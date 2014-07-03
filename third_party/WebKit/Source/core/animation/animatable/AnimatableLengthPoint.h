@@ -28,24 +28,47 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef CSSAnimatableValueFactory_h
-#define CSSAnimatableValueFactory_h
+#ifndef AnimatableLengthPoint_h
+#define AnimatableLengthPoint_h
 
-#include "core/CSSPropertyNames.h"
 #include "core/animation/animatable/AnimatableValue.h"
-#include "wtf/PassRefPtr.h"
 
 namespace WebCore {
 
-class RenderStyle;
-
-class CSSAnimatableValueFactory {
+class AnimatableLengthPoint FINAL : public AnimatableValue {
 public:
-    static PassRefPtrWillBeRawPtr<AnimatableValue> create(CSSPropertyID, const RenderStyle&);
+    virtual ~AnimatableLengthPoint() { }
+    static PassRefPtrWillBeRawPtr<AnimatableLengthPoint> create(PassRefPtrWillBeRawPtr<AnimatableValue> x, PassRefPtrWillBeRawPtr<AnimatableValue> y)
+    {
+        return adoptRefWillBeNoop(new AnimatableLengthPoint(x, y));
+    }
+    const AnimatableValue* x() const { return m_x.get(); }
+    const AnimatableValue* y() const { return m_y.get(); }
+
+    virtual void trace(Visitor*) OVERRIDE;
+
+protected:
+    virtual PassRefPtrWillBeRawPtr<AnimatableValue> interpolateTo(const AnimatableValue*, double fraction) const OVERRIDE;
+
 private:
-    static PassRefPtrWillBeRawPtr<AnimatableValue> createFromColor(CSSPropertyID, const RenderStyle&);
+    AnimatableLengthPoint(PassRefPtrWillBeRawPtr<AnimatableValue> x, PassRefPtrWillBeRawPtr<AnimatableValue> y)
+        : m_x(x)
+        , m_y(y)
+    {
+    }
+    virtual AnimatableType type() const OVERRIDE { return TypeLengthPoint; }
+    virtual bool equalTo(const AnimatableValue*) const OVERRIDE;
+
+    RefPtrWillBeMember<AnimatableValue> m_x;
+    RefPtrWillBeMember<AnimatableValue> m_y;
 };
+
+inline const AnimatableLengthPoint* toAnimatableLengthPoint(const AnimatableValue* value)
+{
+    ASSERT_WITH_SECURITY_IMPLICATION(value && value->isLengthPoint());
+    return static_cast<const AnimatableLengthPoint*>(value);
+}
 
 } // namespace WebCore
 
-#endif // CSSAnimatableValueFactory_h
+#endif // AnimatableLengthPoint_h

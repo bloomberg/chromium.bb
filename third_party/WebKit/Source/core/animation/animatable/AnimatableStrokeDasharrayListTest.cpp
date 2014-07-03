@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 Google Inc. All rights reserved.
+ * Copyright (c) 2013, Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -28,24 +28,41 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef CSSAnimatableValueFactory_h
-#define CSSAnimatableValueFactory_h
+#include "config.h"
+#include "core/animation/animatable/AnimatableStrokeDasharrayList.h"
 
-#include "core/CSSPropertyNames.h"
-#include "core/animation/animatable/AnimatableValue.h"
-#include "wtf/PassRefPtr.h"
+#include "core/svg/SVGLength.h"
 
-namespace WebCore {
+#include <gtest/gtest.h>
 
-class RenderStyle;
+using namespace WebCore;
 
-class CSSAnimatableValueFactory {
-public:
-    static PassRefPtrWillBeRawPtr<AnimatableValue> create(CSSPropertyID, const RenderStyle&);
-private:
-    static PassRefPtrWillBeRawPtr<AnimatableValue> createFromColor(CSSPropertyID, const RenderStyle&);
-};
+namespace {
 
-} // namespace WebCore
+PassRefPtr<SVGLengthList> createSVGLengthList(size_t length)
+{
+    RefPtr<SVGLengthList> list = SVGLengthList::create();
+    for (size_t i = 0; i < length; ++i)
+        list->append(SVGLength::create());
+    return list.release();
+}
 
-#endif // CSSAnimatableValueFactory_h
+TEST(AnimationAnimatableStrokeDasharrayListTest, EqualTo)
+{
+    RefPtr<SVGLengthList> svgListA = createSVGLengthList(4);
+    RefPtr<SVGLengthList> svgListB = createSVGLengthList(4);
+    RefPtrWillBeRawPtr<AnimatableStrokeDasharrayList> listA = AnimatableStrokeDasharrayList::create(svgListA);
+    RefPtrWillBeRawPtr<AnimatableStrokeDasharrayList> listB = AnimatableStrokeDasharrayList::create(svgListB);
+    EXPECT_TRUE(listA->equals(listB.get()));
+
+    TrackExceptionState exceptionState;
+    svgListB->at(3)->newValueSpecifiedUnits(LengthTypePX, 50);
+    listB = AnimatableStrokeDasharrayList::create(svgListB);
+    EXPECT_FALSE(listA->equals(listB.get()));
+
+    svgListB = createSVGLengthList(5);
+    listB = AnimatableStrokeDasharrayList::create(svgListB);
+    EXPECT_FALSE(listA->equals(listB.get()));
+}
+
+} // namespace

@@ -28,24 +28,34 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef CSSAnimatableValueFactory_h
-#define CSSAnimatableValueFactory_h
-
-#include "core/CSSPropertyNames.h"
-#include "core/animation/animatable/AnimatableValue.h"
-#include "wtf/PassRefPtr.h"
+#include "config.h"
+#include "core/animation/animatable/AnimatableVisibility.h"
 
 namespace WebCore {
 
-class RenderStyle;
+bool AnimatableVisibility::usesDefaultInterpolationWith(const AnimatableValue* value) const
+{
+    EVisibility from = m_visibility;
+    EVisibility to = toAnimatableVisibility(value)->m_visibility;
+    return from != VISIBLE && to != VISIBLE;
+}
 
-class CSSAnimatableValueFactory {
-public:
-    static PassRefPtrWillBeRawPtr<AnimatableValue> create(CSSPropertyID, const RenderStyle&);
-private:
-    static PassRefPtrWillBeRawPtr<AnimatableValue> createFromColor(CSSPropertyID, const RenderStyle&);
-};
+PassRefPtrWillBeRawPtr<AnimatableValue> AnimatableVisibility::interpolateTo(const AnimatableValue* value, double fraction) const
+{
+    EVisibility from = m_visibility;
+    EVisibility to = toAnimatableVisibility(value)->m_visibility;
+    if (from != VISIBLE && to != VISIBLE)
+        return defaultInterpolateTo(this, value, fraction);
+    if (fraction <= 0)
+        return takeConstRef(this);
+    if (fraction >= 1)
+        return takeConstRef(value);
+    return takeConstRef(from == VISIBLE ? this : value);
+}
+
+bool AnimatableVisibility::equalTo(const AnimatableValue* value) const
+{
+    return m_visibility == toAnimatableVisibility(value)->m_visibility;
+}
 
 } // namespace WebCore
-
-#endif // CSSAnimatableValueFactory_h

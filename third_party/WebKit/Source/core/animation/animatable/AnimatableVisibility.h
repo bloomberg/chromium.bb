@@ -28,24 +28,42 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef CSSAnimatableValueFactory_h
-#define CSSAnimatableValueFactory_h
+#ifndef AnimatableVisibility_h
+#define AnimatableVisibility_h
 
-#include "core/CSSPropertyNames.h"
 #include "core/animation/animatable/AnimatableValue.h"
-#include "wtf/PassRefPtr.h"
+#include "core/rendering/style/RenderStyleConstants.h"
 
 namespace WebCore {
 
-class RenderStyle;
-
-class CSSAnimatableValueFactory {
+class AnimatableVisibility FINAL : public AnimatableValue {
 public:
-    static PassRefPtrWillBeRawPtr<AnimatableValue> create(CSSPropertyID, const RenderStyle&);
+    virtual ~AnimatableVisibility() { }
+    static PassRefPtrWillBeRawPtr<AnimatableVisibility> create(EVisibility visibility)
+    {
+        return adoptRefWillBeNoop(new AnimatableVisibility(visibility));
+    }
+
+    EVisibility visibility() const { return m_visibility; }
+
+    virtual void trace(Visitor* visitor) OVERRIDE { AnimatableValue::trace(visitor); }
+
+protected:
+    virtual PassRefPtrWillBeRawPtr<AnimatableValue> interpolateTo(const AnimatableValue*, double fraction) const OVERRIDE;
+    virtual bool usesDefaultInterpolationWith(const AnimatableValue*) const OVERRIDE;
+
 private:
-    static PassRefPtrWillBeRawPtr<AnimatableValue> createFromColor(CSSPropertyID, const RenderStyle&);
+    explicit AnimatableVisibility(EVisibility visibility)
+        : m_visibility(visibility)
+    {
+    }
+    virtual AnimatableType type() const OVERRIDE { return TypeVisibility; }
+    virtual bool equalTo(const AnimatableValue*) const OVERRIDE;
+    const EVisibility m_visibility;
 };
+
+DEFINE_ANIMATABLE_VALUE_TYPE_CASTS(AnimatableVisibility, isVisibility());
 
 } // namespace WebCore
 
-#endif // CSSAnimatableValueFactory_h
+#endif // AnimatableVisibility_h

@@ -28,24 +28,30 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef CSSAnimatableValueFactory_h
-#define CSSAnimatableValueFactory_h
-
-#include "core/CSSPropertyNames.h"
-#include "core/animation/animatable/AnimatableValue.h"
-#include "wtf/PassRefPtr.h"
+#include "config.h"
+#include "core/animation/animatable/AnimatableLengthPoint.h"
 
 namespace WebCore {
 
-class RenderStyle;
+PassRefPtrWillBeRawPtr<AnimatableValue> AnimatableLengthPoint::interpolateTo(const AnimatableValue* value, double fraction) const
+{
+    const AnimatableLengthPoint* lengthPoint = toAnimatableLengthPoint(value);
+    return AnimatableLengthPoint::create(
+        AnimatableValue::interpolate(this->x(), lengthPoint->x(), fraction),
+        AnimatableValue::interpolate(this->y(), lengthPoint->y(), fraction));
+}
 
-class CSSAnimatableValueFactory {
-public:
-    static PassRefPtrWillBeRawPtr<AnimatableValue> create(CSSPropertyID, const RenderStyle&);
-private:
-    static PassRefPtrWillBeRawPtr<AnimatableValue> createFromColor(CSSPropertyID, const RenderStyle&);
-};
+bool AnimatableLengthPoint::equalTo(const AnimatableValue* value) const
+{
+    const AnimatableLengthPoint* lengthPoint = toAnimatableLengthPoint(value);
+    return x()->equals(lengthPoint->x()) && y()->equals(lengthPoint->y());
+}
 
-} // namespace WebCore
+void AnimatableLengthPoint::trace(Visitor* visitor)
+{
+    visitor->trace(m_x);
+    visitor->trace(m_y);
+    AnimatableValue::trace(visitor);
+}
 
-#endif // CSSAnimatableValueFactory_h
+}

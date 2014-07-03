@@ -28,24 +28,44 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef CSSAnimatableValueFactory_h
-#define CSSAnimatableValueFactory_h
+#ifndef AnimatableStrokeDasharrayList_h
+#define AnimatableStrokeDasharrayList_h
 
-#include "core/CSSPropertyNames.h"
-#include "core/animation/animatable/AnimatableValue.h"
-#include "wtf/PassRefPtr.h"
+#include "core/animation/animatable/AnimatableRepeatable.h"
+#include "core/svg/SVGLengthList.h"
 
 namespace WebCore {
 
-class RenderStyle;
-
-class CSSAnimatableValueFactory {
+class AnimatableStrokeDasharrayList FINAL : public AnimatableRepeatable {
 public:
-    static PassRefPtrWillBeRawPtr<AnimatableValue> create(CSSPropertyID, const RenderStyle&);
+    virtual ~AnimatableStrokeDasharrayList() { }
+
+    static PassRefPtrWillBeRawPtr<AnimatableStrokeDasharrayList> create(PassRefPtr<SVGLengthList> lengths)
+    {
+        return adoptRefWillBeNoop(new AnimatableStrokeDasharrayList(lengths));
+    }
+
+    PassRefPtr<SVGLengthList> toSVGLengthList() const;
+
+    virtual void trace(Visitor*) OVERRIDE;
+
+protected:
+    virtual PassRefPtrWillBeRawPtr<AnimatableValue> interpolateTo(const AnimatableValue*, double fraction) const OVERRIDE;
+    virtual bool usesDefaultInterpolationWith(const AnimatableValue*) const OVERRIDE;
+
 private:
-    static PassRefPtrWillBeRawPtr<AnimatableValue> createFromColor(CSSPropertyID, const RenderStyle&);
+    AnimatableStrokeDasharrayList(PassRefPtr<SVGLengthList>);
+    // This will consume the vector passed into it.
+    AnimatableStrokeDasharrayList(WillBeHeapVector<RefPtrWillBeMember<AnimatableValue> >& values)
+        : AnimatableRepeatable(values)
+    {
+    }
+
+    virtual AnimatableType type() const OVERRIDE { return TypeStrokeDasharrayList; }
 };
+
+DEFINE_ANIMATABLE_VALUE_TYPE_CASTS(AnimatableStrokeDasharrayList, isStrokeDasharrayList());
 
 } // namespace WebCore
 
-#endif // CSSAnimatableValueFactory_h
+#endif // AnimatableStrokeDasharrayList_h

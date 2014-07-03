@@ -28,24 +28,26 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef CSSAnimatableValueFactory_h
-#define CSSAnimatableValueFactory_h
-
-#include "core/CSSPropertyNames.h"
-#include "core/animation/animatable/AnimatableValue.h"
-#include "wtf/PassRefPtr.h"
+#include "config.h"
+#include "core/animation/animatable/AnimatableTransform.h"
 
 namespace WebCore {
 
-class RenderStyle;
+PassRefPtrWillBeRawPtr<AnimatableTransform> AnimatableTransform::create(const TransformOperations& transform)
+{
+    return adoptRefWillBeNoop(new AnimatableTransform(transform));
+}
 
-class CSSAnimatableValueFactory {
-public:
-    static PassRefPtrWillBeRawPtr<AnimatableValue> create(CSSPropertyID, const RenderStyle&);
-private:
-    static PassRefPtrWillBeRawPtr<AnimatableValue> createFromColor(CSSPropertyID, const RenderStyle&);
-};
+PassRefPtrWillBeRawPtr<AnimatableValue> AnimatableTransform::interpolateTo(const AnimatableValue* value, double fraction) const
+{
+    const AnimatableTransform* transform = toAnimatableTransform(value);
+    return AnimatableTransform::create(transform->m_transform.blend(m_transform, fraction));
+}
+
+bool AnimatableTransform::equalTo(const AnimatableValue* value) const
+{
+    return m_transform == toAnimatableTransform(value)->m_transform;
+}
 
 } // namespace WebCore
 
-#endif // CSSAnimatableValueFactory_h

@@ -28,24 +28,41 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef CSSAnimatableValueFactory_h
-#define CSSAnimatableValueFactory_h
+#ifndef AnimatableShadow_h
+#define AnimatableShadow_h
 
-#include "core/CSSPropertyNames.h"
 #include "core/animation/animatable/AnimatableValue.h"
-#include "wtf/PassRefPtr.h"
+#include "core/rendering/style/ShadowList.h"
 
 namespace WebCore {
 
-class RenderStyle;
-
-class CSSAnimatableValueFactory {
+class AnimatableShadow FINAL : public AnimatableValue {
 public:
-    static PassRefPtrWillBeRawPtr<AnimatableValue> create(CSSPropertyID, const RenderStyle&);
+    virtual ~AnimatableShadow() { }
+    static PassRefPtrWillBeRawPtr<AnimatableShadow> create(PassRefPtr<ShadowList> shadowList)
+    {
+        return adoptRefWillBeNoop(new AnimatableShadow(shadowList));
+    }
+    ShadowList* shadowList() const { return m_shadowList.get(); }
+
+    virtual void trace(Visitor* visitor) OVERRIDE { AnimatableValue::trace(visitor); }
+
+protected:
+    virtual PassRefPtrWillBeRawPtr<AnimatableValue> interpolateTo(const AnimatableValue*, double fraction) const OVERRIDE;
+
 private:
-    static PassRefPtrWillBeRawPtr<AnimatableValue> createFromColor(CSSPropertyID, const RenderStyle&);
+    explicit AnimatableShadow(PassRefPtr<ShadowList> shadowList)
+        : m_shadowList(shadowList)
+    {
+    }
+    virtual AnimatableType type() const OVERRIDE { return TypeShadow; }
+    virtual bool equalTo(const AnimatableValue*) const OVERRIDE;
+
+    const RefPtr<ShadowList> m_shadowList;
 };
+
+DEFINE_ANIMATABLE_VALUE_TYPE_CASTS(AnimatableShadow, isShadow());
 
 } // namespace WebCore
 
-#endif // CSSAnimatableValueFactory_h
+#endif // AnimatableShadow_h

@@ -28,24 +28,54 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef CSSAnimatableValueFactory_h
-#define CSSAnimatableValueFactory_h
-
-#include "core/CSSPropertyNames.h"
+#include "config.h"
 #include "core/animation/animatable/AnimatableValue.h"
-#include "wtf/PassRefPtr.h"
+
+#include "core/animation/animatable/AnimatableNeutral.h"
+#include "wtf/StdLibExtras.h"
+#include <algorithm>
+
+namespace {
+
+const double defaultDistance = 1;
+
+} // namespace
 
 namespace WebCore {
 
-class RenderStyle;
+const AnimatableValue* AnimatableValue::neutralValue()
+{
+    DEFINE_STATIC_REF_WILL_BE_PERSISTENT(AnimatableNeutral, neutralSentinelValue, (AnimatableNeutral::create()));
+    return neutralSentinelValue;
+}
 
-class CSSAnimatableValueFactory {
-public:
-    static PassRefPtrWillBeRawPtr<AnimatableValue> create(CSSPropertyID, const RenderStyle&);
-private:
-    static PassRefPtrWillBeRawPtr<AnimatableValue> createFromColor(CSSPropertyID, const RenderStyle&);
-};
+PassRefPtrWillBeRawPtr<AnimatableValue> AnimatableValue::interpolate(const AnimatableValue* left, const AnimatableValue* right, double fraction)
+{
+    ASSERT(left);
+    ASSERT(right);
+    ASSERT(!left->isNeutral());
+    ASSERT(!right->isNeutral());
+
+    if (fraction && fraction != 1 && left->isSameType(right))
+        return left->interpolateTo(right, fraction);
+
+    return defaultInterpolateTo(left, right, fraction);
+}
+
+double AnimatableValue::distance(const AnimatableValue* left, const AnimatableValue* right)
+{
+    ASSERT(left);
+    ASSERT(right);
+
+    if (left->isSameType(right))
+        return left->distanceTo(right);
+
+    return defaultDistance;
+}
+
+double AnimatableValue::distanceTo(const AnimatableValue*) const
+{
+    return defaultDistance;
+}
 
 } // namespace WebCore
-
-#endif // CSSAnimatableValueFactory_h

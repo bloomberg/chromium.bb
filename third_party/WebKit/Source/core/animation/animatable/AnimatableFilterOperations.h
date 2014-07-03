@@ -28,24 +28,42 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef CSSAnimatableValueFactory_h
-#define CSSAnimatableValueFactory_h
+#ifndef AnimatableFilterOperations_h
+#define AnimatableFilterOperations_h
 
-#include "core/CSSPropertyNames.h"
 #include "core/animation/animatable/AnimatableValue.h"
-#include "wtf/PassRefPtr.h"
+#include "platform/graphics/filters/FilterOperations.h"
 
 namespace WebCore {
 
-class RenderStyle;
-
-class CSSAnimatableValueFactory {
+class AnimatableFilterOperations FINAL : public AnimatableValue {
 public:
-    static PassRefPtrWillBeRawPtr<AnimatableValue> create(CSSPropertyID, const RenderStyle&);
+    virtual ~AnimatableFilterOperations() { }
+    static PassRefPtrWillBeRawPtr<AnimatableFilterOperations> create(const FilterOperations& operations)
+    {
+        return adoptRefWillBeNoop(new AnimatableFilterOperations(operations));
+    }
+    const FilterOperations& operations() const { return m_operations; }
+
+    virtual void trace(Visitor* visitor) OVERRIDE { AnimatableValue::trace(visitor); }
+
+protected:
+    virtual PassRefPtrWillBeRawPtr<AnimatableValue> interpolateTo(const AnimatableValue*, double fraction) const OVERRIDE;
+    virtual bool usesDefaultInterpolationWith(const AnimatableValue*) const OVERRIDE;
+
 private:
-    static PassRefPtrWillBeRawPtr<AnimatableValue> createFromColor(CSSPropertyID, const RenderStyle&);
+    AnimatableFilterOperations(const FilterOperations& operations)
+        : m_operations(operations)
+    {
+    }
+    virtual bool equalTo(const AnimatableValue*) const OVERRIDE;
+    virtual AnimatableType type() const OVERRIDE { return TypeFilterOperations; }
+
+    FilterOperations m_operations;
 };
+
+DEFINE_ANIMATABLE_VALUE_TYPE_CASTS(AnimatableFilterOperations, isFilterOperations());
 
 } // namespace WebCore
 
-#endif // CSSAnimatableValueFactory_h
+#endif // AnimatableFilterOperations_h

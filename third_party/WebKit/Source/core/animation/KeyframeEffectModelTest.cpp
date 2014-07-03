@@ -31,8 +31,8 @@
 #include "config.h"
 #include "core/animation/KeyframeEffectModel.h"
 
-#include "core/animation/AnimatableLength.h"
-#include "core/animation/AnimatableUnknown.h"
+#include "core/animation/animatable/AnimatableLength.h"
+#include "core/animation/animatable/AnimatableUnknown.h"
 #include "core/animation/interpolation/LegacyStyleInterpolation.h"
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/css/parser/BisonCSSParser.h"

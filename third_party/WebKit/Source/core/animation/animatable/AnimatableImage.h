@@ -28,24 +28,48 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef CSSAnimatableValueFactory_h
-#define CSSAnimatableValueFactory_h
+#ifndef AnimatableImage_h
+#define AnimatableImage_h
 
-#include "core/CSSPropertyNames.h"
 #include "core/animation/animatable/AnimatableValue.h"
-#include "wtf/PassRefPtr.h"
+#include "core/css/CSSCrossfadeValue.h"
+#include "core/rendering/style/StyleImage.h"
 
 namespace WebCore {
 
-class RenderStyle;
-
-class CSSAnimatableValueFactory {
+class AnimatableImage FINAL : public AnimatableValue {
 public:
-    static PassRefPtrWillBeRawPtr<AnimatableValue> create(CSSPropertyID, const RenderStyle&);
+    virtual ~AnimatableImage() { }
+    static PassRefPtrWillBeRawPtr<AnimatableImage> create(PassRefPtrWillBeRawPtr<CSSValue> value)
+    {
+        return adoptRefWillBeNoop(new AnimatableImage(value));
+    }
+    CSSValue* toCSSValue() const { return m_value.get(); }
+
+    virtual void trace(Visitor* visitor) OVERRIDE
+    {
+        visitor->trace(m_value);
+        AnimatableValue::trace(visitor);
+    }
+
+protected:
+    virtual PassRefPtrWillBeRawPtr<AnimatableValue> interpolateTo(const AnimatableValue*, double fraction) const OVERRIDE;
+    virtual bool usesDefaultInterpolationWith(const AnimatableValue*) const OVERRIDE;
+
 private:
-    static PassRefPtrWillBeRawPtr<AnimatableValue> createFromColor(CSSPropertyID, const RenderStyle&);
+    AnimatableImage(PassRefPtrWillBeRawPtr<CSSValue> value)
+        : m_value(value)
+    {
+        ASSERT(m_value.get());
+    }
+    virtual AnimatableType type() const OVERRIDE { return TypeImage; }
+    virtual bool equalTo(const AnimatableValue*) const OVERRIDE;
+
+    const RefPtrWillBeMember<CSSValue> m_value;
 };
+
+DEFINE_ANIMATABLE_VALUE_TYPE_CASTS(AnimatableImage, isImage());
 
 } // namespace WebCore
 
-#endif // CSSAnimatableValueFactory_h
+#endif // AnimatableImage_h

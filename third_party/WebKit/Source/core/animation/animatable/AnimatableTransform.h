@@ -28,24 +28,41 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef CSSAnimatableValueFactory_h
-#define CSSAnimatableValueFactory_h
+#ifndef AnimatableTransform_h
+#define AnimatableTransform_h
 
-#include "core/CSSPropertyNames.h"
 #include "core/animation/animatable/AnimatableValue.h"
-#include "wtf/PassRefPtr.h"
+#include "platform/transforms/TransformOperations.h"
 
 namespace WebCore {
 
-class RenderStyle;
-
-class CSSAnimatableValueFactory {
+class AnimatableTransform FINAL : public AnimatableValue {
 public:
-    static PassRefPtrWillBeRawPtr<AnimatableValue> create(CSSPropertyID, const RenderStyle&);
+    virtual ~AnimatableTransform() { }
+    static PassRefPtrWillBeRawPtr<AnimatableTransform> create(const TransformOperations&);
+    const TransformOperations& transformOperations() const
+    {
+        return m_transform;
+    }
+
+    virtual void trace(Visitor* visitor) OVERRIDE { AnimatableValue::trace(visitor); }
+
+protected:
+    virtual PassRefPtrWillBeRawPtr<AnimatableValue> interpolateTo(const AnimatableValue*, double fraction) const OVERRIDE;
+
 private:
-    static PassRefPtrWillBeRawPtr<AnimatableValue> createFromColor(CSSPropertyID, const RenderStyle&);
+    explicit AnimatableTransform(const TransformOperations& transform)
+        : m_transform(transform)
+    {
+    }
+    virtual AnimatableType type() const OVERRIDE { return TypeTransform; }
+    virtual bool equalTo(const AnimatableValue*) const OVERRIDE;
+    const TransformOperations m_transform;
 };
+
+DEFINE_ANIMATABLE_VALUE_TYPE_CASTS(AnimatableTransform, isTransform());
 
 } // namespace WebCore
 
-#endif // CSSAnimatableValueFactory_h
+#endif // AnimatableTransform_h
+

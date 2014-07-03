@@ -28,24 +28,52 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef CSSAnimatableValueFactory_h
-#define CSSAnimatableValueFactory_h
+#ifndef AnimatableLength_h
+#define AnimatableLength_h
 
-#include "core/CSSPropertyNames.h"
 #include "core/animation/animatable/AnimatableValue.h"
-#include "wtf/PassRefPtr.h"
+#include "platform/Length.h"
 
 namespace WebCore {
 
-class RenderStyle;
-
-class CSSAnimatableValueFactory {
+class AnimatableLength FINAL : public AnimatableValue {
 public:
-    static PassRefPtrWillBeRawPtr<AnimatableValue> create(CSSPropertyID, const RenderStyle&);
+    static PassRefPtrWillBeRawPtr<AnimatableLength> create(const Length& length, float zoom)
+    {
+        return adoptRefWillBeNoop(new AnimatableLength(length, zoom));
+    }
+    Length length(float zoom, ValueRange) const;
+
+protected:
+    virtual PassRefPtrWillBeRawPtr<AnimatableValue> interpolateTo(const AnimatableValue*, double fraction) const OVERRIDE;
+
 private:
-    static PassRefPtrWillBeRawPtr<AnimatableValue> createFromColor(CSSPropertyID, const RenderStyle&);
+    static PassRefPtrWillBeRawPtr<AnimatableLength> create(double pixels, double percent, bool hasPixels, bool hasPercent)
+    {
+        return adoptRefWillBeNoop(new AnimatableLength(pixels, percent, hasPixels, hasPercent));
+    }
+    AnimatableLength(const Length&, float zoom);
+    AnimatableLength(double pixels, double percent, bool hasPixels, bool hasPercent)
+        : m_pixels(pixels)
+        , m_percent(percent)
+        , m_hasPixels(hasPixels)
+        , m_hasPercent(hasPercent)
+    {
+        ASSERT(m_hasPixels || m_hasPercent);
+    }
+    virtual AnimatableType type() const OVERRIDE { return TypeLength; }
+    virtual bool equalTo(const AnimatableValue*) const OVERRIDE;
+
+    virtual void trace(Visitor* visitor) OVERRIDE { AnimatableValue::trace(visitor); }
+
+    double m_pixels;
+    double m_percent;
+    bool m_hasPixels;
+    bool m_hasPercent;
 };
+
+DEFINE_ANIMATABLE_VALUE_TYPE_CASTS(AnimatableLength, isLength());
 
 } // namespace WebCore
 
-#endif // CSSAnimatableValueFactory_h
+#endif // AnimatableLength_h

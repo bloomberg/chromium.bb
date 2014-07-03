@@ -28,24 +28,44 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef CSSAnimatableValueFactory_h
-#define CSSAnimatableValueFactory_h
+#include "config.h"
+#include "core/animation/animatable/AnimatableFilterOperations.h"
 
-#include "core/CSSPropertyNames.h"
-#include "core/animation/animatable/AnimatableValue.h"
-#include "wtf/PassRefPtr.h"
+#include <algorithm>
 
 namespace WebCore {
 
-class RenderStyle;
+bool AnimatableFilterOperations::usesDefaultInterpolationWith(const AnimatableValue* value) const
+{
+    const AnimatableFilterOperations* target = toAnimatableFilterOperations(value);
+    return !operations().canInterpolateWith(target->operations());
+}
 
-class CSSAnimatableValueFactory {
-public:
-    static PassRefPtrWillBeRawPtr<AnimatableValue> create(CSSPropertyID, const RenderStyle&);
-private:
-    static PassRefPtrWillBeRawPtr<AnimatableValue> createFromColor(CSSPropertyID, const RenderStyle&);
-};
+PassRefPtrWillBeRawPtr<AnimatableValue> AnimatableFilterOperations::interpolateTo(const AnimatableValue* value, double fraction) const
+{
+    if (usesDefaultInterpolationWith(value))
+        return defaultInterpolateTo(this, value, fraction);
 
-} // namespace WebCore
+    const AnimatableFilterOperations* target = toAnimatableFilterOperations(value);
+    FilterOperations result;
+    size_t fromSize = operations().size();
+    size_t toSize = target->operations().size();
+    size_t size = std::max(fromSize, toSize);
+    for (size_t i = 0; i < size; i++) {
+        FilterOperation* from = (i < fromSize) ? m_operations.operations()[i].get() : 0;
+        FilterOperation* to = (i < toSize) ? target->m_operations.operations()[i].get() : 0;
+        RefPtr<FilterOperation> blendedOp = FilterOperation::blend(from, to, fraction);
+        if (blendedOp)
+            result.operations().append(blendedOp);
+        else
+            ASSERT_NOT_REACHED();
+    }
+    return AnimatableFilterOperations::create(result);
+}
 
-#endif // CSSAnimatableValueFactory_h
+bool AnimatableFilterOperations::equalTo(const AnimatableValue* value) const
+{
+    return operations() == toAnimatableFilterOperations(value)->operations();
+}
+
+}

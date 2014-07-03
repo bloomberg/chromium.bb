@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 Google Inc. All rights reserved.
+ * Copyright (c) 2013, Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -28,24 +28,21 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef CSSAnimatableValueFactory_h
-#define CSSAnimatableValueFactory_h
+#include "config.h"
+#include "core/animation/animatable/AnimatableNeutral.h"
 
-#include "core/CSSPropertyNames.h"
-#include "core/animation/animatable/AnimatableValue.h"
-#include "wtf/PassRefPtr.h"
+#include "core/animation/animatable/AnimatableUnknown.h"
+#include "core/css/CSSArrayFunctionValue.h"
 
-namespace WebCore {
+#include <gtest/gtest.h>
 
-class RenderStyle;
+using namespace WebCore;
 
-class CSSAnimatableValueFactory {
-public:
-    static PassRefPtrWillBeRawPtr<AnimatableValue> create(CSSPropertyID, const RenderStyle&);
-private:
-    static PassRefPtrWillBeRawPtr<AnimatableValue> createFromColor(CSSPropertyID, const RenderStyle&);
-};
+namespace {
 
-} // namespace WebCore
+TEST(AnimationAnimatableNeutralTest, Create)
+{
+    EXPECT_TRUE(AnimatableValue::neutralValue());
+}
 
-#endif // CSSAnimatableValueFactory_h
+}

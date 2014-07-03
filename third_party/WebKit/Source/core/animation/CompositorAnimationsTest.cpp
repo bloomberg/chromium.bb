@@ -32,12 +32,12 @@
 
 #include "core/animation/CompositorAnimations.h"
 
-#include "core/animation/AnimatableDouble.h"
-#include "core/animation/AnimatableFilterOperations.h"
-#include "core/animation/AnimatableTransform.h"
-#include "core/animation/AnimatableValueTestHelper.h"
 #include "core/animation/CompositorAnimationsImpl.h"
 #include "core/animation/CompositorAnimationsTestHelper.h"
+#include "core/animation/animatable/AnimatableDouble.h"
+#include "core/animation/animatable/AnimatableFilterOperations.h"
+#include "core/animation/animatable/AnimatableTransform.h"
+#include "core/animation/animatable/AnimatableValueTestHelper.h"
 #include "platform/geometry/IntSize.h"
 #include "platform/graphics/filters/FilterOperations.h"
 #include "platform/transforms/TransformOperations.h"

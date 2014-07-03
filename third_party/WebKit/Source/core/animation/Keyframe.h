@@ -6,9 +6,9 @@
 #define Keyframe_h
 
 #include "core/CSSPropertyNames.h"
-#include "core/animation/AnimatableValue.h"
 #include "core/animation/AnimationEffect.h"
 #include "core/animation/AnimationNode.h"
+#include "core/animation/animatable/AnimatableValue.h"
 
 namespace WebCore {
 

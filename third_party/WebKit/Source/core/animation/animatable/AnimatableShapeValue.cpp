@@ -28,24 +28,41 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef CSSAnimatableValueFactory_h
-#define CSSAnimatableValueFactory_h
-
-#include "core/CSSPropertyNames.h"
-#include "core/animation/animatable/AnimatableValue.h"
-#include "wtf/PassRefPtr.h"
+#include "config.h"
+#include "core/animation/animatable/AnimatableShapeValue.h"
 
 namespace WebCore {
 
-class RenderStyle;
+bool AnimatableShapeValue::usesDefaultInterpolationWith(const AnimatableValue* value) const
+{
+    const AnimatableShapeValue* shapeValue = toAnimatableShapeValue(value);
 
-class CSSAnimatableValueFactory {
-public:
-    static PassRefPtrWillBeRawPtr<AnimatableValue> create(CSSPropertyID, const RenderStyle&);
-private:
-    static PassRefPtrWillBeRawPtr<AnimatableValue> createFromColor(CSSPropertyID, const RenderStyle&);
-};
+    if (m_shape->type() != ShapeValue::Shape
+        || shapeValue->m_shape->type() != ShapeValue::Shape
+        || m_shape->cssBox() != shapeValue->m_shape->cssBox())
+        return true;
 
-} // namespace WebCore
+    const BasicShape* fromShape = this->m_shape->shape();
+    const BasicShape* toShape = shapeValue->m_shape->shape();
 
-#endif // CSSAnimatableValueFactory_h
+    return !fromShape->canBlend(toShape);
+}
+
+PassRefPtrWillBeRawPtr<AnimatableValue> AnimatableShapeValue::interpolateTo(const AnimatableValue* value, double fraction) const
+{
+    if (usesDefaultInterpolationWith(value))
+        return defaultInterpolateTo(this, value, fraction);
+
+    const AnimatableShapeValue* shapeValue = toAnimatableShapeValue(value);
+    const BasicShape* fromShape = this->m_shape->shape();
+    const BasicShape* toShape = shapeValue->m_shape->shape();
+    return AnimatableShapeValue::create(ShapeValue::createShapeValue(toShape->blend(fromShape, fraction), shapeValue->m_shape->cssBox()).get());
+}
+
+bool AnimatableShapeValue::equalTo(const AnimatableValue* value) const
+{
+    const ShapeValue* shape = toAnimatableShapeValue(value)->m_shape.get();
+    return m_shape == shape || (m_shape && shape && *m_shape == *shape);
+}
+
+}

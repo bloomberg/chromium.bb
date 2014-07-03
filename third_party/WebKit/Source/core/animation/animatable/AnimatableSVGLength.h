@@ -28,24 +28,47 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef CSSAnimatableValueFactory_h
-#define CSSAnimatableValueFactory_h
+#ifndef AnimatableSVGLength_h
+#define AnimatableSVGLength_h
 
-#include "core/CSSPropertyNames.h"
 #include "core/animation/animatable/AnimatableValue.h"
-#include "wtf/PassRefPtr.h"
+#include "core/svg/SVGLength.h"
 
 namespace WebCore {
 
-class RenderStyle;
-
-class CSSAnimatableValueFactory {
+class AnimatableSVGLength FINAL : public AnimatableValue {
 public:
-    static PassRefPtrWillBeRawPtr<AnimatableValue> create(CSSPropertyID, const RenderStyle&);
+    virtual ~AnimatableSVGLength() { }
+
+    static PassRefPtrWillBeRawPtr<AnimatableSVGLength> create(PassRefPtr<SVGLength> length)
+    {
+        return adoptRefWillBeNoop(new AnimatableSVGLength(length));
+    }
+
+    SVGLength* toSVGLength() const
+    {
+        return m_length.get();
+    }
+
+    virtual void trace(Visitor* visitor) OVERRIDE { AnimatableValue::trace(visitor); }
+
+protected:
+    virtual PassRefPtrWillBeRawPtr<AnimatableValue> interpolateTo(const AnimatableValue*, double fraction) const OVERRIDE;
+
 private:
-    static PassRefPtrWillBeRawPtr<AnimatableValue> createFromColor(CSSPropertyID, const RenderStyle&);
+    AnimatableSVGLength(PassRefPtr<SVGLength> length)
+        : m_length(length)
+    {
+    }
+
+    virtual AnimatableType type() const OVERRIDE { return TypeSVGLength; }
+    virtual bool equalTo(const AnimatableValue*) const OVERRIDE;
+
+    RefPtr<SVGLength> m_length;
 };
+
+DEFINE_ANIMATABLE_VALUE_TYPE_CASTS(AnimatableSVGLength, isSVGLength());
 
 } // namespace WebCore
 
-#endif // CSSAnimatableValueFactory_h
+#endif // AnimatableSVGLength_h

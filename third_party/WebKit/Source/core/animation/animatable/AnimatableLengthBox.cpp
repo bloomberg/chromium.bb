@@ -28,24 +28,37 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef CSSAnimatableValueFactory_h
-#define CSSAnimatableValueFactory_h
-
-#include "core/CSSPropertyNames.h"
-#include "core/animation/animatable/AnimatableValue.h"
-#include "wtf/PassRefPtr.h"
+#include "config.h"
+#include "core/animation/animatable/AnimatableLengthBox.h"
 
 namespace WebCore {
 
-class RenderStyle;
+PassRefPtrWillBeRawPtr<AnimatableValue> AnimatableLengthBox::interpolateTo(const AnimatableValue* value, double fraction) const
+{
+    const AnimatableLengthBox* lengthBox = toAnimatableLengthBox(value);
+    return AnimatableLengthBox::create(
+        AnimatableValue::interpolate(this->left(), lengthBox->left(), fraction),
+        AnimatableValue::interpolate(this->right(), lengthBox->right(), fraction),
+        AnimatableValue::interpolate(this->top(), lengthBox->top(), fraction),
+        AnimatableValue::interpolate(this->bottom(), lengthBox->bottom(), fraction));
+}
 
-class CSSAnimatableValueFactory {
-public:
-    static PassRefPtrWillBeRawPtr<AnimatableValue> create(CSSPropertyID, const RenderStyle&);
-private:
-    static PassRefPtrWillBeRawPtr<AnimatableValue> createFromColor(CSSPropertyID, const RenderStyle&);
-};
+bool AnimatableLengthBox::equalTo(const AnimatableValue* value) const
+{
+    const AnimatableLengthBox* lengthBox = toAnimatableLengthBox(value);
+    return left()->equals(lengthBox->left())
+        && right()->equals(lengthBox->right())
+        && top()->equals(lengthBox->top())
+        && bottom()->equals(lengthBox->bottom());
+}
 
-} // namespace WebCore
+void AnimatableLengthBox::trace(Visitor* visitor)
+{
+    visitor->trace(m_left);
+    visitor->trace(m_right);
+    visitor->trace(m_top);
+    visitor->trace(m_bottom);
+    AnimatableValue::trace(visitor);
+}
 
-#endif // CSSAnimatableValueFactory_h
+}

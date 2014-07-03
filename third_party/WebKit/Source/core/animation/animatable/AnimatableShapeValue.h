@@ -28,24 +28,43 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef CSSAnimatableValueFactory_h
-#define CSSAnimatableValueFactory_h
+#ifndef AnimatableShapeValue_h
+#define AnimatableShapeValue_h
 
-#include "core/CSSPropertyNames.h"
 #include "core/animation/animatable/AnimatableValue.h"
-#include "wtf/PassRefPtr.h"
+#include "core/rendering/style/ShapeValue.h"
 
 namespace WebCore {
 
-class RenderStyle;
-
-class CSSAnimatableValueFactory {
+class AnimatableShapeValue FINAL : public AnimatableValue {
 public:
-    static PassRefPtrWillBeRawPtr<AnimatableValue> create(CSSPropertyID, const RenderStyle&);
+    virtual ~AnimatableShapeValue() { }
+    static PassRefPtrWillBeRawPtr<AnimatableShapeValue> create(ShapeValue* shape)
+    {
+        return adoptRefWillBeNoop(new AnimatableShapeValue(shape));
+    }
+    ShapeValue* shapeValue() const { return m_shape.get(); }
+
+    virtual void trace(Visitor* visitor) OVERRIDE { AnimatableValue::trace(visitor); }
+
+protected:
+    virtual PassRefPtrWillBeRawPtr<AnimatableValue> interpolateTo(const AnimatableValue*, double fraction) const OVERRIDE;
+    virtual bool usesDefaultInterpolationWith(const AnimatableValue*) const OVERRIDE;
+
 private:
-    static PassRefPtrWillBeRawPtr<AnimatableValue> createFromColor(CSSPropertyID, const RenderStyle&);
+    AnimatableShapeValue(ShapeValue* shape)
+        : m_shape(shape)
+    {
+        ASSERT(m_shape);
+    }
+    virtual AnimatableType type() const OVERRIDE { return TypeShapeValue; }
+    virtual bool equalTo(const AnimatableValue*) const OVERRIDE;
+
+    RefPtr<ShapeValue> m_shape;
 };
+
+DEFINE_ANIMATABLE_VALUE_TYPE_CASTS(AnimatableShapeValue, isShapeValue());
 
 } // namespace WebCore
 
-#endif // CSSAnimatableValueFactory_h
+#endif // AnimatableShapeValue_h

@@ -28,24 +28,51 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef CSSAnimatableValueFactory_h
-#define CSSAnimatableValueFactory_h
+#ifndef AnimatableDouble_h
+#define AnimatableDouble_h
 
-#include "core/CSSPropertyNames.h"
 #include "core/animation/animatable/AnimatableValue.h"
-#include "wtf/PassRefPtr.h"
 
 namespace WebCore {
 
-class RenderStyle;
-
-class CSSAnimatableValueFactory {
+class AnimatableDouble FINAL : public AnimatableValue {
 public:
-    static PassRefPtrWillBeRawPtr<AnimatableValue> create(CSSPropertyID, const RenderStyle&);
+    virtual ~AnimatableDouble() { }
+
+    enum Constraint {
+        Unconstrained,
+        InterpolationIsNonContinuousWithZero,
+    };
+
+    static PassRefPtrWillBeRawPtr<AnimatableDouble> create(double number, Constraint constraint = Unconstrained)
+    {
+        return adoptRefWillBeNoop(new AnimatableDouble(number, constraint));
+    }
+
+    double toDouble() const { return m_number; }
+
+    virtual void trace(Visitor* visitor) OVERRIDE { AnimatableValue::trace(visitor); }
+
+protected:
+    virtual PassRefPtrWillBeRawPtr<AnimatableValue> interpolateTo(const AnimatableValue*, double fraction) const OVERRIDE;
+    virtual bool usesDefaultInterpolationWith(const AnimatableValue*) const OVERRIDE;
+
 private:
-    static PassRefPtrWillBeRawPtr<AnimatableValue> createFromColor(CSSPropertyID, const RenderStyle&);
+    AnimatableDouble(double number, Constraint constraint)
+        : m_number(number)
+        , m_constraint(constraint)
+    {
+    }
+    virtual AnimatableType type() const OVERRIDE { return TypeDouble; }
+    virtual bool equalTo(const AnimatableValue*) const OVERRIDE;
+    virtual double distanceTo(const AnimatableValue*) const OVERRIDE;
+
+    double m_number;
+    Constraint m_constraint;
 };
+
+DEFINE_ANIMATABLE_VALUE_TYPE_CASTS(AnimatableDouble, isDouble());
 
 } // namespace WebCore
 
-#endif // CSSAnimatableValueFactory_h
+#endif // AnimatableDouble_h

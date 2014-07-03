@@ -28,24 +28,38 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef CSSAnimatableValueFactory_h
-#define CSSAnimatableValueFactory_h
+#include "config.h"
+#include "core/animation/animatable/AnimatableDouble.h"
 
-#include "core/CSSPropertyNames.h"
-#include "core/animation/animatable/AnimatableValue.h"
-#include "wtf/PassRefPtr.h"
+#include "platform/animation/AnimationUtilities.h"
+#include <math.h>
 
 namespace WebCore {
 
-class RenderStyle;
+bool AnimatableDouble::usesDefaultInterpolationWith(const AnimatableValue* value) const
+{
+    const AnimatableDouble* other = toAnimatableDouble(value);
+    return (m_constraint == InterpolationIsNonContinuousWithZero) && (!m_number || !other->m_number);
+}
 
-class CSSAnimatableValueFactory {
-public:
-    static PassRefPtrWillBeRawPtr<AnimatableValue> create(CSSPropertyID, const RenderStyle&);
-private:
-    static PassRefPtrWillBeRawPtr<AnimatableValue> createFromColor(CSSPropertyID, const RenderStyle&);
-};
+PassRefPtrWillBeRawPtr<AnimatableValue> AnimatableDouble::interpolateTo(const AnimatableValue* value, double fraction) const
+{
+    const AnimatableDouble* other = toAnimatableDouble(value);
+    ASSERT(m_constraint == other->m_constraint);
+    if ((m_constraint == InterpolationIsNonContinuousWithZero) && (!m_number || !other->m_number))
+        return defaultInterpolateTo(this, value, fraction);
+    return AnimatableDouble::create(blend(m_number, other->m_number, fraction));
+}
+
+bool AnimatableDouble::equalTo(const AnimatableValue* value) const
+{
+    return m_number == toAnimatableDouble(value)->m_number;
+}
+
+double AnimatableDouble::distanceTo(const AnimatableValue* value) const
+{
+    const AnimatableDouble* other = toAnimatableDouble(value);
+    return fabs(m_number - other->m_number);
+}
 
 } // namespace WebCore
-
-#endif // CSSAnimatableValueFactory_h

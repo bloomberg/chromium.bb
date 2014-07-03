@@ -6,10 +6,10 @@
 #include "core/animation/AnimationStack.h"
 
 #include "core/animation/ActiveAnimations.h"
-#include "core/animation/AnimatableDouble.h"
 #include "core/animation/AnimationClock.h"
 #include "core/animation/AnimationTimeline.h"
 #include "core/animation/KeyframeEffectModel.h"
+#include "core/animation/animatable/AnimatableDouble.h"
 #include "core/animation/interpolation/LegacyStyleInterpolation.h"
 #include <gtest/gtest.h>
 

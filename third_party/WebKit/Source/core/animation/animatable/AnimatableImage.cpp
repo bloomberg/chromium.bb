@@ -28,24 +28,41 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef CSSAnimatableValueFactory_h
-#define CSSAnimatableValueFactory_h
+#include "config.h"
+#include "core/animation/animatable/AnimatableImage.h"
 
-#include "core/CSSPropertyNames.h"
-#include "core/animation/animatable/AnimatableValue.h"
-#include "wtf/PassRefPtr.h"
+#include "core/css/CSSImageValue.h"
+#include "core/rendering/style/StyleGeneratedImage.h"
+#include "wtf/MathExtras.h"
 
 namespace WebCore {
 
-class RenderStyle;
+// FIXME: Once cross-fade works on generated image types, remove this method.
+bool AnimatableImage::usesDefaultInterpolationWith(const AnimatableValue* value) const
+{
+    if (!m_value->isImageValue())
+        return true;
+    if (!toAnimatableImage(value)->toCSSValue()->isImageValue())
+        return true;
+    return false;
+}
 
-class CSSAnimatableValueFactory {
-public:
-    static PassRefPtrWillBeRawPtr<AnimatableValue> create(CSSPropertyID, const RenderStyle&);
-private:
-    static PassRefPtrWillBeRawPtr<AnimatableValue> createFromColor(CSSPropertyID, const RenderStyle&);
-};
+PassRefPtrWillBeRawPtr<AnimatableValue> AnimatableImage::interpolateTo(const AnimatableValue* value, double fraction) const
+{
+    if (fraction <= 0 || fraction >= 1 || usesDefaultInterpolationWith(value))
+        return defaultInterpolateTo(this, value, fraction);
 
-} // namespace WebCore
+    CSSValue* fromValue = toCSSValue();
+    CSSValue* toValue = toAnimatableImage(value)->toCSSValue();
 
-#endif // CSSAnimatableValueFactory_h
+    RefPtrWillBeRawPtr<CSSCrossfadeValue> crossfadeValue = CSSCrossfadeValue::create(fromValue, toValue);
+    crossfadeValue->setPercentage(CSSPrimitiveValue::create(fraction, CSSPrimitiveValue::CSS_NUMBER));
+    return create(crossfadeValue);
+}
+
+bool AnimatableImage::equalTo(const AnimatableValue* value) const
+{
+    return m_value->equals(*toAnimatableImage(value)->m_value.get());
+}
+
+}

@@ -28,24 +28,43 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef CSSAnimatableValueFactory_h
-#define CSSAnimatableValueFactory_h
+#ifndef AnimatableLengthSize_h
+#define AnimatableLengthSize_h
 
-#include "core/CSSPropertyNames.h"
 #include "core/animation/animatable/AnimatableValue.h"
-#include "wtf/PassRefPtr.h"
 
 namespace WebCore {
 
-class RenderStyle;
-
-class CSSAnimatableValueFactory {
+class AnimatableLengthSize FINAL : public AnimatableValue {
 public:
-    static PassRefPtrWillBeRawPtr<AnimatableValue> create(CSSPropertyID, const RenderStyle&);
+    virtual ~AnimatableLengthSize() { }
+    static PassRefPtrWillBeRawPtr<AnimatableLengthSize> create(PassRefPtrWillBeRawPtr<AnimatableValue> width, PassRefPtrWillBeRawPtr<AnimatableValue> height)
+    {
+        return adoptRefWillBeNoop(new AnimatableLengthSize(width, height));
+    }
+    const AnimatableValue* width() const { return m_width.get(); }
+    const AnimatableValue* height() const { return m_height.get(); }
+
+    virtual void trace(Visitor*) OVERRIDE;
+
+protected:
+    virtual PassRefPtrWillBeRawPtr<AnimatableValue> interpolateTo(const AnimatableValue*, double fraction) const OVERRIDE;
+
 private:
-    static PassRefPtrWillBeRawPtr<AnimatableValue> createFromColor(CSSPropertyID, const RenderStyle&);
+    AnimatableLengthSize(PassRefPtrWillBeRawPtr<AnimatableValue> width, PassRefPtrWillBeRawPtr<AnimatableValue> height)
+        : m_width(width)
+        , m_height(height)
+    {
+    }
+    virtual AnimatableType type() const OVERRIDE { return TypeLengthSize; }
+    virtual bool equalTo(const AnimatableValue*) const OVERRIDE;
+
+    RefPtrWillBeMember<AnimatableValue> m_width;
+    RefPtrWillBeMember<AnimatableValue> m_height;
 };
+
+DEFINE_ANIMATABLE_VALUE_TYPE_CASTS(AnimatableLengthSize, isLengthSize());
 
 } // namespace WebCore
 
-#endif // CSSAnimatableValueFactory_h
+#endif // AnimatableLengthSize_h

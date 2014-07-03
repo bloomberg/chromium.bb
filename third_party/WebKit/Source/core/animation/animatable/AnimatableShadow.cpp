@@ -28,24 +28,21 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef CSSAnimatableValueFactory_h
-#define CSSAnimatableValueFactory_h
-
-#include "core/CSSPropertyNames.h"
-#include "core/animation/animatable/AnimatableValue.h"
-#include "wtf/PassRefPtr.h"
+#include "config.h"
+#include "core/animation/animatable/AnimatableShadow.h"
 
 namespace WebCore {
 
-class RenderStyle;
+PassRefPtrWillBeRawPtr<AnimatableValue> AnimatableShadow::interpolateTo(const AnimatableValue* value, double fraction) const
+{
+    const AnimatableShadow* shadowList = toAnimatableShadow(value);
+    return AnimatableShadow::create(ShadowList::blend(m_shadowList.get(), shadowList->m_shadowList.get(), fraction));
+}
 
-class CSSAnimatableValueFactory {
-public:
-    static PassRefPtrWillBeRawPtr<AnimatableValue> create(CSSPropertyID, const RenderStyle&);
-private:
-    static PassRefPtrWillBeRawPtr<AnimatableValue> createFromColor(CSSPropertyID, const RenderStyle&);
-};
+bool AnimatableShadow::equalTo(const AnimatableValue* value) const
+{
+    const ShadowList* shadowList = toAnimatableShadow(value)->m_shadowList.get();
+    return m_shadowList == shadowList || (m_shadowList && shadowList && *m_shadowList == *shadowList);
+}
 
 } // namespace WebCore
-
-#endif // CSSAnimatableValueFactory_h

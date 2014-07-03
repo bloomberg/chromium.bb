@@ -28,24 +28,43 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef CSSAnimatableValueFactory_h
-#define CSSAnimatableValueFactory_h
+#ifndef AnimatableClipPathOperation_h
+#define AnimatableClipPathOperation_h
 
-#include "core/CSSPropertyNames.h"
 #include "core/animation/animatable/AnimatableValue.h"
-#include "wtf/PassRefPtr.h"
+#include "core/rendering/ClipPathOperation.h"
 
 namespace WebCore {
 
-class RenderStyle;
-
-class CSSAnimatableValueFactory {
+class AnimatableClipPathOperation FINAL : public AnimatableValue {
 public:
-    static PassRefPtrWillBeRawPtr<AnimatableValue> create(CSSPropertyID, const RenderStyle&);
+    virtual ~AnimatableClipPathOperation() { }
+    static PassRefPtrWillBeRawPtr<AnimatableClipPathOperation> create(ClipPathOperation* operation)
+    {
+        return adoptRefWillBeNoop(new AnimatableClipPathOperation(operation));
+    }
+    ClipPathOperation* clipPathOperation() const { return m_operation.get(); }
+
+    virtual void trace(Visitor* visitor) OVERRIDE { AnimatableValue::trace(visitor); }
+
+protected:
+    virtual PassRefPtrWillBeRawPtr<AnimatableValue> interpolateTo(const AnimatableValue*, double fraction) const OVERRIDE;
+    virtual bool usesDefaultInterpolationWith(const AnimatableValue*) const OVERRIDE;
+
 private:
-    static PassRefPtrWillBeRawPtr<AnimatableValue> createFromColor(CSSPropertyID, const RenderStyle&);
+    AnimatableClipPathOperation(ClipPathOperation* operation)
+        : m_operation(operation)
+    {
+        ASSERT(m_operation);
+    }
+    virtual AnimatableType type() const OVERRIDE { return TypeClipPathOperation; }
+    virtual bool equalTo(const AnimatableValue*) const OVERRIDE;
+
+    RefPtr<ClipPathOperation> m_operation;
 };
+
+DEFINE_ANIMATABLE_VALUE_TYPE_CASTS(AnimatableClipPathOperation, isClipPathOperation());
 
 } // namespace WebCore
 
-#endif // CSSAnimatableValueFactory_h
+#endif // AnimatableClipPathOperation_h

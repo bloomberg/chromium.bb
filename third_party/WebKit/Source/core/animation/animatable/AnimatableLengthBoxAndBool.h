@@ -28,24 +28,44 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef CSSAnimatableValueFactory_h
-#define CSSAnimatableValueFactory_h
+#ifndef AnimatableLengthBoxAndBool_h
+#define AnimatableLengthBoxAndBool_h
 
-#include "core/CSSPropertyNames.h"
 #include "core/animation/animatable/AnimatableValue.h"
-#include "wtf/PassRefPtr.h"
 
 namespace WebCore {
 
-class RenderStyle;
-
-class CSSAnimatableValueFactory {
+class AnimatableLengthBoxAndBool FINAL : public AnimatableValue {
 public:
-    static PassRefPtrWillBeRawPtr<AnimatableValue> create(CSSPropertyID, const RenderStyle&);
+    virtual ~AnimatableLengthBoxAndBool() { }
+    static PassRefPtrWillBeRawPtr<AnimatableLengthBoxAndBool> create(PassRefPtrWillBeRawPtr<AnimatableValue> box, bool flag)
+    {
+        return adoptRefWillBeNoop(new AnimatableLengthBoxAndBool(box, flag));
+    }
+    const AnimatableValue* box() const { return m_box.get(); }
+    bool flag() const { return m_flag; }
+
+    virtual void trace(Visitor*) OVERRIDE;
+
+protected:
+    virtual PassRefPtrWillBeRawPtr<AnimatableValue> interpolateTo(const AnimatableValue*, double fraction) const OVERRIDE;
+    virtual bool usesDefaultInterpolationWith(const AnimatableValue*) const OVERRIDE;
+
 private:
-    static PassRefPtrWillBeRawPtr<AnimatableValue> createFromColor(CSSPropertyID, const RenderStyle&);
+    AnimatableLengthBoxAndBool(PassRefPtrWillBeRawPtr<AnimatableValue> box, bool flag)
+        : m_box(box)
+        , m_flag(flag)
+    {
+    }
+    virtual AnimatableType type() const OVERRIDE { return TypeLengthBoxAndBool; }
+    virtual bool equalTo(const AnimatableValue*) const OVERRIDE;
+
+    RefPtrWillBeMember<AnimatableValue> m_box;
+    bool m_flag;
 };
+
+DEFINE_ANIMATABLE_VALUE_TYPE_CASTS(AnimatableLengthBoxAndBool, isLengthBoxAndBool());
 
 } // namespace WebCore
 
-#endif // CSSAnimatableValueFactory_h
+#endif // AnimatableLengthBoxAndBool_h

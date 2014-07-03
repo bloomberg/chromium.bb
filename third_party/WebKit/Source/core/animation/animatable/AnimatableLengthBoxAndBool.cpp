@@ -28,24 +28,40 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef CSSAnimatableValueFactory_h
-#define CSSAnimatableValueFactory_h
-
-#include "core/CSSPropertyNames.h"
-#include "core/animation/animatable/AnimatableValue.h"
-#include "wtf/PassRefPtr.h"
+#include "config.h"
+#include "core/animation/animatable/AnimatableLengthBoxAndBool.h"
 
 namespace WebCore {
 
-class RenderStyle;
+bool AnimatableLengthBoxAndBool::usesDefaultInterpolationWith(const AnimatableValue* value) const
+{
+    const AnimatableLengthBoxAndBool* lengthBox = toAnimatableLengthBoxAndBool(value);
+    if (lengthBox->flag() != flag())
+        return true;
+    return AnimatableValue::usesDefaultInterpolation(lengthBox->box(), box());
+}
 
-class CSSAnimatableValueFactory {
-public:
-    static PassRefPtrWillBeRawPtr<AnimatableValue> create(CSSPropertyID, const RenderStyle&);
-private:
-    static PassRefPtrWillBeRawPtr<AnimatableValue> createFromColor(CSSPropertyID, const RenderStyle&);
-};
+PassRefPtrWillBeRawPtr<AnimatableValue> AnimatableLengthBoxAndBool::interpolateTo(const AnimatableValue* value, double fraction) const
+{
+    const AnimatableLengthBoxAndBool* lengthBox = toAnimatableLengthBoxAndBool(value);
+    if (lengthBox->flag() == flag()) {
+        return AnimatableLengthBoxAndBool::create(
+            AnimatableValue::interpolate(box(), lengthBox->box(), fraction),
+            flag());
+    }
+    return defaultInterpolateTo(this, value, fraction);
+}
 
-} // namespace WebCore
+bool AnimatableLengthBoxAndBool::equalTo(const AnimatableValue* value) const
+{
+    const AnimatableLengthBoxAndBool* lengthBox = toAnimatableLengthBoxAndBool(value);
+    return box()->equals(lengthBox->box()) && flag() == lengthBox->flag();
+}
 
-#endif // CSSAnimatableValueFactory_h
+void AnimatableLengthBoxAndBool::trace(Visitor* visitor)
+{
+    visitor->trace(m_box);
+    AnimatableValue::trace(visitor);
+}
+
+}

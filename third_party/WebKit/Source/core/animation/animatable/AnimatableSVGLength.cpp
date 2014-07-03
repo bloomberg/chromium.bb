@@ -28,24 +28,21 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef CSSAnimatableValueFactory_h
-#define CSSAnimatableValueFactory_h
+#include "config.h"
+#include "core/animation/animatable/AnimatableSVGLength.h"
 
-#include "core/CSSPropertyNames.h"
-#include "core/animation/animatable/AnimatableValue.h"
-#include "wtf/PassRefPtr.h"
+#include "platform/FloatConversion.h"
 
 namespace WebCore {
 
-class RenderStyle;
+PassRefPtrWillBeRawPtr<AnimatableValue> AnimatableSVGLength::interpolateTo(const AnimatableValue* value, double fraction) const
+{
+    return create(toAnimatableSVGLength(value)->toSVGLength()->blend(m_length.get(), narrowPrecisionToFloat(fraction)));
+}
 
-class CSSAnimatableValueFactory {
-public:
-    static PassRefPtrWillBeRawPtr<AnimatableValue> create(CSSPropertyID, const RenderStyle&);
-private:
-    static PassRefPtrWillBeRawPtr<AnimatableValue> createFromColor(CSSPropertyID, const RenderStyle&);
-};
+bool AnimatableSVGLength::equalTo(const AnimatableValue* value) const
+{
+    return *m_length == *toAnimatableSVGLength(value)->m_length;
+}
 
 } // namespace WebCore
-
-#endif // CSSAnimatableValueFactory_h
