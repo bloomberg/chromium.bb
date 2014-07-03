@@ -12,6 +12,7 @@ import junit.framework.Assert;
 
 import org.chromium.android_webview.test.util.VideoTestWebServer;
 import org.chromium.base.CommandLine;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.test.util.DOMUtils;
@@ -45,8 +46,12 @@ public class AwContentsClientFullScreenVideoTest extends AwTestBase {
         if (webServer != null) webServer.getTestWebServer().shutdown();
     }
 
+    /*
     @MediumTest
     @Feature({"AndroidWebView"})
+    crbug.com/367346
+    */
+    @DisabledTest
     public void testOnShowAndHideCustomViewWithCallback() throws Throwable {
         doOnShowAndHideCustomViewTest(new Runnable() {
             @Override
@@ -56,8 +61,12 @@ public class AwContentsClientFullScreenVideoTest extends AwTestBase {
         });
     }
 
+    /*
     @MediumTest
     @Feature({"AndroidWebView"})
+    crbug.com/367346
+    */
+    @DisabledTest
     public void testOnShowAndHideCustomViewWithBackKeyLegacy() throws Throwable {
         // When html controls are enabled we skip this test because pressing the back key
         // moves away from the current activity instead of exiting fullscreen mode.
@@ -76,8 +85,12 @@ public class AwContentsClientFullScreenVideoTest extends AwTestBase {
         });
     }
 
+    /*
     @MediumTest
     @Feature({"AndroidWebView"})
+    crbug.com/367346
+    */
+    @DisabledTest
     public void testOnShowAndHideCustomViewWithJavascript() throws Throwable {
         doOnShowAndHideCustomViewTest(new Runnable() {
             @Override
@@ -87,8 +100,12 @@ public class AwContentsClientFullScreenVideoTest extends AwTestBase {
         });
     }
 
+    /*
     @MediumTest
     @Feature({"AndroidWebView"})
+    crbug.com/367346
+    */
+    @DisabledTest
     public void testOnShowCustomViewAndPlayWithHtmlControl() throws Throwable {
         if (!areHtmlControlsEnabled())
             return;
