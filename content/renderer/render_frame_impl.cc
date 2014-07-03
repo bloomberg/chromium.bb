@@ -1764,10 +1764,8 @@ void RenderFrameImpl::didStartProvisionalLoad(blink::WebLocalFrame* frame) {
                     DidStartProvisionalLoad(frame));
   FOR_EACH_OBSERVER(RenderFrameObserver, observers_, DidStartProvisionalLoad());
 
-  int parent_routing_id = frame->parent() ?
-      FromWebFrame(frame->parent())->GetRoutingID() : -1;
-  Send(new FrameHostMsg_DidStartProvisionalLoadForFrame(
-       routing_id_, parent_routing_id, ds->request().url()));
+  Send(new FrameHostMsg_DidStartProvisionalLoadForFrame(routing_id_,
+                                                        ds->request().url()));
 }
 
 void RenderFrameImpl::didReceiveServerRedirectForProvisionalLoad(

@@ -56,7 +56,6 @@ class SupervisedUserNavigationObserver
       content::RenderFrameHost* render_frame_host) OVERRIDE;
   virtual void DidCommitProvisionalLoadForFrame(
       content::RenderFrameHost* render_frame_host,
-      bool is_main_frame,
       const GURL& url,
       content::PageTransition transition_type) OVERRIDE;
 

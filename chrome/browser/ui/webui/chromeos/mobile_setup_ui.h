@@ -21,12 +21,10 @@ class MobileSetupUI : public content::WebUIController,
   // content::WebContentsObserver overrides.
   virtual void DidCommitProvisionalLoadForFrame(
       content::RenderFrameHost* render_frame_host,
-      bool is_main_frame,
       const GURL& url,
       content::PageTransition transition_type) OVERRIDE;
   virtual void DidFailProvisionalLoad(
       content::RenderFrameHost* render_frame_host,
-      bool is_main_frame,
       const GURL& validated_url,
       int error_code,
       const base::string16& error_description) OVERRIDE;

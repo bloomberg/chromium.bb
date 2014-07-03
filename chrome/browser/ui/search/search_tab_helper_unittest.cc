@@ -286,13 +286,10 @@ class TabTitleObserver : public content::WebContentsObserver {
 
  private:
   virtual void DidStartProvisionalLoadForFrame(
-      int64 /* frame_id */,
-      int64 /* parent_frame_id */,
-      bool /* is_main_frame */,
+      content::RenderFrameHost* /* render_frame_host */,
       const GURL& /* validated_url */,
       bool /* is_error_page */,
-      bool /* is_iframe_srcdoc */,
-      content::RenderViewHost* /* render_view_host */) OVERRIDE {
+      bool /* is_iframe_srcdoc */) OVERRIDE {
     title_on_start_ = web_contents()->GetTitle();
   }
 
@@ -354,7 +351,7 @@ TEST_F(SearchTabHelperWindowTest, OnProvisionalLoadFailRedirectNTPToLocal) {
   // NTP.
   const GURL cacheableNTPURL = chrome::GetNewTabPageURL(profile());
   search_tab_helper->DidFailProvisionalLoad(
-      NULL, true, cacheableNTPURL, 1, base::string16());
+      contents->GetMainFrame(), cacheableNTPURL, 1, base::string16());
   CommitPendingLoad(controller);
   EXPECT_EQ(GURL(chrome::kChromeSearchLocalNtpUrl),
                  controller->GetLastCommittedEntry()->GetURL());
@@ -373,8 +370,10 @@ TEST_F(SearchTabHelperWindowTest, OnProvisionalLoadFailDontRedirectIfAborted) {
   // A failed provisional load of a cacheable NTP should be redirected to local
   // NTP.
   const GURL cacheableNTPURL = chrome::GetNewTabPageURL(profile());
-  search_tab_helper->DidFailProvisionalLoad(
-      NULL, true, cacheableNTPURL, net::ERR_ABORTED, base::string16());
+  search_tab_helper->DidFailProvisionalLoad(contents->GetMainFrame(),
+                                            cacheableNTPURL,
+                                            net::ERR_ABORTED,
+                                            base::string16());
   CommitPendingLoad(controller);
   EXPECT_EQ(GURL("chrome://blank"),
                  controller->GetLastCommittedEntry()->GetURL());
@@ -391,8 +390,10 @@ TEST_F(SearchTabHelperWindowTest, OnProvisionalLoadFailDontRedirectNonNTP) {
   ASSERT_NE(static_cast<SearchTabHelper*>(NULL), search_tab_helper);
 
   // Any other web page shouldn't be redirected when provisional load fails.
-  search_tab_helper->DidFailProvisionalLoad(
-      NULL, true, GURL("http://www.example.com"), 1, base::string16());
+  search_tab_helper->DidFailProvisionalLoad(contents->GetMainFrame(),
+                                            GURL("http://www.example.com"),
+                                            1,
+                                            base::string16());
   CommitPendingLoad(controller);
   EXPECT_NE(GURL(chrome::kChromeSearchLocalNtpUrl),
                  controller->GetLastCommittedEntry()->GetURL());

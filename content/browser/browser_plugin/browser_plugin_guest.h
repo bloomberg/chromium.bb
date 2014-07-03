@@ -147,7 +147,6 @@ class CONTENT_EXPORT BrowserPluginGuest : public WebContentsObserver {
   // WebContentsObserver implementation.
   virtual void DidCommitProvisionalLoadForFrame(
       RenderFrameHost* render_frame_host,
-      bool is_main_frame,
       const GURL& url,
       PageTransition transition_type) OVERRIDE;
 

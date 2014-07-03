@@ -39,6 +39,30 @@ class TestRenderFrameHostFactory;
 class TestRenderViewHostFactory;
 class WebContents;
 
+// An interface and utility for driving tests of RenderFrameHost.
+class RenderFrameHostTester {
+ public:
+  // Retrieves the RenderFrameHostTester that drives the specified
+  // RenderFrameHost. The RenderFrameHost must have been created while
+  // RenderFrameHost testing was enabled; use a
+  // RenderViewHostTestEnabler instance (see below) to do this.
+  static RenderFrameHostTester* For(RenderFrameHost* host);
+
+  virtual ~RenderFrameHostTester() {}
+
+  // Gives tests access to RenderFrameHostImpl::OnCreateChild. The returned
+  // RenderFrameHost is owned by the parent RenderFrameHost.
+  virtual RenderFrameHost* AppendChild(const std::string& frame_name) = 0;
+
+  // Calls OnMsgNavigate on the RenderViewHost with the given information,
+  // including a custom PageTransition.  Sets the rest of the
+  // parameters in the message to the "typical" values. This is a helper
+  // function for simulating the most common types of loads.
+  virtual void SendNavigateWithTransition(int page_id,
+                                          const GURL& url,
+                                          PageTransition transition) = 0;
+};
+
 // An interface and utility for driving tests of RenderViewHost.
 class RenderViewHostTester {
  public:
@@ -108,8 +132,8 @@ class RenderViewHostTester {
 };
 
 // You can instantiate only one class like this at a time.  During its
-// lifetime, RenderViewHost objects created may be used via
-// RenderViewHostTester.
+// lifetime, RenderViewHost and RenderFrameHost objects created may be used via
+// RenderViewHostTester and RenderFrameHostTester respectively.
 class RenderViewHostTestEnabler {
  public:
   RenderViewHostTestEnabler();

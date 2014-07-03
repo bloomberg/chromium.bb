@@ -1116,8 +1116,10 @@ TEST_F(WebContentsImplTest, CrossSiteNavigationNotPreemptedByFrame) {
 
   // Simulate a sub-frame navigation arriving and ensure the RVH is still
   // waiting for a before unload response.
-  orig_rvh->SendNavigateWithTransition(1, GURL("http://google.com/frame"),
-                                       PAGE_TRANSITION_AUTO_SUBFRAME);
+  TestRenderFrameHost* child_rfh = static_cast<TestRenderFrameHost*>(
+      orig_rvh->main_render_frame_host()->AppendChild("subframe"));
+  child_rfh->SendNavigateWithTransition(
+      1, GURL("http://google.com/frame"), PAGE_TRANSITION_AUTO_SUBFRAME);
   EXPECT_TRUE(orig_rvh->is_waiting_for_beforeunload_ack());
 
   // Now simulate the onbeforeunload approval and verify the navigation is

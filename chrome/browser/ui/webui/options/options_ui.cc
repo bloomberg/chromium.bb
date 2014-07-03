@@ -51,7 +51,7 @@
 #include "chrome/browser/ui/webui/theme_source.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/notification_types.h"
-#include "content/public/browser/render_view_host.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/url_data_source.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
@@ -400,14 +400,12 @@ base::RefCountedMemory* OptionsUI::GetFaviconResourceBytes(
 }
 
 void OptionsUI::DidStartProvisionalLoadForFrame(
-    int64 frame_id,
-    int64 parent_frame_id,
-    bool is_main_frame,
+    content::RenderFrameHost* render_frame_host,
     const GURL& validated_url,
     bool is_error_page,
-    bool is_iframe_srcdoc,
-    content::RenderViewHost* render_view_host) {
-  if (render_view_host == web_ui()->GetWebContents()->GetRenderViewHost() &&
+    bool is_iframe_srcdoc) {
+  if (render_frame_host->GetRenderViewHost() ==
+          web_ui()->GetWebContents()->GetRenderViewHost() &&
       validated_url.host() == chrome::kChromeUISettingsFrameHost) {
     for (size_t i = 0; i < handlers_.size(); ++i)
       handlers_[i]->PageLoadStarted();

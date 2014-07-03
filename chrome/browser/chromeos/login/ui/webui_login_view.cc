@@ -425,7 +425,6 @@ bool WebUILoginView::PreHandleGestureEvent(
 
 void WebUILoginView::DidFailProvisionalLoad(
     content::RenderFrameHost* render_frame_host,
-    bool is_main_frame,
     const GURL& validated_url,
     int error_code,
     const base::string16& error_description) {

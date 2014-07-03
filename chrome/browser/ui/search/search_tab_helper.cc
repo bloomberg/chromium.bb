@@ -39,6 +39,7 @@
 #include "content/public/browser/navigation_type.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
@@ -324,15 +325,13 @@ void SearchTabHelper::DidNavigateMainFrame(
 }
 
 void SearchTabHelper::DidFailProvisionalLoad(
-    content::RenderFrameHost* /* render_frame_host */,
-    bool is_main_frame,
+    content::RenderFrameHost* render_frame_host,
     const GURL& validated_url,
     int error_code,
     const base::string16& /* error_description */) {
   // If error_code is ERR_ABORTED means that the user has canceled this
   // navigation so it shouldn't be redirected.
-  if (is_main_frame &&
-      error_code != net::ERR_ABORTED &&
+  if (!render_frame_host->GetParent() && error_code != net::ERR_ABORTED &&
       validated_url != GURL(chrome::kChromeSearchLocalNtpUrl) &&
       chrome::IsNTPURL(validated_url, profile())) {
     RedirectToLocalNTP();

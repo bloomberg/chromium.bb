@@ -185,7 +185,6 @@ class BackOnNTPCommitObserver : public content::WebContentsObserver {
 
   virtual void DidCommitProvisionalLoadForFrame(
       content::RenderFrameHost* render_frame_host,
-      bool is_main_frame,
       const GURL& url,
       content::PageTransition transition_type) OVERRIDE {
     if (url == GURL(chrome::kChromeUINewTabURL) ||

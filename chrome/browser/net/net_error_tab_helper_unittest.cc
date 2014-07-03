@@ -4,19 +4,15 @@
 
 #include "chrome/browser/net/net_error_tab_helper.h"
 
-#include "base/message_loop/message_loop.h"
 #include "chrome/common/net/net_error_info.h"
+#include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/page_transition_types.h"
-#include "content/public/test/test_browser_thread.h"
 #include "net/base/net_errors.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using base::MessageLoop;
 using chrome_browser_net::NetErrorTabHelper;
 using chrome_common_net::DnsProbeStatus;
-using content::BrowserThread;
-using content::TestBrowserThread;
 
 class TestNetErrorTabHelper : public NetErrorTabHelper {
  public:
@@ -52,33 +48,33 @@ class TestNetErrorTabHelper : public NetErrorTabHelper {
   int mock_sent_count_;
 };
 
-class NetErrorTabHelperTest : public testing::Test {
+class NetErrorTabHelperTest : public ChromeRenderViewHostTestHarness {
  protected:
   enum MainFrame { SUB_FRAME, MAIN_FRAME };
   enum ErrorPage { NORMAL_PAGE, ERROR_PAGE };
   enum ErrorType { DNS_ERROR, OTHER_ERROR };
 
-  NetErrorTabHelperTest()
-      : fake_ui_thread_(BrowserThread::UI, &message_loop_) {
+  virtual void SetUp() OVERRIDE {
+    ChromeRenderViewHostTestHarness::SetUp();
+    subframe_ = content::RenderFrameHostTester::For(main_rfh())
+                    ->AppendChild("subframe");
+
+    tab_helper_.reset(new TestNetErrorTabHelper);
     NetErrorTabHelper::set_state_for_testing(
         NetErrorTabHelper::TESTING_FORCE_ENABLED);
   }
 
   void StartProvisionalLoad(MainFrame main_frame, ErrorPage error_page) {
-    tab_helper_.DidStartProvisionalLoadForFrame(
-        1,  // frame_id
-        0,  // parent_frame_id
-        (main_frame == MAIN_FRAME),
+    tab_helper_->DidStartProvisionalLoadForFrame(
+        (main_frame == MAIN_FRAME) ? main_rfh() : subframe_,
         bogus_url_,  // validated_url
         (error_page == ERROR_PAGE),
-        false,  // is_iframe_srcdoc
-        NULL);  // render_view_host
+        false);  // is_iframe_srcdoc
   }
 
   void CommitProvisionalLoad(MainFrame main_frame) {
-    tab_helper_.DidCommitProvisionalLoadForFrame(
-        NULL,  // render_frame_host, unused
-        (main_frame == MAIN_FRAME),
+    tab_helper_->DidCommitProvisionalLoadForFrame(
+        (main_frame == MAIN_FRAME) ? main_rfh() : subframe_,
         bogus_url_,  // url
         content::PAGE_TRANSITION_TYPED);
   }
@@ -91,25 +87,22 @@ class NetErrorTabHelperTest : public testing::Test {
     else
       net_error = net::ERR_TIMED_OUT;
 
-    tab_helper_.DidFailProvisionalLoad(NULL,  // render_frame_host, unused
-                                       (main_frame == MAIN_FRAME),
-                                       bogus_url_,  // validated_url
-                                       net_error,
-                                       base::string16());
+    tab_helper_->DidFailProvisionalLoad(
+        (main_frame == MAIN_FRAME) ? main_rfh() : subframe_,
+        bogus_url_,  // validated_url
+        net_error,
+        base::string16());
   }
 
-  void FinishProbe(DnsProbeStatus status) {
-    tab_helper_.FinishProbe(status);
-  }
+  void FinishProbe(DnsProbeStatus status) { tab_helper_->FinishProbe(status); }
 
-  bool probe_running() { return tab_helper_.mock_probe_running(); }
-  DnsProbeStatus last_status_sent() { return tab_helper_.last_status_sent(); }
-  int sent_count() { return tab_helper_.mock_sent_count(); }
+  bool probe_running() { return tab_helper_->mock_probe_running(); }
+  DnsProbeStatus last_status_sent() { return tab_helper_->last_status_sent(); }
+  int sent_count() { return tab_helper_->mock_sent_count(); }
 
  private:
-  MessageLoop message_loop_;
-  TestBrowserThread fake_ui_thread_;
-  TestNetErrorTabHelper tab_helper_;
+  content::RenderFrameHost* subframe_;
+  scoped_ptr<TestNetErrorTabHelper> tab_helper_;
   GURL bogus_url_;
 };
 

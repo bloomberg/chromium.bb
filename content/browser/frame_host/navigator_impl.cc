@@ -143,7 +143,6 @@ NavigationController* NavigatorImpl::GetController() {
 
 void NavigatorImpl::DidStartProvisionalLoad(
     RenderFrameHostImpl* render_frame_host,
-    int parent_routing_id,
     const GURL& url) {
   bool is_error_page = (url.spec() == kUnreachableWebDataURL);
   bool is_iframe_srcdoc = (url.spec() == kAboutSrcDocURL);
@@ -190,8 +189,7 @@ void NavigatorImpl::DidStartProvisionalLoad(
   if (delegate_) {
     // Notify the observer about the start of the provisional load.
     delegate_->DidStartProvisionalLoad(
-        render_frame_host, parent_routing_id,
-        validated_url, is_error_page, is_iframe_srcdoc);
+        render_frame_host, validated_url, is_error_page, is_iframe_srcdoc);
   }
 }
 
@@ -501,11 +499,8 @@ void NavigatorImpl::DidNavigate(
   // different from the NAV_ENTRY_COMMITTED notification which doesn't include
   // the actual URL navigated to and isn't sent for AUTO_SUBFRAME navigations.
   if (details.type != NAVIGATION_TYPE_NAV_IGNORE && delegate_) {
-    // For AUTO_SUBFRAME navigations, an event for the main frame is generated
-    // that is not recorded in the navigation history. For the purpose of
-    // tracking navigation events, we treat this event as a sub frame navigation
-    // event.
-    bool is_main_frame = did_navigate ? details.is_main_frame : false;
+    DCHECK_EQ(!render_frame_host->GetParent(),
+              did_navigate ? details.is_main_frame : false);
     PageTransition transition_type = params.transition;
     // Whether or not a page transition was triggered by going backward or
     // forward in the history is only stored in the navigation controller's
@@ -518,7 +513,6 @@ void NavigatorImpl::DidNavigate(
     }
 
     delegate_->DidCommitProvisionalLoad(render_frame_host,
-                                        is_main_frame,
                                         params.url,
                                         transition_type);
   }

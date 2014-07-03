@@ -870,13 +870,18 @@ TEST_F(TranslateManagerRenderViewHostTest, CloseInfoBarInSubframeNavigation) {
 
   EXPECT_TRUE(CloseTranslateInfoBar());
 
+  content::RenderFrameHostTester* subframe_tester =
+      content::RenderFrameHostTester::For(
+          content::RenderFrameHostTester::For(main_rfh())
+              ->AppendChild("subframe"));
+
   // Simulate a sub-frame auto-navigating.
-  rvh_tester()->SendNavigateWithTransition(
+  subframe_tester->SendNavigateWithTransition(
       1, GURL("http://pub.com"), content::PAGE_TRANSITION_AUTO_SUBFRAME);
   EXPECT_TRUE(GetTranslateInfoBar() == NULL);
 
   // Simulate the user navigating in a sub-frame.
-  rvh_tester()->SendNavigateWithTransition(
+  subframe_tester->SendNavigateWithTransition(
       2, GURL("http://pub.com"), content::PAGE_TRANSITION_MANUAL_SUBFRAME);
   EXPECT_TRUE(GetTranslateInfoBar() == NULL);
 

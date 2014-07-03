@@ -98,12 +98,14 @@ void WebContentsObserverAndroid::DidStopLoading(
 
 void WebContentsObserverAndroid::DidFailProvisionalLoad(
     content::RenderFrameHost* render_frame_host,
-    bool is_main_frame,
     const GURL& validated_url,
     int error_code,
     const base::string16& error_description) {
-  DidFailLoadInternal(
-        true, is_main_frame, error_code, error_description, validated_url);
+  DidFailLoadInternal(true,
+                      !render_frame_host->GetParent(),
+                      error_code,
+                      error_description,
+                      validated_url);
 }
 
 void WebContentsObserverAndroid::DidFailLoad(
@@ -167,27 +169,33 @@ void WebContentsObserverAndroid::DidNavigateAnyFrame(
 }
 
 void WebContentsObserverAndroid::DidStartProvisionalLoadForFrame(
-      int64 frame_id,
-      int64 parent_frame_id,
-      bool is_main_frame,
-      const GURL& validated_url,
-      bool is_error_page,
-      bool is_iframe_srcdoc,
-      RenderViewHost* render_view_host) {
+    RenderFrameHost* render_frame_host,
+    const GURL& validated_url,
+    bool is_error_page,
+    bool is_iframe_srcdoc) {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj(weak_java_observer_.get(env));
   if (obj.is_null())
     return;
   ScopedJavaLocalRef<jstring> jstring_url(
       ConvertUTF8ToJavaString(env, validated_url.spec()));
+  // TODO(dcheng): Does Java really need the parent frame ID? It doesn't appear
+  // to be used at all, and it just adds complexity here.
   Java_WebContentsObserverAndroid_didStartProvisionalLoadForFrame(
-      env, obj.obj(), frame_id, parent_frame_id, is_main_frame,
-      jstring_url.obj(), is_error_page, is_iframe_srcdoc);
+      env,
+      obj.obj(),
+      render_frame_host->GetRoutingID(),
+      render_frame_host->GetParent()
+          ? render_frame_host->GetParent()->GetRoutingID()
+          : -1,
+      !render_frame_host->GetParent(),
+      jstring_url.obj(),
+      is_error_page,
+      is_iframe_srcdoc);
 }
 
 void WebContentsObserverAndroid::DidCommitProvisionalLoadForFrame(
     RenderFrameHost* render_frame_host,
-    bool is_main_frame,
     const GURL& url,
     PageTransition transition_type) {
   JNIEnv* env = AttachCurrentThread();
@@ -200,7 +208,7 @@ void WebContentsObserverAndroid::DidCommitProvisionalLoadForFrame(
       env,
       obj.obj(),
       render_frame_host->GetRoutingID(),
-      is_main_frame,
+      !render_frame_host->GetParent(),
       jstring_url.obj(),
       transition_type);
 }

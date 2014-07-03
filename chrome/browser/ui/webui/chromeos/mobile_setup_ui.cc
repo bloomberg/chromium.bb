@@ -638,7 +638,6 @@ MobileSetupUI::MobileSetupUI(content::WebUI* web_ui)
 
 void MobileSetupUI::DidCommitProvisionalLoadForFrame(
     content::RenderFrameHost* render_frame_host,
-    bool is_main_frame,
     const GURL& url,
     content::PageTransition transition_type) {
   if (render_frame_host->GetFrameName() != "paymentForm")
@@ -650,7 +649,6 @@ void MobileSetupUI::DidCommitProvisionalLoadForFrame(
 
 void MobileSetupUI::DidFailProvisionalLoad(
     content::RenderFrameHost* render_frame_host,
-    bool is_main_frame,
     const GURL& validated_url,
     int error_code,
     const base::string16& error_description) {

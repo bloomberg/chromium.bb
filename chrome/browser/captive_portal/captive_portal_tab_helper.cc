@@ -68,19 +68,18 @@ void CaptivePortalTabHelper::RenderViewDeleted(
 }
 
 void CaptivePortalTabHelper::DidStartProvisionalLoadForFrame(
-    int64 frame_id,
-    int64 parent_frame_id,
-    bool is_main_frame,
+    content::RenderFrameHost* render_frame_host,
     const GURL& validated_url,
     bool is_error_page,
-    bool is_iframe_srcdoc,
-    content::RenderViewHost* render_view_host) {
+    bool is_iframe_srcdoc) {
   DCHECK(CalledOnValidThread());
 
   // Ignore subframes.
-  if (!is_main_frame)
+  if (render_frame_host->GetParent())
     return;
 
+  content::RenderViewHost* render_view_host =
+      render_frame_host->GetRenderViewHost();
   if (provisional_render_view_host_) {
     // If loading an error page for a previous failure, treat this as part of
     // the previous load.  Link Doctor pages act like two error page loads in a
@@ -99,13 +98,12 @@ void CaptivePortalTabHelper::DidStartProvisionalLoadForFrame(
 
 void CaptivePortalTabHelper::DidCommitProvisionalLoadForFrame(
     content::RenderFrameHost* render_frame_host,
-    bool is_main_frame,
     const GURL& url,
     content::PageTransition transition_type) {
   DCHECK(CalledOnValidThread());
 
   // Ignore subframes.
-  if (!is_main_frame)
+  if (render_frame_host->GetParent())
     return;
 
   if (provisional_render_view_host_ == render_frame_host->GetRenderViewHost()) {
@@ -127,14 +125,13 @@ void CaptivePortalTabHelper::DidCommitProvisionalLoadForFrame(
 
 void CaptivePortalTabHelper::DidFailProvisionalLoad(
     content::RenderFrameHost* render_frame_host,
-    bool is_main_frame,
     const GURL& validated_url,
     int error_code,
     const base::string16& error_description) {
   DCHECK(CalledOnValidThread());
 
   // Ignore subframes and unexpected RenderViewHosts.
-  if (!is_main_frame ||
+  if (render_frame_host->GetParent() ||
       render_frame_host->GetRenderViewHost() != provisional_render_view_host_)
     return;
 

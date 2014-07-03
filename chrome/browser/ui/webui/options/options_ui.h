@@ -133,13 +133,10 @@ class OptionsUI : public content::WebUIController,
 
   // Overridden from content::WebContentsObserver:
   virtual void DidStartProvisionalLoadForFrame(
-      int64 frame_id,
-      int64 parent_frame_id,
-      bool is_main_frame,
+      content::RenderFrameHost* render_frame_host,
       const GURL& validated_url,
       bool is_error_page,
-      bool is_iframe_srcdoc,
-      content::RenderViewHost* render_view_host) OVERRIDE;
+      bool is_iframe_srcdoc) OVERRIDE;
 
   // Overridden from OptionsPageUIHandlerHost:
   virtual void InitializeHandlers() OVERRIDE;

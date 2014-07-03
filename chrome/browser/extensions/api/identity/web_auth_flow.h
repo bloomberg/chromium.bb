@@ -108,16 +108,12 @@ class WebAuthFlow : public content::NotificationObserver,
       const content::FrameNavigateParams& params) OVERRIDE;
   virtual void RenderProcessGone(base::TerminationStatus status) OVERRIDE;
   virtual void DidStartProvisionalLoadForFrame(
-      int64 frame_id,
-      int64 parent_frame_id,
-      bool is_main_frame,
+      content::RenderFrameHost* render_frame_host,
       const GURL& validated_url,
       bool is_error_page,
-      bool is_iframe_srcdoc,
-      content::RenderViewHost* render_view_host) OVERRIDE;
+      bool is_iframe_srcdoc) OVERRIDE;
   virtual void DidFailProvisionalLoad(
       content::RenderFrameHost* render_frame_host,
-      bool is_main_frame,
       const GURL& validated_url,
       int error_code,
       const base::string16& error_description) OVERRIDE;

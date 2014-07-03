@@ -23,8 +23,8 @@
 #include "components/infobars/core/infobar.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_entry.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
-#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/user_metrics.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -194,10 +194,9 @@ void SupervisedUserNavigationObserver::ProvisionalChangeToMainFrameUrl(
 
 void SupervisedUserNavigationObserver::DidCommitProvisionalLoadForFrame(
     content::RenderFrameHost* render_frame_host,
-    bool is_main_frame,
     const GURL& url,
     content::PageTransition transition_type) {
-  if (!is_main_frame)
+  if (render_frame_host->GetParent())
     return;
 
   DVLOG(1) << "DidCommitProvisionalLoadForFrame " << url.spec();

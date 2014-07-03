@@ -470,7 +470,6 @@ class TestFailProvisionalLoadObserver : public content::WebContentsObserver {
   // This method is invoked when the provisional load failed.
   virtual void DidFailProvisionalLoad(
       content::RenderFrameHost* render_frame_host,
-      bool is_main_frame,
       const GURL& validated_url,
       int error_code,
       const base::string16& error_description) OVERRIDE {

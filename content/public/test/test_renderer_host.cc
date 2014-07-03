@@ -30,6 +30,13 @@
 
 namespace content {
 
+// RenderFrameHostTester ------------------------------------------------------
+
+// static
+RenderFrameHostTester* RenderFrameHostTester::For(RenderFrameHost* host) {
+  return static_cast<TestRenderFrameHost*>(host);
+}
+
 // RenderViewHostTester -------------------------------------------------------
 
 // static

@@ -41,13 +41,10 @@ class TestFrameNavigationObserver : public WebContentsObserver {
  private:
   // WebContentsObserver
   virtual void DidStartProvisionalLoadForFrame(
-      int64 frame_id,
-      int64 parent_frame_id,
-      bool is_main_frame,
+      RenderFrameHost* render_frame_host,
       const GURL& validated_url,
       bool is_error_page,
-      bool is_iframe_srcdoc,
-      RenderViewHost* render_view_host) OVERRIDE;
+      bool is_iframe_srcdoc) OVERRIDE;
   virtual void DidNavigateAnyFrame(
       const LoadCommittedDetails& details,
       const FrameNavigateParams& params) OVERRIDE;

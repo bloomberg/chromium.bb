@@ -360,7 +360,6 @@ void BrowserPluginGuest::SendQueuedMessages() {
 
 void BrowserPluginGuest::DidCommitProvisionalLoadForFrame(
     RenderFrameHost* render_frame_host,
-    bool is_main_frame,
     const GURL& url,
     PageTransition transition_type) {
   RecordAction(base::UserMetricsAction("BrowserPlugin.Guest.DidNavigate"));

@@ -37,8 +37,7 @@ class WebContentsObserverAndroid : public WebContentsObserver {
   virtual void DidStartLoading(RenderViewHost* render_view_host) OVERRIDE;
   virtual void DidStopLoading(RenderViewHost* render_view_host) OVERRIDE;
   virtual void DidFailProvisionalLoad(
-      content::RenderFrameHost* render_frame_host,
-      bool is_main_frame,
+      RenderFrameHost* render_frame_host,
       const GURL& validated_url,
       int error_code,
       const base::string16& error_description) OVERRIDE;
@@ -54,16 +53,12 @@ class WebContentsObserverAndroid : public WebContentsObserver {
                                    const FrameNavigateParams& params) OVERRIDE;
   virtual void DidFirstVisuallyNonEmptyPaint() OVERRIDE;
   virtual void DidStartProvisionalLoadForFrame(
-      int64 frame_id,
-      int64 parent_frame_id,
-      bool is_main_frame,
+      RenderFrameHost* render_frame_host,
       const GURL& validated_url,
       bool is_error_page,
-      bool is_iframe_srcdoc,
-      RenderViewHost* render_view_host) OVERRIDE;
+      bool is_iframe_srcdoc) OVERRIDE;
   virtual void DidCommitProvisionalLoadForFrame(
       RenderFrameHost* render_frame_host,
-      bool is_main_frame,
       const GURL& url,
       PageTransition transition_type) OVERRIDE;
   virtual void DidFinishLoad(int64 frame_id,

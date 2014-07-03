@@ -176,13 +176,10 @@ class DelayLoadStartAndExecuteJavascript
   }
 
   virtual void DidStartProvisionalLoadForFrame(
-      int64 frame_id,
-      int64 parent_frame_id,
-      bool is_main_frame,
+      content::RenderFrameHost* render_frame_host,
       const GURL& validated_url,
       bool is_error_page,
-      bool is_iframe_srcdoc,
-      content::RenderViewHost* render_view_host) OVERRIDE {
+      bool is_iframe_srcdoc) OVERRIDE {
     if (validated_url != delay_url_ || !rvh_)
       return;
 
@@ -192,7 +189,6 @@ class DelayLoadStartAndExecuteJavascript
 
   virtual void DidCommitProvisionalLoadForFrame(
       content::RenderFrameHost* render_frame_host,
-      bool is_main_frame,
       const GURL& url,
       content::PageTransition transition_type) OVERRIDE {
     if (script_was_executed_ && EndsWith(url.spec(), until_url_suffix_, true)) {

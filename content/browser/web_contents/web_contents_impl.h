@@ -453,7 +453,6 @@ class CONTENT_EXPORT WebContentsImpl
 
   virtual void DidStartProvisionalLoad(
       RenderFrameHostImpl* render_frame_host,
-      int parent_routing_id,
       const GURL& validated_url,
       bool is_error_page,
       bool is_iframe_srcdoc) OVERRIDE;
@@ -471,7 +470,6 @@ class CONTENT_EXPORT WebContentsImpl
       const GURL& validated_target_url) OVERRIDE;
   virtual void DidCommitProvisionalLoad(
       RenderFrameHostImpl* render_frame_host,
-      bool is_main_frame,
       const GURL& url,
       PageTransition transition_type) OVERRIDE;
   virtual void DidNavigateMainFramePreCommit(

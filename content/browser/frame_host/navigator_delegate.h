@@ -29,7 +29,6 @@ class CONTENT_EXPORT NavigatorDelegate {
   // represented by |render_frame_host|.
   virtual void DidStartProvisionalLoad(
       RenderFrameHostImpl* render_frame_host,
-      int parent_routing_id,
       const GURL& validated_url,
       bool is_error_page,
       bool is_iframe_srcdoc) {}
@@ -54,7 +53,6 @@ class CONTENT_EXPORT NavigatorDelegate {
   // A navigation was committed in |render_frame_host|.
   virtual void DidCommitProvisionalLoad(
       RenderFrameHostImpl* render_frame_host,
-      bool is_main_frame,
       const GURL& url,
       PageTransition transition_type) {}
 

@@ -1011,14 +1011,13 @@ WebViewGuest::~WebViewGuest() {
 
 void WebViewGuest::DidCommitProvisionalLoadForFrame(
     content::RenderFrameHost* render_frame_host,
-    bool is_main_frame,
     const GURL& url,
     content::PageTransition transition_type) {
   find_helper_.CancelAllFindSessions();
 
   scoped_ptr<base::DictionaryValue> args(new base::DictionaryValue());
   args->SetString(guestview::kUrl, url.spec());
-  args->SetBoolean(guestview::kIsTopLevel, is_main_frame);
+  args->SetBoolean(guestview::kIsTopLevel, !render_frame_host->GetParent());
   args->SetInteger(webview::kInternalCurrentEntryIndex,
       guest_web_contents()->GetController().GetCurrentEntryIndex());
   args->SetInteger(webview::kInternalEntryCount,
@@ -1032,7 +1031,7 @@ void WebViewGuest::DidCommitProvisionalLoadForFrame(
   current_zoom_factor_ = content::ZoomLevelToZoomFactor(
       content::HostZoomMap::GetZoomLevel(guest_web_contents()));
 
-  if (is_main_frame) {
+  if (!render_frame_host->GetParent()) {
     chromevox_injected_ = false;
     main_frame_id_ = render_frame_host->GetRoutingID();
   }
@@ -1040,7 +1039,6 @@ void WebViewGuest::DidCommitProvisionalLoadForFrame(
 
 void WebViewGuest::DidFailProvisionalLoad(
     content::RenderFrameHost* render_frame_host,
-    bool is_main_frame,
     const GURL& validated_url,
     int error_code,
     const base::string16& error_description) {
@@ -1048,20 +1046,17 @@ void WebViewGuest::DidFailProvisionalLoad(
   std::string error_type(net::ErrorToString(error_code));
   DCHECK(StartsWithASCII(error_type, "net::", true));
   error_type.erase(0, 5);
-  LoadAbort(is_main_frame, validated_url, error_type);
+  LoadAbort(!render_frame_host->GetParent(), validated_url, error_type);
 }
 
 void WebViewGuest::DidStartProvisionalLoadForFrame(
-    int64 frame_id,
-    int64 parent_frame_id,
-    bool is_main_frame,
+    content::RenderFrameHost* render_frame_host,
     const GURL& validated_url,
     bool is_error_page,
-    bool is_iframe_srcdoc,
-    content::RenderViewHost* render_view_host) {
+    bool is_iframe_srcdoc) {
   scoped_ptr<base::DictionaryValue> args(new base::DictionaryValue());
   args->SetString(guestview::kUrl, validated_url.spec());
-  args->SetBoolean(guestview::kIsTopLevel, is_main_frame);
+  args->SetBoolean(guestview::kIsTopLevel, !render_frame_host->GetParent());
   DispatchEvent(
       new GuestViewBase::Event(webview::kEventLoadStart, args.Pass()));
 }

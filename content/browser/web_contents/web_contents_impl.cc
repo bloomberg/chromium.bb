@@ -2332,22 +2332,17 @@ void WebContentsImpl::SetFocusToLocationBar(bool select_all) {
 
 void WebContentsImpl::DidStartProvisionalLoad(
     RenderFrameHostImpl* render_frame_host,
-    int parent_routing_id,
     const GURL& validated_url,
     bool is_error_page,
     bool is_iframe_srcdoc) {
-  bool is_main_frame = render_frame_host->frame_tree_node()->IsMainFrame();
-
   // Notify observers about the start of the provisional load.
-  int render_frame_id = render_frame_host->GetRoutingID();
-  RenderViewHost* render_view_host = render_frame_host->render_view_host();
-  FOR_EACH_OBSERVER(WebContentsObserver, observers_,
-                    DidStartProvisionalLoadForFrame(
-                        render_frame_id, parent_routing_id, is_main_frame,
-                        validated_url, is_error_page, is_iframe_srcdoc,
-                        render_view_host));
+  FOR_EACH_OBSERVER(
+      WebContentsObserver,
+      observers_,
+      DidStartProvisionalLoadForFrame(
+          render_frame_host, validated_url, is_error_page, is_iframe_srcdoc));
 
-  if (is_main_frame) {
+  if (!render_frame_host->GetParent()) {
     FOR_EACH_OBSERVER(
         WebContentsObserver,
         observers_,
@@ -2360,11 +2355,9 @@ void WebContentsImpl::DidFailProvisionalLoadWithError(
     RenderFrameHostImpl* render_frame_host,
     const FrameHostMsg_DidFailProvisionalLoadWithError_Params& params) {
   GURL validated_url(params.url);
-  bool is_main_frame = render_frame_host->frame_tree_node()->IsMainFrame();
   FOR_EACH_OBSERVER(WebContentsObserver,
                     observers_,
                     DidFailProvisionalLoad(render_frame_host,
-                                           is_main_frame,
                                            validated_url,
                                            params.error_code,
                                            params.error_description));
@@ -2445,15 +2438,13 @@ void WebContentsImpl::DidRedirectProvisionalLoad(
 
 void WebContentsImpl::DidCommitProvisionalLoad(
     RenderFrameHostImpl* render_frame_host,
-    bool is_main_frame,
     const GURL& url,
     PageTransition transition_type) {
   // Notify observers about the commit of the provisional load.
-  FOR_EACH_OBSERVER(
-      WebContentsObserver,
-      observers_,
-      DidCommitProvisionalLoadForFrame(
-          render_frame_host, is_main_frame, url, transition_type));
+  FOR_EACH_OBSERVER(WebContentsObserver,
+                    observers_,
+                    DidCommitProvisionalLoadForFrame(
+                        render_frame_host, url, transition_type));
 }
 
 void WebContentsImpl::DidNavigateMainFramePreCommit(

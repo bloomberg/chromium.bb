@@ -328,16 +328,15 @@ void WebNavigationTabObserver::AboutToNavigateRenderView(
 }
 
 void WebNavigationTabObserver::DidStartProvisionalLoadForFrame(
-    int64 frame_num,
-    int64 parent_frame_num,
-    bool is_main_frame,
+    content::RenderFrameHost* render_frame_host,
     const GURL& validated_url,
     bool is_error_page,
-    bool is_iframe_srcdoc,
-    content::RenderViewHost* render_view_host) {
+    bool is_iframe_srcdoc) {
+  content::RenderViewHost* render_view_host =
+      render_frame_host->GetRenderViewHost();
   DVLOG(2) << "DidStartProvisionalLoad("
            << "render_view_host=" << render_view_host
-           << ", frame_num=" << frame_num
+           << ", frame_num=" << render_frame_host->GetRoutingID()
            << ", url=" << validated_url << ")";
   if (!render_view_host_)
     render_view_host_ = render_view_host;
@@ -345,9 +344,16 @@ void WebNavigationTabObserver::DidStartProvisionalLoadForFrame(
       render_view_host != pending_render_view_host_)
     return;
 
-  FrameNavigationState::FrameID frame_id(frame_num, render_view_host);
+  // FIXME: FrameNavigationState and the associated helpers should probably be
+  // refactored to use RenderFrameHost directly instead.
+  FrameNavigationState::FrameID frame_id(render_frame_host->GetRoutingID(),
+                                         render_view_host);
   FrameNavigationState::FrameID parent_frame_id(
-      parent_frame_num, render_view_host);
+      render_frame_host->GetParent()
+          ? render_frame_host->GetParent()->GetRoutingID()
+          : -1,
+      render_view_host);
+  bool is_main_frame = !render_frame_host->GetParent();
 
   navigation_state_.TrackFrame(frame_id,
                                parent_frame_id,
@@ -362,16 +368,15 @@ void WebNavigationTabObserver::DidStartProvisionalLoadForFrame(
   helpers::DispatchOnBeforeNavigate(
       web_contents(),
       render_view_host->GetProcess()->GetID(),
-      frame_num,
+      frame_id.frame_num,
       is_main_frame,
-      parent_frame_num,
+      parent_frame_id.frame_num,
       navigation_state_.IsMainFrame(parent_frame_id),
       navigation_state_.GetUrl(frame_id));
 }
 
 void WebNavigationTabObserver::DidCommitProvisionalLoadForFrame(
     content::RenderFrameHost* render_frame_host,
-    bool is_main_frame,
     const GURL& url,
     content::PageTransition transition_type) {
   content::RenderViewHost* render_view_host =
@@ -385,6 +390,7 @@ void WebNavigationTabObserver::DidCommitProvisionalLoadForFrame(
     return;
   FrameNavigationState::FrameID frame_id(render_frame_host->GetRoutingID(),
                                          render_view_host);
+  bool is_main_frame = !render_frame_host->GetParent();
 
   bool is_reference_fragment_navigation =
       IsReferenceFragmentNavigation(frame_id, url);
@@ -449,7 +455,6 @@ void WebNavigationTabObserver::DidCommitProvisionalLoadForFrame(
 
 void WebNavigationTabObserver::DidFailProvisionalLoad(
     content::RenderFrameHost* render_frame_host,
-    bool is_main_frame,
     const GURL& validated_url,
     int error_code,
     const base::string16& error_description) {
@@ -470,6 +475,8 @@ void WebNavigationTabObserver::DidFailProvisionalLoad(
 
   FrameNavigationState::FrameID frame_id(render_frame_host->GetRoutingID(),
                                          render_view_host);
+  bool is_main_frame = !render_frame_host->GetParent();
+
   if (navigation_state_.CanSendEvents(frame_id)) {
     helpers::DispatchOnErrorOccurred(web_contents(),
                                      render_view_host->GetProcess()->GetID(),

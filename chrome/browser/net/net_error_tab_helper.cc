@@ -93,16 +93,13 @@ void NetErrorTabHelper::DidStartNavigationToPendingEntry(
 }
 
 void NetErrorTabHelper::DidStartProvisionalLoadForFrame(
-    int64 frame_id,
-    int64 parent_frame_id,
-    bool is_main_frame,
+    content::RenderFrameHost* render_frame_host,
     const GURL& validated_url,
     bool is_error_page,
-    bool is_iframe_srcdoc,
-    RenderViewHost* render_view_host) {
+    bool is_iframe_srcdoc) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  if (!is_main_frame)
+  if (render_frame_host->GetParent())
     return;
 
   is_error_page_ = is_error_page;
@@ -110,12 +107,11 @@ void NetErrorTabHelper::DidStartProvisionalLoadForFrame(
 
 void NetErrorTabHelper::DidCommitProvisionalLoadForFrame(
     content::RenderFrameHost* render_frame_host,
-    bool is_main_frame,
     const GURL& url,
     PageTransition transition_type) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  if (!is_main_frame)
+  if (render_frame_host->GetParent())
     return;
 
   // Resend status every time an error page commits; this is somewhat spammy,
@@ -134,13 +130,12 @@ void NetErrorTabHelper::DidCommitProvisionalLoadForFrame(
 
 void NetErrorTabHelper::DidFailProvisionalLoad(
     content::RenderFrameHost* render_frame_host,
-    bool is_main_frame,
     const GURL& validated_url,
     int error_code,
     const base::string16& error_description) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  if (!is_main_frame)
+  if (render_frame_host->GetParent())
     return;
 
   if (IsDnsError(error_code)) {

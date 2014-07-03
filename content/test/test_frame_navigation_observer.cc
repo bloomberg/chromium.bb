@@ -48,18 +48,12 @@ void TestFrameNavigationObserver::Wait() {
 }
 
 void TestFrameNavigationObserver::DidStartProvisionalLoadForFrame(
-    int64 frame_id,
-    int64 parent_frame_id,
-    bool is_main_frame,
+    RenderFrameHost* render_frame_host,
     const GURL& validated_url,
     bool is_error_page,
-    bool is_iframe_srcdoc,
-    RenderViewHost* render_view_host) {
-  RenderFrameHostImpl* rfh = RenderFrameHostImpl::FromID(
-      render_view_host->GetProcess()->GetID(), frame_id);
-  if (!rfh)
-    return;
-
+    bool is_iframe_srcdoc) {
+  RenderFrameHostImpl* rfh =
+      static_cast<RenderFrameHostImpl*>(render_frame_host);
   if (rfh->frame_tree_node()->frame_tree_node_id() == frame_tree_node_id_)
     navigation_started_ = true;
 }

@@ -71,6 +71,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/page_navigator.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
@@ -441,7 +442,6 @@ class CurrentHistoryCleaner : public content::WebContentsObserver {
   virtual void WebContentsDestroyed() OVERRIDE;
   virtual void DidCommitProvisionalLoadForFrame(
       content::RenderFrameHost* render_frame_host,
-      bool is_main_frame,
       const GURL& url,
       content::PageTransition transition_type) OVERRIDE;
 
@@ -463,11 +463,10 @@ CurrentHistoryCleaner::~CurrentHistoryCleaner() {
 
 void CurrentHistoryCleaner::DidCommitProvisionalLoadForFrame(
     content::RenderFrameHost* render_frame_host,
-    bool is_main_frame,
     const GURL& url,
     content::PageTransition transition_type) {
   // Return early if this is not top-level navigation.
-  if (!is_main_frame)
+  if (render_frame_host->GetParent())
     return;
 
   content::NavigationController* nc = &web_contents()->GetController();

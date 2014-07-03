@@ -403,10 +403,8 @@ void RenderFrameHostImpl::OnDocumentOnLoadCompleted() {
 }
 
 void RenderFrameHostImpl::OnDidStartProvisionalLoadForFrame(
-    int parent_routing_id,
     const GURL& url) {
-  frame_tree_node_->navigator()->DidStartProvisionalLoad(
-      this, parent_routing_id, url);
+  frame_tree_node_->navigator()->DidStartProvisionalLoad(this, url);
 }
 
 void RenderFrameHostImpl::OnDidFailProvisionalLoadWithError(

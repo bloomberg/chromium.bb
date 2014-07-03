@@ -15,7 +15,7 @@
 #include "components/password_manager/core/browser/password_manager.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
-#include "content/public/browser/render_view_host.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/frame_navigate_params.h"
 
@@ -98,10 +98,9 @@ void PrerenderTabHelper::ProvisionalChangeToMainFrameUrl(
 
 void PrerenderTabHelper::DidCommitProvisionalLoadForFrame(
     content::RenderFrameHost* render_frame_host,
-    bool is_main_frame,
     const GURL& validated_url,
     content::PageTransition transition_type) {
-  if (!is_main_frame)
+  if (render_frame_host->GetParent())
     return;
   RecordEvent(EVENT_MAINFRAME_COMMIT);
   RecordEventIfLoggedInURL(EVENT_MAINFRAME_COMMIT_DOMAIN_LOGGED_IN,
@@ -157,14 +156,11 @@ void PrerenderTabHelper::DidStopLoading(
 }
 
 void PrerenderTabHelper::DidStartProvisionalLoadForFrame(
-      int64 frame_id,
-      int64 parent_frame_id,
-      bool is_main_frame,
-      const GURL& validated_url,
-      bool is_error_page,
-      bool is_iframe_srcdoc,
-      content::RenderViewHost* render_view_host) {
-  if (!is_main_frame)
+    content::RenderFrameHost* render_frame_host,
+    const GURL& validated_url,
+    bool is_error_page,
+    bool is_iframe_srcdoc) {
+  if (render_frame_host->GetParent())
     return;
 
   // Record PPLT state for the beginning of a new navigation.
