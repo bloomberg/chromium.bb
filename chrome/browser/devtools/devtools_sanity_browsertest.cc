@@ -829,13 +829,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestConsoleOnNavigateBack) {
 }
 
 
-#if defined(OS_CHROMEOS)
-#define MAYBE_TestDeviceEmulation DISABLED_TestDeviceEmulation
-#else
-#define MAYBE_TestDeviceEmulation TestDeviceEmulation
-#endif
-// ChromeOS has --enable-pinch-virtual-viewport on by default: crbug.com/370035.
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, MAYBE_TestDeviceEmulation) {
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestDeviceEmulation) {
   RunTest("testDeviceMetricsOverrides", "about:blank");
 }
 
