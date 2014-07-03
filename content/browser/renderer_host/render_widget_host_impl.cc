@@ -2173,8 +2173,22 @@ void RenderWidgetHostImpl::FrameSwapped(const ui::LatencyInfo& latency_info) {
   if (latency_info.FindLatency(ui::WINDOW_SNAPSHOT_FRAME_NUMBER_COMPONENT,
                                GetLatencyComponentId(),
                                &window_snapshot_component)) {
-    WindowSnapshotReachedScreen(
-        static_cast<int>(window_snapshot_component.sequence_number));
+    int sequence_number = static_cast<int>(
+        window_snapshot_component.sequence_number);
+#if defined(OS_MACOSX)
+    // On Mac, when using CoreAnmation, there is a delay between when content
+    // is drawn to the screen, and when the snapshot will actually pick up
+    // that content. Insert a manual delay of 1/6th of a second (to simulate
+    // 10 frames at 60 fps) before actually taking the snapshot.
+    base::MessageLoop::current()->PostDelayedTask(
+        FROM_HERE,
+        base::Bind(&RenderWidgetHostImpl::WindowSnapshotReachedScreen,
+                   weak_factory_.GetWeakPtr(),
+                   sequence_number),
+        base::TimeDelta::FromSecondsD(1. / 6));
+#else
+    WindowSnapshotReachedScreen(sequence_number);
+#endif
   }
 
   ui::LatencyInfo::LatencyComponent rwh_component;
