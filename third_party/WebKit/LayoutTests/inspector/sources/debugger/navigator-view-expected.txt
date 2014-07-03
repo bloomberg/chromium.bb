@@ -106,6 +106,9 @@ Revealing all resources:
       ?a=b
       very_looooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo…
     example.com
+      the%2fdir
+        foo?bar=100%&baz=a%20%2fb
+        foo?bar=100&baz=a %2fb
       (index)
       ?a=b
     localhost:8080

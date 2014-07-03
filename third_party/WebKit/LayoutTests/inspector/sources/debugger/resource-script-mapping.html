@@ -33,7 +33,7 @@ function test()
                 InspectorTest.waitForWorkspaceUISourceCodeAddedEvent(originalUISourceCodeAdded);
                 defaultScriptMapping.addScript(script);
                 resourceScriptMapping.addScript(script);
-                
+
                 var originalUISourceCode;
                 script.rawLocationToUILocation(0, 5);
 
@@ -113,7 +113,7 @@ function test()
                 InspectorTest.waitForWorkspaceUISourceCodeAddedEvent(originalUISourceCodeAdded);
                 defaultScriptMapping.addScript(script1);
                 resourceScriptMapping.addScript(script1);
-                
+
                 script1.rawLocationToUILocation(0, 5);
 
                 function originalUISourceCodeAdded(uiSourceCode)

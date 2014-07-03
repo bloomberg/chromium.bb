@@ -64,6 +64,8 @@ function test()
     addUISourceCode(rootURL + "foo/bar/contentScript.js?a=1", true);
     addUISourceCode("http://example.com/", false);
     addUISourceCode("http://example.com/?a=b", false);
+    addUISourceCode("http://example.com/the%2fdir/foo?bar=100&baz=a%20%2fb", false);
+    addUISourceCode("http://example.com/the%2fdir/foo?bar=100%&baz=a%20%2fb", false);
     addUISourceCode("?a=b", false);
     addUISourceCode("very_looooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooong_url", false);
     dumpNavigator();
