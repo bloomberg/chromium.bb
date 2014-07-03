@@ -195,7 +195,7 @@ uint8_t* ReadArmPackedRelocs(const char* full_path,
 
   ScopedBuffer buffer(bytes);
   const ssize_t bytes_read = fd.Read(buffer.Get(), bytes);
-  if (bytes_read != bytes) {
+  if (static_cast<size_t>(bytes_read) != bytes) {
     error->Format("Error reading %d bytes from file '%s'", bytes, full_path);
     return NULL;
   }

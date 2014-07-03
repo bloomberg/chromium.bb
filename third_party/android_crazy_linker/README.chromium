@@ -11,19 +11,7 @@ Local Modifications:
 - Forked from:
   android/platform/ndk/f96c7168b688f2d8cc99c220e7a40e3739476848
 
-- Add a required license header to a cpp module, missing in the original:
-diff --git a/third_party/android_crazy_linker/src/src/crazy_linker_elf_view.cpp b/third_party/android_crazy_linker/src/src/crazy_linker_elf_view.cpp
-index 5fa16df..bc03739 100644
---- a/third_party/android_crazy_linker/src/src/crazy_linker_elf_view.cpp
-+++ b/third_party/android_crazy_linker/src/src/crazy_linker_elf_view.cpp
-@@ -1,3 +1,7 @@
-+// Copyright (c) 2014 The Chromium Authors. All rights reserved.
-+// Use of this source code is governed by a BSD-style license that can be
-+// found in the LICENSE file.
-+
- #include "crazy_linker_elf_view.h"
- 
- #include <errno.h>
+- Add a required license header to a cpp module, missing in the original
 
 - Rolled to:
   android/platform/ndk/681f1b744aec1b0888f4c7a68165720db9670300
@@ -37,3 +25,5 @@ index 5fa16df..bc03739 100644
   https://code.google.com/p/chromium/issues/detail?id=385553
 
 - Add support for opening library within a zipfile.
+
+- Fix -Werror=sign-compare error encountered in NDK build.
