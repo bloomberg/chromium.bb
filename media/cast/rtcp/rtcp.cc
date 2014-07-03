@@ -5,7 +5,6 @@
 #include "media/cast/rtcp/rtcp.h"
 
 #include "base/big_endian.h"
-#include "base/rand_util.h"
 #include "media/cast/cast_config.h"
 #include "media/cast/cast_defines.h"
 #include "media/cast/cast_environment.h"
@@ -387,12 +386,8 @@ bool Rtcp::Rtt(base::TimeDelta* rtt, base::TimeDelta* avg_rtt,
 }
 
 void Rtcp::UpdateNextTimeToSendRtcp() {
-  int random = base::RandInt(0, 999);
-  base::TimeDelta time_to_next =
-      (rtcp_interval_ / 2) + (rtcp_interval_ * random / 1000);
-
   base::TimeTicks now = cast_environment_->Clock()->NowTicks();
-  next_time_to_send_rtcp_ = now + time_to_next;
+  next_time_to_send_rtcp_ = now + rtcp_interval_;
 }
 
 void Rtcp::OnReceivedReceiverLog(const RtcpReceiverLogMessage& receiver_log) {

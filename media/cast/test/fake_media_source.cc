@@ -240,7 +240,7 @@ void FakeMediaSource::SendNextFakeFrame() {
   if (start_time_.is_null())
     start_time_ = now;
 
-  base::TimeDelta video_time = VideoFrameTime(video_frame_count_);
+  base::TimeDelta video_time = VideoFrameTime(++video_frame_count_);
   video_frame->set_timestamp(video_time);
   video_frame_input_->InsertRawVideoFrame(video_frame,
                                           start_time_ + video_time);

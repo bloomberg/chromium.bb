@@ -20,6 +20,15 @@ FrameReceiverConfig GetDefaultAudioReceiverConfig();
 // name.
 FrameReceiverConfig GetDefaultVideoReceiverConfig();
 
+// Returns a AudioSenderConfig initialized to default values. This means
+// 48 kHz, 2-channel Opus-coded audio. Default values for SSRCs and payload
+// type.
+AudioSenderConfig GetDefaultAudioSenderConfig();
+
+// Returns a VideoSenderConfig initialized to default values. This means
+// 30 Hz VP8 coded code. Default values for SSRCs and payload type.
+VideoSenderConfig GetDefaultVideoSenderConfig();
+
 // Returns a callback that does nothing.
 CreateVideoEncodeAcceleratorCallback
     CreateDefaultVideoEncodeAcceleratorCallback();

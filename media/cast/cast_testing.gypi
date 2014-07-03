@@ -16,6 +16,7 @@
         '<(DEPTH)/testing/gtest.gyp:gtest',
         '<(DEPTH)/third_party/ffmpeg/ffmpeg.gyp:ffmpeg',
         '<(DEPTH)/third_party/libyuv/libyuv.gyp:libyuv',
+        '<(DEPTH)/third_party/mt19937ar/mt19937ar.gyp:mt19937ar',
         '<(DEPTH)/ui/gfx/gfx.gyp:gfx_geometry',
       ],
       'sources': [
@@ -27,6 +28,8 @@
         'test/skewed_single_thread_task_runner.h',
         'test/skewed_tick_clock.cc',
         'test/skewed_tick_clock.h',
+	'test/loopback_transport.cc',
+	'test/loopback_transport.h',
         'test/utility/audio_utility.cc',
         'test/utility/audio_utility.h',
         'test/utility/barcode.cc',
@@ -170,6 +173,7 @@
       'dependencies': [
         'cast_receiver_app',
         'cast_sender_app',
+        'cast_simulator',
         'udp_proxy',
       ],
     },

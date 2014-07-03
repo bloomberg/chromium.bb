@@ -47,7 +47,7 @@ bool FakeSoftwareVideoEncoder::Encode(
   values.SetInteger("size", frame_size_);
   base::JSONWriter::Write(&values, &encoded_image->data);
   encoded_image->data.resize(
-      std::max<size_t>(encoded_image->data.size(), frame_size_));
+      std::max<size_t>(encoded_image->data.size(), frame_size_), ' ');
   return true;
 }
 

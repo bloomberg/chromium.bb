@@ -184,9 +184,14 @@ class VideoDecoder::FakeImpl : public VideoDecoder::ImplBase {
   virtual ~FakeImpl() {}
 
   virtual scoped_refptr<VideoFrame> Decode(uint8* data, int len) OVERRIDE {
+    // Make sure this is a JSON string.
+    if (!len || data[0] != '{')
+      return NULL;
     base::JSONReader reader;
     scoped_ptr<base::Value> values(
-        reader.Read(base::StringPiece(reinterpret_cast<char*>(data))));
+        reader.Read(base::StringPiece(reinterpret_cast<char*>(data), len)));
+    if (!values)
+      return NULL;
     base::DictionaryValue* dict = NULL;
     values->GetAsDictionary(&dict);
 

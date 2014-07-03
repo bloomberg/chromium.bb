@@ -46,6 +46,7 @@
 #include "media/cast/cast_sender.h"
 #include "media/cast/logging/simple_event_subscriber.h"
 #include "media/cast/test/fake_single_thread_task_runner.h"
+#include "media/cast/test/loopback_transport.h"
 #include "media/cast/test/skewed_single_thread_task_runner.h"
 #include "media/cast/test/skewed_tick_clock.h"
 #include "media/cast/test/utility/audio_utility.h"
@@ -92,65 +93,6 @@ void IgnoreRawEvents(const std::vector<PacketEvent>& packet_events) {
 }
 
 }  // namespace
-
-// Shim that turns forwards packets from a test::PacketPipe to a
-// PacketReceiverCallback.
-class LoopBackPacketPipe : public test::PacketPipe {
- public:
-  LoopBackPacketPipe(const transport::PacketReceiverCallback& packet_receiver)
-      : packet_receiver_(packet_receiver) {}
-
-  virtual ~LoopBackPacketPipe() {}
-
-  // PacketPipe implementations.
-  virtual void Send(scoped_ptr<transport::Packet> packet) OVERRIDE {
-    packet_receiver_.Run(packet.Pass());
-  }
-
- private:
-  transport::PacketReceiverCallback packet_receiver_;
-};
-
-// Class that sends the packet direct from sender into the receiver with the
-// ability to drop packets between the two.
-// TODO(hubbe): Break this out and share code with end2end_unittest.cc
-class LoopBackTransport : public transport::PacketSender {
- public:
-  explicit LoopBackTransport(scoped_refptr<CastEnvironment> cast_environment)
-      : cast_environment_(cast_environment) {}
-
-  void SetPacketReceiver(
-      const transport::PacketReceiverCallback& packet_receiver,
-      const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
-      base::TickClock* clock) {
-    scoped_ptr<test::PacketPipe> loopback_pipe(
-        new LoopBackPacketPipe(packet_receiver));
-    if (packet_pipe_) {
-      packet_pipe_->AppendToPipe(loopback_pipe.Pass());
-    } else {
-      packet_pipe_ = loopback_pipe.Pass();
-    }
-    packet_pipe_->InitOnIOThread(task_runner, clock);
-  }
-
-  virtual bool SendPacket(transport::PacketRef packet,
-                          const base::Closure& cb) OVERRIDE {
-    DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
-    scoped_ptr<Packet> packet_copy(new Packet(packet->data));
-    packet_pipe_->Send(packet_copy.Pass());
-    return true;
-  }
-
-  void SetPacketPipe(scoped_ptr<test::PacketPipe> pipe) {
-    // Append the loopback pipe to the end.
-    pipe->AppendToPipe(packet_pipe_.Pass());
-    packet_pipe_ = pipe.Pass();
-  }
-
- private:
-  scoped_refptr<CastEnvironment> cast_environment_;
-  scoped_ptr<test::PacketPipe> packet_pipe_;
-};
 
 // Wraps a CastTransportSender and records some statistics about
 // the data that goes through it.
@@ -350,7 +292,7 @@ class RunOneBenchmark {
     task_runner_receiver_->SetSkew(1.0 / skew);
   }
 
-  void Create() {
+  void Create(const MeasuringPoint& p) {
     cast_receiver_ = CastReceiver::Create(cast_environment_receiver_,
                                           audio_receiver_config_,
                                           video_receiver_config_,
@@ -379,10 +321,12 @@ class RunOneBenchmark {
                                   CreateDefaultVideoEncodeAcceleratorCallback(),
                                   CreateDefaultVideoEncodeMemoryCallback());
 
-    receiver_to_sender_.SetPacketReceiver(
-        cast_sender_->packet_receiver(), task_runner_, &testing_clock_);
-    sender_to_receiver_.SetPacketReceiver(
-        cast_receiver_->packet_receiver(), task_runner_, &testing_clock_);
+    receiver_to_sender_.Initialize(
+        CreateSimplePipe(p).Pass(), cast_sender_->packet_receiver(),
+        task_runner_, &testing_clock_);
+    sender_to_receiver_.Initialize(
+        CreateSimplePipe(p).Pass(), cast_receiver_->packet_receiver(),
+        task_runner_, &testing_clock_);
   }
 
   virtual ~RunOneBenchmark() {
@@ -440,9 +384,7 @@ class RunOneBenchmark {
     available_bitrate_ = p.bitrate;
     Configure(
         transport::CODEC_VIDEO_FAKE, transport::CODEC_AUDIO_PCM16, 32000, 1);
-    receiver_to_sender_.SetPacketPipe(CreateSimplePipe(p).Pass());
-    sender_to_receiver_.SetPacketPipe(CreateSimplePipe(p).Pass());
-    Create();
+    Create(p);
     StartBasicPlayer();
 
     for (int frame = 0; frame < 1000; frame++) {

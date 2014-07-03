@@ -2,40 +2,365 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Simulation program.
+// Simulate end to end streaming.
+//
 // Input:
-// - File path to writing out the raw event log of the simulation session.
-// - Simulation parameters.
-// - Unique simulation run ID for tagging the log.
+// --source=
+//   WebM used as the source of video and audio frames.
+// --output=
+//   File path to writing out the raw event log of the simulation session.
+// --sim-id=
+//   Unique simulation ID.
+//
 // Output:
 // - Raw event log of the simulation session tagged with the unique test ID,
 //   written out to the specified file path.
 
 #include "base/at_exit.h"
+#include "base/base_paths.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/files/memory_mapped_file.h"
 #include "base/files/scoped_file.h"
+#include "base/json/json_writer.h"
 #include "base/logging.h"
+#include "base/path_service.h"
+#include "base/test/simple_test_tick_clock.h"
+#include "base/thread_task_runner_handle.h"
+#include "base/time/tick_clock.h"
+#include "base/values.h"
+#include "media/base/audio_bus.h"
+#include "media/base/media.h"
+#include "media/base/video_frame.h"
+#include "media/cast/cast_config.h"
+#include "media/cast/cast_environment.h"
+#include "media/cast/cast_receiver.h"
+#include "media/cast/cast_sender.h"
+#include "media/cast/logging/encoding_event_subscriber.h"
+#include "media/cast/logging/log_serializer.h"
+#include "media/cast/logging/logging_defines.h"
+#include "media/cast/logging/proto/raw_events.pb.h"
+#include "media/cast/logging/raw_event_subscriber_bundle.h"
+#include "media/cast/logging/simple_event_subscriber.h"
+#include "media/cast/test/fake_media_source.h"
+#include "media/cast/test/fake_single_thread_task_runner.h"
+#include "media/cast/test/loopback_transport.h"
+#include "media/cast/test/skewed_tick_clock.h"
+#include "media/cast/test/utility/audio_utility.h"
+#include "media/cast/test/utility/default_config.h"
+#include "media/cast/test/utility/test_util.h"
+#include "media/cast/test/utility/udp_proxy.h"
+#include "media/cast/test/utility/video_utility.h"
+#include "media/cast/transport/cast_transport_config.h"
+#include "media/cast/transport/cast_transport_defines.h"
+#include "media/cast/transport/cast_transport_sender.h"
+#include "media/cast/transport/cast_transport_sender_impl.h"
 
-const char kSimulationRunId[] = "simulation-run-id";
-const char kOutputPath[] = "output-path";
+namespace media {
+namespace cast {
+namespace {
+
+const int kTargetDelay = 300;
+const char kSourcePath[] = "source";
+const char kOutputPath[] = "output";
+const char kSimulationId[] = "sim-id";
+
+void UpdateCastTransportStatus(transport::CastTransportStatus status) {
+  LOG(INFO) << "Cast transport status: " << status;
+}
+
+void AudioInitializationStatus(CastInitializationStatus status) {
+  LOG(INFO) << "Audio status: " << status;
+}
+
+void VideoInitializationStatus(CastInitializationStatus status) {
+  LOG(INFO) << "Video status: " << status;
+}
+
+void LogTransportEvents(const scoped_refptr<CastEnvironment>& env,
+                        const std::vector<PacketEvent>& packet_events) {
+  for (std::vector<media::cast::PacketEvent>::const_iterator it =
+           packet_events.begin();
+       it != packet_events.end();
+       ++it) {
+    env->Logging()->InsertPacketEvent(it->timestamp,
+                                      it->type,
+                                      it->media_type,
+                                      it->rtp_timestamp,
+                                      it->frame_id,
+                                      it->packet_id,
+                                      it->max_packet_id,
+                                      it->size);
+  }
+}
+
+void GotVideoFrame(
+    int* counter,
+    CastReceiver* cast_receiver,
+    const scoped_refptr<media::VideoFrame>& video_frame,
+    const base::TimeTicks& render_time,
+    bool continuous) {
+  ++*counter;
+  cast_receiver->RequestDecodedVideoFrame(
+      base::Bind(&GotVideoFrame, counter, cast_receiver));
+}
+
+void GotAudioFrame(
+    int* counter,
+    CastReceiver* cast_receiver,
+    scoped_ptr<AudioBus> audio_bus,
+    const base::TimeTicks& playout_time,
+    bool is_continuous) {
+  ++*counter;
+  cast_receiver->RequestDecodedAudioFrame(
+      base::Bind(&GotAudioFrame, counter, cast_receiver));
+}
+
+void AppendLog(EncodingEventSubscriber* subscriber,
+               const std::string& extra_data,
+               const base::FilePath& output_path) {
+  media::cast::proto::LogMetadata metadata;
+  metadata.set_extra_data(extra_data);
+
+  media::cast::FrameEventList frame_events;
+  media::cast::PacketEventList packet_events;
+  subscriber->GetEventsAndReset(
+      &metadata, &frame_events, &packet_events);
+  media::cast::proto::GeneralDescription* gen_desc =
+      metadata.mutable_general_description();
+  gen_desc->set_product("Cast Simulator");
+  gen_desc->set_product_version("0.1");
+
+  scoped_ptr<char[]> serialized_log(new char[media::cast::kMaxSerializedBytes]);
+  int output_bytes;
+  bool success = media::cast::SerializeEvents(metadata,
+                                              frame_events,
+                                              packet_events,
+                                              true,
+                                              media::cast::kMaxSerializedBytes,
+                                              serialized_log.get(),
+                                              &output_bytes);
+
+  if (!success) {
+    LOG(ERROR) << "Failed to serialize log.";
+    return;
+  }
+
+  if (AppendToFile(output_path, serialized_log.get(), output_bytes) == -1) {
+    LOG(ERROR) << "Failed to append to log.";
+  }
+}
+
+// Run simulation once.
+//
+// |output_path| is the path to write serialized log.
+// |extra_data| is extra tagging information to write to log.
+void RunSimulation(const base::FilePath& source_path,
+                   const base::FilePath& output_path,
+                   const std::string& extra_data) {
+  // Fake clock. Make sure start time is non zero.
+  base::SimpleTestTickClock testing_clock;
+  testing_clock.Advance(base::TimeDelta::FromSeconds(1));
+
+  // Task runner.
+  scoped_refptr<test::FakeSingleThreadTaskRunner> task_runner =
+      new test::FakeSingleThreadTaskRunner(&testing_clock);
+  base::ThreadTaskRunnerHandle task_runner_handle(task_runner);
+
+  // CastEnvironments.
+  scoped_refptr<CastEnvironment> sender_env =
+      new CastEnvironment(
+          scoped_ptr<base::TickClock>(
+              new test::SkewedTickClock(&testing_clock)).Pass(),
+          task_runner,
+          task_runner,
+          task_runner);
+  scoped_refptr<CastEnvironment> receiver_env =
+      new CastEnvironment(
+          scoped_ptr<base::TickClock>(
+              new test::SkewedTickClock(&testing_clock)).Pass(),
+          task_runner,
+          task_runner,
+          task_runner);
+
+  // Event subscriber. Store at most 1 hour of events.
+  EncodingEventSubscriber audio_event_subscriber(AUDIO_EVENT,
+                                                 100 * 60 * 60);
+  EncodingEventSubscriber video_event_subscriber(VIDEO_EVENT,
+                                                 30 * 60 * 60);
+  sender_env->Logging()->AddRawEventSubscriber(&audio_event_subscriber);
+  sender_env->Logging()->AddRawEventSubscriber(&video_event_subscriber);
+
+  // Audio sender config.
+  AudioSenderConfig audio_sender_config = GetDefaultAudioSenderConfig();
+  audio_sender_config.target_playout_delay =
+      base::TimeDelta::FromMilliseconds(kTargetDelay);
+
+  // Audio receiver config.
+  FrameReceiverConfig audio_receiver_config =
+      GetDefaultAudioReceiverConfig();
+  audio_receiver_config.rtp_max_delay_ms =
+      audio_sender_config.target_playout_delay.InMilliseconds();
+
+  // Video sender config.
+  VideoSenderConfig video_sender_config = GetDefaultVideoSenderConfig();
+  video_sender_config.max_bitrate = 4000000;
+  video_sender_config.min_bitrate = 2000000;
+  video_sender_config.start_bitrate = 4000000;
+  video_sender_config.target_playout_delay =
+      base::TimeDelta::FromMilliseconds(kTargetDelay);
+
+  // Video receiver config.
+  FrameReceiverConfig video_receiver_config =
+      GetDefaultVideoReceiverConfig();
+  video_receiver_config.rtp_max_delay_ms =
+      video_sender_config.target_playout_delay.InMilliseconds();
+
+  // Loopback transport.
+  LoopBackTransport receiver_to_sender(receiver_env);
+  LoopBackTransport sender_to_receiver(sender_env);
+
+  // Cast receiver.
+  scoped_ptr<CastReceiver> cast_receiver(
+      CastReceiver::Create(receiver_env,
+                           audio_receiver_config,
+                           video_receiver_config,
+                           &receiver_to_sender));
+
+  // Cast sender and transport sender.
+  scoped_ptr<transport::CastTransportSender> transport_sender(
+      new transport::CastTransportSenderImpl(
+          NULL,
+          &testing_clock,
+          net::IPEndPoint(),
+          base::Bind(&UpdateCastTransportStatus),
+          base::Bind(&LogTransportEvents, sender_env),
+          base::TimeDelta::FromSeconds(1),
+          task_runner,
+          &sender_to_receiver));
+  scoped_ptr<CastSender> cast_sender(
+      CastSender::Create(sender_env, transport_sender.get()));
+
+  // Build packet pipe.
+  // TODO(hclam): Allow user to input these parameters. Following
+  // parameters are taken from a session from real-world data. It is
+  // chosen here because it gives a difficult environment.
+  std::vector<double> average_rates;
+  average_rates.push_back(0.609);
+  average_rates.push_back(0.495);
+  average_rates.push_back(0.561);
+  average_rates.push_back(0.458);
+  average_rates.push_back(0.538);
+  average_rates.push_back(0.513);
+  average_rates.push_back(0.585);
+  average_rates.push_back(0.592);
+  average_rates.push_back(0.658);
+  average_rates.push_back(0.556);
+  average_rates.push_back(0.371);
+  average_rates.push_back(0.595);
+  average_rates.push_back(0.490);
+  average_rates.push_back(0.980);
+  average_rates.push_back(0.781);
+  average_rates.push_back(0.463);
+  test::InterruptedPoissonProcess ipp(average_rates, 0.3, 4.1, 0);
+
+  // Connect sender to receiver. This initializes the pipe.
+  receiver_to_sender.Initialize(
+      ipp.NewBuffer(128 * 1024), cast_sender->packet_receiver(), task_runner,
+      &testing_clock);
+  sender_to_receiver.Initialize(
+      ipp.NewBuffer(128 * 1024), cast_receiver->packet_receiver(), task_runner,
+      &testing_clock);
+
+  // Start receiver.
+  int audio_frame_count = 0;
+  int video_frame_count = 0;
+  cast_receiver->RequestDecodedVideoFrame(
+      base::Bind(&GotVideoFrame, &video_frame_count, cast_receiver.get()));
+  cast_receiver->RequestDecodedAudioFrame(
+      base::Bind(&GotAudioFrame, &audio_frame_count, cast_receiver.get()));
+
+  FakeMediaSource media_source(task_runner,
+                               &testing_clock,
+                               video_sender_config);
+
+  // Initializing audio and video senders.
+  cast_sender->InitializeAudio(audio_sender_config,
+                               base::Bind(&AudioInitializationStatus));
+  cast_sender->InitializeVideo(media_source.get_video_config(),
+                               base::Bind(&VideoInitializationStatus),
+                               CreateDefaultVideoEncodeAcceleratorCallback(),
+                               CreateDefaultVideoEncodeMemoryCallback());
+
+  // Start sending.
+  if (!source_path.empty()) {
+    // 0 means using the FPS from the file.
+    media_source.SetSourceFile(source_path, 0);
+  }
+  media_source.Start(cast_sender->audio_frame_input(),
+                     cast_sender->video_frame_input());
+
+  // Run for 5 minutes.
+  base::TimeDelta elapsed_time;
+  while (elapsed_time.InMinutes() < 5) {
+    // Each step is 100us.
+    base::TimeDelta step = base::TimeDelta::FromMicroseconds(100);
+    task_runner->Sleep(step);
+    elapsed_time += step;
+  }
+
+  LOG(INFO) << "Audio frame count: " << audio_frame_count;
+  LOG(INFO) << "Video frame count: " << video_frame_count;
+  LOG(INFO) << "Writing log: " << output_path.value();
+
+  // Truncate file and then write serialized log.
+  {
+    base::ScopedFILE file(base::OpenFile(output_path, "wb"));
+    if (!file.get()) {
+      LOG(INFO) << "Cannot write to log.";
+      return;
+    }
+  }
+  AppendLog(&video_event_subscriber, extra_data, output_path);
+  AppendLog(&audio_event_subscriber, extra_data, output_path);
+}
+
+}  // namespace
+}  // namespace cast
+}  // namespace media
 
 int main(int argc, char** argv) {
   base::AtExitManager at_exit;
   CommandLine::Init(argc, argv);
   InitLogging(logging::LoggingSettings());
 
+  base::FilePath media_path;
+  if (!PathService::Get(base::DIR_MODULE, &media_path)) {
+    LOG(ERROR) << "Failed to load FFmpeg.";
+    return 1;
+  }
+  media::InitializeMediaLibrary(media_path);
+
   const CommandLine* cmd = CommandLine::ForCurrentProcess();
-  base::FilePath output_path = cmd->GetSwitchValuePath(kOutputPath);
-  CHECK(!output_path.empty());
-  std::string sim_run_id = cmd->GetSwitchValueASCII(kSimulationRunId);
+  base::FilePath source_path = cmd->GetSwitchValuePath(
+      media::cast::kSourcePath);
+  base::FilePath output_path = cmd->GetSwitchValuePath(
+      media::cast::kOutputPath);
+  if (output_path.empty()) {
+    base::GetTempDir(&output_path);
+    output_path = output_path.AppendASCII("sim-events.gz");
+  }
+  std::string sim_id = cmd->GetSwitchValueASCII(media::cast::kSimulationId);
 
-  std::string msg = "Log from simulation run " + sim_run_id;
-  int ret = base::WriteFile(output_path, &msg[0], msg.size());
-  if (ret != static_cast<int>(msg.size()))
-    VLOG(0) << "Failed to write logs to file.";
+  base::DictionaryValue values;
+  values.SetBoolean("sim", true);
+  values.SetString("sim-id", sim_id);
 
+  std::string extra_data;
+  base::JSONWriter::Write(&values, &extra_data);
+
+  // Run.
+  media::cast::RunSimulation(source_path, output_path, extra_data);
   return 0;
 }
