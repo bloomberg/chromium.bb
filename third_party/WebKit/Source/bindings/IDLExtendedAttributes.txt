@@ -77,7 +77,6 @@ PartialInterfaceImplementedAs=*
 PerContextEnabled=*
 PerWorldBindings
 PrimaryGlobal=|*
-PrivateScriptInterface
 PutForwards=*
 RaisesException=|Getter|Setter|Constructor
 Reflect=|*

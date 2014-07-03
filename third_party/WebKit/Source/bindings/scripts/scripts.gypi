@@ -38,7 +38,6 @@
       'v8_globals.py',
       'v8_interface.py',
       'v8_methods.py',
-      'v8_private_script_interface.py',
       'v8_types.py',
       'v8_utilities.py',
     ],

@@ -75,7 +75,6 @@ from idl_types import IdlType
 import v8_callback_interface
 from v8_globals import includes, interfaces
 import v8_interface
-import v8_private_script_interface
 import v8_types
 from v8_utilities import capitalize, cpp_name, conditional_string, v8_class_name
 
@@ -131,12 +130,6 @@ class CodeGeneratorV8(object):
             header_template_filename = 'callback_interface.h'
             cpp_template_filename = 'callback_interface.cpp'
             interface_context = v8_callback_interface.callback_interface_context
-        elif 'PrivateScriptInterface' in interface.extended_attributes:
-            # Currently private scripts don't have dependencies. Once private scripts have dependencies,
-            # we should add them to interface_info.
-            header_template_filename = 'private_script_interface.h'
-            cpp_template_filename = 'private_script_interface.cpp'
-            interface_context = v8_private_script_interface.private_script_interface_context
         else:
             header_template_filename = 'interface.h'
             cpp_template_filename = 'interface.cpp'
@@ -150,8 +143,7 @@ class CodeGeneratorV8(object):
 
         # Add includes for interface itself and any dependencies
         interface_info = self.interfaces_info[interface_name]
-        if 'PrivateScriptInterface' not in interface.extended_attributes:
-            template_context['header_includes'].add(interface_info['include_path'])
+        template_context['header_includes'].add(interface_info['include_path'])
         template_context['header_includes'] = sorted(template_context['header_includes'])
         includes.update(interface_info.get('dependencies_include_paths', []))
         template_context['cpp_includes'] = sorted(includes)

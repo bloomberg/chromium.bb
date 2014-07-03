@@ -12,8 +12,6 @@
       'interface.cpp',
       'interface.h',
       'methods.cpp',
-      'private_script_interface.cpp',
-      'private_script_interface.h',
     ],
   },
 }
