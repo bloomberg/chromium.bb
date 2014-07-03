@@ -549,6 +549,13 @@ void VolumeManager::OnDiskEvent(
       // Notify to observers.
       FOR_EACH_OBSERVER(VolumeManagerObserver, observers_,
                         OnDiskRemoved(*disk));
+      const std::string& device_path = disk->system_path_prefix();
+      if (mounted_disk_monitor_->DeviceIsHardUnpluggedButNotReported(
+              device_path)) {
+        FOR_EACH_OBSERVER(VolumeManagerObserver, observers_,
+                          OnHardUnplugged(device_path));
+        mounted_disk_monitor_->MarkAsHardUnpluggedReported(device_path);
+      }
       return;
   }
   NOTREACHED();
@@ -566,12 +573,8 @@ void VolumeManager::OnDeviceEvent(
                         OnDeviceAdded(device_path));
       return;
     case chromeos::disks::DiskMountManager::DEVICE_REMOVED: {
-      const bool hard_unplugged =
-          mounted_disk_monitor_->DeviceIsHardUnplugged(device_path);
-      FOR_EACH_OBSERVER(VolumeManagerObserver,
-                        observers_,
-                        OnDeviceRemoved(device_path, hard_unplugged));
-      mounted_disk_monitor_->ClearHardUnpluggedFlag(device_path);
+      FOR_EACH_OBSERVER(
+          VolumeManagerObserver, observers_, OnDeviceRemoved(device_path));
       return;
     }
     case chromeos::disks::DiskMountManager::DEVICE_SCANNED:
