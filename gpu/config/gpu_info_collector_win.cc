@@ -99,10 +99,8 @@ GpuPerformanceStats RetrieveGpuPerformanceStats() {
   }
 
   std::string current_results_string = current_results.MaybeAsASCII();
-  if (current_results_string.empty()) {
-    LOG(ERROR) << "Can't retrieve a valid WinSAT assessment.";
+  if (current_results_string.empty())
     return stats;
-  }
 
   // Get relevant scores from results file. XML schema at:
   // http://msdn.microsoft.com/en-us/library/windows/desktop/aa969210.aspx
