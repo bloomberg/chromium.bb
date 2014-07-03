@@ -10,6 +10,9 @@
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_platform_file.h"
 
+#if !defined(ENABLE_SPELLCHECK)
+#error "Spellcheck should be enabled"
+#endif
 
 #define IPC_MESSAGE_START SpellCheckMsgStart
 

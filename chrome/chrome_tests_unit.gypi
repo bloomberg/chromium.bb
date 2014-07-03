@@ -2090,6 +2090,9 @@
              ['exclude', '^browser/spellchecker/'],
              ['exclude', '^renderer/spellchecker/'],
           ],
+          'sources!': [
+            'tools/convert_dict/convert_dict_unittest.cc',
+          ],
           'dependencies!': [
              '../third_party/hunspell/hunspell.gyp:hunspell',
           ],

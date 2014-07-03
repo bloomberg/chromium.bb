@@ -2605,7 +2605,6 @@
             '../net/net.gyp:net_with_v8',
             '../third_party/adobe/flash/flash_player.gyp:flapper_version_h',
             '../third_party/expat/expat.gyp:expat',
-            '../third_party/hunspell/hunspell.gyp:hunspell',
             '../third_party/leveldatabase/leveldatabase.gyp:leveldatabase',
             '../third_party/libjingle/libjingle.gyp:libjingle',
             '../third_party/npapi/npapi.gyp:npapi',
@@ -2930,6 +2929,11 @@
         }],
         ['enable_service_discovery==1', {
           'sources': [ '<@(chrome_browser_ui_service_discovery_sources)' ],
+        }],
+        ['enable_spellcheck==1', {
+          'dependencies': [
+            '../third_party/hunspell/hunspell.gyp:hunspell',
+          ],
         }],
       ],
     },
