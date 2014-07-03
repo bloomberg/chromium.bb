@@ -420,7 +420,7 @@
             'app/chrome_main_mac.mm',
           ],
         }],
-        ['enable_mdns == 1', {
+        ['enable_mdns==1', {
             'sources': [
               'browser/local_discovery/test_service_discovery_client.cc',
               'browser/local_discovery/test_service_discovery_client.h',
@@ -1067,15 +1067,6 @@
         'browser/invalidation/invalidator_storage_unittest.cc',
         'browser/invalidation/ticl_profile_settings_provider_unittest.cc',
         'browser/io_thread_unittest.cc',
-        'browser/local_discovery/gcd_api_flow_unittest.cc',
-        'browser/local_discovery/gcd_registration_ticket_request_unittest.cc',
-        'browser/local_discovery/privet_confirm_api_flow_unittest.cc',
-        'browser/local_discovery/privet_http_unittest.cc',
-        'browser/local_discovery/privet_url_fetcher_unittest.cc',
-        'browser/local_discovery/storage/path_util_unittest.cc',
-        'browser/local_discovery/cloud_print_printer_list_unittest.cc',
-        'browser/local_discovery/cloud_device_list_unittest.cc',
-        'browser/local_discovery/service_discovery_client_mac_unittest.mm',
         'browser/logging_chrome_unittest.cc',
         'browser/mac/keystone_glue_unittest.mm',
         'browser/media/audio_stream_monitor_unittest.cc',
@@ -2236,15 +2227,28 @@
             'browser/ui/views/select_file_dialog_extension_unittest.cc',
           ],
         }],
-        ['enable_mdns == 1', {
-            'sources': [
-              'browser/local_discovery/privet_device_lister_unittest.cc',
-              'browser/local_discovery/privet_notifications_unittest.cc',
-              'browser/local_discovery/privet_local_printer_lister_unittest.cc',
-              'browser/local_discovery/storage/privet_filesystem_attribute_cache_unittest.cc',
-              'common/local_discovery/local_domain_resolver_unittest.cc',
-              'common/local_discovery/service_discovery_client_unittest.cc',
-            ]
+        ['enable_mdns==1', {
+          'sources': [
+            'browser/local_discovery/privet_device_lister_unittest.cc',
+            'browser/local_discovery/privet_local_printer_lister_unittest.cc',
+            'browser/local_discovery/privet_notifications_unittest.cc',
+            'common/local_discovery/local_domain_resolver_unittest.cc',
+            'common/local_discovery/service_discovery_client_unittest.cc',
+          ],
+        }],
+        ['enable_service_discovery==1', {
+          'sources': [
+            'browser/local_discovery/cloud_device_list_unittest.cc',
+            'browser/local_discovery/cloud_print_printer_list_unittest.cc',
+            'browser/local_discovery/gcd_api_flow_unittest.cc',
+            'browser/local_discovery/gcd_registration_ticket_request_unittest.cc',
+            'browser/local_discovery/privet_confirm_api_flow_unittest.cc',
+            'browser/local_discovery/privet_http_unittest.cc',
+            'browser/local_discovery/privet_url_fetcher_unittest.cc',
+            'browser/local_discovery/service_discovery_client_mac_unittest.mm',
+            'browser/local_discovery/storage/path_util_unittest.cc',
+            'browser/local_discovery/storage/privet_filesystem_attribute_cache_unittest.cc',
+          ],
         }],
         ['configuration_policy==0', {
           'sources!': [
