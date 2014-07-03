@@ -54,11 +54,25 @@ const base::char16 kHebrewLetterSamekh = 0x05E1;
 // A Textfield wrapper to intercept OnKey[Pressed|Released]() ressults.
 class TestTextfield : public views::Textfield {
  public:
-  TestTextfield() : Textfield(), key_handled_(false), key_received_(false) {}
+  TestTextfield()
+     : Textfield(),
+       key_handled_(false),
+       key_received_(false),
+       weak_ptr_factory_(this) {}
 
   virtual bool OnKeyPressed(const ui::KeyEvent& e) OVERRIDE {
     key_received_ = true;
-    key_handled_ = views::Textfield::OnKeyPressed(e);
+
+    // Since OnKeyPressed() might destroy |this|, get a weak pointer and
+    // verify it isn't null before writing the bool value to key_handled_.
+    base::WeakPtr<TestTextfield> textfield(weak_ptr_factory_.GetWeakPtr());
+    bool key = views::Textfield::OnKeyPressed(e);
+
+    if (!textfield)
+      return key;
+
+    key_handled_ = key;
+
     return key_handled_;
   }
 
@@ -77,6 +91,8 @@ class TestTextfield : public views::Textfield {
   bool key_handled_;
   bool key_received_;
 
+  base::WeakPtrFactory<TestTextfield> weak_ptr_factory_;
+
   DISALLOW_COPY_AND_ASSIGN(TestTextfield);
 };
 
@@ -91,6 +107,28 @@ class GestureEventForTest : public ui::GestureEvent {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(GestureEventForTest);
+};
+
+// This controller will happily destroy the target textfield passed on
+// construction when a key event is triggered.
+class TextfieldDestroyerController : public views::TextfieldController {
+ public:
+  explicit TextfieldDestroyerController(views::Textfield* target)
+      : target_(target) {
+    target_->set_controller(this);
+  }
+
+  views::Textfield* target() { return target_.get(); }
+
+  // views::TextfieldController:
+  virtual bool HandleKeyEvent(views::Textfield* sender,
+                              const ui::KeyEvent& key_event) OVERRIDE {
+    target_.reset();
+    return false;
+  }
+
+ private:
+  scoped_ptr<views::Textfield> target_;
 };
 
 base::string16 GetClipboardText(ui::ClipboardType type) {
@@ -2007,6 +2045,21 @@ TEST_F(TextfieldTest, GetTextfieldBaseline_FontFallbackTest) {
 
   // Regardless of the text, the baseline must be the same.
   EXPECT_EQ(new_baseline, old_baseline);
+}
+
+// Tests that a textfield view can be destroyed from OnKeyEvent() on its
+// controller and it does not crash.
+TEST_F(TextfieldTest, DestroyingTextfieldFromOnKeyEvent) {
+  InitTextfield();
+
+  // The controller assumes ownership of the textfield.
+  TextfieldDestroyerController controller(textfield_);
+  EXPECT_TRUE(controller.target());
+
+  // Send a key to trigger OnKeyEvent().
+  SendKeyEvent('X');
+
+  EXPECT_FALSE(controller.target());
 }
 
 }  // namespace views
