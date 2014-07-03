@@ -51,3 +51,14 @@ message SuggestionsBlacklist {
   // URLs that make up the blacklist.
   repeated string urls = 1;
 }
+
+// ThumbnailData contains the data to represent a website thumbnail.
+//
+// Next tag: 3
+message ThumbnailData {
+  // The URL of the website represented by this Thumbnail.
+  optional string url = 1;
+
+  // Bitmap bytes, encoded as JPEG.
+  optional bytes data = 2;
+}

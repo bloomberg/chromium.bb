@@ -8,11 +8,16 @@
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/suggestions/blacklist_store.h"
+#include "chrome/browser/search/suggestions/proto/suggestions.pb.h"
 #include "chrome/browser/search/suggestions/suggestions_service.h"
 #include "chrome/browser/search/suggestions/suggestions_store.h"
 #include "chrome/common/pref_names.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
+#include "components/leveldb_proto/proto_database.h"
+#include "components/leveldb_proto/proto_database_impl.h"
 #include "components/pref_registry/pref_registry_syncable.h"
+#include "content/public/browser/browser_context.h"
+#include "content/public/browser/browser_thread.h"
 
 namespace suggestions {
 
@@ -45,13 +50,27 @@ content::BrowserContext* SuggestionsServiceFactory::GetBrowserContextToUse(
 
 KeyedService* SuggestionsServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* profile) const {
+  scoped_refptr<base::SequencedTaskRunner> background_task_runner =
+      content::BrowserThread::GetBlockingPool()->GetSequencedTaskRunner(
+          content::BrowserThread::GetBlockingPool()->GetSequenceToken());
+
   Profile* the_profile = static_cast<Profile*>(profile);
   scoped_ptr<SuggestionsStore> suggestions_store(
       new SuggestionsStore(the_profile->GetPrefs()));
-  scoped_ptr<ThumbnailManager> thumbnail_manager(
-      new ThumbnailManager(the_profile->GetRequestContext()));
   scoped_ptr<BlacklistStore> blacklist_store(
       new BlacklistStore(the_profile->GetPrefs()));
+
+  scoped_ptr<leveldb_proto::ProtoDatabaseImpl<ThumbnailData> > db(
+      new leveldb_proto::ProtoDatabaseImpl<ThumbnailData>(
+          background_task_runner));
+
+  base::FilePath database_dir(
+      the_profile->GetPath().Append(FILE_PATH_LITERAL("Thumbnails")));
+
+  scoped_ptr<ThumbnailManager> thumbnail_manager(new ThumbnailManager(
+      the_profile->GetRequestContext(),
+      db.PassAs<leveldb_proto::ProtoDatabase<ThumbnailData> >(),
+      database_dir));
   return new SuggestionsService(the_profile, suggestions_store.Pass(),
                                 thumbnail_manager.Pass(),
                                 blacklist_store.Pass());

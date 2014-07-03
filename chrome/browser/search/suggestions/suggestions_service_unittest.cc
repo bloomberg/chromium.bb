@@ -87,8 +87,6 @@ MATCHER_P(EqualsProto, message, "") {
 
 namespace suggestions {
 
-namespace {
-
 scoped_ptr<SuggestionsProfile> CreateSuggestionsProfile() {
   scoped_ptr<SuggestionsProfile> profile(new SuggestionsProfile());
   ChromeSuggestion* suggestion = profile->add_suggestions();
@@ -106,7 +104,7 @@ class MockSuggestionsStore : public suggestions::SuggestionsStore {
 
 class MockThumbnailManager : public suggestions::ThumbnailManager {
  public:
-  MockThumbnailManager() : suggestions::ThumbnailManager(NULL) {}
+  MockThumbnailManager() {}
   virtual ~MockThumbnailManager() {}
   MOCK_METHOD1(InitializeThumbnailMap, void(const SuggestionsProfile&));
   MOCK_METHOD2(GetPageThumbnail,
@@ -121,8 +119,6 @@ class MockBlacklistStore : public suggestions::BlacklistStore {
   MOCK_METHOD1(RemoveUrl, bool(const GURL&));
   MOCK_METHOD1(FilterSuggestions, void(SuggestionsProfile*));
 };
-
-}  // namespace
 
 class SuggestionsServiceTest : public testing::Test {
  public:
