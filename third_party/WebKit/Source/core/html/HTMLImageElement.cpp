@@ -243,12 +243,8 @@ ImageCandidate HTMLImageElement::findBestFitImageFromPictureParent()
         if (!type.isEmpty() && !supportedImageType(type))
             continue;
 
-        String media = source->fastGetAttribute(mediaAttr);
-        if (!media.isEmpty()) {
-            RefPtrWillBeRawPtr<MediaQuerySet> mediaQueries = MediaQuerySet::create(media);
-            if (!document().mediaQueryMatcher().evaluate(mediaQueries.get()))
-                continue;
-        }
+        if (!source->mediaQueryMatches())
+            continue;
 
         unsigned effectiveSize = SizesAttributeParser::findEffectiveSize(source->fastGetAttribute(sizesAttr), MediaValuesDynamic::create(document()));
         ImageCandidate candidate = bestFitSourceForSrcsetAttribute(document().devicePixelRatio(), effectiveSize, source->fastGetAttribute(srcsetAttr));

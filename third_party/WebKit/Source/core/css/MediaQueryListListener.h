@@ -53,7 +53,7 @@ public:
 
     bool operator==(const MediaQueryListListener& other) const { return m_function.isNull() ? this == &other : m_function == other.m_function; }
 
-    void trace(Visitor* visitor) { visitor->trace(m_query); }
+    virtual void trace(Visitor* visitor) { visitor->trace(m_query); }
 
 protected:
     MediaQueryListListener();

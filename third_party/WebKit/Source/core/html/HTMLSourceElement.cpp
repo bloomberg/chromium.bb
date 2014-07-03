@@ -27,6 +27,10 @@
 #include "core/html/HTMLSourceElement.h"
 
 #include "core/HTMLNames.h"
+#include "core/css/MediaList.h"
+#include "core/css/MediaQueryList.h"
+#include "core/css/MediaQueryMatcher.h"
+#include "core/dom/Document.h"
 #include "core/events/Event.h"
 #include "core/events/EventSender.h"
 #include "core/html/HTMLMediaElement.h"
@@ -43,8 +47,28 @@ static SourceEventSender& sourceErrorEventSender()
     return sharedErrorEventSender;
 }
 
+class HTMLSourceElement::Listener FINAL : public MediaQueryListListener {
+public:
+    explicit Listener(HTMLSourceElement* element) : m_element(element) { }
+    virtual void call() OVERRIDE
+    {
+        if (m_element)
+            m_element->notifyMediaQueryChanged();
+    }
+
+    void clearElement() { m_element = nullptr; }
+    virtual void trace(Visitor* visitor) OVERRIDE
+    {
+        MediaQueryListListener::trace(visitor);
+        visitor->trace(m_element);
+    }
+private:
+    RawPtrWillBeMember<HTMLSourceElement> m_element;
+};
+
 inline HTMLSourceElement::HTMLSourceElement(Document& document)
     : HTMLElement(sourceTag, document)
+    , m_listener(adoptRefWillBeNoop(new Listener(this)))
 {
     WTF_LOG(Media, "HTMLSourceElement::HTMLSourceElement - %p", this);
     ScriptWrappable::init(this);
@@ -55,6 +79,7 @@ DEFINE_NODE_FACTORY(HTMLSourceElement)
 HTMLSourceElement::~HTMLSourceElement()
 {
     sourceErrorEventSender().cancelEvent(this);
+    m_listener->clearElement();
 }
 
 Node::InsertionNotificationRequest HTMLSourceElement::insertedInto(ContainerNode* insertionPoint)
@@ -114,6 +139,14 @@ void HTMLSourceElement::dispatchPendingEvent(SourceEventSender* eventSender)
     dispatchEvent(Event::createCancelable(EventTypeNames::error));
 }
 
+bool HTMLSourceElement::mediaQueryMatches() const
+{
+    if (!m_mediaQueryList)
+        return true;
+
+    return m_mediaQueryList->matches();
+}
+
 bool HTMLSourceElement::isURLAttribute(const Attribute& attribute) const
 {
     return attribute.name() == srcAttr || HTMLElement::isURLAttribute(attribute);
@@ -122,11 +155,32 @@ bool HTMLSourceElement::isURLAttribute(const Attribute& attribute) const
 void HTMLSourceElement::parseAttribute(const QualifiedName& name, const AtomicString& value)
 {
     HTMLElement::parseAttribute(name, value);
+    if (name == mediaAttr) {
+        if (m_mediaQueryList)
+            m_mediaQueryList->removeListener(m_listener);
+        RefPtrWillBeRawPtr<MediaQuerySet> set = MediaQuerySet::create(value);
+        m_mediaQueryList = MediaQueryList::create(&document().mediaQueryMatcher(), set.release());
+        m_mediaQueryList->addListener(m_listener);
+    }
     if (name == srcsetAttr || name == sizesAttr || name == mediaAttr || name == typeAttr) {
         Element* parent = parentElement();
         if (isHTMLPictureElement(parent))
             toHTMLPictureElement(parent)->sourceOrMediaChanged();
     }
+}
+
+void HTMLSourceElement::notifyMediaQueryChanged()
+{
+    Element* parent = parentElement();
+    if (isHTMLPictureElement(parent))
+        toHTMLPictureElement(parent)->sourceOrMediaChanged();
+}
+
+void HTMLSourceElement::trace(Visitor* visitor)
+{
+    HTMLElement::trace(visitor);
+    visitor->trace(m_mediaQueryList);
+    visitor->trace(m_listener);
 }
 
 }
