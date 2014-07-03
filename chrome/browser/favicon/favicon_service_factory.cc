@@ -6,7 +6,6 @@
 
 #include "base/memory/singleton.h"
 #include "base/prefs/pref_service.h"
-#include "chrome/browser/favicon/chrome_favicon_client_factory.h"
 #include "chrome/browser/favicon/favicon_service.h"
 #include "chrome/browser/history/history_service.h"
 #include "chrome/browser/history/history_service_factory.h"
@@ -41,16 +40,13 @@ FaviconServiceFactory::FaviconServiceFactory()
         "FaviconService",
         BrowserContextDependencyManager::GetInstance()) {
   DependsOn(HistoryServiceFactory::GetInstance());
-  DependsOn(ChromeFaviconClientFactory::GetInstance());
 }
 
 FaviconServiceFactory::~FaviconServiceFactory() {}
 
 KeyedService* FaviconServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* profile) const {
-  FaviconClient* favicon_client =
-      ChromeFaviconClientFactory::GetForProfile(static_cast<Profile*>(profile));
-  return new FaviconService(static_cast<Profile*>(profile), favicon_client);
+  return new FaviconService(static_cast<Profile*>(profile));
 }
 
 bool FaviconServiceFactory::ServiceIsNULLWhileTesting() const {

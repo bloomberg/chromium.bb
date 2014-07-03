@@ -22,7 +22,6 @@
 #include "chrome/browser/extensions/extension_special_storage_policy.h"
 #include "chrome/browser/extensions/extension_system_factory.h"
 #include "chrome/browser/extensions/test_extension_system.h"
-#include "chrome/browser/favicon/chrome_favicon_client_factory.h"
 #include "chrome/browser/favicon/favicon_service.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/history/chrome_history_client.h"
@@ -427,9 +426,7 @@ TestingProfile::~TestingProfile() {
 }
 
 static KeyedService* BuildFaviconService(content::BrowserContext* profile) {
-  FaviconClient* favicon_client =
-      ChromeFaviconClientFactory::GetForProfile(static_cast<Profile*>(profile));
-  return new FaviconService(static_cast<Profile*>(profile), favicon_client);
+  return new FaviconService(static_cast<Profile*>(profile));
 }
 
 void TestingProfile::CreateFaviconService() {
