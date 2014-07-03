@@ -12,6 +12,8 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
+#include "chrome/browser/favicon/chrome_favicon_client.h"
+#include "chrome/browser/favicon/chrome_favicon_client_factory.h"
 #include "chrome/browser/favicon/favicon_service.h"
 #include "chrome/browser/history/android/android_history_provider_service.h"
 #include "chrome/browser/history/android/android_history_types.h"
@@ -198,7 +200,10 @@ TEST_F(SQLiteCursorTest, Run) {
   column_names.push_back(HistoryAndBookmarkRow::GetAndroidName(
       HistoryAndBookmarkRow::FAVICON));
 
-  FaviconService* favicon_service = new FaviconService(testing_profile_);
+  FaviconClient* favicon_client =
+      ChromeFaviconClientFactory::GetForProfile(testing_profile_);
+  FaviconService* favicon_service =
+      new FaviconService(testing_profile_, favicon_client);
 
   SQLiteCursor* cursor = new SQLiteCursor(column_names, statement,
       service_.get(), favicon_service);

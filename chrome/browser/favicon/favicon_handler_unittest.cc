@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/memory/scoped_ptr.h"
+#include "chrome/browser/favicon/chrome_favicon_client.h"
 #include "chrome/browser/favicon/favicon_handler.h"
 #include "chrome/browser/favicon/favicon_service.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
@@ -1404,7 +1405,9 @@ TEST_F(FaviconHandlerTest, TestKeepDownloadedLargestFavicon) {
 }
 
 static KeyedService* BuildFaviconService(content::BrowserContext* profile) {
-  return new FaviconService(static_cast<Profile*>(profile));
+  FaviconClient* favicon_client =
+      new ChromeFaviconClient(static_cast<Profile*>(profile));
+  return new FaviconService(static_cast<Profile*>(profile), favicon_client);
 }
 
 static KeyedService* BuildHistoryService(content::BrowserContext* profile) {
