@@ -428,7 +428,7 @@ bool AutoEnrollmentClient::IsIdHashInProtobuf(
 }
 
 void AutoEnrollmentClient::UpdateBucketDownloadTimingHistograms() {
-  // The mininum time can't be 0, must be at least 1.
+  // The minimum time can't be 0, must be at least 1.
   static const base::TimeDelta kMin = base::TimeDelta::FromMilliseconds(1);
   static const base::TimeDelta kMax = base::TimeDelta::FromMinutes(5);
   // However, 0 can still be sampled.

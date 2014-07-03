@@ -92,7 +92,7 @@ class UpdateSieve {
     return it == request_from_version_.end() ? false : it->second < version;
   }
 
-  // Returns the mininum version seen across all types.
+  // Returns the minimum version seen across all types.
   int64 GetMinVersion() const {
     return min_version_;
   }

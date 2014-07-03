@@ -1126,7 +1126,7 @@ const char kSimulateOutdatedNoAU[]           = "simulate-outdated-no-au";
 const char kSpellingServiceFeedbackUrl[] = "spelling-service-feedback-url";
 
 // Specifies the number of seconds between sending batches of feedback to
-// spelling service. The default is 30 minutes. The mininum is 5 seconds. This
+// spelling service. The default is 30 minutes. The minimum is 5 seconds. This
 // switch is for temporary testing only.
 // TODO(rouslan): Remove this flag when feedback testing is complete. Revisit by
 // August 2013.

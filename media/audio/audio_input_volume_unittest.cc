@@ -149,7 +149,7 @@ TEST_F(AudioInputVolumeTest, MAYBE_InputVolumeTest) {
     double current_volume = ais->GetVolume();
     EXPECT_EQ(max_volume, current_volume);
 
-    // Set the volume to the mininum level (=0).
+    // Set the volume to the minimum level (=0).
     double new_volume = 0.0;
     ais->SetVolume(new_volume);
 #if defined(OS_LINUX)

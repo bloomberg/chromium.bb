@@ -707,7 +707,7 @@ IN_PROC_BROWSER_TEST_F(AutofillTest,
   ASSERT_EQ(3u, personal_data_manager()->GetProfiles().size());
 }
 
-// Test profiles are not merged without mininum address values.
+// Test profiles are not merged without minimum address values.
 // Mininum address values needed during aggregation are: address line 1, city,
 // state, and zip code.
 // Profiles are merged when data for address line 1 and city match.
