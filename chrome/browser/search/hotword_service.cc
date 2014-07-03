@@ -360,7 +360,9 @@ bool HotwordService::UninstallHotwordExtension(
     ExtensionService* extension_service) {
   base::string16 error;
   if (!extension_service->UninstallExtension(
-          extension_misc::kHotwordExtensionId, true, &error)) {
+          extension_misc::kHotwordExtensionId,
+          ExtensionService::UNINSTALL_REASON_INTERNAL_MANAGEMENT,
+          &error)) {
     LOG(WARNING) << "Cannot uninstall extension with id "
                  << extension_misc::kHotwordExtensionId
                  << ": " << error;
