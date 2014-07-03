@@ -81,6 +81,7 @@
       'renderer/principals_extension_bindings.cc',
       'renderer/principals_extension_bindings.h',
       'renderer/resources/extensions/app_custom_bindings.js',
+      'renderer/resources/extensions/app_view.js',
       'renderer/resources/extensions/app_window_custom_bindings.js',
       'renderer/resources/extensions/automation_custom_bindings.js',
       'renderer/resources/extensions/browser_action_custom_bindings.js',

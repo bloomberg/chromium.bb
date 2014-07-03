@@ -1636,6 +1636,7 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
       switches::kDisableBundledPpapiFlash,
       switches::kDisablePnacl,
       switches::kDisableScriptedPrintThrottling,
+      switches::kEnableAppView,
       switches::kEnableAppWindowControls,
       switches::kEnableBenchmarking,
       switches::kEnableNaCl,

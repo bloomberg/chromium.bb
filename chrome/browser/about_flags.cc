@@ -1500,6 +1500,13 @@ const Experiment kExperiments[] = {
   },
 #endif
   {
+    "enable-app-view",
+    IDS_FLAGS_ENABLE_APP_VIEW_NAME,
+    IDS_FLAGS_ENABLE_APP_VIEW_DESCRIPTION,
+    kOsAll,
+    SINGLE_VALUE_TYPE(switches::kEnableAppView)
+  },
+  {
     "disable-app-list-app-info",
     IDS_FLAGS_DISABLE_APP_INFO_IN_APP_LIST,
     IDS_FLAGS_DISABLE_APP_INFO_IN_APP_LIST_DESCRIPTION,

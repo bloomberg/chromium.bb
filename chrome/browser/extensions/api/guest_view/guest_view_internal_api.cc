@@ -13,8 +13,9 @@
 #include "extensions/common/permissions/permissions_data.h"
 
 namespace {
-const char* kWebViewPermissionRequiredError =
-    "\"webview\" permission is required for allocating instance ID.";
+const char* kPermissionRequiredError =
+    "\"webview\" or \"appview\" permission is required for allocating "
+    "instance ID.";
 }  // namespace
 
 namespace extensions {
@@ -30,10 +31,11 @@ bool GuestViewInternalCreateGuestFunction::RunAsync() {
   base::DictionaryValue* create_params;
   EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(1, &create_params));
 
-  if (!GetExtension()->permissions_data()->HasAPIPermission(
-          APIPermission::kWebView)) {
-    LOG(ERROR) << kWebViewPermissionRequiredError;
-    error_ = kWebViewPermissionRequiredError;
+  const PermissionsData* permissions_data = GetExtension()->permissions_data();
+  if (!permissions_data->HasAPIPermission(APIPermission::kWebView) &&
+      !permissions_data->HasAPIPermission(APIPermission::kAppView)) {
+    LOG(ERROR) << kPermissionRequiredError;
+    error_ = kPermissionRequiredError;
     SendResponse(false);
   }
 

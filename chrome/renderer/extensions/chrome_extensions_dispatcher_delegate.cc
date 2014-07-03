@@ -235,6 +235,7 @@ void ChromeExtensionsDispatcherDelegate::PopulateSourceMap(
                              IDR_CHROME_DIRECT_SETTING_JS);
 
   // Platform app sources that are not API-specific..
+  source_map->RegisterSource("appView", IDR_APP_VIEW_JS);
   source_map->RegisterSource("tagWatcher", IDR_TAG_WATCHER_JS);
   source_map->RegisterSource("webViewInternal",
                              IDR_WEB_VIEW_INTERNAL_CUSTOM_BINDINGS_JS);
@@ -246,6 +247,7 @@ void ChromeExtensionsDispatcherDelegate::PopulateSourceMap(
                              IDR_WEB_VIEW_EXPERIMENTAL_JS);
   source_map->RegisterSource("webViewRequest",
                              IDR_WEB_VIEW_REQUEST_CUSTOM_BINDINGS_JS);
+  source_map->RegisterSource("denyAppView", IDR_APP_VIEW_DENY_JS);
   source_map->RegisterSource("denyWebView", IDR_WEB_VIEW_DENY_JS);
   source_map->RegisterSource("injectAppTitlebar", IDR_INJECT_APP_TITLEBAR_JS);
 }
@@ -255,6 +257,9 @@ void ChromeExtensionsDispatcherDelegate::RequireAdditionalModules(
     const extensions::Extension* extension,
     extensions::Feature::Context context_type,
     bool is_within_platform_app) {
+  // TODO(kalman, fsamuel): Eagerly calling Require on context startup is
+  // expensive. It would be better if there were a light way of detecting when
+  // a webview or appview is created and only then set up the infrastructure.
   if (context_type == extensions::Feature::BLESSED_EXTENSION_CONTEXT &&
       is_within_platform_app &&
       extensions::GetCurrentChannel() <= chrome::VersionInfo::CHANNEL_DEV &&
@@ -292,6 +297,16 @@ void ChromeExtensionsDispatcherDelegate::RequireAdditionalModules(
       }
     } else {
       module_system->Require("denyWebView");
+    }
+  }
+
+  if (context_type == extensions::Feature::BLESSED_EXTENSION_CONTEXT) {
+    if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableAppView) &&
+        extension->permissions_data()->HasAPIPermission(
+            extensions::APIPermission::kAppView)) {
+      module_system->Require("appView");
+    } else {
+      module_system->Require("denyAppView");
     }
   }
 }

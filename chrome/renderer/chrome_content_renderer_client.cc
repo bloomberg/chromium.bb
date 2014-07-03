@@ -503,6 +503,7 @@ bool ChromeContentRendererClient::OverrideCreatePlugin(
         GetExtensionByOrigin(document.securityOrigin());
     if (extension) {
       const extensions::APIPermission::ID perms[] = {
+        extensions::APIPermission::kAppView,
         extensions::APIPermission::kWebView,
       };
       for (size_t i = 0; i < arraysize(perms); ++i) {

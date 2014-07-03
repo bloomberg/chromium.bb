@@ -805,8 +805,8 @@ function registerBrowserPluginElement() {
   };
 
   WebViewInternal.BrowserPlugin =
-      DocumentNatives.RegisterElement('browser-plugin', {extends: 'object',
-                                                         prototype: proto});
+      DocumentNatives.RegisterElement('browserplugin', {extends: 'object',
+                                                        prototype: proto});
 
   delete proto.createdCallback;
   delete proto.attachedCallback;

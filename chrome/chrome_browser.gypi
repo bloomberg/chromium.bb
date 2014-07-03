@@ -1708,6 +1708,8 @@
       'browser/content_settings/content_settings_custom_extension_provider.h',
       'browser/content_settings/content_settings_internal_extension_provider.cc',
       'browser/content_settings/content_settings_internal_extension_provider.h',
+      'browser/guest_view/app_view/app_view_guest.cc',
+      'browser/guest_view/app_view/app_view_guest.h',
       'browser/guest_view/guest_view_constants.cc',
       'browser/guest_view/guest_view_constants.h',
       'browser/guest_view/guest_view_base.cc',

@@ -830,7 +830,9 @@ void Dispatcher::UpdateOriginPermissions(
 
 void Dispatcher::EnableCustomElementWhiteList() {
   blink::WebCustomElement::addEmbedderCustomElementName("webview");
-  blink::WebCustomElement::addEmbedderCustomElementName("browser-plugin");
+  blink::WebCustomElement::addEmbedderCustomElementName("appview");
+  blink::WebCustomElement::addEmbedderCustomElementName("appplugin");
+  blink::WebCustomElement::addEmbedderCustomElementName("browserplugin");
 }
 
 void Dispatcher::UpdateBindings(const std::string& extension_id) {

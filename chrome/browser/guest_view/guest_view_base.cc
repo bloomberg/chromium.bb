@@ -4,12 +4,15 @@
 
 #include "chrome/browser/guest_view/guest_view_base.h"
 
+#include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/guest_view/app_view/app_view_guest.h"
 #include "chrome/browser/guest_view/guest_view_constants.h"
 #include "chrome/browser/guest_view/guest_view_manager.h"
 #include "chrome/browser/guest_view/web_view/web_view_guest.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/content_settings.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
@@ -124,8 +127,14 @@ GuestViewBase* GuestViewBase::Create(
     content::BrowserContext* browser_context,
     int guest_instance_id,
     const std::string& view_type) {
-  if (view_type == "webview") {
+  if (view_type == WebViewGuest::Type) {
     return new WebViewGuest(browser_context, guest_instance_id);
+  } else if (view_type == AppViewGuest::Type) {
+    if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+        switches::kEnableAppView)) {
+      return NULL;
+    }
+    return new AppViewGuest(browser_context, guest_instance_id);
   }
   NOTREACHED();
   return NULL;

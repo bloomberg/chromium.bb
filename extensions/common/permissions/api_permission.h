@@ -42,6 +42,7 @@ class APIPermission {
     kActivityLogPrivate,
     kAlarms,
     kAlwaysOnTopWindows,
+    kAppView,
     kAudio,
     kAudioCapture,
     kAutomation,

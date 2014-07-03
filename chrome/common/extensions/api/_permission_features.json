@@ -51,6 +51,10 @@
       "5107DE9024C329EEA9C9A72D94C16723790C6422"  // Apps Developer Tool Dev.
     ]
   },
+  "appview": {
+    "channel": "dev",
+    "extension_types": ["platform_app"]
+  },
   "alarms": {
     "channel": "stable",
     "extension_types": ["extension", "legacy_packaged_app", "platform_app"],
