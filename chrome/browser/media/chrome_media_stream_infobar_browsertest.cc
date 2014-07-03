@@ -105,14 +105,7 @@ class MediaStreamInfoBarTest : public WebRtcTestBase {
 
 // Actual tests ---------------------------------------------------------------
 
-// Failing on Win Aura, so disabling on that.
-// See http://crbug.com/263333.
-#if defined(OS_WIN) && defined(USE_AURA)
-#define MAYBE_TestAllowingUserMedia DISABLED_TestAllowingUserMedia
-#else
-#define MAYBE_TestAllowingUserMedia TestAllowingUserMedia
-#endif
-IN_PROC_BROWSER_TEST_F(MediaStreamInfoBarTest, MAYBE_TestAllowingUserMedia) {
+IN_PROC_BROWSER_TEST_F(MediaStreamInfoBarTest, TestAllowingUserMedia) {
   content::WebContents* tab_contents = LoadTestPageInTab();
   GetUserMediaAndAccept(tab_contents);
 }
@@ -132,17 +125,8 @@ IN_PROC_BROWSER_TEST_F(MediaStreamInfoBarTest, TestDenyingUserMediaIncognito) {
   GetUserMediaAndDeny(tab_contents);
 }
 
-// Failing on Win Aura, so disabling on that.
-// See http://crbug.com/263333.
-#if defined(OS_WIN) && defined(USE_AURA)
-#define MAYBE_TestAcceptThenDenyWhichShouldBeSticky \
-  DISABLED_TestAcceptThenDenyWhichShouldBeSticky
-#else
-#define MAYBE_TestAcceptThenDenyWhichShouldBeSticky \
-  TestAcceptThenDenyWhichShouldBeSticky
-#endif
 IN_PROC_BROWSER_TEST_F(MediaStreamInfoBarTest,
-                       MAYBE_TestAcceptThenDenyWhichShouldBeSticky) {
+                       TestAcceptThenDenyWhichShouldBeSticky) {
 #if defined(OS_WIN) && defined(USE_ASH)
   // Disable this test in Metro+Ash for now (http://crbug.com/262796).
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kAshBrowserTests))
@@ -164,14 +148,7 @@ IN_PROC_BROWSER_TEST_F(MediaStreamInfoBarTest,
   EXPECT_EQ(0u, infobar_service->infobar_count());
 }
 
-// Failing on Win Aura, so disabling on that.
-// See http://crbug.com/263333.
-#if defined(OS_WIN) && defined(USE_AURA)
-#define MAYBE_TestAcceptIsNotSticky DISABLED_TestAcceptIsNotSticky
-#else
-#define MAYBE_TestAcceptIsNotSticky TestAcceptIsNotSticky
-#endif
-IN_PROC_BROWSER_TEST_F(MediaStreamInfoBarTest, MAYBE_TestAcceptIsNotSticky) {
+IN_PROC_BROWSER_TEST_F(MediaStreamInfoBarTest, TestAcceptIsNotSticky) {
   content::WebContents* tab_contents = LoadTestPageInTab();
 
   // If accept were sticky the second call would hang because it hangs if an
