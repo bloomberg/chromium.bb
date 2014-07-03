@@ -152,9 +152,10 @@ void SharedModuleService::OnExtensionUninstalled(
       scoped_ptr<ExtensionSet> dependents =
           GetDependentExtensions(imported_module);
       if (dependents->is_empty()) {
-        service->UninstallExtension(iter->extension_id,
-                                    true,  // External uninstall.
-                                    NULL);  // Ignore error.
+        service->UninstallExtension(
+            iter->extension_id,
+            ExtensionService::UNINSTALL_REASON_ORPHANED_SHARED_MODULE,
+            NULL);  // Ignore error.
       }
     }
   }

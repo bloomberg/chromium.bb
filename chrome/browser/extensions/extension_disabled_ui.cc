@@ -365,7 +365,10 @@ bool ExtensionDisabledGlobalError::ShouldCloseOnDeactivate() const {
 }
 
 void ExtensionDisabledGlobalError::ExtensionUninstallAccepted() {
-  service_->UninstallExtension(extension_->id(), false, NULL);
+  service_->UninstallExtension(
+      extension_->id(),
+      ExtensionService::UNINSTALL_REASON_EXTENSION_DISABLED,
+      NULL);
 }
 
 void ExtensionDisabledGlobalError::ExtensionUninstallCanceled() {

@@ -449,7 +449,8 @@ bool ExtensionSyncService::ProcessExtensionSyncDataHelper(
 
   // Handle uninstalls first.
   if (extension_sync_data.uninstalled()) {
-    if (!extension_service_->UninstallExtensionHelper(extension_service_, id)) {
+    if (!extension_service_->UninstallExtensionHelper(
+            extension_service_, id, ExtensionService::UNINSTALL_REASON_SYNC)) {
       LOG(WARNING) << "Could not uninstall extension " << id
                    << " for sync";
     }
