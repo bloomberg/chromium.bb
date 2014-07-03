@@ -12,6 +12,7 @@
 namespace WebCore {
 
 class Document;
+class Event;
 class ExecutionContext;
 class FrameView;
 class GraphicsContext;
@@ -136,6 +137,11 @@ public:
 class InspectorCallStackEvent {
 public:
     static PassRefPtr<TraceEvent::ConvertableToTraceFormat> currentCallStack();
+};
+
+class InspectorEventDispatchEvent {
+public:
+    static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(const Event&);
 };
 
 } // namespace WebCore

@@ -8,6 +8,7 @@
 #include "bindings/core/v8/ScriptCallStackFactory.h"
 #include "bindings/core/v8/ScriptGCEvent.h"
 #include "bindings/core/v8/ScriptSourceCode.h"
+#include "core/events/Event.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/inspector/IdentifiersFactory.h"
@@ -336,6 +337,11 @@ PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorUpdateCountersEvent::d
 PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorCallStackEvent::currentCallStack()
 {
     return adoptRef(new JSCallStack(createScriptCallStack(ScriptCallStack::maxCallStackSizeToCapture, true)));
+}
+
+PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorEventDispatchEvent::data(const Event& event)
+{
+    return TracedValue().setString("type", event.type()).finish();
 }
 
 }

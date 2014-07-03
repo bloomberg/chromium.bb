@@ -46,7 +46,7 @@ function test()
 
         function windowEventFilter(type, e)
         {
-            return e.name === "EventDispatch" && e.args.type === type;
+            return e.name === "EventDispatch" && e.args.data.type === type;
         };
 
         var windowEventNames = [ "click", "beforeunload", "unload", "load" ];
@@ -68,7 +68,7 @@ function test()
     {
         var formattedEvents = devtoolsEvents.map(function(e)
         {
-            return e.name + "(" + e.args.type + ")";
+            return e.name + "(" + e.args.data.type + ")";
         });
         InspectorTest.log("FAIL: " + message + " devtools.timeline events: " + JSON.stringify(formattedEvents, null, 2));
     }

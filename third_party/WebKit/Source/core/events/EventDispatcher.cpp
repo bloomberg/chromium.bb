@@ -116,7 +116,7 @@ bool EventDispatcher::dispatch()
     ASSERT(!NoEventDispatchAssertion::isEventDispatchForbidden());
     ASSERT(m_event->target());
     WindowEventContext windowEventContext(m_event.get(), m_node.get(), topNodeEventContext());
-    TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "EventDispatch", "type", m_event->type().ascii());
+    TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "EventDispatch", "data", InspectorEventDispatchEvent::data(*m_event));
     // FIXME(361045): remove InspectorInstrumentation calls once DevTools Timeline migrates to tracing.
     InspectorInstrumentationCookie cookie = InspectorInstrumentation::willDispatchEvent(&m_node->document(), *m_event, windowEventContext.window(), m_node.get(), m_event->eventPath());
 
