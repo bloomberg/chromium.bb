@@ -724,7 +724,7 @@ TEST_F(ServiceWorkerJobTest, UnregisterSetsRedundant) {
   ASSERT_EQ(SERVICE_WORKER_OK, status);
 
   version->SetStatus(ServiceWorkerVersion::INSTALLED);
-  registration->set_waiting_version(version);
+  registration->SetWaitingVersion(version);
   EXPECT_EQ(ServiceWorkerVersion::RUNNING,
             version->running_status());
   EXPECT_EQ(ServiceWorkerVersion::INSTALLED, version->status());

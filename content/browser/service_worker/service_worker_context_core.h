@@ -75,7 +75,7 @@ class CONTENT_EXPORT ServiceWorkerContextCore
     void Initialize();
 
     ProcessToProviderMap* map_;
-    scoped_ptr<ProcessToProviderMap::iterator> provider_iterator_;
+    scoped_ptr<ProcessToProviderMap::iterator> process_iterator_;
     scoped_ptr<ProviderMap::iterator> provider_host_iterator_;
 
     DISALLOW_COPY_AND_ASSIGN(ProviderHostIterator);

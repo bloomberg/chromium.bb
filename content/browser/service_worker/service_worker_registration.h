@@ -12,6 +12,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "content/browser/service_worker/service_worker_version.h"
 #include "content/common/content_export.h"
+#include "content/common/service_worker/service_worker_types.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -35,6 +36,15 @@ class ServiceWorkerVersion;
 class CONTENT_EXPORT ServiceWorkerRegistration
     : NON_EXPORTED_BASE(public base::RefCounted<ServiceWorkerRegistration>) {
  public:
+
+  class Listener {
+   public:
+    virtual void OnVersionAttributesChanged(
+        ServiceWorkerRegistration* registration,
+        ChangedVersionAttributesMask changed_mask,
+        const ServiceWorkerRegistrationInfo& info)  = 0;
+  };
+
   ServiceWorkerRegistration(const GURL& pattern,
                             const GURL& script_url,
                             int64 registration_id,
@@ -45,47 +55,54 @@ class CONTENT_EXPORT ServiceWorkerRegistration
   const GURL& pattern() const { return pattern_; }
 
   ServiceWorkerVersion* active_version() const {
-    DCHECK(!is_shutdown_);
     return active_version_.get();
   }
 
   ServiceWorkerVersion* waiting_version() const {
-    DCHECK(!is_shutdown_);
     return waiting_version_.get();
   }
 
-  void set_active_version(ServiceWorkerVersion* version) {
-    DCHECK(!is_shutdown_);
-    active_version_ = version;
+  ServiceWorkerVersion* installing_version() const {
+    return installing_version_.get();
   }
 
-  void set_waiting_version(ServiceWorkerVersion* version) {
-    DCHECK(!is_shutdown_);
-    waiting_version_ = version;
-  }
+  void AddListener(Listener* listener);
+  void RemoveListener(Listener* listener);
 
   ServiceWorkerRegistrationInfo GetInfo();
 
-  // Returns the active version, if it is not null; otherwise, returns the
-  // waiting version.
-  ServiceWorkerVersion* GetNewestVersion();
+  // Sets the corresposding version attribute and resets the position (if any)
+  // left vacant (ie. by a waiting version being promoted).
+  // Also notifies listeners via OnVersionAttributesChanged.
+  void SetActiveVersion(ServiceWorkerVersion* version);
+  void SetWaitingVersion(ServiceWorkerVersion* version);
+  void SetInstallingVersion(ServiceWorkerVersion* version);
 
-  // The final synchronous switchover after all events have been
-  // fired, and the old "active version" is being shut down.
-  void ActivateWaitingVersion();
+  // If version is the installing, waiting, active version of this
+  // registation, the method will reset that field to NULL, and notify
+  // listeners via OnVersionAttributesChanged.
+  void UnsetVersion(ServiceWorkerVersion* version);
+
 
  private:
   ~ServiceWorkerRegistration();
   friend class base::RefCounted<ServiceWorkerRegistration>;
 
+  void SetVersionInternal(
+      ServiceWorkerVersion* version,
+      scoped_refptr<ServiceWorkerVersion>* data_member,
+      int change_flag);
+  void UnsetVersionInternal(
+      ServiceWorkerVersion* version,
+      ChangedVersionAttributesMask* mask);
+
   const GURL pattern_;
   const GURL script_url_;
   const int64 registration_id_;
-
   scoped_refptr<ServiceWorkerVersion> active_version_;
   scoped_refptr<ServiceWorkerVersion> waiting_version_;
-
-  bool is_shutdown_;
+  scoped_refptr<ServiceWorkerVersion> installing_version_;
+  ObserverList<Listener> listeners_;
   base::WeakPtr<ServiceWorkerContextCore> context_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerRegistration);

@@ -746,9 +746,9 @@ ServiceWorkerStorage::GetOrCreateRegistration(
   }
 
   if (version->status() == ServiceWorkerVersion::ACTIVE)
-    registration->set_active_version(version);
+    registration->SetActiveVersion(version);
   else if (version->status() == ServiceWorkerVersion::INSTALLED)
-    registration->set_waiting_version(version);
+    registration->SetWaitingVersion(version);
   else
     NOTREACHED();
   // TODO(michaeln): Hmmm, what if DeleteReg was invoked after

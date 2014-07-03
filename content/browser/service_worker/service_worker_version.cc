@@ -393,12 +393,12 @@ void ServiceWorkerVersion::RemoveControllee(
   }
 }
 
-void ServiceWorkerVersion::AddWaitingControllee(
+void ServiceWorkerVersion::AddPotentialControllee(
     ServiceWorkerProviderHost* provider_host) {
   AddProcessToWorker(provider_host->process_id());
 }
 
-void ServiceWorkerVersion::RemoveWaitingControllee(
+void ServiceWorkerVersion::RemovePotentialControllee(
     ServiceWorkerProviderHost* provider_host) {
   RemoveProcessFromWorker(provider_host->process_id());
 }

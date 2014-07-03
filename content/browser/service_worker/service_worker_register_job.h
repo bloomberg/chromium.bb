@@ -62,9 +62,9 @@ class ServiceWorkerRegisterJob
 
  private:
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerProviderHostWaitingVersionTest,
-                           AssociateWaitingVersionToDocuments);
+                           AssociateInstallingVersionToDocuments);
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerProviderHostWaitingVersionTest,
-                           DisassociateWaitingVersionFromDocuments);
+                           DisassociateVersionFromDocuments);
 
   enum Phase {
      INITIAL,
@@ -86,13 +86,13 @@ class ServiceWorkerRegisterJob
     scoped_refptr<ServiceWorkerRegistration> registration;
 
     // Holds 'installing' or 'waiting' version depending on the phase.
-    scoped_refptr<ServiceWorkerVersion> pending_version;
+    scoped_refptr<ServiceWorkerVersion> new_version;
   };
 
   void set_registration(ServiceWorkerRegistration* registration);
   ServiceWorkerRegistration* registration();
-  void set_pending_version(ServiceWorkerVersion* version);
-  ServiceWorkerVersion* pending_version();
+  void set_new_version(ServiceWorkerVersion* version);
+  ServiceWorkerVersion* new_version();
 
   void SetPhase(Phase phase);
 
@@ -120,14 +120,14 @@ class ServiceWorkerRegisterJob
 
   // Associates a waiting version to documents matched with a scope of the
   // version.
-  CONTENT_EXPORT static void AssociateWaitingVersionToDocuments(
+  CONTENT_EXPORT static void AssociateInstallingVersionToDocuments(
       base::WeakPtr<ServiceWorkerContextCore> context,
       ServiceWorkerVersion* version);
 
-  // Disassociates a waiting version specified by |version_id| from documents.
-  CONTENT_EXPORT static void DisassociateWaitingVersionFromDocuments(
+  // Disassociates a version specified by |version_id| from documents.
+  CONTENT_EXPORT static void DisassociateVersionFromDocuments(
       base::WeakPtr<ServiceWorkerContextCore> context,
-      int64 version_id);
+      ServiceWorkerVersion* version);
 
   // The ServiceWorkerContextCore object should always outlive this.
   base::WeakPtr<ServiceWorkerContextCore> context_;

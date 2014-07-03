@@ -38,10 +38,6 @@ class ServiceWorkerVersionInfo;
 // more than one ServiceWorkerVersion "running" at a time, but only
 // one of them is active. This class connects the actual script with a
 // running worker.
-//
-// is_shutdown_ detects the live-ness of the object itself. If the object is
-// shut down, then it is in the process of being deleted from memory.
-// This happens when a version is replaced as well as at browser shutdown.
 class CONTENT_EXPORT ServiceWorkerVersion
     : NON_EXPORTED_BASE(public base::RefCounted<ServiceWorkerVersion>),
       public EmbeddedWorkerInstance::Listener {
@@ -205,10 +201,12 @@ class CONTENT_EXPORT ServiceWorkerVersion
   bool HasProcessToRun() const;
 
   // Adds and removes |provider_host| as a controllee of this ServiceWorker.
+  // A potential controllee is a host having the version as its .installing
+  // or .waiting version.
   void AddControllee(ServiceWorkerProviderHost* provider_host);
   void RemoveControllee(ServiceWorkerProviderHost* provider_host);
-  void AddWaitingControllee(ServiceWorkerProviderHost* provider_host);
-  void RemoveWaitingControllee(ServiceWorkerProviderHost* provider_host);
+  void AddPotentialControllee(ServiceWorkerProviderHost* provider_host);
+  void RemovePotentialControllee(ServiceWorkerProviderHost* provider_host);
 
   // Returns if it has controllee.
   bool HasControllee() const { return !controllee_map_.empty(); }

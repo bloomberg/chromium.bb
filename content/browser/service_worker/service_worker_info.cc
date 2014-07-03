@@ -44,12 +44,14 @@ ServiceWorkerRegistrationInfo::ServiceWorkerRegistrationInfo(
     const GURL& pattern,
     int64 registration_id,
     const ServiceWorkerVersionInfo& active_version,
-    const ServiceWorkerVersionInfo& waiting_version)
+    const ServiceWorkerVersionInfo& waiting_version,
+    const ServiceWorkerVersionInfo& installing_version)
     : script_url(script_url),
       pattern(pattern),
       registration_id(registration_id),
       active_version(active_version),
-      waiting_version(waiting_version) {
+      waiting_version(waiting_version),
+      installing_version(installing_version) {
 }
 
 ServiceWorkerRegistrationInfo::~ServiceWorkerRegistrationInfo() {}

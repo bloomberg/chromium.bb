@@ -200,7 +200,7 @@ class ServiceWorkerProviderHostWaitingVersionTest : public testing::Test {
 };
 
 TEST_F(ServiceWorkerProviderHostWaitingVersionTest,
-       AssociateWaitingVersionToDocuments) {
+       AssociateInstallingVersionToDocuments) {
   const GURL scope1("http://www.example.com/*");
   const GURL script_url1("http://www.example.com/service_worker1.js");
   scoped_refptr<ServiceWorkerRegistration> registration1(
@@ -209,21 +209,21 @@ TEST_F(ServiceWorkerProviderHostWaitingVersionTest,
   scoped_refptr<ServiceWorkerVersion> version1(
       new ServiceWorkerVersion(registration1, 1L, context_->AsWeakPtr()));
 
-  ServiceWorkerRegisterJob::AssociateWaitingVersionToDocuments(
-      context_->AsWeakPtr(), version1.get());
-  EXPECT_EQ(version1.get(), provider_host1_->waiting_version());
-  EXPECT_EQ(version1.get(), provider_host2_->waiting_version());
-  EXPECT_EQ(NULL, provider_host3_->waiting_version());
+  ServiceWorkerRegisterJob::AssociateInstallingVersionToDocuments(
+      context_->AsWeakPtr(), version1);
+  EXPECT_EQ(version1.get(), provider_host1_->installing_version());
+  EXPECT_EQ(version1.get(), provider_host2_->installing_version());
+  EXPECT_EQ(NULL, provider_host3_->installing_version());
 
   // Version2 is associated with the same registration as version1, so the
   // waiting version of host1 and host2 should be replaced.
   scoped_refptr<ServiceWorkerVersion> version2(
       new ServiceWorkerVersion(registration1, 2L, context_->AsWeakPtr()));
-  ServiceWorkerRegisterJob::AssociateWaitingVersionToDocuments(
-      context_->AsWeakPtr(), version2.get());
-  EXPECT_EQ(version2.get(), provider_host1_->waiting_version());
-  EXPECT_EQ(version2.get(), provider_host2_->waiting_version());
-  EXPECT_EQ(NULL, provider_host3_->waiting_version());
+  ServiceWorkerRegisterJob::AssociateInstallingVersionToDocuments(
+      context_->AsWeakPtr(), version2);
+  EXPECT_EQ(version2.get(), provider_host1_->installing_version());
+  EXPECT_EQ(version2.get(), provider_host2_->installing_version());
+  EXPECT_EQ(NULL, provider_host3_->installing_version());
 
   const GURL scope3(provider_host1_->document_url());
   const GURL script_url3("http://www.example.com/service_worker3.js");
@@ -236,15 +236,15 @@ TEST_F(ServiceWorkerProviderHostWaitingVersionTest,
   // Although version3 can match longer than version2 for host1, it should be
   // ignored because version3 is associated with a different registration from
   // version2.
-  ServiceWorkerRegisterJob::AssociateWaitingVersionToDocuments(
-      context_->AsWeakPtr(), version3.get());
-  EXPECT_EQ(version2.get(), provider_host1_->waiting_version());
-  EXPECT_EQ(version2.get(), provider_host2_->waiting_version());
-  EXPECT_EQ(NULL, provider_host3_->waiting_version());
+  ServiceWorkerRegisterJob::AssociateInstallingVersionToDocuments(
+      context_->AsWeakPtr(), version3);
+  EXPECT_EQ(version2.get(), provider_host1_->installing_version());
+  EXPECT_EQ(version2.get(), provider_host2_->installing_version());
+  EXPECT_EQ(NULL, provider_host3_->installing_version());
 }
 
 TEST_F(ServiceWorkerProviderHostWaitingVersionTest,
-       DisassociateWaitingVersionFromDocuments) {
+       DisassociateVersionFromDocuments) {
   const GURL scope1("http://www.example.com/*");
   const GURL script_url1("http://www.example.com/service_worker.js");
   scoped_refptr<ServiceWorkerRegistration> registration1(
@@ -261,23 +261,23 @@ TEST_F(ServiceWorkerProviderHostWaitingVersionTest,
   scoped_refptr<ServiceWorkerVersion> version2(
       new ServiceWorkerVersion(registration2, 2L, context_->AsWeakPtr()));
 
-  ServiceWorkerRegisterJob::AssociateWaitingVersionToDocuments(
-      context_->AsWeakPtr(), version1.get());
-  ServiceWorkerRegisterJob::AssociateWaitingVersionToDocuments(
-      context_->AsWeakPtr(), version2.get());
+  ServiceWorkerRegisterJob::AssociateInstallingVersionToDocuments(
+      context_->AsWeakPtr(), version1);
+  ServiceWorkerRegisterJob::AssociateInstallingVersionToDocuments(
+      context_->AsWeakPtr(), version2);
 
   // Host1 and host2 are associated with version1 as a waiting version, whereas
   // host3 is associated with version2.
-  EXPECT_EQ(version1.get(), provider_host1_->waiting_version());
-  EXPECT_EQ(version1.get(), provider_host2_->waiting_version());
-  EXPECT_EQ(version2.get(), provider_host3_->waiting_version());
+  EXPECT_EQ(version1.get(), provider_host1_->installing_version());
+  EXPECT_EQ(version1.get(), provider_host2_->installing_version());
+  EXPECT_EQ(version2.get(), provider_host3_->installing_version());
 
   // Disassociate version1 from host1 and host2.
-  ServiceWorkerRegisterJob::DisassociateWaitingVersionFromDocuments(
-      context_->AsWeakPtr(), version1->version_id());
-  EXPECT_EQ(NULL, provider_host1_->waiting_version());
-  EXPECT_EQ(NULL, provider_host2_->waiting_version());
-  EXPECT_EQ(version2.get(), provider_host3_->waiting_version());
+  ServiceWorkerRegisterJob::DisassociateVersionFromDocuments(
+      context_->AsWeakPtr(), version1);
+  EXPECT_EQ(NULL, provider_host1_->installing_version());
+  EXPECT_EQ(NULL, provider_host2_->installing_version());
+  EXPECT_EQ(version2.get(), provider_host3_->installing_version());
 }
 
 }  // namespace content

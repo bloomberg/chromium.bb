@@ -306,7 +306,7 @@ TEST_F(ServiceWorkerStorageTest, StoreFindUpdateDeleteRegistration) {
       new ServiceWorkerVersion(
           live_registration, kVersionId, context_ptr_);
   live_version->SetStatus(ServiceWorkerVersion::INSTALLED);
-  live_registration->set_waiting_version(live_version);
+  live_registration->SetWaitingVersion(live_version);
   EXPECT_EQ(SERVICE_WORKER_OK,
             StoreRegistration(live_registration, live_version));
 
@@ -360,9 +360,8 @@ TEST_F(ServiceWorkerStorageTest, StoreFindUpdateDeleteRegistration) {
   // Update to active.
   scoped_refptr<ServiceWorkerVersion> temp_version =
       found_registration->waiting_version();
-  found_registration->set_waiting_version(NULL);
   temp_version->SetStatus(ServiceWorkerVersion::ACTIVE);
-  found_registration->set_active_version(temp_version);
+  found_registration->SetActiveVersion(temp_version);
   temp_version = NULL;
   EXPECT_EQ(SERVICE_WORKER_OK, UpdateToActiveState(found_registration));
   found_registration = NULL;
@@ -420,7 +419,7 @@ TEST_F(ServiceWorkerStorageTest, InstallingRegistrationsAreFindable) {
       new ServiceWorkerVersion(
           live_registration, kVersionId, context_ptr_);
   live_version->SetStatus(ServiceWorkerVersion::INSTALLING);
-  live_registration->set_waiting_version(live_version);
+  live_registration->SetWaitingVersion(live_version);
 
   // Should not be findable, including by GetAllRegistrations.
   EXPECT_EQ(SERVICE_WORKER_ERROR_NOT_FOUND,
@@ -581,8 +580,7 @@ TEST_F(ServiceWorkerResourceStorageTest, DeleteRegistration_WaitingVersion) {
 
 TEST_F(ServiceWorkerResourceStorageTest, DeleteRegistration_ActiveVersion) {
   // Promote the worker to active and add a controllee.
-  registration_->set_active_version(registration_->waiting_version());
-  registration_->set_waiting_version(NULL);
+  registration_->SetActiveVersion(registration_->waiting_version());
   storage()->UpdateToActiveState(
       registration_, base::Bind(&ServiceWorkerUtils::NoOpStatusCallback));
   scoped_ptr<ServiceWorkerProviderHost> host(
@@ -632,8 +630,7 @@ TEST_F(ServiceWorkerResourceStorageTest, DeleteRegistration_ActiveVersion) {
 
 TEST_F(ServiceWorkerResourceStorageTest, UpdateRegistration) {
   // Promote the worker to active worker and add a controllee.
-  registration_->set_active_version(registration_->waiting_version());
-  registration_->set_waiting_version(NULL);
+  registration_->SetActiveVersion(registration_->waiting_version());
   storage()->UpdateToActiveState(
       registration_, base::Bind(&ServiceWorkerUtils::NoOpStatusCallback));
   scoped_ptr<ServiceWorkerProviderHost> host(
@@ -651,7 +648,7 @@ TEST_F(ServiceWorkerResourceStorageTest, UpdateRegistration) {
   scoped_refptr<ServiceWorkerVersion> live_version = new ServiceWorkerVersion(
       registration_, storage()->NewVersionId(), context_ptr_);
   live_version->SetStatus(ServiceWorkerVersion::NEW);
-  registration_->set_waiting_version(live_version);
+  registration_->SetWaitingVersion(live_version);
 
   // Writing the registration should move the old version's resources to the
   // purgeable list but keep them available.
@@ -704,7 +701,7 @@ TEST_F(ServiceWorkerStorageTest, FindRegistration_LongestScopeMatch) {
       new ServiceWorkerVersion(
           live_registration1, kVersionId1, context_ptr_);
   live_version1->SetStatus(ServiceWorkerVersion::INSTALLED);
-  live_registration1->set_waiting_version(live_version1);
+  live_registration1->SetWaitingVersion(live_version1);
 
   // Registration for "/scope/foo*".
   const GURL kScope2("http://www.example.com/scope/foo*");
@@ -718,7 +715,7 @@ TEST_F(ServiceWorkerStorageTest, FindRegistration_LongestScopeMatch) {
       new ServiceWorkerVersion(
           live_registration2, kVersionId2, context_ptr_);
   live_version2->SetStatus(ServiceWorkerVersion::INSTALLED);
-  live_registration2->set_waiting_version(live_version2);
+  live_registration2->SetWaitingVersion(live_version2);
 
   // Registration for "/scope/foo".
   const GURL kScope3("http://www.example.com/scope/foo");
@@ -732,7 +729,7 @@ TEST_F(ServiceWorkerStorageTest, FindRegistration_LongestScopeMatch) {
       new ServiceWorkerVersion(
           live_registration3, kVersionId3, context_ptr_);
   live_version3->SetStatus(ServiceWorkerVersion::INSTALLED);
-  live_registration3->set_waiting_version(live_version3);
+  live_registration3->SetWaitingVersion(live_version3);
 
   // Notify storage of they being installed.
   storage()->NotifyInstallingRegistration(live_registration1);

@@ -33,7 +33,7 @@ ServiceWorkerContextCore::ProviderHostIterator::GetProviderHost() {
 void ServiceWorkerContextCore::ProviderHostIterator::Advance() {
   DCHECK(!IsAtEnd());
   DCHECK(!provider_host_iterator_->IsAtEnd());
-  DCHECK(!provider_iterator_->IsAtEnd());
+  DCHECK(!process_iterator_->IsAtEnd());
 
   // Advance the inner iterator. If an element is reached, we're done.
   provider_host_iterator_->Advance();
@@ -42,10 +42,10 @@ void ServiceWorkerContextCore::ProviderHostIterator::Advance() {
 
   // Advance the outer iterator until an element is reached, or end is hit.
   while (true) {
-    provider_iterator_->Advance();
-    if (provider_iterator_->IsAtEnd())
+    process_iterator_->Advance();
+    if (process_iterator_->IsAtEnd())
       return;
-    ProviderMap* provider_map = provider_iterator_->GetCurrentValue();
+    ProviderMap* provider_map = process_iterator_->GetCurrentValue();
     provider_host_iterator_.reset(new ProviderMap::iterator(provider_map));
     if (!provider_host_iterator_->IsAtEnd())
       return;
@@ -53,7 +53,7 @@ void ServiceWorkerContextCore::ProviderHostIterator::Advance() {
 }
 
 bool ServiceWorkerContextCore::ProviderHostIterator::IsAtEnd() {
-  return provider_iterator_->IsAtEnd() &&
+  return process_iterator_->IsAtEnd() &&
          (!provider_host_iterator_ || provider_host_iterator_->IsAtEnd());
 }
 
@@ -65,14 +65,14 @@ ServiceWorkerContextCore::ProviderHostIterator::ProviderHostIterator(
 }
 
 void ServiceWorkerContextCore::ProviderHostIterator::Initialize() {
-  provider_iterator_.reset(new ProcessToProviderMap::iterator(map_));
+  process_iterator_.reset(new ProcessToProviderMap::iterator(map_));
   // Advance to the first element.
-  while (!provider_iterator_->IsAtEnd()) {
-    ProviderMap* provider_map = provider_iterator_->GetCurrentValue();
+  while (!process_iterator_->IsAtEnd()) {
+    ProviderMap* provider_map = process_iterator_->GetCurrentValue();
     provider_host_iterator_.reset(new ProviderMap::iterator(provider_map));
     if (!provider_host_iterator_->IsAtEnd())
       return;
-    provider_iterator_->Advance();
+    process_iterator_->Advance();
   }
 }
 
