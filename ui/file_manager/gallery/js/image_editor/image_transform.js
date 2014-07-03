@@ -77,6 +77,38 @@ ImageEditor.Mode.Crop.prototype.setUp = function() {
 };
 
 /**
+ * @override
+ */
+ImageEditor.Mode.Crop.prototype.createTools = function(toolbar) {
+  var aspects = {
+    GALLERY_ASPECT_RATIO_1_1: 1 / 1,
+    GALLERY_ASPECT_RATIO_6_4: 6 / 4,
+    GALLERY_ASPECT_RATIO_7_5: 7 / 5,
+    GALLERY_ASPECT_RATIO_16_9: 16 / 9
+  };
+  for (name in aspects) {
+    toolbar.addButton(
+        name,
+        name,
+        function(aspect, event) {
+          var button = event.target;
+          if (button.classList.contains('selected')) {
+            button.classList.remove('selected');
+            this.cropRect_.fixedAspectRatio = null;
+          } else {
+            var selectedButtons =
+                toolbar.element.querySelectorAll('button.selected');
+            for (var i = 0; i < selectedButtons.length; i++) {
+              selectedButtons[i].classList.remove('selected');
+            }
+            button.classList.add('selected');
+            this.cropRect_.fixedAspectRatio = aspect;
+          }
+        }.bind(this, aspects[name]));
+  }
+};
+
+/**
  * Handles resizing of the window and updates the crop rectangle.
  * @private
  */
@@ -246,6 +278,13 @@ function DraggableRect(rect, viewport) {
    * @private
    */
   this.dragMode_ = null;
+
+  /**
+   * Fixed aspect ratio.
+   * The aspect ratio is not fixed when null.
+   * @type {?number}
+   */
+  this.fixedAspectRatio = null;
 
   Object.seal(this);
 }
@@ -501,7 +540,9 @@ DraggableRect.prototype.getDragHandler = function(
       }
 
       // Update aspect ratio.
-      if (shiftKey)
+      if (this.fixedAspectRatio)
+        this.forceAspectRatio(this.fixedAspectRatio, clipRect);
+      else if (shiftKey)
         this.forceAspectRatio(initialWidth / initialHeight, clipRect);
     }.bind(this);
   }

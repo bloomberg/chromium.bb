@@ -345,6 +345,27 @@ Press any key to continue exploring.
   <message name="IDS_FILE_BROWSER_GALLERY_CROP" desc="In the Gallery, the title on the button that cuts out a rectangular fragment from a photo">
     Crop
   </message>
+  <message name="IDS_FILE_BROWSER_GALLERY_ASPECT_RATIO_1_1" desc="Button label to fix aspect to 1:1 ratio when cropping.">
+    1x1
+  </message>
+  <message name="IDS_FILE_BROWSER_GALLERY_ASPECT_RATIO_4_6" desc="Button label to fix aspect to 4:6 ratio when cropping.">
+    4x6
+  </message>
+  <message name="IDS_FILE_BROWSER_GALLERY_ASPECT_RATIO_6_4" desc="Button label to fix aspect to 6:4 ratio when cropping.">
+    6x4
+  </message>
+  <message name="IDS_FILE_BROWSER_GALLERY_ASPECT_RATIO_5_7" desc="Button label to fix aspect to 5:7 ratio when cropping.">
+    5x7
+  </message>
+  <message name="IDS_FILE_BROWSER_GALLERY_ASPECT_RATIO_7_5" desc="Button label to fix aspect to 7:5 ratio when cropping.">
+    7x5
+  </message>
+  <message name="IDS_FILE_BROWSER_GALLERY_ASPECT_RATIO_16_9" desc="Button label to fix aspect to 16:9 ratio when cropping.">
+    16x9
+  </message>
+  <message name="IDS_FILE_BROWSER_GALLERY_ASPECT_RATIO_9_16" desc="Button label to fix aspect to 9:16 ratio when cropping.">
+    9x16
+  </message>
   <message name="IDS_FILE_BROWSER_GALLERY_EXPOSURE" desc="In the Gallery, the title on the button that applies the Brightness/Contrast filter to a photo.">
     Brightness
   </message>

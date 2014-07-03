@@ -901,6 +901,13 @@ ImageEditor.Toolbar = function(parent, displayStringFunction, updateCallback) {
   this.wrapper_ = parent;
   this.displayStringFunction_ = displayStringFunction;
   this.updateCallback_ = updateCallback;
+  Object.seal(this);
+};
+
+ImageEditor.Toolbar.prototype = {
+  get element() {
+    return this.wrapper_;
+  }
 };
 
 /**
@@ -953,7 +960,8 @@ ImageEditor.Toolbar.prototype.addLabel = function(name) {
 ImageEditor.Toolbar.prototype.addButton = function(
     name, title, handler, opt_class) {
   var button = this.create_('button');
-  if (opt_class) button.classList.add(opt_class);
+  if (opt_class)
+    button.classList.add(opt_class);
   var label = this.create_('span');
   label.textContent = this.displayStringFunction_(title);
   button.appendChild(label);

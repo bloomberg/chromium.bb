@@ -838,7 +838,6 @@ body {
   background-color: rgba(0, 0, 0, 0.75);
   color: white;
   display: -webkit-box;
-  padding-right: 5px;
   pointer-events: auto;
 }
 
@@ -865,6 +864,32 @@ body {
       url(../images/200/icon_contrast.png) 2x);
   height: 24px;
   margin-left: 15px;
+}
+
+.gallery .edit-modal button {
+  background: transparent;
+  border: 0 none;
+  border-image: none;
+  box-sizing: border-box;
+  color: #fff;
+  height: 100%;
+  min-width: 0;
+  padding: 8px 16px;
+}
+
+.gallery .edit-modal button * {
+  pointer-events: none;
+}
+
+.gallery .edit-modal button:hover {
+  background: #1f1f1f;
+  color: #fff;
+}
+
+.gallery .edit-modal button.selected,
+.gallery .edit-modal button:active {
+  background: #f0f0f0;
+  color: black;
 }
 
 .gallery .edit-modal .range {
