@@ -6,15 +6,15 @@
 // This API provides access to HID operations from within the context of an app.
 // Using this API, apps can function as drivers for hardware devices.
 namespace hid {
-  // HID usage pair. Each enumerated device interface exposes an array of
-  // these objects. Values correspond to those defined by the
-  // <a href="http://www.usb.org/developers/devclass_docs/HID1_11.pdf>
-  // HID device class specification</a>.
-  // |usage_page|: HID usage page identifier.
+  // HID top-level collection attributes.
+  // Each enumerated device interface exposes an array of these objects.
+  // |usagePage|: HID usage page identifier.
   // |usage|: Page-defined usage identifier.
-  dictionary HidUsageAndPage {
-    long usage_page;
+  // |reportIds|: Report IDs which belong to the collection and to its children.
+  dictionary HidCollectionInfo {
+    long usagePage;
     long usage;
+    long[] reportIds;
   };
 
   // Returned by <code>getDevices</code> functions to describes a connected HID
@@ -22,12 +22,18 @@ namespace hid {
   // |deviceId|: Device opaque ID.
   // |vendorId|: Vendor ID.
   // |productId|: Product ID.
-  // |usages|: HID usage pairs exposed by underlying Top-level collections.
+  // |collections|: Top-level collections from this device's report descriptor.
+  // |maxInputReportSize|: Top-level collection's max input report size.
+  // |maxOutputReportSize|: Top-level collection's max output report size.
+  // |maxFeatureReportSize|: Top-level collection's max feature report size.
   dictionary HidDeviceInfo {
     long deviceId;
     long vendorId;
     long productId;
-    HidUsageAndPage[] usages;
+    HidCollectionInfo[] collections;
+    long maxInputReportSize;
+    long maxOutputReportSize;
+    long maxFeatureReportSize;
   };
 
   // Returned by <code>connect</code> to represent a communication session with

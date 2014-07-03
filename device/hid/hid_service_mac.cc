@@ -7,17 +7,19 @@
 #include <CoreFoundation/CoreFoundation.h>
 #include <IOKit/hid/IOHIDManager.h>
 
+#include <set>
 #include <string>
 #include <vector>
 
 #include "base/bind.h"
 #include "base/logging.h"
+#include "base/mac/foundation_util.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/sys_string_conversions.h"
 #include "base/threading/thread_restrictions.h"
 #include "device/hid/hid_connection_mac.h"
-#include "device/hid/hid_utils_mac.h"
 
 namespace device {
 
@@ -46,6 +48,89 @@ void EnumerateHidDevices(IOHIDManagerRef hid_manager,
   base::ScopedCFTypeRef<CFSetRef> devices(IOHIDManagerCopyDevices(hid_manager));
   if (devices)
     CFSetApplyFunction(devices, HidEnumerationBackInserter, device_list);
+}
+
+bool TryGetHidIntProperty(IOHIDDeviceRef device,
+                          CFStringRef key,
+                          int32_t* result) {
+  CFNumberRef ref =
+      base::mac::CFCast<CFNumberRef>(IOHIDDeviceGetProperty(device, key));
+  return ref && CFNumberGetValue(ref, kCFNumberSInt32Type, result);
+}
+
+int32_t GetHidIntProperty(IOHIDDeviceRef device, CFStringRef key) {
+  int32_t value;
+  if (TryGetHidIntProperty(device, key, &value))
+    return value;
+  return 0;
+}
+
+bool TryGetHidStringProperty(IOHIDDeviceRef device,
+                             CFStringRef key,
+                             std::string* result) {
+  CFStringRef ref =
+      base::mac::CFCast<CFStringRef>(IOHIDDeviceGetProperty(device, key));
+  if (!ref) {
+    return false;
+  }
+  *result = base::SysCFStringRefToUTF8(ref);
+  return true;
+}
+
+std::string GetHidStringProperty(IOHIDDeviceRef device, CFStringRef key) {
+  std::string value;
+  TryGetHidStringProperty(device, key, &value);
+  return value;
+}
+
+void GetReportIds(IOHIDElementRef element, std::set<int>& reportIDs) {
+  CFArrayRef children = IOHIDElementGetChildren(element);
+  if (!children)
+    return;
+  CFIndex childrenCount = CFArrayGetCount(children);
+  for (CFIndex j = 0; j < childrenCount; ++j) {
+    const IOHIDElementRef child = static_cast<IOHIDElementRef>(
+        const_cast<void*>(CFArrayGetValueAtIndex(children, j)));
+    uint32_t reportID = IOHIDElementGetReportID(child);
+    if (reportID) {
+      reportIDs.insert(reportID);
+    }
+    GetReportIds(child, reportIDs);
+  }
+}
+
+void GetCollectionInfos(IOHIDDeviceRef device,
+                        std::vector<HidCollectionInfo>* top_level_collections) {
+  STLClearObject(top_level_collections);
+  CFMutableDictionaryRef collections_filter =
+      CFDictionaryCreateMutable(kCFAllocatorDefault,
+                                0,
+                                &kCFTypeDictionaryKeyCallBacks,
+                                &kCFTypeDictionaryValueCallBacks);
+  const int kCollectionTypeValue = kIOHIDElementTypeCollection;
+  CFNumberRef collection_type_id = CFNumberCreate(
+      kCFAllocatorDefault, kCFNumberIntType, &kCollectionTypeValue);
+  CFDictionarySetValue(
+      collections_filter, CFSTR(kIOHIDElementTypeKey), collection_type_id);
+  CFRelease(collection_type_id);
+  CFArrayRef collections = IOHIDDeviceCopyMatchingElements(
+      device, collections_filter, kIOHIDOptionsTypeNone);
+  CFIndex collectionsCount = CFArrayGetCount(collections);
+  for (CFIndex i = 0; i < collectionsCount; i++) {
+    const IOHIDElementRef collection = static_cast<IOHIDElementRef>(
+        const_cast<void*>(CFArrayGetValueAtIndex(collections, i)));
+    // Top-Level Collection has no parent
+    if (IOHIDElementGetParent(collection) == 0) {
+      HidCollectionInfo collection_info;
+      HidUsageAndPage::Page page = static_cast<HidUsageAndPage::Page>(
+          IOHIDElementGetUsagePage(collection));
+      uint16_t usage = IOHIDElementGetUsage(collection);
+      collection_info.usage = HidUsageAndPage(usage, page);
+      // Explore children recursively and retrieve their report IDs
+      GetReportIds(collection, collection_info.report_ids);
+      top_level_collections->push_back(collection_info);
+    }
+  }
 }
 
 }  // namespace
@@ -136,41 +221,23 @@ void HidServiceMac::PlatformAddDevice(IOHIDDeviceRef hid_device) {
   // Note that our ownership of hid_device is implied if calling this method.
   // It is balanced in PlatformRemoveDevice.
   DCHECK(thread_checker_.CalledOnValidThread());
-
   HidDeviceInfo device_info;
   device_info.device_id = hid_device;
   device_info.vendor_id =
       GetHidIntProperty(hid_device, CFSTR(kIOHIDVendorIDKey));
   device_info.product_id =
       GetHidIntProperty(hid_device, CFSTR(kIOHIDProductIDKey));
-  device_info.input_report_size =
-      GetHidIntProperty(hid_device, CFSTR(kIOHIDMaxInputReportSizeKey));
-  device_info.output_report_size =
-      GetHidIntProperty(hid_device, CFSTR(kIOHIDMaxOutputReportSizeKey));
-  device_info.feature_report_size =
-      GetHidIntProperty(hid_device, CFSTR(kIOHIDMaxFeatureReportSizeKey));
-  CFTypeRef deviceUsagePairsRaw =
-      IOHIDDeviceGetProperty(hid_device, CFSTR(kIOHIDDeviceUsagePairsKey));
-  CFArrayRef deviceUsagePairs =
-      base::mac::CFCast<CFArrayRef>(deviceUsagePairsRaw);
-  CFIndex deviceUsagePairsCount = CFArrayGetCount(deviceUsagePairs);
-  for (CFIndex i = 0; i < deviceUsagePairsCount; i++) {
-    CFDictionaryRef deviceUsagePair = base::mac::CFCast<CFDictionaryRef>(
-        CFArrayGetValueAtIndex(deviceUsagePairs, i));
-    CFNumberRef usage_raw = base::mac::CFCast<CFNumberRef>(
-        CFDictionaryGetValue(deviceUsagePair, CFSTR(kIOHIDDeviceUsageKey)));
-    uint16_t usage;
-    CFNumberGetValue(usage_raw, kCFNumberSInt32Type, &usage);
-    CFNumberRef page_raw = base::mac::CFCast<CFNumberRef>(
-        CFDictionaryGetValue(deviceUsagePair, CFSTR(kIOHIDDeviceUsagePageKey)));
-    HidUsageAndPage::Page page;
-    CFNumberGetValue(page_raw, kCFNumberSInt32Type, &page);
-    device_info.usages.push_back(HidUsageAndPage(usage, page));
-  }
   device_info.product_name =
       GetHidStringProperty(hid_device, CFSTR(kIOHIDProductKey));
   device_info.serial_number =
       GetHidStringProperty(hid_device, CFSTR(kIOHIDSerialNumberKey));
+  GetCollectionInfos(hid_device, &device_info.collections);
+  device_info.max_input_report_size =
+      GetHidIntProperty(hid_device, CFSTR(kIOHIDMaxInputReportSizeKey));
+  device_info.max_output_report_size =
+      GetHidIntProperty(hid_device, CFSTR(kIOHIDMaxOutputReportSizeKey));
+  device_info.max_feature_report_size =
+      GetHidIntProperty(hid_device, CFSTR(kIOHIDMaxFeatureReportSizeKey));
   AddDevice(device_info);
 }
 

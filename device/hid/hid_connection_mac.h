@@ -11,11 +11,8 @@
 #include <queue>
 
 #include "base/mac/foundation_util.h"
-#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/threading/thread_checker.h"
 #include "device/hid/hid_connection.h"
-#include "device/hid/hid_device_info.h"
 
 namespace base {
 class MessageLoopProxy;
@@ -31,17 +28,20 @@ class HidConnectionMac : public HidConnection {
  public:
   explicit HidConnectionMac(HidDeviceInfo device_info);
 
-  virtual void Read(scoped_refptr<net::IOBufferWithSize> buffer,
-                    const IOCallback& callback) OVERRIDE;
-  virtual void Write(uint8_t report_id,
-                     scoped_refptr<net::IOBufferWithSize> buffer,
-                     const IOCallback& callback) OVERRIDE;
-  virtual void GetFeatureReport(uint8_t report_id,
-                                scoped_refptr<net::IOBufferWithSize> buffer,
-                                const IOCallback& callback) OVERRIDE;
-  virtual void SendFeatureReport(uint8_t report_id,
-                                 scoped_refptr<net::IOBufferWithSize> buffer,
-                                 const IOCallback& callback) OVERRIDE;
+  // HidConnection implementation.
+  virtual void PlatformRead(scoped_refptr<net::IOBufferWithSize> buffer,
+                            const IOCallback& callback) OVERRIDE;
+  virtual void PlatformWrite(uint8_t report_id,
+                             scoped_refptr<net::IOBufferWithSize> buffer,
+                             const IOCallback& callback) OVERRIDE;
+  virtual void PlatformGetFeatureReport(
+      uint8_t report_id,
+      scoped_refptr<net::IOBufferWithSize> buffer,
+      const IOCallback& callback) OVERRIDE;
+  virtual void PlatformSendFeatureReport(
+      uint8_t report_id,
+      scoped_refptr<net::IOBufferWithSize> buffer,
+      const IOCallback& callback) OVERRIDE;
 
  private:
   virtual ~HidConnectionMac();
@@ -53,28 +53,25 @@ class HidConnectionMac : public HidConnection {
                                   uint32_t report_id,
                                   uint8_t* report_bytes,
                                   CFIndex report_length);
-  void ProcessReadQueue();
-  void ProcessInputReport(IOHIDReportType type,
-                          scoped_refptr<net::IOBufferWithSize> buffer);
 
   void WriteReport(IOHIDReportType type,
                    uint8_t report_id,
                    scoped_refptr<net::IOBufferWithSize> buffer,
                    const IOCallback& callback);
 
-  scoped_refptr<base::MessageLoopProxy> message_loop_;
+  void Flush();
+  void ProcessInputReport(scoped_refptr<net::IOBufferWithSize> buffer);
+  void ProcessReadQueue();
 
   base::ScopedCFTypeRef<IOHIDDeviceRef> device_;
+  scoped_refptr<base::MessageLoopProxy> message_loop_;
   scoped_ptr<uint8_t, base::FreeDeleter> inbound_buffer_;
 
   std::queue<PendingHidReport> pending_reports_;
   std::queue<PendingHidRead> pending_reads_;
 
-  base::ThreadChecker thread_checker_;
-
   DISALLOW_COPY_AND_ASSIGN(HidConnectionMac);
 };
-
 
 }  // namespace device
 
