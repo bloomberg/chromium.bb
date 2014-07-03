@@ -22,16 +22,16 @@ MetadataDatabaseIndexOnDisk::MetadataDatabaseIndexOnDisk(leveldb::DB* db)
 
 MetadataDatabaseIndexOnDisk::~MetadataDatabaseIndexOnDisk() {}
 
-const FileTracker* MetadataDatabaseIndexOnDisk::GetFileTracker(
-    int64 tracker_id) const {
+bool MetadataDatabaseIndexOnDisk::GetFileMetadata(
+     const std::string& file_id, FileMetadata* metadata) const {
   NOTIMPLEMENTED();
-  return NULL;
+  return false;
 }
 
-const FileMetadata* MetadataDatabaseIndexOnDisk::GetFileMetadata(
-    const std::string& file_id) const {
+bool MetadataDatabaseIndexOnDisk::GetFileTracker(
+    int64 tracker_id, FileTracker* tracker) const {
   NOTIMPLEMENTED();
-  return NULL;
+  return false;
 }
 
 void MetadataDatabaseIndexOnDisk::StoreFileMetadata(

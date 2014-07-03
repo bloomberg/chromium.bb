@@ -38,14 +38,15 @@ class MetadataDatabaseIndexInterface {
   MetadataDatabaseIndexInterface() {}
   virtual ~MetadataDatabaseIndexInterface() {}
 
-  // Returns FileMetadata identified by |file_id| if exists, otherwise returns
-  // NULL.
-  virtual const FileMetadata* GetFileMetadata(
-      const std::string& file_id) const = 0;
+  // Returns true if FileMetadata identified by |file_id| exists.
+  // If |metadata| is not NULL, the FileMetadata is copied to it.
+  virtual bool GetFileMetadata(
+      const std::string& file_id, FileMetadata* metadata) const = 0;
 
-  // Returns FileTracker identified by |tracker_id| if exists, otherwise returns
-  // NULL.
-  virtual const FileTracker* GetFileTracker(int64 tracker_id) const = 0;
+  // Returns true if FileTracker identified by |tracker_id| exists.
+  // If |tracker| is not NULL, the FileTracker is copied to it.
+  virtual bool GetFileTracker(
+      int64 tracker_id, FileTracker* tracker) const = 0;
 
   // Stores |metadata| and updates indexes.
   // This overwrites existing FileMetadata for the same |file_id|.

@@ -249,14 +249,24 @@ void MetadataDatabaseIndex::Initialize(DatabaseContents* contents) {
 MetadataDatabaseIndex::MetadataDatabaseIndex() {}
 MetadataDatabaseIndex::~MetadataDatabaseIndex() {}
 
-const FileTracker* MetadataDatabaseIndex::GetFileTracker(
-    int64 tracker_id) const {
-  return tracker_by_id_.get(tracker_id);
+bool MetadataDatabaseIndex::GetFileMetadata(
+    const std::string& file_id, FileMetadata* metadata) const {
+  FileMetadata* identified = metadata_by_id_.get(file_id);
+  if (!identified)
+    return false;
+  if (metadata)
+    metadata->CopyFrom(*identified);
+  return true;
 }
 
-const FileMetadata* MetadataDatabaseIndex::GetFileMetadata(
-    const std::string& file_id) const {
-  return metadata_by_id_.get(file_id);
+bool MetadataDatabaseIndex::GetFileTracker(
+    int64 tracker_id, FileTracker* tracker) const {
+  FileTracker* identified = tracker_by_id_.get(tracker_id);
+  if (!identified)
+    return false;
+  if (tracker)
+    tracker->CopyFrom(*identified);
+  return true;
 }
 
 void MetadataDatabaseIndex::StoreFileMetadata(

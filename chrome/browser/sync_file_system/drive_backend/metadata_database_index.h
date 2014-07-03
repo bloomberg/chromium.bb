@@ -72,9 +72,10 @@ class MetadataDatabaseIndex : public MetadataDatabaseIndexInterface {
       DatabaseContents* contents);
 
   // MetadataDatabaseIndexInterface overrides.
-  virtual const FileMetadata* GetFileMetadata(
-      const std::string& file_id) const OVERRIDE;
-  virtual const FileTracker* GetFileTracker(int64 tracker_id) const OVERRIDE;
+  virtual bool GetFileMetadata(
+      const std::string& file_id, FileMetadata* metadata) const OVERRIDE;
+  virtual bool GetFileTracker(
+      int64 tracker_id, FileTracker* tracker) const OVERRIDE;
   virtual void StoreFileMetadata(
       scoped_ptr<FileMetadata> metadata, leveldb::WriteBatch* batch) OVERRIDE;
   virtual void StoreFileTracker(

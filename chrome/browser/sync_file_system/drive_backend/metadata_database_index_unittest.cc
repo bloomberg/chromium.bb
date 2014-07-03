@@ -128,17 +128,16 @@ TEST(MetadataDatabaseIndexTest, GetEntryTest) {
       MetadataDatabaseIndex::CreateForTesting(
           CreateTestDatabaseContents().get());
 
-  EXPECT_FALSE(index->GetFileMetadata(std::string()));
-  EXPECT_FALSE(index->GetFileTracker(kInvalidTrackerID));
+  FileTracker tracker;
+  EXPECT_FALSE(index->GetFileTracker(kInvalidTrackerID, NULL));
+  ASSERT_TRUE(index->GetFileTracker(kFileTrackerID, &tracker));
+  EXPECT_EQ(kFileTrackerID, tracker.tracker_id());
+  EXPECT_EQ("file_id", tracker.file_id());
 
-  const FileTracker* tracker = index->GetFileTracker(kFileTrackerID);
-  ASSERT_TRUE(tracker);
-  EXPECT_EQ(kFileTrackerID, tracker->tracker_id());
-  EXPECT_EQ("file_id", tracker->file_id());
-
-  const FileMetadata* metadata = index->GetFileMetadata("file_id");
-  ASSERT_TRUE(metadata);
-  EXPECT_EQ("file_id", metadata->file_id());
+  FileMetadata metadata;
+  EXPECT_FALSE(index->GetFileMetadata(std::string(), NULL));
+  ASSERT_TRUE(index->GetFileMetadata("file_id", &metadata));
+  EXPECT_EQ("file_id", metadata.file_id());
 }
 
 TEST(MetadataDatabaseIndexTest, IndexLookUpTest) {
@@ -176,11 +175,14 @@ TEST(MetadataDatabaseIndexTest, UpdateTest) {
   index->PromoteDemotedDirtyTrackers();
   EXPECT_EQ(kPlaceholderTrackerID, index->PickDirtyTracker());
 
+  FileMetadata metadata;
+  ASSERT_TRUE(index->GetFileMetadata("file_id", &metadata));
+  FileTracker app_root_tracker;
+  ASSERT_TRUE(index->GetFileTracker(kAppRootTrackerID, &app_root_tracker));
+
   int64 new_tracker_id = 100;
   scoped_ptr<FileTracker> new_tracker =
-      CreateTracker(*index->GetFileMetadata("file_id"),
-                    new_tracker_id,
-                    index->GetFileTracker(kAppRootTrackerID));
+      CreateTracker(metadata, new_tracker_id, &app_root_tracker);
   new_tracker->set_active(false);
   index->StoreFileTracker(new_tracker.Pass(), NULL);
 
@@ -191,8 +193,8 @@ TEST(MetadataDatabaseIndexTest, UpdateTest) {
   index->RemoveFileMetadata("file_id", NULL);
   index->RemoveFileTracker(kFileTrackerID, NULL);
 
-  EXPECT_FALSE(index->GetFileMetadata("file_id"));
-  EXPECT_FALSE(index->GetFileTracker(kFileTrackerID));
+  EXPECT_FALSE(index->GetFileMetadata("file_id", NULL));
+  EXPECT_FALSE(index->GetFileTracker(kFileTrackerID, NULL));
 }
 
 }  // namespace drive_backend
