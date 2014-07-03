@@ -45,6 +45,7 @@
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebURLResponse.h"
 #include "third_party/WebKit/public/web/WebDataSource.h"
+#include "third_party/WebKit/public/web/WebDeviceEmulationParams.h"
 #include "third_party/WebKit/public/web/WebHistoryItem.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebRuntimeFeatures.h"
@@ -2335,6 +2336,36 @@ TEST_F(RenderViewImplTest, OnSetAccessibilityMode) {
   ASSERT_NE((RendererAccessibility*) NULL, view()->renderer_accessibility());
   ASSERT_EQ(RendererAccessibilityTypeFocusOnly,
             view()->renderer_accessibility()->GetType());
+}
+
+TEST_F(RenderViewImplTest, ScreenMetricsEmulation) {
+  LoadHTML("<body style='min-height:1000px;'></body>");
+
+  blink::WebDeviceEmulationParams params;
+  base::string16 get_width = base::ASCIIToUTF16("Number(window.innerWidth)");
+  base::string16 get_height = base::ASCIIToUTF16("Number(window.innerHeight)");
+  int width, height;
+
+  params.viewSize.width = 327;
+  params.viewSize.height = 415;
+  view()->EnableScreenMetricsEmulation(params);
+  EXPECT_TRUE(ExecuteJavaScriptAndReturnIntValue(get_width, &width));
+  EXPECT_EQ(params.viewSize.width, width);
+  EXPECT_TRUE(ExecuteJavaScriptAndReturnIntValue(get_height, &height));
+  EXPECT_EQ(params.viewSize.height, height);
+
+  params.viewSize.width = 1005;
+  params.viewSize.height = 1102;
+  view()->EnableScreenMetricsEmulation(params);
+  EXPECT_TRUE(ExecuteJavaScriptAndReturnIntValue(get_width, &width));
+  EXPECT_EQ(params.viewSize.width, width);
+  EXPECT_TRUE(ExecuteJavaScriptAndReturnIntValue(get_height, &height));
+  EXPECT_EQ(params.viewSize.height, height);
+
+  view()->DisableScreenMetricsEmulation();
+
+  view()->EnableScreenMetricsEmulation(params);
+  // Don't disable here to test that emulation is being shutdown properly.
 }
 
 }  // namespace content
