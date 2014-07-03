@@ -147,10 +147,7 @@ IN_PROC_BROWSER_TEST_F(AppShimMenuControllerBrowserTest,
                     object:app_1_app_window->GetNativeWindow()];
 
   CheckHasAppMenus(app_1_);
-  ExtensionService::UninstallExtensionHelper(
-      extension_service(),
-      app_1_->id(),
-      ExtensionService::UNINSTALL_REASON_FOR_TESTING);
+  ExtensionService::UninstallExtensionHelper(extension_service(), app_1_->id());
   CheckNoAppMenus();
 }
 
