@@ -148,4 +148,54 @@ void GcdPrivateGetCloudDeviceListFunction::CheckListingDone() {
   Release();
 }
 
+GcdPrivateStartSetupFunction::GcdPrivateStartSetupFunction() {
+}
+
+GcdPrivateStartSetupFunction::~GcdPrivateStartSetupFunction() {
+}
+
+bool GcdPrivateStartSetupFunction::RunAsync() {
+  return false;
+}
+
+GcdPrivateSetWiFiNetworksFunction::GcdPrivateSetWiFiNetworksFunction() {
+}
+
+GcdPrivateSetWiFiNetworksFunction::~GcdPrivateSetWiFiNetworksFunction() {
+}
+
+bool GcdPrivateSetWiFiNetworksFunction::RunAsync() {
+  return false;
+}
+
+GcdPrivateSetWiFiCredentialsFunction::GcdPrivateSetWiFiCredentialsFunction() {
+}
+
+GcdPrivateSetWiFiCredentialsFunction::~GcdPrivateSetWiFiCredentialsFunction() {
+}
+
+bool GcdPrivateSetWiFiCredentialsFunction::RunAsync() {
+  return false;
+}
+
+GcdPrivateConfirmCodeFunction::GcdPrivateConfirmCodeFunction() {
+}
+
+GcdPrivateConfirmCodeFunction::~GcdPrivateConfirmCodeFunction() {
+}
+
+bool GcdPrivateConfirmCodeFunction::RunAsync() {
+  return false;
+}
+
+GcdPrivateStopSetupFunction::GcdPrivateStopSetupFunction() {
+}
+
+GcdPrivateStopSetupFunction::~GcdPrivateStopSetupFunction() {
+}
+
+bool GcdPrivateStopSetupFunction::RunAsync() {
+  return false;
+}
+
 }  // namespace extensions
