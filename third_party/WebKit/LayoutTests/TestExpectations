@@ -1036,16 +1036,6 @@ crbug.com/384566 svg/custom/textPath-change-reference2.svg [ ImageOnlyFailure Pa
 crbug.com/387398 [ Linux Debug ] compositing/layer-creation/overlap-transformed-preserved-3d.html [ Failure ]
 crbug.com/387398 [ Linux Debug ] virtual/softwarecompositing/layer-creation/overlap-transformed-preserved-3d.html [ Failure ]
 
-# Will be reverted in a day or two.
-crbug.com/374378 [ Debug ] fast/canvas/webgl/context-release-upon-reload.html [ Failure ]
-crbug.com/374378 [ Debug ] fast/canvas/webgl/context-lost-restored.html [ Failure ]
-crbug.com/374378 [ Debug ] fast/canvas/webgl/context-lost.html [ Failure ]
-crbug.com/374378 [ Debug ] fast/canvas/webgl/WebGLContextEvent.html [ Failure ]
-crbug.com/374378 [ Debug ] virtual/gpu/fast/canvas/webgl/context-release-upon-reload.html [ Failure ]
-crbug.com/374378 [ Debug ] virtual/gpu/fast/canvas/webgl/context-lost-restored.html [ Failure ]
-crbug.com/374378 [ Debug ] virtual/gpu/fast/canvas/webgl/context-lost.html [ Failure ]
-crbug.com/374378 [ Debug ] virtual/gpu/fast/canvas/webgl/WebGLContextEvent.html [ Failure ]
-
 # switching to apache-win32: needs triaging.
 crbug.com/30536 [ Win7 ] http/tests/css/missing-repaint-after-slow-style-sheet.pl [ ImageOnlyFailure ]
 crbug.com/30536 [ Win7 ] http/tests/images/drag-image-to-desktop.html [ Failure ]

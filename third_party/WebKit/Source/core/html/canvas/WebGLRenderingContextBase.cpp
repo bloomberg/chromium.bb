@@ -112,6 +112,12 @@ void WebGLRenderingContextBase::forciblyLoseOldestContext(const String& reason)
 
     WebGLRenderingContextBase* candidate = activeContexts()[candidateID];
 
+    // This context could belong to a dead page and the last JavaScript reference has already
+    // been lost. Garbage collection might be triggered in the middle of this function, for
+    // example, printWarningToConsole() causes an upcall to JavaScript.
+    // Must make sure that the context is not deleted until the call stack unwinds.
+    RefPtr<WebGLRenderingContextBase> protect(candidate);
+
     activeContexts().remove(candidateID);
 
     candidate->printWarningToConsole(reason);
@@ -4183,10 +4189,6 @@ void WebGLRenderingContextBase::forceLostContext(WebGLRenderingContextBase::Lost
 
 void WebGLRenderingContextBase::loseContextImpl(WebGLRenderingContextBase::LostContextMode mode)
 {
-#ifndef NDEBUG
-    printWarningToConsole("loseContextImpl(): begin");
-#endif
-
     if (isContextLost())
         return;
 
@@ -4206,10 +4208,6 @@ void WebGLRenderingContextBase::loseContextImpl(WebGLRenderingContextBase::LostC
 
     detachAndRemoveAllObjects();
 
-#ifndef NDEBUG
-    printWarningToConsole("loseContextImpl(): after detachAndRemoveAllObjects()");
-#endif
-
     // Lose all the extensions.
     for (size_t i = 0; i < m_extensions.size(); ++i) {
         ExtensionTracker* tracker = m_extensions[i];
@@ -4224,10 +4222,6 @@ void WebGLRenderingContextBase::loseContextImpl(WebGLRenderingContextBase::LostC
     if (mode != RealLostContext)
         destroyContext();
 
-#ifndef NDEBUG
-    printWarningToConsole("loseContextImpl(): after destroyContext()");
-#endif
-
     ConsoleDisplayPreference display = (mode == RealLostContext) ? DisplayInConsole: DontDisplayInConsole;
     synthesizeGLError(GC3D_CONTEXT_LOST_WEBGL, "loseContext", "context lost", display);
 
@@ -4238,10 +4232,6 @@ void WebGLRenderingContextBase::loseContextImpl(WebGLRenderingContextBase::LostC
     // Always defer the dispatch of the context lost event, to implement
     // the spec behavior of queueing a task.
     m_dispatchContextLostEventTimer.startOneShot(0, FROM_HERE);
-
-#ifndef NDEBUG
-    printWarningToConsole("loseContextImpl(): end");
-#endif
 }
 
 void WebGLRenderingContextBase::forceRestoreContext()
@@ -5461,9 +5451,6 @@ void WebGLRenderingContextBase::dispatchContextLostEvent(Timer<WebGLRenderingCon
 
 void WebGLRenderingContextBase::maybeRestoreContext(Timer<WebGLRenderingContextBase>*)
 {
-#ifndef NDEBUG
-    printWarningToConsole("maybeRestoreContext(): begin");
-#endif
     ASSERT(isContextLost());
 
     // The rendering context is not restored unless the default behavior of the
@@ -5489,9 +5476,6 @@ void WebGLRenderingContextBase::maybeRestoreContext(Timer<WebGLRenderingContextB
         m_drawingBuffer->beginDestruction();
         m_drawingBuffer.clear();
     }
-#ifndef NDEBUG
-    printWarningToConsole("maybeRestoreContext(): destroyed old DrawingBuffer");
-#endif
 
     blink::WebGraphicsContext3D::Attributes attributes = m_requestedAttributes->attributes(canvas()->document().topDocument().url().string(), settings);
     OwnPtr<blink::WebGraphicsContext3D> context = adoptPtr(blink::Platform::current()->createOffscreenGraphicsContext3D(attributes, 0));
@@ -5511,9 +5495,6 @@ void WebGLRenderingContextBase::maybeRestoreContext(Timer<WebGLRenderingContextB
         }
         return;
     }
-#ifndef NDEBUG
-    printWarningToConsole("maybeRestoreContext(): created new DrawingBuffer");
-#endif
 
     m_drawingBuffer = drawingBuffer.release();
     m_drawingBuffer->bind();
@@ -5523,13 +5504,7 @@ void WebGLRenderingContextBase::maybeRestoreContext(Timer<WebGLRenderingContextB
     setupFlags();
     initializeNewContext();
     markContextChanged(CanvasContextChanged);
-#ifndef NDEBUG
-    printWarningToConsole("maybeRestoreContext(): before dispatchEvent");
-#endif
     canvas()->dispatchEvent(WebGLContextEvent::create(EventTypeNames::webglcontextrestored, false, true, ""));
-#ifndef NDEBUG
-    printWarningToConsole("maybeRestoreContext(): end");
-#endif
 }
 
 String WebGLRenderingContextBase::ensureNotNull(const String& text) const
