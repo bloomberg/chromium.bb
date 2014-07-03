@@ -390,7 +390,7 @@ class Manifest(object):
       attrs.setdefault('alias', attrs['name'])
       self.remotes[attrs['name']] = attrs
     elif name == 'project':
-      self.checkouts_by_path[attrs['path']] = attrs
+      self.checkouts_by_path[attrs.get('path', attrs['name'])] = attrs
       self.checkouts_by_name.setdefault(attrs['name'], []).append(attrs)
     elif name == 'manifest':
       self.revision = attrs.get('revision')
