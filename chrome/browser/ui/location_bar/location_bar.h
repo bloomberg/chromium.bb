@@ -1,19 +1,10 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// The LocationBar class is a virtual interface, defining access to the
-// window's location bar component.  This class exists so that cross-platform
-// components like the browser command system can talk to the platform
-// specific implementations of the location bar control.  It also allows the
-// location bar to be mocked for testing.
+#ifndef CHROME_BROWSER_UI_LOCATION_BAR_LOCATION_BAR_H_
+#define CHROME_BROWSER_UI_LOCATION_BAR_LOCATION_BAR_H_
 
-#ifndef CHROME_BROWSER_UI_OMNIBOX_LOCATION_BAR_H_
-#define CHROME_BROWSER_UI_OMNIBOX_LOCATION_BAR_H_
-
-#include <string>
-
-#include "base/strings/string16.h"
 #include "content/public/common/page_transition_types.h"
 #include "ui/base/window_open_disposition.h"
 #include "url/gurl.h"
@@ -27,6 +18,11 @@ namespace content {
 class WebContents;
 }
 
+// The LocationBar class is a virtual interface, defining access to the
+// window's location bar component.  This class exists so that cross-platform
+// components like the browser command system can talk to the platform
+// specific implementations of the location bar control.  It also allows the
+// location bar to be mocked for testing.
 class LocationBar {
  public:
   explicit LocationBar(Profile* profile);
@@ -121,4 +117,4 @@ class LocationBarTesting {
   virtual ~LocationBarTesting() {}
 };
 
-#endif  // CHROME_BROWSER_UI_OMNIBOX_LOCATION_BAR_H_
+#endif  // CHROME_BROWSER_UI_LOCATION_BAR_LOCATION_BAR_H_
