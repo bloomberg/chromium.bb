@@ -35,7 +35,7 @@
 namespace chromeos {
 
 // Describes a network |network_path| for which a matching certificate |cert_id|
-// was found.
+// was found or for which no certificate was found (|cert_id| will be empty).
 struct ClientCertResolver::NetworkAndMatchingCert {
   NetworkAndMatchingCert(const std::string& network_path,
                          client_cert::ConfigType config_type,
@@ -46,7 +46,7 @@ struct ClientCertResolver::NetworkAndMatchingCert {
 
   std::string service_path;
   client_cert::ConfigType cert_config_type;
-  // The id of the matching certificate.
+  // The id of the matching certificate or empty if no certificate was found.
   std::string pkcs11_id;
 };
 
@@ -177,15 +177,20 @@ void FindCertificateMatches(const net::CertificateList& certs,
        it != networks->end(); ++it) {
     std::vector<CertAndIssuer>::iterator cert_it = std::find_if(
         client_certs.begin(), client_certs.end(), MatchCertWithPattern(*it));
+    std::string pkcs11_id;
     if (cert_it == client_certs.end()) {
-      LOG(WARNING) << "Couldn't find a matching client cert for network "
-                   << it->service_path;
-      continue;
-    }
-    std::string pkcs11_id = CertLoader::GetPkcs11IdForCert(*cert_it->cert);
-    if (pkcs11_id.empty()) {
-      LOG(ERROR) << "Couldn't determine PKCS#11 ID.";
-      continue;
+      VLOG(1) << "Couldn't find a matching client cert for network "
+              << it->service_path;
+      // Leave |pkcs11_id empty| to indicate that no cert was found for this
+      // network.
+    } else {
+      pkcs11_id = CertLoader::GetPkcs11IdForCert(*cert_it->cert);
+      if (pkcs11_id.empty()) {
+        LOG(ERROR) << "Couldn't determine PKCS#11 ID.";
+        // So far this error is not expected to happen. We can just continue, in
+        // the worst case the user can remove the problematic cert.
+        continue;
+      }
     }
     matches->push_back(ClientCertResolver::NetworkAndMatchingCert(
         it->service_path, it->cert_config_type, pkcs11_id));
@@ -447,6 +452,8 @@ void ClientCertResolver::ConfigureCertificates(NetworkCertMatches* matches) {
     VLOG(1) << "Configuring certificate of network " << it->service_path;
     CertLoader* cert_loader = CertLoader::Get();
     base::DictionaryValue shill_properties;
+    // If pkcs11_id is empty, this will clear the key/cert properties of this
+    // network.
     client_cert::SetShillProperties(
         it->cert_config_type,
         base::IntToString(cert_loader->TPMTokenSlotID()),

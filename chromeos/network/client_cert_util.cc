@@ -233,11 +233,15 @@ void SetShillProperties(const client_cert::ConfigType cert_config_type,
       tpm_pin_property = shill::kEapPinProperty;
       if (pkcs11_id) {
         std::string key_id;
-        if (tpm_slot.empty())
-          NET_LOG_ERROR("Missing TPM slot id", "");
-        else
-          key_id = tpm_slot + ":";
-        key_id.append(*pkcs11_id);
+        if (pkcs11_id->empty()) {
+          // An empty pkcs11_id means that we should clear the properties.
+        } else {
+          if (tpm_slot.empty())
+            NET_LOG_ERROR("Missing TPM slot id", "");
+          else
+            key_id = tpm_slot + ":";
+          key_id.append(*pkcs11_id);
+        }
         // Shill requires both CertID and KeyID for TLS connections, despite the
         // fact that by convention they are the same ID, because one identifies
         // the certificate and the other the private key.
