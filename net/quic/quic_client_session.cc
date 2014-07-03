@@ -489,10 +489,9 @@ bool QuicClientSession::CanPool(const std::string& hostname) const {
   }
 
   bool unused = false;
-  // Pooling is prohibited for connections on which client certs were
-  // sent. It is also prohibited for when channel ID was sent if the
-  // hosts are from different eTLDs. And of course, it is prohibited
-  // if the server cert is not valid for the new domain.
+  // Pooling is prohibited if the server cert is not valid for the new domain,
+  // and for connections on which client certs were sent. It is also prohibited
+  // when channel ID was sent if the hosts are from different eTLDs+1.
   if (!ssl_info.cert->VerifyNameMatch(hostname, &unused))
     return false;
 
