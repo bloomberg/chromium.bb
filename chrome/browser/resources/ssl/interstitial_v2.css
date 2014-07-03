@@ -120,7 +120,7 @@ h2 {
 }
 
 .safe-browsing :-webkit-any(
-    a, #details, #details-button, h1, h2, .small-link) {
+    a, #details, #details-button, h1, h2, p, .small-link) {
   color: white;
 }
 
