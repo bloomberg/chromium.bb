@@ -185,7 +185,10 @@ void AudioRendererImpl::ResetDecoderDone() {
       buffer_converter_->Reset();
     algorithm_->FlushBuffers();
   }
-  base::ResetAndReturn(&flush_cb_).Run();
+
+  // Changes in buffering state are always posted. Flush callback must only be
+  // run after buffering state has been set back to nothing.
+  task_runner_->PostTask(FROM_HERE, base::ResetAndReturn(&flush_cb_));
 }
 
 void AudioRendererImpl::Stop(const base::Closure& callback) {
@@ -257,8 +260,7 @@ void AudioRendererImpl::Initialize(DemuxerStream* stream,
 
   init_cb_ = init_cb;
   time_cb_ = time_cb;
-  // Callback can be run from audio callback thread in Render().
-  buffering_state_cb_ = BindToCurrentLoop(buffering_state_cb);
+  buffering_state_cb_ = buffering_state_cb;
   ended_cb_ = ended_cb;
   error_cb_ = error_cb;
 
@@ -728,7 +730,9 @@ void AudioRendererImpl::SetBufferingState_Locked(
   DCHECK_NE(buffering_state_, buffering_state);
   lock_.AssertAcquired();
   buffering_state_ = buffering_state;
-  buffering_state_cb_.Run(buffering_state_);
+
+  task_runner_->PostTask(FROM_HERE,
+                         base::Bind(buffering_state_cb_, buffering_state_));
 }
 
 }  // namespace media
