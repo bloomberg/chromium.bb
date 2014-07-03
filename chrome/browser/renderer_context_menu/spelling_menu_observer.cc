@@ -309,11 +309,12 @@ void SpellingMenuObserver::ExecuteCommand(int command_id) {
                                   false));
     } else {
       Profile* profile = proxy_->GetProfile();
-      if (profile)
+      if (profile) {
         profile->GetPrefs()->SetBoolean(prefs::kSpellCheckUseSpellingService,
                                         false);
         profile->GetPrefs()->SetBoolean(prefs::kEnableAutoSpellCorrect,
                                         false);
+      }
     }
   }
   // Autocorrect requires use of the spelling service and the spelling service
