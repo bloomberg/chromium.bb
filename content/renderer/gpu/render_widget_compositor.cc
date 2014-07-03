@@ -310,14 +310,14 @@ scoped_ptr<RenderWidgetCompositor> RenderWidgetCompositor::Create(
   // Android WebView handles root layer flings itself.
   settings.ignore_root_layer_flings =
       synchronous_compositor_factory;
+  // Memory policy on Android WebView does not depend on whether device is
+  // low end, so always use default policy.
+  bool is_low_end_device =
+      base::SysInfo::IsLowEndDevice() && !synchronous_compositor_factory;
   // RGBA_4444 textures are only enabled for low end devices
   // and are disabled for Android WebView as it doesn't support the format.
-  settings.use_rgba_4444_textures =
-      base::SysInfo::IsLowEndDevice() &&
-      !synchronous_compositor_factory;
-  if (synchronous_compositor_factory) {
-    // TODO(boliu): Set this ratio for Webview.
-  } else if (base::SysInfo::IsLowEndDevice()) {
+  settings.use_rgba_4444_textures = is_low_end_device;
+  if (is_low_end_device) {
     // On low-end we want to be very carefull about killing other
     // apps. So initially we use 50% more memory to avoid flickering
     // or raster-on-demand.
