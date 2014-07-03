@@ -26,6 +26,7 @@
               'app_runtime.idl',
               'dns.idl',
               'extensions_manifest_types.json',
+              'power.idl',
               'runtime.json',
               'socket.idl',
               'sockets_tcp.idl',

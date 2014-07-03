@@ -87,7 +87,6 @@
       'omnibox.json',
       'page_capture.json',
       'permissions.json',
-      'power.idl',
       'preferences_private.json',
       'push_messaging.idl',
       'reading_list_private.json',

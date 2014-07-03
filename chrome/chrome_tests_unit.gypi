@@ -538,6 +538,7 @@
         # they should be kept here.
         '../extensions/browser/admin_policy_unittest.cc',
         '../extensions/browser/api/api_resource_manager_unittest.cc',
+        '../extensions/browser/api/power/power_api_unittest.cc',
         '../extensions/browser/api/storage/settings_quota_unittest.cc',
         '../extensions/browser/api/storage/settings_test_util.cc',
         '../extensions/browser/api/storage/settings_test_util.h',
@@ -922,7 +923,6 @@
         'browser/extensions/api/messaging/native_messaging_policy_handler_unittest.cc',
         'browser/extensions/api/omnibox/omnibox_unittest.cc',
         'browser/extensions/api/permissions/permissions_api_helpers_unittest.cc',
-        'browser/extensions/api/power/power_api_unittest.cc',
         'browser/extensions/api/preference/preference_api_prefs_unittest.cc',
         'browser/extensions/api/proxy/proxy_api_helpers_unittest.cc',
         'browser/extensions/api/push_messaging/obfuscated_gaia_id_fetcher_unittest.cc',

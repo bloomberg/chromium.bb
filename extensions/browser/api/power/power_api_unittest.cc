@@ -1,8 +1,8 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/api/power/power_api.h"
+#include "extensions/browser/api/power/power_api.h"
 
 #include <deque>
 #include <string>
@@ -11,13 +11,10 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/extensions/api/power/power_api_manager.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
-#include "content/public/browser/notification_details.h"
-#include "content/public/browser/notification_source.h"
 #include "content/public/browser/power_save_blocker.h"
+#include "extensions/browser/api/power/power_api_manager.h"
 #include "extensions/common/extension.h"
 
 namespace utils = extension_function_test_utils;

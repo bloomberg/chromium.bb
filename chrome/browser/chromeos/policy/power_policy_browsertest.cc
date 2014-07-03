@@ -24,14 +24,12 @@
 #include "chrome/browser/chromeos/policy/user_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/chromeos/policy/user_cloud_policy_manager_factory_chromeos.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
-#include "chrome/browser/extensions/api/power/power_api_manager.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/policy/profile_policy_connector_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/common/extensions/api/power.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/chromeos_paths.h"
 #include "chromeos/chromeos_switches.h"
@@ -51,6 +49,8 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/test/test_utils.h"
+#include "extensions/browser/api/power/power_api_manager.h"
+#include "extensions/common/api/power.h"
 #include "policy/proto/device_management_backend.pb.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -481,7 +481,7 @@ IN_PROC_BROWSER_TEST_F(PowerPolicyInSessionBrowserTest, AllowScreenWakeLocks) {
   // Pretend an extension grabs a screen wake lock.
   const char kExtensionId[] = "abcdefghijklmnopabcdefghijlkmnop";
   extensions::PowerApiManager::Get(browser()->profile())->AddRequest(
-      kExtensionId, extensions::api::power::LEVEL_DISPLAY);
+      kExtensionId, extensions::core_api::power::LEVEL_DISPLAY);
   base::RunLoop().RunUntilIdle();
 
   // Check that the lock is in effect (ignoring ac_idle_action,

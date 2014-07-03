@@ -1,13 +1,11 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/api/power/power_api_manager.h"
+#include "extensions/browser/api/power/power_api_manager.h"
 
 #include "base/bind.h"
 #include "base/lazy_instance.h"
-#include "chrome/browser/chrome_notification_types.h"
-#include "content/public/browser/notification_service.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
 
@@ -18,12 +16,12 @@ namespace {
 const char kPowerSaveBlockerReason[] = "extension";
 
 content::PowerSaveBlocker::PowerSaveBlockerType
-LevelToPowerSaveBlockerType(api::power::Level level) {
+LevelToPowerSaveBlockerType(core_api::power::Level level) {
   switch (level) {
-    case api::power::LEVEL_SYSTEM:
+    case core_api::power::LEVEL_SYSTEM:
       return content::PowerSaveBlocker::kPowerSaveBlockPreventAppSuspension;
-    case api::power::LEVEL_DISPLAY:  // fallthrough
-    case api::power::LEVEL_NONE:
+    case core_api::power::LEVEL_DISPLAY:  // fallthrough
+    case core_api::power::LEVEL_NONE:
       return content::PowerSaveBlocker::kPowerSaveBlockPreventDisplaySleep;
   }
   NOTREACHED() << "Unhandled level " << level;
@@ -47,7 +45,7 @@ PowerApiManager::GetFactoryInstance() {
 }
 
 void PowerApiManager::AddRequest(const std::string& extension_id,
-                                 api::power::Level level) {
+                                 core_api::power::Level level) {
   extension_levels_[extension_id] = level;
   UpdatePowerSaveBlocker();
 }
@@ -63,13 +61,6 @@ void PowerApiManager::SetCreateBlockerFunctionForTesting(
       base::Bind(&content::PowerSaveBlocker::Create);
 }
 
-void PowerApiManager::Observe(int type,
-                              const content::NotificationSource& source,
-                              const content::NotificationDetails& details) {
-  DCHECK_EQ(type, chrome::NOTIFICATION_APP_TERMINATING);
-  power_save_blocker_.reset();
-}
-
 void PowerApiManager::OnExtensionUnloaded(
     content::BrowserContext* browser_context,
     const Extension* extension,
@@ -81,10 +72,8 @@ void PowerApiManager::OnExtensionUnloaded(
 PowerApiManager::PowerApiManager(content::BrowserContext* context)
     : browser_context_(context),
       create_blocker_function_(base::Bind(&content::PowerSaveBlocker::Create)),
-      current_level_(api::power::LEVEL_SYSTEM) {
+      current_level_(core_api::power::LEVEL_SYSTEM) {
   ExtensionRegistry::Get(browser_context_)->AddObserver(this);
-  registrar_.Add(this, chrome::NOTIFICATION_APP_TERMINATING,
-                 content::NotificationService::AllSources());
 }
 
 PowerApiManager::~PowerApiManager() {}
@@ -95,10 +84,10 @@ void PowerApiManager::UpdatePowerSaveBlocker() {
     return;
   }
 
-  api::power::Level new_level = api::power::LEVEL_SYSTEM;
+  core_api::power::Level new_level = core_api::power::LEVEL_SYSTEM;
   for (ExtensionLevelMap::const_iterator it = extension_levels_.begin();
        it != extension_levels_.end(); ++it) {
-    if (it->second == api::power::LEVEL_DISPLAY)
+    if (it->second == core_api::power::LEVEL_DISPLAY)
       new_level = it->second;
   }
 
@@ -119,6 +108,7 @@ void PowerApiManager::Shutdown() {
   // Unregister here rather than in the d'tor; otherwise this call will recreate
   // the already-deleted ExtensionRegistry.
   ExtensionRegistry::Get(browser_context_)->RemoveObserver(this);
+  power_save_blocker_.reset();
 }
 
 }  // namespace extensions

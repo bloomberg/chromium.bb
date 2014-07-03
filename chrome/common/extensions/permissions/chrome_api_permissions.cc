@@ -129,7 +129,6 @@ std::vector<APIPermissionInfo*> ChromeAPIPermissions::GetAllPermissions()
        APIPermissionInfo::kFlagNone,
        IDS_EXTENSION_PROMPT_WARNING_NATIVE_MESSAGING,
        PermissionMessage::kNativeMessaging},
-      {APIPermission::kPower, "power"},
       {APIPermission::kPrivacy, "privacy", APIPermissionInfo::kFlagNone,
        IDS_EXTENSION_PROMPT_WARNING_PRIVACY, PermissionMessage::kPrivacy},
       {APIPermission::kProcesses, "processes", APIPermissionInfo::kFlagNone,

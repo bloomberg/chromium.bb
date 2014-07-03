@@ -25,6 +25,7 @@ std::vector<APIPermissionInfo*> ExtensionsAPIPermissions::GetAllPermissions()
     const {
   APIPermissionInfo::InitInfo permissions_to_register[] = {
       {APIPermission::kDns, "dns"},
+      {APIPermission::kPower, "power"},
       // Because warning messages for the "socket" permission vary based
       // on the permissions parameters, no message ID or message text is
       // specified here.  The message ID and text used will be
