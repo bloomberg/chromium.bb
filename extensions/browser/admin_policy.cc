@@ -15,13 +15,8 @@ namespace {
 bool ManagementPolicyImpl(const extensions::Extension* extension,
                           base::string16* error,
                           bool modifiable_value) {
-  // Note that COMPONENT and EXTERNAL_COMPONENT are treated differently
-  // below. EXTERNAL_COMPONENT extensions can be modified including
-  // enabled, disabled, uninstalled while COMPONENT extensions cannot.
-  // However, those options are only available for EXTERNAL_COMPONENT
-  // extensions when the proper command line flag is passed.
   bool modifiable =
-      extension->location() != extensions::Manifest::COMPONENT &&
+      !extensions::Manifest::IsComponentLocation(extension->location()) &&
       !extensions::Manifest::IsPolicyLocation(extension->location());
   // Some callers equate "no restriction" to true, others to false.
   if (modifiable)
