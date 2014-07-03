@@ -14,192 +14,206 @@
 
 #include <libaddressinput/address_data.h>
 
-#include <libaddressinput/address_field.h>
-
-#include <sstream>
+#include <string>
+#include <vector>
 
 #include <gtest/gtest.h>
 
 namespace {
 
 using i18n::addressinput::AddressData;
-using i18n::addressinput::AddressField;
 
-using i18n::addressinput::COUNTRY;
-using i18n::addressinput::ADMIN_AREA;
-using i18n::addressinput::LOCALITY;
-using i18n::addressinput::DEPENDENT_LOCALITY;
-using i18n::addressinput::SORTING_CODE;
-using i18n::addressinput::POSTAL_CODE;
-using i18n::addressinput::STREET_ADDRESS;
-using i18n::addressinput::RECIPIENT;
-
-TEST(AddressDataTest, GetFieldValue) {
+TEST(AddressDataTest, FormatForDisplayEmpty) {
   AddressData address;
-  address.region_code = "rrr";
-  address.administrative_area = "sss";
-  address.locality = "ccc";
-  address.dependent_locality = "ddd";
-  address.sorting_code = "xxx";
-  address.postal_code = "zzz";
-  address.recipient = "nnn";
-
-  EXPECT_EQ(address.region_code,
-            address.GetFieldValue(COUNTRY));
-  EXPECT_EQ(address.administrative_area,
-            address.GetFieldValue(ADMIN_AREA));
-  EXPECT_EQ(address.locality,
-            address.GetFieldValue(LOCALITY));
-  EXPECT_EQ(address.dependent_locality,
-            address.GetFieldValue(DEPENDENT_LOCALITY));
-  EXPECT_EQ(address.sorting_code,
-            address.GetFieldValue(SORTING_CODE));
-  EXPECT_EQ(address.postal_code,
-            address.GetFieldValue(POSTAL_CODE));
-  EXPECT_EQ(address.recipient,
-            address.GetFieldValue(RECIPIENT));
+  std::vector<std::string> actual;
+  address.FormatForDisplay(&actual);
+  EXPECT_EQ(std::vector<std::string>(), actual);
 }
 
-TEST(AddressDataTest, GetRepeatedFieldValue) {
+TEST(AddressDataTest, FormatForDisplayUs) {
   AddressData address;
-  address.address_line.push_back("aaa");
-  address.address_line.push_back("222");
-  EXPECT_EQ(address.address_line,
-            address.GetRepeatedFieldValue(STREET_ADDRESS));
+  address.country_code = "US";
+  address.administrative_area = "Texas";
+  address.locality = "Houston";
+  address.postal_code = "77005";
+  address.address_lines.push_back("123 Main St");
+  address.address_lines.push_back("Apt 2");
+  address.recipient = "John Doe";
+
+  std::vector<std::string> actual;
+  address.FormatForDisplay(&actual);
+
+  std::vector<std::string> expected;
+  expected.push_back(address.recipient);
+  expected.insert(expected.end(),
+                  address.address_lines.begin(),
+                  address.address_lines.end());
+  expected.push_back(address.locality + ", " + address.administrative_area +
+                     " " + address.postal_code);
+
+  EXPECT_EQ(expected, actual);
 }
 
-TEST(AddressDataTest, IsFieldEmpty) {
+TEST(AddressDataTest, FormatForDisplayAr) {
   AddressData address;
+  address.country_code = "AR";
+  address.administrative_area = "Capital Federal";
+  address.locality = "Buenos Aires";
+  address.postal_code = "C1001AFB";
+  address.address_lines.push_back("Su Calle 123");
+  address.address_lines.push_back("5° Piso");
+  address.recipient = "Juan Perez";
 
-  EXPECT_TRUE(address.IsFieldEmpty(COUNTRY));
-  EXPECT_TRUE(address.IsFieldEmpty(ADMIN_AREA));
-  EXPECT_TRUE(address.IsFieldEmpty(LOCALITY));
-  EXPECT_TRUE(address.IsFieldEmpty(DEPENDENT_LOCALITY));
-  EXPECT_TRUE(address.IsFieldEmpty(SORTING_CODE));
-  EXPECT_TRUE(address.IsFieldEmpty(POSTAL_CODE));
-  EXPECT_TRUE(address.IsFieldEmpty(STREET_ADDRESS));
-  EXPECT_TRUE(address.IsFieldEmpty(RECIPIENT));
+  std::vector<std::string> actual;
+  address.FormatForDisplay(&actual);
 
-  address.region_code = "rrr";
-  address.administrative_area = "sss";
-  address.locality = "ccc";
-  address.dependent_locality = "ddd";
-  address.sorting_code = "xxx";
-  address.postal_code = "zzz";
-  address.address_line.push_back("aaa");
-  address.recipient = "nnn";
+  std::vector<std::string> expected;
+  expected.push_back(address.recipient);
+  expected.insert(expected.end(),
+                  address.address_lines.begin(),
+                  address.address_lines.end());
+  expected.push_back(address.postal_code + " " + address.locality);
+  expected.push_back(address.administrative_area);
 
-  EXPECT_FALSE(address.IsFieldEmpty(COUNTRY));
-  EXPECT_FALSE(address.IsFieldEmpty(ADMIN_AREA));
-  EXPECT_FALSE(address.IsFieldEmpty(LOCALITY));
-  EXPECT_FALSE(address.IsFieldEmpty(DEPENDENT_LOCALITY));
-  EXPECT_FALSE(address.IsFieldEmpty(SORTING_CODE));
-  EXPECT_FALSE(address.IsFieldEmpty(POSTAL_CODE));
-  EXPECT_FALSE(address.IsFieldEmpty(STREET_ADDRESS));
-  EXPECT_FALSE(address.IsFieldEmpty(RECIPIENT));
+  EXPECT_EQ(expected, actual);
 }
 
-TEST(AddressDataTest, IsFieldEmptyWhitespace) {
+TEST(AddressDataTest, FormatForDisplayJp) {
   AddressData address;
-  address.recipient = "   ";
-  EXPECT_TRUE(address.IsFieldEmpty(RECIPIENT));
-  address.recipient = "abc";
-  EXPECT_FALSE(address.IsFieldEmpty(RECIPIENT));
-  address.recipient = " b ";
-  EXPECT_FALSE(address.IsFieldEmpty(RECIPIENT));
+  address.country_code = "JP";
+  address.language_code = "ja";
+  address.administrative_area = "東京都";
+  address.locality = "渋谷区";
+  address.postal_code = "150-8512";
+  address.address_lines.push_back("桜丘町26-1");
+  address.address_lines.push_back("セルリアンタワー6階");
+  address.recipient = "村上 美紀";
+
+  std::vector<std::string> actual;
+  address.FormatForDisplay(&actual);
+
+  std::vector<std::string> expected;
+  expected.push_back("〒" + address.postal_code);
+  expected.push_back(address.administrative_area + address.locality);
+  expected.insert(expected.end(),
+                  address.address_lines.begin(),
+                  address.address_lines.end());
+  expected.push_back(address.recipient);
+
+  EXPECT_EQ(expected, actual);
 }
 
-TEST(AddressDataTest, IsFieldEmptyVector) {
+TEST(AddressDataTest, FormatForDisplayJpLatn) {
   AddressData address;
-  EXPECT_TRUE(address.IsFieldEmpty(STREET_ADDRESS));
-  address.address_line.push_back("");
-  EXPECT_TRUE(address.IsFieldEmpty(STREET_ADDRESS));
-  address.address_line.push_back("aaa");
-  EXPECT_FALSE(address.IsFieldEmpty(STREET_ADDRESS));
-  address.address_line.push_back("");
-  EXPECT_FALSE(address.IsFieldEmpty(STREET_ADDRESS));
+  address.country_code = "JP";
+  address.language_code = "ja-latn";
+  address.administrative_area = "Tokyo";
+  address.locality = "Shibuya-ku";
+  address.postal_code = "150-8512";
+  address.address_lines.push_back("26-1 Sakuragaoka-cho");
+  address.address_lines.push_back("Cerulean Tower 6F");
+  address.recipient = "Miki Murakami";
+
+  std::vector<std::string> actual;
+  address.FormatForDisplay(&actual);
+
+  std::vector<std::string> expected;
+  expected.push_back(address.recipient);
+  expected.insert(expected.end(),
+                  address.address_lines.begin(),
+                  address.address_lines.end());
+  expected.push_back(address.locality + ", "+ address.administrative_area);
+  expected.push_back(address.postal_code);
+
+  EXPECT_EQ(expected, actual);
 }
 
-TEST(AddressDataTest, IsFieldEmptyVectorWhitespace) {
+TEST(AddressDataTest, FormatForDisplayJpLatnCapitalized) {
   AddressData address;
-  address.address_line.push_back("   ");
-  address.address_line.push_back("   ");
-  address.address_line.push_back("   ");
-  EXPECT_TRUE(address.IsFieldEmpty(STREET_ADDRESS));
-  address.address_line.clear();
-  address.address_line.push_back("abc");
-  EXPECT_FALSE(address.IsFieldEmpty(STREET_ADDRESS));
-  address.address_line.clear();
-  address.address_line.push_back("   ");
-  address.address_line.push_back(" b ");
-  address.address_line.push_back("   ");
-  EXPECT_FALSE(address.IsFieldEmpty(STREET_ADDRESS));
+  address.country_code = "JP";
+  address.language_code = "ja-Latn";
+  address.administrative_area = "Tokyo";
+  address.locality = "Shibuya-ku";
+  address.postal_code = "150-8512";
+  address.address_lines.push_back("26-1 Sakuragaoka-cho");
+  address.address_lines.push_back("Cerulean Tower 6F");
+  address.recipient = "Miki Murakami";
+
+  std::vector<std::string> actual;
+  address.FormatForDisplay(&actual);
+
+  std::vector<std::string> expected;
+  expected.push_back(address.recipient);
+  expected.insert(expected.end(),
+                  address.address_lines.begin(),
+                  address.address_lines.end());
+  expected.push_back(address.locality + ", "+ address.administrative_area);
+  expected.push_back(address.postal_code);
+
+  EXPECT_EQ(expected, actual);
 }
 
-TEST(AddressDataTest, StreamFunction) {
-  std::ostringstream oss;
+TEST(AddressDataTest, FormatForDisplayJpLatnUs) {
   AddressData address;
-  address.address_line.push_back("Line 1");
-  address.address_line.push_back("Line 2");
-  address.recipient = "N";
-  address.region_code = "R";
-  address.postal_code = "Z";
-  address.administrative_area = "S";
-  address.locality = "C";
-  address.dependent_locality = "D";
-  address.sorting_code = "X";
-  address.language_code = "zh-Hant";
-  oss << address;
-  EXPECT_EQ("region_code: \"R\"\n"
-            "administrative_area: \"S\"\n"
-            "locality: \"C\"\n"
-            "dependent_locality: \"D\"\n"
-            "postal_code: \"Z\"\n"
-            "sorting_code: \"X\"\n"
-            "address_line: \"Line 1\"\n"
-            "address_line: \"Line 2\"\n"
-            "language_code: \"zh-Hant\"\n"
-            "recipient: \"N\"\n", oss.str());
+  address.country_code = "JP";
+  address.language_code = "ja-latn-US";
+  address.administrative_area = "Tokyo";
+  address.locality = "Shibuya-ku";
+  address.postal_code = "150-8512";
+  address.address_lines.push_back("26-1 Sakuragaoka-cho");
+  address.address_lines.push_back("Cerulean Tower 6F");
+  address.recipient = "Miki Murakami";
+
+  std::vector<std::string> actual;
+  address.FormatForDisplay(&actual);
+
+  std::vector<std::string> expected;
+  expected.push_back(address.recipient);
+  expected.insert(expected.end(),
+                  address.address_lines.begin(),
+                  address.address_lines.end());
+  expected.push_back(address.locality + ", "+ address.administrative_area);
+  expected.push_back(address.postal_code);
+
+  EXPECT_EQ(expected, actual);
 }
 
-TEST(AddressDataTest, TestEquals) {
+TEST(AddressDataTest, FormatForDisplayWithStreetCi) {
   AddressData address;
-  address.address_line.push_back("Line 1");
-  address.address_line.push_back("Line 2");
-  address.recipient = "N";
-  address.region_code = "R";
-  address.postal_code = "Z";
-  address.administrative_area = "S";
-  address.locality = "C";
-  address.dependent_locality = "D";
-  address.sorting_code = "X";
-  address.language_code = "zh-Hant";
+  address.country_code = "CI";
+  address.address_lines.push_back("Street Line 1");
+  address.locality = "City Name";
+  address.sorting_code = "123CEDEX";
 
-  AddressData clone = address;
+  std::vector<std::string> actual;
+  address.FormatForDisplay(&actual);
 
-  EXPECT_EQ(address, clone);
-  clone.language_code.clear();
-  EXPECT_FALSE(address == clone);
+  std::vector<std::string> expected(
+      1,
+      address.sorting_code + " " +
+          address.address_lines[0] + " " +
+          address.locality + " " +
+          address.sorting_code);
+
+  EXPECT_EQ(expected, actual);
 }
 
-#ifndef NDEBUG
-
-TEST(AddressDataTest, GetFieldValueInvalid) {
+TEST(AddressDataTest, FormatForDisplayWithoutStreetCi) {
   AddressData address;
-  ASSERT_DEATH(address.GetFieldValue(STREET_ADDRESS), "ssertion.*failed");
-}
+  address.country_code = "CI";
+  address.locality = "City Name";
+  address.sorting_code = "123CEDEX";
 
-TEST(AddressDataTest, GetVectorFieldValueInvalid) {
-  AddressData address;
-  ASSERT_DEATH(address.GetRepeatedFieldValue(COUNTRY), "ssertion.*failed");
-}
+  std::vector<std::string> actual;
+  address.FormatForDisplay(&actual);
 
-TEST(AddressDataTest, IsFieldEmptyInvalid) {
-  static const AddressField invalid_field = static_cast<AddressField>(-1);
-  AddressData address;
-  ASSERT_DEATH(address.IsFieldEmpty(invalid_field), "ssertion.*failed");
-}
+  std::vector<std::string> expected(
+      1,
+      address.sorting_code + "  " +
+          address.locality + " " +
+          address.sorting_code);
 
-#endif  // NDEBUG
+  EXPECT_EQ(expected, actual);
+}
 
 }  // namespace
