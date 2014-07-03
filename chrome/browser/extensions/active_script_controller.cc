@@ -30,20 +30,6 @@
 
 namespace extensions {
 
-ActiveScriptController::PendingRequest::PendingRequest() :
-    page_id(-1) {
-}
-
-ActiveScriptController::PendingRequest::PendingRequest(
-    const base::Closure& closure,
-    int page_id)
-    : closure(closure),
-      page_id(page_id) {
-}
-
-ActiveScriptController::PendingRequest::~PendingRequest() {
-}
-
 ActiveScriptController::ActiveScriptController(
     content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
@@ -92,11 +78,10 @@ bool ActiveScriptController::RequiresUserConsentForScriptInjection(
 
 void ActiveScriptController::RequestScriptInjection(
     const Extension* extension,
-    int page_id,
     const base::Closure& callback) {
   CHECK(extension);
   PendingRequestList& list = pending_requests_[extension->id()];
-  list.push_back(PendingRequest(callback, page_id));
+  list.push_back(callback);
 
   // If this was the first entry, notify the location bar that there's a new
   // icon.
@@ -189,8 +174,6 @@ void ActiveScriptController::RunPendingForExtension(
   if (!visible_entry)
     return;
 
-  int page_id = visible_entry->GetPageID();
-
   // We add this to the list of permitted extensions and erase pending entries
   // *before* running them to guard against the crazy case where running the
   // callbacks adds more entries.
@@ -210,9 +193,7 @@ void ActiveScriptController::RunPendingForExtension(
   for (PendingRequestList::iterator request = requests.begin();
        request != requests.end();
        ++request) {
-    // Only run if it's on the proper page.
-    if (request->page_id == page_id)
-      request->closure.Run();
+    request->Run();
   }
 
   // Inform the location bar that the action is now gone.
@@ -221,8 +202,7 @@ void ActiveScriptController::RunPendingForExtension(
 
 void ActiveScriptController::OnRequestScriptInjectionPermission(
     const std::string& extension_id,
-    int page_id,
-    int request_id) {
+    int64 request_id) {
   if (!Extension::IdIsValid(extension_id)) {
     NOTREACHED() << "'" << extension_id << "' is not a valid id.";
     return;
@@ -250,7 +230,6 @@ void ActiveScriptController::OnRequestScriptInjectionPermission(
     // this object.
     RequestScriptInjection(
         extension,
-        page_id,
         base::Bind(&ActiveScriptController::PermitScriptInjection,
                    base::Unretained(this),
                    request_id));
@@ -259,7 +238,7 @@ void ActiveScriptController::OnRequestScriptInjectionPermission(
   }
 }
 
-void ActiveScriptController::PermitScriptInjection(int request_id) {
+void ActiveScriptController::PermitScriptInjection(int64 request_id) {
   content::RenderViewHost* render_view_host =
       web_contents()->GetRenderViewHost();
   if (render_view_host) {

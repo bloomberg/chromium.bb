@@ -35,7 +35,7 @@ typedef std::map<std::string, int> IsolatedWorldMap;
 base::LazyInstance<IsolatedWorldMap> g_isolated_worlds =
     LAZY_INSTANCE_INITIALIZER;
 
-const int kInvalidRequestId = -1;
+const int64 kInvalidRequestId = -1;
 
 // The id of the next pending injection.
 int64 g_next_pending_id = 0;
@@ -120,7 +120,7 @@ ScriptInjection::ScriptInjection(
       extension_id_(extension_id),
       run_location_(run_location),
       tab_id_(tab_id),
-      request_id_(-1),
+      request_id_(kInvalidRequestId),
       complete_(false) {
 }
 
@@ -135,7 +135,7 @@ bool ScriptInjection::TryToInject(UserScript::RunLocation current_location,
   if (current_location < run_location_)
     return false;  // Wait for the right location.
 
-  if (request_id_ != -1)
+  if (request_id_ != kInvalidRequestId)
     return false;  // We're waiting for permission right now, try again later.
 
   if (!extension) {
@@ -185,7 +185,6 @@ void ScriptInjection::RequestPermission() {
   render_view->Send(new ExtensionHostMsg_RequestScriptInjectionPermission(
       render_view->GetRoutingID(),
       extension_id_,
-      render_view->GetPageId(),
       request_id_));
 }
 

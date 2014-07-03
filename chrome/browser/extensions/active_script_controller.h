@@ -53,7 +53,6 @@ class ActiveScriptController : public LocationBarController::ActionProvider,
   // |callback|. The only assumption that can be made about when (or if)
   // |callback| is run is that, if it is run, it will run on the current page.
   void RequestScriptInjection(const Extension* extension,
-                              int page_id,
                               const base::Closure& callback);
 
   // Notifies the ActiveScriptController that an extension has been granted
@@ -73,17 +72,7 @@ class ActiveScriptController : public LocationBarController::ActionProvider,
   virtual void OnExtensionUnloaded(const Extension* extension) OVERRIDE;
 
  private:
-  // A single pending request. This could be a pair, but we'd have way too many
-  // stl typedefs, and "request.closure" is nicer than "request.first".
-  struct PendingRequest {
-    PendingRequest();  // For STL.
-    PendingRequest(const base::Closure& closure, int page_id);
-    ~PendingRequest();
-
-    base::Closure closure;
-    int page_id;
-  };
-  typedef std::vector<PendingRequest> PendingRequestList;
+  typedef std::vector<base::Closure> PendingRequestList;
   typedef std::map<std::string, PendingRequestList> PendingRequestMap;
 
   // Runs any pending injections for the corresponding extension.
@@ -91,11 +80,10 @@ class ActiveScriptController : public LocationBarController::ActionProvider,
 
   // Handle the RequestScriptInjectionPermission message.
   void OnRequestScriptInjectionPermission(const std::string& extension_id,
-                                          int page_id,
-                                          int request_id);
+                                          int64 request_id);
 
   // Grants permission for the given request to run.
-  void PermitScriptInjection(int request_id);
+  void PermitScriptInjection(int64 request_id);
 
   // content::WebContentsObserver implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;

@@ -286,7 +286,7 @@ void ScriptInjectionManager::HandleExecuteCode(
   }
 }
 
-void ScriptInjectionManager::HandlePermitScriptInjection(int request_id) {
+void ScriptInjectionManager::HandlePermitScriptInjection(int64 request_id) {
   ScopedVector<ScriptInjection>::iterator iter =
       pending_injections_.begin();
   for (; iter != pending_injections_.end(); ++iter) {
@@ -295,6 +295,11 @@ void ScriptInjectionManager::HandlePermitScriptInjection(int request_id) {
   }
   if (iter == pending_injections_.end())
     return;
+
+  // At this point, because the request is present in pending_injections_, we
+  // know that this is the same page that issued the request (otherwise,
+  // RVOHelper's DidStartProvisionalLoad callback would have caused it to be
+  // cleared out).
 
   scoped_ptr<ScriptInjection> injection(*iter);
   pending_injections_.weak_erase(iter);

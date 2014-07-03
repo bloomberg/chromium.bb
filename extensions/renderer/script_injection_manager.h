@@ -73,7 +73,7 @@ class ScriptInjectionManager : public UserScriptSet::Observer {
                          content::RenderView* render_view);
 
   // Handle the GrantInjectionPermission extension message.
-  void HandlePermitScriptInjection(int request_id);
+  void HandlePermitScriptInjection(int64 request_id);
 
   // Extensions metadata, owned by Dispatcher (which owns this object).
   const ExtensionSet* extensions_;

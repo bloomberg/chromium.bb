@@ -43,9 +43,6 @@ class ActiveScriptControllerUnitTest : public ChromeRenderViewHostTestHarness {
   // Creates an extension with all hosts permission and adds it to the registry.
   const Extension* AddExtension();
 
-  // Returns the current page id.
-  int GetPageId();
-
   // Returns a closure to use as a script execution for a given extension.
   base::Closure GetExecutionCallbackForExtension(
       const std::string& extension_id);
@@ -99,13 +96,6 @@ const Extension* ActiveScriptControllerUnitTest::AddExtension() {
 
   ExtensionRegistry::Get(profile())->AddEnabled(extension);
   return extension;
-}
-
-int ActiveScriptControllerUnitTest::GetPageId() {
-  content::NavigationEntry* navigation_entry =
-      web_contents()->GetController().GetVisibleEntry();
-  DCHECK(navigation_entry);  // This should never be NULL.
-  return navigation_entry->GetPageID();
 }
 
 base::Closure ActiveScriptControllerUnitTest::GetExecutionCallbackForExtension(
@@ -163,7 +153,6 @@ TEST_F(ActiveScriptControllerUnitTest, RequestPermissionAndExecute) {
   // Request an injection. There should be an action visible, but no executions.
   controller()->RequestScriptInjection(
       extension,
-      GetPageId(),
       GetExecutionCallbackForExtension(extension->id()));
   EXPECT_TRUE(controller()->GetActionForExtension(extension));
   EXPECT_EQ(0u, GetExecutionCountForExtension(extension->id()));
@@ -189,7 +178,6 @@ TEST_F(ActiveScriptControllerUnitTest, RequestPermissionAndExecute) {
   // Grant access.
   controller()->RequestScriptInjection(
       extension,
-      GetPageId(),
       GetExecutionCallbackForExtension(extension->id()));
   controller()->OnClicked(extension);
   EXPECT_EQ(2u, GetExecutionCountForExtension(extension->id()));
@@ -214,7 +202,6 @@ TEST_F(ActiveScriptControllerUnitTest, PendingInjectionsRemovedAtNavigation) {
   // Request an injection. There should be an action visible, but no executions.
   controller()->RequestScriptInjection(
       extension,
-      GetPageId(),
       GetExecutionCallbackForExtension(extension->id()));
   EXPECT_TRUE(controller()->GetActionForExtension(extension));
   EXPECT_EQ(0u, GetExecutionCountForExtension(extension->id()));
@@ -228,7 +215,6 @@ TEST_F(ActiveScriptControllerUnitTest, PendingInjectionsRemovedAtNavigation) {
   // Request and accept a new injection.
   controller()->RequestScriptInjection(
       extension,
-      GetPageId(),
       GetExecutionCallbackForExtension(extension->id()));
   controller()->OnClicked(extension);
 
@@ -252,7 +238,6 @@ TEST_F(ActiveScriptControllerUnitTest, MultiplePendingInjection) {
   for (size_t i = 0u; i < kNumInjections; ++i) {
     controller()->RequestScriptInjection(
         extension,
-        GetPageId(),
         GetExecutionCallbackForExtension(extension->id()));
   }
   EXPECT_EQ(0u, GetExecutionCountForExtension(extension->id()));
@@ -287,7 +272,6 @@ TEST_F(ActiveScriptControllerUnitTest, ActiveScriptsUseActiveTabPermissions) {
 
   controller()->RequestScriptInjection(
       extension,
-      GetPageId(),
       GetExecutionCallbackForExtension(extension->id()));
   EXPECT_TRUE(controller()->GetActionForExtension(extension));
   EXPECT_EQ(0u, GetExecutionCountForExtension(extension->id()));

@@ -582,15 +582,15 @@ IPC_MESSAGE_ROUTED2(ExtensionHostMsg_ContentScriptsExecuting,
 // If request id is -1, this signals that the request has already ran, and this
 // merely serves as a notification. This happens when the feature to disable
 // scripts running without user consent is not enabled.
-IPC_MESSAGE_ROUTED3(ExtensionHostMsg_RequestScriptInjectionPermission,
+IPC_MESSAGE_ROUTED2(ExtensionHostMsg_RequestScriptInjectionPermission,
                     std::string /* extension id */,
-                    int /* page id */,
-                    int /* request id */)
+                    int64 /* request id */)
 
 // Sent from the browser to the renderer in reply to a
 // RequestScriptInjectionPermission message, granting permission for a script
 // script to run.
-IPC_MESSAGE_ROUTED1(ExtensionMsg_PermitScriptInjection, int /* request id */)
+IPC_MESSAGE_ROUTED1(ExtensionMsg_PermitScriptInjection,
+                    int64 /* request id */)
 
 // Sent by the renderer when a web page is checking if its app is installed.
 IPC_MESSAGE_ROUTED3(ExtensionHostMsg_GetAppInstallState,
