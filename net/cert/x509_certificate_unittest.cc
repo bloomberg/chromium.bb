@@ -791,6 +791,11 @@ TEST(X509CertificateTest, IsIssuedByEncodedWithIntermediates) {
   EXPECT_FALSE(cert_chain->IsIssuedByEncoded(issuers));
 }
 
+// Tests that FreeOSCertHandle ignores NULL on each OS.
+TEST(X509CertificateTest, FreeNullHandle) {
+  X509Certificate::FreeOSCertHandle(NULL);
+}
+
 #if defined(USE_NSS)
 TEST(X509CertificateTest, GetDefaultNickname) {
   base::FilePath certs_dir = GetTestCertsDirectory();

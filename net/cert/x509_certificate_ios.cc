@@ -163,7 +163,8 @@ X509Certificate::OSCertHandle X509Certificate::DupOSCertHandle(
 
 // static
 void X509Certificate::FreeOSCertHandle(OSCertHandle cert_handle) {
-  CFRelease(cert_handle);
+  if (cert_handle)
+    CFRelease(cert_handle);
 }
 
 // static
