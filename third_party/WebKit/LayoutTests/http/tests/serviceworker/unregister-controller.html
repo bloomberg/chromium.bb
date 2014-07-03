@@ -13,7 +13,7 @@ async_test(function(t) {
     }));
 
     function on_state_change(event) {
-        if (event.target.state != 'active')
+        if (event.target.state != 'activated')
             return;
         with_iframe(scope, t.step_func(function(frame) {
             var w = frame.contentWindow;
@@ -35,7 +35,7 @@ async_test(function(t) {
     }));
 
     function on_state_change(event) {
-        if (event.target.state != 'active')
+        if (event.target.state != 'activated')
             return;
         navigator.serviceWorker.unregister(scope).then(t.step_func(function() {
             with_iframe(scope, t.step_func(function(frame) {

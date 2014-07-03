@@ -18,7 +18,7 @@ t.step(function() {
 
     function onRegister(sw) {
         sw.onstatechange = t.step_func(function() {
-            if (sw.state !== 'active')
+            if (sw.state !== 'activated')
                 return;
 
             sendMessagePort(sw, 'registering doc').onmessage = t.step_func(function (e) {

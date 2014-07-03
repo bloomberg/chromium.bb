@@ -42,7 +42,7 @@ function onRegister(sw) {
 function onStateChange(event) {
     assertServiceWorkerIsNotCollected();
 
-    if (event.target.state != 'active')
+    if (event.target.state != 'activated')
         return;
     navigator.serviceWorker.unregister(scope).then(onUnregister);
 }

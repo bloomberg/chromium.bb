@@ -60,7 +60,7 @@ t.step(function() {
                 case 'activating':
                     assert_equals(lastServiceWorkerState, 'installed');
                     break;
-                case 'active':
+                case 'activated':
                     assert_equals(lastServiceWorkerState, 'activating');
                     break;
                 default:
@@ -68,14 +68,14 @@ t.step(function() {
                 }
 
                 lastServiceWorkerState = sw.state;
-                if (sw.state === 'active')
+                if (sw.state === 'activated')
                     resolve();
             });
         }));
 
         Promise.all([sawMessage, sawActive]).then(t.step_func(function() {
             assert_array_equals(serviceWorkerStates,
-                                ['parsed', 'installing', 'installed', 'activating', 'active'],
+                                ['parsed', 'installing', 'installed', 'activating', 'activated'],
                                 'Service worker should pass through four states');
 
             assert_equals(currentChangeCount, 0,

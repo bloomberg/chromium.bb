@@ -14,7 +14,7 @@ t.step(function() {
     function onRegister(worker) {
         assert_equals(worker.state, 'parsed', 'worker should be in the "parsed" state upon registration');
         worker.addEventListener('statechange', t.step_func(function(event) {
-            if (event.target.state == 'active')
+            if (event.target.state == 'activated')
                 service_worker_unregister_and_done(t, scope);
         }));
     }

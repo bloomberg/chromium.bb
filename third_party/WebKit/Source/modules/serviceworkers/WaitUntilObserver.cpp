@@ -62,7 +62,6 @@ PassRefPtr<WaitUntilObserver> WaitUntilObserver::create(ExecutionContext* contex
 
 WaitUntilObserver::~WaitUntilObserver()
 {
-    ASSERT(!m_pendingActivity);
 }
 
 void WaitUntilObserver::willDispatchEvent()
@@ -108,7 +107,7 @@ void WaitUntilObserver::incrementPendingActivity()
 void WaitUntilObserver::decrementPendingActivity()
 {
     ASSERT(m_pendingActivity > 0);
-    if (--m_pendingActivity || !executionContext())
+    if (!executionContext() || (!m_hasError && --m_pendingActivity))
         return;
 
     ServiceWorkerGlobalScopeClient* client = ServiceWorkerGlobalScopeClient::from(executionContext());

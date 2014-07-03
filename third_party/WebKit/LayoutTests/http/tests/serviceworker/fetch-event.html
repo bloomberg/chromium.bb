@@ -16,7 +16,7 @@ var worker = 'resources/fetch-event-test-worker.js';
     }
 
     function onStateChange(event) {
-        if (event.target.state != 'active')
+        if (event.target.state != 'activated')
             return;
         with_iframe(scope, t.step_func(function(frame) {
             assert_equals(frame.contentDocument.body.textContent, 'hello, world',
@@ -36,7 +36,7 @@ var worker = 'resources/fetch-event-test-worker.js';
     }
 
     function onStateChange(event) {
-        if (event.target.state != 'active')
+        if (event.target.state != 'activated')
             return;
         with_iframe(scope, t.step_func(function(frame) {
             assert_equals(frame.contentDocument.body.textContent, 'Here\'s a simple html file.\n',
@@ -56,7 +56,7 @@ var worker = 'resources/fetch-event-test-worker.js';
     }
 
     function onStateChange(event) {
-        if (event.target.state != 'active')
+        if (event.target.state != 'activated')
             return;
         with_iframe(scope, t.step_func(function(frame) {
             assert_equals(frame.contentDocument.body.textContent, '',
@@ -76,7 +76,7 @@ var worker = 'resources/fetch-event-test-worker.js';
     }
 
     function onStateChange(event) {
-        if (event.target.state != 'active')
+        if (event.target.state != 'activated')
             return;
         with_iframe(scope, t.step_func(function(frame) {
             assert_equals(frame.contentDocument.body.textContent, 'Here\'s a simple html file.\n',
@@ -96,7 +96,7 @@ var worker = 'resources/fetch-event-test-worker.js';
     }
 
     function onStateChange(event) {
-        if (event.target.state != 'active')
+        if (event.target.state != 'activated')
             return;
         with_iframe(scope, t.step_func(function(frame) {
             assert_equals(frame.contentDocument.body.textContent, 'Here\'s an other html file.\n',

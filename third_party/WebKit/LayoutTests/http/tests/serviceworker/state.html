@@ -27,20 +27,20 @@
             assert_equals(newState, 'installing');
             break;
         case 'installing':
-            assert_in_array(newState, ['installed', 'deactivated']);
+            assert_in_array(newState, ['installed', 'redundant']);
             break;
         case 'installed':
-            assert_in_array(newState, ['activating', 'deactivated']);
+            assert_in_array(newState, ['activating', 'redundant']);
             break;
         case 'activating':
-            assert_in_array(newState, ['active', 'deactivated']);
+            assert_in_array(newState, ['activated', 'redundant']);
             break;
-        case 'active':
-            assert_equals(newState, 'deactivated');
+        case 'activated':
+            assert_equals(newState, 'redundant');
             break;
-        case 'deactivated':
+        case 'redundant':
             assert_unreached('a ServiceWorker should not transition out of ' +
-                             'the "deactivated" state');
+                             'the "redundant" state');
             break;
         default:
             assert_unreached('should not transition into unknown state "' +
@@ -63,7 +63,7 @@
 
             checkStateTransition(event.target.state);
 
-            if (event.target.state == 'active')
+            if (event.target.state == 'activated')
                 service_worker_unregister_and_done(t, scope);
         };
     }

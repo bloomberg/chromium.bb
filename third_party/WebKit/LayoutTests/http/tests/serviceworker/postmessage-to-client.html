@@ -12,7 +12,7 @@ t.step(function() {
 
     function onRegister(worker) {
         worker.addEventListener('statechange', t.step_func(function(event) {
-            if (event.target.state == 'active')
+            if (event.target.state == 'activated')
                 onActive();
         }));
     }

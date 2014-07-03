@@ -13,9 +13,12 @@ enum WebServiceWorkerState {
     WebServiceWorkerStateInstalling,
     WebServiceWorkerStateInstalled,
     WebServiceWorkerStateActivating,
-    WebServiceWorkerStateActive,
-    WebServiceWorkerStateDeactivated,
-    WebServiceWorkerStateLast = WebServiceWorkerStateDeactivated
+    WebServiceWorkerStateActivated,
+    WebServiceWorkerStateRedundant,
+    // FIXME remove below two states once the Chromium side change landed.
+    WebServiceWorkerStateActive = WebServiceWorkerStateActivated,
+    WebServiceWorkerStateDeactivated = WebServiceWorkerStateRedundant,
+    WebServiceWorkerStateLast = WebServiceWorkerStateRedundant
 };
 
 } // namespace blink
