@@ -4,6 +4,7 @@
 
 #include "components/autofill/content/renderer/password_form_conversion_utils.h"
 
+#include "base/strings/string_util.h"
 #include "components/autofill/content/renderer/form_autofill_util.h"
 #include "components/autofill/core/common/password_form.h"
 #include "third_party/WebKit/public/platform/WebString.h"
@@ -24,6 +25,14 @@ namespace {
 // Maximum number of password fields we will observe before throwing our
 // hands in the air and giving up with a given form.
 static const size_t kMaxPasswords = 3;
+
+// Checks in a case-insensitive way if the autocomplete attribute for the given
+// |element| is present and has the specified |value_in_lowercase|.
+bool HasAutocompleteAttributeValue(const WebInputElement* element,
+                                   const char* value_in_lowercase) {
+  return LowerCaseEqualsASCII(element->getAttribute("autocomplete"),
+                              value_in_lowercase);
+}
 
 // Helper to determine which password is the main one, and which is
 // an old password (e.g on a "make new password" form), if any.
@@ -73,6 +82,10 @@ bool LocateSpecificPasswords(std::vector<WebInputElement> passwords,
 // PasswordForm struct.
 void GetPasswordForm(const WebFormElement& form, PasswordForm* password_form) {
   WebInputElement latest_input_element;
+  WebInputElement username_element;
+  // Caches whether |username_element| is marked with autocomplete='username'.
+  // Needed for performance reasons to avoid recalculating this multiple times.
+  bool has_seen_element_with_autocomplete_username_before = false;
   std::vector<WebInputElement> passwords;
   std::vector<base::string16> other_possible_usernames;
 
@@ -90,29 +103,69 @@ void GetPasswordForm(const WebFormElement& form, PasswordForm* password_form) {
 
     if ((passwords.size() < kMaxPasswords) &&
         input_element->isPasswordField()) {
-      // We assume that the username element is the input element before the
-      // first password element.
-      if (passwords.empty() && !latest_input_element.isNull()) {
-        password_form->username_element =
-            latest_input_element.nameForAutofill();
-        password_form->username_value = latest_input_element.value();
-        // Remove the selected username from other_possible_usernames.
-        if (!other_possible_usernames.empty() &&
-            !latest_input_element.value().isEmpty())
-          other_possible_usernames.resize(other_possible_usernames.size() - 1);
-      }
       passwords.push_back(*input_element);
+      // If we have not yet considered any element to be the username so far,
+      // provisionally select the input element just before the first password
+      // element to be the username. This choice will be overruled if we later
+      // find an element with autocomplete='username'.
+      if (username_element.isNull() && !latest_input_element.isNull()) {
+        username_element = latest_input_element;
+        // Remove the selected username from other_possible_usernames.
+        if (!latest_input_element.value().isEmpty()) {
+          DCHECK(!other_possible_usernames.empty());
+          DCHECK_EQ(base::string16(latest_input_element.value()),
+                    other_possible_usernames.back());
+          other_possible_usernames.pop_back();
+        }
+      }
     }
 
     // Various input types such as text, url, email can be a username field.
     if (input_element->isTextField() && !input_element->isPasswordField()) {
-      latest_input_element = *input_element;
-      // We ignore elements that have no value. Unlike username_element,
-      // other_possible_usernames is used only for autofill, not for form
-      // identification, and blank autofill entries are not useful.
-      if (!input_element->value().isEmpty())
-        other_possible_usernames.push_back(input_element->value());
+      if (HasAutocompleteAttributeValue(input_element, "username")) {
+        if (has_seen_element_with_autocomplete_username_before) {
+          // A second or subsequent element marked with autocomplete='username'.
+          // This makes us less confident that we have understood the form. We
+          // will stick to our choice that the first such element was the real
+          // username, but will start collecting other_possible_usernames from
+          // the extra elements marked with autocomplete='username'. Note that
+          // unlike username_element, other_possible_usernames is used only for
+          // autofill, not for form identification, and blank autofill entries
+          // are not useful, so we do not collect empty strings.
+          if (!input_element->value().isEmpty())
+            other_possible_usernames.push_back(input_element->value());
+        } else {
+          // The first element marked with autocomplete='username'. Take the
+          // hint and treat it as the username (overruling the tentative choice
+          // we might have made before). Furthermore, drop all other possible
+          // usernames we have accrued so far: they come from fields not marked
+          // with the autocomplete attribute, making them unlikely alternatives.
+          username_element = *input_element;
+          has_seen_element_with_autocomplete_username_before = true;
+          other_possible_usernames.clear();
+        }
+      } else {
+        if (has_seen_element_with_autocomplete_username_before) {
+          // Having seen elements with autocomplete='username', elements without
+          // this attribute are no longer interesting. No-op.
+        } else {
+          // No elements marked with autocomplete='username' so far whatsoever.
+          // If we have not yet selected a username element even provisionally,
+          // then remember this element for the case when the next field turns
+          // out to be a password. Save a non-empty username as a possible
+          // alternative, at least for now.
+          if (username_element.isNull())
+            latest_input_element = *input_element;
+          if (!input_element->value().isEmpty())
+            other_possible_usernames.push_back(input_element->value());
+        }
+      }
     }
+  }
+
+  if (!username_element.isNull()) {
+    password_form->username_element = username_element.nameForAutofill();
+    password_form->username_value = username_element.value();
   }
 
   // Get the document URL

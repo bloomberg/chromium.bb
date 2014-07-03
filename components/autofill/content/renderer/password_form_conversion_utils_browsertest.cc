@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/strings/string16.h"
+#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/content/renderer/password_form_conversion_utils.h"
@@ -35,12 +36,19 @@ class PasswordFormBuilder {
   }
 
   // Appends a new text-type field at the end of the form, having the specified
-  // |name_and_id| and |value| attributes.
-  void AddUsernameField(const char* name_and_id, const char* value) {
+  // |name_and_id|, |value|, and |autocomplete| attributes. The |autocomplete|
+  // argument can take two special values, namely:
+  //  1.) NULL, causing no autocomplete attribute to be added,
+  //  2.) "", causing an empty attribute (i.e. autocomplete='') to be added.
+  void AddUsernameField(const char* name_and_id,
+                        const char* value,
+                        const char* autocomplete) {
+    std::string autocomplete_attribute(autocomplete != NULL ?
+        base::StringPrintf("autocomplete=\"%s\"", autocomplete) : "");
     base::StringAppendF(
         &html_,
-        "<INPUT type=\"text\" name=\"%s\" id=\"%s\" value=\"%s\"/>",
-        name_and_id, name_and_id, value);
+        "<INPUT type=\"text\" name=\"%s\" id=\"%s\" value=\"%s\" %s/>",
+        name_and_id, name_and_id, value, autocomplete_attribute.c_str());
   }
 
   // Appends a new password-type field at the end of the form, having the
@@ -101,7 +109,7 @@ class PasswordFormConversionUtilsTest : public content::RenderViewTest {
 
 TEST_F(PasswordFormConversionUtilsTest, ValidWebFormElementToPasswordForm) {
   PasswordFormBuilder builder(kTestFormActionURL);
-  builder.AddUsernameField("username", "johnsmith");
+  builder.AddUsernameField("username", "johnsmith", NULL);
   builder.AddSubmitButton();
   builder.AddPasswordField("password", "secret");
   std::string html = builder.ProduceHTML();
@@ -125,7 +133,7 @@ TEST_F(PasswordFormConversionUtilsTest, ValidWebFormElementToPasswordForm) {
 
 TEST_F(PasswordFormConversionUtilsTest, InvalidWebFormElementToPasswordForm) {
   PasswordFormBuilder builder("invalid_target");
-  builder.AddUsernameField("username", "johnsmith");
+  builder.AddUsernameField("username", "johnsmith", NULL);
   builder.AddSubmitButton();
   builder.AddPasswordField("password", "secret");
   std::string html = builder.ProduceHTML();
@@ -138,11 +146,11 @@ TEST_F(PasswordFormConversionUtilsTest, InvalidWebFormElementToPasswordForm) {
 TEST_F(PasswordFormConversionUtilsTest,
        WebFormWithMultipleUseNameAndPassWordFieldsToPasswordForm) {
   PasswordFormBuilder builder(kTestFormActionURL);
-  builder.AddUsernameField("username1", "John");
+  builder.AddUsernameField("username1", "John", NULL);
   builder.AddPasswordField("password1", "oldsecret");
-  builder.AddUsernameField("username2", "Smith");
+  builder.AddUsernameField("username2", "William", NULL);
   builder.AddPasswordField("password2", "secret");
-  builder.AddUsernameField("username3", "JohnSmith");
+  builder.AddUsernameField("username3", "Smith", NULL);
   builder.AddPasswordField("password3", "secret");
   builder.AddSubmitButton();
   std::string html = builder.ProduceHTML();
@@ -161,9 +169,9 @@ TEST_F(PasswordFormConversionUtilsTest,
             password_form->old_password_element);
   EXPECT_EQ(base::UTF8ToUTF16("oldsecret"), password_form->old_password_value);
   ASSERT_EQ(2u, password_form->other_possible_usernames.size());
-  EXPECT_EQ(base::UTF8ToUTF16("Smith"),
+  EXPECT_EQ(base::UTF8ToUTF16("William"),
             password_form->other_possible_usernames[0]);
-  EXPECT_EQ(base::UTF8ToUTF16("JohnSmith"),
+  EXPECT_EQ(base::UTF8ToUTF16("Smith"),
             password_form->other_possible_usernames[1]);
   EXPECT_EQ(PasswordForm::SCHEME_HTML, password_form->scheme);
   EXPECT_FALSE(password_form->ssl_valid);
@@ -175,7 +183,7 @@ TEST_F(PasswordFormConversionUtilsTest,
 TEST_F(PasswordFormConversionUtilsTest,
        WebFormwithThreeDifferentPasswordsToPasswordForm) {
   PasswordFormBuilder builder(kTestFormActionURL);
-  builder.AddUsernameField("username1", "John");
+  builder.AddUsernameField("username1", "John", NULL);
   builder.AddPasswordField("password1", "alpha");
   builder.AddPasswordField("password2", "beta");
   builder.AddPasswordField("password3", "gamma");
@@ -185,6 +193,63 @@ TEST_F(PasswordFormConversionUtilsTest,
   scoped_ptr<PasswordForm> password_form;
   ASSERT_NO_FATAL_FAILURE(LoadHTMLAndConvertForm(html, &password_form));
   ASSERT_EQ(static_cast<PasswordForm*>(NULL), password_form.get());
+}
+
+TEST_F(PasswordFormConversionUtilsTest,
+       UsernameFieldsWithAutocompleteAttributes) {
+  // Each test case consists of a set of parameters to be plugged into the
+  // PasswordFormBuilder below, plus the corresponding expectations.
+  struct TestCase {
+    const char* autocomplete[3];
+    const char* expected_username_element;
+    const char* expected_username_value;
+    const char* expected_other_possible_usernames;
+  } cases[] = {
+      // When a sole element is marked with autocomplete='username', it should
+      // be treated as the username for sure, with no other_possible_usernames.
+      {{"username", NULL, NULL}, "username1", "John", ""},
+      {{NULL, "username", NULL}, "username2", "William", ""},
+      {{NULL, NULL, "username"}, "username3", "Smith", ""},
+      // When >=2 elements have the attribute, the first should be selected as
+      // the username, and the rest should go to other_possible_usernames.
+      {{"username", "username", NULL}, "username1", "John", "William"},
+      {{NULL, "username", "username"}, "username2", "William", "Smith"},
+      {{"username", NULL, "username"}, "username1", "John", "Smith"},
+      {{"username", "username", "username"}, "username1", "John",
+       "William+Smith"},
+      // When there is an empty autocomplete attribute (i.e. autocomplete=''),
+      // it should have the same effect as having no attribute whatsoever.
+      {{"", "", ""}, "username2", "William", "John+Smith"},
+      {{"", "", "username"}, "username3", "Smith", ""},
+      {{"username", "", "username"}, "username1", "John", "Smith"},
+      // Whether attribute values are upper or mixed case, it should not matter.
+      {{"USERNAME", NULL, "uSeRNaMe"}, "username1", "John", "Smith"},
+      {{"uSeRNaMe", NULL, "USERNAME"}, "username1", "John", "Smith"}};
+
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i) {
+    SCOPED_TRACE(testing::Message() << "Iteration " << i);
+
+    PasswordFormBuilder builder(kTestFormActionURL);
+    builder.AddUsernameField("username1", "John", cases[i].autocomplete[0]);
+    builder.AddUsernameField("username2", "William", cases[i].autocomplete[1]);
+    builder.AddPasswordField("password", "secret");
+    builder.AddUsernameField("username3", "Smith", cases[i].autocomplete[2]);
+    builder.AddSubmitButton();
+    std::string html = builder.ProduceHTML();
+
+    scoped_ptr<PasswordForm> password_form;
+    ASSERT_NO_FATAL_FAILURE(LoadHTMLAndConvertForm(html, &password_form));
+    ASSERT_NE(static_cast<PasswordForm*>(NULL), password_form.get());
+
+    EXPECT_EQ(base::UTF8ToUTF16(cases[i].expected_username_element),
+              password_form->username_element);
+    EXPECT_EQ(base::UTF8ToUTF16(cases[i].expected_username_value),
+              password_form->username_value);
+    EXPECT_EQ(base::UTF8ToUTF16("password"), password_form->password_element);
+    EXPECT_EQ(base::UTF8ToUTF16("secret"), password_form->password_value);
+    EXPECT_EQ(base::UTF8ToUTF16(cases[i].expected_other_possible_usernames),
+              JoinString(password_form->other_possible_usernames, '+'));
+  }
 }
 
 }  // namespace autofill
