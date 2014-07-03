@@ -398,9 +398,9 @@ public:
         : HeapObjectHeader(freeListEncodedSize(size))
         , m_next(0)
     {
-#if !defined(NDEBUG) && !ASAN
+#if !defined(NDEBUG) && !defined(ADDRESS_SANITIZER)
         // Zap free area with asterisks, aka 0x2a2a2a2a.
-        // For ASAN don't zap since we keep accounting in the freelist entry.
+        // For ASan don't zap since we keep accounting in the freelist entry.
         for (size_t i = sizeof(*this); i < size; i++)
             reinterpret_cast<Address>(this)[i] = freelistZapValue;
         ASSERT(size >= objectHeaderSize);
@@ -1373,7 +1373,7 @@ Address ThreadHeap<Header>::allocate(size_t size, const GCInfo* gcInfo)
     ASSERT(!(reinterpret_cast<uintptr_t>(result) & allocationMask));
     // Unpoison the memory used for the object (payload).
     ASAN_UNPOISON_MEMORY_REGION(result, payloadSize);
-#if !defined(NDEBUG) || defined(LEAK_SANITIZER)
+#if !defined(NDEBUG) || defined(LEAK_SANITIZER) || defined(ADDRESS_SANITIZER)
     memset(result, 0, payloadSize);
 #endif
     ASSERT(heapPageFromAddress(headerAddress + allocationSize - 1));

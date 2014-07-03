@@ -465,7 +465,7 @@ void HeapObjectHeader::finalize(const GCInfo* gcInfo, Address object, size_t obj
         gcInfo->m_finalize(object);
     }
 
-#if !defined(NDEBUG) || defined(LEAK_SANITIZER)
+#if !defined(NDEBUG) || defined(LEAK_SANITIZER) || defined(ADDRESS_SANITIZER)
     // In Debug builds, memory is zapped when it's freed, and the zapped memory is
     // zeroed out when the memory is reused. Memory is also zapped when using Leak
     // Sanitizer because the heap is used as a root region for LSan and therefore
@@ -662,7 +662,7 @@ void ThreadHeap<Header>::addToFreeList(Address address, size_t size)
     // from them we are 8 byte aligned due to the header size).
     ASSERT(!((reinterpret_cast<uintptr_t>(address) + sizeof(Header)) & allocationMask));
     ASSERT(!(size & allocationMask));
-#if defined(NDEBUG) && !defined(LEAK_SANITIZER)
+#if defined(NDEBUG) && !defined(LEAK_SANITIZER) && !defined(ADDRESS_SANITIZER)
     memset(address, 0, size);
 #endif
     ASAN_POISON_MEMORY_REGION(address, size);
@@ -677,7 +677,7 @@ void ThreadHeap<Header>::addToFreeList(Address address, size_t size)
     }
     entry = new (NotNull, address) FreeListEntry(size);
 #if defined(ADDRESS_SANITIZER)
-    // For ASAN we don't add the entry to the free lists until the asanDeferMemoryReuseCount
+    // For ASan we don't add the entry to the free lists until the asanDeferMemoryReuseCount
     // reaches zero. However we always add entire pages to ensure that adding a new page will
     // increase the allocation space.
     if (HeapPage<Header>::payloadSize() != size && !entry->shouldAddToFreeList())
@@ -702,7 +702,7 @@ Address ThreadHeap<Header>::allocateLargeObject(size_t size, const GCInfo* gcInf
     // headerPadding<Header> bytes to ensure it 8 byte aligned.
     allocationSize += headerPadding<Header>();
 
-    // If ASAN is supported we add allocationGranularity bytes to the allocated space and
+    // If ASan is supported we add allocationGranularity bytes to the allocated space and
     // poison that to detect overflows
 #if defined(ADDRESS_SANITIZER)
     allocationSize += allocationGranularity;
@@ -856,7 +856,7 @@ void ThreadHeap<Header>::sweep()
 {
     ASSERT(isConsistentForGC());
 #if defined(ADDRESS_SANITIZER) && STRICT_ASAN_FINALIZATION_CHECKING
-    // When using ASAN do a pre-sweep where all unmarked objects are poisoned before
+    // When using ASan do a pre-sweep where all unmarked objects are poisoned before
     // calling their finalizer methods. This can catch the cases where one objects
     // finalizer tries to modify another object as part of finalization.
     for (HeapPage<Header>* page = m_firstPage; page; page = page->next())
@@ -1074,7 +1074,7 @@ void HeapPage<Header>::sweep()
         Header* header = static_cast<Header*>(basicHeader);
 
         if (!header->isMarked()) {
-            // For ASAN we unpoison the specific object when calling the finalizer and
+            // For ASan we unpoison the specific object when calling the finalizer and
             // poison it again when done to allow the object's own finalizer to operate
             // on the object, but not have other finalizers be allowed to access it.
             ASAN_UNPOISON_MEMORY_REGION(header->payload(), header->payloadSize());
