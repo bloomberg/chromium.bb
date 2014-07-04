@@ -1639,13 +1639,8 @@ FcFreeTypeQueryFace (const FT_Face  face,
 	for (i = 0; i < face->num_fixed_sizes; i++)
 	{
 	    double d = FcGetPixelSize (face, i);
-	    r = FcRangeCreateDouble (d, d);
-	    if (!FcPatternAddRange (pat, FC_SIZE, r))
-	    {
-		FcRangeDestroy (r);
+	    if (!FcPatternAddDouble (pat, FC_SIZE, d))
 		goto bail1;
-	    }
-	    FcRangeDestroy (r);
 	}
     }
 
