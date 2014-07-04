@@ -88,7 +88,9 @@ FcObjectValidType (FcObject object, FcType type)
 		return FcTrue;
 	    break;
 	case FcTypeRange:
-	    if (type == FcTypeRange || type == FcTypeDouble)
+	    if (type == FcTypeRange ||
+		type == FcTypeDouble ||
+		type == FcTypeInteger)
 		return FcTrue;
 	    break;
 	default:
