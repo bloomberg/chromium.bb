@@ -6,7 +6,6 @@ import json
 import logging
 import sys
 
-from lib.bucket import BUCKET_ID, COMMITTED, ALLOC_COUNT, FREE_COUNT
 from lib.ordered_dict import OrderedDict
 from lib.subcommand import SubCommand
 from lib.sorter import MallocUnit, MMapUnit, SorterSet, UnhookedUnit, UnitSet
@@ -177,19 +176,10 @@ class CatCommand(SubCommand):
 
   @staticmethod
   def _iterate_malloc_unit(dump, bucket_set):
-    for line in dump.iter_stacktrace:
-      words = line.split()
-      bucket = bucket_set.get(int(words[BUCKET_ID]))
+    for bucket_id, _, committed, allocs, frees in dump.iter_stacktrace:
+      bucket = bucket_set.get(bucket_id)
       if bucket and bucket.allocator_type == 'malloc':
-        yield MallocUnit(int(words[BUCKET_ID]),
-                         int(words[COMMITTED]),
-                         int(words[ALLOC_COUNT]),
-                         int(words[FREE_COUNT]),
-                         bucket)
+        yield MallocUnit(bucket_id, committed, allocs, frees, bucket)
       elif not bucket:
         # 'Not-found' buckets are all assumed as malloc buckets.
-        yield MallocUnit(int(words[BUCKET_ID]),
-                         int(words[COMMITTED]),
-                         int(words[ALLOC_COUNT]),
-                         int(words[FREE_COUNT]),
-                         None)
+        yield MallocUnit(bucket_id, committed, allocs, frees, None)

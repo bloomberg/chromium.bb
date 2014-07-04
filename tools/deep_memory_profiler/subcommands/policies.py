@@ -7,7 +7,6 @@ import json
 import logging
 import sys
 
-from lib.bucket import BUCKET_ID, COMMITTED
 from lib.pageframe import PFNCounts
 from lib.policy import PolicySet
 from lib.subcommand import SubCommand
@@ -184,22 +183,21 @@ class PolicyCommands(SubCommand):
 
   @staticmethod
   def _accumulate_malloc(dump, policy, bucket_set, sizes):
-    for line in dump.iter_stacktrace:
-      words = line.split()
-      bucket = bucket_set.get(int(words[BUCKET_ID]))
+    for bucket_id, _, committed, _, _ in dump.iter_stacktrace:
+      bucket = bucket_set.get(bucket_id)
       if not bucket or bucket.allocator_type == 'malloc':
         component_match = policy.find_malloc(bucket)
       elif bucket.allocator_type == 'mmap':
         continue
       else:
         assert False
-      sizes[component_match] += int(words[COMMITTED])
+      sizes[component_match] += committed
 
       assert not component_match.startswith('mmap-')
       if component_match.startswith('tc-'):
-        sizes['tc-total-log'] += int(words[COMMITTED])
+        sizes['tc-total-log'] += committed
       else:
-        sizes['other-total-log'] += int(words[COMMITTED])
+        sizes['other-total-log'] += committed
 
   @staticmethod
   def _accumulate_maps(dump, pfn_dict, policy, bucket_set, sizes):

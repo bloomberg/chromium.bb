@@ -4,7 +4,6 @@
 
 import sys
 
-from lib.bucket import BUCKET_ID
 from lib.subcommand import SubCommand
 
 
@@ -29,13 +28,11 @@ class StacktraceCommand(SubCommand):
         bucket_set: A BucketSet object.
         out: A file object to output.
     """
-    for line in dump.iter_stacktrace:
-      words = line.split()
-      bucket = bucket_set.get(int(words[BUCKET_ID]))
+    for bucket_id, virtual, committed, allocs, frees in dump.iter_stacktrace:
+      bucket = bucket_set.get(bucket_id)
       if not bucket:
         continue
-      for i in range(0, BUCKET_ID - 1):
-        out.write(words[i] + ' ')
+      out.write('%d %d %d %d ' % (virtual, committed, allocs, frees))
       for frame in bucket.symbolized_stackfunction:
         out.write(frame + ' ')
       out.write('\n')

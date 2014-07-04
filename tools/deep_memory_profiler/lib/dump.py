@@ -9,7 +9,6 @@ import os
 import re
 import time
 
-from lib.bucket import BUCKET_ID
 from lib.exceptions import EmptyDumpException, InvalidDumpException
 from lib.exceptions import ObsoleteDumpVersionException, ParsingException
 from lib.pageframe import PageFrame
@@ -18,6 +17,7 @@ from lib.symbol import procfs
 
 
 LOGGER = logging.getLogger('dmprof')
+VIRTUAL, COMMITTED, ALLOC_COUNT, FREE_COUNT, _AT, BUCKET_ID = range(6)
 
 
 # Heap Profile Dump versions
@@ -102,14 +102,15 @@ class Dump(object):
     for region in sorted(self._map.iteritems()):
       yield region[0], region[1]
 
-  def iter_procmaps(self):
-    for begin, end, attr in self._map.iter_range():
-      yield begin, end, attr
-
   @property
   def iter_stacktrace(self):
     for line in self._stacktrace_lines:
-      yield line
+      words = line.split()
+      yield (int(words[BUCKET_ID]),
+             int(words[VIRTUAL]),
+             int(words[COMMITTED]),
+             int(words[ALLOC_COUNT]),
+             int(words[FREE_COUNT]))
 
   def global_stat(self, name):
     return self._global_stats[name]

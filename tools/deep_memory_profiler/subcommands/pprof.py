@@ -5,7 +5,6 @@
 import logging
 import sys
 
-from lib.bucket import BUCKET_ID, COMMITTED, ALLOC_COUNT, FREE_COUNT
 from lib.policy import PolicySet
 from lib.subcommand import SubCommand
 
@@ -94,9 +93,8 @@ class PProfCommand(SubCommand):
       com_committed += region[1]['committed']
       com_allocs += 1
 
-    for line in dump.iter_stacktrace:
-      words = line.split()
-      bucket = bucket_set.get(int(words[BUCKET_ID]))
+    for bucket_id, _, committed, allocs, frees in dump.iter_stacktrace:
+      bucket = bucket_set.get(bucket_id)
       if not bucket or bucket.allocator_type == 'malloc':
         component_match = policy.find_malloc(bucket)
       elif bucket.allocator_type == 'mmap':
@@ -107,8 +105,8 @@ class PProfCommand(SubCommand):
           (component_name and component_name != component_match)):
         continue
 
-      com_committed += int(words[COMMITTED])
-      com_allocs += int(words[ALLOC_COUNT]) - int(words[FREE_COUNT])
+      com_committed += committed
+      com_allocs += allocs - frees
 
     return com_committed, com_allocs
 
@@ -138,9 +136,8 @@ class PProfCommand(SubCommand):
         out.write(' 0x%016x' % address)
       out.write('\n')
 
-    for line in dump.iter_stacktrace:
-      words = line.split()
-      bucket = bucket_set.get(int(words[BUCKET_ID]))
+    for bucket_id, _, committed, allocs, frees in dump.iter_stacktrace:
+      bucket = bucket_set.get(bucket_id)
       if not bucket or bucket.allocator_type == 'malloc':
         component_match = policy.find_malloc(bucket)
       elif bucket.allocator_type == 'mmap':
@@ -152,10 +149,7 @@ class PProfCommand(SubCommand):
         continue
 
       out.write('%6d: %8s [%6d: %8s] @' % (
-          int(words[ALLOC_COUNT]) - int(words[FREE_COUNT]),
-          words[COMMITTED],
-          int(words[ALLOC_COUNT]) - int(words[FREE_COUNT]),
-          words[COMMITTED]))
+          allocs - frees, str(committed), allocs - frees, str(committed)))
       for address in bucket.stacktrace:
         out.write(' 0x%016x' % address)
       out.write('\n')

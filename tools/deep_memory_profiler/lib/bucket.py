@@ -10,9 +10,6 @@ from lib.symbol import FUNCTION_SYMBOLS, SOURCEFILE_SYMBOLS, TYPEINFO_SYMBOLS
 
 LOGGER = logging.getLogger('dmprof')
 
-# Indexes in dumped heap profile dumps.
-VIRTUAL, COMMITTED, ALLOC_COUNT, FREE_COUNT, _, BUCKET_ID = range(6)
-
 
 class Bucket(object):
   """Represents a bucket, which is a unit of memory block classification."""

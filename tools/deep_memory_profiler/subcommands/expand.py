@@ -5,7 +5,6 @@
 import logging
 import sys
 
-from lib.bucket import BUCKET_ID, COMMITTED, ALLOC_COUNT, FREE_COUNT
 from lib.policy import PolicySet
 from lib.subcommand import SubCommand
 
@@ -92,9 +91,8 @@ class ExpandCommand(SubCommand):
     if not rule:
       pass
     elif rule.allocator_type == 'malloc':
-      for line in dump.iter_stacktrace:
-        words = line.split()
-        bucket = bucket_set.get(int(words[BUCKET_ID]))
+      for bucket_id, _, committed, allocs, frees in dump.iter_stacktrace:
+        bucket = bucket_set.get(bucket_id)
         if not bucket or bucket.allocator_type == 'malloc':
           component_match = policy.find_malloc(bucket)
         elif bucket.allocator_type == 'mmap':
@@ -103,13 +101,12 @@ class ExpandCommand(SubCommand):
           assert False
         if component_match == component_name:
           precedence = ''
-          precedence += '(alloc=%d) ' % int(words[ALLOC_COUNT])
-          precedence += '(free=%d) ' % int(words[FREE_COUNT])
+          precedence += '(alloc=%d) ' % allocs
+          precedence += '(free=%d) ' % frees
           if bucket.typeinfo:
             precedence += '(type=%s) ' % bucket.symbolized_typeinfo
             precedence += '(type.name=%s) ' % bucket.typeinfo_name
-          ExpandCommand._add_size(precedence, bucket, depth,
-                                  int(words[COMMITTED]), sizes)
+          ExpandCommand._add_size(precedence, bucket, depth, committed, sizes)
     elif rule.allocator_type == 'mmap':
       for _, region in dump.iter_map:
         if region[0] != 'hooked':
