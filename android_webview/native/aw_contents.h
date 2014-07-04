@@ -111,7 +111,6 @@ class AwContents : public FindHelper::Listener,
   jboolean RestoreFromOpaqueState(JNIEnv* env, jobject obj, jbyteArray state);
   void FocusFirstNode(JNIEnv* env, jobject obj);
   void SetBackgroundColor(JNIEnv* env, jobject obj, jint color);
-  void SetHasTransparentBackground(JNIEnv* env, jobject obj, bool transparent);
   bool OnDraw(JNIEnv* env,
               jobject obj,
               jobject canvas,

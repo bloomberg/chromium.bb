@@ -95,6 +95,7 @@ HardwareRenderer::HardwareRenderer(SharedRendererState* state)
       cc::LayerTreeHost::CreateSingleThreaded(this, this, NULL, settings);
   layer_tree_host_->SetRootLayer(root_layer_);
   layer_tree_host_->SetLayerTreeHostClientReady();
+  layer_tree_host_->set_has_transparent_background(true);
 }
 
 HardwareRenderer::~HardwareRenderer() {
@@ -166,8 +167,6 @@ void HardwareRenderer::DrawGL(bool stencil_enabled,
     bool size_changed = frame_size != frame_size_;
     frame_size_ = frame_size;
     scroll_offset_ = input->scroll_offset;
-    layer_tree_host_->set_has_transparent_background(
-        input->has_transparent_background);
 
     if (!frame_provider_ || size_changed) {
       if (delegated_layer_) {

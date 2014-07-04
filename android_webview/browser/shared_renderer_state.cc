@@ -10,8 +10,7 @@
 
 namespace android_webview {
 
-DrawGLInput::DrawGLInput() : width(0), height(0),
-    has_transparent_background(false) {
+DrawGLInput::DrawGLInput() : width(0), height(0) {
 }
 
 DrawGLInput::~DrawGLInput() {

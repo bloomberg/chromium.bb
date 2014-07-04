@@ -651,9 +651,6 @@ public class AwContents {
         setInternalAccessAdapter(fullScreenView.getInternalAccessAdapter());
         setContainerView(fullScreenView);
 
-        // Make the background transparent so that the ContentVideoView is visible
-        // behind the FullScreenView.
-        nativeSetHasTransparentBackground(mNativeAwContents, true);
         return fullScreenView;
     }
 
@@ -685,7 +682,6 @@ public class AwContents {
         setInternalAccessAdapter(mFullScreenTransitionsState.getInitialInternalAccessDelegate());
         setContainerView(initialContainerView);
 
-        nativeSetHasTransparentBackground(mNativeAwContents, false);
         mFullScreenTransitionsState.exitFullScreen();
     }
 
@@ -2449,8 +2445,6 @@ public class AwContents {
     private native long nativeReleasePopupAwContents(long nativeAwContents);
     private native void nativeFocusFirstNode(long nativeAwContents);
     private native void nativeSetBackgroundColor(long nativeAwContents, int color);
-    private native void nativeSetHasTransparentBackground(
-            long nativeAwContents, boolean transparent);
 
     private native long nativeGetAwDrawGLViewContext(long nativeAwContents);
     private native long nativeCapturePicture(long nativeAwContents, int width, int height);

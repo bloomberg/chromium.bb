@@ -99,9 +99,6 @@ class BrowserViewRenderer : public content::SynchronousCompositorClient,
   // Sets the scale for logical<->physical pixel conversions.
   void SetDipScale(float dip_scale);
 
-  // Sets the background of the layer tree to transparent.
-  void SetHasTransparentBackground(bool transparent);
-
   // Set the root layer scroll offset to |new_value|.
   void ScrollTo(gfx::Vector2d new_value);
 
@@ -195,7 +192,6 @@ class BrowserViewRenderer : public content::SynchronousCompositorClient,
   bool attached_to_window_;
   bool hardware_enabled_;
   float dip_scale_;
-  bool has_transparent_background_;
   float page_scale_factor_;
   bool on_new_picture_enable_;
   bool clear_view_;
