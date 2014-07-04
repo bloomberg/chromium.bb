@@ -32,10 +32,12 @@
 namespace WebCore {
 namespace XPath {
 
-EvaluationContext& Expression::evaluationContext()
+EvaluationContext::EvaluationContext(Node& contextNode)
+    : node(contextNode)
+    , size(1)
+    , position(1)
+    , hadTypeConversionError(false)
 {
-    DEFINE_STATIC_LOCAL(EvaluationContext, evaluationContext, ());
-    return evaluationContext;
 }
 
 Expression::Expression()

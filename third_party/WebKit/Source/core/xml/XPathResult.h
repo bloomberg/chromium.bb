@@ -39,6 +39,10 @@ class Document;
 class ExceptionState;
 class Node;
 
+namespace XPath {
+struct EvaluationContext;
+}
+
 class XPathResult FINAL : public RefCountedWillBeGarbageCollected<XPathResult>, public ScriptWrappable {
     DECLARE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(XPathResult);
 public:
@@ -55,9 +59,9 @@ public:
         FIRST_ORDERED_NODE_TYPE = 9
     };
 
-    static PassRefPtrWillBeRawPtr<XPathResult> create(Document* document, const XPath::Value& value)
+    static PassRefPtrWillBeRawPtr<XPathResult> create(XPath::EvaluationContext& context, const XPath::Value& value)
     {
-        return adoptRefWillBeNoop(new XPathResult(document, value));
+        return adoptRefWillBeNoop(new XPathResult(context, value));
     }
 
     void convertTo(unsigned short type, ExceptionState&);
@@ -79,7 +83,7 @@ public:
     void trace(Visitor*);
 
 private:
-    XPathResult(Document*, const XPath::Value&);
+    XPathResult(XPath::EvaluationContext&, const XPath::Value&);
     XPath::NodeSet& nodeSet() { return *m_nodeSet; }
 
     XPath::Value m_value;

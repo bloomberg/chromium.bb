@@ -56,14 +56,13 @@ void Filter::trace(Visitor* visitor)
     Expression::trace(visitor);
 }
 
-Value Filter::evaluate() const
+Value Filter::evaluate(EvaluationContext& evaluationContext) const
 {
-    Value v = m_expr->evaluate();
+    Value v = m_expr->evaluate(evaluationContext);
 
-    NodeSet& nodes = v.modifiableNodeSet();
+    NodeSet& nodes = v.modifiableNodeSet(evaluationContext);
     nodes.sort();
 
-    EvaluationContext& evaluationContext = Expression::evaluationContext();
     for (unsigned i = 0; i < m_predicates.size(); i++) {
         OwnPtrWillBeRawPtr<NodeSet> newNodes(NodeSet::create());
         evaluationContext.size = nodes.size();
@@ -75,7 +74,7 @@ Value Filter::evaluate() const
             evaluationContext.node = node;
             ++evaluationContext.position;
 
-            if (m_predicates[i]->evaluate())
+            if (m_predicates[i]->evaluate(evaluationContext))
                 newNodes->append(node);
         }
         nodes.swap(*newNodes);
@@ -105,10 +104,9 @@ void LocationPath::trace(Visitor* visitor)
     Expression::trace(visitor);
 }
 
-Value LocationPath::evaluate() const
+Value LocationPath::evaluate(EvaluationContext& evaluationContext) const
 {
-    EvaluationContext& evaluationContext = Expression::evaluationContext();
-    EvaluationContext backupContext = evaluationContext;
+    EvaluationContext clonedContext = evaluationContext;
     // http://www.w3.org/TR/xpath/
     // Section 2, Location Paths:
     // "/ selects the document root (which is always the parent of the document element)"
@@ -127,13 +125,12 @@ Value LocationPath::evaluate() const
 
     OwnPtrWillBeRawPtr<NodeSet> nodes(NodeSet::create());
     nodes->append(context);
-    evaluate(*nodes);
+    evaluate(clonedContext, *nodes);
 
-    evaluationContext = backupContext;
     return Value(nodes.release(), Value::adopt);
 }
 
-void LocationPath::evaluate(NodeSet& nodes) const
+void LocationPath::evaluate(EvaluationContext& context, NodeSet& nodes) const
 {
     bool resultIsSorted = nodes.isSorted();
 
@@ -154,7 +151,7 @@ void LocationPath::evaluate(NodeSet& nodes) const
 
         for (unsigned j = 0; j < nodes.size(); j++) {
             OwnPtrWillBeRawPtr<NodeSet> matches(NodeSet::create());
-            step->evaluate(nodes[j], *matches);
+            step->evaluate(context, nodes[j], *matches);
 
             if (!matches->isSorted())
                 resultIsSorted = false;
@@ -226,12 +223,12 @@ void Path::trace(Visitor* visitor)
     Expression::trace(visitor);
 }
 
-Value Path::evaluate() const
+Value Path::evaluate(EvaluationContext& context) const
 {
-    Value v = m_filter->evaluate();
+    Value v = m_filter->evaluate(context);
 
-    NodeSet& nodes = v.modifiableNodeSet();
-    m_path->evaluate(nodes);
+    NodeSet& nodes = v.modifiableNodeSet(context);
+    m_path->evaluate(context, nodes);
 
     return v;
 }

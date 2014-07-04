@@ -126,12 +126,11 @@ bool Step::predicatesAreContextListInsensitive() const
     return true;
 }
 
-void Step::evaluate(Node* context, NodeSet& nodes) const
+void Step::evaluate(EvaluationContext& evaluationContext, Node* context, NodeSet& nodes) const
 {
-    EvaluationContext& evaluationContext = Expression::evaluationContext();
     evaluationContext.position = 0;
 
-    nodesInAxis(context, nodes);
+    nodesInAxis(evaluationContext, context, nodes);
 
     // Check predicates that couldn't be merged into node test.
     for (unsigned i = 0; i < m_predicates.size(); i++) {
@@ -147,7 +146,7 @@ void Step::evaluate(Node* context, NodeSet& nodes) const
             evaluationContext.node = node;
             evaluationContext.size = nodes.size();
             evaluationContext.position = j + 1;
-            if (predicate->evaluate())
+            if (predicate->evaluate(evaluationContext))
                 newNodes->append(node);
         }
 
@@ -232,12 +231,10 @@ static inline bool nodeMatchesBasicTest(Node* node, Step::Axis axis, const Step:
     return false;
 }
 
-static inline bool nodeMatches(Node* node, Step::Axis axis, const Step::NodeTest& nodeTest)
+static inline bool nodeMatches(EvaluationContext& evaluationContext, Node* node, Step::Axis axis, const Step::NodeTest& nodeTest)
 {
     if (!nodeMatchesBasicTest(node, axis, nodeTest))
         return false;
-
-    EvaluationContext& evaluationContext = Expression::evaluationContext();
 
     // Only the first merged predicate may depend on position.
     ++evaluationContext.position;
@@ -249,7 +246,7 @@ static inline bool nodeMatches(Node* node, Step::Axis axis, const Step::NodeTest
         evaluationContext.node = node;
         // No need to set context size - we only get here when evaluating
         // predicates that do not depend on it.
-        if (!predicate->evaluate())
+        if (!predicate->evaluate(evaluationContext))
             return false;
     }
 
@@ -258,7 +255,7 @@ static inline bool nodeMatches(Node* node, Step::Axis axis, const Step::NodeTest
 
 // Result nodes are ordered in axis order. Node test (including merged
 // predicates) is applied.
-void Step::nodesInAxis(Node* context, NodeSet& nodes) const
+void Step::nodesInAxis(EvaluationContext& evaluationContext, Node* context, NodeSet& nodes) const
 {
     ASSERT(nodes.isEmpty());
     switch (m_axis) {
@@ -268,7 +265,7 @@ void Step::nodesInAxis(Node* context, NodeSet& nodes) const
             return;
 
         for (Node* n = context->firstChild(); n; n = n->nextSibling()) {
-            if (nodeMatches(n, ChildAxis, nodeTest()))
+            if (nodeMatches(evaluationContext, n, ChildAxis, nodeTest()))
                 nodes.append(n);
         }
         return;
@@ -279,7 +276,7 @@ void Step::nodesInAxis(Node* context, NodeSet& nodes) const
             return;
 
         for (Node* n = context->firstChild(); n; n = NodeTraversal::next(*n, context)) {
-            if (nodeMatches(n, DescendantAxis, nodeTest()))
+            if (nodeMatches(evaluationContext, n, DescendantAxis, nodeTest()))
                 nodes.append(n);
         }
         return;
@@ -287,11 +284,11 @@ void Step::nodesInAxis(Node* context, NodeSet& nodes) const
     case ParentAxis:
         if (context->isAttributeNode()) {
             Element* n = toAttr(context)->ownerElement();
-            if (nodeMatches(n, ParentAxis, nodeTest()))
+            if (nodeMatches(evaluationContext, n, ParentAxis, nodeTest()))
                 nodes.append(n);
         } else {
             ContainerNode* n = context->parentNode();
-            if (n && nodeMatches(n, ParentAxis, nodeTest()))
+            if (n && nodeMatches(evaluationContext, n, ParentAxis, nodeTest()))
                 nodes.append(n);
         }
         return;
@@ -300,11 +297,11 @@ void Step::nodesInAxis(Node* context, NodeSet& nodes) const
         Node* n = context;
         if (context->isAttributeNode()) {
             n = toAttr(context)->ownerElement();
-            if (nodeMatches(n, AncestorAxis, nodeTest()))
+            if (nodeMatches(evaluationContext, n, AncestorAxis, nodeTest()))
                 nodes.append(n);
         }
         for (n = n->parentNode(); n; n = n->parentNode()) {
-            if (nodeMatches(n, AncestorAxis, nodeTest()))
+            if (nodeMatches(evaluationContext, n, AncestorAxis, nodeTest()))
                 nodes.append(n);
         }
         nodes.markSorted(false);
@@ -316,7 +313,7 @@ void Step::nodesInAxis(Node* context, NodeSet& nodes) const
             return;
 
         for (Node* n = context->nextSibling(); n; n = n->nextSibling()) {
-            if (nodeMatches(n, FollowingSiblingAxis, nodeTest()))
+            if (nodeMatches(evaluationContext, n, FollowingSiblingAxis, nodeTest()))
                 nodes.append(n);
         }
         return;
@@ -326,7 +323,7 @@ void Step::nodesInAxis(Node* context, NodeSet& nodes) const
             return;
 
         for (Node* n = context->previousSibling(); n; n = n->previousSibling()) {
-            if (nodeMatches(n, PrecedingSiblingAxis, nodeTest()))
+            if (nodeMatches(evaluationContext, n, PrecedingSiblingAxis, nodeTest()))
                 nodes.append(n);
         }
         nodes.markSorted(false);
@@ -336,16 +333,16 @@ void Step::nodesInAxis(Node* context, NodeSet& nodes) const
         if (context->isAttributeNode()) {
             Node* p = toAttr(context)->ownerElement();
             while ((p = NodeTraversal::next(*p))) {
-                if (nodeMatches(p, FollowingAxis, nodeTest()))
+                if (nodeMatches(evaluationContext, p, FollowingAxis, nodeTest()))
                     nodes.append(p);
             }
         } else {
             for (Node* p = context; !isRootDomNode(p); p = p->parentNode()) {
                 for (Node* n = p->nextSibling(); n; n = n->nextSibling()) {
-                    if (nodeMatches(n, FollowingAxis, nodeTest()))
+                    if (nodeMatches(evaluationContext, n, FollowingAxis, nodeTest()))
                         nodes.append(n);
                     for (Node* c = n->firstChild(); c; c = NodeTraversal::next(*c, n)) {
-                        if (nodeMatches(c, FollowingAxis, nodeTest()))
+                        if (nodeMatches(evaluationContext, c, FollowingAxis, nodeTest()))
                             nodes.append(c);
                     }
                 }
@@ -360,7 +357,7 @@ void Step::nodesInAxis(Node* context, NodeSet& nodes) const
         Node* n = context;
         while (ContainerNode* parent = n->parentNode()) {
             for (n = NodeTraversal::previous(*n); n != parent; n = NodeTraversal::previous(*n)) {
-                if (nodeMatches(n, PrecedingAxis, nodeTest()))
+                if (nodeMatches(evaluationContext, n, PrecedingAxis, nodeTest()))
                     nodes.append(n);
             }
             n = parent;
@@ -381,7 +378,7 @@ void Step::nodesInAxis(Node* context, NodeSet& nodes) const
             // In XPath land, namespace nodes are not accessible on the attribute axis.
             if (n && n->namespaceURI() != XMLNSNames::xmlnsNamespaceURI) {
                 // Still need to check merged predicates.
-                if (nodeMatches(n.get(), AttributeAxis, nodeTest()))
+                if (nodeMatches(evaluationContext, n.get(), AttributeAxis, nodeTest()))
                     nodes.append(n.release());
             }
             return;
@@ -394,7 +391,7 @@ void Step::nodesInAxis(Node* context, NodeSet& nodes) const
         AttributeCollection::const_iterator end = attributes.end();
         for (AttributeCollection::const_iterator it = attributes.begin(); it != end; ++it) {
             RefPtrWillBeRawPtr<Attr> attr = contextElement->ensureAttr(it->name());
-            if (nodeMatches(attr.get(), AttributeAxis, nodeTest()))
+            if (nodeMatches(evaluationContext, attr.get(), AttributeAxis, nodeTest()))
                 nodes.append(attr.release());
         }
         return;
@@ -405,34 +402,34 @@ void Step::nodesInAxis(Node* context, NodeSet& nodes) const
         return;
 
     case SelfAxis:
-        if (nodeMatches(context, SelfAxis, nodeTest()))
+        if (nodeMatches(evaluationContext, context, SelfAxis, nodeTest()))
             nodes.append(context);
         return;
 
     case DescendantOrSelfAxis:
-        if (nodeMatches(context, DescendantOrSelfAxis, nodeTest()))
+        if (nodeMatches(evaluationContext, context, DescendantOrSelfAxis, nodeTest()))
             nodes.append(context);
         // In XPath model, attribute nodes do not have children.
         if (context->isAttributeNode())
             return;
 
         for (Node* n = context->firstChild(); n; n = NodeTraversal::next(*n, context)) {
-            if (nodeMatches(n, DescendantOrSelfAxis, nodeTest()))
+            if (nodeMatches(evaluationContext, n, DescendantOrSelfAxis, nodeTest()))
                 nodes.append(n);
         }
         return;
 
     case AncestorOrSelfAxis: {
-        if (nodeMatches(context, AncestorOrSelfAxis, nodeTest()))
+        if (nodeMatches(evaluationContext, context, AncestorOrSelfAxis, nodeTest()))
             nodes.append(context);
         Node* n = context;
         if (context->isAttributeNode()) {
             n = toAttr(context)->ownerElement();
-            if (nodeMatches(n, AncestorOrSelfAxis, nodeTest()))
+            if (nodeMatches(evaluationContext, n, AncestorOrSelfAxis, nodeTest()))
                 nodes.append(n);
         }
         for (n = n->parentNode(); n; n = n->parentNode()) {
-            if (nodeMatches(n, AncestorOrSelfAxis, nodeTest()))
+            if (nodeMatches(evaluationContext, n, AncestorOrSelfAxis, nodeTest()))
                 nodes.append(n);
         }
         nodes.markSorted(false);

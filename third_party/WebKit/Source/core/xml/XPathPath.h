@@ -43,7 +43,7 @@ public:
     virtual ~Filter();
     virtual void trace(Visitor*) OVERRIDE;
 
-    virtual Value evaluate() const OVERRIDE;
+    virtual Value evaluate(EvaluationContext&) const OVERRIDE;
 
 private:
     virtual Value::Type resultType() const OVERRIDE { return Value::NodeSetValue; }
@@ -58,9 +58,9 @@ public:
     virtual ~LocationPath();
     virtual void trace(Visitor*) OVERRIDE;
 
-    virtual Value evaluate() const OVERRIDE;
+    virtual Value evaluate(EvaluationContext&) const OVERRIDE;
     void setAbsolute(bool value) { m_absolute = value; setIsContextNodeSensitive(!m_absolute); }
-    void evaluate(NodeSet&) const; // nodes is an input/output parameter
+    void evaluate(EvaluationContext&, NodeSet&) const; // nodes is an input/output parameter
     void appendStep(Step*);
     void insertFirstStep(Step*);
 
@@ -77,7 +77,7 @@ public:
     virtual ~Path();
     virtual void trace(Visitor*) OVERRIDE;
 
-    virtual Value evaluate() const OVERRIDE;
+    virtual Value evaluate(EvaluationContext&) const OVERRIDE;
 
 private:
     virtual Value::Type resultType() const OVERRIDE { return Value::NodeSetValue; }

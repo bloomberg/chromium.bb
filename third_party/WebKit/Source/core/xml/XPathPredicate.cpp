@@ -48,7 +48,7 @@ void Number::trace(Visitor* visitor)
     Expression::trace(visitor);
 }
 
-Value Number::evaluate() const
+Value Number::evaluate(EvaluationContext&) const
 {
     return m_value;
 }
@@ -64,14 +64,14 @@ void StringExpression::trace(Visitor* visitor)
     Expression::trace(visitor);
 }
 
-Value StringExpression::evaluate() const
+Value StringExpression::evaluate(EvaluationContext&) const
 {
     return m_value;
 }
 
-Value Negative::evaluate() const
+Value Negative::evaluate(EvaluationContext& context) const
 {
-    Value p(subExpr(0)->evaluate());
+    Value p(subExpr(0)->evaluate(context));
     return -p.toNumber();
 }
 
@@ -82,10 +82,10 @@ NumericOp::NumericOp(Opcode opcode, PassOwnPtrWillBeRawPtr<Expression> lhs, Pass
     addSubExpression(rhs);
 }
 
-Value NumericOp::evaluate() const
+Value NumericOp::evaluate(EvaluationContext& context) const
 {
-    Value lhs(subExpr(0)->evaluate());
-    Value rhs(subExpr(1)->evaluate());
+    Value lhs(subExpr(0)->evaluate(context));
+    Value rhs(subExpr(1)->evaluate(context));
 
     double leftVal = lhs.toNumber();
     double rightVal = rhs.toNumber();
@@ -113,20 +113,20 @@ EqTestOp::EqTestOp(Opcode opcode, PassOwnPtrWillBeRawPtr<Expression> lhs, PassOw
     addSubExpression(rhs);
 }
 
-bool EqTestOp::compare(const Value& lhs, const Value& rhs) const
+bool EqTestOp::compare(EvaluationContext& context, const Value& lhs, const Value& rhs) const
 {
     if (lhs.isNodeSet()) {
-        const NodeSet& lhsSet = lhs.toNodeSet();
+        const NodeSet& lhsSet = lhs.toNodeSet(&context);
         if (rhs.isNodeSet()) {
             // If both objects to be compared are node-sets, then the comparison
             // will be true if and only if there is a node in the first node-set
             // and a node in the second node-set such that the result of
             // performing the comparison on the string-values of the two nodes
             // is true.
-            const NodeSet& rhsSet = rhs.toNodeSet();
+            const NodeSet& rhsSet = rhs.toNodeSet(&context);
             for (unsigned lindex = 0; lindex < lhsSet.size(); ++lindex) {
                 for (unsigned rindex = 0; rindex < rhsSet.size(); ++rindex) {
-                    if (compare(stringValue(lhsSet[lindex]), stringValue(rhsSet[rindex])))
+                    if (compare(context, stringValue(lhsSet[lindex]), stringValue(rhsSet[rindex])))
                         return true;
                 }
             }
@@ -140,7 +140,7 @@ bool EqTestOp::compare(const Value& lhs, const Value& rhs) const
             // converting the string-value of that node to a number using the
             // number function is true.
             for (unsigned lindex = 0; lindex < lhsSet.size(); ++lindex) {
-                if (compare(Value(stringValue(lhsSet[lindex])).toNumber(), rhs))
+                if (compare(context, Value(stringValue(lhsSet[lindex])).toNumber(), rhs))
                     return true;
             }
             return false;
@@ -152,7 +152,7 @@ bool EqTestOp::compare(const Value& lhs, const Value& rhs) const
             // comparison on the string-value of the node and the other string
             // is true.
             for (unsigned lindex = 0; lindex < lhsSet.size(); ++lindex) {
-                if (compare(stringValue(lhsSet[lindex]), rhs))
+                if (compare(context, stringValue(lhsSet[lindex]), rhs))
                     return true;
             }
             return false;
@@ -163,28 +163,28 @@ bool EqTestOp::compare(const Value& lhs, const Value& rhs) const
             // result of performing the comparison on the boolean and on the
             // result of converting the node-set to a boolean using the boolean
             // function is true.
-            return compare(lhs.toBoolean(), rhs);
+            return compare(context, lhs.toBoolean(), rhs);
         }
         ASSERT(0);
     }
     if (rhs.isNodeSet()) {
-        const NodeSet& rhsSet = rhs.toNodeSet();
+        const NodeSet& rhsSet = rhs.toNodeSet(&context);
         if (lhs.isNumber()) {
             for (unsigned rindex = 0; rindex < rhsSet.size(); ++rindex) {
-                if (compare(lhs, Value(stringValue(rhsSet[rindex])).toNumber()))
+                if (compare(context, lhs, Value(stringValue(rhsSet[rindex])).toNumber()))
                     return true;
             }
             return false;
         }
         if (lhs.isString()) {
             for (unsigned rindex = 0; rindex < rhsSet.size(); ++rindex) {
-                if (compare(lhs, stringValue(rhsSet[rindex])))
+                if (compare(context, lhs, stringValue(rhsSet[rindex])))
                     return true;
             }
             return false;
         }
         if (lhs.isBoolean())
-            return compare(lhs, rhs.toBoolean());
+            return compare(context, lhs, rhs.toBoolean());
         ASSERT(0);
     }
 
@@ -216,12 +216,12 @@ bool EqTestOp::compare(const Value& lhs, const Value& rhs) const
     return false;
 }
 
-Value EqTestOp::evaluate() const
+Value EqTestOp::evaluate(EvaluationContext& context) const
 {
-    Value lhs(subExpr(0)->evaluate());
-    Value rhs(subExpr(1)->evaluate());
+    Value lhs(subExpr(0)->evaluate(context));
+    Value rhs(subExpr(1)->evaluate(context));
 
-    return compare(lhs, rhs);
+    return compare(context, lhs, rhs);
 }
 
 LogicalOp::LogicalOp(Opcode opcode, PassOwnPtrWillBeRawPtr<Expression> lhs, PassOwnPtrWillBeRawPtr<Expression> rhs)
@@ -236,9 +236,9 @@ bool LogicalOp::shortCircuitOn() const
     return m_opcode != OP_And;
 }
 
-Value LogicalOp::evaluate() const
+Value LogicalOp::evaluate(EvaluationContext& context) const
 {
-    Value lhs(subExpr(0)->evaluate());
+    Value lhs(subExpr(0)->evaluate(context));
 
     // This is not only an optimization, http://www.w3.org/TR/xpath
     // dictates that we must do short-circuit evaluation
@@ -246,16 +246,16 @@ Value LogicalOp::evaluate() const
     if (lhsBool == shortCircuitOn())
         return lhsBool;
 
-    return subExpr(1)->evaluate().toBoolean();
+    return subExpr(1)->evaluate(context).toBoolean();
 }
 
-Value Union::evaluate() const
+Value Union::evaluate(EvaluationContext& context) const
 {
-    Value lhsResult = subExpr(0)->evaluate();
-    Value rhs = subExpr(1)->evaluate();
+    Value lhsResult = subExpr(0)->evaluate(context);
+    Value rhs = subExpr(1)->evaluate(context);
 
-    NodeSet& resultSet = lhsResult.modifiableNodeSet();
-    const NodeSet& rhsNodes = rhs.toNodeSet();
+    NodeSet& resultSet = lhsResult.modifiableNodeSet(context);
+    const NodeSet& rhsNodes = rhs.toNodeSet(&context);
 
     HashSet<Node*> nodes;
     for (size_t i = 0; i < resultSet.size(); ++i)
@@ -286,15 +286,15 @@ void Predicate::trace(Visitor* visitor)
     visitor->trace(m_expr);
 }
 
-bool Predicate::evaluate() const
+bool Predicate::evaluate(EvaluationContext& context) const
 {
     ASSERT(m_expr);
 
-    Value result(m_expr->evaluate());
+    Value result(m_expr->evaluate(context));
 
     // foo[3] means foo[position()=3]
     if (result.isNumber())
-        return EqTestOp(EqTestOp::OpcodeEqual, adoptPtrWillBeNoop(createFunction("position")), adoptPtrWillBeNoop(new Number(result.toNumber()))).evaluate().toBoolean();
+        return EqTestOp(EqTestOp::OpcodeEqual, adoptPtrWillBeNoop(createFunction("position")), adoptPtrWillBeNoop(new Number(result.toNumber()))).evaluate(context).toBoolean();
 
     return result.toBoolean();
 }

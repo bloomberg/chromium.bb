@@ -40,7 +40,7 @@ public:
     virtual void trace(Visitor*) OVERRIDE;
 
 private:
-    virtual Value evaluate() const OVERRIDE;
+    virtual Value evaluate(EvaluationContext&) const OVERRIDE;
     virtual Value::Type resultType() const OVERRIDE { return Value::NumberValue; }
 
     Value m_value;
@@ -52,7 +52,7 @@ public:
     virtual void trace(Visitor*) OVERRIDE;
 
 private:
-    virtual Value evaluate() const OVERRIDE;
+    virtual Value evaluate(EvaluationContext&) const OVERRIDE;
     virtual Value::Type resultType() const OVERRIDE { return Value::StringValue; }
 
     Value m_value;
@@ -60,7 +60,7 @@ private:
 
 class Negative FINAL : public Expression {
 private:
-    virtual Value evaluate() const OVERRIDE;
+    virtual Value evaluate(EvaluationContext&) const OVERRIDE;
     virtual Value::Type resultType() const OVERRIDE { return Value::NumberValue; }
 };
 
@@ -72,7 +72,7 @@ public:
     NumericOp(Opcode, PassOwnPtrWillBeRawPtr<Expression> lhs, PassOwnPtrWillBeRawPtr<Expression> rhs);
 
 private:
-    virtual Value evaluate() const OVERRIDE;
+    virtual Value evaluate(EvaluationContext&) const OVERRIDE;
     virtual Value::Type resultType() const OVERRIDE { return Value::NumberValue; }
 
     Opcode m_opcode;
@@ -82,11 +82,11 @@ class EqTestOp FINAL : public Expression {
 public:
     enum Opcode { OpcodeEqual, OpcodeNotEqual, OpcodeGreaterThan, OpcodeLessThan, OpcodeGreaterOrEqual, OpcodeLessOrEqual };
     EqTestOp(Opcode, PassOwnPtrWillBeRawPtr<Expression> lhs, PassOwnPtrWillBeRawPtr<Expression> rhs);
-    virtual Value evaluate() const OVERRIDE;
+    virtual Value evaluate(EvaluationContext&) const OVERRIDE;
 
 private:
     virtual Value::Type resultType() const OVERRIDE { return Value::BooleanValue; }
-    bool compare(const Value&, const Value&) const;
+    bool compare(EvaluationContext&, const Value&, const Value&) const;
 
     Opcode m_opcode;
 };
@@ -99,14 +99,14 @@ public:
 private:
     virtual Value::Type resultType() const OVERRIDE { return Value::BooleanValue; }
     bool shortCircuitOn() const;
-    virtual Value evaluate() const OVERRIDE;
+    virtual Value evaluate(EvaluationContext&) const OVERRIDE;
 
     Opcode m_opcode;
 };
 
 class Union FINAL : public Expression {
 private:
-    virtual Value evaluate() const OVERRIDE;
+    virtual Value evaluate(EvaluationContext&) const OVERRIDE;
     virtual Value::Type resultType() const OVERRIDE { return Value::NodeSetValue; }
 };
 
@@ -117,7 +117,7 @@ public:
     explicit Predicate(PassOwnPtrWillBeRawPtr<Expression>);
     void trace(Visitor*);
 
-    bool evaluate() const;
+    bool evaluate(EvaluationContext&) const;
     bool isContextPositionSensitive() const { return m_expr->isContextPositionSensitive() || m_expr->resultType() == Value::NumberValue; }
     bool isContextSizeSensitive() const { return m_expr->isContextSizeSensitive(); }
 

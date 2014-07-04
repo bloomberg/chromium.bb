@@ -73,157 +73,157 @@ struct FunctionRec {
 static HashMap<String, FunctionRec>* functionMap;
 
 class FunLast FINAL : public Function {
-    virtual Value evaluate() const OVERRIDE;
+    virtual Value evaluate(EvaluationContext&) const OVERRIDE;
     virtual Value::Type resultType() const OVERRIDE { return Value::NumberValue; }
 public:
     FunLast() { setIsContextSizeSensitive(true); }
 };
 
 class FunPosition FINAL : public Function {
-    virtual Value evaluate() const OVERRIDE;
+    virtual Value evaluate(EvaluationContext&) const OVERRIDE;
     virtual Value::Type resultType() const OVERRIDE { return Value::NumberValue; }
 public:
     FunPosition() { setIsContextPositionSensitive(true); }
 };
 
 class FunCount FINAL : public Function {
-    virtual Value evaluate() const OVERRIDE;
+    virtual Value evaluate(EvaluationContext&) const OVERRIDE;
     virtual Value::Type resultType() const OVERRIDE { return Value::NumberValue; }
 };
 
 class FunId FINAL : public Function {
-    virtual Value evaluate() const OVERRIDE;
+    virtual Value evaluate(EvaluationContext&) const OVERRIDE;
     virtual Value::Type resultType() const OVERRIDE { return Value::NodeSetValue; }
 };
 
 class FunLocalName FINAL : public Function {
-    virtual Value evaluate() const OVERRIDE;
+    virtual Value evaluate(EvaluationContext&) const OVERRIDE;
     virtual Value::Type resultType() const OVERRIDE { return Value::StringValue; }
 public:
     FunLocalName() { setIsContextNodeSensitive(true); } // local-name() with no arguments uses context node.
 };
 
 class FunNamespaceURI FINAL : public Function {
-    virtual Value evaluate() const OVERRIDE;
+    virtual Value evaluate(EvaluationContext&) const OVERRIDE;
     virtual Value::Type resultType() const OVERRIDE { return Value::StringValue; }
 public:
     FunNamespaceURI() { setIsContextNodeSensitive(true); } // namespace-uri() with no arguments uses context node.
 };
 
 class FunName FINAL : public Function {
-    virtual Value evaluate() const OVERRIDE;
+    virtual Value evaluate(EvaluationContext&) const OVERRIDE;
     virtual Value::Type resultType() const OVERRIDE { return Value::StringValue; }
 public:
     FunName() { setIsContextNodeSensitive(true); } // name() with no arguments uses context node.
 };
 
 class FunString FINAL : public Function {
-    virtual Value evaluate() const OVERRIDE;
+    virtual Value evaluate(EvaluationContext&) const OVERRIDE;
     virtual Value::Type resultType() const OVERRIDE { return Value::StringValue; }
 public:
     FunString() { setIsContextNodeSensitive(true); } // string() with no arguments uses context node.
 };
 
 class FunConcat FINAL : public Function {
-    virtual Value evaluate() const OVERRIDE;
+    virtual Value evaluate(EvaluationContext&) const OVERRIDE;
     virtual Value::Type resultType() const OVERRIDE { return Value::StringValue; }
 };
 
 class FunStartsWith FINAL : public Function {
-    virtual Value evaluate() const OVERRIDE;
+    virtual Value evaluate(EvaluationContext&) const OVERRIDE;
     virtual Value::Type resultType() const OVERRIDE { return Value::BooleanValue; }
 };
 
 class FunContains FINAL : public Function {
-    virtual Value evaluate() const OVERRIDE;
+    virtual Value evaluate(EvaluationContext&) const OVERRIDE;
     virtual Value::Type resultType() const OVERRIDE { return Value::BooleanValue; }
 };
 
 class FunSubstringBefore FINAL : public Function {
-    virtual Value evaluate() const OVERRIDE;
+    virtual Value evaluate(EvaluationContext&) const OVERRIDE;
     virtual Value::Type resultType() const OVERRIDE { return Value::StringValue; }
 };
 
 class FunSubstringAfter FINAL : public Function {
-    virtual Value evaluate() const OVERRIDE;
+    virtual Value evaluate(EvaluationContext&) const OVERRIDE;
     virtual Value::Type resultType() const OVERRIDE { return Value::StringValue; }
 };
 
 class FunSubstring FINAL : public Function {
-    virtual Value evaluate() const OVERRIDE;
+    virtual Value evaluate(EvaluationContext&) const OVERRIDE;
     virtual Value::Type resultType() const OVERRIDE { return Value::StringValue; }
 };
 
 class FunStringLength FINAL : public Function {
-    virtual Value evaluate() const OVERRIDE;
+    virtual Value evaluate(EvaluationContext&) const OVERRIDE;
     virtual Value::Type resultType() const OVERRIDE { return Value::NumberValue; }
 public:
     FunStringLength() { setIsContextNodeSensitive(true); } // string-length() with no arguments uses context node.
 };
 
 class FunNormalizeSpace FINAL : public Function {
-    virtual Value evaluate() const OVERRIDE;
+    virtual Value evaluate(EvaluationContext&) const OVERRIDE;
     virtual Value::Type resultType() const OVERRIDE { return Value::StringValue; }
 public:
     FunNormalizeSpace() { setIsContextNodeSensitive(true); } // normalize-space() with no arguments uses context node.
 };
 
 class FunTranslate FINAL : public Function {
-    virtual Value evaluate() const OVERRIDE;
+    virtual Value evaluate(EvaluationContext&) const OVERRIDE;
     virtual Value::Type resultType() const OVERRIDE { return Value::StringValue; }
 };
 
 class FunBoolean FINAL : public Function {
-    virtual Value evaluate() const OVERRIDE;
+    virtual Value evaluate(EvaluationContext&) const OVERRIDE;
     virtual Value::Type resultType() const OVERRIDE { return Value::BooleanValue; }
 };
 
 class FunNot FINAL : public Function {
-    virtual Value evaluate() const OVERRIDE;
+    virtual Value evaluate(EvaluationContext&) const OVERRIDE;
     virtual Value::Type resultType() const OVERRIDE { return Value::BooleanValue; }
 };
 
 class FunTrue FINAL : public Function {
-    virtual Value evaluate() const OVERRIDE;
+    virtual Value evaluate(EvaluationContext&) const OVERRIDE;
     virtual Value::Type resultType() const OVERRIDE { return Value::BooleanValue; }
 };
 
 class FunFalse FINAL : public Function {
-    virtual Value evaluate() const OVERRIDE;
+    virtual Value evaluate(EvaluationContext&) const OVERRIDE;
     virtual Value::Type resultType() const OVERRIDE { return Value::BooleanValue; }
 };
 
 class FunLang FINAL : public Function {
-    virtual Value evaluate() const OVERRIDE;
+    virtual Value evaluate(EvaluationContext&) const OVERRIDE;
     virtual Value::Type resultType() const OVERRIDE { return Value::BooleanValue; }
 public:
     FunLang() { setIsContextNodeSensitive(true); } // lang() always works on context node.
 };
 
 class FunNumber FINAL : public Function {
-    virtual Value evaluate() const OVERRIDE;
+    virtual Value evaluate(EvaluationContext&) const OVERRIDE;
     virtual Value::Type resultType() const OVERRIDE { return Value::NumberValue; }
 public:
     FunNumber() { setIsContextNodeSensitive(true); } // number() with no arguments uses context node.
 };
 
 class FunSum FINAL : public Function {
-    virtual Value evaluate() const OVERRIDE;
+    virtual Value evaluate(EvaluationContext&) const OVERRIDE;
     virtual Value::Type resultType() const OVERRIDE { return Value::NumberValue; }
 };
 
 class FunFloor FINAL : public Function {
-    virtual Value evaluate() const OVERRIDE;
+    virtual Value evaluate(EvaluationContext&) const OVERRIDE;
     virtual Value::Type resultType() const OVERRIDE { return Value::NumberValue; }
 };
 
 class FunCeiling FINAL : public Function {
-    virtual Value evaluate() const OVERRIDE;
+    virtual Value evaluate(EvaluationContext&) const OVERRIDE;
     virtual Value::Type resultType() const OVERRIDE { return Value::NumberValue; }
 };
 
 class FunRound FINAL : public Function {
-    virtual Value evaluate() const OVERRIDE;
+    virtual Value evaluate(EvaluationContext&) const OVERRIDE;
     virtual Value::Type resultType() const OVERRIDE { return Value::NumberValue; }
 public:
     static double round(double);
@@ -304,23 +304,23 @@ void Function::setArguments(WillBeHeapVector<OwnPtrWillBeMember<Expression> >& a
         addSubExpression(it->release());
 }
 
-Value FunLast::evaluate() const
+Value FunLast::evaluate(EvaluationContext& context) const
 {
-    return Expression::evaluationContext().size;
+    return context.size;
 }
 
-Value FunPosition::evaluate() const
+Value FunPosition::evaluate(EvaluationContext& context) const
 {
-    return Expression::evaluationContext().position;
+    return context.position;
 }
 
-Value FunId::evaluate() const
+Value FunId::evaluate(EvaluationContext& context) const
 {
-    Value a = arg(0)->evaluate();
+    Value a = arg(0)->evaluate(context);
     StringBuilder idList; // A whitespace-separated list of IDs
 
     if (a.isNodeSet()) {
-        const NodeSet& nodes = a.toNodeSet();
+        const NodeSet& nodes = a.toNodeSet(&context);
         for (size_t i = 0; i < nodes.size(); ++i) {
             String str = stringValue(nodes[i]);
             idList.append(str);
@@ -331,7 +331,7 @@ Value FunId::evaluate() const
         idList.append(str);
     }
 
-    TreeScope& contextScope = evaluationContext().node->treeScope();
+    TreeScope& contextScope = context.node->treeScope();
     OwnPtrWillBeRawPtr<NodeSet> result(NodeSet::create());
     HashSet<Node*> resultSet;
 
@@ -389,80 +389,80 @@ static inline String expandedName(Node* node)
     return prefix.isEmpty() ? expandedNameLocalPart(node) : prefix + ":" + expandedNameLocalPart(node);
 }
 
-Value FunLocalName::evaluate() const
+Value FunLocalName::evaluate(EvaluationContext& context) const
 {
     if (argCount() > 0) {
-        Value a = arg(0)->evaluate();
+        Value a = arg(0)->evaluate(context);
         if (!a.isNodeSet())
             return "";
 
-        Node* node = a.toNodeSet().firstNode();
+        Node* node = a.toNodeSet(&context).firstNode();
         return node ? expandedNameLocalPart(node) : "";
     }
 
-    return expandedNameLocalPart(evaluationContext().node.get());
+    return expandedNameLocalPart(context.node.get());
 }
 
-Value FunNamespaceURI::evaluate() const
+Value FunNamespaceURI::evaluate(EvaluationContext& context) const
 {
     if (argCount() > 0) {
-        Value a = arg(0)->evaluate();
+        Value a = arg(0)->evaluate(context);
         if (!a.isNodeSet())
             return "";
 
-        Node* node = a.toNodeSet().firstNode();
+        Node* node = a.toNodeSet(&context).firstNode();
         return node ? node->namespaceURI().string() : "";
     }
 
-    return evaluationContext().node->namespaceURI().string();
+    return context.node->namespaceURI().string();
 }
 
-Value FunName::evaluate() const
+Value FunName::evaluate(EvaluationContext& context) const
 {
     if (argCount() > 0) {
-        Value a = arg(0)->evaluate();
+        Value a = arg(0)->evaluate(context);
         if (!a.isNodeSet())
             return "";
 
-        Node* node = a.toNodeSet().firstNode();
+        Node* node = a.toNodeSet(&context).firstNode();
         return node ? expandedName(node) : "";
     }
 
-    return expandedName(evaluationContext().node.get());
+    return expandedName(context.node.get());
 }
 
-Value FunCount::evaluate() const
+Value FunCount::evaluate(EvaluationContext& context) const
 {
-    Value a = arg(0)->evaluate();
+    Value a = arg(0)->evaluate(context);
 
-    return double(a.toNodeSet().size());
+    return double(a.toNodeSet(&context).size());
 }
 
-Value FunString::evaluate() const
+Value FunString::evaluate(EvaluationContext& context) const
 {
     if (!argCount())
-        return Value(Expression::evaluationContext().node.get()).toString();
-    return arg(0)->evaluate().toString();
+        return Value(context.node.get()).toString();
+    return arg(0)->evaluate(context).toString();
 }
 
-Value FunConcat::evaluate() const
+Value FunConcat::evaluate(EvaluationContext& context) const
 {
     StringBuilder result;
     result.reserveCapacity(1024);
 
     unsigned count = argCount();
     for (unsigned i = 0; i < count; ++i) {
-        String str(arg(i)->evaluate().toString());
+        String str(arg(i)->evaluate(context).toString());
         result.append(str);
     }
 
     return result.toString();
 }
 
-Value FunStartsWith::evaluate() const
+Value FunStartsWith::evaluate(EvaluationContext& context) const
 {
-    String s1 = arg(0)->evaluate().toString();
-    String s2 = arg(1)->evaluate().toString();
+    String s1 = arg(0)->evaluate(context).toString();
+    String s2 = arg(1)->evaluate(context).toString();
 
     if (s2.isEmpty())
         return true;
@@ -470,10 +470,10 @@ Value FunStartsWith::evaluate() const
     return s1.startsWith(s2);
 }
 
-Value FunContains::evaluate() const
+Value FunContains::evaluate(EvaluationContext& context) const
 {
-    String s1 = arg(0)->evaluate().toString();
-    String s2 = arg(1)->evaluate().toString();
+    String s1 = arg(0)->evaluate(context).toString();
+    String s2 = arg(1)->evaluate(context).toString();
 
     if (s2.isEmpty())
         return true;
@@ -481,10 +481,10 @@ Value FunContains::evaluate() const
     return s1.contains(s2) != 0;
 }
 
-Value FunSubstringBefore::evaluate() const
+Value FunSubstringBefore::evaluate(EvaluationContext& context) const
 {
-    String s1 = arg(0)->evaluate().toString();
-    String s2 = arg(1)->evaluate().toString();
+    String s1 = arg(0)->evaluate(context).toString();
+    String s2 = arg(1)->evaluate(context).toString();
 
     if (s2.isEmpty())
         return "";
@@ -497,10 +497,10 @@ Value FunSubstringBefore::evaluate() const
     return s1.left(i);
 }
 
-Value FunSubstringAfter::evaluate() const
+Value FunSubstringAfter::evaluate(EvaluationContext& context) const
 {
-    String s1 = arg(0)->evaluate().toString();
-    String s2 = arg(1)->evaluate().toString();
+    String s1 = arg(0)->evaluate(context).toString();
+    String s2 = arg(1)->evaluate(context).toString();
 
     size_t i = s1.find(s2);
     if (i == kNotFound)
@@ -509,17 +509,17 @@ Value FunSubstringAfter::evaluate() const
     return s1.substring(i + s2.length());
 }
 
-Value FunSubstring::evaluate() const
+Value FunSubstring::evaluate(EvaluationContext& context) const
 {
-    String s = arg(0)->evaluate().toString();
-    double doublePos = arg(1)->evaluate().toNumber();
+    String s = arg(0)->evaluate(context).toString();
+    double doublePos = arg(1)->evaluate(context).toNumber();
     if (std::isnan(doublePos))
         return "";
     long pos = static_cast<long>(FunRound::round(doublePos));
     bool haveLength = argCount() == 3;
     long len = -1;
     if (haveLength) {
-        double doubleLen = arg(2)->evaluate().toNumber();
+        double doubleLen = arg(2)->evaluate(context).toNumber();
         if (std::isnan(doubleLen))
             return "";
         len = static_cast<long>(FunRound::round(doubleLen));
@@ -540,29 +540,29 @@ Value FunSubstring::evaluate() const
     return s.substring(pos - 1, len);
 }
 
-Value FunStringLength::evaluate() const
+Value FunStringLength::evaluate(EvaluationContext& context) const
 {
     if (!argCount())
-        return Value(Expression::evaluationContext().node.get()).toString().length();
-    return arg(0)->evaluate().toString().length();
+        return Value(context.node.get()).toString().length();
+    return arg(0)->evaluate(context).toString().length();
 }
 
-Value FunNormalizeSpace::evaluate() const
+Value FunNormalizeSpace::evaluate(EvaluationContext& context) const
 {
     if (!argCount()) {
-        String s = Value(Expression::evaluationContext().node.get()).toString();
+        String s = Value(context.node.get()).toString();
         return s.simplifyWhiteSpace();
     }
 
-    String s = arg(0)->evaluate().toString();
+    String s = arg(0)->evaluate(context).toString();
     return s.simplifyWhiteSpace();
 }
 
-Value FunTranslate::evaluate() const
+Value FunTranslate::evaluate(EvaluationContext& context) const
 {
-    String s1 = arg(0)->evaluate().toString();
-    String s2 = arg(1)->evaluate().toString();
-    String s3 = arg(2)->evaluate().toString();
+    String s1 = arg(0)->evaluate(context).toString();
+    String s2 = arg(1)->evaluate(context).toString();
+    String s3 = arg(2)->evaluate(context).toString();
     StringBuilder result;
 
     for (unsigned i1 = 0; i1 < s1.length(); ++i1) {
@@ -578,27 +578,27 @@ Value FunTranslate::evaluate() const
     return result.toString();
 }
 
-Value FunBoolean::evaluate() const
+Value FunBoolean::evaluate(EvaluationContext& context) const
 {
-    return arg(0)->evaluate().toBoolean();
+    return arg(0)->evaluate(context).toBoolean();
 }
 
-Value FunNot::evaluate() const
+Value FunNot::evaluate(EvaluationContext& context) const
 {
-    return !arg(0)->evaluate().toBoolean();
+    return !arg(0)->evaluate(context).toBoolean();
 }
 
-Value FunTrue::evaluate() const
+Value FunTrue::evaluate(EvaluationContext&) const
 {
     return true;
 }
 
-Value FunLang::evaluate() const
+Value FunLang::evaluate(EvaluationContext& context) const
 {
-    String lang = arg(0)->evaluate().toString();
+    String lang = arg(0)->evaluate(context).toString();
 
     const Attribute* languageAttribute = 0;
-    Node* node = evaluationContext().node.get();
+    Node* node = context.node.get();
     while (node) {
         if (node->isElementNode()) {
             Element* element = toElement(node);
@@ -628,26 +628,26 @@ Value FunLang::evaluate() const
     return false;
 }
 
-Value FunFalse::evaluate() const
+Value FunFalse::evaluate(EvaluationContext&) const
 {
     return false;
 }
 
-Value FunNumber::evaluate() const
+Value FunNumber::evaluate(EvaluationContext& context) const
 {
     if (!argCount())
-        return Value(Expression::evaluationContext().node.get()).toNumber();
-    return arg(0)->evaluate().toNumber();
+        return Value(context.node.get()).toNumber();
+    return arg(0)->evaluate(context).toNumber();
 }
 
-Value FunSum::evaluate() const
+Value FunSum::evaluate(EvaluationContext& context) const
 {
-    Value a = arg(0)->evaluate();
+    Value a = arg(0)->evaluate(context);
     if (!a.isNodeSet())
         return 0.0;
 
     double sum = 0.0;
-    const NodeSet& nodes = a.toNodeSet();
+    const NodeSet& nodes = a.toNodeSet(&context);
     // To be really compliant, we should sort the node-set, as floating point addition is not associative.
     // However, this is unlikely to ever become a practical issue, and sorting is slow.
 
@@ -657,14 +657,14 @@ Value FunSum::evaluate() const
     return sum;
 }
 
-Value FunFloor::evaluate() const
+Value FunFloor::evaluate(EvaluationContext& context) const
 {
-    return floor(arg(0)->evaluate().toNumber());
+    return floor(arg(0)->evaluate(context).toNumber());
 }
 
-Value FunCeiling::evaluate() const
+Value FunCeiling::evaluate(EvaluationContext& context) const
 {
-    return ceil(arg(0)->evaluate().toNumber());
+    return ceil(arg(0)->evaluate(context).toNumber());
 }
 
 double FunRound::round(double val)
@@ -678,9 +678,9 @@ double FunRound::round(double val)
     return val;
 }
 
-Value FunRound::evaluate() const
+Value FunRound::evaluate(EvaluationContext& context) const
 {
-    return round(arg(0)->evaluate().toNumber());
+    return round(arg(0)->evaluate(context).toNumber());
 }
 
 struct FunctionMapping {

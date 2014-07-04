@@ -38,7 +38,7 @@ public:
     explicit VariableReference(const String& name);
 
 private:
-    virtual Value evaluate() const OVERRIDE;
+    virtual Value evaluate(EvaluationContext&) const OVERRIDE;
     virtual Value::Type resultType() const OVERRIDE { ASSERT_NOT_REACHED(); return Value::NumberValue; }
 
     String m_name;

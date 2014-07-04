@@ -48,10 +48,10 @@ void Value::trace(Visitor* visitor)
     visitor->trace(m_data);
 }
 
-const NodeSet& Value::toNodeSet() const
+const NodeSet& Value::toNodeSet(EvaluationContext* context) const
 {
-    if (!isNodeSet())
-        Expression::evaluationContext().hadTypeConversionError = true;
+    if (!isNodeSet() && context)
+        context->hadTypeConversionError = true;
 
     if (!m_data) {
         DEFINE_STATIC_LOCAL(OwnPtrWillBePersistent<NodeSet>, emptyNodeSet, (NodeSet::create()));
@@ -61,10 +61,10 @@ const NodeSet& Value::toNodeSet() const
     return m_data->nodeSet();
 }
 
-NodeSet& Value::modifiableNodeSet()
+NodeSet& Value::modifiableNodeSet(EvaluationContext& context)
 {
     if (!isNodeSet())
-        Expression::evaluationContext().hadTypeConversionError = true;
+        context.hadTypeConversionError = true;
 
     if (!m_data)
         m_data = ValueData::create();

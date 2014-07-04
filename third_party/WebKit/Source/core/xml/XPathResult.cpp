@@ -31,6 +31,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/xml/XPathEvaluator.h"
+#include "core/xml/XPathExpressionNode.h"
 
 namespace WebCore {
 
@@ -38,7 +39,7 @@ using namespace XPath;
 
 DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(XPathResult);
 
-XPathResult::XPathResult(Document* document, const Value& value)
+XPathResult::XPathResult(EvaluationContext& context, const Value& value)
     : m_value(value)
     , m_nodeSetPosition(0)
     , m_domTreeVersion(0)
@@ -57,9 +58,9 @@ XPathResult::XPathResult(Document* document, const Value& value)
     case Value::NodeSetValue:
         m_resultType = UNORDERED_NODE_ITERATOR_TYPE;
         m_nodeSetPosition = 0;
-        m_nodeSet = NodeSet::create(m_value.toNodeSet());
-        m_document = document;
-        m_domTreeVersion = document->domTreeVersion();
+        m_nodeSet = NodeSet::create(m_value.toNodeSet(&context));
+        m_document = &context.node->document();
+        m_domTreeVersion = m_document->domTreeVersion();
         return;
     }
     ASSERT_NOT_REACHED();
@@ -113,7 +114,7 @@ void XPathResult::convertTo(unsigned short type, ExceptionState& exceptionState)
             exceptionState.throwTypeError("The result is not a node set, and therefore cannot be converted to the desired type.");
             return;
         }
-        m_value.toNodeSet().sort();
+        m_value.toNodeSet(0).sort();
         m_resultType = type;
         break;
     }
@@ -158,7 +159,7 @@ Node* XPathResult::singleNodeValue(ExceptionState& exceptionState) const
         return 0;
     }
 
-    const NodeSet& nodes = m_value.toNodeSet();
+    const NodeSet& nodes = m_value.toNodeSet(0);
     if (resultType() == FIRST_ORDERED_NODE_TYPE)
         return nodes.firstNode();
     return nodes.anyNode();
@@ -180,7 +181,7 @@ unsigned long XPathResult::snapshotLength(ExceptionState& exceptionState) const
         return 0;
     }
 
-    return m_value.toNodeSet().size();
+    return m_value.toNodeSet(0).size();
 }
 
 Node* XPathResult::iterateNext(ExceptionState& exceptionState)
@@ -212,7 +213,7 @@ Node* XPathResult::snapshotItem(unsigned long index, ExceptionState& exceptionSt
         return 0;
     }
 
-    const NodeSet& nodes = m_value.toNodeSet();
+    const NodeSet& nodes = m_value.toNodeSet(0);
     if (index >= nodes.size())
         return 0;
 

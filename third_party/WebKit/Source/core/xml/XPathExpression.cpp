@@ -76,13 +76,8 @@ PassRefPtrWillBeRawPtr<XPathResult> XPathExpression::evaluate(Node* contextNode,
         return nullptr;
     }
 
-    EvaluationContext& evaluationContext = Expression::evaluationContext();
-    evaluationContext.node = contextNode;
-    evaluationContext.size = 1;
-    evaluationContext.position = 1;
-    evaluationContext.hadTypeConversionError = false;
-    RefPtrWillBeRawPtr<XPathResult> result = XPathResult::create(&contextNode->document(), m_topExpression->evaluate());
-    evaluationContext.node = nullptr; // Do not hold a reference to the context node, as this may prevent the whole document from being destroyed in time.
+    EvaluationContext evaluationContext(*contextNode);
+    RefPtrWillBeRawPtr<XPathResult> result = XPathResult::create(evaluationContext, m_topExpression->evaluate(evaluationContext));
 
     if (evaluationContext.hadTypeConversionError) {
         // It is not specified what to do if type conversion fails while evaluating an expression.

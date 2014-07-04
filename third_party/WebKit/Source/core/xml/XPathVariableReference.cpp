@@ -37,9 +37,9 @@ VariableReference::VariableReference(const String& name)
 {
 }
 
-Value VariableReference::evaluate() const
+Value VariableReference::evaluate(EvaluationContext& context) const
 {
-    HashMap<String, String>& bindings = evaluationContext().variableBindings;
+    HashMap<String, String>& bindings = context.variableBindings;
     if (!bindings.contains(m_name)) {
         // FIXME: Is this the right thing to do if an unknown variable is
         // referenced?
