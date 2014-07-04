@@ -8,7 +8,6 @@
 namespace WebCore {
 
 class Document;
-class NavigatorContentUtilsClientMock;
 class Internals;
 
 class InternalsNavigatorContentUtils {

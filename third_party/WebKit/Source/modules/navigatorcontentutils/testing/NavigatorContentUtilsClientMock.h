@@ -6,12 +6,12 @@
 #define NavigatorContentUtilsClientMock_h
 
 #include "modules/navigatorcontentutils/NavigatorContentUtilsClient.h"
-#include "platform/weborigin/KURL.h"
 #include "wtf/HashSet.h"
-#include "wtf/OwnPtr.h"
 #include "wtf/text/WTFString.h"
 
 namespace WebCore {
+
+class KURL;
 
 // Provides a mock object for the navigatorcontentutils client.
 class NavigatorContentUtilsClientMock : public NavigatorContentUtilsClient {

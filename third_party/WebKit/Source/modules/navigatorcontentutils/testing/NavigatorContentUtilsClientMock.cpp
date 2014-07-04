@@ -6,7 +6,7 @@
 #include "NavigatorContentUtilsClientMock.h"
 
 #include "modules/navigatorcontentutils/NavigatorContentUtilsClient.h"
-#include "wtf/PassOwnPtr.h"
+#include "platform/weborigin/KURL.h"
 #include "wtf/text/StringHash.h"
 
 namespace WebCore {

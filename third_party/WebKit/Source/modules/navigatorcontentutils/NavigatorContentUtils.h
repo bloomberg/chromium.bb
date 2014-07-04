@@ -30,6 +30,7 @@
 #include "modules/navigatorcontentutils/NavigatorContentUtilsClient.h"
 #include "platform/Supplementable.h"
 #include "platform/heap/Handle.h"
+#include "wtf/OwnPtr.h"
 #include "wtf/text/WTFString.h"
 
 namespace WebCore {
