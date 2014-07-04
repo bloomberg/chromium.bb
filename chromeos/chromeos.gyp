@@ -363,6 +363,8 @@
         'network/dhcp_proxy_script_fetcher_chromeos.h',
         'pairing/fake_controller_pairing_controller.cc',
         'pairing/fake_controller_pairing_controller.h',
+        'pairing/fake_host_pairing_controller.cc',
+        'pairing/fake_host_pairing_controller.h',
         'pairing/controller_pairing_controller.cc',
         'pairing/controller_pairing_controller.h',
         'pairing/host_pairing_controller.cc',

@@ -67,6 +67,10 @@ class CHROMEOS_EXPORT HostPairingController {
   // |STAGE_WAITING_FOR_CODE_CONFIRMATION| stage.
   virtual std::string GetConfirmationCode() = 0;
 
+  // Returns an enrollment domain name. Can be called on stage
+  // |STAGE_ENROLLMENT| and later.
+  virtual std::string GetEnrollmentDomain() = 0;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(HostPairingController);
 };
