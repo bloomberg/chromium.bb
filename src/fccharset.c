@@ -916,7 +916,7 @@ FcNameUnparseCharSet (FcStrBuf *buf, const FcCharSet *c)
 				FcNameUnparseUnicode (buf, last);
 			    }
 			    if (last != 0x7FFFFFFF)
-				FcStrBufChar (buf, ',');
+				FcStrBufChar (buf, ' ');
 			    /* Start new range. */
 			    first = u;
 			    FcNameUnparseUnicode (buf, u);
