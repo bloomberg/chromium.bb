@@ -1199,7 +1199,6 @@ FcFreeTypeQueryFace (const FT_Face  face,
     const char	    *tmp;
 
     FcRange	    *r = NULL;
-    double	    lower_size = 0.0L, upper_size = DBL_MAX;
 
     FcBool	    symbol = FcFalse;
 
@@ -1614,23 +1613,26 @@ FcFreeTypeQueryFace (const FT_Face  face,
 	free (complex_);
     }
 
-#if defined (HAVE_TT_OS2_USUPPEROPTICALPOINTSIZE) && defined (HAVE_TT_OS2_USLOWEROPTICALPOINTSIZE)
-    if (os2 && os2->version >= 0x0005 && os2->version != 0xffff)
-    {
-	/* usLowerPointSize and usUpperPointSize is actually twips */
-	lower_size = os2->usLowerOpticalPointSize / 20.0L;
-	upper_size = os2->usUpperOpticalPointSize / 20.0L;
-    }
-#endif
     if (os2)
     {
-	r = FcRangeCreateDouble (lower_size, upper_size);
-	if (!FcPatternAddRange (pat, FC_SIZE, r))
+#if defined (HAVE_TT_OS2_USUPPEROPTICALPOINTSIZE) && defined (HAVE_TT_OS2_USLOWEROPTICALPOINTSIZE)
+	if (os2 && os2->version >= 0x0005 && os2->version != 0xffff)
 	{
+	    double lower_size, upper_size;
+
+	    /* usLowerPointSize and usUpperPointSize is actually twips */
+	    lower_size = os2->usLowerOpticalPointSize / 20.0L;
+	    upper_size = os2->usUpperOpticalPointSize / 20.0L;
+
+	    r = FcRangeCreateDouble (lower_size, upper_size);
+	    if (!FcPatternAddRange (pat, FC_SIZE, r))
+	    {
+		FcRangeDestroy (r);
+		goto bail1;
+	    }
 	    FcRangeDestroy (r);
-	    goto bail1;
 	}
-	FcRangeDestroy (r);
+#endif
     }
     else
     {
