@@ -426,7 +426,7 @@ frame_resize_inside(struct frame *frame, int32_t width, int32_t height)
 	struct theme *t = frame->theme;
 	int decoration_width, decoration_height, titlebar_height;
 
-	if (frame->title)
+	if (frame->title || !wl_list_empty(&frame->buttons))
 		titlebar_height = t->titlebar_height;
 	else
 		titlebar_height = t->width;
@@ -467,7 +467,7 @@ frame_refresh_geometry(struct frame *frame)
 	if (!frame->geometry_dirty)
 		return;
 
-	if (frame->title)
+	if (frame->title || !wl_list_empty(&frame->buttons))
 		titlebar_height = t->titlebar_height;
 	else
 		titlebar_height = t->width;
