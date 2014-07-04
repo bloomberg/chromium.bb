@@ -603,8 +603,6 @@ bool CrxUpdateService::CheckForUpdates() {
             << ", time_since_last_checked="
             << time_since_last_checked.InSeconds() << " seconds";
 
-    ChangeItemState(item, CrxUpdateItem::kChecking);
-
     item->last_check = now;
     item->crx_urls.clear();
     item->crx_diffurls.clear();
@@ -622,6 +620,8 @@ bool CrxUpdateService::CheckForUpdates() {
     item->download_metrics.clear();
 
     items_to_check.push_back(item);
+
+    ChangeItemState(item, CrxUpdateItem::kChecking);
   }
 
   if (items_to_check.empty())
@@ -927,14 +927,14 @@ void CrxUpdateService::DoneInstalling(const std::string& component_id,
   }
 
   if (is_success) {
-    ChangeItemState(item, CrxUpdateItem::kUpdated);
     item->component.version = item->next_version;
     item->component.fingerprint = item->next_fp;
+    ChangeItemState(item, CrxUpdateItem::kUpdated);
   } else {
-    ChangeItemState(item, CrxUpdateItem::kNoUpdate);
     item->error_category = error_category;
     item->error_code = error;
     item->extra_code1 = extra_code;
+    ChangeItemState(item, CrxUpdateItem::kNoUpdate);
   }
 
   ping_manager_->OnUpdateComplete(item);
@@ -1005,16 +1005,22 @@ ComponentUpdateService::Status CrxUpdateService::OnDemandUpdateInternal(
   if (!uit)
     return kError;
 
-  Status service_status = GetServiceStatus(uit->status);
-  // If the item is already in the process of being updated, there is
-  // no point in this call, so return kInProgress.
-  if (service_status == kInProgress)
-    return service_status;
-
-  // Otherwise the item was already checked a while back (or it is new),
-  // set its status to kNew to give it a slightly higher priority.
-  ChangeItemState(uit, CrxUpdateItem::kNew);
   uit->on_demand = true;
+
+  // If there is an update available for this item, then continue processing
+  // the update. This is an artifact of how update checks are done: in addition
+  // to the on-demand item, the update check may include other items as well.
+  if (uit->status != CrxUpdateItem::kCanUpdate) {
+    Status service_status = GetServiceStatus(uit->status);
+    // If the item is already in the process of being updated, there is
+    // no point in this call, so return kInProgress.
+    if (service_status == kInProgress)
+      return service_status;
+
+    // Otherwise the item was already checked a while back (or it is new),
+    // set its status to kNew to give it a slightly higher priority.
+    ChangeItemState(uit, CrxUpdateItem::kNew);
+  }
 
   // In case the current delay is long, set the timer to a shorter value
   // to get the ball rolling.

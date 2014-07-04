@@ -241,7 +241,15 @@ base::string16 ComponentsUI::ServiceStatusToString(
 void ComponentsUI::OnEvent(Events event, const std::string& id) {
   base::DictionaryValue parameters;
   parameters.SetString("event", ComponentEventToString(event));
-  if (!id.empty())
+  if (!id.empty()) {
+    using component_updater::ComponentUpdateService;
+    if (event == ComponentUpdateService::Observer::COMPONENT_UPDATED) {
+      ComponentUpdateService* cus = g_browser_process->component_updater();
+      component_updater::CrxUpdateItem item;
+      if (cus->GetComponentDetails(id, &item))
+        parameters.SetString("version", item.component.version.GetString());
+    }
     parameters.SetString("id", id);
+  }
   web_ui()->CallJavascriptFunction("onComponentEvent", parameters);
 }

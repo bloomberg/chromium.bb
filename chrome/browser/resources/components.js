@@ -90,6 +90,9 @@ function onComponentEvent(eventArgs) {
     var id = eventArgs['id'];
     $('status-' + id).textContent = eventArgs['event'];
   }
+  if (eventArgs['version']) {
+    $('version-' + id).textContent = eventArgs['version'];
+  }
 }
 
 /**
