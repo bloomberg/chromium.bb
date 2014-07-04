@@ -9,7 +9,7 @@
 #include <string>
 
 #include "base/scoped_observer.h"
-#include "components/search_engines/template_url_service.h"
+#include "chrome/browser/search_engines/template_url_service.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "extensions/browser/extension_registry_observer.h"
 

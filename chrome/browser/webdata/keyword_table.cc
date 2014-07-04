@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/search_engines/keyword_table.h"
+#include "chrome/browser/webdata/keyword_table.h"
 
 #include <set>
 
@@ -15,7 +15,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
-#include "components/history/core/browser/url_database.h"
+#include "chrome/browser/history/history_database.h"
 #include "components/search_engines/search_terms_data.h"
 #include "components/search_engines/template_url.h"
 #include "components/webdata/common/web_database.h"
@@ -106,12 +106,12 @@ void BindURLToStatement(const TemplateURLData& data,
   s->BindString16(starting_column, data.short_name);
   s->BindString16(starting_column + 1, data.keyword());
   s->BindString(starting_column + 2, data.favicon_url.is_valid() ?
-      history::URLDatabase::GURLToDatabaseURL(data.favicon_url) :
+      history::HistoryDatabase::GURLToDatabaseURL(data.favicon_url) :
       std::string());
   s->BindString(starting_column + 3, data.url());
   s->BindBool(starting_column + 4, data.safe_for_autoreplace);
   s->BindString(starting_column + 5, data.originating_url.is_valid() ?
-      history::URLDatabase::GURLToDatabaseURL(data.originating_url) :
+      history::HistoryDatabase::GURLToDatabaseURL(data.originating_url) :
       std::string());
   s->BindInt64(starting_column + 6, data.date_created.ToTimeT());
   s->BindInt(starting_column + 7, data.usage_count);

@@ -3,12 +3,20 @@ include_rules = [
 ]
 
 specific_include_rules = {
-  "search_host_to_urls_map_unittest\.": [
+  "search_host_to_urls_map(_unittest)?\.": [
     "-chrome",
     "-content",
+    "+chrome/browser/search_engines/search_host_to_urls_map.h",
+    "+chrome/browser/search_engines/template_url_service.h",
   ],
   "template_url_unittest\.": [
     "-chrome",
     "-content",
+  ],
+  "util\.": [
+    "-chrome",
+    "-content",
+    "+chrome/browser/search_engines/template_url_service.h",
+    "+chrome/browser/search_engines/util.h",
   ],
 }

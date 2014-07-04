@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_SEARCH_ENGINES_UTIL_H_
-#define COMPONENTS_SEARCH_ENGINES_UTIL_H_
+#ifndef CHROME_BROWSER_SEARCH_ENGINES_UTIL_H_
+#define CHROME_BROWSER_SEARCH_ENGINES_UTIL_H_
 
 // This file contains utility functions for search engine functionality.
 #include <set>
@@ -12,7 +12,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
-#include "components/search_engines/template_url_service.h"
+#include "chrome/browser/search_engines/template_url_service.h"
 
 class KeywordWebDataService;
 class PrefService;
@@ -133,4 +133,4 @@ void RemoveDuplicatePrepopulateIDs(
     const SearchTermsData& search_terms_data,
     std::set<std::string>* removed_keyword_guids);
 
-#endif  // COMPONENTS_SEARCH_ENGINES_UTIL_H_
+#endif  // CHROME_BROWSER_SEARCH_ENGINES_UTIL_H_

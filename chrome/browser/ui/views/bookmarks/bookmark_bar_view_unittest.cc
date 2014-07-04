@@ -8,6 +8,8 @@
 #include "base/values.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/search_engines/template_url_service.h"
+#include "chrome/browser/search_engines/template_url_service_client.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/app_list/app_list_util.h"
 #include "chrome/common/pref_names.h"
@@ -18,8 +20,6 @@
 #include "chrome/test/base/testing_pref_service_syncable.h"
 #include "components/bookmarks/test/bookmark_test_helpers.h"
 #include "components/search_engines/search_terms_data.h"
-#include "components/search_engines/template_url_service.h"
-#include "components/search_engines/template_url_service_client.h"
 #include "ui/views/controls/button/label_button.h"
 
 class BookmarkBarViewInstantExtendedTest : public BrowserWithTestWindowTest {
