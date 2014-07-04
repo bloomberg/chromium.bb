@@ -411,16 +411,8 @@ void AdbTargetsUIHandler::DeviceListChanged(
       browser_data->SetString(kTargetSourceField, source_id());
 
       base::Version remote_version;
-      if (browser->IsChrome()) {
-        remote_version = base::Version(browser->version());
-      } else {
-        // Try parse WebView version.
-        std::string version = browser->version();
-        size_t pos = version.find("Chrome/");
-        if (pos != std::string::npos) {
-          remote_version = base::Version(browser->version().substr(pos + 7));
-        }
-      }
+      remote_version = base::Version(browser->version());
+
       chrome::VersionInfo version_info;
       base::Version local_version(version_info.Version());
 
