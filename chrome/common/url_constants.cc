@@ -32,6 +32,8 @@ const char kChromeUICloudPrintResourcesURL[] = "chrome://cloudprintresources/";
 const char kChromeUIComponentsURL[] = "chrome://components/";
 const char kChromeUIConflictsURL[] = "chrome://conflicts/";
 const char kChromeUIConstrainedHTMLTestURL[] = "chrome://constrained-test/";
+const char kChromeUIContextualSearchPromoURL[] =
+    "chrome://contextual-search-promo";
 const char kChromeUICrashesURL[] = "chrome://crashes/";
 const char kChromeUICreditsURL[] = "chrome://credits/";
 const char kChromeUIDevicesURL[] = "chrome://devices/";
@@ -161,6 +163,7 @@ const char kChromeUICloudPrintResourcesHost[] = "cloudprintresources";
 const char kChromeUICloudPrintSetupHost[] = "cloudprintsetup";
 const char kChromeUIConflictsHost[] = "conflicts";
 const char kChromeUIConstrainedHTMLTestHost[] = "constrained-test";
+const char kChromeUIContextualSearchPromoHost[] = "contextual-search-promo";
 const char kChromeUICrashesHost[] = "crashes";
 const char kChromeUICrashHost[] = "crash";
 const char kChromeUICreditsHost[] = "credits";
