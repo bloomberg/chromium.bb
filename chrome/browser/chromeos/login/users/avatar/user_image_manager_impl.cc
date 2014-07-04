@@ -32,6 +32,7 @@
 #include "chrome/browser/profiles/profile_downloader.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_paths.h"
+#include "components/user_manager/user_type.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "policy/policy_constants.h"
@@ -998,7 +999,8 @@ bool UserImageManagerImpl::IsUserLoggedInAndRegular() const {
   const User* user = GetUser();
   if (!user)
     return false;
-  return user->is_logged_in() && user->GetType() == User::USER_TYPE_REGULAR;
+  return user->is_logged_in() &&
+         user->GetType() == user_manager::USER_TYPE_REGULAR;
 }
 
 }  // namespace chromeos

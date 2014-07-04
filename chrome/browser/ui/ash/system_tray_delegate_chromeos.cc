@@ -100,6 +100,7 @@
 #include "chromeos/network/portal_detector/network_portal_detector.h"
 #include "components/google/core/browser/google_util.h"
 #include "components/policy/core/common/cloud/cloud_policy_store.h"
+#include "components/user_manager/user_type.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/user_metrics.h"
@@ -600,7 +601,7 @@ void SystemTrayDelegateChromeOS::ShowUserLogin() {
 
   // Only regular users could add other users to current session.
   if (UserManager::Get()->GetActiveUser()->GetType() !=
-      User::USER_TYPE_REGULAR) {
+      user_manager::USER_TYPE_REGULAR) {
     return;
   }
 

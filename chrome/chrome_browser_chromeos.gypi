@@ -52,6 +52,7 @@
         '../components/components.gyp:cloud_policy_proto',
         '../components/components.gyp:onc_component',
         '../components/components.gyp:policy',
+        '../components/components.gyp:user_manager',
         # This depends directly on the variations target, rather than just
         # transitively via the common target because the proto sources need to
         # be generated before code in this target can start building.

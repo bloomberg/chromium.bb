@@ -14,7 +14,7 @@
 #include "chrome/browser/chromeos/login/auth/auth_attempt_state_resolver.h"
 #include "chrome/browser/chromeos/login/auth/key.h"
 #include "chrome/browser/chromeos/login/auth/user_context.h"
-#include "chrome/browser/chromeos/login/users/user.h"
+#include "components/user_manager/user_type.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "google_apis/gaia/gaia_auth_consumer.h"
@@ -37,7 +37,7 @@ OnlineAttempt::OnlineAttempt(AuthAttemptState* current_attempt,
       resolver_(callback),
       weak_factory_(this),
       try_again_(true) {
-  DCHECK(attempt_->user_type == User::USER_TYPE_REGULAR);
+  DCHECK(attempt_->user_type == user_manager::USER_TYPE_REGULAR);
 }
 
 OnlineAttempt::~OnlineAttempt() {

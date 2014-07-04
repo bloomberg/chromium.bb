@@ -71,6 +71,7 @@
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/signin/core/browser/signin_manager.h"
+#include "components/user_manager/user_type.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/navigation_controller.h"
@@ -504,7 +505,7 @@ void BrowserOptionsHandler::GetLocalizedValues(base::DictionaryValue* values) {
   if (username.empty()) {
     chromeos::User* user =
         chromeos::ProfileHelper::Get()->GetUserByProfile(profile);
-    if (user && (user->GetType() != chromeos::User::USER_TYPE_GUEST))
+    if (user && (user->GetType() != user_manager::USER_TYPE_GUEST))
       username = user->email();
 
   }

@@ -51,6 +51,7 @@
 #include "chromeos/settings/cros_settings_names.h"
 #include "components/google/core/browser/google_util.h"
 #include "components/policy/core/common/policy_service.h"
+#include "components/user_manager/user_type.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
@@ -197,15 +198,16 @@ void ExistingUserController::UpdateLoginDisplay(const UserList& users) {
   for (UserList::const_iterator it = users.begin(); it != users.end(); ++it) {
     // TODO(xiyuan): Clean user profile whose email is not in whitelist.
     bool meets_locally_managed_requirements =
-        (*it)->GetType() != User::USER_TYPE_LOCALLY_MANAGED ||
+        (*it)->GetType() != user_manager::USER_TYPE_LOCALLY_MANAGED ||
         UserManager::Get()->AreLocallyManagedUsersAllowed();
     bool meets_whitelist_requirements =
         LoginUtils::IsWhitelisted((*it)->email(), NULL) ||
-        (*it)->GetType() != User::USER_TYPE_REGULAR;
+        (*it)->GetType() != user_manager::USER_TYPE_REGULAR;
 
     // Public session accounts are always shown on login screen.
-    bool meets_show_users_requirements = show_users_on_signin ||
-        (*it)->GetType() == User::USER_TYPE_PUBLIC_ACCOUNT;
+    bool meets_show_users_requirements =
+        show_users_on_signin ||
+        (*it)->GetType() == user_manager::USER_TYPE_PUBLIC_ACCOUNT;
     if (meets_locally_managed_requirements &&
         meets_whitelist_requirements &&
         meets_show_users_requirements) {
@@ -384,7 +386,7 @@ bool ExistingUserController::IsSigninInProgress() const {
 
 void ExistingUserController::Login(const UserContext& user_context,
                                    const SigninSpecifics& specifics) {
-  if (user_context.GetUserType() == User::USER_TYPE_GUEST) {
+  if (user_context.GetUserType() == user_manager::USER_TYPE_GUEST) {
     if (!specifics.guest_mode_url.empty()) {
       guest_mode_url_ = GURL(specifics.guest_mode_url);
       if (specifics.guest_mode_url_append_locale)
@@ -393,13 +395,15 @@ void ExistingUserController::Login(const UserContext& user_context,
     }
     LoginAsGuest();
     return;
-  } else if (user_context.GetUserType() == User::USER_TYPE_PUBLIC_ACCOUNT) {
+  } else if (user_context.GetUserType() ==
+             user_manager::USER_TYPE_PUBLIC_ACCOUNT) {
     LoginAsPublicAccount(user_context.GetUserID());
     return;
-  } else if (user_context.GetUserType() == User::USER_TYPE_RETAIL_MODE) {
+  } else if (user_context.GetUserType() ==
+             user_manager::USER_TYPE_RETAIL_MODE) {
     LoginAsRetailModeUser();
     return;
-  } else if (user_context.GetUserType() == User::USER_TYPE_KIOSK_APP) {
+  } else if (user_context.GetUserType() == user_manager::USER_TYPE_KIOSK_APP) {
     LoginAsKioskApp(user_context.GetUserID(), specifics.kiosk_diagnostic_mode);
     return;
   }
@@ -568,7 +572,7 @@ void ExistingUserController::LoginAsPublicAccount(
   // If there is no public account with the given |username|, logging in is not
   // possible.
   const User* user = UserManager::Get()->FindUser(username);
-  if (!user || user->GetType() != User::USER_TYPE_PUBLIC_ACCOUNT) {
+  if (!user || user->GetType() != user_manager::USER_TYPE_PUBLIC_ACCOUNT) {
     // Re-enable clicking on other windows.
     login_display_->SetUIEnabled(true);
     StartPublicSessionAutoLoginTimer();
@@ -990,7 +994,7 @@ void ExistingUserController::ConfigurePublicSessionAutoLogin() {
 
   const User* user =
       UserManager::Get()->FindUser(public_session_auto_login_username_);
-  if (!user || user->GetType() != User::USER_TYPE_PUBLIC_ACCOUNT)
+  if (!user || user->GetType() != user_manager::USER_TYPE_PUBLIC_ACCOUNT)
     public_session_auto_login_username_.clear();
 
   if (!cros_settings_->GetInteger(
@@ -1055,7 +1059,8 @@ void ExistingUserController::InitializeStartUrls() const {
   const base::ListValue *urls;
   UserManager* user_manager = UserManager::Get();
   bool can_show_getstarted_guide =
-      user_manager->GetActiveUser()->GetType() == User::USER_TYPE_REGULAR &&
+      user_manager->GetActiveUser()->GetType() ==
+          user_manager::USER_TYPE_REGULAR &&
       !user_manager->IsCurrentUserNonCryptohomeDataEphemeral();
   if (user_manager->IsLoggedInAsDemoUser()) {
     if (CrosSettings::Get()->GetList(kStartUpUrls, &urls)) {
@@ -1128,7 +1133,7 @@ void ExistingUserController::ShowError(int error_id,
     if (num_login_attempts_ > 1) {
       const User* user =
           UserManager::Get()->FindUser(last_login_attempt_username_);
-      if (user && (user->GetType() == User::USER_TYPE_LOCALLY_MANAGED))
+      if (user && (user->GetType() == user_manager::USER_TYPE_LOCALLY_MANAGED))
         error_id = IDS_LOGIN_ERROR_AUTHENTICATING_2ND_TIME_SUPERVISED;
     }
   }

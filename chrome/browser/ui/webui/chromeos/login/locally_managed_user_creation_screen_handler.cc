@@ -16,6 +16,7 @@
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/common/url_constants.h"
 #include "chromeos/audio/chromeos_sounds.h"
+#include "components/user_manager/user_type.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "grit/browser_resources.h"
 #include "grit/generated_resources.h"
@@ -216,7 +217,7 @@ void LocallyManagedUserCreationScreenHandler::Show() {
   chromeos::CrosSettings::Get()->GetString(chromeos::kDeviceOwner, &owner);
 
   for (UserList::const_iterator it = users.begin(); it != users.end(); ++it) {
-    if ((*it)->GetType() != User::USER_TYPE_REGULAR)
+    if ((*it)->GetType() != user_manager::USER_TYPE_REGULAR)
       continue;
     bool is_owner = ((*it)->email() == owner);
     base::DictionaryValue* user_dict = new base::DictionaryValue();

@@ -31,6 +31,7 @@
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/policy/core/common/cloud/cloud_external_data_manager.h"
 #include "components/policy/core/common/cloud/device_management_service.h"
+#include "components/user_manager/user_type.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "policy/policy_constants.h"
@@ -133,7 +134,7 @@ scoped_ptr<UserCloudPolicyManagerChromeOS>
   // USER_TYPE_PUBLIC_ACCOUNT gets its policy from the
   // DeviceLocalAccountPolicyService.
   const std::string& username = user->email();
-  if (user->GetType() != chromeos::User::USER_TYPE_REGULAR ||
+  if (user->GetType() != user_manager::USER_TYPE_REGULAR ||
       BrowserPolicyConnector::IsNonEnterpriseUser(username)) {
     return scoped_ptr<UserCloudPolicyManagerChromeOS>();
   }

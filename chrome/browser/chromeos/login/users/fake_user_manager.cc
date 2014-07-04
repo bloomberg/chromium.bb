@@ -6,6 +6,7 @@
 
 #include "chrome/browser/chromeos/login/users/fake_supervised_user_manager.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "components/user_manager/user_type.h"
 
 namespace {
 
@@ -62,7 +63,8 @@ UserList FakeUserManager::GetUsersAdmittedForMultiProfile() const {
   for (UserList::const_iterator it = user_list_.begin();
        it != user_list_.end();
        ++it) {
-    if ((*it)->GetType() == User::USER_TYPE_REGULAR && !(*it)->is_logged_in())
+    if ((*it)->GetType() == user_manager::USER_TYPE_REGULAR &&
+        !(*it)->is_logged_in())
       result.push_back(*it);
   }
   return result;
@@ -233,9 +235,9 @@ bool FakeUserManager::IsLoggedInAsLocallyManagedUser() const {
 
 bool FakeUserManager::IsLoggedInAsKioskApp() const {
   const User* active_user = GetActiveUser();
-  return active_user ?
-      active_user->GetType() == User::USER_TYPE_KIOSK_APP :
-      false;
+  return active_user
+             ? active_user->GetType() == user_manager::USER_TYPE_KIOSK_APP
+             : false;
 }
 
 bool FakeUserManager::IsLoggedInAsStub() const {

@@ -17,7 +17,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/login/users/user.h"
 #include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
@@ -29,6 +28,7 @@
 #include "chromeos/settings/cros_settings_names.h"
 #include "chromeos/system/statistics_provider.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
+#include "components/user_manager/user_type.h"
 #include "content/public/browser/browser_thread.h"
 #include "policy/proto/device_management_backend.pb.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
@@ -435,7 +435,7 @@ void DeviceStatusCollector::GetUsers(em::DeviceStatusReportRequest* request) {
   chromeos::UserList::const_iterator user;
   for (user = users.begin(); user != users.end(); ++user) {
     // Only regular users are reported.
-    if ((*user)->GetType() != chromeos::User::USER_TYPE_REGULAR)
+    if ((*user)->GetType() != user_manager::USER_TYPE_REGULAR)
       continue;
 
     em::DeviceUser* device_user = request->add_user();

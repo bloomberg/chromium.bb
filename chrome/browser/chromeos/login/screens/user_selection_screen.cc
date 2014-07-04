@@ -14,6 +14,7 @@
 #include "chrome/browser/signin/screenlock_bridge.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
 #include "chrome/common/pref_names.h"
+#include "components/user_manager/user_type.h"
 #include "ui/wm/core/user_activity_detector.h"
 
 namespace chromeos {
@@ -60,9 +61,9 @@ void UserSelectionScreen::FillUserDictionary(
     base::DictionaryValue* user_dict) {
   const std::string& user_id = user->email();
   const bool is_public_account =
-      user->GetType() == User::USER_TYPE_PUBLIC_ACCOUNT;
+      user->GetType() == user_manager::USER_TYPE_PUBLIC_ACCOUNT;
   const bool is_locally_managed_user =
-      user->GetType() == User::USER_TYPE_LOCALLY_MANAGED;
+      user->GetType() == user_manager::USER_TYPE_LOCALLY_MANAGED;
 
   user_dict->SetString(kKeyUsername, user_id);
   user_dict->SetString(kKeyEmailAddress, user->display_email());
@@ -113,9 +114,9 @@ bool UserSelectionScreen::ShouldForceOnlineSignIn(const User* user) {
 
   const User::OAuthTokenStatus token_status = user->oauth_token_status();
   const bool is_locally_managed_user =
-      user->GetType() == User::USER_TYPE_LOCALLY_MANAGED;
+      user->GetType() == user_manager::USER_TYPE_LOCALLY_MANAGED;
   const bool is_public_session =
-      user->GetType() == User::USER_TYPE_PUBLIC_ACCOUNT;
+      user->GetType() == user_manager::USER_TYPE_PUBLIC_ACCOUNT;
 
   if (is_locally_managed_user &&
       token_status == User::OAUTH_TOKEN_STATUS_UNKNOWN) {
@@ -202,7 +203,7 @@ const UserList UserSelectionScreen::PrepareUserListForSending(
     const std::string& user_id = (*it)->email();
     bool is_owner = (user_id == owner);
     bool is_public_account =
-        ((*it)->GetType() == User::USER_TYPE_PUBLIC_ACCOUNT);
+        ((*it)->GetType() == user_manager::USER_TYPE_PUBLIC_ACCOUNT);
 
     if ((is_public_account && !is_signin_to_add) || is_owner ||
         (!is_public_account && non_owner_count < max_non_owner_users)) {
@@ -250,7 +251,7 @@ void UserSelectionScreen::SendUserList(bool animated) {
     const std::string& user_id = (*it)->email();
     bool is_owner = (user_id == owner);
     bool is_public_account =
-        ((*it)->GetType() == User::USER_TYPE_PUBLIC_ACCOUNT);
+        ((*it)->GetType() == user_manager::USER_TYPE_PUBLIC_ACCOUNT);
     ScreenlockBridge::LockHandler::AuthType initial_auth_type =
       ShouldForceOnlineSignIn(*it)
           ? ScreenlockBridge::LockHandler::ONLINE_SIGN_IN

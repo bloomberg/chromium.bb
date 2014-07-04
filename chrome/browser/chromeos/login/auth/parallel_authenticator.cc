@@ -14,7 +14,6 @@
 #include "chrome/browser/chromeos/login/auth/key.h"
 #include "chrome/browser/chromeos/login/auth/login_status_consumer.h"
 #include "chrome/browser/chromeos/login/auth/user_context.h"
-#include "chrome/browser/chromeos/login/users/user.h"
 #include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/chromeos/ownership/owner_settings_service.h"
 #include "chrome/browser/chromeos/ownership/owner_settings_service_factory.h"
@@ -25,6 +24,7 @@
 #include "chromeos/dbus/cryptohome_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/login/login_state.h"
+#include "components/user_manager/user_type.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
@@ -243,7 +243,7 @@ void ParallelAuthenticator::AuthenticateToLogin(
   authentication_profile_ = profile;
   current_state_.reset(new AuthAttemptState(
       user_context,
-      User::USER_TYPE_REGULAR,
+      user_manager::USER_TYPE_REGULAR,
       false,  // unlock
       false,  // online_complete
       !UserManager::Get()->IsKnownUser(user_context.GetUserID())));
@@ -262,7 +262,7 @@ void ParallelAuthenticator::CompleteLogin(Profile* profile,
   authentication_profile_ = profile;
   current_state_.reset(new AuthAttemptState(
       user_context,
-      User::USER_TYPE_REGULAR,
+      user_manager::USER_TYPE_REGULAR,
       true,   // unlock
       false,  // online_complete
       !UserManager::Get()->IsKnownUser(user_context.GetUserID())));
@@ -287,7 +287,7 @@ void ParallelAuthenticator::CompleteLogin(Profile* profile,
 void ParallelAuthenticator::AuthenticateToUnlock(
     const UserContext& user_context) {
   current_state_.reset(new AuthAttemptState(user_context,
-                                            User::USER_TYPE_REGULAR,
+                                            user_manager::USER_TYPE_REGULAR,
                                             true,     // unlock
                                             true,     // online_complete
                                             false));  // user_is_new
@@ -305,7 +305,7 @@ void ParallelAuthenticator::LoginAsLocallyManagedUser(
   // TODO(nkostylev): Pass proper value for |user_is_new| or remove (not used).
   current_state_.reset(
       new AuthAttemptState(user_context,
-                           User::USER_TYPE_LOCALLY_MANAGED,
+                           user_manager::USER_TYPE_LOCALLY_MANAGED,
                            false,    // unlock
                            false,    // online_complete
                            false));  // user_is_new
@@ -321,12 +321,12 @@ void ParallelAuthenticator::LoginRetailMode() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   // Note: |kRetailModeUserEMail| is used in other places to identify a retail
   // mode session.
-  current_state_.reset(new AuthAttemptState(
-      UserContext(UserManager::kRetailModeUserName),
-      User::USER_TYPE_RETAIL_MODE,
-      false,    // unlock
-      false,    // online_complete
-      false));  // user_is_new
+  current_state_.reset(
+      new AuthAttemptState(UserContext(UserManager::kRetailModeUserName),
+                           user_manager::USER_TYPE_RETAIL_MODE,
+                           false,    // unlock
+                           false,    // online_complete
+                           false));  // user_is_new
   remove_user_data_on_failure_ = false;
   ephemeral_mount_attempted_ = true;
   MountGuest(current_state_.get(),
@@ -335,12 +335,12 @@ void ParallelAuthenticator::LoginRetailMode() {
 
 void ParallelAuthenticator::LoginOffTheRecord() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  current_state_.reset(new AuthAttemptState(
-      UserContext(UserManager::kGuestUserName),
-      User::USER_TYPE_GUEST,
-      false,    // unlock
-      false,    // online_complete
-      false));  // user_is_new
+  current_state_.reset(
+      new AuthAttemptState(UserContext(UserManager::kGuestUserName),
+                           user_manager::USER_TYPE_GUEST,
+                           false,    // unlock
+                           false,    // online_complete
+                           false));  // user_is_new
   remove_user_data_on_failure_ = false;
   ephemeral_mount_attempted_ = true;
   MountGuest(current_state_.get(),
@@ -349,11 +349,12 @@ void ParallelAuthenticator::LoginOffTheRecord() {
 
 void ParallelAuthenticator::LoginAsPublicAccount(const std::string& username) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  current_state_.reset(new AuthAttemptState(UserContext(username),
-                                            User::USER_TYPE_PUBLIC_ACCOUNT,
-                                            false,    // unlock
-                                            false,    // online_complete
-                                            false));  // user_is_new
+  current_state_.reset(
+      new AuthAttemptState(UserContext(username),
+                           user_manager::USER_TYPE_PUBLIC_ACCOUNT,
+                           false,    // unlock
+                           false,    // online_complete
+                           false));  // user_is_new
   remove_user_data_on_failure_ = false;
   ephemeral_mount_attempted_ = true;
   SystemSaltGetter::Get()->GetSystemSalt(
@@ -371,7 +372,7 @@ void ParallelAuthenticator::LoginAsKioskAccount(
   const std::string user_id =
       use_guest_mount ? UserManager::kGuestUserName : app_user_id;
   current_state_.reset(new AuthAttemptState(UserContext(user_id),
-                                            User::USER_TYPE_KIOSK_APP,
+                                            user_manager::USER_TYPE_KIOSK_APP,
                                             false,    // unlock
                                             false,    // online_complete
                                             false));  // user_is_new
@@ -774,15 +775,15 @@ ParallelAuthenticator::ResolveCryptohomeSuccessState() {
   if (check_key_attempted_)
     return UNLOCK;
 
-  if (current_state_->user_type == User::USER_TYPE_GUEST)
+  if (current_state_->user_type == user_manager::USER_TYPE_GUEST)
     return GUEST_LOGIN;
-  if (current_state_->user_type == User::USER_TYPE_RETAIL_MODE)
+  if (current_state_->user_type == user_manager::USER_TYPE_RETAIL_MODE)
     return DEMO_LOGIN;
-  if (current_state_->user_type == User::USER_TYPE_PUBLIC_ACCOUNT)
+  if (current_state_->user_type == user_manager::USER_TYPE_PUBLIC_ACCOUNT)
     return PUBLIC_ACCOUNT_LOGIN;
-  if (current_state_->user_type == User::USER_TYPE_KIOSK_APP)
+  if (current_state_->user_type == user_manager::USER_TYPE_KIOSK_APP)
     return KIOSK_ACCOUNT_LOGIN;
-  if (current_state_->user_type == User::USER_TYPE_LOCALLY_MANAGED)
+  if (current_state_->user_type == user_manager::USER_TYPE_LOCALLY_MANAGED)
     return LOCALLY_MANAGED_USER_LOGIN;
 
   if (!VerifyOwner())

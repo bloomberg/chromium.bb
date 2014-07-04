@@ -8,7 +8,7 @@
 #include "chrome/browser/chromeos/login/auth/auth_attempt_state.h"
 #include "chrome/browser/chromeos/login/auth/online_attempt.h"
 #include "chrome/browser/chromeos/login/auth/user_context.h"
-#include "chrome/browser/chromeos/login/users/user.h"
+#include "components/user_manager/user_type.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -29,7 +29,7 @@ void OnlineAttemptHost::Check(content::BrowserContext* auth_context,
     current_attempt_user_context_ = user_context;
 
     state_.reset(new AuthAttemptState(user_context,
-                                      User::USER_TYPE_REGULAR,
+                                      user_manager::USER_TYPE_REGULAR,
                                       false,    // unlock
                                       false,    // online_complete
                                       false));  // user_is_new

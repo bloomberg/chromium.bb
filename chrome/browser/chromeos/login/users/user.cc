@@ -39,7 +39,7 @@ class RegularUser : public User {
   virtual ~RegularUser();
 
   // Overridden from User:
-  virtual UserType GetType() const OVERRIDE;
+  virtual user_manager::UserType GetType() const OVERRIDE;
   virtual bool CanSyncImage() const OVERRIDE;
 
  private:
@@ -52,7 +52,7 @@ class GuestUser : public User {
   virtual ~GuestUser();
 
   // Overridden from User:
-  virtual UserType GetType() const OVERRIDE;
+  virtual user_manager::UserType GetType() const OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(GuestUser);
@@ -64,7 +64,7 @@ class KioskAppUser : public User {
   virtual ~KioskAppUser();
 
   // Overridden from User:
-  virtual UserType GetType() const OVERRIDE;
+  virtual user_manager::UserType GetType() const OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(KioskAppUser);
@@ -76,7 +76,7 @@ class LocallyManagedUser : public User {
   virtual ~LocallyManagedUser();
 
   // Overridden from User:
-  virtual UserType GetType() const OVERRIDE;
+  virtual user_manager::UserType GetType() const OVERRIDE;
   virtual std::string display_email() const OVERRIDE;
 
  private:
@@ -89,7 +89,7 @@ class RetailModeUser : public User {
   virtual ~RetailModeUser();
 
   // Overridden from User:
-  virtual UserType GetType() const OVERRIDE;
+  virtual user_manager::UserType GetType() const OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(RetailModeUser);
@@ -101,7 +101,7 @@ class PublicAccountUser : public User {
   virtual ~PublicAccountUser();
 
   // Overridden from User:
-  virtual UserType GetType() const OVERRIDE;
+  virtual user_manager::UserType GetType() const OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PublicAccountUser);
@@ -236,8 +236,8 @@ RegularUser::RegularUser(const std::string& email) : User(email) {
 
 RegularUser::~RegularUser() {}
 
-User::UserType RegularUser::GetType() const {
-  return USER_TYPE_REGULAR;
+user_manager::UserType RegularUser::GetType() const {
+  return user_manager::USER_TYPE_REGULAR;
 }
 
 bool RegularUser::CanSyncImage() const {
@@ -250,8 +250,8 @@ GuestUser::GuestUser() : User(UserManager::kGuestUserName) {
 
 GuestUser::~GuestUser() {}
 
-User::UserType GuestUser::GetType() const {
-  return USER_TYPE_GUEST;
+user_manager::UserType GuestUser::GetType() const {
+  return user_manager::USER_TYPE_GUEST;
 }
 
 KioskAppUser::KioskAppUser(const std::string& kiosk_app_username)
@@ -261,8 +261,8 @@ KioskAppUser::KioskAppUser(const std::string& kiosk_app_username)
 
 KioskAppUser::~KioskAppUser() {}
 
-User::UserType KioskAppUser::GetType() const {
-  return USER_TYPE_KIOSK_APP;
+user_manager::UserType KioskAppUser::GetType() const {
+  return user_manager::USER_TYPE_KIOSK_APP;
 }
 
 LocallyManagedUser::LocallyManagedUser(const std::string& username)
@@ -272,8 +272,8 @@ LocallyManagedUser::LocallyManagedUser(const std::string& username)
 
 LocallyManagedUser::~LocallyManagedUser() {}
 
-User::UserType LocallyManagedUser::GetType() const {
-  return USER_TYPE_LOCALLY_MANAGED;
+user_manager::UserType LocallyManagedUser::GetType() const {
+  return user_manager::USER_TYPE_LOCALLY_MANAGED;
 }
 
 std::string LocallyManagedUser::display_email() const {
@@ -286,8 +286,8 @@ RetailModeUser::RetailModeUser() : User(UserManager::kRetailModeUserName) {
 
 RetailModeUser::~RetailModeUser() {}
 
-User::UserType RetailModeUser::GetType() const {
-  return USER_TYPE_RETAIL_MODE;
+user_manager::UserType RetailModeUser::GetType() const {
+  return user_manager::USER_TYPE_RETAIL_MODE;
 }
 
 PublicAccountUser::PublicAccountUser(const std::string& email) : User(email) {
@@ -295,20 +295,20 @@ PublicAccountUser::PublicAccountUser(const std::string& email) : User(email) {
 
 PublicAccountUser::~PublicAccountUser() {}
 
-User::UserType PublicAccountUser::GetType() const {
-  return USER_TYPE_PUBLIC_ACCOUNT;
+user_manager::UserType PublicAccountUser::GetType() const {
+  return user_manager::USER_TYPE_PUBLIC_ACCOUNT;
 }
 
 bool User::has_gaia_account() const {
-  COMPILE_ASSERT(NUM_USER_TYPES == 6, num_user_types_unexpected);
+  COMPILE_ASSERT(user_manager::NUM_USER_TYPES == 6, num_user_types_unexpected);
   switch (GetType()) {
-    case USER_TYPE_REGULAR:
+    case user_manager::USER_TYPE_REGULAR:
       return true;
-    case USER_TYPE_GUEST:
-    case USER_TYPE_RETAIL_MODE:
-    case USER_TYPE_PUBLIC_ACCOUNT:
-    case USER_TYPE_LOCALLY_MANAGED:
-    case USER_TYPE_KIOSK_APP:
+    case user_manager::USER_TYPE_GUEST:
+    case user_manager::USER_TYPE_RETAIL_MODE:
+    case user_manager::USER_TYPE_PUBLIC_ACCOUNT:
+    case user_manager::USER_TYPE_LOCALLY_MANAGED:
+    case user_manager::USER_TYPE_KIOSK_APP:
       return false;
     default:
       NOTREACHED();

@@ -9,7 +9,7 @@
 
 #include "chrome/browser/chromeos/login/auth/login_status_consumer.h"
 #include "chrome/browser/chromeos/login/auth/user_context.h"
-#include "chrome/browser/chromeos/login/users/user.h"
+#include "components/user_manager/user_type.h"
 #include "google_apis/gaia/gaia_auth_consumer.h"
 #include "google_apis/gaia/gaia_auth_fetcher.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
@@ -22,7 +22,7 @@ class AuthAttemptState {
  public:
   // Used to initialize for a login attempt.
   AuthAttemptState(const UserContext& user_context,
-                   User::UserType user_type,
+                   user_manager::UserType user_type,
                    bool unlock,
                    bool online_complete,
                    bool user_is_new);
@@ -81,7 +81,7 @@ class AuthAttemptState {
   const std::string login_captcha;
 
   // The type of the user attempting to log in.
-  const User::UserType user_type;
+  const user_manager::UserType user_type;
 
   const bool unlock;  // True if authenticating to unlock the computer.
 

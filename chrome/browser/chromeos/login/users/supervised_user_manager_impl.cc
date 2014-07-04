@@ -22,6 +22,7 @@
 #include "chrome/browser/supervised_user/supervised_user_service.h"
 #include "chrome/browser/supervised_user/supervised_user_service_factory.h"
 #include "chromeos/settings/cros_settings_names.h"
+#include "components/user_manager/user_type.h"
 #include "content/public/browser/browser_thread.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 
@@ -169,7 +170,7 @@ bool SupervisedUserManagerImpl::HasSupervisedUsers(
       const std::string& manager_id) const {
   const UserList& users = owner_->GetUsers();
   for (UserList::const_iterator it = users.begin(); it != users.end(); ++it) {
-    if ((*it)->GetType() == User::USER_TYPE_LOCALLY_MANAGED) {
+    if ((*it)->GetType() == user_manager::USER_TYPE_LOCALLY_MANAGED) {
       if (manager_id == GetManagerUserId((*it)->email()))
         return true;
     }
@@ -359,7 +360,7 @@ const User* SupervisedUserManagerImpl::FindByDisplayName(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   const UserList& users = owner_->GetUsers();
   for (UserList::const_iterator it = users.begin(); it != users.end(); ++it) {
-    if (((*it)->GetType() == User::USER_TYPE_LOCALLY_MANAGED) &&
+    if (((*it)->GetType() == user_manager::USER_TYPE_LOCALLY_MANAGED) &&
         ((*it)->display_name() == display_name)) {
       return *it;
     }
@@ -372,7 +373,7 @@ const User* SupervisedUserManagerImpl::FindBySyncId(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   const UserList& users = owner_->GetUsers();
   for (UserList::const_iterator it = users.begin(); it != users.end(); ++it) {
-    if (((*it)->GetType() == User::USER_TYPE_LOCALLY_MANAGED) &&
+    if (((*it)->GetType() == user_manager::USER_TYPE_LOCALLY_MANAGED) &&
         (GetUserSyncId((*it)->email()) == sync_id)) {
       return *it;
     }

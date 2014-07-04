@@ -13,6 +13,7 @@
 #include "chrome/browser/supervised_user/chromeos/supervised_user_password_service.h"
 #include "chrome/browser/supervised_user/supervised_user_shared_settings_service_factory.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
+#include "components/user_manager/user_type.h"
 
 namespace chromeos {
 
@@ -43,7 +44,7 @@ KeyedService* SupervisedUserPasswordServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   Profile* profile= static_cast<Profile*>(context);
   User* user = ProfileHelper::Get()->GetUserByProfile(profile);
-  if (user->GetType() != User::USER_TYPE_LOCALLY_MANAGED)
+  if (user->GetType() != user_manager::USER_TYPE_LOCALLY_MANAGED)
     return NULL;
   SupervisedUserPasswordService* result = new SupervisedUserPasswordService();
   result->Init(

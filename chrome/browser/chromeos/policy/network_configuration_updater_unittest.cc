@@ -26,6 +26,7 @@
 #include "components/policy/core/common/mock_configuration_policy_provider.h"
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/core/common/policy_service_impl.h"
+#include "components/user_manager/user_type.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
 #include "net/base/test_data_directory.h"
@@ -59,8 +60,8 @@ class FakeUser : public chromeos::User {
   virtual ~FakeUser() {}
 
   // User overrides
-  virtual UserType GetType() const OVERRIDE {
-    return USER_TYPE_REGULAR;
+  virtual user_manager::UserType GetType() const OVERRIDE {
+    return user_manager::USER_TYPE_REGULAR;
   }
 
  private:

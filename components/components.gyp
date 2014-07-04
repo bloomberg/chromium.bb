@@ -81,6 +81,11 @@
         'wifi.gypi',
       ],
     }],
+    ['chromeos==1', {
+      'includes': [
+        'user_manager.gypi',
+      ],
+    }],
     ['android_webview_build == 0', {
       # Android WebView fails to build if a dependency on these targets is
       # introduced.

@@ -5,14 +5,13 @@
 #include "chrome/browser/chromeos/login/auth/user_context.h"
 
 #include "chrome/browser/chromeos/login/helper.h"
-#include "chrome/browser/chromeos/login/users/user_manager.h"
 
 namespace chromeos {
 
 UserContext::UserContext()
     : is_using_oauth_(true),
       auth_flow_(AUTH_FLOW_OFFLINE),
-      user_type_(User::USER_TYPE_REGULAR) {
+      user_type_(user_manager::USER_TYPE_REGULAR) {
 }
 
 UserContext::UserContext(const UserContext& other)
@@ -29,14 +28,15 @@ UserContext::UserContext(const std::string& user_id)
     : user_id_(login::CanonicalizeUserID(user_id)),
       is_using_oauth_(true),
       auth_flow_(AUTH_FLOW_OFFLINE),
-      user_type_(User::USER_TYPE_REGULAR) {
+      user_type_(user_manager::USER_TYPE_REGULAR) {
 }
 
-UserContext::UserContext(User::UserType user_type, const std::string& user_id)
+UserContext::UserContext(user_manager::UserType user_type,
+                         const std::string& user_id)
     : is_using_oauth_(true),
       auth_flow_(AUTH_FLOW_OFFLINE),
       user_type_(user_type) {
-  if (user_type_ == User::USER_TYPE_REGULAR)
+  if (user_type_ == user_manager::USER_TYPE_REGULAR)
     user_id_ = login::CanonicalizeUserID(user_id);
   else
     user_id_ = user_id;
@@ -85,7 +85,7 @@ UserContext::AuthFlow UserContext::GetAuthFlow() const {
   return auth_flow_;
 }
 
-User::UserType UserContext::GetUserType() const {
+user_manager::UserType UserContext::GetUserType() const {
   return user_type_;
 }
 
@@ -118,7 +118,7 @@ void UserContext::SetAuthFlow(AuthFlow auth_flow) {
   auth_flow_ = auth_flow;
 }
 
-void UserContext::SetUserType(User::UserType user_type) {
+void UserContext::SetUserType(user_manager::UserType user_type) {
   user_type_ = user_type;
 }
 

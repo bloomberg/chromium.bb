@@ -43,6 +43,7 @@
 #include "chrome/common/pref_names.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "components/user_manager/user_type.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -210,7 +211,7 @@ int FindPublicSession(const chromeos::UserList& users) {
   int i = 0;
   for (UserList::const_iterator it = users.begin();
        it != users.end(); ++it, ++i) {
-    if ((*it)->GetType() == User::USER_TYPE_PUBLIC_ACCOUNT) {
+    if ((*it)->GetType() == user_manager::USER_TYPE_PUBLIC_ACCOUNT) {
       index = i;
       break;
     }
@@ -1149,7 +1150,7 @@ void WallpaperManager::ScheduleSetUserWallpaper(const std::string& user_id,
   // Guest user, regular user in ephemeral mode, or kiosk app.
   const User* user = UserManager::Get()->FindUser(user_id);
   if (UserManager::Get()->IsUserNonCryptohomeDataEphemeral(user_id) ||
-      (user != NULL && user->GetType() == User::USER_TYPE_KIOSK_APP)) {
+      (user != NULL && user->GetType() == user_manager::USER_TYPE_KIOSK_APP)) {
     InitInitialUserWallpaper(user_id, false);
     GetPendingWallpaper(user_id, delayed)->ResetSetDefaultWallpaper();
     return;

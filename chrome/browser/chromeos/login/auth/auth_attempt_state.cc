@@ -15,7 +15,7 @@ using content::BrowserThread;
 namespace chromeos {
 
 AuthAttemptState::AuthAttemptState(const UserContext& user_context,
-                                   User::UserType user_type,
+                                   user_manager::UserType user_type,
                                    bool unlock,
                                    bool online_complete,
                                    bool user_is_new)
@@ -23,8 +23,8 @@ AuthAttemptState::AuthAttemptState(const UserContext& user_context,
       user_type(user_type),
       unlock(unlock),
       online_complete_(online_complete),
-      online_outcome_(online_complete ? LoginFailure::UNLOCK_FAILED :
-                                        LoginFailure::NONE),
+      online_outcome_(online_complete ? LoginFailure::UNLOCK_FAILED
+                                      : LoginFailure::NONE),
       hosted_policy_(GaiaAuthFetcher::HostedAccountsAllowed),
       is_first_time_user_(user_is_new),
       cryptohome_complete_(false),

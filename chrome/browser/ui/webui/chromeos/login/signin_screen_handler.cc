@@ -63,6 +63,7 @@
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/portal_detector/network_portal_detector.h"
+#include "components/user_manager/user_type.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "google_apis/gaia/gaia_auth_util.h"
@@ -1004,13 +1005,13 @@ void SigninScreenHandler::HandleAttemptUnlock(const std::string& username) {
 }
 
 void SigninScreenHandler::HandleLaunchDemoUser() {
-  UserContext context(User::USER_TYPE_RETAIL_MODE, std::string());
+  UserContext context(user_manager::USER_TYPE_RETAIL_MODE, std::string());
   if (delegate_)
     delegate_->Login(context, SigninSpecifics());
 }
 
 void SigninScreenHandler::HandleLaunchIncognito() {
-  UserContext context(User::USER_TYPE_GUEST, std::string());
+  UserContext context(user_manager::USER_TYPE_GUEST, std::string());
   if (delegate_)
     delegate_->Login(context, SigninSpecifics());
 }
@@ -1028,7 +1029,7 @@ void SigninScreenHandler::HandleShowLocallyManagedUserCreationScreen() {
 
 void SigninScreenHandler::HandleLaunchPublicAccount(
     const std::string& username) {
-  UserContext context(User::USER_TYPE_PUBLIC_ACCOUNT, username);
+  UserContext context(user_manager::USER_TYPE_PUBLIC_ACCOUNT, username);
   if (delegate_)
     delegate_->Login(context, SigninSpecifics());
 }
@@ -1268,7 +1269,7 @@ void SigninScreenHandler::HandleRetrieveAuthenticatedUserEmail(
 
 void SigninScreenHandler::HandleLaunchKioskApp(const std::string& app_id,
                                                bool diagnostic_mode) {
-  UserContext context(User::USER_TYPE_KIOSK_APP, app_id);
+  UserContext context(user_manager::USER_TYPE_KIOSK_APP, app_id);
   SigninSpecifics specifics;
   specifics.kiosk_diagnostic_mode = diagnostic_mode;
   if (delegate_)

@@ -17,6 +17,7 @@
 #include "chromeos/network/network_handler.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
+#include "components/user_manager/user_type.h"
 
 namespace policy {
 
@@ -74,7 +75,7 @@ KeyedService* UserNetworkConfigurationUpdaterFactory::BuildServiceInstanceFor(
     return NULL;
 
   const bool allow_trusted_certs_from_policy =
-      user->GetType() == chromeos::User::USER_TYPE_REGULAR;
+      user->GetType() == user_manager::USER_TYPE_REGULAR;
 
   ProfilePolicyConnector* profile_connector =
       ProfilePolicyConnectorFactory::GetForProfile(profile);

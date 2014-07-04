@@ -43,6 +43,7 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager_client.h"
 #include "components/signin/core/browser/signin_manager.h"
+#include "components/user_manager/user_type.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/url_data_source.h"
@@ -251,7 +252,7 @@ void ScreenLocker::Authenticate(const UserContext& user_context) {
 
   // Special case: supervised users. Use special authenticator.
   if (const User* user = FindUnlockUser(user_context.GetUserID())) {
-    if (user->GetType() == User::USER_TYPE_LOCALLY_MANAGED) {
+    if (user->GetType() == user_manager::USER_TYPE_LOCALLY_MANAGED) {
       UserContext updated_context = UserManager::Get()
                                         ->GetSupervisedUserManager()
                                         ->GetAuthentication()

@@ -1,5 +1,6 @@
 include_rules = [
   "+components/captive_portal",
+  "+components/user_manager",
 
   # Library used for calculating CRC-32 needed for HWID verification.
   "+third_party/zlib",
