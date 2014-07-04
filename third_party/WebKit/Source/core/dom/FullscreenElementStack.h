@@ -105,8 +105,10 @@ private:
     void clearFullscreenElementStack();
     void popFullscreenElementStack();
     void pushFullscreenElementStack(Element&);
-    void addDocumentToFullScreenChangeEventQueue(Document&);
-    void fullScreenChangeDelayTimerFired(Timer<FullscreenElementStack>*);
+
+    void enqueueChangeEvent(Document&);
+    void enqueueErrorEvent(Element&);
+    void eventQueueTimerFired(Timer<FullscreenElementStack>*);
 
     void fullScreenElementRemoved();
 
@@ -114,9 +116,8 @@ private:
     RefPtrWillBeMember<Element> m_fullScreenElement;
     WillBeHeapVector<RefPtrWillBeMember<Element> > m_fullScreenElementStack;
     RenderFullScreen* m_fullScreenRenderer;
-    Timer<FullscreenElementStack> m_fullScreenChangeDelayTimer;
-    WillBeHeapDeque<RefPtrWillBeMember<Node> > m_fullScreenChangeEventTargetQueue;
-    WillBeHeapDeque<RefPtrWillBeMember<Node> > m_fullScreenErrorEventTargetQueue;
+    Timer<FullscreenElementStack> m_eventQueueTimer;
+    WillBeHeapDeque<RefPtrWillBeMember<Event> > m_eventQueue;
     LayoutRect m_savedPlaceholderFrameRect;
     RefPtr<RenderStyle> m_savedPlaceholderRenderStyle;
 };

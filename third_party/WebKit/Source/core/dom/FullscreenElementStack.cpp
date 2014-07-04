@@ -58,6 +58,13 @@ static bool fullscreenIsAllowedForAllOwners(const Document& document)
     return true;
 }
 
+static PassRefPtrWillBeRawPtr<Event> createEvent(const AtomicString& type, EventTarget& target)
+{
+    RefPtrWillBeRawPtr<Event> event = Event::createBubble(type);
+    event->setTarget(&target);
+    return event;
+}
+
 const char* FullscreenElementStack::supplementName()
 {
     return "FullscreenElementStack";
@@ -104,7 +111,7 @@ FullscreenElementStack::FullscreenElementStack(Document& document)
     : DocumentLifecycleObserver(&document)
     , m_areKeysEnabledInFullScreen(false)
     , m_fullScreenRenderer(0)
-    , m_fullScreenChangeDelayTimer(this, &FullscreenElementStack::fullScreenChangeDelayTimerFired)
+    , m_eventQueueTimer(this, &FullscreenElementStack::eventQueueTimerFired)
 {
     document.setHasFullscreenElementStack();
 }
@@ -120,8 +127,7 @@ inline Document* FullscreenElementStack::document()
 
 void FullscreenElementStack::documentWasDetached()
 {
-    m_fullScreenChangeEventTargetQueue.clear();
-    m_fullScreenErrorEventTargetQueue.clear();
+    m_eventQueue.clear();
 
     if (m_fullScreenRenderer)
         setFullScreenRenderer(0);
@@ -234,7 +240,7 @@ void FullscreenElementStack::requestFullScreenForElement(Element& element, Reque
             // set to true on the document.
             if (!followingDoc) {
                 from(*currentDoc).pushFullscreenElementStack(element);
-                addDocumentToFullScreenChangeEventQueue(*currentDoc);
+                enqueueChangeEvent(*currentDoc);
                 continue;
             }
 
@@ -246,7 +252,7 @@ void FullscreenElementStack::requestFullScreenForElement(Element& element, Reque
                 // stack, and queue a task to fire an event named fullscreenchange with its bubbles attribute
                 // set to true on document.
                 from(*currentDoc).pushFullscreenElementStack(*followingDoc->ownerElement());
-                addDocumentToFullScreenChangeEventQueue(*currentDoc);
+                enqueueChangeEvent(*currentDoc);
                 continue;
             }
 
@@ -262,8 +268,7 @@ void FullscreenElementStack::requestFullScreenForElement(Element& element, Reque
         return;
     } while (0);
 
-    m_fullScreenErrorEventTargetQueue.append(&element);
-    m_fullScreenChangeDelayTimer.startOneShot(0, FROM_HERE);
+    enqueueErrorEvent(element);
 }
 
 void FullscreenElementStack::webkitCancelFullScreen()
@@ -314,7 +319,7 @@ void FullscreenElementStack::webkitExitFullscreen()
     for (WillBeHeapDeque<RefPtrWillBeMember<Document> >::iterator i = descendants.begin(); i != descendants.end(); ++i) {
         ASSERT(*i);
         from(**i).clearFullscreenElementStack();
-        addDocumentToFullScreenChangeEventQueue(**i);
+        enqueueChangeEvent(**i);
     }
 
     // 5. While doc is not null, run these substeps:
@@ -331,7 +336,7 @@ void FullscreenElementStack::webkitExitFullscreen()
 
         // 2. Queue a task to fire an event named fullscreenchange with its bubbles attribute set to true
         // on doc.
-        addDocumentToFullScreenChangeEventQueue(*currentDoc);
+        enqueueChangeEvent(*currentDoc);
 
         // 3. If doc's fullscreen element stack is empty and doc's browsing context has a browsing context
         // container, set doc to that browsing context container's node document.
@@ -417,7 +422,7 @@ void FullscreenElementStack::webkitDidEnterFullScreenForElement(Element*)
 
     m_fullScreenElement->didBecomeFullscreenElement();
 
-    m_fullScreenChangeDelayTimer.startOneShot(0, FROM_HERE);
+    m_eventQueueTimer.startOneShot(0, FROM_HERE);
 }
 
 void FullscreenElementStack::webkitWillExitFullScreenForElement(Element*)
@@ -453,10 +458,10 @@ void FullscreenElementStack::webkitDidExitFullScreenForElement(Element*)
     // means that the events will be queued there. So if we have no events here, start the timer on
     // the exiting document.
     Document* exitingDocument = document();
-    if (m_fullScreenChangeEventTargetQueue.isEmpty() && m_fullScreenErrorEventTargetQueue.isEmpty())
+    if (m_eventQueue.isEmpty())
         exitingDocument = &document()->topDocument();
     ASSERT(exitingDocument);
-    from(*exitingDocument).m_fullScreenChangeDelayTimer.startOneShot(0, FROM_HERE);
+    from(*exitingDocument).m_eventQueueTimer.startOneShot(0, FROM_HERE);
 }
 
 void FullscreenElementStack::setFullScreenRenderer(RenderFullScreen* renderer)
@@ -483,35 +488,44 @@ void FullscreenElementStack::fullScreenRendererDestroyed()
     m_fullScreenRenderer = 0;
 }
 
-void FullscreenElementStack::fullScreenChangeDelayTimerFired(Timer<FullscreenElementStack>*)
+void FullscreenElementStack::enqueueChangeEvent(Document& document)
+{
+    ASSERT(document.hasFullscreenElementStack());
+    FullscreenElementStack& fullscreen = from(document);
+
+    EventTarget* target = fullscreen.webkitFullscreenElement();
+    if (!target)
+        target = fullscreen.webkitCurrentFullScreenElement();
+    if (!target)
+        target = &document;
+    m_eventQueue.append(createEvent(EventTypeNames::webkitfullscreenchange, *target));
+    // NOTE: The timer is started in webkitDidEnterFullScreenForElement/webkitDidExitFullScreenForElement.
+}
+
+void FullscreenElementStack::enqueueErrorEvent(Element& element)
+{
+    m_eventQueue.append(createEvent(EventTypeNames::webkitfullscreenerror, element));
+    m_eventQueueTimer.startOneShot(0, FROM_HERE);
+}
+
+void FullscreenElementStack::eventQueueTimerFired(Timer<FullscreenElementStack>*)
 {
     // Since we dispatch events in this function, it's possible that the
     // document will be detached and GC'd. We protect it here to make sure we
     // can finish the function successfully.
     RefPtrWillBeRawPtr<Document> protectDocument(document());
-    WillBeHeapDeque<RefPtrWillBeMember<Node> > changeQueue;
-    m_fullScreenChangeEventTargetQueue.swap(changeQueue);
-    WillBeHeapDeque<RefPtrWillBeMember<Node> > errorQueue;
-    m_fullScreenErrorEventTargetQueue.swap(errorQueue);
+    WillBeHeapDeque<RefPtrWillBeRawPtr<Event> > eventQueue;
+    m_eventQueue.swap(eventQueue);
 
-    while (!changeQueue.isEmpty()) {
-        RefPtrWillBeRawPtr<Node> node = changeQueue.takeFirst();
-
-        // If the element was removed from our tree, also message the documentElement.
-        if (!node->inDocument() && document()->documentElement())
-            changeQueue.append(document()->documentElement());
-
-        node->dispatchEvent(Event::createBubble(EventTypeNames::webkitfullscreenchange));
-    }
-
-    while (!errorQueue.isEmpty()) {
-        RefPtrWillBeRawPtr<Node> node = errorQueue.takeFirst();
+    while (!eventQueue.isEmpty()) {
+        RefPtrWillBeRawPtr<Event> event = eventQueue.takeFirst();
+        Node* target = event->target()->toNode();
 
         // If the element was removed from our tree, also message the documentElement.
-        if (!node->inDocument() && document()->documentElement())
-            errorQueue.append(document()->documentElement());
+        if (!target->inDocument() && document()->documentElement())
+            eventQueue.append(createEvent(event->type(), *document()->documentElement()));
 
-        node->dispatchEvent(Event::createBubble(EventTypeNames::webkitfullscreenerror));
+        target->dispatchEvent(event);
     }
 }
 
@@ -558,25 +572,11 @@ void FullscreenElementStack::pushFullscreenElementStack(Element& element)
     m_fullScreenElementStack.append(&element);
 }
 
-void FullscreenElementStack::addDocumentToFullScreenChangeEventQueue(Document& doc)
-{
-    ASSERT(doc.hasFullscreenElementStack());
-    FullscreenElementStack& fullscreen = from(doc);
-
-    Node* target = fullscreen.webkitFullscreenElement();
-    if (!target)
-        target = fullscreen.webkitCurrentFullScreenElement();
-    if (!target)
-        target = &doc;
-    m_fullScreenChangeEventTargetQueue.append(target);
-}
-
 void FullscreenElementStack::trace(Visitor* visitor)
 {
     visitor->trace(m_fullScreenElement);
     visitor->trace(m_fullScreenElementStack);
-    visitor->trace(m_fullScreenChangeEventTargetQueue);
-    visitor->trace(m_fullScreenErrorEventTargetQueue);
+    visitor->trace(m_eventQueue);
     DocumentSupplement::trace(visitor);
 }
 
