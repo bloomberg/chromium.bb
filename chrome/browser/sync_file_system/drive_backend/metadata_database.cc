@@ -384,11 +384,14 @@ bool FilterFileTrackersByParentAndTitle(
         tracker.synced_details().title() != title)
       continue;
 
-    // Prioritize trackers that has |synced_details|.
-    if (!found || !tracker.has_synced_details()) {
+    // Prioritize trackers that has |synced_details| when |trackers| has
+    // multiple candidates.
+    if (!found || tracker.has_synced_details()) {
       found = true;
       if (result)
         result->CopyFrom(tracker);
+      if (!result || result->has_synced_details())
+        return found;
     }
   }
 
