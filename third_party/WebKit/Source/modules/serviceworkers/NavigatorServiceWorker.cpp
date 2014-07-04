@@ -74,4 +74,10 @@ void NavigatorServiceWorker::willDetachGlobalObjectFromFrame()
     }
 }
 
+void NavigatorServiceWorker::trace(Visitor* visitor)
+{
+    visitor->trace(m_serviceWorker);
+    WillBeHeapSupplement<Navigator>::trace(visitor);
+}
+
 } // namespace WebCore

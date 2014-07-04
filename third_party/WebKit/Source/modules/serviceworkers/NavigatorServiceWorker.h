@@ -26,7 +26,7 @@ public:
 
     static ServiceWorkerContainer* serviceWorker(Navigator&);
 
-    virtual void trace(Visitor* visitor) OVERRIDE { WillBeHeapSupplement<Navigator>::trace(visitor); }
+    virtual void trace(Visitor*) OVERRIDE;
 
 private:
     explicit NavigatorServiceWorker(Navigator&);
