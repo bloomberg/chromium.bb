@@ -35,7 +35,7 @@ private:
     // DOMWindowProperty override.
     virtual void willDetachGlobalObjectFromFrame() OVERRIDE;
 
-    RefPtr<ServiceWorkerContainer> m_serviceWorker;
+    RefPtrWillBeMember<ServiceWorkerContainer> m_serviceWorker;
 };
 
 } // namespace WebCore

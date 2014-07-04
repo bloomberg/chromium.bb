@@ -35,6 +35,7 @@
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "core/dom/ContextLifecycleObserver.h"
 #include "modules/serviceworkers/ServiceWorker.h"
+#include "platform/heap/Handle.h"
 #include "public/platform/WebServiceWorkerProviderClient.h"
 #include "wtf/Forward.h"
 #include "wtf/PassRefPtr.h"
@@ -51,16 +52,18 @@ class Dictionary;
 class ExecutionContext;
 class ServiceWorker;
 
-class ServiceWorkerContainer FINAL :
-    public RefCounted<ServiceWorkerContainer>,
-    public ScriptWrappable,
-    public ContextLifecycleObserver,
-    public blink::WebServiceWorkerProviderClient {
+class ServiceWorkerContainer FINAL
+    : public RefCountedWillBeGarbageCollectedFinalized<ServiceWorkerContainer>
+    , public ScriptWrappable
+    , public ContextLifecycleObserver
+    , public blink::WebServiceWorkerProviderClient {
 public:
-    static PassRefPtr<ServiceWorkerContainer> create(ExecutionContext*);
+    static PassRefPtrWillBeRawPtr<ServiceWorkerContainer> create(ExecutionContext*);
     ~ServiceWorkerContainer();
 
     void detachClient();
+
+    void trace(Visitor*);
 
     PassRefPtrWillBeRawPtr<ServiceWorker> active() { return m_active.get(); }
     PassRefPtrWillBeRawPtr<ServiceWorker> controller() { return m_controller.get(); }
@@ -82,10 +85,10 @@ private:
     explicit ServiceWorkerContainer(ExecutionContext*);
 
     blink::WebServiceWorkerProvider* m_provider;
-    RefPtr<ServiceWorker> m_active;
-    RefPtr<ServiceWorker> m_controller;
-    RefPtr<ServiceWorker> m_installing;
-    RefPtr<ServiceWorker> m_waiting;
+    RefPtrWillBeMember<ServiceWorker> m_active;
+    RefPtrWillBeMember<ServiceWorker> m_controller;
+    RefPtrWillBeMember<ServiceWorker> m_installing;
+    RefPtrWillBeMember<ServiceWorker> m_waiting;
 };
 
 } // namespace WebCore

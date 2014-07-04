@@ -47,13 +47,13 @@ namespace WebCore {
 
 class ServiceWorker::ThenFunction FINAL : public ScriptFunction {
 public:
-    static PassOwnPtr<ScriptFunction> create(PassRefPtr<ServiceWorker> observer)
+    static PassOwnPtr<ScriptFunction> create(PassRefPtrWillBeRawPtr<ServiceWorker> observer)
     {
         ExecutionContext* executionContext = observer->executionContext();
         return adoptPtr(new ThenFunction(toIsolate(executionContext), observer));
     }
 private:
-    ThenFunction(v8::Isolate* isolate, PassRefPtr<ServiceWorker> observer)
+    ThenFunction(v8::Isolate* isolate, PassRefPtrWillBeRawPtr<ServiceWorker> observer)
         : ScriptFunction(isolate)
         , m_observer(observer)
     {
@@ -65,7 +65,7 @@ private:
         return value;
     }
 
-    RefPtr<ServiceWorker> m_observer;
+    RefPtrWillBePersistent<ServiceWorker> m_observer;
 };
 
 const AtomicString& ServiceWorker::interfaceName() const
@@ -139,10 +139,10 @@ const AtomicString& ServiceWorker::state() const
     }
 }
 
-PassRefPtr<ServiceWorker> ServiceWorker::from(ExecutionContext* executionContext, WebType* worker)
+PassRefPtrWillBeRawPtr<ServiceWorker> ServiceWorker::from(ExecutionContext* executionContext, WebType* worker)
 {
     if (!worker)
-        return PassRefPtr<ServiceWorker>();
+        return nullptr;
 
     blink::WebServiceWorkerProxy* proxy = worker->proxy();
     ServiceWorker* existingServiceWorker = proxy ? proxy->unwrap() : 0;
@@ -154,9 +154,9 @@ PassRefPtr<ServiceWorker> ServiceWorker::from(ExecutionContext* executionContext
     return create(executionContext, adoptPtr(worker));
 }
 
-PassRefPtr<ServiceWorker> ServiceWorker::from(ScriptPromiseResolver* resolver, WebType* worker)
+PassRefPtrWillBeRawPtr<ServiceWorker> ServiceWorker::from(ScriptPromiseResolver* resolver, WebType* worker)
 {
-    RefPtr<ServiceWorker> serviceWorker = ServiceWorker::from(resolver->scriptState()->executionContext(), worker);
+    RefPtrWillBeRawPtr<ServiceWorker> serviceWorker = ServiceWorker::from(resolver->scriptState()->executionContext(), worker);
     ScriptState::Scope scope(resolver->scriptState());
     serviceWorker->waitOnPromise(resolver->promise());
     return serviceWorker;
@@ -220,9 +220,9 @@ void ServiceWorker::stop()
     setProxyState(ContextStopped);
 }
 
-PassRefPtr<ServiceWorker> ServiceWorker::create(ExecutionContext* executionContext, PassOwnPtr<blink::WebServiceWorker> outerWorker)
+PassRefPtrWillBeRawPtr<ServiceWorker> ServiceWorker::create(ExecutionContext* executionContext, PassOwnPtr<blink::WebServiceWorker> outerWorker)
 {
-    RefPtr<ServiceWorker> worker = adoptRef(new ServiceWorker(executionContext, outerWorker));
+    RefPtrWillBeRawPtr<ServiceWorker> worker = adoptRefWillBeRefCountedGarbageCollected(new ServiceWorker(executionContext, outerWorker));
     worker->suspendIfNeeded();
     return worker.release();
 }

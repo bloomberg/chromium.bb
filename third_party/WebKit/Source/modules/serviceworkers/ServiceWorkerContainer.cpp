@@ -56,9 +56,9 @@ using blink::WebServiceWorkerProvider;
 
 namespace WebCore {
 
-PassRefPtr<ServiceWorkerContainer> ServiceWorkerContainer::create(ExecutionContext* executionContext)
+PassRefPtrWillBeRawPtr<ServiceWorkerContainer> ServiceWorkerContainer::create(ExecutionContext* executionContext)
 {
-    return adoptRef(new ServiceWorkerContainer(executionContext));
+    return adoptRefWillBeNoop(new ServiceWorkerContainer(executionContext));
 }
 
 ServiceWorkerContainer::~ServiceWorkerContainer()
@@ -72,6 +72,14 @@ void ServiceWorkerContainer::detachClient()
         m_provider->setClient(0);
         m_provider = 0;
     }
+}
+
+void ServiceWorkerContainer::trace(Visitor* visitor)
+{
+    visitor->trace(m_active);
+    visitor->trace(m_controller);
+    visitor->trace(m_installing);
+    visitor->trace(m_waiting);
 }
 
 ScriptPromise ServiceWorkerContainer::registerServiceWorker(ScriptState* scriptState, const String& url, const Dictionary& dictionary)
