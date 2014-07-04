@@ -40,7 +40,7 @@ namespace WebCore {
 
 class LocalFrame;
 
-class Touch FINAL : public RefCountedWillBeGarbageCollectedFinalized<Touch>, public ScriptWrappable {
+class Touch FINAL : public RefCountedWillBeGarbageCollected<Touch>, public ScriptWrappable {
 public:
     static PassRefPtrWillBeRawPtr<Touch> create(LocalFrame* frame, EventTarget* target,
         unsigned identifier, const FloatPoint& screenPos, const FloatPoint& pagePos,

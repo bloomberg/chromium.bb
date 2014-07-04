@@ -38,7 +38,8 @@ namespace WebCore {
 
 class ClientRect;
 
-class ClientRectList FINAL : public RefCountedWillBeGarbageCollectedFinalized<ClientRectList>, public ScriptWrappable {
+class ClientRectList FINAL : public RefCountedWillBeGarbageCollected<ClientRectList>, public ScriptWrappable {
+    DECLARE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(ClientRectList);
 public:
     static PassRefPtrWillBeRawPtr<ClientRectList> create()
     {
@@ -48,8 +49,6 @@ public:
     {
         return adoptRefWillBeNoop(new ClientRectList(quads));
     }
-    ~ClientRectList();
-
     unsigned length() const;
     ClientRect* item(unsigned index);
 

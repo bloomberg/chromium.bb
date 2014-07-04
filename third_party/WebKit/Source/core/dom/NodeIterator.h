@@ -36,7 +36,7 @@ namespace WebCore {
 
 class ExceptionState;
 
-class NodeIterator FINAL : public RefCountedWillBeGarbageCollectedFinalized<NodeIterator>, public ScriptWrappable, public NodeIteratorBase {
+class NodeIterator FINAL : public RefCountedWillBeGarbageCollected<NodeIterator>, public ScriptWrappable, public NodeIteratorBase {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(NodeIterator);
 public:
     static PassRefPtrWillBeRawPtr<NodeIterator> create(PassRefPtrWillBeRawPtr<Node> rootNode, unsigned whatToShow, PassRefPtrWillBeRawPtr<NodeFilter> filter)
@@ -44,7 +44,9 @@ public:
         return adoptRefWillBeNoop(new NodeIterator(rootNode, whatToShow, filter));
     }
 
-    virtual ~NodeIterator();
+#if !ENABLE(OILPAN)
+    ~NodeIterator();
+#endif
 
     PassRefPtrWillBeRawPtr<Node> nextNode(ExceptionState&);
     PassRefPtrWillBeRawPtr<Node> previousNode(ExceptionState&);

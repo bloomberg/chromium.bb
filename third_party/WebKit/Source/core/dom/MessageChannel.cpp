@@ -33,6 +33,8 @@
 
 namespace WebCore {
 
+DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(MessageChannel);
+
 static void createChannel(MessagePort* port1, MessagePort* port2)
 {
     blink::WebMessagePortChannel* channel1;
@@ -51,10 +53,6 @@ MessageChannel::MessageChannel(ExecutionContext* context)
 {
     ScriptWrappable::init(this);
     createChannel(m_port1.get(), m_port2.get());
-}
-
-MessageChannel::~MessageChannel()
-{
 }
 
 void MessageChannel::trace(Visitor* visitor)

@@ -36,7 +36,7 @@
 
 namespace WebCore {
 
-class FileList : public RefCountedWillBeGarbageCollectedFinalized<FileList>, public ScriptWrappable {
+class FileList FINAL : public RefCountedWillBeGarbageCollected<FileList>, public ScriptWrappable {
 public:
     static PassRefPtrWillBeRawPtr<FileList> create()
     {

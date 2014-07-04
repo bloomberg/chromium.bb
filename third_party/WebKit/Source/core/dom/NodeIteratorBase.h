@@ -35,9 +35,8 @@ class Node;
 class NodeFilter;
 
 class NodeIteratorBase : public WillBeGarbageCollectedMixin {
+    DECLARE_EMPTY_VIRTUAL_DESTRUCTOR_WILL_BE_REMOVED(NodeIteratorBase);
 public:
-    virtual ~NodeIteratorBase() { }
-
     Node* root() const { return m_root.get(); }
     unsigned whatToShow() const { return m_whatToShow; }
     NodeFilter* filter() const { return m_filter.get(); }

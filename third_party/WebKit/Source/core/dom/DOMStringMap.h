@@ -38,12 +38,11 @@ namespace WebCore {
 
 class Element;
 
-class DOMStringMap : public NoBaseWillBeGarbageCollectedFinalized<DOMStringMap>, public ScriptWrappable {
+class DOMStringMap : public NoBaseWillBeGarbageCollected<DOMStringMap>, public ScriptWrappable {
     WTF_MAKE_NONCOPYABLE(DOMStringMap);
     WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
+    DECLARE_EMPTY_VIRTUAL_DESTRUCTOR_WILL_BE_REMOVED(DOMStringMap);
 public:
-    virtual ~DOMStringMap();
-
 #if !ENABLE(OILPAN)
     virtual void ref() = 0;
     virtual void deref() = 0;

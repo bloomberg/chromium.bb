@@ -44,14 +44,12 @@ class ExceptionState;
 class FileReaderLoader;
 class ExecutionContext;
 
-class FileReaderSync FINAL : public RefCountedWillBeGarbageCollectedFinalized<FileReaderSync>, public ScriptWrappable {
+class FileReaderSync FINAL : public RefCountedWillBeGarbageCollected<FileReaderSync>, public ScriptWrappable {
 public:
     static PassRefPtrWillBeRawPtr<FileReaderSync> create()
     {
         return adoptRefWillBeNoop(new FileReaderSync());
     }
-
-    ~FileReaderSync() { }
 
     PassRefPtr<ArrayBuffer> readAsArrayBuffer(ExecutionContext*, Blob*, ExceptionState&);
     String readAsBinaryString(ExecutionContext*, Blob*, ExceptionState&);

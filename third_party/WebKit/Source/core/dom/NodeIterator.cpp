@@ -79,12 +79,12 @@ NodeIterator::NodeIterator(PassRefPtrWillBeRawPtr<Node> rootNode, unsigned whatT
     root()->document().attachNodeIterator(this);
 }
 
+#if !ENABLE(OILPAN)
 NodeIterator::~NodeIterator()
 {
-#if !ENABLE(OILPAN)
     root()->document().detachNodeIterator(this);
-#endif
 }
+#endif
 
 PassRefPtrWillBeRawPtr<Node> NodeIterator::nextNode(ExceptionState& exceptionState)
 {

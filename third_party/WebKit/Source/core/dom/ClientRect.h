@@ -37,7 +37,7 @@ namespace WebCore {
 
 class IntRect;
 
-class ClientRect FINAL : public RefCountedWillBeGarbageCollectedFinalized<ClientRect>, public ScriptWrappable {
+class ClientRect FINAL : public RefCountedWillBeGarbageCollected<ClientRect>, public ScriptWrappable {
 public:
     static PassRefPtrWillBeRawPtr<ClientRect> create()
     {

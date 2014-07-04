@@ -34,7 +34,7 @@
 
 namespace WebCore {
 
-class TouchList : public RefCountedWillBeGarbageCollectedFinalized<TouchList>, public ScriptWrappable {
+class TouchList FINAL : public RefCountedWillBeGarbageCollected<TouchList>, public ScriptWrappable {
 public:
     static PassRefPtrWillBeRawPtr<TouchList> create()
     {

@@ -28,9 +28,7 @@
 
 namespace WebCore {
 
-DOMStringMap::~DOMStringMap()
-{
-}
+DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(DOMStringMap);
 
 bool DOMStringMap::namedPropertyQuery(const AtomicString& name, ExceptionState&)
 {

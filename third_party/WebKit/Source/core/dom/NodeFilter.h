@@ -32,7 +32,7 @@
 
 namespace WebCore {
 
-class NodeFilter FINAL : public RefCountedWillBeGarbageCollectedFinalized<NodeFilter>, public ScriptWrappable {
+class NodeFilter FINAL : public RefCountedWillBeGarbageCollected<NodeFilter>, public ScriptWrappable {
 public:
     /**
      * The following constants are returned by the acceptNode()

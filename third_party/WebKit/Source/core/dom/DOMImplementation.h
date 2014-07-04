@@ -38,7 +38,7 @@ class HTMLDocument;
 class KURL;
 class XMLDocument;
 
-class DOMImplementation FINAL : public NoBaseWillBeGarbageCollectedFinalized<DOMImplementation>, public ScriptWrappable {
+class DOMImplementation FINAL : public NoBaseWillBeGarbageCollected<DOMImplementation>, public ScriptWrappable {
     WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
 public:
     static PassOwnPtrWillBeRawPtr<DOMImplementation> create(Document& document)
