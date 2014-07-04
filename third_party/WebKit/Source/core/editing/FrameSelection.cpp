@@ -1629,10 +1629,9 @@ void FrameSelection::caretBlinkTimerFired(Timer<FrameSelection>*)
 {
     ASSERT(caretIsVisible());
     ASSERT(isCaret());
-    bool caretPaint = m_caretPaint;
-    if (isCaretBlinkingSuspended() && caretPaint)
+    if (isCaretBlinkingSuspended() && m_caretPaint)
         return;
-    m_caretPaint = !caretPaint;
+    m_caretPaint = !m_caretPaint;
     invalidateCaretRect();
 }
 
