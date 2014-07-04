@@ -17,8 +17,9 @@ const wchar_t kChromiumBinariesName[] = L"Chromium Binaries";
 }  // namespace
 
 ChromiumBinariesDistribution::ChromiumBinariesDistribution()
-    : BrowserDistribution(CHROME_BINARIES,
-          make_scoped_ptr(new NonUpdatingAppRegistrationData(
+    : BrowserDistribution(
+          CHROME_BINARIES,
+          scoped_ptr<AppRegistrationData>(new NonUpdatingAppRegistrationData(
               base::string16(L"Software\\").append(kChromiumBinariesName)))),
       browser_distribution_(
           BrowserDistribution::GetSpecificDistribution(CHROME_BROWSER)) {

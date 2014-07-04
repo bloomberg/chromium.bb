@@ -311,8 +311,9 @@ void WorkerProcessLauncherTest::CrashWorker() {
 }
 
 void WorkerProcessLauncherTest::StartWorker() {
-  launcher_.reset(new WorkerProcessLauncher(launcher_delegate_.Pass(),
-                                            &server_listener_));
+  launcher_.reset(new WorkerProcessLauncher(
+      launcher_delegate_.PassAs<WorkerProcessLauncher::Delegate>(),
+      &server_listener_));
 
   launcher_->SetKillProcessTimeoutForTest(base::TimeDelta::FromMilliseconds(0));
 }

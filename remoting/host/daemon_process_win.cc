@@ -221,7 +221,8 @@ void DaemonProcessWin::LaunchNetworkProcess() {
 
   scoped_ptr<UnprivilegedProcessDelegate> delegate(
       new UnprivilegedProcessDelegate(io_task_runner(), target.Pass()));
-  network_launcher_.reset(new WorkerProcessLauncher(delegate.Pass(), this));
+  network_launcher_.reset(new WorkerProcessLauncher(
+      delegate.PassAs<WorkerProcessLauncher::Delegate>(), this));
 }
 
 scoped_ptr<DaemonProcess> DaemonProcess::Create(

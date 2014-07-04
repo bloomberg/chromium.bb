@@ -26,8 +26,10 @@ const wchar_t kChromeFrameGuid[] = L"{8BA986DA-5100-405E-AA35-86F34A02ACBF}";
 }
 
 ChromeFrameDistribution::ChromeFrameDistribution()
-    : BrowserDistribution(CHROME_FRAME,
-          make_scoped_ptr(new UpdatingAppRegistrationData(kChromeFrameGuid))) {
+    : BrowserDistribution(
+          CHROME_FRAME,
+          scoped_ptr<AppRegistrationData>(
+              new UpdatingAppRegistrationData(kChromeFrameGuid))) {
 }
 
 base::string16 ChromeFrameDistribution::GetBaseAppName() {

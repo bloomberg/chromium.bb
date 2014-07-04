@@ -63,8 +63,8 @@ base::string16 GetUninstallSurveyUrl() {
 
 GoogleChromeDistribution::GoogleChromeDistribution()
     : BrowserDistribution(CHROME_BROWSER,
-          make_scoped_ptr(
-              new UpdatingAppRegistrationData(kChromeGuid))) {
+                          scoped_ptr<AppRegistrationData>(
+                              new UpdatingAppRegistrationData(kChromeGuid))) {
 }
 
 GoogleChromeDistribution::GoogleChromeDistribution(

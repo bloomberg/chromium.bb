@@ -19,8 +19,9 @@
 #include "chrome/installer/util/non_updating_app_registration_data.h"
 
 GoogleChromeDistribution::GoogleChromeDistribution()
-    : BrowserDistribution(CHROME_BROWSER,
-          make_scoped_ptr(
+    : BrowserDistribution(
+          CHROME_BROWSER,
+          scoped_ptr<AppRegistrationData>(
               new NonUpdatingAppRegistrationData(base::string16()))) {
 }
 

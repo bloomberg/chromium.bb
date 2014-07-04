@@ -552,7 +552,8 @@ void DesktopSessionWin::OnSessionAttached(uint32 session_id) {
   }
 
   // Create a launcher for the desktop process, using the per-session delegate.
-  launcher_.reset(new WorkerProcessLauncher(delegate.Pass(), this));
+  launcher_.reset(new WorkerProcessLauncher(
+      delegate.PassAs<WorkerProcessLauncher::Delegate>(), this));
 }
 
 void DesktopSessionWin::OnSessionDetached() {

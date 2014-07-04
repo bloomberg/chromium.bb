@@ -26,9 +26,8 @@ const wchar_t kCommandExecuteImplUuid[] =
 }  // namespace
 
 GoogleChromeSxSDistribution::GoogleChromeSxSDistribution()
-    : GoogleChromeDistribution(
-          make_scoped_ptr(
-              new UpdatingAppRegistrationData(kChromeSxSGuid))) {
+    : GoogleChromeDistribution(scoped_ptr<AppRegistrationData>(
+          new UpdatingAppRegistrationData(kChromeSxSGuid))) {
 }
 
 base::string16 GoogleChromeSxSDistribution::GetBaseAppName() {

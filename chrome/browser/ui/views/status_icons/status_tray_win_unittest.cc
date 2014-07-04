@@ -135,12 +135,15 @@ TEST(StatusTrayWinTest, EnsureVisibleTest) {
 
   FakeStatusTrayStateChangerProxy* proxy =
       new FakeStatusTrayStateChangerProxy();
-  tray.SetStatusTrayStateChangerProxyForTest(make_scoped_ptr(proxy));
+  tray.SetStatusTrayStateChangerProxyForTest(
+      scoped_ptr<StatusTrayStateChangerProxy>(proxy));
 
   StatusIconWin* icon = static_cast<StatusIconWin*>(tray.CreateStatusIcon(
       StatusTray::OTHER_ICON, *image, base::ASCIIToUTF16("tool tip")));
 
   icon->ForceVisible();
+  // |proxy| is owned by |tray|, and |tray| lives to the end of the scope,
+  // so calling methods on |proxy| is safe.
   EXPECT_TRUE(proxy->enqueue_called());
   EXPECT_EQ(proxy->window(), icon->window());
   EXPECT_EQ(proxy->icon_id(), icon->icon_id());
