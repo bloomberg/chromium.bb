@@ -240,11 +240,6 @@
                   '|Source/core/frame/DeviceEvent(Controller|Dispatcher)Base' \
                   '|Source/core/frame/DeviceSingleWindowEventController'
     },
-    'activity_logger': {
-      'filepath': 'public/web/WebDOMActivityLogger.h' \
-                  '|Source/bindings/scripts/code_generator_v8.pm' \
-                  '|Source/web/WebDOMActivityLogger.cpp'
-    },
     'webp': {
       'filepath': 'Source/platform/image-decoders/webp' \
                   '|Source/platform/image-encoders/skia/WEBP'
@@ -371,7 +366,7 @@
                'nhiroki@chromium.org' ],
     'viewport_interaction': [ 'kenneth.christiansen@gmail.com' ],
     'css_regions': [ 'ChromiumBugTracker@adobe.com' ],
-    'web_idl': [ 'arv+blink@chromium.org', 'ch.dumez@samsung.com', 'watchdog-blink-watchlist@google.com' ],
+    'web_idl': [ 'arv+blink@chromium.org', 'ch.dumez@samsung.com' ],
     'webcomponents': [ 'webcomponents-bugzilla@chromium.org', 'dglazkov+blink@chromium.org' ],
     'mediastream': [ 'tommyw+watchlist@chromium.org' ],
     'navigator_content_utils': [ 'gyuyoung.kim@webkit.org' ],
@@ -388,7 +383,6 @@
                         'serviceworker-reviews@chromium.org' ],
     'spellcheck' : [ 'groby+blinkspell@chromium.org' ],
     'device_orientation': [ 'timvolodine@chromium.org', 'mvanouwerkerk+watch@chromium.org', 'ch.dumez@samsung.com' ],
-    'activity_logger': [ 'watchdog-blink-watchlist@google.com' ],
     'webp': [ 'urvang@google.com',
               'jzern@chromium.org',
               'skal@google.com',
