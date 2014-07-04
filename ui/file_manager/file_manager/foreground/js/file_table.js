@@ -840,6 +840,8 @@ filelist.updateListItemDriveProps = function(li, driveProps) {
 
   if (driveProps.customIconUrl)
     iconDiv.style.backgroundImage = 'url(' + driveProps.customIconUrl + ')';
+  else
+    iconDiv.style.backgroundImage = '';  // Back to the default image.
 
   if (li.classList.contains('directory'))
     iconDiv.classList.toggle('shared', driveProps.shared);
