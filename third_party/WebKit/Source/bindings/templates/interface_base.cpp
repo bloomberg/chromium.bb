@@ -57,9 +57,17 @@ template <typename T> void V8_USE(T) { }
 {# Attributes #}
 {% from 'attributes.cpp' import constructor_getter_callback,
        attribute_getter, attribute_getter_callback,
-       attribute_setter, attribute_setter_callback
-   with context %}
+       attribute_setter, attribute_setter_callback,
+       attribute_getter_implemented_in_private_script,
+       attribute_setter_implemented_in_private_script
+       with context %}
 {% for attribute in attributes if not attribute.constructor_type %}
+{% if attribute.is_implemented_in_private_script %}
+{{attribute_getter_implemented_in_private_script(attribute)}}
+{% if not attribute.is_read_only or attribute.put_forwards %}
+{{attribute_setter_implemented_in_private_script(attribute)}}
+{% endif %}
+{% endif %}
 {% for world_suffix in attribute.world_suffixes %}
 {% if not attribute.has_custom_getter %}
 {{attribute_getter(attribute, world_suffix)}}

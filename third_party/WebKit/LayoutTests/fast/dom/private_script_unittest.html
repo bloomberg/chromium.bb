@@ -49,6 +49,18 @@ internals.addClickListener(node7);
 internals.clickNode(document, node7);
 shouldBeEqualToString('internals.innerHTML(node7)', 'clicked')
 
+shouldBe('internals.readonlyShortAttribute', '123');
+shouldBe('internals.shortAttribute', '-1');
+internals.shortAttribute = 111;
+shouldBe('internals.shortAttribute', '111');
+shouldBeEqualToString('internals.stringAttribute', 'xxx');
+internals.stringAttribute = "foo";
+shouldBeEqualToString('internals.stringAttribute', 'foo');
+shouldBe('internals.nodeAttribute', 'null');
+var node8 = internals.createElement(document);
+internals.nodeAttribute = node8;
+shouldBe('internals.nodeAttribute', 'node8');
+
 </script>
 </body>
 </html>

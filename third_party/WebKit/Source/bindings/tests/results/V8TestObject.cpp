@@ -4856,6 +4856,294 @@ static void testInterfaceWillBeGarbageCollectedOrNullAttributeAttributeSetterCal
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 
+static bool readonlyShortAttributeAttributeGetterImplementedInPrivateScript(LocalFrame* frame, TestObject* holderImpl, int* result)
+{
+    if (!frame)
+        return false;
+    v8::Handle<v8::Context> context = toV8Context(frame, DOMWrapperWorld::privateScriptIsolatedWorld());
+    if (context.IsEmpty())
+        return false;
+    ScriptState* scriptState = ScriptState::from(context);
+    if (!scriptState->executionContext())
+        return false;
+
+    ScriptState::Scope scope(scriptState);
+    v8::Handle<v8::Value> holder = toV8(holderImpl, scriptState->context()->Global(), scriptState->isolate());
+
+    // FIXME: Support exceptions thrown from Blink-in-JS.
+    v8::TryCatch block;
+    v8::Handle<v8::Value> v8Value = PrivateScriptRunner::runDOMAttributeGetter(scriptState, "TestObject", "readonlyShortAttribute", holder);
+    if (block.HasCaught())
+        return false;
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "readonlyShortAttribute", "TestObject", scriptState->context()->Global(), scriptState->isolate());
+    TONATIVE_DEFAULT_EXCEPTIONSTATE(int, cppValue, toInt16(v8Value, exceptionState), exceptionState, false);
+    if (block.HasCaught())
+        return false;
+    *result = cppValue;
+    return true;
+}
+
+static void readonlyShortAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestObject* impl = V8TestObject::toNative(holder);
+    int result;
+    if (!readonlyShortAttributeAttributeGetterImplementedInPrivateScript(toFrameIfNotDetached(info.GetIsolate()->GetCurrentContext()), impl, &result))
+        return;
+    v8SetReturnValueInt(info, result);
+}
+
+static void readonlyShortAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMGetter");
+    TestObjectV8Internal::readonlyShortAttributeAttributeGetter(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
+}
+
+static bool shortAttributeAttributeGetterImplementedInPrivateScript(LocalFrame* frame, TestObject* holderImpl, int* result)
+{
+    if (!frame)
+        return false;
+    v8::Handle<v8::Context> context = toV8Context(frame, DOMWrapperWorld::privateScriptIsolatedWorld());
+    if (context.IsEmpty())
+        return false;
+    ScriptState* scriptState = ScriptState::from(context);
+    if (!scriptState->executionContext())
+        return false;
+
+    ScriptState::Scope scope(scriptState);
+    v8::Handle<v8::Value> holder = toV8(holderImpl, scriptState->context()->Global(), scriptState->isolate());
+
+    // FIXME: Support exceptions thrown from Blink-in-JS.
+    v8::TryCatch block;
+    v8::Handle<v8::Value> v8Value = PrivateScriptRunner::runDOMAttributeGetter(scriptState, "TestObject", "shortAttribute", holder);
+    if (block.HasCaught())
+        return false;
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "shortAttribute", "TestObject", scriptState->context()->Global(), scriptState->isolate());
+    TONATIVE_DEFAULT_EXCEPTIONSTATE(int, cppValue, toInt16(v8Value, exceptionState), exceptionState, false);
+    if (block.HasCaught())
+        return false;
+    *result = cppValue;
+    return true;
+}
+
+static bool shortAttributeAttributeSetterImplementedInPrivateScript(LocalFrame* frame, TestObject* holderImpl, int cppValue)
+{
+    if (!frame)
+        return false;
+    v8::Handle<v8::Context> context = toV8Context(frame, DOMWrapperWorld::privateScriptIsolatedWorld());
+    if (context.IsEmpty())
+        return false;
+    ScriptState* scriptState = ScriptState::from(context);
+    if (!scriptState->executionContext())
+        return false;
+
+    ScriptState::Scope scope(scriptState);
+    v8::Handle<v8::Value> holder = toV8(holderImpl, scriptState->context()->Global(), scriptState->isolate());
+
+    // FIXME: Support exceptions thrown from Blink-in-JS.
+    v8::TryCatch block;
+    PrivateScriptRunner::runDOMAttributeSetter(scriptState, "TestObject", "shortAttribute", holder, v8::Integer::New(scriptState->isolate(), cppValue));
+    if (block.HasCaught())
+        return false;
+    return true;
+}
+
+static void shortAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestObject* impl = V8TestObject::toNative(holder);
+    int result;
+    if (!shortAttributeAttributeGetterImplementedInPrivateScript(toFrameIfNotDetached(info.GetIsolate()->GetCurrentContext()), impl, &result))
+        return;
+    v8SetReturnValueInt(info, result);
+}
+
+static void shortAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMGetter");
+    TestObjectV8Internal::shortAttributeAttributeGetter(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
+}
+
+static void shortAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
+{
+    v8::Handle<v8::Object> holder = info.Holder();
+    ExceptionState exceptionState(ExceptionState::SetterContext, "shortAttribute", "TestObject", holder, info.GetIsolate());
+    TestObject* impl = V8TestObject::toNative(holder);
+    TONATIVE_VOID_EXCEPTIONSTATE(int, cppValue, toInt16(v8Value, exceptionState), exceptionState);
+    shortAttributeAttributeSetterImplementedInPrivateScript(toFrameIfNotDetached(info.GetIsolate()->GetCurrentContext()), impl, cppValue);
+}
+
+static void shortAttributeAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMSetter");
+    TestObjectV8Internal::shortAttributeAttributeSetter(v8Value, info);
+    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
+}
+
+static bool stringAttributeAttributeGetterImplementedInPrivateScript(LocalFrame* frame, TestObject* holderImpl, String* result)
+{
+    if (!frame)
+        return false;
+    v8::Handle<v8::Context> context = toV8Context(frame, DOMWrapperWorld::privateScriptIsolatedWorld());
+    if (context.IsEmpty())
+        return false;
+    ScriptState* scriptState = ScriptState::from(context);
+    if (!scriptState->executionContext())
+        return false;
+
+    ScriptState::Scope scope(scriptState);
+    v8::Handle<v8::Value> holder = toV8(holderImpl, scriptState->context()->Global(), scriptState->isolate());
+
+    // FIXME: Support exceptions thrown from Blink-in-JS.
+    v8::TryCatch block;
+    v8::Handle<v8::Value> v8Value = PrivateScriptRunner::runDOMAttributeGetter(scriptState, "TestObject", "stringAttribute", holder);
+    if (block.HasCaught())
+        return false;
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "stringAttribute", "TestObject", scriptState->context()->Global(), scriptState->isolate());
+    TOSTRING_DEFAULT(V8StringResource<>, cppValue, v8Value, false);
+    if (block.HasCaught())
+        return false;
+    *result = cppValue;
+    return true;
+}
+
+static bool stringAttributeAttributeSetterImplementedInPrivateScript(LocalFrame* frame, TestObject* holderImpl, String cppValue)
+{
+    if (!frame)
+        return false;
+    v8::Handle<v8::Context> context = toV8Context(frame, DOMWrapperWorld::privateScriptIsolatedWorld());
+    if (context.IsEmpty())
+        return false;
+    ScriptState* scriptState = ScriptState::from(context);
+    if (!scriptState->executionContext())
+        return false;
+
+    ScriptState::Scope scope(scriptState);
+    v8::Handle<v8::Value> holder = toV8(holderImpl, scriptState->context()->Global(), scriptState->isolate());
+
+    // FIXME: Support exceptions thrown from Blink-in-JS.
+    v8::TryCatch block;
+    PrivateScriptRunner::runDOMAttributeSetter(scriptState, "TestObject", "stringAttribute", holder, v8String(scriptState->isolate(), cppValue));
+    if (block.HasCaught())
+        return false;
+    return true;
+}
+
+static void stringAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestObject* impl = V8TestObject::toNative(holder);
+    String result;
+    if (!stringAttributeAttributeGetterImplementedInPrivateScript(toFrameIfNotDetached(info.GetIsolate()->GetCurrentContext()), impl, &result))
+        return;
+    v8SetReturnValueString(info, result, info.GetIsolate());
+}
+
+static void stringAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMGetter");
+    TestObjectV8Internal::stringAttributeAttributeGetter(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
+}
+
+static void stringAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
+{
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestObject* impl = V8TestObject::toNative(holder);
+    TOSTRING_VOID(V8StringResource<>, cppValue, v8Value);
+    stringAttributeAttributeSetterImplementedInPrivateScript(toFrameIfNotDetached(info.GetIsolate()->GetCurrentContext()), impl, cppValue);
+}
+
+static void stringAttributeAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMSetter");
+    TestObjectV8Internal::stringAttributeAttributeSetter(v8Value, info);
+    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
+}
+
+static bool nodeAttributeAttributeGetterImplementedInPrivateScript(LocalFrame* frame, TestObject* holderImpl, RefPtrWillBeRawPtr<Node>* result)
+{
+    if (!frame)
+        return false;
+    v8::Handle<v8::Context> context = toV8Context(frame, DOMWrapperWorld::privateScriptIsolatedWorld());
+    if (context.IsEmpty())
+        return false;
+    ScriptState* scriptState = ScriptState::from(context);
+    if (!scriptState->executionContext())
+        return false;
+
+    ScriptState::Scope scope(scriptState);
+    v8::Handle<v8::Value> holder = toV8(holderImpl, scriptState->context()->Global(), scriptState->isolate());
+
+    // FIXME: Support exceptions thrown from Blink-in-JS.
+    v8::TryCatch block;
+    v8::Handle<v8::Value> v8Value = PrivateScriptRunner::runDOMAttributeGetter(scriptState, "TestObject", "nodeAttribute", holder);
+    if (block.HasCaught())
+        return false;
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "nodeAttribute", "TestObject", scriptState->context()->Global(), scriptState->isolate());
+    TONATIVE_DEFAULT(Node*, cppValue, V8Node::toNativeWithTypeCheck(scriptState->isolate(), v8Value), false);
+    if (block.HasCaught())
+        return false;
+    *result = cppValue;
+    return true;
+}
+
+static bool nodeAttributeAttributeSetterImplementedInPrivateScript(LocalFrame* frame, TestObject* holderImpl, PassRefPtrWillBeRawPtr<Node> cppValue)
+{
+    if (!frame)
+        return false;
+    v8::Handle<v8::Context> context = toV8Context(frame, DOMWrapperWorld::privateScriptIsolatedWorld());
+    if (context.IsEmpty())
+        return false;
+    ScriptState* scriptState = ScriptState::from(context);
+    if (!scriptState->executionContext())
+        return false;
+
+    ScriptState::Scope scope(scriptState);
+    v8::Handle<v8::Value> holder = toV8(holderImpl, scriptState->context()->Global(), scriptState->isolate());
+
+    // FIXME: Support exceptions thrown from Blink-in-JS.
+    v8::TryCatch block;
+    PrivateScriptRunner::runDOMAttributeSetter(scriptState, "TestObject", "nodeAttribute", holder, toV8(cppValue, scriptState->context()->Global(), scriptState->isolate()));
+    if (block.HasCaught())
+        return false;
+    return true;
+}
+
+static void nodeAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestObject* impl = V8TestObject::toNative(holder);
+    RefPtrWillBeRawPtr<Node> result;
+    if (!nodeAttributeAttributeGetterImplementedInPrivateScript(toFrameIfNotDetached(info.GetIsolate()->GetCurrentContext()), impl, &result))
+        return;
+    v8SetReturnValueFast(info, WTF::getPtr(result.release()), impl);
+}
+
+static void nodeAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMGetter");
+    TestObjectV8Internal::nodeAttributeAttributeGetter(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
+}
+
+static void nodeAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
+{
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestObject* impl = V8TestObject::toNative(holder);
+    TONATIVE_VOID(Node*, cppValue, V8Node::toNativeWithTypeCheck(info.GetIsolate(), v8Value));
+    nodeAttributeAttributeSetterImplementedInPrivateScript(toFrameIfNotDetached(info.GetIsolate()->GetCurrentContext()), impl, cppValue);
+}
+
+static void nodeAttributeAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMSetter");
+    TestObjectV8Internal::nodeAttributeAttributeSetter(v8Value, info);
+    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
+}
+
 static void TestObjectConstructorGetter(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     v8::Handle<v8::Value> data = info.Data();
@@ -9736,7 +10024,7 @@ static bool shortMethodImplementedInPrivateScriptMethodImplementedInPrivateScrip
     if (block.HasCaught())
         return false;
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "shortMethodImplementedInPrivateScript", "TestObject", scriptState->context()->Global(), scriptState->isolate());
-    int cppValue = toInt16(v8Value, exceptionState);
+    TONATIVE_DEFAULT_EXCEPTIONSTATE(int, cppValue, toInt16(v8Value, exceptionState), exceptionState, false);
     if (block.HasCaught())
         return false;
     *result = cppValue;
@@ -9781,7 +10069,7 @@ static bool shortMethodWithShortArgumentImplementedInPrivateScriptMethodImplemen
     if (block.HasCaught())
         return false;
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "shortMethodWithShortArgumentImplementedInPrivateScript", "TestObject", scriptState->context()->Global(), scriptState->isolate());
-    int cppValue = toInt16(v8Value, exceptionState);
+    TONATIVE_DEFAULT_EXCEPTIONSTATE(int, cppValue, toInt16(v8Value, exceptionState), exceptionState, false);
     if (block.HasCaught())
         return false;
     *result = cppValue;
@@ -9837,7 +10125,7 @@ static bool stringMethodWithStringArgumentImplementedInPrivateScriptMethodImplem
     if (block.HasCaught())
         return false;
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "stringMethodWithStringArgumentImplementedInPrivateScript", "TestObject", scriptState->context()->Global(), scriptState->isolate());
-    V8StringResource<> cppValue = v8Value;
+    TOSTRING_DEFAULT(V8StringResource<>, cppValue, v8Value, false);
     if (block.HasCaught())
         return false;
     *result = cppValue;
@@ -9890,7 +10178,7 @@ static bool nodeMethodWithNodeArgumentImplementedInPrivateScriptMethodImplemente
     if (block.HasCaught())
         return false;
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "nodeMethodWithNodeArgumentImplementedInPrivateScript", "TestObject", scriptState->context()->Global(), scriptState->isolate());
-    Node* cppValue = V8Node::toNativeWithTypeCheck(scriptState->isolate(), v8Value);
+    TONATIVE_DEFAULT(Node*, cppValue, V8Node::toNativeWithTypeCheck(scriptState->isolate(), v8Value), false);
     if (block.HasCaught())
         return false;
     *result = cppValue;
@@ -9949,7 +10237,7 @@ static bool nodeMethodWithVariousArgumentsImplementedInPrivateScriptMethodImplem
     if (block.HasCaught())
         return false;
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "nodeMethodWithVariousArgumentsImplementedInPrivateScript", "TestObject", scriptState->context()->Global(), scriptState->isolate());
-    Node* cppValue = V8Node::toNativeWithTypeCheck(scriptState->isolate(), v8Value);
+    TONATIVE_DEFAULT(Node*, cppValue, V8Node::toNativeWithTypeCheck(scriptState->isolate(), v8Value), false);
     if (block.HasCaught())
         return false;
     *result = cppValue;
@@ -10165,6 +10453,10 @@ static const V8DOMConfiguration::AttributeConfiguration V8TestObjectAttributes[]
     {"testInterfaceGarbageCollectedOrNullAttribute", TestObjectV8Internal::testInterfaceGarbageCollectedOrNullAttributeAttributeGetterCallback, TestObjectV8Internal::testInterfaceGarbageCollectedOrNullAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"testInterfaceWillBeGarbageCollectedAttribute", TestObjectV8Internal::testInterfaceWillBeGarbageCollectedAttributeAttributeGetterCallback, TestObjectV8Internal::testInterfaceWillBeGarbageCollectedAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"testInterfaceWillBeGarbageCollectedOrNullAttribute", TestObjectV8Internal::testInterfaceWillBeGarbageCollectedOrNullAttributeAttributeGetterCallback, TestObjectV8Internal::testInterfaceWillBeGarbageCollectedOrNullAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
+    {"readonlyShortAttribute", TestObjectV8Internal::readonlyShortAttributeAttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
+    {"shortAttribute", TestObjectV8Internal::shortAttributeAttributeGetterCallback, TestObjectV8Internal::shortAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
+    {"stringAttribute", TestObjectV8Internal::stringAttributeAttributeGetterCallback, TestObjectV8Internal::stringAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
+    {"nodeAttribute", TestObjectV8Internal::nodeAttributeAttributeGetterCallback, TestObjectV8Internal::nodeAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
 };
 
 static const V8DOMConfiguration::AccessorConfiguration V8TestObjectAccessors[] = {

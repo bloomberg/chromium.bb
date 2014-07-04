@@ -86,6 +86,9 @@ function collectPropertiesHelper(object, path)
         throw 'Error: probably looping';
 
     for (var property in object) {
+        // Skip internals properties, since they aren't web accessible.
+        if (property === 'internals')
+            continue;
         path.push(property);
         var type = typeof(object[property]);
         if (type == "object") {

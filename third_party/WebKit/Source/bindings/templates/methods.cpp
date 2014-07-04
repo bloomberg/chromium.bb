@@ -511,7 +511,7 @@ static bool {{method.name}}MethodImplementedInPrivateScript({{method.argument_de
     v8::Handle<v8::Value> holder = toV8(holderImpl, scriptState->context()->Global(), scriptState->isolate());
 
     {% for argument in method.arguments %}
-    v8::Handle<v8::Value> {{argument.handle}} = {{argument.cpp_value_to_v8_value}};
+    v8::Handle<v8::Value> {{argument.handle}} = {{argument.private_script_cpp_value_to_v8_value}};
     {% endfor %}
     {% if method.arguments %}
     v8::Handle<v8::Value> argv[] = { {{method.arguments | join(', ', 'handle')}} };
@@ -521,19 +521,19 @@ static bool {{method.name}}MethodImplementedInPrivateScript({{method.argument_de
     {% endif %}
     // FIXME: Support exceptions thrown from Blink-in-JS.
     v8::TryCatch block;
-    {% if method.returned_v8_value_to_local_cpp_value %}
+    {% if method.idl_type == 'void' %}
+    PrivateScriptRunner::runDOMMethod(scriptState, "{{cpp_class}}", "{{method.name}}", holder, {{method.arguments | length}}, argv);
+    if (block.HasCaught())
+        return false;
+    {% else %}
     v8::Handle<v8::Value> v8Value = PrivateScriptRunner::runDOMMethod(scriptState, "{{cpp_class}}", "{{method.name}}", holder, {{method.arguments | length}}, argv);
     if (block.HasCaught())
         return false;
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "{{method.name}}", "{{cpp_class}}", scriptState->context()->Global(), scriptState->isolate());
-    {{method.raw_cpp_type}} cppValue = {{method.returned_v8_value_to_local_cpp_value}};
+    {{method.private_script_v8_value_to_local_cpp_value}};
     if (block.HasCaught())
         return false;
     *result = cppValue;
-    {% else %}{# void return type #}
-    PrivateScriptRunner::runDOMMethod(scriptState, "{{cpp_class}}", "{{method.name}}", holder, {{method.arguments | length}}, argv);
-    if (block.HasCaught())
-        return false;
     {% endif %}
     return true;
 }

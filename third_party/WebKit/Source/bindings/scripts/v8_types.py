@@ -411,7 +411,7 @@ V8_VALUE_TO_CPP_VALUE = {
 }
 
 
-def v8_value_to_cpp_value(idl_type, extended_attributes, v8_value, index, isolate='info.GetIsolate()'):
+def v8_value_to_cpp_value(idl_type, extended_attributes, v8_value, index, isolate):
     if idl_type.name == 'void':
         return ''
 
@@ -466,20 +466,28 @@ def v8_value_to_cpp_value_array_or_sequence(array_or_sequence_type, v8_value, in
     return expression
 
 
-def v8_value_to_local_cpp_value(idl_type, extended_attributes, v8_value, variable_name, index=None, declare_variable=True):
+def v8_value_to_local_cpp_value(idl_type, extended_attributes, v8_value, variable_name, index=None, declare_variable=True, isolate='info.GetIsolate()', used_in_private_script=False):
     """Returns an expression that converts a V8 value to a C++ value and stores it as a local value."""
+
+    # FIXME: Support union type.
+    if idl_type.is_union_type:
+        return ''
+
     this_cpp_type = idl_type.cpp_type_args(extended_attributes=extended_attributes, raw_type=True)
 
     idl_type = idl_type.preprocessed_type
-    cpp_value = v8_value_to_cpp_value(idl_type, extended_attributes, v8_value, index)
+    cpp_value = v8_value_to_cpp_value(idl_type, extended_attributes, v8_value, index, isolate)
     args = [variable_name, cpp_value]
     if idl_type.base_type == 'DOMString' and not idl_type.array_or_sequence_type:
-        macro = 'TOSTRING_VOID'
+        macro = 'TOSTRING_DEFAULT' if used_in_private_script else 'TOSTRING_VOID'
     elif idl_type.may_raise_exception_on_conversion:
-        macro = 'TONATIVE_VOID_EXCEPTIONSTATE'
+        macro = 'TONATIVE_DEFAULT_EXCEPTIONSTATE' if used_in_private_script else 'TONATIVE_VOID_EXCEPTIONSTATE'
         args.append('exceptionState')
     else:
-        macro = 'TONATIVE_VOID'
+        macro = 'TONATIVE_DEFAULT' if used_in_private_script else 'TONATIVE_VOID'
+
+    if used_in_private_script:
+        args.append('false')
 
     # Macros come in several variants, to minimize expensive creation of
     # v8::TryCatch.
@@ -568,7 +576,7 @@ def v8_conversion_type(idl_type, extended_attributes):
             return 'StringOrNull'
         if treat_returned_null_string_as == 'Undefined':
             return 'StringOrUndefined'
-        raise 'Unrecognized TreatReturnNullStringAs value: "%s"' % treat_returned_null_string_as
+        raise 'Unrecognized TreatReturnedNullStringAs value: "%s"' % treat_returned_null_string_as
     if idl_type.is_basic_type or base_idl_type == 'ScriptValue':
         return base_idl_type
 
@@ -590,7 +598,7 @@ V8_SET_RETURN_VALUE = {
     'DOMString': 'v8SetReturnValueString(info, {cpp_value}, info.GetIsolate())',
     'ByteString': 'v8SetReturnValueString(info, {cpp_value}, info.GetIsolate())',
     'ScalarValueString': 'v8SetReturnValueString(info, {cpp_value}, info.GetIsolate())',
-    # [TreatNullReturnValueAs]
+    # [TreatReturnedNullStringAs]
     'StringOrNull': 'v8SetReturnValueStringOrNull(info, {cpp_value}, info.GetIsolate())',
     'StringOrUndefined': 'v8SetReturnValueStringOrUndefined(info, {cpp_value}, info.GetIsolate())',
     'void': '',
@@ -679,7 +687,7 @@ CPP_VALUE_TO_V8_VALUE = {
     'double': 'v8::Number::New({isolate}, {cpp_value})',
     'unrestricted double': 'v8::Number::New({isolate}, {cpp_value})',
     'void': 'v8Undefined()',
-    # [TreatNullReturnValueAs]
+    # [TreatReturnedNullStringAs]
     'StringOrNull': '{cpp_value}.isNull() ? v8::Handle<v8::Value>(v8::Null({isolate})) : v8String({isolate}, {cpp_value})',
     'StringOrUndefined': '{cpp_value}.isNull() ? v8Undefined() : v8String({isolate}, {cpp_value})',
     # Special cases

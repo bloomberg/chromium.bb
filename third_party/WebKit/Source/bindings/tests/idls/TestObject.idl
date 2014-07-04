@@ -536,5 +536,9 @@ interface TestObject {
     [ImplementedInPrivateScript] DOMString stringMethodWithStringArgumentImplementedInPrivateScript(DOMString value);
     [ImplementedInPrivateScript] Node nodeMethodWithNodeArgumentImplementedInPrivateScript(Node value);
     [ImplementedInPrivateScript] Node nodeMethodWithVariousArgumentsImplementedInPrivateScript(Document document, Node node, short value1, double value2, DOMString string);
+    [ImplementedInPrivateScript] readonly attribute short readonlyShortAttribute;
+    [ImplementedInPrivateScript] attribute short shortAttribute;
+    [ImplementedInPrivateScript] attribute DOMString stringAttribute;
+    [ImplementedInPrivateScript] attribute Node nodeAttribute;
 
 };

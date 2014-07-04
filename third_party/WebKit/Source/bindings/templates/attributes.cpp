@@ -48,7 +48,11 @@ const v8::PropertyCallbackInfo<v8::Value>& info
     {% if attribute.is_nullable and not attribute.is_nullable_simple %}
     bool isNull = false;
     {% endif %}
-    {% if attribute.cpp_value_original %}
+    {% if attribute.is_implemented_in_private_script %}
+    {{attribute.cpp_type}} result;
+    if (!{{attribute.cpp_value_original}})
+        return;
+    {% elif attribute.cpp_value_original %}
     {{attribute.cpp_type}} {{attribute.cpp_value}}({{attribute.cpp_value_original}});
     {% endif %}
     {# Checks #}
@@ -331,4 +335,60 @@ v8::Local<v8::String>, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackI
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 {% endfilter %}
+{% endmacro %}
+
+
+{##############################################################################}
+{% macro attribute_getter_implemented_in_private_script(attribute) %}
+static bool {{attribute.name}}AttributeGetterImplementedInPrivateScript(LocalFrame* frame, {{cpp_class}}* holderImpl, {{attribute.cpp_type}}* result)
+{
+    if (!frame)
+        return false;
+    v8::Handle<v8::Context> context = toV8Context(frame, DOMWrapperWorld::privateScriptIsolatedWorld());
+    if (context.IsEmpty())
+        return false;
+    ScriptState* scriptState = ScriptState::from(context);
+    if (!scriptState->executionContext())
+        return false;
+
+    ScriptState::Scope scope(scriptState);
+    v8::Handle<v8::Value> holder = toV8(holderImpl, scriptState->context()->Global(), scriptState->isolate());
+
+    // FIXME: Support exceptions thrown from Blink-in-JS.
+    v8::TryCatch block;
+    v8::Handle<v8::Value> v8Value = PrivateScriptRunner::runDOMAttributeGetter(scriptState, "{{cpp_class}}", "{{attribute.name}}", holder);
+    if (block.HasCaught())
+        return false;
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "{{attribute.name}}", "{{cpp_class}}", scriptState->context()->Global(), scriptState->isolate());
+    {{attribute.private_script_v8_value_to_local_cpp_value}};
+    if (block.HasCaught())
+        return false;
+    *result = cppValue;
+    return true;
+}
+{% endmacro %}
+
+
+{% macro attribute_setter_implemented_in_private_script(attribute) %}
+static bool {{attribute.name}}AttributeSetterImplementedInPrivateScript(LocalFrame* frame, {{cpp_class}}* holderImpl, {{attribute.argument_cpp_type}} cppValue)
+{
+    if (!frame)
+        return false;
+    v8::Handle<v8::Context> context = toV8Context(frame, DOMWrapperWorld::privateScriptIsolatedWorld());
+    if (context.IsEmpty())
+        return false;
+    ScriptState* scriptState = ScriptState::from(context);
+    if (!scriptState->executionContext())
+        return false;
+
+    ScriptState::Scope scope(scriptState);
+    v8::Handle<v8::Value> holder = toV8(holderImpl, scriptState->context()->Global(), scriptState->isolate());
+
+    // FIXME: Support exceptions thrown from Blink-in-JS.
+    v8::TryCatch block;
+    PrivateScriptRunner::runDOMAttributeSetter(scriptState, "{{cpp_class}}", "{{attribute.name}}", holder, {{attribute.private_script_cpp_value_to_v8_value}});
+    if (block.HasCaught())
+        return false;
+    return true;
+}
 {% endmacro %}

@@ -282,6 +282,7 @@
     // This function is for testing HitRegions on Canvas2D.
     unsigned long countHitRegions(CanvasRenderingContext2D context);
 
+    // FIXME: Move these tests to a separate IDL file.
     [ImplementedInPrivateScript] void doNothing();
     [ImplementedInPrivateScript] short return123();
     [ImplementedInPrivateScript] short echoInteger(short value);
@@ -301,4 +302,8 @@
     [ImplementedInPrivateScript] void setInnerHTML(Node node, DOMString string);
     [ImplementedInPrivateScript] void addClickListener(Node node);
     [ImplementedInPrivateScript] void clickNode(Document document, Node node);
+    [ImplementedInPrivateScript] readonly attribute short readonlyShortAttribute;
+    [ImplementedInPrivateScript] attribute short shortAttribute;
+    [ImplementedInPrivateScript] attribute DOMString stringAttribute;
+    [ImplementedInPrivateScript] attribute Node nodeAttribute;
 };

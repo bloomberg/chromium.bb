@@ -22,6 +22,13 @@ PASS internals.innerHTML(node5) is "<div>foo</div>"
 PASS internals.innerHTML(node6) is "foo"
 PASS internals.innerHTML(node7) is ""
 PASS internals.innerHTML(node7) is "clicked"
+PASS internals.readonlyShortAttribute is 123
+PASS internals.shortAttribute is -1
+PASS internals.shortAttribute is 111
+PASS internals.stringAttribute is "xxx"
+PASS internals.stringAttribute is "foo"
+PASS internals.nodeAttribute is null
+PASS internals.nodeAttribute is node8
 PASS successfullyParsed is true
 
 TEST COMPLETE

@@ -163,10 +163,9 @@ def method_context(interface, method):
             argument for argument in arguments
             if not argument.is_optional]),
         'per_context_enabled_function': v8_utilities.per_context_enabled_function_name(method),  # [PerContextEnabled]
+        'private_script_v8_value_to_local_cpp_value': idl_type.v8_value_to_local_cpp_value(
+            extended_attributes, 'v8Value', 'cppValue', isolate='scriptState->isolate()', used_in_private_script=True),
         'property_attributes': property_attributes(method),
-        'raw_cpp_type': idl_type.cpp_type_args(raw_type=True),
-        'returned_v8_value_to_local_cpp_value': v8_types.v8_value_to_cpp_value(
-            idl_type, extended_attributes, 'v8Value', 0, isolate='scriptState->isolate()'),
         'runtime_enabled_function': v8_utilities.runtime_enabled_function_name(method),  # [RuntimeEnabled]
         'signature': 'v8::Local<v8::Signature>()' if is_static or 'DoNotCheckSignature' in extended_attributes else 'defaultSignature',
         'union_arguments': idl_type.union_arguments,
@@ -192,9 +191,6 @@ def argument_context(interface, method, argument, index):
                                            raw_type=True,
                                            used_as_variadic_argument=argument.is_variadic),
         'cpp_value': this_cpp_value,
-        'cpp_value_to_v8_value': idl_type.cpp_value_to_v8_value(
-            argument.name, isolate='scriptState->isolate()',
-            creation_context='scriptState->context()->Global()'),
         # FIXME: check that the default value's type is compatible with the argument's
         'default_value': argument.default_cpp_value,
         'enum_validation_expression': idl_type.enum_validation_expression,
@@ -218,12 +214,15 @@ def argument_context(interface, method, argument, index):
         'is_nullable': idl_type.is_nullable,
         'is_optional': argument.is_optional,
         'is_variadic_wrapper_type': is_variadic_wrapper_type,
-        'vector_type': v8_types.cpp_ptr_type('Vector', 'HeapVector', idl_type.gc_type),
         'is_wrapper_type': idl_type.is_wrapper_type,
         'name': argument.name,
+        'private_script_cpp_value_to_v8_value': idl_type.cpp_value_to_v8_value(
+            argument.name, isolate='scriptState->isolate()',
+            creation_context='scriptState->context()->Global()'),
         'v8_set_return_value': v8_set_return_value(interface.name, method, this_cpp_value),
         'v8_set_return_value_for_main_world': v8_set_return_value(interface.name, method, this_cpp_value, for_main_world=True),
         'v8_value_to_local_cpp_value': v8_value_to_local_cpp_value(argument, index),
+        'vector_type': v8_types.cpp_ptr_type('Vector', 'HeapVector', idl_type.gc_type),
     }
 
 

@@ -40,7 +40,7 @@ static v8::Handle<v8::Value> compilePrivateScript(v8::Isolate* isolate, String c
     return V8ScriptRunner::compileAndRunInternalScript(v8String(isolate, source), isolate);
 }
 
-static v8::Handle<v8::Value> propertyValue(ScriptState* scriptState, String className, String propertyName)
+static v8::Handle<v8::Object> classObjectOfPrivateScript(ScriptState* scriptState, String className)
 {
     ASSERT(scriptState->perContextData());
     ASSERT(scriptState->executionContext());
@@ -61,15 +61,75 @@ static v8::Handle<v8::Value> propertyValue(ScriptState* scriptState, String clas
         RELEASE_ASSERT(compiledClass->IsObject());
         scriptState->perContextData()->setCompiledPrivateScript(className, compiledClass);
     }
-    return v8::Handle<v8::Object>::Cast(compiledClass)->Get(v8String(isolate, propertyName));
+    return v8::Handle<v8::Object>::Cast(compiledClass);
 }
 
-v8::Handle<v8::Value> PrivateScriptRunner::runDOMMethod(ScriptState* scriptState, String className, String operationName, v8::Handle<v8::Value> holder, int argc, v8::Handle<v8::Value> argv[])
+// FIXME: Replace this method with a V8 API for getOwnPropertyDescriptor, once V8 is rolled.
+static v8::Handle<v8::Object> getOwnPropertyDescriptor(ScriptState* scriptState, v8::Handle<v8::Object> classObject, String name)
 {
-    v8::Handle<v8::Value> operation = propertyValue(scriptState, className, operationName);
-    RELEASE_ASSERT(!operation.IsEmpty());
-    RELEASE_ASSERT(operation->IsFunction());
-    return V8ScriptRunner::callFunction(v8::Handle<v8::Function>::Cast(operation), scriptState->executionContext(), holder, argc, argv, scriptState->isolate());
+    ASSERT(!scriptState->contextIsEmpty());
+    v8::Handle<v8::Value> object = scriptState->context()->Global()->Get(v8String(scriptState->isolate(), "Object"));
+    RELEASE_ASSERT(!object.IsEmpty());
+    RELEASE_ASSERT(object->IsObject());
+    v8::Handle<v8::Value> getOwnPropertyDescriptorFunction = v8::Handle<v8::Object>::Cast(object)->Get(v8String(scriptState->isolate(), "getOwnPropertyDescriptor"));
+    RELEASE_ASSERT(!getOwnPropertyDescriptorFunction.IsEmpty());
+    RELEASE_ASSERT(getOwnPropertyDescriptorFunction->IsFunction());
+    v8::Handle<v8::Value> argv[] = { classObject, v8String(scriptState->isolate(), name) };
+    v8::Handle<v8::Value> descriptor = V8ScriptRunner::callInternalFunction(v8::Handle<v8::Function>::Cast(getOwnPropertyDescriptorFunction), object, WTF_ARRAY_LENGTH(argv), argv, scriptState->isolate());
+    RELEASE_ASSERT(!descriptor.IsEmpty());
+    RELEASE_ASSERT(descriptor->IsObject());
+    return v8::Handle<v8::Object>::Cast(descriptor);
+}
+
+static void initializeHolderIfNeeded(ScriptState* scriptState, v8::Handle<v8::Object> classObject, v8::Handle<v8::Value> holder)
+{
+    RELEASE_ASSERT(!holder.IsEmpty());
+    RELEASE_ASSERT(holder->IsObject());
+    v8::Handle<v8::Object> holderObject = v8::Handle<v8::Object>::Cast(holder);
+    v8::Isolate* isolate = scriptState->isolate();
+    v8::Handle<v8::Value> isInitialized = V8HiddenValue::getHiddenValue(isolate, holderObject, V8HiddenValue::privateScriptObjectIsInitialized(isolate));
+    if (isInitialized.IsEmpty()) {
+        v8::Handle<v8::Value> initializeFunction = classObject->Get(v8String(isolate, "constructor"));
+        if (!initializeFunction.IsEmpty()) {
+            RELEASE_ASSERT(initializeFunction->IsFunction());
+            V8ScriptRunner::callFunction(v8::Handle<v8::Function>::Cast(initializeFunction), scriptState->executionContext(), holder, 0, 0, isolate);
+            isInitialized = v8Boolean(true, isolate);
+            V8HiddenValue::setHiddenValue(isolate, holderObject, V8HiddenValue::privateScriptObjectIsInitialized(isolate), isInitialized);
+        }
+    }
+}
+
+v8::Handle<v8::Value> PrivateScriptRunner::runDOMAttributeGetter(ScriptState* scriptState, String className, String attributeName, v8::Handle<v8::Value> holder)
+{
+    v8::Handle<v8::Object> classObject = classObjectOfPrivateScript(scriptState, className);
+    v8::Handle<v8::Object> descriptor = getOwnPropertyDescriptor(scriptState, classObject, attributeName);
+    v8::Handle<v8::Value> getter = descriptor->Get(v8String(scriptState->isolate(), "get"));
+    RELEASE_ASSERT(!getter.IsEmpty());
+    RELEASE_ASSERT(getter->IsFunction());
+    initializeHolderIfNeeded(scriptState, classObject, holder);
+    return V8ScriptRunner::callFunction(v8::Handle<v8::Function>::Cast(getter), scriptState->executionContext(), holder, 0, 0, scriptState->isolate());
+}
+
+void PrivateScriptRunner::runDOMAttributeSetter(ScriptState* scriptState, String className, String attributeName, v8::Handle<v8::Value> holder, v8::Handle<v8::Value> v8Value)
+{
+    v8::Handle<v8::Object> classObject = classObjectOfPrivateScript(scriptState, className);
+    v8::Handle<v8::Object> descriptor = getOwnPropertyDescriptor(scriptState, classObject, attributeName);
+    v8::Handle<v8::Value> setter = descriptor->Get(v8String(scriptState->isolate(), "set"));
+    RELEASE_ASSERT(!setter.IsEmpty());
+    RELEASE_ASSERT(setter->IsFunction());
+    initializeHolderIfNeeded(scriptState, classObject, holder);
+    v8::Handle<v8::Value> argv[] = { v8Value };
+    V8ScriptRunner::callFunction(v8::Handle<v8::Function>::Cast(setter), scriptState->executionContext(), holder, WTF_ARRAY_LENGTH(argv), argv, scriptState->isolate());
+}
+
+v8::Handle<v8::Value> PrivateScriptRunner::runDOMMethod(ScriptState* scriptState, String className, String methodName, v8::Handle<v8::Value> holder, int argc, v8::Handle<v8::Value> argv[])
+{
+    v8::Handle<v8::Object> classObject = classObjectOfPrivateScript(scriptState, className);
+    v8::Handle<v8::Value> method = classObject->Get(v8String(scriptState->isolate(), methodName));
+    RELEASE_ASSERT(!method.IsEmpty());
+    RELEASE_ASSERT(method->IsFunction());
+    initializeHolderIfNeeded(scriptState, classObject, holder);
+    return V8ScriptRunner::callFunction(v8::Handle<v8::Function>::Cast(method), scriptState->executionContext(), holder, argc, argv, scriptState->isolate());
 }
 
 } // namespace WebCore

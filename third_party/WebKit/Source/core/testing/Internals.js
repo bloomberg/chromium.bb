@@ -7,6 +7,12 @@
 installClass("Internals", function(global) {
     var InternalsPrototype = Object.create(Element.prototype);
 
+    InternalsPrototype.constructor = function() {
+        this.m_shortAttribute = -1;
+        this.m_stringAttribute = "xxx";
+        this.m_nodeAttribute = null;
+    }
+
     InternalsPrototype.doNothing = function() {
     }
 
@@ -84,6 +90,25 @@ installClass("Internals", function(global) {
         var event = new MouseEvent("click", { bubbles: true, cancelable: true, view: global });
         node.dispatchEvent(event);
     }
+
+    Object.defineProperty(InternalsPrototype, "readonlyShortAttribute", {
+        get: function() { return 123; }
+    });
+
+    Object.defineProperty(InternalsPrototype, "shortAttribute", {
+        get: function() { return this.m_shortAttribute; },
+        set: function(value) { this.m_shortAttribute = value; }
+    });
+
+    Object.defineProperty(InternalsPrototype, "stringAttribute", {
+        get: function() { return this.m_stringAttribute; },
+        set: function(value) { this.m_stringAttribute = value; }
+    });
+
+    Object.defineProperty(InternalsPrototype, "nodeAttribute", {
+        get: function() { return this.m_nodeAttribute; },
+        set: function(value) { this.m_nodeAttribute = value; }
+    });
 
     return InternalsPrototype;
 });
