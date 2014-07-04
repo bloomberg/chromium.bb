@@ -106,8 +106,8 @@ TEST_F(EmfPrintingTest, Enumerate) {
   context->NewDocument(L"EmfTest.Enumerate");
   context->NewPage();
   // Process one at a time.
-  Emf::Enumerator emf_enum(emf, context->context(),
-                           &emf.GetPageBounds(1).ToRECT());
+  RECT page_bounds = emf.GetPageBounds(1).ToRECT();
+  Emf::Enumerator emf_enum(emf, context->context(), &page_bounds);
   for (Emf::Enumerator::const_iterator itr = emf_enum.begin();
        itr != emf_enum.end();
        ++itr) {
@@ -161,7 +161,7 @@ TEST_F(EmfPrintingTest, PageBreak) {
   // Since presumably the printer is not real, let us just delete the job from
   // the queue.
   HANDLE printer = NULL;
-  if (::OpenPrinter(L"UnitTest Printer", &printer, NULL)) {
+  if (::OpenPrinter(const_cast<LPTSTR>(L"UnitTest Printer"), &printer, NULL)) {
     ::SetJob(printer, job_id, 0, NULL, JOB_CONTROL_DELETE);
     ClosePrinter(printer);
   }
