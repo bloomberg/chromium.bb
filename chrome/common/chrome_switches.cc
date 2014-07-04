@@ -541,6 +541,10 @@ const char kEnableOriginChipOnSrp[]         = "enable-origin-chip-on-srp";
 // Enables panels (always on-top docked pop-up windows).
 const char kEnablePanels[]                  = "enable-panels";
 
+// Enables presenting plugin placeholder content as shadow DOM.
+const char kEnablePluginPlaceholderShadowDom[] =
+    "enable-plugin-placeholder-shadow-dom";
+
 // Enables showing unregistered printers in print preview
 const char kEnablePrintPreviewRegisterPromos[] =
     "enable-print-preview-register-promos";
