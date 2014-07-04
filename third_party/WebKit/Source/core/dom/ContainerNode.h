@@ -161,9 +161,11 @@ public:
     enum ChildrenChangeType { ChildInserted, ChildRemoved, AllChildrenRemoved, TextChanged };
     enum ChildrenChangeSource { ChildrenChangeSourceAPI, ChildrenChangeSourceParser };
     struct ChildrenChange {
+        STACK_ALLOCATED();
+    public:
         ChildrenChangeType type;
-        Node* siblingBeforeChange;
-        Node* siblingAfterChange;
+        RawPtrWillBeMember<Node> siblingBeforeChange;
+        RawPtrWillBeMember<Node> siblingAfterChange;
         ChildrenChangeSource byParser;
     };
 
