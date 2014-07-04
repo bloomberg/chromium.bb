@@ -11,6 +11,15 @@ function dummyScript()
     console.log("dummy string");
 }
 
+function onload()
+{
+    if (window.testRunner) {
+        testRunner.waitUntilDone();
+        testRunner.showWebInspector();
+    }
+    runTest();
+}
+
 function test()
 {
     InspectorTest.startDebuggerTest(waitForScripts);
@@ -80,7 +89,7 @@ function test()
 </script>
 </head>
 
-<body onload="runTest()">
+<body onload="onload()">
 <p>
 Tests that Linkifier works correctly.
 <p>
