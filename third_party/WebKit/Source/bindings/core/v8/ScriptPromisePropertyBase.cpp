@@ -62,15 +62,13 @@ ScriptPromise ScriptPromisePropertyBase::promise(DOMWrapperWorld& world)
     }
     ASSERT(wrapper->CreationContext() == context);
 
-    v8::Handle<v8::Promise> promise = V8HiddenValue::getHiddenValue(m_isolate, wrapper, promiseName()).As<v8::Promise>();
-    if (!promise.IsEmpty()) {
-        // Return cached Promise
-        return ScriptPromise(scriptState, promise);
-    }
+    v8::Handle<v8::Value> cachedPromise = V8HiddenValue::getHiddenValue(m_isolate, wrapper, promiseName());
+    if (!cachedPromise.IsEmpty())
+        return ScriptPromise(scriptState, cachedPromise);
 
     // Create and cache the Promise
     v8::Handle<v8::Promise::Resolver> resolver = v8::Promise::Resolver::New(m_isolate);
-    promise = resolver->GetPromise();
+    v8::Handle<v8::Promise> promise = resolver->GetPromise();
     V8HiddenValue::setHiddenValue(m_isolate, wrapper, promiseName(), promise);
 
     switch (m_state) {
