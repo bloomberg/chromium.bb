@@ -57,3 +57,6 @@ AppCacheStorageImplTest.*
 AppCacheStorageImplTest.*
 AppCacheUpdateJobTest.AlreadyChecking
 AppCacheUpdateJobTest.ManifestMissingMimeTypeTest
+
+# http://crbug.com/391513
+GamepadServiceTest.*
