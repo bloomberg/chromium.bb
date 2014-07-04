@@ -1230,18 +1230,20 @@ TEST_F(AcceleratorControllerTest, DisallowedWithNoWindow) {
   }
 
   // Make sure we don't alert if we do have a window.
-  scoped_ptr<aura::Window> window(
-      CreateTestWindowInShellWithBounds(gfx::Rect(5, 5, 20, 20)));
-  wm::ActivateWindow(window.get());
+  scoped_ptr<aura::Window> window;
   for (size_t i = 0; i < kActionsNeedingWindowLength; ++i) {
+    window.reset(CreateTestWindowInShellWithBounds(gfx::Rect(5, 5, 20, 20)));
+    wm::ActivateWindow(window.get());
     delegate->TriggerAccessibilityAlert(A11Y_ALERT_NONE);
     GetController()->PerformAction(kActionsNeedingWindow[i], dummy);
     EXPECT_NE(delegate->GetLastAccessibilityAlert(), A11Y_ALERT_WINDOW_NEEDED);
   }
 
   // Don't alert if we have a minimized window either.
-  GetController()->PerformAction(WINDOW_MINIMIZE, dummy);
   for (size_t i = 0; i < kActionsNeedingWindowLength; ++i) {
+    window.reset(CreateTestWindowInShellWithBounds(gfx::Rect(5, 5, 20, 20)));
+    wm::ActivateWindow(window.get());
+    GetController()->PerformAction(WINDOW_MINIMIZE, dummy);
     delegate->TriggerAccessibilityAlert(A11Y_ALERT_NONE);
     GetController()->PerformAction(kActionsNeedingWindow[i], dummy);
     EXPECT_NE(delegate->GetLastAccessibilityAlert(), A11Y_ALERT_WINDOW_NEEDED);

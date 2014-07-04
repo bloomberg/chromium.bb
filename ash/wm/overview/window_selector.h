@@ -17,6 +17,7 @@
 #include "ui/aura/window_tracker.h"
 #include "ui/events/event_handler.h"
 #include "ui/gfx/display_observer.h"
+#include "ui/views/controls/textfield/textfield_controller.h"
 #include "ui/wm/public/activation_change_observer.h"
 
 namespace aura {
@@ -32,6 +33,11 @@ namespace ui {
 class LocatedEvent;
 }
 
+namespace views {
+class Textfield;
+class Widget;
+}
+
 namespace ash {
 class WindowSelectorDelegate;
 class WindowSelectorItem;
@@ -41,10 +47,10 @@ class WindowGrid;
 // The WindowSelector shows a grid of all of your windows, allowing to select
 // one by clicking or tapping on it.
 class ASH_EXPORT WindowSelector
-    : public ui::EventHandler,
-      public gfx::DisplayObserver,
+    : public gfx::DisplayObserver,
       public aura::WindowObserver,
-      public aura::client::ActivationChangeObserver {
+      public aura::client::ActivationChangeObserver,
+      public views::TextfieldController {
  public:
   enum Direction {
     LEFT,
@@ -66,9 +72,6 @@ class ASH_EXPORT WindowSelector
   // Called when the last window selector item from a grid is deleted.
   void OnGridEmpty(WindowGrid* grid);
 
-  // ui::EventHandler:
-  virtual void OnKeyEvent(ui::KeyEvent* event) OVERRIDE;
-
   // gfx::DisplayObserver:
   virtual void OnDisplayAdded(const gfx::Display& display) OVERRIDE;
   virtual void OnDisplayRemoved(const gfx::Display& display) OVERRIDE;
@@ -85,6 +88,12 @@ class ASH_EXPORT WindowSelector
   virtual void OnAttemptToReactivateWindow(
       aura::Window* request_active,
       aura::Window* actual_active) OVERRIDE;
+
+  // views::TextfieldController:
+  virtual void ContentsChanged(views::Textfield* sender,
+                               const base::string16& new_contents) OVERRIDE;
+  virtual bool HandleKeyEvent(views::Textfield* sender,
+                              const ui::KeyEvent& key_event) OVERRIDE;
 
  private:
   friend class WindowSelectorTest;
@@ -103,7 +112,7 @@ class ASH_EXPORT WindowSelector
 
   // Helper function that moves the selection widget to |direction| on the
   // corresponding window grid.
-  void Move(Direction direction);
+  void Move(Direction direction, bool animate);
 
   // Tracks observed windows.
   std::set<aura::Window*> observed_windows_;
@@ -141,6 +150,14 @@ class ASH_EXPORT WindowSelector
 
   // The number of items in the overview.
   size_t num_items_;
+
+  // Indicates if we are showing the selection widget.
+  bool showing_selection_widget_;
+
+  // Window text filter widget. As the user writes on it, we filter the items
+  // in the overview. It is also responsible for handling overview key events,
+  // such as enter key to select.
+  scoped_ptr<views::Widget> text_filter_widget_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowSelector);
 };

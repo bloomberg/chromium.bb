@@ -79,6 +79,11 @@ class WindowSelectorItem : public views::ButtonListener,
   // label is read.
   void SendFocusAlert() const;
 
+  // Sets if the item is dimmed in the overview. Changing the value will also
+  // change the visibility of the transform windows.
+  virtual void SetDimmed(bool dimmed);
+  bool dimmed() const { return dimmed_; }
+
   const gfx::Rect& bounds() const { return bounds_; }
   const gfx::Rect& target_bounds() const { return target_bounds_; }
 
@@ -99,6 +104,13 @@ class WindowSelectorItem : public views::ButtonListener,
 
   // Sets the bounds used by the selector item's windows.
   void set_bounds(const gfx::Rect& bounds) { bounds_ = bounds; }
+
+  // Changes the opacity of all the windows the item owns.
+  virtual void SetOpacity(float opacity);
+
+  // True if the item is being shown in the overview, false if it's being
+  // filtered.
+  bool dimmed_;
 
  private:
   friend class WindowSelectorTest;

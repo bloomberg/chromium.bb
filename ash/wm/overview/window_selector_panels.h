@@ -39,6 +39,7 @@ class WindowSelectorPanels : public WindowSelectorItem {
   virtual void SetItemBounds(aura::Window* root_window,
                              const gfx::Rect& target_bounds,
                              bool animate) OVERRIDE;
+  virtual void SetOpacity(float opacity) OVERRIDE;
 
  private:
   typedef ScopedVector<ScopedTransformOverviewWindow> WindowList;

@@ -97,7 +97,8 @@ ScopedTransformOverviewWindow::ScopedTransformOverviewWindow(
                  ui::SHOW_STATE_MINIMIZED),
       ignored_by_shelf_(ash::wm::GetWindowState(window)->ignored_by_shelf()),
       overview_started_(false),
-      original_transform_(window->layer()->GetTargetTransform()) {
+      original_transform_(window->layer()->GetTargetTransform()),
+      opacity_(window->layer()->GetTargetOpacity()) {
 }
 
 ScopedTransformOverviewWindow::~ScopedTransformOverviewWindow() {
@@ -119,6 +120,7 @@ ScopedTransformOverviewWindow::~ScopedTransformOverviewWindow() {
                            ui::SHOW_STATE_MINIMIZED);
     }
     ash::wm::GetWindowState(window_)->set_ignored_by_shelf(ignored_by_shelf_);
+    window_->layer()->SetOpacity(opacity_);
   }
 }
 
@@ -158,6 +160,7 @@ void ScopedTransformOverviewWindow::RestoreWindow() {
 void ScopedTransformOverviewWindow::RestoreWindowOnExit() {
   minimized_ = false;
   original_transform_ = gfx::Transform();
+  opacity_ = 1;
 }
 
 void ScopedTransformOverviewWindow::OnWindowDestroyed() {

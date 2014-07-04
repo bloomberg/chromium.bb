@@ -112,6 +112,9 @@ class ScopedTransformOverviewWindow {
   // The original transform of the window before entering overview mode.
   gfx::Transform original_transform_;
 
+  // The original opacity of the window before entering overview mode.
+  float opacity_;
+
   DISALLOW_COPY_AND_ASSIGN(ScopedTransformOverviewWindow);
 };
 

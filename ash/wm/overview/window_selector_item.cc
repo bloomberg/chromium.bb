@@ -75,8 +75,43 @@ static const int kShadowBlur = 10;
 
 const int WindowSelectorItem::kFadeInMilliseconds = 80;
 
+// Opacity for dimmed items.
+static const float kDimmedItemOpacity = 0.5f;
+
+views::Widget* CreateWindowLabel(aura::Window* root_window,
+                                 const base::string16 title) {
+  views::Widget* widget = new views::Widget;
+  views::Widget::InitParams params;
+  params.type = views::Widget::InitParams::TYPE_POPUP;
+  params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
+  params.parent =
+      Shell::GetContainer(root_window, ash::kShellWindowId_OverlayContainer);
+  params.accept_events = false;
+  params.visible_on_all_workspaces = true;
+  widget->set_focus_on_creation(false);
+  widget->Init(params);
+  views::Label* label = new views::Label;
+  label->SetEnabledColor(kLabelColor);
+  label->SetBackgroundColor(kLabelBackground);
+  label->set_shadows(gfx::ShadowValues(1, gfx::ShadowValue(
+      gfx::Point(0, kVerticalShadowOffset), kShadowBlur, kLabelShadow)));
+  ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
+  label->SetFontList(bundle.GetFontList(ui::ResourceBundle::BoldFont));
+  label->SetText(title);
+  views::BoxLayout* layout = new views::BoxLayout(views::BoxLayout::kVertical,
+                                                  0,
+                                                  kVerticalLabelPadding,
+                                                  0);
+  label->SetLayoutManager(layout);
+  widget->SetContentsView(label);
+  widget->Show();
+  return widget;
+}
+
 WindowSelectorItem::WindowSelectorItem()
-    : root_window_(NULL),
+    : dimmed_(false),
+      root_window_(NULL),
       in_bounds_update_(false),
       window_label_view_(NULL) {
 }
@@ -134,12 +169,19 @@ void WindowSelectorItem::SendFocusAlert() const {
   activate_window_button_->SendFocusAlert();
 }
 
+void WindowSelectorItem::SetDimmed(bool dimmed) {
+  dimmed_ = dimmed;
+  SetOpacity(dimmed ? kDimmedItemOpacity : 1.0f);
+}
+
 void WindowSelectorItem::ButtonPressed(views::Button* sender,
                                        const ui::Event& event) {
   views::Widget::GetWidgetForNativeView(SelectionWindow())->Close();
 }
 
 void WindowSelectorItem::OnWindowTitleChanged(aura::Window* window) {
+  // TODO(flackr): Maybe add the new title to a vector of titles so that we can
+  // filter any of the titles the window had while in the overview session.
   if (window == SelectionWindow())
     window_label_view_->SetText(window->title());
 }
@@ -205,6 +247,11 @@ void WindowSelectorItem::UpdateCloseButtonBounds(aura::Window* root_window,
       close_button_->GetNativeWindow()->SetTransform(close_button_transform);
     }
   }
+}
+
+void WindowSelectorItem::SetOpacity(float opacity) {
+  window_label_->GetNativeWindow()->layer()->SetOpacity(opacity);
+  close_button_->GetNativeWindow()->layer()->SetOpacity(opacity);
 }
 
 void WindowSelectorItem::UpdateWindowLabels(const gfx::Rect& window_bounds,

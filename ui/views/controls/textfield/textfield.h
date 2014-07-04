@@ -120,6 +120,9 @@ class VIEWS_EXPORT Textfield : public View,
   void SetSelectionBackgroundColor(SkColor color);
   void UseDefaultSelectionBackgroundColor();
 
+  // Set drop shadows underneath the text.
+  void SetShadows(const gfx::ShadowValues& shadows);
+
   // Gets/Sets whether or not the cursor is enabled.
   bool GetCursorEnabled() const;
   void SetCursorEnabled(bool enabled);

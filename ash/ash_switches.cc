@@ -54,6 +54,10 @@ const char kAshEnableMagnifierKeyScroller[] =
     "ash-enable-magnifier-key-scroller";
 #endif
 
+// Enables text filtering with the keyboard in Overview Mode.
+const char kAshDisableTextFilteringInOverviewMode[] =
+    "ash-disable-text-filtering-in-overview-mode";
+
 // Enables software based mirroring.
 const char kAshEnableSoftwareMirroring[] = "ash-enable-software-mirroring";
 

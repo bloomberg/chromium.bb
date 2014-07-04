@@ -75,4 +75,9 @@ void WindowSelectorWindow::SetItemBounds(aura::Window* root_window,
       animate);
 }
 
+void WindowSelectorWindow::SetOpacity(float opacity) {
+  transform_window_.window()->layer()->SetOpacity(opacity);
+  WindowSelectorItem::SetOpacity(opacity);
+}
+
 }  // namespace ash

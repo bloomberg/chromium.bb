@@ -205,4 +205,14 @@ void WindowSelectorPanels::SetItemBounds(aura::Window* root_window,
   }
 }
 
+void WindowSelectorPanels::SetOpacity(float opacity) {
+  // TODO(flackr): find a way to make panels that are hidden behind other panels
+  // look nice.
+  for (WindowList::iterator iter = transform_windows_.begin();
+       iter != transform_windows_.end(); iter++) {
+    (*iter)->window()->layer()->SetOpacity(opacity);
+  }
+  WindowSelectorItem::SetOpacity(opacity);
+}
+
 }  // namespace ash

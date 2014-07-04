@@ -30,6 +30,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_vector.h"
 #include "base/run_loop.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/cursor_client.h"
@@ -202,6 +203,19 @@ class WindowSelectorTest : public test::AshTestBase {
         SelectedWindow()->SelectionWindow();
   }
 
+  const bool selection_widget_active() {
+    WindowSelector* ws = ash::Shell::GetInstance()->
+        window_selector_controller()->window_selector_.get();
+    return ws->grid_list_[ws->selected_grid_index_]->is_selecting();
+  }
+
+  bool showing_filter_widget() {
+    WindowSelector* ws = ash::Shell::GetInstance()->
+        window_selector_controller()->window_selector_.get();
+    return ws->text_filter_widget_->GetNativeWindow()->layer()->
+        GetTargetTransform().IsIdentity();
+  }
+
   views::Widget* GetCloseButton(ash::WindowSelectorItem* window) {
     return window->close_button_.get();
   }
@@ -224,8 +238,20 @@ class WindowSelectorTest : public test::AshTestBase {
             GetCloseButton(window_item)->GetNativeView()))));
   }
 
+  void FilterItems(const base::StringPiece& pattern) {
+    ash::Shell::GetInstance()->
+        window_selector_controller()->window_selector_.get()->
+            ContentsChanged(NULL, base::UTF8ToUTF16(pattern));
+  }
+
   test::ShelfViewTestAPI* shelf_view_test() {
     return shelf_view_test_.get();
+  }
+
+  views::Widget* text_filter_widget() {
+    return ash::Shell::GetInstance()->
+        window_selector_controller()->window_selector_.get()->
+            text_filter_widget_.get();
   }
 
  private:
@@ -266,10 +292,10 @@ TEST_F(WindowSelectorTest, Basic) {
   // Hide the cursor before entering overview to test that it will be shown.
   aura::client::GetCursorClient(root_window)->HideCursor();
 
-  // In overview mode the windows should no longer overlap and focus should
-  // be removed from the window.
+  // In overview mode the windows should no longer overlap and the text filter
+  // widget should be focused.
   ToggleOverview();
-  EXPECT_EQ(NULL, GetFocusedWindow());
+  EXPECT_EQ(text_filter_widget()->GetNativeWindow(), GetFocusedWindow());
   EXPECT_FALSE(WindowsOverlapping(window1.get(), window2.get()));
   EXPECT_FALSE(WindowsOverlapping(window1.get(), panel1.get()));
   // Panels 1 and 2 should still be overlapping being in a single selector
@@ -294,7 +320,7 @@ TEST_F(WindowSelectorTest, BasicGesture) {
   wm::ActivateWindow(window1.get());
   EXPECT_EQ(window1.get(), GetFocusedWindow());
   ToggleOverview();
-  EXPECT_EQ(NULL, GetFocusedWindow());
+  EXPECT_EQ(text_filter_widget()->GetNativeWindow(), GetFocusedWindow());
   aura::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
                                        window2.get());
   generator.GestureTapAt(gfx::ToEnclosingRect(
@@ -502,9 +528,9 @@ TEST_F(WindowSelectorTest, CancelRestoresFocus) {
   wm::ActivateWindow(window.get());
   EXPECT_EQ(window.get(), GetFocusedWindow());
 
-  // In overview mode, focus should be removed.
+  // In overview mode, the text filter widget should be focused.
   ToggleOverview();
-  EXPECT_EQ(NULL, GetFocusedWindow());
+  EXPECT_EQ(text_filter_widget()->GetNativeWindow(), GetFocusedWindow());
 
   // If canceling overview mode, focus should be restored.
   ToggleOverview();
@@ -1012,6 +1038,87 @@ TEST_F(WindowSelectorTest, CloseButtonOnPanels) {
   EXPECT_TRUE(widget2->IsClosed());
   RunAllPendingInMessageLoop();
   EXPECT_FALSE(IsSelecting());
+}
+
+// Creates three windows and tests filtering them by title.
+TEST_F(WindowSelectorTest, BasicTextFiltering) {
+  gfx::Rect bounds(0, 0, 100, 100);
+  scoped_ptr<aura::Window> window2(CreateWindow(bounds));
+  scoped_ptr<aura::Window> window1(CreateWindow(bounds));
+  scoped_ptr<aura::Window> window0(CreateWindow(bounds));
+  base::string16 window2_title = base::UTF8ToUTF16("Highway to test");
+  base::string16 window1_title = base::UTF8ToUTF16("For those about to test");
+  base::string16 window0_title = base::UTF8ToUTF16("We salute you");
+  window0->SetTitle(window0_title);
+  window1->SetTitle(window1_title);
+  window2->SetTitle(window2_title);
+  ToggleOverview();
+  EXPECT_FALSE(selection_widget_active());
+  EXPECT_FALSE(showing_filter_widget());
+  FilterItems("Test");
+
+  // The selection widget should appear when filtering starts, and should be
+  // selecting the first matching window.
+  EXPECT_TRUE(selection_widget_active());
+  EXPECT_TRUE(showing_filter_widget());
+  EXPECT_EQ(GetSelectedWindow(), window1.get());
+
+  // Window 0 has no "test" on it so it should be the only dimmed item.
+  std::vector<WindowSelectorItem*> items = GetWindowItemsForRoot(0);
+  EXPECT_TRUE(items[0]->dimmed());
+  EXPECT_FALSE(items[1]->dimmed());
+  EXPECT_FALSE(items[2]->dimmed());
+
+  // No items match the search.
+  FilterItems("I'm testing 'n testing");
+  EXPECT_TRUE(items[0]->dimmed());
+  EXPECT_TRUE(items[1]->dimmed());
+  EXPECT_TRUE(items[2]->dimmed());
+
+  // All the items should match the empty string. The filter widget should also
+  // disappear.
+  FilterItems("");
+  EXPECT_FALSE(showing_filter_widget());
+  EXPECT_FALSE(items[0]->dimmed());
+  EXPECT_FALSE(items[1]->dimmed());
+  EXPECT_FALSE(items[2]->dimmed());
+}
+
+// Tests selecting in the overview with dimmed and undimmed items.
+TEST_F(WindowSelectorTest, TextFilteringSelection) {
+  gfx::Rect bounds(0, 0, 100, 100);
+   scoped_ptr<aura::Window> window2(CreateWindow(bounds));
+   scoped_ptr<aura::Window> window1(CreateWindow(bounds));
+   scoped_ptr<aura::Window> window0(CreateWindow(bounds));
+   base::string16 window2_title = base::UTF8ToUTF16("Rock and roll");
+   base::string16 window1_title = base::UTF8ToUTF16("Rock and");
+   base::string16 window0_title = base::UTF8ToUTF16("Rock");
+   window0->SetTitle(window0_title);
+   window1->SetTitle(window1_title);
+   window2->SetTitle(window2_title);
+   ToggleOverview();
+   SendKey(ui::VKEY_RIGHT);
+   EXPECT_TRUE(selection_widget_active());
+   EXPECT_EQ(GetSelectedWindow(), window0.get());
+
+   // Dim the first item, the selection should jump to the next item.
+   std::vector<WindowSelectorItem*> items = GetWindowItemsForRoot(0);
+   FilterItems("Rock and");
+   EXPECT_EQ(GetSelectedWindow(), window1.get());
+
+   // Cycle the selection, the dimmed window should not be selected.
+   SendKey(ui::VKEY_RIGHT);
+   EXPECT_EQ(GetSelectedWindow(), window2.get());
+   SendKey(ui::VKEY_RIGHT);
+   EXPECT_EQ(GetSelectedWindow(), window1.get());
+
+   // Dimming all the items should hide the selection widget.
+   FilterItems("Pop");
+   EXPECT_FALSE(selection_widget_active());
+
+   // Undimming one window should automatically select it.
+   FilterItems("Rock and roll");
+   EXPECT_EQ(GetSelectedWindow(), window2.get());
 }
 
 }  // namespace ash
