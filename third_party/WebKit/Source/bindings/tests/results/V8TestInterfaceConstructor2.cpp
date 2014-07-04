@@ -191,7 +191,7 @@ void V8TestInterfaceConstructor2::constructorCallback(const v8::FunctionCallback
     TestInterfaceConstructor2V8Internal::constructor(info);
 }
 
-static void configureV8TestInterfaceConstructor2Template(v8::Handle<v8::FunctionTemplate> functionTemplate, v8::Isolate* isolate)
+static void installV8TestInterfaceConstructor2Template(v8::Handle<v8::FunctionTemplate> functionTemplate, v8::Isolate* isolate)
 {
     functionTemplate->ReadOnlyPrototype();
 
@@ -212,7 +212,7 @@ static void configureV8TestInterfaceConstructor2Template(v8::Handle<v8::Function
 
 v8::Handle<v8::FunctionTemplate> V8TestInterfaceConstructor2::domTemplate(v8::Isolate* isolate)
 {
-    return V8DOMConfiguration::domClassTemplate(isolate, const_cast<WrapperTypeInfo*>(&wrapperTypeInfo), configureV8TestInterfaceConstructor2Template);
+    return V8DOMConfiguration::domClassTemplate(isolate, const_cast<WrapperTypeInfo*>(&wrapperTypeInfo), installV8TestInterfaceConstructor2Template);
 }
 
 bool V8TestInterfaceConstructor2::hasInstance(v8::Handle<v8::Value> v8Value, v8::Isolate* isolate)

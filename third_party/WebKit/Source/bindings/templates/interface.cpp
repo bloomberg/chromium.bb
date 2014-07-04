@@ -742,8 +742,7 @@ static const V8DOMConfiguration::AttributeConfiguration shadowAttributes[] = {
 
 
 {##############################################################################}
-{% block class_attributes %}
-{# FIXME: rename to install_attributes and put into configure_class_template #}
+{% block install_attributes %}
 {% if has_attribute_configuration %}
 static const V8DOMConfiguration::AttributeConfiguration {{v8_class}}Attributes[] = {
     {% for attribute in attributes
@@ -763,8 +762,7 @@ static const V8DOMConfiguration::AttributeConfiguration {{v8_class}}Attributes[]
 
 
 {##############################################################################}
-{% block class_accessors %}
-{# FIXME: rename install_accessors and put into configure_class_template #}
+{% block install_accessors %}
 {% if has_accessors %}
 static const V8DOMConfiguration::AccessorConfiguration {{v8_class}}Accessors[] = {
     {% for attribute in attributes if attribute.is_expose_js_accessors %}
@@ -777,8 +775,7 @@ static const V8DOMConfiguration::AccessorConfiguration {{v8_class}}Accessors[] =
 
 
 {##############################################################################}
-{% block class_methods %}
-{# FIXME: rename to install_methods and put into configure_class_template #}
+{% block install_methods %}
 {% if method_configuration_methods %}
 static const V8DOMConfiguration::MethodConfiguration {{v8_class}}Methods[] = {
     {% for method in method_configuration_methods %}
@@ -873,9 +870,8 @@ static void configureShadowObjectTemplate(v8::Handle<v8::ObjectTemplate> templ, 
 
 
 {##############################################################################}
-{% block configure_class_template %}
-{# FIXME: rename to install_dom_template and Install{{v8_class}}DOMTemplate #}
-static void configure{{v8_class}}Template(v8::Handle<v8::FunctionTemplate> functionTemplate, v8::Isolate* isolate)
+{% block install_dom_template %}
+static void install{{v8_class}}Template(v8::Handle<v8::FunctionTemplate> functionTemplate, v8::Isolate* isolate)
 {
     functionTemplate->ReadOnlyPrototype();
 
@@ -1080,7 +1076,6 @@ V8DOMConfiguration::installMethodCustomSignature({{method.function_template}}, {
 
 {######################################}
 {% macro install_constants() %}
-{# FIXME: should use reflected_name instead of name #}
 {# Normal (always enabled) constants #}
 static const V8DOMConfiguration::ConstantConfiguration {{v8_class}}Constants[] = {
     {% for constant in constants if not constant.runtime_enabled_function %}
@@ -1106,11 +1101,10 @@ COMPILE_ASSERT({{constant.value}} == {{constant_cpp_class}}::{{constant.reflecte
 
 
 {##############################################################################}
-{% block get_template %}
-{# FIXME: rename to get_dom_template and GetDOMTemplate #}
+{% block get_dom_template %}
 v8::Handle<v8::FunctionTemplate> {{v8_class}}::domTemplate(v8::Isolate* isolate)
 {
-    return V8DOMConfiguration::domClassTemplate(isolate, const_cast<WrapperTypeInfo*>(&wrapperTypeInfo), configure{{v8_class}}Template);
+    return V8DOMConfiguration::domClassTemplate(isolate, const_cast<WrapperTypeInfo*>(&wrapperTypeInfo), install{{v8_class}}Template);
 }
 
 {% endblock %}

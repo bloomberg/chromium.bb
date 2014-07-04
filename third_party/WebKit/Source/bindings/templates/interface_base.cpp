@@ -134,15 +134,15 @@ template <typename T> void V8_USE(T) { }
 
 {% block visit_dom_wrapper %}{% endblock %}
 {% block shadow_attributes %}{% endblock %}
-{% block class_attributes %}{% endblock %}
-{% block class_accessors %}{% endblock %}
-{% block class_methods %}{% endblock %}
+{% block install_attributes %}{% endblock %}
+{% block install_accessors %}{% endblock %}
+{% block install_methods %}{% endblock %}
 {% block named_constructor %}{% endblock %}
 {% block initialize_event %}{% endblock %}
 {% block constructor_callback %}{% endblock %}
 {% block configure_shadow_object_template %}{% endblock %}
-{% block configure_class_template %}{% endblock %}
-{% block get_template %}{% endblock %}
+{% block install_dom_template %}{% endblock %}
+{% block get_dom_template %}{% endblock %}
 {% block has_instance %}{% endblock %}
 {% block to_native_with_type_check %}{% endblock %}
 {% block install_per_context_attributes %}{% endblock %}
