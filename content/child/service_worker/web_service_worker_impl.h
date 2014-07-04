@@ -55,7 +55,7 @@ class WebServiceWorkerImpl
 
  private:
   // Commits the new state internally and notifies the proxy of the change.
-  void ChangeState(blink::WebServiceWorkerState new_state);
+  void CommitState(blink::WebServiceWorkerState new_state);
 
   scoped_ptr<ServiceWorkerHandleReference> handle_ref_;
   blink::WebServiceWorkerState state_;

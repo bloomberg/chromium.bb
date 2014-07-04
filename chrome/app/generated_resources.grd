@@ -6400,12 +6400,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ENABLE_LINKABLE_EPHEMERAL_APPS_DESCRIPTION" desc="Description for the flag to enable linkable ephemeral apps.">
         Enables experimentation with launching ephemeral apps from hyperlinks. For example, links to Chrome Web Store app detail pages in Google search results will launch the app rather than navigate to the detail page.
       </message>
-      <message name="IDS_FLAGS_ENABLE_SERVICE_WORKER_NAME" desc="Name of the flag to enable streamlined ServiceWorker.">
-        Enable support for ServiceWorker.
-      </message>
-      <message name="IDS_FLAGS_ENABLE_SERVICE_WORKER_DESCRIPTION" desc="Description for the flag to enable ServiceWorker.">
-        ServiceWorker is a new kind of web worker that can intercept resource requests. See https://github.com/slightlyoff/ServiceWorker for more information.
-      </message>
       <message name="IDS_FLAGS_ENABLE_SERVICE_WORKER_SYNC_NAME" desc="Name of the flag to enable ServiceWorker background synchronization.">
         Enable support for ServiceWorker background sync event.
       </message>
