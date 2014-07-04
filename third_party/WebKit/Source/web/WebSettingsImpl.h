@@ -90,7 +90,6 @@ public:
     virtual void setDeviceScaleAdjustment(float) OVERRIDE;
     virtual void setDeviceSupportsMouse(bool) OVERRIDE;
     virtual void setDeviceSupportsTouch(bool) OVERRIDE;
-    virtual void setDisallowFullscreenForNonMediaElements(bool) OVERRIDE;
     virtual void setDoubleTapToZoomEnabled(bool) OVERRIDE;
     virtual void setDownloadableBinaryFontsEnabled(bool) OVERRIDE;
     virtual void setEditingBehavior(EditingBehavior) OVERRIDE;
@@ -180,7 +179,6 @@ public:
     bool renderVSyncNotificationEnabled() const { return m_renderVSyncNotificationEnabled; }
     bool autoZoomFocusedNodeToLegibleScale() const { return m_autoZoomFocusedNodeToLegibleScale; }
     bool gestureTapHighlightEnabled() const { return m_gestureTapHighlightEnabled; }
-    bool disallowFullscreenForNonMediaElements() const { return m_disallowFullscreenForNonMediaElements; }
     bool doubleTapToZoomEnabled() const { return m_doubleTapToZoomEnabled; }
     bool perTilePaintingEnabled() const { return m_perTilePaintingEnabled; }
     bool supportDeprecatedTargetDensityDPI() const { return m_supportDeprecatedTargetDensityDPI; }
@@ -216,7 +214,6 @@ private:
     // can be removed any time after 2015. See http://crbug.com/313754.
     bool m_clobberUserAgentInitialScaleQuirk;
     bool m_mainFrameResizesAreOrientationChanges;
-    bool m_disallowFullscreenForNonMediaElements;
 };
 
 } // namespace blink
