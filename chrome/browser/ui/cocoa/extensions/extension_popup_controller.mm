@@ -12,6 +12,7 @@
 #include "chrome/browser/extensions/extension_view_host.h"
 #include "chrome/browser/extensions/extension_view_host_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/url_constants.h"
 #include "chrome/browser/ui/browser.h"
 #import "chrome/browser/ui/cocoa/browser_window_cocoa.h"
 #import "chrome/browser/ui/cocoa/extensions/extension_view_mac.h"
@@ -273,6 +274,20 @@ class DevtoolsNotificationBridge : public content::NotificationObserver {
   DCHECK(browser);
   if (!browser)
     return nil;
+
+  // If we click the browser/page action again, we should close the popup.
+  // Make Mac behavior the same with Windows and others.
+  if (gPopup) {
+    std::string extension_id = url.host();
+    if (url.SchemeIs(content::kChromeUIScheme) &&
+        url.host() == chrome::kChromeUIExtensionInfoHost)
+      extension_id = url.path().substr(1);
+    extensions::ExtensionViewHost* host = [gPopup extensionViewHost];
+    if (extension_id == host->extension_id()) {
+      [gPopup close];
+      return nil;
+    }
+  }
 
   extensions::ExtensionViewHost* host =
       extensions::ExtensionViewHostFactory::CreatePopupHost(url, browser);
