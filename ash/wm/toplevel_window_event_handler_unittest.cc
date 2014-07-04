@@ -16,6 +16,7 @@
 #include "ash/wm/workspace_controller.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/message_loop/message_loop.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/test/aura_test_base.h"
@@ -703,6 +704,37 @@ TEST_F(ToplevelWindowEventHandlerTest, RunMoveLoopFailsDuringInProgressDrag) {
 
   generator.ReleaseLeftButton();
   EXPECT_EQ("10,11 100x100", window1->bounds().ToString());
+}
+
+namespace {
+
+void SendMouseReleaseAndReleaseCapture(aura::test::EventGenerator* generator,
+                                       aura::Window* window) {
+  generator->ReleaseLeftButton();
+  window->ReleaseCapture();
+}
+
+}  // namespace
+
+// Test that a drag is successful even if ET_MOUSE_CAPTURE_CHANGED is sent
+// immediately after the mouse release. views::Widget has this behavior.
+TEST_F(ToplevelWindowEventHandlerTest, CaptureLossAfterMouseRelease) {
+  scoped_ptr<aura::Window> window(CreateWindow(HTNOWHERE));
+  aura::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
+                                       window.get());
+  generator.PressLeftButton();
+  window->SetCapture();
+
+  aura::client::WindowMoveClient* move_client =
+      aura::client::GetWindowMoveClient(window->GetRootWindow());
+  base::MessageLoopForUI::current()->PostTask(
+      FROM_HERE,
+      base::Bind(&SendMouseReleaseAndReleaseCapture,
+                 base::Unretained(&generator),
+                 base::Unretained(window.get())));
+  EXPECT_EQ(aura::client::MOVE_SUCCESSFUL,
+            move_client->RunMoveLoop(window.get(), gfx::Vector2d(),
+                aura::client::WINDOW_MOVE_SOURCE_MOUSE));
 }
 
 // Showing the resize shadows when the mouse is over the window edges is tested

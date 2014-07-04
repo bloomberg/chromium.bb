@@ -494,8 +494,11 @@ void ToplevelWindowEventHandler::HandleMouseReleased(
   if (event->phase() != ui::EP_PRETARGET)
     return;
 
-  CompleteDrag(event->type() == ui::ET_MOUSE_RELEASED ?
-                   DRAG_COMPLETE : DRAG_REVERT);
+  if (window_resizer_) {
+    CompleteDrag(event->type() == ui::ET_MOUSE_RELEASED ?
+                     DRAG_COMPLETE : DRAG_REVERT);
+  }
+
   // Completing the drag may result in hiding the window. If this happens
   // mark the event as handled so no other handlers/observers act upon the
   // event. They should see the event on a hidden window, to determine targets
