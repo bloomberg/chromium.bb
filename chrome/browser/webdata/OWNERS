@@ -7,7 +7,3 @@ per-file web_data*=pkasting@chromium.org
 # Autofill
 per-file autocomplete*=isherman@chromium.org
 per-file autofill*=isherman@chromium.org
-
-# Keywords
-per-file keyword_table*=pkasting@chromium.org
-per-file keyword_web_data_service*=pkasting@chromium.org

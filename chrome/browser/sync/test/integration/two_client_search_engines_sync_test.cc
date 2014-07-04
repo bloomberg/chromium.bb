@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
 #include "chrome/browser/sync/test/integration/search_engines_helper.h"
@@ -11,6 +10,7 @@
 #include "chrome/browser/sync/test/integration/sync_integration_test_util.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "components/search_engines/template_url.h"
+#include "components/search_engines/template_url_service.h"
 
 using base::ASCIIToUTF16;
 using sync_integration_test_util::AwaitCommitActivityCompletion;

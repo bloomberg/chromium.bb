@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/search_engines/util.h"
+#include "components/search_engines/util.h"
 
 #include <map>
 #include <set>
@@ -13,9 +13,9 @@
 #include "base/memory/scoped_vector.h"
 #include "base/prefs/pref_service.h"
 #include "base/time/time.h"
-#include "chrome/browser/search_engines/template_url_service.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_prepopulate_data.h"
+#include "components/search_engines/template_url_service.h"
 
 base::string16 GetDefaultSearchEngineName(TemplateURLService* service) {
   DCHECK(service);

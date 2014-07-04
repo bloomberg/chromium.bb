@@ -24,7 +24,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/profile_resetter/profile_resetter.h"
-#include "chrome/browser/search_engines/template_url_service_observer.h"
+#include "components/search_engines/template_url_service_observer.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "extensions/common/one_shot_event.h"

@@ -18,7 +18,7 @@ import java.util.List;
  * Only usable from the UI thread as it's primary purpose is for supporting the Android
  * preferences UI.
  *
- * See chrome/browser/search_engines/template_url_service.h for more details.
+ * See components/search_engines/template_url_service.h for more details.
  */
 public class TemplateUrlService {
 
