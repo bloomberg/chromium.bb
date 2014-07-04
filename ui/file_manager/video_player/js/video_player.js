@@ -292,10 +292,10 @@ VideoPlayer.prototype.onFirstVideoReady_ = function() {
   if (shrinkX > 1 || shrinkY > 1) {
     if (shrinkY > shrinkX) {
       newHeight = newHeight / shrinkY;
-      newWidth = (newHeight - TITLE_HEIGHT) * aspect;
+      newWidth = newHeight * aspect;
     } else {
       newWidth = newWidth / shrinkX;
-      newHeight = newWidth / aspect + TITLE_HEIGHT;
+      newHeight = newWidth / aspect;
     }
   }
 
