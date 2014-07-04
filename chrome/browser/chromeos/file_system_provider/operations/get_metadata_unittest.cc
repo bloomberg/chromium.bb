@@ -11,6 +11,7 @@
 #include "base/memory/scoped_vector.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/file_system_provider/operations/get_metadata.h"
+#include "chrome/browser/chromeos/file_system_provider/operations/test_util.h"
 #include "chrome/common/extensions/api/file_system_provider.h"
 #include "chrome/common/extensions/api/file_system_provider_internal.h"
 #include "extensions/browser/event_router.h"
@@ -27,28 +28,6 @@ const char kFileSystemId[] = "testing-file-system";
 const char kMimeType[] = "text/plain";
 const int kRequestId = 2;
 const base::FilePath::CharType kDirectoryPath[] = "/directory";
-
-// Fake event dispatcher implementation with extra logging capability. Acts as
-// a providing extension end-point.
-class LoggingDispatchEventImpl {
- public:
-  explicit LoggingDispatchEventImpl(bool dispatch_reply)
-      : dispatch_reply_(dispatch_reply) {}
-  virtual ~LoggingDispatchEventImpl() {}
-
-  bool OnDispatchEventImpl(scoped_ptr<extensions::Event> event) {
-    events_.push_back(event->DeepCopy());
-    return dispatch_reply_;
-  }
-
-  ScopedVector<extensions::Event>& events() { return events_; }
-
- private:
-  ScopedVector<extensions::Event> events_;
-  bool dispatch_reply_;
-
-  DISALLOW_COPY_AND_ASSIGN(LoggingDispatchEventImpl);
-};
 
 // Callback invocation logger. Acts as a fileapi end-point.
 class CallbackLogger {
@@ -104,7 +83,7 @@ class FileSystemProviderOperationsGetMetadataTest : public testing::Test {
 };
 
 TEST_F(FileSystemProviderOperationsGetMetadataTest, Execute) {
-  LoggingDispatchEventImpl dispatcher(true /* dispatch_reply */);
+  util::LoggingDispatchEventImpl dispatcher(true /* dispatch_reply */);
   CallbackLogger callback_logger;
 
   GetMetadata get_metadata(NULL,
@@ -113,7 +92,7 @@ TEST_F(FileSystemProviderOperationsGetMetadataTest, Execute) {
                            base::Bind(&CallbackLogger::OnGetMetadata,
                                       base::Unretained(&callback_logger)));
   get_metadata.SetDispatchEventImplForTesting(
-      base::Bind(&LoggingDispatchEventImpl::OnDispatchEventImpl,
+      base::Bind(&util::LoggingDispatchEventImpl::OnDispatchEventImpl,
                  base::Unretained(&dispatcher)));
 
   EXPECT_TRUE(get_metadata.Execute(kRequestId));
@@ -143,7 +122,7 @@ TEST_F(FileSystemProviderOperationsGetMetadataTest, Execute) {
 }
 
 TEST_F(FileSystemProviderOperationsGetMetadataTest, Execute_NoListener) {
-  LoggingDispatchEventImpl dispatcher(false /* dispatch_reply */);
+  util::LoggingDispatchEventImpl dispatcher(false /* dispatch_reply */);
   CallbackLogger callback_logger;
 
   GetMetadata get_metadata(NULL,
@@ -152,7 +131,7 @@ TEST_F(FileSystemProviderOperationsGetMetadataTest, Execute_NoListener) {
                            base::Bind(&CallbackLogger::OnGetMetadata,
                                       base::Unretained(&callback_logger)));
   get_metadata.SetDispatchEventImplForTesting(
-      base::Bind(&LoggingDispatchEventImpl::OnDispatchEventImpl,
+      base::Bind(&util::LoggingDispatchEventImpl::OnDispatchEventImpl,
                  base::Unretained(&dispatcher)));
 
   EXPECT_FALSE(get_metadata.Execute(kRequestId));
@@ -162,7 +141,7 @@ TEST_F(FileSystemProviderOperationsGetMetadataTest, OnSuccess) {
   using extensions::api::file_system_provider_internal::
       GetMetadataRequestedSuccess::Params;
 
-  LoggingDispatchEventImpl dispatcher(true /* dispatch_reply */);
+  util::LoggingDispatchEventImpl dispatcher(true /* dispatch_reply */);
   CallbackLogger callback_logger;
 
   GetMetadata get_metadata(NULL,
@@ -171,7 +150,7 @@ TEST_F(FileSystemProviderOperationsGetMetadataTest, OnSuccess) {
                            base::Bind(&CallbackLogger::OnGetMetadata,
                                       base::Unretained(&callback_logger)));
   get_metadata.SetDispatchEventImplForTesting(
-      base::Bind(&LoggingDispatchEventImpl::OnDispatchEventImpl,
+      base::Bind(&util::LoggingDispatchEventImpl::OnDispatchEventImpl,
                  base::Unretained(&dispatcher)));
 
   EXPECT_TRUE(get_metadata.Execute(kRequestId));
@@ -227,7 +206,7 @@ TEST_F(FileSystemProviderOperationsGetMetadataTest, OnSuccess) {
 }
 
 TEST_F(FileSystemProviderOperationsGetMetadataTest, OnError) {
-  LoggingDispatchEventImpl dispatcher(true /* dispatch_reply */);
+  util::LoggingDispatchEventImpl dispatcher(true /* dispatch_reply */);
   CallbackLogger callback_logger;
 
   GetMetadata get_metadata(NULL,
@@ -236,7 +215,7 @@ TEST_F(FileSystemProviderOperationsGetMetadataTest, OnError) {
                            base::Bind(&CallbackLogger::OnGetMetadata,
                                       base::Unretained(&callback_logger)));
   get_metadata.SetDispatchEventImplForTesting(
-      base::Bind(&LoggingDispatchEventImpl::OnDispatchEventImpl,
+      base::Bind(&util::LoggingDispatchEventImpl::OnDispatchEventImpl,
                  base::Unretained(&dispatcher)));
 
   EXPECT_TRUE(get_metadata.Execute(kRequestId));

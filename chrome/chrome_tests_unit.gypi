@@ -741,6 +741,8 @@
         'browser/chromeos/file_system_provider/operations/open_file_unittest.cc',
         'browser/chromeos/file_system_provider/operations/read_directory_unittest.cc',
         'browser/chromeos/file_system_provider/operations/read_file_unittest.cc',
+        'browser/chromeos/file_system_provider/operations/test_util.cc',
+        'browser/chromeos/file_system_provider/operations/test_util.h',
         'browser/chromeos/file_system_provider/operations/unmount_unittest.cc',
         'browser/chromeos/file_system_provider/request_manager_unittest.cc',
         'browser/chromeos/file_system_provider/service_unittest.cc',

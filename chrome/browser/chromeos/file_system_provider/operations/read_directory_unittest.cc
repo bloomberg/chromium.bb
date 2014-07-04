@@ -11,6 +11,7 @@
 #include "base/memory/scoped_vector.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/file_system_provider/operations/read_directory.h"
+#include "chrome/browser/chromeos/file_system_provider/operations/test_util.h"
 #include "chrome/common/extensions/api/file_system_provider.h"
 #include "chrome/common/extensions/api/file_system_provider_internal.h"
 #include "extensions/browser/event_router.h"
@@ -26,28 +27,6 @@ const char kExtensionId[] = "mbflcebpggnecokmikipoihdbecnjfoj";
 const char kFileSystemId[] = "testing-file-system";
 const int kRequestId = 2;
 const base::FilePath::CharType kDirectoryPath[] = "/directory";
-
-// Fake event dispatcher implementation with extra logging capability. Acts as
-// a providing extension end-point.
-class LoggingDispatchEventImpl {
- public:
-  explicit LoggingDispatchEventImpl(bool dispatch_reply)
-      : dispatch_reply_(dispatch_reply) {}
-  virtual ~LoggingDispatchEventImpl() {}
-
-  bool OnDispatchEventImpl(scoped_ptr<extensions::Event> event) {
-    events_.push_back(event->DeepCopy());
-    return dispatch_reply_;
-  }
-
-  ScopedVector<extensions::Event>& events() { return events_; }
-
- private:
-  ScopedVector<extensions::Event> events_;
-  bool dispatch_reply_;
-
-  DISALLOW_COPY_AND_ASSIGN(LoggingDispatchEventImpl);
-};
 
 // Callback invocation logger. Acts as a fileapi end-point.
 class CallbackLogger {
@@ -111,7 +90,7 @@ class FileSystemProviderOperationsReadDirectoryTest : public testing::Test {
 };
 
 TEST_F(FileSystemProviderOperationsReadDirectoryTest, Execute) {
-  LoggingDispatchEventImpl dispatcher(true /* dispatch_reply */);
+  util::LoggingDispatchEventImpl dispatcher(true /* dispatch_reply */);
   CallbackLogger callback_logger;
 
   ReadDirectory read_directory(NULL,
@@ -120,7 +99,7 @@ TEST_F(FileSystemProviderOperationsReadDirectoryTest, Execute) {
                                base::Bind(&CallbackLogger::OnReadDirectory,
                                           base::Unretained(&callback_logger)));
   read_directory.SetDispatchEventImplForTesting(
-      base::Bind(&LoggingDispatchEventImpl::OnDispatchEventImpl,
+      base::Bind(&util::LoggingDispatchEventImpl::OnDispatchEventImpl,
                  base::Unretained(&dispatcher)));
 
   EXPECT_TRUE(read_directory.Execute(kRequestId));
@@ -150,7 +129,7 @@ TEST_F(FileSystemProviderOperationsReadDirectoryTest, Execute) {
 }
 
 TEST_F(FileSystemProviderOperationsReadDirectoryTest, Execute_NoListener) {
-  LoggingDispatchEventImpl dispatcher(false /* dispatch_reply */);
+  util::LoggingDispatchEventImpl dispatcher(false /* dispatch_reply */);
   CallbackLogger callback_logger;
 
   ReadDirectory read_directory(NULL,
@@ -159,7 +138,7 @@ TEST_F(FileSystemProviderOperationsReadDirectoryTest, Execute_NoListener) {
                                base::Bind(&CallbackLogger::OnReadDirectory,
                                           base::Unretained(&callback_logger)));
   read_directory.SetDispatchEventImplForTesting(
-      base::Bind(&LoggingDispatchEventImpl::OnDispatchEventImpl,
+      base::Bind(&util::LoggingDispatchEventImpl::OnDispatchEventImpl,
                  base::Unretained(&dispatcher)));
 
   EXPECT_FALSE(read_directory.Execute(kRequestId));
@@ -169,7 +148,7 @@ TEST_F(FileSystemProviderOperationsReadDirectoryTest, OnSuccess) {
   using extensions::api::file_system_provider_internal::
       ReadDirectoryRequestedSuccess::Params;
 
-  LoggingDispatchEventImpl dispatcher(true /* dispatch_reply */);
+  util::LoggingDispatchEventImpl dispatcher(true /* dispatch_reply */);
   CallbackLogger callback_logger;
 
   ReadDirectory read_directory(NULL,
@@ -178,7 +157,7 @@ TEST_F(FileSystemProviderOperationsReadDirectoryTest, OnSuccess) {
                                base::Bind(&CallbackLogger::OnReadDirectory,
                                           base::Unretained(&callback_logger)));
   read_directory.SetDispatchEventImplForTesting(
-      base::Bind(&LoggingDispatchEventImpl::OnDispatchEventImpl,
+      base::Bind(&util::LoggingDispatchEventImpl::OnDispatchEventImpl,
                  base::Unretained(&dispatcher)));
 
   EXPECT_TRUE(read_directory.Execute(kRequestId));
@@ -237,7 +216,7 @@ TEST_F(FileSystemProviderOperationsReadDirectoryTest, OnSuccess) {
 }
 
 TEST_F(FileSystemProviderOperationsReadDirectoryTest, OnError) {
-  LoggingDispatchEventImpl dispatcher(true /* dispatch_reply */);
+  util::LoggingDispatchEventImpl dispatcher(true /* dispatch_reply */);
   CallbackLogger callback_logger;
 
   ReadDirectory read_directory(NULL,
@@ -246,7 +225,7 @@ TEST_F(FileSystemProviderOperationsReadDirectoryTest, OnError) {
                                base::Bind(&CallbackLogger::OnReadDirectory,
                                           base::Unretained(&callback_logger)));
   read_directory.SetDispatchEventImplForTesting(
-      base::Bind(&LoggingDispatchEventImpl::OnDispatchEventImpl,
+      base::Bind(&util::LoggingDispatchEventImpl::OnDispatchEventImpl,
                  base::Unretained(&dispatcher)));
 
   EXPECT_TRUE(read_directory.Execute(kRequestId));
