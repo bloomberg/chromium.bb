@@ -401,14 +401,23 @@ bool SVGImage::dataChanged(bool allDataReceived)
         // This will become an issue when SVGImage will be able to load other
         // SVGImage objects, but we're safe now, because SVGImage can only be
         // loaded by a top-level document.
-        OwnPtrWillBeRawPtr<Page> page = adoptPtrWillBeNoop(new Page(pageClients));
-        page->settings().setScriptEnabled(false);
-        page->settings().setPluginsEnabled(false);
-        page->settings().setAcceleratedCompositingEnabled(false);
+        OwnPtrWillBeRawPtr<Page> page;
+        {
+            TRACE_EVENT0("blink", "SVGImage::dataChanged::createPage");
+            page = adoptPtrWillBeNoop(new Page(pageClients));
+            page->settings().setScriptEnabled(false);
+            page->settings().setPluginsEnabled(false);
+            page->settings().setAcceleratedCompositingEnabled(false);
+        }
 
-        RefPtr<LocalFrame> frame = LocalFrame::create(dummyFrameLoaderClient, &page->frameHost(), 0);
-        frame->setView(FrameView::create(frame.get()));
-        frame->init();
+        RefPtr<LocalFrame> frame;
+        {
+            TRACE_EVENT0("blink", "SVGImage::dataChanged::createFrame");
+            frame = LocalFrame::create(dummyFrameLoaderClient, &page->frameHost(), 0);
+            frame->setView(FrameView::create(frame.get()));
+            frame->init();
+        }
+
         FrameLoader& loader = frame->loader();
         loader.forceSandboxFlags(SandboxAll);
 
@@ -418,6 +427,7 @@ bool SVGImage::dataChanged(bool allDataReceived)
 
         m_page = page.release();
 
+        TRACE_EVENT0("blink", "SVGImage::dataChanged::load");
         loader.load(FrameLoadRequest(0, blankURL(), SubstituteData(data(), "image/svg+xml", "UTF-8", KURL(), ForceSynchronousLoad)));
         // Set the intrinsic size before a container size is available.
         m_intrinsicSize = containerSize();
