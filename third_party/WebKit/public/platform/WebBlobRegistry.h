@@ -50,11 +50,6 @@ public:
     virtual void registerPublicBlobURL(const blink::WebURL&, const blink::WebString& uuid) { }
     virtual void revokePublicBlobURL(const blink::WebURL&) { }
 
-    // DEPRECATED - old style blob handling is being replaced
-    virtual void registerBlobURL(const WebURL&, WebBlobData&) { }
-    virtual void registerBlobURL(const WebURL&, const WebURL& srcURL) { }
-    virtual void unregisterBlobURL(const WebURL&) { }
-
     // Registers a stream URL referring to a stream with the specified media
     // type.
     virtual void registerStreamURL(const WebURL&, const WebString&) { BLINK_ASSERT_NOT_REACHED(); }
