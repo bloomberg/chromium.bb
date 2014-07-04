@@ -92,43 +92,6 @@ scoped_ptr<FileTracker> CreatePlaceholderTracker(
   return tracker.Pass();
 }
 
-bool CreateTestDatabase(leveldb::DB* db) {
-  scoped_ptr<FileMetadata> sync_root_metadata =
-      CreateFolderMetadata("sync_root_folder_id",
-                           "Chrome Syncable FileSystem");
-  scoped_ptr<FileTracker> sync_root_tracker =
-      CreateTracker(*sync_root_metadata, kSyncRootTrackerID, NULL);
-
-  scoped_ptr<FileMetadata> app_root_metadata =
-      CreateFolderMetadata("app_root_folder_id", "app_id");
-  scoped_ptr<FileTracker> app_root_tracker =
-      CreateTracker(*app_root_metadata, kAppRootTrackerID,
-                    sync_root_tracker.get());
-  app_root_tracker->set_app_id("app_id");
-  app_root_tracker->set_tracker_kind(TRACKER_KIND_APP_ROOT);
-
-  scoped_ptr<FileMetadata> file_metadata =
-      CreateFileMetadata("file_id", "file", "file_md5");
-  scoped_ptr<FileTracker> file_tracker =
-      CreateTracker(*file_metadata, kFileTrackerID, app_root_tracker.get());
-
-  scoped_ptr<FileTracker> placeholder_tracker =
-      CreatePlaceholderTracker("unsynced_file_id", kPlaceholderTrackerID,
-                               app_root_tracker.get());
-
-  leveldb::WriteBatch batch;
-  PutFileMetadataToBatch(*sync_root_metadata, &batch);
-  PutFileTrackerToBatch(*sync_root_tracker, &batch);
-  PutFileMetadataToBatch(*app_root_metadata, &batch);
-  PutFileTrackerToBatch(*app_root_tracker, &batch);
-  PutFileMetadataToBatch(*file_metadata, &batch);
-  PutFileTrackerToBatch(*file_tracker, &batch);
-  PutFileTrackerToBatch(*placeholder_tracker, &batch);
-
-  leveldb::Status status = db->Write(leveldb::WriteOptions(), &batch);
-  return status.ok();
-}
-
 }  // namespace
 
 class MetadataDatabaseIndexOnDiskTest : public testing::Test {
@@ -153,6 +116,54 @@ class MetadataDatabaseIndexOnDiskTest : public testing::Test {
     return status.ok();
   }
 
+  void CreateTestDatabase(bool build_index) {
+    scoped_ptr<FileMetadata> sync_root_metadata =
+        CreateFolderMetadata("sync_root_folder_id",
+                             "Chrome Syncable FileSystem");
+    scoped_ptr<FileTracker> sync_root_tracker =
+        CreateTracker(*sync_root_metadata, kSyncRootTrackerID, NULL);
+
+    scoped_ptr<FileMetadata> app_root_metadata =
+        CreateFolderMetadata("app_root_folder_id", "app_title");
+    scoped_ptr<FileTracker> app_root_tracker =
+        CreateTracker(*app_root_metadata, kAppRootTrackerID,
+                      sync_root_tracker.get());
+    app_root_tracker->set_app_id("app_id");
+    app_root_tracker->set_tracker_kind(TRACKER_KIND_APP_ROOT);
+
+    scoped_ptr<FileMetadata> file_metadata =
+        CreateFileMetadata("file_id", "file", "file_md5");
+    scoped_ptr<FileTracker> file_tracker =
+        CreateTracker(*file_metadata, kFileTrackerID, app_root_tracker.get());
+
+    scoped_ptr<FileTracker> placeholder_tracker =
+        CreatePlaceholderTracker("unsynced_file_id", kPlaceholderTrackerID,
+                                 app_root_tracker.get());
+
+    leveldb::WriteBatch batch;
+    if (build_index) {
+      DCHECK(index());
+      index()->StoreFileMetadata(sync_root_metadata.Pass(), &batch);
+      index()->StoreFileTracker(sync_root_tracker.Pass(), &batch);
+      index()->StoreFileMetadata(app_root_metadata.Pass(), &batch);
+      index()->StoreFileTracker(app_root_tracker.Pass(), &batch);
+      index()->StoreFileMetadata(file_metadata.Pass(), &batch);
+      index()->StoreFileTracker(file_tracker.Pass(), &batch);
+      index()->StoreFileTracker(placeholder_tracker.Pass(), &batch);
+    } else {
+      PutFileMetadataToBatch(*sync_root_metadata, &batch);
+      PutFileTrackerToBatch(*sync_root_tracker, &batch);
+      PutFileMetadataToBatch(*app_root_metadata, &batch);
+      PutFileTrackerToBatch(*app_root_tracker, &batch);
+      PutFileMetadataToBatch(*file_metadata, &batch);
+      PutFileTrackerToBatch(*file_tracker, &batch);
+      PutFileTrackerToBatch(*placeholder_tracker, &batch);
+    }
+
+    leveldb::Status status = db_->Write(leveldb::WriteOptions(), &batch);
+    ASSERT_TRUE(status.ok());
+  }
+
   MetadataDatabaseIndexOnDisk* index() { return index_.get(); }
 
  private:
@@ -164,10 +175,8 @@ class MetadataDatabaseIndexOnDiskTest : public testing::Test {
     options.env = in_memory_env_.get();
     leveldb::Status status =
         leveldb::DB::Open(options, database_dir_.path().AsUTF8Unsafe(), &db);
-    EXPECT_TRUE(status.ok());
+    ASSERT_TRUE(status.ok());
     db_.reset(db);
-
-    ASSERT_TRUE(CreateTestDatabase(db_.get()));
   }
 
   scoped_ptr<MetadataDatabaseIndexOnDisk> index_;
@@ -178,6 +187,8 @@ class MetadataDatabaseIndexOnDiskTest : public testing::Test {
 };
 
 TEST_F(MetadataDatabaseIndexOnDiskTest, GetEntryTest) {
+  CreateTestDatabase(false);
+
   FileTracker tracker;
   EXPECT_FALSE(index()->GetFileTracker(kInvalidTrackerID, NULL));
   ASSERT_TRUE(index()->GetFileTracker(kFileTrackerID, &tracker));
@@ -191,7 +202,8 @@ TEST_F(MetadataDatabaseIndexOnDiskTest, GetEntryTest) {
 }
 
 TEST_F(MetadataDatabaseIndexOnDiskTest, SetEntryTest) {
-  // This test does not check if indexes are updated successfully.
+  // This test does not check updates of indexes.
+  CreateTestDatabase(false);
 
   const int64 tracker_id = 10;
   scoped_ptr<leveldb::WriteBatch> batch(new leveldb::WriteBatch);
@@ -232,6 +244,68 @@ TEST_F(MetadataDatabaseIndexOnDiskTest, SetEntryTest) {
 
   EXPECT_FALSE(index()->GetFileMetadata("test_file_id", NULL));
   EXPECT_FALSE(index()->GetFileTracker(tracker_id, NULL));
+}
+
+TEST_F(MetadataDatabaseIndexOnDiskTest, IndexAppRootIDByAppIDTest) {
+  CreateTestDatabase(true);
+
+  std::vector<std::string> app_ids = index()->GetRegisteredAppIDs();
+  ASSERT_EQ(1u, app_ids.size());
+  EXPECT_EQ("app_id", app_ids[0]);
+
+  EXPECT_EQ(kInvalidTrackerID, index()->GetAppRootTracker(""));
+  EXPECT_EQ(kAppRootTrackerID, index()->GetAppRootTracker("app_id"));
+
+  const int64 kAppRootTrackerID2 = 12;
+  FileTracker sync_root_tracker;
+  index()->GetFileTracker(kSyncRootTrackerID, &sync_root_tracker);
+  scoped_ptr<FileMetadata> app_root_metadata =
+      CreateFolderMetadata("app_root_folder_id_2", "app_title_2");
+
+  // Testing AddToAppIDIndex
+  scoped_ptr<leveldb::WriteBatch> batch(new leveldb::WriteBatch);
+  scoped_ptr<FileTracker> app_root_tracker =
+      CreateTracker(*app_root_metadata, kAppRootTrackerID2,
+                    &sync_root_tracker);
+  app_root_tracker->set_app_id("app_id_2");
+  app_root_tracker->set_tracker_kind(TRACKER_KIND_APP_ROOT);
+
+  index()->StoreFileTracker(app_root_tracker.Pass(), batch.get());
+  WriteToDB(batch.Pass());
+  EXPECT_EQ(kAppRootTrackerID, index()->GetAppRootTracker("app_id"));
+  EXPECT_EQ(kAppRootTrackerID2, index()->GetAppRootTracker("app_id_2"));
+
+  // Testing UpdateInAppIDIndex
+  batch.reset(new leveldb::WriteBatch);
+  app_root_tracker = CreateTracker(*app_root_metadata, kAppRootTrackerID2,
+                                   &sync_root_tracker);
+  app_root_tracker->set_app_id("app_id_3");
+  app_root_tracker->set_active(false);
+
+  index()->StoreFileTracker(app_root_tracker.Pass(), batch.get());
+  WriteToDB(batch.Pass());
+  EXPECT_EQ(kAppRootTrackerID, index()->GetAppRootTracker("app_id"));
+  EXPECT_EQ(kInvalidTrackerID, index()->GetAppRootTracker("app_id_2"));
+  EXPECT_EQ(kInvalidTrackerID, index()->GetAppRootTracker("app_id_3"));
+
+  batch.reset(new leveldb::WriteBatch);
+  app_root_tracker = CreateTracker(*app_root_metadata, kAppRootTrackerID2,
+                                   &sync_root_tracker);
+  app_root_tracker->set_app_id("app_id_3");
+  app_root_tracker->set_tracker_kind(TRACKER_KIND_APP_ROOT);
+
+  index()->StoreFileTracker(app_root_tracker.Pass(), batch.get());
+  WriteToDB(batch.Pass());
+  EXPECT_EQ(kAppRootTrackerID, index()->GetAppRootTracker("app_id"));
+  EXPECT_EQ(kInvalidTrackerID, index()->GetAppRootTracker("app_id_2"));
+  EXPECT_EQ(kAppRootTrackerID2, index()->GetAppRootTracker("app_id_3"));
+
+  // Testing RemoveFromAppIDIndex
+  batch.reset(new leveldb::WriteBatch);
+  index()->RemoveFileTracker(kAppRootTrackerID2, batch.get());
+  WriteToDB(batch.Pass());
+  EXPECT_EQ(kAppRootTrackerID, index()->GetAppRootTracker("app_id"));
+  EXPECT_EQ(kInvalidTrackerID, index()->GetAppRootTracker("app_id_3"));
 }
 
 }  // namespace drive_backend

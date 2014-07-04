@@ -20,6 +20,8 @@ const char kServiceMetadataKey[] = "SERVICE";
 const char kFileMetadataKeyPrefix[] = "FILE: ";
 const char kFileTrackerKeyPrefix[] = "TRACKER: ";
 
+const char kAppRootIDByAppIDKeyPrefix[] = "APP_ROOT: ";
+
 const int kMaxRetry = 5;
 const int64 kListChangesRetryDelaySeconds = 60 * 60;
 

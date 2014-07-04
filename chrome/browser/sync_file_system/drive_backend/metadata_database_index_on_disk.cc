@@ -13,6 +13,7 @@
 #include "chrome/browser/sync_file_system/drive_backend/metadata_database.pb.h"
 #include "chrome/browser/sync_file_system/logger.h"
 #include "third_party/leveldatabase/src/include/leveldb/db.h"
+#include "third_party/leveldatabase/src/include/leveldb/write_batch.h"
 
 // LevelDB database schema
 // =======================
@@ -64,6 +65,28 @@
 
 namespace sync_file_system {
 namespace drive_backend {
+
+namespace {
+
+// TODO(peria): Gather up those common methods with metadata_database_index.cc
+//     into a separate file.
+
+bool IsAppRoot(const FileTracker& tracker) {
+  return tracker.tracker_kind() == TRACKER_KIND_APP_ROOT ||
+      tracker.tracker_kind() == TRACKER_KIND_DISABLED_APP_ROOT;
+}
+
+std::string GetTrackerTitle(const FileTracker& tracker) {
+  if (tracker.has_synced_details())
+    return tracker.synced_details().title();
+  return std::string();
+}
+
+std::string GenerateAppRootIDByAppIDKey(const std::string& app_id) {
+  return kAppRootIDByAppIDKeyPrefix + app_id;
+}
+
+}  // namespace
 
 MetadataDatabaseIndexOnDisk::MetadataDatabaseIndexOnDisk(leveldb::DB* db)
     : db_(db) {
@@ -137,7 +160,20 @@ void MetadataDatabaseIndexOnDisk::StoreFileTracker(
     scoped_ptr<FileTracker> tracker, leveldb::WriteBatch* batch) {
   DCHECK(tracker);
   PutFileTrackerToBatch(*tracker, batch);
-  // TODO(peria): Update indexes.
+
+  int64 tracker_id = tracker->tracker_id();
+  FileTracker old_tracker;
+  if (!GetFileTracker(tracker_id, &old_tracker)) {
+    DVLOG(3) << "Adding new tracker: " << tracker->tracker_id()
+             << " " << GetTrackerTitle(*tracker);
+    AddToAppIDIndex(*tracker, batch);
+    // TODO(peria): Add other indexes.
+  } else {
+    DVLOG(3) << "Updating tracker: " << tracker->tracker_id()
+             << " " << GetTrackerTitle(*tracker);
+    UpdateInAppIDIndex(old_tracker, *tracker, batch);
+    // TODO(peria): Update other indexes.
+  }
 }
 
 void MetadataDatabaseIndexOnDisk::RemoveFileMetadata(
@@ -148,7 +184,17 @@ void MetadataDatabaseIndexOnDisk::RemoveFileMetadata(
 void MetadataDatabaseIndexOnDisk::RemoveFileTracker(
     int64 tracker_id, leveldb::WriteBatch* batch) {
   PutFileTrackerDeletionToBatch(tracker_id, batch);
-  // TODO(peria): Update indexes.
+
+  FileTracker tracker;
+  if (!GetFileTracker(tracker_id, &tracker)) {
+    NOTREACHED();
+    return;
+  }
+
+  DVLOG(3) << "Removing tracker: "
+           << tracker.tracker_id() << " " << GetTrackerTitle(tracker);
+  RemoveFromAppIDIndex(tracker, batch);
+  // TODO(peria): Remove from other indexes.
 }
 
 TrackerIDSet MetadataDatabaseIndexOnDisk::GetFileTrackerIDsByFileID(
@@ -160,14 +206,31 @@ TrackerIDSet MetadataDatabaseIndexOnDisk::GetFileTrackerIDsByFileID(
 
 int64 MetadataDatabaseIndexOnDisk::GetAppRootTracker(
     const std::string& app_id) const {
-  // TODO(peria): Implement here
-  NOTIMPLEMENTED();
-  return 0;
+  const std::string key(GenerateAppRootIDByAppIDKey(app_id));
+  std::string value;
+  leveldb::Status status = db_->Get(leveldb::ReadOptions(), key, &value);
+  if (!status.ok()) {
+    util::Log(logging::LOG_WARNING, FROM_HERE,
+              "LevelDB error (%s) in getting AppRoot for AppID: %s",
+              status.ToString().c_str(),
+              app_id.c_str());
+    return kInvalidTrackerID;
+  }
+
+  int64 root_id;
+  if (!base::StringToInt64(value, &root_id)) {
+    util::Log(logging::LOG_WARNING, FROM_HERE,
+              "Failed to parse a root ID (%s) for an App ID: %s",
+              value.c_str(),
+              app_id.c_str());
+    return kInvalidTrackerID;
+  }
+
+  return root_id;
 }
 
 TrackerIDSet MetadataDatabaseIndexOnDisk::GetFileTrackerIDsByParentAndTitle(
-    int64 parent_tracker_id,
-    const std::string& title) const {
+    int64 parent_tracker_id, const std::string& title) const {
   // TODO(peria): Implement here
   NOTIMPLEMENTED();
   return TrackerIDSet();
@@ -234,9 +297,15 @@ size_t MetadataDatabaseIndexOnDisk::CountFileTracker() const {
 
 std::vector<std::string>
 MetadataDatabaseIndexOnDisk::GetRegisteredAppIDs() const {
-  // TODO(peria): Implement here
-  NOTIMPLEMENTED();
-  return std::vector<std::string>();
+  std::vector<std::string> result;
+  scoped_ptr<leveldb::Iterator> itr(db_->NewIterator(leveldb::ReadOptions()));
+  for (itr->Seek(kAppRootIDByAppIDKeyPrefix); itr->Valid(); itr->Next()) {
+    const std::string& key(itr->key().ToString());
+    if (!StartsWithASCII(key, kAppRootIDByAppIDKeyPrefix, true))
+      break;
+    result.push_back(RemovePrefix(key, kAppRootIDByAppIDKeyPrefix));
+  }
+  return result;
 }
 
 std::vector<int64> MetadataDatabaseIndexOnDisk::GetAllTrackerIDs() const {
@@ -250,6 +319,67 @@ MetadataDatabaseIndexOnDisk::GetAllMetadataIDs() const {
   // TODO(peria): Implement here
   NOTIMPLEMENTED();
   return std::vector<std::string>();
+}
+
+void MetadataDatabaseIndexOnDisk::AddToAppIDIndex(
+    const FileTracker& tracker, leveldb::WriteBatch* batch) {
+  if (!IsAppRoot(tracker)) {
+    DVLOG(3) << "  Tracker for " << tracker.file_id() << " is not an App root.";
+    return;
+  }
+
+  DVLOG(1) << "  Add to app_root_by_app_id: " << tracker.app_id();
+
+  const std::string db_key(GenerateAppRootIDByAppIDKey(tracker.app_id()));
+  DCHECK(tracker.active());
+  DCHECK(!DBHasKey(db_key));
+  batch->Put(db_key, base::Int64ToString(tracker.tracker_id()));
+}
+
+void MetadataDatabaseIndexOnDisk::UpdateInAppIDIndex(
+    const FileTracker& old_tracker,
+    const FileTracker& new_tracker,
+    leveldb::WriteBatch* batch) {
+  DCHECK_EQ(old_tracker.tracker_id(), new_tracker.tracker_id());
+
+  if (IsAppRoot(old_tracker) && !IsAppRoot(new_tracker)) {
+    DCHECK(old_tracker.active());
+    DCHECK(!new_tracker.active());
+    const std::string db_key(GenerateAppRootIDByAppIDKey(old_tracker.app_id()));
+    DCHECK(DBHasKey(db_key));
+
+    DVLOG(1) << "  Remove from app_root_by_app_id: " << old_tracker.app_id();
+    batch->Delete(db_key);
+  } else if (!IsAppRoot(old_tracker) && IsAppRoot(new_tracker)) {
+    DCHECK(!old_tracker.active());
+    DCHECK(new_tracker.active());
+    const std::string db_key(GenerateAppRootIDByAppIDKey(new_tracker.app_id()));
+    DCHECK(!DBHasKey(db_key));
+
+    DVLOG(1) << "  Add to app_root_by_app_id: " << new_tracker.app_id();
+    batch->Put(db_key, base::Int64ToString(new_tracker.tracker_id()));
+  }
+}
+
+void MetadataDatabaseIndexOnDisk::RemoveFromAppIDIndex(
+    const FileTracker& tracker, leveldb::WriteBatch* batch) {
+  if (!IsAppRoot(tracker)) {
+    DVLOG(3) << "  Tracker for " << tracker.file_id() << " is not an App root.";
+    return;
+  }
+
+  DCHECK(tracker.active());
+  const std::string db_key(GenerateAppRootIDByAppIDKey(tracker.app_id()));
+  DCHECK(DBHasKey(db_key));
+
+  DVLOG(1) << "  Remove from app_root_by_app_id: " << tracker.app_id();
+  batch->Delete(db_key);
+}
+
+bool MetadataDatabaseIndexOnDisk::DBHasKey(const std::string& key) {
+  scoped_ptr<leveldb::Iterator> itr(db_->NewIterator(leveldb::ReadOptions()));
+  itr->Seek(key);
+  return itr->Valid() && (itr->key() == key);
 }
 
 }  // namespace drive_backend

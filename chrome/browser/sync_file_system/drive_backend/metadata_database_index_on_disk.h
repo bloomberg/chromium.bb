@@ -35,7 +35,7 @@ class MetadataDatabaseIndexOnDisk : public MetadataDatabaseIndexInterface {
 
   // MetadataDatabaseIndexInterface overrides.
   virtual bool GetFileMetadata(
-      const std::string& file_id, FileMetadata*  metadata) const OVERRIDE;
+      const std::string& file_id, FileMetadata* metadata) const OVERRIDE;
   virtual bool GetFileTracker(
       int64 tracker_id, FileTracker* tracker) const OVERRIDE;
   virtual void StoreFileMetadata(
@@ -68,7 +68,17 @@ class MetadataDatabaseIndexOnDisk : public MetadataDatabaseIndexInterface {
   virtual std::vector<std::string> GetAllMetadataIDs() const OVERRIDE;
 
  private:
-  friend class MetadataDatabaseTest;
+  // Maintain indexes from AppIDs to tracker IDs.
+  void AddToAppIDIndex(const FileTracker& new_tracker,
+                       leveldb::WriteBatch* batch);
+  void UpdateInAppIDIndex(const FileTracker& old_tracker,
+                          const FileTracker& new_tracker,
+                          leveldb::WriteBatch* batch);
+  void RemoveFromAppIDIndex(const FileTracker& tracker,
+                            leveldb::WriteBatch* batch);
+
+  // Checks if |db_| has an entry whose key is |key|.
+  bool DBHasKey(const std::string& key);
 
   leveldb::DB* db_;  // Not owned.
 

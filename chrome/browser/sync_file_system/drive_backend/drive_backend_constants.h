@@ -22,6 +22,8 @@ extern const char kServiceMetadataKey[];
 extern const char kFileMetadataKeyPrefix[];
 extern const char kFileTrackerKeyPrefix[];
 
+extern const char kAppRootIDByAppIDKeyPrefix[];
+
 extern const int kMaxRetry;
 extern const int64 kListChangesRetryDelaySeconds;
 
