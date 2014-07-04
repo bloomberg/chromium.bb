@@ -148,6 +148,11 @@ class MetadataDatabaseIndexOnDiskTest : public testing::Test {
     in_memory_env_.reset();
   }
 
+  bool WriteToDB(scoped_ptr<leveldb::WriteBatch> batch) {
+    leveldb::Status status = db_->Write(leveldb::WriteOptions(), batch.get());
+    return status.ok();
+  }
+
   MetadataDatabaseIndexOnDisk* index() { return index_.get(); }
 
  private:
@@ -183,6 +188,50 @@ TEST_F(MetadataDatabaseIndexOnDiskTest, GetEntryTest) {
   EXPECT_FALSE(index()->GetFileMetadata(std::string(), NULL));
   ASSERT_TRUE(index()->GetFileMetadata("file_id", &metadata));
   EXPECT_EQ("file_id", metadata.file_id());
+}
+
+TEST_F(MetadataDatabaseIndexOnDiskTest, SetEntryTest) {
+  // This test does not check if indexes are updated successfully.
+
+  const int64 tracker_id = 10;
+  scoped_ptr<leveldb::WriteBatch> batch(new leveldb::WriteBatch);
+  scoped_ptr<FileMetadata> metadata =
+      CreateFileMetadata("test_file_id", "test_title", "test_md5");
+  FileTracker root_tracker;
+  EXPECT_TRUE(index()->GetFileTracker(kSyncRootTrackerID, &root_tracker));
+  scoped_ptr<FileTracker> tracker =
+      CreateTracker(*metadata, tracker_id, &root_tracker);
+
+  index()->StoreFileMetadata(metadata.Pass(), batch.get());
+  index()->StoreFileTracker(tracker.Pass(), batch.get());
+
+  EXPECT_FALSE(index()->GetFileMetadata("test_file_id", NULL));
+  EXPECT_FALSE(index()->GetFileTracker(tracker_id, NULL));
+
+  WriteToDB(batch.Pass());
+
+  metadata.reset(new FileMetadata);
+  ASSERT_TRUE(index()->GetFileMetadata("test_file_id", metadata.get()));
+  EXPECT_TRUE(metadata->has_details());
+  EXPECT_EQ("test_title", metadata->details().title());
+
+  tracker.reset(new FileTracker);
+  ASSERT_TRUE(index()->GetFileTracker(tracker_id, tracker.get()));
+  EXPECT_EQ("test_file_id", tracker->file_id());
+
+  // Test if removers work.
+  batch.reset(new leveldb::WriteBatch);
+
+  index()->RemoveFileMetadata("test_file_id", batch.get());
+  index()->RemoveFileTracker(tracker_id, batch.get());
+
+  EXPECT_TRUE(index()->GetFileMetadata("test_file_id", NULL));
+  EXPECT_TRUE(index()->GetFileTracker(tracker_id, NULL));
+
+  WriteToDB(batch.Pass());
+
+  EXPECT_FALSE(index()->GetFileMetadata("test_file_id", NULL));
+  EXPECT_FALSE(index()->GetFileTracker(tracker_id, NULL));
 }
 
 }  // namespace drive_backend

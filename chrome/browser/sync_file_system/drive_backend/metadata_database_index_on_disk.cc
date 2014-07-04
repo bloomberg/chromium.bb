@@ -129,30 +129,26 @@ bool MetadataDatabaseIndexOnDisk::GetFileTracker(
 
 void MetadataDatabaseIndexOnDisk::StoreFileMetadata(
     scoped_ptr<FileMetadata> metadata, leveldb::WriteBatch* batch) {
+  DCHECK(metadata);
   PutFileMetadataToBatch(*metadata, batch);
-  // TODO(peria): Implement here
-  NOTIMPLEMENTED();
 }
 
 void MetadataDatabaseIndexOnDisk::StoreFileTracker(
     scoped_ptr<FileTracker> tracker, leveldb::WriteBatch* batch) {
+  DCHECK(tracker);
   PutFileTrackerToBatch(*tracker, batch);
-  // TODO(peria): Implement here
-  NOTIMPLEMENTED();
+  // TODO(peria): Update indexes.
 }
 
 void MetadataDatabaseIndexOnDisk::RemoveFileMetadata(
     const std::string& file_id, leveldb::WriteBatch* batch) {
   PutFileMetadataDeletionToBatch(file_id, batch);
-  // TODO(peria): Implement here
-  NOTIMPLEMENTED();
 }
 
 void MetadataDatabaseIndexOnDisk::RemoveFileTracker(
     int64 tracker_id, leveldb::WriteBatch* batch) {
   PutFileTrackerDeletionToBatch(tracker_id, batch);
-  // TODO(peria): Implement here
-  NOTIMPLEMENTED();
+  // TODO(peria): Update indexes.
 }
 
 TrackerIDSet MetadataDatabaseIndexOnDisk::GetFileTrackerIDsByFileID(
