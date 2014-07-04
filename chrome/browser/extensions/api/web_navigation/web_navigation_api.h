@@ -94,8 +94,8 @@ class WebNavigationTabObserver
                                    WindowOpenDisposition disposition,
                                    content::PageTransition transition,
                                    int64 source_frame_num) OVERRIDE;
-  virtual void FrameDetached(content::RenderViewHost* render_view_host,
-                             int64 frame_num) OVERRIDE;
+  virtual void FrameDetached(
+      content::RenderFrameHost* render_view_host) OVERRIDE;
   virtual void WebContentsDestroyed() OVERRIDE;
 
  private:

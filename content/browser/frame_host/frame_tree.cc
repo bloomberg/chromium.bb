@@ -129,9 +129,7 @@ void FrameTree::RemoveFrame(FrameTreeNode* child) {
   // Notify observers of the frame removal.
   RenderFrameHostImpl* render_frame_host = child->current_frame_host();
   if (!on_frame_removed_.is_null()) {
-    on_frame_removed_.Run(
-        render_frame_host->render_view_host(),
-        render_frame_host->GetRoutingID());
+    on_frame_removed_.Run(render_frame_host);
   }
 
   parent->RemoveChild(child);
@@ -165,7 +163,7 @@ void FrameTree::SetFocusedFrame(FrameTreeNode* node) {
 }
 
 void FrameTree::SetFrameRemoveListener(
-    const base::Callback<void(RenderViewHostImpl*, int)>& on_frame_removed) {
+    const base::Callback<void(RenderFrameHost*)>& on_frame_removed) {
   on_frame_removed_ = on_frame_removed;
 }
 

@@ -97,9 +97,8 @@ class CONTENT_EXPORT FrameTree {
   // Allows a client to listen for frame removal.  The listener should expect
   // to receive the RenderViewHostImpl containing the frame and the renderer-
   // specific frame routing ID of the removed frame.
-  // TODO(creis): These parameters will later change to be the RenderFrameHost.
   void SetFrameRemoveListener(
-      const base::Callback<void(RenderViewHostImpl*, int)>& on_frame_removed);
+      const base::Callback<void(RenderFrameHost*)>& on_frame_removed);
 
   // Creates a RenderViewHost for a new main frame RenderFrameHost in the given
   // |site_instance|.  The RenderViewHost will have its Shutdown method called
@@ -153,7 +152,7 @@ class CONTENT_EXPORT FrameTree {
 
   int64 focused_frame_tree_node_id_;
 
-  base::Callback<void(RenderViewHostImpl*, int)> on_frame_removed_;
+  base::Callback<void(RenderFrameHost*)> on_frame_removed_;
 
   DISALLOW_COPY_AND_ASSIGN(FrameTree);
 };

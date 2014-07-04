@@ -114,11 +114,8 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener,
       const GURL& url,
       NavigationController::ReloadType reload_type) {}
 
-  // |render_view_host| is the RenderViewHost for which the provisional load is
-  // happening. |frame_id| is a positive, non-zero integer identifying the
-  // navigating frame in the given |render_view_host|. |parent_frame_id| is the
-  // frame identifier of the frame containing the navigating frame, or -1 if the
-  // frame is not contained in another frame.
+  // |render_frame_host| is the RenderFrameHost for which the provisional load
+  // is happening.
   //
   // Since the URL validation will strip error URLs, or srcdoc URLs, the boolean
   // flags |is_error_page| and |is_iframe_srcdoc| will indicate that the not
@@ -141,8 +138,7 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener,
       RenderFrameHost* render_frame_host) {}
 
   // This method is invoked when the provisional load was successfully
-  // committed. The |render_view_host| is now the current RenderViewHost of the
-  // WebContents.
+  // committed.
   //
   // If the navigation only changed the reference fragment, or was triggered
   // using the history API (e.g. window.history.replaceState), we will receive
@@ -238,8 +234,7 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener,
                                    PageTransition transition,
                                    int64 source_frame_id) {}
 
-  virtual void FrameDetached(RenderViewHost* render_view_host,
-                             int64 frame_id) {}
+  virtual void FrameDetached(RenderFrameHost* render_frame_host) {}
 
   // This method is invoked when the renderer has completed its first paint
   // after a non-empty layout.

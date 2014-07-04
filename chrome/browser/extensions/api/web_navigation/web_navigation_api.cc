@@ -344,8 +344,8 @@ void WebNavigationTabObserver::DidStartProvisionalLoadForFrame(
       render_view_host != pending_render_view_host_)
     return;
 
-  // FIXME: FrameNavigationState and the associated helpers should probably be
-  // refactored to use RenderFrameHost directly instead.
+  // TODO(dcheng): FrameNavigationState and the associated helpers should
+  // probably be refactored to use RenderFrameHost directly instead.
   FrameNavigationState::FrameID frame_id(render_frame_host->GetRoutingID(),
                                          render_view_host);
   FrameNavigationState::FrameID parent_frame_id(
@@ -632,22 +632,23 @@ void WebNavigationTabObserver::DidOpenRequestedURL(
 }
 
 void WebNavigationTabObserver::FrameDetached(
-    content::RenderViewHost* render_view_host,
-    int64 frame_num) {
+    content::RenderFrameHost* render_frame_host) {
+  content::RenderViewHost* render_view_host =
+      render_frame_host->GetRenderViewHost();
   if (render_view_host != render_view_host_ &&
       render_view_host != pending_render_view_host_) {
     return;
   }
-  FrameNavigationState::FrameID frame_id(frame_num, render_view_host);
+  FrameNavigationState::FrameID frame_id(render_frame_host->GetRoutingID(),
+                                         render_view_host);
   if (navigation_state_.CanSendEvents(frame_id) &&
       !navigation_state_.GetNavigationCompleted(frame_id)) {
-    helpers::DispatchOnErrorOccurred(
-        web_contents(),
-        render_view_host->GetProcess()->GetID(),
-        navigation_state_.GetUrl(frame_id),
-        frame_num,
-        navigation_state_.IsMainFrame(frame_id),
-        net::ERR_ABORTED);
+    helpers::DispatchOnErrorOccurred(web_contents(),
+                                     render_view_host->GetProcess()->GetID(),
+                                     navigation_state_.GetUrl(frame_id),
+                                     frame_id.frame_num,
+                                     navigation_state_.IsMainFrame(frame_id),
+                                     net::ERR_ABORTED);
   }
   navigation_state_.FrameDetached(frame_id);
 }
