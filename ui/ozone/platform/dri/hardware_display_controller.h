@@ -169,6 +169,10 @@ class HardwareDisplayController
   // is set to false. Otherwise it is true.
   bool is_disabled_;
 
+  // Store the state of the CRTC before we took over. Used to restore the CRTC
+  // once we no longer need it.
+  ScopedDrmCrtcPtr saved_crtc_;
+
   DISALLOW_COPY_AND_ASSIGN(HardwareDisplayController);
 };
 

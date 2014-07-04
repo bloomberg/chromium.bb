@@ -55,9 +55,13 @@ HardwareDisplayController::HardwareDisplayController(
       crtc_id_(crtc_id),
       surface_(),
       time_of_last_flip_(0),
-      is_disabled_(true) {}
+      is_disabled_(true),
+      saved_crtc_(drm_->GetCrtc(crtc_id_)) {}
 
 HardwareDisplayController::~HardwareDisplayController() {
+  if (!is_disabled_)
+    drm_->SetCrtc(saved_crtc_.get(), &connector_id_);
+
   // Reset the cursor.
   UnsetCursor();
   UnbindSurfaceFromController();
