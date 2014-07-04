@@ -6,6 +6,7 @@
 
 #include "base/files/scoped_temp_dir.h"
 #include "chrome/browser/sync_file_system/drive_backend/drive_backend_constants.h"
+#include "chrome/browser/sync_file_system/drive_backend/drive_backend_test_util.h"
 #include "chrome/browser/sync_file_system/drive_backend/drive_backend_util.h"
 #include "chrome/browser/sync_file_system/drive_backend/metadata_database.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -24,73 +25,6 @@ const int64 kSyncRootTrackerID = 1;
 const int64 kAppRootTrackerID = 2;
 const int64 kFileTrackerID = 3;
 const int64 kPlaceholderTrackerID = 4;
-
-scoped_ptr<FileMetadata> CreateFolderMetadata(const std::string& file_id,
-                                              const std::string& title) {
-  FileDetails details;
-  details.set_title(title);
-  details.set_file_kind(FILE_KIND_FOLDER);
-  details.set_missing(false);
-
-  scoped_ptr<FileMetadata> metadata(new FileMetadata);
-  metadata->set_file_id(file_id);
-  *metadata->mutable_details() = details;
-
-  return metadata.Pass();
-}
-
-scoped_ptr<FileMetadata> CreateFileMetadata(const std::string& file_id,
-                                            const std::string& title,
-                                            const std::string& md5) {
-  FileDetails details;
-  details.set_title(title);
-  details.set_file_kind(FILE_KIND_FILE);
-  details.set_missing(false);
-  details.set_md5(md5);
-
-  scoped_ptr<FileMetadata> metadata(new FileMetadata);
-  metadata->set_file_id(file_id);
-  *metadata->mutable_details() = details;
-
-  return metadata.Pass();
-}
-
-scoped_ptr<FileTracker> CreateTracker(const FileMetadata& metadata,
-                                      int64 tracker_id,
-                                      const FileTracker* parent_tracker) {
-  scoped_ptr<FileTracker> tracker(new FileTracker);
-  tracker->set_tracker_id(tracker_id);
-  int64 parent_id = parent_tracker ?
-      parent_tracker->tracker_id() : kInvalidTrackerID;
-  tracker->set_parent_tracker_id(parent_id);
-  tracker->set_file_id(metadata.file_id());
-  if (parent_tracker)
-    tracker->set_app_id(parent_tracker->app_id());
-  tracker->set_tracker_kind(TRACKER_KIND_REGULAR);
-  *tracker->mutable_synced_details() = metadata.details();
-  tracker->set_dirty(false);
-  tracker->set_active(true);
-  tracker->set_needs_folder_listing(false);
-  return tracker.Pass();
-}
-
-scoped_ptr<FileTracker> CreatePlaceholderTracker(
-    const std::string& file_id,
-    int64 tracker_id,
-    const FileTracker* parent_tracker) {
-  scoped_ptr<FileTracker> tracker(new FileTracker);
-  tracker->set_tracker_id(tracker_id);
-  if (parent_tracker)
-    tracker->set_parent_tracker_id(parent_tracker->tracker_id());
-  tracker->set_file_id(file_id);
-  if (parent_tracker)
-    tracker->set_app_id(parent_tracker->app_id());
-  tracker->set_tracker_kind(TRACKER_KIND_REGULAR);
-  tracker->set_dirty(true);
-  tracker->set_active(false);
-  tracker->set_needs_folder_listing(false);
-  return tracker.Pass();
-}
 
 }  // namespace
 
@@ -118,27 +52,30 @@ class MetadataDatabaseIndexOnDiskTest : public testing::Test {
 
   void CreateTestDatabase(bool build_index) {
     scoped_ptr<FileMetadata> sync_root_metadata =
-        CreateFolderMetadata("sync_root_folder_id",
-                             "Chrome Syncable FileSystem");
+        test_util::CreateFolderMetadata("sync_root_folder_id",
+                                        "Chrome Syncable FileSystem");
     scoped_ptr<FileTracker> sync_root_tracker =
-        CreateTracker(*sync_root_metadata, kSyncRootTrackerID, NULL);
+        test_util::CreateTracker(*sync_root_metadata, kSyncRootTrackerID, NULL);
 
     scoped_ptr<FileMetadata> app_root_metadata =
-        CreateFolderMetadata("app_root_folder_id", "app_title");
+        test_util::CreateFolderMetadata("app_root_folder_id", "app_title");
     scoped_ptr<FileTracker> app_root_tracker =
-        CreateTracker(*app_root_metadata, kAppRootTrackerID,
-                      sync_root_tracker.get());
+        test_util::CreateTracker(*app_root_metadata, kAppRootTrackerID,
+                                 sync_root_tracker.get());
     app_root_tracker->set_app_id("app_id");
     app_root_tracker->set_tracker_kind(TRACKER_KIND_APP_ROOT);
 
     scoped_ptr<FileMetadata> file_metadata =
-        CreateFileMetadata("file_id", "file", "file_md5");
+        test_util::CreateFileMetadata("file_id", "file", "file_md5");
     scoped_ptr<FileTracker> file_tracker =
-        CreateTracker(*file_metadata, kFileTrackerID, app_root_tracker.get());
+        test_util::CreateTracker(*file_metadata,
+                                 kFileTrackerID,
+                                 app_root_tracker.get());
 
     scoped_ptr<FileTracker> placeholder_tracker =
-        CreatePlaceholderTracker("unsynced_file_id", kPlaceholderTrackerID,
-                                 app_root_tracker.get());
+        test_util::CreatePlaceholderTracker("unsynced_file_id",
+                                            kPlaceholderTrackerID,
+                                            app_root_tracker.get());
 
     leveldb::WriteBatch batch;
     if (build_index) {
@@ -208,11 +145,11 @@ TEST_F(MetadataDatabaseIndexOnDiskTest, SetEntryTest) {
   const int64 tracker_id = 10;
   scoped_ptr<leveldb::WriteBatch> batch(new leveldb::WriteBatch);
   scoped_ptr<FileMetadata> metadata =
-      CreateFileMetadata("test_file_id", "test_title", "test_md5");
+      test_util::CreateFileMetadata("test_file_id", "test_title", "test_md5");
   FileTracker root_tracker;
   EXPECT_TRUE(index()->GetFileTracker(kSyncRootTrackerID, &root_tracker));
   scoped_ptr<FileTracker> tracker =
-      CreateTracker(*metadata, tracker_id, &root_tracker);
+      test_util::CreateTracker(*metadata, tracker_id, &root_tracker);
 
   index()->StoreFileMetadata(metadata.Pass(), batch.get());
   index()->StoreFileTracker(tracker.Pass(), batch.get());
@@ -260,13 +197,13 @@ TEST_F(MetadataDatabaseIndexOnDiskTest, IndexAppRootIDByAppIDTest) {
   FileTracker sync_root_tracker;
   index()->GetFileTracker(kSyncRootTrackerID, &sync_root_tracker);
   scoped_ptr<FileMetadata> app_root_metadata =
-      CreateFolderMetadata("app_root_folder_id_2", "app_title_2");
+      test_util::CreateFolderMetadata("app_root_folder_id_2", "app_title_2");
 
   // Testing AddToAppIDIndex
   scoped_ptr<leveldb::WriteBatch> batch(new leveldb::WriteBatch);
   scoped_ptr<FileTracker> app_root_tracker =
-      CreateTracker(*app_root_metadata, kAppRootTrackerID2,
-                    &sync_root_tracker);
+      test_util::CreateTracker(*app_root_metadata, kAppRootTrackerID2,
+                               &sync_root_tracker);
   app_root_tracker->set_app_id("app_id_2");
   app_root_tracker->set_tracker_kind(TRACKER_KIND_APP_ROOT);
 
@@ -277,8 +214,9 @@ TEST_F(MetadataDatabaseIndexOnDiskTest, IndexAppRootIDByAppIDTest) {
 
   // Testing UpdateInAppIDIndex
   batch.reset(new leveldb::WriteBatch);
-  app_root_tracker = CreateTracker(*app_root_metadata, kAppRootTrackerID2,
-                                   &sync_root_tracker);
+  app_root_tracker = test_util::CreateTracker(*app_root_metadata,
+                                              kAppRootTrackerID2,
+                                              &sync_root_tracker);
   app_root_tracker->set_app_id("app_id_3");
   app_root_tracker->set_active(false);
 
@@ -289,8 +227,9 @@ TEST_F(MetadataDatabaseIndexOnDiskTest, IndexAppRootIDByAppIDTest) {
   EXPECT_EQ(kInvalidTrackerID, index()->GetAppRootTracker("app_id_3"));
 
   batch.reset(new leveldb::WriteBatch);
-  app_root_tracker = CreateTracker(*app_root_metadata, kAppRootTrackerID2,
-                                   &sync_root_tracker);
+  app_root_tracker = test_util::CreateTracker(*app_root_metadata,
+                                              kAppRootTrackerID2,
+                                              &sync_root_tracker);
   app_root_tracker->set_app_id("app_id_3");
   app_root_tracker->set_tracker_kind(TRACKER_KIND_APP_ROOT);
 

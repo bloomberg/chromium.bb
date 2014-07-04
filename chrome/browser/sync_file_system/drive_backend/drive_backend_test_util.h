@@ -33,6 +33,19 @@ void ExpectEquivalentMetadata(const FileMetadata& left,
 void ExpectEquivalentTrackers(const FileTracker& left,
                               const FileTracker& right);
 
+scoped_ptr<FileMetadata> CreateFolderMetadata(const std::string& file_id,
+                                              const std::string& title);
+scoped_ptr<FileMetadata> CreateFileMetadata(const std::string& file_id,
+                                            const std::string& title,
+                                            const std::string& md5);
+scoped_ptr<FileTracker> CreateTracker(const FileMetadata& metadata,
+                                      int64 tracker_id,
+                                      const FileTracker* parent_tracker);
+scoped_ptr<FileTracker> CreatePlaceholderTracker(
+    const std::string& file_id,
+    int64 tracker_id,
+    const FileTracker* parent_tracker);
+
 }  // namespace test_util
 }  // namespace drive_backend
 }  // namespace sync_file_system

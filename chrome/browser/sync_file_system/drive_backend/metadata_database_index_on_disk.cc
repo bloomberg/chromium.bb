@@ -68,20 +68,6 @@ namespace drive_backend {
 
 namespace {
 
-// TODO(peria): Gather up those common methods with metadata_database_index.cc
-//     into a separate file.
-
-bool IsAppRoot(const FileTracker& tracker) {
-  return tracker.tracker_kind() == TRACKER_KIND_APP_ROOT ||
-      tracker.tracker_kind() == TRACKER_KIND_DISABLED_APP_ROOT;
-}
-
-std::string GetTrackerTitle(const FileTracker& tracker) {
-  if (tracker.has_synced_details())
-    return tracker.synced_details().title();
-  return std::string();
-}
-
 std::string GenerateAppRootIDByAppIDKey(const std::string& app_id) {
   return kAppRootIDByAppIDKeyPrefix + app_id;
 }

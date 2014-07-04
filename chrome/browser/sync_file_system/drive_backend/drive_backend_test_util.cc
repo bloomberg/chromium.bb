@@ -8,6 +8,7 @@
 #include <string>
 
 #include "chrome/browser/drive/drive_api_util.h"
+#include "chrome/browser/sync_file_system/drive_backend/drive_backend_constants.h"
 #include "chrome/browser/sync_file_system/drive_backend/metadata_database.h"
 #include "chrome/browser/sync_file_system/drive_backend/metadata_database.pb.h"
 #include "google_apis/drive/drive_api_parser.h"
@@ -63,6 +64,73 @@ void ExpectEquivalentTrackers(const FileTracker& left,
   EXPECT_EQ(left.dirty(), right.dirty());
   EXPECT_EQ(left.active(), right.active());
   EXPECT_EQ(left.needs_folder_listing(), right.needs_folder_listing());
+}
+
+scoped_ptr<FileMetadata> CreateFolderMetadata(const std::string& file_id,
+                                              const std::string& title) {
+  FileDetails details;
+  details.set_title(title);
+  details.set_file_kind(FILE_KIND_FOLDER);
+  details.set_missing(false);
+
+  scoped_ptr<FileMetadata> metadata(new FileMetadata);
+  metadata->set_file_id(file_id);
+  *metadata->mutable_details() = details;
+
+  return metadata.Pass();
+}
+
+scoped_ptr<FileMetadata> CreateFileMetadata(const std::string& file_id,
+                                            const std::string& title,
+                                            const std::string& md5) {
+  FileDetails details;
+  details.set_title(title);
+  details.set_file_kind(FILE_KIND_FILE);
+  details.set_missing(false);
+  details.set_md5(md5);
+
+  scoped_ptr<FileMetadata> metadata(new FileMetadata);
+  metadata->set_file_id(file_id);
+  *metadata->mutable_details() = details;
+
+  return metadata.Pass();
+}
+
+scoped_ptr<FileTracker> CreateTracker(const FileMetadata& metadata,
+                                      int64 tracker_id,
+                                      const FileTracker* parent_tracker) {
+  scoped_ptr<FileTracker> tracker(new FileTracker);
+  tracker->set_tracker_id(tracker_id);
+  int64 parent_id = parent_tracker ?
+      parent_tracker->tracker_id() : kInvalidTrackerID;
+  tracker->set_parent_tracker_id(parent_id);
+  tracker->set_file_id(metadata.file_id());
+  if (parent_tracker)
+    tracker->set_app_id(parent_tracker->app_id());
+  tracker->set_tracker_kind(TRACKER_KIND_REGULAR);
+  *tracker->mutable_synced_details() = metadata.details();
+  tracker->set_dirty(false);
+  tracker->set_active(true);
+  tracker->set_needs_folder_listing(false);
+  return tracker.Pass();
+}
+
+scoped_ptr<FileTracker> CreatePlaceholderTracker(
+    const std::string& file_id,
+    int64 tracker_id,
+    const FileTracker* parent_tracker) {
+  scoped_ptr<FileTracker> tracker(new FileTracker);
+  tracker->set_tracker_id(tracker_id);
+  if (parent_tracker)
+    tracker->set_parent_tracker_id(parent_tracker->tracker_id());
+  tracker->set_file_id(file_id);
+  if (parent_tracker)
+    tracker->set_app_id(parent_tracker->app_id());
+  tracker->set_tracker_kind(TRACKER_KIND_REGULAR);
+  tracker->set_dirty(true);
+  tracker->set_active(false);
+  tracker->set_needs_folder_listing(false);
+  return tracker.Pass();
 }
 
 }  // namespace test_util

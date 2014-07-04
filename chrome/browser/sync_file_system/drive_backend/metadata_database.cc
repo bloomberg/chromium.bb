@@ -43,9 +43,18 @@ namespace drive_backend {
 
 namespace {
 
-bool IsAppRoot(const FileTracker& tracker) {
-  return tracker.tracker_kind() == TRACKER_KIND_APP_ROOT ||
-      tracker.tracker_kind() == TRACKER_KIND_DISABLED_APP_ROOT;
+std::string FileKindToString(FileKind file_kind) {
+  switch (file_kind) {
+    case FILE_KIND_UNSUPPORTED:
+      return "unsupported";
+    case FILE_KIND_FILE:
+      return "file";
+    case FILE_KIND_FOLDER:
+      return "folder";
+  }
+
+  NOTREACHED();
+  return "unknown";
 }
 
 base::FilePath ReverseConcatPathComponents(
@@ -68,6 +77,81 @@ base::FilePath ReverseConcatPathComponents(
   }
 
   return base::FilePath(result).NormalizePathSeparators();
+}
+
+void PopulateFileDetailsByFileResource(
+    const google_apis::FileResource& file_resource,
+    FileDetails* details) {
+  details->clear_parent_folder_ids();
+  for (std::vector<google_apis::ParentReference>::const_iterator itr =
+           file_resource.parents().begin();
+       itr != file_resource.parents().end();
+       ++itr) {
+    details->add_parent_folder_ids(itr->file_id());
+  }
+  details->set_title(file_resource.title());
+
+  google_apis::DriveEntryKind kind = drive::util::GetKind(file_resource);
+  if (kind == google_apis::ENTRY_KIND_FILE)
+    details->set_file_kind(FILE_KIND_FILE);
+  else if (kind == google_apis::ENTRY_KIND_FOLDER)
+    details->set_file_kind(FILE_KIND_FOLDER);
+  else
+    details->set_file_kind(FILE_KIND_UNSUPPORTED);
+
+  details->set_md5(file_resource.md5_checksum());
+  details->set_etag(file_resource.etag());
+  details->set_creation_time(file_resource.created_date().ToInternalValue());
+  details->set_modification_time(
+      file_resource.modified_date().ToInternalValue());
+  details->set_missing(false);
+}
+
+scoped_ptr<FileMetadata> CreateFileMetadataFromFileResource(
+    int64 change_id,
+    const google_apis::FileResource& resource) {
+  scoped_ptr<FileMetadata> file(new FileMetadata);
+  file->set_file_id(resource.file_id());
+
+  FileDetails* details = file->mutable_details();
+  details->set_change_id(change_id);
+
+  if (resource.labels().is_trashed()) {
+    details->set_missing(true);
+    return file.Pass();
+  }
+
+  PopulateFileDetailsByFileResource(resource, details);
+  return file.Pass();
+}
+
+scoped_ptr<FileMetadata> CreateFileMetadataFromChangeResource(
+    const google_apis::ChangeResource& change) {
+  scoped_ptr<FileMetadata> file(new FileMetadata);
+  file->set_file_id(change.file_id());
+
+  FileDetails* details = file->mutable_details();
+  details->set_change_id(change.change_id());
+
+  if (change.is_deleted()) {
+    details->set_missing(true);
+    return file.Pass();
+  }
+
+  PopulateFileDetailsByFileResource(*change.file(), details);
+  return file.Pass();
+}
+
+scoped_ptr<FileMetadata> CreateDeletedFileMetadata(
+    int64 change_id,
+    const std::string& file_id) {
+  scoped_ptr<FileMetadata> file(new FileMetadata);
+  file->set_file_id(file_id);
+
+  FileDetails* details = file->mutable_details();
+  details->set_change_id(change_id);
+  details->set_missing(true);
+  return file.Pass();
 }
 
 scoped_ptr<FileTracker> CreateSyncRootTracker(
@@ -101,6 +185,12 @@ scoped_ptr<FileTracker> CreateInitialAppRootTracker(
   return app_root_tracker.Pass();
 }
 
+scoped_ptr<FileTracker> CloneFileTracker(const FileTracker* obj) {
+  if (!obj)
+    return scoped_ptr<FileTracker>();
+  return scoped_ptr<FileTracker>(new FileTracker(*obj));
+}
+
 void WriteOnFileTaskRunner(
     leveldb::DB* db,
     scoped_ptr<leveldb::WriteBatch> batch,
@@ -112,12 +202,6 @@ void WriteOnFileTaskRunner(
   worker_task_runner->PostTask(
       FROM_HERE,
       base::Bind(callback, LevelDBStatusToSyncStatusCode(status)));
-}
-
-std::string GetTrackerTitle(const FileTracker& tracker) {
-  if (tracker.has_synced_details())
-    return tracker.synced_details().title();
-  return std::string();
 }
 
 // Returns true if |db| has no content.

@@ -18,6 +18,7 @@
 #include "chrome/browser/drive/drive_service_interface.h"
 #include "chrome/browser/drive/drive_uploader.h"
 #include "chrome/browser/sync_file_system/drive_backend/callback_helper.h"
+#include "chrome/browser/sync_file_system/drive_backend/drive_backend_constants.h"
 #include "chrome/browser/sync_file_system/drive_backend/drive_backend_util.h"
 #include "chrome/browser/sync_file_system/drive_backend/folder_creator.h"
 #include "chrome/browser/sync_file_system/drive_backend/metadata_database.h"
@@ -27,6 +28,7 @@
 #include "chrome/browser/sync_file_system/drive_backend/sync_task_token.h"
 #include "chrome/browser/sync_file_system/logger.h"
 #include "google_apis/drive/drive_api_parser.h"
+#include "net/base/mime_util.h"
 #include "webkit/common/fileapi/file_system_util.h"
 
 namespace sync_file_system {
@@ -56,6 +58,15 @@ bool IsLocalFileMissing(const SyncFileMetadata& local_metadata,
                         const FileChange& local_change) {
   return local_metadata.file_type == SYNC_FILE_TYPE_UNKNOWN ||
          local_change.IsDelete();
+}
+
+std::string GetMimeTypeFromTitle(const base::FilePath& title) {
+  base::FilePath::StringType extension = title.Extension();
+  std::string mime_type;
+  if (extension.empty() ||
+      !net::GetWellKnownMimeTypeFromExtension(extension.substr(1), &mime_type))
+    return kMimeTypeOctetStream;
+  return mime_type;
 }
 
 }  // namespace

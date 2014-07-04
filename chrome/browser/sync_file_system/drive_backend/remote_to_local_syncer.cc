@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/file_util.h"
 #include "base/format_macros.h"
 #include "base/location.h"
 #include "base/logging.h"
@@ -76,6 +77,20 @@ scoped_ptr<FileMetadata> GetFileMetadata(MetadataDatabase* database,
   if (!database->FindFileByFileID(file_id, metadata.get()))
     metadata.reset();
   return metadata.Pass();
+}
+
+// Creates a temporary file in |dir_path|.  This must be called on an
+// IO-allowed task runner, and the runner must be given as |file_task_runner|.
+webkit_blob::ScopedFile CreateTemporaryFile(
+    base::TaskRunner* file_task_runner) {
+  base::FilePath temp_file_path;
+  if (!base::CreateTemporaryFile(&temp_file_path))
+    return webkit_blob::ScopedFile();
+
+  return webkit_blob::ScopedFile(
+      temp_file_path,
+      webkit_blob::ScopedFile::DELETE_ON_SCOPE_OUT,
+      file_task_runner);
 }
 
 }  // namespace

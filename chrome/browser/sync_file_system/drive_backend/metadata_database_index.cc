@@ -75,17 +75,6 @@ typename Container::mapped_type FindItem(
   return found->second;
 }
 
-bool IsAppRoot(const FileTracker& tracker) {
-  return tracker.tracker_kind() == TRACKER_KIND_APP_ROOT ||
-      tracker.tracker_kind() == TRACKER_KIND_DISABLED_APP_ROOT;
-}
-
-std::string GetTrackerTitle(const FileTracker& tracker) {
-  if (tracker.has_synced_details())
-    return tracker.synced_details().title();
-  return std::string();
-}
-
 void ReadDatabaseContents(leveldb::DB* db,
                           DatabaseContents* contents) {
   DCHECK(db);

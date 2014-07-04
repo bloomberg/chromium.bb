@@ -7,6 +7,7 @@
 #include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_util.h"
+#include "chrome/browser/sync_file_system/drive_backend/drive_backend_util.h"
 #include "third_party/leveldatabase/src/include/leveldb/write_batch.h"
 #include "url/gurl.h"
 #include "webkit/common/fileapi/file_system_types.h"
@@ -21,12 +22,6 @@ const base::FilePath::CharType kV0FormatPathPrefix[] =
     FILE_PATH_LITERAL("drive/");
 const char kWapiFileIdPrefix[] = "file:";
 const char kWapiFolderIdPrefix[] = "folder:";
-
-std::string RemovePrefix(const std::string& str, const std::string& prefix) {
-  if (StartsWithASCII(str, prefix, true))
-    return std::string(str.begin() + prefix.size(), str.end());
-  return str;
-}
 
 }  // namespace
 
