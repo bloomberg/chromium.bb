@@ -124,13 +124,6 @@ private:
     virtual RenderWidget* existingRenderWidget() const = 0;
     virtual void updateWidgetInternal() = 0;
 
-    enum DisplayState {
-        Restarting,
-        RestartingWithPendingMouseClick,
-        Playing
-    };
-    DisplayState displayState() const { return m_displayState; }
-    void setDisplayState(DisplayState state) { m_displayState = state; }
     bool loadPlugin(const KURL&, const String& mimeType, const Vector<String>& paramNames, const Vector<String>& paramValues, bool useFallback, bool requireRenderer);
     bool pluginIsLoadable(const KURL&, const String& mimeType);
     bool wouldLoadAsNetscapePlugin(const String& url, const String& serviceType);
@@ -140,7 +133,6 @@ private:
     bool m_isCapturingMouseEvents;
     bool m_needsWidgetUpdate;
     bool m_shouldPreferPlugInsForImages;
-    DisplayState m_displayState;
 
     // Normally the Widget is stored in HTMLFrameOwnerElement::m_widget.
     // However, plugins can persist even when not rendered. In order to

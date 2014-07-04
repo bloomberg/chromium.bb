@@ -66,7 +66,6 @@ HTMLPlugInElement::HTMLPlugInElement(const QualifiedName& tagName, Document& doc
     // the same codepath in this class.
     , m_needsWidgetUpdate(!createdByParser)
     , m_shouldPreferPlugInsForImages(preferPlugInsForImagesOption == ShouldPreferPlugInsForImages)
-    , m_displayState(Playing)
 {
     setHasCustomStyleCallbacks();
 }
@@ -336,8 +335,6 @@ void HTMLPlugInElement::defaultEventHandler(Event* event)
         return;
     if (r->isEmbeddedObject()) {
         if (toRenderEmbeddedObject(r)->showsUnavailablePluginIndicator())
-            return;
-        if (displayState() < Playing)
             return;
     }
     RefPtr<Widget> widget = toRenderWidget(r)->widget();
