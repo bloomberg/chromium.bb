@@ -13,10 +13,10 @@
 #include "base/prefs/pref_service.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/test/base/testing_pref_service_syncable.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/search_engines/template_url.h"
+#include "components/search_engines/template_url_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class DefaultSearchPrefMigrationTest : public testing::Test {

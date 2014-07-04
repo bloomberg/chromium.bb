@@ -36,8 +36,8 @@ specific_include_rules = {
   # write these rules so they don't add bad dependencies.
   r"^[a-z_]+_table(_unittest|_win)?\.(cc|h)": [
     "!chrome/browser/history/history_database.h",
-    "!chrome/browser/search_engines/template_url.h",
-    "!chrome/browser/search_engines/template_url_service.h",
+    "!components/search_engines/template_url.h",
+    "!components/search_engines/template_url_service.h",
   ],
 
   # TODO(caitkp): Extract unit tests from //chrome, at lower priority

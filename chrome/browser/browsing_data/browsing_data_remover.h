@@ -16,7 +16,7 @@
 #include "base/task/cancelable_task_tracker.h"
 #include "base/time/time.h"
 #include "chrome/browser/pepper_flash_settings_manager.h"
-#include "chrome/browser/search_engines/template_url_service.h"
+#include "components/search_engines/template_url_service.h"
 #if defined(OS_CHROMEOS)
 #include "chromeos/dbus/dbus_method_call_status.h"
 #endif
