@@ -44,6 +44,12 @@ class DriConsoleBuffer {
   // Buffer ID used by the DRM modesettings API.
   uint32_t framebuffer_;
 
+  // Memory map base address.
+  void* mmap_base_;
+
+  // Memory map size.
+  size_t mmap_size_;
+
   DISALLOW_COPY_AND_ASSIGN(DriConsoleBuffer);
 };
 
