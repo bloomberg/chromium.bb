@@ -35,12 +35,16 @@ WebSocketHandshakeStreamCreateHelper::CreateBasicStream(
   // method.
   std::vector<std::string> extensions(
       1, "permessage-deflate; client_max_window_bits");
-  return stream_ = new WebSocketBasicHandshakeStream(connection.Pass(),
-                                                     connect_delegate_,
-                                                     using_proxy,
-                                                     requested_subprotocols_,
-                                                     extensions,
-                                                     failure_message_);
+  WebSocketBasicHandshakeStream* stream =
+      new WebSocketBasicHandshakeStream(connection.Pass(),
+                                        connect_delegate_,
+                                        using_proxy,
+                                        requested_subprotocols_,
+                                        extensions,
+                                        failure_message_);
+  OnStreamCreated(stream);
+  stream_ = stream;
+  return stream;
 }
 
 // TODO(ricea): Create a WebSocketSpdyHandshakeStream. crbug.com/323852
@@ -50,6 +54,17 @@ WebSocketHandshakeStreamCreateHelper::CreateSpdyStream(
     bool use_relative_url) {
   NOTREACHED() << "Not implemented";
   return NULL;
+}
+
+scoped_ptr<WebSocketStream> WebSocketHandshakeStreamCreateHelper::Upgrade() {
+  DCHECK(stream_);
+  WebSocketHandshakeStreamBase* stream = stream_;
+  stream_ = NULL;
+  return stream->Upgrade();
+}
+
+void WebSocketHandshakeStreamCreateHelper::OnStreamCreated(
+    WebSocketBasicHandshakeStream* stream) {
 }
 
 }  // namespace net

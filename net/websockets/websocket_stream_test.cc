@@ -9,6 +9,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/compiler_specific.h"
 #include "base/memory/scoped_vector.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/histogram_samples.h"
@@ -66,16 +67,8 @@ class DeterministicKeyWebSocketHandshakeStreamCreateHelper
       : WebSocketHandshakeStreamCreateHelper(connect_delegate,
                                              requested_subprotocols) {}
 
-  virtual WebSocketHandshakeStreamBase* CreateBasicStream(
-      scoped_ptr<ClientSocketHandle> connection,
-      bool using_proxy) OVERRIDE {
-    WebSocketHandshakeStreamCreateHelper::CreateBasicStream(connection.Pass(),
-                                                            using_proxy);
-    // This will break in an obvious way if the type created by
-    // CreateBasicStream() changes.
-    static_cast<WebSocketBasicHandshakeStream*>(stream())
-        ->SetWebSocketKeyForTesting("dGhlIHNhbXBsZSBub25jZQ==");
-    return stream();
+  virtual void OnStreamCreated(WebSocketBasicHandshakeStream* stream) OVERRIDE {
+    stream->SetWebSocketKeyForTesting("dGhlIHNhbXBsZSBub25jZQ==");
   }
 };
 

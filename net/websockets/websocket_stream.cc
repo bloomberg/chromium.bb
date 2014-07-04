@@ -114,7 +114,7 @@ class StreamRequestImpl : public WebSocketStreamRequest {
   }
 
   void PerformUpgrade() {
-    connect_delegate_->OnSuccess(create_helper_->stream()->Upgrade());
+    connect_delegate_->OnSuccess(create_helper_->Upgrade());
   }
 
   void ReportFailure() {
