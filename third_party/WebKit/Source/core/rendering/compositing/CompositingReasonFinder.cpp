@@ -5,7 +5,6 @@
 #include "config.h"
 #include "core/rendering/compositing/CompositingReasonFinder.h"
 
-#include "core/CSSPropertyNames.h"
 #include "core/dom/Document.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/Settings.h"
@@ -14,20 +13,6 @@
 #include "core/rendering/compositing/RenderLayerCompositor.h"
 
 namespace WebCore {
-
-// FIXME: Should we store this information in RenderStyle?
-static bool hasInlineTransform(RenderObject& renderer)
-{
-    Node* node = renderer.node();
-    if (!node)
-        return false;
-    if (!node->isElementNode())
-        return false;
-    const StylePropertySet* inlineStyle = toElement(node)->inlineStyle();
-    if (!inlineStyle)
-        return false;
-    return inlineStyle->hasProperty(CSSPropertyTransform) || inlineStyle->hasProperty(CSSPropertyWebkitTransform);
-}
 
 CompositingReasonFinder::CompositingReasonFinder(RenderView& renderView)
     : m_renderView(renderView)
@@ -111,9 +96,6 @@ CompositingReasons CompositingReasonFinder::potentialCompositingReasonsFromStyle
 
     if (style->hasWillChangeCompositingHint() && !style->subtreeWillChangeContents())
         reasons |= CompositingReasonWillChangeCompositingHint;
-
-    if (hasInlineTransform(*renderer))
-        reasons |= CompositingReasonInlineTransform;
 
     if (style->transformStyle3D() == TransformStyle3DPreserve3D)
         reasons |= CompositingReasonPreserve3DWith3DDescendants;

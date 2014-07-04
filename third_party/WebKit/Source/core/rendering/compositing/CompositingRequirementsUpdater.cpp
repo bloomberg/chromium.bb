@@ -402,9 +402,6 @@ void CompositingRequirementsUpdater::updateRecursive(RenderLayer* ancestorLayer,
             willBeCompositedOrSquashed = true;
         }
 
-        if (willBeCompositedOrSquashed)
-            reasonsToComposite |= layer->potentialCompositingReasonsFromStyle() & CompositingReasonInlineTransform;
-
         // If the original layer is composited, the reflection needs to be, too.
         if (layer->reflectionInfo()) {
             // FIXME: Shouldn't we call computeCompositingRequirements to handle a reflection overlapping with another renderer?
@@ -420,8 +417,7 @@ void CompositingRequirementsUpdater::updateRecursive(RenderLayer* ancestorLayer,
         // Note that if the layer clips its descendants, there's no reason to propagate the child animation to the parent layers. That's because
         // we know for sure the animation is contained inside the clipping rectangle, which is already added to the overlap map.
         bool isCompositedClippingLayer = compositor->canBeComposited(layer) && (reasonsToComposite & CompositingReasonClipsCompositingDescendants);
-        bool isCompositedWithInlineTransform = reasonsToComposite & CompositingReasonInlineTransform;
-        if ((!childRecursionData.m_testingOverlap && !isCompositedClippingLayer) || layer->renderer()->style()->hasCurrentTransformAnimation() || isCompositedWithInlineTransform)
+        if ((!childRecursionData.m_testingOverlap && !isCompositedClippingLayer) || layer->renderer()->style()->hasCurrentTransformAnimation())
             currentRecursionData.m_testingOverlap = false;
 
         if (childRecursionData.m_compositingAncestor == layer)

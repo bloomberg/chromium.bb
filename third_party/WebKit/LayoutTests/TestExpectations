@@ -1201,8 +1201,6 @@ crbug.com/308768 http/tests/security/XFrameOptions/x-frame-options-deny-meta-tag
 crbug.com/308768 http/tests/xmlhttprequest/xmlhttprequest-data-url.html [ Skip ]
 crbug.com/308768 inspector/network/network-status-non-http.html [ Skip ]
 
-Bug(abarth) css3/compositing/effect-background-blend-mode-stacking.html [ NeedsRebaseline ]
-
 # Started being flaky in r175790.
 crbug.com/361045 inspector/layers/tracing-layer-tree.html [ Pass Failure ]
 
