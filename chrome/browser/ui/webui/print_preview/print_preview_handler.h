@@ -13,6 +13,7 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/printing/print_view_manager_observer.h"
 #include "content/public/browser/web_ui_message_handler.h"
+#include "google_apis/gaia/merge_session_helper.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
 
 #if defined(ENABLE_SERVICE_DISCOVERY)
@@ -20,6 +21,7 @@
 #include "chrome/browser/local_discovery/service_discovery_shared_client.h"
 #endif  // ENABLE_SERVICE_DISCOVERY
 
+class AccountReconcilor;
 class PrintSystemTaskProxy;
 
 namespace base {
@@ -43,7 +45,8 @@ class PrintPreviewHandler
       public local_discovery::PrivetLocalPrintOperation::Delegate,
 #endif
       public ui::SelectFileDialog::Listener,
-      public printing::PrintViewManagerObserver {
+      public printing::PrintViewManagerObserver,
+      public MergeSessionHelper::Observer {
  public:
   PrintPreviewHandler();
   virtual ~PrintPreviewHandler();
@@ -59,6 +62,11 @@ class PrintPreviewHandler
 
   // PrintViewManagerObserver implementation.
   virtual void OnPrintDialogShown() OVERRIDE;
+
+  // MergeSessionHelper::Observer implementation.
+  virtual void MergeSessionCompleted(
+      const std::string& account_id,
+      const GoogleServiceAuthError& error) OVERRIDE;
 
   // Displays a modal dialog, prompting the user to select a file.
   void SelectFile(const base::FilePath& default_path);
@@ -271,6 +279,11 @@ class PrintPreviewHandler
       base::DictionaryValue* printer_value);
 #endif
 
+  // Register/unregister from notifications of changes done to the GAIA
+  // cookie.
+  void RegisterForMergeSession();
+  void UnregisterForMergeSession();
+
   // The underlying dialog object.
   scoped_refptr<ui::SelectFileDialog> select_file_dialog_;
 
@@ -294,6 +307,10 @@ class PrintPreviewHandler
 
   // Holds token service to get OAuth2 access tokens.
   scoped_ptr<AccessTokenService> token_service_;
+
+  // Pointer to reconcilor so that print preview can listen for GAIA cookie
+  // changes.
+  AccountReconcilor* reconcilor_;
 
 #if defined(ENABLE_SERVICE_DISCOVERY)
   scoped_refptr<local_discovery::ServiceDiscoverySharedClient>

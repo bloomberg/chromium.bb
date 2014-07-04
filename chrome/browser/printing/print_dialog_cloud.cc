@@ -21,6 +21,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_dialogs.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/print_messages.h"
@@ -28,6 +29,7 @@
 #include "components/cloud_devices/common/cloud_devices_urls.h"
 #include "components/google/core/browser/google_util.h"
 #include "components/pref_registry/pref_registry_syncable.h"
+#include "components/signin/core/common/profile_management_switches.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
@@ -711,16 +713,26 @@ void CreateCloudPrintSigninTab(Browser* browser,
                                bool add_account,
                                const base::Closure& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  GURL url = add_account ? cloud_devices::GetCloudPrintAddAccountURL()
-                         : cloud_devices::GetCloudPrintSigninURL();
-  content::WebContents* web_contents = browser->OpenURL(content::OpenURLParams(
-      google_util::AppendGoogleLocaleParam(
-          url, g_browser_process->GetApplicationLocale()),
-      content::Referrer(),
-      NEW_FOREGROUND_TAB,
-      content::PAGE_TRANSITION_AUTO_BOOKMARK,
-      false));
-  new SignInObserver(web_contents, cloud_devices::GetCloudPrintURL(), callback);
+  if (switches::IsEnableAccountConsistency() &&
+      !browser->profile()->IsOffTheRecord()) {
+    browser->window()->ShowAvatarBubbleFromAvatarButton(
+        add_account ? BrowserWindow::AVATAR_BUBBLE_MODE_ADD_ACCOUNT
+                    : BrowserWindow::AVATAR_BUBBLE_MODE_SIGNIN,
+        signin::ManageAccountsParams());
+  } else {
+    GURL url = add_account ? cloud_devices::GetCloudPrintAddAccountURL()
+                           : cloud_devices::GetCloudPrintSigninURL();
+    content::WebContents* web_contents =
+        browser->OpenURL(content::OpenURLParams(
+            google_util::AppendGoogleLocaleParam(
+                url, g_browser_process->GetApplicationLocale()),
+            content::Referrer(),
+            NEW_FOREGROUND_TAB,
+            content::PAGE_TRANSITION_AUTO_BOOKMARK,
+            false));
+    new SignInObserver(web_contents, cloud_devices::GetCloudPrintURL(),
+                        callback);
+  }
 }
 
 void CreatePrintDialogForBytes(content::BrowserContext* browser_context,

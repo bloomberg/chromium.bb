@@ -36,6 +36,7 @@
 #include "chrome/browser/printing/print_view_manager.h"
 #include "chrome/browser/printing/printer_manager_dialog.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/signin/account_reconcilor_factory.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -54,9 +55,10 @@
 #include "components/cloud_devices/common/cloud_device_description.h"
 #include "components/cloud_devices/common/cloud_devices_urls.h"
 #include "components/cloud_devices/common/printer_description.h"
+#include "components/signin/core/browser/account_reconcilor.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_manager.h"
-#include "components/signin/core/browser/signin_manager_base.h"
+#include "components/signin/core/common/profile_management_switches.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_controller.h"
@@ -551,6 +553,7 @@ PrintPreviewHandler::PrintPreviewHandler()
       manage_cloud_printers_dialog_request_count_(0),
       reported_failed_preview_(false),
       has_logged_printers_count_(false),
+      reconcilor_(NULL),
       weak_factory_(this) {
   ReportUserActionHistogram(PREVIEW_STARTED);
 }
@@ -558,6 +561,8 @@ PrintPreviewHandler::PrintPreviewHandler()
 PrintPreviewHandler::~PrintPreviewHandler() {
   if (select_file_dialog_.get())
     select_file_dialog_->ListenerDestroyed();
+
+  UnregisterForMergeSession();
 }
 
 void PrintPreviewHandler::RegisterMessages() {
@@ -621,6 +626,7 @@ void PrintPreviewHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback("getPrivetPrinterCapabilities",
       base::Bind(&PrintPreviewHandler::HandleGetPrivetPrinterCapabilities,
                  base::Unretained(this)));
+  RegisterForMergeSession();
 }
 
 bool PrintPreviewHandler::PrivetPrintingEnabled() {
@@ -1267,6 +1273,12 @@ void PrintPreviewHandler::OnPrintDialogShown() {
   ClosePreviewDialog();
 }
 
+void PrintPreviewHandler::MergeSessionCompleted(
+    const std::string& account_id,
+    const GoogleServiceAuthError& error) {
+  OnSigninComplete();
+}
+
 void PrintPreviewHandler::SelectFile(const base::FilePath& default_filename) {
   ui::SelectFileDialog::FileTypeInfo file_type_info;
   file_type_info.extensions.resize(1);
@@ -1587,3 +1599,18 @@ void PrintPreviewHandler::FillPrinterDescription(
 }
 
 #endif  // defined(ENABLE_SERVICE_DISCOVERY)
+
+void PrintPreviewHandler::RegisterForMergeSession() {
+  DCHECK(!reconcilor_);
+  Profile* profile = Profile::FromWebUI(web_ui());
+  if (switches::IsEnableAccountConsistency() && !profile->IsOffTheRecord()) {
+    reconcilor_ = AccountReconcilorFactory::GetForProfile(profile);
+    if (reconcilor_)
+      reconcilor_->AddMergeSessionObserver(this);
+  }
+}
+
+void PrintPreviewHandler::UnregisterForMergeSession() {
+  if (reconcilor_)
+    reconcilor_->RemoveMergeSessionObserver(this);
+}

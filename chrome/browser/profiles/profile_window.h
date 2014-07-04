@@ -7,7 +7,9 @@
 
 #include "base/callback_forward.h"
 #include "chrome/browser/profiles/profile_metrics.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/host_desktop.h"
+#include "chrome/browser/ui/profile_chooser_constants.h"
 #include "chrome/browser/ui/startup/startup_types.h"
 
 class Profile;
@@ -87,6 +89,11 @@ void EnableNewProfileManagementPreview(Profile* profile);
 
 // Disables new profile management preview and attempts to relaunch Chrome.
 void DisableNewProfileManagementPreview(Profile* profile);
+
+// Converts from modes in the avatar menu to modes understood by
+// ProfileChooserView.
+BubbleViewMode BubbleViewModeFromAvatarBubbleMode(
+    BrowserWindow::AvatarBubbleMode mode);
 
 }  // namespace profiles
 

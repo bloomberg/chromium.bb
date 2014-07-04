@@ -2396,23 +2396,9 @@ void BrowserView::ShowAvatarBubbleFromAvatarButton(
       alignment = views::BubbleBorder::ALIGN_EDGE_TO_ANCHOR_EDGE;
     }
 
-    profiles::BubbleViewMode view_mode;
-    switch (mode) {
-      case AVATAR_BUBBLE_MODE_ACCOUNT_MANAGEMENT:
-        view_mode = profiles::BUBBLE_VIEW_MODE_ACCOUNT_MANAGEMENT;
-        break;
-      case AVATAR_BUBBLE_MODE_SIGNIN:
-        view_mode = profiles::BUBBLE_VIEW_MODE_GAIA_SIGNIN;
-        break;
-      case AVATAR_BUBBLE_MODE_REAUTH:
-        view_mode = profiles::BUBBLE_VIEW_MODE_GAIA_REAUTH;
-        break;
-      default:
-        view_mode = profiles::BUBBLE_VIEW_MODE_PROFILE_CHOOSER;
-        break;
-    }
-    ProfileChooserView::ShowBubble(view_mode, manage_accounts_params,
-        anchor_view, arrow, alignment, browser());
+    ProfileChooserView::ShowBubble(
+        profiles::BubbleViewModeFromAvatarBubbleMode(mode),
+        manage_accounts_params, anchor_view, arrow, alignment, browser());
   } else {
     gfx::Point origin;
     views::View::ConvertPointToScreen(anchor_view, &origin);

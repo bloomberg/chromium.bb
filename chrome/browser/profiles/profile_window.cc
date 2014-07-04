@@ -19,6 +19,7 @@
 #include "chrome/browser/signin/account_reconcilor_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_dialogs.h"
+#include "chrome/browser/ui/profile_chooser_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -359,6 +360,24 @@ void DisableNewProfileManagementPreview(Profile* profile) {
       false);
   chrome::AttemptRestart();
   UpdateServicesWithNewProfileManagementFlag(profile, false);
+}
+
+BubbleViewMode BubbleViewModeFromAvatarBubbleMode(
+    BrowserWindow::AvatarBubbleMode mode) {
+  switch (mode) {
+    case BrowserWindow::AVATAR_BUBBLE_MODE_ACCOUNT_MANAGEMENT:
+      return profiles::BUBBLE_VIEW_MODE_ACCOUNT_MANAGEMENT;
+    case BrowserWindow::AVATAR_BUBBLE_MODE_SIGNIN:
+      return profiles::BUBBLE_VIEW_MODE_GAIA_SIGNIN;
+    case BrowserWindow::AVATAR_BUBBLE_MODE_ADD_ACCOUNT:
+      return profiles::BUBBLE_VIEW_MODE_GAIA_ADD_ACCOUNT;
+    case BrowserWindow::AVATAR_BUBBLE_MODE_REAUTH:
+      return profiles::BUBBLE_VIEW_MODE_GAIA_REAUTH;
+    case BrowserWindow::AVATAR_BUBBLE_MODE_DEFAULT:
+      return profiles::BUBBLE_VIEW_MODE_PROFILE_CHOOSER;
+  }
+  NOTREACHED();
+  return profiles::BUBBLE_VIEW_MODE_PROFILE_CHOOSER;
 }
 
 }  // namespace profiles
