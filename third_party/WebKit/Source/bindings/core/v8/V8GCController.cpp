@@ -156,10 +156,8 @@ public:
 
     void notifyFinished()
     {
-        Node** nodeIterator = m_nodesInNewSpace.begin();
-        Node** nodeIteratorEnd = m_nodesInNewSpace.end();
-        for (; nodeIterator < nodeIteratorEnd; ++nodeIterator) {
-            Node* node = *nodeIterator;
+        for (size_t i = 0; i < m_nodesInNewSpace.size(); i++) {
+            Node* node = m_nodesInNewSpace[i];
             ASSERT(node->containsWrapper());
             if (node->isV8CollectableDuringMinorGC()) { // This branch is just for performance.
                 gcTree(m_isolate, node);
@@ -169,7 +167,7 @@ public:
     }
 
 private:
-    bool traverseTree(Node* rootNode, Vector<Node*, initialNodeVectorSize>* partiallyDependentNodes)
+    bool traverseTree(Node* rootNode, WillBeHeapVector<RawPtrWillBeMember<Node>, initialNodeVectorSize>* partiallyDependentNodes)
     {
         // To make each minor GC time bounded, we might need to give up
         // traversing at some point for a large DOM tree. That being said,
@@ -218,7 +216,7 @@ private:
 
     void gcTree(v8::Isolate* isolate, Node* startNode)
     {
-        Vector<Node*, initialNodeVectorSize> partiallyDependentNodes;
+        WillBeHeapVector<RawPtrWillBeMember<Node>, initialNodeVectorSize> partiallyDependentNodes;
 
         Node* node = startNode;
         while (Node* parent = node->parentOrShadowHostOrTemplateHostNode())
@@ -230,18 +228,15 @@ private:
         // We completed the DOM tree traversal. All wrappers in the DOM tree are
         // stored in partiallyDependentNodes and are expected to exist in the new space of V8.
         // We report those wrappers to V8 as an object group.
-        Node** nodeIterator = partiallyDependentNodes.begin();
-        Node** const nodeIteratorEnd = partiallyDependentNodes.end();
-        if (nodeIterator == nodeIteratorEnd)
+        if (!partiallyDependentNodes.size())
             return;
-
-        Node* groupRoot = *nodeIterator;
-        for (; nodeIterator != nodeIteratorEnd; ++nodeIterator) {
-            (*nodeIterator)->markAsDependentGroup(groupRoot, isolate);
+        Node* groupRoot = partiallyDependentNodes[0];
+        for (size_t i = 0; i < partiallyDependentNodes.size(); i++) {
+            partiallyDependentNodes[i]->markAsDependentGroup(groupRoot, isolate);
         }
     }
 
-    Vector<Node*> m_nodesInNewSpace;
+    WillBePersistentHeapVector<RawPtrWillBeMember<Node> > m_nodesInNewSpace;
     v8::Isolate* m_isolate;
 };
 
@@ -321,7 +316,7 @@ private:
     }
 
     v8::Isolate* m_isolate;
-    Vector<Node*> m_groupsWhichNeedRetainerInfo;
+    WillBePersistentHeapVector<RawPtrWillBeMember<Node> > m_groupsWhichNeedRetainerInfo;
     bool m_liveRootGroupIdSet;
     bool m_constructRetainedObjectInfos;
 };

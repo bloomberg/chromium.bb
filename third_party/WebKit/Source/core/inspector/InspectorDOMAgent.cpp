@@ -663,7 +663,7 @@ int InspectorDOMAgent::pushNodePathToFrontend(Node* nodeToPush)
         return result;
 
     Node* node = nodeToPush;
-    Vector<Node*> path;
+    WillBeHeapVector<RawPtrWillBeMember<Node> > path;
     NodeToIdMap* danglingMap = 0;
 
     while (true) {
@@ -687,7 +687,7 @@ int InspectorDOMAgent::pushNodePathToFrontend(Node* nodeToPush)
 
     NodeToIdMap* map = danglingMap ? danglingMap : m_documentNodeToIdMap.get();
     for (int i = path.size() - 1; i >= 0; --i) {
-        int nodeId = map->get(path.at(i));
+        int nodeId = map->get(path.at(i).get());
         ASSERT(nodeId);
         pushChildNodesToFrontend(nodeId);
     }

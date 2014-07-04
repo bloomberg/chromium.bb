@@ -735,7 +735,7 @@ void InspectorCSSAgent::getPlatformFontsForNode(ErrorString* errorString, int no
     RefPtrWillBeRawPtr<CSSComputedStyleDeclaration> computedStyleInfo = CSSComputedStyleDeclaration::create(node, true);
     *cssFamilyName = computedStyleInfo->getPropertyValue(CSSPropertyFontFamily);
 
-    Vector<Node*> textNodes;
+    WillBeHeapVector<RawPtrWillBeMember<Node> > textNodes;
     if (node->nodeType() == Node::TEXT_NODE) {
         if (node->renderer())
             textNodes.append(node);
