@@ -70,8 +70,8 @@ scoped_ptr<base::Value> ConvertValue(const base::Value& value,
       if (value.GetAsInteger(&int_value) ||
           (value.GetAsString(&string_value) &&
            base::StringToInt(string_value, &int_value))) {
-        return make_scoped_ptr(base::Value::CreateBooleanValue(int_value != 0))
-            .PassAs<base::Value>();
+        return scoped_ptr<base::Value>(
+            base::Value::CreateBooleanValue(int_value != 0));
       }
       break;
     }
@@ -79,8 +79,8 @@ scoped_ptr<base::Value> ConvertValue(const base::Value& value,
       // Integers may be string-encoded.
       if (value.GetAsString(&string_value) &&
           base::StringToInt(string_value, &int_value)) {
-        return make_scoped_ptr(base::Value::CreateIntegerValue(int_value))
-            .PassAs<base::Value>();
+        return scoped_ptr<base::Value>(
+            base::Value::CreateIntegerValue(int_value));
       }
       break;
     }
@@ -88,12 +88,12 @@ scoped_ptr<base::Value> ConvertValue(const base::Value& value,
       // Doubles may be string-encoded or integer-encoded.
       double double_value = 0;
       if (value.GetAsInteger(&int_value)) {
-        return make_scoped_ptr(base::Value::CreateDoubleValue(int_value))
-            .PassAs<base::Value>();
+        return scoped_ptr<base::Value>(
+            base::Value::CreateDoubleValue(int_value));
       } else if (value.GetAsString(&string_value) &&
                  base::StringToDouble(string_value, &double_value)) {
-        return make_scoped_ptr(base::Value::CreateDoubleValue(double_value))
-            .PassAs<base::Value>();
+        return scoped_ptr<base::Value>(
+            base::Value::CreateDoubleValue(double_value));
       }
       break;
     }
@@ -252,8 +252,8 @@ void RegistryDict::ReadRegistry(HKEY hive, const base::string16& root) {
       case REG_SZ:
       case REG_EXPAND_SZ:
         SetValue(name,
-                 make_scoped_ptr(new base::StringValue(
-                                     base::UTF16ToUTF8(it.Value()))).Pass());
+                 scoped_ptr<base::Value>(
+                     new base::StringValue(base::UTF16ToUTF8(it.Value()))));
         continue;
       case REG_DWORD_LITTLE_ENDIAN:
       case REG_DWORD_BIG_ENDIAN:
@@ -264,8 +264,8 @@ void RegistryDict::ReadRegistry(HKEY hive, const base::string16& root) {
           else
             dword_value = base::ByteSwapToLE32(dword_value);
           SetValue(name,
-                   make_scoped_ptr(base::Value::CreateIntegerValue(dword_value))
-                       .PassAs<base::Value>());
+                   scoped_ptr<base::Value>(
+                       base::Value::CreateIntegerValue(dword_value)));
           continue;
         }
       case REG_NONE:

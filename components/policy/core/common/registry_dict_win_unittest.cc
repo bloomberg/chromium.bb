@@ -19,12 +19,12 @@ TEST(RegistryDictTest, SetAndGetValue) {
   base::FundamentalValue int_value(42);
   base::StringValue string_value("fortytwo");
 
-  test_dict.SetValue("one", make_scoped_ptr(int_value.DeepCopy()).Pass());
+  test_dict.SetValue("one", scoped_ptr<base::Value>(int_value.DeepCopy()));
   EXPECT_EQ(1, test_dict.values().size());
   EXPECT_TRUE(base::Value::Equals(&int_value, test_dict.GetValue("one")));
   EXPECT_FALSE(test_dict.GetValue("two"));
 
-  test_dict.SetValue("two", make_scoped_ptr(string_value.DeepCopy()).Pass());
+  test_dict.SetValue("two", scoped_ptr<base::Value>(string_value.DeepCopy()));
   EXPECT_EQ(2, test_dict.values().size());
   EXPECT_TRUE(base::Value::Equals(&int_value, test_dict.GetValue("one")));
   EXPECT_TRUE(base::Value::Equals(&string_value, test_dict.GetValue("two")));
@@ -47,7 +47,7 @@ TEST(RegistryDictTest, CaseInsensitiveButPreservingValueNames) {
   base::FundamentalValue int_value(42);
   base::StringValue string_value("fortytwo");
 
-  test_dict.SetValue("One", make_scoped_ptr(int_value.DeepCopy()).Pass());
+  test_dict.SetValue("One", scoped_ptr<base::Value>(int_value.DeepCopy()));
   EXPECT_EQ(1, test_dict.values().size());
   EXPECT_TRUE(base::Value::Equals(&int_value, test_dict.GetValue("oNe")));
 
@@ -55,7 +55,7 @@ TEST(RegistryDictTest, CaseInsensitiveButPreservingValueNames) {
   ASSERT_NE(entry, test_dict.values().end());
   EXPECT_EQ("One", entry->first);
 
-  test_dict.SetValue("ONE", make_scoped_ptr(string_value.DeepCopy()).Pass());
+  test_dict.SetValue("ONE", scoped_ptr<base::Value>(string_value.DeepCopy()));
   EXPECT_EQ(1, test_dict.values().size());
   EXPECT_TRUE(base::Value::Equals(&string_value, test_dict.GetValue("one")));
 
@@ -71,7 +71,7 @@ TEST(RegistryDictTest, SetAndGetKeys) {
   base::StringValue string_value("fortytwo");
 
   scoped_ptr<RegistryDict> subdict(new RegistryDict());
-  subdict->SetValue("one", make_scoped_ptr(int_value.DeepCopy()).Pass());
+  subdict->SetValue("one", scoped_ptr<base::Value>(int_value.DeepCopy()));
   test_dict.SetKey("two", subdict.Pass());
   EXPECT_EQ(1, test_dict.keys().size());
   RegistryDict* actual_subdict = test_dict.GetKey("two");
@@ -79,7 +79,7 @@ TEST(RegistryDictTest, SetAndGetKeys) {
   EXPECT_TRUE(base::Value::Equals(&int_value, actual_subdict->GetValue("one")));
 
   subdict.reset(new RegistryDict());
-  subdict->SetValue("three", make_scoped_ptr(string_value.DeepCopy()).Pass());
+  subdict->SetValue("three", scoped_ptr<base::Value>(string_value.DeepCopy()));
   test_dict.SetKey("four", subdict.Pass());
   EXPECT_EQ(2, test_dict.keys().size());
   actual_subdict = test_dict.GetKey("two");
@@ -112,7 +112,7 @@ TEST(RegistryDictTest, CaseInsensitiveButPreservingKeyNames) {
   EXPECT_EQ("One", entry->first);
 
   scoped_ptr<RegistryDict> subdict(new RegistryDict());
-  subdict->SetValue("two", make_scoped_ptr(int_value.DeepCopy()).Pass());
+  subdict->SetValue("two", scoped_ptr<base::Value>(int_value.DeepCopy()));
   test_dict.SetKey("ONE", subdict.Pass());
   EXPECT_EQ(1, test_dict.keys().size());
   actual_subdict = test_dict.GetKey("One");
@@ -134,17 +134,17 @@ TEST(RegistryDictTest, Merge) {
   base::FundamentalValue int_value(42);
   base::StringValue string_value("fortytwo");
 
-  dict_a.SetValue("one", make_scoped_ptr(int_value.DeepCopy()).Pass());
+  dict_a.SetValue("one", scoped_ptr<base::Value>(int_value.DeepCopy()));
   scoped_ptr<RegistryDict> subdict(new RegistryDict());
-  subdict->SetValue("two", make_scoped_ptr(string_value.DeepCopy()).Pass());
+  subdict->SetValue("two", scoped_ptr<base::Value>(string_value.DeepCopy()));
   dict_a.SetKey("three", subdict.Pass());
 
-  dict_b.SetValue("four", make_scoped_ptr(string_value.DeepCopy()).Pass());
+  dict_b.SetValue("four", scoped_ptr<base::Value>(string_value.DeepCopy()));
   subdict.reset(new RegistryDict());
-  subdict->SetValue("two", make_scoped_ptr(int_value.DeepCopy()).Pass());
+  subdict->SetValue("two", scoped_ptr<base::Value>(int_value.DeepCopy()));
   dict_b.SetKey("three", subdict.Pass());
   subdict.reset(new RegistryDict());
-  subdict->SetValue("five", make_scoped_ptr(int_value.DeepCopy()).Pass());
+  subdict->SetValue("five", scoped_ptr<base::Value>(int_value.DeepCopy()));
   dict_b.SetKey("six", subdict.Pass());
 
   dict_a.Merge(dict_b);
@@ -167,9 +167,9 @@ TEST(RegistryDictTest, Swap) {
   base::FundamentalValue int_value(42);
   base::StringValue string_value("fortytwo");
 
-  dict_a.SetValue("one", make_scoped_ptr(int_value.DeepCopy()).Pass());
+  dict_a.SetValue("one", scoped_ptr<base::Value>(int_value.DeepCopy()));
   dict_a.SetKey("two", make_scoped_ptr(new RegistryDict()).Pass());
-  dict_b.SetValue("three", make_scoped_ptr(string_value.DeepCopy()).Pass());
+  dict_b.SetValue("three", scoped_ptr<base::Value>(string_value.DeepCopy()));
 
   dict_a.Swap(&dict_b);
 
@@ -190,25 +190,25 @@ TEST(RegistryDictTest, ConvertToJSON) {
   base::StringValue string_zero("0");
   base::StringValue string_dict("{ \"key\": [ \"value\" ] }");
 
-  test_dict.SetValue("one", make_scoped_ptr(int_value.DeepCopy()).Pass());
+  test_dict.SetValue("one", scoped_ptr<base::Value>(int_value.DeepCopy()));
   scoped_ptr<RegistryDict> subdict(new RegistryDict());
-  subdict->SetValue("two", make_scoped_ptr(string_value.DeepCopy()).Pass());
+  subdict->SetValue("two", scoped_ptr<base::Value>(string_value.DeepCopy()));
   test_dict.SetKey("three", subdict.Pass());
   scoped_ptr<RegistryDict> list(new RegistryDict());
-  list->SetValue("1", make_scoped_ptr(string_value.DeepCopy()).Pass());
+  list->SetValue("1", scoped_ptr<base::Value>(string_value.DeepCopy()));
   test_dict.SetKey("dict-to-list", list.Pass());
   test_dict.SetValue("int-to-bool",
-                     make_scoped_ptr(int_value.DeepCopy()).Pass());
+                     scoped_ptr<base::Value>(int_value.DeepCopy()));
   test_dict.SetValue("int-to-double",
-                     make_scoped_ptr(int_value.DeepCopy()).Pass());
+                     scoped_ptr<base::Value>(int_value.DeepCopy()));
   test_dict.SetValue("string-to-bool",
-                     make_scoped_ptr(string_zero.DeepCopy()).Pass());
+                     scoped_ptr<base::Value>(string_zero.DeepCopy()));
   test_dict.SetValue("string-to-double",
-                     make_scoped_ptr(string_zero.DeepCopy()).Pass());
+                     scoped_ptr<base::Value>(string_zero.DeepCopy()));
   test_dict.SetValue("string-to-int",
-                     make_scoped_ptr(string_zero.DeepCopy()).Pass());
+                     scoped_ptr<base::Value>(string_zero.DeepCopy()));
   test_dict.SetValue("string-to-dict",
-                     make_scoped_ptr(string_dict.DeepCopy()).Pass());
+                     scoped_ptr<base::Value>(string_dict.DeepCopy()));
 
   std::string error;
   Schema schema = Schema::Parse(
@@ -260,9 +260,9 @@ TEST(RegistryDictTest, KeyValueNameClashes) {
   base::FundamentalValue int_value(42);
   base::StringValue string_value("fortytwo");
 
-  test_dict.SetValue("one", make_scoped_ptr(int_value.DeepCopy()).Pass());
+  test_dict.SetValue("one", scoped_ptr<base::Value>(int_value.DeepCopy()));
   scoped_ptr<RegistryDict> subdict(new RegistryDict());
-  subdict->SetValue("two", make_scoped_ptr(string_value.DeepCopy()).Pass());
+  subdict->SetValue("two", scoped_ptr<base::Value>(string_value.DeepCopy()));
   test_dict.SetKey("one", subdict.Pass());
 
   EXPECT_TRUE(base::Value::Equals(&int_value, test_dict.GetValue("one")));
