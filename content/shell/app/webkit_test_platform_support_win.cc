@@ -84,7 +84,7 @@ bool CheckLayoutSystemDeps() {
   ::GetVersionEx(&version_info);
   bool is_vista_or_later = (version_info.dwMajorVersion >= 6);
   NONCLIENTMETRICS metrics = {0};
-  metrics.cbSize = is_vista_or_later ? (sizeof NONCLIENTMETRICS)
+  metrics.cbSize = is_vista_or_later ? sizeof(NONCLIENTMETRICS)
                                      : NONCLIENTMETRICS_SIZE_PRE_VISTA;
   bool success = !!::SystemParametersInfo(
       SPI_GETNONCLIENTMETRICS, metrics.cbSize, &metrics, 0);
