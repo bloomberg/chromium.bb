@@ -18,7 +18,6 @@ class WebScreenOrientationClient;
 namespace WebCore {
 
 class FrameView;
-class OrientationInformation;
 
 class ScreenOrientationController FINAL : public NoBaseWillBeGarbageCollectedFinalized<ScreenOrientationController>, public WillBeHeapSupplement<LocalFrame>, public PageLifecycleObserver {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(ScreenOrientationController);
@@ -28,17 +27,14 @@ public:
 
     virtual void persistentHostHasBeenDestroyed() OVERRIDE;
 
-    OrientationInformation* orientation();
-    void notifyOrientationChanged();
-
-    void lockOrientation(blink::WebScreenOrientationLockType, blink::WebLockOrientationCallback*);
-    void unlockOrientation();
+    blink::WebScreenOrientationType orientation() const;
 
     static void provideTo(LocalFrame&, blink::WebScreenOrientationClient*);
     static ScreenOrientationController& from(LocalFrame&);
     static const char* supplementName();
 
-    virtual void trace(Visitor*);
+    void lockOrientation(blink::WebScreenOrientationLockType, blink::WebLockOrientationCallback*);
+    void unlockOrientation();
 
 private:
     explicit ScreenOrientationController(LocalFrame&, blink::WebScreenOrientationClient*);
@@ -47,9 +43,7 @@ private:
     // Inherited from PageLifecycleObserver.
     virtual void pageVisibilityChanged() OVERRIDE;
 
-    void updateOrientation();
-
-    PersistentWillBeMember<OrientationInformation> m_orientation;
+    blink::WebScreenOrientationType m_overrideOrientation;
     blink::WebScreenOrientationClient* m_client;
     LocalFrame& m_frame;
 };

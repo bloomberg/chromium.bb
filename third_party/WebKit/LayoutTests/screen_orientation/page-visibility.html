@@ -21,7 +21,7 @@ test(function() {
     if (window.testRunner)
         window.testRunner.setMockScreenOrientation("landscape-primary");
     assert_equals(orientationChangeEventListenerCalls, 1);
-    assert_equals(screen.orientation.type, "landscape-primary");
+    assert_equals(screen.orientation, "landscape-primary");
 }, "Test that 'orientationchange' event is fired when the page is visible");
 
 if (window.testRunner)
@@ -35,7 +35,7 @@ test(function() {
 }, "Test that 'orientationchange' event is not fired when the page is not visible");
 
 test(function() {
-    assert_equals(screen.orientation.type, "landscape-primary");
+    assert_equals(screen.orientation, "landscape-primary");
 }, "Test that screen.orientation keeps returning the same orientation when the page is not visible");
 
 if (window.testRunner)
@@ -46,7 +46,7 @@ test(function() {
     // An 'orientationchange' event should have been fired.
     assert_equals(orientationChangeEventListenerCalls, 2);
     // Should keep returning the start returning the orientation value.
-    assert_equals(screen.orientation.type, "portrait-primary");
+    assert_equals(screen.orientation, "portrait-primary");
 }, "Test that screen.orientation is updated once the page is visible again");
 
 test(function() {

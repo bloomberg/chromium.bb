@@ -116,13 +116,15 @@ ScreenOrientation::~ScreenOrientation()
 {
 }
 
-OrientationInformation* ScreenOrientation::orientation(Screen& screen)
+const AtomicString& ScreenOrientation::orientation(Screen& screen)
 {
     ScreenOrientation& screenOrientation = ScreenOrientation::from(screen);
     if (!screenOrientation.frame()) {
-        return 0;
+        // FIXME: we should try to return a better guess, like the latest known value.
+        return orientationTypeToString(blink::WebScreenOrientationPortraitPrimary);
     }
-    return ScreenOrientationController::from(*screenOrientation.frame()).orientation();
+    ScreenOrientationController& controller = ScreenOrientationController::from(*screenOrientation.frame());
+    return orientationTypeToString(controller.orientation());
 }
 
 ScriptPromise ScreenOrientation::lockOrientation(ScriptState* state, Screen& screen, const AtomicString& lockString)

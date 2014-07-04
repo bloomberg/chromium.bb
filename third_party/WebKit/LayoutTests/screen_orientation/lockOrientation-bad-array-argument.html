@@ -11,7 +11,7 @@ function onOrientationChangeEvent(ev) {
 }
 
 function completeTest() {
-    shouldBeEqualToString("screen.orientation.type", "portrait-primary");
+    shouldBeEqualToString("screen.orientation", "portrait-primary");
     screen.unlockOrientation();
     finishJSTest();
 }
@@ -22,7 +22,7 @@ function typeErrorEnum(argStr) {
   return "TypeError: Failed to execute 'lockOrientation' on 'Screen': parameter 1 ('" + argStr + "') is not a valid enum value.";
 }
 
-shouldBeEqualToString("screen.orientation.type", "portrait-primary");
+shouldBeEqualToString("screen.orientation", "portrait-primary");
 // Bad argument to lockOrientation(), we should not get locked.
 shouldThrow("screen.lockOrientation(['portrait-primary', 'invalid-orientation'])", "typeErrorEnum('portrait-primary,invalid-orientation')");
 shouldThrow("screen.lockOrientation(['portrait-primary', null])", "typeErrorEnum('portrait-primary,')");

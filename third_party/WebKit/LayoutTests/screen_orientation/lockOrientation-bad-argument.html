@@ -11,7 +11,7 @@ function onOrientationChangeEvent(ev) {
 }
 
 function completeTest() {
-    shouldBeEqualToString("screen.orientation.type", "portrait-primary");
+    shouldBeEqualToString("screen.orientation", "portrait-primary");
     screen.unlockOrientation();
     finishJSTest();
 }
@@ -22,19 +22,19 @@ function typeErrorEnum(argStr) {
   return "TypeError: Failed to execute 'lockOrientation' on 'Screen': parameter 1 ('" + argStr + "') is not a valid enum value.";
 }
 
-shouldBeEqualToString("screen.orientation.type", "portrait-primary");
+shouldBeEqualToString("screen.orientation", "portrait-primary");
 shouldThrow("screen.lockOrientation('invalid-orientation')", "typeErrorEnum('invalid-orientation')");
-shouldBeEqualToString("screen.orientation.type", "portrait-primary");
+shouldBeEqualToString("screen.orientation", "portrait-primary");
 shouldThrow("screen.lockOrientation(null)", "typeErrorEnum('null')");
-shouldBeEqualToString("screen.orientation.type", "portrait-primary");
+shouldBeEqualToString("screen.orientation", "portrait-primary");
 shouldThrow("screen.lockOrientation(undefined)", "typeErrorEnum('undefined')");
-shouldBeEqualToString("screen.orientation.type", "portrait-primary");
+shouldBeEqualToString("screen.orientation", "portrait-primary");
 shouldThrow("screen.lockOrientation(123)", "typeErrorEnum('123')");
-shouldBeEqualToString("screen.orientation.type", "portrait-primary");
+shouldBeEqualToString("screen.orientation", "portrait-primary");
 shouldThrow("screen.lockOrientation(window)", "typeErrorEnum('[object Window]')");
-shouldBeEqualToString("screen.orientation.type", "portrait-primary");
+shouldBeEqualToString("screen.orientation", "portrait-primary");
 shouldThrow("screen.lockOrientation(['portrait-primary', 'landscape-primary'])", "typeErrorEnum('portrait-primary,landscape-primary')");
-shouldBeEqualToString("screen.orientation.type", "portrait-primary");
+shouldBeEqualToString("screen.orientation", "portrait-primary");
 shouldThrow("screen.lockOrientation()", '"TypeError: Failed to execute \'lockOrientation\' on \'Screen\': 1 argument required, but only 0 present."');
 
 // Finish asynchronously to give events a chance to fire.

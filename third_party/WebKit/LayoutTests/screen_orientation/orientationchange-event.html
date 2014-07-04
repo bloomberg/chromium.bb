@@ -12,7 +12,7 @@ var orientations = [
   'landscape-secondary'
 ];
 
-var currentIndex = orientations.indexOf(window.screen.orientation.type);
+var currentIndex = orientations.indexOf(window.screen.orientation);
 // Count the number of calls received from the EventHandler set on window.onorientationchange.
 var orientationChangeEventHandlerCalls = 0;
 // Count the number of calls received from the listener set with window.addEventListene().
@@ -42,7 +42,7 @@ for (var i = 0; i < 4; ++i) {
     window.testRunner.setMockScreenOrientation(orientations[getNextIndex()]);
 
     currentIndex = getNextIndex();
-    assert_equals(screen.orientation.type, orientations[currentIndex]);
+    assert_equals(screen.orientation, orientations[currentIndex]);
 
     todo_equals(orientationChangeEventHandlerCalls, i + 1);
     assert_equals(orientationChangeEventListenerCalls, i + 1);
@@ -51,7 +51,7 @@ for (var i = 0; i < 4; ++i) {
 
 test(function() {
   window.testRunner.setMockScreenOrientation(orientations[currentIndex]);
-  assert_equals(screen.orientation.type, orientations[currentIndex]);
+  assert_equals(screen.orientation, orientations[currentIndex]);
 
   todo_equals(orientationChangeEventHandlerCalls, 4);
   assert_equals(orientationChangeEventListenerCalls, 4);
