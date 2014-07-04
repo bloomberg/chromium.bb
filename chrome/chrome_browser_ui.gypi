@@ -967,6 +967,8 @@
       'browser/ui/webui/chromeos/login/gaia_screen_handler.h',
       'browser/ui/webui/chromeos/login/hid_detection_screen_handler.cc',
       'browser/ui/webui/chromeos/login/hid_detection_screen_handler.h',
+      'browser/ui/webui/chromeos/login/host_pairing_screen_handler.cc',
+      'browser/ui/webui/chromeos/login/host_pairing_screen_handler.h',
       'browser/ui/webui/chromeos/login/inline_login_handler_chromeos.cc',
       'browser/ui/webui/chromeos/login/inline_login_handler_chromeos.h',
       'browser/ui/webui/chromeos/login/kiosk_app_menu_handler.cc',

@@ -37,6 +37,7 @@
 #include "chrome/browser/chromeos/login/screens/error_screen.h"
 #include "chrome/browser/chromeos/login/screens/eula_screen.h"
 #include "chrome/browser/chromeos/login/screens/hid_detection_screen.h"
+#include "chrome/browser/chromeos/login/screens/host_pairing_screen.h"
 #include "chrome/browser/chromeos/login/screens/kiosk_autolaunch_screen.h"
 #include "chrome/browser/chromeos/login/screens/kiosk_enable_screen.h"
 #include "chrome/browser/chromeos/login/screens/network_screen.h"
@@ -109,6 +110,11 @@ bool ShouldShowControllerPairingScreen() {
       chromeos::switches::kShowControllerPairingDemo);
 }
 
+bool ShouldShowHostPairingScreen() {
+  return CommandLine::ForCurrentProcess()->HasSwitch(
+      chromeos::switches::kShowHostPairingDemo);
+}
+
 bool IsResumableScreen(const std::string& screen) {
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kResumableScreens); ++i) {
     if (screen == kResumableScreens[i])
@@ -158,6 +164,7 @@ const char WizardController::kAppLaunchSplashScreenName[] =
 const char WizardController::kHIDDetectionScreenName[] = "hid-detection";
 const char WizardController::kControllerPairingScreenName[] =
     "controller-pairing";
+const char WizardController::kHostPairingScreenName[] = "host-pairing";
 
 // static
 const int WizardController::kMinAudibleOutputVolumePercent = 10;
@@ -392,6 +399,14 @@ ControllerPairingScreen* WizardController::GetControllerPairingScreen() {
   return controller_pairing_screen_.get();
 }
 
+HostPairingScreen* WizardController::GetHostPairingScreen() {
+  if (!host_pairing_screen_) {
+    host_pairing_screen_.reset(new HostPairingScreen(
+        this, oobe_display_->GetHostPairingScreenActor()));
+  }
+  return host_pairing_screen_.get();
+}
+
 void WizardController::ShowNetworkScreen() {
   VLOG(1) << "Showing network screen.";
   // Hide the status area initially; it only appears after OOBE first animates
@@ -556,6 +571,12 @@ void WizardController::ShowControllerPairingScreen() {
   SetCurrentScreen(GetControllerPairingScreen());
 }
 
+void WizardController::ShowHostPairingScreen() {
+  VLOG(1) << "Showing host pairing screen.";
+  SetStatusAreaVisible(false);
+  SetCurrentScreen(GetHostPairingScreen());
+}
+
 void WizardController::SkipToLoginForTesting(
     const LoginScreenContext& context) {
   VLOG(1) << "SkipToLoginForTesting.";
@@ -616,8 +637,11 @@ void WizardController::OnConnectionFailed() {
 }
 
 void WizardController::OnUpdateCompleted() {
+  // TODO(dzhioev): place checks related to pairing in a proper place.
   if (ShouldShowControllerPairingScreen()) {
     ShowControllerPairingScreen();
+  } else if (ShouldShowHostPairingScreen()) {
+    ShowHostPairingScreen();
   } else {
     ShowAutoEnrollmentCheckScreen();
   }
@@ -773,6 +797,10 @@ void WizardController::OnControllerPairingFinished() {
   ShowAutoEnrollmentCheckScreen();
 }
 
+void WizardController::OnHostPairingFinished() {
+  ShowAutoEnrollmentCheckScreen();
+}
+
 void WizardController::InitiateOOBEUpdate() {
   PerformPostEulaActions();
   SetCurrentScreenSmooth(GetUpdateScreen(), true);
@@ -905,6 +933,8 @@ void WizardController::AdvanceToScreen(const std::string& screen_name) {
     ShowHIDDetectionScreen();
   } else if (screen_name == kControllerPairingScreenName) {
     ShowControllerPairingScreen();
+  } else if (screen_name == kHostPairingScreenName) {
+    ShowHostPairingScreen();
   } else if (screen_name != kTestNoScreenName) {
     if (is_out_of_box_) {
       time_oobe_started_ = base::Time::Now();
@@ -995,6 +1025,9 @@ void WizardController::OnExit(ExitCodes exit_code) {
       break;
     case CONTROLLER_PAIRING_FINISHED:
       OnControllerPairingFinished();
+      break;
+    case HOST_PAIRING_FINISHED:
+      OnHostPairingFinished();
       break;
     default:
       NOTREACHED();

@@ -22,6 +22,7 @@
 #include "chrome/browser/ui/webui/chromeos/login/eula_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/hid_detection_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/host_pairing_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/kiosk_app_menu_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/kiosk_autolaunch_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/kiosk_enable_screen_handler.h"
@@ -148,6 +149,7 @@ const char OobeUI::kScreenAppLaunchSplash[] = "app-launch-splash";
 const char OobeUI::kScreenConfirmPassword[] = "confirm-password";
 const char OobeUI::kScreenFatalError[] = "fatal-error";
 const char OobeUI::kScreenControllerPairing[] = "controller-pairing";
+const char OobeUI::kScreenHostPairing[] = "host-pairing";
 
 OobeUI::OobeUI(content::WebUI* web_ui, const GURL& url)
     : WebUIController(web_ui),
@@ -275,6 +277,12 @@ OobeUI::OobeUI(content::WebUI* web_ui, const GURL& url)
     AddScreenHandler(handler);
   }
 
+  if (display_type_ == kOobeDisplay) {
+    HostPairingScreenHandler* handler = new HostPairingScreenHandler();
+    host_pairing_screen_actor_ = handler;
+    AddScreenHandler(handler);
+  }
+
   // Initialize KioskAppMenuHandler. Note that it is NOT a screen handler.
   kiosk_app_menu_handler_ = new KioskAppMenuHandler;
   web_ui->AddMessageHandler(kiosk_app_menu_handler_);
@@ -360,6 +368,10 @@ ControllerPairingScreenActor* OobeUI::GetControllerPairingScreenActor() {
   return controller_pairing_screen_actor_;
 }
 
+HostPairingScreenActor* OobeUI::GetHostPairingScreenActor() {
+  return host_pairing_screen_actor_;
+}
+
 UserImageScreenActor* OobeUI::GetUserImageScreenActor() {
   return user_image_screen_actor_;
 }
@@ -434,6 +446,7 @@ void OobeUI::InitializeScreenMaps() {
   screen_names_[SCREEN_CONFIRM_PASSWORD] = kScreenConfirmPassword;
   screen_names_[SCREEN_FATAL_ERROR] = kScreenFatalError;
   screen_names_[SCREEN_OOBE_CONTROLLER_PAIRING] = kScreenControllerPairing;
+  screen_names_[SCREEN_OOBE_HOST_PAIRING] = kScreenHostPairing;
 
   screen_ids_.clear();
   for (size_t i = 0; i < screen_names_.size(); ++i)

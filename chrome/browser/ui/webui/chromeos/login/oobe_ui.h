@@ -25,6 +25,7 @@ class AppLaunchSplashScreenActor;
 class BaseScreenHandler;
 class ControllerPairingScreenActor;
 class ErrorScreenHandler;
+class HostPairingScreenActor;
 class KioskAppMenuHandler;
 class KioskEnableScreenActor;
 class LoginScreenContext;
@@ -83,6 +84,7 @@ class OobeUI : public OobeDisplay,
   static const char kScreenFatalError[];
   static const char kScreenHIDDetection[];
   static const char kScreenControllerPairing[];
+  static const char kScreenHostPairing[];
 
   OobeUI(content::WebUI* web_ui, const GURL& url);
   virtual ~OobeUI();
@@ -112,6 +114,7 @@ class OobeUI : public OobeDisplay,
   virtual HIDDetectionScreenActor* GetHIDDetectionScreenActor() OVERRIDE;
   virtual ControllerPairingScreenActor* GetControllerPairingScreenActor()
       OVERRIDE;
+  virtual HostPairingScreenActor* GetHostPairingScreenActor() OVERRIDE;
 
   // Collects localized strings from the owned handlers.
   void GetLocalizedStrings(base::DictionaryValue* localized_strings);
@@ -193,6 +196,7 @@ class OobeUI : public OobeDisplay,
       locally_managed_user_creation_screen_actor_;
   AppLaunchSplashScreenActor* app_launch_splash_screen_actor_;
   ControllerPairingScreenActor* controller_pairing_screen_actor_;
+  HostPairingScreenActor* host_pairing_screen_actor_;
 
   // Reference to ErrorScreenHandler that handles error screen
   // requests and forward calls from native code to JS side.

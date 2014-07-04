@@ -38,6 +38,7 @@ class EnrollmentScreen;
 class ErrorScreen;
 class EulaScreen;
 class HIDDetectionScreen;
+class HostPairingScreen;
 struct Geoposition;
 class KioskAutolaunchScreen;
 class KioskEnableScreen;
@@ -140,6 +141,7 @@ class WizardController : public ScreenObserver {
   LocallyManagedUserCreationScreen* GetLocallyManagedUserCreationScreen();
   HIDDetectionScreen* GetHIDDetectionScreen();
   ControllerPairingScreen* GetControllerPairingScreen();
+  HostPairingScreen* GetHostPairingScreen();
 
   // Returns a pointer to the current screen or NULL if there's no such
   // screen.
@@ -167,6 +169,7 @@ class WizardController : public ScreenObserver {
   static const char kAppLaunchSplashScreenName[];
   static const char kHIDDetectionScreenName[];
   static const char kControllerPairingScreenName[];
+  static const char kHostPairingScreenName[];
 
   // Volume percent at which spoken feedback is still audible.
   static const int kMinAudibleOutputVolumePercent;
@@ -187,6 +190,7 @@ class WizardController : public ScreenObserver {
   void ShowLocallyManagedUserCreationScreen();
   void ShowHIDDetectionScreen();
   void ShowControllerPairingScreen();
+  void ShowHostPairingScreen();
 
   // Shows images login screen.
   void ShowLoginScreen(const LoginScreenContext& context);
@@ -216,6 +220,7 @@ class WizardController : public ScreenObserver {
   void OnTermsOfServiceDeclined();
   void OnTermsOfServiceAccepted();
   void OnControllerPairingFinished();
+  void OnHostPairingFinished();
 
   // Loads brand code on I/O enabled thread and stores to Local State.
   void LoadBrandCodeFromFile();
@@ -324,6 +329,7 @@ class WizardController : public ScreenObserver {
       locally_managed_user_creation_screen_;
   scoped_ptr<HIDDetectionScreen> hid_detection_screen_;
   scoped_ptr<ControllerPairingScreen> controller_pairing_screen_;
+  scoped_ptr<HostPairingScreen> host_pairing_screen_;
 
   // Screen that's currently active.
   WizardScreen* current_screen_;

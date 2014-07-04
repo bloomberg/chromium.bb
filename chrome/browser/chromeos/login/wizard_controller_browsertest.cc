@@ -1104,7 +1104,7 @@ IN_PROC_BROWSER_TEST_F(WizardControllerOobeResumeTest,
 // TODO(dzhioev): Add tests for controller/host pairing flow.
 // http://crbug.com/375191
 
-COMPILE_ASSERT(ScreenObserver::EXIT_CODES_COUNT == 22,
+COMPILE_ASSERT(ScreenObserver::EXIT_CODES_COUNT == 23,
                add_tests_for_new_control_flow_you_just_introduced);
 
 }  // namespace chromeos

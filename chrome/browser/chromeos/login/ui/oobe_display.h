@@ -20,6 +20,7 @@ class EnrollmentScreenActor;
 class ErrorScreenActor;
 class EulaScreenActor;
 class HIDDetectionScreenActor;
+class HostPairingScreenActor;
 class KioskAutolaunchScreenActor;
 class KioskEnableScreenActor;
 class LocallyManagedUserCreationScreenHandler;
@@ -58,6 +59,7 @@ class OobeDisplay {
     SCREEN_CONFIRM_PASSWORD,
     SCREEN_FATAL_ERROR,
     SCREEN_OOBE_CONTROLLER_PAIRING,
+    SCREEN_OOBE_HOST_PAIRING,
     SCREEN_UNKNOWN
   };
 
@@ -84,6 +86,7 @@ class OobeDisplay {
       GetLocallyManagedUserCreationScreenActor() = 0;
   virtual AppLaunchSplashScreenActor* GetAppLaunchSplashScreenActor() = 0;
   virtual ControllerPairingScreenActor* GetControllerPairingScreenActor() = 0;
+  virtual HostPairingScreenActor* GetHostPairingScreenActor() = 0;
 
   // Returns if JS side is fully loaded and ready to accept messages.
   // If |false| is returned, then |display_is_ready_callback| is stored

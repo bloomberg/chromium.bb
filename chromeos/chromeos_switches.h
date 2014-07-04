@@ -75,6 +75,7 @@ CHROMEOS_EXPORT extern const char kOobeTimerInterval[];
 CHROMEOS_EXPORT extern const char kPowerStub[];
 CHROMEOS_EXPORT extern const char kShillStub[];
 CHROMEOS_EXPORT extern const char kShowControllerPairingDemo[];
+CHROMEOS_EXPORT extern const char kShowHostPairingDemo[];
 CHROMEOS_EXPORT extern const char kSmsTestMessages[];
 CHROMEOS_EXPORT extern const char kStubCrosSettings[];
 CHROMEOS_EXPORT extern const char kTestAutoUpdateUI[];
