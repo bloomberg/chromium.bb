@@ -8,7 +8,7 @@
 #include "chrome/browser/history/history_service.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "components/search_engines/template_url_service.h"
+#include "chrome/browser/search_engines/template_url_service.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 

@@ -4,7 +4,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
-#include "components/search_engines/search_host_to_urls_map.h"
+#include "chrome/browser/search_engines/search_host_to_urls_map.h"
 #include "components/search_engines/search_terms_data.h"
 #include "components/search_engines/template_url.h"
 #include "testing/gtest/include/gtest/gtest.h"

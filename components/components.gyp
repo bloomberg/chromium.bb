@@ -43,6 +43,7 @@
     'pref_registry.gypi',
     'query_parser.gypi',
     'rappor.gypi',
+    'search_engines.gypi',
     'search_provider_logos.gypi',
     'signin.gypi',
     'startup_metric_utils.gypi',
@@ -91,7 +92,6 @@
       # introduced.
       'includes': [
         'gcm_driver.gypi',
-        'search_engines.gypi',
         'sync_driver.gypi',
         'invalidation.gypi',
       ],

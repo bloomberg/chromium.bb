@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/search_engines/search_host_to_urls_map.h"
+#include "chrome/browser/search_engines/search_host_to_urls_map.h"
 
 #include "base/memory/scoped_ptr.h"
 #include "components/search_engines/template_url.h"

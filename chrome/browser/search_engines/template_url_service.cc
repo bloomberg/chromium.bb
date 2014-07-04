@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/search_engines/template_url_service.h"
+#include "chrome/browser/search_engines/template_url_service.h"
 
 #include <algorithm>
 #include <utility>
@@ -21,15 +21,15 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
+#include "chrome/browser/search_engines/search_host_to_urls_map.h"
+#include "chrome/browser/search_engines/template_url_service_client.h"
+#include "chrome/browser/search_engines/template_url_service_observer.h"
+#include "chrome/browser/search_engines/util.h"
 #include "components/rappor/rappor_service.h"
 #include "components/search_engines/search_engines_pref_names.h"
-#include "components/search_engines/search_host_to_urls_map.h"
 #include "components/search_engines/search_terms_data.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_prepopulate_data.h"
-#include "components/search_engines/template_url_service_client.h"
-#include "components/search_engines/template_url_service_observer.h"
-#include "components/search_engines/util.h"
 #include "components/url_fixer/url_fixer.h"
 #include "net/base/net_util.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"

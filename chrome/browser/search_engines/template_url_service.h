@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_SEARCH_ENGINES_TEMPLATE_URL_SERVICE_H_
-#define COMPONENTS_SEARCH_ENGINES_TEMPLATE_URL_SERVICE_H_
+#ifndef CHROME_BROWSER_SEARCH_ENGINES_TEMPLATE_URL_SERVICE_H_
+#define CHROME_BROWSER_SEARCH_ENGINES_TEMPLATE_URL_SERVICE_H_
 
 #include <list>
 #include <map>
@@ -16,10 +16,10 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "base/prefs/pref_change_registrar.h"
+#include "chrome/browser/webdata/keyword_web_data_service.h"
 #include "components/google/core/browser/google_url_tracker.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/search_engines/default_search_manager.h"
-#include "components/search_engines/keyword_web_data_service.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_id.h"
 #include "components/webdata/common/web_data_service_consumer.h"
@@ -759,4 +759,4 @@ class TemplateURLService : public WebDataServiceConsumer,
   DISALLOW_COPY_AND_ASSIGN(TemplateURLService);
 };
 
-#endif  // COMPONENTS_SEARCH_ENGINES_TEMPLATE_URL_SERVICE_H_
+#endif  // CHROME_BROWSER_SEARCH_ENGINES_TEMPLATE_URL_SERVICE_H_

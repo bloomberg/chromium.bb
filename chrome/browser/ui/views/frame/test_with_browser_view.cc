@@ -9,6 +9,7 @@
 #include "chrome/browser/autocomplete/autocomplete_controller.h"
 #include "chrome/browser/predictors/predictor_database.h"
 #include "chrome/browser/search_engines/chrome_template_url_service_client.h"
+#include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/search_engines/ui_thread_search_terms_data.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -20,7 +21,6 @@
 #include "chrome/test/base/testing_io_thread_state.h"
 #include "components/autocomplete/test_scheme_classifier.h"
 #include "components/search_engines/search_terms_data.h"
-#include "components/search_engines/template_url_service.h"
 #include "content/public/test/test_utils.h"
 
 #if defined(OS_CHROMEOS)

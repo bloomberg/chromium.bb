@@ -9,7 +9,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
-#include "components/search_engines/template_url_service.h"
+#include "chrome/browser/search_engines/template_url_service.h"
 #include "components/sync_driver/generic_change_processor.h"
 #include "components/sync_driver/ui_data_type_controller.h"
 #include "content/public/browser/notification_observer.h"
