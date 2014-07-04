@@ -98,7 +98,7 @@ MediaSource::MediaSource(ExecutionContext* context)
     : ActiveDOMObject(context)
     , m_readyState(closedKeyword())
     , m_asyncEventQueue(GenericEventQueue::create(this))
-    , m_attachedElement(0)
+    , m_attachedElement(nullptr)
     , m_sourceBuffers(SourceBufferList::create(executionContext(), m_asyncEventQueue.get()))
     , m_activeSourceBuffers(SourceBufferList::create(executionContext(), m_asyncEventQueue.get()))
 {
@@ -109,7 +109,9 @@ MediaSource::MediaSource(ExecutionContext* context)
 MediaSource::~MediaSource()
 {
     WTF_LOG(Media, "MediaSource::~MediaSource %p", this);
+#if !ENABLE(OILPAN)
     ASSERT(isClosed());
+#endif
 }
 
 SourceBuffer* MediaSource::addSourceBuffer(const String& type, ExceptionState& exceptionState)
@@ -257,6 +259,19 @@ ExecutionContext* MediaSource::executionContext() const
     return ActiveDOMObject::executionContext();
 }
 
+void MediaSource::clearWeakMembers(Visitor* visitor)
+{
+#if ENABLE(OILPAN)
+    // Oilpan: If the MediaSource survived, but its attached media
+    // element did not, signal the element that it can safely
+    // notify its MediaSource during finalization by calling close().
+    if (m_attachedElement && !visitor->isAlive(m_attachedElement)) {
+        m_attachedElement->setCloseMediaSourceWhenFinalizing();
+        m_attachedElement.clear();
+    }
+#endif
+}
+
 void MediaSource::trace(Visitor* visitor)
 {
 #if ENABLE(OILPAN)
@@ -264,6 +279,7 @@ void MediaSource::trace(Visitor* visitor)
 #endif
     visitor->trace(m_sourceBuffers);
     visitor->trace(m_activeSourceBuffers);
+    visitor->registerWeakMembers<MediaSource, &MediaSource::clearWeakMembers>(this);
     EventTargetWithInlineData::trace(visitor);
 }
 
@@ -403,7 +419,7 @@ void MediaSource::setReadyState(const AtomicString& state)
 
     if (state == closedKeyword()) {
         m_webMediaSource.clear();
-        m_attachedElement = 0;
+        m_attachedElement.clear();
     }
 
     if (oldState == state)

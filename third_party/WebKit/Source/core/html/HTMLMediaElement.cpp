@@ -332,6 +332,7 @@ HTMLMediaElement::HTMLMediaElement(const QualifiedName& tagName, Document& docum
     , m_processingPreferenceChange(false)
 #if ENABLE(OILPAN)
     , m_isFinalizing(false)
+    , m_closeMediaSourceWhenFinalizing(false)
 #endif
     , m_lastTextTrackUpdateTime(-1)
     , m_audioTracks(AudioTrackList::create(*this))
@@ -390,9 +391,12 @@ HTMLMediaElement::~HTMLMediaElement()
     }
 #endif
 
+#if ENABLE(OILPAN)
+    if (m_closeMediaSourceWhenFinalizing)
+        closeMediaSource();
+#else
     closeMediaSource();
 
-#if !ENABLE(OILPAN)
     removeElementFromDocumentMap(this, &document());
 #endif
 
@@ -442,6 +446,14 @@ HTMLMediaElement::~HTMLMediaElement()
     document().decrementLoadEventDelayCount();
 #endif
 }
+
+#if ENABLE(OILPAN)
+void HTMLMediaElement::setCloseMediaSourceWhenFinalizing()
+{
+    ASSERT(!m_closeMediaSourceWhenFinalizing);
+    m_closeMediaSourceWhenFinalizing = true;
+}
+#endif
 
 void HTMLMediaElement::didMoveToNewDocument(Document& oldDocument)
 {
@@ -3914,6 +3926,7 @@ void HTMLMediaElement::trace(Visitor* visitor)
     visitor->trace(m_error);
     visitor->trace(m_currentSourceNode);
     visitor->trace(m_nextChildNodeToConsider);
+    visitor->trace(m_mediaSource);
     visitor->trace(m_audioTracks);
     visitor->trace(m_videoTracks);
     visitor->trace(m_textTracks);

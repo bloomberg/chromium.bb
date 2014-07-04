@@ -105,9 +105,14 @@ SourceBuffer::SourceBuffer(PassOwnPtr<WebSourceBuffer> webSourceBuffer, MediaSou
 
 SourceBuffer::~SourceBuffer()
 {
+    // Oilpan: a SourceBuffer might be finalized without having been
+    // explicitly removed first, hence the asserts below will not
+    // hold.
+#if !ENABLE(OILPAN)
     ASSERT(isRemoved());
     ASSERT(!m_loader);
     ASSERT(!m_stream);
+#endif
 }
 
 const AtomicString& SourceBuffer::segmentsKeyword()

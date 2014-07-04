@@ -292,6 +292,15 @@ public:
 
 #if ENABLE(OILPAN)
     bool isFinalizing() const { return m_isFinalizing; }
+
+    // Oilpan: finalization of the media element is observable from its
+    // attached MediaSource; it entering a closed state.
+    //
+    // Express that by having the MediaSource keep a weak reference
+    // to the media element and signal that it wants to be notified
+    // of destruction if it survives a GC, but the media element
+    // doesn't.
+    void setCloseMediaSourceWhenFinalizing();
 #endif
 
 protected:
@@ -524,7 +533,7 @@ private:
 
     DisplayMode m_displayMode;
 
-    RefPtr<HTMLMediaSource> m_mediaSource;
+    RefPtrWillBeMember<HTMLMediaSource> m_mediaSource;
 
     mutable double m_cachedTime;
     mutable double m_cachedTimeWallClockUpdateTime;
@@ -566,6 +575,7 @@ private:
     bool m_processingPreferenceChange : 1;
 #if ENABLE(OILPAN)
     bool m_isFinalizing : 1;
+    bool m_closeMediaSourceWhenFinalizing : 1;
 #endif
     double m_lastTextTrackUpdateTime;
 

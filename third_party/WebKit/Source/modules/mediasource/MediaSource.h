@@ -87,8 +87,10 @@ public:
     virtual bool isClosed() const OVERRIDE;
     virtual double duration() const OVERRIDE;
     virtual PassRefPtr<TimeRanges> buffered() const OVERRIDE;
+#if !ENABLE(OILPAN)
     virtual void refHTMLMediaSource() OVERRIDE { ref(); }
     virtual void derefHTMLMediaSource() OVERRIDE { deref(); }
+#endif
 
     // EventTarget interface
     virtual const AtomicString& interfaceName() const OVERRIDE;
@@ -110,6 +112,7 @@ public:
     void removedFromRegistry();
 
     void trace(Visitor*);
+    void clearWeakMembers(Visitor*);
 
 private:
     explicit MediaSource(ExecutionContext*);
@@ -130,8 +133,7 @@ private:
     OwnPtr<blink::WebMediaSource> m_webMediaSource;
     AtomicString m_readyState;
     OwnPtrWillBeMember<GenericEventQueue> m_asyncEventQueue;
-    // FIXME: oilpan: This should become a Member. For now, m_attachedElement will be cleared by the HTMLMediaElement destructor.
-    HTMLMediaElement* m_attachedElement;
+    RawPtrWillBeWeakMember<HTMLMediaElement> m_attachedElement;
 
     Member<SourceBufferList> m_sourceBuffers;
     Member<SourceBufferList> m_activeSourceBuffers;
