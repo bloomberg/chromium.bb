@@ -65,7 +65,7 @@ _FcValuePrintFile (FILE *f, const FcValue v)
 	break;
     case FcTypeRange:
 	r = FcRangeCanonicalize (v.u.r);
-	fprintf (f, "(%g, %g)", r.u.d.begin, r.u.d.end);
+	fprintf (f, "[%g %g)", r.u.d.begin, r.u.d.end);
 	break;
     }
 }
