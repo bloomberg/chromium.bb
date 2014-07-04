@@ -2,8 +2,6 @@
 <script src="../../resources/js-test.js"></script>
 <script>
     description("Tests that the bottom border at a column boundary in a block that lives in multiple columns is recorded properly for balancing");
-    if (window.internals)
-        internals.settings.setRegionBasedColumnsEnabled(true);
 </script>
 <p>There should be no space between the short black line and the long gray one.</p>
 <div id="mc" style="-webkit-columns:3; columns:3; line-height:21px; orphans:1; widows:1; border-bottom:3px solid gray;">
