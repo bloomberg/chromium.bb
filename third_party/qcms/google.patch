@@ -454,7 +454,7 @@ index 6a5faf9..fa7f2d1 100644
 +    dest[b_out] = otdata_b[output[2]];
  }
 diff --git a/third_party/qcms/src/transform.c b/third_party/qcms/src/transform.c
-index 9a6562b..7e0ba2c 100644
+index 9a6562b..08db142 100644
 --- a/third_party/qcms/src/transform.c
 +++ b/third_party/qcms/src/transform.c
 @@ -181,11 +181,20 @@ compute_chromatic_adaption(struct CIE_XYZ source_white_point,
@@ -870,7 +870,17 @@ index 9a6562b..7e0ba2c 100644
  
  	/* don't precache if we do not have the TRC curves */
  	if (!profile->redTRC || !profile->greenTRC || !profile->blueTRC)
-@@ -1157,14 +1232,14 @@ qcms_transform* qcms_transform_create(
+@@ -1078,7 +1153,8 @@ qcms_transform* qcms_transform_precacheLUT_float(qcms_transform *transform, qcms
+ 	//XXX: qcms_modular_transform_data may return either the src or dest buffer. If so it must not be free-ed
+ 	if (src && lut != src) {
+ 		free(src);
+-	} else if (dest && lut != src) {
++	}
++	if (dest && lut != dest) {
+ 		free(dest);
+ 	}
+ 
+@@ -1157,14 +1233,14 @@ qcms_transform* qcms_transform_create(
                  	return NULL;
              	}
  		if (precache) {
@@ -887,7 +897,7 @@ index 9a6562b..7e0ba2c 100644
                      /* Microsoft Compiler for x64 doesn't support MMX.
                       * SSE code uses MMX so that we disable on x64 */
  		    } else
-@@ -1256,13 +1331,34 @@ qcms_transform* qcms_transform_create(
+@@ -1256,13 +1332,34 @@ qcms_transform* qcms_transform_create(
  	return transform;
  }
  

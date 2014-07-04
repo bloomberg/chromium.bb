@@ -37,5 +37,7 @@ google.patch contains the following modifications. Apply with
  - Apply upstream simplification of qcmstypes.h
    - https://hg.mozilla.org/mozilla-central/rev/b5be94737a83
  - Check for unused tag_len in read_nested_curveType()
+ - Apply qcms_transform_precacheLUT_float does not properly free dest buffer
+   - https://bugzilla.mozilla.org/show_bug.cgi?id=701348
 To regenerate google.patch:
   git diff b8456f38 src > google.patch
