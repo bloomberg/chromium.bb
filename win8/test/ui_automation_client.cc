@@ -542,7 +542,7 @@ HRESULT UIAutomationClient::Context::GetInvokableItems(
       continue;
     }
     if (V_VT(&var) != VT_BSTR) {
-      LOG(ERROR) << __FUNCTION__ " name is not a BSTR: " << V_VT(&var);
+      LOG(ERROR) << __FUNCTION__ << " name is not a BSTR: " << V_VT(&var);
       continue;
     }
     choices->push_back(base::string16(V_BSTR(&var)));
@@ -573,7 +573,8 @@ void UIAutomationClient::Context::CloseWindow(
   }
 
   if (V_VT(&var) != VT_I4) {
-    LOG(ERROR) << __FUNCTION__ " window handle is not an int: " << V_VT(&var);
+    LOG(ERROR) << __FUNCTION__
+               << " window handle is not an int: " << V_VT(&var);
     return;
   }
 
