@@ -11,6 +11,7 @@
 #include "base/win/windows_version.h"
 #include "ui/app_list/app_list_constants.h"
 #include "ui/app_list/app_list_model.h"
+#include "ui/app_list/app_list_switches.h"
 #include "ui/app_list/app_list_view_delegate.h"
 #include "ui/app_list/speech_ui_model.h"
 #include "ui/app_list/views/app_list_background.h"
@@ -21,6 +22,7 @@
 #include "ui/app_list/views/contents_view.h"
 #include "ui/app_list/views/search_box_view.h"
 #include "ui/app_list/views/speech_view.h"
+#include "ui/app_list/views/start_page_view.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animation_observer.h"
@@ -66,7 +68,7 @@ bool SupportsShadow() {
   // Shadows are not supported on Windows without Aero Glass.
   if (!ui::win::IsAeroGlassEnabled() ||
       CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableDwmComposition)) {
+          ::switches::kDisableDwmComposition)) {
     return false;
   }
 #elif defined(OS_LINUX) && !defined(OS_CHROMEOS)
@@ -394,7 +396,12 @@ void AppListView::OnBeforeBubbleWidgetInit(
 }
 
 views::View* AppListView::GetInitiallyFocusedView() {
-  return app_list_main_view_->search_box_view()->search_box();
+  return app_list::switches::IsExperimentalAppListEnabled()
+             ? app_list_main_view_->contents_view()
+                   ->start_page_view()
+                   ->dummy_search_box_view()
+                   ->search_box()
+             : app_list_main_view_->search_box_view()->search_box();
 }
 
 gfx::ImageSkia AppListView::GetWindowIcon() {

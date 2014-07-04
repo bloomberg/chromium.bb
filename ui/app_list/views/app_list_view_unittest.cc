@@ -240,8 +240,11 @@ void AppListViewTestContext::RunDisplayTest() {
   // Checks on the main view.
   AppListMainView* main_view = view_->app_list_main_view();
   EXPECT_NO_FATAL_FAILURE(CheckView(main_view));
-  EXPECT_NO_FATAL_FAILURE(CheckView(main_view->search_box_view()));
   EXPECT_NO_FATAL_FAILURE(CheckView(main_view->contents_view()));
+
+  EXPECT_TRUE(main_view->contents_view()->IsNamedPageActive(
+      test_type_ == EXPERIMENTAL ? ContentsView::NAMED_PAGE_START
+                                 : ContentsView::NAMED_PAGE_APPS));
 
   Close();
 }

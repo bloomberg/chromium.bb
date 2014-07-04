@@ -69,10 +69,16 @@ void ContentsView::InitNamedPages(AppListModel* model,
   }
 
   apps_container_view_ = new AppsContainerView(app_list_main_view_, model);
-  int apps_page_index = AddLauncherPage(
-      apps_container_view_, IDR_APP_LIST_APPS_ICON, NAMED_PAGE_APPS);
 
-  pagination_model_.SelectPage(apps_page_index, false);
+  int initial_page_index = AddLauncherPage(
+      apps_container_view_, IDR_APP_LIST_APPS_ICON, NAMED_PAGE_APPS);
+  if (app_list::switches::IsExperimentalAppListEnabled())
+    initial_page_index = GetPageIndexForNamedPage(NAMED_PAGE_START);
+
+  pagination_model_.SelectPage(initial_page_index, false);
+
+  // Needed to update the main search box visibility.
+  ActivePageChanged(false);
 }
 
 void ContentsView::CancelDrag() {

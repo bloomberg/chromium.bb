@@ -208,7 +208,7 @@ void AppListMainView::UpdateSearchBoxVisibility() {
       !contents_view_->IsNamedPageActive(ContentsView::NAMED_PAGE_START) ||
       contents_view_->IsShowingSearchResults();
   search_box_view_->SetVisible(visible);
-  if (visible && GetWidget()->IsVisible())
+  if (visible && GetWidget() && GetWidget()->IsVisible())
     search_box_view_->search_box()->RequestFocus();
 }
 
