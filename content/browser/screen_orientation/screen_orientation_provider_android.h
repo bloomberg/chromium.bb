@@ -39,6 +39,11 @@ class ScreenOrientationProviderAndroid : public ScreenOrientationProvider,
   // whether the orientation will need to change to match the |lock|.
   bool LockMatchesCurrentOrientation(blink::WebScreenOrientationLockType lock);
 
+  // Returns the lock type that should be associated with 'natural' lock.
+  // Returns WebScreenOrientationLockDefault if the natural lock type can't be
+  // found.
+  blink::WebScreenOrientationLockType GetNaturalLockType() const;
+
   virtual ~ScreenOrientationProviderAndroid();
 
   base::android::ScopedJavaGlobalRef<jobject> j_screen_orientation_provider_;

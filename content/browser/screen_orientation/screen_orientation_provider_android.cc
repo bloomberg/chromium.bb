@@ -59,6 +59,16 @@ void ScreenOrientationProviderAndroid::LockOrientation(
     return;
   }
 
+  if (lock_orientation == blink::WebScreenOrientationLockNatural) {
+    lock_orientation = GetNaturalLockType();
+    if (lock_orientation == blink::WebScreenOrientationLockDefault) {
+      // We are in a broken state, let's pretend we got canceled.
+      dispatcher_->NotifyLockError(request_id,
+                                   blink::WebLockOrientationErrorCanceled);
+      return;
+    }
+  }
+
   if (j_screen_orientation_provider_.is_null()) {
     j_screen_orientation_provider_.Reset(Java_ScreenOrientationProvider_create(
         base::android::AttachCurrentThread()));
@@ -149,11 +159,9 @@ bool ScreenOrientationProviderAndroid::LockMatchesCurrentOrientation(
         blink::WebScreenOrientationPortraitPrimary ||
         screen_info.orientationType ==
         blink::WebScreenOrientationPortraitSecondary;
-  case blink::WebScreenOrientationLockNatural:
-    // TODO(mlamouri): implement.
-    return true;
   case blink::WebScreenOrientationLockAny:
     return true;
+  case blink::WebScreenOrientationLockNatural:
   case blink::WebScreenOrientationLockDefault:
     NOTREACHED();
     return false;
@@ -161,6 +169,39 @@ bool ScreenOrientationProviderAndroid::LockMatchesCurrentOrientation(
 
   NOTREACHED();
   return false;
+}
+
+blink::WebScreenOrientationLockType
+ScreenOrientationProviderAndroid::GetNaturalLockType() const {
+  if (!web_contents()->GetRenderViewHost())
+    return blink::WebScreenOrientationLockDefault;
+
+  RenderWidgetHost* rwh = web_contents()->GetRenderViewHost();
+  blink::WebScreenInfo screen_info;
+  rwh->GetWebScreenInfo(&screen_info);
+
+  switch (screen_info.orientationType) {
+  case blink::WebScreenOrientationPortraitPrimary:
+  case blink::WebScreenOrientationPortraitSecondary:
+    if (screen_info.orientationAngle == 0 ||
+        screen_info.orientationAngle == 180) {
+      return blink::WebScreenOrientationLockPortraitPrimary;
+    }
+    return blink::WebScreenOrientationLockLandscapePrimary;
+  case blink::WebScreenOrientationLandscapePrimary:
+  case blink::WebScreenOrientationLandscapeSecondary:
+    if (screen_info.orientationAngle == 0 ||
+        screen_info.orientationAngle == 180) {
+      return blink::WebScreenOrientationLockLandscapePrimary;
+    }
+    return blink::WebScreenOrientationLockPortraitPrimary;
+  case blink::WebScreenOrientationUndefined:
+    NOTREACHED();
+    return blink::WebScreenOrientationLockDefault;
+  }
+
+  NOTREACHED();
+  return blink::WebScreenOrientationLockDefault;
 }
 
 // static
