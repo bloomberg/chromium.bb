@@ -131,7 +131,7 @@ typedef (CanvasRenderingContext2D or WebGLRenderingContext) RenderingContext;
 
     [PerWorldBindings] NodeList getElementsByName([Default=Undefined] optional DOMString elementName);
 
-    [LogActivity, PutForwards=href] readonly attribute Location location;
+    [PutForwards=href] readonly attribute Location location;
 
     // IE extensions
     [MeasureAs=DocumentCharset, TreatReturnedNullStringAs=Undefined, TreatNullAs=NullString] attribute DOMString charset;

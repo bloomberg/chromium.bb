@@ -95,7 +95,7 @@ protected:
     bool verifyActivities(const String& activities)
     {
         Vector<String> activityVector;
-        activities.split('\n', activityVector);
+        activities.split("\n", activityVector);
         return m_activityLogger->verifyActivities(activityVector);
     }
 
@@ -427,6 +427,32 @@ TEST_F(ActivityLoggerTest, DISABLED_FormActionAttribute)
         "blinkSetAttribute | form | action | data:text/html;charset=utf-8,B | data:text/html;charset=utf-8,C\n"
         "blinkSetAttribute | form | action | data:text/html;charset=utf-8,C | data:text/html;charset=utf-8,D\n"
         "blinkSetAttribute | form | action | data:text/html;charset=utf-8,D | data:text/html;charset=utf-8,E";
+    executeScriptInMainWorld(code);
+    ASSERT_TRUE(verifyActivities(""));
+    executeScriptInIsolatedWorld(code);
+    ASSERT_TRUE(verifyActivities(expectedActivities));
+}
+
+TEST_F(ActivityLoggerTest, DISABLED_LocalDOMWindowAttribute)
+{
+    const char* code =
+        "location.href = 'data:text/html;charset=utf-8,A';"
+        "location.assign('data:text/html;charset=utf-8,B');"
+        "location.replace('data:text/html;charset=utf-8,C');"
+        "location.protocol = 'protocol';"
+        "location.pathname = 'pathname';"
+        "location.search = 'search';"
+        "location.hash = 'hash';"
+        "location.href = 'about:blank';";
+    const char* expectedActivities =
+        "blinkSetAttribute | LocalDOMWindow | url | about:blank | data:text/html;charset=utf-8,A\n"
+        "blinkSetAttribute | LocalDOMWindow | url | about:blank | data:text/html;charset=utf-8,B\n"
+        "blinkSetAttribute | LocalDOMWindow | url | about:blank | data:text/html;charset=utf-8,C\n"
+        "blinkSetAttribute | LocalDOMWindow | url | about:blank | protocol:blank\n"
+        "blinkSetAttribute | LocalDOMWindow | url | about:blank | about:pathname\n"
+        "blinkSetAttribute | LocalDOMWindow | url | about:blank | about:blank?search\n"
+        "blinkSetAttribute | LocalDOMWindow | url | about:blank | about:blank#hash\n"
+        "blinkSetAttribute | LocalDOMWindow | url | about:blank#hash | about:blank\n";
     executeScriptInMainWorld(code);
     ASSERT_TRUE(verifyActivities(""));
     executeScriptInIsolatedWorld(code);
