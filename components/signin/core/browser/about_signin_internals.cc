@@ -148,6 +148,15 @@ void AboutSigninInternals::NotifySigninValueChanged(
 }
 
 void AboutSigninInternals::RefreshSigninPrefs() {
+  // Since the AboutSigninInternals has a dependency on the SigninManager
+  // (as seen in the AboutSigninInternalsFactory) the SigninManager can have
+  // the AuthenticatedUsername set before AboutSigninInternals can observe it.
+  // For that scenario, read the AuthenticatedUsername if it exists.
+  if (!signin_manager_->GetAuthenticatedUsername().empty()) {
+    signin_status_.untimed_signin_fields[USERNAME] =
+        signin_manager_->GetAuthenticatedUsername();
+  }
+
   // Return if no client exists. Can occur in unit tests.
   if (!client_)
     return;
