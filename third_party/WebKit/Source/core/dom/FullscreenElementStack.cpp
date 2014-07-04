@@ -514,7 +514,7 @@ void FullscreenElementStack::eventQueueTimerFired(Timer<FullscreenElementStack>*
     // document will be detached and GC'd. We protect it here to make sure we
     // can finish the function successfully.
     RefPtrWillBeRawPtr<Document> protectDocument(document());
-    WillBeHeapDeque<RefPtrWillBeRawPtr<Event> > eventQueue;
+    WillBeHeapDeque<RefPtrWillBeMember<Event> > eventQueue;
     m_eventQueue.swap(eventQueue);
 
     while (!eventQueue.isEmpty()) {
