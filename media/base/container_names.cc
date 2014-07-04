@@ -16,8 +16,8 @@ namespace media {
 namespace container_names {
 
 #define TAG(a, b, c, d) \
-    ((static_cast<uint8>(a) << 24) | (static_cast<uint8>(b) << 16) | \
-     (static_cast<uint8>(c) << 8) | (static_cast<uint8>(d)))
+    ((static_cast<uint8>(a) << 24u) | (static_cast<uint8>(b) << 16u) | \
+     (static_cast<uint8>(c) << 8u) | (static_cast<uint8>(d)))
 
 #define RCHECK(x)     \
     do {              \
