@@ -527,10 +527,6 @@ void MigrateUserPrefs(Profile* profile) {
   PromoResourceService::MigrateUserPrefs(prefs);
   TranslatePrefs::MigrateUserPrefs(prefs, prefs::kAcceptLanguages);
 
-#if defined(ENABLE_MANAGED_USERS)
-  SupervisedUserService::MigrateUserPrefs(prefs);
-#endif
-
 #if defined(OS_MACOSX) && !defined(OS_IOS)
   autofill::AutofillManager::MigrateUserPrefs(prefs);
 #endif  // defined(OS_MACOSX) && !defined(OS_IOS)

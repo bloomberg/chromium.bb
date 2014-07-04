@@ -74,8 +74,6 @@ class SupervisedUserService : public KeyedService,
 
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
-  static void MigrateUserPrefs(PrefService* prefs);
-
   void SetDelegate(Delegate* delegate);
 
   // Returns the URL filter for the IO thread, for filtering network requests

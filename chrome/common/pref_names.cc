@@ -1101,9 +1101,6 @@ const char kImportSavedPasswords[] = "import_saved_passwords";
 const char kProfileAvatarIndex[] = "profile.avatar_index";
 const char kProfileName[] = "profile.name";
 
-// Whether the profile is supervised. Deprecated, use kSupervisedUserId below.
-const char kProfileIsSupervised[] = "profile.is_managed";
-
 // The supervised user ID.
 const char kSupervisedUserId[] = "profile.managed_user_id";
 

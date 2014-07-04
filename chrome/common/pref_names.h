@@ -350,7 +350,6 @@ extern const char kImportSavedPasswords[];
 
 extern const char kProfileAvatarIndex[];
 extern const char kProfileName[];
-extern const char kProfileIsSupervised[];
 extern const char kSupervisedUserId[];
 
 extern const char kProfileGAIAInfoUpdateTime[];

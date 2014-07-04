@@ -327,16 +327,13 @@ void ProfileImpl::RegisterProfilePrefs(
       prefs::kProfileAvatarIndex,
       -1,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
-  registry->RegisterStringPref(prefs::kSupervisedUserId,
-                               std::string(),
-                               user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+  registry->RegisterStringPref(
+      prefs::kSupervisedUserId,
+      std::string(),
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
   registry->RegisterStringPref(prefs::kProfileName,
                                std::string(),
                                user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
-  registry->RegisterBooleanPref(
-      prefs::kProfileIsSupervised,
-      false,
-      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
   registry->RegisterStringPref(prefs::kHomePage,
                                std::string(),
                                user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);

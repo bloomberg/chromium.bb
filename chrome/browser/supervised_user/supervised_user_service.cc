@@ -180,24 +180,6 @@ void SupervisedUserService::RegisterProfilePrefs(
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
-// static
-void SupervisedUserService::MigrateUserPrefs(PrefService* prefs) {
-  if (!prefs->HasPrefPath(prefs::kProfileIsSupervised))
-    return;
-
-  bool is_supervised = prefs->GetBoolean(prefs::kProfileIsSupervised);
-  prefs->ClearPref(prefs::kProfileIsSupervised);
-
-  if (!is_supervised)
-    return;
-
-  std::string supervised_user_id = prefs->GetString(prefs::kSupervisedUserId);
-  if (!supervised_user_id.empty())
-    return;
-
-  prefs->SetString(prefs::kSupervisedUserId, "Dummy ID");
-}
-
 void SupervisedUserService::SetDelegate(Delegate* delegate) {
   if (delegate_ == delegate)
     return;
