@@ -309,15 +309,8 @@ IN_PROC_BROWSER_TEST_P(WebRtcGetUserMediaBrowserTest,
                           kRenderDuplicatedMediastreamAndStop));
 }
 
-// Flaky on Android.  http://crbug.com/387895
-#if defined(OS_ANDROID)
-#define MAYBE_GetAudioAndVideoStreamAndStop DISABLED_GetAudioAndVideoStreamAndStop
-#else
-#define MAYBE_GetAudioAndVideoStreamAndStop GetAudioAndVideoStreamAndStop
-#endif
-
 IN_PROC_BROWSER_TEST_P(WebRtcGetUserMediaBrowserTest,
-                       MAYBE_GetAudioAndVideoStreamAndStop) {
+                       GetAudioAndVideoStreamAndStop) {
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
 
   GURL url(embedded_test_server()->GetURL("/media/getusermedia.html"));
@@ -627,7 +620,7 @@ static const UserMediaSizes kAllUserMediaSizes[] = {
     {960, 960, 720, 720, 10, 30},
     {1280, 1280, 720, 720, 10, 30}};
 
-INSTANTIATE_TEST_CASE_P(UserMedia,
+INSTANTIATE_TEST_CASE_P(WebRtcConstraintsBrowserTests,
                         WebRtcConstraintsBrowserTest,
                         testing::ValuesIn(kAllUserMediaSizes));
 
