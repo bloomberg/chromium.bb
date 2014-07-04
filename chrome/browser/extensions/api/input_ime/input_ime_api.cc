@@ -308,30 +308,33 @@ bool InputImeEventRouter::RegisterIme(
 #if defined(USE_X11)
   VLOG(1) << "RegisterIme: " << extension_id << " id: " << component.id;
 
-  std::vector<std::string> layouts;
-  layouts.assign(component.layouts.begin(), component.layouts.end());
-
-  std::vector<std::string> languages;
-  languages.assign(component.languages.begin(), component.languages.end());
-
-  // Ideally Observer should be per (extension_id + Profile), and multiple
-  // InputMethodEngine can share one Observer. But it would become tricky
-  // to maintain an internal map for observers which does nearly nothing
-  // but just make sure they can properly deleted.
-  // Making Obesrver per InputMethodEngine can make things cleaner.
   Profile* profile = ProfileManager::GetActiveUserProfile();
-  scoped_ptr<chromeos::InputMethodEngineInterface::Observer> observer(
-      new chromeos::ImeObserver(profile, extension_id));
-  chromeos::InputMethodEngine* engine = new chromeos::InputMethodEngine();
-  engine->Initialize(observer.Pass(),
-                     component.name.c_str(),
-                     extension_id.c_str(),
-                     component.id.c_str(),
-                     languages,
-                     layouts,
-                     component.options_page_url,
-                     component.input_view_url);
-  profile_engine_map_[profile][extension_id][component.id] = engine;
+  // Avoid potential mem leaks due to duplicated component IDs.
+  if (!profile_engine_map_[profile][extension_id][component.id]) {
+    std::vector<std::string> layouts;
+    layouts.assign(component.layouts.begin(), component.layouts.end());
+
+    std::vector<std::string> languages;
+    languages.assign(component.languages.begin(), component.languages.end());
+
+    // Ideally Observer should be per (extension_id + Profile), and multiple
+    // InputMethodEngine can share one Observer. But it would become tricky
+    // to maintain an internal map for observers which does nearly nothing
+    // but just make sure they can properly deleted.
+    // Making Obesrver per InputMethodEngine can make things cleaner.
+    scoped_ptr<chromeos::InputMethodEngineInterface::Observer> observer(
+        new chromeos::ImeObserver(profile, extension_id));
+    chromeos::InputMethodEngine* engine = new chromeos::InputMethodEngine();
+    engine->Initialize(observer.Pass(),
+                       component.name.c_str(),
+                       extension_id.c_str(),
+                       component.id.c_str(),
+                       languages,
+                       layouts,
+                       component.options_page_url,
+                       component.input_view_url);
+    profile_engine_map_[profile][extension_id][component.id] = engine;
+  }
 
   return true;
 #else
