@@ -1,0 +1,1 @@
+This test opens a window that shows a form with "action" pointing to insecure location. We should trigger a mixed content callback even though we've set the preference to block this, because we've overriden the preferences via a web permission client callback.

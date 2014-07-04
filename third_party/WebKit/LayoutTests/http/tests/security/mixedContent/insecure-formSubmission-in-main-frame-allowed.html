@@ -9,6 +9,8 @@ if (window.testRunner) {
     testRunner.overridePreference("WebKitAllowDisplayingInsecureContent", false);
     testRunner.setAllowDisplayOfInsecureContent(true);
 }
+if (window.internals)
+    internals.settings.setLaxMixedContentCheckingEnabled(false);
 
 window.addEventListener("message", function (e) {
   if (window.testRunner)

@@ -122,6 +122,20 @@ bool MixedContentChecker::canConnectInsecureWebSocket(SecurityOrigin* securityOr
     return canRunInsecureContentInternal(securityOrigin, url, MixedContentChecker::WebSocket);
 }
 
+bool MixedContentChecker::canSubmitToInsecureForm(SecurityOrigin* securityOrigin, const KURL& url) const
+{
+    // For whatever reason, some folks handle forms via JavaScript, and submit to `javascript:void(0)`
+    // rather than calling `preventDefault()`. We special-case `javascript:` URLs here, as they don't
+    // introduce MixedContent for form submissions.
+    if (url.protocolIs("javascript"))
+        return true;
+
+    // If lax mixed content checking is enabled (noooo!), skip this check entirely.
+    if (RuntimeEnabledFeatures::laxMixedContentCheckingEnabled())
+        return true;
+    return canDisplayInsecureContentInternal(securityOrigin, url, MixedContentChecker::Submission);
+}
+
 void MixedContentChecker::logWarning(bool allowed, const KURL& target, const MixedContentType type) const
 {
     StringBuilder message;

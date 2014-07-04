@@ -1,0 +1,1 @@
+This test opens a window that shows a form with "action" pointing to an insecure location. We should not trigger a mixed content callback even though the main frame in the window is HTTPS and the form is pointing to insecure content, because we've set the preference to block this.
