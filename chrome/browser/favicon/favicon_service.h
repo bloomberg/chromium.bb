@@ -15,6 +15,7 @@
 #include "components/favicon_base/favicon_types.h"
 #include "components/keyed_service/core/keyed_service.h"
 
+class FaviconClient;
 class GURL;
 class HistoryService;
 struct ImportedFaviconUsage;
@@ -24,7 +25,9 @@ class Profile;
 // backend behind the scenes.
 class FaviconService : public KeyedService {
  public:
-  explicit FaviconService(Profile* profile);
+  // TODO(jif): Remove usage of Profile. http://crbug.com/378208.
+  // The FaviconClient must outlive the constructed FaviconService.
+  FaviconService(Profile* profile, FaviconClient* favicon_client);
 
   virtual ~FaviconService();
 
@@ -219,6 +222,7 @@ class FaviconService : public KeyedService {
   base::hash_set<MissingFaviconURLHash> missing_favicon_urls_;
   HistoryService* history_service_;
   Profile* profile_;
+  FaviconClient* favicon_client_;
 
   // Helper function for GetFaviconImageForPageURL(), GetRawFaviconForPageURL()
   // and GetFaviconForPageURL().
