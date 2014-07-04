@@ -1101,7 +1101,10 @@ IN_PROC_BROWSER_TEST_F(WizardControllerOobeResumeTest,
 // TODO(merkulova): Add tests for bluetooth HID detection screen variations when
 // UI and logic is ready. http://crbug.com/127016
 
-COMPILE_ASSERT(ScreenObserver::EXIT_CODES_COUNT == 21,
+// TODO(dzhioev): Add tests for controller/host pairing flow.
+// http://crbug.com/375191
+
+COMPILE_ASSERT(ScreenObserver::EXIT_CODES_COUNT == 22,
                add_tests_for_new_control_flow_you_just_introduced);
 
 }  // namespace chromeos

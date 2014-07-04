@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromeos/pairing/fake_controller_pairing_flow.h"
+#include "chromeos/pairing/fake_controller_pairing_controller.h"
 
 #include <map>
 
@@ -16,7 +16,8 @@
 
 namespace chromeos {
 
-FakeControllerPairingFlow::FakeControllerPairingFlow(const std::string& config)
+FakeControllerPairingController::FakeControllerPairingController(
+    const std::string& config)
     : current_stage_(STAGE_NONE),
       should_fail_on_connecting_(false),
       connection_lost_begin_(STAGE_NONE),
@@ -26,11 +27,11 @@ FakeControllerPairingFlow::FakeControllerPairingFlow(const std::string& config)
   AddObserver(this);
 }
 
-FakeControllerPairingFlow::~FakeControllerPairingFlow() {
+FakeControllerPairingController::~FakeControllerPairingController() {
   RemoveObserver(this);
 }
 
-void FakeControllerPairingFlow::ApplyConfig(const std::string& config) {
+void FakeControllerPairingController::ApplyConfig(const std::string& config) {
   typedef std::vector<std::string> Tokens;
 
   base::StringPairs kv_pairs;
@@ -103,21 +104,21 @@ void FakeControllerPairingFlow::ApplyConfig(const std::string& config) {
       << "Wrong 'code' format.";
 }
 
-void FakeControllerPairingFlow::SetShouldFailOnConnecting() {
+void FakeControllerPairingController::SetShouldFailOnConnecting() {
   should_fail_on_connecting_ = true;
 }
 
-void FakeControllerPairingFlow::SetShouldLoseConnection(Stage stage_begin,
-                                                        Stage stage_end) {
+void FakeControllerPairingController::SetShouldLoseConnection(Stage stage_begin,
+                                                              Stage stage_end) {
   connection_lost_begin_ = stage_begin;
   connection_lost_end_ = stage_end;
 }
 
-void FakeControllerPairingFlow::SetEnrollmentShouldFail() {
+void FakeControllerPairingController::SetEnrollmentShouldFail() {
   enrollment_should_fail_ = true;
 }
 
-void FakeControllerPairingFlow::SetDiscoveryScenario(
+void FakeControllerPairingController::SetDiscoveryScenario(
     const DiscoveryScenario& discovery_scenario) {
   discovery_scenario_ = discovery_scenario;
   // Check that scenario is valid.
@@ -143,30 +144,31 @@ void FakeControllerPairingFlow::SetDiscoveryScenario(
   }
 }
 
-void FakeControllerPairingFlow::AddObserver(Observer* observer) {
+void FakeControllerPairingController::AddObserver(Observer* observer) {
   observers_.AddObserver(observer);
 }
 
-void FakeControllerPairingFlow::RemoveObserver(Observer* observer) {
+void FakeControllerPairingController::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
 }
 
-ControllerPairingFlow::Stage FakeControllerPairingFlow::GetCurrentStage() {
+ControllerPairingController::Stage
+FakeControllerPairingController::GetCurrentStage() {
   return current_stage_;
 }
 
-void FakeControllerPairingFlow::StartFlow() {
+void FakeControllerPairingController::StartPairing() {
   CHECK(current_stage_ == STAGE_NONE);
   ChangeStage(STAGE_DEVICES_DISCOVERY);
 }
 
-ControllerPairingFlow::DeviceIdList
-FakeControllerPairingFlow::GetDiscoveredDevices() {
+ControllerPairingController::DeviceIdList
+FakeControllerPairingController::GetDiscoveredDevices() {
   CHECK(current_stage_ == STAGE_DEVICES_DISCOVERY);
   return DeviceIdList(discovered_devices_.begin(), discovered_devices_.end());
 }
 
-void FakeControllerPairingFlow::ChooseDeviceForPairing(
+void FakeControllerPairingController::ChooseDeviceForPairing(
     const std::string& device_id) {
   CHECK(current_stage_ == STAGE_DEVICES_DISCOVERY);
   CHECK(discovered_devices_.count(device_id));
@@ -174,14 +176,14 @@ void FakeControllerPairingFlow::ChooseDeviceForPairing(
   ChangeStage(STAGE_ESTABLISHING_CONNECTION);
 }
 
-void FakeControllerPairingFlow::RepeatDiscovery() {
+void FakeControllerPairingController::RepeatDiscovery() {
   CHECK(current_stage_ == STAGE_DEVICE_NOT_FOUND ||
         current_stage_ == STAGE_ESTABLISHING_CONNECTION_ERROR ||
         current_stage_ == STAGE_HOST_ENROLLMENT_ERROR);
   ChangeStage(STAGE_DEVICES_DISCOVERY);
 }
 
-std::string FakeControllerPairingFlow::GetConfirmationCode() {
+std::string FakeControllerPairingController::GetConfirmationCode() {
   CHECK(current_stage_ == STAGE_WAITING_FOR_CODE_CONFIRMATION);
   if (confirmation_code_.empty()) {
     if (preset_confirmation_code_.empty()) {
@@ -194,7 +196,8 @@ std::string FakeControllerPairingFlow::GetConfirmationCode() {
   return confirmation_code_;
 }
 
-void FakeControllerPairingFlow::SetConfirmationCodeIsCorrect(bool correct) {
+void FakeControllerPairingController::SetConfirmationCodeIsCorrect(
+    bool correct) {
   CHECK(current_stage_ == STAGE_WAITING_FOR_CODE_CONFIRMATION);
   if (correct)
     ChangeStage(STAGE_HOST_UPDATE_IN_PROGRESS);
@@ -202,35 +205,36 @@ void FakeControllerPairingFlow::SetConfirmationCodeIsCorrect(bool correct) {
     ChangeStage(STAGE_DEVICES_DISCOVERY);
 }
 
-void FakeControllerPairingFlow::OnAuthenticationDone(
+void FakeControllerPairingController::OnAuthenticationDone(
     const chromeos::UserContext& user_context,
     content::BrowserContext* browser_context) {
   CHECK(current_stage_ == STAGE_WAITING_FOR_CREDENTIALS);
   ChangeStage(STAGE_HOST_ENROLLMENT_IN_PROGRESS);
 }
 
-void FakeControllerPairingFlow::StartSession() {
+void FakeControllerPairingController::StartSession() {
   CHECK(current_stage_ == STAGE_PAIRING_DONE);
   ChangeStage(STAGE_FINISHED);
 }
 
-void FakeControllerPairingFlow::ChangeStage(Stage new_stage) {
+void FakeControllerPairingController::ChangeStage(Stage new_stage) {
   if (current_stage_ == new_stage)
     return;
   current_stage_ = new_stage;
   FOR_EACH_OBSERVER(Observer, observers_, PairingStageChanged(new_stage));
 }
 
-void FakeControllerPairingFlow::ChangeStageLater(Stage new_stage) {
+void FakeControllerPairingController::ChangeStageLater(Stage new_stage) {
   base::MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
-      base::Bind(&FakeControllerPairingFlow::ChangeStage,
+      base::Bind(&FakeControllerPairingController::ChangeStage,
                  base::Unretained(this),
                  new_stage),
       async_duration_);
 }
 
-void FakeControllerPairingFlow::ExecuteDiscoveryEvent(size_t event_position) {
+void FakeControllerPairingController::ExecuteDiscoveryEvent(
+    size_t event_position) {
   if (current_stage_ != STAGE_DEVICES_DISCOVERY)
     return;
   CHECK(event_position < discovery_scenario_.size());
@@ -254,32 +258,33 @@ void FakeControllerPairingFlow::ExecuteDiscoveryEvent(size_t event_position) {
   }
   base::MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
-      base::Bind(&FakeControllerPairingFlow::ExecuteDiscoveryEvent,
+      base::Bind(&FakeControllerPairingController::ExecuteDiscoveryEvent,
                  base::Unretained(this),
                  event_position),
       async_duration_);
 }
 
-void FakeControllerPairingFlow::DeviceFound(const std::string& device_id) {
+void FakeControllerPairingController::DeviceFound(
+    const std::string& device_id) {
   CHECK(current_stage_ == STAGE_DEVICES_DISCOVERY);
   discovered_devices_.insert(device_id);
   FOR_EACH_OBSERVER(Observer, observers_, DiscoveredDevicesListChanged());
 }
 
-void FakeControllerPairingFlow::DeviceLost(const std::string& device_id) {
+void FakeControllerPairingController::DeviceLost(const std::string& device_id) {
   CHECK(current_stage_ == STAGE_DEVICES_DISCOVERY);
   discovered_devices_.erase(device_id);
   FOR_EACH_OBSERVER(Observer, observers_, DiscoveredDevicesListChanged());
 }
 
-void FakeControllerPairingFlow::PairingStageChanged(Stage new_stage) {
+void FakeControllerPairingController::PairingStageChanged(Stage new_stage) {
   Stage next_stage = STAGE_NONE;
   switch (new_stage) {
     case STAGE_DEVICES_DISCOVERY: {
       discovered_devices_.clear();
       base::MessageLoop::current()->PostDelayedTask(
           FROM_HERE,
-          base::Bind(&FakeControllerPairingFlow::ExecuteDiscoveryEvent,
+          base::Bind(&FakeControllerPairingController::ExecuteDiscoveryEvent,
                      base::Unretained(this),
                      0),
           async_duration_);
@@ -324,7 +329,7 @@ void FakeControllerPairingFlow::PairingStageChanged(Stage new_stage) {
     ChangeStageLater(next_stage);
 }
 
-void FakeControllerPairingFlow::DiscoveredDevicesListChanged() {
+void FakeControllerPairingController::DiscoveredDevicesListChanged() {
 }
 
 }  // namespace chromeos

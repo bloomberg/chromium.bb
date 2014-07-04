@@ -118,6 +118,11 @@ cr.define('login', function() {
     initializeImpl_: function() {
       this.screenContext_ = new login.ScreenContext();
       this.querySelectorAllImpl_('[alias]').forEach(function(element) {
+        var alias = element.getAttribute('alias');
+        if (alias in this)
+          throw Error('Alias "' + alias + '" of "' + this.name() + '" screen ' +
+              'shadows or redefines property that is already defined.');
+        this[alias] = element;
         this[element.getAttribute('alias')] = element;
       }, this);
       var self = this;

@@ -13,24 +13,22 @@
 namespace chromeos {
 
 class AppLaunchSplashScreenActor;
+class AutoEnrollmentCheckScreenActor;
 class CoreOobeActor;
+class ControllerPairingScreenActor;
 class EnrollmentScreenActor;
 class ErrorScreenActor;
 class EulaScreenActor;
 class HIDDetectionScreenActor;
 class KioskAutolaunchScreenActor;
 class KioskEnableScreenActor;
+class LocallyManagedUserCreationScreenHandler;
 class NetworkScreenActor;
 class ResetScreenActor;
 class TermsOfServiceScreenActor;
 class UpdateScreenActor;
 class UserImageScreenActor;
-// TODO(altimofeev): use real actors instead
-class ViewScreenDelegate;
-class WizardScreen;
 class WrongHWIDScreenActor;
-class AutoEnrollmentCheckScreenActor;
-class LocallyManagedUserCreationScreenHandler;
 
 // Interface which is used by WizardController to do actual OOBE screens
 // showing. Also it provides actors for the OOBE screens.
@@ -59,16 +57,11 @@ class OobeDisplay {
     SCREEN_APP_LAUNCH_SPLASH,
     SCREEN_CONFIRM_PASSWORD,
     SCREEN_FATAL_ERROR,
+    SCREEN_OOBE_CONTROLLER_PAIRING,
     SCREEN_UNKNOWN
   };
 
   virtual ~OobeDisplay() {}
-
-  // Shows the given screen.
-  virtual void ShowScreen(WizardScreen* screen) = 0;
-
-  // Hides the given screen.
-  virtual void HideScreen(WizardScreen* screen) = 0;
 
   // Pointers to actors which should be used by the specific screens. Actors
   // must be owned by the OobeDisplay implementation.
@@ -90,6 +83,7 @@ class OobeDisplay {
   virtual LocallyManagedUserCreationScreenHandler*
       GetLocallyManagedUserCreationScreenActor() = 0;
   virtual AppLaunchSplashScreenActor* GetAppLaunchSplashScreenActor() = 0;
+  virtual ControllerPairingScreenActor* GetControllerPairingScreenActor() = 0;
 
   // Returns if JS side is fully loaded and ready to accept messages.
   // If |false| is returned, then |display_is_ready_callback| is stored

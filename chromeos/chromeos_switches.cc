@@ -205,6 +205,10 @@ const char kPowerStub[] = "power-stub";
 //  'interactive=3' - Interactive mode, connect/scan/etc requests take 3 secs
 const char kShillStub[] = "shill-stub";
 
+// If this switch is set, controller pairing process is displayed after update
+// stage of OOBE.
+const char kShowControllerPairingDemo[] = "show-controller-pairing-demo";
+
 // Sends test messages on first call to RequestUpdate (stub only).
 const char kSmsTestMessages[] = "sms-test-messages";
 

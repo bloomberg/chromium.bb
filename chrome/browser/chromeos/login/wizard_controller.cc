@@ -33,6 +33,7 @@
 #include "chrome/browser/chromeos/login/hwid_checker.h"
 #include "chrome/browser/chromeos/login/login_utils.h"
 #include "chrome/browser/chromeos/login/managed/locally_managed_user_creation_screen.h"
+#include "chrome/browser/chromeos/login/screens/controller_pairing_screen.h"
 #include "chrome/browser/chromeos/login/screens/error_screen.h"
 #include "chrome/browser/chromeos/login/screens/eula_screen.h"
 #include "chrome/browser/chromeos/login/screens/hid_detection_screen.h"
@@ -103,6 +104,11 @@ bool CanShowHIDDetectionScreen() {
         chromeos::switches::kDisableHIDDetectionOnOOBE);
 }
 
+bool ShouldShowControllerPairingScreen() {
+  return CommandLine::ForCurrentProcess()->HasSwitch(
+      chromeos::switches::kShowControllerPairingDemo);
+}
+
 bool IsResumableScreen(const std::string& screen) {
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kResumableScreens); ++i) {
     if (screen == kResumableScreens[i])
@@ -150,6 +156,8 @@ const char WizardController::kLocallyManagedUserCreationScreenName[] =
 const char WizardController::kAppLaunchSplashScreenName[] =
   "app-launch-splash";
 const char WizardController::kHIDDetectionScreenName[] = "hid-detection";
+const char WizardController::kControllerPairingScreenName[] =
+    "controller-pairing";
 
 // static
 const int WizardController::kMinAudibleOutputVolumePercent = 10;
@@ -376,6 +384,14 @@ chromeos::HIDDetectionScreen* WizardController::GetHIDDetectionScreen() {
   return hid_detection_screen_.get();
 }
 
+ControllerPairingScreen* WizardController::GetControllerPairingScreen() {
+  if (!controller_pairing_screen_) {
+    controller_pairing_screen_.reset(new ControllerPairingScreen(
+        this, oobe_display_->GetControllerPairingScreenActor()));
+  }
+  return controller_pairing_screen_.get();
+}
+
 void WizardController::ShowNetworkScreen() {
   VLOG(1) << "Showing network screen.";
   // Hide the status area initially; it only appears after OOBE first animates
@@ -534,6 +550,12 @@ void WizardController::ShowHIDDetectionScreen() {
   SetCurrentScreen(GetHIDDetectionScreen());
 }
 
+void WizardController::ShowControllerPairingScreen() {
+  VLOG(1) << "Showing controller pairing screen.";
+  SetStatusAreaVisible(false);
+  SetCurrentScreen(GetControllerPairingScreen());
+}
+
 void WizardController::SkipToLoginForTesting(
     const LoginScreenContext& context) {
   VLOG(1) << "SkipToLoginForTesting.";
@@ -594,7 +616,11 @@ void WizardController::OnConnectionFailed() {
 }
 
 void WizardController::OnUpdateCompleted() {
-  ShowAutoEnrollmentCheckScreen();
+  if (ShouldShowControllerPairingScreen()) {
+    ShowControllerPairingScreen();
+  } else {
+    ShowAutoEnrollmentCheckScreen();
+  }
 }
 
 void WizardController::OnEulaAccepted() {
@@ -743,6 +769,10 @@ void WizardController::OnTermsOfServiceAccepted() {
   ShowUserImageScreen();
 }
 
+void WizardController::OnControllerPairingFinished() {
+  ShowAutoEnrollmentCheckScreen();
+}
+
 void WizardController::InitiateOOBEUpdate() {
   PerformPostEulaActions();
   SetCurrentScreenSmooth(GetUpdateScreen(), true);
@@ -804,7 +834,7 @@ void WizardController::ShowCurrentScreen() {
 
   FOR_EACH_OBSERVER(Observer, observer_list_, OnScreenChanged(current_screen_));
 
-  oobe_display_->ShowScreen(current_screen_);
+  current_screen_->Show();
 }
 
 void WizardController::SetCurrentScreenSmooth(WizardScreen* new_current,
@@ -818,7 +848,7 @@ void WizardController::SetCurrentScreenSmooth(WizardScreen* new_current,
   smooth_show_timer_.Stop();
 
   if (current_screen_)
-    oobe_display_->HideScreen(current_screen_);
+    current_screen_->Hide();
 
   std::string screen_id = new_current->GetName();
   if (IsOOBEStepToTrack(screen_id))
@@ -873,6 +903,8 @@ void WizardController::AdvanceToScreen(const std::string& screen_name) {
     AutoLaunchKioskApp();
   } else if (screen_name == kHIDDetectionScreenName) {
     ShowHIDDetectionScreen();
+  } else if (screen_name == kControllerPairingScreenName) {
+    ShowControllerPairingScreen();
   } else if (screen_name != kTestNoScreenName) {
     if (is_out_of_box_) {
       time_oobe_started_ = base::Time::Now();
@@ -960,6 +992,9 @@ void WizardController::OnExit(ExitCodes exit_code) {
       break;
     case WRONG_HWID_WARNING_SKIPPED:
       OnWrongHWIDWarningSkipped();
+      break;
+    case CONTROLLER_PAIRING_FINISHED:
+      OnControllerPairingFinished();
       break;
     default:
       NOTREACHED();

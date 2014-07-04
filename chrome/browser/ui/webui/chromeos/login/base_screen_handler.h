@@ -200,6 +200,12 @@ class BaseScreenHandler : public content::WebUIMessageHandler {
         name, base::Bind(&CallbackWrapper4<A1, A2, A3, A4>, callback));
   }
 
+  template <typename Method>
+  void AddPrefixedCallback(const std::string& unprefixed_name,
+                           const Method& method) {
+    AddCallback(FullMethodPath(unprefixed_name), method);
+  }
+
   // Called when the page is ready and handler can do initialization.
   virtual void Initialize() = 0;
 

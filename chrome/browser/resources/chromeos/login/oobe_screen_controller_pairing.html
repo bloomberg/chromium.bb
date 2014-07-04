@@ -1,0 +1,58 @@
+<!-- TODO(dzhioev): replace all the strings with i18n-values. -->
+<div class="step hidden no-logo" id="controller-pairing" hidden>
+  <div alias="throbber_" class="throbber" hidden></div>
+  <div alias="pageNameLabel_" class="page-name"></div>
+  <div class="page page-devices-discovery">
+    <div>Searching for nearby Chromeboxes...</div>
+  </div>
+  <div class="page page-device-select">
+    <div>Select a Chromebox to connect to</div>
+    <list alias="deviceList_" class="device-list"></list>
+    <button action="chooseDevice">
+      Connect
+    </button>
+  </div>
+  <div class="page page-device-not-found">
+     <div>No Chromeboxes were found.</div>
+     <button action="repeatDiscovery">Repeat discovery</button>
+  </div>
+  <div class="page page-establishing-connection">
+    <div>Connecting...</div>
+  </div>
+  <div class="page page-establishing-connection-error">
+    <div>Can't connect to Chromebox.</div>
+    <button action="repeatDiscovery">Repeat discovery</button>
+  </div>
+  <div class="page page-code-confirmation">
+    <div alias="confirmationCodeLabel_"></div>
+    <button action="acceptCode" disabled>Yes</button>
+    <button action="rejectCode" disabled>No</button>
+  </div>
+  <div class="page page-host-update">
+    <div>Updating Chromebox.</div>
+  </div>
+  <div class="page page-host-connection-lost">
+    <div>Connection lost. Please come closer.</div>
+  </div>
+  <div class="page page-enrollment-introduction">
+    <div>Press continue to connect to your domain.</div>
+    <button action="proceedToAuthentication" disabled>Continue</button>
+  </div>
+  <div class="page page-authentication">
+    <div>Connect to your domain.</div>
+    <iframe alias="gaiaFrame_" frameBorder="0" class="gaia-frame"></iframe>
+  </div>
+  <div class="page page-host-enrollment">
+    <div>
+      Connecting to <strong alias="domainNameLabel_">domain.com</strong>.
+    </div>
+  </div>
+  <div class="page page-host-enrollment-error">
+    <div>Host enrollment failed.</div>
+    <button action="repeatDiscovery">Repeat discovery</button>
+  </div>
+  <div class="page page-pairing-done">
+    <div>Great success!</div>
+    <button action="startSession">Continue to Hangouts</button>
+  </div>
+</div>

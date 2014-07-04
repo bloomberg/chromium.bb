@@ -1,0 +1,28 @@
+/* Copyright 2014 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
+#controller-pairing {
+  background: white;
+  height: 601px;
+  padding: 20px;
+  width: 720px;
+}
+
+#controller-pairing .page-name {
+  text-align: center;
+}
+
+#controller-pairing .device-list {
+  border: 2px solid black;
+  height: 200px;
+}
+
+#controller-pairing button {
+  margin: 10px;
+}
+
+#controller-pairing .gaia-frame {
+  height: 300px;
+}

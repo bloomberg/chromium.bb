@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMEOS_PAIRING_FAKE_CONTROLLER_PAIRING_FLOW_H_
-#define CHROMEOS_PAIRING_FAKE_CONTROLLER_PAIRING_FLOW_H_
+#ifndef CHROMEOS_PAIRING_FAKE_CONTROLLER_PAIRING_CONTROLLER_H_
+#define CHROMEOS_PAIRING_FAKE_CONTROLLER_PAIRING_CONTROLLER_H_
 
 #include <set>
 #include <utility>
@@ -12,15 +12,15 @@
 #include "base/observer_list.h"
 #include "base/time/time.h"
 #include "chromeos/chromeos_export.h"
-#include "chromeos/pairing/controller_pairing_flow.h"
+#include "chromeos/pairing/controller_pairing_controller.h"
 
 namespace chromeos {
 
-class CHROMEOS_EXPORT FakeControllerPairingFlow
-    : public ControllerPairingFlow,
-      public ControllerPairingFlow::Observer {
+class CHROMEOS_EXPORT FakeControllerPairingController
+    : public ControllerPairingController,
+      public ControllerPairingController::Observer {
  public:
-  typedef ControllerPairingFlow::Observer Observer;
+  typedef ControllerPairingController::Observer Observer;
 
   enum DiscoveryEventType { DEVICE_FOUND, DEVICE_LOST, NOTHING_FOUND };
 
@@ -37,10 +37,10 @@ class CHROMEOS_EXPORT FakeControllerPairingFlow
   //   F-Device_1~F-Device_5~F-Device_3~L-Device_3~L-Device_1~F-Device_1
   // * code - 6 digits or empty string. Default: empty string. If strings is
   // empty, random code is generated.
-  FakeControllerPairingFlow(const std::string& config);
-  virtual ~FakeControllerPairingFlow();
+  explicit FakeControllerPairingController(const std::string& config);
+  virtual ~FakeControllerPairingController();
 
-  // Applies given |config| to flow.
+  // Applies given |config| to controller.
   void ApplyConfig(const std::string& config);
 
   // Sets delay for asynchronous operations. like device searching or host
@@ -64,11 +64,11 @@ class CHROMEOS_EXPORT FakeControllerPairingFlow
   // For default scenario refer to implementation.
   void SetDiscoveryScenario(const DiscoveryScenario& discovery_scenario);
 
-  // Overridden from ControllerPairingFlow:
+  // Overridden from ControllerPairingController:
   virtual void AddObserver(Observer* observer) OVERRIDE;
   virtual void RemoveObserver(Observer* observer) OVERRIDE;
   virtual Stage GetCurrentStage() OVERRIDE;
-  virtual void StartFlow() OVERRIDE;
+  virtual void StartPairing() OVERRIDE;
   virtual DeviceIdList GetDiscoveredDevices() OVERRIDE;
   virtual void ChooseDeviceForPairing(const std::string& device_id) OVERRIDE;
   virtual void RepeatDiscovery() OVERRIDE;
@@ -86,11 +86,11 @@ class CHROMEOS_EXPORT FakeControllerPairingFlow
   void DeviceFound(const std::string& device_id);
   void DeviceLost(const std::string& device_id);
 
-  // Overridden from ui::ControllerPairingFlow::Observer:
+  // Overridden from ui::ControllerPairingController::Observer:
   virtual void PairingStageChanged(Stage new_stage) OVERRIDE;
   virtual void DiscoveredDevicesListChanged() OVERRIDE;
 
-  ObserverList<ControllerPairingFlow::Observer> observers_;
+  ObserverList<ControllerPairingController::Observer> observers_;
   Stage current_stage_;
   std::string confirmation_code_;
   std::string preset_confirmation_code_;
@@ -103,9 +103,9 @@ class CHROMEOS_EXPORT FakeControllerPairingFlow
   Stage connection_lost_end_;
   bool enrollment_should_fail_;
 
-  DISALLOW_COPY_AND_ASSIGN(FakeControllerPairingFlow);
+  DISALLOW_COPY_AND_ASSIGN(FakeControllerPairingController);
 };
 
 }  // namespace chromeos
 
-#endif  // CHROMEOS_PAIRING_FAKE_CONTROLLER_PAIRING_FLOW_H_
+#endif  // CHROMEOS_PAIRING_FAKE_CONTROLLER_PAIRING_CONTROLLER_H_

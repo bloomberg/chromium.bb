@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMEOS_PAIRING_CONTROLLER_PAIRING_FLOW_H_
-#define CHROMEOS_PAIRING_CONTROLLER_PAIRING_FLOW_H_
+#ifndef CHROMEOS_PAIRING_CONTROLLER_PAIRING_CONTROLLER_H_
+#define CHROMEOS_PAIRING_CONTROLLER_PAIRING_CONTROLLER_H_
 
 #include <string>
 #include <vector>
@@ -21,7 +21,7 @@ class BrowserContext;
 
 namespace chromeos {
 
-class CHROMEOS_EXPORT ControllerPairingFlow {
+class CHROMEOS_EXPORT ControllerPairingController {
  public:
   enum Stage {
     STAGE_NONE,
@@ -44,11 +44,11 @@ class CHROMEOS_EXPORT ControllerPairingFlow {
     Observer();
     virtual ~Observer();
 
-    // Called when flow has moved on from one stage to another.
+    // Called when pairing has moved on from one stage to another.
     virtual void PairingStageChanged(Stage new_stage) = 0;
 
     // Called when new device was discovered or existing device was lost.
-    // This notification is made only on |STAGE_SCANNING_FOR_DEVICES| stage.
+    // This notification is made only on |STAGE_DEVICES_DISCOVERY| stage.
     virtual void DiscoveredDevicesListChanged() = 0;
 
    private:
@@ -57,17 +57,17 @@ class CHROMEOS_EXPORT ControllerPairingFlow {
 
   typedef std::vector<std::string> DeviceIdList;
 
-  ControllerPairingFlow();
-  virtual ~ControllerPairingFlow();
+  ControllerPairingController();
+  virtual ~ControllerPairingController();
 
   virtual void AddObserver(Observer* observer) = 0;
   virtual void RemoveObserver(Observer* observer) = 0;
 
-  // Returns current stage of flow.
+  // Returns current stage of pairing process.
   virtual Stage GetCurrentStage() = 0;
 
-  // Starts pairing flow. Can be called only on |STAGE_NONE| stage.
-  virtual void StartFlow() = 0;
+  // Starts pairing process. Can be called only on |STAGE_NONE| stage.
+  virtual void StartPairing() = 0;
 
   // Returns list of discovered devices. Can be called only on
   // |STAGE_DEVICES_DISCOVERY| stage.
@@ -78,7 +78,8 @@ class CHROMEOS_EXPORT ControllerPairingFlow {
   virtual void ChooseDeviceForPairing(const std::string& device_id) = 0;
 
   // Rescan for devices to pair with. Can be called only on
-  // |STAGE_DEVICE_NOT_FOUND| stage.
+  // stages |STAGE_DEVICE_NOT_FOUND|, |STAGE_ESTABLISHING_CONNECTION_ERROR|,
+  // |STAGE_HOST_ENROLLMENT_ERROR|.
   virtual void RepeatDiscovery() = 0;
 
   // Returns pairing confirmation code.
@@ -100,9 +101,9 @@ class CHROMEOS_EXPORT ControllerPairingFlow {
   virtual void StartSession() = 0;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(ControllerPairingFlow);
+  DISALLOW_COPY_AND_ASSIGN(ControllerPairingController);
 };
 
 }  // namespace chromeos
 
-#endif  // CHROMEOS_PAIRING_CONTROLLER_PAIRING_FLOW_H_
+#endif  // CHROMEOS_PAIRING_CONTROLLER_PAIRING_CONTROLLER_H_

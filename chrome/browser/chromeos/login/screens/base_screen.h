@@ -8,13 +8,14 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "chrome/browser/chromeos/login/screens/screen_context.h"
 
 namespace base {
 class DictionaryValue;
 }
 
 namespace chromeos {
+
+class ScreenContext;
 
 // Base class for the all OOBE/login/before-session screens.
 // Screens are identified by ID, screen and it's JS counterpart must have same
