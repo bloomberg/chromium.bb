@@ -6,4 +6,5 @@ CompositingIOSurfaceTransformerTest.*
 WebLayerImplFixedBoundsTest.CompareToWebLayerImplComplex
 WebLayerImplFixedBoundsTest.CompareToWebLayerImplSimple
 
-
+# crbug.com/391503
+PepperGamepadHostTest.WaitForReply
