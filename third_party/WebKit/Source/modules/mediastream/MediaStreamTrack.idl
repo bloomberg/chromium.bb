@@ -32,7 +32,7 @@
     attribute boolean enabled;
     readonly attribute DOMString readyState;
 
-    [CallWith=ExecutionContext, RaisesException] static void getSources(MediaStreamTrackSourcesCallback callback);
+    [CallWith=ExecutionContext, RaisesException, MeasureAs=MediaStreamTrackGetSources] static void getSources(MediaStreamTrackSourcesCallback callback);
     [ImplementedAs=stopTrack, RaisesException] void stop();
     [CallWith=ExecutionContext] MediaStreamTrack clone();
 
