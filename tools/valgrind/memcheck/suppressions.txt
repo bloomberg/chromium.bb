@@ -448,6 +448,14 @@
    fun:_ZN3gfx18RenderTextHarfBuzz12EnsureLayoutEv
 }
 
+{
+  bug_391510
+  Memcheck:Leak
+  fun:_Znw*
+  fun:_ZN4base21CancelableTaskTracker16NewTrackedTaskId*
+  fun:_ZN14HistoryService14ScheduleDBTask*
+  fun:_ZN7history19URLIndexPrivateData26ScheduleUpdateRecentVisits*
+}
 
 #-----------------------------------------------------------------------
 # 3. Suppressions for real chromium bugs that are not yet fixed.
