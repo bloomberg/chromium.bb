@@ -385,6 +385,7 @@ frame_set_title(struct frame *frame, const char *title)
 	free(frame->title);
 	frame->title = dup;
 
+	frame->geometry_dirty = 1;
 	frame->status |= FRAME_STATUS_REPAINT;
 
 	return 0;
