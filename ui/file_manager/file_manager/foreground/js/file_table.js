@@ -607,7 +607,7 @@ FileTable.prototype.updateListItemsMetadata = function(type, entries) {
       var cell = cells[i];
       var listItem = this.list_.getListItemAncestor(cell);
       var entry = this.dataModel.item(listItem.listIndex);
-      if (entry && (entry.toURL() in entries))
+      if (entry && urls.indexOf(entry.toURL()) !== -1)
         callback.call(this, cell, entry, listItem);
     }
   }.bind(this);
