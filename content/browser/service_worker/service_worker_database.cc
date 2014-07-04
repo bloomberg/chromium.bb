@@ -16,7 +16,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "content/browser/service_worker/service_worker_database.pb.h"
-#include "content/browser/service_worker/service_worker_histograms.h"
+#include "content/browser/service_worker/service_worker_metrics.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "third_party/leveldatabase/src/helpers/memenv/memenv.h"
 #include "third_party/leveldatabase/src/include/leveldb/db.h"
@@ -1084,7 +1084,7 @@ void ServiceWorkerDatabase::HandleOpenResult(
     Status status) {
   if (status != STATUS_OK)
     Disable(from_here, status);
-  ServiceWorkerHistograms::CountOpenDatabaseResult(status);
+  ServiceWorkerMetrics::CountOpenDatabaseResult(status);
 }
 
 void ServiceWorkerDatabase::HandleReadResult(
@@ -1092,7 +1092,7 @@ void ServiceWorkerDatabase::HandleReadResult(
     Status status) {
   if (status != STATUS_OK)
     Disable(from_here, status);
-  ServiceWorkerHistograms::CountReadDatabaseResult(status);
+  ServiceWorkerMetrics::CountReadDatabaseResult(status);
 }
 
 void ServiceWorkerDatabase::HandleWriteResult(
@@ -1100,7 +1100,7 @@ void ServiceWorkerDatabase::HandleWriteResult(
     Status status) {
   if (status != STATUS_OK)
     Disable(from_here, status);
-  ServiceWorkerHistograms::CountWriteDatabaseResult(status);
+  ServiceWorkerMetrics::CountWriteDatabaseResult(status);
 }
 
 }  // namespace content

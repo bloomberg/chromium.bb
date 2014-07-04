@@ -6,7 +6,7 @@
 
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_disk_cache.h"
-#include "content/browser/service_worker/service_worker_histograms.h"
+#include "content/browser/service_worker/service_worker_metrics.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_request_headers.h"
@@ -199,8 +199,8 @@ void ServiceWorkerWriteToCacheJob::WriteHeadersToCache() {
 void ServiceWorkerWriteToCacheJob::OnWriteHeadersComplete(int result) {
   SetStatus(net::URLRequestStatus());  // Clear the IO_PENDING status
   if (result < 0) {
-    ServiceWorkerHistograms::CountWriteResponseResult(
-        ServiceWorkerHistograms::WRITE_HEADERS_ERROR);
+    ServiceWorkerMetrics::CountWriteResponseResult(
+        ServiceWorkerMetrics::WRITE_HEADERS_ERROR);
     AsyncNotifyDoneHelper(net::URLRequestStatus(
         net::URLRequestStatus::FAILED, result));
     return;
@@ -228,14 +228,14 @@ void ServiceWorkerWriteToCacheJob::OnWriteDataComplete(int result) {
     return;
   }
   if (result < 0) {
-    ServiceWorkerHistograms::CountWriteResponseResult(
-        ServiceWorkerHistograms::WRITE_DATA_ERROR);
+    ServiceWorkerMetrics::CountWriteResponseResult(
+        ServiceWorkerMetrics::WRITE_DATA_ERROR);
     AsyncNotifyDoneHelper(net::URLRequestStatus(
         net::URLRequestStatus::FAILED, result));
     return;
   }
-  ServiceWorkerHistograms::CountWriteResponseResult(
-      ServiceWorkerHistograms::WRITE_OK);
+  ServiceWorkerMetrics::CountWriteResponseResult(
+      ServiceWorkerMetrics::WRITE_OK);
   SetStatus(net::URLRequestStatus());  // Clear the IO_PENDING status
   NotifyReadComplete(result);
 }

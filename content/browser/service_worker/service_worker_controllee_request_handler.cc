@@ -5,6 +5,7 @@
 #include "content/browser/service_worker/service_worker_controllee_request_handler.h"
 
 #include "content/browser/service_worker/service_worker_context_core.h"
+#include "content/browser/service_worker/service_worker_metrics.h"
 #include "content/browser/service_worker/service_worker_provider_host.h"
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/browser/service_worker/service_worker_url_request_job.h"
@@ -114,6 +115,9 @@ ServiceWorkerControlleeRequestHandler::DidLookupRegistrationForMainResource(
     job_->FallbackToNetwork();
     return;
   }
+
+  ServiceWorkerMetrics::CountControlledPageLoad();
+
   // TODO(michaeln): should SetWaitingVersion() even if no active version so
   // so the versions in the pipeline (.installing, .waiting) show up in the
   // attribute values.

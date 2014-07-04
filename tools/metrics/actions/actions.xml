@@ -10121,6 +10121,13 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="ServiceWorker.ControlledPageLoad">
+  <owner>nhiroki@chromium.org</owner>
+  <description>
+    Counts the number of page loads controlled by a Service Worker.
+  </description>
+</action>
+
 <action name="SettingsResetBubble.LearnMore">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>

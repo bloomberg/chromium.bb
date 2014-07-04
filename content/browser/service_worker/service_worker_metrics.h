@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_HISTOGRAMS_H_
-#define CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_HISTOGRAMS_H_
+#ifndef CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_METRICS_H_
+#define CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_METRICS_H_
 
 #include "base/macros.h"
 #include "content/browser/service_worker/service_worker_database.h"
 
 namespace content {
 
-class ServiceWorkerHistograms {
+class ServiceWorkerMetrics {
  public:
   enum ReadResponseResult {
     READ_OK,
@@ -36,10 +36,13 @@ class ServiceWorkerHistograms {
   static void CountReadDatabaseResult(ServiceWorkerDatabase::Status status);
   static void CountWriteDatabaseResult(ServiceWorkerDatabase::Status status);
 
+  // Counts the number of page loads controlled by a Service Worker.
+  static void CountControlledPageLoad();
+
  private:
-  DISALLOW_IMPLICIT_CONSTRUCTORS(ServiceWorkerHistograms);
+  DISALLOW_IMPLICIT_CONSTRUCTORS(ServiceWorkerMetrics);
 };
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_HISTOGRAMS_H_
+#endif  // CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_METRICS_H_

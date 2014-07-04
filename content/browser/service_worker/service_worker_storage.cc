@@ -13,8 +13,8 @@
 #include "base/task_runner_util.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_disk_cache.h"
-#include "content/browser/service_worker/service_worker_histograms.h"
 #include "content/browser/service_worker/service_worker_info.h"
+#include "content/browser/service_worker/service_worker_metrics.h"
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/browser/service_worker/service_worker_utils.h"
 #include "content/browser/service_worker/service_worker_version.h"
@@ -829,7 +829,7 @@ void ServiceWorkerStorage::OnDiskCacheInitialized(int rv) {
                << net::ErrorToString(rv);
     ScheduleDeleteAndStartOver();
   }
-  ServiceWorkerHistograms::CountInitDiskCacheResult(rv == net::OK);
+  ServiceWorkerMetrics::CountInitDiskCacheResult(rv == net::OK);
 }
 
 void ServiceWorkerStorage::OnNoControllees(ServiceWorkerVersion* version) {

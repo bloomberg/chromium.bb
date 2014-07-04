@@ -6,7 +6,7 @@
 
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_disk_cache.h"
-#include "content/browser/service_worker/service_worker_histograms.h"
+#include "content/browser/service_worker/service_worker_metrics.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_request_headers.h"
@@ -135,8 +135,8 @@ void ServiceWorkerReadFromCacheJob::OnReadInfoComplete(int result) {
   scoped_refptr<ServiceWorkerReadFromCacheJob> protect(this);
   if (!http_info_io_buffer_->http_info) {
     DCHECK(result < 0);
-    ServiceWorkerHistograms::CountReadResponseResult(
-        ServiceWorkerHistograms::READ_HEADERS_ERROR);
+    ServiceWorkerMetrics::CountReadResponseResult(
+        ServiceWorkerMetrics::READ_HEADERS_ERROR);
     NotifyDone(net::URLRequestStatus(net::URLRequestStatus::FAILED, result));
     return;
   }
@@ -173,18 +173,18 @@ void ServiceWorkerReadFromCacheJob::SetupRangeResponse(int resource_size) {
 }
 
 void ServiceWorkerReadFromCacheJob::OnReadComplete(int result) {
-  ServiceWorkerHistograms::ReadResponseResult check_result;
+  ServiceWorkerMetrics::ReadResponseResult check_result;
   if (result == 0) {
-    check_result = ServiceWorkerHistograms::READ_OK;
+    check_result = ServiceWorkerMetrics::READ_OK;
     NotifyDone(net::URLRequestStatus());
   } else if (result < 0) {
-    check_result = ServiceWorkerHistograms::READ_DATA_ERROR;
+    check_result = ServiceWorkerMetrics::READ_DATA_ERROR;
     NotifyDone(net::URLRequestStatus(net::URLRequestStatus::FAILED, result));
   } else {
-    check_result = ServiceWorkerHistograms::READ_OK;
+    check_result = ServiceWorkerMetrics::READ_OK;
     SetStatus(net::URLRequestStatus());  // Clear the IO_PENDING status
   }
-  ServiceWorkerHistograms::CountReadResponseResult(check_result);
+  ServiceWorkerMetrics::CountReadResponseResult(check_result);
   NotifyReadComplete(result);
 }
 
