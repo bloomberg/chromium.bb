@@ -334,6 +334,8 @@ public:
     // Keyboard event to the Right Mouse button down event.
     bool sendContextMenuEvent(const WebKeyboardEvent&);
 
+    void showContextMenuAtPoint(float x, float y, PassRefPtr<WebCore::ContextMenuProvider>);
+
     // Notifies the WebView that a load has been committed. isNewNavigation
     // will be true if a new session history item should be created for that
     // load. isNavigationWithinPage will be true if the navigation does

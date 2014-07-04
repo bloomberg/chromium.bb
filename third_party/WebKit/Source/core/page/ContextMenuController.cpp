@@ -102,6 +102,21 @@ void ContextMenuController::showContextMenu(Event* event, PassRefPtr<ContextMenu
     showContextMenu(event);
 }
 
+void ContextMenuController::showContextMenuAtPoint(LocalFrame* frame, float x, float y, PassRefPtr<ContextMenuProvider> menuProvider)
+{
+    m_menuProvider = menuProvider;
+
+    LayoutPoint location(x, y);
+    m_contextMenu = createContextMenu(frame, location);
+    if (!m_contextMenu) {
+        clearContextMenu();
+        return;
+    }
+
+    m_menuProvider->populateContextMenu(m_contextMenu.get());
+    showContextMenu(nullptr);
+}
+
 PassOwnPtr<ContextMenu> ContextMenuController::createContextMenu(Event* event)
 {
     ASSERT(event);
@@ -110,10 +125,15 @@ PassOwnPtr<ContextMenu> ContextMenuController::createContextMenu(Event* event)
         return nullptr;
 
     MouseEvent* mouseEvent = toMouseEvent(event);
-    HitTestResult result(mouseEvent->absoluteLocation());
+    return createContextMenu(event->target()->toNode()->document().frame(), mouseEvent->absoluteLocation());
+}
 
-    if (LocalFrame* frame = event->target()->toNode()->document().frame())
-        result = frame->eventHandler().hitTestResultAtPoint(mouseEvent->absoluteLocation(), HitTestRequest::ReadOnly | HitTestRequest::Active);
+PassOwnPtr<ContextMenu> ContextMenuController::createContextMenu(LocalFrame* frame, const LayoutPoint& location)
+{
+    HitTestResult result(location);
+
+    if (frame)
+        result = frame->eventHandler().hitTestResultAtPoint(location, HitTestRequest::ReadOnly | HitTestRequest::Active);
 
     if (!result.innerNonSharedNode())
         return nullptr;
@@ -126,7 +146,8 @@ PassOwnPtr<ContextMenu> ContextMenuController::createContextMenu(Event* event)
 void ContextMenuController::showContextMenu(Event* event)
 {
     m_client->showContextMenu(m_contextMenu.get());
-    event->setDefaultHandled();
+    if (event)
+        event->setDefaultHandled();
 }
 
 void ContextMenuController::contextMenuItemSelected(const ContextMenuItem* item)

@@ -43,7 +43,9 @@
 
     [Custom] DOMString platform();
     [Custom] DOMString port();
+    // FIXME: showContextMenu is here only for old frontends. Remove in M43.
     [Custom] void showContextMenu(MouseEvent event, any items);
+    [Custom] void showContextMenuAtPoint(float x, float y, any items);
     void sendMessageToBackend(DOMString message);
     void sendMessageToEmbedder(DOMString message);
 

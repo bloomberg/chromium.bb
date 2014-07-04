@@ -110,6 +110,7 @@ private:
             m_frontendHost->m_menuProvider = 0;
         }
         m_items.clear();
+        m_frontendHost = 0;
     }
 
     InspectorFrontendHost* m_frontendHost;
@@ -193,6 +194,18 @@ void InspectorFrontendHost::sendMessageToEmbedder(const String& message)
 {
     if (m_client)
         m_client->sendMessageToEmbedder(escapeUnicodeNonCharacters(message));
+}
+
+void InspectorFrontendHost::showContextMenu(Page* page, float x, float y, const Vector<ContextMenuItem>& items)
+{
+    ASSERT(m_frontendPage);
+    ScriptState* frontendScriptState = ScriptState::forMainWorld(m_frontendPage->deprecatedLocalMainFrame());
+    ScriptValue frontendApiObject = frontendScriptState->getFromGlobalObject("InspectorFrontendAPI");
+    ASSERT(frontendApiObject.isObject());
+
+    RefPtr<FrontendMenuProvider> menuProvider = FrontendMenuProvider::create(this, frontendApiObject, items);
+    m_menuProvider = menuProvider.get();
+    page->inspectorController().showContextMenu(x, y, menuProvider);
 }
 
 void InspectorFrontendHost::showContextMenu(Event* event, const Vector<ContextMenuItem>& items)

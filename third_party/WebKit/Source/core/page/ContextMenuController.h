@@ -40,6 +40,7 @@ namespace WebCore {
     class ContextMenuProvider;
     class Document;
     class Event;
+    class LocalFrame;
     class Page;
 
     class ContextMenuController : public NoBaseWillBeGarbageCollectedFinalized<ContextMenuController> {
@@ -56,6 +57,7 @@ namespace WebCore {
 
         void handleContextMenuEvent(Event*);
         void showContextMenu(Event*, PassRefPtr<ContextMenuProvider>);
+        void showContextMenuAtPoint(LocalFrame*, float x, float y, PassRefPtr<ContextMenuProvider>);
 
         void contextMenuItemSelected(const ContextMenuItem*);
 
@@ -65,6 +67,7 @@ namespace WebCore {
         ContextMenuController(Page*, ContextMenuClient*);
 
         PassOwnPtr<ContextMenu> createContextMenu(Event*);
+        PassOwnPtr<ContextMenu> createContextMenu(LocalFrame*, const LayoutPoint&);
         void showContextMenu(Event*);
 
         ContextMenuClient* m_client;

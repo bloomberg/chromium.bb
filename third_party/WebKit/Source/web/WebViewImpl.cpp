@@ -62,6 +62,7 @@
 #include "core/loader/UniqueIdentifier.h"
 #include "core/page/Chrome.h"
 #include "core/page/ContextMenuController.h"
+#include "core/page/ContextMenuProvider.h"
 #include "core/page/DragController.h"
 #include "core/page/DragData.h"
 #include "core/page/DragSession.h"
@@ -1352,6 +1353,16 @@ bool WebViewImpl::sendContextMenuEvent(const WebKeyboardEvent& event)
     return handled;
 }
 #endif
+
+void WebViewImpl::showContextMenuAtPoint(float x, float y, PassRefPtr<ContextMenuProvider> menuProvider)
+{
+    if (!page()->mainFrame()->isLocalFrame())
+        return;
+    m_contextMenuAllowed = true;
+    page()->contextMenuController().clearContextMenu();
+    page()->contextMenuController().showContextMenuAtPoint(page()->deprecatedLocalMainFrame(), x, y, menuProvider);
+    m_contextMenuAllowed = false;
+}
 
 bool WebViewImpl::keyEventDefault(const WebKeyboardEvent& event)
 {

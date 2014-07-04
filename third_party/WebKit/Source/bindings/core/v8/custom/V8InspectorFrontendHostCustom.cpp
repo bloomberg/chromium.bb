@@ -33,6 +33,9 @@
 
 #include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8MouseEvent.h"
+#include "bindings/core/v8/V8Window.h"
+#include "core/dom/Document.h"
+#include "core/frame/LocalDOMWindow.h"
 #include "core/inspector/InspectorController.h"
 #include "core/inspector/InspectorFrontendClient.h"
 #include "core/inspector/InspectorFrontendHost.h"
@@ -57,7 +60,7 @@ void V8InspectorFrontendHost::portMethodCustom(const v8::FunctionCallbackInfo<v8
 {
 }
 
-static bool populateContextMenuItems(v8::Local<v8::Array>& itemArray, ContextMenu& menu, v8::Isolate* isolate)
+static bool populateContextMenuItems(const v8::Local<v8::Array>& itemArray, ContextMenu& menu, v8::Isolate* isolate)
 {
     for (size_t i = 0; i < itemArray->Length(); ++i) {
         v8::Local<v8::Object> item = v8::Local<v8::Object>::Cast(itemArray->Get(i));
@@ -121,6 +124,39 @@ void V8InspectorFrontendHost::showContextMenuMethodCustom(const v8::FunctionCall
     InspectorFrontendHost* frontendHost = V8InspectorFrontendHost::toNative(info.Holder());
     Vector<ContextMenuItem> items = menu.items();
     frontendHost->showContextMenu(event, items);
+}
+
+void V8InspectorFrontendHost::showContextMenuAtPointMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    if (info.Length() < 3)
+        return;
+
+    v8::Local<v8::Value> x = v8::Local<v8::Value>::Cast(info[0]);
+    if (!x->IsNumber())
+        return;
+
+    v8::Local<v8::Value> y = v8::Local<v8::Value>::Cast(info[1]);
+    if (!y->IsNumber())
+        return;
+
+    v8::Local<v8::Value> array = v8::Local<v8::Value>::Cast(info[2]);
+    if (!array->IsArray())
+        return;
+    ContextMenu menu;
+    if (!populateContextMenuItems(v8::Local<v8::Array>::Cast(array), menu, info.GetIsolate()))
+        return;
+
+    v8::Isolate* isolate = info.GetIsolate();
+    v8::Handle<v8::Object> windowWrapper = V8Window::findInstanceInPrototypeChain(isolate->GetEnteredContext()->Global(), isolate);
+    if (windowWrapper.IsEmpty())
+        return;
+    LocalDOMWindow* window = V8Window::toNative(windowWrapper);
+    if (!window->document() || !window->document()->page())
+        return;
+
+    InspectorFrontendHost* frontendHost = V8InspectorFrontendHost::toNative(info.Holder());
+    Vector<ContextMenuItem> items = menu.items();
+    frontendHost->showContextMenu(window->document()->page(), static_cast<float>(x->NumberValue()), static_cast<float>(y->NumberValue()), items);
 }
 
 static void histogramEnumeration(const char* name, const v8::FunctionCallbackInfo<v8::Value>& info, int boundaryValue)

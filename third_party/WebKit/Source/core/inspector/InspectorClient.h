@@ -28,6 +28,7 @@
 #define InspectorClient_h
 
 #include "core/inspector/InspectorStateClient.h"
+#include "core/page/ContextMenuProvider.h"
 #include "wtf/Forward.h"
 #include "wtf/HashMap.h"
 #include "wtf/HashSet.h"
@@ -69,6 +70,7 @@ public:
     virtual void setShowScrollBottleneckRects(bool) { }
 
     virtual void resetScrollAndPageScaleFactor() { }
+    virtual void showContextMenu(float x, float y, PassRefPtr<ContextMenuProvider>) { }
     virtual void getAllocatedObjects(HashSet<const void*>&) { }
     virtual void dumpUncountedAllocatedObjects(const HashMap<const void*, size_t>&) { }
 

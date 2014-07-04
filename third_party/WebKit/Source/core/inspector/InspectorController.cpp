@@ -64,6 +64,7 @@
 #include "core/inspector/PageConsoleAgent.h"
 #include "core/inspector/PageDebuggerAgent.h"
 #include "core/inspector/PageRuntimeAgent.h"
+#include "core/page/ContextMenuProvider.h"
 #include "core/page/Page.h"
 #include "core/rendering/RenderLayer.h"
 #include "platform/PlatformMouseEvent.h"
@@ -324,6 +325,13 @@ void InspectorController::setInjectedScriptForOrigin(const String& origin, const
 {
     if (InspectorInspectorAgent* inspectorAgent = m_instrumentingAgents->inspectorInspectorAgent())
         inspectorAgent->setInjectedScriptForOrigin(origin, source);
+}
+
+void InspectorController::showContextMenu(float x, float y, PassRefPtr<ContextMenuProvider> menuProvider)
+{
+    if (!m_inspectorClient)
+        return;
+    m_inspectorClient->showContextMenu(x, y, menuProvider);
 }
 
 void InspectorController::dispatchMessageFromFrontend(const String& message)

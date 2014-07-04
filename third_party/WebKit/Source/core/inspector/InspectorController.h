@@ -40,6 +40,7 @@
 
 namespace WebCore {
 
+class ContextMenuProvider;
 class DOMWrapperWorld;
 class LocalFrame;
 class GraphicsContext;
@@ -88,6 +89,7 @@ public:
     void setInspectorFrontendClient(PassOwnPtr<InspectorFrontendClient>);
     void didClearDocumentOfWindowObject(LocalFrame*);
     void setInjectedScriptForOrigin(const String& origin, const String& source);
+    void showContextMenu(float x, float y, PassRefPtr<ContextMenuProvider>);
 
     void dispatchMessageFromFrontend(const String& message);
 
