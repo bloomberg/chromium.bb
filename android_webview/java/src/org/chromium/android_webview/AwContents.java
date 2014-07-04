@@ -2274,8 +2274,14 @@ public class AwContents {
                         (int) Math.round(event.getY(actionIndex) / mDIPScale));
             }
 
-            if (mOverScrollGlow != null && event.getActionMasked() == MotionEvent.ACTION_UP) {
-                mOverScrollGlow.releaseAll();
+            if (mOverScrollGlow != null) {
+                if (event.getActionMasked() == MotionEvent.ACTION_DOWN) {
+                    mOverScrollGlow.setShouldPull(true);
+                } else if (event.getActionMasked() == MotionEvent.ACTION_UP ||
+                        event.getActionMasked() == MotionEvent.ACTION_CANCEL) {
+                    mOverScrollGlow.setShouldPull(false);
+                    mOverScrollGlow.releaseAll();
+                }
             }
 
             return rv;
