@@ -34,7 +34,7 @@
 
 namespace WTF {
 
-#if defined(MEMORY_TOOL_REPLACES_ALLOCATOR)
+#if defined(MEMORY_SANITIZER_INITIAL_SIZE)
 static const size_t kInitialVectorSize = 1;
 #else
 #ifndef WTF_VECTOR_INITIAL_SIZE
