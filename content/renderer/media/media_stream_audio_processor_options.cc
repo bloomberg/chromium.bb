@@ -234,7 +234,9 @@ void EnableNoiseSuppression(AudioProcessing* audio_processing) {
 }
 
 void EnableExperimentalNoiseSuppression(AudioProcessing* audio_processing) {
-  CHECK_EQ(audio_processing->EnableExperimentalNs(true), 0);
+  webrtc::Config config;
+  config.Set<webrtc::ExperimentalNs>(new webrtc::ExperimentalNs(true));
+  audio_processing->SetExtraOptions(config);
 }
 
 void EnableHighPassFilter(AudioProcessing* audio_processing) {
