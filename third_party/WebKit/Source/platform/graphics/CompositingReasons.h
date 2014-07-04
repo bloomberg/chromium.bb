@@ -80,6 +80,10 @@ const uint64_t CompositingReasonLayerForMask                             = UINT6
 const uint64_t CompositingReasonLayerForClippingMask                     = UINT64_C(1) << 54;
 const uint64_t CompositingReasonLayerForScrollingBlockSelection          = UINT64_C(1) << 55;
 
+// Composited elements with inline transforms trigger assumed overlap so that
+// we can update their transforms quickly.
+const uint64_t CompositingReasonInlineTransform                          = UINT64_C(1) << 56;
+
 // Various combinations of compositing reasons are defined here also, for more intutive and faster bitwise logic.
 const uint64_t CompositingReasonComboAllDirectReasons =
     CompositingReason3DTransform
@@ -123,7 +127,8 @@ const uint64_t CompositingReasonCombo3DDescendants =
 const uint64_t CompositingReasonComboAllStyleDeterminedReasons =
     CompositingReasonComboAllDirectStyleDeterminedReasons
     | CompositingReasonComboCompositedDescendants
-    | CompositingReasonCombo3DDescendants;
+    | CompositingReasonCombo3DDescendants
+    | CompositingReasonInlineTransform;
 
 const uint64_t CompositingReasonComboReasonsThatRequireOwnBacking =
     CompositingReasonComboAllDirectReasons
@@ -348,6 +353,9 @@ static const CompositingReasonStringMap compositingReasonStringMap[] = {
     { CompositingReasonLayerForScrollingBlockSelection,
         "layerForScrollingBlockSelection",
         "Secondary layer, to house block selection gaps for composited scrolling with no scrolling contents" },
+    { CompositingReasonInlineTransform,
+        "inlineTransform",
+        "Has an inline transform, which causes subsequent layers to assume overlap" },
 };
 
 } // namespace WebCore

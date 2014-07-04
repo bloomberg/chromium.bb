@@ -11,6 +11,15 @@ namespace WebCore {
 
 class StyleDifference {
 public:
+    enum PropertyDifference {
+        TransformChanged = 1 << 0,
+        OpacityChanged = 1 << 1,
+        ZIndexChanged = 1 << 2,
+        FilterChanged = 1 << 3,
+        // The object needs to be repainted if it contains text or properties dependent on color (e.g., border or outline).
+        TextOrColorChanged = 1 << 4,
+    };
+
     StyleDifference()
         : m_repaintType(NoRepaint)
         , m_layoutType(NoLayout)
@@ -18,6 +27,11 @@ public:
     { }
 
     bool hasDifference() const { return m_repaintType || m_layoutType || m_propertySpecificDifferences; }
+
+    bool hasOnlyPropertySpecificDifference(PropertyDifference propertyDifference) const
+    {
+        return !m_repaintType && !m_layoutType && m_propertySpecificDifferences == static_cast<unsigned>(propertyDifference);
+    }
 
     bool needsRepaint() const { return m_repaintType != NoRepaint; }
     void clearNeedsRepaint() { m_repaintType = NoRepaint; }
@@ -77,15 +91,6 @@ private:
         FullLayout
     };
     unsigned m_layoutType : 2;
-
-    enum PropertyDifference {
-        TransformChanged = 1 << 0,
-        OpacityChanged = 1 << 1,
-        ZIndexChanged = 1 << 2,
-        FilterChanged = 1 << 3,
-        // The object needs to be repainted if it contains text or properties dependent on color (e.g., border or outline).
-        TextOrColorChanged = 1 << 4,
-    };
 
     unsigned m_propertySpecificDifferences : 5;
 };

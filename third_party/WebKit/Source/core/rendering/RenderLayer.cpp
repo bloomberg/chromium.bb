@@ -3568,6 +3568,35 @@ void RenderLayer::updateFilters(const RenderStyle* oldStyle, const RenderStyle* 
 
 void RenderLayer::styleChanged(StyleDifference diff, const RenderStyle* oldStyle)
 {
+    CompositingReasons oldPotentialCompositingReasonsFromStyle = m_potentialCompositingReasonsFromStyle;
+    compositor()->updatePotentialCompositingReasonsFromStyle(this);
+
+    // This block of code implements an optimization for inline transforms.
+    // A common pattern is for a touchmove handler to update the transform of
+    // an element every frame while the user moves their finger across the
+    // screen. To cut off almost all the work in the compositing update for
+    // this case, we treat inline transforms has having assumed overlap
+    // (similar to how we treat animated transforms). The conditions below
+    // recognize when the compositing state is set up to receive a direct
+    // transform update. Notice that we read CompositingReasonInlineTransform
+    // from the m_compositingReasons, which means that the inline transform
+    // actually triggered assumed overlap in the overlap map.
+    if (diff.hasOnlyPropertySpecificDifference(StyleDifference::TransformChanged)
+        && !renderer()->hasReflection()
+        && m_compositedLayerMapping
+        && m_compositingReasons & CompositingReasonInlineTransform
+        && m_potentialCompositingReasonsFromStyle == oldPotentialCompositingReasonsFromStyle) {
+
+        updateTransform(oldStyle, renderer()->style());
+        // FIXME: Consider introducing a smaller graphics layer update scope
+        // that just handles transforms. GraphicsLayerUpdateLocal will also
+        // program bounds, clips, and many other properties that could not
+        // possibly have changed.
+        m_compositedLayerMapping->setNeedsGraphicsLayerUpdate(GraphicsLayerUpdateLocal);
+        compositor()->setNeedsCompositingUpdate(CompositingUpdateAfterGeometryChange);
+        return;
+    }
+
     m_stackingNode->updateIsNormalFlowOnly();
     m_stackingNode->updateStackingNodesAfterStyleChange(oldStyle);
 
@@ -3595,8 +3624,6 @@ void RenderLayer::styleChanged(StyleDifference diff, const RenderStyle* oldStyle
         DisableCompositingQueryAsserts disabler;
         updateFilters(oldStyle, renderer()->style());
     }
-
-    compositor()->updatePotentialCompositingReasonsFromStyle(this);
 
     setNeedsCompositingInputsUpdate();
 

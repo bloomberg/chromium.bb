@@ -94,6 +94,7 @@ public:
     bool isEmpty() const;
     PropertyReference propertyAt(unsigned index) const { return PropertyReference(*this, index); }
     int findPropertyIndex(CSSPropertyID) const;
+    bool hasProperty(CSSPropertyID property) const { return findPropertyIndex(property) != -1; }
 
     PassRefPtrWillBeRawPtr<CSSValue> getPropertyCSSValue(CSSPropertyID) const;
     String getPropertyValue(CSSPropertyID) const;
