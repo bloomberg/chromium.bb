@@ -29,7 +29,7 @@ class GbmSurfaceFactory : public DriSurfaceFactory {
       SetGLGetProcAddressProcCallback set_gl_get_proc_address) OVERRIDE;
   virtual scoped_ptr<ui::SurfaceOzoneEGL> CreateEGLSurfaceForWidget(
       gfx::AcceleratedWidget w) OVERRIDE;
-  virtual ui::NativeBufferOzone CreateNativeBuffer(
+  virtual scoped_refptr<ui::NativePixmap> CreateNativePixmap(
       gfx::Size size,
       BufferFormat format) OVERRIDE;
 

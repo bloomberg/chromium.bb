@@ -7,6 +7,7 @@
 #include <stdlib.h>
 
 #include "base/command_line.h"
+#include "ui/ozone/public/native_pixmap.h"
 #include "ui/ozone/public/surface_ozone_canvas.h"
 #include "ui/ozone/public/surface_ozone_egl.h"
 
@@ -56,20 +57,13 @@ ui::OverlayCandidatesOzone* SurfaceFactoryOzone::GetOverlayCandidates(
   return NULL;
 }
 
-void SurfaceFactoryOzone::ScheduleOverlayPlane(
-    gfx::AcceleratedWidget w,
-    int plane_z_order,
-    gfx::OverlayTransform plane_transform,
-    ui::NativeBufferOzone buffer,
-    const gfx::Rect& display_bounds,
-    gfx::RectF crop_rect) {
-  NOTREACHED();
-}
-
-ui::NativeBufferOzone SurfaceFactoryOzone::CreateNativeBuffer(
+scoped_refptr<ui::NativePixmap> SurfaceFactoryOzone::CreateNativePixmap(
     gfx::Size size,
     BufferFormat format) {
-  return 0;
+  return NULL;
 }
 
+bool SurfaceFactoryOzone::CanShowPrimaryPlaneAsOverlay() {
+  return false;
+}
 }  // namespace ui

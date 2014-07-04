@@ -34,6 +34,7 @@
         'public/gpu_platform_support.h',
         'public/gpu_platform_support_host.cc',
         'public/gpu_platform_support_host.h',
+        'public/native_pixmap.h',
         'public/overlay_candidates_ozone.cc',
         'public/overlay_candidates_ozone.h',
         'public/surface_factory_ozone.cc',

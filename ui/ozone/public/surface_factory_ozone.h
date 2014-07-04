@@ -20,7 +20,7 @@ class SkCanvas;
 
 namespace ui {
 
-typedef intptr_t NativeBufferOzone;
+class NativePixmap;
 class OverlayCandidatesOzone;
 class SurfaceOzoneCanvas;
 class SurfaceOzoneEGL;
@@ -134,25 +134,15 @@ class OZONE_BASE_EXPORT SurfaceFactoryOzone {
   virtual OverlayCandidatesOzone* GetOverlayCandidates(
       gfx::AcceleratedWidget w);
 
-  // Sets the overlay plane to switch to at the next page flip.
-  // |plane_z_order| specifies the stacking order of the plane relative to the
-  // main framebuffer located at index 0.
-  // |plane_transform| specifies how the buffer is to be transformed during.
-  // composition.
-  // |buffer| to be presented by the overlay.
-  // |display_bounds| specify where it is supposed to be on the screen.
-  // |crop_rect| specifies the region within the buffer to be placed inside
-  // |display_bounds|.
-  virtual void ScheduleOverlayPlane(gfx::AcceleratedWidget w,
-                                    int plane_z_order,
-                                    gfx::OverlayTransform plane_transform,
-                                    ui::NativeBufferOzone buffer,
-                                    const gfx::Rect& display_bounds,
-                                    gfx::RectF crop_rect);
-
   // Cleate a single native buffer to be used for overlay planes.
-  virtual ui::NativeBufferOzone CreateNativeBuffer(gfx::Size size,
-                                                   BufferFormat format);
+  virtual scoped_refptr<NativePixmap> CreateNativePixmap(
+      gfx::Size size,
+      BufferFormat format);
+
+  // Returns true if overlays can be shown at z-index 0, replacing the main
+  // surface. Combined with surfaceless extensions, it allows for an
+  // overlay-only mode.
+  virtual bool CanShowPrimaryPlaneAsOverlay();
 
  private:
   static SurfaceFactoryOzone* impl_;  // not owned
