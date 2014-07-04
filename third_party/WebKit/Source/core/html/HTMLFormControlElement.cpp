@@ -32,8 +32,9 @@
 #include "core/html/HTMLInputElement.h"
 #include "core/html/HTMLLegendElement.h"
 #include "core/html/ValidityState.h"
-#include "core/html/forms/ValidationMessage.h"
 #include "core/frame/UseCounter.h"
+#include "core/page/Page.h"
+#include "core/page/ValidationMessageClient.h"
 #include "core/rendering/RenderBox.h"
 #include "core/rendering/RenderTheme.h"
 #include "wtf/Vector.h"
@@ -48,6 +49,7 @@ HTMLFormControlElement::HTMLFormControlElement(const QualifiedName& tagName, Doc
     , m_isAutofilled(false)
     , m_isReadOnly(false)
     , m_isRequired(false)
+    , m_hasValidationMessage(false)
     , m_ancestorDisabledState(AncestorDisabledStateUnknown)
     , m_dataListAncestorState(Unknown)
     , m_willValidateInitialized(false)
@@ -253,7 +255,7 @@ Node::InsertionNotificationRequest HTMLFormControlElement::insertedInto(Containe
 void HTMLFormControlElement::removedFrom(ContainerNode* insertionPoint)
 {
     hideVisibleValidationMessage();
-    m_validationMessage = nullptr;
+    m_hasValidationMessage = false;
     m_ancestorDisabledState = AncestorDisabledStateUnknown;
     m_dataListAncestorState = Unknown;
     HTMLElement::removedFrom(insertionPoint);
@@ -411,15 +413,43 @@ void HTMLFormControlElement::updateVisibleValidationMessage()
     String message;
     if (renderer() && willValidate())
         message = validationMessage().stripWhiteSpace();
-    if (!m_validationMessage)
-        m_validationMessage = ValidationMessage::create(this);
-    m_validationMessage->updateValidationMessage(message);
+
+    m_hasValidationMessage = true;
+    ValidationMessageClient* client = &page->validationMessageClient();
+    if (message.isEmpty())
+        client->hideValidationMessage(*this);
+    else
+        client->showValidationMessage(*this, message);
 }
 
 void HTMLFormControlElement::hideVisibleValidationMessage()
 {
-    if (m_validationMessage)
-        m_validationMessage->requestToHideMessage();
+    if (!m_hasValidationMessage)
+        return;
+
+    if (ValidationMessageClient* client = validationMessageClient())
+        client->hideValidationMessage(*this);
+}
+
+bool HTMLFormControlElement::isValidationMessageVisible() const
+{
+    if (!m_hasValidationMessage)
+        return false;
+
+    ValidationMessageClient* client = validationMessageClient();
+    if (!client)
+        return false;
+
+    return client->isValidationMessageVisible(*this);
+}
+
+ValidationMessageClient* HTMLFormControlElement::validationMessageClient() const
+{
+    Page* page = document().page();
+    if (!page)
+        return 0;
+
+    return &page->validationMessageClient();
 }
 
 bool HTMLFormControlElement::checkValidity(WillBeHeapVector<RefPtrWillBeMember<FormAssociatedElement> >* unhandledInvalidControls)
@@ -453,9 +483,9 @@ void HTMLFormControlElement::setNeedsValidityCheck()
     m_isValid = newIsValid;
 
     // Updates only if this control already has a validation message.
-    if (m_validationMessage && m_validationMessage->isVisible()) {
+    if (isValidationMessageVisible()) {
         // Calls updateVisibleValidationMessage() even if m_isValid is not
-        // changed because a validation message can be chagned.
+        // changed because a validation message can be changed.
         updateVisibleValidationMessage();
     }
 }

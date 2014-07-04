@@ -37,7 +37,6 @@ class FormDataList;
 class HTMLElement;
 class HTMLFormElement;
 class Node;
-class ValidationMessage;
 class ValidityState;
 class VisibleSelection;
 

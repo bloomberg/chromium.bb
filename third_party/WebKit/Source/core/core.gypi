@@ -2659,8 +2659,6 @@
             'html/forms/TypeAhead.h',
             'html/forms/URLInputType.cpp',
             'html/forms/URLInputType.h',
-            'html/forms/ValidationMessage.cpp',
-            'html/forms/ValidationMessage.h',
             'html/forms/WeekInputType.cpp',
             'html/forms/WeekInputType.h',
             'html/ime/InputMethodContext.cpp',

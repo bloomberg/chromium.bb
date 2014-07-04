@@ -33,7 +33,7 @@ class FormDataList;
 class HTMLFieldSetElement;
 class HTMLFormElement;
 class HTMLLegendElement;
-class ValidationMessage;
+class ValidationMessageClient;
 class ValidityState;
 
 // HTMLFormControlElement is the default implementation of FormAssociatedElement,
@@ -157,11 +157,14 @@ private:
     virtual bool isValidFormControlElement() OVERRIDE FINAL;
     void updateAncestorDisabledState() const;
 
-    OwnPtr<ValidationMessage> m_validationMessage;
+    bool isValidationMessageVisible() const;
+    ValidationMessageClient* validationMessageClient() const;
+
     bool m_disabled : 1;
     bool m_isAutofilled : 1;
     bool m_isReadOnly : 1;
     bool m_isRequired : 1;
+    bool m_hasValidationMessage : 1;
 
     enum AncestorDisabledState { AncestorDisabledStateUnknown, AncestorDisabledStateEnabled, AncestorDisabledStateDisabled };
     mutable AncestorDisabledState m_ancestorDisabledState;
