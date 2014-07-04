@@ -770,7 +770,8 @@ void FrameLoader::reportLocalLoadFailed(LocalFrame* frame, const String& url)
     frame->document()->addConsoleMessage(SecurityMessageSource, ErrorMessageLevel, "Not allowed to load local resource: " + url);
 }
 
-static ResourceRequest requestFromHistoryItem(HistoryItem* item, ResourceRequestCachePolicy cachePolicy)
+// static
+ResourceRequest FrameLoader::requestFromHistoryItem(HistoryItem* item, ResourceRequestCachePolicy cachePolicy)
 {
     RefPtr<FormData> formData = item->formData();
     ResourceRequest request(item->url(), item->referrer());

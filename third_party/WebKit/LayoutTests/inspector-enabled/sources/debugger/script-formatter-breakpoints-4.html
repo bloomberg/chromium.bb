@@ -51,7 +51,7 @@ var test = function()
             {
                 InspectorTest.addResult("Removing breakpoint.");
                 var formattedSourceFrame = panel.visibleView;
-                InspectorTest.removeBreakpoint(formattedSourceFrame, 16);
+                InspectorTest.removeBreakpoint(formattedSourceFrame, 19);
                 InspectorTest.addResult("Unformatting.");
                 scriptFormatter._discardFormattedUISourceCodeScript(panel.visibleView.uiSourceCode());
                 var breakpoints = WebInspector.breakpointManager._storage._setting.get();

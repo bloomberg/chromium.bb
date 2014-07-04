@@ -9,6 +9,7 @@
 #include "core/css/CSSStyleSheet.h"
 #include "core/css/StyleSheetContents.h"
 #include "core/fetch/CSSStyleSheetResource.h"
+#include "core/fetch/RawResource.h"
 #include "core/fetch/Resource.h"
 #include "core/fetch/ResourceFetcher.h"
 #include "core/fetch/ResourcePtr.h"
@@ -21,7 +22,7 @@
 
 namespace WebCore {
 
-class InspectorResourceContentLoader::ResourceClient FINAL : private StyleSheetResourceClient {
+class InspectorResourceContentLoader::ResourceClient FINAL : private RawResourceClient, private StyleSheetResourceClient {
 public:
     ResourceClient(InspectorResourceContentLoader* loader)
         : m_loader(loader)
@@ -30,23 +31,45 @@ public:
 
     void waitForResource(Resource* resource)
     {
-        resource->addClient(this);
+        if (resource->type() == Resource::Raw)
+            resource->addClient(static_cast<RawResourceClient*>(this));
+        else
+            resource->addClient(static_cast<StyleSheetResourceClient*>(this));
     }
 
 private:
     InspectorResourceContentLoader* m_loader;
 
     virtual void setCSSStyleSheet(const String&, const KURL&, const String&, const CSSStyleSheetResource*) OVERRIDE;
+    virtual void notifyFinished(Resource*) OVERRIDE;
+    void resourceFinished(Resource*);
 
     friend class InspectorResourceContentLoader;
 };
 
-void InspectorResourceContentLoader::ResourceClient::setCSSStyleSheet(const String&, const KURL& url, const String&, const CSSStyleSheetResource* resource)
+void InspectorResourceContentLoader::ResourceClient::resourceFinished(Resource* resource)
 {
     if (m_loader)
         m_loader->resourceFinished(this);
-    const_cast<CSSStyleSheetResource*>(resource)->removeClient(this);
+
+    if (resource->type() == Resource::Raw)
+        resource->removeClient(static_cast<RawResourceClient*>(this));
+    else
+        resource->removeClient(static_cast<StyleSheetResourceClient*>(this));
+
     delete this;
+}
+
+void InspectorResourceContentLoader::ResourceClient::setCSSStyleSheet(const String&, const KURL& url, const String&, const CSSStyleSheetResource* resource)
+{
+    resourceFinished(const_cast<CSSStyleSheetResource*>(resource));
+}
+
+void InspectorResourceContentLoader::ResourceClient::notifyFinished(Resource* resource)
+{
+    if (resource->type() == Resource::CSSStyleSheet)
+        return;
+    resourceFinished(resource);
 }
 
 InspectorResourceContentLoader::InspectorResourceContentLoader(Page* page)
@@ -69,8 +92,28 @@ void InspectorResourceContentLoader::start()
     }
     for (Vector<Document*>::const_iterator documentIt = documents.begin(); documentIt != documents.end(); ++documentIt) {
         Document* document = *documentIt;
-
         HashSet<String> urlsToFetch;
+
+        ResourceRequest resourceRequest;
+        HistoryItem* item = document->frame() ? document->frame()->loader().currentItem() : 0;
+        if (item) {
+            resourceRequest = FrameLoader::requestFromHistoryItem(item, ReturnCacheDataDontLoad);
+        } else {
+            resourceRequest = document->url();
+            resourceRequest.setCachePolicy(ReturnCacheDataDontLoad);
+        }
+
+        if (!resourceRequest.url().string().isEmpty()) {
+            urlsToFetch.add(resourceRequest.url().string());
+            FetchRequest request(resourceRequest, FetchInitiatorTypeNames::internal);
+            ResourcePtr<Resource> resource = document->fetcher()->fetchRawResource(request);
+            // Prevent garbage collection by holding a reference to this resource.
+            m_resources.append(resource.get());
+            ResourceClient* resourceClient = new ResourceClient(this);
+            m_pendingResourceClients.add(resourceClient);
+            resourceClient->waitForResource(resource.get());
+        }
+
         Vector<CSSStyleSheet*> styleSheets;
         InspectorCSSAgent::collectAllDocumentStyleSheets(document, styleSheets);
         for (Vector<CSSStyleSheet*>::const_iterator stylesheetIt = styleSheets.begin(); stylesheetIt != styleSheets.end(); ++stylesheetIt) {

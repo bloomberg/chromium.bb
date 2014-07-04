@@ -12,7 +12,6 @@
 
 namespace WebCore {
 
-class CSSStyleSheetResource;
 class Page;
 class Resource;
 class VoidCallback;

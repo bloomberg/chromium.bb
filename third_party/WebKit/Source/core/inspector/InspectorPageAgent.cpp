@@ -580,7 +580,7 @@ static PassRefPtr<TypeBuilder::Array<TypeBuilder::Page::Cookie> > buildArrayForC
     return cookies;
 }
 
-static void cachedResourcesForDocument(Document* document, Vector<Resource*>& result)
+static void cachedResourcesForDocument(Document* document, Vector<Resource*>& result, bool skipXHRs)
 {
     const ResourceFetcher::DocumentResourceMap& allResources = document->fetcher()->allResources();
     ResourceFetcher::DocumentResourceMap::const_iterator end = allResources.end();
@@ -596,6 +596,10 @@ static void cachedResourcesForDocument(Document* document, Vector<Resource*>& re
         case Resource::Font:
             // Skip fonts that were referenced in CSS but never used/downloaded.
             if (toFontResource(cachedResource)->stillNeedsLoad())
+                continue;
+            break;
+        case Resource::Raw:
+            if (skipXHRs)
                 continue;
             break;
         default:
@@ -623,15 +627,15 @@ Vector<Document*> InspectorPageAgent::importsForFrame(LocalFrame* frame)
     return result;
 }
 
-static Vector<Resource*> cachedResourcesForFrame(LocalFrame* frame)
+static Vector<Resource*> cachedResourcesForFrame(LocalFrame* frame, bool skipXHRs)
 {
     Vector<Resource*> result;
     Document* rootDocument = frame->document();
     Vector<Document*> loaders = InspectorPageAgent::importsForFrame(frame);
 
-    cachedResourcesForDocument(rootDocument, result);
+    cachedResourcesForDocument(rootDocument, result, skipXHRs);
     for (size_t i = 0; i < loaders.size(); ++i)
-        cachedResourcesForDocument(loaders[i], result);
+        cachedResourcesForDocument(loaders[i], result, skipXHRs);
 
     return result;
 }
@@ -642,7 +646,7 @@ static Vector<KURL> allResourcesURLsForFrame(LocalFrame* frame)
 
     result.append(urlWithoutFragment(frame->loader().documentLoader()->url()));
 
-    Vector<Resource*> allResources = cachedResourcesForFrame(frame);
+    Vector<Resource*> allResources = cachedResourcesForFrame(frame, false);
     for (Vector<Resource*>::const_iterator it = allResources.begin(); it != allResources.end(); ++it)
         result.append(urlWithoutFragment((*it)->url()));
 
@@ -1241,7 +1245,7 @@ PassRefPtr<TypeBuilder::Page::FrameResourceTree> InspectorPageAgent::buildObject
          .setFrame(frameObject)
          .setResources(subresources);
 
-    Vector<Resource*> allResources = cachedResourcesForFrame(frame);
+    Vector<Resource*> allResources = cachedResourcesForFrame(frame, true);
     for (Vector<Resource*>::const_iterator it = allResources.begin(); it != allResources.end(); ++it) {
         Resource* cachedResource = *it;
 
