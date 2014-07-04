@@ -22,7 +22,7 @@ recordPanelShown:
     network : 3
     profiles : 6
     resources : 2
-    scripts : 4
+    sources : 4
     timeline : 5
 }
 Panel shown: profiles
