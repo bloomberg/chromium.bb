@@ -266,8 +266,8 @@ static void GetDeviceSupportedFormatsDirectShow(
                                 h->bmiHeader.biHeight);
       // Trust the frame rate from the VIDEOINFOHEADER.
       format.frame_rate = (h->AvgTimePerFrame > 0) ?
-          static_cast<int>(kSecondsToReferenceTime / h->AvgTimePerFrame) :
-          0;
+          kSecondsToReferenceTime / static_cast<float>(h->AvgTimePerFrame) :
+          0.0f;
       formats->push_back(format);
       DVLOG(1) << device.name() << " resolution: "
           << format.frame_size.ToString() << ", fps: " << format.frame_rate
@@ -313,7 +313,8 @@ static void GetDeviceSupportedFormatsMediaFoundation(
       DLOG(ERROR) << "MFGetAttributeSize: " << std::hex << hr;
       return;
     }
-    capture_format.frame_rate = denominator ? numerator / denominator : 0;
+    capture_format.frame_rate = denominator
+        ? static_cast<float>(numerator) / denominator : 0.0f;
 
     GUID type_guid;
     hr = type->GetGUID(MF_MT_SUBTYPE, &type_guid);
