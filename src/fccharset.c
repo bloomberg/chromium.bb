@@ -822,14 +822,14 @@ FcNameParseRange (FcChar8 **string, FcChar32 *pfirst, FcChar32 *plast)
 	char *t;
 	long first, last;
 
-	while (isspace(*s) || *s == ',')
+	while (isspace(*s))
 	    s++;
 	t = s;
 	errno = 0;
 	first = last = strtol (s, &s, 16);
 	if (errno)
 	    return FcFalse;
-	while (isspace(*s) || *s == ',')
+	while (isspace(*s))
 	    s++;
 	if (*s == '-')
 	{
