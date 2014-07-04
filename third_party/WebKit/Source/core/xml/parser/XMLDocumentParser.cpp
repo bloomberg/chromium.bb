@@ -58,6 +58,7 @@
 #include "core/xml/parser/XMLParserInput.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/SharedBuffer.h"
+#include "platform/TraceEvent.h"
 #include "platform/network/ResourceError.h"
 #include "platform/network/ResourceRequest.h"
 #include "platform/network/ResourceResponse.h"
@@ -404,6 +405,7 @@ void XMLDocumentParser::detach()
 
 void XMLDocumentParser::end()
 {
+    TRACE_EVENT0("blink", "XMLDocumentParser::end");
     // XMLDocumentParserLibxml2 will do bad things to the document if doEnd() is called.
     // I don't believe XMLDocumentParserQt needs doEnd called in the fragment case.
     ASSERT(!m_parsingFragment);
@@ -861,6 +863,7 @@ void XMLDocumentParser::trace(Visitor* visitor)
 
 void XMLDocumentParser::doWrite(const String& parseString)
 {
+    TRACE_EVENT0("blink", "XMLDocumentParser::doWrite");
     ASSERT(!isDetached());
     if (!m_context)
         initializeParserContext();
@@ -1563,6 +1566,7 @@ bool XMLDocumentParser::appendFragmentSource(const String& chunk)
     if (chunkAsUtf8.length() > INT_MAX)
         return false;
 
+    TRACE_EVENT0("blink", "XMLDocumentParser::appendFragmentSource");
     initializeParserContext(chunkAsUtf8);
     xmlParseContent(context());
     endDocument(); // Close any open text nodes.
