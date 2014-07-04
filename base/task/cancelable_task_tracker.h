@@ -41,6 +41,7 @@
 #include "base/callback.h"
 #include "base/containers/hash_tables.h"
 #include "base/memory/weak_ptr.h"
+#include "base/task_runner_util.h"
 #include "base/threading/thread_checker.h"
 
 namespace tracked_objects {
@@ -73,6 +74,24 @@ class BASE_EXPORT CancelableTaskTracker {
                           const tracked_objects::Location& from_here,
                           const base::Closure& task,
                           const base::Closure& reply);
+
+  template <typename TaskReturnType, typename ReplyArgType>
+  TaskId PostTaskAndReplyWithResult(
+      base::TaskRunner* task_runner,
+      const tracked_objects::Location& from_here,
+      const base::Callback<TaskReturnType(void)>& task,
+      const base::Callback<void(ReplyArgType)>& reply) {
+    TaskReturnType* result = new TaskReturnType();
+    return PostTaskAndReply(
+        task_runner,
+        from_here,
+        base::Bind(&base::internal::ReturnAsParamAdapter<TaskReturnType>,
+                   task,
+                   base::Unretained(result)),
+        base::Bind(&base::internal::ReplyAdapter<TaskReturnType, ReplyArgType>,
+                   reply,
+                   base::Owned(result)));
+  }
 
   // Creates a tracked TaskId and an associated IsCanceledCallback. Client can
   // later call TryCancel() with the returned TaskId, and run |is_canceled_cb|
