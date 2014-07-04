@@ -53,6 +53,9 @@ void SyncRollbackManager::Init(
                                 report_unrecoverable_error_function,
                                 cancelation_signal);
 
+  if (!initialized())
+    return;
+
   change_delegate_ = change_delegate;
 
   for (size_t i = 0; i < workers.size(); ++i) {

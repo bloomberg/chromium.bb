@@ -123,6 +123,10 @@ class SYNC_EXPORT_PRIVATE SyncRollbackManagerBase :
       syncer::TypeDebugInfoObserver* observer) OVERRIDE;
   virtual void RequestEmitDebugInfo() OVERRIDE;
 
+  bool initialized() const {
+    return initialized_;
+  }
+
  private:
   void NotifyInitializationSuccess();
   void NotifyInitializationFailure();
@@ -143,6 +147,8 @@ class SYNC_EXPORT_PRIVATE SyncRollbackManagerBase :
   base::WeakPtrFactory<SyncRollbackManagerBase> weak_ptr_factory_;
 
   scoped_ptr<SyncEncryptionHandler> dummy_handler_;
+
+  bool initialized_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncRollbackManagerBase);
 };

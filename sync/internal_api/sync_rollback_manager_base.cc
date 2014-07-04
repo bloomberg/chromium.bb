@@ -43,7 +43,8 @@ namespace syncer {
 SyncRollbackManagerBase::SyncRollbackManagerBase()
     : report_unrecoverable_error_function_(NULL),
       weak_ptr_factory_(this),
-      dummy_handler_(new DummyEntryptionHandler) {
+      dummy_handler_(new DummyEntryptionHandler),
+      initialized_(false) {
 }
 
 SyncRollbackManagerBase::~SyncRollbackManagerBase() {
@@ -77,6 +78,7 @@ void SyncRollbackManagerBase::Init(
     return;
   }
 
+  initialized_ = true;
   NotifyInitializationSuccess();
 }
 
@@ -151,10 +153,11 @@ void SyncRollbackManagerBase::SaveChanges() {
 }
 
 void SyncRollbackManagerBase::ShutdownOnSyncThread() {
-  if (share_.directory) {
+  if (initialized_) {
     SaveChanges();
     share_.directory->Close();
     share_.directory.reset();
+    initialized_ = false;
   }
 }
 

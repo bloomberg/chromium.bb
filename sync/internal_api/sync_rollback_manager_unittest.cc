@@ -5,6 +5,7 @@
 #include "sync/internal_api/sync_rollback_manager.h"
 
 #include "base/files/scoped_temp_dir.h"
+#include "base/run_loop.h"
 #include "sync/internal_api/public/read_node.h"
 #include "sync/internal_api/public/read_transaction.h"
 #include "sync/internal_api/public/sessions/sync_session_snapshot.h"
@@ -76,9 +77,9 @@ class SyncRollbackManagerTest : public testing::Test,
                void(const sessions::SyncSessionSnapshot&));
   MOCK_METHOD1(OnConnectionStatusChange, void(ConnectionStatus));
   MOCK_METHOD4(OnInitializationComplete,
-      void(const WeakHandle<JsBackend>&,
-           const WeakHandle<DataTypeDebugInfoListener>&,
-           bool, ModelTypeSet));
+               void(const WeakHandle<JsBackend>&,
+                    const WeakHandle<DataTypeDebugInfoListener>&,
+                    bool, ModelTypeSet));
   MOCK_METHOD1(OnActionableError, void(const SyncProtocolError&));
   MOCK_METHOD1(OnMigrationRequested, void(ModelTypeSet));;
   MOCK_METHOD1(OnProtocolEvent, void(const ProtocolEvent&));
@@ -100,11 +101,19 @@ class SyncRollbackManagerTest : public testing::Test,
   }
 
   void InitManager(SyncManager* manager, ModelTypeSet types,
-                   TestChangeDelegate* delegate) {
+                   TestChangeDelegate* delegate, StorageOption storage_option) {
+    manager_ = manager;
+    types_ = types;
+
+    EXPECT_CALL(*this, OnInitializationComplete(_, _, _, _))
+        .WillOnce(WithArgs<2>(Invoke(this,
+                                     &SyncRollbackManagerTest::HandleInit)));
+
     manager->AddObserver(this);
     TestInternalComponentsFactory factory(InternalComponentsFactory::Switches(),
-                                          STORAGE_ON_DISK);
+                                          storage_option);
 
+    base::RunLoop run_loop;
     manager->Init(temp_dir_.path(),
                   MakeWeakHandle(base::WeakPtr<JsEventHandler>()),
                   "", 0, true, scoped_ptr<HttpPostProviderFactory>().Pass(),
@@ -113,21 +122,16 @@ class SyncRollbackManagerTest : public testing::Test,
                   NULL, delegate, SyncCredentials(), "", "", "", &factory,
                   NULL, scoped_ptr<UnrecoverableErrorHandler>().Pass(),
                   NULL, NULL);
-    manager->ConfigureSyncer(
-        CONFIGURE_REASON_NEW_CLIENT,
-        types,
-        ModelTypeSet(), ModelTypeSet(), ModelTypeSet(), ModelSafeRoutingInfo(),
-        base::Bind(&SyncRollbackManagerTest::OnConfigDone,
-                   base::Unretained(this), true),
-        base::Bind(&SyncRollbackManagerTest::OnConfigDone,
-                   base::Unretained(this), false));
+    loop_.PostTask(FROM_HERE, run_loop.QuitClosure());
+    run_loop.Run();
   }
 
   // Create and persist an entry by unique tag in DB.
   void PrepopulateDb(ModelType type, const std::string& client_tag) {
     SyncBackupManager backup_manager;
     TestChangeDelegate delegate;
-    InitManager(&backup_manager, ModelTypeSet(type), &delegate);
+    InitManager(&backup_manager, ModelTypeSet(type), &delegate,
+                STORAGE_ON_DISK);
     CreateEntry(backup_manager.GetUserShare(), type, client_tag);
     backup_manager.ShutdownOnSyncThread();
   }
@@ -140,9 +144,34 @@ class SyncRollbackManagerTest : public testing::Test,
     return BaseNode::INIT_OK == node.InitByClientTagLookup(type, client_tag);
   }
 
+ private:
+  void ConfigureSyncer() {
+    manager_->ConfigureSyncer(
+          CONFIGURE_REASON_NEW_CLIENT,
+          types_,
+          ModelTypeSet(), ModelTypeSet(), ModelTypeSet(),
+          ModelSafeRoutingInfo(),
+          base::Bind(&SyncRollbackManagerTest::OnConfigDone,
+                     base::Unretained(this), true),
+          base::Bind(&SyncRollbackManagerTest::OnConfigDone,
+                     base::Unretained(this), false));
+  }
+
+  void HandleInit(bool success) {
+    if (success) {
+      loop_.PostTask(FROM_HERE,
+                     base::Bind(&SyncRollbackManagerTest::ConfigureSyncer,
+                                base::Unretained(this)));
+    } else {
+      manager_->ShutdownOnSyncThread();
+    }
+  }
+
   base::ScopedTempDir temp_dir_;
   scoped_refptr<ModelSafeWorker> worker_;
   base::MessageLoop loop_;    // Needed for WeakHandle
+  SyncManager* manager_;
+  ModelTypeSet types_;
 };
 
 bool IsRollbackDoneAction(SyncProtocolError e) {
@@ -154,7 +183,8 @@ TEST_F(SyncRollbackManagerTest, RollbackBasic) {
 
   TestChangeDelegate delegate;
   SyncRollbackManager rollback_manager;
-  InitManager(&rollback_manager, ModelTypeSet(PREFERENCES), &delegate);
+  InitManager(&rollback_manager, ModelTypeSet(PREFERENCES), &delegate,
+              STORAGE_ON_DISK);
 
   // Simulate a new entry added during type initialization.
   int64 new_pref_id =
@@ -177,7 +207,8 @@ TEST_F(SyncRollbackManagerTest, NoRollbackOfTypesNotBackedUp) {
 
   TestChangeDelegate delegate;
   SyncRollbackManager rollback_manager;
-  InitManager(&rollback_manager, ModelTypeSet(PREFERENCES, APPS), &delegate);
+  InitManager(&rollback_manager, ModelTypeSet(PREFERENCES, APPS), &delegate,
+              STORAGE_ON_DISK);
 
   // Simulate new entry added during type initialization.
   int64 new_pref_id =
@@ -204,7 +235,8 @@ TEST_F(SyncRollbackManagerTest, BackupDbNotChangedOnAbort) {
   TestChangeDelegate delegate;
   scoped_ptr<SyncRollbackManager> rollback_manager(
       new SyncRollbackManager);
-  InitManager(rollback_manager.get(), ModelTypeSet(PREFERENCES), &delegate);
+  InitManager(rollback_manager.get(), ModelTypeSet(PREFERENCES), &delegate,
+              STORAGE_ON_DISK);
 
   // Simulate a new entry added during type initialization.
   CreateEntry(rollback_manager->GetUserShare(), PREFERENCES, "pref2");
@@ -214,9 +246,18 @@ TEST_F(SyncRollbackManagerTest, BackupDbNotChangedOnAbort) {
 
   // Verify new entry was not persisted.
   rollback_manager.reset(new SyncRollbackManager);
-  InitManager(rollback_manager.get(), ModelTypeSet(PREFERENCES), &delegate);
+  InitManager(rollback_manager.get(), ModelTypeSet(PREFERENCES), &delegate,
+              STORAGE_ON_DISK);
   EXPECT_FALSE(VerifyEntry(rollback_manager->GetUserShare(), PREFERENCES,
                            "pref2"));
+}
+
+TEST_F(SyncRollbackManagerTest, OnInitializationFailure) {
+  // Test graceful shutdown on initialization failure.
+  scoped_ptr<SyncRollbackManager> rollback_manager(
+      new SyncRollbackManager);
+  InitManager(rollback_manager.get(), ModelTypeSet(PREFERENCES), NULL,
+              STORAGE_ON_DISK);
 }
 
 }  // anonymous namespace
