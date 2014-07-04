@@ -19,11 +19,6 @@ function foo()
 
     InspectorTest.addResult(textEditor.text());
 
-    function dumpTextEditorWithSelection()
-    {
-        InspectorTest.addResult(InspectorTest.textWithSelection(textEditor.text(), textEditor.selection()));
-    }
-
     function homeButton(shift, callback)
     {
         var key = WebInspector.isMac() ? "leftArrow" : "home";
@@ -38,7 +33,7 @@ function foo()
         function hitButtonCallback()
         {
             --times;
-            dumpTextEditorWithSelection();
+            InspectorTest.dumpTextWithSelection(textEditor);
             if (times > 0) {
                 homeButton(shift, hitButtonCallback);
                 return;
@@ -53,7 +48,7 @@ function foo()
         {
             var selection = WebInspector.TextRange.createFromLocation(2, 8);
             textEditor.setSelection(selection);
-            dumpTextEditorWithSelection();
+            InspectorTest.dumpTextWithSelection(textEditor);
             hitHomeButton(false, 1, next);
         },
 
@@ -61,7 +56,7 @@ function foo()
         {
             var selection = WebInspector.TextRange.createFromLocation(2, 2);
             textEditor.setSelection(selection);
-            dumpTextEditorWithSelection();
+            InspectorTest.dumpTextWithSelection(textEditor);
             hitHomeButton(false, 1, next);
         },
 
@@ -69,7 +64,7 @@ function foo()
         {
             var selection = WebInspector.TextRange.createFromLocation(2, 2);
             textEditor.setSelection(selection);
-            dumpTextEditorWithSelection();
+            InspectorTest.dumpTextWithSelection(textEditor);
             hitHomeButton(false, 3, next);
         },
 
@@ -77,7 +72,7 @@ function foo()
         {
             var selection = WebInspector.TextRange.createFromLocation(0, 2);
             textEditor.setSelection(selection);
-            dumpTextEditorWithSelection();
+            InspectorTest.dumpTextWithSelection(textEditor);
             hitHomeButton(false, 2, next);
         },
 
@@ -85,7 +80,7 @@ function foo()
         {
             var selection = new WebInspector.TextRange(0, 0, 2, 8);
             textEditor.setSelection(selection);
-            dumpTextEditorWithSelection();
+            InspectorTest.dumpTextWithSelection(textEditor);
             hitHomeButton(true, 3, next);
         },
 
@@ -93,7 +88,7 @@ function foo()
         {
             var selection = new WebInspector.TextRange(3, 1, 2, 8);
             textEditor.setSelection(selection);
-            dumpTextEditorWithSelection();
+            InspectorTest.dumpTextWithSelection(textEditor);
             hitHomeButton(true, 3, next);
         }
     ]);

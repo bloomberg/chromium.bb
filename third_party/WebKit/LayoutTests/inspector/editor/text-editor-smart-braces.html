@@ -24,7 +24,7 @@ function test()
             InspectorTest.typeIn(textEditor, "({[", step2);
             function step2()
             {
-                InspectorTest.addResult(InspectorTest.textWithSelection(textEditor.text(), textEditor.selection()));
+                InspectorTest.dumpTextWithSelection(textEditor);
                 next();
             }
         },
@@ -35,7 +35,7 @@ function test()
             InspectorTest.typeIn(textEditor, "({[]})", step3);
             function step3()
             {
-                InspectorTest.addResult(InspectorTest.textWithSelection(textEditor.text(), textEditor.selection()));
+                InspectorTest.dumpTextWithSelection(textEditor);
                 next();
             }
         }

@@ -37,23 +37,9 @@ function test()
     {
         if (typeof to !== "number")
             to = from;
-        lineSelections([
+        InspectorTest.setLineSelections(textEditor, [
             { line: line, from: from, to: to }
         ]);
-    }
-
-    function lineSelections(selections)
-    {
-        var coords = [];
-        for (var i = 0; i < selections.length; ++i) {
-            var selection = selections[i];
-            if (selection.column) {
-                selection.from = selection.column;
-                selection.to = selection.column;
-            }
-            coords.push(new WebInspector.TextRange(selection.line, selection.from, selection.line, selection.to));
-        }
-        textEditor.setSelections(coords);
     }
 
     function dumpSelectionStats()
@@ -173,7 +159,7 @@ function test()
 
         function testNonWordSelection3(next)
         {
-            lineSelections([
+            InspectorTest.setLineSelections(textEditor, [
                 { line: 14, from: 15, to: 25 },
                 { line: 16, column: 21 },
                 { line: 17, from: 42, to: 47 },
@@ -186,7 +172,7 @@ function test()
 
         function testNonWordSelection4(next)
         {
-            lineSelections([
+            InspectorTest.setLineSelections(textEditor, [
                 { line: 14, from: 15, to: 25 },
                 { line: 16, from: 21, to: 23 },
                 { line: 17, from: 42, to: 47 },
@@ -199,7 +185,7 @@ function test()
 
         function testTriggerWordSearchInMixedCase(next)
         {
-            lineSelections([
+            InspectorTest.setLineSelections(textEditor, [
                 { line: 9, from: 10, to: 25 },
                 { line: 14, column: 33 }
             ]);

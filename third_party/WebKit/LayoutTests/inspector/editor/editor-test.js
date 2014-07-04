@@ -12,9 +12,9 @@ InspectorTest.createTestEditor = function(clientHeight, textEditorDelegate)
     return textEditor;
 };
 
-InspectorTest.textWithSelection = function(text, selection)
+function textWithSelection(text, selections)
 {
-    if (!selection)
+    if (!selections.length)
         return text;
 
     function lineWithCursor(line, column, cursorChar)
@@ -23,21 +23,38 @@ InspectorTest.textWithSelection = function(text, selection)
     }
 
     var lines = text.split("\n");
-    selection = selection.normalize();
-    var endCursorChar = selection.isEmpty() ? "|" : "<";
-    lines[selection.endLine] = lineWithCursor(lines[selection.endLine], selection.endColumn, endCursorChar);
-    if (!selection.isEmpty()) {
-        lines[selection.startLine] = lineWithCursor(lines[selection.startLine], selection.startColumn, ">");
+    for (var i = 0; i < selections.length; ++i) {
+        var selection = selections[i];
+        selection = selection.normalize();
+        var endCursorChar = selection.isEmpty() ? "|" : "<";
+        lines[selection.endLine] = lineWithCursor(lines[selection.endLine], selection.endColumn, endCursorChar);
+        if (!selection.isEmpty()) {
+            lines[selection.startLine] = lineWithCursor(lines[selection.startLine], selection.startColumn, ">");
+        }
     }
     return lines.join("\n");
 }
 
 InspectorTest.dumpTextWithSelection = function(textEditor, dumpWhiteSpaces)
 {
-    var text = InspectorTest.textWithSelection(textEditor.text(), textEditor.selection());
+    var text = textWithSelection(textEditor.text(), textEditor.selections());
     if (dumpWhiteSpaces)
         text = text.replace(/ /g, ".");
     InspectorTest.addResult(text);
+}
+
+InspectorTest.setLineSelections = function(editor, selections)
+{
+    var coords = [];
+    for (var i = 0; i < selections.length; ++i) {
+        var selection = selections[i];
+        if (selection.column) {
+            selection.from = selection.column;
+            selection.to = selection.column;
+        }
+        coords.push(new WebInspector.TextRange(selection.line, selection.from, selection.line, selection.to));
+    }
+    editor.setSelections(coords);
 }
 
 InspectorTest.typeIn = function(editor, typeText, callback)
