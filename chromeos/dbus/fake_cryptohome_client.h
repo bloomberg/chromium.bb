@@ -184,6 +184,15 @@ class CHROMEOS_EXPORT FakeCryptohomeClient : public CryptohomeClient {
                            const cryptohome::AuthorizationRequest& auth,
                            const cryptohome::RemoveKeyRequest& request,
                            const ProtobufMethodCallback& callback) OVERRIDE;
+  virtual void GetBootAttribute(
+      const cryptohome::GetBootAttributeRequest& request,
+      const ProtobufMethodCallback& callback) OVERRIDE;
+  virtual void SetBootAttribute(
+      const cryptohome::SetBootAttributeRequest& request,
+      const ProtobufMethodCallback& callback) OVERRIDE;
+  virtual void FlushAndSignBootAttributes(
+      const cryptohome::FlushAndSignBootAttributesRequest& request,
+      const ProtobufMethodCallback& callback) OVERRIDE;
 
   // Changes the behavior of WaitForServiceToBeAvailable(). This method runs
   // pending callbacks if is_available is true.
@@ -206,6 +215,10 @@ class CHROMEOS_EXPORT FakeCryptohomeClient : public CryptohomeClient {
   static std::vector<uint8> GetStubSystemSalt();
 
  private:
+  void ReturnProtobufMethodCallback(
+      const cryptohome::BaseReply& reply,
+      const ProtobufMethodCallback& callback);
+
   // Posts tasks which return fake results to the UI thread.
   void ReturnAsyncMethodResult(const AsyncMethodCallback& callback,
                                bool returns_data);
@@ -213,9 +226,6 @@ class CHROMEOS_EXPORT FakeCryptohomeClient : public CryptohomeClient {
   // This method is used to implement ReturnAsyncMethodResult.
   void ReturnAsyncMethodResultInternal(const AsyncMethodCallback& callback,
                                        bool returns_data);
-
-  void ReturnProtobufMethodCallback(const std::string& user_id,
-                                    const ProtobufMethodCallback& callback);
 
   bool service_is_available_;
   int async_call_id_;

@@ -190,6 +190,16 @@ class MockCryptohomeClient : public CryptohomeClient {
                     const cryptohome::AuthorizationRequest& auth,
                     const cryptohome::RemoveKeyRequest& request,
                     const ProtobufMethodCallback& callback));
+  MOCK_METHOD2(GetBootAttribute,
+               void(const cryptohome::GetBootAttributeRequest& request,
+                    const ProtobufMethodCallback& callback));
+  MOCK_METHOD2(SetBootAttribute,
+               void(const cryptohome::SetBootAttributeRequest& request,
+                    const ProtobufMethodCallback& callback));
+  MOCK_METHOD2(
+      FlushAndSignBootAttributes,
+      void(const cryptohome::FlushAndSignBootAttributesRequest& request,
+           const ProtobufMethodCallback& callback));
 };
 
 }  // namespace chromeos

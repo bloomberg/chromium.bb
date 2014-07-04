@@ -800,6 +800,54 @@ class CryptohomeClientImpl : public CryptohomeClient {
                                   callback));
   }
 
+  virtual void GetBootAttribute(
+      const cryptohome::GetBootAttributeRequest& request,
+      const ProtobufMethodCallback& callback) OVERRIDE {
+    const char* method_name = cryptohome::kCryptohomeGetBootAttribute;
+    dbus::MethodCall method_call(cryptohome::kCryptohomeInterface, method_name);
+
+    dbus::MessageWriter writer(&method_call);
+    writer.AppendProtoAsArrayOfBytes(request);
+
+    proxy_->CallMethod(&method_call,
+                       dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+                       base::Bind(&CryptohomeClientImpl::OnBaseReplyMethod,
+                                  weak_ptr_factory_.GetWeakPtr(),
+                                  callback));
+  }
+
+  virtual void SetBootAttribute(
+      const cryptohome::SetBootAttributeRequest& request,
+      const ProtobufMethodCallback& callback) OVERRIDE {
+    const char* method_name = cryptohome::kCryptohomeSetBootAttribute;
+    dbus::MethodCall method_call(cryptohome::kCryptohomeInterface, method_name);
+
+    dbus::MessageWriter writer(&method_call);
+    writer.AppendProtoAsArrayOfBytes(request);
+
+    proxy_->CallMethod(&method_call,
+                       dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+                       base::Bind(&CryptohomeClientImpl::OnBaseReplyMethod,
+                                  weak_ptr_factory_.GetWeakPtr(),
+                                  callback));
+  }
+
+  virtual void FlushAndSignBootAttributes(
+      const cryptohome::FlushAndSignBootAttributesRequest& request,
+      const ProtobufMethodCallback& callback) OVERRIDE {
+    const char* method_name = cryptohome::kCryptohomeFlushAndSignBootAttributes;
+    dbus::MethodCall method_call(cryptohome::kCryptohomeInterface, method_name);
+
+    dbus::MessageWriter writer(&method_call);
+    writer.AppendProtoAsArrayOfBytes(request);
+
+    proxy_->CallMethod(&method_call,
+                       dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+                       base::Bind(&CryptohomeClientImpl::OnBaseReplyMethod,
+                                  weak_ptr_factory_.GetWeakPtr(),
+                                  callback));
+  }
+
  protected:
   virtual void Init(dbus::Bus* bus) OVERRIDE {
     proxy_ = bus->GetObjectProxy(

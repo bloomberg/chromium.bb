@@ -472,7 +472,8 @@ void FakeCryptohomeClient::CheckKeyEx(
     const cryptohome::AuthorizationRequest& auth,
     const cryptohome::CheckKeyRequest& request,
     const ProtobufMethodCallback& callback) {
-  ReturnProtobufMethodCallback(id.email(), callback);
+  cryptohome::BaseReply reply;
+  ReturnProtobufMethodCallback(reply, callback);
 }
 
 void FakeCryptohomeClient::MountEx(
@@ -480,7 +481,11 @@ void FakeCryptohomeClient::MountEx(
     const cryptohome::AuthorizationRequest& auth,
     const cryptohome::MountRequest& request,
     const ProtobufMethodCallback& callback) {
-  ReturnProtobufMethodCallback(id.email(), callback);
+  cryptohome::BaseReply reply;
+  cryptohome::MountReply* mount =
+      reply.MutableExtension(cryptohome::MountReply::reply);
+  mount->set_sanitized_username(GetStubSanitizedUsername(id.email()));
+  ReturnProtobufMethodCallback(reply, callback);
 }
 
 void FakeCryptohomeClient::AddKeyEx(
@@ -488,7 +493,8 @@ void FakeCryptohomeClient::AddKeyEx(
     const cryptohome::AuthorizationRequest& auth,
     const cryptohome::AddKeyRequest& request,
     const ProtobufMethodCallback& callback) {
-  ReturnProtobufMethodCallback(id.email(), callback);
+  cryptohome::BaseReply reply;
+  ReturnProtobufMethodCallback(reply, callback);
 }
 
 void FakeCryptohomeClient::RemoveKeyEx(
@@ -496,7 +502,8 @@ void FakeCryptohomeClient::RemoveKeyEx(
     const cryptohome::AuthorizationRequest& auth,
     const cryptohome::RemoveKeyRequest& request,
     const ProtobufMethodCallback& callback) {
-  ReturnProtobufMethodCallback(id.email(), callback);
+  cryptohome::BaseReply reply;
+  ReturnProtobufMethodCallback(reply, callback);
 }
 
 void FakeCryptohomeClient::UpdateKeyEx(
@@ -504,7 +511,32 @@ void FakeCryptohomeClient::UpdateKeyEx(
     const cryptohome::AuthorizationRequest& auth,
     const cryptohome::UpdateKeyRequest& request,
     const ProtobufMethodCallback& callback) {
-  ReturnProtobufMethodCallback(id.email(), callback);
+  cryptohome::BaseReply reply;
+  ReturnProtobufMethodCallback(reply, callback);
+}
+
+void FakeCryptohomeClient::GetBootAttribute(
+    const cryptohome::GetBootAttributeRequest& request,
+    const ProtobufMethodCallback& callback) {
+  cryptohome::BaseReply reply;
+  cryptohome::GetBootAttributeReply* attr_reply =
+      reply.MutableExtension(cryptohome::GetBootAttributeReply::reply);
+  attr_reply->set_value("");
+  ReturnProtobufMethodCallback(reply, callback);
+}
+
+void FakeCryptohomeClient::SetBootAttribute(
+    const cryptohome::SetBootAttributeRequest& request,
+    const ProtobufMethodCallback& callback) {
+  cryptohome::BaseReply reply;
+  ReturnProtobufMethodCallback(reply, callback);
+}
+
+void FakeCryptohomeClient::FlushAndSignBootAttributes(
+    const cryptohome::FlushAndSignBootAttributesRequest& request,
+    const ProtobufMethodCallback& callback) {
+  cryptohome::BaseReply reply;
+  ReturnProtobufMethodCallback(reply, callback);
 }
 
 void FakeCryptohomeClient::SetServiceIsAvailable(bool is_available) {
@@ -525,13 +557,8 @@ std::vector<uint8> FakeCryptohomeClient::GetStubSystemSalt() {
 }
 
 void FakeCryptohomeClient::ReturnProtobufMethodCallback(
-    const std::string& userid,
+    const cryptohome::BaseReply& reply,
     const ProtobufMethodCallback& callback) {
-  cryptohome::BaseReply reply;
-  reply.set_error(cryptohome::CRYPTOHOME_ERROR_NOT_SET);
-  cryptohome::MountReply* mount =
-      reply.MutableExtension(cryptohome::MountReply::reply);
-  mount->set_sanitized_username(GetStubSanitizedUsername(userid));
   base::MessageLoop::current()->PostTask(
       FROM_HERE,
       base::Bind(callback,
