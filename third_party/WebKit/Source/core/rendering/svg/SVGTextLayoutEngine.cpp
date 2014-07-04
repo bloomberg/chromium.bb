@@ -295,13 +295,13 @@ void SVGTextLayoutEngine::finalizeTransformMatrices(Vector<SVGInlineTextBox*>& b
     AffineTransform textBoxTransformation;
     for (unsigned boxPosition = 0; boxPosition < boxCount; ++boxPosition) {
         SVGInlineTextBox* textBox = boxes.at(boxPosition);
-        Vector<SVGTextFragment>& fragments = textBox->textFragments();
+        m_chunkLayoutBuilder.transformationForTextBox(textBox, textBoxTransformation);
+        if (textBoxTransformation.isIdentity())
+            continue;
 
+        Vector<SVGTextFragment>& fragments = textBox->textFragments();
         unsigned fragmentCount = fragments.size();
         for (unsigned i = 0; i < fragmentCount; ++i) {
-            m_chunkLayoutBuilder.transformationForTextBox(textBox, textBoxTransformation);
-            if (textBoxTransformation.isIdentity())
-                continue;
             ASSERT(fragments[i].lengthAdjustTransform.isIdentity());
             fragments[i].lengthAdjustTransform = textBoxTransformation;
         }
