@@ -26,9 +26,9 @@ EVENTS_BASE_EXPORT uint16 GetCharacterFromXEvent(XEvent* xev);
 EVENTS_BASE_EXPORT int XKeysymForWindowsKeyCode(KeyboardCode keycode,
                                                 bool shift);
 
-// Converts an X keycode into an X KeySym.
-EVENTS_BASE_EXPORT unsigned int DefaultXKeysymFromHardwareKeycode(
-    unsigned int keycode);
+// Converts an X keycode into ui::KeyboardCode.
+EVENTS_BASE_EXPORT KeyboardCode
+    DefaultKeyboardCodeFromHardwareKeycode(unsigned int hardware_code);
 
 }  // namespace ui
 
