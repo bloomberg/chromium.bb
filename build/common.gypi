@@ -3954,6 +3954,7 @@
                 ],
                 'defines': [
                   'MEMORY_TOOL_REPLACES_ALLOCATOR',
+                  'MEMORY_SANITIZER_INITIAL_SIZE',
                 ],
               }],
             ],
