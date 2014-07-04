@@ -114,6 +114,7 @@ TAGS
 /tests/*.exe
 /tests/*.log
 /tests/*.trs
+/tests/backtranslate
 /tests/backtranslate_with_letsign
 /tests/capitalized_with_sentance
 /tests/capitalized_word
@@ -171,4 +172,3 @@ TAGS
 /tools/lou_trace
 /tools/lou_translate
 /tools/*.exe
-
