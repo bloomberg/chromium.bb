@@ -333,7 +333,7 @@ PassRefPtrWillBeRawPtr<HTMLDocument> DOMImplementation::createHTMLDocument(const
         ASSERT(headElement);
         RefPtrWillBeRawPtr<HTMLTitleElement> titleElement = HTMLTitleElement::create(*d);
         headElement->appendChild(titleElement);
-        titleElement->appendChild(d->createTextNode(title), IGNORE_EXCEPTION);
+        titleElement->appendChild(d->createTextNode(title), ASSERT_NO_EXCEPTION);
     }
     d->setSecurityOrigin(document().securityOrigin()->isolatedCopy());
     d->setContextFeatures(document().contextFeatures());
