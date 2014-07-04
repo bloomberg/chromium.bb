@@ -44,6 +44,7 @@ class WebAXObjectProxy : public gin::Wrappable<WebAXObjectProxy> {
 
   void NotificationReceived(blink::WebFrame* frame,
                             const std::string& notification_name);
+  void Reset();
 
  protected:
   const blink::WebAXObject& accessibility_object() const {

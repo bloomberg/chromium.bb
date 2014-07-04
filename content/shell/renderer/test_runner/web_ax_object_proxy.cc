@@ -591,6 +591,10 @@ void WebAXObjectProxy::NotificationReceived(
       argv);
 }
 
+void WebAXObjectProxy::Reset()  {
+  notification_callback_.Reset();
+}
+
 std::string WebAXObjectProxy::Role() {
   return GetRole(accessibility_object());
 }
@@ -986,6 +990,17 @@ WebAXObjectProxyList::~WebAXObjectProxyList() {
 }
 
 void WebAXObjectProxyList::Clear() {
+  v8::Isolate* isolate = blink::mainThreadIsolate();
+  v8::HandleScope handle_scope(isolate);
+  size_t elementCount = elements_.Size();
+  for (size_t i = 0; i < elementCount; i++) {
+    WebAXObjectProxy* unwrapped_object = NULL;
+    bool result = gin::ConvertFromV8(isolate, elements_.Get(i),
+                                     &unwrapped_object);
+    DCHECK(result);
+    DCHECK(unwrapped_object);
+    unwrapped_object->Reset();
+  }
   elements_.Clear();
 }
 
