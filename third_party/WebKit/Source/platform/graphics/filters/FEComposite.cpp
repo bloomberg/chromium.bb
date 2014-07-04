@@ -331,15 +331,13 @@ void FEComposite::applySoftware()
         destinationRect.intersect(absolutePaintRect());
         if (destinationRect.isEmpty())
             break;
-        IntPoint destinationPoint(destinationRect.x() - absolutePaintRect().x(), destinationRect.y() - absolutePaintRect().y());
         FloatRect sourceRect(IntPoint(destinationRect.x() - in->absolutePaintRect().x(),
                                     destinationRect.y() - in->absolutePaintRect().y()), destinationRect.size());
         FloatRect source2Rect(IntPoint(destinationRect.x() - in2->absolutePaintRect().x(),
                                      destinationRect.y() - in2->absolutePaintRect().y()), destinationRect.size());
-        filterContext->drawImageBuffer(imageBuffer2,
-            FloatRect(destinationPoint, imageBuffer2->size()), &source2Rect);
-        filterContext->drawImageBuffer(imageBuffer,
-            FloatRect(destinationPoint, imageBuffer->size()), &sourceRect, CompositeSourceIn);
+        destinationRect.move(-absolutePaintRect().x(), -absolutePaintRect().y());
+        filterContext->drawImageBuffer(imageBuffer2, destinationRect, &source2Rect);
+        filterContext->drawImageBuffer(imageBuffer, destinationRect, &sourceRect, CompositeSourceIn);
         break;
     }
     case FECOMPOSITE_OPERATOR_OUT:
