@@ -994,7 +994,13 @@ IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, Flash) {
       LIST_TEST(WebSocket_UtilityBufferedAmount) \
   )
 
-IN_PROC_BROWSER_TEST_F(PPAPITest, WebSocket1) {
+// Repeatedly flaky on WinXP Tests(1): http://crbug.com/389084
+#if defined(OS_WIN)
+#define MAYBE_WebSocket1 DISABLED_WebSocket1
+#else
+#define MAYBE_WebSocket1 WebSocket1
+#endif
+IN_PROC_BROWSER_TEST_F(PPAPITest, MAYBE_WebSocket1) {
   RUN_WEBSOCKET_SUBTESTS_1;
 }
 
