@@ -32,7 +32,6 @@
 #define MIDIAccess_h
 
 #include "bindings/core/v8/ScriptPromise.h"
-#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/dom/ActiveDOMObject.h"
 #include "modules/EventTargetModules.h"
 #include "modules/webmidi/MIDIAccessInitializer.h"
@@ -48,7 +47,7 @@ namespace WebCore {
 class ExecutionContext;
 struct MIDIOptions;
 
-class MIDIAccess FINAL : public RefCountedGarbageCollectedWillBeGarbageCollectedFinalized<MIDIAccess>, public ScriptWrappable, public ActiveDOMObject, public EventTargetWithInlineData, public MIDIAccessorClient {
+class MIDIAccess FINAL : public RefCountedGarbageCollectedWillBeGarbageCollectedFinalized<MIDIAccess>, public ActiveDOMObject, public EventTargetWithInlineData, public MIDIAccessorClient {
     DEFINE_EVENT_TARGET_REFCOUNTING_WILL_BE_REMOVED(RefCountedGarbageCollected<MIDIAccess>);
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(MIDIAccess);
 public:

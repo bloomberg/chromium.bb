@@ -26,7 +26,6 @@
 #ifndef XMLHttpRequestUpload_h
 #define XMLHttpRequestUpload_h
 
-#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/events/EventListener.h"
 #include "core/xml/XMLHttpRequest.h"
 #include "core/xml/XMLHttpRequestEventTarget.h"
@@ -43,7 +42,7 @@ namespace WebCore {
 class ExecutionContext;
 class XMLHttpRequest;
 
-class XMLHttpRequestUpload FINAL : public NoBaseWillBeRefCountedGarbageCollected<XMLHttpRequestUpload>, public ScriptWrappable, public XMLHttpRequestEventTarget {
+class XMLHttpRequestUpload FINAL : public NoBaseWillBeRefCountedGarbageCollected<XMLHttpRequestUpload>, public XMLHttpRequestEventTarget {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(XMLHttpRequestUpload);
 public:
     static PassOwnPtrWillBeRawPtr<XMLHttpRequestUpload> create(XMLHttpRequest* xmlHttpRequest)

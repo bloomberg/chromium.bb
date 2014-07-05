@@ -31,6 +31,7 @@ BatteryManager::BatteryManager(ExecutionContext* context)
     , m_batteryStatus(BatteryStatus::create())
     , m_state(NotStarted)
 {
+    ScriptWrappable::init(this);
 }
 
 ScriptPromise BatteryManager::startRequest(ScriptState* scriptState)

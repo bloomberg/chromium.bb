@@ -30,7 +30,6 @@
 #ifndef VTTCue_h
 #define VTTCue_h
 
-#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/html/track/TextTrackCue.h"
 #include "platform/heap/Handle.h"
 
@@ -61,7 +60,7 @@ private:
     RawPtrWillBeMember<VTTCue> m_cue;
 };
 
-class VTTCue FINAL : public TextTrackCue, public ScriptWrappable {
+class VTTCue FINAL : public TextTrackCue {
 public:
     static PassRefPtrWillBeRawPtr<VTTCue> create(Document& document, double startTime, double endTime, const String& text)
     {

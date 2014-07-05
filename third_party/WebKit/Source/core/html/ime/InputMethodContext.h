@@ -31,7 +31,6 @@
 #ifndef InputMethodContext_h
 #define InputMethodContext_h
 
-#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/editing/CompositionUnderline.h"
 #include "core/events/EventTarget.h"
 #include "core/html/HTMLElement.h"
@@ -46,7 +45,7 @@ class ExecutionContext;
 class InputMethodController;
 class Node;
 
-class InputMethodContext FINAL : public NoBaseWillBeRefCountedGarbageCollected<InputMethodContext>, public ScriptWrappable, public EventTargetWithInlineData {
+class InputMethodContext FINAL : public NoBaseWillBeRefCountedGarbageCollected<InputMethodContext>, public EventTargetWithInlineData {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(InputMethodContext);
 public:
     static PassOwnPtrWillBeRawPtr<InputMethodContext> create(HTMLElement*);

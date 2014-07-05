@@ -32,7 +32,6 @@
 #ifndef Performance_h
 #define Performance_h
 
-#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/events/EventTarget.h"
 #include "core/frame/DOMWindowProperty.h"
 #include "core/timing/MemoryInfo.h"
@@ -56,7 +55,7 @@ class UserTiming;
 
 typedef WillBeHeapVector<RefPtrWillBeMember<PerformanceEntry> > PerformanceEntryVector;
 
-class Performance FINAL : public RefCountedWillBeRefCountedGarbageCollected<Performance>, public ScriptWrappable, public DOMWindowProperty, public EventTargetWithInlineData {
+class Performance FINAL : public RefCountedWillBeRefCountedGarbageCollected<Performance>, public DOMWindowProperty, public EventTargetWithInlineData {
     REFCOUNTED_EVENT_TARGET(Performance);
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(Performance);
 public:

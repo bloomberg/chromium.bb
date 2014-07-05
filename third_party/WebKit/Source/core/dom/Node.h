@@ -26,7 +26,6 @@
 #define Node_h
 
 #include "bindings/core/v8/ExceptionStatePlaceholder.h"
-#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/dom/MutationObserver.h"
 #include "core/dom/SimulatedClickOptions.h"
 #include "core/dom/TreeScope.h"
@@ -109,11 +108,11 @@ private:
 };
 
 #if ENABLE(OILPAN)
-#define NODE_BASE_CLASSES public GarbageCollectedFinalized<Node>, public EventTarget, public ScriptWrappable
+#define NODE_BASE_CLASSES public GarbageCollectedFinalized<Node>, public EventTarget
 #else
 // TreeShared should be the last to pack TreeShared::m_refCount and
 // Node::m_nodeFlags on 64bit platforms.
-#define NODE_BASE_CLASSES public EventTarget, public ScriptWrappable, public TreeShared<Node>
+#define NODE_BASE_CLASSES public EventTarget, public TreeShared<Node>
 #endif
 
 class Node : NODE_BASE_CLASSES {

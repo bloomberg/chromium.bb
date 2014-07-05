@@ -31,7 +31,6 @@
 #ifndef SourceBufferList_h
 #define SourceBufferList_h
 
-#include "bindings/core/v8/ScriptWrappable.h"
 #include "modules/EventTargetModules.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Vector.h"
@@ -41,7 +40,7 @@ namespace WebCore {
 class SourceBuffer;
 class GenericEventQueue;
 
-class SourceBufferList FINAL : public RefCountedGarbageCollectedWillBeGarbageCollectedFinalized<SourceBufferList>, public ScriptWrappable, public EventTargetWithInlineData {
+class SourceBufferList FINAL : public RefCountedGarbageCollectedWillBeGarbageCollectedFinalized<SourceBufferList>, public EventTargetWithInlineData {
     DEFINE_EVENT_TARGET_REFCOUNTING_WILL_BE_REMOVED(RefCountedGarbageCollected<SourceBufferList>);
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(SourceBufferList);
 public:

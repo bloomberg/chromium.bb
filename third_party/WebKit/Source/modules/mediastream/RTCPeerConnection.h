@@ -32,7 +32,6 @@
 #define RTCPeerConnection_h
 
 #include "bindings/core/v8/Dictionary.h"
-#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/dom/ActiveDOMObject.h"
 #include "modules/EventTargetModules.h"
 #include "modules/mediastream/MediaStream.h"
@@ -57,7 +56,6 @@ class VoidCallback;
 
 class RTCPeerConnection FINAL
     : public RefCountedGarbageCollectedWillBeGarbageCollectedFinalized<RTCPeerConnection>
-    , public ScriptWrappable
     , public blink::WebRTCPeerConnectionHandlerClient
     , public EventTargetWithInlineData
     , public ActiveDOMObject {

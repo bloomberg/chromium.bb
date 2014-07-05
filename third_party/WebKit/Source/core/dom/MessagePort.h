@@ -27,7 +27,6 @@
 #ifndef MessagePort_h
 #define MessagePort_h
 
-#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/dom/ActiveDOMObject.h"
 #include "core/events/EventListener.h"
 #include "core/events/EventTarget.h"
@@ -57,7 +56,6 @@ typedef Vector<OwnPtr<blink::WebMessagePortChannel>, 1> MessagePortChannelArray;
 class MessagePort FINAL : public RefCountedWillBeRefCountedGarbageCollected<MessagePort>
     , public ActiveDOMObject
     , public EventTargetWithInlineData
-    , public ScriptWrappable
     , public blink::WebMessagePortChannelClient {
     REFCOUNTED_EVENT_TARGET(MessagePort);
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(MessagePort);

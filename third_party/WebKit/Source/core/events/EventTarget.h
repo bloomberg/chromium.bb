@@ -32,6 +32,7 @@
 #ifndef EventTarget_h
 #define EventTarget_h
 
+#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/events/EventListenerMap.h"
 #include "core/events/ThreadLocalEventNames.h"
 #include "platform/heap/Handle.h"
@@ -72,7 +73,7 @@ public:
     OwnPtr<FiringEventIteratorVector> firingEventIterators;
 };
 
-class EventTarget : public WillBeGarbageCollectedMixin {
+class EventTarget : public WillBeGarbageCollectedMixin, public ScriptWrappable {
 public:
 #if !ENABLE(OILPAN)
     void ref() { refEventTarget(); }
@@ -115,6 +116,7 @@ public:
     virtual void trace(Visitor*) { }
 
 protected:
+    EventTarget();
     virtual ~EventTarget();
 
     // Subclasses should likely not override these themselves; instead, they should subclass EventTargetWithInlineData.

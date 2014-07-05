@@ -23,7 +23,6 @@
 #define XMLHttpRequest_h
 
 #include "bindings/core/v8/ScriptString.h"
-#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/dom/ActiveDOMObject.h"
 #include "core/events/EventListener.h"
 #include "core/loader/ThreadableLoaderClient.h"
@@ -55,7 +54,6 @@ typedef int ExceptionCode;
 
 class XMLHttpRequest FINAL
     : public RefCountedWillBeRefCountedGarbageCollected<XMLHttpRequest>
-    , public ScriptWrappable
     , public XMLHttpRequestEventTarget
     , private ThreadableLoaderClient
     , public ActiveDOMObject {

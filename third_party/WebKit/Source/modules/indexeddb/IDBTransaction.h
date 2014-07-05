@@ -26,7 +26,6 @@
 #ifndef IDBTransaction_h
 #define IDBTransaction_h
 
-#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/dom/ActiveDOMObject.h"
 #include "core/dom/DOMError.h"
 #include "core/events/EventListener.h"
@@ -51,7 +50,6 @@ struct IDBObjectStoreMetadata;
 
 class IDBTransaction FINAL
     : public RefCountedGarbageCollectedWillBeGarbageCollectedFinalized<IDBTransaction>
-    , public ScriptWrappable
     , public EventTargetWithInlineData
     , public ActiveDOMObject {
     DEFINE_EVENT_TARGET_REFCOUNTING_WILL_BE_REMOVED(RefCountedGarbageCollected<IDBTransaction>);

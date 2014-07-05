@@ -25,7 +25,6 @@
 #ifndef AudioNode_h
 #define AudioNode_h
 
-#include "bindings/core/v8/ScriptWrappable.h"
 #include "modules/EventTargetModules.h"
 #include "platform/audio/AudioBus.h"
 #include "wtf/Forward.h"
@@ -51,7 +50,7 @@ class ExceptionState;
 // Most processing nodes such as filters will have one input and one output, although multiple inputs and outputs are possible.
 
 // AudioNode has its own ref-counting mechanism that use RefTypes so we cannot use RefCountedGarbageCollected.
-class AudioNode : public NoBaseWillBeGarbageCollectedFinalized<AudioNode>, public ScriptWrappable, public EventTargetWithInlineData {
+class AudioNode : public NoBaseWillBeGarbageCollectedFinalized<AudioNode>, public EventTargetWithInlineData {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(AudioNode);
 public:
     enum { ProcessingSizeInFrames = 128 };

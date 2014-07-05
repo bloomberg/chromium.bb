@@ -31,7 +31,6 @@
 #ifndef WebSocket_h
 #define WebSocket_h
 
-#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/dom/ActiveDOMObject.h"
 #include "core/events/EventListener.h"
 #include "modules/EventTargetModules.h"
@@ -50,7 +49,7 @@ namespace WebCore {
 class Blob;
 class ExceptionState;
 
-class WebSocket : public RefCountedWillBeRefCountedGarbageCollected<WebSocket>, public ScriptWrappable, public EventTargetWithInlineData, public ActiveDOMObject, public WebSocketChannelClient {
+class WebSocket : public RefCountedWillBeRefCountedGarbageCollected<WebSocket>, public EventTargetWithInlineData, public ActiveDOMObject, public WebSocketChannelClient {
     REFCOUNTED_EVENT_TARGET(WebSocket);
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(WebSocket);
 public:

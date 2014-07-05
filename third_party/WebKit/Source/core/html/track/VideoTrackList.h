@@ -5,13 +5,12 @@
 #ifndef VideoTrackList_h
 #define VideoTrackList_h
 
-#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/html/track/TrackListBase.h"
 #include "core/html/track/VideoTrack.h"
 
 namespace WebCore {
 
-class VideoTrackList FINAL : public TrackListBase<VideoTrack>, public ScriptWrappable {
+class VideoTrackList FINAL : public TrackListBase<VideoTrack> {
 public:
     static PassRefPtrWillBeRawPtr<VideoTrackList> create(HTMLMediaElement&);
 

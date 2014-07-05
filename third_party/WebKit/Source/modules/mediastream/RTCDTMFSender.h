@@ -26,7 +26,6 @@
 #ifndef RTCDTMFSender_h
 #define RTCDTMFSender_h
 
-#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/dom/ActiveDOMObject.h"
 #include "modules/EventTargetModules.h"
 #include "platform/Timer.h"
@@ -44,7 +43,6 @@ class MediaStreamTrack;
 
 class RTCDTMFSender FINAL
     : public RefCountedGarbageCollectedWillBeGarbageCollectedFinalized<RTCDTMFSender>
-    , public ScriptWrappable
     , public EventTargetWithInlineData
     , public blink::WebRTCDTMFSenderHandlerClient
     , public ActiveDOMObject {

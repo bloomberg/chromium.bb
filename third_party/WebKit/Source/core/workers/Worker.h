@@ -46,7 +46,7 @@ class ExecutionContext;
 class WorkerGlobalScopeProxy;
 class WorkerScriptLoader;
 
-class Worker FINAL : public AbstractWorker, public ScriptWrappable, private WorkerScriptLoaderClient {
+class Worker FINAL : public AbstractWorker, private WorkerScriptLoaderClient {
 public:
     static PassRefPtrWillBeRawPtr<Worker> create(ExecutionContext*, const String& url, ExceptionState&);
     virtual ~Worker();

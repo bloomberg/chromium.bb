@@ -31,7 +31,6 @@
 #ifndef FileWriter_h
 #define FileWriter_h
 
-#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/dom/ActiveDOMObject.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/fileapi/FileError.h"
@@ -47,7 +46,7 @@ class Blob;
 class ExceptionState;
 class ExecutionContext;
 
-class FileWriter FINAL : public FileWriterBase, public ScriptWrappable, public ActiveDOMObject, public EventTargetWithInlineData, public blink::WebFileWriterClient {
+class FileWriter FINAL : public FileWriterBase, public ActiveDOMObject, public EventTargetWithInlineData, public blink::WebFileWriterClient {
     DEFINE_EVENT_TARGET_REFCOUNTING(RefCountedGarbageCollected<FileWriterBase>);
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(FileWriter);
 public:

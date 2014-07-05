@@ -26,7 +26,6 @@
 #ifndef SpeechSynthesisUtterance_h
 #define SpeechSynthesisUtterance_h
 
-#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/dom/ContextLifecycleObserver.h"
 #include "modules/EventTargetModules.h"
 #include "modules/speech/SpeechSynthesisVoice.h"
@@ -35,7 +34,7 @@
 
 namespace WebCore {
 
-class SpeechSynthesisUtterance FINAL : public RefCountedGarbageCollectedWillBeGarbageCollectedFinalized<SpeechSynthesisUtterance>, public PlatformSpeechSynthesisUtteranceClient, public ScriptWrappable, public ContextLifecycleObserver, public EventTargetWithInlineData {
+class SpeechSynthesisUtterance FINAL : public RefCountedGarbageCollectedWillBeGarbageCollectedFinalized<SpeechSynthesisUtterance>, public PlatformSpeechSynthesisUtteranceClient, public ContextLifecycleObserver, public EventTargetWithInlineData {
     DEFINE_EVENT_TARGET_REFCOUNTING_WILL_BE_REMOVED(RefCountedGarbageCollected<SpeechSynthesisUtterance>);
     USING_GARBAGE_COLLECTED_MIXIN(SpeechSynthesisUtterance);
 public:

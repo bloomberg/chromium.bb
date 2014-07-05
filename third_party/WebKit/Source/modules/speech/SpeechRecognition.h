@@ -26,7 +26,6 @@
 #ifndef SpeechRecognition_h
 #define SpeechRecognition_h
 
-#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/dom/ActiveDOMObject.h"
 #include "modules/EventTargetModules.h"
 #include "modules/speech/SpeechGrammarList.h"
@@ -42,7 +41,7 @@ class ExecutionContext;
 class SpeechRecognitionController;
 class SpeechRecognitionError;
 
-class SpeechRecognition FINAL : public RefCountedGarbageCollectedWillBeGarbageCollectedFinalized<SpeechRecognition>, public ScriptWrappable, public ActiveDOMObject, public EventTargetWithInlineData {
+class SpeechRecognition FINAL : public RefCountedGarbageCollectedWillBeGarbageCollectedFinalized<SpeechRecognition>, public ActiveDOMObject, public EventTargetWithInlineData {
     DEFINE_EVENT_TARGET_REFCOUNTING_WILL_BE_REMOVED(RefCountedGarbageCollected<SpeechRecognition>);
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(SpeechRecognition);
 public:

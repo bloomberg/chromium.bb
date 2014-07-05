@@ -5,13 +5,12 @@
 #ifndef AudioTrackList_h
 #define AudioTrackList_h
 
-#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/html/track/AudioTrack.h"
 #include "core/html/track/TrackListBase.h"
 
 namespace WebCore {
 
-class AudioTrackList FINAL : public TrackListBase<AudioTrack>, public ScriptWrappable {
+class AudioTrackList FINAL : public TrackListBase<AudioTrack> {
 public:
     static PassRefPtrWillBeRawPtr<AudioTrackList> create(HTMLMediaElement&);
 

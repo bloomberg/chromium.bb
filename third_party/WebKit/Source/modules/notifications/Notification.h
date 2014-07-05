@@ -31,7 +31,6 @@
 #ifndef Notification_h
 #define Notification_h
 
-#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/dom/ActiveDOMObject.h"
 #include "modules/EventTargetModules.h"
 #include "modules/notifications/NotificationClient.h"
@@ -48,7 +47,7 @@ class Dictionary;
 class ExecutionContext;
 class NotificationPermissionCallback;
 
-class Notification : public RefCountedGarbageCollectedWillBeGarbageCollectedFinalized<Notification>, public ScriptWrappable, public ActiveDOMObject, public EventTargetWithInlineData {
+class Notification : public RefCountedGarbageCollectedWillBeGarbageCollectedFinalized<Notification>, public ActiveDOMObject, public EventTargetWithInlineData {
     DEFINE_EVENT_TARGET_REFCOUNTING_WILL_BE_REMOVED(RefCountedGarbageCollected<Notification>);
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(Notification);
 public:

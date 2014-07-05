@@ -71,6 +71,7 @@ AnimationPlayer::AnimationPlayer(ExecutionContext* executionContext, AnimationTi
     , m_outdated(true)
     , m_finished(false)
 {
+    ScriptWrappable::init(this);
     if (m_content) {
         if (m_content->player())
             m_content->player()->cancel();

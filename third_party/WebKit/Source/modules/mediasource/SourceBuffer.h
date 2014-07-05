@@ -31,7 +31,6 @@
 #ifndef SourceBuffer_h
 #define SourceBuffer_h
 
-#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/dom/ActiveDOMObject.h"
 #include "core/fileapi/FileReaderLoaderClient.h"
 #include "modules/EventTargetModules.h"
@@ -54,7 +53,7 @@ class MediaSource;
 class Stream;
 class TimeRanges;
 
-class SourceBuffer FINAL : public RefCountedGarbageCollectedWillBeGarbageCollectedFinalized<SourceBuffer>, public ActiveDOMObject, public EventTargetWithInlineData, public ScriptWrappable, public FileReaderLoaderClient {
+class SourceBuffer FINAL : public RefCountedGarbageCollectedWillBeGarbageCollectedFinalized<SourceBuffer>, public ActiveDOMObject, public EventTargetWithInlineData, public FileReaderLoaderClient {
     DEFINE_EVENT_TARGET_REFCOUNTING_WILL_BE_REMOVED(RefCountedGarbageCollected<SourceBuffer>);
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(SourceBuffer);
 public:

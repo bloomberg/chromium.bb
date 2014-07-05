@@ -26,7 +26,6 @@
 #ifndef MediaStreamTrack_h
 #define MediaStreamTrack_h
 
-#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/dom/ActiveDOMObject.h"
 #include "modules/EventTargetModules.h"
 #include "modules/mediastream/SourceInfo.h"
@@ -43,7 +42,6 @@ class MediaStreamTrackSourcesCallback;
 
 class MediaStreamTrack FINAL
     : public RefCountedGarbageCollectedWillBeGarbageCollectedFinalized<MediaStreamTrack>
-    , public ScriptWrappable
     , public ActiveDOMObject
     , public EventTargetWithInlineData
     , public MediaStreamSource::Observer {

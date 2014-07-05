@@ -32,7 +32,6 @@
 #define ServiceWorker_h
 
 #include "bindings/core/v8/ScriptPromise.h"
-#include "bindings/core/v8/ScriptWrappable.h"
 #include "bindings/core/v8/SerializedScriptValue.h"
 #include "core/workers/AbstractWorker.h"
 #include "public/platform/WebServiceWorker.h"
@@ -49,7 +48,6 @@ class ScriptPromiseResolver;
 
 class ServiceWorker
     : public AbstractWorker
-    , public ScriptWrappable
     , public blink::WebServiceWorkerProxy {
 public:
     virtual ~ServiceWorker() { }

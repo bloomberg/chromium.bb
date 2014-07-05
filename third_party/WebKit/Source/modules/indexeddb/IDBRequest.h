@@ -31,7 +31,6 @@
 
 #include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/ScriptValue.h"
-#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/dom/ActiveDOMObject.h"
 #include "core/dom/DOMError.h"
 #include "core/dom/DOMStringList.h"
@@ -55,7 +54,6 @@ class SharedBuffer;
 
 class IDBRequest
     : public RefCountedGarbageCollectedWillBeGarbageCollectedFinalized<IDBRequest>
-    , public ScriptWrappable
     , public EventTargetWithInlineData
     , public ActiveDOMObject {
     DEFINE_EVENT_TARGET_REFCOUNTING_WILL_BE_REMOVED(RefCountedGarbageCollected<IDBRequest>);

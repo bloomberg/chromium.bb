@@ -5,7 +5,6 @@
 #ifndef NetworkInformation_h
 #define NetworkInformation_h
 
-#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/dom/ActiveDOMObject.h"
 #include "core/events/EventTarget.h"
 #include "core/page/NetworkStateNotifier.h"
@@ -17,7 +16,6 @@ class ExecutionContext;
 
 class NetworkInformation FINAL
     : public RefCountedWillBeRefCountedGarbageCollected<NetworkInformation>
-    , public ScriptWrappable
     , public ActiveDOMObject
     , public EventTargetWithInlineData
     , public NetworkStateNotifier::NetworkStateObserver {

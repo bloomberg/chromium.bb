@@ -25,7 +25,6 @@
 #ifndef AudioContext_h
 #define AudioContext_h
 
-#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/dom/ActiveDOMObject.h"
 #include "core/events/EventListener.h"
 #include "modules/EventTargetModules.h"
@@ -74,7 +73,7 @@ class WaveShaperNode;
 // AudioContext is the cornerstone of the web audio API and all AudioNodes are created from it.
 // For thread safety between the audio thread and the main thread, it has a rendering graph locking mechanism.
 
-class AudioContext : public ThreadSafeRefCountedWillBeThreadSafeRefCountedGarbageCollected<AudioContext>, public ActiveDOMObject, public ScriptWrappable, public EventTargetWithInlineData {
+class AudioContext : public ThreadSafeRefCountedWillBeThreadSafeRefCountedGarbageCollected<AudioContext>, public ActiveDOMObject, public EventTargetWithInlineData {
     DEFINE_EVENT_TARGET_REFCOUNTING(ThreadSafeRefCountedWillBeThreadSafeRefCountedGarbageCollected<AudioContext>);
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(AudioContext);
 public:

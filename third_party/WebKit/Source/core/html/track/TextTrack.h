@@ -27,7 +27,6 @@
 #ifndef TextTrack_h
 #define TextTrack_h
 
-#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/events/EventTarget.h"
 #include "core/html/track/TrackBase.h"
 #include "platform/heap/Handle.h"
@@ -44,7 +43,7 @@ class TextTrackList;
 class VTTRegion;
 class VTTRegionList;
 
-class TextTrack : public TrackBase, public ScriptWrappable, public EventTargetWithInlineData {
+class TextTrack : public TrackBase, public EventTargetWithInlineData {
     REFCOUNTED_EVENT_TARGET(TrackBase);
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(TextTrack);
 public:

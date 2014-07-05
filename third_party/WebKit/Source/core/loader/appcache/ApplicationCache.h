@@ -26,7 +26,6 @@
 #ifndef ApplicationCache_h
 #define ApplicationCache_h
 
-#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/events/EventTarget.h"
 #include "core/loader/appcache/ApplicationCacheHost.h"
 #include "core/frame/DOMWindowProperty.h"
@@ -41,7 +40,7 @@ class ExceptionState;
 class LocalFrame;
 class KURL;
 
-class ApplicationCache FINAL : public RefCountedWillBeRefCountedGarbageCollected<ApplicationCache>, public ScriptWrappable, public EventTargetWithInlineData, public DOMWindowProperty {
+class ApplicationCache FINAL : public RefCountedWillBeRefCountedGarbageCollected<ApplicationCache>, public EventTargetWithInlineData, public DOMWindowProperty {
     REFCOUNTED_EVENT_TARGET(ApplicationCache);
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(ApplicationCache);
 public:

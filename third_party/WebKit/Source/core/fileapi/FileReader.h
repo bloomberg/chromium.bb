@@ -31,7 +31,6 @@
 #ifndef FileReader_h
 #define FileReader_h
 
-#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/dom/ActiveDOMObject.h"
 #include "core/events/EventTarget.h"
 #include "core/fileapi/FileError.h"
@@ -49,7 +48,7 @@ class Blob;
 class ExceptionState;
 class ExecutionContext;
 
-class FileReader FINAL : public RefCountedWillBeRefCountedGarbageCollected<FileReader>, public ScriptWrappable, public ActiveDOMObject, public FileReaderLoaderClient, public EventTargetWithInlineData {
+class FileReader FINAL : public RefCountedWillBeRefCountedGarbageCollected<FileReader>, public ActiveDOMObject, public FileReaderLoaderClient, public EventTargetWithInlineData {
     REFCOUNTED_EVENT_TARGET(FileReader);
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(FileReader);
 public:
