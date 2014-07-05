@@ -48,11 +48,11 @@
           },
           'cflags': [ '-Wno-header-hygiene' ],
         }],
-        ['OS=="linux"', {
+        ['OS=="linux" or OS=="mac"', {
           'defines': [
-            # TODO(tfarina): Only Linux has the generated config.h for now.
-            # Generate the config.h in the other platforms: mac, win and enable
-            # this for everyone.
+            # TODO(tfarina): Only Mac and Linux has the generated config.h for
+            # now. Generate the config.h for Windows too and enable this there
+            # as well.
             'HAVE_CONFIG_H=1',
           ],
         }],
@@ -70,9 +70,6 @@
     {
       'target_name': 'snappy_unittest',
       'type': 'executable',
-      'defines': [
-        'HAVE_CONFIG_H=1',
-      ],
       'sources': [
         'src/snappy-test.cc',
         'src/snappy-test.h',
@@ -85,6 +82,14 @@
         '../../third_party/zlib/zlib.gyp:zlib',
       ],
       'conditions': [
+        ['OS=="linux" or OS=="mac"', {
+          'defines': [
+            # TODO(tfarina): Only Mac and Linux has the generated config.h for
+            # now. Generate the config.h for Windows too and enable this there
+            # as well.
+            'HAVE_CONFIG_H=1',
+          ],
+        }],
         ['clang == 1', {
           'cflags': [
             '-Wno-return-type',
