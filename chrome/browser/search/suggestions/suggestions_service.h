@@ -22,7 +22,9 @@
 #include "ui/gfx/image/image_skia.h"
 #include "url/gurl.h"
 
-class Profile;
+namespace net {
+class URLRequestContextGetter;
+}  // namespace net
 
 namespace user_prefs {
 class PrefRegistrySyncable;
@@ -47,7 +49,7 @@ class SuggestionsService : public KeyedService, public net::URLFetcherDelegate {
  public:
   typedef base::Callback<void(const SuggestionsProfile&)> ResponseCallback;
 
-  SuggestionsService(Profile* profile,
+  SuggestionsService(net::URLRequestContextGetter* url_request_context,
                      scoped_ptr<SuggestionsStore> suggestions_store,
                      scoped_ptr<ThumbnailManager> thumbnail_manager,
                      scoped_ptr<BlacklistStore> blacklist_store);
@@ -163,7 +165,7 @@ class SuggestionsService : public KeyedService, public net::URLFetcherDelegate {
   // Used to obtain server thumbnails, if available.
   scoped_ptr<ThumbnailManager> thumbnail_manager_;
 
-  Profile* profile_;
+  net::URLRequestContextGetter* url_request_context_;
 
   // Delay used when scheduling a blacklisting task.
   int blacklist_delay_sec_;

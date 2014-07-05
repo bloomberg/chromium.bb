@@ -8,16 +8,12 @@
 #include <string>
 
 #include "base/memory/scoped_ptr.h"
-#include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
-#include "chrome/browser/browser_process.h"
-#include "chrome/browser/history/history_types.h"
 #include "chrome/browser/metrics/variations/variations_http_header_provider.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/suggestions/blacklist_store.h"
 #include "chrome/browser/search/suggestions/suggestions_store.h"
 #include "components/pref_registry/pref_registry_syncable.h"
@@ -121,13 +117,14 @@ std::string GetBlacklistUrlPrefix() {
 }  // namespace
 
 SuggestionsService::SuggestionsService(
-    Profile* profile, scoped_ptr<SuggestionsStore> suggestions_store,
+    net::URLRequestContextGetter* url_request_context,
+    scoped_ptr<SuggestionsStore> suggestions_store,
     scoped_ptr<ThumbnailManager> thumbnail_manager,
     scoped_ptr<BlacklistStore> blacklist_store)
     : suggestions_store_(suggestions_store.Pass()),
       blacklist_store_(blacklist_store.Pass()),
       thumbnail_manager_(thumbnail_manager.Pass()),
-      profile_(profile),
+      url_request_context_(url_request_context),
       blacklist_delay_sec_(kBlacklistDefaultDelaySec),
       weak_ptr_factory_(this),
       request_timeout_ms_(kDefaultRequestTimeoutMs) {
@@ -248,11 +245,11 @@ net::URLFetcher* SuggestionsService::CreateSuggestionsRequest(const GURL& url) {
   net::URLFetcher* request =
       net::URLFetcher::Create(0, url, net::URLFetcher::GET, this);
   request->SetLoadFlags(net::LOAD_DISABLE_CACHE);
-  request->SetRequestContext(profile_->GetRequestContext());
+  request->SetRequestContext(url_request_context_);
   // Add Chrome experiment state to the request headers.
   net::HttpRequestHeaders headers;
   chrome_variations::VariationsHttpHeaderProvider::GetInstance()->AppendHeaders(
-      request->GetOriginalURL(), profile_->IsOffTheRecord(), false, &headers);
+      request->GetOriginalURL(), false, false, &headers);
   request->SetExtraRequestHeaders(headers.ToString());
   return request;
 }

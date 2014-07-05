@@ -23,7 +23,8 @@ namespace suggestions {
 
 // static
 SuggestionsService* SuggestionsServiceFactory::GetForProfile(Profile* profile) {
-  if (!SuggestionsService::IsEnabled()) return NULL;
+  if (!SuggestionsService::IsEnabled() || profile->IsOffTheRecord())
+    return NULL;
 
   return static_cast<SuggestionsService*>(
       GetInstance()->GetServiceForBrowserContext(profile, true));
@@ -69,11 +70,10 @@ KeyedService* SuggestionsServiceFactory::BuildServiceInstanceFor(
 
   scoped_ptr<ThumbnailManager> thumbnail_manager(new ThumbnailManager(
       the_profile->GetRequestContext(),
-      db.PassAs<leveldb_proto::ProtoDatabase<ThumbnailData> >(),
-      database_dir));
-  return new SuggestionsService(the_profile, suggestions_store.Pass(),
-                                thumbnail_manager.Pass(),
-                                blacklist_store.Pass());
+      db.PassAs<leveldb_proto::ProtoDatabase<ThumbnailData> >(), database_dir));
+  return new SuggestionsService(
+      the_profile->GetRequestContext(), suggestions_store.Pass(),
+      thumbnail_manager.Pass(), blacklist_store.Pass());
 }
 
 void SuggestionsServiceFactory::RegisterProfilePrefs(
