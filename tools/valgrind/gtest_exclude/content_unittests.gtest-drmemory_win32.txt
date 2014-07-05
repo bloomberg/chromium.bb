@@ -1,2 +1,5 @@
 # Crashes: http://crbug.com/383054
 BrowserAccessibilityManagerWinTest.TestAccessibleHWND
+
+# http://crbug.com/391513
+GamepadServiceTest.ConnectionsTest
