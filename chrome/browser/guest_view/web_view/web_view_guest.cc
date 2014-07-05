@@ -25,11 +25,11 @@
 #include "chrome/browser/renderer_context_menu/context_menu_delegate.h"
 #include "chrome/browser/renderer_context_menu/render_view_context_menu.h"
 #include "chrome/browser/ui/pdf/pdf_tab_helper.h"
+#include "chrome/browser/ui/zoom/zoom_controller.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/render_messages.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_security_policy.h"
-#include "content/public/browser/host_zoom_map.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_details.h"
@@ -164,6 +164,14 @@ void RemoveWebViewEventListenersOnIOThread(
 }
 
 void AttachWebViewHelpers(WebContents* contents) {
+  // Create a zoom controller for the guest contents give it access to
+  // GetZoomLevel() and and SetZoomLevel() in WebViewGuest.
+  // TODO(wjmaclean) This currently uses the same HostZoomMap as the browser
+  // context, but we eventually want to isolate the guest contents from zoom
+  // changes outside the guest (e.g. in the main browser), so we should
+  // create a separate HostZoomMap for the guest.
+  ZoomController::CreateForWebContents(contents);
+
   FaviconTabHelper::CreateForWebContents(contents);
   extensions::ChromeExtensionWebContentsObserver::CreateForWebContents(
       contents);
@@ -1028,8 +1036,10 @@ void WebViewGuest::DidCommitProvisionalLoadForFrame(
       new GuestViewBase::Event(webview::kEventLoadCommit, args.Pass()));
 
   // Update the current zoom factor for the new page.
-  current_zoom_factor_ = content::ZoomLevelToZoomFactor(
-      content::HostZoomMap::GetZoomLevel(guest_web_contents()));
+  ZoomController* zoom_controller =
+      ZoomController::FromWebContents(guest_web_contents());
+  DCHECK(zoom_controller);
+  current_zoom_factor_ = zoom_controller->GetZoomLevel();
 
   if (!render_frame_host->GetParent()) {
     chromevox_injected_ = false;
@@ -1484,8 +1494,11 @@ void WebViewGuest::SetName(const std::string& name) {
 }
 
 void WebViewGuest::SetZoom(double zoom_factor) {
+  ZoomController* zoom_controller =
+      ZoomController::FromWebContents(guest_web_contents());
+  DCHECK(zoom_controller);
   double zoom_level = content::ZoomFactorToZoomLevel(zoom_factor);
-  content::HostZoomMap::SetZoomLevel(guest_web_contents(), zoom_level);
+  zoom_controller->SetZoomLevel(zoom_level);
 
   scoped_ptr<base::DictionaryValue> args(new base::DictionaryValue());
   args->SetDouble(webview::kOldZoomFactor, current_zoom_factor_);

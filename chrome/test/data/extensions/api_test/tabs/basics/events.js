@@ -155,7 +155,23 @@ chrome.test.runTests([
                   {"windowId": secondWindowId, "index": 0}, pass(function() {
       moveAndListen(testTabId, secondWindowId, 0,
                     {"windowId": firstWindowId, "index": 1});
-    }));
+                  }));
+  },
+
+  function tabsOnZoomChange() {
+    chrome.tabs.setZoom(testTabId, 1, function() {
+      chrome.test.listenOnce(
+          chrome.tabs.onZoomChange,
+          function(zoomChangeInfo) {
+            assertEq(testTabId, zoomChangeInfo.tabId);
+            assertEq(1, zoomChangeInfo.oldZoomFactor);
+            assertEq(3.14159, +zoomChangeInfo.newZoomFactor.toFixed(5));
+            assertEq("automatic", zoomChangeInfo.zoomSettings.mode);
+            assertEq("per-origin", zoomChangeInfo.zoomSettings.scope);
+          });
+
+      chrome.tabs.setZoom(testTabId, 3.14159);
+    });
   },
 
   function windowsOnCreated() {

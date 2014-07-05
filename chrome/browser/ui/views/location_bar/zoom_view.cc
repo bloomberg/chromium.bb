@@ -33,8 +33,8 @@ void ZoomView::Update(ZoomController* zoom_controller) {
     return;
   }
 
-  SetTooltipText(l10n_util::GetStringFUTF16Int(IDS_TOOLTIP_ZOOM,
-      zoom_controller->zoom_percent()));
+  SetTooltipText(l10n_util::GetStringFUTF16Int(
+      IDS_TOOLTIP_ZOOM, zoom_controller->GetZoomPercent()));
   SetImage(ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
       zoom_controller->GetResourceForZoomLevel()));
   SetVisible(true);

@@ -34,6 +34,7 @@ TabsWindowsAPI::TabsWindowsAPI(content::BrowserContext* context)
   event_router->RegisterObserver(this, api::tabs::OnAttached::kEventName);
   event_router->RegisterObserver(this, api::tabs::OnRemoved::kEventName);
   event_router->RegisterObserver(this, api::tabs::OnReplaced::kEventName);
+  event_router->RegisterObserver(this, api::tabs::OnZoomChange::kEventName);
 
   // Windows API Events.
   event_router->RegisterObserver(this, api::windows::OnCreated::kEventName);

@@ -678,8 +678,8 @@ class Browser : public TabStripModelObserver,
                                  bool starred) OVERRIDE;
 
   // Overridden from ZoomObserver:
-  virtual void OnZoomChanged(content::WebContents* source,
-                             bool can_show_bubble) OVERRIDE;
+  virtual void OnZoomChanged(
+      const ZoomController::ZoomChangedEventData& data) OVERRIDE;
 
   // Overridden from SelectFileDialog::Listener:
   virtual void FileSelected(const base::FilePath& path,
@@ -754,8 +754,10 @@ class Browser : public TabStripModelObserver,
   // Assorted utility functions ///////////////////////////////////////////////
 
   // Sets the specified browser as the delegate of the WebContents and all the
-  // associated tab helpers that are needed.
-  void SetAsDelegate(content::WebContents* web_contents, Browser* delegate);
+  // associated tab helpers that are needed. If |set_delegate| is true, this
+  // browser object is set as a delegate for |web_contents| components, else
+  // is is removed as a delegate.
+  void SetAsDelegate(content::WebContents* web_contents, bool set_delegate);
 
   // Shows the Find Bar, optionally selecting the next entry that matches the
   // existing search string for that Tab. |forward_direction| controls the

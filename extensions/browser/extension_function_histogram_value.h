@@ -888,6 +888,10 @@ enum HistogramValue {
   GCDPRIVATE_SETWIFICREDENTIALS,
   GCDPRIVATE_CONFIRMCODE,
   GCDPRIVATE_STOPSETUP,
+  TABS_SETZOOM,
+  TABS_GETZOOM,
+  TABS_SETZOOMSETTINGS,
+  TABS_GETZOOMSETTINGS,
   // Last entry: Add new entries above and ensure to update
   // tools/metrics/histograms/histograms/histograms.xml.
   ENUM_BOUNDARY

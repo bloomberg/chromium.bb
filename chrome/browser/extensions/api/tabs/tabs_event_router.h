@@ -13,6 +13,7 @@
 #include "chrome/browser/extensions/api/tabs/tabs_api.h"
 #include "chrome/browser/ui/browser_list_observer.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
+#include "chrome/browser/ui/zoom/zoom_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "extensions/browser/event_router.h"
 
@@ -28,7 +29,8 @@ namespace extensions {
 // extension processes in the same profile.
 class TabsEventRouter : public TabStripModelObserver,
                         public chrome::BrowserListObserver,
-                        public content::NotificationObserver {
+                        public content::NotificationObserver,
+                        public ZoomObserver {
  public:
   explicit TabsEventRouter(Profile* profile);
   virtual ~TabsEventRouter();
@@ -70,6 +72,11 @@ class TabsEventRouter : public TabStripModelObserver,
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
+
+  // ZoomObserver.
+  virtual void OnZoomChanged(
+      const ZoomController::ZoomChangedEventData& data) OVERRIDE;
+
  private:
   // "Synthetic" event. Called from TabInsertedAt if new tab is detected.
   void TabCreatedAt(content::WebContents* contents, int index, bool active);

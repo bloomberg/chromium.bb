@@ -46,6 +46,47 @@
             "description": "The soonest that the JavaScript or CSS will be injected into the tab. Defaults to \"document_idle\"."
           }
         }
+      },
+      {
+        "id": "ZoomSettings",
+        "type": "object",
+        "description": "Defines how zoom changes in a tab are handled and at what scope.",
+        "properties": {
+          "mode": {
+            "type": "string",
+            "description": "Defines how zoom changes are handled, i.e. which entity is responsible for the actual scaling of the page; defaults to <code>automatic</code>.",
+            "optional": true,
+            "enum": [
+              {
+                "name": "automatic",
+                "description": "Zoom changes are handled automatically by the browser."
+              },
+              {
+                "name": "manual",
+                "description": "Overrides the automatic handling of zoom changes. The <code>onZoomChange</code> event will still be dispatched, and it is the responsibility of the extension to listen for this event and manually scale the page. This mode does not support <code>per-origin</code> zooming, and will thus ignore the <code>scope</code> zoom setting and assume <code>per-tab</code>."
+              },
+              {
+                "name": "disabled",
+                "description": "Disables all zooming in the tab. The tab will revert to default (100%) zoom, and all attempted zoom changes will be ignored."
+              }
+            ]
+          },
+          "scope": {
+            "type": "string",
+            "description": "Defines whether zoom changes will persist for the page's origin, or only take effect in this tab; defaults to <code>per-origin</code> when in <code>automatic</code> mode, and <code>per-tab</code> otherwise.",
+            "optional": true,
+            "enum": [
+              {
+                "name": "per-origin",
+                "description": "Zoom changes will persist in the zoomed page's origin, i.e. all other tabs navigated to that same origin will be zoomed as well. Moreover, <code>per-origin</code> zoom changes are saved with the origin, meaning that when navigating to other pages in the same origin, they will all be zoomed to the same zoom factor. The <code>per-origin</code> scope is only available in the <code>automatic</code> mode."
+              },
+              {
+                "name": "per-tab",
+                "description": "Zoom changes only take effect in this tab, and zoom changes in other tabs will not affect the zooming of this tab. Also, <code>per-tab</code> zoom changes are reset on navigation; navigating a tab will always load pages with their <code>per-origin</code> zoom factors."
+              }
+            ]
+          }
+        }
       }
     ],
     "functions": [
@@ -671,6 +712,109 @@
             "parameters": []
           }
         ]
+      },
+      {
+        "name": "setZoom",
+        "type": "function",
+        "description": "Zooms a specified tab.",
+        "parameters": [
+          {
+            "type": "integer",
+            "name": "tabId",
+            "minimum": 0,
+            "optional": true,
+            "description": "The ID of the tab to zoom; defaults to the active tab of the current window."
+          },
+          {
+            "type": "number",
+            "name": "zoomFactor",
+            "description": "The new zoom factor."
+          },
+          {
+            "type": "function",
+            "name": "callback",
+            "optional": true,
+            "description": "Called after the zoom factor has been changed.",
+            "parameters": []
+          }
+        ]
+      },
+      {
+        "name": "getZoom",
+        "type": "function",
+        "description": "Gets the current zoom factor of a specified tab.",
+        "parameters": [
+          {
+            "type": "integer",
+            "name": "tabId",
+            "minimum": 0,
+            "optional": true,
+            "description": "The ID of the tab to get the current zoom factor from; defaults to the active tab of the current window."
+          },
+          {
+            "type": "function",
+            "name": "callback",
+            "description": "Called with the tab's current zoom factor after it has been fetched.",
+            "parameters": [
+              {
+                "type": "number",
+                "name": "zoomFactor",
+                "description": "The tab's current zoom factor."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "setZoomSettings",
+        "type": "function",
+        "description": "Sets the zoom settings for a specified tab, which define how zoom changes are handled. These settings are reset to defaults upon navigating the tab.",
+        "parameters": [
+          {
+            "type": "integer",
+            "name": "tabId",
+            "optional": true,
+            "minimum": 0,
+            "description": "The ID of the tab to change the zoom settings for; defaults to the active tab of the current window."
+          },
+          {
+            "$ref": "ZoomSettings",
+            "name": "zoomSettings",
+            "description": "Defines how zoom changes are handled and at what scope."
+          },
+          {
+            "type": "function",
+            "name": "callback",
+            "description": "Called after the zoom settings have been changed.",
+            "parameters": []
+          }
+        ]
+      },
+      {
+        "name": "getZoomSettings",
+        "type": "function",
+        "description": "Gets the current zoom settings of a specified tab.",
+        "parameters": [
+          {
+            "type": "integer",
+            "name": "tabId",
+            "optional": true,
+            "minimum": 0,
+            "description": "The ID of the tab to get the current zoom settings from; defaults to the active tab of the current window."
+          },
+          {
+            "type": "function",
+            "name": "callback",
+            "description": "Called with the tab's current zoom settings.",
+            "parameters": [
+              {
+                "$ref": "ZoomSettings",
+                "name": "zoomSettings",
+                "description": "The tab's current zoom settings."
+              }
+            ]
+          }
+        ]
       }
     ],
     "events": [
@@ -921,6 +1065,21 @@
           {"type": "integer", "name": "addedTabId", "minimum": 0},
           {"type": "integer", "name": "removedTabId", "minimum": 0}
         ]
+      },
+      {
+        "name": "onZoomChange",
+        "type": "function",
+        "description": "Fired when a tab is zoomed.",
+        "parameters": [{
+          "type": "object",
+          "name": "ZoomChangeInfo",
+          "properties": {
+            "tabId": {"type": "integer", "minimum": 0},
+            "oldZoomFactor": {"type": "number"},
+            "newZoomFactor": {"type": "number"},
+            "zoomSettings": {"$ref": "ZoomSettings"}
+          }
+        }]
       }
     ]
   }

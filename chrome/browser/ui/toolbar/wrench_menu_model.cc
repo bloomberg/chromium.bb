@@ -33,6 +33,8 @@
 #include "chrome/browser/ui/toolbar/bookmark_sub_menu_model.h"
 #include "chrome/browser/ui/toolbar/encoding_menu_controller.h"
 #include "chrome/browser/ui/toolbar/recent_tabs_sub_menu_model.h"
+#include "chrome/browser/ui/zoom/zoom_controller.h"
+#include "chrome/browser/ui/zoom/zoom_event_manager.h"
 #include "chrome/browser/upgrade_detector.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -283,7 +285,12 @@ WrenchMenuModel::WrenchMenuModel(ui::AcceleratorProvider* provider,
   Build(is_new_menu);
   UpdateZoomControls();
 
-  zoom_subscription_ = HostZoomMap::GetForBrowserContext(
+  content_zoom_subscription_ = content::HostZoomMap::GetForBrowserContext(
+      browser->profile())->AddZoomLevelChangedCallback(
+          base::Bind(&WrenchMenuModel::OnZoomLevelChanged,
+                     base::Unretained(this)));
+
+  browser_zoom_subscription_ = ZoomEventManager::GetForBrowserContext(
       browser->profile())->AddZoomLevelChangedCallback(
           base::Bind(&WrenchMenuModel::OnZoomLevelChanged,
                      base::Unretained(this)));
@@ -795,13 +802,11 @@ void WrenchMenuModel::CreateZoomMenu(bool new_menu) {
 }
 
 void WrenchMenuModel::UpdateZoomControls() {
-  bool enable_increment = false;
-  bool enable_decrement = false;
   int zoom_percent = 100;
   if (browser_->tab_strip_model()->GetActiveWebContents()) {
-    zoom_percent =
-        browser_->tab_strip_model()->GetActiveWebContents()->GetZoomPercent(
-            &enable_increment, &enable_decrement);
+    zoom_percent = ZoomController::FromWebContents(
+                       browser_->tab_strip_model()->GetActiveWebContents())
+                       ->GetZoomPercent();
   }
   zoom_label_ = l10n_util::GetStringFUTF16(
       IDS_ZOOM_PERCENT, base::IntToString16(zoom_percent));

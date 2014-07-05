@@ -158,7 +158,7 @@ void NTPLoginHandler::HandleShowSyncLoginUI(const base::ListValue* args) {
     DCHECK(success);
 
     double zoom = content::ZoomLevelToZoomFactor(
-        content::HostZoomMap::GetZoomLevel(web_contents));
+        ZoomController::FromWebContents(web_contents)->GetZoomLevel());
     gfx::Rect rect(x * zoom, y * zoom, width * zoom, height * zoom);
 
     browser->window()->ShowAvatarBubble(web_ui()->GetWebContents(), rect);

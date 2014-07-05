@@ -10,6 +10,7 @@
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/chrome_page_zoom_constants.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/zoom/zoom_controller.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/host_zoom_map.h"
 #include "content/public/browser/render_view_host.h"
@@ -66,13 +67,16 @@ std::vector<double> PresetZoomLevels(double custom_level) {
 }
 
 void Zoom(content::WebContents* web_contents, content::PageZoom zoom) {
-  double current_zoom_level = content::HostZoomMap::GetZoomLevel(web_contents);
+  ZoomController* zoom_controller =
+      ZoomController::FromWebContents(web_contents);
+
+  double current_zoom_level = zoom_controller->GetZoomLevel();
   double default_zoom_level =
       Profile::FromBrowserContext(web_contents->GetBrowserContext())->
           GetPrefs()->GetDouble(prefs::kDefaultZoomLevel);
 
   if (zoom == content::PAGE_ZOOM_RESET) {
-    content::HostZoomMap::SetZoomLevel(web_contents, default_zoom_level);
+    zoom_controller->SetZoomLevel(default_zoom_level);
     content::RecordAction(UserMetricsAction("ZoomNormal"));
     return;
   }
@@ -90,7 +94,7 @@ void Zoom(content::WebContents* web_contents, content::PageZoom zoom) {
       if (content::ZoomValuesEqual(zoom_level, current_zoom_level))
         continue;
       if (zoom_level < current_zoom_level) {
-        content::HostZoomMap::SetZoomLevel(web_contents, zoom_level);
+        zoom_controller->SetZoomLevel(zoom_level);
         content::RecordAction(UserMetricsAction("ZoomMinus"));
         return;
       }
@@ -105,7 +109,7 @@ void Zoom(content::WebContents* web_contents, content::PageZoom zoom) {
       if (content::ZoomValuesEqual(zoom_level, current_zoom_level))
         continue;
       if (zoom_level > current_zoom_level) {
-        content::HostZoomMap::SetZoomLevel(web_contents, zoom_level);
+        zoom_controller->SetZoomLevel(zoom_level);
         content::RecordAction(UserMetricsAction("ZoomPlus"));
         return;
       }

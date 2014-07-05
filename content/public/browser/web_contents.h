@@ -488,10 +488,6 @@ class WebContents : public PageNavigator,
   virtual void SetClosedByUserGesture(bool value) = 0;
   virtual bool GetClosedByUserGesture() const = 0;
 
-  // Gets the zoom percent for this tab.
-  virtual int GetZoomPercent(bool* enable_increment,
-                             bool* enable_decrement) const = 0;
-
   // Opens view-source tab for this contents.
   virtual void ViewSource() = 0;
 

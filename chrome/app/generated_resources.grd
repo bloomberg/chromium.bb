@@ -7141,8 +7141,11 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_TOOLTIP_TRANSLATE" desc="The tooltip for translate">
         Translate this page
       </message>
-      <message name="IDS_TOOLTIP_ZOOM" desc="The tooltip for zoom icon">
+      <message name="IDS_TOOLTIP_ZOOM" desc="The tooltip for the zoom bubble">
         Zoom: <ph name="VALUE">$1<ex>100</ex></ph>%
+      </message>
+      <message name="IDS_TOOLTIP_ZOOM_EXTENSION_ICON" desc="The tooltip for the extension icon in the zoom bubble">
+        This page was zoomed by the "<ph name="NAME">$1<ex>Google Cast</ex></ph>" extension
       </message>
       <if expr="not use_titlecase">
         <message name="IDS_ZOOM_SET_DEFAULT" desc="The text label of a button which, when clicked, returns the page to default zoom">

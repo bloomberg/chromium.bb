@@ -138,7 +138,7 @@ void SetZoomBubbleAutoCloseDelayForTesting(NSTimeInterval time_interval) {
   if (!zoomController)
     return;
 
-  int percent = zoomController->zoom_percent();
+  int percent = zoomController->GetZoomPercent();
   NSString* string =
       l10n_util::GetNSStringF(IDS_ZOOM_PERCENT, base::IntToString16(percent));
   [zoomPercent_ setAttributedStringValue:

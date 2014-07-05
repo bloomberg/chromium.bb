@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_UI_ZOOM_ZOOM_OBSERVER_H_
 #define CHROME_BROWSER_UI_ZOOM_ZOOM_OBSERVER_H_
 
+#include "chrome/browser/ui/zoom/zoom_controller.h"
+
 namespace content {
 class WebContents;
 }
@@ -13,8 +15,8 @@ class WebContents;
 class ZoomObserver {
  public:
   // Notification that the zoom percentage has changed.
-  virtual void OnZoomChanged(content::WebContents* source,
-                             bool can_show_bubble) = 0;
+  virtual void OnZoomChanged(const ZoomController::ZoomChangedEventData& data) {
+  }
 
  protected:
   virtual ~ZoomObserver() {}

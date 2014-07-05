@@ -5,8 +5,11 @@
 #ifndef CHROME_BROWSER_UI_ZOOM_ZOOM_CONTROLLER_H_
 #define CHROME_BROWSER_UI_ZOOM_ZOOM_CONTROLLER_H_
 
+#include <vector>
+
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/observer_list.h"
 #include "base/prefs/pref_member.h"
 #include "content/public/browser/host_zoom_map.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -18,13 +21,55 @@ namespace content {
 class WebContents;
 }
 
-// Per-tab class to manage the Omnibox zoom icon.
+namespace extensions {
+class Extension;
+}  // namespace extensions
+
+// Per-tab class to manage zoom changes and the Omnibox zoom icon.
 class ZoomController : public content::WebContentsObserver,
                        public content::WebContentsUserData<ZoomController> {
  public:
+  // Defines how zoom changes are handled.
+  enum ZoomMode {
+    // Results in default zoom behavior, i.e. zoom changes are handled
+    // automatically and on a per-origin basis, meaning that other tabs
+    // navigated to the same origin will also zoom.
+    ZOOM_MODE_DEFAULT,
+    // Results in zoom changes being handled automatically, but on a per-tab
+    // basis. Tabs in this zoom mode will not be affected by zoom changes in
+    // other tabs, and vice versa.
+    ZOOM_MODE_ISOLATED,
+    // Overrides the automatic handling of zoom changes. The |onZoomChange|
+    // event will still be dispatched, but the page will not actually be zoomed.
+    // These zoom changes can be handled manually by listening for the
+    // |onZoomChange| event. Zooming in this mode is also on a per-tab basis.
+    ZOOM_MODE_MANUAL,
+    // Disables all zooming in this tab. The tab will revert to default (100%)
+    // zoom, and all attempted zoom changes will be ignored.
+    ZOOM_MODE_DISABLED,
+  };
+
+  struct ZoomChangedEventData {
+    ZoomChangedEventData(content::WebContents* web_contents,
+                         double old_zoom_level,
+                         double new_zoom_level,
+                         ZoomController::ZoomMode zoom_mode,
+                         bool can_show_bubble)
+        : web_contents(web_contents),
+          old_zoom_level(old_zoom_level),
+          new_zoom_level(new_zoom_level),
+          zoom_mode(zoom_mode),
+          can_show_bubble(can_show_bubble) {}
+    content::WebContents* web_contents;
+    double old_zoom_level;
+    double new_zoom_level;
+    ZoomController::ZoomMode zoom_mode;
+    bool can_show_bubble;
+  };
+
   virtual ~ZoomController();
 
-  int zoom_percent() const { return zoom_percent_; }
+  ZoomMode zoom_mode() const { return zoom_mode_; }
 
   // Convenience method to quickly check if the tab's at default zoom.
   bool IsAtDefaultZoom() const;
@@ -32,7 +77,32 @@ class ZoomController : public content::WebContentsObserver,
   // Returns which image should be loaded for the current zoom level.
   int GetResourceForZoomLevel() const;
 
-  void set_observer(ZoomObserver* observer) { observer_ = observer; }
+  const extensions::Extension* last_extension() const {
+    return last_extension_.get();
+  }
+
+  void AddObserver(ZoomObserver* observer);
+  void RemoveObserver(ZoomObserver* observer);
+
+  // Gets the current zoom level by querying HostZoomMap (if not in manual zoom
+  // mode) or from the ZoomController local value otherwise.
+  double GetZoomLevel() const;
+  // Calls GetZoomLevel() then converts the returned value to a percentage
+  // zoom factor.
+  int GetZoomPercent() const;
+
+  // Sets the zoom level through HostZoomMap.
+  // Returns true on success.
+  bool SetZoomLevel(double zoom_level);
+
+  // Sets the zoom level via HostZoomMap (or stores it locally if in manual zoom
+  // mode), and attributes the zoom to |extension|. Returns true on success.
+  bool SetZoomLevelByExtension(
+      double zoom_level,
+      const scoped_refptr<const extensions::Extension>& extension);
+
+  // Sets the zoom mode, which defines zoom behavior (see enum ZoomMode).
+  void SetZoomMode(ZoomMode zoom_mode);
 
   // content::WebContentsObserver overrides:
   virtual void DidNavigateMainFrame(
@@ -51,15 +121,29 @@ class ZoomController : public content::WebContentsObserver,
   // meaning the change should apply to ~all sites. If it is not empty, the
   // change only affects sites with the given host.
   void UpdateState(const std::string& host);
+  // Same as UpdateState, but takes into account whether a temporary zoom level
+  // has been set on |host| when deciding whether to show the zoom notification
+  // bubble.
+  void UpdateStateIncludingTemporary(const std::string& host,
+                                     bool is_temporary_zoom);
 
-  // The current zoom percentage.
-  int zoom_percent_;
+  // The current zoom mode.
+  ZoomMode zoom_mode_;
+
+  // Current zoom level.
+  double zoom_level_;
 
   // Used to access the default zoom level preference.
   DoublePrefMember default_zoom_level_;
 
+  std::vector<ZoomChangedEventData> event_data_;
+
+  // Keeps track of the extension (if any) that initiated the last zoom change
+  // that took effect.
+  scoped_refptr<const extensions::Extension> last_extension_;
+
   // Observer receiving notifications on state changes.
-  ZoomObserver* observer_;
+  ObserverList<ZoomObserver> observers_;
 
   content::BrowserContext* browser_context_;
 

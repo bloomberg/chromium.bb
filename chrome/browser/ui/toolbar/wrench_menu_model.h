@@ -192,7 +192,8 @@ class WrenchMenuModel : public ui::SimpleMenuModel,
   Browser* browser_;  // weak
   TabStripModel* tab_strip_model_; // weak
 
-  scoped_ptr<content::HostZoomMap::Subscription> zoom_subscription_;
+  scoped_ptr<content::HostZoomMap::Subscription> content_zoom_subscription_;
+  scoped_ptr<content::HostZoomMap::Subscription> browser_zoom_subscription_;
   content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(WrenchMenuModel);

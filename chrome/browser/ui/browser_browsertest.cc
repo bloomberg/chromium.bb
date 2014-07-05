@@ -1807,6 +1807,20 @@ void OnZoomLevelChanged(const base::Closure& callback,
 #else
 #define MAYBE_PageZoom PageZoom
 #endif
+
+namespace {
+
+int GetZoomPercent(const content::WebContents* contents,
+                   bool* enable_plus,
+                   bool* enable_minus) {
+  int percent = ZoomController::FromWebContents(contents)->GetZoomPercent();
+  *enable_plus = percent < contents->GetMaximumZoomPercent();
+  *enable_minus = percent > contents->GetMinimumZoomPercent();
+  return percent;
+}
+
+}  // namespace
+
 IN_PROC_BROWSER_TEST_F(BrowserTest, MAYBE_PageZoom) {
   WebContents* contents = browser()->tab_strip_model()->GetActiveWebContents();
   bool enable_plus, enable_minus;
@@ -1822,7 +1836,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, MAYBE_PageZoom) {
     chrome::Zoom(browser(), content::PAGE_ZOOM_IN);
     loop_runner->Run();
     sub.reset();
-    EXPECT_EQ(contents->GetZoomPercent(&enable_plus, &enable_minus), 110);
+    EXPECT_EQ(GetZoomPercent(contents, &enable_plus, &enable_minus), 110);
     EXPECT_TRUE(enable_plus);
     EXPECT_TRUE(enable_minus);
   }
@@ -1838,7 +1852,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, MAYBE_PageZoom) {
     chrome::Zoom(browser(), content::PAGE_ZOOM_RESET);
     loop_runner->Run();
     sub.reset();
-    EXPECT_EQ(contents->GetZoomPercent(&enable_plus, &enable_minus), 100);
+    EXPECT_EQ(GetZoomPercent(contents, &enable_plus, &enable_minus), 100);
     EXPECT_TRUE(enable_plus);
     EXPECT_TRUE(enable_minus);
   }
@@ -1854,7 +1868,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, MAYBE_PageZoom) {
     chrome::Zoom(browser(), content::PAGE_ZOOM_OUT);
     loop_runner->Run();
     sub.reset();
-    EXPECT_EQ(contents->GetZoomPercent(&enable_plus, &enable_minus), 90);
+    EXPECT_EQ(GetZoomPercent(contents, &enable_plus, &enable_minus), 90);
     EXPECT_TRUE(enable_plus);
     EXPECT_TRUE(enable_minus);
   }

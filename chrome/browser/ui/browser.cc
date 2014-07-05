@@ -50,6 +50,8 @@
 #include "chrome/browser/download/download_service.h"
 #include "chrome/browser/download/download_service_factory.h"
 #include "chrome/browser/download/download_shelf.h"
+#include "chrome/browser/extensions/api/tabs/tabs_event_router.h"
+#include "chrome/browser/extensions/api/tabs/tabs_windows_api.h"
 #include "chrome/browser/extensions/browser_extension_window_controller.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/tab_helper.h"
@@ -889,7 +891,7 @@ WebContents* Browser::OpenURL(const OpenURLParams& params) {
 void Browser::TabInsertedAt(WebContents* contents,
                             int index,
                             bool foreground) {
-  SetAsDelegate(contents, this);
+  SetAsDelegate(contents, true);
   SessionTabHelper* session_tab_helper =
       SessionTabHelper::FromWebContents(contents);
   session_tab_helper->SetWindowID(session_id());
@@ -932,7 +934,7 @@ void Browser::TabClosingAt(TabStripModel* tab_strip_model,
       content::NotificationService::NoDetails());
 
   // Sever the WebContents' connection back to us.
-  SetAsDelegate(contents, NULL);
+  SetAsDelegate(contents, false);
 }
 
 void Browser::TabDetachedAt(WebContents* contents, int index) {
@@ -1840,12 +1842,11 @@ void Browser::URLStarredChanged(content::WebContents* web_contents,
 ///////////////////////////////////////////////////////////////////////////////
 // Browser, ZoomObserver implementation:
 
-void Browser::OnZoomChanged(content::WebContents* source,
-                            bool can_show_bubble) {
-  if (source == tab_strip_model_->GetActiveWebContents()) {
+void Browser::OnZoomChanged(const ZoomController::ZoomChangedEventData& data) {
+  if (data.web_contents == tab_strip_model_->GetActiveWebContents()) {
     // Only show the zoom bubble for zoom changes in the active window.
-    window_->ZoomChangedForActiveTab(can_show_bubble && window_->IsActive() &&
-        !is_devtools());
+    window_->ZoomChangedForActiveTab(data.can_show_bubble &&
+                                     window_->IsActive() && !is_devtools());
   }
 }
 
@@ -2181,7 +2182,8 @@ bool Browser::CanCloseWithInProgressDownloads() {
 ///////////////////////////////////////////////////////////////////////////////
 // Browser, Assorted utility functions (private):
 
-void Browser::SetAsDelegate(WebContents* web_contents, Browser* delegate) {
+void Browser::SetAsDelegate(WebContents* web_contents, bool set_delegate) {
+  Browser* delegate = set_delegate ? this : NULL;
   // WebContents...
   web_contents->SetDelegate(delegate);
 
@@ -2192,7 +2194,10 @@ void Browser::SetAsDelegate(WebContents* web_contents, Browser* delegate) {
   CoreTabHelper::FromWebContents(web_contents)->set_delegate(delegate);
   SearchEngineTabHelper::FromWebContents(web_contents)->set_delegate(delegate);
   SearchTabHelper::FromWebContents(web_contents)->set_delegate(delegate);
-  ZoomController::FromWebContents(web_contents)->set_observer(delegate);
+  if (delegate)
+    ZoomController::FromWebContents(web_contents)->AddObserver(this);
+  else
+    ZoomController::FromWebContents(web_contents)->RemoveObserver(this);
   ChromeTranslateClient* chrome_translate_client =
       ChromeTranslateClient::FromWebContents(web_contents);
   chrome_translate_client->translate_driver().set_observer(
@@ -2221,7 +2226,7 @@ void Browser::TabDetachedAtImpl(content::WebContents* contents,
       SyncHistoryWithTabs(0);
   }
 
-  SetAsDelegate(contents, NULL);
+  SetAsDelegate(contents, false);
   RemoveScheduledUpdatesFor(contents);
 
   if (find_bar_controller_.get() && index == tab_strip_model_->active_index()) {

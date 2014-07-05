@@ -1141,6 +1141,8 @@
       'browser/ui/window_sizer/window_sizer_mac.mm',
       'browser/ui/zoom/zoom_controller.cc',
       'browser/ui/zoom/zoom_controller.h',
+      'browser/ui/zoom/zoom_event_manager.cc',
+      'browser/ui/zoom/zoom_event_manager.h',
       'browser/ui/zoom/zoom_observer.h',
       '<(SHARED_INTERMEDIATE_DIR)/chrome/browser/ui/webui/omnibox/omnibox.mojom.cc',
     ],

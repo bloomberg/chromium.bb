@@ -2208,18 +2208,6 @@ bool WebContentsImpl::GetClosedByUserGesture() const {
   return closed_by_user_gesture_;
 }
 
-int WebContentsImpl::GetZoomPercent(bool* enable_increment,
-                                    bool* enable_decrement) const {
-  *enable_decrement = *enable_increment = false;
-  // Calculate the zoom percent from the factor. Round up to the nearest whole
-  // number.
-  int percent = static_cast<int>(
-      ZoomLevelToZoomFactor(HostZoomMap::GetZoomLevel(this)) * 100 + 0.5);
-  *enable_decrement = percent > minimum_zoom_percent_;
-  *enable_increment = percent < maximum_zoom_percent_;
-  return percent;
-}
-
 void WebContentsImpl::ViewSource() {
   if (!delegate_)
     return;

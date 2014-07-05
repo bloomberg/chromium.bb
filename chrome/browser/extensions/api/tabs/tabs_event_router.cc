@@ -148,6 +148,8 @@ void TabsEventRouter::RegisterForTabNotifications(WebContents* contents) {
 
   registrar_.Add(this, chrome::NOTIFICATION_FAVICON_UPDATED,
                  content::Source<WebContents>(contents));
+
+  ZoomController::FromWebContents(contents)->AddObserver(this);
 }
 
 void TabsEventRouter::UnregisterForTabNotifications(WebContents* contents) {
@@ -157,6 +159,8 @@ void TabsEventRouter::UnregisterForTabNotifications(WebContents* contents) {
       content::Source<WebContents>(contents));
   registrar_.Remove(this, chrome::NOTIFICATION_FAVICON_UPDATED,
       content::Source<WebContents>(contents));
+
+  ZoomController::FromWebContents(contents)->RemoveObserver(this);
 }
 
 void TabsEventRouter::OnBrowserRemoved(Browser* browser) {
@@ -550,6 +554,32 @@ void TabsEventRouter::TabPinnedStateChanged(WebContents* contents, int index) {
                                    tab_strip->IsTabPinned(tab_index));
     DispatchTabUpdatedEvent(contents, changed_properties.Pass());
   }
+}
+
+void TabsEventRouter::OnZoomChanged(
+    const ZoomController::ZoomChangedEventData& data) {
+  DCHECK(data.web_contents);
+  int tab_id = ExtensionTabUtil::GetTabId(data.web_contents);
+  if (tab_id < 0)
+    return;
+
+  // Prepare the zoom change information.
+  api::tabs::OnZoomChange::ZoomChangeInfo zoom_change_info;
+  zoom_change_info.tab_id = tab_id;
+  zoom_change_info.old_zoom_factor =
+      content::ZoomLevelToZoomFactor(data.old_zoom_level);
+  zoom_change_info.new_zoom_factor =
+      content::ZoomLevelToZoomFactor(data.new_zoom_level);
+  ZoomModeToZoomSettings(data.zoom_mode,
+                         &zoom_change_info.zoom_settings);
+
+  // Dispatch the |onZoomChange| event.
+  Profile* profile = Profile::FromBrowserContext(
+      data.web_contents->GetBrowserContext());
+  DispatchEvent(profile,
+                tabs::OnZoomChange::kEventName,
+                api::tabs::OnZoomChange::Create(zoom_change_info),
+                EventRouter::USER_GESTURE_UNKNOWN);
 }
 
 }  // namespace extensions

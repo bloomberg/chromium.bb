@@ -38253,6 +38253,10 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="827" label="GCDPRIVATE_SETWIFICREDENTIALS"/>
   <int value="828" label="GCDPRIVATE_CONFIRMCODE"/>
   <int value="829" label="GCDPRIVATE_STOPSETUP"/>
+  <int value="830" label="TABS_SETZOOM"/>
+  <int value="831" label="TABS_GETZOOM"/>
+  <int value="832" label="TABS_SETZOOMSETTINGS"/>
+  <int value="833" label="TABS_GETZOOMSETTINGS"/>
 </enum>
 
 <enum name="ExtensionInstallCause" type="int">

@@ -10,6 +10,7 @@
 #include "chrome/browser/ui/views/frame/immersive_mode_controller.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "extensions/browser/extension_icon_image.h"
 #include "ui/views/bubble/bubble_delegate.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/label.h"
@@ -22,11 +23,16 @@ class NotificationSource;
 class WebContents;
 }
 
+namespace views {
+class ImageButton;
+}  // namespace views
+
 // View used to display the zoom percentage when it has changed.
 class ZoomBubbleView : public views::BubbleDelegateView,
                        public views::ButtonListener,
                        public content::NotificationObserver,
-                       public ImmersiveModeController::Observer {
+                       public ImmersiveModeController::Observer,
+                       public extensions::IconImage::Observer {
  public:
   // Shows the bubble and automatically closes it after a short time period if
   // |auto_close| is true.
@@ -44,6 +50,25 @@ class ZoomBubbleView : public views::BubbleDelegateView,
   static const ZoomBubbleView* GetZoomBubbleForTest();
 
  private:
+  // Stores information about the extension that initiated the zoom change, if
+  // any.
+  struct ZoomBubbleExtensionInfo {
+    ZoomBubbleExtensionInfo();
+    ~ZoomBubbleExtensionInfo();
+
+    // The unique id of the extension, which is used to find the correct
+    // extension after clicking on the image button in the zoom bubble.
+    std::string id;
+
+    // The name of the extension, which appears in the tooltip of the image
+    // button in the zoom bubble.
+    std::string name;
+
+    // An image of the extension's icon, which appears in the zoom bubble as an
+    // image button.
+    scoped_ptr<const extensions::IconImage> icon_image;
+  };
+
   ZoomBubbleView(views::View* anchor_view,
                  content::WebContents* web_contents,
                  bool auto_close,
@@ -63,11 +88,20 @@ class ZoomBubbleView : public views::BubbleDelegateView,
 
   void Close();
 
+  // Sets information about the extension that initiated the zoom change.
+  // Calling this method asserts that the extension |extension| did initiate
+  // the zoom change.
+  void SetExtensionInfo(const extensions::Extension* extension);
+
   // Starts a timer which will close the bubble if |auto_close_| is true.
   void StartTimerIfNecessary();
 
   // Stops the auto-close timer.
   void StopTimer();
+
+  // extensions::IconImage::Observer overrides:
+  virtual void OnExtensionIconImageChanged(
+      extensions::IconImage* /* image */) OVERRIDE;
 
   // views::View methods.
   virtual void OnMouseEntered(const ui::MouseEvent& event) OVERRIDE;
@@ -93,6 +127,8 @@ class ZoomBubbleView : public views::BubbleDelegateView,
   virtual void OnImmersiveRevealStarted() OVERRIDE;
   virtual void OnImmersiveModeControllerDestroyed() OVERRIDE;
 
+  ZoomBubbleExtensionInfo extension_info_;
+
   // Singleton instance of the zoom bubble. The zoom bubble can only be shown on
   // the active browser window, so there is no case in which it will be shown
   // twice at the same time.
@@ -100,6 +136,11 @@ class ZoomBubbleView : public views::BubbleDelegateView,
 
   // Timer used to close the bubble when |auto_close_| is true.
   base::OneShotTimer<ZoomBubbleView> timer_;
+
+  // Image button in the zoom bubble that will show the |extension_icon_| image
+  // if an extension initiated the zoom change, and links to that extension at
+  // "chrome://extensions".
+  views::ImageButton* image_button_;
 
   // Label displaying the zoom percentage.
   views::Label* label_;

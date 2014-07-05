@@ -23,6 +23,8 @@
 #include "chrome/browser/ui/views/bookmarks/bookmark_menu_delegate.h"
 #include "chrome/browser/ui/views/toolbar/extension_toolbar_menu_view.h"
 #include "chrome/browser/ui/views/toolbar/wrench_menu_observer.h"
+#include "chrome/browser/ui/zoom/zoom_controller.h"
+#include "chrome/browser/ui/zoom/zoom_event_manager.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "content/public/browser/host_zoom_map.h"
 #include "content/public/browser/notification_observer.h"
@@ -632,7 +634,12 @@ class WrenchMenu::ZoomView : public WrenchMenuView {
         decrement_button_(NULL),
         fullscreen_button_(NULL),
         zoom_label_width_(0) {
-    zoom_subscription_ = HostZoomMap::GetForBrowserContext(
+    content_zoom_subscription_ = HostZoomMap::GetForBrowserContext(
+        menu->browser_->profile())->AddZoomLevelChangedCallback(
+            base::Bind(&WrenchMenu::ZoomView::OnZoomLevelChanged,
+                       base::Unretained(this)));
+
+    browser_zoom_subscription_ = ZoomEventManager::GetForBrowserContext(
         menu->browser_->profile())->AddZoomLevelChangedCallback(
             base::Bind(&WrenchMenu::ZoomView::OnZoomLevelChanged,
                        base::Unretained(this)));
@@ -784,15 +791,13 @@ class WrenchMenu::ZoomView : public WrenchMenuView {
   }
 
   void UpdateZoomControls() {
-    bool enable_increment = false;
-    bool enable_decrement = false;
     WebContents* selected_tab =
         menu()->browser_->tab_strip_model()->GetActiveWebContents();
     int zoom = 100;
     if (selected_tab)
-      zoom = selected_tab->GetZoomPercent(&enable_increment, &enable_decrement);
-    increment_button_->SetEnabled(enable_increment);
-    decrement_button_->SetEnabled(enable_decrement);
+      zoom = ZoomController::FromWebContents(selected_tab)->GetZoomPercent();
+    increment_button_->SetEnabled(zoom < selected_tab->GetMaximumZoomPercent());
+    decrement_button_->SetEnabled(zoom > selected_tab->GetMinimumZoomPercent());
     zoom_label_->SetText(
         l10n_util::GetStringFUTF16Int(IDS_ZOOM_PERCENT, zoom));
 
@@ -830,7 +835,8 @@ class WrenchMenu::ZoomView : public WrenchMenuView {
   // Index of the fullscreen menu item in the model.
   const int fullscreen_index_;
 
-  scoped_ptr<content::HostZoomMap::Subscription> zoom_subscription_;
+  scoped_ptr<content::HostZoomMap::Subscription> content_zoom_subscription_;
+  scoped_ptr<content::HostZoomMap::Subscription> browser_zoom_subscription_;
   content::NotificationRegistrar registrar_;
 
   // Button for incrementing the zoom.
