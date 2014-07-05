@@ -1023,8 +1023,8 @@ class StatsState {
   StateSetting state_medium_value_;
 };
 
-const StatsState::UserLevelState StatsState::kUserLevel;
-const StatsState::SystemLevelState StatsState::kSystemLevel;
+const StatsState::UserLevelState StatsState::kUserLevel = {};
+const StatsState::SystemLevelState StatsState::kSystemLevel = {};
 
 // A value parameterized test for testing the stats collection consent setting.
 class CollectStatsConsent : public ::testing::TestWithParam<StatsState> {
