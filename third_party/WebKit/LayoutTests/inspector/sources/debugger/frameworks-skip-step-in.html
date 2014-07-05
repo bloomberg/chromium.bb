@@ -52,7 +52,6 @@ function test()
     var totalDebuggerStatements = 5;
 
     WebInspector.experimentsSettings.frameworksDebuggingSupport.enableForTest();
-    WebInspector.settings.skipStackFramesSwitch.set(true);
     WebInspector.settings.skipStackFramesPattern.set(frameworkRegexString);
 
     InspectorTest.setQuiet(true);

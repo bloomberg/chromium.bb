@@ -36,7 +36,6 @@ function test()
     var maxAsyncCallStackDepth = 4;
 
     WebInspector.experimentsSettings.frameworksDebuggingSupport.enableForTest();
-    WebInspector.settings.skipStackFramesSwitch.set(true);
     WebInspector.settings.skipStackFramesPattern.set(frameworkRegexString);
 
     InspectorTest.setQuiet(true);
