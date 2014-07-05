@@ -31,6 +31,7 @@
 #include "config.h"
 #include "core/inspector/AsyncCallStackTracker.h"
 
+#include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8RecursionScope.h"
 #include "core/dom/ContextLifecycleObserver.h"
 #include "core/dom/ExecutionContext.h"
@@ -158,11 +159,11 @@ void AsyncCallStackTracker::willFireTimer(ExecutionContext* context, int timerId
     ASSERT(!m_currentAsyncCallChain);
     if (ExecutionContextData* data = m_executionContextDataMap.get(context)) {
         if (data->m_intervalTimerIds.contains(timerId))
-            setCurrentAsyncCallChain(data->m_timerCallChains.get(timerId));
+            setCurrentAsyncCallChain(context, data->m_timerCallChains.get(timerId));
         else
-            setCurrentAsyncCallChain(data->m_timerCallChains.take(timerId));
+            setCurrentAsyncCallChain(context, data->m_timerCallChains.take(timerId));
     } else {
-        setCurrentAsyncCallChain(nullptr);
+        setCurrentAsyncCallChain(context, nullptr);
     }
 }
 
@@ -194,9 +195,9 @@ void AsyncCallStackTracker::willFireAnimationFrame(ExecutionContext* context, in
     ASSERT(callbackId > 0);
     ASSERT(!m_currentAsyncCallChain);
     if (ExecutionContextData* data = m_executionContextDataMap.get(context))
-        setCurrentAsyncCallChain(data->m_animationFrameCallChains.take(callbackId));
+        setCurrentAsyncCallChain(context, data->m_animationFrameCallChains.take(callbackId));
     else
-        setCurrentAsyncCallChain(nullptr);
+        setCurrentAsyncCallChain(context, nullptr);
 }
 
 void AsyncCallStackTracker::didEnqueueEvent(EventTarget* eventTarget, Event* event, const ScriptValue& callFrames)
@@ -224,10 +225,11 @@ void AsyncCallStackTracker::willHandleEvent(EventTarget* eventTarget, Event* eve
     if (XMLHttpRequest* xhr = toXmlHttpRequest(eventTarget)) {
         willHandleXHREvent(xhr, eventTarget, event);
     } else {
-        if (ExecutionContextData* data = m_executionContextDataMap.get(eventTarget->executionContext()))
-            setCurrentAsyncCallChain(data->m_eventCallChains.get(event));
+        ExecutionContext* context = eventTarget->executionContext();
+        if (ExecutionContextData* data = m_executionContextDataMap.get(context))
+            setCurrentAsyncCallChain(context, data->m_eventCallChains.get(event));
         else
-            setCurrentAsyncCallChain(nullptr);
+            setCurrentAsyncCallChain(context, nullptr);
     }
 }
 
@@ -243,16 +245,17 @@ void AsyncCallStackTracker::willLoadXHR(XMLHttpRequest* xhr, const ScriptValue& 
 
 void AsyncCallStackTracker::willHandleXHREvent(XMLHttpRequest* xhr, EventTarget* eventTarget, Event* event)
 {
-    ASSERT(xhr->executionContext());
+    ExecutionContext* context = xhr->executionContext();
+    ASSERT(context);
     ASSERT(isEnabled());
-    if (ExecutionContextData* data = m_executionContextDataMap.get(xhr->executionContext())) {
+    if (ExecutionContextData* data = m_executionContextDataMap.get(context)) {
         bool isXHRDownload = (xhr == eventTarget);
         if (isXHRDownload && event->type() == EventTypeNames::loadend)
-            setCurrentAsyncCallChain(data->m_xhrCallChains.take(xhr));
+            setCurrentAsyncCallChain(context, data->m_xhrCallChains.take(xhr));
         else
-            setCurrentAsyncCallChain(data->m_xhrCallChains.get(xhr));
+            setCurrentAsyncCallChain(context, data->m_xhrCallChains.get(xhr));
     } else {
-        setCurrentAsyncCallChain(nullptr);
+        setCurrentAsyncCallChain(context, nullptr);
     }
 }
 
@@ -288,9 +291,9 @@ void AsyncCallStackTracker::willDeliverMutationRecords(ExecutionContext* context
     ASSERT(context);
     ASSERT(isEnabled());
     if (ExecutionContextData* data = m_executionContextDataMap.get(context))
-        setCurrentAsyncCallChain(data->m_mutationObserverCallChains.take(observer));
+        setCurrentAsyncCallChain(context, data->m_mutationObserverCallChains.take(observer));
     else
-        setCurrentAsyncCallChain(nullptr);
+        setCurrentAsyncCallChain(context, nullptr);
 }
 
 void AsyncCallStackTracker::didFireAsyncCall()
@@ -306,9 +309,9 @@ PassRefPtr<AsyncCallStackTracker::AsyncCallChain> AsyncCallStackTracker::createA
     return chain.release();
 }
 
-void AsyncCallStackTracker::setCurrentAsyncCallChain(PassRefPtr<AsyncCallChain> chain)
+void AsyncCallStackTracker::setCurrentAsyncCallChain(ExecutionContext* context, PassRefPtr<AsyncCallChain> chain)
 {
-    if (V8RecursionScope::recursionLevel(v8::Isolate::GetCurrent())) {
+    if (V8RecursionScope::recursionLevel(toIsolate(context))) {
         if (m_currentAsyncCallChain)
             ++m_nestedAsyncCallCount;
     } else {

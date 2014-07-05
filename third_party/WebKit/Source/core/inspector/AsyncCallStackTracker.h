@@ -105,7 +105,7 @@ private:
     void willHandleXHREvent(XMLHttpRequest*, EventTarget*, Event*);
 
     PassRefPtr<AsyncCallChain> createAsyncCallChain(const String& description, const ScriptValue& callFrames);
-    void setCurrentAsyncCallChain(PassRefPtr<AsyncCallChain>);
+    void setCurrentAsyncCallChain(ExecutionContext*, PassRefPtr<AsyncCallChain>);
     void clearCurrentAsyncCallChain();
     static void ensureMaxAsyncCallChainDepth(AsyncCallChain*, unsigned);
     static bool validateCallFrames(const ScriptValue& callFrames);
