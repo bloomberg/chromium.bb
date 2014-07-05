@@ -29,4 +29,6 @@ It is currently used by the chrome remote desktop team for JavaScript unit
 testing.
 
 Local Modifications:
-None
+No Modifications is made to src/qunit.js.
+src/browser_test_harness.js is added to enable running the QUnit test suite on
+try bots using the chromium browser test infrastructure.

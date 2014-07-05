@@ -837,6 +837,7 @@
         # Runtime dependencies
         '../ppapi/ppapi_internal.gyp:ppapi_tests',
         '../remoting/remoting.gyp:remoting_browser_test_resources',
+        '../remoting/remoting.gyp:remoting_webapp_unittest',
         '../third_party/mesa/mesa.gyp:osmesa',
         '../third_party/widevine/cdm/widevine_cdm.gyp:widevine_test_license_server',
       ],
@@ -1602,10 +1603,12 @@
         'test/remoting/page_load_notification_observer.cc',
         'test/remoting/page_load_notification_observer.h',
         'test/remoting/pin_browsertest.cc',
+        'test/remoting/qunit_browser_test_runner.cc',
         'test/remoting/remote_desktop_browsertest.cc',
         'test/remoting/remote_desktop_browsertest.h',
         'test/remoting/waiter.cc',
         'test/remoting/waiter.h',
+        'test/remoting/webapp_javascript_unittest.cc',
         # TODO(craig): Rename this and run from base_unittests when the test
         # is safe to run there. See http://crbug.com/78722 for details.
         '../base/files/file_path_watcher_browsertest.cc',
