@@ -49,6 +49,7 @@
 #include "platform/geometry/IntSize.h"
 #include "platform/graphics/Color.h"
 #include "public/platform/Platform.h"
+#include "public/platform/WebClipboard.h"
 #include "public/platform/WebDragData.h"
 #include "public/platform/WebSize.h"
 #include "public/platform/WebThread.h"
@@ -212,6 +213,21 @@ protected:
 
     std::string m_baseURL;
     FrameTestHelpers::WebViewHelper m_webViewHelper;
+};
+
+TEST_F(WebViewTest, CopyImageAt)
+{
+    std::string url = m_baseURL + "canvas-copy-image.html";
+    URLTestHelpers::registerMockedURLLoad(toKURL(url), "canvas-copy-image.html");
+    WebView* webView = m_webViewHelper.initializeAndLoad(url, true, 0);
+    webView->resize(WebSize(400, 400));
+    webView->copyImageAt(WebPoint(50, 50));
+
+    blink::WebData data = blink::Platform::current()->clipboard()->readImage(blink::WebClipboard::Buffer());
+    blink::WebImage image = blink::WebImage::fromData(data, WebSize());
+
+    SkAutoLockPixels autoLock(image.getSkBitmap());
+    EXPECT_EQ(SkColorSetARGB(255, 255, 0, 0), image.getSkBitmap().getColor(0, 0));
 };
 
 TEST_F(WebViewTest, SetBaseBackgroundColor)

@@ -225,10 +225,15 @@ void ContextMenuClientImpl::showContextMenu(const WebCore::ContextMenu* defaultM
 
     if (isHTMLCanvasElement(r.innerNonSharedNode())) {
         data.mediaType = WebContextMenuData::MediaTypeCanvas;
+        data.hasImageContents = true;
     } else if (!r.absoluteImageURL().isEmpty()) {
         data.srcURL = r.absoluteImageURL();
         data.mediaType = WebContextMenuData::MediaTypeImage;
         data.mediaFlags |= WebContextMenuData::MediaCanPrint;
+
+        // An image can be null for many reasons, like being blocked, no image
+        // data received from server yet.
+        data.hasImageContents = r.image() && !r.image()->isNull();
     } else if (!r.absoluteMediaURL().isEmpty()) {
         data.srcURL = r.absoluteMediaURL();
 
@@ -287,12 +292,6 @@ void ContextMenuClientImpl::showContextMenu(const WebCore::ContextMenu* defaultM
             }
         }
     }
-
-    // An image can to be null for many reasons, like being blocked, no image
-    // data received from server yet.
-    data.hasImageContents =
-        (data.mediaType == WebContextMenuData::MediaTypeImage)
-        && r.image() && !(r.image()->isNull());
 
     // If it's not a link, an image, a media element, or an image/media link,
     // show a selection menu or a more generic page menu.
