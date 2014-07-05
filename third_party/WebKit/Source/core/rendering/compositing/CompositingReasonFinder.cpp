@@ -5,6 +5,7 @@
 #include "config.h"
 #include "core/rendering/compositing/CompositingReasonFinder.h"
 
+#include "core/CSSPropertyNames.h"
 #include "core/dom/Document.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/Settings.h"

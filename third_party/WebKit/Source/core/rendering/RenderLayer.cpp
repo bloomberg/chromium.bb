@@ -113,6 +113,7 @@ RenderLayer::RenderLayer(RenderLayerModelObject* renderer, LayerType type)
     , m_visibleDescendantStatusDirty(false)
     , m_hasVisibleDescendant(false)
     , m_hasVisibleNonLayerContent(false)
+    , m_hasInlineTransform(false)
     , m_isPaginated(false)
     , m_3DTransformedDescendantStatusDirty(true)
     , m_has3DTransformedDescendant(false)
@@ -3566,8 +3567,70 @@ void RenderLayer::updateFilters(const RenderStyle* oldStyle, const RenderStyle* 
     updateOrRemoveFilterEffectRenderer();
 }
 
+// FIXME: Should we store this information in RenderStyle?
+static bool rendererHasInlineTransform(RenderObject& renderer)
+{
+    Node* node = renderer.node();
+    if (!node)
+        return false;
+    if (!node->isElementNode())
+        return false;
+    const StylePropertySet* inlineStyle = toElement(node)->inlineStyle();
+    if (!inlineStyle)
+        return false;
+    return inlineStyle->hasProperty(CSSPropertyTransform) || inlineStyle->hasProperty(CSSPropertyWebkitTransform);
+}
+
+bool RenderLayer::attemptDirectCompositingUpdate(StyleDifference diff, const RenderStyle* oldStyle)
+{
+    CompositingReasons oldPotentialCompositingReasonsFromStyle = m_potentialCompositingReasonsFromStyle;
+    compositor()->updatePotentialCompositingReasonsFromStyle(this);
+
+    m_hasInlineTransform = rendererHasInlineTransform(*m_renderer);
+
+    // This function implements an optimization for transforms and opacity.
+    // A common pattern is for a touchmove handler to update the transform
+    // and/or an opacity of an element every frame while the user moves their
+    // finger across the screen. The conditions below recognize when the
+    // compositing state is set up to receive a direct transform or opacity
+    // update.
+
+    if (!diff.hasOnlyPropertySpecificDifference(StyleDifference::TransformChanged))
+        return false;
+    if (m_potentialCompositingReasonsFromStyle != oldPotentialCompositingReasonsFromStyle)
+        return false;
+    if (renderer()->hasReflection())
+        return false;
+    if (!m_compositedLayerMapping)
+        return false;
+
+    // To cut off almost all the work in the compositing update for
+    // this case, we treat inline transforms has having assumed overlap
+    // (similar to how we treat animated transforms). Notice that we read
+    // CompositingReasonInlineTransform from the m_compositingReasons, which
+    // means that the inline transform actually triggered assumed overlap in
+    // the overlap map.
+    if (!m_hasInlineTransform)
+        return false;
+    if (!(m_compositingReasons & CompositingReasonInlineTransform))
+        return false;
+
+    updateTransform(oldStyle, renderer()->style());
+
+    // FIXME: Consider introducing a smaller graphics layer update scope
+    // that just handles transforms and opacity. GraphicsLayerUpdateLocal
+    // will also program bounds, clips, and many other properties that could
+    // not possibly have changed.
+    m_compositedLayerMapping->setNeedsGraphicsLayerUpdate(GraphicsLayerUpdateLocal);
+    compositor()->setNeedsCompositingUpdate(CompositingUpdateAfterGeometryChange);
+    return true;
+}
+
 void RenderLayer::styleChanged(StyleDifference diff, const RenderStyle* oldStyle)
 {
+    if (attemptDirectCompositingUpdate(diff, oldStyle))
+        return;
+
     m_stackingNode->updateIsNormalFlowOnly();
     m_stackingNode->updateStackingNodesAfterStyleChange(oldStyle);
 
@@ -3595,8 +3658,6 @@ void RenderLayer::styleChanged(StyleDifference diff, const RenderStyle* oldStyle
         DisableCompositingQueryAsserts disabler;
         updateFilters(oldStyle, renderer()->style());
     }
-
-    compositor()->updatePotentialCompositingReasonsFromStyle(this);
 
     setNeedsCompositingInputsUpdate();
 
