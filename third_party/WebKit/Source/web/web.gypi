@@ -289,6 +289,7 @@
       'tests/PopupMenuTest.cpp',
       'tests/PrerenderingTest.cpp',
       'tests/ProgrammaticScrollTest.cpp',
+      'tests/RenderGeometryMapTest.cpp',
       'tests/ScrollingCoordinatorChromiumTest.cpp',
       'tests/SpinLockTest.cpp',
       'tests/TextFinderTest.cpp',
