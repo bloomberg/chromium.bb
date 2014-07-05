@@ -853,9 +853,8 @@ void RenderViewContextMenu::AppendAudioItems() {
 void RenderViewContextMenu::AppendCanvasItems() {
   menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_SAVEIMAGEAS,
                                   IDS_CONTENT_CONTEXT_SAVEIMAGEAS);
-
-  // TODO(zino): We should support 'copy image' for canvas.
-  // http://crbug.com/369092
+  menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_COPYIMAGE,
+                                  IDS_CONTENT_CONTEXT_COPYIMAGE);
 }
 
 void RenderViewContextMenu::AppendVideoItems() {

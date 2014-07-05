@@ -77,7 +77,7 @@ IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest,
-                       SaveAsImageForCanvas) {
+                       ContextMenuForCanvas) {
   content::ContextMenuParams params;
   params.media_type = blink::WebContextMenuData::MediaTypeCanvas;
 
@@ -87,6 +87,7 @@ IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest,
   menu.Init();
 
   ASSERT_TRUE(menu.IsItemPresent(IDC_CONTENT_CONTEXT_SAVEIMAGEAS));
+  ASSERT_TRUE(menu.IsItemPresent(IDC_CONTENT_CONTEXT_COPYIMAGE));
 }
 
 // Opens a link in a new tab via a "real" context menu.
