@@ -5694,13 +5694,7 @@
    fun:_ZN7WebCore15DOMWrapperWorldC1Eii
    fun:_ZN7WebCore15DOMWrapperWorld6createEii
    fun:_ZN7WebCore15DOMWrapperWorld9mainWorldEv
-   fun:_ZN7WebCore16ScriptControllerC2EPNS_10LocalFrameE
-   fun:_ZN7WebCore16ScriptControllerC1EPNS_10LocalFrameE
-   fun:_ZN7WebCore10LocalFrame*
-   fun:_ZN7WebCore10LocalFrame*
-   fun:_ZN7WebCore10LocalFrame6create*
-   fun:_ZN5blink17WebLocalFrameImpl21initializeAsMainFrameEPN7WebCore4PageE
-   fun:_ZN5blink11WebViewImpl12setMainFrameEPNS_8WebFrameE
+   ...
    fun:_ZN7content22BufferedDataSourceTestC2Ev
 }
 {
