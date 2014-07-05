@@ -119,6 +119,14 @@ test(function ()
         assert_false(walker.expandEntityReferences);
     });
 }, 'Test that the fourth argument (expandEntityReferences) is ignored.');
+
+test(function() {
+    var treeWalker = document.createTreeWalker(document.body, 42, null);
+    assert_equals(treeWalker.root, document.body);
+    assert_equals(treeWalker.currentNode, document.body);
+    assert_equals(treeWalker.whatToShow, 42);
+    assert_equals(treeWalker.filter, null);
+}, "Optional arguments to createTreeWalker should be optional (3 passed, null).");
 </script>
 </body>
 </html>

@@ -6,5 +6,6 @@ PASS Construct a TreeWalker by document.createTreeWalker().
 PASS Give an invalid root node to document.createTreeWalker(). 
 PASS Walk over nodes. 
 PASS Test that the fourth argument (expandEntityReferences) is ignored. 
+PASS Optional arguments to createTreeWalker should be optional (3 passed, null). 
 Harness: the test ran to completion.
 

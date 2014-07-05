@@ -193,6 +193,14 @@ test(function ()
         testIteratorForwardAndBackward(iterator, expectedAll);
     });
 }, 'Test that the fourth argument (expandEntityReferences) is ignored.');
+
+test(function() {
+    var nodeIterator = document.createNodeIterator(document.body, 42, null);
+    assert_equals(nodeIterator.root, document.body);
+    assert_equals(nodeIterator.referenceNode, document.body);
+    assert_equals(nodeIterator.whatToShow, 42);
+    assert_equals(nodeIterator.filter, null);
+}, "Optional arguments to createNodeIterator should be optional (3 passed, null).");
 </script>
 </body>
 </html>

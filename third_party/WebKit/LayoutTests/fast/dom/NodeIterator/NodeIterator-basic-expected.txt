@@ -11,5 +11,6 @@ PASS Iterate over all comment nodes forward then backward.
 PASS Test the behavior of NodeIterator when no nodes match with the given filter. 
 PASS Test the behavior of NodeIterator when NodeFilter is specified. 
 PASS Test that the fourth argument (expandEntityReferences) is ignored. 
+PASS Optional arguments to createNodeIterator should be optional (3 passed, null). 
 Harness: the test ran to completion.
 

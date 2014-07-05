@@ -149,6 +149,8 @@ v8::ArrayBuffer::Allocator* v8ArrayBufferAllocator()
 
 PassRefPtrWillBeRawPtr<NodeFilter> toNodeFilter(v8::Handle<v8::Value> callback, v8::Handle<v8::Object> creationContext, ScriptState* scriptState)
 {
+    if (callback->IsNull())
+        return nullptr;
     RefPtrWillBeRawPtr<NodeFilter> filter = NodeFilter::create();
 
     v8::Handle<v8::Object> filterWrapper = toV8(filter, creationContext, scriptState->isolate()).As<v8::Object>();
