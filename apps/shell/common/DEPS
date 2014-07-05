@@ -3,6 +3,4 @@ include_rules = [
   "-content",
   "+content/public/common",
   "+content/public/test",
-
-  "+webkit/common/user_agent/user_agent_util.h",
 ]
