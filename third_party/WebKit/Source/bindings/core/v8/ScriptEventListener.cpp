@@ -122,7 +122,7 @@ String eventListenerHandlerBody(Document* document, EventListener* listener)
     if (function.IsEmpty())
         return "";
 
-    TOSTRING_DEFAULT(V8StringResource<WithNullCheck>, functionString, function, "");
+    TOSTRING_DEFAULT(V8StringResource<TreatNullAsNullString>, functionString, function, "");
     return functionString;
 }
 

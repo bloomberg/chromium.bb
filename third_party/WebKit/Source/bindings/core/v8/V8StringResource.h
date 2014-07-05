@@ -162,8 +162,9 @@ String int32ToWebCoreString(int value);
 // or AtomicStrings as appropriate, using multiple typecast operators.
 enum V8StringResourceMode {
     DefaultMode,
-    WithNullCheck,
-    WithUndefinedOrNullCheck
+    TreatNullAsEmptyString,
+    TreatNullAsNullString,
+    TreatNullAndUndefinedAsNullString
 };
 
 template <V8StringResourceMode Mode = DefaultMode>
@@ -201,7 +202,7 @@ public:
             return true;
 
         if (!isValid()) {
-            setString(String());
+            setString(fallbackString());
             return true;
         }
 
@@ -228,6 +229,7 @@ public:
 
 private:
     bool isValid() const;
+    String fallbackString() const;
 
     void setString(const String& string)
     {
@@ -254,14 +256,40 @@ template<> inline bool V8StringResource<DefaultMode>::isValid() const
     return true;
 }
 
-template<> inline bool V8StringResource<WithNullCheck>::isValid() const
+template<> inline String V8StringResource<DefaultMode>::fallbackString() const
+{
+    ASSERT_NOT_REACHED();
+    return String();
+}
+
+template<> inline bool V8StringResource<TreatNullAsEmptyString>::isValid() const
 {
     return !m_v8Object->IsNull();
 }
 
-template<> inline bool V8StringResource<WithUndefinedOrNullCheck>::isValid() const
+template<> inline String V8StringResource<TreatNullAsEmptyString>::fallbackString() const
+{
+    return emptyString();
+}
+
+template<> inline bool V8StringResource<TreatNullAsNullString>::isValid() const
+{
+    return !m_v8Object->IsNull();
+}
+
+template<> inline String V8StringResource<TreatNullAsNullString>::fallbackString() const
+{
+    return String();
+}
+
+template<> inline bool V8StringResource<TreatNullAndUndefinedAsNullString>::isValid() const
 {
     return !m_v8Object->IsNull() && !m_v8Object->IsUndefined();
+}
+
+template<> inline String V8StringResource<TreatNullAndUndefinedAsNullString>::fallbackString() const
+{
+    return String();
 }
 
 } // namespace WebCore

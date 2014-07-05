@@ -1531,7 +1531,7 @@ static void stringOrNullAttributeAttributeSetter(v8::Local<v8::Value> v8Value, c
 {
     v8::Handle<v8::Object> holder = info.Holder();
     TestObject* impl = V8TestObject::toNative(holder);
-    TOSTRING_VOID(V8StringResource<WithNullCheck>, cppValue, v8Value);
+    TOSTRING_VOID(V8StringResource<TreatNullAsNullString>, cppValue, v8Value);
     impl->setStringOrNullAttribute(cppValue);
 }
 
@@ -1936,7 +1936,7 @@ static void cachedStringOrNoneAttributeAttributeSetter(v8::Local<v8::Value> v8Va
 {
     v8::Handle<v8::Object> holder = info.Holder();
     TestObject* impl = V8TestObject::toNative(holder);
-    TOSTRING_VOID(V8StringResource<WithNullCheck>, cppValue, v8Value);
+    TOSTRING_VOID(V8StringResource<TreatNullAsNullString>, cppValue, v8Value);
     impl->setCachedStringOrNoneAttribute(cppValue);
     V8HiddenValue::deleteHiddenValue(info.GetIsolate(), holder, v8AtomicString(info.GetIsolate(), "cachedStringOrNoneAttribute")); // Invalidate the cached value.
 }
@@ -4193,6 +4193,35 @@ static void setterCallWithExecutionContextStringAttributeAttributeSetterCallback
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 
+static void treatNullAsEmptyStringStringAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestObject* impl = V8TestObject::toNative(holder);
+    v8SetReturnValueString(info, impl->treatNullAsEmptyStringStringAttribute(), info.GetIsolate());
+}
+
+static void treatNullAsEmptyStringStringAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMGetter");
+    TestObjectV8Internal::treatNullAsEmptyStringStringAttributeAttributeGetter(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
+}
+
+static void treatNullAsEmptyStringStringAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
+{
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestObject* impl = V8TestObject::toNative(holder);
+    TOSTRING_VOID(V8StringResource<TreatNullAsEmptyString>, cppValue, v8Value);
+    impl->setTreatNullAsEmptyStringStringAttribute(cppValue);
+}
+
+static void treatNullAsEmptyStringStringAttributeAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMSetter");
+    TestObjectV8Internal::treatNullAsEmptyStringStringAttributeAttributeSetter(v8Value, info);
+    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
+}
+
 static void treatNullAsNullStringStringAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     v8::Handle<v8::Object> holder = info.Holder();
@@ -4211,7 +4240,7 @@ static void treatNullAsNullStringStringAttributeAttributeSetter(v8::Local<v8::Va
 {
     v8::Handle<v8::Object> holder = info.Holder();
     TestObject* impl = V8TestObject::toNative(holder);
-    TOSTRING_VOID(V8StringResource<WithNullCheck>, cppValue, v8Value);
+    TOSTRING_VOID(V8StringResource<TreatNullAsNullString>, cppValue, v8Value);
     impl->setTreatNullAsNullStringStringAttribute(cppValue);
 }
 
@@ -4650,7 +4679,7 @@ static void activityLoggingSetterOnlyLogPreviousValueAttributeAttributeSetter(v8
 {
     v8::Handle<v8::Object> holder = info.Holder();
     TestObject* impl = V8TestObject::toNative(holder);
-    TOSTRING_VOID(V8StringResource<WithNullCheck>, cppValue, v8Value);
+    TOSTRING_VOID(V8StringResource<TreatNullAsNullString>, cppValue, v8Value);
     impl->setActivityLoggingSetterOnlyLogPreviousValueAttribute(cppValue);
 }
 
@@ -7396,7 +7425,7 @@ static void voidMethodDefaultFalseBooleanArgMethodCallback(const v8::FunctionCal
 static void voidMethodDefaultNullableByteStringArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toNative(info.Holder());
-    V8StringResource<WithNullCheck> defaultStringArg;
+    V8StringResource<TreatNullAsNullString> defaultStringArg;
     {
         v8::TryCatch block;
         V8RethrowTryCatchScope rethrow(block);
@@ -7419,7 +7448,7 @@ static void voidMethodDefaultNullableByteStringArgMethodCallback(const v8::Funct
 static void voidMethodDefaultNullableStringArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toNative(info.Holder());
-    V8StringResource<WithNullCheck> defaultStringArg;
+    V8StringResource<TreatNullAsNullString> defaultStringArg;
     {
         if (info.Length() > 0) {
             TOSTRING_VOID_INTERNAL(defaultStringArg, info[0]);
@@ -8464,6 +8493,27 @@ static void voidMethodEnforceRangeLongArgMethodCallback(const v8::FunctionCallba
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 
+static void voidMethodTreatNullAsEmptyStringStringArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    if (UNLIKELY(info.Length() < 1)) {
+        throwMinimumArityTypeErrorForMethod("voidMethodTreatNullAsEmptyStringStringArg", "TestObject", 1, info.Length(), info.GetIsolate());
+        return;
+    }
+    TestObject* impl = V8TestObject::toNative(info.Holder());
+    V8StringResource<TreatNullAsEmptyString> treatNullAsEmptyStringStringArg;
+    {
+        TOSTRING_VOID_INTERNAL(treatNullAsEmptyStringStringArg, info[0]);
+    }
+    impl->voidMethodTreatNullAsEmptyStringStringArg(treatNullAsEmptyStringStringArg);
+}
+
+static void voidMethodTreatNullAsEmptyStringStringArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMMethod");
+    TestObjectV8Internal::voidMethodTreatNullAsEmptyStringStringArgMethod(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
+}
+
 static void voidMethodTreatNullAsNullStringStringArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     if (UNLIKELY(info.Length() < 1)) {
@@ -8471,7 +8521,7 @@ static void voidMethodTreatNullAsNullStringStringArgMethod(const v8::FunctionCal
         return;
     }
     TestObject* impl = V8TestObject::toNative(info.Holder());
-    V8StringResource<WithNullCheck> treatNullAsNullStringStringArg;
+    V8StringResource<TreatNullAsNullString> treatNullAsNullStringStringArg;
     {
         TOSTRING_VOID_INTERNAL(treatNullAsNullStringStringArg, info[0]);
     }
@@ -8492,7 +8542,7 @@ static void voidMethodTreatNullAsNullStringTreatUndefinedAsNullStringStringArgMe
         return;
     }
     TestObject* impl = V8TestObject::toNative(info.Holder());
-    V8StringResource<WithUndefinedOrNullCheck> treatNullAsNullStringStringArg;
+    V8StringResource<TreatNullAndUndefinedAsNullString> treatNullAsNullStringStringArg;
     {
         TOSTRING_VOID_INTERNAL(treatNullAsNullStringStringArg, info[0]);
     }
@@ -10432,6 +10482,7 @@ static const V8DOMConfiguration::AttributeConfiguration V8TestObjectAttributes[]
     {"locationReplaceable", TestObjectV8Internal::locationReplaceableAttributeGetterCallback, TestObjectV8Internal::locationReplaceableAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"setterCallWithActiveWindowAndFirstWindowStringAttribute", TestObjectV8Internal::setterCallWithActiveWindowAndFirstWindowStringAttributeAttributeGetterCallback, TestObjectV8Internal::setterCallWithActiveWindowAndFirstWindowStringAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"setterCallWithExecutionContextStringAttribute", TestObjectV8Internal::setterCallWithExecutionContextStringAttributeAttributeGetterCallback, TestObjectV8Internal::setterCallWithExecutionContextStringAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
+    {"treatNullAsEmptyStringStringAttribute", TestObjectV8Internal::treatNullAsEmptyStringStringAttributeAttributeGetterCallback, TestObjectV8Internal::treatNullAsEmptyStringStringAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"treatNullAsNullStringStringAttribute", TestObjectV8Internal::treatNullAsNullStringStringAttributeAttributeGetterCallback, TestObjectV8Internal::treatNullAsNullStringStringAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"treatReturnedNullStringAsNullStringAttribute", TestObjectV8Internal::treatReturnedNullStringAsNullStringAttributeAttributeGetterCallback, TestObjectV8Internal::treatReturnedNullStringAsNullStringAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"treatReturnedNullStringAsUndefinedStringAttribute", TestObjectV8Internal::treatReturnedNullStringAsUndefinedStringAttributeAttributeGetterCallback, TestObjectV8Internal::treatReturnedNullStringAsUndefinedStringAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
@@ -10598,6 +10649,7 @@ static const V8DOMConfiguration::MethodConfiguration V8TestObjectMethods[] = {
     {"voidMethodDefaultUndefinedLongArg", TestObjectV8Internal::voidMethodDefaultUndefinedLongArgMethodCallback, 0, 0},
     {"voidMethodDefaultUndefinedStringArg", TestObjectV8Internal::voidMethodDefaultUndefinedStringArgMethodCallback, 0, 0},
     {"voidMethodEnforceRangeLongArg", TestObjectV8Internal::voidMethodEnforceRangeLongArgMethodCallback, 0, 1},
+    {"voidMethodTreatNullAsEmptyStringStringArg", TestObjectV8Internal::voidMethodTreatNullAsEmptyStringStringArgMethodCallback, 0, 1},
     {"voidMethodTreatNullAsNullStringStringArg", TestObjectV8Internal::voidMethodTreatNullAsNullStringStringArgMethodCallback, 0, 1},
     {"voidMethodTreatNullAsNullStringTreatUndefinedAsNullStringStringArg", TestObjectV8Internal::voidMethodTreatNullAsNullStringTreatUndefinedAsNullStringStringArgMethodCallback, 0, 1},
     {"activityLoggingAccessForAllWorldsMethod", TestObjectV8Internal::activityLoggingAccessForAllWorldsMethodMethodCallback, 0, 0},

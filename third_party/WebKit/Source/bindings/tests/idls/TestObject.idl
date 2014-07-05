@@ -240,6 +240,7 @@ interface TestObject {
     [Conditional=CONDITION, RuntimeEnabled=FeatureName] attribute long conditionalRuntimeEnabledLongAttribute;
     [SetterCallWith=ActiveWindow&FirstWindow] attribute DOMString setterCallWithActiveWindowAndFirstWindowStringAttribute;
     [SetterCallWith=ExecutionContext] attribute DOMString setterCallWithExecutionContextStringAttribute;
+    [TreatNullAs=EmptyString] attribute DOMString treatNullAsEmptyStringStringAttribute;
     [TreatNullAs=NullString] attribute DOMString treatNullAsNullStringStringAttribute;
     [TreatReturnedNullStringAs=Null] attribute DOMString treatReturnedNullStringAsNullStringAttribute;
     [TreatReturnedNullStringAs=Undefined] attribute DOMString treatReturnedNullStringAsUndefinedStringAttribute;
@@ -448,6 +449,7 @@ interface TestObject {
     // [EnforceRange]
     void voidMethodEnforceRangeLongArg([EnforceRange] long enforceRangeLongArg);
     // [TreatNullAs], [TreatUndefinedAs]
+    void voidMethodTreatNullAsEmptyStringStringArg([TreatNullAs=EmptyString] DOMString treatNullAsEmptyStringStringArg);
     void voidMethodTreatNullAsNullStringStringArg([TreatNullAs=NullString] DOMString treatNullAsNullStringStringArg);
     void voidMethodTreatNullAsNullStringTreatUndefinedAsNullStringStringArg([TreatNullAs=NullString, TreatUndefinedAs=NullString] DOMString treatNullAsNullStringStringArg);
 

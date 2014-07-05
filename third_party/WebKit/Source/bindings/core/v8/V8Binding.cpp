@@ -885,7 +885,7 @@ PassRefPtr<JSONValue> v8ToJSONValue(v8::Isolate* isolate, v8::Handle<v8::Value> 
             RefPtr<JSONValue> propertyValue = v8ToJSONValue(isolate, object->Get(name), maxDepth);
             if (!propertyValue)
                 return nullptr;
-            TOSTRING_DEFAULT(V8StringResource<WithNullCheck>, nameString, name, nullptr);
+            TOSTRING_DEFAULT(V8StringResource<TreatNullAsNullString>, nameString, name, nullptr);
             jsonObject->setValue(nameString, propertyValue);
         }
         return jsonObject;

@@ -177,10 +177,10 @@ void V8XMLHttpRequest::openMethodCustom(const v8::FunctionCallbackInfo<v8::Value
         bool async = info[2]->BooleanValue();
 
         if (info.Length() >= 4 && !info[3]->IsUndefined()) {
-            TOSTRING_VOID(V8StringResource<WithNullCheck>, user, info[3]);
+            TOSTRING_VOID(V8StringResource<TreatNullAsNullString>, user, info[3]);
 
             if (info.Length() >= 5 && !info[4]->IsUndefined()) {
-                TOSTRING_VOID(V8StringResource<WithNullCheck>, password, info[4]);
+                TOSTRING_VOID(V8StringResource<TreatNullAsNullString>, password, info[4]);
                 xmlHttpRequest->open(method, url, async, user, password, exceptionState);
             } else {
                 xmlHttpRequest->open(method, url, async, user, exceptionState);
@@ -240,7 +240,7 @@ void V8XMLHttpRequest::sendMethodCustom(const v8::FunctionCallbackInfo<v8::Value
             ASSERT(arrayBufferView);
             xmlHttpRequest->send(arrayBufferView, exceptionState);
         } else {
-            TOSTRING_VOID(V8StringResource<WithNullCheck>, argString, arg);
+            TOSTRING_VOID(V8StringResource<TreatNullAsNullString>, argString, arg);
             xmlHttpRequest->send(argString, exceptionState);
         }
     }

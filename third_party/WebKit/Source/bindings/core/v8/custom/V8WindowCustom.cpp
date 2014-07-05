@@ -264,7 +264,7 @@ void V8Window::postMessageMethodCustom(const v8::FunctionCallbackInfo<v8::Value>
             return;
         }
     }
-    TOSTRING_VOID(V8StringResource<WithUndefinedOrNullCheck>, targetOrigin, info[targetOriginArgIndex]);
+    TOSTRING_VOID(V8StringResource<TreatNullAndUndefinedAsNullString>, targetOrigin, info[targetOriginArgIndex]);
 
     RefPtr<SerializedScriptValue> message = SerializedScriptValue::create(info[0], &portArray, &arrayBufferArray, exceptionState, info.GetIsolate());
     if (exceptionState.throwIfNeeded())
@@ -347,9 +347,9 @@ void V8Window::showModalDialogMethodCustom(const v8::FunctionCallbackInfo<v8::Va
         return;
     }
 
-    TOSTRING_VOID(V8StringResource<WithUndefinedOrNullCheck>, urlString, info[0]);
+    TOSTRING_VOID(V8StringResource<TreatNullAndUndefinedAsNullString>, urlString, info[0]);
     DialogHandler handler(info[1], ScriptState::current(info.GetIsolate()));
-    TOSTRING_VOID(V8StringResource<WithUndefinedOrNullCheck>, dialogFeaturesString, info[2]);
+    TOSTRING_VOID(V8StringResource<TreatNullAndUndefinedAsNullString>, dialogFeaturesString, info[2]);
 
     impl->showModalDialog(urlString, dialogFeaturesString, callingDOMWindow(info.GetIsolate()), enteredDOMWindow(info.GetIsolate()), setUpDialog, &handler);
 
@@ -365,7 +365,7 @@ void V8Window::openMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
         return;
     }
 
-    TOSTRING_VOID(V8StringResource<WithUndefinedOrNullCheck>, urlString, info[0]);
+    TOSTRING_VOID(V8StringResource<TreatNullAndUndefinedAsNullString>, urlString, info[0]);
     AtomicString frameName;
     if (info[1]->IsUndefined() || info[1]->IsNull()) {
         frameName = "_blank";
@@ -373,7 +373,7 @@ void V8Window::openMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
         TOSTRING_VOID(V8StringResource<>, frameNameResource, info[1]);
         frameName = frameNameResource;
     }
-    TOSTRING_VOID(V8StringResource<WithUndefinedOrNullCheck>, windowFeaturesString, info[2]);
+    TOSTRING_VOID(V8StringResource<TreatNullAndUndefinedAsNullString>, windowFeaturesString, info[2]);
 
     RefPtrWillBeRawPtr<LocalDOMWindow> openedWindow = impl->open(urlString, frameName, windowFeaturesString, callingDOMWindow(info.GetIsolate()), enteredDOMWindow(info.GetIsolate()));
     if (!openedWindow)

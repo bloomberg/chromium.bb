@@ -83,7 +83,7 @@ static bool populateContextMenuItems(const v8::Local<v8::Array>& itemArray, Cont
             v8::Local<v8::Array> subItemsArray = v8::Local<v8::Array>::Cast(subItems);
             if (!populateContextMenuItems(subItemsArray, subMenu, isolate))
                 return false;
-            TOSTRING_DEFAULT(V8StringResource<WithNullCheck>, labelString, label, false);
+            TOSTRING_DEFAULT(V8StringResource<TreatNullAsNullString>, labelString, label, false);
             ContextMenuItem item(SubmenuType,
                 ContextMenuItemCustomTagNoAction,
                 labelString,
@@ -91,7 +91,7 @@ static bool populateContextMenuItems(const v8::Local<v8::Array>& itemArray, Cont
             menu.appendItem(item);
         } else {
             ContextMenuAction typedId = static_cast<ContextMenuAction>(ContextMenuItemBaseCustomTag + id->ToInt32()->Value());
-            TOSTRING_DEFAULT(V8StringResource<WithNullCheck>, labelString, label, false);
+            TOSTRING_DEFAULT(V8StringResource<TreatNullAsNullString>, labelString, label, false);
             ContextMenuItem menuItem((typeString == "checkbox" ? CheckableActionType : ActionType), typedId, labelString);
             if (checked->IsBoolean())
                 menuItem.setChecked(checked->ToBoolean()->Value());
