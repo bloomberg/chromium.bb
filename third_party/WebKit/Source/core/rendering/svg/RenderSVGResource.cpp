@@ -40,8 +40,8 @@ static inline bool inheritColorFromParentStyle(RenderObject* object, bool applyT
     if (!object->parent() || !object->parent()->style())
         return false;
     const SVGRenderStyle* parentSVGStyle = object->parent()->style()->svgStyle();
-    SVGPaint::SVGPaintType paintType = applyToFill ? parentSVGStyle->fillPaintType() : parentSVGStyle->strokePaintType();
-    if (paintType != SVGPaint::SVG_PAINTTYPE_RGBCOLOR && paintType != SVGPaint::SVG_PAINTTYPE_RGBCOLOR_ICCCOLOR)
+    SVGPaintType paintType = applyToFill ? parentSVGStyle->fillPaintType() : parentSVGStyle->strokePaintType();
+    if (paintType != SVG_PAINTTYPE_RGBCOLOR && paintType != SVG_PAINTTYPE_RGBCOLOR_ICCCOLOR)
         return false;
     color = applyToFill ? parentSVGStyle->fillPaintColor() : parentSVGStyle->strokePaintColor();
     return true;
@@ -80,18 +80,18 @@ static inline RenderSVGResource* requestPaintingResource(RenderSVGResourceMode m
     }
 
     bool applyToFill = mode == ApplyToFillMode;
-    SVGPaint::SVGPaintType paintType = applyToFill ? svgStyle->fillPaintType() : svgStyle->strokePaintType();
-    ASSERT(paintType != SVGPaint::SVG_PAINTTYPE_NONE);
+    SVGPaintType paintType = applyToFill ? svgStyle->fillPaintType() : svgStyle->strokePaintType();
+    ASSERT(paintType != SVG_PAINTTYPE_NONE);
 
     Color color;
     bool hasColor = false;
     switch (paintType) {
-    case SVGPaint::SVG_PAINTTYPE_CURRENTCOLOR:
-    case SVGPaint::SVG_PAINTTYPE_RGBCOLOR:
-    case SVGPaint::SVG_PAINTTYPE_RGBCOLOR_ICCCOLOR:
-    case SVGPaint::SVG_PAINTTYPE_URI_CURRENTCOLOR:
-    case SVGPaint::SVG_PAINTTYPE_URI_RGBCOLOR:
-    case SVGPaint::SVG_PAINTTYPE_URI_RGBCOLOR_ICCCOLOR:
+    case SVG_PAINTTYPE_CURRENTCOLOR:
+    case SVG_PAINTTYPE_RGBCOLOR:
+    case SVG_PAINTTYPE_RGBCOLOR_ICCCOLOR:
+    case SVG_PAINTTYPE_URI_CURRENTCOLOR:
+    case SVG_PAINTTYPE_URI_RGBCOLOR:
+    case SVG_PAINTTYPE_URI_RGBCOLOR_ICCCOLOR:
         color = applyToFill ? svgStyle->fillPaintColor() : svgStyle->strokePaintColor();
         hasColor = true;
     default:
@@ -100,10 +100,10 @@ static inline RenderSVGResource* requestPaintingResource(RenderSVGResourceMode m
 
     if (style->insideLink() == InsideVisitedLink) {
         // FIXME: This code doesn't support the uri component of the visited link paint, https://bugs.webkit.org/show_bug.cgi?id=70006
-        SVGPaint::SVGPaintType visitedPaintType = applyToFill ? svgStyle->visitedLinkFillPaintType() : svgStyle->visitedLinkStrokePaintType();
+        SVGPaintType visitedPaintType = applyToFill ? svgStyle->visitedLinkFillPaintType() : svgStyle->visitedLinkStrokePaintType();
 
         // For SVG_PAINTTYPE_CURRENTCOLOR, 'color' already contains the 'visitedColor'.
-        if (visitedPaintType < SVGPaint::SVG_PAINTTYPE_URI_NONE && visitedPaintType != SVGPaint::SVG_PAINTTYPE_CURRENTCOLOR) {
+        if (visitedPaintType < SVG_PAINTTYPE_URI_NONE && visitedPaintType != SVG_PAINTTYPE_CURRENTCOLOR) {
             const Color& visitedColor = applyToFill ? svgStyle->visitedLinkFillPaintColor() : svgStyle->visitedLinkStrokePaintColor();
             color = Color(visitedColor.red(), visitedColor.green(), visitedColor.blue(), color.alpha());
             hasColor = true;
@@ -112,7 +112,7 @@ static inline RenderSVGResource* requestPaintingResource(RenderSVGResourceMode m
 
     // If the primary resource is just a color, return immediately.
     RenderSVGResourceSolidColor* colorResource = RenderSVGResource::sharedSolidPaintingResource();
-    if (paintType < SVGPaint::SVG_PAINTTYPE_URI_NONE) {
+    if (paintType < SVG_PAINTTYPE_URI_NONE) {
         if (!hasColor && !inheritColorFromParentStyle(object, applyToFill, color))
             return 0;
 
@@ -123,7 +123,7 @@ static inline RenderSVGResource* requestPaintingResource(RenderSVGResourceMode m
     // If no resources are associated with the given renderer, return the color resource.
     SVGResources* resources = SVGResourcesCache::cachedResourcesForRenderObject(object);
     if (!resources) {
-        if (paintType == SVGPaint::SVG_PAINTTYPE_URI_NONE || (!hasColor && !inheritColorFromParentStyle(object, applyToFill, color)))
+        if (paintType == SVG_PAINTTYPE_URI_NONE || (!hasColor && !inheritColorFromParentStyle(object, applyToFill, color)))
             return 0;
 
         colorResource->setColor(color);

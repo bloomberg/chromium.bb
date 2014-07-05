@@ -62,6 +62,7 @@ class ImmutableStylePropertySet;
 class MediaQueryExp;
 class MediaQuerySet;
 class MutableStylePropertySet;
+class StyleColor;
 class StyleKeyframe;
 class StylePropertyShorthand;
 class StyleRuleBase;
@@ -93,6 +94,7 @@ public:
     bool parseSupportsCondition(const String&);
     static bool parseValue(MutableStylePropertySet*, CSSPropertyID, const String&, bool important, CSSParserMode, StyleSheetContents*);
     static bool parseColor(RGBA32& color, const String&, bool strict = false);
+    static StyleColor colorFromRGBColorString(const String&);
     static bool parseSystemColor(RGBA32& color, const String&);
     static PassRefPtrWillBeRawPtr<CSSValueList> parseFontFaceValue(const AtomicString&);
     static PassRefPtrWillBeRawPtr<CSSValue> parseAnimationTimingFunctionValue(const String&);

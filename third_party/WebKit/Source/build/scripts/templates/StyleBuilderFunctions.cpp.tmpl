@@ -607,19 +607,40 @@ static bool lengthTypeAndValueMatch(const BorderImageLengthBox& borderImageLengt
 
 {{declare_value_function(property_id)}}
 {
-    if (value->isSVGPaint()) {
-        SVGPaint* svgPaint = toSVGPaint(value);
+    String url;
+    if (value->isValueList()) {
+        CSSValueList* list = toCSSValueList(value);
+        ASSERT(list->length() > 1);
 
-        Color color;
-        if (svgPaint->paintType() == SVGPaint::SVG_PAINTTYPE_CURRENTCOLOR
-                || svgPaint->paintType() == SVGPaint::SVG_PAINTTYPE_URI_CURRENTCOLOR)
-            color = state.style()->color();
-        else
-            color = svgPaint->color();
+        if (!list->item(0)->isPrimitiveValue())
+            return;
 
-        {{set_value(property)}}(svgPaint->paintType(),
-            color,
-            svgPaint->uri(),
+        CSSPrimitiveValue* pValue = toCSSPrimitiveValue(list->item(0));
+        if (!pValue->isURI())
+            return;
+
+        url = pValue->getStringValue();
+        value = list->item(1);
+    }
+    if (value->isPrimitiveValue()) {
+        CSSPrimitiveValue* pValue = toCSSPrimitiveValue(value);
+        Color c;
+        SVGPaintType ptype = SVG_PAINTTYPE_RGBCOLOR;
+        if (pValue->isRGBColor()) {
+            c = pValue->getRGBA32Value();
+            ptype = url.isEmpty() ? SVG_PAINTTYPE_RGBCOLOR : SVG_PAINTTYPE_URI_RGBCOLOR;
+        } else if (pValue->getValueID() == CSSValueCurrentcolor) {
+            c = state.style()->color();
+            ptype = url.isEmpty() ? SVG_PAINTTYPE_CURRENTCOLOR : SVG_PAINTTYPE_URI_CURRENTCOLOR;
+        } else if (pValue->getValueID() == CSSValueNone) {
+            ptype = url.isEmpty() ? SVG_PAINTTYPE_NONE : SVG_PAINTTYPE_URI_NONE;
+        } else if (pValue->isURI()) {
+            ptype = SVG_PAINTTYPE_URI;
+            url = pValue->getStringValue();
+        } else {
+            return;
+        }
+        {{set_value(property)}}(ptype, c, url,
             state.applyPropertyToRegularStyle(),
             state.applyPropertyToVisitedLinkStyle());
     }

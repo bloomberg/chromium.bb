@@ -67,12 +67,12 @@
 #include "core/css/Pair.h"
 #include "core/css/Rect.h"
 #include "core/css/RuntimeCSSEnabled.h"
+#include "core/css/parser/BisonCSSParser.h"
 #include "core/css/parser/CSSParserIdioms.h"
 #include "core/frame/UseCounter.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/rendering/RenderTheme.h"
-#include "core/svg/SVGPaint.h"
 #include "platform/FloatConversion.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "wtf/BitArray.h"
@@ -8295,26 +8295,28 @@ bool CSSPropertyParser::parseSVGValue(CSSPropertyID propId, bool important)
     case CSSPropertyFill: // <paint> | inherit
     case CSSPropertyStroke: // <paint> | inherit
         {
-            if (id == CSSValueNone) {
-                parsedValue = SVGPaint::createNone();
-            } else if (id == CSSValueCurrentcolor) {
-                parsedValue = SVGPaint::createCurrentColor();
+            if (id == CSSValueNone || id == CSSValueCurrentcolor) {
+                parsedValue = cssValuePool().createIdentifierValue(id);
             } else if (isSystemColor(id)) {
-                parsedValue = SVGPaint::createColor(RenderTheme::theme().systemColor(id));
+                parsedValue = cssValuePool().createColorValue(RenderTheme::theme().systemColor(id).rgb());
             } else if (value->unit == CSSPrimitiveValue::CSS_URI) {
                 RGBA32 c = Color::transparent;
                 if (m_valueList->next()) {
+                    RefPtrWillBeRawPtr<CSSValueList> values = CSSValueList::createSpaceSeparated();
+                    values->append(CSSPrimitiveValue::create(value->string, CSSPrimitiveValue::CSS_URI));
                     if (parseColorFromValue(m_valueList->current(), c))
-                        parsedValue = SVGPaint::createURIAndColor(value->string, c);
-                    else if (m_valueList->current()->id == CSSValueNone)
-                        parsedValue = SVGPaint::createURIAndNone(value->string);
-                    else if (m_valueList->current()->id == CSSValueCurrentcolor)
-                        parsedValue = SVGPaint::createURIAndCurrentColor(value->string);
+                        parsedValue = cssValuePool().createColorValue(c);
+                    else if (m_valueList->current()->id == CSSValueNone || m_valueList->current()->id == CSSValueCurrentcolor)
+                        parsedValue = cssValuePool().createIdentifierValue(m_valueList->current()->id);
+                    if (parsedValue) {
+                        values->append(parsedValue);
+                        parsedValue = values;
+                    }
                 }
                 if (!parsedValue)
-                    parsedValue = SVGPaint::createURI(value->string);
+                    parsedValue = CSSPrimitiveValue::create(value->string, CSSPrimitiveValue::CSS_URI);
             } else {
-                parsedValue = parseSVGPaint();
+                parsedValue = parseColor();
             }
 
             if (parsedValue)
@@ -8329,7 +8331,7 @@ bool CSSPropertyParser::parseSVGValue(CSSPropertyID propId, bool important)
             parsedValue = cssValuePool().createColorValue(RenderTheme::theme().systemColor(id).rgb());
         } else if ((id >= CSSValueAqua && id <= CSSValueTransparent)
             || (id >= CSSValueAliceblue && id <= CSSValueYellowgreen) || id == CSSValueGrey) {
-            StyleColor styleColor = SVGPaint::colorFromRGBColorString(value->string);
+            StyleColor styleColor = BisonCSSParser::colorFromRGBColorString(value->string);
             ASSERT(!styleColor.isCurrentColor());
             parsedValue = cssValuePool().createColorValue(styleColor.color().rgb());
         } else if (id == CSSValueCurrentcolor) {
@@ -8454,14 +8456,6 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseSVGStrokeDasharray()
     if (!validPrimitive)
         return nullptr;
     return ret.release();
-}
-
-PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseSVGPaint()
-{
-    RGBA32 c = Color::transparent;
-    if (!parseColorFromValue(m_valueList->current(), c))
-        return SVGPaint::createUnknown();
-    return SVGPaint::createColor(Color(c));
 }
 
 // normal | [ fill || stroke || markers ]

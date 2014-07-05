@@ -26,7 +26,6 @@
 #include "core/css/CSSPrimitiveValueMappings.h"
 #include "core/dom/Document.h"
 #include "core/rendering/style/RenderStyle.h"
-#include "core/svg/SVGPaint.h"
 
 namespace WebCore {
 
@@ -83,12 +82,25 @@ static PassRefPtrWillBeRawPtr<CSSValue> paintOrderToCSSValueList(EPaintOrder pai
     return list.release();
 }
 
-PassRefPtrWillBeRawPtr<SVGPaint> CSSComputedStyleDeclaration::adjustSVGPaintForCurrentColor(PassRefPtrWillBeRawPtr<SVGPaint> newPaint, RenderStyle& style) const
+static PassRefPtrWillBeRawPtr<CSSValue> adjustSVGPaintForCurrentColor(SVGPaintType paintType, const String& url, const Color& color, const Color& currentColor)
 {
-    RefPtrWillBeRawPtr<SVGPaint> paint = newPaint;
-    if (paint->paintType() == SVGPaint::SVG_PAINTTYPE_CURRENTCOLOR || paint->paintType() == SVGPaint::SVG_PAINTTYPE_URI_CURRENTCOLOR)
-        paint->setColor(style.color());
-    return paint.release();
+    if (paintType >= SVG_PAINTTYPE_URI_NONE) {
+        RefPtrWillBeRawPtr<CSSValueList> values = CSSValueList::createSpaceSeparated();
+        values->append(CSSPrimitiveValue::create(url, CSSPrimitiveValue::CSS_URI));
+        if (paintType == SVG_PAINTTYPE_URI_NONE)
+            values->append(CSSPrimitiveValue::create(CSSValueNone));
+        else if (paintType == SVG_PAINTTYPE_URI_CURRENTCOLOR)
+            values->append(CSSPrimitiveValue::createColor(currentColor.rgb()));
+        else if (paintType == SVG_PAINTTYPE_URI_RGBCOLOR)
+            values->append(CSSPrimitiveValue::createColor(color.rgb()));
+        return values.release();
+    }
+    if (paintType == SVG_PAINTTYPE_NONE)
+        return CSSPrimitiveValue::create(CSSValueNone);
+    if (paintType == SVG_PAINTTYPE_CURRENTCOLOR)
+        return CSSPrimitiveValue::createColor(currentColor.rgb());
+
+    return CSSPrimitiveValue::createColor(color.rgb());
 }
 
 static inline String serializeAsFragmentIdentifier(const AtomicString& resource)
@@ -168,7 +180,7 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSComputedStyleDeclaration::getSVGPropertyCSSV
         case CSSPropertyStopColor:
             return currentColorOrValidColor(*style, svgStyle->stopColor());
         case CSSPropertyFill:
-            return adjustSVGPaintForCurrentColor(SVGPaint::create(svgStyle->fillPaintType(), svgStyle->fillPaintUri(), svgStyle->fillPaintColor()), *style);
+            return adjustSVGPaintForCurrentColor(svgStyle->fillPaintType(), svgStyle->fillPaintUri(), svgStyle->fillPaintColor(), style->color());
         case CSSPropertyMarkerEnd:
             if (!svgStyle->markerEndResource().isEmpty())
                 return CSSPrimitiveValue::create(serializeAsFragmentIdentifier(svgStyle->markerEndResource()), CSSPrimitiveValue::CSS_URI);
@@ -182,7 +194,7 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSComputedStyleDeclaration::getSVGPropertyCSSV
                 return CSSPrimitiveValue::create(serializeAsFragmentIdentifier(svgStyle->markerStartResource()), CSSPrimitiveValue::CSS_URI);
             return CSSPrimitiveValue::createIdentifier(CSSValueNone);
         case CSSPropertyStroke:
-            return adjustSVGPaintForCurrentColor(SVGPaint::create(svgStyle->strokePaintType(), svgStyle->strokePaintUri(), svgStyle->strokePaintColor()), *style);
+            return adjustSVGPaintForCurrentColor(svgStyle->strokePaintType(), svgStyle->strokePaintUri(), svgStyle->strokePaintColor(), style->color());
         case CSSPropertyStrokeDasharray:
             return strokeDashArrayToCSSValueList(svgStyle->strokeDashArray());
         case CSSPropertyStrokeDashoffset:

@@ -122,9 +122,9 @@ bool CSSPropertyEquality::propertiesEqual(CSSPropertyID prop, const RenderStyle&
         const SVGRenderStyle& aSVG = *a.svgStyle();
         const SVGRenderStyle& bSVG = *b.svgStyle();
         return aSVG.fillPaintType() == bSVG.fillPaintType()
-            && (aSVG.fillPaintType() != SVGPaint::SVG_PAINTTYPE_RGBCOLOR || aSVG.fillPaintColor() == bSVG.fillPaintColor())
+            && (aSVG.fillPaintType() != SVG_PAINTTYPE_RGBCOLOR || aSVG.fillPaintColor() == bSVG.fillPaintColor())
             && aSVG.visitedLinkFillPaintType() == bSVG.visitedLinkFillPaintType()
-            && (aSVG.visitedLinkFillPaintType() != SVGPaint::SVG_PAINTTYPE_RGBCOLOR || aSVG.visitedLinkFillPaintColor() == bSVG.visitedLinkFillPaintColor());
+            && (aSVG.visitedLinkFillPaintType() != SVG_PAINTTYPE_RGBCOLOR || aSVG.visitedLinkFillPaintColor() == bSVG.visitedLinkFillPaintColor());
     }
     case CSSPropertyFillOpacity:
         return a.fillOpacity() == b.fillOpacity();
@@ -211,9 +211,9 @@ bool CSSPropertyEquality::propertiesEqual(CSSPropertyID prop, const RenderStyle&
         const SVGRenderStyle& aSVG = *a.svgStyle();
         const SVGRenderStyle& bSVG = *b.svgStyle();
         return aSVG.strokePaintType() == bSVG.strokePaintType()
-            && (aSVG.strokePaintType() != SVGPaint::SVG_PAINTTYPE_RGBCOLOR || aSVG.strokePaintColor() == bSVG.strokePaintColor())
+            && (aSVG.strokePaintType() != SVG_PAINTTYPE_RGBCOLOR || aSVG.strokePaintColor() == bSVG.strokePaintColor())
             && aSVG.visitedLinkStrokePaintType() == bSVG.visitedLinkStrokePaintType()
-            && (aSVG.visitedLinkStrokePaintType() != SVGPaint::SVG_PAINTTYPE_RGBCOLOR || aSVG.visitedLinkStrokePaintColor() == bSVG.visitedLinkStrokePaintColor());
+            && (aSVG.visitedLinkStrokePaintType() != SVG_PAINTTYPE_RGBCOLOR || aSVG.visitedLinkStrokePaintColor() == bSVG.visitedLinkStrokePaintColor());
     }
     case CSSPropertyStrokeDasharray:
         return dataEquivalent(a.strokeDashArray(), b.strokeDashArray());

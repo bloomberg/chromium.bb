@@ -39,7 +39,6 @@ class MutableStylePropertySet;
 class Node;
 class RenderObject;
 class RenderStyle;
-class SVGPaint;
 class ShadowData;
 class ShadowList;
 class StyleColor;
@@ -108,7 +107,6 @@ private:
     PassRefPtrWillBeRawPtr<CSSValue> valueForShadowData(const ShadowData&, const RenderStyle&, bool useSpread) const;
     PassRefPtrWillBeRawPtr<CSSValue> valueForShadowList(const ShadowList*, const RenderStyle&, bool useSpread) const;
     PassRefPtrWillBeRawPtr<CSSPrimitiveValue> currentColorOrValidColor(const RenderStyle&, const StyleColor&) const;
-    PassRefPtrWillBeRawPtr<SVGPaint> adjustSVGPaintForCurrentColor(PassRefPtrWillBeRawPtr<SVGPaint>, RenderStyle&) const;
 
     PassRefPtrWillBeRawPtr<CSSValue> valueForFilter(const RenderObject*, const RenderStyle&) const;
 

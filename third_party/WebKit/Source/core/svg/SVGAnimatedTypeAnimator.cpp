@@ -21,6 +21,7 @@
 #include "config.h"
 #include "core/svg/SVGAnimatedTypeAnimator.h"
 
+#include "core/css/parser/BisonCSSParser.h"
 #include "core/svg/SVGAnimateTransformElement.h"
 #include "core/svg/SVGAnimatedColor.h"
 #include "core/svg/SVGAnimationElement.h"
@@ -28,7 +29,6 @@
 #include "core/svg/SVGLength.h"
 #include "core/svg/SVGLengthList.h"
 #include "core/svg/SVGNumber.h"
-#include "core/svg/SVGPaint.h"
 #include "core/svg/SVGPointList.h"
 #include "core/svg/SVGString.h"
 #include "core/svg/SVGTransformList.h"
@@ -87,7 +87,7 @@ PassRefPtr<SVGPropertyBase> SVGAnimatedTypeAnimator::createPropertyForAnimation(
 
     switch (m_type) {
     case AnimatedColor:
-        return SVGColorProperty::create(value.isEmpty() ? StyleColor::currentColor() : SVGPaint::colorFromRGBColorString(value));
+        return SVGColorProperty::create(value.isEmpty() ? StyleColor::currentColor() : BisonCSSParser::colorFromRGBColorString(value));
     case AnimatedNumber: {
         RefPtr<SVGNumber> property = SVGNumber::create();
         property->setValueAsString(value, IGNORE_EXCEPTION);

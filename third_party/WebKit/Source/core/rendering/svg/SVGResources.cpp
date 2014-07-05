@@ -28,7 +28,6 @@
 #include "core/rendering/svg/RenderSVGResourceMasker.h"
 #include "core/svg/SVGFilterElement.h"
 #include "core/svg/SVGGradientElement.h"
-#include "core/svg/SVGPaint.h"
 #include "core/svg/SVGPatternElement.h"
 #include "core/svg/SVGURIReference.h"
 
@@ -162,14 +161,14 @@ static inline AtomicString targetReferenceFromResource(SVGElement& element)
     return SVGURIReference::fragmentIdentifierFromIRIString(target, element.treeScope());
 }
 
-static inline bool svgPaintTypeHasURL(SVGPaint::SVGPaintType paintType)
+static inline bool svgPaintTypeHasURL(SVGPaintType paintType)
 {
     switch (paintType) {
-    case SVGPaint::SVG_PAINTTYPE_URI_NONE:
-    case SVGPaint::SVG_PAINTTYPE_URI_CURRENTCOLOR:
-    case SVGPaint::SVG_PAINTTYPE_URI_RGBCOLOR:
-    case SVGPaint::SVG_PAINTTYPE_URI_RGBCOLOR_ICCCOLOR:
-    case SVGPaint::SVG_PAINTTYPE_URI:
+    case SVG_PAINTTYPE_URI_NONE:
+    case SVG_PAINTTYPE_URI_CURRENTCOLOR:
+    case SVG_PAINTTYPE_URI_RGBCOLOR:
+    case SVG_PAINTTYPE_URI_RGBCOLOR_ICCCOLOR:
+    case SVG_PAINTTYPE_URI:
         return true;
     default:
         break;
@@ -177,7 +176,7 @@ static inline bool svgPaintTypeHasURL(SVGPaint::SVGPaintType paintType)
     return false;
 }
 
-static inline RenderSVGResourceContainer* paintingResourceFromSVGPaint(TreeScope& treeScope, const SVGPaint::SVGPaintType& paintType, const String& paintUri, AtomicString& id, bool& hasPendingResource)
+static inline RenderSVGResourceContainer* paintingResourceFromSVGPaint(TreeScope& treeScope, const SVGPaintType& paintType, const String& paintUri, AtomicString& id, bool& hasPendingResource)
 {
     if (!svgPaintTypeHasURL(paintType))
         return 0;

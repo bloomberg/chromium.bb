@@ -55,7 +55,6 @@
 #include "core/css/CSSTransformValue.h"
 #include "core/css/CSSUnicodeRangeValue.h"
 #include "core/css/CSSValueList.h"
-#include "core/svg/SVGPaint.h"
 
 namespace WebCore {
 
@@ -199,8 +198,6 @@ bool CSSValue::equals(const CSSValue& other) const
             return compareCSSValues<CSSFilterValue>(*this, other);
         case CSSArrayFunctionValueClass:
             return compareCSSValues<CSSArrayFunctionValue>(*this, other);
-        case SVGPaintClass:
-            return compareCSSValues<SVGPaint>(*this, other);
         case CSSSVGDocumentClass:
             return compareCSSValues<CSSSVGDocumentValue>(*this, other);
         default:
@@ -281,8 +278,6 @@ String CSSValue::cssText() const
         return toCSSFilterValue(this)->customCSSText();
     case CSSArrayFunctionValueClass:
         return toCSSArrayFunctionValue(this)->customCSSText();
-    case SVGPaintClass:
-        return toSVGPaint(this)->customCSSText();
     case CSSSVGDocumentClass:
         return toCSSSVGDocumentValue(this)->customCSSText();
     }
@@ -386,9 +381,6 @@ void CSSValue::destroy()
         return;
     case CSSArrayFunctionValueClass:
         delete toCSSArrayFunctionValue(this);
-        return;
-    case SVGPaintClass:
-        delete toSVGPaint(this);
         return;
     case CSSSVGDocumentClass:
         delete toCSSSVGDocumentValue(this);
@@ -494,9 +486,6 @@ void CSSValue::finalizeGarbageCollectedObject()
     case CSSArrayFunctionValueClass:
         toCSSArrayFunctionValue(this)->~CSSArrayFunctionValue();
         return;
-    case SVGPaintClass:
-        toSVGPaint(this)->~SVGPaint();
-        return;
     case CSSSVGDocumentClass:
         toCSSSVGDocumentValue(this)->~CSSSVGDocumentValue();
         return;
@@ -601,9 +590,6 @@ void CSSValue::trace(Visitor* visitor)
     case CSSArrayFunctionValueClass:
         toCSSArrayFunctionValue(this)->traceAfterDispatch(visitor);
         return;
-    case SVGPaintClass:
-        toSVGPaint(this)->traceAfterDispatch(visitor);
-        return;
     case CSSSVGDocumentClass:
         toCSSSVGDocumentValue(this)->traceAfterDispatch(visitor);
         return;
@@ -629,8 +615,6 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSValue::cloneForCSSOM() const
         return toCSSTransformValue(this)->cloneForCSSOM();
     case ImageSetClass:
         return toCSSImageSetValue(this)->cloneForCSSOM();
-    case SVGPaintClass:
-        return toSVGPaint(this)->cloneForCSSOM();
     default:
         ASSERT(!isSubtypeExposedToCSSOM());
         return TextCloneCSSValue::create(classType(), cssText());

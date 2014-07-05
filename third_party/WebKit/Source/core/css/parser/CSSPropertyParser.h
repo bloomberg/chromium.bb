@@ -193,7 +193,6 @@ private:
     bool parseFontFaceUnicodeRange();
 
     bool parseSVGValue(CSSPropertyID propId, bool important);
-    PassRefPtrWillBeRawPtr<CSSValue> parseSVGPaint();
     PassRefPtrWillBeRawPtr<CSSValue> parseSVGStrokeDasharray();
 
     PassRefPtrWillBeRawPtr<CSSValue> parsePaintOrder() const;

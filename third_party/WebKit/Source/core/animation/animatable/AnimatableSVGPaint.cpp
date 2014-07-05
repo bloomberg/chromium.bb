@@ -36,8 +36,8 @@ namespace WebCore {
 bool AnimatableSVGPaint::usesDefaultInterpolationWith(const AnimatableValue* value) const
 {
     const AnimatableSVGPaint* svgPaint = toAnimatableSVGPaint(value);
-    return (paintType() != SVGPaint::SVG_PAINTTYPE_RGBCOLOR || svgPaint->paintType() != SVGPaint::SVG_PAINTTYPE_RGBCOLOR)
-        && (visitedLinkPaintType() != SVGPaint::SVG_PAINTTYPE_RGBCOLOR || svgPaint->visitedLinkPaintType() != SVGPaint::SVG_PAINTTYPE_RGBCOLOR);
+    return (paintType() != SVG_PAINTTYPE_RGBCOLOR || svgPaint->paintType() != SVG_PAINTTYPE_RGBCOLOR)
+        && (visitedLinkPaintType() != SVG_PAINTTYPE_RGBCOLOR || svgPaint->visitedLinkPaintType() != SVG_PAINTTYPE_RGBCOLOR);
 }
 
 PassRefPtrWillBeRawPtr<AnimatableValue> AnimatableSVGPaint::interpolateTo(const AnimatableValue* value, double fraction) const

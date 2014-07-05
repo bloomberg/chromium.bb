@@ -3112,7 +3112,6 @@
             'svg/SVGNumberOptionalNumber.h',
             'svg/SVGNumberTearOff.cpp',
             'svg/SVGNumberTearOff.h',
-            'svg/SVGPaint.cpp',
             'svg/SVGParserUtilities.cpp',
             'svg/SVGParserUtilities.h',
             'svg/SVGParsingError.h',

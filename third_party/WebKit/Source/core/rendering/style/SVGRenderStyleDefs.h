@@ -30,13 +30,25 @@
 
 #include "core/svg/SVGLength.h"
 #include "core/svg/SVGLengthList.h"
-#include "core/svg/SVGPaint.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"
 
 namespace WebCore {
+
+    enum SVGPaintType {
+        SVG_PAINTTYPE_UNKNOWN,
+        SVG_PAINTTYPE_RGBCOLOR,
+        SVG_PAINTTYPE_RGBCOLOR_ICCCOLOR,
+        SVG_PAINTTYPE_NONE,
+        SVG_PAINTTYPE_CURRENTCOLOR,
+        SVG_PAINTTYPE_URI_NONE,
+        SVG_PAINTTYPE_URI_CURRENTCOLOR,
+        SVG_PAINTTYPE_URI_RGBCOLOR,
+        SVG_PAINTTYPE_URI_RGBCOLOR_ICCCOLOR,
+        SVG_PAINTTYPE_URI
+    };
 
     enum EBaselineShift {
         BS_BASELINE, BS_SUB, BS_SUPER, BS_LENGTH
@@ -117,10 +129,10 @@ namespace WebCore {
         }
 
         float opacity;
-        SVGPaint::SVGPaintType paintType;
+        SVGPaintType paintType;
         Color paintColor;
         String paintUri;
-        SVGPaint::SVGPaintType visitedLinkPaintType;
+        SVGPaintType visitedLinkPaintType;
         Color visitedLinkPaintColor;
         String visitedLinkPaintUri;
 
@@ -147,10 +159,10 @@ namespace WebCore {
         RefPtr<SVGLength> dashOffset;
         RefPtr<SVGLengthList> dashArray;
 
-        SVGPaint::SVGPaintType paintType;
+        SVGPaintType paintType;
         Color paintColor;
         String paintUri;
-        SVGPaint::SVGPaintType visitedLinkPaintType;
+        SVGPaintType visitedLinkPaintType;
         Color visitedLinkPaintColor;
         String visitedLinkPaintUri;
 
