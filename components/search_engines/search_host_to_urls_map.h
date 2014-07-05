@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SEARCH_ENGINES_SEARCH_HOST_TO_URLS_MAP_H_
-#define CHROME_BROWSER_SEARCH_ENGINES_SEARCH_HOST_TO_URLS_MAP_H_
+#ifndef COMPONENTS_SEARCH_ENGINES_SEARCH_HOST_TO_URLS_MAP_H_
+#define COMPONENTS_SEARCH_ENGINES_SEARCH_HOST_TO_URLS_MAP_H_
 
 #include <map>
 #include <set>
 #include <string>
 
 #include "base/basictypes.h"
-#include "chrome/browser/search_engines/template_url_service.h"
+#include "components/search_engines/template_url_service.h"
 
 // Holds the host to template url mappings for the search providers. WARNING:
 // This class does not own any TemplateURLs passed to it and it is up to the
@@ -63,4 +63,4 @@ class SearchHostToURLsMap {
   DISALLOW_COPY_AND_ASSIGN(SearchHostToURLsMap);
 };
 
-#endif  // CHROME_BROWSER_SEARCH_ENGINES_SEARCH_HOST_TO_URLS_MAP_H_
+#endif  // COMPONENTS_SEARCH_ENGINES_SEARCH_HOST_TO_URLS_MAP_H_

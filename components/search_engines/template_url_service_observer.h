@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SEARCH_ENGINES_TEMPLATE_URL_SERVICE_OBSERVER_H_
-#define CHROME_BROWSER_SEARCH_ENGINES_TEMPLATE_URL_SERVICE_OBSERVER_H_
+#ifndef COMPONENTS_SEARCH_ENGINES_TEMPLATE_URL_SERVICE_OBSERVER_H_
+#define COMPONENTS_SEARCH_ENGINES_TEMPLATE_URL_SERVICE_OBSERVER_H_
 
 // TemplateURLServiceObserver is notified whenever the set of TemplateURLs
 // are modified.
@@ -16,4 +16,4 @@ class TemplateURLServiceObserver {
   virtual ~TemplateURLServiceObserver() {}
 };
 
-#endif  // CHROME_BROWSER_SEARCH_ENGINES_TEMPLATE_URL_SERVICE_OBSERVER_H_
+#endif  // COMPONENTS_SEARCH_ENGINES_TEMPLATE_URL_SERVICE_OBSERVER_H_

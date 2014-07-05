@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_WEBDATA_KEYWORD_WEB_DATA_SERVICE_H__
-#define CHROME_BROWSER_WEBDATA_KEYWORD_WEB_DATA_SERVICE_H__
+#ifndef COMPONENTS_SEARCH_ENGINES_KEYWORD_WEB_DATA_SERVICE_H__
+#define COMPONENTS_SEARCH_ENGINES_KEYWORD_WEB_DATA_SERVICE_H__
 
 #include "base/memory/ref_counted.h"
-#include "chrome/browser/webdata/keyword_table.h"
+#include "components/search_engines/keyword_table.h"
 #include "components/search_engines/template_url_id.h"
 #include "components/webdata/common/web_data_service_base.h"
 #include "components/webdata/common/web_database.h"
@@ -107,4 +107,4 @@ class KeywordWebDataService : public WebDataServiceBase {
   DISALLOW_COPY_AND_ASSIGN(KeywordWebDataService);
 };
 
-#endif  // CHROME_BROWSER_WEBDATA_KEYWORD_WEB_DATA_SERVICE_H__
+#endif  // COMPONENTS_SEARCH_ENGINES_KEYWORD_WEB_DATA_SERVICE_H__

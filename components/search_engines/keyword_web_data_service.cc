@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/webdata/keyword_web_data_service.h"
+#include "components/search_engines/keyword_web_data_service.h"
 
 #include "base/bind.h"
-#include "chrome/browser/webdata/keyword_table.h"
+#include "components/search_engines/keyword_table.h"
 #include "components/search_engines/template_url_data.h"
 #include "components/webdata/common/web_data_results.h"
 #include "components/webdata/common/web_database_service.h"

@@ -18,7 +18,7 @@
 #include "base/threading/non_thread_safe.h"
 #include "chrome/browser/browsing_data/browsing_data_remover.h"
 #include "chrome/browser/profile_resetter/brandcoded_default_settings.h"
-#include "chrome/browser/search_engines/template_url_service.h"
+#include "components/search_engines/template_url_service.h"
 
 class Profile;
 

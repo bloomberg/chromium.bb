@@ -8,10 +8,10 @@
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/common/pref_names.h"
 #include "components/search_engines/template_url.h"
+#include "components/search_engines/template_url_service.h"
 
 namespace {
 
