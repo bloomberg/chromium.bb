@@ -60,7 +60,7 @@ interface HTMLInputElement : HTMLElement {
     [CustomElementCallbacks] attribute DOMString defaultValue;
     [Reflect] attribute DOMString useMap;
     // See the discussion in https://bugs.webkit.org/show_bug.cgi?id=100085
-    [TreatNullAs=NullString, RaisesException=Setter, CustomElementCallbacks] attribute DOMString value;
+    [TreatNullAs=EmptyString, RaisesException=Setter, CustomElementCallbacks] attribute DOMString value;
     [RaisesException=Setter, CustomElementCallbacks] attribute Date? valueAsDate;
     [RaisesException=Setter, CustomElementCallbacks] attribute unrestricted double valueAsNumber;
 
