@@ -35,6 +35,7 @@
 #include "bindings/core/v8/V8EventTarget.h"
 #include "bindings/core/v8/V8MediaKeyError.h"
 #include "bindings/core/v8/V8MessagePort.h"
+#include "bindings/core/v8/V8Path2D.h"
 #include "bindings/core/v8/V8Storage.h"
 #include "bindings/core/v8/V8TextTrack.h"
 #include "bindings/core/v8/V8VoidCallback.h"
@@ -426,6 +427,16 @@ bool Dictionary::getWithUndefinedOrNullCheck(const String& key, RefPtrWillBeMemb
         return false;
 
     value = V8Element::toNativeWithTypeCheck(m_isolate, v8Value);
+    return true;
+}
+
+bool Dictionary::getWithUndefinedOrNullCheck(const String& key, RefPtr<Path2D>& value) const
+{
+    v8::Local<v8::Value> v8Value;
+    if (!getKey(key, v8Value) || WebCore::isUndefinedOrNull(v8Value))
+        return false;
+
+    value = V8Path2D::toNativeWithTypeCheck(m_isolate, v8Value);
     return true;
 }
 

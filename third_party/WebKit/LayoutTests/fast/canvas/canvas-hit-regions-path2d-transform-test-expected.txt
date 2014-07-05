@@ -1,0 +1,59 @@
+Rectangle with context.translate():
+PASS region is null
+PASS region is 'hit'
+PASS region is 'hit'
+PASS region is null
+PASS region is 'hit'
+
+Rectangle with context.rotate():
+PASS region is null
+PASS region is 'hit'
+PASS region is null
+PASS region is 'hit'
+
+Rectangle with context.scale():
+PASS region is 'hit'
+PASS region is 'hit'
+PASS region is 'hit'
+PASS region is 'hit'
+
+Non rectangle (star) with context.translate():
+PASS region is null
+PASS region is null
+PASS region is 'hit'
+PASS region is 'hit'
+PASS region is null
+PASS region is null
+PASS region is 'hit'
+PASS region is null
+PASS region is 'hit'
+PASS region is 'hit'
+
+Non rectangle (star) with context.rotate():
+PASS region is 'hit'
+PASS region is null
+PASS region is null
+PASS region is null
+PASS region is null
+PASS region is null
+PASS region is null
+PASS region is 'hit'
+PASS region is 'hit'
+PASS region is null
+
+Non rectangle (star) with context.scale():
+PASS region is 'hit'
+PASS region is 'hit'
+PASS region is 'hit'
+PASS region is null
+PASS region is null
+PASS region is null
+PASS region is null
+PASS region is 'hit'
+PASS region is 'hit'
+PASS region is null
+
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

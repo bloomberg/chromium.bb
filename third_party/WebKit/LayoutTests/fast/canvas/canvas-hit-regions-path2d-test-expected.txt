@@ -1,0 +1,13 @@
+Hit detection and mouse event tests
+PASS clickCanvas(100, 100) is 'face'
+PASS clickCanvas(200, 200) is 'nose'
+PASS clickCanvas(127, 242) is 'mouth'
+PASS clickCanvas(150, 125) is 'eye'
+PASS clickCanvas(250, 125) is 'eye'
+PASS clickCanvas(200, 125) is 'face'
+PASS clickCanvas(20, 10) is null
+
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

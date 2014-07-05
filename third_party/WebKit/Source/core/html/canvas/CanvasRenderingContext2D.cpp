@@ -2378,17 +2378,20 @@ void CanvasRenderingContext2D::addHitRegion(const Dictionary& options, Exception
         return;
     }
 
+    RefPtr<Path2D> path2d;
+    options.getWithUndefinedOrNullCheck("path", path2d);
+    Path hitRegionPath = path2d ? path2d->path() : m_path;
+
     FloatRect clipBounds;
     GraphicsContext* context = drawingContext();
 
-    if (m_path.isEmpty() || !context || !state().m_invertibleCTM
+    if (hitRegionPath.isEmpty() || !context || !state().m_invertibleCTM
         || !context->getTransformedClipBounds(&clipBounds)) {
         exceptionState.throwDOMException(NotSupportedError, "The specified path has no pixels.");
         return;
     }
 
-    Path specifiedPath = m_path;
-    specifiedPath.transform(state().m_transform);
+    hitRegionPath.transform(state().m_transform);
 
     if (hasClip()) {
         // FIXME: The hit regions should take clipping region into account.
@@ -2398,7 +2401,7 @@ void CanvasRenderingContext2D::addHitRegion(const Dictionary& options, Exception
         return;
     }
 
-    passOptions.path = specifiedPath;
+    passOptions.path = hitRegionPath;
 
     String fillRuleString;
     options.getWithUndefinedOrNullCheck("fillRule", fillRuleString);

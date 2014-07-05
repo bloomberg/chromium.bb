@@ -55,6 +55,7 @@ class IDBKeyRange;
 class MIDIPort;
 class MediaKeyError;
 class Notification;
+class Path2D;
 class SpeechRecognitionResult;
 class SpeechRecognitionResultList;
 class Storage;
@@ -180,6 +181,7 @@ public:
 
     bool getWithUndefinedOrNullCheck(const String&, String&) const;
     bool getWithUndefinedOrNullCheck(const String&, RefPtrWillBeMember<Element>&) const;
+    bool getWithUndefinedOrNullCheck(const String&, RefPtr<Path2D>&) const;
 
     bool hasProperty(const String&) const;
 
