@@ -27,6 +27,7 @@
 
 using content::ResourceController;
 using content::ResourceThrottle;
+using content::ResourceType;
 
 namespace extensions {
 

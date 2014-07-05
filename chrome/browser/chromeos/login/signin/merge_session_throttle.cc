@@ -34,6 +34,7 @@
 
 using content::BrowserThread;
 using content::RenderViewHost;
+using content::ResourceType;
 using content::WebContents;
 
 namespace {

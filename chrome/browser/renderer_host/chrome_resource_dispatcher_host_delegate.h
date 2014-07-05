@@ -43,13 +43,13 @@ class ChromeResourceDispatcherHostDelegate
       int route_id,
       const std::string& method,
       const GURL& url,
-      ResourceType::Type resource_type,
+      content::ResourceType::Type resource_type,
       content::ResourceContext* resource_context) OVERRIDE;
   virtual void RequestBeginning(
       net::URLRequest* request,
       content::ResourceContext* resource_context,
       content::AppCacheService* appcache_service,
-      ResourceType::Type resource_type,
+      content::ResourceType::Type resource_type,
       int child_id,
       int route_id,
       ScopedVector<content::ResourceThrottle>* throttles) OVERRIDE;
@@ -104,7 +104,7 @@ class ChromeResourceDispatcherHostDelegate
   void AppendStandardResourceThrottles(
       net::URLRequest* request,
       content::ResourceContext* resource_context,
-      ResourceType::Type resource_type,
+      content::ResourceType::Type resource_type,
       ScopedVector<content::ResourceThrottle>* throttles);
 
 #if defined(ENABLE_ONE_CLICK_SIGNIN)

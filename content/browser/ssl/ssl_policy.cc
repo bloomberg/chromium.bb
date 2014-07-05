@@ -18,10 +18,10 @@
 #include "content/browser/ssl/ssl_request_info.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/content_browser_client.h"
+#include "content/public/common/resource_type.h"
 #include "content/public/common/ssl_status.h"
 #include "content/public/common/url_constants.h"
 #include "net/ssl/ssl_info.h"
-#include "webkit/common/resource_type.h"
 
 
 namespace content {

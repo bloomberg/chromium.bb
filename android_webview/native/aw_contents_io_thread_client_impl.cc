@@ -36,6 +36,7 @@ using base::android::ToJavaArrayOfStrings;
 using base::LazyInstance;
 using content::BrowserThread;
 using content::RenderFrameHost;
+using content::ResourceType;
 using content::WebContents;
 using std::map;
 using std::pair;

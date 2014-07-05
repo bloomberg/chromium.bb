@@ -75,6 +75,7 @@
 using content::BrowserThread;
 using content::RenderViewHost;
 using content::ResourceRequestInfo;
+using content::ResourceType;
 
 // By default we don't allow access to all file:// urls on ChromeOS and
 // Android.

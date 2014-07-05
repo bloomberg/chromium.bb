@@ -13,7 +13,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/extensions/api/declarative_webrequest/request_stage.h"
 #include "chrome/common/extensions/api/events.h"
-#include "webkit/common/resource_type.h"
+#include "content/public/common/resource_type.h"
 
 namespace base {
 class Value;
@@ -105,10 +105,10 @@ class WebRequestConditionAttributeResourceType
 
  private:
   explicit WebRequestConditionAttributeResourceType(
-      const std::vector<ResourceType::Type>& types);
+      const std::vector<content::ResourceType::Type>& types);
   virtual ~WebRequestConditionAttributeResourceType();
 
-  const std::vector<ResourceType::Type> types_;
+  const std::vector<content::ResourceType::Type> types_;
 
   DISALLOW_COPY_AND_ASSIGN(WebRequestConditionAttributeResourceType);
 };

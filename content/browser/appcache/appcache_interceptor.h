@@ -7,9 +7,9 @@
 
 #include "base/memory/singleton.h"
 #include "content/common/content_export.h"
+#include "content/public/common/resource_type.h"
 #include "net/url_request/url_request.h"
 #include "url/gurl.h"
-#include "webkit/common/resource_type.h"
 
 namespace content {
 class AppCacheRequestHandler;

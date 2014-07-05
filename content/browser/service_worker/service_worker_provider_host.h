@@ -12,7 +12,7 @@
 #include "base/memory/weak_ptr.h"
 #include "content/common/content_export.h"
 #include "content/common/service_worker/service_worker_types.h"
-#include "webkit/common/resource_type.h"
+#include "content/public/common/resource_type.h"
 
 namespace IPC {
 class Sender;

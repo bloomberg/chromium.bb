@@ -75,6 +75,7 @@
 
 using base::UserMetricsAction;
 using content::RenderFrameHost;
+using content::ResourceType;
 using content::WebContents;
 
 namespace {

@@ -9,12 +9,14 @@
 #include "base/metrics/sparse_histogram.h"
 #include "base/strings/string_util.h"
 #include "content/public/browser/resource_request_info.h"
+#include "content/public/common/resource_type.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_request.h"
 #include "url/url_canon.h"
 #include "url/url_parse.h"
 #include "url/url_util.h"
-#include "webkit/common/resource_type.h"
+
+using content::ResourceType;
 
 namespace prerender {
 

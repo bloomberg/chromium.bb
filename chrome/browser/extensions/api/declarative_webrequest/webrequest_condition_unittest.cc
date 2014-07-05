@@ -16,6 +16,7 @@
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using content::ResourceType;
 using url_matcher::URLMatcher;
 using url_matcher::URLMatcherConditionSet;
 

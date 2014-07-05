@@ -10,11 +10,11 @@
 #include <string>
 
 #include "content/common/content_export.h"
+#include "content/public/common/resource_type.h"
 #include "net/base/request_priority.h"
 #include "third_party/WebKit/public/platform/WebReferrerPolicy.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
 #include "url/gurl.h"
-#include "webkit/common/resource_type.h"
 
 namespace content {
 

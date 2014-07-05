@@ -30,6 +30,7 @@ using base::DictionaryValue;
 using base::ListValue;
 using base::StringValue;
 using base::Value;
+using content::ResourceType;
 
 namespace helpers = extension_web_request_api_helpers;
 namespace keys = extensions::declarative_webrequest_constants;

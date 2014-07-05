@@ -11,6 +11,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
+using content::ResourceType;
+
 namespace prerender {
 
 class PrerenderUtilTest : public testing::Test {

@@ -16,10 +16,10 @@
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "content/common/content_export.h"
+#include "content/public/common/resource_type.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
 #include "net/base/request_priority.h"
-#include "webkit/common/resource_type.h"
 
 struct ResourceMsg_RequestCompleteData;
 

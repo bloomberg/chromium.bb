@@ -18,10 +18,10 @@
 #include "content/public/browser/browser_child_process_host_delegate.h"
 #include "content/public/browser/browser_child_process_host_iterator.h"
 #include "content/public/common/process_type.h"
+#include "content/public/common/resource_type.h"
 #include "ipc/ipc_sender.h"
 #include "third_party/WebKit/public/web/WebContentSecurityPolicy.h"
 #include "url/gurl.h"
-#include "webkit/common/resource_type.h"
 
 struct ResourceHostMsg_Request;
 

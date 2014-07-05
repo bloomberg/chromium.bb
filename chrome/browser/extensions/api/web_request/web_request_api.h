@@ -18,6 +18,7 @@
 #include "chrome/browser/extensions/api/declarative_webrequest/request_stage.h"
 #include "chrome/browser/extensions/api/web_request/web_request_api_helpers.h"
 #include "chrome/browser/extensions/api/web_request/web_request_permissions.h"
+#include "content/public/common/resource_type.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_function.h"
@@ -26,7 +27,6 @@
 #include "net/base/completion_callback.h"
 #include "net/base/network_delegate.h"
 #include "net/http/http_request_headers.h"
-#include "webkit/common/resource_type.h"
 
 class ExtensionWebRequestTimeTracker;
 class GURL;
@@ -119,7 +119,7 @@ class ExtensionWebRequestEventRouter
     bool InitFromValue(const base::DictionaryValue& value, std::string* error);
 
     extensions::URLPatternSet urls;
-    std::vector<ResourceType::Type> types;
+    std::vector<content::ResourceType::Type> types;
     int tab_id;
     int window_id;
   };
@@ -357,7 +357,7 @@ class ExtensionWebRequestEventRouter
       int window_id,
       int render_process_host_id,
       int routing_id,
-      ResourceType::Type resource_type,
+      content::ResourceType::Type resource_type,
       bool is_async_request,
       bool is_request_from_extension,
       int* extra_info_spec,

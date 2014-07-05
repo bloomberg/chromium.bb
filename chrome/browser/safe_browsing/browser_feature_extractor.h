@@ -25,8 +25,8 @@
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/safe_browsing/ui_manager.h"
+#include "content/public/common/resource_type.h"
 #include "url/gurl.h"
-#include "webkit/common/resource_type.h"
 
 
 class HistoryService;
@@ -45,12 +45,12 @@ struct IPUrlInfo {
   std::string url;
   std::string method;
   std::string referrer;
-  ResourceType::Type resource_type;
+  content::ResourceType::Type resource_type;
 
   IPUrlInfo(const std::string& url,
             const std::string& method,
             const std::string& referrer,
-            const ResourceType::Type& resource_type);
+            const content::ResourceType::Type& resource_type);
   ~IPUrlInfo();
 };
 

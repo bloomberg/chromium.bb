@@ -8,7 +8,7 @@
 #include <string>
 
 #include "base/memory/ref_counted.h"
-#include "webkit/common/resource_type.h"
+#include "content/public/common/resource_type.h"
 
 namespace content {
 class NavigationEntryImpl;

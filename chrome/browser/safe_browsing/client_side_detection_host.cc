@@ -40,6 +40,7 @@
 using content::BrowserThread;
 using content::NavigationEntry;
 using content::ResourceRequestDetails;
+using content::ResourceType;
 using content::WebContents;
 
 namespace safe_browsing {

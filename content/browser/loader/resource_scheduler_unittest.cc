@@ -16,13 +16,13 @@
 #include "content/public/browser/resource_controller.h"
 #include "content/public/browser/resource_throttle.h"
 #include "content/public/common/process_type.h"
+#include "content/public/common/resource_type.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/request_priority.h"
 #include "net/http/http_server_properties_impl.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "webkit/common/resource_type.h"
 
 namespace content {
 

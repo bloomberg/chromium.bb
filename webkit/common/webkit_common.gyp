@@ -42,8 +42,6 @@
       'sources': [
         'data_element.cc',
         'data_element.h',
-        'resource_type.cc',
-        'resource_type.h',
         'webkit_common_export.h',
         'webpreferences.cc',
         'webpreferences.h',

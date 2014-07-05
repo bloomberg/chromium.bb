@@ -32,6 +32,7 @@
 // top of this file.
 
 using base::Time;
+using content::ResourceType;
 using extensions::ExtensionWarning;
 
 namespace extension_web_request_api_helpers {

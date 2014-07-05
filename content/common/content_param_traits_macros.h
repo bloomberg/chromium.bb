@@ -9,17 +9,18 @@
 #define CONTENT_COMMON_CONTENT_PARAM_TRAITS_MACROS_H_
 
 #include "content/common/content_export.h"
+#include "content/public/common/resource_type.h"
 #include "ipc/ipc_message_macros.h"
 #include "third_party/WebKit/public/web/WebCompositionUnderline.h"
 #include "third_party/WebKit/public/web/WebContentSecurityPolicy.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "third_party/WebKit/public/web/WebPageVisibilityState.h"
-#include "webkit/common/resource_type.h"
 
 #undef IPC_MESSAGE_EXPORT
 #define IPC_MESSAGE_EXPORT CONTENT_EXPORT
 
-IPC_ENUM_TRAITS_MAX_VALUE(ResourceType::Type, ResourceType::LAST_TYPE - 1)
+IPC_ENUM_TRAITS_MAX_VALUE(content::ResourceType::Type,
+                          content::ResourceType::LAST_TYPE - 1)
 IPC_ENUM_TRAITS_MAX_VALUE(blink::WebContentSecurityPolicyType,
                           blink::WebContentSecurityPolicyTypeLast)
 IPC_ENUM_TRAITS_MIN_MAX_VALUE(blink::WebInputEvent::Type,

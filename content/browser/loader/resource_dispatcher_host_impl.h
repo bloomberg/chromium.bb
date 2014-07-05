@@ -36,10 +36,10 @@
 #include "content/public/browser/global_request_id.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/resource_dispatcher_host.h"
+#include "content/public/common/resource_type.h"
 #include "ipc/ipc_message.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/url_request/url_request.h"
-#include "webkit/common/resource_type.h"
 
 class ResourceHandler;
 struct ResourceHostMsg_Request;

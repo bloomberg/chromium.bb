@@ -12,6 +12,8 @@
 #include "content/public/browser/resource_request_info.h"
 #include "net/url_request/url_request.h"
 
+using content::ResourceType;
+
 namespace prerender {
 
 PrerenderPendingSwapThrottle::PrerenderPendingSwapThrottle(

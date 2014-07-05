@@ -20,10 +20,10 @@
 #include "content/public/browser/browser_child_process_host_delegate.h"
 #include "content/public/browser/browser_child_process_host_iterator.h"
 #include "content/public/common/process_type.h"
+#include "content/public/common/resource_type.h"
 #include "content/public/common/webplugininfo.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "ui/gfx/native_widget_types.h"
-#include "webkit/common/resource_type.h"
 
 struct ResourceHostMsg_Request;
 

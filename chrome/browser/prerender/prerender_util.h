@@ -6,8 +6,8 @@
 #define CHROME_BROWSER_PRERENDER_PRERENDER_UTIL_H_
 
 #include "base/basictypes.h"
+#include "content/public/common/resource_type.h"
 #include "url/gurl.h"
-#include "webkit/common/resource_type.h"
 
 namespace net {
 class HttpResponseHeaders;
@@ -51,7 +51,7 @@ bool IsControlGroupExperiment(uint8 experiment_id);
 // Called by URLRequestResponseStarted to gather data about Pagespeed headers
 // into the Prerender.PagespeedHeader histogram. Public so it can be accessed
 // by the unit test.
-void GatherPagespeedData(const ResourceType::Type resource_type,
+void GatherPagespeedData(const content::ResourceType::Type resource_type,
                          const GURL& request_url,
                          const net::HttpResponseHeaders* response_headers);
 

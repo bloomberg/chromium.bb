@@ -75,6 +75,7 @@ using base::StringValue;
 using content::BrowserMessageFilter;
 using content::BrowserThread;
 using content::ResourceRequestInfo;
+using content::ResourceType;
 using extensions::ErrorUtils;
 using extensions::Extension;
 using extensions::ExtensionWarning;

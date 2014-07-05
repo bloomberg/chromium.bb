@@ -59,6 +59,7 @@
 
 using content::BrowserThread;
 using content::ResourceRequestInfo;
+using content::ResourceType;
 using extensions::Extension;
 using extensions::SharedModuleInfo;
 

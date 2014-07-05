@@ -31,6 +31,7 @@
 using content::BrowserThread;
 using content::NavigationController;
 using content::NavigationEntry;
+using content::ResourceType;
 using content::WebContents;
 
 namespace safe_browsing {

@@ -7,7 +7,7 @@
 
 #include "content/public/child/request_peer.h"
 #include "content/public/common/resource_response_info.h"
-#include "webkit/common/resource_type.h"
+#include "content/public/common/resource_type.h"
 
 // The SecurityFilterPeer is a proxy to a
 // content::RequestPeer instance.  It is used to pre-process
@@ -21,7 +21,7 @@ class SecurityFilterPeer : public content::RequestPeer {
   virtual ~SecurityFilterPeer();
 
   static SecurityFilterPeer* CreateSecurityFilterPeerForDeniedRequest(
-      ResourceType::Type resource_type,
+      content::ResourceType::Type resource_type,
       content::RequestPeer* peer,
       int os_error);
 

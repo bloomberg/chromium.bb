@@ -47,6 +47,7 @@
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/resource_type.h"
 #include "content/public/common/result_codes.h"
 #include "content/public/common/sandboxed_process_launcher_delegate.h"
 #include "ipc/ipc_switches.h"
@@ -56,7 +57,6 @@
 #include "ui/base/ui_base_switches.h"
 #include "webkit/browser/fileapi/file_system_context.h"
 #include "webkit/browser/fileapi/sandbox_file_system_backend.h"
-#include "webkit/common/resource_type.h"
 
 #if defined(OS_WIN)
 #include "content/common/sandbox_win.h"

@@ -25,12 +25,12 @@
 #include "content/public/child/request_peer.h"
 #include "content/public/child/resource_dispatcher_delegate.h"
 #include "content/public/common/resource_response.h"
+#include "content/public/common/resource_type.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"
 #include "net/base/request_priority.h"
 #include "net/http/http_response_headers.h"
 #include "webkit/child/resource_loader_bridge.h"
-#include "webkit/common/resource_type.h"
 
 using webkit_glue::ResourceLoaderBridge;
 

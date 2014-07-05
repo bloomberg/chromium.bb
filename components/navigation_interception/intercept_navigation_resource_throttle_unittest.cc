@@ -31,6 +31,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using content::ResourceType;
 using testing::_;
 using testing::Eq;
 using testing::Ne;

@@ -28,6 +28,7 @@
 
 using android_webview::AwContentsIoThreadClient;
 using content::BrowserThread;
+using content::ResourceType;
 using navigation_interception::InterceptNavigationDelegate;
 
 namespace {

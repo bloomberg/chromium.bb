@@ -15,7 +15,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
-#include "webkit/common/resource_type.h"
+#include "content/public/common/resource_type.h"
 
 class GURL;
 class URLPattern;
@@ -46,7 +46,7 @@ class UserScriptListener
   // given URL.  Otherwise, this method returns NULL.
   content::ResourceThrottle* CreateResourceThrottle(
       const GURL& url,
-      ResourceType::Type resource_type);
+      content::ResourceType::Type resource_type);
 
  private:
   friend struct content::BrowserThread::DeleteOnThread<
@@ -57,7 +57,8 @@ class UserScriptListener
 
   virtual ~UserScriptListener();
 
-  bool ShouldDelayRequest(const GURL& url, ResourceType::Type resource_type);
+  bool ShouldDelayRequest(const GURL& url,
+                          content::ResourceType::Type resource_type);
   void StartDelayedRequests();
 
   // Update user_scripts_ready_ based on the status of all profiles. On a

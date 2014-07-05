@@ -16,11 +16,11 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "chrome/browser/extensions/extension_warning_set.h"
+#include "content/public/common/resource_type.h"
 #include "net/base/auth.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
 #include "url/gurl.h"
-#include "webkit/common/resource_type.h"
 
 namespace base {
 class ListValue;
@@ -304,17 +304,17 @@ bool MergeOnAuthRequiredResponses(
 
 // Returns whether |type| is a ResourceType that is handled by the web request
 // API.
-bool IsRelevantResourceType(ResourceType::Type type);
+bool IsRelevantResourceType(content::ResourceType::Type type);
 
 // Returns a string representation of |type| or |other| if |type| is not handled
 // by the web request API.
-const char* ResourceTypeToString(ResourceType::Type type);
+const char* ResourceTypeToString(content::ResourceType::Type type);
 
 // Stores a |ResourceType::Type| representation in |type| if |type_str| is
 // a resource type handled by the web request API. Returns true in case of
 // success.
 bool ParseResourceType(const std::string& type_str,
-                       ResourceType::Type* type);
+                       content::ResourceType::Type* type);
 
 // Triggers clearing each renderer's in-memory cache the next time it navigates.
 void ClearCacheOnNavigation();

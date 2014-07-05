@@ -14,7 +14,7 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
-#include "webkit/common/resource_type.h"
+#include "content/public/common/resource_type.h"
 
 class GURL;
 class Profile;
@@ -108,7 +108,7 @@ class CaptivePortalTabHelper
 
   // Called by Observe in response to the corresponding event.
   void OnRedirect(int child_id,
-                  ResourceType::Type resource_type,
+                  content::ResourceType::Type resource_type,
                   const GURL& new_url);
 
   // Called by Observe in response to the corresponding event.

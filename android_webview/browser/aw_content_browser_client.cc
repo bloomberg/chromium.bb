@@ -37,6 +37,7 @@
 #include "webkit/common/webpreferences.h"
 
 using content::BrowserThread;
+using content::ResourceType;
 
 namespace android_webview {
 namespace {

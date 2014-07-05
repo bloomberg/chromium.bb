@@ -10,7 +10,7 @@
 #include "content/browser/appcache/appcache_entry.h"
 #include "content/browser/appcache/appcache_host.h"
 #include "content/common/content_export.h"
-#include "webkit/common/resource_type.h"
+#include "content/public/common/resource_type.h"
 
 namespace net {
 class NetworkDelegate;

@@ -1,15 +1,17 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_COMMON_RESOURCE_TYPE_H__
-#define WEBKIT_COMMON_RESOURCE_TYPE_H__
+#ifndef CONTENT_PUBLIC_COMMON_RESOURCE_TYPE_H_
+#define CONTENT_PUBLIC_COMMON_RESOURCE_TYPE_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
+#include "content/common/content_export.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
-#include "webkit/common/webkit_common_export.h"
 
-class ResourceType {
+namespace content {
+
+class CONTENT_EXPORT ResourceType {
  public:
   // Used in histograms, so please add new types at the end, and rename unused
   // entries to RESOURCETYPE_UNUSED_0, etc...
@@ -35,6 +37,8 @@ class ResourceType {
                      // everytime.
   };
 
+  static Type FromTargetType(blink::WebURLRequest::TargetType type);
+
   static bool ValidType(int32 type) {
     return type >= MAIN_FRAME && type < LAST_TYPE;
   }
@@ -42,9 +46,6 @@ class ResourceType {
   static Type FromInt(int32 type) {
     return static_cast<Type>(type);
   }
-
-  WEBKIT_COMMON_EXPORT static Type FromTargetType(
-      blink::WebURLRequest::TargetType type);
 
   static bool IsFrame(ResourceType::Type type) {
     return type == MAIN_FRAME || type == SUB_FRAME;
@@ -69,8 +70,9 @@ class ResourceType {
   }
 
  private:
-  // Don't instantiate this class.
-  ResourceType();
-  ~ResourceType();
+  DISALLOW_COPY_AND_ASSIGN(ResourceType);
 };
-#endif  // WEBKIT_COMMON_RESOURCE_TYPE_H__
+
+}  // namespace content
+
+#endif  // CONTENT_PUBLIC_COMMON_RESOURCE_TYPE_H_

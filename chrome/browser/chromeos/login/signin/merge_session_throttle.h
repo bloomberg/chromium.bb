@@ -11,8 +11,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "content/public/browser/resource_throttle.h"
+#include "content/public/common/resource_type.h"
 #include "net/base/completion_callback.h"
-#include "webkit/common/resource_type.h"
 
 class Profile;
 
@@ -36,7 +36,7 @@ class MergeSessionThrottle
   typedef base::Closure CompletionCallback;
 
   explicit MergeSessionThrottle(net::URLRequest* request,
-                                ResourceType::Type resource_type);
+                                content::ResourceType::Type resource_type);
   virtual ~MergeSessionThrottle();
 
   // content::ResourceThrottle implementation:
@@ -74,14 +74,14 @@ class MergeSessionThrottle
   // (for ResourceType::MAIN_FRAME).
   // The function must be called from UI thread.
   static void DeleayResourceLoadingOnUIThread(
-      ResourceType::Type resource_type,
+      content::ResourceType::Type resource_type,
       int render_process_id,
       int render_view_id,
       const GURL& url,
       const MergeSessionThrottle::CompletionCallback& callback);
 
   net::URLRequest* request_;
-  ResourceType::Type resource_type_;
+  content::ResourceType::Type resource_type_;
 
   // Global counter that keeps the track of session merge status for all
   // encountered profiles. This is used to determine if a throttle should

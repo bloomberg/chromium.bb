@@ -12,7 +12,7 @@
 #include "base/memory/linked_ptr.h"
 #include "base/strings/string_piece.h"
 #include "content/common/content_export.h"
-#include "webkit/common/resource_type.h"
+#include "content/public/common/resource_type.h"
 
 class GURL;
 

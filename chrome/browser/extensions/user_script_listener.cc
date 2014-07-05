@@ -19,6 +19,7 @@
 
 using content::BrowserThread;
 using content::ResourceThrottle;
+using content::ResourceType;
 
 namespace extensions {
 

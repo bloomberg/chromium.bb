@@ -35,6 +35,7 @@
 #include "url/gurl.h"
 
 using content::BrowserThread;
+using content::ResourceType;
 using content::WebContentsTester;
 
 using testing::DoAll;

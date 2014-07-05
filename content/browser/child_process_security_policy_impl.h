@@ -15,8 +15,8 @@
 #include "base/memory/singleton.h"
 #include "base/synchronization/lock.h"
 #include "content/public/browser/child_process_security_policy.h"
+#include "content/public/common/resource_type.h"
 #include "webkit/common/fileapi/file_system_types.h"
-#include "webkit/common/resource_type.h"
 
 class GURL;
 

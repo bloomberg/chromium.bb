@@ -36,6 +36,7 @@
 #include "ui/base/resource/resource_bundle.h"
 
 using content::BrowserThread;
+using content::ResourceType;
 using extensions::ExtensionsBrowserClient;
 
 namespace {
