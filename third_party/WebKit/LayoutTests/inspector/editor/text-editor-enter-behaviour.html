@@ -17,6 +17,9 @@ function testFunction()
     console.log(a);
     console.log(b);
     console.log(c);
+    if (a > b) {
+        console.log(a);
+    }
     return c;
 }
     var textEditor = InspectorTest.createTestEditor();
@@ -52,7 +55,6 @@ function testFunction()
         function testEnterInTheBeginningOfTheLine(next)
         {
             textEditor.setText(testFunction.toString());
-            var line = textEditor.line(2);
             textEditor.setSelection(WebInspector.TextRange.createFromLocation(2, 0));
             hitEnterDumpTextAndNext(next);
         },
@@ -60,7 +62,6 @@ function testFunction()
         function testEnterWithTheSelection(next)
         {
             textEditor.setText(testFunction.toString());
-            var line = textEditor.line(2);
             textEditor.setSelection(new WebInspector.TextRange(2, 2, 2, 4));
             hitEnterDumpTextAndNext(next);
         },
@@ -68,7 +69,6 @@ function testFunction()
         function testEnterWithReversedSelection(next)
         {
             textEditor.setText(testFunction.toString());
-            var line = textEditor.line(2);
             textEditor.setSelection(new WebInspector.TextRange(2, 4, 2, 2));
             hitEnterDumpTextAndNext(next);
         },
@@ -76,7 +76,6 @@ function testFunction()
         function testEnterWithTheMultiLineSelection(next)
         {
             textEditor.setText(testFunction.toString());
-            var line = textEditor.line(2);
             textEditor.setSelection(new WebInspector.TextRange(2, 0, 8, 4));
             hitEnterDumpTextAndNext(next);
         },
@@ -84,10 +83,16 @@ function testFunction()
         function testEnterWithFullLineSelection(next)
         {
             textEditor.setText(testFunction.toString());
-            var line = textEditor.line(2);
             textEditor.setSelection(new WebInspector.TextRange(2, 0, 3, 0));
             hitEnterDumpTextAndNext(next);
         },
+
+        function testEnterBeforeOpenBrace(next)
+        {
+            textEditor.setText(testFunction.toString());
+            textEditor.setSelection(new WebInspector.TextRange(8, 0, 8, 0));
+            hitEnterDumpTextAndNext(next);
+        }
     ]);
 
     function hitEnterDumpTextAndNext(next)

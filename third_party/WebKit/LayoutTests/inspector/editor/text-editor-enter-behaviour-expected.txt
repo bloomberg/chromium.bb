@@ -11,6 +11,9 @@ function.testFunction()
 ....console.log(a);
 ....console.log(b);
 ....console.log(c);
+....if.(a.>.b).{
+........console.log(a);
+....}
 ....return.c;
 }
 
@@ -24,6 +27,9 @@ function.testFunction()
 ....console.log(a);
 ....console.log(b);
 ....console.log(c);
+....if.(a.>.b).{
+........console.log(a);
+....}
 ....return.c;
 }
 
@@ -37,6 +43,9 @@ function.testFunction()
 ....console.log(a);
 ....console.log(b);
 ....console.log(c);
+....if.(a.>.b).{
+........console.log(a);
+....}
 ....return.c;
 }
 
@@ -50,6 +59,9 @@ function.testFunction()
 ....console.log(a);
 ....console.log(b);
 ....console.log(c);
+....if.(a.>.b).{
+........console.log(a);
+....}
 ....return.c;
 }
 
@@ -63,6 +75,9 @@ function.testFunction()
 ....console.log(a);
 ....console.log(b);
 ....console.log(c);
+....if.(a.>.b).{
+........console.log(a);
+....}
 ....return.c;
 }
 
@@ -76,6 +91,9 @@ function.testFunction()
 ....console.log(a);
 ....console.log(b);
 ....console.log(c);
+....if.(a.>.b).{
+........console.log(a);
+....}
 ....return.c;
 }
 
@@ -83,7 +101,10 @@ Running: testEnterWithTheMultiLineSelection
 function.testFunction()
 {
 
-|return.c;
+|if.(a.>.b).{
+........console.log(a);
+....}
+....return.c;
 }
 
 Running: testEnterWithFullLineSelection
@@ -95,6 +116,25 @@ function.testFunction()
 ....console.log(a);
 ....console.log(b);
 ....console.log(c);
+....if.(a.>.b).{
+........console.log(a);
+....}
+....return.c;
+}
+
+Running: testEnterBeforeOpenBrace
+function.testFunction()
+{
+....var.a.=.100;
+....var.b.=.200;
+....var.c.=.(a.+.b)./.2;
+....console.log(a);
+....console.log(b);
+....console.log(c);
+
+|....if.(a.>.b).{
+........console.log(a);
+....}
 ....return.c;
 }
 
