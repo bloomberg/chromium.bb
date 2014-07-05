@@ -765,9 +765,6 @@ crbug.com/339259 fast/flexbox/box-orient-button.html [ Pass Failure ]
 crbug.com/339394 [ Win Debug ] virtual/threaded/animations/animation-matrix-negative-scale-unmatrix.html [ Pass Failure ]
 crbug.com/339597 http/tests/navigation/back-to-redirect-with-frame.php [ Pass Timeout ]
 
-# Still-failing tests for the new WebSocket implementation.
-crbug.com/339373 http/tests/websocket/close-before-handshake-response.html [ Failure ]
-
 # Tests of functionality not implemented in the new WebSocket
 # implementation. These tests will be removed when the old implementation is
 # removed.

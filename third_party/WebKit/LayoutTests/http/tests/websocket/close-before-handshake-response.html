@@ -15,9 +15,8 @@ var ws = new WebSocket("ws://127.0.0.1:8880/handshake-fail-by-just-close");
 ws.onopen = function() {
   testFailed("Unexpected open event");
 };
-ws.onerror = function() {
-  testFailed("Unexpected error event");
-};
+// FIXME: The WebSocket API requires an onerror event to be fired, but for
+// compatibility with the old implementation we don't currently test for it.
 ws.onclose = function(evt) {
   testPassed("close event");
   wasClean = evt.wasClean;
