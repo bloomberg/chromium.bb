@@ -76,6 +76,7 @@ module('base.EventSource.removeEventListener', {
 
 test('should not invoke the listener in subsequent calls to |raiseEvent|',
   function() {
+    var numCalled = 0;
     listener = sinon.spy();
     source.addEventListener('foo', listener);
 
@@ -89,6 +90,7 @@ test('should not invoke the listener in subsequent calls to |raiseEvent|',
 
 test('should work even if the listener is removed during |raiseEvent|',
   function() {
+    var numCalled = 0;
     var sink = {};
     sink.listener = sinon.spy(function() {
       source.removeEventListener('foo', sink.listener);

@@ -309,23 +309,19 @@
         {
           'destination': '<(output_dir)/qunit',
           'files': [
-            '../third_party/qunit/src/browser_test_harness.js',
-            '../third_party/qunit/src/qunit.css',
-            '../third_party/qunit/src/qunit.js',
+            '../third_party/qunit/src/',
           ],
         },
         {
           'destination': '<(output_dir)/blanketjs',
           'files': [
-            '../third_party/blanketjs/src/blanket.js',
-            '../third_party/blanketjs/src/qunit_adapter.js',
+            '../third_party/blanketjs/src/',
           ],
         },
         {
           'destination': '<(output_dir)/sinonjs',
           'files': [
-            '../third_party/sinonjs/src/sinon.js',
-            '../third_party/sinonjs/src/sinon-qunit.js',
+            '../third_party/sinonjs/src/',
           ],
         },
         {
