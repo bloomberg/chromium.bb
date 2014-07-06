@@ -186,9 +186,6 @@ public:
     long long length() const;
 
 private:
-    friend class BlobRegistryImpl;
-    friend class BlobStorageData;
-
     // Used by appendArrayBuffer and appendArrayBufferView.
     void appendBytes(const void*, long long length);
 
