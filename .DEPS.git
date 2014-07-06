@@ -164,6 +164,8 @@ deps_os = {
             Var('git_url') + '/android_tools.git@7e1a9d2fadc6d5aba62b235ffa9a15f3b4be06cb',
         'src/third_party/aosp':
             Var('git_url') + '/chromium/deps/aosp.git@bbafe5155dff86bbba1e92b42a073ffcfcfbf28c',
+        'src/third_party/apache-mime4j':
+            Var('git_url') + '/chromium/deps/apache-mime4j.git@28cb1108bff4b6cf0a2e86ff58b3d025934ebe3a',
         'src/third_party/elfutils/src':
             Var('git_url') + '/external/elfutils.git@249673729a7e5dbd5de4f3760bdcaa3d23d154d7',
         'src/third_party/eyesfree/src/android/java/src/com/googlecode/eyesfree/braille':
