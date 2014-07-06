@@ -17,7 +17,7 @@ class ToughAnimationCasesPage(page_module.Page):
   def RunNavigateSteps(self, action_runner):
     action_runner.NavigateToPage(self)
     if self._need_measurement_ready:
-      action_runner.WaitForJavaScriptCondition('window.measurementReady')
+      action_runner.WaitForJavaScriptCondition('measurementReady')
 
   def RunSmoothness(self, action_runner):
     action_runner.Wait(10)
@@ -56,32 +56,7 @@ class ToughAnimationCasesPageSet(page_set_module.PageSet):
       # animatable properties.
       'file://tough_animation_cases/balls_css_transition_all_properties.html',
       # pylint: disable=C0301
-      'file://tough_animation_cases/overlay_background_color_css_transitions.html',
-      # Why: Tests Web Animations running with hundreds of keyframes.
-      'file://tough_animation_cases/web_animations_many_keyframes.html?N=0032',
-      'file://tough_animation_cases/web_animations_many_keyframes.html?N=0100',
-      'file://tough_animation_cases/web_animations_many_keyframes.html?N=0316',
-      'file://tough_animation_cases/web_animations_many_keyframes.html?N=1000',
-      # Why: Tests many Web Animations starting simultaneously.
-      'file://tough_animation_cases/web_animations_simultaneous.html?N=0032',
-      'file://tough_animation_cases/web_animations_simultaneous.html?N=0100',
-      'file://tough_animation_cases/web_animations_simultaneous.html?N=0316',
-      'file://tough_animation_cases/web_animations_simultaneous.html?N=1000',
-      # Why: Tests many Web Animations chaining off the onfinish event.
-      'file://tough_animation_cases/web_animations_staggered_chaining.html?N=0032',
-      'file://tough_animation_cases/web_animations_staggered_chaining.html?N=0100',
-      'file://tough_animation_cases/web_animations_staggered_chaining.html?N=0316',
-      'file://tough_animation_cases/web_animations_staggered_chaining.html?N=1000',
-      # Why: Tests many Web Animations running with infinite iterations.
-      'file://tough_animation_cases/web_animations_staggered_infinite_iterations.html?N=0032',
-      'file://tough_animation_cases/web_animations_staggered_infinite_iterations.html?N=0100',
-      'file://tough_animation_cases/web_animations_staggered_infinite_iterations.html?N=0316',
-      'file://tough_animation_cases/web_animations_staggered_infinite_iterations.html?N=1000',
-      # Why: Tests many Web Animations all starting at different times.
-      'file://tough_animation_cases/web_animations_staggered_triggering.html?N=0032',
-      'file://tough_animation_cases/web_animations_staggered_triggering.html?N=0100',
-      'file://tough_animation_cases/web_animations_staggered_triggering.html?N=0316',
-      'file://tough_animation_cases/web_animations_staggered_triggering.html?N=1000',
+      'file://tough_animation_cases/overlay_background_color_css_transitions.html'
     ]
 
     for url in urls_list_one:
