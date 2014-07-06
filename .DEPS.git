@@ -23,8 +23,6 @@ deps = {
         Var('git_url') + '/chromium/src/third_party/lcov.git@b37daf5968200da8ff520ce65c4e5bce4047dd15',
     'third_party/lss':
         Var('git_url') + '/external/linux-syscall-support/lss.git@2f724fced658cd6182096c615efdf3767b7c57fe',
-    'third_party/valgrind':
-        Var('git_url') + '/chromium/deps/valgrind.git@59886873b4b8258a8e0f098c23e1958e0d0c0a26',
     'tools/clang':
         Var('git_url') + '/chromium/src/tools/clang.git@7aa71664f527268776ce5b5bceae01a4bc6a1666',
     'tools/gyp':
