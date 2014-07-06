@@ -256,6 +256,9 @@ FcCompareHash (FcValue *v1, FcValue *v2)
     return FcCompareString (v1, v2);
 }
 
+
+/* Define priorities to -1 for objects that don't have a compare function. */
+
 #define PRI_NULL(n)				\
     PRI_ ## n ## _STRONG = -1,			\
     PRI_ ## n ## _WEAK = -1,
@@ -279,6 +282,9 @@ typedef enum _FcMatcherPriorityDummy {
 } FcMatcherPriorityDummy;
 
 #undef FC_OBJECT
+
+
+/* Canonical match priority order. */
 
 #undef PRI1
 #define PRI1(n)					\
