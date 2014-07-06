@@ -200,9 +200,17 @@ WebRtcAudioRenderer::WebRtcAudioRenderer(
       start_ref_count_(0),
       audio_delay_milliseconds_(0),
       fifo_delay_milliseconds_(0),
+      // TODO(tommi): Ducking is currently not set on sink_params due to an
+      // issue on Windows that causes the ducked state to be pinned if an output
+      // stream is opened before an input stream (both in communication mode).
+      // Furthermore the input stream may not be associated with the output
+      // stream, which results in the output stream getting incorrectly ducked.
+      // What should happen here is that the ducking flag should be raised
+      // iff an input device is currently open with ducking set.
+      // Bugs: crbug/391414, crbug/391247.
       sink_params_(media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
                    media::CHANNEL_LAYOUT_STEREO, 0, sample_rate, 16,
-                   frames_per_buffer, media::AudioParameters::DUCKING) {
+                   frames_per_buffer, media::AudioParameters::NO_EFFECTS) {
   WebRtcLogMessage(base::StringPrintf(
       "WAR::WAR. source_render_view_id=%d"
       ", session_id=%d, sample_rate=%d, frames_per_buffer=%d",

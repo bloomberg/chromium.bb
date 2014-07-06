@@ -336,7 +336,10 @@ TEST_F(MediaStreamAudioProcessorTest, VerifyConstraints) {
     }
     EXPECT_FALSE(audio_constraints.NeedsAudioProcessing());
 #if defined(OS_WIN)
-    EXPECT_TRUE(audio_constraints.GetProperty(kMediaStreamAudioDucking));
+    // TODO(tommi): Turn this back to EXPECT_TRUE on Windows when ducking issues
+    // have been resolved.
+    // Bugs: crbug/391414, crbug/391247.
+    EXPECT_FALSE(audio_constraints.GetProperty(kMediaStreamAudioDucking));
 #else
     EXPECT_FALSE(audio_constraints.GetProperty(kMediaStreamAudioDucking));
 #endif
