@@ -46,6 +46,10 @@ bool PSLMatchingHelper::IsPublicSuffixDomainMatch(const std::string& url1,
                                                   const std::string& url2) {
   GURL gurl1(url1);
   GURL gurl2(url2);
+
+  if (!gurl1.is_valid() || !gurl2.is_valid())
+    return false;
+
   return gurl1.scheme() == gurl2.scheme() &&
          GetRegistryControlledDomain(gurl1) ==
              GetRegistryControlledDomain(gurl2) &&

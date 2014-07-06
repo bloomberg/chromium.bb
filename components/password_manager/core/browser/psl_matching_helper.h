@@ -49,7 +49,8 @@ class PSLMatchingHelper {
       const std::string& registry_controlled_domain) const;
 
   // Two URLs are considered a Public Suffix Domain match if they have the same
-  // scheme, ports, and their registry controlled domains are equal.
+  // scheme, ports, and their registry controlled domains are equal. If one or
+  // both arguments do not describe valid URLs, returns false.
   static bool IsPublicSuffixDomainMatch(const std::string& url1,
                                         const std::string& url2);
 
