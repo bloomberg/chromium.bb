@@ -2,18 +2,29 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import time
+
 from metrics import Metric
 from telemetry.value import scalar
+
 
 class PowerMetric(Metric):
   """A metric for measuring power usage."""
 
-  def __init__(self):
+  def __init__(self, browser, quiescent_measurement_time_s=0):
+    """PowerMetric Constructor.
+
+    Args:
+        browser: browser object to use.
+        quiescent_measurement_time_s: time to measure quiescent power,
+            in seconds. 0 means don't measure quiescent power."""
     super(PowerMetric, self).__init__()
-    self._browser = None
+    self._browser = browser
     self._running = False
     self._starting_cpu_stats = None
     self._results = None
+    self._quiescent_power_draw_mwh = 0
+    self._MeasureQuiescentPower(quiescent_measurement_time_s)
 
   def __del__(self):
     # TODO(jeremy): Remove once crbug.com/350841 is fixed.
@@ -24,7 +35,7 @@ class PowerMetric(Metric):
       parent.__del__()
 
   def _StopInternal(self):
-    """ Stop monitoring power if measurement is running. This function is
+    """Stop monitoring power if measurement is running. This function is
     idempotent."""
     if not self._running:
       return
@@ -34,12 +45,25 @@ class PowerMetric(Metric):
       self._results['cpu_stats'] = (
           _SubtractCpuStats(self._browser.cpu_stats, self._starting_cpu_stats))
 
+  def _MeasureQuiescentPower(self, measurement_time_s):
+    """Measure quiescent power draw for the system."""
+    platform = self._browser.platform
+    if not platform.CanMonitorPower() or \
+        platform.CanMeasurePerApplicationPower() or \
+        not measurement_time_s:
+      return
+
+    platform.StartMonitoringPower(self._browser)
+    time.sleep(measurement_time_s)
+    power_results = platform.StopMonitoringPower()
+    self._quiescent_power_draw_mwh = (
+        power_results.get('energy_consumption_mwh', 0))
+
   def Start(self, _, tab):
     if not tab.browser.platform.CanMonitorPower():
       return
 
     self._results = None
-    self._browser = tab.browser
     self._StopInternal()
 
     # This line invokes top a few times, call before starting power measurement.
@@ -65,11 +89,23 @@ class PowerMetric(Metric):
     if not self._results:
       return
 
-    energy_consumption_mwh = self._results.get('energy_consumption_mwh')
-    if energy_consumption_mwh is not None:
+    application_energy_consumption_mwh = (
+        self._results.get('application_energy_consumption_mwh'))
+    total_energy_consumption_mwh = self._results.get('energy_consumption_mwh')
+
+    if not application_energy_consumption_mwh and total_energy_consumption_mwh:
+      application_energy_consumption_mwh = max(
+          total_energy_consumption_mwh - self._quiescent_power_draw_mwh, 0)
+
+    if total_energy_consumption_mwh is not None:
       results.AddValue(scalar.ScalarValue(
           results.current_page, 'energy_consumption_mwh', 'mWh',
-          energy_consumption_mwh))
+          total_energy_consumption_mwh))
+
+    if application_energy_consumption_mwh is not None:
+      results.AddValue(scalar.ScalarValue(
+          results.current_page, 'application_energy_consumption_mwh', 'mWh',
+          application_energy_consumption_mwh))
 
     component_utilization = self._results.get('component_utilization', {})
     # GPU Frequency.

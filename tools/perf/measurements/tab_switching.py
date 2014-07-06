@@ -21,10 +21,14 @@ from telemetry.value import histogram
 # TODO: Revisit this test once multitab support is finalized.
 
 class TabSwitching(page_measurement.PageMeasurement):
+
+  # Amount of time to measure, in seconds.
+  SAMPLE_TIME = 30
+
   def __init__(self):
     super(TabSwitching, self).__init__()
     self._first_page_in_pageset = True
-    self._power_metric = power.PowerMetric()
+    self._power_metric = None
 
   def CustomizeBrowserOptions(self, options):
     options.AppendExtraBrowserArgs([
@@ -32,8 +36,9 @@ class TabSwitching(page_measurement.PageMeasurement):
     ])
     power.PowerMetric.CustomizeBrowserOptions(options)
 
-  def DidStartBrowser(self, browser):
+  def WillStartBrowser(self, browser):
     self._first_page_in_pageset = True
+    self._power_metric = power.PowerMetric(browser, TabSwitching.SAMPLE_TIME)
 
   def TabForPage(self, page, browser):
     if self._first_page_in_pageset:
@@ -58,7 +63,7 @@ class TabSwitching(page_measurement.PageMeasurement):
     util.WaitFor(tab.HasReachedQuiescence, 60)
 
     self._power_metric.Start(page, tab)
-    time.sleep(60)
+    time.sleep(TabSwitching.SAMPLE_TIME)
     self._power_metric.Stop(page, tab)
     self._power_metric.AddResults(tab, results,)
 

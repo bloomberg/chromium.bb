@@ -108,7 +108,9 @@ class PageCyclerUnitTest(unittest.TestCase):
       real_memory_module = page_cycler.memory
       try:
         page_cycler.memory = mock_memory_module
-        cycler.DidStartBrowser(FakeBrowser())
+        browser = FakeBrowser()
+        cycler.WillStartBrowser(browser)
+        cycler.DidStartBrowser(browser)
       finally:
         page_cycler.memory = real_memory_module
 

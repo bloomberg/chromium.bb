@@ -19,8 +19,10 @@ class Smoothness(page_measurement.PageMeasurement):
     options.AppendExtraBrowserArgs('--touch-events=enabled')
     power.PowerMetric.CustomizeBrowserOptions(options)
 
+  def WillStartBrowser(self, browser):
+    self._power_metric = power.PowerMetric(browser)
+
   def WillRunActions(self, page, tab):
-    self._power_metric = power.PowerMetric()
     self._power_metric.Start(page, tab)
     self._smoothness_controller = smoothness_controller.SmoothnessController()
     self._smoothness_controller.Start(page, tab)

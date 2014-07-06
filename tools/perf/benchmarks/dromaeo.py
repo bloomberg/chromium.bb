@@ -14,10 +14,13 @@ from telemetry.page import page_set
 class _DromaeoMeasurement(page_measurement.PageMeasurement):
   def __init__(self):
     super(_DromaeoMeasurement, self).__init__()
-    self._power_metric = power.PowerMetric()
+    self._power_metric = None
 
   def CustomizeBrowserOptions(self, options):
     power.PowerMetric.CustomizeBrowserOptions(options)
+
+  def WillStartBrowser(self, browser):
+    self._power_metric = power.PowerMetric(browser)
 
   def DidNavigateToPage(self, page, tab):
     self._power_metric.Start(page, tab)
