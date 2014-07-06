@@ -3362,6 +3362,7 @@
             'css/DragUpdateTest.cpp',
             'css/MediaValuesTest.cpp',
             'css/MediaQueryEvaluatorTest.cpp',
+            'css/MediaQueryMatcherTest.cpp',
             'css/MediaQuerySetTest.cpp',
             'css/RuleSetTest.cpp',
             'css/invalidation/DescendantInvalidationSetTest.cpp',

@@ -47,6 +47,7 @@ DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(MediaQueryMatcher)
 void MediaQueryMatcher::documentDetached()
 {
     m_document = nullptr;
+    m_evaluator = nullptr;
 
     // Take a ref to each MediaQueryList as removing the listeners in documentDetached
     // could release the last ref and mutate the m_mediaLists.
@@ -67,6 +68,8 @@ PassOwnPtr<MediaQueryEvaluator> MediaQueryMatcher::createEvaluator() const
 
 bool MediaQueryMatcher::evaluate(const MediaQuerySet* media)
 {
+    ASSERT(!m_document || m_document->frame() || !m_evaluator);
+
     if (!media)
         return false;
 
