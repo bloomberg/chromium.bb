@@ -293,7 +293,6 @@ typedef enum _FcMatcherPriorityDummy {
     PRI_ ## n ## _WEAK = PRI_ ## n
 
 typedef enum _FcMatcherPriority {
-    PRI1(HASH),
     PRI1(FILE),
     PRI1(FONTFORMAT),
     PRI1(SCALABLE),
