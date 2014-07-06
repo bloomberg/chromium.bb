@@ -245,17 +245,6 @@ FcCompareFilename (FcValue *v1, FcValue *v2)
 	return 3.0;
 }
 
-static double
-FcCompareHash (FcValue *v1, FcValue *v2)
-{
-    const FcChar8 *s1 = FcValueString (v1), *s2 = FcValueString (v2);
-
-    /* Do not match an empty string */
-    if (!s1 || !s2 || !s1[0] || !s2[0])
-	return 1.0;
-    return FcCompareString (v1, v2);
-}
-
 
 /* Define priorities to -1 for objects that don't have a compare function. */
 
@@ -272,7 +261,6 @@ FcCompareHash (FcValue *v1, FcValue *v2)
 #define PRI_FcCompareCharSet(n)		PRI1(n)
 #define PRI_FcCompareLang(n)		PRI1(n)
 #define PRI_FcComparePostScript(n)	PRI1(n)
-#define PRI_FcCompareHash(n)		PRI1(n)
 #define PRI_FcCompareSizeRange(n)	PRI1(n)
 
 #define FC_OBJECT(NAME, Type, Cmp)	PRI_##Cmp(NAME)
