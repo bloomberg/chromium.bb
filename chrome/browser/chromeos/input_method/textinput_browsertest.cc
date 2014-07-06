@@ -268,8 +268,9 @@ IN_PROC_BROWSER_TEST_F(TextInput_TextInputStateChangedTest,
   }
 }
 
+// Flaky on chromeos.  http://crbug.com/391582
 IN_PROC_BROWSER_TEST_F(TextInput_TextInputStateChangedTest,
-                       OpenNewTabOnloadTest) {
+                       DISABLED_OpenNewTabOnloadTest) {
   TextInputTestHelper helper;
   EXPECT_EQ(ui::TEXT_INPUT_TYPE_NONE, helper.GetTextInputType());
 
