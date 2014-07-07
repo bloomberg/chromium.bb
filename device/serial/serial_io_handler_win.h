@@ -1,15 +1,15 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_API_SERIAL_SERIAL_IO_HANDLER_WIN_H_
-#define CHROME_BROWSER_EXTENSIONS_API_SERIAL_SERIAL_IO_HANDLER_WIN_H_
+#ifndef DEVICE_SERIAL_SERIAL_IO_HANDLER_WIN_H_
+#define DEVICE_SERIAL_SERIAL_IO_HANDLER_WIN_H_
 
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
-#include "chrome/browser/extensions/api/serial/serial_io_handler.h"
+#include "device/serial/serial_io_handler.h"
 
-namespace extensions {
+namespace device {
 
 class SerialIoHandlerWin : public SerialIoHandler,
                            public base::MessageLoopForIO::IOHandler {
@@ -20,13 +20,11 @@ class SerialIoHandlerWin : public SerialIoHandler,
   virtual void CancelReadImpl() OVERRIDE;
   virtual void CancelWriteImpl() OVERRIDE;
   virtual bool Flush() const OVERRIDE;
-  virtual device::serial::DeviceControlSignalsPtr GetControlSignals()
-      const OVERRIDE;
+  virtual serial::DeviceControlSignalsPtr GetControlSignals() const OVERRIDE;
   virtual bool SetControlSignals(
-      const device::serial::HostControlSignals& control_signals) OVERRIDE;
-  virtual bool ConfigurePort(
-      const device::serial::ConnectionOptions& options) OVERRIDE;
-  virtual device::serial::ConnectionInfoPtr GetPortInfo() const OVERRIDE;
+      const serial::HostControlSignals& control_signals) OVERRIDE;
+  virtual bool ConfigurePort(const serial::ConnectionOptions& options) OVERRIDE;
+  virtual serial::ConnectionInfoPtr GetPortInfo() const OVERRIDE;
   virtual bool PostOpen() OVERRIDE;
 
  private:
@@ -60,7 +58,6 @@ class SerialIoHandlerWin : public SerialIoHandler,
   DISALLOW_COPY_AND_ASSIGN(SerialIoHandlerWin);
 };
 
-}  // namespace extensions
+}  // namespace device
 
-#endif  // CHROME_BROWSER_EXTENSIONS_API_SERIAL_SERIAL_IO_HANDLER_WIN_H_
-
+#endif  // DEVICE_SERIAL_SERIAL_IO_HANDLER_WIN_H_

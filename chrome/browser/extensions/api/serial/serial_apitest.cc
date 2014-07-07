@@ -52,7 +52,7 @@ class FakeSerialGetDevicesFunction : public AsyncExtensionFunction {
   virtual ~FakeSerialGetDevicesFunction() {}
 };
 
-class FakeEchoSerialIoHandler : public SerialIoHandler {
+class FakeEchoSerialIoHandler : public device::SerialIoHandler {
  public:
   explicit FakeEchoSerialIoHandler() : opened_(false) {}
 

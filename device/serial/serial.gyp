@@ -27,6 +27,9 @@
       'includes': [
         '../../mojo/public/tools/bindings/mojom_bindings_generator.gypi',
       ],
+      'dependencies': [
+        '../../net/net.gyp:net',
+      ],
       'sources': [
         'serial.mojom',
         'serial_device_enumerator.cc',
@@ -37,6 +40,12 @@
         'serial_device_enumerator_mac.h',
         'serial_device_enumerator_win.cc',
         'serial_device_enumerator_win.h',
+        'serial_io_handler.cc',
+        'serial_io_handler.h',
+        'serial_io_handler_posix.cc',
+        'serial_io_handler_posix.h',
+        'serial_io_handler_win.cc',
+        'serial_io_handler_win.h',
       ],
     },
   ],

@@ -13,9 +13,9 @@
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/time/time.h"
-#include "chrome/browser/extensions/api/serial/serial_io_handler.h"
 #include "chrome/common/extensions/api/serial.h"
 #include "content/public/browser/browser_thread.h"
+#include "device/serial/serial_io_handler.h"
 #include "extensions/browser/api/api_resource.h"
 #include "extensions/browser/api/api_resource_manager.h"
 
@@ -30,7 +30,7 @@ namespace extensions {
 class SerialConnection : public ApiResource,
                          public base::SupportsWeakPtr<SerialConnection> {
  public:
-  typedef SerialIoHandler::OpenCompleteCallback OpenCompleteCallback;
+  typedef device::SerialIoHandler::OpenCompleteCallback OpenCompleteCallback;
 
   // This is the callback type expected by Receive. Note that an error result
   // does not necessarily imply an empty |data| string, since a receive may
@@ -111,7 +111,7 @@ class SerialConnection : public ApiResource,
       const api::serial::HostControlSignals& control_signals);
 
   // Overrides |io_handler_| for testing.
-  void SetIoHandlerForTest(scoped_refptr<SerialIoHandler> handler);
+  void SetIoHandlerForTest(scoped_refptr<device::SerialIoHandler> handler);
 
   static const BrowserThread::ID kThreadId = BrowserThread::IO;
 
@@ -188,7 +188,7 @@ class SerialConnection : public ApiResource,
   scoped_ptr<TimeoutTask> send_timeout_task_;
 
   // Asynchronous I/O handler.
-  scoped_refptr<SerialIoHandler> io_handler_;
+  scoped_refptr<device::SerialIoHandler> io_handler_;
 };
 
 }  // namespace extensions
