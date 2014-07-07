@@ -31,38 +31,6 @@ class ToughWebglCasesPage(page_module.Page):
     action_runner.Wait(5)
 
 
-class Page1(ToughWebglCasesPage):
-
-  """
-  Why: Observed performance regression with this demo in M33
-  """
-
-  def __init__(self, page_set):
-    super(Page1, self).__init__(
-      url='http://montagestudio.com/demos/eco-homes/',
-      page_set=page_set)
-
-  def RunNavigateSteps(self, action_runner):
-    action_runner.NavigateToPage(self)
-    action_runner.WaitForJavaScriptCondition(
-        'document.readyState == "complete"')
-    action_runner.Wait(15)
-
-
-class Page2(ToughWebglCasesPage):
-
-  def __init__(self, page_set):
-    super(Page2, self).__init__(
-      url='http://helloracer.com/racer-s/',
-      page_set=page_set)
-
-  def RunNavigateSteps(self, action_runner):
-    action_runner.NavigateToPage(self)
-    action_runner.WaitForJavaScriptCondition(
-        'document.readyState == "complete"')
-    action_runner.Wait(10)
-
-
 class ToughWebglCasesPageSet(page_set_module.PageSet):
 
   """
@@ -73,8 +41,6 @@ class ToughWebglCasesPageSet(page_set_module.PageSet):
     super(ToughWebglCasesPageSet, self).__init__(
       archive_data_file='data/tough_webgl_cases.json')
 
-    self.AddPage(Page1(self))
-    self.AddPage(Page2(self))
     urls_list = [
       # pylint: disable=C0301
       'http://www.khronos.org/registry/webgl/sdk/demos/google/nvidia-vertex-buffer-object/index.html',
