@@ -11,6 +11,15 @@ function test()
 
     function step1()
     {
+        InspectorTest.addResult("Rules before toggling:");
+        InspectorTest.dumpSelectedElementStyles(true, false, true);
+        InspectorTest.toggleMatchedStyleProperty("background-color", false);
+        InspectorTest.runAfterPendingDispatches(step2);
+    }
+
+    function step2()
+    {
+        InspectorTest.addResult("Rules after toggling:");
         InspectorTest.dumpSelectedElementStyles(true, false, true);
         InspectorTest.completeTest();
     }
@@ -19,7 +28,7 @@ function test()
 </head>
 
 <body onload="runTest()">
-<p>Tests that rules from imported stylesheets are correctly shown in inspector.</p>
+<p>Tests that rules from imported stylesheets are correctly shown and are editable in inspector.</p>
 <div id="square" class="square"></div>
 </body>
 </html>

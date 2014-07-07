@@ -1535,11 +1535,11 @@ bool InspectorStyleSheet::resourceStyleSheetText(String* result) const
     if (m_origin == TypeBuilder::CSS::StyleSheetOrigin::User || m_origin == TypeBuilder::CSS::StyleSheetOrigin::User_agent)
         return false;
 
-    if (!ownerDocument() || !ownerDocument()->frame())
+    if (!ownerDocument())
         return false;
 
     bool base64Encoded;
-    bool success = m_resourceAgent->fetchResourceContent(ownerDocument()->frame(), KURL(ParsedURLString, m_pageStyleSheet->href()), result, &base64Encoded) && !base64Encoded;
+    bool success = m_resourceAgent->fetchResourceContent(ownerDocument(), KURL(ParsedURLString, m_pageStyleSheet->href()), result, &base64Encoded) && !base64Encoded;
     return success;
 }
 

@@ -144,7 +144,7 @@ public:
 
     // Called from other agents.
     void setHostId(const String&);
-    bool fetchResourceContent(LocalFrame*, const KURL&, String* content, bool* base64Encoded);
+    bool fetchResourceContent(Document*, const KURL&, String* content, bool* base64Encoded);
 
 private:
     InspectorResourceAgent(InspectorPageAgent*);
