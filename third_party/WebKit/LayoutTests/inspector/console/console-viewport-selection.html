@@ -166,6 +166,7 @@ function test()
 
     function dumpSelectionText()
     {
+        viewport.refresh();
         var text = viewport._selectedText();
         InspectorTest.addResult("Selected text:<<<EOL\n" + text + "\nEOL");
     }
@@ -184,6 +185,7 @@ function test()
 
     function emulateShiftClickOnMessage(messageIndex)
     {
+        viewport.refresh();
         var selection = window.getSelection();
         if (!selection || !selection.rangeCount) {
             InspectorTest.addResult("FAILURE: There's no selection");
@@ -226,6 +228,7 @@ function test()
         var from = selectionContainerAndOffset(consoleView.itemElement(fromMessage).element(), fromTextOffset);
         var to = selectionContainerAndOffset(consoleView.itemElement(toMessage).element(), toTextOffset);
         window.getSelection().setBaseAndExtent(from.container, from.offset, to.container, to.offset);
+        viewport.refresh();
     }
 }
 </script>
