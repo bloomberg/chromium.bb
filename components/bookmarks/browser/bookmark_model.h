@@ -411,7 +411,7 @@ class BookmarkModel : public KeyedService {
   base::CancelableTaskTracker cancelable_task_tracker_;
 
   // Reads/writes bookmarks to disk.
-  scoped_refptr<bookmarks::BookmarkStorage> store_;
+  scoped_ptr<bookmarks::BookmarkStorage> store_;
 
   scoped_ptr<bookmarks::BookmarkIndex> index_;
 

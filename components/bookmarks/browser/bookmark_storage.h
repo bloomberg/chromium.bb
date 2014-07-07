@@ -11,6 +11,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
+#include "base/memory/weak_ptr.h"
 #include "components/bookmarks/browser/bookmark_node.h"
 
 class BookmarkModel;
@@ -133,8 +134,7 @@ class BookmarkLoadDetails {
 // as notifying the BookmarkStorage every time the model changes.
 //
 // Internally BookmarkStorage uses BookmarkCodec to do the actual read/write.
-class BookmarkStorage : public base::ImportantFileWriter::DataSerializer,
-                        public base::RefCountedThreadSafe<BookmarkStorage> {
+class BookmarkStorage : public base::ImportantFileWriter::DataSerializer {
  public:
   // Creates a BookmarkStorage for the specified model. The data will be loaded
   // from and saved to a location derived from |profile_path|. The IO code will
@@ -142,6 +142,7 @@ class BookmarkStorage : public base::ImportantFileWriter::DataSerializer,
   BookmarkStorage(BookmarkModel* model,
                   const base::FilePath& profile_path,
                   base::SequencedTaskRunner* sequenced_task_runner);
+  virtual ~BookmarkStorage();
 
   // Loads the bookmarks into the model, notifying the model when done. This
   // takes ownership of |details| and send the |OnLoadFinished| callback from
@@ -164,10 +165,6 @@ class BookmarkStorage : public base::ImportantFileWriter::DataSerializer,
   virtual bool SerializeData(std::string* output) OVERRIDE;
 
  private:
-  friend class base::RefCountedThreadSafe<BookmarkStorage>;
-
-  virtual ~BookmarkStorage();
-
   // Serializes the data and schedules save using ImportantFileWriter.
   // Returns true on successful serialization.
   bool SaveNow();
@@ -183,6 +180,8 @@ class BookmarkStorage : public base::ImportantFileWriter::DataSerializer,
 
   // Sequenced task runner where file I/O operations will be performed at.
   scoped_refptr<base::SequencedTaskRunner> sequenced_task_runner_;
+
+  base::WeakPtrFactory<BookmarkStorage> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkStorage);
 };

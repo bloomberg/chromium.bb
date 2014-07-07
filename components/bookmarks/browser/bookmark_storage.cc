@@ -48,7 +48,7 @@ void AddBookmarksToIndex(BookmarkLoadDetails* details,
 }
 
 void LoadCallback(const base::FilePath& path,
-                  BookmarkStorage* storage,
+                  const base::WeakPtr<BookmarkStorage>& storage,
                   BookmarkLoadDetails* details,
                   base::SequencedTaskRunner* task_runner) {
   startup_metric_utils::ScopedSlowStartupUMA
@@ -146,7 +146,8 @@ BookmarkStorage::BookmarkStorage(
     base::SequencedTaskRunner* sequenced_task_runner)
     : model_(model),
       writer_(profile_path.Append(bookmarks::kBookmarksFileName),
-              sequenced_task_runner) {
+              sequenced_task_runner),
+      weak_factory_(this) {
   sequenced_task_runner_ = sequenced_task_runner;
   writer_.set_commit_interval(base::TimeDelta::FromMilliseconds(kSaveDelayMS));
   sequenced_task_runner_->PostTask(FROM_HERE,
@@ -167,7 +168,7 @@ void BookmarkStorage::LoadBookmarks(
   sequenced_task_runner_->PostTask(FROM_HERE,
                                    base::Bind(&LoadCallback,
                                               writer_.path(),
-                                              make_scoped_refptr(this),
+                                              weak_factory_.GetWeakPtr(),
                                               details_.get(),
                                               task_runner));
 }
