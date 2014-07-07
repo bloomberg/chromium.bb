@@ -293,6 +293,8 @@ body {
 /* Filename */
 
 .gallery .filename-spacer {
+  height: 100%;
+  overflow: hidden;
   position: relative;
   width: 270px;
 }
@@ -318,7 +320,6 @@ body {
   height: 21px;
   top: 5px;
 }
-
 
 .gallery .filename-spacer .namebox {
   background-color: transparent;
@@ -355,12 +356,14 @@ body {
   -webkit-box-orient: horizontal;
   -webkit-box-pack: start;
   display: -webkit-box;
+  height: 0;
   opacity: 0;
   top: 50px;
   visibility: hidden;
 }
 
 .gallery[editing] .filename-spacer .options {
+  height: auto;
   opacity: 1;
   top: 28px;
   visibility: visible;
