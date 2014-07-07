@@ -85,6 +85,11 @@ class CONTENT_EXPORT IndexedDBDatabase
   void Close(IndexedDBConnection* connection, bool forced);
   void ForceClose();
 
+  // Ack that one of the connections notified with a "versionchange" event did
+  // not promptly close. Therefore a "blocked" event should be fired at the
+  // pending connection.
+  void VersionChangeIgnored();
+
   void Commit(int64 transaction_id);
   void Abort(int64 transaction_id);
   void Abort(int64 transaction_id, const IndexedDBDatabaseError& error);

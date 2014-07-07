@@ -92,6 +92,12 @@ void WebIDBDatabaseImpl::close() {
                                       ipc_database_callbacks_id_);
 }
 
+void WebIDBDatabaseImpl::versionChangeIgnored() {
+  IndexedDBDispatcher* dispatcher =
+      IndexedDBDispatcher::ThreadSpecificInstance(thread_safe_sender_.get());
+  dispatcher->NotifyIDBDatabaseVersionChangeIgnored(ipc_database_id_);
+}
+
 void WebIDBDatabaseImpl::get(long long transaction_id,
                              long long object_store_id,
                              long long index_id,

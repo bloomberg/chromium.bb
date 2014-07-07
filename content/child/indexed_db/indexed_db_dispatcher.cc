@@ -278,6 +278,11 @@ void IndexedDBDispatcher::RequestIDBDatabaseClose(
     pending_database_callbacks_.Remove(ipc_database_callbacks_id);
 }
 
+void IndexedDBDispatcher::NotifyIDBDatabaseVersionChangeIgnored(
+    int32 ipc_database_id) {
+  Send(new IndexedDBHostMsg_DatabaseVersionChangeIgnored(ipc_database_id));
+}
+
 void IndexedDBDispatcher::RequestIDBDatabaseCreateTransaction(
     int32 ipc_database_id,
     int64 transaction_id,

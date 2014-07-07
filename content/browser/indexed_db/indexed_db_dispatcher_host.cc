@@ -475,6 +475,8 @@ bool IndexedDBDispatcherHost::DatabaseDispatcherHost::OnMessageReceived(
     IPC_MESSAGE_HANDLER(IndexedDBHostMsg_DatabaseCreateTransaction,
                         OnCreateTransaction)
     IPC_MESSAGE_HANDLER(IndexedDBHostMsg_DatabaseClose, OnClose)
+    IPC_MESSAGE_HANDLER(IndexedDBHostMsg_DatabaseVersionChangeIgnored,
+                        OnVersionChangeIgnored)
     IPC_MESSAGE_HANDLER(IndexedDBHostMsg_DatabaseDestroyed, OnDestroyed)
     IPC_MESSAGE_HANDLER(IndexedDBHostMsg_DatabaseGet, OnGet)
     IPC_MESSAGE_HANDLER(IndexedDBHostMsg_DatabasePut, OnPutWrapper)
@@ -566,6 +568,17 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnClose(
   if (!connection || !connection->IsConnected())
     return;
   connection->Close();
+}
+
+void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnVersionChangeIgnored(
+    int32 ipc_database_id) {
+  DCHECK(
+      parent_->indexed_db_context_->TaskRunner()->RunsTasksOnCurrentThread());
+  IndexedDBConnection* connection =
+      parent_->GetOrTerminateProcess(&map_, ipc_database_id);
+  if (!connection || !connection->IsConnected())
+    return;
+  connection->VersionChangeIgnored();
 }
 
 void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnDestroyed(

@@ -40,7 +40,10 @@ class WebIDBDatabaseImpl : public blink::WebIDBDatabase {
                                  blink::WebIDBDatabaseCallbacks* callbacks,
                                  const blink::WebVector<long long>& scope,
                                  blink::WebIDBTransactionMode mode);
+
   virtual void close();
+  virtual void versionChangeIgnored();
+
   virtual void get(long long transactionId,
                    long long objectStoreId,
                    long long indexId,

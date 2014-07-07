@@ -480,7 +480,11 @@ IPC_MESSAGE_CONTROL1(IndexedDBHostMsg_DatabaseCreateTransaction,
 
 // WebIDBDatabase::close() message.
 IPC_MESSAGE_CONTROL1(IndexedDBHostMsg_DatabaseClose,
-                     int32 /* ipc_database_callbacks_id */)
+                     int32 /* ipc_database_id */)
+
+// WebIDBDatabase::versionChangeIgnored() message.
+IPC_MESSAGE_CONTROL1(IndexedDBHostMsg_DatabaseVersionChangeIgnored,
+                     int32 /* ipc_database_id */)
 
 // WebIDBDatabase::~WebIDBDatabase() message.
 IPC_MESSAGE_CONTROL1(IndexedDBHostMsg_DatabaseDestroyed,

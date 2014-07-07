@@ -30,6 +30,12 @@ void IndexedDBConnection::ForceClose() {
   callbacks_ = NULL;
 }
 
+void IndexedDBConnection::VersionChangeIgnored() {
+  if (!database_)
+    return;
+  database_->VersionChangeIgnored();
+}
+
 bool IndexedDBConnection::IsConnected() {
   return database_.get() != NULL;
 }

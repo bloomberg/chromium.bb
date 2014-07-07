@@ -46,7 +46,9 @@ IndexedDBCallbacks::IndexedDBCallbacks(IndexedDBDispatcherHost* dispatcher_host,
       host_transaction_id_(kNoTransaction),
       ipc_database_id_(kNoDatabase),
       ipc_database_callbacks_id_(kNoDatabaseCallbacks),
-      data_loss_(blink::WebIDBDataLossNone) {}
+      data_loss_(blink::WebIDBDataLossNone),
+      sent_blocked_(false) {
+}
 
 IndexedDBCallbacks::IndexedDBCallbacks(IndexedDBDispatcherHost* dispatcher_host,
                                        int32 ipc_thread_id,
@@ -59,7 +61,9 @@ IndexedDBCallbacks::IndexedDBCallbacks(IndexedDBDispatcherHost* dispatcher_host,
       host_transaction_id_(kNoTransaction),
       ipc_database_id_(kNoDatabase),
       ipc_database_callbacks_id_(kNoDatabaseCallbacks),
-      data_loss_(blink::WebIDBDataLossNone) {}
+      data_loss_(blink::WebIDBDataLossNone),
+      sent_blocked_(false) {
+}
 
 IndexedDBCallbacks::IndexedDBCallbacks(IndexedDBDispatcherHost* dispatcher_host,
                                        int32 ipc_thread_id,
@@ -75,7 +79,9 @@ IndexedDBCallbacks::IndexedDBCallbacks(IndexedDBDispatcherHost* dispatcher_host,
       origin_url_(origin_url),
       ipc_database_id_(kNoDatabase),
       ipc_database_callbacks_id_(ipc_database_callbacks_id),
-      data_loss_(blink::WebIDBDataLossNone) {}
+      data_loss_(blink::WebIDBDataLossNone),
+      sent_blocked_(false) {
+}
 
 IndexedDBCallbacks::~IndexedDBCallbacks() {}
 
@@ -114,6 +120,10 @@ void IndexedDBCallbacks::OnBlocked(int64 existing_version) {
             kNoDatabaseCallbacks == ipc_database_callbacks_id_);
   DCHECK_EQ(kNoDatabase, ipc_database_id_);
 
+  if (sent_blocked_)
+    return;
+
+  sent_blocked_ = true;
   dispatcher_host_->Send(new IndexedDBMsg_CallbacksIntBlocked(
       ipc_thread_id_, ipc_callbacks_id_, existing_version));
 }

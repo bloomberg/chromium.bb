@@ -112,6 +112,8 @@ class CONTENT_EXPORT IndexedDBDispatcher : public WorkerTaskRunner::Observer {
   void RequestIDBDatabaseClose(int32 ipc_database_id,
                                int32 ipc_database_callbacks_id);
 
+  void NotifyIDBDatabaseVersionChangeIgnored(int32 ipc_database_id);
+
   void RequestIDBDatabaseCreateTransaction(
       int32 ipc_database_id,
       int64 transaction_id,

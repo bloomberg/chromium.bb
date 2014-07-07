@@ -133,6 +133,8 @@ class CONTENT_EXPORT IndexedDBCallbacks
   blink::WebIDBDataLoss data_loss_;
   std::string data_loss_message_;
 
+  // The "blocked" event should be sent at most once per request.
+  bool sent_blocked_;
   DISALLOW_COPY_AND_ASSIGN(IndexedDBCallbacks);
 };
 

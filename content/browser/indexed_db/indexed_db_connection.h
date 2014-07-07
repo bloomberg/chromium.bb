@@ -24,6 +24,8 @@ class CONTENT_EXPORT IndexedDBConnection {
   virtual void Close();
   virtual bool IsConnected();
 
+  void VersionChangeIgnored();
+
   IndexedDBDatabase* database() { return database_; }
   IndexedDBDatabaseCallbacks* callbacks() { return callbacks_; }
 
