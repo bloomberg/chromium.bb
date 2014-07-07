@@ -1495,6 +1495,11 @@ PassRefPtr<RenderStyle> Element::styleForRenderer()
         activeAnimations->updateAnimationFlags(*style);
     }
 
+    if (style->hasTransform()) {
+        if (const StylePropertySet* inlineStyle = this->inlineStyle())
+            style->setHasInlineTransform(inlineStyle->hasProperty(CSSPropertyTransform) || inlineStyle->hasProperty(CSSPropertyWebkitTransform));
+    }
+
     document().didRecalculateStyleForElement();
     return style.release();
 }

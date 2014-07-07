@@ -98,6 +98,9 @@ CompositingReasons CompositingReasonFinder::potentialCompositingReasonsFromStyle
     if (style->hasWillChangeCompositingHint() && !style->subtreeWillChangeContents())
         reasons |= CompositingReasonWillChangeCompositingHint;
 
+    if (style->hasInlineTransform())
+        reasons |= CompositingReasonInlineTransform;
+
     if (style->transformStyle3D() == TransformStyle3DPreserve3D)
         reasons |= CompositingReasonPreserve3DWith3DDescendants;
 

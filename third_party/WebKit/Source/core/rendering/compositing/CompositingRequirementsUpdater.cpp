@@ -385,8 +385,8 @@ void CompositingRequirementsUpdater::updateRecursive(RenderLayer* ancestorLayer,
             willBeCompositedOrSquashed = true;
         }
 
-        if (willBeCompositedOrSquashed && layer->hasInlineTransform())
-            reasonsToComposite |= CompositingReasonInlineTransform;
+        if (willBeCompositedOrSquashed)
+            reasonsToComposite |= layer->potentialCompositingReasonsFromStyle() & CompositingReasonInlineTransform;
 
         // If the original layer is composited, the reflection needs to be, too.
         if (layer->reflectionInfo()) {

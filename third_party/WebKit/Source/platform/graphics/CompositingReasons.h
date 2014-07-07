@@ -128,7 +128,8 @@ const uint64_t CompositingReasonCombo3DDescendants =
 const uint64_t CompositingReasonComboAllStyleDeterminedReasons =
     CompositingReasonComboAllDirectStyleDeterminedReasons
     | CompositingReasonComboCompositedDescendants
-    | CompositingReasonCombo3DDescendants;
+    | CompositingReasonCombo3DDescendants
+    | CompositingReasonInlineTransform;
 
 const uint64_t CompositingReasonComboReasonsThatRequireOwnBacking =
     CompositingReasonComboAllDirectReasons

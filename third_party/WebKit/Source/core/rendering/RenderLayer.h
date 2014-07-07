@@ -211,8 +211,6 @@ public:
     bool hasVisibleNonLayerContent() const { return m_hasVisibleNonLayerContent; }
     bool hasNonCompositedChild() const { ASSERT(isAllowedToQueryCompositingState()); return m_hasNonCompositedChild; }
 
-    bool hasInlineTransform() const { return m_hasInlineTransform; }
-
     bool usedTransparency() const { return m_usedTransparency; }
 
     // Gets the nearest enclosing positioned ancestor layer (also includes
@@ -638,7 +636,6 @@ private:
     unsigned m_hasVisibleDescendant : 1;
 
     unsigned m_hasVisibleNonLayerContent : 1;
-    unsigned m_hasInlineTransform : 1;
 
     unsigned m_isPaginated : 1; // If we think this layer is split by a multi-column ancestor, then this bit will be set.
 
