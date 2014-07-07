@@ -121,6 +121,7 @@
 #gaia-signin .step-contents {
   -webkit-box-pack: center;
   display: -webkit-box;
+  height: 100%;
 }
 
 #createManagedUserSeparator {
