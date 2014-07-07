@@ -182,7 +182,7 @@
               'intermediate_dir': '<(SHARED_INTERMEDIATE_DIR)/cronet',
               'jar_extract_dir': '<(intermediate_dir)/cronet_jar_extract',
               'jar_excluded_classes': [
-                '*/BaseChromiumApp*.class',
+                '*/library_loader/*',
               ],
               'jar_extract_stamp': '<(intermediate_dir)/jar_extract.stamp',
               'cronet_jar_stamp': '<(intermediate_dir)/cronet_jar.stamp',
