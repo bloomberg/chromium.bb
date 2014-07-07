@@ -11,6 +11,7 @@ namespace blink {
 
 class WebServiceWorkerResponsePrivate : public RefCounted<WebServiceWorkerResponsePrivate> {
 public:
+    WebURL url;
     unsigned short status;
     WebString statusText;
     HashMap<String, String> headers;
@@ -30,6 +31,16 @@ void WebServiceWorkerResponse::reset()
 void WebServiceWorkerResponse::assign(const WebServiceWorkerResponse& other)
 {
     m_private = other.m_private;
+}
+
+void WebServiceWorkerResponse::setURL(const WebURL& url)
+{
+    m_private->url = url;
+}
+
+WebURL WebServiceWorkerResponse::url() const
+{
+    return m_private->url;
 }
 
 void WebServiceWorkerResponse::setStatus(unsigned short status)

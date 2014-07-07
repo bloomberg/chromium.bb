@@ -8,6 +8,7 @@
 #include "WebCommon.h"
 #include "public/platform/WebPrivatePtr.h"
 #include "public/platform/WebString.h"
+#include "public/platform/WebURL.h"
 #include "public/platform/WebVector.h"
 
 #if INSIDE_BLINK
@@ -39,6 +40,9 @@ public:
 
     void reset();
     void assign(const WebServiceWorkerResponse&);
+
+    void setURL(const WebURL&);
+    WebURL url() const;
 
     void setStatus(unsigned short);
     unsigned short status() const;
