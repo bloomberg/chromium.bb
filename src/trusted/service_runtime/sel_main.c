@@ -186,86 +186,57 @@ static int my_getopt(int argc, char *const *argv, const char *shortopts) {
 #define my_getopt getopt
 #endif
 
-int NaClSelLdrMain(int argc, char **argv) {
-  int                           opt;
-  char                          *rest;
-  struct redir                  *entry;
-  struct redir                  *redir_queue;
-  struct redir                  **redir_qend;
+struct SelLdrOptions {
+  char *nacl_file;
+  char *blob_library_file;
 
+  int quiet;
+  int verbosity;
+  int fuzzing_quit_after_load;
+  int skip_qualification;
+  int handle_signals;
+  int enable_debug_stub;
+  int rpc_supplies_nexe;
+  int export_addr_to;
+  int debug_mode_bypass_acl_checks;
+  int debug_mode_ignore_validator;
+  int debug_mode_startup_signal;
+  struct redir *redir_queue;
+  struct redir **redir_qend;
+};
 
-  char                          *nacl_file = NULL;
-  char                          *blob_library_file = NULL;
-  int                           rpc_supplies_nexe = 0;
-  int                           export_addr_to = -1;
+static void SelLdrOptionsCtor(struct SelLdrOptions *options) {
+  /* Just to be safe. */
+  memset(options, 0, sizeof(*options));
 
-  struct NaClApp                *nap = NULL;
+  options->nacl_file = NULL;
+  options->blob_library_file = NULL;
+  options->quiet = 0;
+  options->verbosity = 0;
+  options->fuzzing_quit_after_load = 0;
+  options->skip_qualification = 0;
+  options->handle_signals = 0;
+  options->enable_debug_stub = 0;
+  options->rpc_supplies_nexe = 0;
+  options->export_addr_to = -1;
+  options->debug_mode_bypass_acl_checks = 0;
+  options->debug_mode_ignore_validator = 0;
+  options->debug_mode_startup_signal = 0;
+  options->redir_queue = NULL;
+  options->redir_qend = &(options->redir_queue);
+}
 
-  struct GioFile                gout;
-  NaClErrorCode                 errcode = LOAD_INTERNAL;
-  struct NaClDesc               *blob_file = NULL;
+/* TODO(ncbray): do not directly set fields on NaClApp. */
+static void NaClSelLdrParseArgs(int argc, char **argv,
+                                struct SelLdrOptions *options,
+                                struct DynArray *env_vars,
+                                struct NaClApp *nap) {
+  int opt;
+  char *rest;
+  struct redir *entry;
 
-  int                           ret_code;
-  struct DynArray               env_vars;
+  options->verbosity = NaClLogGetVerbosity();
 
-  int                           verbosity = 0;
-  int                           quiet = 0;
-  int                           fuzzing_quit_after_load = 0;
-  int                           debug_mode_bypass_acl_checks = 0;
-  int                           debug_mode_ignore_validator = 0;
-  int                           debug_mode_startup_signal = 0;
-  int                           skip_qualification = 0;
-  int                           handle_signals = 0;
-  int                           enable_debug_stub = 0;
-  struct NaClPerfCounter        time_all_main;
-  const char                    **envp;
-  struct NaClEnvCleanser        env_cleanser;
-
-#if NACL_OSX
-  /* Mac dynamic libraries cannot access the environ variable directly. */
-  envp = (const char **) *_NSGetEnviron();
-#else
-  /* Overzealous code style check is overzealous. */
-  /* @IGNORE_LINES_FOR_CODE_HYGIENE[1] */
-  extern char **environ;
-  envp = (const char **) environ;
-#endif
-
-  ret_code = 1;
-  redir_queue = NULL;
-  redir_qend = &redir_queue;
-
-  NaClAllModulesInit();
-
-  /*
-   * If this is a secondary process spun up to assist windows exception
-   * handling, the following function will not return.  If this is a normal
-   * sel_ldr process, the following function does nothing.
-   */
-  NaClDebugExceptionHandlerStandaloneHandleArgs(argc, argv);
-
-  nap = NaClAppCreate();
-  if (nap == NULL) {
-    fprintf(stderr, "NaClAppCreate() failed\n");
-    exit(1);
-  }
-
-  NaClBootstrapChannelErrorReporterInit();
-  NaClErrorLogHookInit(NaClBootstrapChannelErrorReporter, nap);
-
-  verbosity = NaClLogGetVerbosity();
-
-  NaClPerfCounterCtor(&time_all_main, "SelMain");
-
-  fflush((FILE *) NULL);
-
-  if (!GioFileRefCtor(&gout, stdout)) {
-    fprintf(stderr, "Could not create general standard output channel\n");
-    exit(1);
-  }
-  if (!DynArrayCtor(&env_vars, 0)) {
-    NaClLog(LOG_FATAL, "Failed to allocate env var array\n");
-  }
   /*
    * On platforms with glibc getopt, require POSIXLY_CORRECT behavior,
    * viz, no reordering of the arglist -- stop argument processing as
@@ -285,18 +256,18 @@ int NaClSelLdrMain(int argc, char **argv) {
                        "aB:cdeE:f:Fgh:i:l:qQr:RsSvw:X:Z")) != -1) {
     switch (opt) {
       case 'a':
-        if (!quiet)
+        if (!options->quiet)
           fprintf(stderr, "DEBUG MODE ENABLED (bypass acl)\n");
-        debug_mode_bypass_acl_checks = 1;
+        options->debug_mode_bypass_acl_checks = 1;
         break;
       case 'B':
-        blob_library_file = optarg;
+        options->blob_library_file = optarg;
         break;
       case 'c':
-        ++debug_mode_ignore_validator;
+        ++(options->debug_mode_ignore_validator);
         break;
       case 'd':
-        debug_mode_startup_signal = 1;
+        options->debug_mode_startup_signal = 1;
         break;
 #if NACL_LINUX
       case 'D':
@@ -320,19 +291,19 @@ int NaClSelLdrMain(int argc, char **argv) {
          * outside of sel_ldr is easier.  However, we could do
          * de-duplication here if it proves to be worthwhile.
          */
-        if (!DynArraySet(&env_vars, env_vars.num_entries, optarg)) {
+        if (!DynArraySet(env_vars, env_vars->num_entries, optarg)) {
           NaClLog(LOG_FATAL, "Adding item to env_vars failed\n");
         }
         break;
       case 'f':
-        nacl_file = optarg;
+        options->nacl_file = optarg;
         break;
       case 'F':
-        fuzzing_quit_after_load = 1;
+        options->fuzzing_quit_after_load = 1;
         break;
 
       case 'g':
-        enable_debug_stub = 1;
+        options->enable_debug_stub = 1;
         break;
 
       case 'h':
@@ -349,8 +320,8 @@ int NaClSelLdrMain(int argc, char **argv) {
         entry->tag = HOST_DESC;
         entry->u.host.d = strtol(rest+1, (char **) 0, 0);
         entry->u.host.mode = ImportModeMap(opt);
-        *redir_qend = entry;
-        redir_qend = &entry->next;
+        *(options->redir_qend) = entry;
+        options->redir_qend = &entry->next;
         break;
       case 'i':
         /* import IMC handle */
@@ -363,8 +334,8 @@ int NaClSelLdrMain(int argc, char **argv) {
         entry->nacl_desc = strtol(optarg, &rest, 0);
         entry->tag = IMC_DESC;
         entry->u.handle = (NaClHandle) strtol(rest+1, (char **) 0, 0);
-        *redir_qend = entry;
-        redir_qend = &entry->next;
+        *(options->redir_qend) = entry;
+        options->redir_qend = &entry->next;
         break;
       case 'l':
         if (NULL != optarg) {
@@ -378,16 +349,16 @@ int NaClSelLdrMain(int argc, char **argv) {
         }
         break;
       case 'q':
-        quiet = 1;
+        options->quiet = 1;
         break;
       case 'Q':
-        if (!quiet)
+        if (!options->quiet)
           fprintf(stderr, "PLATFORM QUALIFICATION DISABLED BY -Q - "
                   "Native Client's sandbox will be unreliable!\n");
-        skip_qualification = 1;
+        options->skip_qualification = 1;
         break;
       case 'R':
-        rpc_supplies_nexe = 1;
+        options->rpc_supplies_nexe = 1;
         break;
       /* case 'r':  with 'h' and 'w' above */
       case 's':
@@ -399,15 +370,15 @@ int NaClSelLdrMain(int argc, char **argv) {
         }
         break;
       case 'S':
-        handle_signals = 1;
+        options->handle_signals = 1;
         break;
       case 'v':
-        ++verbosity;
+        ++(options->verbosity);
         NaClLogIncrVerbosity();
         break;
       /* case 'w':  with 'h' and 'r' above */
       case 'X':
-        export_addr_to = strtol(optarg, (char **) 0, 0);
+        options->export_addr_to = strtol(optarg, (char **) 0, 0);
         break;
 #if NACL_LINUX
       case 'z':
@@ -436,8 +407,94 @@ int NaClSelLdrMain(int argc, char **argv) {
         exit(-1);
     }
   }
+}
 
-  if (debug_mode_startup_signal) {
+static void RedirectIO(struct NaClApp *nap, struct redir *redir_queue){
+  struct redir *entry;
+  /*
+   * Execute additional I/O redirections.  NB: since the NaClApp
+   * takes ownership of host / IMC socket descriptors, all but
+   * the first run will not get access if the NaClApp closes
+   * them.  Currently a normal NaClApp process exit does not
+   * close descriptors, since the underlying host OS will do so
+   * as part of service runtime exit.
+   */
+  NaClLog(4, "Processing I/O redirection/inheritance from command line\n");
+  for (entry = redir_queue; NULL != entry; entry = entry->next) {
+    switch (entry->tag) {
+      case HOST_DESC:
+        NaClAddHostDescriptor(nap, entry->u.host.d,
+                              entry->u.host.mode, entry->nacl_desc);
+        break;
+      case IMC_DESC:
+        NaClAddImcHandle(nap, entry->u.handle, entry->nacl_desc);
+        break;
+    }
+  }
+}
+
+int NaClSelLdrMain(int argc, char **argv) {
+  struct NaClApp                *nap = NULL;
+  struct SelLdrOptions          optionsImpl;
+  struct SelLdrOptions          *options = &optionsImpl;
+
+  struct GioFile                gout;
+  NaClErrorCode                 errcode = LOAD_INTERNAL;
+  struct NaClDesc               *blob_file = NULL;
+
+  int                           ret_code;
+  struct DynArray               env_vars;
+
+  struct NaClPerfCounter        time_all_main;
+  const char                    **envp;
+  struct NaClEnvCleanser        env_cleanser;
+
+#if NACL_OSX
+  /* Mac dynamic libraries cannot access the environ variable directly. */
+  envp = (const char **) *_NSGetEnviron();
+#else
+  /* Overzealous code style check is overzealous. */
+  /* @IGNORE_LINES_FOR_CODE_HYGIENE[1] */
+  extern char **environ;
+  envp = (const char **) environ;
+#endif
+
+  ret_code = 1;
+
+  NaClAllModulesInit();
+
+  /*
+   * If this is a secondary process spun up to assist windows exception
+   * handling, the following function will not return.  If this is a normal
+   * sel_ldr process, the following function does nothing.
+   */
+  NaClDebugExceptionHandlerStandaloneHandleArgs(argc, argv);
+
+  nap = NaClAppCreate();
+  if (nap == NULL) {
+    fprintf(stderr, "NaClAppCreate() failed\n");
+    exit(1);
+  }
+
+  NaClBootstrapChannelErrorReporterInit();
+  NaClErrorLogHookInit(NaClBootstrapChannelErrorReporter, nap);
+
+  NaClPerfCounterCtor(&time_all_main, "SelMain");
+
+  fflush((FILE *) NULL);
+
+  if (!GioFileRefCtor(&gout, stdout)) {
+    fprintf(stderr, "Could not create general standard output channel\n");
+    exit(1);
+  }
+
+  SelLdrOptionsCtor(options);
+  if (!DynArrayCtor(&env_vars, 0)) {
+    NaClLog(LOG_FATAL, "Failed to allocate env var array\n");
+  }
+  NaClSelLdrParseArgs(argc, argv, options, &env_vars, nap);
+
+  if (options->debug_mode_startup_signal) {
 #if NACL_WINDOWS
     fprintf(stderr, "DEBUG startup signal not supported on Windows\n");
     exit(1);
@@ -459,15 +516,15 @@ int NaClSelLdrMain(int argc, char **argv) {
 #endif
   }
 
-  if (debug_mode_ignore_validator == 1) {
-    if (!quiet)
+  if (options->debug_mode_ignore_validator == 1) {
+    if (!options->quiet)
       fprintf(stderr, "DEBUG MODE ENABLED (ignore validator)\n");
-  } else if (debug_mode_ignore_validator > 1) {
-    if (!quiet)
+  } else if (options->debug_mode_ignore_validator > 1) {
+    if (!options->quiet)
       fprintf(stderr, "DEBUG MODE ENABLED (skip validator)\n");
   }
 
-  if (verbosity) {
+  if (options->verbosity) {
     int         ix;
     char const  *separator = "";
 
@@ -479,28 +536,28 @@ int NaClSelLdrMain(int argc, char **argv) {
     putc('\n', stderr);
   }
 
-  if (debug_mode_bypass_acl_checks) {
+  if (options->debug_mode_bypass_acl_checks) {
     NaClInsecurelyBypassAllAclChecks();
   }
 
-  if (rpc_supplies_nexe) {
-    if (NULL != nacl_file) {
+  if (options->rpc_supplies_nexe) {
+    if (NULL != options->nacl_file) {
       fprintf(stderr,
               "sel_ldr: mutually exclusive flags -f and -R both used\n");
       exit(1);
     }
     /* post: NULL == nacl_file */
-    if (export_addr_to < 0) {
+    if (options->export_addr_to < 0) {
       fprintf(stderr,
               "sel_ldr: -R requires -X to set up secure command channel\n");
       exit(1);
     }
   } else {
-    if (NULL == nacl_file && optind < argc) {
-      nacl_file = argv[optind];
+    if (NULL == options->nacl_file && optind < argc) {
+      options->nacl_file = argv[optind];
       ++optind;
     }
-    if (NULL == nacl_file) {
+    if (NULL == options->nacl_file) {
       fprintf(stderr, "No nacl file specified\n");
       exit(1);
     }
@@ -515,13 +572,13 @@ int NaClSelLdrMain(int argc, char **argv) {
    * so hence forth, testing !rpc_supplies_nexe suffices for
    * establishing NULL != nacl_file.
    */
-  CHECK((NULL == nacl_file) == rpc_supplies_nexe);
+  CHECK((NULL == options->nacl_file) == options->rpc_supplies_nexe);
 
   /* to be passed to NaClMain, eventually... */
   argv[--optind] = (char *) "NaClMain";
 
-  nap->ignore_validator_result = (debug_mode_ignore_validator > 0);
-  nap->skip_validator = (debug_mode_ignore_validator > 1);
+  nap->ignore_validator_result = (options->debug_mode_ignore_validator > 0);
+  nap->skip_validator = (options->debug_mode_ignore_validator > 1);
 
   if (getenv("NACL_UNTRUSTED_EXCEPTION_HANDLING") != NULL) {
     nap->enable_exception_handling = 1;
@@ -530,8 +587,8 @@ int NaClSelLdrMain(int argc, char **argv) {
    * TODO(mseaborn): Always enable the Mach exception handler on Mac
    * OS X, and remove handle_signals and sel_ldr's "-S" option.
    */
-  if (nap->enable_exception_handling || enable_debug_stub ||
-      (handle_signals && NACL_OSX)) {
+  if (nap->enable_exception_handling || options->enable_debug_stub ||
+      (options->handle_signals && NACL_OSX)) {
 #if NACL_WINDOWS
     nap->attach_debug_exception_handler_func =
         NaClDebugExceptionHandlerStandaloneAttach;
@@ -563,23 +620,23 @@ int NaClSelLdrMain(int argc, char **argv) {
    * NACL_DANGEROUS_SKIP_QUALIFICATION_TEST is used by tsan / memcheck
    * (see src/third_party/valgrind/).
    */
-  if (!skip_qualification &&
+  if (!options->skip_qualification &&
       getenv("NACL_DANGEROUS_SKIP_QUALIFICATION_TEST") != NULL) {
-    if (!quiet)
+    if (!options->quiet)
       fprintf(stderr, "PLATFORM QUALIFICATION DISABLED BY ENVIRONMENT - "
               "Native Client's sandbox will be unreliable!\n");
-    skip_qualification = 1;
+    options->skip_qualification = 1;
   }
 
-  if (!skip_qualification) {
+  if (!options->skip_qualification) {
     NaClErrorCode pq_error = NACL_FI_VAL("pq", NaClErrorCode,
                                          NaClRunSelQualificationTests());
     if (LOAD_OK != pq_error) {
       errcode = pq_error;
       nap->module_load_status = pq_error;
-      if (!quiet)
+      if (!options->quiet)
         fprintf(stderr, "Error while loading \"%s\": %s\n",
-                NULL != nacl_file ? nacl_file
+                NULL != options->nacl_file ? options->nacl_file
                                   : "(no file, to-be-supplied-via-RPC)",
                 NaClErrorString(errcode));
     }
@@ -603,13 +660,13 @@ int NaClSelLdrMain(int argc, char **argv) {
    * Open both files first because (on Mac OS X at least)
    * NaClAppLoadFile() enables an outer sandbox.
    */
-  if (NULL != blob_library_file) {
-    NaClFileNameForValgrind(blob_library_file);
-    blob_file = (struct NaClDesc *) NaClDescIoDescOpen(blob_library_file,
-                                                       NACL_ABI_O_RDONLY, 0);
+  if (NULL != options->blob_library_file) {
+    NaClFileNameForValgrind(options->blob_library_file);
+    blob_file = (struct NaClDesc *) NaClDescIoDescOpen(
+        options->blob_library_file, NACL_ABI_O_RDONLY, 0);
     if (NULL == blob_file) {
       perror("sel_main");
-      fprintf(stderr, "Cannot open \"%s\".\n", blob_library_file);
+      fprintf(stderr, "Cannot open \"%s\".\n", options->blob_library_file);
       exit(1);
     }
     NaClPerfCounterMark(&time_all_main, "SnapshotBlob");
@@ -618,13 +675,13 @@ int NaClSelLdrMain(int argc, char **argv) {
 
   NaClAppInitialDescriptorHookup(nap);
 
-  if (!rpc_supplies_nexe) {
+  if (!options->rpc_supplies_nexe) {
     if (LOAD_OK == errcode) {
-      NaClLog(2, "Loading nacl file %s (non-RPC)\n", nacl_file);
-      errcode = NaClAppLoadFileFromFilename(nap, nacl_file);
-      if (LOAD_OK != errcode && !quiet) {
+      NaClLog(2, "Loading nacl file %s (non-RPC)\n", options->nacl_file);
+      errcode = NaClAppLoadFileFromFilename(nap, options->nacl_file);
+      if (LOAD_OK != errcode && !options->quiet) {
         fprintf(stderr, "Error while loading \"%s\": %s\n",
-                nacl_file,
+                options->nacl_file,
                 NaClErrorString(errcode));
         fprintf(stderr,
                 ("Using the wrong type of nexe (nacl-x86-32"
@@ -636,31 +693,12 @@ int NaClSelLdrMain(int argc, char **argv) {
       NaClPerfCounterIntervalLast(&time_all_main);
     }
 
-    if (fuzzing_quit_after_load) {
+    if (options->fuzzing_quit_after_load) {
       exit(0);
     }
   }
 
-  /*
-   * Execute additional I/O redirections.  NB: since the NaClApp
-   * takes ownership of host / IMC socket descriptors, all but
-   * the first run will not get access if the NaClApp closes
-   * them.  Currently a normal NaClApp process exit does not
-   * close descriptors, since the underlying host OS will do so
-   * as part of service runtime exit.
-   */
-  NaClLog(4, "Processing I/O redirection/inheritance from command line\n");
-  for (entry = redir_queue; NULL != entry; entry = entry->next) {
-    switch (entry->tag) {
-      case HOST_DESC:
-        NaClAddHostDescriptor(nap, entry->u.host.d,
-                              entry->u.host.mode, entry->nacl_desc);
-        break;
-      case IMC_DESC:
-        NaClAddImcHandle(nap, entry->u.handle, entry->nacl_desc);
-        break;
-    }
-  }
+  RedirectIO(nap, options->redir_queue);
 
   /*
    * If export_addr_to is set to a non-negative integer, we create a
@@ -672,7 +710,7 @@ int NaClSelLdrMain(int argc, char **argv) {
    * The service runtime also accepts a connection on the bound socket
    * and spawns a secure command channel thread to service it.
    */
-  if (0 <= export_addr_to) {
+  if (0 <= options->export_addr_to) {
     NaClCreateServiceSocket(nap);
     /*
      * LOG_FATAL errors that occur before NaClSetUpBootstrapChannel will
@@ -685,7 +723,7 @@ int NaClSelLdrMain(int argc, char **argv) {
      * errors would be seen, since NaClSetUpBootstrapChannel will get
      * called.
      */
-    NaClSetUpBootstrapChannel(nap, (NaClHandle) export_addr_to);
+    NaClSetUpBootstrapChannel(nap, (NaClHandle) options->export_addr_to);
     /*
      * NB: spawns a thread that uses the command channel.  we do
      * this after NaClAppLoadFile so that NaClApp object is more
@@ -700,14 +738,14 @@ int NaClSelLdrMain(int argc, char **argv) {
    * contents henceforth.
    */
 
-  if (rpc_supplies_nexe) {
+  if (options->rpc_supplies_nexe) {
     errcode = NaClWaitForLoadModuleCommand(nap);
     NaClPerfCounterMark(&time_all_main, "WaitForLoad");
     NaClPerfCounterIntervalLast(&time_all_main);
   }
 
   if (LOAD_OK == errcode) {
-    if (verbosity) {
+    if (options->verbosity) {
       gprintf((struct Gio *) &gout, "printing NaClApp details\n");
       NaClAppPrintDetails(nap, (struct Gio *) &gout);
     }
@@ -721,7 +759,7 @@ int NaClSelLdrMain(int argc, char **argv) {
    * XP seems to have some problems when we do bind()/listen() on a
    * separate thread from accept().
    */
-  if (enable_debug_stub && NACL_OSX) {
+  if (options->enable_debug_stub && NACL_OSX) {
     if (!NaClDebugBindSocket()) {
       exit(1);
     }
@@ -743,13 +781,13 @@ int NaClSelLdrMain(int argc, char **argv) {
     g_enable_outer_sandbox_func();
   }
 
-  if (NULL != blob_library_file) {
+  if (NULL != options->blob_library_file) {
     if (LOAD_OK == errcode) {
-      NaClLog(2, "Loading blob file %s\n", blob_library_file);
+      NaClLog(2, "Loading blob file %s\n", options->blob_library_file);
       errcode = NaClMainLoadIrt(nap, blob_file, NULL);
       if (LOAD_OK != errcode) {
         fprintf(stderr, "Error while loading \"%s\": %s\n",
-                blob_library_file,
+                options->blob_library_file,
                 NaClErrorString(errcode));
       }
       NaClPerfCounterMark(&time_all_main, "BlobLoaded");
@@ -757,7 +795,7 @@ int NaClSelLdrMain(int argc, char **argv) {
     }
 
     NaClDescUnref(blob_file);
-    if (verbosity) {
+    if (options->verbosity) {
       gprintf((struct Gio *) &gout, "printing post-IRT NaClApp details\n");
       NaClAppPrintDetails(nap, (struct Gio *) &gout);
     }
@@ -815,7 +853,7 @@ int NaClSelLdrMain(int argc, char **argv) {
     fprintf(stderr, "Launch service threads failed\n");
     goto done;
   }
-  if (enable_debug_stub) {
+  if (options->enable_debug_stub) {
     if (!NaClDebugInit(nap)) {
       goto done;
     }
@@ -852,7 +890,7 @@ int NaClSelLdrMain(int argc, char **argv) {
  done:
   fflush(stdout);
 
-  if (verbosity) {
+  if (options->verbosity) {
     gprintf((struct Gio *) &gout, "exiting -- printing NaClApp details\n");
     NaClAppPrintDetails(nap, (struct Gio *) &gout);
 
@@ -872,7 +910,7 @@ int NaClSelLdrMain(int argc, char **argv) {
     NaClBlockIfCommandChannelExists(nap);
   }
 
-  if (verbosity > 0) {
+  if (options->verbosity > 0) {
     printf("Done.\n");
   }
   fflush(stdout);
