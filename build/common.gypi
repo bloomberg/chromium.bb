@@ -2235,11 +2235,6 @@
         'ozone_platform_egltest%': 1,
       }],
 
-      ['use_ozone==1 and ozone_auto_platforms==1 and chromeos==1', {
-        # Use dri as the default platform.
-        'ozone_platform%': 'dri',
-      }],
-
       ['desktop_linux==1 and use_aura==1 and use_x11==1', {
         'use_clipboard_aurax11%': 1,
       }],
