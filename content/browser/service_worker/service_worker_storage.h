@@ -93,7 +93,7 @@ class CONTENT_EXPORT ServiceWorkerStorage
   // Commits |registration| with the installed but not activated |version|
   // to storage, overwritting any pre-existing registration data for the scope.
   // A pre-existing version's script resources will remain available until
-  // either a browser restart or DeleteVersionResources is called.
+  // it no longer controls a page, or a browser restart occurs.
   void StoreRegistration(
       ServiceWorkerRegistration* registration,
       ServiceWorkerVersion* version,
@@ -106,7 +106,7 @@ class CONTENT_EXPORT ServiceWorkerStorage
 
   // Deletes the registration data for |registration_id|. The script resources
   // for the registration's stored version will remain available until that
-  // version no longer controls a page.
+  // version no longer controls a page, or a browser restart occurs.
   void DeleteRegistration(int64 registration_id,
                           const GURL& origin,
                           const StatusCallback& callback);
@@ -151,12 +151,15 @@ class CONTENT_EXPORT ServiceWorkerStorage
                            DeleteRegistration_ActiveVersion);
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerResourceStorageTest,
                            UpdateRegistration);
+  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerResourceStorageDiskTest,
+                           CleanupOnRestart);
 
   struct InitialData {
     int64 next_registration_id;
     int64 next_version_id;
     int64 next_resource_id;
     std::set<GURL> origins;
+    std::set<int64> purgeable_resource_ids;
 
     InitialData();
     ~InitialData();

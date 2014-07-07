@@ -76,8 +76,6 @@ void ServiceWorkerUnregisterJob::DeleteRegistration(
         ServiceWorkerVersion::REDUNDANT);
   }
 
-  // TODO(michaeln): Eventually call storage->DeleteVersionResources() when the
-  // version no longer has any controllees.
   context_->storage()->DeleteRegistration(
       registration->id(),
       registration->script_url().GetOrigin(),

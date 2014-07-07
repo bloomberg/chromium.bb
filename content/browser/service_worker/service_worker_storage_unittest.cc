@@ -4,6 +4,7 @@
 
 #include <string>
 
+#include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
@@ -18,10 +19,12 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
+#include "net/base/test_completion_callback.h"
 #include "net/http/http_response_headers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using net::IOBuffer;
+using net::TestCompletionCallback;
 using net::WrappedIOBuffer;
 
 namespace content {
@@ -116,22 +119,26 @@ bool VerifyBasicResponse(ServiceWorkerStorage* storage, int64 id,
       storage->CreateResponseReader(id);
   scoped_refptr<HttpResponseInfoIOBuffer> info_buffer =
       new HttpResponseInfoIOBuffer();
-  int rv = -1234;
-  reader->ReadInfo(info_buffer, base::Bind(&OnIOComplete, &rv));
-  base::RunLoop().RunUntilIdle();
-  if (expected_positive_result)
-    EXPECT_LT(0, rv);
-  if (rv <= 0)
-    return false;
+  {
+    TestCompletionCallback cb;
+    reader->ReadInfo(info_buffer, cb.callback());
+    int rv = cb.WaitForResult();
+    if (expected_positive_result)
+      EXPECT_LT(0, rv);
+    if (rv <= 0)
+      return false;
+  }
 
   const int kBigEnough = 512;
   scoped_refptr<net::IOBuffer> buffer = new IOBuffer(kBigEnough);
-  rv = -1234;
-  reader->ReadData(buffer, kBigEnough, base::Bind(&OnIOComplete, &rv));
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(static_cast<int>(arraysize(kExpectedHttpBody)), rv);
-  if (rv <= 0)
-    return false;
+  {
+    TestCompletionCallback cb;
+    reader->ReadData(buffer, kBigEnough, cb.callback());
+    int rv = cb.WaitForResult();
+    EXPECT_EQ(static_cast<int>(arraysize(kExpectedHttpBody)), rv);
+    if (rv <= 0)
+      return false;
+  }
 
   bool status_match =
       std::string("HONKYDORY") ==
@@ -154,7 +161,7 @@ class ServiceWorkerStorageTest : public testing::Test {
 
   virtual void SetUp() OVERRIDE {
     context_.reset(
-        new ServiceWorkerContextCore(base::FilePath(),
+        new ServiceWorkerContextCore(GetUserDataDirectory(),
                                      base::MessageLoopProxy::current(),
                                      base::MessageLoopProxy::current(),
                                      NULL,
@@ -166,6 +173,8 @@ class ServiceWorkerStorageTest : public testing::Test {
   virtual void TearDown() OVERRIDE {
     context_.reset();
   }
+
+  virtual base::FilePath GetUserDataDirectory() { return base::FilePath(); }
 
   ServiceWorkerStorage* storage() { return context_->storage(); }
 
@@ -486,6 +495,7 @@ TEST_F(ServiceWorkerStorageTest, InstallingRegistrationsAreFindable) {
 }
 
 class ServiceWorkerResourceStorageTest : public ServiceWorkerStorageTest {
+ public:
   virtual void SetUp() OVERRIDE {
     ServiceWorkerStorageTest::SetUp();
 
@@ -547,6 +557,22 @@ class ServiceWorkerResourceStorageTest : public ServiceWorkerStorageTest {
   int64 resource_id1_;
   int64 resource_id2_;
   scoped_refptr<ServiceWorkerRegistration> registration_;
+};
+
+class ServiceWorkerResourceStorageDiskTest
+    : public ServiceWorkerResourceStorageTest {
+ public:
+  virtual void SetUp() OVERRIDE {
+    ASSERT_TRUE(user_data_directory_.CreateUniqueTempDir());
+    ServiceWorkerResourceStorageTest::SetUp();
+  }
+
+  virtual base::FilePath GetUserDataDirectory() OVERRIDE {
+    return user_data_directory_.path();
+  }
+
+ protected:
+  base::ScopedTempDir user_data_directory_;
 };
 
 TEST_F(ServiceWorkerResourceStorageTest, DeleteRegistration_WaitingVersion) {
@@ -613,8 +639,8 @@ TEST_F(ServiceWorkerResourceStorageTest, DeleteRegistration_ActiveVersion) {
             storage()->database_->GetPurgeableResourceIds(&verify_ids));
   EXPECT_EQ(2u, verify_ids.size());
 
-  EXPECT_TRUE(VerifyBasicResponse(storage(), resource_id1_, false));
-  EXPECT_TRUE(VerifyBasicResponse(storage(), resource_id2_, false));
+  EXPECT_TRUE(VerifyBasicResponse(storage(), resource_id1_, true));
+  EXPECT_TRUE(VerifyBasicResponse(storage(), resource_id2_, true));
 
   // Removing the controllee should cause the resources to be deleted.
   registration_->active_version()->RemoveControllee(host.get());
@@ -624,6 +650,73 @@ TEST_F(ServiceWorkerResourceStorageTest, DeleteRegistration_ActiveVersion) {
             storage()->database_->GetPurgeableResourceIds(&verify_ids));
   EXPECT_TRUE(verify_ids.empty());
 
+  EXPECT_FALSE(VerifyBasicResponse(storage(), resource_id1_, false));
+  EXPECT_FALSE(VerifyBasicResponse(storage(), resource_id2_, false));
+}
+
+// Android has flaky IO error: http://crbug.com/387045
+#if defined(OS_ANDROID)
+#define MAYBE_CleanupOnRestart DISABLED_CleanupOnRestart
+#else
+#define MAYBE_CleanupOnRestart CleanupOnRestart
+#endif
+TEST_F(ServiceWorkerResourceStorageDiskTest, MAYBE_CleanupOnRestart) {
+  // Promote the worker to active and add a controllee.
+  registration_->SetActiveVersion(registration_->waiting_version());
+  registration_->SetWaitingVersion(NULL);
+  storage()->UpdateToActiveState(
+      registration_, base::Bind(&ServiceWorkerUtils::NoOpStatusCallback));
+  scoped_ptr<ServiceWorkerProviderHost> host(
+      new ServiceWorkerProviderHost(33 /* dummy render process id */,
+                                    1 /* dummy provider_id */,
+                                    context_->AsWeakPtr(),
+                                    NULL));
+  registration_->active_version()->AddControllee(host.get());
+
+  bool was_called = false;
+  ServiceWorkerStatusCode result = SERVICE_WORKER_ERROR_FAILED;
+  std::set<int64> verify_ids;
+
+  // Deleting the registration should move the resources to the purgeable list
+  // but keep them available.
+  storage()->DeleteRegistration(
+      registration_->id(),
+      scope_.GetOrigin(),
+      base::Bind(&VerifyPurgeableListStatusCallback,
+                 base::Unretained(storage()->database_.get()),
+                 &verify_ids,
+                 &was_called,
+                 &result));
+  base::RunLoop().RunUntilIdle();
+  ASSERT_TRUE(was_called);
+  EXPECT_EQ(SERVICE_WORKER_OK, result);
+  EXPECT_EQ(2u, verify_ids.size());
+  verify_ids.clear();
+  EXPECT_EQ(ServiceWorkerDatabase::STATUS_OK,
+            storage()->database_->GetPurgeableResourceIds(&verify_ids));
+  EXPECT_EQ(2u, verify_ids.size());
+
+  EXPECT_TRUE(VerifyBasicResponse(storage(), resource_id1_, true));
+  EXPECT_TRUE(VerifyBasicResponse(storage(), resource_id2_, true));
+
+  // Simulate browser restart. This should trigger stale resource purging.
+  context_.reset();
+  context_.reset(new ServiceWorkerContextCore(GetUserDataDirectory(),
+                                              base::MessageLoopProxy::current(),
+                                              base::MessageLoopProxy::current(),
+                                              NULL,
+                                              NULL,
+                                              NULL));
+  // Use FindRegistration to force storage system initialization.
+  scoped_refptr<ServiceWorkerRegistration> found_registration;
+  FindRegistrationForDocument(document_url_, &found_registration);
+  base::RunLoop().RunUntilIdle();
+
+  // Stale resources should be gone.
+  verify_ids.clear();
+  EXPECT_EQ(ServiceWorkerDatabase::STATUS_OK,
+            storage()->database_->GetPurgeableResourceIds(&verify_ids));
+  EXPECT_TRUE(verify_ids.empty());
   EXPECT_FALSE(VerifyBasicResponse(storage(), resource_id1_, false));
   EXPECT_FALSE(VerifyBasicResponse(storage(), resource_id2_, false));
 }

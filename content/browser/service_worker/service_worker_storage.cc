@@ -526,6 +526,9 @@ void ServiceWorkerStorage::DidReadInitialData(
     next_resource_id_ = data->next_resource_id;
     registered_origins_.swap(data->origins);
     state_ = INITIALIZED;
+    StartPurgingResources(
+        std::vector<int64>(data->purgeable_resource_ids.begin(),
+                           data->purgeable_resource_ids.end()));
   } else {
     // TODO(nhiroki): Stringify |status| using StatusToString() defined in
     // service_worker_database.cc.
@@ -928,6 +931,14 @@ void ServiceWorkerStorage::ReadInitialDataFromDB(
   }
 
   status = database->GetOriginsWithRegistrations(&data->origins);
+  if (status != ServiceWorkerDatabase::STATUS_OK) {
+    original_task_runner->PostTask(
+        FROM_HERE, base::Bind(callback, base::Owned(data.release()), status));
+    return;
+  }
+
+  // TODO: Also purge uncommitted resources.
+  status = database->GetPurgeableResourceIds(&data->purgeable_resource_ids);
   original_task_runner->PostTask(
       FROM_HERE, base::Bind(callback, base::Owned(data.release()), status));
 }
