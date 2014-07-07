@@ -38,7 +38,7 @@ function setupEvents() {
 
   if (ssl && overridable) {
     $('proceed-link').classList.add('small-link');
-  } else {
+  } else if ($('help-link')) {
     // Overridable SSL page doesn't have this link.
     $('help-link').addEventListener('click', function(event) {
       if (ssl)
