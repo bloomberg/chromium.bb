@@ -189,12 +189,15 @@ static int my_getopt(int argc, char *const *argv, const char *shortopts) {
 struct SelLdrOptions {
   char *nacl_file;
   char *blob_library_file;
+  int app_argc;
+  char **app_argv;
 
   int quiet;
   int verbosity;
   int fuzzing_quit_after_load;
   int skip_qualification;
   int handle_signals;
+  int enable_exception_handling;
   int enable_debug_stub;
   int rpc_supplies_nexe;
   int export_addr_to;
@@ -211,11 +214,15 @@ static void SelLdrOptionsCtor(struct SelLdrOptions *options) {
 
   options->nacl_file = NULL;
   options->blob_library_file = NULL;
+  options->app_argc = 0;
+  options->app_argv = NULL;
+
   options->quiet = 0;
   options->verbosity = 0;
   options->fuzzing_quit_after_load = 0;
   options->skip_qualification = 0;
   options->handle_signals = 0;
+  options->enable_exception_handling = 0;
   options->enable_debug_stub = 0;
   options->rpc_supplies_nexe = 0;
   options->export_addr_to = -1;
@@ -275,7 +282,7 @@ static void NaClSelLdrParseArgs(int argc, char **argv,
         break;
 #endif
       case 'e':
-        nap->enable_exception_handling = 1;
+        options->enable_exception_handling = 1;
         break;
       case 'E':
         /*
@@ -407,6 +414,84 @@ static void NaClSelLdrParseArgs(int argc, char **argv,
         exit(-1);
     }
   }
+
+  /* Post process the options. */
+
+  if (options->debug_mode_ignore_validator == 1) {
+    if (!options->quiet)
+      fprintf(stderr, "DEBUG MODE ENABLED (ignore validator)\n");
+  } else if (options->debug_mode_ignore_validator > 1) {
+    if (!options->quiet)
+      fprintf(stderr, "DEBUG MODE ENABLED (skip validator)\n");
+  }
+
+  if (options->verbosity) {
+    int         ix;
+    char const  *separator = "";
+
+    fprintf(stderr, "sel_ldr argument list:\n");
+    for (ix = 0; ix < argc; ++ix) {
+      fprintf(stderr, "%s%s", separator, argv[ix]);
+      separator = " ";
+    }
+    putc('\n', stderr);
+  }
+
+  if (options->rpc_supplies_nexe) {
+    if (NULL != options->nacl_file) {
+      fprintf(stderr,
+              "sel_ldr: mutually exclusive flags -f and -R both used\n");
+      exit(1);
+    }
+    /* post: NULL == nacl_file */
+    if (options->export_addr_to < 0) {
+      fprintf(stderr,
+              "sel_ldr: -R requires -X to set up secure command channel\n");
+      exit(1);
+    }
+  } else {
+    if (NULL == options->nacl_file && optind < argc) {
+      options->nacl_file = argv[optind];
+      ++optind;
+    }
+    if (NULL == options->nacl_file) {
+      fprintf(stderr, "No nacl file specified\n");
+      exit(1);
+    }
+    /* post: NULL != nacl_file */
+  }
+  /*
+   * post condition established by the above code (in Hoare logic
+   * terminology):
+   *
+   * NULL == nacl_file iff rpc_supplies_nexe
+   *
+   * so hence forth, testing !rpc_supplies_nexe suffices for
+   * establishing NULL != nacl_file.
+   */
+  CHECK((NULL == options->nacl_file) == options->rpc_supplies_nexe);
+
+  /* to be passed to NaClMain, eventually... */
+  argv[--optind] = (char *) "NaClMain";
+
+  options->app_argc = argc - optind;
+  options->app_argv = argv + optind;
+
+  /*
+   * NACL_DANGEROUS_SKIP_QUALIFICATION_TEST is used by tsan / memcheck
+   * (see src/third_party/valgrind/).
+   */
+  if (!options->skip_qualification &&
+      getenv("NACL_DANGEROUS_SKIP_QUALIFICATION_TEST") != NULL) {
+    if (!options->quiet)
+      fprintf(stderr, "PLATFORM QUALIFICATION DISABLED BY ENVIRONMENT - "
+              "Native Client's sandbox will be unreliable!\n");
+    options->skip_qualification = 1;
+  }
+
+  if (getenv("NACL_UNTRUSTED_EXCEPTION_HANDLING") != NULL) {
+    options->enable_exception_handling = 1;
+  }
 }
 
 static void RedirectIO(struct NaClApp *nap, struct redir *redir_queue){
@@ -516,73 +601,14 @@ int NaClSelLdrMain(int argc, char **argv) {
 #endif
   }
 
-  if (options->debug_mode_ignore_validator == 1) {
-    if (!options->quiet)
-      fprintf(stderr, "DEBUG MODE ENABLED (ignore validator)\n");
-  } else if (options->debug_mode_ignore_validator > 1) {
-    if (!options->quiet)
-      fprintf(stderr, "DEBUG MODE ENABLED (skip validator)\n");
-  }
-
-  if (options->verbosity) {
-    int         ix;
-    char const  *separator = "";
-
-    fprintf(stderr, "sel_ldr argument list:\n");
-    for (ix = 0; ix < argc; ++ix) {
-      fprintf(stderr, "%s%s", separator, argv[ix]);
-      separator = " ";
-    }
-    putc('\n', stderr);
-  }
-
   if (options->debug_mode_bypass_acl_checks) {
     NaClInsecurelyBypassAllAclChecks();
   }
 
-  if (options->rpc_supplies_nexe) {
-    if (NULL != options->nacl_file) {
-      fprintf(stderr,
-              "sel_ldr: mutually exclusive flags -f and -R both used\n");
-      exit(1);
-    }
-    /* post: NULL == nacl_file */
-    if (options->export_addr_to < 0) {
-      fprintf(stderr,
-              "sel_ldr: -R requires -X to set up secure command channel\n");
-      exit(1);
-    }
-  } else {
-    if (NULL == options->nacl_file && optind < argc) {
-      options->nacl_file = argv[optind];
-      ++optind;
-    }
-    if (NULL == options->nacl_file) {
-      fprintf(stderr, "No nacl file specified\n");
-      exit(1);
-    }
-    /* post: NULL != nacl_file */
-  }
-  /*
-   * post condition established by the above code (in Hoare logic
-   * terminology):
-   *
-   * NULL == nacl_file iff rpc_supplies_nexe
-   *
-   * so hence forth, testing !rpc_supplies_nexe suffices for
-   * establishing NULL != nacl_file.
-   */
-  CHECK((NULL == options->nacl_file) == options->rpc_supplies_nexe);
-
-  /* to be passed to NaClMain, eventually... */
-  argv[--optind] = (char *) "NaClMain";
-
   nap->ignore_validator_result = (options->debug_mode_ignore_validator > 0);
   nap->skip_validator = (options->debug_mode_ignore_validator > 1);
+  nap->enable_exception_handling = options->enable_exception_handling;
 
-  if (getenv("NACL_UNTRUSTED_EXCEPTION_HANDLING") != NULL) {
-    nap->enable_exception_handling = 1;
-  }
   /*
    * TODO(mseaborn): Always enable the Mach exception handler on Mac
    * OS X, and remove handle_signals and sel_ldr's "-S" option.
@@ -616,18 +642,7 @@ int NaClSelLdrMain(int argc, char **argv) {
 
   /*
    * Ensure the platform qualification checks pass.
-   *
-   * NACL_DANGEROUS_SKIP_QUALIFICATION_TEST is used by tsan / memcheck
-   * (see src/third_party/valgrind/).
    */
-  if (!options->skip_qualification &&
-      getenv("NACL_DANGEROUS_SKIP_QUALIFICATION_TEST") != NULL) {
-    if (!options->quiet)
-      fprintf(stderr, "PLATFORM QUALIFICATION DISABLED BY ENVIRONMENT - "
-              "Native Client's sandbox will be unreliable!\n");
-    options->skip_qualification = 1;
-  }
-
   if (!options->skip_qualification) {
     NaClErrorCode pq_error = NACL_FI_VAL("pq", NaClErrorCode,
                                          NaClRunSelQualificationTests());
@@ -860,8 +875,8 @@ int NaClSelLdrMain(int argc, char **argv) {
   }
   NACL_TEST_INJECTION(BeforeMainThreadLaunches, ());
   if (!NaClCreateMainThread(nap,
-                            argc - optind,
-                            argv + optind,
+                            options->app_argc,
+                            options->app_argv,
                             NaClEnvCleanserEnvironment(&env_cleanser))) {
     fprintf(stderr, "creating main thread failed\n");
     goto done;
