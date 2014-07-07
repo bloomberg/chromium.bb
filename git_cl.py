@@ -327,13 +327,9 @@ class Settings(object):
   def GetIsGitSvn(self):
     """Return true if this repo looks like it's using git-svn."""
     if self.is_git_svn is None:
-      # The presence of a svn-remote using the svn:// (or file://)
-      # protocol suggests that you're using svn. Remotes with the
-      # http* protocols suggest read-only svn access and are ignored.
-      code, result = RunGitWithCode(
-          ['config', '--local', '--get-regexp', r'^svn-remote\..*\.url'])
-      self.is_git_svn = (code == 0 and ("svn://" in result or
-                                        "file://" in result))
+      # If you have any "svn-remote.*" config keys, we think you're using svn.
+      self.is_git_svn = RunGitWithCode(
+          ['config', '--local', '--get-regexp', r'^svn-remote\.'])[0] == 0
     return self.is_git_svn
 
   def GetSVNBranch(self):
