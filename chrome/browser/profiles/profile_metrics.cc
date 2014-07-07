@@ -22,17 +22,6 @@ namespace {
 const int kMaximumReportedProfileCount = 5;
 const int kMaximumDaysOfDisuse = 4 * 7;  // Should be integral number of weeks.
 
-struct ProfileCounts {
-  size_t total;
-  size_t signedin;
-  size_t supervised;
-  size_t unused;
-  size_t gaia_icon;
-
-  ProfileCounts()
-      : total(0), signedin(0), supervised(0), unused(0), gaia_icon(0) {}
-};
-
 ProfileMetrics::ProfileType GetProfileType(
     const base::FilePath& profile_path) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
@@ -53,35 +42,6 @@ void UpdateReportedOSProfileStatistics(int active, int signedin) {
 #if defined(OS_WIN)
   GoogleUpdateSettings::UpdateProfileCounts(active, signedin);
 #endif
-}
-
-bool CountProfileInformation(ProfileManager* manager, ProfileCounts* counts) {
-  const ProfileInfoCache& info_cache = manager->GetProfileInfoCache();
-  size_t number_of_profiles = info_cache.GetNumberOfProfiles();
-  counts->total = number_of_profiles;
-
-  // Ignore other metrics if we have no profiles, e.g. in Chrome Frame tests.
-  if (!number_of_profiles)
-    return false;
-
-  // Maximum age for "active" profile is 4 weeks.
-  base::Time oldest = base::Time::Now() -
-      base::TimeDelta::FromDays(kMaximumDaysOfDisuse);
-
-  for (size_t i = 0; i < number_of_profiles; ++i) {
-    if (info_cache.GetProfileActiveTimeAtIndex(i) < oldest) {
-      counts->unused++;
-    } else {
-      if (info_cache.ProfileIsSupervisedAtIndex(i))
-        counts->supervised++;
-      if (!info_cache.GetUserNameOfProfileAtIndex(i).empty()) {
-        counts->signedin++;
-        if (info_cache.IsUsingGAIAPictureOfProfileAtIndex(i))
-          counts->gaia_icon++;
-      }
-    }
-  }
-  return true;
 }
 
 void LogLockedProfileInformation(ProfileManager* manager) {
@@ -142,6 +102,37 @@ enum ProfileAvatar {
   AVATAR_GAIA,              // 28
   NUM_PROFILE_AVATAR_METRICS
 };
+
+bool ProfileMetrics::CountProfileInformation(ProfileManager* manager,
+                                             ProfileCounts* counts) {
+  const ProfileInfoCache& info_cache = manager->GetProfileInfoCache();
+  size_t number_of_profiles = info_cache.GetNumberOfProfiles();
+  counts->total = number_of_profiles;
+
+  // Ignore other metrics if we have no profiles, e.g. in Chrome Frame tests.
+  if (!number_of_profiles)
+    return false;
+
+  // Maximum age for "active" profile is 4 weeks.
+  base::Time oldest = base::Time::Now() -
+      base::TimeDelta::FromDays(kMaximumDaysOfDisuse);
+
+  for (size_t i = 0; i < number_of_profiles; ++i) {
+    if (info_cache.GetProfileActiveTimeAtIndex(i) < oldest) {
+      counts->unused++;
+    } else {
+      if (info_cache.ProfileIsSupervisedAtIndex(i))
+        counts->supervised++;
+      if (!info_cache.GetUserNameOfProfileAtIndex(i).empty()) {
+        counts->signedin++;
+        if (info_cache.IsUsingGAIAPictureOfProfileAtIndex(i))
+          counts->gaia_icon++;
+      }
+    }
+  }
+  return true;
+}
+
 
 void ProfileMetrics::UpdateReportedProfilesStatistics(ProfileManager* manager) {
   ProfileCounts counts;

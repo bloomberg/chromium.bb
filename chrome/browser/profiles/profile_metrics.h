@@ -20,6 +20,17 @@ class FilePath;
 
 class ProfileMetrics {
  public:
+  struct ProfileCounts {
+    size_t total;
+    size_t signedin;
+    size_t supervised;
+    size_t unused;
+    size_t gaia_icon;
+
+    ProfileCounts()
+        : total(0), signedin(0), supervised(0), unused(0), gaia_icon(0) {}
+  };
+
   // Enum for counting the ways users were added.
   enum ProfileAdd {
     ADD_NEW_USER_ICON = 0,    // User adds new user from icon menu
@@ -145,6 +156,10 @@ class ProfileMetrics {
 #endif  // defined(OS_ANDROID)
 
   static void UpdateReportedProfilesStatistics(ProfileManager* manager);
+  // Count and return summary information about the profiles currently in the
+  // |manager|. This information is returned in the output variable |counts|.
+  static bool CountProfileInformation(ProfileManager* manager,
+                                      ProfileCounts* counts);
 
   static void LogNumberOfProfiles(ProfileManager* manager);
   static void LogProfileAddNewUser(ProfileAdd metric);
