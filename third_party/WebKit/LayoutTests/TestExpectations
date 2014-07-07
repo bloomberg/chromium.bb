@@ -1,3 +1,6 @@
+crbug.com/391036 compositing/squashing/remove-squashed-layer-plus-move.html [ NeedsRebaseline ]
+crbug.com/391036 virtual/softwarecompositing/squashing/remove-squashed-layer-plus-move.html [ NeedsRebaseline ]
+
 crbug.com/391391 [ XP ] http/tests/xmlhttprequest/access-control-basic-get-fail-non-simple.html [ Pass Failure ]
 
 crbug.com/391299 [ XP ] http/tests/xmlhttprequest/workers/access-control-basic-get-fail-non-simple.html [ Pass Failure ]

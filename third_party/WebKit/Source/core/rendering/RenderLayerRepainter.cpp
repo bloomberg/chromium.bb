@@ -77,7 +77,7 @@ void RenderLayerRepainter::repaintIncludingNonCompositingDescendants()
 
 void RenderLayerRepainter::repaintIncludingNonCompositingDescendantsInternal(const RenderLayerModelObject* repaintContainer)
 {
-    m_renderer.invalidatePaintUsingContainer(repaintContainer, m_renderer.boundsRectForPaintInvalidation(repaintContainer), InvalidationLayer);
+    m_renderer.invalidatePaintUsingContainer(repaintContainer, m_renderer.previousPaintInvalidationRect(), InvalidationLayer);
 
     // FIXME: Repaints can be issued during style recalc at present, via RenderLayerModelObject::styleWillChange. This happens in scenarios when
     // repaint is needed but not layout.

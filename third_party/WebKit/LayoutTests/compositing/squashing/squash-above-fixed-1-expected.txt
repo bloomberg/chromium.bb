@@ -48,10 +48,10 @@ CASE 2, scrolling y to 80, new layers will be squashed, so things repaint:
       "drawsContent": true,
       "repaintRects": [
         [0, 500, 200, 100],
-        [0, 400, 200, 100],
-        [0, 300, 200, 100],
         [0, 200, 200, 100],
-        [0, 100, 200, 100]
+        [0, 100, 200, 100],
+        [0, 100, 200, 100],
+        [0, 0, 200, 100]
       ],
       "children": [
         {
@@ -136,10 +136,10 @@ CASE 4, scrolling y to 170 new layers will be squashed, so things repaint:
       "drawsContent": true,
       "repaintRects": [
         [0, 600, 200, 100],
-        [0, 500, 200, 100],
-        [0, 400, 200, 100],
-        [0, 300, 200, 100],
-        [0, 200, 200, 100]
+        [0, 200, 200, 100],
+        [0, 200, 200, 100],
+        [0, 100, 200, 100],
+        [0, 0, 200, 100]
       ],
       "children": [
         {
