@@ -6,7 +6,6 @@
 
 from __future__ import print_function
 
-import collections
 import errno
 import logging
 import os
@@ -160,8 +159,9 @@ class SCMWrapper(object):
 
     return getattr(self, command)(options, args, file_list)
 
-  def GetActualRemoteURL(self):
+  def GetActualRemoteURL(self, options):
     """Attempt to determine the remote URL for this SCMWrapper."""
+    # Git
     if os.path.exists(os.path.join(self.checkout_path, '.git')):
       actual_remote_url = shlex.split(scm.GIT.Capture(
           ['config', '--local', '--get-regexp', r'remote.*.url'],
@@ -189,7 +189,7 @@ class SCMWrapper(object):
       # A checkout which doesn't exist can't be broken.
       return True
 
-    actual_remote_url = self.GetActualRemoteURL()
+    actual_remote_url = self.GetActualRemoteURL(options)
     if actual_remote_url:
       return (gclient_utils.SplitUrlRevision(actual_remote_url)[0].rstrip('/')
               == gclient_utils.SplitUrlRevision(self.url)[0].rstrip('/'))
@@ -230,139 +230,6 @@ class SCMWrapper(object):
       shutil.move(self.checkout_path, dest_path)
 
 
-_GitRefishBase = collections.namedtuple('GitRef', (
-    # The initial string that the parsed Refish came from
-    'source',
-    # Is this ref a branch?
-    'is_branch',
-    # The name of this ref when accessed through the local repository
-    'local_ref',
-    # The name of the remote that this refish resides on
-    'remote',
-    # The path of this refish on the remote (e.g., 'master')
-    'remote_ref',
-    # The remote-qualified path to this refish (e.g., 'origin/master')
-    'remote_refspec',
-    # If a branch, the expected name of the upstream branch that it should
-    # track; otherwise, 'None'
-    'upstream_branch',
-))
-
-
-class GitRefish(_GitRefishBase):
-  # Disable 'no __init__' warning | pylint: disable=W0232
-  """Implements refish parsing and properties.
-
-  This class is designed to concentrate and codify the assumptions made by
-  'gclient' code about refs and revisions.
-  """
-
-  _DEFAULT_REMOTE = 'origin'
-
-  _GIT_SHA1_RE = re.compile('[0-9a-f]{40}', re.IGNORECASE)
-  _GIT_SHA1_SHORT_RE = re.compile('[0-9a-f]{4,40}', re.IGNORECASE)
-
-  def __str__(self):
-    return self.source
-
-  @classmethod
-  def Parse(cls, ref, remote=None, other_remotes=None):
-    """Parses a ref into a 'GitRefish' instance.
-
-    Args:
-      ref: (str) The refish (branch, tag, hash, etc.) to parse
-      remote: (None/str) If supplied, the name of the primary remote. In
-          addtion to being recognized as a remote string, the primary remote
-          will also be used (as needed) when generating the remote refspec. If
-          omitted, the default remote name ('origin') will be used.
-      other_remotes: (None/iterable) If supplied, a list of strings to
-          recognize as remotes in addition to 'remote'.
-    """
-    assert ref == ref.strip()
-
-    # Use default set of remotes
-    remote = remote or cls._DEFAULT_REMOTE
-    remotes = {remote}
-    if other_remotes:
-      remotes.update(other_remotes)
-
-    # Treat 'ref' as a '/'-delimited set of items; analyze their contents
-    ref_split = local_ref = remote_ref = tuple(ref.split('/'))
-    is_branch = True
-    if len(ref_split) > 1:
-      if ref_split[0] == 'refs':
-        if len(ref_split) >= 3 and ref_split[1] == 'heads':
-          # refs/heads/foo/bar
-          #
-          # Local Ref:  foo/bar
-          # Remote Ref: foo/bar
-          local_ref = remote_ref = ref_split[2:]
-        elif len(ref_split) >= 4 and ref_split[1] == 'remotes':
-          # refs/remotes/<REMOTE>/foo/bar
-          # This is a bad assumption, and this logic can be improved, but it
-          # is consistent with traditional 'gclient' logic.
-          #
-          # Local Ref:  refs/remotes/<REMOTE>/foo/bar
-          # Remote:     <REMOTE>
-          # Remote Ref: foo/bar
-          remote = ref_split[2]
-          remote_ref = ref_split[3:]
-      elif len(ref_split) >= 2 and ref_split[0] in remotes:
-        # origin/master
-        #
-        # Local Ref:  refs/remotes/origin/master
-        # Remote Ref: master
-        remote = ref_split[0]
-        remote_ref = ref_split[1:]
-        local_ref = ('refs', 'remotes') + ref_split
-
-      # (Default) The refish has multiple paths. Assume at least that it's a
-      # branch name.
-      #
-      # foo/bar
-      # refs/foo/bar
-      #
-      # Local Ref:  foo/bar
-      # Remote ref: foo/bar
-    else:
-      # It could be a hash, a short-hash, or a tag
-      is_branch = False
-
-    # Determine how the ref should be referenced remotely
-    if is_branch:
-      # foo/bar/baz => origin/foo/bar/baz
-      remote_refspec = (remote,) + remote_ref
-    else:
-      # Refer to the hash/tag directly. This is actually not allowed in
-      # 'fetch', although it oftentimes works regardless.
-      #
-      # <HASH/TAG> => <HASH/TAG>
-      remote_refspec = (ref,)
-
-    # Calculate the upstream branch
-    if is_branch:
-      # Convert '/refs/heads/...' to 'refs/remotes/REMOTE/...'
-      if ref_split[:2] == ('refs', 'heads'):
-        upstream_branch = ('refs', 'remotes', remote) + ref_split[2:]
-      else:
-        upstream_branch = ref_split
-    else:
-      upstream_branch = None
-
-    def compose(ref_tuple):
-      return '/'.join(ref_tuple) if ref_tuple else ref_tuple
-
-    return cls(
-        source=ref,
-        is_branch=is_branch,
-        local_ref=compose(local_ref),
-        remote=remote,
-        remote_ref=compose(remote_ref),
-        remote_refspec=compose(remote_refspec),
-        upstream_branch=compose(upstream_branch),
-    )
-
-
 class GitWrapper(SCMWrapper):
   """Wrapper for Git"""
   name = 'git'
@@ -391,10 +258,6 @@ class GitWrapper(SCMWrapper):
       return result
     except OSError:
       return False
-
-  def ParseRefish(self, value, **kwargs):
-    kwargs.setdefault('remote', self.remote)
-    return GitRefish.Parse(value, **kwargs)
 
   def GetCheckoutRoot(self):
     return scm.GIT.GetCheckoutRoot(self.checkout_path)
@@ -430,7 +293,7 @@ class GitWrapper(SCMWrapper):
         cwd=self.checkout_path,
         filter_fn=GitDiffFilterer(self.relpath).Filter, print_func=self.Print)
 
-  def _FetchAndReset(self, refish, file_list, options):
+  def _FetchAndReset(self, revision, file_list, options):
     """Equivalent to git fetch; git reset."""
     quiet = []
     if not options.verbose:
@@ -438,7 +301,7 @@ class GitWrapper(SCMWrapper):
     self._UpdateBranchHeads(options, fetch=False)
 
     self._Fetch(options, prune=True, quiet=options.verbose)
-    self._Run(['reset', '--hard', refish.local_ref] + quiet, options)
+    self._Run(['reset', '--hard', revision] + quiet, options)
     if file_list is not None:
       files = self._Capture(['ls-files']).splitlines()
       file_list.extend([os.path.join(self.checkout_path, f) for f in files])
@@ -466,7 +329,7 @@ class GitWrapper(SCMWrapper):
     self._CheckMinVersion("1.6.6")
 
     # If a dependency is not pinned, track the default remote branch.
-    default_rev = 'refs/remotes/%s/master' % (self.remote,)
+    default_rev = 'refs/remotes/%s/master' % self.remote
     url, deps_revision = gclient_utils.SplitUrlRevision(self.url)
     rev_str = ""
     revision = deps_revision
@@ -503,7 +366,16 @@ class GitWrapper(SCMWrapper):
       verbose = ['--verbose']
       printed_path = True
 
-    refish = self.ParseRefish(revision)
+    if revision.startswith('refs/'):
+      rev_type = "branch"
+    elif revision.startswith(self.remote + '/'):
+      # Rewrite remote refs to their local equivalents.
+      revision = 'refs/remotes/' + revision
+      rev_type = "branch"
+    else:
+      # hash is also a tag, only make a distinction at checkout
+      rev_type = "hash"
+
     mirror = self._GetMirror(url, options)
     if mirror:
       url = mirror.mirror_path
@@ -514,10 +386,10 @@ class GitWrapper(SCMWrapper):
       if mirror:
         self._UpdateMirror(mirror, options)
       try:
-        self._Clone(refish.local_ref, url, options)
+        self._Clone(revision, url, options)
       except subprocess2.CalledProcessError:
         self._DeleteOrMove(options.force)
-        self._Clone(refish.local_ref, url, options)
+        self._Clone(revision, url, options)
       if deps_revision and deps_revision.startswith('branch-heads/'):
         deps_branch = deps_revision.replace('branch-heads/', '')
         self._Capture(['branch', deps_branch, deps_revision])
@@ -558,7 +430,7 @@ class GitWrapper(SCMWrapper):
       self._CheckClean(rev_str)
       # Switch over to the new upstream
       self._Run(['remote', 'set-url', self.remote, url], options)
-      self._FetchAndReset(refish, file_list, options)
+      self._FetchAndReset(revision, file_list, options)
       return_early = True
 
     if return_early:
@@ -601,8 +473,7 @@ class GitWrapper(SCMWrapper):
       else:
         raise gclient_utils.Error('Invalid Upstream: %s' % upstream_branch)
 
-    if not scm.GIT.IsValidRevision(self.checkout_path, refish.local_ref,
-                                   sha_only=True):
+    if not scm.GIT.IsValidRevision(self.checkout_path, revision, sha_only=True):
       # Update the remotes first so we have all the refs.
       remote_output = scm.GIT.Capture(['remote'] + verbose + ['update'],
               cwd=self.checkout_path)
@@ -622,7 +493,7 @@ class GitWrapper(SCMWrapper):
       # case 0
       self._CheckClean(rev_str)
       self._CheckDetachedHead(rev_str, options)
-      if self._Capture(['rev-list', '-n', '1', 'HEAD']) == refish.local_ref:
+      if self._Capture(['rev-list', '-n', '1', 'HEAD']) == revision:
         self.Print('Up-to-date; skipping checkout.')
       else:
         # 'git checkout' may need to overwrite existing untracked files. Allow
@@ -640,8 +511,8 @@ class GitWrapper(SCMWrapper):
       if scm.GIT.IsGitSvn(self.checkout_path) and upstream_branch is not None:
         # Our git-svn branch (upstream_branch) is our upstream
         self._AttemptRebase(upstream_branch, files, options,
-                            newbase=refish.local_ref,
-                            printed_path=printed_path, merge=options.merge)
+                            newbase=revision, printed_path=printed_path,
+                            merge=options.merge)
         printed_path = True
       else:
         # Can't find a merge-base since we don't know our upstream. That makes
@@ -649,19 +520,19 @@ class GitWrapper(SCMWrapper):
         # assume origin is our upstream since that's what the old behavior was.
         upstream_branch = self.remote
         if options.revision or deps_revision:
-          upstream_branch = refish.local_ref
+          upstream_branch = revision
         self._AttemptRebase(upstream_branch, files, options,
                             printed_path=printed_path, merge=options.merge)
         printed_path = True
-    elif not refish.is_branch:
+    elif rev_type == 'hash':
       # case 2
       self._AttemptRebase(upstream_branch, files, options,
-                          newbase=refish.local_ref, printed_path=printed_path,
+                          newbase=revision, printed_path=printed_path,
                           merge=options.merge)
       printed_path = True
-    elif refish.upstream_branch != upstream_branch:
+    elif revision.replace('heads', 'remotes/' + self.remote) != upstream_branch:
       # case 4
-      new_base = refish.upstream_branch
+      new_base = revision.replace('heads', 'remotes/' + self.remote)
       if not printed_path:
         self.Print('_____ %s%s' % (self.relpath, rev_str), timestamp=False)
       switch_error = ("Switching upstream branch from %s to %s\n"
@@ -792,8 +663,9 @@ class GitWrapper(SCMWrapper):
     _, deps_revision = gclient_utils.SplitUrlRevision(self.url)
     if not deps_revision:
       deps_revision = default_rev
-    refish = self.ParseRefish(deps_revision)
-    deps_revision = self.GetUsableRev(refish.remote_refspec, options)
+    if deps_revision.startswith('refs/heads/'):
+      deps_revision = deps_revision.replace('refs/heads/', self.remote + '/')
+    deps_revision = self.GetUsableRev(deps_revision, options)
 
     if file_list is not None:
       files = self._Capture(['diff', deps_revision, '--name-only']).split()
@@ -970,16 +842,14 @@ class GitWrapper(SCMWrapper):
         self.Print('_____ removing non-empty tmp dir %s' % tmp_dir)
       gclient_utils.rmtree(tmp_dir)
     self._UpdateBranchHeads(options, fetch=True)
-
-    refish = self.ParseRefish(revision)
-    self._Checkout(options, refish.local_ref, quiet=True)
+    self._Checkout(options, revision.replace('refs/heads/', ''), quiet=True)
     if self._GetCurrentBranch() is None:
       # Squelch git's very verbose detached HEAD warning and use our own
       self.Print(
-        "Checked out %s to a detached HEAD. Before making any commits\n"
-        "in this repo, you should use 'git checkout <branch>' to switch to\n"
-        "an existing branch or use 'git checkout %s -b <branch>' to\n"
-        "create a new branch for your work." % (revision, self.remote))
+        ('Checked out %s to a detached HEAD. Before making any commits\n'
+         'in this repo, you should use \'git checkout <branch>\' to switch to\n'
+         'an existing branch or use \'git checkout %s -b <branch>\' to\n'
+         'create a new branch for your work.') % (revision, self.remote))
 
   def _AskForData(self, prompt, options):
     if options.jobs > 1:

@@ -48,7 +48,7 @@ class SCMMock(object):
   def DoesRemoteURLMatch(self, _):
     return True
 
-  def GetActualRemoteURL(self):
+  def GetActualRemoteURL(self, _):
     return self.url
 
 

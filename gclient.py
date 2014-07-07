@@ -1112,7 +1112,7 @@ solutions = [
       if dep.managed and dep.url:
         scm = gclient_scm.CreateSCM(
             dep.url, self.root_dir, dep.name, self.outbuf)
-        actual_url = scm.GetActualRemoteURL()
+        actual_url = scm.GetActualRemoteURL(self._options)
         if actual_url and not scm.DoesRemoteURLMatch(self._options):
           raise gclient_utils.Error('''
 Your .gclient file seems to be broken. The requested URL is different from what
