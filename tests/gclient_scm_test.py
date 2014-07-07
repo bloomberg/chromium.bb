@@ -1278,7 +1278,6 @@ class ManagedGitWrapperTestCaseMox(BaseTestCase):
                                 cwd=self.base_path).AndRaise(error)
     gclient_scm.GitWrapper._Fetch(options)
     gclient_scm.scm.GIT.Capture(['svn', 'fetch'], cwd=self.base_path)
-    gclient_scm.GitWrapper._Fetch(options)
 
     self.mox.StubOutWithMock(gclient_scm.scm.GIT, 'IsGitSvn', True)
     gclient_scm.scm.GIT.IsGitSvn(cwd=self.base_path).MultipleTimes(
@@ -1289,6 +1288,8 @@ class ManagedGitWrapperTestCaseMox(BaseTestCase):
         ).AndReturn(True)
     gclient_scm.scm.GIT.IsValidRevision(cwd=self.base_path, rev=too_big
         ).MultipleTimes(2).AndReturn(False)
+    # pylint: disable=E1120
+    gclient_scm.GitWrapper._Fetch(options)
 
     gclient_scm.os.path.isdir(self.base_path).AndReturn(False)
     gclient_scm.os.path.isdir(self.base_path).MultipleTimes().AndReturn(True)
@@ -1578,6 +1579,143 @@ class UnmanagedGitWrapperTestCase(BaseGitWrapperTestCase):
     self.assertEquals(scm.revinfo(options, (), None),
                       '069c602044c5388d2d15c3f875b057c852003458')
     self.checkstdout('________ unmanaged solution; skipping .\n')
+
+
+class GitRefishTestCase(unittest.TestCase):
+
+  @staticmethod
+  def parse(revision, **kwargs):
+    kwargs.setdefault('remote', 'origin')
+    kwargs.setdefault('other_remotes', ('server', 'backup'))
+    return gclient_scm.GitRefish.Parse(revision, **kwargs)
+
+  def testParse(self):
+    LONG_HASH = '0c745b5ff533cf50a8731e168908644a9d9be4cf'
+    SHORT_HASH = '0c745b5'
+    TARGETS = (
+      (
+        'refs/heads/master',
+        gclient_scm.GitRefish(
+            source='refs/heads/master',
+            is_branch=True,
+            local_ref='master',
+            remote='origin',
+            remote_ref='master',
+            remote_refspec='origin/master',
+            upstream_branch='refs/remotes/origin/master',
+        ),
+      ),
+
+      (
+        'refs/special/magic',
+        gclient_scm.GitRefish(
+            source='refs/special/magic',
+            is_branch=True,
+            local_ref='refs/special/magic',
+            remote='origin',
+            remote_ref='refs/special/magic',
+            remote_refspec='origin/refs/special/magic',
+            upstream_branch='refs/special/magic',
+        )
+      ),
+
+      (
+        'origin/foo/bar',
+        gclient_scm.GitRefish(
+            source='origin/foo/bar',
+            is_branch=True,
+            local_ref='refs/remotes/origin/foo/bar',
+            remote='origin',
+            remote_ref='foo/bar',
+            remote_refspec='origin/foo/bar',
+            upstream_branch='origin/foo/bar',
+        )
+      ),
+
+      (
+        'server/foo/bar',
+        gclient_scm.GitRefish(
+            source='server/foo/bar',
+            is_branch=True,
+            local_ref='refs/remotes/server/foo/bar',
+            remote='server',
+            remote_ref='foo/bar',
+            remote_refspec='server/foo/bar',
+            upstream_branch='server/foo/bar',
+        ),
+      ),
+
+      (
+        'refs/remotes/foo/bar/baz',
+        gclient_scm.GitRefish(
+            source='refs/remotes/foo/bar/baz',
+            is_branch=True,
+            local_ref='refs/remotes/foo/bar/baz',
+            remote='foo',
+            remote_ref='bar/baz',
+            remote_refspec='foo/bar/baz',
+            upstream_branch='refs/remotes/foo/bar/baz',
+        )
+      ),
+
+      (
+        'foo/bar',
+        gclient_scm.GitRefish(
+            source='foo/bar',
+            is_branch=True,
+            local_ref='foo/bar',
+            remote='origin',
+            remote_ref='foo/bar',
+            remote_refspec='origin/foo/bar',
+            upstream_branch='foo/bar',
+        ),
+      ),
+
+      (
+        LONG_HASH,
+        gclient_scm.GitRefish(
+            source=LONG_HASH,
+            is_branch=False,
+            local_ref=LONG_HASH,
+            remote='origin',
+            remote_ref=LONG_HASH,
+            remote_refspec=LONG_HASH,
+            upstream_branch=None,
+        ),
+      ),
+
+      # Short hash (consider it a hash)
+      (
+        SHORT_HASH,
+        gclient_scm.GitRefish(
+            source=SHORT_HASH,
+            is_branch=False,
+            local_ref=SHORT_HASH,
+            remote='origin',
+            remote_ref=SHORT_HASH,
+            remote_refspec=SHORT_HASH,
+            upstream_branch=None,
+        ),
+      ),
+
+      # Unqualified branches are currently parsed as hash/tag
+      (
+        'master',
+        gclient_scm.GitRefish(
+            source='master',
+            is_branch=False,
+            local_ref='master',
+            remote='origin',
+            remote_ref='master',
+            remote_refspec='master',
+            upstream_branch=None,
+        )
+      ),
+    )
+
+    for value, refish in TARGETS:
+      parsed_refish = self.parse(value)
+      self.assertEqual(parsed_refish, refish)
 
 
 if __name__ == '__main__':
