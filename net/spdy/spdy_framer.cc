@@ -2353,7 +2353,6 @@ SpdySerializedFrame* SpdyFramer::SerializeSynStream(
     const size_t payload_len =
         GetSerializedLength(protocol_version(),
                             &(syn_stream.name_value_block()));
-    // SPDY 4 reports this compression as a SYN_STREAM compression.
     debug_visitor_->OnSendCompressedFrame(syn_stream.stream_id(),
                                           SYN_STREAM,
                                           payload_len,
@@ -2626,8 +2625,10 @@ SpdySerializedFrame* SpdyFramer::SerializeHeaders(
   }
 
   if (debug_visitor_) {
-    const size_t payload_len = protocol_version() > SPDY3 ?
-        hpack_encoding.size() :
+    // SPDY4 uses HPACK for header compression. However, continue to
+    // use GetSerializedLength() for an apples-to-apples comparision of
+    // compression performance between HPACK and SPDY w/ deflate.
+    const size_t payload_len =
         GetSerializedLength(protocol_version(),
                             &(headers.name_value_block()));
     debug_visitor_->OnSendCompressedFrame(headers.stream_id(),
@@ -2701,8 +2702,16 @@ SpdyFrame* SpdyFramer::SerializePushPromise(
                                PUSH_PROMISE);
 
   if (debug_visitor_) {
+    // SPDY4 uses HPACK for header compression. However, continue to
+    // use GetSerializedLength() for an apples-to-apples comparision of
+    // compression performance between HPACK and SPDY w/ deflate.
+    const size_t payload_len =
+        GetSerializedLength(protocol_version(),
+                            &(push_promise.name_value_block()));
     debug_visitor_->OnSendCompressedFrame(push_promise.stream_id(),
-        PUSH_PROMISE, hpack_encoding.size(), builder.length());
+                                          PUSH_PROMISE,
+                                          payload_len,
+                                          builder.length());
   }
 
   return builder.take();
@@ -2737,13 +2746,6 @@ SpdyFrame* SpdyFramer::SerializeContinuation(
   DCHECK_EQ(GetContinuationMinimumSize(), builder.length());
 
   builder.WriteBytes(&hpack_encoding[0], hpack_encoding.size());
-
-  if (debug_visitor_) {
-    const size_t payload_len = hpack_encoding.size();
-    debug_visitor_->OnSendCompressedFrame(continuation.stream_id(),
-        CONTINUATION, payload_len, builder.length());
-  }
-
   return builder.take();
 }
 

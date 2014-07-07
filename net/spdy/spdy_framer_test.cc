@@ -4875,7 +4875,6 @@ TEST_P(SpdyFramerTest, ContinuationFrameFlags) {
     EXPECT_CALL(visitor, OnHeaders(42, 0, false));
     EXPECT_CALL(visitor, OnControlFrameHeaderData(42, _, _))
           .WillRepeatedly(testing::Return(true));
-    EXPECT_CALL(debug_visitor, OnSendCompressedFrame(42, CONTINUATION, _, _));
 
     SpdyHeadersIR headers_ir(42);
     headers_ir.SetHeader("foo", "bar");

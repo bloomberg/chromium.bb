@@ -2066,7 +2066,7 @@ void SpdySession::OnSendCompressedFrame(
     SpdyFrameType type,
     size_t payload_len,
     size_t frame_len) {
-  if (type != SYN_STREAM)
+  if (type != SYN_STREAM && type != HEADERS)
     return;
 
   DCHECK(buffered_spdy_framer_.get());

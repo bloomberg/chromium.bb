@@ -8,6 +8,7 @@
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
+#include "base/test/statistics_delta_reader.h"
 #include "net/base/io_buffer.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_log_unittest.h"
@@ -1754,6 +1755,70 @@ TEST_P(SpdySessionTest, NetLogOnSessionEOF) {
   } else {
     ADD_FAILURE();
   }
+}
+
+TEST_P(SpdySessionTest, SynCompressionHistograms) {
+  session_deps_.enable_compression = true;
+
+  scoped_ptr<SpdyFrame> req(
+      spdy_util_.ConstructSpdyGet(NULL, 0, true, 1, MEDIUM, true));
+  MockWrite writes[] = {
+    CreateMockWrite(*req, 0),
+  };
+  MockRead reads[] = {
+    MockRead(ASYNC, 0, 1)  // EOF
+  };
+  DeterministicSocketData data(reads, arraysize(reads),
+                               writes, arraysize(writes));
+  MockConnect connect_data(SYNCHRONOUS, OK);
+  data.set_connect_data(connect_data);
+  session_deps_.deterministic_socket_factory->AddSocketDataProvider(&data);
+
+  CreateDeterministicNetworkSession();
+  base::WeakPtr<SpdySession> session =
+      CreateInsecureSpdySession(http_session_, key_, BoundNetLog());
+
+  GURL url(kDefaultURL);
+  base::WeakPtr<SpdyStream> spdy_stream =
+      CreateStreamSynchronously(SPDY_REQUEST_RESPONSE_STREAM,
+                                session, url, MEDIUM, BoundNetLog());
+  test::StreamDelegateDoNothing delegate(spdy_stream);
+  spdy_stream->SetDelegate(&delegate);
+
+  scoped_ptr<SpdyHeaderBlock> headers(
+      spdy_util_.ConstructGetHeaderBlock(url.spec()));
+  spdy_stream->SendRequestHeaders(headers.Pass(), NO_MORE_DATA_TO_SEND);
+  EXPECT_TRUE(spdy_stream->HasUrlFromHeaders());
+
+  // Write request headers & capture resulting histogram update.
+  base::StatisticsDeltaReader statistics_delta_reader;
+  data.RunFor(1);
+  scoped_ptr<base::HistogramSamples> samples(
+    statistics_delta_reader.GetHistogramSamplesSinceCreation(
+        "Net.SpdySynStreamCompressionPercentage"));
+
+  // Regression test of compression performance under the request fixture.
+  switch (spdy_util_.spdy_version()) {
+    case SPDY2:
+      EXPECT_EQ(samples->GetCount(0), 1);
+      break;
+    case SPDY3:
+      EXPECT_EQ(samples->GetCount(30), 1);
+      break;
+    case SPDY4:
+      EXPECT_EQ(samples->GetCount(82), 1);
+      break;
+    case SPDY5:
+      EXPECT_EQ(samples->GetCount(82), 1);
+      break;
+    default:
+      NOTREACHED();
+  }
+
+  // Read and process EOF.
+  data.RunFor(1);
+  base::MessageLoop::current()->RunUntilIdle();
+  EXPECT_TRUE(session == NULL);
 }
 
 // Queue up a low-priority SYN_STREAM followed by a high-priority
