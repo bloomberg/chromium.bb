@@ -100,8 +100,8 @@ class DeleteAfterRebootHelperTest : public testing::Test {
 
 TEST_F(DeleteAfterRebootHelperTest, TestStringListToMultiSZConversions) {
   struct StringTest {
-    wchar_t* test_name;
-    wchar_t* str;
+    const wchar_t* test_name;
+    const wchar_t* str;
     DWORD length;
     size_t count;
   } tests[] = {
@@ -113,26 +113,29 @@ TEST_F(DeleteAfterRebootHelperTest, TestStringListToMultiSZConversions) {
   for (int i = 0; i < arraysize(tests); i++) {
     std::vector<PendingMove> string_list;
     EXPECT_TRUE(SUCCEEDED(
-        MultiSZBytesToStringArray(reinterpret_cast<char*>(tests[i].str),
-                                  tests[i].length, &string_list)))
+        MultiSZBytesToStringArray(reinterpret_cast<const char*>(tests[i].str),
+                                  tests[i].length,
+                                  &string_list)))
         << tests[i].test_name;
     EXPECT_EQ(tests[i].count, string_list.size()) << tests[i].test_name;
     std::vector<char> buffer;
     buffer.resize(WStringPairListSize(string_list));
     StringArrayToMultiSZBytes(string_list, &buffer);
-    EXPECT_TRUE(CompareBuffers(&buffer[0],
-                reinterpret_cast<char*>(tests[i].str),
-                tests[i].length)) << tests[i].test_name;
+    EXPECT_TRUE(CompareBuffers(const_cast<const char*>(&buffer[0]),
+                               reinterpret_cast<const char*>(tests[i].str),
+                               tests[i].length))
+        << tests[i].test_name;
   }
 
-  StringTest failures[] =
-    { L"malformed", reinterpret_cast<wchar_t*>("oddnumb\0\0"), 9, 1 };
+  StringTest failures[] = {
+      L"malformed", reinterpret_cast<const wchar_t*>("oddnumb\0\0"), 9, 1};
 
   for (int i = 0; i < arraysize(failures); i++) {
     std::vector<PendingMove> string_list;
-    EXPECT_FALSE(SUCCEEDED(
-        MultiSZBytesToStringArray(reinterpret_cast<char*>(failures[i].str),
-                                  failures[i].length, &string_list)))
+    EXPECT_FALSE(SUCCEEDED(MultiSZBytesToStringArray(
+        reinterpret_cast<const char*>(failures[i].str),
+        failures[i].length,
+        &string_list)))
         << failures[i].test_name;
   }
 }
