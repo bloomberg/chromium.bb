@@ -18,11 +18,9 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/platform_thread.h"
-#include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/google/google_brand.h"
-#include "chrome/browser/memory_details.h"
 #include "chrome/browser/metrics/chrome_stability_metrics_provider.h"
 #include "chrome/browser/metrics/extensions_metrics_provider.h"
 #include "chrome/browser/metrics/gpu_metrics_provider.h"
@@ -92,8 +90,12 @@ metrics::SystemProfileProto::Channel AsProtobufChannel(
 // Will run the provided task after finished.
 class MetricsMemoryDetails : public MemoryDetails {
  public:
-  explicit MetricsMemoryDetails(const base::Closure& callback)
-      : callback_(callback) {}
+  MetricsMemoryDetails(
+      const base::Closure& callback,
+      MemoryGrowthTracker* memory_growth_tracker)
+      : callback_(callback) {
+    SetMemoryGrowthTracker(memory_growth_tracker);
+  }
 
   virtual void OnDetailsAvailable() OVERRIDE {
     base::MessageLoop::current()->PostTask(FROM_HERE, callback_);
@@ -238,7 +240,7 @@ void ChromeMetricsServiceClient::CollectFinalMetrics(
                  weak_ptr_factory_.GetWeakPtr());
 
   scoped_refptr<MetricsMemoryDetails> details(
-      new MetricsMemoryDetails(callback));
+      new MetricsMemoryDetails(callback, &memory_growth_tracker_));
   details->StartFetch(MemoryDetails::UPDATE_USER_METRICS);
 
   // Collect WebCore cache information to put into a histogram.

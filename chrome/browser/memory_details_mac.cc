@@ -49,7 +49,8 @@ enum BrowserType {
 
 
 MemoryDetails::MemoryDetails()
-    : user_metrics_mode_(UPDATE_USER_METRICS) {
+    : user_metrics_mode_(UPDATE_USER_METRICS),
+      memory_growth_tracker_(NULL) {
   const std::string google_browser_name =
       l10n_util::GetStringUTF8(IDS_PRODUCT_NAME);
   // (Human and process) names of browsers; should match the ordering for

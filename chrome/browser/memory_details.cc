@@ -110,6 +110,41 @@ ProcessData& ProcessData::operator=(const ProcessData& rhs) {
   return *this;
 }
 
+MemoryGrowthTracker::MemoryGrowthTracker() {}
+
+MemoryGrowthTracker::~MemoryGrowthTracker() {}
+
+bool MemoryGrowthTracker::UpdateSample(
+    base::ProcessId pid,
+    int sample,
+    int* diff) {
+  // |sample| is memory usage in kB.
+  const base::TimeTicks current_time = base::TimeTicks::Now();
+  std::map<base::ProcessId, int>::iterator found_size = memory_sizes_.find(pid);
+  if (found_size != memory_sizes_.end()) {
+    const int last_size = found_size->second;
+    std::map<base::ProcessId, base::TimeTicks>::iterator found_time =
+        times_.find(pid);
+    const base::TimeTicks last_time = found_time->second;
+    if (last_time < (current_time - base::TimeDelta::FromMinutes(30))) {
+      // Note that it is undefined how division of a negative integer gets
+      // rounded. |*diff| may have a difference of 1 from the correct number
+      // if |sample| < |last_size|. We ignore it as 1 is small enough.
+      *diff = ((sample - last_size) * 30 /
+               (current_time - last_time).InMinutes());
+      found_size->second = sample;
+      found_time->second = current_time;
+      return true;
+    }
+    // Skip if a last record is found less than 30 minutes ago.
+  } else {
+    // Not reporting if it's the first record for |pid|.
+    times_[pid] = current_time;
+    memory_sizes_[pid] = sample;
+  }
+  return false;
+}
+
 // About threading:
 //
 // This operation will hit no fewer than 3 threads.
@@ -171,6 +206,11 @@ std::string MemoryDetails::ToLogString() {
     log += "\n";
   }
   return log;
+}
+
+void MemoryDetails::SetMemoryGrowthTracker(
+    MemoryGrowthTracker* memory_growth_tracker) {
+  memory_growth_tracker_ = memory_growth_tracker;
 }
 
 void MemoryDetails::CollectChildInfoOnIOThread() {
@@ -400,6 +440,15 @@ void MemoryDetails::UpdateHistograms() {
           default:
             // TODO(erikkay): Should we bother splitting out the other subtypes?
             UMA_HISTOGRAM_MEMORY_KB("Memory.Renderer", sample);
+            int diff;
+            if (memory_growth_tracker_ &&
+                memory_growth_tracker_->UpdateSample(
+                    browser.processes[index].pid, sample, &diff)) {
+              if (diff < 0)
+                UMA_HISTOGRAM_MEMORY_KB("Memory.RendererShrinkIn30Min", -diff);
+              else
+                UMA_HISTOGRAM_MEMORY_KB("Memory.RendererGrowthIn30Min", diff);
+            }
             renderer_count++;
             continue;
         }

@@ -5,11 +5,14 @@
 #ifndef CHROME_BROWSER_MEMORY_DETAILS_H_
 #define CHROME_BROWSER_MEMORY_DETAILS_H_
 
+#include <map>
 #include <vector>
 
 #include "base/memory/ref_counted.h"
+#include "base/process/process_handle.h"
 #include "base/process/process_metrics.h"
 #include "base/strings/string16.h"
+#include "base/time/time.h"
 #include "chrome/browser/site_details.h"
 #include "content/public/common/process_type.h"
 
@@ -82,6 +85,32 @@ struct ProcessData {
   BrowserContextSiteDataMap site_data;
 };
 
+// MemoryGrowthTracker tracks latest metrics about record time and memory usage
+// at that time per process.
+class MemoryGrowthTracker {
+ public:
+  MemoryGrowthTracker();
+  ~MemoryGrowthTracker();
+
+  // If 30 minutes have passed since last UMA record, UpdateSample() computes
+  // a difference between current memory usage |sample| of process |pid| and
+  // stored memory usage at the time of last UMA record. Then, it updates the
+  // stored memory usage to |sample|, stores the difference in |diff| and
+  // returns true.
+  // If no memory usage of |pid| has not been recorded so far or 30 minutes
+  // have not passed since last record, it just returns false.
+  // |sample| is memory usage in kB.
+  bool UpdateSample(base::ProcessId pid, int sample, int* diff);
+
+ private:
+  // Latest metrics about record time and memory usage at that time per process.
+  // The second values of |memory_sizes_| are in kB.
+  std::map<base::ProcessId, base::TimeTicks> times_;
+  std::map<base::ProcessId, int> memory_sizes_;
+
+  DISALLOW_COPY_AND_ASSIGN(MemoryGrowthTracker);
+};
+
 #if defined(OS_MACOSX)
 class ProcessInfoSnapshot;
 #endif
@@ -142,6 +171,9 @@ class MemoryDetails : public base::RefCountedThreadSafe<MemoryDetails> {
 
   virtual ~MemoryDetails();
 
+  // Set MemoryGrowthTracker into MemoryDetails.
+  void SetMemoryGrowthTracker(MemoryGrowthTracker* memory_growth_tracker);
+
  private:
   // Collect child process information on the IO thread.  This is needed because
   // information about some child process types (i.e. plugins) can only be taken
@@ -185,6 +217,12 @@ class MemoryDetails : public base::RefCountedThreadSafe<MemoryDetails> {
   std::vector<ProcessData> process_data_;
 
   UserMetricsMode user_metrics_mode_;
+
+  // A pointer to MemoryGrowthTracker which is contained in a longer-lived
+  // owner of MemoryDetails, for example, ChromeMetricsServiceClient.
+  // The pointer is NULL by default and set by SetMemoryGrowthTracker().
+  // If it is NULL, nothing is tracked.
+  MemoryGrowthTracker* memory_growth_tracker_;
 
 #if defined(OS_CHROMEOS)
   base::SwapInfo swap_info_;

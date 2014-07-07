@@ -12,6 +12,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
+#include "chrome/browser/memory_details.h"
 #include "chrome/browser/metrics/network_stats_uploader.h"
 #include "chrome/browser/metrics/tracking_synchronizer_observer.h"
 #include "components/metrics/metrics_service_client.h"
@@ -164,6 +165,10 @@ class ChromeMetricsServiceClient
 
   // Callback that is called when initial metrics gathering is complete.
   base::Closure finished_gathering_initial_metrics_callback_;
+
+  // The MemoryGrowthTracker instance that tracks memory usage growth in
+  // MemoryDetails.
+  MemoryGrowthTracker memory_growth_tracker_;
 
   base::WeakPtrFactory<ChromeMetricsServiceClient> weak_ptr_factory_;
 

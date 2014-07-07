@@ -37,7 +37,8 @@ enum {
 } BrowserProcess;
 
 MemoryDetails::MemoryDetails()
-    : user_metrics_mode_(UPDATE_USER_METRICS) {
+    : user_metrics_mode_(UPDATE_USER_METRICS),
+      memory_growth_tracker_(NULL) {
   static const base::string16 google_browser_name =
       l10n_util::GetStringUTF16(IDS_PRODUCT_NAME);
   struct {
