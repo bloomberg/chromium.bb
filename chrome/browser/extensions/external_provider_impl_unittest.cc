@@ -19,6 +19,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_constants.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/notification_service.h"
@@ -59,6 +60,11 @@ class ExternalProviderImplTest : public ExtensionServiceTestBase {
         new chromeos::FakeUserManager);
 #endif
     InitializeExtensionServiceWithUpdater();
+
+    // Don't install default apps. Some of the default apps are downloaded from
+    // the webstore, ignoring the url we pass to kAppsGalleryUpdateURL, which
+    // would cause the external updates to never finish install.
+    profile_->GetPrefs()->SetString(prefs::kDefaultApps, "");
 
     ProviderCollection providers;
     extensions::ExternalProviderImpl::CreateExternalProviders(
