@@ -1,0 +1,83 @@
+<!--
+Copyright 2014 The Chromium Authors. All rights reserved.
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+-->
+
+<link rel="import" href="ct-builder-grid.html">
+
+<script>
+(function () {
+
+var kExampleFailures = [{
+    "testName": "plugins/gesture-events-scrolled.html",
+    "resultNodesByBuilder": {
+        "WebKit Win7 (dbg)": {
+            "expected": "PASS",
+            "is_unexpected": true,
+            "actual": "CRASH",
+            "time": 0.9
+        },
+        "WebKit Mac10.6 (dbg)": {
+            "expected": "PASS",
+            "is_unexpected": true,
+            "actual": "CRASH",
+            "has_stderr": true,
+            "time": 1.8
+        },
+        "WebKit Mac10.7": {
+            "expected": "PASS",
+            "is_unexpected": true,
+            "actual": "TEXT",
+            "has_stderr": true,
+            "time": 3.2
+        }
+    },
+    "oldestFailingRevision": 177164,
+    "newestPassingRevision": 177165
+}, {
+    "testName": "plugins/transformed-events.html",
+    "resultNodesByBuilder": {
+        "WebKit Win7 (dbg)": {
+            "expected": "PASS",
+            "is_unexpected": true,
+            "actual": "TEXT",
+            "time": 0.6
+        },
+        "WebKit Mac10.7": {
+            "expected": "PASS",
+            "is_unexpected": true,
+            "actual": "CRASH",
+            "has_stderr": true,
+            "time": 3.2
+        },
+    },
+    "oldestFailingRevision": 177164,
+    "newestPassingRevision": 177165
+}];
+
+module("ct-builder-grid");
+
+asyncTest("basic", 7, function() {
+  var grid = document.createElement('ct-builder-grid');
+  grid.failures = kExampleFailures;
+
+  Platform.endOfMicrotask(function() {
+    var rows = grid.shadowRoot.querySelectorAll('tbody tr');
+    equal(rows.length, 2);
+
+    var row1 = grid.shadowRoot.querySelector('tbody td.CRASH').parentNode;
+    equal(row1.children.length, 3);
+    equal(row1.children[1].querySelectorAll('ct-builder').length, 1);
+    equal(row1.children[2].querySelectorAll('ct-builder').length, 2);
+
+    var row2 = grid.shadowRoot.querySelector('tbody td.TEXT').parentNode;
+    equal(row2.children.length, 3);
+    equal(row2.children[1].querySelectorAll('ct-builder').length, 1);
+    equal(row2.children[2].querySelectorAll('ct-builder').length, 1);
+    start();
+  });
+});
+
+})()
+</script>

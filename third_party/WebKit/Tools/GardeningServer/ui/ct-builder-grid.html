@@ -1,0 +1,157 @@
+<!--
+Copyright 2014 The Chromium Authors. All rights reserved.
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+-->
+
+<link rel="import" href="ct-builder.html">
+
+<!-- Table of failure types, listing the failing builders for each type. -->
+<polymer-element name="ct-builder-grid" attributes="failures">
+  <template>
+    <style>
+      table {
+        border-collapse: collapse;
+        font-size: 11px;
+        table-layout: fixed;
+        width: 350px;
+      }
+
+      tbody tr {
+        border-top: 1px solid #eee;
+      }
+
+      tbody td:first-child {
+        width: 20%;
+      }
+
+      tbody td {
+        padding: 2px;
+        width: 40%;
+      }
+
+      tbody tr td:first-child {
+        vertical-align: top;
+      }
+
+      tr :first-child span {
+        padding: 0 2px;
+      }
+
+      .TIMEOUT span {
+        background-color: #fffc6c;
+      }
+
+      .TEXT span {
+        background-color: #e98080;
+      }
+
+      .CRASH span {
+        background-color: #ffc343;
+      }
+
+      .AUDIO span {
+        background-color: #bfdfff;
+      }
+
+      .IMAGE span {
+        background-color: #69f;
+      }
+
+      .IMAGE\+TEXT span {
+        background-color: #96f;
+      }
+
+      .MISSING span {
+        padding-left: 0px;
+      }
+
+      .BUILDING, .BUILDING ~ td {
+        opacity: 0.5;
+      }
+    </style>
+    <table>
+      <thead>
+        <tr>
+          <td>type</td>
+          <td>release</td>
+          <td>debug</td>
+        </tr>
+      </thead>
+      <tbody>
+        <template repeat="{{ type in resultTypes|keys }}">
+          <tr>
+            <td class="{{ type }}">
+              <span>{{ type }}</span>
+            </td>
+            <td>
+              <template repeat="{{ builder in resultTypes[type]|keys }}">
+                <template if="{{ !resultTypes[type][builder].debug }}">
+                  <ct-builder builderName="{{ builder }}"></ct-builder>
+                </template>
+              </template>
+            </td>
+            <td>
+              <template repeat="{{ builder in resultTypes[type]|keys }}">
+                <template if="{{ resultTypes[type][builder].debug }}">
+                  <ct-builder builderName="{{ builder }}"></ct-builder>
+                </template>
+              </template>
+            </td>
+          </tr>
+        </template>
+      </tbody>
+    </table>
+  </template>
+  <script>
+    Polymer({
+      failures: [],
+      resultTypes: {},
+
+      keys: function(obj) {
+        return Object.keys(obj);
+      },
+
+      failuresChanged: function() {
+        // Create a set of builders for each result type (e.g., text, crash).
+        this.resultTypes = {};
+        var passingRevisions = [];
+        this.failures.forEach(function(failure) {
+          passingRevisions.push(failure.newestPassingRevision);
+          var results = failure.resultNodesByBuilder;
+          Object.keys(results, (function(builderName) {
+            var result = results[builderName];
+            if (!result.is_unexpected)
+              return;
+
+            if (!Object.has(this.resultTypes, result.actual))
+              this.resultTypes[result.actual] = {};
+            this.resultTypes[result.actual][builderName] =
+                config.builders[builderName];
+          }).bind(this));
+        }, this);
+
+        // BUILDING builders should appear last.
+        var buildingType = this._getBuilding(passingRevisions);
+        if (!Object.isEmpty(buildingType))
+            this.resultTypes['BUILDING'] = buildingType;
+      },
+
+      _getBuilding: function(revisions) {
+        var building = {};
+        var builderNames = [];
+        revisions.unique().forEach(function(revision) {
+          builderNames.push.apply(builderNames,
+              Object.keys(model.buildersInFlightForRevision(revision + 1)));
+        });
+        builderNames.unique().forEach(function(builderName) {
+          if (!config.builders[builderName])
+            return;
+          building[builderName] =
+              {'debug': config.builders[builderName].debug};
+        });
+        return building;
+      },
+    });
+  </script>
+</polymer-element>

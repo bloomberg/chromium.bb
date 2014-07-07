@@ -4,6 +4,7 @@ Use of this source code is governed by a BSD-style license that can be
 found in the LICENSE file.
 -->
 
+<link rel="import" href="ct-builder-grid.html">
 <link rel="import" href="ct-commit-list.html">
 <link rel="import" href="ct-test-list.html">
 
@@ -20,7 +21,12 @@ found in the LICENSE file.
       paper-button {
         background: papayawhip;
       }
-    </style>
+
+      ct-builder-grid {
+        margin-right: 10px;
+      }
+     </style>
+    <ct-builder-grid failures="{{failures}}"></ct-builder-grid>
     <div style="flex: 1">
       <ct-test-list tests="{{failures|testNames}}"></ct-test-list>
       <ct-commit-list first="{{failures[0].newestPassingRevision + 1}}"

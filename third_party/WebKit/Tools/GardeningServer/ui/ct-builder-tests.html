@@ -1,0 +1,30 @@
+<!--
+Copyright 2014 The Chromium Authors. All rights reserved.
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+-->
+
+<link rel="import" href="ct-builder.html">
+
+<script>
+(function () {
+
+module("ct-builder");
+
+asyncTest("basic", 2, function() {
+  var builder = document.createElement('ct-builder');
+  builder.builderName = 'WebKit Linux (dbg)';
+
+  Platform.endOfMicrotask(function() {
+    var html = builder.shadowRoot.innerHTML;
+
+    var a = builder.shadowRoot.querySelector('a');
+    ok(a);
+    notEqual(a.href.indexOf('WebKit%20Linux%20(dbg)'), -1);
+
+    start();
+  });
+});
+
+})()
+</script>
