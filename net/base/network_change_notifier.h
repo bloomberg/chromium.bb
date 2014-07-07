@@ -5,10 +5,7 @@
 #ifndef NET_BASE_NETWORK_CHANGE_NOTIFIER_H_
 #define NET_BASE_NETWORK_CHANGE_NOTIFIER_H_
 
-#include <vector>
-
 #include "base/basictypes.h"
-#include "base/gtest_prod_util.h"
 #include "base/observer_list_threadsafe.h"
 #include "base/time/time.h"
 #include "net/base/net_export.h"
@@ -20,8 +17,6 @@ namespace net {
 struct DnsConfig;
 class HistogramWatcher;
 class NetworkChangeNotifierFactory;
-struct NetworkInterface;
-typedef std::vector<NetworkInterface> NetworkInterfaceList;
 class URLRequest;
 
 #if defined(OS_LINUX)
@@ -310,25 +305,14 @@ class NET_EXPORT NetworkChangeNotifier {
   // Stores |config| in NetworkState and notifies observers.
   static void SetDnsConfig(const DnsConfig& config);
 
-  // Infer connection type from |GetNetworkList|. If all network interfaces have
-  // the same type, return it, otherwise return CONNECTION_UNKNOWN.
-  static ConnectionType ConnectionTypeFromInterfaces();
-
  private:
   friend class HostResolverImplDnsTest;
   friend class NetworkChangeNotifierAndroidTest;
   friend class NetworkChangeNotifierLinuxTest;
   friend class NetworkChangeNotifierWinTest;
-  FRIEND_TEST_ALL_PREFIXES(NetworkChangeNotifierTest,
-                           InterfacesToConnectionType);
 
   class NetworkState;
   class NetworkChangeCalculator;
-
-  // Infer connection type from |interfaces|. If all network interfaces have
-  // the same type, return it, otherwise return CONNECTION_UNKNOWN.
-  static ConnectionType ConnectionTypeFromInterfaceList(
-      const NetworkInterfaceList& interfaces);
 
   void NotifyObserversOfIPAddressChangeImpl();
   void NotifyObserversOfConnectionTypeChangeImpl(ConnectionType type);
