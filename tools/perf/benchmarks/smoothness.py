@@ -41,6 +41,7 @@ class SmoothnessKeyMobileSites(benchmark.Benchmark):
   page_set = page_sets.KeyMobileSitesPageSet
 
 
+@benchmark.Disabled('android')  # crbug.com/350692
 class SmoothnessToughAnimationCases(benchmark.Benchmark):
   test = smoothness.Smoothness
   page_set = page_sets.ToughAnimationCasesPageSet
