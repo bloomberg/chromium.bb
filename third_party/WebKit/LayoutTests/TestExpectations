@@ -1261,3 +1261,6 @@ crbug.com/30536 [ Win7 ] http/tests/security/clipboard/clipboard-file-access.htm
 crbug.com/30536 [ Win7 ] http/tests/security/contentSecurityPolicy/report-uri.html [ Timeout Pass ]
 crbug.com/30536 [ Win7 ] http/tests/security/contentSecurityPolicy/report-only.html [ Failure Pass ]
 
+# Flaky on Mac and XP.
+crbug.com/390204 [ Mac XP Release ] inspector/console/console-viewport-selection.html [ Pass Failure ]
+crbug.com/390204 [ Mac XP Debug ] inspector/console/console-viewport-selection.html [ Pass Failure Slow ]
