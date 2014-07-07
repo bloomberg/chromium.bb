@@ -2586,7 +2586,7 @@ SpdySerializedFrame* SpdyFramer::SerializeHeaders(
           headers.name_value_block(), &hpack_encoding);
     }
     size += hpack_encoding.size();
-    if (size > GetControlFrameBufferMaxSize()) {
+    if (size > GetHeaderFragmentMaxSize()) {
       size += GetNumberRequiredContinuationFrames(size) *
               GetContinuationMinimumSize();
       flags &= ~HEADERS_FLAG_END_HEADERS;
@@ -2682,7 +2682,7 @@ SpdyFrame* SpdyFramer::SerializePushPromise(
         push_promise.name_value_block(), &hpack_encoding);
   }
   size += hpack_encoding.size();
-  if (size > GetControlFrameBufferMaxSize()) {
+  if (size > GetHeaderFragmentMaxSize()) {
     size += GetNumberRequiredContinuationFrames(size) *
             GetContinuationMinimumSize();
     flags &= ~PUSH_PROMISE_FLAG_END_PUSH_PROMISE;
@@ -2872,7 +2872,7 @@ size_t SpdyFramer::GetSerializedLength(const SpdyHeaderBlock& headers) {
 }
 
 size_t SpdyFramer::GetNumberRequiredContinuationFrames(size_t size) {
-  const size_t kMaxControlFrameSize = GetControlFrameBufferMaxSize();
+  const size_t kMaxControlFrameSize = GetHeaderFragmentMaxSize();
   DCHECK_GT(protocol_version(), SPDY3);
   DCHECK_GT(size, kMaxControlFrameSize);
   size_t overflow = size - kMaxControlFrameSize;
@@ -2883,7 +2883,7 @@ void SpdyFramer::WritePayloadWithContinuation(SpdyFrameBuilder* builder,
                                               const string& hpack_encoding,
                                               SpdyStreamId stream_id,
                                               SpdyFrameType type) {
-  const size_t kMaxControlFrameSize = GetControlFrameBufferMaxSize();
+  const size_t kMaxControlFrameSize = GetHeaderFragmentMaxSize();
 
     // In addition to the prefix, fixed_field_size includes the size of
     // any fields that come before the variable-length name/value block.

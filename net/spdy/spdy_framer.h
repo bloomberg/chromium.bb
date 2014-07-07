@@ -718,6 +718,12 @@ class NET_EXPORT_PRIVATE SpdyFramer {
     return (1<<14) - 1;
   }
 
+  // TODO(jgraettinger): For h2-13 interop testing coverage,
+  // fragment at smaller payload boundaries.
+  size_t GetHeaderFragmentMaxSize() const {
+    return GetControlFrameBufferMaxSize() >> 4;  // 1023 bytes.
+  }
+
   // The size of the control frame buffer.
   // Since this is only used for control frame headers, the maximum control
   // frame header size (SYN_STREAM) is sufficient; all remaining control

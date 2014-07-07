@@ -3197,7 +3197,7 @@ TEST_P(SpdyFramerTest, TooLargeHeadersFrameUsesContinuation) {
   EXPECT_TRUE(visitor.header_buffer_valid_);
   EXPECT_EQ(0, visitor.error_count_);
   EXPECT_EQ(1, visitor.headers_frame_count_);
-  EXPECT_EQ(1, visitor.continuation_count_);
+  EXPECT_EQ(16, visitor.continuation_count_);
   EXPECT_EQ(1, visitor.zero_length_control_frame_header_data_count_);
 }
 
@@ -3226,7 +3226,7 @@ TEST_P(SpdyFramerTest, TooLargePushPromiseFrameUsesContinuation) {
   EXPECT_TRUE(visitor.header_buffer_valid_);
   EXPECT_EQ(0, visitor.error_count_);
   EXPECT_EQ(1, visitor.push_promise_frame_count_);
-  EXPECT_EQ(1, visitor.continuation_count_);
+  EXPECT_EQ(16, visitor.continuation_count_);
   EXPECT_EQ(1, visitor.zero_length_control_frame_header_data_count_);
 }
 
