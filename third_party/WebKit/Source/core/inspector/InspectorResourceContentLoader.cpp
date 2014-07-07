@@ -107,11 +107,13 @@ void InspectorResourceContentLoader::start()
             urlsToFetch.add(resourceRequest.url().string());
             FetchRequest request(resourceRequest, FetchInitiatorTypeNames::internal);
             ResourcePtr<Resource> resource = document->fetcher()->fetchRawResource(request);
-            // Prevent garbage collection by holding a reference to this resource.
-            m_resources.append(resource.get());
-            ResourceClient* resourceClient = new ResourceClient(this);
-            m_pendingResourceClients.add(resourceClient);
-            resourceClient->waitForResource(resource.get());
+            if (resource) {
+                // Prevent garbage collection by holding a reference to this resource.
+                m_resources.append(resource.get());
+                ResourceClient* resourceClient = new ResourceClient(this);
+                m_pendingResourceClients.add(resourceClient);
+                resourceClient->waitForResource(resource.get());
+            }
         }
 
         Vector<CSSStyleSheet*> styleSheets;
@@ -126,6 +128,8 @@ void InspectorResourceContentLoader::start()
             urlsToFetch.add(url);
             FetchRequest request(ResourceRequest(url), FetchInitiatorTypeNames::internal);
             ResourcePtr<Resource> resource = document->fetcher()->fetchCSSStyleSheet(request);
+            if (!resource)
+                continue;
             // Prevent garbage collection by holding a reference to this resource.
             m_resources.append(resource.get());
             ResourceClient* resourceClient = new ResourceClient(this);
