@@ -207,8 +207,8 @@ class TestGitCl(TestCase):
     ] + cc_call + private_call + [
         ((['git', 'config', 'branch.master.base-url'],), ''),
         ((['git',
-           'config', '--local', '--get-regexp', '^svn-remote\\.'],),
-         (('', None), 0)),
+           'config', '--local', '--get-regexp', '^svn-remote\\..*\\.url'],),
+         (('svn-remote.mybranch.url svn://svn.chromium.org/chrome', None), 0)),
         ((['git', 'rev-parse', '--show-cdup'],), ''),
         ((['git', 'svn', 'info'],), ''),
         ((['git', 'config', 'rietveld.project'],), ''),
@@ -253,7 +253,7 @@ class TestGitCl(TestCase):
   def _dcommit_calls_1(cls):
     return [
       ((['git',
-         'config', '--local', '--get-regexp', '^svn-remote\\.'],),
+         'config', '--local', '--get-regexp', '^svn-remote\\..*\\.url'],),
        ((('svn-remote.svn.url svn://svn.chromium.org/chrome\n'
           'svn-remote.svn.fetch trunk/src:refs/remotes/origin/master'),
          None),
@@ -775,7 +775,8 @@ class TestGitCl(TestCase):
          ''),
         ((['git', 'config', 'rietveld.private',],),
          ''),
-        ((['git', 'config', '--local', '--get-regexp', '^svn-remote\\.'],),
+        ((['git', 'config', '--local', '--get-regexp',
+           '^svn-remote\\..*\\.url',],),
          ''),
         ((['git', 'config', 'rietveld.project',],),
          ''),
