@@ -106,7 +106,7 @@
         # This condition is for Windows 8 Metro mode support.  We need to
         # specify a particular desktop during widget creation in that case.
         # This is done using the desktop aura native widget framework.
-        ['use_ash==1 and OS=="win"', {
+        ['OS=="win"', {
           'dependencies': [
             '../aura/aura.gyp:aura',
           ],
