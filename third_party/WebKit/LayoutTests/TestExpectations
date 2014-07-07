@@ -1264,3 +1264,8 @@ crbug.com/30536 [ Win7 ] http/tests/security/contentSecurityPolicy/report-only.h
 # Flaky on Mac and XP.
 crbug.com/390204 [ Mac XP Release ] inspector/console/console-viewport-selection.html [ Pass Failure ]
 crbug.com/390204 [ Mac XP Debug ] inspector/console/console-viewport-selection.html [ Pass Failure Slow ]
+
+# Assertion failures seen only on Slow Leopard.
+crbug.com/374961 [ SnowLeopard Debug ] inspector/sources/debugger/frameworks-skip-step-in.html [ Crash ]
+crbug.com/374961 [ SnowLeopard Debug ] inspector/sources/debugger/frameworks-steppings.html [ Crash ]
+crbug.com/374961 [ SnowLeopard Debug ] inspector/sources/debugger/frameworks-with-async-callstack.html [ Crash ]
