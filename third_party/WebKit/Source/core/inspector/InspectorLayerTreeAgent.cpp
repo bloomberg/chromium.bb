@@ -303,12 +303,12 @@ void InspectorLayerTreeAgent::compositingReasons(ErrorString* errorString, const
         return;
     CompositingReasons reasonsBitmask = graphicsLayer->compositingReasons();
     reasonStrings = TypeBuilder::Array<String>::create();
-    for (size_t i = 0; i < WTF_ARRAY_LENGTH(compositingReasonStringMap); ++i) {
-        if (!(reasonsBitmask & compositingReasonStringMap[i].reason))
+    for (size_t i = 0; i < kNumberOfCompositingReasons; ++i) {
+        if (!(reasonsBitmask & kCompositingReasonStringMap[i].reason))
             continue;
-        reasonStrings->addItem(compositingReasonStringMap[i].shortName);
+        reasonStrings->addItem(kCompositingReasonStringMap[i].shortName);
 #ifndef _NDEBUG
-        reasonsBitmask &= ~compositingReasonStringMap[i].reason;
+        reasonsBitmask &= ~kCompositingReasonStringMap[i].reason;
 #endif
     }
     ASSERT(!reasonsBitmask);

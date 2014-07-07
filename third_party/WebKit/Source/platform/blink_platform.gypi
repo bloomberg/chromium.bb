@@ -557,6 +557,7 @@
       'graphics/ColorSpace.cpp',
       'graphics/ColorSpace.h',
       'graphics/CompositingReasons.h',
+      'graphics/CompositingReasons.cpp',
       'graphics/CrossfadeGeneratedImage.cpp',
       'graphics/CrossfadeGeneratedImage.h',
       'graphics/DecodingImageGenerator.cpp',

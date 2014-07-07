@@ -716,9 +716,9 @@ PassRefPtr<JSONObject> GraphicsLayer::layerTreeAsJSON(LayerTreeFlags flags, Rend
 
     if (flags & LayerTreeIncludesDebugInfo) {
         RefPtr<JSONArray> compositingReasonsJSON = adoptRef(new JSONArray);
-        for (size_t i = 0; i < WTF_ARRAY_LENGTH(compositingReasonStringMap); ++i) {
-            if (m_debugInfo.compositingReasons() & compositingReasonStringMap[i].reason)
-                compositingReasonsJSON->pushString(compositingReasonStringMap[i].description);
+        for (size_t i = 0; i < kNumberOfCompositingReasons; ++i) {
+            if (m_debugInfo.compositingReasons() & kCompositingReasonStringMap[i].reason)
+                compositingReasonsJSON->pushString(kCompositingReasonStringMap[i].description);
         }
         json->setArray("compositingReasons", compositingReasonsJSON);
     }

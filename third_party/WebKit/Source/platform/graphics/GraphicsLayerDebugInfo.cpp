@@ -72,10 +72,10 @@ void GraphicsLayerDebugInfo::appendLayoutRects(JSONObject* jsonObject) const
 void GraphicsLayerDebugInfo::appendCompositingReasons(JSONObject* jsonObject) const
 {
     RefPtr<JSONArray> jsonArray = JSONArray::create();
-    for (size_t i = 0; i < WTF_ARRAY_LENGTH(compositingReasonStringMap); ++i) {
-        if (!(m_compositingReasons & compositingReasonStringMap[i].reason))
+    for (size_t i = 0; i < kNumberOfCompositingReasons; ++i) {
+        if (!(m_compositingReasons & kCompositingReasonStringMap[i].reason))
             continue;
-        jsonArray->pushString(compositingReasonStringMap[i].description);
+        jsonArray->pushString(kCompositingReasonStringMap[i].description);
     }
     jsonObject->setArray("compositing_reasons", jsonArray);
 }
