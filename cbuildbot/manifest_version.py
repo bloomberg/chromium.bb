@@ -309,7 +309,10 @@ class BuilderStatus(object):
   STATUS_PASSED = 'pass'
   STATUS_INFLIGHT = 'inflight'
   STATUS_MISSING = 'missing' # i.e. never started.
-  COMPLETED_STATUSES = (STATUS_PASSED, STATUS_FAILED)
+  STATUS_ABORTED = 'aborted'
+  COMPLETED_STATUSES = (STATUS_PASSED, STATUS_FAILED, STATUS_ABORTED)
+  ALL_STATUSES = (STATUS_FAILED, STATUS_PASSED, STATUS_INFLIGHT,
+                  STATUS_MISSING, STATUS_ABORTED)
 
   MISSING_MESSAGE = ('Unknown run, it probably never started:'
                      ' %(builder)s, version %(version)s')
