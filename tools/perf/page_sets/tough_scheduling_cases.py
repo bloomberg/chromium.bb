@@ -296,6 +296,7 @@ class Page19(ToughSchedulingCasesPage):
   def RunSmoothness(self, action_runner):
     action_runner.Wait(3)
 
+
 class Page20(ToughSchedulingCasesPage):
 
   """ Why: Simple JS touch dragging """
@@ -315,6 +316,7 @@ class Page20(ToughSchedulingCasesPage):
         speed_in_pixels_per_second=150,
         distance=400)
     interaction.End()
+
 
 class EmptyTouchHandlerPage(ToughSchedulingCasesPage):
 
@@ -345,6 +347,20 @@ class EmptyTouchHandlerPage(ToughSchedulingCasesPage):
       action_runner.ScrollPage(use_touch=True, speed_in_pixels_per_second=400,
                                distance=2100)
       interaction.End()
+
+
+class SynchronizedScrollOffsetPage(ToughSchedulingCasesPage):
+
+  """Why: For measuring the latency of scroll-synchronized effects."""
+
+  def __init__(self, page_set):
+    super(SynchronizedScrollOffsetPage, self).__init__(
+      url='file://tough_scheduling_cases/sync_scroll_offset.html',
+      page_set=page_set)
+
+  def RunSmoothness(self, action_runner):
+    action_runner.RunAction(ScrollBounceAction())
+
 
 class ToughSchedulingCasesPageSet(page_set_module.PageSet):
 
@@ -443,3 +459,5 @@ class ToughSchedulingCasesPageSet(page_set_module.PageSet):
       slow_handler=True,
       bounce=True,
       page_set=self))
+    # Why: For measuring the latency of scroll-synchronized effects.
+    self.AddPage(SynchronizedScrollOffsetPage(page_set=self))
