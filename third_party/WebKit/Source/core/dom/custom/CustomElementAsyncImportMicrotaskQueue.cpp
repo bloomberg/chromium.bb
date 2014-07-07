@@ -35,7 +35,7 @@
 
 namespace WebCore {
 
-void CustomElementAsyncImportMicrotaskQueue::enqueue(PassOwnPtrWillBeRawPtr<CustomElementMicrotaskImportStep> step)
+void CustomElementAsyncImportMicrotaskQueue::enqueue(PassOwnPtrWillBeRawPtr<CustomElementMicrotaskStep> step)
 {
     m_queue.append(step);
 }

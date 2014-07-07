@@ -72,6 +72,7 @@ class Chrome;
 class Comment;
 class ContentSecurityPolicyResponseHeaders;
 class ContextFeatures;
+class CustomElementMicrotaskRunQueue;
 class CustomElementRegistrationContext;
 class DOMImplementation;
 class DocumentFragment;
@@ -967,6 +968,7 @@ public:
     ScriptValue registerElement(WebCore::ScriptState*, const AtomicString& name, ExceptionState&);
     ScriptValue registerElement(WebCore::ScriptState*, const AtomicString& name, const Dictionary& options, ExceptionState&, CustomElement::NameSet validNames = CustomElement::StandardNames);
     CustomElementRegistrationContext* registrationContext() { return m_registrationContext.get(); }
+    CustomElementMicrotaskRunQueue* customElementMicrotaskRunQueue();
 
     void setImportsController(HTMLImportsController*);
     HTMLImportsController* importsController() const { return m_importsController; }
@@ -1353,6 +1355,7 @@ private:
     OwnPtr<FastTextAutosizer> m_fastTextAutosizer;
 
     RefPtrWillBeMember<CustomElementRegistrationContext> m_registrationContext;
+    RefPtrWillBeMember<CustomElementMicrotaskRunQueue> m_customElementMicrotaskRunQueue;
 
     void elementDataCacheClearTimerFired(Timer<Document>*);
     Timer<Document> m_elementDataCacheClearTimer;

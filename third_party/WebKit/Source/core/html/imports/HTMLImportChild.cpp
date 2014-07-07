@@ -33,7 +33,6 @@
 
 #include "core/dom/Document.h"
 #include "core/dom/custom/CustomElement.h"
-#include "core/dom/custom/CustomElementMicrotaskDispatcher.h"
 #include "core/dom/custom/CustomElementMicrotaskImportStep.h"
 #include "core/dom/custom/CustomElementSyncMicrotaskQueue.h"
 #include "core/html/imports/HTMLImportChildClient.h"
@@ -92,8 +91,7 @@ void HTMLImportChild::didFinish()
 void HTMLImportChild::didFinishLoading()
 {
     stateWillChange();
-    if (m_customElementMicrotaskStep)
-        CustomElementMicrotaskDispatcher::instance().importDidFinish(m_customElementMicrotaskStep.get());
+    CustomElement::didFinishLoadingImport(*(root()->document()));
 }
 
 void HTMLImportChild::didFinishUpgradingCustomElements()

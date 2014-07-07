@@ -93,6 +93,7 @@
 #include "core/dom/TreeWalker.h"
 #include "core/dom/VisitedLinkState.h"
 #include "core/dom/XMLDocument.h"
+#include "core/dom/custom/CustomElementMicrotaskRunQueue.h"
 #include "core/dom/custom/CustomElementRegistrationContext.h"
 #include "core/dom/shadow/ElementShadow.h"
 #include "core/dom/shadow/ShadowRoot.h"
@@ -836,6 +837,13 @@ ScriptValue Document::registerElement(WebCore::ScriptState* scriptState, const A
     CustomElementConstructorBuilder constructorBuilder(scriptState, &options);
     registrationContext()->registerElement(this, &constructorBuilder, name, validNames, exceptionState);
     return constructorBuilder.bindingsReturnValue();
+}
+
+CustomElementMicrotaskRunQueue* Document::customElementMicrotaskRunQueue()
+{
+    if (!m_customElementMicrotaskRunQueue)
+        m_customElementMicrotaskRunQueue = CustomElementMicrotaskRunQueue::create();
+    return m_customElementMicrotaskRunQueue.get();
 }
 
 void Document::setImportsController(HTMLImportsController* controller)
@@ -5805,6 +5813,7 @@ void Document::trace(Visitor* visitor)
     visitor->trace(m_mediaQueryMatcher);
     visitor->trace(m_scriptedAnimationController);
     visitor->trace(m_registrationContext);
+    visitor->trace(m_customElementMicrotaskRunQueue);
     visitor->trace(m_elementDataCache);
     visitor->trace(m_associatedFormControls);
     visitor->trace(m_useElementsNeedingUpdate);

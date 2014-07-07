@@ -9,7 +9,6 @@
 #include "core/dom/custom/CustomElementCallbackDispatcher.h"
 #include "core/dom/custom/CustomElementCallbackQueue.h"
 #include "core/dom/custom/CustomElementMicrotaskImportStep.h"
-#include "core/dom/custom/CustomElementMicrotaskStepDispatcher.h"
 #include "core/dom/custom/CustomElementScheduler.h"
 #include "wtf/MainThread.h"
 
@@ -20,7 +19,6 @@ static const CustomElementCallbackQueue::ElementQueueId kMicrotaskQueueId = 0;
 CustomElementMicrotaskDispatcher::CustomElementMicrotaskDispatcher()
     : m_hasScheduledMicrotask(false)
     , m_phase(Quiescent)
-    , m_steps(CustomElementMicrotaskStepDispatcher::create())
 {
 }
 
@@ -32,34 +30,11 @@ CustomElementMicrotaskDispatcher& CustomElementMicrotaskDispatcher::instance()
     return *instance;
 }
 
-void CustomElementMicrotaskDispatcher::enqueue(HTMLImportLoader* parentLoader, PassOwnPtrWillBeRawPtr<CustomElementMicrotaskStep> step)
-{
-    ensureMicrotaskScheduledForMicrotaskSteps();
-    m_steps->enqueue(parentLoader, step);
-}
-
-void CustomElementMicrotaskDispatcher::enqueue(HTMLImportLoader* parentLoader, PassOwnPtrWillBeRawPtr<CustomElementMicrotaskImportStep> step, bool importIsSync)
-{
-    ensureMicrotaskScheduledForMicrotaskSteps();
-    m_steps->enqueue(parentLoader, step, importIsSync);
-}
-
 void CustomElementMicrotaskDispatcher::enqueue(CustomElementCallbackQueue* queue)
 {
     ensureMicrotaskScheduledForElementQueue();
     queue->setOwner(kMicrotaskQueueId);
     m_elements.append(queue);
-}
-
-void CustomElementMicrotaskDispatcher::importDidFinish(CustomElementMicrotaskImportStep* step)
-{
-    ensureMicrotaskScheduledForMicrotaskSteps();
-}
-
-void CustomElementMicrotaskDispatcher::ensureMicrotaskScheduledForMicrotaskSteps()
-{
-    ASSERT(m_phase == Quiescent || m_phase == DispatchingCallbacks);
-    ensureMicrotaskScheduled();
 }
 
 void CustomElementMicrotaskDispatcher::ensureMicrotaskScheduledForElementQueue()
@@ -94,7 +69,6 @@ void CustomElementMicrotaskDispatcher::doDispatch()
     ASSERT_WITH_SECURITY_IMPLICATION(!CustomElementCallbackDispatcher::inCallbackDeliveryScope());
 
     m_phase = Resolving;
-    m_steps->dispatch();
 
     m_phase = DispatchingCallbacks;
     for (WillBeHeapVector<RawPtrWillBeMember<CustomElementCallbackQueue> >::iterator it = m_elements.begin(); it != m_elements.end(); ++it) {
@@ -110,25 +84,9 @@ void CustomElementMicrotaskDispatcher::doDispatch()
 
 void CustomElementMicrotaskDispatcher::trace(Visitor* visitor)
 {
-    visitor->trace(m_steps);
 #if ENABLE(OILPAN)
     visitor->trace(m_elements);
 #endif
 }
 
-#if !defined(NDEBUG)
-void CustomElementMicrotaskDispatcher::show()
-{
-    m_steps->show(2);
-
-}
-#endif
-
 } // namespace WebCore
-
-#if !defined(NDEBUG)
-void showCEMD()
-{
-    WebCore::CustomElementMicrotaskDispatcher::instance().show();
-}
-#endif

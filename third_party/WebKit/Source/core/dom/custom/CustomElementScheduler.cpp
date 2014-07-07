@@ -39,8 +39,11 @@
 #include "core/dom/custom/CustomElementMicrotaskDispatcher.h"
 #include "core/dom/custom/CustomElementMicrotaskImportStep.h"
 #include "core/dom/custom/CustomElementMicrotaskResolutionStep.h"
+#include "core/dom/custom/CustomElementMicrotaskRunQueue.h"
 #include "core/dom/custom/CustomElementRegistrationContext.h"
+#include "core/dom/custom/CustomElementSyncMicrotaskQueue.h"
 #include "core/html/imports/HTMLImportChild.h"
+#include "core/html/imports/HTMLImportsController.h"
 
 namespace WebCore {
 
@@ -73,9 +76,9 @@ void CustomElementScheduler::resolveOrScheduleResolution(PassRefPtrWillBeRawPtr<
         return;
     }
 
-    HTMLImportLoader* loader = element->document().importLoader();
+    Document& document = element->document();
     OwnPtrWillBeRawPtr<CustomElementMicrotaskResolutionStep> step = CustomElementMicrotaskResolutionStep::create(context, element, descriptor);
-    CustomElementMicrotaskDispatcher::instance().enqueue(loader, step.release());
+    enqueueMicrotaskStep(document, step.release());
 }
 
 CustomElementMicrotaskImportStep* CustomElementScheduler::scheduleImport(HTMLImportChild* import)
@@ -87,8 +90,14 @@ CustomElementMicrotaskImportStep* CustomElementScheduler::scheduleImport(HTMLImp
     // processing step, or the base queue.
     OwnPtrWillBeRawPtr<CustomElementMicrotaskImportStep> step = CustomElementMicrotaskImportStep::create(import);
     CustomElementMicrotaskImportStep* rawStep = step.get();
-    CustomElementMicrotaskDispatcher::instance().enqueue(import->parent()->loader(), step.release(), import->isSync());
+    enqueueMicrotaskStep(*(import->parent()->document()), step.release(), import->isSync());
     return rawStep;
+}
+
+void CustomElementScheduler::enqueueMicrotaskStep(Document& document, PassOwnPtrWillBeRawPtr<CustomElementMicrotaskStep> step, bool importIsSync)
+{
+    Document& master = document.importsController() ? *(document.importsController()->master()) : document;
+    master.customElementMicrotaskRunQueue()->enqueue(document.importLoader(), step, importIsSync);
 }
 
 CustomElementScheduler& CustomElementScheduler::instance()

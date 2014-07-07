@@ -58,6 +58,7 @@ public:
 
     // API to notify of document-level changes
     static CustomElementMicrotaskImportStep* didCreateImport(HTMLImportChild*);
+    static void didFinishLoadingImport(Document& master);
 
     // API for registration contexts
     static void define(Element*, PassRefPtr<CustomElementDefinition>);
