@@ -11,7 +11,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
-#include "base/threading/worker_pool.h"
 #include "chrome/browser/chromeos/policy/proto/install_attributes.pb.h"
 #include "chromeos/chromeos_paths.h"
 #include "chromeos/cryptohome/cryptohome_util.h"
@@ -278,11 +277,6 @@ TEST_F(EnterpriseInstallAttributesTest, VerifyFakeInstallAttributesCache) {
   ASSERT_TRUE(cryptohome_util::InstallAttributesSet(
       EnterpriseInstallAttributes::kAttrEnterpriseUser, kTestUser));
   ASSERT_TRUE(cryptohome_util::InstallAttributesFinalize());
-  // Wait for the async write.
-  base::RunLoop loop;
-  base::WorkerPool::PostTaskAndReply(
-      FROM_HERE, base::Bind(&base::DoNothing), loop.QuitClosure(), false);
-  loop.Run();
 
   // Verify that EnterpriseInstallAttributes correctly decodes the stub
   // cache file.
