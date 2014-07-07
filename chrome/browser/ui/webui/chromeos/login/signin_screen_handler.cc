@@ -502,13 +502,6 @@ void SigninScreenHandler::UpdateStateInternal(
     return;
   }
 
-  // TODO (ygorshenin@): switch log level to INFO once signin screen
-  // will be tested well.
-  LOG(WARNING) << "SigninScreenHandler::UpdateStateInternal(): "
-               << "state=" << NetworkStateInformer::StatusString(state) << ", "
-               << "network_name=" << network_name << ", "
-               << "reason=" << ErrorScreenActor::ErrorReasonString(reason)
-               << ", force_update=" << force_update;
   update_state_closure_.Cancel();
 
   if ((state == NetworkStateInformer::OFFLINE && !force_update) ||

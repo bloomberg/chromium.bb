@@ -121,6 +121,41 @@ void RecordPortalToOnlineTransition(const base::TimeDelta& duration) {
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
+// NetworkPortalDetectorImpl::DetectionAttemptCompletedLogState
+
+NetworkPortalDetectorImpl::DetectionAttemptCompletedReport::
+    DetectionAttemptCompletedReport()
+    : result(captive_portal::RESULT_COUNT), response_code(-1) {
+}
+
+NetworkPortalDetectorImpl::DetectionAttemptCompletedReport::
+    DetectionAttemptCompletedReport(const std::string network_name,
+                                    const std::string network_id,
+                                    captive_portal::CaptivePortalResult result,
+                                    int response_code)
+    : network_name(network_name),
+      network_id(network_id),
+      result(result),
+      response_code(response_code) {
+}
+
+void NetworkPortalDetectorImpl::DetectionAttemptCompletedReport::Report()
+    const {
+  VLOG(1) << "Detection attempt completed: "
+          << "name=" << network_name << ", "
+          << "id=" << network_id << ", "
+          << "result=" << captive_portal::CaptivePortalResultToString(result)
+          << ", "
+          << "response_code=" << response_code;
+}
+
+bool NetworkPortalDetectorImpl::DetectionAttemptCompletedReport::Equals(
+    const DetectionAttemptCompletedReport& o) const {
+  return network_name == o.network_name && network_id == o.network_id &&
+         result == o.result && response_code == o.response_code;
+}
+
+////////////////////////////////////////////////////////////////////////////////
 // NetworkPortalDetectorImpl, public:
 
 const char NetworkPortalDetectorImpl::kOobeDetectionResultHistogram[] =
@@ -167,10 +202,10 @@ NetworkPortalDetectorImpl::NetworkPortalDetectorImpl(
     : state_(STATE_IDLE),
       test_url_(CaptivePortalDetector::kDefaultURL),
       enabled_(false),
-      weak_factory_(this),
       attempt_count_(0),
       strategy_(PortalDetectorStrategy::CreateById(
-          PortalDetectorStrategy::STRATEGY_ID_LOGIN_SCREEN)) {
+          PortalDetectorStrategy::STRATEGY_ID_LOGIN_SCREEN)),
+      weak_factory_(this) {
   captive_portal_detector_.reset(new CaptivePortalDetector(request_context));
   strategy_->set_delegate(this);
 
@@ -408,12 +443,15 @@ void NetworkPortalDetectorImpl::OnAttemptCompleted(
   DCHECK(CalledOnValidThread());
   DCHECK(is_checking_for_portal());
 
-  VLOG(1) << "Detection attempt completed: "
-          << "name=" << default_network_name_ << ", "
-          << "id=" << default_network_id_ << ", "
-          << "result="
-          << captive_portal::CaptivePortalResultToString(results.result) << ", "
-          << "response_code=" << results.response_code;
+  DetectionAttemptCompletedReport attempt_completed_report(
+      default_network_name_,
+      default_network_id_,
+      results.result,
+      results.response_code);
+  if (!attempt_completed_report_.Equals(attempt_completed_report)) {
+    attempt_completed_report_ = attempt_completed_report;
+    attempt_completed_report_.Report();
+  }
 
   state_ = STATE_IDLE;
   attempt_timeout_.Cancel();

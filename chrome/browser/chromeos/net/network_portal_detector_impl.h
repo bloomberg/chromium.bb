@@ -90,6 +90,24 @@ class NetworkPortalDetectorImpl
   friend class NetworkPortalDetectorImplTest;
   friend class NetworkPortalDetectorImplBrowserTest;
 
+  struct DetectionAttemptCompletedReport {
+    DetectionAttemptCompletedReport();
+
+    DetectionAttemptCompletedReport(const std::string network_name,
+                                    const std::string network_id,
+                                    captive_portal::CaptivePortalResult result,
+                                    int response_code);
+
+    void Report() const;
+
+    bool Equals(const DetectionAttemptCompletedReport& o) const;
+
+    std::string network_name;
+    std::string network_id;
+    captive_portal::CaptivePortalResult result;
+    int response_code;
+  };
+
   typedef std::string NetworkId;
   typedef base::hash_map<NetworkId, CaptivePortalState> CaptivePortalStateMap;
 
@@ -212,8 +230,6 @@ class NetworkPortalDetectorImpl
   // True if the NetworkPortalDetector is enabled.
   bool enabled_;
 
-  base::WeakPtrFactory<NetworkPortalDetectorImpl> weak_factory_;
-
   // Start time of portal detection.
   base::TimeTicks detection_start_time_;
 
@@ -236,6 +252,11 @@ class NetworkPortalDetectorImpl
 
   // Test time ticks used by unit tests.
   base::TimeTicks time_ticks_for_testing_;
+
+  // Contents of a last log message about completed detection attempt.
+  DetectionAttemptCompletedReport attempt_completed_report_;
+
+  base::WeakPtrFactory<NetworkPortalDetectorImpl> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkPortalDetectorImpl);
 };
