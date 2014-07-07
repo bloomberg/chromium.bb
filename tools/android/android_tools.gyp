@@ -20,6 +20,14 @@
       ],
     },
     {
+      'target_name': 'heap_profiler',
+      'type': 'none',
+      'dependencies': [
+        'heap_profiler/heap_profiler.gyp:heap_dump',
+        'heap_profiler/heap_profiler.gyp:heap_profiler',
+      ],
+    },
+    {
       'target_name': 'memdump',
       'type': 'none',
       'dependencies': [
