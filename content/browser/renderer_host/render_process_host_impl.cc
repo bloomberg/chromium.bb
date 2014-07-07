@@ -883,7 +883,8 @@ void RenderProcessHostImpl::CreateMessageFilters() {
     AddFilter(new MemoryBenchmarkMessageFilter());
 #endif
   AddFilter(new VibrationMessageFilter());
-  AddFilter(new PushMessagingMessageFilter(GetID()));
+  AddFilter(new PushMessagingMessageFilter(
+      GetID(), storage_partition_impl_->GetServiceWorkerContext()));
   AddFilter(new BatteryStatusMessageFilter());
 }
 

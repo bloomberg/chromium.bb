@@ -14,16 +14,17 @@
 
 IPC_MESSAGE_ROUTED3(PushMessagingMsg_RegisterSuccess,
                     int32 /* callbacks_id */,
-                    GURL /* endpoint */,
-                    std::string /* registration_id */)
+                    GURL /* push_endpoint */,
+                    std::string /* push_registration_id */)
 
 IPC_MESSAGE_ROUTED1(PushMessagingMsg_RegisterError,
                     int32 /* callbacks_id */)
 
 // Messages sent from the renderer to the browser.
 
-IPC_MESSAGE_CONTROL4(PushMessagingHostMsg_Register,
-                     int32 /* routing_id */,
+IPC_MESSAGE_CONTROL5(PushMessagingHostMsg_Register,
+                     int32 /* render_frame_id */,
                      int32 /* callbacks_id */,
                      std::string /* sender_id */,
-                     bool /* user gesture */)
+                     bool /* user_gesture */,
+                     int32 /* service_worker_provider_id */)

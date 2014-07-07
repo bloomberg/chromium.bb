@@ -10,6 +10,7 @@
 #include "third_party/WebKit/public/platform/WebPushClient.h"
 
 namespace blink {
+class WebServiceWorkerProvider;
 class WebString;
 }  // namespace blink
 
@@ -37,6 +38,10 @@ class MockWebPushClient : public blink::WebPushClient {
   virtual void registerPushMessaging(
       const blink::WebString& sender_id,
       blink::WebPushRegistrationCallbacks* callbacks);
+  virtual void registerPushMessaging(
+      const blink::WebString& sender_id,
+      blink::WebPushRegistrationCallbacks* callbacks,
+      blink::WebServiceWorkerProvider* service_worker_provider);
 
   std::string end_point_;
   std::string registration_id_;

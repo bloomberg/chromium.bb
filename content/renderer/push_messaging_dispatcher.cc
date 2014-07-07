@@ -4,15 +4,21 @@
 
 #include "content/renderer/push_messaging_dispatcher.h"
 
+#include "content/child/service_worker/web_service_worker_provider_impl.h"
 #include "content/common/push_messaging_messages.h"
 #include "ipc/ipc_message.h"
 #include "third_party/WebKit/public/platform/WebPushError.h"
 #include "third_party/WebKit/public/platform/WebPushRegistration.h"
+#include "third_party/WebKit/public/platform/WebServiceWorkerProvider.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/web/WebUserGestureIndicator.h"
 #include "url/gurl.h"
 
 using blink::WebString;
+
+namespace {
+const char kAbortErrorReason[] = "Registration failed.";
+}
 
 namespace content {
 
@@ -36,11 +42,27 @@ void PushMessagingDispatcher::registerPushMessaging(
     const WebString& sender_id,
     blink::WebPushRegistrationCallbacks* callbacks) {
   DCHECK(callbacks);
-  int callbacks_id = registration_callbacks_.Add(callbacks);
+  scoped_ptr<blink::WebPushError> error(
+      new blink::WebPushError(blink::WebPushError::ErrorTypeAbort,
+                              WebString::fromUTF8(kAbortErrorReason)));
+  callbacks->onError(error.release());
+  delete callbacks;
+}
 
+void PushMessagingDispatcher::registerPushMessaging(
+    const WebString& sender_id,
+    blink::WebPushRegistrationCallbacks* callbacks,
+    blink::WebServiceWorkerProvider* service_worker_provider) {
+  DCHECK(callbacks);
+  int callbacks_id = registration_callbacks_.Add(callbacks);
+  int service_worker_provider_id = static_cast<WebServiceWorkerProviderImpl*>(
+                                       service_worker_provider)->provider_id();
   Send(new PushMessagingHostMsg_Register(
-      routing_id(), callbacks_id, sender_id.utf8(),
-      blink::WebUserGestureIndicator::isProcessingUserGesture()));
+      routing_id(),
+      callbacks_id,
+      sender_id.utf8(),
+      blink::WebUserGestureIndicator::isProcessingUserGesture(),
+      service_worker_provider_id));
 }
 
 void PushMessagingDispatcher::OnRegisterSuccess(
@@ -60,7 +82,6 @@ void PushMessagingDispatcher::OnRegisterSuccess(
 }
 
 void PushMessagingDispatcher::OnRegisterError(int32 callbacks_id) {
-  const std::string kAbortErrorReason = "Registration failed.";
   blink::WebPushRegistrationCallbacks* callbacks =
       registration_callbacks_.Lookup(callbacks_id);
   CHECK(callbacks);

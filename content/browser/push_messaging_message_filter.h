@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "content/public/browser/browser_message_filter.h"
 #include "url/gurl.h"
@@ -14,10 +15,13 @@
 namespace content {
 
 class PushMessagingService;
+class ServiceWorkerContextWrapper;
 
 class PushMessagingMessageFilter : public BrowserMessageFilter {
  public:
-  explicit PushMessagingMessageFilter(int render_process_id);
+  PushMessagingMessageFilter(
+      int render_process_id,
+      ServiceWorkerContextWrapper* service_worker_context);
 
  private:
   virtual ~PushMessagingMessageFilter();
@@ -28,22 +32,26 @@ class PushMessagingMessageFilter : public BrowserMessageFilter {
   void OnRegister(int render_frame_id,
                   int callbacks_id,
                   const std::string& sender_id,
-                  bool user_gesture);
+                  bool user_gesture,
+                  int service_worker_provider_id);
 
   void DoRegister(int render_frame_id,
                   int callbacks_id,
                   const std::string& sender_id,
-                  bool user_gesture);
+                  bool user_gesture,
+                  const GURL& origin,
+                  int64 service_worker_registration_id);
 
   void DidRegister(int render_frame_id,
                    int callbacks_id,
-                   const GURL& endpoint,
-                   const std::string& registration_id,
+                   const GURL& push_endpoint,
+                   const std::string& push_registration_id,
                    bool success);
 
   PushMessagingService* service();
 
   int render_process_id_;
+  scoped_refptr<ServiceWorkerContextWrapper> service_worker_context_;
 
   // Owned by the content embedder's browsing context.
   PushMessagingService* service_;

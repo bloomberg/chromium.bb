@@ -41,6 +41,8 @@ class WebServiceWorkerProviderImpl
 
   ServiceWorkerProviderContext* context() { return context_.get(); }
 
+  int provider_id() const { return provider_id_; }
+
  private:
   void RemoveScriptClient();
   ServiceWorkerDispatcher* GetDispatcher();

@@ -283,9 +283,9 @@ class TestRunnerBindings : public gin::Wrappable<TestRunnerBindings> {
   void CapturePixelsAsyncThen(v8::Handle<v8::Function> callback);
   void SetCustomTextOutput(std::string output);
   void SetViewSourceForFrame(const std::string& name, bool enabled);
-  void setMockPushClientSuccess(const std::string& end_point,
+  void SetMockPushClientSuccess(const std::string& endpoint,
                                 const std::string& registration_id);
-  void setMockPushClientError(const std::string& message);
+  void SetMockPushClientError(const std::string& message);
 
   bool GlobalFlag();
   void SetGlobalFlag(bool value);
@@ -533,9 +533,9 @@ gin::ObjectTemplateBuilder TestRunnerBindings::GetObjectTemplateBuilder(
       .SetMethod("setViewSourceForFrame",
                  &TestRunnerBindings::SetViewSourceForFrame)
       .SetMethod("setMockPushClientSuccess",
-                 &TestRunnerBindings::setMockPushClientSuccess)
+                 &TestRunnerBindings::SetMockPushClientSuccess)
       .SetMethod("setMockPushClientError",
-                 &TestRunnerBindings::setMockPushClientError)
+                 &TestRunnerBindings::SetMockPushClientError)
 
       // Properties.
       .SetProperty("globalFlag",
@@ -1364,14 +1364,15 @@ void TestRunnerBindings::SetViewSourceForFrame(const std::string& name,
   }
 }
 
-void TestRunnerBindings::setMockPushClientSuccess(
-  const std::string& end_point, const std::string& registration_id) {
+void TestRunnerBindings::SetMockPushClientSuccess(
+    const std::string& endpoint,
+    const std::string& registration_id) {
   if (!runner_)
     return;
-  runner_->SetMockPushClientSuccess(end_point, registration_id);
+  runner_->SetMockPushClientSuccess(endpoint, registration_id);
 }
 
-void TestRunnerBindings::setMockPushClientError(const std::string& message) {
+void TestRunnerBindings::SetMockPushClientError(const std::string& message) {
   if (!runner_)
     return;
   runner_->SetMockPushClientError(message);
@@ -2832,9 +2833,9 @@ void TestRunner::CapturePixelsCallback(scoped_ptr<InvokeCallbackTask> task,
   InvokeCallback(task.Pass());
 }
 
-void TestRunner::SetMockPushClientSuccess(
-  const std::string& end_point, const std::string& registration_id) {
-  proxy_->GetPushClientMock()->SetMockSuccessValues(end_point, registration_id);
+void TestRunner::SetMockPushClientSuccess(const std::string& endpoint,
+                                          const std::string& registration_id) {
+  proxy_->GetPushClientMock()->SetMockSuccessValues(endpoint, registration_id);
 }
 
 void TestRunner::SetMockPushClientError(const std::string& message) {

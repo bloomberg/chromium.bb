@@ -7,7 +7,9 @@
 #include <string>
 
 #include "base/bind.h"
+#include "base/strings/string_number_conversions.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
+#include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/common/push_messaging_messages.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
@@ -15,9 +17,12 @@
 
 namespace content {
 
-PushMessagingMessageFilter::PushMessagingMessageFilter(int render_process_id)
+PushMessagingMessageFilter::PushMessagingMessageFilter(
+    int render_process_id,
+    ServiceWorkerContextWrapper* service_worker_context)
     : BrowserMessageFilter(PushMessagingMsgStart),
       render_process_id_(render_process_id),
+      service_worker_context_(service_worker_context),
       service_(NULL),
       weak_factory_(this) {
 }
@@ -37,30 +42,45 @@ bool PushMessagingMessageFilter::OnMessageReceived(
 void PushMessagingMessageFilter::OnRegister(int render_frame_id,
                                             int callbacks_id,
                                             const std::string& sender_id,
-                                            bool user_gesture) {
+                                            bool user_gesture,
+                                            int service_worker_provider_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   // TODO(mvanouwerkerk): Validate arguments?
-  BrowserThread::PostTask(BrowserThread::UI,
-                          FROM_HERE,
-                          base::Bind(&PushMessagingMessageFilter::DoRegister,
-                                     weak_factory_.GetWeakPtr(),
-                                     render_frame_id,
-                                     callbacks_id,
-                                     sender_id,
-                                     user_gesture));
-}
-
-void PushMessagingMessageFilter::DoRegister(int render_frame_id,
-                                            int callbacks_id,
-                                            const std::string& sender_id,
-                                            bool user_gesture) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (!service()) {
-    DidRegister(render_frame_id, callbacks_id, GURL(), "", false);
+  ServiceWorkerProviderHost* service_worker_host =
+      service_worker_context_->context()->GetProviderHost(
+          render_process_id_, service_worker_provider_id);
+  if (!service_worker_host || !service_worker_host->active_version()) {
+    Send(new PushMessagingMsg_RegisterError(render_frame_id, callbacks_id));
     return;
   }
-  // TODO(mvanouwerkerk): Pass in a real app ID based on Service Worker ID.
-  std::string app_id = "https://example.com 0";
+  BrowserThread::PostTask(
+      BrowserThread::UI,
+      FROM_HERE,
+      base::Bind(&PushMessagingMessageFilter::DoRegister,
+                 weak_factory_.GetWeakPtr(),
+                 render_frame_id,
+                 callbacks_id,
+                 sender_id,
+                 user_gesture,
+                 service_worker_host->active_version()->scope().GetOrigin(),
+                 service_worker_host->active_version()->registration_id()));
+}
+
+void PushMessagingMessageFilter::DoRegister(
+    int render_frame_id,
+    int callbacks_id,
+    const std::string& sender_id,
+    bool user_gesture,
+    const GURL& origin,
+    int64 service_worker_registration_id) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  if (!service()) {
+    Send(new PushMessagingMsg_RegisterError(render_frame_id, callbacks_id));
+    return;
+  }
+  // TODO(mvanouwerkerk): Is this the app_id format we want to use?
+  std::string app_id =
+      origin.spec() + " " + base::Int64ToString(service_worker_registration_id);
   service()->Register(app_id,
                       sender_id,
                       render_process_id_,
@@ -72,15 +92,16 @@ void PushMessagingMessageFilter::DoRegister(int render_frame_id,
                                  callbacks_id));
 }
 
-void PushMessagingMessageFilter::DidRegister(int render_frame_id,
-                                             int callbacks_id,
-                                             const GURL& endpoint,
-                                             const std::string& registration_id,
-                                             bool success) {
+void PushMessagingMessageFilter::DidRegister(
+    int render_frame_id,
+    int callbacks_id,
+    const GURL& push_endpoint,
+    const std::string& push_registration_id,
+    bool success) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (success) {
     Send(new PushMessagingMsg_RegisterSuccess(
-        render_frame_id, callbacks_id, endpoint, registration_id));
+        render_frame_id, callbacks_id, push_endpoint, push_registration_id));
   } else {
     Send(new PushMessagingMsg_RegisterError(render_frame_id, callbacks_id));
   }
@@ -88,10 +109,11 @@ void PushMessagingMessageFilter::DidRegister(int render_frame_id,
 
 PushMessagingService* PushMessagingMessageFilter::service() {
   if (!service_) {
-    RenderProcessHost* host = RenderProcessHost::FromID(render_process_id_);
-    if (!host)
+    RenderProcessHost* process_host =
+        RenderProcessHost::FromID(render_process_id_);
+    if (!process_host)
       return NULL;
-    service_ = host->GetBrowserContext()->GetPushMessagingService();
+    service_ = process_host->GetBrowserContext()->GetPushMessagingService();
   }
   return service_;
 }

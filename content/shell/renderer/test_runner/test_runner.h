@@ -543,7 +543,7 @@ class TestRunner : public WebTestRunner,
   // uint8 RGBA format.
   void CapturePixelsAsyncThen(v8::Handle<v8::Function> callback);
 
-  void SetMockPushClientSuccess(const std::string& end_point,
+  void SetMockPushClientSuccess(const std::string& endpoint,
                                 const std::string& registration_id);
   void SetMockPushClientError(const std::string& message);
 
