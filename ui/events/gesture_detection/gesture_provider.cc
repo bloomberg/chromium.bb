@@ -503,17 +503,12 @@ class GestureProvider::GestureListenerImpl
     return false;
   }
 
-  virtual bool OnLongPress(const MotionEvent& e) OVERRIDE {
+  virtual void OnLongPress(const MotionEvent& e) OVERRIDE {
     DCHECK(!IsDoubleTapInProgress());
     SetIgnoreSingleTap(true);
 
     GestureEventDetails long_press_details(ET_GESTURE_LONG_PRESS, 0, 0);
     provider_->Send(CreateGesture(long_press_details, e));
-
-    // Returning true puts the GestureDetector in "longpress" mode, disabling
-    // further scrolling.  This is undesirable, as it is quite common for a
-    // longpress gesture to fire on content that won't trigger a context menu.
-    return false;
   }
 
   void SetDoubleTapEnabled(bool enabled) {

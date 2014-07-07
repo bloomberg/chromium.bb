@@ -69,8 +69,7 @@ bool GestureDetector::SimpleGestureListener::OnSingleTapUp(
   return false;
 }
 
-bool GestureDetector::SimpleGestureListener::OnLongPress(const MotionEvent& e) {
-  return false;
+void GestureDetector::SimpleGestureListener::OnLongPress(const MotionEvent& e) {
 }
 
 bool GestureDetector::SimpleGestureListener::OnScroll(const MotionEvent& e1,
@@ -179,7 +178,6 @@ GestureDetector::GestureDetector(
       min_swipe_direction_component_ratio_(0),
       still_down_(false),
       defer_confirm_single_tap_(false),
-      in_longpress_(false),
       always_in_tap_region_(false),
       always_in_bigger_tap_region_(false),
       two_finger_tap_allowed_for_gesture_(false),
@@ -312,7 +310,6 @@ bool GestureDetector::OnTouchEvent(const MotionEvent& ev) {
       always_in_tap_region_ = true;
       always_in_bigger_tap_region_ = true;
       still_down_ = true;
-      in_longpress_ = false;
       defer_confirm_single_tap_ = false;
       two_finger_tap_allowed_for_gesture_ = two_finger_tap_enabled_;
 
@@ -325,9 +322,6 @@ bool GestureDetector::OnTouchEvent(const MotionEvent& ev) {
       break;
 
     case MotionEvent::ACTION_MOVE:
-      if (in_longpress_)
-        break;
-
       {
         const float scroll_x = last_focus_x_ - focus_x;
         const float scroll_y = last_focus_y_ - focus_y;
@@ -391,9 +385,6 @@ bool GestureDetector::OnTouchEvent(const MotionEvent& ev) {
           // Finally, give the up event of the double-tap.
           DCHECK(double_tap_listener_);
           handled |= double_tap_listener_->OnDoubleTapEvent(ev);
-        } else if (in_longpress_) {
-          timeout_handler_->StopTimeout(TAP);
-          in_longpress_ = false;
         } else if (always_in_tap_region_) {
           handled = listener_->OnSingleTapUp(ev);
           if (defer_confirm_single_tap_ && double_tap_listener_ != NULL) {
@@ -489,7 +480,7 @@ void GestureDetector::OnShowPressTimeout() {
 void GestureDetector::OnLongPressTimeout() {
   timeout_handler_->StopTimeout(TAP);
   defer_confirm_single_tap_ = false;
-  in_longpress_ = listener_->OnLongPress(*current_down_event_);
+  listener_->OnLongPress(*current_down_event_);
 }
 
 void GestureDetector::OnTapTimeout() {
@@ -513,7 +504,6 @@ void GestureDetector::CancelTaps() {
   always_in_tap_region_ = false;
   always_in_bigger_tap_region_ = false;
   defer_confirm_single_tap_ = false;
-  in_longpress_ = false;
 }
 
 bool GestureDetector::IsConsideredDoubleTap(

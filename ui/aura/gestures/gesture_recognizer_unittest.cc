@@ -4338,6 +4338,52 @@ TEST_P(GestureRecognizerTest, LatencyPassedFromTouchEvent) {
   EXPECT_EQ(0U, delegate->latency_info().latency_components.size());
 }
 
+// A delegate that deletes a window on long press.
+class GestureEventDeleteWindowOnLongPress : public GestureEventConsumeDelegate {
+ public:
+  GestureEventDeleteWindowOnLongPress()
+      : window_(NULL) {}
+
+  void set_window(aura::Window** window) { window_ = window; }
+
+  virtual void OnGestureEvent(ui::GestureEvent* gesture) OVERRIDE {
+    GestureEventConsumeDelegate::OnGestureEvent(gesture);
+    if (gesture->type() != ui::ET_GESTURE_LONG_PRESS)
+      return;
+    ui::GestureRecognizer::Get()->CleanupStateForConsumer(*window_);
+    delete *window_;
+    *window_ = NULL;
+  }
+
+ private:
+  aura::Window** window_;
+  DISALLOW_COPY_AND_ASSIGN(GestureEventDeleteWindowOnLongPress);
+};
+
+// Check that deleting the window in response to a long press gesture doesn't
+// crash.
+TEST_P(GestureRecognizerTest, GestureEventLongPressDeletingWindow) {
+  GestureEventDeleteWindowOnLongPress delegate;
+  const int kWindowWidth = 123;
+  const int kWindowHeight = 45;
+  const int kTouchId = 2;
+  gfx::Rect bounds(100, 200, kWindowWidth, kWindowHeight);
+  aura::Window* window(CreateTestWindowWithDelegate(
+      &delegate, -1234, bounds, root_window()));
+  delegate.set_window(&window);
+
+  ui::TouchEvent press1(ui::ET_TOUCH_PRESSED,
+                        gfx::Point(101, 201),
+                        kTouchId,
+                        ui::EventTimeForNow());
+  DispatchEventUsingWindowDispatcher(&press1);
+  EXPECT_TRUE(window != NULL);
+
+  // Wait until the timer runs out.
+  delegate.WaitUntilReceivedGesture(ui::ET_GESTURE_LONG_PRESS);
+  EXPECT_EQ(NULL, window);
+}
+
 INSTANTIATE_TEST_CASE_P(GestureRecognizer,
                         GestureRecognizerTest,
                         ::testing::Bool());

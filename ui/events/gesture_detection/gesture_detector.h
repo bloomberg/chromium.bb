@@ -74,7 +74,7 @@ class GestureDetector {
     virtual bool OnDown(const MotionEvent& e) = 0;
     virtual void OnShowPress(const MotionEvent& e) = 0;
     virtual bool OnSingleTapUp(const MotionEvent& e) = 0;
-    virtual bool OnLongPress(const MotionEvent& e) = 0;
+    virtual void OnLongPress(const MotionEvent& e) = 0;
     virtual bool OnScroll(const MotionEvent& e1,
                           const MotionEvent& e2,
                           float distance_x,
@@ -111,7 +111,7 @@ class GestureDetector {
     virtual bool OnDown(const MotionEvent& e) OVERRIDE;
     virtual void OnShowPress(const MotionEvent& e) OVERRIDE;
     virtual bool OnSingleTapUp(const MotionEvent& e) OVERRIDE;
-    virtual bool OnLongPress(const MotionEvent& e) OVERRIDE;
+    virtual void OnLongPress(const MotionEvent& e) OVERRIDE;
     virtual bool OnScroll(const MotionEvent& e1,
                           const MotionEvent& e2,
                           float distance_x,
@@ -182,7 +182,6 @@ class GestureDetector {
 
   bool still_down_;
   bool defer_confirm_single_tap_;
-  bool in_longpress_;
   bool always_in_tap_region_;
   bool always_in_bigger_tap_region_;
   bool two_finger_tap_allowed_for_gesture_;
