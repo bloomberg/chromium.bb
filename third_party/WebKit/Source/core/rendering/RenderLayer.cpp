@@ -1835,7 +1835,7 @@ void RenderLayer::paintLayerContents(GraphicsContext* context, const LayerPainti
     bool rootRelativeBoundsComputed = false;
 
     // Apply clip-path to context.
-    bool hasClipPath = false;
+    GraphicsContextStateSaver clipStateSaver(*context, false);
     RenderStyle* style = renderer()->style();
     RenderSVGResourceClipper* resourceClipper = 0;
     ClipperContext clipperContext;
@@ -1846,8 +1846,7 @@ void RenderLayer::paintLayerContents(GraphicsContext* context, const LayerPainti
     if (renderer()->hasClipPath() && !context->paintingDisabled() && style && (!needsCompositedScrolling() || paintFlags & PaintLayerPaintingChildClippingMaskPhase)) {
         ASSERT(style->clipPath());
         if (style->clipPath()->type() == ClipPathOperation::SHAPE) {
-            hasClipPath = true;
-            context->save();
+            clipStateSaver.save();
             ShapeClipPathOperation* clipPath = toShapeClipPathOperation(style->clipPath());
 
             if (!rootRelativeBoundsComputed) {
@@ -1862,6 +1861,9 @@ void RenderLayer::paintLayerContents(GraphicsContext* context, const LayerPainti
             // FIXME: It doesn't work with forward or external SVG references (https://bugs.webkit.org/show_bug.cgi?id=90405)
             Element* element = document.getElementById(referenceClipPathOperation->fragment());
             if (isSVGClipPathElement(element) && element->renderer()) {
+                // FIXME: Saving at this point is not required in the 'mask'-
+                // case, or if the clip ends up empty.
+                clipStateSaver.save();
                 if (!rootRelativeBoundsComputed) {
                     rootRelativeBounds = physicalBoundingBoxIncludingReflectionAndStackingChildren(paintingInfo.rootLayer, offsetFromRoot);
                     rootRelativeBoundsComputed = true;
@@ -2010,9 +2012,6 @@ void RenderLayer::paintLayerContents(GraphicsContext* context, const LayerPainti
 
     if (resourceClipper)
         resourceClipper->postApplyStatefulResource(renderer(), context, clipperContext);
-
-    if (hasClipPath)
-        context->restore();
 }
 
 void RenderLayer::paintLayerByApplyingTransform(GraphicsContext* context, const LayerPaintingInfo& paintingInfo, PaintLayerFlags paintFlags, const LayoutPoint& translationOffset)
