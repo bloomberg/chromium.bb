@@ -18,7 +18,7 @@
 
 //<include src="../../file_manager/common/js/util.js"/>
 //<include src="../../file_manager/foreground/js/media/media_controls.js"/>
-//<include src="../../file_manager/foreground/js/media/util.js"/>
+//<include src="../../file_manager/foreground/js/media/mouse_inactivity_watcher.js"/>
 
 //<include src="video_player.js"/>
 

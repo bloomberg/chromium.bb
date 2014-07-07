@@ -51,7 +51,7 @@
 
 //<include src="../media/media_controls.js"/>
 //<include src="../media/media_util.js"/>
-//<include src="../media/util.js"/>
+//<include src="../media/mouse_inactivity_watcher.js"/>
 
 //<include src="../metadata/metadata_cache.js"/>
 

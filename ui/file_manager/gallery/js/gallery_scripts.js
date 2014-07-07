@@ -51,7 +51,7 @@
 //<include src="image_editor/exif_encoder.js"/>
 
 //<include src="../../file_manager/foreground/js/media/media_util.js"/>
-//<include src="../../file_manager/foreground/js/media/util.js"/>
+//<include src="../../file_manager/foreground/js/media/mouse_inactivity_watcher.js"/>
 //<include src="../../file_manager/foreground/js/metadata/metadata_cache.js"/>
 
 //<include src="gallery.js">

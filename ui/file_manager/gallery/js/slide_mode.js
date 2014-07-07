@@ -70,12 +70,12 @@ SlideMode.editorModes = [
 /**
  * @return {string} Mode name.
  */
-SlideMode.prototype.getName = function() { return 'slide' };
+SlideMode.prototype.getName = function() { return 'slide'; };
 
 /**
  * @return {string} Mode title.
  */
-SlideMode.prototype.getTitle = function() { return 'GALLERY_SLIDE' };
+SlideMode.prototype.getTitle = function() { return 'GALLERY_SLIDE'; };
 
 /**
  * Initialize the listeners.
@@ -616,10 +616,9 @@ SlideMode.prototype.advanceWithKeyboard = function(keyID) {
  * @param {number} direction -1 for left, 1 for right.
  */
 SlideMode.prototype.advanceManually = function(direction) {
-  if (this.isSlideshowPlaying_()) {
+  if (this.isSlideshowPlaying_())
     this.pauseSlideshow_();
-    cr.dispatchSimpleEvent(this, 'useraction');
-  }
+  cr.dispatchSimpleEvent(this, 'useraction');
   this.selectNext(direction);
 };
 
