@@ -864,10 +864,12 @@ bool RenderLayer::updateLayerPosition()
             localPoint += offset;
         }
     } else if (parent()) {
-        // Called when scrolling, via RenderLayerScrollableArea::setScrollOffset -> updateLayerPositionsAfterOverflowScroll.
-        DisableCompositingQueryAsserts disabler;
-
-        if (compositingState() != NotComposited) {
+        // FIXME: This code is very wrong. The compositing system doesn't
+        // understand columns and we're hacking around that fact by faking
+        // the position of the RenderLayers when we think we'll end up being
+        // composited. Hopefully we'll be able to unwind this hack when we
+        // implement multi-column using regions.
+        if (hasStyleDeterminedDirectCompositingReasons()) {
             // FIXME: Composited layers ignore pagination, so about the best we can do is make sure they're offset into the appropriate column.
             // They won't split across columns properly.
             if (!parent()->renderer()->hasColumns() && parent()->renderer()->isDocumentElement() && renderer()->view()->hasColumns())
@@ -3657,12 +3659,6 @@ void RenderLayer::styleChanged(StyleDifference diff, const RenderStyle* oldStyle
     }
 
     setNeedsCompositingInputsUpdate();
-
-    // FIXME: Remove incremental compositing updates after fixing the chicken/egg issues
-    // https://code.google.com/p/chromium/issues/detail?id=343756
-    DisableCompositingQueryAsserts disabler;
-
-    compositor()->updateLayerCompositingState(this, RenderLayerCompositor::UseChickenEggHacks);
 }
 
 bool RenderLayer::scrollsOverflow() const

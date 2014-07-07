@@ -456,37 +456,6 @@ bool RenderLayerCompositor::updateLayerIfViewportConstrained(RenderLayer* layer)
     return false;
 }
 
-// These are temporary hacks to work around chicken-egg issues while we continue to refactor the compositing code.
-// See crbug.com/383191 for a list of tests that fail if this method is removed.
-void RenderLayerCompositor::applyUpdateLayerCompositingStateChickenEggHacks(RenderLayer* layer, CompositingStateTransitionType compositedLayerUpdate)
-{
-    if (compositedLayerUpdate != NoCompositingStateChange) {
-        bool compositedLayerMappingChanged = allocateOrClearCompositedLayerMapping(layer, compositedLayerUpdate);
-        if (compositedLayerMappingChanged) {
-            // Repaint rects can only be computed for layers that have already been attached to the
-            // render tree, but a chicken-egg compositing update can happen before |layer| gets
-            // attached. Since newly-created renderers don't get parented until they are attached
-            // (see RenderTreeBuilder::createRendererForElementIfNeeded), we can check for attachment
-            // by checking for a parent.
-            if (layer->parent())
-                layer->repainter().computeRepaintRectsIncludingNonCompositingDescendants();
-            repaintOnCompositingChange(layer);
-        }
-    }
-}
-
-void RenderLayerCompositor::updateLayerCompositingState(RenderLayer* layer, UpdateLayerCompositingStateOptions options)
-{
-    layer->setCompositingReasons(layer->potentialCompositingReasonsFromStyle(), CompositingReasonComboAllDirectStyleDeterminedReasons);
-    CompositingStateTransitionType compositedLayerUpdate = CompositingLayerAssigner(this).computeCompositedLayerUpdate(layer);
-
-    if (compositedLayerUpdate != NoCompositingStateChange)
-        setNeedsCompositingUpdate(CompositingUpdateRebuildTree);
-
-    if (options == UseChickenEggHacks)
-        applyUpdateLayerCompositingStateChickenEggHacks(layer, compositedLayerUpdate);
-}
-
 void RenderLayerCompositor::repaintOnCompositingChange(RenderLayer* layer)
 {
     // If the renderer is not attached yet, no need to repaint.
