@@ -88,6 +88,10 @@ bool MetadataDatabaseIndexOnDisk::GetFileMetadata(
   const std::string key(kFileMetadataKeyPrefix + file_id);
   std::string value;
   leveldb::Status status = db_->Get(leveldb::ReadOptions(), key, &value);
+
+  if (status.IsNotFound())
+    return false;
+
   if (!status.ok()) {
     util::Log(logging::LOG_WARNING, FROM_HERE,
               "LevelDB error (%s) in getting FileMetadata for ID: %s",
@@ -115,6 +119,10 @@ bool MetadataDatabaseIndexOnDisk::GetFileTracker(
                         base::Int64ToString(tracker_id));
   std::string value;
   leveldb::Status status = db_->Get(leveldb::ReadOptions(), key, &value);
+
+  if (status.IsNotFound())
+    return false;
+
   if (!status.ok()) {
     util::Log(logging::LOG_WARNING, FROM_HERE,
               "LevelDB error (%s) in getting FileTracker for ID: %" PRId64,
@@ -195,6 +203,10 @@ int64 MetadataDatabaseIndexOnDisk::GetAppRootTracker(
   const std::string key(GenerateAppRootIDByAppIDKey(app_id));
   std::string value;
   leveldb::Status status = db_->Get(leveldb::ReadOptions(), key, &value);
+
+  if (status.IsNotFound())
+    return kInvalidTrackerID;
+
   if (!status.ok()) {
     util::Log(logging::LOG_WARNING, FROM_HERE,
               "LevelDB error (%s) in getting AppRoot for AppID: %s",
