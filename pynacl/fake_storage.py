@@ -16,6 +16,9 @@ class FakeStorage(object):
     self._store = {}
     self._write_count = 0
 
+  def Exists(self, key):
+    return self._store.get(key, False)
+
   def PutData(self, data, key, clobber=True):
     if clobber or key not in self._store:
       self._store[key] = data

@@ -88,7 +88,7 @@ class TestOnce(unittest.TestCase):
                     system_summary='test')
       o.Run('test', self._input_dirs, self._output_dirs[0],
             [command.Copy('%(input0)s/in0', '%(output)s/out')])
-      self.assertEquals(len(o.GetCachedDirItems()), 1)
+      self.assertEquals(len(o.GetCachedCloudItems()), 1)
 
   def test_UncachedCommandsNotRecorded(self):
     with pynacl.working_directory.TemporaryWorkingDirectory() as work_dir:
@@ -97,7 +97,7 @@ class TestOnce(unittest.TestCase):
                     system_summary='test', cache_results=False)
       o.Run('test', self._input_dirs, self._output_dirs[0],
             [command.Copy('%(input0)s/in0', '%(output)s/out')])
-      self.assertEquals(len(o.GetCachedDirItems()), 0)
+      self.assertEquals(len(o.GetCachedCloudItems()), 0)
 
   def FileLength(self, src, dst, **kwargs):
     """Command object to write the length of one file into another."""
@@ -122,9 +122,9 @@ class TestOnce(unittest.TestCase):
             [self.FileLength(
                 '%(input0)s/in0', '%(output)s/out')])
 
-      # Check that 2 writes have occurred. One to write a mapping from in->out,
-      # and one for the output data.
-      self.assertEquals(2, fs.WriteCount())
+      # Check that 3 writes have occurred. One to write a mapping from in->out,
+      # one for the output data, and one for the log file.
+      self.assertEquals(3, fs.WriteCount())
 
       # Run the computation again from input1 to output1.
       # (These should have the same length.)
@@ -134,7 +134,7 @@ class TestOnce(unittest.TestCase):
 
       # Write count goes up by one as an in->out hash is added,
       # but no new output is stored (as it is the same).
-      self.assertEquals(3, fs.WriteCount())
+      self.assertEquals(4, fs.WriteCount())
 
       # Check that the test is still valid:
       #   - in0 and in1 have equal length.

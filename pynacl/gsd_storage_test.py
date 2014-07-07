@@ -124,6 +124,40 @@ class TestGSDStorage(unittest.TestCase):
         download=download)
     self.assertEquals('bar', storage.GetData('foo'))
 
+  def test_Exists(self):
+    stored_keys = set()
+    def call(cmd):
+      self.assertTrue(len(cmd) >= 3)
+      self.assertTrue(cmd[1] in ['cp', 'ls'])
+      if cmd[1] == 'cp':
+        # Add the key into stored_keys
+        copy_key = cmd[-1]
+        stored_keys.add(copy_key)
+        return 0
+      elif cmd[1] == 'ls':
+        query_key = cmd[-1]
+        if query_key in stored_keys:
+          return 0
+        else:
+          return 1
+
+    write_storage = gsd_storage.GSDStorage(
+        gsutil=['mygsutil'],
+        write_bucket='mybucket',
+        read_buckets=[],
+        call=call)
+
+    read_storage = gsd_storage.GSDStorage(
+        gsutil=['mygsutil'],
+        write_bucket='',
+        read_buckets=['mybucket'],
+        call=call)
+
+    self.assertNotEquals(None, write_storage.PutData('data', 'foo_key'))
+    self.assertTrue(write_storage.Exists('foo_key'))
+    self.assertFalse(write_storage.Exists('bad_key'))
+    self.assertTrue(read_storage.Exists('foo_key'))
+    self.assertFalse(read_storage.Exists('bad_key'))
 
 if __name__ == '__main__':
   unittest.main()

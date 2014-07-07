@@ -14,6 +14,7 @@ more or less like a key+value data-store.
 
 import logging
 import os
+import posixpath
 import re
 import shutil
 import subprocess
@@ -87,6 +88,23 @@ class GSDStorage(object):
     self._read_buckets = read_buckets
     self._call = call
     self._download = download
+
+  def Exists(self, key):
+    """Queries whether or not a key exists.
+
+    Args:
+      key: Key file is stored under.
+    Returns:
+      URL of existing key, or False if file does not exist.
+    """
+    for bucket in set(self._read_buckets + [self._write_bucket]):
+      obj = posixpath.join(bucket, key)
+      cmd = self._gsutil + ['ls', GS_PATTERN % obj]
+      logging.info('Running: %s', str(cmd))
+      if self._call(cmd) == 0:
+        return GS_HTTPS_PATTERN % obj
+
+    return False
 
   def PutFile(self, path, key, clobber=True):
     """Write a file to global storage.

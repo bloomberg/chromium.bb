@@ -35,13 +35,19 @@ DEFAULT_SRC_DIR = os.path.join(SCRIPT_DIR, 'src')
 DEFAULT_OUT_DIR = os.path.join(SCRIPT_DIR, 'out')
 
 
-def PrintAnnotatorURL(url):
+def PrintAnnotatorURL(cloud_item):
   """Print an URL in buildbot annotator form.
 
   Args:
-    url: A URL to print.
+    cloud_item: once.CloudStorageItem representing a memoized item in the cloud.
   """
-  pynacl.log_tools.WriteAnnotatorLine('@@@STEP_LINK@download@%s@@@' % url)
+  if cloud_item.dir_item:
+    url = cloud_item.dir_item.url
+    pynacl.log_tools.WriteAnnotatorLine('@@@STEP_LINK@download@%s@@@' % url)
+
+    if cloud_item.log_url:
+      log_url = cloud_item.log_url
+      pynacl.log_tools.WriteAnnotatorLine('@@@STEP_LINK@log@%s@@@' % log_url)
 
 
 class PackageBuilder(object):
@@ -304,14 +310,16 @@ class PackageBuilder(object):
             archive_name = component
           else:
             archive_name = component + '.tgz'
-          cache_item = self._build_once.GetCachedDirItemForPackage(component)
+          cache_item = self._build_once.GetCachedCloudItemForPackage(component)
           if cache_item is None:
             archive_desc = archive_info.ArchiveInfo(archive_name)
           else:
-            include_package = True
-            archive_desc = archive_info.ArchiveInfo(archive_name,
-                                                    cache_item.hash,
-                                                    url=cache_item.url)
+            dir_item = cache_item.dir_item
+            if dir_item:
+              include_package = True
+              archive_desc = archive_info.ArchiveInfo(archive_name,
+                                                      dir_item.hash,
+                                                      url=dir_item.url)
 
           package_desc.AppendArchive(archive_desc)
 
