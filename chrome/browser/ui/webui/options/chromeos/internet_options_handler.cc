@@ -21,8 +21,6 @@
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/chromeos/login/users/user.h"
-#include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/chromeos/mobile_config.h"
 #include "chrome/browser/chromeos/net/onc_utils.h"
 #include "chrome/browser/chromeos/options/network_config_view.h"
@@ -32,7 +30,7 @@
 #include "chrome/browser/chromeos/ui/choose_mobile_network_dialog.h"
 #include "chrome/browser/chromeos/ui/mobile_config_ui.h"
 #include "chrome/browser/chromeos/ui_proxy_config_service.h"
-#include "chrome/browser/ui/webui/options/chromeos/core_chromeos_options_handler.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/options/chromeos/internet_options_handler_strings.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/network/device_state.h"
@@ -48,17 +46,15 @@
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/network_ui_data.h"
 #include "chromeos/network/network_util.h"
+#include "chromeos/network/onc/onc_signature.h"
+#include "chromeos/network/onc/onc_translator.h"
 #include "components/onc/onc_constants.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "grit/ash_resources.h"
-#include "grit/locale_settings.h"
-#include "grit/theme_resources.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
-#include "ui/base/l10n/l10n_util.h"
-#include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/webui/web_ui_util.h"
 #include "ui/gfx/image/image_skia.h"
@@ -70,12 +66,7 @@ namespace {
 
 // Keys for the network description dictionary passed to the web ui. Make sure
 // to keep the strings in sync with what the JavaScript side uses.
-const char kNetworkInfoKeyConnectable[] = "connectable";
-const char kNetworkInfoKeyConnected[] = "connected";
-const char kNetworkInfoKeyConnecting[] = "connecting";
 const char kNetworkInfoKeyIconURL[] = "iconURL";
-const char kNetworkInfoKeyNetworkName[] = "networkName";
-const char kNetworkInfoKeyNetworkType[] = "networkType";
 const char kNetworkInfoKeyServicePath[] = "servicePath";
 const char kNetworkInfoKeyPolicyManaged[] = "policyManaged";
 
@@ -143,30 +134,21 @@ const char kTagActivationState[] = "activationState";
 const char kTagAddConnection[] = "add";
 const char kTagApn[] = "apn";
 const char kTagAutoConnect[] = "autoConnect";
-const char kTagBssid[] = "bssid";
 const char kTagCarrierSelectFlag[] = "showCarrierSelect";
 const char kTagCarrierUrl[] = "carrierUrl";
-const char kTagCellular[] = "cellular";
 const char kTagCellularAvailable[] = "cellularAvailable";
 const char kTagCellularEnabled[] = "cellularEnabled";
 const char kTagCellularSupportsScan[] = "cellularSupportsScan";
 const char kTagConfigure[] = "configure";
 const char kTagConnect[] = "connect";
-const char kTagConnected[] = "connected";
-const char kTagConnecting[] = "connecting";
-const char kTagConnectionState[] = "connectionState";
 const char kTagControlledBy[] = "controlledBy";
 const char kTagDeviceConnected[] = "deviceConnected";
-const char kTagDisableConnectButton[] = "disableConnectButton";
 const char kTagDisconnect[] = "disconnect";
-const char kTagEncryption[] = "encryption";
 const char kTagErrorState[] = "errorState";
 const char kTagEsn[] = "esn";
 const char kTagFirmwareRevision[] = "firmwareRevision";
 const char kTagForget[] = "forget";
-const char kTagFrequency[] = "frequency";
 const char kTagGsm[] = "gsm";
-const char kTagHardwareAddress[] = "hardwareAddress";
 const char kTagHardwareRevision[] = "hardwareRevision";
 const char kTagIdentity[] = "identity";
 const char kTagIccid[] = "iccid";
@@ -184,7 +166,6 @@ const char kTagName[] = "name";
 const char kTagNameServersGoogle[] = "nameServersGoogle";
 const char kTagNameServerType[] = "nameServerType";
 const char kTagNetworkId[] = "networkId";
-const char kTagNetworkName[] = "networkName";
 const char kTagNetworkTechnology[] = "networkTechnology";
 const char kTagOperatorCode[] = "operatorCode";
 const char kTagOperatorName[] = "operatorName";
@@ -204,25 +185,16 @@ const char kTagRoamingState[] = "roamingState";
 const char kTagServerHostname[] = "serverHostname";
 const char kTagCarriers[] = "carriers";
 const char kTagCurrentCarrierIndex[] = "currentCarrierIndex";
-const char kTagServiceName[] = "serviceName";
-const char kTagServicePath[] = "servicePath";
 const char kTagShared[] = "shared";
 const char kTagShowActivateButton[] = "showActivateButton";
-const char kTagShowPreferred[] = "showPreferred";
-const char kTagShowProxy[] = "showProxy";
 const char kTagShowStaticIPConfig[] = "showStaticIPConfig";
 const char kTagShowViewAccountButton[] = "showViewAccountButton";
 const char kTagSimCardLockEnabled[] = "simCardLockEnabled";
-const char kTagSsid[] = "ssid";
-const char kTagStrength[] = "strength";
 const char kTagSupportUrl[] = "supportUrl";
 const char kTagTrue[] = "true";
-const char kTagType[] = "type";
 const char kTagUsername[] = "username";
 const char kTagValue[] = "value";
-const char kTagVpn[] = "vpn";
 const char kTagVpnList[] = "vpnList";
-const char kTagWifi[] = "wifi";
 const char kTagWifiAvailable[] = "wifiAvailable";
 const char kTagWifiEnabled[] = "wifiEnabled";
 const char kTagWimaxAvailable[] = "wimaxAvailable";
@@ -292,21 +264,6 @@ std::string LoggedInUserTypeToJSString(LoginState::LoggedInUserType type) {
   return std::string();
 }
 
-void SetCommonNetworkInfo(const NetworkState* state,
-                          const std::string& icon_url,
-                          base::DictionaryValue* network_info) {
-  network_info->SetString(kNetworkInfoKeyIconURL, icon_url);
-
-  std::string name = state->name();
-  if (state->Matches(NetworkTypePattern::Ethernet())) {
-    name = internet_options_strings::NetworkDeviceTypeString(
-        shill::kTypeEthernet);
-  }
-  network_info->SetString(kNetworkInfoKeyNetworkName, name);
-  network_info->SetString(kNetworkInfoKeyNetworkType, state->type());
-  network_info->SetString(kNetworkInfoKeyServicePath, state->path());
-}
-
 // Builds a dictionary with network information and an icon used for the
 // NetworkList on the settings page. Ownership of the returned pointer is
 // transferred to the caller.
@@ -314,26 +271,19 @@ base::DictionaryValue* BuildNetworkDictionary(
     const NetworkState* network,
     float icon_scale_factor,
     const PrefService* profile_prefs) {
-  scoped_ptr<base::DictionaryValue> network_info(new base::DictionaryValue());
-  if (network->visible()) {
-    network_info->SetBoolean(kNetworkInfoKeyConnectable,
-                             network->connectable());
-    network_info->SetBoolean(kNetworkInfoKeyConnected,
-                             network->IsConnectedState());
-    network_info->SetBoolean(kNetworkInfoKeyConnecting,
-                             network->IsConnectingState());
-  } else {
-    network_info->SetBoolean(kNetworkInfoKeyConnectable, false);
-    network_info->SetBoolean(kNetworkInfoKeyConnected, false);
-    network_info->SetBoolean(kNetworkInfoKeyConnecting, false);
-  }
+  scoped_ptr<base::DictionaryValue> network_info =
+      network_util::TranslateNetworkStateToONC(network);
+
   bool has_policy = onc::HasPolicyForNetwork(
       profile_prefs, g_browser_process->local_state(), *network);
   network_info->SetBoolean(kNetworkInfoKeyPolicyManaged, has_policy);
 
   std::string icon_url = ash::network_icon::GetImageUrlForNetwork(
       network, ash::network_icon::ICON_TYPE_LIST, icon_scale_factor);
-  SetCommonNetworkInfo(network, icon_url, network_info.get());
+
+  network_info->SetString(kNetworkInfoKeyIconURL, icon_url);
+  network_info->SetString(kNetworkInfoKeyServicePath, network->path());
+
   return network_info.release();
 }
 
@@ -535,12 +485,6 @@ void PopulateVPNDetails(const NetworkState* vpn,
   SetValueDictionary(dictionary, kTagServerHostname,
                      new base::StringValue(provider_host),
                      hostname_ui_data);
-
-  // Disable 'Connect' for VPN unless connected to a non-VPN network.
-  const NetworkState* connected_network =
-      NetworkHandler::Get()->network_state_handler()->ConnectedNetworkByType(
-          NetworkTypePattern::NonVirtual());
-  dictionary->SetBoolean(kTagDisableConnectButton, !connected_network);
 }
 
 // Given a list of supported carrier's by the device, return the index of
@@ -567,27 +511,9 @@ int FindCurrentCarrierIndex(const base::ListValue* carriers,
   return -1;
 }
 
-void PopulateWifiDetails(const NetworkState* wifi,
-                         const base::DictionaryValue& shill_properties,
-                         base::DictionaryValue* dictionary) {
-  dictionary->SetString(kTagSsid, wifi->name());
-  dictionary->SetInteger(kTagStrength, wifi->signal_strength());
-  dictionary->SetString(kTagEncryption,
-                        internet_options_strings::EncryptionString(
-                            wifi->security(), wifi->eap_method()));
-  CopyStringFromDictionary(
-      shill_properties, shill::kWifiBSsid, kTagBssid, dictionary);
-  CopyIntegerFromDictionary(shill_properties,
-                            shill::kWifiFrequency,
-                            kTagFrequency,
-                            false,
-                            dictionary);
-}
-
 void PopulateWimaxDetails(const NetworkState* wimax,
                           const base::DictionaryValue& shill_properties,
                           base::DictionaryValue* dictionary) {
-  dictionary->SetInteger(kTagStrength, wimax->signal_strength());
   CopyStringFromDictionary(
       shill_properties, shill::kEapIdentityProperty, kTagIdentity, dictionary);
 }
@@ -766,12 +692,6 @@ void PopulateCellularDetails(const NetworkState* cellular,
     }
   }
 
-  // Set Cellular Buttons Visibility
-  dictionary->SetBoolean(
-      kTagDisableConnectButton,
-      cellular->activation_state() == shill::kActivationStateActivating ||
-          cellular->IsConnectingState());
-
   // Don't show any account management related buttons if the activation
   // state is unknown or no payment portal URL is available.
   std::string support_url;
@@ -824,17 +744,14 @@ void PopulateCellularDetails(const NetworkState* cellular,
   }
 }
 
-void PopulateConnectionDetails(const NetworkState* network,
-                               const base::DictionaryValue& shill_properties,
-                               base::DictionaryValue* dictionary) {
+scoped_ptr<base::DictionaryValue> PopulateConnectionDetails(
+    const NetworkState* network,
+    const base::DictionaryValue& shill_properties) {
+  scoped_ptr<base::DictionaryValue> dictionary =
+      onc::TranslateShillServiceToONCPart(
+          shill_properties, &onc::kNetworkWithStateSignature);
+
   dictionary->SetString(kNetworkInfoKeyServicePath, network->path());
-  dictionary->SetString(kTagServiceName, network->name());
-  dictionary->SetBoolean(kTagConnecting, network->IsConnectingState());
-  dictionary->SetBoolean(kTagConnected, network->IsConnectedState());
-  dictionary->SetString(kTagConnectionState,
-                        internet_options_strings::ConnectionStateString(
-                            network->connection_state()));
-  dictionary->SetString(kTagNetworkName, network->name());
   dictionary->SetString(
       kTagErrorState,
       ash::network_connect::ErrorString(network->error(), network->path()));
@@ -844,20 +761,20 @@ void PopulateConnectionDetails(const NetworkState* network,
   dictionary->SetBoolean(kTagShared, shared);
 
   const std::string& type = network->type();
+
   const NetworkState* connected_network =
       NetworkHandler::Get()->network_state_handler()->ConnectedNetworkByType(
           NetworkTypePattern::Primitive(type));
-
   dictionary->SetBoolean(kTagDeviceConnected, connected_network != NULL);
 
-  if (type == shill::kTypeWifi)
-    PopulateWifiDetails(network, shill_properties, dictionary);
-  else if (type == shill::kTypeWimax)
-    PopulateWimaxDetails(network, shill_properties, dictionary);
+  if (type == shill::kTypeWimax)
+    PopulateWimaxDetails(network, shill_properties, dictionary.get());
   else if (type == shill::kTypeCellular)
-    PopulateCellularDetails(network, shill_properties, dictionary);
+    PopulateCellularDetails(network, shill_properties, dictionary.get());
   else if (type == shill::kTypeVPN)
-    PopulateVPNDetails(network, shill_properties, dictionary);
+    PopulateVPNDetails(network, shill_properties, dictionary.get());
+
+  return dictionary.Pass();
 }
 
 // Helper methods for SetIPConfigProperties
@@ -943,11 +860,11 @@ void InternetOptionsHandler::GetLocalizedValues(
 
 void InternetOptionsHandler::InitializePage() {
   base::DictionaryValue dictionary;
-  dictionary.SetString(kTagCellular,
+  dictionary.SetString(::onc::network_type::kCellular,
       GetIconDataUrl(IDR_AURA_UBER_TRAY_NETWORK_BARS_DARK));
-  dictionary.SetString(kTagWifi,
+  dictionary.SetString(::onc::network_type::kWiFi,
       GetIconDataUrl(IDR_AURA_UBER_TRAY_NETWORK_ARCS_DARK));
-  dictionary.SetString(kTagVpn,
+  dictionary.SetString(::onc::network_type::kVPN,
       GetIconDataUrl(IDR_AURA_UBER_TRAY_NETWORK_VPN));
   web_ui()->CallJavascriptFunction(kSetDefaultNetworkIconsFunction,
                                    dictionary);
@@ -1254,9 +1171,9 @@ void InternetOptionsHandler::UpdateConnectionDataCallback(
   const NetworkState* network = GetNetworkState(service_path);
   if (!network)
     return;
-  base::DictionaryValue dictionary;
-  PopulateConnectionDetails(network, shill_properties, &dictionary);
-  web_ui()->CallJavascriptFunction(kUpdateConnectionDataFunction, dictionary);
+  scoped_ptr<base::DictionaryValue> dictionary =
+      PopulateConnectionDetails(network, shill_properties);
+  web_ui()->CallJavascriptFunction(kUpdateConnectionDataFunction, *dictionary);
 }
 
 void InternetOptionsHandler::UpdateCarrier() {
@@ -1480,21 +1397,13 @@ void InternetOptionsHandler::PopulateDictionaryDetailsCallback(
 
   details_path_ = service_path;
 
+  scoped_ptr<base::DictionaryValue> dictionary =
+      PopulateConnectionDetails(network, shill_properties);
+
   ::onc::ONCSource onc_source = ::onc::ONC_SOURCE_NONE;
   const base::DictionaryValue* onc =
       onc::FindPolicyForActiveUser(network->guid(), &onc_source);
   const NetworkPropertyUIData property_ui_data(onc_source);
-
-  base::DictionaryValue dictionary;
-
-  // Device hardware address
-  const DeviceState* device = NetworkHandler::Get()->network_state_handler()->
-      GetDeviceState(network->device_path());
-  if (device) {
-    dictionary.SetString(
-        kTagHardwareAddress,
-        network_util::FormattedMacAddress(device->mac_address()));
-  }
 
   // IP config
   scoped_ptr<base::DictionaryValue> ipconfig_dhcp(new base::DictionaryValue);
@@ -1505,7 +1414,7 @@ void InternetOptionsHandler::PopulateDictionaryDetailsCallback(
   ipconfig_dhcp->SetString(kIpConfigNameServers, ipconfig_name_servers);
   ipconfig_dhcp->SetString(kIpConfigWebProxyAutoDiscoveryUrl,
                            network->web_proxy_auto_discovery_url().spec());
-  SetValueDictionary(&dictionary,
+  SetValueDictionary(dictionary.get(),
                      kDictionaryIpConfig,
                      ipconfig_dhcp.release(),
                      property_ui_data);
@@ -1514,13 +1423,13 @@ void InternetOptionsHandler::PopulateDictionaryDetailsCallback(
   int automatic_ip_config = 0;
   scoped_ptr<base::DictionaryValue> static_ip_dict(
       BuildIPInfoDictionary(shill_properties, true, &automatic_ip_config));
-  dictionary.SetBoolean(kIpConfigAutoConfig, automatic_ip_config == 0);
+  dictionary->SetBoolean(kIpConfigAutoConfig, automatic_ip_config == 0);
   DCHECK(automatic_ip_config == 3 || automatic_ip_config == 0)
       << "UI doesn't support automatic specification of individual "
       << "static IP parameters.";
   scoped_ptr<base::DictionaryValue> saved_ip_dict(
       BuildIPInfoDictionary(shill_properties, false, NULL));
-  dictionary.Set(kDictionarySavedIp, saved_ip_dict.release());
+  dictionary->Set(kDictionarySavedIp, saved_ip_dict.release());
 
   // Determine what kind of name server setting we have by comparing the
   // StaticIP and Google values with the ipconfig values.
@@ -1533,37 +1442,30 @@ void InternetOptionsHandler::PopulateDictionaryDetailsCallback(
   if (ipconfig_name_servers == kGoogleNameServers) {
     name_server_type = kNameServerTypeGoogle;
   }
-  SetValueDictionary(&dictionary,
+  SetValueDictionary(dictionary.get(),
                      kDictionaryStaticIp,
                      static_ip_dict.release(),
                      property_ui_data);
 
-  std::string type = network->type();
-  dictionary.SetString(kTagType, type);
-  dictionary.SetString(kTagServicePath, network->path());
-  dictionary.SetString(kTagNameServerType, name_server_type);
-  dictionary.SetString(kTagNameServersGoogle, kGoogleNameServers);
-
-  // Only show proxy for remembered networks.
-  dictionary.SetBoolean(kTagShowProxy, !network->profile_path().empty());
+  dictionary->SetString(kTagNameServerType, name_server_type);
+  dictionary->SetString(kTagNameServersGoogle, kGoogleNameServers);
 
   // Enable static ip config for Ethernet or WiFi.
   bool staticIPConfig = network->Matches(NetworkTypePattern::Ethernet()) ||
-                        type == shill::kTypeWifi;
-  dictionary.SetBoolean(kTagShowStaticIPConfig, staticIPConfig);
+                        network->Matches(NetworkTypePattern::WiFi());
+  dictionary->SetBoolean(kTagShowStaticIPConfig, staticIPConfig);
 
-  dictionary.SetBoolean(kTagShowPreferred, !network->profile_path().empty());
   int priority = 0;
   shill_properties.GetIntegerWithoutPathExpansion(
       shill::kPriorityProperty, &priority);
   bool preferred = priority > 0;
-  SetValueDictionary(&dictionary, kTagPreferred,
+  SetValueDictionary(dictionary.get(), kTagPreferred,
                      new base::FundamentalValue(preferred),
                      property_ui_data);
 
   NetworkPropertyUIData auto_connect_ui_data(onc_source);
   std::string onc_path_to_auto_connect;
-  if (type == shill::kTypeWifi) {
+  if (network->Matches(NetworkTypePattern::WiFi())) {
     content::RecordAction(
         base::UserMetricsAction("Options_NetworkShowDetailsWifi"));
     if (network->IsConnectedState()) {
@@ -1572,7 +1474,7 @@ void InternetOptionsHandler::PopulateDictionaryDetailsCallback(
     }
     onc_path_to_auto_connect =
         ::onc::network_config::WifiProperty(::onc::wifi::kAutoConnect);
-  } else if (type == shill::kTypeVPN) {
+  } else if (network->Matches(NetworkTypePattern::VPN())) {
     content::RecordAction(
         base::UserMetricsAction("Options_NetworkShowDetailsVPN"));
     if (network->IsConnectedState()) {
@@ -1581,7 +1483,7 @@ void InternetOptionsHandler::PopulateDictionaryDetailsCallback(
     }
     onc_path_to_auto_connect = ::onc::network_config::VpnProperty(
         ::onc::vpn::kAutoConnect);
-  } else if (type == shill::kTypeCellular) {
+  } else if (network->Matches(NetworkTypePattern::Cellular())) {
     content::RecordAction(
         base::UserMetricsAction("Options_NetworkShowDetailsCellular"));
     if (network->IsConnectedState()) {
@@ -1600,31 +1502,42 @@ void InternetOptionsHandler::PopulateDictionaryDetailsCallback(
                                 onc_source,
                                 auto_connect,
                                 auto_connect_ui_data,
-                                &dictionary);
-
-  PopulateConnectionDetails(network, shill_properties, &dictionary);
+                                dictionary.get());
 
   // Show details dialog
-  web_ui()->CallJavascriptFunction(kShowDetailedInfoFunction, dictionary);
+  web_ui()->CallJavascriptFunction(kShowDetailedInfoFunction, *dictionary);
 }
 
 gfx::NativeWindow InternetOptionsHandler::GetNativeWindow() const {
   return web_ui()->GetWebContents()->GetTopLevelNativeWindow();
 }
 
+float InternetOptionsHandler::GetScaleFactor() const {
+  return web_ui()->GetDeviceScaleFactor();
+}
+
+const PrefService* InternetOptionsHandler::GetPrefs() const {
+  return Profile::FromWebUI(web_ui())->GetPrefs();
+}
+
 void InternetOptionsHandler::NetworkCommandCallback(
     const base::ListValue* args) {
-  std::string type;
+  std::string onc_type;
   std::string service_path;
   std::string command;
   if (args->GetSize() != 3 ||
-      !args->GetString(0, &type) ||
+      !args->GetString(0, &onc_type) ||
       !args->GetString(1, &service_path) ||
       !args->GetString(2, &command)) {
     NOTREACHED();
     return;
   }
-
+  std::string type;  // Shill type
+  if (!onc_type.empty()) {
+    type = network_util::TranslateONCTypeToShill(onc_type);
+    if (type.empty())
+      LOG(ERROR) << "Unable to translate ONC type: " << onc_type;
+  }
   // Process commands that do not require an existing network.
   if (command == kTagAddConnection) {
     if (CanAddNetworkType(type))
@@ -1699,10 +1612,7 @@ base::ListValue* InternetOptionsHandler::GetWiredList() {
       FirstNetworkByType(NetworkTypePattern::Ethernet());
   if (!network)
     return list;
-  list->Append(
-      BuildNetworkDictionary(network,
-                             web_ui()->GetDeviceScaleFactor(),
-                             Profile::FromWebUI(web_ui())->GetPrefs()));
+  list->Append(BuildNetworkDictionary(network, GetScaleFactor(), GetPrefs()));
   return list;
 }
 
@@ -1714,10 +1624,7 @@ base::ListValue* InternetOptionsHandler::GetWirelessList() {
       NetworkTypePattern::Wireless(), &networks);
   for (NetworkStateHandler::NetworkStateList::const_iterator iter =
            networks.begin(); iter != networks.end(); ++iter) {
-    list->Append(
-        BuildNetworkDictionary(*iter,
-                               web_ui()->GetDeviceScaleFactor(),
-                               Profile::FromWebUI(web_ui())->GetPrefs()));
+    list->Append(BuildNetworkDictionary(*iter, GetScaleFactor(), GetPrefs()));
   }
 
   return list;
@@ -1731,10 +1638,7 @@ base::ListValue* InternetOptionsHandler::GetVPNList() {
       NetworkTypePattern::VPN(), &networks);
   for (NetworkStateHandler::NetworkStateList::const_iterator iter =
            networks.begin(); iter != networks.end(); ++iter) {
-    list->Append(
-        BuildNetworkDictionary(*iter,
-                               web_ui()->GetDeviceScaleFactor(),
-                               Profile::FromWebUI(web_ui())->GetPrefs()));
+    list->Append(BuildNetworkDictionary(*iter, GetScaleFactor(), GetPrefs()));
   }
 
   return list;

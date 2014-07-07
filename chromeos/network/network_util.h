@@ -109,6 +109,10 @@ CHROMEOS_EXPORT scoped_ptr<base::ListValue> TranslateNetworkListToONC(
     int limit,
     bool debugging_properties);
 
+// Returns the Shill type corresponding to ONC |type| or an empty string if
+// there is no match. Only valid for ethernet, wifi, wimax, cellular, and vpn.
+CHROMEOS_EXPORT std::string TranslateONCTypeToShill(const std::string& type);
+
 }  // namespace network_util
 }  // namespace chromeos
 

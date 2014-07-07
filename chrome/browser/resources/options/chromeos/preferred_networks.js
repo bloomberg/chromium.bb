@@ -51,8 +51,8 @@ cr.define('options', function() {
 
   /**
    * Creates a list entry for a remembered network.
-   * @param{{networkName: string,
-             networkType: string,
+   * @param{{Name: string,
+             Type: string,
              servicePath: string}} data
    *    Description of the network.
    * @constructor
@@ -72,8 +72,8 @@ cr.define('options', function() {
 
     /**
      * Description of the network.
-     * @type {{networkName: string,
-     *         networkType: string,
+     * @type {{Name: string,
+     *         Type: string,
      *         servicePath: string}}
      */
     data: null,
@@ -82,7 +82,7 @@ cr.define('options', function() {
     decorate: function() {
       DeletableItem.prototype.decorate.call(this);
       var label = this.ownerDocument.createElement('div');
-      label.textContent = this.data.networkName;
+      label.textContent = this.data.Name;
       if (this.data.policyManaged)
         this.deletable = false;
       this.contentElement.appendChild(label);
@@ -125,7 +125,7 @@ cr.define('options', function() {
       if (item) {
         // Inform the network library that we are forgetting this network.
         chrome.send('networkCommand',
-                    [item.networkType,
+                    [item.Type,
                     item.servicePath,
                     'forget']);
       }
@@ -146,8 +146,8 @@ cr.define('options', function() {
 
     /**
      * Adds a remembered network to the list.
-     * @param {{networkName: string,
-                networkType: string,
+     * @param {{Name: string,
+                Type: string,
                 servicePath: string} data
      *     Description of the network.
      */

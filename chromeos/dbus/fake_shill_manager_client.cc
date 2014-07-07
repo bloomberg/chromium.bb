@@ -644,29 +644,34 @@ void FakeShillManagerClient::SetupDefaultEnvironment() {
                                shill::kIPConfigsProperty,
                                wifi_ip_configs);
 
-    services->AddService("/service/wifi1",
+    const std::string kWifi1Path = "/service/wifi1";
+    services->AddService(kWifi1Path,
                          "wifi1",
                          shill::kTypeWifi,
                          state,
                          add_to_visible);
-    services->SetServiceProperty("/service/wifi1",
+    services->SetServiceProperty(kWifi1Path,
                                  shill::kSecurityProperty,
                                  base::StringValue(shill::kSecurityWep));
-    profiles->AddService(shared_profile, "/service/wifi1");
+    services->SetServiceProperty(kWifi1Path,
+                                 shill::kConnectableProperty,
+                                 base::FundamentalValue(true));
+    profiles->AddService(shared_profile, kWifi1Path);
 
-    services->AddService("/service/wifi2",
+    const std::string kWifi2Path = "/service/wifi2";
+    services->AddService(kWifi2Path,
                          "wifi2_PSK",
                          shill::kTypeWifi,
                          shill::kStateIdle,
                          add_to_visible);
-    services->SetServiceProperty("/service/wifi2",
+    services->SetServiceProperty(kWifi2Path,
                                  shill::kSecurityProperty,
                                  base::StringValue(shill::kSecurityPsk));
 
     base::FundamentalValue strength_value(80);
     services->SetServiceProperty(
-        "/service/wifi2", shill::kSignalStrengthProperty, strength_value);
-    profiles->AddService(shared_profile, "/service/wifi2");
+        kWifi2Path, shill::kSignalStrengthProperty, strength_value);
+    profiles->AddService(shared_profile, kWifi2Path);
 
     if (portaled) {
       const std::string kPortaledWifiPath = "/service/portaled_wifi";

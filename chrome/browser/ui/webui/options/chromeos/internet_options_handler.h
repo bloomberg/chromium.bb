@@ -17,6 +17,7 @@
 #include "ui/gfx/native_widget_types.h"
 
 class Browser;
+class PrefService;
 
 namespace chromeos {
 class DeviceState;
@@ -124,6 +125,12 @@ class InternetOptionsHandler
 
   // Gets the native window for hosting dialogs, etc.
   gfx::NativeWindow GetNativeWindow() const;
+
+  // Gets the UI scale factor.
+  float GetScaleFactor() const;
+
+  // Gets the user PrefService associated with the WebUI.
+  const PrefService* GetPrefs() const;
 
   // Handle various network commands and clicks on a network item
   // in the network list.

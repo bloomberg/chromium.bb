@@ -10,6 +10,7 @@
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/onc/onc_signature.h"
+#include "chromeos/network/onc/onc_translation_tables.h"
 #include "chromeos/network/onc/onc_translator.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
@@ -182,6 +183,14 @@ scoped_ptr<base::ListValue> TranslateNetworkListToONC(
     network_properties_list->Append(onc_dictionary.release());
   }
   return network_properties_list.Pass();
+}
+
+std::string TranslateONCTypeToShill(const std::string& onc_type) {
+  if (onc_type == ::onc::network_type::kEthernet)
+    return shill::kTypeEthernet;
+  std::string shill_type;
+  onc::TranslateStringToShill(onc::kNetworkTypeTable, onc_type, &shill_type);
+  return shill_type;
 }
 
 }  // namespace network_util

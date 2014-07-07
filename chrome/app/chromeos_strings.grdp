@@ -1769,18 +1769,27 @@ Press any key to continue exploring.
   </message>
   <message name="IDS_OPTIONS_SETTINGS_SECTION_TITLE_REMEMBERED_NETWORK" desc="Title for section in settings/internet for list of remembered (favirote) networks">
     Remembered networks
+
   </message>
-  <message name="IDS_OPTIONS_SETTINGS_NETWORK_OFFLINE" desc="Message displayed when a user is not connected to a wireless network">
-    Offline
+  <!-- Network state strings -->
+  <message name="IDS_CHROMEOS_NETWORK_STATE_NOT_CONNECTED" desc="Displayed state for a network when not connected.">
+    Not connected
   </message>
+  <message name="IDS_CHROMEOS_NETWORK_STATE_CONNECTED" desc="Displayed state for a network when connected">
+    Connected
+  </message>
+  <message name="IDS_CHROMEOS_NETWORK_STATE_CONNECTING" desc="Displayed state for a network when connecting">
+    Not Connected
+  </message>
+  <message name="IDS_CHROMEOS_NETWORK_STATE_UNKNOWN" desc="Displayed state for a network when unknown">
+    Unknown
+  </message>
+
   <message name="IDS_OPTIONS_SETTINGS_NETWORK_DISABLED" desc="Message displayed when a type of network connection is disabled">
     Disabled
   </message>
   <message name="IDS_OPTIONS_SETTINGS_NETWORK_OTHER" desc="Menu option for connecting to a network that is not listed in the menu.">
     Join other...
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_NETWORK_NOT_CONNECTED" desc="Displayed for a network control when not connected.">
-    Not connected
   </message>
   <message name="IDS_OPTIONS_SETTINGS_NETWORK_DISABLE_WIFI" desc="Menu option in the Wi-Fi menu when there is a connected Wi-Fi network.">
     Disable Wi-Fi

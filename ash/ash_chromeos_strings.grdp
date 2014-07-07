@@ -185,47 +185,6 @@ Server message: <ph name="server_msg">$3<ex>Incorrect password</ex></ph>
     Activation of '<ph name="name">$1<ex>Generic Wireless</ex></ph>' requires a network connection.
   </message>
 
-  <!-- Network state strings -->
-  <message name="IDS_CHROMEOS_NETWORK_STATE_UNKNOWN" desc="Network state in about:network: UNKNOWN">
-    Unknown
-  </message>
-  <message name="IDS_CHROMEOS_NETWORK_STATE_IDLE" desc="Network state in about:network: IDLE">
-    Idle
-  </message>
-  <message name="IDS_CHROMEOS_NETWORK_STATE_CARRIER" desc="Network state in about:network: CARRIER">
-    Carrier
-  </message>
-  <message name="IDS_CHROMEOS_NETWORK_STATE_ASSOCIATION" desc="Network state in about:network: ASSOCIATION">
-    Association
-  </message>
-  <message name="IDS_CHROMEOS_NETWORK_STATE_CONFIGURATION" desc="Network state in about:network: CONFIGURATION">
-    Configuration
-  </message>
-  <message name="IDS_CHROMEOS_NETWORK_STATE_READY" desc="Network state in about:network: READY">
-    Connected
-  </message>
-  <message name="IDS_CHROMEOS_NETWORK_STATE_DISCONNECT" desc="Network state in about:network: DISCONNECT">
-    Disconnect
-  </message>
-  <message name="IDS_CHROMEOS_NETWORK_STATE_FAILURE" desc="Network state in about:network: FAILURE">
-    Failure
-  </message>
-  <message name="IDS_CHROMEOS_NETWORK_STATE_ACTIVATION_FAILURE" desc="Network state in about:network: ACTIVATION_FAILURE">
-    Activation failure
-  </message>
-  <message name="IDS_CHROMEOS_NETWORK_STATE_UNRECOGNIZED" desc="Network state in about:network: Unrecognized">
-    Unrecognized state
-  </message>
-  <message name="IDS_CHROMEOS_NETWORK_STATE_PORTAL" desc="Network state in about:network: Portal">
-    Portal state
-  </message>
-  <message name="IDS_CHROMEOS_NETWORK_STATE_ONLINE" desc="Network state in about:network: Online">
-    Online state
-  </message>
-  <message name="IDS_CHROMEOS_NETWORK_STATE_CONNECT_REQUESTED" desc="Network state in about:network: Connect Requested">
-    Connect Requested
-  </message>
-
   <!-- Network error strings -->
   <message name="IDS_CHROMEOS_NETWORK_ERROR_UNKNOWN" desc="Network error details in notifications: UNKNOWN">
     Unknown network error

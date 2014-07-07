@@ -217,6 +217,7 @@ const StringTranslationEntry kNetworkTypeTable[] = {
     //  { network_type::kEthernet, shill::kTypeEthernet },
     //  { network_type::kEthernet, shill::kTypeEthernetEap },
     { ::onc::network_type::kWiFi, shill::kTypeWifi},
+    { ::onc::network_type::kWimax, shill::kTypeWimax},
     { ::onc::network_type::kCellular, shill::kTypeCellular},
     { ::onc::network_type::kVPN, shill::kTypeVPN},
     {NULL}};

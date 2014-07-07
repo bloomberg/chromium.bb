@@ -17,9 +17,6 @@ namespace internet_options_strings {
 void RegisterLocalizedStrings(base::DictionaryValue* localized_strings);
 std::string ActivationStateString(const std::string& activation_state);
 std::string RoamingStateString(const std::string& roaming_state);
-std::string ConnectionStateString(const std::string& state);
-std::string EncryptionString(const std::string& security,
-                             const std::string& eap_method);
 std::string ProviderTypeString(
     const std::string& provider_type,
     const base::DictionaryValue& provider_properties);

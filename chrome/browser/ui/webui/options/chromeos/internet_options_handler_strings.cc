@@ -24,15 +24,13 @@ struct StringResource {
 
 StringResource kStringResources[] = {
     // Main settings page.
+    {"ethernetName", IDS_STATUSBAR_NETWORK_DEVICE_ETHERNET},
     {"ethernetTitle", IDS_STATUSBAR_NETWORK_DEVICE_ETHERNET},
     {"wifiTitle", IDS_OPTIONS_SETTINGS_SECTION_TITLE_WIFI_NETWORK},
     {"wimaxTitle", IDS_OPTIONS_SETTINGS_SECTION_TITLE_WIMAX_NETWORK},
     {"cellularTitle", IDS_OPTIONS_SETTINGS_SECTION_TITLE_CELLULAR_NETWORK},
     {"vpnTitle", IDS_OPTIONS_SETTINGS_SECTION_TITLE_PRIVATE_NETWORK},
-    {"networkNotConnected", IDS_OPTIONS_SETTINGS_NETWORK_NOT_CONNECTED},
-    {"networkConnected", IDS_CHROMEOS_NETWORK_STATE_READY},
     {"joinOtherNetwork", IDS_OPTIONS_SETTINGS_NETWORK_OTHER},
-    {"networkOffline", IDS_OPTIONS_SETTINGS_NETWORK_OFFLINE},
     {"networkDisabled", IDS_OPTIONS_SETTINGS_NETWORK_DISABLED},
     {"turnOffWifi", IDS_OPTIONS_SETTINGS_NETWORK_DISABLE_WIFI},
     {"turnOffWimax", IDS_OPTIONS_SETTINGS_NETWORK_DISABLE_WIMAX},
@@ -50,6 +48,12 @@ StringResource kStringResources[] = {
     {"disableDataRoaming", IDS_OPTIONS_SETTINGS_DISABLE_DATA_ROAMING},
     {"dataRoamingDisableToggleTooltip",
      IDS_OPTIONS_SETTINGS_TOGGLE_DATA_ROAMING_RESTRICTION},
+
+    // ONC network states.
+    {"OncStateNotConnected", IDS_CHROMEOS_NETWORK_STATE_NOT_CONNECTED},
+    {"OncStateConnecting", IDS_CHROMEOS_NETWORK_STATE_CONNECTING},
+    {"OncStateConnected", IDS_CHROMEOS_NETWORK_STATE_CONNECTED},
+    {"OncStateUnknown", IDS_CHROMEOS_NETWORK_STATE_UNKNOWN},
 
     // Internet details dialog.
     {"managedNetwork", IDS_OPTIONS_SETTINGS_MANAGED_NETWORK},
@@ -186,63 +190,6 @@ std::string RoamingStateString(const std::string& roaming_state) {
   else
     id = IDS_CHROMEOS_NETWORK_ROAMING_STATE_UNKNOWN;
   return l10n_util::GetStringUTF8(id);
-}
-
-std::string ConnectionStateString(const std::string& state) {
-  int id;
-  if (state == shill::kUnknownString)
-    id = IDS_CHROMEOS_NETWORK_STATE_UNKNOWN;
-  else if (state == shill::kStateIdle)
-    id = IDS_CHROMEOS_NETWORK_STATE_IDLE;
-  else if (state == shill::kStateCarrier)
-    id = IDS_CHROMEOS_NETWORK_STATE_CARRIER;
-  else if (state == shill::kStateAssociation)
-    id = IDS_CHROMEOS_NETWORK_STATE_ASSOCIATION;
-  else if (state == shill::kStateConfiguration)
-    id = IDS_CHROMEOS_NETWORK_STATE_CONFIGURATION;
-  else if (state == shill::kStateReady)
-    id = IDS_CHROMEOS_NETWORK_STATE_READY;
-  else if (state == shill::kStateDisconnect)
-    id = IDS_CHROMEOS_NETWORK_STATE_DISCONNECT;
-  else if (state == shill::kStateFailure)
-    id = IDS_CHROMEOS_NETWORK_STATE_FAILURE;
-  else if (state == shill::kStateActivationFailure)
-    id = IDS_CHROMEOS_NETWORK_STATE_ACTIVATION_FAILURE;
-  else if (state == shill::kStatePortal)
-    id = IDS_CHROMEOS_NETWORK_STATE_PORTAL;
-  else if (state == shill::kStateOnline)
-    id = IDS_CHROMEOS_NETWORK_STATE_ONLINE;
-  else
-    id = IDS_CHROMEOS_NETWORK_STATE_UNRECOGNIZED;
-  return l10n_util::GetStringUTF8(id);
-}
-
-// Note: these strings are user visible but not localized.
-std::string EncryptionString(const std::string& security,
-                             const std::string& eap_method) {
-  if (security == shill::kSecurityNone)
-    return "";
-  if (security == shill::kSecurityWpa)
-    return "WPA";
-  if (security == shill::kSecurityWep)
-    return "WEP";
-  if (security == shill::kSecurityRsn)
-    return "RSN";
-  if (security == shill::kSecurityPsk)
-    return "PSK";
-  if (security == shill::kSecurity8021x) {
-    std::string result = "8021X";
-    if (eap_method == shill::kEapMethodPEAP)
-      result += "PEAP";
-    else if (eap_method == shill::kEapMethodTLS)
-      result += "TLS";
-    else if (eap_method == shill::kEapMethodTTLS)
-      result += "TTLS";
-    else if (eap_method == shill::kEapMethodLEAP)
-      result += "LEAP";
-    return result;
-  }
-  return "Unknown";
 }
 
 std::string ProviderTypeString(
