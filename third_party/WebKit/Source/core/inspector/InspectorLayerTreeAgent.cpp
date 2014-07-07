@@ -48,6 +48,7 @@
 #include "platform/geometry/IntRect.h"
 #include "platform/graphics/CompositingReasons.h"
 #include "platform/graphics/GraphicsContextRecorder.h"
+#include "platform/image-encoders/skia/PNGImageEncoder.h"
 #include "platform/transforms/TransformationMatrix.h"
 #include "public/platform/WebFloatPoint.h"
 #include "public/platform/WebLayer.h"
@@ -371,8 +372,12 @@ void InspectorLayerTreeAgent::replaySnapshot(ErrorString* errorString, const Str
     const GraphicsContextSnapshot* snapshot = snapshotById(errorString, snapshotId);
     if (!snapshot)
         return;
-    OwnPtr<ImageBuffer> imageBuffer = snapshot->replay(fromStep ? *fromStep : 0, toStep ? *toStep : 0);
-    *dataURL = imageBuffer->toDataURL("image/png");
+    OwnPtr<Vector<char> > base64Data = snapshot->replay(fromStep ? *fromStep : 0, toStep ? *toStep : 0);
+    if (!base64Data) {
+        *errorString = "Image encoding failed";
+        return;
+    }
+    *dataURL = "data:image/png;base64," + *base64Data;
 }
 
 void InspectorLayerTreeAgent::profileSnapshot(ErrorString* errorString, const String& snapshotId, const int* minRepeatCount, const double* minDuration, RefPtr<TypeBuilder::Array<TypeBuilder::Array<double> > >& outTimings)
@@ -385,8 +390,8 @@ void InspectorLayerTreeAgent::profileSnapshot(ErrorString* errorString, const St
     for (size_t i = 0; i < timings->size(); ++i) {
         const Vector<double>& row = (*timings)[i];
         RefPtr<TypeBuilder::Array<double> > outRow = TypeBuilder::Array<double>::create();
-        for (size_t j = 1; j < row.size(); ++j)
-            outRow->addItem(row[j] - row[j - 1]);
+        for (size_t j = 0; j < row.size(); ++j)
+            outRow->addItem(row[j]);
         outTimings->addItem(outRow.release());
     }
 }

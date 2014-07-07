@@ -47,7 +47,7 @@ public:
 
     static PassRefPtr<GraphicsContextSnapshot> load(const char*, size_t);
 
-    PassOwnPtr<ImageBuffer> replay(unsigned fromStep = 0, unsigned toStep = 0) const;
+    PassOwnPtr<Vector<char> > replay(unsigned fromStep = 0, unsigned toStep = 0) const;
     PassOwnPtr<Timings> profile(unsigned minIterations, double minDuration) const;
     PassRefPtr<JSONArray> snapshotCommandLog() const;
 
@@ -55,7 +55,7 @@ private:
     friend class GraphicsContextRecorder;
     GraphicsContextSnapshot(PassRefPtr<SkPicture>, bool isCerteainlyOpaque);
 
-    PassOwnPtr<ImageBuffer> createImageBuffer() const;
+    PassOwnPtr<SkBitmap> createBitmap() const;
 
     RefPtr<SkPicture> m_picture;
     bool m_isCertainlyOpaque;
