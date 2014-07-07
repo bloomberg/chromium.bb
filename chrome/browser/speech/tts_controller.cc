@@ -151,6 +151,11 @@ void TtsController::SpeakOrEnqueue(Utterance* utterance) {
 }
 
 void TtsController::SpeakNow(Utterance* utterance) {
+  // Ensure we have all built-in voices loaded. This is a no-op if already
+  // loaded.
+  bool loaded_built_in =
+      GetPlatformImpl()->LoadBuiltInTtsExtension(utterance->profile());
+
   // Get all available voices and try to find a matching voice.
   std::vector<VoiceData> voices;
   GetVoices(utterance->profile(), &voices);
@@ -218,8 +223,7 @@ void TtsController::SpeakNow(Utterance* utterance) {
 
     // If the native voice wasn't able to process this speech, see if
     // the browser has built-in TTS that isn't loaded yet.
-    if (!success &&
-        GetPlatformImpl()->LoadBuiltInTtsExtension(utterance->profile())) {
+    if (!success && loaded_built_in) {
       utterance_queue_.push(utterance);
       return;
     }
@@ -303,8 +307,13 @@ void TtsController::GetVoices(Profile* profile,
 #endif
 
   TtsPlatformImpl* platform_impl = GetPlatformImpl();
-  if (platform_impl && platform_impl->PlatformImplAvailable())
-    platform_impl->GetVoices(out_voices);
+  if (platform_impl) {
+    // Ensure we have all built-in voices loaded. This is a no-op if already
+    // loaded.
+    platform_impl->LoadBuiltInTtsExtension(profile);
+    if (platform_impl->PlatformImplAvailable())
+      platform_impl->GetVoices(out_voices);
+  }
 }
 
 bool TtsController::IsSpeaking() {
