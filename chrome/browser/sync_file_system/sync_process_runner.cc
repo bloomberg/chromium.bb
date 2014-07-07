@@ -44,14 +44,21 @@ bool WasSuccessfulSync(SyncStatusCode status) {
 
 SyncProcessRunner::SyncProcessRunner(
     const std::string& name,
-    SyncFileSystemService* sync_service)
+    SyncFileSystemService* sync_service,
+    int max_parallel_task)
     : name_(name),
       sync_service_(sync_service),
+      max_parallel_task_(max_parallel_task),
+      running_tasks_(0),
       current_delay_(0),
       last_delay_(0),
       pending_changes_(0),
-      running_(false),
-      factory_(this) {}
+      factory_(this) {
+  DCHECK_LE(1, max_parallel_task_);
+
+  DCHECK_EQ(1, max_parallel_task_)
+      << "Parellel task execution is not yet implemented.";
+}
 
 SyncProcessRunner::~SyncProcessRunner() {}
 
@@ -109,13 +116,15 @@ SyncServiceState SyncProcessRunner::GetServiceState() {
   return sync_service()->GetSyncServiceState();
 }
 
-void SyncProcessRunner::Finished(SyncStatusCode status) {
-  DCHECK(running_);
-  running_ = false;
+void SyncProcessRunner::Finished(const base::TimeTicks& start_time,
+                                 SyncStatusCode status) {
+  DCHECK_LT(0, running_tasks_);
+  DCHECK_LE(running_tasks_, max_parallel_task_);
+  --running_tasks_;
   util::Log(logging::LOG_VERBOSE, FROM_HERE,
             "[%s] * Finished (elapsed: %" PRId64 " sec)",
             name_.c_str(),
-            (base::Time::Now() - last_scheduled_).InSeconds());
+            (base::TimeTicks::Now() - start_time).InSeconds());
   if (status == SYNC_STATUS_NO_CHANGE_TO_SYNC ||
       status == SYNC_STATUS_FILE_BUSY)
     ScheduleInternal(kSyncDelayMaxInMilliseconds);
@@ -127,17 +136,17 @@ void SyncProcessRunner::Finished(SyncStatusCode status) {
 }
 
 void SyncProcessRunner::Run() {
-  if (running_)
+  if (running_tasks_ >= max_parallel_task_)
     return;
-  running_ = true;
-  last_scheduled_ = base::Time::Now();
+  ++running_tasks_;
+  last_scheduled_ = base::TimeTicks::Now();
   last_delay_ = current_delay_;
 
   util::Log(logging::LOG_VERBOSE, FROM_HERE,
             "[%s] * Started", name_.c_str());
 
-  StartSync(
-      base::Bind(&SyncProcessRunner::Finished, factory_.GetWeakPtr()));
+  StartSync(base::Bind(&SyncProcessRunner::Finished, factory_.GetWeakPtr(),
+                       last_scheduled_));
 }
 
 void SyncProcessRunner::ScheduleInternal(int64 delay) {
@@ -147,7 +156,7 @@ void SyncProcessRunner::ScheduleInternal(int64 delay) {
     if (current_delay_ == delay)
       return;
 
-    base::TimeDelta elapsed = base::Time::Now() - last_scheduled_;
+    base::TimeDelta elapsed = base::TimeTicks::Now() - last_scheduled_;
     if (elapsed < time_to_next) {
       time_to_next = time_to_next - elapsed;
     } else {

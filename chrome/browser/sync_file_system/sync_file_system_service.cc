@@ -142,7 +142,7 @@ class LocalSyncRunner : public SyncProcessRunner,
  public:
   LocalSyncRunner(const std::string& name,
                   SyncFileSystemService* sync_service)
-      : SyncProcessRunner(name, sync_service),
+      : SyncProcessRunner(name, sync_service, 1),
         factory_(this) {}
 
   virtual void StartSync(const SyncStatusCallback& callback) OVERRIDE {
@@ -185,7 +185,7 @@ class RemoteSyncRunner : public SyncProcessRunner,
   RemoteSyncRunner(const std::string& name,
                    SyncFileSystemService* sync_service,
                    RemoteFileSyncService* remote_service)
-      : SyncProcessRunner(name, sync_service),
+      : SyncProcessRunner(name, sync_service, 1),
         remote_service_(remote_service),
         last_state_(REMOTE_SERVICE_OK),
         factory_(this) {}
