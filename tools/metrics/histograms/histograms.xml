@@ -2786,6 +2786,71 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="ContentSettings.DefaultCookiesSetting" enum="ContentSetting">
+  <owner>toyoshim@chromium.org</owner>
+  <summary>The default cookies setting at profile open.</summary>
+</histogram>
+
+<histogram name="ContentSettings.DefaultHandlersSetting" enum="ContentSetting">
+  <obsolete>
+    Deprecated 07/2014 since it is not referenced anywhere in the code.
+  </obsolete>
+  <owner>toyoshim@chromium.org</owner>
+  <summary>The default handler setting at profile open.</summary>
+</histogram>
+
+<histogram name="ContentSettings.DefaultImagesSetting" enum="ContentSetting">
+  <owner>toyoshim@chromium.org</owner>
+  <summary>The default image setting at profile open.</summary>
+</histogram>
+
+<histogram name="ContentSettings.DefaultJavaScriptSetting"
+    enum="ContentSetting">
+  <owner>toyoshim@chromium.org</owner>
+  <summary>The default JavaScript setting at profile open.</summary>
+</histogram>
+
+<histogram name="ContentSettings.DefaultLocationSetting" enum="ContentSetting">
+  <owner>toyoshim@chromium.org</owner>
+  <summary>The default location setting at profile open.</summary>
+</histogram>
+
+<histogram name="ContentSettings.DefaultMediaStreamSetting"
+    enum="ContentSetting">
+  <owner>toyoshim@chromium.org</owner>
+  <summary>The default MediaStream setting at profile open.</summary>
+</histogram>
+
+<histogram name="ContentSettings.DefaultMIDISysExSetting" enum="ContentSetting">
+  <owner>toyoshim@chromium.org</owner>
+  <summary>
+    The default MIDI permission setting on sysex (system exclusive) messages at
+    profile open.
+  </summary>
+</histogram>
+
+<histogram name="ContentSettings.DefaultMouseCursorSetting"
+    enum="ContentSetting">
+  <owner>toyoshim@chromium.org</owner>
+  <summary>The default mouse cursor setting at profile open.</summary>
+</histogram>
+
+<histogram name="ContentSettings.DefaultNotificationsSetting"
+    enum="ContentSetting">
+  <owner>toyoshim@chromium.org</owner>
+  <summary>The default notification setting at profile open.</summary>
+</histogram>
+
+<histogram name="ContentSettings.DefaultPluginsSetting" enum="ContentSetting">
+  <owner>toyoshim@chromium.org</owner>
+  <summary>The default plugins setting at profile open.</summary>
+</histogram>
+
+<histogram name="ContentSettings.DefaultPopupsSetting" enum="ContentSetting">
+  <owner>toyoshim@chromium.org</owner>
+  <summary>The default popups setting at profile open.</summary>
+</histogram>
+
 <histogram name="Cookie.ParsedCookieStatus" enum="ParsedCookieStatus">
   <obsolete>
     Deprecated as of 9/2013. Experiment to measure control characters in cookies
@@ -35887,6 +35952,13 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="2" label="PROBLEM"/>
   <int value="3" label="TEST_FAILURE_OCCURRED"/>
   <int value="4" label="TEST_NOT_RUN"/>
+</enum>
+
+<enum name="ContentSetting" type="int">
+  <int value="1" label="ALLOW"/>
+  <int value="2" label="BLOCK"/>
+  <int value="3" label="ASK"/>
+  <int value="4" label="SESSION_ONLY"/>
 </enum>
 
 <enum name="ContextualSearchOptCardAction" type="int">
