@@ -21,7 +21,15 @@ class ScriptContextTest : public content::RenderViewTest {
   }
 };
 
-TEST_F(ScriptContextTest, GetEffectiveDocumentURL) {
+// ScriptContextTest.GetEffectiveDocumentURL is flaky on Windows
+// (http://crbug.com/391894)
+#if defined(OS_WIN)
+#define MAYBE_GetEffectiveDocumentURL DISABLED_GetEffectiveDocumentURL
+#else
+#define MAYBE_GetEffectiveDocumentURL GetEffectiveDocumentURL
+#endif
+
+TEST_F(ScriptContextTest, MAYBE_GetEffectiveDocumentURL) {
   GURL top_url("http://example.com/");
   GURL different_url("http://example.net/");
   GURL blank_url("about:blank");
