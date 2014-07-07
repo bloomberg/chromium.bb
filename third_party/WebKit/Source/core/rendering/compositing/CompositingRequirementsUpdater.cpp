@@ -123,25 +123,11 @@ private:
 
 class CompositingRequirementsUpdater::RecursionData {
 public:
-    RecursionData(RenderLayer* compAncestor, bool testOverlap)
-        : m_compositingAncestor(compAncestor)
+    explicit RecursionData(RenderLayer* compositingAncestor)
+        : m_compositingAncestor(compositingAncestor)
         , m_subtreeIsCompositing(false)
         , m_hasUnisolatedCompositedBlendingDescendant(false)
-        , m_testingOverlap(testOverlap)
-#ifndef NDEBUG
-        , m_depth(0)
-#endif
-    {
-    }
-
-    RecursionData(const RecursionData& other)
-        : m_compositingAncestor(other.m_compositingAncestor)
-        , m_subtreeIsCompositing(other.m_subtreeIsCompositing)
-        , m_hasUnisolatedCompositedBlendingDescendant(other.m_hasUnisolatedCompositedBlendingDescendant)
-        , m_testingOverlap(other.m_testingOverlap)
-#ifndef NDEBUG
-        , m_depth(other.m_depth + 1)
-#endif
+        , m_testingOverlap(true)
     {
     }
 
@@ -149,9 +135,6 @@ public:
     bool m_subtreeIsCompositing;
     bool m_hasUnisolatedCompositedBlendingDescendant;
     bool m_testingOverlap;
-#ifndef NDEBUG
-    int m_depth;
-#endif
 };
 
 static bool requiresCompositingOrSquashing(CompositingReasons reasons)
@@ -208,7 +191,7 @@ void CompositingRequirementsUpdater::update(RenderLayer* root)
 
     // Go through the layers in presentation order, so that we can compute which RenderLayers need compositing layers.
     // FIXME: we could maybe do this and the hierarchy udpate in one pass, but the parenting logic would be more complex.
-    RecursionData recursionData(root, true);
+    RecursionData recursionData(root);
     OverlapMap overlapTestRequestMap;
     bool saw3DTransform = false;
 
@@ -281,7 +264,7 @@ void CompositingRequirementsUpdater::updateRecursive(RenderLayer* ancestorLayer,
     // The children of this layer don't need to composite, unless there is
     // a compositing layer among them, so start by inheriting the compositing
     // ancestor with m_subtreeIsCompositing set to false.
-    RecursionData childRecursionData(currentRecursionData);
+    RecursionData childRecursionData = currentRecursionData;
     childRecursionData.m_subtreeIsCompositing = false;
 
     bool willBeCompositedOrSquashed = compositor->canBeComposited(layer) && requiresCompositingOrSquashing(reasonsToComposite);
