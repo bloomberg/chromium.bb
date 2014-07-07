@@ -18,6 +18,7 @@ extern const char kDisableAccountConsistency[];
 extern const char kDisableNewProfileManagement[];
 extern const char kEnableAccountConsistency[];
 extern const char kEnableNewProfileManagement[];
+extern const char kEnableSigninScopedDeviceId[];
 extern const char kEnableWebBasedSignin[];
 extern const char kExtensionsMultiAccount[];
 extern const char kFastUserSwitching[];

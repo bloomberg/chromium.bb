@@ -100,7 +100,6 @@ class OneClickSigninHelper
                   const std::string& email,
                   const std::string& password,
                   const std::string& refresh_token,
-                  const std::string& signin_scoped_device_id,
                   content::WebContents* web_contents,
                   bool untrusted_confirmation_required,
                   signin::Source source,
@@ -114,7 +113,6 @@ class OneClickSigninHelper
     std::string email;
     std::string password;
     std::string refresh_token;
-    std::string signin_scoped_device_id;
 
     // Web contents in which the sync setup page should be displayed,
     // if necessary. Can be NULL.
@@ -214,7 +212,7 @@ class OneClickSigninHelper
   // Handles cross account sign in error. If the supplied |email| does not match
   // the last signed in email of the current profile, then Chrome will show a
   // confirmation dialog before starting sync. It returns true if there is a
-  // cross ccount error, and false otherwise.
+  // cross account error, and false otherwise.
   static bool HandleCrossAccountError(
       content::WebContents* contents,
       const std::string& session_index,

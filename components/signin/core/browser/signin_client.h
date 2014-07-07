@@ -50,6 +50,10 @@ class SigninClient : public KeyedService {
   // this device id.
   virtual std::string GetSigninScopedDeviceId() = 0;
 
+  // Clears signin scoped device id. This happens when user signs out or about
+  // to sign in.
+  virtual void ClearSigninScopedDeviceId() = 0;
+
   // Returns the URL request context information associated with the client.
   virtual net::URLRequestContextGetter* GetURLRequestContext() = 0;
 

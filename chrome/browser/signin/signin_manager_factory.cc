@@ -88,6 +88,10 @@ void SigninManagerFactory::RegisterProfilePrefs(
       prefs::kGoogleServicesUsername,
       std::string(),
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterStringPref(
+      prefs::kGoogleServicesSigninScopedDeviceId,
+      std::string(),
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
   registry->RegisterBooleanPref(
       prefs::kAutologinEnabled,
       true,

@@ -415,7 +415,7 @@ bool AreWeShowingSignin(GURL url, signin::Source source, std::string email) {
        !email.empty());
 }
 
-// Gets signin scoped device id from signin client if profile is valid.
+// If profile is valid then get signin scoped device id from signin client.
 // Otherwise returns empty string.
 std::string GetSigninScopedDeviceId(Profile* profile) {
   std::string signin_scoped_device_id;
@@ -511,7 +511,6 @@ OneClickSigninHelper::StartSyncArgs::StartSyncArgs(
     const std::string& email,
     const std::string& password,
     const std::string& refresh_token,
-    const std::string& signin_scoped_device_id,
     content::WebContents* web_contents,
     bool untrusted_confirmation_required,
     signin::Source source,
@@ -523,7 +522,6 @@ OneClickSigninHelper::StartSyncArgs::StartSyncArgs(
       email(email),
       password(password),
       refresh_token(refresh_token),
-      signin_scoped_device_id(signin_scoped_device_id),
       web_contents(web_contents),
       source(source),
       callback(callback) {
@@ -656,10 +654,11 @@ void OneClickSigninHelper::SyncStarterWrapper::DisplayErrorBubble(
 }
 
 void OneClickSigninHelper::SyncStarterWrapper::StartSigninOAuthHelper() {
+  std::string signin_scoped_device_id = GetSigninScopedDeviceId(args_.profile);
   signin_oauth_helper_.reset(
       new SigninOAuthHelper(args_.profile->GetRequestContext(),
                             args_.session_index,
-                            args_.signin_scoped_device_id,
+                            signin_scoped_device_id,
                             this));
 }
 
@@ -1176,7 +1175,6 @@ bool OneClickSigninHelper::HandleCrossAccountError(
       Profile::FromBrowserContext(contents->GetBrowserContext());
   std::string last_email =
       profile->GetPrefs()->GetString(prefs::kGoogleServicesLastUsername);
-  std::string signin_scoped_device_id = GetSigninScopedDeviceId(profile);
 
   if (!last_email.empty() && !gaia::AreEmailsSame(last_email, email)) {
     // If the new email address is different from the email address that
@@ -1195,7 +1193,7 @@ bool OneClickSigninHelper::HandleCrossAccountError(
             &StartExplicitSync,
             StartSyncArgs(profile, browser, auto_accept,
                           session_index, email, password,
-                          refresh_token, signin_scoped_device_id,
+                          refresh_token,
                           contents, false /* confirmation_required */, source,
                           sync_callback),
             contents,
@@ -1482,7 +1480,6 @@ void OneClickSigninHelper::DidStopLoading(
           << " auto_accept=" << auto_accept_
           << " source=" << source_;
 
-  std::string signin_scoped_device_id = GetSigninScopedDeviceId(profile);
   switch (auto_accept_) {
     case AUTO_ACCEPT_NONE:
       if (showing_signin_)
@@ -1497,8 +1494,7 @@ void OneClickSigninHelper::DidStopLoading(
       if (!do_not_start_sync_for_testing_) {
         StartSync(
             StartSyncArgs(profile, browser, auto_accept_,
-                          session_index_, email_, password_,
-                          "", signin_scoped_device_id,
+                          session_index_, email_, password_, "",
                           NULL  /* don't force sync setup in same tab */,
                           true  /* confirmation_required */, source_,
                           CreateSyncStarterCallback()),
@@ -1514,8 +1510,7 @@ void OneClickSigninHelper::DidStopLoading(
       if (!do_not_start_sync_for_testing_) {
         StartSync(
             StartSyncArgs(profile, browser, auto_accept_,
-                          session_index_, email_, password_,
-                          "", signin_scoped_device_id,
+                          session_index_, email_, password_, "",
                           NULL  /* don't force sync setup in same tab */,
                           true  /* confirmation_required */, source_,
                           CreateSyncStarterCallback()),
@@ -1561,8 +1556,7 @@ void OneClickSigninHelper::DidStopLoading(
         if (!do_not_start_sync_for_testing_) {
           StartSync(
               StartSyncArgs(profile, browser, auto_accept_,
-                            session_index_, email_, password_,
-                            "", signin_scoped_device_id,
+                            session_index_, email_, password_, "",
                             contents,
                             untrusted_confirmation_required_, source_,
                             CreateSyncStarterCallback()),

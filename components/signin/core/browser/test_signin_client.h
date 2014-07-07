@@ -44,6 +44,9 @@ class TestSigninClient : public SigninClient {
   // Returns empty string.
   virtual std::string GetSigninScopedDeviceId() OVERRIDE;
 
+  // Does nothing.
+  virtual void ClearSigninScopedDeviceId() OVERRIDE;
+
   // Returns the empty string.
   virtual std::string GetProductVersion() OVERRIDE;
 

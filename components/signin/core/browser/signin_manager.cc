@@ -203,6 +203,7 @@ void SigninManager::SignOut(
   const std::string username = GetAuthenticatedUsername();
   clear_authenticated_username();
   client_->GetPrefs()->ClearPref(prefs::kGoogleServicesUsername);
+  client_->ClearSigninScopedDeviceId();
 
   // Erase (now) stale information from AboutSigninInternals.
   NotifyDiagnosticsObservers(USERNAME, "");
