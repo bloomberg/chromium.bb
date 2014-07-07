@@ -1230,7 +1230,7 @@ void RenderObject::paintOutline(PaintInfo& paintInfo, const LayoutRect& paintRec
     if (!hasOutline())
         return;
 
-    RenderStyle* styleToUse = style();
+    RenderStyle* styleToUse = outlineStyle();
     LayoutUnit outlineWidth = styleToUse->outlineWidth();
 
     int outlineOffset = styleToUse->outlineOffset();

@@ -4072,7 +4072,7 @@ void RenderBox::incrementallyInvalidatePaint(const RenderLayerModelObject* paint
     if (!style()->hasBorder() && !style()->boxShadow() && !style()->hasBorderImageOutsets() && !style()->hasOutline())
         return;
 
-    RenderStyle* outlineStyle = outlineStyleForPaintInvalidation();
+    RenderStyle* outlineStyle = this->outlineStyle();
     LayoutUnit outlineWidth = outlineStyle->outlineSize();
     LayoutBoxExtent insetShadowExtent = style()->getBoxShadowInsetExtent();
     LayoutUnit deltaWidth = absoluteValue(newBounds.width() - oldBounds.width());
@@ -4164,8 +4164,9 @@ LayoutBoxExtent RenderBox::computeVisualEffectOverflowExtent() const
         left = std::max(left, borderOutsets.left());
     }
 
-    if (style()->hasOutline()) {
-        LayoutUnit outlineSize = style()->outlineSize();
+    RenderStyle* outlineStyle = this->outlineStyle();
+    if (outlineStyle->hasOutline()) {
+        LayoutUnit outlineSize = outlineStyle->outlineSize();
         top = std::max(top, outlineSize);
         right = std::max(right, outlineSize);
         bottom = std::max(bottom, outlineSize);
