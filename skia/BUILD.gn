@@ -541,6 +541,9 @@ source_set("skia_opts") {
       # SSSE 3
       "//third_party/skia/src/opts/SkBitmapProcState_opts_SSSE3.cpp",
 
+      # SSE 4
+      "//third_party/skia/src/opts/SkBlurImage_opts_SSE4.cpp",
+
       # Chrome-specific.
       "ext/convolver_SSE2.cc",
 

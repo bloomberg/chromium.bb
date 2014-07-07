@@ -219,6 +219,9 @@
         '../third_party/skia/include/core',
         '../third_party/skia/src/core',
       ],
+      'sources': [
+        '../third_party/skia/src/opts/SkBlurImage_opts_SSE4.cpp',
+      ],
       'conditions': [
         [ 'OS in ["linux", "freebsd", "openbsd", "solaris", "android"]', {
           'cflags': [
