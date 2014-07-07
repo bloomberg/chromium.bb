@@ -658,7 +658,7 @@ void ServiceWorkerStorage::DidGetAllRegistrations(
 
     if (it->is_active) {
       info.active_version.is_null = false;
-      info.active_version.status = ServiceWorkerVersion::ACTIVE;
+      info.active_version.status = ServiceWorkerVersion::ACTIVATED;
       info.active_version.version_id = it->version_id;
     } else {
       info.waiting_version.is_null = false;
@@ -741,11 +741,11 @@ ServiceWorkerStorage::GetOrCreateRegistration(
   if (!version) {
     version = new ServiceWorkerVersion(registration, data.version_id, context_);
     version->SetStatus(data.is_active ?
-        ServiceWorkerVersion::ACTIVE : ServiceWorkerVersion::INSTALLED);
+        ServiceWorkerVersion::ACTIVATED : ServiceWorkerVersion::INSTALLED);
     version->script_cache_map()->SetResources(resources);
   }
 
-  if (version->status() == ServiceWorkerVersion::ACTIVE)
+  if (version->status() == ServiceWorkerVersion::ACTIVATED)
     registration->SetActiveVersion(version);
   else if (version->status() == ServiceWorkerVersion::INSTALLED)
     registration->SetWaitingVersion(version);

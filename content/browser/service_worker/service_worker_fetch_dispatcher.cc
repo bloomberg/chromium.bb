@@ -35,7 +35,7 @@ ServiceWorkerFetchDispatcher::~ServiceWorkerFetchDispatcher() {}
 
 void ServiceWorkerFetchDispatcher::Run() {
   DCHECK(version_->status() == ServiceWorkerVersion::ACTIVATING ||
-         version_->status() == ServiceWorkerVersion::ACTIVE)
+         version_->status() == ServiceWorkerVersion::ACTIVATED)
       << version_->status();
 
   if (version_->status() == ServiceWorkerVersion::ACTIVATING) {
@@ -48,7 +48,7 @@ void ServiceWorkerFetchDispatcher::Run() {
 }
 
 void ServiceWorkerFetchDispatcher::DidWaitActivation() {
-  if (version_->status() != ServiceWorkerVersion::ACTIVE) {
+  if (version_->status() != ServiceWorkerVersion::ACTIVATED) {
     DCHECK_EQ(ServiceWorkerVersion::INSTALLED, version_->status());
     DidFailActivation();
     return;

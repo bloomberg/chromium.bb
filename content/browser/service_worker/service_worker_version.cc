@@ -277,7 +277,7 @@ void ServiceWorkerVersion::DispatchActivateEvent(
 void ServiceWorkerVersion::DispatchFetchEvent(
     const ServiceWorkerFetchRequest& request,
     const FetchCallback& callback) {
-  DCHECK_EQ(ACTIVE, status()) << status();
+  DCHECK_EQ(ACTIVATED, status()) << status();
 
   if (running_status() != RUNNING) {
     // Schedule calling this method after starting the worker.
@@ -302,7 +302,7 @@ void ServiceWorkerVersion::DispatchFetchEvent(
 }
 
 void ServiceWorkerVersion::DispatchSyncEvent(const StatusCallback& callback) {
-  DCHECK_EQ(ACTIVE, status()) << status();
+  DCHECK_EQ(ACTIVATED, status()) << status();
 
   if (!CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableServiceWorkerSync)) {
@@ -331,7 +331,7 @@ void ServiceWorkerVersion::DispatchSyncEvent(const StatusCallback& callback) {
 
 void ServiceWorkerVersion::DispatchPushEvent(const StatusCallback& callback,
                                              const std::string& data) {
-  DCHECK_EQ(ACTIVE, status()) << status();
+  DCHECK_EQ(ACTIVATED, status()) << status();
 
   if (!CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableExperimentalWebPlatformFeatures)) {
@@ -565,7 +565,7 @@ void ServiceWorkerVersion::OnActivateEventFinished(
     status = SERVICE_WORKER_ERROR_ACTIVATE_WORKER_FAILED;
     SetStatus(REDUNDANT);
   } else {
-    SetStatus(ACTIVE);
+    SetStatus(ACTIVATED);
   }
 
   scoped_refptr<ServiceWorkerVersion> protect(this);

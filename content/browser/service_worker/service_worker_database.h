@@ -57,7 +57,7 @@ class CONTENT_EXPORT ServiceWorkerDatabase {
 
     // Versions are first stored once they successfully install and become
     // the waiting version. Then transition to the active version. The stored
-    // version may be in the ACTIVE state or in the INSTALLED state.
+    // version may be in the ACTIVATED state or in the INSTALLED state.
     int64 version_id;
     bool is_active;
     bool has_fetch_handler;

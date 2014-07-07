@@ -36,7 +36,7 @@ class ServiceWorkerVersionInfo;
 // This class corresponds to a specific version of a ServiceWorker
 // script for a given pattern. When a script is upgraded, there may be
 // more than one ServiceWorkerVersion "running" at a time, but only
-// one of them is active. This class connects the actual script with a
+// one of them is activated. This class connects the actual script with a
 // running worker.
 class CONTENT_EXPORT ServiceWorkerVersion
     : NON_EXPORTED_BASE(public base::RefCounted<ServiceWorkerVersion>),
@@ -56,15 +56,15 @@ class CONTENT_EXPORT ServiceWorkerVersion
     STOPPING = EmbeddedWorkerInstance::STOPPING,
   };
 
-  // Current version status; some of the status (e.g. INSTALLED and ACTIVE)
+  // Current version status; some of the status (e.g. INSTALLED and ACTIVATED)
   // should be persisted unlike running status.
   enum Status {
     NEW,         // The version is just created.
     INSTALLING,  // Install event is dispatched and being handled.
     INSTALLED,   // Install event is finished and is ready to be activated.
     ACTIVATING,  // Activate event is dispatched and being handled.
-    ACTIVE,      // Activation is finished and can run as active.
-    REDUNDANT,   // The version is no longer running as active, due to
+    ACTIVATED,      // Activation is finished and can run as activated.
+    REDUNDANT,   // The version is no longer running as activated, due to
                  // unregistration or replace.
   };
 
@@ -149,7 +149,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
   // calls |callback| when it errors out or it gets response from the worker
   // to notify install completion.
   // |active_version_id| must be a valid positive ID
-  // if there's an active (previous) version running.
+  // if there's an activated (previous) version running.
   //
   // This must be called when the status() is NEW. Calling this changes
   // the version's status to INSTALLING.
@@ -164,14 +164,14 @@ class CONTENT_EXPORT ServiceWorkerVersion
   //
   // This must be called when the status() is INSTALLED. Calling this changes
   // the version's status to ACTIVATING.
-  // Upon completion, the version's status will be changed to ACTIVE
+  // Upon completion, the version's status will be changed to ACTIVATED
   // on success, or back to INSTALLED on failure.
   void DispatchActivateEvent(const StatusCallback& callback);
 
   // Sends fetch event to the associated embedded worker and calls
   // |callback| with the response from the worker.
   //
-  // This must be called when the status() is ACTIVE. Calling this in other
+  // This must be called when the status() is ACTIVATED. Calling this in other
   // statuses will result in an error SERVICE_WORKER_ERROR_FAILED.
   void DispatchFetchEvent(const ServiceWorkerFetchRequest& request,
                           const FetchCallback& callback);
@@ -180,14 +180,14 @@ class CONTENT_EXPORT ServiceWorkerVersion
   // |callback| when it errors out or it gets response from the worker to notify
   // completion.
   //
-  // This must be called when the status() is ACTIVE.
+  // This must be called when the status() is ACTIVATED.
   void DispatchSyncEvent(const StatusCallback& callback);
 
   // Sends push event to the associated embedded worker and asynchronously calls
   // |callback| when it errors out or it gets response from the worker to notify
   // completion.
   //
-  // This must be called when the status() is ACTIVE.
+  // This must be called when the status() is ACTIVATED.
   void DispatchPushEvent(const StatusCallback& callback,
                          const std::string& data);
 

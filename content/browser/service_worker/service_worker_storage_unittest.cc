@@ -360,7 +360,7 @@ TEST_F(ServiceWorkerStorageTest, StoreFindUpdateDeleteRegistration) {
   // Update to active.
   scoped_refptr<ServiceWorkerVersion> temp_version =
       found_registration->waiting_version();
-  temp_version->SetStatus(ServiceWorkerVersion::ACTIVE);
+  temp_version->SetStatus(ServiceWorkerVersion::ACTIVATED);
   found_registration->SetActiveVersion(temp_version);
   temp_version = NULL;
   EXPECT_EQ(SERVICE_WORKER_OK, UpdateToActiveState(found_registration));
@@ -382,7 +382,7 @@ TEST_F(ServiceWorkerStorageTest, StoreFindUpdateDeleteRegistration) {
   EXPECT_TRUE(found_registration->HasOneRef());
   EXPECT_FALSE(found_registration->waiting_version());
   ASSERT_TRUE(found_registration->active_version());
-  EXPECT_EQ(ServiceWorkerVersion::ACTIVE,
+  EXPECT_EQ(ServiceWorkerVersion::ACTIVATED,
             found_registration->active_version()->status());
 
   // Delete from storage but with a instance still live.

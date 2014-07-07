@@ -183,7 +183,7 @@ class ServiceWorkerURLRequestJobTest : public testing::Test {
 };
 
 TEST_F(ServiceWorkerURLRequestJobTest, Simple) {
-  version_->SetStatus(ServiceWorkerVersion::ACTIVE);
+  version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
   TestRequest(200, "OK", std::string());
 }
 
@@ -235,13 +235,13 @@ TEST_F(ServiceWorkerURLRequestJobTest, BlobResponse) {
       blob_storage_context->context()->AddFinishedBlob(blob_data_);
   SetUpWithHelper(new BlobResponder(kProcessID, blob_handle->uuid()));
 
-  version_->SetStatus(ServiceWorkerVersion::ACTIVE);
+  version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
   TestRequest(200, "OK", expected_response);
 }
 
 TEST_F(ServiceWorkerURLRequestJobTest, NonExistentBlobUUIDResponse) {
   SetUpWithHelper(new BlobResponder(kProcessID, "blob-id:nothing-is-here"));
-  version_->SetStatus(ServiceWorkerVersion::ACTIVE);
+  version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
   TestRequest(500, "Service Worker Response Error", std::string());
 }
 
@@ -257,7 +257,7 @@ TEST_F(ServiceWorkerURLRequestJobTest, FetchGeneratedResponse) {
       blob_storage_context->context()->AddFinishedBlob(blob_data_);
   SetUpWithHelper(new BlobResponder(kProcessID, blob_handle->uuid()));
 
-  version_->SetStatus(ServiceWorkerVersion::ACTIVE);
+  version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
 
   std::map<std::string, std::string> expected_headers;
   expected_headers["Service-Worker"] = "generated";

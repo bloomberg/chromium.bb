@@ -297,10 +297,10 @@ TEST_F(ServiceWorkerVersionTest, ActivateAndWaitCompletion) {
   base::RunLoop().RunUntilIdle();
 
   // After successful completion, version's status must be changed to
-  // ACTIVE, and status change callback must have been fired.
+  // ACTIVATED, and status change callback must have been fired.
   EXPECT_EQ(SERVICE_WORKER_OK, status);
   EXPECT_TRUE(status_change_called);
-  EXPECT_EQ(ServiceWorkerVersion::ACTIVE, version_->status());
+  EXPECT_EQ(ServiceWorkerVersion::ACTIVATED, version_->status());
 }
 
 TEST_F(ServiceWorkerVersionTest, RepeatedlyObserveStatusChanges) {
@@ -327,7 +327,7 @@ TEST_F(ServiceWorkerVersionTest, RepeatedlyObserveStatusChanges) {
   ASSERT_EQ(ServiceWorkerVersion::INSTALLING, statuses[0]);
   ASSERT_EQ(ServiceWorkerVersion::INSTALLED, statuses[1]);
   ASSERT_EQ(ServiceWorkerVersion::ACTIVATING, statuses[2]);
-  ASSERT_EQ(ServiceWorkerVersion::ACTIVE, statuses[3]);
+  ASSERT_EQ(ServiceWorkerVersion::ACTIVATED, statuses[3]);
 }
 
 TEST_F(ServiceWorkerVersionTest, AddAndRemoveProcesses) {

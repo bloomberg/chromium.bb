@@ -137,7 +137,7 @@ class WorkerActivatedObserver
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
     const ServiceWorkerVersion* version =
         context_->context()->GetLiveVersion(version_id);
-    if (version->status() == ServiceWorkerVersion::ACTIVE) {
+    if (version->status() == ServiceWorkerVersion::ACTIVATED) {
       context_->RemoveObserver(this);
       BrowserThread::PostTask(BrowserThread::UI,
                               FROM_HERE,
@@ -457,7 +457,7 @@ class ServiceWorkerVersionBrowserTest : public ServiceWorkerBrowserTest {
         "GET",
         std::map<std::string, std::string>(),
         false);
-    version_->SetStatus(ServiceWorkerVersion::ACTIVE);
+    version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
     version_->DispatchFetchEvent(
         request, CreateResponseReceiver(BrowserThread::UI, done,
                                         blob_context_, result));
@@ -472,7 +472,7 @@ class ServiceWorkerVersionBrowserTest : public ServiceWorkerBrowserTest {
   void SyncEventOnIOThread(const base::Closure& done,
                            ServiceWorkerStatusCode* result) {
     ASSERT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::IO));
-    version_->SetStatus(ServiceWorkerVersion::ACTIVE);
+    version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
     version_->DispatchSyncEvent(
         CreateReceiver(BrowserThread::UI, done, result));
   }
@@ -586,7 +586,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest,
 IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest,
                        Activate_NoEventListener) {
   ActivateTestHelper("/service_worker/worker.js", SERVICE_WORKER_OK);
-  ASSERT_EQ(ServiceWorkerVersion::ACTIVE, version_->status());
+  ASSERT_EQ(ServiceWorkerVersion::ACTIVATED, version_->status());
 }
 
 IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest, Activate_Rejected) {
