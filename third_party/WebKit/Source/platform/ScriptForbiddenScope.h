@@ -5,6 +5,7 @@
 #ifndef ScriptForbiddenScope_h
 #define ScriptForbiddenScope_h
 
+#include "platform/PlatformExport.h"
 #include "wtf/Assertions.h"
 #include "wtf/TemporaryChange.h"
 
@@ -12,12 +13,12 @@ namespace WebCore {
 
 #if ASSERT_ENABLED
 
-class ScriptForbiddenScope {
+class PLATFORM_EXPORT ScriptForbiddenScope {
 public:
     ScriptForbiddenScope();
     ~ScriptForbiddenScope();
 
-    class AllowUserAgentScript {
+    class PLATFORM_EXPORT AllowUserAgentScript {
     public:
         AllowUserAgentScript();
         ~AllowUserAgentScript();
@@ -30,7 +31,7 @@ public:
 
 #else
 
-class ScriptForbiddenScope {
+class PLATFORM_EXPORT ScriptForbiddenScope {
 public:
     ScriptForbiddenScope() { }
     class AllowUserAgentScript {

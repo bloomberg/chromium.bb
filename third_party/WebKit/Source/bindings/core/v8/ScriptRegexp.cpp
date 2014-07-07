@@ -32,7 +32,7 @@
 #include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8PerIsolateData.h"
 #include "bindings/core/v8/V8ScriptRunner.h"
-#include "core/dom/ScriptForbiddenScope.h"
+#include "platform/ScriptForbiddenScope.h"
 
 namespace WebCore {
 

@@ -116,6 +116,8 @@
       'RefCountedSupplement.h',
       'SSLKeyGenerator.cpp',
       'SSLKeyGenerator.h',
+      'ScriptForbiddenScope.cpp',
+      'ScriptForbiddenScope.h',
       'SecureTextInput.cpp',
       'SecureTextInput.h',
       'SerializedResource.h',

@@ -33,7 +33,7 @@
 
 #include "bindings/core/v8/V8PerIsolateData.h"
 #include "core/dom/ExecutionContext.h"
-#include "core/dom/ScriptForbiddenScope.h"
+#include "platform/ScriptForbiddenScope.h"
 #include "wtf/Noncopyable.h"
 #include <v8.h>
 

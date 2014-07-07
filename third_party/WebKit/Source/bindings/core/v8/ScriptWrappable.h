@@ -32,7 +32,7 @@
 #define ScriptWrappable_h
 
 #include "bindings/core/v8/WrapperTypeInfo.h"
-#include "core/dom/ScriptForbiddenScope.h"
+#include "platform/ScriptForbiddenScope.h"
 #include "platform/heap/Handle.h"
 #include <v8.h>
 

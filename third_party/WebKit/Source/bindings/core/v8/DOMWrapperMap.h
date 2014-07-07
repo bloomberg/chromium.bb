@@ -32,7 +32,7 @@
 #define DOMWrapperMap_h
 
 #include "bindings/core/v8/WrapperTypeInfo.h"
-#include "core/dom/ScriptForbiddenScope.h"
+#include "platform/ScriptForbiddenScope.h"
 #include "wtf/HashMap.h"
 #include <v8-util.h>
 #include <v8.h>

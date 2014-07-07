@@ -2061,8 +2061,6 @@
             'dom/RequestAnimationFrameCallback.h',
             'dom/SandboxFlags.cpp',
             'dom/SandboxFlags.h',
-            'dom/ScriptForbiddenScope.cpp',
-            'dom/ScriptForbiddenScope.h',
             'dom/ScriptLoader.cpp',
             'dom/ScriptLoader.h',
             'dom/ScriptRunner.cpp',

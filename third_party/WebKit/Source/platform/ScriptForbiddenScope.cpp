@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "config.h"
-#include "core/dom/ScriptForbiddenScope.h"
+#include "platform/ScriptForbiddenScope.h"
 
 #include "wtf/Assertions.h"
 #include "wtf/MainThread.h"
