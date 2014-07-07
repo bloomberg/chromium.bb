@@ -303,9 +303,6 @@ bool RenderListItem::updateMarkerLocation()
     if (markerParent != lineBoxParent) {
         updateFirstLetter();
         m_marker->remove();
-        // FIXME(crbug.com/391009): Investigate whether this call is needed.
-        if (markerParent)
-            markerParent->dirtyLinesFromChangedChild(m_marker);
         lineBoxParent->addChild(m_marker, firstNonMarkerChild(lineBoxParent));
         m_marker->updateMarginsAndContent();
         // If markerParent is an anonymous block with no children, destroy it.
