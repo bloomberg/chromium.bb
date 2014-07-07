@@ -9,6 +9,15 @@
   </outputs>
   <release seq="1">
     <includes>
+      <include name="IDR_PICKER_COMMON_JS" file="../Source/web/resources/pickerCommon.js" type="BINDATA"/>
+      <include name="IDR_PICKER_COMMON_CSS" file="../Source/web/resources/pickerCommon.css" type="BINDATA"/>
+      <include name="IDR_CALENDAR_PICKER_CSS" file="../Source/web/resources/calendarPicker.css" type="BINDATA"/>
+      <include name="IDR_CALENDAR_PICKER_JS" file="../Source/web/resources/calendarPicker.js" type="BINDATA"/>
+      <include name="IDR_PICKER_BUTTON_CSS" file="../Source/web/resources/pickerButton.css" type="BINDATA"/>
+      <include name="IDR_SUGGESTION_PICKER_CSS" file="../Source/web/resources/suggestionPicker.css" type="BINDATA"/>
+      <include name="IDR_SUGGESTION_PICKER_JS" file="../Source/web/resources/suggestionPicker.js" type="BINDATA"/>
+      <include name="IDR_COLOR_SUGGESTION_PICKER_CSS" file="../Source/web/resources/colorSuggestionPicker.css" type="BINDATA"/>
+      <include name="IDR_COLOR_SUGGESTION_PICKER_JS" file="../Source/web/resources/colorSuggestionPicker.js" type="BINDATA"/>
       <if expr="pp_ifdef('use_concatenated_impulse_responses')">
         <include name="IDR_AUDIO_SPATIALIZATION_COMPOSITE" file="../Source/platform/audio/resources/Composite.wav" type="BINDATA"/>
       </if>

@@ -60,7 +60,7 @@ public:
 
     bool isEmpty() const { return !size(); }
 
-    void append(SharedBuffer*);
+    void append(PassRefPtr<SharedBuffer>);
     void append(const char*, unsigned);
     void append(const Vector<char>&);
 

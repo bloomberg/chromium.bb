@@ -39,9 +39,8 @@
 #include "platform/DateTimeChooserClient.h"
 #include "platform/Language.h"
 #include "platform/text/PlatformLocale.h"
-#include "web/CalendarPicker.h"
+#include "public/platform/Platform.h"
 #include "web/ChromeClientImpl.h"
-#include "web/PickerCommon.h"
 #include "web/WebViewImpl.h"
 
 using namespace WebCore;
@@ -118,10 +117,10 @@ void DateTimeChooserImpl::writeDocument(WebCore::SharedBuffer* data)
     }
 
     addString("<!DOCTYPE html><head><meta charset='UTF-8'><style>\n", data);
-    data->append(pickerCommonCss, sizeof(pickerCommonCss));
-    data->append(pickerButtonCss, sizeof(pickerButtonCss));
-    data->append(suggestionPickerCss, sizeof(suggestionPickerCss));
-    data->append(calendarPickerCss, sizeof(calendarPickerCss));
+    data->append(blink::Platform::current()->loadResource("pickerCommon.css"));
+    data->append(blink::Platform::current()->loadResource("pickerButton.css"));
+    data->append(blink::Platform::current()->loadResource("suggestionPicker.css"));
+    data->append(blink::Platform::current()->loadResource("calendarPicker.css"));
     addString("</style></head><body><div id=main>Loading...</div><script>\n"
         "window.dialogArguments = {\n", data);
     addProperty("anchorRectInScreen", anchorRectInScreen, data);
@@ -161,9 +160,9 @@ void DateTimeChooserImpl::writeDocument(WebCore::SharedBuffer* data)
     }
     addString("}\n", data);
 
-    data->append(pickerCommonJs, sizeof(pickerCommonJs));
-    data->append(suggestionPickerJs, sizeof(suggestionPickerJs));
-    data->append(calendarPickerJs, sizeof(calendarPickerJs));
+    data->append(blink::Platform::current()->loadResource("pickerCommon.js"));
+    data->append(blink::Platform::current()->loadResource("suggestionPicker.js"));
+    data->append(blink::Platform::current()->loadResource("calendarPicker.js"));
     addString("</script></body>\n", data);
 }
 

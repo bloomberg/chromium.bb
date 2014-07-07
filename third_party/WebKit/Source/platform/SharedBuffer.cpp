@@ -232,7 +232,7 @@ const char* SharedBuffer::data() const
     return m_buffer.data();
 }
 
-void SharedBuffer::append(SharedBuffer* data)
+void SharedBuffer::append(PassRefPtr<SharedBuffer> data)
 {
     const char* segment;
     size_t position = 0;
