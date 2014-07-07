@@ -139,7 +139,7 @@ int TestOpenThread(DWORD thread_id) {
   }
 }
 
-SBOX_TESTS_COMMAND int OpenFile(int argc, wchar_t **argv) {
+SBOX_TESTS_COMMAND int OpenFileCmd(int argc, wchar_t **argv) {
   if (1 != argc)
     return SBOX_TEST_FAILED_TO_EXECUTE_COMMAND;
 
@@ -161,7 +161,7 @@ int TestOpenWriteFile(int argc, wchar_t **argv) {
   trim_quote(&path);
 
   return TestOpenWriteFile(path);
-  }
+}
 
 int TestOpenWriteFile(const base::string16& path) {
   return TestOpenFile(path, true);

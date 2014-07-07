@@ -80,19 +80,19 @@ TEST(ValidationSuite, TestFileSystem) {
   ASSERT_TRUE(VolumeSupportsACLs(L"%AppData%\\"));
 
   TestRunner runner;
-  EXPECT_EQ(SBOX_TEST_DENIED, runner.RunTest(L"OpenFile %SystemDrive%"));
-  EXPECT_EQ(SBOX_TEST_DENIED, runner.RunTest(L"OpenFile %SystemRoot%"));
-  EXPECT_EQ(SBOX_TEST_DENIED, runner.RunTest(L"OpenFile %ProgramFiles%"));
+  EXPECT_EQ(SBOX_TEST_DENIED, runner.RunTest(L"OpenFileCmd %SystemDrive%"));
+  EXPECT_EQ(SBOX_TEST_DENIED, runner.RunTest(L"OpenFileCmd %SystemRoot%"));
+  EXPECT_EQ(SBOX_TEST_DENIED, runner.RunTest(L"OpenFileCmd %ProgramFiles%"));
   EXPECT_EQ(SBOX_TEST_DENIED,
-      runner.RunTest(L"OpenFile %SystemRoot%\\System32"));
+      runner.RunTest(L"OpenFileCmd %SystemRoot%\\System32"));
   EXPECT_EQ(SBOX_TEST_DENIED,
-      runner.RunTest(L"OpenFile %SystemRoot%\\explorer.exe"));
+      runner.RunTest(L"OpenFileCmd %SystemRoot%\\explorer.exe"));
   EXPECT_EQ(SBOX_TEST_DENIED,
-      runner.RunTest(L"OpenFile %SystemRoot%\\Cursors\\arrow_i.cur"));
+      runner.RunTest(L"OpenFileCmd %SystemRoot%\\Cursors\\arrow_i.cur"));
   EXPECT_EQ(SBOX_TEST_DENIED,
-      runner.RunTest(L"OpenFile %AllUsersProfile%"));
-  EXPECT_EQ(SBOX_TEST_DENIED, runner.RunTest(L"OpenFile %Temp%"));
-  EXPECT_EQ(SBOX_TEST_DENIED, runner.RunTest(L"OpenFile %AppData%"));
+      runner.RunTest(L"OpenFileCmd %AllUsersProfile%"));
+  EXPECT_EQ(SBOX_TEST_DENIED, runner.RunTest(L"OpenFileCmd %Temp%"));
+  EXPECT_EQ(SBOX_TEST_DENIED, runner.RunTest(L"OpenFileCmd %AppData%"));
 }
 
 // Tests if the registry is correctly protected by the sandbox.
