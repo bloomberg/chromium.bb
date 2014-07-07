@@ -25,6 +25,7 @@
 #include "chrome/browser/common/cancelable_request.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/net/chrome_cookie_notification_details.h"
+#include "chrome/browser/net/prediction_options.h"
 #include "chrome/browser/predictors/predictor_database.h"
 #include "chrome/browser/predictors/predictor_database_factory.h"
 #include "chrome/browser/prerender/prerender_condition.h"
@@ -1861,6 +1862,14 @@ void PrerenderManager::RecordNetworkBytes(Origin origin,
 
 bool PrerenderManager::IsEnabled() const {
   DCHECK(CalledOnValidThread());
+
+  // TODO(bnc): remove conditional as per crbug.com/334602.
+  if (profile_ && profile_->GetPrefs() &&
+        profile_->GetPrefs()->GetInteger(prefs::kNetworkPredictionOptions) !=
+        chrome_browser_net::NETWORK_PREDICTION_UNSET) {
+    return chrome_browser_net::CanPredictNetworkActionsUI(profile_->GetPrefs());
+  }
+  // TODO(bnc): remove rest of method as per crbug.com/334602.
   if (!enabled_)
     return false;
   for (std::list<const PrerenderCondition*>::const_iterator it =
