@@ -43,13 +43,7 @@ class DevToolsWindow : public DevToolsUIBindings::Delegate,
 
   virtual ~DevToolsWindow();
 
-  static std::string GetDevToolsWindowPlacementPrefKey();
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
-
-  // Return the DevToolsWindow for the given RenderViewHost if one exists,
-  // otherwise NULL.
-  static DevToolsWindow* GetInstanceForInspectedRenderViewHost(
-      content::RenderViewHost* inspected_rvh);
 
   // Return the DevToolsWindow for the given WebContents if one exists,
   // otherwise NULL.
@@ -67,7 +61,7 @@ class DevToolsWindow : public DevToolsUIBindings::Delegate,
       content::WebContents* inspected_tab,
       DevToolsContentsResizingStrategy* out_strategy);
 
-  static bool IsDevToolsWindow(content::RenderViewHost* window_rvh);
+  static bool IsDevToolsWindow(content::WebContents* web_contents);
 
   // Open or reveal DevTools window, and perform the specified action.
   static DevToolsWindow* OpenDevToolsWindow(
@@ -225,12 +219,14 @@ class DevToolsWindow : public DevToolsUIBindings::Delegate,
                              bool external_frontend,
                              bool can_dock);
   static DevToolsWindow* FindDevToolsWindow(content::DevToolsAgentHost*);
-  static DevToolsWindow* AsDevToolsWindow(content::RenderViewHost*);
+  static DevToolsWindow* AsDevToolsWindow(content::WebContents*);
   static DevToolsWindow* CreateDevToolsWindowForWorker(Profile* profile);
   static DevToolsWindow* ToggleDevToolsWindow(
       content::RenderViewHost* inspected_rvh,
       bool force_open,
       const DevToolsToggleAction& action);
+
+  static std::string GetDevToolsWindowPlacementPrefKey();
 
   // content::WebContentsDelegate:
   virtual content::WebContents* OpenURLFromTab(

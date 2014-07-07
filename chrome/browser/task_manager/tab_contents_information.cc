@@ -140,7 +140,7 @@ TabContentsInformation::~TabContentsInformation() {}
 bool TabContentsInformation::CheckOwnership(
     content::WebContents* web_contents) {
   return chrome::FindBrowserWithWebContents(web_contents) ||
-         DevToolsWindow::IsDevToolsWindow(web_contents->GetRenderViewHost()) ||
+         DevToolsWindow::IsDevToolsWindow(web_contents) ||
          IsContentsPrerendering(web_contents);
 }
 

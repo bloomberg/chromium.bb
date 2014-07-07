@@ -148,8 +148,9 @@ class SpellCheckObserver : public content::WebContentsObserver {
 - (BOOL)shouldAllowHistorySwiping {
   if (!renderWidgetHost_ || !renderWidgetHost_->IsRenderView())
     return NO;
-  if (DevToolsWindow::IsDevToolsWindow(
-      RenderViewHost::From(renderWidgetHost_))) {
+  content::WebContents* webContents = content::WebContents::FromRenderViewHost(
+      RenderViewHost::From(renderWidgetHost_));
+  if (webContents && DevToolsWindow::IsDevToolsWindow(webContents)) {
     return NO;
   }
 

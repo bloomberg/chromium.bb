@@ -385,28 +385,22 @@ content::WebContents* DevToolsWindow::GetInTabWebContents(
 }
 
 // static
-DevToolsWindow* DevToolsWindow::GetInstanceForInspectedRenderViewHost(
-      content::RenderViewHost* inspected_rvh) {
-  if (!inspected_rvh || !DevToolsAgentHost::HasFor(inspected_rvh))
-    return NULL;
-
-  scoped_refptr<DevToolsAgentHost> agent(DevToolsAgentHost::GetOrCreateFor(
-      inspected_rvh));
-  return FindDevToolsWindow(agent.get());
-}
-
-// static
 DevToolsWindow* DevToolsWindow::GetInstanceForInspectedWebContents(
     WebContents* inspected_web_contents) {
-  if (!inspected_web_contents)
+  if (!inspected_web_contents || g_instances == NULL)
     return NULL;
-  return GetInstanceForInspectedRenderViewHost(
-      inspected_web_contents->GetRenderViewHost());
+  DevToolsWindows* instances = g_instances.Pointer();
+  for (DevToolsWindows::iterator it(instances->begin()); it != instances->end();
+       ++it) {
+    if ((*it)->GetInspectedWebContents() == inspected_web_contents)
+      return *it;
+  }
+  return NULL;
 }
 
 // static
-bool DevToolsWindow::IsDevToolsWindow(content::RenderViewHost* window_rvh) {
-  return AsDevToolsWindow(window_rvh) != NULL;
+bool DevToolsWindow::IsDevToolsWindow(content::WebContents* web_contents) {
+  return AsDevToolsWindow(web_contents) != NULL;
 }
 
 // static
@@ -617,8 +611,7 @@ void DevToolsWindow::Show(const DevToolsToggleAction& action) {
 // static
 bool DevToolsWindow::HandleBeforeUnload(WebContents* frontend_contents,
     bool proceed, bool* proceed_to_fire_unload) {
-  DevToolsWindow* window = AsDevToolsWindow(
-      frontend_contents->GetRenderViewHost());
+  DevToolsWindow* window = AsDevToolsWindow(frontend_contents);
   if (!window)
     return false;
   if (!window->intercepted_page_beforeunload_)
@@ -631,8 +624,7 @@ bool DevToolsWindow::HandleBeforeUnload(WebContents* frontend_contents,
 // static
 bool DevToolsWindow::InterceptPageBeforeUnload(WebContents* contents) {
   DevToolsWindow* window =
-      DevToolsWindow::GetInstanceForInspectedRenderViewHost(
-          contents->GetRenderViewHost());
+      DevToolsWindow::GetInstanceForInspectedWebContents(contents);
   if (!window || window->intercepted_page_beforeunload_)
     return false;
 
@@ -653,8 +645,7 @@ bool DevToolsWindow::InterceptPageBeforeUnload(WebContents* contents) {
 bool DevToolsWindow::NeedsToInterceptBeforeUnload(
     WebContents* contents) {
   DevToolsWindow* window =
-      DevToolsWindow::GetInstanceForInspectedRenderViewHost(
-          contents->GetRenderViewHost());
+      DevToolsWindow::GetInstanceForInspectedWebContents(contents);
   return window && !window->intercepted_page_beforeunload_;
 }
 
@@ -669,7 +660,7 @@ bool DevToolsWindow::HasFiredBeforeUnloadEventForDevToolsBrowser(
     return true;
   WebContents* contents =
       browser->tab_strip_model()->GetWebContentsAt(0);
-  DevToolsWindow* window = AsDevToolsWindow(contents->GetRenderViewHost());
+  DevToolsWindow* window = AsDevToolsWindow(contents);
   if (!window)
     return false;
   return window->intercepted_page_beforeunload_;
@@ -678,8 +669,7 @@ bool DevToolsWindow::HasFiredBeforeUnloadEventForDevToolsBrowser(
 // static
 void DevToolsWindow::OnPageCloseCanceled(WebContents* contents) {
   DevToolsWindow *window =
-      DevToolsWindow::GetInstanceForInspectedRenderViewHost(
-          contents->GetRenderViewHost());
+      DevToolsWindow::GetInstanceForInspectedWebContents(contents);
   if (!window)
     return;
   window->intercepted_page_beforeunload_ = false;
@@ -782,6 +772,8 @@ GURL DevToolsWindow::GetDevToolsURL(Profile* profile,
 // static
 DevToolsWindow* DevToolsWindow::FindDevToolsWindow(
     DevToolsAgentHost* agent_host) {
+  if (!agent_host || g_instances == NULL)
+    return NULL;
   DevToolsWindows* instances = g_instances.Pointer();
   content::DevToolsManager* manager = content::DevToolsManager::GetInstance();
   for (DevToolsWindows::iterator it(instances->begin()); it != instances->end();
@@ -795,13 +787,13 @@ DevToolsWindow* DevToolsWindow::FindDevToolsWindow(
 
 // static
 DevToolsWindow* DevToolsWindow::AsDevToolsWindow(
-    content::RenderViewHost* window_rvh) {
-  if (g_instances == NULL)
+    content::WebContents* web_contents) {
+  if (!web_contents || g_instances == NULL)
     return NULL;
   DevToolsWindows* instances = g_instances.Pointer();
   for (DevToolsWindows::iterator it(instances->begin()); it != instances->end();
        ++it) {
-    if ((*it)->main_web_contents_->GetRenderViewHost() == window_rvh)
+    if ((*it)->main_web_contents_ == web_contents)
       return *it;
   }
   return NULL;
