@@ -13,12 +13,6 @@ var fileSystem = null;
  * @type {string}
  * @const
  */
-var FILE_SYSTEM_ID = 'vanilla';
-
-/**
- * @type {string}
- * @const
- */
 var TESTING_MIME_TYPE = 'text/secret-testing-mime-type';
 
 /**
@@ -56,26 +50,6 @@ var TESTING_WITHOUT_MIME_FILE = Object.freeze({
 });
 
 /**
- * Gets volume information for the provided file system.
- *
- * @param {string} fileSystemId Id of the provided file system.
- * @param {function(Object)} callback Callback to be called on result, with the
- *     volume information object in case of success, or null if not found.
- */
-function getVolumeInfo(fileSystemId, callback) {
-  chrome.fileBrowserPrivate.getVolumeMetadataList(function(volumeList) {
-    for (var i = 0; i < volumeList.length; i++) {
-      if (volumeList[i].extensionId == chrome.runtime.id &&
-          volumeList[i].fileSystemId == fileSystemId) {
-        callback(volumeList[i]);
-        return;
-      }
-    }
-    callback(null);
-  });
-}
-
-/**
  * Returns metadata for a requested entry.
  *
  * @param {GetMetadataRequestedOptions} options Options.
@@ -84,7 +58,7 @@ function getVolumeInfo(fileSystemId, callback) {
  * @param {function(string)} onError Error callback with an error code.
  */
 function onGetMetadataRequested(options, onSuccess, onError) {
-  if (options.fileSystemId != FILE_SYSTEM_ID) {
+  if (options.fileSystemId != test_util.FILE_SYSTEM_ID) {
     onError('SECURITY');  // enum ProviderError.
     return;
   }
@@ -114,27 +88,9 @@ function onGetMetadataRequested(options, onSuccess, onError) {
  * @param {function()} callback Success callback.
  */
 function setUp(callback) {
-  chrome.fileSystemProvider.mount(
-      {fileSystemId: FILE_SYSTEM_ID, displayName: 'chocolate.zip'},
-      function() {
-        chrome.fileSystemProvider.onGetMetadataRequested.addListener(
-            onGetMetadataRequested);
-
-        getVolumeInfo(FILE_SYSTEM_ID, function(volumeInfo) {
-          chrome.test.assertTrue(!!volumeInfo);
-          chrome.fileBrowserPrivate.requestFileSystem(
-              volumeInfo.volumeId,
-              function(inFileSystem) {
-                chrome.test.assertTrue(!!inFileSystem);
-
-                fileSystem = inFileSystem;
-                callback();
-              });
-        });
-      },
-      function() {
-        chrome.test.fail();
-      });
+  chrome.fileSystemProvider.onGetMetadataRequested.addListener(
+      onGetMetadataRequested);
+  test_util.mountFileSystem(callback);
 }
 
 /**
@@ -146,58 +102,62 @@ function runTests() {
     // appears on a task list.
     function withMimeIsTask() {
       var onSuccess = chrome.test.callbackPass();
-      fileSystem.root.getFile(TESTING_WITH_MIME_FILE.name, {}, function(entry) {
-        chrome.fileBrowserPrivate.getFileTasks(
-            [entry.toURL()],
-            function(tasks) {
-              chrome.test.assertEq(1, tasks.length);
-              chrome.test.assertEq(
-                  "ddammdhioacbehjngdmkjcjbnfginlla|app|magic_handler",
-                  tasks[0].taskId);
-              onSuccess();
-            });
-      }, function(error) {
-        chrome.test.fail(error.name);
-      });
+      test_util.fileSystem.root.getFile(
+          TESTING_WITH_MIME_FILE.name,
+          {},
+          function(entry) {
+          chrome.fileBrowserPrivate.getFileTasks(
+              [entry.toURL()],
+              function(tasks) {
+                chrome.test.assertEq(1, tasks.length);
+                chrome.test.assertEq(
+                    "ddammdhioacbehjngdmkjcjbnfginlla|app|magic_handler",
+                    tasks[0].taskId);
+                onSuccess();
+              });
+          }, function(error) {
+            chrome.test.fail(error.name);
+          });
     },
     // Confirm, that executing that task, will actually run an OnLaunched event.
     // This is another code path, than collecting tasks (tested above).
     function withMimeExecute() {
       var onSuccess = chrome.test.callbackPass();
-      fileSystem.root.getFile(TESTING_WITH_MIME_FILE.name, {}, function(entry) {
-        chrome.fileBrowserPrivate.getFileTasks(
-            [entry.toURL()],
-            function(tasks) {
-              chrome.test.assertEq(1, tasks.length);
-              chrome.test.assertEq(
-                  "ddammdhioacbehjngdmkjcjbnfginlla|app|magic_handler",
-                  tasks[0].taskId);
-              var onLaunched = function(event) {
-                chrome.test.assertTrue(!!event);
-                chrome.test.assertEq("magic_handler", event.id);
-                chrome.test.assertTrue(!!event.items);
-                chrome.test.assertEq(1, event.items.length);
+      test_util.fileSystem.root.getFile(
+          TESTING_WITH_MIME_FILE.name, {}, function(entry) {
+          chrome.fileBrowserPrivate.getFileTasks(
+              [entry.toURL()],
+              function(tasks) {
+                chrome.test.assertEq(1, tasks.length);
                 chrome.test.assertEq(
-                    TESTING_MIME_TYPE, event.items[0].type);
-                chrome.test.assertEq(
-                    TESTING_WITH_MIME_FILE.name,
-                    event.items[0].entry.name);
-                chrome.app.runtime.onLaunched.removeListener(onLaunched);
-                onSuccess();
-              };
-              chrome.app.runtime.onLaunched.addListener(onLaunched);
-              chrome.fileBrowserPrivate.executeTask(
-                  tasks[0].taskId, [entry.toURL()]);
-            });
-      }, function(error) {
-        chrome.test.fail(error.name);
-      });
+                    "ddammdhioacbehjngdmkjcjbnfginlla|app|magic_handler",
+                    tasks[0].taskId);
+                var onLaunched = function(event) {
+                  chrome.test.assertTrue(!!event);
+                  chrome.test.assertEq("magic_handler", event.id);
+                  chrome.test.assertTrue(!!event.items);
+                  chrome.test.assertEq(1, event.items.length);
+                  chrome.test.assertEq(
+                      TESTING_MIME_TYPE, event.items[0].type);
+                  chrome.test.assertEq(
+                      TESTING_WITH_MIME_FILE.name,
+                      event.items[0].entry.name);
+                  chrome.app.runtime.onLaunched.removeListener(onLaunched);
+                  onSuccess();
+                };
+                chrome.app.runtime.onLaunched.addListener(onLaunched);
+                chrome.fileBrowserPrivate.executeTask(
+                    tasks[0].taskId, [entry.toURL()]);
+              });
+          }, function(error) {
+            chrome.test.fail(error.name);
+          });
     },
     // The file without a mime set must not appear on the task list for this
     // testing extension.
     function withoutMime() {
       var onSuccess = chrome.test.callbackPass();
-      fileSystem.root.getFile(
+      test_util.fileSystem.root.getFile(
           TESTING_WITHOUT_MIME_FILE.name,
           {},
           function(entry) {

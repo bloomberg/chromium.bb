@@ -7,7 +7,10 @@
   "permissions": ["fileSystemProvider", "fileBrowserPrivate"],
   "app": {
     "background": {
-      "scripts": ["test.js"]
+      "scripts": [
+        "chrome-extension://gfnblenhaahcnmfdbebgincjohfkbnch/test_util.js",
+        "test.js"
+      ]
     }
   }
 }

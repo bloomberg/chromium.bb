@@ -13,6 +13,15 @@ class FileSystemProviderApiTest : public ExtensionApiTest {
       : current_channel_(chrome::VersionInfo::CHANNEL_UNKNOWN) {
   }
 
+  // Loads a helper testing extension.
+  virtual void SetUpOnMainThread() OVERRIDE {
+    ExtensionApiTest::SetUpOnMainThread();
+    const extensions::Extension* extension = LoadExtensionWithFlags(
+        test_data_dir_.AppendASCII("file_system_provider/test_util"),
+        kFlagEnableIncognito);
+    ASSERT_TRUE(extension);
+  }
+
  private:
   extensions::ScopedCurrentChannel current_channel_;
 };

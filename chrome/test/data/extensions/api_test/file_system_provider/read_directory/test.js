@@ -10,12 +10,6 @@
 var fileSystem = null;
 
 /**
- * @type {string}
- * @const
- */
-var FILE_SYSTEM_ID = 'vanilla';
-
-/**
  * @type {Object}
  * @const
  */
@@ -60,26 +54,6 @@ var TESTING_TIRAMISU_FILE = Object.freeze({
 });
 
 /**
- * Gets volume information for the provided file system.
- *
- * @param {string} fileSystemId Id of the provided file system.
- * @param {function(Object)} callback Callback to be called on result, with the
- *     volume information object in case of success, or null if not found.
- */
-function getVolumeInfo(fileSystemId, callback) {
-  chrome.fileBrowserPrivate.getVolumeMetadataList(function(volumeList) {
-    for (var i = 0; i < volumeList.length; i++) {
-      if (volumeList[i].extensionId == chrome.runtime.id &&
-          volumeList[i].fileSystemId == fileSystemId) {
-        callback(volumeList[i]);
-        return;
-      }
-    }
-    callback(null);
-  });
-}
-
-/**
  * Returns entries in the requested directory.
  *
  * @param {ReadDirectoryRequestedOptions} options Options.
@@ -88,7 +62,7 @@ function getVolumeInfo(fileSystemId, callback) {
  * @param {function(string)} onError Error callback with an error code.
  */
 function onReadDirectoryRequested(options, onSuccess, onError) {
-  if (options.fileSystemId != FILE_SYSTEM_ID) {
+  if (options.fileSystemId != test_util.FILE_SYSTEM_ID) {
     onError('SECURITY');  // enum ProviderError.
     return;
   }
@@ -114,7 +88,7 @@ function onReadDirectoryRequested(options, onSuccess, onError) {
  * @param {function(string)} onError Error callback with an error code.
  */
 function onGetMetadataRequested(options, onSuccess, onError) {
-  if (options.fileSystemId != FILE_SYSTEM_ID) {
+  if (options.fileSystemId != test_util.FILE_SYSTEM_ID) {
     onError('SECURITY');  // enum ProviderError.
     return;
   }
@@ -139,31 +113,11 @@ function onGetMetadataRequested(options, onSuccess, onError) {
  * @param {function()} callback Success callback.
  */
 function setUp(callback) {
-  chrome.fileSystemProvider.mount(
-      {
-        fileSystemId: FILE_SYSTEM_ID,
-        displayName: 'chocolate.zip'
-      },
-      function() {
-        chrome.fileSystemProvider.onReadDirectoryRequested.addListener(
-            onReadDirectoryRequested);
-        chrome.fileSystemProvider.onGetMetadataRequested.addListener(
-            onGetMetadataRequested);
-        getVolumeInfo(FILE_SYSTEM_ID, function(volumeInfo) {
-          chrome.test.assertTrue(!!volumeInfo);
-          chrome.fileBrowserPrivate.requestFileSystem(
-              volumeInfo.volumeId,
-              function(inFileSystem) {
-                chrome.test.assertTrue(!!inFileSystem);
-
-                fileSystem = inFileSystem;
-                callback();
-              });
-        });
-      },
-      function() {
-        chrome.test.fail();
-      });
+  chrome.fileSystemProvider.onGetMetadataRequested.addListener(
+      onGetMetadataRequested);
+  chrome.fileSystemProvider.onReadDirectoryRequested.addListener(
+      onReadDirectoryRequested);
+  test_util.mountFileSystem(callback);
 }
 
 /**
@@ -175,7 +129,7 @@ function runTests() {
     // should succeed.
     function readEntriesSuccess() {
       var onTestSuccess = chrome.test.callbackPass();
-      fileSystem.root.getDirectory(
+      test_util.fileSystem.root.getDirectory(
           'hello',
           {create: false},
           function(dirEntry) {
@@ -212,7 +166,7 @@ function runTests() {
     // error.
     function readEntriesError() {
       var onTestSuccess = chrome.test.callbackPass();
-      fileSystem.root.getDirectory(
+      test_util.fileSystem.root.getDirectory(
           'cranberries',
           {create: false},
           function(dirEntry) {

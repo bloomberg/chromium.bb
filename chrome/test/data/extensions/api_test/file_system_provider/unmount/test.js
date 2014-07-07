@@ -17,26 +17,6 @@ var FIRST_FILE_SYSTEM_ID = 'vanilla';
 var SECOND_FILE_SYSTEM_ID = 'ice-cream';
 
 /**
- * Gets volume information for the provided file system.
- *
- * @param {string} fileSystemId Id of the provided file system.
- * @param {function(Object)} callback Callback to be called on result, with the
- *     volume information object in case of success, or null if not found.
- */
-function getVolumeInfo(fileSystemId, callback) {
-  chrome.fileBrowserPrivate.getVolumeMetadataList(function(volumeList) {
-    for (var i = 0; i < volumeList.length; i++) {
-      if (volumeList[i].extensionId == chrome.runtime.id &&
-          volumeList[i].fileSystemId == fileSystemId) {
-        callback(volumeList[i]);
-        return;
-      }
-    }
-    callback(null);
-  });
-}
-
-/**
  * Sets up the tests. Called once per all test cases. In case of a failure,
  * the callback is not called.
  *
@@ -128,7 +108,7 @@ function runTests() {
       chrome.fileSystemProvider.onUnmountRequested.addListener(
           onUnmountRequested);
 
-      getVolumeInfo(SECOND_FILE_SYSTEM_ID, function(volumeInfo) {
+      test_util.getVolumeInfo(SECOND_FILE_SYSTEM_ID, function(volumeInfo) {
         chrome.test.assertTrue(!!volumeInfo);
         chrome.fileBrowserPrivate.removeMount(volumeInfo.volumeId);
       });
@@ -171,7 +151,7 @@ function runTests() {
           onUnmountRequested);
       chrome.fileBrowserPrivate.onMountCompleted.addListener(onMountCompleted);
 
-      getVolumeInfo(SECOND_FILE_SYSTEM_ID, function(volumeInfo) {
+      test_util.getVolumeInfo(SECOND_FILE_SYSTEM_ID, function(volumeInfo) {
         chrome.test.assertTrue(!!volumeInfo);
         chrome.fileBrowserPrivate.removeMount(volumeInfo.volumeId);
       });
