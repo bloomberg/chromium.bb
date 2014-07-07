@@ -203,7 +203,12 @@ bool TsPacket::ParseAdaptationField(BitReader* bit_reader,
   for (int k = 0; k < adaptation_field_remaining_size; k++) {
     int stuffing_byte;
     RCHECK(bit_reader->ReadBits(8, &stuffing_byte));
-    RCHECK(stuffing_byte == 0xff);
+    // Unfortunately, a lot of streams exist in the field that do not fill
+    // the remaining of the adaptation field with the expected stuffing value:
+    // do not fail if that's the case.
+    DVLOG_IF(1, stuffing_byte != 0xff)
+        << "Stream not compliant: invalid stuffing byte "
+        << std::hex << stuffing_byte;
   }
 
   DVLOG(LOG_LEVEL_TS) << "random_access_indicator=" << random_access_indicator_;
