@@ -385,6 +385,9 @@ PATH_SPECIFIC_WHITELISTED_LICENSES = {
     'v8/test/cctest': [  # http://crbug.com/98597
         'UNKNOWN',
     ],
+    'v8/src/third_party/kernel/tools/perf/util/jitdump.h': [  # http://crbug.com/391716
+        'UNKNOWN',
+    ],
 }
 
 
