@@ -65,44 +65,44 @@ WebSettingsImpl::WebSettingsImpl(Settings* settings, InspectorController* inspec
 
 void WebSettingsImpl::setStandardFontFamily(const WebString& font, UScriptCode script)
 {
-    m_settings->genericFontFamilySettings().setStandard(font, script);
-    m_settings->notifyGenericFontFamilyChange();
+    if (m_settings->genericFontFamilySettings().updateStandard(font, script))
+        m_settings->notifyGenericFontFamilyChange();
 }
 
 void WebSettingsImpl::setFixedFontFamily(const WebString& font, UScriptCode script)
 {
-    m_settings->genericFontFamilySettings().setFixed(font, script);
-    m_settings->notifyGenericFontFamilyChange();
+    if (m_settings->genericFontFamilySettings().updateFixed(font, script))
+        m_settings->notifyGenericFontFamilyChange();
 }
 
 void WebSettingsImpl::setSerifFontFamily(const WebString& font, UScriptCode script)
 {
-    m_settings->genericFontFamilySettings().setSerif(font, script);
-    m_settings->notifyGenericFontFamilyChange();
+    if (m_settings->genericFontFamilySettings().updateSerif(font, script))
+        m_settings->notifyGenericFontFamilyChange();
 }
 
 void WebSettingsImpl::setSansSerifFontFamily(const WebString& font, UScriptCode script)
 {
-    m_settings->genericFontFamilySettings().setSansSerif(font, script);
-    m_settings->notifyGenericFontFamilyChange();
+    if (m_settings->genericFontFamilySettings().updateSansSerif(font, script))
+        m_settings->notifyGenericFontFamilyChange();
 }
 
 void WebSettingsImpl::setCursiveFontFamily(const WebString& font, UScriptCode script)
 {
-    m_settings->genericFontFamilySettings().setCursive(font, script);
-    m_settings->notifyGenericFontFamilyChange();
+    if (m_settings->genericFontFamilySettings().updateCursive(font, script))
+        m_settings->notifyGenericFontFamilyChange();
 }
 
 void WebSettingsImpl::setFantasyFontFamily(const WebString& font, UScriptCode script)
 {
-    m_settings->genericFontFamilySettings().setFantasy(font, script);
-    m_settings->notifyGenericFontFamilyChange();
+    if (m_settings->genericFontFamilySettings().updateFantasy(font, script))
+        m_settings->notifyGenericFontFamilyChange();
 }
 
 void WebSettingsImpl::setPictographFontFamily(const WebString& font, UScriptCode script)
 {
-    m_settings->genericFontFamilySettings().setPictograph(font, script);
-    m_settings->notifyGenericFontFamilyChange();
+    if (m_settings->genericFontFamilySettings().updatePictograph(font, script))
+        m_settings->notifyGenericFontFamilyChange();
 }
 
 void WebSettingsImpl::setDefaultFontSize(int size)

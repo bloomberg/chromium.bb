@@ -694,12 +694,12 @@ Page* InspectorOverlay::overlayPage()
     Settings& settings = m_page->settings();
     Settings& overlaySettings = m_overlayPage->settings();
 
-    overlaySettings.genericFontFamilySettings().setStandard(settings.genericFontFamilySettings().standard());
-    overlaySettings.genericFontFamilySettings().setSerif(settings.genericFontFamilySettings().serif());
-    overlaySettings.genericFontFamilySettings().setSansSerif(settings.genericFontFamilySettings().sansSerif());
-    overlaySettings.genericFontFamilySettings().setCursive(settings.genericFontFamilySettings().cursive());
-    overlaySettings.genericFontFamilySettings().setFantasy(settings.genericFontFamilySettings().fantasy());
-    overlaySettings.genericFontFamilySettings().setPictograph(settings.genericFontFamilySettings().pictograph());
+    overlaySettings.genericFontFamilySettings().updateStandard(settings.genericFontFamilySettings().standard());
+    overlaySettings.genericFontFamilySettings().updateSerif(settings.genericFontFamilySettings().serif());
+    overlaySettings.genericFontFamilySettings().updateSansSerif(settings.genericFontFamilySettings().sansSerif());
+    overlaySettings.genericFontFamilySettings().updateCursive(settings.genericFontFamilySettings().cursive());
+    overlaySettings.genericFontFamilySettings().updateFantasy(settings.genericFontFamilySettings().fantasy());
+    overlaySettings.genericFontFamilySettings().updatePictograph(settings.genericFontFamilySettings().pictograph());
     overlaySettings.setMinimumFontSize(settings.minimumFontSize());
     overlaySettings.setMinimumLogicalFontSize(settings.minimumLogicalFontSize());
     overlaySettings.setScriptEnabled(true);

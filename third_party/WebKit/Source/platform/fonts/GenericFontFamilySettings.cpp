@@ -86,9 +86,12 @@ const AtomicString& GenericFontFamilySettings::standard(UScriptCode script) cons
     return genericFontFamilyForScript(m_standardFontFamilyMap, script);
 }
 
-void GenericFontFamilySettings::setStandard(const AtomicString& family, UScriptCode script)
+bool GenericFontFamilySettings::updateStandard(const AtomicString& family, UScriptCode script)
 {
+    if (family == standard())
+        return false;
     setGenericFontFamilyMap(m_standardFontFamilyMap, family, script);
+    return true;
 }
 
 const AtomicString& GenericFontFamilySettings::fixed(UScriptCode script) const
@@ -96,9 +99,12 @@ const AtomicString& GenericFontFamilySettings::fixed(UScriptCode script) const
     return genericFontFamilyForScript(m_fixedFontFamilyMap, script);
 }
 
-void GenericFontFamilySettings::setFixed(const AtomicString& family, UScriptCode script)
+bool GenericFontFamilySettings::updateFixed(const AtomicString& family, UScriptCode script)
 {
+    if (family == fixed())
+        return false;
     setGenericFontFamilyMap(m_fixedFontFamilyMap, family, script);
+    return true;
 }
 
 const AtomicString& GenericFontFamilySettings::serif(UScriptCode script) const
@@ -106,9 +112,12 @@ const AtomicString& GenericFontFamilySettings::serif(UScriptCode script) const
     return genericFontFamilyForScript(m_serifFontFamilyMap, script);
 }
 
-void GenericFontFamilySettings::setSerif(const AtomicString& family, UScriptCode script)
+bool GenericFontFamilySettings::updateSerif(const AtomicString& family, UScriptCode script)
 {
+    if (family == serif())
+        return false;
     setGenericFontFamilyMap(m_serifFontFamilyMap, family, script);
+    return true;
 }
 
 const AtomicString& GenericFontFamilySettings::sansSerif(UScriptCode script) const
@@ -116,9 +125,12 @@ const AtomicString& GenericFontFamilySettings::sansSerif(UScriptCode script) con
     return genericFontFamilyForScript(m_sansSerifFontFamilyMap, script);
 }
 
-void GenericFontFamilySettings::setSansSerif(const AtomicString& family, UScriptCode script)
+bool GenericFontFamilySettings::updateSansSerif(const AtomicString& family, UScriptCode script)
 {
+    if (family == sansSerif())
+        return false;
     setGenericFontFamilyMap(m_sansSerifFontFamilyMap, family, script);
+    return true;
 }
 
 const AtomicString& GenericFontFamilySettings::cursive(UScriptCode script) const
@@ -126,9 +138,12 @@ const AtomicString& GenericFontFamilySettings::cursive(UScriptCode script) const
     return genericFontFamilyForScript(m_cursiveFontFamilyMap, script);
 }
 
-void GenericFontFamilySettings::setCursive(const AtomicString& family, UScriptCode script)
+bool GenericFontFamilySettings::updateCursive(const AtomicString& family, UScriptCode script)
 {
+    if (family == cursive())
+        return false;
     setGenericFontFamilyMap(m_cursiveFontFamilyMap, family, script);
+    return true;
 }
 
 const AtomicString& GenericFontFamilySettings::fantasy(UScriptCode script) const
@@ -136,9 +151,12 @@ const AtomicString& GenericFontFamilySettings::fantasy(UScriptCode script) const
     return genericFontFamilyForScript(m_fantasyFontFamilyMap, script);
 }
 
-void GenericFontFamilySettings::setFantasy(const AtomicString& family, UScriptCode script)
+bool GenericFontFamilySettings::updateFantasy(const AtomicString& family, UScriptCode script)
 {
+    if (family == fantasy())
+        return false;
     setGenericFontFamilyMap(m_fantasyFontFamilyMap, family, script);
+    return true;
 }
 
 const AtomicString& GenericFontFamilySettings::pictograph(UScriptCode script) const
@@ -146,9 +164,12 @@ const AtomicString& GenericFontFamilySettings::pictograph(UScriptCode script) co
     return genericFontFamilyForScript(m_pictographFontFamilyMap, script);
 }
 
-void GenericFontFamilySettings::setPictograph(const AtomicString& family, UScriptCode script)
+bool GenericFontFamilySettings::updatePictograph(const AtomicString& family, UScriptCode script)
 {
+    if (family == pictograph())
+        return false;
     setGenericFontFamilyMap(m_pictographFontFamilyMap, family, script);
+    return true;
 }
 
 void GenericFontFamilySettings::reset()

@@ -50,25 +50,25 @@ public:
 
     explicit GenericFontFamilySettings(const GenericFontFamilySettings&);
 
-    void setStandard(const AtomicString&, UScriptCode = USCRIPT_COMMON);
+    bool updateStandard(const AtomicString&, UScriptCode = USCRIPT_COMMON);
     const AtomicString& standard(UScriptCode = USCRIPT_COMMON) const;
 
-    void setFixed(const AtomicString&, UScriptCode = USCRIPT_COMMON);
+    bool updateFixed(const AtomicString&, UScriptCode = USCRIPT_COMMON);
     const AtomicString& fixed(UScriptCode = USCRIPT_COMMON) const;
 
-    void setSerif(const AtomicString&, UScriptCode = USCRIPT_COMMON);
+    bool updateSerif(const AtomicString&, UScriptCode = USCRIPT_COMMON);
     const AtomicString& serif(UScriptCode = USCRIPT_COMMON) const;
 
-    void setSansSerif(const AtomicString&, UScriptCode = USCRIPT_COMMON);
+    bool updateSansSerif(const AtomicString&, UScriptCode = USCRIPT_COMMON);
     const AtomicString& sansSerif(UScriptCode = USCRIPT_COMMON) const;
 
-    void setCursive(const AtomicString&, UScriptCode = USCRIPT_COMMON);
+    bool updateCursive(const AtomicString&, UScriptCode = USCRIPT_COMMON);
     const AtomicString& cursive(UScriptCode = USCRIPT_COMMON) const;
 
-    void setFantasy(const AtomicString&, UScriptCode = USCRIPT_COMMON);
+    bool updateFantasy(const AtomicString&, UScriptCode = USCRIPT_COMMON);
     const AtomicString& fantasy(UScriptCode = USCRIPT_COMMON) const;
 
-    void setPictograph(const AtomicString&, UScriptCode = USCRIPT_COMMON);
+    bool updatePictograph(const AtomicString&, UScriptCode = USCRIPT_COMMON);
     const AtomicString& pictograph(UScriptCode = USCRIPT_COMMON) const;
 
     // Only called by InternalSettings to clear font family maps.

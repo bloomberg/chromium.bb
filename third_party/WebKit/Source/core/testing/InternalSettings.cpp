@@ -213,8 +213,8 @@ void InternalSettings::setStandardFontFamily(const AtomicString& family, const S
     UScriptCode code = scriptNameToCode(script);
     if (code == USCRIPT_INVALID_CODE)
         return;
-    settings()->genericFontFamilySettings().setStandard(family, code);
-    settings()->notifyGenericFontFamilyChange();
+    if (settings()->genericFontFamilySettings().updateStandard(family, code))
+        settings()->notifyGenericFontFamilyChange();
 }
 
 void InternalSettings::setSerifFontFamily(const AtomicString& family, const String& script, ExceptionState& exceptionState)
@@ -223,8 +223,8 @@ void InternalSettings::setSerifFontFamily(const AtomicString& family, const Stri
     UScriptCode code = scriptNameToCode(script);
     if (code == USCRIPT_INVALID_CODE)
         return;
-    settings()->genericFontFamilySettings().setSerif(family, code);
-    settings()->notifyGenericFontFamilyChange();
+    if (settings()->genericFontFamilySettings().updateSerif(family, code))
+        settings()->notifyGenericFontFamilyChange();
 }
 
 void InternalSettings::setSansSerifFontFamily(const AtomicString& family, const String& script, ExceptionState& exceptionState)
@@ -233,8 +233,8 @@ void InternalSettings::setSansSerifFontFamily(const AtomicString& family, const 
     UScriptCode code = scriptNameToCode(script);
     if (code == USCRIPT_INVALID_CODE)
         return;
-    settings()->genericFontFamilySettings().setSansSerif(family, code);
-    settings()->notifyGenericFontFamilyChange();
+    if (settings()->genericFontFamilySettings().updateSansSerif(family, code))
+        settings()->notifyGenericFontFamilyChange();
 }
 
 void InternalSettings::setFixedFontFamily(const AtomicString& family, const String& script, ExceptionState& exceptionState)
@@ -243,8 +243,8 @@ void InternalSettings::setFixedFontFamily(const AtomicString& family, const Stri
     UScriptCode code = scriptNameToCode(script);
     if (code == USCRIPT_INVALID_CODE)
         return;
-    settings()->genericFontFamilySettings().setFixed(family, code);
-    settings()->notifyGenericFontFamilyChange();
+    if (settings()->genericFontFamilySettings().updateFixed(family, code))
+        settings()->notifyGenericFontFamilyChange();
 }
 
 void InternalSettings::setCursiveFontFamily(const AtomicString& family, const String& script, ExceptionState& exceptionState)
@@ -253,8 +253,8 @@ void InternalSettings::setCursiveFontFamily(const AtomicString& family, const St
     UScriptCode code = scriptNameToCode(script);
     if (code == USCRIPT_INVALID_CODE)
         return;
-    settings()->genericFontFamilySettings().setCursive(family, code);
-    settings()->notifyGenericFontFamilyChange();
+    if (settings()->genericFontFamilySettings().updateCursive(family, code))
+        settings()->notifyGenericFontFamilyChange();
 }
 
 void InternalSettings::setFantasyFontFamily(const AtomicString& family, const String& script, ExceptionState& exceptionState)
@@ -263,8 +263,8 @@ void InternalSettings::setFantasyFontFamily(const AtomicString& family, const St
     UScriptCode code = scriptNameToCode(script);
     if (code == USCRIPT_INVALID_CODE)
         return;
-    settings()->genericFontFamilySettings().setFantasy(family, code);
-    settings()->notifyGenericFontFamilyChange();
+    if (settings()->genericFontFamilySettings().updateFantasy(family, code))
+        settings()->notifyGenericFontFamilyChange();
 }
 
 void InternalSettings::setPictographFontFamily(const AtomicString& family, const String& script, ExceptionState& exceptionState)
@@ -273,8 +273,8 @@ void InternalSettings::setPictographFontFamily(const AtomicString& family, const
     UScriptCode code = scriptNameToCode(script);
     if (code == USCRIPT_INVALID_CODE)
         return;
-    settings()->genericFontFamilySettings().setPictograph(family, code);
-    settings()->notifyGenericFontFamilyChange();
+    if (settings()->genericFontFamilySettings().updatePictograph(family, code))
+        settings()->notifyGenericFontFamilyChange();
 }
 
 void InternalSettings::setTextAutosizingEnabled(bool enabled, ExceptionState& exceptionState)
