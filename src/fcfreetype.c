@@ -1613,36 +1613,24 @@ FcFreeTypeQueryFace (const FT_Face  face,
 	free (complex_);
     }
 
-    if (os2)
-    {
 #if defined (HAVE_TT_OS2_USUPPEROPTICALPOINTSIZE) && defined (HAVE_TT_OS2_USLOWEROPTICALPOINTSIZE)
-	if (os2 && os2->version >= 0x0005 && os2->version != 0xffff)
-	{
-	    double lower_size, upper_size;
-
-	    /* usLowerPointSize and usUpperPointSize is actually twips */
-	    lower_size = os2->usLowerOpticalPointSize / 20.0L;
-	    upper_size = os2->usUpperOpticalPointSize / 20.0L;
-
-	    r = FcRangeCreateDouble (lower_size, upper_size);
-	    if (!FcPatternAddRange (pat, FC_SIZE, r))
-	    {
-		FcRangeDestroy (r);
-		goto bail1;
-	    }
-	    FcRangeDestroy (r);
-	}
-#endif
-    }
-    else
+    if (os2 && os2->version >= 0x0005 && os2->version != 0xffff)
     {
-	for (i = 0; i < face->num_fixed_sizes; i++)
+	double lower_size, upper_size;
+
+	/* usLowerPointSize and usUpperPointSize is actually twips */
+	lower_size = os2->usLowerOpticalPointSize / 20.0L;
+	upper_size = os2->usUpperOpticalPointSize / 20.0L;
+
+	r = FcRangeCreateDouble (lower_size, upper_size);
+	if (!FcPatternAddRange (pat, FC_SIZE, r))
 	{
-	    double d = FcGetPixelSize (face, i);
-	    if (!FcPatternAddDouble (pat, FC_SIZE, d))
-		goto bail1;
+	    FcRangeDestroy (r);
+	    goto bail1;
 	}
+	FcRangeDestroy (r);
     }
+#endif
 
     /*
      * Type 1: Check for FontInfo dictionary information
