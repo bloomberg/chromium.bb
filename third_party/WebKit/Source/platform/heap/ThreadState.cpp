@@ -31,6 +31,7 @@
 #include "config.h"
 #include "platform/heap/ThreadState.h"
 
+#include "platform/ScriptForbiddenScope.h"
 #include "platform/TraceEvent.h"
 #include "platform/heap/AddressSanitizer.h"
 #include "platform/heap/Handle.h"
@@ -837,6 +838,8 @@ void ThreadState::performPendingSweep()
         return;
 
     TRACE_EVENT0("blink", "ThreadState::performPendingSweep");
+    ScriptForbiddenScope forbiddenScope;
+
     double timeStamp = WTF::currentTimeMS();
     const char* samplingState = TRACE_EVENT_GET_SAMPLING_STATE();
     if (isMainThread())

@@ -31,6 +31,7 @@
 #include "config.h"
 #include "platform/heap/Heap.h"
 
+#include "platform/ScriptForbiddenScope.h"
 #include "platform/TraceEvent.h"
 #include "platform/heap/ThreadState.h"
 #include "public/platform/Platform.h"
@@ -1861,6 +1862,7 @@ void Heap::collectGarbage(ThreadState::StackState stackState)
         return;
     }
 
+    ScriptForbiddenScope forbiddenScope;
     s_lastGCWasConservative = false;
 
     TRACE_EVENT0("blink", "Heap::collectGarbage");
