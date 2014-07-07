@@ -65,7 +65,7 @@ def ValidateGitRepo(url, directory, clobber_mismatch=False, logger=None):
                     an exception.
   """
   if logger is None:
-    logger = pynacl.log_tools.GetConsoleLogger()
+    logger = log_tools.GetConsoleLogger()
   git_dir = os.path.join(directory, '.git')
   if os.path.exists(git_dir):
     try:
@@ -113,7 +113,7 @@ def SyncGitRepo(url, destination, revision, reclone=False, clean=False,
              git_cache.
   """
   if logger is None:
-    logger = pynacl.log_tools.GetConsoleLogger()
+    logger = log_tools.GetConsoleLogger()
   if reclone:
     logger.debug('Clobbering source directory %s' % destination)
     file_tools.RemoveDirectoryIfPresent(destination)
@@ -402,7 +402,7 @@ def GitSetRepoAlternates(directory, alternates_list, append=True, logger=None):
       append: If True, will append the list to currently set list of alternates.
   """
   if logger is None:
-    logger = pynacl.log_tools.GetConsoleLogger()
+    logger = log_tools.GetConsoleLogger()
   git_alternates_file = os.path.join(directory, GIT_ALTERNATES_PATH)
   git_alternates_dir = os.path.dirname(git_alternates_file)
   if not os.path.isdir(git_alternates_dir):
