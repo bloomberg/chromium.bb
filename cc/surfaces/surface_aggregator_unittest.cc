@@ -22,6 +22,7 @@
 #include "cc/test/render_pass_test_common.h"
 #include "cc/test/render_pass_test_utils.h"
 #include "cc/test/test_shared_bitmap_manager.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkColor.h"
 
@@ -875,9 +876,12 @@ TEST_F(SurfaceAggregatorWithResourcesTest, TakeResourcesOneSurface) {
   frame = aggregator_->Aggregate(surface_id);
 
   ASSERT_EQ(3u, client.returned_resources().size());
+  ResourceProvider::ResourceId returned_ids[3];
   for (size_t i = 0; i < 3; ++i) {
-    EXPECT_EQ(ids[i], client.returned_resources()[i].id);
+    returned_ids[i] = client.returned_resources()[i].id;
   }
+  EXPECT_THAT(returned_ids,
+              testing::WhenSorted(testing::ElementsAreArray(ids)));
   factory.Destroy(surface_id);
 }
 
