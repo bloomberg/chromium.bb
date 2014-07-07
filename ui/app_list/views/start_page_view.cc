@@ -19,6 +19,7 @@
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/layout/box_layout.h"
+#include "ui/views/widget/widget.h"
 
 namespace app_list {
 
@@ -196,7 +197,9 @@ void StartPageView::SetShowState(ShowState show_state) {
   instant_container_->SetVisible(show_state == SHOW_START_PAGE);
   results_view_->SetVisible(show_state == SHOW_SEARCH_RESULTS);
 
-  if (show_state == SHOW_START_PAGE)
+  // This can be called when the app list is closing (widget is invisible). In
+  // that case, do not steal focus from other elements.
+  if (show_state == SHOW_START_PAGE && GetWidget() && GetWidget()->IsVisible())
     search_box_view_->search_box()->RequestFocus();
 
   if (show_state_ == show_state)
