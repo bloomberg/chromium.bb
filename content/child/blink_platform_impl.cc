@@ -754,6 +754,19 @@ const DataResource kDataResources[] = {
   { "generatePassword", IDR_PASSWORD_GENERATION_ICON, ui::SCALE_FACTOR_100P },
   { "generatePasswordHover",
     IDR_PASSWORD_GENERATION_ICON_HOVER, ui::SCALE_FACTOR_100P },
+#ifdef IDR_PICKER_COMMON_JS
+  { "pickerCommon.js", IDR_PICKER_COMMON_JS, ui::SCALE_FACTOR_NONE },
+  { "pickerCommon.css", IDR_PICKER_COMMON_CSS, ui::SCALE_FACTOR_NONE },
+  { "calendarPicker.js", IDR_CALENDAR_PICKER_JS, ui::SCALE_FACTOR_NONE },
+  { "calendarPicker.css", IDR_CALENDAR_PICKER_CSS, ui::SCALE_FACTOR_NONE },
+  { "pickerButton.css", IDR_PICKER_BUTTON_CSS, ui::SCALE_FACTOR_NONE },
+  { "suggestionPicker.js", IDR_SUGGESTION_PICKER_JS, ui::SCALE_FACTOR_NONE },
+  { "suggestionPicker.css", IDR_SUGGESTION_PICKER_CSS, ui::SCALE_FACTOR_NONE },
+  { "colorSuggestionPicker.js",
+    IDR_COLOR_SUGGESTION_PICKER_JS, ui::SCALE_FACTOR_NONE },
+  { "colorSuggestionPicker.css",
+    IDR_COLOR_SUGGESTION_PICKER_CSS, ui::SCALE_FACTOR_NONE },
+#endif
 };
 
 }  // namespace
