@@ -336,13 +336,10 @@ void DOMSelection::modify(const String& alterString, const String& directionStri
 
 void DOMSelection::extend(Node* node, int offset, ExceptionState& exceptionState)
 {
+    ASSERT(node);
+
     if (!m_frame)
         return;
-
-    if (!node) {
-        exceptionState.throwDOMException(TypeMismatchError, ExceptionMessages::argumentNullOrIncorrectType(1, "Node"));
-        return;
-    }
 
     if (offset < 0) {
         exceptionState.throwDOMException(IndexSizeError, String::number(offset) + " is not a valid offset.");
@@ -358,6 +355,13 @@ void DOMSelection::extend(Node* node, int offset, ExceptionState& exceptionState
 
     // FIXME: Eliminate legacy editing positions
     m_frame->selection().setExtent(VisiblePosition(createLegacyEditingPosition(node, offset), DOWNSTREAM));
+}
+
+void DOMSelection::extend(Node* node, ExceptionState& exceptionState)
+{
+    // This default value implementation differs from the spec, which says |offset| is not optional.
+    // FIXME: Specify this default value in Selection.idl.
+    extend(node, 0, exceptionState);
 }
 
 PassRefPtrWillBeRawPtr<Range> DOMSelection::getRangeAt(int index, ExceptionState& exceptionState)

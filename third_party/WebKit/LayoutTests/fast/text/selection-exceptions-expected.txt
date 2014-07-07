@@ -10,7 +10,7 @@ PASS getSelection().setBaseAndExtent(document.documentElement, -1, document.docu
 PASS getSelection().setBaseAndExtent(document.documentElement, 0, document.documentElement, -1) threw exception IndexSizeError: Failed to execute 'setBaseAndExtent' on 'Selection': -1 is not a valid extent offset..
 PASS getSelection().collapse(document.documentElement, -1) threw exception IndexSizeError: Failed to execute 'collapse' on 'Selection': -1 is not a valid offset..
 PASS getSelection().getRangeAt(-1) threw exception IndexSizeError: Failed to execute 'getRangeAt' on 'Selection': -1 is not a valid index..
-PASS getSelection().extend(0, -1) threw exception TypeMismatchError: Failed to execute 'extend' on 'Selection': The 1st argument provided is either null, or an invalid Node object..
+PASS getSelection().extend(0, -1) threw exception TypeError: Failed to execute 'extend' on 'Selection': parameter 1 is not of type 'Node'..
 PASS getSelection().extend(document.documentElement, -1) threw exception IndexSizeError: Failed to execute 'extend' on 'Selection': -1 is not a valid offset..
 PASS getSelection().extend(document.documentElement, 1000) threw exception IndexSizeError: Failed to execute 'extend' on 'Selection': 1000 is larger than the given node's length..
 PASS successfullyParsed is true

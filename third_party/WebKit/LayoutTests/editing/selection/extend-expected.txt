@@ -4,5 +4,5 @@ Success: s.extend(span2.firstChild, 4) raised IndexSizeError: Failed to execute 
 Success: s.extend(span2.firstChild, -1) raised IndexSizeError: Failed to execute 'extend' on 'Selection': -1 is not a valid offset..
 Success: window.getSelection() is b.
 Success: window.getSelection() is arbaz.
-Success: s.extend() raised TypeMismatchError: Failed to execute 'extend' on 'Selection': The 1st argument provided is either null, or an invalid Node object..
-Success: s.extend(null, 0) raised TypeMismatchError: Failed to execute 'extend' on 'Selection': The 1st argument provided is either null, or an invalid Node object..
+Success: s.extend() raised TypeError: Failed to execute 'extend' on 'Selection': 1 argument required, but only 0 present..
+Success: s.extend(null, 0) raised TypeError: Failed to execute 'extend' on 'Selection': parameter 1 is not of type 'Node'..

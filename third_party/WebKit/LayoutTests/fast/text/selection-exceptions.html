@@ -20,7 +20,7 @@
 
         shouldThrow('getSelection().getRangeAt(-1)', '"IndexSizeError: Failed to execute \'getRangeAt\' on \'Selection\': -1 is not a valid index."');
 
-        shouldThrow('getSelection().extend(0, -1)', '"TypeMismatchError: Failed to execute \'extend\' on \'Selection\': The 1st argument provided is either null, or an invalid Node object."');
+        shouldThrow('getSelection().extend(0, -1)', '"TypeError: Failed to execute \'extend\' on \'Selection\': parameter 1 is not of type \'Node\'."');
         shouldThrow('getSelection().extend(document.documentElement, -1)', '"IndexSizeError: Failed to execute \'extend\' on \'Selection\': -1 is not a valid offset."');
         shouldThrow('getSelection().extend(document.documentElement, 1000)', '"IndexSizeError: Failed to execute \'extend\' on \'Selection\': 1000 is larger than the given node\'s length."');
     </script>

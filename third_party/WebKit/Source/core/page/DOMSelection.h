@@ -57,6 +57,7 @@ public:
 
     void clearTreeScope();
 
+    // FIXME: Reorder API functions according to Selection.idl.
     // Safari Selection Object API
     // These methods return the valid equivalents of internal editing positions.
     Node* baseNode() const;
@@ -84,6 +85,7 @@ public:
     void collapseToEnd(ExceptionState&);
     void collapseToStart(ExceptionState&);
     void extend(Node*, int offset, ExceptionState&);
+    void extend(Node*, ExceptionState&);
     PassRefPtrWillBeRawPtr<Range> getRangeAt(int, ExceptionState&);
     void removeAllRanges();
     void addRange(Range*);
