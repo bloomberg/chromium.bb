@@ -30,7 +30,7 @@ namespace extensions {
 
 typedef ExtensionApiTest GlobalCommandsApiTest;
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) && defined(USE_X11)
 // Send a simulated key press and release event, where |control|, |shift| or
 // |alt| indicates whether the key is struck with corresponding modifier.
 void SendNativeKeyEventToXDisplay(ui::KeyboardCode key,
@@ -71,7 +71,7 @@ void SendNativeKeyEventToXDisplay(ui::KeyboardCode key,
 
   XFlush(display);
 }
-#endif  // OS_LINUX
+#endif  // OS_LINUX && USE_X11
 
 #if defined(OS_MACOSX)
 using base::ScopedCFTypeRef;
@@ -152,7 +152,7 @@ IN_PROC_BROWSER_TEST_F(GlobalCommandsApiTest, MAYBE_GlobalCommand) {
   // Activate the shortcut (Ctrl+Shift+9). This should have an effect.
   ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
       incognito_browser, ui::VKEY_9, true, true, false, false));
-#elif defined(OS_LINUX)
+#elif defined(OS_LINUX) && defined(USE_X11)
   // Create an incognito browser to capture the focus.
   CreateIncognitoBrowser();
 

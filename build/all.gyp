@@ -1186,9 +1186,6 @@
                 '../ui/ozone/ozone.gyp:*',
                 '../ui/ozone/demo/ozone_demos.gyp:*',
               ],
-              'dependencies!': [
-                '../chrome/chrome.gyp:interactive_ui_tests',  # crbug.com/362166
-              ],
             }],
           ],
         },

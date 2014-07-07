@@ -246,7 +246,7 @@ BasePanelBrowserTest::~BasePanelBrowserTest() {
 }
 
 bool BasePanelBrowserTest::SkipTestIfIceWM() {
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) && defined(USE_X11)
   return ui::GuessWindowManager() == ui::WM_ICE_WM;
 #else
   return false;
@@ -254,7 +254,7 @@ bool BasePanelBrowserTest::SkipTestIfIceWM() {
 }
 
 bool BasePanelBrowserTest::SkipTestIfCompizWM() {
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) && defined(USE_X11)
   return ui::GuessWindowManager() == ui::WM_COMPIZ;
 #else
   return false;
@@ -392,7 +392,7 @@ Panel* BasePanelBrowserTest::CreatePanelWithParams(
   if (params.wait_for_fully_created) {
     base::MessageLoopForUI::current()->RunUntilIdle();
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) && defined(USE_X11)
     // On bots, we might have a simple window manager which always activates new
     // windows, and can't always deactivate them. Re-activate the main tabbed
     // browser to "deactivate" the newly created panel.
