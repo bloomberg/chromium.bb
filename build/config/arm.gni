@@ -40,7 +40,7 @@ if (cpu_arch == "arm") {
 
   } else if (arm_version == 7) {
     arm_arch = "armv7-a"
-    arm_tune = ""
+    arm_tune = "generic-armv7-a"
     if (arm_float_abi == "") {
       arm_float_abi = "softfp"
     }

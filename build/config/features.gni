@@ -11,6 +11,10 @@
 #
 # See also build/config/ui.gni
 
+if (is_android) {
+  import("//native_client/build/config/android/config.gni")
+}
+
 declare_args() {
   # Multicast DNS.
   enable_mdns = is_win || is_linux
@@ -88,3 +92,50 @@ if (is_android) {
 } else {
   safe_browsing_mode = 1
 }
+
+enable_configuration_policy = true
+
+# The data acquisition mode for CLD2. Possible values are:
+#   static:     CLD2 data is statically linked to the executable.
+#   standalone: CLD2 data is provided in a standalone file that is
+#               bundled with the executable.
+#   component:  CLD2 data is provided as a Chrome "component" and is
+#               downloaded via the component updater.
+#
+# For more information on switching the CLD2 data source, see:
+#   https://sites.google.com/a/chromium.org/dev/developers/how-tos/compact-language-detector-cld-data-source-configuration
+cld2_data_source = "static"
+
+# Enables support for background apps.
+enable_background = !is_ios && !is_android
+
+enable_task_manager = !is_ios && !is_android
+
+use_cups = is_desktop_linux || is_mac
+
+enable_themes = !is_android && !is_chromeos
+
+# TODO(scottmg) remove this when we've fixed printing.
+win_pdf_metafile_for_printing = true
+
+enable_captive_portal_detection = !is_android && !is_ios
+
+# Enables use of the session service, which is enabled by default.
+# Android stores them separately on the Java side.
+enable_session_service = !is_android && !is_ios
+
+# Whether we are using the rlz library or not.  Platforms like Android send
+# rlz codes for searches but do not use the library.
+enable_rlz = is_chrome_branded && (is_win || is_mac || is_ios || is_chromeos)
+
+enable_plugin_installation = is_win || is_mac
+
+enable_app_list = !is_ios && !is_android
+
+enable_managed_users = !is_ios
+
+enable_service_discovery = enable_mdns || is_mac
+
+enable_autofill_dialog = !is_ios && !(is_android && is_android_webview_build)
+
+enable_wifi_bootstrapping = is_win || is_mac

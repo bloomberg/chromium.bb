@@ -48,7 +48,7 @@ executable("irt_core_raw") {
     "irt_tls.c",
   ]
 
-  deps += [
+  deps = [
     "//native_client/src/shared/gio:gio",
     "//native_client/src/shared/platform:platform",
     "//native_client/src/shared/srpc:srpc",

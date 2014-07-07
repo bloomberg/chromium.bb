@@ -21,8 +21,8 @@
 #
 group("prep_toolchains") {
   deps = [
-    "//native_client/build/toolchain:prep_x86_newlib",
-    "//native_client/build/toolchain:prep_arm_newlib",
+    "//native_client/build/toolchain:prep_nacl_x86_newlib",
+    "//native_client/build/toolchain:prep_nacl_arm_newlib",
   ]
 }
 

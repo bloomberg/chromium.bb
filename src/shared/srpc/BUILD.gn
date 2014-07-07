@@ -9,7 +9,7 @@ import("//native_client/build/toolchain/nacl/nacl_sdk.gni")
 
 
 static_library("srpc") {
-  deps += [
+  deps = [
     "//native_client/src/untrusted/nacl:imc_syscalls",
   ]
 

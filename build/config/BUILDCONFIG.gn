@@ -1,4 +1,4 @@
-# Copyright (c) 2014 The NativeClient Authors. All rights reserved.
+# Copyright (c) 2014 The Native Client Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -20,6 +20,9 @@ declare_args() {
   # The current NaCl libc and preps stage, none for trusted toolchains.
   nacl_libc = "none"
   nacl_prep = "none"
+  use_newlib = true
+  use_glibc = false
+  use_pnacl = false
 
   use_newlib = true
   use_glibc = false
@@ -353,20 +356,6 @@ if (is_nacl) {
   set_default_toolchain("//native_client/build/toolchain/mac:clang")
 }
 
-
-# We do not use assignment filters
-set_sources_assignment_filter([])
-
-# =============================================================================
-# BUILD OPTIONS
-# =============================================================================
-
-# These Sanitizers all imply using the Clang compiler. On Windows they either
-# don't work or work differently.
-if (!is_clang && (is_asan || is_lsan || is_tsan || is_msan)) {
-  is_clang = true
-}
-
 # =============================================================================
 # TARGET DEFAULTS
 # =============================================================================
@@ -463,16 +452,6 @@ set_defaults("executable") {
     }
   } else {
     configs = nacl_compiler_configs
-    if (cpu_arch == "arm") {
-      arch = "arm"
-    } else {
-      arch = "x86"
-    }
-    if (nacl_prep != "raw") {
-      deps = ["//native_client/build/toolchain:prep_${arch}_${nacl_libc}(${host_toolchain})"]
-    } else {
-      deps = ["//native_client/build/toolchain:untar_nacl_${arch}_${nacl_libc}(${host_toolchain})"]
-    }
   }
 }
 
@@ -482,16 +461,6 @@ set_defaults("static_library") {
     configs += native_compiler_configs
   } else {
     configs += nacl_compiler_configs
-    if (cpu_arch == "arm") {
-      arch = "arm"
-    } else {
-      arch = "x86"
-    }
-    if (nacl_prep != "raw") {
-      deps = ["//native_client/build/toolchain:prep_${arch}_${nacl_libc}(${host_toolchain})"]
-    } else {
-      deps = ["//native_client/build/toolchain:untar_nacl_${arch}_${nacl_libc}(${host_toolchain})"]
-    }
   }
 }
 
@@ -508,16 +477,6 @@ set_defaults("shared_library") {
     }
   } else {
     configs = nacl_compiler_configs
-    if (cpu_arch == "arm") {
-      arch = "arm"
-    } else {
-      arch = "x86"
-    }
-    if (nacl_prep != "raw") {
-      deps = ["//native_client/build/toolchain:prep_${arch}_${nacl_libc}(${host_toolchain})"]
-    } else {
-      deps = ["//native_client/build/toolchain:untar_nacl_${arch}_${nacl_libc}(${host_toolchain})"]
-    }
   }
 }
 
@@ -527,16 +486,6 @@ set_defaults("source_set") {
     configs = native_compiler_configs
   } else {
     configs = nacl_compiler_configs
-    if (cpu_arch == "arm") {
-      arch = "arm"
-    } else {
-      arch = "x86"
-    }
-    if (nacl_prep != "raw") {
-      deps = ["//native_client/build/toolchain:prep_${arch}_${nacl_libc}(${host_toolchain})"]
-    } else {
-      deps = ["//native_client/build/toolchain:untar_nacl_${arch}_${nacl_libc}(${host_toolchain})"]
-    }
   }
 }
 

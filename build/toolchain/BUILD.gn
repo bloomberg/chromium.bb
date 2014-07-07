@@ -95,59 +95,95 @@ template("prep_toolchain") {
     copy("${target_name}_crti_arm") {
       sources = [  "${crt_path}/crt_arm.crti_arm.o" ]
       outputs = [ "${install_dir}/lib/crti.o" ]
+      deps = [
+        "//native_client/build/toolchain:untar_${package}"
+      ]
     }
     copy("${target_name}_crtn_arm") {
       sources = [  "${crt_path}/crt_arm.crtn_arm.o" ]
       outputs = [ "${install_dir}/lib/crtn.o" ]
+      deps = [
+        "//native_client/build/toolchain:untar_${package}"
+      ]
     }
     copy("${target_name}_crt1_arm") {
       sources = [  "//native_client/src/untrusted/stubs/crt1.x" ]
       outputs = [ "${install_dir}/lib/crt1.o" ]
+      deps = [
+        "//native_client/build/toolchain:untar_${package}"
+      ]
     }
 
     nacl_path = "${root_build_dir}/raw_newlib_arm/obj/native_client/src/untrusted/nacl"
     copy("${target_name}_libnacl_arm") {
       sources = [ "${nacl_path}/libnacl.a" ]
       outputs = [ "${install_dir}/lib/libnacl.a" ]
+      deps = [
+        "//native_client/build/toolchain:untar_${package}"
+      ]
     }
   } else {
     crt_path = "${root_build_dir}/raw_newlib_x86/obj/native_client/src/untrusted/stubs"
     copy("${target_name}_crti_x86_32") {
       sources = [  "${crt_path}/crt_x86_32.crti_x86_32.o" ]
       outputs = [ "${install_dir}/lib32/crti.o" ]
+      deps = [
+        "//native_client/build/toolchain:untar_${package}"
+      ]
     }
     copy("${target_name}_crtn_x86_32") {
       sources = [  "${crt_path}/crt_x86_32.crtn_x86_32.o" ]
       outputs = [ "${install_dir}/lib32/crtn.o" ]
+      deps = [
+        "//native_client/build/toolchain:untar_${package}"
+      ]
     }
     copy("${target_name}_crt1_x86_32") {
       sources = [  "//native_client/src/untrusted/stubs/crt1.x" ]
       outputs = [ "${install_dir}/lib32/crt1.o" ]
+      deps = [
+        "//native_client/build/toolchain:untar_${package}"
+      ]
     }
 
     crt_path = "${root_build_dir}/raw_newlib_x64/obj/native_client/src/untrusted/stubs"
     copy("${target_name}_crti_x86_64") {
       sources = [  "${crt_path}/crt_x86_64.crti_x86_64.o" ]
       outputs = [ "${install_dir}/lib/crti.o" ]
+      deps = [
+        "//native_client/build/toolchain:untar_${package}"
+      ]
     }
     copy("${target_name}_crtn_x86_64") {
       sources = [  "${crt_path}/crt_x86_64.crtn_x86_64.o" ]
       outputs = [ "${install_dir}/lib/crtn.o" ]
+      deps = [
+        "//native_client/build/toolchain:untar_${package}"
+      ]
     }
     copy("${target_name}_crt1_x86_64") {
       sources = [  "//native_client/src/untrusted/stubs/crt1.x" ]
       outputs = [ "${install_dir}/lib/crt1.o" ]
+      deps = [
+        "//native_client/build/toolchain:untar_${package}"
+      ]
     }
 
     nacl_path = "${root_build_dir}/raw_newlib_x86/obj/native_client/src/untrusted/nacl"
     copy("${target_name}_libnacl_x86_32") {
       sources = [ "${nacl_path}/libnacl.a" ]
       outputs = [ "${install_dir}/lib32/libnacl.a" ]
+      deps = [
+        "//native_client/build/toolchain:untar_${package}"
+      ]
     }
     nacl_path = "${root_build_dir}/raw_newlib_x64/obj/native_client/src/untrusted/nacl"
     copy("${target_name}_libnacl_x86_64") {
       sources = [ "${nacl_path}/libnacl.a" ]
       outputs = [ "${install_dir}/lib/libnacl.a" ]
+      deps = [
+        "//native_client/build/toolchain:untar_${package}"
+      ]
     }
   }
 
@@ -244,12 +280,12 @@ if (nacl_prep == "none") {
     package = "nacl_arm_newlib"
   }
 
-  prep_toolchain("prep_x86_newlib") {
+  prep_toolchain("prep_nacl_x86_newlib") {
     package_arch = "x86"
     package_libc = "newlib"
   }
 
-  prep_toolchain("prep_arm_newlib") {
+  prep_toolchain("prep_nacl_arm_newlib") {
     package_arch = "arm"
     package_libc = "newlib"
   }

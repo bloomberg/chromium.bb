@@ -33,6 +33,8 @@ template("nacl_toolchain") {
     ar = invoker.toolprefix + invoker.ar
     ld = invoker.toolprefix + invoker.ld
 
+    package = "nacl_" + invoker.package_arch + "_" + invoker.nacl_libc
+
     # Make these apply to all tools below.
     lib_prefix = "-l"
     lib_dir_prefix="-L"
@@ -86,6 +88,9 @@ template("nacl_toolchain") {
       nacl_libc = invoker.nacl_libc
       nacl_prep = "raw"
     }
+    deps = [
+      "//native_client/build/toolchain:untar_${package}"
+    ]
   }
 
   toolchain(target_name) {
@@ -102,6 +107,8 @@ template("nacl_toolchain") {
     cxx = invoker.toolprefix + invoker.cxx
     ar = invoker.toolprefix + invoker.ar
     ld = invoker.toolprefix + invoker.ld
+
+    package = "nacl_" + invoker.package_arch + "_" + invoker.nacl_libc
 
     # Make these apply to all tools below.
     lib_prefix = "-l"
@@ -156,5 +163,8 @@ template("nacl_toolchain") {
       nacl_libc = invoker.nacl_libc
       nacl_prep = "cooked"
     }
+    deps = [
+      "//native_client/build/toolchain:prep_${package}"
+    ]
   }
 }

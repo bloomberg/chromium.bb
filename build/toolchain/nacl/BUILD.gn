@@ -6,31 +6,37 @@ import("//native_client/build/config/sysroot.gni")
 import("//native_client/build/toolchain/nacl_toolchain.gni")
 
 nacl_toolchain("newlib_x86") {
-  toolprefix = "toolchain/${os}_x86/nacl_x86_newlib/bin/i686-nacl-"
+  nacl_libc = "newlib"
+  package_arch = "x86"
   toolchain_cpu_arch = "x86"
+  toolprefix = "toolchain/${os}_x86/nacl_x86_newlib/bin/i686-nacl-"
+
   cc = "gcc"
   cxx = "g++"
   ar = "ar"
   ld = cxx
-  nacl_libc = "newlib"
 }
 
 nacl_toolchain("newlib_x64") {
-  toolprefix = "toolchain/${os}_x86/nacl_x86_newlib/bin/x86_64-nacl-"
+  nacl_libc = "newlib"
+  package_arch = "x86"
   toolchain_cpu_arch = "x64"
+  toolprefix = "toolchain/${os}_x86/nacl_x86_newlib/bin/x86_64-nacl-"
+
   cc = "gcc"
   cxx = "g++"
   ar = "ar"
   ld = cxx
-  nacl_libc = "newlib"
 }
 
 nacl_toolchain("newlib_arm") {
-  toolprefix = "toolchain/${os}_x86/nacl_arm_newlib/bin/arm-nacl-"
+  nacl_libc = "newlib"
+  package_arch = "arm"
   toolchain_cpu_arch = "arm"
+  toolprefix = "toolchain/${os}_x86/nacl_arm_newlib/bin/arm-nacl-"
+
   cc = "gcc"
   cxx = "g++"
   ar = "ar"
   ld = cxx
-  nacl_libc = "newlib"
 }
