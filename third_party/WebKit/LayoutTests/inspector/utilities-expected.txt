@@ -62,3 +62,5 @@ Pair(5, -58)
 Pair(5, 58)
 Pair(9, 9)
 
+Running: stringHashTest
+

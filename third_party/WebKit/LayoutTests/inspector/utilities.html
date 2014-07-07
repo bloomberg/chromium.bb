@@ -415,6 +415,17 @@ function test()
                 assertHelper(key2IndexA < key2IndexB, "stable order", i, a, b);
             }
             next();
+        },
+
+        function stringHashTest(next)
+        {
+            var stringA = Array(10000).join(" ");
+            var stringB = stringA + " ";
+            var hashA = stringA.hashCode();
+            InspectorTest.assertTrue(hashA !== stringB.hashCode());
+            InspectorTest.assertTrue(isFinite(hashA));
+            InspectorTest.assertTrue(hashA + 1 !== hashA);
+            next();
         }
 
     ]);
