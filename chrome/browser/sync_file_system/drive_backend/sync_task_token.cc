@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/debug/trace_event.h"
+#include "base/thread_task_runner_handle.h"
 #include "chrome/browser/sync_file_system/drive_backend/sync_task_manager.h"
 #include "chrome/browser/sync_file_system/drive_backend/task_dependency_manager.h"
 
@@ -21,7 +22,7 @@ scoped_ptr<SyncTaskToken> SyncTaskToken::CreateForTesting(
     const SyncStatusCallback& callback) {
   return make_scoped_ptr(new SyncTaskToken(
       base::WeakPtr<SyncTaskManager>(),
-      base::MessageLoopProxy::current(),
+      base::ThreadTaskRunnerHandle::Get(),
       kTestingTaskTokenID,
       scoped_ptr<BlockingFactor>(),
       callback));

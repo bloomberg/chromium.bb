@@ -11,6 +11,7 @@
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/drive/drive_uploader.h"
 #include "chrome/browser/drive/fake_drive_service.h"
@@ -78,7 +79,7 @@ class DriveFileSyncServiceSyncTest : public testing::Test {
     ASSERT_TRUE(drive::test_util::SetUpTestEntries(fake_drive_service_));
 
     drive_uploader_ = new drive::DriveUploader(
-        fake_drive_service_, base::MessageLoopProxy::current().get());
+        fake_drive_service_, base::ThreadTaskRunnerHandle::Get().get());
 
     fake_drive_helper_.reset(new FakeDriveServiceHelper(
         fake_drive_service_, drive_uploader_,
@@ -88,7 +89,7 @@ class DriveFileSyncServiceSyncTest : public testing::Test {
     bool created = false;
     scoped_ptr<DriveMetadataStore> metadata_store(
         new DriveMetadataStore(fake_drive_helper_->base_dir_path(),
-                               base::MessageLoopProxy::current().get()));
+                               base::ThreadTaskRunnerHandle::Get().get()));
     metadata_store->Initialize(CreateResultReceiver(&status, &created));
     FlushMessageLoop();
     EXPECT_EQ(SYNC_STATUS_OK, status);

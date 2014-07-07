@@ -7,7 +7,8 @@
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/location.h"
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "chrome/browser/sync_file_system/file_change.h"
 #include "chrome/browser/sync_file_system/sync_file_metadata.h"
 #include "chrome/browser/sync_file_system/syncable_file_system_util.h"
@@ -56,7 +57,7 @@ void FakeRemoteChangeProcessor::PrepareForProcessRemoteChange(
   if (found_list != local_changes_.end())
     change_list = found_list->second;
 
-  base::MessageLoopProxy::current()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::Bind(callback, SYNC_STATUS_OK,
                  local_metadata, change_list));
@@ -95,7 +96,7 @@ void FakeRemoteChangeProcessor::ApplyRemoteChange(
     applied_changes_[url].push_back(change);
     status = SYNC_STATUS_OK;
   }
-  base::MessageLoopProxy::current()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(callback, status));
 }
 
@@ -103,7 +104,7 @@ void FakeRemoteChangeProcessor::FinalizeRemoteSync(
     const fileapi::FileSystemURL& url,
     bool clear_local_changes,
     const base::Closure& completion_callback) {
-  base::MessageLoopProxy::current()->PostTask(FROM_HERE, completion_callback);
+  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, completion_callback);
 }
 
 void FakeRemoteChangeProcessor::RecordFakeLocalChange(
@@ -111,7 +112,7 @@ void FakeRemoteChangeProcessor::RecordFakeLocalChange(
     const FileChange& change,
     const SyncStatusCallback& callback) {
   local_changes_[url].Update(change);
-  base::MessageLoopProxy::current()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(callback, SYNC_STATUS_OK));
 }
 

@@ -10,6 +10,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/thread_task_runner_handle.h"
 #include "chrome/browser/sync_file_system/drive_backend/sync_task.h"
 #include "chrome/browser/sync_file_system/drive_backend/sync_task_manager.h"
 #include "chrome/browser/sync_file_system/drive_backend/sync_task_token.h"
@@ -61,7 +62,7 @@ class TaskManagerClient
         last_operation_status_(SYNC_STATUS_OK) {
     task_manager_.reset(new SyncTaskManager(
         AsWeakPtr(), maximum_background_task,
-        base::MessageLoopProxy::current()));
+        base::ThreadTaskRunnerHandle::Get()));
     task_manager_->Initialize(SYNC_STATUS_OK);
     base::MessageLoop::current()->RunUntilIdle();
     maybe_schedule_next_task_count_ = 0;
@@ -396,7 +397,7 @@ TEST(SyncTaskManagerTest, ScheduleAndCancelSyncTask) {
   {
     SyncTaskManager task_manager(base::WeakPtr<SyncTaskManager::Client>(),
                                  0 /* maximum_background_task */,
-                                 base::MessageLoopProxy::current());
+                                 base::ThreadTaskRunnerHandle::Get());
     task_manager.Initialize(SYNC_STATUS_OK);
     message_loop.RunUntilIdle();
     task_manager.ScheduleSyncTask(
@@ -418,7 +419,7 @@ TEST(SyncTaskManagerTest, ScheduleTaskAtPriority) {
   base::MessageLoop message_loop;
   SyncTaskManager task_manager(base::WeakPtr<SyncTaskManager::Client>(),
                                0 /* maximum_background_task */,
-                               base::MessageLoopProxy::current());
+                               base::ThreadTaskRunnerHandle::Get());
   task_manager.Initialize(SYNC_STATUS_OK);
   message_loop.RunUntilIdle();
 
@@ -479,7 +480,7 @@ TEST(SyncTaskManagerTest, BackgroundTask_Sequential) {
   base::MessageLoop message_loop;
   SyncTaskManager task_manager(base::WeakPtr<SyncTaskManager::Client>(),
                                10 /* maximum_background_task */,
-                               base::MessageLoopProxy::current());
+                               base::ThreadTaskRunnerHandle::Get());
   task_manager.Initialize(SYNC_STATUS_OK);
 
   SyncStatusCode status = SYNC_STATUS_FAILED;
@@ -520,7 +521,7 @@ TEST(SyncTaskManagerTest, BackgroundTask_Parallel) {
   base::MessageLoop message_loop;
   SyncTaskManager task_manager(base::WeakPtr<SyncTaskManager::Client>(),
                                10 /* maximum_background_task */,
-                               base::MessageLoopProxy::current());
+                               base::ThreadTaskRunnerHandle::Get());
   task_manager.Initialize(SYNC_STATUS_OK);
 
   SyncStatusCode status = SYNC_STATUS_FAILED;
@@ -561,7 +562,7 @@ TEST(SyncTaskManagerTest, BackgroundTask_Throttled) {
   base::MessageLoop message_loop;
   SyncTaskManager task_manager(base::WeakPtr<SyncTaskManager::Client>(),
                                2 /* maximum_background_task */,
-                               base::MessageLoopProxy::current());
+                               base::ThreadTaskRunnerHandle::Get());
   task_manager.Initialize(SYNC_STATUS_OK);
 
   SyncStatusCode status = SYNC_STATUS_FAILED;
@@ -602,7 +603,7 @@ TEST(SyncTaskManagerTest, UpdateBlockingFactor) {
   base::MessageLoop message_loop;
   SyncTaskManager task_manager(base::WeakPtr<SyncTaskManager::Client>(),
                                10 /* maximum_background_task */,
-                               base::MessageLoopProxy::current());
+                               base::ThreadTaskRunnerHandle::Get());
   task_manager.Initialize(SYNC_STATUS_OK);
 
   SyncStatusCode status1 = SYNC_STATUS_FAILED;

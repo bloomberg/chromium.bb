@@ -7,8 +7,10 @@
 #include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/run_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/thread_task_runner_handle.h"
 #include "chrome/browser/sync_file_system/local/canned_syncable_file_system.h"
 #include "chrome/browser/sync_file_system/local/local_file_sync_context.h"
 #include "chrome/browser/sync_file_system/local/local_file_sync_service.h"
@@ -99,7 +101,7 @@ ACTION_P3(NotifyStateAndCallback,
           mock_remote_service, service_state, operation_status) {
   mock_remote_service->NotifyRemoteServiceStateUpdated(
       service_state, "Test event.");
-  base::MessageLoopProxy::current()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(arg1, operation_status));
 }
 
@@ -108,12 +110,12 @@ ACTION_P(RecordState, states) {
 }
 
 ACTION_P(MockStatusCallback, status) {
-  base::MessageLoopProxy::current()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(arg4, status));
 }
 
 ACTION_P2(MockSyncFileCallback, status, url) {
-  base::MessageLoopProxy::current()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(arg0, status, url));
 }
 

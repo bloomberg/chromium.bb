@@ -5,8 +5,8 @@
 #include "chrome/browser/sync_file_system/drive_backend_v1/drive_file_sync_service.h"
 
 #include "base/bind.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "base/run_loop.h"
+#include "base/thread_task_runner_handle.h"
 #include "chrome/browser/sync_file_system/drive_backend_v1/drive_metadata_store.h"
 #include "chrome/browser/sync_file_system/drive_backend_v1/fake_api_util.h"
 #include "chrome/browser/sync_file_system/sync_file_system.pb.h"
@@ -65,7 +65,7 @@ class DriveFileSyncServiceTest : public testing::Test {
     ASSERT_TRUE(scoped_base_dir_.CreateUniqueTempDir());
     base_dir_ = scoped_base_dir_.path();
     metadata_store_ = new DriveMetadataStore(
-        base_dir_, base::MessageLoopProxy::current().get());
+        base_dir_, base::ThreadTaskRunnerHandle::Get().get());
     bool done = false;
     metadata_store_->Initialize(base::Bind(&DidInitialize, &done));
     base::RunLoop().RunUntilIdle();

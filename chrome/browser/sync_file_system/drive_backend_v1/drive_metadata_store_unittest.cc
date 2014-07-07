@@ -13,6 +13,7 @@
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/threading/thread.h"
 #include "base/values.h"
 #include "chrome/browser/sync_file_system/drive_backend/metadata_db_migration_util.h"
@@ -83,7 +84,7 @@ class DriveMetadataStoreTest : public testing::Test {
     file_thread_.reset(new base::Thread("Thread_File"));
     file_thread_->Start();
 
-    ui_task_runner_ = base::MessageLoopProxy::current();
+    ui_task_runner_ = base::ThreadTaskRunnerHandle::Get();
     file_task_runner_ = file_thread_->message_loop_proxy();
 
     ASSERT_TRUE(base_dir_.CreateUniqueTempDir());

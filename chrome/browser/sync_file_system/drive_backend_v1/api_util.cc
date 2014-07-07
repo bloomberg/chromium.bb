@@ -13,6 +13,7 @@
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/values.h"
 #include "chrome/browser/drive/drive_api_service.h"
@@ -151,7 +152,7 @@ bool CreateTemporaryFile(const base::FilePath& dir_path,
   *temp_file =
       webkit_blob::ScopedFile(temp_file_path,
                               webkit_blob::ScopedFile::DELETE_ON_SCOPE_OUT,
-                              base::MessageLoopProxy::current().get());
+                              base::ThreadTaskRunnerHandle::Get().get());
   return success;
 }
 

@@ -12,10 +12,10 @@
 #include "base/file_util.h"
 #include "base/files/file.h"
 #include "base/guid.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/task_runner_util.h"
+#include "base/thread_task_runner_handle.h"
 #include "chrome/browser/sync_file_system/file_change.h"
 #include "chrome/browser/sync_file_system/local/local_file_change_tracker.h"
 #include "chrome/browser/sync_file_system/local/local_file_sync_context.h"
@@ -65,7 +65,7 @@ R RunOnThread(
   task_runner->PostTask(
       location,
       base::Bind(task, base::Bind(&AssignAndQuit<R>,
-                                  base::MessageLoopProxy::current(),
+                                  base::ThreadTaskRunnerHandle::Get(),
                                   &result)));
   base::MessageLoop::current()->Run();
   return result;
@@ -77,8 +77,8 @@ void RunOnThread(base::SingleThreadTaskRunner* task_runner,
   task_runner->PostTaskAndReply(
       location, task,
       base::Bind(base::IgnoreResult(
-          base::Bind(&base::MessageLoopProxy::PostTask,
-                     base::MessageLoopProxy::current(),
+          base::Bind(&base::SingleThreadTaskRunner::PostTask,
+                     base::ThreadTaskRunnerHandle::Get(),
                      FROM_HERE, base::Bind(&Quit)))));
   base::MessageLoop::current()->Run();
 }
@@ -233,7 +233,7 @@ void CannedSyncableFileSystem::SetUp(QuotaMode quota_mode) {
     quota_manager_ = new QuotaManager(false /* is_incognito */,
                                       data_dir_.path(),
                                       io_task_runner_.get(),
-                                      base::MessageLoopProxy::current().get(),
+                                      base::ThreadTaskRunnerHandle::Get().get(),
                                       storage_policy.get());
   }
 
@@ -286,7 +286,7 @@ File::Error CannedSyncableFileSystem::OpenFileSystem() {
                  base::Unretained(this),
                  base::Bind(&CannedSyncableFileSystem::DidOpenFileSystem,
                             base::Unretained(this),
-                            base::MessageLoopProxy::current())));
+                            base::ThreadTaskRunnerHandle::Get())));
   base::MessageLoop::current()->Run();
 
   if (backend()->sync_context()) {

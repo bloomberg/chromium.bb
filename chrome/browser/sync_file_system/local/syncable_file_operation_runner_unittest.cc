@@ -10,6 +10,7 @@
 #include "base/location.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
+#include "base/thread_task_runner_handle.h"
 #include "chrome/browser/sync_file_system/local/canned_syncable_file_system.h"
 #include "chrome/browser/sync_file_system/local/local_file_change_tracker.h"
 #include "chrome/browser/sync_file_system/local/local_file_sync_context.h"
@@ -53,8 +54,8 @@ class SyncableFileOperationRunnerTest : public testing::Test {
         in_memory_env_(leveldb::NewMemEnv(leveldb::Env::Default())),
         file_system_(GURL("http://example.com"),
                      in_memory_env_.get(),
-                     base::MessageLoopProxy::current().get(),
-                     base::MessageLoopProxy::current().get()),
+                     base::ThreadTaskRunnerHandle::Get().get(),
+                     base::ThreadTaskRunnerHandle::Get().get()),
         callback_count_(0),
         write_status_(File::FILE_ERROR_FAILED),
         write_bytes_(0),
@@ -69,8 +70,8 @@ class SyncableFileOperationRunnerTest : public testing::Test {
     sync_context_ = new LocalFileSyncContext(
         dir_.path(),
         in_memory_env_.get(),
-        base::MessageLoopProxy::current().get(),
-        base::MessageLoopProxy::current().get());
+        base::ThreadTaskRunnerHandle::Get().get(),
+        base::ThreadTaskRunnerHandle::Get().get());
     ASSERT_EQ(
         SYNC_STATUS_OK,
         file_system_.MaybeInitializeFileSystemContext(sync_context_.get()));

@@ -11,8 +11,8 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "base/stl_util.h"
+#include "base/thread_task_runner_handle.h"
 #include "chrome/browser/sync_file_system/local/canned_syncable_file_system.h"
 #include "chrome/browser/sync_file_system/local/local_file_sync_context.h"
 #include "chrome/browser/sync_file_system/local/sync_file_system_backend.h"
@@ -39,8 +39,8 @@ class LocalFileChangeTrackerTest : public testing::Test {
       : in_memory_env_(leveldb::NewMemEnv(leveldb::Env::Default())),
         file_system_(GURL("http://example.com"),
                      in_memory_env_.get(),
-                     base::MessageLoopProxy::current().get(),
-                     base::MessageLoopProxy::current().get()) {}
+                     base::ThreadTaskRunnerHandle::Get().get(),
+                     base::ThreadTaskRunnerHandle::Get().get()) {}
 
   virtual void SetUp() OVERRIDE {
     file_system_.SetUp(CannedSyncableFileSystem::QUOTA_ENABLED);
@@ -48,8 +48,8 @@ class LocalFileChangeTrackerTest : public testing::Test {
     sync_context_ =
         new LocalFileSyncContext(base::FilePath(),
                                  in_memory_env_.get(),
-                                 base::MessageLoopProxy::current().get(),
-                                 base::MessageLoopProxy::current().get());
+                                 base::ThreadTaskRunnerHandle::Get().get(),
+                                 base::ThreadTaskRunnerHandle::Get().get());
     ASSERT_EQ(
         sync_file_system::SYNC_STATUS_OK,
         file_system_.MaybeInitializeFileSystemContext(sync_context_.get()));

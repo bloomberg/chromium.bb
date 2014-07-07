@@ -6,7 +6,8 @@
 
 #include "base/bind.h"
 #include "base/location.h"
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "chrome/browser/sync_file_system/file_change.h"
 #include "chrome/browser/sync_file_system/sync_file_metadata.h"
 #include "webkit/browser/fileapi/file_system_url.h"
@@ -32,7 +33,7 @@ void MockLocalChangeProcessor::ApplyLocalChangeStub(
     const SyncFileMetadata& local_file_metadata,
     const fileapi::FileSystemURL& url,
     const SyncStatusCallback& callback) {
-  base::MessageLoopProxy::current()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(callback, SYNC_STATUS_OK));
 }
 

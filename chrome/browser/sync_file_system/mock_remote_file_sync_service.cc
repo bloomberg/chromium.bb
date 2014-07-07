@@ -8,7 +8,8 @@
 
 #include "base/bind.h"
 #include "base/location.h"
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "url/gurl.h"
 #include "webkit/browser/fileapi/file_system_url.h"
 
@@ -90,7 +91,7 @@ void MockRemoteFileSyncService::AddFileStatusObserverStub(
 void MockRemoteFileSyncService::RegisterOriginStub(
     const GURL& origin,
     const SyncStatusCallback& callback) {
-  base::MessageLoopProxy::current()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::Bind(callback, SYNC_STATUS_OK));
 }
@@ -99,14 +100,14 @@ void MockRemoteFileSyncService::DeleteOriginDirectoryStub(
     const GURL& origin,
     UninstallFlag flag,
     const SyncStatusCallback& callback) {
-  base::MessageLoopProxy::current()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::Bind(callback, SYNC_STATUS_OK));
 }
 
 void MockRemoteFileSyncService::ProcessRemoteChangeStub(
     const SyncFileCallback& callback) {
-  base::MessageLoopProxy::current()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::Bind(callback, SYNC_STATUS_NO_CHANGE_TO_SYNC,
                  fileapi::FileSystemURL()));

@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/metrics/histogram.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/time/time.h"
 #include "base/values.h"
@@ -175,7 +176,7 @@ scoped_ptr<SyncEngine> SyncEngine::CreateForBrowserContext(
       content::BrowserThread::GetBlockingPool();
 
   scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner =
-      base::MessageLoopProxy::current();
+      base::ThreadTaskRunnerHandle::Get();
   scoped_refptr<base::SequencedTaskRunner> worker_task_runner =
       worker_pool->GetSequencedTaskRunnerWithShutdownBehavior(
           worker_pool->GetSequenceToken(),

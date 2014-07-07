@@ -13,13 +13,13 @@
 #include "base/files/file_path.h"
 #include "base/location.h"
 #include "base/memory/scoped_vector.h"
-#include "base/message_loop/message_loop_proxy.h"
-#include "base/sequenced_task_runner.h"
+#include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/task_runner_util.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/drive/drive_api_util.h"
 #include "chrome/browser/sync_file_system/drive_backend/drive_backend_constants.h"
@@ -623,8 +623,8 @@ SyncStatusCode MetadataDatabase::CreateForTesting(
     scoped_ptr<leveldb::DB> db,
     scoped_ptr<MetadataDatabase>* metadata_database_out) {
   scoped_ptr<MetadataDatabase> metadata_database(
-      new MetadataDatabase(base::MessageLoopProxy::current(),
-                           base::MessageLoopProxy::current(),
+      new MetadataDatabase(base::ThreadTaskRunnerHandle::Get(),
+                           base::ThreadTaskRunnerHandle::Get(),
                            base::FilePath(), NULL));
   metadata_database->db_ = db.Pass();
   SyncStatusCode status =

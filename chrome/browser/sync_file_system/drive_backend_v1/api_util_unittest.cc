@@ -7,7 +7,6 @@
 #include "base/file_util.h"
 #include "base/location.h"
 #include "base/message_loop/message_loop.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "chrome/browser/drive/drive_uploader.h"

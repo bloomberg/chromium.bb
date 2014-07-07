@@ -11,6 +11,7 @@
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
+#include "base/thread_task_runner_handle.h"
 #include "chrome/browser/drive/drive_uploader.h"
 #include "chrome/browser/drive/fake_drive_service.h"
 #include "chrome/browser/sync_file_system/drive_backend/drive_backend_constants.h"
@@ -51,7 +52,7 @@ class RegisterAppTaskTest : public testing::Test {
     scoped_ptr<drive::DriveUploaderInterface>
         drive_uploader(new drive::DriveUploader(
             fake_drive_service.get(),
-            base::MessageLoopProxy::current()));
+            base::ThreadTaskRunnerHandle::Get()));
 
     fake_drive_service_helper_.reset(new FakeDriveServiceHelper(
         fake_drive_service.get(), drive_uploader.get(),
@@ -62,9 +63,9 @@ class RegisterAppTaskTest : public testing::Test {
             fake_drive_service.PassAs<drive::DriveServiceInterface>(),
             drive_uploader.Pass(),
             NULL,
-            base::MessageLoopProxy::current(),
-            base::MessageLoopProxy::current(),
-            base::MessageLoopProxy::current()));
+            base::ThreadTaskRunnerHandle::Get(),
+            base::ThreadTaskRunnerHandle::Get(),
+            base::ThreadTaskRunnerHandle::Get()));
 
     ASSERT_EQ(google_apis::HTTP_CREATED,
               fake_drive_service_helper_->AddOrphanedFolder(

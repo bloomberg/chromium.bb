@@ -7,6 +7,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
+#include "base/thread_task_runner_handle.h"
 #include "chrome/browser/drive/drive_uploader.h"
 #include "chrome/browser/drive/fake_drive_service.h"
 #include "chrome/browser/extensions/test_extension_service.h"
@@ -116,9 +117,9 @@ class SyncWorkerTest : public testing::Test,
             fake_drive_service.Pass(),
             scoped_ptr<drive::DriveUploaderInterface>(),
             NULL /* task_logger */,
-            base::MessageLoopProxy::current() /* ui_task_runner */,
-            base::MessageLoopProxy::current() /* worker_task_runner */,
-            base::MessageLoopProxy::current() /* file_task_runner */));
+            base::ThreadTaskRunnerHandle::Get() /* ui_task_runner */,
+            base::ThreadTaskRunnerHandle::Get() /* worker_task_runner */,
+            base::ThreadTaskRunnerHandle::Get() /* file_task_runner */));
 
     sync_worker_.reset(new SyncWorker(
         profile_dir_.path(),

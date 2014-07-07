@@ -8,8 +8,8 @@
 
 #include "base/command_line.h"
 #include "base/file_util.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "base/run_loop.h"
+#include "base/thread_task_runner_handle.h"
 #include "chrome/browser/drive/drive_api_util.h"
 #include "chrome/browser/drive/drive_uploader.h"
 #include "chrome/browser/drive/fake_drive_service.h"
@@ -116,11 +116,11 @@ GURL ExtensionNameToGURL(const std::string& extension_name) {
 
 #if !defined(OS_ANDROID)
 ACTION(InvokeCompletionCallback) {
-  base::MessageLoopProxy::current()->PostTask(FROM_HERE, arg2);
+  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, arg2);
 }
 
 ACTION(PrepareForRemoteChange_Busy) {
-  base::MessageLoopProxy::current()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::Bind(arg1,
                  SYNC_STATUS_FILE_BUSY,
@@ -129,7 +129,7 @@ ACTION(PrepareForRemoteChange_Busy) {
 }
 
 ACTION(PrepareForRemoteChange_NotFound) {
-  base::MessageLoopProxy::current()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::Bind(arg1,
                  SYNC_STATUS_OK,
@@ -138,7 +138,7 @@ ACTION(PrepareForRemoteChange_NotFound) {
 }
 
 ACTION(PrepareForRemoteChange_NotModified) {
-  base::MessageLoopProxy::current()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::Bind(arg1,
                  SYNC_STATUS_OK,
@@ -147,7 +147,7 @@ ACTION(PrepareForRemoteChange_NotModified) {
 }
 
 ACTION(InvokeDidApplyRemoteChange) {
-  base::MessageLoopProxy::current()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(arg3, SYNC_STATUS_OK));
 }
 #endif  // !defined(OS_ANDROID)
@@ -194,7 +194,7 @@ class DriveFileSyncServiceFakeTest : public testing::Test {
 
     fake_drive_service_ = new FakeDriveService;
     DriveUploaderInterface* drive_uploader = new DriveUploader(
-        fake_drive_service_, base::MessageLoopProxy::current().get());
+        fake_drive_service_, base::ThreadTaskRunnerHandle::Get().get());
 
     fake_drive_helper_.reset(new FakeDriveServiceHelper(
         fake_drive_service_, drive_uploader,
@@ -206,7 +206,7 @@ class DriveFileSyncServiceFakeTest : public testing::Test {
         scoped_ptr<DriveUploaderInterface>(drive_uploader)).Pass();
     metadata_store_.reset(new DriveMetadataStore(
         fake_drive_helper_->base_dir_path(),
-        base::MessageLoopProxy::current().get()));
+        base::ThreadTaskRunnerHandle::Get().get()));
 
     bool done = false;
     metadata_store_->Initialize(base::Bind(&DidInitialize, &done));

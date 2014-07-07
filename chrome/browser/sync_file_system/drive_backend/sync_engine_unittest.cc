@@ -7,6 +7,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
+#include "base/thread_task_runner_handle.h"
 #include "chrome/browser/drive/drive_uploader.h"
 #include "chrome/browser/drive/fake_drive_service.h"
 #include "chrome/browser/sync_file_system/drive_backend/callback_helper.h"
@@ -37,7 +38,7 @@ class SyncEngineTest : public testing::Test,
 
     worker_pool_ = new base::SequencedWorkerPool(1, "Worker");
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner =
-        base::MessageLoopProxy::current();
+        base::ThreadTaskRunnerHandle::Get();
     worker_task_runner_ =
         worker_pool_->GetSequencedTaskRunnerWithShutdownBehavior(
             worker_pool_->GetSequenceToken(),

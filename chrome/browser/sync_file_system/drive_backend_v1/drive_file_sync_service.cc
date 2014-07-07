@@ -12,8 +12,8 @@
 #include "base/file_util.h"
 #include "base/location.h"
 #include "base/memory/weak_ptr.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "chrome/browser/drive/drive_api_util.h"
 #include "chrome/browser/drive/drive_notification_manager.h"
@@ -77,7 +77,7 @@ scoped_ptr<DriveFileSyncService> DriveFileSyncService::Create(
   scoped_ptr<drive_backend::SyncTaskManager> task_manager(
       new drive_backend::SyncTaskManager(service->AsWeakPtr(),
                                          0 /* maximum_background_task */,
-                                         base::MessageLoopProxy::current()));
+                                         base::ThreadTaskRunnerHandle::Get()));
   SyncStatusCallback callback = base::Bind(
       &drive_backend::SyncTaskManager::Initialize, task_manager->AsWeakPtr());
   service->Initialize(task_manager.Pass(), callback);
@@ -102,7 +102,7 @@ scoped_ptr<DriveFileSyncService> DriveFileSyncService::CreateForTesting(
   scoped_ptr<drive_backend::SyncTaskManager> task_manager(
       new drive_backend::SyncTaskManager(service->AsWeakPtr(),
                                          0 /* maximum_background_task */,
-                                         base::MessageLoopProxy::current()));
+                                         base::ThreadTaskRunnerHandle::Get()));
   SyncStatusCallback callback = base::Bind(
       &drive_backend::SyncTaskManager::Initialize, task_manager->AsWeakPtr());
   service->InitializeForTesting(task_manager.Pass(),
@@ -346,7 +346,7 @@ void DriveFileSyncService::InitializeForTesting(
   api_util_ = api_util.Pass();
   metadata_store_ = metadata_store.Pass();
 
-  base::MessageLoopProxy::current()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::Bind(&DriveFileSyncService::DidInitializeMetadataStore,
                  AsWeakPtr(), callback, SYNC_STATUS_OK, false));

@@ -6,6 +6,7 @@
 
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/threading/thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -64,9 +65,9 @@ TEST(DriveBackendCallbackHelperTest, RunOnOtherThreadTest) {
   base::Thread thread("WorkerThread");
   thread.Start();
 
-  scoped_refptr<base::MessageLoopProxy> ui_task_runner =
-      base::MessageLoopProxy::current();
-  scoped_refptr<base::MessageLoopProxy> worker_task_runner =
+  scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner =
+      base::ThreadTaskRunnerHandle::Get();
+  scoped_refptr<base::SequencedTaskRunner> worker_task_runner =
       thread.message_loop_proxy();
 
   bool called = false;

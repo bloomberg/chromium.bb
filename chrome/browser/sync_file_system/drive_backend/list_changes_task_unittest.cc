@@ -9,6 +9,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/format_macros.h"
 #include "base/run_loop.h"
+#include "base/thread_task_runner_handle.h"
 #include "chrome/browser/sync_file_system/drive_backend/drive_backend_constants.h"
 #include "chrome/browser/sync_file_system/drive_backend/fake_drive_service_helper.h"
 #include "chrome/browser/sync_file_system/drive_backend/metadata_database.h"
@@ -48,7 +49,7 @@ class ListChangesTaskTest : public testing::Test {
     scoped_ptr<drive::DriveUploaderInterface>
         drive_uploader(new drive::DriveUploader(
             fake_drive_service.get(),
-            base::MessageLoopProxy::current()));
+            base::ThreadTaskRunnerHandle::Get()));
 
     fake_drive_service_helper_.reset(
         new FakeDriveServiceHelper(fake_drive_service.get(),
@@ -58,16 +59,16 @@ class ListChangesTaskTest : public testing::Test {
     sync_task_manager_.reset(new SyncTaskManager(
         base::WeakPtr<SyncTaskManager::Client>(),
         10 /* maximum_background_task */,
-        base::MessageLoopProxy::current()));
+        base::ThreadTaskRunnerHandle::Get()));
     sync_task_manager_->Initialize(SYNC_STATUS_OK);
 
     context_.reset(new SyncEngineContext(
         fake_drive_service.PassAs<drive::DriveServiceInterface>(),
         drive_uploader.Pass(),
         NULL,
-        base::MessageLoopProxy::current(),
-        base::MessageLoopProxy::current(),
-        base::MessageLoopProxy::current()));
+        base::ThreadTaskRunnerHandle::Get(),
+        base::ThreadTaskRunnerHandle::Get(),
+        base::ThreadTaskRunnerHandle::Get()));
 
     SetUpRemoteFolders();
 
