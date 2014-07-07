@@ -109,8 +109,9 @@ base::FilePath GetDriveMountPointPathForUserIdHash(
       FILE_PATH_LITERAL("/special");
   static const char kDriveMountPointNameBase[] = "drive";
   return base::FilePath(kSpecialMountPointRoot).AppendASCII(
-      net::EscapePath(kDriveMountPointNameBase +
-                      (user_id_hash.empty() ? "" : "-" + user_id_hash)));
+      net::EscapeQueryParamValue(
+          kDriveMountPointNameBase +
+          (user_id_hash.empty() ? "" : "-" + user_id_hash), false));
 }
 
 base::FilePath GetDriveMountPointPath(Profile* profile) {

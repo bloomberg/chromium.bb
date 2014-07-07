@@ -112,7 +112,7 @@ std::string GetDownloadsMountPointName(Profile* profile) {
                 profile->GetOriginalProfile())
           : NULL;
   const std::string id = user ? "-" + user->username_hash() : "";
-  return net::EscapePath(kDownloadsFolderName + id);
+  return net::EscapeQueryParamValue(kDownloadsFolderName + id, false);
 }
 
 }  // namespace util
