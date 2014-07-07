@@ -988,8 +988,8 @@ void ThreadProxy::ScheduledActionCommit() {
 
   if (hold_commit) {
     // For some layer types in impl-side painting, the commit is held until
-    // the pending tree is activated.  It's also possible that the
-    // pending tree has already activated if there was no work to be done.
+    // the sync tree is activated.  It's also possible that the
+    // sync tree has already activated if there was no work to be done.
     TRACE_EVENT_INSTANT0("cc", "HoldCommit", TRACE_EVENT_SCOPE_THREAD);
     impl().completion_event_for_commit_held_on_tree_activation =
         impl().commit_completion_event;
@@ -1018,8 +1018,8 @@ void ThreadProxy::ScheduledActionUpdateVisibleTiles() {
   impl().layer_tree_host_impl->UpdateVisibleTiles();
 }
 
-void ThreadProxy::ScheduledActionActivatePendingTree() {
-  TRACE_EVENT0("cc", "ThreadProxy::ScheduledActionActivatePendingTree");
+void ThreadProxy::ScheduledActionActivateSyncTree() {
+  TRACE_EVENT0("cc", "ThreadProxy::ScheduledActionActivateSyncTree");
   DCHECK(IsImplThread());
   impl().layer_tree_host_impl->ActivateSyncTree();
 }
@@ -1437,7 +1437,7 @@ void ThreadProxy::DidActivateSyncTree() {
 
   UpdateBackgroundAnimateTicking();
 
-  impl().timing_history.DidActivatePendingTree();
+  impl().timing_history.DidActivateSyncTree();
 }
 
 void ThreadProxy::DidManageTiles() {

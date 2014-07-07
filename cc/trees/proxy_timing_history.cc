@@ -47,7 +47,7 @@ void ProxyTimingHistory::DidCommit() {
       commit_complete_time_ - begin_main_frame_sent_time_);
 }
 
-void ProxyTimingHistory::DidActivatePendingTree() {
+void ProxyTimingHistory::DidActivateSyncTree() {
   commit_to_activate_duration_history_.InsertSample(
       base::TimeTicks::HighResNow() - commit_complete_time_);
 }

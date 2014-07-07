@@ -199,8 +199,8 @@ class FakeSchedulerClient : public SchedulerClient {
     if (redraw_will_happen_if_update_visible_tiles_happens_)
       scheduler_->SetNeedsRedraw();
   }
-  virtual void ScheduledActionActivatePendingTree() OVERRIDE {
-    actions_.push_back("ScheduledActionActivatePendingTree");
+  virtual void ScheduledActionActivateSyncTree() OVERRIDE {
+    actions_.push_back("ScheduledActionActivateSyncTree");
     states_.push_back(scheduler_->AsValue().release());
   }
   virtual void ScheduledActionBeginOutputSurfaceCreation() OVERRIDE {
@@ -966,7 +966,7 @@ TEST(SchedulerTest, ShouldUpdateVisibleTiles) {
 
   client.Reset();
   scheduler->NotifyReadyToActivate();
-  EXPECT_SINGLE_ACTION("ScheduledActionActivatePendingTree", client);
+  EXPECT_SINGLE_ACTION("ScheduledActionActivateSyncTree", client);
 
   client.Reset();
   client.SetSwapContainsIncompleteTile(true);
@@ -1641,7 +1641,7 @@ void DidLoseOutputSurfaceAfterBeginFrameStartedWithHighLatency(
   scheduler->NotifyReadyToCommit();
   if (impl_side_painting) {
     EXPECT_ACTION("ScheduledActionCommit", client, 0, 3);
-    EXPECT_ACTION("ScheduledActionActivatePendingTree", client, 1, 3);
+    EXPECT_ACTION("ScheduledActionActivateSyncTree", client, 1, 3);
     EXPECT_ACTION("ScheduledActionBeginOutputSurfaceCreation", client, 2, 3);
   } else {
     EXPECT_ACTION("ScheduledActionCommit", client, 0, 2);
@@ -1691,8 +1691,8 @@ void DidLoseOutputSurfaceAfterReadyToCommit(bool impl_side_painting) {
   client.Reset();
   scheduler->DidLoseOutputSurface();
   if (impl_side_painting) {
-    // Pending tree should be forced to activate.
-    EXPECT_SINGLE_ACTION("ScheduledActionActivatePendingTree", client);
+    // Sync tree should be forced to activate.
+    EXPECT_SINGLE_ACTION("ScheduledActionActivateSyncTree", client);
   } else {
     // Do nothing when impl frame is in deadine pending state.
     EXPECT_NO_ACTION(client);

@@ -130,8 +130,8 @@ const char* SchedulerStateMachine::ActionToString(Action action) {
       return "ACTION_COMMIT";
     case ACTION_UPDATE_VISIBLE_TILES:
       return "ACTION_UPDATE_VISIBLE_TILES";
-    case ACTION_ACTIVATE_PENDING_TREE:
-      return "ACTION_ACTIVATE_PENDING_TREE";
+    case ACTION_ACTIVATE_SYNC_TREE:
+      return "ACTION_ACTIVATE_SYNC_TREE";
     case ACTION_DRAW_AND_SWAP_IF_POSSIBLE:
       return "ACTION_DRAW_AND_SWAP_IF_POSSIBLE";
     case ACTION_DRAW_AND_SWAP_FORCED:
@@ -515,7 +515,7 @@ SchedulerStateMachine::Action SchedulerStateMachine::NextAction() const {
   if (ShouldUpdateVisibleTiles())
     return ACTION_UPDATE_VISIBLE_TILES;
   if (ShouldActivatePendingTree())
-    return ACTION_ACTIVATE_PENDING_TREE;
+    return ACTION_ACTIVATE_SYNC_TREE;
   if (ShouldCommit())
     return ACTION_COMMIT;
   if (ShouldAnimate())
@@ -547,7 +547,7 @@ void SchedulerStateMachine::UpdateState(Action action) {
           current_frame_number_;
       return;
 
-    case ACTION_ACTIVATE_PENDING_TREE:
+    case ACTION_ACTIVATE_SYNC_TREE:
       UpdateStateOnActivation();
       return;
 

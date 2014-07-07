@@ -20,7 +20,7 @@ class ProxyTimingHistory {
 
   void DidBeginMainFrame();
   void DidCommit();
-  void DidActivatePendingTree();
+  void DidActivateSyncTree();
   void DidStartDrawing();
   // Returns draw duration.
   base::TimeDelta DidFinishDrawing();

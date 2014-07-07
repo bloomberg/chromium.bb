@@ -645,8 +645,8 @@ void Scheduler::ProcessScheduledActions() {
       case SchedulerStateMachine::ACTION_UPDATE_VISIBLE_TILES:
         client_->ScheduledActionUpdateVisibleTiles();
         break;
-      case SchedulerStateMachine::ACTION_ACTIVATE_PENDING_TREE:
-        client_->ScheduledActionActivatePendingTree();
+      case SchedulerStateMachine::ACTION_ACTIVATE_SYNC_TREE:
+        client_->ScheduledActionActivateSyncTree();
         break;
       case SchedulerStateMachine::ACTION_DRAW_AND_SWAP_IF_POSSIBLE:
         DrawAndSwapIfPossible();

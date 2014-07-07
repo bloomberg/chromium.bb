@@ -232,8 +232,7 @@ TEST(SchedulerStateMachineTest, MainFrameBeforeDrawDisabled) {
   state.OnBeginImplFrame(CreateBeginFrameArgsForTesting());
 
   state.NotifyReadyToActivate();
-  EXPECT_ACTION_UPDATE_STATE(
-      SchedulerStateMachine::ACTION_ACTIVATE_PENDING_TREE);
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_ACTIVATE_SYNC_TREE);
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_ANIMATE);
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
   EXPECT_EQ(state.CommitState(),
@@ -308,8 +307,7 @@ TEST(SchedulerStateMachineTest, MainFrameBeforeActivationEnabled) {
   // Verify NotifyReadyToActivate unblocks activation, draw, and
   // commit in that order.
   state.NotifyReadyToActivate();
-  EXPECT_ACTION_UPDATE_STATE(
-      SchedulerStateMachine::ACTION_ACTIVATE_PENDING_TREE);
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_ACTIVATE_SYNC_TREE);
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
 
   EXPECT_TRUE(state.ShouldTriggerBeginImplFrameDeadlineEarly());
@@ -1595,8 +1593,7 @@ TEST(SchedulerStateMachineTest,
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_COMMIT);
 
   EXPECT_TRUE(state.PendingActivationsShouldBeForced());
-  EXPECT_ACTION_UPDATE_STATE(
-      SchedulerStateMachine::ACTION_ACTIVATE_PENDING_TREE);
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_ACTIVATE_SYNC_TREE);
 
   EXPECT_TRUE(state.PendingDrawsShouldBeAborted());
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_DRAW_AND_SWAP_ABORT);
@@ -1733,8 +1730,7 @@ void FinishPreviousCommitAndDrawWithoutExitingDeadline(
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_COMMIT);
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
   state.NotifyReadyToActivate();
-  EXPECT_ACTION_UPDATE_STATE(
-      SchedulerStateMachine::ACTION_ACTIVATE_PENDING_TREE);
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_ACTIVATE_SYNC_TREE);
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
 
   state.OnBeginImplFrame(CreateBeginFrameArgsForTesting());

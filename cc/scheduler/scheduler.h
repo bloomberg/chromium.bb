@@ -35,7 +35,7 @@ class SchedulerClient {
   virtual void ScheduledActionAnimate() = 0;
   virtual void ScheduledActionCommit() = 0;
   virtual void ScheduledActionUpdateVisibleTiles() = 0;
-  virtual void ScheduledActionActivatePendingTree() = 0;
+  virtual void ScheduledActionActivateSyncTree() = 0;
   virtual void ScheduledActionBeginOutputSurfaceCreation() = 0;
   virtual void ScheduledActionManageTiles() = 0;
   virtual void DidAnticipatedDrawTimeChange(base::TimeTicks time) = 0;

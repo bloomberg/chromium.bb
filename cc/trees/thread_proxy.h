@@ -216,7 +216,7 @@ class CC_EXPORT ThreadProxy : public Proxy,
   virtual void ScheduledActionAnimate() OVERRIDE;
   virtual void ScheduledActionCommit() OVERRIDE;
   virtual void ScheduledActionUpdateVisibleTiles() OVERRIDE;
-  virtual void ScheduledActionActivatePendingTree() OVERRIDE;
+  virtual void ScheduledActionActivateSyncTree() OVERRIDE;
   virtual void ScheduledActionBeginOutputSurfaceCreation() OVERRIDE;
   virtual void ScheduledActionManageTiles() OVERRIDE;
   virtual void DidAnticipatedDrawTimeChange(base::TimeTicks time) OVERRIDE;
