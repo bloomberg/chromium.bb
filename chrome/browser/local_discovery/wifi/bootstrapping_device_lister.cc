@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/message_loop/message_loop_proxy.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 
 namespace local_discovery {
@@ -151,15 +152,11 @@ void BootstrappingDeviceLister::UpdateChangedSSIDs(
   base::WeakPtr<BootstrappingDeviceLister> weak_this =
       weak_factory_.GetWeakPtr();
 
-  ActiveDeviceList changed_devices;
-  std::set_difference(changed.begin(),
-                      changed.end(),
-                      original.begin(),
-                      original.end(),
-                      std::back_inserter(changed_devices));
+  ActiveDeviceList changed_devices =
+    base::STLSetDifference<ActiveDeviceList>(changed, original);
 
-  for (ActiveDeviceList::iterator i = changed_devices.begin();
-       weak_this && i != changed_devices.end();
+  for (ActiveDeviceList::reverse_iterator i = changed_devices.rbegin();
+       weak_this && i != changed_devices.rend();
        i++) {
     BootstrappingDeviceDescription description;
     if (ParsePrivetSSID(i->second, i->first, &description)) {
