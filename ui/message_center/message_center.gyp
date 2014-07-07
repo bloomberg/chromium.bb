@@ -140,6 +140,7 @@
             ['exclude', '\\.(cc|mm)$'],
             ['include', '^dummy_message_center\\.cc$'],
             ['include', '^message_center_switches\\.cc$'],
+            ['include', '^notification_delegate\\.cc$'],
           ],
         }, {  # notifications==1
           'sources!': [ 'dummy_message_center.cc' ],
@@ -148,7 +149,6 @@
         ['OS=="android"', {
           'sources/': [
             ['include', '^notification\\.cc$'],
-            ['include', '^notification_delegate\\.cc$'],
             ['include', '^notifier_settings\\.cc$'],
           ],
         }],
