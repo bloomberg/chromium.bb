@@ -3594,24 +3594,43 @@ bool RenderLayer::attemptDirectCompositingUpdate(StyleDifference diff, const Ren
     // compositing state is set up to receive a direct transform or opacity
     // update.
 
-    if (!diff.hasOnlyPropertySpecificDifference(StyleDifference::TransformChanged))
+    if (!diff.hasAtMostPropertySpecificDifferences(StyleDifference::TransformChanged | StyleDifference::OpacityChanged))
         return false;
+    // The potentialCompositingReasonsFromStyle could have changed without
+    // a corresponding StyleDifference if an animation started or ended.
     if (m_potentialCompositingReasonsFromStyle != oldPotentialCompositingReasonsFromStyle)
         return false;
+    // We could add support for reflections if we updated the transform on
+    // the reflection layers.
     if (renderer()->hasReflection())
+        return false;
+    // If we're unwinding a scheduleSVGFilterLayerUpdateHack(), then we can't
+    // perform a direct compositing update because the filters code is going
+    // to produce different output this time around. We can remove this code
+    // once we fix the chicken/egg bugs in the filters code and delete the
+    // scheduleSVGFilterLayerUpdateHack().
+    if (renderer()->node() && renderer()->node()->svgFilterNeedsLayerUpdate())
         return false;
     if (!m_compositedLayerMapping)
         return false;
 
-    // To cut off almost all the work in the compositing update for
-    // this case, we treat inline transforms has having assumed overlap
-    // (similar to how we treat animated transforms). Notice that we read
-    // CompositingReasonInlineTransform from the m_compositingReasons, which
-    // means that the inline transform actually triggered assumed overlap in
-    // the overlap map.
-    if (!m_hasInlineTransform)
-        return false;
-    if (!(m_compositingReasons & CompositingReasonInlineTransform))
+    if (diff.transformChanged()) {
+        // To cut off almost all the work in the compositing update for
+        // this case, we treat inline transforms has having assumed overlap
+        // (similar to how we treat animated transforms). Notice that we read
+        // CompositingReasonInlineTransform from the m_compositingReasons, which
+        // means that the inline transform actually triggered assumed overlap in
+        // the overlap map.
+        if (!m_hasInlineTransform)
+            return false;
+        if (!(m_compositingReasons & CompositingReasonInlineTransform))
+            return false;
+    }
+
+    // We composite transparent RenderLayers differently from non-transparent
+    // RenderLayers even when the non-transparent RenderLayers are already a
+    // stacking context.
+    if (diff.opacityChanged() && m_renderer->style()->hasOpacity() != oldStyle->hasOpacity())
         return false;
 
     updateTransform(oldStyle, renderer()->style());

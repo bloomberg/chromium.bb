@@ -749,6 +749,7 @@ public:
 
     float textStrokeWidth() const { return rareInheritedData->textStrokeWidth; }
     float opacity() const { return rareNonInheritedData->opacity; }
+    bool hasOpacity() const { return opacity() < 1.0f; }
     ControlPart appearance() const { return static_cast<ControlPart>(rareNonInheritedData->m_appearance); }
     // aspect ratio convenience method
     bool hasAspectRatio() const { return rareNonInheritedData->m_hasAspectRatio; }

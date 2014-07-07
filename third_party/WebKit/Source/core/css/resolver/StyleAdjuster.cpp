@@ -192,7 +192,7 @@ void StyleAdjuster::adjustRenderStyle(RenderStyle* style, RenderStyle* parentSty
     // cases where objects that should be blended as a single unit end up with a non-transparent
     // object wedged in between them. Auto z-index also becomes 0 for objects that specify transforms/masks/reflections.
     if (style->hasAutoZIndex() && ((e && e->document().documentElement() == e)
-        || style->opacity() < 1.0f
+        || style->hasOpacity()
         || style->hasTransformRelatedProperty()
         || style->hasMask()
         || style->clipPath()

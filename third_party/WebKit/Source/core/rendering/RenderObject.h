@@ -876,7 +876,7 @@ public:
 
     bool isFloatingOrOutOfFlowPositioned() const { return (isFloating() || isOutOfFlowPositioned()); }
 
-    bool isTransparent() const { return style()->opacity() < 1.0f; }
+    bool isTransparent() const { return style()->hasOpacity(); }
     float opacity() const { return style()->opacity(); }
 
     bool hasReflection() const { return m_bitfields.hasReflection(); }

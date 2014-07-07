@@ -28,9 +28,9 @@ public:
 
     bool hasDifference() const { return m_repaintType || m_layoutType || m_propertySpecificDifferences; }
 
-    bool hasOnlyPropertySpecificDifference(PropertyDifference propertyDifference) const
+    bool hasAtMostPropertySpecificDifferences(unsigned propertyDifferences) const
     {
-        return !m_repaintType && !m_layoutType && m_propertySpecificDifferences == static_cast<unsigned>(propertyDifference);
+        return !m_repaintType && !m_layoutType && !(m_propertySpecificDifferences & ~propertyDifferences);
     }
 
     bool needsRepaint() const { return m_repaintType != NoRepaint; }
