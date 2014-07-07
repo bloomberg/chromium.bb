@@ -318,7 +318,7 @@
 <translation id="7332592614823088566">Ред <ph name="ROWINDEX"/> од <ph name="ROWTOTAL"/>, колона <ph name="COLINDEX"/> од <ph name="COLTOTAL"/></translation>
 <translation id="794091007957014205">{COUNT,plural, =1{знак @}one{# знак @}few{# знака @}other{# знакова @}}</translation>
 <translation id="1107942983112791593">maqe</translation>
-<translation id="1383876407941801731">Претрага</translation>
+<translation id="1383876407941801731">Претражи</translation>
 <translation id="9065283790526219006">+popup</translation>
 <translation id="5203930734796605961"><ph name="KEY"/> је већ додељен команди.</translation>
 <translation id="3486232535569802404"><ph name="V1"/> до <ph name="V2"/></translation>

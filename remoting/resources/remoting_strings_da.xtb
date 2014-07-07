@@ -13,11 +13,13 @@ host</translation>
 <translation id="2801119484858626560">Der er registreret en inkompatibel version af Chrome Fjernskrivebord. Kontrollér, at du har den nyeste version af Chrome og Chrome Fjernskrivebord på begge computere, og prøv igen.</translation>
 <translation id="6998989275928107238">Til</translation>
 <translation id="406849768426631008">Vil du hjælpe en anden person, mens I videochatter? Prøv <ph name="LINK_BEGIN"/>Fjernskrivebord i Google Hangouts<ph name="LINK_END"/>.</translation>
+<translation id="906458777597946297">Maksimér vinduet</translation>
 <translation id="5397086374758643919">Afinstallationsprogram til host for Chrome Fjernskrivebord</translation>
 <translation id="3258789396564295715">Du kan få sikker adgang til denne computer via Chrome Fjernskrivebord.</translation>
 <translation id="5070121137485264635">Fjernværten kræver, at du bekræftes over for et tredjepartswebsite. Du skal give Chrome Fjernskrivebord yderligere tilladelser til at få adgang til denne adresse, før du kan fortsætte:</translation>
 <translation id="2124408767156847088">Sikker adgang til dine computere fra din Android-enhed.</translation>
 <translation id="3194245623920924351">Chrome Fjernskrivebord</translation>
+<translation id="3649256019230929621">Minimer vinduet</translation>
 <translation id="4808503597364150972">Indtast din pinkode til <ph name="HOSTNAME"/>.</translation>
 <translation id="7672203038394118626">Fjernforbindelserne til denne computer er blevet deaktiveret.</translation>
 <translation id="8244400547700556338">Få flere oplysninger.</translation>
@@ -28,9 +30,9 @@ host</translation>
 <translation id="7658239707568436148">Annuller</translation>
 <translation id="7782471917492991422">Kontrollér indstillingerne for strømstyring på din computer, og sørg for, at den ikke er konfigureret til at gå i dvale, når den er inaktiv.</translation>
 <translation id="7665369617277396874">Tilføj konto</translation>
-<translation id="5925497314631808737">• Fuld skærm/fordybningstilstand er implementeret.
-• Ikon til at skjule handlingsbjælken er forbedret.</translation>
+<translation id="4939475390270873744">• Et nedbrud ved opstart er blevet rettet.</translation>
 <translation id="2707879711568641861">Nogle komponenter, der kræves til Chrome Fjernskrivebord, mangler. Kontrollér, at du har den nyeste version af Google Chrome, og prøv igen.</translation>
+<translation id="1779766957982586368">Luk vindue</translation>
 <translation id="2499160551253595098">Hjælp os med at forbedre Chrome Fjernskrivebord ved at lade os indsamle brugsstatistikker og rapporter om nedbrud.</translation>
 <translation id="7868137160098754906">Indtast din pinkode til fjerncomputeren.</translation>
 <translation id="677755392401385740">Host er startet for bruger: <ph name="HOST_USERNAME"/>.</translation>
@@ -55,7 +57,6 @@ host</translation>
 <translation id="9188433529406846933">Autoriser</translation>
 <translation id="228809120910082333">Bekræft din konto og pinkode nedenfor for at give adgang via Chromoting.</translation>
 <translation id="7605995381616883502">Ny forbindelse</translation>
-<translation id="5826423541626112308">Host for Chrome Fjernskrivebord</translation>
 <translation id="2851674870054673688">Når personen indtaster koden, startes delingssessionen.</translation>
 <translation id="5593560073513909978">Tjenesten er midlertidigt utilgængelig. Prøv igen senere.</translation>
 <translation id="3908017899227008678">Tilpas til vinduet</translation>
@@ -65,7 +66,6 @@ host</translation>
 <translation id="1409991159633941777">Nogle komponenter, der kræves til Chrome Fjernskrivebord, mangler. Kontrollér, at du har den nyeste version af Chrome, og prøv igen.</translation>
 <translation id="174018511426417793">Du har ingen registrerede computere. Hvis du vil aktivere fjernforbindelser til en computer, skal du installere Chrome Fjernskrivebord på den pågældende computer og klikke på &quot;<ph name="BUTTON_NAME"/>&quot;.</translation>
 <translation id="9126115402994542723">Bed ikke om en pinkode igen, når der oprettes forbindelse til denne host fra denne enhed.</translation>
-<translation id="253387295088602549">Giv en anden bruger sikker adgang til din computer via internettet.</translation>
 <translation id="1300633907480909701">Få adgang til dine computere fra din Android-enhed på sikker vis.
 
 • Konfigurer fjernadgang på dine computere ved hjælp af appen Chrome Fjernskrivebord fra Chrome Webshop: https://chrome.google.com/remotedesktop
@@ -85,9 +85,9 @@ Du kan få flere oplysninger om privatliv i privatlivspolitikkerne for Google (h
 <translation id="5285241842433869526">Få flere oplysninger om at konfigurere en computer til fjernadgang.</translation>
 <translation id="4430915108080446161">Genererer adgangskode...</translation>
 <translation id="2013996867038862849">Alle parrede klienter er blevet slettet.</translation>
-<translation id="7081428606750359611">Chromoting-host</translation>
 <translation id="8228265668171617545">Der er registreret en inkompatibel version af Chromoting. Kontrollér, at du har den nyeste version af Chrome og Chromoting på begge computere, og prøv igen.</translation>
 <translation id="6985691951107243942">Er du sikker på, at du vil deaktivere fjernforbindelserne til <ph name="HOSTNAME"/>? Hvis du ombestemmer dig, skal du genaktivere forbindelserne på den computer.</translation>
+<translation id="6944854424004126054">Gendan vinduet</translation>
 <translation id="1436054138039008644"><ph name="HOSTNAME"/> (sidst online d. <ph name="DATE"/>)</translation>
 <translation id="9149992051684092333">Hvis du vil begynde at dele dit skrivebord, skal du give adgangskoden nedenfor til den person, som skal hjælpe dig.</translation>
 <translation id="409800995205263688">BEMÆRK! Politikindstillingerne tillader kun forbindelser mellem computere inden for dit netværk.</translation>
@@ -215,5 +215,6 @@ Fjernskrivebord</translation>
 <translation id="1818475040640568770">Du har ingen registrerede computere.</translation>
 <translation id="4394049700291259645">Deaktiver</translation>
 <translation id="4156740505453712750">Beskyt adgangen til denne computer ved at vælge en pinkode på <ph name="BOLD_START"/>mindst seks cifre<ph name="BOLD_END"/>. Denne pinkode skal indtastes, når du opretter forbindelse fra et andet sted.</translation>
+<translation id="6398765197997659313">Afslut fuld skærm</translation>
 <translation id="3286521253923406898">Administration af Chromoting-host</translation>
 </translationbundle>

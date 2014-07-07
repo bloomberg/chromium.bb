@@ -54,7 +54,6 @@
 <translation id="4831257561365056138">Desinstalar Iniciador de aplicativos Chromium</translation>
 <translation id="4222580632002216401">Agora, você está conectado ao Chromium. A sincronização está desativada por seu administrador.</translation>
 <translation id="4207043877577553402"><ph name="BEGIN_BOLD"/>Aviso:<ph name="END_BOLD"/> O Chromium não pode impedir que as extensões gravem seu histórico de navegação. Para desativar esta extensão no modo anônimo, desmarque esta opção.</translation>
-<translation id="4516868174453854611">Agora que você está conectado, pode ver suas guias, favoritos e outras coisas do Chromium no seu laptop, telefone ou tablet. Você também receberá sugestões e recursos mais relevantes nos serviços do Google.</translation>
 <translation id="985602178874221306">Autores do Chromium</translation>
 <translation id="8628626585870903697">O Chromium não inclui o visualizador de PDF que é necessário para que a visualização de impressão funcione.</translation>
 <translation id="7138853919861947730">O Chromium pode usar os serviços da web para melhorar sua experiência de navegação.</translation>
@@ -106,6 +105,7 @@
 <translation id="7066436765290594559">O Chromium OS não pôde sincronizar seus dados. Atualize sua senha de sincronização.</translation>
 <translation id="7747138024166251722">O instalador não conseguiu criar um diretório temporário. Verifique se há espaço livre em disco e se há permissão para a instalação de software.</translation>
 <translation id="3258596308407688501">O Chromium não pode ler e gravar neste diretório de dados: <ph name="USER_DATA_DIRECTORY"/></translation>
+<translation id="1869480248812203386">Você pode ajudar a tornar o Chromium mais seguro e mais fácil de usar ao informar automaticamente ao Google detalhes sobre possíveis incidentes de segurança.</translation>
 <translation id="6970811910055250180">Atualizando o dispositivo...</translation>
 <translation id="2485422356828889247">Desinstalar</translation>
 <translation id="85843667276690461">Obter ajuda para usar o Chromium</translation>
@@ -114,7 +114,6 @@
 <translation id="8493179195440786826">O Chromium está desatualizado</translation>
 <translation id="911206726377975832">Excluir também dados de navegação?</translation>
 <translation id="95514773681268843"><ph name="DOMAIN"/> requer que você leia e aceite os Termos de Serviço a seguir antes de utilizar o serviço. Esses termos não ampliam, modificam nem limitam os Termos do Chromium OS.</translation>
-<translation id="5603085937604338780">chromium</translation>
 <translation id="1699664235656412242">Feche todas as janelas do Chromium, (incluindo as que estejam no modo Windows 8) e tente novamente.</translation>
 <translation id="6734080038664603509">Atualizar o &amp;Chromium</translation>
 <translation id="8862326446509486874">Você não tem os direitos adequados para instalação no nível do sistema. Tente executar o instalador novamente como administrador.</translation>
@@ -221,6 +220,7 @@ Se você decidir fazer login assim mesmo, as informações do Chromium, como fav
 <translation id="9013262824292842194">O Chromium requer o Windows Vista ou Windows XP com SP2 ou superior.</translation>
 <translation id="1967743265616885482">Um módulo com o mesmo nome é conhecido por entrar em conflito com o Chromium.</translation>
 <translation id="8704119203788522458">Este é seu Chromium</translation>
+<translation id="8269379391216269538">Ajudar a melhorar o Chromium</translation>
 <translation id="4224199872375172890">O Chromium está atualizado.</translation>
 <translation id="374481098568514319">Este computador já possui uma versão mais recente dos componentes do Chromium. Use um instalador mais recente.</translation>
 <translation id="6240281849816458190">Você tentou acessar &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, mas o servidor apresentou um certificado que ainda não é válido. Nenhuma informação está disponível para indicar se o certificado é confiável. O Chromium não pode garantir que você esteja se comunicando com &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, e não com um invasor. O relógio do computador está definido como <ph name="CURRENT_TIME"/> no momento. Isso está correto? Se não estiver, corrija o erro e atualize esta página.</translation>

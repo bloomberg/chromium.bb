@@ -20,7 +20,7 @@
 <translation id="7121570032414343252"><ph name="NUMBER_TWO"/> സെക്കന്റ്</translation>
 <translation id="7511635910912978956"><ph name="NUMBER_FEW"/> മണിക്കൂര്‍‍ അവശേഷിക്കുന്നു</translation>
 <translation id="5948410903763073882">Alt+<ph name="KEY_COMBO_NAME"/></translation>
-<translation id="7658239707568436148">റദ്ദാക്കുക</translation>
+<translation id="7658239707568436148">റദ്ദാക്കൂ</translation>
 <translation id="7222373446505536781">F11</translation>
 <translation id="1761785978543082658"><ph name="QUANTITY"/> B</translation>
 <translation id="3660179305079774227">മുകളിലേക്കുള്ള അമ്പടയാളം</translation>
@@ -86,6 +86,7 @@
 <translation id="7487278341251176613"><ph name="NUMBER_TWO"/> മിനിറ്റ് ശേഷിക്കുന്നു</translation>
 <translation id="5110450810124758964"><ph name="NUMBER_ONE"/> day ago</translation>
 <translation id="2820806154655529776"><ph name="NUMBER_ONE"/> സെക്കന്റ്</translation>
+<translation id="4320177379694898372">ഇന്റർനെറ്റ് കണക്ഷനൊന്നുമില്ല</translation>
 <translation id="7814458197256864873">&amp;പകര്‍ത്തൂ</translation>
 <translation id="3889424535448813030">വലതുഭാഗത്തെ അമ്പടയാളം</translation>
 <translation id="4229495110203539533"><ph name="NUMBER_ONE"/> sec ago</translation>
@@ -150,7 +151,7 @@
 <translation id="1781701194097416995">ഇടതുവശത്തുള്ള പദത്തിലേക്ക് നീക്കുക</translation>
 <translation id="1243314992276662751">അപ്‌ലോഡുചെയ്യുക</translation>
 <translation id="50030952220075532"><ph name="NUMBER_ONE"/> ദിവസം അവശേഷിക്കുന്നു</translation>
-<translation id="8179976553408161302">നൽകുക</translation>
+<translation id="8179976553408161302">Enter</translation>
 <translation id="8471049483003785219">ഇടതുവശത്തുള്ള പദത്തിലേക്ക് നീക്കി തിരഞ്ഞെടുത്ത് പരിഷ്‌ക്കരിക്കുക</translation>
 <translation id="945522503751344254">ഫീഡ്ബാക്ക് അയയ്ക്കുക</translation>
 <translation id="9170848237812810038">‍&amp;പൂര്‍വാവസ്ഥയിലാക്കുക</translation>

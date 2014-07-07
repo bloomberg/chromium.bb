@@ -7,11 +7,13 @@
 <translation id="5172758083709347301">Įrenginys</translation>
 <translation id="7180611975245234373">Atnaujinti</translation>
 <translation id="777702478322588152">Prefektūra</translation>
+<translation id="7600965453749440009">Niekada neversti <ph name="LANGUAGE"/></translation>
 <translation id="2262243747453050782">HTTP klaida</translation>
 <translation id="1339601241726513588">Registracijos domenas:</translation>
 <translation id="7298195798382681320">Rekomenduojama</translation>
 <translation id="4058922952496707368">Raktas „<ph name="SUBKEY"/>“: <ph name="ERROR"/></translation>
 <translation id="5299298092464848405">Analizuojant politiką įvyko klaida</translation>
+<translation id="6831043979455480757">Vertėjas</translation>
 <translation id="1228893227497259893">Netinkamas subjekto identifikatorius</translation>
 <translation id="6337534724793800597">Filtruoti politiką pagal pavadinimą</translation>
 <translation id="4372948949327679948">Numatyta „<ph name="VALUE_TYPE"/>“ vertė.</translation>
@@ -21,11 +23,17 @@
 <translation id="2958431318199492670">Tinklo konfigūracija neatitinka ONC standarto. Kai kurių konfigūracijos dalių neįmanoma importuoti.</translation>
 <translation id="933712198907837967">Diners Club</translation>
 <translation id="277499241957683684">Trūksta įrenginio įrašo</translation>
+<translation id="8553075262323480129">Išversti negalima, nes nepavyko nustatyti puslapio kalbos.</translation>
 <translation id="7935318582918952113">DOM Distiller</translation>
+<translation id="1103523840287552314">Visada versti <ph name="LANGUAGE"/></translation>
 <translation id="1227633850867390598">Slėpti vertę</translation>
 <translation id="6753269504797312559">Politikos vertė</translation>
+<translation id="8834246243508017242">Įgalinti automatinį pildymą naudojant kontaktus…</translation>
+<translation id="7275334191706090484">Tvarkomos žymės</translation>
 <translation id="7400418766976504921">URL adresas</translation>
+<translation id="7378627244592794276">Ne</translation>
 <translation id="2704283930420550640">Vertė neatitinka formato.</translation>
+<translation id="8943805475239098364">Ar norite ieškoti <ph name="NEW_GOOGLE_HOST"/> vietoj <ph name="CURRENT_GOOGLE_HOST"/>?</translation>
 <translation id="4850886885716139402">Žiūrėti</translation>
 <translation id="8091372947890762290">Laukiama aktyvinimo serveryje</translation>
 <translation id="719464814642662924">Visa</translation>
@@ -37,6 +45,7 @@
 <translation id="7441627299479586546">Netinkamas politikos objektas</translation>
 <translation id="3885155851504623709">Apylinkė</translation>
 <translation id="6973656660372572881">Nurodyti fiksuoti įgaliotieji serveriai ir .pac scenarijaus URL.</translation>
+<translation id="7108649287766967076">Verčiant į <ph name="TARGET_LANGUAGE"/> įvyko klaida.</translation>
 <translation id="4103249731201008433">Netinkamas įrenginio serijos numeris</translation>
 <translation id="3667681724235208644">Peržiūrėti pradinį puslapį</translation>
 <translation id="4079302484614802869">Įgaliotojo serverio konfigūracijoje nustatyta naudoti .pac scenarijaus URL, o ne fiksuotus įgaliotuosius serverius.</translation>
@@ -48,14 +57,15 @@
 <translation id="4668929960204016307">,</translation>
 <translation id="2212735316055980242">Politika nerasta</translation>
 <translation id="3150653042067488994">Laikina serverio klaida</translation>
-<translation id="7087282848513945231">Apskritis</translation>
+<translation id="7087282848513945231">Apygarda</translation>
 <translation id="6458467102616083041">Nepaisoma, nes numatytoji paieška neleidžiama pagal politiką.</translation>
 <translation id="1227224963052638717">Nežinoma politika.</translation>
 <translation id="9207861905230894330">Nepavyko pridėti straipsnio.</translation>
 <translation id="337363190475750230">Teikimas nutrauktas</translation>
 <translation id="2367567093518048410">Lygis</translation>
 <translation id="7610193165460212391">Vertė nepatenka į diapazoną <ph name="VALUE"/>.</translation>
-<translation id="2096368010154057602">Skyrius</translation>
+<translation id="370665806235115550">Įkeliama...</translation>
+<translation id="2096368010154057602">Departamentas</translation>
 <translation id="4258748452823770588">Netinkamas parašas</translation>
 <translation id="3024663005179499861">Netinkamas politikos tipas</translation>
 <translation id="3450660100078934250">MasterCard</translation>
@@ -67,20 +77,26 @@
 <translation id="883848425547221593">Kitos žymės</translation>
 <translation id="2181821976797666341">Politika</translation>
 <translation id="3174168572213147020">Sala</translation>
+<translation id="9137013805542155359">Rodyti originalą</translation>
 <translation id="2213606439339815911">Gaunami įrašai...</translation>
 <translation id="6263376278284652872"><ph name="DOMAIN"/> žymės</translation>
+<translation id="498957508165411911">Versti iš <ph name="ORIGINAL_LANGUAGE"/> į <ph name="TARGET_LANGUAGE"/>?</translation>
+<translation id="7186367841673660872">Šis puslapis išverstas iš<ph name="ORIGINAL_LANGUAGE"/>į<ph name="LANGUAGE_LANGUAGE"/></translation>
 <translation id="7139724024395191329">Emyratas</translation>
 <translation id="5145883236150621069">Politikos atsakyme yra klaidos kodas</translation>
+<translation id="7983301409776629893">Visada versti iš <ph name="ORIGINAL_LANGUAGE"/> į <ph name="TARGET_LANGUAGE"/></translation>
 <translation id="6970216967273061347">Rajonas</translation>
 <translation id="3010559122411665027">Sąrašo įrašas „<ph name="ENTRY_INDEX"/>“: <ph name="ERROR"/></translation>
 <translation id="6445051938772793705">Šalis</translation>
+<translation id="5031870354684148875">Apie „Google“ vertėją</translation>
+<translation id="6891596781022320156">Politikos lygis nepalaikomas.</translation>
 <translation id="2025186561304664664">Nustatytas automatinis įgaliotojo serverio konfigūravimas.</translation>
 <translation id="1853748787962613237">Nepavyko parodyti straipsnio.</translation>
 <translation id="5455374756549232013">Bloga politikos laiko žymė</translation>
+<translation id="1962204205936693436"><ph name="DOMAIN"/> žymės</translation>
 <translation id="1973335181906896915">Serijinio rengimo klaida</translation>
 <translation id="5989320800837274978">Nenurodyti nei fiksuoti įgaliotieji serveriai, nei .pac scenarijaus URL.</translation>
 <translation id="7805768142964895445">Būsena</translation>
-<translation id="4002066346123236978">Pavadinimas</translation>
 <translation id="536296301121032821">Išsaugant politikos nustatymus įvyko klaida</translation>
 <translation id="5439770059721715174">Schemos patvirtinimo klaida „<ph name="ERROR_PATH"/>“: <ph name="ERROR"/></translation>
 <translation id="8349305172487531364">Žymų juosta</translation>
@@ -89,21 +105,27 @@
 <translation id="647261751007945333">Įrenginio politika</translation>
 <translation id="678528074488531090">Tikrinimo klaida: <ph name="VALIDATION_ERROR"/>.</translation>
 <translation id="213826338245044447">Žymės mobiliesiems</translation>
+<translation id="8571890674111243710">Puslapis verčiamas į <ph name="LANGUAGE"/>...</translation>
 <translation id="4117700440116928470">Politikos aprėptis nepalaikoma.</translation>
 <translation id="2114841414352855701">Nepaisoma, nes buvo pakeista taikant „<ph name="POLICY_NAME"/>“.</translation>
+<translation id="3228969707346345236">Išversti nepavyko, nes puslapis jau yra <ph name="LANGUAGE"/>.</translation>
 <translation id="8891727572606052622">Netinkamas įgaliotojo serverio režimas.</translation>
 <translation id="6008256403891681546">JCB</translation>
 <translation id="7752995774971033316">Netvarkoma</translation>
 <translation id="3712624925041724820">Licencijos baigėsi</translation>
 <translation id="4926049483395192435">Turi būti nurodyta.</translation>
 <translation id="7542995811387359312">Automatinis kredito kortelės informacijos pildymas neleidžiamas, nes šiai formai nenaudojamas saugus ryšys.</translation>
+<translation id="5179510805599951267">Ne <ph name="ORIGINAL_LANGUAGE"/> k.? Pranešti apie šią klaidą</translation>
 <translation id="8088680233425245692">Nepavyko peržiūrėti straipsnio.</translation>
+<translation id="8725066075913043281">Bandyti dar kartą</translation>
 <translation id="1821930232296380041">Netinkama užklausa arba jos parametrai</translation>
 <translation id="1640180200866533862">Naudotojo politika</translation>
+<translation id="375403751935624634">Vertimas nepavyko dėl serverio klaidos.</translation>
 <translation id="5629630648637658800">Įkeliant politikos nustatymus įvyko klaida</translation>
 <translation id="2354001756790975382">Kitos žymės</translation>
 <translation id="3650584904733503804">Tikrinimas sėkmingas</translation>
 <translation id="6915804003454593391">Naudotojas:</translation>
+<translation id="8812832766208874265">Toliau naudoti <ph name="CURRENT_GOOGLE_HOST"/></translation>
 <translation id="3377188786107721145">Politikos analizės klaida</translation>
 <translation id="2270192940992995399">Nepavyko rasti straipsnio.</translation>
 <translation id="4726672564094551039">Iš naujo įkelti politiką</translation>
@@ -111,12 +133,15 @@
 <translation id="5190835502935405962">Žymių juosta</translation>
 <translation id="6965978654500191972">Įrenginys</translation>
 <translation id="8249320324621329438">Paskutinį kartą gauta:</translation>
+<translation id="1285320974508926690">Niekada neversti šios svetainės</translation>
 <translation id="6282194474023008486">Pašto kodas</translation>
 <translation id="443673843213245140">Įgaliotojo serverio naudojimas neleidžiamas, bet nurodyta aiški įgaliotojo serverio konfigūracija.</translation>
 <translation id="3623476034248543066">Rodyti vertę</translation>
+<translation id="9020542370529661692">Šis puslapis išverstas į <ph name="TARGET_LANGUAGE"/></translation>
 <translation id="5631439013527180824">Netinkamas įrenginio tvarkymo prieigos raktas</translation>
 <translation id="560412284261940334">Tvarkymas nepalaikomas</translation>
 <translation id="3169472444629675720">Discover</translation>
+<translation id="4923417429809017348">Šis puslapis išverstas iš nežinomos kalbos į <ph name="LANGUAGE_LANGUAGE"/> k.</translation>
 <translation id="4813512666221746211">Tinklo klaida</translation>
 <translation id="1875753206475436906">euristinis tipas: <ph name="HEURISTIC_TYPE"/>
     serverio tipas: <ph name="SERVER_TYPE"/>
@@ -129,12 +154,15 @@
 <translation id="6644283850729428850">Ši politika nepatvirtinta.</translation>
 <translation id="7988324688042446538">Žymės staliniame kompiuteryje</translation>
 <translation id="8488350697529856933">Taikoma</translation>
+<translation id="6165508094623778733">Sužinokite daugiau</translation>
 <translation id="5565735124758917034">Aktyvus</translation>
+<translation id="7568593326407688803">Šis puslapis yra<ph name="ORIGINAL_LANGUAGE"/>Ar norėtumėte jį išversti?</translation>
 <translation id="8876793034577346603">Analizuojant tinklo konfigūraciją įvyko klaida.</translation>
 <translation id="106701514854093668">Žymės staliniame kompiuteryje</translation>
 <translation id="6154808779448689242">Sugrąžintas politikos prieigos raktas neatitinka dabartinio prieigos rakto</translation>
 <translation id="7961015016161918242">Niekada</translation>
 <translation id="2835170189407361413">Valyti formą</translation>
+<translation id="6550675742724504774">Parinktys</translation>
 <translation id="8804164990146287819">Privatumo politika</translation>
 <translation id="5337776961545044340">„Google“ piniginė nepalaiko šio tipo kortelės naudojantis šio prekybininko paslaugomis. Pasirinkite kitą kortelę.</translation>
 <translation id="7182878459783632708">Nenustatyta jokia politika</translation>
@@ -143,12 +171,14 @@
 <translation id="8713130696108419660">Netinkamas pradinis parašas</translation>
 <translation id="20817612488360358">Sistemos įgaliotojo serverio nustatymai nustatyti kaip naudotini, bet taip pat nurodyta tiksli įgaliotojo serverio konfigūracija.</translation>
 <translation id="2639739919103226564">Būsena:</translation>
+<translation id="1832546148887467272">Perjungti į <ph name="NEW_GOOGLE_HOST"/></translation>
 <translation id="5095208057601539847">Provincija</translation>
 <translation id="1847321074516120686">„Chrome“ automatinio pildymo nustatymai</translation>
 <translation id="1152021252151287493">Netinkamas patvirtinimo parašas.</translation>
 <translation id="6965382102122355670">Gerai</translation>
 <translation id="2721148159707890343">Užklausa sėkminga</translation>
 <translation id="2455981314101692989">Šiame tinklalapyje neleidžiamas automatinis šios formos pildymas.</translation>
+<translation id="8308427013383895095">Vertimas nepavyko dėl tinklo ryšio problemos.</translation>
 <translation id="5720705177508910913">Dabartinis naudotojas</translation>
 <translation id="3380864720620200369">Kliento ID:</translation>
 </translationbundle>

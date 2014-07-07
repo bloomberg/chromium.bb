@@ -318,7 +318,7 @@
 <translation id="7332592614823088566">Række <ph name="ROWINDEX"/> af <ph name="ROWTOTAL"/>, kolonne <ph name="COLINDEX"/> af <ph name="COLTOTAL"/></translation>
 <translation id="794091007957014205">{COUNT,plural, =1{snabel-a}one{# snabel-a'er}other{# snabel-a'er}}</translation>
 <translation id="1107942983112791593">mark.ram</translation>
-<translation id="1383876407941801731">Søgning</translation>
+<translation id="1383876407941801731">Søg</translation>
 <translation id="9065283790526219006">+pop op-vindue</translation>
 <translation id="5203930734796605961"><ph name="KEY"/> er allerede tilknyttet en kommando.</translation>
 <translation id="3486232535569802404"><ph name="V1"/> til <ph name="V2"/></translation>

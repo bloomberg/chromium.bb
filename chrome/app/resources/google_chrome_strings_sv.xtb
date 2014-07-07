@@ -29,6 +29,7 @@ Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna
 <translation id="4891791193823137474">Låt Google Chrome köras i bakgrunden</translation>
 <translation id="110877069173485804">Det här är Chrome</translation>
 <translation id="1376881911183620035">Tack för att du testar nya Chrome. Chrome måste startas om, så kontrollera att dina arbeten har sparats innan du fortsätter.</translation>
+<translation id="8406086379114794905">Hjälp till att göra Chrome bättre</translation>
 <translation id="2896252579017640304">Starta Chrome-appar</translation>
 <translation id="2721687379934343312">På Mac sparas lösenord på nyckelringen. Andra Chrome-användare som använder det här OS X-kontot kan komma åt lösenorden och synkronisera dem.</translation>
 <translation id="683440813066116847">Regel som tillåter inkommande mDNS-trafik för Google Chrome Canary.</translation>
@@ -128,6 +129,7 @@ Om du loggar in ändå synkroniseras din information i Chrome, till exempel bokm
 <translation id="911206726377975832">Vill du även ta bort din webbinformation?</translation>
 <translation id="2036562258783619899">Ta en förhandstitt på nya Chrome</translation>
 <translation id="5855036575689098185">Programmet som körs på datorn är inte kompatibelt med Google Chrome.</translation>
+<translation id="7164397146364144019">Du kan bidra till att göra Chrome säkrare och enklare att använda genom att rapportera uppgifter om möjliga säkerhetsincidenter till Google automatiskt.</translation>
 <translation id="8008534537613507642">Installera om Chrome</translation>
 <translation id="2044287590254833138">Verktygsfältet Google Chrome</translation>
 <translation id="8862326446509486874">Du har inte behörighet att göra en installation på systemnivå. Försök köra installationsprogrammet igen som administratör.</translation>
@@ -136,7 +138,6 @@ Om du loggar in ändå synkroniseras din information i Chrome, till exempel bokm
 <translation id="7436949144778751379">För Google Chrome krävs Windows XP eller senare. En del funktioner fungerar eventuellt inte.</translation>
 <translation id="5877064549588274448">Kanalen har ändrats. Starta om enheten om du vill tillämpa ändringarna.</translation>
 <translation id="103396972844768118">Viktig information om uppgifter i Chrome</translation>
-<translation id="6145223986912084844">chrome</translation>
 <translation id="6757767188268205357">Stör mig inte</translation>
 <translation id="2290095356545025170">Är du säker på att du vill avinstallera Google Chrome?</translation>
 <translation id="7062966102157262887">En hämtning pågår. Vill du avsluta Google Chrome och avbryta hämtningen?</translation>
@@ -189,7 +190,6 @@ Om du loggar in ändå synkroniseras din information i Chrome, till exempel bokm
 <translation id="3444832043240812445">Du måste <ph name="BEGIN_LINK"/>aktivera kraschrapportering<ph name="END_LINK"/> för att information om de senaste krascherna ska visas på den här sidan.</translation>
 <translation id="8614913330719544658">Google Chrome svarar inte. Vill du starta om nu?</translation>
 <translation id="2681064822612051220">Det finns en annan installation av Google Chrome på datorn. Avinstallera den och försök igen.</translation>
-<translation id="1175529839152551794">Nu när du har loggat in kommer du åt flikar, bokmärken och andra grejer i Chrome på din laptop, mobil och surfplatta. Du får även tillgång till mer relevanta förslag och funktioner i Googles tjänster.</translation>
 <translation id="8209985377776300429">Du förhandsgranskar nya Chrome.</translation>
 <translation id="6126631249883707068">Vill du att Google Chrome ska spara ditt lösenord?</translation>
 <translation id="7773845170078702898">Vill du att Google Chrome sparar lösenordet för den här webbplatsen?</translation>

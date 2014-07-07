@@ -2,22 +2,28 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="ar">
 <translation id="8588878054171169263">حفظ الصورة</translation>
+<translation id="7998918019931843664">إعادة فتح علامة التبويب المغلقة</translation>
 <translation id="4996978546172906250">مشاركة عن طريق</translation>
 <translation id="5578795271662203820">البحث في <ph name="SEARCH_ENGINE"/> عن هذه الصورة</translation>
-<translation id="6831043979455480757">الترجمة</translation>
+<translation id="6831043979455480757">ترجمة</translation>
 <translation id="7644305409888602715">جارٍ ترجمة الصفحة إلى <ph name="SOURCE_LANGUAGE"/>...</translation>
 <translation id="7015922086425404465">‏الحصول على التطبيق من متجر Google Play: <ph name="APP_ACTION"/></translation>
 <translation id="1491151370853475546">إعادة تحميل هذه الصفحة</translation>
+<translation id="5233638681132016545">علامة تبويب جديدة</translation>
 <translation id="641643625718530986">طباعة…</translation>
+<translation id="5763382633136178763">علامات تبويب التصفح المتخفي</translation>
+<translation id="5210365745912300556">إغلاق علامة التبويب</translation>
 <translation id="7658239707568436148">إلغاء</translation>
 <translation id="6458785801851713928">المزامنة غير متاحة لنطاقك.</translation>
 <translation id="2731700343119398978">يرجى الانتظار...</translation>
+<translation id="6846298663435243399">جارٍ التحميل…</translation>
 <translation id="7378627244592794276">لا</translation>
 <translation id="3358663646935160692">‏تتم إدارة هذا الحساب من خلال <ph name="DOMAIN_NAME"/>. لقد سجلت دخولك باستخدام حساب مُدار تمنح المشرف عليه إمكانية التحكم في ملفك الشخصي على Chrome. ستظل بياناتك على Chrome مرتبطة دائمًا بهذا الحساب. ويؤدي إلغاء الربط بهذا الحساب إلى حذف بيانات Chrome المحلية.</translation>
 <translation id="1966710179511230534">الرجاء تحديث تفاصيل تسجيل الدخول.</translation>
 <translation id="1623104350909869708">منع هذه الصفحة من إنشاء مربعات حوار إضافية.</translation>
 <translation id="1426410128494586442">نعم</translation>
 <translation id="8218346974737627104">تأكيد تسجيل الدخول</translation>
+<translation id="8853345339104747198">علامة التبويب <ph name="TAB_TITLE"/></translation>
 <translation id="624558823898732418">لغة الترجمة: <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="8872441722924401214">اختيار شهادة للمصادقة</translation>
 <translation id="3896036286668839683">عارض الشهادات</translation>
@@ -39,6 +45,7 @@
 <translation id="3063601790762993062">حفظ الفيديو</translation>
 <translation id="6042308850641462728">المزيد</translation>
 <translation id="7267430310003164111">‏طلب الحصول على تطبيق من متجر Google Play.  اسم التطبيق: <ph name="APP_NAME"/>.  معدل التطبيق المتوسط: <ph name="APP_RATING"/>.</translation>
+<translation id="303955801043931176">تم إغلاق علامة التبويب</translation>
 <translation id="4148957013307229264">جارٍ التثبيت...</translation>
 <translation id="3992315671621218278">حفظ الرابط</translation>
 <translation id="8034522405403831421">هذه الصفحة باللغة <ph name="SOURCE_LANGUAGE"/>. هل تريد ترجمتها إلى اللغة <ph name="TARGET_LANGUAGE"/>؟</translation>
@@ -64,9 +71,11 @@
 <translation id="6333140779060797560">مشاركة عن طريق <ph name="APPLICATION"/></translation>
 <translation id="6040143037577758943">إغلاق</translation>
 <translation id="969096075394517431">تغيير اللغات</translation>
+<translation id="5556459405103347317">إعادة تحميل</translation>
 <translation id="5032574515228824816">مطالبة</translation>
 <translation id="4847896847259487518">وضع إشارة على الصفحة</translation>
 <translation id="497421865427891073">انتقال للأمام</translation>
+<translation id="8310344678080805313">علامات التبويب القياسية</translation>
 <translation id="6277522088822131679">حدثت مشكلة أثناء طباعة الصفحة. الرجاء إعادة المحاولة.</translation>
 <translation id="1742134235943978220">تمت الترجمة إلى <ph name="TARGET_LANGUAGE"/>.</translation>
 <translation id="6965382102122355670">موافق</translation>

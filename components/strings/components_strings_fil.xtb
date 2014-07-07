@@ -7,11 +7,13 @@
 <translation id="5172758083709347301">Computer</translation>
 <translation id="7180611975245234373">I-refresh</translation>
 <translation id="777702478322588152">Prefecture</translation>
+<translation id="7600965453749440009">Huwag isalin kailanman ang <ph name="LANGUAGE"/></translation>
 <translation id="2262243747453050782">Error sa HTTP</translation>
 <translation id="1339601241726513588">Domain ng pagpapatala:</translation>
 <translation id="7298195798382681320">Inirerekomenda</translation>
 <translation id="4058922952496707368">Key &quot;<ph name="SUBKEY"/>&quot;: <ph name="ERROR"/></translation>
 <translation id="5299298092464848405">Error sa pag-parse ng patakaran</translation>
+<translation id="6831043979455480757">I-translate</translation>
 <translation id="1228893227497259893">Maling tagatukoy ng entity</translation>
 <translation id="6337534724793800597">I-filter ang mga patakaran ayon sa pangalan</translation>
 <translation id="4372948949327679948">Inaasahang <ph name="VALUE_TYPE"/> na halaga.</translation>
@@ -21,11 +23,17 @@
 <translation id="2958431318199492670">Hindi sumusunod ang configuration ng network sa pamantayan ng ONC. Hindi maaaring i-import ang mga bahagi ng configuration.</translation>
 <translation id="933712198907837967">Diners Club</translation>
 <translation id="277499241957683684">Nawawalang tala ng device</translation>
+<translation id="8553075262323480129">Nabigo ang pag-translate dahil hindi matukoy ang wika ng pahina.</translation>
 <translation id="7935318582918952113">DOM Distiller</translation>
+<translation id="1103523840287552314">Palaging i-translate ang <ph name="LANGUAGE"/></translation>
 <translation id="1227633850867390598">Itago ang halaga</translation>
 <translation id="6753269504797312559">Halaga ng patakaran</translation>
+<translation id="8834246243508017242">I-enable ang Autofill gamit ang Mga Contact…</translation>
+<translation id="7275334191706090484">Mga Pinamamahalaang Bookmark</translation>
 <translation id="7400418766976504921">URL</translation>
+<translation id="7378627244592794276">Hindi</translation>
 <translation id="2704283930420550640">Hindi tumutugma ang format sa halaga.</translation>
+<translation id="8943805475239098364">Gusto mo bang maghanap gamit ang <ph name="NEW_GOOGLE_HOST"/> sa halip ng <ph name="CURRENT_GOOGLE_HOST"/>?</translation>
 <translation id="4850886885716139402">View</translation>
 <translation id="8091372947890762290">Nakabinbin sa server ang pag-activate</translation>
 <translation id="719464814642662924">Visa</translation>
@@ -35,8 +43,9 @@
 <translation id="112840717907525620">OK ang cache ng patakaran</translation>
 <translation id="3452404311384756672">Kunin ang agwat:</translation>
 <translation id="7441627299479586546">Maling paksa ng patakaran</translation>
-<translation id="3885155851504623709">Parish</translation>
+<translation id="3885155851504623709">Parokya</translation>
 <translation id="6973656660372572881">Tinukoy ang parehong mga hindi nababagong proxy server at isang .pac script URL.</translation>
+<translation id="7108649287766967076">Nabigo ang pag-translate sa <ph name="TARGET_LANGUAGE"/>.</translation>
 <translation id="4103249731201008433">Di-wasto ang serial number ng device</translation>
 <translation id="3667681724235208644">Tingnan ang Orihinal</translation>
 <translation id="4079302484614802869">Nakatakda ang configuration ng proxy upang gumamit ng isang .pac script URL, hindi ng mga hindi nababagong proxy server.</translation>
@@ -55,7 +64,8 @@
 <translation id="337363190475750230">Naalis sa pagkakaprobisyon</translation>
 <translation id="2367567093518048410">Antas</translation>
 <translation id="7610193165460212391">Wala sa sakop ang halaga <ph name="VALUE"/>.</translation>
-<translation id="2096368010154057602">Kagawaran</translation>
+<translation id="370665806235115550">Kumakarga...</translation>
+<translation id="2096368010154057602">Departamento</translation>
 <translation id="4258748452823770588">Maling lagda</translation>
 <translation id="3024663005179499861">Maling uri ng patakaran</translation>
 <translation id="3450660100078934250">MasterCard</translation>
@@ -66,21 +76,27 @@
 <translation id="2328300916057834155">Binalewalang di-wastong bookmark sa index <ph name="ENTRY_INDEX"/></translation>
 <translation id="883848425547221593">Iba Pang Mga Bookmark</translation>
 <translation id="2181821976797666341">Mga Patakaran</translation>
-<translation id="3174168572213147020">Island</translation>
+<translation id="3174168572213147020">Pulo</translation>
+<translation id="9137013805542155359">Ipakita ang orihinal</translation>
 <translation id="2213606439339815911">Kinukuha ang mga entry...</translation>
 <translation id="6263376278284652872">Mga bookmark ng <ph name="DOMAIN"/></translation>
+<translation id="498957508165411911">I-translate mula <ph name="ORIGINAL_LANGUAGE"/> patungong <ph name="TARGET_LANGUAGE"/>?</translation>
+<translation id="7186367841673660872">Naisalin ang pahinang ito mula sa<ph name="ORIGINAL_LANGUAGE"/>sa<ph name="LANGUAGE_LANGUAGE"/></translation>
 <translation id="7139724024395191329">Emirate</translation>
 <translation id="5145883236150621069">May code ng error sa tugon sa patakaran</translation>
+<translation id="7983301409776629893">Palaging isalin ang <ph name="ORIGINAL_LANGUAGE"/> sa <ph name="TARGET_LANGUAGE"/></translation>
 <translation id="6970216967273061347">Distrito</translation>
 <translation id="3010559122411665027">Listahan ng entry na &quot;<ph name="ENTRY_INDEX"/>&quot;: <ph name="ERROR"/></translation>
 <translation id="6445051938772793705">Bansa</translation>
+<translation id="5031870354684148875">Tungkol sa Google Translate</translation>
+<translation id="6891596781022320156">Hindi sinusuportahan ang antas ng patakaran.</translation>
 <translation id="2025186561304664664">Nakatakda sa awtomatikong naka-configure ang proxy.</translation>
 <translation id="1853748787962613237">Hindi naipakita ang artikulo.</translation>
 <translation id="5455374756549232013">Maling timestamp ng patakaran</translation>
+<translation id="1962204205936693436">Mga Bookmark ng <ph name="DOMAIN"/></translation>
 <translation id="1973335181906896915">Error sa serialization</translation>
 <translation id="5989320800837274978">Hindi tunukoy ang alinman sa mga hindi nababagong proxy server o isang .pac script URL.</translation>
 <translation id="7805768142964895445">Katayuan</translation>
-<translation id="4002066346123236978">Pamagat</translation>
 <translation id="536296301121032821">Nabigo i-load ang mga setting ng patakaran sa store</translation>
 <translation id="5439770059721715174">Error sa pagpapatunay ng schema sa &quot;<ph name="ERROR_PATH"/>&quot;: <ph name="ERROR"/></translation>
 <translation id="8349305172487531364">Bookmarks bar</translation>
@@ -89,21 +105,27 @@
 <translation id="647261751007945333">Mga patakaran sa device</translation>
 <translation id="678528074488531090">Error sa pagpapatotoo: <ph name="VALIDATION_ERROR"/>.</translation>
 <translation id="213826338245044447">Mga Bookmark sa Mobile</translation>
+<translation id="8571890674111243710">Tina-translate ang pahina sa <ph name="LANGUAGE"/>...</translation>
 <translation id="4117700440116928470">Hindi sinusuportahan ang saklaw ng patakaran.</translation>
 <translation id="2114841414352855701">Binalewala dahil na-override ito ng <ph name="POLICY_NAME"/>.</translation>
+<translation id="3228969707346345236">Nabigo ang pag-translate dahil nasa <ph name="LANGUAGE"/> na ang pahina.</translation>
 <translation id="8891727572606052622">Di-wastong mode ng proxy.</translation>
 <translation id="6008256403891681546">JCB</translation>
 <translation id="7752995774971033316">Hindi pinamamahalaan</translation>
 <translation id="3712624925041724820">Naubos na ang mga lisensya</translation>
 <translation id="4926049483395192435">Dapat na tukuyin.</translation>
 <translation id="7542995811387359312">Hindi pinagana ang awtomatikong pagpuno ng credit card dahil ang form na ito ay hindi gumagamit ng secure na koneksyon.</translation>
+<translation id="5179510805599951267">Wala sa <ph name="ORIGINAL_LANGUAGE"/>? Iulat ang error na ito</translation>
 <translation id="8088680233425245692">Hindi natingnan ang artikulo.</translation>
+<translation id="8725066075913043281">Muling subukan</translation>
 <translation id="1821930232296380041">Di-wastong kahilingan o mga parameter ng kahilingan</translation>
 <translation id="1640180200866533862">Mga patakaran ng user</translation>
+<translation id="375403751935624634">Nabigo ang translation dahil sa error sa server.</translation>
 <translation id="5629630648637658800">Nabigong i-load ang mga setting ng patakaran</translation>
 <translation id="2354001756790975382">Iba pang mga bookmark</translation>
 <translation id="3650584904733503804">Matagumpay ang pagpapatunay</translation>
 <translation id="6915804003454593391">User:</translation>
+<translation id="8812832766208874265">Patuloy na gamitin ang <ph name="CURRENT_GOOGLE_HOST"/></translation>
 <translation id="3377188786107721145">Error sa pag-parse ng patakaran</translation>
 <translation id="2270192940992995399">Hindi nahanap ang artikulo.</translation>
 <translation id="4726672564094551039">I-reload ang mga patakaran</translation>
@@ -111,12 +133,15 @@
 <translation id="5190835502935405962">Bar ng Mga Bookmark</translation>
 <translation id="6965978654500191972">Device</translation>
 <translation id="8249320324621329438">Huling kinuha:</translation>
+<translation id="1285320974508926690">Huwag isalin kailanman ang site na ito</translation>
 <translation id="6282194474023008486">Postal code</translation>
 <translation id="443673843213245140">Hindi pinagana ang paggamit ng isang proxy ngunit tinutukoy ang isang tahasang configuration ng proxy.</translation>
 <translation id="3623476034248543066">Ipakita ang halaga</translation>
+<translation id="9020542370529661692">Na-translate sa <ph name="TARGET_LANGUAGE"/> ang pahinang ito</translation>
 <translation id="5631439013527180824">Di-wastong token sa pamamahala ng device</translation>
 <translation id="560412284261940334">Hindi sinusuportahan ang pamamahala</translation>
 <translation id="3169472444629675720">Discover</translation>
+<translation id="4923417429809017348">Na-translate ang pahinang ito mula sa hindi kilalang wika patungo sa <ph name="LANGUAGE_LANGUAGE"/></translation>
 <translation id="4813512666221746211">Error sa network</translation>
 <translation id="1875753206475436906">heuristic type: <ph name="HEURISTIC_TYPE"/>
     server type: <ph name="SERVER_TYPE"/>
@@ -129,12 +154,15 @@
 <translation id="6644283850729428850">Hindi na ginagamit ang patakarang ito.</translation>
 <translation id="7988324688042446538">Mga bookmark sa desktop</translation>
 <translation id="8488350697529856933">Nalalapat sa</translation>
+<translation id="6165508094623778733">Matuto nang higit pa</translation>
 <translation id="5565735124758917034">Aktibo</translation>
+<translation id="7568593326407688803">Ang pahinang ito ay nasa<ph name="ORIGINAL_LANGUAGE"/>Gusto mong isalin ito?</translation>
 <translation id="8876793034577346603">Nabigong ma-parse ang configuration ng network.</translation>
 <translation id="106701514854093668">Mga Bookmark sa Desktop</translation>
 <translation id="6154808779448689242">Hindi tumutugma ang ibinalik na token sa patakaran sa kasalukuyang token</translation>
 <translation id="7961015016161918242">Hindi Kailanman</translation>
 <translation id="2835170189407361413">I-clear ang form</translation>
+<translation id="6550675742724504774">Mga Pagpipilian</translation>
 <translation id="8804164990146287819">Patakaran sa Privacy</translation>
 <translation id="5337776961545044340">Hindi sinusuportahan ng Google Wallet ang ganitong uri ng card para sa merchant na ito. Mangyaring pumili ng ibang card.</translation>
 <translation id="7182878459783632708">Walang nakatakdang mga patakaran</translation>
@@ -143,12 +171,14 @@
 <translation id="8713130696108419660">Maling lagda ng inisyal</translation>
 <translation id="20817612488360358">Itinatakda ang mga setting ng proxy ng system upang magamit ngunit tinutukoy rin ang isang tahasang configuration ng proxy.</translation>
 <translation id="2639739919103226564">Katayuan:</translation>
-<translation id="5095208057601539847">Lalawigan</translation>
+<translation id="1832546148887467272">Lumipat sa <ph name="NEW_GOOGLE_HOST"/></translation>
+<translation id="5095208057601539847">Probinsya</translation>
 <translation id="1847321074516120686">Mga setting ng Autofill ng Chrome</translation>
 <translation id="1152021252151287493">Hindi maayos na lagda sa pag-verify.</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="2721148159707890343">Matagumpay ang kahilingan</translation>
 <translation id="2455981314101692989">Hindi pinagana ng webpage na ito ang awtomatikong pagpuno para sa form na ito.</translation>
+<translation id="8308427013383895095">Nabigo ang translation dahil sa problema sa koneksyon sa network.</translation>
 <translation id="5720705177508910913">Kasalukuyang user</translation>
 <translation id="3380864720620200369">Client ID:</translation>
 </translationbundle>

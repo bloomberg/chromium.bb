@@ -7,11 +7,13 @@
 <translation id="5172758083709347301">Számítógép</translation>
 <translation id="7180611975245234373">Frissítés</translation>
 <translation id="777702478322588152">Prefektúra</translation>
+<translation id="7600965453749440009">Soha ne fordítsa le a(z) <ph name="LANGUAGE"/> nyelvű szöveget</translation>
 <translation id="2262243747453050782">HTTP hiba</translation>
 <translation id="1339601241726513588">Regisztrációs domain:</translation>
 <translation id="7298195798382681320">Ajánlott</translation>
 <translation id="4058922952496707368">&quot;<ph name="SUBKEY"/>&quot; kulcs: <ph name="ERROR"/></translation>
 <translation id="5299298092464848405">Irányelv-előfeldolgozási hiba</translation>
+<translation id="6831043979455480757">Fordítás</translation>
 <translation id="1228893227497259893">Helytelen entitásazonosító</translation>
 <translation id="6337534724793800597">Házirendek szűrése név szerint</translation>
 <translation id="4372948949327679948">Várt <ph name="VALUE_TYPE"/> érték.</translation>
@@ -21,11 +23,17 @@
 <translation id="2958431318199492670">A hálózati konfiguráció nem felel meg az ONC szabványnak. A konfiguráció egyes részeit nem lehet importálni.</translation>
 <translation id="933712198907837967">Diners Club</translation>
 <translation id="277499241957683684">Hiányzó eszközrekord</translation>
+<translation id="8553075262323480129">A fordítás nem sikerült, mivel az oldal nyelvét nem lehet megállapítani.</translation>
 <translation id="7935318582918952113">DOM Distiller</translation>
+<translation id="1103523840287552314"><ph name="LANGUAGE"/> - mindig legyen lefordítva</translation>
 <translation id="1227633850867390598">Érték elrejtése</translation>
 <translation id="6753269504797312559">Házirend értéke</translation>
+<translation id="8834246243508017242">Az Ismerősöket felhasználó Automatikus kitöltés engedélyezése…</translation>
+<translation id="7275334191706090484">Kezelt könyvjelzők</translation>
 <translation id="7400418766976504921">URL</translation>
+<translation id="7378627244592794276">Nem</translation>
 <translation id="2704283930420550640">Az érték nem egyezik a formátummal.</translation>
+<translation id="8943805475239098364">Szeretne a <ph name="NEW_GOOGLE_HOST"/> domainnel keresni a <ph name="CURRENT_GOOGLE_HOST"/> helyett?</translation>
 <translation id="4850886885716139402">Nézet</translation>
 <translation id="8091372947890762290">Az aktiválás függőben van a szerveren</translation>
 <translation id="719464814642662924">Visa</translation>
@@ -35,8 +43,9 @@
 <translation id="112840717907525620">Irányelv-gyorsítótár OK</translation>
 <translation id="3452404311384756672">Lekérési intervallum:</translation>
 <translation id="7441627299479586546">Az irányelv tárgya nem megfelelő</translation>
-<translation id="3885155851504623709">Közösség</translation>
+<translation id="3885155851504623709">Körzet</translation>
 <translation id="6973656660372572881">Mindkét fix proxyszerver és egy .Pac típusú szkript URL-címe meg van adva.</translation>
+<translation id="7108649287766967076">A(z) <ph name="TARGET_LANGUAGE"/> nyelvre fordítás sikertelen volt.</translation>
 <translation id="4103249731201008433">Az eszköz sorozatszáma érvénytelen</translation>
 <translation id="3667681724235208644">Eredeti megtekintése</translation>
 <translation id="4079302484614802869">A proxykonfiguráció a .pac típusú szkript URL-cím, nem pedig a fix proxyszerverek használatára van beállítva.</translation>
@@ -48,14 +57,15 @@
 <translation id="4668929960204016307">,</translation>
 <translation id="2212735316055980242">Nem találhatók irányelvek</translation>
 <translation id="3150653042067488994">Átmeneti szerverhiba</translation>
-<translation id="7087282848513945231">Ország</translation>
+<translation id="7087282848513945231">Megye</translation>
 <translation id="6458467102616083041">A rendszer figyelmen kívül hagyja, mivel az alapértelmezett keresést házirend tiltja le.</translation>
 <translation id="1227224963052638717">Ismeretlen házirend</translation>
 <translation id="9207861905230894330">A cikk hozzáadása sikertelen.</translation>
 <translation id="337363190475750230">Deaktiválva</translation>
 <translation id="2367567093518048410">Szint</translation>
 <translation id="7610193165460212391">Az érték kívül esik a következő tartományon: <ph name="VALUE"/>.</translation>
-<translation id="2096368010154057602">Részleg</translation>
+<translation id="370665806235115550">Betöltés…</translation>
+<translation id="2096368010154057602">Megye</translation>
 <translation id="4258748452823770588">Rossz aláírás</translation>
 <translation id="3024663005179499861">Nem megfelelő irányelvtípus</translation>
 <translation id="3450660100078934250">MasterCard</translation>
@@ -67,20 +77,26 @@
 <translation id="883848425547221593">Egyéb könyvjelzők</translation>
 <translation id="2181821976797666341">Házirendek</translation>
 <translation id="3174168572213147020">Sziget</translation>
+<translation id="9137013805542155359">Eredeti megjelenítése</translation>
 <translation id="2213606439339815911">Bejegyzések lekérése...</translation>
 <translation id="6263376278284652872"><ph name="DOMAIN"/> könyvjelzők</translation>
+<translation id="498957508165411911">Lefordítja <ph name="ORIGINAL_LANGUAGE"/> nyelvről <ph name="TARGET_LANGUAGE"/> nyelvre?</translation>
+<translation id="7186367841673660872">Ezt az oldalt<ph name="ORIGINAL_LANGUAGE"/>nyelvről<ph name="LANGUAGE_LANGUAGE"/>nyelvre fordítottuk</translation>
 <translation id="7139724024395191329">Emírség</translation>
 <translation id="5145883236150621069">Az irányelv válasza hibakódot tartalmaz</translation>
-<translation id="6970216967273061347">Körzet</translation>
+<translation id="7983301409776629893">A(z) <ph name="ORIGINAL_LANGUAGE"/> nyelvű szövegeket mindig fordítsa <ph name="TARGET_LANGUAGE"/> nyelvre</translation>
+<translation id="6970216967273061347">Kerület</translation>
 <translation id="3010559122411665027">&quot;<ph name="ENTRY_INDEX"/>.&quot; listabejegyzés: <ph name="ERROR"/></translation>
 <translation id="6445051938772793705">Ország</translation>
+<translation id="5031870354684148875">A Google Fordító leírása</translation>
+<translation id="6891596781022320156">Ezt a házirendszintet a rendszer nem támogatja.</translation>
 <translation id="2025186561304664664">Automatikusan konfigurálhatóra beállított proxy.</translation>
 <translation id="1853748787962613237">Nem sikerült megjeleníteni a cikket.</translation>
 <translation id="5455374756549232013">Hibás az irányelv időbélyege</translation>
+<translation id="1962204205936693436">A(z) <ph name="DOMAIN"/> könyvjelzői</translation>
 <translation id="1973335181906896915">Szerializálási hiba</translation>
 <translation id="5989320800837274978">Sem fix proxyszerver, sem pedig .pac típusú szkript URL-címe nincs megadva.</translation>
 <translation id="7805768142964895445">Állapot</translation>
-<translation id="4002066346123236978">Cím</translation>
 <translation id="536296301121032821">Az irányelv-beállítások tárolása sikertelen</translation>
 <translation id="5439770059721715174">Sémaérvényesítési hiba a következőnél: „<ph name="ERROR_PATH"/>”: <ph name="ERROR"/></translation>
 <translation id="8349305172487531364">Könyvjelzősáv</translation>
@@ -89,21 +105,27 @@
 <translation id="647261751007945333">Eszközházirendek</translation>
 <translation id="678528074488531090">Érvényesítési hiba: <ph name="VALIDATION_ERROR"/>.</translation>
 <translation id="213826338245044447">Mobil könyvjelzők</translation>
+<translation id="8571890674111243710">Oldal fordítása erre a nyelvre: <ph name="LANGUAGE"/>...</translation>
 <translation id="4117700440116928470">Az irányelv hatásköre nem támogatott.</translation>
 <translation id="2114841414352855701">A rendszer figyelmen kívül hagyja, mivel a(z) <ph name="POLICY_NAME"/> felülírta.</translation>
+<translation id="3228969707346345236">A fordítás nem sikerült, mert az oldal már ezen a nyelven van: <ph name="LANGUAGE"/>.</translation>
 <translation id="8891727572606052622">Érvénytelen proxymód.</translation>
 <translation id="6008256403891681546">JCB</translation>
 <translation id="7752995774971033316">Nem kezelt</translation>
 <translation id="3712624925041724820">Az engedélyek elfogytak</translation>
 <translation id="4926049483395192435">Meg kell határozni.</translation>
 <translation id="7542995811387359312">Az automatikus bankkártya-kitöltés le van tiltva, mivel ez az űrlap nem biztonságos kapcsolatot használ.</translation>
+<translation id="5179510805599951267">Nem <ph name="ORIGINAL_LANGUAGE"/> nyelven van? Hiba bejelentése</translation>
 <translation id="8088680233425245692">Nem sikerült megtekinteni a cikket.</translation>
+<translation id="8725066075913043281">Újrapróbálás</translation>
 <translation id="1821930232296380041">Érvénytelen kérés vagy kérésparaméter</translation>
 <translation id="1640180200866533862">Felhasználói házirendek</translation>
+<translation id="375403751935624634">A fordítás a szerver hibája miatt nem sikerült.</translation>
 <translation id="5629630648637658800">Az irányelv-beállítások betöltése sikertelen</translation>
 <translation id="2354001756790975382">További könyvjelzők</translation>
 <translation id="3650584904733503804">Sikeres érvényesítés</translation>
 <translation id="6915804003454593391">Felhasználó:</translation>
+<translation id="8812832766208874265">Továbbra is ezt használom: <ph name="CURRENT_GOOGLE_HOST"/></translation>
 <translation id="3377188786107721145">Irányelv-előfeldolgozási hiba</translation>
 <translation id="2270192940992995399">Nem sikerült megtalálni a cikket.</translation>
 <translation id="4726672564094551039">Házirendek újratöltése</translation>
@@ -111,12 +133,15 @@
 <translation id="5190835502935405962">Könyvjelzősáv</translation>
 <translation id="6965978654500191972">Készülék</translation>
 <translation id="8249320324621329438">Utolsó lekérés:</translation>
+<translation id="1285320974508926690">Ezt a webhelyet soha ne fordítsa le</translation>
 <translation id="6282194474023008486">Irányítószám</translation>
 <translation id="443673843213245140">A proxy használata le van tiltva, de kifejezett proxykonfiguráció van megadva.</translation>
 <translation id="3623476034248543066">Érték megjelenítése</translation>
+<translation id="9020542370529661692">Az oldalt lefordítottuk <ph name="TARGET_LANGUAGE"/> nyelvre.</translation>
 <translation id="5631439013527180824">Érvénytelen eszközkezelési token</translation>
 <translation id="560412284261940334">A kezelés nem támogatott</translation>
 <translation id="3169472444629675720">Discover</translation>
+<translation id="4923417429809017348">Ezt az oldalt lefordították egy ismeretlen nyelvről <ph name="LANGUAGE_LANGUAGE"/> nyelvre</translation>
 <translation id="4813512666221746211">Hálózati hiba</translation>
 <translation id="1875753206475436906">heurisztika típusa: <ph name="HEURISTIC_TYPE"/>
     szerver típusa: <ph name="SERVER_TYPE"/>
@@ -129,12 +154,15 @@
 <translation id="6644283850729428850">Ez a házirend már elavult.</translation>
 <translation id="7988324688042446538">Asztali könyvjelzők</translation>
 <translation id="8488350697529856933">A következőre érvényes</translation>
+<translation id="6165508094623778733">További információ</translation>
 <translation id="5565735124758917034">Aktív</translation>
+<translation id="7568593326407688803">Az oldal nyelve<ph name="ORIGINAL_LANGUAGE"/>Kívánja lefordítani?</translation>
 <translation id="8876793034577346603">A hálózati konfiguráció előfeldolgozása sikertelen.</translation>
 <translation id="106701514854093668">Asztali könyvjelzők</translation>
 <translation id="6154808779448689242">A visszaadott irányelvtoken nem egyezik az aktuális tokennel</translation>
 <translation id="7961015016161918242">Soha</translation>
 <translation id="2835170189407361413">Űrlap törlése</translation>
+<translation id="6550675742724504774">Beállítások</translation>
 <translation id="8804164990146287819">Adatvédelmi irányelvek</translation>
 <translation id="5337776961545044340">A Google Wallet ennél a kereskedőnél nem támogatja ezt a kártyatípust. Kérjük, válasszon másik kártyát.</translation>
 <translation id="7182878459783632708">Nincsenek beállított házirendek</translation>
@@ -143,12 +171,14 @@
 <translation id="8713130696108419660">Helytelen első aláírás</translation>
 <translation id="20817612488360358">A rendszer proxybeállításai konfigurálva vannak a használathoz, de kifejezett proxykonfiguráció is meg van adva.</translation>
 <translation id="2639739919103226564">Állapot:</translation>
+<translation id="1832546148887467272">Váltás a következőre: <ph name="NEW_GOOGLE_HOST"/></translation>
 <translation id="5095208057601539847">Tartomány</translation>
 <translation id="1847321074516120686">A Chrome Automatikus kitöltésének beállításai</translation>
 <translation id="1152021252151287493">Hibás igazoló aláírás.</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="2721148159707890343">Sikeres kérés</translation>
 <translation id="2455981314101692989">A weboldal letiltotta az automatikus kitöltést erre az űrlapra.</translation>
+<translation id="8308427013383895095">A fordítás a hálózati kapcsolat problémája miatt nem sikerült.</translation>
 <translation id="5720705177508910913">Jelenlegi felhasználó</translation>
 <translation id="3380864720620200369">Ügyfél-azonosító:</translation>
 </translationbundle>

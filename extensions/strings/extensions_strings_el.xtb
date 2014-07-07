@@ -1,19 +1,17 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="el">
-<translation id="8719282907381795632">Πρόσβαση στα δεδομένα σας στον ιστότοπο <ph name="WEBSITE_1"/></translation>
 <translation id="7809034755304591547">Το αναγνωριστικό <ph name="EXTENSION_NAME"/> (αναγνωριστικό επέκτασης &quot;<ph name="EXTENSION_ID"/>&quot;) έχει αποκλειστεί από τον διαχειριστή.</translation>
 <translation id="2857834222104759979">Το αρχείο δήλωσης δεν είναι έγκυρο.</translation>
+<translation id="8978038008714088448">Ανάγνωση και τροποποίηση των δεδομένων σας στον ιστότοπο <ph name="WEBSITE_1"/></translation>
+<translation id="4205302772098850608">Ανάγνωση και τροποποίηση των δεδομένων σας στους ιστότοπους <ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/>, και <ph name="WEBSITE_3"/></translation>
 <translation id="3828484226910527078">Πρόσβαση στη συσκευή USB</translation>
 <translation id="6384275966486438344">Αλλαγή των ρυθμίσεων αναζήτησης σε: <ph name="SEARCH_HOST"/></translation>
 <translation id="5911798608827489036">Ανταλλαγή δεδομένων με οποιονδήποτε υπολογιστή στο τοπικό δίκτυο ή το Διαδίκτυο</translation>
 <translation id="4719685943208231314">Πρόσβαση στη συσκευή USB από <ph name="VENDOR_NAME"/></translation>
 <translation id="657064425229075395">Δεν ήταν δυνατή η φόρτωση του σεναρίου παρασκηνίου '<ph name="BACKGROUND_SCRIPT"/>'.</translation>
-<translation id="3093853184108622112">Πρόσβαση στα δεδομένα σας στους ιστότοπους <ph name="WEBSITE_1"/> και <ph name="WEBSITE_2"/></translation>
 <translation id="8597109877291678953">Ανταλλαγή δεδομένων με τον υπολογιστή με το όνομα <ph name="HOSTNAME"/></translation>
-<translation id="6914908792814954894">Πρόσβαση στα δεδομένα σας σε <ph name="NUMBER_OF_WEBSITES"/> ιστότοπους</translation>
 <translation id="5456409301717116725">Αυτή η επέκταση περιλαμβάνει το αρχείο κλειδιού &quot;<ph name="KEY_PATH"/>&quot;. Πιθανότατα δεν θέλετε να προβείτε σε αυτήν την ενέργεια.</translation>
-<translation id="6968649314782363508">Πρόσβαση στα δεδομένα σας στους ιστότοπους <ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/> και <ph name="WEBSITE_3"/></translation>
 <translation id="2350172092385603347">Χρησιμοποιήθηκε τοπική προσαρμογή, όμως δεν καθορίστηκε η τιμή &quot;default_locale&quot; στη δήλωση.</translation>
 <translation id="8058376558882514200">Πρόσβαση στη συσκευή USB <ph name="PRODUCT_NAME"/> από <ph name="VENDOR_NAME"/></translation>
 <translation id="8774379383902544371">Πρόσβαση σε συσκευές USB</translation>
@@ -21,13 +19,15 @@
 <translation id="6344170822609224263">Λίστα πρόσβασης για συνδέσεις δικτύου</translation>
 <translation id="2518849872271000461">Ανταλλαγή δεδομένων με τους υπολογιστές με τα εξής ονόματα: <ph name="HOSTNAMES"/></translation>
 <translation id="1389014510128217152">- <ph name="WEBSITE_1"/></translation>
-<translation id="5530391389158154052">Πρόσβαση στα δεδομένα σας σε <ph name="NUMBER_OF_WEBSITES"/> ιστότοπους</translation>
 <translation id="961805664415579088">Ανταλλαγή δεδομένων με οποιονδήποτε υπολογιστή στον τομέα <ph name="DOMAIN"/></translation>
 <translation id="4968399700653439437">Ανταλλαγή δεδομένων με οποιονδήποτε υπολογιστή στους τομείς: <ph name="DOMAINS"/></translation>
 <translation id="8662911384982557515">Αλλαγή της αρχικής σελίδας σε: <ph name="HOME_PAGE"/></translation>
+<translation id="8114679593444120202">Ανάγνωση και τροποποίηση των δεδομένων σας σε <ph name="NUMBER_OF_WEBSITES"/> ιστότοπους</translation>
 <translation id="8602184400052594090">Το αρχείο δήλωσης λείπει ή δεν είναι δυνατή η ανάγνωσή του.</translation>
 <translation id="7893008570150657497">Πρόσβασης στις φωτογραφίες, στη μουσική και στα άλλα μέσα από τον υπολογιστή σας</translation>
 <translation id="7217838517480956708">Ο διαχειριστής αυτού του υπολογιστή απαιτεί την εγκατάσταση της επέκτασης <ph name="EXTENSION_NAME"/>. Δεν είναι δυνατή η κατάργηση ή η τροποποίησή της.</translation>
 <translation id="7154130902455071009">Αλλαγή της σελίδας έναρξης σε: <ph name="START_PAGE"/></translation>
+<translation id="6094507746643187368">Ανάγνωση και τροποποίηση των δεδομένων σας στους ιστότοπους <ph name="WEBSITE_1"/> και <ph name="WEBSITE_2"/></translation>
 <translation id="1803557475693955505">Δεν ήταν δυνατή η φόρτωση της σελίδας φόντου &quot;<ph name="BACKGROUND_PAGE"/>&quot;.</translation>
+<translation id="8207052894957937969">Ανάγνωση και τροποποίηση των δεδομένων σας σε <ph name="NUMBER_OF_WEBSITES"/> ιστότοπους</translation>
 </translationbundle>

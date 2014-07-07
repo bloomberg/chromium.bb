@@ -318,7 +318,7 @@
 <translation id="7332592614823088566">Linha <ph name="ROWINDEX"/> de <ph name="ROWTOTAL"/>, coluna <ph name="COLINDEX"/> de <ph name="COLTOTAL"/></translation>
 <translation id="794091007957014205">{COUNT,plural, =1{arroba}other{# sinais de arroba}}</translation>
 <translation id="1107942983112791593">maqe</translation>
-<translation id="1383876407941801731">Pesquisa</translation>
+<translation id="1383876407941801731">Pesquisar</translation>
 <translation id="9065283790526219006">+popup</translation>
 <translation id="5203930734796605961"><ph name="KEY"/> já foi atribuído a um comando.</translation>
 <translation id="3486232535569802404"><ph name="V1"/> a <ph name="V2"/></translation>

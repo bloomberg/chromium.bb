@@ -81,6 +81,7 @@
 <translation id="8750798805984357768">Выберите один из вариантов.</translation>
 <translation id="7740050170769002709">HTML-содержание</translation>
 <translation id="6692633176391053278">счетчик</translation>
+<translation id="4975562563186953947">Выбрано: <ph name="SELECTED_COUNT"/></translation>
 <translation id="8541249477527128034">управление мультимедиа</translation>
 <translation id="2226276347425096477">Длина текста не должна превышать <ph name="MAX_CHARACTERS"/> симв. (сейчас <ph name="CURRENT_LENGTH"/> симв.).</translation>
 <translation id="6101327004457443354">включение звуковой дорожки</translation>

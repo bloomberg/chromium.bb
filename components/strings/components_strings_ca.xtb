@@ -7,11 +7,13 @@
 <translation id="5172758083709347301">Automàtica</translation>
 <translation id="7180611975245234373">Actualitza</translation>
 <translation id="777702478322588152">Prefectura</translation>
+<translation id="7600965453749440009">No tradueixis mai de: <ph name="LANGUAGE"/></translation>
 <translation id="2262243747453050782">Error d'HTTP</translation>
 <translation id="1339601241726513588">Domini d'inscripció:</translation>
 <translation id="7298195798382681320">Recomanada</translation>
 <translation id="4058922952496707368">Tecla &quot;<ph name="SUBKEY"/>&quot;: <ph name="ERROR"/></translation>
 <translation id="5299298092464848405">S'ha produït un error en analitzar la política</translation>
+<translation id="6831043979455480757">Tradueix</translation>
 <translation id="1228893227497259893">Identificador d'entitat incorrecte</translation>
 <translation id="6337534724793800597">Filtra les polítiques pel nom</translation>
 <translation id="4372948949327679948">Valor <ph name="VALUE_TYPE"/> esperat.</translation>
@@ -21,11 +23,17 @@
 <translation id="2958431318199492670">La configuració de la xarxa no compleix l'estàndard ONC. Pot ser que algunes opcions de configuració no s'hagin importat.</translation>
 <translation id="933712198907837967">Diners Club</translation>
 <translation id="277499241957683684">Falta el registre del dispositiu</translation>
+<translation id="8553075262323480129">S'ha produït un error en fer la traducció perquè no s'ha pogut determinar l'idioma de la pàgina.</translation>
 <translation id="7935318582918952113">Destil·lador DOM</translation>
+<translation id="1103523840287552314">Tradueix sempre l'idioma <ph name="LANGUAGE"/></translation>
 <translation id="1227633850867390598">Amaga el valor</translation>
 <translation id="6753269504797312559">Valor de la política</translation>
+<translation id="8834246243508017242">Activa l'emplenament automàtic mitjançant els contactes...</translation>
+<translation id="7275334191706090484">Adreces d'interès gestionades</translation>
 <translation id="7400418766976504921">URL</translation>
+<translation id="7378627244592794276">No</translation>
 <translation id="2704283930420550640">El valor no coincideix amb el format.</translation>
+<translation id="8943805475239098364">Voleu cercar amb <ph name="NEW_GOOGLE_HOST"/> en lloc de <ph name="CURRENT_GOOGLE_HOST"/>?</translation>
 <translation id="4850886885716139402">Visualització</translation>
 <translation id="8091372947890762290">L'activació està pendent al servidor</translation>
 <translation id="719464814642662924">Visa</translation>
@@ -35,8 +43,9 @@
 <translation id="112840717907525620">La memòria cau de la política està en bon estat</translation>
 <translation id="3452404311384756672">Obtén l'interval:</translation>
 <translation id="7441627299479586546">Usuari de la política incorrecte</translation>
-<translation id="3885155851504623709">Districte</translation>
+<translation id="3885155851504623709">Diòcesi</translation>
 <translation id="6973656660372572881">S'especifiquen tant els servidors intermediaris fixos com un URL d'script .pac.</translation>
+<translation id="7108649287766967076">La traducció a <ph name="TARGET_LANGUAGE"/> ha fallat.</translation>
 <translation id="4103249731201008433">El número de sèrie del dispositiu no és vàlid</translation>
 <translation id="3667681724235208644">Mostra l'original</translation>
 <translation id="4079302484614802869">La configuració del servidor intermediari s'ha definit perquè utilitzi un URL d'script .pac, en lloc de servidors intermedis fixos.</translation>
@@ -48,13 +57,14 @@
 <translation id="4668929960204016307">,</translation>
 <translation id="2212735316055980242">No es troba la política</translation>
 <translation id="3150653042067488994">Error temporal del servidor</translation>
-<translation id="7087282848513945231">Comtat</translation>
+<translation id="7087282848513945231">Comptat</translation>
 <translation id="6458467102616083041">S'ha ignorat perquè la política ha desactivat la cerca predeterminada.</translation>
 <translation id="1227224963052638717">Política desconeguda.</translation>
 <translation id="9207861905230894330">No s'ha pogut afegir l'article.</translation>
 <translation id="337363190475750230">No administrat</translation>
 <translation id="2367567093518048410">Nivell</translation>
 <translation id="7610193165460212391">El valor es troba fora de l'interval <ph name="VALUE"/> .</translation>
+<translation id="370665806235115550">S'està carregant...</translation>
 <translation id="2096368010154057602">Departament</translation>
 <translation id="4258748452823770588">Signatura errònia</translation>
 <translation id="3024663005179499861">Tipus de política incorrecte</translation>
@@ -67,20 +77,26 @@
 <translation id="883848425547221593">Altres adreces d'interès</translation>
 <translation id="2181821976797666341">Polítiques</translation>
 <translation id="3174168572213147020">Illa</translation>
+<translation id="9137013805542155359">Mostra l'original</translation>
 <translation id="2213606439339815911">S'estan recuperant les entrades...</translation>
 <translation id="6263376278284652872">Adreces d'interès de <ph name="DOMAIN"/></translation>
+<translation id="498957508165411911">Voleu traduir de <ph name="ORIGINAL_LANGUAGE"/> a <ph name="TARGET_LANGUAGE"/>?</translation>
+<translation id="7186367841673660872">Aquesta pàgina s'ha traduït de:<ph name="ORIGINAL_LANGUAGE"/>a:<ph name="LANGUAGE_LANGUAGE"/></translation>
 <translation id="7139724024395191329">Emirat</translation>
 <translation id="5145883236150621069">Hi ha un codi d'error en la resposta a la política</translation>
+<translation id="7983301409776629893">Tradueix sempre de: <ph name="ORIGINAL_LANGUAGE"/> a: <ph name="TARGET_LANGUAGE"/></translation>
 <translation id="6970216967273061347">Districte</translation>
 <translation id="3010559122411665027">Entrada de llista &quot;<ph name="ENTRY_INDEX"/>&quot;: <ph name="ERROR"/></translation>
 <translation id="6445051938772793705">País</translation>
+<translation id="5031870354684148875">Quant a Google Traductor</translation>
+<translation id="6891596781022320156">No s'admet el nivell de la política.</translation>
 <translation id="2025186561304664664">El servidor intermediari està definit perquè es configuri automàticament.</translation>
 <translation id="1853748787962613237">No s'ha pogut mostrar l'article.</translation>
 <translation id="5455374756549232013">Marca de temps de la política incorrecta</translation>
+<translation id="1962204205936693436">Adreces d'interès de <ph name="DOMAIN"/></translation>
 <translation id="1973335181906896915">Error de serialització</translation>
 <translation id="5989320800837274978">No s'especifiquen servidors intermediaris ni URL d'script .pac.</translation>
 <translation id="7805768142964895445">Estat</translation>
-<translation id="4002066346123236978">Títol</translation>
 <translation id="536296301121032821">No s'ha pogut emmagatzemar la configuració de la política</translation>
 <translation id="5439770059721715174">Error de validació de l'esquema a &quot;<ph name="ERROR_PATH"/>&quot;: <ph name="ERROR"/></translation>
 <translation id="8349305172487531364">Barra d'adreces d'interès</translation>
@@ -89,21 +105,27 @@
 <translation id="647261751007945333">Polítiques de dispositius</translation>
 <translation id="678528074488531090">Error de validació: <ph name="VALIDATION_ERROR"/>.</translation>
 <translation id="213826338245044447">Adreces d'interès per a mòbils</translation>
+<translation id="8571890674111243710">S'està traduint la pàgina a l'idioma <ph name="LANGUAGE"/>...</translation>
 <translation id="4117700440116928470">L'àmbit de la política no s'admet.</translation>
 <translation id="2114841414352855701">S'ha ignorat perquè <ph name="POLICY_NAME"/> l'ha substituït.</translation>
+<translation id="3228969707346345236">S'ha produït un error en fer la traducció perquè la pàgina ja està en <ph name="LANGUAGE"/>.</translation>
 <translation id="8891727572606052622">El mode de servidor intermediari no és vàlid.</translation>
 <translation id="6008256403891681546">JCB</translation>
 <translation id="7752995774971033316">Sense gestionar</translation>
 <translation id="3712624925041724820">Llicències exhaurides</translation>
 <translation id="4926049483395192435">S'ha d'especificar.</translation>
 <translation id="7542995811387359312">L'emplenament automàtic de targetes de crèdit està desactivat perquè el formulari no utilitza una connexió segura.</translation>
+<translation id="5179510805599951267">No està escrita en <ph name="ORIGINAL_LANGUAGE"/>? Informa d'aquest error</translation>
 <translation id="8088680233425245692">No s'ha pogut consultar l'article.</translation>
+<translation id="8725066075913043281">Torna-ho a provar</translation>
 <translation id="1821930232296380041">Sol·licitud o paràmetres de la sol·licitud no vàlids</translation>
 <translation id="1640180200866533862">Polítiques d'usuari</translation>
+<translation id="375403751935624634">S'ha produït un error en el procés de traducció a causa d'un error del servidor.</translation>
 <translation id="5629630648637658800">No s'ha pogut carregar la configuració de la política</translation>
 <translation id="2354001756790975382">Altres adreces d'interès</translation>
 <translation id="3650584904733503804">Validació correcta</translation>
 <translation id="6915804003454593391">Usuari:</translation>
+<translation id="8812832766208874265">Continua utilitzant <ph name="CURRENT_GOOGLE_HOST"/></translation>
 <translation id="3377188786107721145">S'ha produït un error en analitzar la política</translation>
 <translation id="2270192940992995399">No s'ha pogut trobar l'article.</translation>
 <translation id="4726672564094551039">Torna a carregar les polítiques</translation>
@@ -111,12 +133,15 @@
 <translation id="5190835502935405962">Barra d'adreces d'interès</translation>
 <translation id="6965978654500191972">Dispositiu</translation>
 <translation id="8249320324621329438">Última obtenció:</translation>
+<translation id="1285320974508926690">No tradueixis mai aquest lloc</translation>
 <translation id="6282194474023008486">Codi postal</translation>
 <translation id="443673843213245140">L'ús d'un servidor intermediari no està activat, però s'ha especificat una configuració explícita d'un servidor intermediari.</translation>
 <translation id="3623476034248543066">Mostra el valor</translation>
+<translation id="9020542370529661692">Aquesta pàgina s'ha traduït a <ph name="TARGET_LANGUAGE"/></translation>
 <translation id="5631439013527180824">Testimoni de gestió del dispositiu no vàlid</translation>
 <translation id="560412284261940334">Gestió no compatible</translation>
 <translation id="3169472444629675720">Discover</translation>
+<translation id="4923417429809017348">Aquesta pàgina s'ha traduït des d'un idioma desconegut a: <ph name="LANGUAGE_LANGUAGE"/></translation>
 <translation id="4813512666221746211">Error de xarxa</translation>
 <translation id="1875753206475436906">tipus heurístic: <ph name="HEURISTIC_TYPE"/>
     tipus de servidor: <ph name="SERVER_TYPE"/>
@@ -129,12 +154,15 @@
 <translation id="6644283850729428850">Aquesta política ha quedat obsoleta.</translation>
 <translation id="7988324688042446538">Adreces d'interès d'escriptori</translation>
 <translation id="8488350697529856933">Objectiu d'aplicació</translation>
+<translation id="6165508094623778733">Més informació</translation>
 <translation id="5565735124758917034">Actiu</translation>
+<translation id="7568593326407688803">Aquesta pàgina està en<ph name="ORIGINAL_LANGUAGE"/>Voleu traduir-la?</translation>
 <translation id="8876793034577346603">No s'ha pogut analitzar la configuració de la xarxa.</translation>
 <translation id="106701514854093668">Adreces d'interès d'escriptori</translation>
 <translation id="6154808779448689242">El testimoni de la política que s'ha retornat no coincideix amb el testimoni actual</translation>
 <translation id="7961015016161918242">Mai</translation>
 <translation id="2835170189407361413">Esborra el formulari</translation>
+<translation id="6550675742724504774">Opcions</translation>
 <translation id="8804164990146287819">Política de privadesa</translation>
 <translation id="5337776961545044340">No s'admet aquest tipus de targeta a Google Wallet per a aquest comerciant. Seleccioneu-ne una altra.</translation>
 <translation id="7182878459783632708">Cap política definida</translation>
@@ -143,12 +171,14 @@
 <translation id="8713130696108419660">Signatura inicial incorrecta</translation>
 <translation id="20817612488360358">S'ha definit la configuració del servidor intermediari del sistema perquè es pugui utilitzar, però també s'ha especificat una configuració del servidor intermediari explícita.</translation>
 <translation id="2639739919103226564">Estat:</translation>
+<translation id="1832546148887467272">Canvia a <ph name="NEW_GOOGLE_HOST"/></translation>
 <translation id="5095208057601539847">Província</translation>
 <translation id="1847321074516120686">Configuració d'Emplenament automàtic de Chrome</translation>
 <translation id="1152021252151287493">La signatura de verificació és incorrecta.</translation>
 <translation id="6965382102122355670">D'acord</translation>
 <translation id="2721148159707890343">Sol·licitud realitzada correctament</translation>
 <translation id="2455981314101692989">Aquesta pàgina web ha desactivat l'emplenament automàtic per a aquest formulari.</translation>
+<translation id="8308427013383895095">No s'ha pogut executar la traducció a causa d'un problema amb la connexió de xarxa.</translation>
 <translation id="5720705177508910913">Usuari actual</translation>
 <translation id="3380864720620200369">Identificador de client:</translation>
 </translationbundle>

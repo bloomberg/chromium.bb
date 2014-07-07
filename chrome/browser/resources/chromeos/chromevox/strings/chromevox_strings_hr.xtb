@@ -318,7 +318,7 @@
 <translation id="7332592614823088566"><ph name="ROWINDEX"/>. redak od <ph name="ROWTOTAL"/>, <ph name="COLINDEX"/>. stupac od <ph name="COLTOTAL"/></translation>
 <translation id="794091007957014205">{COUNT,plural, =1{znak @}one{# znak @}few{# znaka @}other{# znakova @}}</translation>
 <translation id="1107942983112791593">ozn</translation>
-<translation id="1383876407941801731">Pretraživanje</translation>
+<translation id="1383876407941801731">Traži</translation>
 <translation id="9065283790526219006">+ skočni prozor</translation>
 <translation id="5203930734796605961">Tipka <ph name="KEY"/> već je dodijeljena naredbi.</translation>
 <translation id="3486232535569802404">Od <ph name="V1"/> do <ph name="V2"/></translation>

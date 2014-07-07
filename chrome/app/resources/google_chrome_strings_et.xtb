@@ -25,6 +25,7 @@
 <translation id="4891791193823137474">Luba Google Chrome'i töötamine taustal</translation>
 <translation id="110877069173485804">See on teie Chrome</translation>
 <translation id="1376881911183620035">Täname teid uue Chrome'i proovimise eest. Chrome peab taaskäivituma, seega veenduge enne jätkamist, et oleksite salvestanud kõik pooleliolevad tööd.</translation>
+<translation id="8406086379114794905">Aidake Chrome'i täiustada</translation>
 <translation id="2896252579017640304">Käivitage Chrome'i rakendusi</translation>
 <translation id="2721687379934343312">Macis salvestatakse paroolid rakendusse Keychain. Teised Chrome'i kasutajad, kes kasutavad sama OS X-i kontot, saavad neid paroole kasutada ja neid sünkroonida.</translation>
 <translation id="683440813066116847">Sissetuleku reegel Google Chrome Canaryle mDNS-liikluse lubamiseks.</translation>
@@ -124,6 +125,7 @@ Kui logite siiski sisse, liidetakse Chrome'i teave, nagu järjehoidjad, ajalugu 
 <translation id="911206726377975832">Kas kustutada ka teie sirvimisandmed?</translation>
 <translation id="2036562258783619899">Uue Chrome'i eelvaade</translation>
 <translation id="5855036575689098185">Teie arvutis töötav tarkvara ei ühildu Google Chrome'iga.</translation>
+<translation id="7164397146364144019">Saate aidata muuta Chrome'i turvalisemaks ja lihtsamalt kasutatavaks, kui teavitate Google'it automaatselt võimalike turvaintsidentide üksikasjadest.</translation>
 <translation id="8008534537613507642">Installi Chrome uuesti</translation>
 <translation id="2044287590254833138">Google Chrome'i tööriistariba</translation>
 <translation id="8862326446509486874">Teil ei ole süsteemi tasemel installimiseks sobivaid õigusi. Proovige installijat administraatorina uuesti käivitada.</translation>
@@ -132,7 +134,6 @@ Kui logite siiski sisse, liidetakse Chrome'i teave, nagu järjehoidjad, ajalugu 
 <translation id="7436949144778751379">Google Chrome nõuab Windows XP-d või uuemat operatsioonisüsteemi. Mõned funktsioonid ei pruugi töötada.</translation>
 <translation id="5877064549588274448">Kanal on muutunud. Muudatuste rakendamiseks taaskäivitage oma seade.</translation>
 <translation id="103396972844768118">Oluline teave teie Chrome'i andmete kohta</translation>
-<translation id="6145223986912084844">chrome</translation>
 <translation id="6757767188268205357">Ära tüüta mind</translation>
 <translation id="2290095356545025170">Olete kindel, et soovite Google Chrome'i desinstallida?</translation>
 <translation id="7062966102157262887">Allalaadimine on pooleli. Kas soovite Google Chrome'ist väljuda ja allalaadimise tühistada?</translation>
@@ -185,7 +186,6 @@ Kui logite siiski sisse, liidetakse Chrome'i teave, nagu järjehoidjad, ajalugu 
 <translation id="3444832043240812445">Lehel näidatakse vaid teavet hiljutiste krahhide kohta, kui olete <ph name="BEGIN_LINK"/>krahhide aruandluse lubanud<ph name="END_LINK"/>.</translation>
 <translation id="8614913330719544658">Google Chrome ei reageeri. Kas soovite kohe taaskäivitada?</translation>
 <translation id="2681064822612051220">Süsteemist leiti Google Chrome'i konfliktne install. Desinstallige see ja proovige uuesti.</translation>
-<translation id="1175529839152551794">Kui olete sisse logitud, näete oma vahelehti, järjehoidjaid ja muud Chrome'i kraami kõikjal oma sülearvutis, telefonis ja tahvelarvutis. Google'i teenused pakuvad teile ka asjakohasemaid soovitusi ja funktsioone.</translation>
 <translation id="8209985377776300429">Vaatate uue Chrome'i eelvaadet.</translation>
 <translation id="6126631249883707068">Kas soovite, et Google Chrome salvestaks teie parooli?</translation>
 <translation id="7773845170078702898">Kas soovite, et Google Chrome salvestaks parooli, mida selle saidi jaoks kasutate?</translation>

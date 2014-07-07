@@ -25,6 +25,7 @@
 <translation id="4891791193823137474">Google Chrome im Hintergrund ausführen</translation>
 <translation id="110877069173485804">Dies ist Ihr persönlicher Chrome-Browser</translation>
 <translation id="1376881911183620035">Vielen Dank, dass Sie das neue Chrome testen. Vor dem Fortfahren muss Chrome neu gestartet werden, um sicherzustellen, dass alle Arbeitsvorgänge gespeichert wurden.</translation>
+<translation id="8406086379114794905">Zur Verbesserung von Chrome beitragen</translation>
 <translation id="2896252579017640304">Chrome-Apps starten</translation>
 <translation id="2721687379934343312">Auf einem Mac werden die Passwörter in Ihrem Schlüsselbund gespeichert. Sie können von anderen Chrome-Nutzern über dieses OS X-Konto abgerufen oder synchronisiert werden.</translation>
 <translation id="683440813066116847">Eingangsregel für die Zulassung von mDNS-Verkehr in Google Chrome Canary</translation>
@@ -64,7 +65,7 @@
 <translation id="1434626383986940139">Chrome Canary-Apps</translation>
 <translation id="8551886023433311834">Fast fertig! Starten Sie Ihr Gerät neu, um die Aktualisierung abzuschließen.</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE"/> - Google Chrome</translation>
-<translation id="1073391069195728457">Chrome – Benachrichtigungen</translation>
+<translation id="1073391069195728457">Chrome-Benachrichtigungen</translation>
 <translation id="7339898014177206373">Neues Fenster</translation>
 <translation id="3282568296779691940">In Chrome anmelden</translation>
 <translation id="3089968997497233615">Es gibt eine neue, sicherere Version von Google Chrome.</translation>
@@ -113,6 +114,7 @@ Sollten Sie sich trotzdem anmelden, werden die Chrome-Daten wie Lesezeichen, Ver
 <translation id="911206726377975832">Auch die Browserdaten löschen?</translation>
 <translation id="2036562258783619899">Das neue Chrome in einer Vorschau ansehen</translation>
 <translation id="5855036575689098185">Auf Ihrem Computer befindet sich Software, die nicht mit Google Chrome kompatibel ist.</translation>
+<translation id="7164397146364144019">Helfen Sie mit, Chrome sicherer und nutzerfreundlicher zu machen, indem Sie Details zu möglichen sicherheitsrelevanten Zwischenfällen automatisch an Google senden.</translation>
 <translation id="8008534537613507642">Chrome erneut installieren</translation>
 <translation id="2044287590254833138">Google Chrome-Toolbar</translation>
 <translation id="8862326446509486874">Sie verfügen nicht über die erforderlichen Rechte für eine systemweite Installation. Starten Sie das Installationsprogramm als Administrator.</translation>
@@ -121,7 +123,6 @@ Sollten Sie sich trotzdem anmelden, werden die Chrome-Daten wie Lesezeichen, Ver
 <translation id="7436949144778751379">Für Google Chrome ist Windows XP oder höher erforderlich. Einige Funktionen sind möglicherweise nicht verfügbar.</translation>
 <translation id="5877064549588274448">Kanal wurde geändert. Starten Sie Ihr Gerät neu, um die Änderungen zu übernehmen.</translation>
 <translation id="103396972844768118">Wichtige Informationen zu Ihren Chrome-Daten</translation>
-<translation id="6145223986912084844">chrome</translation>
 <translation id="6757767188268205357">Keine Anfragen mehr</translation>
 <translation id="2290095356545025170">Möchten Sie Google Chrome wirklich deinstallieren?</translation>
 <translation id="7062966102157262887">Momentan wird ein Download durchgeführt. Möchten Sie Google Chrome beenden und den Download abbrechen?</translation>
@@ -146,7 +147,7 @@ Sollten Sie sich trotzdem anmelden, werden die Chrome-Daten wie Lesezeichen, Ver
 <translation id="61852838583753520">&amp;Chrome OS aktualisieren</translation>
 <translation id="5028489144783860647">Google Chrome konnte Ihre Daten nicht synchronisieren. Bitte aktualisieren Sie Ihre Passphrase für die Synchronisierung.</translation>
 <translation id="9026991721384951619">Chrome OS konnte Ihre Daten nicht synchronisieren, da die Anmeldedaten Ihres Kontos veraltet sind.</translation>
-<translation id="8547799825197623713">Chrome-App-Übersicht für Canary</translation>
+<translation id="8547799825197623713">Chrome App Launcher für Canary</translation>
 <translation id="6326175484149238433">Aus Chrome entfernen</translation>
 <translation id="2871893339301912279">Sie sind in Chrome angemeldet.</translation>
 <translation id="7890208801193284374">Bei gemeinsam genutzten Computern können die verschiedenen Personen separat surfen und Chrome jeweils nach ihren Wünschen einrichten.</translation>
@@ -165,7 +166,6 @@ Sollten Sie sich trotzdem anmelden, werden die Chrome-Daten wie Lesezeichen, Ver
 <translation id="3444832043240812445">Diese Seite zeigt nur Informationen zu Ihren letzten Abstürzen, wenn Sie die <ph name="BEGIN_LINK"/>Absturzberichtsfunktion aktivieren<ph name="END_LINK"/>.</translation>
 <translation id="8614913330719544658">Google Chrome reagiert nicht. Jetzt neu starten?</translation>
 <translation id="2681064822612051220">Auf dem System wurde eine Installation von Google Chrome gefunden, die einen Konflikt verursacht. Deinstallieren Sie sie und versuchen Sie es erneut.</translation>
-<translation id="1175529839152551794">Nach der Anmeldung können Sie nun Ihre Tabs, Lesezeichen und sonstigen Chrome-Inhalte geräteübergreifend auf Ihrem Laptop, Telefon und Tablet nutzen. Sie erhalten außerdem relevantere Vorschläge und Funktionen zu den Google-Diensten.</translation>
 <translation id="8209985377776300429">Sie sehen eine Vorschau des neuen Chrome.</translation>
 <translation id="6126631249883707068">Möchten Sie, dass Ihr Passwort von Google Chrome gespeichert wird?</translation>
 <translation id="7773845170078702898">Soll Google Chrome Ihr Passwort für diese Website speichern?</translation>

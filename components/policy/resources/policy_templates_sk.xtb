@@ -195,6 +195,22 @@ Ak toto pravidlo nie je nastavené alebo je prázdne, akýkoľvek používateľ 
           Odporúčaným spôsobom uzamknutia obrazovky pri nečinnosti je uzamknutie obrazovky v režime spánku a nastavenie doby, po uplynutí ktorej systém <ph name="PRODUCT_OS_NAME"/> prejde do režimu spánku. Toto pravidlo by sa malo používať len v prípade, ak chcete obrazovku uzamknúť oveľa skôr, než dôjde k prechodu do režimu spánku alebo ak nechcete režim spánku používať vôbec.
 
           Hodnota pravidla by mala byť uvedená v milisekundách. Hodnoty musia byť nižšie ako oneskorenie režimu nečinnosti.</translation>
+<translation id="979541737284082440">(Tento dokument môže obsahovať pravidlá, ktoré sú zacielené na neskoršie
+      verzie prehliadača <ph name="PRODUCT_NAME"/>. Tieto pravidlá
+      môžu byť zmenené bez predchádzajúceho upozornenia. Zoznam podporovaných pravidiel je
+      rovnaký pre prehliadače Chromium aj Google Chrome.)
+
+      Tieto nastavenia nemusíte meniť ručne! Ľahko použiteľné šablóny môžete stiahnuť na adrese
+      <ph name="POLICY_TEMPLATE_DOWNLOAD_URL"/>.
+
+      Tieto pravidlá sú výhradne určené na použitie pri konfigurácii inštancií prehliadača Chrome vo vašej organizácii. Použitie týchto pravidiel mimo vašej organizácie (napr. vo verejne distribuovanom programe) je považované za škodlivý softvér. Google a dodávatelia antivírusových softvérov ho pravdepodobne budú označovať ako škodlivý softvér.
+
+      Poznámka: Pravidlá sa počnúc verziou 28 prehliadača <ph name="PRODUCT_NAME"/>
+      načítavajú priamo z rozhrania Group Policy API systému
+      Windows. Pravidlá ručne zapísané do registra budú ignorované. Podrobnejšie informácie nájdete na adrese
+      http://crbug.com/259236.
+
+      Ak je pracovná stanica pripojená k doméne Active Directory, načítavajú sa pravidlá počnúc verziou 35 prehliadača <ph name="PRODUCT_NAME"/> priamo z registra. V opačnom prípade sa pravidlá načítavajú zo skupiny GPO.</translation>
 <translation id="4157003184375321727">Hlásiť verziu operačného systému a firmvéru</translation>
 <translation id="5255162913209987122">Odporúča sa</translation>
 <translation id="1861037019115362154">Určuje zoznam zakázaných doplnkov aplikácie <ph name="PRODUCT_NAME"/> a bráni používateľom toto nastavenie zmeniť.
@@ -333,20 +349,6 @@ Ak toto pravidlo nie je nastavené alebo je prázdne, akýkoľvek používateľ 
 <translation id="382476126209906314">Konfigurácia predpony TalkGadget pre hostiteľov vzdialeného prístupu</translation>
 <translation id="6561396069801924653">Zobraziť možnosti zjednodušenia prístupu v ponuke systémovej lišty</translation>
 <translation id="8104962233214241919">Automaticky vybrať certifikáty klienta pre tieto webové stránky</translation>
-<translation id="7983624541020350102">(Tento dokument môže obsahovať pravidlá, ktoré sú určené pre novšie
-      verzie aplikácie <ph name="PRODUCT_NAME"/>. Môžu byť
-      zmenené bez upozornenia. Zoznam podporovaných pravidiel je
-      rovnaký pre prehliadač Chromium aj Google Chrome.)
-
-      Tieto nastavenia nemusíte meniť ručne!  Môžete si stiahnuť jednoduché šablóny zo stránky
-      <ph name="POLICY_TEMPLATE_DOWNLOAD_URL"/>.
-
-      Tieto pravidlá by sa mali výhradne používať na konfiguráciu inštancií prehliadača Chrome, ktoré používate interne vo svojej organizácii. Používanie týchto pravidiel mimo vašej organizácie (napríklad vo verejne distribuovanom programe) je považované za škodlivý softvér a pravdepodobne aj bude označené ako škodlivý softvér spoločnosťou Google a dodávateľmi antivírusovej ochrany.
-
-      Poznámka: Od verzie 28 aplikácie <ph name="PRODUCT_NAME"/>
-      sa pravidlá načítavajú priamo z rozhrania Group Policy API v systéme
-      Windows. Pravidlá, ktoré boli do databázy Registry zapísané ručne, budú ignorované. Viac informácií nájdete na stránke
-      http://crbug.com/259236.</translation>
 <translation id="2906874737073861391">Zoznam rozšírení AppPack</translation>
 <translation id="4386578721025870401">Stanovte časový limit prihlásenia v režime offline pre používateľa, ktorého totožnosť bola overená prostredníctvom štandardu SAML.
       Počas prihlásenia môže OS Chrome overiť totožnosť na serveri (online) alebo pomocou hesla uloženého vo vyrovnávacej pamäti (offline).
@@ -451,6 +453,7 @@ Ak toto pravidlo nie je nastavené alebo je prázdne, akýkoľvek používateľ 
 
       Ak toto pravidlo ponecháte nenastavené, povolí sa, no používateľ ho bude môcť zmeniť.</translation>
 <translation id="6943577887654905793">Názov predvoľby v systéme Mac/Linux:</translation>
+<translation id="8176035528522326671">Povolí používateľovi v podnikovej sieti stať sa iba hlavným používateľom s viacerými profilmi (predvolené správanie pre používateľov spravovaných podnikom)</translation>
 <translation id="6925212669267783763">Umožňuje nakonfigurovať adresár, ktorý prehliadač <ph name="PRODUCT_FRAME_NAME"/> použije na ukladanie údajov používateľa.
 
       Ak toto pravidlo nastavíte, prehliadač <ph name="PRODUCT_FRAME_NAME"/> bude používať zadaný adresár.
@@ -459,6 +462,7 @@ Ak toto pravidlo nie je nastavené alebo je prázdne, akýkoľvek používateľ 
 
       Ak toto nastavenie ponecháte nenastavené, použije sa predvolený adresár profilu.</translation>
 <translation id="8906768759089290519">Povoliť režim hosťa</translation>
+<translation id="348495353354674884">Povoliť virtuálnu klávesnicu</translation>
 <translation id="2168397434410358693">Oneskorenie režimu nečinnosti pri používaní napájacieho zdroja</translation>
 <translation id="838870586332499308">Povoliť roaming pre dátové prenosy</translation>
 <translation id="2292084646366244343"><ph name="PRODUCT_NAME"/> môže na opravu pravopisných chýb používať webovú službu spoločnosti Google. Ak je toto nastavenie povolené, služba sa používa neustále. Ak je nastavenie zakázané, služba sa nepoužíva nikdy.
@@ -474,6 +478,13 @@ Ak toto pravidlo nie je nastavené alebo je prázdne, akýkoľvek používateľ 
 
           Škálovací faktor musí mať hodnotu aspoň 100 %. Hodnoty, ktoré by oneskorenie stmavenia obrazovky v režime prezentácie skrátili na dobu kratšiu ako je bežné oneskorenie stmavenia obrazovky, nie sú povolené.</translation>
 <translation id="254524874071906077">Nastaviť Chrome ako predvolený prehliadač</translation>
+<translation id="8112122435099806139">Určuje formát hodín, ktorý sa použije na zariadení.
+
+      Toto pravidlo konfiguruje formát hodín, ktorý sa predvolene použije na prihlasovacej obrazovke pre relácie používateľov. Používatelia budú môcť nastavenia formátu hodín vo svojom účte prepísať.
+
+      Ak je pravidlo povolené, zariadenie bude používať 24-hodinový formát hodín. Ak je pravidlo zakázané, zariadenie použije 12-hodinový formát hodín.
+
+      Ak pravidlo nenastavíte, zariadenie použije v predvolenom nastavení 24-hodinový formát hodín.</translation>
 <translation id="8764119899999036911">Určuje, či bude vygenerovaný hlavný názov služby protokolu Kerberos založený na kanonickom názve DNS alebo na pôvodnom zadanom názve.
 
           Ak toto nastavenie povolíte, vyhľadávanie záznamov CNAME sa preskočí a použije sa zadaný názov servera.
@@ -489,8 +500,15 @@ Ak toto pravidlo nie je nastavené alebo je prázdne, akýkoľvek používateľ 
 
           Ak zvolíte prechod do režimu spánku, môžete nastaviť, či má systém <ph name="PRODUCT_OS_NAME"/> pred prechodom do režimu spánku obrazovku uzamknúť alebo nie.</translation>
 <translation id="3915395663995367577">Adresa URL súboru PAC servera proxy</translation>
-<translation id="2144674628322086778">Povoliť podnikovému používateľovi byť súčasťou primárneho aj sekundárneho viacnásobného profilu (predvolené správanie)</translation>
 <translation id="1022361784792428773">ID rozšírení, ktorých inštalácia by mala byť používateľovi zakázaná (alebo hodnota * pre všetky)</translation>
+<translation id="6064943054844745819">Určí zoznam zastaraných funkcií webovej platformy, ktoré sa majú znova povoliť.
+
+      Toto pravidlo umožňuje správcom na obmedzený čas znova povoliť zastarané funkcie webovej platformy. Funkcie sú identifikované podľa značky reťazca a ak budú zodpovedať značkám zahrnutým v tomto pravidle, budú znova povolené.
+
+      V súčasnosti sú definované nasledujúce značky:
+      - ShowModalDialog_EffectiveUntil20150430
+
+      Ak toto pravidlo nenastavíte alebo ak je zoznam prázdny, všetky zastarané funkcie webovej platformy zostanú zakázané.</translation>
 <translation id="3805659594028420438">Povolí rozšírenie pre certifikáty TLS typu domain-bound (ktorého podpora bola ukončená)</translation>
 <translation id="5499375345075963939">Toto pravidlo je aktívne iba v režime predaja.
 
@@ -542,9 +560,6 @@ Ak toto pravidlo nie je nastavené alebo je prázdne, akýkoľvek používateľ 
           Ak je toto nastavenie povolené, fyzické zariadenia vstupu a výstupu hostiteľa budú počas prebiehajúceho vzdialeného spojenia zakázané.
 
           Ak je toto nastavenie zakázané alebo nenastavené, miestni aj vzdialení používatelia môžu počas zdieľania komunikovať s hostiteľom.</translation>
-<translation id="4894257424747841850">Nahlásenie zoznamu používateľov zariadenia, ktorí sa nedávno prihlásili.
-
-      Ak sa toto pravidlo nenastaví alebo sa nastaví na hodnotu False, používatelia sa nenahlásia.</translation>
 <translation id="2488010520405124654">Povoliť zobrazenie výzvy na konfiguráciu siete v režime offline.
 
       Ak toto pravidlo nie je nastavené alebo je jeho hodnota nastavená na True, v zariadení je nakonfigurovaný miestny účet s automatickým prihlasovaním bez oneskorenia a zariadenie nemá prístup na internet, systém <ph name="PRODUCT_OS_NAME"/> zobrazí výzvu na konfiguráciu siete.
@@ -556,6 +571,9 @@ Ak toto pravidlo nie je nastavené alebo je prázdne, akýkoľvek používateľ 
           Toto pravidlo je voliteľné. Ak nie je nastavené, žiadosť o vyhľadávanie návrhu sa odošle pomocou metódy GET.
 
           Toto pravidlo sa rešpektuje iba v prípade, ak je povolené pravidlo DefaultSearchProviderEnabled.</translation>
+<translation id="8140204717286305802">Nahlásenie zoznamu sieťových rozhraní s typmi a adresami hardvéru pre server.
+
+      Ak je pravidlo nastavené na hodnotu False, zoznam rozhraní sa nenahlási.</translation>
 <translation id="4962195944157514011">Určuje adresu URL vyhľadávača používaného pri predvolenom vyhľadávaní. Adresa URL by mala obsahovať reťazec <ph name="SEARCH_TERM_MARKER"/>, ktorý bude počas posielania dopytu nahradený používateľom hľadanými výrazmi.
 
           Táto možnosť musí byť nastavená v prípade, že je povolené pravidlo „DefaultSearchProviderEnabled“ a bude dodržané len v takom prípade.</translation>
@@ -683,7 +701,6 @@ Ak toto pravidlo nie je nastavené alebo je prázdne, akýkoľvek používateľ 
 <translation id="7717938661004793600">Konfigurujte funkcie zjednodušenia prístupu v systéme <ph name="PRODUCT_OS_NAME"/>.</translation>
 <translation id="5182055907976889880">Konfigurácia služby Disk Google v systéme <ph name="PRODUCT_OS_NAME"/>.</translation>
 <translation id="8704831857353097849">Zoznam zakázaných doplnkov</translation>
-<translation id="8391419598427733574">Hlásiť verziu operačného systému a firmvéru registrovaných zariadení. Ak je toto nastavenie nastavené na hodnotu True, registrované zariadenia budú pravidelne hlásiť verziu operačného systému a firmvéru. Ak nastavené nie je, alebo je nastavené na hodnotu False, informácie o verzii nebudú nahlásené.</translation>
 <translation id="467449052039111439">Otvoriť zoznam adries URL</translation>
 <translation id="1988371335297483117">Dátové časti automatických aktualizácií systému <ph name="PRODUCT_OS_NAME"/> je možné namiesto protokolu HTTPS stiahnuť prostredníctvom protokolu HTTP. To umožňuje sťahovanie protokolu HTTP transparentne ukladať do vyrovnávacej pamäte protokolu HTTP.
 
@@ -733,8 +750,10 @@ Ak toto pravidlo nie je nastavené alebo je prázdne, akýkoľvek používateľ 
 <translation id="8244525275280476362">Maximálne oneskorenie načítania po zrušení platnosti pravidla</translation>
 <translation id="8587229956764455752">Povoliť vytváranie nových používateľských účtov</translation>
 <translation id="7417972229667085380">Percento predĺženia oneskorenia režimu nečinnosti v režime prezentácie (podpora je ukončená)</translation>
+<translation id="6211428344788340116">Nahlásenie časov aktivity zariadenia.
+
+      Ak toto pravidlo nenastavíte alebo ho nastavíte na hodnotu True, registrované zariadenia budú nahlasovať časové obdobia, kedy používateľ zariadenie aktívne používa. Ak je nastavené na hodnotu False, časy aktivity zariadenia sa nebudú zaznamenávať ani nahlasovať.</translation>
 <translation id="3964909636571393861">Umožňuje prístup k zoznamu adries URL</translation>
-<translation id="3450318623141983471">Hlási stav prepínača režimu pre vývojárov pri spustení zariadenia. Ak toto pravidlo nie je nastavené, alebo je nastavené na hodnotu False, stav prepínača režimu pre vývojárov sa hlásiť nebude.</translation>
 <translation id="1811270320106005269">Povolí uzamknutie v prípade, ak sú zariadenia nečinné alebo pozastavené.
 
       Ak toto nastavenie povolíte, pri pokuse o odomknutie zariadenia a prebudenie z režimu spánku sa používateľom zobrazí výzva na zadanie hesla.
@@ -798,7 +817,6 @@ Ak toto pravidlo nie je nastavené alebo je prázdne, akýkoľvek používateľ 
           Ak pravidlo nie je nastavené, okno s upozornením sa nezobrazí.
 
           Hodnota pravidla by mala byť stanovená v milisekundách. Hodnoty musia byť menšie alebo rovnaké ako oneskorenie z nečinnosti.</translation>
-<translation id="1098794473340446990">Hlásiť časy aktivity zariadenia. Ak je toto nastavenie nastavené na hodnotu True, registrované zariadenia budú hlásiť časové obdobia, kedy používateľ zariadenie aktívne používa. Ak nastavené nie je, alebo je nastavené na hodnotu False, časy aktivity zariadenia sa nebudú zaznamenávať ani hlásiť.</translation>
 <translation id="1327466551276625742">Povolenie výzvy na konfiguráciu siete v režime offline</translation>
 <translation id="7937766917976512374">Povoliť alebo zakázať zaznamenávanie videa</translation>
 <translation id="427632463972968153">Určuje parametre, ktoré sa použijú pri hľadaní obrázkov pomocou metódy POST. Pozostáva z párov názov/hodnota oddelených čiarkami. Ak je hodnota parameter šablóny, napr. hodnota {imageThumbnail} v príklade vyššie, bude nahradená údajmi skutočnej miniatúry obrázkov.
@@ -847,6 +865,10 @@ Ak toto pravidlo nie je nastavené alebo je prázdne, akýkoľvek používateľ 
       &quot;1412.24.34&quot;: aktualizovať iba na túto konkrétnu verziu</translation>
 <translation id="8102913158860568230">Predvolené nastavenie mediálneho streamu</translation>
 <translation id="6641981670621198190">Zakázať podporu rozhrania API pre grafiku 3D</translation>
+<translation id="5196805177499964601">Umožňuje blokovať režim pre vývojárov.
+
+      Ak toto pravidlo nastavíte na hodnotu Pravda, systém <ph name="PRODUCT_OS_NAME"/> zabráni zariadeniu, aby sa reštartovalo v režime pre vývojárov. Systém odmietne reštartovanie a ak je zapnutý prepínač pre vývojárov, zobrazí chybovú obrazovku.
+      Ak toto pravidlo nenastavíte alebo ho nastavíte na hodnotu Nepravda, režim pre vývojárov bude na zariadení naďalej dostupný.</translation>
 <translation id="1265053460044691532">Stanovte časový limit prihlásenia v režime offline pre používateľa, ktorého totožnosť bola overená prostredníctvom štandardu SAML</translation>
 <translation id="5703863730741917647">Určte akciu, ktorá sa má uskutočniť po uplynutí určitého času nečinnosti.
 
@@ -858,6 +880,7 @@ Ak toto pravidlo nie je nastavené alebo je prázdne, akýkoľvek používateľ 
 <translation id="5997543603646547632">Používať v predvolenom nastavení 24-hodinový formát hodín</translation>
 <translation id="7003746348783715221">Predvoľby prehliadača <ph name="PRODUCT_NAME"/></translation>
 <translation id="4723829699367336876">Povoliť prechod cez bránu firewall v smere od klienta vzdialeného prístupu</translation>
+<translation id="2744751866269053547">Registrovať obslužné nástroje protokolu</translation>
 <translation id="6367755442345892511">Či má byť kanál na vydávanie nových verzií konfigurovateľný používateľom</translation>
 <translation id="3868347814555911633">Toto pravidlo je aktívne iba v režime predaja.
 
@@ -876,6 +899,7 @@ Ak toto pravidlo nie je nastavené alebo je prázdne, akýkoľvek používateľ 
 
       Toto pravidlo má vplyv na všetky typy vstupov videa, a nie len na vstavanú kameru.</translation>
 <translation id="7063895219334505671">Povoliť na týchto stránkach kontextové okná</translation>
+<translation id="3756011779061588474">Blokovať režim pre vývojárov</translation>
 <translation id="4052765007567912447">Určuje, či môžu používatelia zobraziť heslá v správcovi hesiel formou čitateľného textu.
 
           Ak toto nastavenie zakážete, v okne správcu hesiel nebude možné zobraziť uložené heslá formou čitateľného textu.
@@ -917,6 +941,7 @@ Ak toto pravidlo nie je nastavené alebo je prázdne, akýkoľvek používateľ 
           Ak je toto pravidlo nastavené na hodnotu False, prehrávanie videa sa považuje za nečinnosť používateľa.</translation>
 <translation id="3965339130942650562">Časový limit pred odhlásením nečinného používateľa</translation>
 <translation id="5814301096961727113">Nastaviť predvolený stav hlasovej odozvy na prihlasovacej obrazovke</translation>
+<translation id="1950814444940346204">Povoliť zastarané funkcie webovej platformy</translation>
 <translation id="9084985621503260744">Určuje, či prehrávanie videa ovplyvňuje správu napájania</translation>
 <translation id="7091198954851103976">Vždy spustí doplnky, ktoré vyžadujú autorizáciu</translation>
 <translation id="1708496595873025510">Nastaviť obmedzenie pre načítanie počiatočnej hodnoty variácie</translation>
@@ -950,7 +975,6 @@ Ak toto pravidlo nie je nastavené alebo je prázdne, akýkoľvek používateľ 
           Toto pravidlo sa vzťahuje iba na interné používanie prehliadača Chrome.</translation>
 <translation id="5586942249556966598">Nevykonať žiadnu akciu</translation>
 <translation id="131353325527891113">Zobraziť používateľské mená na prihlasovacej obrazovke</translation>
-<translation id="4057110413331612451">Povoliť podnikovému používateľovi byť iba primárnym používateľom s viacnásobným profilom</translation>
 <translation id="5365946944967967336">Zobraziť tlačidlo Domov na paneli s nástrojmi</translation>
 <translation id="3709266154059827597">Konfigurovať zoznam rozšírení, ktorých inštalácia je zakázaná</translation>
 <translation id="1933378685401357864">Obrázok tapety</translation>
@@ -1329,6 +1353,9 @@ Ak toto pravidlo nie je nastavené alebo je prázdne, akýkoľvek používateľ 
           Ak nebude nastavené, poskytovateľ vyhľadávania nebude aktivovaný pomocou žiadneho kľúčového slova.
 
           Toto pravidlo sa vezme do úvahy len v prípade, ak je povolené pravidlo „DefaultSearchProviderEnabled“.</translation>
+<translation id="1152117524387175066">Nahlásenie stavu prepínača režimu pre vývojárov pri spustení zariadenia.
+
+      Ak je toto pravidlo nastavené na hodnotu False, stav prepínača režimu pre vývojárov sa nebude nahlasovať.</translation>
 <translation id="5774856474228476867">Adresa URL vyhľadávania predvoleného poskytovateľa vyhľadávania</translation>
 <translation id="4650759511838826572">Zakázať schémy protokolu adresy URL</translation>
 <translation id="7831595031698917016">Určuje maximálne oneskorenie v milisekundách medzi prijatím zrušenia platnosti pravidla a načítaním nového pravidla zo služby správy zariadenia.
@@ -1377,13 +1404,6 @@ Ak toto pravidlo nie je nastavené alebo je prázdne, akýkoľvek používateľ 
 <translation id="602728333950205286">Adresa URL dynamického vyhľadávania predvoleného poskytovateľa vyhľadávania</translation>
 <translation id="3030000825273123558">Povoliť hlásenia o metrikách</translation>
 <translation id="8465065632133292531">Parametre pre adresu URL okamžitého vyhľadávania, ktorá používa metódu POST</translation>
-<translation id="6659688282368245087">Určuje formát hodín použitý na zariadení.
-
-      Toto pravidlo konfiguruje formát hodín použitý na prihlasovacej obrazovke, ktorý sa tiež predvolene použije pre relácie používateľov. Používatelia môžu tento formát hodín vo svojom účte stále prepísať.
-
-      Ak nie je pravidlo nastavené na hodnotu True, zariadenie použije 24-hodinový formát hodín. Ak je pravidlo nastavené na hodnotu False, zariadenie použije 12-hodinový formát hodín.
-
-      Ak je pravidlo ponechané nenastavené, zariadenie použije predvolený 24-hodinový formát hodín.</translation>
 <translation id="6559057113164934677">Nepovoliť žiadnym stránkam používať kameru a mikrofón</translation>
 <translation id="7273823081800296768">Ak je toto nastavenie povolené alebo nie je nakonfigurované, používatelia môžu aktivovať párovanie klientov a hostiteľov v čase pripojenia, čím predídu opakovanému zadávaniu kódu PIN.
 
@@ -1468,6 +1488,9 @@ Ak toto pravidlo nie je nastavené alebo je prázdne, akýkoľvek používateľ 
 
       Ak toto nastavenie zakážete alebo ho ponecháte nenastavené, umožníte webovým stránkam používať rozhranie API WebGL a doplnkom umožníte používať rozhranie API Pepper 3D. Predvolené nastavenia prehliadača však aj naďalej môžu vyžadovať postúpenie argumentov príkazového riadka. V opačnom prípade môžu použitie rozhraní API znemožniť.</translation>
 <translation id="2077273864382355561">Oneskorenie vypnutia obrazovky pri napájaní z batérie</translation>
+<translation id="9112897538922695510">Umožňuje zaregistrovať zoznam obslužných nástrojov protokolu. Môže to byť iba odporúčané pravidlo. Vlastnosť |protocol| by mala byť nastavená na schému, ako napríklad „mailto“, a vlasnosť |url| by mala byť nastavená na vzor adresy URL aplikácie, ktorá danú schému obsluhuje. Vzor môže zahrnovať reťazec „%s“, ktorý bude nahradený obsluhovanou adresou URL (ak bude použitý).
+
+          Obslužné nástroje protokolu, ktoré sú registrované týmto pravidlom, budú zlúčené s nástrojmi registrovanými používateľom a budú všetky k dispozícii na použitie. Používateľ môže prepísať obslužné nástroje protokolu nainštalované pravidlom inštaláciou nového predvoleného obslužného nástroja. Obslužný protokol registrovaný pravidlom však nie je možné odstrániť.</translation>
 <translation id="3417418267404583991">Ak je toto pravidlo nastavené na hodnotu true alebo je nenakonfigurované, systém <ph name="PRODUCT_OS_NAME"/> povolí prihlásenie hostí. Prihlásenia hostí predstavujú relácie anonymných používateľov a nevyžadujú heslo.
 
       Ak je toto pravidlo nastavené na hodnotu false, systém <ph name="PRODUCT_OS_NAME"/> nepovolí spustenie relácií hosťa.</translation>
@@ -1484,6 +1507,9 @@ Ak toto pravidlo nie je nastavené alebo je prázdne, akýkoľvek používateľ 
           Hodnota * v zozname zakázaných položiek znamená, že všetci hostitelia pre odosielanie natívnych správ sú zakázaní. Povolení budú iba tí, ktorí sú výslovne uvedení na bielej listine.
 
           Ak toto pravidlo nebude nastavené, produkt <ph name="PRODUCT_NAME"/> načíta všetkých nainštalovaných hostiteľov pre odosielanie natívnych správ.</translation>
+<translation id="749556411189861380">Nahlásenie verzie operačného systému a firmvéru registrovaných zariadení.
+
+      Ak je toto nastavenie nastavené na hodnotu True, registrované zariadenia budú pravidelne nahlasovať verziu operačného systému a firmvéru. Ak je nastavené na hodnotu False, informácie o verzii sa nebudú nahlasovať.</translation>
 <translation id="7258823566580374486">Povoliť blokovanie hostiteľov so vzdialeným prístupom</translation>
 <translation id="5560039246134246593">Pridá parameter k načítaniu počiatočnej hodnoty variácie v prehliadači <ph name="PRODUCT_NAME"/>.
 
@@ -1508,6 +1534,11 @@ Ak toto pravidlo nie je nastavené alebo je prázdne, akýkoľvek používateľ 
 <translation id="8908294717014659003">Umožňuje nastaviť, či webové stránky budú môcť používať zariadenia na zaznamenávanie médií. Prístup k zariadeniam na zaznamenávanie médií môže byť povolený v predvolenom nastavení alebo sa používateľovi môže zobraziť dopyt zakaždým, keď nejaké webové stránky budú chcieť použiť zariadenie na zaznamenávanie médií.
 
           Ak toto pravidlo nenastavíte, použije sa pravidlo PromptOnAccess a používateľ ho bude môcť zmeniť.</translation>
+<translation id="4429220551923452215">Povolí alebo zakáže skratku aplikácií na paneli záložiek.
+
+      Ak toto pravidlo nie je nastavené, používateľ si môže vybrať, či sa majú skratku aplikácií zobrazovať v kontextovej ponuke panela záložiek.
+
+      Ak je toto pravidlo nakonfigurované, nemôže ho používateľ zmeniť a skratka aplikácií sa zobrazí buď vždy, alebo nikdy.</translation>
 <translation id="2299220924812062390">Určiť zoznam povolených doplnkov</translation>
 <translation id="4325690621216251241">Pridať na systémový panel tlačidlo odhlásenia</translation>
 <translation id="924557436754151212">Import uložených hesiel z predvoleného prehliadača pri prvom spustení</translation>
@@ -1515,6 +1546,7 @@ Ak toto pravidlo nie je nastavené alebo je prázdne, akýkoľvek používateľ 
 <translation id="7227967227357489766">Definuje zoznam používateľov, ktorí majú povolenie prihlásiť sa do zariadenia. Položky majú formát <ph name="USER_WHITELIST_ENTRY_FORMAT"/>, napríklad <ph name="USER_WHITELIST_ENTRY_EXAMPLE"/>. Ak chcete povoliť všetkých používateľov z niektorej domény, použite položky vo formáte <ph name="USER_WHITELIST_ENTRY_WILDCARD"/>.
 
       Ak toto pravidlo nenakonfigurujete, budú sa môcť do zariadenia prihlásiť všetci používatelia. Upozorňujeme, že pri vytvorení nového používateľa je potrebné náležite nakonfigurovať aj pravidlo <ph name="DEVICEALLOWNEWUSERS_POLICY_NAME"/>.</translation>
+<translation id="2521581787935130926">Zobraziť skratku aplikácií na paneli so záložkami</translation>
 <translation id="8135937294926049787">Určuje dobu nečinnosti používateľa, po ktorej sa obrazovka pri používaní napájacieho zdroja uzamkne.
 
           Ak je toto pravidlo nastavené na hodnotu väčšiu ako nula, určuje dobu nečinnosti používateľa, po ktorej systém <ph name="PRODUCT_OS_NAME"/> obrazovku vypne.
@@ -1559,6 +1591,15 @@ Ak toto pravidlo nie je nastavené alebo je prázdne, akýkoľvek používateľ 
 <translation id="1062011392452772310">Povoliť pre zariadenie vzdialené overenie</translation>
 <translation id="7774768074957326919">Použiť systémové nastavenia servera proxy</translation>
 <translation id="3891357445869647828">Povoliť kód JavaScript</translation>
+<translation id="2274864612594831715">Toto pravidlo konfiguruje povolenie virtuálnej klávesnice ako zariadenia vstupu v systéme OS Chrome. Používatelia nemôžu toto pravidlo prepísať.
+
+      Ak je toto pravidlo povolené, bude virtuálna klávesnica na obrazovke vždy povolená.
+
+      Ak je toto pravidlo zakázané, bude virtuálna klávesnica na obrazovke vždy zakázaná.
+
+      Ak toto pravidlo nastavíte, používatelia ho nebudú môcť zmeniť ani prepísať. Budú však stále môcť povoliť alebo zakázať klávesnicu na obrazovke zjednodušenia ovládania, ktorá má prednosť pred virtuálnou klávesnicou ovládanou týmto pravidlom. Informácie o ovládaní klávesnice na obrazovke zjednodušenia ovládania nájdete v pravidle |VirtualKeyboardEnabled|.
+
+      Ak toto pravidlo nenastavíte, bude klávesnica na obrazovke počiatočne zakázaná, ale používateľ ju bude môcť kedykoľvek povoliť. Pri rozhodovaní o tom, kedy zobraziť klávesnicu, je tiež možné použiť heuristické pravidlá.</translation>
 <translation id="6774533686631353488">Povolenie hostiteľov zasielania natívnych správ na používateľskej úrovni (nainštalovaných bez administrátorských povolení).</translation>
 <translation id="868187325500643455">Povoliť všetkým webovým stránkam automatické spúšťanie doplnkov</translation>
 <translation id="7421483919690710988">Nastaviť veľkosť vyrovnávacej pamäte média v bajtoch</translation>
@@ -1619,6 +1660,7 @@ Ak toto pravidlo nie je nastavené alebo je prázdne, akýkoľvek používateľ 
 
           Ak toto pravidlo ponecháte nenastavené, použije sa v prípade všetkých webových stránok globálna predvolená hodnota buď z pravidla „DefaultImagesSetting“ (ak je nastavené), alebo z osobnej konfigurácie používateľa.</translation>
 <translation id="8499172469244085141">Predvolené nastavenia (používatelia ich môžu nahradiť)</translation>
+<translation id="4816674326202173458">Povoliť používateľovi v podnikovej sieti stať sa hlavným aj sekundárnym používateľom (predvolené správanie pre používateľov, ktorí nie sú spravovaní)</translation>
 <translation id="8693243869659262736">Použiť vstavaného klienta DNS</translation>
 <translation id="3072847235228302527">Nastaviť Zmluvné podmienky pre miestny účet v zariadení</translation>
 <translation id="5523812257194833591">Verejná relácia, do ktorej sa zariadenie po oneskorení automaticky prihlási.
@@ -1698,9 +1740,6 @@ Zoznam nepovolených položiek ExtensionInstallBlacklist je tomuto pravidlu nadr
 <translation id="5388730678841939057">Zvolí stratégiu, ktorá sa použije na uvoľnenie miesta na disku počas automatického čistenia (ktorej podpora bola ukončená)</translation>
 <translation id="7848840259379156480">Umožňuje konfigurovať vykresľovací modul HTML počas inštalácie doplnku <ph name="PRODUCT_FRAME_NAME"/>. V predvolenom nastavení môže vykresľovanie vykonávať hostiteľský prehliadač, toto nastavenie však môžete prekonať a namiesto toho vykresľovať stránky HTML pomocou doplnku <ph name="PRODUCT_FRAME_NAME"/>.</translation>
 <translation id="186719019195685253">Akcia, ktorá sa má vykonať po uplynutí určitého času nečinnosti počas prevádzky s napájaním</translation>
-<translation id="7890264460280019664">Nahlásiť serveru zoznam sieťových rozhraní s typmi a adresami hardvéru.
-
-      Ak pravidlo nie je nastavené alebo je nastavené na hodnotu False, zoznam rozhraní sa nenahlási.</translation>
 <translation id="197143349065136573">Povoľuje proces starého webovského prihlásenia.
 
       Toto nastavenie je užitočné pre podnikových zákazníkov používajúcich riešenia SSO, ktoré ešte nie sú kompatibilné s novým vloženým prihlasovacím procesom.
@@ -1801,6 +1840,9 @@ Zoznam nepovolených položiek ExtensionInstallBlacklist je tomuto pravidlu nadr
       Toto pravidlo byť malo byť nastavené ako adresa URL, z ktorej systém <ph name="PRODUCT_OS_NAME"/> môže Zmluvné podmienky stiahnuť. Zmluvné podmienky musia byť uložené vo formáte čistého textu, zobrazované ako typ MIME „text/plain“. Nie sú povolené žiadne značky.</translation>
 <translation id="2623014935069176671">Počkať na aktivitu používateľa</translation>
 <translation id="2660846099862559570">Nikdy nepoužívať server proxy</translation>
+<translation id="637934607141010488">Nahlásenie zoznamu používateľov zariadenia, ktorí sa nedávno prihlásili.
+
+      Ak je toto pravidlo nastavené na hodnotu False, používatelia sa nenahlásia.</translation>
 <translation id="1956493342242507974">Konfigurácia správy napájania na prihlasovacej obrazovke systému <ph name="PRODUCT_OS_NAME"/>.
 
       Toto pravidlo umožňuje nakonfigurovať správanie systému <ph name="PRODUCT_OS_NAME"/> v prípadoch, keď je zobrazená prihlasovacia obrazovka a používateľ určitý čas nevykonáva žiadnu činnosť. Toto pravidlo riadi niekoľko nastavení. Ak chcete zobraziť ich individuálnu sémantiku a rozsahy hodnôt, prejdite na zodpovedajúce pravidlá, ktoré riadia správu napájania v rámci relácie. Jedinými výnimkami z týchto pravidiel sú:

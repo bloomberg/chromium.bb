@@ -318,7 +318,7 @@
 <translation id="7332592614823088566">Baris <ph name="ROWINDEX"/> dari <ph name="ROWTOTAL"/>, Kolom <ph name="COLINDEX"/> dari <ph name="COLTOTAL"/></translation>
 <translation id="794091007957014205">{COUNT,plural, =1{et}other{# tanda et}}</translation>
 <translation id="1107942983112791593">maqe</translation>
-<translation id="1383876407941801731">Penelusuran</translation>
+<translation id="1383876407941801731">Telusuri</translation>
 <translation id="9065283790526219006">+popup</translation>
 <translation id="5203930734796605961"><ph name="KEY"/> telah ditetapkan untuk suatu perintah.</translation>
 <translation id="3486232535569802404"><ph name="V1"/> hingga <ph name="V2"/></translation>

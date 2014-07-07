@@ -7,11 +7,13 @@
 <translation id="5172758083709347301">যন্ত্র</translation>
 <translation id="7180611975245234373">রিফ্রেশ করুন</translation>
 <translation id="777702478322588152">জেলা</translation>
+<translation id="7600965453749440009"><ph name="LANGUAGE"/> কখনও অনুবাদ করবেন না</translation>
 <translation id="2262243747453050782">HTTP ত্রুটি</translation>
 <translation id="1339601241726513588">ডোমেন নথিভুক্ত করুন:</translation>
 <translation id="7298195798382681320">প্রস্তাবিত</translation>
 <translation id="4058922952496707368">কী &quot;<ph name="SUBKEY"/>&quot;: <ph name="ERROR"/></translation>
 <translation id="5299298092464848405">নীতি বিশ্লেষণ করার সময় ত্রুটি</translation>
+<translation id="6831043979455480757">অনুবাদ</translation>
 <translation id="1228893227497259893">ভুল সত্তা সনাক্তকারী</translation>
 <translation id="6337534724793800597">নাম অনুসারে ফিল্টারগুলি বাছাই করুন</translation>
 <translation id="4372948949327679948">প্রত্যাশিত <ph name="VALUE_TYPE"/> মান৷</translation>
@@ -21,11 +23,17 @@
 <translation id="2958431318199492670">নেটওয়ার্ক কনফিগারেশন ONC মানকের সাথে সম্মত নয়৷ কনফিগারেশনের অংশগুলি আমদানিকৃত নাও হতে পারে৷</translation>
 <translation id="933712198907837967">Diners Club</translation>
 <translation id="277499241957683684">ডিভাইস রেকর্ড অনুপস্থিত</translation>
+<translation id="8553075262323480129">পৃষ্ঠার ভাষা নির্ধারণ না করতে পারার কারণে অনুবাদ ব্যর্থ হয়েছে৷</translation>
 <translation id="7935318582918952113">DOM Distiller</translation>
+<translation id="1103523840287552314">সর্বদা অনুবাদ করুন <ph name="LANGUAGE"/></translation>
 <translation id="1227633850867390598">মান লুকান</translation>
 <translation id="6753269504797312559">নীতি মান</translation>
+<translation id="8834246243508017242">পরিচিতিগুলি ব্যবহার করে স্বতঃপূর্ণ সক্ষম করুন...</translation>
+<translation id="7275334191706090484">পরিচালিত বুকমার্কগুলি</translation>
 <translation id="7400418766976504921">URL</translation>
+<translation id="7378627244592794276">না</translation>
 <translation id="2704283930420550640">বিন্যাসের সাথে মূল্য মেলে না৷</translation>
+<translation id="8943805475239098364">আপনি কি <ph name="CURRENT_GOOGLE_HOST"/> এর পরিবর্তে <ph name="NEW_GOOGLE_HOST"/> দিয়ে অনুসন্ধান করতে চান?</translation>
 <translation id="4850886885716139402">দেখুন</translation>
 <translation id="8091372947890762290">সার্ভারে সক্রিয়করণ বাকি আছে</translation>
 <translation id="719464814642662924">Visa</translation>
@@ -36,8 +44,9 @@
 <translation id="112840717907525620">নীতি ক্যাশেটি ঠিক আছে</translation>
 <translation id="3452404311384756672">বিরামকাল প্রাপ্ত করুন:</translation>
 <translation id="7441627299479586546">ভুল বিষয় বিশিষ্ট নীতি</translation>
-<translation id="3885155851504623709">প্যারিশ</translation>
+<translation id="3885155851504623709">পারিশ</translation>
 <translation id="6973656660372572881">স্থির প্রক্সি সার্ভার এবং .pac স্ক্রিপ্ট URL-এর উভয়ই নির্দিষ্ট আছে৷</translation>
+<translation id="7108649287766967076"><ph name="TARGET_LANGUAGE"/> এ অনুবাদ ব্যর্থ হয়েছে৷</translation>
 <translation id="4103249731201008433">ডিভাইসের ক্রমিক সংখ্যা অবৈধ</translation>
 <translation id="3667681724235208644">আসলটি দেখুন</translation>
 <translation id="4079302484614802869">প্রক্সি কনফিগারেশনটি .pac স্ক্রিপ্ট URL-এ ব্যবহার করাতে সেট থাকে স্থির প্রক্সি সার্ভারগুলিতে নয়৷</translation>
@@ -56,6 +65,7 @@
 <translation id="337363190475750230">প্রদান করবে না</translation>
 <translation id="2367567093518048410">স্তর</translation>
 <translation id="7610193165460212391">সীমার বাইরে মান <ph name="VALUE"/>৷</translation>
+<translation id="370665806235115550">লোড হচ্ছে...</translation>
 <translation id="2096368010154057602">বিভাগ</translation>
 <translation id="4258748452823770588">ত্রুটিপূর্ণ স্বাক্ষর</translation>
 <translation id="3024663005179499861">নীতির ভুল প্রকার</translation>
@@ -67,21 +77,27 @@
 <translation id="2328300916057834155"><ph name="ENTRY_INDEX"/> সূচিতে অবৈধ বুকমার্ক এড়িয়ে যাওয়া হয়েছে</translation>
 <translation id="883848425547221593">অন্যান্য বুকমার্ক</translation>
 <translation id="2181821976797666341">নীতিসমূহ</translation>
-<translation id="3174168572213147020">আইল্যাণ্ড</translation>
+<translation id="3174168572213147020">দ্বীপ</translation>
+<translation id="9137013805542155359">প্রকৃত রূপ দেখান</translation>
 <translation id="2213606439339815911">এন্ট্রিগুলি আনা হচ্ছে...</translation>
 <translation id="6263376278284652872"><ph name="DOMAIN"/> বুকমার্কগুলি</translation>
+<translation id="498957508165411911"><ph name="ORIGINAL_LANGUAGE"/> থেকে <ph name="TARGET_LANGUAGE"/> তে অনুবাদ করবেন?</translation>
+<translation id="7186367841673660872">এই পৃষ্ঠাটি<ph name="ORIGINAL_LANGUAGE"/>থেকে<ph name="LANGUAGE_LANGUAGE"/>তে অনুবাদ করা হয়েছে</translation>
 <translation id="7139724024395191329">এমিরেট</translation>
 <translation id="5145883236150621069">নীতি প্রতিক্রিয়ার মধ্যে ত্রুটি কোড উপস্থিত</translation>
+<translation id="7983301409776629893">সর্বদা <ph name="ORIGINAL_LANGUAGE"/>-কে <ph name="TARGET_LANGUAGE"/>-তে অনুবাদ করুন</translation>
 <translation id="6970216967273061347">জেলা</translation>
 <translation id="3010559122411665027">তালিকার এন্ট্রি &quot; <ph name="ENTRY_INDEX"/> &quot;: <ph name="ERROR"/></translation>
 <translation id="6445051938772793705">দেশ</translation>
+<translation id="5031870354684148875">Google অনুবাদ সম্বন্ধে</translation>
+<translation id="6891596781022320156">নীতি স্তর সমর্থিত নয়।</translation>
 <translation id="2025186561304664664">স্বতঃ কনফিগার করতে প্রক্সি সেট করা হয়৷</translation>
 <translation id="1853748787962613237">নিবন্ধ প্রদর্শন করতে ব্যর্থ হয়েছে৷</translation>
 <translation id="5455374756549232013">ত্রুটিপূর্ণ নীতি টাইমস্ট্যাম্প</translation>
+<translation id="1962204205936693436"><ph name="DOMAIN"/> বুকমার্কগুলি</translation>
 <translation id="1973335181906896915">ধারাবাহিকতাতে ত্রুটি</translation>
 <translation id="5989320800837274978">কোনো নির্ধারিত প্রক্সি সার্ভার অথবা একটি.pac স্ক্রিপ্ট UR সুর্নিদিষ্টভাবে উল্লেখ করা হয়নি৷</translation>
 <translation id="7805768142964895445">স্থিতি</translation>
-<translation id="4002066346123236978">শিরোনাম</translation>
 <translation id="536296301121032821">নীতি সেটিংস সংরক্ষণ করতে ব্যর্থ হয়েছে</translation>
 <translation id="5439770059721715174">&quot;<ph name="ERROR_PATH"/>&quot; এ স্কিমা বৈধতার ত্রুটি হয়েছে: <ph name="ERROR"/></translation>
 <translation id="8349305172487531364">বুকমার্কস দণ্ড</translation>
@@ -90,21 +106,27 @@
 <translation id="647261751007945333">ডিভাইস নীতিগুলি</translation>
 <translation id="678528074488531090">বৈধতা যাচাইকরণে ত্রুটি: <ph name="VALIDATION_ERROR"/>৷</translation>
 <translation id="213826338245044447">মোবাইল বুকমার্ক</translation>
+<translation id="8571890674111243710">পৃষ্ঠাটি<ph name="LANGUAGE"/>তে অনুবাদ করুন...</translation>
 <translation id="4117700440116928470">নীতির সুযোগটি সমর্থিত নয়৷</translation>
 <translation id="2114841414352855701">এড়িয়ে যাওয়া হয়েছে কারণ এটি <ph name="POLICY_NAME"/>-দ্বারা ওভাররাইড করা হয়েছিল৷</translation>
+<translation id="3228969707346345236">পৃষ্ঠাটি ইতিমধ্যে <ph name="LANGUAGE"/>-এ থাকার কারণে অনুবাদ ব্যর্থ হয়েছে৷</translation>
 <translation id="8891727572606052622">প্রক্সি মোড অবৈধ৷</translation>
 <translation id="6008256403891681546">JCB</translation>
 <translation id="7752995774971033316">অপরিচালিত</translation>
 <translation id="3712624925041724820">লাইসেন্সগুলির মেয়াদ শেষ হয়ে গেছে</translation>
 <translation id="4926049483395192435">নির্দিষ্ট করা উচিত৷</translation>
 <translation id="7542995811387359312">স্বয়ংক্রিয় ক্রেডিট কার্ড পূরণটি অক্ষম রয়েছে কারণ এই ফর্মটি কোনও সুরক্ষিত সংযোগ ব্যবহার করে না৷</translation>
+<translation id="5179510805599951267"><ph name="ORIGINAL_LANGUAGE"/>-এ নেই? এই ত্রুটি রিপোর্ট করুন</translation>
 <translation id="8088680233425245692">নিবন্ধ দেখতে ব্যর্থ হয়েছে৷</translation>
+<translation id="8725066075913043281">আবার চেষ্টা করুন</translation>
 <translation id="1821930232296380041">অবৈধ অনুরোধ বা অনুরোধ মাপকাঠিগুলি</translation>
 <translation id="1640180200866533862">ব্যবহারকারীর নীতিসমূহ</translation>
+<translation id="375403751935624634">একটি সার্ভার ত্রুটির কারণে অনুবাদ ব্যর্থ হয়েছে৷</translation>
 <translation id="5629630648637658800">নীতি সেটিংস লোড করতে ব্যর্থ হয়েছে</translation>
 <translation id="2354001756790975382">অন্য বুকমার্কস</translation>
 <translation id="3650584904733503804">বৈধতা যাচাইকরণ সফল হয়েছে</translation>
 <translation id="6915804003454593391">ব্যবহারকারী:</translation>
+<translation id="8812832766208874265"><ph name="CURRENT_GOOGLE_HOST"/>টি ব্যবহার করা চালিয়ে যান</translation>
 <translation id="3377188786107721145">নীতি বিশ্লেষণ ত্রুটি</translation>
 <translation id="2270192940992995399">নিবন্ধ খুঁজতে ব্যর্থ হয়েছে৷</translation>
 <translation id="4726672564094551039">নীতিগুলি পুনঃলোড করুন</translation>
@@ -112,12 +134,15 @@
 <translation id="5190835502935405962">বুকমার্ক দণ্ড</translation>
 <translation id="6965978654500191972">ডিভাইস</translation>
 <translation id="8249320324621329438">সর্বশেষ প্রাপ্ত করেছে:</translation>
+<translation id="1285320974508926690">কখনই এই সাইটটিকে অনুবাদ করবেন না</translation>
 <translation id="6282194474023008486">পোস্টাল কোড</translation>
 <translation id="443673843213245140">প্রক্সির ব্যবহার অক্ষম করা হয়েছে কিন্তু কোনো স্পষ্ট প্রক্সি কনফিগারেশান নির্দিষ্ট করা হয়েছে৷</translation>
 <translation id="3623476034248543066">মান দেখান</translation>
+<translation id="9020542370529661692">এই পৃষ্ঠাটি <ph name="TARGET_LANGUAGE"/> এ অনুবাদ করা হয়েছে</translation>
 <translation id="5631439013527180824">অবৈধ ডিভাইস পরিচালনা টোকেন</translation>
 <translation id="560412284261940334">পরিচালনা সমর্থিত নয়</translation>
 <translation id="3169472444629675720">আবিষ্কার করুন</translation>
+<translation id="4923417429809017348">এই পৃষ্ঠাটি কোন অজানা ভাষা থেকে <ph name="LANGUAGE_LANGUAGE"/>-এ অনুবাদ করা হয়েছে</translation>
 <translation id="4813512666221746211">নেটওয়ার্ক  ত্রুটি</translation>
 <translation id="1875753206475436906">অনুসন্ধানমূলক প্রকার: <ph name="HEURISTIC_TYPE"/>
     সার্ভারের প্রকার: <ph name="SERVER_TYPE"/>
@@ -130,12 +155,15 @@
 <translation id="6644283850729428850">এই নীতিটি অসমর্থিত হয়েছে৷</translation>
 <translation id="7988324688042446538">ডেস্কটপ বুকমার্ক</translation>
 <translation id="8488350697529856933">এতে প্রয়োগ হয়</translation>
+<translation id="6165508094623778733">আরো জানুন</translation>
 <translation id="5565735124758917034">সক্রিয়</translation>
+<translation id="7568593326407688803">এই পৃষ্ঠাটি<ph name="ORIGINAL_LANGUAGE"/>ভাষাতে আছে আপনি কি এটিকে অনুবাদ করতে চাইবেন?</translation>
 <translation id="8876793034577346603">নেটওয়ার্ক কনফিগারেশন বিশ্লেষণ করতে ব্যর্থ হয়েছে৷</translation>
 <translation id="106701514854093668">ডেস্কটপ বুকমার্ক</translation>
 <translation id="6154808779448689242">ফিরে পাওয়া নীতি টোকেন বর্তমান টোকেনের সঙ্গে মেলে না</translation>
 <translation id="7961015016161918242">কখনই নয়</translation>
 <translation id="2835170189407361413">ফর্ম সাফ করুন</translation>
+<translation id="6550675742724504774">বিকল্পসমূহ</translation>
 <translation id="8804164990146287819">গোপনীয়তা নীতি</translation>
 <translation id="5337776961545044340">এই বণিকের জন্য এই ধরনের কার্ড Google Wallet এর দ্বারা সমর্থিত নয়৷ দয়া করে একটি আলাদা কার্ড নির্বাচন করুন৷</translation>
 <translation id="7182878459783632708">কোন নীতি সেট করা নেই</translation>
@@ -144,12 +172,14 @@
 <translation id="8713130696108419660">খারাপ ইনিশিয়াল স্বাক্ষর</translation>
 <translation id="20817612488360358">সিস্টেম প্রক্সি সেটিংস ব্যবহার করার জন্য সেট আছে কিন্তু একটি সুনির্দিষ্ট প্রক্সি কনফিগারেশনও নির্দিষ্ট করা আছে৷</translation>
 <translation id="2639739919103226564">স্থিতি: </translation>
+<translation id="1832546148887467272"><ph name="NEW_GOOGLE_HOST"/>তে স্যুইচ করুন</translation>
 <translation id="5095208057601539847">প্রদেশ</translation>
 <translation id="1847321074516120686">Chrome স্বতসম্পূর্ণ সেটিংস</translation>
 <translation id="1152021252151287493">খারাপ যাচাইকরণের স্বাক্ষর৷</translation>
 <translation id="6965382102122355670">ওকে</translation>
 <translation id="2721148159707890343">অনুরোধ সফল হয়েছে</translation>
 <translation id="2455981314101692989">এই ওয়েবপৃষ্ঠাটি এই ফর্মটির জন্য  স্বয়ংক্রিয় পূরণ ফর্মকে অক্ষম করেছে৷</translation>
+<translation id="8308427013383895095">নেটওয়ার্ক সংযোগে কোন সমস্যা হওয়ার কারণে অনুবাদ ব্যর্থ হয়েছে৷</translation>
 <translation id="5720705177508910913">বর্তমান ব্যবহারকারী</translation>
 <translation id="3380864720620200369">ক্লায়েন্ট ID:</translation>
 </translationbundle>

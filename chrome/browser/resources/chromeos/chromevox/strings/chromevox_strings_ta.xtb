@@ -318,7 +318,7 @@
 <translation id="7332592614823088566"><ph name="ROWTOTAL"/> இல் <ph name="ROWINDEX"/> வது வரிசை, <ph name="COLTOTAL"/> இல் <ph name="COLINDEX"/> வது நெடுவரிசை</translation>
 <translation id="794091007957014205">{COUNT,plural, =1{வீதக் குறி}other{# வீதக் குறிகள்}}</translation>
 <translation id="1107942983112791593">maqe</translation>
-<translation id="1383876407941801731">தேடு</translation>
+<translation id="1383876407941801731">தேடல்</translation>
 <translation id="9065283790526219006">+பாப்அப்</translation>
 <translation id="5203930734796605961">ஏற்கனவே ஒரு கட்டளைக்கு <ph name="KEY"/> ஒதுக்கப்பட்டுள்ளது.</translation>
 <translation id="3486232535569802404"><ph name="V1"/> முதல் <ph name="V2"/> வரை</translation>

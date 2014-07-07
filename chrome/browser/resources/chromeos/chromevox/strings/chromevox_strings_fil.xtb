@@ -318,7 +318,7 @@
 <translation id="7332592614823088566">Row <ph name="ROWINDEX"/> ng <ph name="ROWTOTAL"/>, Column <ph name="COLINDEX"/> ng <ph name="COLTOTAL"/></translation>
 <translation id="794091007957014205">{COUNT,plural, =1{at}one{# at sign}other{# (na) at sign}}</translation>
 <translation id="1107942983112791593">maqe</translation>
-<translation id="1383876407941801731">Paghahanap</translation>
+<translation id="1383876407941801731">Hanapin</translation>
 <translation id="9065283790526219006">+popup</translation>
 <translation id="5203930734796605961">Ang <ph name="KEY"/> ay nakatakda na sa isang command.</translation>
 <translation id="3486232535569802404"><ph name="V1"/> hanggang <ph name="V2"/></translation>

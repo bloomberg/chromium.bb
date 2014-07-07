@@ -2,16 +2,21 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="ro">
 <translation id="8588878054171169263">Salvați imaginea</translation>
+<translation id="7998918019931843664">Redeschideți fila închisă</translation>
 <translation id="4996978546172906250">Trimiteți prin</translation>
 <translation id="5578795271662203820">Căutați imaginea cu <ph name="SEARCH_ENGINE"/></translation>
-<translation id="6831043979455480757">Traducere</translation>
+<translation id="6831043979455480757">Traduceți</translation>
 <translation id="7644305409888602715">Se traduce pagina în <ph name="SOURCE_LANGUAGE"/>...</translation>
 <translation id="7015922086425404465">Descărcați aplicația din Magazin Google Play: <ph name="APP_ACTION"/></translation>
 <translation id="1491151370853475546">Reîncărcați această pagină</translation>
+<translation id="5233638681132016545">Filă nouă</translation>
 <translation id="641643625718530986">Printați...</translation>
+<translation id="5763382633136178763">File incognito</translation>
+<translation id="5210365745912300556">Închideți fila</translation>
 <translation id="7658239707568436148">Anulaţi</translation>
 <translation id="6458785801851713928">Sincronizarea nu este disponibilă pentru domeniul dvs.</translation>
 <translation id="2731700343119398978">Așteptați...</translation>
+<translation id="6846298663435243399">Se încarcă...</translation>
 <translation id="7378627244592794276">Nu</translation>
 <translation id="3358663646935160692">Acest cont este gestionat de <ph name="DOMAIN_NAME"/>.
 
@@ -20,6 +25,7 @@ Urmează să vă conectați cu un cont gestionat și să acordați administrator
 <translation id="1623104350909869708">Restricționați capacitatea acestei pagini de a crea casete de dialog suplimentare</translation>
 <translation id="1426410128494586442">Da</translation>
 <translation id="8218346974737627104">Confirmați conectarea</translation>
+<translation id="8853345339104747198"><ph name="TAB_TITLE"/>, filă</translation>
 <translation id="624558823898732418">Limba traducerii: <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="8872441722924401214">Alegeți certificatul pentru autentificare</translation>
 <translation id="3896036286668839683">Vizualizator de certificate</translation>
@@ -41,6 +47,7 @@ Urmează să vă conectați cu un cont gestionat și să acordați administrator
 <translation id="3063601790762993062">Salvați videoclipul</translation>
 <translation id="6042308850641462728">Mai mult</translation>
 <translation id="7267430310003164111">Notificare pentru a descărca aplicația din Magazin Google Play.  Numele aplicației: <ph name="APP_NAME"/>.  Evaluarea medie a aplicației: <ph name="APP_RATING"/>.</translation>
+<translation id="303955801043931176">Fila a fost închisă</translation>
 <translation id="4148957013307229264">Se instalează...</translation>
 <translation id="3992315671621218278">Salvați linkul</translation>
 <translation id="8034522405403831421">Această pagină este în <ph name="SOURCE_LANGUAGE"/>. Doriți traducere în <ph name="TARGET_LANGUAGE"/>?</translation>
@@ -66,9 +73,11 @@ Urmează să vă conectați cu un cont gestionat și să acordați administrator
 <translation id="6333140779060797560">Trimiteți prin <ph name="APPLICATION"/></translation>
 <translation id="6040143037577758943">Închideți</translation>
 <translation id="969096075394517431">Schimbați limbile</translation>
+<translation id="5556459405103347317">Reîncărcați</translation>
 <translation id="5032574515228824816">Solicitare</translation>
 <translation id="4847896847259487518">Marcați pagina</translation>
 <translation id="497421865427891073">Înainte</translation>
+<translation id="8310344678080805313">File standard</translation>
 <translation id="6277522088822131679">A apărut o problemă la printarea paginii. Încercați din nou.</translation>
 <translation id="1742134235943978220">Tradusă în <ph name="TARGET_LANGUAGE"/>.</translation>
 <translation id="6965382102122355670">OK</translation>

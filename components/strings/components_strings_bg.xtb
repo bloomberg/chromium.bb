@@ -7,11 +7,13 @@
 <translation id="5172758083709347301">Машината</translation>
 <translation id="7180611975245234373">Опресняване</translation>
 <translation id="777702478322588152">Префектура</translation>
+<translation id="7600965453749440009">Никога да не се превежда от <ph name="LANGUAGE"/></translation>
 <translation id="2262243747453050782">HTTP грешка</translation>
 <translation id="1339601241726513588">Домейн за записване:</translation>
 <translation id="7298195798382681320">Препоръчително</translation>
 <translation id="4058922952496707368">Ключ „<ph name="SUBKEY"/>“: <ph name="ERROR"/></translation>
 <translation id="5299298092464848405">Грешка при синтактичния анализ на правилото</translation>
+<translation id="6831043979455480757">Превод</translation>
 <translation id="1228893227497259893">Грешен идентификатор на обект</translation>
 <translation id="6337534724793800597">Филтриране на правилата по име</translation>
 <translation id="4372948949327679948">Очаквана е стойност от тип <ph name="VALUE_TYPE"/>.</translation>
@@ -21,11 +23,17 @@
 <translation id="2958431318199492670">Конфигурацията на мрежата не спазва стандарта на ONC. Възможно е части от нея да не са импортирани.</translation>
 <translation id="933712198907837967">Diners Club</translation>
 <translation id="277499241957683684">Липсващ запис за устройството</translation>
+<translation id="8553075262323480129">Преводът не бе успешен, защото езикът на страницата не можа да бъде определен.</translation>
 <translation id="7935318582918952113">DOM Distiller</translation>
+<translation id="1103523840287552314">Винаги да се превежда от <ph name="LANGUAGE"/></translation>
 <translation id="1227633850867390598">Скриване на стойността</translation>
 <translation id="6753269504797312559">Стойност за правилото</translation>
+<translation id="8834246243508017242">Активиране на използването на контактите при автоматично попълване…</translation>
+<translation id="7275334191706090484">Управлявани отметки</translation>
 <translation id="7400418766976504921">URL адрес</translation>
+<translation id="7378627244592794276">Не</translation>
 <translation id="2704283930420550640">Стойността не съответства на формата.</translation>
+<translation id="8943805475239098364">Искате ли да търсите с <ph name="NEW_GOOGLE_HOST"/> вместо с <ph name="CURRENT_GOOGLE_HOST"/>?</translation>
 <translation id="4850886885716139402">Изглед</translation>
 <translation id="8091372947890762290">В сървъра се изчаква активиране</translation>
 <translation id="719464814642662924">Visa</translation>
@@ -37,6 +45,7 @@
 <translation id="7441627299479586546">Грешен предмет на правилото</translation>
 <translation id="3885155851504623709">Община</translation>
 <translation id="6973656660372572881">Посочени са както фиксирани прокси сървъри, така и URL адрес на скрипт във формат .pac.</translation>
+<translation id="7108649287766967076">Преводът на <ph name="TARGET_LANGUAGE"/> не бе успешен.</translation>
 <translation id="4103249731201008433">Серийният номер на устройството е невалиден</translation>
 <translation id="3667681724235208644">Преглед на оригинала</translation>
 <translation id="4079302484614802869">За конфигурацията на прокси сървъра е зададено да използва URL адрес на скрипт във формат .pac, а не фиксирани прокси сървъри.</translation>
@@ -55,6 +64,7 @@
 <translation id="337363190475750230">Обезпечаването е отменено</translation>
 <translation id="2367567093518048410">Ниво</translation>
 <translation id="7610193165460212391">Стойността е извън обхват <ph name="VALUE"/>.</translation>
+<translation id="370665806235115550">Зарежда се...</translation>
 <translation id="2096368010154057602">Департамент</translation>
 <translation id="4258748452823770588">Невалиден подпис</translation>
 <translation id="3024663005179499861">Грешен тип на правилото</translation>
@@ -67,20 +77,26 @@
 <translation id="883848425547221593">Други отметки</translation>
 <translation id="2181821976797666341">Правила</translation>
 <translation id="3174168572213147020">Остров</translation>
+<translation id="9137013805542155359">Показване на оригинала</translation>
 <translation id="2213606439339815911">Записите се извличат...</translation>
 <translation id="6263376278284652872">Отметки от <ph name="DOMAIN"/></translation>
+<translation id="498957508165411911">Да се преведе ли от <ph name="ORIGINAL_LANGUAGE"/> на <ph name="TARGET_LANGUAGE"/>?</translation>
+<translation id="7186367841673660872">Тази страница е преведена от<ph name="ORIGINAL_LANGUAGE"/>на<ph name="LANGUAGE_LANGUAGE"/></translation>
 <translation id="7139724024395191329">Емирство</translation>
 <translation id="5145883236150621069">В отговора за правилото присъства код на грешка</translation>
+<translation id="7983301409776629893">Винаги да се превежда от <ph name="ORIGINAL_LANGUAGE"/> на <ph name="TARGET_LANGUAGE"/></translation>
 <translation id="6970216967273061347">Окръг</translation>
 <translation id="3010559122411665027">Списъчен запис „<ph name="ENTRY_INDEX"/>“: <ph name="ERROR"/></translation>
 <translation id="6445051938772793705">Държава</translation>
+<translation id="5031870354684148875">Всичко за Google Преводач</translation>
+<translation id="6891596781022320156">Нивото на правилото не се поддържа.</translation>
 <translation id="2025186561304664664">За прокси сървъра е зададена автоматична конфигурация.</translation>
 <translation id="1853748787962613237">Показването на статията не бе успешно.</translation>
 <translation id="5455374756549232013">Невалидно клеймо за дата и час на правилото</translation>
+<translation id="1962204205936693436">Отметки от <ph name="DOMAIN"/></translation>
 <translation id="1973335181906896915">Грешка при сериализирането</translation>
 <translation id="5989320800837274978">Не са посочени нито фиксирани прокси сървъри, нито URL адрес на скрипт във формат .pac.</translation>
 <translation id="7805768142964895445">Състояние</translation>
-<translation id="4002066346123236978">Заглавие</translation>
 <translation id="536296301121032821">Съхраняването на настройките за правилото не бе успешно</translation>
 <translation id="5439770059721715174">При потвърждаване на схемата възникна грешка в/ъв „<ph name="ERROR_PATH"/>“: <ph name="ERROR"/></translation>
 <translation id="8349305172487531364">Лента на отметките</translation>
@@ -89,21 +105,27 @@
 <translation id="647261751007945333">Правила за устройството</translation>
 <translation id="678528074488531090">Грешка при потвърждаването: <ph name="VALIDATION_ERROR"/>.</translation>
 <translation id="213826338245044447">Мобилни отметки</translation>
+<translation id="8571890674111243710">Превод на страницата на <ph name="LANGUAGE"/>...</translation>
 <translation id="4117700440116928470">Обхватът на правилата не се поддържа.</translation>
 <translation id="2114841414352855701">Бе пренебрегнато, защото бе отменено от <ph name="POLICY_NAME"/>.</translation>
+<translation id="3228969707346345236">Преводът не бе успешен, защото страницата вече е на <ph name="LANGUAGE"/>.</translation>
 <translation id="8891727572606052622">Невалиден режим на прокси сървъра.</translation>
 <translation id="6008256403891681546">JCB</translation>
 <translation id="7752995774971033316">Не се управлява</translation>
 <translation id="3712624925041724820">Лицензите са изчерпани</translation>
 <translation id="4926049483395192435">Трябва да се посочи.</translation>
 <translation id="7542995811387359312">Автоматичното попълване на кредитната карта е деактивирано, защото този формуляр не използва защитена връзка.</translation>
+<translation id="5179510805599951267">Не е на <ph name="ORIGINAL_LANGUAGE"/>? Подайте сигнал за тази грешка</translation>
 <translation id="8088680233425245692">Преглеждането на статията не бе успешно.</translation>
+<translation id="8725066075913043281">Опитайте отново</translation>
 <translation id="1821930232296380041">Заявката или параметрите й са невалидни</translation>
 <translation id="1640180200866533862">Правила за потребителите</translation>
+<translation id="375403751935624634">Преводът не бе успешен поради грешка в сървъра.</translation>
 <translation id="5629630648637658800">Зареждането на настройките за правилото не бе успешно</translation>
 <translation id="2354001756790975382">Други отметки</translation>
 <translation id="3650584904733503804">Потвърждаването е успешно</translation>
 <translation id="6915804003454593391">Потребител:</translation>
+<translation id="8812832766208874265">Искам да продължа да използвам <ph name="CURRENT_GOOGLE_HOST"/></translation>
 <translation id="3377188786107721145">Грешка при синтактичния анализ на правилото</translation>
 <translation id="2270192940992995399">Намирането на статията не бе успешно.</translation>
 <translation id="4726672564094551039">Презареждане на правилата</translation>
@@ -111,12 +133,15 @@
 <translation id="5190835502935405962">Лента на отметките</translation>
 <translation id="6965978654500191972">Устройство</translation>
 <translation id="8249320324621329438">Последно извличане:</translation>
+<translation id="1285320974508926690">Този сайт да не се превежда никога</translation>
 <translation id="6282194474023008486">Пощенски код</translation>
 <translation id="443673843213245140">Използването на прокси сървър е деактивирано, но е посочена изрична негова конфигурация.</translation>
 <translation id="3623476034248543066">Показване на стойността</translation>
+<translation id="9020542370529661692">Тази страница е преведена на <ph name="TARGET_LANGUAGE"/></translation>
 <translation id="5631439013527180824">Невалидно означение за управление на устройството</translation>
 <translation id="560412284261940334">Управлението не се поддържа</translation>
 <translation id="3169472444629675720">Discover</translation>
+<translation id="4923417429809017348">Тази страница е преведена от непознат език на <ph name="LANGUAGE_LANGUAGE"/></translation>
 <translation id="4813512666221746211">Грешка в мрежата</translation>
 <translation id="1875753206475436906">евристичен тип: <ph name="HEURISTIC_TYPE"/>
 тип сървър: <ph name="SERVER_TYPE"/>
@@ -129,12 +154,15 @@
 <translation id="6644283850729428850">Това правило е оттеглено.</translation>
 <translation id="7988324688042446538">Настолни отметки</translation>
 <translation id="8488350697529856933">Прилага се към</translation>
+<translation id="6165508094623778733">Научете повече</translation>
 <translation id="5565735124758917034">Активно</translation>
+<translation id="7568593326407688803">Тази страница е на<ph name="ORIGINAL_LANGUAGE"/>Искате ли да я преведете?</translation>
 <translation id="8876793034577346603">Синтактичният анализ на конфигурацията на мрежата не бе успешен.</translation>
 <translation id="106701514854093668">Настолни отметки</translation>
 <translation id="6154808779448689242">Изведеното означение на правилото не съответства на текущото</translation>
 <translation id="7961015016161918242">Никога</translation>
 <translation id="2835170189407361413">Изчистване на формуляра</translation>
+<translation id="6550675742724504774">Опции</translation>
 <translation id="8804164990146287819">Декларация за поверителност</translation>
 <translation id="5337776961545044340">Използваният тип карта не се поддържа от Google Wallet за този търговец. Моля, изберете друга.</translation>
 <translation id="7182878459783632708">Няма зададени правила</translation>
@@ -143,12 +171,14 @@
 <translation id="8713130696108419660">Лош подпис посредством първоначалния ключ</translation>
 <translation id="20817612488360358">За използване са зададени системни настройки за прокси сървъра, но е посочена и изрична конфигурация.</translation>
 <translation id="2639739919103226564">Състояние:</translation>
-<translation id="5095208057601539847">Област</translation>
+<translation id="1832546148887467272">Превключване към <ph name="NEW_GOOGLE_HOST"/></translation>
+<translation id="5095208057601539847">Провинция</translation>
 <translation id="1847321074516120686">Настройки за автоматично попълване в Chrome</translation>
 <translation id="1152021252151287493">Невалиден подпис за потвърждаване.</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="2721148159707890343">Заявката е успешна</translation>
 <translation id="2455981314101692989">Тази уеб страница е деактивирала автоматичното попълване за този формуляр.</translation>
+<translation id="8308427013383895095">Преводът не бе успешен поради проблем с връзката към мрежата.</translation>
 <translation id="5720705177508910913">Текущият потребител</translation>
 <translation id="3380864720620200369">Идент. № на клиентската програма:</translation>
 </translationbundle>

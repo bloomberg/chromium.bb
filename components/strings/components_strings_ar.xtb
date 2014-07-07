@@ -6,12 +6,14 @@
 <translation id="6779575937362063477">‏هذا النوع من البطاقات غير متوافق مع محفظة Google. يُرجى تحديد بطاقة مختلفة.</translation>
 <translation id="5172758083709347301">الجهاز</translation>
 <translation id="7180611975245234373">تحديث</translation>
-<translation id="777702478322588152">المديرية</translation>
+<translation id="777702478322588152">الإدارة الأمنية</translation>
+<translation id="7600965453749440009">عدم الترجمة مطلقًا من اللغة <ph name="LANGUAGE"/></translation>
 <translation id="2262243747453050782">‏خطأ HTTP</translation>
 <translation id="1339601241726513588">نطاق التسجيل:</translation>
 <translation id="7298195798382681320">موصى بها</translation>
 <translation id="4058922952496707368">المفتاح &quot;<ph name="SUBKEY"/>&quot;: <ph name="ERROR"/></translation>
 <translation id="5299298092464848405">خطأ في تحليل السياسة</translation>
+<translation id="6831043979455480757">ترجمة</translation>
 <translation id="1228893227497259893">معرف الكيان خاطئ</translation>
 <translation id="6337534724793800597">تصفية السياسات بحسب الاسم</translation>
 <translation id="4372948949327679948">القيمة <ph name="VALUE_TYPE"/> المتوقعة.</translation>
@@ -21,11 +23,17 @@
 <translation id="2958431318199492670">‏لا تتوافق تهيئة الشبكة مع معيار ONC. قد لا يتم استيراد بعض أجزاء التهيئة.</translation>
 <translation id="933712198907837967">Diners Club</translation>
 <translation id="277499241957683684">سجِلّ الجهاز مفقود</translation>
+<translation id="8553075262323480129">أخفقت الترجمة لتعذر تحديد لغة الصفحة.</translation>
 <translation id="7935318582918952113">DOM Distiller</translation>
+<translation id="1103523840287552314">ترجمة اللغة <ph name="LANGUAGE"/> دومًا</translation>
 <translation id="1227633850867390598">إخفاء القيمة</translation>
 <translation id="6753269504797312559">قيمة السياسة</translation>
+<translation id="8834246243508017242">تمكين الملء التلقائي باستخدام جهات الاتصال...</translation>
+<translation id="7275334191706090484">الإشارات المرجعية المُدارة</translation>
 <translation id="7400418766976504921">‏عنوان URL</translation>
+<translation id="7378627244592794276">لا</translation>
 <translation id="2704283930420550640">القيمة لا تطابق التنسيق.</translation>
+<translation id="8943805475239098364">هل تريد البحث باستخدام <ph name="NEW_GOOGLE_HOST"/> بدلاً من <ph name="CURRENT_GOOGLE_HOST"/>؟</translation>
 <translation id="4850886885716139402">عرض</translation>
 <translation id="8091372947890762290">التنشيط قيد الانتظار في الخادم</translation>
 <translation id="719464814642662924">Visa</translation>
@@ -35,8 +43,9 @@
 <translation id="112840717907525620">ذاكرة التخزين المؤقت للسياسة بحالة جيدة</translation>
 <translation id="3452404311384756672">الفاصل الزمني للجلب:</translation>
 <translation id="7441627299479586546">موضوع السياسة غير صحيح</translation>
-<translation id="3885155851504623709">الأبرشية</translation>
+<translation id="3885155851504623709">دائرة</translation>
 <translation id="6973656660372572881">‏تم تحديد كل من الخوادم الوكيلة الثابتة وعنوان URL للنص البرمجي pac.</translation>
+<translation id="7108649287766967076">أخفقت الترجمة إلى <ph name="TARGET_LANGUAGE"/>.</translation>
 <translation id="4103249731201008433">الرقم التسلسلي للجهاز غير صالح</translation>
 <translation id="3667681724235208644">عرض النسخة الأصلية</translation>
 <translation id="4079302484614802869">‏تم تعيين تهيئة الخادم الوكيل لاستخدام عنوان URL نص برمجي ‎.pac وليس الخوادم الوكيلة الثابتة.</translation>
@@ -48,14 +57,15 @@
 <translation id="4668929960204016307">،</translation>
 <translation id="2212735316055980242">تعذر العثور على السياسة</translation>
 <translation id="3150653042067488994">خطأ مؤقت في الخادم</translation>
-<translation id="7087282848513945231">المقاطعة</translation>
+<translation id="7087282848513945231">المقاطعة/الإقليم/المنطقة</translation>
 <translation id="6458467102616083041">تم التجاهل نظرًا لتعطيل البحث الافتراضي بواسطة السياسة.</translation>
 <translation id="1227224963052638717">سياسة غير معروفة.</translation>
 <translation id="9207861905230894330">أخفقت إضافة مقالة.</translation>
 <translation id="337363190475750230">تم إلغاء التوفير</translation>
 <translation id="2367567093518048410">المستوى</translation>
 <translation id="7610193165460212391">القيمة خارج النطاق <ph name="VALUE"/>.</translation>
-<translation id="2096368010154057602">القسم</translation>
+<translation id="370665806235115550">تحميل...</translation>
+<translation id="2096368010154057602">الإدارة</translation>
 <translation id="4258748452823770588">توقيع غير صالح</translation>
 <translation id="3024663005179499861">نوع السياسة غير صحيح</translation>
 <translation id="3450660100078934250">MasterCard</translation>
@@ -67,43 +77,55 @@
 <translation id="883848425547221593">إشارات أخرى</translation>
 <translation id="2181821976797666341">السياسات</translation>
 <translation id="3174168572213147020">جزيرة</translation>
+<translation id="9137013805542155359">إظهار الصفحة الأصلية</translation>
 <translation id="2213606439339815911">جارٍ جلب الإدخالات...</translation>
 <translation id="6263376278284652872">إشعارات <ph name="DOMAIN"/></translation>
+<translation id="498957508165411911">هل تريد الترجمة من <ph name="ORIGINAL_LANGUAGE"/> إلى <ph name="TARGET_LANGUAGE"/>؟</translation>
+<translation id="7186367841673660872">تمت ترجمة هذه الصفحة من اللغة<ph name="ORIGINAL_LANGUAGE"/>إلى اللغة<ph name="LANGUAGE_LANGUAGE"/></translation>
 <translation id="7139724024395191329">الإمارة</translation>
 <translation id="5145883236150621069">يوجد رمز خطأ في استجابة السياسة</translation>
+<translation id="7983301409776629893">الترجمة من اللغة <ph name="ORIGINAL_LANGUAGE"/> إلى اللغة <ph name="TARGET_LANGUAGE"/> دومًا</translation>
 <translation id="6970216967273061347">المنطقة</translation>
 <translation id="3010559122411665027">إدخال القائمة &quot;<ph name="ENTRY_INDEX"/>&quot;: <ph name="ERROR"/></translation>
 <translation id="6445051938772793705">البلد</translation>
+<translation id="5031870354684148875">‏معلومات عن الترجمة من Google</translation>
+<translation id="6891596781022320156">مستوى السياسة غير مدعوم.</translation>
 <translation id="2025186561304664664">تم تعيين الخادم الوكيل على التهيئة التلقائية.</translation>
 <translation id="1853748787962613237">أخفق عرض المقالة.</translation>
 <translation id="5455374756549232013">الطابع الزمني للسياسة سيئ</translation>
+<translation id="1962204205936693436">إشارات <ph name="DOMAIN"/></translation>
 <translation id="1973335181906896915">خطأ أثناء التسلسل</translation>
 <translation id="5989320800837274978">‏لم يتم تحديد أي من الخوادم الوكيلة الثابتة ولا عنوان URL للنص البرمجي pac.</translation>
 <translation id="7805768142964895445">الحالة</translation>
-<translation id="4002066346123236978">العنوان</translation>
 <translation id="536296301121032821">أخفق تخزين إعدادات السياسة</translation>
 <translation id="5439770059721715174">حدث خطأ في مصادقة المخطط على &quot;<ph name="ERROR_PATH"/>&quot;: <ph name="ERROR"/></translation>
 <translation id="8349305172487531364">شريط الإشارات</translation>
 <translation id="7956713633345437162">الإشارات المرجعية على الجوال</translation>
-<translation id="5089810972385038852">الولاية</translation>
+<translation id="5089810972385038852">بلد/دولة</translation>
 <translation id="647261751007945333">سياسات الأجهزة</translation>
 <translation id="678528074488531090">خطأ في عملية التحقق: <ph name="VALIDATION_ERROR"/>.</translation>
 <translation id="213826338245044447">الإشارات المرجعية على الجوال</translation>
+<translation id="8571890674111243710">جارٍ ترجمة الصفحة إلى <ph name="LANGUAGE"/>...</translation>
 <translation id="4117700440116928470">نطاق السياسة غير متوافق.</translation>
 <translation id="2114841414352855701">تم تجاهلها نظرًا لتجاوزها بواسطة <ph name="POLICY_NAME"/>.</translation>
+<translation id="3228969707346345236">أخفقت الترجمة لأن الصفحة باللغة <ph name="LANGUAGE"/> فعلاً.</translation>
 <translation id="8891727572606052622">وضع الخادم الوكيل غير صالح.</translation>
 <translation id="6008256403891681546">JCB</translation>
 <translation id="7752995774971033316">غير مُدار</translation>
 <translation id="3712624925041724820">التراخيص مستنفذة</translation>
 <translation id="4926049483395192435">يجب تحديدها.</translation>
 <translation id="7542995811387359312">تم تعطيل الملء التلقائي لبطاقة الائتمان لأن هذا النموذج لا يستخدم اتصالاً آمنًا.</translation>
+<translation id="5179510805599951267">هل الصفحة ليست باللغة <ph name="ORIGINAL_LANGUAGE"/>؟ الإبلاغ عن هذا الخطأ</translation>
 <translation id="8088680233425245692">أخفق عرض المقالة.</translation>
+<translation id="8725066075913043281">أعد المحاولة</translation>
 <translation id="1821930232296380041">طلب غير صالح، أو معلمات طلب غير صالحة</translation>
 <translation id="1640180200866533862">سياسات المستخدم</translation>
+<translation id="375403751935624634">أخفقت الترجمة بسبب حدوث خطأ في الخادم.</translation>
 <translation id="5629630648637658800">أخفق تحميل إعدادات السياسة</translation>
 <translation id="2354001756790975382">الإشارات الأخرى</translation>
 <translation id="3650584904733503804">تم التحقق بنجاح</translation>
 <translation id="6915804003454593391">المستخدم:</translation>
+<translation id="8812832766208874265">الاستمرار في استخدام <ph name="CURRENT_GOOGLE_HOST"/></translation>
 <translation id="3377188786107721145">خطأ في تحليل السياسة</translation>
 <translation id="2270192940992995399">أخفق العثور على المقالة.</translation>
 <translation id="4726672564094551039">إعادة تحميل السياسات</translation>
@@ -111,12 +133,15 @@
 <translation id="5190835502935405962">شريط الإشارات</translation>
 <translation id="6965978654500191972">جهاز</translation>
 <translation id="8249320324621329438">تاريخ آخر عملية جلب:</translation>
+<translation id="1285320974508926690">عدم ترجمة هذا الموقع مطلقًا</translation>
 <translation id="6282194474023008486">الرمز البريدي</translation>
 <translation id="443673843213245140">تم تعطيل استخدام الخادم الوكيل ولكن تم تحديد تهيئة صريحة للخادم الوكيل.</translation>
 <translation id="3623476034248543066">عرض القيمة</translation>
+<translation id="9020542370529661692">تمت ترجمة هذه الصفحة إلى <ph name="TARGET_LANGUAGE"/></translation>
 <translation id="5631439013527180824">الرمز المميز لإدارة الجهاز غير صالح</translation>
 <translation id="560412284261940334">الإدارة غير متوفرة</translation>
 <translation id="3169472444629675720">Discover</translation>
+<translation id="4923417429809017348">تمت ترجمة هذه الصفحة من لغة غير معروفة إلى اللغة <ph name="LANGUAGE_LANGUAGE"/></translation>
 <translation id="4813512666221746211">حدث خطأ في الشبكة</translation>
 <translation id="1875753206475436906">نوع الموجّه: <ph name="HEURISTIC_TYPE"/>
     نوع الخادم: <ph name="SERVER_TYPE"/>
@@ -129,12 +154,15 @@
 <translation id="6644283850729428850">تم تجاهل هذه السياسة.</translation>
 <translation id="7988324688042446538">الإشارات المرجعية على سطح المكتب</translation>
 <translation id="8488350697529856933">تنطبق على</translation>
+<translation id="6165508094623778733">مزيد من المعلومات</translation>
 <translation id="5565735124758917034">نشط</translation>
+<translation id="7568593326407688803">تتوفر هذه الصفحة باللغة<ph name="ORIGINAL_LANGUAGE"/>فهل تريد ترجمتها؟</translation>
 <translation id="8876793034577346603">أخفق تحليل تهيئة الشبكة</translation>
 <translation id="106701514854093668">الإشارات المرجعية على سطح المكتب</translation>
 <translation id="6154808779448689242">لا يتطابق الرمز المميز لسياسة الإرجاع مع الرمز المميز الحالي</translation>
 <translation id="7961015016161918242">مطلقًا</translation>
 <translation id="2835170189407361413">محو النموذج</translation>
+<translation id="6550675742724504774">خيارات</translation>
 <translation id="8804164990146287819">سياسة الخصوصية</translation>
 <translation id="5337776961545044340">‏هذا النوع من البطاقات غير متوافق مع محفظة Google لهذا التاجر. يُرجى تحديد بطاقة أخرى.</translation>
 <translation id="7182878459783632708">لم يتم تعيين أية سياسات</translation>
@@ -143,12 +171,14 @@
 <translation id="8713130696108419660">توقيع أولي غير صحيح</translation>
 <translation id="20817612488360358">تم تعيين إعدادات الخادم الوكيل ليتم استخدامها وتم أيضًا تحديد تهيئة صريحة للخادم الوكيل.</translation>
 <translation id="2639739919103226564">الحالة:</translation>
-<translation id="5095208057601539847">المقاطعة</translation>
+<translation id="1832546148887467272">التبديل إلى <ph name="NEW_GOOGLE_HOST"/></translation>
+<translation id="5095208057601539847">الإقليم</translation>
 <translation id="1847321074516120686">‏إعدادات الملء التلقائي في Chrome</translation>
 <translation id="1152021252151287493">توقيع تحقق سيئ</translation>
 <translation id="6965382102122355670">موافق</translation>
 <translation id="2721148159707890343">تم إرسال الطلب بنجاح</translation>
 <translation id="2455981314101692989">عطلت صفحة الويب هذه الملء التلقائي لهذا النموذج.</translation>
+<translation id="8308427013383895095">أخفقت الترجمة بسبب حدوث مشكلة في الاتصال بالشبكة.</translation>
 <translation id="5720705177508910913">المستخدم الحالي</translation>
 <translation id="3380864720620200369">معرِّف العميل:</translation>
 </translationbundle>

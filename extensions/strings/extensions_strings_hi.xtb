@@ -1,19 +1,17 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="hi">
-<translation id="8719282907381795632"><ph name="WEBSITE_1"/> पर अपने डेटा तक पहुंचें</translation>
 <translation id="7809034755304591547"><ph name="EXTENSION_NAME"/> (एक्सटेंशन आईडी &quot;<ph name="EXTENSION_ID"/>&quot;) को व्यवस्थापक द्वारा प्रतिबंधित किया गया है.</translation>
 <translation id="2857834222104759979">मालसूची फ़ाइल अमान्य है.</translation>
+<translation id="8978038008714088448"><ph name="WEBSITE_1"/> पर मौजूद अपना डेटा पढ़ें और बदलें</translation>
+<translation id="4205302772098850608"><ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/>, और <ph name="WEBSITE_3"/> पर मौजूद अपना डेटा पढ़ें और बदलें</translation>
 <translation id="3828484226910527078">USB उपकरण एक्‍सेस करें</translation>
 <translation id="6384275966486438344">अपनी खोज सेटिंग इसमें बदलें: <ph name="SEARCH_HOST"/></translation>
 <translation id="5911798608827489036">स्थानीय नेटवर्क या इंटरनेट पर किसी कंप्यूटर से डेटा का आदान-प्रदान करें</translation>
 <translation id="4719685943208231314"><ph name="VENDOR_NAME"/> से USB उपकरण एक्‍सेस करें</translation>
 <translation id="657064425229075395">पृष्ठभूमि स्क्रिप्ट '<ph name="BACKGROUND_SCRIPT"/>' लोड नहीं की जा सकी.</translation>
-<translation id="3093853184108622112"><ph name="WEBSITE_1"/> और <ph name="WEBSITE_2"/> पर अपने डेटा तक पहुंचें</translation>
 <translation id="8597109877291678953"><ph name="HOSTNAME"/> नामक कंप्यूटर से डेटा का आदान-प्रदान करें</translation>
-<translation id="6914908792814954894"><ph name="NUMBER_OF_WEBSITES"/> वेबसाइटों पर अपना डेटा एक्सेस करें</translation>
 <translation id="5456409301717116725">एक्सटेंशन में कुंजी फ़ाइल '<ph name="KEY_PATH"/>' शामिल है. संभवतः आप ऐसा नहीं करना चाहते हैं.</translation>
-<translation id="6968649314782363508"><ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/>, और <ph name="WEBSITE_3"/> पर अपने डेटा तक पहुंचें</translation>
 <translation id="2350172092385603347">स्थानीयकरण का उपयोग किया गया, लेकिन default_locale को मालसूची में निर्दिष्ट नहीं किया गया था.</translation>
 <translation id="8058376558882514200"><ph name="VENDOR_NAME"/> से USB उपकरण <ph name="PRODUCT_NAME"/> को एक्‍सेस करें</translation>
 <translation id="8774379383902544371">USB उपकरणों तक पहुंचें</translation>
@@ -21,13 +19,15 @@
 <translation id="6344170822609224263">नेटवर्क कनेक्शन की सूची एक्सेस करें</translation>
 <translation id="2518849872271000461">इस नाम वाले कंप्यूटर से डेटा का आदान-प्रदान करें: <ph name="HOSTNAMES"/></translation>
 <translation id="1389014510128217152">- <ph name="WEBSITE_1"/></translation>
-<translation id="5530391389158154052"><ph name="NUMBER_OF_WEBSITES"/> वेबसाइटों पर अपना डेटा एक्सेस करें</translation>
 <translation id="961805664415579088"><ph name="DOMAIN"/> डोमेन में किसी कंप्यूटर से डेटा का आदान-प्रदान करें</translation>
 <translation id="4968399700653439437">इस डोमेन में किसी कंप्यूटर से डेटा का आदान-प्रदान करें: <ph name="DOMAINS"/></translation>
 <translation id="8662911384982557515">अपना मुखपृष्ठ इसमें बदलें: <ph name="HOME_PAGE"/></translation>
+<translation id="8114679593444120202"><ph name="NUMBER_OF_WEBSITES"/> वेबसाइटों पर मौजूद अपना डेटा पढ़ें और बदलें</translation>
 <translation id="8602184400052594090">मालसूची फ़ाइल गुम है या पढ़ने योग्य नहीं है.</translation>
 <translation id="7893008570150657497">आपके कंप्यूटर के फ़ोटो, संगीत, और अन्य मीडिया तक पहुंचें</translation>
 <translation id="7217838517480956708">इस मशीन का व्यवस्थापक चाहता है कि <ph name="EXTENSION_NAME"/> इंस्टॉल किया हुआ हो. इसे निकाला या संशोधित नहीं किया जा सकता.</translation>
 <translation id="7154130902455071009">अपना आरंभ पृष्ठ इसमें बदलें: <ph name="START_PAGE"/></translation>
+<translation id="6094507746643187368"><ph name="WEBSITE_1"/> और <ph name="WEBSITE_2"/> पर मौजूद अपना डेटा पढ़ें और बदलें</translation>
 <translation id="1803557475693955505">पृष्ठभूमि पृष्ठ '<ph name="BACKGROUND_PAGE"/>' को लोड नहीं कर सका.</translation>
+<translation id="8207052894957937969"><ph name="NUMBER_OF_WEBSITES"/> वेबसाइटों पर मौजूद अपना डेटा पढ़ें और बदलें</translation>
 </translationbundle>

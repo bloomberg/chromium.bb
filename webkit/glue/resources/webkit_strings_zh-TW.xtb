@@ -20,7 +20,7 @@
 <translation id="8199524924445686405"> 年 </translation>
 <translation id="795667975304826397">未選擇檔案</translation>
 <translation id="7789962463072032349">暫停</translation>
-<translation id="6853785296079745596">不顯示隱藏式輔助字幕</translation>
+<translation id="6853785296079745596">不顯示字幕</translation>
 <translation id="4360991593054037559">請輸入有效值。最接近的兩個有效值分別是 <ph name="VALID_VALUE_LOW"/> 和 <ph name="VALID_VALUE_HIGHER"/>。</translation>
 <translation id="1758486001363313524">其他...</translation>
 <translation id="8141602879876242471">這是可搜尋的索引，輸入搜尋關鍵字：</translation>
@@ -39,12 +39,12 @@
 <translation id="901493112792887934">目前時間 (以秒為單位)</translation>
 <translation id="5164977714490026579">值必須大於或等於 <ph name="MINIMUM"/>。</translation>
 <translation id="2247351761944213033"><ph name="YEAR"/> 年，第 <ph name="WEEKNUMBER"/> 週</translation>
-<translation id="7740016676195725605">停止顯示隱藏式輔助字幕</translation>
+<translation id="7740016676195725605">停止顯示字幕</translation>
 <translation id="5944544982112848342">2048 (高級)</translation>
 <translation id="3075154866155599887">欄位內容不完整或日期無效，請輸入有效的值。</translation>
 <translation id="3040011195152428237">連結</translation>
 <translation id="1014825444426747588">空白</translation>
-<translation id="9050748414552849310">顯示隱藏式輔助字幕</translation>
+<translation id="9050748414552849310">顯示字幕</translation>
 <translation id="4522570452068850558">詳細資訊</translation>
 <translation id="8451268428117625855">請選取檔案。</translation>
 <translation id="8117451130807776954">本週</translation>
@@ -53,7 +53,7 @@
 <translation id="2060505056492490888">「<ph name="DOT"/>」未放在「<ph name="INVALIDDOMAIN"/>」的正確位置。</translation>
 <translation id="2674318244760992338">頁尾</translation>
 <translation id="8987927404178983737">月</translation>
-<translation id="8115662671911883373">開始顯示隱藏式輔助字幕</translation>
+<translation id="8115662671911883373">開始顯示字幕</translation>
 <translation id="7364796246159120393">選擇檔案</translation>
 <translation id="2761667185364618470">如果您要繼續執行，請勾選這個核取方塊。</translation>
 <translation id="8534579021159131403">分鐘</translation>
@@ -81,6 +81,7 @@
 <translation id="8750798805984357768">請選取其中一個選項。</translation>
 <translation id="7740050170769002709">HTML 內容</translation>
 <translation id="6692633176391053278">步進器</translation>
+<translation id="4975562563186953947">已選取 <ph name="SELECTED_COUNT"/> 個項目</translation>
 <translation id="8541249477527128034">媒體控制</translation>
 <translation id="2226276347425096477">請將這段文字刪減至 <ph name="MAX_CHARACTERS"/> 個字元以下 (目前的字元數為 <ph name="CURRENT_LENGTH"/> 個)。</translation>
 <translation id="6101327004457443354">取消音軌靜音</translation>

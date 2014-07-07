@@ -1,19 +1,17 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="no">
-<translation id="8719282907381795632">få tilgang til dataene dine på <ph name="WEBSITE_1"/></translation>
 <translation id="7809034755304591547"><ph name="EXTENSION_NAME"/> (utvidelses-ID «<ph name="EXTENSION_ID"/>») er blokkert av administratoren.</translation>
 <translation id="2857834222104759979">Manifestfilen er ugyldig.</translation>
+<translation id="8978038008714088448">lese og endre dataene dine på <ph name="WEBSITE_1"/></translation>
+<translation id="4205302772098850608">lese og endre dataene dine på <ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/> og <ph name="WEBSITE_3"/></translation>
 <translation id="3828484226910527078">Åpne USB-enheten</translation>
 <translation id="6384275966486438344">endre søkeinnstillingene dine til: <ph name="SEARCH_HOST"/></translation>
 <translation id="5911798608827489036">utveksle data med en hvilken som helst datamaskin på det lokale nettverket eller Internett</translation>
 <translation id="4719685943208231314">Åpne USB-enheten fra <ph name="VENDOR_NAME"/></translation>
 <translation id="657064425229075395">Kunne ikke laste inn bakgrunnsskriptet «<ph name="BACKGROUND_SCRIPT"/>».</translation>
-<translation id="3093853184108622112">få tilgang til dataene dine på <ph name="WEBSITE_1"/> og <ph name="WEBSITE_2"/></translation>
 <translation id="8597109877291678953">utveksle data med datamaskinen <ph name="HOSTNAME"/></translation>
-<translation id="6914908792814954894">få tilgang til dataene dine på <ph name="NUMBER_OF_WEBSITES"/> nettsteder</translation>
 <translation id="5456409301717116725">Denne utvidelsen inneholder nøkkelfilen «<ph name="KEY_PATH"/>». Du ønsker sannsynligvis ikke å gjøre dette.</translation>
-<translation id="6968649314782363508">få tilgang til dataene dine på <ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/> og <ph name="WEBSITE_3"/></translation>
 <translation id="2350172092385603347">Lokaliseringen er brukt, men default_locale var ikke spesifisert i manifestet.</translation>
 <translation id="8058376558882514200">Åpne USB-enheten <ph name="PRODUCT_NAME"/> fra <ph name="VENDOR_NAME"/></translation>
 <translation id="8774379383902544371">få tilgang til USB-enheter</translation>
@@ -21,13 +19,15 @@
 <translation id="6344170822609224263">få tilgang til liste over nettverkstilkoblinger</translation>
 <translation id="2518849872271000461">utveksle data med datamaskiner som har navnet: <ph name="HOSTNAMES"/></translation>
 <translation id="1389014510128217152">– <ph name="WEBSITE_1"/></translation>
-<translation id="5530391389158154052">Få tilgang til dataene dine på <ph name="NUMBER_OF_WEBSITES"/> nettsteder</translation>
 <translation id="961805664415579088">utveksle data med en hvilken som helst datamaskin i domenet <ph name="DOMAIN"/></translation>
 <translation id="4968399700653439437">utveksle data med en hvilken som helst datamaskin på domenene: <ph name="DOMAINS"/></translation>
 <translation id="8662911384982557515">endre startsiden din til: <ph name="HOME_PAGE"/></translation>
+<translation id="8114679593444120202">lese og endre dataene dine på <ph name="NUMBER_OF_WEBSITES"/> nettsteder</translation>
 <translation id="8602184400052594090">Manifestfilen mangler eller kan ikke leses.</translation>
 <translation id="7893008570150657497">Åpne bilder, musikk og andre mediefiler fra datamaskinen din</translation>
 <translation id="7217838517480956708">Administratoren til denne maskinen krever at <ph name="EXTENSION_NAME"/> blir installert. Utvidelsen kan ikke fjernes eller endres.</translation>
 <translation id="7154130902455071009">endre startsiden din til: <ph name="START_PAGE"/></translation>
+<translation id="6094507746643187368">lese og endre dataene dine på <ph name="WEBSITE_1"/> og <ph name="WEBSITE_2"/></translation>
 <translation id="1803557475693955505">Kan ikke laste inn bakgrunnssiden <ph name="BACKGROUND_PAGE"/>.</translation>
+<translation id="8207052894957937969">lese og endre dataene dine på <ph name="NUMBER_OF_WEBSITES"/> nettsteder</translation>
 </translationbundle>

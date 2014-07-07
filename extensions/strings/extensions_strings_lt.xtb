@@ -1,19 +1,17 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="lt">
-<translation id="8719282907381795632">Pasiekti <ph name="WEBSITE_1"/> duomenis</translation>
 <translation id="7809034755304591547">Administratorius užblokavo „<ph name="EXTENSION_NAME"/>“ (plėtinio ID „<ph name="EXTENSION_ID"/>“).</translation>
 <translation id="2857834222104759979">Neteisingas deklaracijos failas.</translation>
+<translation id="8978038008714088448">Skaityti ir keisti duomenis <ph name="WEBSITE_1"/></translation>
+<translation id="4205302772098850608">Skaityti ir keisti duomenis <ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/> ir <ph name="WEBSITE_3"/></translation>
 <translation id="3828484226910527078">Pasiekti USB įrenginį</translation>
 <translation id="6384275966486438344">Pakeiskite paieškos nustatymus į: <ph name="SEARCH_HOST"/></translation>
 <translation id="5911798608827489036">Keistis duomenimis su bet kuriuo kompiuteriu vietiniame tinkle ar internete</translation>
 <translation id="4719685943208231314">Pasiekti USB įrenginį iš „<ph name="VENDOR_NAME"/>“</translation>
 <translation id="657064425229075395">Nepavyko įkelti foninio scenarijaus „<ph name="BACKGROUND_SCRIPT"/>“.</translation>
-<translation id="3093853184108622112">Pasiekti <ph name="WEBSITE_1"/> ir <ph name="WEBSITE_2"/> duomenis</translation>
 <translation id="8597109877291678953">Keistis duomenimis su kompiuteriu, kurio pavadinimas <ph name="HOSTNAME"/></translation>
-<translation id="6914908792814954894">Pasiekite savo duomenis <ph name="NUMBER_OF_WEBSITES"/> svetain.</translation>
 <translation id="5456409301717116725">Šiame plėtinyje yra rakto failas „<ph name="KEY_PATH"/>“. Neturėtumėte to daryti.</translation>
-<translation id="6968649314782363508">Pasiekti <ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/> ir <ph name="WEBSITE_3"/> duomenis</translation>
 <translation id="2350172092385603347">Naudotas lokalizavimas, bet deklaracijoje nenurodyta numatytoji lokalė.</translation>
 <translation id="8058376558882514200">Pasiekti USB įrenginį „<ph name="PRODUCT_NAME"/>“ iš „<ph name="VENDOR_NAME"/>“</translation>
 <translation id="8774379383902544371">Pasiekti USB įrenginius</translation>
@@ -21,13 +19,15 @@
 <translation id="6344170822609224263">Pasiekti tinklo ryšių sąrašą</translation>
 <translation id="2518849872271000461">Keistis duomenimis su kompiuteriais, kurių pavadinimai: <ph name="HOSTNAMES"/></translation>
 <translation id="1389014510128217152">– <ph name="WEBSITE_1"/></translation>
-<translation id="5530391389158154052">Pasiekite savo duomenis <ph name="NUMBER_OF_WEBSITES"/> svetain.</translation>
 <translation id="961805664415579088">Keistis duomenimis su bet kuriuo kompiuteriu domene <ph name="DOMAIN"/></translation>
 <translation id="4968399700653439437">Keistis duomenimis su bet kuriuo kompiuteriu šiuose domenuose: <ph name="DOMAINS"/></translation>
 <translation id="8662911384982557515">Pakeisti pagrindinį puslapį į: <ph name="HOME_PAGE"/></translation>
+<translation id="8114679593444120202">Skaityti ir keisti duomenis <ph name="NUMBER_OF_WEBSITES"/> svetain.</translation>
 <translation id="8602184400052594090">Trūksta deklaracijos arba ji nenuskaitoma.</translation>
 <translation id="7893008570150657497">Pasiekti nuotraukas, muziką ir kitą mediją iš kompiuterio</translation>
 <translation id="7217838517480956708">Šio kompiuterio administratorius reikalauja, kad būtų įdiegtas papildinys „<ph name="EXTENSION_NAME"/>“. Jo negalima pašalinti ar pakeisti.</translation>
 <translation id="7154130902455071009">Pakeiskite pradžios puslapį į: <ph name="START_PAGE"/></translation>
+<translation id="6094507746643187368">Skaityti ir keisti duomenis <ph name="WEBSITE_1"/> ir <ph name="WEBSITE_2"/></translation>
 <translation id="1803557475693955505">Nepavyko įkelti fono puslapio „<ph name="BACKGROUND_PAGE"/>“.</translation>
+<translation id="8207052894957937969">Skaityti ir keisti duomenis <ph name="NUMBER_OF_WEBSITES"/> svetain.</translation>
 </translationbundle>

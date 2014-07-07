@@ -1,19 +1,17 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="fil">
-<translation id="8719282907381795632">I-access ang iyong data sa <ph name="WEBSITE_1"/></translation>
 <translation id="7809034755304591547">Ang <ph name="EXTENSION_NAME"/> (ID ng extension &quot;<ph name="EXTENSION_ID"/>&quot;) ay na-block ng administrator.</translation>
 <translation id="2857834222104759979">Di-wasto ang manifest file.</translation>
+<translation id="8978038008714088448">Basahin at baguhin ang iyong data sa <ph name="WEBSITE_1"/></translation>
+<translation id="4205302772098850608">Basahin at baguhin ang iyong data sa <ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/> at <ph name="WEBSITE_3"/></translation>
 <translation id="3828484226910527078">I-access ang USB device</translation>
 <translation id="6384275966486438344">Gawing ito ang iyong mga setting ng paghahanap: <ph name="SEARCH_HOST"/></translation>
 <translation id="5911798608827489036">Makipagpalitan ng data sa anumang computer sa lokal na network o internet</translation>
 <translation id="4719685943208231314">I-access ang USB device na mula sa <ph name="VENDOR_NAME"/></translation>
 <translation id="657064425229075395">Hindi ma-load ang script ng background na '<ph name="BACKGROUND_SCRIPT"/>'.</translation>
-<translation id="3093853184108622112">I-access ang iyong data sa <ph name="WEBSITE_1"/> at <ph name="WEBSITE_2"/></translation>
 <translation id="8597109877291678953">Makipagpalitan ng data sa computer na may pangalang <ph name="HOSTNAME"/></translation>
-<translation id="6914908792814954894">I-access ang iyong data sa <ph name="NUMBER_OF_WEBSITES"/> (na) website</translation>
 <translation id="5456409301717116725">Kasama sa extension na ito ang key file na '<ph name="KEY_PATH"/>'. Malamang na hindi mo iyon gustong gawin.</translation>
-<translation id="6968649314782363508">I-access ang iyong data sa <ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/>, at <ph name="WEBSITE_3"/></translation>
 <translation id="2350172092385603347">Ginamit ang localization , subalit hindi natukoy ang default_locale sa manipesto.</translation>
 <translation id="8058376558882514200">I-access ang USB device na <ph name="PRODUCT_NAME"/> na mula sa <ph name="VENDOR_NAME"/></translation>
 <translation id="8774379383902544371">I-access ang mga USB device</translation>
@@ -21,13 +19,15 @@
 <translation id="6344170822609224263">I-access ang listahan ng mga koneksyon sa network</translation>
 <translation id="2518849872271000461">Makipagpalitan ng data sa mga computer na may pangalang: <ph name="HOSTNAMES"/></translation>
 <translation id="1389014510128217152">- <ph name="WEBSITE_1"/></translation>
-<translation id="5530391389158154052">I-access ang iyong data sa <ph name="NUMBER_OF_WEBSITES"/> (na) website</translation>
 <translation id="961805664415579088">Makipagpalitan ng data sa anumang computer sa domain na <ph name="DOMAIN"/></translation>
 <translation id="4968399700653439437">Makipagpalitan ng data sa anumang computer sa mga domain na: <ph name="DOMAINS"/></translation>
 <translation id="8662911384982557515">Baguhin ang iyong home page sa: <ph name="HOME_PAGE"/></translation>
+<translation id="8114679593444120202">Basahin at baguhin ang iyong data sa <ph name="NUMBER_OF_WEBSITES"/> (na) website</translation>
 <translation id="8602184400052594090">Nawawala o hindi mabasa ang manifest file.</translation>
 <translation id="7893008570150657497">Ma-access ang mga larawan, musika, at iba pang media mula sa iyong computer</translation>
 <translation id="7217838517480956708">Kinakailangan ng administrator ng machine na ito na ma-install ang <ph name="EXTENSION_NAME"/>. Hindi ito maaaring alisin o baguhin.</translation>
 <translation id="7154130902455071009">Gawing ito ang iyong panimulang pahina: <ph name="START_PAGE"/></translation>
+<translation id="6094507746643187368">Basahin at baguhin ang iyong data sa <ph name="WEBSITE_1"/> at <ph name="WEBSITE_2"/></translation>
 <translation id="1803557475693955505">Maaaring hindi mai-load ang pahina ng background '<ph name="BACKGROUND_PAGE"/>'.</translation>
+<translation id="8207052894957937969">Basahin at baguhin ang iyong data sa <ph name="NUMBER_OF_WEBSITES"/> (na) website</translation>
 </translationbundle>

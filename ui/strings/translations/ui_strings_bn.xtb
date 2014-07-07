@@ -10,7 +10,7 @@
 <translation id="6310545596129886942"><ph name="NUMBER_FEW"/> সেকেন্ড বাকি</translation>
 <translation id="9213479837033539041"><ph name="NUMBER_MANY"/> সেকেন্ড বাকি</translation>
 <translation id="1209866192426315618"><ph name="NUMBER_DEFAULT"/> মিনিট বাকি</translation>
-<translation id="1801827354178857021">সময়কাল</translation>
+<translation id="1801827354178857021">পূর্ণচ্ছেদ</translation>
 <translation id="1190609913194133056">বিজ্ঞপ্তি কেন্দ্র</translation>
 <translation id="7470933019269157899"><ph name="NUMBER_DEFAULT"/> মিনিট বাকি</translation>
 <translation id="5613020302032141669">Left Arrow</translation>
@@ -86,6 +86,7 @@
 <translation id="7487278341251176613"><ph name="NUMBER_TWO"/> মিনিট বাকি</translation>
 <translation id="5110450810124758964"><ph name="NUMBER_ONE"/> day ago</translation>
 <translation id="2820806154655529776"><ph name="NUMBER_ONE"/> সেকেন্ড</translation>
+<translation id="4320177379694898372">কোনো ইন্টারনেট সংযোগ নেই</translation>
 <translation id="7814458197256864873">&amp;অনুলিপি</translation>
 <translation id="3889424535448813030">Right Arrow</translation>
 <translation id="4229495110203539533"><ph name="NUMBER_ONE"/> sec ago</translation>
@@ -150,7 +151,7 @@
 <translation id="1781701194097416995">শব্দকে বামদিকে সরান</translation>
 <translation id="1243314992276662751">আপলোড</translation>
 <translation id="50030952220075532"><ph name="NUMBER_ONE"/> দিন বাকি</translation>
-<translation id="8179976553408161302">প্রবেশ করুন</translation>
+<translation id="8179976553408161302">Enter</translation>
 <translation id="8471049483003785219">শব্দকে বামদিকে সরান এবং নির্বাচন পরিবর্তন করুন</translation>
 <translation id="945522503751344254">প্রতিক্রিয়া পাঠান</translation>
 <translation id="9170848237812810038">&amp;পূর্বাবস্থায় ফিরুন</translation>

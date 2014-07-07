@@ -10,7 +10,7 @@
 <translation id="6310545596129886942">Faltan <ph name="NUMBER_FEW"/> segundos</translation>
 <translation id="9213479837033539041">Faltan <ph name="NUMBER_MANY"/> segundos</translation>
 <translation id="1209866192426315618">Faltan <ph name="NUMBER_DEFAULT"/> minutos</translation>
-<translation id="1801827354178857021">Punto</translation>
+<translation id="1801827354178857021">Período</translation>
 <translation id="1190609913194133056">Centro de notificaciones</translation>
 <translation id="7470933019269157899">Faltan <ph name="NUMBER_DEFAULT"/> minutos.</translation>
 <translation id="5613020302032141669">Flecha izquierda</translation>
@@ -33,7 +33,7 @@
 <translation id="1940483897317142625">Eliminar hasta el final de la línea</translation>
 <translation id="8507996248087185956"><ph name="NUMBER_DEFAULT"/> minutos</translation>
 <translation id="3520476450377425184">Faltan <ph name="NUMBER_MANY"/> días</translation>
-<translation id="932327136139879170">Inicio</translation>
+<translation id="932327136139879170">Página principal</translation>
 <translation id="5600907569873192868">Faltan <ph name="NUMBER_MANY"/> minutos</translation>
 <translation id="8666066831007952346">Faltan <ph name="NUMBER_TWO"/> días</translation>
 <translation id="6390842777729054533">Faltan <ph name="NUMBER_ZERO"/> segundos</translation>
@@ -86,6 +86,7 @@
 <translation id="7487278341251176613">Faltan <ph name="NUMBER_TWO"/> minutos.</translation>
 <translation id="5110450810124758964">Hace <ph name="NUMBER_ONE"/> día</translation>
 <translation id="2820806154655529776"><ph name="NUMBER_ONE"/> segundo</translation>
+<translation id="4320177379694898372">Sin conexión a Internet</translation>
 <translation id="7814458197256864873">&amp;Copiar</translation>
 <translation id="3889424535448813030">Flecha derecha</translation>
 <translation id="4229495110203539533">Hace <ph name="NUMBER_ONE"/> segundo</translation>
@@ -150,7 +151,7 @@
 <translation id="1781701194097416995">Mover una palabra a la izquierda</translation>
 <translation id="1243314992276662751">Cargar</translation>
 <translation id="50030952220075532">Falta <ph name="NUMBER_ONE"/> día</translation>
-<translation id="8179976553408161302">Entrar</translation>
+<translation id="8179976553408161302">Intro</translation>
 <translation id="8471049483003785219">Mover una palabra a la izquierda y modificar selección</translation>
 <translation id="945522503751344254">Enviar comentarios</translation>
 <translation id="9170848237812810038">&amp;Deshacer</translation>

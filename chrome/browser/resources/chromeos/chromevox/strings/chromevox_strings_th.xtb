@@ -311,14 +311,14 @@
 <translation id="4006140876663370126">รูปภาพ</translation>
 <translation id="8914429597676860578">เติมข้อความอัตโนมัติ</translation>
 <translation id="1539527321543337398">พื้นที่ข้อความ</translation>
-<translation id="5310788376443009632">ลบออกแล้ว:</translation>
+<translation id="5310788376443009632">นำออกออกแล้ว:</translation>
 <translation id="1905379170753160525">แสดงรายการส่วนหัว</translation>
 <translation id="5748623122140342504">ส่วนหัวระดับ 5 ก่อนหน้า</translation>
 <translation id="7434509671034404296">นักพัฒนา</translation>
 <translation id="7332592614823088566">แถว <ph name="ROWINDEX"/> จาก <ph name="ROWTOTAL"/>, คอลัมน์ <ph name="COLINDEX"/> จาก <ph name="COLTOTAL"/></translation>
 <translation id="794091007957014205">{COUNT,plural, =1{เครื่องหมาย at}other{# เครื่องหมาย at}}</translation>
 <translation id="1107942983112791593">ตัวอักษรวิ่ง</translation>
-<translation id="1383876407941801731">เครื่องมือค้นหา</translation>
+<translation id="1383876407941801731">ค้นหา</translation>
 <translation id="9065283790526219006">+ป๊อปอัป</translation>
 <translation id="5203930734796605961"><ph name="KEY"/> ถูกกำหนดให้กับคำสั่งแล้ว</translation>
 <translation id="3486232535569802404"><ph name="V1"/> ถึง <ph name="V2"/></translation>
@@ -448,7 +448,7 @@
 <translation id="7336596009609913925">มีป๊อปอัป</translation>
 <translation id="4554899522007042510">ความสว่าง <ph name="BRIGHTNESS"/> เปอร์เซ็นต์</translation>
 <translation id="4107807507418787238">ไม่มีเซลล์ด้านล่าง</translation>
-<translation id="9077213568694924680">ลบออกจากการเลือกแล้ว</translation>
+<translation id="9077213568694924680">นำออกออกจากการเลือกแล้ว</translation>
 <translation id="1025074108959230262">ปิดโหมดติดหนึบแล้ว</translation>
 <translation id="3599054940393788245">ไม่ได้อยู่ในคณิตศาสตร์</translation>
 <translation id="739763518212184081">บรรทัดก่อนหน้า</translation>
@@ -469,7 +469,7 @@
 <translation id="1157843803349774103">ช่องตัวเลือกรวม <ph name="NAME"/> <ph name="VALUE"/></translation>
 <translation id="3819376190738087562">ไม่มีการข้าม</translation>
 <translation id="1334095593597963605">พูดอักขระและคำ</translation>
-<translation id="6910211073230771657">ลบแล้ว</translation>
+<translation id="6910211073230771657">นำออกแล้ว</translation>
 <translation id="3762198587642264450">ไปที่ด้านล่างของแถวปัจจุบัน</translation>
 <translation id="4997282455736854877">ปุ่มตัวเลือก <ph name="NAME"/> ที่เลือกไว้</translation>
 <translation id="5750633686117194034">ไม่มีการกดคีย์ตัวปรับแต่ง โปรดกดคีย์ตัวปรับแต่งอย่างน้อยหนึ่งคีย์ค้างไว้ ยกนิ้วขึ้นเมื่อเสร็จสิ้นและคุณจะได้ยินเสียงการตั้งคีย์ แตะเพื่อออก</translation>

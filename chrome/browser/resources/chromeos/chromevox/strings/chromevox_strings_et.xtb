@@ -318,7 +318,7 @@
 <translation id="7332592614823088566">Rida <ph name="ROWINDEX"/>/<ph name="ROWTOTAL"/>, veerg <ph name="COLINDEX"/>/<ph name="COLTOTAL"/></translation>
 <translation id="794091007957014205">{COUNT,plural, =1{ät-märk (@)}other{# ät-märki (@)}}</translation>
 <translation id="1107942983112791593">maqe</translation>
-<translation id="1383876407941801731">Otsing</translation>
+<translation id="1383876407941801731">Otsi</translation>
 <translation id="9065283790526219006">+hüpik</translation>
 <translation id="5203930734796605961">Klahvile <ph name="KEY"/> on käsk juba määratud.</translation>
 <translation id="3486232535569802404"><ph name="V1"/> &gt; <ph name="V2"/></translation>

@@ -81,13 +81,14 @@
 <translation id="8750798805984357768">Seleccioneu una d'aquestes opcions.</translation>
 <translation id="7740050170769002709">Contingut HTML</translation>
 <translation id="6692633176391053278">desplaçador</translation>
+<translation id="4975562563186953947">Elements seleccionats: <ph name="SELECTED_COUNT"/></translation>
 <translation id="8541249477527128034">control de mitjans</translation>
 <translation id="2226276347425096477">Escurceu aquest text a un màxim de <ph name="MAX_CHARACTERS"/> caràcters (ara n'esteu utilitzant <ph name="CURRENT_LENGTH"/>).</translation>
 <translation id="6101327004457443354">activa el so de la pista d'àudio</translation>
 <translation id="1822429046913737220">a. m./p. m.</translation>
 <translation id="1639239467298939599">S'està carregant</translation>
 <translation id="2908441821576996758">Introduïu una llista d'adreces electròniques separades per comes.</translation>
-<translation id="5939518447894949180">Restablir</translation>
+<translation id="5939518447894949180">Restableix</translation>
 <translation id="1921819250265091946">dd</translation>
 <translation id="2613802280814924224">Introduïu un valor vàlid. El valor vàlid més proper és <ph name="VALID_VALUE"/>.</translation>
 <translation id="835897206747267392">Valor no vàlid.</translation>

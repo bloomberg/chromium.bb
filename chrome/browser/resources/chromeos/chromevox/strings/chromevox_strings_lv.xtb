@@ -318,7 +318,7 @@
 <translation id="7332592614823088566"><ph name="ROWINDEX"/>. rinda no <ph name="ROWTOTAL"/>, <ph name="COLINDEX"/>. sleja no <ph name="COLTOTAL"/></translation>
 <translation id="794091007957014205">{COUNT,plural, =1{“et” zīme}zero{# “et” zīmju}one{# “et” zīme}other{# “et” zīmes}}</translation>
 <translation id="1107942983112791593">slīdošais teksts</translation>
-<translation id="1383876407941801731">Meklēšana</translation>
+<translation id="1383876407941801731">Meklēt</translation>
 <translation id="9065283790526219006">ietver uznirstošu elementu</translation>
 <translation id="5203930734796605961">Taustiņš <ph name="KEY"/> jau ir piešķirts komandai.</translation>
 <translation id="3486232535569802404"><ph name="V1"/>–<ph name="V2"/></translation>

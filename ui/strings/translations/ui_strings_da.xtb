@@ -86,6 +86,7 @@
 <translation id="7487278341251176613"><ph name="NUMBER_TWO"/> minutter tilbage</translation>
 <translation id="5110450810124758964"><ph name="NUMBER_ONE"/> dag siden</translation>
 <translation id="2820806154655529776"><ph name="NUMBER_ONE"/> sek.</translation>
+<translation id="4320177379694898372">Ingen internetforbindelse</translation>
 <translation id="7814458197256864873">&amp;Kopier</translation>
 <translation id="3889424535448813030">Højrepil</translation>
 <translation id="4229495110203539533"><ph name="NUMBER_ONE"/> sekund siden</translation>
@@ -150,7 +151,7 @@
 <translation id="1781701194097416995">Flyt til venstre efter ordet</translation>
 <translation id="1243314992276662751">Upload</translation>
 <translation id="50030952220075532"><ph name="NUMBER_ONE"/> dage tilbage</translation>
-<translation id="8179976553408161302">Start</translation>
+<translation id="8179976553408161302">Enter</translation>
 <translation id="8471049483003785219">Flyt ord til venstre, og rediger markering</translation>
 <translation id="945522503751344254">Send feedback</translation>
 <translation id="9170848237812810038">&amp;Fortryd</translation>

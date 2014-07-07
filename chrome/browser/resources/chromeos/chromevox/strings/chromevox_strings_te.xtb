@@ -318,7 +318,7 @@
 <translation id="7332592614823088566"><ph name="ROWTOTAL"/>లో <ph name="ROWINDEX"/>వ అడ్డు వరుస, <ph name="COLTOTAL"/>లో <ph name="COLINDEX"/>వ నిలువు వరుస</translation>
 <translation id="794091007957014205">{COUNT,plural, =1{@ గుర్తు}other{# @ గుర్తులు}}</translation>
 <translation id="1107942983112791593">maqe</translation>
-<translation id="1383876407941801731">శోధన</translation>
+<translation id="1383876407941801731">శోధించు</translation>
 <translation id="9065283790526219006">+పాప్అప్</translation>
 <translation id="5203930734796605961"><ph name="KEY"/> ఇప్పటికే ఆదేశానికి కేటాయించబడింది.</translation>
 <translation id="3486232535569802404"><ph name="V1"/> నుండి <ph name="V2"/> వరకు</translation>

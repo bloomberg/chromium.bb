@@ -318,7 +318,7 @@
 <translation id="7332592614823088566">שורה <ph name="ROWINDEX"/> מתוך <ph name="ROWTOTAL"/>, עמודה <ph name="COLINDEX"/> מתוך <ph name="COLTOTAL"/></translation>
 <translation id="794091007957014205">{COUNT,plural, =1{סימן @}two{# סימני @}many{# סימני @}other{# סימני @}}</translation>
 <translation id="1107942983112791593">maqe</translation>
-<translation id="1383876407941801731">חיפוש</translation>
+<translation id="1383876407941801731">חפש</translation>
 <translation id="9065283790526219006">‎+popup‎</translation>
 <translation id="5203930734796605961"><ph name="KEY"/> כבר הוקצה לפקודה.</translation>
 <translation id="3486232535569802404"><ph name="V1"/> עד <ph name="V2"/></translation>

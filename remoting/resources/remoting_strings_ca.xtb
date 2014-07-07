@@ -13,11 +13,13 @@ Host</translation>
 <translation id="2801119484858626560">S'ha detectat una versió incompatible de l'escriptori remot de Chrome. Assegureu-vos que teniu la versió més recent de Google Chrome i de l'escriptori remot de Chrome als dos ordinadors i torneu-ho a provar.</translation>
 <translation id="6998989275928107238">Per a</translation>
 <translation id="406849768426631008">Voleu ajudar algú mentre manteniu una videotrucada? Proveu <ph name="LINK_BEGIN"/> Escriptori remot a Google Hangouts<ph name="LINK_END"/>.</translation>
+<translation id="906458777597946297">Maximitza la finestra</translation>
 <translation id="5397086374758643919">Programa de desinstal·lació de l'amfitrió de l'escriptori remot de Chrome</translation>
 <translation id="3258789396564295715">Podeu accedir de manera segura a aquest ordinador mitjançant l'escriptori remot de Chrome.</translation>
 <translation id="5070121137485264635">L'amfitrió remot necessita que us autentiqueu en un lloc web de tercers. Per continuar, cal que concediu permisos addicionals a l'escriptori remot de Chrome per accedir a aquesta adreça:</translation>
 <translation id="2124408767156847088">Accediu de manera segura als vostres ordinadors des del dispositiu Android.</translation>
 <translation id="3194245623920924351">Escriptori remot de Chrome</translation>
+<translation id="3649256019230929621">Minimitza la finestra</translation>
 <translation id="4808503597364150972">Introduïu el vostre PIN per a <ph name="HOSTNAME"/>.</translation>
 <translation id="7672203038394118626">S'han desactivat les connexions remotes en aquest ordinador.</translation>
 <translation id="8244400547700556338">Més informació</translation>
@@ -28,9 +30,9 @@ Host</translation>
 <translation id="7658239707568436148">Cancel·la</translation>
 <translation id="7782471917492991422">Comproveu la configuració de gestió d'energia de l'ordinador i assegureu-vos que no s'hagi configurat per estar en mode de baix consum quan estigui inactiu.</translation>
 <translation id="7665369617277396874">Afegeix un compte</translation>
-<translation id="5925497314631808737">• S'ha implementat el mode de pantalla completa/envoltant.
-• S'ha millorat la icona per amagar la barra d'accions.</translation>
+<translation id="4939475390270873744">• S'ha solucionat un error a l'inici.</translation>
 <translation id="2707879711568641861">Falten alguns components necessaris per a l'escriptori remot de Chrome. Assegureu-vos que heu instal·lat la versió més recent i torneu-ho a provar.</translation>
+<translation id="1779766957982586368">Tanca la finestra</translation>
 <translation id="2499160551253595098">Ajudeu-nos a millorar l'escriptori remot de Chrome: permeteu-nos recollir estadístiques d'ús i informes d'error.</translation>
 <translation id="7868137160098754906">Introduïu el vostre PIN de l'ordinador remot.</translation>
 <translation id="677755392401385740">L'amfitrió ha començat per a l'usuari: <ph name="HOST_USERNAME"/>.</translation>
@@ -38,7 +40,7 @@ Host</translation>
 <translation id="3197730452537982411">Escriptori remot</translation>
 <translation id="8355326866731426344">Aquest codi d'accés caducarà d'aquí a <ph name="TIMEOUT"/></translation>
 <translation id="985602178874221306">Els autors de Chromium</translation>
-<translation id="2498359688066513246">Ajuda i comentaris</translation>
+<translation id="2498359688066513246">Ajuda i suggeriments </translation>
 <translation id="6198252989419008588">Canvia el PIN</translation>
 <translation id="170207782578677537">No s'ha pogut registrar aquest ordinador.</translation>
 <translation id="4804818685124855865">Desconnecta</translation>
@@ -55,7 +57,6 @@ Host</translation>
 <translation id="9188433529406846933">Autoritza</translation>
 <translation id="228809120910082333">Confirmeu el vostre compte i PIN a continuació per permetre l'accés per Chromoting.</translation>
 <translation id="7605995381616883502">Connexió nova</translation>
-<translation id="5826423541626112308">Amfitrió de l'escriptori remot de Chrome</translation>
 <translation id="2851674870054673688">Quan hagin introduït el codi, la sessió d'ús compartit començarà.</translation>
 <translation id="5593560073513909978">El servei està temporalment no disponible. Torneu-ho a provar més tard.</translation>
 <translation id="3908017899227008678">Redueix per ajustar</translation>
@@ -65,7 +66,6 @@ Host</translation>
 <translation id="1409991159633941777">Falten alguns components necessaris per a l'escriptori remot de Chrome. Assegureu-vos que executeu la versió més recent de Google Chrome i torneu-ho a provar.</translation>
 <translation id="174018511426417793">No teniu cap ordinador registrat. Per activar les connexions remotes a un ordinador, instal·leu-hi l'escriptori remot de Chrome i feu clic a <ph name="BUTTON_NAME"/>.</translation>
 <translation id="9126115402994542723">No tornis a demanar el PIN en connectar amb aquest amfitrió des d'aquest dispositiu</translation>
-<translation id="253387295088602549">Permeteu que un altre usuari accedeixi al vostre ordinador de manera segura per Internet.</translation>
 <translation id="1300633907480909701">Accediu de manera segura als vostres ordinadors des del dispositiu Android.
 
 • A tots els ordinadors que feu servir, podeu configurar l'accés remot amb l'aplicació d'escriptori remot de Chrome disponible a Chrome Web Store: https://chrome.google.com/remotedesktop
@@ -85,9 +85,9 @@ Per obtenir informació sobre la privadesa, vegeu la Política de privadesa de G
 <translation id="5285241842433869526">Obteniu informació sobre com podeu configurar un ordinador per a l'accés remot.</translation>
 <translation id="4430915108080446161">S'està generant el codi d'accés...</translation>
 <translation id="2013996867038862849">S'han suprimit tots els clients sincronitzats.</translation>
-<translation id="7081428606750359611">Chromoting Host</translation>
 <translation id="8228265668171617545">S'ha detectat una versió incompatible de Chromoting. Assegureu-vos que teniu la versió més recent de Google Chrome i de Chromoting als dos ordinadors i torneu-ho a provar.</translation>
 <translation id="6985691951107243942">Esteu segur que voleu desactivar les connexions remotes a <ph name="HOSTNAME"/>? Si canvieu de parer, haureu de visitar aquest ordinador per tornar-les a activar.</translation>
+<translation id="6944854424004126054">Restaura la finestra</translation>
 <translation id="1436054138039008644"><ph name="HOSTNAME"/> (darrera vegada en línia: <ph name="DATE"/>)</translation>
 <translation id="9149992051684092333">Per començar a compartir l'escriptori, proporcioneu el codi d'accés següent a la persona que us oferirà assistència.</translation>
 <translation id="409800995205263688">NOTA: La configuració de la política només permet connexions entre ordinadors de la vostra xarxa.</translation>
@@ -153,7 +153,7 @@ Per obtenir informació sobre la privadesa, vegeu la Política de privadesa de G
 <translation id="2359808026110333948">Continua</translation>
 <translation id="2078880767960296260">Procés de l'amfitrió</translation>
 <translation id="1643640058022401035">Si sortiu d'aquesta pàgina, la sessió de Chromoting finalitzarà.</translation>
-<translation id="8261506727792406068">Suprimeix</translation>
+<translation id="8261506727792406068">Elimina</translation>
 <translation id="2235518894410572517">Compartiu aquest ordinador perquè un altre usuari el vegi i el controli.</translation>
 <translation id="6939719207673461467">Mostra o amaga el teclat</translation>
 <translation id="1023096696228309145">Demaneu a l'usuari de l'ordinador al qual voleu accedir que faci clic a Comparteix ara i que us doni el codi d'accés.</translation>
@@ -215,5 +215,6 @@ remot de Chrome</translation>
 <translation id="1818475040640568770">No teniu cap ordinador registrat.</translation>
 <translation id="4394049700291259645">Desactiva</translation>
 <translation id="4156740505453712750">Per protegir l'accés a aquest ordinador, trieu un PIN de <ph name="BOLD_START"/>sis dígits com a mínim<ph name="BOLD_END"/>. Necessitareu aquest PIN per connectar-vos a aquest ordinador des d'una altra ubicació.</translation>
+<translation id="6398765197997659313">Surt del mode de pantalla completa</translation>
 <translation id="3286521253923406898">Controlador de Chromoting Host</translation>
 </translationbundle>

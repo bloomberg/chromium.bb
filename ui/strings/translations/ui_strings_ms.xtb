@@ -33,7 +33,7 @@
 <translation id="1940483897317142625">Padamkan Hingga Hujung Baris</translation>
 <translation id="8507996248087185956"><ph name="NUMBER_DEFAULT"/> mins</translation>
 <translation id="3520476450377425184"><ph name="NUMBER_MANY"/> hari lagi</translation>
-<translation id="932327136139879170">Halaman Utama</translation>
+<translation id="932327136139879170">Laman Utama</translation>
 <translation id="5600907569873192868"><ph name="NUMBER_MANY"/> minit lagi</translation>
 <translation id="8666066831007952346"><ph name="NUMBER_TWO"/> hari lagi</translation>
 <translation id="6390842777729054533"><ph name="NUMBER_ZERO"/> saat lagi</translation>
@@ -86,6 +86,7 @@
 <translation id="7487278341251176613">Tinggal <ph name="NUMBER_TWO"/> minit</translation>
 <translation id="5110450810124758964"><ph name="NUMBER_ONE"/> hari yang lalu</translation>
 <translation id="2820806154655529776"><ph name="NUMBER_ONE"/> saat</translation>
+<translation id="4320177379694898372">Tiada sambungan Internet</translation>
 <translation id="7814458197256864873">&amp;Salin</translation>
 <translation id="3889424535448813030">Anak Panah Kanan</translation>
 <translation id="4229495110203539533"><ph name="NUMBER_ONE"/> saat yang lalu</translation>
@@ -150,7 +151,7 @@
 <translation id="1781701194097416995">Alihkan Perkataan Ke Kiri</translation>
 <translation id="1243314992276662751">Muat naik</translation>
 <translation id="50030952220075532"><ph name="NUMBER_ONE"/> hari lagi</translation>
-<translation id="8179976553408161302">Masuk</translation>
+<translation id="8179976553408161302">Enter</translation>
 <translation id="8471049483003785219">Alihkan Perkataan Ke Kiri dan Ubah Suai Pilihan</translation>
 <translation id="945522503751344254">Hantar maklum balas</translation>
 <translation id="9170848237812810038">&amp;Buat asal</translation>

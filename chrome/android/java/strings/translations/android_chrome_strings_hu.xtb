@@ -2,16 +2,21 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="hu">
 <translation id="8588878054171169263">Kép mentése</translation>
+<translation id="7998918019931843664">Bezárt lap megnyitása</translation>
 <translation id="4996978546172906250">Megosztás itt:</translation>
 <translation id="5578795271662203820">A kép keresése a(z) <ph name="SEARCH_ENGINE"/> keresővel</translation>
 <translation id="6831043979455480757">Fordítás</translation>
 <translation id="7644305409888602715">Oldal fordítása <ph name="SOURCE_LANGUAGE"/> nyelvre...</translation>
 <translation id="7015922086425404465">Alkalmazás beszerzése a Google Play Áruházból: <ph name="APP_ACTION"/></translation>
 <translation id="1491151370853475546">Az oldal újratöltése</translation>
+<translation id="5233638681132016545">Új lap</translation>
 <translation id="641643625718530986">Nyomtatás…</translation>
+<translation id="5763382633136178763">Inkognitólapok</translation>
+<translation id="5210365745912300556">Lap bezárása</translation>
 <translation id="7658239707568436148">Mégse</translation>
 <translation id="6458785801851713928">A szinkronizálási szolgáltatás az Ön domainjén nem érhető el.</translation>
 <translation id="2731700343119398978">Kérjük, várjon...</translation>
+<translation id="6846298663435243399">Betöltés…</translation>
 <translation id="7378627244592794276">Nem</translation>
 <translation id="3358663646935160692">Ennek a fióknak <ph name="DOMAIN_NAME"/> a kezelője.
 
@@ -20,6 +25,7 @@
 <translation id="1623104350909869708">Akadályozza meg, hogy ez az oldal további párbeszédablakokat hozzon létre.</translation>
 <translation id="1426410128494586442">Igen</translation>
 <translation id="8218346974737627104">Bejelentkezés megerősítése</translation>
+<translation id="8853345339104747198"><ph name="TAB_TITLE"/> lap</translation>
 <translation id="624558823898732418">A fordítás nyelve: <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="8872441722924401214">Tanúsítvány kiválasztása a hitelesítéshez</translation>
 <translation id="3896036286668839683">Tanúsítványmegtekintő</translation>
@@ -41,6 +47,7 @@
 <translation id="3063601790762993062">Videó mentése</translation>
 <translation id="6042308850641462728">Hosszabban</translation>
 <translation id="7267430310003164111">Felszólítás az alkalmazás beszerzésére a Google Play Áruházból. Alkalmazás neve: <ph name="APP_NAME"/>. Alkalmazás átlagos értékelése: <ph name="APP_RATING"/>.</translation>
+<translation id="303955801043931176">Lap bezárva</translation>
 <translation id="4148957013307229264">Telepítés...</translation>
 <translation id="3992315671621218278">Link mentése</translation>
 <translation id="8034522405403831421">Ez az oldal <ph name="SOURCE_LANGUAGE"/> nyelven van. Lefordítja <ph name="TARGET_LANGUAGE"/> nyelvre?</translation>
@@ -66,9 +73,11 @@
 <translation id="6333140779060797560">Megosztás a következőn keresztül: <ph name="APPLICATION"/></translation>
 <translation id="6040143037577758943">Bezárás</translation>
 <translation id="969096075394517431">Nyelvek módosítása</translation>
+<translation id="5556459405103347317">Újratöltés</translation>
 <translation id="5032574515228824816">Parancssor</translation>
 <translation id="4847896847259487518">Oldal felvétele a könyvjelzők közé</translation>
 <translation id="497421865427891073">Előrelépés</translation>
+<translation id="8310344678080805313">Szabványos lapok</translation>
 <translation id="6277522088822131679">Hiba történt az oldal nyomtatásakor. Próbálja újra.</translation>
 <translation id="1742134235943978220">Lefordítva <ph name="TARGET_LANGUAGE"/> nyelvre.</translation>
 <translation id="6965382102122355670">OK</translation>

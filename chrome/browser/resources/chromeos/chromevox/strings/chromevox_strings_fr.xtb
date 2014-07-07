@@ -318,7 +318,7 @@
 <translation id="7332592614823088566">Ligne <ph name="ROWINDEX"/> sur <ph name="ROWTOTAL"/>, colonne <ph name="COLINDEX"/> sur <ph name="COLTOTAL"/></translation>
 <translation id="794091007957014205">{COUNT,plural, =1{arobase}one{# arobase}other{# arobases}}</translation>
 <translation id="1107942983112791593">marquee</translation>
-<translation id="1383876407941801731">Recherche</translation>
+<translation id="1383876407941801731">Rechercher</translation>
 <translation id="9065283790526219006">+pop-up</translation>
 <translation id="5203930734796605961">La touche <ph name="KEY"/> est déjà associée à une commande</translation>
 <translation id="3486232535569802404"><ph name="V1"/> à <ph name="V2"/></translation>
@@ -477,7 +477,7 @@
 <translation id="5374320867641260420">Aucun bouton suivant</translation>
 <translation id="7641134354185483015">Aucun titre de niveau 3 précédent</translation>
 <translation id="2964026537669811554">Titre de groupe</translation>
-<translation id="3810838688059735925">Vidéo</translation>
+<translation id="3810838688059735925">Google Vidéos</translation>
 <translation id="4982773647088557172"><ph name="VALUE"/>, <ph name="NAME"/>, zone de liste</translation>
 <translation id="2864481629947106776">Lien précédent</translation>
 <translation id="2751010054435611913">texte n° tél.</translation>

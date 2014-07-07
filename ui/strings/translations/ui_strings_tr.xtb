@@ -10,7 +10,7 @@
 <translation id="6310545596129886942"><ph name="NUMBER_FEW"/> saniye kaldı</translation>
 <translation id="9213479837033539041"><ph name="NUMBER_MANY"/> saniye kaldı</translation>
 <translation id="1209866192426315618"><ph name="NUMBER_DEFAULT"/> dakika kaldı</translation>
-<translation id="1801827354178857021">Nokta</translation>
+<translation id="1801827354178857021">Dönem</translation>
 <translation id="1190609913194133056">Bildirim Merkezi</translation>
 <translation id="7470933019269157899"><ph name="NUMBER_DEFAULT"/> dakika kaldı</translation>
 <translation id="5613020302032141669">Sol Ok</translation>
@@ -86,6 +86,7 @@
 <translation id="7487278341251176613"><ph name="NUMBER_TWO"/> dakika kaldı</translation>
 <translation id="5110450810124758964"><ph name="NUMBER_ONE"/> gün önce</translation>
 <translation id="2820806154655529776"><ph name="NUMBER_ONE"/> saniye</translation>
+<translation id="4320177379694898372">İnternet bağlantısı yok</translation>
 <translation id="7814458197256864873">K&amp;opyala</translation>
 <translation id="3889424535448813030">Sağ Ok</translation>
 <translation id="4229495110203539533"><ph name="NUMBER_ONE"/> saniye önce</translation>
@@ -150,7 +151,7 @@
 <translation id="1781701194097416995">Bir Kelime Sola Git</translation>
 <translation id="1243314992276662751">Yükle</translation>
 <translation id="50030952220075532"><ph name="NUMBER_ONE"/> gün kaldı</translation>
-<translation id="8179976553408161302">Giriş</translation>
+<translation id="8179976553408161302">Enter</translation>
 <translation id="8471049483003785219">Bir Kelime Sola Git ve Seçimi Değiştir</translation>
 <translation id="945522503751344254">Geri bildirim gönder</translation>
 <translation id="9170848237812810038">&amp;Geri al</translation>

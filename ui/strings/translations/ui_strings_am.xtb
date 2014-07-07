@@ -10,7 +10,7 @@
 <translation id="6310545596129886942"><ph name="NUMBER_FEW"/> ሴኮንድ ይቀራል</translation>
 <translation id="9213479837033539041"><ph name="NUMBER_MANY"/> ሴኮንድ ይቀራል</translation>
 <translation id="1209866192426315618"><ph name="NUMBER_DEFAULT"/> ደቂቃ ይቀራል</translation>
-<translation id="1801827354178857021">ነቁጥ</translation>
+<translation id="1801827354178857021">ክፍለ ጊዜ</translation>
 <translation id="1190609913194133056">የማሳወቂያ ማዕከል</translation>
 <translation id="7470933019269157899"><ph name="NUMBER_DEFAULT"/> ደቂቃዎች ቀርተዋል</translation>
 <translation id="5613020302032141669">ግራ ቀስት</translation>
@@ -86,6 +86,7 @@
 <translation id="7487278341251176613"><ph name="NUMBER_TWO"/> ደቂቃዎች ቀርተዋል</translation>
 <translation id="5110450810124758964">ከ<ph name="NUMBER_ONE"/> ቀን በፊት</translation>
 <translation id="2820806154655529776"><ph name="NUMBER_ONE"/> ሴኮንድ</translation>
+<translation id="4320177379694898372">ምንም የበይነመረብ ግንኙነት የለም</translation>
 <translation id="7814458197256864873">&amp;ቅዳ</translation>
 <translation id="3889424535448813030">ቀኝ  ቀስት</translation>
 <translation id="4229495110203539533">ከ<ph name="NUMBER_ONE"/> ሴኮንድ በፊት</translation>

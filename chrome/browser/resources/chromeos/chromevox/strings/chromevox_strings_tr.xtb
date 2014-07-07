@@ -318,7 +318,7 @@
 <translation id="7332592614823088566">Satır: <ph name="ROWINDEX"/> / <ph name="ROWTOTAL"/>, Sütun: <ph name="COLINDEX"/> / <ph name="COLTOTAL"/></translation>
 <translation id="794091007957014205">{COUNT,plural, =1{kuyruklu a işareti}other{# kuyruklu a işareti}}</translation>
 <translation id="1107942983112791593">maqe</translation>
-<translation id="1383876407941801731">Arama</translation>
+<translation id="1383876407941801731">Ara</translation>
 <translation id="9065283790526219006">+popup</translation>
 <translation id="5203930734796605961"><ph name="KEY"/> tuşu zaten bir komuta atanmış.</translation>
 <translation id="3486232535569802404"><ph name="V1"/>-<ph name="V2"/></translation>

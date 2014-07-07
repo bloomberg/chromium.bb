@@ -33,7 +33,7 @@
 <translation id="1940483897317142625">Избриши до краја реда</translation>
 <translation id="8507996248087185956"><ph name="NUMBER_DEFAULT"/> мин.</translation>
 <translation id="3520476450377425184">Преостало <ph name="NUMBER_MANY"/> дана</translation>
-<translation id="932327136139879170">Home</translation>
+<translation id="932327136139879170">Почетна</translation>
 <translation id="5600907569873192868">Преостало <ph name="NUMBER_MANY"/> мин.</translation>
 <translation id="8666066831007952346">Преостало <ph name="NUMBER_TWO"/> дана</translation>
 <translation id="6390842777729054533">Преостало <ph name="NUMBER_ZERO"/> сек.</translation>
@@ -86,6 +86,7 @@
 <translation id="7487278341251176613"><ph name="NUMBER_TWO"/> minutes left</translation>
 <translation id="5110450810124758964">Пре <ph name="NUMBER_ONE"/> дан</translation>
 <translation id="2820806154655529776"><ph name="NUMBER_ONE"/> сек.</translation>
+<translation id="4320177379694898372">Нема интернет везе</translation>
 <translation id="7814458197256864873">&amp;Копирај</translation>
 <translation id="3889424535448813030">Стрелица надесно</translation>
 <translation id="4229495110203539533">Пре <ph name="NUMBER_ONE"/> секунду</translation>
@@ -150,7 +151,7 @@
 <translation id="1781701194097416995">Помери улево за реч</translation>
 <translation id="1243314992276662751">Отпреми</translation>
 <translation id="50030952220075532">Преостао <ph name="NUMBER_ONE"/> дан</translation>
-<translation id="8179976553408161302">Унеси</translation>
+<translation id="8179976553408161302">Enter</translation>
 <translation id="8471049483003785219">Помери улево за реч и измени избор</translation>
 <translation id="945522503751344254">Пошаљи повратне информације</translation>
 <translation id="9170848237812810038">&amp;Опозови</translation>

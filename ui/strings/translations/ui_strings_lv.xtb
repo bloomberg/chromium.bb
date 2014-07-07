@@ -10,7 +10,7 @@
 <translation id="6310545596129886942"><ph name="NUMBER_FEW"/> sekundes atlikušas</translation>
 <translation id="9213479837033539041"><ph name="NUMBER_MANY"/> sekundes atlikušas</translation>
 <translation id="1209866192426315618"><ph name="NUMBER_DEFAULT"/> minūtes atlikušas</translation>
-<translation id="1801827354178857021">Punkts</translation>
+<translation id="1801827354178857021">Periods</translation>
 <translation id="1190609913194133056">Paziņojumu centrs</translation>
 <translation id="7470933019269157899">Atlikušas <ph name="NUMBER_DEFAULT"/> minūtes</translation>
 <translation id="5613020302032141669">Kreisā bulta</translation>
@@ -33,7 +33,7 @@
 <translation id="1940483897317142625">Dzēst līdz rindiņas beigām</translation>
 <translation id="8507996248087185956"><ph name="NUMBER_DEFAULT"/> minūtes</translation>
 <translation id="3520476450377425184"><ph name="NUMBER_MANY"/> dienas atlikušas</translation>
-<translation id="932327136139879170">Sākumvieta</translation>
+<translation id="932327136139879170">Sākums</translation>
 <translation id="5600907569873192868"><ph name="NUMBER_MANY"/> minūtes atlikušas</translation>
 <translation id="8666066831007952346"><ph name="NUMBER_TWO"/> dienas atlikušas</translation>
 <translation id="6390842777729054533"><ph name="NUMBER_ZERO"/> sekundes atlikušas</translation>
@@ -86,6 +86,7 @@
 <translation id="7487278341251176613"><ph name="NUMBER_TWO"/> minutes left</translation>
 <translation id="5110450810124758964">Pirms <ph name="NUMBER_ONE"/> dienas</translation>
 <translation id="2820806154655529776"><ph name="NUMBER_ONE"/> sekundes</translation>
+<translation id="4320177379694898372">Nav interneta savienojuma.</translation>
 <translation id="7814458197256864873">Ko&amp;pēt</translation>
 <translation id="3889424535448813030">Labā bulta</translation>
 <translation id="4229495110203539533">Pirms <ph name="NUMBER_ONE"/> sekundes</translation>

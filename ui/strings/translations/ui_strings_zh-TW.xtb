@@ -10,7 +10,7 @@
 <translation id="6310545596129886942">剩下 <ph name="NUMBER_FEW"/> 秒</translation>
 <translation id="9213479837033539041">剩下 <ph name="NUMBER_MANY"/> 秒</translation>
 <translation id="1209866192426315618">剩下 <ph name="NUMBER_DEFAULT"/> 分鐘</translation>
-<translation id="1801827354178857021">句號</translation>
+<translation id="1801827354178857021">期間</translation>
 <translation id="1190609913194133056">通知中心</translation>
 <translation id="7470933019269157899">剩下 <ph name="NUMBER_DEFAULT"/> 分鐘</translation>
 <translation id="5613020302032141669">向左鍵</translation>
@@ -86,6 +86,7 @@
 <translation id="7487278341251176613">剩下 <ph name="NUMBER_TWO"/> 分鐘</translation>
 <translation id="5110450810124758964"><ph name="NUMBER_ONE"/> 天前</translation>
 <translation id="2820806154655529776"><ph name="NUMBER_ONE"/> 秒</translation>
+<translation id="4320177379694898372">沒有網際網路連線</translation>
 <translation id="7814458197256864873">複製(&amp;C)</translation>
 <translation id="3889424535448813030">向右鍵</translation>
 <translation id="4229495110203539533"><ph name="NUMBER_ONE"/> 秒前</translation>
@@ -150,7 +151,7 @@
 <translation id="1781701194097416995">左移到文字分行</translation>
 <translation id="1243314992276662751">上傳</translation>
 <translation id="50030952220075532">剩下 <ph name="NUMBER_ONE"/> 天</translation>
-<translation id="8179976553408161302">進入</translation>
+<translation id="8179976553408161302">Enter</translation>
 <translation id="8471049483003785219">左移到文字分行並修改選取範圍</translation>
 <translation id="945522503751344254">提供意見</translation>
 <translation id="9170848237812810038">取消(&amp;U)</translation>

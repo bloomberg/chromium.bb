@@ -1,19 +1,17 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="sk">
-<translation id="8719282907381795632">Pristupovať k údajom na webových stránkach <ph name="WEBSITE_1"/></translation>
 <translation id="7809034755304591547">Rozšírenie <ph name="EXTENSION_NAME"/> (ID rozšírenia „<ph name="EXTENSION_ID"/>“) bolo správcom zablokované.</translation>
 <translation id="2857834222104759979">Súbor manifestu je neplatný.</translation>
+<translation id="8978038008714088448">Čítať a upravovať údaje na webe <ph name="WEBSITE_1"/></translation>
+<translation id="4205302772098850608">Čítať a upravovať údaje na weboch <ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/> a <ph name="WEBSITE_3"/></translation>
 <translation id="3828484226910527078">Prístup do zariadenia USB</translation>
 <translation id="6384275966486438344">Zmeniť nastavenia vyhľadávania na: <ph name="SEARCH_HOST"/></translation>
 <translation id="5911798608827489036">Výmena údajov s ktorýmkoľvek počítačom v miestnej sieti alebo na internete</translation>
 <translation id="4719685943208231314">Prístup do zariadenia USB od spoločnosti <ph name="VENDOR_NAME"/></translation>
 <translation id="657064425229075395">Nepodarilo sa načítať skript na pozadí „<ph name="BACKGROUND_SCRIPT"/>“.</translation>
-<translation id="3093853184108622112">Pristupovať k údajom na webových stránkach <ph name="WEBSITE_1"/> a <ph name="WEBSITE_2"/></translation>
 <translation id="8597109877291678953">Výmena údajov s počítačom s názvom <ph name="HOSTNAME"/></translation>
-<translation id="6914908792814954894">Prístup k vašim údajom na <ph name="NUMBER_OF_WEBSITES"/> weboch</translation>
 <translation id="5456409301717116725">Toto rozšírenie obsahuje súbor kľúča <ph name="KEY_PATH"/>. Pravdepodobne to nechcete urobiť.</translation>
-<translation id="6968649314782363508">Pristupovať k údajom na webových stránkach <ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/> a <ph name="WEBSITE_3"/></translation>
 <translation id="2350172092385603347">Lokalizácia sa použila, parameter default_locale však nebol v manifeste určený.</translation>
 <translation id="8058376558882514200">Prístup do zariadenia USB <ph name="PRODUCT_NAME"/> od spoločnosti <ph name="VENDOR_NAME"/></translation>
 <translation id="8774379383902544371">Prístup k zariadeniam USB</translation>
@@ -21,13 +19,15 @@
 <translation id="6344170822609224263">Pristupovať k zoznamu sieťových pripojení</translation>
 <translation id="2518849872271000461">Výmena údajov s počítačmi s nasledujúcimi názvami: <ph name="HOSTNAMES"/></translation>
 <translation id="1389014510128217152">– <ph name="WEBSITE_1"/></translation>
-<translation id="5530391389158154052">Pristupovať k údajom na webových stránkach (počet: <ph name="NUMBER_OF_WEBSITES"/>)</translation>
 <translation id="961805664415579088">Výmena údajov s ktorýmkoľvek počítačom v doméne <ph name="DOMAIN"/></translation>
 <translation id="4968399700653439437">Výmena údajov s ktorýmkoľvek počítačom v nasledujúcich doménach: <ph name="DOMAINS"/></translation>
 <translation id="8662911384982557515">Zmeniť domovskú stránku na: <ph name="HOME_PAGE"/></translation>
+<translation id="8114679593444120202">Čítať a upravovať údaje na <ph name="NUMBER_OF_WEBSITES"/> weboch</translation>
 <translation id="8602184400052594090">Súbor manifestu chýba alebo je nečitateľný.</translation>
 <translation id="7893008570150657497">Pristupovať ku fotografiám, hudbe a ďalším médiám z vášho počítača</translation>
 <translation id="7217838517480956708">Správca tohto zariadenia vyžaduje inštaláciu rozšírenia <ph name="EXTENSION_NAME"/>. Nemôže byť odstránené alebo upravené.</translation>
 <translation id="7154130902455071009">Zmeniť úvodnú stránku na: <ph name="START_PAGE"/></translation>
+<translation id="6094507746643187368">Čítať a upravovať údaje na weboch <ph name="WEBSITE_1"/> a <ph name="WEBSITE_2"/></translation>
 <translation id="1803557475693955505">Nepodarilo sa načítať stránku na pozadí „<ph name="BACKGROUND_PAGE"/>“.</translation>
+<translation id="8207052894957937969">Čítať a upravovať údaje na <ph name="NUMBER_OF_WEBSITES"/> weboch</translation>
 </translationbundle>

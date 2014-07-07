@@ -2,16 +2,21 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="nl">
 <translation id="8588878054171169263">Afbeelding opslaan</translation>
+<translation id="7998918019931843664">Gesloten tabblad opnieuw openen</translation>
 <translation id="4996978546172906250">Delen via</translation>
 <translation id="5578795271662203820">Zoeken op <ph name="SEARCH_ENGINE"/> naar afbeelding</translation>
 <translation id="6831043979455480757">Vertalen</translation>
 <translation id="7644305409888602715">Pagina vertalen naar het <ph name="SOURCE_LANGUAGE"/>...</translation>
 <translation id="7015922086425404465">Download de app uit de Google Play Store: <ph name="APP_ACTION"/></translation>
 <translation id="1491151370853475546">Deze pagina opnieuw laden</translation>
+<translation id="5233638681132016545">Nieuw tabblad</translation>
 <translation id="641643625718530986">Afdrukken…</translation>
+<translation id="5763382633136178763">Incognitotabbladen</translation>
+<translation id="5210365745912300556">Tabblad sluiten</translation>
 <translation id="7658239707568436148">Annuleren</translation>
 <translation id="6458785801851713928">De synchronisatieservice is niet beschikbaar voor je domein.</translation>
 <translation id="2731700343119398978">Even geduld...</translation>
+<translation id="6846298663435243399">Laden…</translation>
 <translation id="7378627244592794276">Nee</translation>
 <translation id="3358663646935160692">Dit account wordt beheerd door <ph name="DOMAIN_NAME"/>.
 
@@ -20,6 +25,7 @@ Je logt in met een beheerd account en geeft de beheerder controle over je Chrome
 <translation id="1623104350909869708">Voorkomen dat deze pagina extra dialoogvensters weergeeft</translation>
 <translation id="1426410128494586442">Ja</translation>
 <translation id="8218346974737627104">Inloggen bevestigen</translation>
+<translation id="8853345339104747198"><ph name="TAB_TITLE"/>, tabblad</translation>
 <translation id="624558823898732418">Doeltaal: <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="8872441722924401214">Certificaat voor authenticatie kiezen</translation>
 <translation id="3896036286668839683">Certificaatweergave</translation>
@@ -41,6 +47,7 @@ Je logt in met een beheerd account en geeft de beheerder controle over je Chrome
 <translation id="3063601790762993062">Video opslaan</translation>
 <translation id="6042308850641462728">Meer</translation>
 <translation id="7267430310003164111">Melding om de app te downloaden via de Google Play Store. Appnaam: <ph name="APP_NAME"/>.  gemiddeld waarderingscijfer van app: <ph name="APP_RATING"/>.</translation>
+<translation id="303955801043931176">Tabblad gesloten</translation>
 <translation id="4148957013307229264">Installeren...</translation>
 <translation id="3992315671621218278">Link opslaan</translation>
 <translation id="8034522405403831421">Deze pagina is in het <ph name="SOURCE_LANGUAGE"/>. Vertalen naar het <ph name="TARGET_LANGUAGE"/>?</translation>
@@ -66,9 +73,11 @@ Je logt in met een beheerd account en geeft de beheerder controle over je Chrome
 <translation id="6333140779060797560">Delen via <ph name="APPLICATION"/></translation>
 <translation id="6040143037577758943">Sluiten</translation>
 <translation id="969096075394517431">Talen wijzigen</translation>
+<translation id="5556459405103347317">Opnieuw laden</translation>
 <translation id="5032574515228824816">Prompt</translation>
 <translation id="4847896847259487518">Bladwijzer voor pagina toevoegen</translation>
 <translation id="497421865427891073">Naar voren gaan</translation>
+<translation id="8310344678080805313">Standaardtabbladen</translation>
 <translation id="6277522088822131679">Er is een fout opgetreden bij het afdrukken van de pagina. Probeer het opnieuw.</translation>
 <translation id="1742134235943978220">Vertaald naar het <ph name="TARGET_LANGUAGE"/>.</translation>
 <translation id="6965382102122355670">OK</translation>

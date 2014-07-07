@@ -56,7 +56,6 @@ Maaaring hindi available ang ilang tampok at hindi mase-save ang mga pagbabago s
 <translation id="4831257561365056138">I-uninstall ang Chromium App Launcher</translation>
 <translation id="4222580632002216401">Naka-sign in ka na ngayon sa Chromium! Na-disable ng iyong administrator ang pag-sync.</translation>
 <translation id="4207043877577553402"><ph name="BEGIN_BOLD"/>Babala:<ph name="END_BOLD"/> Hindi mapipigilan ng Google Chrome ang pagtatala ng mga extension ng iyong kasaysayan sa pagba-browse. Upang huwag paganahin ang extension na ito sa mode na incognito, alisin ang pagkakapili sa opsyong ito.</translation>
-<translation id="4516868174453854611">Ngayong naka-sign in ka na, maaari mong makuha ang iyong mga tab, bookmark at iba pang mga bagay-bagay sa Chromium sa iyong laptop, telepono at tablet. Makakatanggap ka rin ng higit na nauugnay na mga suhestiyon at feature sa mga serbisyo ng Google.</translation>
 <translation id="985602178874221306">Ang Mga May-akda ng Chromium</translation>
 <translation id="8628626585870903697">Hindi isinasama ng Chromium ang PDF viewer na kinakailangan upang gumana ang Preview ng Pag-print.</translation>
 <translation id="7138853919861947730">Maaaring gumamit ang Chromium ng mga serbisyo sa web upang mapahusay ang iyong karanasan sa pagba-browse.</translation>
@@ -110,6 +109,7 @@ Maaaring hindi available ang ilang tampok at hindi mase-save ang mga pagbabago s
 <translation id="3258596308407688501">Hindi makakapag-read at makakapag-write ang Chromium sa direktoryo ng data nito:
 
 <ph name="USER_DATA_DIRECTORY"/></translation>
+<translation id="1869480248812203386">Makakatulong ka na gawing mas ligtas at mas madaling gamitin ang Chrome sa pamamagitan ng awtomatikong pag-uulat sa Google ng mga detalye ng mga posibleng isyu sa seguridad.</translation>
 <translation id="6970811910055250180">Ina-update ang iyong device...</translation>
 <translation id="2485422356828889247">I-uninstall</translation>
 <translation id="85843667276690461">Kumuha ng tulong sa paggamit ng Chromium</translation>
@@ -118,7 +118,6 @@ Maaaring hindi available ang ilang tampok at hindi mase-save ang mga pagbabago s
 <translation id="8493179195440786826">Luma na ang Chromium</translation>
 <translation id="911206726377975832">Tatanggalin din ang iyong data sa pag-browse?</translation>
 <translation id="95514773681268843">Kinakailangan ng <ph name="DOMAIN"/> na basahin mo at tanggapin ang sumusunod na Mga Tuntunin ng Serbisyo bago gamitin ang device na ito. Hindi pinapalawak, binabago o nililimitahan ng mga tuntuning ito ang Mga Tuntunin ng Chromium OS.</translation>
-<translation id="5603085937604338780">chromium</translation>
 <translation id="1699664235656412242">Pakisara ang lahat ng window ng Chromium (kasama ang mga nasa mode na Windows 8) at subukang muli.</translation>
 <translation id="6734080038664603509">I-update ang &amp;Chromium</translation>
 <translation id="8862326446509486874">Wala kang naaangkop na mga karapatan para sa pag-install sa antas ng system. Subukan muling patakbuhin ang installer bilang Administrator.</translation>
@@ -227,6 +226,7 @@ Kapag nag-sign in ka pa rin, isasama sa <ph name="ACCOUNT_EMAIL_NEW"/> ang impor
 <translation id="9013262824292842194">Kinakailangan ng Chromium ang Windows Vista o Windows XP na may SP2 o mas mataas.</translation>
 <translation id="1967743265616885482">May module na may kaparehong pangalan ang natuklasang sumasalungat sa Chromium.</translation>
 <translation id="8704119203788522458">Ito ang iyong Chromium</translation>
+<translation id="8269379391216269538">Tumulong sa pagpapahusay ng Chromium</translation>
 <translation id="4224199872375172890">Napapanahon ang Chromium.</translation>
 <translation id="374481098568514319">Mayroon nang mas bagong bersyon ng mga component ng Chromium ang computer na ito. Mangyaring gumamit ng mas bagong installer.</translation>
 <translation id="6240281849816458190">Tinangka mong marating ang &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, ngunit nagpakita ang server ng wala pang bisang certificate. Walang available na impormasyon upang isaad kung mapagkakatiwalaan ang certificate. Hindi magagarantiya ng Chromium na nakikipag-ugnayan ka sa &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; at hindi sa isang nang-aatake. Kasalukuyang nakatakda sa <ph name="CURRENT_TIME"/> ang orasan ng iyong computer. Tama ba ito? Kung hindi, dapat mong iwasto ang system ng orasan at i-refresh ang pahinang ito.</translation>

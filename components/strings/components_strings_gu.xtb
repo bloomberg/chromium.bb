@@ -6,12 +6,14 @@
 <translation id="6779575937362063477">Google Wallet દ્વારા આ પ્રકારના કાર્ડને સમર્થન નથી. કૃપા કરીને બીજું કાર્ડ પસંદ કરો.</translation>
 <translation id="5172758083709347301">મશીન</translation>
 <translation id="7180611975245234373">તાજું કરો</translation>
-<translation id="777702478322588152">પ્રીફેક્ચર</translation>
+<translation id="777702478322588152">પ્રીફેચર</translation>
+<translation id="7600965453749440009"><ph name="LANGUAGE"/> નું ક્યારેય અનુવાદ કરશો નહીં</translation>
 <translation id="2262243747453050782">HTTP ભૂલ</translation>
 <translation id="1339601241726513588">નોંધણી ડોમેન:</translation>
 <translation id="7298195798382681320">ભલામણ કરેલ</translation>
 <translation id="4058922952496707368">કી &quot;<ph name="SUBKEY"/>&quot;: <ph name="ERROR"/></translation>
 <translation id="5299298092464848405">ભૂલ વિશ્લેષણ નીતિ</translation>
+<translation id="6831043979455480757">અનુવાદ કરો</translation>
 <translation id="1228893227497259893">ખોટો અસ્તિત્વ ઓળખકર્તા</translation>
 <translation id="6337534724793800597">નામ દ્વારા નીતિઓને ફિલ્ટર કરો</translation>
 <translation id="4372948949327679948">અપેક્ષિત <ph name="VALUE_TYPE"/> મૂલ્ય.</translation>
@@ -21,40 +23,48 @@
 <translation id="2958431318199492670">નેટવર્ક ગોઠવણી ONC માનકનું પાલન કરતી નથી. ગોઠવણીના ભાગો આયાત કરી શકાશે નહીં.</translation>
 <translation id="933712198907837967">ડાઇનર્સ ક્લબ</translation>
 <translation id="277499241957683684">ઉપકરણ રેકોર્ડ ખૂટે છે</translation>
+<translation id="8553075262323480129">ભાષાંતર નિષ્ફળ રહ્યું કારણ કે પૃષ્ઠની ભાષા નિર્ધારિત થઈ શકી નથી.</translation>
 <translation id="7935318582918952113">DOM Distiller</translation>
+<translation id="1103523840287552314"><ph name="LANGUAGE"/> નો હંમેશાં અનુવાદ કરો</translation>
 <translation id="1227633850867390598">મૂલ્ય છુપાવો</translation>
 <translation id="6753269504797312559">નીતિ મૂલ્ય</translation>
+<translation id="8834246243508017242">સંપર્કોનો ઉપયોગ કરીને સ્વતઃભરણ સક્ષમ કરો...</translation>
+<translation id="7275334191706090484">સંચાલિત બુકમાર્ક્સ</translation>
 <translation id="7400418766976504921">URL</translation>
+<translation id="7378627244592794276">ના</translation>
 <translation id="2704283930420550640">મૂલ્ય ફોર્મેટથી મેળ ખાતું  નથી.</translation>
+<translation id="8943805475239098364">શું તમે <ph name="CURRENT_GOOGLE_HOST"/> ને બદલે <ph name="NEW_GOOGLE_HOST"/> સાથે શોધ કરવા માંગો છો?</translation>
 <translation id="4850886885716139402">જુઓ</translation>
 <translation id="8091372947890762290">સક્રિયતા સર્વર પર બાકી છે</translation>
 <translation id="719464814642662924">વિઝા</translation>
-<translation id="6839929833149231406">ક્ષેત્ર</translation>
+<translation id="6839929833149231406">વિસ્તાર</translation>
 <translation id="1871208020102129563">પ્રોક્સી નિયત કરેલા પ્રોક્સી સર્વરનો ઉપયોગ કરવા માટે સેટ કરેલી છે, .pac સ્ક્રિપ્ટ URL નથી.</translation>
 <translation id="3380365263193509176">અજ્ઞાત ભૂલ</translation>
 <translation id="112840717907525620">નીતિ કેશ ઑકે</translation>
 <translation id="3452404311384756672">આનયન અંતરાલ:</translation>
 <translation id="7441627299479586546">ખોટો નીતિ વિષય</translation>
-<translation id="3885155851504623709">પેરિશ</translation>
+<translation id="3885155851504623709">પૅરિશ</translation>
 <translation id="6973656660372572881">નિયત પ્રોક્સી સર્વર્સ અને .pac script URL બન્નેનો ઉલ્લેખ કરેલો છે.</translation>
+<translation id="7108649287766967076"><ph name="TARGET_LANGUAGE"/> માં અનુવાદ નિષ્ફળ રહ્યો.</translation>
 <translation id="4103249731201008433">ઉપકરણ અનુક્ર્માંક નંબર અમાન્ય છે</translation>
 <translation id="3667681724235208644">મૂળ જુઓ</translation>
 <translation id="4079302484614802869">પ્રોક્સી ગોઠવણી .pac સ્ક્રિપ્ટ URL નો ઉપયોગ કરવા માટે સેટ છે, નિયત પ્રોક્સી સર્વર્સ માટે નહીં.</translation>
 <translation id="5540224163453853">વિનંતી કરેલ લેખ શોધી શકાયો નથી.</translation>
 <translation id="5523118979700054094">નીતિનું નામ</translation>
 <translation id="7791543448312431591">ઉમેરો</translation>
-<translation id="2053553514270667976">ઝિપ કોડ</translation>
+<translation id="2053553514270667976">પિન કોડ</translation>
 <translation id="1644184664548287040">નેટવર્ક ગોઠવણી અમાન્ય છે અને આયાત કરી શકાઇ નથી.</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="2212735316055980242">નીતિ મળી નથી</translation>
 <translation id="3150653042067488994">અસ્થાયી સર્વર ભૂલ</translation>
-<translation id="7087282848513945231">વહીવટી વિભાગ</translation>
+<translation id="7087282848513945231">પરગણું</translation>
 <translation id="6458467102616083041">અવગણો કારણ કે નીતિ દ્વારા ડિફૉલ્ટ શોધ અક્ષમ કરેલી છે.</translation>
 <translation id="1227224963052638717">અજ્ઞાત નીતિ.</translation>
 <translation id="9207861905230894330">લેખ ઉમેરવામાં નિષ્ફળ થયાં.</translation>
 <translation id="337363190475750230">જોગવાઈ દૂર કરી</translation>
 <translation id="2367567093518048410">સ્તર</translation>
 <translation id="7610193165460212391">મૂલ્ય <ph name="VALUE"/> શ્રેણી બહારનું છે.</translation>
+<translation id="370665806235115550">લોડ કરી રહ્યું છે...</translation>
 <translation id="2096368010154057602">વિભાગ</translation>
 <translation id="4258748452823770588">ખરાબ હસ્તાક્ષર</translation>
 <translation id="3024663005179499861">ખોટો નીતિ પ્રકાર</translation>
@@ -67,20 +77,26 @@
 <translation id="883848425547221593">અન્ય બુકમાર્ક્સ</translation>
 <translation id="2181821976797666341">નીતિઓ</translation>
 <translation id="3174168572213147020">આઇલેન્ડ</translation>
+<translation id="9137013805542155359">મૂળ બતાવો</translation>
 <translation id="2213606439339815911">પ્રવિષ્ટિઓનું આનયન કરી રહ્યાં છે...</translation>
 <translation id="6263376278284652872"><ph name="DOMAIN"/> બુકમાર્ક્સ</translation>
-<translation id="7139724024395191329">એમિરેટ</translation>
+<translation id="498957508165411911">શું <ph name="ORIGINAL_LANGUAGE"/> માંથી <ph name="TARGET_LANGUAGE"/> માં અનુવાદ કરીએ?</translation>
+<translation id="7186367841673660872">આ પૃષ્ઠનું<ph name="ORIGINAL_LANGUAGE"/>માંથી<ph name="LANGUAGE_LANGUAGE"/>માં ભાષાંતર કરવામાં આવ્યું છે.</translation>
+<translation id="7139724024395191329">એમિરાત</translation>
 <translation id="5145883236150621069">નીતિ પ્રતિક્રિયામાં ભૂલ કોડ હાજર</translation>
-<translation id="6970216967273061347">જિલ્લો</translation>
+<translation id="7983301409776629893">હંમેશા <ph name="ORIGINAL_LANGUAGE"/> નું <ph name="TARGET_LANGUAGE"/> માં ભાષાંતર કરો</translation>
+<translation id="6970216967273061347">જીલ્લો</translation>
 <translation id="3010559122411665027">&quot;<ph name="ENTRY_INDEX"/>&quot; એન્ટ્રીને સૂચિબદ્ધ કરો: <ph name="ERROR"/></translation>
 <translation id="6445051938772793705">દેશ</translation>
+<translation id="5031870354684148875">Google અનુવાદ વિશે</translation>
+<translation id="6891596781022320156">નીતિ સ્તર સમર્થિત નથી.</translation>
 <translation id="2025186561304664664">પ્રોક્સી સ્વતઃ ગોઠવાયેલી પર સેટ છે.</translation>
 <translation id="1853748787962613237">લેખ પ્રદર્શિત કરવામાં નિષ્ફળ થયાં.</translation>
 <translation id="5455374756549232013">ખરાબ નીતિ સમયનોંધ</translation>
+<translation id="1962204205936693436"><ph name="DOMAIN"/> બુકમાર્ક્સ</translation>
 <translation id="1973335181906896915">અનુક્રમાંકન ભૂલ</translation>
 <translation id="5989320800837274978">નિયત પ્રોક્સી સર્વર્સ અથવા .pac સ્ક્રિપ્ટનો URL નો ઉલ્લેખ કરેલો નથી.</translation>
 <translation id="7805768142964895445">સ્થિતિ</translation>
-<translation id="4002066346123236978">શીર્ષક</translation>
 <translation id="536296301121032821">નીતિ સેટિંગ્સ સ્ટોર કરવામાં નિષ્ફળ થયાં</translation>
 <translation id="5439770059721715174">&quot;<ph name="ERROR_PATH"/>&quot; પર સ્કીમા માન્યતા ભૂલ: <ph name="ERROR"/></translation>
 <translation id="8349305172487531364">બુકમાર્ક્સ બાર</translation>
@@ -89,21 +105,27 @@
 <translation id="647261751007945333">ઉપકરણ નીતિઓ</translation>
 <translation id="678528074488531090">માન્યતા ભૂલ: <ph name="VALIDATION_ERROR"/>.</translation>
 <translation id="213826338245044447">મોબાઇલ બુકમાર્ક્સ</translation>
+<translation id="8571890674111243710">પૃષ્ઠને <ph name="LANGUAGE"/> માં અનુવાદિત કરી રહ્યું છે...</translation>
 <translation id="4117700440116928470">નીતિ મર્યાદા સમર્થિત નથી.</translation>
 <translation id="2114841414352855701">અવગણ્યું કારણ કે તે <ph name="POLICY_NAME"/> દ્વારા ઓવરરાઇડ થયું હતું.</translation>
+<translation id="3228969707346345236">ભાષાંતર નિષ્ફળ રહ્યું કારણ કે પૃષ્ઠ પહેલાથી જ <ph name="LANGUAGE"/> માં છે.</translation>
 <translation id="8891727572606052622">અમાન્ય પ્રોક્સી મોડ.</translation>
 <translation id="6008256403891681546">JCB</translation>
 <translation id="7752995774971033316">બિનસંચાલિત</translation>
 <translation id="3712624925041724820">લાઇસેંસીસ પૂર્ણ</translation>
 <translation id="4926049483395192435">ઉલ્લેખિત હોવું આવશ્યક છે.</translation>
 <translation id="7542995811387359312">આપમેળે ક્રેડિટ કાર્ડ ભરણ અક્ષમ કર્યું છે કારણ કે આ ફોર્મ સુરક્ષિત કનેક્શનનો ઉપયોગ કરતું નથી.</translation>
+<translation id="5179510805599951267"><ph name="ORIGINAL_LANGUAGE"/> માં નથી? આ ભૂલની જાણ કરો </translation>
 <translation id="8088680233425245692">લેખ જોવામાં નિષ્ફળ થયાં.</translation>
+<translation id="8725066075913043281">ફરી પ્રયાસ કરો</translation>
 <translation id="1821930232296380041">અમાન્ય વિનંતી અથવા વિનંતી પરિમાણો</translation>
 <translation id="1640180200866533862">વપરાશકર્તા નીતિઓ</translation>
+<translation id="375403751935624634">સર્વર ભૂલને કારણે ભાષાંતર નિષ્ફળ રહ્યું.</translation>
 <translation id="5629630648637658800">નીતિ સેટિંગ્સ લોડ કરવામાં નિષ્ફળ થયાં</translation>
 <translation id="2354001756790975382">અન્ય બુકમાર્ક્સ</translation>
 <translation id="3650584904733503804">માન્યતા સફળ</translation>
 <translation id="6915804003454593391">વપરાશકર્તા: </translation>
+<translation id="8812832766208874265"><ph name="CURRENT_GOOGLE_HOST"/> નો ઉપયોગ ચાલુ રાખો</translation>
 <translation id="3377188786107721145">નીતિ વિશ્લેષણ ભૂલ</translation>
 <translation id="2270192940992995399">લેખ શોધવામાં નિષ્ફળ થયાં.</translation>
 <translation id="4726672564094551039">નીતિઓ ફરીથી લોડ કરો</translation>
@@ -111,12 +133,15 @@
 <translation id="5190835502935405962">બુકમાર્ક્સ બાર</translation>
 <translation id="6965978654500191972">ઉપકરણ</translation>
 <translation id="8249320324621329438">છેલ્લું આનયન:</translation>
+<translation id="1285320974508926690">આ સાઇટનું ક્યારેય ભાષાંતર કરશો નહીં</translation>
 <translation id="6282194474023008486">પોસ્ટલ કોડ</translation>
 <translation id="443673843213245140">પ્રોક્સીનો ઉપયોગ અક્ષમ કરેલો છે પણ એક સ્પષ્ટ પ્રોક્સી ગોઠવણી ઉલ્લેખિત છે.</translation>
 <translation id="3623476034248543066">કિંમત બતાવો</translation>
+<translation id="9020542370529661692">આ પૃષ્ઠનો <ph name="TARGET_LANGUAGE"/> માં અનુવાદ કરવામાં આવ્યો છે</translation>
 <translation id="5631439013527180824">અમાન્ય ઉપકરણ સંચાલન ટોકન</translation>
 <translation id="560412284261940334">સંચાલન સમર્થિત નથી</translation>
 <translation id="3169472444629675720">Discover</translation>
+<translation id="4923417429809017348">આ પૃષ્ઠ કોઈ અજ્ઞાત ભાષામાંથી <ph name="LANGUAGE_LANGUAGE"/> માં અનુવાદિત કરવામાં આવ્યું છે</translation>
 <translation id="4813512666221746211">નેટવર્ક ભૂલ</translation>
 <translation id="1875753206475436906">સંશોધનાત્મક પ્રકાર: <ph name="HEURISTIC_TYPE"/>
     સર્વર પ્રકાર: <ph name="SERVER_TYPE"/>
@@ -129,12 +154,15 @@
 <translation id="6644283850729428850">આ નીતિ દૂર કરવામાં આવેલી છે.</translation>
 <translation id="7988324688042446538">ડેસ્કટૉપ બુકમાર્ક્સ</translation>
 <translation id="8488350697529856933">આમને લાગુ</translation>
+<translation id="6165508094623778733">વધુ જાણો</translation>
 <translation id="5565735124758917034">સક્રિય</translation>
+<translation id="7568593326407688803">આ પૃષ્ઠ<ph name="ORIGINAL_LANGUAGE"/>માં છે શું તમે તેને અનુવાદિત કરવા માંગો છો?</translation>
 <translation id="8876793034577346603">નેટવર્ક ગોઠવણી વિશ્લેષિત થવામાં નિષ્ફળ થઇ.</translation>
 <translation id="106701514854093668">ડેસ્કટૉપ બુકમાર્ક્સ</translation>
 <translation id="6154808779448689242">પરત થયેલ નીતિ ટોકન વર્તમાન ટોકનથી મેળ ખાતો નથી</translation>
 <translation id="7961015016161918242">ક્યારેય નહીં</translation>
 <translation id="2835170189407361413">ફોર્મ સાફ કરો</translation>
+<translation id="6550675742724504774">વિકલ્પો</translation>
 <translation id="8804164990146287819">ગોપનીયતા નીતિ</translation>
 <translation id="5337776961545044340">આ વેપારી માટે Google Wallet દ્વારા આ પ્રકારના કાર્ડને સમર્થન નથી. કૃપા કરીને બીજું કાર્ડ પસંદ કરો.</translation>
 <translation id="7182878459783632708">કોઈ નીતિઓ  સેટ નથી</translation>
@@ -143,12 +171,14 @@
 <translation id="8713130696108419660">ખોટી ટૂંકી સહી</translation>
 <translation id="20817612488360358">સિસ્ટમ પ્રોક્સી સેટિંગ્સ ઉપયોગમાં લેવા માટે સેટ છે પણ એક સ્પષ્ટ પ્રોક્સી ગોઠવણી પણ ઉલ્લેખિત કરેલી છે.</translation>
 <translation id="2639739919103226564">સ્થિતિ:</translation>
+<translation id="1832546148887467272"><ph name="NEW_GOOGLE_HOST"/> માં સ્વિચ કરો</translation>
 <translation id="5095208057601539847">પ્રાંત</translation>
 <translation id="1847321074516120686">Chrome Autofill સેટિંગ્સ</translation>
 <translation id="1152021252151287493">ખોટી ચકાસણી સહી.</translation>
 <translation id="6965382102122355670">ઓકે</translation>
 <translation id="2721148159707890343">વિનંતી સફળ થઇ</translation>
 <translation id="2455981314101692989">આ વેબપૃષ્ઠે આ ફોર્મનું આપમેળે ભરણ અક્ષમ કર્યું છે.</translation>
+<translation id="8308427013383895095">નેટવર્ક કનેક્શનમાં સમસ્યાને કારણે ભાષાંતર નિષ્ફળ રહ્યું.</translation>
 <translation id="5720705177508910913">વર્તમાન વપરાશકર્તા</translation>
 <translation id="3380864720620200369">ક્લાઇન્ટ ID:</translation>
 </translationbundle>

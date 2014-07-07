@@ -2,16 +2,21 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="id">
 <translation id="8588878054171169263">Simpan gambar</translation>
+<translation id="7998918019931843664">Buka kembali tab yang ditutup</translation>
 <translation id="4996978546172906250">Bagikan melalui</translation>
 <translation id="5578795271662203820">Telusuri <ph name="SEARCH_ENGINE"/> untuk gambar ini</translation>
-<translation id="6831043979455480757">Boleh</translation>
+<translation id="6831043979455480757">Terjemahkan</translation>
 <translation id="7644305409888602715">Menerjemahkan laman ke <ph name="SOURCE_LANGUAGE"/>...</translation>
 <translation id="7015922086425404465">Dapatkan aplikasi dari Google Play Store: <ph name="APP_ACTION"/></translation>
 <translation id="1491151370853475546">Muat Ulang Laman Ini</translation>
+<translation id="5233638681132016545">Tab baru</translation>
 <translation id="641643625718530986">Cetak...</translation>
+<translation id="5763382633136178763">Tab penyamaran</translation>
+<translation id="5210365745912300556">Tutup tab</translation>
 <translation id="7658239707568436148">Batal</translation>
 <translation id="6458785801851713928">Sinkronisasi tidak tersedia untuk domain Anda.</translation>
 <translation id="2731700343119398978">Harap tunggu...</translation>
+<translation id="6846298663435243399">Memuat…</translation>
 <translation id="7378627244592794276">Nggak</translation>
 <translation id="3358663646935160692">Akun ini dikelola oleh <ph name="DOMAIN_NAME"/>.
 
@@ -20,6 +25,7 @@ Anda masuk dengan akun yang dikelola dan memberikan administratornya kontrol ata
 <translation id="1623104350909869708">Cegah dialog lain dari laman ini.</translation>
 <translation id="1426410128494586442">Ya</translation>
 <translation id="8218346974737627104">Konfirmasi proses masuk</translation>
+<translation id="8853345339104747198"><ph name="TAB_TITLE"/>, tab</translation>
 <translation id="624558823898732418">Bahasa Terjemahan: <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="8872441722924401214">Pilih sertifikat untuk autentikasi</translation>
 <translation id="3896036286668839683">Penampil Sertifikat</translation>
@@ -41,6 +47,7 @@ Anda masuk dengan akun yang dikelola dan memberikan administratornya kontrol ata
 <translation id="3063601790762993062">Simpan video</translation>
 <translation id="6042308850641462728">Lainnya</translation>
 <translation id="7267430310003164111">Permintaan untuk mendapatkan aplikasi dari Google Play Store. Nama aplikasi: <ph name="APP_NAME"/>. Peringkat rata-rata aplikasi: <ph name="APP_RATING"/>.</translation>
+<translation id="303955801043931176">Tab ditutup</translation>
 <translation id="4148957013307229264">Memasang...</translation>
 <translation id="3992315671621218278">Simpan tautan</translation>
 <translation id="8034522405403831421">Laman ini berbahasa <ph name="SOURCE_LANGUAGE"/>. Terjemahkan ke <ph name="TARGET_LANGUAGE"/>?</translation>
@@ -66,9 +73,11 @@ Anda masuk dengan akun yang dikelola dan memberikan administratornya kontrol ata
 <translation id="6333140779060797560">Bagikan melalui <ph name="APPLICATION"/></translation>
 <translation id="6040143037577758943">Tutup</translation>
 <translation id="969096075394517431">Ubah bahasa</translation>
+<translation id="5556459405103347317">Muat ulang</translation>
 <translation id="5032574515228824816">Meminta</translation>
 <translation id="4847896847259487518">Bookmark laman</translation>
 <translation id="497421865427891073">Maju</translation>
+<translation id="8310344678080805313">Tab standar</translation>
 <translation id="6277522088822131679">Terjadi masalah saat mencetak laman. Coba lagi.</translation>
 <translation id="1742134235943978220">Diterjemahkan ke <ph name="TARGET_LANGUAGE"/>.</translation>
 <translation id="6965382102122355670">Oke</translation>

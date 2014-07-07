@@ -1,19 +1,17 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="mr">
-<translation id="8719282907381795632"><ph name="WEBSITE_1"/> वरील आपल्या डेटावर प्रवेश करा</translation>
 <translation id="7809034755304591547"><ph name="EXTENSION_NAME"/> (विस्तार ID &quot;<ph name="EXTENSION_ID"/>&quot;) प्रशासकाद्वारे अवरोधित करण्यात आला आहे.</translation>
 <translation id="2857834222104759979">मॅनिफेस्ट फाइल अवैध आहे.</translation>
+<translation id="8978038008714088448"><ph name="WEBSITE_1"/> वर आपला डेटा वाचा आणि सुधारित करा</translation>
+<translation id="4205302772098850608"><ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/>, आणि <ph name="WEBSITE_3"/> वर आपला डेटा वाचा आणि सुधारित करा</translation>
 <translation id="3828484226910527078">USB डिव्हाइसवर प्रवेश करा</translation>
 <translation id="6384275966486438344">आपल्या शोध सेटिंग्ज यावर बदला: <ph name="SEARCH_HOST"/></translation>
 <translation id="5911798608827489036">स्थानिक नेटवर्क किंवा इंटरनेटवरील कोणत्याही संगणकासह डेटा अदलाबदल करा</translation>
 <translation id="4719685943208231314"><ph name="VENDOR_NAME"/> वरून USB डिव्हाइसवर प्रवेश करा</translation>
 <translation id="657064425229075395">पार्श्वभूमी स्क्रिप्‍ट '<ph name="BACKGROUND_SCRIPT"/>' लोड करू शकले नाही.</translation>
-<translation id="3093853184108622112"><ph name="WEBSITE_1"/> आणि <ph name="WEBSITE_2"/> वरील आपल्या डेटावर प्रवेश करा</translation>
 <translation id="8597109877291678953"><ph name="HOSTNAME"/> नावाच्या संगणकासह डेटा अदलाबदल करा</translation>
-<translation id="6914908792814954894"><ph name="NUMBER_OF_WEBSITES"/> वेबसाइटवरील आपल्या डेटावर प्रवेश करा</translation>
 <translation id="5456409301717116725">हा विस्तार मुख्य फाइल '<ph name="KEY_PATH"/>' समाविष्ट करतो. आपण कदाचित ते करू इच्छित नसू शकता.</translation>
-<translation id="6968649314782363508"><ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/>, आणि <ph name="WEBSITE_3"/> वरील आपल्या डेटावर प्रवेश करा</translation>
 <translation id="2350172092385603347">अनुवाद वापरले, परंतु मॅनिफेस्टमध्ये डीफॉल्ट_लोकॅल निर्दिष्ट नाही.</translation>
 <translation id="8058376558882514200"><ph name="VENDOR_NAME"/> वरून <ph name="PRODUCT_NAME"/> USB डिव्हाइसवर प्रवेश करा</translation>
 <translation id="8774379383902544371">USB डिव्हाइसेसवर प्रवेश करा</translation>
@@ -21,13 +19,15 @@
 <translation id="6344170822609224263">नेटवर्क कनेक्शनच्या सूचीवर प्रवेश करा</translation>
 <translation id="2518849872271000461">या नावाच्या संगणकासह डेटा अदलाबदल करा: <ph name="HOSTNAMES"/></translation>
 <translation id="1389014510128217152">- <ph name="WEBSITE_1"/></translation>
-<translation id="5530391389158154052"><ph name="NUMBER_OF_WEBSITES"/> वेबसाइटवरील आपल्या डेटावर प्रवेश करा</translation>
 <translation id="961805664415579088"><ph name="DOMAIN"/> डोमेनमध्ये कोणत्याही संगणकासह डेटा अदलाबदल करा</translation>
 <translation id="4968399700653439437">डोमेनमध्ये कोणत्याही संगणकासह डेटा अदलाबदल करा: <ph name="DOMAINS"/></translation>
 <translation id="8662911384982557515">आपले मुख्‍यपृष्‍ठ यावर बदला: <ph name="HOME_PAGE"/></translation>
+<translation id="8114679593444120202"><ph name="NUMBER_OF_WEBSITES"/> वेबसाइटवर आपला डेटा वाचा आणि सुधारित करा</translation>
 <translation id="8602184400052594090">मॅनिफेस्ट फाइल गहाळ किंवा अवाचनीय आहे.</translation>
 <translation id="7893008570150657497">आपल्या संगणकावरील फोटो, संगीत आणि इतर माध्यमांमध्ये प्रवेश करा</translation>
 <translation id="7217838517480956708">या मशीनच्या प्रशासकास <ph name="EXTENSION_NAME"/> स्थापन करणे आवश्यक आहे. हे काढले किंवा सुधारित केले जाऊ शकत नाही.</translation>
 <translation id="7154130902455071009">आपले प्रारंभ पृष्ठ यावर बदला: <ph name="START_PAGE"/></translation>
+<translation id="6094507746643187368"><ph name="WEBSITE_1"/> आणि <ph name="WEBSITE_2"/> वर आपला डेटा वाचा आणि सुधारित करा</translation>
 <translation id="1803557475693955505">'पार्श्वभूमी पृष्ठ '<ph name="BACKGROUND_PAGE"/>'  लोड करणे शक्य नाही.</translation>
+<translation id="8207052894957937969"><ph name="NUMBER_OF_WEBSITES"/> वेबसाइटवर आपला डेटा वाचा आणि सुधारित करा</translation>
 </translationbundle>

@@ -7,11 +7,13 @@
 <translation id="5172758083709347301">Maskine</translation>
 <translation id="7180611975245234373">Opdater</translation>
 <translation id="777702478322588152">Præfektur</translation>
+<translation id="7600965453749440009">Oversæt aldrig <ph name="LANGUAGE"/></translation>
 <translation id="2262243747453050782">HTTP-fejl</translation>
 <translation id="1339601241726513588">Registreringsdomæne:</translation>
 <translation id="7298195798382681320">Anbefalet</translation>
 <translation id="4058922952496707368">Nøgle &quot;<ph name="SUBKEY"/>&quot;: <ph name="ERROR"/></translation>
 <translation id="5299298092464848405">Der opstod en fejl ved parsing af politik</translation>
+<translation id="6831043979455480757">Oversæt</translation>
 <translation id="1228893227497259893">Forkert enheds-id</translation>
 <translation id="6337534724793800597">Filtrer politikker efter navn</translation>
 <translation id="4372948949327679948">Forventet <ph name="VALUE_TYPE"/>-værdi.</translation>
@@ -21,11 +23,17 @@
 <translation id="2958431318199492670">Netværkskonfigurationen overholder ikke ONC-standarden. Dele af konfiguration kan muligvis ikke importeres.</translation>
 <translation id="933712198907837967">Diners Club</translation>
 <translation id="277499241957683684">Manglende enhedsregistrering</translation>
+<translation id="8553075262323480129">Oversættelsen mislykkedes, fordi sidens sprog ikke kunne fastslås.</translation>
 <translation id="7935318582918952113">DOM Distiller</translation>
+<translation id="1103523840287552314">Oversæt altid <ph name="LANGUAGE"/></translation>
 <translation id="1227633850867390598">Skjul værdi</translation>
 <translation id="6753269504797312559">Politikkens værdi</translation>
+<translation id="8834246243508017242">Aktivér autofyld med kontaktpersoner...</translation>
+<translation id="7275334191706090484">Administrerede bogmærker</translation>
 <translation id="7400418766976504921">Webadresse</translation>
+<translation id="7378627244592794276">Nej</translation>
 <translation id="2704283930420550640">Værdien stemmer ikke overens med formatet.</translation>
+<translation id="8943805475239098364">Vil du søge med <ph name="NEW_GOOGLE_HOST"/> i stedet for <ph name="CURRENT_GOOGLE_HOST"/>?</translation>
 <translation id="4850886885716139402">Vis</translation>
 <translation id="8091372947890762290">Aktivering afventer serveren</translation>
 <translation id="719464814642662924">Visa</translation>
@@ -37,6 +45,7 @@
 <translation id="7441627299479586546">Forkert emne for politik</translation>
 <translation id="3885155851504623709">Sogn</translation>
 <translation id="6973656660372572881">Både faste proxyservere og en webadresse for .pac-script angives.</translation>
+<translation id="7108649287766967076">Oversættelsen til <ph name="TARGET_LANGUAGE"/> mislykkedes.</translation>
 <translation id="4103249731201008433">Enhedens serienummer er ugyldigt</translation>
 <translation id="3667681724235208644">Se original</translation>
 <translation id="4079302484614802869">Proxykonfiguration er angivet til at anvende en webadresse for .pac-script, ikke faste proxyservere.</translation>
@@ -48,14 +57,15 @@
 <translation id="4668929960204016307">,</translation>
 <translation id="2212735316055980242">Politikken blev ikke fundet</translation>
 <translation id="3150653042067488994">Midlertidig serverfejl</translation>
-<translation id="7087282848513945231">Region</translation>
+<translation id="7087282848513945231">Amt/region</translation>
 <translation id="6458467102616083041">Ignoreret, fordi standardsøgning er deaktiveret af politikken.</translation>
 <translation id="1227224963052638717">Ukendt politik.</translation>
 <translation id="9207861905230894330">Artiklen kunne ikke tilføjes.</translation>
 <translation id="337363190475750230">Fjernet</translation>
 <translation id="2367567093518048410">Niveau</translation>
 <translation id="7610193165460212391">Værdien er uden for intervallet <ph name="VALUE"/>.</translation>
-<translation id="2096368010154057602">Afdeling</translation>
+<translation id="370665806235115550">Indlæser...</translation>
+<translation id="2096368010154057602">Departement</translation>
 <translation id="4258748452823770588">Forkert signatur</translation>
 <translation id="3024663005179499861">Forkert politiktype</translation>
 <translation id="3450660100078934250">MasterCard</translation>
@@ -67,43 +77,55 @@
 <translation id="883848425547221593">Andre bogmærker</translation>
 <translation id="2181821976797666341">Politikker</translation>
 <translation id="3174168572213147020">Ø</translation>
+<translation id="9137013805542155359">Vis oprindelig</translation>
 <translation id="2213606439339815911">Indlæg hentes...</translation>
 <translation id="6263376278284652872"><ph name="DOMAIN"/>-bogmærker</translation>
+<translation id="498957508165411911">Vil du oversætte fra <ph name="ORIGINAL_LANGUAGE"/> til <ph name="TARGET_LANGUAGE"/>?</translation>
+<translation id="7186367841673660872">Denne side er oversat fra<ph name="ORIGINAL_LANGUAGE"/>til<ph name="LANGUAGE_LANGUAGE"/></translation>
 <translation id="7139724024395191329">Emirat</translation>
 <translation id="5145883236150621069">Fejlkode til stede i politiksvar</translation>
+<translation id="7983301409776629893">Oversæt altid <ph name="ORIGINAL_LANGUAGE"/> til <ph name="TARGET_LANGUAGE"/></translation>
 <translation id="6970216967273061347">Distrikt</translation>
 <translation id="3010559122411665027">Angiv posten &quot;<ph name="ENTRY_INDEX"/>&quot;: <ph name="ERROR"/></translation>
 <translation id="6445051938772793705">Land</translation>
+<translation id="5031870354684148875">Om Google Oversæt</translation>
+<translation id="6891596781022320156">Politikniveauet understøttes ikke.</translation>
 <translation id="2025186561304664664">Proxyen konfigureres automatisk.</translation>
 <translation id="1853748787962613237">Artiklen kunne ikke vises.</translation>
 <translation id="5455374756549232013">Forkert tidsstempel for politik</translation>
+<translation id="1962204205936693436">Bogmærker fra <ph name="DOMAIN"/></translation>
 <translation id="1973335181906896915">Serialiseringsfejl</translation>
 <translation id="5989320800837274978">Der er hverken angivet faste proxyservere eller en .pac-scriptwebadresse.</translation>
 <translation id="7805768142964895445">Status</translation>
-<translation id="4002066346123236978">Titel</translation>
 <translation id="536296301121032821">Der kunne ikke gemmes indstillinger for politik</translation>
 <translation id="5439770059721715174">Skemavalideringsfejl på &quot;<ph name="ERROR_PATH"/>&quot;: <ph name="ERROR"/></translation>
 <translation id="8349305172487531364">Bogmærkelinje</translation>
 <translation id="7956713633345437162">Bogmærker på mobil</translation>
-<translation id="5089810972385038852">Stat</translation>
+<translation id="5089810972385038852">Delstat</translation>
 <translation id="647261751007945333">Enhedspolitikker</translation>
 <translation id="678528074488531090">Valideringsfejl: <ph name="VALIDATION_ERROR"/>.</translation>
 <translation id="213826338245044447">Bogmærker på mobil</translation>
+<translation id="8571890674111243710">Oversætter siden til <ph name="LANGUAGE"/>...</translation>
 <translation id="4117700440116928470">Politikkens omfang understøttes ikke.</translation>
 <translation id="2114841414352855701">Ignoreret, da den blev tilsidesat af <ph name="POLICY_NAME"/> .</translation>
+<translation id="3228969707346345236">Oversættelsen mislykkedes, fordi siden allerede er på <ph name="LANGUAGE"/>.</translation>
 <translation id="8891727572606052622">Ugyldig proxytilstand.</translation>
 <translation id="6008256403891681546">JCB</translation>
 <translation id="7752995774971033316">Administreres ikke</translation>
 <translation id="3712624925041724820">Licenserne er opbrugt</translation>
 <translation id="4926049483395192435">Skal angives.</translation>
 <translation id="7542995811387359312">Automatisk udfyldning af kreditkort er deaktiveret, fordi formularen ikke bruger en sikker forbindelse.</translation>
+<translation id="5179510805599951267">Ikke på <ph name="ORIGINAL_LANGUAGE"/>? Rapporter denne fejl</translation>
 <translation id="8088680233425245692">Artiklen kunne ikke vises.</translation>
+<translation id="8725066075913043281">Forsøg igen</translation>
 <translation id="1821930232296380041">Ugyldig anmodning eller anmodningsparametre</translation>
 <translation id="1640180200866533862">Brugerpolitikker</translation>
+<translation id="375403751935624634">Oversættelsen mislykkedes på grund af en serverfejl.</translation>
 <translation id="5629630648637658800">Der kunne ikke indlæses indstillinger for politik</translation>
 <translation id="2354001756790975382">Andre bogmærker</translation>
 <translation id="3650584904733503804">Valideringen er fuldført</translation>
 <translation id="6915804003454593391">Bruger:</translation>
+<translation id="8812832766208874265">Fortsæt med at bruge <ph name="CURRENT_GOOGLE_HOST"/></translation>
 <translation id="3377188786107721145">Det opstod en fejl ved parsing af politik</translation>
 <translation id="2270192940992995399">Artiklen kunne ikke findes.</translation>
 <translation id="4726672564094551039">Opdater politikker</translation>
@@ -111,12 +133,15 @@
 <translation id="5190835502935405962">Bogmærkelinje</translation>
 <translation id="6965978654500191972">Enhed</translation>
 <translation id="8249320324621329438">Sidste hentet:</translation>
+<translation id="1285320974508926690">Oversæt aldrig dette website</translation>
 <translation id="6282194474023008486">Postnummer</translation>
 <translation id="443673843213245140">Brug af en proxy er deaktiveret, men en eksplicit proxykonfiguration er angivet.</translation>
 <translation id="3623476034248543066">Vis værdi</translation>
+<translation id="9020542370529661692">Denne side er oversat til <ph name="TARGET_LANGUAGE"/></translation>
 <translation id="5631439013527180824">Ugyldigt token for enhedsadministration</translation>
 <translation id="560412284261940334">Administration er ikke understøttet</translation>
 <translation id="3169472444629675720">Discover</translation>
+<translation id="4923417429809017348">Denne side er oversat fra et ukendt sprog til <ph name="LANGUAGE_LANGUAGE"/></translation>
 <translation id="4813512666221746211">Netværksfejl</translation>
 <translation id="1875753206475436906">heuristisk type: <ph name="HEURISTIC_TYPE"/>
     servertype: <ph name="SERVER_TYPE"/>
@@ -129,12 +154,15 @@
 <translation id="6644283850729428850">Denne politik er forældet.</translation>
 <translation id="7988324688042446538">Bogmærker på pc</translation>
 <translation id="8488350697529856933">Gælder for</translation>
+<translation id="6165508094623778733">Flere oplysninger</translation>
 <translation id="5565735124758917034">Aktiv</translation>
+<translation id="7568593326407688803">Denne side er på<ph name="ORIGINAL_LANGUAGE"/>Vil du oversætte den?</translation>
 <translation id="8876793034577346603">Netværkskonfiguration kunne ikke parses.</translation>
 <translation id="106701514854093668">Bogmærker på pc</translation>
 <translation id="6154808779448689242">Det returnerede token for politikken stemmer ikke overens med det nuværende token</translation>
 <translation id="7961015016161918242">Aldrig</translation>
 <translation id="2835170189407361413">Ryd formular</translation>
+<translation id="6550675742724504774">Valgmuligheder</translation>
 <translation id="8804164990146287819">Privatlivspolitik</translation>
 <translation id="5337776961545044340">Denne korttype understøttes ikke af Google Wallet for denne sælger. Vælg et andet kort.</translation>
 <translation id="7182878459783632708">Ingen politikker er indstillet</translation>
@@ -143,12 +171,14 @@
 <translation id="8713130696108419660">Ugyldig første signatur</translation>
 <translation id="20817612488360358">Indstillingerne for systemproxy er angivet at blive brugt, men en eksplicit proxykonfiguration er også angivet.</translation>
 <translation id="2639739919103226564">Status:</translation>
+<translation id="1832546148887467272">Skift til <ph name="NEW_GOOGLE_HOST"/></translation>
 <translation id="5095208057601539847">Provins</translation>
 <translation id="1847321074516120686">Indstillinger for Autofyld i Chrome</translation>
 <translation id="1152021252151287493">Ugyldig verificeringssignatur.</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="2721148159707890343">Anmodning lykkedes</translation>
 <translation id="2455981314101692989">Denne webside har deaktiveret automatisk udfyldning af denne formular.</translation>
+<translation id="8308427013383895095">Oversættelsen mislykkedes på grund af problemer med netværksforbindelsen.</translation>
 <translation id="5720705177508910913">Aktuel bruger</translation>
 <translation id="3380864720620200369">Klient-id:</translation>
 </translationbundle>

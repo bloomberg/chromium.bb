@@ -10,7 +10,7 @@
 <translation id="6310545596129886942"><ph name="NUMBER_FEW"/> secs left</translation>
 <translation id="9213479837033539041"><ph name="NUMBER_MANY"/> secs left</translation>
 <translation id="1209866192426315618">还有 <ph name="NUMBER_DEFAULT"/> 分钟</translation>
-<translation id="1801827354178857021">句号</translation>
+<translation id="1801827354178857021">期间</translation>
 <translation id="1190609913194133056">通知中心</translation>
 <translation id="7470933019269157899">还剩 <ph name="NUMBER_DEFAULT"/> 分钟</translation>
 <translation id="5613020302032141669">向左箭头</translation>
@@ -33,7 +33,7 @@
 <translation id="1940483897317142625">删除至行末</translation>
 <translation id="8507996248087185956"><ph name="NUMBER_DEFAULT"/> 分钟</translation>
 <translation id="3520476450377425184"><ph name="NUMBER_MANY"/> days left</translation>
-<translation id="932327136139879170">主页</translation>
+<translation id="932327136139879170">家庭</translation>
 <translation id="5600907569873192868"><ph name="NUMBER_MANY"/> mins left</translation>
 <translation id="8666066831007952346"><ph name="NUMBER_TWO"/> days left</translation>
 <translation id="6390842777729054533"><ph name="NUMBER_ZERO"/> secs left</translation>
@@ -86,6 +86,7 @@
 <translation id="7487278341251176613">还剩 <ph name="NUMBER_TWO"/> 分钟</translation>
 <translation id="5110450810124758964"><ph name="NUMBER_ONE"/> 天前</translation>
 <translation id="2820806154655529776"><ph name="NUMBER_ONE"/> sec</translation>
+<translation id="4320177379694898372">未连接到互联网</translation>
 <translation id="7814458197256864873">复制(&amp;C)</translation>
 <translation id="3889424535448813030">向右箭头</translation>
 <translation id="4229495110203539533"><ph name="NUMBER_ONE"/> 秒前</translation>
@@ -150,7 +151,7 @@
 <translation id="1781701194097416995">左移一个字</translation>
 <translation id="1243314992276662751">上传</translation>
 <translation id="50030952220075532"><ph name="NUMBER_ONE"/> day left</translation>
-<translation id="8179976553408161302">进入</translation>
+<translation id="8179976553408161302">Enter</translation>
 <translation id="8471049483003785219">左移一个字并更改选择范围</translation>
 <translation id="945522503751344254">发送反馈</translation>
 <translation id="9170848237812810038">撤消(&amp;U)</translation>

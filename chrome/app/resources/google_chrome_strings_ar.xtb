@@ -25,6 +25,7 @@
 <translation id="4891791193823137474">‏دع Google Chrome يعمل في الخلفية</translation>
 <translation id="110877069173485804">‏هذا Chrome الخاص بك</translation>
 <translation id="1376881911183620035">‏نشكرك لتجربة Chrome الجديد، يحتاج Chrome إلى إعادة التشغيل لضمان أنك حفظت أي أعمال مفتوحة قبل الاستمرار.</translation>
+<translation id="8406086379114794905">‏ساهم في تحسين Chrome</translation>
 <translation id="2896252579017640304">‏تشغيل تطبيقات Chrome</translation>
 <translation id="2721687379934343312">‏في نظام التشغيل Mac، يتم حفظ كلمات المرور في تطبيق Keychain  ويمكن الدخول إليها أو مزامنتها من قبل مستخدمي Chrome الآخرين الذين يشاركون حساب نظام التشغيل X هذا.</translation>
 <translation id="683440813066116847">‏قاعدة الوارد إلى Google Chrome Canary للسماح بحركة مرور mDNS.</translation>
@@ -124,6 +125,7 @@
 <translation id="911206726377975832">هل تريد أيضًا حذف بيانات التصفح؟</translation>
 <translation id="2036562258783619899">‏معاينة Chrome الجديد</translation>
 <translation id="5855036575689098185">‏البرامج التي تعمل على جهاز الكمبيوتر لا تتوافق مع Google Chrome.</translation>
+<translation id="7164397146364144019">‏يمكنك المساعدة في جعل Chrome أكثر أمانًا وأسهل استخدامًا بإبلاغ Google تلقائيًا بتفاصيل أي مخاطر أمنية محتملة.</translation>
 <translation id="8008534537613507642">‏إعادة تثبيت Chrome</translation>
 <translation id="2044287590254833138">‏شريط أدوات Google Chrome</translation>
 <translation id="8862326446509486874">لا تملك الحقوق الكافية للتثبيت على مستوى النظام. جرّب تشغيل المثبِّت بصفة مشرف.</translation>
@@ -132,7 +134,6 @@
 <translation id="7436949144778751379">‏يتطلب Google Chrome نظام التشغيل Windows XP أو الأحدث. قد لا تعمل بعض الميزات.</translation>
 <translation id="5877064549588274448">تم تغيير القناة. يمكنك إعادة تشغيل الجهاز لتدخل التغييرات حيز التنفيذ.</translation>
 <translation id="103396972844768118">‏معلومات مهمة بخصوص بياناتك في Chrome</translation>
-<translation id="6145223986912084844">chrome</translation>
 <translation id="6757767188268205357">عدم المطالبة مرة أخرى</translation>
 <translation id="2290095356545025170">‏هل تريد بالتأكيد إزالة Google Chrome؟</translation>
 <translation id="7062966102157262887">‏هناك تنزيل قيد التقدم. هل تريد الخروج من Google Chrome وإلغاء التنزيل؟</translation>
@@ -183,7 +184,6 @@
 <translation id="3444832043240812445">تعرض هذه الصفحة فقط معلومات عن الأعطال الحديثة إذا <ph name="BEGIN_LINK"/>مكّنت الإبلاغ عن الأعطال<ph name="END_LINK"/>.</translation>
 <translation id="8614913330719544658">‏لا يستجيب Google Chrome. هل تريد إعادة التشغيل الآن؟</translation>
 <translation id="2681064822612051220">‏تم العثور على تثبيت متضارب لـ Google Chrome على النظام. الرجاء إزالته وإعادة المحاولة.</translation>
-<translation id="1175529839152551794">‏والآن بعد أن سجّلت دخولك، يمكنك الحصول على علامات التبويب والإشارات المرجعية وعناصر Chrome الأخرى عبر الكمبيوتر المحمول والهاتف والجهاز اللوحي: كما ستتلقى المزيد من الاقتراحات والميزات ذات الصلة في خدمات Google.</translation>
 <translation id="8209985377776300429">‏أنت تعاين Chrome الجديد.</translation>
 <translation id="6126631249883707068">‏هل تريد من Google Chrome حفظ كلمة المرور؟</translation>
 <translation id="7773845170078702898">‏هل تريد من Google Chrome حفظ كلمة المرور لهذا الموقع؟</translation>

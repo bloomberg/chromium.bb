@@ -6,12 +6,14 @@
 <translation id="6779575937362063477">Google Wallet ഇത്തരം കാർഡിനെ പിന്തുണയ്ക്കുന്നില്ല. മറ്റൊന്ന് തിരഞ്ഞെടുക്കുക.</translation>
 <translation id="5172758083709347301">മെഷീൻ</translation>
 <translation id="7180611975245234373">പുതുക്കുക</translation>
-<translation id="777702478322588152">പ്രിഫെക്ചര്‍</translation>
+<translation id="777702478322588152">പ്രിഫെക്‌ചർ</translation>
+<translation id="7600965453749440009"><ph name="LANGUAGE"/> ഒരിക്കലും വിവര്‍‌ത്തനം ചെയ്യരുത്</translation>
 <translation id="2262243747453050782">HTTP പിശക്</translation>
 <translation id="1339601241726513588">എൻറോൾമെന്റ് ഡൊമെയ്ൻ:</translation>
 <translation id="7298195798382681320">ശുപാർശചെയ്യുന്നത്</translation>
 <translation id="4058922952496707368">കീ &quot;<ph name="SUBKEY"/>&quot;: <ph name="ERROR"/></translation>
 <translation id="5299298092464848405">നയം പാഴ്‌സുചെയ്യുന്നതിൽ പിശക്</translation>
+<translation id="6831043979455480757">വിവര്‍‌ത്തനം ചെയ്യുക</translation>
 <translation id="1228893227497259893">തെറ്റായ എന്റിറ്റി ഐഡന്റിഫയർ</translation>
 <translation id="6337534724793800597">പേരിന്റെ ക്രമത്തിൽ നയങ്ങൾ ഫിൽട്ടർ ചെയ്യുക</translation>
 <translation id="4372948949327679948">പ്രതീക്ഷിച്ച <ph name="VALUE_TYPE"/> മൂല്യം.</translation>
@@ -21,11 +23,17 @@
 <translation id="2958431318199492670">നെറ്റ്‌വർക്ക് കോൺഫിഗറേഷൻ ONC സ്റ്റാൻഡേർഡിന് അനുസൃതമായി പ്രവർത്തിക്കുന്നില്ല. കോൺഫിഗറേഷൻ ഭാഗങ്ങൾ ഇമ്പോർട്ടുചെയ്‌തേക്കില്ല.</translation>
 <translation id="933712198907837967">Diners Club</translation>
 <translation id="277499241957683684">ഉപകരണ റെക്കോർഡ് കാണുന്നില്ല</translation>
+<translation id="8553075262323480129">പേജിന്‍റെ ഭാഷ നിര്‍‌ണ്ണയിക്കാന്‍‌ കഴിയാത്തതിനാല്‍‌ വിവര്‍‌ത്തനം പരാജയപ്പെട്ടു.</translation>
 <translation id="7935318582918952113">DOM ഡിസ്‌റ്റിലർ</translation>
+<translation id="1103523840287552314"><ph name="LANGUAGE"/> എല്ലായ്പ്പോഴും വിവര്‍ത്തനം ചെയ്യുക </translation>
 <translation id="1227633850867390598">മൂല്യം മറയ്‌ക്കുക</translation>
 <translation id="6753269504797312559">നയ മൂല്യം</translation>
+<translation id="8834246243508017242">കോൺടാക്‌റ്റുകൾ ഉപയോഗിച്ച് ഓട്ടോഫിൽ പ്രവർത്തനക്ഷമമാക്കുക…</translation>
+<translation id="7275334191706090484">നിയന്ത്രിത ബുക്ക്‌മാർക്കുകൾ</translation>
 <translation id="7400418766976504921">URL</translation>
+<translation id="7378627244592794276">വേണ്ട</translation>
 <translation id="2704283930420550640">മൂല്യം ഫോർമാറ്റുമായി പൊരുത്തപ്പെടുന്നില്ല.</translation>
+<translation id="8943805475239098364"><ph name="CURRENT_GOOGLE_HOST"/>-ന് പകരം <ph name="NEW_GOOGLE_HOST"/>-നോടൊപ്പം തിരയാൻ നിങ്ങൾക്കാഗ്രഹമുണ്ടോ?</translation>
 <translation id="4850886885716139402">കാണുക</translation>
 <translation id="8091372947890762290">സെർവറിൽ സജീവമാക്കൽ തീർപ്പാക്കിയിട്ടില്ല</translation>
 <translation id="719464814642662924">Visa</translation>
@@ -37,13 +45,14 @@
 <translation id="7441627299479586546">തെറ്റായ നയ വിഷയം</translation>
 <translation id="3885155851504623709">പാരിഷ്</translation>
 <translation id="6973656660372572881">സ്ഥിരമായ പ്രോക്‌സി സെർവറുകളും ഒരു സ്‌ക്രിപ്റ്റ് URL-ഉം വ്യക്തമാക്കിയിരിക്കുന്നു.</translation>
+<translation id="7108649287766967076"><ph name="TARGET_LANGUAGE"/> ഭാഷയിലേക്കുള്ള വിവർത്തനം പരാജയപ്പെട്ടു.</translation>
 <translation id="4103249731201008433">ഉപകരണ സീരിയൽ നമ്പർ അസാധുവാണ്</translation>
 <translation id="3667681724235208644">യഥാർത്ഥമായത് കാണുക</translation>
 <translation id="4079302484614802869">പ്രോക്‌സി കോൺഫിഗറേഷൻ .pac സ്‌ക്രിപ്റ്റ് URL ഉപയോഗിക്കുന്നതിനായി സജ്ജീകരിച്ചിരിക്കുന്നു, സ്ഥിരമായ പ്രോക്‌സി സെർവറുകൾ ഉപയോഗിക്കുന്നതിനായല്ല.</translation>
 <translation id="5540224163453853">അഭ്യർത്ഥിച്ച ലേഖനം കണ്ടെത്താനായില്ല.</translation>
 <translation id="5523118979700054094">നയത്തിന്റെ പേര്</translation>
 <translation id="7791543448312431591">ചേര്‍ക്കൂ</translation>
-<translation id="2053553514270667976">പിന്‍ കോഡ്</translation>
+<translation id="2053553514270667976">തപാൽ കോഡ്</translation>
 <translation id="1644184664548287040">നെറ്റ്‌വർക്ക് കോൺഫിഗറേഷൻ അസാധുവായതിനാൽ ഇമ്പോർട്ടുചെയ്യാൻ കഴിഞ്ഞില്ല.</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="2212735316055980242">നയം കണ്ടെത്തിയില്ല</translation>
@@ -55,6 +64,7 @@
 <translation id="337363190475750230">ഡിപ്രൊവിഷൻ ചെയ്‌തു</translation>
 <translation id="2367567093518048410">നില</translation>
 <translation id="7610193165460212391">മൂല്യം പരിധിക്ക് പുറത്താണ് <ph name="VALUE"/>.</translation>
+<translation id="370665806235115550">ലോഡ്ചെയ്യുന്നു...</translation>
 <translation id="2096368010154057602">വകുപ്പ്</translation>
 <translation id="4258748452823770588">മോശം സിഗ്‌നേച്ചർ</translation>
 <translation id="3024663005179499861">തെറ്റായ നയ തരം</translation>
@@ -66,44 +76,56 @@
 <translation id="2328300916057834155"><ph name="ENTRY_INDEX"/> സൂചികയിൽ അസാധുവായ ബുക്ക്‌മാർക്ക് അവഗണിച്ചു</translation>
 <translation id="883848425547221593">മറ്റുള്ള ബുക്ക്‌മാര്‍‌ക്കുകള്‍‌</translation>
 <translation id="2181821976797666341">നയങ്ങൾ</translation>
-<translation id="3174168572213147020">ഐസ്‌ലാന്‍റ്</translation>
+<translation id="3174168572213147020">ഐലന്‍ഡ്</translation>
+<translation id="9137013805542155359">യഥാര്‍ത്ഥമായത് കാണിക്കുക</translation>
 <translation id="2213606439339815911">എൻട്രികൾ ലഭ്യമാക്കുന്നു...</translation>
 <translation id="6263376278284652872"><ph name="DOMAIN"/> ബുക്ക്‌മാർക്കുകൾ</translation>
+<translation id="498957508165411911"><ph name="ORIGINAL_LANGUAGE"/>-ൽ നിന്ന് <ph name="TARGET_LANGUAGE"/>-ലേക്ക് വിവർത്തനം ചെയ്യണോ?</translation>
+<translation id="7186367841673660872">ഈ പേജ്<ph name="ORIGINAL_LANGUAGE"/>ല്‍‌ നിന്നും<ph name="LANGUAGE_LANGUAGE"/>ലേക്ക് വിവര്‍‌ത്തനം ചെയ്‌തു</translation>
 <translation id="7139724024395191329">എമിറേറ്റ്</translation>
 <translation id="5145883236150621069">നയ പ്രതികരണത്തിൽ പിശക് കോഡ് ഉണ്ട്</translation>
+<translation id="7983301409776629893">എല്ലായ്‌പ്പോഴും <ph name="ORIGINAL_LANGUAGE"/> നെ <ph name="TARGET_LANGUAGE"/> ലേക്ക് വിവര്‍‌ത്തനം ചെയ്യുക</translation>
 <translation id="6970216967273061347">ജില്ല</translation>
 <translation id="3010559122411665027">ലിസ്റ്റ് എൻട്രി &quot;<ph name="ENTRY_INDEX"/>&quot;: <ph name="ERROR"/></translation>
 <translation id="6445051938772793705">രാജ്യം</translation>
+<translation id="5031870354684148875">Google വിവര്‍ത്തനം എന്നതിനെക്കുറിച്ച് </translation>
+<translation id="6891596781022320156">നയ നില പിന്തുണയ്ക്കുന്നില്ല.</translation>
 <translation id="2025186561304664664">പ്രോക്സി യാന്ത്രികമായി കോൺഫിഗർ ചെയ്യാൻ സജ്ജമാക്കി.</translation>
 <translation id="1853748787962613237">ലേഖനം പ്രദർശിപ്പിക്കുന്നത് പരാജയപ്പെട്ടു.</translation>
 <translation id="5455374756549232013">മോശം നയ ടൈംസ്റ്റാമ്പ്</translation>
+<translation id="1962204205936693436"><ph name="DOMAIN"/> ബുക്ക്‌മാർക്കുകൾ</translation>
 <translation id="1973335181906896915">സീരിയലൈസേഷൻ പിശക്</translation>
 <translation id="5989320800837274978">ഒരു സ്ഥിരമായ പ്രോക്സി സെർവർ അല്ലെങ്കിൽ ഒരു .pac സ്‌ക്രിപ്റ്റ് URL വ്യക്തമാക്കിയിട്ടില്ല.</translation>
 <translation id="7805768142964895445">നില</translation>
-<translation id="4002066346123236978">ശീർഷകം</translation>
 <translation id="536296301121032821">നയ ക്രമീകരണങ്ങൾ സംഭരിക്കുന്നതിൽ പരാജയപ്പെട്ടു</translation>
 <translation id="5439770059721715174">&quot;<ph name="ERROR_PATH"/>&quot; എന്നതിൽ സ്‌കീമ മൂല്ല്യനിർണ്ണയ പിശക്: <ph name="ERROR"/></translation>
 <translation id="8349305172487531364">ബുക്മാര്‍ക്ക് ബാര്‍</translation>
 <translation id="7956713633345437162">മൊബൈൽ ബുക്ക്‌മാർക്കുകൾ</translation>
-<translation id="5089810972385038852">സംസ്ഥാനം</translation>
+<translation id="5089810972385038852">സ്റ്റേറ്റ്</translation>
 <translation id="647261751007945333">ഉപകരണ നയങ്ങൾ</translation>
 <translation id="678528074488531090">മൂല്യനിർണ്ണയ പിശക്: <ph name="VALIDATION_ERROR"/>.</translation>
 <translation id="213826338245044447">മൊബൈൽ ബുക്ക്‌മാർക്കുകൾ</translation>
+<translation id="8571890674111243710"><ph name="LANGUAGE"/> ലേക്ക് പേജ് വിവര്‍‌ത്തനം ചെയ്യുന്നു...</translation>
 <translation id="4117700440116928470">നയ സ്‌കോപ്പ് പിന്തുണയ്ക്കുന്നില്ല.</translation>
 <translation id="2114841414352855701"> <ph name="POLICY_NAME"/> എന്നതിനാൽ മറികടന്നതിനാൽ ഇത് അവഗണിച്ചു.</translation>
+<translation id="3228969707346345236"><ph name="LANGUAGE"/> ല്‍‌ ഈ പേജ് ഇതിനകം ഉള്ളതിനാല്‍‌ വിവര്‍‌ത്തനം പരാജയപ്പെട്ടു.</translation>
 <translation id="8891727572606052622">അസാധുവായ പ്രോക്സി മോഡ്</translation>
 <translation id="6008256403891681546">JCB</translation>
 <translation id="7752995774971033316">നിയന്ത്രിക്കാനാകാത്തത്</translation>
 <translation id="3712624925041724820">ലൈസൻസുകൾ കാലഹരണപ്പെട്ടു</translation>
 <translation id="4926049483395192435">വ്യക്തമാക്കേണ്ടതാണ്.</translation>
 <translation id="7542995811387359312">ഈ ഫോം ഒരു സുരക്ഷിത കണക്ഷന്‍ ഉപയോഗിക്കാത്തതിനാല്‍ സ്വപ്രേരിത ക്രെഡിറ്റ് കാര്‍ഡ് പൂരിപ്പിക്കല്‍ അപ്രാപ്തമാക്കി.</translation>
+<translation id="5179510805599951267"><ph name="ORIGINAL_LANGUAGE"/> എന്നതില്‍‌ ഇല്ലേ? ഈ പിശക് റിപ്പോര്‍‌ട്ടുചെയ്യുക</translation>
 <translation id="8088680233425245692">ലേഖനം കാണുന്നത് പരാജയപ്പെട്ടു.</translation>
+<translation id="8725066075913043281">വീണ്ടും ശ്രമിക്കുക</translation>
 <translation id="1821930232296380041">അഭ്യർത്ഥന അല്ലെങ്കിൽ അഭ്യർത്ഥന പാരാമീറ്ററുകൾ അസാധുവാണ്</translation>
 <translation id="1640180200866533862">ഉപയോക്തൃ നയങ്ങൾ</translation>
+<translation id="375403751935624634">ഒരു സെര്‍വര്‍ പിശക് കാരണം വിവര്‍‌ത്തനം പരാജയപ്പെട്ടു.</translation>
 <translation id="5629630648637658800">നയ ക്രമീകരണങ്ങൾ ലോഡുചെയ്യുന്നതിൽ പരാജയപ്പെട്ടു</translation>
 <translation id="2354001756790975382">മറ്റ് ബുക്‌മാര്‍ക്കുകള്‍</translation>
 <translation id="3650584904733503804">മൂല്യനിർണ്ണയം വിജയകരം</translation>
 <translation id="6915804003454593391">ഉപയോക്താവ്:</translation>
+<translation id="8812832766208874265"><ph name="CURRENT_GOOGLE_HOST"/> ഉപയോഗിക്കുന്നത് തുടരുക</translation>
 <translation id="3377188786107721145">നയം പാഴ്‌സുചെയ്യുന്നതിൽ പിശക്</translation>
 <translation id="2270192940992995399">ലേഖനം കണ്ടെത്തുന്നത് പരാജയപ്പെട്ടു.</translation>
 <translation id="4726672564094551039">നയങ്ങൾ വീണ്ടും ലോഡുചെയ്യുക</translation>
@@ -111,12 +133,15 @@
 <translation id="5190835502935405962">ബുക്ക്‌മാര്‍‌ക്കുകള്‍‌ ബാര്‍‌</translation>
 <translation id="6965978654500191972">ഉപാധി</translation>
 <translation id="8249320324621329438">അവസാനം ലഭ്യമായത്:</translation>
-<translation id="6282194474023008486">പോസ്റ്റല്‍ കോഡ്</translation>
+<translation id="1285320974508926690">ഈ സൈറ്റ് ഒരിക്കലും വിവര്‍‌ത്തനം ചെയ്യരുത്</translation>
+<translation id="6282194474023008486">തപാല്‍ കോഡ്</translation>
 <translation id="443673843213245140">പ്രോക്‌സി ഉപയോഗം അപ്രാപ്‌തമാക്കി പക്ഷെ ഒരു വ്യക്തമായ പ്രോക്‌സി കോൺഫിഗറേഷൻ നിർദ്ദേശിച്ചു.</translation>
 <translation id="3623476034248543066">മൂല്യം കാണിക്കുക</translation>
+<translation id="9020542370529661692">ഈ പേജ് <ph name="TARGET_LANGUAGE"/>-ലേക്ക് വിവർത്തനം ചെയ്‌തു</translation>
 <translation id="5631439013527180824">ഉപകരണ മാനേജുമെന്റ് ടോക്കൺ അസാധുവാണ്</translation>
 <translation id="560412284261940334">മാനേജുമെന്റ് പിന്തുണയ്‌ക്കുന്നില്ല</translation>
 <translation id="3169472444629675720">Discover</translation>
+<translation id="4923417429809017348">ഈ പേജിനെ അറിയപ്പെടാത്ത ഒരു ഭാഷയില്‍‌ നിന്നും <ph name="LANGUAGE_LANGUAGE"/> എന്നതിലേക്ക് വിവര്‍‌ത്തനം ചെയ്തു</translation>
 <translation id="4813512666221746211">നെറ്റ്‌വര്‍ക്ക് പിശക്</translation>
 <translation id="1875753206475436906">ഹ്യൂറുസ്‌റ്റിക് തരം: <ph name="HEURISTIC_TYPE"/>
     സെർവർ തരം: <ph name="SERVER_TYPE"/>
@@ -129,12 +154,15 @@
 <translation id="6644283850729428850">ഈ നയം ഒഴിവാക്കി.</translation>
 <translation id="7988324688042446538">ഡെസ്‌ക്‌ടോപ്പ് ബുക്ക്‌മാർക്കുകൾ</translation>
 <translation id="8488350697529856933">ഇതിന് ബാധകമാക്കുന്നു</translation>
+<translation id="6165508094623778733">കൂടുതല്‍ മനസിലാക്കുക</translation>
 <translation id="5565735124758917034">സജീവമാണ്</translation>
+<translation id="7568593326407688803">ഈ പേജ്<ph name="ORIGINAL_LANGUAGE"/>ലാണ് നിങ്ങളത് വിവര്‍‌ത്തനം ചെയ്യാന്‍‌ താല്‍‌പ്പര്യപ്പെടുന്നോ?</translation>
 <translation id="8876793034577346603">നെറ്റ്‌വർക്ക് കോൺഫിഗറേഷൻ പാഴ്‌സുചെയ്യുന്നതിൽ പരാജയപ്പെട്ടു</translation>
 <translation id="106701514854093668">ഡെസ്‌ക്‌ടോപ്പ് ബുക്ക്‌മാർക്കുകൾ</translation>
 <translation id="6154808779448689242">മടങ്ങിയ നയ ടോക്കൺ നിലവിലുള്ള ടോക്കണുമായി പൊരുത്തപ്പെടില്ല</translation>
 <translation id="7961015016161918242">ഒരിക്കലുമില്ല</translation>
 <translation id="2835170189407361413">ഫോം മായ്‌ക്കുക</translation>
+<translation id="6550675742724504774">ഐച്ഛികങ്ങള്‍‌</translation>
 <translation id="8804164990146287819">സ്വകാര്യത നയം</translation>
 <translation id="5337776961545044340">ഈ വ്യാപരിക്കായി ഈ തരത്തിലുള്ള കാർഡ് Google Wallet പിന്തുണയ്ക്കുന്നില്ല. മറ്റൊരു കാർഡ് തിരഞ്ഞെടുക്കുക.</translation>
 <translation id="7182878459783632708">നയങ്ങളൊന്നും സജ്ജമാക്കിയിട്ടില്ല</translation>
@@ -143,12 +171,14 @@
 <translation id="8713130696108419660">ഇനിഷ്യൽ സിഗ്നേച്ചർ മോശമാണ്</translation>
 <translation id="20817612488360358">സിസ്റ്റം പ്രോക്‌സി ക്രമീകരണം ഉപയോഗിക്കുന്നതിനായി സജ്ജമാക്കി, പക്ഷെ ഒരു സ്‌പഷ്‌ടമായ പ്രോക്‌സി കോൺഫിഗറേഷനും അതോടൊപ്പം നിർദ്ദേശിച്ചിരിക്കുന്നു.</translation>
 <translation id="2639739919103226564">നില:</translation>
+<translation id="1832546148887467272"><ph name="NEW_GOOGLE_HOST"/>-ലേക്ക് സ്വിച്ച് ചെയ്യുക</translation>
 <translation id="5095208057601539847">പ്രവിശ്യ</translation>
 <translation id="1847321074516120686">Chrome ഓട്ടോഫിൽ ക്രമീകരണം</translation>
 <translation id="1152021252151287493">മോശം പരിശോധിച്ചുറപ്പിക്കൽ സിഗ്‌നേച്ചർ.</translation>
 <translation id="6965382102122355670">ശരി</translation>
 <translation id="2721148159707890343">അഭ്യർത്ഥന വിജയിച്ചു</translation>
 <translation id="2455981314101692989">ഈ വെബ്പേജ് ഈ ഫോമിനായുള്ള സ്വപ്രേരിത ഫില്ലിംഗിനെ അപ്രാപ്തമാക്കി.</translation>
+<translation id="8308427013383895095">നെറ്റ്വര്‍ക്ക് കണക്ഷനിലെ ഒരു പിശക് കാരണം വിവര്‍ത്തനം പരാജയപ്പെട്ടു.</translation>
 <translation id="5720705177508910913">നിലവിലെ ഉപയോക്താവ്</translation>
 <translation id="3380864720620200369">ക്ലയന്റ് ID:</translation>
 </translationbundle>

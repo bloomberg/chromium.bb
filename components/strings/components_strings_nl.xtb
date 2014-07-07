@@ -7,11 +7,13 @@
 <translation id="5172758083709347301">Computer</translation>
 <translation id="7180611975245234373">Vernieuwen</translation>
 <translation id="777702478322588152">Prefectuur</translation>
+<translation id="7600965453749440009"><ph name="LANGUAGE"/> nooit vertalen</translation>
 <translation id="2262243747453050782">HTTP-fout</translation>
 <translation id="1339601241726513588">Inschrijvingsdomein:</translation>
 <translation id="7298195798382681320">Aanbevolen</translation>
 <translation id="4058922952496707368">Sleutel '<ph name="SUBKEY"/>': <ph name="ERROR"/></translation>
 <translation id="5299298092464848405">Fout bij het parseren van het beleid</translation>
+<translation id="6831043979455480757">Vertalen</translation>
 <translation id="1228893227497259893">Onjuiste entiteits-ID</translation>
 <translation id="6337534724793800597">Beleid filteren op naam</translation>
 <translation id="4372948949327679948">Verwachte <ph name="VALUE_TYPE"/> waarde.</translation>
@@ -21,15 +23,21 @@
 <translation id="2958431318199492670">De netwerkconfiguratie voldoet niet aan de ONC-standaard. Delen van de configuratie worden mogelijk niet geïmporteerd.</translation>
 <translation id="933712198907837967">Diners Club</translation>
 <translation id="277499241957683684">Apparaatrecord ontbreekt</translation>
+<translation id="8553075262323480129">De vertaling is mislukt omdat de taal van de pagina niet kan worden bepaald.</translation>
 <translation id="7935318582918952113">DOM Distiller</translation>
+<translation id="1103523840287552314"><ph name="LANGUAGE"/> altijd vertalen</translation>
 <translation id="1227633850867390598">Waarde verbergen</translation>
 <translation id="6753269504797312559">Beleidswaarde</translation>
+<translation id="8834246243508017242">Automatisch aanvullen inschakelen met contacten…</translation>
+<translation id="7275334191706090484">Beheerde bladwijzers</translation>
 <translation id="7400418766976504921">URL</translation>
+<translation id="7378627244592794276">Nee</translation>
 <translation id="2704283930420550640">Waarde komt niet overeen met notatie.</translation>
+<translation id="8943805475239098364">Wil je zoeken met <ph name="NEW_GOOGLE_HOST"/> in plaats van met <ph name="CURRENT_GOOGLE_HOST"/>?</translation>
 <translation id="4850886885716139402">Weergave</translation>
 <translation id="8091372947890762290">Activering is in behandeling op de server</translation>
 <translation id="719464814642662924">Visa</translation>
-<translation id="6839929833149231406">Regio</translation>
+<translation id="6839929833149231406">Gebied</translation>
 <translation id="1871208020102129563">Proxy is ingesteld op het gebruik van vaste proxyservers, niet op een script-URL van het PAC-type.</translation>
 <translation id="3380365263193509176">Onbekende fout</translation>
 <translation id="112840717907525620">Cachegeheugen van beleid is OK</translation>
@@ -37,6 +45,7 @@
 <translation id="7441627299479586546">Onjuist beleidsonderwerp</translation>
 <translation id="3885155851504623709">Gemeente</translation>
 <translation id="6973656660372572881">Zowel vaste proxyservers als een pac-script-URL worden gespecificeerd.</translation>
+<translation id="7108649287766967076">De vertaling naar het <ph name="TARGET_LANGUAGE"/> is mislukt.</translation>
 <translation id="4103249731201008433">Serienummer van apparaat is ongeldig</translation>
 <translation id="3667681724235208644">Origineel weergeven</translation>
 <translation id="4079302484614802869">Proxyconfiguratie is ingesteld op het gebruik van een pac-script-URL, niet op het gebruik van vaste proxyservers.</translation>
@@ -55,6 +64,7 @@
 <translation id="337363190475750230">Registratie ongedaan gemaakt</translation>
 <translation id="2367567093518048410">Niveau</translation>
 <translation id="7610193165460212391">Waarde <ph name="VALUE"/> is buiten bereik.</translation>
+<translation id="370665806235115550">Laden...</translation>
 <translation id="2096368010154057602">Departement</translation>
 <translation id="4258748452823770588">Onjuiste handtekening</translation>
 <translation id="3024663005179499861">Onjuist beleidstype</translation>
@@ -67,20 +77,26 @@
 <translation id="883848425547221593">Andere bladwijzers</translation>
 <translation id="2181821976797666341">Beleid</translation>
 <translation id="3174168572213147020">Eiland</translation>
+<translation id="9137013805542155359">Origineel weergeven</translation>
 <translation id="2213606439339815911">Items ophalen…</translation>
 <translation id="6263376278284652872">Bladwijzers voor <ph name="DOMAIN"/></translation>
+<translation id="498957508165411911">Vertalen uit het <ph name="ORIGINAL_LANGUAGE"/> naar het <ph name="TARGET_LANGUAGE"/>?</translation>
+<translation id="7186367841673660872">Deze pagina is vertaald van het<ph name="ORIGINAL_LANGUAGE"/>in het<ph name="LANGUAGE_LANGUAGE"/></translation>
 <translation id="7139724024395191329">Emiraat</translation>
 <translation id="5145883236150621069">Foutcode aanwezig in de beleidsreactie</translation>
+<translation id="7983301409776629893"><ph name="ORIGINAL_LANGUAGE"/> altijd vertalen in het <ph name="TARGET_LANGUAGE"/></translation>
 <translation id="6970216967273061347">District</translation>
 <translation id="3010559122411665027">Lijstitem '<ph name="ENTRY_INDEX"/>': <ph name="ERROR"/></translation>
 <translation id="6445051938772793705">Land</translation>
+<translation id="5031870354684148875">Over Google Translate</translation>
+<translation id="6891596781022320156">Beleidsniveau wordt niet ondersteund.</translation>
 <translation id="2025186561304664664">Proxy is ingesteld op automatische configuratie.</translation>
 <translation id="1853748787962613237">Kan artikel niet weergeven.</translation>
 <translation id="5455374756549232013">Onjuiste tijdstempel van beleid</translation>
+<translation id="1962204205936693436">Bladwijzers voor <ph name="DOMAIN"/></translation>
 <translation id="1973335181906896915">Serialisatiefout</translation>
 <translation id="5989320800837274978">Er worden geen vaste proxyservers en geen pac-script-URL gespecificeerd.</translation>
 <translation id="7805768142964895445">Status</translation>
-<translation id="4002066346123236978">Titel</translation>
 <translation id="536296301121032821">Opslaan van beleidsinstellingen is mislukt</translation>
 <translation id="5439770059721715174">Schemavalidatiefout op '<ph name="ERROR_PATH"/>': <ph name="ERROR"/></translation>
 <translation id="8349305172487531364">Bladwijzerbalk</translation>
@@ -89,21 +105,27 @@
 <translation id="647261751007945333">Apparaatbeleid</translation>
 <translation id="678528074488531090">Validatiefout: <ph name="VALIDATION_ERROR"/>.</translation>
 <translation id="213826338245044447">Mobiele bladwijzers</translation>
+<translation id="8571890674111243710">Pagina wordt vertaald in het <ph name="LANGUAGE"/>...</translation>
 <translation id="4117700440116928470">Beleidsbereik wordt niet ondersteund.</translation>
 <translation id="2114841414352855701">Genegeerd omdat het werd overschreven door <ph name="POLICY_NAME"/>.</translation>
+<translation id="3228969707346345236">De vertaling is mislukt omdat de pagina al in het <ph name="LANGUAGE"/> is.</translation>
 <translation id="8891727572606052622">Ongeldige proxymodus.</translation>
 <translation id="6008256403891681546">JCB</translation>
 <translation id="7752995774971033316">Niet-beheerd</translation>
 <translation id="3712624925041724820">Licenties zijn verbruikt</translation>
 <translation id="4926049483395192435">Moet worden opgegeven.</translation>
 <translation id="7542995811387359312">Het automatisch invullen van creditcardnummers is uitgeschakeld, omdat dit formulier geen beveiligde verbinding gebruikt.</translation>
+<translation id="5179510805599951267">Niet in het <ph name="ORIGINAL_LANGUAGE"/>? Deze fout melden</translation>
 <translation id="8088680233425245692">Kan artikel niet bekijken.</translation>
+<translation id="8725066075913043281">Opnieuw proberen</translation>
 <translation id="1821930232296380041">Ongeldige aanvraag of aanvraagparameters</translation>
 <translation id="1640180200866533862">Gebruikersbeleid</translation>
+<translation id="375403751935624634">Het vertalen is mislukt wegens een serverfout.</translation>
 <translation id="5629630648637658800">Laden van beleidsinstellingen is mislukt</translation>
 <translation id="2354001756790975382">Andere bladwijzers</translation>
 <translation id="3650584904733503804">Validatie geslaagd</translation>
 <translation id="6915804003454593391">Gebruiker:</translation>
+<translation id="8812832766208874265"><ph name="CURRENT_GOOGLE_HOST"/> blijven gebruiken</translation>
 <translation id="3377188786107721145">Fout bij het parseren van beleid</translation>
 <translation id="2270192940992995399">Kan artikel niet vinden.</translation>
 <translation id="4726672564094551039">Beleid opnieuw laden</translation>
@@ -111,12 +133,15 @@
 <translation id="5190835502935405962">Bladwijzerbalk</translation>
 <translation id="6965978654500191972">Apparaat</translation>
 <translation id="8249320324621329438">Laatst opgehaald:</translation>
+<translation id="1285320974508926690">Deze site nooit vertalen</translation>
 <translation id="6282194474023008486">Postcode</translation>
 <translation id="443673843213245140">Het gebruik van een proxy is uitgeschakeld, maar er is wel een expliciete proxyconfiguratie opgegeven.</translation>
 <translation id="3623476034248543066">Waarde weergeven</translation>
+<translation id="9020542370529661692">Deze pagina is vertaald naar het <ph name="TARGET_LANGUAGE"/></translation>
 <translation id="5631439013527180824">Ongeldige token voor apparaatbeheer</translation>
 <translation id="560412284261940334">Beheer wordt niet ondersteund</translation>
 <translation id="3169472444629675720">Discover</translation>
+<translation id="4923417429809017348">Deze pagina is vertaald uit een onbekende taal naar het <ph name="LANGUAGE_LANGUAGE"/></translation>
 <translation id="4813512666221746211">Netwerkfout</translation>
 <translation id="1875753206475436906">heuristisch type: <ph name="HEURISTIC_TYPE"/>
     servertype: <ph name="SERVER_TYPE"/>
@@ -129,12 +154,15 @@
 <translation id="6644283850729428850">Dit beleid is verouderd.</translation>
 <translation id="7988324688042446538">Desktopbladwijzers</translation>
 <translation id="8488350697529856933">Van toepassing op</translation>
+<translation id="6165508094623778733">Meer informatie</translation>
 <translation id="5565735124758917034">Actief</translation>
+<translation id="7568593326407688803">Deze pagina is geschreven in het<ph name="ORIGINAL_LANGUAGE"/>Wil je deze laten vertalen?</translation>
 <translation id="8876793034577346603">Netwerkconfiguratie kan niet worden geparseerd.</translation>
 <translation id="106701514854093668">Desktopbladwijzers</translation>
 <translation id="6154808779448689242">Geretourneerde beleidstoken komt niet overeen met huidige token</translation>
 <translation id="7961015016161918242">Nooit</translation>
 <translation id="2835170189407361413">Formulier leegmaken</translation>
+<translation id="6550675742724504774">Opties</translation>
 <translation id="8804164990146287819">Privacybeleid</translation>
 <translation id="5337776961545044340">Dit type kaart wordt voor deze verkoper niet ondersteund door Google Wallet. Selecteer een andere kaart.</translation>
 <translation id="7182878459783632708">Geen beleid ingesteld</translation>
@@ -143,12 +171,14 @@
 <translation id="8713130696108419660">Onjuiste eerste handtekening</translation>
 <translation id="20817612488360358">De proxyinstellingen van het systeem moeten worden gebruikt, maar er is ook een expliciete proxyconfiguratie opgegeven.</translation>
 <translation id="2639739919103226564">Status:</translation>
+<translation id="1832546148887467272">Overschakelen naar <ph name="NEW_GOOGLE_HOST"/></translation>
 <translation id="5095208057601539847">Provincie</translation>
 <translation id="1847321074516120686">Instellingen voor Automatisch aanvullen in Chrome beheren...</translation>
 <translation id="1152021252151287493">Onjuiste verificatiehandtekening.</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="2721148159707890343">Verzoek geslaagd</translation>
 <translation id="2455981314101692989">Deze webpagina heeft Automatisch aanvullen uitgeschakeld voor dit formulier.</translation>
+<translation id="8308427013383895095">De vertaling is mislukt omdat er een probleem is opgetreden met de netwerkverbinding.</translation>
 <translation id="5720705177508910913">Huidige gebruiker</translation>
 <translation id="3380864720620200369">Klant-ID:</translation>
 </translationbundle>

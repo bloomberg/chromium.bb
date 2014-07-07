@@ -7,11 +7,13 @@
 <translation id="5172758083709347301">Komputer</translation>
 <translation id="7180611975245234373">Odśwież</translation>
 <translation id="777702478322588152">Prefektura</translation>
+<translation id="7600965453749440009">Nigdy nie tłumacz z języka: <ph name="LANGUAGE"/></translation>
 <translation id="2262243747453050782">Błąd HTTP</translation>
 <translation id="1339601241726513588">Domena rejestracji:</translation>
 <translation id="7298195798382681320">Zalecane</translation>
 <translation id="4058922952496707368">Klucz „<ph name="SUBKEY"/>”: <ph name="ERROR"/></translation>
 <translation id="5299298092464848405">Podczas przetwarzania zasady wystąpił błąd</translation>
+<translation id="6831043979455480757">Tłumacz</translation>
 <translation id="1228893227497259893">Błędny identyfikator elementu</translation>
 <translation id="6337534724793800597">Filtruj zasady według nazwy</translation>
 <translation id="4372948949327679948">Oczekiwano wartości typu <ph name="VALUE_TYPE"/>.</translation>
@@ -21,22 +23,29 @@
 <translation id="2958431318199492670">Konfiguracja sieci jest niezgodna ze standardem ONC. Jej fragmenty mogły nie zostać zaimportowane.</translation>
 <translation id="933712198907837967">Diners Club</translation>
 <translation id="277499241957683684">Brak rekordu urządzenia</translation>
+<translation id="8553075262323480129">Tłumaczenie nie powiodło się, ponieważ nie można określić języka strony.</translation>
 <translation id="7935318582918952113">DOM Distiller</translation>
+<translation id="1103523840287552314">Zawsze tłumacz z języka: <ph name="LANGUAGE"/></translation>
 <translation id="1227633850867390598">Ukryj wartość</translation>
 <translation id="6753269504797312559">Wartość zasady</translation>
+<translation id="8834246243508017242">Włącz Autouzupełnianie z kontaktami…</translation>
+<translation id="7275334191706090484">Zakładki zarządzane</translation>
 <translation id="7400418766976504921">Adres URL</translation>
+<translation id="7378627244592794276">Nie</translation>
 <translation id="2704283930420550640">Wartość nie pasuje do formatu.</translation>
+<translation id="8943805475239098364">Chcesz wyszukiwać w <ph name="NEW_GOOGLE_HOST"/> zamiast <ph name="CURRENT_GOOGLE_HOST"/>?</translation>
 <translation id="4850886885716139402">Widok</translation>
 <translation id="8091372947890762290">Aktywacja oczekuje na serwerze</translation>
 <translation id="719464814642662924">Visa</translation>
-<translation id="6839929833149231406">Region</translation>
+<translation id="6839929833149231406">Dzielnica</translation>
 <translation id="1871208020102129563">Proxy skonfigurowano do używania stałych serwerów proxy, a nie URL-a skryptu PAC.</translation>
 <translation id="3380365263193509176">Nieznany błąd</translation>
 <translation id="112840717907525620">Pamięć podręczna zasad: OK</translation>
 <translation id="3452404311384756672">Okres pobierania:</translation>
 <translation id="7441627299479586546">Nieprawidłowy podmiot zasady</translation>
-<translation id="3885155851504623709">Parafia</translation>
+<translation id="3885155851504623709">Gmina</translation>
 <translation id="6973656660372572881">Określono zarówno stałe serwery proxy, jak i URL skryptu PAC.</translation>
+<translation id="7108649287766967076">Tłumaczenie na <ph name="TARGET_LANGUAGE"/> nie powiodło się.</translation>
 <translation id="4103249731201008433">Numer seryjny urządzenia jest nieprawidłowy</translation>
 <translation id="3667681724235208644">Wyświetl oryginał</translation>
 <translation id="4079302484614802869">Proxy skonfigurowano do używania URL-a skryptu PAC, a nie ustalonych serwerów proxy.</translation>
@@ -55,6 +64,7 @@
 <translation id="337363190475750230">Anulowano obsługę</translation>
 <translation id="2367567093518048410">Poziom</translation>
 <translation id="7610193165460212391">Wartość spoza zakresu (<ph name="VALUE"/>)</translation>
+<translation id="370665806235115550">Ładowanie...</translation>
 <translation id="2096368010154057602">Departament</translation>
 <translation id="4258748452823770588">Nieprawidłowy podpis</translation>
 <translation id="3024663005179499861">Nieprawidłowy typ zasady</translation>
@@ -67,20 +77,26 @@
 <translation id="883848425547221593">Inne zakładki</translation>
 <translation id="2181821976797666341">Zasady</translation>
 <translation id="3174168572213147020">Wyspa</translation>
+<translation id="9137013805542155359">Pokaż tekst oryginalny</translation>
 <translation id="2213606439339815911">Pobieram wpisy...</translation>
 <translation id="6263376278284652872">Zakładki <ph name="DOMAIN"/></translation>
+<translation id="498957508165411911">Przetłumaczyć z języka: <ph name="ORIGINAL_LANGUAGE"/> na <ph name="TARGET_LANGUAGE"/>?</translation>
+<translation id="7186367841673660872">Ta strona została przetłumaczona z języka<ph name="ORIGINAL_LANGUAGE"/>na język<ph name="LANGUAGE_LANGUAGE"/></translation>
 <translation id="7139724024395191329">Emirat</translation>
 <translation id="5145883236150621069">W odebranej polityce znajduje się kod błędu</translation>
-<translation id="6970216967273061347">Dystrykt</translation>
+<translation id="7983301409776629893">Zawsze tłumacz z języka: <ph name="ORIGINAL_LANGUAGE"/> na <ph name="TARGET_LANGUAGE"/></translation>
+<translation id="6970216967273061347">Okręg</translation>
 <translation id="3010559122411665027">Pozycja listy „<ph name="ENTRY_INDEX"/>”: <ph name="ERROR"/></translation>
 <translation id="6445051938772793705">Kraj</translation>
+<translation id="5031870354684148875">Tłumacz Google – informacje</translation>
+<translation id="6891596781022320156">Ten poziom zasad nie jest obsługiwany.</translation>
 <translation id="2025186561304664664">Ustawiono automatyczne konfigurowanie proxy.</translation>
 <translation id="1853748787962613237">Nie udało się wyświetlić artykułu.</translation>
 <translation id="5455374756549232013">Nieprawidłowy czas zasady</translation>
+<translation id="1962204205936693436">Zakładki z <ph name="DOMAIN"/></translation>
 <translation id="1973335181906896915">Podczas przekształcania do postaci szeregowej wystąpił błąd</translation>
 <translation id="5989320800837274978">Nie określono ani stałych serwerów proxy, ani adresu URL skryptu PAC.</translation>
 <translation id="7805768142964895445">Stan</translation>
-<translation id="4002066346123236978">Tytuł</translation>
 <translation id="536296301121032821">Zapisanie ustawień zasady nie powiodło się</translation>
 <translation id="5439770059721715174">Błąd podczas sprawdzania poprawności schematu – „<ph name="ERROR_PATH"/>”: <ph name="ERROR"/></translation>
 <translation id="8349305172487531364">Pasek zakładek</translation>
@@ -89,21 +105,27 @@
 <translation id="647261751007945333">Zasady dotyczące urządzeń</translation>
 <translation id="678528074488531090">Błąd sprawdzania poprawności: <ph name="VALIDATION_ERROR"/>.</translation>
 <translation id="213826338245044447">Zakładki na komórce</translation>
+<translation id="8571890674111243710">Trwa tłumaczenie strony na język: <ph name="LANGUAGE"/>...</translation>
 <translation id="4117700440116928470">Ten zakres zasad nie jest obsługiwany.</translation>
 <translation id="2114841414352855701">Ignorowana, ponieważ jest zastąpiona przez <ph name="POLICY_NAME"/>.</translation>
+<translation id="3228969707346345236">Tłumaczenie nie powiodło się, ponieważ strona jest już w języku: <ph name="LANGUAGE"/>.</translation>
 <translation id="8891727572606052622">Nieprawidłowy tryb proxy</translation>
 <translation id="6008256403891681546">JCB</translation>
 <translation id="7752995774971033316">Niezarządzany</translation>
 <translation id="3712624925041724820">Brak wolnych licencji</translation>
 <translation id="4926049483395192435">Musi być określona.</translation>
 <translation id="7542995811387359312">Automatyczne wypełnianie danych karty kredytowej jest wyłączone, ponieważ ten formularz nie korzysta z bezpiecznego połączenia.</translation>
+<translation id="5179510805599951267">Jeśli to nie jest język <ph name="ORIGINAL_LANGUAGE"/>, zgłoś błąd</translation>
 <translation id="8088680233425245692">Nie udało się wyświetlić artykułu.</translation>
+<translation id="8725066075913043281">Spróbuj ponownie</translation>
 <translation id="1821930232296380041">Nieprawidłowe żądanie lub jego parametry</translation>
 <translation id="1640180200866533862">Zasady dotyczące użytkowników</translation>
+<translation id="375403751935624634">Tłumaczenie nie powiodło się z powodu błędu serwera.</translation>
 <translation id="5629630648637658800">Ładowanie ustawień zasady nie powiodło się</translation>
 <translation id="2354001756790975382">Inne zakładki</translation>
 <translation id="3650584904733503804">Weryfikacja powiodła się</translation>
 <translation id="6915804003454593391">Użytkownik:</translation>
+<translation id="8812832766208874265">Nadal używaj <ph name="CURRENT_GOOGLE_HOST"/></translation>
 <translation id="3377188786107721145">Podczas przetwarzania zasady wystąpił błąd</translation>
 <translation id="2270192940992995399">Nie udało się znaleźć artykułu.</translation>
 <translation id="4726672564094551039">Odśwież zasady</translation>
@@ -111,12 +133,15 @@
 <translation id="5190835502935405962">Pasek zakładek</translation>
 <translation id="6965978654500191972">Urządzenie</translation>
 <translation id="8249320324621329438">Ostatnie pobieranie:</translation>
+<translation id="1285320974508926690">Nigdy nie tłumacz tej witryny</translation>
 <translation id="6282194474023008486">Kod pocztowy</translation>
 <translation id="443673843213245140">Korzystanie z serwera proxy jest wyłączone, ale podano konfigurację proxy.</translation>
 <translation id="3623476034248543066">Pokaż wartość</translation>
+<translation id="9020542370529661692">Ta strona została przetłumaczona na <ph name="TARGET_LANGUAGE"/>.</translation>
 <translation id="5631439013527180824">Nieprawidłowy token zarządzania urządzeniem</translation>
 <translation id="560412284261940334">Zarządzanie jest nieobsługiwane</translation>
 <translation id="3169472444629675720">Discover</translation>
+<translation id="4923417429809017348">Ta strona została przetłumaczona z nieznanego języka na język <ph name="LANGUAGE_LANGUAGE"/></translation>
 <translation id="4813512666221746211">Błąd sieci</translation>
 <translation id="1875753206475436906">typ heurystyczny: <ph name="HEURISTIC_TYPE"/>
     typ serwera: <ph name="SERVER_TYPE"/>
@@ -129,12 +154,15 @@
 <translation id="6644283850729428850">Zasada jest przestarzała.</translation>
 <translation id="7988324688042446538">Zakładki na komputerze</translation>
 <translation id="8488350697529856933">Dotyczy</translation>
+<translation id="6165508094623778733">Więcej informacji</translation>
 <translation id="5565735124758917034">Aktywny</translation>
+<translation id="7568593326407688803">Język strony:<ph name="ORIGINAL_LANGUAGE"/>Chcesz ją przetłumaczyć?</translation>
 <translation id="8876793034577346603">Przetwarzanie konfiguracji sieci nie powiodło się.</translation>
 <translation id="106701514854093668">Zakładki na komputerze</translation>
 <translation id="6154808779448689242">Zwrócony token zasady jest niezgodny z bieżącym</translation>
 <translation id="7961015016161918242">Nigdy</translation>
 <translation id="2835170189407361413">Wyczyść formularz</translation>
+<translation id="6550675742724504774">Opcje</translation>
 <translation id="8804164990146287819">Polityka prywatności</translation>
 <translation id="5337776961545044340">W przypadku tego sprzedawcy karty tego typu nie są obsługiwane w Portfelu Google. Wybierz inną.</translation>
 <translation id="7182878459783632708">Brak ustawionych zasad</translation>
@@ -143,12 +171,14 @@
 <translation id="8713130696108419660">Błędny podpis wstępny</translation>
 <translation id="20817612488360358">Skonfigurowano używanie systemowych ustawień proxy, ale podano też jawną konfigurację proxy.</translation>
 <translation id="2639739919103226564">Stan:</translation>
-<translation id="5095208057601539847">Region</translation>
+<translation id="1832546148887467272">Przejdź do <ph name="NEW_GOOGLE_HOST"/></translation>
+<translation id="5095208057601539847">Prowincja</translation>
 <translation id="1847321074516120686">Ustawienia autouzupełniania Chrome</translation>
 <translation id="1152021252151287493">Nieprawidłowy podpis weryfikujący.</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="2721148159707890343">Żądanie wykonane pomyślnie</translation>
 <translation id="2455981314101692989">Automatyczne wypełnianie tego formularza zostało wyłączone przez stronę internetową.</translation>
+<translation id="8308427013383895095">Tłumaczenie nie powiodło się z powodu problemu z połączeniem sieciowym.</translation>
 <translation id="5720705177508910913">Bieżący użytkownik</translation>
 <translation id="3380864720620200369">Identyfikator klienta:</translation>
 </translationbundle>

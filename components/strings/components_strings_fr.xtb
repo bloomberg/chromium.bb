@@ -7,11 +7,13 @@
 <translation id="5172758083709347301">Ordinateur</translation>
 <translation id="7180611975245234373">Actualiser</translation>
 <translation id="777702478322588152">Préfecture</translation>
+<translation id="7600965453749440009">Ne jamais traduire les pages rédigées en <ph name="LANGUAGE"/> </translation>
 <translation id="2262243747453050782">Erreur HTTP.</translation>
 <translation id="1339601241726513588">Domaine d'enregistrement :</translation>
 <translation id="7298195798382681320">Recommandé</translation>
 <translation id="4058922952496707368">Clé &quot;<ph name="SUBKEY"/>&quot; : <ph name="ERROR"/></translation>
 <translation id="5299298092464848405">Erreur d'analyse de la règle.</translation>
+<translation id="6831043979455480757">Traduire</translation>
 <translation id="1228893227497259893">Identifiant d'entité incorrect.</translation>
 <translation id="6337534724793800597">Filtrer les règles par nom</translation>
 <translation id="4372948949327679948">Valeur attendue : <ph name="VALUE_TYPE"/>.</translation>
@@ -21,22 +23,29 @@
 <translation id="2958431318199492670">La configuration du réseau ne respecte pas les normes de l'ONC. Il est possible que des parties de la configuration ne soient pas importées.</translation>
 <translation id="933712198907837967">Diners Club</translation>
 <translation id="277499241957683684">Enregistrement de l'appareil manquant.</translation>
+<translation id="8553075262323480129">La traduction a échoué, car nous n'avons pas pu déterminer la langue de la page.</translation>
 <translation id="7935318582918952113">DOM Distiller</translation>
+<translation id="1103523840287552314">Toujours traduire les pages en <ph name="LANGUAGE"/></translation>
 <translation id="1227633850867390598">Masquer la valeur</translation>
 <translation id="6753269504797312559">Valeur de la règle</translation>
+<translation id="8834246243508017242">Activer la saisie automatique à l'aide de la fonctionnalité Contacts</translation>
+<translation id="7275334191706090484">Favoris gérés</translation>
 <translation id="7400418766976504921">URL</translation>
+<translation id="7378627244592794276">Non</translation>
 <translation id="2704283930420550640">La valeur ne respecte pas le format requis.</translation>
+<translation id="8943805475239098364">Voulez-vous effectuer vos recherches avec <ph name="NEW_GOOGLE_HOST"/> au lieu de <ph name="CURRENT_GOOGLE_HOST"/> ?</translation>
 <translation id="4850886885716139402">Afficher</translation>
 <translation id="8091372947890762290">Activation en attente sur le serveur.</translation>
 <translation id="719464814642662924">Visa</translation>
-<translation id="6839929833149231406">Zone</translation>
+<translation id="6839929833149231406">Région</translation>
 <translation id="1871208020102129563">Le proxy est configuré pour utiliser des serveurs proxy déterminés, pas une URL de script .pac.</translation>
 <translation id="3380365263193509176">Erreur inconnue.</translation>
 <translation id="112840717907525620">Cache de la règle valide.</translation>
 <translation id="3452404311384756672">Intervalle de récupération :</translation>
 <translation id="7441627299479586546">Objet de la règle incorrect.</translation>
-<translation id="3885155851504623709">Commune</translation>
+<translation id="3885155851504623709">Paroisse</translation>
 <translation id="6973656660372572881">Les serveurs proxy déterminés et une URL de script .pac sont spécifiés tous les deux.</translation>
+<translation id="7108649287766967076">Échec de la traduction en <ph name="TARGET_LANGUAGE"/>.</translation>
 <translation id="4103249731201008433">Le numéro de série de l'appareil n'est pas valide.</translation>
 <translation id="3667681724235208644">Afficher la page d'origine</translation>
 <translation id="4079302484614802869">La configuration du proxy est définie pour utiliser une URL de script .pac, et non pas des serveurs proxy déterminés.</translation>
@@ -55,6 +64,7 @@
 <translation id="337363190475750230">Révoqué</translation>
 <translation id="2367567093518048410">Niveau</translation>
 <translation id="7610193165460212391">La valeur <ph name="VALUE"/> est hors limites.</translation>
+<translation id="370665806235115550">Chargement...</translation>
 <translation id="2096368010154057602">Département</translation>
 <translation id="4258748452823770588">Signature incorrecte.</translation>
 <translation id="3024663005179499861">Type de règle incorrect.</translation>
@@ -67,20 +77,26 @@
 <translation id="883848425547221593">Autres favoris</translation>
 <translation id="2181821976797666341">Règles</translation>
 <translation id="3174168572213147020">Île</translation>
+<translation id="9137013805542155359">Afficher l'original</translation>
 <translation id="2213606439339815911">Obtention des entrées en cours…</translation>
 <translation id="6263376278284652872">Favoris de <ph name="DOMAIN"/></translation>
+<translation id="498957508165411911">Traduire en <ph name="TARGET_LANGUAGE"/> cette page affichée en <ph name="ORIGINAL_LANGUAGE"/> ?</translation>
+<translation id="7186367841673660872">Cette page en<ph name="ORIGINAL_LANGUAGE"/>a été traduite en<ph name="LANGUAGE_LANGUAGE"/></translation>
 <translation id="7139724024395191329">Émirat</translation>
 <translation id="5145883236150621069">Code d'erreur présent dans la réponse de la règle.</translation>
+<translation id="7983301409776629893">Toujours traduire en <ph name="TARGET_LANGUAGE"/> les pages en <ph name="ORIGINAL_LANGUAGE"/></translation>
 <translation id="6970216967273061347">District</translation>
 <translation id="3010559122411665027">Entrée de la liste &quot;<ph name="ENTRY_INDEX"/>&quot; : <ph name="ERROR"/></translation>
 <translation id="6445051938772793705">Pays</translation>
+<translation id="5031870354684148875">À propos de Google Traduction</translation>
+<translation id="6891596781022320156">Le niveau de la règle n'est pas accepté.</translation>
 <translation id="2025186561304664664">Le proxy est défini sur la configuration automatique.</translation>
 <translation id="1853748787962613237">Échec de l'affichage de l'article.</translation>
 <translation id="5455374756549232013">Horodatage de la règle incorrect.</translation>
+<translation id="1962204205936693436">Favoris du domaine <ph name="DOMAIN"/></translation>
 <translation id="1973335181906896915">Erreur de sérialisation.</translation>
 <translation id="5989320800837274978">Aucun serveur proxy déterminé ou URL de script .pac n'a été indiqué.</translation>
 <translation id="7805768142964895445">État</translation>
-<translation id="4002066346123236978">Titre</translation>
 <translation id="536296301121032821">Échec du stockage des paramètres de la règle.</translation>
 <translation id="5439770059721715174">Erreur de validation du schéma au niveau de &quot;<ph name="ERROR_PATH"/>&quot; : <ph name="ERROR"/></translation>
 <translation id="8349305172487531364">Barre de favoris</translation>
@@ -89,21 +105,27 @@
 <translation id="647261751007945333">Règles relatives aux appareils</translation>
 <translation id="678528074488531090">Erreur de validation : <ph name="VALIDATION_ERROR"/>.</translation>
 <translation id="213826338245044447">Favoris sur mobile</translation>
+<translation id="8571890674111243710">Traduction de la page en <ph name="LANGUAGE"/>...</translation>
 <translation id="4117700440116928470">La portée de la règle n'est pas compatible.</translation>
 <translation id="2114841414352855701">Ignorée parce que remplacée par <ph name="POLICY_NAME"/>.</translation>
+<translation id="3228969707346345236">La traduction a échoué, car la page est déjà en <ph name="LANGUAGE"/>.</translation>
 <translation id="8891727572606052622">Mode proxy non valide.</translation>
 <translation id="6008256403891681546">JCB</translation>
 <translation id="7752995774971033316">Non géré</translation>
 <translation id="3712624925041724820">Licences épuisées.</translation>
 <translation id="4926049483395192435">Doit être spécifié.</translation>
 <translation id="7542995811387359312">La saisie automatique des numéros de carte de paiement est désactivée, car la connexion utilisée par ce formulaire n'est pas sécurisée.</translation>
+<translation id="5179510805599951267">Cette page n'est pas rédigée en <ph name="ORIGINAL_LANGUAGE"/> ? Signaler l'erreur</translation>
 <translation id="8088680233425245692">Échec de l'affichage de l'article.</translation>
+<translation id="8725066075913043281">Réessayer</translation>
 <translation id="1821930232296380041">La demande ou ses paramètres ne sont pas valides.</translation>
 <translation id="1640180200866533862">Règles relatives aux utilisateurs</translation>
+<translation id="375403751935624634">Échec de la traduction en raison d'une erreur de serveur</translation>
 <translation id="5629630648637658800">Échec du chargement des paramètres de la règle.</translation>
 <translation id="2354001756790975382">Autres favoris</translation>
 <translation id="3650584904733503804">Validation réussie.</translation>
 <translation id="6915804003454593391">Utilisateur :</translation>
+<translation id="8812832766208874265">Continuer à utiliser <ph name="CURRENT_GOOGLE_HOST"/></translation>
 <translation id="3377188786107721145">Erreur d'analyse de la règle.</translation>
 <translation id="2270192940992995399">Échec de la détection de l'article.</translation>
 <translation id="4726672564094551039">Actualiser les règles</translation>
@@ -111,12 +133,15 @@
 <translation id="5190835502935405962">Barre de favoris</translation>
 <translation id="6965978654500191972">Périphérique</translation>
 <translation id="8249320324621329438">Dernière récupération :</translation>
+<translation id="1285320974508926690">Ne jamais traduire ce site</translation>
 <translation id="6282194474023008486">Code postal</translation>
 <translation id="443673843213245140">L'utilisation d'un proxy est désactivée, mais une configuration de proxy explicite est spécifiée.</translation>
 <translation id="3623476034248543066">Afficher la valeur</translation>
+<translation id="9020542370529661692">Cette page a été traduite en <ph name="TARGET_LANGUAGE"/>.</translation>
 <translation id="5631439013527180824">Jeton de gestion de l'appareil non valide.</translation>
 <translation id="560412284261940334">Gestion non acceptée.</translation>
 <translation id="3169472444629675720">Discover</translation>
+<translation id="4923417429809017348">Cette page rédigée dans une langue non identifiée a été traduite en <ph name="LANGUAGE_LANGUAGE"/>.</translation>
 <translation id="4813512666221746211">Erreur réseau.</translation>
 <translation id="1875753206475436906">type heuristique : <ph name="HEURISTIC_TYPE"/>
     type de serveur : <ph name="SERVER_TYPE"/>
@@ -129,12 +154,15 @@
 <translation id="6644283850729428850">Cette règle est obsolète.</translation>
 <translation id="7988324688042446538">Favoris sur l'ordinateur</translation>
 <translation id="8488350697529856933">S'applique à</translation>
+<translation id="6165508094623778733">En savoir plus</translation>
 <translation id="5565735124758917034">Actif</translation>
+<translation id="7568593326407688803">Cette page est en<ph name="ORIGINAL_LANGUAGE"/>Voulez-vous la traduire ?</translation>
 <translation id="8876793034577346603">Échec de l'analyse de la configuration du réseau.</translation>
 <translation id="106701514854093668">Favoris sur l'ordinateur</translation>
 <translation id="6154808779448689242">Le jeton de la règle renvoyé ne correspond pas au jeton actuel.</translation>
 <translation id="7961015016161918242">Jamais</translation>
 <translation id="2835170189407361413">Effacer le formulaire</translation>
+<translation id="6550675742724504774">Options</translation>
 <translation id="8804164990146287819">Règles de confidentialité</translation>
 <translation id="5337776961545044340">Ce type de carte n'est pas compatible avec Google Wallet pour ce marchand. Veuillez en sélectionner une autre.</translation>
 <translation id="7182878459783632708">Aucune règle n'est définie</translation>
@@ -143,12 +171,14 @@
 <translation id="8713130696108419660">Signature initiale incorrecte.</translation>
 <translation id="20817612488360358">Les paramètres de proxy du système sont configurés pour être utilisés, mais une configuration de proxy explicite est également spécifiée.</translation>
 <translation id="2639739919103226564">État :</translation>
+<translation id="1832546148887467272">Utiliser l'hôte <ph name="NEW_GOOGLE_HOST"/></translation>
 <translation id="5095208057601539847">Province</translation>
 <translation id="1847321074516120686">Paramètres de saisie automatique de Google Chrome</translation>
 <translation id="1152021252151287493">Signature de validation incorrecte.</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="2721148159707890343">Demande réussie.</translation>
 <translation id="2455981314101692989">Cette page Web a désactivé la saisie automatique dans ce formulaire.</translation>
+<translation id="8308427013383895095">Échec de la traduction en raison d'un problème de connexion réseau</translation>
 <translation id="5720705177508910913">Utilisateur actuel</translation>
 <translation id="3380864720620200369">ID client :</translation>
 </translationbundle>

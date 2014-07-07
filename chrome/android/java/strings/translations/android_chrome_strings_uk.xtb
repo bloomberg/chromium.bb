@@ -2,16 +2,21 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="uk">
 <translation id="8588878054171169263">Зберегти зображення</translation>
+<translation id="7998918019931843664">Знову відкрити закриту вкладку</translation>
 <translation id="4996978546172906250">Надіслати через</translation>
 <translation id="5578795271662203820">Шукати зображення в <ph name="SEARCH_ENGINE"/></translation>
 <translation id="6831043979455480757">Перекласти</translation>
 <translation id="7644305409888602715">Виконується переклад сторінки такою мовою: <ph name="SOURCE_LANGUAGE"/>…</translation>
 <translation id="7015922086425404465">Завантажити додаток із Google Play Маркету: <ph name="APP_ACTION"/></translation>
 <translation id="1491151370853475546">Перезавантажити цю сторінку</translation>
+<translation id="5233638681132016545">Нова вкладка</translation>
 <translation id="641643625718530986">Друк…</translation>
+<translation id="5763382633136178763">Анонімні вкладки</translation>
+<translation id="5210365745912300556">Закрити вкладку</translation>
 <translation id="7658239707568436148">Скасувати</translation>
 <translation id="6458785801851713928">Синхронізація не доступна для вашого домену.</translation>
 <translation id="2731700343119398978">Зачекайте...</translation>
+<translation id="6846298663435243399">Завантаження…</translation>
 <translation id="7378627244592794276">Ні</translation>
 <translation id="3358663646935160692">Цим обліковим записом керує домен <ph name="DOMAIN_NAME"/>.
 
@@ -20,6 +25,7 @@
 <translation id="1623104350909869708">Заборонити цій сторінці створювати додаткові діалогові вікна</translation>
 <translation id="1426410128494586442">так</translation>
 <translation id="8218346974737627104">Підтвердити вхід</translation>
+<translation id="8853345339104747198">Вкладка &quot;<ph name="TAB_TITLE"/>&quot;</translation>
 <translation id="624558823898732418">Мова перекладу: <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="8872441722924401214">Виберіть сертифікат для автентифікації</translation>
 <translation id="3896036286668839683">Перегляд сертифікатів</translation>
@@ -41,6 +47,7 @@
 <translation id="3063601790762993062">Зберегти відео</translation>
 <translation id="6042308850641462728">Більше</translation>
 <translation id="7267430310003164111">Підказка щодо завантаження додатка з Google Play Маркету. Назва додатка: <ph name="APP_NAME"/>. Середній рейтинг додатка: <ph name="APP_RATING"/>.</translation>
+<translation id="303955801043931176">Вкладку закрито</translation>
 <translation id="4148957013307229264">Встановлення...</translation>
 <translation id="3992315671621218278">Зберегти посилання</translation>
 <translation id="8034522405403831421">Мова цієї сторінки: <ph name="SOURCE_LANGUAGE"/>. Перекласти її такою мовою: <ph name="TARGET_LANGUAGE"/>?</translation>
@@ -66,9 +73,11 @@
 <translation id="6333140779060797560">Надіслати через <ph name="APPLICATION"/></translation>
 <translation id="6040143037577758943">Закрити</translation>
 <translation id="969096075394517431">Змінити мови</translation>
+<translation id="5556459405103347317">Перезавантажити</translation>
 <translation id="5032574515228824816">Підказка</translation>
 <translation id="4847896847259487518">Зробити закладку для сторінки</translation>
 <translation id="497421865427891073">Перейти вперед</translation>
+<translation id="8310344678080805313">Стандартні вкладки</translation>
 <translation id="6277522088822131679">Виникла проблема з друком цієї сторінки. Повторіть спробу.</translation>
 <translation id="1742134235943978220">Перекладено такою мовою: <ph name="TARGET_LANGUAGE"/>.</translation>
 <translation id="6965382102122355670">ОК</translation>

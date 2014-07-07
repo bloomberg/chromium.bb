@@ -56,7 +56,6 @@ Sommige functies zijn wellicht niet beschikbaar en wijzigingen in voorkeuren wor
 <translation id="4831257561365056138">Chromium App Launcher verwijderen</translation>
 <translation id="4222580632002216401">Je bent nu ingelogd bij Chromium! Synchronisatie is uitgeschakeld door je beheerder.</translation>
 <translation id="4207043877577553402"><ph name="BEGIN_BOLD"/>Waarschuwing:<ph name="END_BOLD"/> Chromium kan niet voorkomen dat extensies je browsergeschiedenis vastleggen. Als je deze extensie in de incognitomodus wilt uitschakelen, verwijder je het vinkje bij deze optie.</translation>
-<translation id="4516868174453854611">Nu je bent ingelogd, zie je dezelfde tabbladen, bladwijzers en andere Chromium-instellingen op je laptop, telefoon en tablet. Je ontvangt ook relevantere suggesties en functies in Google services.</translation>
 <translation id="985602178874221306">De auteurs van Chromium</translation>
 <translation id="8628626585870903697">Chromium bevat niet de pdf-viewer die nodig is om de functie 'Afdrukvoorbeeld' te laten werken.</translation>
 <translation id="7138853919861947730">Chromium gebruikt mogelijk webservices om je surfervaring te verbeteren.</translation>
@@ -110,6 +109,7 @@ Sommige functies zijn wellicht niet beschikbaar en wijzigingen in voorkeuren wor
 <translation id="3258596308407688501">Chrome kan niet lezen van en schrijven naar de eigen gegevensdirectory :
 
 <ph name="USER_DATA_DIRECTORY"/></translation>
+<translation id="1869480248812203386">Je kunt helpen Chromium veiliger en gebruiksvriendelijker te maken door automatisch informatie over mogelijke beveiligingsincidenten aan Google te melden.</translation>
 <translation id="6970811910055250180">Je apparaat bijwerken...</translation>
 <translation id="2485422356828889247">Installatie ongedaan maken</translation>
 <translation id="85843667276690461">Hulp bij het gebruik van Chromium</translation>
@@ -118,7 +118,6 @@ Sommige functies zijn wellicht niet beschikbaar en wijzigingen in voorkeuren wor
 <translation id="8493179195440786826">Chromium is verouderd</translation>
 <translation id="911206726377975832">Ook browsegegevens wissen?</translation>
 <translation id="95514773681268843"><ph name="DOMAIN"/> vereist dat je de volgende Servicevoorwaarden leest en accepteert voordat je dit apparaat gebruikt. Deze voorwaarden zijn geen uitbreiding, aanpassing of beperking van de Voorwaarden van Chromium OS.</translation>
-<translation id="5603085937604338780">chromium</translation>
 <translation id="1699664235656412242">Sluit alle Chromium-vensters (inclusief de vensters in Windows 8-modus) en probeer het opnieuw.</translation>
 <translation id="6734080038664603509">&amp;Chromium bijwerken</translation>
 <translation id="8862326446509486874">Je hebt geen rechten om op systeemniveau te installeren. Meld je aan als beheerder en voer het installatieprogramma opnieuw uit.</translation>
@@ -224,6 +223,7 @@ Als je toch inlogt, worden Chromium-gegevens zoals bladwijzers, geschiedenis en 
 <translation id="9013262824292842194">Voor Chromium is Windows Vista of Windows XP met SP2 of hoger vereist.</translation>
 <translation id="1967743265616885482">Van een module met dezelfde naam is bekend dat deze conflicteert met Chromium.</translation>
 <translation id="8704119203788522458">Personaliseer jouw Chromium</translation>
+<translation id="8269379391216269538">Help ons Chromium beter te maken</translation>
 <translation id="4224199872375172890">Chromium is bijgewerkt.</translation>
 <translation id="374481098568514319">Deze computer beschikt al over een recentere versie van de Chromium-componenten. Gebruik een recenter installatieprogramma.</translation>
 <translation id="6240281849816458190">Je probeert &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; te bereiken, maar de server heeft een certificaat gepresenteerd dat nog niet geldig is. Er is geen informatie beschikbaar om te bepalen of dat certificaat betrouwbaar is. Chromium kan niet volledig garanderen dat je communiceert met &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; en niet met een aanvaller. De klok van je computer is momenteel ingesteld op <ph name="CURRENT_TIME"/>. Is dit de correcte tijd? Als dit niet zo is, moet je de klok van het systeem aanpassen en deze pagina vernieuwen.</translation>

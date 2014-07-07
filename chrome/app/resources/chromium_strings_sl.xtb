@@ -56,7 +56,6 @@ Nekatere funkcije morda niso na voljo in spremembe nastavitev ne bodo shranjene.
 <translation id="4831257561365056138">Odstrani Chromium App Launcher</translation>
 <translation id="4222580632002216401">Zdaj ste prijavljeni v Chromium. Sinhronizacijo je onemogočil skrbnik.</translation>
 <translation id="4207043877577553402"><ph name="BEGIN_BOLD"/>Opozorilo:<ph name="END_BOLD"/> Chromium razširitvam ne more preprečiti beleženja zgodovine brskanja. Če želite onemogočiti to razširitev v načinu brez beleženja zgodovine, počistite to možnost.</translation>
-<translation id="4516868174453854611">Ker ste prijavljeni, lahko do zavihkov, zaznamkov in drugih stvari v Chromiumu dostopate v prenosniku, telefonu in tabličnem računalniku. Na voljo boste imeli tudi ustreznejše predloge in funkcije glede Googlovih storitev.</translation>
 <translation id="985602178874221306">Ustvarjalci Chromiuma</translation>
 <translation id="8628626585870903697">Chromium nima pregledovalnika datotek PDF, ki je potreben za predogled tiskanja.</translation>
 <translation id="7138853919861947730">Chromium lahko za boljšo izkušnjo brskanja uporablja spletne storitve.</translation>
@@ -110,6 +109,7 @@ Nekatere funkcije morda niso na voljo in spremembe nastavitev ne bodo shranjene.
 <translation id="3258596308407688501">Chromium ne more brati svojega imenika s podatki ali pisati vanj:
 
 <ph name="USER_DATA_DIRECTORY"/></translation>
+<translation id="1869480248812203386">S samodejnim poročanjem podrobnosti o morebitnih varnostnih dogodkih Googlu lahko pomagate narediti Chromium varnejši in preprostejši za uporabo.</translation>
 <translation id="6970811910055250180">Posodabljanje naprave ...</translation>
 <translation id="2485422356828889247">Odstranjevanje</translation>
 <translation id="85843667276690461">Pomoč pri uporabi Chromiuma</translation>
@@ -118,7 +118,6 @@ Nekatere funkcije morda niso na voljo in spremembe nastavitev ne bodo shranjene.
 <translation id="8493179195440786826">Chromium je zastarel</translation>
 <translation id="911206726377975832">Ali želite izbrisati tudi podatke brskanja?</translation>
 <translation id="95514773681268843"><ph name="DOMAIN"/> zahteva, da preberete in sprejmete pogoje storitve, preden začnete uporabljati napravo. Ti pogoji ne dopolnjujejo, spreminjajo ali omejujejo pogojev za Chromium OS.</translation>
-<translation id="5603085937604338780">chromium</translation>
 <translation id="1699664235656412242">Zaprite vsa okna Chromiuma (tudi tista v načinu Windows 8) in poskusite znova.</translation>
 <translation id="6734080038664603509">Posodobi &amp;Chromium</translation>
 <translation id="8862326446509486874">Nimate ustreznih pravic za namestitev na ravni sistema. Poskusite znova zagnati namestitveni program kot skrbnik.</translation>
@@ -227,6 +226,7 @@ Nekatere funkcije morda ne bodo na voljo. Določite drug imenik profila ali upor
 <translation id="9013262824292842194">Za Chromium potrebujete operacijski sistem Windows Vista ali Windows XP s servisnim paketom SP2 ali novejšim.</translation>
 <translation id="1967743265616885482">Modul z istim imenom je že bil v sporu s Chromiumom.</translation>
 <translation id="8704119203788522458">To je vaš Chromium</translation>
+<translation id="8269379391216269538">Pomagajte izboljšati Chromium</translation>
 <translation id="4224199872375172890">Chromium je posodobljen.</translation>
 <translation id="374481098568514319">Ta računalnik že ima novejšo različico Chromiumovih komponent. Uporabite novejši namestitveni program.</translation>
 <translation id="6240281849816458190">Poskusili ste odpreti &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, vendar ima strežnik potrdilo, ki še ni veljavno. Ni podatkov, na podlagi katerih bi bilo mogoče ugotoviti, ali je potrdilu mogoče zaupati. Google Chrome ne more zagotoviti, da komunicirate z domeno &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; in ne napadalcem. Ura v računalniku je trenutno nastavljena na <ph name="CURRENT_TIME"/>. Je to pravilno? Če ni, pravilno nastavite sistemsko uro in osvežite stran.</translation>

@@ -7,11 +7,13 @@
 <translation id="5172758083709347301">మెషీన్</translation>
 <translation id="7180611975245234373">రీఫ్రెష్ చేయి</translation>
 <translation id="777702478322588152">అధికారిక నివాసం</translation>
+<translation id="7600965453749440009"><ph name="LANGUAGE"/>ను ఎప్పటికీ అనువదించవద్దు</translation>
 <translation id="2262243747453050782">HTTP లోపం</translation>
 <translation id="1339601241726513588">నమోదిత డొమైన్:</translation>
 <translation id="7298195798382681320">సిఫార్సు చేయబడినవి</translation>
 <translation id="4058922952496707368">కీ &quot;<ph name="SUBKEY"/>&quot;: <ph name="ERROR"/></translation>
 <translation id="5299298092464848405">విధానాన్ని అన్వయించడంలో లోపం</translation>
+<translation id="6831043979455480757">అనువదించు</translation>
 <translation id="1228893227497259893">ఎంటిటీ ఐడెంటిఫైయర్ చెల్లదు</translation>
 <translation id="6337534724793800597">పేరు ద్వారా విధానాలను ఫిల్టర్ చేయి</translation>
 <translation id="4372948949327679948">ఆశిస్తున్న <ph name="VALUE_TYPE"/> విలువ.</translation>
@@ -21,11 +23,17 @@
 <translation id="2958431318199492670">నెట్‌వర్క్ కాన్ఫిగరేషన్ ONC ప్రమాణానికి అనుకూలంగా లేదు. కాన్ఫిగరేషన్‌లోని భాగాలు దిగుమతి కాకపోయి ఉండకపోవచ్చు.</translation>
 <translation id="933712198907837967">డైనర్స్ క్లబ్</translation>
 <translation id="277499241957683684">పరికరం రికార్డ్ లేదు</translation>
+<translation id="8553075262323480129">పేజీ భాష నిర్థారించలేకపోయినందున అనువాదం విఫలమైంది.</translation>
 <translation id="7935318582918952113">DOM డిస్టిల్లర్</translation>
+<translation id="1103523840287552314">ఎల్లప్పుడూ <ph name="LANGUAGE"/>ను అనువదించు</translation>
 <translation id="1227633850867390598">విలువను దాచండి</translation>
 <translation id="6753269504797312559">విధానం విలువ</translation>
+<translation id="8834246243508017242">పరిచయాలను ఉపయోగించి స్వీయపూర్తిని ప్రారంభించండి…</translation>
+<translation id="7275334191706090484">నిర్వహించబడిన బుక్‌మార్క్‌లు</translation>
 <translation id="7400418766976504921">URL</translation>
+<translation id="7378627244592794276">వద్దు</translation>
 <translation id="2704283930420550640">విలువ ఆకృతికి సరిపోలలేదు.</translation>
+<translation id="8943805475239098364">మీరు <ph name="CURRENT_GOOGLE_HOST"/>కు బదులుగా <ph name="NEW_GOOGLE_HOST"/>తో శోధించాలని అనుకుంటున్నారా?</translation>
 <translation id="4850886885716139402">వీక్షణ</translation>
 <translation id="8091372947890762290">సక్రియం సర్వర్‌లో పెండింగ్‌లో ఉంది</translation>
 <translation id="719464814642662924">వీసా</translation>
@@ -37,13 +45,14 @@
 <translation id="7441627299479586546">చెల్లని విధాన విషయం</translation>
 <translation id="3885155851504623709">పారిష్</translation>
 <translation id="6973656660372572881">రెండు స్థిర ప్రాక్సీ సర్వర్లు మరియు ఒక .pac స్క్రిప్ట్ URL పేర్కొనబడ్డాయి.</translation>
+<translation id="7108649287766967076"><ph name="TARGET_LANGUAGE"/>కు అనువాదం విఫలమైంది.</translation>
 <translation id="4103249731201008433">పరికరం క్రమ సంఖ్య చెల్లదు</translation>
 <translation id="3667681724235208644">అసలైనదాన్ని వీక్షించండి</translation>
 <translation id="4079302484614802869">ప్రాక్సీ కాన్ఫిగరేషన్ స్థిరమైన ప్రాక్సీ సర్వర్‌లను కాకుండా, ఒక .pac స్క్రిప్ట్ URLను ఉపయోగించడానికి సెట్ చేయబడింది.</translation>
 <translation id="5540224163453853">అభ్యర్థించిన కథనాన్ని కనుగొనడం సాధ్యపడలేదు.</translation>
 <translation id="5523118979700054094">విధానం పేరు</translation>
 <translation id="7791543448312431591">జోడించు</translation>
-<translation id="2053553514270667976">పిన్ కోడ్</translation>
+<translation id="2053553514270667976">జిప్ కోడ్</translation>
 <translation id="1644184664548287040">నెట్‌వర్క్ కాన్ఫిగరేషన్ చెల్లదు మరియు దిగుమతి చేయడం సాధ్యం కాదు.</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="2212735316055980242">విధానం కనుగొనబడలేదు</translation>
@@ -55,6 +64,7 @@
 <translation id="337363190475750230">కేటాయింపు తీసివేయబడింది</translation>
 <translation id="2367567093518048410">స్థాయి</translation>
 <translation id="7610193165460212391">విలువ <ph name="VALUE"/> పరిధి వెలుపల ఉంది.</translation>
+<translation id="370665806235115550">లోడ్ అవుతోంది...</translation>
 <translation id="2096368010154057602">శాఖ</translation>
 <translation id="4258748452823770588">చెల్లని సంతకం</translation>
 <translation id="3024663005179499861">చెల్లని విధాన రకం</translation>
@@ -67,20 +77,26 @@
 <translation id="883848425547221593">ఇతర బుక్‌మార్క్‌లు:</translation>
 <translation id="2181821976797666341">విధానాలు</translation>
 <translation id="3174168572213147020">దీవి</translation>
+<translation id="9137013805542155359">అసలును చూపించు</translation>
 <translation id="2213606439339815911">నమోదులను పొందుతోంది...</translation>
 <translation id="6263376278284652872"><ph name="DOMAIN"/> బుక్‌మార్క్‌లు</translation>
+<translation id="498957508165411911"><ph name="ORIGINAL_LANGUAGE"/> నుండి <ph name="TARGET_LANGUAGE"/>కి అనువదించాలా?</translation>
+<translation id="7186367841673660872">ఈ పేజీ<ph name="ORIGINAL_LANGUAGE"/>నుండి<ph name="LANGUAGE_LANGUAGE"/>కు అనువదించబడింది</translation>
 <translation id="7139724024395191329">ఎమిరేట్</translation>
 <translation id="5145883236150621069">విధాన ప్రతిస్పందనలో లోపం కోడ్ ఉంది</translation>
+<translation id="7983301409776629893">ఎల్లప్పుడూ <ph name="ORIGINAL_LANGUAGE"/>ను <ph name="TARGET_LANGUAGE"/>కు అనువదించు</translation>
 <translation id="6970216967273061347">జిల్లా</translation>
 <translation id="3010559122411665027">జాబితా నమోదు &quot;<ph name="ENTRY_INDEX"/>&quot;: <ph name="ERROR"/></translation>
 <translation id="6445051938772793705">దేశం</translation>
+<translation id="5031870354684148875">Google అనువాదం గురించి</translation>
+<translation id="6891596781022320156">విధానం స్థాయికి మద్దతు లేదు.</translation>
 <translation id="2025186561304664664">ప్రాక్సీ స్వయంచాలకంగా కాన్ఫిగర్ చేయబడేలా సెట్ చేయబడింది.</translation>
 <translation id="1853748787962613237">కథనాన్ని ప్రదర్శించడంలో విఫలమైంది.</translation>
 <translation id="5455374756549232013">చెల్లని విధాన సమయముద్ర</translation>
+<translation id="1962204205936693436"><ph name="DOMAIN"/> బుక్‌మార్క్‌లు</translation>
 <translation id="1973335181906896915">శ్రేణిగా రూపొందించడంలో లోపం</translation>
 <translation id="5989320800837274978">స్థిర ప్రాక్సీ సర్వర్‌లు లేదా ఒక .pac స్క్రిప్ట్ URL పేర్కొనబడలేదు.</translation>
 <translation id="7805768142964895445">స్థితి</translation>
-<translation id="4002066346123236978">శీర్షిక</translation>
 <translation id="536296301121032821">విధాన సెట్టింగ్‌లను నిల్వ చేయడంలో విఫలమైంది</translation>
 <translation id="5439770059721715174">&quot;<ph name="ERROR_PATH"/>&quot;లో స్కీమా ప్రామాణీకరణ లోపం: <ph name="ERROR"/></translation>
 <translation id="8349305172487531364">బుక్‌మార్క్‌ల పట్టీ</translation>
@@ -89,21 +105,27 @@
 <translation id="647261751007945333">పరికర విధానాలు</translation>
 <translation id="678528074488531090">ప్రామాణీకరణ లోపం: <ph name="VALIDATION_ERROR"/>.</translation>
 <translation id="213826338245044447">మొబైల్ బుక్‌మార్క్‌లు</translation>
+<translation id="8571890674111243710">పేజీని <ph name="LANGUAGE"/>కు అనువదిస్తోంది...</translation>
 <translation id="4117700440116928470">విధానం పరిధికి మద్దతు లేదు.</translation>
 <translation id="2114841414352855701">ఇది <ph name="POLICY_NAME"/> ద్వారా భర్తీ చేయబడినందున విస్మరించబడింది.</translation>
+<translation id="3228969707346345236">పేజీ ఇప్పటికే <ph name="LANGUAGE"/>లో ఉన్నందున అనువాదం విఫలమైంది.</translation>
 <translation id="8891727572606052622">చెల్లని ప్రాక్సీ మోడ్.</translation>
 <translation id="6008256403891681546">JCB</translation>
 <translation id="7752995774971033316">నిర్వహించడం లేదు</translation>
 <translation id="3712624925041724820">లైసెన్స్‌లు అయిపోయాయి</translation>
 <translation id="4926049483395192435">ఖచ్చితంగా పేర్కొనాలి.</translation>
 <translation id="7542995811387359312">ఈ ఫారమ్ సురక్షిత కనెక్షన్‌ని ఉపయోగించనందున స్వయంచాలకంగా క్రెడిట్ కార్డ్ పూర్తి చెయ్యడం ఆపివేయబడింది.</translation>
+<translation id="5179510805599951267"><ph name="ORIGINAL_LANGUAGE"/>లో లేదా? ఈ లోపాన్ని నివేదించండి</translation>
 <translation id="8088680233425245692">కథనాన్ని వీక్షించడంలో విఫలమైంది.</translation>
+<translation id="8725066075913043281">మళ్ళీ ప్రయత్నించండి</translation>
 <translation id="1821930232296380041">చెల్లని అభ్యర్థన లేదా అభ్యర్థన పరామితులు</translation>
 <translation id="1640180200866533862">వినియోగదారు విధానాలు</translation>
+<translation id="375403751935624634">సర్వర్ లోపం వల్ల అనువాదం విఫలమైంది.</translation>
 <translation id="5629630648637658800">విధాన సెట్టింగ్‌లను లోడ్ చేయడంలో విఫలమైంది</translation>
 <translation id="2354001756790975382">ఇతర బుక్‌మార్క్‌లు</translation>
 <translation id="3650584904733503804">ప్రామాణీకరణ విజయవంతం అయింది</translation>
 <translation id="6915804003454593391">వినియోగదారు:</translation>
+<translation id="8812832766208874265"><ph name="CURRENT_GOOGLE_HOST"/> వినియోగాన్ని కొనసాగించండి</translation>
 <translation id="3377188786107721145">విధాన అన్వయ లోపం</translation>
 <translation id="2270192940992995399">కథనాన్ని కనుగొనడంలో విఫలమైంది.</translation>
 <translation id="4726672564094551039">విధానాలను మళ్లీ లోడ్ చేయి</translation>
@@ -111,12 +133,15 @@
 <translation id="5190835502935405962">బుక్‌మార్క్‌ల బార్</translation>
 <translation id="6965978654500191972">పరికరం</translation>
 <translation id="8249320324621329438">చివరగా పొందబడినవి:</translation>
+<translation id="1285320974508926690">ఈ సైట్‌ను అనువదించవద్దు</translation>
 <translation id="6282194474023008486">పోస్టల్ కోడ్</translation>
 <translation id="443673843213245140">ప్రాక్సీని ఉపయోగించడం ఆపివేయబడింది కానీ స్పష్టమైన ప్రాక్సీ కాన్ఫిగరేషన్ పేర్కొనబడింది.</translation>
 <translation id="3623476034248543066">విలువను చూపండి</translation>
+<translation id="9020542370529661692">ఈ పేజీ <ph name="TARGET_LANGUAGE"/>కి అనువదించబడింది</translation>
 <translation id="5631439013527180824">చెల్లని పరికర నిర్వహణ టోకెన్</translation>
 <translation id="560412284261940334">నిర్వహణకు మద్దతు లేదు</translation>
 <translation id="3169472444629675720">కనుగొను</translation>
+<translation id="4923417429809017348">ఈ పేజీ తెలియని భాష నుండి <ph name="LANGUAGE_LANGUAGE"/>కు అనువదించబడింది</translation>
 <translation id="4813512666221746211">నెట్‌వర్క్ లోపం</translation>
 <translation id="1875753206475436906">సమస్య పరిష్కార రకం: <ph name="HEURISTIC_TYPE"/>
     సర్వర్ రకం: <ph name="SERVER_TYPE"/>
@@ -129,12 +154,15 @@
 <translation id="6644283850729428850">ఈ విధానం విలువ తగ్గించబడింది.</translation>
 <translation id="7988324688042446538">డెస్క్‌టాప్ బుక్‌మార్క్‌లు</translation>
 <translation id="8488350697529856933">వీటికి వర్తిస్తుంది</translation>
+<translation id="6165508094623778733">మరింత తెలుసుకోండి</translation>
 <translation id="5565735124758917034">సక్రియం</translation>
+<translation id="7568593326407688803">ఈ పేజీ<ph name="ORIGINAL_LANGUAGE"/>లో ఉంది మీరు దీన్ని అనువదించాలనుకుంటున్నారా?</translation>
 <translation id="8876793034577346603">నెట్‌వర్క్ కాన్ఫిగరేషన్ అన్వయించబడటంలో విఫలమైంది.</translation>
 <translation id="106701514854093668">డెస్క్‌టాప్‌ బుక్‌మార్క్‌లు</translation>
 <translation id="6154808779448689242">అందించబడిన విధాన టోకెన్ ప్రస్తుత టోకెన్‌కు సరిపోలలేదు</translation>
 <translation id="7961015016161918242">ఎప్పుడూ లేదు</translation>
 <translation id="2835170189407361413">ఫారమ్‌ను తుడిచివేయి</translation>
+<translation id="6550675742724504774">ఎంపికలు</translation>
 <translation id="8804164990146287819">గోప్యతా విధానం</translation>
 <translation id="5337776961545044340">ఈ వ్యాపార సంస్థ కోసం Google Wallet ఈ రకమైన కార్డ్‌కు మద్దతు ఇవ్వడం లేదు. దయచేసి మరో కార్డ్‌ని ఎంచుకోండి.</translation>
 <translation id="7182878459783632708">విధానాలను సెట్ చేయలేదు</translation>
@@ -143,12 +171,14 @@
 <translation id="8713130696108419660">చెల్లని ప్రారంభ సంతకం</translation>
 <translation id="20817612488360358">సిస్టమ్ ప్రాక్సీ సెట్టింగ్‌లు ఉపయోగించడానికి సెట్ చేయబడ్డాయి కానీ స్పష్టమైన ప్రాక్సీ కాన్ఫిగరేషన్ కూడా పేర్కొనబడింది.</translation>
 <translation id="2639739919103226564">స్థితి: </translation>
+<translation id="1832546148887467272"><ph name="NEW_GOOGLE_HOST"/>కి మారు</translation>
 <translation id="5095208057601539847">ప్రావిన్స్</translation>
 <translation id="1847321074516120686">Chrome స్వీయపూర్తి సెట్టింగ్‌లు</translation>
 <translation id="1152021252151287493">చెల్లని ధృవీకరణ సంతకం.</translation>
 <translation id="6965382102122355670">సరే</translation>
 <translation id="2721148159707890343">అభ్యర్థన విజయవంతం అయింది</translation>
 <translation id="2455981314101692989">ఈ వెబ్‌పేజీ ఈ ఫారమ్‌ కోసం స్వయంచాలకంగా పూర్తి చెయ్యడాన్ని ఆపివేసింది.</translation>
+<translation id="8308427013383895095">నెట్‌వర్క్ కనెక్షన్‌తో సమస్య ఉన్నందున అనువాదం విఫలమైంది.</translation>
 <translation id="5720705177508910913">ప్రస్తుత వినియోగదారు</translation>
 <translation id="3380864720620200369">క్లయింట్ ID:</translation>
 </translationbundle>

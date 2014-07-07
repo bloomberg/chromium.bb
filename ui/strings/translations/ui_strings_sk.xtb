@@ -33,7 +33,7 @@
 <translation id="1940483897317142625">Odstrániť po koniec riadka</translation>
 <translation id="8507996248087185956">Počet minút: <ph name="NUMBER_DEFAULT"/></translation>
 <translation id="3520476450377425184">Počet zvyšných dní: <ph name="NUMBER_MANY"/></translation>
-<translation id="932327136139879170">Home</translation>
+<translation id="932327136139879170">Domov</translation>
 <translation id="5600907569873192868">Počet zvyšných minút: <ph name="NUMBER_MANY"/></translation>
 <translation id="8666066831007952346">Počet zvyšných dní: <ph name="NUMBER_TWO"/></translation>
 <translation id="6390842777729054533">Počet zvyšných sekúnd: <ph name="NUMBER_ZERO"/></translation>
@@ -86,6 +86,7 @@
 <translation id="7487278341251176613"><ph name="NUMBER_TWO"/> minutes left</translation>
 <translation id="5110450810124758964">Pred <ph name="NUMBER_ONE"/> dňom</translation>
 <translation id="2820806154655529776"><ph name="NUMBER_ONE"/> sekunda</translation>
+<translation id="4320177379694898372">Žiadne internetové pripojenie</translation>
 <translation id="7814458197256864873">&amp;Kopírovať</translation>
 <translation id="3889424535448813030">Šípka doprava</translation>
 <translation id="4229495110203539533">Pred <ph name="NUMBER_ONE"/> s</translation>
@@ -150,7 +151,7 @@
 <translation id="1781701194097416995">Presunúť slovo doľava</translation>
 <translation id="1243314992276662751">Nahrať</translation>
 <translation id="50030952220075532">Zostáva <ph name="NUMBER_ONE"/> deň</translation>
-<translation id="8179976553408161302">Začať</translation>
+<translation id="8179976553408161302">Enter</translation>
 <translation id="8471049483003785219">Presunúť slovo doľava a upraviť výber</translation>
 <translation id="945522503751344254">Poslať spätnú väzbu</translation>
 <translation id="9170848237812810038">&amp;Naspäť</translation>

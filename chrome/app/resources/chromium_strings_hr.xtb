@@ -54,7 +54,6 @@
 <translation id="4831257561365056138">Deinstaliraj pokretač aplikacija sustava Chromium</translation>
 <translation id="4222580632002216401">Sada ste prijavljeni na Chromium! Administrator je onemogućio sinkronizaciju.</translation>
 <translation id="4207043877577553402"><ph name="BEGIN_BOLD"/>Upozorenje:<ph name="END_BOLD"/> Chromium ne može spriječiti proširenja da evidentiraju vašu povijest pregledavanja. Da biste onemogućili proširenje u anonimnom načinu, isključite tu opciju.</translation>
-<translation id="4516868174453854611">Sada kad ste prijavljeni, možete imati svoje kartice, oznake i druge sadržaje u Chromiumu na svojem prijenosnom računalu, telefonu i tabletu. Također ćete dobivati relevantnije prijedloge i značajke na Googleovim uslugama.</translation>
 <translation id="985602178874221306">Autori Chromiuma</translation>
 <translation id="8628626585870903697">Chromium ne uključuje pregledač PDF-a koji je potreban da bi pregled ispisa funkcionirao.</translation>
 <translation id="7138853919861947730">Chromium može upotrebljavati web-usluge za poboljšanje vašeg doživljaja pregledavanja.</translation>
@@ -108,6 +107,7 @@
 <translation id="3258596308407688501">Chromium ne može čitati iz svojeg podatkovnog direktorija niti u njega pisati:
 
 <ph name="USER_DATA_DIRECTORY"/></translation>
+<translation id="1869480248812203386">Možete pomoći da Chromium bude sigurniji i jednostavniji za upotrebu tako što ćete omogućiti da se Googleu automatski prijavljuju pojedinosti o mogućim sigurnosnim incidentima.</translation>
 <translation id="6970811910055250180">Ažuriranje uređaja...</translation>
 <translation id="2485422356828889247">Deinstaliraj</translation>
 <translation id="85843667276690461">Pomoć za upotrebu Chromiuma</translation>
@@ -116,7 +116,6 @@
 <translation id="8493179195440786826">Chromium je zastario</translation>
 <translation id="911206726377975832">Izbrisati i podatke o pregledavanju?</translation>
 <translation id="95514773681268843"><ph name="DOMAIN"/> zahtijeva da pročitate i prihvatite sljedeće Uvjete pružanja usluge prije upotrebe ovog uređaja. Ti uvjeti ne predstavljaju proširenje, izmjenu ili ograničenje Uvjeta OS-a Chromium.</translation>
-<translation id="5603085937604338780">chromium</translation>
 <translation id="1699664235656412242">Zatvorite sve prozore u Chromiumu (uključujući i one u načinu sustava Windows 8) i pokušajte ponovo.</translation>
 <translation id="6734080038664603509">Ažuriranje &amp;Chromiuma</translation>
 <translation id="8862326446509486874">Nemate odgovarajuća prava za instaliranje na razini sustava. Pokušajte ponovno pokrenuti program za instalaciju kao administrator.</translation>
@@ -224,6 +223,7 @@ Ako se ipak prijavite, podaci sustava Chromium kao što su oznake, povijest i os
 <translation id="9013262824292842194">Chromium zahtijeva sustav Windows Vista ili Windows XP sa servisnim paketom SP2 ili novijim.</translation>
 <translation id="1967743265616885482">Modul s tim nazivom već je bio u konfliktu s preglednikom Chromium.</translation>
 <translation id="8704119203788522458">To je vaš Chromium</translation>
+<translation id="8269379391216269538">Pomognite poboljšati Chromium.</translation>
 <translation id="4224199872375172890">Chromium je ažuran.</translation>
 <translation id="374481098568514319">Ovo računalo već ima noviju verziju komponenti Chromiuma. Upotrijebite noviji instalacijski program.</translation>
 <translation id="6240281849816458190">Pokušali ste pristupiti web-lokaciji &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, ali je poslužitelj ponudio certifikat koji još ne vrijedi. Nema dostupnih informacija o tome može li se taj certifikat smatrati pouzdanim. Chromium ne može pouzdano jamčiti da komunicirate s web-lokacijom &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, a ne s napadačem. Sat vašeg računala trenutačno je postavljen na <ph name="CURRENT_TIME"/>. Je li to točno? Ako nije, podesite sat sustava i osvježite ovu stranicu.</translation>

@@ -6,7 +6,7 @@
 <translation id="248395913932153421">วัน</translation>
 <translation id="1729654308190250600">โปรดป้อนที่อยู่อีเมลที่ไม่ว่างเปล่า</translation>
 <translation id="6015796118275082299">ปี</translation>
-<translation id="1235745349614807883">ลบการค้นหาล่าสุด</translation>
+<translation id="1235745349614807883">นำออกการค้นหาล่าสุด</translation>
 <translation id="7223624360433298498">เวลาที่ผ่านไป</translation>
 <translation id="1171774979989969504">โปรดป้อนที่อยู่อีเมล</translation>
 <translation id="709897737746224366">โปรดจับคู่รูปแบบที่ร้องขอ</translation>
@@ -81,6 +81,7 @@
 <translation id="8750798805984357768">โปรดเลือกตัวเลือกอย่างหนึ่งอย่างใดเหล่านี้</translation>
 <translation id="7740050170769002709">เนื้อหา HTML</translation>
 <translation id="6692633176391053278">ตัวเพิ่ม/ลดระดับเสียง</translation>
+<translation id="4975562563186953947">เลือกไว้ <ph name="SELECTED_COUNT"/> รายการ</translation>
 <translation id="8541249477527128034">การควบคุมสื่อ</translation>
 <translation id="2226276347425096477">โปรดย่อข้อความนี้ให้เหลือไม่เกิน <ph name="MAX_CHARACTERS"/> อักขระ (ขณะนี้ข้อความของคุณมี <ph name="CURRENT_LENGTH"/> อักขระ)</translation>
 <translation id="6101327004457443354">เปิดไฟล์เสียง</translation>

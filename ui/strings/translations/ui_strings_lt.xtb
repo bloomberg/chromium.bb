@@ -10,7 +10,7 @@
 <translation id="6310545596129886942">liko <ph name="NUMBER_FEW"/> sek.</translation>
 <translation id="9213479837033539041">liko <ph name="NUMBER_MANY"/> sek.</translation>
 <translation id="1209866192426315618">liko <ph name="NUMBER_DEFAULT"/> min.</translation>
-<translation id="1801827354178857021">Taškas</translation>
+<translation id="1801827354178857021">Laikotarpis</translation>
 <translation id="1190609913194133056">Pranešimų centras</translation>
 <translation id="7470933019269157899">Liko <ph name="NUMBER_DEFAULT"/> min.</translation>
 <translation id="5613020302032141669">Rodyklė į kairę</translation>
@@ -33,7 +33,7 @@
 <translation id="1940483897317142625">Trinti iki eilutės pabaigos</translation>
 <translation id="8507996248087185956"><ph name="NUMBER_DEFAULT"/> min.</translation>
 <translation id="3520476450377425184">liko <ph name="NUMBER_MANY"/> dienos (-ų)</translation>
-<translation id="932327136139879170">Pradžia</translation>
+<translation id="932327136139879170">Kontaktinė namų informacija</translation>
 <translation id="5600907569873192868">liko <ph name="NUMBER_MANY"/> min.</translation>
 <translation id="8666066831007952346">liko <ph name="NUMBER_TWO"/> dienos (-ų)</translation>
 <translation id="6390842777729054533">liko <ph name="NUMBER_ZERO"/> sek.</translation>
@@ -86,6 +86,7 @@
 <translation id="7487278341251176613">Liko <ph name="NUMBER_TWO"/> min.</translation>
 <translation id="5110450810124758964">Prieš <ph name="NUMBER_ONE"/> dieną</translation>
 <translation id="2820806154655529776"><ph name="NUMBER_ONE"/> sek.</translation>
+<translation id="4320177379694898372">Nėra interneto ryšio</translation>
 <translation id="7814458197256864873">&amp;Kopijuoti</translation>
 <translation id="3889424535448813030">Rodyklė į dešinę</translation>
 <translation id="4229495110203539533">Prieš <ph name="NUMBER_ONE"/> sek.</translation>

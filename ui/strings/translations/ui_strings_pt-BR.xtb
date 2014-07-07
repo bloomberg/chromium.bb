@@ -10,7 +10,7 @@
 <translation id="6310545596129886942"><ph name="NUMBER_FEW"/> segundos restantes</translation>
 <translation id="9213479837033539041"><ph name="NUMBER_MANY"/> segundos restantes</translation>
 <translation id="1209866192426315618"><ph name="NUMBER_DEFAULT"/> minutos restantes</translation>
-<translation id="1801827354178857021">Ponto final</translation>
+<translation id="1801827354178857021">Período</translation>
 <translation id="1190609913194133056">Central de Notificações</translation>
 <translation id="7470933019269157899"><ph name="NUMBER_DEFAULT"/> minutos restantes</translation>
 <translation id="5613020302032141669">Seta para a esquerda</translation>
@@ -33,7 +33,7 @@
 <translation id="1940483897317142625">Excluir até o fim da linha</translation>
 <translation id="8507996248087185956"><ph name="NUMBER_DEFAULT"/> minutos</translation>
 <translation id="3520476450377425184"><ph name="NUMBER_MANY"/> dias restantes</translation>
-<translation id="932327136139879170">Página inicial</translation>
+<translation id="932327136139879170">Início</translation>
 <translation id="5600907569873192868"><ph name="NUMBER_MANY"/> minutos restantes</translation>
 <translation id="8666066831007952346"><ph name="NUMBER_TWO"/> dias restantes</translation>
 <translation id="6390842777729054533"><ph name="NUMBER_ZERO"/> segundos restantes</translation>
@@ -86,6 +86,7 @@
 <translation id="7487278341251176613"><ph name="NUMBER_TWO"/> minutes left</translation>
 <translation id="5110450810124758964"><ph name="NUMBER_ONE"/> dia atrás</translation>
 <translation id="2820806154655529776"><ph name="NUMBER_ONE"/> s</translation>
+<translation id="4320177379694898372">Sem conexão com a Internet</translation>
 <translation id="7814458197256864873">Co&amp;piar</translation>
 <translation id="3889424535448813030">Seta para a direita</translation>
 <translation id="4229495110203539533"><ph name="NUMBER_ONE"/> segundo atrás</translation>

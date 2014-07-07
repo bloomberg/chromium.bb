@@ -318,7 +318,7 @@
 <translation id="7332592614823088566">Riga <ph name="ROWINDEX"/> di <ph name="ROWTOTAL"/>, colonna <ph name="COLINDEX"/> di <ph name="COLTOTAL"/></translation>
 <translation id="794091007957014205">{COUNT,plural, =1{chiocciola}other{# simboli chiocciola}}</translation>
 <translation id="1107942983112791593">maqe</translation>
-<translation id="1383876407941801731">Ricerca</translation>
+<translation id="1383876407941801731">Cerca</translation>
 <translation id="9065283790526219006">+popup</translation>
 <translation id="5203930734796605961">Il tasto <ph name="KEY"/> è già assegnato a un comando.</translation>
 <translation id="3486232535569802404">Da <ph name="V1"/> a <ph name="V2"/></translation>

@@ -13,11 +13,13 @@
 <translation id="2801119484858626560">偵測到不相容的 Chrome 遠端桌面版本。請確認您與共用對象的電腦使用的都是最新版本的 Chrome 和 Chrome 遠端桌面，然後再試一次。</translation>
 <translation id="6998989275928107238">目標電腦</translation>
 <translation id="406849768426631008">想要透過視訊通訊功能協助其他使用者解決問題嗎？建議您試試 <ph name="LINK_BEGIN"/>Google Hangouts 的遠端桌面<ph name="LINK_END"/>。</translation>
+<translation id="906458777597946297">將視窗放到最大</translation>
 <translation id="5397086374758643919">Chrome 遠端桌面主機端解除安裝程式</translation>
 <translation id="3258789396564295715">您可以透過 Chrome 遠端桌面安全地存取這台電腦。</translation>
 <translation id="5070121137485264635">遠端主機要求您向第三方網站進行驗證。如要繼續，您必須授予額外權限，讓 Chrome 遠端桌面能夠存取這個位址：</translation>
 <translation id="2124408767156847088">透過 Android 裝置安全存取您的電腦。</translation>
 <translation id="3194245623920924351">Chrome 遠端桌面</translation>
+<translation id="3649256019230929621">將視窗縮到最小</translation>
 <translation id="4808503597364150972">請輸入 <ph name="HOSTNAME"/> 的 PIN。</translation>
 <translation id="7672203038394118626">這台電腦的遠端連線已停用。</translation>
 <translation id="8244400547700556338">瞭解詳情</translation>
@@ -28,9 +30,9 @@
 <translation id="7658239707568436148">取消</translation>
 <translation id="7782471917492991422">請檢查電腦的電源管理設定，確認電腦在閒置時不會進入休眠狀態。</translation>
 <translation id="7665369617277396874">新增帳戶</translation>
-<translation id="5925497314631808737">• 實作全螢幕/沈浸模式。
-• 改善隱藏動作列圖示。</translation>
+<translation id="4939475390270873744">• 修正啟動時當機的問題。</translation>
 <translation id="2707879711568641861">找不到 Chrome 遠端桌面所需的部分元件。請確認您已安裝最新版本，然後再試一次。</translation>
+<translation id="1779766957982586368">關閉視窗</translation>
 <translation id="2499160551253595098">允許我們收集使用統計資料和當機報告，協助我們改善 Chrome 遠端桌面。</translation>
 <translation id="7868137160098754906">請為遠端電腦輸入您的 PIN。</translation>
 <translation id="677755392401385740">已為下列使用者啟動主機：<ph name="HOST_USERNAME"/>。</translation>
@@ -55,7 +57,6 @@
 <translation id="9188433529406846933">授權</translation>
 <translation id="228809120910082333">請在下方確認您的帳戶和 PIN，以便授予 Chromoting 存取權限。</translation>
 <translation id="7605995381616883502">新連線</translation>
-<translation id="5826423541626112308">Chrome 遠端桌面主機</translation>
 <translation id="2851674870054673688">對方輸入存取碼之後，共用工作階段即會開始。</translation>
 <translation id="5593560073513909978">服務暫時無法使用，請稍後再試。</translation>
 <translation id="3908017899227008678">縮小以符合視窗大小</translation>
@@ -65,7 +66,6 @@
 <translation id="1409991159633941777">找不到 Chrome 遠端桌面所需的部分元件。請確認您執行的是最新版本的 Chrome，然後再試一次。</translation>
 <translation id="174018511426417793">您尚未註冊任何電腦。如要為電腦啟用遠端連線，請在電腦上安裝 Chrome 遠端桌面，然後按一下 [<ph name="BUTTON_NAME"/>]。</translation>
 <translation id="9126115402994542723">此裝置連線至這個主機時，不必再次詢問 PIN。</translation>
-<translation id="253387295088602549">在安全連線機制下，允許其他使用者透過網際網路存取您的電腦。</translation>
 <translation id="1300633907480909701">透過 Android 裝置安全存取您的電腦。
 
 • 在您的電腦上，透過 Chrome 遠端桌面應用程式設定遠端存取權限。您可前往 Chrome 線上應用程式商店 (https://chrome.google.com/remotedesktop) 下載該應用程式。
@@ -85,9 +85,9 @@
 <translation id="5285241842433869526">瞭解如何設定電腦以供遠端存取。</translation>
 <translation id="4430915108080446161">正在產生存取碼...</translation>
 <translation id="2013996867038862849">已刪除所有配對的用戶端。</translation>
-<translation id="7081428606750359611">Chromoting 主機</translation>
 <translation id="8228265668171617545">偵測到不相容的 Chromoting 遠端桌面版本。請確認您與共用對象的電腦使用的都是最新版本的 Chrome 和 Chromoting，然後再試一次。</translation>
 <translation id="6985691951107243942">您是否確定要停用與 <ph name="HOSTNAME"/> 之間的遠端連線？如果之後改變心意的話，您必須親身前往該電腦所在位置並修改設定後，才能重新啟用連線。</translation>
+<translation id="6944854424004126054">還原視窗</translation>
 <translation id="1436054138039008644"><ph name="HOSTNAME"/> (最近上線日期：<ph name="DATE"/>)</translation>
 <translation id="9149992051684092333">如要開始共用您的電腦，請將下方的存取碼告知要協助您的人員。</translation>
 <translation id="409800995205263688">注意：政策設定僅允許您網路中的電腦相互連線。</translation>
@@ -215,5 +215,6 @@
 <translation id="1818475040640568770">您尚未註冊任何電腦。</translation>
 <translation id="4394049700291259645">停用</translation>
 <translation id="4156740505453712750">如要保護這台電腦，避免不明人士入侵，請選擇一個<ph name="BOLD_START"/>至少 6 位數<ph name="BOLD_END"/>的 PIN。當使用者從其他位置連線時，必須先輸入這個 PIN 驗證身分。</translation>
+<translation id="6398765197997659313">退出全螢幕模式</translation>
 <translation id="3286521253923406898">Chromoting 主機控制器</translation>
 </translationbundle>

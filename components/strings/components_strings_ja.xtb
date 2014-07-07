@@ -7,11 +7,13 @@
 <translation id="5172758083709347301">マシン</translation>
 <translation id="7180611975245234373">更新</translation>
 <translation id="777702478322588152">都道府県</translation>
+<translation id="7600965453749440009"><ph name="LANGUAGE"/>を翻訳しない</translation>
 <translation id="2262243747453050782">HTTP エラーです</translation>
 <translation id="1339601241726513588">登録ドメイン:</translation>
 <translation id="7298195798382681320">推奨</translation>
 <translation id="4058922952496707368">キー「<ph name="SUBKEY"/>」: <ph name="ERROR"/></translation>
 <translation id="5299298092464848405">ポリシーの解析中にエラーが発生しました</translation>
+<translation id="6831043979455480757">翻訳</translation>
 <translation id="1228893227497259893">エンティティ識別子が正しくありません</translation>
 <translation id="6337534724793800597">ポリシーを名前でフィルタ</translation>
 <translation id="4372948949327679948"><ph name="VALUE_TYPE"/> 値が想定されます。</translation>
@@ -21,11 +23,17 @@
 <translation id="2958431318199492670">ネットワーク設定が ONC 標準に準拠していません。設定の一部がインポートされない可能性があります。</translation>
 <translation id="933712198907837967">Diners Club</translation>
 <translation id="277499241957683684">デバイス レコードがありません</translation>
+<translation id="8553075262323480129">ページの言語を検出できないため翻訳できません。</translation>
 <translation id="7935318582918952113">DOM Distiller</translation>
+<translation id="1103523840287552314"><ph name="LANGUAGE"/>を常に翻訳</translation>
 <translation id="1227633850867390598">値を非表示</translation>
 <translation id="6753269504797312559">ポリシーの値</translation>
+<translation id="8834246243508017242">連絡先からの自動入力を有効にする...</translation>
+<translation id="7275334191706090484">管理対象のブックマーク</translation>
 <translation id="7400418766976504921">URL</translation>
+<translation id="7378627244592794276">いいえ</translation>
 <translation id="2704283930420550640">値が有効な形式ではありません。</translation>
+<translation id="8943805475239098364"><ph name="CURRENT_GOOGLE_HOST"/> の代わりに <ph name="NEW_GOOGLE_HOST"/> で検索しますか？</translation>
 <translation id="4850886885716139402">表示</translation>
 <translation id="8091372947890762290">サーバーで有効化が保留になっています</translation>
 <translation id="719464814642662924">Visa</translation>
@@ -37,6 +45,7 @@
 <translation id="7441627299479586546">ポリシーの対象が間違っています</translation>
 <translation id="3885155851504623709">教区</translation>
 <translation id="6973656660372572881">固定プロキシ サーバーと .pac スクリプト URL の両方が指定されています。</translation>
+<translation id="7108649287766967076"><ph name="TARGET_LANGUAGE"/>に翻訳できませんでした。</translation>
 <translation id="4103249731201008433">デバイスのシリアル番号が無効です</translation>
 <translation id="3667681724235208644">元のページを表示</translation>
 <translation id="4079302484614802869">プロキシは固定プロキシ サーバーではなく .pac スクリプト URL を使用するように設定されています。</translation>
@@ -55,6 +64,7 @@
 <translation id="337363190475750230">プロビジョニングが解除されました</translation>
 <translation id="2367567093518048410">レベル</translation>
 <translation id="7610193165460212391">値（<ph name="VALUE"/>）が範囲外です。</translation>
+<translation id="370665806235115550">読み込み中...</translation>
 <translation id="2096368010154057602">県</translation>
 <translation id="4258748452823770588">署名が不適切です</translation>
 <translation id="3024663005179499861">ポリシー タイプが間違っています</translation>
@@ -67,20 +77,26 @@
 <translation id="883848425547221593">その他のブックマーク</translation>
 <translation id="2181821976797666341">ポリシー</translation>
 <translation id="3174168572213147020">島</translation>
+<translation id="9137013805542155359">原文のページを表示</translation>
 <translation id="2213606439339815911">エントリを取得しています...</translation>
 <translation id="6263376278284652872"><ph name="DOMAIN"/> のブックマーク</translation>
-<translation id="7139724024395191329">首長国</translation>
+<translation id="498957508165411911"><ph name="ORIGINAL_LANGUAGE"/>から<ph name="TARGET_LANGUAGE"/>に翻訳しますか？</translation>
+<translation id="7186367841673660872">このページは<ph name="ORIGINAL_LANGUAGE"/>から<ph name="LANGUAGE_LANGUAGE"/>に翻訳されました</translation>
+<translation id="7139724024395191329">管轄区域</translation>
 <translation id="5145883236150621069">ポリシー応答内にエラー コードがあります</translation>
+<translation id="7983301409776629893">常に<ph name="ORIGINAL_LANGUAGE"/>から<ph name="TARGET_LANGUAGE"/>に翻訳する</translation>
 <translation id="6970216967273061347">地区</translation>
 <translation id="3010559122411665027">リスト エントリ「<ph name="ENTRY_INDEX"/>」: <ph name="ERROR"/></translation>
 <translation id="6445051938772793705">国</translation>
+<translation id="5031870354684148875">Google 翻訳について</translation>
+<translation id="6891596781022320156">ポリシーレベルがサポートされていません。</translation>
 <translation id="2025186561304664664">プロキシは自動設定になっています。</translation>
 <translation id="1853748787962613237">記事を表示できませんでした。</translation>
 <translation id="5455374756549232013">ポリシーのタイムスタンプが不適切です</translation>
+<translation id="1962204205936693436"><ph name="DOMAIN"/> のブックマーク</translation>
 <translation id="1973335181906896915">シリアル化エラーです</translation>
 <translation id="5989320800837274978">固定プロキシ サーバーと .pac スクリプト URL のどちらも指定されていません。</translation>
 <translation id="7805768142964895445">ステータス</translation>
-<translation id="4002066346123236978">タイトル</translation>
 <translation id="536296301121032821">ポリシー設定を保存できませんでした</translation>
 <translation id="5439770059721715174">「<ph name="ERROR_PATH"/>」でスキーマ確認エラー: <ph name="ERROR"/></translation>
 <translation id="8349305172487531364">ブックマーク バー</translation>
@@ -89,21 +105,27 @@
 <translation id="647261751007945333">デバイス ポリシー</translation>
 <translation id="678528074488531090">検証エラー: <ph name="VALIDATION_ERROR"/>。</translation>
 <translation id="213826338245044447">モバイルのブックマーク</translation>
+<translation id="8571890674111243710">ページを<ph name="LANGUAGE"/>に翻訳しています...</translation>
 <translation id="4117700440116928470">ポリシーの適用範囲がサポートされていません。</translation>
 <translation id="2114841414352855701"><ph name="POLICY_NAME"/> によって上書きされるため無視されます。</translation>
+<translation id="3228969707346345236">このページは既に<ph name="LANGUAGE"/>なので、翻訳できません。</translation>
 <translation id="8891727572606052622">プロキシ モードが無効です。</translation>
 <translation id="6008256403891681546">JCB</translation>
 <translation id="7752995774971033316">管理されていません</translation>
 <translation id="3712624925041724820">ライセンスを使い切りました</translation>
 <translation id="4926049483395192435">指定する必要があります。</translation>
 <translation id="7542995811387359312">このフォームは安全な接続を使用していないため、クレジットカードの自動入力が無効になっています。</translation>
+<translation id="5179510805599951267"><ph name="ORIGINAL_LANGUAGE"/>でない場合はこのエラーを報告する</translation>
 <translation id="8088680233425245692">記事を表示できませんでした。</translation>
+<translation id="8725066075913043281">やり直し</translation>
 <translation id="1821930232296380041">無効なリクエストまたはリクエスト パラメータです</translation>
 <translation id="1640180200866533862">ユーザー ポリシー</translation>
+<translation id="375403751935624634">サーバー エラーのため翻訳できませんでした。</translation>
 <translation id="5629630648637658800">ポリシー設定を読み込めませんでした</translation>
 <translation id="2354001756790975382">その他のブックマーク</translation>
 <translation id="3650584904733503804">検証が正常に完了しました</translation>
 <translation id="6915804003454593391">ユーザー:</translation>
+<translation id="8812832766208874265">引き続き <ph name="CURRENT_GOOGLE_HOST"/> を使用する</translation>
 <translation id="3377188786107721145">ポリシー解析エラーです</translation>
 <translation id="2270192940992995399">記事が見つかりませんでした。</translation>
 <translation id="4726672564094551039">ポリシーを再読み込み</translation>
@@ -111,12 +133,15 @@
 <translation id="5190835502935405962">ブックマーク バー</translation>
 <translation id="6965978654500191972">デバイス</translation>
 <translation id="8249320324621329438">前回の取得:</translation>
+<translation id="1285320974508926690">このサイトは翻訳しない</translation>
 <translation id="6282194474023008486">郵便番号</translation>
 <translation id="443673843213245140">プロキシの使用は無効ですが、プロキシの設定が明示的に指定されています。</translation>
 <translation id="3623476034248543066">値を表示</translation>
+<translation id="9020542370529661692">このページは<ph name="TARGET_LANGUAGE"/>に翻訳されています</translation>
 <translation id="5631439013527180824">無効なデバイス管理トークンです</translation>
 <translation id="560412284261940334">管理はサポートされていません</translation>
 <translation id="3169472444629675720">Discover</translation>
+<translation id="4923417429809017348">このページは、不明な言語から<ph name="LANGUAGE_LANGUAGE"/>に翻訳されました。</translation>
 <translation id="4813512666221746211">ネットワーク エラー</translation>
 <translation id="1875753206475436906">ヒューリスティック タイプ: <ph name="HEURISTIC_TYPE"/>
     サーバー タイプ: <ph name="SERVER_TYPE"/>
@@ -129,12 +154,15 @@
 <translation id="6644283850729428850">このポリシーは廃止されました。</translation>
 <translation id="7988324688042446538">パソコンのブックマーク</translation>
 <translation id="8488350697529856933">適用先</translation>
+<translation id="6165508094623778733">詳しく見る</translation>
 <translation id="5565735124758917034">有効</translation>
+<translation id="7568593326407688803">これは<ph name="ORIGINAL_LANGUAGE"/>のページです。翻訳しますか？</translation>
 <translation id="8876793034577346603">ネットワーク設定を解析できませんでした。</translation>
 <translation id="106701514854093668">パソコンのブックマーク</translation>
 <translation id="6154808779448689242">返されたポリシー トークンは現在のトークンと一致しません</translation>
 <translation id="7961015016161918242">同期しない</translation>
 <translation id="2835170189407361413">フォームをクリア</translation>
+<translation id="6550675742724504774">オプション</translation>
 <translation id="8804164990146287819">プライバシー ポリシー</translation>
 <translation id="5337776961545044340">Google ウォレットでは、この販売者にこの種類のカードはサポートされていません。別のカードを選択してください。</translation>
 <translation id="7182878459783632708">ポリシーが設定されていません</translation>
@@ -143,12 +171,14 @@
 <translation id="8713130696108419660">無効なイニシャル署名です</translation>
 <translation id="20817612488360358">システム プロキシ設定を使用するように設定されていますが、明示的なプロキシの設定も指定されています。</translation>
 <translation id="2639739919103226564">ステータス:</translation>
+<translation id="1832546148887467272"><ph name="NEW_GOOGLE_HOST"/> に切り替える</translation>
 <translation id="5095208057601539847">地方</translation>
 <translation id="1847321074516120686">Chrome での自動入力の設定</translation>
 <translation id="1152021252151287493">確認用の署名に問題があります。</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="2721148159707890343">リクエストを正常に送信しました</translation>
 <translation id="2455981314101692989">このウェブページでは、フォームへの自動入力が無効になっています。</translation>
+<translation id="8308427013383895095">ネットワーク接続に問題があったため翻訳できませんでした。</translation>
 <translation id="5720705177508910913">現在のユーザー</translation>
 <translation id="3380864720620200369">クライアント ID:</translation>
 </translationbundle>

@@ -10,7 +10,7 @@
 <translation id="6310545596129886942"><ph name="NUMBER_FEW"/> sec. rimanenti</translation>
 <translation id="9213479837033539041"><ph name="NUMBER_MANY"/> sec. rimanenti</translation>
 <translation id="1209866192426315618"><ph name="NUMBER_DEFAULT"/> min. rimanenti</translation>
-<translation id="1801827354178857021">Punto</translation>
+<translation id="1801827354178857021">Periodo</translation>
 <translation id="1190609913194133056">Centro notifiche</translation>
 <translation id="7470933019269157899"><ph name="NUMBER_DEFAULT"/> minuti rimanenti</translation>
 <translation id="5613020302032141669">Freccia sinistra</translation>
@@ -33,7 +33,7 @@
 <translation id="1940483897317142625">Elimina fino a fine riga</translation>
 <translation id="8507996248087185956"><ph name="NUMBER_DEFAULT"/> min.</translation>
 <translation id="3520476450377425184"><ph name="NUMBER_MANY"/> giorni rimanenti</translation>
-<translation id="932327136139879170">Home</translation>
+<translation id="932327136139879170">Home page</translation>
 <translation id="5600907569873192868"><ph name="NUMBER_MANY"/> min. rimanenti</translation>
 <translation id="8666066831007952346"><ph name="NUMBER_TWO"/> giorni rimanenti</translation>
 <translation id="6390842777729054533"><ph name="NUMBER_ZERO"/> sec. rimanenti</translation>
@@ -86,6 +86,7 @@
 <translation id="7487278341251176613"><ph name="NUMBER_TWO"/> minutes left</translation>
 <translation id="5110450810124758964"><ph name="NUMBER_ONE"/> giorno fa</translation>
 <translation id="2820806154655529776"><ph name="NUMBER_ONE"/> sec.</translation>
+<translation id="4320177379694898372">Nessuna connessione Internet</translation>
 <translation id="7814458197256864873">&amp;Copia</translation>
 <translation id="3889424535448813030">Freccia destra</translation>
 <translation id="4229495110203539533"><ph name="NUMBER_ONE"/> secondo fa</translation>
@@ -150,7 +151,7 @@
 <translation id="1781701194097416995">Sposta di una parola a sinistra</translation>
 <translation id="1243314992276662751">Carica</translation>
 <translation id="50030952220075532"><ph name="NUMBER_ONE"/> giorno rimanente</translation>
-<translation id="8179976553408161302">Invia</translation>
+<translation id="8179976553408161302">Invio</translation>
 <translation id="8471049483003785219">Sposta di una parola a sinistra e modifica selezione</translation>
 <translation id="945522503751344254">Invia feedback</translation>
 <translation id="9170848237812810038">&amp;Annulla</translation>

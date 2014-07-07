@@ -10,7 +10,7 @@
 <translation id="6310545596129886942">Preostalo sekundi: <ph name="NUMBER_FEW"/></translation>
 <translation id="9213479837033539041">Preostalo sekundi: <ph name="NUMBER_MANY"/></translation>
 <translation id="1209866192426315618">Preostalo minuta: <ph name="NUMBER_DEFAULT"/></translation>
-<translation id="1801827354178857021">Točka</translation>
+<translation id="1801827354178857021">Razdoblje</translation>
 <translation id="1190609913194133056">Centar za obavijesti</translation>
 <translation id="7470933019269157899">Preostalo minuta: <ph name="NUMBER_DEFAULT"/></translation>
 <translation id="5613020302032141669">Strelica lijevo</translation>
@@ -33,7 +33,7 @@
 <translation id="1940483897317142625">Izbriši do kraja retka</translation>
 <translation id="8507996248087185956">Broj minuta: <ph name="NUMBER_DEFAULT"/></translation>
 <translation id="3520476450377425184">Preostalo dana: <ph name="NUMBER_MANY"/></translation>
-<translation id="932327136139879170">Home</translation>
+<translation id="932327136139879170">Početna stranica</translation>
 <translation id="5600907569873192868">Preostalo minuta: <ph name="NUMBER_MANY"/></translation>
 <translation id="8666066831007952346">Preostalo dana: <ph name="NUMBER_TWO"/></translation>
 <translation id="6390842777729054533">Preostalo sekundi: <ph name="NUMBER_ZERO"/></translation>
@@ -86,6 +86,7 @@
 <translation id="7487278341251176613">Preostalo minuta: <ph name="NUMBER_TWO"/></translation>
 <translation id="5110450810124758964">Prije <ph name="NUMBER_ONE"/> dan</translation>
 <translation id="2820806154655529776">Broj sekundi: <ph name="NUMBER_ONE"/></translation>
+<translation id="4320177379694898372">Nema internetske veze</translation>
 <translation id="7814458197256864873">&amp;Kopiraj</translation>
 <translation id="3889424535448813030">Strelica desno</translation>
 <translation id="4229495110203539533">Prije <ph name="NUMBER_ONE"/> sekundu</translation>
@@ -150,7 +151,7 @@
 <translation id="1781701194097416995">Premjesti riječ ulijevo</translation>
 <translation id="1243314992276662751">Prenesi</translation>
 <translation id="50030952220075532">Preostalo dana: <ph name="NUMBER_ONE"/></translation>
-<translation id="8179976553408161302">Pridružite se</translation>
+<translation id="8179976553408161302">Enter</translation>
 <translation id="8471049483003785219">Premjesti riječ ulijevo i izmijeni odabir</translation>
 <translation id="945522503751344254">Slanje povratnih informacija</translation>
 <translation id="9170848237812810038">&amp;Poništi</translation>

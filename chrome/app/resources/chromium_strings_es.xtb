@@ -56,7 +56,6 @@ Es posible que algunas funciones no estén disponibles y que no se guarden los c
 <translation id="4831257561365056138">Desinstalar menú de aplicaciones de Chromium</translation>
 <translation id="4222580632002216401">Has iniciado sesión en Chromium. El administrador ha inhabilitado la sincronización.</translation>
 <translation id="4207043877577553402"><ph name="BEGIN_BOLD"/>Advertencia:<ph name="END_BOLD"/> Chromium no puede evitar que las extensiones registren el historial de búsqueda. Para inhabilitar la ejecución de esta extensión en modo incógnito, desactiva la casilla correspondiente a esta opción.</translation>
-<translation id="4516868174453854611">Al haber iniciado sesión, puedes ver tus pestañas, tus marcadores y otros elementos de Chromium en tu portátil, teléfono y tablet. También recibirás funciones y sugerencias más relevantes en relación con los servicios de Google.</translation>
 <translation id="985602178874221306">Los creadores de Chromium</translation>
 <translation id="8628626585870903697">Chromium no incluye el visor de PDF que se necesita para que la vista previa de impresión funcione.</translation>
 <translation id="7138853919861947730">Chromium puede utilizar servicios web para mejorar la experiencia de navegación de los usuarios.</translation>
@@ -111,6 +110,7 @@ Es posible que algunas funciones no estén disponibles y que no se guarden los c
 <translation id="3258596308407688501">Chromium no puede leer el directorio de datos ni escribir en él:
 
 <ph name="USER_DATA_DIRECTORY"/></translation>
+<translation id="1869480248812203386">Puedes ayudar a que Chromium sea más seguro y más fácil de utilizar enviando a Google automáticamente información sobre posibles incidentes de seguridad.</translation>
 <translation id="6970811910055250180">Actualizando el dispositivo...</translation>
 <translation id="2485422356828889247">Desinstalar</translation>
 <translation id="85843667276690461">Obtener ayuda de Chromium</translation>
@@ -119,7 +119,6 @@ Es posible que algunas funciones no estén disponibles y que no se guarden los c
 <translation id="8493179195440786826">Chromium no está actualizado</translation>
 <translation id="911206726377975832">¿Quieres borrar también los datos de navegación?</translation>
 <translation id="95514773681268843"><ph name="DOMAIN"/> requiere que leas y aceptes las siguientes Condiciones de servicio para poder utilizar este dispositivo. Estas condiciones no amplían, modifican ni limitan los términos de Chromium OS.</translation>
-<translation id="5603085937604338780">chromium</translation>
 <translation id="1699664235656412242">Cierra todas las ventanas de Chromium (incluidas las ventanas en modo Windows 8) y vuelve a intentarlo.</translation>
 <translation id="6734080038664603509">Actualizar &amp;Chromium</translation>
 <translation id="8862326446509486874">No dispones de los derechos necesarios para la instalación en el sistema. Intenta ejecutar de nuevo el programa de instalación como administrador.</translation>
@@ -228,6 +227,7 @@ Si decides iniciar sesión de todas formas, se fusionará la información de Chr
 <translation id="9013262824292842194">Chromium está disponible para Windows Vista o Windows XP con SP2 o superior.</translation>
 <translation id="1967743265616885482">Se ha detectado que un módulo con el mismo nombre provoca un conflicto con Chromium.</translation>
 <translation id="8704119203788522458">Aquí tienes tu navegador Chromium</translation>
+<translation id="8269379391216269538">Ayuda a mejorar Chromium</translation>
 <translation id="4224199872375172890">Chromium está actualizado.</translation>
 <translation id="374481098568514319">Este ordenador ya cuenta con una versión más reciente de los componentes de Chromium. Utiliza un archivo de instalación más reciente.</translation>
 <translation id="6240281849816458190">Has intentado acceder a &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, pero el servidor ha presentado un certificado que aún no es válido, ya que no disponemos de información que indique si el certificado es fiable. Chromium no puede garantizar de manera fiable que estés estableciendo comunicación con &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; y no con un hacker. Actualmente, el reloj de tu ordenador marca la(s) <ph name="CURRENT_TIME"/>. ¿Esta información es correcta? En caso contrario, debes corregir el reloj de tu sistema y, a continuación, actualizar la página.</translation>

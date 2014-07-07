@@ -1,19 +1,17 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="sr">
-<translation id="8719282907381795632">Приступ подацима на <ph name="WEBSITE_1"/></translation>
 <translation id="7809034755304591547">Администратор је блокирао <ph name="EXTENSION_NAME"/> (ИД додатка „<ph name="EXTENSION_ID"/>“).</translation>
 <translation id="2857834222104759979">Датотека манифеста је неважећа.</translation>
+<translation id="8978038008714088448">Читање и измена података на <ph name="WEBSITE_1"/></translation>
+<translation id="4205302772098850608">Читање и измена података на <ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/> и <ph name="WEBSITE_3"/></translation>
 <translation id="3828484226910527078">Приступ USB уређају</translation>
 <translation id="6384275966486438344">Промените подешавања претраге на: <ph name="SEARCH_HOST"/></translation>
 <translation id="5911798608827489036">Размена података са било којим рачунаром на локалној мрежи или интернету</translation>
 <translation id="4719685943208231314">Приступ USB уређају произвођача <ph name="VENDOR_NAME"/></translation>
 <translation id="657064425229075395">Није могуће учитати скрипту у позадини „<ph name="BACKGROUND_SCRIPT"/>“.</translation>
-<translation id="3093853184108622112">Приступ подацима на <ph name="WEBSITE_1"/> и <ph name="WEBSITE_2"/></translation>
 <translation id="8597109877291678953">Размена података са рачунаром са називом <ph name="HOSTNAME"/></translation>
-<translation id="6914908792814954894">Приступите подацима на <ph name="NUMBER_OF_WEBSITES"/> веб-сајтова</translation>
 <translation id="5456409301717116725">Овај додатак садржи датотеку кључа „<ph name="KEY_PATH"/>“. Вероватно то не желите.</translation>
-<translation id="6968649314782363508">Приступ подацима на <ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/> и <ph name="WEBSITE_3"/></translation>
 <translation id="2350172092385603347">Коришћена је локализација, али параметар default_locale није наведен у манифесту.</translation>
 <translation id="8058376558882514200">Приступ USB уређају <ph name="PRODUCT_NAME"/> произвођача <ph name="VENDOR_NAME"/></translation>
 <translation id="8774379383902544371">Приступ USB уређајима</translation>
@@ -21,13 +19,15 @@
 <translation id="6344170822609224263">Приступ листи мрежних веза</translation>
 <translation id="2518849872271000461">Размена података са рачунарима са називима: <ph name="HOSTNAMES"/></translation>
 <translation id="1389014510128217152">– <ph name="WEBSITE_1"/></translation>
-<translation id="5530391389158154052">Приступајте подацима на <ph name="NUMBER_OF_WEBSITES"/> веб-сајт(ов)а</translation>
 <translation id="961805664415579088">Размена података са било којим рачунаром на домену <ph name="DOMAIN"/></translation>
 <translation id="4968399700653439437">Размена података са било којим рачунаром на доменима: <ph name="DOMAINS"/></translation>
 <translation id="8662911384982557515">Промените почетну страницу у: <ph name="HOME_PAGE"/></translation>
+<translation id="8114679593444120202">Read and modify your data on <ph name="NUMBER_OF_WEBSITES"/> websites</translation>
 <translation id="8602184400052594090">Датотека манифеста недостаје или је нечитљива.</translation>
 <translation id="7893008570150657497">да приступа сликама, музици и другим медијима са рачунара</translation>
 <translation id="7217838517480956708">Администратор овог уређаја захтева да додатак <ph name="EXTENSION_NAME"/> буде инсталиран. Не можете да га уклоните или измените.</translation>
 <translation id="7154130902455071009">Промените почетну страницу у: <ph name="START_PAGE"/></translation>
+<translation id="6094507746643187368">Читање и измена података на <ph name="WEBSITE_1"/> и <ph name="WEBSITE_2"/></translation>
 <translation id="1803557475693955505">Није могуће учитати страницу у позадини „<ph name="BACKGROUND_PAGE"/>“.</translation>
+<translation id="8207052894957937969">Read and modify your data on <ph name="NUMBER_OF_WEBSITES"/> websites</translation>
 </translationbundle>

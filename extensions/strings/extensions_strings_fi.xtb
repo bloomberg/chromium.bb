@@ -1,19 +1,17 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="fi">
-<translation id="8719282907381795632">Käyttää tietojasi sivustolla <ph name="WEBSITE_1"/></translation>
 <translation id="7809034755304591547"><ph name="EXTENSION_NAME"/> (laajennustunnus <ph name="EXTENSION_ID"/>) on järjestelmänvalvojan kiellettyjen laajennuksien luettelossa.</translation>
 <translation id="2857834222104759979">Luettelotiedosto on virheellinen.</translation>
+<translation id="8978038008714088448">Lukea ja muokata tietojasi sivustossa <ph name="WEBSITE_1"/>.</translation>
+<translation id="4205302772098850608">Lukea ja muokata tietojasi sivustoissa <ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/> ja <ph name="WEBSITE_3"/>.</translation>
 <translation id="3828484226910527078">Käytä USB-laitetta</translation>
 <translation id="6384275966486438344">Ota käyttöön seuraava hakukone: <ph name="SEARCH_HOST"/></translation>
 <translation id="5911798608827489036">Vaihda tietoja minkä tahansa paikallisverkossa tai internetissä olevan tietokoneen kanssa</translation>
 <translation id="4719685943208231314">Käyttää valmistajan <ph name="VENDOR_NAME"/> USB-laitetta.</translation>
 <translation id="657064425229075395">Taustakoodin <ph name="BACKGROUND_SCRIPT"/> lataaminen epäonnistui.</translation>
-<translation id="3093853184108622112">Käyttää tietojasi sivustoilla <ph name="WEBSITE_1"/> ja <ph name="WEBSITE_2"/></translation>
 <translation id="8597109877291678953">Vaihda tietoja tietokoneen nimeltä <ph name="HOSTNAME"/> kanssa</translation>
-<translation id="6914908792814954894">Käyttää tietojasi <ph name="NUMBER_OF_WEBSITES"/> sivustolla.</translation>
 <translation id="5456409301717116725">Tämä laajennus sisältää avaintiedoston <ph name="KEY_PATH"/>. Et todennäköisesti halua sitä.</translation>
-<translation id="6968649314782363508">Käyttää tietojasi sivustoilla <ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/> ja <ph name="WEBSITE_3"/></translation>
 <translation id="2350172092385603347">Lokalisaatiota käytetään, mutta default_locale ei ole määritetty luettelossa.</translation>
 <translation id="8058376558882514200">Käyttää valmistajan <ph name="VENDOR_NAME"/> USB-laitetta <ph name="PRODUCT_NAME"/>.</translation>
 <translation id="8774379383902544371">Käytä USB-laitteita</translation>
@@ -21,13 +19,15 @@
 <translation id="6344170822609224263">Pääsy verkkoyhteysluetteloon</translation>
 <translation id="2518849872271000461">Vaida tietoja seuraavan nimisten tietokoneiden kanssa: <ph name="HOSTNAMES"/></translation>
 <translation id="1389014510128217152">– <ph name="WEBSITE_1"/></translation>
-<translation id="5530391389158154052">Access your data on <ph name="NUMBER_OF_WEBSITES"/> websites</translation>
 <translation id="961805664415579088">Vaihda tietoja minkä tahansa verkkotunnusta <ph name="DOMAIN"/> käyttävän tietokoneen kanssa</translation>
 <translation id="4968399700653439437">Vaihda tietoja minkä tahansa seuraavia verkkotunnuksia käyttävän tietokoneen kanssa: <ph name="DOMAINS"/></translation>
 <translation id="8662911384982557515">Vaihda aloitussivuksi <ph name="HOME_PAGE"/></translation>
+<translation id="8114679593444120202">Lukea ja muokata tietojasi <ph name="NUMBER_OF_WEBSITES"/> sivustossa.</translation>
 <translation id="8602184400052594090">Luettelotiedosto puuttuu tai sitä ei voi lukea.</translation>
 <translation id="7893008570150657497">käyttää valokuvia, musiikkia ja muuta tietokoneesi mediaa</translation>
 <translation id="7217838517480956708">Koneen ylläpitäjä vaatii laajennuksen <ph name="EXTENSION_NAME"/> asennusta. Sitä ei voi poistaa tai muuttaa.</translation>
 <translation id="7154130902455071009">Vaihda aloitussivuksi <ph name="START_PAGE"/></translation>
+<translation id="6094507746643187368">Lukea ja muokata tietojasi sivustoissa <ph name="WEBSITE_1"/> ja <ph name="WEBSITE_2"/>.</translation>
 <translation id="1803557475693955505">Taustasivun <ph name="BACKGROUND_PAGE"/> lataaminen ei onnistunut.</translation>
+<translation id="8207052894957937969">Lukea ja muokata tietojasi <ph name="NUMBER_OF_WEBSITES"/> sivustossa.</translation>
 </translationbundle>

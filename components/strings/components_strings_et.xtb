@@ -7,11 +7,13 @@
 <translation id="5172758083709347301">Masin</translation>
 <translation id="7180611975245234373">Värskenda</translation>
 <translation id="777702478322588152">Prefektuur</translation>
+<translation id="7600965453749440009">Ära kunagi tõlgi: <ph name="LANGUAGE"/></translation>
 <translation id="2262243747453050782">HTTP viga</translation>
 <translation id="1339601241726513588">Registreerimisdomeen:</translation>
 <translation id="7298195798382681320">Soovitatud</translation>
 <translation id="4058922952496707368">Võti „<ph name="SUBKEY"/>”: <ph name="ERROR"/></translation>
 <translation id="5299298092464848405">Reegli sõelumisel ilmnes viga</translation>
+<translation id="6831043979455480757">Tõlgi</translation>
 <translation id="1228893227497259893">Üksuse vale identifikaator</translation>
 <translation id="6337534724793800597">Reeglite filtreerimine nime järgi</translation>
 <translation id="4372948949327679948">Oodatud väärtus: <ph name="VALUE_TYPE"/>.</translation>
@@ -21,11 +23,17 @@
 <translation id="2958431318199492670">Võrgu seadistus ei vasta ONC standardile. On võimalik, et seadistuse mõnd osa ei saa importida.</translation>
 <translation id="933712198907837967">Diners Club</translation>
 <translation id="277499241957683684">Seadme kirje puudub</translation>
+<translation id="8553075262323480129">Tõlkimine nurjus, kuna lehe keelt ei õnnestunud määrata.</translation>
 <translation id="7935318582918952113">DOM Distiller</translation>
+<translation id="1103523840287552314">Tõlgi alati: <ph name="LANGUAGE"/></translation>
 <translation id="1227633850867390598">Peida väärtus</translation>
 <translation id="6753269504797312559">Reegli väärtus</translation>
+<translation id="8834246243508017242">Luba automaatne täitmine kontakte kasutades …</translation>
+<translation id="7275334191706090484">Hallatud järjehoidjad</translation>
 <translation id="7400418766976504921">URL</translation>
+<translation id="7378627244592794276">Ei</translation>
 <translation id="2704283930420550640">Väärtus ei vasta vormingule.</translation>
+<translation id="8943805475239098364">Kas soovite otsida domeeni <ph name="CURRENT_GOOGLE_HOST"/> asemel domeenis <ph name="NEW_GOOGLE_HOST"/>?</translation>
 <translation id="4850886885716139402">Kuva</translation>
 <translation id="8091372947890762290">Aktiveerimine on serveris ootel</translation>
 <translation id="719464814642662924">Visa</translation>
@@ -37,24 +45,26 @@
 <translation id="7441627299479586546">Reegli objekt on vale</translation>
 <translation id="3885155851504623709">Vald</translation>
 <translation id="6973656660372572881">Määratud on nii fikseeritud puhverserverid kui ka pac-skriptiga URL.</translation>
+<translation id="7108649287766967076">Tõlkimine <ph name="TARGET_LANGUAGE"/> keelde ebaõnnestus.</translation>
 <translation id="4103249731201008433">Seadme seerianumber on kehtetu</translation>
 <translation id="3667681724235208644">Originaali kuvamine</translation>
 <translation id="4079302484614802869">Puhverserveri konfigureerimine on määratud kasutama pac-skripti URL-i, mitte fikseeritud puhverservereid.</translation>
 <translation id="5540224163453853">Taotletud artiklit ei õnnestunud leida.</translation>
 <translation id="5523118979700054094">Reegli nimi</translation>
 <translation id="7791543448312431591">Lisa</translation>
-<translation id="2053553514270667976">Sihtnumber</translation>
+<translation id="2053553514270667976">Postiindeks</translation>
 <translation id="1644184664548287040">Võrgu seadistus on sobimatu ja seda ei saa importida.</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="2212735316055980242">Reeglit ei leitud</translation>
 <translation id="3150653042067488994">Serveris ilmnes ajutine viga</translation>
-<translation id="7087282848513945231">Riik</translation>
+<translation id="7087282848513945231">Maakond</translation>
 <translation id="6458467102616083041">Seda eiratakse, kuna vaikeotsing on reegliga keelatud.</translation>
 <translation id="1227224963052638717">Tundmatud eeskirjad.</translation>
 <translation id="9207861905230894330">Artikli lisamine ebaõnnestus.</translation>
 <translation id="337363190475750230">Eraldatud</translation>
 <translation id="2367567093518048410">Tase</translation>
 <translation id="7610193165460212391">Väärtus on vahemikust (<ph name="VALUE"/>) väljaspool.</translation>
+<translation id="370665806235115550">Laadimine...</translation>
 <translation id="2096368010154057602">Osakond</translation>
 <translation id="4258748452823770588">Sobimatu allkiri</translation>
 <translation id="3024663005179499861">Reegli tüüp on vale</translation>
@@ -67,20 +77,26 @@
 <translation id="883848425547221593">Muud järjehoidjad</translation>
 <translation id="2181821976797666341">Reeglid</translation>
 <translation id="3174168572213147020">Saar</translation>
+<translation id="9137013805542155359">Kuva originaal</translation>
 <translation id="2213606439339815911">Kirjete toomine ...</translation>
 <translation id="6263376278284652872">Domeeni <ph name="DOMAIN"/> järjehoidjad</translation>
+<translation id="498957508165411911">Kas tõlkida <ph name="ORIGINAL_LANGUAGE"/> keelest <ph name="TARGET_LANGUAGE"/> keelde?</translation>
+<translation id="7186367841673660872">See leht on tõlgitud keelest<ph name="ORIGINAL_LANGUAGE"/>keelde<ph name="LANGUAGE_LANGUAGE"/></translation>
 <translation id="7139724024395191329">Emiraat</translation>
 <translation id="5145883236150621069">Reegli vastuses sisaldus veakood</translation>
-<translation id="6970216967273061347">Piirkond</translation>
+<translation id="7983301409776629893">Tõlgi alati keelest <ph name="ORIGINAL_LANGUAGE"/> keelde <ph name="TARGET_LANGUAGE"/></translation>
+<translation id="6970216967273061347">Ringkond</translation>
 <translation id="3010559122411665027">Loendi kirje „<ph name="ENTRY_INDEX"/>”: <ph name="ERROR"/></translation>
 <translation id="6445051938772793705">Riik</translation>
+<translation id="5031870354684148875">Teave Google'i tõlke kohta</translation>
+<translation id="6891596781022320156">Reegli taset ei toetata.</translation>
 <translation id="2025186561304664664">Puhverserver seadistatakse automaatselt.</translation>
 <translation id="1853748787962613237">Artikli kuvamine ebaõnnestus.</translation>
 <translation id="5455374756549232013">Reegli ajatempel on sobimatu</translation>
+<translation id="1962204205936693436">Domeeni <ph name="DOMAIN"/> järjehoidjad</translation>
 <translation id="1973335181906896915">Viga jadaks teisendamisel</translation>
 <translation id="5989320800837274978">Määratud ei ole fikseeritud puhverservereid ega pac-skriptiga URL-i.</translation>
 <translation id="7805768142964895445">Olek</translation>
-<translation id="4002066346123236978">Pealkiri</translation>
 <translation id="536296301121032821">Reegli seadete talletamine ebaõnnestus</translation>
 <translation id="5439770059721715174">Skeemi valideerimise viga asukohas „<ph name="ERROR_PATH"/>”: <ph name="ERROR"/></translation>
 <translation id="8349305172487531364">Järjehoidjariba</translation>
@@ -89,21 +105,27 @@
 <translation id="647261751007945333">Seadme reeglid</translation>
 <translation id="678528074488531090">Viga valideerimisel: <ph name="VALIDATION_ERROR"/>.</translation>
 <translation id="213826338245044447">Mobiili järjehoidjad</translation>
+<translation id="8571890674111243710">Lehe tõlkimine <ph name="LANGUAGE"/> keelde...</translation>
 <translation id="4117700440116928470">Reegli ulatust ei toetata.</translation>
 <translation id="2114841414352855701">Seda ignoreeritakse, kuna reegel <ph name="POLICY_NAME"/> alistab selle.</translation>
+<translation id="3228969707346345236">Tõlkimine nurjus, kuna lehe keel on juba <ph name="LANGUAGE"/>.</translation>
 <translation id="8891727572606052622">Kehtetu puhverserveri režiim.</translation>
 <translation id="6008256403891681546">JCB</translation>
 <translation id="7752995774971033316">Haldamata</translation>
 <translation id="3712624925041724820">Litsentsid on ammendunud</translation>
 <translation id="4926049483395192435">Tuleb määrata.</translation>
 <translation id="7542995811387359312">Automaatne krediitkaardi täide on keelatud, sest see vorm ei kasuta turvalist ühendust.</translation>
+<translation id="5179510805599951267">Tegu ei ole <ph name="ORIGINAL_LANGUAGE"/> keelega? Andke veast teada</translation>
 <translation id="8088680233425245692">Artikli kuvamine ebaõnnestus.</translation>
+<translation id="8725066075913043281">Proovi uuesti</translation>
 <translation id="1821930232296380041">Taotlus või selle parameetrid on kehtetud</translation>
 <translation id="1640180200866533862">Kasutajareeglid</translation>
+<translation id="375403751935624634">Tõlkimine ebaõnnestus serverivea tõttu.</translation>
 <translation id="5629630648637658800">Reegli seadete laadimine ebaõnnestus</translation>
 <translation id="2354001756790975382">Muud järjehoidjad</translation>
 <translation id="3650584904733503804">Valideerimine õnnestus</translation>
 <translation id="6915804003454593391">Kasutaja:</translation>
+<translation id="8812832766208874265">Jätka domeeni <ph name="CURRENT_GOOGLE_HOST"/> kasutamist</translation>
 <translation id="3377188786107721145">Viga reegli sõelumisel</translation>
 <translation id="2270192940992995399">Artiklit ei leitud.</translation>
 <translation id="4726672564094551039">Laadi reeglid uuesti</translation>
@@ -111,12 +133,15 @@
 <translation id="5190835502935405962">Järjehoidjariba</translation>
 <translation id="6965978654500191972">Seade</translation>
 <translation id="8249320324621329438">Viimati toodud:</translation>
+<translation id="1285320974508926690">Ära kunagi seda saiti tõlgi</translation>
 <translation id="6282194474023008486">Sihtnumber</translation>
 <translation id="443673843213245140">Puhverserveri kasutamine on keelatud, kuid määratud on ka konkreetne puhverserveri konfigureerimine.</translation>
 <translation id="3623476034248543066">Kuva väärtused</translation>
+<translation id="9020542370529661692">See leht on tõlgitud <ph name="TARGET_LANGUAGE"/> keelde</translation>
 <translation id="5631439013527180824">Seadme halduse luba on kehtetu</translation>
 <translation id="560412284261940334">Haldust ei toetata</translation>
 <translation id="3169472444629675720">Discover</translation>
+<translation id="4923417429809017348">Leht on tõlgitud teadmata keelest <ph name="LANGUAGE_LANGUAGE"/> keelde</translation>
 <translation id="4813512666221746211">Võrgu viga</translation>
 <translation id="1875753206475436906">heuristiline tüüp: <ph name="HEURISTIC_TYPE"/>
     serveri tüüp: <ph name="SERVER_TYPE"/>
@@ -129,12 +154,15 @@
 <translation id="6644283850729428850">See reegel on aegunud.</translation>
 <translation id="7988324688042446538">Töölaua järjehoidjad</translation>
 <translation id="8488350697529856933">Kehtib:</translation>
+<translation id="6165508094623778733">Lisateave</translation>
 <translation id="5565735124758917034">Aktiivne</translation>
+<translation id="7568593326407688803">See leht on keeles<ph name="ORIGINAL_LANGUAGE"/>Kas soovite seda tõlkida?</translation>
 <translation id="8876793034577346603">Võrgu seadistust ei õnnestunud sõeluda.</translation>
 <translation id="106701514854093668">Töölaua järjehoidjad</translation>
 <translation id="6154808779448689242">Tagastatud reegli luba ei kattu praeguse loaga</translation>
 <translation id="7961015016161918242">Mitte kunagi</translation>
 <translation id="2835170189407361413">Tühjenda vorm</translation>
+<translation id="6550675742724504774">Valikud</translation>
 <translation id="8804164990146287819">Privaatsuseeskirjad</translation>
 <translation id="5337776961545044340">Google Wallet ei toeta selle kaupmehe puhul seda tüüpi kaarti. Valige teine kaart.</translation>
 <translation id="7182878459783632708">Reegleid pole määratud</translation>
@@ -143,12 +171,14 @@
 <translation id="8713130696108419660">Sobimatu esialgne allkiri</translation>
 <translation id="20817612488360358">Kasutamiseks on määratud süsteemi puhverserveri seaded, kuid määratud on ka konkreetne puhverserveri konfigureerimine.</translation>
 <translation id="2639739919103226564">Olek:</translation>
+<translation id="1832546148887467272">Lülitu ümber domeenile <ph name="NEW_GOOGLE_HOST"/></translation>
 <translation id="5095208057601539847">Provints</translation>
 <translation id="1847321074516120686">Chrome'i automaatse täitmise seaded</translation>
 <translation id="1152021252151287493">Sobimatu kinnitusallkiri.</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="2721148159707890343">Taotlus õnnestus</translation>
 <translation id="2455981314101692989">See veebileht on keelanud automaatse täitmise selle vormi puhul.</translation>
+<translation id="8308427013383895095">Tõlkimine ebaõnnestus võrguühenduse probleemi tõttu.</translation>
 <translation id="5720705177508910913">Praegune kasutaja</translation>
 <translation id="3380864720620200369">Kliendi ID:</translation>
 </translationbundle>
