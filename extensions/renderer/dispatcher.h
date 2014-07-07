@@ -192,10 +192,7 @@ class Dispatcher : public content::RenderProcessObserver,
   void UpdateActiveExtensions();
 
   // Sets up the host permissions for |extension|.
-  void InitOriginPermissions(const Extension* extension);
-  void UpdateOriginPermissions(UpdatedExtensionPermissionsInfo::Reason reason,
-                               const Extension* extension,
-                               const URLPatternSet& origins);
+  void UpdateOriginPermissions(const Extension* extension);
 
   // Enable custom element whitelist in Apps.
   void EnableCustomElementWhiteList();

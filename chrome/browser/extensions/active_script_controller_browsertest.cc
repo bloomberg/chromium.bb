@@ -33,7 +33,7 @@ const char kBackgroundScriptSource[] =
     "var listener = function(tabId) {\n"
     "  chrome.tabs.onUpdated.removeListener(listener);\n"
     "  chrome.tabs.executeScript(tabId, {\n"
-    "    code: \"chrome.test.sendMessage('inject succeeded');\",\n"
+    "    code: \"chrome.test.sendMessage('inject succeeded');\"\n"
     "  });"
     "};\n"
     "chrome.tabs.onUpdated.addListener(listener);";

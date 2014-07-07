@@ -22,6 +22,7 @@
 #include "extensions/common/permissions/usb_device_permission_data.h"
 #include "extensions/common/url_pattern.h"
 #include "extensions/common/url_pattern_set.h"
+#include "extensions/common/user_script.h"
 #include "extensions/common/view_type.h"
 #include "ipc/ipc_message_macros.h"
 #include "ui/gfx/ipc/gfx_param_traits.h"
@@ -32,6 +33,9 @@
 IPC_ENUM_TRAITS_MAX_VALUE(extensions::ViewType, extensions::VIEW_TYPE_LAST)
 IPC_ENUM_TRAITS_MAX_VALUE(content::SocketPermissionRequest::OperationType,
                           content::SocketPermissionRequest::OPERATION_TYPE_LAST)
+
+IPC_ENUM_TRAITS_MAX_VALUE(extensions::UserScript::InjectionType,
+                          extensions::UserScript::INJECTION_TYPE_LAST)
 
 // Parameters structure for ExtensionHostMsg_AddAPIActionToActivityLog and
 // ExtensionHostMsg_AddEventToActivityLog.
@@ -156,16 +160,6 @@ IPC_STRUCT_BEGIN(ExtensionMsg_ExternalConnectionInfo)
   IPC_STRUCT_MEMBER(GURL, source_url)
 IPC_STRUCT_END()
 
-// Parameters structure for ExtensionMsg_UpdatePermissions.
-IPC_STRUCT_BEGIN(ExtensionMsg_UpdatePermissions_Params)
-  IPC_STRUCT_MEMBER(int /* UpdateExtensionPermissionsInfo::REASON */, reason_id)
-  IPC_STRUCT_MEMBER(std::string, extension_id)
-  IPC_STRUCT_MEMBER(extensions::APIPermissionSet, apis)
-  IPC_STRUCT_MEMBER(extensions::ManifestPermissionSet, manifest_permissions)
-  IPC_STRUCT_MEMBER(extensions::URLPatternSet, explicit_hosts)
-  IPC_STRUCT_MEMBER(extensions::URLPatternSet, scriptable_hosts)
-IPC_STRUCT_END()
-
 IPC_STRUCT_TRAITS_BEGIN(extensions::DraggableRegion)
   IPC_STRUCT_TRAITS_MEMBER(draggable)
   IPC_STRUCT_TRAITS_MEMBER(bounds)
@@ -212,6 +206,20 @@ typedef std::map<std::string, std::string> SubstitutionMap;
 // Map of extensions IDs to the executing script paths.
 typedef std::map<std::string, std::set<std::string> > ExecutingScriptsMap;
 
+struct ExtensionMsg_PermissionSetStruct {
+  ExtensionMsg_PermissionSetStruct();
+  explicit ExtensionMsg_PermissionSetStruct(
+      const extensions::PermissionSet* permissions);
+  ~ExtensionMsg_PermissionSetStruct();
+
+  scoped_refptr<const extensions::PermissionSet> ToPermissionSet() const;
+
+  extensions::APIPermissionSet apis;
+  extensions::ManifestPermissionSet manifest_permissions;
+  extensions::URLPatternSet explicit_hosts;
+  extensions::URLPatternSet scriptable_hosts;
+};
+
 struct ExtensionMsg_Loaded_Params {
   ExtensionMsg_Loaded_Params();
   ~ExtensionMsg_Loaded_Params();
@@ -231,11 +239,9 @@ struct ExtensionMsg_Loaded_Params {
   // to generate the extension ID for extensions that are loaded unpacked.
   base::FilePath path;
 
-  // The extension's active permissions.
-  extensions::APIPermissionSet apis;
-  extensions::ManifestPermissionSet manifest_permissions;
-  extensions::URLPatternSet explicit_hosts;
-  extensions::URLPatternSet scriptable_hosts;
+  // The extension's active and withheld permissions.
+  ExtensionMsg_PermissionSetStruct active_permissions;
+  ExtensionMsg_PermissionSetStruct withheld_permissions;
 
   // We keep this separate so that it can be used in logging.
   std::string id;
@@ -287,6 +293,14 @@ struct ParamTraits<extensions::ManifestPermissionSet> {
 };
 
 template <>
+struct ParamTraits<ExtensionMsg_PermissionSetStruct> {
+  typedef ExtensionMsg_PermissionSetStruct param_type;
+  static void Write(Message* m, const param_type& p);
+  static bool Read(const Message* m, PickleIterator* iter, param_type* p);
+  static void Log(const param_type& p, std::string* l);
+};
+
+template <>
 struct ParamTraits<ExtensionMsg_Loaded_Params> {
   typedef ExtensionMsg_Loaded_Params param_type;
   static void Write(Message* m, const param_type& p);
@@ -297,6 +311,13 @@ struct ParamTraits<ExtensionMsg_Loaded_Params> {
 }  // namespace IPC
 
 #endif  // EXTENSIONS_COMMON_EXTENSION_MESSAGES_H_
+
+// Parameters structure for ExtensionMsg_UpdatePermissions.
+IPC_STRUCT_BEGIN(ExtensionMsg_UpdatePermissions_Params)
+  IPC_STRUCT_MEMBER(std::string, extension_id)
+  IPC_STRUCT_MEMBER(ExtensionMsg_PermissionSetStruct, active_permissions)
+  IPC_STRUCT_MEMBER(ExtensionMsg_PermissionSetStruct, withheld_permissions)
+IPC_STRUCT_END()
 
 // Messages sent from the browser to the renderer.
 
@@ -582,8 +603,9 @@ IPC_MESSAGE_ROUTED2(ExtensionHostMsg_ContentScriptsExecuting,
 // If request id is -1, this signals that the request has already ran, and this
 // merely serves as a notification. This happens when the feature to disable
 // scripts running without user consent is not enabled.
-IPC_MESSAGE_ROUTED2(ExtensionHostMsg_RequestScriptInjectionPermission,
+IPC_MESSAGE_ROUTED3(ExtensionHostMsg_RequestScriptInjectionPermission,
                     std::string /* extension id */,
+                    extensions::UserScript::InjectionType /* script type */,
                     int64 /* request id */)
 
 // Sent from the browser to the renderer in reply to a

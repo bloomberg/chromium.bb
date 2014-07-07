@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/memory/scoped_ptr.h"
+#include "extensions/common/permissions/permissions_data.h"
 #include "extensions/common/user_script.h"
 #include "third_party/WebKit/public/web/WebScriptSource.h"
 
@@ -34,15 +35,10 @@ class ScriptInjector {
                         // (or just did not accept) the injection.
   };
 
-  // The possible types of access for a given frame.
-  enum AccessType {
-    DENY_ACCESS,    // The script cannot access the given frame.
-    ALLOW_ACCESS,   // The script can access the given frame.
-    REQUEST_ACCESS  // The browser must determine if the script can access the
-                    // given frame.
-  };
-
   virtual ~ScriptInjector() {}
+
+  // Returns the script type of this particular injection.
+  virtual UserScript::InjectionType script_type() const = 0;
 
   // Returns true if the script should execute in child frames.
   virtual bool ShouldExecuteInChildFrames() const = 0;
@@ -64,10 +60,11 @@ class ScriptInjector {
   virtual bool ShouldInjectCss(UserScript::RunLocation run_location) const = 0;
 
   // Returns true if the script should execute on the given |frame|.
-  virtual AccessType CanExecuteOnFrame(const Extension* extension,
-                                       blink::WebFrame* web_frame,
-                                       int tab_id,
-                                       const GURL& top_url) const = 0;
+  virtual PermissionsData::AccessType CanExecuteOnFrame(
+      const Extension* extension,
+      blink::WebFrame* web_frame,
+      int tab_id,
+      const GURL& top_url) const = 0;
 
   // Returns the javascript sources to inject at the given |run_location|.
   // Only called if ShouldInjectJs() is true.

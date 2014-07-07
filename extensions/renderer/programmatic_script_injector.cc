@@ -34,6 +34,11 @@ ProgrammaticScriptInjector::ProgrammaticScriptInjector(
 ProgrammaticScriptInjector::~ProgrammaticScriptInjector() {
 }
 
+UserScript::InjectionType ProgrammaticScriptInjector::script_type()
+    const {
+  return UserScript::PROGRAMMATIC_SCRIPT;
+}
+
 bool ProgrammaticScriptInjector::ShouldExecuteInChildFrames() const {
   return params_->all_frames;
 }
@@ -60,7 +65,7 @@ bool ProgrammaticScriptInjector::ShouldInjectCss(
   return GetRunLocation() == run_location && !params_->is_javascript;
 }
 
-ScriptInjector::AccessType ProgrammaticScriptInjector::CanExecuteOnFrame(
+PermissionsData::AccessType ProgrammaticScriptInjector::CanExecuteOnFrame(
     const Extension* extension,
     blink::WebFrame* frame,
     int tab_id,
@@ -68,23 +73,17 @@ ScriptInjector::AccessType ProgrammaticScriptInjector::CanExecuteOnFrame(
   GURL effective_document_url = ScriptContext::GetEffectiveDocumentURL(
       frame, frame->document().url(), params_->match_about_blank);
   if (params_->is_web_view) {
-    return effective_document_url == params_->webview_src ? ALLOW_ACCESS
-                                                          : DENY_ACCESS;
+    return effective_document_url == params_->webview_src
+               ? PermissionsData::ACCESS_ALLOWED
+               : PermissionsData::ACCESS_DENIED;
   }
 
-  if (!extension->permissions_data()->CanAccessPage(extension,
-                                                    effective_document_url,
-                                                    top_url,
-                                                    tab_id,
-                                                    -1,  // no process ID.
-                                                    NULL /* ignore error */)) {
-    return DENY_ACCESS;
-  }
-
-  return extension->permissions_data()->RequiresActionForScriptExecution(
-             extension, tab_id, effective_document_url)
-             ? REQUEST_ACCESS
-             : ALLOW_ACCESS;
+  return extension->permissions_data()->GetPageAccess(extension,
+                                                      effective_document_url,
+                                                      top_url,
+                                                      tab_id,
+                                                      -1,  // no process ID.
+                                                      NULL /* ignore error */);
 }
 
 std::vector<blink::WebScriptSource> ProgrammaticScriptInjector::GetJsSources(

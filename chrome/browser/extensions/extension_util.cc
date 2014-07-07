@@ -9,6 +9,7 @@
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_sync_service.h"
+#include "chrome/browser/extensions/permissions_updater.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/extensions/extension_icon_source.h"
 #include "chrome/common/chrome_switches.h"
@@ -183,10 +184,24 @@ bool AllowedScriptingOnAllUrls(const std::string& extension_id,
 void SetAllowedScriptingOnAllUrls(const std::string& extension_id,
                                   content::BrowserContext* context,
                                   bool allowed) {
+  if (allowed == AllowedScriptingOnAllUrls(extension_id, context))
+    return;  // Nothing to do here.
+
   ExtensionPrefs::Get(context)->UpdateExtensionPref(
       extension_id,
       kExtensionAllowedOnAllUrlsPrefName,
       allowed ? new base::FundamentalValue(true) : NULL);
+
+  const Extension* extension =
+      ExtensionRegistry::Get(context)->enabled_extensions().GetByID(
+          extension_id);
+  if (extension) {
+    PermissionsUpdater updater(context);
+    if (allowed)
+      updater.GrantWithheldImpliedAllHosts(extension);
+    else
+      updater.WithholdImpliedAllHosts(extension);
+  }
 }
 
 bool IsAppLaunchable(const std::string& extension_id,

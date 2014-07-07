@@ -8,6 +8,7 @@
 #include "chrome/browser/extensions/active_script_controller.h"
 #include "chrome/browser/extensions/active_tab_permission_granter.h"
 #include "chrome/browser/extensions/extension_util.h"
+#include "chrome/browser/extensions/permissions_updater.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
@@ -20,6 +21,7 @@
 #include "extensions/common/feature_switch.h"
 #include "extensions/common/id_util.h"
 #include "extensions/common/manifest.h"
+#include "extensions/common/user_script.h"
 #include "extensions/common/value_builder.h"
 
 namespace extensions {
@@ -43,16 +45,25 @@ class ActiveScriptControllerUnitTest : public ChromeRenderViewHostTestHarness {
   // Creates an extension with all hosts permission and adds it to the registry.
   const Extension* AddExtension();
 
-  // Returns a closure to use as a script execution for a given extension.
-  base::Closure GetExecutionCallbackForExtension(
-      const std::string& extension_id);
+  // Returns true if the |extension| requires user consent before injecting
+  // a script.
+  bool RequiresUserConsent(const Extension* extension) const;
+
+  // Request an injection for the given |extension|.
+  void RequestInjection(const Extension* extension);
 
   // Returns the number of times a given extension has had a script execute.
   size_t GetExecutionCountForExtension(const std::string& extension_id) const;
 
-  ActiveScriptController* controller() { return active_script_controller_; }
+  ActiveScriptController* controller() const {
+    return active_script_controller_;
+  }
 
  private:
+  // Returns a closure to use as a script execution for a given extension.
+  base::Closure GetExecutionCallbackForExtension(
+      const std::string& extension_id);
+
   // Increment the number of executions for the given |extension_id|.
   void IncrementExecutionCount(const std::string& extension_id);
 
@@ -95,16 +106,25 @@ const Extension* ActiveScriptControllerUnitTest::AddExtension() {
           .Build();
 
   ExtensionRegistry::Get(profile())->AddEnabled(extension);
+  PermissionsUpdater(profile()).InitializePermissions(extension);
   return extension;
 }
 
-base::Closure ActiveScriptControllerUnitTest::GetExecutionCallbackForExtension(
-    const std::string& extension_id) {
-  // We use base unretained here, but if this ever gets executed outside of
-  // this test's lifetime, we have a major problem anyway.
-  return base::Bind(&ActiveScriptControllerUnitTest::IncrementExecutionCount,
-                    base::Unretained(this),
-                    extension_id);
+bool ActiveScriptControllerUnitTest::RequiresUserConsent(
+    const Extension* extension) const {
+  PermissionsData::AccessType access_type =
+      controller()->RequiresUserConsentForScriptInjectionForTesting(
+          extension, UserScript::PROGRAMMATIC_SCRIPT);
+  // We should never downright refuse access in these tests.
+  DCHECK_NE(PermissionsData::ACCESS_DENIED, access_type);
+  return access_type == PermissionsData::ACCESS_WITHHELD;
+}
+
+void ActiveScriptControllerUnitTest::RequestInjection(
+    const Extension* extension) {
+  controller()->RequestScriptInjectionForTesting(
+      extension,
+      GetExecutionCallbackForExtension(extension->id()));
 }
 
 size_t ActiveScriptControllerUnitTest::GetExecutionCountForExtension(
@@ -114,6 +134,15 @@ size_t ActiveScriptControllerUnitTest::GetExecutionCountForExtension(
   if (iter != extension_executions_.end())
     return iter->second;
   return 0u;
+}
+
+base::Closure ActiveScriptControllerUnitTest::GetExecutionCallbackForExtension(
+    const std::string& extension_id) {
+  // We use base unretained here, but if this ever gets executed outside of
+  // this test's lifetime, we have a major problem anyway.
+  return base::Bind(&ActiveScriptControllerUnitTest::IncrementExecutionCount,
+                    base::Unretained(this),
+                    extension_id);
 }
 
 void ActiveScriptControllerUnitTest::IncrementExecutionCount(
@@ -147,13 +176,10 @@ TEST_F(ActiveScriptControllerUnitTest, RequestPermissionAndExecute) {
   ASSERT_FALSE(controller()->GetActionForExtension(extension));
 
   // Since the extension requests all_hosts, we should require user consent.
-  EXPECT_TRUE(
-      controller()->RequiresUserConsentForScriptInjection(extension));
+  EXPECT_TRUE(RequiresUserConsent(extension));
 
   // Request an injection. There should be an action visible, but no executions.
-  controller()->RequestScriptInjection(
-      extension,
-      GetExecutionCallbackForExtension(extension->id()));
+  RequestInjection(extension);
   EXPECT_TRUE(controller()->GetActionForExtension(extension));
   EXPECT_EQ(0u, GetExecutionCountForExtension(extension->id()));
 
@@ -166,27 +192,22 @@ TEST_F(ActiveScriptControllerUnitTest, RequestPermissionAndExecute) {
 
   // Since we already executed on the given page, we shouldn't need permission
   // for a second time.
-  EXPECT_FALSE(
-      controller()->RequiresUserConsentForScriptInjection(extension));
+  EXPECT_FALSE(RequiresUserConsent(extension));
 
   // Reloading should clear those permissions, and we should again require user
   // consent.
   Reload();
-  EXPECT_TRUE(
-      controller()->RequiresUserConsentForScriptInjection(extension));
+  EXPECT_TRUE(RequiresUserConsent(extension));
 
   // Grant access.
-  controller()->RequestScriptInjection(
-      extension,
-      GetExecutionCallbackForExtension(extension->id()));
+  RequestInjection(extension);
   controller()->OnClicked(extension);
   EXPECT_EQ(2u, GetExecutionCountForExtension(extension->id()));
   EXPECT_FALSE(controller()->GetActionForExtension(extension));
 
   // Navigating to another site should also clear the permissions.
   NavigateAndCommit(GURL("https://www.foo.com"));
-  EXPECT_TRUE(
-      controller()->RequiresUserConsentForScriptInjection(extension));
+  EXPECT_TRUE(RequiresUserConsent(extension));
 }
 
 // Test that injections that are not executed by the time the user navigates are
@@ -200,9 +221,7 @@ TEST_F(ActiveScriptControllerUnitTest, PendingInjectionsRemovedAtNavigation) {
   ASSERT_EQ(0u, GetExecutionCountForExtension(extension->id()));
 
   // Request an injection. There should be an action visible, but no executions.
-  controller()->RequestScriptInjection(
-      extension,
-      GetExecutionCallbackForExtension(extension->id()));
+  RequestInjection(extension);
   EXPECT_TRUE(controller()->GetActionForExtension(extension));
   EXPECT_EQ(0u, GetExecutionCountForExtension(extension->id()));
 
@@ -213,9 +232,7 @@ TEST_F(ActiveScriptControllerUnitTest, PendingInjectionsRemovedAtNavigation) {
   EXPECT_EQ(0u, GetExecutionCountForExtension(extension->id()));
 
   // Request and accept a new injection.
-  controller()->RequestScriptInjection(
-      extension,
-      GetExecutionCallbackForExtension(extension->id()));
+  RequestInjection(extension);
   controller()->OnClicked(extension);
 
   // The extension should only have executed once, even though a grand total
@@ -235,11 +252,9 @@ TEST_F(ActiveScriptControllerUnitTest, MultiplePendingInjection) {
 
   const size_t kNumInjections = 3u;
   // Queue multiple pending injections.
-  for (size_t i = 0u; i < kNumInjections; ++i) {
-    controller()->RequestScriptInjection(
-        extension,
-        GetExecutionCallbackForExtension(extension->id()));
-  }
+  for (size_t i = 0u; i < kNumInjections; ++i)
+    RequestInjection(extension);
+
   EXPECT_EQ(0u, GetExecutionCountForExtension(extension->id()));
 
   controller()->OnClicked(extension);
@@ -263,16 +278,14 @@ TEST_F(ActiveScriptControllerUnitTest, ActiveScriptsUseActiveTabPermissions) {
 
   // Since we have active tab permissions, we shouldn't need user consent
   // anymore.
-  EXPECT_FALSE(controller()->RequiresUserConsentForScriptInjection(extension));
+  EXPECT_FALSE(RequiresUserConsent(extension));
 
   // Also test that granting active tab runs any pending tasks.
   Reload();
   // Navigating should mean we need permission again.
-  EXPECT_TRUE(controller()->RequiresUserConsentForScriptInjection(extension));
+  EXPECT_TRUE(RequiresUserConsent(extension));
 
-  controller()->RequestScriptInjection(
-      extension,
-      GetExecutionCallbackForExtension(extension->id()));
+  RequestInjection(extension);
   EXPECT_TRUE(controller()->GetActionForExtension(extension));
   EXPECT_EQ(0u, GetExecutionCountForExtension(extension->id()));
 
@@ -290,23 +303,23 @@ TEST_F(ActiveScriptControllerUnitTest, ActiveScriptsCanHaveAllUrlsPref) {
   ASSERT_TRUE(extension);
 
   NavigateAndCommit(GURL("https://www.google.com"));
-  EXPECT_TRUE(controller()->RequiresUserConsentForScriptInjection(extension));
+  EXPECT_TRUE(RequiresUserConsent(extension));
 
   // Enable the extension on all urls.
   util::SetAllowedScriptingOnAllUrls(extension->id(), profile(), true);
 
-  EXPECT_FALSE(controller()->RequiresUserConsentForScriptInjection(extension));
+  EXPECT_FALSE(RequiresUserConsent(extension));
   // This should carry across navigations, and websites.
   NavigateAndCommit(GURL("http://www.foo.com"));
-  EXPECT_FALSE(controller()->RequiresUserConsentForScriptInjection(extension));
+  EXPECT_FALSE(RequiresUserConsent(extension));
 
   // Turning off the preference should have instant effect.
   util::SetAllowedScriptingOnAllUrls(extension->id(), profile(), false);
-  EXPECT_TRUE(controller()->RequiresUserConsentForScriptInjection(extension));
+  EXPECT_TRUE(RequiresUserConsent(extension));
 
   // And should also persist across navigations and websites.
   NavigateAndCommit(GURL("http://www.bar.com"));
-  EXPECT_TRUE(controller()->RequiresUserConsentForScriptInjection(extension));
+  EXPECT_TRUE(RequiresUserConsent(extension));
 }
 
 }  // namespace extensions

@@ -35,6 +35,14 @@ class UserScript;
 // straight.
 class PermissionsData {
  public:
+  // The possible types of access for a given frame.
+  enum AccessType {
+    ACCESS_DENIED,   // The extension is not allowed to access the given page.
+    ACCESS_ALLOWED,  // The extension is allowed to access the given page.
+    ACCESS_WITHHELD  // The browser must determine if the extension can access
+                     // the given page.
+  };
+
   // Delegate class to allow different contexts (e.g. browser vs renderer) to
   // have control over policy decisions.
   class PolicyDelegate {
@@ -76,8 +84,10 @@ class PermissionsData {
                               const Extension* extension,
                               std::string* error);
 
-  // Sets the runtime permissions of the given |extension| to |permissions|.
-  void SetActivePermissions(const PermissionSet* active) const;
+  // Sets the runtime permissions of the given |extension| to |active| and
+  // |withheld|.
+  void SetPermissions(const scoped_refptr<const PermissionSet>& active,
+                      const scoped_refptr<const PermissionSet>& withheld) const;
 
   // Updates the tab-specific permissions of |tab_id| to include those from
   // |permissions|.
@@ -132,6 +142,10 @@ class PermissionsData {
   // display at install time as strings.
   std::vector<base::string16> GetPermissionMessageDetailsStrings() const;
 
+  // Returns true if the extension has requested all-hosts permissions (or
+  // something close to it), but has had it withheld.
+  bool HasWithheldImpliedAllHosts() const;
+
   // Returns true if the |extension| has permission to access and interact with
   // the specified page, in order to do things like inject scripts or modify
   // the content.
@@ -143,6 +157,15 @@ class PermissionsData {
                      int tab_id,
                      int process_id,
                      std::string* error) const;
+  // Like CanAccessPage, but also takes withheld permissions into account.
+  // TODO(rdevlin.cronin) We shouldn't have two functions, but not all callers
+  // know how to wait for permission.
+  AccessType GetPageAccess(const Extension* extension,
+                           const GURL& document_url,
+                           const GURL& top_document_url,
+                           int tab_id,
+                           int process_id,
+                           std::string* error) const;
 
   // Returns true if the |extension| has permission to inject a content script
   // on the page.
@@ -156,6 +179,16 @@ class PermissionsData {
                                  int tab_id,
                                  int process_id,
                                  std::string* error) const;
+  // Like CanRunContentScriptOnPage, but also takes withheld permissions into
+  // account.
+  // TODO(rdevlin.cronin) We shouldn't have two functions, but not all callers
+  // know how to wait for permission.
+  AccessType GetContentScriptAccess(const Extension* extension,
+                                    const GURL& document_url,
+                                    const GURL& top_document_url,
+                                    int tab_id,
+                                    int process_id,
+                                    std::string* error) const;
 
   // Returns true if extension is allowed to obtain the contents of a page as
   // an image. Since a page may contain sensitive information, this is
@@ -163,17 +196,14 @@ class PermissionsData {
   // page itself.
   bool CanCaptureVisiblePage(int tab_id, std::string* error) const;
 
-  // Returns true if the user should be alerted that the |extension| is running
-  // a script. If |tab_id| and |url| are included, this also considers tab-
-  // specific permissions.
-  bool RequiresActionForScriptExecution(const Extension* extension) const;
-  bool RequiresActionForScriptExecution(const Extension* extension,
-                                        int tab_id,
-                                        const GURL& url) const;
-
   scoped_refptr<const PermissionSet> active_permissions() const {
     base::AutoLock auto_lock(runtime_lock_);
     return active_permissions_unsafe_;
+  }
+
+  scoped_refptr<const PermissionSet> withheld_permissions() const {
+    base::AutoLock auto_lock(runtime_lock_);
+    return withheld_permissions_unsafe_;
   }
 
 #if defined(UNIT_TEST)
@@ -198,16 +228,17 @@ class PermissionsData {
   bool HasTabSpecificPermissionToExecuteScript(int tab_id,
                                                const GURL& url) const;
 
-  // Returns true if the extension is permitted to run on the given page,
+  // Returns whether or not the extension is permitted to run on the given page,
   // checking against |permitted_url_patterns| in addition to blocking special
   // sites (like the webstore or chrome:// urls).
-  bool CanRunOnPage(const Extension* extension,
-                    const GURL& document_url,
-                    const GURL& top_document_url,
-                    int tab_id,
-                    int process_id,
-                    const URLPatternSet& permitted_url_patterns,
-                    std::string* error) const;
+  AccessType CanRunOnPage(const Extension* extension,
+                          const GURL& document_url,
+                          const GURL& top_document_url,
+                          int tab_id,
+                          int process_id,
+                          const URLPatternSet& permitted_url_patterns,
+                          const URLPatternSet& withheld_url_patterns,
+                          std::string* error) const;
 
   // The associated extension's id.
   std::string extension_id_;
@@ -223,6 +254,13 @@ class PermissionsData {
   // Unless you need to change |active_permissions_unsafe_|, use the (safe)
   // active_permissions() accessor.
   mutable scoped_refptr<const PermissionSet> active_permissions_unsafe_;
+
+  // The permissions the extension requested, but was not granted due because
+  // they are too powerful. This includes things like all_hosts.
+  // Unsafe indicates that we must lock anytime this is directly accessed.
+  // Unless you need to change |withheld_permissions_unsafe_|, use the (safe)
+  // withheld_permissions() accessor.
+  mutable scoped_refptr<const PermissionSet> withheld_permissions_unsafe_;
 
   mutable TabPermissionsMap tab_specific_permissions_;
 

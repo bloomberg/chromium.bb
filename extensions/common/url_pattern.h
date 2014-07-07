@@ -153,6 +153,13 @@ class URLPattern {
   // Returns true if |test| matches our path.
   bool MatchesPath(const std::string& test) const;
 
+  // Returns true if the pattern is vague enough that it implies all hosts,
+  // such as *://*/*.
+  // This is an expensive method, and should be used sparingly!
+  // You should probably use URLPatternSet::ShouldWarnAllHosts(), which is
+  // cached.
+  bool ImpliesAllHosts() const;
+
   // Sets the port. Returns false if the port is invalid.
   bool SetPort(const std::string& port);
   const std::string& port() const { return port_; }

@@ -271,7 +271,7 @@ void Dispatcher::DidCreateScriptContext(
   // Initialize origin permissions for content scripts, which can't be
   // initialized in |OnActivateExtension|.
   if (context_type == Feature::CONTENT_SCRIPT_CONTEXT)
-    InitOriginPermissions(extension);
+    UpdateOriginPermissions(extension);
 
   {
     scoped_ptr<ModuleSystem> module_system(
@@ -506,7 +506,7 @@ void Dispatcher::WebKitInitialized() {
     const Extension* extension = extensions_.GetByID(*iter);
     CHECK(extension);
 
-    InitOriginPermissions(extension);
+    UpdateOriginPermissions(extension);
   }
 
   EnableCustomElementWhiteList();
@@ -565,7 +565,7 @@ void Dispatcher::OnActivateExtension(const std::string& extension_id) {
     extensions::DOMActivityLogger::AttachToWorld(
         extensions::DOMActivityLogger::kMainWorldId, extension_id);
 
-    InitOriginPermissions(extension);
+    UpdateOriginPermissions(extension);
   }
 
   UpdateActiveExtensions();
@@ -732,38 +732,17 @@ void Dispatcher::OnUnloaded(const std::string& id) {
 
 void Dispatcher::OnUpdatePermissions(
     const ExtensionMsg_UpdatePermissions_Params& params) {
-  int reason_id = params.reason_id;
-  const std::string& extension_id = params.extension_id;
-  const APIPermissionSet& apis = params.apis;
-  const ManifestPermissionSet& manifest_permissions =
-      params.manifest_permissions;
-  const URLPatternSet& explicit_hosts = params.explicit_hosts;
-  const URLPatternSet& scriptable_hosts = params.scriptable_hosts;
-
-  const Extension* extension = extensions_.GetByID(extension_id);
+  const Extension* extension = extensions_.GetByID(params.extension_id);
   if (!extension)
     return;
 
-  scoped_refptr<const PermissionSet> delta = new PermissionSet(
-      apis, manifest_permissions, explicit_hosts, scriptable_hosts);
-  scoped_refptr<const PermissionSet> old_active =
-      extension->permissions_data()->active_permissions();
-  UpdatedExtensionPermissionsInfo::Reason reason =
-      static_cast<UpdatedExtensionPermissionsInfo::Reason>(reason_id);
+  scoped_refptr<const PermissionSet> active =
+      params.active_permissions.ToPermissionSet();
+  scoped_refptr<const PermissionSet> withheld =
+      params.withheld_permissions.ToPermissionSet();
 
-  const PermissionSet* new_active = NULL;
-  switch (reason) {
-    case UpdatedExtensionPermissionsInfo::ADDED:
-      new_active = PermissionSet::CreateUnion(old_active.get(), delta.get());
-      break;
-    case UpdatedExtensionPermissionsInfo::REMOVED:
-      new_active =
-          PermissionSet::CreateDifference(old_active.get(), delta.get());
-      break;
-  }
-
-  extension->permissions_data()->SetActivePermissions(new_active);
-  UpdateOriginPermissions(reason, extension, explicit_hosts);
+  extension->permissions_data()->SetPermissions(active, withheld);
+  UpdateOriginPermissions(extension);
   UpdateBindings(extension->id());
 }
 
@@ -792,21 +771,14 @@ void Dispatcher::UpdateActiveExtensions() {
   delegate_->OnActiveExtensionsUpdated(active_extensions);
 }
 
-void Dispatcher::InitOriginPermissions(const Extension* extension) {
+void Dispatcher::UpdateOriginPermissions(const Extension* extension) {
+  const URLPatternSet& hosts =
+      extension->permissions_data()->GetEffectiveHostPermissions();
+  WebSecurityPolicy::resetOriginAccessWhitelists();
   delegate_->InitOriginPermissions(extension,
                                    IsExtensionActive(extension->id()));
-  UpdateOriginPermissions(
-      UpdatedExtensionPermissionsInfo::ADDED,
-      extension,
-      extension->permissions_data()->GetEffectiveHostPermissions());
-}
-
-void Dispatcher::UpdateOriginPermissions(
-    UpdatedExtensionPermissionsInfo::Reason reason,
-    const Extension* extension,
-    const URLPatternSet& origins) {
-  for (URLPatternSet::const_iterator i = origins.begin(); i != origins.end();
-       ++i) {
+  for (URLPatternSet::const_iterator iter = hosts.begin(); iter != hosts.end();
+       ++iter) {
     const char* schemes[] = {
         url::kHttpScheme,
         url::kHttpsScheme,
@@ -815,14 +787,12 @@ void Dispatcher::UpdateOriginPermissions(
         url::kFtpScheme,
     };
     for (size_t j = 0; j < arraysize(schemes); ++j) {
-      if (i->MatchesScheme(schemes[j])) {
-        ((reason == UpdatedExtensionPermissionsInfo::REMOVED)
-             ? WebSecurityPolicy::removeOriginAccessWhitelistEntry
-             : WebSecurityPolicy::addOriginAccessWhitelistEntry)(
+      if (iter->MatchesScheme(schemes[j])) {
+        WebSecurityPolicy::addOriginAccessWhitelistEntry(
             extension->url(),
             WebString::fromUTF8(schemes[j]),
-            WebString::fromUTF8(i->host()),
-            i->match_subdomains());
+            WebString::fromUTF8(iter->host()),
+            iter->match_subdomains());
       }
     }
   }

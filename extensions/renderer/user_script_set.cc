@@ -191,13 +191,13 @@ scoped_ptr<ScriptInjection> UserScriptSet::GetInjectionForScript(
   if (!script->MatchesURL(effective_document_url))
     return injection.Pass();
 
-  if (!extension->permissions_data()->CanRunContentScriptOnPage(
+  if (extension->permissions_data()->GetContentScriptAccess(
           extension,
           effective_document_url,
           web_frame->top()->document().url(),
           -1,  // Content scripts are not tab-specific.
           -1,  // We don't have a process id in this context.
-          NULL /* ignore error */)) {
+          NULL /* ignore error */) == PermissionsData::ACCESS_DENIED) {
     return injection.Pass();
   }
 

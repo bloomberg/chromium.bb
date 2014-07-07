@@ -87,6 +87,10 @@ void UserScriptInjector::OnUserScriptsUpdated(
   }
 }
 
+UserScript::InjectionType UserScriptInjector::script_type() const {
+  return UserScript::CONTENT_SCRIPT;
+}
+
 bool UserScriptInjector::ShouldExecuteInChildFrames() const {
   return false;
 }
@@ -115,7 +119,7 @@ bool UserScriptInjector::ShouldInjectCss(
          !script_->css_scripts().empty();
 }
 
-ScriptInjector::AccessType UserScriptInjector::CanExecuteOnFrame(
+PermissionsData::AccessType UserScriptInjector::CanExecuteOnFrame(
     const Extension* extension,
     blink::WebFrame* web_frame,
     int tab_id,
@@ -123,15 +127,18 @@ ScriptInjector::AccessType UserScriptInjector::CanExecuteOnFrame(
   // If we don't have a tab id, we have no UI surface to ask for user consent.
   // For now, we treat this as an automatic allow.
   if (tab_id == -1)
-    return ALLOW_ACCESS;
+    return PermissionsData::ACCESS_ALLOWED;
 
   GURL effective_document_url = ScriptContext::GetEffectiveDocumentURL(
       web_frame, web_frame->document().url(), script_->match_about_blank());
 
-  return extension->permissions_data()->RequiresActionForScriptExecution(
-             extension, tab_id, web_frame->top()->document().url())
-             ? REQUEST_ACCESS
-             : ALLOW_ACCESS;
+  return extension->permissions_data()->GetContentScriptAccess(
+      extension,
+      effective_document_url,
+      top_url,
+      tab_id,
+      -1,  // no process id
+      NULL /* ignore error */);
 }
 
 std::vector<blink::WebScriptSource> UserScriptInjector::GetJsSources(

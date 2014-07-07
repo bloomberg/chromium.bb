@@ -8,8 +8,10 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "content/public/common/url_constants.h"
 #include "extensions/common/constants.h"
+#include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "url/gurl.h"
 #include "url/url_util.h"
 
@@ -415,6 +417,41 @@ bool URLPattern::MatchesHost(const GURL& test) const {
     return false;
 
   return test.host()[test.host().length() - host_.length() - 1] == '.';
+}
+
+bool URLPattern::ImpliesAllHosts() const {
+  // Check if it matches all urls or is a pattern like http://*/*.
+  if (match_all_urls_ ||
+      (match_subdomains_ && host_.empty() && port_ == "*" && path_ == "/*")) {
+    return true;
+  }
+
+  // If this doesn't even match subdomains, it can't possibly imply all hosts.
+  if (!match_subdomains_)
+    return false;
+
+  // If |host_| is a recognized TLD, this will be 0. We don't include private
+  // TLDs, so that, e.g., *.appspot.com does not imply all hosts.
+  size_t registry_length = net::registry_controlled_domains::GetRegistryLength(
+      host_,
+      net::registry_controlled_domains::EXCLUDE_UNKNOWN_REGISTRIES,
+      net::registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES);
+  // If there was more than just a TLD in the host (e.g., *.foobar.com), it
+  // doesn't imply all hosts.
+  if (registry_length > 0)
+    return false;
+
+  // At this point the host could either be just a TLD ("com") or some unknown
+  // TLD-like string ("notatld"). To disambiguate between them construct a
+  // fake URL, and check the registry. This returns 0 if the TLD is
+  // unrecognized, or the length of the recognized TLD.
+  registry_length = net::registry_controlled_domains::GetRegistryLength(
+      base::StringPrintf("foo.%s", host_.c_str()),
+      net::registry_controlled_domains::EXCLUDE_UNKNOWN_REGISTRIES,
+      net::registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES);
+  // If we recognized this TLD, then this is a pattern like *.com, and it
+  // should imply all hosts. Otherwise, this doesn't imply all hosts.
+  return registry_length > 0;
 }
 
 bool URLPattern::MatchesPath(const std::string& test) const {

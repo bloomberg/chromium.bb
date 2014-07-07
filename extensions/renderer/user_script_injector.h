@@ -35,6 +35,7 @@ class UserScriptInjector : public ScriptInjector,
       const std::vector<UserScript*>& scripts) OVERRIDE;
 
   // ScriptInjector implementation.
+  virtual UserScript::InjectionType script_type() const OVERRIDE;
   virtual bool ShouldExecuteInChildFrames() const OVERRIDE;
   virtual bool ShouldExecuteInMainWorld() const OVERRIDE;
   virtual bool IsUserGesture() const OVERRIDE;
@@ -43,10 +44,11 @@ class UserScriptInjector : public ScriptInjector,
       UserScript::RunLocation run_location) const OVERRIDE;
   virtual bool ShouldInjectCss(
       UserScript::RunLocation run_location) const OVERRIDE;
-  virtual AccessType CanExecuteOnFrame(const Extension* extension,
-                                       blink::WebFrame* web_frame,
-                                       int tab_id,
-                                       const GURL& top_url) const OVERRIDE;
+  virtual PermissionsData::AccessType CanExecuteOnFrame(
+      const Extension* extension,
+      blink::WebFrame* web_frame,
+      int tab_id,
+      const GURL& top_url) const OVERRIDE;
   virtual std::vector<blink::WebScriptSource> GetJsSources(
       UserScript::RunLocation run_location) const OVERRIDE;
   virtual std::vector<std::string> GetCssSources(

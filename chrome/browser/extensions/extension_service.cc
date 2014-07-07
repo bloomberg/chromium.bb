@@ -1459,8 +1459,7 @@ void ExtensionService::AddComponentExtension(const Extension* extension) {
 void ExtensionService::CheckPermissionsIncrease(const Extension* extension,
                                                 bool is_extension_installed) {
 #if defined(ENABLE_EXTENSIONS)
-  extensions::PermissionsUpdater(profile_).InitializeActivePermissions(
-      extension);
+  extensions::PermissionsUpdater(profile_).InitializePermissions(extension);
 
   // We keep track of all permissions the user has granted each extension.
   // This allows extensions to gracefully support backwards compatibility

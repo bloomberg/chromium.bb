@@ -74,19 +74,6 @@ scoped_refptr<const Extension> GetExtensionWithHostPermission(
       .Build();
 }
 
-bool RequiresActionForScriptExecution(const std::string& extension_id,
-                                      const std::string& host_permissions,
-                                      Manifest::Location location) {
-  scoped_refptr<const Extension> extension =
-      GetExtensionWithHostPermission(extension_id,
-                                     host_permissions,
-                                     location);
-  return extension->permissions_data()->RequiresActionForScriptExecution(
-      extension,
-      -1,  // Ignore tab id for these.
-      GURL::EmptyGURL());
-}
-
 // Checks that urls are properly restricted for the given extension.
 void CheckRestrictedUrls(const Extension* extension,
                          bool block_chrome_urls) {
@@ -264,47 +251,6 @@ TEST(ExtensionPermissionsTest, SocketPermissions) {
         extension,
         SocketPermissionRequest::UDP_SEND_TO,
         "239.255.255.250", 1900));
-}
-
-TEST(ExtensionPermissionsTest, RequiresActionForScriptExecution) {
-  // Extensions with all_hosts should require action.
-  EXPECT_TRUE(RequiresActionForScriptExecution(
-      "all_hosts_permissions", kAllHostsPermission, Manifest::INTERNAL));
-  // Extensions with nearly all hosts are treated the same way.
-  EXPECT_TRUE(RequiresActionForScriptExecution(
-      "pseudo_all_hosts_permissions", "*://*.com/*", Manifest::INTERNAL));
-  // Extensions with explicit permissions shouldn't require action.
-  EXPECT_FALSE(RequiresActionForScriptExecution(
-      "explicit_permissions", "https://www.google.com/*", Manifest::INTERNAL));
-  // Policy extensions are exempt...
-  EXPECT_FALSE(RequiresActionForScriptExecution(
-      "policy", kAllHostsPermission, Manifest::EXTERNAL_POLICY));
-  // ... as are component extensions.
-  EXPECT_FALSE(RequiresActionForScriptExecution(
-      "component", kAllHostsPermission, Manifest::COMPONENT));
-  // Throw in an external pref extension to make sure that it's not just working
-  // for everything non-internal.
-  EXPECT_TRUE(RequiresActionForScriptExecution(
-      "external_pref", kAllHostsPermission, Manifest::EXTERNAL_PREF));
-
-  // If we grant an extension tab permissions, then it should no longer require
-  // action.
-  scoped_refptr<const Extension> extension =
-      GetExtensionWithHostPermission("all_hosts_permissions",
-                                     kAllHostsPermission,
-                                     Manifest::INTERNAL);
-  URLPatternSet allowed_hosts;
-  allowed_hosts.AddPattern(
-      URLPattern(URLPattern::SCHEME_HTTPS, "https://www.google.com/*"));
-  scoped_refptr<PermissionSet> tab_permissions(
-      new PermissionSet(APIPermissionSet(),
-                        ManifestPermissionSet(),
-                        allowed_hosts,
-                        URLPatternSet()));
-  extension->permissions_data()->UpdateTabSpecificPermissions(0,
-                                                              tab_permissions);
-  EXPECT_FALSE(extension->permissions_data()->RequiresActionForScriptExecution(
-      extension, 0, GURL("https://www.google.com/")));
 }
 
 TEST(ExtensionPermissionsTest, IsRestrictedUrl) {

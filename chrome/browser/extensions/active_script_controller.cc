@@ -25,10 +25,31 @@
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/extension_set.h"
 #include "extensions/common/feature_switch.h"
+#include "extensions/common/manifest.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "ipc/ipc_message_macros.h"
 
 namespace extensions {
+
+namespace {
+
+// Returns true if the extension should be regarded as a "permitted" extension
+// for the case of metrics. We need this because we only actually withhold
+// permissions if the switch is enabled, but want to record metrics in all
+// cases.
+// "ExtensionWouldHaveHadHostPermissionsWithheldIfSwitchWasOn()" would be
+// more accurate, but too long.
+bool ShouldRecordExtension(const Extension* extension) {
+  return extension->ShouldDisplayInExtensionSettings() &&
+         !Manifest::IsPolicyLocation(extension->location()) &&
+         !Manifest::IsComponentLocation(extension->location()) &&
+         !PermissionsData::CanExecuteScriptEverywhere(extension) &&
+         extension->permissions_data()
+             ->active_permissions()
+             ->ShouldWarnAllHosts();
+}
+
+}  // namespace
 
 ActiveScriptController::ActiveScriptController(
     content::WebContents* web_contents)
@@ -54,39 +75,6 @@ ActiveScriptController* ActiveScriptController::GetForWebContents(
   // This should never be NULL.
   DCHECK(location_bar_controller);
   return location_bar_controller->active_script_controller();
-}
-
-bool ActiveScriptController::RequiresUserConsentForScriptInjection(
-    const Extension* extension) {
-  CHECK(extension);
-  if (!extension->permissions_data()->RequiresActionForScriptExecution(
-          extension,
-          SessionID::IdForTab(web_contents()),
-          web_contents()->GetVisibleURL()) ||
-      util::AllowedScriptingOnAllUrls(extension->id(),
-                                      web_contents()->GetBrowserContext())) {
-    return false;
-  }
-
-  // If the feature is not enabled, we automatically allow all extensions to
-  // run scripts.
-  if (!enabled_)
-    permitted_extensions_.insert(extension->id());
-
-  return permitted_extensions_.count(extension->id()) == 0;
-}
-
-void ActiveScriptController::RequestScriptInjection(
-    const Extension* extension,
-    const base::Closure& callback) {
-  CHECK(extension);
-  PendingRequestList& list = pending_requests_[extension->id()];
-  list.push_back(callback);
-
-  // If this was the first entry, notify the location bar that there's a new
-  // icon.
-  if (list.size() == 1u)
-    LocationBarController::NotifyChange(web_contents());
 }
 
 void ActiveScriptController::OnActiveTabPermissionGranted(
@@ -159,13 +147,52 @@ void ActiveScriptController::OnExtensionUnloaded(const Extension* extension) {
     pending_requests_.erase(iter);
 }
 
+PermissionsData::AccessType
+ActiveScriptController::RequiresUserConsentForScriptInjection(
+    const Extension* extension,
+    UserScript::InjectionType type) {
+  CHECK(extension);
+
+  // If the feature is not enabled, we automatically allow all extensions to
+  // run scripts.
+  if (!enabled_)
+    permitted_extensions_.insert(extension->id());
+
+  // Allow the extension if it's been explicitly granted permission.
+  if (permitted_extensions_.count(extension->id()) > 0)
+    return PermissionsData::ACCESS_ALLOWED;
+
+  GURL url = web_contents()->GetVisibleURL();
+  int tab_id = SessionID::IdForTab(web_contents());
+  switch (type) {
+    case UserScript::CONTENT_SCRIPT:
+      return extension->permissions_data()->GetContentScriptAccess(
+          extension, url, url, tab_id, -1, NULL);
+    case UserScript::PROGRAMMATIC_SCRIPT:
+      return extension->permissions_data()->GetPageAccess(
+          extension, url, url, tab_id, -1, NULL);
+  }
+
+  NOTREACHED();
+  return PermissionsData::ACCESS_DENIED;
+}
+
+void ActiveScriptController::RequestScriptInjection(
+    const Extension* extension,
+    const base::Closure& callback) {
+  CHECK(extension);
+  PendingRequestList& list = pending_requests_[extension->id()];
+  list.push_back(callback);
+
+  // If this was the first entry, notify the location bar that there's a new
+  // icon.
+  if (list.size() == 1u)
+    LocationBarController::NotifyChange(web_contents());
+}
+
 void ActiveScriptController::RunPendingForExtension(
     const Extension* extension) {
   DCHECK(extension);
-  PendingRequestMap::iterator iter =
-      pending_requests_.find(extension->id());
-  if (iter == pending_requests_.end())
-    return;
 
   content::NavigationEntry* visible_entry =
       web_contents()->GetController().GetVisibleEntry();
@@ -178,6 +205,11 @@ void ActiveScriptController::RunPendingForExtension(
   // *before* running them to guard against the crazy case where running the
   // callbacks adds more entries.
   permitted_extensions_.insert(extension->id());
+
+  PendingRequestMap::iterator iter = pending_requests_.find(extension->id());
+  if (iter == pending_requests_.end())
+    return;
+
   PendingRequestList requests;
   iter->second.swap(requests);
   pending_requests_.erase(extension->id());
@@ -202,6 +234,7 @@ void ActiveScriptController::RunPendingForExtension(
 
 void ActiveScriptController::OnRequestScriptInjectionPermission(
     const std::string& extension_id,
+    UserScript::InjectionType script_type,
     int64 request_id) {
   if (!Extension::IdIsValid(extension_id)) {
     NOTREACHED() << "'" << extension_id << "' is not a valid id.";
@@ -220,25 +253,37 @@ void ActiveScriptController::OnRequestScriptInjectionPermission(
   // ran (because this feature is not enabled). Add the extension to the list of
   // permitted extensions (for metrics), and return immediately.
   if (request_id == -1) {
-    DCHECK(!enabled_);
-    permitted_extensions_.insert(extension->id());
+    if (ShouldRecordExtension(extension)) {
+      DCHECK(!enabled_);
+      permitted_extensions_.insert(extension->id());
+    }
     return;
   }
 
-  if (RequiresUserConsentForScriptInjection(extension)) {
-    // This base::Unretained() is safe, because the callback is only invoked by
-    // this object.
-    RequestScriptInjection(
-        extension,
-        base::Bind(&ActiveScriptController::PermitScriptInjection,
-                   base::Unretained(this),
-                   request_id));
-  } else {
-    PermitScriptInjection(request_id);
+  switch (RequiresUserConsentForScriptInjection(extension, script_type)) {
+    case PermissionsData::ACCESS_ALLOWED:
+      PermitScriptInjection(request_id);
+      break;
+    case PermissionsData::ACCESS_WITHHELD:
+      // This base::Unretained() is safe, because the callback is only invoked
+      // by this object.
+      RequestScriptInjection(
+          extension,
+          base::Bind(&ActiveScriptController::PermitScriptInjection,
+                     base::Unretained(this),
+                     request_id));
+      break;
+    case PermissionsData::ACCESS_DENIED:
+      // We should usually only get a "deny access" if the page changed (as the
+      // renderer wouldn't have requested permission if the answer was always
+      // "no"). Just let the request fizzle and die.
+      break;
   }
 }
 
 void ActiveScriptController::PermitScriptInjection(int64 request_id) {
+  // This only sends the response to the renderer - the process of adding the
+  // extension to the list of |permitted_extensions_| is done elsewhere.
   content::RenderViewHost* render_view_host =
       web_contents()->GetRenderViewHost();
   if (render_view_host) {

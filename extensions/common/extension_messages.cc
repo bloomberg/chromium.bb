@@ -22,6 +22,26 @@ using extensions::ManifestPermissionSet;
 using extensions::PermissionSet;
 using extensions::URLPatternSet;
 
+ExtensionMsg_PermissionSetStruct::ExtensionMsg_PermissionSetStruct() {
+}
+
+ExtensionMsg_PermissionSetStruct::ExtensionMsg_PermissionSetStruct(
+    const PermissionSet* permissions)
+    : apis(permissions->apis()),
+      manifest_permissions(permissions->manifest_permissions()),
+      explicit_hosts(permissions->explicit_hosts()),
+      scriptable_hosts(permissions->scriptable_hosts()) {
+}
+
+ExtensionMsg_PermissionSetStruct::~ExtensionMsg_PermissionSetStruct() {
+}
+
+scoped_refptr<const PermissionSet>
+ExtensionMsg_PermissionSetStruct::ToPermissionSet() const {
+  return new PermissionSet(
+      apis, manifest_permissions, explicit_hosts, scriptable_hosts);
+}
+
 ExtensionMsg_Loaded_Params::ExtensionMsg_Loaded_Params()
     : location(Manifest::INVALID_LOCATION),
       creation_flags(Extension::NO_FLAGS) {}
@@ -33,16 +53,9 @@ ExtensionMsg_Loaded_Params::ExtensionMsg_Loaded_Params(
     : manifest(extension->manifest()->value()->DeepCopy()),
       location(extension->location()),
       path(extension->path()),
-      apis(extension->permissions_data()->active_permissions()->apis()),
-      manifest_permissions(extension->permissions_data()
-                               ->active_permissions()
-                               ->manifest_permissions()),
-      explicit_hosts(extension->permissions_data()
-                         ->active_permissions()
-                         ->explicit_hosts()),
-      scriptable_hosts(extension->permissions_data()
-                           ->active_permissions()
-                           ->scriptable_hosts()),
+      active_permissions(extension->permissions_data()->active_permissions()),
+      withheld_permissions(
+          extension->permissions_data()->withheld_permissions()),
       id(extension->id()),
       creation_flags(extension->creation_flags()) {
 }
@@ -52,8 +65,9 @@ scoped_refptr<Extension> ExtensionMsg_Loaded_Params::ConvertToExtension(
   scoped_refptr<Extension> extension =
       Extension::Create(path, location, *manifest, creation_flags, error);
   if (extension.get()) {
-    extension->permissions_data()->SetActivePermissions(new PermissionSet(
-        apis, manifest_permissions, explicit_hosts, scriptable_hosts));
+    extension->permissions_data()->SetPermissions(
+        active_permissions.ToPermissionSet(),
+        withheld_permissions.ToPermissionSet());
   }
   return extension;
 }
@@ -221,28 +235,50 @@ void ParamTraits<ManifestPermissionSet>::Log(
   LogParam(p.map(), l);
 }
 
+void ParamTraits<ExtensionMsg_PermissionSetStruct>::Write(Message* m,
+                                                          const param_type& p) {
+  WriteParam(m, p.apis);
+  WriteParam(m, p.manifest_permissions);
+  WriteParam(m, p.explicit_hosts);
+  WriteParam(m, p.scriptable_hosts);
+}
+
+bool ParamTraits<ExtensionMsg_PermissionSetStruct>::Read(const Message* m,
+                                                         PickleIterator* iter,
+                                                         param_type* p) {
+  return ReadParam(m, iter, &p->apis) &&
+         ReadParam(m, iter, &p->manifest_permissions) &&
+         ReadParam(m, iter, &p->explicit_hosts) &&
+         ReadParam(m, iter, &p->scriptable_hosts);
+}
+
+void ParamTraits<ExtensionMsg_PermissionSetStruct>::Log(const param_type& p,
+                                                        std::string* l) {
+  LogParam(p.apis, l);
+  LogParam(p.manifest_permissions, l);
+  LogParam(p.explicit_hosts, l);
+  LogParam(p.scriptable_hosts, l);
+}
+
 void ParamTraits<ExtensionMsg_Loaded_Params>::Write(Message* m,
                                                     const param_type& p) {
   WriteParam(m, p.location);
   WriteParam(m, p.path);
   WriteParam(m, *(p.manifest));
   WriteParam(m, p.creation_flags);
-  WriteParam(m, p.apis);
-  WriteParam(m, p.explicit_hosts);
-  WriteParam(m, p.scriptable_hosts);
+  WriteParam(m, p.active_permissions);
+  WriteParam(m, p.withheld_permissions);
 }
 
 bool ParamTraits<ExtensionMsg_Loaded_Params>::Read(const Message* m,
                                                    PickleIterator* iter,
                                                    param_type* p) {
   p->manifest.reset(new base::DictionaryValue());
-  return ReadParam(m, iter, &p->location) &&
-         ReadParam(m, iter, &p->path) &&
+  return ReadParam(m, iter, &p->location) && ReadParam(m, iter, &p->path) &&
          ReadParam(m, iter, p->manifest.get()) &&
          ReadParam(m, iter, &p->creation_flags) &&
-         ReadParam(m, iter, &p->apis) &&
-         ReadParam(m, iter, &p->explicit_hosts) &&
-         ReadParam(m, iter, &p->scriptable_hosts);
+         ReadParam(m, iter, &p->active_permissions) &&
+         ReadParam(m, iter, &p->withheld_permissions);
 }
 
 void ParamTraits<ExtensionMsg_Loaded_Params>::Log(const param_type& p,
