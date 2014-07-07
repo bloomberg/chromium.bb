@@ -120,6 +120,10 @@ bool NeedRestartToApplyPerSessionFlags(const CommandLine& user_flags) {
 }
 
 bool CanPerformEarlyRestart() {
+  // TODO(alemate): crbug/391357 - temporary disabling early restart before
+  // crbug.com/391793 is fixed.
+  return false;
+
   const ExistingUserController* controller =
       ExistingUserController::current_controller();
   if (!controller)
