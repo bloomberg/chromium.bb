@@ -314,12 +314,13 @@ class PackageBuilder(object):
           if cache_item is None:
             archive_desc = archive_info.ArchiveInfo(archive_name)
           else:
-            dir_item = cache_item.dir_item
-            if dir_item:
+            if cache_item.dir_item:
               include_package = True
-              archive_desc = archive_info.ArchiveInfo(archive_name,
-                                                      dir_item.hash,
-                                                      url=dir_item.url)
+              archive_desc = archive_info.ArchiveInfo(
+                  archive_name, cache_item.dir_item.hash,
+                  url=cache_item.dir_item.url,
+                  log_url=cache_item.log_url,
+              )
 
           package_desc.AppendArchive(archive_desc)
 

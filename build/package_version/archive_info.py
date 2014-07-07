@@ -20,7 +20,7 @@ DEFAULT_ARCHIVE_INFO = ArchiveInfoTuple(name='',
                                         url=None,
                                         tar_src_dir='',
                                         extract_dir='',
-                                        log_url='')
+                                        log_url=None)
 
 def GetArchiveHash(archive_file):
   """Gets the standardized hash value for a given archive.
@@ -49,7 +49,7 @@ class ArchiveInfo(object):
     extract_dir: Where files should be extracted to within destination dir.
   """
   def __init__(self, name='', archive_hash=0, url=None, tar_src_dir='',
-               extract_dir='', log_url='', archive_info_file=None):
+               extract_dir='', log_url=None, archive_info_file=None):
     """Initialize ArchiveInfo object.
 
     When an archive_info_file is specified, all other fields are ignored.
@@ -114,7 +114,7 @@ class ArchiveInfo(object):
     return dict(self._archive_tuple._asdict())
 
   def SetArchiveData(self, name, archive_hash, url=None, tar_src_dir='',
-                     extract_dir='', log_url=''):
+                     extract_dir='', log_url=None):
     """Replaces currently set with new ArchiveInfoTuple."""
     self._archive_tuple = ArchiveInfoTuple(name, archive_hash, url,
                                            tar_src_dir, extract_dir, log_url)

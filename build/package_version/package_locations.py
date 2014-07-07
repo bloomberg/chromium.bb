@@ -95,6 +95,17 @@ def GetLocalPackageArchiveFile(tar_dir, package_target, package_name,
                       archive_name)
 
 
+def GetLocalPackageArchiveLogFile(archive_file):
+  """Returns the local package archive log file location.
+
+  Args:
+    archive_file: Location of the local archive file location.
+  Returns:
+    The standard location where local package archive log file is found.
+  """
+  return os.path.splitext(archive_file)[0] + '.log'
+
+
 def GetRevisionFile(revision_dir, package_name):
   """Returns the local revision file location.
 

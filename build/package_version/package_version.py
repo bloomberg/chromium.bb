@@ -170,7 +170,8 @@ def GetPackageTargetPackages(custom_package_name, package_target_packages):
 
 
 def DownloadPackageArchives(tar_dir, package_target, package_name, package_desc,
-                            downloader=None, revision_num=None):
+                            downloader=None, revision_num=None,
+                            include_logs=False):
   """Downloads package archives from the cloud to the tar directory.
 
   Args:
@@ -259,12 +260,54 @@ def DownloadPackageArchives(tar_dir, package_target, package_name, package_desc,
         raise IOError('Could not download URL (%s): %s' %
                       (archive_desc.url, e))
 
+      # Delete any stale log files
+      local_archive_log = package_locations.GetLocalPackageArchiveLogFile(
+          local_archive_file
+      )
+      if os.path.isfile(local_archive_log):
+        os.unlink(local_archive_log)
+
       verified_hash = archive_info.GetArchiveHash(local_archive_file)
       if verified_hash != archive_desc.hash:
         raise IOError('Package hash check failed: %s != %s' %
                       (verified_hash, archive_desc.hash))
 
       downloaded_files.append(local_archive_file)
+
+  # Download any logs if include_logs is True.
+  if include_logs:
+    download_logs = []
+    for archive_obj in package_desc.GetArchiveList():
+      archive_desc = archive_obj.GetArchiveData()
+      if archive_desc.log_url:
+        local_archive_file = package_locations.GetLocalPackageArchiveFile(
+            tar_dir,
+            package_target,
+            package_name,
+            archive_desc.name
+        )
+        local_archive_log = package_locations.GetLocalPackageArchiveLogFile(
+            local_archive_file
+        )
+        if not os.path.isfile(local_archive_log):
+          download_log_tuple = (archive_desc.name,
+                                archive_desc.log_url,
+                                local_archive_log)
+          download_logs.append(download_log_tuple)
+
+    if download_logs:
+      logging.info('--Syncing %s Logs--' % (package_name))
+      num_logs = len(download_logs)
+      for index, download_log_tuple in enumerate(download_logs):
+        name, log_url, local_log_file = download_log_tuple
+        logging.info('Downloading archive log: %s (%d/%d)' %
+                     (name, index+1, num_logs))
+
+        try:
+          downloader(log_url, local_log_file)
+        except Exception as e:
+          raise IOError('Could not download log URL (%s): %s' %
+                        (log_url, e))
 
   # Delete any stale left over packages.
   for old_archive in old_archives:
@@ -274,6 +317,10 @@ def DownloadPackageArchives(tar_dir, package_target, package_name, package_desc,
         package_name,
         old_archive)
     os.unlink(archive_file)
+
+    archive_log = package_locations.GetLocalPackageArchiveLogFile(archive_file)
+    if os.path.isfile(archive_log):
+      os.unlink(archive_log)
 
   # Save the package file so we know what we currently have.
   package_desc.SavePackageFile(local_package_file)
@@ -306,8 +353,11 @@ def ArchivePackageArchives(tar_dir, package_target, package_name, archives,
                       [(archive, True) for archive in extra_archives])
   for archive, skip_missing in package_archives:
     archive_url = None
+    archive_log_url = None
     if '@' in archive:
       archive, archive_url = archive.split('@', 1)
+      if ',' in archive_url:
+        archive_url, archive_log_url = archive_url.split(',', 1)
 
     extract_param = ''
     tar_src_dir = ''
@@ -325,7 +375,8 @@ def ArchivePackageArchives(tar_dir, package_target, package_name, archives,
                                             archive_hash,
                                             url=archive_url,
                                             tar_src_dir=tar_src_dir,
-                                            extract_dir=extract_dir)
+                                            extract_dir=extract_dir,
+                                            log_url=archive_log_url)
     package_desc.AppendArchive(archive_desc)
 
     if archive_hash is None:
@@ -628,7 +679,7 @@ def _ArchiveCmdArgParser(subparser):
     action='append', default=[],
     help='Extra archives that are expected to be built elsewhere.')
   subparser.add_argument(
-    metavar='TAR(,SRCDIR(:EXTRACTDIR))(@URL)', dest='archive__archives',
+    metavar='TAR(,SRCDIR(:EXTRACTDIR))(@URL,LOGURL)', dest='archive__archives',
     nargs='+',
     help='Package archive with an optional tar information and url.'
          ' SRCDIR is the root directory where files live inside of the tar.'
@@ -731,9 +782,13 @@ def _SyncCmdArgParser(subparser):
     default=None,
     help='SVN Revision of the packages to download.')
   subparser.add_argument(
+    '--include-logs', dest='sync__include_logs',
+    action='store_true', default=False,
+    help='Also download logs next to each archive if available.')
+  subparser.add_argument(
     '-x', '--extract', dest='sync__extract',
     action='store_true', default=False,
-    help='Extract package arcvhies after they have been downloaded.')
+    help='Extract package archives after they have been downloaded.')
 
 
 def _DoSyncCmd(arguments):

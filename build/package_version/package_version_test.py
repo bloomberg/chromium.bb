@@ -53,7 +53,8 @@ class TestPackageVersion(unittest.TestCase):
     return full_mock_file
 
   def GeneratePackageInfo(self, archive_list, name_dict={},
-                          url_dict={}, src_dir_dict={}, dir_dict={}):
+                          url_dict={}, src_dir_dict={}, dir_dict={},
+                          log_url_dict={}):
     """Generates a package_info.PackageInfo object for list of archives."
 
     Args:
@@ -75,11 +76,13 @@ class TestPackageVersion(unittest.TestCase):
       archive_url = url_dict.get(archive_file, None)
       archive_src_tar_dir = src_dir_dict.get(archive_file, '')
       archive_dir = dir_dict.get(archive_file, '')
+      archive_log_url = log_url_dict.get(archive_file, None)
       archive_desc = archive_info.ArchiveInfo(archive_name,
                                               archive_hash,
                                               url=archive_url,
                                               tar_src_dir=archive_src_tar_dir,
-                                              extract_dir=archive_dir)
+                                              extract_dir=archive_dir,
+                                              log_url=archive_log_url)
       package_desc.AppendArchive(archive_desc)
 
     return package_desc
@@ -88,13 +91,17 @@ class TestPackageVersion(unittest.TestCase):
     # Check that we can download a package archive correctly.
     with pynacl.working_directory.TemporaryWorkingDirectory() as work_dir:
       mock_tar = self.GenerateMockFile(work_dir)
-
       fake_url = 'http://www.fake.com/archive.tar'
       self._fake_downloader.StoreURL(fake_url, mock_tar)
 
+      mock_log = self.GenerateMockFile(work_dir)
+      fake_log_url = 'http://www.fake.com/archive_log.txt'
+      self._fake_downloader.StoreURL(fake_log_url, mock_log)
+
       package_desc = self.GeneratePackageInfo(
           [mock_tar],
-          url_dict={mock_tar: fake_url}
+          url_dict={mock_tar: fake_url},
+          log_url_dict={mock_tar: fake_log_url},
       )
 
       tar_dir = os.path.join(work_dir, 'tar_dir')
@@ -105,7 +112,8 @@ class TestPackageVersion(unittest.TestCase):
           package_target,
           package_name,
           package_desc,
-          downloader=self._fake_downloader.Download
+          downloader=self._fake_downloader.Download,
+          include_logs=False,
       )
       self.assertEqual(self._fake_downloader.GetDownloadCount(), 1,
                        "Expected a single archive to have been downloaded.")
@@ -121,6 +129,29 @@ class TestPackageVersion(unittest.TestCase):
       self.assertEqual(
           archive_info.GetArchiveHash(local_archive_file),
           archive_info.GetArchiveHash(mock_tar)
+       )
+
+      # Check log is not downloaded.
+      local_archive_log = package_locations.GetLocalPackageArchiveLogFile(
+          local_archive_file
+      )
+      self.assertFalse(os.path.isfile(local_archive_log))
+
+      # Check log is downloaded when include_logs is True
+      package_version.DownloadPackageArchives(
+          tar_dir,
+          package_target,
+          package_name,
+          package_desc,
+          downloader=self._fake_downloader.Download,
+          include_logs=True,
+      )
+      self.assertEqual(self._fake_downloader.GetDownloadCount(), 2,
+                       "Expected only log to have been downloaded.")
+
+      self.assertEqual(
+          archive_info.GetArchiveHash(local_archive_log),
+          archive_info.GetArchiveHash(mock_log)
        )
 
   def test_DownloadArchiveMissingURLFails(self):
@@ -141,6 +172,45 @@ class TestPackageVersion(unittest.TestCase):
           'missing_name',
           package_desc,
           downloader=self._fake_downloader.Download
+      )
+
+  def test_DownloadArchiveLogMissingURLFails(self):
+    # Checks that we fail when the archive log has an invalid URL set.
+    with pynacl.working_directory.TemporaryWorkingDirectory() as work_dir:
+      mock_tar = self.GenerateMockFile(work_dir)
+      fake_url = 'http://www.fake.com/archive.tar'
+      self._fake_downloader.StoreURL(fake_url, mock_tar)
+
+      package_desc = self.GeneratePackageInfo(
+          [mock_tar],
+          url_dict={mock_tar: fake_url},
+          log_url_dict={mock_tar: 'http://www.missingurl.com'},
+      )
+
+      tar_dir = os.path.join(work_dir, 'tar_dir')
+      package_target = 'archive_target'
+      package_name = 'archive_name'
+
+      # Not including logs should not fail.
+      package_version.DownloadPackageArchives(
+          tar_dir,
+          package_target,
+          package_name,
+          package_desc,
+          downloader=self._fake_downloader.Download,
+          include_logs=False,
+      )
+
+      # Including logs should now fail.
+      self.assertRaises(
+          IOError,
+          package_version.DownloadPackageArchives,
+          tar_dir,
+          package_target,
+          package_name,
+          package_desc,
+          downloader=self._fake_downloader.Download,
+          include_logs=True,
       )
 
   def test_DownloadArchiveMismatchFails(self):
