@@ -98,6 +98,11 @@ int JavaScriptCallFrame::column() const
     return callV8FunctionReturnInt("column");
 }
 
+String JavaScriptCallFrame::scriptName() const
+{
+    return callV8FunctionReturnString("scriptName");
+}
+
 String JavaScriptCallFrame::functionName() const
 {
     return callV8FunctionReturnString("functionName");

@@ -61,6 +61,7 @@ class JSONObject;
 class KURL;
 class MutationObserver;
 class ScriptArguments;
+class ScriptAsyncCallStack;
 class ScriptCallStack;
 class ScriptDebugServer;
 class ScriptRegexp;
@@ -178,6 +179,8 @@ public:
 
     void setBreakpoint(const String& scriptId, int lineNumber, int columnNumber, BreakpointSource, const String& condition = String());
     void removeBreakpoint(const String& scriptId, int lineNumber, int columnNumber, BreakpointSource);
+
+    PassRefPtrWillBeRawPtr<ScriptAsyncCallStack> currentAsyncStackTraceForConsole();
 
 protected:
     explicit InspectorDebuggerAgent(InjectedScriptManager*);

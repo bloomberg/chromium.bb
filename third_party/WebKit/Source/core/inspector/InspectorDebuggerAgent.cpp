@@ -43,8 +43,11 @@
 #include "core/inspector/InstrumentingAgents.h"
 #include "core/inspector/JavaScriptCallFrame.h"
 #include "core/inspector/ScriptArguments.h"
+#include "core/inspector/ScriptAsyncCallStack.h"
+#include "core/inspector/ScriptCallFrame.h"
 #include "core/inspector/ScriptCallStack.h"
 #include "platform/JSONValues.h"
+#include "wtf/text/StringBuilder.h"
 #include "wtf/text/WTFString.h"
 
 using WebCore::TypeBuilder::Array;
@@ -1090,6 +1093,41 @@ PassRefPtr<StackTrace> InspectorDebuggerAgent::currentAsyncStackTrace()
         if (result)
             next->setAsyncStackTrace(result.release());
         result.swap(next);
+    }
+    return result.release();
+}
+
+static PassRefPtrWillBeRawPtr<ScriptCallStack> toScriptCallStack(JavaScriptCallFrame* callFrame)
+{
+    Vector<ScriptCallFrame> frames;
+    for (; callFrame; callFrame = callFrame->caller()) {
+        StringBuilder stringBuilder;
+        stringBuilder.appendNumber(callFrame->sourceID());
+        String scriptId = stringBuilder.toString();
+        // FIXME(WK62725): Debugger line/column are 0-based, while console ones are 1-based.
+        int line = callFrame->line() + 1;
+        int column = callFrame->column() + 1;
+        frames.append(ScriptCallFrame(callFrame->functionName(), scriptId, callFrame->scriptName(), line, column));
+    }
+    return ScriptCallStack::create(frames);
+}
+
+PassRefPtrWillBeRawPtr<ScriptAsyncCallStack> InspectorDebuggerAgent::currentAsyncStackTraceForConsole()
+{
+    if (!m_asyncCallStackTracker.isEnabled())
+        return nullptr;
+    const AsyncCallStackTracker::AsyncCallChain* chain = m_asyncCallStackTracker.currentAsyncCallChain();
+    if (!chain)
+        return nullptr;
+    const AsyncCallStackTracker::AsyncCallStackVector& callStacks = chain->callStacks();
+    if (callStacks.isEmpty())
+        return nullptr;
+    RefPtrWillBeRawPtr<ScriptAsyncCallStack> result;
+    for (AsyncCallStackTracker::AsyncCallStackVector::const_reverse_iterator it = callStacks.rbegin(); it != callStacks.rend(); ++it) {
+        RefPtrWillBeRawPtr<JavaScriptCallFrame> callFrame = ScriptDebugServer::toJavaScriptCallFrame((*it)->callFrames());
+        if (!callFrame)
+            break;
+        result = ScriptAsyncCallStack::create((*it)->description(), toScriptCallStack(callFrame.get()), result.release());
     }
     return result.release();
 }

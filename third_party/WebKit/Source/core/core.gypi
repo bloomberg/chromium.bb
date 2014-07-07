@@ -1319,6 +1319,8 @@
             'inspector/PageRuntimeAgent.h',
             'inspector/ScriptArguments.cpp',
             'inspector/ScriptArguments.h',
+            'inspector/ScriptAsyncCallStack.cpp',
+            'inspector/ScriptAsyncCallStack.h',
             'inspector/ScriptCallFrame.cpp',
             'inspector/ScriptCallFrame.h',
             'inspector/ScriptCallStack.cpp',

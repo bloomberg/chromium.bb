@@ -40,6 +40,7 @@
 #include "core/inspector/InjectedScript.h"
 #include "core/inspector/InjectedScriptManager.h"
 #include "core/inspector/ScriptArguments.h"
+#include "core/inspector/ScriptAsyncCallStack.h"
 #include "core/inspector/ScriptCallFrame.h"
 #include "core/inspector/ScriptCallStack.h"
 #include "wtf/CurrentTime.h"
@@ -232,8 +233,15 @@ void ConsoleMessage::addToFrontend(InspectorFrontend::Console* frontend, Injecte
     }
     if (m_callStack)
         jsonObj->setStackTrace(m_callStack->buildInspectorArray());
+    if (m_asyncCallStack)
+        jsonObj->setAsyncStackTrace(m_asyncCallStack->buildInspectorObject());
     frontend->messageAdded(jsonObj);
     frontend->flush();
+}
+
+void ConsoleMessage::setAsyncStackTrace(PassRefPtrWillBeRawPtr<ScriptAsyncCallStack> asyncCallStack)
+{
+    m_asyncCallStack = asyncCallStack;
 }
 
 void ConsoleMessage::windowCleared(LocalDOMWindow* window)
@@ -258,4 +266,3 @@ unsigned ConsoleMessage::argumentCount()
 }
 
 } // namespace WebCore
-

@@ -401,6 +401,12 @@ DebuggerScript._frameMirrorToJSCallFrame = function(frameMirror, callerFrame, sc
         return script && script.id();
     }
 
+    function scriptName()
+    {
+        var script = ensureFuncMirror().script();
+        return script && script.name();
+    }
+
     function functionName()
     {
         var func = ensureFuncMirror();
@@ -454,6 +460,7 @@ DebuggerScript._frameMirrorToJSCallFrame = function(frameMirror, callerFrame, sc
         "sourceID": sourceID,
         "line": line,
         "column": column,
+        "scriptName": scriptName,
         "functionName": functionName,
         "thisObject": thisObject,
         "scopeChain": lazyScopeChain,

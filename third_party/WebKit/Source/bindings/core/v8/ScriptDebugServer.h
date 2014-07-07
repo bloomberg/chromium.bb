@@ -84,6 +84,8 @@ public:
     PassRefPtrWillBeRawPtr<JavaScriptCallFrame> topCallFrameNoScopes();
     int frameCount();
 
+    static PassRefPtrWillBeRawPtr<JavaScriptCallFrame> toJavaScriptCallFrame(const ScriptValue&);
+
     class Task {
     public:
         virtual ~Task() { }

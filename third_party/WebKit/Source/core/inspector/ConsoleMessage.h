@@ -43,6 +43,7 @@ class LocalDOMWindow;
 class InjectedScriptManager;
 class InspectorFrontend;
 class ScriptArguments;
+class ScriptAsyncCallStack;
 class ScriptCallFrame;
 class ScriptCallStack;
 class ScriptValue;
@@ -58,6 +59,7 @@ public:
 
     void addToFrontend(InspectorFrontend::Console*, InjectedScriptManager*, bool generatePreview);
     void setTimestamp(double timestamp) { m_timestamp = timestamp; }
+    void setAsyncStackTrace(PassRefPtrWillBeRawPtr<ScriptAsyncCallStack>);
 
     MessageType type() const { return m_type; }
 
@@ -75,6 +77,7 @@ private:
     ScriptStateProtectingContext m_scriptState;
     RefPtrWillBePersistent<ScriptArguments> m_arguments;
     RefPtrWillBePersistent<ScriptCallStack> m_callStack;
+    RefPtrWillBePersistent<ScriptAsyncCallStack> m_asyncCallStack;
     String m_url;
     unsigned m_line;
     unsigned m_column;
