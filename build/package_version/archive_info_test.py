@@ -24,9 +24,10 @@ class TestArchiveInfo(unittest.TestCase):
     archive_url = 'test_url' + str(random.random())
     tar_src_dir = 'test_src' + str(random.random())
     extract_dir = 'test_extr' + str(random.random())
+    log_url = 'test_log_url' + str(random.random())
 
     archive = archive_info.ArchiveInfo(archive_name, archive_hash, archive_url,
-                                       tar_src_dir, extract_dir)
+                                       tar_src_dir, extract_dir, log_url)
 
     return archive
 
@@ -56,9 +57,10 @@ class TestArchiveInfo(unittest.TestCase):
     archive_url = 'test_archive_url'
     tar_src_dir = 'test_archive_dir'
     extract_dir = 'test_extraction_dir'
+    log_url = 'test_log_url'
 
     archive = archive_info.ArchiveInfo(archive_name, archive_hash, archive_url,
-                                       tar_src_dir, extract_dir)
+                                       tar_src_dir, extract_dir, log_url)
 
     archive_data = archive.GetArchiveData()
     self.assertEqual(archive_data.name, archive_name)
@@ -66,6 +68,7 @@ class TestArchiveInfo(unittest.TestCase):
     self.assertEqual(archive_data.url, archive_url)
     self.assertEqual(archive_data.tar_src_dir, tar_src_dir)
     self.assertEqual(archive_data.extract_dir, extract_dir)
+    self.assertEqual(archive_data.log_url, log_url)
 
   def test_ArchiveFileSaveLoad(self):
     with pynacl.working_directory.TemporaryWorkingDirectory() as work_dir:

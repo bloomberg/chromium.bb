@@ -939,6 +939,19 @@ def _DoFillEmptyTarsCmd(arguments):
     output_package_desc.SavePackageFile(package_path)
 
 
+def _RecalcRevisions(subparser):
+  subparser.description = 'Recalculates hashes for files in revision directory.'
+
+
+def _DoRecalcRevisions(arguments):
+  for json_file in os.listdir(arguments.revisions_dir):
+    if json_file.endswith('.json'):
+      revision_file = os.path.join(arguments.revisions_dir, json_file)
+      revision_desc = revision_info.RevisionInfo(arguments.packages_desc)
+      revision_desc.LoadRevisionFile(revision_file, skip_hash_verify=True)
+      revision_desc.SaveRevisionFile(revision_file)
+
+
 CommandFuncs = collections.namedtuple(
     'CommandFuncs',
     ['parse_func', 'do_cmd_func'])
@@ -953,6 +966,7 @@ COMMANDS = {
     'setrevision': CommandFuncs(_SetRevisionCmdArgParser, _DoSetRevisionCmd),
     'getrevision': CommandFuncs(_GetRevisionCmdArgParser, _DoGetRevisionCmd),
     'fillemptytars': CommandFuncs(_FillEmptyTarsParser, _DoFillEmptyTarsCmd),
+    'recalcrevisions': CommandFuncs(_RecalcRevisions, _DoRecalcRevisions),
 }
 
 

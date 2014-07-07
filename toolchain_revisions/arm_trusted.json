@@ -6,6 +6,7 @@
         {
           "extract_dir": "",
           "hash": "dbea575fc43c5c20d61f706d165888f2509fdbe8",
+          "log_url": "",
           "name": "sysroot-arm-trusted.tgz",
           "tar_src_dir": "",
           "url": "https://storage.googleapis.com/nativeclient-archive2/toolchain/12292/sysroot-arm-trusted.tgz"
@@ -15,5 +16,5 @@
     }
   },
   "revision": 12292,
-  "revision_hash": "713a4a6634ad8804722b4d725161eca6e99aebc4"
+  "revision_hash": "76700b529227ddeca9e99d31715e3641eb341ac0"
 }

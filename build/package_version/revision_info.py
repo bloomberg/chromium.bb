@@ -84,7 +84,7 @@ class RevisionInfo(object):
                            + '\n  Supplied Target Packages:'
                            + '\n\t' + '\n\t'.join(sorted(revision_targets)))
 
-  def LoadRevisionFile(self, revision_file):
+  def LoadRevisionFile(self, revision_file, skip_hash_verify=False):
     """Loads a revision file into this object
 
     Args:
@@ -108,9 +108,10 @@ class RevisionInfo(object):
 
     self._ValidateRevisionComplete()
 
-    hash_value = revision_json[FIELD_REVISION_HASH]
-    if self._GetRevisionHash() != hash_value:
-      raise IOError('Invalid revision file - revision hash check failed')
+    if not skip_hash_verify:
+      hash_value = revision_json[FIELD_REVISION_HASH]
+      if self._GetRevisionHash() != hash_value:
+        raise IOError('Invalid revision file - revision hash check failed')
 
   def SaveRevisionFile(self, revision_file):
     """Saves this object to a revision file to be loaded later.

@@ -6,6 +6,7 @@
         {
           "extract_dir": "",
           "hash": "49b3fecdbee907cfd9acc475a050576d753a89da",
+          "log_url": "",
           "name": "naclsdk_linux_arm_bionic.tgz",
           "tar_src_dir": "linux_arm_bionic",
           "url": "https://storage.googleapis.com/nativeclient-archive2/toolchain/13333/naclsdk_linux_arm_bionic.tgz"
@@ -15,5 +16,5 @@
     }
   },
   "revision": 13333,
-  "revision_hash": "dadad5ad00a6233ff80cea94cd0b562c6ea8dbf8"
+  "revision_hash": "8c3c75608508c760c291cc04d688f4215f48a70a"
 }

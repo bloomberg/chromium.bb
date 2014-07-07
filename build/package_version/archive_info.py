@@ -13,8 +13,14 @@ import os
 
 ArchiveInfoTuple = collections.namedtuple(
     'ArchiveInfoTuple',
-    ['name', 'hash', 'url', 'tar_src_dir', 'extract_dir'])
+    ['name', 'hash', 'url', 'tar_src_dir', 'extract_dir', 'log_url'])
 
+DEFAULT_ARCHIVE_INFO = ArchiveInfoTuple(name='',
+                                        hash=0,
+                                        url=None,
+                                        tar_src_dir='',
+                                        extract_dir='',
+                                        log_url='')
 
 def GetArchiveHash(archive_file):
   """Gets the standardized hash value for a given archive.
@@ -43,7 +49,7 @@ class ArchiveInfo(object):
     extract_dir: Where files should be extracted to within destination dir.
   """
   def __init__(self, name='', archive_hash=0, url=None, tar_src_dir='',
-               extract_dir='', archive_info_file=None):
+               extract_dir='', log_url='', archive_info_file=None):
     """Initialize ArchiveInfo object.
 
     When an archive_info_file is specified, all other fields are ignored.
@@ -54,7 +60,8 @@ class ArchiveInfo(object):
     if archive_info_file is not None:
       self.LoadArchiveInfoFile(archive_info_file)
     else:
-      self.SetArchiveData(name, archive_hash, url, tar_src_dir, extract_dir)
+      self.SetArchiveData(name, archive_hash, url, tar_src_dir,
+                          extract_dir, log_url)
 
   def __eq__(self, other):
     return (type(self) == type(other) and
@@ -80,7 +87,12 @@ class ArchiveInfo(object):
                          type(archive_info_file),
                          archive_info_file)
 
-    self._archive_tuple = ArchiveInfoTuple(**archive_json)
+    json_values = [(key, value) for key, value in archive_json.iteritems()
+                   if key in ArchiveInfoTuple._fields]
+
+    archive_info = DEFAULT_ARCHIVE_INFO._asdict()
+    archive_info.update(json_values)
+    self._archive_tuple = ArchiveInfoTuple(**archive_info)
 
   def SaveArchiveInfoFile(self, archive_info_file):
     """Saves this object as a serialized JSON file if the object is valid.
@@ -102,10 +114,10 @@ class ArchiveInfo(object):
     return dict(self._archive_tuple._asdict())
 
   def SetArchiveData(self, name, archive_hash, url=None, tar_src_dir='',
-                     extract_dir=''):
+                     extract_dir='', log_url=''):
     """Replaces currently set with new ArchiveInfoTuple."""
     self._archive_tuple = ArchiveInfoTuple(name, archive_hash, url,
-                                           tar_src_dir, extract_dir)
+                                           tar_src_dir, extract_dir, log_url)
 
   def GetArchiveData(self):
     """Returns the current ArchiveInfoTuple tuple."""
