@@ -25,9 +25,21 @@ class SyncFileSystemService;
 // with each other.
 class SyncProcessRunner {
  public:
-  typedef base::Callback<void(const SyncStatusCallback&)> Task;
+  class TimerHelper {
+   public:
+    virtual ~TimerHelper() {}
+    virtual bool IsRunning() = 0;
+    virtual void Start(const tracked_objects::Location& from_here,
+                       const base::TimeDelta& delay,
+                       const base::Closure& closure) = 0;
+
+   protected:
+    TimerHelper() {}
+  };
+
   SyncProcessRunner(const std::string& name,
                     SyncFileSystemService* sync_service,
+                    scoped_ptr<TimerHelper> timer_helper,
                     int max_parallel_task);
   virtual ~SyncProcessRunner();
 
@@ -57,7 +69,7 @@ class SyncProcessRunner {
   SyncFileSystemService* sync_service_;
   int max_parallel_task_;
   int running_tasks_;
-  base::OneShotTimer<SyncProcessRunner> timer_;
+  scoped_ptr<TimerHelper> timer_helper_;
   base::TimeTicks last_scheduled_;
   int64 current_delay_;
   int64 last_delay_;

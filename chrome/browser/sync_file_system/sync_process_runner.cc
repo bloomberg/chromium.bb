@@ -31,6 +31,28 @@ const int64 kSyncDelaySlowInMilliseconds =
 const int64 kSyncDelayMaxInMilliseconds =
     30 * 60 * base::Time::kMillisecondsPerSecond;  // 30 min
 
+class BaseTimerHelper : public SyncProcessRunner::TimerHelper {
+ public:
+  BaseTimerHelper() {}
+
+  virtual bool IsRunning() OVERRIDE {
+    return timer_.IsRunning();
+  }
+
+  virtual void Start(const tracked_objects::Location& from_here,
+                     const base::TimeDelta& delay,
+                     const base::Closure& closure) OVERRIDE {
+    timer_.Start(from_here, delay, closure);
+  }
+
+  virtual ~BaseTimerHelper() {}
+
+ private:
+  base::OneShotTimer<SyncProcessRunner> timer_;
+
+  DISALLOW_COPY_AND_ASSIGN(BaseTimerHelper);
+};
+
 bool WasSuccessfulSync(SyncStatusCode status) {
   return status == SYNC_STATUS_OK ||
          status == SYNC_STATUS_HAS_CONFLICT ||
@@ -45,11 +67,13 @@ bool WasSuccessfulSync(SyncStatusCode status) {
 SyncProcessRunner::SyncProcessRunner(
     const std::string& name,
     SyncFileSystemService* sync_service,
+    scoped_ptr<TimerHelper> timer_helper,
     int max_parallel_task)
     : name_(name),
       sync_service_(sync_service),
       max_parallel_task_(max_parallel_task),
       running_tasks_(0),
+      timer_helper_(timer_helper.Pass()),
       current_delay_(0),
       last_delay_(0),
       pending_changes_(0),
@@ -58,6 +82,8 @@ SyncProcessRunner::SyncProcessRunner(
 
   DCHECK_EQ(1, max_parallel_task_)
       << "Parellel task execution is not yet implemented.";
+  if (!timer_helper_)
+    timer_helper_.reset(new BaseTimerHelper);
 }
 
 SyncProcessRunner::~SyncProcessRunner() {}
@@ -93,7 +119,7 @@ void SyncProcessRunner::Schedule() {
 }
 
 void SyncProcessRunner::ScheduleIfNotRunning() {
-  if (!timer_.IsRunning())
+  if (!timer_helper_->IsRunning())
     Schedule();
 }
 
@@ -152,7 +178,7 @@ void SyncProcessRunner::Run() {
 void SyncProcessRunner::ScheduleInternal(int64 delay) {
   base::TimeDelta time_to_next = base::TimeDelta::FromMilliseconds(delay);
 
-  if (timer_.IsRunning()) {
+  if (timer_helper_->IsRunning()) {
     if (current_delay_ == delay)
       return;
 
@@ -163,7 +189,6 @@ void SyncProcessRunner::ScheduleInternal(int64 delay) {
       time_to_next = base::TimeDelta::FromMilliseconds(
           kSyncDelayFastInMilliseconds);
     }
-    timer_.Stop();
   }
 
   if (current_delay_ != delay) {
@@ -173,7 +198,9 @@ void SyncProcessRunner::ScheduleInternal(int64 delay) {
   }
   current_delay_ = delay;
 
-  timer_.Start(FROM_HERE, time_to_next, this, &SyncProcessRunner::Run);
+  timer_helper_->Start(
+      FROM_HERE, time_to_next,
+      base::Bind(&SyncProcessRunner::Run, base::Unretained(this)));
 }
 
 }  // namespace sync_file_system
