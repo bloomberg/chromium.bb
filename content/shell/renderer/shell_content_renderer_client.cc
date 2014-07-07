@@ -21,6 +21,7 @@
 #include "content/shell/renderer/test_runner/web_test_proxy.h"
 #include "content/shell/renderer/webkit_test_runner.h"
 #include "content/test/mock_webclipboard_impl.h"
+#include "ppapi/shared_impl/ppapi_switches.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamCenter.h"
 #include "third_party/WebKit/public/web/WebPluginParams.h"
 #include "third_party/WebKit/public/web/WebView.h"
@@ -189,6 +190,23 @@ void ShellContentRendererClient::WebTestProxyCreated(RenderView* render_view,
       ShellRenderProcessObserver::GetInstance()->test_interfaces());
   test_runner->proxy()->SetDelegate(
       ShellRenderProcessObserver::GetInstance()->test_delegate());
+}
+
+bool ShellContentRendererClient::IsPluginAllowedToUseCompositorAPI(
+    const GURL& url) {
+  return CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnablePepperTesting);
+}
+
+bool ShellContentRendererClient::IsPluginAllowedToUseVideoDecodeAPI(
+    const GURL& url) {
+  return CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnablePepperTesting);
+}
+
+bool ShellContentRendererClient::IsPluginAllowedToUseDevChannelAPIs() {
+  return CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnablePepperTesting);
 }
 
 }  // namespace content

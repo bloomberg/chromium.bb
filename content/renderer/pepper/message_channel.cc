@@ -10,6 +10,8 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
+#include "content/public/common/content_client.h"
+#include "content/public/renderer/content_renderer_client.h"
 #include "content/renderer/pepper/host_array_buffer_var.h"
 #include "content/renderer/pepper/npapi_glue.h"
 #include "content/renderer/pepper/pepper_plugin_instance_impl.h"
@@ -76,8 +78,7 @@ bool HasDevChannelPermission(NPObject* channel_object) {
   MessageChannel* channel = ToMessageChannel(channel_object);
   if (!channel)
     return false;
-  return channel->instance()->module()->permissions().HasPermission(
-      ppapi::PERMISSION_DEV_CHANNEL);
+  return GetContentClient()->renderer()->IsPluginAllowedToUseDevChannelAPIs();
 }
 
 //------------------------------------------------------------------------------

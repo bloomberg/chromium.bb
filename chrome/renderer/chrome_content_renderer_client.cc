@@ -18,6 +18,7 @@
 #include "chrome/common/chrome_content_client.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/chrome_version_info.h"
 #include "chrome/common/content_settings_pattern.h"
 #include "chrome/common/crash_keys.h"
 #include "chrome/common/extensions/chrome_extensions_client.h"
@@ -162,6 +163,18 @@ namespace {
 
 ChromeContentRendererClient* g_current_client;
 
+#if defined(ENABLE_PLUGINS)
+const char* const kPredefinedAllowedCompositorOrigins[] = {
+  "6EAED1924DB611B6EEF2A664BD077BE7EAD33B8F",  // see crbug.com/383937
+  "4EB74897CB187C7633357C2FE832E0AD6A44883A"   // see crbug.com/383937
+};
+
+const char* const kPredefinedAllowedVideoDecodeOrigins[] = {
+  "6EAED1924DB611B6EEF2A664BD077BE7EAD33B8F",  // see crbug.com/383937
+  "4EB74897CB187C7633357C2FE832E0AD6A44883A"   // see crbug.com/383937
+};
+#endif
+
 static void AppendParams(const std::vector<base::string16>& additional_names,
                          const std::vector<base::string16>& additional_values,
                          WebVector<WebString>* existing_names,
@@ -240,6 +253,13 @@ ChromeContentRendererClient::ChromeContentRendererClient() {
       extensions::ChromeExtensionsClient::GetInstance());
   extensions::ExtensionsRendererClient::Set(
       ChromeExtensionsRendererClient::GetInstance());
+#if defined(ENABLE_PLUGINS)
+  for (size_t i = 0; i < arraysize(kPredefinedAllowedCompositorOrigins); ++i)
+    allowed_compositor_origins_.insert(kPredefinedAllowedCompositorOrigins[i]);
+  for (size_t i = 0; i < arraysize(kPredefinedAllowedVideoDecodeOrigins); ++i)
+    allowed_video_decode_origins_.insert(
+        kPredefinedAllowedVideoDecodeOrigins[i]);
+#endif
 }
 
 ChromeContentRendererClient::~ChromeContentRendererClient() {
@@ -1434,4 +1454,47 @@ ChromeContentRendererClient::CreateWorkerPermissionClientProxy(
     content::RenderFrame* render_frame,
     blink::WebFrame* frame) {
   return new WorkerPermissionClientProxy(render_frame, frame);
+}
+
+bool ChromeContentRendererClient::IsPluginAllowedToUseDevChannelAPIs() {
+#if defined(ENABLE_PLUGINS)
+  // Allow access for tests.
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnablePepperTesting)) {
+    return true;
+  }
+
+  chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
+  // Allow dev channel APIs to be used on "Canary", "Dev", and "Unknown"
+  // releases of Chrome. Permitting "Unknown" allows these APIs to be used on
+  // Chromium builds as well.
+  return channel <= chrome::VersionInfo::CHANNEL_DEV;
+#else
+  return false;
+#endif
+}
+
+bool ChromeContentRendererClient::IsPluginAllowedToUseCompositorAPI(
+    const GURL& url) {
+#if defined(ENABLE_PLUGINS)
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnablePepperTesting))
+    return true;
+  return IsExtensionOrSharedModuleWhitelisted(url, allowed_compositor_origins_);
+#else
+  return false;
+#endif
+}
+
+bool ChromeContentRendererClient::IsPluginAllowedToUseVideoDecodeAPI(
+    const GURL& url) {
+#if defined(ENABLE_PLUGINS)
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnablePepperTesting))
+    return true;
+  return IsExtensionOrSharedModuleWhitelisted(url,
+                                              allowed_video_decode_origins_);
+#else
+  return false;
+#endif
 }

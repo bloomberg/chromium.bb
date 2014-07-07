@@ -54,6 +54,32 @@ bool CanUseMediaStreamAPI(const RendererPpapiHost* host, PP_Instance instance) {
   return content_renderer_client->AllowPepperMediaStreamAPI(document_url);
 }
 
+bool CanUseCompositorAPI(const RendererPpapiHost* host, PP_Instance instance) {
+  blink::WebPluginContainer* container =
+      host->GetContainerForInstance(instance);
+  if (!container)
+    return false;
+
+  GURL document_url = container->element().document().url();
+  ContentRendererClient* content_renderer_client =
+      GetContentClient()->renderer();
+  return content_renderer_client->IsPluginAllowedToUseCompositorAPI(
+      document_url);
+}
+
+bool CanUseVideoDecodeAPI(const RendererPpapiHost* host, PP_Instance instance) {
+  blink::WebPluginContainer* container =
+      host->GetContainerForInstance(instance);
+  if (!container)
+    return false;
+
+  GURL document_url = container->element().document().url();
+  ContentRendererClient* content_renderer_client =
+      GetContentClient()->renderer();
+  return content_renderer_client->IsPluginAllowedToUseVideoDecodeAPI(
+      document_url);
+}
+
 }  // namespace
 #endif  // defined(ENABLE_WEBRTC)
 
@@ -82,9 +108,11 @@ scoped_ptr<ResourceHost> ContentRendererPepperHostFactory::CreateResourceHost(
   // Public interfaces.
   switch (message.type()) {
     case PpapiHostMsg_Compositor_Create::ID: {
-        return scoped_ptr<ResourceHost>(
-            new PepperCompositorHost(host_, instance, params.pp_resource()));
-      }
+      if (!CanUseCompositorAPI(host_, instance))
+        return scoped_ptr<ResourceHost>();
+      return scoped_ptr<ResourceHost>(
+          new PepperCompositorHost(host_, instance, params.pp_resource()));
+    }
     case PpapiHostMsg_FileRef_CreateForFileAPI::ID: {
       PP_Resource file_system;
       std::string internal_path;
@@ -127,9 +155,12 @@ scoped_ptr<ResourceHost> ContentRendererPepperHostFactory::CreateResourceHost(
     case PpapiHostMsg_URLLoader_Create::ID:
       return scoped_ptr<ResourceHost>(new PepperURLLoaderHost(
           host_, false, instance, params.pp_resource()));
-    case PpapiHostMsg_VideoDecoder_Create::ID:
+    case PpapiHostMsg_VideoDecoder_Create::ID: {
+      if (!CanUseVideoDecodeAPI(host_, instance))
+        return scoped_ptr<ResourceHost>();
       return scoped_ptr<ResourceHost>(
           new PepperVideoDecoderHost(host_, instance, params.pp_resource()));
+    }
     case PpapiHostMsg_WebSocket_Create::ID:
       return scoped_ptr<ResourceHost>(
           new PepperWebSocketHost(host_, instance, params.pp_resource()));

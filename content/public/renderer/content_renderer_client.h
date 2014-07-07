@@ -258,6 +258,15 @@ class CONTENT_EXPORT ContentRendererClient {
   virtual blink::WebWorkerPermissionClientProxy*
       CreateWorkerPermissionClientProxy(RenderFrame* render_frame,
                                         blink::WebFrame* frame);
+
+  // Returns true if the page at |url| can use Pepper Compositor APIs.
+  virtual bool IsPluginAllowedToUseCompositorAPI(const GURL& url);
+
+  // Returns true if the page at |url| can use Pepper VideoDecoder APIs.
+  virtual bool IsPluginAllowedToUseVideoDecodeAPI(const GURL& url);
+
+  // Returns true if dev channel APIs are available for plugins.
+  virtual bool IsPluginAllowedToUseDevChannelAPIs();
 };
 
 }  // namespace content

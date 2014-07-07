@@ -129,6 +129,9 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
   virtual bool AllowPepperMediaStreamAPI(const GURL& url) OVERRIDE;
   virtual void AddKeySystems(
       std::vector<content::KeySystemInfo>* key_systems) OVERRIDE;
+  virtual bool IsPluginAllowedToUseDevChannelAPIs() OVERRIDE;
+  virtual bool IsPluginAllowedToUseCompositorAPI(const GURL& url) OVERRIDE;
+  virtual bool IsPluginAllowedToUseVideoDecodeAPI(const GURL& url) OVERRIDE;
 
   // Takes ownership.
   void SetExtensionDispatcherForTest(
@@ -198,6 +201,10 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
   scoped_refptr<WebRtcLoggingMessageFilter> webrtc_logging_message_filter_;
 #endif
   scoped_ptr<SearchBouncer> search_bouncer_;
+#if defined(ENABLE_PLUGINS)
+  std::set<std::string> allowed_compositor_origins_;
+  std::set<std::string> allowed_video_decode_origins_;
+#endif
 };
 
 #endif  // CHROME_RENDERER_CHROME_CONTENT_RENDERER_CLIENT_H_
