@@ -21,6 +21,7 @@
 // longer need to support these old Bionic versions.
 // All x86_64 builds use a new enough bionic to have sys/user.h.
 #if !defined(__BIONIC__) || defined(__x86_64__)
+#include <sys/types.h>  // Fix for gcc 4.7, make sure __uint16_t is defined.
 #include <sys/user.h>
 #endif
 
