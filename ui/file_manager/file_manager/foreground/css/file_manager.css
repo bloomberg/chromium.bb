@@ -115,7 +115,6 @@ a:focus {
   -webkit-box-flex: 1;
   -webkit-box-orient: horizontal;
   background-color: white;  /* Makes #drag-container invisible. */
-  border-radius: 2px;
   display: -webkit-box;
   overflow: hidden;
   position: relative;

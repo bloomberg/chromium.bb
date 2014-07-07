@@ -25,7 +25,6 @@
     "commandLinePrivate",
     "contextMenus",
     "echoPrivate",
-    "experimental",
     "fileBrowserHandler",
     "fileBrowserPrivate",
     "fullscreen",
