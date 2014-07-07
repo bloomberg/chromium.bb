@@ -1400,15 +1400,15 @@ static void installV8TestInterfaceTemplate(v8::Handle<v8::FunctionTemplate> func
     }
 #endif // ENABLE(PARTIAL_CONDITION)
     static const V8DOMConfiguration::ConstantConfiguration V8TestInterfaceConstants[] = {
-        {"UNSIGNED_LONG", 0},
-        {"CONST_JAVASCRIPT", 1},
-        {"IMPLEMENTS_CONSTANT_1", 1},
-        {"IMPLEMENTS_CONSTANT_2", 2},
-        {"PARTIAL2_UNSIGNED_SHORT", 0},
+        {"UNSIGNED_LONG", 0, 0, 0, V8DOMConfiguration::ConstantTypeUnsignedLong},
+        {"CONST_JAVASCRIPT", 1, 0, 0, V8DOMConfiguration::ConstantTypeShort},
+        {"IMPLEMENTS_CONSTANT_1", 1, 0, 0, V8DOMConfiguration::ConstantTypeUnsignedShort},
+        {"IMPLEMENTS_CONSTANT_2", 2, 0, 0, V8DOMConfiguration::ConstantTypeUnsignedShort},
+        {"PARTIAL2_UNSIGNED_SHORT", 0, 0, 0, V8DOMConfiguration::ConstantTypeUnsignedShort},
     };
     V8DOMConfiguration::installConstants(functionTemplate, prototypeTemplate, V8TestInterfaceConstants, WTF_ARRAY_LENGTH(V8TestInterfaceConstants), isolate);
     if (RuntimeEnabledFeatures::partialFeatureNameEnabled()) {
-        static const V8DOMConfiguration::ConstantConfiguration constantConfiguration = {"PARTIAL_UNSIGNED_SHORT", static_cast<signed int>(0)};
+        static const V8DOMConfiguration::ConstantConfiguration constantConfiguration = {"PARTIAL_UNSIGNED_SHORT", 0, 0, 0, V8DOMConfiguration::ConstantTypeUnsignedShort};
         V8DOMConfiguration::installConstants(functionTemplate, prototypeTemplate, &constantConfiguration, 1, isolate);
     }
     functionTemplate->InstanceTemplate()->SetIndexedPropertyHandler(TestInterfaceImplementationV8Internal::indexedPropertyGetterCallback, TestInterfaceImplementationV8Internal::indexedPropertySetterCallback, 0, TestInterfaceImplementationV8Internal::indexedPropertyDeleterCallback, indexedPropertyEnumerator<TestInterfaceImplementation>);

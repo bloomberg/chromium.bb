@@ -91,12 +91,25 @@ public:
             attribute.attribute);
     }
 
+    enum ConstantType {
+        ConstantTypeShort,
+        ConstantTypeLong,
+        ConstantTypeUnsignedShort,
+        ConstantTypeUnsignedLong,
+        ConstantTypeFloat,
+        ConstantTypeDouble,
+        ConstantTypeString
+    };
+
     // ConstantConfiguration translates into calls to Set() for setting up an
     // object's constants. It sets the constant on both the FunctionTemplate and
     // the ObjectTemplate. PropertyAttributes is always ReadOnly.
     struct ConstantConfiguration {
         const char* const name;
-        int value;
+        int ivalue;
+        double dvalue;
+        const char* const svalue;
+        ConstantType type;
     };
 
     static void installConstants(v8::Handle<v8::FunctionTemplate>, v8::Handle<v8::ObjectTemplate>, const ConstantConfiguration*, size_t constantCount, v8::Isolate*);

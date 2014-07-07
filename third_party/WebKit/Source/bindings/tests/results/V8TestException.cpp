@@ -103,7 +103,7 @@ static void installV8TestExceptionTemplate(v8::Handle<v8::FunctionTemplate> func
     v8::Local<v8::ObjectTemplate> instanceTemplate ALLOW_UNUSED = functionTemplate->InstanceTemplate();
     v8::Local<v8::ObjectTemplate> prototypeTemplate ALLOW_UNUSED = functionTemplate->PrototypeTemplate();
     static const V8DOMConfiguration::ConstantConfiguration V8TestExceptionConstants[] = {
-        {"UNSIGNED_SHORT_CONSTANT", 1},
+        {"UNSIGNED_SHORT_CONSTANT", 1, 0, 0, V8DOMConfiguration::ConstantTypeUnsignedShort},
     };
     V8DOMConfiguration::installConstants(functionTemplate, prototypeTemplate, V8TestExceptionConstants, WTF_ARRAY_LENGTH(V8TestExceptionConstants), isolate);
     static const V8DOMConfiguration::MethodConfiguration toStringMethodConfiguration = {

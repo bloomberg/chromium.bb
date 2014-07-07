@@ -10742,27 +10742,35 @@ static void installV8TestObjectTemplate(v8::Handle<v8::FunctionTemplate> functio
     }
 #endif // ENABLE(CONDITION)
     static const V8DOMConfiguration::ConstantConfiguration V8TestObjectConstants[] = {
-        {"CONST_VALUE_0", 0},
-        {"CONST_VALUE_1", 1},
-        {"CONST_VALUE_2", 2},
-        {"CONST_VALUE_4", 4},
-        {"CONST_VALUE_8", 8},
-        {"CONST_VALUE_9", -1},
-        {"CONST_VALUE_10", "my constant string"},
-        {"CONST_VALUE_11", 0xffffffff},
-        {"CONST_VALUE_12", 0x01},
-        {"CONST_VALUE_13", 0X20},
-        {"CONST_VALUE_14", 0x1abc},
-        {"CONST_VALUE_15", 010},
-        {"CONST_VALUE_16", -010},
-        {"CONST_VALUE_16", -0x1A},
-        {"CONST_VALUE_17", -0X1a},
-        {"DEPRECATED_CONSTANT", 1},
-        {"CONST_JAVASCRIPT", 1},
+        {"CONST_VALUE_0", 0, 0, 0, V8DOMConfiguration::ConstantTypeUnsignedShort},
+        {"CONST_VALUE_1", 1, 0, 0, V8DOMConfiguration::ConstantTypeUnsignedShort},
+        {"CONST_VALUE_2", 2, 0, 0, V8DOMConfiguration::ConstantTypeUnsignedShort},
+        {"CONST_VALUE_4", 4, 0, 0, V8DOMConfiguration::ConstantTypeUnsignedShort},
+        {"CONST_VALUE_8", 8, 0, 0, V8DOMConfiguration::ConstantTypeUnsignedShort},
+        {"CONST_VALUE_9", -1, 0, 0, V8DOMConfiguration::ConstantTypeShort},
+        {"CONST_VALUE_10", 0, 0, "my constant string", V8DOMConfiguration::ConstantTypeString},
+        {"CONST_VALUE_11", 0xffffffff, 0, 0, V8DOMConfiguration::ConstantTypeUnsignedShort},
+        {"CONST_VALUE_12", 0x01, 0, 0, V8DOMConfiguration::ConstantTypeUnsignedShort},
+        {"CONST_VALUE_13", 0X20, 0, 0, V8DOMConfiguration::ConstantTypeUnsignedShort},
+        {"CONST_VALUE_14", 0x1abc, 0, 0, V8DOMConfiguration::ConstantTypeUnsignedShort},
+        {"CONST_VALUE_15", 010, 0, 0, V8DOMConfiguration::ConstantTypeUnsignedShort},
+        {"CONST_VALUE_16", -010, 0, 0, V8DOMConfiguration::ConstantTypeUnsignedShort},
+        {"CONST_VALUE_16", -0x1A, 0, 0, V8DOMConfiguration::ConstantTypeUnsignedShort},
+        {"CONST_VALUE_17", -0X1a, 0, 0, V8DOMConfiguration::ConstantTypeUnsignedShort},
+        {"CONST_VALUE_18", 0, 0.123, 0, V8DOMConfiguration::ConstantTypeDouble},
+        {"CONST_VALUE_19", 0, 4e9, 0, V8DOMConfiguration::ConstantTypeDouble},
+        {"CONST_VALUE_20", 0, 3.4e5, 0, V8DOMConfiguration::ConstantTypeDouble},
+        {"CONST_VALUE_21", 0, -1.3, 0, V8DOMConfiguration::ConstantTypeDouble},
+        {"CONST_VALUE_22", 0, -4e-9, 0, V8DOMConfiguration::ConstantTypeDouble},
+        {"CONST_VALUE_23", 0, .123, 0, V8DOMConfiguration::ConstantTypeDouble},
+        {"CONST_VALUE_24", 0, 5E+4, 0, V8DOMConfiguration::ConstantTypeDouble},
+        {"CONST_VALUE_25", 0, 1, 0, V8DOMConfiguration::ConstantTypeFloat},
+        {"DEPRECATED_CONSTANT", 1, 0, 0, V8DOMConfiguration::ConstantTypeShort},
+        {"CONST_JAVASCRIPT", 1, 0, 0, V8DOMConfiguration::ConstantTypeShort},
     };
     V8DOMConfiguration::installConstants(functionTemplate, prototypeTemplate, V8TestObjectConstants, WTF_ARRAY_LENGTH(V8TestObjectConstants), isolate);
     if (RuntimeEnabledFeatures::featureNameEnabled()) {
-        static const V8DOMConfiguration::ConstantConfiguration constantConfiguration = {"FEATURE_ENABLED_CONST", static_cast<signed int>(1)};
+        static const V8DOMConfiguration::ConstantConfiguration constantConfiguration = {"FEATURE_ENABLED_CONST", 1, 0, 0, V8DOMConfiguration::ConstantTypeShort};
         V8DOMConfiguration::installConstants(functionTemplate, prototypeTemplate, &constantConfiguration, 1, isolate);
     }
     COMPILE_ASSERT(0 == TestObject::CONST_VALUE_0, TheValueOfTestObject_CONST_VALUE_0DoesntMatchWithImplementation);
@@ -10771,7 +10779,6 @@ static void installV8TestObjectTemplate(v8::Handle<v8::FunctionTemplate> functio
     COMPILE_ASSERT(4 == TestObject::CONST_VALUE_4, TheValueOfTestObject_CONST_VALUE_4DoesntMatchWithImplementation);
     COMPILE_ASSERT(8 == TestObject::CONST_VALUE_8, TheValueOfTestObject_CONST_VALUE_8DoesntMatchWithImplementation);
     COMPILE_ASSERT(-1 == TestObject::CONST_VALUE_9, TheValueOfTestObject_CONST_VALUE_9DoesntMatchWithImplementation);
-    COMPILE_ASSERT("my constant string" == TestObject::CONST_VALUE_10, TheValueOfTestObject_CONST_VALUE_10DoesntMatchWithImplementation);
     COMPILE_ASSERT(0xffffffff == TestObject::CONST_VALUE_11, TheValueOfTestObject_CONST_VALUE_11DoesntMatchWithImplementation);
     COMPILE_ASSERT(0x01 == TestObject::CONST_VALUE_12, TheValueOfTestObject_CONST_VALUE_12DoesntMatchWithImplementation);
     COMPILE_ASSERT(0X20 == TestObject::CONST_VALUE_13, TheValueOfTestObject_CONST_VALUE_13DoesntMatchWithImplementation);

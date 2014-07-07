@@ -340,6 +340,7 @@ def constant_context(constant):
     extended_attributes = constant.extended_attributes
     return {
         'cpp_class': extended_attributes.get('PartialInterfaceImplementedAs'),
+        'idl_type': constant.idl_type.name,
         'name': constant.name,
         # FIXME: use 'reflected_name' as correct 'name'
         'reflected_name': extended_attributes.get('Reflect', constant.name),

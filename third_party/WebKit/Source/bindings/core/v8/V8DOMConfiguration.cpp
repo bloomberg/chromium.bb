@@ -72,8 +72,26 @@ void V8DOMConfiguration::installConstants(v8::Handle<v8::FunctionTemplate> funct
     for (size_t i = 0; i < constantCount; ++i) {
         const ConstantConfiguration* constant = &constants[i];
         v8::Handle<v8::String> constantName = v8AtomicString(isolate, constant->name);
-        functionDescriptor->Set(constantName, v8::Integer::New(isolate, constant->value), static_cast<v8::PropertyAttribute>(v8::ReadOnly | v8::DontDelete));
-        prototype->Set(constantName, v8::Integer::New(isolate, constant->value), static_cast<v8::PropertyAttribute>(v8::ReadOnly | v8::DontDelete));
+        switch (constant->type) {
+        case ConstantTypeShort:
+        case ConstantTypeLong:
+        case ConstantTypeUnsignedShort:
+        case ConstantTypeUnsignedLong:
+            functionDescriptor->Set(constantName, v8::Integer::New(isolate, constant->ivalue), static_cast<v8::PropertyAttribute>(v8::ReadOnly | v8::DontDelete));
+            prototype->Set(constantName, v8::Integer::New(isolate, constant->ivalue), static_cast<v8::PropertyAttribute>(v8::ReadOnly | v8::DontDelete));
+            break;
+        case ConstantTypeFloat:
+        case ConstantTypeDouble:
+            functionDescriptor->Set(constantName, v8::Number::New(isolate, constant->dvalue), static_cast<v8::PropertyAttribute>(v8::ReadOnly | v8::DontDelete));
+            prototype->Set(constantName, v8::Number::New(isolate, constant->dvalue), static_cast<v8::PropertyAttribute>(v8::ReadOnly | v8::DontDelete));
+            break;
+        case ConstantTypeString:
+            functionDescriptor->Set(constantName, v8::String::NewFromUtf8(isolate, constant->svalue), static_cast<v8::PropertyAttribute>(v8::ReadOnly | v8::DontDelete));
+            prototype->Set(constantName, v8::String::NewFromUtf8(isolate, constant->svalue), static_cast<v8::PropertyAttribute>(v8::ReadOnly | v8::DontDelete));
+            break;
+        default:
+            ASSERT_NOT_REACHED();
+        }
     }
 }
 
