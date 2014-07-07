@@ -79,7 +79,7 @@ class DispatcherDelegate {
   // See http://crbug.com/368431.
   virtual void UpdateTabSpecificPermissions(
       const extensions::Dispatcher* dispatcher,
-      int page_id,
+      const GURL& url,
       int tab_id,
       const std::string& extension_id,
       const extensions::URLPatternSet& origin_set) {}

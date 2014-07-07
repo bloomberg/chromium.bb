@@ -41,7 +41,9 @@
 #include "extensions/renderer/script_context.h"
 #include "grit/renderer_resources.h"
 #include "third_party/WebKit/public/platform/WebString.h"
+#include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebSecurityPolicy.h"
+#include "third_party/WebKit/public/web/WebView.h"
 
 #if defined(ENABLE_WEBRTC)
 #include "chrome/renderer/extensions/cast_streaming_native_handler.h"
@@ -340,7 +342,7 @@ void ChromeExtensionsDispatcherDelegate::ClearTabSpecificPermissions(
 
 void ChromeExtensionsDispatcherDelegate::UpdateTabSpecificPermissions(
     const extensions::Dispatcher* dispatcher,
-    int page_id,
+    const GURL& url,
     int tab_id,
     const std::string& extension_id,
     const extensions::URLPatternSet& origin_set) {
@@ -348,9 +350,10 @@ void ChromeExtensionsDispatcherDelegate::UpdateTabSpecificPermissions(
 
   // For now, the message should only be sent to the render view that contains
   // the target tab. This may change. Either way, if this is the target tab it
-  // gives us the chance to check against the page ID to avoid races.
+  // gives us the chance to check against the URL to avoid races.
   DCHECK(view);
-  if (view && view->GetPageId() != page_id)
+  GURL active_url(view->GetWebView()->mainFrame()->document().url());
+  if (active_url != url)
     return;
 
   const extensions::Extension* extension =

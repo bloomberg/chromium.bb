@@ -768,12 +768,12 @@ void Dispatcher::OnUpdatePermissions(
 }
 
 void Dispatcher::OnUpdateTabSpecificPermissions(
-    int page_id,
+    const GURL& url,
     int tab_id,
     const std::string& extension_id,
     const URLPatternSet& origin_set) {
   delegate_->UpdateTabSpecificPermissions(
-      this, page_id, tab_id, extension_id, origin_set);
+      this, url, tab_id, extension_id, origin_set);
 }
 
 void Dispatcher::OnUsingWebRequestAPI(bool webrequest_used) {

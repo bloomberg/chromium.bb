@@ -178,7 +178,7 @@ class Dispatcher : public content::RenderProcessObserver,
   void OnTransferBlobs(const std::vector<std::string>& blob_uuids);
   void OnUnloaded(const std::string& id);
   void OnUpdatePermissions(const ExtensionMsg_UpdatePermissions_Params& params);
-  void OnUpdateTabSpecificPermissions(int page_id,
+  void OnUpdateTabSpecificPermissions(const GURL& url,
                                       int tab_id,
                                       const std::string& extension_id,
                                       const URLPatternSet& origin_set);

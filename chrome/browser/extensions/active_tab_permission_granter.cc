@@ -81,7 +81,7 @@ void ActiveTabPermissionGranter::GrantIfRequested(const Extension* extension) {
         web_contents()->GetController().GetVisibleEntry();
     if (navigation_entry) {
       Send(new ExtensionMsg_UpdateTabSpecificPermissions(
-          navigation_entry->GetPageID(),
+          navigation_entry->GetURL(),
           tab_id_,
           extension->id(),
           new_hosts));

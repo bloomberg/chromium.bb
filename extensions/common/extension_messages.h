@@ -380,7 +380,7 @@ IPC_MESSAGE_CONTROL1(ExtensionMsg_UpdatePermissions,
 
 // Tell the renderer about new tab-specific permissions for an extension.
 IPC_MESSAGE_CONTROL4(ExtensionMsg_UpdateTabSpecificPermissions,
-                     int32 /* page_id (only relevant for the target tab) */,
+                     GURL /* url */,
                      int /* tab_id */,
                      std::string /* extension_id */,
                      extensions::URLPatternSet /* hosts */)
