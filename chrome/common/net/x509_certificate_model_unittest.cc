@@ -330,3 +330,34 @@ TEST(X509CertificateModelTest, GetCMSString) {
     EXPECT_TRUE(certs[0]->Equals(decoded_certs[0]));
   }
 }
+
+TEST(X509CertificateModelTest, ProcessSecAlgorithms) {
+  {
+    scoped_refptr<net::X509Certificate> cert(net::ImportCertFromFile(
+        net::GetTestCertsDirectory(), "root_ca_cert.pem"));
+    ASSERT_TRUE(cert.get());
+    EXPECT_EQ("PKCS #1 SHA-1 With RSA Encryption",
+              x509_certificate_model::ProcessSecAlgorithmSignature(
+                  cert->os_cert_handle()));
+    EXPECT_EQ("PKCS #1 SHA-1 With RSA Encryption",
+              x509_certificate_model::ProcessSecAlgorithmSignatureWrap(
+                  cert->os_cert_handle()));
+    EXPECT_EQ("PKCS #1 RSA Encryption",
+              x509_certificate_model::ProcessSecAlgorithmSubjectPublicKey(
+                  cert->os_cert_handle()));
+  }
+  {
+    scoped_refptr<net::X509Certificate> cert(net::ImportCertFromFile(
+        net::GetTestCertsDirectory(), "weak_digest_md5_root.pem"));
+    ASSERT_TRUE(cert.get());
+    EXPECT_EQ("PKCS #1 MD5 With RSA Encryption",
+              x509_certificate_model::ProcessSecAlgorithmSignature(
+                  cert->os_cert_handle()));
+    EXPECT_EQ("PKCS #1 MD5 With RSA Encryption",
+              x509_certificate_model::ProcessSecAlgorithmSignatureWrap(
+                  cert->os_cert_handle()));
+    EXPECT_EQ("PKCS #1 RSA Encryption",
+              x509_certificate_model::ProcessSecAlgorithmSubjectPublicKey(
+                  cert->os_cert_handle()));
+  }
+}

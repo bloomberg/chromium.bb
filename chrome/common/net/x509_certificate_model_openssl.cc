@@ -1168,20 +1168,18 @@ std::string GetCMSString(const net::X509Certificate::OSCertHandles& cert_chain,
 
 std::string ProcessSecAlgorithmSignature(
     net::X509Certificate::OSCertHandle cert_handle) {
-  // TODO(bulach): implement me.
-  return "";
+  return Asn1ObjectToString(cert_handle->cert_info->signature->algorithm);
 }
 
 std::string ProcessSecAlgorithmSubjectPublicKey(
     net::X509Certificate::OSCertHandle cert_handle) {
-  // TODO(bulach): implement me.
-  return "";
+  return Asn1ObjectToString(
+      X509_get_X509_PUBKEY(cert_handle)->algor->algorithm);
 }
 
 std::string ProcessSecAlgorithmSignatureWrap(
     net::X509Certificate::OSCertHandle cert_handle) {
-  // TODO(bulach): implement me.
-  return "";
+  return Asn1ObjectToString(cert_handle->sig_alg->algorithm);
 }
 
 std::string ProcessSubjectPublicKeyInfo(
