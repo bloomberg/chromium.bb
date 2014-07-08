@@ -30,8 +30,7 @@
 #endif
 
 #if defined(USE_AURA) || (defined(OS_MACOSX) && !defined(OS_IOS))
-#include "content/browser/compositor/image_transport_factory.h"
-#include "ui/compositor/test/in_process_context_factory.h"
+#include "content/browser/compositor/test/no_transport_image_transport_factory.h"
 #endif
 
 #if defined(USE_AURA)
@@ -457,7 +456,8 @@ class RenderWidgetHostTest : public testing::Test {
 #if defined(USE_AURA) || (defined(OS_MACOSX) && !defined(OS_IOS))
     if (IsDelegatedRendererEnabled()) {
       ImageTransportFactory::InitializeForUnitTests(
-          scoped_ptr<ui::ContextFactory>(new ui::InProcessContextFactory));
+          scoped_ptr<ImageTransportFactory>(
+              new NoTransportImageTransportFactory));
     }
 #endif
 #if defined(USE_AURA)

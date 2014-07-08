@@ -55,8 +55,7 @@ class CONTENT_EXPORT ImageTransportFactory {
 
   // Initializes the global transport factory for unit tests using the provided
   // context factory.
-  static void InitializeForUnitTests(
-      scoped_ptr<ui::ContextFactory> test_factory);
+  static void InitializeForUnitTests(scoped_ptr<ImageTransportFactory> factory);
 
   // Terminates the global transport factory.
   static void Terminate();

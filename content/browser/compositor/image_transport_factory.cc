@@ -6,7 +6,6 @@
 
 #include "base/command_line.h"
 #include "content/browser/compositor/gpu_process_transport_factory.h"
-#include "content/browser/compositor/no_transport_image_transport_factory.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/compositor_switches.h"
 #include "ui/gl/gl_implementation.h"
@@ -33,7 +32,7 @@ void ImageTransportFactory::Initialize() {
 }
 
 void ImageTransportFactory::InitializeForUnitTests(
-    scoped_ptr<ui::ContextFactory> test_factory) {
+    scoped_ptr<ImageTransportFactory> factory) {
   DCHECK(!g_factory);
   DCHECK(!g_initialized_for_unit_tests);
   g_initialized_for_unit_tests = true;
@@ -42,7 +41,7 @@ void ImageTransportFactory::InitializeForUnitTests(
   if (command_line->HasSwitch(switches::kEnablePixelOutputInTests))
     g_disable_null_draw = new gfx::DisableNullDrawGLBindings;
 
-  SetFactory(new NoTransportImageTransportFactory(test_factory.Pass()));
+  SetFactory(factory.release());
 }
 
 // static

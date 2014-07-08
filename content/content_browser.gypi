@@ -1398,8 +1398,6 @@
       'browser/compositor/gpu_process_transport_factory.h',
       'browser/compositor/image_transport_factory.cc',
       'browser/compositor/image_transport_factory.h',
-      'browser/compositor/no_transport_image_transport_factory.cc',
-      'browser/compositor/no_transport_image_transport_factory.h',
       'browser/compositor/onscreen_display_client.cc',
       'browser/compositor/onscreen_display_client.h',
       'browser/compositor/overlay_candidate_validator_ozone.cc',
@@ -1599,7 +1597,13 @@
     ['OS!="android" and OS!="ios"', {
       'dependencies': [
         'browser/tracing/tracing_resources.gyp:tracing_resources',
+        '../ui/compositor/compositor.gyp:compositor',
       ],
+      'sources': [ '<@(compositor_browser_sources)' ],
+    }, {
+      'sources/': [
+        ['exclude', '^public/browser/context_factory.h'],
+      ]
     }],
     ['OS!="ios"', {
       'dependencies': [
@@ -1786,16 +1790,6 @@
         ['exclude', '^browser/renderer_host/ui_events_helper.cc'],
         ['exclude', '^browser/renderer_host/ui_events_helper.h'],
       ],
-    }],
-    ['use_aura==1 or OS=="mac"', {
-      'dependencies': [
-        '../ui/compositor/compositor.gyp:compositor',
-      ],
-      'sources': [ '<@(compositor_browser_sources)' ],
-    }, {
-      'sources/': [
-        ['exclude', '^public/browser/context_factory.h'],
-      ]
     }],
     ['enable_plugins==1', {
       'dependencies': [

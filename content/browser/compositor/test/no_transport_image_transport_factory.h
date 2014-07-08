@@ -18,8 +18,7 @@ namespace content {
 // An ImageTransportFactory that disables transport.
 class NoTransportImageTransportFactory : public ImageTransportFactory {
  public:
-  explicit NoTransportImageTransportFactory(
-      scoped_ptr<ui::ContextFactory> context_factory);
+  NoTransportImageTransportFactory();
   virtual ~NoTransportImageTransportFactory();
 
   // ImageTransportFactory implementation.

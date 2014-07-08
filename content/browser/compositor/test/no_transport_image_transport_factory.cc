@@ -2,24 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/compositor/no_transport_image_transport_factory.h"
+#include "content/browser/compositor/test/no_transport_image_transport_factory.h"
 
 #include "cc/output/context_provider.h"
 #include "content/common/gpu/client/gl_helper.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "ui/compositor/compositor.h"
+#include "ui/compositor/test/in_process_context_factory.h"
 
 namespace content {
 
-NoTransportImageTransportFactory::NoTransportImageTransportFactory(
-    scoped_ptr<ui::ContextFactory> context_factory)
-    : context_factory_(context_factory.Pass()) {}
+NoTransportImageTransportFactory::NoTransportImageTransportFactory()
+    : context_factory_(new ui::InProcessContextFactory) {
+}
 
 NoTransportImageTransportFactory::~NoTransportImageTransportFactory() {
   scoped_ptr<GLHelper> lost_gl_helper = gl_helper_.Pass();
-  FOR_EACH_OBSERVER(ImageTransportFactoryObserver,
-                    observer_list_,
-                    OnLostResources());
+  FOR_EACH_OBSERVER(
+      ImageTransportFactoryObserver, observer_list_, OnLostResources());
 }
 
 ui::ContextFactory* NoTransportImageTransportFactory::GetContextFactory() {

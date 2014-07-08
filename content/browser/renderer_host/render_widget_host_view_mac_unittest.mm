@@ -9,7 +9,7 @@
 #include "base/mac/sdk_forward_declarations.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/browser/browser_thread_impl.h"
-#include "content/browser/compositor/image_transport_factory.h"
+#include "content/browser/compositor/test/no_transport_image_transport_factory.h"
 #include "content/browser/gpu/compositor_util.h"
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
 #include "content/common/gpu/gpu_messages.h"
@@ -23,7 +23,6 @@
 #include "content/test/test_render_view_host.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/compositor/test/in_process_context_factory.h"
 #include "ui/events/test/cocoa_test_event_utils.h"
 #import "ui/gfx/test/ui_cocoa_test_helper.h"
 
@@ -170,7 +169,8 @@ class RenderWidgetHostViewMacTest : public RenderViewHostImplTestHarness {
     RenderViewHostImplTestHarness::SetUp();
     if (IsDelegatedRendererEnabled()) {
       ImageTransportFactory::InitializeForUnitTests(
-          scoped_ptr<ui::ContextFactory>(new ui::InProcessContextFactory));
+          scoped_ptr<ImageTransportFactory>(
+              new NoTransportImageTransportFactory));
     }
 
     // TestRenderViewHost's destruction assumes that its view is a

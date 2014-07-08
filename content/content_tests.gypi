@@ -325,18 +325,18 @@
             '../ui/wm/wm.gyp:wm',
           ],
         }],
-        ['use_aura==1 or OS=="mac"', {
-          'dependencies': [
-            '../ui/compositor/compositor.gyp:compositor',
-          ],
-        }],
         ['OS=="win"', {
           'dependencies': [
             '../third_party/iaccessible2/iaccessible2.gyp:iaccessible2',
           ],
         }],
         ['OS!="android" and OS!="ios"', {
+          'sources': [
+            'browser/compositor/test/no_transport_image_transport_factory.cc',
+            'browser/compositor/test/no_transport_image_transport_factory.h',
+          ],
           'dependencies': [
+            '../ui/compositor/compositor.gyp:compositor',
             '../third_party/libvpx/libvpx.gyp:libvpx',
           ],
         }],
