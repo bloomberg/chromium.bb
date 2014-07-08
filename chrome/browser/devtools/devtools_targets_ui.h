@@ -23,22 +23,23 @@ class Profile;
 class DevToolsTargetsUIHandler {
  public:
   typedef base::Callback<void(const std::string&,
-                              scoped_ptr<base::ListValue>)> Callback;
+                              const base::ListValue&)> Callback;
   typedef base::Callback<void(DevToolsTargetImpl*)> TargetCallback;
 
-  DevToolsTargetsUIHandler(const std::string& source_id, Callback callback);
+  DevToolsTargetsUIHandler(const std::string& source_id,
+                           const Callback& callback);
   virtual ~DevToolsTargetsUIHandler();
 
   std::string source_id() const { return source_id_; }
 
   static scoped_ptr<DevToolsTargetsUIHandler> CreateForRenderers(
-      Callback callback);
+      const Callback& callback);
 
   static scoped_ptr<DevToolsTargetsUIHandler> CreateForWorkers(
-      Callback callback);
+      const Callback& callback);
 
   static scoped_ptr<DevToolsTargetsUIHandler> CreateForAdb(
-      Callback callback, Profile* profile);
+      const Callback& callback, Profile* profile);
 
   DevToolsTargetImpl* GetTarget(const std::string& target_id);
 
@@ -50,7 +51,7 @@ class DevToolsTargetsUIHandler {
 
  protected:
   base::DictionaryValue* Serialize(const DevToolsTargetImpl& target);
-  void SendSerializedTargets(scoped_ptr<base::ListValue> list);
+  void SendSerializedTargets(const base::ListValue& list);
 
   typedef std::map<std::string, DevToolsTargetImpl*> TargetMap;
   TargetMap targets_;

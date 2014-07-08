@@ -85,7 +85,7 @@ class InspectUI : public content::WebUIController,
                                  const std::string& target_id);
 
   void PopulateTargets(const std::string& source_id,
-                       scoped_ptr<base::ListValue> targets);
+                       const base::ListValue& targets);
 
   void PopulatePortStatus(const base::Value& status);
 

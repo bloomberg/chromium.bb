@@ -73,8 +73,6 @@ class DevToolsUIBindings : public content::NotificationObserver,
                           const base::Value* arg1,
                           const base::Value* arg2,
                           const base::Value* arg3);
-  void DispatchEventOnFrontend(const std::string& event_type,
-                               const base::Value* event_data);
  private:
   // content::NotificationObserver:
   virtual void Observe(int type,
@@ -128,7 +126,7 @@ class DevToolsUIBindings : public content::NotificationObserver,
 
   // Forwards discovered devices to frontend.
   virtual void PopulateRemoteDevices(const std::string& source,
-                                     scoped_ptr<base::ListValue> targets);
+                                     const base::ListValue& targets);
 
   void DocumentOnLoadCompletedInMainFrame();
 
@@ -156,6 +154,9 @@ class DevToolsUIBindings : public content::NotificationObserver,
   // Theme and extensions support.
   void UpdateTheme();
   void AddDevToolsExtensionsToClient();
+
+  void DispatchEventOnFrontend(const std::string& event_type,
+                               const base::Value& event_data);
 
   class FrontendWebContentsObserver;
   friend class FrontendWebContentsObserver;

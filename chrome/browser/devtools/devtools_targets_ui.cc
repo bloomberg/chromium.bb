@@ -86,8 +86,9 @@ class RenderViewHostTargetsUIHandler
     : public DevToolsTargetsUIHandler,
       public content::NotificationObserver {
  public:
-  explicit RenderViewHostTargetsUIHandler(Callback callback);
+  explicit RenderViewHostTargetsUIHandler(const Callback& callback);
   virtual ~RenderViewHostTargetsUIHandler();
+
  private:
   // content::NotificationObserver overrides.
   virtual void Observe(int type,
@@ -101,7 +102,7 @@ class RenderViewHostTargetsUIHandler
 };
 
 RenderViewHostTargetsUIHandler::RenderViewHostTargetsUIHandler(
-    Callback callback)
+    const Callback& callback)
     : DevToolsTargetsUIHandler(kTargetSourceRenderer, callback) {
   notification_registrar_.Add(this,
                               content::NOTIFICATION_WEB_CONTENTS_CONNECTED,
@@ -132,7 +133,7 @@ void RenderViewHostTargetsUIHandler::Observe(
 }
 
 void RenderViewHostTargetsUIHandler::UpdateTargets() {
-  scoped_ptr<base::ListValue> list_value(new base::ListValue());
+  base::ListValue list_value;
 
   std::map<std::string, base::DictionaryValue*> id_to_descriptor;
 
@@ -153,7 +154,7 @@ void RenderViewHostTargetsUIHandler::UpdateTargets() {
 
     std::string parent_id = target->GetParentId();
     if (parent_id.empty() || id_to_descriptor.count(parent_id) == 0) {
-      list_value->Append(descriptor);
+      list_value.Append(descriptor);
     } else {
       base::DictionaryValue* parent = id_to_descriptor[parent_id];
       base::ListValue* guests = NULL;
@@ -165,7 +166,7 @@ void RenderViewHostTargetsUIHandler::UpdateTargets() {
     }
   }
 
-  SendSerializedTargets(list_value.Pass());
+  SendSerializedTargets(list_value);
 }
 
 // WorkerObserver -------------------------------------------------------------
@@ -248,7 +249,7 @@ class WorkerTargetsUIHandler
     : public DevToolsTargetsUIHandler,
       public content::BrowserChildProcessObserver {
  public:
-  explicit WorkerTargetsUIHandler(Callback callback);
+  explicit WorkerTargetsUIHandler(const Callback& callback);
   virtual ~WorkerTargetsUIHandler();
 
  private:
@@ -263,7 +264,7 @@ class WorkerTargetsUIHandler
   scoped_refptr<WorkerObserver> observer_;
 };
 
-WorkerTargetsUIHandler::WorkerTargetsUIHandler(Callback callback)
+WorkerTargetsUIHandler::WorkerTargetsUIHandler(const Callback& callback)
     : DevToolsTargetsUIHandler(kTargetSourceWorker, callback),
       observer_(new WorkerObserver()) {
   observer_->Start(base::Bind(&WorkerTargetsUIHandler::UpdateTargets,
@@ -291,15 +292,15 @@ void WorkerTargetsUIHandler::BrowserChildProcessHostDisconnected(
 void WorkerTargetsUIHandler::UpdateTargets(
     const DevToolsTargetImpl::List& targets) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  scoped_ptr<base::ListValue> list_value(new base::ListValue());
+  base::ListValue list_value;
   STLDeleteValues(&targets_);
   for (DevToolsTargetImpl::List::const_iterator it = targets.begin();
       it != targets.end(); ++it) {
     DevToolsTargetImpl* target = *it;
-    list_value->Append(Serialize(*target));
+    list_value.Append(Serialize(*target));
     targets_[target->GetId()] = target;
   }
-  SendSerializedTargets(list_value.Pass());
+  SendSerializedTargets(list_value);
 }
 
 // AdbTargetsUIHandler --------------------------------------------------------
@@ -308,7 +309,7 @@ class AdbTargetsUIHandler
     : public DevToolsTargetsUIHandler,
       public DevToolsAndroidBridge::DeviceListListener {
  public:
-  AdbTargetsUIHandler(Callback callback, Profile* profile);
+  AdbTargetsUIHandler(const Callback& callback, Profile* profile);
   virtual ~AdbTargetsUIHandler();
 
   virtual void Open(const std::string& browser_id,
@@ -330,7 +331,8 @@ class AdbTargetsUIHandler
   RemoteBrowsers remote_browsers_;
 };
 
-AdbTargetsUIHandler::AdbTargetsUIHandler(Callback callback, Profile* profile)
+AdbTargetsUIHandler::AdbTargetsUIHandler(const Callback& callback,
+                                         Profile* profile)
     : DevToolsTargetsUIHandler(kTargetSourceAdb, callback),
       profile_(profile) {
   DevToolsAndroidBridge* android_bridge =
@@ -374,7 +376,7 @@ void AdbTargetsUIHandler::DeviceListChanged(
   remote_browsers_.clear();
   STLDeleteValues(&targets_);
 
-  scoped_ptr<base::ListValue> device_list(new base::ListValue());
+  base::ListValue device_list;
   for (DevToolsAndroidBridge::RemoteDevices::const_iterator dit =
       devices.begin(); dit != devices.end(); ++dit) {
     DevToolsAndroidBridge::RemoteDevice* device = dit->get();
@@ -446,9 +448,9 @@ void AdbTargetsUIHandler::DeviceListChanged(
       browser_list->Append(browser_data);
     }
 
-    device_list->Append(device_data);
+    device_list.Append(device_data);
   }
-  SendSerializedTargets(device_list.Pass());
+  SendSerializedTargets(device_list);
 }
 
 } // namespace
@@ -457,7 +459,7 @@ void AdbTargetsUIHandler::DeviceListChanged(
 
 DevToolsTargetsUIHandler::DevToolsTargetsUIHandler(
     const std::string& source_id,
-    Callback callback)
+    const Callback& callback)
     : source_id_(source_id),
       callback_(callback) {
 }
@@ -469,7 +471,7 @@ DevToolsTargetsUIHandler::~DevToolsTargetsUIHandler() {
 // static
 scoped_ptr<DevToolsTargetsUIHandler>
 DevToolsTargetsUIHandler::CreateForRenderers(
-    DevToolsTargetsUIHandler::Callback callback) {
+    const DevToolsTargetsUIHandler::Callback& callback) {
   return scoped_ptr<DevToolsTargetsUIHandler>(
       new RenderViewHostTargetsUIHandler(callback));
 }
@@ -477,7 +479,7 @@ DevToolsTargetsUIHandler::CreateForRenderers(
 // static
 scoped_ptr<DevToolsTargetsUIHandler>
 DevToolsTargetsUIHandler::CreateForWorkers(
-    DevToolsTargetsUIHandler::Callback callback) {
+    const DevToolsTargetsUIHandler::Callback& callback) {
   return scoped_ptr<DevToolsTargetsUIHandler>(
       new WorkerTargetsUIHandler(callback));
 }
@@ -485,7 +487,7 @@ DevToolsTargetsUIHandler::CreateForWorkers(
 // static
 scoped_ptr<DevToolsTargetsUIHandler>
 DevToolsTargetsUIHandler::CreateForAdb(
-    DevToolsTargetsUIHandler::Callback callback, Profile* profile) {
+    const DevToolsTargetsUIHandler::Callback& callback, Profile* profile) {
   return scoped_ptr<DevToolsTargetsUIHandler>(
       new AdbTargetsUIHandler(callback, profile));
 }
@@ -524,8 +526,8 @@ base::DictionaryValue* DevToolsTargetsUIHandler::Serialize(
 }
 
 void DevToolsTargetsUIHandler::SendSerializedTargets(
-    scoped_ptr<base::ListValue> list) {
-  callback_.Run(source_id_, list.Pass());
+    const base::ListValue& list) {
+  callback_.Run(source_id_, list);
 }
 
 // PortForwardingStatusSerializer ---------------------------------------------

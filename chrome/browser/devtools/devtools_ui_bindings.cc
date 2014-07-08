@@ -387,10 +387,10 @@ void DevToolsUIBindings::DispatchOnEmbedder(const std::string& message) {
   std::string error;
   embedder_message_dispatcher_->Dispatch(method, params, &error);
   if (id) {
-    scoped_ptr<base::Value> id_value(base::Value::CreateIntegerValue(id));
-    scoped_ptr<base::Value> error_value(base::Value::CreateStringValue(error));
+    base::FundamentalValue id_value(id);
+    base::StringValue error_value(error);
     CallClientFunction("InspectorFrontendAPI.embedderMessageAck",
-                       id_value.get(), error_value.get(), NULL);
+                       &id_value, &error_value, NULL);
   }
 }
 
@@ -623,14 +623,13 @@ void DevToolsUIBindings::EnableRemoteDeviceCounter(bool enable) {
 }
 
 void DevToolsUIBindings::DeviceCountChanged(int count) {
-  base::FundamentalValue value(count);
-  DispatchEventOnFrontend(kDeviceCountChanged, &value);
+  DispatchEventOnFrontend(kDeviceCountChanged, base::FundamentalValue(count));
 }
 
 void DevToolsUIBindings::PopulateRemoteDevices(
     const std::string& source,
-    scoped_ptr<base::ListValue> targets) {
-  DispatchEventOnFrontend(kDevicesChanged, targets.get());
+    const base::ListValue& targets) {
+  DispatchEventOnFrontend(kDevicesChanged, targets);
 }
 
 void DevToolsUIBindings::FileSavedAs(const std::string& url) {
@@ -796,13 +795,13 @@ void DevToolsUIBindings::CallClientFunction(const std::string& function_name,
 
 void DevToolsUIBindings::DispatchEventOnFrontend(
     const std::string& event_type,
-    const base::Value* event_data) {
+    const base::Value& event_data) {
   if (subscribers_.find(event_type) == subscribers_.end())
     return;
-  base::StringValue event_type_value = base::StringValue(event_type);
+  base::StringValue event_type_value(event_type);
   CallClientFunction("InspectorFrontendAPI.dispatchEventToListeners",
                      &event_type_value,
-                     event_data,
+                     &event_data,
                      NULL);
 }
 
