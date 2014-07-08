@@ -22,17 +22,17 @@ bin_dir = os.path.dirname(__file__)
 # but ignore all errors.
 
 try:
-  os.remove(os.path.join(bin_dir, "linux", "clang_format"))
+  os.remove(os.path.join(bin_dir, "linux", "clang-format"))
 except:
   pass
 
 try:
-  os.remove(os.path.join(bin_dir, "mac", "clang_format"))
+  os.remove(os.path.join(bin_dir, "mac", "clang-format"))
 except:
   pass
 
 try:
-  os.remove(os.path.join(bin_dir, "win", "clang_format.exe"))
+  os.remove(os.path.join(bin_dir, "win", "clang-format.exe"))
 except:
   pass
 
