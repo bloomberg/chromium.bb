@@ -1442,6 +1442,7 @@ IPC_MESSAGE_CONTROL1(ViewHostMsg_SuddenTerminationChanged,
                      bool /* enabled */)
 
 IPC_STRUCT_BEGIN(ViewHostMsg_CompositorSurfaceBuffersSwapped_Params)
+  IPC_STRUCT_MEMBER(bool, use_native_widget)
   IPC_STRUCT_MEMBER(int32, surface_id)
   IPC_STRUCT_MEMBER(uint64, surface_handle)
   IPC_STRUCT_MEMBER(int32, route_id)

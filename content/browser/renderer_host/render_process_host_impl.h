@@ -295,9 +295,11 @@ class CONTENT_EXPORT RenderProcessHostImpl
   void OnSavedPageAsMHTML(int job_id, int64 mhtml_file_size);
   void OnCloseACK(int old_route_id);
 
+#if defined(OS_MACOSX)
   // CompositorSurfaceBuffersSwapped handler when there's no RWH.
   void OnCompositorSurfaceBuffersSwappedNoHost(
       const ViewHostMsg_CompositorSurfaceBuffersSwapped_Params& params);
+#endif
 
   // Generates a command line to be used to spawn a renderer and appends the
   // results to |*command_line|.

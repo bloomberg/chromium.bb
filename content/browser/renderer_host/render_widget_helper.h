@@ -30,7 +30,7 @@ namespace base {
 class TimeDelta;
 }
 
-struct GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params;
+struct ViewHostMsg_CompositorSurfaceBuffersSwapped_Params;
 struct ViewHostMsg_CreateWindow_Params;
 struct ViewMsg_SwapOut_Params;
 
@@ -137,6 +137,20 @@ class RenderWidgetHelper
   // created by CreateNewWindow which initially blocked the requests.
   void ResumeRequestsForView(int route_id);
 
+#if defined(OS_MACOSX)
+  // Associate an NSView with a render process and widget, so that browser
+  // compositor swaps can come through during resize.
+  static void SetRenderWidgetIDForWidget(gfx::AcceleratedWidget native_widget,
+                                         int render_process_id,
+                                         int render_widget_id);
+  static void ResetRenderWidgetIDForWidget(
+      gfx::AcceleratedWidget native_widget);
+
+  // Display a new frame to an NSView.
+  static void OnNativeSurfaceBuffersSwappedOnUIThread(
+      const ViewHostMsg_CompositorSurfaceBuffersSwapped_Params& params);
+#endif
+
   // IO THREAD ONLY -----------------------------------------------------------
 
   // Called on the IO thread when a BackingStore message is received.
@@ -171,9 +185,10 @@ class RenderWidgetHelper
 #endif
 
 #if defined(OS_MACOSX)
-  static void OnNativeSurfaceBuffersSwappedOnIOThread(
-      GpuProcessHost* gpu_process_host,
-      const GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params& params);
+  // Retrieve the render process and widget that was associated with an NSView.
+  static bool GetRenderWidgetIDForWidget(gfx::AcceleratedWidget native_widget,
+                                         int* render_process_id,
+                                         int* render_widget_id);
 #endif
 
  private:

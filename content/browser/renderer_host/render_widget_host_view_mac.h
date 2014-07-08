@@ -442,6 +442,10 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   // Container for the NSView drawn by the browser compositor.
   scoped_ptr<BrowserCompositorViewMac> browser_compositor_view_;
 
+  // Set when the browser compositor is requested to paint, and unset when the
+  // browser compositor paints in DoBrowserCompositorPendingPaint.
+  bool browser_compositor_has_pending_paint_;
+
   // Placeholder that is allocated while browser_compositor_view_ is NULL,
   // indicating that a BrowserCompositorViewMac may be allocated. This is to
   // help in recycling the internals of BrowserCompositorViewMac.
@@ -517,6 +521,7 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
       const std::vector<ui::LatencyInfo>& latency_info) OVERRIDE;
   virtual NSView* BrowserCompositorSuperview() OVERRIDE;
   virtual ui::Layer* BrowserCompositorRootLayer() OVERRIDE;
+  virtual bool BrowserCompositorShouldDrawImmediately() OVERRIDE;
 
  private:
   friend class RenderWidgetHostViewMacTest;
@@ -542,6 +547,7 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
 
   void EnsureBrowserCompositorView();
   void DestroyBrowserCompositorView();
+  void DoBrowserCompositorPendingPaint();
 
   void EnsureSoftwareLayer();
   void DestroySoftwareLayer();
@@ -582,6 +588,10 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
 
   // Indicates if the page is loading.
   bool is_loading_;
+
+  // Indicates if the view is currently stalled waiting for a new frame to come
+  // in.
+  bool is_paused_for_resize_or_repaint_;
 
   // The text to be shown in the tooltip, supplied by the renderer.
   base::string16 tooltip_text_;

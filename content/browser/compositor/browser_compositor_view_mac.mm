@@ -76,9 +76,17 @@ BrowserCompositorViewMac::~BrowserCompositorViewMac() {
   }
 }
 
+NSView* BrowserCompositorViewMac::GetView() const {
+  return cocoa_view_;
+}
+
 ui::Compositor* BrowserCompositorViewMac::GetCompositor() const {
-  DCHECK(cocoa_view_);
   return [cocoa_view_ compositor];
+}
+
+bool BrowserCompositorViewMac::HasFrameWithSizeInDIP(
+    const gfx::Size& desired_size_in_dip) const {
+  return [cocoa_view_ hasFrameWithSizeInDIP:desired_size_in_dip];
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -75,6 +75,15 @@
   compositor_->ScheduleFullRedraw();
 }
 
+- (bool)hasFrameWithSizeInDIP:(gfx::Size)desiredSizeInDIP {
+  gfx::Size layerSize;
+  if (accelerated_layer_)
+    layerSize = gfx::Rect([accelerated_layer_ bounds]).size();
+  if (software_layer_)
+    layerSize = gfx::Rect([software_layer_ bounds]).size();
+  return layerSize == desiredSizeInDIP;
+}
+
 - (ui::Compositor*)compositor {
   return compositor_.get();
 }
@@ -89,6 +98,7 @@
   accelerated_latency_info_.insert(accelerated_latency_info_.end(),
                                    latency_info.begin(), latency_info.end());
 
+  // Disable the fade-in animation as the layer is added, removed, or resized.
   ScopedCAActionDisabler disabler;
 
   // If there is already an accelerated layer, but it has the wrong scale
@@ -103,8 +113,6 @@
 
   // If there is not a layer for accelerated frames, create one.
   if (!accelerated_layer_) {
-    // Disable the fade-in animation as the layer is added.
-    ScopedCAActionDisabler disabler;
     scoped_refptr<content::CompositingIOSurfaceMac> iosurface =
         content::CompositingIOSurfaceMac::Create();
     accelerated_layer_.reset([[CompositingIOSurfaceLayer alloc]
@@ -135,7 +143,8 @@
   bool bounds_changed = !CGRectEqualToRect(
       new_layer_bounds, [accelerated_layer_ bounds]);
   [accelerated_layer_ setBounds:new_layer_bounds];
-  if (bounds_changed) {
+  if (bounds_changed ||
+      (client_ && client_->BrowserCompositorShouldDrawImmediately())) {
     [accelerated_layer_ setNeedsDisplay];
     [accelerated_layer_ displayIfNeeded];
   }
@@ -143,7 +152,6 @@
   // If there was a software layer or an old accelerated layer, remove it.
   // Disable the fade-out animation as the layer is removed.
   {
-    ScopedCAActionDisabler disabler;
     [software_layer_ removeFromSuperlayer];
     software_layer_.reset();
     [old_accelerated_layer resetClient];

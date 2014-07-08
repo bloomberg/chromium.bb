@@ -413,8 +413,21 @@ RenderWidgetHostImpl* RenderWidgetHostViewMac::GetHost() {
 
 void RenderWidgetHostViewMac::SchedulePaintInRect(
     const gfx::Rect& damage_rect_in_dip) {
-  if (browser_compositor_view_)
-    browser_compositor_view_->GetCompositor()->ScheduleFullRedraw();
+  // Do not paint immediately because this is being called from deep inside
+  // DelegatedFrameHost, and not all of its state is set up yet.
+  if (browser_compositor_view_ && !browser_compositor_has_pending_paint_) {
+    browser_compositor_has_pending_paint_ = true;
+    base::MessageLoop::current()->PostTask(FROM_HERE,
+        base::Bind(&RenderWidgetHostViewMac::DoBrowserCompositorPendingPaint,
+                   weak_factory_.GetWeakPtr()));
+  }
+}
+
+void RenderWidgetHostViewMac::DoBrowserCompositorPendingPaint() {
+  if (browser_compositor_has_pending_paint_) {
+    browser_compositor_view_->GetCompositor()->Draw();
+    browser_compositor_has_pending_paint_ = false;
+  }
 }
 
 bool RenderWidgetHostViewMac::IsVisible() {
@@ -468,6 +481,10 @@ ui::Layer* RenderWidgetHostViewMac::BrowserCompositorRootLayer() {
   return root_layer_.get();
 }
 
+bool RenderWidgetHostViewMac::BrowserCompositorShouldDrawImmediately() {
+  return is_paused_for_resize_or_repaint_;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // RenderWidgetHostViewBase, public:
 
@@ -484,10 +501,12 @@ RenderWidgetHostViewMac::RenderWidgetHostViewMac(RenderWidgetHost* widget)
     : render_widget_host_(RenderWidgetHostImpl::From(widget)),
       text_input_type_(ui::TEXT_INPUT_TYPE_NONE),
       can_compose_inline_(true),
+      browser_compositor_has_pending_paint_(false),
       browser_compositor_view_placeholder_(
           new BrowserCompositorViewPlaceholderMac),
       backing_store_scale_factor_(1),
       is_loading_(false),
+      is_paused_for_resize_or_repaint_(false),
       weak_factory_(this),
       fullscreen_parent_host_view_(NULL),
       overlay_view_weak_factory_(this),
@@ -613,6 +632,10 @@ void RenderWidgetHostViewMac::EnsureBrowserCompositorView() {
   browser_compositor_view_.reset(new BrowserCompositorViewMac(this));
   delegated_frame_host_->AddedToWindow();
   delegated_frame_host_->WasShown();
+  RenderWidgetHelper::SetRenderWidgetIDForWidget(
+      browser_compositor_view_->GetView(),
+      render_widget_host_->GetProcess()->GetID(),
+      render_widget_host_->GetRoutingID());
 }
 
 void RenderWidgetHostViewMac::DestroyBrowserCompositorView() {
@@ -623,7 +646,10 @@ void RenderWidgetHostViewMac::DestroyBrowserCompositorView() {
 
   delegated_frame_host_->WasHidden();
   delegated_frame_host_->RemovingFromWindow();
+  RenderWidgetHelper::ResetRenderWidgetIDForWidget(
+      browser_compositor_view_->GetView());
   browser_compositor_view_.reset();
+  browser_compositor_has_pending_paint_ = false;
 }
 
 void RenderWidgetHostViewMac::EnsureSoftwareLayer() {
@@ -1804,6 +1830,8 @@ bool RenderWidgetHostViewMac::HasAcceleratedSurface(
                software_frame_manager_->GetCurrentFrameSizeInDIP() ==
                    desired_size);
   }
+  if (browser_compositor_view_)
+    return browser_compositor_view_->HasFrameWithSizeInDIP(desired_size);
   return false;
 }
 
@@ -1835,6 +1863,8 @@ void RenderWidgetHostViewMac::OnSwapCompositorFrame(
         frame->delegated_frame_data.Pass(),
         frame->metadata.device_scale_factor,
         frame->metadata.latency_info);
+
+    DoBrowserCompositorPendingPaint();
   } else if (frame->software_frame_data) {
     if (!software_frame_manager_->SwapToNewFrame(
             output_surface_id,
@@ -2189,11 +2219,6 @@ void RenderWidgetHostViewMac::PauseForPendingResizeOrRepaintsAndDraw() {
   if (!render_widget_host_ || render_widget_host_->is_hidden())
     return;
 
-  // Synchronized resizing does not yet work with browser compositor.
-  // http://crbug.com/388005
-  if (delegated_frame_host_)
-    return;
-
   // Pausing for the overlay/underlay view prevents the other one from receiving
   // frames. This may lead to large delays, causing overlaps.
   // See crbug.com/352020.
@@ -2206,7 +2231,9 @@ void RenderWidgetHostViewMac::PauseForPendingResizeOrRepaintsAndDraw() {
   SendPendingSwapAck();
 
   // Wait for a frame of the right size to come in.
+  is_paused_for_resize_or_repaint_ = true;
   render_widget_host_->PauseForPendingResizeOrRepaints();
+  is_paused_for_resize_or_repaint_ = false;
 
   // Immediately draw any frames that haven't been drawn yet. This is necessary
   // to keep the window and the window's contents in sync.

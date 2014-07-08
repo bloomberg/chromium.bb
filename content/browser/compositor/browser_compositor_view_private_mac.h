@@ -44,6 +44,9 @@ class BrowserCompositorViewCocoaHelper;
 // Called when an error is encountered while drawing to the screen.
 - (void)gotAcceleratedLayerError;
 
+// Check if a frame of a given size is currently being displayed.
+- (bool)hasFrameWithSizeInDIP:(gfx::Size)desiredSizeInDIP;
+
 @end  // BrowserCompositorViewCocoa
 
 namespace content {
