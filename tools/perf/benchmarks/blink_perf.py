@@ -8,6 +8,7 @@ from telemetry import benchmark
 from telemetry.core import util
 from telemetry.page import page_measurement
 from telemetry.page import page_set
+from telemetry.value import list_of_scalar_values
 
 
 def _CreatePageSetFromPath(path):
@@ -88,7 +89,9 @@ class _BlinkPerfMeasurement(page_measurement.PageMeasurement):
       values = [float(v.replace(',', '')) for v in parts[1:-1]]
       units = parts[-1]
       metric = page.display_name.split('.')[0].replace('/', '_')
-      results.Add(metric, units, values)
+      results.AddValue(list_of_scalar_values.ListOfScalarValues(
+          results.current_page, metric, units, values))
+
       break
 
     print log
