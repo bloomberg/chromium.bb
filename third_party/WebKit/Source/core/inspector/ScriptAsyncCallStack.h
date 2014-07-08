@@ -21,14 +21,14 @@ public:
 
     PassRefPtr<TypeBuilder::Console::AsyncStackTrace> buildInspectorObject() const;
 
-    void trace(Visitor*) { }
+    void trace(Visitor*);
 
 private:
     ScriptAsyncCallStack(const String&, PassRefPtrWillBeRawPtr<ScriptCallStack>, PassRefPtrWillBeRawPtr<ScriptAsyncCallStack>);
 
     String m_description;
-    RefPtr<ScriptCallStack> m_callStack;
-    RefPtr<ScriptAsyncCallStack> m_asyncStackTrace;
+    RefPtrWillBeMember<ScriptCallStack> m_callStack;
+    RefPtrWillBeMember<ScriptAsyncCallStack> m_asyncStackTrace;
 };
 
 } // namespace WebCore

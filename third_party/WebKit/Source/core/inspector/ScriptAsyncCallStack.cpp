@@ -33,4 +33,10 @@ PassRefPtr<TypeBuilder::Console::AsyncStackTrace> ScriptAsyncCallStack::buildIns
     return result.release();
 }
 
+void ScriptAsyncCallStack::trace(Visitor* visitor)
+{
+    visitor->trace(m_callStack);
+    visitor->trace(m_asyncStackTrace);
+}
+
 } // namespace WebCore
