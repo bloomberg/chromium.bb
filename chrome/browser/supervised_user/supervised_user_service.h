@@ -220,6 +220,9 @@ class SupervisedUserService : public KeyedService,
                                   const std::string& token);
 
   void SetupSync();
+  void StartSetupSync();
+  void FinishSetupSyncWhenReady();
+  void FinishSetupSync();
 
   bool ProfileIsSupervised() const;
 

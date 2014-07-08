@@ -312,7 +312,7 @@ void SupervisedUserService::OnStateChanged() {
   if (waiting_for_sync_initialization_ && service->sync_initialized()) {
     waiting_for_sync_initialization_ = false;
     service->RemoveObserver(this);
-    SetupSync();
+    FinishSetupSync();
     return;
   }
 
@@ -340,12 +340,40 @@ void SupervisedUserService::OnExtensionUnloaded(
 }
 
 void SupervisedUserService::SetupSync() {
+  StartSetupSync();
+  FinishSetupSyncWhenReady();
+}
+
+void SupervisedUserService::StartSetupSync() {
+  // Tell the sync service that setup is in progress so we don't start syncing
+  // until we've finished configuration.
+  ProfileSyncServiceFactory::GetForProfile(profile_)->SetSetupInProgress(true);
+}
+
+void SupervisedUserService::FinishSetupSyncWhenReady() {
+  // If we're already waiting for the Sync backend, there's nothing to do here.
+  if (waiting_for_sync_initialization_)
+    return;
+
+  // Continue in FinishSetupSync() once the Sync backend has been initialized.
+  ProfileSyncService* service =
+      ProfileSyncServiceFactory::GetForProfile(profile_);
+  if (service->sync_initialized()) {
+    FinishSetupSync();
+  } else {
+    service->AddObserver(this);
+    waiting_for_sync_initialization_ = true;
+  }
+}
+
+void SupervisedUserService::FinishSetupSync() {
   ProfileSyncService* service =
       ProfileSyncServiceFactory::GetForProfile(profile_);
   DCHECK(service->sync_initialized());
 
   bool sync_everything = false;
   syncer::ModelTypeSet synced_datatypes;
+  synced_datatypes.Put(syncer::SESSIONS);
   service->OnUserChoseDatatypes(sync_everything, synced_datatypes);
 
   // Notify ProfileSyncService that we are done with configuration.
@@ -491,24 +519,14 @@ void SupervisedUserService::GetManualExceptionsForHost(
 }
 
 void SupervisedUserService::InitSync(const std::string& refresh_token) {
-  ProfileSyncService* service =
-      ProfileSyncServiceFactory::GetForProfile(profile_);
-  // Tell the sync service that setup is in progress so we don't start syncing
-  // until we've finished configuration.
-  service->SetSetupInProgress(true);
+  StartSetupSync();
 
   ProfileOAuth2TokenService* token_service =
       ProfileOAuth2TokenServiceFactory::GetForProfile(profile_);
   token_service->UpdateCredentials(supervised_users::kSupervisedUserPseudoEmail,
                                    refresh_token);
 
-  // Continue in SetupSync() once the Sync backend has been initialized.
-  if (service->sync_initialized()) {
-    SetupSync();
-  } else {
-    ProfileSyncServiceFactory::GetForProfile(profile_)->AddObserver(this);
-    waiting_for_sync_initialization_ = true;
-  }
+  FinishSetupSyncWhenReady();
 }
 
 void SupervisedUserService::Init() {
@@ -544,6 +562,8 @@ void SupervisedUserService::SetActive(bool active) {
           ProfileOAuth2TokenServiceFactory::GetForProfile(profile_);
       token_service->LoadCredentials(
           supervised_users::kSupervisedUserPseudoEmail);
+
+      SetupSync();
     }
   }
 
