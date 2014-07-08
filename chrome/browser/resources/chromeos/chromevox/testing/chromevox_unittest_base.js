@@ -40,14 +40,18 @@ ChromeVoxUnitTestBase.prototype = {
   runAccessibilityChecks: false,
 
   /**
-   * Loads some inlined html into the current document, replacing
+   * Loads some inlined html into the body of the current document, replacing
    * whatever was there previously.
    * @param {string} html The html to load as a string.
    */
   loadHtml: function(html) {
-    document.open();
-    document.write(html);
-    document.close();
+    while (document.head.firstChild) {
+      document.head.removeChild(document.head.firstChild);
+    }
+    while (document.body.firstChild) {
+      document.body.removeChild(document.body.firstChild);
+    }
+    this.appendHtml(html);
   },
 
   /**
@@ -81,6 +85,15 @@ ChromeVoxUnitTestBase.prototype = {
    */
   appendDoc: function(commentEncodedHtml) {
     var html = this.extractHtmlFromCommentEncodedString_(commentEncodedHtml);
+    this.appendHtml(html);
+  },
+
+  /**
+   * Appends some inlined html into the current document, at the end of
+   * the body element.
+   * @param {string} html The html to load as a string.
+   */
+  appendHtml: function(html) {
     var div = document.createElement('div');
     div.innerHTML = html;
     var fragment = document.createDocumentFragment();
