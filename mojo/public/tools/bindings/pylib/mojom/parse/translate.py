@@ -84,10 +84,6 @@ def _MapMethod(tree):
     method['response_parameters'] = map(ParameterToDict, tree[4])
   return method
 
-def _MapEnumField(tree):
-  return {'name': tree[1],
-          'value': tree[2]}
-
 def _MapStruct(tree):
   struct = {}
   struct['name'] = tree[1]
@@ -108,9 +104,13 @@ def _MapInterface(tree):
   return interface
 
 def _MapEnum(tree):
+  def MapEnumField(tree):
+    return {'name': tree[1],
+            'value': tree[2]}
+
   enum = {}
   enum['name'] = tree[1]
-  enum['fields'] = _MapTree(_MapEnumField, tree[2], 'ENUM_FIELD')
+  enum['fields'] = _MapTree(MapEnumField, tree[2], 'ENUM_VALUE')
   return enum
 
 def _MapConstant(tree):

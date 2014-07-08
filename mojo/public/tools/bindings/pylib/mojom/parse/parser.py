@@ -283,25 +283,24 @@ class Parser(object):
       p[0] = ast.Ordinal(None)
 
   def p_enum(self, p):
-    """enum : ENUM NAME LBRACE enum_field_list RBRACE SEMI"""
+    """enum : ENUM NAME LBRACE nonempty_enum_value_list RBRACE SEMI
+            | ENUM NAME LBRACE nonempty_enum_value_list COMMA RBRACE SEMI"""
     p[0] = ('ENUM', p[2], p[4])
 
-  def p_enum_field_list(self, p):
-    """enum_field_list : enum_field
-                       | enum_field COMMA enum_field_list
-                       | """
-    if len(p) == 2:
-      p[0] = _ListFromConcat(p[1])
-    elif len(p) > 3:
-      p[0] = _ListFromConcat(p[1], p[3])
+  def p_nonempty_enum_value_list_1(self, p):
+    """nonempty_enum_value_list : enum_value"""
+    p[0] = [p[1]]
 
-  def p_enum_field(self, p):
-    """enum_field : NAME
-                  | NAME EQUALS constant"""
-    if len(p) == 2:
-      p[0] = ('ENUM_FIELD', p[1], None)
-    else:
-      p[0] = ('ENUM_FIELD', p[1], p[3])
+  def p_nonempty_enum_value_list_2(self, p):
+    """nonempty_enum_value_list : nonempty_enum_value_list COMMA enum_value"""
+    p[0] = p[1]
+    p[0].append(p[3])
+
+  def p_enum_value(self, p):
+    """enum_value : NAME
+                  | NAME EQUALS int
+                  | NAME EQUALS identifier_wrapped"""
+    p[0] = ('ENUM_VALUE', p[1], p[3] if len(p) == 4 else None)
 
   def p_const(self, p):
     """const : CONST typename NAME EQUALS constant SEMI"""
@@ -322,24 +321,30 @@ class Parser(object):
     p[0] = ''.join(p[1:])
 
   def p_literal(self, p):
-    """literal : number
+    """literal : int
+               | float
                | TRUE
                | FALSE
                | DEFAULT
                | STRING_LITERAL"""
     p[0] = p[1]
 
-  def p_number(self, p):
-    """number : digits
-              | PLUS digits
-              | MINUS digits"""
+  def p_int(self, p):
+    """int : int_const
+           | PLUS int_const
+           | MINUS int_const"""
     p[0] = ''.join(p[1:])
 
-  def p_digits(self, p):
-    """digits : INT_CONST_DEC
-              | INT_CONST_HEX
-              | FLOAT_CONST"""
+  def p_int_const(self, p):
+    """int_const : INT_CONST_DEC
+                 | INT_CONST_HEX"""
     p[0] = p[1]
+
+  def p_float(self, p):
+    """float : FLOAT_CONST
+             | PLUS FLOAT_CONST
+             | MINUS FLOAT_CONST"""
+    p[0] = ''.join(p[1:])
 
   def p_error(self, e):
     if e is None:
