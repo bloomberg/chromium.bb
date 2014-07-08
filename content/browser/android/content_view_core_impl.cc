@@ -638,8 +638,8 @@ void ContentViewCoreImpl::GetScaledContentBitmap(
     result_callback.Run(false, SkBitmap());
     return;
   }
-  SkBitmap::Config skbitmap_format = gfx::ConvertToSkiaConfig(jbitmap_config);
-  view->GetScaledContentBitmap(scale, skbitmap_format, src_subrect,
+  SkColorType color_type = gfx::ConvertToSkiaColorType(jbitmap_config);
+  view->GetScaledContentBitmap(scale, color_type, src_subrect,
       result_callback);
 }
 

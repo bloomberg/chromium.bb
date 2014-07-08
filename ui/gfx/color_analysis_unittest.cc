@@ -149,7 +149,7 @@ void Calculate8bitBitmapMinMax(const SkBitmap& bitmap,
                                uint8_t* max_gl) {
   SkAutoLockPixels bitmap_lock(bitmap);
   DCHECK(bitmap.getPixels());
-  DCHECK(bitmap.config() == SkBitmap::kA8_Config);
+  DCHECK_EQ(bitmap.colorType(), kAlpha_8_SkColorType);
   DCHECK(min_gl);
   DCHECK(max_gl);
   *min_gl = std::numeric_limits<uint8_t>::max();

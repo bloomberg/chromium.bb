@@ -183,7 +183,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
       const gfx::Rect& src_subrect,
       const gfx::Size& dst_size,
       const base::Callback<void(bool, const SkBitmap&)>& callback,
-      const SkBitmap::Config config) OVERRIDE;
+      const SkColorType color_type) OVERRIDE;
   virtual void CopyFromCompositingSurfaceToVideoFrame(
       const gfx::Rect& src_subrect,
       const scoped_refptr<media::VideoFrame>& target,
@@ -345,7 +345,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
 
   // Exposed for tests.
   aura::Window* window() { return window_; }
-  virtual SkBitmap::Config PreferredReadbackFormat() OVERRIDE;
+  virtual SkColorType PreferredReadbackFormat() OVERRIDE;
   virtual DelegatedFrameHost* GetDelegatedFrameHost() const OVERRIDE;
 
  private:

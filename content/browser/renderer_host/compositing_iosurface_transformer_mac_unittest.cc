@@ -212,8 +212,8 @@ int ImageDifference(const SkBitmap& expected, const SkBitmap& actual) {
   // Sanity-check assumed image properties.
   DCHECK_EQ(expected.width(), actual.width());
   DCHECK_EQ(expected.height(), actual.height());
-  DCHECK_EQ(SkBitmap::kARGB_8888_Config, expected.config());
-  DCHECK_EQ(SkBitmap::kARGB_8888_Config, actual.config());
+  DCHECK_EQ(kN32_SkColorType, expected.colorType());
+  DCHECK_EQ(kN32_SkColorType, actual.colorType());
 
   // Compare both images.
   int num_pixels_different = 0;

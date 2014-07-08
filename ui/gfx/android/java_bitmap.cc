@@ -41,17 +41,17 @@ bool JavaBitmap::RegisterJavaBitmap(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }
 
-static int SkBitmapConfigToBitmapFormat(SkBitmap::Config bitmap_config) {
-  switch (bitmap_config) {
-    case SkBitmap::kA8_Config:
+static int SkColorTypeToBitmapFormat(SkColorType color_type) {
+  switch (color_type) {
+    case kAlpha_8_SkColorType:
       return BITMAP_FORMAT_ALPHA_8;
-    case SkBitmap::kARGB_4444_Config:
+    case kARGB_4444_SkColorType:
       return BITMAP_FORMAT_ARGB_4444;
-    case SkBitmap::kARGB_8888_Config:
+    case kN32_SkColorType:
       return BITMAP_FORMAT_ARGB_8888;
-    case SkBitmap::kRGB_565_Config:
+    case kRGB_565_SkColorType:
       return BITMAP_FORMAT_RGB_565;
-    case SkBitmap::kNo_Config:
+    case kUnknown_SkColorType:
     default:
       NOTREACHED();
       return BITMAP_FORMAT_NO_CONFIG;
@@ -60,10 +60,10 @@ static int SkBitmapConfigToBitmapFormat(SkBitmap::Config bitmap_config) {
 
 ScopedJavaLocalRef<jobject> CreateJavaBitmap(int width,
                                              int height,
-                                             SkBitmap::Config bitmap_config) {
+                                             SkColorType color_type) {
   DCHECK_GT(width, 0);
   DCHECK_GT(height, 0);
-  int java_bitmap_config = SkBitmapConfigToBitmapFormat(bitmap_config);
+  int java_bitmap_config = SkColorTypeToBitmapFormat(color_type);
   return Java_BitmapHelper_createBitmap(
       AttachCurrentThread(), width, height, java_bitmap_config);
 }
@@ -82,11 +82,11 @@ ScopedJavaLocalRef<jobject> CreateJavaBitmapFromAndroidResource(
 ScopedJavaLocalRef<jobject> ConvertToJavaBitmap(const SkBitmap* skbitmap) {
   DCHECK(skbitmap);
   DCHECK(!skbitmap->isNull());
-  SkBitmap::Config bitmap_config = skbitmap->config();
-  DCHECK((bitmap_config == SkBitmap::kRGB_565_Config) ||
-         (bitmap_config == SkBitmap::kARGB_8888_Config));
+  SkColorType color_type = skbitmap->colorType();
+  DCHECK((color_type == kRGB_565_SkColorType) ||
+         (color_type == kN32_SkColorType));
   ScopedJavaLocalRef<jobject> jbitmap = CreateJavaBitmap(
-      skbitmap->width(), skbitmap->height(), bitmap_config);
+      skbitmap->width(), skbitmap->height(), color_type);
   SkAutoLockPixels src_lock(*skbitmap);
   JavaBitmap dst_lock(jbitmap.obj());
   void* src_pixels = skbitmap->getPixels();
@@ -120,21 +120,21 @@ SkBitmap CreateSkBitmapFromJavaBitmap(const JavaBitmap& jbitmap) {
   return skbitmap;
 }
 
-SkBitmap::Config ConvertToSkiaConfig(jobject bitmap_config) {
+SkColorType ConvertToSkiaColorType(jobject bitmap_config) {
   int jbitmap_config = Java_BitmapHelper_getBitmapFormatForConfig(
       AttachCurrentThread(), bitmap_config);
   switch (jbitmap_config) {
     case BITMAP_FORMAT_ALPHA_8:
-      return SkBitmap::kA8_Config;
+      return kAlpha_8_SkColorType;
     case BITMAP_FORMAT_ARGB_4444:
-      return SkBitmap::kARGB_4444_Config;
+      return kARGB_4444_SkColorType;
     case BITMAP_FORMAT_ARGB_8888:
-      return SkBitmap::kARGB_8888_Config;
+      return kN32_SkColorType;
     case BITMAP_FORMAT_RGB_565:
-      return SkBitmap::kRGB_565_Config;
+      return kRGB_565_SkColorType;
     case BITMAP_FORMAT_NO_CONFIG:
     default:
-      return SkBitmap::kNo_Config;
+      return kUnknown_SkColorType;
   }
 }
 

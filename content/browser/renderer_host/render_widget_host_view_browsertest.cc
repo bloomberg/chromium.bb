@@ -157,7 +157,7 @@ class RenderWidgetHostViewBrowserTest : public ContentBrowserTest {
               &RenderWidgetHostViewBrowserTest::FinishCopyFromBackingStore,
               base::Unretained(this),
               run_loop.QuitClosure()),
-          SkBitmap::kARGB_8888_Config);
+          kN32_SkColorType);
       run_loop.Run();
 
       if (frames_captured())
@@ -291,7 +291,7 @@ IN_PROC_BROWSER_TEST_P(CompositingRenderWidgetHostViewBrowserTest,
       base::Bind(&RenderWidgetHostViewBrowserTest::FinishCopyFromBackingStore,
                  base::Unretained(this),
                  run_loop.QuitClosure()),
-      SkBitmap::kARGB_8888_Config);
+      kN32_SkColorType);
   // Delete the surface before the callback is run.
   GetRenderWidgetHostView()->AcceleratedSurfaceRelease();
   run_loop.Run();
@@ -637,7 +637,7 @@ class CompositingRenderWidgetHostViewBrowserTestTabCapture
       rwhvp->CopyFromCompositingSurface(copy_rect,
                                         output_size,
                                         callback,
-                                        SkBitmap::kARGB_8888_Config);
+                                        kN32_SkColorType);
     }
     run_loop.Run();
   }

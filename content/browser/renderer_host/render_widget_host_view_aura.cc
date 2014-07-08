@@ -934,9 +934,9 @@ void RenderWidgetHostViewAura::CopyFromCompositingSurface(
     const gfx::Rect& src_subrect,
     const gfx::Size& dst_size,
     const base::Callback<void(bool, const SkBitmap&)>& callback,
-    const SkBitmap::Config config) {
+    const SkColorType color_type) {
   delegated_frame_host_->CopyFromCompositingSurface(
-      src_subrect, dst_size, callback, config);
+      src_subrect, dst_size, callback, color_type);
 }
 
 void RenderWidgetHostViewAura::CopyFromCompositingSurfaceToVideoFrame(
@@ -2419,8 +2419,8 @@ void RenderWidgetHostViewAura::ForwardKeyboardEvent(
   host_->ForwardKeyboardEvent(event);
 }
 
-SkBitmap::Config RenderWidgetHostViewAura::PreferredReadbackFormat() {
-  return SkBitmap::kARGB_8888_Config;
+SkColorType RenderWidgetHostViewAura::PreferredReadbackFormat() {
+  return kN32_SkColorType;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

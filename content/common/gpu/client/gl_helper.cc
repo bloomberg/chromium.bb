@@ -141,19 +141,19 @@ class GLHelper::CopyTextureToImpl
       const gfx::Rect& src_subrect,
       const gfx::Size& dst_size,
       unsigned char* out,
-      const SkBitmap::Config config,
+      const SkColorType color_type,
       const base::Callback<void(bool)>& callback,
       GLHelper::ScalerQuality quality);
 
   void ReadbackTextureSync(GLuint texture,
                            const gfx::Rect& src_rect,
                            unsigned char* out,
-                           SkBitmap::Config format);
+                           SkColorType format);
 
   void ReadbackTextureAsync(GLuint texture,
                             const gfx::Size& dst_size,
                             unsigned char* out,
-                            SkBitmap::Config config,
+                            SkColorType color_type,
                             const base::Callback<void(bool)>& callback);
 
   // Reads back bytes from the currently bound frame buffer.
@@ -162,7 +162,7 @@ class GLHelper::CopyTextureToImpl
                      int32 bytes_per_row,     // generally dst_size.width() * 4
                      int32 row_stride_bytes,  // generally dst_size.width() * 4
                      unsigned char* out,
-                     const SkBitmap::Config config,
+                     const SkColorType color_type,
                      ReadbackSwizzle swizzle,
                      const base::Callback<void(bool)>& callback);
 
@@ -193,7 +193,7 @@ class GLHelper::CopyTextureToImpl
   // 0 if GL_EXT_draw_buffers is not available.
   GLint MaxDrawBuffers() const { return max_draw_buffers_; }
 
-  bool IsReadbackConfigSupported(SkBitmap::Config bitmap_config);
+  bool IsReadbackConfigSupported(SkColorType color_type);
 
  private:
   // A single request to CropScaleReadbackAndCleanTexture.
@@ -316,7 +316,7 @@ class GLHelper::CopyTextureToImpl
                       const gfx::Size& dst_size,
                       bool vertically_flip_texture,
                       bool swizzle,
-                      SkBitmap::Config config,
+                      SkColorType color_type,
                       GLHelper::ScalerQuality quality);
 
   static void nullcallback(bool success) {}
@@ -362,9 +362,9 @@ GLuint GLHelper::CopyTextureToImpl::ScaleTexture(
     const gfx::Size& dst_size,
     bool vertically_flip_texture,
     bool swizzle,
-    SkBitmap::Config bitmap_config,
+    SkColorType color_type,
     GLHelper::ScalerQuality quality) {
-  if (!IsReadbackConfigSupported(bitmap_config))
+  if (!IsReadbackConfigSupported(color_type))
     return 0;
 
   scoped_ptr<ScalerInterface> scaler(
@@ -381,11 +381,11 @@ GLuint GLHelper::CopyTextureToImpl::ScaleTexture(
   gl_->GenTextures(1, &dst_texture);
   {
     ScopedTextureBinder<GL_TEXTURE_2D> texture_binder(gl_, dst_texture);
-    switch (bitmap_config) {
-      case SkBitmap::kARGB_8888_Config:
+    switch (color_type) {
+      case kN32_SkColorType:
         // Do nothing params already set.
         break;
-      case SkBitmap::kRGB_565_Config:
+      case kRGB_565_SkColorType:
         format = GL_RGB;
         type = GL_UNSIGNED_SHORT_5_6_5;
         break;
@@ -412,10 +412,10 @@ void GLHelper::CopyTextureToImpl::ReadbackAsync(
     int32 bytes_per_row,
     int32 row_stride_bytes,
     unsigned char* out,
-    const SkBitmap::Config bitmap_config,
+    const SkColorType color_type,
     ReadbackSwizzle swizzle,
     const base::Callback<void(bool)>& callback) {
-  if (!IsReadbackConfigSupported(bitmap_config)) {
+  if (!IsReadbackConfigSupported(color_type)) {
     callback.Run(false);
     return;
   }
@@ -428,12 +428,12 @@ void GLHelper::CopyTextureToImpl::ReadbackAsync(
   GLenum format = GL_RGBA, type = GL_UNSIGNED_BYTE;
   int bytes_per_pixel = 4;
 
-  switch (bitmap_config) {
-    case SkBitmap::kARGB_8888_Config:
+  switch (color_type) {
+    case kN32_SkColorType:
       if (swizzle == kSwizzleBGRA)
         format = GL_BGRA_EXT;
       break;
-    case SkBitmap::kRGB_565_Config:
+    case kRGB_565_SkColorType:
       format = GL_RGB;
       type = GL_UNSIGNED_SHORT_5_6_5;
       bytes_per_pixel = 2;
@@ -472,10 +472,10 @@ void GLHelper::CopyTextureToImpl::CropScaleReadbackAndCleanTexture(
     const gfx::Rect& src_subrect,
     const gfx::Size& dst_size,
     unsigned char* out,
-    const SkBitmap::Config bitmap_config,
+    const SkColorType color_type,
     const base::Callback<void(bool)>& callback,
     GLHelper::ScalerQuality quality) {
-  if (!IsReadbackConfigSupported(bitmap_config)) {
+  if (!IsReadbackConfigSupported(color_type)) {
     callback.Run(false);
     return;
   }
@@ -489,7 +489,7 @@ void GLHelper::CopyTextureToImpl::CropScaleReadbackAndCleanTexture(
 #else
                                 false,
 #endif
-                                bitmap_config,
+                                color_type,
                                 quality);
   DCHECK(texture);
   ScopedFramebuffer dst_framebuffer(gl_);
@@ -502,11 +502,11 @@ void GLHelper::CopyTextureToImpl::CropScaleReadbackAndCleanTexture(
                             texture,
                             0);
   int bytes_per_pixel = 4;
-  switch (bitmap_config) {
-    case SkBitmap::kARGB_8888_Config:
+  switch (color_type) {
+    case kN32_SkColorType:
       // Do nothing params already set.
       break;
-    case SkBitmap::kRGB_565_Config:
+    case kRGB_565_SkColorType:
       bytes_per_pixel = 2;
       break;
     default:
@@ -517,7 +517,7 @@ void GLHelper::CopyTextureToImpl::CropScaleReadbackAndCleanTexture(
                 dst_size.width() * bytes_per_pixel,
                 dst_size.width() * bytes_per_pixel,
                 out,
-                bitmap_config,
+                color_type,
                 kSwizzleNone,
                 callback);
   gl_->DeleteTextures(1, &texture);
@@ -527,8 +527,8 @@ void GLHelper::CopyTextureToImpl::ReadbackTextureSync(
     GLuint texture,
     const gfx::Rect& src_rect,
     unsigned char* out,
-    SkBitmap::Config bitmap_config) {
-  if (!IsReadbackConfigSupported(bitmap_config))
+    SkColorType color_type) {
+  if (!IsReadbackConfigSupported(color_type))
     return;
 
   ScopedFramebuffer dst_framebuffer(gl_);
@@ -538,8 +538,8 @@ void GLHelper::CopyTextureToImpl::ReadbackTextureSync(
   gl_->FramebufferTexture2D(
       GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture, 0);
   GLenum format =
-      (bitmap_config == SkBitmap::kRGB_565_Config) ? GL_RGB : GL_RGBA;
-  GLenum type = (bitmap_config == SkBitmap::kRGB_565_Config)
+      (color_type == kRGB_565_SkColorType) ? GL_RGB : GL_RGBA;
+  GLenum type = (color_type == kRGB_565_SkColorType)
                     ? GL_UNSIGNED_SHORT_5_6_5
                     : GL_UNSIGNED_BYTE;
   gl_->ReadPixels(src_rect.x(),
@@ -555,9 +555,9 @@ void GLHelper::CopyTextureToImpl::ReadbackTextureAsync(
     GLuint texture,
     const gfx::Size& dst_size,
     unsigned char* out,
-    SkBitmap::Config bitmap_config,
+    SkColorType color_type,
     const base::Callback<void(bool)>& callback) {
-  if (!IsReadbackConfigSupported(bitmap_config))
+  if (!IsReadbackConfigSupported(color_type))
     return;
 
   ScopedFramebuffer dst_framebuffer(gl_);
@@ -569,12 +569,12 @@ void GLHelper::CopyTextureToImpl::ReadbackTextureAsync(
                             GL_TEXTURE_2D,
                             texture,
                             0);
-  int bytes_per_pixel = (bitmap_config == SkBitmap::kRGB_565_Config) ? 2 : 4;
+  int bytes_per_pixel = (color_type == kRGB_565_SkColorType) ? 2 : 4;
   ReadbackAsync(dst_size,
                 dst_size.width() * bytes_per_pixel,
                 dst_size.width() * bytes_per_pixel,
                 out,
-                bitmap_config,
+                color_type,
                 kSwizzleNone,
                 callback);
 }
@@ -591,17 +591,17 @@ GLuint GLHelper::CopyTextureToImpl::CopyAndScaleTexture(
                       dst_size,
                       vertically_flip_texture,
                       false,
-                      SkBitmap::kARGB_8888_Config,
+                      kN32_SkColorType,
                       quality);
 }
 
 bool GLHelper::CopyTextureToImpl::IsReadbackConfigSupported(
-    SkBitmap::Config bitmap_config) {
+    SkColorType color_type) {
   if (!helper_) {
     DCHECK(helper_);
     return false;
   }
-  return helper_->IsReadbackConfigSupported(bitmap_config);
+  return helper_->IsReadbackConfigSupported(color_type);
 }
 
 void GLHelper::CopyTextureToImpl::ReadbackDone(Request* finished_request,
@@ -682,7 +682,7 @@ void GLHelper::CropScaleReadbackAndCleanTexture(
     const gfx::Rect& src_subrect,
     const gfx::Size& dst_size,
     unsigned char* out,
-    const SkBitmap::Config config,
+    const SkColorType color_type,
     const base::Callback<void(bool)>& callback,
     GLHelper::ScalerQuality quality) {
   InitCopyTextToImpl();
@@ -692,7 +692,7 @@ void GLHelper::CropScaleReadbackAndCleanTexture(
       src_subrect,
       dst_size,
       out,
-      config,
+      color_type,
       callback,
       quality);
 }
@@ -704,13 +704,13 @@ void GLHelper::CropScaleReadbackAndCleanMailbox(
     const gfx::Rect& src_subrect,
     const gfx::Size& dst_size,
     unsigned char* out,
-    const SkBitmap::Config bitmap_config,
+    const SkColorType color_type,
     const base::Callback<void(bool)>& callback,
     GLHelper::ScalerQuality quality) {
   GLuint mailbox_texture = ConsumeMailboxToTexture(src_mailbox, sync_point);
   CropScaleReadbackAndCleanTexture(
       mailbox_texture, src_size, src_subrect, dst_size, out,
-      bitmap_config,
+      color_type,
       callback,
       quality);
   gl_->DeleteTextures(1, &mailbox_texture);
@@ -719,7 +719,7 @@ void GLHelper::CropScaleReadbackAndCleanMailbox(
 void GLHelper::ReadbackTextureSync(GLuint texture,
                                    const gfx::Rect& src_rect,
                                    unsigned char* out,
-                                   SkBitmap::Config format) {
+                                   SkColorType format) {
   InitCopyTextToImpl();
   copy_texture_to_impl_->ReadbackTextureSync(texture, src_rect, out, format);
 }
@@ -728,13 +728,13 @@ void GLHelper::ReadbackTextureAsync(
     GLuint texture,
     const gfx::Size& dst_size,
     unsigned char* out,
-    SkBitmap::Config config,
+    SkColorType color_type,
     const base::Callback<void(bool)>& callback) {
   InitCopyTextToImpl();
   copy_texture_to_impl_->ReadbackTextureAsync(texture,
                                               dst_size,
                                               out,
-                                              config,
+                                              color_type,
                                               callback);
 }
 
@@ -917,7 +917,7 @@ void GLHelper::CopyTextureToImpl::ReadbackPlane(
                 dst_subrect.width() >> size_shift,
                 target->stride(plane),
                 target->data(plane) + offset,
-                SkBitmap::kARGB_8888_Config,
+                kN32_SkColorType,
                 swizzle,
                 callback);
 }
@@ -1194,7 +1194,7 @@ void GLHelper::CopyTextureToImpl::ReadbackYUV_MRT::ReadbackYUV(
   media::LetterboxYUV(target, dst_subrect_);
 }
 
-bool GLHelper::IsReadbackConfigSupported(SkBitmap::Config texture_format) {
+bool GLHelper::IsReadbackConfigSupported(SkColorType texture_format) {
   DCHECK(readback_support_.get());
   return readback_support_.get()->IsReadbackConfigSupported(texture_format);
 }

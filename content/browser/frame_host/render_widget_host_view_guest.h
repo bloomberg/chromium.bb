@@ -91,7 +91,7 @@ class CONTENT_EXPORT RenderWidgetHostViewGuest
       const gfx::Rect& src_subrect,
       const gfx::Size& dst_size,
       const base::Callback<void(bool, const SkBitmap&)>& callback,
-      const SkBitmap::Config config) OVERRIDE;
+      const SkColorType color_type) OVERRIDE;
   virtual void AcceleratedSurfaceBuffersSwapped(
       const GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params& params,
       int gpu_host_id) OVERRIDE;
@@ -146,7 +146,7 @@ class CONTENT_EXPORT RenderWidgetHostViewGuest
   virtual void DispatchGestureEvent(ui::GestureEvent* event) OVERRIDE;
   virtual void DispatchCancelTouchEvent(ui::TouchEvent* event) OVERRIDE;
 
-  virtual SkBitmap::Config PreferredReadbackFormat() OVERRIDE;
+  virtual SkColorType PreferredReadbackFormat() OVERRIDE;
 
  protected:
   friend class RenderWidgetHostView;

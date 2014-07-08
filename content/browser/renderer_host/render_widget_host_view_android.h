@@ -132,7 +132,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
       const gfx::Rect& src_subrect,
       const gfx::Size& dst_size,
       const base::Callback<void(bool, const SkBitmap&)>& callback,
-      const SkBitmap::Config config) OVERRIDE;
+      const SkColorType color_type) OVERRIDE;
   virtual void CopyFromCompositingSurfaceToVideoFrame(
       const gfx::Rect& src_subrect,
       const scoped_refptr<media::VideoFrame>& target,
@@ -186,7 +186,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   // DelegatedFrameEvictor implementation
   virtual void EvictDelegatedFrame() OVERRIDE;
 
-  virtual SkBitmap::Config PreferredReadbackFormat() OVERRIDE;
+  virtual SkColorType PreferredReadbackFormat() OVERRIDE;
 
   // GestureTextSelectorClient implementation.
   virtual void ShowSelectionHandlesAutomatically() OVERRIDE;
@@ -220,7 +220,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
 
   void GetScaledContentBitmap(
       float scale,
-      SkBitmap::Config bitmap_config,
+      SkColorType color_type,
       gfx::Rect src_subrect,
       const base::Callback<void(bool, const SkBitmap&)>& result_callback);
 
@@ -261,13 +261,13 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   // of the copy.
   static void PrepareTextureCopyOutputResult(
       const gfx::Size& dst_size_in_pixel,
-      const SkBitmap::Config config,
+      const SkColorType color_type,
       const base::TimeTicks& start_time,
       const base::Callback<void(bool, const SkBitmap&)>& callback,
       scoped_ptr<cc::CopyOutputResult> result);
   static void PrepareTextureCopyOutputResultForDelegatedReadback(
       const gfx::Size& dst_size_in_pixel,
-      const SkBitmap::Config config,
+      const SkColorType color_type,
       const base::TimeTicks& start_time,
       scoped_refptr<cc::Layer> readback_layer,
       const base::Callback<void(bool, const SkBitmap&)>& callback,
@@ -278,9 +278,9 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
       const gfx::Rect& src_subrect_in_pixel,
       const gfx::Size& dst_size_in_pixel,
       const base::Callback<void(bool, const SkBitmap&)>& callback,
-      const SkBitmap::Config config);
+      const SkColorType color_type);
 
-  bool IsReadbackConfigSupported(SkBitmap::Config bitmap_config);
+  bool IsReadbackConfigSupported(SkColorType color_type);
 
   // If we have locks on a frame during a ContentViewCore swap or a context
   // lost, the frame is no longer valid and we can safely release all the locks.

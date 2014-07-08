@@ -264,7 +264,7 @@ void RendererOverridesHandler::InnerSwapCompositorFrame() {
         base::Bind(&RendererOverridesHandler::ScreencastFrameCaptured,
                    weak_factory_.GetWeakPtr(),
                    format, quality, last_compositor_frame_metadata_),
-        SkBitmap::kARGB_8888_Config);
+        kN32_SkColorType);
   }
 }
 

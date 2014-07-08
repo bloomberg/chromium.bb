@@ -354,7 +354,7 @@ void RenderWidgetHostViewGuest::CopyFromCompositingSurface(
     const gfx::Rect& src_subrect,
     const gfx::Size& dst_size,
     const base::Callback<void(bool, const SkBitmap&)>& callback,
-    const SkBitmap::Config config) {
+    const SkColorType color_type) {
   CHECK(guest_);
   guest_->CopyFromCompositingSurface(src_subrect, dst_size, callback);
 }
@@ -544,8 +544,8 @@ void RenderWidgetHostViewGuest::ProcessGestures(
   }
 }
 
-SkBitmap::Config RenderWidgetHostViewGuest::PreferredReadbackFormat() {
-  return SkBitmap::kARGB_8888_Config;
+SkColorType RenderWidgetHostViewGuest::PreferredReadbackFormat() {
+  return kN32_SkColorType;
 }
 
 RenderWidgetHostViewBase*

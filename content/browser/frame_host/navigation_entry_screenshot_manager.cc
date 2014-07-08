@@ -130,7 +130,7 @@ void NavigationEntryScreenshotManager::TakeScreenshotImpl(
     NavigationEntryImpl* entry) {
   DCHECK(host && host->GetView());
   DCHECK(entry);
-  SkBitmap::Config preferred_format = host->PreferredReadbackFormat();
+  SkColorType preferred_format = host->PreferredReadbackFormat();
   host->CopyFromBackingStore(
       gfx::Rect(),
       host->GetView()->GetViewBounds().size(),

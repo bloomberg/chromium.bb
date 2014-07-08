@@ -678,14 +678,14 @@ void RenderWidgetHostImpl::CopyFromBackingStore(
     const gfx::Rect& src_subrect,
     const gfx::Size& accelerated_dst_size,
     const base::Callback<void(bool, const SkBitmap&)>& callback,
-    const SkBitmap::Config& bitmap_config) {
+    const SkColorType color_type) {
   if (view_) {
     TRACE_EVENT0("browser",
         "RenderWidgetHostImpl::CopyFromBackingStore::FromCompositingSurface");
     gfx::Rect accelerated_copy_rect = src_subrect.IsEmpty() ?
         gfx::Rect(view_->GetViewBounds().size()) : src_subrect;
     view_->CopyFromCompositingSurface(
-        accelerated_copy_rect, accelerated_dst_size, callback, bitmap_config);
+        accelerated_copy_rect, accelerated_dst_size, callback, color_type);
     return;
   }
 
@@ -2381,10 +2381,10 @@ void RenderWidgetHostImpl::AddLatencyInfoComponentIds(
   }
 }
 
-SkBitmap::Config RenderWidgetHostImpl::PreferredReadbackFormat() {
+SkColorType RenderWidgetHostImpl::PreferredReadbackFormat() {
   if (view_)
     return view_->PreferredReadbackFormat();
-  return SkBitmap::kARGB_8888_Config;
+  return kN32_SkColorType;
 }
 
 }  // namespace content

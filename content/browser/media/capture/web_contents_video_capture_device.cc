@@ -469,7 +469,7 @@ void RenderVideoFrame(const SkBitmap& input,
   // Sanity-check the captured bitmap.
   if (input.empty() ||
       !input.readyToDraw() ||
-      input.config() != SkBitmap::kARGB_8888_Config ||
+      input.colorType() != kN32_SkColorType ||
       input.width() < 2 || input.height() < 2) {
     DVLOG(1) << "input unacceptable (size="
              << input.getSize()
@@ -667,7 +667,7 @@ void WebContentsCaptureMachine::Capture(
                    start_time,
                    target,
                    deliver_frame_cb),
-        SkBitmap::kARGB_8888_Config);
+        kN32_SkColorType);
   }
 }
 

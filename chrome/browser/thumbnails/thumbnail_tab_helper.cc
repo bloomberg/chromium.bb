@@ -108,7 +108,7 @@ void AsyncProcessThumbnail(content::WebContents* web_contents,
       copy_rect,
       context->requested_copy_size,
       base::Bind(&ProcessCapturedBitmap, context, algorithm),
-      SkBitmap::kARGB_8888_Config);
+      kN32_SkColorType);
 }
 
 }  // namespace

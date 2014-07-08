@@ -96,7 +96,7 @@ class PDFBrowserTest : public InProcessBrowserTest,
         gfx::Rect(),
         gfx::Size(),
         base::Bind(&PDFBrowserTest::CopyFromBackingStoreCallback, this),
-        SkBitmap::kARGB_8888_Config);
+        kN32_SkColorType);
 
     content::RunMessageLoop();
 

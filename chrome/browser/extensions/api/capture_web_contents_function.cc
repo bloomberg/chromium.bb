@@ -77,7 +77,7 @@ bool CaptureWebContentsFunction::RunAsync() {
       view->GetViewBounds().size(),
       base::Bind(&CaptureWebContentsFunction::CopyFromBackingStoreComplete,
                  this),
-      SkBitmap::kARGB_8888_Config);
+      kN32_SkColorType);
   return true;
 }
 

@@ -136,7 +136,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
       const gfx::Rect& src_rect,
       const gfx::Size& accelerated_dst_size,
       const base::Callback<void(bool, const SkBitmap&)>& callback,
-      const SkBitmap::Config& bitmap_config) OVERRIDE;
+      const SkColorType color_type) OVERRIDE;
   virtual bool CanCopyFromBackingStore() OVERRIDE;
 #if defined(OS_ANDROID)
   virtual void LockBackingStore() OVERRIDE;
@@ -173,7 +173,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
       const MouseEventCallback& callback) OVERRIDE;
   virtual void GetWebScreenInfo(blink::WebScreenInfo* result) OVERRIDE;
 
-  virtual SkBitmap::Config PreferredReadbackFormat() OVERRIDE;
+  virtual SkColorType PreferredReadbackFormat() OVERRIDE;
 
   // BrowserAccessibilityDelegate
   virtual void AccessibilitySetFocus(int acc_obj_id) OVERRIDE;

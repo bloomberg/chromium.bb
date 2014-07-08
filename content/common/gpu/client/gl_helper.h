@@ -172,7 +172,7 @@ class CONTENT_EXPORT GLHelper {
       const gfx::Rect& src_subrect,
       const gfx::Size& dst_size,
       unsigned char* out,
-      const SkBitmap::Config config,
+      const SkColorType color_type,
       const base::Callback<void(bool)>& callback,
       GLHelper::ScalerQuality quality);
 
@@ -192,7 +192,7 @@ class CONTENT_EXPORT GLHelper {
       const gfx::Rect& src_subrect,
       const gfx::Size& dst_size,
       unsigned char* out,
-      const SkBitmap::Config config,
+      const SkColorType color_type,
       const base::Callback<void(bool)>& callback,
       GLHelper::ScalerQuality quality);
 
@@ -204,12 +204,12 @@ class CONTENT_EXPORT GLHelper {
   void ReadbackTextureSync(GLuint texture,
                            const gfx::Rect& src_rect,
                            unsigned char* out,
-                           SkBitmap::Config format);
+                           SkColorType format);
 
   void ReadbackTextureAsync(GLuint texture,
                             const gfx::Size& dst_size,
                             unsigned char* out,
-                            SkBitmap::Config config,
+                            SkColorType color_type,
                             const base::Callback<void(bool)>& callback);
 
   // Creates a copy of the specified texture. |size| is the size of the texture.
@@ -322,7 +322,7 @@ class CONTENT_EXPORT GLHelper {
 
   // Checks whether the readbback is supported for texture with the
   // matching config. This doesnt check for cross format readbacks.
-  bool IsReadbackConfigSupported(SkBitmap::Config texture_format);
+  bool IsReadbackConfigSupported(SkColorType texture_format);
 
  protected:
   class CopyTextureToImpl;

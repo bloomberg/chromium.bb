@@ -120,10 +120,10 @@ void DelegatedFrameHost::CopyFromCompositingSurface(
     const gfx::Rect& src_subrect,
     const gfx::Size& dst_size,
     const base::Callback<void(bool, const SkBitmap&)>& callback,
-    const SkBitmap::Config config) {
+    const SkColorType color_type) {
   // Only ARGB888 and RGB565 supported as of now.
-  bool format_support = ((config == SkBitmap::kRGB_565_Config) ||
-                         (config == SkBitmap::kARGB_8888_Config));
+  bool format_support = ((color_type == kRGB_565_SkColorType) ||
+                         (color_type == kN32_SkColorType));
   DCHECK(format_support);
   if (!CanCopyToBitmap()) {
     callback.Run(false, SkBitmap());
@@ -136,7 +136,7 @@ void DelegatedFrameHost::CopyFromCompositingSurface(
       cc::CopyOutputRequest::CreateRequest(base::Bind(
           &DelegatedFrameHost::CopyFromCompositingSurfaceHasResult,
           dst_size_in_pixel,
-          config,
+          color_type,
           callback));
   gfx::Rect src_subrect_in_pixel =
       ConvertRectToPixel(client_->CurrentDeviceScaleFactor(), src_subrect);
@@ -429,7 +429,7 @@ void DelegatedFrameHost::EvictDelegatedFrame() {
 // static
 void DelegatedFrameHost::CopyFromCompositingSurfaceHasResult(
     const gfx::Size& dst_size_in_pixel,
-    const SkBitmap::Config config,
+    const SkColorType color_type,
     const base::Callback<void(bool, const SkBitmap&)>& callback,
     scoped_ptr<cc::CopyOutputResult> result) {
   if (result->IsEmpty() || result->size().IsEmpty()) {
@@ -438,14 +438,14 @@ void DelegatedFrameHost::CopyFromCompositingSurfaceHasResult(
   }
 
   if (result->HasTexture()) {
-    PrepareTextureCopyOutputResult(dst_size_in_pixel, config,
+    PrepareTextureCopyOutputResult(dst_size_in_pixel, color_type,
                                    callback,
                                    result.Pass());
     return;
   }
 
   DCHECK(result->HasBitmap());
-  PrepareBitmapCopyOutputResult(dst_size_in_pixel, config, callback,
+  PrepareBitmapCopyOutputResult(dst_size_in_pixel, color_type, callback,
                                 result.Pass());
 }
 
@@ -471,7 +471,7 @@ static void CopyFromCompositingSurfaceFinished(
 // static
 void DelegatedFrameHost::PrepareTextureCopyOutputResult(
     const gfx::Size& dst_size_in_pixel,
-    const SkBitmap::Config config,
+    const SkColorType color_type,
     const base::Callback<void(bool, const SkBitmap&)>& callback,
     scoped_ptr<cc::CopyOutputResult> result) {
   DCHECK(result->HasTexture());
@@ -479,7 +479,6 @@ void DelegatedFrameHost::PrepareTextureCopyOutputResult(
       base::Bind(callback, false, SkBitmap()));
 
   scoped_ptr<SkBitmap> bitmap(new SkBitmap);
-  SkColorType color_type = SkBitmapConfigToColorType(config);
   if (!bitmap->allocPixels(SkImageInfo::Make(dst_size_in_pixel.width(),
                                              dst_size_in_pixel.height(),
                                              color_type,
@@ -509,7 +508,7 @@ void DelegatedFrameHost::PrepareTextureCopyOutputResult(
       gfx::Rect(result->size()),
       dst_size_in_pixel,
       pixels,
-      config,
+      color_type,
       base::Bind(&CopyFromCompositingSurfaceFinished,
                  callback,
                  base::Passed(&release_callback),
@@ -521,10 +520,10 @@ void DelegatedFrameHost::PrepareTextureCopyOutputResult(
 // static
 void DelegatedFrameHost::PrepareBitmapCopyOutputResult(
     const gfx::Size& dst_size_in_pixel,
-    const SkBitmap::Config config,
+    const SkColorType color_type,
     const base::Callback<void(bool, const SkBitmap&)>& callback,
     scoped_ptr<cc::CopyOutputResult> result) {
-  if (config != SkBitmap::kARGB_8888_Config) {
+  if (color_type != kN32_SkColorType) {
     NOTIMPLEMENTED();
     callback.Run(false, SkBitmap());
     return;

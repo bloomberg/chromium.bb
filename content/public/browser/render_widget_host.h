@@ -181,7 +181,7 @@ class CONTENT_EXPORT RenderWidgetHost : public IPC::Sender {
       const gfx::Rect& src_rect,
       const gfx::Size& accelerated_dst_size,
       const base::Callback<void(bool, const SkBitmap&)>& callback,
-      const SkBitmap::Config& bitmap_config) = 0;
+      const SkColorType color_type) = 0;
   // Ensures that the view does not drop the backing store even when hidden.
   virtual bool CanCopyFromBackingStore() = 0;
 #if defined(OS_ANDROID)
@@ -290,7 +290,7 @@ class CONTENT_EXPORT RenderWidgetHost : public IPC::Sender {
   // Get the screen info corresponding to this render widget.
   virtual void GetWebScreenInfo(blink::WebScreenInfo* result) = 0;
 
-  virtual SkBitmap::Config PreferredReadbackFormat() = 0;
+  virtual SkColorType PreferredReadbackFormat() = 0;
 
  protected:
   friend class RenderWidgetHostImpl;

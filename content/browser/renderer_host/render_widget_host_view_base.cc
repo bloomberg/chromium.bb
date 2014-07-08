@@ -595,8 +595,8 @@ void RenderWidgetHostViewBase::FlushInput() {
   impl->FlushInput();
 }
 
-SkBitmap::Config RenderWidgetHostViewBase::PreferredReadbackFormat() {
-  return SkBitmap::kARGB_8888_Config;
+SkColorType RenderWidgetHostViewBase::PreferredReadbackFormat() {
+  return kN32_SkColorType;
 }
 
 gfx::Size RenderWidgetHostViewBase::GetVisibleViewportSize() const {

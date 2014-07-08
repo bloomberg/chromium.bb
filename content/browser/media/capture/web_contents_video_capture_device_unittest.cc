@@ -249,7 +249,7 @@ class CaptureTestRenderViewHost : public TestRenderViewHost {
       const gfx::Rect& src_rect,
       const gfx::Size& accelerated_dst_size,
       const base::Callback<void(bool, const SkBitmap&)>& callback,
-      const SkBitmap::Config& bitmap_config) OVERRIDE {
+      const SkColorType color_type) OVERRIDE {
     gfx::Size size = controller_->GetCopyResultSize();
     SkColor color = controller_->GetSolidColor();
 

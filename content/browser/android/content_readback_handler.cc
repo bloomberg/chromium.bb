@@ -54,7 +54,7 @@ void ContentReadbackHandler::GetContentBitmap(JNIEnv* env,
                                               jobject obj,
                                               jint readback_id,
                                               jfloat scale,
-                                              jobject config,
+                                              jobject color_type,
                                               jfloat x,
                                               jfloat y,
                                               jfloat width,
@@ -70,7 +70,7 @@ void ContentReadbackHandler::GetContentBitmap(JNIEnv* env,
                  readback_id);
 
   view->GetScaledContentBitmap(
-      scale, config, gfx::Rect(x, y, width, height), result_callback);
+      scale, color_type, gfx::Rect(x, y, width, height), result_callback);
 }
 
 void ContentReadbackHandler::GetCompositorBitmap(JNIEnv* env,

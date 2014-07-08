@@ -296,7 +296,7 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
       const gfx::Rect& src_subrect,
       const gfx::Size& dst_size,
       const base::Callback<void(bool, const SkBitmap&)>& callback,
-      SkBitmap::Config config) OVERRIDE;
+      SkColorType color_type) OVERRIDE;
   virtual void CopyFromCompositingSurfaceToVideoFrame(
       const gfx::Rect& src_subrect,
       const scoped_refptr<media::VideoFrame>& target,
@@ -344,7 +344,7 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
       uint32 output_surface_id, unsigned frame_id) OVERRIDE;
   virtual void ReleaseReferencesToSoftwareFrame() OVERRIDE;
 
-  virtual SkBitmap::Config PreferredReadbackFormat() OVERRIDE;
+  virtual SkColorType PreferredReadbackFormat() OVERRIDE;
 
   // CompositingIOSurfaceLayerClient implementation.
   virtual void AcceleratedLayerDidDrawFrame(bool succeeded) OVERRIDE;

@@ -20,27 +20,27 @@ void GLHelperReadbackSupport::InitializeReadbackSupport() {
   // In future if any new format support is needed that should be added here.
   // Initialize the array with FORMAT_NOT_SUPPORTED as we dont know the
   // supported formats yet.
-  for (int i = 0; i < SkBitmap::kConfigCount; ++i) {
+  for (int i = 0; i <= kLastEnum_SkColorType; ++i) {
     format_support_table_[i] = FORMAT_NOT_SUPPORTED;
   }
-  CheckForReadbackSupport(SkBitmap::kRGB_565_Config);
-  CheckForReadbackSupport(SkBitmap::kARGB_4444_Config);
-  CheckForReadbackSupport(SkBitmap::kARGB_8888_Config);
+  CheckForReadbackSupport(kRGB_565_SkColorType);
+  CheckForReadbackSupport(kARGB_4444_SkColorType);
+  CheckForReadbackSupport(kN32_SkColorType);
   // Further any formats, support should be checked here.
 }
 
 void GLHelperReadbackSupport::CheckForReadbackSupport(
-    SkBitmap::Config texture_format) {
+    SkColorType texture_format) {
   bool supports_format = false;
   switch (texture_format) {
-    case SkBitmap::kRGB_565_Config:
+    case kRGB_565_SkColorType:
       supports_format = SupportsFormat(GL_RGB, GL_UNSIGNED_SHORT_5_6_5);
       break;
-    case SkBitmap::kARGB_8888_Config:
+    case kN32_SkColorType:
       // This is the baseline, assume always true.
       supports_format = true;
       break;
-    case SkBitmap::kARGB_4444_Config:
+    case kARGB_4444_SkColorType:
       supports_format = false;
       break;
     default:
@@ -48,7 +48,7 @@ void GLHelperReadbackSupport::CheckForReadbackSupport(
       supports_format = false;
       break;
   }
-  DCHECK((int)texture_format < (int)SkBitmap::kConfigCount);
+  DCHECK((int)texture_format <= (int)kLastEnum_SkColorType);
   format_support_table_[texture_format] =
       supports_format ? FORMAT_SUPPORTED : FORMAT_NOT_SUPPORTED;
 }
@@ -100,7 +100,7 @@ bool GLHelperReadbackSupport::SupportsFormat(GLint format, GLint type) {
 }
 
 bool GLHelperReadbackSupport::IsReadbackConfigSupported(
-    SkBitmap::Config texture_format) {
+    SkColorType texture_format) {
   switch (format_support_table_[texture_format]) {
     case FORMAT_SUPPORTED:
       return true;

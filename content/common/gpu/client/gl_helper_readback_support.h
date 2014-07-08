@@ -22,7 +22,7 @@ class CONTENT_EXPORT GLHelperReadbackSupport {
   // For ex: some hardwares have rgb565 readback
   // support when binded with the frame buffer for others it may fail.
   // Here we pass the internal textureformat as skia config.
-  bool IsReadbackConfigSupported(SkBitmap::Config texture_format);
+  bool IsReadbackConfigSupported(SkColorType texture_format);
 
   // Provides the additional readback format/type pairing for a render target
   // of a given format/type pairing
@@ -46,14 +46,14 @@ class CONTENT_EXPORT GLHelperReadbackSupport {
   // InitializeReadbackSupport. We should not use this any where
   // except the InitializeReadbackSupport.Calling this at other places
   // can distrub the state of normal gl operations.
-  void CheckForReadbackSupport(SkBitmap::Config texture_format);
+  void CheckForReadbackSupport(SkColorType texture_format);
 
   // Helper functions for checking the supported texture formats.
   // Avoid using this API in between texture operations, as this does some
   // teture opertions (bind, attach) internally.
   bool SupportsFormat(GLint format, GLint type);
 
-  FormatSupport format_support_table_[SkBitmap::kConfigCount];
+  FormatSupport format_support_table_[kLastEnum_SkColorType + 1];
 
   gpu::gles2::GLES2Interface* gl_;
   std::vector<struct FormatCacheEntry> format_cache_;

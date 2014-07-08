@@ -291,7 +291,7 @@ void RenderWidgetHostViewAndroid::SetBounds(const gfx::Rect& rect) {
 
 void RenderWidgetHostViewAndroid::GetScaledContentBitmap(
     float scale,
-    SkBitmap::Config bitmap_config,
+    SkColorType color_type,
     gfx::Rect src_subrect,
     const base::Callback<void(bool, const SkBitmap&)>& result_callback) {
   if (!IsSurfaceAvailableForCopy()) {
@@ -311,7 +311,7 @@ void RenderWidgetHostViewAndroid::GetScaledContentBitmap(
   gfx::Size dst_size(
       gfx::ToCeiledSize(gfx::ScaleSize(bounds, scale / device_scale_factor)));
   CopyFromCompositingSurface(
-      src_subrect, dst_size, result_callback, bitmap_config);
+      src_subrect, dst_size, result_callback, color_type);
 }
 
 bool RenderWidgetHostViewAndroid::HasValidFrame() const {
@@ -664,8 +664,8 @@ void RenderWidgetHostViewAndroid::CopyFromCompositingSurface(
     const gfx::Rect& src_subrect,
     const gfx::Size& dst_size,
     const base::Callback<void(bool, const SkBitmap&)>& callback,
-    const SkBitmap::Config bitmap_config) {
-  if (!IsReadbackConfigSupported(bitmap_config)) {
+    const SkColorType color_type) {
+  if (!IsReadbackConfigSupported(color_type)) {
     callback.Run(false, SkBitmap());
     return;
   }
@@ -684,7 +684,7 @@ void RenderWidgetHostViewAndroid::CopyFromCompositingSurface(
 
   if (using_synchronous_compositor_) {
     SynchronousCopyContents(src_subrect_in_pixel, dst_size_in_pixel, callback,
-                            bitmap_config);
+                            color_type);
     UMA_HISTOGRAM_TIMES("Compositing.CopyFromSurfaceTimeSynchronous",
                         base::TimeTicks::Now() - start_time);
     return;
@@ -711,7 +711,7 @@ void RenderWidgetHostViewAndroid::CopyFromCompositingSurface(
       base::Bind(&RenderWidgetHostViewAndroid::
                      PrepareTextureCopyOutputResultForDelegatedReadback,
                  dst_size_in_pixel,
-                 bitmap_config,
+                 color_type,
                  start_time,
                  readback_layer,
                  callback));
@@ -955,7 +955,7 @@ void RenderWidgetHostViewAndroid::SynchronousCopyContents(
     const gfx::Rect& src_subrect_in_pixel,
     const gfx::Size& dst_size_in_pixel,
     const base::Callback<void(bool, const SkBitmap&)>& callback,
-    const SkBitmap::Config config) {
+    const SkColorType color_type) {
   SynchronousCompositor* compositor =
       SynchronousCompositorImpl::FromID(host_->GetProcess()->GetID(),
                                         host_->GetRoutingID());
@@ -967,7 +967,7 @@ void RenderWidgetHostViewAndroid::SynchronousCopyContents(
   SkBitmap bitmap;
   bitmap.allocPixels(SkImageInfo::Make(dst_size_in_pixel.width(),
                                        dst_size_in_pixel.height(),
-                                       SkBitmapConfigToColorType(config),
+                                       color_type,
                                        kPremul_SkAlphaType));
   SkCanvas canvas(bitmap);
   canvas.scale(
@@ -1355,20 +1355,20 @@ void RenderWidgetHostViewAndroid::OnLostResources() {
 void
 RenderWidgetHostViewAndroid::PrepareTextureCopyOutputResultForDelegatedReadback(
     const gfx::Size& dst_size_in_pixel,
-    const SkBitmap::Config config,
+    const SkColorType color_type,
     const base::TimeTicks& start_time,
     scoped_refptr<cc::Layer> readback_layer,
     const base::Callback<void(bool, const SkBitmap&)>& callback,
     scoped_ptr<cc::CopyOutputResult> result) {
   readback_layer->RemoveFromParent();
   PrepareTextureCopyOutputResult(
-      dst_size_in_pixel, config, start_time, callback, result.Pass());
+      dst_size_in_pixel, color_type, start_time, callback, result.Pass());
 }
 
 // static
 void RenderWidgetHostViewAndroid::PrepareTextureCopyOutputResult(
     const gfx::Size& dst_size_in_pixel,
-    const SkBitmap::Config bitmap_config,
+    const SkColorType color_type,
     const base::TimeTicks& start_time,
     const base::Callback<void(bool, const SkBitmap&)>& callback,
     scoped_ptr<cc::CopyOutputResult> result) {
@@ -1379,7 +1379,6 @@ void RenderWidgetHostViewAndroid::PrepareTextureCopyOutputResult(
     return;
 
   scoped_ptr<SkBitmap> bitmap(new SkBitmap);
-  SkColorType color_type = SkBitmapConfigToColorType(bitmap_config);
   if (!bitmap->allocPixels(SkImageInfo::Make(dst_size_in_pixel.width(),
                                              dst_size_in_pixel.height(),
                                              color_type,
@@ -1413,7 +1412,7 @@ void RenderWidgetHostViewAndroid::PrepareTextureCopyOutputResult(
       gfx::Rect(result->size()),
       dst_size_in_pixel,
       pixels,
-      bitmap_config,
+      color_type,
       base::Bind(&CopyFromCompositingSurfaceFinished,
                  callback,
                  base::Passed(&release_callback),
@@ -1424,24 +1423,24 @@ void RenderWidgetHostViewAndroid::PrepareTextureCopyOutputResult(
 }
 
 bool RenderWidgetHostViewAndroid::IsReadbackConfigSupported(
-    SkBitmap::Config bitmap_config) {
+    SkColorType color_type) {
   ImageTransportFactoryAndroid* factory =
       ImageTransportFactoryAndroid::GetInstance();
   GLHelper* gl_helper = factory->GetGLHelper();
   if (!gl_helper)
     return false;
-  return gl_helper->IsReadbackConfigSupported(bitmap_config);
+  return gl_helper->IsReadbackConfigSupported(color_type);
 }
 
-SkBitmap::Config RenderWidgetHostViewAndroid::PreferredReadbackFormat() {
+SkColorType RenderWidgetHostViewAndroid::PreferredReadbackFormat() {
   // Define the criteria here. If say the 16 texture readback is
   // supported we should go with that (this degrades quality)
   // or stick back to the default format.
   if (base::SysInfo::IsLowEndDevice()) {
-    if (IsReadbackConfigSupported(SkBitmap::kRGB_565_Config))
-      return SkBitmap::kRGB_565_Config;
+    if (IsReadbackConfigSupported(kRGB_565_SkColorType))
+      return kRGB_565_SkColorType;
   }
-  return SkBitmap::kARGB_8888_Config;
+  return kN32_SkColorType;
 }
 
 void RenderWidgetHostViewAndroid::ShowSelectionHandlesAutomatically() {

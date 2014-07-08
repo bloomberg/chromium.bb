@@ -1211,14 +1211,14 @@ void RenderWidgetHostViewMac::CopyFromCompositingSurface(
     const gfx::Rect& src_subrect,
     const gfx::Size& dst_size,
     const base::Callback<void(bool, const SkBitmap&)>& callback,
-    const SkBitmap::Config config) {
+    const SkColorType color_type) {
   if (delegated_frame_host_) {
     delegated_frame_host_->CopyFromCompositingSurface(
-        src_subrect, dst_size, callback, config);
+        src_subrect, dst_size, callback, color_type);
     return;
   }
 
-  if (config != SkBitmap::kARGB_8888_Config) {
+  if (color_type != kN32_SkColorType) {
     NOTIMPLEMENTED();
     callback.Run(false, SkBitmap());
   }
@@ -2262,8 +2262,8 @@ void RenderWidgetHostViewMac::LayoutLayers() {
   }
 }
 
-SkBitmap::Config RenderWidgetHostViewMac::PreferredReadbackFormat() {
-  return SkBitmap::kARGB_8888_Config;
+SkColorType RenderWidgetHostViewMac::PreferredReadbackFormat() {
+  return kN32_SkColorType;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
