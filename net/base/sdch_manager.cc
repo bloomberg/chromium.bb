@@ -69,7 +69,8 @@ bool SdchManager::Dictionary::CanAdvertise(const GURL& target_url) {
       3. The request URI path-matches the path header of the dictionary.
       4. The request is not an HTTPS request.
      We can override (ignore) item (4) only when we have explicitly enabled
-     HTTPS support AND dictionary has been acquired over HTTPS.
+     HTTPS support AND the dictionary acquisition scheme matches the target
+     url scheme.
     */
   if (!DomainMatch(target_url, domain_))
     return false;
@@ -79,7 +80,7 @@ bool SdchManager::Dictionary::CanAdvertise(const GURL& target_url) {
     return false;
   if (!SdchManager::secure_scheme_supported() && target_url.SchemeIsSecure())
     return false;
-  if (target_url.SchemeIsSecure() && !url_.SchemeIsSecure())
+  if (target_url.SchemeIsSecure() != url_.SchemeIsSecure())
     return false;
   if (base::Time::Now() > expiration_)
     return false;
@@ -158,8 +159,9 @@ bool SdchManager::Dictionary::CanUse(const GURL& referring_url) {
     3. The request URL path-matches the path attribute of the dictionary.
     4. The request is not an HTTPS request.
     We can override (ignore) item (4) only when we have explicitly enabled
-    HTTPS support AND dictionary has been acquired over HTTPS.
-*/
+    HTTPS support AND the dictionary acquisition scheme matches the target
+     url scheme.
+  */
   if (!DomainMatch(referring_url, domain_)) {
     SdchErrorRecovery(DICTIONARY_FOUND_HAS_WRONG_DOMAIN);
     return false;
@@ -178,7 +180,7 @@ bool SdchManager::Dictionary::CanUse(const GURL& referring_url) {
     SdchErrorRecovery(DICTIONARY_FOUND_HAS_WRONG_SCHEME);
     return false;
   }
-  if (referring_url.SchemeIsSecure() && !url_.SchemeIsSecure()) {
+  if (referring_url.SchemeIsSecure() != url_.SchemeIsSecure()) {
     SdchErrorRecovery(DICTIONARY_FOUND_HAS_WRONG_SCHEME);
     return false;
   }
