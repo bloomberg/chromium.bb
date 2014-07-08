@@ -710,7 +710,7 @@ COMPILE_ASSERT(offsetof(RelocBlockPOD, relocs) == 8, reloc_block_header_size);
 class RelocBlock {
  public:
   RelocBlock() {
-    pod.page_rva = ~0;
+    pod.page_rva = 0xFFFFFFFF;
     pod.block_size = 8;
   }
 

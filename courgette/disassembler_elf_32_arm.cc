@@ -215,7 +215,7 @@ uint16 DisassemblerElf32ARM::TypedRVAARM::op_size() const {
     case ARM_OFF21:
       return 4;
     default:
-      return -1;
+      return 0xFFFF;
   }
 }
 

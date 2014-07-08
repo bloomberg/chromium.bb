@@ -30,7 +30,7 @@ class DisassemblerElf32 : public Disassembler {
   // class encapsulates this behavior.  public for use in unit tests.
   class TypedRVA {
    public:
-    explicit TypedRVA(RVA rva) : rva_(rva), offset_(-1) {
+    explicit TypedRVA(RVA rva) : rva_(rva), offset_(static_cast<size_t>(-1)) {
     }
 
     virtual ~TypedRVA() { };
