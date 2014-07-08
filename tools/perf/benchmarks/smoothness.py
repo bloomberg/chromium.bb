@@ -66,7 +66,7 @@ class SmoothnessFastPathKeySilkCases(benchmark.Benchmark):
     silk_flags.CustomizeBrowserOptionsForFastPath(options)
 
 
-@benchmark.Disabled('android')  # crbug.com/363783
+@benchmark.Disabled('j')  # crbug.com/363783
 class SmoothnessGpuRasterizationTop25(benchmark.Benchmark):
   """Measures rendering statistics for the top 25 with GPU rasterization
   """
