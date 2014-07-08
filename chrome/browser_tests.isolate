@@ -79,6 +79,7 @@
           '<(PRODUCT_DIR)/pnacl/',
           '<(PRODUCT_DIR)/pseudo_locales/',
           '<(PRODUCT_DIR)/pyproto/',
+          '<(PRODUCT_DIR)/remoting/unittests/',
           '<(PRODUCT_DIR)/test_data/chrome/',
           '<(PRODUCT_DIR)/test_data/ppapi/',
           '<(PRODUCT_DIR)/test_url_loader_data/',

@@ -309,19 +309,23 @@
         {
           'destination': '<(output_dir)/qunit',
           'files': [
-            '../third_party/qunit/src/',
+            '../third_party/qunit/src/browser_test_harness.js',
+            '../third_party/qunit/src/qunit.css',
+            '../third_party/qunit/src/qunit.js',
           ],
         },
         {
           'destination': '<(output_dir)/blanketjs',
           'files': [
-            '../third_party/blanketjs/src/',
+            '../third_party/blanketjs/src/blanket.js',
+            '../third_party/blanketjs/src/qunit_adapter.js',
           ],
         },
         {
           'destination': '<(output_dir)/sinonjs',
           'files': [
-            '../third_party/sinonjs/src/',
+            '../third_party/sinonjs/src/sinon.js',
+            '../third_party/sinonjs/src/sinon-qunit.js',
           ],
         },
         {
@@ -348,7 +352,7 @@
             '<@(remoting_webapp_unittest_cases)'
           ],
           'outputs': [
-            '<(PRODUCT_DIR)/ut.html',
+            '<(PRODUCT_DIR)/unittest.html',
           ],
           'action': [
             'python', 'webapp/build-html.py',
