@@ -130,7 +130,7 @@ NotificationManager::CreateNotification() {
       new message_center::Notification(
           message_center::NOTIFICATION_TYPE_SIMPLE,
           file_system_info_.mount_path().value(),
-          base::UTF8ToUTF16(file_system_info_.file_system_name()),
+          base::UTF8ToUTF16(file_system_info_.display_name()),
           l10n_util::GetStringUTF16(
               callbacks_.size() == 1
                   ? IDS_FILE_SYSTEM_PROVIDER_UNRESPONSIVE_WARNING

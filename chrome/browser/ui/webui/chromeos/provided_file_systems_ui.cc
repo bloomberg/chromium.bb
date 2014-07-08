@@ -289,7 +289,7 @@ void ProvidedFileSystemsWebUIHandler::UpdateFileSystems(
 
     base::DictionaryValue* item = new base::DictionaryValue();
     item->SetString(kKeyId, file_system_info.file_system_id());
-    item->SetString(kKeyName, file_system_info.file_system_name());
+    item->SetString(kKeyName, file_system_info.display_name());
     item->SetString(kKeyExtensionId, file_system_info.extension_id());
     item->SetString(kKeyMountPath,
                     file_system_info.mount_path().AsUTF8Unsafe());

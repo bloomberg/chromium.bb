@@ -75,7 +75,7 @@ class FileSystemProviderOperationsOpenFileTest : public testing::Test {
     file_system_info_ =
         ProvidedFileSystemInfo(kExtensionId,
                                kFileSystemId,
-                               "" /* file_system_name */,
+                               "" /* display_name */,
                                base::FilePath() /* mount_path */);
   }
 

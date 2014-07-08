@@ -80,7 +80,7 @@ class FileSystemProviderOperationsReadFileTest : public testing::Test {
     file_system_info_ =
         ProvidedFileSystemInfo(kExtensionId,
                                kFileSystemId,
-                               "" /* file_system_name */,
+                               "" /* display_name */,
                                base::FilePath() /* mount_path */);
     io_buffer_ = make_scoped_refptr(new net::IOBuffer(kOffset + kLength));
   }

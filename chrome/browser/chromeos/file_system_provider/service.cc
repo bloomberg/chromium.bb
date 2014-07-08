@@ -38,7 +38,7 @@ ProvidedFileSystemInterface* CreateProvidedFileSystem(
 }  // namespace
 
 const char kPrefKeyFileSystemId[] = "file-system-id";
-const char kPrefKeyFileSystemName[] = "file-system-name";
+const char kPrefKeyDisplayName[] = "display-name";
 
 void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterDictionaryPref(
@@ -97,7 +97,7 @@ void Service::SetFileSystemFactoryForTesting(
 
 bool Service::MountFileSystem(const std::string& extension_id,
                               const std::string& file_system_id,
-                              const std::string& file_system_name) {
+                              const std::string& display_name) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   // If already exists a file system provided by the same extension with this
@@ -149,7 +149,7 @@ bool Service::MountFileSystem(const std::string& extension_id,
   //   mount_point_name =  b33f1337-41-5aa5
   //   mount_path = /provided/b33f1337-41-5aa5
   ProvidedFileSystemInfo file_system_info(
-      extension_id, file_system_id, file_system_name, mount_path);
+      extension_id, file_system_id, display_name, mount_path);
 
   ProvidedFileSystemInterface* file_system =
       file_system_factory_.Run(profile_, file_system_info);
@@ -331,7 +331,7 @@ void Service::RememberFileSystems() {
 
     base::DictionaryValue* file_system = new base::DictionaryValue();
     file_system->SetString(kPrefKeyFileSystemId, it->file_system_id());
-    file_system->SetString(kPrefKeyFileSystemName, it->file_system_name());
+    file_system->SetString(kPrefKeyDisplayName, it->display_name());
     file_systems->Append(file_system);
   }
 
@@ -374,22 +374,22 @@ void Service::RestoreFileSystems(const std::string& extension_id) {
     file_system->GetString(kPrefKeyFileSystemId, &file_system_id);
     DCHECK(!file_system_id.empty());
 
-    std::string file_system_name;
-    file_system->GetString(kPrefKeyFileSystemName, &file_system_name);
-    DCHECK(!file_system_name.empty());
+    std::string display_name;
+    file_system->GetString(kPrefKeyDisplayName, &display_name);
+    DCHECK(!display_name.empty());
 
-    if (file_system_id.empty() || file_system_name.empty()) {
+    if (file_system_id.empty() || display_name.empty()) {
       LOG(ERROR)
           << "Malformed provided file system information in preferences.";
       continue;
     }
 
     const bool result =
-        MountFileSystem(extension_id, file_system_id, file_system_name);
+        MountFileSystem(extension_id, file_system_id, display_name);
     if (!result) {
       LOG(ERROR) << "Failed to restore a provided file system from "
                  << "preferences: " << extension_id << ", " << file_system_id
-                 << ", " << file_system_name << ".";
+                 << ", " << display_name << ".";
     }
   }
 }

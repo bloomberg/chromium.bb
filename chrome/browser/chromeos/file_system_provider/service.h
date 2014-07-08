@@ -38,7 +38,7 @@ namespace file_system_provider {
 
 // Key names for preferences.
 extern const char kPrefKeyFileSystemId[];
-extern const char kPrefKeyFileSystemName[];
+extern const char kPrefKeyDisplayName[];
 
 class ProvidedFileSystemFactoryInterface;
 class ProvidedFileSystemInfo;
@@ -70,7 +70,7 @@ class Service : public KeyedService,
   // For success, returns true, otherwise false.
   bool MountFileSystem(const std::string& extension_id,
                        const std::string& file_system_id,
-                       const std::string& file_system_name);
+                       const std::string& display_name);
 
   // Unmounts a file system with the specified |file_system_id| for the
   // |extension_id|. For success returns true, otherwise false.

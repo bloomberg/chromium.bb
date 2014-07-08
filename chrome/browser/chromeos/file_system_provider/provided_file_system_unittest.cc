@@ -31,7 +31,7 @@ namespace {
 const char kExtensionId[] = "mbflcebpggnecokmikipoihdbecnjfoj";
 const int kExpectedRequestId = 1;
 const char kFileSystemId[] = "camera-pictures";
-const char kFileSystemName[] = "Camera Pictures";
+const char kDisplayName[] = "Camera Pictures";
 
 class FakeEventRouter : public extensions::EventRouter {
  public:
@@ -90,7 +90,7 @@ class FileSystemProviderProvidedFileSystemTest : public testing::Test {
     const base::FilePath mount_path =
         util::GetMountPath(profile_.get(), kExtensionId, kFileSystemId);
     file_system_info_.reset(new ProvidedFileSystemInfo(
-        kExtensionId, kFileSystemId, kFileSystemName, mount_path));
+        kExtensionId, kFileSystemId, kDisplayName, mount_path));
     provided_file_system_.reset(
         new ProvidedFileSystem(event_router_.get(), *file_system_info_.get()));
   }

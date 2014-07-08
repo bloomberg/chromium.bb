@@ -215,7 +215,7 @@ VolumeInfo CreateProvidedFileSystemVolumeInfo(
   VolumeInfo volume_info;
   volume_info.file_system_id = file_system_info.file_system_id();
   volume_info.extension_id = file_system_info.extension_id();
-  volume_info.volume_label = file_system_info.file_system_name();
+  volume_info.volume_label = file_system_info.display_name();
   volume_info.type = VOLUME_TYPE_PROVIDED;
   volume_info.mount_path = file_system_info.mount_path();
   volume_info.mount_condition = chromeos::disks::MOUNT_CONDITION_NONE;
