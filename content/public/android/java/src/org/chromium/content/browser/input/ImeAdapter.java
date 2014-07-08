@@ -406,6 +406,7 @@ public class ImeAdapter {
      * @return Whether the native counterpart of ImeAdapter received the call.
      */
     boolean deleteSurroundingText(int beforeLength, int afterLength) {
+        mViewEmbedder.onImeEvent(false);
         if (mNativeImeAdapterAndroid == 0) return false;
         // Can't send the deletion key code yet because it will delete an extra char at the end.
         // Also the deleteSurroundingText message is not always ordered properly with key event
