@@ -31,8 +31,10 @@ namespace remoting {
 static const int kMaxPendingFrames = 2;
 
 // Interval between empty keep-alive frames. These frames are sent only
-// when there are no real video frames being sent.
-static const int kKeepAlivePacketIntervalMs = 500;
+// when there are no real video frames being sent. To prevent PseudoTCP from
+// resetting congestion window this value must be smaller that then the minimum
+// RTO used in PseudoTCP, which is 250ms.
+static const int kKeepAlivePacketIntervalMs = 200;
 
 VideoScheduler::VideoScheduler(
     scoped_refptr<base::SingleThreadTaskRunner> capture_task_runner,
