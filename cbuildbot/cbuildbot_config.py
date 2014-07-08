@@ -19,6 +19,7 @@ CONFIG_TYPE_PALADIN = 'paladin'
 CONFIG_TYPE_RELEASE = 'release'
 CONFIG_TYPE_FULL = 'full'
 CONFIG_TYPE_FIRMWARE = 'firmware'
+CONFIG_TYPE_RELEASE_AFDO = 'release-afdo'
 
 CONFIG_TYPE_DUMP_ORDER = (
     CONFIG_TYPE_PALADIN,
@@ -31,7 +32,7 @@ CONFIG_TYPE_DUMP_ORDER = (
     'full-group',
     CONFIG_TYPE_RELEASE,
     'release-group',
-    'release-pgo',
+    'release-afdo',
     'release-afdo-generate',
     'release-afdo-use',
     'sdk',
@@ -2050,55 +2051,39 @@ release_afdo = _release.derive(
   dev_installer_prebuilts=False,
 )
 
-_config.add_group('x86-alex-release-pgo',
-  release_afdo.add_config('x86-alex-release-afdo-generate',
-    boards=['x86-alex'],
-    afdo_generate_min=True,
-    afdo_update_ebuild=True,
-  ),
-  release_afdo.add_config('x86-alex-release-afdo-use',
-    boards=['x86-alex'],
-    afdo_use=True,
-  ),
-)
+# Now generate generic release-afdo configs if we haven't created anything more
+# specific above already. release-afdo configs are builders that do AFDO profile
+# collection and optimization in the same builder. Used by developers that
+# want to measure performance changes caused by their changes.
+def _AddAFDOConfigs():
+  for board in _all_release_boards:
+    if board in _x86_release_boards:
+      base = {}
+    else:
+      base = non_testable_builder
+    generate_config = _config(
+        base,
+        boards=(board,),
+        afdo_generate_min=True,
+        afdo_update_ebuild=True,
+    )
+    use_config = _config(
+        base,
+        boards=(board,),
+        afdo_use=True,
+    )
 
-_config.add_group('lumpy-release-pgo',
-  release_afdo.add_config('lumpy-release-afdo-generate',
-    boards=['lumpy'],
-    afdo_generate_min=True,
-    afdo_update_ebuild=True,
-  ),
-  release_afdo.add_config('lumpy-release-afdo-use',
-    boards=['lumpy'],
-    afdo_use=True,
-  ),
-)
+    config_name = '%s-%s' % (board, CONFIG_TYPE_RELEASE_AFDO)
+    if config_name not in config:
+      generate_config_name = '%s-%s-%s' % (board, CONFIG_TYPE_RELEASE_AFDO,
+                                           'generate')
+      use_config_name = '%s-%s-%s' % (board, CONFIG_TYPE_RELEASE_AFDO, 'use')
+      _config.add_group(config_name,
+                        release_afdo.add_config(generate_config_name,
+                                                generate_config),
+                        release_afdo.add_config(use_config_name, use_config))
 
-_config.add_group('parrot-release-pgo',
-  release_afdo.add_config('parrot-release-afdo-generate',
-    boards=['parrot'],
-    afdo_generate_min=True,
-    afdo_update_ebuild=True,
-  ),
-  release_afdo.add_config('parrot-release-afdo-use',
-    boards=['parrot'],
-    afdo_use=True,
-  ),
-)
-
-_config.add_group('daisy-release-pgo',
-  release_afdo.add_config('daisy-release-afdo-generate',
-    non_testable_builder,
-    boards=['daisy'],
-    afdo_generate_min=True,
-    afdo_update_ebuild=True,
-  ),
-  release_afdo.add_config('daisy-release-afdo-use',
-    non_testable_builder,
-    boards=['daisy'],
-    afdo_use=True,
-  ),
-)
+_AddAFDOConfigs()
 
 ### Release configs.
 

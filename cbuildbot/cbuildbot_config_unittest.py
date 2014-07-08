@@ -339,6 +339,38 @@ class CBuildBotTest(cros_test_lib.MoxTestCase):
             self.assertEqual(child_config.afdo_use, prev_value,
                 msg % (child_config.name, build_name))
 
+  def testReleaseAFDOConfigs(self):
+    """Verify that <board>-release-afdo config have generate and use children.
+
+    These configs should have a 'generate' and a 'use' child config. Also,
+    any 'generate' and 'use' configs should be children of a release-afdo
+    config.
+    """
+    msg = 'Config %s should have %s as a parent'
+    parent_suffix = cbuildbot_config.CONFIG_TYPE_RELEASE_AFDO
+    generate_suffix = '%s-generate' % parent_suffix
+    use_suffix = '%s-use' % parent_suffix
+    for build_name, config in cbuildbot_config.config.iteritems():
+      if build_name.endswith(parent_suffix):
+        self.assertEqual(len(config.child_configs), 2,
+            'Config %s should have 2 child configs' % build_name)
+        for child_config in config.child_configs:
+          child_name = child_config.name
+          self.assertTrue(child_name.endswith(generate_suffix) or
+                          child_name.endswith(use_suffix),
+                          'Config %s has wrong %s child' %
+                          (build_name, child_config))
+      if build_name.endswith(generate_suffix):
+        parent_config_name = build_name.replace(generate_suffix,
+                                                parent_suffix)
+        self.assertTrue(parent_config_name in cbuildbot_config.config,
+                        msg % (build_name, parent_config_name))
+      if build_name.endswith(use_suffix):
+        parent_config_name = build_name.replace(use_suffix,
+                                                parent_suffix)
+        self.assertTrue(parent_config_name in cbuildbot_config.config,
+                        msg % (build_name, parent_config_name))
+
   def testNoGrandChildConfigs(self):
     """Verify that no child configs have a child config."""
     for build_name, config in cbuildbot_config.config.iteritems():
