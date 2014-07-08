@@ -191,5 +191,9 @@
   "web_accessible_resources": {
     "documentation": "manifest/web_accessible_resources.html",
     "example": []
+  },
+  "webview": {
+    "documentation": "tags/web_view#local_resources",
+    "example": {}
   }
 }
