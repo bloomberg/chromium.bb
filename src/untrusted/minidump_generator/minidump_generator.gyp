@@ -9,7 +9,7 @@
   ],
   'targets' : [
     {
-      'target_name': 'minidump_generator_lib',
+      'target_name': 'minidump_lib',
       'type': 'none',
       'variables': {
         'nlib_target': 'libminidump_generator.a',
