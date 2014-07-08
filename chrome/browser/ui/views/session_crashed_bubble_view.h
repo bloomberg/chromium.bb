@@ -51,12 +51,11 @@ class SessionCrashedBubbleView
                            bool offer_uma_optin);
   virtual ~SessionCrashedBubbleView();
 
-  // Creates and shows the session crashed bubble, with |offer_uma_optin|
-  // indicating whether the UMA opt-in checkbox should be shown. Called
-  // by Show after checking whether the UMA option should be presented and it
-  // takes ownership of |browser_observer|.
+  // Creates and shows the session crashed bubble, with |uma_opted_in_already|
+  // indicating whether the user has already opted-in to UMA. It will be called
+  // by Show. It takes ownership of |browser_observer|.
   static void ShowForReal(scoped_ptr<BrowserRemovalObserver> browser_observer,
-                          bool offer_uma_optin);
+                          bool uma_opted_in_already);
 
   // WidgetDelegateView methods.
   virtual views::View* GetInitiallyFocusedView() OVERRIDE;

@@ -65,19 +65,6 @@ const SkColor kTextColor = SkColorSetRGB(102, 102, 102);
 const char kEnableBubbleUIFinchName[] = "EnableSessionCrashedBubbleUI";
 const char kEnableBubbleUIGroupEnabled[] = "Enabled";
 
-bool ShouldOfferMetricsReporting() {
-// Stats collection only applies to Google Chrome builds.
-#if defined(GOOGLE_CHROME_BUILD)
-  // Only show metrics reporting option if user didn't already consent to it.
-  if (GoogleUpdateSettings::GetCollectStatsConsent())
-    return false;
-  return g_browser_process->local_state()->FindPreference(
-      prefs::kMetricsReportingEnabled)->IsUserModifiable();
-#else
-  return false;
-#endif  // defined(GOOGLE_CHROME_BUILD)
-}
-
 // Whether or not the bubble UI should be used.
 bool IsBubbleUIEnabled() {
   const base::CommandLine& command_line = *CommandLine::ForCurrentProcess();
@@ -129,21 +116,37 @@ void SessionCrashedBubbleView::Show(Browser* browser) {
   scoped_ptr<BrowserRemovalObserver> browser_observer(
       new BrowserRemovalObserver(browser));
 
+// Stats collection only applies to Google Chrome builds.
+#if defined(GOOGLE_CHROME_BUILD)
   // Schedule a task to run ShouldOfferMetricsReporting() on FILE thread, since
   // GoogleUpdateSettings::GetCollectStatsConsent() does IO. Then, call
   // SessionCrashedBubbleView::ShowForReal with the result.
   content::BrowserThread::PostTaskAndReplyWithResult(
       content::BrowserThread::FILE,
       FROM_HERE,
-      base::Bind(&ShouldOfferMetricsReporting),
+      base::Bind(&GoogleUpdateSettings::GetCollectStatsConsent),
       base::Bind(&SessionCrashedBubbleView::ShowForReal,
                  base::Passed(&browser_observer)));
+#else
+  SessionCrashedBubbleView::ShowForReal(browser_observer.Pass(), false);
+#endif  // defined(GOOGLE_CHROME_BUILD)
 }
 
 // static
 void SessionCrashedBubbleView::ShowForReal(
     scoped_ptr<BrowserRemovalObserver> browser_observer,
-    bool offer_uma_optin) {
+    bool uma_opted_in_already) {
+  // Determine whether or not the uma opt-in option should be offered. It is
+  // offered only when it is a Google chrome build, user hasn't opted in yet,
+  // and the preference is modifiable by the user.
+  bool offer_uma_optin = false;
+
+#if defined(GOOGLE_CHROME_BUILD)
+  if (!uma_opted_in_already)
+    offer_uma_optin = g_browser_process->local_state()->FindPreference(
+        prefs::kMetricsReportingEnabled)->IsUserModifiable();
+#endif  // defined(GOOGLE_CHROME_BUILD)
+
   Browser* browser = browser_observer->browser();
 
   if (!browser)
