@@ -375,8 +375,7 @@ void CompositorAnimationsImpl::addKeyframesToCurve(blink::WebAnimationCurve& cur
         switch (curve.type()) {
         case blink::WebAnimationCurve::AnimationCurveTypeFilter: {
             OwnPtr<blink::WebFilterOperations> ops = adoptPtr(blink::Platform::current()->compositorSupport()->createFilterOperations());
-            bool converted = toWebFilterOperations(toAnimatableFilterOperations(value)->operations(), ops.get());
-            ASSERT_UNUSED(converted, converted);
+            toWebFilterOperations(toAnimatableFilterOperations(value)->operations(), ops.get());
 
             blink::WebFilterKeyframe filterKeyframe(keyframes[i]->offset(), ops.release());
             blink::WebFilterAnimationCurve* filterCurve = static_cast<blink::WebFilterAnimationCurve*>(&curve);

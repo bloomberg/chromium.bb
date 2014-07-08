@@ -1044,24 +1044,15 @@ WebLayer* GraphicsLayer::platformLayer() const
     return m_layer->layer();
 }
 
-bool GraphicsLayer::setFilters(const FilterOperations& filters)
+void GraphicsLayer::setFilters(const FilterOperations& filters)
 {
     SkiaImageFilterBuilder builder;
     OwnPtr<WebFilterOperations> webFilters = adoptPtr(Platform::current()->compositorSupport()->createFilterOperations());
     FilterOutsets outsets = filters.outsets();
     builder.setCropOffset(FloatSize(outsets.left(), outsets.top()));
-    if (!builder.buildFilterOperations(filters, webFilters.get())) {
-        // Make sure the filters are removed from the platform layer, as they are
-        // going to fallback to software mode.
-        webFilters->clear();
-        m_layer->layer()->setFilters(*webFilters);
-        m_filters = FilterOperations();
-        return false;
-    }
-
+    builder.buildFilterOperations(filters, webFilters.get());
     m_layer->layer()->setFilters(*webFilters);
     m_filters = filters;
-    return true;
 }
 
 void GraphicsLayer::setPaintingPhase(GraphicsLayerPaintingPhase phase)

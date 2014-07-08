@@ -116,12 +116,12 @@ void toWebTransformOperations(const TransformOperations& transformOperations, We
     } // for each operation
 }
 
-bool toWebFilterOperations(const FilterOperations& inOperations, WebFilterOperations* outOperations)
+void toWebFilterOperations(const FilterOperations& inOperations, WebFilterOperations* outOperations)
 {
     SkiaImageFilterBuilder builder;
     FilterOutsets outsets = inOperations.outsets();
     builder.setCropOffset(FloatSize(outsets.left(), outsets.top()));
-    return builder.buildFilterOperations(inOperations, outOperations);
+    builder.buildFilterOperations(inOperations, outOperations);
 }
 
 } // namespace WebCore

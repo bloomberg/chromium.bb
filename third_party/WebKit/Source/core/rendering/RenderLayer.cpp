@@ -221,12 +221,7 @@ bool RenderLayer::paintsWithFilters() const
 
     // https://code.google.com/p/chromium/issues/detail?id=343759
     DisableCompositingQueryAsserts disabler;
-    if (!m_compositedLayerMapping
-        || compositingState() != PaintsIntoOwnBacking
-        || !m_compositedLayerMapping->canCompositeFilters())
-        return true;
-
-    return false;
+    return !m_compositedLayerMapping || compositingState() != PaintsIntoOwnBacking;
 }
 
 bool RenderLayer::requiresFullLayerImageForFilters() const
@@ -3535,22 +3530,12 @@ bool RenderLayer::isVisuallyNonEmpty() const
     return false;
 }
 
-static bool hasOrHadFilters(const RenderStyle* oldStyle, const RenderStyle* newStyle)
-{
-    ASSERT(newStyle);
-    return (oldStyle && oldStyle->hasFilter()) || newStyle->hasFilter();
-}
-
 void RenderLayer::updateFilters(const RenderStyle* oldStyle, const RenderStyle* newStyle)
 {
-    if (!hasOrHadFilters(oldStyle, newStyle))
+    if (!newStyle->hasFilter() && (!oldStyle || !oldStyle->hasFilter()))
         return;
 
     updateOrRemoveFilterClients();
-    // During an accelerated animation, both WebKit and the compositor animate properties.
-    // However, WebKit shouldn't ask the compositor to update its filters if the compositor is performing the animation.
-    if (hasCompositedLayerMapping() && !newStyle->isRunningFilterAnimationOnCompositor())
-        compositedLayerMapping()->updateFilters(renderer()->style());
     updateOrRemoveFilterEffectRenderer();
 }
 
@@ -3638,12 +3623,7 @@ void RenderLayer::styleChanged(StyleDifference diff, const RenderStyle* oldStyle
     updateDescendantDependentFlags();
 
     updateTransform(oldStyle, renderer()->style());
-
-    {
-        // https://code.google.com/p/chromium/issues/detail?id=343759
-        DisableCompositingQueryAsserts disabler;
-        updateFilters(oldStyle, renderer()->style());
-    }
+    updateFilters(oldStyle, renderer()->style());
 
     setNeedsCompositingInputsUpdate();
 }

@@ -186,7 +186,6 @@ public:
     GraphicsLayer* layerForScrollCorner() const { return m_layerForScrollCorner.get(); }
 
     void updateFilters(const RenderStyle*);
-    bool canCompositeFilters() const { return m_canCompositeFilters; }
 
     void setBlendMode(blink::WebBlendMode);
 
@@ -409,7 +408,6 @@ private:
     unsigned m_isMainFrameRenderViewLayer : 1;
     unsigned m_requiresOwnBackingStoreForIntrinsicReasons : 1;
     unsigned m_requiresOwnBackingStoreForAncestorReasons : 1;
-    unsigned m_canCompositeFilters : 1;
     unsigned m_backgroundLayerPaintsFixedRootBackground : 1;
     unsigned m_scrollingContentsAreEmpty : 1;
 };

@@ -187,8 +187,7 @@ public:
     void setBlendMode(blink::WebBlendMode);
     void setIsRootForIsolatedGroup(bool);
 
-    // Returns true if filter can be rendered by the compositor
-    bool setFilters(const FilterOperations&);
+    void setFilters(const FilterOperations&);
 
     // Some GraphicsLayers paint only the foreground or the background content
     void setPaintingPhase(GraphicsLayerPaintingPhase);
