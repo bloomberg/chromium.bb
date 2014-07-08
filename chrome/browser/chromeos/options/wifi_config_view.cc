@@ -908,7 +908,7 @@ void WifiConfigView::Init(bool show_8021x) {
     ParseEAPUIProperty(&eap_method_ui_data_, network, ::onc::eap::kOuter);
     ParseEAPUIProperty(&phase_2_auth_ui_data_, network, ::onc::eap::kInner);
     ParseEAPUIProperty(
-        &user_cert_ui_data_, network, ::onc::eap::kClientCertRef);
+        &user_cert_ui_data_, network, ::onc::client_cert::kClientCertRef);
     ParseEAPUIProperty(
         &server_ca_cert_ui_data_, network, ::onc::eap::kServerCARef);
     if (server_ca_cert_ui_data_.IsManaged()) {

@@ -129,8 +129,8 @@ const char kNotConnected[] = "NotConnected";
 
 namespace ethernet {
 const char kAuthentication[] = "Authentication";
+const char kAuthenticationNone[] = "None";
 const char kEAP[] = "EAP";
-const char kNone[] = "None";
 const char k8021X[] = "8021X";
 }  // namespace ethernet
 
@@ -151,11 +151,11 @@ const char kEAP[] = "EAP";
 const char kFrequency[] = "Frequency";
 const char kFrequencyList[] = "FrequencyList";
 const char kHiddenSSID[] = "HiddenSSID";
-const char kNone[] = "None";
 const char kPassphrase[] = "Passphrase";
 const char kProxyURL[] = "ProxyURL";
 const char kSSID[] = "SSID";
 const char kSecurity[] = "Security";
+const char kSecurityNone[] = "None";
 const char kSignalStrength[] = "SignalStrength";
 const char kWEP_8021X[] = "WEP-8021X";
 const char kWEP_PSK[] = "WEP-PSK";
@@ -164,25 +164,31 @@ const char kWPA_PSK[] = "WPA-PSK";
 const char kWPA2_PSK[] = "WPA2-PSK";
 }  // namespace wifi
 
-namespace certificate {
-const char kAuthority[] = "Authority";
-const char kClient[] = "Client";
+namespace client_cert {
+const char kClientCertPattern[] = "ClientCertPattern";
+const char kClientCertRef[] = "ClientCertRef";
+const char kClientCertType[] = "ClientCertType";
+const char kClientCertTypeNone[] = "None";
 const char kCommonName[] = "CommonName";
 const char kEmailAddress[] = "EmailAddress";
 const char kEnrollmentURI[] = "EnrollmentURI";
-const char kGUID[] = "GUID";
 const char kIssuerCARef[] = "IssuerCARef";
 const char kIssuerCAPEMs[] = "IssuerCAPEMs";
 const char kIssuer[] = "Issuer";
 const char kLocality[] = "Locality";
-const char kNone[] = "None";
 const char kOrganization[] = "Organization";
 const char kOrganizationalUnit[] = "OrganizationalUnit";
-const char kPKCS12[] = "PKCS12";
 const char kPattern[] = "Pattern";
 const char kRef[] = "Ref";
-const char kServer[] = "Server";
 const char kSubject[] = "Subject";
+}  // namespace client_cert
+
+namespace certificate {
+const char kAuthority[] = "Authority";
+const char kClient[] = "Client";
+const char kGUID[] = "GUID";
+const char kPKCS12[] = "PKCS12";
+const char kServer[] = "Server";
 const char kTrustBits[] = "TrustBits";
 const char kType[] = "Type";
 const char kWeb[] = "Web";
@@ -206,9 +212,6 @@ const char kStretch[] = "Stretch";
 namespace eap {
 const char kAnonymousIdentity[] = "AnonymousIdentity";
 const char kAutomatic[] = "Automatic";
-const char kClientCertPattern[] = "ClientCertPattern";
-const char kClientCertRef[] = "ClientCertRef";
-const char kClientCertType[] = "ClientCertType";
 const char kEAP_AKA[] = "EAP-AKA";
 const char kEAP_FAST[] = "EAP-FAST";
 const char kEAP_SIM[] = "EAP-SIM";
@@ -232,9 +235,6 @@ const char kUseSystemCAs[] = "UseSystemCAs";
 
 namespace vpn {
 const char kAutoConnect[] = "AutoConnect";
-const char kClientCertPattern[] = "ClientCertPattern";
-const char kClientCertRef[] = "ClientCertRef";
-const char kClientCertType[] = "ClientCertType";
 const char kHost[] = "Host";
 const char kIPsec[] = "IPsec";
 const char kL2TP[] = "L2TP";

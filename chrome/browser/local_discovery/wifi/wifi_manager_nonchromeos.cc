@@ -37,7 +37,7 @@ scoped_ptr<base::DictionaryValue> MakeProperties(const std::string& ssid,
     // manner.
     wifi->SetString(onc::wifi::kSecurity, onc::wifi::kWPA2_PSK);
   } else {
-    wifi->SetString(onc::wifi::kSecurity, onc::wifi::kNone);
+    wifi->SetString(onc::wifi::kSecurity, onc::wifi::kSecurityNone);
   }
 
   return properties.Pass();

@@ -228,7 +228,7 @@ const StringTranslationEntry kVPNTypeTable[] = {
 
 // The first matching line is chosen.
 const StringTranslationEntry kWiFiSecurityTable[] = {
-    { ::onc::wifi::kNone, shill::kSecurityNone},
+    { ::onc::wifi::kSecurityNone, shill::kSecurityNone},
     { ::onc::wifi::kWEP_PSK, shill::kSecurityWep},
     { ::onc::wifi::kWPA_PSK, shill::kSecurityPsk},
     { ::onc::wifi::kWPA_EAP, shill::kSecurity8021x},

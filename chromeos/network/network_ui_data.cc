@@ -148,11 +148,18 @@ void NetworkUIData::FillDictionary(base::DictionaryValue* dict) const {
 
 namespace {
 
-void TranslateClientCertType(const std::string& client_cert_type,
-                             NetworkUIData* ui_data) {
-  using namespace ::onc::certificate;
+void GetAndTranslateClientCertType(const base::DictionaryValue& onc_object,
+                                   NetworkUIData* ui_data) {
+  using namespace ::onc::client_cert;
+
+  std::string client_cert_type;
+  if (!onc_object.GetStringWithoutPathExpansion(kClientCertType,
+                                                &client_cert_type)) {
+    return;
+  }
+
   ClientCertType type;
-  if (client_cert_type == kNone) {
+  if (client_cert_type == kClientCertTypeNone) {
     type = CLIENT_CERT_TYPE_NONE;
   } else if (client_cert_type == kRef) {
     type = CLIENT_CERT_TYPE_REF;
@@ -174,44 +181,16 @@ void TranslateCertificatePattern(const base::DictionaryValue& onc_object,
   ui_data->set_certificate_pattern(pattern);
 }
 
-void TranslateEAP(const base::DictionaryValue& eap,
-                  NetworkUIData* ui_data) {
-  std::string client_cert_type;
-  if (eap.GetStringWithoutPathExpansion(::onc::eap::kClientCertType,
-                                        &client_cert_type)) {
-    TranslateClientCertType(client_cert_type, ui_data);
-  }
-}
-
-void TranslateIPsec(const base::DictionaryValue& ipsec,
-                    NetworkUIData* ui_data) {
-  std::string client_cert_type;
-  if (ipsec.GetStringWithoutPathExpansion(::onc::vpn::kClientCertType,
-                                          &client_cert_type)) {
-    TranslateClientCertType(client_cert_type, ui_data);
-  }
-}
-
-void TranslateOpenVPN(const base::DictionaryValue& openvpn,
-                      NetworkUIData* ui_data) {
-  std::string client_cert_type;
-  if (openvpn.GetStringWithoutPathExpansion(::onc::vpn::kClientCertType,
-                                            &client_cert_type)) {
-    TranslateClientCertType(client_cert_type, ui_data);
-  }
-}
-
 void TranslateONCHierarchy(const onc::OncValueSignature& signature,
                            const base::DictionaryValue& onc_object,
                            NetworkUIData* ui_data) {
-  if (&signature == &onc::kCertificatePatternSignature)
+  if (&signature == &onc::kCertificatePatternSignature) {
     TranslateCertificatePattern(onc_object, ui_data);
-  else if (&signature == &onc::kEAPSignature)
-    TranslateEAP(onc_object, ui_data);
-  else if (&signature == &onc::kIPsecSignature)
-    TranslateIPsec(onc_object, ui_data);
-  else if (&signature == &onc::kOpenVPNSignature)
-    TranslateOpenVPN(onc_object, ui_data);
+  } else if (&signature == &onc::kEAPSignature ||
+             &signature == &onc::kIPsecSignature ||
+             &signature == &onc::kOpenVPNSignature) {
+    GetAndTranslateClientCertType(onc_object, ui_data);
+  }
 
   // Recurse into nested objects.
   for (base::DictionaryValue::Iterator it(onc_object); !it.IsAtEnd();

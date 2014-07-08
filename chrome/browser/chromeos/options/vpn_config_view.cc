@@ -782,7 +782,7 @@ void VPNConfigView::ParseUIProperties(const NetworkState* vpn) {
     ParseVPNUIProperty(vpn, type_dict_name, ::onc::openvpn::kServerCARef,
                        &ca_cert_ui_data_);
   }
-  ParseVPNUIProperty(vpn, type_dict_name, ::onc::vpn::kClientCertRef,
+  ParseVPNUIProperty(vpn, type_dict_name, ::onc::client_cert::kClientCertRef,
                      &user_cert_ui_data_);
 
   const std::string credentials_dict_name(

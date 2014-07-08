@@ -1256,7 +1256,7 @@ std::string WiFiServiceImpl::SecurityFromDot11AuthAlg(
     case DOT11_AUTH_ALGO_80211_SHARED_KEY:
       return onc::wifi::kWEP_PSK;
     case DOT11_AUTH_ALGO_80211_OPEN:
-      return onc::wifi::kNone;
+      return onc::wifi::kSecurityNone;
     default:
       return onc::wifi::kWPA_EAP;
   }
@@ -1600,7 +1600,7 @@ DWORD WiFiServiceImpl::Connect(const std::string& network_guid,
       if (error_string.empty() &&
           properties->GetDictionary(onc::network_type::kWiFi, &wifi) &&
           wifi->GetString(onc::wifi::kSecurity, &wifi_security) &&
-          wifi_security != onc::wifi::kNone) {
+          wifi_security != onc::wifi::kSecurityNone) {
         error = ERROR_ACCESS_DENIED;
         LOG(ERROR) << error;
         return error;
@@ -1743,7 +1743,7 @@ bool WiFiServiceImpl::AuthEncryptionFromSecurity(
     std::string* authentication,
     std::string* encryption,
     std::string* key_type) const {
-  if (security == onc::wifi::kNone) {
+  if (security == onc::wifi::kSecurityNone) {
     *authentication = kAuthenticationOpen;
     *encryption = kEncryptionNone;
   } else if (security == onc::wifi::kWEP_PSK) {

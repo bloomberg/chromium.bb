@@ -13,7 +13,7 @@ namespace wifi {
 
 NetworkProperties::NetworkProperties()
     : connection_state(onc::connection_state::kNotConnected),
-      security(onc::wifi::kNone),
+      security(onc::wifi::kSecurityNone),
       signal_strength(0),
       auto_connect(false),
       frequency(kFrequencyUnknown) {

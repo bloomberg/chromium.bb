@@ -36,28 +36,28 @@ const OncValueSignature kCellularApnListSignature = {
 };
 
 const OncFieldSignature issuer_subject_pattern_fields[] = {
-    { ::onc::certificate::kCommonName, &kStringSignature},
-    { ::onc::certificate::kLocality, &kStringSignature},
-    { ::onc::certificate::kOrganization, &kStringSignature},
-    { ::onc::certificate::kOrganizationalUnit, &kStringSignature},
+    { ::onc::client_cert::kCommonName, &kStringSignature},
+    { ::onc::client_cert::kLocality, &kStringSignature},
+    { ::onc::client_cert::kOrganization, &kStringSignature},
+    { ::onc::client_cert::kOrganizationalUnit, &kStringSignature},
     {NULL}};
 
 const OncFieldSignature certificate_pattern_fields[] = {
     { ::onc::kRecommended, &kRecommendedSignature},
-    { ::onc::certificate::kEnrollmentURI, &kStringListSignature},
-    { ::onc::certificate::kIssuer, &kIssuerSubjectPatternSignature},
-    { ::onc::certificate::kIssuerCARef, &kStringListSignature},
+    { ::onc::client_cert::kEnrollmentURI, &kStringListSignature},
+    { ::onc::client_cert::kIssuer, &kIssuerSubjectPatternSignature},
+    { ::onc::client_cert::kIssuerCARef, &kStringListSignature},
     // Used internally. Not officially supported.
-    { ::onc::certificate::kIssuerCAPEMs, &kStringListSignature},
-    { ::onc::certificate::kSubject, &kIssuerSubjectPatternSignature},
+    { ::onc::client_cert::kIssuerCAPEMs, &kStringListSignature},
+    { ::onc::client_cert::kSubject, &kIssuerSubjectPatternSignature},
     {NULL}};
 
 const OncFieldSignature eap_fields[] = {
     { ::onc::kRecommended, &kRecommendedSignature},
     { ::onc::eap::kAnonymousIdentity, &kStringSignature},
-    { ::onc::eap::kClientCertPattern, &kCertificatePatternSignature},
-    { ::onc::eap::kClientCertRef, &kStringSignature},
-    { ::onc::eap::kClientCertType, &kStringSignature},
+    { ::onc::client_cert::kClientCertPattern, &kCertificatePatternSignature},
+    { ::onc::client_cert::kClientCertRef, &kStringSignature},
+    { ::onc::client_cert::kClientCertType, &kStringSignature},
     { ::onc::eap::kIdentity, &kStringSignature},
     { ::onc::eap::kInner, &kStringSignature},
     { ::onc::eap::kOuter, &kStringSignature},
@@ -73,9 +73,9 @@ const OncFieldSignature eap_fields[] = {
 const OncFieldSignature ipsec_fields[] = {
     { ::onc::kRecommended, &kRecommendedSignature},
     { ::onc::ipsec::kAuthenticationType, &kStringSignature},
-    { ::onc::vpn::kClientCertPattern, &kCertificatePatternSignature},
-    { ::onc::vpn::kClientCertRef, &kStringSignature},
-    { ::onc::vpn::kClientCertType, &kStringSignature},
+    { ::onc::client_cert::kClientCertPattern, &kCertificatePatternSignature},
+    { ::onc::client_cert::kClientCertRef, &kStringSignature},
+    { ::onc::client_cert::kClientCertType, &kStringSignature},
     { ::onc::ipsec::kGroup, &kStringSignature},
     { ::onc::ipsec::kIKEVersion, &kIntegerSignature},
     { ::onc::ipsec::kPSK, &kStringSignature},
@@ -107,9 +107,9 @@ const OncFieldSignature openvpn_fields[] = {
     { ::onc::openvpn::kAuthNoCache, &kBoolSignature},
     { ::onc::openvpn::kAuthRetry, &kStringSignature},
     { ::onc::openvpn::kCipher, &kStringSignature},
-    { ::onc::vpn::kClientCertPattern, &kCertificatePatternSignature},
-    { ::onc::vpn::kClientCertRef, &kStringSignature},
-    { ::onc::vpn::kClientCertType, &kStringSignature},
+    { ::onc::client_cert::kClientCertPattern, &kCertificatePatternSignature},
+    { ::onc::client_cert::kClientCertRef, &kStringSignature},
+    { ::onc::client_cert::kClientCertType, &kStringSignature},
     { ::onc::openvpn::kCompLZO, &kStringSignature},
     { ::onc::openvpn::kCompNoAdapt, &kBoolSignature},
     { ::onc::openvpn::kIgnoreDefaultRoute, &kBoolSignature},

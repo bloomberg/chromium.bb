@@ -76,13 +76,13 @@ scoped_ptr<base::DictionaryValue> IssuerSubjectPattern::CreateONCDictionary()
     const {
   scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue);
   if (!common_name_.empty())
-    dict->SetString(onc::certificate::kCommonName, common_name_);
+    dict->SetString(onc::client_cert::kCommonName, common_name_);
   if (!locality_.empty())
-    dict->SetString(onc::certificate::kLocality, locality_);
+    dict->SetString(onc::client_cert::kLocality, locality_);
   if (!organization_.empty())
-    dict->SetString(onc::certificate::kOrganization, organization_);
+    dict->SetString(onc::client_cert::kOrganization, organization_);
   if (!organizational_unit_.empty())
-    dict->SetString(onc::certificate::kOrganizationalUnit,
+    dict->SetString(onc::client_cert::kOrganizationalUnit,
                     organizational_unit_);
   return dict.Pass();
 }
@@ -91,12 +91,12 @@ void IssuerSubjectPattern::ReadFromONCDictionary(
     const base::DictionaryValue& dict) {
   Clear();
 
-  dict.GetStringWithoutPathExpansion(onc::certificate::kCommonName,
+  dict.GetStringWithoutPathExpansion(onc::client_cert::kCommonName,
                                      &common_name_);
-  dict.GetStringWithoutPathExpansion(onc::certificate::kLocality, &locality_);
-  dict.GetStringWithoutPathExpansion(onc::certificate::kOrganization,
+  dict.GetStringWithoutPathExpansion(onc::client_cert::kLocality, &locality_);
+  dict.GetStringWithoutPathExpansion(onc::client_cert::kOrganization,
                                      &organization_);
-  dict.GetStringWithoutPathExpansion(onc::certificate::kOrganizationalUnit,
+  dict.GetStringWithoutPathExpansion(onc::client_cert::kOrganizationalUnit,
                                      &organizational_unit_);
 }
 
@@ -125,20 +125,20 @@ scoped_ptr<base::DictionaryValue> CertificatePattern::CreateONCDictionary()
   scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue);
 
   if (!issuer_ca_pems_.empty()) {
-    dict->SetWithoutPathExpansion(onc::certificate::kIssuerCAPEMs,
+    dict->SetWithoutPathExpansion(onc::client_cert::kIssuerCAPEMs,
                                   CreateListFromStrings(issuer_ca_pems_));
   }
 
   if (!issuer_.Empty())
-    dict->SetWithoutPathExpansion(onc::certificate::kIssuer,
+    dict->SetWithoutPathExpansion(onc::client_cert::kIssuer,
                                   issuer_.CreateONCDictionary().release());
 
   if (!subject_.Empty())
-    dict->SetWithoutPathExpansion(onc::certificate::kSubject,
+    dict->SetWithoutPathExpansion(onc::client_cert::kSubject,
                                   subject_.CreateONCDictionary().release());
 
   if (!enrollment_uri_list_.empty())
-    dict->SetWithoutPathExpansion(onc::certificate::kEnrollmentURI,
+    dict->SetWithoutPathExpansion(onc::client_cert::kEnrollmentURI,
                                   CreateListFromStrings(enrollment_uri_list_));
   return dict.Pass();
 }
@@ -151,25 +151,25 @@ bool CertificatePattern::ReadFromONCDictionary(
   const base::ListValue* child_list = NULL;
 
   // All of these are optional.
-  if (dict.GetListWithoutPathExpansion(onc::certificate::kIssuerCAPEMs,
+  if (dict.GetListWithoutPathExpansion(onc::client_cert::kIssuerCAPEMs,
                                        &child_list) &&
       child_list) {
     if (!GetAsListOfStrings(*child_list, &issuer_ca_pems_))
       return false;
   }
-  if (dict.GetDictionaryWithoutPathExpansion(onc::certificate::kIssuer,
+  if (dict.GetDictionaryWithoutPathExpansion(onc::client_cert::kIssuer,
                                              &child_dict) &&
       child_dict) {
     issuer_.ReadFromONCDictionary(*child_dict);
   }
   child_dict = NULL;
-  if (dict.GetDictionaryWithoutPathExpansion(onc::certificate::kSubject,
+  if (dict.GetDictionaryWithoutPathExpansion(onc::client_cert::kSubject,
                                              &child_dict) &&
       child_dict) {
     subject_.ReadFromONCDictionary(*child_dict);
   }
   child_list = NULL;
-  if (dict.GetListWithoutPathExpansion(onc::certificate::kEnrollmentURI,
+  if (dict.GetListWithoutPathExpansion(onc::client_cert::kEnrollmentURI,
                                        &child_list) &&
       child_list) {
     if (!GetAsListOfStrings(*child_list, &enrollment_uri_list_))

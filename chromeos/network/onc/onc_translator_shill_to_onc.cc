@@ -145,7 +145,7 @@ void ShillToONCTranslator::TranslateEthernet() {
   std::string shill_network_type;
   shill_dictionary_->GetStringWithoutPathExpansion(shill::kTypeProperty,
                                                    &shill_network_type);
-  const char* onc_auth = ::onc::ethernet::kNone;
+  const char* onc_auth = ::onc::ethernet::kAuthenticationNone;
   if (shill_network_type == shill::kTypeEthernetEap)
     onc_auth = ::onc::ethernet::k8021X;
   onc_object_->SetStringWithoutPathExpansion(::onc::ethernet::kAuthentication,

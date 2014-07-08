@@ -563,8 +563,10 @@ bool ResolveServerCertRefsInObject(const CertPEMsByGUIDMap& certs_by_guid,
                                    const OncValueSignature& signature,
                                    base::DictionaryValue* onc_object) {
   if (&signature == &kCertificatePatternSignature) {
-    if (!ResolveCertRefList(certs_by_guid, certificate::kIssuerCARef,
-                            certificate::kIssuerCAPEMs, onc_object)) {
+    if (!ResolveCertRefList(certs_by_guid,
+                            client_cert::kIssuerCARef,
+                            client_cert::kIssuerCAPEMs,
+                            onc_object)) {
       return false;
     }
   } else if (&signature == &kEAPSignature) {

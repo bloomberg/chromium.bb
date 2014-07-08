@@ -290,6 +290,32 @@ bool Validator::ValidateRecommendedField(
   return true;
 }
 
+bool Validator::ValidateClientCertFields(bool allow_cert_type_none,
+                                         base::DictionaryValue* result) {
+  using namespace ::onc::client_cert;
+  const char* const kValidCertTypes[] = {kRef, kPattern};
+  std::vector<const char*> valid_cert_types(toVector(kValidCertTypes));
+  if (allow_cert_type_none)
+    valid_cert_types.push_back(kClientCertTypeNone);
+  if (FieldExistsAndHasNoValidValue(*result, kClientCertType, valid_cert_types))
+    return false;
+
+  std::string cert_type;
+  result->GetStringWithoutPathExpansion(kClientCertType, &cert_type);
+
+  if (IsCertPatternInDevicePolicy(cert_type))
+    return false;
+
+  bool all_required_exist = true;
+
+  if (cert_type == kPattern)
+    all_required_exist &= RequireField(*result, kClientCertPattern);
+  else if (cert_type == kRef)
+    all_required_exist &= RequireField(*result, kClientCertRef);
+
+  return !error_on_missing_field_ || all_required_exist;
+}
+
 namespace {
 
 std::string JoinStringRange(const std::vector<const char*>& strings,
@@ -400,7 +426,7 @@ bool Validator::CheckGuidIsUniqueAndAddToSet(const base::DictionaryValue& dict,
 }
 
 bool Validator::IsCertPatternInDevicePolicy(const std::string& cert_type) {
-  if (cert_type == ::onc::certificate::kPattern &&
+  if (cert_type == ::onc::client_cert::kPattern &&
       onc_source_ == ::onc::ONC_SOURCE_DEVICE_POLICY) {
     error_or_warning_found_ = true;
     LOG(ERROR) << MessageHeader() << "Client certificate patterns are "
@@ -501,7 +527,7 @@ bool Validator::ValidateNetworkConfiguration(base::DictionaryValue* result) {
 bool Validator::ValidateEthernet(base::DictionaryValue* result) {
   using namespace ::onc::ethernet;
 
-  const char* const kValidAuthentications[] = {kNone, k8021X};
+  const char* const kValidAuthentications[] = {kAuthenticationNone, k8021X};
   const std::vector<const char*> valid_authentications(
       toVector(kValidAuthentications));
   if (FieldExistsAndHasNoValidValue(
@@ -547,8 +573,8 @@ bool Validator::ValidateIPConfig(base::DictionaryValue* result) {
 bool Validator::ValidateWiFi(base::DictionaryValue* result) {
   using namespace ::onc::wifi;
 
-  const char* const kValidSecurities[] = {kNone, kWEP_PSK, kWEP_8021X, kWPA_PSK,
-                                          kWPA_EAP};
+  const char* const kValidSecurities[] = {kSecurityNone, kWEP_PSK, kWEP_8021X,
+                                          kWPA_PSK, kWPA_EAP};
   const std::vector<const char*> valid_securities(toVector(kValidSecurities));
   if (FieldExistsAndHasNoValidValue(*result, kSecurity, valid_securities))
     return false;
@@ -591,17 +617,12 @@ bool Validator::ValidateVPN(base::DictionaryValue* result) {
 
 bool Validator::ValidateIPsec(base::DictionaryValue* result) {
   using namespace ::onc::ipsec;
-  using namespace ::onc::certificate;
 
   const char* const kValidAuthentications[] = {kPSK, kCert};
   const std::vector<const char*> valid_authentications(
       toVector(kValidAuthentications));
-  const char* const kValidCertTypes[] = {kRef, kPattern};
-  const std::vector<const char*> valid_cert_types(toVector(kValidCertTypes));
   if (FieldExistsAndHasNoValidValue(
           *result, kAuthenticationType, valid_authentications) ||
-      FieldExistsAndHasNoValidValue(
-          *result, ::onc::vpn::kClientCertType, valid_cert_types) ||
       FieldExistsAndIsEmpty(*result, kServerCARefs)) {
     return false;
   }
@@ -613,6 +634,11 @@ bool Validator::ValidateIPsec(base::DictionaryValue* result) {
     return false;
   }
 
+  if (!ValidateClientCertFields(false,  // don't allow ClientCertType None
+                                result)) {
+    return false;
+  }
+
   bool all_required_exist = RequireField(*result, kAuthenticationType) &&
                             RequireField(*result, kIKEVersion);
   std::string auth;
@@ -620,7 +646,8 @@ bool Validator::ValidateIPsec(base::DictionaryValue* result) {
   bool has_server_ca_cert =
       result->HasKey(kServerCARefs) || result->HasKey(kServerCARef);
   if (auth == kCert) {
-    all_required_exist &= RequireField(*result, ::onc::vpn::kClientCertType);
+    all_required_exist &=
+        RequireField(*result, ::onc::client_cert::kClientCertType);
     if (!has_server_ca_cert) {
       all_required_exist = false;
       error_or_warning_found_ = true;
@@ -639,32 +666,16 @@ bool Validator::ValidateIPsec(base::DictionaryValue* result) {
     return false;
   }
 
-  std::string cert_type;
-  result->GetStringWithoutPathExpansion(::onc::vpn::kClientCertType,
-                                        &cert_type);
-
-  if (IsCertPatternInDevicePolicy(cert_type))
-    return false;
-
-  if (cert_type == kPattern)
-    all_required_exist &= RequireField(*result, ::onc::vpn::kClientCertPattern);
-  else if (cert_type == kRef)
-    all_required_exist &= RequireField(*result, ::onc::vpn::kClientCertRef);
-
   return !error_on_missing_field_ || all_required_exist;
 }
 
 bool Validator::ValidateOpenVPN(base::DictionaryValue* result) {
   using namespace ::onc::openvpn;
-  using namespace ::onc::certificate;
 
   const char* const kValidAuthRetryValues[] = {::onc::openvpn::kNone, kInteract,
                                                kNoInteract};
   const std::vector<const char*> valid_auth_retry_values(
       toVector(kValidAuthRetryValues));
-  const char* const kValidCertTypes[] = {::onc::certificate::kNone, kRef,
-                                         kPattern};
-  const std::vector<const char*> valid_cert_types(toVector(kValidCertTypes));
   const char* const kValidCertTlsValues[] = {::onc::openvpn::kNone,
                                              ::onc::openvpn::kServer};
   const std::vector<const char*> valid_cert_tls_values(
@@ -672,8 +683,6 @@ bool Validator::ValidateOpenVPN(base::DictionaryValue* result) {
 
   if (FieldExistsAndHasNoValidValue(
           *result, kAuthRetry, valid_auth_retry_values) ||
-      FieldExistsAndHasNoValidValue(
-          *result, ::onc::vpn::kClientCertType, valid_cert_types) ||
       FieldExistsAndHasNoValidValue(
           *result, kRemoteCertTLS, valid_cert_tls_values) ||
       FieldExistsAndIsEmpty(*result, kServerCARefs)) {
@@ -687,18 +696,11 @@ bool Validator::ValidateOpenVPN(base::DictionaryValue* result) {
     return false;
   }
 
-  bool all_required_exist = RequireField(*result, ::onc::vpn::kClientCertType);
-  std::string cert_type;
-  result->GetStringWithoutPathExpansion(::onc::vpn::kClientCertType,
-                                        &cert_type);
-
-  if (IsCertPatternInDevicePolicy(cert_type))
+  if (!ValidateClientCertFields(true /* allow ClientCertType None */, result))
     return false;
 
-  if (cert_type == kPattern)
-    all_required_exist &= RequireField(*result, ::onc::vpn::kClientCertPattern);
-  else if (cert_type == kRef)
-    all_required_exist &= RequireField(*result, ::onc::vpn::kClientCertRef);
+  bool all_required_exist =
+      RequireField(*result, ::onc::client_cert::kClientCertType);
 
   return !error_on_missing_field_ || all_required_exist;
 }
@@ -719,7 +721,7 @@ bool Validator::ValidateVerifyX509(base::DictionaryValue* result) {
 }
 
 bool Validator::ValidateCertificatePattern(base::DictionaryValue* result) {
-  using namespace ::onc::certificate;
+  using namespace ::onc::client_cert;
 
   bool all_required_exist = true;
   if (!result->HasKey(kSubject) && !result->HasKey(kIssuer) &&
@@ -768,7 +770,6 @@ bool Validator::ValidateProxyLocation(base::DictionaryValue* result) {
 
 bool Validator::ValidateEAP(base::DictionaryValue* result) {
   using namespace ::onc::eap;
-  using namespace ::onc::certificate;
 
   const char* const kValidInnerValues[] = {kAutomatic, kMD5, kMSCHAPv2, kPAP};
   const std::vector<const char*> valid_inner_values(
@@ -777,13 +778,9 @@ bool Validator::ValidateEAP(base::DictionaryValue* result) {
       kPEAP, kEAP_TLS, kEAP_TTLS, kLEAP, kEAP_SIM, kEAP_FAST, kEAP_AKA};
   const std::vector<const char*> valid_outer_values(
       toVector(kValidOuterValues));
-  const char* const kValidCertTypes[] = {kRef, kPattern};
-  const std::vector<const char*> valid_cert_types(toVector(kValidCertTypes));
 
   if (FieldExistsAndHasNoValidValue(*result, kInner, valid_inner_values) ||
       FieldExistsAndHasNoValidValue(*result, kOuter, valid_outer_values) ||
-      FieldExistsAndHasNoValidValue(
-          *result, kClientCertType, valid_cert_types) ||
       FieldExistsAndIsEmpty(*result, kServerCARefs)) {
     return false;
   }
@@ -795,17 +792,12 @@ bool Validator::ValidateEAP(base::DictionaryValue* result) {
     return false;
   }
 
-  bool all_required_exist = RequireField(*result, kOuter);
-  std::string cert_type;
-  result->GetStringWithoutPathExpansion(kClientCertType, &cert_type);
-
-  if (IsCertPatternInDevicePolicy(cert_type))
+  if (!ValidateClientCertFields(false,  // don't allow ClientCertType None
+                                result)) {
     return false;
+  }
 
-  if (cert_type == kPattern)
-    all_required_exist &= RequireField(*result, kClientCertPattern);
-  else if (cert_type == kRef)
-    all_required_exist &= RequireField(*result, kClientCertRef);
+  bool all_required_exist = RequireField(*result, kOuter);
 
   return !error_on_missing_field_ || all_required_exist;
 }

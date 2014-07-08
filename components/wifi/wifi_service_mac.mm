@@ -523,7 +523,7 @@ std::string WiFiServiceMac::SecurityFromCWSecurityMode(
     case kCWSecurityModeWEP:
       return onc::wifi::kWEP_PSK;
     case kCWSecurityModeOpen:
-      return onc::wifi::kNone;
+      return onc::wifi::kSecurityNone;
     // TODO(mef): Figure out correct mapping.
     case kCWSecurityModeWPS:
     case kCWSecurityModeDynamicWEP:

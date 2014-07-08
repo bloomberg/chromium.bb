@@ -339,7 +339,7 @@ const base::DictionaryValue* GetNetworkConfigForEthernetWithoutEAP(
     std::string auth;
     ethernet->GetStringWithoutPathExpansion(::onc::ethernet::kAuthentication,
                                             &auth);
-    if (auth == ::onc::ethernet::kNone)
+    if (auth == ::onc::ethernet::kAuthenticationNone)
       return network;
   }
   return NULL;
