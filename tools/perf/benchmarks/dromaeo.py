@@ -75,7 +75,7 @@ class _DromaeoMeasurement(page_measurement.PageMeasurement):
       if name == suffix:
         data_type = 'default'
 
-      results.Add(Escape(name), 'run/s', value, data_type=data_type)
+      results.Add(Escape(name), 'runs/s', value, data_type=data_type)
 
     aggregated = {}
     for data in score:
