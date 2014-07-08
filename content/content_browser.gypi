@@ -1848,5 +1848,10 @@
         'browser/media/media_web_contents_observer.h',
       ],
     }],
+    ['debug_devtools==1', {
+      'defines': [
+        'DEBUG_DEVTOOLS=1',
+       ],
+    }],
   ],
 }

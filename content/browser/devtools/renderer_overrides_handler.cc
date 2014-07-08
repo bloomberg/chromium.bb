@@ -498,11 +498,11 @@ scoped_refptr<DevToolsProtocol::Response>
 RendererOverridesHandler::PageCanScreencast(
     scoped_refptr<DevToolsProtocol::Command> command) {
   base::DictionaryValue* result = new base::DictionaryValue();
-#if defined(OS_ANDROID)
+#if defined(OS_ANDROID) || defined(DEBUG_DEVTOOLS)
   result->SetBoolean(devtools::kResult, true);
 #else
   result->SetBoolean(devtools::kResult, false);
-#endif  // defined(OS_ANDROID)
+#endif  // defined(OS_ANDROID) || defined(DEBUG_DEVTOOLS)
   return command->SuccessResponse(result);
 }
 
