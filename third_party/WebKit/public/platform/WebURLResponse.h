@@ -166,6 +166,10 @@ public:
     BLINK_PLATFORM_EXPORT bool wasFetchedViaProxy() const;
     BLINK_PLATFORM_EXPORT void setWasFetchedViaProxy(bool);
 
+    // Flag whether this request was loaded via a ServiceWorker.
+    BLINK_PLATFORM_EXPORT bool wasFetchedViaServiceWorker() const;
+    BLINK_PLATFORM_EXPORT void setWasFetchedViaServiceWorker(bool);
+
     // Flag whether this request is part of a multipart response.
     BLINK_PLATFORM_EXPORT bool isMultipartPayload() const;
     BLINK_PLATFORM_EXPORT void setIsMultipartPayload(bool);

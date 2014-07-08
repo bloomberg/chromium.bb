@@ -159,6 +159,9 @@ public:
     bool wasFetchedViaProxy() const { return m_wasFetchedViaProxy; }
     void setWasFetchedViaProxy(bool value) { m_wasFetchedViaProxy = value; }
 
+    bool wasFetchedViaServiceWorker() const { return m_wasFetchedViaServiceWorker; }
+    void setWasFetchedViaServiceWorker(bool value) { m_wasFetchedViaServiceWorker = value; }
+
     bool isMultipartPayload() const { return m_isMultipartPayload; }
     void setIsMultipartPayload(bool value) { m_isMultipartPayload = value; }
 
@@ -185,6 +188,7 @@ public:
         return 1280;
     }
 
+    // This method doesn't compare the all members.
     static bool compare(const ResourceResponse&, const ResourceResponse&);
 
 private:
@@ -251,6 +255,9 @@ private:
     // Was the resource fetched over an explicit proxy (HTTP, SOCKS, etc).
     bool m_wasFetchedViaProxy;
 
+    // Was the resource fetched over a ServiceWorker.
+    bool m_wasFetchedViaServiceWorker;
+
     // The time at which the response headers were received.  For cached
     // responses, this time could be "far" in the past.
     double m_responseTime;
@@ -298,6 +305,7 @@ public:
     bool m_wasNpnNegotiated;
     bool m_wasAlternateProtocolAvailable;
     bool m_wasFetchedViaProxy;
+    bool m_wasFetchedViaServiceWorker;
     double m_responseTime;
     String m_remoteIPAddress;
     unsigned short m_remotePort;

@@ -319,6 +319,8 @@ void DocumentThreadableLoader::handleResponse(unsigned long identifier, const Re
         return;
     }
 
+    // FIXME: When response.wasFetchedViaServiceWorker() is true, we need to check the URL of the response for CSP and CORS.
+
     if (!m_sameOriginRequest && m_options.crossOriginRequestPolicy == UseAccessControl) {
         String accessControlErrorDescription;
         if (!passesAccessControlCheck(response, effectiveAllowCredentials(), securityOrigin(), accessControlErrorDescription)) {
