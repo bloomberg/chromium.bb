@@ -91,13 +91,16 @@ def _ConfigureLocalProperties(device, is_perf):
   if not is_perf:
     local_props.append('%s=all' % android_commands.JAVA_ASSERT_PROPERTY)
     local_props.append('debug.checkjni=1')
-  device.WriteFile(
-      constants.DEVICE_LOCAL_PROPERTIES_PATH,
-      '\n'.join(local_props), as_root=True)
-  # Android will not respect the local props file if it is world writable.
-  device.RunShellCommand(
-      'chmod 644 %s' % constants.DEVICE_LOCAL_PROPERTIES_PATH,
-      as_root=True)
+  try:
+    device.WriteFile(
+        constants.DEVICE_LOCAL_PROPERTIES_PATH,
+        '\n'.join(local_props), as_root=True)
+    # Android will not respect the local props file if it is world writable.
+    device.RunShellCommand(
+        'chmod 644 %s' % constants.DEVICE_LOCAL_PROPERTIES_PATH,
+        as_root=True)
+  except device_errors.CommandFailedError as e:
+    logging.warning(str(e))
 
   # LOCAL_PROPERTIES_PATH = '/data/local.prop'
 

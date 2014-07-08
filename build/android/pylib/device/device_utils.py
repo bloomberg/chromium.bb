@@ -320,7 +320,7 @@ class DeviceUtils(object):
       signum: An integer containing the signal number to send to kill. Defaults
               to 9 (SIGKILL).
       as_root: A boolean indicating whether the kill should be executed with
-               root priveleges.
+               root privileges.
       blocking: A boolean indicating whether we should wait until all processes
                 with the given |process_name| are dead.
       timeout: Same as for |IsOnline|.
@@ -504,7 +504,7 @@ class DeviceUtils(object):
       device_path: A string containing the absolute path of the file to read
                    from the device.
       as_root: A boolean indicating whether the read should be executed with
-               root priveleges.
+               root privileges.
       timeout: Same as for |IsOnline|.
       retries: Same as for |IsOnline|.
     Returns:
@@ -517,7 +517,7 @@ class DeviceUtils(object):
     if as_root:
       if not self.old_interface.CanAccessProtectedFileContents():
         raise device_errors.CommandFailedError(
-          'Cannot read from %s with root priveleges.' % device_path)
+          'Cannot read from %s with root privileges.' % device_path)
       return self.old_interface.GetProtectedFileContents(device_path)
     else:
       return self.old_interface.GetFileContents(device_path)
@@ -532,7 +532,7 @@ class DeviceUtils(object):
                    on the device.
       contents: A string containing the data to write to the device.
       as_root: A boolean indicating whether the write should be executed with
-               root priveleges.
+               root privileges.
       timeout: Same as for |IsOnline|.
       retries: Same as for |IsOnline|.
     Raises:
@@ -541,7 +541,7 @@ class DeviceUtils(object):
     if as_root:
       if not self.old_interface.CanAccessProtectedFileContents():
         raise device_errors.CommandFailedError(
-            'Cannot write to %s with root priveleges.' % device_path)
+            'Cannot write to %s with root privileges.' % device_path)
       self.old_interface.SetProtectedFileContents(device_path, contents)
     else:
       self.old_interface.SetFileContents(device_path, contents)
