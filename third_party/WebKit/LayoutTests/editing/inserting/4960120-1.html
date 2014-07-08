@@ -3,7 +3,7 @@
 
 <script>
 var textarea = document.getElementById("textarea");
-textarea.focus();
+textarea.setSelectionRange(0, 0);
 
 document.execCommand("InsertLineBreak");
 </script>

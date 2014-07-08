@@ -284,21 +284,13 @@ void HTMLTextFormControlElement::setSelectionRange(int start, int end, TextField
     if (!renderer() || !renderer()->isTextControl())
         return;
 
-    int textLength = innerEditorValue().length();
-    end = std::max(std::min(end, textLength), 0);
-    start = std::max(std::min(start, end), 0);
-    cacheSelection(start, end, direction);
-    bool isCaretSelection = start == end;
-    bool shouldSetSelection = document().focusedElement() == this || (!isCaretSelection && start < textLength);
+    end = std::max(end, 0);
+    start = std::min(std::max(start, 0), end);
 
-    if (!hasVisibleTextArea(renderer(), innerEditorElement()))
+    if (!hasVisibleTextArea(renderer(), innerEditorElement())) {
+        cacheSelection(start, end, direction);
         return;
-
-    LocalFrame* frame = document().frame();
-
-    if (!frame || !shouldSetSelection)
-        return;
-
+    }
     VisiblePosition startPosition = visiblePositionForIndex(start);
     VisiblePosition endPosition;
     if (start == end)
@@ -319,7 +311,8 @@ void HTMLTextFormControlElement::setSelectionRange(int start, int end, TextField
         newSelection = VisibleSelection(startPosition, endPosition);
     newSelection.setIsDirectional(direction != SelectionHasNoDirection);
 
-    frame->selection().setSelection(newSelection);
+    if (LocalFrame* frame = document().frame())
+        frame->selection().setSelection(newSelection);
 }
 
 VisiblePosition HTMLTextFormControlElement::visiblePositionForIndex(int index) const
@@ -486,8 +479,8 @@ void HTMLTextFormControlElement::selectionChanged(bool userTriggered)
     if (!renderer() || !isTextFormControl())
         return;
 
-    if (document().focusedElement() == this)
-        cacheSelection(computeSelectionStart(), computeSelectionEnd(), computeSelectionDirection());
+    // selectionStart() or selectionEnd() will return cached selection when this node doesn't have focus
+    cacheSelection(computeSelectionStart(), computeSelectionEnd(), computeSelectionDirection());
 
     if (LocalFrame* frame = document().frame()) {
         if (frame->selection().isRange() && userTriggered)
