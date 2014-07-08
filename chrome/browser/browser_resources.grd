@@ -28,6 +28,10 @@
         <structure name="IDR_APP_LIST_START_PAGE_JS" file="resources\app_list\start_page.js" flattenhtml="true" type="chrome_html" />
         <structure name="IDR_APP_LIST_HOTWORD_NACL_NMF" file="resources\app_list\hotword_nacl.nmf" flattenhtml="true" type="chrome_html" />
       </if>
+      <if expr="is_android">
+        <structure name="IDR_CONTEXTUAL_SEARCH_PROMO_CSS" file="resources\contextual_search\promo.css" flattenhtml="true" type="chrome_html" />
+        <structure name="IDR_CONTEXTUAL_SEARCH_PROMO_HTML" file="resources\contextual_search\promo.html" flattenhtml="true" type="chrome_html" />
+      </if>
       <if expr="chromeos">
         <structure name="IDR_DEMO_USER_LOGIN_HTML" file="resources\chromeos\login\demo_user_login.html" flattenhtml="true" type="chrome_html" />
         <structure name="IDR_DEMO_USER_LOGIN_JS" file="resources\chromeos\login\demo_user_login.js" flattenhtml="true" type="chrome_html" />
@@ -110,6 +114,9 @@
       </if>
       <if expr="enable_app_list">
         <include name="IDR_CHROME_APP_MANIFEST" file="resources\chrome_app\manifest.json" type="BINDATA" />
+      </if>
+      <if expr="is_android">
+        <include name="IDR_CONTEXTUAL_SEARCH_PROMO_JS" file="resources\contextual_search\promo.js" type="BINDATA" />
       </if>
       <if expr="enable_printing">
         <include name="IDR_CLOUDPRINT_MANIFEST" file="resources\cloud_print_app\manifest.json" type="BINDATA" />
