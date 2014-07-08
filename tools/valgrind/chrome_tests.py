@@ -436,11 +436,6 @@ class ChromeTests:
                        "--ui-test-action-max-timeout=800000",
                        "--no-sandbox"]
 
-  def TestAutomatedUI(self):
-    return self.SimpleTest("chrome", "automated_ui_tests",
-                           valgrind_test_args=self.UI_VALGRIND_ARGS,
-                           cmd_args=self.UI_TEST_ARGS)
-
   def TestBrowser(self):
     return self.SimpleTest("chrome", "browser_tests",
                            valgrind_test_args=self.BROWSER_VALGRIND_ARGS,
@@ -455,14 +450,6 @@ class ChromeTests:
     return self.SimpleTest("chrome", "interactive_ui_tests",
                            valgrind_test_args=self.UI_VALGRIND_ARGS,
                            cmd_args=self.UI_TEST_ARGS)
-
-  def TestReliability(self):
-    script_dir = path_utils.ScriptDir()
-    url_list_file = os.path.join(script_dir, "reliability", "url_list.txt")
-    return self.SimpleTest("chrome", "reliability_tests",
-                           valgrind_test_args=self.UI_VALGRIND_ARGS,
-                           cmd_args=(self.UI_TEST_ARGS +
-                                     ["--list=%s" % url_list_file]))
 
   def TestSafeBrowsing(self):
     return self.SimpleTest("chrome", "safe_browsing_tests",
@@ -605,7 +592,6 @@ class ChromeTests:
     "app_list": TestAppList,     "app_list_unittests": TestAppList,
     "ash": TestAsh,              "ash_unittests": TestAsh,
     "aura": TestAura,            "aura_unittests": TestAura,
-    "automated_ui" : TestAutomatedUI,
     "base": TestBase,            "base_unittests": TestBase,
     "browser": TestBrowser,      "browser_tests": TestBrowser,
     "cacheinvalidation": TestCacheInvalidation,
@@ -652,7 +638,6 @@ class ChromeTests:
     "libphonenumber_unittests": TestPhoneNumber,
     "ppapi": TestPPAPI,          "ppapi_unittests": TestPPAPI,
     "printing": TestPrinting,    "printing_unittests": TestPrinting,
-    "reliability": TestReliability, "reliability_tests": TestReliability,
     "remoting": TestRemoting,    "remoting_unittests": TestRemoting,
     "safe_browsing": TestSafeBrowsing, "safe_browsing_tests": TestSafeBrowsing,
     "sandbox": TestLinuxSandbox, "sandbox_linux_unittests": TestLinuxSandbox,
