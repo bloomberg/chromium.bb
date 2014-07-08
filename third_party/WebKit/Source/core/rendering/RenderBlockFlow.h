@@ -291,7 +291,18 @@ private:
 
     virtual RootInlineBox* createRootInlineBox(); // Subclassed by SVG
 
-    void createOrDestroyMultiColumnFlowThreadIfNeeded();
+    bool isPagedOverflow(const RenderStyle*);
+
+    enum FlowThreadType {
+        NoFlowThread,
+        MultiColumnFlowThread,
+        PagedFlowThread
+    };
+
+    FlowThreadType flowThreadType(const RenderStyle*);
+
+    RenderMultiColumnFlowThread* createMultiColumnFlowThread(FlowThreadType);
+    void createOrDestroyMultiColumnFlowThreadIfNeeded(const RenderStyle* oldStyle);
 
     void updateLogicalWidthForAlignment(const ETextAlign&, const RootInlineBox*, BidiRun* trailingSpaceRun, float& logicalLeft, float& totalLogicalWidth, float& availableLogicalWidth, unsigned expansionOpportunityCount);
     void checkForPaginationLogicalHeightChange(LayoutUnit& pageLogicalHeight, bool& pageLogicalHeightChanged, bool& hasSpecifiedPageLogicalHeight);

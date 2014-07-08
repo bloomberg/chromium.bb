@@ -35,6 +35,7 @@ RenderMultiColumnFlowThread::RenderMultiColumnFlowThread()
     , m_columnHeightAvailable(0)
     , m_inBalancingPass(false)
     , m_needsColumnHeightsRecalculation(false)
+    , m_progressionIsInline(true)
 {
     setFlowThreadState(InsideInFlowThread);
 }
@@ -169,7 +170,7 @@ void RenderMultiColumnFlowThread::layoutColumns(bool relayoutChildren, SubtreeLa
     }
 
     invalidateRegions();
-    m_needsColumnHeightsRecalculation = requiresBalancing();
+    m_needsColumnHeightsRecalculation = heightIsAuto();
     layout();
 }
 

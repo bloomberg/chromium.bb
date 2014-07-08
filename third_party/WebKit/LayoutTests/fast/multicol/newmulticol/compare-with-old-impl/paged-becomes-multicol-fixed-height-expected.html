@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <script>
+            function test() {
+                var elm = document.getElementById('elm');
+                elm.offsetTop; // trigger layout
+                elm.style.WebkitColumns = '4';
+                elm.style.columns = '4';
+                elm.style.overflow = 'visible';
+            }
+        </script>
+    </head>
+    <body onload="test()">
+        <p>You should see the word 'PASS' below.</p>
+        <div style="float:left;">
+            <div id="elm" style="overflow:-webkit-paged-x; -webkit-column-gap:0; column-gap:0; orphans:1; widows:1; height:7em; line-height:4em;">
+                P<br>
+                A<br>
+                S<br>
+                S<br>
+            </div>
+        </div>
+    </body>
+</html>

@@ -59,6 +59,7 @@ public:
 
     virtual bool isRenderFlowThread() const OVERRIDE FINAL { return true; }
     virtual bool isRenderMultiColumnFlowThread() const { return false; }
+    virtual bool isRenderPagedFlowThread() const { return false; }
 
     virtual void layout() OVERRIDE;
 

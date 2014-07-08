@@ -38,6 +38,7 @@
 #include "core/rendering/RenderFlowThread.h"
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderMultiColumnFlowThread.h"
+#include "core/rendering/RenderPagedFlowThread.h"
 #include "core/rendering/RenderText.h"
 #include "core/rendering/RenderView.h"
 #include "core/rendering/line/LineWidth.h"
@@ -1827,7 +1828,7 @@ void RenderBlockFlow::styleDidChange(StyleDifference diff, const RenderStyle* ol
     }
 
     if (diff.needsFullLayout() || !oldStyle)
-        createOrDestroyMultiColumnFlowThreadIfNeeded();
+        createOrDestroyMultiColumnFlowThreadIfNeeded(oldStyle);
 }
 
 void RenderBlockFlow::updateStaticInlinePositionForChild(RenderBox* child, LayoutUnit logicalTop)
@@ -2731,25 +2732,65 @@ RootInlineBox* RenderBlockFlow::createRootInlineBox()
     return new RootInlineBox(*this);
 }
 
-void RenderBlockFlow::createOrDestroyMultiColumnFlowThreadIfNeeded()
+bool RenderBlockFlow::isPagedOverflow(const RenderStyle* style)
+{
+    return style->isOverflowPaged() && node() != document().viewportDefiningElement();
+}
+
+RenderBlockFlow::FlowThreadType RenderBlockFlow::flowThreadType(const RenderStyle* style)
+{
+    if (isPagedOverflow(style))
+        return PagedFlowThread;
+    if (style->specifiesColumns())
+        return MultiColumnFlowThread;
+    return NoFlowThread;
+}
+
+RenderMultiColumnFlowThread* RenderBlockFlow::createMultiColumnFlowThread(FlowThreadType type)
+{
+    switch (type) {
+    case MultiColumnFlowThread:
+        return RenderMultiColumnFlowThread::createAnonymous(document(), style());
+    case PagedFlowThread:
+        // Paged overflow is currently done using the multicol implementation.
+        return RenderPagedFlowThread::createAnonymous(document(), style());
+    default:
+        ASSERT_NOT_REACHED();
+        return nullptr;
+    }
+}
+
+void RenderBlockFlow::createOrDestroyMultiColumnFlowThreadIfNeeded(const RenderStyle* oldStyle)
 {
     if (!document().regionBasedColumnsEnabled())
         return;
 
-    bool needsFlowThread = style()->specifiesColumns();
-    if (needsFlowThread != static_cast<bool>(multiColumnFlowThread())) {
-        if (needsFlowThread) {
-            RenderMultiColumnFlowThread* flowThread = RenderMultiColumnFlowThread::createAnonymous(document(), style());
-            addChild(flowThread);
-            flowThread->populate();
-            RenderBlockFlowRareData& rareData = ensureRareData();
-            ASSERT(!rareData.m_multiColumnFlowThread);
-            rareData.m_multiColumnFlowThread = flowThread;
-        } else {
+    // Paged overflow trumps multicol in this implementation. Ideally, it should be possible to have
+    // both paged overflow and multicol on the same element, but then we need two flow
+    // threads. Anyway, this is nothing to worry about until we can actually nest multicol properly
+    // inside other fragmentation contexts.
+    FlowThreadType type = flowThreadType(style());
+
+    if (multiColumnFlowThread()) {
+        ASSERT(oldStyle);
+        if (type != flowThreadType(oldStyle)) {
+            // If we're no longer to be multicol/paged, destroy the flow thread. Also destroy it
+            // when switching between multicol and paged, since that affects the column set
+            // structure (multicol containers may have spanners, paged containers may not).
             multiColumnFlowThread()->evacuateAndDestroy();
             ASSERT(!multiColumnFlowThread());
         }
     }
+
+    if (type == NoFlowThread || multiColumnFlowThread())
+        return;
+
+    RenderMultiColumnFlowThread* flowThread = createMultiColumnFlowThread(type);
+    addChild(flowThread);
+    flowThread->populate();
+    RenderBlockFlowRareData& rareData = ensureRareData();
+    ASSERT(!rareData.m_multiColumnFlowThread);
+    rareData.m_multiColumnFlowThread = flowThread;
 }
 
 RenderBlockFlow::RenderBlockFlowRareData& RenderBlockFlow::ensureRareData()

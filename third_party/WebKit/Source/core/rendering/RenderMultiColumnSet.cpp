@@ -191,7 +191,7 @@ LayoutUnit RenderMultiColumnSet::calculateColumnHeight(BalancedHeightCalculation
 
 void RenderMultiColumnSet::addContentRun(LayoutUnit endOffsetFromFirstPage)
 {
-    if (!multiColumnFlowThread()->requiresBalancing())
+    if (!multiColumnFlowThread()->heightIsAuto())
         return;
     if (!m_contentRuns.isEmpty() && endOffsetFromFirstPage <= m_contentRuns.last().breakOffset())
         return;
@@ -203,7 +203,7 @@ void RenderMultiColumnSet::addContentRun(LayoutUnit endOffsetFromFirstPage)
 
 bool RenderMultiColumnSet::recalculateColumnHeight(BalancedHeightCalculation calculationMode)
 {
-    ASSERT(multiColumnFlowThread()->requiresBalancing());
+    ASSERT(multiColumnFlowThread()->heightIsAuto());
 
     LayoutUnit oldColumnHeight = m_columnHeight;
     if (calculationMode == GuessFromFlowThreadPortion) {
@@ -252,7 +252,7 @@ void RenderMultiColumnSet::resetColumnHeight()
 
     LayoutUnit oldColumnHeight = pageLogicalHeight();
 
-    if (multiColumnFlowThread()->requiresBalancing())
+    if (multiColumnFlowThread()->heightIsAuto())
         m_columnHeight = 0;
     else
         setAndConstrainColumnHeight(heightAdjustedForSetOffset(multiColumnFlowThread()->columnHeightAvailable()));
@@ -335,10 +335,15 @@ LayoutRect RenderMultiColumnSet::columnRectAt(unsigned index) const
     LayoutUnit colLogicalTop = borderBefore() + paddingBefore();
     LayoutUnit colLogicalLeft = borderAndPaddingLogicalLeft();
     LayoutUnit colGap = columnGap();
-    if (style()->isLeftToRightDirection())
-        colLogicalLeft += index * (colLogicalWidth + colGap);
-    else
-        colLogicalLeft += contentLogicalWidth() - colLogicalWidth - index * (colLogicalWidth + colGap);
+
+    if (multiColumnFlowThread()->progressionIsInline()) {
+        if (style()->isLeftToRightDirection())
+            colLogicalLeft += index * (colLogicalWidth + colGap);
+        else
+            colLogicalLeft += contentLogicalWidth() - colLogicalWidth - index * (colLogicalWidth + colGap);
+    } else {
+        colLogicalTop += index * (colLogicalHeight + colGap);
+    }
 
     if (isHorizontalWritingMode())
         return LayoutRect(colLogicalLeft, colLogicalTop, colLogicalWidth, colLogicalHeight);
@@ -433,6 +438,9 @@ void RenderMultiColumnSet::paintObject(PaintInfo& paintInfo, const LayoutPoint& 
 void RenderMultiColumnSet::paintColumnRules(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     if (paintInfo.context->paintingDisabled())
+        return;
+
+    if (flowThread()->isRenderPagedFlowThread())
         return;
 
     RenderStyle* blockStyle = multiColumnBlockFlow()->style();
@@ -564,6 +572,12 @@ void RenderMultiColumnSet::collectLayerFragments(LayerFragments& fragments, cons
     LayoutUnit colGap = columnGap();
     unsigned colCount = actualColumnCount();
 
+    RenderMultiColumnFlowThread* flowThread = multiColumnFlowThread();
+    bool progressionIsInline = flowThread->progressionIsInline();
+    bool leftToRight = style()->isLeftToRightDirection();
+
+    LayoutUnit initialBlockOffset = logicalTop() - flowThread->logicalTop();
+
     for (unsigned i = startColumn; i <= endColumn; i++) {
         // Get the portion of the flow thread that corresponds to this column.
         LayoutRect flowThreadPortion = flowThreadPortionRectAt(i);
@@ -580,11 +594,20 @@ void RenderMultiColumnSet::collectLayerFragments(LayerFragments& fragments, cons
         // We also need to intersect the dirty rect. We have to apply a translation and shift based off
         // our column index.
         LayoutPoint translationOffset;
-        LayoutUnit inlineOffset = i * (colLogicalWidth + colGap);
-        if (!style()->isLeftToRightDirection())
+        LayoutUnit inlineOffset = progressionIsInline ? i * (colLogicalWidth + colGap) : LayoutUnit();
+        if (!leftToRight)
             inlineOffset = -inlineOffset;
         translationOffset.setX(inlineOffset);
-        LayoutUnit blockOffset = isHorizontalWritingMode() ? -flowThreadPortion.y() : -flowThreadPortion.x();
+        LayoutUnit blockOffset;
+        if (progressionIsInline) {
+            blockOffset = initialBlockOffset + (isHorizontalWritingMode() ? -flowThreadPortion.y() : -flowThreadPortion.x());
+        } else {
+            // Column gap can apply in the block direction for page fragmentainers.
+            // There is currently no spec which calls for column-gap to apply
+            // for page fragmentainers at all, but it's applied here for compatibility
+            // with the old multicolumn implementation.
+            blockOffset = i * colGap;
+        }
         if (isFlippedBlocksWritingMode(style()->writingMode()))
             blockOffset = -blockOffset;
         translationOffset.setY(blockOffset);
@@ -610,7 +633,7 @@ void RenderMultiColumnSet::collectLayerFragments(LayerFragments& fragments, cons
 
         LayoutRect flippedFlowThreadOverflowPortion(flowThreadOverflowPortion);
         // Flip it into more a physical (RenderLayer-style) rectangle.
-        flowThread()->flipForWritingMode(flippedFlowThreadOverflowPortion);
+        flowThread->flipForWritingMode(flippedFlowThreadOverflowPortion);
         fragment.paginationClip = flippedFlowThreadOverflowPortion;
         fragments.append(fragment);
     }

@@ -1596,6 +1596,8 @@
             'rendering/RenderMultiColumnSet.h',
             'rendering/RenderObject.cpp',
             'rendering/RenderObjectChildList.cpp',
+            'rendering/RenderPagedFlowThread.cpp',
+            'rendering/RenderPagedFlowThread.h',
             'rendering/RenderPart.cpp',
             'rendering/RenderProgress.cpp',
             'rendering/RenderProgress.h',

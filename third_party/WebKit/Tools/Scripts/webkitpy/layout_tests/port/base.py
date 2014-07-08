@@ -1611,6 +1611,9 @@ class Port(object):
             VirtualTestSuite('regionbasedmulticol',
                              'fast/multicol',
                              ['--enable-region-based-columns']),
+            VirtualTestSuite('regionbasedmulticol',
+                             'fast/pagination',
+                             ['--enable-region-based-columns']),
         ]
 
     @memoized
