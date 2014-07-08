@@ -139,7 +139,6 @@ void EllipsisBox::paintSelection(GraphicsContext* context, const FloatPoint& box
     const int deltaY = roundToInt(renderer().style()->isFlippedLinesWritingMode() ? selectionBottom - logicalBottom() : logicalTop() - top);
     const FloatPoint localOrigin(boxOrigin.x(), boxOrigin.y() - deltaY);
     FloatRect clipRect(localOrigin, FloatSize(m_logicalWidth, h.toFloat()));
-    alignSelectionRectToDevicePixels(clipRect);
     context->clip(clipRect);
     context->drawHighlightForText(font, RenderBlockFlow::constructTextRun(&renderer(), font, m_str, style, TextRun::AllowTrailingExpansion), localOrigin, h, c);
 }

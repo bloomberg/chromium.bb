@@ -204,8 +204,6 @@ inline RenderText& InlineTextBox::textRenderer() const
     return toRenderText(renderer());
 }
 
-void alignSelectionRectToDevicePixels(FloatRect&);
-
 inline AffineTransform InlineTextBox::rotation(const FloatRect& boxRect, RotationDirection rotationDirection)
 {
     return rotationDirection == Clockwise ? AffineTransform(0, 1, -1, 0, boxRect.x() + boxRect.maxY(), boxRect.maxY() - boxRect.x())
