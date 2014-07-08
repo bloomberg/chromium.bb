@@ -1,4 +1,4 @@
-noscript-image2.png has MIME type image/png
+CONSOLE MESSAGE: line 9: PASS
 This test requires DumpRenderTree to see the log of what resources are loaded. It checks that images inside a noscript block are not loaded.
 
 <noscript>
