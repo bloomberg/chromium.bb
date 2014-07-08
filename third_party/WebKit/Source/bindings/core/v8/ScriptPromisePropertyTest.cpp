@@ -11,6 +11,7 @@
 #include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/V8Binding.h"
+#include "bindings/core/v8/V8GCController.h"
 #include "core/dom/Document.h"
 #include "core/events/Event.h"
 #include "core/testing/DummyPageHolder.h"
@@ -84,7 +85,7 @@ protected:
         gc();
     }
 
-    void gc() { v8::Isolate::GetCurrent()->RequestGarbageCollectionForTesting(v8::Isolate::kFullGarbageCollection); }
+    void gc() { V8GCController::collectGarbage(v8::Isolate::GetCurrent()); }
 
     PassOwnPtr<ScriptFunction> notReached() { return adoptPtr(new NotReached()); }
     PassOwnPtr<ScriptFunction> stub(ScriptValue& value, size_t& callCount) { return adoptPtr(new StubFunction(value, callCount)); }
