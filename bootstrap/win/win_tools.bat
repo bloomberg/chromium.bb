@@ -68,8 +68,8 @@ set GIT_ERASE_TOP=4
 set GIT_VERSION=1.9.0.chromium.5
 
 if not "%DEPOT_TOOLS_GIT_BLEEDING%" == "1" goto :GIT_190_CHECK_REST
-set GIT_ERASE_TOP=4
-set GIT_VERSION=1.9.0.chromium.5
+set GIT_ERASE_TOP=5
+set GIT_VERSION=1.9.0.chromium.6
 
 :GIT_190_CHECK_REST
 if "%DEPOT_TOOLS_GIT_190%" == "0" goto :GIT_1852_CHECK
