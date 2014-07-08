@@ -877,16 +877,20 @@
       "312745D9BF916161191143F6490085EEA0434997"   // Google Talk debug
     ]
   },
-  "screenlockPrivate": {
+  "screenlockPrivate": [{
+    "platforms": ["chromeos"],
+    "channel": "stable",
+    "extension_types": ["platform_app"],
+    "location": "component"
+  }, {
+    "platforms": ["mac", "win", "linux"],
     "channel": "stable",
     "extension_types": ["platform_app"],
     "whitelist": [
       "lkegkdgachcnekllcdfkijonogckdnjo",  // API test
-      "190C131D270994E7330E9A3CD48224061CB10E2D",  // dogfood 1
-      "7FDDD1C0CB0052596657FDEC92841D509DC8D404",  // dogfood 2
-      "E13990DC5440B6E270503DA27A35762F423725C3"   // dogfood 3
+      "E13990DC5440B6E270503DA27A35762F423725C3"   // dogfood
     ]
-  },
+  }],
   "screensaver": {
     "channel": "stable",
     "extension_types": ["legacy_packaged_app", "hosted_app", "platform_app"]
