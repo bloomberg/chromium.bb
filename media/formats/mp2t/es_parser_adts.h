@@ -13,12 +13,12 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "media/base/audio_decoder_config.h"
-#include "media/base/byte_queue.h"
 #include "media/formats/mp2t/es_parser.h"
 
 namespace media {
 class AudioTimestampHelper;
 class BitReader;
+class OffsetByteQueue;
 class StreamParserBuffer;
 }
 
@@ -43,16 +43,25 @@ class EsParserAdts : public EsParser {
 
  private:
   // Used to link a PTS with a byte position in the ES stream.
-  typedef std::pair<int, base::TimeDelta> EsPts;
+  typedef std::pair<int64, base::TimeDelta> EsPts;
   typedef std::list<EsPts> EsPtsList;
+
+  struct AdtsFrame;
+
+  // Synchronize the stream on an ADTS syncword (consuming bytes from
+  // |es_queue_| if needed).
+  // Returns true when a full ADTS frame has been found: in that case
+  // |adts_frame| structure is filled up accordingly.
+  // Returns false otherwise (no ADTS syncword found or partial ADTS frame).
+  bool LookForAdtsFrame(AdtsFrame* adts_frame);
+
+  // Skip an ADTS frame in the ES queue.
+  void SkipAdtsFrame(const AdtsFrame& adts_frame);
 
   // Signal any audio configuration change (if any).
   // Return false if the current audio config is not
   // a supported ADTS audio config.
   bool UpdateAudioConfiguration(const uint8* adts_header);
-
-  // Discard some bytes from the ES stream.
-  void DiscardEs(int nbytes);
 
   // Callbacks:
   // - to signal a new audio configuration,
@@ -65,7 +74,7 @@ class EsParserAdts : public EsParser {
   bool sbr_in_mimetype_;
 
   // Bytes of the ES stream that have not been emitted yet.
-  ByteQueue es_byte_queue_;
+  scoped_ptr<media::OffsetByteQueue> es_queue_;
 
   // List of PTS associated with a position in the ES stream.
   EsPtsList pts_list_;

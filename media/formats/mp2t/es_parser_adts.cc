@@ -14,6 +14,7 @@
 #include "media/base/buffers.h"
 #include "media/base/channel_layout.h"
 #include "media/base/stream_parser_buffer.h"
+#include "media/formats/common/offset_byte_queue.h"
 #include "media/formats/mp2t/mp2t_common.h"
 #include "media/formats/mpeg/adts_constants.h"
 
@@ -37,40 +38,36 @@ static size_t ExtractAdtsChannelConfig(const uint8* adts_header) {
 // Return true if buf corresponds to an ADTS syncword.
 // |buf| size must be at least 2.
 static bool isAdtsSyncWord(const uint8* buf) {
+  // The first 12 bits must be 1.
+  // The layer field (2 bits) must be set to 0.
   return (buf[0] == 0xff) && ((buf[1] & 0xf6) == 0xf0);
 }
 
-// Look for an ADTS syncword.
-// |new_pos| returns
-// - either the byte position of the ADTS frame (if found)
-// - or the byte position of 1st byte that was not processed (if not found).
-// In every case, the returned value in |new_pos| is such that new_pos >= pos
-// |frame_sz| returns the size of the ADTS frame (if found).
-// Return whether a syncword was found.
-static bool LookForSyncWord(const uint8* raw_es, int raw_es_size,
-                            int pos,
-                            int* new_pos, int* frame_sz) {
-  DCHECK_GE(pos, 0);
-  DCHECK_LE(pos, raw_es_size);
+namespace mp2t {
 
-  int max_offset = raw_es_size - kADTSHeaderMinSize;
-  if (pos >= max_offset) {
-    // Do not change the position if:
-    // - max_offset < 0: not enough bytes to get a full header
-    //   Since pos >= 0, this is a subcase of the next condition.
-    // - pos >= max_offset: might be the case after reading one full frame,
-    //   |pos| is then incremented by the frame size and might then point
-    //   to the end of the buffer.
-    *new_pos = pos;
+struct EsParserAdts::AdtsFrame {
+  // Pointer to the ES data.
+  const uint8* data;
+
+  // Frame size;
+  int size;
+
+  // Frame offset in the ES queue.
+  int64 queue_offset;
+};
+
+bool EsParserAdts::LookForAdtsFrame(AdtsFrame* adts_frame) {
+  int es_size;
+  const uint8* es;
+  es_queue_->Peek(&es, &es_size);
+
+  int max_offset = es_size - kADTSHeaderMinSize;
+  if (max_offset <= 0)
     return false;
-  }
 
-  for (int offset = pos; offset < max_offset; offset++) {
-    const uint8* cur_buf = &raw_es[offset];
-
+  for (int offset = 0; offset < max_offset; offset++) {
+    const uint8* cur_buf = &es[offset];
     if (!isAdtsSyncWord(cur_buf))
-      // The first 12 bits must be 1.
-      // The layer field (2 bits) must be set to 0.
       continue;
 
     int frame_size = ExtractAdtsFrameSize(cur_buf);
@@ -79,24 +76,41 @@ static bool LookForSyncWord(const uint8* raw_es, int raw_es_size,
       continue;
     }
 
+    int remaining_size = es_size - offset;
+    if (remaining_size < frame_size) {
+      // Not a full frame: will resume when we have more data.
+      es_queue_->Pop(offset);
+      return false;
+    }
+
     // Check whether there is another frame
     // |size| apart from the current one.
-    int remaining_size = raw_es_size - offset;
     if (remaining_size >= frame_size + 2 &&
         !isAdtsSyncWord(&cur_buf[frame_size])) {
       continue;
     }
 
-    *new_pos = offset;
-    *frame_sz = frame_size;
+    es_queue_->Pop(offset);
+    es_queue_->Peek(&adts_frame->data, &es_size);
+    adts_frame->queue_offset = es_queue_->head();
+    adts_frame->size = frame_size;
+    DVLOG(LOG_LEVEL_ES)
+        << "ADTS syncword @ pos=" << adts_frame->queue_offset
+        << " frame_size=" << adts_frame->size;
+    DVLOG(LOG_LEVEL_ES)
+        << "ADTS header: "
+        << base::HexEncode(adts_frame->data, kADTSHeaderMinSize);
     return true;
   }
 
-  *new_pos = max_offset;
+  es_queue_->Pop(max_offset);
   return false;
 }
 
-namespace mp2t {
+void EsParserAdts::SkipAdtsFrame(const AdtsFrame& adts_frame) {
+  DCHECK_EQ(adts_frame.queue_offset, es_queue_->head());
+  es_queue_->Pop(adts_frame.size);
+}
 
 EsParserAdts::EsParserAdts(
     const NewAudioConfigCB& new_audio_config_cb,
@@ -104,7 +118,8 @@ EsParserAdts::EsParserAdts(
     bool sbr_in_mimetype)
   : new_audio_config_cb_(new_audio_config_cb),
     emit_buffer_cb_(emit_buffer_cb),
-    sbr_in_mimetype_(sbr_in_mimetype) {
+    sbr_in_mimetype_(sbr_in_mimetype),
+    es_queue_(new media::OffsetByteQueue()) {
 }
 
 EsParserAdts::~EsParserAdts() {
@@ -113,45 +128,25 @@ EsParserAdts::~EsParserAdts() {
 bool EsParserAdts::Parse(const uint8* buf, int size,
                          base::TimeDelta pts,
                          base::TimeDelta dts) {
-  int raw_es_size;
-  const uint8* raw_es;
-
   // The incoming PTS applies to the access unit that comes just after
   // the beginning of |buf|.
-  if (pts != kNoTimestamp()) {
-    es_byte_queue_.Peek(&raw_es, &raw_es_size);
-    pts_list_.push_back(EsPts(raw_es_size, pts));
-  }
+  if (pts != kNoTimestamp())
+    pts_list_.push_back(EsPts(es_queue_->tail(), pts));
 
   // Copy the input data to the ES buffer.
-  es_byte_queue_.Push(buf, size);
-  es_byte_queue_.Peek(&raw_es, &raw_es_size);
+  es_queue_->Push(buf, size);
 
-  // Look for every ADTS frame in the ES buffer starting at offset = 0
-  int es_position = 0;
-  int frame_size;
-  while (LookForSyncWord(raw_es, raw_es_size, es_position,
-                         &es_position, &frame_size)) {
-    DVLOG(LOG_LEVEL_ES)
-        << "ADTS syncword @ pos=" << es_position
-        << " frame_size=" << frame_size;
-    DVLOG(LOG_LEVEL_ES)
-        << "ADTS header: "
-        << base::HexEncode(&raw_es[es_position], kADTSHeaderMinSize);
-
-    // Do not process the frame if this one is a partial frame.
-    int remaining_size = raw_es_size - es_position;
-    if (frame_size > remaining_size)
-      break;
-
+  // Look for every ADTS frame in the ES buffer.
+  AdtsFrame adts_frame;
+  while (LookForAdtsFrame(&adts_frame)) {
     // Update the audio configuration if needed.
-    DCHECK_GE(frame_size, kADTSHeaderMinSize);
-    if (!UpdateAudioConfiguration(&raw_es[es_position]))
+    DCHECK_GE(adts_frame.size, kADTSHeaderMinSize);
+    if (!UpdateAudioConfiguration(adts_frame.data))
       return false;
 
     // Get the PTS & the duration of this access unit.
     while (!pts_list_.empty() &&
-           pts_list_.front().first <= es_position) {
+           pts_list_.front().first <= adts_frame.queue_offset) {
       audio_timestamp_helper_->SetBaseTimestamp(pts_list_.front().second);
       pts_list_.pop_front();
     }
@@ -167,8 +162,8 @@ bool EsParserAdts::Parse(const uint8* buf, int size,
     // type and allow multiple audio tracks. See https://crbug.com/341581.
     scoped_refptr<StreamParserBuffer> stream_parser_buffer =
         StreamParserBuffer::CopyFrom(
-            &raw_es[es_position],
-            frame_size,
+            adts_frame.data,
+            adts_frame.size,
             is_key_frame,
             DemuxerStream::AUDIO, 0);
     stream_parser_buffer->SetDecodeTimestamp(current_pts);
@@ -180,11 +175,8 @@ bool EsParserAdts::Parse(const uint8* buf, int size,
     audio_timestamp_helper_->AddFrames(kSamplesPerAACFrame);
 
     // Skip the current frame.
-    es_position += frame_size;
+    SkipAdtsFrame(adts_frame);
   }
-
-  // Discard all the bytes that have been processed.
-  DiscardEs(es_position);
 
   return true;
 }
@@ -193,7 +185,7 @@ void EsParserAdts::Flush() {
 }
 
 void EsParserAdts::Reset() {
-  es_byte_queue_.Reset();
+  es_queue_.reset(new media::OffsetByteQueue());
   pts_list_.clear();
   last_audio_decoder_config_ = AudioDecoderConfig();
 }
@@ -270,19 +262,6 @@ bool EsParserAdts::UpdateAudioConfiguration(const uint8* adts_header) {
   }
 
   return true;
-}
-
-void EsParserAdts::DiscardEs(int nbytes) {
-  DCHECK_GE(nbytes, 0);
-  if (nbytes <= 0)
-    return;
-
-  // Adjust the ES position of each PTS.
-  for (EsPtsList::iterator it = pts_list_.begin(); it != pts_list_.end(); ++it)
-    it->first -= nbytes;
-
-  // Discard |nbytes| of ES.
-  es_byte_queue_.Pop(nbytes);
 }
 
 }  // namespace mp2t
