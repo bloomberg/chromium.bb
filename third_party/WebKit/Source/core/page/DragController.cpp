@@ -322,8 +322,8 @@ static Element* elementUnderMouse(Document* documentUnderMouse, const IntPoint& 
     Node* n = result.innerNode();
     while (n && !n->isElementNode())
         n = n->parentOrShadowHostNode();
-    if (n)
-        n = n->deprecatedShadowAncestorNode();
+    if (n && n->isInShadowTree())
+        n = n->shadowHost();
 
     return toElement(n);
 }
