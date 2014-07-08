@@ -84,7 +84,7 @@ void V8SQLResultSetRowList::itemMethodCustom(const v8::FunctionCallbackInfo<v8::
             ASSERT_NOT_REACHED();
         }
 
-        item->Set(v8String(info.GetIsolate(), rowList->columnNames()[i]), value, static_cast<v8::PropertyAttribute>(v8::DontDelete | v8::ReadOnly));
+        item->ForceSet(v8String(info.GetIsolate(), rowList->columnNames()[i]), value, static_cast<v8::PropertyAttribute>(v8::DontDelete | v8::ReadOnly));
     }
 
     v8SetReturnValue(info, item);
