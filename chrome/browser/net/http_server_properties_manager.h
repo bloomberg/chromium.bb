@@ -100,14 +100,15 @@ class HttpServerPropertiesManager
 
   // Returns the Alternate-Protocol and port for |server|.
   // HasAlternateProtocol(server) must be true.
-  virtual net::PortAlternateProtocolPair GetAlternateProtocol(
+  virtual net::AlternateProtocolInfo GetAlternateProtocol(
       const net::HostPortPair& server) OVERRIDE;
 
   // Sets the Alternate-Protocol for |server|.
   virtual void SetAlternateProtocol(
       const net::HostPortPair& server,
       uint16 alternate_port,
-      net::AlternateProtocol alternate_protocol) OVERRIDE;
+      net::AlternateProtocol alternate_protocol,
+      double alternate_probability) OVERRIDE;
 
   // Sets the Alternate-Protocol for |server| to be BROKEN.
   virtual void SetBrokenAlternateProtocol(
@@ -130,6 +131,9 @@ class HttpServerPropertiesManager
 
   virtual void SetAlternateProtocolExperiment(
       net::AlternateProtocolExperiment experiment) OVERRIDE;
+
+  virtual void SetAlternateProtocolProbabilityThreshold(
+      double threshold) OVERRIDE;
 
   virtual net::AlternateProtocolExperiment GetAlternateProtocolExperiment()
       const OVERRIDE;

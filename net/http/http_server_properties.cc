@@ -111,9 +111,10 @@ AlternateProtocol AlternateProtocolFromNextProto(NextProto next_proto) {
   return UNINITIALIZED_ALTERNATE_PROTOCOL;
 }
 
-std::string PortAlternateProtocolPair::ToString() const {
-  return base::StringPrintf("%d:%s", port,
-                            AlternateProtocolToString(protocol));
+std::string AlternateProtocolInfo::ToString() const {
+  return base::StringPrintf("%d:%s p=%f", port,
+                            AlternateProtocolToString(protocol),
+                            probability);
 }
 
 }  // namespace net

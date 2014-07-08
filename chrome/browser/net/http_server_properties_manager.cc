@@ -65,7 +65,7 @@ HttpServerPropertiesManager::HttpServerPropertiesManager(
     PrefService* pref_service)
     : pref_service_(pref_service),
       setting_prefs_(false) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(pref_service);
   ui_weak_ptr_factory_.reset(
       new base::WeakPtrFactory<HttpServerPropertiesManager>(this));
@@ -80,12 +80,12 @@ HttpServerPropertiesManager::HttpServerPropertiesManager(
 }
 
 HttpServerPropertiesManager::~HttpServerPropertiesManager() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   io_weak_ptr_factory_.reset();
 }
 
 void HttpServerPropertiesManager::InitializeOnIOThread() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   io_weak_ptr_factory_.reset(
       new base::WeakPtrFactory<HttpServerPropertiesManager>(this));
   http_server_properties_impl_.reset(new net::HttpServerPropertiesImpl());
@@ -101,7 +101,7 @@ void HttpServerPropertiesManager::InitializeOnIOThread() {
 }
 
 void HttpServerPropertiesManager::ShutdownOnUIThread() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   // Cancel any pending updates, and stop listening for pref change updates.
   ui_cache_update_timer_->Stop();
   ui_weak_ptr_factory_.reset();
@@ -130,7 +130,7 @@ void HttpServerPropertiesManager::SetVersion(
 // This is required for conformance with the HttpServerProperties interface.
 base::WeakPtr<net::HttpServerProperties>
     HttpServerPropertiesManager::GetWeakPtr() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   return io_weak_ptr_factory_->GetWeakPtr();
 }
 
@@ -139,7 +139,7 @@ void HttpServerPropertiesManager::Clear() {
 }
 
 void HttpServerPropertiesManager::Clear(const base::Closure& completion) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   http_server_properties_impl_->Clear();
   UpdatePrefsFromCacheOnIO(completion);
@@ -147,14 +147,14 @@ void HttpServerPropertiesManager::Clear(const base::Closure& completion) {
 
 bool HttpServerPropertiesManager::SupportsSpdy(
     const net::HostPortPair& server) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   return http_server_properties_impl_->SupportsSpdy(server);
 }
 
 void HttpServerPropertiesManager::SetSupportsSpdy(
     const net::HostPortPair& server,
     bool support_spdy) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   http_server_properties_impl_->SetSupportsSpdy(server, support_spdy);
   ScheduleUpdatePrefsOnIO();
@@ -162,75 +162,85 @@ void HttpServerPropertiesManager::SetSupportsSpdy(
 
 bool HttpServerPropertiesManager::HasAlternateProtocol(
     const net::HostPortPair& server) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   return http_server_properties_impl_->HasAlternateProtocol(server);
 }
 
-net::PortAlternateProtocolPair
+net::AlternateProtocolInfo
 HttpServerPropertiesManager::GetAlternateProtocol(
     const net::HostPortPair& server) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   return http_server_properties_impl_->GetAlternateProtocol(server);
 }
 
 void HttpServerPropertiesManager::SetAlternateProtocol(
     const net::HostPortPair& server,
     uint16 alternate_port,
-    net::AlternateProtocol alternate_protocol) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+    net::AlternateProtocol alternate_protocol,
+    double alternate_probability) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   http_server_properties_impl_->SetAlternateProtocol(
-      server, alternate_port, alternate_protocol);
+      server, alternate_port, alternate_protocol, alternate_probability);
   ScheduleUpdatePrefsOnIO();
 }
 
 void HttpServerPropertiesManager::SetBrokenAlternateProtocol(
     const net::HostPortPair& server) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   http_server_properties_impl_->SetBrokenAlternateProtocol(server);
   ScheduleUpdatePrefsOnIO();
 }
 
 bool HttpServerPropertiesManager::WasAlternateProtocolRecentlyBroken(
     const net::HostPortPair& server) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   return http_server_properties_impl_->WasAlternateProtocolRecentlyBroken(
       server);
 }
 
 void HttpServerPropertiesManager::ConfirmAlternateProtocol(
     const net::HostPortPair& server) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   http_server_properties_impl_->ConfirmAlternateProtocol(server);
   ScheduleUpdatePrefsOnIO();
 }
 
 void HttpServerPropertiesManager::ClearAlternateProtocol(
     const net::HostPortPair& server) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   http_server_properties_impl_->ClearAlternateProtocol(server);
   ScheduleUpdatePrefsOnIO();
 }
 
 const net::AlternateProtocolMap&
 HttpServerPropertiesManager::alternate_protocol_map() const {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   return http_server_properties_impl_->alternate_protocol_map();
 }
 
 void HttpServerPropertiesManager::SetAlternateProtocolExperiment(
     net::AlternateProtocolExperiment experiment) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   http_server_properties_impl_->SetAlternateProtocolExperiment(experiment);
+}
+
+void HttpServerPropertiesManager::SetAlternateProtocolProbabilityThreshold(
+    double threshold) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  http_server_properties_impl_->SetAlternateProtocolProbabilityThreshold(
+      threshold);
 }
 
 net::AlternateProtocolExperiment
 HttpServerPropertiesManager::GetAlternateProtocolExperiment() const {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   return http_server_properties_impl_->GetAlternateProtocolExperiment();
 }
 
 const net::SettingsMap&
 HttpServerPropertiesManager::GetSpdySettings(
     const net::HostPortPair& host_port_pair) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   return http_server_properties_impl_->GetSpdySettings(host_port_pair);
 }
 
@@ -239,7 +249,7 @@ bool HttpServerPropertiesManager::SetSpdySetting(
     net::SpdySettingsIds id,
     net::SpdySettingsFlags flags,
     uint32 value) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   bool persist = http_server_properties_impl_->SetSpdySetting(
       host_port_pair, id, flags, value);
   if (persist)
@@ -249,34 +259,34 @@ bool HttpServerPropertiesManager::SetSpdySetting(
 
 void HttpServerPropertiesManager::ClearSpdySettings(
     const net::HostPortPair& host_port_pair) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   http_server_properties_impl_->ClearSpdySettings(host_port_pair);
   ScheduleUpdatePrefsOnIO();
 }
 
 void HttpServerPropertiesManager::ClearAllSpdySettings() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   http_server_properties_impl_->ClearAllSpdySettings();
   ScheduleUpdatePrefsOnIO();
 }
 
 const net::SpdySettingsMap&
 HttpServerPropertiesManager::spdy_settings_map() const {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   return http_server_properties_impl_->spdy_settings_map();
 }
 
 void HttpServerPropertiesManager::SetServerNetworkStats(
     const net::HostPortPair& host_port_pair,
     NetworkStats stats) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   http_server_properties_impl_->SetServerNetworkStats(host_port_pair, stats);
 }
 
 const HttpServerPropertiesManager::NetworkStats*
 HttpServerPropertiesManager::GetServerNetworkStats(
     const net::HostPortPair& host_port_pair) const {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   return http_server_properties_impl_->GetServerNetworkStats(host_port_pair);
 }
 
@@ -284,7 +294,7 @@ HttpServerPropertiesManager::GetServerNetworkStats(
 // Update the HttpServerPropertiesImpl's cache with data from preferences.
 //
 void HttpServerPropertiesManager::ScheduleUpdateCacheOnUI() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   // Cancel pending updates, if any.
   ui_cache_update_timer_->Stop();
   StartCacheUpdateTimerOnUI(
@@ -293,7 +303,7 @@ void HttpServerPropertiesManager::ScheduleUpdateCacheOnUI() {
 
 void HttpServerPropertiesManager::StartCacheUpdateTimerOnUI(
     base::TimeDelta delay) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   ui_cache_update_timer_->Start(
       FROM_HERE, delay, this,
       &HttpServerPropertiesManager::UpdateCacheFromPrefsOnUI);
@@ -301,7 +311,7 @@ void HttpServerPropertiesManager::StartCacheUpdateTimerOnUI(
 
 void HttpServerPropertiesManager::UpdateCacheFromPrefsOnUI() {
   // The preferences can only be read on the UI thread.
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (!pref_service_->HasPrefPath(prefs::kHttpServerProperties))
     return;
@@ -439,10 +449,18 @@ void HttpServerPropertiesManager::UpdateCacheFromPrefsOnUI() {
         continue;
       }
 
-      net::PortAlternateProtocolPair port_alternate_protocol;
-      port_alternate_protocol.port = port;
-      port_alternate_protocol.protocol = protocol;
+      double probability = 1;
+      if (port_alternate_protocol_dict->HasKey("probability") &&
+          !port_alternate_protocol_dict->GetDoubleWithoutPathExpansion(
+              "probability", &probability)) {
+        DVLOG(1) << "Malformed Alternate-Protocol server: " << server_str;
+        detected_corrupted_prefs = true;
+        continue;
+      }
 
+      net::AlternateProtocolInfo port_alternate_protocol(port,
+                                                         protocol,
+                                                         probability);
       alternate_protocol_map->Put(server, port_alternate_protocol);
       ++count;
     } while (false);
@@ -469,7 +487,7 @@ void HttpServerPropertiesManager::UpdateCacheFromPrefsOnIO(
     bool detected_corrupted_prefs) {
   // Preferences have the master data because admins might have pushed new
   // preferences. Update the cached data with new data from preferences.
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   UMA_HISTOGRAM_COUNTS("Net.CountOfSpdyServers", spdy_servers->size());
   http_server_properties_impl_->InitializeSpdyServers(spdy_servers, true);
@@ -498,7 +516,7 @@ void HttpServerPropertiesManager::UpdateCacheFromPrefsOnIO(
 // Update Preferences with data from the cached data.
 //
 void HttpServerPropertiesManager::ScheduleUpdatePrefsOnIO() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   // Cancel pending updates, if any.
   io_prefs_update_timer_->Stop();
   StartPrefsUpdateTimerOnIO(
@@ -507,7 +525,7 @@ void HttpServerPropertiesManager::ScheduleUpdatePrefsOnIO() {
 
 void HttpServerPropertiesManager::StartPrefsUpdateTimerOnIO(
     base::TimeDelta delay) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   // This is overridden in tests to post the task without the delay.
   io_prefs_update_timer_->Start(
       FROM_HERE, delay, this,
@@ -521,7 +539,7 @@ void HttpServerPropertiesManager::UpdatePrefsFromCacheOnIO() {
 
 void HttpServerPropertiesManager::UpdatePrefsFromCacheOnIO(
     const base::Closure& completion) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   base::ListValue* spdy_server_list = new base::ListValue;
   http_server_properties_impl_->GetSpdyServerList(
@@ -573,7 +591,7 @@ void HttpServerPropertiesManager::UpdatePrefsFromCacheOnIO(
 }
 
 // A local or temporary data structure to hold |supports_spdy|, SpdySettings,
-// and PortAlternateProtocolPair preferences for a server. This is used only in
+// and AlternateProtocolInfo preferences for a server. This is used only in
 // UpdatePrefsOnUI.
 struct ServerPref {
   ServerPref()
@@ -583,14 +601,14 @@ struct ServerPref {
   }
   ServerPref(bool supports_spdy,
              const net::SettingsMap* settings_map,
-             const net::PortAlternateProtocolPair* alternate_protocol)
+             const net::AlternateProtocolInfo* alternate_protocol)
       : supports_spdy(supports_spdy),
         settings_map(settings_map),
         alternate_protocol(alternate_protocol) {
   }
   bool supports_spdy;
   const net::SettingsMap* settings_map;
-  const net::PortAlternateProtocolPair* alternate_protocol;
+  const net::AlternateProtocolInfo* alternate_protocol;
 };
 
 void HttpServerPropertiesManager::UpdatePrefsOnUI(
@@ -602,7 +620,7 @@ void HttpServerPropertiesManager::UpdatePrefsOnUI(
   typedef std::map<net::HostPortPair, ServerPref> ServerPrefMap;
   ServerPrefMap server_pref_map;
 
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // Add servers that support spdy to server_pref_map.
   std::string s;
@@ -640,7 +658,7 @@ void HttpServerPropertiesManager::UpdatePrefsOnUI(
            alternate_protocol_map->begin();
        map_it != alternate_protocol_map->end(); ++map_it) {
     const net::HostPortPair& server = map_it->first;
-    const net::PortAlternateProtocolPair& port_alternate_protocol =
+    const net::AlternateProtocolInfo& port_alternate_protocol =
         map_it->second;
     if (!net::IsAlternateProtocolValid(port_alternate_protocol.protocol)) {
       continue;
@@ -688,13 +706,15 @@ void HttpServerPropertiesManager::UpdatePrefsOnUI(
     if (server_pref.alternate_protocol) {
       base::DictionaryValue* port_alternate_protocol_dict =
           new base::DictionaryValue;
-      const net::PortAlternateProtocolPair* port_alternate_protocol =
+      const net::AlternateProtocolInfo* port_alternate_protocol =
           server_pref.alternate_protocol;
       port_alternate_protocol_dict->SetInteger(
           "port", port_alternate_protocol->port);
       const char* protocol_str =
           net::AlternateProtocolToString(port_alternate_protocol->protocol);
       port_alternate_protocol_dict->SetString("protocol_str", protocol_str);
+      port_alternate_protocol_dict->SetDouble(
+          "probability", port_alternate_protocol->probability);
       server_pref_dict->SetWithoutPathExpansion(
           "alternate_protocol", port_alternate_protocol_dict);
     }
@@ -718,7 +738,7 @@ void HttpServerPropertiesManager::UpdatePrefsOnUI(
 }
 
 void HttpServerPropertiesManager::OnHttpServerPropertiesChanged() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!setting_prefs_)
     ScheduleUpdateCacheOnUI();
 }

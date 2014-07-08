@@ -77,7 +77,7 @@ void UpdateSpdySessionDependencies(
     case SPDYNPN:
       session_deps->http_server_properties.SetAlternateProtocol(
           HostPortPair("www.google.com", 80), 443,
-          AlternateProtocolFromNextProto(test_params.protocol));
+          AlternateProtocolFromNextProto(test_params.protocol), 1);
       session_deps->use_alternate_protocols = true;
       session_deps->next_protos = SpdyNextProtos();
       break;

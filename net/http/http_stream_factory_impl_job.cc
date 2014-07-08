@@ -171,7 +171,7 @@ LoadState HttpStreamFactoryImpl::Job::GetLoadState() const {
 
 void HttpStreamFactoryImpl::Job::MarkAsAlternate(
     const GURL& original_url,
-    PortAlternateProtocolPair alternate) {
+    AlternateProtocolInfo alternate) {
   DCHECK(!original_url_.get());
   original_url_.reset(new GURL(original_url));
   if (alternate.protocol == QUIC) {

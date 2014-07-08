@@ -26,6 +26,7 @@ HttpServerPropertiesImpl::HttpServerPropertiesImpl()
       alternate_protocol_experiment_(
           ALTERNATE_PROTOCOL_NOT_PART_OF_EXPERIMENT),
       spdy_settings_map_(SpdySettingsMap::NO_AUTO_EVICT),
+      alternate_protocol_probability_threshold_(0),
       weak_ptr_factory_(this) {
   canoncial_suffixes_.push_back(".c.youtube.com");
   canoncial_suffixes_.push_back(".googlevideo.com");
@@ -130,15 +131,15 @@ std::string HttpServerPropertiesImpl::GetFlattenedSpdyServer(
   return spdy_server;
 }
 
-static const PortAlternateProtocolPair* g_forced_alternate_protocol = NULL;
+static const AlternateProtocolInfo* g_forced_alternate_protocol = NULL;
 
 // static
 void HttpServerPropertiesImpl::ForceAlternateProtocol(
-    const PortAlternateProtocolPair& pair) {
+    const AlternateProtocolInfo& info) {
   // Note: we're going to leak this.
   if (g_forced_alternate_protocol)
     delete g_forced_alternate_protocol;
-  g_forced_alternate_protocol = new PortAlternateProtocolPair(pair);
+  g_forced_alternate_protocol = new AlternateProtocolInfo(info);
 }
 
 // static
@@ -193,9 +194,13 @@ void HttpServerPropertiesImpl::SetSupportsSpdy(
 
 bool HttpServerPropertiesImpl::HasAlternateProtocol(
     const HostPortPair& server) {
-  if (alternate_protocol_map_.Get(server) != alternate_protocol_map_.end() ||
-      g_forced_alternate_protocol)
+  if (g_forced_alternate_protocol)
     return true;
+  AlternateProtocolMap::const_iterator it = alternate_protocol_map_.Get(server);
+  if (it != alternate_protocol_map_.end() &&
+      it->second.probability > alternate_protocol_probability_threshold_) {
+    return true;
+  }
 
   return GetCanonicalHost(server) != canonical_host_to_origin_map_.end();
 }
@@ -213,7 +218,7 @@ std::string HttpServerPropertiesImpl::GetCanonicalSuffix(
   return std::string();
 }
 
-PortAlternateProtocolPair
+AlternateProtocolInfo
 HttpServerPropertiesImpl::GetAlternateProtocol(
     const HostPortPair& server) {
   DCHECK(HasAlternateProtocol(server));
@@ -236,17 +241,18 @@ HttpServerPropertiesImpl::GetAlternateProtocol(
 void HttpServerPropertiesImpl::SetAlternateProtocol(
     const HostPortPair& server,
     uint16 alternate_port,
-    AlternateProtocol alternate_protocol) {
+    AlternateProtocol alternate_protocol,
+    double alternate_probability) {
   if (alternate_protocol == ALTERNATE_PROTOCOL_BROKEN) {
     LOG(DFATAL) << "Call SetBrokenAlternateProtocol() instead.";
     return;
   }
 
-  PortAlternateProtocolPair alternate;
-  alternate.port = alternate_port;
-  alternate.protocol = alternate_protocol;
+  AlternateProtocolInfo alternate(alternate_port,
+                                  alternate_protocol,
+                                  alternate_probability);
   if (HasAlternateProtocol(server)) {
-    const PortAlternateProtocolPair existing_alternate =
+    const AlternateProtocolInfo existing_alternate =
         GetAlternateProtocol(server);
 
     if (existing_alternate.protocol == ALTERNATE_PROTOCOL_BROKEN) {
@@ -260,8 +266,10 @@ void HttpServerPropertiesImpl::SetAlternateProtocol(
                    << server.ToString()
                    << " from [Port: " << existing_alternate.port
                    << ", Protocol: " << existing_alternate.protocol
+                   << ", Probability: " << existing_alternate.probability
                    << "] to [Port: " << alternate_port
                    << ", Protocol: " << alternate_protocol
+                   << ", Probability: " << alternate_probability
                    << "].";
     }
   } else {
@@ -292,8 +300,9 @@ void HttpServerPropertiesImpl::SetBrokenAlternateProtocol(
   if (it != alternate_protocol_map_.end()) {
     it->second.protocol = ALTERNATE_PROTOCOL_BROKEN;
   } else {
-    PortAlternateProtocolPair alternate;
-    alternate.protocol = ALTERNATE_PROTOCOL_BROKEN;
+    AlternateProtocolInfo alternate(server.port(),
+                                    ALTERNATE_PROTOCOL_BROKEN,
+                                    1);
     alternate_protocol_map_.Put(server, alternate);
   }
   int count = ++broken_alternate_protocol_map_[server];
@@ -412,6 +421,11 @@ HttpServerPropertiesImpl::GetServerNetworkStats(
     return NULL;
   }
   return &it->second;
+}
+
+void HttpServerPropertiesImpl::SetAlternateProtocolProbabilityThreshold(
+    double threshold) {
+  alternate_protocol_probability_threshold_ = threshold;
 }
 
 HttpServerPropertiesImpl::CanonicalHostMap::const_iterator
