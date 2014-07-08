@@ -8,6 +8,7 @@
 #include <map>
 #include <vector>
 
+#include "base/atomic_ref_count.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
@@ -315,12 +316,6 @@ void BrowserProcessImpl::PostDestroyThreads() {
   io_thread_.reset();
 }
 
-#if defined(USE_X11) || defined(OS_WIN)
-static void Signal(base::WaitableEvent* event) {
-  event->Signal();
-}
-#endif
-
 unsigned int BrowserProcessImpl::AddRefModule() {
   DCHECK(CalledOnValidThread());
 
@@ -384,12 +379,81 @@ unsigned int BrowserProcessImpl::ReleaseModule() {
   return module_ref_count_;
 }
 
+namespace {
+
+// Used at the end of session to block the UI thread for completion of sentinel
+// tasks on the set of threads used to persist profile data and local state.
+// This is done to ensure that the data has been persisted to disk before
+// continuing.
+class RundownTaskCounter :
+    public base::RefCountedThreadSafe<RundownTaskCounter> {
+ public:
+  RundownTaskCounter();
+
+  // Posts a rundown task to |task_runner|, can be invoked an arbitrary number
+  // of times before calling TimedWait.
+  void Post(base::SequencedTaskRunner* task_runner);
+
+  // Waits until the count is zero or |max_time| has passed.
+  // This can only be called once per instance.
+  bool TimedWait(const base::TimeDelta& max_time);
+
+ private:
+  friend class base::RefCountedThreadSafe<RundownTaskCounter>;
+  ~RundownTaskCounter() {}
+
+  // Decrements the counter and releases the waitable event on transition to
+  // zero.
+  void Decrement();
+
+  // The count starts at one to defer the possibility of one->zero transitions
+  // until TimedWait is called.
+  base::AtomicRefCount count_;
+  base::WaitableEvent waitable_event_;
+
+  DISALLOW_COPY_AND_ASSIGN(RundownTaskCounter);
+};
+
+RundownTaskCounter::RundownTaskCounter()
+    : count_(1), waitable_event_(true, false) {
+}
+
+void RundownTaskCounter::Post(base::SequencedTaskRunner* task_runner) {
+  // As the count starts off at one, it should never get to zero unless
+  // TimedWait has been called.
+  DCHECK(!base::AtomicRefCountIsZero(&count_));
+
+  base::AtomicRefCountInc(&count_);
+
+  task_runner->PostTask(FROM_HERE,
+      base::Bind(&RundownTaskCounter::Decrement, this));
+}
+
+void RundownTaskCounter::Decrement() {
+  if (!base::AtomicRefCountDec(&count_))
+    waitable_event_.Signal();
+}
+
+bool RundownTaskCounter::TimedWait(const base::TimeDelta& max_time) {
+  // Decrement the excess count from the constructor.
+  Decrement();
+
+  return waitable_event_.TimedWait(max_time);
+}
+
+}  // namespace
+
 void BrowserProcessImpl::EndSession() {
   // Mark all the profiles as clean.
   ProfileManager* pm = profile_manager();
   std::vector<Profile*> profiles(pm->GetLoadedProfiles());
-  for (size_t i = 0; i < profiles.size(); ++i)
-    profiles[i]->SetExitType(Profile::EXIT_SESSION_ENDED);
+  scoped_refptr<RundownTaskCounter> rundown_counter(new RundownTaskCounter());
+  for (size_t i = 0; i < profiles.size(); ++i) {
+    Profile* profile = profiles[i];
+    profile->SetExitType(Profile::EXIT_SESSION_ENDED);
+
+    rundown_counter->Post(profile->GetIOTaskRunner());
+  }
 
   // Tell the metrics service it was cleanly shutdown.
   MetricsService* metrics = g_browser_process->metrics_service();
@@ -400,6 +464,8 @@ void BrowserProcessImpl::EndSession() {
     // On ChromeOS, chrome gets killed when hangs, so no need to
     // commit metrics::prefs::kStabilitySessionEndCompleted change immediately.
     local_state()->CommitPendingWrite();
+
+    rundown_counter->Post(local_state_task_runner_);
 #endif
   }
 
@@ -410,7 +476,9 @@ void BrowserProcessImpl::EndSession() {
   // otherwise on startup we'll think we crashed. So we block until done and
   // then proceed with normal shutdown.
 #if defined(USE_X11) || defined(OS_WIN)
-  // Create a waitable event to block on file writing being complete.
+  // Do a best-effort wait on the successful countdown of rundown tasks. Note
+  // that if we don't complete "quickly enough", Windows will terminate our
+  // process.
   //
   // On Windows, we previously posted a message to FILE and then ran a nested
   // message loop, waiting for that message to be processed until quitting.
@@ -421,16 +489,8 @@ void BrowserProcessImpl::EndSession() {
   // GPU process synchronously. Because the system may not be allowing
   // processes to launch, this can result in a hang. See
   // http://crbug.com/318527.
-  scoped_ptr<base::WaitableEvent> done_writing(
-      new base::WaitableEvent(false, false));
-  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-      base::Bind(Signal, done_writing.get()));
-  // If all file writes haven't cleared in the timeout, leak the WaitableEvent
-  // so that there's no race to reference it in Signal().
-  if (!done_writing->TimedWait(
-      base::TimeDelta::FromSeconds(kEndSessionTimeoutSeconds))) {
-    ignore_result(done_writing.release());
-  }
+  rundown_counter->TimedWait(
+      base::TimeDelta::FromSeconds(kEndSessionTimeoutSeconds));
 #else
   NOTIMPLEMENTED();
 #endif
