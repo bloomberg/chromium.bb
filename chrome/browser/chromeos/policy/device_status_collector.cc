@@ -72,9 +72,6 @@ int64 TimestampToDayKey(Time timestamp) {
   return (Time::FromUTCExploded(exploded) - Time::UnixEpoch()).InMilliseconds();
 }
 
-// Maximum number of users to report.
-const int kMaxUserCount = 5;
-
 }  // namespace
 
 namespace policy {
@@ -430,7 +427,6 @@ void DeviceStatusCollector::GetNetworkInterfaces(
 void DeviceStatusCollector::GetUsers(em::DeviceStatusReportRequest* request) {
   policy::BrowserPolicyConnectorChromeOS* connector =
       g_browser_process->platform_part()->browser_policy_connector_chromeos();
-  bool found_managed_user = false;
   const chromeos::UserList& users = chromeos::UserManager::Get()->GetUsers();
   chromeos::UserList::const_iterator user;
   for (user = users.begin(); user != users.end(); ++user) {
@@ -443,17 +439,10 @@ void DeviceStatusCollector::GetUsers(em::DeviceStatusReportRequest* request) {
     if (connector->GetUserAffiliation(email) == USER_AFFILIATION_MANAGED) {
       device_user->set_type(em::DeviceUser::USER_TYPE_MANAGED);
       device_user->set_email(email);
-      found_managed_user = true;
     } else {
       device_user->set_type(em::DeviceUser::USER_TYPE_UNMANAGED);
       // Do not report the email address of unmanaged users.
     }
-
-    // Add only kMaxUserCount entries, unless no managed users are found in the
-    // first kMaxUserCount users. In that case, continue until at least one
-    // managed user is found.
-    if (request->user_size() >= kMaxUserCount && found_managed_user)
-      break;
   }
 }
 
