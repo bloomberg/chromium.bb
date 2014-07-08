@@ -19,6 +19,7 @@
 #include "chrome/browser/autocomplete/autocomplete_provider_listener.h"
 #include "chrome/browser/autocomplete/autocomplete_result.h"
 #include "chrome/browser/autocomplete/chrome_autocomplete_scheme_classifier.h"
+#include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/history/history_backend.h"
 #include "chrome/browser/history/history_database.h"
 #include "chrome/browser/history/history_service.h"
@@ -576,7 +577,7 @@ void HistoryURLProvider::Start(const AutocompleteInput& input,
     DoAutocomplete(NULL, url_db, params.get());
     matches_.clear();
     PromoteMatchesIfNecessary(*params);
-    UpdateStarredStateOfMatches();
+    UpdateStarredStateOfMatches(BookmarkModelFactory::GetForProfile(profile_));
     // NOTE: We don't reset |params| here since at least the |promote_type|
     // field on it will be read by the second pass -- see comments in
     // DoAutocomplete().
@@ -615,14 +616,11 @@ AutocompleteMatch HistoryURLProvider::SuggestExactInput(
     match.destination_url = destination_url;
 
     // Trim off "http://" if the user didn't type it.
-    // NOTE: We use TrimHttpPrefix() here rather than StringForURLDisplay() to
-    // strip the scheme as we need to know the offset so we can adjust the
-    // |match_location| below.  StringForURLDisplay() and TrimHttpPrefix() have
-    // slightly different behavior as well (the latter will strip even without
-    // two slashes after the scheme).
     DCHECK(!trim_http || !AutocompleteInput::HasHTTPScheme(text));
     base::string16 display_string(
-        StringForURLDisplay(destination_url, false, false));
+        net::FormatUrl(destination_url, std::string(),
+                       net::kFormatUrlOmitAll & ~net::kFormatUrlOmitHTTP,
+                       net::UnescapeRule::SPACES, NULL, NULL, NULL));
     const size_t offset = trim_http ? TrimHttpPrefix(&display_string) : 0;
     match.fill_into_edit =
         AutocompleteInput::FormattedStringWithEquivalentMeaning(
@@ -894,8 +892,7 @@ void HistoryURLProvider::QueryComplete(
       }
       matches_.push_back(HistoryMatchToACMatch(*params, i, NORMAL, relevance));
     }
-
-    UpdateStarredStateOfMatches();
+    UpdateStarredStateOfMatches(BookmarkModelFactory::GetForProfile(profile_));
   }
 
   done_ = true;

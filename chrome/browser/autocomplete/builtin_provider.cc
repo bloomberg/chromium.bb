@@ -40,10 +40,8 @@ const char* const kChromeSettingsSubPages[] = {
 
 const int BuiltinProvider::kRelevance = 860;
 
-BuiltinProvider::BuiltinProvider(AutocompleteProviderListener* listener,
-                                 Profile* profile)
-    : AutocompleteProvider(listener, profile,
-          AutocompleteProvider::TYPE_BUILTIN) {
+BuiltinProvider::BuiltinProvider(AutocompleteProviderListener* listener)
+    : AutocompleteProvider(listener, AutocompleteProvider::TYPE_BUILTIN) {
   std::vector<std::string> builtins(
       chrome::kChromeHostURLs,
       chrome::kChromeHostURLs + chrome::kNumberOfChromeHostURLs);

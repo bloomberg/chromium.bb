@@ -10,6 +10,7 @@
 #include "chrome/browser/history/in_memory_url_index_types.h"
 
 class AutocompleteInput;
+class Profile;
 struct AutocompleteMatch;
 
 // This class is a base class for the history autocomplete providers and
@@ -39,6 +40,8 @@ class HistoryProvider : public AutocompleteProvider {
       const history::TermMatches& matches,
       size_t text_length,
       bool is_url);
+
+  Profile* profile_;
 };
 
 #endif  // CHROME_BROWSER_AUTOCOMPLETE_HISTORY_PROVIDER_H_

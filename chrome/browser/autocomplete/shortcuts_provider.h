@@ -105,6 +105,7 @@ class ShortcutsProvider
   // The default max relevance unless overridden by a field trial.
   static const int kShortcutsProviderDefaultMaxRelevance;
 
+  Profile* profile_;
   std::string languages_;
   bool initialized_;
 };

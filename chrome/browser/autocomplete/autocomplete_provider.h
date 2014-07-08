@@ -5,8 +5,6 @@
 #ifndef CHROME_BROWSER_AUTOCOMPLETE_AUTOCOMPLETE_PROVIDER_H_
 #define CHROME_BROWSER_AUTOCOMPLETE_AUTOCOMPLETE_PROVIDER_H_
 
-#include <string>
-
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/string16.h"
@@ -15,8 +13,7 @@
 
 class AutocompleteInput;
 class AutocompleteProviderListener;
-class GURL;
-class Profile;
+class BookmarkModel;
 
 typedef std::vector<metrics::OmniboxEventProto_ProviderInfo> ProvidersInfo;
 
@@ -141,7 +138,6 @@ class AutocompleteProvider
   };
 
   AutocompleteProvider(AutocompleteProviderListener* listener,
-                       Profile* profile,
                        Type type);
 
   // Returns a string describing a particular AutocompleteProvider type.
@@ -195,13 +191,6 @@ class AutocompleteProvider
   // with the previous session.
   virtual void ResetSession();
 
-  // A convenience function to call net::FormatUrl() with the current set of
-  // "Accept Languages" when check_accept_lang is true.  Otherwise, it's called
-  // with an empty list.
-  base::string16 StringForURLDisplay(const GURL& url,
-                                     bool check_accept_lang,
-                                     bool trim_http) const;
-
   // Returns the set of matches for the current query.
   const ACMatches& matches() const { return matches_; }
 
@@ -234,8 +223,8 @@ class AutocompleteProvider
   virtual ~AutocompleteProvider();
 
   // Updates the starred state of each of the matches in matches_ from the
-  // profile's bookmark bar model.
-  void UpdateStarredStateOfMatches();
+  // bookmark bar model. Does nothing when |bookmark_model| is NULL.
+  void UpdateStarredStateOfMatches(BookmarkModel* bookmark_model);
 
   // Fixes up user URL input to make it more possible to match against.  Among
   // many other things, this takes care of the following:
@@ -258,10 +247,6 @@ class AutocompleteProvider
   // NOTE: For a view-source: URL, this will trim from after "view-source:" and
   // return 0.
   static size_t TrimHttpPrefix(base::string16* url);
-
-  // The profile associated with the AutocompleteProvider.  Reference is not
-  // owned by us.
-  Profile* profile_;
 
   AutocompleteProviderListener* listener_;
   ACMatches matches_;

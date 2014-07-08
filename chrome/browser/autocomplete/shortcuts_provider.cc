@@ -23,6 +23,7 @@
 #include "chrome/browser/autocomplete/autocomplete_result.h"
 #include "chrome/browser/autocomplete/history_provider.h"
 #include "chrome/browser/autocomplete/shortcuts_backend_factory.h"
+#include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/history/history_notifications.h"
 #include "chrome/browser/history/history_service.h"
 #include "chrome/browser/history/history_service_factory.h"
@@ -55,8 +56,8 @@ const int ShortcutsProvider::kShortcutsProviderDefaultMaxRelevance = 1199;
 
 ShortcutsProvider::ShortcutsProvider(AutocompleteProviderListener* listener,
                                      Profile* profile)
-    : AutocompleteProvider(listener, profile,
-          AutocompleteProvider::TYPE_SHORTCUTS),
+    : AutocompleteProvider(listener, AutocompleteProvider::TYPE_SHORTCUTS),
+      profile_(profile),
       languages_(profile_->GetPrefs()->GetString(prefs::kAcceptLanguages)),
       initialized_(false) {
   scoped_refptr<ShortcutsBackend> backend =
@@ -92,7 +93,7 @@ void ShortcutsProvider::Start(const AutocompleteInput& input,
         name, 1, 1000, 50, base::Histogram::kUmaTargetedHistogramFlag);
     counter->Add(static_cast<int>((end_time - start_time).InMilliseconds()));
   }
-  UpdateStarredStateOfMatches();
+  UpdateStarredStateOfMatches(BookmarkModelFactory::GetForProfile(profile_));
 }
 
 void ShortcutsProvider::DeleteMatch(const AutocompleteMatch& match) {

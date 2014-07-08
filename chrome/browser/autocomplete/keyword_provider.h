@@ -139,6 +139,8 @@ class KeywordProvider : public AutocompleteProvider {
 
   TemplateURLService* GetTemplateURLService() const;
 
+  Profile* profile_;
+
   // Model for the keywords.  This is only non-null when testing, otherwise the
   // TemplateURLService from the Profile is used.
   TemplateURLService* model_;

@@ -25,6 +25,7 @@
 #include "chrome/browser/autocomplete/autocomplete_result.h"
 #include "chrome/browser/autocomplete/chrome_autocomplete_scheme_classifier.h"
 #include "chrome/browser/autocomplete/keyword_provider.h"
+#include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/history/history_service.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/metrics/variations/variations_http_header_provider.h"
@@ -421,7 +422,7 @@ void SearchProvider::UpdateMatches() {
   }
 
   base::TimeTicks update_starred_start_time(base::TimeTicks::Now());
-  UpdateStarredStateOfMatches();
+  UpdateStarredStateOfMatches(BookmarkModelFactory::GetForProfile(profile_));
   UMA_HISTOGRAM_TIMES("Omnibox.SearchProvider.UpdateStarredTime",
                       base::TimeTicks::Now() - update_starred_start_time);
   UpdateDone();

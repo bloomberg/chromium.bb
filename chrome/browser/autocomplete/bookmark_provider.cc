@@ -32,8 +32,8 @@ typedef std::vector<BookmarkMatch> BookmarkMatches;
 BookmarkProvider::BookmarkProvider(
     AutocompleteProviderListener* listener,
     Profile* profile)
-    : AutocompleteProvider(listener, profile,
-                           AutocompleteProvider::TYPE_BOOKMARK),
+    : AutocompleteProvider(listener, AutocompleteProvider::TYPE_BOOKMARK),
+      profile_(profile),
       bookmark_model_(NULL),
       score_using_url_matches_(OmniboxFieldTrial::BookmarksIndexURLsValue()) {
   if (profile) {

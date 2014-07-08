@@ -49,7 +49,8 @@ class TestProvider : public AutocompleteProvider {
   TestProvider(int relevance, const base::string16& prefix,
                Profile* profile,
                const base::string16 match_keyword)
-      : AutocompleteProvider(NULL, profile, AutocompleteProvider::TYPE_SEARCH),
+      : AutocompleteProvider(NULL, AutocompleteProvider::TYPE_SEARCH),
+        profile_(profile),
         relevance_(relevance),
         prefix_(prefix),
         match_keyword_(match_keyword) {
@@ -74,6 +75,7 @@ class TestProvider : public AutocompleteProvider {
       AutocompleteMatch::Type type,
       const TemplateURLRef::SearchTermsArgs& search_terms_args);
 
+  Profile* profile_;
   int relevance_;
   const base::string16 prefix_;
   const base::string16 match_keyword_;

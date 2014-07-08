@@ -65,6 +65,15 @@ AutocompleteMatchType::Type GetAutocompleteMatchType(const std::string& type) {
   return AutocompleteMatchType::SEARCH_SUGGEST;
 }
 
+base::string16 StringForURLDisplayWithAcceptLanguages(Profile* profile,
+                                                      const GURL& url) {
+  std::string languages = profile ?
+      profile->GetPrefs()->GetString(prefs::kAcceptLanguages) : std::string();
+  return net::FormatUrl(url, languages,
+                        net::kFormatUrlOmitAll & ~net::kFormatUrlOmitHTTP,
+                        net::UnescapeRule::SPACES, NULL, NULL, NULL);
+}
+
 } // namespace
 
 // SuggestionDeletionHandler -------------------------------------------------
@@ -130,7 +139,8 @@ const int BaseSearchProvider::kDeletionURLFetcherID = 3;
 BaseSearchProvider::BaseSearchProvider(AutocompleteProviderListener* listener,
                                        Profile* profile,
                                        AutocompleteProvider::Type type)
-    : AutocompleteProvider(listener, profile, type),
+    : AutocompleteProvider(listener, type),
+      profile_(profile),
       field_trial_triggered_(false),
       field_trial_triggered_in_session_(false),
       suggest_results_pending_(0),
@@ -369,7 +379,7 @@ BaseSearchProvider::NavigationResult::NavigationResult(
              deletion_url),
       url_(url),
       formatted_url_(AutocompleteInput::FormattedStringWithEquivalentMeaning(
-          url, provider.StringForURLDisplay(url, true, false),
+          url, StringForURLDisplayWithAcceptLanguages(profile, url),
           ChromeAutocompleteSchemeClassifier(profile))),
       description_(description) {
   DCHECK(url_.is_valid());

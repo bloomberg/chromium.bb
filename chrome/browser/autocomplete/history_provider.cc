@@ -47,7 +47,8 @@ bool HistoryProvider::PreventInlineAutocomplete(
 HistoryProvider::HistoryProvider(AutocompleteProviderListener* listener,
                                  Profile* profile,
                                  AutocompleteProvider::Type type)
-    : AutocompleteProvider(listener, profile, type) {
+    : AutocompleteProvider(listener, type),
+      profile_(profile) {
 }
 
 HistoryProvider::~HistoryProvider() {}

@@ -81,8 +81,8 @@ void ScopedEndExtensionKeywordMode::StayInKeywordMode() {
 
 KeywordProvider::KeywordProvider(AutocompleteProviderListener* listener,
                                  Profile* profile)
-    : AutocompleteProvider(listener, profile,
-                           AutocompleteProvider::TYPE_KEYWORD),
+    : AutocompleteProvider(listener, AutocompleteProvider::TYPE_KEYWORD),
+      profile_(profile),
       model_(NULL) {
 #if defined(ENABLE_EXTENSIONS)
   extensions_delegate_.reset(new KeywordExtensionsDelegateImpl(this));
@@ -91,7 +91,8 @@ KeywordProvider::KeywordProvider(AutocompleteProviderListener* listener,
 
 KeywordProvider::KeywordProvider(AutocompleteProviderListener* listener,
                                  TemplateURLService* model)
-    : AutocompleteProvider(listener, NULL, AutocompleteProvider::TYPE_KEYWORD),
+    : AutocompleteProvider(listener, AutocompleteProvider::TYPE_KEYWORD),
+      profile_(NULL),
       model_(model) {
 }
 

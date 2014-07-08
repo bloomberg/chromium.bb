@@ -492,6 +492,8 @@ class BaseSearchProvider : public AutocompleteProvider,
   // if suggested relevances cause undesriable behavior. Updates |done_|.
   virtual void UpdateMatches() = 0;
 
+  Profile* profile_;
+
   // Whether a field trial, if any, has triggered in the most recent
   // autocomplete query. This field is set to true only if the suggestion
   // provider has completed and the response contained

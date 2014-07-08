@@ -70,6 +70,7 @@ class BookmarkProvider : public AutocompleteProvider {
       size_t text_length,
       bool is_url);
 
+  Profile* profile_;
   BookmarkModel* bookmark_model_;
 
   // True if we should use matches in the URL for scoring.
