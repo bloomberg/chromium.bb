@@ -819,13 +819,14 @@ void Pipeline::BufferingStateChanged(BufferingState* buffering_state,
   DCHECK(task_runner_->BelongsToCurrentThread());
   bool was_waiting_for_enough_data = WaitingForEnoughData();
 
-  // Disable underflow by ignoring updates that renderers have ran out of data.
-  if (state_ == kPlaying && new_buffering_state == BUFFERING_HAVE_NOTHING &&
-      underflow_disabled_for_testing_) {
+  *buffering_state = new_buffering_state;
+
+  // Disable underflow by ignoring updates that renderers have ran out of data
+  // after we have started the clock.
+  if (state_ == kPlaying && underflow_disabled_for_testing_ &&
+      clock_state_ != CLOCK_PAUSED) {
     return;
   }
-
-  *buffering_state = new_buffering_state;
 
   // Renderer underflowed.
   if (!was_waiting_for_enough_data && WaitingForEnoughData()) {
