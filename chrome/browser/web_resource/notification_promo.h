@@ -36,6 +36,7 @@ class NotificationPromo {
     NTP_NOTIFICATION_PROMO,
     NTP_BUBBLE_PROMO,
     MOBILE_NTP_SYNC_PROMO,
+    MOBILE_NTP_WHATS_NEW_PROMO,
   };
 
   NotificationPromo();

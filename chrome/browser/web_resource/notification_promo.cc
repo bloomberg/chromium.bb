@@ -109,6 +109,8 @@ const PromoMapEntry kPromoMap[] = {
     { NotificationPromo::NTP_NOTIFICATION_PROMO, "ntp_notification_promo" },
     { NotificationPromo::NTP_BUBBLE_PROMO, "ntp_bubble_promo" },
     { NotificationPromo::MOBILE_NTP_SYNC_PROMO, "mobile_ntp_sync_promo" },
+    { NotificationPromo::MOBILE_NTP_WHATS_NEW_PROMO,
+        "mobile_ntp_whats_new_promo" },
 };
 
 // Convert PromoType to appropriate string.

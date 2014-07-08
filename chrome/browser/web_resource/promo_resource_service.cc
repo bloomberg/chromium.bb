@@ -34,6 +34,9 @@ const int kTestCacheUpdateDelay = 3 * 60 * 1000;
 const NotificationPromo::PromoType kValidPromoTypes[] = {
 #if defined(OS_ANDROID) || defined(OS_IOS)
     NotificationPromo::MOBILE_NTP_SYNC_PROMO,
+#if defined(OS_IOS)
+    NotificationPromo::MOBILE_NTP_WHATS_NEW_PROMO,
+#endif  // defined(OS_IOS)
 #else
     NotificationPromo::NTP_NOTIFICATION_PROMO,
     NotificationPromo::NTP_BUBBLE_PROMO,
