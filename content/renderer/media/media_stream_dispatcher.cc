@@ -10,6 +10,7 @@
 #include "content/renderer/media/media_stream_dispatcher_eventhandler.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/render_view_impl.h"
+#include "media/audio/audio_parameters.h"
 #include "third_party/WebKit/public/web/WebUserGestureIndicator.h"
 #include "url/gurl.h"
 
@@ -105,6 +106,7 @@ void MediaStreamDispatcher::CancelGenerateStream(
 
 void MediaStreamDispatcher::StopStreamDevice(
     const StreamDeviceInfo& device_info) {
+  DCHECK(main_loop_->BelongsToCurrentThread());
   DVLOG(1) << "MediaStreamDispatcher::StopStreamDevice"
            << ", {device_id = " << device_info.device.id << "}";
   // Remove |device_info| from all streams in |label_stream_map_|.
@@ -383,6 +385,7 @@ void MediaStreamDispatcher::OnDeviceOpenFailed(int request_id) {
 
 int MediaStreamDispatcher::audio_session_id(const std::string& label,
                                             int index) {
+  DCHECK(main_loop_->BelongsToCurrentThread());
   LabelStreamMap::iterator it = label_stream_map_.find(label);
   if (it == label_stream_map_.end() ||
       it->second.audio_array.size() <= static_cast<size_t>(index)) {
@@ -392,17 +395,34 @@ int MediaStreamDispatcher::audio_session_id(const std::string& label,
 }
 
 bool MediaStreamDispatcher::IsStream(const std::string& label) {
+  DCHECK(main_loop_->BelongsToCurrentThread());
   return label_stream_map_.find(label) != label_stream_map_.end();
 }
 
 int MediaStreamDispatcher::video_session_id(const std::string& label,
                                             int index) {
+  DCHECK(main_loop_->BelongsToCurrentThread());
   LabelStreamMap::iterator it = label_stream_map_.find(label);
   if (it == label_stream_map_.end() ||
       it->second.video_array.size() <= static_cast<size_t>(index)) {
     return StreamDeviceInfo::kNoId;
   }
   return it->second.video_array[index].session_id;
+}
+
+bool MediaStreamDispatcher::IsAudioDuckingActive() const {
+  DCHECK(main_loop_->BelongsToCurrentThread());
+  LabelStreamMap::const_iterator stream_it = label_stream_map_.begin();
+  while (stream_it != label_stream_map_.end()) {
+    const StreamDeviceInfoArray& audio_array = stream_it->second.audio_array;
+    for (StreamDeviceInfoArray::const_iterator device_it = audio_array.begin();
+         device_it != audio_array.end(); ++device_it) {
+      if (device_it->device.input.effects & media::AudioParameters::DUCKING)
+        return true;
+    }
+    ++stream_it;
+  }
+  return false;
 }
 
 }  // namespace content

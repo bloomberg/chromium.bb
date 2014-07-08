@@ -12,6 +12,7 @@
 #include "content/public/common/media_stream_request.h"
 #include "content/renderer/media/media_stream_dispatcher.h"
 #include "content/renderer/media/media_stream_dispatcher_eventhandler.h"
+#include "media/audio/audio_parameters.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -408,6 +409,68 @@ TEST_F(MediaStreamDispatcherTest, DeviceClosed) {
   EXPECT_EQ(label, handler_->device_stopped_label_);
   EXPECT_EQ(dispatcher_->video_session_id(label, 0),
             StreamDeviceInfo::kNoId);
+}
+
+TEST_F(MediaStreamDispatcherTest, CheckDuckingState) {
+  scoped_ptr<MediaStreamDispatcher> dispatcher(new MediaStreamDispatcher(NULL));
+  scoped_ptr<MockMediaStreamDispatcherEventHandler>
+      handler(new MockMediaStreamDispatcherEventHandler);
+  StreamOptions components(true, false);  // audio only.
+  int ipc_request_id1 = dispatcher->next_ipc_id_;
+
+  dispatcher->GenerateStream(kRequestId1, handler.get()->AsWeakPtr(),
+                             components, GURL());
+  EXPECT_EQ(1u, dispatcher->requests_.size());
+
+  // Ducking isn't active at this point.
+  EXPECT_FALSE(dispatcher->IsAudioDuckingActive());
+
+  // Complete the creation of stream1 with a single audio track that has
+  // ducking enabled.
+  StreamDeviceInfoArray audio_device_array(1);
+  StreamDeviceInfo& audio_device_info = audio_device_array[0];
+  audio_device_info.device.name = "Microphone";
+  audio_device_info.device.type = kAudioType;
+  audio_device_info.session_id = kAudioSessionId;
+  audio_device_info.device.input.effects = media::AudioParameters::DUCKING;
+
+  StreamDeviceInfoArray video_device_array;  // Empty for this test.
+
+  const char kStreamLabel[] = "stream1";
+  dispatcher->OnMessageReceived(MediaStreamMsg_StreamGenerated(
+      kRouteId, ipc_request_id1, kStreamLabel,
+      audio_device_array, video_device_array));
+  EXPECT_EQ(handler->request_id_, kRequestId1);
+  EXPECT_EQ(0u, dispatcher->requests_.size());
+
+  // Ducking should now be reported as active.
+  EXPECT_TRUE(dispatcher->IsAudioDuckingActive());
+
+  // Stop the device (removes the stream).
+  dispatcher->OnMessageReceived(
+      MediaStreamMsg_DeviceStopped(kRouteId, kStreamLabel,
+            handler->audio_device_));
+
+  // Ducking should now be reported as inactive again.
+  EXPECT_FALSE(dispatcher->IsAudioDuckingActive());
+
+  // Now do the same sort of test with the DUCKING flag off.
+  audio_device_info.device.input.effects =
+      media::AudioParameters::ECHO_CANCELLER;
+
+  dispatcher->OnMessageReceived(MediaStreamMsg_StreamGenerated(
+      kRouteId, ipc_request_id1, kStreamLabel,
+      audio_device_array, video_device_array));
+  EXPECT_EQ(handler->request_id_, kRequestId1);
+  EXPECT_EQ(0u, dispatcher->requests_.size());
+
+  // Ducking should still be reported as not active.
+  EXPECT_FALSE(dispatcher->IsAudioDuckingActive());
+
+  // Stop the device (removes the stream).
+  dispatcher->OnMessageReceived(
+      MediaStreamMsg_DeviceStopped(kRouteId, kStreamLabel,
+            handler->audio_device_));
 }
 
 }  // namespace content

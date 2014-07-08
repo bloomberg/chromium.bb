@@ -98,6 +98,14 @@ void HarmonizeConstraintsAndEffects(RTCMediaConstraints* constraints,
         }
         DVLOG(1) << "Disabling constraint: "
                  << kConstraintEffectMap[i].constraint;
+      } else if (kConstraintEffectMap[i].effect ==
+                 media::AudioParameters::DUCKING && value && !is_mandatory) {
+        // Special handling of the DUCKING flag that sets the optional
+        // constraint to |false| to match what the device will support.
+        constraints->AddOptional(kConstraintEffectMap[i].constraint,
+            webrtc::MediaConstraintsInterface::kValueFalse, true);
+        // No need to modify |effects| since the ducking flag is already off.
+        DCHECK((*effects & media::AudioParameters::DUCKING) == 0);
       }
     }
   }

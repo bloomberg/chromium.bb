@@ -346,13 +346,13 @@ TEST_F(CoreAudioUtilWinTest, SharedModeInitialize) {
   // Perform a shared-mode initialization without event-driven buffer handling.
   uint32 endpoint_buffer_size = 0;
   HRESULT hr = CoreAudioUtil::SharedModeInitialize(client, &format, NULL,
-                                                   &endpoint_buffer_size);
+                                                   &endpoint_buffer_size, NULL);
   EXPECT_TRUE(SUCCEEDED(hr));
   EXPECT_GT(endpoint_buffer_size, 0u);
 
   // It is only possible to create a client once.
   hr = CoreAudioUtil::SharedModeInitialize(client, &format, NULL,
-                                           &endpoint_buffer_size);
+                                           &endpoint_buffer_size, NULL);
   EXPECT_FALSE(SUCCEEDED(hr));
   EXPECT_EQ(hr, AUDCLNT_E_ALREADY_INITIALIZED);
 
@@ -360,7 +360,7 @@ TEST_F(CoreAudioUtilWinTest, SharedModeInitialize) {
   client = CoreAudioUtil::CreateDefaultClient(eRender, eConsole);
   EXPECT_TRUE(client);
   hr = CoreAudioUtil::SharedModeInitialize(client, &format, NULL,
-                                           &endpoint_buffer_size);
+                                           &endpoint_buffer_size, NULL);
   EXPECT_TRUE(SUCCEEDED(hr));
   EXPECT_GT(endpoint_buffer_size, 0u);
 
@@ -373,7 +373,7 @@ TEST_F(CoreAudioUtilWinTest, SharedModeInitialize) {
   EXPECT_FALSE(CoreAudioUtil::IsFormatSupported(
                   client, AUDCLNT_SHAREMODE_SHARED, &format));
   hr = CoreAudioUtil::SharedModeInitialize(client, &format, NULL,
-                                           &endpoint_buffer_size);
+                                           &endpoint_buffer_size, NULL);
   EXPECT_TRUE(FAILED(hr));
   EXPECT_EQ(hr, E_INVALIDARG);
 
@@ -389,7 +389,7 @@ TEST_F(CoreAudioUtilWinTest, SharedModeInitialize) {
   EXPECT_TRUE(CoreAudioUtil::IsFormatSupported(
                   client, AUDCLNT_SHAREMODE_SHARED, &format));
   hr = CoreAudioUtil::SharedModeInitialize(client, &format, event_handle.Get(),
-                                           &endpoint_buffer_size);
+                                           &endpoint_buffer_size, NULL);
   EXPECT_TRUE(SUCCEEDED(hr));
   EXPECT_GT(endpoint_buffer_size, 0u);
 }
@@ -420,7 +420,7 @@ TEST_F(CoreAudioUtilWinTest, CreateRenderAndCaptureClients) {
 
       // Do a proper initialization and verify that it works this time.
       CoreAudioUtil::SharedModeInitialize(client, &format, NULL,
-                                          &endpoint_buffer_size);
+                                          &endpoint_buffer_size, NULL);
       render_client = CoreAudioUtil::CreateRenderClient(client);
       EXPECT_TRUE(render_client);
       EXPECT_GT(endpoint_buffer_size, 0u);
@@ -432,7 +432,7 @@ TEST_F(CoreAudioUtilWinTest, CreateRenderAndCaptureClients) {
 
       // Do a proper initialization and verify that it works this time.
       CoreAudioUtil::SharedModeInitialize(client, &format, NULL,
-                                          &endpoint_buffer_size);
+                                          &endpoint_buffer_size, NULL);
       capture_client = CoreAudioUtil::CreateCaptureClient(client);
       EXPECT_TRUE(capture_client);
       EXPECT_GT(endpoint_buffer_size, 0u);
@@ -454,7 +454,7 @@ TEST_F(CoreAudioUtilWinTest, FillRenderEndpointBufferWithSilence) {
   EXPECT_TRUE(SUCCEEDED(CoreAudioUtil::GetSharedModeMixFormat(client,
                                                               &format)));
   CoreAudioUtil::SharedModeInitialize(client, &format, NULL,
-                                      &endpoint_buffer_size);
+                                      &endpoint_buffer_size, NULL);
   EXPECT_GT(endpoint_buffer_size, 0u);
 
   ScopedComPtr<IAudioRenderClient> render_client(

@@ -62,10 +62,7 @@ struct {
   { MediaAudioConstraints::kGoogTypingNoiseDetection, true },
   { MediaAudioConstraints::kGoogExperimentalNoiseSuppression, false },
 #if defined(OS_WIN)
-  // TODO(tommi): Turn this back to |true| on Windows when ducking issues
-  // have been resolved.
-  // Bugs: crbug/391414, crbug/391247.
-  { kMediaStreamAudioDucking, false },
+  { kMediaStreamAudioDucking, true },
 #else
   { kMediaStreamAudioDucking, false },
 #endif

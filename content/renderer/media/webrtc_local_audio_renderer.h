@@ -135,9 +135,11 @@ class CONTENT_EXPORT WebRtcLocalAudioRenderer
   base::TimeDelta total_render_time_;
 
   // The audio parameters of the capture source.
+  // Must only be touched on the main thread.
   media::AudioParameters source_params_;
 
   // The audio parameters used by the sink.
+  // Must only be touched on the main thread.
   media::AudioParameters sink_params_;
 
   // Set when playing, cleared when paused.

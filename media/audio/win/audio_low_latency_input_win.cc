@@ -9,6 +9,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "media/audio/win/audio_manager_win.h"
 #include "media/audio/win/avrt_wrapper_win.h"
+#include "media/audio/win/core_audio_util_win.h"
 #include "media/base/audio_bus.h"
 
 using base::win::ScopedComPtr;
@@ -97,7 +98,9 @@ WASAPIAudioInputStream::WASAPIAudioInputStream(AudioManagerWin* manager,
   }
 }
 
-WASAPIAudioInputStream::~WASAPIAudioInputStream() {}
+WASAPIAudioInputStream::~WASAPIAudioInputStream() {
+  DCHECK(CalledOnValidThread());
+}
 
 bool WASAPIAudioInputStream::Open() {
   DCHECK(CalledOnValidThread());
@@ -512,6 +515,11 @@ HRESULT WASAPIAudioInputStream::SetCaptureDevice() {
           base::WideToUTF8(static_cast<WCHAR*>(communications_id))) {
         DLOG(WARNING) << "Ducking has been requested for a non-default device."
                          "Not supported.";
+        // We can't honor the requested effect flag, so turn it off and
+        // continue.  We'll check this flag later to see if we've actually
+        // opened up the communications device, so it's important that it
+        // reflects the active state.
+        effects_ &= ~AudioParameters::DUCKING;
         endpoint_device_.Release();  // Fall back on code below.
       }
     }
@@ -639,12 +647,14 @@ HRESULT WASAPIAudioInputStream::InitializeAudioEngine() {
   // buffer is never smaller than the minimum buffer size needed to ensure
   // that glitches do not occur between the periodic processing passes.
   // This setting should lead to lowest possible latency.
-  HRESULT hr = audio_client_->Initialize(AUDCLNT_SHAREMODE_SHARED,
-                                         flags,
-                                         0,  // hnsBufferDuration
-                                         0,
-                                         &format_,
-                                         NULL);
+  HRESULT hr = audio_client_->Initialize(
+      AUDCLNT_SHAREMODE_SHARED,
+      flags,
+      0,  // hnsBufferDuration
+      0,
+      &format_,
+      (effects_ & AudioParameters::DUCKING) ? &kCommunicationsSessionId : NULL);
+
   if (FAILED(hr))
     return hr;
 

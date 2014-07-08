@@ -10,7 +10,9 @@
 #include "base/metrics/histogram.h"
 #include "base/synchronization/lock.h"
 #include "content/renderer/media/audio_device_factory.h"
+#include "content/renderer/media/media_stream_dispatcher.h"
 #include "content/renderer/media/webrtc_audio_capturer.h"
+#include "content/renderer/render_view_impl.h"
 #include "media/audio/audio_output_device.h"
 #include "media/base/audio_bus.h"
 #include "media/base/audio_fifo.h"
@@ -92,44 +94,6 @@ void WebRtcLocalAudioRenderer::OnSetFormat(
   // thread.
   capture_thread_checker_.DetachFromThread();
   DCHECK(capture_thread_checker_.CalledOnValidThread());
-
-  // Reset the |source_params_|, |sink_params_| and |loopback_fifo_| to match
-  // the new format.
-  {
-    base::AutoLock auto_lock(thread_lock_);
-    if (source_params_ == params)
-      return;
-
-    source_params_ = params;
-
-    sink_params_ = media::AudioParameters(source_params_.format(),
-        source_params_.channel_layout(), source_params_.channels(),
-        source_params_.input_channels(), source_params_.sample_rate(),
-        source_params_.bits_per_sample(),
-#if defined(OS_ANDROID)
-        // On Android, input and output use the same sample rate. In order to
-        // use the low latency mode, we need to use the buffer size suggested by
-        // the AudioManager for the sink.  It will later be used to decide
-        // the buffer size of the shared memory buffer.
-        frames_per_buffer_,
-#else
-        2 * source_params_.frames_per_buffer(),
-#endif
-        // If DUCKING is enabled on the source, it needs to be enabled on the
-        // sink as well.
-        source_params_.effects());
-
-    // TODO(henrika): we could add a more dynamic solution here but I prefer
-    // a fixed size combined with bad audio at overflow. The alternative is
-    // that we start to build up latency and that can be more difficult to
-    // detect. Tests have shown that the FIFO never contains more than 2 or 3
-    // audio frames but I have selected a max size of ten buffers just
-    // in case since these tests were performed on a 16 core, 64GB Win 7
-    // machine. We could also add some sort of error notifier in this area if
-    // the FIFO overflows.
-    loopback_fifo_.reset(new media::AudioFifo(
-        params.channels(), 10 * params.frames_per_buffer()));
-  }
 
   // Post a task on the main render thread to reconfigure the |sink_| with the
   // new format.
@@ -278,10 +242,11 @@ void WebRtcLocalAudioRenderer::MaybeStartSink() {
   if (!sink_.get() || !source_params_.IsValid())
     return;
 
-  base::AutoLock auto_lock(thread_lock_);
-
-  // Clear up the old data in the FIFO.
-  loopback_fifo_->Clear();
+  {
+    // Clear up the old data in the FIFO.
+    base::AutoLock auto_lock(thread_lock_);
+    loopback_fifo_->Clear();
+  }
 
   if (!sink_params_.IsValid() || !playing_ || !volume_ || sink_started_)
     return;
@@ -300,6 +265,59 @@ void WebRtcLocalAudioRenderer::ReconfigureSink(
 
   DVLOG(1) << "WebRtcLocalAudioRenderer::ReconfigureSink()";
 
+  int implicit_ducking_effect = 0;
+  RenderViewImpl* render_view =
+      RenderViewImpl::FromRoutingID(source_render_view_id_);
+  if (render_view &&
+      render_view->media_stream_dispatcher() &&
+      render_view->media_stream_dispatcher()->IsAudioDuckingActive()) {
+    DVLOG(1) << "Forcing DUCKING to be ON for output";
+    implicit_ducking_effect = media::AudioParameters::DUCKING;
+  } else {
+    DVLOG(1) << "DUCKING not forced ON for output";
+  }
+
+  if (source_params_ == params)
+    return;
+
+  // Reset the |source_params_|, |sink_params_| and |loopback_fifo_| to match
+  // the new format.
+
+  source_params_ = params;
+
+  sink_params_ = media::AudioParameters(source_params_.format(),
+      source_params_.channel_layout(), source_params_.channels(),
+      source_params_.input_channels(), source_params_.sample_rate(),
+      source_params_.bits_per_sample(),
+#if defined(OS_ANDROID)
+      // On Android, input and output use the same sample rate. In order to
+      // use the low latency mode, we need to use the buffer size suggested by
+      // the AudioManager for the sink.  It will later be used to decide
+      // the buffer size of the shared memory buffer.
+      frames_per_buffer_,
+#else
+      2 * source_params_.frames_per_buffer(),
+#endif
+      // If DUCKING is enabled on the source, it needs to be enabled on the
+      // sink as well.
+      source_params_.effects() | implicit_ducking_effect);
+
+  {
+    // TODO(henrika): we could add a more dynamic solution here but I prefer
+    // a fixed size combined with bad audio at overflow. The alternative is
+    // that we start to build up latency and that can be more difficult to
+    // detect. Tests have shown that the FIFO never contains more than 2 or 3
+    // audio frames but I have selected a max size of ten buffers just
+    // in case since these tests were performed on a 16 core, 64GB Win 7
+    // machine. We could also add some sort of error notifier in this area if
+    // the FIFO overflows.
+    media::AudioFifo* new_fifo = new media::AudioFifo(
+        params.channels(), 10 * params.frames_per_buffer());
+
+    base::AutoLock auto_lock(thread_lock_);
+    loopback_fifo_.reset(new_fifo);
+  }
+
   if (!sink_)
     return;  // WebRtcLocalAudioRenderer has not yet been started.
 
@@ -309,6 +327,7 @@ void WebRtcLocalAudioRenderer::ReconfigureSink(
     sink_->Stop();
     sink_started_ = false;
   }
+
   sink_ = AudioDeviceFactory::NewOutputDevice(source_render_view_id_,
                                               source_render_frame_id_);
   MaybeStartSink();

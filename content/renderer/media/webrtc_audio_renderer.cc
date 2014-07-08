@@ -9,8 +9,10 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "content/renderer/media/audio_device_factory.h"
+#include "content/renderer/media/media_stream_dispatcher.h"
 #include "content/renderer/media/webrtc_audio_device_impl.h"
 #include "content/renderer/media/webrtc_logging.h"
+#include "content/renderer/render_view_impl.h"
 #include "media/audio/audio_output_device.h"
 #include "media/audio/audio_parameters.h"
 #include "media/audio/sample_rates.h"
@@ -181,6 +183,19 @@ class SharedAudioRenderer : public MediaStreamAudioRenderer {
   OnPlayStateChanged on_play_state_changed_;
 };
 
+// Returns either AudioParameters::NO_EFFECTS or AudioParameters::DUCKING
+// depending on whether or not an input element is currently open with
+// ducking enabled.
+int GetCurrentDuckingFlag(int render_view_id) {
+  RenderViewImpl* render_view = RenderViewImpl::FromRoutingID(render_view_id);
+  if (render_view && render_view->media_stream_dispatcher() &&
+      render_view->media_stream_dispatcher()->IsAudioDuckingActive()) {
+    return media::AudioParameters::DUCKING;
+  }
+
+  return media::AudioParameters::NO_EFFECTS;
+}
+
 }  // namespace
 
 WebRtcAudioRenderer::WebRtcAudioRenderer(
@@ -200,24 +215,18 @@ WebRtcAudioRenderer::WebRtcAudioRenderer(
       start_ref_count_(0),
       audio_delay_milliseconds_(0),
       fifo_delay_milliseconds_(0),
-      // TODO(tommi): Ducking is currently not set on sink_params due to an
-      // issue on Windows that causes the ducked state to be pinned if an output
-      // stream is opened before an input stream (both in communication mode).
-      // Furthermore the input stream may not be associated with the output
-      // stream, which results in the output stream getting incorrectly ducked.
-      // What should happen here is that the ducking flag should be raised
-      // iff an input device is currently open with ducking set.
-      // Bugs: crbug/391414, crbug/391247.
       sink_params_(media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
                    media::CHANNEL_LAYOUT_STEREO, 0, sample_rate, 16,
-                   frames_per_buffer, media::AudioParameters::NO_EFFECTS) {
+                   frames_per_buffer,
+                   GetCurrentDuckingFlag(source_render_view_id)) {
   WebRtcLogMessage(base::StringPrintf(
       "WAR::WAR. source_render_view_id=%d"
-      ", session_id=%d, sample_rate=%d, frames_per_buffer=%d",
+      ", session_id=%d, sample_rate=%d, frames_per_buffer=%d, effects=%i",
       source_render_view_id,
       session_id,
       sample_rate,
-      frames_per_buffer));
+      frames_per_buffer,
+      sink_params_.effects()));
 }
 
 WebRtcAudioRenderer::~WebRtcAudioRenderer() {

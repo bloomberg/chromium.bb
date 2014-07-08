@@ -71,6 +71,7 @@ WASAPIAudioOutputStream::WASAPIAudioOutputStream(AudioManagerWin* manager,
       source_(NULL),
       audio_bus_(AudioBus::Create(params)) {
   DCHECK(manager_);
+
   VLOG(1) << "WASAPIAudioOutputStream::WASAPIAudioOutputStream()";
   VLOG_IF(1, share_mode_ == AUDCLNT_SHAREMODE_EXCLUSIVE)
       << "Core Audio (WASAPI) EXCLUSIVE MODE is enabled.";
@@ -120,7 +121,9 @@ WASAPIAudioOutputStream::WASAPIAudioOutputStream(AudioManagerWin* manager,
   DCHECK(stop_render_event_.IsValid());
 }
 
-WASAPIAudioOutputStream::~WASAPIAudioOutputStream() {}
+WASAPIAudioOutputStream::~WASAPIAudioOutputStream() {
+  DCHECK_EQ(GetCurrentThreadId(), creating_thread_id_);
+}
 
 bool WASAPIAudioOutputStream::Open() {
   VLOG(1) << "WASAPIAudioOutputStream::Open()";
@@ -128,11 +131,19 @@ bool WASAPIAudioOutputStream::Open() {
   if (opened_)
     return true;
 
+  DCHECK(!audio_client_);
+  DCHECK(!audio_render_client_);
+
+  // Will be set to true if we ended up opening the default communications
+  // device.
+  bool communications_device = false;
+
   // Create an IAudioClient interface for the default rendering IMMDevice.
   ScopedComPtr<IAudioClient> audio_client;
   if (device_id_.empty() ||
       CoreAudioUtil::DeviceIsDefault(eRender, device_role_, device_id_)) {
     audio_client = CoreAudioUtil::CreateDefaultClient(eRender, device_role_);
+    communications_device = (device_role_ == eCommunications);
   } else {
     ScopedComPtr<IMMDevice> device(CoreAudioUtil::CreateDevice(device_id_));
     DLOG_IF(ERROR, !device) << "Failed to open device: " << device_id_;
@@ -157,7 +168,8 @@ bool WASAPIAudioOutputStream::Open() {
     // mode and using event-driven buffer handling.
     hr = CoreAudioUtil::SharedModeInitialize(
         audio_client, &format_, audio_samples_render_event_.Get(),
-        &endpoint_buffer_size_frames_);
+        &endpoint_buffer_size_frames_,
+        communications_device ? &kCommunicationsSessionId : NULL);
     if (FAILED(hr))
       return false;
 
@@ -198,7 +210,7 @@ bool WASAPIAudioOutputStream::Open() {
   if (!audio_render_client)
     return false;
 
-   // Store valid COM interfaces.
+  // Store valid COM interfaces.
   audio_client_ = audio_client;
   audio_render_client_ = audio_render_client;
 

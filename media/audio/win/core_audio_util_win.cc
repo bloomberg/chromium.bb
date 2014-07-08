@@ -23,6 +23,12 @@ using base::win::ScopedHandle;
 
 namespace media {
 
+// See header file for documentation.
+// {BE39AF4F-087C-423F-9303-234EC1E5B8EE}
+const GUID kCommunicationsSessionId = {
+  0xbe39af4f, 0x87c, 0x423f, { 0x93, 0x3, 0x23, 0x4e, 0xc1, 0xe5, 0xb8, 0xee }
+};
+
 enum { KSAUDIO_SPEAKER_UNSUPPORTED = 0 };
 
 // Converts Microsoft's channel configuration to ChannelLayout.
@@ -731,10 +737,9 @@ ChannelConfig CoreAudioUtil::GetChannelConfig(const std::string& device_id,
   return static_cast<ChannelConfig>(format.dwChannelMask);
 }
 
-HRESULT CoreAudioUtil::SharedModeInitialize(IAudioClient* client,
-                                            const WAVEFORMATPCMEX* format,
-                                            HANDLE event_handle,
-                                            uint32* endpoint_buffer_size) {
+HRESULT CoreAudioUtil::SharedModeInitialize(
+    IAudioClient* client, const WAVEFORMATPCMEX* format, HANDLE event_handle,
+    uint32* endpoint_buffer_size, const GUID* session_guid) {
   DCHECK(IsSupported());
 
   // Use default flags (i.e, dont set AUDCLNT_STREAMFLAGS_NOPERSIST) to
@@ -760,7 +765,7 @@ HRESULT CoreAudioUtil::SharedModeInitialize(IAudioClient* client,
                                   0,
                                   0,
                                   reinterpret_cast<const WAVEFORMATEX*>(format),
-                                  NULL);
+                                  session_guid);
   if (FAILED(hr)) {
     DVLOG(1) << "IAudioClient::Initialize: " << std::hex << hr;
     return hr;

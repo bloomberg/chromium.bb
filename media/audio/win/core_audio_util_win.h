@@ -200,10 +200,15 @@ class MEDIA_EXPORT CoreAudioUtil {
   // If a valid event is provided in |event_handle|, the client will be
   // initialized for event-driven buffer handling. If |event_handle| is set to
   // NULL, event-driven buffer handling is not utilized.
+  // This function will initialize the audio client as part of the default
+  // audio session if NULL is passed for |session_guid|, otherwise the client
+  // will be associated with the specified session.
   static HRESULT SharedModeInitialize(IAudioClient* client,
                                       const WAVEFORMATPCMEX* format,
                                       HANDLE event_handle,
-                                      uint32* endpoint_buffer_size);
+                                      uint32* endpoint_buffer_size,
+                                      const GUID* session_guid);
+
   // TODO(henrika): add ExclusiveModeInitialize(...)
 
   // Create an IAudioRenderClient client for an existing IAudioClient given by
@@ -229,6 +234,13 @@ class MEDIA_EXPORT CoreAudioUtil {
   ~CoreAudioUtil() {}
   DISALLOW_COPY_AND_ASSIGN(CoreAudioUtil);
 };
+
+// The special audio session identifier we use when opening up the default
+// communication device.  This has the effect that a separate volume control
+// will be shown in the system's volume mixer and control over ducking and
+// visually observing the behavior of ducking, is easier.
+// Use with |SharedModeInitialize|.
+extern const GUID kCommunicationsSessionId;
 
 }  // namespace media
 

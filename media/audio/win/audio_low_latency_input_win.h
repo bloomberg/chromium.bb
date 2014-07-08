@@ -157,8 +157,10 @@ class MEDIA_EXPORT WASAPIAudioInputStream
   // Length of the audio endpoint buffer.
   uint32 endpoint_buffer_size_frames_;
 
-  // A copy of the supplied AudioParameter's |effects|.
-  const int effects_;
+  // A copy of the supplied AudioParameter's |effects|.  If ducking was
+  // specified (desired device=communications) but we ended up not being
+  // able to open the communications device, this flag will be cleared.
+  int effects_;
 
   // Contains the unique name of the selected endpoint device.
   // Note that AudioManagerBase::kDefaultDeviceId represents the default
