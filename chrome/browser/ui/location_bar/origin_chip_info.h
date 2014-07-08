@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_TOOLBAR_ORIGIN_CHIP_INFO_H_
-#define CHROME_BROWSER_UI_TOOLBAR_ORIGIN_CHIP_INFO_H_
+#ifndef CHROME_BROWSER_UI_LOCATION_BAR_ORIGIN_CHIP_INFO_H_
+#define CHROME_BROWSER_UI_LOCATION_BAR_ORIGIN_CHIP_INFO_H_
 
 #include "base/strings/string16.h"
 #include "chrome/browser/ui/toolbar/toolbar_model.h"
@@ -89,4 +89,4 @@ class OriginChip {
                                                Profile* profile);
 };
 
-#endif  // CHROME_BROWSER_UI_TOOLBAR_ORIGIN_CHIP_INFO_H_
+#endif  // CHROME_BROWSER_UI_LOCATION_BAR_ORIGIN_CHIP_INFO_H_
