@@ -116,10 +116,11 @@ void Node::operator delete(void* ptr)
 #endif
 
 #if DUMP_NODE_STATISTICS
-static HashSet<Node*>& liveNodeSet()
+typedef WillBeHeapHashSet<RawPtrWillBeWeakMember<Node> > WeakNodeSet;
+static WeakNodeSet& liveNodeSet()
 {
-    DEFINE_STATIC_LOCAL(HashSet<Node*>, s_liveNodeSet, ());
-    return s_liveNodeSet;
+    DEFINE_STATIC_LOCAL(OwnPtrWillBePersistent<WeakNodeSet>, set, (adoptPtrWillBeNoop(new WeakNodeSet())));
+    return *set;
 }
 #endif
 
@@ -146,7 +147,7 @@ void Node::dumpStatistics()
     size_t elementsWithRareData = 0;
     size_t elementsWithNamedNodeMap = 0;
 
-    for (HashSet<Node*>::iterator it = liveNodeSet().begin(); it != liveNodeSet().end(); ++it) {
+    for (WeakNodeSet::iterator it = liveNodeSet().begin(); it != liveNodeSet().end(); ++it) {
         Node* node = *it;
 
         if (node->hasRareData()) {
@@ -169,7 +170,7 @@ void Node::dumpStatistics()
                     result.storedValue->value++;
 
                 if (const ElementData* elementData = element->elementData()) {
-                    attributes += elementData->length();
+                    attributes += elementData->attributes().size();
                     ++elementsWithAttributeStorage;
                 }
                 break;
@@ -278,11 +279,11 @@ Node::~Node()
     nodeCounter.decrement();
 #endif
 
+#if !ENABLE(OILPAN)
 #if DUMP_NODE_STATISTICS
     liveNodeSet().remove(this);
 #endif
 
-#if !ENABLE(OILPAN)
     if (hasRareData())
         clearRareData();
 
