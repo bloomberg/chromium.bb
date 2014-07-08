@@ -33,4 +33,6 @@
 #define LINUX_S_IWUSR 0200
 #define LINUX_S_IXUSR 0100
 
+#define LINUX_TCGETS 0x5401
+
 #endif

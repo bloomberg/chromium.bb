@@ -356,6 +356,12 @@ int fork(void) {
                      0 /* stack */, 0 /* ptid */, 0 /* tls */, 0 /* ctid */));
 }
 
+int isatty(int fd) {
+  struct linux_termios term;
+  return errno_value_call(
+      linux_syscall3(__NR_ioctl, fd, LINUX_TCGETS, (uintptr_t) &term)) == 0;
+}
+
 int pipe(int pipefd[2]) {
   return errno_value_call(linux_syscall1(__NR_pipe, (uintptr_t) pipefd));
 }

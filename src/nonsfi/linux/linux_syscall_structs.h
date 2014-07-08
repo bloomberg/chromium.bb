@@ -59,4 +59,15 @@ static inline struct linux_user_desc create_linux_user_desc(
 
 #endif
 
+struct linux_termios {
+  uint16_t c_iflag;
+  uint16_t c_oflag;
+  uint16_t c_cflag;
+  uint16_t c_lflag;
+  int8_t c_line;
+  int8_t c_cc[13];
+  int8_t c_ispeed;
+  int8_t c_ospeed;
+};
+
 #endif
