@@ -25,6 +25,8 @@
 #include "net/base/net_export.h"
 #include "net/base/network_delegate.h"
 #include "net/dns/host_resolver.h"
+#include "net/proxy/proxy_config_service.h"
+#include "net/proxy/proxy_service.h"
 #include "net/socket/next_proto.h"
 
 namespace net {
@@ -74,7 +76,14 @@ class NET_EXPORT URLRequestContextBuilder {
   URLRequestContextBuilder();
   ~URLRequestContextBuilder();
 
-  void set_proxy_config_service(ProxyConfigService* proxy_config_service);
+  // These functions are mutually exclusive.  The ProxyConfigService, if
+  // set, will be used to construct a ProxyService.
+  void set_proxy_config_service(ProxyConfigService* proxy_config_service) {
+    proxy_config_service_.reset(proxy_config_service);
+  }
+  void set_proxy_service(ProxyService* proxy_service) {
+    proxy_service_.reset(proxy_service);
+  }
 
   // Call these functions to specify hard-coded Accept-Language
   // or User-Agent header values for all requests that don't
@@ -105,6 +114,12 @@ class NET_EXPORT URLRequestContextBuilder {
   }
 #endif
 
+  // TODO(mmenke):  Probably makes sense to get rid of this, and have consumers
+  // set their own NetLog::Observers instead.
+  void set_net_log(NetLog* net_log) {
+    net_log_.reset(net_log);
+  }
+
   // By default host_resolver is constructed with CreateDefaultResolver.
   void set_host_resolver(HostResolver* host_resolver) {
     host_resolver_.reset(host_resolver);
@@ -128,15 +143,8 @@ class NET_EXPORT URLRequestContextBuilder {
   }
 
   // By default HttpCache is enabled with a default constructed HttpCacheParams.
-  void EnableHttpCache(const HttpCacheParams& params) {
-    http_cache_enabled_ = true;
-    http_cache_params_ = params;
-  }
-
-  void DisableHttpCache() {
-    http_cache_enabled_ = false;
-    http_cache_params_ = HttpCacheParams();
-  }
+  void EnableHttpCache(const HttpCacheParams& params);
+  void DisableHttpCache();
 
   // Override default net::HttpNetworkSession::Params settings.
   void set_http_network_session_params(
@@ -144,9 +152,18 @@ class NET_EXPORT URLRequestContextBuilder {
     http_network_session_params_ = http_network_session_params;
   }
 
+  void set_transport_security_persister_path(
+      const base::FilePath& transport_security_persister_path) {
+    transport_security_persister_path_ = transport_security_persister_path;
+  }
+
   // Adjust |http_network_session_params_.next_protos| to enable SPDY and QUIC.
   void SetSpdyAndQuicEnabled(bool spdy_enabled,
                              bool quic_enabled);
+
+  void set_throttling_enabled(bool throttling_enabled) {
+    throttling_enabled_ = throttling_enabled;
+  }
 
   URLRequestContext* Build();
 
@@ -173,10 +190,15 @@ class NET_EXPORT URLRequestContextBuilder {
   bool ftp_enabled_;
 #endif
   bool http_cache_enabled_;
+  bool throttling_enabled_;
+
   HttpCacheParams http_cache_params_;
   HttpNetworkSessionParams http_network_session_params_;
+  base::FilePath transport_security_persister_path_;
+  scoped_ptr<NetLog> net_log_;
   scoped_ptr<HostResolver> host_resolver_;
   scoped_ptr<ProxyConfigService> proxy_config_service_;
+  scoped_ptr<ProxyService> proxy_service_;
   scoped_ptr<NetworkDelegate> network_delegate_;
   scoped_ptr<FtpTransactionFactory> ftp_transaction_factory_;
   std::vector<SchemeFactory> extra_http_auth_handlers_;

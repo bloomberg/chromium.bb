@@ -12,6 +12,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "net/url_request/url_fetcher.h"
 #include "remoting/base/breakpad.h"
+#include "remoting/base/url_request_context_getter.h"
 #include "remoting/host/host_exit_codes.h"
 #include "remoting/host/logging.h"
 #include "remoting/host/pairing_registry_delegate.h"

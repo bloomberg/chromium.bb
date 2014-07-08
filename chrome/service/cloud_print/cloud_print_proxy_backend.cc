@@ -19,7 +19,7 @@
 #include "chrome/service/cloud_print/cloud_print_service_helpers.h"
 #include "chrome/service/cloud_print/cloud_print_token_store.h"
 #include "chrome/service/cloud_print/connector_settings.h"
-#include "chrome/service/net/service_url_request_context.h"
+#include "chrome/service/net/service_url_request_context_getter.h"
 #include "chrome/service/service_process.h"
 #include "components/cloud_devices/common/cloud_devices_switches.h"
 #include "google_apis/gaia/gaia_oauth_client.h"

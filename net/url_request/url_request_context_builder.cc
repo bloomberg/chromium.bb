@@ -24,14 +24,17 @@
 #include "net/http/http_network_layer.h"
 #include "net/http/http_network_session.h"
 #include "net/http/http_server_properties_impl.h"
+#include "net/http/transport_security_persister.h"
 #include "net/http/transport_security_state.h"
-#include "net/proxy/proxy_service.h"
+#include "net/ssl/default_server_bound_cert_store.h"
+#include "net/ssl/server_bound_cert_service.h"
 #include "net/ssl/ssl_config_service_defaults.h"
 #include "net/url_request/data_protocol_handler.h"
 #include "net/url_request/static_http_user_agent_settings.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_storage.h"
 #include "net/url_request/url_request_job_factory_impl.h"
+#include "net/url_request/url_request_throttler_manager.h"
 
 #if !defined(DISABLE_FILE_SUPPORT)
 #include "net/url_request/file_protocol_handler.h"
@@ -115,7 +118,9 @@ class BasicNetworkDelegate : public NetworkDelegate {
   }
 
   virtual bool OnCanThrottleRequest(const URLRequest& request) const OVERRIDE {
-    return false;
+    // Returning true will only enable throttling if there's also a
+    // URLRequestThrottlerManager, which there isn't, by default.
+    return true;
   }
 
   virtual int OnBeforeSocketStreamConnect(
@@ -138,7 +143,7 @@ class BasicURLRequestContext : public URLRequestContext {
 
   base::Thread* GetCacheThread() {
     if (!cache_thread_) {
-      cache_thread_.reset(new base::Thread("Cache Thread"));
+      cache_thread_.reset(new base::Thread("Network Cache Thread"));
       cache_thread_->StartWithOptions(
           base::Thread::Options(base::MessageLoop::TYPE_IO, 0));
     }
@@ -147,20 +152,29 @@ class BasicURLRequestContext : public URLRequestContext {
 
   base::Thread* GetFileThread() {
     if (!file_thread_) {
-      file_thread_.reset(new base::Thread("File Thread"));
+      file_thread_.reset(new base::Thread("Network File Thread"));
       file_thread_->StartWithOptions(
           base::Thread::Options(base::MessageLoop::TYPE_DEFAULT, 0));
     }
     return file_thread_.get();
   }
 
+  void set_transport_security_persister(
+      scoped_ptr<TransportSecurityPersister> transport_security_persister) {
+    transport_security_persister = transport_security_persister.Pass();
+  }
+
  protected:
   virtual ~BasicURLRequestContext() {}
 
  private:
+  // Threads should be torn down last.
   scoped_ptr<base::Thread> cache_thread_;
   scoped_ptr<base::Thread> file_thread_;
+
   URLRequestContextStorage storage_;
+  scoped_ptr<TransportSecurityPersister> transport_security_persister_;
+
   DISALLOW_COPY_AND_ASSIGN(BasicURLRequestContext);
 };
 
@@ -205,9 +219,14 @@ URLRequestContextBuilder::URLRequestContextBuilder()
 
 URLRequestContextBuilder::~URLRequestContextBuilder() {}
 
-void URLRequestContextBuilder::set_proxy_config_service(
-    ProxyConfigService* proxy_config_service) {
-  proxy_config_service_.reset(proxy_config_service);
+void URLRequestContextBuilder::EnableHttpCache(const HttpCacheParams& params) {
+  http_cache_enabled_ = true;
+  http_cache_params_ = params;
+}
+
+void URLRequestContextBuilder::DisableHttpCache() {
+  http_cache_enabled_ = false;
+  http_cache_params_ = HttpCacheParams();
 }
 
 void URLRequestContextBuilder::SetSpdyAndQuicEnabled(bool spdy_enabled,
@@ -228,32 +247,42 @@ URLRequestContext* URLRequestContextBuilder::Build() {
   NetworkDelegate* network_delegate = network_delegate_.release();
   storage->set_network_delegate(network_delegate);
 
-  if (!host_resolver_)
-    host_resolver_ = net::HostResolver::CreateDefaultResolver(NULL);
+  if (net_log_) {
+    storage->set_net_log(net_log_.release());
+  } else {
+    storage->set_net_log(new net::NetLog);
+  }
+
+  if (!host_resolver_) {
+    host_resolver_ = net::HostResolver::CreateDefaultResolver(
+        context->net_log());
+  }
   storage->set_host_resolver(host_resolver_.Pass());
 
-  storage->set_net_log(new net::NetLog);
-
-  // TODO(willchan): Switch to using this code when
-  // ProxyService::CreateSystemProxyConfigService()'s signature doesn't suck.
-#if defined(OS_LINUX) || defined(OS_ANDROID)
-  ProxyConfigService* proxy_config_service = proxy_config_service_.release();
-#else
-  ProxyConfigService* proxy_config_service = NULL;
-  if (proxy_config_service_) {
-    proxy_config_service = proxy_config_service_.release();
-  } else {
-    proxy_config_service =
-        ProxyService::CreateSystemProxyConfigService(
-            base::ThreadTaskRunnerHandle::Get().get(),
-            context->GetFileThread()->message_loop());
+  if (!proxy_service_) {
+    // TODO(willchan): Switch to using this code when
+    // ProxyService::CreateSystemProxyConfigService()'s signature doesn't suck.
+  #if defined(OS_LINUX) || defined(OS_ANDROID)
+    ProxyConfigService* proxy_config_service = proxy_config_service_.release();
+  #else
+    ProxyConfigService* proxy_config_service = NULL;
+    if (proxy_config_service_) {
+      proxy_config_service = proxy_config_service_.release();
+    } else {
+      proxy_config_service =
+          ProxyService::CreateSystemProxyConfigService(
+              base::ThreadTaskRunnerHandle::Get().get(),
+              context->GetFileThread()->message_loop());
+    }
+  #endif  // defined(OS_LINUX) || defined(OS_ANDROID)
+    proxy_service_.reset(
+        ProxyService::CreateUsingSystemProxyResolver(
+            proxy_config_service,
+            0,  // This results in using the default value.
+            context->net_log()));
   }
-#endif  // defined(OS_LINUX) || defined(OS_ANDROID)
-  storage->set_proxy_service(
-      ProxyService::CreateUsingSystemProxyResolver(
-          proxy_config_service,
-          4,  // TODO(willchan): Find a better constant somewhere.
-          context->net_log()));
+  storage->set_proxy_service(proxy_service_.release());
+
   storage->set_ssl_config_service(new net::SSLConfigServiceDefaults);
   HttpAuthHandlerRegistryFactory* http_auth_handler_registry_factory =
       net::HttpAuthHandlerRegistryFactory::CreateDefault(
@@ -265,11 +294,32 @@ URLRequestContext* URLRequestContextBuilder::Build() {
   }
   storage->set_http_auth_handler_factory(http_auth_handler_registry_factory);
   storage->set_cookie_store(new CookieMonster(NULL, NULL));
+
+  // TODO(mmenke):  This always creates a file thread, even when it ends up
+  // not being used.  Consider lazily creating the thread.
+  storage->set_server_bound_cert_service(
+      new ServerBoundCertService(
+          new DefaultServerBoundCertStore(NULL),
+          context->GetFileThread()->message_loop_proxy()));
+
   storage->set_transport_security_state(new net::TransportSecurityState());
+  if (!transport_security_persister_path_.empty()) {
+    context->set_transport_security_persister(
+        make_scoped_ptr<TransportSecurityPersister>(
+            new TransportSecurityPersister(
+                context->transport_security_state(),
+                transport_security_persister_path_,
+                context->GetFileThread()->message_loop_proxy(),
+                false)));
+  }
+
   storage->set_http_server_properties(
       scoped_ptr<net::HttpServerProperties>(
           new net::HttpServerPropertiesImpl()));
   storage->set_cert_verifier(CertVerifier::CreateDefault());
+
+  if (throttling_enabled_)
+    storage->set_throttler_manager(new URLRequestThrottlerManager());
 
   net::HttpNetworkSession::Params network_session_params;
   network_session_params.host_resolver = context->host_resolver();

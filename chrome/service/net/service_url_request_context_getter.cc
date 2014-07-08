@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/service/net/service_url_request_context.h"
+#include "chrome/service/net/service_url_request_context_getter.h"
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
 #include <sys/utsname.h>
@@ -14,19 +14,9 @@
 #include "base/sys_info.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/service/service_process.h"
-#include "net/cert/cert_verifier.h"
-#include "net/cookies/cookie_monster.h"
-#include "net/dns/host_resolver.h"
-#include "net/http/http_auth_handler_factory.h"
-#include "net/http/http_cache.h"
-#include "net/http/http_network_session.h"
-#include "net/http/http_server_properties_impl.h"
 #include "net/proxy/proxy_config_service.h"
 #include "net/proxy/proxy_service.h"
-#include "net/ssl/ssl_config_service_defaults.h"
-#include "net/url_request/static_http_user_agent_settings.h"
-#include "net/url_request/url_request_job_factory_impl.h"
-#include "net/url_request/url_request_throttler_manager.h"
+#include "net/url_request/url_request_context_builder.h"
 
 namespace {
 // Copied from webkit/glue/user_agent.cc. We don't want to pull in a dependency
@@ -86,6 +76,7 @@ std::string BuildOSCpuInfo() {
   return os_cpu;
 }
 
+// Returns the default user agent.
 std::string MakeUserAgentForServiceProcess() {
   std::string user_agent;
   chrome::VersionInfo version_info;
@@ -106,51 +97,10 @@ std::string MakeUserAgentForServiceProcess() {
 
 }  // namespace
 
-ServiceURLRequestContext::ServiceURLRequestContext(
-    const std::string& user_agent,
-    net::ProxyConfigService* net_proxy_config_service)
-    : storage_(this) {
-  storage_.set_host_resolver(net::HostResolver::CreateDefaultResolver(NULL));
-  storage_.set_proxy_service(net::ProxyService::CreateUsingSystemProxyResolver(
-      net_proxy_config_service, 0u, NULL));
-  storage_.set_cert_verifier(net::CertVerifier::CreateDefault());
-  storage_.set_ssl_config_service(new net::SSLConfigServiceDefaults);
-  storage_.set_http_auth_handler_factory(
-      net::HttpAuthHandlerFactory::CreateDefault(host_resolver()));
-  storage_.set_http_server_properties(
-      scoped_ptr<net::HttpServerProperties>(
-          new net::HttpServerPropertiesImpl()));
-  storage_.set_transport_security_state(new net::TransportSecurityState);
-  storage_.set_throttler_manager(new net::URLRequestThrottlerManager);
-
-  net::HttpNetworkSession::Params session_params;
-  session_params.host_resolver = host_resolver();
-  session_params.cert_verifier = cert_verifier();
-  session_params.transport_security_state = transport_security_state();
-  session_params.proxy_service = proxy_service();
-  session_params.ssl_config_service = ssl_config_service();
-  session_params.http_auth_handler_factory = http_auth_handler_factory();
-  session_params.http_server_properties = http_server_properties();
-  scoped_refptr<net::HttpNetworkSession> network_session(
-      new net::HttpNetworkSession(session_params));
-  storage_.set_http_transaction_factory(new net::HttpCache(
-      network_session.get(), net::HttpCache::DefaultBackend::InMemory(0)));
-  // In-memory cookie store.
-  storage_.set_cookie_store(new net::CookieMonster(NULL, NULL));
-  storage_.set_job_factory(new net::URLRequestJobFactoryImpl());
-  storage_.set_http_user_agent_settings(new net::StaticHttpUserAgentSettings(
-      "en-us,fr", user_agent));
-}
-
-ServiceURLRequestContext::~ServiceURLRequestContext() {
-}
-
 ServiceURLRequestContextGetter::ServiceURLRequestContextGetter()
-    : network_task_runner_(
+    : user_agent_(MakeUserAgentForServiceProcess()),
+      network_task_runner_(
           g_service_process->io_thread()->message_loop_proxy()) {
-  // Build the default user agent.
-  user_agent_ = MakeUserAgentForServiceProcess();
-
   // TODO(sanjeevr): Change CreateSystemProxyConfigService to accept a
   // MessageLoopProxy* instead of MessageLoop*.
   DCHECK(g_service_process);
@@ -161,10 +111,14 @@ ServiceURLRequestContextGetter::ServiceURLRequestContextGetter()
 
 net::URLRequestContext*
 ServiceURLRequestContextGetter::GetURLRequestContext() {
-  if (!url_request_context_.get())
-    url_request_context_.reset(
-        new ServiceURLRequestContext(user_agent_,
-                                     proxy_config_service_.release()));
+  if (!url_request_context_.get()) {
+    net::URLRequestContextBuilder builder;
+    builder.set_user_agent(user_agent_);
+    builder.set_accept_language("en-us,fr");
+    builder.set_proxy_config_service(proxy_config_service_.release());
+    builder.set_throttling_enabled(true);
+    url_request_context_.reset(builder.Build());
+  }
   return url_request_context_.get();
 }
 

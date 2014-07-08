@@ -121,7 +121,7 @@
         '<@(remoting_protocol_sources)',
       ],
       'sources!': [
-        'base/url_request_context.cc',
+        'base/url_request_context_getter.cc',
         'jingle_glue/chromium_socket_factory.cc',
       ],
 

@@ -24,7 +24,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/service_process_util.h"
 #include "chrome/service/cloud_print/cloud_print_proxy.h"
-#include "chrome/service/net/service_url_request_context.h"
+#include "chrome/service/net/service_url_request_context_getter.h"
 #include "chrome/service/service_ipc_server.h"
 #include "chrome/service/service_process_prefs.h"
 #include "grit/chromium_strings.h"

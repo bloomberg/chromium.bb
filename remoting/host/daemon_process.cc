@@ -16,7 +16,6 @@
 #include "base/single_thread_task_runner.h"
 #include "net/base/net_util.h"
 #include "remoting/base/auto_thread_task_runner.h"
-#include "remoting/base/url_request_context.h"
 #include "remoting/host/branding.h"
 #include "remoting/host/chromoting_messages.h"
 #include "remoting/host/config_file_watcher.h"

@@ -4,6 +4,7 @@
 
 #include "mojo/services/network/url_loader_impl.h"
 
+#include "base/message_loop/message_loop.h"
 #include "mojo/common/common_type_converters.h"
 #include "mojo/services/network/network_context.h"
 #include "net/base/io_buffer.h"

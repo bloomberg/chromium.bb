@@ -1,21 +1,12 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/base/url_request_context.h"
+#include "remoting/base/url_request_context_getter.h"
 
 #include "base/message_loop/message_loop_proxy.h"
-#include "net/cert/cert_verifier.h"
-#include "net/dns/host_resolver.h"
-#include "net/http/http_auth_handler_factory.h"
-#include "net/http/http_network_layer.h"
-#include "net/http/http_network_session.h"
-#include "net/http/http_server_properties_impl.h"
-#include "net/http/transport_security_state.h"
 #include "net/proxy/proxy_config_service.h"
-#include "net/proxy/proxy_service.h"
-#include "net/ssl/ssl_config_service_defaults.h"
-#include "net/url_request/url_request_job_factory_impl.h"
+#include "net/url_request/url_request_context_builder.h"
 #include "remoting/base/vlog_net_log.h"
 
 #if defined(OS_WIN)
@@ -78,45 +69,6 @@ net::ProxyConfigService* CreateSystemProxyConfigService(
 
 }  // namespace
 
-// TODO(willchan): This is largely copied from service_url_request_context.cc,
-// which is in turn copied from some test code. Move it somewhere reusable.
-URLRequestContext::URLRequestContext(
-    scoped_ptr<net::ProxyConfigService> proxy_config_service)
-    : storage_(this) {
-  scoped_ptr<VlogNetLog> net_log(new VlogNetLog());
-  storage_.set_host_resolver(
-      net::HostResolver::CreateDefaultResolver(net_log.get()));
-  storage_.set_proxy_service(net::ProxyService::CreateUsingSystemProxyResolver(
-      proxy_config_service.release(), 0u, net_log.get()));
-  storage_.set_cert_verifier(net::CertVerifier::CreateDefault());
-  storage_.set_ssl_config_service(new net::SSLConfigServiceDefaults);
-  storage_.set_http_auth_handler_factory(
-      net::HttpAuthHandlerFactory::CreateDefault(host_resolver()));
-  storage_.set_http_server_properties(
-      scoped_ptr<net::HttpServerProperties>(
-          new net::HttpServerPropertiesImpl()));
-  storage_.set_transport_security_state(new net::TransportSecurityState);
-  storage_.set_job_factory(new net::URLRequestJobFactoryImpl());
-
-  net::HttpNetworkSession::Params session_params;
-  session_params.host_resolver = host_resolver();
-  session_params.cert_verifier = cert_verifier();
-  session_params.transport_security_state = transport_security_state();
-  session_params.proxy_service = proxy_service();
-  session_params.ssl_config_service = ssl_config_service();
-  session_params.http_auth_handler_factory = http_auth_handler_factory();
-  session_params.http_server_properties = http_server_properties();
-  session_params.net_log = net_log.get();
-  scoped_refptr<net::HttpNetworkSession> network_session(
-      new net::HttpNetworkSession(session_params));
-  storage_.set_http_transaction_factory(
-      new net::HttpNetworkLayer(network_session.get()));
-  storage_.set_net_log(net_log.release());
-}
-
-URLRequestContext::~URLRequestContext() {
-}
-
 URLRequestContextGetter::URLRequestContextGetter(
     scoped_refptr<base::SingleThreadTaskRunner> network_task_runner)
     : network_task_runner_(network_task_runner) {
@@ -126,8 +78,11 @@ URLRequestContextGetter::URLRequestContextGetter(
 
 net::URLRequestContext* URLRequestContextGetter::GetURLRequestContext() {
   if (!url_request_context_.get()) {
-    url_request_context_.reset(
-        new URLRequestContext(proxy_config_service_.Pass()));
+    net::URLRequestContextBuilder builder;
+    builder.set_net_log(new VlogNetLog());
+    builder.DisableHttpCache();
+    builder.set_proxy_config_service(proxy_config_service_.release());
+    url_request_context_.reset(builder.Build());
   }
   return url_request_context_.get();
 }

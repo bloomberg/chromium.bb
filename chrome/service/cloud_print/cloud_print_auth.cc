@@ -10,7 +10,7 @@
 #include "chrome/common/cloud_print/cloud_print_constants.h"
 #include "chrome/common/cloud_print/cloud_print_helpers.h"
 #include "chrome/service/cloud_print/cloud_print_token_store.h"
-#include "chrome/service/net/service_url_request_context.h"
+#include "chrome/service/net/service_url_request_context_getter.h"
 #include "chrome/service/service_process.h"
 #include "google_apis/gaia/gaia_urls.h"
 

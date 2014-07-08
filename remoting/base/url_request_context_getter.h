@@ -1,9 +1,9 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef REMOTING_BASE_URL_REQUEST_CONTEXT_H_
-#define REMOTING_BASE_URL_REQUEST_CONTEXT_H_
+#ifndef REMOTING_BASE_URL_REQUEST_CONTEXT_GETTER_H_
+#define REMOTING_BASE_URL_REQUEST_CONTEXT_GETTER_H_
 
 #include <string>
 
@@ -20,22 +20,6 @@ class MessageLoopProxy;
 }  // namespace base
 
 namespace remoting {
-
-// Subclass of net::URLRequestContext which can be used to store extra
-// information for requests. This subclass is meant to be used in the
-// remoting Me2Me host process where the profile is not available.
-class URLRequestContext : public net::URLRequestContext {
- public:
-  explicit URLRequestContext(
-      scoped_ptr<net::ProxyConfigService> proxy_config_service);
-
- private:
-  virtual ~URLRequestContext();
-
-  net::URLRequestContextStorage storage_;
-
-  DISALLOW_COPY_AND_ASSIGN(URLRequestContext);
-};
 
 class URLRequestContextGetter : public net::URLRequestContextGetter {
  public:
@@ -60,4 +44,4 @@ class URLRequestContextGetter : public net::URLRequestContextGetter {
 
 }  // namespace remoting
 
-#endif  // REMOTING_BASE_URL_REQUEST_CONTEXT_H_
+#endif  // REMOTING_BASE_URL_REQUEST_CONTEXT_GETTER_H_

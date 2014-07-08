@@ -8,7 +8,7 @@
 
 #include "base/bind.h"
 #include "remoting/base/auto_thread.h"
-#include "remoting/base/url_request_context.h"
+#include "remoting/base/url_request_context_getter.h"
 
 namespace remoting {
 

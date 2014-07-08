@@ -5,18 +5,15 @@
 #ifndef MOJO_SERVICES_NETWORK_NETWORK_CONTEXT_H_
 #define MOJO_SERVICES_NETWORK_NETWORK_CONTEXT_H_
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/threading/thread.h"
 
 namespace base {
 class FilePath;
 }
 
 namespace net {
-class NetLog;
 class URLRequestContext;
-class URLRequestContextStorage;
-class TransportSecurityPersister;
 }
 
 namespace mojo {
@@ -31,12 +28,7 @@ class NetworkContext {
   }
 
  private:
-  base::Thread file_thread_;
-  base::Thread cache_thread_;
-  scoped_ptr<net::NetLog> net_log_;
-  scoped_ptr<net::URLRequestContextStorage> storage_;
   scoped_ptr<net::URLRequestContext> url_request_context_;
-  scoped_ptr<net::TransportSecurityPersister> transport_security_persister_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkContext);
 };

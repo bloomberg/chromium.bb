@@ -4,7 +4,9 @@
 
 #include "remoting/host/setup/host_starter.h"
 
+#include "base/bind.h"
 #include "base/guid.h"
+#include "base/location.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "google_apis/google_api_keys.h"

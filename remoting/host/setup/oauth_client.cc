@@ -4,6 +4,8 @@
 
 #include "remoting/host/setup/oauth_client.h"
 
+#include "base/logging.h"
+
 namespace {
 const int kMaxGaiaRetries = 3;
 }  // namespace

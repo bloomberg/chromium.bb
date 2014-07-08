@@ -16,7 +16,7 @@
 #include "google_apis/google_api_keys.h"
 #include "jni/JniInterface_jni.h"
 #include "media/base/yuv_convert.h"
-#include "remoting/base/url_request_context.h"
+#include "remoting/base/url_request_context_getter.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_frame.h"
 
 using base::android::ConvertJavaStringToUTF8;

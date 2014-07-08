@@ -9,8 +9,13 @@
 #include <string>
 
 #include "base/callback.h"
+#include "base/memory/ref_counted.h"
 #include "google_apis/gaia/gaia_oauth_client.h"
-#include "remoting/base/url_request_context.h"
+#include "net/url_request/url_request_context_getter.h"
+
+namespace net {
+class URLRequestContext;
+}
 
 namespace remoting {
 

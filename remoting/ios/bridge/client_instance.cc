@@ -8,7 +8,7 @@
 #include "base/logging.h"
 #include "base/synchronization/waitable_event.h"
 #include "net/socket/client_socket_factory.h"
-#include "remoting/base/url_request_context.h"
+#include "remoting/base/url_request_context_getter.h"
 #include "remoting/client/audio_player.h"
 #include "remoting/client/plugin/delegating_signal_strategy.h"
 #include "remoting/ios/bridge/client_proxy.h"

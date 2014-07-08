@@ -13,7 +13,7 @@
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "remoting/base/service_urls.h"
-#include "remoting/base/url_request_context.h"
+#include "remoting/base/url_request_context_getter.h"
 #include "remoting/host/setup/host_starter.h"
 #include "remoting/host/setup/oauth_helper.h"
 #include "remoting/host/setup/pin_validator.h"

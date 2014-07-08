@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_SERVICE_NET_SERVICE_URL_REQUEST_CONTEXT_H_
-#define CHROME_SERVICE_NET_SERVICE_URL_REQUEST_CONTEXT_H_
+#ifndef CHROME_SERVICE_NET_SERVICE_URL_REQUEST_CONTEXT_GETTER_H_
+#define CHROME_SERVICE_NET_SERVICE_URL_REQUEST_CONTEXT_GETTER_H_
 
 #include <string>
 
@@ -27,23 +27,6 @@ class MessageLoopProxy;
 namespace net {
 class ProxyConfigService;
 }
-
-// Subclass of net::URLRequestContext which can be used to store extra
-// information for requests. This subclass is meant to be used in the service
-// process where the profile is not available.
-//
-class ServiceURLRequestContext : public net::URLRequestContext {
- public:
-  // This context takes ownership of |net_proxy_config_service|.
-  explicit ServiceURLRequestContext(
-      const std::string& user_agent,
-      net::ProxyConfigService* net_proxy_config_service);
-
-  virtual ~ServiceURLRequestContext();
-
- private:
-  net::URLRequestContextStorage storage_;
-};
 
 class ServiceURLRequestContextGetter : public net::URLRequestContextGetter {
  public:
@@ -69,4 +52,4 @@ class ServiceURLRequestContextGetter : public net::URLRequestContextGetter {
   scoped_ptr<net::URLRequestContext> url_request_context_;
 };
 
-#endif  // CHROME_SERVICE_NET_SERVICE_URL_REQUEST_CONTEXT_H_
+#endif  // CHROME_SERVICE_NET_SERVICE_URL_REQUEST_CONTEXT_GETTER_H_
