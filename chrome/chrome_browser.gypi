@@ -1166,7 +1166,6 @@
       'browser/search_engines/search_provider_install_state_message_filter.h',
       'browser/search_engines/template_url_fetcher.cc',
       'browser/search_engines/template_url_fetcher.h',
-      'browser/search_engines/template_url_fetcher_callbacks.h',
       'browser/search_engines/template_url_fetcher_factory.cc',
       'browser/search_engines/template_url_fetcher_factory.h',
       'browser/search_engines/template_url_parser.cc',

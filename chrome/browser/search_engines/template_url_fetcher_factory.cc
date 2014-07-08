@@ -41,7 +41,9 @@ TemplateURLFetcherFactory::~TemplateURLFetcherFactory() {
 
 KeyedService* TemplateURLFetcherFactory::BuildServiceInstanceFor(
     content::BrowserContext* profile) const {
-  return new TemplateURLFetcher(static_cast<Profile*>(profile));
+  return new TemplateURLFetcher(
+      TemplateURLServiceFactory::GetForProfile(static_cast<Profile*>(profile)),
+      profile->GetRequestContext());
 }
 
 content::BrowserContext* TemplateURLFetcherFactory::GetBrowserContextToUse(

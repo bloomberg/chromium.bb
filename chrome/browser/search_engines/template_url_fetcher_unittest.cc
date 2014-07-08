@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/callback_helpers.h"
 #include "base/file_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/search_engines/template_url_fetcher.h"
-#include "chrome/browser/search_engines/template_url_fetcher_callbacks.h"
 #include "chrome/browser/search_engines/template_url_fetcher_factory.h"
 #include "chrome/browser/search_engines/template_url_service_test_util.h"
 #include "chrome/common/chrome_paths.h"
@@ -20,26 +20,6 @@
 #include "url/gurl.h"
 
 using base::ASCIIToUTF16;
-
-class TemplateURLFetcherTest;
-
-// Handles callbacks from TemplateURLFetcher.
-class TemplateURLFetcherTestCallbacks : public TemplateURLFetcherCallbacks {
- public:
-  explicit TemplateURLFetcherTestCallbacks(TemplateURLFetcherTest* test)
-      : test_(test) {
-  }
-  virtual ~TemplateURLFetcherTestCallbacks();
-
-  // TemplateURLFetcherCallbacks implementation.
-  virtual void ConfirmAddSearchProvider(TemplateURL* template_url,
-                                        Profile* profile) OVERRIDE;
-
- private:
-  TemplateURLFetcherTest* test_;
-
-  DISALLOW_COPY_AND_ASSIGN(TemplateURLFetcherTestCallbacks);
-};
 
 // Basic set-up for TemplateURLFetcher tests.
 class TemplateURLFetcherTest : public testing::Test {
@@ -61,12 +41,14 @@ class TemplateURLFetcherTest : public testing::Test {
     test_util_.TearDown();
   }
 
-  // Called by ~TemplateURLFetcherTestCallbacks.
-  void DestroyedCallback(TemplateURLFetcherTestCallbacks* callbacks);
+  // Called when the callback is destroyed.
+  void DestroyedCallback();
 
   // TemplateURLFetcherCallbacks implementation.  (Although not derived from
   // this class, this method handles those calls for the test.)
-  void ConfirmAddSearchProvider(TemplateURL* template_url, Profile* profile);
+  void ConfirmAddSearchProvider(
+      base::ScopedClosureRunner* callback_destruction_notifier,
+      scoped_ptr<TemplateURL> template_url);
 
  protected:
   // Schedules the download of the url.
@@ -98,16 +80,6 @@ class TemplateURLFetcherTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(TemplateURLFetcherTest);
 };
 
-TemplateURLFetcherTestCallbacks::~TemplateURLFetcherTestCallbacks() {
-  test_->DestroyedCallback(this);
-}
-
-void TemplateURLFetcherTestCallbacks::ConfirmAddSearchProvider(
-    TemplateURL* template_url,
-    Profile* profile) {
-  test_->ConfirmAddSearchProvider(template_url, profile);
-}
-
 TemplateURLFetcherTest::TemplateURLFetcherTest()
     : callbacks_destroyed_(0),
       add_provider_called_(0),
@@ -118,17 +90,16 @@ TemplateURLFetcherTest::TemplateURLFetcherTest()
       src_dir.AppendASCII("chrome/test/data"));
 }
 
-void TemplateURLFetcherTest::DestroyedCallback(
-    TemplateURLFetcherTestCallbacks* callbacks) {
+void TemplateURLFetcherTest::DestroyedCallback() {
   callbacks_destroyed_++;
   if (waiting_for_download_)
     base::MessageLoop::current()->Quit();
 }
 
 void TemplateURLFetcherTest::ConfirmAddSearchProvider(
-    TemplateURL* template_url,
-    Profile* profile) {
-  last_callback_template_url_.reset(template_url);
+    base::ScopedClosureRunner* callback_destruction_notifier,
+    scoped_ptr<TemplateURL> template_url) {
+  last_callback_template_url_ = template_url.Pass();
   add_provider_called_++;
 }
 
@@ -149,10 +120,18 @@ void TemplateURLFetcherTest::StartDownload(
   // Start the fetch.
   GURL osdd_url = test_server_.GetURL("/" + osdd_file_name);
   GURL favicon_url;
+  base::ScopedClosureRunner* callback_destruction_notifier =
+      new base::ScopedClosureRunner(
+          base::Bind(&TemplateURLFetcherTest::DestroyedCallback,
+                     base::Unretained(this)));
+
   TemplateURLFetcherFactory::GetForProfile(
       test_util_.profile())->ScheduleDownload(
           keyword, osdd_url, favicon_url, NULL,
-          new TemplateURLFetcherTestCallbacks(this), provider_type);
+          base::Bind(&TemplateURLFetcherTest::ConfirmAddSearchProvider,
+                     base::Unretained(this),
+                     base::Owned(callback_destruction_notifier)),
+          provider_type);
 }
 
 void TemplateURLFetcherTest::WaitForDownloadToFinish() {

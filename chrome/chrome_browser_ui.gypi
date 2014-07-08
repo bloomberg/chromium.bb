@@ -1534,8 +1534,6 @@
       'browser/ui/search/search_ui.h',
       'browser/ui/search_engines/search_engine_tab_helper_delegate.cc',
       'browser/ui/search_engines/search_engine_tab_helper_delegate.h',
-      'browser/ui/search_engines/template_url_fetcher_ui_callbacks.cc',
-      'browser/ui/search_engines/template_url_fetcher_ui_callbacks.h',
       'browser/ui/singleton_tabs.cc',
       'browser/ui/singleton_tabs.h',
       'browser/ui/startup/autolaunch_prompt.h',

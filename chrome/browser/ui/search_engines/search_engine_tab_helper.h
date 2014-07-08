@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_SEARCH_ENGINES_SEARCH_ENGINE_TAB_HELPER_H_
 #define CHROME_BROWSER_UI_SEARCH_ENGINES_SEARCH_ENGINE_TAB_HELPER_H_
 
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/find_bar/find_bar_controller.h"
 #include "chrome/browser/ui/find_bar/find_notification_details.h"
 #include "chrome/common/search_provider.h"
@@ -12,6 +13,7 @@
 #include "content/public/browser/web_contents_user_data.h"
 
 class SearchEngineTabHelperDelegate;
+class TemplateURL;
 
 // Per-tab search engine manager. Handles dealing search engine processing
 // functionality.
@@ -39,12 +41,17 @@ class SearchEngineTabHelper
                      const GURL& osdd_url,
                      const search_provider::OSDDType& msg_provider_type);
 
+  // Handles when an OSDD is downloaded.
+  void OnDownloadedOSDD(scoped_ptr<TemplateURL> template_url);
+
   // If params has a searchable form, this tries to create a new keyword.
   void GenerateKeywordIfNecessary(
       const content::FrameNavigateParams& params);
 
   // Delegate for notifying our owner about stuff. Not owned by us.
   SearchEngineTabHelperDelegate* delegate_;
+
+  base::WeakPtrFactory<SearchEngineTabHelper> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(SearchEngineTabHelper);
 };

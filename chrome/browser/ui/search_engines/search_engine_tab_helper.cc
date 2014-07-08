@@ -8,7 +8,7 @@
 #include "chrome/browser/search_engines/template_url_fetcher.h"
 #include "chrome/browser/search_engines/template_url_fetcher_factory.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
-#include "chrome/browser/ui/search_engines/template_url_fetcher_ui_callbacks.h"
+#include "chrome/browser/ui/search_engines/search_engine_tab_helper_delegate.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
 #include "components/search_engines/template_url.h"
@@ -83,7 +83,8 @@ bool SearchEngineTabHelper::OnMessageReceived(const IPC::Message& message) {
 }
 
 SearchEngineTabHelper::SearchEngineTabHelper(WebContents* web_contents)
-    : content::WebContentsObserver(web_contents) {
+    : content::WebContentsObserver(web_contents),
+      weak_ptr_factory_(this) {
   DCHECK(web_contents);
 }
 
@@ -134,7 +135,16 @@ void SearchEngineTabHelper::OnPageHasOSDD(
   // new keyword will be created when done.
   TemplateURLFetcherFactory::GetForProfile(profile)->ScheduleDownload(
       keyword, osdd_url, entry->GetFavicon().url, web_contents(),
-      new TemplateURLFetcherUICallbacks(this, web_contents()), provider_type);
+      base::Bind(&SearchEngineTabHelper::OnDownloadedOSDD,
+                 weak_ptr_factory_.GetWeakPtr()),
+      provider_type);
+}
+
+void SearchEngineTabHelper::OnDownloadedOSDD(
+    scoped_ptr<TemplateURL> template_url) {
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents()->GetBrowserContext());
+  delegate_->ConfirmAddSearchProvider(template_url.release(), profile);
 }
 
 void SearchEngineTabHelper::GenerateKeywordIfNecessary(
