@@ -383,7 +383,8 @@ int64 MetadataDatabaseIndex::PickDirtyTracker() const {
   return *dirty_trackers_.begin();
 }
 
-void MetadataDatabaseIndex::DemoteDirtyTracker(int64 tracker_id) {
+void MetadataDatabaseIndex::DemoteDirtyTracker(
+    int64 tracker_id, leveldb::WriteBatch* /* unused_batch */) {
   if (dirty_trackers_.erase(tracker_id))
     demoted_dirty_trackers_.insert(tracker_id);
 }
@@ -392,7 +393,8 @@ bool MetadataDatabaseIndex::HasDemotedDirtyTracker() const {
   return !demoted_dirty_trackers_.empty();
 }
 
-void MetadataDatabaseIndex::PromoteDemotedDirtyTrackers() {
+void MetadataDatabaseIndex::PromoteDemotedDirtyTrackers(
+    leveldb::WriteBatch* /* unused_batch */) {
   dirty_trackers_.insert(demoted_dirty_trackers_.begin(),
                          demoted_dirty_trackers_.end());
   demoted_dirty_trackers_.clear();

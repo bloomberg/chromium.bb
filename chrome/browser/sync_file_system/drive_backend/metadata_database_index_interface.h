@@ -94,12 +94,13 @@ class MetadataDatabaseIndexInterface {
   virtual int64 PickDirtyTracker() const = 0;
 
   // Demotes a dirty tracker.
-  virtual void DemoteDirtyTracker(int64 tracker_id) = 0;
+  virtual void DemoteDirtyTracker(
+      int64 tracker_id, leveldb::WriteBatch* batch) = 0;
 
   virtual bool HasDemotedDirtyTracker() const = 0;
 
   // Promotes all demoted dirty trackers to normal dirty trackers.
-  virtual void PromoteDemotedDirtyTrackers() = 0;
+  virtual void PromoteDemotedDirtyTrackers(leveldb::WriteBatch* batch) = 0;
 
   virtual size_t CountDirtyTracker() const = 0;
   virtual size_t CountFileMetadata() const = 0;

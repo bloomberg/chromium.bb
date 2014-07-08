@@ -95,9 +95,10 @@ class MetadataDatabaseIndex : public MetadataDatabaseIndexInterface {
   virtual std::string PickMultiTrackerFileID() const OVERRIDE;
   virtual ParentIDAndTitle PickMultiBackingFilePath() const OVERRIDE;
   virtual int64 PickDirtyTracker() const OVERRIDE;
-  virtual void DemoteDirtyTracker(int64 tracker_id) OVERRIDE;
+  virtual void DemoteDirtyTracker(
+      int64 tracker_id, leveldb::WriteBatch* batch) OVERRIDE;
   virtual bool HasDemotedDirtyTracker() const OVERRIDE;
-  virtual void PromoteDemotedDirtyTrackers() OVERRIDE;
+  virtual void PromoteDemotedDirtyTrackers(leveldb::WriteBatch* batch) OVERRIDE;
   virtual size_t CountDirtyTracker() const OVERRIDE;
   virtual size_t CountFileMetadata() const OVERRIDE;
   virtual size_t CountFileTracker() const OVERRIDE;

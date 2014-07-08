@@ -23,6 +23,8 @@ extern const char kFileMetadataKeyPrefix[];
 extern const char kFileTrackerKeyPrefix[];
 
 extern const char kAppRootIDByAppIDKeyPrefix[];
+extern const char kDirtyIDKeyPrefix[];
+extern const char kDemotedDirtyIDKeyPrefix[];
 
 extern const int kMaxRetry;
 extern const int64 kListChangesRetryDelaySeconds;

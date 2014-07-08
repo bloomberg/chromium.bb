@@ -21,6 +21,8 @@ const char kFileMetadataKeyPrefix[] = "FILE: ";
 const char kFileTrackerKeyPrefix[] = "TRACKER: ";
 
 const char kAppRootIDByAppIDKeyPrefix[] = "APP_ROOT: ";
+const char kDirtyIDKeyPrefix[] = "DIRTY: ";
+const char kDemotedDirtyIDKeyPrefix[] = "DEMOTED_DIRTY: ";
 
 const int kMaxRetry = 5;
 const int64 kListChangesRetryDelaySeconds = 60 * 60;

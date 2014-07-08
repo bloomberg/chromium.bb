@@ -43,6 +43,8 @@ namespace drive_backend {
 
 namespace {
 
+void EmptyStatusCallback(SyncStatusCode status) {}
+
 std::string FileKindToString(FileKind file_kind) {
   switch (file_kind) {
     case FILE_KIND_UNSUPPORTED:
@@ -1367,12 +1369,16 @@ MetadataDatabase::ActivationStatus MetadataDatabase::TryActivateTracker(
 
 void MetadataDatabase::LowerTrackerPriority(int64 tracker_id) {
   DCHECK(worker_sequence_checker_.CalledOnValidSequencedThread());
-  index_->DemoteDirtyTracker(tracker_id);
+  scoped_ptr<leveldb::WriteBatch> batch(new leveldb::WriteBatch);
+  index_->DemoteDirtyTracker(tracker_id, batch.get());
+  WriteToDatabase(batch.Pass(), base::Bind(&EmptyStatusCallback));
 }
 
 void MetadataDatabase::PromoteLowerPriorityTrackersToNormal() {
   DCHECK(worker_sequence_checker_.CalledOnValidSequencedThread());
-  index_->PromoteDemotedDirtyTrackers();
+  scoped_ptr<leveldb::WriteBatch> batch(new leveldb::WriteBatch);
+  index_->PromoteDemotedDirtyTrackers(batch.get());
+  WriteToDatabase(batch.Pass(), base::Bind(&EmptyStatusCallback));
 }
 
 bool MetadataDatabase::GetNormalPriorityDirtyTracker(
@@ -1793,6 +1799,7 @@ void MetadataDatabase::WriteToDatabase(scoped_ptr<leveldb::WriteBatch> batch,
     return;
   }
 
+  // TODO(peria): Write to DB on disk synchronously.
   file_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&WriteOnFileTaskRunner,

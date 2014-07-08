@@ -107,9 +107,9 @@ TEST(MetadataDatabaseIndexTest, UpdateTest) {
       MetadataDatabaseIndex::CreateForTesting(
           CreateTestDatabaseContents().get());
 
-  index->DemoteDirtyTracker(kPlaceholderTrackerID);
+  index->DemoteDirtyTracker(kPlaceholderTrackerID, NULL);
   EXPECT_EQ(kInvalidTrackerID, index->PickDirtyTracker());
-  index->PromoteDemotedDirtyTrackers();
+  index->PromoteDemotedDirtyTrackers(NULL);
   EXPECT_EQ(kPlaceholderTrackerID, index->PickDirtyTracker());
 
   FileMetadata metadata;

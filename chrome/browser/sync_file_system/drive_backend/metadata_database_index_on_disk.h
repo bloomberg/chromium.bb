@@ -57,9 +57,10 @@ class MetadataDatabaseIndexOnDisk : public MetadataDatabaseIndexInterface {
   virtual std::string PickMultiTrackerFileID() const OVERRIDE;
   virtual ParentIDAndTitle PickMultiBackingFilePath() const OVERRIDE;
   virtual int64 PickDirtyTracker() const OVERRIDE;
-  virtual void DemoteDirtyTracker(int64 tracker_id) OVERRIDE;
+  virtual void DemoteDirtyTracker(
+      int64 tracker_id, leveldb::WriteBatch* batch) OVERRIDE;
   virtual bool HasDemotedDirtyTracker() const OVERRIDE;
-  virtual void PromoteDemotedDirtyTrackers() OVERRIDE;
+  virtual void PromoteDemotedDirtyTrackers(leveldb::WriteBatch* batch) OVERRIDE;
   virtual size_t CountDirtyTracker() const OVERRIDE;
   virtual size_t CountFileMetadata() const OVERRIDE;
   virtual size_t CountFileTracker() const OVERRIDE;
@@ -76,6 +77,15 @@ class MetadataDatabaseIndexOnDisk : public MetadataDatabaseIndexInterface {
                           leveldb::WriteBatch* batch);
   void RemoveFromAppIDIndex(const FileTracker& tracker,
                             leveldb::WriteBatch* batch);
+
+  // Maintain dirty tracker IDs.
+  void AddToDirtyTrackerIndexes(const FileTracker& new_tracker,
+                                leveldb::WriteBatch* batch);
+  void UpdateInDirtyTrackerIndexes(const FileTracker& old_tracker,
+                                   const FileTracker& new_tracker,
+                                   leveldb::WriteBatch* batch);
+  void RemoveFromDirtyTrackerIndexes(const FileTracker& tracker,
+                                     leveldb::WriteBatch* batch);
 
   // Checks if |db_| has an entry whose key is |key|.
   bool DBHasKey(const std::string& key);

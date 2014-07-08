@@ -187,7 +187,7 @@ TEST_F(MetadataDatabaseIndexOnDiskTest, IndexAppRootIDByAppIDTest) {
   CreateTestDatabase(true);
 
   std::vector<std::string> app_ids = index()->GetRegisteredAppIDs();
-  ASSERT_EQ(1u, app_ids.size());
+  ASSERT_EQ(1U, app_ids.size());
   EXPECT_EQ("app_id", app_ids[0]);
 
   EXPECT_EQ(kInvalidTrackerID, index()->GetAppRootTracker(""));
@@ -245,6 +245,63 @@ TEST_F(MetadataDatabaseIndexOnDiskTest, IndexAppRootIDByAppIDTest) {
   WriteToDB(batch.Pass());
   EXPECT_EQ(kAppRootTrackerID, index()->GetAppRootTracker("app_id"));
   EXPECT_EQ(kInvalidTrackerID, index()->GetAppRootTracker("app_id_3"));
+}
+
+TEST_F(MetadataDatabaseIndexOnDiskTest, DirtyTrackersTest) {
+  CreateTestDatabase(true);
+
+  scoped_ptr<leveldb::WriteBatch> batch;
+  // Testing public methods
+  EXPECT_EQ(1U, index()->CountDirtyTracker());
+  EXPECT_FALSE(index()->HasDemotedDirtyTracker());
+  EXPECT_EQ(kPlaceholderTrackerID, index()->PickDirtyTracker());
+  batch.reset(new leveldb::WriteBatch);
+  index()->DemoteDirtyTracker(kPlaceholderTrackerID, batch.get());
+  WriteToDB(batch.Pass());
+  EXPECT_TRUE(index()->HasDemotedDirtyTracker());
+  EXPECT_EQ(1U, index()->CountDirtyTracker());
+
+  const int64 tracker_id = 13;
+  scoped_ptr<FileTracker> app_root_tracker(new FileTracker);
+  index()->GetFileTracker(kAppRootTrackerID, app_root_tracker.get());
+
+  // Testing AddDirtyTrackerIndexes
+  scoped_ptr<FileTracker> tracker =
+      test_util::CreatePlaceholderTracker("placeholder",
+                                          tracker_id,
+                                          app_root_tracker.get());
+  batch.reset(new leveldb::WriteBatch);
+  index()->StoreFileTracker(tracker.Pass(), batch.get());
+  WriteToDB(batch.Pass());
+  EXPECT_EQ(2U, index()->CountDirtyTracker());
+  EXPECT_EQ(tracker_id, index()->PickDirtyTracker());
+
+  // Testing UpdateDirtyTrackerIndexes
+  tracker = test_util::CreatePlaceholderTracker("placeholder",
+                                                tracker_id,
+                                                app_root_tracker.get());
+  tracker->set_dirty(false);
+  batch.reset(new leveldb::WriteBatch);
+  index()->StoreFileTracker(tracker.Pass(), batch.get());
+  WriteToDB(batch.Pass());
+  EXPECT_EQ(1U, index()->CountDirtyTracker());
+  EXPECT_EQ(kInvalidTrackerID, index()->PickDirtyTracker());
+
+  tracker = test_util::CreatePlaceholderTracker("placeholder",
+                                                tracker_id,
+                                                app_root_tracker.get());
+  batch.reset(new leveldb::WriteBatch);
+  index()->StoreFileTracker(tracker.Pass(), batch.get());
+  WriteToDB(batch.Pass());
+  EXPECT_EQ(2U, index()->CountDirtyTracker());
+  EXPECT_EQ(tracker_id, index()->PickDirtyTracker());
+
+  // Testing RemoveFromDirtyTrackerIndexes
+  batch.reset(new leveldb::WriteBatch);
+  index()->RemoveFileTracker(tracker_id, batch.get());
+  WriteToDB(batch.Pass());
+  EXPECT_EQ(1U, index()->CountDirtyTracker());
+  EXPECT_EQ(kInvalidTrackerID, index()->PickDirtyTracker());
 }
 
 }  // namespace drive_backend
