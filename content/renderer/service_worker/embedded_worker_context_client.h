@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_CHILD_SERVICE_WORKER_EMBEDDED_WORKER_CLIENT_H_
-#define CONTENT_CHILD_SERVICE_WORKER_EMBEDDED_WORKER_CLIENT_H_
+#ifndef CONTENT_RENDERER_SERVICE_WORKER_EMBEDDED_WORKER_CONTEXT_CLIENT_H_
+#define CONTENT_RENDERER_SERVICE_WORKER_EMBEDDED_WORKER_CONTEXT_CLIENT_H_
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
@@ -59,9 +59,6 @@ class EmbeddedWorkerContextClient
   bool OnMessageReceived(const IPC::Message& msg);
 
   void Send(IPC::Message* message);
-
-  // TODO(kinuko): Deprecate this.
-  void SendReplyToBrowser(int request_id, const IPC::Message& message);
 
   // WebServiceWorkerContextClient overrides, some of them are just dispatched
   // on to script_context_.
@@ -131,4 +128,4 @@ class EmbeddedWorkerContextClient
 
 }  // namespace content
 
-#endif  // CONTENT_CHILD_SERVICE_WORKER_EMBEDDED_WORKER_CLIENT_H_
+#endif  // CONTENT_RENDERER_SERVICE_WORKER_EMBEDDED_WORKER_CONTEXT_CLIENT_H_

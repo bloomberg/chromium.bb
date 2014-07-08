@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_CHILD_SERVICE_WORKER_EMBEDDED_WORKER_DISPATCHER_H_
-#define CONTENT_CHILD_SERVICE_WORKER_EMBEDDED_WORKER_DISPATCHER_H_
+#ifndef CONTENT_RENDERER_SERVICE_WORKER_EMBEDDED_WORKER_DISPATCHER_H_
+#define CONTENT_RENDERER_SERVICE_WORKER_EMBEDDED_WORKER_DISPATCHER_H_
 
 #include "base/basictypes.h"
 #include "base/id_map.h"
@@ -45,4 +45,4 @@ class EmbeddedWorkerDispatcher : public IPC::Listener {
 
 }  // namespace content
 
-#endif  // CONTENT_CHILD_SERVICE_WORKER_EMBEDDED_WORKER_DISPATCHER_H_
+#endif  // CONTENT_RENDERER_SERVICE_WORKER_EMBEDDED_WORKER_DISPATCHER_H_

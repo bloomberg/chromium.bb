@@ -25,6 +25,7 @@ class EmbeddedWorkerContextMessageFilter : public ChildMessageFilter {
       const IPC::Message& msg) OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
 
+ private:
   scoped_refptr<base::MessageLoopProxy> main_thread_loop_proxy_;
   scoped_refptr<ThreadSafeSender> thread_safe_sender_;
 
