@@ -58,9 +58,9 @@ def ConstructArchiveInfo(default_archive_info=None, **archive_args):
 
 
 class ArchiveInfo(object):
-  """An ArchiveInfo object represents informatinon about an archive."""
+  """An ArchiveInfo object represents information about an archive."""
   def __init__(self, archive_info_file=None, **archive_args):
-    """Initialize ArchiveInfo object.
+    """Constructor for ArchiveInfo object.
 
     Args:
       archive_info_file: A JSON file representing an ArchiveInfo object.
@@ -87,7 +87,7 @@ class ArchiveInfo(object):
     return ArchiveInfo(**arch_tuple._asdict())
 
   def LoadArchiveInfoFile(self, archive_info_file):
-    """Loads a archive info file into this object.
+    """Loads a archive info file JSON into this object.
 
     Args:
       archive_info_file: Filename or archive info json.
@@ -125,7 +125,7 @@ class ArchiveInfo(object):
     return dict(self._archive_tuple._asdict())
 
   def SetArchiveData(self, **archive_args):
-    """Replaces currently set archive data with new ArchiveInfoTuple."""
+    """Replaces currently set archive data with fields from ArchiveInfoTuple."""
     self._archive_tuple = ConstructArchiveInfo(**archive_args)
     if not self._archive_tuple.name:
       raise RuntimeError('Invalid Archive Data - "name" is not set.')

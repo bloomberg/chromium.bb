@@ -27,8 +27,15 @@ FIELD_REVISION_HASH = 'revision_hash'
 
 
 class RevisionInfo(object):
-  """Revision JSON file describing the revision for a package."""
+  """Revision information object describing a set revision for a package."""
   def __init__(self, packages_desc, revision_file=None):
+    """Constructor for a RevisionInfo object.
+
+    Args:
+      packages_desc: Packages description containing all the necessary packages
+                     and package targets to verify a revision file is complete.
+      revision_file: Optional JSON file representing a RevisionInfo object.
+    """
     assert isinstance(packages_desc, packages_info.PackagesInfo)
     self._packages_desc = packages_desc
     self._revision_num = -1
@@ -49,6 +56,7 @@ class RevisionInfo(object):
             self._package_targets == other._package_targets)
 
   def _GetRevisionHash(self):
+    """Returns a stable hash for a revision file for validation purposes."""
     hash_string = str(self._revision_num)
     hash_string += str(self._package_name)
     for package_target in sorted(self._package_targets):
@@ -63,6 +71,7 @@ class RevisionInfo(object):
     return hashlib.sha1(hash_string).hexdigest()
 
   def _ValidateRevisionComplete(self):
+    """Validate packages to make sure it matches the packages description."""
     if self._package_name is None:
       raise RuntimeError('Invalid revision information - no package name.')
     elif self._revision_num == -1:
@@ -85,10 +94,13 @@ class RevisionInfo(object):
                            + '\n\t' + '\n\t'.join(sorted(revision_targets)))
 
   def LoadRevisionFile(self, revision_file, skip_hash_verify=False):
-    """Loads a revision file into this object
+    """Loads a revision JSON file into this object.
 
     Args:
-      revision_file: File name for a revision file.
+      revision_file: File name for a revision JSON file.
+      skip_hash_verify: If True, will skip the hash validation check. This
+                        should only be used if a field has been added or
+                        removed in order to recalculate the revision hash.
     """
     try:
       with open(revision_file, 'rt') as f:
@@ -114,10 +126,10 @@ class RevisionInfo(object):
         raise IOError('Invalid revision file - revision hash check failed')
 
   def SaveRevisionFile(self, revision_file):
-    """Saves this object to a revision file to be loaded later.
+    """Saves this object to a revision JSON file to be loaded later.
 
     Args:
-      revision_file: File name where revision file will be saved.
+      revision_file: File name where revision JSON file will be saved.
     """
     self._ValidateRevisionComplete()
 

@@ -3,7 +3,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""A package is a json file describing a list of package archives."""
+"""A package is a JSON file describing a list of package archives."""
 
 import json
 import os
@@ -23,7 +23,7 @@ CURRENT_PACKAGE_VERSION = 1
 
 
 def ReadPackageFile(package_file):
-  """Returns a PackageInfoTuple representation of a json package file."""
+  """Returns a PackageInfoTuple representation of a JSON package file."""
   with open(package_file, 'rt') as f:
     json_value = json.load(f)
 
@@ -180,7 +180,7 @@ class PackageInfo(object):
     """Loads a package file into this object.
 
     Args:
-      package_file: Filename or json dictionary.
+      package_file: Filename or JSON dictionary.
     """
     archive_names = None
     self._archive_list = []
