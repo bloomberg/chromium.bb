@@ -5,6 +5,7 @@
 #include "cc/resources/video_resource_updater.h"
 
 #include "base/bind.h"
+#include "base/debug/trace_event.h"
 #include "cc/output/gl_renderer.h"
 #include "cc/resources/resource_provider.h"
 #include "gpu/GLES2/gl2extchromium.h"
@@ -97,6 +98,7 @@ static gfx::Size SoftwarePlaneDimension(
 
 VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
     const scoped_refptr<media::VideoFrame>& video_frame) {
+  TRACE_EVENT0("cc", "VideoResourceUpdater::CreateForSoftwarePlanes");
   media::VideoFrame::Format input_frame_format = video_frame->format();
 
 #if defined(VIDEO_HOLE)
@@ -291,6 +293,7 @@ static void ReturnTexture(const scoped_refptr<media::VideoFrame>& frame,
 
 VideoFrameExternalResources VideoResourceUpdater::CreateForHardwarePlanes(
     const scoped_refptr<media::VideoFrame>& video_frame) {
+  TRACE_EVENT0("cc", "VideoResourceUpdater::CreateForHardwarePlanes");
   media::VideoFrame::Format frame_format = video_frame->format();
 
   DCHECK_EQ(frame_format, media::VideoFrame::NATIVE_TEXTURE);
