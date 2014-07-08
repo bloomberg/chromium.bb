@@ -324,7 +324,6 @@ Bug(gardener) [ Release XP ] http/tests/security/xss-DENIED-xsl-external-entity-
 Bug(gardener) [ Release XP ] http/tests/w3c/webperf/submission/Google/resource-timing/html/test_resource_connection_reuse.html [ Failure Pass ]
 Bug(gardener) [ Debug SnowLeopard ] http/tests/w3c/webperf/submission/Intel/user-timing/test_user_timing_mark.html [ Failure Pass ]
 crbug.com/347109 [ Debug SnowLeopard ] http/tests/websocket/useragent-in-openinghandshake.html [ Failure Pass ]
-crbug.com/349537 [ Release Linux ] http/tests/websocket/workers/worker-reload-repeated.html [ Failure Pass ]
 crbug.com/357427 [ Release Linux ] http/tests/workers/terminate-during-sync-operation-file.html [ Crash Pass ]
 crbug.com/357427 [ Debug Linux ] http/tests/workers/terminate-during-sync-operation-filesystem.html [ Pass Timeout ]
 crbug.com/357427 [ Release Lion ] http/tests/workers/terminate-during-sync-operation-websql.html [ Pass Timeout ]
