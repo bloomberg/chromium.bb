@@ -31,6 +31,20 @@ public:
     void trace(Visitor*);
 };
 
+class GCedClassWithAScriptWrappableBase
+    : public A, public ScriptWrappable {
+public:
+    void trace(Visitor*);
+};
+
+class GCedClassWithAScriptWrappableAndAFinalizableBase
+    : public GCedClassWithAScriptWrappableBase
+    , public B
+    , public ScriptWrappable {
+public:
+    void trace(Visitor*);
+};
+
 }
 
 #endif

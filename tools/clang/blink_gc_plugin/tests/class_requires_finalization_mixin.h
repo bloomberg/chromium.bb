@@ -12,7 +12,7 @@ namespace WebCore {
 class OffHeap : public RefCounted<OffHeap> { };
 class OnHeap : public GarbageCollected<OnHeap> { };
 
-class Mixin : public GarbageCollectedMixin {
+class MixinFinalizable : public GarbageCollectedMixin {
 public:
     void trace(Visitor*);
 private:
@@ -20,7 +20,16 @@ private:
     Member<OnHeap> m_onHeap;
 };
 
-class NeedsFinalizer : public GarbageCollected<NeedsFinalizer>, public Mixin {
+class MixinNotFinalizable : public GarbageCollectedMixin {
+public:
+    void trace(Visitor*);
+private:
+    Member<OnHeap> m_onHeap;
+};
+
+class NeedsFinalizer
+    : public GarbageCollected<NeedsFinalizer>
+    , public MixinFinalizable {
     USING_GARBAGE_COLLECTED_MIXIN(NeedsFinalizer);
 public:
     void trace(Visitor*);
@@ -29,8 +38,19 @@ private:
 };
 
 class HasFinalizer : public GarbageCollectedFinalized<HasFinalizer>,
-                     public Mixin {
+                     public MixinFinalizable {
     USING_GARBAGE_COLLECTED_MIXIN(HasFinalizer);
+public:
+    void trace(Visitor*);
+private:
+    Member<OnHeap> m_obj;
+};
+
+class NeedsNoFinalization
+    : public GarbageCollected<NeedsNoFinalization>
+    , public MixinNotFinalizable
+    , public ScriptWrappable {
+    USING_GARBAGE_COLLECTED_MIXIN(NeedsNoFinalization);
 public:
     void trace(Visitor*);
 private:

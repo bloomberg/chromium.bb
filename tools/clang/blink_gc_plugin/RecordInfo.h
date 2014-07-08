@@ -121,6 +121,7 @@ class RecordInfo {
   CachedBool is_stack_allocated_;
   CachedBool is_non_newable_;
   CachedBool is_only_placement_newable_;
+  CachedBool does_need_finalization_;
 
   bool determined_trace_methods_;
   clang::CXXMethodDecl* trace_method_;

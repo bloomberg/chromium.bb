@@ -218,6 +218,15 @@ class GarbageCollectedMixin {
     virtual bool isAlive(Visitor*) const = 0;
 };
 
+// WebCore::ScriptWrappable receives special treatment
+// so as to allow it to be used together with GarbageCollected<T>,
+// even when its user-declared destructor is provided.
+// As it is with Oilpan disabled.
+class ScriptWrappable {
+public:
+    ~ScriptWrappable() { /* user-declared, thus, non-trivial */ }
+};
+
 }
 
 namespace WTF {

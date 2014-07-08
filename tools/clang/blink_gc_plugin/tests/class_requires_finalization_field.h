@@ -41,7 +41,7 @@ struct VectorTraits<WebCore::C> {
 namespace WebCore {
 
 // Off-heap vectors always need to be finalized.
-class NeedsFinalizer : public A {
+class NeedsFinalizer : public A, public ScriptWrappable {
 public:
     void trace(Visitor*);
 private:
@@ -58,7 +58,7 @@ private:
 };
 
 // On-heap vectors with no inlined objects never need to be finalized.
-class DoesNotNeedFinalizer : public A {
+class DoesNotNeedFinalizer : public A, public ScriptWrappable {
 public:
     void trace(Visitor*);
 private:
@@ -67,7 +67,7 @@ private:
 
 // On-heap vectors with inlined objects that don't need destruction
 // don't need to be finalized.
-class AlsoDoesNotNeedFinalizer : public A {
+class AlsoDoesNotNeedFinalizer : public A, public ScriptWrappable {
 public:
     void trace(Visitor*);
 private:

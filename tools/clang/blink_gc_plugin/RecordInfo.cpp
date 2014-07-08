@@ -18,6 +18,7 @@ RecordInfo::RecordInfo(CXXRecordDecl* record, RecordCache* cache)
       is_stack_allocated_(kNotComputed),
       is_non_newable_(kNotComputed),
       is_only_placement_newable_(kNotComputed),
+      does_need_finalization_(kNotComputed),
       determined_trace_methods_(false),
       trace_method_(0),
       trace_dispatch_method_(0),
@@ -400,7 +401,46 @@ void RecordInfo::DetermineTracingMethods() {
 
 // TODO: Add classes with a finalize() method that specialize FinalizerTrait.
 bool RecordInfo::NeedsFinalization() {
-  return record_->hasNonTrivialDestructor();
+  if (does_need_finalization_ == kNotComputed) {
+    // Rely on hasNonTrivialDestructor(), but if the only
+    // identifiable reason for it being true is the presence
+    // of a safely ignorable class as a direct base,
+    // or we're processing such an 'ignorable' class, then it does
+    // not need finalization.
+    does_need_finalization_ =
+        record_->hasNonTrivialDestructor() ? kTrue : kFalse;
+    if (!does_need_finalization_)
+      return does_need_finalization_;
+
+    // Processing a class with a safely-ignorable destructor.
+    NamespaceDecl* ns =
+        dyn_cast<NamespaceDecl>(record_->getDeclContext());
+    if (ns && Config::HasIgnorableDestructor(ns->getName(), name_)) {
+      does_need_finalization_ = kFalse;
+      return does_need_finalization_;
+    }
+
+    CXXDestructorDecl* dtor = record_->getDestructor();
+    if (dtor && dtor->isUserProvided())
+      return does_need_finalization_;
+    for (Fields::iterator it = GetFields().begin();
+         it != GetFields().end();
+         ++it) {
+      if (it->second.edge()->NeedsFinalization())
+        return does_need_finalization_;
+    }
+
+    for (Bases::iterator it = GetBases().begin();
+         it != GetBases().end();
+         ++it) {
+      if (it->second.info()->NeedsFinalization())
+        return does_need_finalization_;
+    }
+    // Destructor was non-trivial due to bases with destructors that
+    // can be safely ignored. Hence, no need for finalization.
+    does_need_finalization_ = kFalse;
+  }
+  return does_need_finalization_;
 }
 
 // A class needs tracing if:

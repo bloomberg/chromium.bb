@@ -91,6 +91,14 @@ class Config {
            name == "PersistentHeapHashMap";
   }
 
+  // Following http://crrev.com/369633033 (Blink r177436),
+  // ignore WebCore::ScriptWrappable's destructor.
+  // FIXME: remove when its non-Oilpan destructor is removed.
+  static bool HasIgnorableDestructor(const std::string& ns,
+                                     const std::string& name) {
+    return ns == "WebCore" && name == "ScriptWrappable";
+  }
+
   // Assumes name is a valid collection name.
   static size_t CollectionDimension(const std::string& name) {
     return (IsHashMap(name) || name == "pair") ? 2 : 1;

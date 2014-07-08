@@ -6,7 +6,12 @@
 
 namespace WebCore {
 
-void Mixin::trace(Visitor* visitor)
+void MixinFinalizable::trace(Visitor* visitor)
+{
+    visitor->trace(m_onHeap);
+}
+
+void MixinNotFinalizable::trace(Visitor* visitor)
 {
     visitor->trace(m_onHeap);
 }
@@ -14,13 +19,19 @@ void Mixin::trace(Visitor* visitor)
 void NeedsFinalizer::trace(Visitor* visitor)
 {
     visitor->trace(m_obj);
-    Mixin::trace(visitor);
+    MixinFinalizable::trace(visitor);
 }
 
 void HasFinalizer::trace(Visitor* visitor)
 {
     visitor->trace(m_obj);
-    Mixin::trace(visitor);
+    MixinFinalizable::trace(visitor);
+}
+
+void NeedsNoFinalization::trace(Visitor* visitor)
+{
+    visitor->trace(m_obj);
+    MixinNotFinalizable::trace(visitor);
 }
 
 }
