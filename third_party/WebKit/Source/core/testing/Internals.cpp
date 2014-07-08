@@ -2213,9 +2213,6 @@ bool Internals::loseSharedGraphicsContext3D()
 
 void Internals::forceCompositingUpdate(Document* document, ExceptionState& exceptionState)
 {
-    // Hit when running content_shell with --expose-internals-for-testing.
-    DisableCompositingQueryAsserts disabler;
-
     if (!document || !document->renderView()) {
         exceptionState.throwDOMException(InvalidAccessError, document ? "The document's render view cannot be retrieved." : "The document provided is invalid.");
         return;
