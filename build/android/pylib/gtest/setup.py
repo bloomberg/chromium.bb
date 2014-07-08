@@ -219,44 +219,6 @@ def _GetDisabledTestsFilterFromFile(suite_name):
   return disabled_filter
 
 
-# A helper class for scheduling setup-related tasks on devices.
-class _TestSetupRunner(test_runner.TestRunner):
-  def SetUp(self):
-    pass
-
-  def TearDown(self):
-    pass
-
-  def DeviceSteps(self):
-    """ Steps to be run for device. Should be implemented in subclasses.
-
-    Returns:
-      A value that will be put into 'setup_result' field of corresponding
-      test result.
-    """
-    raise NotImplementedError()
-
-  def RunTest(self, _test):
-    result = base_test_result.BaseTestResult(
-        'dummy', base_test_result.ResultType.PASS)
-
-    result.setup_result = self.DeviceSteps()
-    results = base_test_result.TestRunResults()
-    results.AddResult(result)
-    return results, None
-
-
-def _InstallPackage(test_options, test_package, devices):
-  def TestInstallerRunnerFactory(device, _shard_index):
-    class TestInstallerRunner(_TestSetupRunner):
-      def DeviceSteps(self):
-        self.test_package.Install(self.device)
-    return TestInstallerRunner(test_options, device, test_package)
-
-  test_dispatcher.RunTests(['setup'], TestInstallerRunnerFactory, devices,
-      shard=False)
-
-
 def _GetTests(test_options, test_package, devices):
   """Get a list of tests.
 
@@ -269,16 +231,22 @@ def _GetTests(test_options, test_package, devices):
     A list of all the tests in the test suite.
   """
   def TestListerRunnerFactory(device, _shard_index):
-    class TestListerRunner(_TestSetupRunner):
-      def DeviceSteps(self):
-        return self.test_package.GetAllTests(self.device)
+    class TestListerRunner(test_runner.TestRunner):
+      def RunTest(self, _test):
+        result = base_test_result.BaseTestResult(
+            'gtest_list_tests', base_test_result.ResultType.PASS)
+        self.test_package.Install(self.device)
+        result.test_list = self.test_package.GetAllTests(self.device)
+        results = base_test_result.TestRunResults()
+        results.AddResult(result)
+        return results, None
     return TestListerRunner(test_options, device, test_package)
 
   results, _no_retry = test_dispatcher.RunTests(
-      ['setup'], TestListerRunnerFactory, devices)
+      ['gtest_list_tests'], TestListerRunnerFactory, devices)
   tests = []
   for r in results.GetAll():
-    tests.extend(r.setup_result)
+    tests.extend(r.test_list)
   return tests
 
 
@@ -356,7 +324,6 @@ def Setup(test_options, devices):
   _GenerateDepsDirUsingIsolate(test_options.suite_name,
                                test_options.isolate_file_path)
 
-  _InstallPackage(test_options, test_package, devices)
   tests = _GetTests(test_options, test_package, devices)
 
   # Constructs a new TestRunner with the current options.
