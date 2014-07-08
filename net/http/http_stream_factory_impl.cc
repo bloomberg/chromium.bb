@@ -22,9 +22,8 @@ namespace net {
 
 namespace {
 
-const PortAlternateProtocolPair kNoAlternateProtocol = {
-  0,  UNINITIALIZED_ALTERNATE_PROTOCOL
-};
+const AlternateProtocolInfo kNoAlternateProtocol =
+    AlternateProtocolInfo(0,  UNINITIALIZED_ALTERNATE_PROTOCOL, 0);
 
 GURL UpgradeUrlToHttps(const GURL& original_url, int port) {
   GURL::Replacements replacements;
@@ -111,7 +110,7 @@ HttpStreamRequest* HttpStreamFactoryImpl::RequestStreamInternal(
                                  net_log);
 
   GURL alternate_url;
-  PortAlternateProtocolPair alternate =
+  AlternateProtocolInfo alternate =
       GetAlternateProtocolRequestFor(request_info.url, &alternate_url);
   Job* alternate_job = NULL;
   if (alternate.protocol != UNINITIALIZED_ALTERNATE_PROTOCOL) {
@@ -155,7 +154,7 @@ void HttpStreamFactoryImpl::PreconnectStreams(
     const SSLConfig& proxy_ssl_config) {
   DCHECK(!for_websockets_);
   GURL alternate_url;
-  PortAlternateProtocolPair alternate =
+  AlternateProtocolInfo alternate =
       GetAlternateProtocolRequestFor(request_info.url, &alternate_url);
   Job* job = NULL;
   if (alternate.protocol != UNINITIALIZED_ALTERNATE_PROTOCOL) {
@@ -176,7 +175,7 @@ const HostMappingRules* HttpStreamFactoryImpl::GetHostMappingRules() const {
   return session_->params().host_mapping_rules;
 }
 
-PortAlternateProtocolPair HttpStreamFactoryImpl::GetAlternateProtocolRequestFor(
+AlternateProtocolInfo HttpStreamFactoryImpl::GetAlternateProtocolRequestFor(
     const GURL& original_url,
     GURL* alternate_url) {
   if (!session_->params().use_alternate_protocols)
@@ -193,7 +192,7 @@ PortAlternateProtocolPair HttpStreamFactoryImpl::GetAlternateProtocolRequestFor(
   if (!http_server_properties.HasAlternateProtocol(origin))
     return kNoAlternateProtocol;
 
-  PortAlternateProtocolPair alternate =
+  AlternateProtocolInfo alternate =
       http_server_properties.GetAlternateProtocol(origin);
   if (alternate.protocol == ALTERNATE_PROTOCOL_BROKEN) {
     HistogramAlternateProtocolUsage(

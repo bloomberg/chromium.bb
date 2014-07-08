@@ -207,7 +207,7 @@ TEST_F(HttpServerPropertiesManagerTest,
       net::HostPortPair::FromString("www.google.com:80")));
   ASSERT_TRUE(http_server_props_manager_->HasAlternateProtocol(
       net::HostPortPair::FromString("mail.google.com:80")));
-  net::PortAlternateProtocolPair port_alternate_protocol =
+  net::AlternateProtocolInfo port_alternate_protocol =
       http_server_props_manager_->GetAlternateProtocol(
           net::HostPortPair::FromString("www.google.com:80"));
   EXPECT_EQ(443, port_alternate_protocol.port);
@@ -345,7 +345,7 @@ TEST_F(HttpServerPropertiesManagerTest, HasAlternateProtocol) {
   EXPECT_FALSE(
       http_server_props_manager_->HasAlternateProtocol(spdy_server_mail));
   http_server_props_manager_->SetAlternateProtocol(
-      spdy_server_mail, 443, net::NPN_SPDY_3);
+      spdy_server_mail, 443, net::NPN_SPDY_3, 1);
 
   // Run the task.
   loop_.RunUntilIdle();
@@ -353,7 +353,7 @@ TEST_F(HttpServerPropertiesManagerTest, HasAlternateProtocol) {
 
   ASSERT_TRUE(
       http_server_props_manager_->HasAlternateProtocol(spdy_server_mail));
-  net::PortAlternateProtocolPair port_alternate_protocol =
+  net::AlternateProtocolInfo port_alternate_protocol =
       http_server_props_manager_->GetAlternateProtocol(spdy_server_mail);
   EXPECT_EQ(443, port_alternate_protocol.port);
   EXPECT_EQ(net::NPN_SPDY_3, port_alternate_protocol.protocol);
@@ -365,7 +365,7 @@ TEST_F(HttpServerPropertiesManagerTest, Clear) {
   net::HostPortPair spdy_server_mail("mail.google.com", 443);
   http_server_props_manager_->SetSupportsSpdy(spdy_server_mail, true);
   http_server_props_manager_->SetAlternateProtocol(
-      spdy_server_mail, 443, net::NPN_SPDY_3);
+      spdy_server_mail, 443, net::NPN_SPDY_3, 1);
 
   const net::SpdySettingsIds id1 = net::SETTINGS_UPLOAD_BANDWIDTH;
   const net::SpdySettingsFlags flags1 = net::SETTINGS_FLAG_PLEASE_PERSIST;

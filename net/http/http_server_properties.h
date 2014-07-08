@@ -92,19 +92,29 @@ NET_EXPORT AlternateProtocol AlternateProtocolFromString(
 NET_EXPORT_PRIVATE AlternateProtocol AlternateProtocolFromNextProto(
     NextProto next_proto);
 
-struct NET_EXPORT PortAlternateProtocolPair {
-  bool Equals(const PortAlternateProtocolPair& other) const {
-    return port == other.port && protocol == other.protocol;
+struct NET_EXPORT AlternateProtocolInfo {
+  AlternateProtocolInfo(uint16 port,
+                        AlternateProtocol protocol,
+                        double probability)
+      : port(port),
+        protocol(protocol),
+        probability(probability) {}
+
+  bool Equals(const AlternateProtocolInfo& other) const {
+    return port == other.port &&
+        protocol == other.protocol &&
+        probability == other.probability;
   }
 
   std::string ToString() const;
 
   uint16 port;
   AlternateProtocol protocol;
+  double probability;
 };
 
 typedef base::MRUCache<
-    HostPortPair, PortAlternateProtocolPair> AlternateProtocolMap;
+    HostPortPair, AlternateProtocolInfo> AlternateProtocolMap;
 typedef base::MRUCache<HostPortPair, SettingsMap> SpdySettingsMap;
 
 extern const char kAlternateProtocolHeader[];
@@ -143,13 +153,14 @@ class NET_EXPORT HttpServerProperties {
 
   // Returns the Alternate-Protocol and port for |server|.
   // HasAlternateProtocol(server) must be true.
-  virtual PortAlternateProtocolPair GetAlternateProtocol(
+  virtual AlternateProtocolInfo GetAlternateProtocol(
       const HostPortPair& server) = 0;
 
   // Sets the Alternate-Protocol for |server|.
   virtual void SetAlternateProtocol(const HostPortPair& server,
                                     uint16 alternate_port,
-                                    AlternateProtocol alternate_protocol) = 0;
+                                    AlternateProtocol alternate_protocol,
+                                    double probability) = 0;
 
   // Sets the Alternate-Protocol for |server| to be BROKEN.
   virtual void SetBrokenAlternateProtocol(const HostPortPair& server) = 0;
@@ -169,6 +180,9 @@ class NET_EXPORT HttpServerProperties {
 
   virtual void SetAlternateProtocolExperiment(
       AlternateProtocolExperiment experiment) = 0;
+
+  virtual void SetAlternateProtocolProbabilityThreshold(
+      double threshold) = 0;
 
   virtual AlternateProtocolExperiment GetAlternateProtocolExperiment()
       const = 0;

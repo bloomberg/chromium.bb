@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
+#include "base/strings/string_util.h"
 #include "net/base/host_mapping_rules.h"
 #include "net/base/host_port_pair.h"
 #include "net/http/http_network_session.h"
@@ -29,40 +30,60 @@ void HttpStreamFactory::ResetStaticSettingsToInit() {
 
 void HttpStreamFactory::ProcessAlternateProtocol(
     const base::WeakPtr<HttpServerProperties>& http_server_properties,
-    const std::string& alternate_protocol_str,
+    const std::vector<std::string>& alternate_protocol_values,
     const HostPortPair& http_host_port_pair,
     const HttpNetworkSession& session) {
-  std::vector<std::string> port_protocol_vector;
-  base::SplitString(alternate_protocol_str, ':', &port_protocol_vector);
-  if (port_protocol_vector.size() != 2) {
-    DVLOG(1) << kAlternateProtocolHeader
-             << " header has too many tokens: "
-             << alternate_protocol_str;
-    return;
+  AlternateProtocol protocol = UNINITIALIZED_ALTERNATE_PROTOCOL;
+  int port = 0;
+  double probability = 1;
+  for (size_t i = 0; i < alternate_protocol_values.size(); ++i) {
+    const std::string& alternate_protocol_str = alternate_protocol_values[i];
+    if (StartsWithASCII(alternate_protocol_str, "p=", true)) {
+      if (!base::StringToDouble(alternate_protocol_str.substr(2),
+                                &probability) ||
+          probability < 0 || probability > 1) {
+        DVLOG(1) << kAlternateProtocolHeader
+                 << " header has unrecognizable probability: "
+                 << alternate_protocol_values[i];
+        return;
+      }
+      continue;
+    }
+
+    std::vector<std::string> port_protocol_vector;
+    base::SplitString(alternate_protocol_str, ':', &port_protocol_vector);
+    if (port_protocol_vector.size() != 2) {
+      DVLOG(1) << kAlternateProtocolHeader
+               << " header has too many tokens: "
+               << alternate_protocol_str;
+      return;
+    }
+
+    if (!base::StringToInt(port_protocol_vector[0], &port) ||
+        port <= 0 || port >= 1 << 16) {
+      DVLOG(1) << kAlternateProtocolHeader
+               << " header has unrecognizable port: "
+               << port_protocol_vector[0];
+      return;
+    }
+
+    protocol =
+        AlternateProtocolFromString(port_protocol_vector[1]);
+    if (IsAlternateProtocolValid(protocol) &&
+        !session.IsProtocolEnabled(protocol)) {
+      protocol = ALTERNATE_PROTOCOL_BROKEN;
+    }
+
+    if (protocol == ALTERNATE_PROTOCOL_BROKEN) {
+      DVLOG(1) << kAlternateProtocolHeader
+               << " header has unrecognized protocol: "
+               << port_protocol_vector[1];
+      return;
+    }
   }
 
-  int port;
-  if (!base::StringToInt(port_protocol_vector[0], &port) ||
-      port <= 0 || port >= 1 << 16) {
-    DVLOG(1) << kAlternateProtocolHeader
-             << " header has unrecognizable port: "
-             << port_protocol_vector[0];
+  if (protocol == UNINITIALIZED_ALTERNATE_PROTOCOL)
     return;
-  }
-
-  AlternateProtocol protocol =
-      AlternateProtocolFromString(port_protocol_vector[1]);
-  if (IsAlternateProtocolValid(protocol) &&
-      !session.IsProtocolEnabled(protocol)) {
-    protocol = ALTERNATE_PROTOCOL_BROKEN;
-  }
-
-  if (protocol == ALTERNATE_PROTOCOL_BROKEN) {
-    DVLOG(1) << kAlternateProtocolHeader
-             << " header has unrecognized protocol: "
-             << port_protocol_vector[1];
-    return;
-  }
 
   HostPortPair host_port(http_host_port_pair);
   const HostMappingRules* mapping_rules = GetHostMappingRules();
@@ -70,14 +91,15 @@ void HttpStreamFactory::ProcessAlternateProtocol(
     mapping_rules->RewriteHost(&host_port);
 
   if (http_server_properties->HasAlternateProtocol(host_port)) {
-    const PortAlternateProtocolPair existing_alternate =
+    const AlternateProtocolInfo existing_alternate =
         http_server_properties->GetAlternateProtocol(host_port);
     // If we think the alternate protocol is broken, don't change it.
     if (existing_alternate.protocol == ALTERNATE_PROTOCOL_BROKEN)
       return;
   }
 
-  http_server_properties->SetAlternateProtocol(host_port, port, protocol);
+  http_server_properties->SetAlternateProtocol(host_port, port, protocol,
+                                               probability);
 }
 
 GURL HttpStreamFactory::ApplyHostMappingRules(const GURL& url,

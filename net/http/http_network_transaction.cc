@@ -79,17 +79,20 @@ void ProcessAlternateProtocol(
     HttpNetworkSession* session,
     const HttpResponseHeaders& headers,
     const HostPortPair& http_host_port_pair) {
-  std::string alternate_protocol_str;
-
-  if (!headers.EnumerateHeader(NULL, kAlternateProtocolHeader,
-                               &alternate_protocol_str)) {
-    // Header is not present.
+  if (!headers.HasHeader(kAlternateProtocolHeader))
     return;
+
+  std::vector<std::string> alternate_protocol_values;
+  void* iter = NULL;
+  std::string alternate_protocol_str;
+  while (headers.EnumerateHeader(&iter, kAlternateProtocolHeader,
+                                 &alternate_protocol_str)) {
+    alternate_protocol_values.push_back(alternate_protocol_str);
   }
 
   session->http_stream_factory()->ProcessAlternateProtocol(
       session->http_server_properties(),
-      alternate_protocol_str,
+      alternate_protocol_values,
       http_host_port_pair,
       *session);
 }

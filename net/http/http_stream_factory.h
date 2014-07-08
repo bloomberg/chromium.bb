@@ -179,7 +179,7 @@ class NET_EXPORT HttpStreamFactory {
 
   void ProcessAlternateProtocol(
       const base::WeakPtr<HttpServerProperties>& http_server_properties,
-      const std::string& alternate_protocol_str,
+      const std::vector<std::string>& alternate_protocol_values,
       const HostPortPair& http_host_port_pair,
       const HttpNetworkSession& session);
 

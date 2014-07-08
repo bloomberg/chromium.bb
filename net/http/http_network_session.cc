@@ -81,6 +81,7 @@ HttpNetworkSession::Params::Params()
       force_spdy_over_ssl(true),
       force_spdy_always(false),
       use_alternate_protocols(false),
+      alternate_protocol_probability_threshold(0),
       enable_websocket_over_spdy(false),
       enable_quic(false),
       enable_quic_port_selection(true),
@@ -182,6 +183,9 @@ HttpNetworkSession::HttpNetworkSession(const Params& params)
   if (HpackHuffmanAggregator::UseAggregator()) {
     huffman_aggregator_.reset(new HpackHuffmanAggregator());
   }
+
+  http_server_properties_->SetAlternateProtocolProbabilityThreshold(
+      params.alternate_protocol_probability_threshold);
 }
 
 HttpNetworkSession::~HttpNetworkSession() {

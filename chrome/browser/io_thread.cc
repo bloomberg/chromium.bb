@@ -900,9 +900,7 @@ void IOThread::EnableSpdy(const std::string& mode) {
     } else if (option == kDisableAltProtocols) {
       globals_->use_alternate_protocols.set(false);
     } else if (option == kForceAltProtocols) {
-      net::PortAlternateProtocolPair pair;
-      pair.port = 443;
-      pair.protocol = net::NPN_SPDY_3;
+      net::AlternateProtocolInfo pair(443, net::NPN_SPDY_3, 1);
       net::HttpServerPropertiesImpl::ForceAlternateProtocol(pair);
     } else if (option == kSingleDomain) {
       DVLOG(1) << "FORCING SINGLE DOMAIN";
@@ -1013,6 +1011,8 @@ void IOThread::InitializeNetworkSessionParamsFromGlobals(
   params->forced_spdy_exclusions = globals.forced_spdy_exclusions;
   globals.use_alternate_protocols.CopyToIfSet(
       &params->use_alternate_protocols);
+  globals.alternate_protocol_probability_threshold.CopyToIfSet(
+      &params->alternate_protocol_probability_threshold);
   globals.enable_websocket_over_spdy.CopyToIfSet(
       &params->enable_websocket_over_spdy);
 
@@ -1164,6 +1164,14 @@ void IOThread::ConfigureQuicGlobals(
     globals->quic_supported_versions.set(supported_versions);
   }
 
+  double threshold =
+      GetAlternateProtocolProbabilityThreshold(command_line, quic_trial_params);
+  if (threshold >=0 && threshold <= 1) {
+    globals->alternate_protocol_probability_threshold.set(threshold);
+    globals->http_server_properties->SetAlternateProtocolProbabilityThreshold(
+        threshold);
+  }
+
   if (command_line.HasSwitch(switches::kOriginToForceQuicOn)) {
     net::HostPortPair quic_origin =
         net::HostPortPair::FromString(
@@ -1231,6 +1239,7 @@ net::QuicTagVector IOThread::GetQuicConnectionOptions(
   return ParseQuicConnectionOptions(it->second);
 }
 
+// static
 net::QuicTagVector IOThread::ParseQuicConnectionOptions(
     const std::string& connection_options) {
   net::QuicTagVector options;
@@ -1250,6 +1259,30 @@ net::QuicTagVector IOThread::ParseQuicConnectionOptions(
   return options;
 }
 
+// static
+double IOThread::GetAlternateProtocolProbabilityThreshold(
+    const base::CommandLine& command_line,
+    const VariationParameters& quic_trial_params) {
+  double value;
+  if (command_line.HasSwitch(
+          switches::kAlternateProtocolProbabilityThreshold)) {
+    if (base::StringToDouble(
+            command_line.GetSwitchValueASCII(
+                switches::kAlternateProtocolProbabilityThreshold),
+            &value)) {
+      return value;
+    }
+  }
+  if (base::StringToDouble(
+          GetVariationParam(quic_trial_params,
+                            "alternate_protocol_probability_threshold"),
+          &value)) {
+    return value;
+  }
+  return -1;
+}
+
+// static
 bool IOThread::ShouldEnableQuicTimeBasedLossDetection(
     const CommandLine& command_line,
     base::StringPiece quic_trial_group,
@@ -1269,6 +1302,7 @@ bool IOThread::ShouldEnableQuicTimeBasedLossDetection(
       kQuicFieldTrialTimeBasedLossDetectionSuffix);
 }
 
+// static
 size_t IOThread::GetQuicMaxPacketLength(
     const CommandLine& command_line,
     base::StringPiece quic_trial_group,
@@ -1310,6 +1344,7 @@ size_t IOThread::GetQuicMaxPacketLength(
   return value;
 }
 
+// static
 net::QuicVersion IOThread::GetQuicVersion(
     const CommandLine& command_line,
     const VariationParameters& quic_trial_params) {
@@ -1321,6 +1356,7 @@ net::QuicVersion IOThread::GetQuicVersion(
   return ParseQuicVersion(GetVariationParam(quic_trial_params, "quic_version"));
 }
 
+// static
 net::QuicVersion IOThread::ParseQuicVersion(const std::string& quic_version) {
   net::QuicVersionVector supported_versions = net::QuicSupportedVersions();
   for (size_t i = 0; i < supported_versions.size(); ++i) {

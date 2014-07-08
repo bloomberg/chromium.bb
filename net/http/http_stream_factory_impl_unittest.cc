@@ -1269,7 +1269,8 @@ TEST_P(HttpStreamFactoryTest, DISABLED_OrphanedWebSocketStream) {
   session->http_server_properties()->SetAlternateProtocol(
       HostPortPair("www.google.com", 8888),
       9999,
-      NPN_SPDY_3);
+      NPN_SPDY_3,
+      1);
 
   SSLConfig ssl_config;
   StreamRequestWaiter waiter;

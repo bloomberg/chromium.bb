@@ -35,6 +35,7 @@ extern const char kAllowNaClFileHandleAPI[];
 extern const char kAllowNaClSocketAPI[];
 extern const char kAllowOutdatedPlugins[];
 extern const char kAllowRunningInsecureContent[];
+extern const char kAlternateProtocolProbabilityThreshold[];
 extern const char kAlwaysAuthorizePlugins[];
 extern const char kAppId[];
 extern const char kApp[];
