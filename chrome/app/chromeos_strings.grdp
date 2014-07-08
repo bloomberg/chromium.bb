@@ -132,6 +132,12 @@ Press any key to continue exploring.
   <message name="IDS_FLAGS_FILE_MANAGER_ENABLE_NEW_GALLERY_DESCRIPTION" desc="Description of the about:flag option to the enable new gallery app.">
     Use the experimental new gallery instead of the stable one.
   </message>
+  <message name="IDS_FLAGS_ENABLE_VIDEO_PLAYER_CHROMECAST_SUPPORT_NAME" desc="Name of the about:flag option to enable the chromecast support for video app.">
+    Experimental Chromecast support for Video Player
+  </message>
+  <message name="IDS_FLAGS_ENABLE_VIDEO_PLAYER_CHROMECAST_SUPPORT_DESCRIPTION" desc="Description of the about:flag option to the enable the chromecast support for video app.">
+    This option enables experimental Chromecast support for Video Player app on ChromeOS.
+  </message>
   <message name="IDS_FILE_SYSTEM_PROVIDER_UNRESPONSIVE_WARNING" desc="A warning shown in a notification that an operation is taking longer than expected.">
     An operation is taking longer than expected. Do you want to abort it?
   </message>

@@ -1039,6 +1039,13 @@ const Experiment kExperiments[] = {
     MULTI_VALUE_TYPE(kEnableFileManagerNewGalleryChoices)
   },
   {
+    "enable-video-player-chromecast-support",
+    IDS_FLAGS_ENABLE_VIDEO_PLAYER_CHROMECAST_SUPPORT_NAME,
+    IDS_FLAGS_ENABLE_VIDEO_PLAYER_CHROMECAST_SUPPORT_DESCRIPTION,
+    kOsCrOS,
+    SINGLE_VALUE_TYPE(chromeos::switches::kEnableVideoPlayerChromecastSupport)
+  },
+  {
     "disable-quickoffice-component-app",
     IDS_FLAGS_DISABLE_QUICKOFFICE_COMPONENT_APP_NAME,
     IDS_FLAGS_DISABLE_QUICKOFFICE_COMPONENT_APP_DESCRIPTION,

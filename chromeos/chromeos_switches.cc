@@ -129,6 +129,10 @@ const char kEnterpriseEnrollmentSkipRobotAuth[] =
 const char kFileManagerEnableNewGallery[] =
     "file-manager-enable-new-gallery";
 
+// Enables the chromecast support for video player app.
+const char kEnableVideoPlayerChromecastSupport[] =
+    "enable-video-player-chromecast-support";
+
 // Passed to Chrome the first time that it's run after the system boots.
 // Not passed on restart after sign out.
 const char kFirstExecAfterBoot[] = "first-exec-after-boot";
