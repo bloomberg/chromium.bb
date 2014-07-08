@@ -23,7 +23,7 @@ pre {
 }
 
 a:hover {
- text-decoration:underline;
+ text-decoration: underline;
 }
 
 textarea {
@@ -38,12 +38,80 @@ button {
 }
 
 input[type=text] {
-  border:1px solid #ccc;
+  border: 1px solid #ccc;
 }
 
 input[type=checkbox] {
   position: relative;
   top: 2px;
+}
+
+video {
+  background: #eee;
+  border:1px solid #aaa;
+}
+
+.drop-down {
+  width: 10%;
+}
+
+.left {
+  float: left;
+  width: 50%;
+}
+
+.right {
+  width: 49%;
+  margin-left: auto;
+  position: relative;
+}
+
+.inline-contents {
+  display: inline;
+}
+
+.button-green {
+  background: #064;
+  color: #FFF;
+}
+
+.button-red {
+  background: #B22;
+  color: #FFF;
+}
+
+.width-100 {
+  width: 100%;
+}
+
+#wrapper {
+  margin: 0px auto;
+  padding: 5px;
+}
+
+#header {
+  position: fixed;
+  overflow: auto;
+  width: 100%;
+  height: 50px;
+}
+
+#container {
+  position: fixed;
+  overflow: auto;
+  width: 100%;
+  height: 99%;
+  margin-top: 50px;
+}
+
+#footer {
+  overflow: auto;
+  width: 100%;
+  height: 50%;
+}
+
+#getusermedia-constraints {
+  width: 40%;
 }
 
 #debug {
@@ -54,50 +122,4 @@ input[type=checkbox] {
 #messages {
   overflow: auto;
   word-wrap: break-word;
-}
-
-.drop-down {
-  width: 10%;
-}
-
-.video-area {
-  background: #eee;
-  border:1px solid #aaa;
-}
-
-.inline-contents {
-  display: inline;
-}
-
-#getusermedia-input {
-  width: 100%;
-}
-
-#getusermedia-constraints {
-  width: 40%;
-}
-
-#wrapper {
-  margin: 0px auto;
-  padding: 5px;
-}
-
-#container {
-  overflow: auto;
-  width: 100%;
-  height: 96%;
-}
-
-#left {
-  float: left;
-}
-
-#left-half {
-  float: left;
-  width: 50%;
-}
-
-#right-half {
-  width: 49%;
-  margin-left: 51%;
 }

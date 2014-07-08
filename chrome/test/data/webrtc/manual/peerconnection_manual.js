@@ -578,7 +578,7 @@ function preparePeerConnection() {
     error_('creating peer connection, but we already have one.');
 
   global.peerConnection = createPeerConnection(STUN_SERVER);
-  print_('ok-peerconnection-created');
+  success_('ok-peerconnection-created');
 }
 
 /**
