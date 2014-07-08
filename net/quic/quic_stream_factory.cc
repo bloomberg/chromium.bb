@@ -939,7 +939,7 @@ void QuicStreamFactory::ProcessGoingAwaySession(
   // session connected until the handshake has been confirmed.
   HistogramBrokenAlternateProtocolLocation(
       BROKEN_ALTERNATE_PROTOCOL_LOCATION_QUIC_STREAM_FACTORY);
-  AlternateProtocolInfo alternate =
+  PortAlternateProtocolPair alternate =
       http_server_properties_->GetAlternateProtocol(server);
   DCHECK_EQ(QUIC, alternate.protocol);
 
@@ -952,7 +952,7 @@ void QuicStreamFactory::ProcessGoingAwaySession(
   http_server_properties_->SetBrokenAlternateProtocol(server);
   http_server_properties_->ClearAlternateProtocol(server);
   http_server_properties_->SetAlternateProtocol(
-      server, alternate.port, alternate.protocol, 1);
+      server, alternate.port, alternate.protocol);
   DCHECK_EQ(QUIC,
             http_server_properties_->GetAlternateProtocol(server).protocol);
   DCHECK(http_server_properties_->WasAlternateProtocolRecentlyBroken(

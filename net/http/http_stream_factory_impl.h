@@ -76,7 +76,7 @@ class NET_EXPORT_PRIVATE HttpStreamFactoryImpl : public HttpStreamFactory {
       WebSocketHandshakeStreamBase::CreateHelper* create_helper,
       const BoundNetLog& net_log);
 
-  AlternateProtocolInfo GetAlternateProtocolRequestFor(
+  PortAlternateProtocolPair GetAlternateProtocolRequestFor(
       const GURL& original_url,
       GURL* alternate_url);
 

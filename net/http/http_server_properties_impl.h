@@ -55,7 +55,7 @@ class NET_EXPORT HttpServerPropertiesImpl
   // Debugging to simulate presence of an AlternateProtocol.
   // If we don't have an alternate protocol in the map for any given host/port
   // pair, force this ProtocolPortPair.
-  static void ForceAlternateProtocol(const AlternateProtocolInfo& pair);
+  static void ForceAlternateProtocol(const PortAlternateProtocolPair& pair);
   static void DisableForcedAlternateProtocol();
 
   // Returns the canonical host suffix for |server|, or std::string() if none
@@ -84,15 +84,14 @@ class NET_EXPORT HttpServerPropertiesImpl
 
   // Returns the Alternate-Protocol and port for |server|.
   // HasAlternateProtocol(server) must be true.
-  virtual AlternateProtocolInfo GetAlternateProtocol(
+  virtual PortAlternateProtocolPair GetAlternateProtocol(
       const HostPortPair& server) OVERRIDE;
 
   // Sets the Alternate-Protocol for |server|.
   virtual void SetAlternateProtocol(
       const HostPortPair& server,
       uint16 alternate_port,
-      AlternateProtocol alternate_protocol,
-      double probability) OVERRIDE;
+      AlternateProtocol alternate_protocol) OVERRIDE;
 
   // Sets the Alternate-Protocol for |server| to be BROKEN.
   virtual void SetBrokenAlternateProtocol(const HostPortPair& server) OVERRIDE;
@@ -112,9 +111,6 @@ class NET_EXPORT HttpServerPropertiesImpl
 
   virtual void SetAlternateProtocolExperiment(
       AlternateProtocolExperiment experiment) OVERRIDE;
-
-  virtual void SetAlternateProtocolProbabilityThreshold(
-      double threshold) OVERRIDE;
 
   virtual AlternateProtocolExperiment GetAlternateProtocolExperiment()
       const OVERRIDE;
@@ -187,8 +183,6 @@ class NET_EXPORT HttpServerPropertiesImpl
   // Contains list of suffixes (for exmaple ".c.youtube.com",
   // ".googlevideo.com", ".googleusercontent.com") of canoncial hostnames.
   CanonicalSufficList canoncial_suffixes_;
-
-  double alternate_protocol_probability_threshold_;
 
   base::WeakPtrFactory<HttpServerPropertiesImpl> weak_ptr_factory_;
 
