@@ -5,16 +5,16 @@
     </head>
     <body>
         <p>
-            Tests that notifications can be displayed when permission has been
-            granted. The text "notification.onshow fired" should be displayed.
-            When running this test manually, accept the permission request.
+            Tests that it is possible to replace existing notifications using
+            the "tag" property of a Web Notification object. When running this
+            test manually, verify that the title of the shown notification is
+            updated to read "Notification 2".
         </p>
         <div id="console"></div>
-        <script src="resources/notification-display.js"></script>
+        <script src="resources/notification-replace.js"></script>
         <script>
             if (window.testRunner) {
                 testRunner.grantWebNotificationPermission("file://", true);
-                testRunner.dumpAsText();
                 testRunner.waitUntilDone();
             }
 

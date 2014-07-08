@@ -1,0 +1,13 @@
+DESKTOP NOTIFICATION SHOWN: Notification
+DESKTOP NOTIFICATION CLOSED: Notification
+Tests that it is possible to return focus to the |window| object when a notification has been clicked on when another window is in the foreground.
+
+When running this test manually, disable pop-up blocking, grant permission for the notification and reload this page. Click the notification which will be shown. You should see two PASS messages and this window should be focused.
+
+PASS successfullyParsed is true
+
+TEST COMPLETE
+PASS notification.onshow() has been called.
+PASS notification.onclick() has been called.
+PASS Focus has been returned to the opening window.
+

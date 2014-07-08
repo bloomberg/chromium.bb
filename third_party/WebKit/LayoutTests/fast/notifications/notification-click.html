@@ -5,16 +5,15 @@
     </head>
     <body>
         <p>
-            Tests that notifications can be displayed when permission has been
-            granted. The text "notification.onshow fired" should be displayed.
-            When running this test manually, accept the permission request.
+            Tests that Notification.click() will result in the onclick event being
+            called in a document context. When running this test manually, accept
+            the permission and click on the shown notification.
         </p>
         <div id="console"></div>
-        <script src="resources/notification-display.js"></script>
+        <script src="resources/notification-click.js"></script>
         <script>
             if (window.testRunner) {
                 testRunner.grantWebNotificationPermission("file://", true);
-                testRunner.dumpAsText();
                 testRunner.waitUntilDone();
             }
 

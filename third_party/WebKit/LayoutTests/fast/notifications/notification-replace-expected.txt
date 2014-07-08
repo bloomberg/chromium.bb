@@ -1,0 +1,11 @@
+DESKTOP NOTIFICATION SHOWN: Notification, tag: my-notification
+REPLACING NOTIFICATION Notification
+DESKTOP NOTIFICATION SHOWN: Notification 2, tag: my-notification
+Tests that it is possible to replace existing notifications using the "tag" property of a Web Notification object. When running this test manually, verify that the title of the shown notification is updated to read "Notification 2".
+
+PASS successfullyParsed is true
+
+TEST COMPLETE
+PASS notification.onshow() has been called.
+PASS updatedNotification.onshow() has been called.
+

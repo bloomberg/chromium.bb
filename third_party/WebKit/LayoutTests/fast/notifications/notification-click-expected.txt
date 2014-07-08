@@ -1,0 +1,10 @@
+DESKTOP NOTIFICATION SHOWN: Notification
+DESKTOP NOTIFICATION CLOSED: Notification
+Tests that Notification.click() will result in the onclick event being called in a document context. When running this test manually, accept the permission and click on the shown notification.
+
+PASS successfullyParsed is true
+
+TEST COMPLETE
+PASS notification.onshow() has been called.
+PASS notification.onclick() has been called.
+

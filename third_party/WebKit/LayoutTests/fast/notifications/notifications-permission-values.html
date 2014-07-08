@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <script src="../../resources/js-test.js"></script>
+    </head>
+    <body>
+        <p>
+            Tests that the return values of Notification.permission match
+            the permission request status.
+        </p>
+        <div id="console"></div>
+        <script>
+            if (!window.testRunner) {
+                testFailed("This test depends on window.testRunner to toggle permissions.");
+            } else {
+                // The "default" state indicates that no permission request has
+                // been answered yet.
+                shouldBeEqualToString("Notification.permission", "default");
+
+                window.testRunner.grantWebNotificationPermission("file://", false);
+                shouldBeEqualToString("Notification.permission", "denied");
+
+                window.testRunner.grantWebNotificationPermission("file://", true);
+                shouldBeEqualToString("Notification.permission", "granted");
+            }
+        </script>
+    </body>
+</html>

@@ -819,9 +819,6 @@ crbug.com/356777 http/tests/history/frameset-repeated-name.html [ Pass Failure ]
 
 crbug.com/390377 [ Release ] fast/dom/private_script_unittest.html [ Skip ]
 
-# Temporary until the Web Notification API test-runner changes finished.
-crbug.com/349015 fast/notifications/notifications-constructor-with-permission.html [ Failure Pass ]
-
 crbug.com/350543 [ Linux ] svg/animations/reset-animation-crash.html [ Crash Pass ]
 crbug.com/350827 svg/animations/svglengthlist-animation-3.html [ Failure Pass ]
 crbug.com/350828 svg/custom/animate-initial-pause-unpause.html [ Failure Pass ]

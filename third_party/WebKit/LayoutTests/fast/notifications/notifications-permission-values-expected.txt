@@ -1,0 +1,9 @@
+Tests that the return values of Notification.permission match the permission request status.
+
+PASS Notification.permission is "default"
+PASS Notification.permission is "denied"
+PASS Notification.permission is "granted"
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

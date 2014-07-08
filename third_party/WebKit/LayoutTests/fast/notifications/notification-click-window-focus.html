@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <script src="../../resources/js-test.js"></script>
+    </head>
+    <body>
+        <p>
+            Tests that it is possible to return focus to the |window| object
+            when a notification has been clicked on when another window is in
+            the foreground.
+        </p>
+        <p>
+            When running this test manually, disable pop-up blocking, grant
+            permission for the notification and reload this page. Click the
+            notification which will be shown. You should see two PASS messages
+            and this window should be focused.
+        </p>
+        <div id="console"></div>
+        <script>
+            if (window.testRunner) {
+                testRunner.setCanOpenWindows(); 
+                testRunner.setCloseRemainingWindowsWhenComplete();
+                testRunner.grantWebNotificationPermission("file://", true);
+                testRunner.waitUntilDone();
+            }
+
+            window.addEventListener("focus", function() {
+                testPassed("Focus has been returned to the opening window.");
+                if (window.testRunner)
+                    testRunner.notifyDone();
+            });
+
+            var childWindow = window.open("about:blank");
+            childWindow.focus();
+
+            var notification = new Notification("Notification");
+            notification.addEventListener("show", function() {
+                testPassed("notification.onshow() has been called.");
+                if (window.testRunner)
+                    testRunner.simulateWebNotificationClick("Notification");
+            });
+
+            notification.addEventListener("click", function() {
+                testPassed("notification.onclick() has been called.");
+                notification.close();
+
+                window.focus();
+            });
+        </script>
+    </body>
+</html>

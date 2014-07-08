@@ -1,4 +1,7 @@
-Sending notifications without permission...
+Tests that notifications will not be displayed when no permission has been granted. The text "notification.onerror fired" should be displayed below.
 
-PASS: error event fired.
+PASS successfullyParsed is true
+
+TEST COMPLETE
+notification.onerror fired.
 

@@ -9,7 +9,7 @@
         <script>
             description("Checks that the {title, dir, lang, body, tag, icon} properties are set on the Notification object.");
             if (window.testRunner) {
-                testRunner.grantWebNotificationPermission("file://");
+                testRunner.grantWebNotificationPermission("file://", true);
                 testRunner.dumpAsText();
             }
 
