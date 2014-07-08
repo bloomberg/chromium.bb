@@ -4,6 +4,7 @@
 
 #include "content/public/renderer/web_preferences.h"
 
+#include "base/debug/trace_event.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/renderer/net_info_helper.h"
 #include "third_party/WebKit/public/platform/WebConnectionType.h"
@@ -114,6 +115,7 @@ void ApplyFontsFromMap(const webkit_glue::ScriptFontFamilyMap& map,
 }  // namespace
 
 void ApplyWebPreferences(const WebPreferences& prefs, WebView* web_view) {
+  TRACE_EVENT0("renderer", "ApplyWebPreferences");
   WebSettings* settings = web_view->settings();
   ApplyFontsFromMap(prefs.standard_font_family_map,
                     setStandardFontFamilyWrapper, settings);
