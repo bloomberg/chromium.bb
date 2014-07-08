@@ -32,7 +32,7 @@ static const int kMaxPendingFrames = 2;
 
 // Interval between empty keep-alive frames. These frames are sent only
 // when there are no real video frames being sent. To prevent PseudoTCP from
-// resetting congestion window this value must be smaller that then the minimum
+// resetting congestion window this value must be smaller than the minimum
 // RTO used in PseudoTCP, which is 250ms.
 static const int kKeepAlivePacketIntervalMs = 200;
 
