@@ -8,6 +8,7 @@
 #include <errno.h>
 
 #include "base/basictypes.h"
+#include "base/logging.h"
 
 namespace sandbox {
 
@@ -181,7 +182,9 @@ intptr_t Syscall::Call(int nr,
                        intptr_t p2,
                        intptr_t p3,
                        intptr_t p4,
-                       intptr_t p5) {
+                       intptr_t p5,
+                       intptr_t p6,
+                       intptr_t p7) {
   // We rely on "intptr_t" to be the exact size as a "void *". This is
   // typically true, but just in case, we add a check. The language
   // specification allows platforms some leeway in cases, where
@@ -192,6 +195,12 @@ intptr_t Syscall::Call(int nr,
   COMPILE_ASSERT(sizeof(void*) == sizeof(intptr_t),
                  pointer_types_and_intptr_must_be_exactly_the_same_size);
 
+  // TODO(nedeljko): Enable use of more than six parameters on architectures
+  //                 where that makes sense.
+  DCHECK_EQ(p6, 0) << " Support for syscalls with more than six arguments not "
+                      "added for this architecture";
+  DCHECK_EQ(p7, 0) << " Support for syscalls with more than six arguments not "
+                      "added for this architecture";
   const intptr_t args[6] = {p0, p1, p2, p3, p4, p5};
 
 // Invoke our file-scope assembly code. The constraints have been picked
