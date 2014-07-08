@@ -74,7 +74,6 @@
 #include "chrome/browser/ssl/ssl_add_certificate.h"
 #include "chrome/browser/ssl/ssl_blocking_page.h"
 #include "chrome/browser/ssl/ssl_client_certificate_selector.h"
-#include "chrome/browser/sync_file_system/local/sync_file_system_backend.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/browser/ui/blocked_content/blocked_window_params.h"
 #include "chrome/browser/ui/blocked_content/popup_blocker_tab_helper.h"
@@ -164,6 +163,7 @@
 #elif defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/chrome_browser_main_chromeos.h"
 #include "chrome/browser/chromeos/drive/fileapi/file_system_backend_delegate.h"
+#include "chrome/browser/chromeos/file_manager/app_id.h"
 #include "chrome/browser/chromeos/file_system_provider/fileapi/backend_delegate.h"
 #include "chrome/browser/chromeos/fileapi/file_system_backend.h"
 #include "chrome/browser/chromeos/fileapi/mtp_file_system_backend_delegate.h"
@@ -205,10 +205,6 @@
 #include "components/signin/core/browser/signin_manager.h"
 #endif
 
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/file_manager/app_id.h"
-#endif
-
 #if defined(TOOLKIT_VIEWS)
 #include "chrome/browser/ui/views/chrome_browser_main_extra_parts_views.h"
 #endif
@@ -237,6 +233,7 @@
 #include "chrome/browser/guest_view/web_view/web_view_guest.h"
 #include "chrome/browser/guest_view/web_view/web_view_renderer_state.h"
 #include "chrome/browser/renderer_host/chrome_extension_message_filter.h"
+#include "chrome/browser/sync_file_system/local/sync_file_system_backend.h"
 #endif
 
 #if defined(ENABLE_SPELLCHECK)
@@ -1603,14 +1600,14 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
         chrome::VersionInfo::Channel channel =
             chrome::VersionInfo::GetChannel();
 #if defined(OS_ANDROID) || defined(OS_IOS)
-        chrome::VersionInfo::Channel forceChannel =
+        chrome::VersionInfo::Channel force_channel =
             chrome::VersionInfo::CHANNEL_DEV;
 #else
-        chrome::VersionInfo::Channel forceChannel =
+        chrome::VersionInfo::Channel force_channel =
             chrome::VersionInfo::CHANNEL_CANARY;
 #endif
 
-        if (channel <= forceChannel || group == "Enabled")
+        if (channel <= force_channel || group == "Enabled")
           command_line->AppendSwitch(switches::kEnableOfflineLoadStaleCache);
       }
     }
@@ -2568,17 +2565,17 @@ void ChromeContentBrowserClient::GetAdditionalAllowedSchemesForFileSystem(
 
 void ChromeContentBrowserClient::GetURLRequestAutoMountHandlers(
     std::vector<fileapi::URLRequestAutoMountHandler>* handlers) {
-#if !defined(OS_ANDROID)
+#if defined(ENABLE_EXTENSIONS)
   handlers->push_back(
       base::Bind(MediaFileSystemBackend::AttemptAutoMountForURLRequest));
-#endif  // OS_ANDROID
+#endif
 }
 
 void ChromeContentBrowserClient::GetAdditionalFileSystemBackends(
     content::BrowserContext* browser_context,
     const base::FilePath& storage_partition_path,
     ScopedVector<fileapi::FileSystemBackend>* additional_backends) {
-#if !defined(OS_ANDROID)
+#if defined(ENABLE_EXTENSIONS)
   base::SequencedWorkerPool* pool = content::BrowserThread::GetBlockingPool();
   additional_backends->push_back(new MediaFileSystemBackend(
       storage_partition_path,
@@ -2601,9 +2598,11 @@ void ChromeContentBrowserClient::GetAdditionalFileSystemBackends(
   additional_backends->push_back(backend);
 #endif
 
+#if defined(ENABLE_EXTENSIONS)
   additional_backends->push_back(
       new sync_file_system::SyncFileSystemBackend(
           Profile::FromBrowserContext(browser_context)));
+#endif
 
 #if defined(ENABLE_SERVICE_DISCOVERY)
   if (CommandLine::ForCurrentProcess()->HasSwitch(

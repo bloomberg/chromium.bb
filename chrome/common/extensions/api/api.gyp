@@ -17,7 +17,6 @@
     'android_schema_files': [
       'file_system.idl',
       'manifest_types.json',
-      'sync_file_system.idl',
     ],
 
     # These are used everywhere except Android.

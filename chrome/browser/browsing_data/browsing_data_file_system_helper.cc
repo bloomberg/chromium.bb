@@ -124,7 +124,9 @@ void BrowsingDataFileSystemHelperImpl::FetchFileSystemInfoInFileThread() {
   const fileapi::FileSystemType types[] = {
     fileapi::kFileSystemTypeTemporary,
     fileapi::kFileSystemTypePersistent,
+#if defined(ENABLE_EXTENSIONS)
     fileapi::kFileSystemTypeSyncable,
+#endif
   };
 
   typedef std::map<GURL, FileSystemInfo> OriginInfoMap;

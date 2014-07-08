@@ -2115,6 +2115,7 @@
             ['exclude', '^browser/extensions/api/'],
             ['exclude', '^browser/extensions/error_console/'],
             ['exclude', '^browser/sync/glue/extensions_activity_monitor_unittest.cc'],
+            ['exclude', '^browser/sync_file_system/'],
             ['exclude', '^common/extensions/api/'],
             ['exclude', '^common/extensions/manifest_handlers/'],
             ['exclude', '^common/extensions/manifest_tests/'],
@@ -2625,8 +2626,6 @@
 
             # Test files cannot be opened on Android.
             'browser/drive/fake_drive_service_unittest.cc',
-            'browser/sync_file_system/drive_backend/api_util_unittest.cc',
-            'browser/sync_file_system/drive_backend/drive_file_sync_service_sync_unittest.cc',
 
             # The autofill popup is implemented in mostly native code on
             # Android.
