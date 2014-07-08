@@ -8,6 +8,8 @@ import tempfile
 from metrics import loading
 from telemetry.core.platform.profiler import perf_profiler
 from telemetry.page import page_measurement
+from telemetry.value import scalar
+
 
 class LoadingProfile(page_measurement.PageMeasurement):
   options = {'page_repeat': 2}
@@ -47,4 +49,5 @@ class LoadingProfile(page_measurement.PageMeasurement):
 
     for function, period in perf_profiler.PerfProfiler.GetTopSamples(
         profile_file, 10).iteritems():
-      results.Add(function.replace('.', '_'), 'period', period)
+      results.AddValue(scalar.ScalarValue(
+          results.current_page, function.replace('.', '_'), 'period', period))
