@@ -31,6 +31,7 @@
 #include "ui/base/l10n/l10n_util.h"
 
 #if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/file_manager/app_id.h"
 #include "chrome/browser/chromeos/genius_app/app_id.h"
 #endif
 
@@ -108,7 +109,7 @@ bool IsUnRemovableDefaultApp(const std::string& id) {
       id == extension_misc::kWebStoreAppId)
     return true;
 #if defined(OS_CHROMEOS)
-  if (id == genius_app::kGeniusAppId)
+  if (id == file_manager::kFileManagerAppId || id == genius_app::kGeniusAppId)
     return true;
 #endif
   return false;
@@ -210,7 +211,7 @@ AppListSyncableService::AppListSyncableService(
     : profile_(profile),
       extension_system_(extension_system),
       model_(new AppListModel),
-      first_app_list_sync_(false) {
+      first_app_list_sync_(true) {
   if (!extension_system) {
     LOG(ERROR) << "AppListSyncableService created with no ExtensionSystem";
     return;
@@ -538,21 +539,26 @@ syncer::SyncMergeResult AppListSyncableService::MergeDataAndStartSyncing(
     unsynced_items.insert(iter->first);
   }
 
-  first_app_list_sync_ = initial_sync_data.empty();
-
   // Create SyncItem entries for initial_sync_data.
   size_t new_items = 0, updated_items = 0;
   for (syncer::SyncDataList::const_iterator iter = initial_sync_data.begin();
        iter != initial_sync_data.end(); ++iter) {
     const syncer::SyncData& data = *iter;
     const std::string& item_id = data.GetSpecifics().app_list().item_id();
+    const sync_pb::AppListSpecifics& specifics = data.GetSpecifics().app_list();
     DVLOG(2) << this << "  Initial Sync Item: " << item_id
-             << " Type: " << data.GetSpecifics().app_list().item_type();
+             << " Type: " << specifics.item_type();
     DCHECK_EQ(syncer::APP_LIST, data.GetDataType());
-    if (ProcessSyncItemSpecifics(data.GetSpecifics().app_list()))
+    if (ProcessSyncItemSpecifics(specifics))
       ++new_items;
     else
       ++updated_items;
+    if (specifics.item_type() != sync_pb::AppListSpecifics::TYPE_FOLDER &&
+        !IsUnRemovableDefaultApp(item_id) &&
+        !AppIsDefault(extension_system_->extension_service(), item_id)) {
+      VLOG(2) << "Syncing non-default item: " << item_id;
+      first_app_list_sync_ = false;
+    }
     unsynced_items.erase(item_id);
   }
 
@@ -566,6 +572,10 @@ syncer::SyncMergeResult AppListSyncableService::MergeDataAndStartSyncing(
   for (std::set<std::string>::iterator iter = unsynced_items.begin();
        iter != unsynced_items.end(); ++iter) {
     SyncItem* sync_item = FindSyncItem(*iter);
+    // Sync can cause an item to change folders, causing an unsynced folder
+    // item to be removed.
+    if (!sync_item)
+      continue;
     VLOG(2) << this << " -> SYNC ADD: " << sync_item->ToString();
     change_list.push_back(SyncChange(FROM_HERE,  SyncChange::ACTION_ADD,
                                      GetSyncDataFromSyncItem(sync_item)));
@@ -851,6 +861,7 @@ std::string AppListSyncableService::FindOrCreateOemFolder(
 }
 
 syncer::StringOrdinal AppListSyncableService::GetOemFolderPos() {
+  VLOG(1) << "GetOemFolderPos: " << first_app_list_sync_;
   if (!first_app_list_sync_) {
     DVLOG(1) << "Sync items exist, placing OEM folder at end.";
     syncer::StringOrdinal last;
