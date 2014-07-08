@@ -2603,6 +2603,36 @@ TEST_F(SharedCryptoTest, MAYBE(GenerateKeyPairRsa)) {
             ExportKey(blink::WebCryptoKeyFormatSpki, private_key, &output));
 }
 
+TEST_F(SharedCryptoTest, MAYBE(GenerateKeyPairRsaBadModulusLength)) {
+  const unsigned int kBadModulus[] = {
+      0,
+      255,         // Not a multiple of 8.
+      1023,        // Not a multiple of 8.
+      0xFFFFFFFF,  // Cannot fit in a signed int.
+      16384 + 8,   // 16384 is the maxmimum length that NSS succeeds for.
+  };
+
+  const std::vector<uint8> public_exponent = HexStringToBytes("010001");
+
+  for (size_t i = 0; i < arraysize(kBadModulus); ++i) {
+    const unsigned int modulus_length = kBadModulus[i];
+    blink::WebCryptoAlgorithm algorithm = CreateRsaHashedKeyGenAlgorithm(
+        blink::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5,
+        blink::WebCryptoAlgorithmIdSha256,
+        modulus_length,
+        public_exponent);
+    bool extractable = true;
+    const blink::WebCryptoKeyUsageMask usage_mask = 0;
+    blink::WebCryptoKey public_key = blink::WebCryptoKey::createNull();
+    blink::WebCryptoKey private_key = blink::WebCryptoKey::createNull();
+
+    EXPECT_FALSE(
+        GenerateKeyPair(
+            algorithm, extractable, usage_mask, &public_key, &private_key)
+            .IsSuccess());
+  }
+}
+
 // Try generating RSA key pairs using unsupported public exponents. Only
 // exponents of 3 and 65537 are supported. While both OpenSSL and NSS can
 // support other values, OpenSSL hangs when given invalid exponents, so use a

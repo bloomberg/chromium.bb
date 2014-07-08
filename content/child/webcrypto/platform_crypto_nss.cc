@@ -1504,6 +1504,9 @@ Status GenerateRsaKeyPair(const blink::WebCryptoAlgorithm& algorithm,
     return Status::OperationError();
 
   PK11RSAGenParams rsa_gen_params;
+  // keySizeInBits is a signed type, don't pass in a negative value.
+  if (modulus_length_bits > INT_MAX)
+    return Status::OperationError();
   rsa_gen_params.keySizeInBits = modulus_length_bits;
   rsa_gen_params.pe = public_exponent;
 
@@ -1531,7 +1534,7 @@ Status GenerateRsaKeyPair(const blink::WebCryptoAlgorithm& algorithm,
 
   // Note: NSS does not generate an sec_public_key if the call below fails,
   // so there is no danger of a leaked sec_public_key.
-  SECKEYPublicKey* sec_public_key;
+  SECKEYPublicKey* sec_public_key = NULL;
   crypto::ScopedSECKEYPrivateKey scoped_sec_private_key(
       PK11_GenerateKeyPairWithOpFlags(slot.get(),
                                       CKM_RSA_PKCS_KEY_PAIR_GEN,
@@ -1541,7 +1544,7 @@ Status GenerateRsaKeyPair(const blink::WebCryptoAlgorithm& algorithm,
                                       operation_flags,
                                       operation_flags_mask,
                                       NULL));
-  if (!private_key)
+  if (!scoped_sec_private_key)
     return Status::OperationError();
 
   blink::WebCryptoKeyAlgorithm key_algorithm;
