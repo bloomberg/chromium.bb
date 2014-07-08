@@ -16,14 +16,12 @@ namespace view_manager {
 
 class View;
 
+// See note about -ing/-ed suffixes for observer methods in node_observer.h.
+
 class ViewObserver {
  public:
-  enum DispositionChangePhase {
-    DISPOSITION_CHANGING,
-    DISPOSITION_CHANGED
-  };
-
-  virtual void OnViewDestroy(View* view, DispositionChangePhase phase) {}
+  virtual void OnViewDestroying(View* view) {}
+  virtual void OnViewDestroyed(View* view) {}
 
   virtual void OnViewInputEvent(View* view, const EventPtr& event) {}
 

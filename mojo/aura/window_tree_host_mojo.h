@@ -62,11 +62,10 @@ class WindowTreeHostMojo : public aura::WindowTreeHost,
   virtual ui::EventProcessor* GetEventProcessor() OVERRIDE;
 
   // view_manager::NodeObserver:
-  virtual void OnNodeBoundsChange(
+  virtual void OnNodeBoundsChanged(
       view_manager::Node* node,
       const gfx::Rect& old_bounds,
-      const gfx::Rect& new_bounds,
-      view_manager::NodeObserver::DispositionChangePhase phase) OVERRIDE;
+      const gfx::Rect& new_bounds) OVERRIDE;
 
   view_manager::Node* node_;
 

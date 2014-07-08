@@ -21,40 +21,52 @@ namespace view_manager {
 class Node;
 class View;
 
+// A note on -ing and -ed suffixes:
+//
+// -ing methods are called before changes are applied to the local node model.
+// -ed methods are called after changes are applied to the local node model.
+//
+// If the change originated from another connection to the view manager, it's
+// possible that the change has already been applied to the service-side model
+// prior to being called, so for example in the case of OnNodeDestroying(), it's
+// possible the node has already been destroyed on the service side.
+
 class NodeObserver {
  public:
-  enum DispositionChangePhase {
-    DISPOSITION_CHANGING,
-    DISPOSITION_CHANGED
-  };
-
   struct TreeChangeParams {
     TreeChangeParams();
     Node* target;
     Node* old_parent;
     Node* new_parent;
     Node* receiver;
-    DispositionChangePhase phase;
   };
 
-  virtual void OnTreeChange(const TreeChangeParams& params) {}
+  virtual void OnTreeChanging(const TreeChangeParams& params) {}
+  virtual void OnTreeChanged(const TreeChangeParams& params) {}
 
+  virtual void OnNodeReordering(Node* node,
+                                Node* relative_node,
+                                OrderDirection direction) {}
   virtual void OnNodeReordered(Node* node,
                                Node* relative_node,
-                               OrderDirection direction,
-                               DispositionChangePhase phase) {}
+                               OrderDirection direction) {}
 
-  virtual void OnNodeDestroy(Node* node, DispositionChangePhase phase) {}
+  virtual void OnNodeDestroying(Node* node) {}
+  virtual void OnNodeDestroyed(Node* node) {}
 
-  virtual void OnNodeActiveViewChange(Node* node,
-                                      View* old_view,
-                                      View* new_view,
-                                      DispositionChangePhase phase) {}
+  virtual void OnNodeActiveViewChanging(Node* node,
+                                        View* old_view,
+                                        View* new_view) {}
+  virtual void OnNodeActiveViewChanged(Node* node,
+                                       View* old_view,
+                                       View* new_view) {}
 
-  virtual void OnNodeBoundsChange(Node* node,
-                                  const gfx::Rect& old_bounds,
-                                  const gfx::Rect& new_bounds,
-                                  DispositionChangePhase phase) {}
+  virtual void OnNodeBoundsChanging(Node* node,
+                                    const gfx::Rect& old_bounds,
+                                    const gfx::Rect& new_bounds) {}
+  virtual void OnNodeBoundsChanged(Node* node,
+                                   const gfx::Rect& old_bounds,
+                                   const gfx::Rect& new_bounds) {}
 
   virtual void OnNodeFocusChanged(Node* gained_focus, Node* lost_focus) {}
 

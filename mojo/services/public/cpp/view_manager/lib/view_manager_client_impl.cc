@@ -93,11 +93,8 @@ class RootObserver : public NodeObserver {
 
  private:
   // Overridden from NodeObserver:
-  virtual void OnNodeDestroy(Node* node,
-                             DispositionChangePhase phase) OVERRIDE {
+  virtual void OnNodeDestroyed(Node* node) OVERRIDE {
     DCHECK_EQ(node, root_);
-    if (phase != NodeObserver::DISPOSITION_CHANGED)
-      return;
     static_cast<ViewManagerClientImpl*>(
         NodePrivate(root_).view_manager())->RemoveRoot(root_);
     delete this;

@@ -113,19 +113,13 @@ class EmbeddedApp : public ApplicationDelegate,
   }
 
   // Overridden from NodeObserver:
-  virtual void OnNodeActiveViewChange(
-      Node* node,
-      View* old_view,
-      View* new_view,
-      NodeObserver::DispositionChangePhase phase) OVERRIDE {
+  virtual void OnNodeActiveViewChanged(Node* node,
+                                       View* old_view,
+                                       View* new_view) OVERRIDE {
     if (new_view == 0)
       views_to_reap_[node] = old_view;
   }
-  virtual void OnNodeDestroy(
-      Node* node,
-      NodeObserver::DispositionChangePhase phase) OVERRIDE {
-    if (phase != NodeObserver::DISPOSITION_CHANGED)
-      return;
+  virtual void OnNodeDestroyed(Node* node) OVERRIDE {
     DCHECK(roots_.find(node->id()) != roots_.end());
     roots_.erase(node->id());
     std::map<Node*, View*>::const_iterator it = views_to_reap_.find(node);

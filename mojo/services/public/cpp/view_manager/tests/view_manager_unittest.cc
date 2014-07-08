@@ -98,10 +98,9 @@ class ActiveViewChangedObserver : public NodeObserver {
 
  private:
   // Overridden from NodeObserver:
-  virtual void OnNodeActiveViewChange(Node* node,
-                                      View* old_view,
-                                      View* new_view,
-                                      DispositionChangePhase phase) OVERRIDE {
+  virtual void OnNodeActiveViewChanged(Node* node,
+                                       View* old_view,
+                                       View* new_view) OVERRIDE {
     DCHECK_EQ(node, node_);
     QuitRunLoop();
   }
@@ -126,13 +125,10 @@ class BoundsChangeObserver : public NodeObserver {
 
  private:
   // Overridden from NodeObserver:
-  virtual void OnNodeBoundsChange(Node* node,
-                                  const gfx::Rect& old_bounds,
-                                  const gfx::Rect& new_bounds,
-                                  DispositionChangePhase phase) OVERRIDE {
+  virtual void OnNodeBoundsChanged(Node* node,
+                                   const gfx::Rect& old_bounds,
+                                   const gfx::Rect& new_bounds) OVERRIDE {
     DCHECK_EQ(node, node_);
-    if (phase != NodeObserver::DISPOSITION_CHANGED)
-      return;
     QuitRunLoop();
   }
 
@@ -164,7 +160,7 @@ class TreeSizeMatchesObserver : public NodeObserver {
 
  private:
   // Overridden from NodeObserver:
-  virtual void OnTreeChange(const TreeChangeParams& params) OVERRIDE {
+  virtual void OnTreeChanged(const TreeChangeParams& params) OVERRIDE {
     if (IsTreeCorrectSize())
       QuitRunLoop();
   }
@@ -204,11 +200,7 @@ class DestructionObserver : public NodeObserver, public ViewObserver {
 
  private:
   // Overridden from NodeObserver:
-  virtual void OnNodeDestroy(
-      Node* node,
-      NodeObserver::DispositionChangePhase phase) OVERRIDE {
-    if (phase != NodeObserver::DISPOSITION_CHANGED)
-      return;
+  virtual void OnNodeDestroyed(Node* node) OVERRIDE {
     std::set<Id>::iterator it = nodes_->find(node->id());
     if (it != nodes_->end())
       nodes_->erase(it);
@@ -217,11 +209,7 @@ class DestructionObserver : public NodeObserver, public ViewObserver {
   }
 
   // Overridden from ViewObserver:
-  virtual void OnViewDestroy(
-      View* view,
-      ViewObserver::DispositionChangePhase phase) OVERRIDE {
-    if (phase != ViewObserver::DISPOSITION_CHANGED)
-      return;
+  virtual void OnViewDestroyed(View* view) OVERRIDE {
     std::set<Id>::iterator it = views_->find(view->id());
     if (it != views_->end())
       views_->erase(it);
@@ -272,11 +260,7 @@ class OrderChangeObserver : public NodeObserver {
   // Overridden from NodeObserver:
   virtual void OnNodeReordered(Node* node,
                                Node* relative_node,
-                               OrderDirection direction,
-                               DispositionChangePhase phase) OVERRIDE {
-    if (phase != NodeObserver::DISPOSITION_CHANGED)
-      return;
-
+                               OrderDirection direction) OVERRIDE {
     DCHECK_EQ(node, node_);
     QuitRunLoop();
   }
@@ -306,11 +290,7 @@ class NodeTracker : public NodeObserver {
 
  private:
   // Overridden from NodeObserver:
-  virtual void OnNodeDestroy(
-      Node* node,
-      NodeObserver::DispositionChangePhase phase) OVERRIDE {
-    if (phase != NodeObserver::DISPOSITION_CHANGED)
-      return;
+  virtual void OnNodeDestroyed(Node* node) OVERRIDE {
     DCHECK_EQ(node, node_);
     node_ = NULL;
   }

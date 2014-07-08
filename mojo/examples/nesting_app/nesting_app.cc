@@ -102,11 +102,7 @@ class NestingApp : public ApplicationDelegate,
   }
 
   // Overridden from NodeObserver:
-  virtual void OnNodeDestroy(
-      Node* node,
-      NodeObserver::DispositionChangePhase phase) OVERRIDE {
-    if (phase != NodeObserver::DISPOSITION_CHANGED)
-      return;
+  virtual void OnNodeDestroyed(Node* node) OVERRIDE {
     // TODO(beng): reap views & child nodes.
     nested_ = NULL;
   }

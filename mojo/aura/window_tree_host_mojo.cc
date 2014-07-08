@@ -164,11 +164,10 @@ ui::EventProcessor* WindowTreeHostMojo::GetEventProcessor() {
 ////////////////////////////////////////////////////////////////////////////////
 // WindowTreeHostMojo, view_manager::NodeObserver implementation:
 
-void WindowTreeHostMojo::OnNodeBoundsChange(
+void WindowTreeHostMojo::OnNodeBoundsChanged(
     view_manager::Node* node,
     const gfx::Rect& old_bounds,
-    const gfx::Rect& new_bounds,
-    view_manager::NodeObserver::DispositionChangePhase phase) {
+    const gfx::Rect& new_bounds) {
   bounds_ = new_bounds;
   if (old_bounds.origin() != new_bounds.origin())
     OnHostMoved(bounds_.origin());
