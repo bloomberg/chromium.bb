@@ -1,0 +1,168 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//build/config/features.gni")
+import("//build/config/ui.gni")
+
+content_tests_gypi_values = exec_script(
+    "//build/gypi_to_gn.py",
+    [ rebase_path("../content_tests.gypi"),
+      "--replace=<(SHARED_INTERMEDIATE_DIR)=$root_gen_dir" ],
+    "scope",
+    [ "../content_tests.gypi" ])
+
+static_library("test_support") {
+# GYP version //content/content_tests.gypi:test_support_content
+  deps = [
+    "//net:test_support",
+    "//skia",
+    "//testing/gmock",
+    "//testing/gtest",
+    "//ui/accessibility:ax_gen",
+    "//ui/base",
+    "//ui/base:ui_base_test_support",
+    "//ui/events:dom4_keycode_converter",
+    "//ui/events:events_base",
+    "//ui/events:events_test_support",
+    "//ui/events:gesture_detection",
+    "//ui/gfx:gfx_test_support",
+    "//ui/resources",
+    "//url",
+    "//webkit/common",
+    "//content/browser/speech/proto",
+    "//content/browser",
+    "//content/common",
+    "//content/app",
+  ]
+
+  if (!is_ios) {
+    sources = rebase_path(content_tests_gypi_values.layouttest_support_content_sources,
+                          ".", "//content")
+
+    deps += [
+      "//content/child",
+      "//content/common",
+      "//content/gpu",
+      "//content/ppapi_plugin",
+      "//content/renderer",
+      "//content/utility",
+      "//content/worker",
+      "//cc",
+      "//cc:test_support",
+      "//ppapi:ppapi_proxy",
+      "//ppapi:ppapi_shared",
+      "//third_party/WebKit/public:blink",
+      "//ui/surface",
+      "//v8",
+      "//webkit/child",
+      "//webkit/common/gpu",
+      "//webkit/browser:storage",
+      "//webkit/common:storage",
+# TODO(GYP)
+#"//media",
+#"//ppapi:host",
+#"//ppapi:unittest_shared",
+    ]
+
+    forward_dependent_configs_from = [
+      "//third_party/WebKit/public:blink",
+    ]
+
+# TODO(GYP)
+# These targets need include dirs and defines from the libjingle target in order
+# to compile.
+    if (false && enable_webrtc) {
+      sources += [
+        "../renderer/media/mock_media_stream_dispatcher.cc",
+        "../renderer/media/mock_media_stream_dispatcher.h",
+        "../renderer/media/mock_peer_connection_impl.cc",
+        "../renderer/media/mock_peer_connection_impl.h",
+        "../renderer/media/mock_web_rtc_peer_connection_handler_client.cc",
+        "../renderer/media/mock_web_rtc_peer_connection_handler_client.h",
+        "../renderer/media/webrtc/mock_peer_connection_dependency_factory.cc",
+        "../renderer/media/webrtc/mock_peer_connection_dependency_factory.h",
+      ]
+
+      deps += [
+        "//third_party/libjingle:webrtc",
+        "//third_party/libjingle:peerconnection",
+        "//third_party/webrtc/modules:video_capture",
+      ]
+    }
+
+    if (use_glib) {
+      deps += [
+        "//build/linux/system:glib",
+      ]
+    }
+
+    if (use_aura) {
+      deps += [
+        "//ui/aura:test_support",
+        "//ui/resources:test_pak",
+        "//ui/wm",
+      ]
+    }
+
+    if (use_aura || is_mac) {
+      deps += [ "//ui/compositor" ]
+    }
+
+    if (is_win) {
+      deps += [ "//third_party/iaccessible2" ]
+    }
+
+    if (!is_android && !is_ios) {
+# TODO(GYP)
+#deps += [ "//third_party/libvpx" ]
+    }
+
+    if (is_android) {
+      deps += [ "//ui/shell_dialogs" ]
+    }
+
+    if (is_win) {
+      deps += [ "//sandbox" ]
+    }
+  } else { # is_ios
+    sources = [
+      "public/test/content_test_suite_base.cc",
+      "public/test/mock_notification_observer.cc",
+      "public/test/mock_resource_context.cc",
+      "public/test/test_browser_thread.cc",
+      "public/test/test_content_client_initializer.cc",
+      "public/test/test_notification_tracker.cc",
+      "public/test/test_utils.cc",
+      "public/test/unittest_test_suite.cc",
+      "test/content_test_suite.cc",
+      "test/test_content_browser_client.cc",
+      "test/test_content_client.cc",
+    ]
+  }
+}
+
+if (!is_ios) {
+
+  static_library("layouttest_support") {
+# GYP version //content/content_tests.gypi:layouttest_support_content
+    sources = rebase_path(content_tests_gypi_values.layouttest_support_content_sources,
+                          ".", "//content")
+
+    deps = [
+      ":test_support",
+      "//skia",
+      "//v8",
+      "//ui/accessibility:ax_gen",
+    ]
+
+    if (is_android) {
+# TODO(GYP)
+# deps += [ "test_support_content_jni_headers" ]
+    }
+  }
+
+}  # !is_ios
+
+# TODO(GYP): Unit test targets
+

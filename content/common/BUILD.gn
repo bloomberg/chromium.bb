@@ -93,10 +93,10 @@ source_set("common") {
       "plugin_list_posix.cc",
     ]
 
-    # TODO(GYP) enable when converted to GN.
-    #deps += [
-    #  "//webkit:webkit_resources",
-    #]
+    deps += [
+      "//webkit:resources",
+      "//content:resources",
+    ]
     libs += [ "QuartzCore.framework" ]
   }
 
@@ -125,6 +125,10 @@ source_set("common") {
       "cursors/webcursor_ozone.cc",
       "font_list_ozone.cc",
     ]
+  }
+
+  if (!use_aura) {
+    sources -= [ "cursors/webcursor_aura.cc" ]
   }
 
   if (!use_aura || !use_x11) {
