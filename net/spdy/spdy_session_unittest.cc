@@ -4609,6 +4609,258 @@ TEST_P(SpdySessionTest, SplitHeaders) {
   EXPECT_EQ(kStreamUrl, request_url);
 }
 
+// Regression. Sorta. Push streams and client streams were sharing a single
+// limit for a long time.
+TEST_P(SpdySessionTest, PushedStreamShouldNotCountToClientConcurrencyLimit) {
+  SettingsMap new_settings;
+  new_settings[SETTINGS_MAX_CONCURRENT_STREAMS] =
+      SettingsFlagsAndValue(SETTINGS_FLAG_NONE, 2);
+  scoped_ptr<SpdyFrame> settings_frame(
+      spdy_util_.ConstructSpdySettings(new_settings));
+  scoped_ptr<SpdyFrame> pushed(spdy_util_.ConstructSpdyPush(
+      NULL, 0, 2, 1, "http://www.google.com/a.dat"));
+  MockRead reads[] = {
+      CreateMockRead(*settings_frame), CreateMockRead(*pushed, 3),
+      MockRead(ASYNC, 0, 4),
+  };
+
+  scoped_ptr<SpdyFrame> settings_ack(spdy_util_.ConstructSpdySettingsAck());
+  scoped_ptr<SpdyFrame> req(
+      spdy_util_.ConstructSpdyGet(NULL, 0, false, 1, LOWEST, true));
+  MockWrite writes[] = {
+      CreateMockWrite(*settings_ack, 1), CreateMockWrite(*req, 2),
+  };
+
+  DeterministicSocketData data(
+      reads, arraysize(reads), writes, arraysize(writes));
+  MockConnect connect_data(SYNCHRONOUS, OK);
+  data.set_connect_data(connect_data);
+  session_deps_.deterministic_socket_factory->AddSocketDataProvider(&data);
+
+  CreateDeterministicNetworkSession();
+
+  base::WeakPtr<SpdySession> session =
+      CreateInsecureSpdySession(http_session_, key_, BoundNetLog());
+
+  // Read the settings frame.
+  data.RunFor(1);
+
+  GURL url1(kDefaultURL);
+  base::WeakPtr<SpdyStream> spdy_stream1 = CreateStreamSynchronously(
+      SPDY_REQUEST_RESPONSE_STREAM, session, url1, LOWEST, BoundNetLog());
+  ASSERT_TRUE(spdy_stream1.get() != NULL);
+  EXPECT_EQ(0u, spdy_stream1->stream_id());
+  test::StreamDelegateDoNothing delegate1(spdy_stream1);
+  spdy_stream1->SetDelegate(&delegate1);
+
+  EXPECT_EQ(0u, session->num_active_streams());
+  EXPECT_EQ(1u, session->num_created_streams());
+  EXPECT_EQ(0u, session->num_pushed_streams());
+  EXPECT_EQ(0u, session->num_active_pushed_streams());
+
+  scoped_ptr<SpdyHeaderBlock> headers(
+      spdy_util_.ConstructGetHeaderBlock(url1.spec()));
+  spdy_stream1->SendRequestHeaders(headers.Pass(), NO_MORE_DATA_TO_SEND);
+  EXPECT_TRUE(spdy_stream1->HasUrlFromHeaders());
+
+  // Run until 1st stream is activated.
+  EXPECT_EQ(0u, delegate1.stream_id());
+  data.RunFor(2);
+  EXPECT_EQ(1u, delegate1.stream_id());
+  EXPECT_EQ(1u, session->num_active_streams());
+  EXPECT_EQ(0u, session->num_created_streams());
+  EXPECT_EQ(0u, session->num_pushed_streams());
+  EXPECT_EQ(0u, session->num_active_pushed_streams());
+
+  // Run until pushed stream is created.
+  data.RunFor(1);
+  EXPECT_EQ(2u, session->num_active_streams());
+  EXPECT_EQ(0u, session->num_created_streams());
+  EXPECT_EQ(1u, session->num_pushed_streams());
+  EXPECT_EQ(1u, session->num_active_pushed_streams());
+
+  // Second stream should not be stalled, although we have 2 active streams, but
+  // one of them is push stream and should not be taken into account when we
+  // create streams on the client.
+  base::WeakPtr<SpdyStream> spdy_stream2 = CreateStreamSynchronously(
+      SPDY_REQUEST_RESPONSE_STREAM, session, url1, LOWEST, BoundNetLog());
+  EXPECT_TRUE(spdy_stream2.get() != NULL);
+  EXPECT_EQ(2u, session->num_active_streams());
+  EXPECT_EQ(1u, session->num_created_streams());
+  EXPECT_EQ(1u, session->num_pushed_streams());
+  EXPECT_EQ(1u, session->num_active_pushed_streams());
+
+  // Read EOF.
+  data.RunFor(1);
+}
+
+TEST_P(SpdySessionTest, RejectPushedStreamExceedingConcurrencyLimit) {
+  scoped_ptr<SpdyFrame> push_a(spdy_util_.ConstructSpdyPush(
+      NULL, 0, 2, 1, "http://www.google.com/a.dat"));
+  scoped_ptr<SpdyFrame> push_b(spdy_util_.ConstructSpdyPush(
+      NULL, 0, 4, 1, "http://www.google.com/b.dat"));
+  MockRead reads[] = {
+      CreateMockRead(*push_a, 1), CreateMockRead(*push_b, 2),
+      MockRead(ASYNC, 0, 4),
+  };
+
+  scoped_ptr<SpdyFrame> req(
+      spdy_util_.ConstructSpdyGet(NULL, 0, false, 1, LOWEST, true));
+  scoped_ptr<SpdyFrame> rst(
+      spdy_util_.ConstructSpdyRstStream(4, RST_STREAM_REFUSED_STREAM));
+  MockWrite writes[] = {
+      CreateMockWrite(*req, 0), CreateMockWrite(*rst, 3),
+  };
+
+  DeterministicSocketData data(
+      reads, arraysize(reads), writes, arraysize(writes));
+  MockConnect connect_data(SYNCHRONOUS, OK);
+  data.set_connect_data(connect_data);
+  session_deps_.deterministic_socket_factory->AddSocketDataProvider(&data);
+
+  CreateDeterministicNetworkSession();
+
+  base::WeakPtr<SpdySession> session =
+      CreateInsecureSpdySession(http_session_, key_, BoundNetLog());
+  session->set_max_concurrent_pushed_streams(1);
+
+  GURL url1(kDefaultURL);
+  base::WeakPtr<SpdyStream> spdy_stream1 = CreateStreamSynchronously(
+      SPDY_REQUEST_RESPONSE_STREAM, session, url1, LOWEST, BoundNetLog());
+  ASSERT_TRUE(spdy_stream1.get() != NULL);
+  EXPECT_EQ(0u, spdy_stream1->stream_id());
+  test::StreamDelegateDoNothing delegate1(spdy_stream1);
+  spdy_stream1->SetDelegate(&delegate1);
+
+  EXPECT_EQ(0u, session->num_active_streams());
+  EXPECT_EQ(1u, session->num_created_streams());
+  EXPECT_EQ(0u, session->num_pushed_streams());
+  EXPECT_EQ(0u, session->num_active_pushed_streams());
+
+  scoped_ptr<SpdyHeaderBlock> headers(
+      spdy_util_.ConstructGetHeaderBlock(url1.spec()));
+  spdy_stream1->SendRequestHeaders(headers.Pass(), NO_MORE_DATA_TO_SEND);
+  EXPECT_TRUE(spdy_stream1->HasUrlFromHeaders());
+
+  // Run until 1st stream is activated.
+  EXPECT_EQ(0u, delegate1.stream_id());
+  data.RunFor(1);
+  EXPECT_EQ(1u, delegate1.stream_id());
+  EXPECT_EQ(1u, session->num_active_streams());
+  EXPECT_EQ(0u, session->num_created_streams());
+  EXPECT_EQ(0u, session->num_pushed_streams());
+  EXPECT_EQ(0u, session->num_active_pushed_streams());
+
+  // Run until pushed stream is created.
+  data.RunFor(1);
+  EXPECT_EQ(2u, session->num_active_streams());
+  EXPECT_EQ(0u, session->num_created_streams());
+  EXPECT_EQ(1u, session->num_pushed_streams());
+  EXPECT_EQ(1u, session->num_active_pushed_streams());
+
+  // Reset incoming pushed stream.
+  data.RunFor(2);
+  EXPECT_EQ(2u, session->num_active_streams());
+  EXPECT_EQ(0u, session->num_created_streams());
+  EXPECT_EQ(1u, session->num_pushed_streams());
+  EXPECT_EQ(1u, session->num_active_pushed_streams());
+
+  // Read EOF.
+  data.RunFor(1);
+}
+
+TEST_P(SpdySessionTest, IgnoreReservedRemoteStreamsCount) {
+  // Streams in reserved remote state exist only in SPDY4.
+  if (spdy_util_.spdy_version() < SPDY4)
+    return;
+
+  scoped_ptr<SpdyFrame> push_a(spdy_util_.ConstructSpdyPush(
+      NULL, 0, 2, 1, "http://www.google.com/a.dat"));
+  scoped_ptr<SpdyHeaderBlock> push_headers(new SpdyHeaderBlock);
+  spdy_util_.AddUrlToHeaderBlock("http://www.google.com/b.dat",
+                                 push_headers.get());
+  scoped_ptr<SpdyFrame> push_b(
+      spdy_util_.ConstructInitialSpdyPushFrame(push_headers.Pass(), 4, 1));
+  scoped_ptr<SpdyFrame> headers_b(
+      spdy_util_.ConstructSpdyPushHeaders(4, NULL, 0));
+  MockRead reads[] = {
+      CreateMockRead(*push_a, 1), CreateMockRead(*push_b, 2),
+      CreateMockRead(*headers_b, 3), MockRead(ASYNC, 0, 5),
+  };
+
+  scoped_ptr<SpdyFrame> req(
+      spdy_util_.ConstructSpdyGet(NULL, 0, false, 1, LOWEST, true));
+  scoped_ptr<SpdyFrame> rst(
+      spdy_util_.ConstructSpdyRstStream(4, RST_STREAM_REFUSED_STREAM));
+  MockWrite writes[] = {
+      CreateMockWrite(*req, 0), CreateMockWrite(*rst, 4),
+  };
+
+  DeterministicSocketData data(
+      reads, arraysize(reads), writes, arraysize(writes));
+  MockConnect connect_data(SYNCHRONOUS, OK);
+  data.set_connect_data(connect_data);
+  session_deps_.deterministic_socket_factory->AddSocketDataProvider(&data);
+
+  CreateDeterministicNetworkSession();
+
+  base::WeakPtr<SpdySession> session =
+      CreateInsecureSpdySession(http_session_, key_, BoundNetLog());
+  session->set_max_concurrent_pushed_streams(1);
+
+  GURL url1(kDefaultURL);
+  base::WeakPtr<SpdyStream> spdy_stream1 = CreateStreamSynchronously(
+      SPDY_REQUEST_RESPONSE_STREAM, session, url1, LOWEST, BoundNetLog());
+  ASSERT_TRUE(spdy_stream1.get() != NULL);
+  EXPECT_EQ(0u, spdy_stream1->stream_id());
+  test::StreamDelegateDoNothing delegate1(spdy_stream1);
+  spdy_stream1->SetDelegate(&delegate1);
+
+  EXPECT_EQ(0u, session->num_active_streams());
+  EXPECT_EQ(1u, session->num_created_streams());
+  EXPECT_EQ(0u, session->num_pushed_streams());
+  EXPECT_EQ(0u, session->num_active_pushed_streams());
+
+  scoped_ptr<SpdyHeaderBlock> headers(
+      spdy_util_.ConstructGetHeaderBlock(url1.spec()));
+  spdy_stream1->SendRequestHeaders(headers.Pass(), NO_MORE_DATA_TO_SEND);
+  EXPECT_TRUE(spdy_stream1->HasUrlFromHeaders());
+
+  // Run until 1st stream is activated.
+  EXPECT_EQ(0u, delegate1.stream_id());
+  data.RunFor(1);
+  EXPECT_EQ(1u, delegate1.stream_id());
+  EXPECT_EQ(1u, session->num_active_streams());
+  EXPECT_EQ(0u, session->num_created_streams());
+  EXPECT_EQ(0u, session->num_pushed_streams());
+  EXPECT_EQ(0u, session->num_active_pushed_streams());
+
+  // Run until pushed stream is created.
+  data.RunFor(1);
+  EXPECT_EQ(2u, session->num_active_streams());
+  EXPECT_EQ(0u, session->num_created_streams());
+  EXPECT_EQ(1u, session->num_pushed_streams());
+  EXPECT_EQ(1u, session->num_active_pushed_streams());
+
+  // Accept promised stream. It should not count towards pushed stream limit.
+  data.RunFor(1);
+  EXPECT_EQ(3u, session->num_active_streams());
+  EXPECT_EQ(0u, session->num_created_streams());
+  EXPECT_EQ(2u, session->num_pushed_streams());
+  EXPECT_EQ(1u, session->num_active_pushed_streams());
+
+  // Reset last pushed stream upon headers reception as it is going to be 2nd,
+  // while we accept only one.
+  data.RunFor(2);
+  EXPECT_EQ(2u, session->num_active_streams());
+  EXPECT_EQ(0u, session->num_created_streams());
+  EXPECT_EQ(1u, session->num_pushed_streams());
+  EXPECT_EQ(1u, session->num_active_pushed_streams());
+
+  // Read EOF.
+  data.RunFor(1);
+}
+
 TEST(MapFramerErrorToProtocolError, MapsValues) {
   CHECK_EQ(
       SPDY_ERROR_INVALID_CONTROL_FRAME,
