@@ -1813,11 +1813,15 @@ void RenderWidgetHostViewMac::OnSwapCompositorFrame(
 
   if (frame->delegated_frame_data) {
     float scale_factor = frame->metadata.device_scale_factor;
-    gfx::Size dip_size = ToCeiledSize(frame->metadata.viewport_size);
-    gfx::Size pixel_size = ConvertSizeToPixel(
-        scale_factor, dip_size);
-    root_layer_->SetBounds(gfx::Rect(dip_size));
 
+    // Compute the frame size based on the root render pass rect size.
+    cc::RenderPass* root_pass =
+        frame->delegated_frame_data->render_pass_list.back();
+    gfx::Size pixel_size = root_pass->output_rect.size();
+    gfx::Size dip_size =
+        ConvertSizeToDIP(scale_factor, pixel_size);
+
+    root_layer_->SetBounds(gfx::Rect(dip_size));
     if (!render_widget_host_->is_hidden()) {
       EnsureBrowserCompositorView();
       browser_compositor_view_->GetCompositor()->SetScaleAndSize(
