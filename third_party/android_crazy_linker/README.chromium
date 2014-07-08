@@ -27,3 +27,5 @@ Local Modifications:
 - Add support for opening library within a zipfile.
 
 - Fix -Werror=sign-compare error encountered in NDK build.
+
+- Improve permission denied message to mention upgrading from L-preview.

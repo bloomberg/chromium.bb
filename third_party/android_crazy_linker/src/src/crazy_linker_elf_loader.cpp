@@ -306,7 +306,13 @@ bool ElfLoader::LoadSegments(Error* error) {
                                MAP_FIXED | MAP_PRIVATE,
                                file_page_start + file_offset_);
       if (seg_addr == MAP_FAILED) {
-        error->Format("Could not map segment %d: %s", i, strerror(errno));
+        if (errno == EACCES) {
+          error->Format("Could not map segment %d: %s. "
+                        "If you are running L-preview, please upgrade to L.",
+                        i, strerror(errno));
+        } else {
+          error->Format("Could not map segment %d: %s", i, strerror(errno));
+        }
         return false;
       }
     }
