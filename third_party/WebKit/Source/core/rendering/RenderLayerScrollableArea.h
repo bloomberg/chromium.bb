@@ -121,7 +121,7 @@ public:
     void updateAfterStyleChange(const RenderStyle*);
     void updateAfterOverflowRecalc();
 
-    virtual void updateAfterCompositingChange() OVERRIDE;
+    virtual bool updateAfterCompositingChange() OVERRIDE;
 
     bool hasScrollbar() const { return m_hBar || m_vBar; }
 
@@ -172,9 +172,10 @@ public:
 
     bool needsCompositedScrolling() const;
 
-    // FIXME: This needs to be exposed as forced compositing scrolling is a RenderLayerScrollableArea
-    // concept and stacking container is a RenderLayerStackingNode concept.
-    bool adjustForForceCompositedScrollingMode(bool) const;
+    // These are used during compositing updates to determine if the overflow
+    // controls need to be repositioned in the GraphicsLayer tree.
+    void setTopmostScrollChild(RenderLayer*);
+    RenderLayer* topmostScrollChild() const { ASSERT(!m_nextTopmostScrollChild); return m_topmostScrollChild; }
 
 private:
     bool hasHorizontalOverflow() const;
@@ -224,6 +225,9 @@ private:
 
     unsigned m_scrollDimensionsDirty : 1;
     unsigned m_inOverflowRelayout : 1;
+
+    RenderLayer* m_nextTopmostScrollChild;
+    RenderLayer* m_topmostScrollChild;
 
     // The width/height of our scrolled area.
     LayoutRect m_overflowRect;

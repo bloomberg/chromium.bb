@@ -277,6 +277,12 @@ void CompositingLayerAssigner::assignLayersToBackingsInternal(RenderLayer* layer
         }
     }
 
+    if (layer->scrollParent())
+        layer->scrollParent()->scrollableArea()->setTopmostScrollChild(layer);
+
+    if (layer->needsCompositedScrolling())
+        layer->scrollableArea()->setTopmostScrollChild(0);
+
     RenderLayerStackingNodeIterator iterator(*layer->stackingNode(), NormalFlowChildren | PositiveZOrderChildren);
     while (RenderLayerStackingNode* curNode = iterator.next())
         assignLayersToBackingsInternal(curNode->layer(), squashingState, layersNeedingRepaint);

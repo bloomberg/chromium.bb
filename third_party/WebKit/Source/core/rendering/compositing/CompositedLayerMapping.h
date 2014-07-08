@@ -185,6 +185,11 @@ public:
     GraphicsLayer* layerForVerticalScrollbar() const { return m_layerForVerticalScrollbar.get(); }
     GraphicsLayer* layerForScrollCorner() const { return m_layerForScrollCorner.get(); }
 
+    // Removes the overflow controls host layer from its parent and positions it
+    // so that it can be inserted as a sibling to this CLM without changing
+    // position.
+    GraphicsLayer* detachLayerForOverflowControls(const RenderLayer& enclosingLayer);
+
     void updateFilters(const RenderStyle*);
 
     void setBlendMode(blink::WebBlendMode);
@@ -380,6 +385,7 @@ private:
     OwnPtr<GraphicsLayer> m_layerForHorizontalScrollbar;
     OwnPtr<GraphicsLayer> m_layerForVerticalScrollbar;
     OwnPtr<GraphicsLayer> m_layerForScrollCorner;
+    OwnPtr<GraphicsLayer> m_overflowControlsHostLayer;
 
     // A squashing CLM has two possible squashing-related structures.
     //

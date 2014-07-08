@@ -304,15 +304,17 @@ void RenderLayerCompositor::updateIfNeeded()
         CompositingLayerAssigner layerAssigner(this);
         layerAssigner.assign(updateRoot, layersNeedingRepaint);
 
+        bool layersChanged = layerAssigner.layersChanged();
+
         {
             TRACE_EVENT0("blink_rendering", "RenderLayerCompositor::updateAfterCompositingChange");
             if (const FrameView::ScrollableAreaSet* scrollableAreas = m_renderView.frameView()->scrollableAreas()) {
                 for (FrameView::ScrollableAreaSet::iterator it = scrollableAreas->begin(); it != scrollableAreas->end(); ++it)
-                    (*it)->updateAfterCompositingChange();
+                    layersChanged |= (*it)->updateAfterCompositingChange();
             }
         }
 
-        if (layerAssigner.layersChanged())
+        if (layersChanged)
             updateType = std::max(updateType, CompositingUpdateRebuildTree);
     }
 
@@ -330,10 +332,12 @@ void RenderLayerCompositor::updateIfNeeded()
     }
 
     if (updateType >= CompositingUpdateRebuildTree) {
+        GraphicsLayerTreeBuilder::AncestorInfo ancestorInfo;
         GraphicsLayerVector childList;
+        ancestorInfo.childLayersOfEnclosingCompositedLayer = &childList;
         {
             TRACE_EVENT0("blink_rendering", "GraphicsLayerTreeBuilder::rebuild");
-            GraphicsLayerTreeBuilder().rebuild(*updateRoot, childList);
+            GraphicsLayerTreeBuilder().rebuild(*updateRoot, ancestorInfo);
         }
 
         if (childList.isEmpty())

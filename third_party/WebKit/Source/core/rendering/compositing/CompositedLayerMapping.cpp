@@ -983,12 +983,14 @@ void CompositedLayerMapping::updateInternalHierarchy()
     // The clip for child layers does not include space for overflow controls, so they exist as
     // siblings of the clipping layer if we have one. Normal children of this layer are set as
     // children of the clipping layer.
+    if (m_overflowControlsHostLayer)
+        m_graphicsLayer->addChild(m_overflowControlsHostLayer.get());
     if (m_layerForHorizontalScrollbar)
-        m_graphicsLayer->addChild(m_layerForHorizontalScrollbar.get());
+        m_overflowControlsHostLayer->addChild(m_layerForHorizontalScrollbar.get());
     if (m_layerForVerticalScrollbar)
-        m_graphicsLayer->addChild(m_layerForVerticalScrollbar.get());
+        m_overflowControlsHostLayer->addChild(m_layerForVerticalScrollbar.get());
     if (m_layerForScrollCorner)
-        m_graphicsLayer->addChild(m_layerForScrollCorner.get());
+        m_overflowControlsHostLayer->addChild(m_layerForScrollCorner.get());
 
     // The squashing containment layer, if it exists, becomes a no-op parent.
     if (m_squashingLayer) {
@@ -1183,6 +1185,9 @@ bool CompositedLayerMapping::updateOverflowControlsLayers(bool needsHorizontalSc
     bool horizontalScrollbarLayerChanged = toggleScrollbarLayerIfNeeded(m_layerForHorizontalScrollbar, needsHorizontalScrollbarLayer, CompositingReasonLayerForHorizontalScrollbar);
     bool verticalScrollbarLayerChanged = toggleScrollbarLayerIfNeeded(m_layerForVerticalScrollbar, needsVerticalScrollbarLayer, CompositingReasonLayerForVerticalScrollbar);
     bool scrollCornerLayerChanged = toggleScrollbarLayerIfNeeded(m_layerForScrollCorner, needsScrollCornerLayer, CompositingReasonLayerForScrollCorner);
+
+    bool needsOverflowControlsHostLayer = needsHorizontalScrollbarLayer || needsVerticalScrollbarLayer || needsScrollCornerLayer;
+    toggleScrollbarLayerIfNeeded(m_overflowControlsHostLayer, needsOverflowControlsHostLayer, CompositingReasonLayerForOverflowControlsHost);
 
     if (ScrollingCoordinator* scrollingCoordinator = scrollingCoordinatorFromLayer(m_owningLayer)) {
         if (horizontalScrollbarLayerChanged)
@@ -1779,6 +1784,15 @@ LayoutRect CompositedLayerMapping::contentsBox() const
     return contentsBox;
 }
 
+GraphicsLayer* CompositedLayerMapping::detachLayerForOverflowControls(const RenderLayer& enclosingLayer)
+{
+    LayoutPoint localOffsetToTransformedAncestor = m_owningLayer.computeOffsetFromTransformedAncestor();
+    LayoutPoint enclosingLayerOffsetToTransformedAncestor = enclosingLayer.computeOffsetFromTransformedAncestor();
+    m_overflowControlsHostLayer->setPosition(FloatPoint(localOffsetToTransformedAncestor - enclosingLayerOffsetToTransformedAncestor));
+    m_overflowControlsHostLayer->removeFromParent();
+    return m_overflowControlsHostLayer.get();
+}
+
 GraphicsLayer* CompositedLayerMapping::parentForSublayers() const
 {
     if (m_scrollingBlockSelectionLayer)
@@ -2222,6 +2236,8 @@ String CompositedLayerMapping::debugName(const GraphicsLayer* graphicsLayer)
         name = "Vertical Scrollbar Layer";
     } else if (graphicsLayer == m_layerForScrollCorner.get()) {
         name = "Scroll Corner Layer";
+    } else if (graphicsLayer == m_overflowControlsHostLayer.get()) {
+        name = "Overflow Controls Host Layer";
     } else if (graphicsLayer == m_scrollingLayer.get()) {
         name = "Scrolling Layer";
     } else if (graphicsLayer == m_scrollingContentsLayer.get()) {

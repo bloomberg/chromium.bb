@@ -81,6 +81,8 @@ RenderLayerScrollableArea::RenderLayerScrollableArea(RenderLayer& layer)
     , m_scrollsOverflow(false)
     , m_scrollDimensionsDirty(true)
     , m_inOverflowRelayout(false)
+    , m_nextTopmostScrollChild(0)
+    , m_topmostScrollChild(0)
     , m_scrollCorner(0)
     , m_resizer(0)
 {
@@ -729,9 +731,13 @@ void RenderLayerScrollableArea::updateAfterStyleChange(const RenderStyle* oldSty
     updateResizerStyle();
 }
 
-void RenderLayerScrollableArea::updateAfterCompositingChange()
+bool RenderLayerScrollableArea::updateAfterCompositingChange()
 {
     layer()->updateScrollingStateAfterCompositingChange();
+    const bool layersChanged = m_topmostScrollChild != m_nextTopmostScrollChild;
+    m_topmostScrollChild = m_nextTopmostScrollChild;
+    m_nextTopmostScrollChild = nullptr;
+    return layersChanged;
 }
 
 void RenderLayerScrollableArea::updateAfterOverflowRecalc()
@@ -1443,6 +1449,15 @@ bool RenderLayerScrollableArea::usesCompositedScrolling() const
 bool RenderLayerScrollableArea::needsCompositedScrolling() const
 {
     return scrollsOverflow() && box().view()->compositor()->acceleratedCompositingForOverflowScrollEnabled();
+}
+
+void RenderLayerScrollableArea::setTopmostScrollChild(RenderLayer* scrollChild)
+{
+    // We only want to track the topmost scroll child for scrollable areas with
+    // overlay scrollbars.
+    if (!hasOverlayScrollbars())
+        return;
+    m_nextTopmostScrollChild = scrollChild;
 }
 
 } // Namespace WebCore

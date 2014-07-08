@@ -70,20 +70,21 @@ const uint64_t CompositingReasonLayerForDescendantClip                   = UINT6
 const uint64_t CompositingReasonLayerForPerspective                      = UINT64_C(1) << 43;
 const uint64_t CompositingReasonLayerForHorizontalScrollbar              = UINT64_C(1) << 44;
 const uint64_t CompositingReasonLayerForVerticalScrollbar                = UINT64_C(1) << 45;
-const uint64_t CompositingReasonLayerForScrollCorner                     = UINT64_C(1) << 46;
-const uint64_t CompositingReasonLayerForScrollingContents                = UINT64_C(1) << 47;
-const uint64_t CompositingReasonLayerForScrollingContainer               = UINT64_C(1) << 48;
-const uint64_t CompositingReasonLayerForSquashingContents                = UINT64_C(1) << 49;
-const uint64_t CompositingReasonLayerForSquashingContainer               = UINT64_C(1) << 50;
-const uint64_t CompositingReasonLayerForForeground                       = UINT64_C(1) << 51;
-const uint64_t CompositingReasonLayerForBackground                       = UINT64_C(1) << 52;
-const uint64_t CompositingReasonLayerForMask                             = UINT64_C(1) << 53;
-const uint64_t CompositingReasonLayerForClippingMask                     = UINT64_C(1) << 54;
-const uint64_t CompositingReasonLayerForScrollingBlockSelection          = UINT64_C(1) << 55;
+const uint64_t CompositingReasonLayerForOverflowControlsHost             = UINT64_C(1) << 46;
+const uint64_t CompositingReasonLayerForScrollCorner                     = UINT64_C(1) << 47;
+const uint64_t CompositingReasonLayerForScrollingContents                = UINT64_C(1) << 48;
+const uint64_t CompositingReasonLayerForScrollingContainer               = UINT64_C(1) << 49;
+const uint64_t CompositingReasonLayerForSquashingContents                = UINT64_C(1) << 50;
+const uint64_t CompositingReasonLayerForSquashingContainer               = UINT64_C(1) << 51;
+const uint64_t CompositingReasonLayerForForeground                       = UINT64_C(1) << 52;
+const uint64_t CompositingReasonLayerForBackground                       = UINT64_C(1) << 53;
+const uint64_t CompositingReasonLayerForMask                             = UINT64_C(1) << 54;
+const uint64_t CompositingReasonLayerForClippingMask                     = UINT64_C(1) << 55;
+const uint64_t CompositingReasonLayerForScrollingBlockSelection          = UINT64_C(1) << 56;
 
 // Composited elements with inline transforms trigger assumed overlap so that
 // we can update their transforms quickly.
-const uint64_t CompositingReasonInlineTransform                          = UINT64_C(1) << 56;
+const uint64_t CompositingReasonInlineTransform                          = UINT64_C(1) << 57;
 
 // Various combinations of compositing reasons are defined here also, for more intutive and faster bitwise logic.
 const uint64_t CompositingReasonComboAllDirectReasons =

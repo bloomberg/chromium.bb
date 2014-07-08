@@ -39,7 +39,18 @@ public:
     GraphicsLayerTreeBuilder();
     ~GraphicsLayerTreeBuilder();
 
-    void rebuild(RenderLayer&, GraphicsLayerVector& childLayersOfEnclosingLayer);
+    struct AncestorInfo {
+        AncestorInfo()
+            : enclosingCompositedLayer(0)
+            , childLayersOfEnclosingCompositedLayer(0)
+        {
+        }
+
+        RenderLayer* enclosingCompositedLayer;
+        GraphicsLayerVector* childLayersOfEnclosingCompositedLayer;
+    };
+
+    void rebuild(RenderLayer&, AncestorInfo);
 };
 
 } // namespace WebCore
