@@ -48,6 +48,13 @@ def main ():
           cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, bufsize=0)
       out, err = p.communicate()
       if p.returncode:
+        # TODO(jochen): Remove once crbug.com/370551 is resolved.
+        if sys.platform == 'darwin':
+          cmd[:0] = [
+              'gdb', '-batch', '-ex', 'run', '-ex' 'bt', '-ex', 'quit', '-args']
+          p = subprocess.Popen(
+              cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, bufsize=0)
+          out, err = p.communicate()
         raise Exception('Failed to run d8', out, err)
       with open(cxxoutfile, 'wb') as f:
         f.write(out)
