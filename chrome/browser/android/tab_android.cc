@@ -173,12 +173,6 @@ void TabAndroid::HandlePopupNavigation(chrome::NavigateParams* params) {
   NOTIMPLEMENTED();
 }
 
-void TabAndroid::OnReceivedHttpAuthRequest(jobject auth_handler,
-                                           const base::string16& host,
-                                           const base::string16& realm) {
-  NOTIMPLEMENTED();
-}
-
 bool TabAndroid::ShouldWelcomePageLinkToTermsOfService() {
   NOTIMPLEMENTED();
   return false;

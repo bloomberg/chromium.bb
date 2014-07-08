@@ -4,7 +4,10 @@
 
 package org.chromium.chrome.browser;
 
+import android.app.Activity;
+
 import org.chromium.base.CalledByNative;
+import org.chromium.ui.base.WindowAndroid;
 
 /**
  * Represents an HTTP authentication request to be handled by the UI.
@@ -83,6 +86,20 @@ public class ChromeHttpAuthHandler {
         return nativeGetCancelButtonText(mNativeChromeHttpAuthHandler);
     }
 
+    @CalledByNative
+    private void showDialog(WindowAndroid windowAndroid) {
+        if (windowAndroid == null) {
+            cancel();
+        }
+        Activity activity = windowAndroid.getActivity().get();
+        if (activity == null) {
+            cancel();
+        }
+        LoginPrompt authDialog = new LoginPrompt(activity, this);
+        setAutofillObserver(authDialog);
+        authDialog.show();
+    }
+
     // ---------------------------------------------
     // Autofill-related
     // ---------------------------------------------
@@ -101,7 +118,7 @@ public class ChromeHttpAuthHandler {
      * Register for onAutofillDataAvailable callbacks.  |observer| can be null,
      * in which case no callback is made.
      */
-    public void setAutofillObserver(AutofillObserver observer) {
+    private void setAutofillObserver(AutofillObserver observer) {
         mAutofillObserver = observer;
         // In case the autofill data arrives before the observer is set.
         if (mAutofillUsername != null && mAutofillPassword != null) {

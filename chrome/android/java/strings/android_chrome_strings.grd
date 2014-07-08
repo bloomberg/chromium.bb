@@ -306,6 +306,14 @@ You are signing in with a managed account and giving its administrator control o
         Save video
      </message>
 
+     <!-- Http authentication -->
+      <message name="IDS_ACCESSIBILITY_HTTP_AUTH_USERNAME_INPUT" desc="Content description for the http authentication pop-up username input field.">
+        Username
+      </message>
+      <message name="IDS_ACCESSIBILITY_HTTP_AUTH_PASSWORD_INPUT" desc="Content description for the http authentication pop-up password input field.">
+        Password
+      </message>
+
       <!-- Smartcard certificate support -->
       <message name="IDS_SMARTCARD_DIALOG_TITLE" desc="Title of a dialog asking whether to use Android default keystore or a smartcard for certificate authentication.">
         Choose certificate for authentication

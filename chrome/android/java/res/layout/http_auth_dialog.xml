@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2014 The Chromium Authors. All rights reserved.
+
+     Use of this source code is governed by a BSD-style license that can be
+     found in the LICENSE file.
+-->
+
+<TableLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:stretchColumns="1"
+    android:paddingTop="5dp"
+    android:paddingEnd="7dp"
+    android:paddingBottom="5dp"
+    android:paddingStart="7dp" >
+    <TextView
+        android:id="@+id/explanation"
+        android:layout_width="match_parent" />
+    <TableRow>
+        <TextView
+            android:id="@+id/username_label"
+            android:paddingStart="7dp"/>
+        <EditText
+            android:id="@+id/username"
+            android:inputType="textNoSuggestions"
+            android:contentDescription="@string/accessibility_http_auth_username_input" />
+    </TableRow>
+    <TableRow>
+        <TextView
+            android:id="@+id/password_label"
+            android:paddingStart="7dp"/>
+        <EditText
+            android:id="@+id/password"
+            android:inputType="textPassword"
+            android:contentDescription="@string/accessibility_http_auth_password_input" />
+    </TableRow>
+</TableLayout>

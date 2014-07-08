@@ -8,12 +8,13 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/ui/android/chrome_http_auth_handler.h"
+#include "chrome/browser/ui/android/window_android_helper.h"
 #include "chrome/browser/ui/login/login_prompt.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 #include "net/base/auth.h"
+#include "ui/base/android/window_android.h"
 
 using content::BrowserThread;
 using net::URLRequest;
@@ -45,18 +46,16 @@ class LoginHandlerAndroid : public LoginHandler {
     // Get pointer to TabAndroid
     content::WebContents* web_contents = GetWebContentsForLogin();
     CHECK(web_contents);
-    TabAndroid* tab_android = TabAndroid::FromWebContents(web_contents);
+    WindowAndroidHelper* window_helper = WindowAndroidHelper::FromWebContents(
+        web_contents);
 
-    // Notify TabAndroid that HTTP authentication is required for current page.
-    if (tab_android) {
+    // Notify WindowAndroid that HTTP authentication is required.
+    if (window_helper->GetWindowAndroid()) {
       chrome_http_auth_handler_.reset(new ChromeHttpAuthHandler(explanation));
       chrome_http_auth_handler_->Init();
       chrome_http_auth_handler_->SetObserver(this);
-
-      tab_android->OnReceivedHttpAuthRequest(
-          chrome_http_auth_handler_.get()->GetJavaObject(),
-          base::ASCIIToUTF16(auth_info()->challenger.ToString()),
-          base::UTF8ToUTF16(auth_info()->realm));
+      chrome_http_auth_handler_->ShowDialog(
+          window_helper->GetWindowAndroid()->GetJavaObject().obj());
 
       // Register to receive a callback to OnAutofillDataAvailable().
       SetModel(manager);

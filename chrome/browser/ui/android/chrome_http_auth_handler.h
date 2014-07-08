@@ -17,7 +17,7 @@
 // by, e.g., showing the user a login dialog.
 class ChromeHttpAuthHandler {
  public:
-  ChromeHttpAuthHandler(const base::string16& explanation);
+  explicit ChromeHttpAuthHandler(const base::string16& explanation);
   ~ChromeHttpAuthHandler();
 
   // This must be called before using the object.
@@ -28,10 +28,8 @@ class ChromeHttpAuthHandler {
   // are called. |observer| may be NULL in which case the callbacks are skipped.
   void SetObserver(LoginHandler* observer);
 
-  // Returns a reference to the Java land ChromeHttpAuthHandler.  This
-  // reference must not be released, and remains valid until the native
-  // ChromeHttpAuthHandler is destructed.
-  jobject GetJavaObject();
+  // Show the dialog prompting for login credentials.
+  void ShowDialog(jobject window_android);
 
   // Forwards the autofill data to the Java land object.
   void OnAutofillDataAvailable(
