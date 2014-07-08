@@ -129,19 +129,27 @@ class Parser(object):
     if len(p) > 3:
       p[0] = p[2]
 
-  def p_attribute_list(self, p):
-    """attribute_list : attribute
-                      | attribute COMMA attribute_list
-                      | """
-    if len(p) == 2:
-      p[0] = _ListFromConcat(p[1])
-    elif len(p) > 3:
-      p[0] = _ListFromConcat(p[1], p[3])
+  def p_attribute_list_1(self, p):
+    """attribute_list : """
+    p[0] = ast.AttributeList()
+
+  def p_attribute_list_2(self, p):
+    """attribute_list : nonempty_attribute_list"""
+    p[0] = p[1]
+
+  def p_nonempty_attribute_list_1(self, p):
+    """nonempty_attribute_list : attribute"""
+    p[0] = ast.AttributeList(p[1])
+
+  def p_nonempty_attribute_list_2(self, p):
+    """nonempty_attribute_list : nonempty_attribute_list COMMA attribute"""
+    p[0] = p[1]
+    p[0].Append(p[3])
 
   def p_attribute(self, p):
     """attribute : NAME EQUALS evaled_literal
                  | NAME EQUALS NAME"""
-    p[0] = ('ATTRIBUTE', p[1], p[3])
+    p[0] = ast.Attribute(p[1], p[3], filename=self.filename, lineno=p.lineno(1))
 
   def p_evaled_literal(self, p):
     """evaled_literal : literal"""
@@ -213,7 +221,7 @@ class Parser(object):
   def p_parameter(self, p):
     """parameter : typename NAME ordinal"""
     p[0] = ast.Parameter(p[1], p[2], p[3],
-                         filename=self.filename, lineno=p.lineno(1))
+                         filename=self.filename, lineno=p.lineno(2))
 
   def p_typename(self, p):
     """typename : basictypename

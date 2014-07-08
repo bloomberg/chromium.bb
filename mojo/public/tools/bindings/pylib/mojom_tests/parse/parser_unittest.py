@@ -672,5 +672,78 @@ class ParserTest(unittest.TestCase):
             r" *MyMethod\(, string a\);$"):
       parser.Parse(source2, "my_file.mojom")
 
+  def testValidAttributes(self):
+    """Tests parsing attributes (and attribute lists)."""
+
+    # Note: We use structs because they have (optional) attribute lists.
+
+    # Empty attribute list.
+    source1 = "[] struct MyStruct {};"
+    expected1 = \
+        [('MODULE',
+          '',
+          None,
+          [('STRUCT',
+            'MyStruct',
+            ast.AttributeList(),
+            None)])]
+    self.assertEquals(parser.Parse(source1, "my_file.mojom"), expected1)
+
+    # One-element attribute list, with name value.
+    source2 = "[MyAttribute=MyName] struct MyStruct {};"
+    expected2 = \
+        [('MODULE',
+          '',
+          None,
+          [('STRUCT',
+            'MyStruct',
+            ast.AttributeList(ast.Attribute("MyAttribute", "MyName")),
+            None)])]
+    self.assertEquals(parser.Parse(source2, "my_file.mojom"), expected2)
+
+    # Two-element attribute list, with one string value and one integer value.
+    source3 = "[MyAttribute1 = \"hello\", MyAttribute2 = 5] struct MyStruct {};"
+    expected3 = \
+        [('MODULE',
+          '',
+          None,
+          [('STRUCT',
+            'MyStruct',
+            ast.AttributeList([ast.Attribute("MyAttribute1", "hello"),
+                               ast.Attribute("MyAttribute2", 5)]),
+            None)])]
+    self.assertEquals(parser.Parse(source3, "my_file.mojom"), expected3)
+
+    # TODO(vtl): Boolean attributes don't work yet. (In fact, we just |eval()|
+    # literal (non-name) values, which is extremely dubious.)
+
+  def testInvalidAttributes(self):
+    """Tests that invalid attributes and attribute lists are correctly
+    detected."""
+
+    # Trailing commas not allowed.
+    source1 = "[MyAttribute=MyName,] struct MyStruct {};"
+    with self.assertRaisesRegexp(
+        parser.ParseError,
+        r"^my_file\.mojom:1: Error: Unexpected '\]':\n"
+            r"\[MyAttribute=MyName,\] struct MyStruct {};$"):
+      parser.Parse(source1, "my_file.mojom")
+
+    # Missing value.
+    source2 = "[MyAttribute=] struct MyStruct {};"
+    with self.assertRaisesRegexp(
+        parser.ParseError,
+        r"^my_file\.mojom:1: Error: Unexpected '\]':\n"
+            r"\[MyAttribute=\] struct MyStruct {};$"):
+      parser.Parse(source2, "my_file.mojom")
+
+    # Missing key.
+    source3 = "[=MyName] struct MyStruct {};"
+    with self.assertRaisesRegexp(
+        parser.ParseError,
+        r"^my_file\.mojom:1: Error: Unexpected '=':\n"
+            r"\[=MyName\] struct MyStruct {};$"):
+      parser.Parse(source3, "my_file.mojom")
+
 if __name__ == "__main__":
   unittest.main()

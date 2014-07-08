@@ -17,33 +17,6 @@ class NodeBase(object):
     self.lineno = lineno
 
 
-class Ordinal(NodeBase):
-  """Represents an ordinal value labeling, e.g., a struct field."""
-
-  def __init__(self, value, **kwargs):
-    NodeBase.__init__(self, **kwargs)
-    self.value = value
-
-  def __eq__(self, other):
-    return self.value == other.value
-
-
-class Parameter(NodeBase):
-  """Represents a method request or response parameter."""
-
-  def __init__(self, typename, name, ordinal, **kwargs):
-    assert isinstance(ordinal, Ordinal)
-    NodeBase.__init__(self, **kwargs)
-    self.typename = typename
-    self.name = name
-    self.ordinal = ordinal
-
-  def __eq__(self, other):
-    return self.typename == other.typename and \
-           self.name == other.name and \
-           self.ordinal == other.ordinal
-
-
 class NodeListBase(NodeBase):
   """Represents a list of other nodes, all having the same type. (This is meant
   to be subclassed, with subclasses defining _list_item_type to be the class of
@@ -86,6 +59,56 @@ class NodeListBase(NodeBase):
     if self.elements:
       self.filename = self.elements[0].filename
       self.lineno = self.elements[0].lineno
+
+
+################################################################################
+
+
+class Attribute(NodeBase):
+  """Represents an attribute."""
+
+  def __init__(self, key, value, **kwargs):
+    assert isinstance(key, str)
+    NodeBase.__init__(self, **kwargs)
+    self.key = key
+    self.value = value
+
+  def __eq__(self, other):
+    return self.key == other.key and self.value == other.value
+
+
+class AttributeList(NodeListBase):
+  """Represents a list attributes."""
+
+  _list_item_type = Attribute
+
+
+class Ordinal(NodeBase):
+  """Represents an ordinal value labeling, e.g., a struct field."""
+
+  def __init__(self, value, **kwargs):
+    assert value is None or isinstance(value, int)
+    NodeBase.__init__(self, **kwargs)
+    self.value = value
+
+  def __eq__(self, other):
+    return self.value == other.value
+
+
+class Parameter(NodeBase):
+  """Represents a method request or response parameter."""
+
+  def __init__(self, typename, name, ordinal, **kwargs):
+    assert isinstance(ordinal, Ordinal)
+    NodeBase.__init__(self, **kwargs)
+    self.typename = typename
+    self.name = name
+    self.ordinal = ordinal
+
+  def __eq__(self, other):
+    return self.typename == other.typename and \
+           self.name == other.name and \
+           self.ordinal == other.ordinal
 
 
 class ParameterList(NodeListBase):
