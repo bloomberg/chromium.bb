@@ -39,6 +39,25 @@ class Conditions(object):
 
   def Bit(self, name):
     _, arch = self._active_condition.split('_')
+
+    if name == 'coverage_enabled':
+      return False
+
+    if name == 'build_x86':
+      return arch == 'x86' or arch == 'x64'
+
+    if name == 'build_arm':
+      return arch == 'arm'
+
+    if name == 'build_x86_32':
+      return arch == 'x86'
+
+    if name == 'build_x86_64':
+      return arch == 'x64'
+
+    if name == 'build_mips32':
+      return arch == 'mips32'
+
     if name == 'target_arm':
       return arch == 'arm'
 

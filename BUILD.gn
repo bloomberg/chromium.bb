@@ -14,18 +14,6 @@
 # combinations of the real targets.
 #
 
-#
-# TODO(noelallen) : BUG# 386243
-# Remove the need for a target to prep all toolchains once a Cooked toolchain
-# can depend on the correct prep steps.
-#
-group("prep_toolchains") {
-  deps = [
-    "//native_client/build/toolchain:prep_nacl_x86_newlib",
-    "//native_client/build/toolchain:prep_nacl_arm_newlib",
-  ]
-}
-
 group("trusted_arm") {
   deps = [
     "//native_client/src:trusted_targets(//native_client/build/toolchain/linux:trusted_arm)",

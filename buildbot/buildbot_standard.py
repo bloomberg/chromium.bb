@@ -186,7 +186,6 @@ def BuildScript(status, context):
       Command(context,
               cmd=[gn_path, '--dotfile=../native_client/.gn',
                    '--root=..', 'gen', '../out'])
-      Command(context, cmd=['ninja', '-C', '../out', '-j10', 'prep_toolchains'])
       Command(context, cmd=['ninja', '-C', '../out', '-j10'] + targets)
 
   if context['clang']:

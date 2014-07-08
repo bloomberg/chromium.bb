@@ -92,6 +92,8 @@ class Environment(object):
     return nodes
 
   def AddObject(self, name, sources, objtype, **kwargs):
+    if type(sources) == type(""):
+      sources = [sources]
     add_props = { 'sources': sources }
 
     table = ParsePropertyTable(kwargs)
@@ -106,10 +108,10 @@ class Environment(object):
     return name
 
   def ComponentLibrary(self, name, sources, **kwargs):
-    return self.AddObject(LibName(name), sources, 'library', **kwargs)
+    return self.AddObject(LibName(name), sources, 'static_library', **kwargs)
 
   def DualLibrary(self, name, sources, **kwargs):
-    return self.AddObject(LibName(name), sources, 'DualLibrary', **kwargs)
+    return self.AddObject(LibName(name), sources, 'static_library', **kwargs)
 
   def DualObject(self, name, **kwargs):
     return name
@@ -137,7 +139,7 @@ class Environment(object):
     return name
 
   def ComponentProgram(self, name, sources, **kwargs):
-    self.AddObject(name, sources, 'executable', **kwargs)
+    # self.AddObject(name, sources, 'executable', **kwargs)
     return name
 
   def Command(self, *args, **kwargs):
@@ -156,7 +158,7 @@ class Environment(object):
     ARGS['capture_stderr']=capture_stderr
     ARGS['wrapper_program_prefix']=wrapper_program_prefix
     ARGS['scale_timeout'] = scale_timeout
-    self.AddObject(name, [], 'test', **ARGS)
+    # self.AddObject(name, [], 'test', **ARGS)
     return name
 
   def CommandSelLdrTestNacl(self, *args, **kwargs):
@@ -169,9 +171,9 @@ class Environment(object):
     name = "Unknown"
     if len(args):
       name = args[0]
-    self.tracker.AddObject('Add %s to %s.' %
-                           (node, ' and '.join(suites)),
-                           'note')
+    # self.tracker.AddObject('Add %s to %s.' %
+    #                       (node, ' and '.join(suites)),
+    #                       'note')
     return name
 
   def EnsureRequiredBuildWarnings(env, **kwargs):
@@ -193,7 +195,7 @@ class Environment(object):
     return self.AddObject(LibName(name), sources, 'shared_library', **kwargs)
 
   def NaClSdkLibrary(self, name, sources, **kwargs):
-    return self.AddObject(LibName(name), sources, 'NaClDualLibrary', **kwargs)
+    return self.AddObject(LibName(name), sources, 'static_library', **kwargs)
 
   def Requires(self, *args):
     return args
