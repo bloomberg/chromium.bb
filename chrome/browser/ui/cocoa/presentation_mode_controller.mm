@@ -253,7 +253,13 @@ const CGFloat kFloatingBarVerticalOffset = 22;
   [self hideActiveWindowUI];
 }
 
+// On OSX 10.8+, the menu bar shows on the secondary screen in fullscreen.
+// On OSX 10.7, fullscreen never fills the secondary screen.
+// On OSX 10.6, the menu bar never shows on the secondary screen in fullscreen.
+// See http://crbug.com/388906 for full details.
 - (CGFloat)floatingBarVerticalOffset {
+  if (base::mac::IsOSMountainLionOrLater())
+    return kFloatingBarVerticalOffset;
   return [self isWindowOnPrimaryScreen] ? kFloatingBarVerticalOffset : 0;
 }
 
