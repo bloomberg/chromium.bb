@@ -129,6 +129,9 @@ void SetYamaRestrictions(bool enable_restriction) {
 }
 
 TEST(Yama, RestrictPtraceWorks) {
+  if (HasLinux32Bug())
+    return;
+
   ScopedProcess process1(base::Bind(&SetYamaRestrictions, true));
   ASSERT_TRUE(process1.WaitForClosureToRun());
 
@@ -151,7 +154,7 @@ TEST(Yama, RestrictPtraceWorks) {
 void DoNothing() {}
 
 SANDBOX_TEST(Yama, RestrictPtraceIsDefault) {
-  if (!Yama::IsPresent())
+  if (!Yama::IsPresent() || HasLinux32Bug())
     return;
 
   CHECK(Yama::DisableYamaRestrictions());
