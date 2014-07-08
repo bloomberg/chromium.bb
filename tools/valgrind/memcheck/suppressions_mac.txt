@@ -2512,3 +2512,14 @@
    fun:_ZN7content16WebIDBCursorImpl16continueFunctionERKN5blink9WebIDBKeyEPNS1_15WebIDBCallbacksE
    fun:_ZN7content38WebIDBCursorImplTest_PrefetchTest_Test8TestBodyEv
 }
+{
+   bug_392244
+   Memcheck:Leak
+   ...
+   fun:_ZN4base10GetTempDirEPNS_8FilePathE
+   fun:_ZN4base15GetShmemTempDirEbPNS_8FilePathE
+   ...
+   fun:_ZN7content25TestWebKitPlatformSupportC2Ev
+   fun:_ZN7content25TestWebKitPlatformSupportC1Ev
+   fun:_ZN7content17UnitTestTestSuiteC2EPN4base9TestSuiteE
+}
