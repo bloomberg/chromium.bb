@@ -616,7 +616,7 @@ class BASE_EXPORT TraceLog {
   // the category group, or event_callback_ is not null and
   // event_callback_category_filter_ matches the category group.
   void UpdateCategoryGroupEnabledFlags();
-  void UpdateCategoryGroupEnabledFlag(int category_index);
+  void UpdateCategoryGroupEnabledFlag(size_t category_index);
 
   // Configure synthetic delays based on the values set in the current
   // category filter.

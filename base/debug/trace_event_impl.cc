@@ -1209,7 +1209,7 @@ const char* TraceLog::GetCategoryGroupName(
   return g_category_groups[category_index];
 }
 
-void TraceLog::UpdateCategoryGroupEnabledFlag(int category_index) {
+void TraceLog::UpdateCategoryGroupEnabledFlag(size_t category_index) {
   unsigned char enabled_flag = 0;
   const char* category_group = g_category_groups[category_index];
   if (mode_ == RECORDING_MODE &&
@@ -1225,8 +1225,8 @@ void TraceLog::UpdateCategoryGroupEnabledFlag(int category_index) {
 }
 
 void TraceLog::UpdateCategoryGroupEnabledFlags() {
-  int category_index = base::subtle::NoBarrier_Load(&g_category_index);
-  for (int i = 0; i < category_index; i++)
+  size_t category_index = base::subtle::NoBarrier_Load(&g_category_index);
+  for (size_t i = 0; i < category_index; i++)
     UpdateCategoryGroupEnabledFlag(i);
 }
 
@@ -1264,10 +1264,10 @@ const unsigned char* TraceLog::GetCategoryGroupEnabledInternal(
   DCHECK(!strchr(category_group, '"')) <<
       "Category groups may not contain double quote";
   // The g_category_groups is append only, avoid using a lock for the fast path.
-  int current_category_index = base::subtle::Acquire_Load(&g_category_index);
+  size_t current_category_index = base::subtle::Acquire_Load(&g_category_index);
 
   // Search for pre-existing category group.
-  for (int i = 0; i < current_category_index; ++i) {
+  for (size_t i = 0; i < current_category_index; ++i) {
     if (strcmp(g_category_groups[i], category_group) == 0) {
       return &g_category_group_enabled[i];
     }
@@ -1279,8 +1279,8 @@ const unsigned char* TraceLog::GetCategoryGroupEnabledInternal(
   // Only hold to lock when actually appending a new category, and
   // check the categories groups again.
   AutoLock lock(lock_);
-  int category_index = base::subtle::Acquire_Load(&g_category_index);
-  for (int i = 0; i < category_index; ++i) {
+  size_t category_index = base::subtle::Acquire_Load(&g_category_index);
+  for (size_t i = 0; i < category_index; ++i) {
     if (strcmp(g_category_groups[i], category_group) == 0) {
       return &g_category_group_enabled[i];
     }
@@ -1316,8 +1316,8 @@ void TraceLog::GetKnownCategoryGroups(
   AutoLock lock(lock_);
   category_groups->push_back(
       g_category_groups[g_category_trace_event_overhead]);
-  int category_index = base::subtle::NoBarrier_Load(&g_category_index);
-  for (int i = g_num_builtin_categories; i < category_index; i++)
+  size_t category_index = base::subtle::NoBarrier_Load(&g_category_index);
+  for (size_t i = g_num_builtin_categories; i < category_index; i++)
     category_groups->push_back(g_category_groups[i]);
 }
 
