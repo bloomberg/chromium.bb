@@ -1157,9 +1157,6 @@ Press any key to continue exploring.
   <message name="IDS_UPDATE_COMPLETED" desc="Notification for update completed">
     System update complete. Please restart the system.
   </message>
-  <message name="IDS_INSTALLING_UPDATE" desc="Label shown on the updates installation screen during OOBE">
-    Please wait while <ph name="PRODUCT_NAME">$1<ex>Chrome OS</ex></ph> installs the latest system updates.
-  </message>
   <message name="IDS_INSTALLING_UPDATE_DESC" desc="Additional info shown on the updates installation screen during OOBE">
     Your computer will restart when the update is complete.
   </message>
@@ -1190,12 +1187,6 @@ Press any key to continue exploring.
   <message name="IDS_UPDATE_CANCELLED" desc="Message shown when the update has been cancelled by user">
     Cancelling update...
   </message>
-  <message name="IDS_CHECKING_FOR_UPDATE_MSG" desc="Chrome OS OOBE: message shown during checking for update stage.">
-    <ph name="PRODUCT_NAME">$1<ex>Chrome</ex></ph> updates automatically so you always have the freshest version.
-  </message>
-  <message name="IDS_UPDATE_MSG" desc="Chrome OS OOBE: message shown during update stage.">
-    <ph name="PRODUCT_NAME">$1<ex>Chrome</ex></ph> updates automatically so you always have the freshest version. When this download completes, <ph name="PRODUCT_NAME">$1<ex>Chrome</ex></ph> will restart and you'll be on your way.
-  </message>
   <message name="IDS_REMORA_CONFIRM_MESSAGE" desc="Remora confirm message on the first OOBE screen">
     Chromebox for Meetings device is ready to be set up.
   </message>
@@ -1210,9 +1201,6 @@ Press any key to continue exploring.
   </message>
   <message name="IDS_EULA_SCREEN_TITLE" desc="Title of the OOBE EULA screen">
     The small print
-  </message>
-  <message name="IDS_EULA_SCREEN_ACCESSIBLE_TITLE" desc="Title to be spoken on opening the OOBE EULA screen">
-    <ph name="PRODUCT_OS_NAME">$1<ex>Chrome OS</ex></ph> terms
   </message>
   <message name="IDS_AUTOSTART_WARNING_TITLE" desc="Title of the kiosk autostart screen">
     Auto-launch permission requested

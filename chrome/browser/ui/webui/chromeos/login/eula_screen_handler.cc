@@ -114,9 +114,7 @@ void EulaScreenHandler::SetDelegate(Delegate* delegate) {
 void EulaScreenHandler::DeclareLocalizedValues(
     LocalizedValuesBuilder* builder) {
   builder->Add("eulaScreenTitle", IDS_EULA_SCREEN_TITLE);
-  builder->AddF("eulaScreenAccessibleTitle",
-                IDS_EULA_SCREEN_ACCESSIBLE_TITLE,
-                IDS_PRODUCT_OS_NAME);
+  builder->Add("eulaScreenAccessibleTitle", IDS_EULA_SCREEN_ACCESSIBLE_TITLE);
   builder->Add("checkboxLogging", IDS_EULA_CHECKBOX_ENABLE_LOGGING);
   builder->Add("back", IDS_EULA_BACK_BUTTON);
   builder->Add("acceptAgreement", IDS_EULA_ACCEPT_AND_CONTINUE_BUTTON);
