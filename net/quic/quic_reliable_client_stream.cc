@@ -27,8 +27,11 @@ QuicReliableClientStream::~QuicReliableClientStream() {
 uint32 QuicReliableClientStream::ProcessData(const char* data,
                                              uint32 data_len) {
   // TODO(rch): buffer data if we don't have a delegate.
-  if (!delegate_)
-    return ERR_ABORTED;
+  if (!delegate_) {
+    DLOG(ERROR) << "Missing delegate";
+    Reset(QUIC_STREAM_CANCELLED);
+    return 0;
+  }
 
   int rv = delegate_->OnDataReceived(data, data_len);
   if (rv != OK) {
