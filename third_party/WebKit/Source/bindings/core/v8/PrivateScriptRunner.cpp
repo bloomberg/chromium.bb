@@ -5,6 +5,7 @@
 #include "config.h"
 #include "bindings/core/v8/PrivateScriptRunner.h"
 
+#include "bindings/core/v8/DOMWrapperWorld.h"
 #include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8PerContextData.h"
 #include "bindings/core/v8/V8ScriptRunner.h"
@@ -97,6 +98,21 @@ static void initializeHolderIfNeeded(ScriptState* scriptState, v8::Handle<v8::Ob
             V8HiddenValue::setHiddenValue(isolate, holderObject, V8HiddenValue::privateScriptObjectIsInitialized(isolate), isInitialized);
         }
     }
+}
+
+v8::Handle<v8::Value> PrivateScriptRunner::installClass(LocalFrame* frame, String className)
+{
+    if (!frame)
+        return v8::Handle<v8::Value>();
+    v8::Handle<v8::Context> context = toV8Context(frame, DOMWrapperWorld::privateScriptIsolatedWorld());
+    if (context.IsEmpty())
+        return v8::Handle<v8::Value>();
+    ScriptState* scriptState = ScriptState::from(context);
+    if (!scriptState->executionContext())
+        return v8::Handle<v8::Value>();
+
+    ScriptState::Scope scope(scriptState);
+    return classObjectOfPrivateScript(scriptState, className);
 }
 
 v8::Handle<v8::Value> PrivateScriptRunner::runDOMAttributeGetter(ScriptState* scriptState, String className, String attributeName, v8::Handle<v8::Value> holder)

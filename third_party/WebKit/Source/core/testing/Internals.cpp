@@ -1951,7 +1951,7 @@ PassRefPtrWillBeRawPtr<TypeConversions> Internals::typeConversions() const
 
 PrivateScriptTest* Internals::privateScriptTest() const
 {
-    return PrivateScriptTest::create();
+    return PrivateScriptTest::create(frame());
 }
 
 Vector<String> Internals::getReferencedFilePaths() const

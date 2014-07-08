@@ -10,17 +10,19 @@
 
 namespace WebCore {
 
+class LocalFrame;
+
 class PrivateScriptTest : public GarbageCollected<PrivateScriptTest> {
 public:
-    static PrivateScriptTest* create()
+    static PrivateScriptTest* create(LocalFrame* frame)
     {
-        return new PrivateScriptTest();
+        return new PrivateScriptTest(frame);
     }
 
     void trace(Visitor*) { }
 
 private:
-    PrivateScriptTest() { }
+    PrivateScriptTest(LocalFrame*);
 };
 
 } // namespace WebCore

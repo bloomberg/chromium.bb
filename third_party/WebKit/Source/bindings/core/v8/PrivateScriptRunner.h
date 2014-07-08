@@ -10,10 +10,12 @@
 
 namespace WebCore {
 
+class LocalFrame;
 class ScriptState;
 
 class PrivateScriptRunner {
 public:
+    static v8::Handle<v8::Value> installClass(LocalFrame*, String className);
     static v8::Handle<v8::Value> runDOMAttributeGetter(ScriptState*, String className, String attributeName, v8::Handle<v8::Value> holder);
     static void runDOMAttributeSetter(ScriptState*, String className, String attributeName, v8::Handle<v8::Value> holder, v8::Handle<v8::Value> v8Value);
     static v8::Handle<v8::Value> runDOMMethod(ScriptState*, String className, String methodName, v8::Handle<v8::Value> holder, int argc, v8::Handle<v8::Value> argv[]);

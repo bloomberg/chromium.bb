@@ -3319,6 +3319,7 @@
             'testing/MockPagePopupDriver.h',
             'testing/NullExecutionContext.cpp',
             'testing/NullExecutionContext.h',
+            'testing/PrivateScriptTest.cpp',
             'testing/PrivateScriptTest.h',
             'testing/TypeConversions.h',
             'testing/v8/WebCoreTestSupport.cpp',
