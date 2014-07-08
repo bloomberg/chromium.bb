@@ -32,8 +32,9 @@
 namespace WebCore {
 
 class Element;
-class LocalFrame;
 class LayoutRect;
+class LocalFrame;
+class Node;
 class RenderLayer;
 class RenderObject;
 class TextStream;
@@ -71,6 +72,8 @@ String quoteAndEscapeNonPrintables(const String&);
 String counterValueForElement(Element*);
 
 String markerTextForListItem(Element*);
+
+String nodePositionAsStringForTesting(Node*);
 
 } // namespace WebCore
 
