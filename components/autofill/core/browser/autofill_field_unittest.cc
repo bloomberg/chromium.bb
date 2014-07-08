@@ -218,7 +218,7 @@ TEST(AutofillFieldTest, FillSelectControlWithFullStateNames) {
   EXPECT_EQ(ASCIIToUTF16("California"), field.value);
 }
 
-TEST(AutofillFieldTest, FillSelectControlWithWithAbbreviateStateNames) {
+TEST(AutofillFieldTest, FillSelectControlWithAbbreviateStateNames) {
   const char* const kStates[] = {
     "AL", "CA"
   };
@@ -230,6 +230,101 @@ TEST(AutofillFieldTest, FillSelectControlWithWithAbbreviateStateNames) {
   AutofillField::FillFormField(field, ASCIIToUTF16("California"), "en-US",
                                &field);
   EXPECT_EQ(ASCIIToUTF16("CA"), field.value);
+}
+
+TEST(AutofillFieldTest, FillSelectControlWithInexactFullStateNames) {
+  {
+    const char* const kStates[] = {
+      "SC - South Carolina", "CA - California", "NC - North Carolina",
+    };
+    AutofillField field(
+        GenerateSelectFieldWithOptions(kStates, arraysize(kStates)),
+        base::string16());
+    field.set_heuristic_type(ADDRESS_HOME_STATE);
+
+    AutofillField::FillFormField(field, ASCIIToUTF16("California"), "en-US",
+                                 &field);
+    EXPECT_EQ(ASCIIToUTF16("CA - California"), field.value);
+  }
+
+  // Don't accidentally match "Virginia" to "West Virginia".
+  {
+    const char* const kStates[] = {
+      "WV - West Virginia", "VA - Virginia", "NV - North Virginia",
+    };
+    AutofillField field(
+        GenerateSelectFieldWithOptions(kStates, arraysize(kStates)),
+        base::string16());
+    field.set_heuristic_type(ADDRESS_HOME_STATE);
+
+    AutofillField::FillFormField(field, ASCIIToUTF16("Virginia"), "en-US",
+                                 &field);
+    EXPECT_EQ(ASCIIToUTF16("VA - Virginia"), field.value);
+  }
+
+  // Do accidentally match "Virginia" to "West Virginia". NB: Ideally, Chrome
+  // would fail this test. It's here to document behavior rather than enforce
+  // it.
+  {
+    const char* const kStates[] = {
+      "WV - West Virginia", "TX - Texas",
+    };
+    AutofillField field(
+        GenerateSelectFieldWithOptions(kStates, arraysize(kStates)),
+        base::string16());
+    field.set_heuristic_type(ADDRESS_HOME_STATE);
+
+    AutofillField::FillFormField(field, ASCIIToUTF16("Virginia"), "en-US",
+                                 &field);
+    EXPECT_EQ(ASCIIToUTF16("WV - West Virginia"), field.value);
+  }
+
+  // Tests that substring matches work for full state names (a full token
+  // match isn't required). Also tests that matches work for states with
+  // whitespace in the middle.
+  {
+    const char* const kStates[] = {
+      "California.", "North Carolina.",
+    };
+    AutofillField field(
+        GenerateSelectFieldWithOptions(kStates, arraysize(kStates)),
+        base::string16());
+    field.set_heuristic_type(ADDRESS_HOME_STATE);
+
+    AutofillField::FillFormField(field, ASCIIToUTF16("North Carolina"), "en-US",
+                                 &field);
+    EXPECT_EQ(ASCIIToUTF16("North Carolina."), field.value);
+  }
+}
+
+TEST(AutofillFieldTest, FillSelectControlWithInexactAbbreviations) {
+  {
+    const char* const kStates[] = {
+      "NC - North Carolina", "CA - California",
+    };
+    AutofillField field(
+        GenerateSelectFieldWithOptions(kStates, arraysize(kStates)),
+        base::string16());
+    field.set_heuristic_type(ADDRESS_HOME_STATE);
+
+    AutofillField::FillFormField(field, ASCIIToUTF16("CA"), "en-US",
+                                 &field);
+    EXPECT_EQ(ASCIIToUTF16("CA - California"), field.value);
+  }
+
+  {
+    const char* const kNotStates[] = {
+      "NCNCA", "SCNCA",
+    };
+    AutofillField field(
+        GenerateSelectFieldWithOptions(kNotStates, arraysize(kNotStates)),
+        base::string16());
+    field.set_heuristic_type(ADDRESS_HOME_STATE);
+
+    AutofillField::FillFormField(field, ASCIIToUTF16("NC"), "en-US",
+                                 &field);
+    EXPECT_EQ(base::string16(), field.value);
+  }
 }
 
 TEST(AutofillFieldTest, FillSelectControlWithNumericMonth) {

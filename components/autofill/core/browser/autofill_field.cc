@@ -66,6 +66,65 @@ bool SetSelectControlValue(const base::string16& value,
   return true;
 }
 
+// Like SetSelectControlValue, but searches within the field values and options
+// for |value|. For example, "NC - North Carolina" would match "north carolina".
+bool SetSelectControlValueSubstringMatch(const base::string16& value,
+                                         FormFieldData* field) {
+  base::string16 value_lowercase = StringToLowerASCII(value);
+  DCHECK_EQ(field->option_values.size(), field->option_contents.size());
+  int best_match = -1;
+
+  for (size_t i = 0; i < field->option_values.size(); ++i) {
+    if (StringToLowerASCII(field->option_values[i]).find(value_lowercase) !=
+            std::string::npos ||
+        StringToLowerASCII(field->option_contents[i]).find(value_lowercase) !=
+            std::string::npos) {
+      // The best match is the shortest one.
+      if (best_match == -1 ||
+          field->option_values[best_match].size() >
+              field->option_values[i].size()) {
+        best_match = i;
+      }
+    }
+  }
+
+  if (best_match >= 0) {
+    field->value = field->option_values[best_match];
+    return true;
+  }
+
+  return false;
+}
+
+// Like SetSelectControlValue, but searches within the field values and options
+// for |value|. First it tokenizes the options, then tries to match against
+// tokens. For example, "NC - North Carolina" would match "nc" but not "ca".
+bool SetSelectControlValueTokenMatch(const base::string16& value,
+                                     FormFieldData* field) {
+  base::string16 value_lowercase = StringToLowerASCII(value);
+  std::vector<base::string16> tokenized;
+  DCHECK_EQ(field->option_values.size(), field->option_contents.size());
+
+  for (size_t i = 0; i < field->option_values.size(); ++i) {
+    base::SplitStringAlongWhitespace(
+        StringToLowerASCII(field->option_values[i]), &tokenized);
+    if (std::find(tokenized.begin(), tokenized.end(), value_lowercase) !=
+        tokenized.end()) {
+      field->value = field->option_values[i];
+      return true;
+    }
+
+    base::SplitStringAlongWhitespace(
+        StringToLowerASCII(field->option_contents[i]), &tokenized);
+    if (std::find(tokenized.begin(), tokenized.end(), value_lowercase) !=
+        tokenized.end()) {
+      field->value = field->option_values[i];
+      return true;
+    }
+  }
+
+  return false;
+}
 
 // Try to fill a numeric |value| into the given |field|.
 bool FillNumericSelectControl(int value,
@@ -88,11 +147,24 @@ bool FillStateSelectControl(const base::string16& value,
   base::string16 full, abbreviation;
   state_names::GetNameAndAbbreviation(value, &full, &abbreviation);
 
-  // Try the abbreviation first.
-  if (!abbreviation.empty() && SetSelectControlValue(abbreviation, field))
+  // Try an exact match of the abbreviation first.
+  if (!abbreviation.empty() && SetSelectControlValue(abbreviation, field)) {
     return true;
+  }
 
-  return !full.empty() && SetSelectControlValue(full, field);
+  // Try an exact match of the full name.
+  if (!full.empty() && SetSelectControlValue(full, field)) {
+    return true;
+  }
+
+  // Then try an inexact match of the full name.
+  if (!full.empty() && SetSelectControlValueSubstringMatch(full, field)) {
+    return true;
+  }
+
+  // Then try an inexact match of the abbreviation name.
+  return !abbreviation.empty() &&
+      SetSelectControlValueTokenMatch(abbreviation, field);
 }
 
 bool FillCountrySelectControl(const base::string16& value,
