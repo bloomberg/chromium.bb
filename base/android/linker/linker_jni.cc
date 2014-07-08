@@ -267,7 +267,7 @@ bool GenericLoadLibrary(
 
   s_lib_info_fields.SetLoadInfo(
       env, lib_info_obj, info.load_address, info.load_size);
-  LOG_INFO("%s: Success loading library %s", __FUNCTION__, lib_basename);
+  LOG_INFO("%s: Success loading library %s", __FUNCTION__, library_name);
   return true;
 }
 
