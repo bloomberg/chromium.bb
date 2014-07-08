@@ -391,7 +391,6 @@ void NaClListener::OnStart(const nacl::NaClStartParams& params) {
 #endif
 
   NaClChromeMainStartApp(nap, args);
-  NOTREACHED();
 }
 
 void NaClListener::StartNonSfi(const nacl::NaClStartParams& params) {
