@@ -31,7 +31,9 @@ assert(ffmpeg_branding == "Chromium" ||
        ffmpeg_branding == "ChromiumOS" ||
        ffmpeg_branding == "ChromeOS")
 
-if (cpu_arch == "arm" && arm_version == 7 && arm_use_neon) {
+if (cpu_arch == "x86") {
+  ffmpeg_arch = "ia32"
+} else if (cpu_arch == "arm" && arm_version == 7 && arm_use_neon) {
   ffmpeg_arch = "arm-neon"
 } else {
   ffmpeg_arch = cpu_arch

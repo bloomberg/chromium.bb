@@ -121,7 +121,7 @@ if (build_ffmpegsumo) {
     ]
     include_dirs = [
       platform_config_root,
-      "."
+      ".",
     ]
     defines = [
       "HAVE_AV_CONFIG_H",
@@ -134,57 +134,90 @@ if (build_ffmpegsumo) {
       "FF_API_DESTRUCT_PACKET=0",
       "FF_API_GET_BUFFER=0",
     ]
-    cflags = [
-      "-fPIC",
-      "-fomit-frame-pointer",
-      # ffmpeg uses its own deprecated functions.
-      "-Wno-deprecated-declarations",
-    ]
-    if (is_clang) {
-      cflags += [
-        "-Wno-absolute-value",
-        "-Wno-incompatible-pointer-types",
-        "-Wno-logical-op-parentheses",
-        "-Wno-parentheses",
-        "-Wno-pointer-sign",
-        "-Wno-switch",
-        # Don't emit warnings for gcc -f flags clang doesn't implement.
-        "-Qunused-arguments",
-      ]
-      if (ffmpeg_branding == "Chrome" || ffmpeg_branding == "ChromeOS") {
-        cflags += [ "-Wno-attributes" ]
-      }
+
+    # So we can append below and assume they're defined.
+    cflags = []
+    ldflags = []
+    libs = []
+    deps = []
+
+    # Since we are not often debugging FFmpeg, and performance is
+    # unacceptable without optimization, freeze the optimizations to -O2.
+    # If someone really wants -O1 , they can change these in their checkout.
+    # If you want -O0, see the Gotchas in README.Chromium for why that
+    # won't work.
+    #
+    # In addition to the above reasons, /Od optimization won't remove symbols
+    # that are under "if (0)" style sections.  Which lead to link time errors
+    # when for example it tries to link an ARM symbol on X86.
+    if (is_debug) {
+      configs -= [ "//build/config/compiler:no_optimize" ]
     } else {
-      # gcc doesn't have flags for specific warnings, so disable them
-      # all.
-      cflags += [ "-w" ]
+      configs -= [ "//build/config/compiler:optimize" ]
     }
-    if (cpu_arch == "x86") {
-      # Turn off valgrind build option that breaks ffmpeg builds.
-      # TODO(ajwong): The gyp file had special removals for
-      # debug_extra_cflags and release_extra_cflags. Do we care?
-#cflags -= [ "-fno-omit-frame-pointer" ]
-    } else if (cpu_arch == "arm") {
-      # TODO(ihf): See the long comment in build_ffmpeg.sh
-      # We want to be consistent with CrOS and have configured
-      # ffmpeg for thumb. Protect yourself from -marm.
-      cflags -= [ "-marm" ]
+    if (is_win) {
+      # Setting the optimizations to 'speed' or to 'max' on Windows results in
+      # a lot of unresolved symbols. The only supported mode is 'size' (see
+      # crbug.com/264459).
+      configs += [ "//build/config/compiler:optimize" ]
+    } else {
+      configs += [ "//build/config/compiler:optimize_max" ]
+    }
+
+    if (is_posix) {
       cflags += [
-        "-mthumb",
-        "-march=armv7-a",
-        "-mtune=cortex-a8",
-        "-mfpu=${arm_fpu}"
+        "-fPIC",
+        "-fomit-frame-pointer",
+        # ffmpeg uses its own deprecated functions.
+        "-Wno-deprecated-declarations",
       ]
-      if (arm_float_abi == "hard") {
-        cflags += [ "-DHAVE_VFP_ARGS=1" ]
+
+      if (is_clang) {
+        cflags += [
+          "-Wno-absolute-value",
+          "-Wno-incompatible-pointer-types",
+          "-Wno-logical-op-parentheses",
+          "-Wno-parentheses",
+          "-Wno-pointer-sign",
+          "-Wno-switch",
+          # Don't emit warnings for gcc -f flags clang doesn't implement.
+          "-Qunused-arguments",
+        ]
+        if (ffmpeg_branding == "Chrome" || ffmpeg_branding == "ChromeOS") {
+          cflags += [ "-Wno-attributes" ]
+        }
       } else {
-        cflags += [ "-DHAVE_VFP_ARGS=0" ]
+        # gcc doesn't have flags for specific warnings, so disable them
+        # all.
+        cflags += [ "-w" ]
       }
-    } else if (cpu_arch == "mipsel") {
-      cflags += [
-        "-mips32",
-        "-EL -Wl,-EL",
-      ]
+      if (cpu_arch == "x86") {
+        # Turn off valgrind build option that breaks ffmpeg builds.
+        # TODO(ajwong): The gyp file had special removals for
+        # debug_extra_cflags and release_extra_cflags. Do we care?
+#cflags -= [ "-fno-omit-frame-pointer" ]
+      } else if (cpu_arch == "arm") {
+        # TODO(ihf): See the long comment in build_ffmpeg.sh
+        # We want to be consistent with CrOS and have configured
+        # ffmpeg for thumb. Protect yourself from -marm.
+        cflags -= [ "-marm" ]
+        cflags += [
+          "-mthumb",
+          "-march=armv7-a",
+          "-mtune=cortex-a8",
+          "-mfpu=${arm_fpu}"
+        ]
+        if (arm_float_abi == "hard") {
+          cflags += [ "-DHAVE_VFP_ARGS=1" ]
+        } else {
+          cflags += [ "-DHAVE_VFP_ARGS=0" ]
+        }
+      } else if (cpu_arch == "mipsel") {
+        cflags += [
+          "-mips32",
+          "-EL -Wl,-EL",
+        ]
+      }
     }
 
     if (is_posix && !is_mac) {
@@ -271,67 +304,66 @@ if (build_ffmpegsumo) {
 #              }
       lib_dirs = [ target_gen_dir ]
     } else if (is_win) {
-# TODO(ajwong):
-# Original conditional
-#  ['clang == 1 or (OS == "win" and (MSVS_VERSION == "2013" or MSVS_VERSION == "2013e"))',
-      if (is_clang) {
-        defines += [
-          "inline=__inline",
-          "strtoll=_strtoi64",
-          "_ISOC99_SOURCE",
-          "_LARGEFILE_SOURCE",
-          "HAVE_AV_CONFIG_H",
-          "strtod=avpriv_strtod",
-          "snprintf=avpriv_snprintf",
-          "_snprintf=avpriv_snprintf",
-          "vsnprintf=avpriv_vsnprintf",
-        ]
-        include_dirs += [
-          "chromium/include/win"
-        ]
-        # TODO(dalecurtis): We should fix these.  http://crbug.com/154421
-        cflags += [
-          "/wd4996", # 'function': was declared deprecated
-          "/wd4018", # 'expression': signed/unsigned mismatch
-          "/wd4090", # 'operation' : different 'modifier' qualifiers
-          "/wd4305", # 'identifier': truncation from 'type1' to 'type2'
-          "/wd4133", # 'type' : incompatible types - from 'type1' to 'type2'
-          "/wd4146", # unary minus operator applied to unsigned type, result
-                     #   still unsigned
-          "/wd4554", # 'operator' : check operator precedence for possible
-                     #   error; use parentheses to clarify precedence
-          "/wd4028", # formal parameter 'number' different from declaration
-          "/wd4334", # 'operator' : result of 32-bit shift implicitly
-                     #   converted to 64 bits (was 64-bit shift intended?)
-          "/wd4101", # 'identifier' : unreferenced local variable
-          "/wd4102", # 'label' : unreferenced label
-          "/wd4116", # unnamed type definition in parentheses
-          "/wd4307", # 'operator' : integral constant overflow
-          "/wd4273", # 'function' : inconsistent DLL linkage
-          "/wd4005", # 'identifier' : macro redefinition
-          "/wd4056", # overflow in floating point constant arithmetic
-          "/wd4756", # overflow in constant arithmetic
-        ]
+      defines += [
+        "inline=__inline",
+        "strtoll=_strtoi64",
+        "_ISOC99_SOURCE",
+        "_LARGEFILE_SOURCE",
+        "HAVE_AV_CONFIG_H",
+        "strtod=avpriv_strtod",
+        "snprintf=avpriv_snprintf",
+        "_snprintf=avpriv_snprintf",
+        "vsnprintf=avpriv_vsnprintf",
+      ]
+
+      configs -= [ "//build/config/compiler:chromium_code" ]
+      configs += [ "//build/config/compiler:no_chromium_code" ]
+
+      include_dirs += [
+        "chromium/include/win"
+      ]
+      # TODO(dalecurtis): We should fix these.  http://crbug.com/154421
+      cflags += [
+        "/wd4996", # 'function': was declared deprecated
+        "/wd4018", # 'expression': signed/unsigned mismatch
+        "/wd4090", # 'operation' : different 'modifier' qualifiers
+        "/wd4305", # 'identifier': truncation from 'type1' to 'type2'
+        "/wd4133", # 'type' : incompatible types - from 'type1' to 'type2'
+        "/wd4146", # unary minus operator applied to unsigned type, result
+                   #   still unsigned
+        "/wd4554", # 'operator' : check operator precedence for possible
+                   #   error; use parentheses to clarify precedence
+        "/wd4028", # formal parameter 'number' different from declaration
+        "/wd4334", # 'operator' : result of 32-bit shift implicitly
+                   #   converted to 64 bits (was 64-bit shift intended?)
+        "/wd4101", # 'identifier' : unreferenced local variable
+        "/wd4102", # 'label' : unreferenced label
+        "/wd4116", # unnamed type definition in parentheses
+        "/wd4307", # 'operator' : integral constant overflow
+        "/wd4273", # 'function' : inconsistent DLL linkage
+        "/wd4005", # 'identifier' : macro redefinition
+        "/wd4056", # overflow in floating point constant arithmetic
+        "/wd4756", # overflow in constant arithmetic
+      ]
 # TODO(ajwong): Verify this is true.
-        # Ignore warnings about a local symbol being inefficiently imported,
-        # upstream is working on a fix.
-        ldflags += [
-          "/ignore:4049", # locally defined symbol 'symbol' imported
-          "/ignore:4217", # locally defined symbol 'symbol' imported in
-                          #   function 'function'
+      # Ignore warnings about a local symbol being inefficiently imported,
+      # upstream is working on a fix.
+      ldflags += [
+        "/ignore:4049", # locally defined symbol 'symbol' imported
+        "/ignore:4217", # locally defined symbol 'symbol' imported in
+                        #   function 'function'
+      ]
+      if (cpu_arch == "x64") {
+        # TODO(wolenetz): We should fix this.  http://crbug.com/171009
+        cflags += [
+          "/wd4267"  # Conversion from size_t to 'type'.
         ]
-        if (cpu_arch == "x64") {
-          # TODO(wolenetz): We should fix this.  http://crbug.com/171009
-          cflags += [
-            "/wd4267"  # Conversion from size_t to 'type'.
-          ]
-        }
       }
       deps += [ ":ffmpeg_generate_def" ]
     }
 
     if (cpu_arch != "arm" && cpu_arch != "mipsel" && os_config != "linux-noasm") {
-      deps = [ ":ffmpeg_yasm" ]
+      deps += [ ":ffmpeg_yasm" ]
     }
   }
 }
@@ -339,10 +371,12 @@ if (build_ffmpegsumo) {
 if (is_win) {
   config("ffmpeg_win_dependent_config") {
     include_dirs = [
-      "$platform_config_root",
+      platform_config_root,
       "chromium/include/win",
       ".",
     ]
+    libs = [ "$target_out_dir/ffmpegsumo.lib" ]
+    ldflags = [ "/DELAYLOAD:ffmpegsumo.dll" ]
   }
 
   action("ffmpeg_generate_def") {
@@ -351,26 +385,24 @@ if (is_win) {
     outputs = [ "$target_gen_dir/ffmpegsumo.def" ]
     args = [
 # TODO(ajwong): This was -i <(INTERMEDIATE_DIR). What next?
-      "-i", target_out_dir,
-      "-o", target_gen_dir,
+      "-i", rebase_path(target_out_dir, root_build_dir),
+      "-o", rebase_path(target_gen_dir, root_build_dir),
       "-t", "windows_def",
       "-m", "ffmpegsumo.dll",
-    ] + sources
+    ] + rebase_path(sources, root_build_dir)
   }
 
   group("ffmpeg") {
-    # Adds C99 types for Visual C++.
-    sources = [ "chromium/include/win/inttypes.h" ]
-# TODO(ajwong): Is adding "libs" here necessary necessary on windows?
-    libs = [ "$target_out_dir/ffmpegsumo.lib" ]
-    ldflags += [ "/DELAYLOAD:ffmpegsumo.dll" ]
     direct_dependent_configs = [ ":ffmpeg_win_dependent_config" ]
-    deps = [ ":ffmpeg_generate_stubs", "ffmpegsumo" ]
+    deps = [
+      ":ffmpeg_generate_stubs",
+      ":ffmpegsumo",
+    ]
   }
 } else {
   config("ffmpeg_posix_dependent_config") {
     include_dirs = [
-      "$platform_config_root",
+      platform_config_root,
       ".",
     ]
   }
