@@ -48,7 +48,7 @@ InspectorTest.setLineSelections = function(editor, selections)
     var coords = [];
     for (var i = 0; i < selections.length; ++i) {
         var selection = selections[i];
-        if (selection.column) {
+        if (typeof selection.column === "number") {
             selection.from = selection.column;
             selection.to = selection.column;
         }

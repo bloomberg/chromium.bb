@@ -26,7 +26,7 @@ function test()
     {
         function innerDumpAndNext()
         {
-            InspectorTest.dumpTextWithSelection(textEditor);
+            InspectorTest.dumpTextWithSelection(textEditor, true);
             next();
         }
         return innerDumpAndNext;

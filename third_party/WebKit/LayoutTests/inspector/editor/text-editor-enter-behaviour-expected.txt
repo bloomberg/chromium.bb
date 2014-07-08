@@ -138,3 +138,21 @@ function.testFunction()
 ....return.c;
 }
 
+Running: testEnterMultiCursor
+function.testFunction()
+{
+....var.a.=.100;
+
+|....var.b.=.200;
+....var.c.=.(a.+.b)./.2;
+.
+.|...console.log(a);
+..
+..|..console.log(b);
+....console.log(c);
+....if.(a.>.b).{
+........console.log(a);
+....}
+....return.c;
+}
+

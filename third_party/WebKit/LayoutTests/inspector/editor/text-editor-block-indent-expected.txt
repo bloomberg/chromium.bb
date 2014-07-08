@@ -9,65 +9,65 @@ This test verifies applied indentation whenever you hit enter in "{|}" or type i
 
 Running: testSimpleCollapsedBlockExpanding
 {
-  |
-} {}
-  {}
-  {
-    
-    {
-        
+..|
+}.{}
+..{}
+..{
+....
+....{
+........
 
 
 Running: testMulticursorCollapsedBlockExpanding
 {
-  |
-} {
-  |
+..|
+}.{
+..|
 }
-  {
-    |
-  }
-  {
-    
-    {
-        
+..{
+....|
+..}
+..{
+....
+....{
+........
 
 
 Running: testMulticursorCollapsedBlockNotExpanding
 {
-|} {}
-  
-  |{}
-  {
-    
-    {
-        
+|}.{}
+..
+..|{}
+..{
+....
+....{
+........
 
 
 Running: testSingleCursorClosingBracketIndent
-{} {}
-  {}
-  {
-  }|
-    {
-        
+{}.{}
+..{}
+..{
+..}|....
+....{
+........
 
 
 Running: testMulticursorClosingBracketIndent
-{} {}
-  {}
-  {
-  }|
-    {
-    }|
+{}.{}
+..{}
+..{
+..}|
+....{
+....}|
 
 
 Running: testMulticursorClosingBracketIndentNotExecuted
-{} {}
-  {}
-  {
-    }|
-    {}|
-        
+{}.{}
+..{}
+..{
+....}|
+....{}|
+........
 
 
