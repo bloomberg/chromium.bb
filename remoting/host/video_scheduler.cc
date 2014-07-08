@@ -192,6 +192,9 @@ void VideoScheduler::SetLosslessColor(bool want_lossless) {
 // Private methods -----------------------------------------------------------
 
 VideoScheduler::~VideoScheduler() {
+  // Destroy the capturer and encoder on their respective threads.
+  capture_task_runner_->DeleteSoon(FROM_HERE, capturer_.release());
+  encode_task_runner_->DeleteSoon(FROM_HERE, encoder_.release());
 }
 
 // Capturer thread -------------------------------------------------------------

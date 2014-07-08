@@ -7,8 +7,11 @@
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/single_thread_task_runner.h"
+#include "remoting/base/auto_thread.h"
 #include "remoting/base/auto_thread_task_runner.h"
-#include "remoting/codec/video_encoder.h"
+#include "remoting/codec/video_encoder_verbatim.h"
+#include "remoting/host/screen_capturer_fake.h"
 #include "remoting/proto/video.pb.h"
 #include "remoting/protocol/protocol_mock_objects.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -51,8 +54,8 @@ static const int kHeight = 480;
 
 class MockVideoEncoder : public VideoEncoder {
  public:
-  MockVideoEncoder();
-  virtual ~MockVideoEncoder();
+  MockVideoEncoder() {}
+  virtual ~MockVideoEncoder() {}
 
   scoped_ptr<VideoPacket> Encode(
       const webrtc::DesktopFrame& frame) {
@@ -64,17 +67,48 @@ class MockVideoEncoder : public VideoEncoder {
   DISALLOW_COPY_AND_ASSIGN(MockVideoEncoder);
 };
 
-MockVideoEncoder::MockVideoEncoder() {}
+class ThreadCheckVideoEncoder : public VideoEncoderVerbatim {
+ public:
+  ThreadCheckVideoEncoder(
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner)
+      : task_runner_(task_runner) {
+  }
+  virtual ~ThreadCheckVideoEncoder() {
+    EXPECT_TRUE(task_runner_->BelongsToCurrentThread());
+  }
 
-MockVideoEncoder::~MockVideoEncoder() {}
+ private:
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+
+  DISALLOW_COPY_AND_ASSIGN(ThreadCheckVideoEncoder);
+};
+
+class ThreadCheckScreenCapturer : public ScreenCapturerFake {
+ public:
+  ThreadCheckScreenCapturer(
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner)
+      : task_runner_(task_runner) {
+  }
+  virtual ~ThreadCheckScreenCapturer() {
+    EXPECT_TRUE(task_runner_->BelongsToCurrentThread());
+  }
+
+ private:
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+
+  DISALLOW_COPY_AND_ASSIGN(ThreadCheckScreenCapturer);
+};
 
 class VideoSchedulerTest : public testing::Test {
  public:
   VideoSchedulerTest();
 
   virtual void SetUp() OVERRIDE;
+  virtual void TearDown() OVERRIDE;
 
-  void StartVideoScheduler(scoped_ptr<webrtc::ScreenCapturer> capturer);
+  void StartVideoScheduler(
+      scoped_ptr<webrtc::ScreenCapturer> capturer,
+      scoped_ptr<VideoEncoder> encoder);
   void StopVideoScheduler();
 
   // webrtc::ScreenCapturer mocks.
@@ -84,14 +118,13 @@ class VideoSchedulerTest : public testing::Test {
  protected:
   base::MessageLoop message_loop_;
   base::RunLoop run_loop_;
-  scoped_refptr<AutoThreadTaskRunner> task_runner_;
+  scoped_refptr<AutoThreadTaskRunner> capture_task_runner_;
+  scoped_refptr<AutoThreadTaskRunner> encode_task_runner_;
+  scoped_refptr<AutoThreadTaskRunner> main_task_runner_;
   scoped_refptr<VideoScheduler> scheduler_;
 
   MockClientStub client_stub_;
   MockVideoStub video_stub_;
-
-  // The following mock objects are owned by VideoScheduler.
-  MockVideoEncoder* encoder_;
 
   scoped_ptr<webrtc::DesktopFrame> frame_;
 
@@ -103,25 +136,35 @@ class VideoSchedulerTest : public testing::Test {
 };
 
 VideoSchedulerTest::VideoSchedulerTest()
-    : encoder_(NULL),
-      capturer_callback_(NULL) {
+    : capturer_callback_(NULL) {
 }
 
 void VideoSchedulerTest::SetUp() {
-  task_runner_ = new AutoThreadTaskRunner(
+  main_task_runner_ = new AutoThreadTaskRunner(
       message_loop_.message_loop_proxy(), run_loop_.QuitClosure());
+  capture_task_runner_ = main_task_runner_;
+  encode_task_runner_ = main_task_runner_;
+}
 
-  encoder_ = new MockVideoEncoder();
+void VideoSchedulerTest::TearDown() {
+  // Release the task runners, so that the test can quit.
+  capture_task_runner_ = NULL;
+  encode_task_runner_ = NULL;
+  main_task_runner_ = NULL;
+
+  // Run the MessageLoop until everything has torn down.
+  run_loop_.Run();
 }
 
 void VideoSchedulerTest::StartVideoScheduler(
-    scoped_ptr<webrtc::ScreenCapturer> capturer) {
+    scoped_ptr<webrtc::ScreenCapturer> capturer,
+    scoped_ptr<VideoEncoder> encoder) {
   scheduler_ = new VideoScheduler(
-      task_runner_, // Capture
-      task_runner_, // Encode
-      task_runner_, // Network
+      capture_task_runner_,
+      encode_task_runner_,
+      main_task_runner_,
       capturer.Pass(),
-      scoped_ptr<VideoEncoder>(encoder_),
+      encoder.Pass(),
       &client_stub_,
       &video_stub_);
   scheduler_->Start();
@@ -165,16 +208,17 @@ TEST_F(VideoSchedulerTest, StartAndStop) {
       .After(capturer_start)
       .WillRepeatedly(Invoke(this, &VideoSchedulerTest::OnCaptureFrame));
 
+  scoped_ptr<MockVideoEncoder> encoder(new MockVideoEncoder());
+
   // Expect the encoder be called.
-  EXPECT_CALL(*encoder_, EncodePtr(_))
+  EXPECT_CALL(*encoder, EncodePtr(_))
       .WillRepeatedly(FinishEncode());
 
   // By default delete the arguments when ProcessVideoPacket is received.
   EXPECT_CALL(video_stub_, ProcessVideoPacketPtr(_, _))
       .WillRepeatedly(FinishSend());
 
-  // For the first time when ProcessVideoPacket is received we stop the
-  // VideoScheduler.
+  // When the first ProcessVideoPacket is received we stop the VideoScheduler.
   EXPECT_CALL(video_stub_, ProcessVideoPacketPtr(_, _))
       .WillOnce(DoAll(
           FinishSend(),
@@ -182,10 +226,24 @@ TEST_F(VideoSchedulerTest, StartAndStop) {
       .RetiresOnSaturation();
 
   // Start video frame capture.
-  StartVideoScheduler(capturer.PassAs<webrtc::ScreenCapturer>());
+  StartVideoScheduler(capturer.PassAs<webrtc::ScreenCapturer>(),
+                      encoder.PassAs<VideoEncoder>());
+}
 
-  task_runner_ = NULL;
-  run_loop_.Run();
+// Verify that the capturer and encoder are torn down on the correct threads.
+TEST_F(VideoSchedulerTest, DeleteOnThreads) {
+capture_task_runner_ = AutoThread::Create("capture", main_task_runner_);
+encode_task_runner_ = AutoThread::Create("encode", main_task_runner_);
+
+  scoped_ptr<webrtc::ScreenCapturer> capturer(
+      new ThreadCheckScreenCapturer(capture_task_runner_));
+  scoped_ptr<VideoEncoder> encoder(
+      new ThreadCheckVideoEncoder(encode_task_runner_));
+
+  // Start and stop the scheduler, so it will tear down the screen capturer and
+  // video encoder.
+  StartVideoScheduler(capturer.Pass(), encoder.Pass());
+  StopVideoScheduler();
 }
 
 }  // namespace remoting
