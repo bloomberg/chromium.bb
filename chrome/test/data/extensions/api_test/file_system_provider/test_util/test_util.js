@@ -25,6 +25,21 @@ test_util.FILE_SYSTEM_NAME = 'Vanilla';
 test_util.fileSystem = null;
 
 /**
+ * Default metadata. Used by onMetadataRequestedDefault(). The key is a full
+ * path, and the value, a MetadataEntry object.
+ *
+ * @param {Object.<string, Object>}
+ */
+test_util.defaultMetadata = {
+  '/': {
+    isDirectory: true,
+    name: '',
+    size: 0,
+    modificationTime: new Date(2014, 4, 28, 10, 39, 15)
+  }
+};
+
+/**
  * Gets volume information for the provided file system.
  *
  * @param {string} fileSystemId Id of the provided file system.
@@ -74,4 +89,28 @@ test_util.mountFileSystem = function(callback) {
       }, function() {
         chrome.test.fail();
       });
+};
+
+/**
+ * Default implementation for the metadata request event. It should be used
+ * only if metadata handling is not being tested.
+ *
+ * @param {GetMetadataRequestedOptions} options Options.
+ * @param {function(Object)} onSuccess Success callback with metadata passed
+ *     an argument.
+ * @param {function(string)} onError Error callback with an error code.
+ */
+test_util.onGetMetadataRequestedDefault = function(
+    options, onSuccess, onError) {
+  if (options.fileSystemId != test_util.FILE_SYSTEM_ID) {
+    onError('SECURITY');  // enum ProviderError.
+    return;
+  }
+
+  if (!(options.entryPath in test_util.defaultMetadata)) {
+    onError('NOT_FOUND');
+    return;
+  }
+
+  onSuccess(test_util.defaultMetadata[options.entryPath]);
 };

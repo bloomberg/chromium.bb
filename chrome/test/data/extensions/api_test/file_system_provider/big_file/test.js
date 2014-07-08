@@ -29,17 +29,6 @@ var TESTING_TEXT = 'We are bytes at the 5th GB of the file!';
 var TESTING_TEXT_OFFSET = 5 * 1000 * 1000 * 1000;
 
 /**
- * @type {Object}
- * @const
- */
-var TESTING_ROOT = Object.freeze({
-  isDirectory: true,
-  name: '',
-  size: 0,
-  modificationTime: new Date(2014, 4, 28, 10, 39, 15)
-});
-
-/**
  * Metadata for a testing file with 6GB file size.
  * @type {Object}
  * @const
@@ -50,36 +39,6 @@ var TESTING_6GB_FILE = Object.freeze({
   size: 6 * 1024 * 1024 * 1024,
   modificationTime: new Date(2014, 1, 25, 7, 36, 12)
 });
-
-/**
- * Returns metadata for the requested entry.
- *
- * To successfully acquire a DirectoryEntry, or even a DOMFileSystem, this event
- * must be implemented and return correct values.
- *
- * @param {GetMetadataRequestedOptions} options Options.
- * @param {function(Object)} onSuccess Success callback with metadata passed
- *     an argument.
- * @param {function(string)} onError Error callback with an error code.
- */
-function onGetMetadataRequested(options, onSuccess, onError) {
-  if (options.fileSystemId != test_util.FILE_SYSTEM_ID) {
-    onError('INVALID_OPERATION');  // enum ProviderError.
-    return;
-  }
-
-  if (options.entryPath == '/') {
-    onSuccess(TESTING_ROOT);
-    return;
-  }
-
-  if (options.entryPath == '/' + TESTING_6GB_FILE.name) {
-    onSuccess(TESTING_6GB_FILE);
-    return;
-  }
-
-  onError('NOT_FOUND');  // enum ProviderError.
-}
 
 /**
  * Requests opening a file at <code>filePath</code>. Further file operations
@@ -173,13 +132,18 @@ function onReadFileRequested(options, onSuccess, onError) {
  */
 function setUp(callback) {
   chrome.fileSystemProvider.onGetMetadataRequested.addListener(
-      onGetMetadataRequested);
+      test_util.onGetMetadataRequestedDefault);
+
+  test_util.defaultMetadata['/' + TESTING_6GB_FILE.name] =
+      TESTING_6GB_FILE;
+
   chrome.fileSystemProvider.onOpenFileRequested.addListener(
       onOpenFileRequested);
   chrome.fileSystemProvider.onReadFileRequested.addListener(
       onReadFileRequested);
   chrome.fileSystemProvider.onCloseFileRequested.addListener(
       onCloseFileRequested);
+
   test_util.mountFileSystem(callback);
 }
 

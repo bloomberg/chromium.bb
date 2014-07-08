@@ -19,17 +19,6 @@ var TESTING_MIME_TYPE = 'text/secret-testing-mime-type';
  * @type {Object}
  * @const
  */
-var TESTING_ROOT = Object.freeze({
-  isDirectory: true,
-  name: '',
-  size: 0,
-  modificationTime: new Date(2013, 3, 27, 9, 38, 14)
-});
-
-/**
- * @type {Object}
- * @const
- */
 var TESTING_WITH_MIME_FILE = Object.freeze({
   isDirectory: false,
   name: 'first-file.abc',
@@ -50,38 +39,6 @@ var TESTING_WITHOUT_MIME_FILE = Object.freeze({
 });
 
 /**
- * Returns metadata for a requested entry.
- *
- * @param {GetMetadataRequestedOptions} options Options.
- * @param {function(Object)} onSuccess Success callback with metadata passed
- *     an argument.
- * @param {function(string)} onError Error callback with an error code.
- */
-function onGetMetadataRequested(options, onSuccess, onError) {
-  if (options.fileSystemId != test_util.FILE_SYSTEM_ID) {
-    onError('SECURITY');  // enum ProviderError.
-    return;
-  }
-
-  if (options.entryPath == '/') {
-    onSuccess(TESTING_ROOT);
-    return;
-  }
-
-  if (options.entryPath == '/' + TESTING_WITH_MIME_FILE.name) {
-    onSuccess(TESTING_WITH_MIME_FILE);
-    return;
-  }
-
-  if (options.entryPath == '/' + TESTING_WITHOUT_MIME_FILE.name) {
-    onSuccess(TESTING_WITHOUT_MIME_FILE);
-    return;
-  }
-
-  onError('NOT_FOUND');  // enum ProviderError.
-}
-
-/**
  * Sets up the tests. Called once per all test cases. In case of a failure,
  * the callback is not called.
  *
@@ -89,7 +46,13 @@ function onGetMetadataRequested(options, onSuccess, onError) {
  */
 function setUp(callback) {
   chrome.fileSystemProvider.onGetMetadataRequested.addListener(
-      onGetMetadataRequested);
+      test_util.onGetMetadataRequestedDefault);
+
+  test_util.defaultMetadata['/' + TESTING_WITH_MIME_FILE.name] =
+      TESTING_WITH_MIME_FILE;
+  test_util.defaultMetadata['/' + TESTING_WITHOUT_MIME_FILE.name] =
+      TESTING_WITHOUT_MIME_FILE;
+
   test_util.mountFileSystem(callback);
 }
 

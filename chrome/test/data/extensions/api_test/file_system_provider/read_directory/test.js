@@ -13,17 +13,6 @@ var fileSystem = null;
  * @type {Object}
  * @const
  */
-var TESTING_ROOT = Object.freeze({
-  isDirectory: true,
-  name: '',
-  size: 0,
-  modificationTime: new Date(2014, 4, 28, 10, 39, 15)
-});
-
-/**
- * @type {Object}
- * @const
- */
 var TESTING_HELLO_DIR = Object.freeze({
   isDirectory: true,
   name: 'hello',
@@ -77,36 +66,6 @@ function onReadDirectoryRequested(options, onSuccess, onError) {
 }
 
 /**
- * Returns metadata for the requested entry.
- *
- * To successfully acquire a DirectoryEntry, or even a DOMFileSystem, this event
- * must be implemented and return correct values.
- *
- * @param {GetMetadataRequestedOptions} options Options.
- * @param {function(Object)} onSuccess Success callback with metadata passed
- *     an argument.
- * @param {function(string)} onError Error callback with an error code.
- */
-function onGetMetadataRequested(options, onSuccess, onError) {
-  if (options.fileSystemId != test_util.FILE_SYSTEM_ID) {
-    onError('SECURITY');  // enum ProviderError.
-    return;
-  }
-
-  if (options.entryPath == '/') {
-    onSuccess(TESTING_ROOT);
-    return;
-  }
-
-  if (options.entryPath == '/' + TESTING_HELLO_DIR.name) {
-    onSuccess(TESTING_HELLO_DIR);
-    return;
-  }
-
-  onError('NOT_FOUND');  // enum ProviderError.
-}
-
-/**
  * Sets up the tests. Called once per all test cases. In case of a failure,
  * the callback is not called.
  *
@@ -114,9 +73,18 @@ function onGetMetadataRequested(options, onSuccess, onError) {
  */
 function setUp(callback) {
   chrome.fileSystemProvider.onGetMetadataRequested.addListener(
-      onGetMetadataRequested);
+      test_util.onGetMetadataRequestedDefault);
+
+  test_util.defaultMetadata['/' + TESTING_HELLO_DIR.name] =
+      TESTING_HELLO_DIR;
+  test_util.defaultMetadata['/' + TESTING_HELLO_DIR.name + '/' +
+        TESTING_TIRAMISU_FILE.name] = TESTING_TIRAMISU_FILE;
+  test_util.defaultMetadata['/' + TESTING_HELLO_DIR.name + '/' +
+      TESTING_CANDIES_DIR.name] = TESTING_CANDIES_DIR;
+
   chrome.fileSystemProvider.onReadDirectoryRequested.addListener(
       onReadDirectoryRequested);
+
   test_util.mountFileSystem(callback);
 }
 

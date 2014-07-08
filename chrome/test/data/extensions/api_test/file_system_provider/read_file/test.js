@@ -17,17 +17,6 @@ var fileSystem = null;
 var openedFiles = {};
 
 /**
- * @type {Object}
- * @const
- */
-var TESTING_ROOT = Object.freeze({
-  isDirectory: true,
-  name: '',
-  size: 0,
-  modificationTime: new Date(2014, 4, 28, 10, 39, 15)
-});
-
-/**
  * Testing contents for files.
  * @type {string}
  * @const
@@ -57,41 +46,6 @@ var TESTING_BROKEN_TIRAMISU_FILE = Object.freeze({
   size: TESTING_TEXT.length,
   modificationTime: new Date(2014, 1, 25, 7, 36, 12)
 });
-
-/**
- * Returns metadata for the requested entry.
- *
- * To successfully acquire a DirectoryEntry, or even a DOMFileSystem, this event
- * must be implemented and return correct values.
- *
- * @param {GetMetadataRequestedOptions} options Options.
- * @param {function(Object)} onSuccess Success callback with metadata passed
- *     an argument.
- * @param {function(string)} onError Error callback with an error code.
- */
-function onGetMetadataRequested(options, onSuccess, onError) {
-  if (options.fileSystemId != test_util.FILE_SYSTEM_ID) {
-    onError('SECURITY');  // enum ProviderError.
-    return;
-  }
-
-  if (options.entryPath == '/') {
-    onSuccess(TESTING_ROOT);
-    return;
-  }
-
-  if (options.entryPath == '/' + TESTING_TIRAMISU_FILE.name) {
-    onSuccess(TESTING_TIRAMISU_FILE);
-    return;
-  }
-
-  if (options.entryPath == '/' + TESTING_BROKEN_TIRAMISU_FILE.name) {
-    onSuccess(TESTING_BROKEN_TIRAMISU_FILE);
-    return;
-  }
-
-  onError('NOT_FOUND');  // enum ProviderError.
-}
 
 /**
  * Requests opening a file at <code>filePath</code>. Further file operations
@@ -186,13 +140,21 @@ function onReadFileRequested(options, onSuccess, onError) {
  */
 function setUp(callback) {
   chrome.fileSystemProvider.onGetMetadataRequested.addListener(
-      onGetMetadataRequested);
+      test_util.onGetMetadataRequestedDefault);
+
+  test_util.defaultMetadata['/' + TESTING_TIRAMISU_FILE.name] =
+      TESTING_TIRAMISU_FILE;
+  test_util.defaultMetadata['/' + TESTING_BROKEN_TIRAMISU_FILE.name] =
+      TESTING_TIRAMISU_FILE;
+
   chrome.fileSystemProvider.onOpenFileRequested.addListener(
       onOpenFileRequested);
   chrome.fileSystemProvider.onReadFileRequested.addListener(
       onReadFileRequested);
   chrome.fileSystemProvider.onCloseFileRequested.addListener(
-      onCloseFileRequested);  test_util.mountFileSystem(callback);
+      onCloseFileRequested);
+
+  test_util.mountFileSystem(callback);
 }
 
 /**
