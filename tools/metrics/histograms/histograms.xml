@@ -50937,6 +50937,10 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram_suffixes>
 
 <histogram_suffixes name="SpdyCwnd">
+  <obsolete>
+    Deprecated as of 07/2014.
+  </obsolete>
+  <owner>willchan@chromium.org</owner>
   <suffix name="cwnd32" label="using cwnd policy static 32"/>
   <suffix name="cwnd10" label="using cwnd policy static 10"/>
   <suffix name="cwnd16" label="using cwnd policy static 16"/>
