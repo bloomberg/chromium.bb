@@ -27,7 +27,7 @@ bool IsRateLimitedEventType(ui::Event* event) {
          event->type() == ui::ET_TOUCH_MOVED;
 }
 
-}
+}  // namespace
 
 class NativeViewportImpl
     : public InterfaceImpl<mojo::NativeViewport>,
@@ -102,16 +102,16 @@ class NativeViewportImpl
   virtual bool OnEvent(ui::Event* ui_event) OVERRIDE {
     // Must not return early before updating capture.
     switch (ui_event->type()) {
-    case ui::ET_MOUSE_PRESSED:
-    case ui::ET_TOUCH_PRESSED:
-      native_viewport_->SetCapture();
-      break;
-    case ui::ET_MOUSE_RELEASED:
-    case ui::ET_TOUCH_RELEASED:
-      native_viewport_->ReleaseCapture();
-      break;
-    default:
-      break;
+      case ui::ET_MOUSE_PRESSED:
+      case ui::ET_TOUCH_PRESSED:
+        native_viewport_->SetCapture();
+        break;
+      case ui::ET_MOUSE_RELEASED:
+      case ui::ET_TOUCH_RELEASED:
+        native_viewport_->ReleaseCapture();
+        break;
+      default:
+        break;
     }
 
     if (waiting_for_event_ack_ && IsRateLimitedEventType(ui_event))
@@ -167,10 +167,8 @@ class NVSDelegate : public ApplicationDelegate {
   mojo::shell::Context* context_;
 };
 
-
 }  // namespace services
 }  // namespace mojo
-
 
 MOJO_NATIVE_VIEWPORT_EXPORT mojo::ApplicationImpl*
     CreateNativeViewportService(

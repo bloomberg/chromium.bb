@@ -1,4 +1,4 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -48,7 +48,6 @@ WindowTreeHostImpl::WindowTreeHostImpl(
   }
   context_factory_ = new ContextFactoryImpl(pipe.handle1.Pass());
   aura::Env::GetInstance()->set_context_factory(context_factory_);
-  CHECK(context_factory_) << "No GL bindings.";
 }
 
 WindowTreeHostImpl::~WindowTreeHostImpl() {

@@ -56,9 +56,10 @@ void BackgroundServiceLoader::LoadService(
     const GURL& url,
     ScopedMessagePipeHandle shell_handle) {
   const int kDefaultStackSize = 0;
-  if (!thread_.IsRunning())
+  if (!thread_.IsRunning()) {
     thread_.StartWithOptions(
         base::Thread::Options(message_loop_type_, kDefaultStackSize));
+  }
   thread_.message_loop()->PostTask(
       FROM_HERE,
       base::Bind(&BackgroundServiceLoader::LoadServiceOnBackgroundThread,

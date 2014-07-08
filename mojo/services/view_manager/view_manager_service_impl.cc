@@ -5,7 +5,6 @@
 #include "mojo/services/view_manager/view_manager_service_impl.h"
 
 #include "base/bind.h"
-#include "base/stl_util.h"
 #include "mojo/services/public/cpp/geometry/geometry_type_converters.h"
 #include "mojo/services/public/cpp/input_events/input_events_type_converters.h"
 #include "mojo/services/view_manager/node.h"
@@ -797,11 +796,12 @@ void ViewManagerServiceImpl::DispatchOnViewInputEvent(Id transport_view_id,
   const ViewId view_id(ViewIdFromTransportId(transport_view_id));
   ViewManagerServiceImpl* connection = root_node_manager_->GetConnection(
       view_id.connection_id);
-  if (connection)
+  if (connection) {
     connection->client()->OnViewInputEvent(
         transport_view_id,
         event.Pass(),
         base::Bind(&base::DoNothing));
+  }
 }
 
 void ViewManagerServiceImpl::OnNodeHierarchyChanged(const Node* node,
