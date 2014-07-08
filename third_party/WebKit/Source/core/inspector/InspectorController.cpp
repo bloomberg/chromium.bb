@@ -76,6 +76,7 @@ InspectorController::InspectorController(Page* page, InspectorClient* inspectorC
     , m_injectedScriptManager(InjectedScriptManager::createForPage())
     , m_state(adoptPtr(new InspectorCompositeState(inspectorClient)))
     , m_overlay(InspectorOverlay::create(page, inspectorClient))
+    , m_resourceAgent(0)
     , m_cssAgent(0)
     , m_layerTreeAgent(0)
     , m_page(page)
