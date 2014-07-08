@@ -2824,6 +2824,7 @@ void FrameView::updateLayoutAndStyleForPainting()
     }
 
     scrollContentsIfNeededRecursive();
+    ASSERT(lifecycle().state() == DocumentLifecycle::CompositingClean);
 }
 
 void FrameView::updateLayoutAndStyleIfNeededRecursive()
