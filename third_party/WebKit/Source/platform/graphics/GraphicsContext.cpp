@@ -211,17 +211,12 @@ void GraphicsContext::restoreLayer()
         m_opaqueRegion.popCanvasLayer(this);
 }
 
-void GraphicsContext::beginAnnotation(const char* rendererName, const char* paintPhase,
-    const String& elementId, const String& elementClass, const String& elementTag, int inspectorNodeId)
+void GraphicsContext::beginAnnotation(const AnnotationList& annotations)
 {
     if (contextDisabled())
         return;
 
     canvas()->beginCommentGroup("GraphicsContextAnnotation");
-
-    GraphicsContextAnnotation annotation(rendererName, paintPhase, elementId, elementClass, elementTag, inspectorNodeId);
-    AnnotationList annotations;
-    annotation.asAnnotationList(annotations);
 
     AnnotationList::const_iterator end = annotations.end();
     for (AnnotationList::const_iterator it = annotations.begin(); it != end; ++it)
@@ -237,9 +232,9 @@ void GraphicsContext::endAnnotation()
     if (contextDisabled())
         return;
 
+    ASSERT(m_annotationCount > 0);
     canvas()->endCommentGroup();
 
-    ASSERT(m_annotationCount > 0);
 #if ASSERT_ENABLED
     --m_annotationCount;
 #endif

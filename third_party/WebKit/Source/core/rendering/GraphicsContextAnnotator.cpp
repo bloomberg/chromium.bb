@@ -40,6 +40,13 @@
 
 namespace {
 
+const char AnnotationKeyRendererName[]    = "RENDERER";
+const char AnnotationKeyPaintPhase[]      = "PHASE";
+const char AnnotationKeyElementId[]       = "ID";
+const char AnnotationKeyElementClass[]    = "CLASS";
+const char AnnotationKeyElementTag[]      = "TAG";
+const char AnnotationKeyInspectorNodeId[] = "INSPECTOR_ID";
+
 static const char* paintPhaseName(WebCore::PaintPhase phase)
 {
     switch (phase) {
@@ -86,24 +93,18 @@ void GraphicsContextAnnotator::annotate(const PaintInfo& paintInfo, const Render
     ASSERT(paintInfo.context);
     ASSERT(object);
 
+    AnnotationList annotations;
     AnnotationModeFlags mode = paintInfo.context->annotationMode();
     Element* element = object->node() && object->node()->isElementNode() ? toElement(object->node()) : 0;
 
-    const char* rendererName = 0;
-    const char* paintPhase = 0;
-    String elementId, elementClass, elementTag;
-
     if (mode & AnnotateRendererName)
-        rendererName = object->renderName();
+        annotations.append(std::make_pair(AnnotationKeyRendererName, object->renderName()));
 
     if (mode & AnnotatePaintPhase)
-        paintPhase = paintPhaseName(paintInfo.phase);
+        annotations.append(std::make_pair(AnnotationKeyPaintPhase, paintPhaseName(paintInfo.phase)));
 
-    if ((mode & AnnotateElementId) && element) {
-        const AtomicString id = element->getIdAttribute();
-        if (!id.isNull() && !id.isEmpty())
-            elementId = id.string();
-    }
+    if ((mode & AnnotateElementId) && element && element->hasID())
+        annotations.append(std::make_pair(AnnotationKeyElementId, element->getIdAttribute().string()));
 
     if ((mode & AnnotateElementClass) && element && element->hasClass()) {
         SpaceSplitString classes = element->classNames();
@@ -115,20 +116,22 @@ void GraphicsContextAnnotator::annotate(const PaintInfo& paintInfo, const Render
                 classBuilder.append(classes[i]);
             }
 
-            elementClass = classBuilder.toString();
+            annotations.append(std::make_pair(AnnotationKeyElementClass, classBuilder.toString()));
         }
     }
 
     if ((mode & AnnotateElementTag) && element)
-        elementTag = element->tagName();
+        annotations.append(std::make_pair(AnnotationKeyElementTag, element->tagName()));
 
-    int inspectorNodeId = 0;
     if (mode & AnnotateInspectorId) {
-        if (Node* ownerNode = object->generatingNode())
-            inspectorNodeId = InspectorNodeIds::idForNode(ownerNode);
+        if (Node* ownerNode = object->generatingNode()) {
+            annotations.append(std::make_pair(AnnotationKeyInspectorNodeId,
+                String::number(InspectorNodeIds::idForNode(ownerNode))));
+        }
     }
+
     m_context = paintInfo.context;
-    m_context->beginAnnotation(rendererName, paintPhase, elementId, elementClass, elementTag, inspectorNodeId);
+    m_context->beginAnnotation(annotations);
 }
 
 void GraphicsContextAnnotator::finishAnnotation()

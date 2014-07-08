@@ -50,21 +50,6 @@ enum AnnotationMode {
 typedef unsigned AnnotationModeFlags;
 typedef Vector<std::pair<const char*, String> > AnnotationList;
 
-class GraphicsContextAnnotation {
-public:
-    GraphicsContextAnnotation(const char*, const char*, const String&, const String&, const String&, int inspectorNodeId);
-
-    void asAnnotationList(AnnotationList&) const;
-
-private:
-    const char* m_rendererName;
-    const char* m_paintPhase;
-    String m_elementId;
-    String m_elementClass;
-    String m_elementTag;
-    int m_inspectorNodeId;
-};
-
 } // namespace WebCore
 
 #endif // GraphicsContextAnnotation_h

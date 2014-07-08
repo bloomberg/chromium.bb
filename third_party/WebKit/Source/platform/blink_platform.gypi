@@ -580,7 +580,6 @@
       'graphics/GradientGeneratedImage.h',
       'graphics/GraphicsContext.cpp',
       'graphics/GraphicsContext.h',
-      'graphics/GraphicsContextAnnotation.cpp',
       'graphics/GraphicsContextAnnotation.h',
       'graphics/GraphicsContextCullSaver.h',
       'graphics/GraphicsContextRecorder.cpp',

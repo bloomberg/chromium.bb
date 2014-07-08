@@ -402,7 +402,7 @@ public:
 
     static void adjustLineToPixelBoundaries(FloatPoint& p1, FloatPoint& p2, float strokeWidth, StrokeStyle);
 
-    void beginAnnotation(const char*, const char*, const String&, const String&, const String&, int);
+    void beginAnnotation(const AnnotationList&);
     void endAnnotation();
 
 private:
