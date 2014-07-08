@@ -125,8 +125,8 @@ bool ZoomController::SetZoomLevelByExtension(
   content::HostZoomMap* zoom_map =
       content::HostZoomMap::GetForBrowserContext(browser_context_);
   DCHECK(zoom_map);
-  DCHECK(event_data_.empty());
-  event_data_.push_back(ZoomChangedEventData(web_contents(),
+  DCHECK(!event_data_);
+  event_data_.reset(new ZoomChangedEventData(web_contents(),
                                              GetZoomLevel(),
                                              zoom_level,
                                              zoom_mode_,
@@ -149,7 +149,7 @@ bool ZoomController::SetZoomLevelByExtension(
     zoom_map->SetZoomLevelForHost(host, zoom_level);
   }
 
-  DCHECK(event_data_.empty());
+  DCHECK(!event_data_);
   last_extension_ = NULL;
   return true;
 }
@@ -165,13 +165,12 @@ void ZoomController::SetZoomMode(ZoomMode new_mode) {
   int render_view_id = web_contents()->GetRenderViewHost()->GetRoutingID();
   double original_zoom_level = GetZoomLevel();
 
-  ZoomChangedEventData zoom_change_data(web_contents(),
-                                        original_zoom_level,
-                                        original_zoom_level,
-                                        new_mode,
-                                        new_mode != ZOOM_MODE_DEFAULT);
-  DCHECK(event_data_.empty());
-  event_data_.push_back(zoom_change_data);
+  DCHECK(!event_data_);
+  event_data_.reset(new ZoomChangedEventData(web_contents(),
+                                             original_zoom_level,
+                                             original_zoom_level,
+                                             new_mode,
+                                             new_mode != ZOOM_MODE_DEFAULT));
 
   switch (new_mode) {
     case ZOOM_MODE_DEFAULT: {
@@ -189,7 +188,7 @@ void ZoomController::SetZoomMode(ZoomMode new_mode) {
           // the correct zoom level.
           double origin_zoom_level =
               zoom_map->GetZoomLevelForHostAndScheme(url.scheme(), host);
-          event_data_.back().new_zoom_level = origin_zoom_level;
+          event_data_->new_zoom_level = origin_zoom_level;
           zoom_map->SetTemporaryZoomLevel(
               render_process_id, render_view_id, origin_zoom_level);
         } else {
@@ -214,8 +213,8 @@ void ZoomController::SetZoomMode(ZoomMode new_mode) {
         // When we don't call any HostZoomMap set functions, we send the event
         // manually.
         FOR_EACH_OBSERVER(
-            ZoomObserver, observers_, OnZoomChanged(event_data_.back()));
-        event_data_.pop_back();
+            ZoomObserver, observers_, OnZoomChanged(*event_data_));
+        event_data_.reset();
       }
       break;
     }
@@ -231,8 +230,8 @@ void ZoomController::SetZoomMode(ZoomMode new_mode) {
         // When we don't call any HostZoomMap set functions, we send the event
         // manually.
         FOR_EACH_OBSERVER(
-            ZoomObserver, observers_, OnZoomChanged(event_data_.back()));
-        event_data_.pop_back();
+            ZoomObserver, observers_, OnZoomChanged(*event_data_));
+        event_data_.reset();
       }
       break;
     }
@@ -244,7 +243,7 @@ void ZoomController::SetZoomMode(ZoomMode new_mode) {
     }
   }
   // Any event data we've stored should have been consumed by this point.
-  DCHECK(event_data_.empty());
+  DCHECK(!event_data_);
 
   zoom_mode_ = new_mode;
 }
@@ -288,11 +287,11 @@ void ZoomController::UpdateStateIncludingTemporary(const std::string& host,
   bool can_show_bubble =
       zoom_mode_ != ZOOM_MODE_DEFAULT || (!host.empty() && !is_temporary_zoom);
 
-  if (!event_data_.empty()) {
+  if (event_data_) {
     // For state changes initiated within the ZoomController, information about
     // the change should be sent.
-    ZoomChangedEventData zoom_change_data = event_data_.back();
-    event_data_.pop_back();
+    ZoomChangedEventData zoom_change_data = *event_data_;
+    event_data_.reset();
     zoom_change_data.can_show_bubble |= can_show_bubble;
     FOR_EACH_OBSERVER(
         ZoomObserver, observers_, OnZoomChanged(zoom_change_data));
@@ -300,7 +299,7 @@ void ZoomController::UpdateStateIncludingTemporary(const std::string& host,
     // TODO(wjmaclean) Should we consider having HostZoomMap send both old and
     // new zoom levels here?
     double zoom_level = GetZoomLevel();
-    ZoomChangedEventData zoom_change_data = ZoomChangedEventData(
+    ZoomChangedEventData zoom_change_data(
         web_contents(), zoom_level, zoom_level, zoom_mode_, can_show_bubble);
     FOR_EACH_OBSERVER(
         ZoomObserver, observers_, OnZoomChanged(zoom_change_data));

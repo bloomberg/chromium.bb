@@ -5,10 +5,9 @@
 #ifndef CHROME_BROWSER_UI_ZOOM_ZOOM_CONTROLLER_H_
 #define CHROME_BROWSER_UI_ZOOM_ZOOM_CONTROLLER_H_
 
-#include <vector>
-
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "base/prefs/pref_member.h"
 #include "content/public/browser/host_zoom_map.h"
@@ -136,7 +135,7 @@ class ZoomController : public content::WebContentsObserver,
   // Used to access the default zoom level preference.
   DoublePrefMember default_zoom_level_;
 
-  std::vector<ZoomChangedEventData> event_data_;
+  scoped_ptr<ZoomChangedEventData> event_data_;
 
   // Keeps track of the extension (if any) that initiated the last zoom change
   // that took effect.
