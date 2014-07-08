@@ -1172,6 +1172,9 @@ void BrowserView::ShowTranslateBubble(content::WebContents* web_contents,
   LanguageState& language_state = chrome_translate_client->GetLanguageState();
   language_state.SetTranslateEnabled(true);
 
+  if (!IsActive())
+    return;
+
   TranslateBubbleView::ShowBubble(
       GetToolbarView()->GetTranslateBubbleAnchor(), web_contents, step,
       error_type);
