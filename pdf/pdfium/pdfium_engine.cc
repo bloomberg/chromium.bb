@@ -204,6 +204,12 @@ const PDFFontSubstitution PDFFontSubstitutions[] = {
 
 void* MapFont(struct _FPDF_SYSFONTINFO*, int weight, int italic,
               int charset, int pitch_family, const char* face, int* exact) {
+  // Do not attempt to map fonts if pepper is not initialized (for privet local
+  // printing).
+  // TODO(noamsml): Real font substitution (http://crbug.com/391978)
+  if (!pp::Module::Get())
+    return NULL;
+
   pp::BrowserFontDescription description;
 
   // Pretend the system does not have the Symbol font to force a fallback to
