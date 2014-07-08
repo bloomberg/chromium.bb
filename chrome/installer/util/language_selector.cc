@@ -11,6 +11,7 @@
 #include <functional>
 
 #include "base/logging.h"
+#include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/win/i18n.h"
 #include "chrome/installer/util/google_update_settings.h"
@@ -190,7 +191,7 @@ bool MatchLanguageOffset(const std::wstring& language, int* offset) {
 // configured languages.
 void GetCandidatesFromSystem(std::vector<std::wstring>* candidates) {
   DCHECK(candidates);
-  std::wstring language;
+  base::string16 language;
 
   // Omaha gets first pick.
   GoogleUpdateSettings::GetLanguage(&language);

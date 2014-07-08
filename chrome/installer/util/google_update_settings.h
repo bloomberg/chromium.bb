@@ -116,19 +116,19 @@ class GoogleUpdateSettings {
 
   // Returns in |browser| the browser used to download chrome as recorded
   // Google Update. Returns false if the information is not available.
-  static bool GetBrowser(std::wstring* browser);
+  static bool GetBrowser(base::string16* browser);
 
   // Returns in |language| the language selected by the user when downloading
   // chrome. This information is collected by the web server used to download
   // the chrome installer. Returns false if the information is not available.
-  static bool GetLanguage(std::wstring* language);
+  static bool GetLanguage(base::string16* language);
 
   // Returns in |brand| the RLZ brand code or distribution tag that has been
   // assigned to a partner. Returns false if the information is not available.
   //
   // NOTE: This function is Windows only.  If the code you are writing is not
   // specifically for Windows, prefer calling google_brand::GetBrand().
-  static bool GetBrand(std::wstring* brand);
+  static bool GetBrand(base::string16* brand);
 
   // Returns in |brand| the RLZ reactivation brand code or distribution tag
   // that has been assigned to a partner for reactivating a dormant chrome
@@ -137,19 +137,19 @@ class GoogleUpdateSettings {
   // NOTE: This function is Windows only.  If the code you are writing is not
   // specifically for Windows, prefer calling
   // google_brand::GetReactivationBrand().
-  static bool GetReactivationBrand(std::wstring* brand);
+  static bool GetReactivationBrand(base::string16* brand);
 
   // Returns in |client| the google_update client field, which is currently
   // used to track experiments. Returns false if the entry does not exist.
-  static bool GetClient(std::wstring* client);
+  static bool GetClient(base::string16* client);
 
   // Sets the google_update client field. Unlike GetClient() this is set only
   // for the current user. Returns false if the operation failed.
-  static bool SetClient(const std::wstring& client);
+  static bool SetClient(const base::string16& client);
 
   // Returns in 'client' the RLZ referral available for some distribution
   // partners. This value does not exist for most chrome or chromium installs.
-  static bool GetReferral(std::wstring* referral);
+  static bool GetReferral(base::string16* referral);
 
   // Overwrites the current value of the referral with an empty string. Returns
   // true if this operation succeeded.
@@ -192,7 +192,7 @@ class GoogleUpdateSettings {
   static void UpdateInstallStatus(bool system_install,
                                   installer::ArchiveType archive_type,
                                   int install_return_code,
-                                  const std::wstring& product_guid);
+                                  const base::string16& product_guid);
 
   // This method updates the value for Google Update "ap" key for Chrome
   // based on whether we are doing incremental install (or not) and whether
@@ -229,13 +229,13 @@ class GoogleUpdateSettings {
   // Takes a |handle| to a registry key and writes |value| string into the
   // specified |key|. See DuplicateGoogleUpdateSystemClientKey for details.
   static bool WriteGoogleUpdateSystemClientKey(int handle,
-                                               const std::wstring& key,
-                                               const std::wstring& value);
+                                               const base::string16& key,
+                                               const base::string16& value);
 
   // Returns the effective update policy for |app_guid| as dictated by
   // Group Policy settings.  |is_overridden|, if non-NULL, is populated with
   // true if an app-specific policy override is in force, or false otherwise.
-  static UpdatePolicy GetAppUpdatePolicy(const std::wstring& app_guid,
+  static UpdatePolicy GetAppUpdatePolicy(const base::string16& app_guid,
                                          bool* is_overridden);
 
   // Returns true if the app indicated by |app_guid| should be updated

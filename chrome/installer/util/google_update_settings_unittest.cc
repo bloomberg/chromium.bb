@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/installer/util/google_update_settings.h"
+
 #include <windows.h>
 #include <shlwapi.h>  // For SHDeleteKey.
 
@@ -15,7 +17,6 @@
 #include "chrome/installer/util/fake_installation_state.h"
 #include "chrome/installer/util/google_update_constants.h"
 #include "chrome/installer/util/google_update_experiment_util.h"
-#include "chrome/installer/util/google_update_settings.h"
 #include "chrome/installer/util/util_constants.h"
 #include "chrome/installer/util/work_item_list.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -49,7 +50,7 @@ class GoogleUpdateSettingsTest : public testing::Test {
 
     RegKey update_key;
     BrowserDistribution* dist = BrowserDistribution::GetDistribution();
-    std::wstring path = dist->GetStateKey();
+    base::string16 path = dist->GetStateKey();
     ASSERT_EQ(ERROR_SUCCESS, update_key.Create(root, path.c_str(), KEY_WRITE));
     ASSERT_EQ(ERROR_SUCCESS, update_key.WriteValue(L"ap", value));
   }
@@ -58,7 +59,7 @@ class GoogleUpdateSettingsTest : public testing::Test {
   // the binaries).
   void SetMultiApField(SystemUserInstall is_system, const wchar_t* value) {
     // Caller must specify a multi-install ap value.
-    ASSERT_NE(std::wstring::npos, std::wstring(value).find(L"-multi"));
+    ASSERT_NE(base::string16::npos, base::string16(value).find(L"-multi"));
     HKEY root = is_system == SYSTEM_INSTALL ?
         HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
     RegKey update_key;
@@ -70,7 +71,7 @@ class GoogleUpdateSettingsTest : public testing::Test {
           BrowserDistribution::CHROME_BINARIES)
     };
     for (size_t i = 0; i < arraysize(kDists); ++i) {
-      std::wstring path = kDists[i]->GetStateKey();
+      base::string16 path = kDists[i]->GetStateKey();
       ASSERT_EQ(ERROR_SUCCESS, update_key.Create(root, path.c_str(),
                                                  KEY_WRITE));
       ASSERT_EQ(ERROR_SUCCESS, update_key.WriteValue(L"ap", value));
@@ -116,7 +117,7 @@ class GoogleUpdateSettingsTest : public testing::Test {
     for (size_t i = 0; i < arraysize(prefixes); ++i) {
       for (size_t j = 0; j < arraysize(expectations); ++j) {
         for (size_t k = 0; k < arraysize(suffixes); ++k) {
-          std::wstring ap = prefixes[i];
+          base::string16 ap = prefixes[i];
           ap += expectations[j].ap_value;
           ap += suffixes[k];
           const wchar_t* channel = expectations[j].channel;
@@ -140,7 +141,7 @@ class GoogleUpdateSettingsTest : public testing::Test {
     BrowserDistribution* chrome =
         BrowserDistribution::GetSpecificDistribution(
             BrowserDistribution::CHROME_BROWSER);
-    std::wstring value;
+    base::string16 value;
 #if defined(GOOGLE_CHROME_BUILD)
     EXPECT_TRUE(chrome->ShouldSetExperimentLabels());
 
@@ -191,9 +192,9 @@ class GoogleUpdateSettingsTest : public testing::Test {
 
   // Creates "ap" key with the value given as parameter. Also adds work
   // items to work_item_list given so that they can be rolled back later.
-  bool CreateApKey(WorkItemList* work_item_list, const std::wstring& value) {
+  bool CreateApKey(WorkItemList* work_item_list, const base::string16& value) {
     HKEY reg_root = HKEY_CURRENT_USER;
-    std::wstring reg_key = GetApKeyPath();
+    base::string16 reg_key = GetApKeyPath();
     work_item_list->AddCreateRegKeyWorkItem(
         reg_root, reg_key, WorkItem::kWow64Default);
     work_item_list->AddSetRegValueWorkItem(reg_root,
@@ -211,18 +212,18 @@ class GoogleUpdateSettingsTest : public testing::Test {
 
   // Returns the key path of "ap" key, e.g.:
   // Google\Update\ClientState\<kTestProductGuid>
-  std::wstring GetApKeyPath() {
-    std::wstring reg_key(google_update::kRegPathClientState);
+  base::string16 GetApKeyPath() {
+    base::string16 reg_key(google_update::kRegPathClientState);
     reg_key.append(L"\\");
     reg_key.append(kTestProductGuid);
     return reg_key;
   }
 
   // Utility method to read "ap" key value
-  std::wstring ReadApKeyValue() {
+  base::string16 ReadApKeyValue() {
     RegKey key;
-    std::wstring ap_key_value;
-    std::wstring reg_key = GetApKeyPath();
+    base::string16 ap_key_value;
+    base::string16 reg_key = GetApKeyPath();
     if (key.Open(HKEY_CURRENT_USER, reg_key.c_str(), KEY_ALL_ACCESS) ==
         ERROR_SUCCESS) {
       key.ReadValue(google_update::kRegApField, &ap_key_value);
@@ -519,8 +520,8 @@ TEST_F(GoogleUpdateSettingsTest, UpdateInstallStatusTest) {
 
   work_item_list.reset(WorkItem::CreateWorkItemList());
   // Test the case of when "ap" key doesnt exist at all
-  std::wstring ap_key_value = ReadApKeyValue();
-  std::wstring reg_key = GetApKeyPath();
+  base::string16 ap_key_value = ReadApKeyValue();
+  base::string16 reg_key = GetApKeyPath();
   HKEY reg_root = HKEY_CURRENT_USER;
   bool ap_key_deleted = false;
   RegKey key;
@@ -688,7 +689,7 @@ TEST_F(GoogleUpdateSettingsTest, GetAppUpdatePolicyDefaultOverride) {
 
 // Test that an app-specific override is used if present.
 TEST_F(GoogleUpdateSettingsTest, GetAppUpdatePolicyAppOverride) {
-  std::wstring app_policy_value(
+  base::string16 app_policy_value(
       GoogleUpdateSettings::kUpdateOverrideValuePrefix);
   app_policy_value.append(kTestProductGuid);
 
@@ -1036,34 +1037,34 @@ class CollectStatsConsent : public ::testing::TestWithParam<StatsState> {
   static void MakeChromeMultiInstall(HKEY root_key);
   static void ApplySetting(StatsState::StateSetting setting,
                            HKEY root_key,
-                           const std::wstring& reg_key);
+                           const base::string16& reg_key);
 
-  static std::wstring* chrome_version_key_;
-  static std::wstring* chrome_state_key_;
-  static std::wstring* chrome_state_medium_key_;
-  static std::wstring* binaries_state_key_;
-  static std::wstring* binaries_state_medium_key_;
+  static base::string16* chrome_version_key_;
+  static base::string16* chrome_state_key_;
+  static base::string16* chrome_state_medium_key_;
+  static base::string16* binaries_state_key_;
+  static base::string16* binaries_state_medium_key_;
   registry_util::RegistryOverrideManager override_manager_;
 };
 
-std::wstring* CollectStatsConsent::chrome_version_key_;
-std::wstring* CollectStatsConsent::chrome_state_key_;
-std::wstring* CollectStatsConsent::chrome_state_medium_key_;
-std::wstring* CollectStatsConsent::binaries_state_key_;
-std::wstring* CollectStatsConsent::binaries_state_medium_key_;
+base::string16* CollectStatsConsent::chrome_version_key_;
+base::string16* CollectStatsConsent::chrome_state_key_;
+base::string16* CollectStatsConsent::chrome_state_medium_key_;
+base::string16* CollectStatsConsent::binaries_state_key_;
+base::string16* CollectStatsConsent::binaries_state_medium_key_;
 
 void CollectStatsConsent::SetUpTestCase() {
   BrowserDistribution* dist =
       BrowserDistribution::GetSpecificDistribution(
           BrowserDistribution::CHROME_BROWSER);
-  chrome_version_key_ = new std::wstring(dist->GetVersionKey());
-  chrome_state_key_ = new std::wstring(dist->GetStateKey());
-  chrome_state_medium_key_ = new std::wstring(dist->GetStateMediumKey());
+  chrome_version_key_ = new base::string16(dist->GetVersionKey());
+  chrome_state_key_ = new base::string16(dist->GetStateKey());
+  chrome_state_medium_key_ = new base::string16(dist->GetStateMediumKey());
 
   dist = BrowserDistribution::GetSpecificDistribution(
       BrowserDistribution::CHROME_BINARIES);
-  binaries_state_key_ = new std::wstring(dist->GetStateKey());
-  binaries_state_medium_key_ = new std::wstring(dist->GetStateMediumKey());
+  binaries_state_key_ = new base::string16(dist->GetStateKey());
+  binaries_state_medium_key_ = new base::string16(dist->GetStateMediumKey());
 }
 
 void CollectStatsConsent::TearDownTestCase() {
@@ -1078,7 +1079,8 @@ void CollectStatsConsent::TearDownTestCase() {
 void CollectStatsConsent::SetUp() {
   const StatsState& stats_state = GetParam();
   const HKEY root_key = stats_state.root_key();
-  std::wstring reg_temp_name(stats_state.system_level() ? L"HKLM_" : L"HKCU_");
+  base::string16 reg_temp_name(
+      stats_state.system_level() ? L"HKLM_" : L"HKCU_");
   reg_temp_name += L"CollectStatsConsent";
   override_manager_.OverrideRegistry(root_key, reg_temp_name);
 
@@ -1112,7 +1114,7 @@ void CollectStatsConsent::MakeChromeMultiInstall(HKEY root_key) {
 // Write the correct value to represent |setting| in the registry.
 void CollectStatsConsent::ApplySetting(StatsState::StateSetting setting,
                                        HKEY root_key,
-                                       const std::wstring& reg_key) {
+                                       const base::string16& reg_key) {
   if (setting != StatsState::NO_SETTING) {
     DWORD value = setting != StatsState::FALSE_SETTING ? 1 : 0;
     ASSERT_EQ(
@@ -1140,7 +1142,7 @@ TEST_P(CollectStatsConsent, SetCollectStatsConsentAtLevel) {
   EXPECT_TRUE(GoogleUpdateSettings::SetCollectStatsConsentAtLevel(
                   GetParam().system_level(),
                   !GetParam().is_consent_granted()));
-  const std::wstring* const reg_keys[] = {
+  const base::string16* const reg_keys[] = {
     chrome_state_key_,
     chrome_state_medium_key_,
     binaries_state_key_,
@@ -1148,7 +1150,7 @@ TEST_P(CollectStatsConsent, SetCollectStatsConsentAtLevel) {
   };
   int key_index = ((GetParam().system_level() ? 1 : 0) +
                    (GetParam().multi_install() ? 2 : 0));
-  const std::wstring& reg_key = *reg_keys[key_index];
+  const base::string16& reg_key = *reg_keys[key_index];
   DWORD value = 0;
   EXPECT_EQ(
       ERROR_SUCCESS,

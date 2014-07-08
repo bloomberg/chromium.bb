@@ -602,7 +602,7 @@ int __stdcall GoogleChromeDaysSinceLastRun() {
                         kChromeRegClientStateKey,
                         KEY_QUERY_VALUE | KEY_WOW64_32KEY);
     if (client_state.Valid()) {
-      std::wstring last_run;
+      base::string16 last_run;
       int64 last_run_value = 0;
       if (client_state.ReadValue(google_update::kRegLastRunTimeField,
                                  &last_run) == ERROR_SUCCESS &&
@@ -715,7 +715,7 @@ BOOL __stdcall CanOfferRelaunch(const wchar_t** partner_brandcode_list,
 
   // b) the installed brandcode should belong to that partner (in
   // brandcode_list);
-  std::wstring installed_brandcode;
+  base::string16 installed_brandcode;
   bool valid_brandcode = false;
   if (GoogleUpdateSettings::GetBrand(&installed_brandcode)) {
     for (int i = 0; i < partner_brandcode_list_length; ++i) {
