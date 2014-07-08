@@ -49,7 +49,7 @@ void AddBookmarksToIndex(BookmarkLoadDetails* details,
 
 void LoadCallback(const base::FilePath& path,
                   const base::WeakPtr<BookmarkStorage>& storage,
-                  BookmarkLoadDetails* details,
+                  scoped_ptr<BookmarkLoadDetails> details,
                   base::SequencedTaskRunner* task_runner) {
   startup_metric_utils::ScopedSlowStartupUMA
       scoped_timer("Startup.SlowStartupBookmarksLoad");
@@ -96,17 +96,18 @@ void LoadCallback(const base::FilePath& path,
 
   if (load_index) {
     TimeTicks start_time = TimeTicks::Now();
-    AddBookmarksToIndex(details, details->bb_node());
-    AddBookmarksToIndex(details, details->other_folder_node());
-    AddBookmarksToIndex(details, details->mobile_folder_node());
+    AddBookmarksToIndex(details.get(), details->bb_node());
+    AddBookmarksToIndex(details.get(), details->other_folder_node());
+    AddBookmarksToIndex(details.get(), details->mobile_folder_node());
     for (size_t i = 0; i < extra_nodes.size(); ++i)
-      AddBookmarksToIndex(details, extra_nodes[i]);
+      AddBookmarksToIndex(details.get(), extra_nodes[i]);
     UMA_HISTOGRAM_TIMES("Bookmarks.CreateBookmarkIndexTime",
                         TimeTicks::Now() - start_time);
   }
 
   task_runner->PostTask(FROM_HERE,
-                        base::Bind(&BookmarkStorage::OnLoadFinished, storage));
+                        base::Bind(&BookmarkStorage::OnLoadFinished, storage,
+                                   base::Passed(&details)));
 }
 
 }  // namespace
@@ -162,14 +163,11 @@ BookmarkStorage::~BookmarkStorage() {
 void BookmarkStorage::LoadBookmarks(
     scoped_ptr<BookmarkLoadDetails> details,
     const scoped_refptr<base::SequencedTaskRunner>& task_runner) {
-  DCHECK(!details_.get());
-  DCHECK(details);
-  details_ = details.Pass();
   sequenced_task_runner_->PostTask(FROM_HERE,
                                    base::Bind(&LoadCallback,
                                               writer_.path(),
                                               weak_factory_.GetWeakPtr(),
-                                              details_.get(),
+                                              base::Passed(&details),
                                               task_runner));
 }
 
@@ -193,11 +191,11 @@ bool BookmarkStorage::SerializeData(std::string* output) {
   return serializer.Serialize(*(value.get()));
 }
 
-void BookmarkStorage::OnLoadFinished() {
+void BookmarkStorage::OnLoadFinished(scoped_ptr<BookmarkLoadDetails> details) {
   if (!model_)
     return;
 
-  model_->DoneLoading(details_.Pass());
+  model_->DoneLoading(details.Pass());
 }
 
 bool BookmarkStorage::SaveNow() {
