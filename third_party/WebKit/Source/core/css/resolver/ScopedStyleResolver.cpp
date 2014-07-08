@@ -68,7 +68,7 @@ void ScopedStyleResolver::addRulesFromSheet(CSSStyleSheet* cssSheet, const Media
     AddRuleFlags addRuleFlags = resolver->document().securityOrigin()->canRequest(sheet->baseURL()) ? RuleHasDocumentSecurityOrigin : RuleHasNoSpecialState;
     const RuleSet& ruleSet = sheet->ensureRuleSet(medium, addRuleFlags);
     resolver->addMediaQueryResults(ruleSet.viewportDependentMediaQueryResults());
-    resolver->processScopedRules(ruleSet, cssSheet, m_scopingNode);
+    resolver->processScopedRules(ruleSet, cssSheet, m_scope.rootNode());
 }
 
 void ScopedStyleResolver::collectFeaturesTo(RuleFeatureSet& features, HashSet<const StyleSheetContents*>& visitedSharedStyleSheetContents)
@@ -114,7 +114,6 @@ void ScopedStyleResolver::addKeyframeStyle(PassRefPtrWillBeRawPtr<StyleRuleKeyfr
 
 void ScopedStyleResolver::collectMatchingAuthorRules(ElementRuleCollector& collector, bool includeEmptyRules, bool applyAuthorStyles, CascadeScope cascadeScope, CascadeOrder cascadeOrder)
 {
-    const ContainerNode* scopingNode = &m_scopingNode;
     unsigned contextFlags = SelectorChecker::DefaultBehavior;
 
     if (!applyAuthorStyles)
@@ -122,7 +121,7 @@ void ScopedStyleResolver::collectMatchingAuthorRules(ElementRuleCollector& colle
 
     RuleRange ruleRange = collector.matchedResult().ranges.authorRuleRange();
     for (size_t i = 0; i < m_authorStyleSheets.size(); ++i) {
-        MatchRequest matchRequest(&m_authorStyleSheets[i]->contents()->ruleSet(), includeEmptyRules, scopingNode, m_authorStyleSheets[i], applyAuthorStyles, i);
+        MatchRequest matchRequest(&m_authorStyleSheets[i]->contents()->ruleSet(), includeEmptyRules, &scopingNode(), m_authorStyleSheets[i], applyAuthorStyles, i);
         collector.collectMatchingRules(matchRequest, ruleRange, static_cast<SelectorChecker::ContextFlags>(contextFlags), cascadeScope, cascadeOrder);
     }
 }
@@ -130,14 +129,14 @@ void ScopedStyleResolver::collectMatchingAuthorRules(ElementRuleCollector& colle
 void ScopedStyleResolver::matchPageRules(PageRuleCollector& collector)
 {
     // Only consider the global author RuleSet for @page rules, as per the HTML5 spec.
-    ASSERT(m_scopingNode.isDocumentNode());
+    ASSERT(scopingNode().isDocumentNode());
     for (size_t i = 0; i < m_authorStyleSheets.size(); ++i)
         collector.matchPageRules(&m_authorStyleSheets[i]->contents()->ruleSet());
 }
 
 void ScopedStyleResolver::collectViewportRulesTo(StyleResolver* resolver) const
 {
-    if (!m_scopingNode.isDocumentNode())
+    if (!scopingNode().isDocumentNode())
         return;
     for (size_t i = 0; i < m_authorStyleSheets.size(); ++i)
         resolver->viewportStyleResolver()->collectViewportRules(&m_authorStyleSheets[i]->contents()->ruleSet(), ViewportStyleResolver::AuthorOrigin);

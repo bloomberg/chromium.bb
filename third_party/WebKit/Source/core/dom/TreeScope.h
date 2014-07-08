@@ -95,7 +95,7 @@ public:
     // Used by the basic DOM mutation methods (e.g., appendChild()).
     void adoptIfNeeded(Node&);
 
-    Node& rootNode() const { return *m_rootNode; }
+    ContainerNode& rootNode() const { return *m_rootNode; }
 
     IdTargetObserverRegistry& idTargetObserverRegistry() const { return *m_idTargetObserverRegistry.get(); }
 
@@ -171,7 +171,7 @@ private:
 
     bool rootNodeHasTreeSharedParent() const;
 
-    RawPtrWillBeMember<Node> m_rootNode;
+    RawPtrWillBeMember<ContainerNode> m_rootNode;
     RawPtrWillBeMember<Document> m_document;
     RawPtrWillBeMember<TreeScope> m_parentTreeScope;
 

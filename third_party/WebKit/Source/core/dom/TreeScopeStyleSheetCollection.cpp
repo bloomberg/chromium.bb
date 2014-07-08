@@ -213,7 +213,7 @@ void TreeScopeStyleSheetCollection::resetAllRuleSetsInTreeScope(StyleResolver* s
         for (ListHashSet<Node*, 4>::iterator it = removedNodes->begin(); it != removedNodes->end(); ++it)
             styleResolver->resetAuthorStyle(toContainerNode(*it));
     }
-    styleResolver->resetAuthorStyle(toContainerNode(&m_treeScope.rootNode()));
+    styleResolver->resetAuthorStyle(&m_treeScope.rootNode());
 }
 
 static bool styleSheetsUseRemUnits(const WillBeHeapVector<RefPtrWillBeMember<CSSStyleSheet> >& sheets)

@@ -317,6 +317,11 @@ inline ContainerNode* Node::parentElementOrDocumentFragment() const
     return parent && (parent->isElementNode() || parent->isDocumentFragment()) ? parent : 0;
 }
 
+inline bool Node::isTreeScope() const
+{
+    return &treeScope().rootNode() == this;
+}
+
 inline void getChildNodes(Node& node, NodeVector& nodes)
 {
     ASSERT(!nodes.size());
