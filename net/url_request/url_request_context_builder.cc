@@ -214,7 +214,8 @@ URLRequestContextBuilder::URLRequestContextBuilder()
 #if !defined(DISABLE_FTP_SUPPORT)
       ftp_enabled_(false),
 #endif
-      http_cache_enabled_(true) {
+      http_cache_enabled_(true),
+      throttling_enabled_(false) {
 }
 
 URLRequestContextBuilder::~URLRequestContextBuilder() {}
