@@ -30,7 +30,7 @@ class WebGLConformanceExpectations(test_expectations.TestExpectations):
     self.Fail('conformance/textures/texture-draw-with-2d-and-cube.html',
         bug=391951)
     self.Fail('conformance/renderbuffers/framebuffer-object-attachment.html',
-        ['win', 'linux'], bug=391953)
+        ['win', 'linux', 'android', 'chromeos'], bug=391953)
 
     # Flaky on Win
     self.Fail('conformance/extensions/webgl-draw-buffers.html',
