@@ -257,10 +257,6 @@ SK_API void SkDebugf_FileLine(const char* file, int line, bool fatal,
     #define SK_SUPPORT_LEGACY_BITMAP_CONFIG
 #endif
 
-#ifndef SK_SUPPORT_LEGACY_PIXELREF_UNFLATTENABLE
-    #define SK_SUPPORT_LEGACY_PIXELREF_UNFLATTENABLE
-#endif
-
 // ===== End Chrome-specific definitions =====
 
 #endif
