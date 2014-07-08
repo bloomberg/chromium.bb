@@ -66,6 +66,8 @@ class Dictionary {
     ALLOW_ONLY_INLINE_ALLOCATION();
 public:
     Dictionary();
+    // Creates an empty dictionary
+    explicit Dictionary(v8::Isolate*);
     Dictionary(const v8::Handle<v8::Value>& options, v8::Isolate*);
     ~Dictionary();
 
@@ -107,6 +109,14 @@ public:
     bool get(const String&, v8::Local<v8::Value>&) const;
     bool get(const String&, RefPtr<HeaderMap>&) const;
     bool get(const String&, RefPtr<Headers>&) const;
+
+    // Sets properties using default attributes.
+    bool set(const String&, const v8::Handle<v8::Value>&);
+    bool set(const String&, const String&);
+    bool set(const String&, unsigned);
+    bool set(const String&, const Dictionary&);
+
+    v8::Handle<v8::Value> v8Value() const { return m_options; }
 
     class ConversionContext {
     public:

@@ -65,6 +65,12 @@ Dictionary::Dictionary()
 {
 }
 
+Dictionary::Dictionary(v8::Isolate* isolate)
+    : m_options(v8::Object::New(isolate))
+    , m_isolate(isolate)
+{
+}
+
 Dictionary::Dictionary(const v8::Handle<v8::Value>& options, v8::Isolate* isolate)
     : m_options(options)
     , m_isolate(isolate)
@@ -598,6 +604,31 @@ bool Dictionary::get(const String& key, RefPtr<Headers>& value) const
 
     value = V8Headers::toNativeWithTypeCheck(m_isolate, v8Value);
     return true;
+}
+
+bool Dictionary::set(const String& key, const v8::Handle<v8::Value>& value)
+{
+    if (isUndefinedOrNull())
+        return false;
+    v8::Local<v8::Object> options = m_options->ToObject();
+    ASSERT(!options.IsEmpty());
+
+    return options->Set(v8String(m_isolate, key), value);
+}
+
+bool Dictionary::set(const String& key, const String& value)
+{
+    return set(key, v8String(m_isolate, value));
+}
+
+bool Dictionary::set(const String& key, unsigned value)
+{
+    return set(key, v8::Integer::NewFromUnsigned(m_isolate, value));
+}
+
+bool Dictionary::set(const String& key, const Dictionary& value)
+{
+    return set(key, value.v8Value());
 }
 
 bool Dictionary::convert(ConversionContext& context, const String& key, Dictionary& value) const

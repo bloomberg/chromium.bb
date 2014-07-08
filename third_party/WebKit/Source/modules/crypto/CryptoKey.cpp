@@ -33,9 +33,9 @@
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
-#include "modules/crypto/KeyAlgorithm.h"
 #include "platform/CryptoResult.h"
 #include "public/platform/WebCryptoAlgorithmParams.h"
+#include "public/platform/WebCryptoKeyAlgorithm.h"
 #include "public/platform/WebString.h"
 
 namespace WebCore {
@@ -147,13 +147,6 @@ bool CryptoKey::extractable() const
     return m_key.extractable();
 }
 
-KeyAlgorithm* CryptoKey::algorithm()
-{
-    if (!m_algorithm)
-        m_algorithm = KeyAlgorithm::create(m_key.algorithm());
-    return m_algorithm.get();
-}
-
 // FIXME: This creates a new javascript array each time. What should happen
 //        instead is return the same (immutable) array. (Javascript callers can
 //        distinguish this by doing an == test on the arrays and seeing they are
@@ -220,11 +213,6 @@ bool CryptoKey::parseUsageMask(const Vector<String>& usages, blink::WebCryptoKey
         mask |= usage;
     }
     return true;
-}
-
-void CryptoKey::trace(Visitor* visitor)
-{
-    visitor->trace(m_algorithm);
 }
 
 } // namespace WebCore

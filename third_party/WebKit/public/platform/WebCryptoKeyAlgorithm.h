@@ -85,6 +85,9 @@ public:
     BLINK_PLATFORM_EXPORT WebCryptoHmacKeyAlgorithmParams* hmacParams() const;
     BLINK_PLATFORM_EXPORT WebCryptoRsaHashedKeyAlgorithmParams* rsaHashedParams() const;
 
+    // Write the algorithm parameters to a dictionary.
+    BLINK_PLATFORM_EXPORT void writeToDictionary(WebCryptoKeyAlgorithmDictionary*) const;
+
 private:
     BLINK_PLATFORM_EXPORT void assign(const WebCryptoKeyAlgorithm& other);
     BLINK_PLATFORM_EXPORT void reset();

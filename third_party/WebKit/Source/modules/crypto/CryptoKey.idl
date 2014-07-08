@@ -34,6 +34,6 @@
 ] interface CryptoKey {
     readonly attribute DOMString type;
     readonly attribute boolean extractable;
-    readonly attribute KeyAlgorithm algorithm;
+    [Custom] readonly attribute object algorithm;
     readonly attribute DOMString[] usages;
 };

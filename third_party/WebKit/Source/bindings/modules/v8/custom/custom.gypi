@@ -8,6 +8,7 @@
             'V8AudioNodeCustom.cpp',
             'V8ClientCustom.cpp',
             'V8CryptoCustom.cpp',
+            'V8CryptoKeyCustom.cpp',
             'V8CustomSQLStatementErrorCallback.cpp',
             'V8DeviceMotionEventCustom.cpp',
             'V8DeviceOrientationEventCustom.cpp',

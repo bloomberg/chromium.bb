@@ -37,6 +37,18 @@
 
 namespace blink {
 
+// Interface used for serializing WebCryptoKeyAlgorithmParams to a javascript
+// dictionary.
+class WebCryptoKeyAlgorithmDictionary {
+public:
+    virtual ~WebCryptoKeyAlgorithmDictionary() { }
+
+    virtual void setString(const char*, const char*) = 0;
+    virtual void setUint(const char*, unsigned) = 0;
+    virtual void setAlgorithm(const char*, const WebCryptoAlgorithm&) = 0;
+    virtual void setUint8Array(const char*, const WebVector<unsigned char>&) = 0;
+};
+
 enum WebCryptoKeyAlgorithmParamsType {
     WebCryptoKeyAlgorithmParamsTypeNone,
     WebCryptoKeyAlgorithmParamsTypeHmac,
@@ -51,6 +63,8 @@ public:
     {
         return WebCryptoKeyAlgorithmParamsTypeNone;
     }
+
+    virtual void writeToDictionary(WebCryptoKeyAlgorithmDictionary*) const = 0;
 };
 
 class WebCryptoAesKeyAlgorithmParams : public WebCryptoKeyAlgorithmParams {
@@ -68,6 +82,11 @@ public:
     virtual WebCryptoKeyAlgorithmParamsType type() const
     {
         return WebCryptoKeyAlgorithmParamsTypeAes;
+    }
+
+    virtual void writeToDictionary(WebCryptoKeyAlgorithmDictionary* dict) const
+    {
+        dict->setUint("length", m_lengthBits);
     }
 
 private:
@@ -95,6 +114,12 @@ public:
     virtual WebCryptoKeyAlgorithmParamsType type() const
     {
         return WebCryptoKeyAlgorithmParamsTypeHmac;
+    }
+
+    virtual void writeToDictionary(WebCryptoKeyAlgorithmDictionary* dict) const
+    {
+        dict->setAlgorithm("hash", m_hash);
+        dict->setUint("length", m_lengthBits);
     }
 
 private:
@@ -129,6 +154,13 @@ public:
     virtual WebCryptoKeyAlgorithmParamsType type() const
     {
         return WebCryptoKeyAlgorithmParamsTypeRsaHashed;
+    }
+
+    virtual void writeToDictionary(WebCryptoKeyAlgorithmDictionary* dict) const
+    {
+        dict->setAlgorithm("hash", m_hash);
+        dict->setUint("modulusLength", m_modulusLengthBits);
+        dict->setUint8Array("publicExponent", m_publicExponent);
     }
 
 private:

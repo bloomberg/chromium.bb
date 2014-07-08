@@ -34,7 +34,6 @@
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "modules/crypto/NormalizeAlgorithm.h"
 #include "platform/heap/Handle.h"
-#include "public/platform/WebCryptoAlgorithm.h"
 #include "public/platform/WebCryptoKey.h"
 #include "wtf/Forward.h"
 #include "wtf/text/WTFString.h"
@@ -55,7 +54,6 @@ public:
 
     String type() const;
     bool extractable() const;
-    KeyAlgorithm* algorithm();
     Vector<String> usages() const;
 
     const blink::WebCryptoKey& key() const { return m_key; }
@@ -68,13 +66,12 @@ public:
     static bool parseFormat(const String&, blink::WebCryptoKeyFormat&, CryptoResult*);
     static bool parseUsageMask(const Vector<String>&, blink::WebCryptoKeyUsageMask&, CryptoResult*);
 
-    void trace(Visitor*);
+    void trace(Visitor*) { }
 
 protected:
     explicit CryptoKey(const blink::WebCryptoKey&);
 
     const blink::WebCryptoKey m_key;
-    Member<KeyAlgorithm> m_algorithm;
 };
 
 } // namespace WebCore

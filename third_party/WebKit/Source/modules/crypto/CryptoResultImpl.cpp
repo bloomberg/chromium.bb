@@ -31,6 +31,7 @@
 #include "config.h"
 #include "modules/crypto/CryptoResultImpl.h"
 
+#include "bindings/core/v8/Dictionary.h"
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "bindings/core/v8/ScriptState.h"
 #include "core/dom/ContextLifecycleObserver.h"
@@ -157,16 +158,15 @@ void CryptoResultImpl::completeWithKeyPair(const blink::WebCryptoKey& publicKey,
         ScriptState* scriptState = m_resolver->scriptState();
         ScriptState::Scope scope(scriptState);
 
-        // FIXME: Use Dictionary instead, to limit amount of direct v8 access used from WebCore.
-        v8::Handle<v8::Object> keyPair = v8::Object::New(scriptState->isolate());
+        Dictionary keyPair(scriptState->isolate());
 
         v8::Handle<v8::Value> publicKeyValue = toV8NoInline(CryptoKey::create(publicKey), scriptState->context()->Global(), scriptState->isolate());
         v8::Handle<v8::Value> privateKeyValue = toV8NoInline(CryptoKey::create(privateKey), scriptState->context()->Global(), scriptState->isolate());
 
-        keyPair->Set(v8::String::NewFromUtf8(scriptState->isolate(), "publicKey"), publicKeyValue);
-        keyPair->Set(v8::String::NewFromUtf8(scriptState->isolate(), "privateKey"), privateKeyValue);
+        keyPair.set("publicKey", publicKeyValue);
+        keyPair.set("privateKey", privateKeyValue);
 
-        m_resolver->resolve(v8::Handle<v8::Value>(keyPair));
+        m_resolver->resolve(keyPair.v8Value());
     }
 }
 

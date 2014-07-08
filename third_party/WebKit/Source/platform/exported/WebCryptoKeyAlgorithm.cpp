@@ -131,6 +131,13 @@ WebCryptoRsaHashedKeyAlgorithmParams* WebCryptoKeyAlgorithm::rsaHashedParams() c
     return 0;
 }
 
+void WebCryptoKeyAlgorithm::writeToDictionary(WebCryptoKeyAlgorithmDictionary* dict) const
+{
+    ASSERT(!isNull());
+    dict->setString("name", WebCryptoAlgorithm::lookupAlgorithmInfo(id())->name);
+    m_private->params.get()->writeToDictionary(dict);
+}
+
 void WebCryptoKeyAlgorithm::assign(const WebCryptoKeyAlgorithm& other)
 {
     m_private = other.m_private;
