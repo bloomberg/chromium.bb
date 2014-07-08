@@ -194,8 +194,12 @@ void EphemeralAppService::GarbageCollectApps() {
     GetAppsToRemove(app_count, app_launch_times, &remove_app_ids);
     for (std::set<std::string>::const_iterator id = remove_app_ids.begin();
          id != remove_app_ids.end(); ++id) {
-      if (service->UninstallExtension(*id, false, NULL))
+      if (service->UninstallExtension(
+              *id,
+              ExtensionService::UNINSTALL_REASON_ORPHANED_EPHEMERAL_EXTENSION,
+              NULL)) {
         --app_count;
+      }
     }
   }
 

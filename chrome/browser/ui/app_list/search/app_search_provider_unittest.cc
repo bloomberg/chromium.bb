@@ -84,7 +84,8 @@ TEST_F(AppSearchProviderTest, DisableAndEnable) {
 
 TEST_F(AppSearchProviderTest, Uninstall) {
   EXPECT_EQ("Packaged App 1", RunQuery("pa1"));
-  service_->UninstallExtension(kPackagedApp1Id, false, NULL);
+  service_->UninstallExtension(
+      kPackagedApp1Id, ExtensionService::UNINSTALL_REASON_FOR_TESTING, NULL);
   EXPECT_EQ("", RunQuery("pa1"));
 
   // Let uninstall code to clean up.

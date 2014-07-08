@@ -284,9 +284,10 @@ void ExternalInstallError::InstallUIAbort(bool user_initiated) {
   if (user_initiated && GetExtension()) {
     ExtensionSystem::Get(browser_context_)
         ->extension_service()
-        ->UninstallExtension(extension_id_,
-                             false,  // Not externally uninstalled.
-                             NULL);  // Ignore error.
+        ->UninstallExtension(
+            extension_id_,
+            ExtensionService::UNINSTALL_REASON_INSTALL_CANCELED,
+            NULL);  // Ignore error.
     // Since the manager listens for the extension to be removed, this will
     // remove the error...
   } else {

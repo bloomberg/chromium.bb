@@ -155,10 +155,28 @@ class ExtensionService
       public content::NotificationObserver,
       public extensions::Blacklist::Observer {
  public:
+  enum UninstallReason {
+    UNINSTALL_REASON_FOR_TESTING,         // Used for testing code only
+    UNINSTALL_REASON_USER_INITIATED,      // User performed some UI gesture
+    UNINSTALL_REASON_EXTENSION_DISABLED,  // Extension disabled due to error
+    UNINSTALL_REASON_STORAGE_THRESHOLD_EXCEEDED,
+    UNINSTALL_REASON_INSTALL_CANCELED,
+    UNINSTALL_REASON_MANAGEMENT_API,
+    UNINSTALL_REASON_SYNC,
+    UNINSTALL_REASON_ORPHANED_THEME,
+    UNINSTALL_REASON_ORPHANED_EPHEMERAL_EXTENSION,
+    // The entries below imply bypassing checking user has permission to
+    // uninstall the corresponding extension id.
+    UNINSTALL_REASON_ORPHANED_EXTERNAL_EXTENSION,
+    UNINSTALL_REASON_ORPHANED_SHARED_MODULE,
+    UNINSTALL_REASON_INTERNAL_MANAGEMENT  // Internal extensions (see usages)
+  };
+
   // Attempts to uninstall an extension from a given ExtensionService. Returns
   // true iff the target extension exists.
   static bool UninstallExtensionHelper(ExtensionService* extensions_service,
-                                       const std::string& extension_id);
+                                       const std::string& extension_id,
+                                       UninstallReason reason);
 
   // Constructor stores pointers to |profile| and |extension_prefs| but
   // ownership remains at caller.
@@ -240,14 +258,10 @@ class ExtensionService
   void ReloadExtension(const std::string& extension_id);
 
   // Uninstalls the specified extension. Callers should only call this method
-  // with extensions that exist. |external_uninstall| is a magical parameter
-  // that is only used to send information to ExtensionPrefs, which external
-  // callers should never set to true.
-  //
-  // TODO(aa): Remove |external_uninstall| -- this information should be passed
-  // to ExtensionPrefs some other way.
+  // with extensions that exist. |reason| lets the caller specify why the
+  // extension is uninstalled.
   virtual bool UninstallExtension(const std::string& extension_id,
-                                  bool external_uninstall,
+                                  UninstallReason reason,
                                   base::string16* error);
 
   // Enables the extension.  If the extension is already enabled, does

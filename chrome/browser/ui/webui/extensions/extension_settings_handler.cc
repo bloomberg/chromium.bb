@@ -733,9 +733,10 @@ void ExtensionSettingsHandler::ExtensionUninstallAccepted() {
   if (!extension)
     return;
 
-  extension_service_->UninstallExtension(extension_id_prompting_,
-                                         false,  // External uninstall.
-                                         NULL);  // Error.
+  extension_service_->UninstallExtension(
+      extension_id_prompting_,
+      ExtensionService::UNINSTALL_REASON_USER_INITIATED,
+      NULL);  // Error.
   extension_id_prompting_ = "";
 
   // There will be no EXTENSION_UNLOADED notification for terminated

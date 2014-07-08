@@ -42,9 +42,8 @@ void ExtensionUninstaller::ExtensionUninstallAccepted() {
   const extensions::Extension* extension =
       service->GetInstalledExtension(app_id_);
   if (extension) {
-    service->UninstallExtension(app_id_,
-                                false, /* external_uninstall*/
-                                NULL);
+    service->UninstallExtension(
+        app_id_, ExtensionService::UNINSTALL_REASON_USER_INITIATED, NULL);
   }
   controller_->OnCloseChildDialog();
   CleanUp();

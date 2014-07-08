@@ -131,7 +131,7 @@ TEST_F(SharedModuleServiceUnitTest, PruneSharedModulesOnUninstall) {
   // Uninstall the extension that imports our module.
   base::string16 error;
   service_->UninstallExtension(importing_extension->id(),
-                               false,  // Not external uninstall.
+                               ExtensionService::UNINSTALL_REASON_FOR_TESTING,
                                &error);
   EXPECT_TRUE(error.empty());
 

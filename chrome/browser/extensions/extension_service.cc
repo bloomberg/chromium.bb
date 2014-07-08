@@ -168,7 +168,7 @@ void ExtensionService::CheckExternalUninstall(const std::string& id) {
                  << "with id: " << id;
     return;
   }
-  UninstallExtension(id, true, NULL);
+  UninstallExtension(id, UNINSTALL_REASON_ORPHANED_EXTERNAL_EXTENSION, NULL);
 }
 
 void ExtensionService::SetFileTaskRunnerForTesting(
@@ -231,13 +231,13 @@ bool ExtensionService::OnExternalExtensionUpdateUrlFound(
 }
 
 // static
-// This function is used to implement the command-line switch
-// --uninstall-extension, and to uninstall an extension via sync.  The LOG
-// statements within this function are used to inform the user if the uninstall
-// cannot be done.
+// This function is used to uninstall an extension via sync.  The LOG statements
+// within this function are used to inform the user if the uninstall cannot be
+// done.
 bool ExtensionService::UninstallExtensionHelper(
     ExtensionService* extensions_service,
-    const std::string& extension_id) {
+    const std::string& extension_id,
+    UninstallReason reason) {
   // We can't call UninstallExtension with an invalid extension ID.
   if (!extensions_service->GetInstalledExtension(extension_id)) {
     LOG(WARNING) << "Attempted uninstallation of non-existent extension with "
@@ -248,7 +248,7 @@ bool ExtensionService::UninstallExtensionHelper(
   // The following call to UninstallExtension will not allow an uninstall of a
   // policy-controlled extension.
   base::string16 error;
-  if (!extensions_service->UninstallExtension(extension_id, false, &error)) {
+  if (!extensions_service->UninstallExtension(extension_id, reason, &error)) {
     LOG(WARNING) << "Cannot uninstall extension with id " << extension_id
                  << ": " << error;
     return false;
@@ -694,7 +694,7 @@ bool ExtensionService::UninstallExtension(
     // "transient" because the process of uninstalling may cause the reference
     // to become invalid. Instead, use |extenson->id()|.
     const std::string& transient_extension_id,
-    bool external_uninstall,
+    UninstallReason reason,
     base::string16* error) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -713,6 +713,10 @@ bool ExtensionService::UninstallExtension(
   // TODO(rdevlin.cronin): This is probably not right. We should do something
   // else, like include an enum IS_INTERNAL_UNINSTALL or IS_USER_UNINSTALL so
   // we don't do this.
+  bool external_uninstall =
+      (reason == UNINSTALL_REASON_INTERNAL_MANAGEMENT) ||
+      (reason == UNINSTALL_REASON_ORPHANED_EXTERNAL_EXTENSION) ||
+      (reason == UNINSTALL_REASON_ORPHANED_SHARED_MODULE);
   if (!external_uninstall &&
       !system_->management_policy()->UserMayModifySettings(
         extension.get(), error)) {

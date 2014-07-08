@@ -82,7 +82,8 @@ void SyncExtensionHelper::UninstallExtension(
     Profile* profile, const std::string& name) {
   ExtensionService::UninstallExtensionHelper(
       extensions::ExtensionSystem::Get(profile)->extension_service(),
-      extensions::id_util::GenerateId(name));
+      extensions::id_util::GenerateId(name),
+      ExtensionService::UNINSTALL_REASON_SYNC);
 }
 
 std::vector<std::string> SyncExtensionHelper::GetInstalledExtensionNames(

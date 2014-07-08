@@ -647,10 +647,10 @@ void ManagementUninstallFunctionBase::Finish(bool should_uninstall) {
                                               extension_id_);
       SendResponse(false);
     } else {
-      bool success =
-          service()->UninstallExtension(extension_id_,
-                                        false, /* external uninstall */
-                                        NULL);
+      bool success = service()->UninstallExtension(
+          extension_id_,
+          ExtensionService::UNINSTALL_REASON_MANAGEMENT_API,
+          NULL);
 
       // TODO set error_ if !success
       SendResponse(success);
