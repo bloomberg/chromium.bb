@@ -205,47 +205,46 @@ protected:
     struct NonInheritedFlags {
         bool operator==(const NonInheritedFlags& other) const
         {
-            return _effectiveDisplay == other._effectiveDisplay
-                && _originalDisplay == other._originalDisplay
-                && _overflowX == other._overflowX
-                && _overflowY == other._overflowY
-                && _vertical_align == other._vertical_align
-                && _clear == other._clear
-                && _position == other._position
-                && _floating == other._floating
-                && _table_layout == other._table_layout
-                && _page_break_before == other._page_break_before
-                && _page_break_after == other._page_break_after
-                && _page_break_inside == other._page_break_inside
-                && _styleType == other._styleType
-                && _affectedByFocus == other._affectedByFocus
-                && _affectedByHover == other._affectedByHover
-                && _affectedByActive == other._affectedByActive
-                && _affectedByDrag == other._affectedByDrag
-                && _pseudoBits == other._pseudoBits
-                && _unicodeBidi == other._unicodeBidi
+            return effectiveDisplay == other.effectiveDisplay
+                && originalDisplay == other.originalDisplay
+                && overflowX == other.overflowX
+                && overflowY == other.overflowY
+                && verticalAlign == other.verticalAlign
+                && clear == other.clear
+                && position == other.position
+                && floating == other.floating
+                && tableLayout == other.tableLayout
+                && pageBreakBefore == other.pageBreakBefore
+                && pageBreakAfter == other.pageBreakAfter
+                && pageBreakInside == other.pageBreakInside
+                && styleType == other.styleType
+                && affectedByFocus == other.affectedByFocus
+                && affectedByHover == other.affectedByHover
+                && affectedByActive == other.affectedByActive
+                && affectedByDrag == other.affectedByDrag
+                && pseudoBits == other.pseudoBits
+                && unicodeBidi == other.unicodeBidi
                 && explicitInheritance == other.explicitInheritance
                 && currentColor == other.currentColor
                 && unique == other.unique
                 && emptyState == other.emptyState
                 && firstChildState == other.firstChildState
                 && lastChildState == other.lastChildState
-                && _isLink == other._isLink;
+                && isLink == other.isLink;
         }
 
         bool operator!=(const NonInheritedFlags& other) const { return !(*this == other); }
 
-        unsigned _effectiveDisplay : 5; // EDisplay
-        unsigned _originalDisplay : 5; // EDisplay
-        unsigned _overflowX : 3; // EOverflow
-        unsigned _overflowY : 3; // EOverflow
-        unsigned _vertical_align : 4; // EVerticalAlign
-        unsigned _clear : 2; // EClear
-        unsigned _position : 3; // EPosition
-        unsigned _floating : 2; // EFloat
-        unsigned _table_layout : 1; // ETableLayout
-
-        unsigned _unicodeBidi : 3; // EUnicodeBidi
+        unsigned effectiveDisplay : 5; // EDisplay
+        unsigned originalDisplay : 5; // EDisplay
+        unsigned overflowX : 3; // EOverflow
+        unsigned overflowY : 3; // EOverflow
+        unsigned verticalAlign : 4; // EVerticalAlign
+        unsigned clear : 2; // EClear
+        unsigned position : 3; // EPosition
+        unsigned floating : 2; // EFloat
+        unsigned tableLayout : 1; // ETableLayout
+        unsigned unicodeBidi : 3; // EUnicodeBidi
 
         // This is set if we used viewport units when resolving a length.
         // It is mutable so we can pass around const RenderStyles to resolve lengths.
@@ -253,35 +252,26 @@ protected:
 
         // 32 bits
 
-        unsigned _page_break_before : 2; // EPageBreak
-        unsigned _page_break_after : 2; // EPageBreak
-        unsigned _page_break_inside : 2; // EPageBreak
+        unsigned pageBreakBefore : 2; // EPageBreak
+        unsigned pageBreakAfter : 2; // EPageBreak
+        unsigned pageBreakInside : 2; // EPageBreak
 
-        unsigned _styleType : 6; // PseudoId
-        unsigned _pseudoBits : 8;
+        unsigned styleType : 6; // PseudoId
+        unsigned pseudoBits : 8;
         unsigned explicitInheritance : 1; // Explicitly inherits a non-inherited property
         unsigned currentColor : 1; // At least one color has the value 'currentColor'
         unsigned unique : 1; // Style can not be shared.
+
         unsigned emptyState : 1;
         unsigned firstChildState : 1;
         unsigned lastChildState : 1;
 
-        bool affectedByFocus() const { return _affectedByFocus; }
-        void setAffectedByFocus(bool value) { _affectedByFocus = value; }
-        bool affectedByHover() const { return _affectedByHover; }
-        void setAffectedByHover(bool value) { _affectedByHover = value; }
-        bool affectedByActive() const { return _affectedByActive; }
-        void setAffectedByActive(bool value) { _affectedByActive = value; }
-        bool affectedByDrag() const { return _affectedByDrag; }
-        void setAffectedByDrag(bool value) { _affectedByDrag = value; }
-        bool isLink() const { return _isLink; }
-        void setIsLink(bool value) { _isLink = value; }
-    private:
-        unsigned _affectedByFocus : 1;
-        unsigned _affectedByHover : 1;
-        unsigned _affectedByActive : 1;
-        unsigned _affectedByDrag : 1;
-        unsigned _isLink : 1;
+        unsigned affectedByFocus : 1;
+        unsigned affectedByHover : 1;
+        unsigned affectedByActive : 1;
+        unsigned affectedByDrag : 1;
+
+        unsigned isLink : 1;
         // If you add more style bits here, you will also need to update RenderStyle::copyNonInheritedFrom()
         // 63 bits
     } noninherited_flags;
@@ -310,20 +300,20 @@ protected:
         inherited_flags._insideLink = NotInsideLink;
         inherited_flags.m_writingMode = initialWritingMode();
 
-        noninherited_flags._effectiveDisplay = noninherited_flags._originalDisplay = initialDisplay();
-        noninherited_flags._overflowX = initialOverflowX();
-        noninherited_flags._overflowY = initialOverflowY();
-        noninherited_flags._vertical_align = initialVerticalAlign();
-        noninherited_flags._clear = initialClear();
-        noninherited_flags._position = initialPosition();
-        noninherited_flags._floating = initialFloating();
-        noninherited_flags._table_layout = initialTableLayout();
-        noninherited_flags._unicodeBidi = initialUnicodeBidi();
-        noninherited_flags._page_break_before = initialPageBreak();
-        noninherited_flags._page_break_after = initialPageBreak();
-        noninherited_flags._page_break_inside = initialPageBreak();
-        noninherited_flags._styleType = NOPSEUDO;
-        noninherited_flags._pseudoBits = 0;
+        noninherited_flags.effectiveDisplay = noninherited_flags.originalDisplay = initialDisplay();
+        noninherited_flags.overflowX = initialOverflowX();
+        noninherited_flags.overflowY = initialOverflowY();
+        noninherited_flags.verticalAlign = initialVerticalAlign();
+        noninherited_flags.clear = initialClear();
+        noninherited_flags.position = initialPosition();
+        noninherited_flags.floating = initialFloating();
+        noninherited_flags.tableLayout = initialTableLayout();
+        noninherited_flags.unicodeBidi = initialUnicodeBidi();
+        noninherited_flags.pageBreakBefore = initialPageBreak();
+        noninherited_flags.pageBreakAfter = initialPageBreak();
+        noninherited_flags.pageBreakInside = initialPageBreak();
+        noninherited_flags.styleType = NOPSEUDO;
+        noninherited_flags.pseudoBits = 0;
         noninherited_flags.explicitInheritance = false;
         noninherited_flags.currentColor = false;
         noninherited_flags.unique = false;
@@ -331,11 +321,11 @@ protected:
         noninherited_flags.firstChildState = false;
         noninherited_flags.lastChildState = false;
         noninherited_flags.hasViewportUnits = false;
-        noninherited_flags.setAffectedByFocus(false);
-        noninherited_flags.setAffectedByHover(false);
-        noninherited_flags.setAffectedByActive(false);
-        noninherited_flags.setAffectedByDrag(false);
-        noninherited_flags.setIsLink(false);
+        noninherited_flags.affectedByFocus = false;
+        noninherited_flags.affectedByHover = false;
+        noninherited_flags.affectedByActive = false;
+        noninherited_flags.affectedByDrag = false;
+        noninherited_flags.isLink = false;
     }
 
 private:
@@ -366,8 +356,8 @@ public:
     void inheritFrom(const RenderStyle* inheritParent, IsAtShadowBoundary = NotAtShadowBoundary);
     void copyNonInheritedFrom(const RenderStyle*);
 
-    PseudoId styleType() const { return static_cast<PseudoId>(noninherited_flags._styleType); }
-    void setStyleType(PseudoId styleType) { noninherited_flags._styleType = styleType; }
+    PseudoId styleType() const { return static_cast<PseudoId>(noninherited_flags.styleType); }
+    void setStyleType(PseudoId styleType) { noninherited_flags.styleType = styleType; }
 
     RenderStyle* getCachedPseudoStyle(PseudoId) const;
     RenderStyle* addCachedPseudoStyle(PassRefPtr<RenderStyle>);
@@ -378,19 +368,19 @@ public:
     void setHasViewportUnits(bool hasViewportUnits = true) const { noninherited_flags.hasViewportUnits = hasViewportUnits; }
     bool hasViewportUnits() const { return noninherited_flags.hasViewportUnits; }
 
-    bool affectedByFocus() const { return noninherited_flags.affectedByFocus(); }
-    bool affectedByHover() const { return noninherited_flags.affectedByHover(); }
-    bool affectedByActive() const { return noninherited_flags.affectedByActive(); }
-    bool affectedByDrag() const { return noninherited_flags.affectedByDrag(); }
+    bool affectedByFocus() const { return noninherited_flags.affectedByFocus; }
+    bool affectedByHover() const { return noninherited_flags.affectedByHover; }
+    bool affectedByActive() const { return noninherited_flags.affectedByActive; }
+    bool affectedByDrag() const { return noninherited_flags.affectedByDrag; }
 
-    void setAffectedByFocus() { noninherited_flags.setAffectedByFocus(true); }
-    void setAffectedByHover() { noninherited_flags.setAffectedByHover(true); }
-    void setAffectedByActive() { noninherited_flags.setAffectedByActive(true); }
-    void setAffectedByDrag() { noninherited_flags.setAffectedByDrag(true); }
+    void setAffectedByFocus() { noninherited_flags.affectedByFocus = true; }
+    void setAffectedByHover() { noninherited_flags.affectedByHover = true; }
+    void setAffectedByActive() { noninherited_flags.affectedByActive = true; }
+    void setAffectedByDrag() { noninherited_flags.affectedByDrag = true; }
 
     bool operator==(const RenderStyle& other) const;
     bool operator!=(const RenderStyle& other) const { return !(*this == other); }
-    bool isFloating() const { return noninherited_flags._floating != NoFloat; }
+    bool isFloating() const { return noninherited_flags.floating != NoFloat; }
     bool hasMargin() const { return surround->margin.nonZero(); }
     bool hasBorder() const { return surround->border.hasBorder(); }
     bool hasPadding() const { return surround->padding.nonZero(); }
@@ -444,8 +434,8 @@ public:
 
     // attribute getter methods
 
-    EDisplay display() const { return static_cast<EDisplay>(noninherited_flags._effectiveDisplay); }
-    EDisplay originalDisplay() const { return static_cast<EDisplay>(noninherited_flags._originalDisplay); }
+    EDisplay display() const { return static_cast<EDisplay>(noninherited_flags.effectiveDisplay); }
+    EDisplay originalDisplay() const { return static_cast<EDisplay>(noninherited_flags.originalDisplay); }
 
     const Length& left() const { return surround->offset.left(); }
     const Length& right() const { return surround->offset.right(); }
@@ -465,11 +455,11 @@ public:
     bool hasStaticInlinePosition(bool horizontal) const { return horizontal ? hasAutoLeftAndRight() : hasAutoTopAndBottom(); }
     bool hasStaticBlockPosition(bool horizontal) const { return horizontal ? hasAutoTopAndBottom() : hasAutoLeftAndRight(); }
 
-    EPosition position() const { return static_cast<EPosition>(noninherited_flags._position); }
+    EPosition position() const { return static_cast<EPosition>(noninherited_flags.position); }
     bool hasOutOfFlowPosition() const { return position() == AbsolutePosition || position() == FixedPosition; }
     bool hasInFlowPosition() const { return position() == RelativePosition; }
     bool hasViewportConstrainedPosition() const { return position() == FixedPosition; }
-    EFloat floating() const { return static_cast<EFloat>(noninherited_flags._floating); }
+    EFloat floating() const { return static_cast<EFloat>(noninherited_flags.floating); }
 
     const Length& width() const { return m_box->width(); }
     const Length& height() const { return m_box->height(); }
@@ -537,14 +527,14 @@ public:
     EBorderStyle outlineStyle() const { return m_background->outline().style(); }
     OutlineIsAuto outlineStyleIsAuto() const { return static_cast<OutlineIsAuto>(m_background->outline().isAuto()); }
 
-    EOverflow overflowX() const { return static_cast<EOverflow>(noninherited_flags._overflowX); }
-    EOverflow overflowY() const { return static_cast<EOverflow>(noninherited_flags._overflowY); }
+    EOverflow overflowX() const { return static_cast<EOverflow>(noninherited_flags.overflowX); }
+    EOverflow overflowY() const { return static_cast<EOverflow>(noninherited_flags.overflowY); }
     // It's sufficient to just check one direction, since it's illegal to have visible on only one overflow value.
     bool isOverflowVisible() const { ASSERT(overflowX() != OVISIBLE || overflowX() == overflowY()); return overflowX() == OVISIBLE; }
     bool isOverflowPaged() const { return overflowY() == OPAGEDX || overflowY() == OPAGEDY; }
 
     EVisibility visibility() const { return static_cast<EVisibility>(inherited_flags._visibility); }
-    EVerticalAlign verticalAlign() const { return static_cast<EVerticalAlign>(noninherited_flags._vertical_align); }
+    EVerticalAlign verticalAlign() const { return static_cast<EVerticalAlign>(noninherited_flags.verticalAlign); }
     const Length& verticalAlignLength() const { return m_box->verticalAlign(); }
 
     const Length& clipLeft() const { return visual->clip.left(); }
@@ -554,10 +544,10 @@ public:
     const LengthBox& clip() const { return visual->clip; }
     bool hasClip() const { return visual->hasClip; }
 
-    EUnicodeBidi unicodeBidi() const { return static_cast<EUnicodeBidi>(noninherited_flags._unicodeBidi); }
+    EUnicodeBidi unicodeBidi() const { return static_cast<EUnicodeBidi>(noninherited_flags.unicodeBidi); }
 
-    EClear clear() const { return static_cast<EClear>(noninherited_flags._clear); }
-    ETableLayout tableLayout() const { return static_cast<ETableLayout>(noninherited_flags._table_layout); }
+    EClear clear() const { return static_cast<EClear>(noninherited_flags.clear); }
+    ETableLayout tableLayout() const { return static_cast<ETableLayout>(noninherited_flags.tableLayout); }
     bool isFixedTableLayout() const { return tableLayout() == TFIXED && !logicalWidth().isAuto(); }
 
     const Font& font() const;
@@ -721,15 +711,15 @@ public:
     CursorList* cursors() const { return rareInheritedData->cursorData.get(); }
 
     EInsideLink insideLink() const { return static_cast<EInsideLink>(inherited_flags._insideLink); }
-    bool isLink() const { return noninherited_flags.isLink(); }
+    bool isLink() const { return noninherited_flags.isLink; }
 
     short widows() const { return rareInheritedData->widows; }
     short orphans() const { return rareInheritedData->orphans; }
     bool hasAutoWidows() const { return rareInheritedData->m_hasAutoWidows; }
     bool hasAutoOrphans() const { return rareInheritedData->m_hasAutoOrphans; }
-    EPageBreak pageBreakInside() const { return static_cast<EPageBreak>(noninherited_flags._page_break_inside); }
-    EPageBreak pageBreakBefore() const { return static_cast<EPageBreak>(noninherited_flags._page_break_before); }
-    EPageBreak pageBreakAfter() const { return static_cast<EPageBreak>(noninherited_flags._page_break_after); }
+    EPageBreak pageBreakInside() const { return static_cast<EPageBreak>(noninherited_flags.pageBreakInside); }
+    EPageBreak pageBreakBefore() const { return static_cast<EPageBreak>(noninherited_flags.pageBreakBefore); }
+    EPageBreak pageBreakAfter() const { return static_cast<EPageBreak>(noninherited_flags.pageBreakAfter); }
 
     // CSS3 Getter Methods
 
@@ -980,10 +970,10 @@ public:
 
 // attribute setter methods
 
-    void setDisplay(EDisplay v) { noninherited_flags._effectiveDisplay = v; }
-    void setOriginalDisplay(EDisplay v) { noninherited_flags._originalDisplay = v; }
-    void setPosition(EPosition v) { noninherited_flags._position = v; }
-    void setFloating(EFloat v) { noninherited_flags._floating = v; }
+    void setDisplay(EDisplay v) { noninherited_flags.effectiveDisplay = v; }
+    void setOriginalDisplay(EDisplay v) { noninherited_flags.originalDisplay = v; }
+    void setPosition(EPosition v) { noninherited_flags.position = v; }
+    void setFloating(EFloat v) { noninherited_flags.floating = v; }
 
     void setLeft(const Length& v) { SET_VAR(surround, offset.m_left, v); }
     void setRight(const Length& v) { SET_VAR(surround, offset.m_right, v); }
@@ -1095,10 +1085,10 @@ public:
     void setOutlineStyle(EBorderStyle v) { SET_VAR(m_background, m_outline.m_style, v); }
     void setOutlineColor(const StyleColor& v) { SET_BORDERVALUE_COLOR(m_background, m_outline, v); }
 
-    void setOverflowX(EOverflow v) { noninherited_flags._overflowX = v; }
-    void setOverflowY(EOverflow v) { noninherited_flags._overflowY = v; }
+    void setOverflowX(EOverflow v) { noninherited_flags.overflowX = v; }
+    void setOverflowY(EOverflow v) { noninherited_flags.overflowY = v; }
     void setVisibility(EVisibility v) { inherited_flags._visibility = v; }
-    void setVerticalAlign(EVerticalAlign v) { noninherited_flags._vertical_align = v; }
+    void setVerticalAlign(EVerticalAlign v) { noninherited_flags.verticalAlign = v; }
     void setVerticalAlignLength(const Length& length) { setVerticalAlign(LENGTH); SET_VAR(m_box, m_verticalAlign, length); }
 
     void setHasClip(bool b = true) { SET_VAR(visual, hasClip, b); }
@@ -1109,10 +1099,10 @@ public:
     void setClip(const Length& top, const Length& right, const Length& bottom, const Length& left);
     void setClip(const LengthBox& box) { SET_VAR(visual, clip, box); }
 
-    void setUnicodeBidi(EUnicodeBidi b) { noninherited_flags._unicodeBidi = b; }
+    void setUnicodeBidi(EUnicodeBidi b) { noninherited_flags.unicodeBidi = b; }
 
-    void setClear(EClear v) { noninherited_flags._clear = v; }
-    void setTableLayout(ETableLayout v) { noninherited_flags._table_layout = v; }
+    void setClear(EClear v) { noninherited_flags.clear = v; }
+    void setTableLayout(ETableLayout v) { noninherited_flags.tableLayout = v; }
 
     bool setFontDescription(const FontDescription&);
     // Only used for blending font sizes when animating and for text autosizing.
@@ -1225,7 +1215,7 @@ public:
     void clearCursorList();
 
     void setInsideLink(EInsideLink insideLink) { inherited_flags._insideLink = insideLink; }
-    void setIsLink(bool b) { noninherited_flags.setIsLink(b); }
+    void setIsLink(bool b) { noninherited_flags.isLink = b; }
 
     PrintColorAdjust printColorAdjust() const { return static_cast<PrintColorAdjust>(inherited_flags.m_printColorAdjust); }
     void setPrintColorAdjust(PrintColorAdjust value) { inherited_flags.m_printColorAdjust = value; }
@@ -1242,9 +1232,9 @@ public:
     void setOrphans(short o) { SET_VAR(rareInheritedData, m_hasAutoOrphans, false); SET_VAR(rareInheritedData, orphans, o); }
 
     // For valid values of page-break-inside see http://www.w3.org/TR/CSS21/page.html#page-break-props
-    void setPageBreakInside(EPageBreak b) { ASSERT(b == PBAUTO || b == PBAVOID); noninherited_flags._page_break_inside = b; }
-    void setPageBreakBefore(EPageBreak b) { noninherited_flags._page_break_before = b; }
-    void setPageBreakAfter(EPageBreak b) { noninherited_flags._page_break_after = b; }
+    void setPageBreakInside(EPageBreak b) { ASSERT(b == PBAUTO || b == PBAVOID); noninherited_flags.pageBreakInside = b; }
+    void setPageBreakBefore(EPageBreak b) { noninherited_flags.pageBreakBefore = b; }
+    void setPageBreakAfter(EPageBreak b) { noninherited_flags.pageBreakAfter = b; }
 
     // CSS3 Setters
     void setOutlineOffset(int v) { SET_VAR(m_background, m_outline.m_offset, v); }
@@ -1744,7 +1734,7 @@ private:
     void setVisitedLinkTextFillColor(const StyleColor& v) { SET_VAR_WITH_SETTER(rareInheritedData, visitedLinkTextFillColor, setVisitedLinkTextFillColor, v); }
     void setVisitedLinkTextStrokeColor(const StyleColor& v) { SET_VAR_WITH_SETTER(rareInheritedData, visitedLinkTextStrokeColor, setVisitedLinkTextStrokeColor, v); }
 
-    void inheritUnicodeBidiFrom(const RenderStyle* parent) { noninherited_flags._unicodeBidi = parent->noninherited_flags._unicodeBidi; }
+    void inheritUnicodeBidiFrom(const RenderStyle* parent) { noninherited_flags.unicodeBidi = parent->noninherited_flags.unicodeBidi; }
     void getShadowExtent(const ShadowList*, LayoutUnit& top, LayoutUnit& right, LayoutUnit& bottom, LayoutUnit& left) const;
     LayoutBoxExtent getShadowInsetExtent(const ShadowList*) const;
     void getShadowHorizontalExtent(const ShadowList*, LayoutUnit& left, LayoutUnit& right) const;
@@ -1897,26 +1887,26 @@ inline bool RenderStyle::setTextOrientation(TextOrientation textOrientation)
 
 inline bool RenderStyle::hasAnyPublicPseudoStyles() const
 {
-    return PUBLIC_PSEUDOID_MASK & noninherited_flags._pseudoBits;
+    return PUBLIC_PSEUDOID_MASK & noninherited_flags.pseudoBits;
 }
 
 inline bool RenderStyle::hasPseudoStyle(PseudoId pseudo) const
 {
     ASSERT(pseudo > NOPSEUDO);
     ASSERT(pseudo < FIRST_INTERNAL_PSEUDOID);
-    return (1 << (pseudo - 1)) & noninherited_flags._pseudoBits;
+    return (1 << (pseudo - 1)) & noninherited_flags.pseudoBits;
 }
 
 inline void RenderStyle::setHasPseudoStyle(PseudoId pseudo)
 {
     ASSERT(pseudo > NOPSEUDO);
     ASSERT(pseudo < FIRST_INTERNAL_PSEUDOID);
-    noninherited_flags._pseudoBits |= 1 << (pseudo - 1);
+    noninherited_flags.pseudoBits |= 1 << (pseudo - 1);
 }
 
 inline bool RenderStyle::hasPseudoElementStyle() const
 {
-    return noninherited_flags._pseudoBits & PSEUDO_ELEMENT_MASK;
+    return noninherited_flags.pseudoBits & PSEUDO_ELEMENT_MASK;
 }
 
 float calcBorderRadiiConstraintScaleFor(const FloatRect&, const FloatRoundedRect::Radii&);

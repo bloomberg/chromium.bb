@@ -216,19 +216,19 @@ void RenderStyle::copyNonInheritedFrom(const RenderStyle* other)
     surround = other->surround;
     rareNonInheritedData = other->rareNonInheritedData;
     // The flags are copied one-by-one because noninherited_flags contains a bunch of stuff other than real style data.
-    noninherited_flags._effectiveDisplay = other->noninherited_flags._effectiveDisplay;
-    noninherited_flags._originalDisplay = other->noninherited_flags._originalDisplay;
-    noninherited_flags._overflowX = other->noninherited_flags._overflowX;
-    noninherited_flags._overflowY = other->noninherited_flags._overflowY;
-    noninherited_flags._vertical_align = other->noninherited_flags._vertical_align;
-    noninherited_flags._clear = other->noninherited_flags._clear;
-    noninherited_flags._position = other->noninherited_flags._position;
-    noninherited_flags._floating = other->noninherited_flags._floating;
-    noninherited_flags._table_layout = other->noninherited_flags._table_layout;
-    noninherited_flags._unicodeBidi = other->noninherited_flags._unicodeBidi;
-    noninherited_flags._page_break_before = other->noninherited_flags._page_break_before;
-    noninherited_flags._page_break_after = other->noninherited_flags._page_break_after;
-    noninherited_flags._page_break_inside = other->noninherited_flags._page_break_inside;
+    noninherited_flags.effectiveDisplay = other->noninherited_flags.effectiveDisplay;
+    noninherited_flags.originalDisplay = other->noninherited_flags.originalDisplay;
+    noninherited_flags.overflowX = other->noninherited_flags.overflowX;
+    noninherited_flags.overflowY = other->noninherited_flags.overflowY;
+    noninherited_flags.verticalAlign = other->noninherited_flags.verticalAlign;
+    noninherited_flags.clear = other->noninherited_flags.clear;
+    noninherited_flags.position = other->noninherited_flags.position;
+    noninherited_flags.floating = other->noninherited_flags.floating;
+    noninherited_flags.tableLayout = other->noninherited_flags.tableLayout;
+    noninherited_flags.unicodeBidi = other->noninherited_flags.unicodeBidi;
+    noninherited_flags.pageBreakBefore = other->noninherited_flags.pageBreakBefore;
+    noninherited_flags.pageBreakAfter = other->noninherited_flags.pageBreakAfter;
+    noninherited_flags.pageBreakInside = other->noninherited_flags.pageBreakInside;
     noninherited_flags.explicitInheritance = other->noninherited_flags.explicitInheritance;
     noninherited_flags.currentColor = other->noninherited_flags.currentColor;
     noninherited_flags.hasViewportUnits = other->noninherited_flags.hasViewportUnits;
@@ -539,20 +539,20 @@ bool RenderStyle::diffNeedsFullLayoutAndRepaint(const RenderStyle& other) const
         || inherited_flags.m_writingMode != other.inherited_flags.m_writingMode)
         return true;
 
-    if (noninherited_flags._overflowX != other.noninherited_flags._overflowX
-        || noninherited_flags._overflowY != other.noninherited_flags._overflowY
-        || noninherited_flags._clear != other.noninherited_flags._clear
-        || noninherited_flags._unicodeBidi != other.noninherited_flags._unicodeBidi
-        || noninherited_flags._position != other.noninherited_flags._position
-        || noninherited_flags._floating != other.noninherited_flags._floating
-        || noninherited_flags._originalDisplay != other.noninherited_flags._originalDisplay)
+    if (noninherited_flags.overflowX != other.noninherited_flags.overflowX
+        || noninherited_flags.overflowY != other.noninherited_flags.overflowY
+        || noninherited_flags.clear != other.noninherited_flags.clear
+        || noninherited_flags.unicodeBidi != other.noninherited_flags.unicodeBidi
+        || noninherited_flags.position != other.noninherited_flags.position
+        || noninherited_flags.floating != other.noninherited_flags.floating
+        || noninherited_flags.originalDisplay != other.noninherited_flags.originalDisplay)
         return true;
 
-    if (noninherited_flags._effectiveDisplay >= FIRST_TABLE_DISPLAY && noninherited_flags._effectiveDisplay <= LAST_TABLE_DISPLAY) {
+    if (noninherited_flags.effectiveDisplay >= FIRST_TABLE_DISPLAY && noninherited_flags.effectiveDisplay <= LAST_TABLE_DISPLAY) {
         if (inherited_flags._border_collapse != other.inherited_flags._border_collapse
             || inherited_flags._empty_cells != other.inherited_flags._empty_cells
             || inherited_flags._caption_side != other.inherited_flags._caption_side
-            || noninherited_flags._table_layout != other.noninherited_flags._table_layout)
+            || noninherited_flags.tableLayout != other.noninherited_flags.tableLayout)
             return true;
 
         // In the collapsing border model, 'hidden' suppresses other borders, while 'none'
@@ -567,7 +567,7 @@ bool RenderStyle::diffNeedsFullLayoutAndRepaint(const RenderStyle& other) const
                 || (borderRightStyle() == BHIDDEN && other.borderRightStyle() == BNONE)
                 || (borderRightStyle() == BNONE && other.borderRightStyle() == BHIDDEN)))
             return true;
-    } else if (noninherited_flags._effectiveDisplay == LIST_ITEM) {
+    } else if (noninherited_flags.effectiveDisplay == LIST_ITEM) {
         if (inherited_flags._list_style_type != other.inherited_flags._list_style_type
             || inherited_flags._list_style_position != other.inherited_flags._list_style_position)
             return true;
@@ -604,7 +604,7 @@ bool RenderStyle::diffNeedsFullLayout(const RenderStyle& other) const
             return true;
     }
 
-    if (noninherited_flags._vertical_align != other.noninherited_flags._vertical_align)
+    if (noninherited_flags.verticalAlign != other.noninherited_flags.verticalAlign)
         return true;
 
     if (surround.get() != other.surround.get()) {
