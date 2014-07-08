@@ -1,3 +1,6 @@
+crbug.com/391036 fast/repaint/create-layer-repaint.html [ NeedsRebaseline ]
+crbug.com/391036 fast/repaint/positioned-document-element.html [ NeedsRebaseline ]
+crbug.com/391036 fast/repaint/bugzilla-6473.html [ NeedsRebaseline ]
 
 crbug.com/391391 [ XP ] http/tests/xmlhttprequest/access-control-basic-get-fail-non-simple.html [ Pass Failure ]
 

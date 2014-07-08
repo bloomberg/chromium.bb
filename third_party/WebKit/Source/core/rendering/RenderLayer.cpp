@@ -1346,6 +1346,7 @@ void RenderLayer::removeOnlyThisLayer()
         return;
 
     m_clipper.clearClipRectsIncludingDescendants();
+    repainter().repaintIncludingNonCompositingDescendants();
 
     RenderLayer* nextSib = nextSibling();
 

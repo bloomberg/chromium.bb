@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<div id="target" style="width: 100px; height: 100px; background: lightblue"></div>
+<script src="../../resources/run-after-display.js"></script>
+<script>
+if (testRunner) {
+    testRunner.dumpAsText();
+    testRunner.waitUntilDone();
+}
+
+runAfterDisplay(function() {
+    if (internals)
+        window.internals.startTrackingRepaints(document);
+
+    document.getElementById('target').style.opacity = 0.5;
+
+    if (testRunner)
+        testRunner.setCustomTextOutput(window.internals.layerTreeAsText(document, internals.LAYER_TREE_INCLUDES_REPAINT_RECTS));
+
+    testRunner.notifyDone();
+});
+</script>
