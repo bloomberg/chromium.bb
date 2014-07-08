@@ -7,6 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/memory/scoped_vector.h"
 #include "base/path_service.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
@@ -1088,6 +1089,10 @@ class PasswordStoreMacTest : public testing::Test {
     base::MessageLoop::current()->Run();
   }
 
+  scoped_refptr<TestPasswordStoreMac> store() { return store_; }
+
+  MockAppleKeychain* keychain() { return keychain_; }
+
  protected:
   base::MessageLoopForUI message_loop_;
   content::TestBrowserThread ui_thread_;
@@ -1253,4 +1258,137 @@ TEST_F(PasswordStoreMacTest, TestDBKeychainAssociation) {
   EXPECT_EQ(0u, matching_items.size());
   login_db_->GetLogins(m_form, &matching_items);
   EXPECT_EQ(0u, matching_items.size());
+}
+
+namespace {
+
+// Tests RemoveLoginsCreatedBetween or RemoveLoginsSyncedBetween depending on
+// |check_created|.
+void CheckRemoveLoginsBetween(PasswordStoreMacTest* test, bool check_created) {
+  PasswordFormData www_form_data1 = {
+      PasswordForm::SCHEME_HTML, "http://www.facebook.com/",
+      "http://www.facebook.com/index.html", "login", L"username", L"password",
+      L"submit", L"joe_user", L"sekrit", true, false, 0 };
+  PasswordFormData www_form_data2 = {
+      PasswordForm::SCHEME_HTML, "http://different.com/",
+      "http://different.com/index.html", "login", L"username", L"password",
+      L"submit", L"different_joe_user", L"sekrit", true, false, 0 };
+  scoped_ptr<PasswordForm> form_facebook(
+      CreatePasswordFormFromData(www_form_data1));
+  scoped_ptr<PasswordForm> form_other(
+      CreatePasswordFormFromData(www_form_data2));
+  base::Time now = base::Time::Now();
+  base::Time next_day = now + base::TimeDelta::FromDays(1);
+  if (check_created) {
+    form_facebook->date_created = now;
+    form_other->date_created = next_day;
+  } else {
+    form_facebook->date_synced = now;
+    form_other->date_synced = next_day;
+  }
+
+  test->store()->AddLogin(*form_facebook);
+  test->store()->AddLogin(*form_other);
+  test->WaitForStoreUpdate();
+
+  MacKeychainPasswordFormAdapter owned_keychain_adapter(test->keychain());
+  owned_keychain_adapter.SetFindsOnlyOwnedItems(false);
+  ScopedVector<PasswordForm> matching_items;
+  matching_items.get() = owned_keychain_adapter.PasswordsFillingForm(
+      form_facebook->signon_realm, form_facebook->scheme);
+  EXPECT_EQ(1u, matching_items.size());
+  matching_items.clear();
+  matching_items.get() = owned_keychain_adapter.PasswordsFillingForm(
+      form_other->signon_realm, form_other->scheme);
+  EXPECT_EQ(1u, matching_items.size());
+  matching_items.clear();
+
+  // Remove form_facebook.
+  void (PasswordStore::*method)(base::Time, base::Time) =
+      check_created ? &PasswordStore::RemoveLoginsCreatedBetween
+                    : &PasswordStore::RemoveLoginsSyncedBetween;
+  (test->store()->*method)(base::Time(), next_day);
+  test->WaitForStoreUpdate();
+
+  matching_items.get() = owned_keychain_adapter.PasswordsFillingForm(
+      form_facebook->signon_realm, form_facebook->scheme);
+  EXPECT_EQ(0u, matching_items.size());
+  matching_items.get() = owned_keychain_adapter.PasswordsFillingForm(
+      form_other->signon_realm, form_other->scheme);
+  EXPECT_EQ(1u, matching_items.size());
+  matching_items.clear();
+
+  // Remove form_facebook.
+  (test->store()->*method)(next_day, base::Time());
+  test->WaitForStoreUpdate();
+  matching_items.get() = owned_keychain_adapter.PasswordsFillingForm(
+      form_other->signon_realm, form_other->scheme);
+  EXPECT_EQ(0u, matching_items.size());
+}
+
+}  // namespace
+
+TEST_F(PasswordStoreMacTest, TestRemoveLoginsCreatedBetween) {
+  CheckRemoveLoginsBetween(this, true);
+}
+
+TEST_F(PasswordStoreMacTest, TestRemoveLoginsSyncedBetween) {
+  CheckRemoveLoginsBetween(this, false);
+}
+
+TEST_F(PasswordStoreMacTest, TestRemoveLoginsMultiProfile) {
+  // Make sure that RemoveLoginsCreatedBetween does affect only the correct
+  // profile.
+
+  // Add a third-party password.
+  MockAppleKeychain::KeychainTestData keychain_data = {
+      kSecAuthenticationTypeHTMLForm, "some.domain.com",
+      kSecProtocolTypeHTTP, "/insecure.html", 0, NULL, "20020601171500Z",
+      "joe_user", "sekrit", false };
+  keychain_->AddTestItem(keychain_data);
+
+  // Add a password through the adapter. It has the "Chrome" creator tag.
+  // However, it's not referenced by the password database.
+  MacKeychainPasswordFormAdapter owned_keychain_adapter(keychain_);
+  owned_keychain_adapter.SetFindsOnlyOwnedItems(true);
+  PasswordFormData www_form_data1 = {
+      PasswordForm::SCHEME_HTML, "http://www.facebook.com/",
+      "http://www.facebook.com/index.html", "login", L"username", L"password",
+      L"submit", L"joe_user", L"sekrit", true, false, 1 };
+  scoped_ptr<PasswordForm> www_form(CreatePasswordFormFromData(www_form_data1));
+  EXPECT_TRUE(owned_keychain_adapter.AddPassword(*www_form));
+
+  // Add a password from the current profile.
+  PasswordFormData www_form_data2 = {
+      PasswordForm::SCHEME_HTML, "http://www.facebook.com/",
+      "http://www.facebook.com/index.html", "login", L"username", L"password",
+      L"submit", L"not_joe_user", L"12345", true, false, 1 };
+  www_form.reset(CreatePasswordFormFromData(www_form_data2));
+  store_->AddLogin(*www_form);
+  WaitForStoreUpdate();
+
+  ScopedVector<PasswordForm> matching_items;
+  login_db_->GetLogins(*www_form, &matching_items.get());
+  EXPECT_EQ(1u, matching_items.size());
+  matching_items.clear();
+
+  store_->RemoveLoginsCreatedBetween(base::Time(), base::Time());
+  WaitForStoreUpdate();
+
+  // Check the second facebook form is gone.
+  login_db_->GetLogins(*www_form, &matching_items.get());
+  EXPECT_EQ(0u, matching_items.size());
+
+  // Check the first facebook form is still there.
+  matching_items.get() = owned_keychain_adapter.PasswordsFillingForm(
+      www_form->signon_realm, www_form->scheme);
+  ASSERT_EQ(1u, matching_items.size());
+  EXPECT_EQ(ASCIIToUTF16("joe_user"), matching_items[0]->username_value);
+  matching_items.clear();
+
+  // Check the third-party password is still there.
+  owned_keychain_adapter.SetFindsOnlyOwnedItems(false);
+  matching_items.get() = owned_keychain_adapter.PasswordsFillingForm(
+      "http://some.domain.com/insecure.html", PasswordForm::SCHEME_HTML);
+  ASSERT_EQ(1u, matching_items.size());
 }

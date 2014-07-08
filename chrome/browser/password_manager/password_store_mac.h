@@ -84,11 +84,6 @@ class PasswordStoreMac : public password_manager::PasswordStore {
   bool DatabaseHasFormMatchingKeychainForm(
       const autofill::PasswordForm& form);
 
-  // Returns all the Keychain entries that we own but no longer have
-  // corresponding metadata for in our database.
-  // Caller is responsible for deleting the forms.
-  std::vector<autofill::PasswordForm*> GetUnusedKeychainForms();
-
   // Removes the given forms from the database.
   void RemoveDatabaseForms(
       const std::vector<autofill::PasswordForm*>& forms);
