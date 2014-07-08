@@ -2,8 +2,8 @@ Name: The library to input, validate, and display addresses.
 Short Name: libaddressinput
 URL: https://code.google.com/p/libaddressinput/
 Version: 0
-Date: 24 June 2014
-Revision: 297
+Date: 7 July 2014
+Revision: 300
 License: Apache 2.0
 License File: LICENSE
 Security Critical: no
