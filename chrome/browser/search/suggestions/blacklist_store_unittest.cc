@@ -7,12 +7,16 @@
 #include <set>
 #include <string>
 
+#include "base/memory/scoped_ptr.h"
+#include "base/metrics/histogram_samples.h"
 #include "base/metrics/statistics_recorder.h"
+#include "base/test/statistics_delta_reader.h"
 #include "chrome/browser/search/suggestions/proto/suggestions.pb.h"
-#include "chrome/test/base/testing_pref_service_syncable.h"
-#include "chrome/test/base/uma_histogram_helper.h"
+#include "components/pref_registry/testing_pref_service_syncable.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+using user_prefs::TestingPrefServiceSyncable;
 
 namespace suggestions {
 
@@ -22,8 +26,6 @@ const char kTestUrlA[] = "http://aaa.com/";
 const char kTestUrlB[] = "http://bbb.com/";
 const char kTestUrlC[] = "http://ccc.com/";
 const char kTestUrlD[] = "http://ddd.com/";
-
-const char* const kHistogramsToSnapshot[] = {"Suggestions.LocalBlacklistSize"};
 
 SuggestionsProfile CreateSuggestions(std::set<std::string> urls) {
   SuggestionsProfile suggestions;
@@ -121,18 +123,18 @@ TEST(BlacklistStoreTest, GetFirstUrlFromBlacklist) {
 }
 
 TEST(BlacklistStoreLogTest, LogsBlacklistSize) {
-  UMAHistogramHelper histogram_helper;
   content::TestBrowserThreadBundle bundle;
-  histogram_helper.PrepareSnapshot(
-      kHistogramsToSnapshot, arraysize(kHistogramsToSnapshot));
+  base::StatisticsDeltaReader statistics_delta_reader;
 
   // Create a first store - blacklist is empty at this point.
   TestingPrefServiceSyncable prefs;
   BlacklistStore::RegisterProfilePrefs(prefs.registry());
   scoped_ptr<BlacklistStore> blacklist_store(new BlacklistStore(&prefs));
-  histogram_helper.Fetch();
-  histogram_helper.ExpectTotalCount("Suggestions.LocalBlacklistSize", 1);
-  histogram_helper.ExpectUniqueSample("Suggestions.LocalBlacklistSize", 0, 1);
+  scoped_ptr<base::HistogramSamples> samples(
+      statistics_delta_reader.GetHistogramSamplesSinceCreation(
+          "Suggestions.LocalBlacklistSize"));
+  EXPECT_EQ(1, samples->TotalCount());
+  EXPECT_EQ(1, samples->GetCount(0));
 
   // Add some content to the blacklist.
   EXPECT_TRUE(blacklist_store->BlacklistUrl(GURL(kTestUrlA)));
@@ -140,10 +142,11 @@ TEST(BlacklistStoreLogTest, LogsBlacklistSize) {
 
   // Create a new BlacklistStore and verify the counts.
   blacklist_store.reset(new BlacklistStore(&prefs));
-  histogram_helper.Fetch();
-  histogram_helper.ExpectTotalCount("Suggestions.LocalBlacklistSize", 2);
-  histogram_helper.ExpectBucketCount("Suggestions.LocalBlacklistSize", 0, 1);
-  histogram_helper.ExpectBucketCount("Suggestions.LocalBlacklistSize", 2, 1);
+  samples = statistics_delta_reader.GetHistogramSamplesSinceCreation(
+      "Suggestions.LocalBlacklistSize");
+  EXPECT_EQ(2, samples->TotalCount());
+  EXPECT_EQ(1, samples->GetCount(0));
+  EXPECT_EQ(1, samples->GetCount(2));
 }
 
 }  // namespace suggestions
