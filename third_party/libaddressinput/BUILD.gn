@@ -29,10 +29,15 @@ config("libaddressinput_config") {
 # GYP version: third_party/libaddressinput/libaddressinput.gyp:libaddressinput_util
 static_library("util") {
   sources = [
+    "chromium/addressinput_util.cc",
+    "chromium/addressinput_util.h",
     "chromium/canonicalize_string.cc",
     "chromium/json.cc",
     "$libaddressinput_dir/cpp/include/libaddressinput/address_data.h",
     "$libaddressinput_dir/cpp/include/libaddressinput/address_field.h",
+    "$libaddressinput_dir/cpp/include/libaddressinput/address_formatter.h",
+    "$libaddressinput_dir/cpp/include/libaddressinput/address_metadata.h",
+    "$libaddressinput_dir/cpp/include/libaddressinput/address_problem.h",
     "$libaddressinput_dir/cpp/include/libaddressinput/util/basictypes.h",
     "$libaddressinput_dir/cpp/include/libaddressinput/util/internal/basictypes.h",
     "$libaddressinput_dir/cpp/include/libaddressinput/util/internal/move.h",
@@ -41,11 +46,18 @@ static_library("util") {
     "$libaddressinput_dir/cpp/include/libaddressinput/util/scoped_ptr.h",
     "$libaddressinput_dir/cpp/src/address_data.cc",
     "$libaddressinput_dir/cpp/src/address_field.cc",
+    "$libaddressinput_dir/cpp/src/address_formatter.cc",
+    "$libaddressinput_dir/cpp/src/address_metadata.cc",
+    "$libaddressinput_dir/cpp/src/address_problem.cc",
+    "$libaddressinput_dir/cpp/src/language.cc",
+    "$libaddressinput_dir/cpp/src/language.h",
     "$libaddressinput_dir/cpp/src/region_data_constants.cc",
     "$libaddressinput_dir/cpp/src/region_data_constants.h",
     "$libaddressinput_dir/cpp/src/rule.cc",
     "$libaddressinput_dir/cpp/src/rule.h",
     "$libaddressinput_dir/cpp/src/util/canonicalize_string.h",
+    "$libaddressinput_dir/cpp/src/util/cctype_tolower_equal.cc",
+    "$libaddressinput_dir/cpp/src/util/cctype_tolower_equal.h",
     "$libaddressinput_dir/cpp/src/util/json.h",
     "$libaddressinput_dir/cpp/src/util/stl_util.h",
     "$libaddressinput_dir/cpp/src/util/string_util.cc",
@@ -72,12 +84,10 @@ static_library("libaddressinput") {
     "chromium/chrome_downloader_impl.h",
     "chromium/chrome_storage_impl.cc",
     "chromium/chrome_storage_impl.h",
-    "$libaddressinput_dir/cpp/include/libaddressinput/address_problem.h",
     "$libaddressinput_dir/cpp/include/libaddressinput/address_ui_component.h",
     "$libaddressinput_dir/cpp/include/libaddressinput/address_ui.h",
     "$libaddressinput_dir/cpp/include/libaddressinput/address_validator.h",
     "$libaddressinput_dir/cpp/include/libaddressinput/load_rules_delegate.h",
-    "$libaddressinput_dir/cpp/src/address_problem.cc",
     "$libaddressinput_dir/cpp/src/address_ui.cc",
     "$libaddressinput_dir/cpp/src/address_validator.cc",
     "$libaddressinput_dir/cpp/src/country_rules_aggregator.cc",
@@ -114,6 +124,7 @@ static_library("libaddressinput") {
 
 test("libaddressinput_unittests") {
   sources = [
+    "chromium/addressinput_util_unittest.cc",
     "chromium/chrome_downloader_impl_unittest.cc",
     "chromium/chrome_rule_test.cc",
     "chromium/chrome_storage_impl_unittest.cc",
@@ -148,7 +159,6 @@ test("libaddressinput_unittests") {
 
   include_dirs = [
     "$libaddressinput_dir/cpp/src",
-    #"'<(SHARED_INTERMEDIATE_DIR)/libaddressinput/',
   ]
 
   deps = [

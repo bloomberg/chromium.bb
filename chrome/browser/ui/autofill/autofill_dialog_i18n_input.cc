@@ -12,6 +12,7 @@
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "grit/components_strings.h"
+#include "third_party/libaddressinput/chromium/addressinput_util.h"
 #include "third_party/libaddressinput/chromium/cpp/include/libaddressinput/address_data.h"
 #include "third_party/libaddressinput/chromium/cpp/include/libaddressinput/address_field.h"
 #include "third_party/libaddressinput/chromium/cpp/include/libaddressinput/address_ui.h"
@@ -88,8 +89,8 @@ bool AddressHasCompleteAndVerifiedData(const AutofillProfile& profile,
   if (!profile.IsVerified())
     return false;
 
-  if (!i18n::CreateAddressDataFromAutofillProfile(profile, app_locale)->
-          HasAllRequiredFields()) {
+  if (!addressinput::HasAllRequiredFields(
+          *i18n::CreateAddressDataFromAutofillProfile(profile, app_locale))) {
     return false;
   }
 

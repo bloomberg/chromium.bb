@@ -14,7 +14,7 @@ namespace autofill {
 
 MATCHER_P(CountryCodeMatcher, country_code, "Checks an AddressData's country") {
   // |arg| is an AddressData object.
-  return arg.country_code == country_code;
+  return arg.region_code == country_code;
 }
 
 class MockAddressValidator : public ::i18n::addressinput::AddressValidator {

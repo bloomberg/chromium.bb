@@ -102,9 +102,9 @@ class ExampleAddressValidatorTest
       if (!fields_json->GetStringValueForKey(street_key, &street_field))
         break;
 
-      address.address_lines.push_back(street_field);
+      address.address_line.push_back(street_field);
     }
-    address.country_code = country;
+    address.region_code = country;
     fields_json->GetStringValueForKey("state", &address.administrative_area);
     fields_json->GetStringValueForKey("city", &address.locality);
     fields_json->GetStringValueForKey("locality", &address.dependent_locality);
@@ -181,7 +181,7 @@ class ExampleAddressValidatorTest
   virtual void OnAddressValidationRulesLoaded(const std::string& country_code,
                                               bool success) {
     AddressData address_data;
-    address_data.country_code = country_code;
+    address_data.region_code = country_code;
     AddressValidator::Status status =
         validator_->ValidateAddress(address_data, AddressProblemFilter(), NULL);
     EXPECT_TRUE(success);

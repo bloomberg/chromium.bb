@@ -58,7 +58,7 @@ class AddressValidatorTest : public testing::Test, public LoadRulesDelegate {
   virtual void OnAddressValidationRulesLoaded(const std::string& country_code,
                                               bool success) {
     AddressData address_data;
-    address_data.country_code = country_code;
+    address_data.region_code = country_code;
     AddressValidator::Status status =
         validator_->ValidateAddress(address_data, AddressProblemFilter(), NULL);
     EXPECT_EQ(success, status == AddressValidator::SUCCESS);
@@ -72,7 +72,7 @@ TEST_F(AddressValidatorTest, RegionHasRules) {
   for (size_t i = 0; i < region_codes.size(); ++i) {
     SCOPED_TRACE("For region: " + region_codes[i]);
     validator_->LoadRules(region_codes[i]);
-    address.country_code = region_codes[i];
+    address.region_code = region_codes[i];
     EXPECT_EQ(
         AddressValidator::SUCCESS,
         validator_->ValidateAddress(address, AddressProblemFilter(), NULL));
@@ -81,7 +81,7 @@ TEST_F(AddressValidatorTest, RegionHasRules) {
 
 TEST_F(AddressValidatorTest, EmptyAddressNoFatalFailure) {
   AddressData address;
-  address.country_code = "US";
+  address.region_code = "US";
 
   AddressProblems problems;
   EXPECT_EQ(
@@ -91,10 +91,10 @@ TEST_F(AddressValidatorTest, EmptyAddressNoFatalFailure) {
 
 TEST_F(AddressValidatorTest, USZipCode) {
   AddressData address;
-  address.address_lines.push_back("340 Main St.");
+  address.address_line.push_back("340 Main St.");
   address.locality = "Venice";
   address.administrative_area = "CA";
-  address.country_code = "US";
+  address.region_code = "US";
 
   // Valid Californian zip code.
   address.postal_code = "90291";
@@ -162,12 +162,12 @@ TEST_F(AddressValidatorTest, BasicValidation) {
   // US rules should always be available, even though this load call fails.
   validator_->LoadRules("US");
   AddressData address;
-  address.country_code = "US";
+  address.region_code = "US";
   address.language_code = "en";
   address.administrative_area = "TX";
   address.locality = "Paris";
   address.postal_code = "75461";
-  address.address_lines.push_back("123 Main St");
+  address.address_line.push_back("123 Main St");
   AddressProblems problems;
   EXPECT_EQ(
       AddressValidator::SUCCESS,
@@ -211,12 +211,12 @@ TEST_F(AddressValidatorTest, BasicValidationFailure) {
   // US rules should always be available, even though this load call fails.
   validator_->LoadRules("US");
   AddressData address;
-  address.country_code = "US";
+  address.region_code = "US";
   address.language_code = "en";
   address.administrative_area = "XT";
   address.locality = "Paris";
   address.postal_code = "75461";
-  address.address_lines.push_back("123 Main St");
+  address.address_line.push_back("123 Main St");
   AddressProblems problems;
   EXPECT_EQ(
       AddressValidator::SUCCESS,
@@ -229,14 +229,14 @@ TEST_F(AddressValidatorTest, BasicValidationFailure) {
 
 TEST_F(AddressValidatorTest, NoNullSuggestionsCrash) {
   AddressData address;
-  address.country_code = "US";
+  address.region_code = "US";
   EXPECT_EQ(AddressValidator::SUCCESS,
             validator_->GetSuggestions(address, COUNTRY, 1, NULL));
 }
 
 TEST_F(AddressValidatorTest, SuggestAdminAreaForPostalCode) {
   AddressData address;
-  address.country_code = "US";
+  address.region_code = "US";
   address.postal_code = "90291";
 
   std::vector<AddressData> suggestions;
@@ -250,7 +250,7 @@ TEST_F(AddressValidatorTest, SuggestAdminAreaForPostalCode) {
 TEST_F(AddressValidatorTest, SuggestLocalityForPostalCodeWithAdminArea) {
   validator_->LoadRules("TW");
   AddressData address;
-  address.country_code = "TW";
+  address.region_code = "TW";
   address.postal_code = "515";
   address.administrative_area = "Changhua";
 
@@ -266,7 +266,7 @@ TEST_F(AddressValidatorTest, SuggestLocalityForPostalCodeWithAdminArea) {
 TEST_F(AddressValidatorTest, SuggestAdminAreaForPostalCodeWithLocality) {
   validator_->LoadRules("TW");
   AddressData address;
-  address.country_code = "TW";
+  address.region_code = "TW";
   address.postal_code = "515";
   address.locality = "Dacun";
 
@@ -281,7 +281,7 @@ TEST_F(AddressValidatorTest, SuggestAdminAreaForPostalCodeWithLocality) {
 
 TEST_F(AddressValidatorTest, NoSuggestForPostalCodeWithWrongAdminArea) {
   AddressData address;
-  address.country_code = "US";
+  address.region_code = "US";
   address.postal_code = "90066";
   address.postal_code = "TX";
 
@@ -294,7 +294,7 @@ TEST_F(AddressValidatorTest, NoSuggestForPostalCodeWithWrongAdminArea) {
 TEST_F(AddressValidatorTest, SuggestForLocality) {
   validator_->LoadRules("CN");
   AddressData address;
-  address.country_code = "CN";
+  address.region_code = "CN";
   address.locality = "Anqin";
 
   std::vector<AddressData> suggestions;
@@ -308,7 +308,7 @@ TEST_F(AddressValidatorTest, SuggestForLocality) {
 TEST_F(AddressValidatorTest, SuggestForLocalityAndAdminArea) {
   validator_->LoadRules("CN");
   AddressData address;
-  address.country_code = "CN";
+  address.region_code = "CN";
   address.locality = "Anqing";
   address.administrative_area = "Anhui";
 
@@ -324,7 +324,7 @@ TEST_F(AddressValidatorTest, SuggestForLocalityAndAdminArea) {
 TEST_F(AddressValidatorTest, SuggestForAdminAreaAndLocality) {
   validator_->LoadRules("CN");
   AddressData address;
-  address.country_code = "CN";
+  address.region_code = "CN";
   address.locality = "Anqing";
   address.administrative_area = "Anhui";
 
@@ -340,7 +340,7 @@ TEST_F(AddressValidatorTest, SuggestForAdminAreaAndLocality) {
 TEST_F(AddressValidatorTest, SuggestForDependentLocality) {
   validator_->LoadRules("CN");
   AddressData address;
-  address.country_code = "CN";
+  address.region_code = "CN";
   address.dependent_locality = "Zongyang";
 
   std::vector<AddressData> suggestions;
@@ -357,7 +357,7 @@ TEST_F(AddressValidatorTest,
        NoSuggestForDependentLocalityWithWrongAdminArea) {
   validator_->LoadRules("CN");
   AddressData address;
-  address.country_code = "CN";
+  address.region_code = "CN";
   address.dependent_locality = "Zongyang";
   address.administrative_area = "Sichuan Sheng";
 
@@ -370,7 +370,7 @@ TEST_F(AddressValidatorTest,
 
 TEST_F(AddressValidatorTest, EmptySuggestionsOverLimit) {
   AddressData address;
-  address.country_code = "US";
+  address.region_code = "US";
   address.administrative_area = "A";
 
   std::vector<AddressData> suggestions;
@@ -381,7 +381,7 @@ TEST_F(AddressValidatorTest, EmptySuggestionsOverLimit) {
 
 TEST_F(AddressValidatorTest, PreferShortSuggestions) {
   AddressData address;
-  address.country_code = "US";
+  address.region_code = "US";
   address.administrative_area = "CA";
 
   std::vector<AddressData> suggestions;
@@ -393,7 +393,7 @@ TEST_F(AddressValidatorTest, PreferShortSuggestions) {
 
 TEST_F(AddressValidatorTest, SuggestTheSingleMatchForFullMatchName) {
   AddressData address;
-  address.country_code = "US";
+  address.region_code = "US";
   address.administrative_area = "Texas";
 
   std::vector<AddressData> suggestions;
@@ -405,7 +405,7 @@ TEST_F(AddressValidatorTest, SuggestTheSingleMatchForFullMatchName) {
 
 TEST_F(AddressValidatorTest, SuggestAdminArea) {
   AddressData address;
-  address.country_code = "US";
+  address.region_code = "US";
   address.administrative_area = "Cali";
 
   std::vector<AddressData> suggestions;
@@ -417,7 +417,7 @@ TEST_F(AddressValidatorTest, SuggestAdminArea) {
 
 TEST_F(AddressValidatorTest, MultipleSuggestions) {
   AddressData address;
-  address.country_code = "US";
+  address.region_code = "US";
   address.administrative_area = "MA";
 
   std::vector<AddressData> suggestions;
@@ -443,7 +443,7 @@ TEST_F(AddressValidatorTest, SuggestNonLatinKeyWhenLanguageMatches) {
   validator_->LoadRules("KR");
   AddressData address;
   address.language_code = "ko";
-  address.country_code = "KR";
+  address.region_code = "KR";
   address.postal_code = "210-210";
 
   std::vector<AddressData> suggestions;
@@ -458,7 +458,7 @@ TEST_F(AddressValidatorTest, SuggestNonLatinKeyWhenUserInputIsNotLatin) {
   validator_->LoadRules("KR");
   AddressData address;
   address.language_code = "en";
-  address.country_code = "KR";
+  address.region_code = "KR";
   address.administrative_area = "강원";
 
   std::vector<AddressData> suggestions;
@@ -473,7 +473,7 @@ TEST_F(AddressValidatorTest,
   validator_->LoadRules("KR");
   AddressData address;
   address.language_code = "en";
-  address.country_code = "KR";
+  address.region_code = "KR";
   address.postal_code = "210-210";
 
   std::vector<AddressData> suggestions;
@@ -488,7 +488,7 @@ TEST_F(AddressValidatorTest, SuggestLatinNameWhenUserInputIsLatin) {
   validator_->LoadRules("KR");
   AddressData address;
   address.language_code = "ko";
-  address.country_code = "KR";
+  address.region_code = "KR";
   address.administrative_area = "Gang";
 
   std::vector<AddressData> suggestions;
@@ -500,7 +500,7 @@ TEST_F(AddressValidatorTest, SuggestLatinNameWhenUserInputIsLatin) {
 
 TEST_F(AddressValidatorTest, NoSuggestionsForEmptyAddress) {
   AddressData address;
-  address.country_code = "US";
+  address.region_code = "US";
 
   std::vector<AddressData> suggestions;
   EXPECT_EQ(
@@ -511,25 +511,25 @@ TEST_F(AddressValidatorTest, NoSuggestionsForEmptyAddress) {
 
 TEST_F(AddressValidatorTest, SuggestionIncludesCountry) {
   AddressData address;
-  address.country_code = "US";
+  address.region_code = "US";
   address.postal_code = "90291";
 
   std::vector<AddressData> suggestions;
   EXPECT_EQ(AddressValidator::SUCCESS,
             validator_->GetSuggestions(address, POSTAL_CODE, 1, &suggestions));
   ASSERT_EQ(1U, suggestions.size());
-  EXPECT_EQ("US", suggestions[0].country_code);
+  EXPECT_EQ("US", suggestions[0].region_code);
 }
 
 TEST_F(AddressValidatorTest, SuggestOnlyForAdministrativeAreasAndPostalCode) {
   AddressData address;
-  address.country_code = "US";
+  address.region_code = "US";
   address.administrative_area = "CA";
   address.locality = "Los Angeles";
   address.dependent_locality = "Venice";
   address.postal_code = "90291";
   address.sorting_code = "123";
-  address.address_lines.push_back("123 Main St");
+  address.address_line.push_back("123 Main St");
   address.recipient = "Jon Smith";
 
   // Fields that should not have suggestions in US.
@@ -556,7 +556,7 @@ TEST_F(AddressValidatorTest, SuggestOnlyForAdministrativeAreasAndPostalCode) {
 
 TEST_F(AddressValidatorTest, CanonicalizeUsAdminAreaName) {
   AddressData address;
-  address.country_code = "US";
+  address.region_code = "US";
   address.administrative_area = "cALIFORNIa";
   EXPECT_TRUE(validator_->CanonicalizeAdministrativeArea(&address));
   EXPECT_EQ("CA", address.administrative_area);
@@ -564,7 +564,7 @@ TEST_F(AddressValidatorTest, CanonicalizeUsAdminAreaName) {
 
 TEST_F(AddressValidatorTest, CanonicalizeUsAdminAreaKey) {
   AddressData address;
-  address.country_code = "US";
+  address.region_code = "US";
   address.administrative_area = "CA";
   EXPECT_TRUE(validator_->CanonicalizeAdministrativeArea(&address));
   EXPECT_EQ("CA", address.administrative_area);
@@ -573,7 +573,7 @@ TEST_F(AddressValidatorTest, CanonicalizeUsAdminAreaKey) {
 TEST_F(AddressValidatorTest, CanonicalizeJpAdminAreaKey) {
   validator_->LoadRules("JP");
   AddressData address;
-  address.country_code = "JP";
+  address.region_code = "JP";
   address.administrative_area = "東京都";
   EXPECT_TRUE(validator_->CanonicalizeAdministrativeArea(&address));
   EXPECT_EQ("東京都", address.administrative_area);
@@ -582,7 +582,7 @@ TEST_F(AddressValidatorTest, CanonicalizeJpAdminAreaKey) {
 TEST_F(AddressValidatorTest, CanonicalizeJpAdminAreaLatinName) {
   validator_->LoadRules("JP");
   AddressData address;
-  address.country_code = "JP";
+  address.region_code = "JP";
   address.administrative_area = "tOKYo";
   EXPECT_TRUE(validator_->CanonicalizeAdministrativeArea(&address));
   EXPECT_EQ("TOKYO", address.administrative_area);

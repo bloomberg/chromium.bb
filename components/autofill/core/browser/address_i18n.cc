@@ -33,7 +33,7 @@ scoped_ptr<AddressData> CreateAddressData(
   scoped_ptr<AddressData> address_data(new AddressData());
   address_data->recipient = base::UTF16ToUTF8(
       get_info.Run(AutofillType(NAME_FULL)));
-  address_data->country_code = base::UTF16ToUTF8(
+  address_data->region_code = base::UTF16ToUTF8(
       get_info.Run(AutofillType(HTML_TYPE_COUNTRY_CODE, HTML_MODE_NONE)));
   address_data->administrative_area = base::UTF16ToUTF8(
       get_info.Run(AutofillType(ADDRESS_HOME_STATE)));
@@ -49,7 +49,7 @@ scoped_ptr<AddressData> CreateAddressData(
       base::UTF16ToUTF8(
           get_info.Run(AutofillType(ADDRESS_HOME_STREET_ADDRESS))),
       '\n',
-      &address_data->address_lines);
+      &address_data->address_line);
   return address_data.Pass();
 }
 

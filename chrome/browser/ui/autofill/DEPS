@@ -1,4 +1,5 @@
 include_rules = [
+  '+third_party/libaddressinput/chromium/addressinput_util.h',
   '+third_party/libaddressinput/chromium/chrome_downloader_impl.h',
   '+third_party/libaddressinput/chromium/chrome_storage_impl.h',
   '+third_party/libaddressinput/chromium/cpp/include/libaddressinput',

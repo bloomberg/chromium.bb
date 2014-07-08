@@ -232,7 +232,7 @@ class AddressValidatorImpl : public AddressValidator {
       const AddressProblemFilter& filter,
       AddressProblems* problems) const {
     std::map<std::string, Ruleset*>::const_iterator ruleset_it =
-        rules_.find(address.country_code);
+        rules_.find(address.region_code);
 
     // We can still validate the required fields even if the full ruleset isn't
     // ready.
@@ -241,12 +241,12 @@ class AddressValidatorImpl : public AddressValidator {
         Rule rule;
         rule.CopyFrom(Rule::GetDefault());
         if (rule.ParseSerializedRule(
-                 RegionDataConstants::GetRegionData(address.country_code))) {
+                 RegionDataConstants::GetRegionData(address.region_code))) {
           EnforceRequiredFields(rule, address, filter, problems);
         }
       }
 
-      return loading_rules_.find(address.country_code) != loading_rules_.end()
+      return loading_rules_.find(address.region_code) != loading_rules_.end()
           ? RULES_NOT_READY
           : RULES_UNAVAILABLE;
     }
@@ -321,11 +321,11 @@ class AddressValidatorImpl : public AddressValidator {
                                 size_t suggestions_limit,
                                 std::vector<AddressData>* suggestions) const {
     std::map<std::string, Ruleset*>::const_iterator ruleset_it =
-        rules_.find(user_input.country_code);
+        rules_.find(user_input.region_code);
 
     if (ruleset_it == rules_.end()) {
       return
-          loading_rules_.find(user_input.country_code) != loading_rules_.end()
+          loading_rules_.find(user_input.region_code) != loading_rules_.end()
               ? RULES_NOT_READY
               : RULES_UNAVAILABLE;
     }
@@ -477,7 +477,7 @@ class AddressValidatorImpl : public AddressValidator {
       }
 
       AddressData suggestion;
-      suggestion.country_code = user_input.country_code;
+      suggestion.region_code = user_input.region_code;
       suggestion.postal_code = user_input.postal_code;
 
       // Traverse the tree of rulesets from the most specific |ruleset| to the
@@ -501,7 +501,7 @@ class AddressValidatorImpl : public AddressValidator {
   // AddressValidator implementation.
   virtual bool CanonicalizeAdministrativeArea(AddressData* address_data) const {
     std::map<std::string, Ruleset*>::const_iterator ruleset_it =
-        rules_.find(address_data->country_code);
+        rules_.find(address_data->region_code);
     if (ruleset_it == rules_.end()) {
       return false;
     }
@@ -544,7 +544,7 @@ class AddressValidatorImpl : public AddressValidator {
          ++field_it) {
       bool field_empty = *field_it != STREET_ADDRESS
           ? address.GetFieldValue(*field_it).empty()
-          : IsEmptyStreetAddress(address.address_lines);
+          : IsEmptyStreetAddress(address.address_line);
       if (field_empty &&
           FilterAllows(
               filter, *field_it, AddressProblem::MISSING_REQUIRED_FIELD)) {

@@ -1,4 +1,4 @@
-// Copyright (C) 2013 Google Inc.
+// Copyright (C) 2014 Google Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -15,133 +15,136 @@
 #include <libaddressinput/address_data.h>
 
 #include <libaddressinput/address_field.h>
+#include <libaddressinput/util/basictypes.h>
 
 #include <algorithm>
 #include <cassert>
 #include <cstddef>
+#include <functional>
+#include <ostream>
 #include <string>
 #include <vector>
 
-#include "region_data_constants.h"
-#include "rule.h"
-#include "util/string_util.h"
+#include <re2/re2.h>
 
 namespace i18n {
 namespace addressinput {
 
 namespace {
 
-const std::string* GetMemberForField(const AddressData& address,
-                                     AddressField field) {
-  switch (field) {
-    case COUNTRY:
-      return &address.country_code;
-    case ADMIN_AREA:
-      return &address.administrative_area;
-    case LOCALITY:
-      return &address.locality;
-    case DEPENDENT_LOCALITY:
-      return &address.dependent_locality;
-    case SORTING_CODE:
-      return &address.sorting_code;
-    case POSTAL_CODE:
-      return &address.postal_code;
-    case RECIPIENT:
-      return &address.recipient;
-    case STREET_ADDRESS:
-      break;
-  }
+// Mapping from AddressField value to pointer to AddressData member.
+std::string AddressData::*kStringField[] = {
+  &AddressData::region_code,
+  &AddressData::administrative_area,
+  &AddressData::locality,
+  &AddressData::dependent_locality,
+  &AddressData::sorting_code,
+  &AddressData::postal_code,
+  NULL,
+  &AddressData::recipient
+};
 
-  assert(false);
-  return NULL;
+// Mapping from AddressField value to pointer to AddressData member.
+const std::vector<std::string> AddressData::*kVectorStringField[] = {
+  NULL,
+  NULL,
+  NULL,
+  NULL,
+  NULL,
+  NULL,
+  &AddressData::address_line,
+  NULL
+};
+
+COMPILE_ASSERT(arraysize(kStringField) == arraysize(kVectorStringField),
+               field_mapping_array_size_mismatch);
+
+// A string is considered to be "empty" not only if it actually is empty, but
+// also if it contains nothing but whitespace.
+bool IsStringEmpty(const std::string& str) {
+  static const RE2 kMatcher("\\S");
+  return str.empty() || !RE2::PartialMatch(str, kMatcher);
 }
 
 }  // namespace
 
-void AddressData::FormatForDisplay(std::vector<std::string>* lines) const {
-  assert(lines != NULL);
-  lines->clear();
-
-  Rule rule;
-  rule.CopyFrom(Rule::GetDefault());
-  rule.ParseSerializedRule(RegionDataConstants::GetRegionData(country_code));
-
-  // If latinized rules are available and the |language_code| of this address is
-  // not the primary language code for the region, then use the latinized
-  // formatting rules.
-  const std::vector<std::vector<FormatElement> >& format =
-      rule.GetLatinFormat().empty() ||
-      language_code.empty() ||
-      NormalizeLanguageCode(language_code) ==
-          NormalizeLanguageCode(rule.GetLanguage())
-              ? rule.GetFormat() : rule.GetLatinFormat();
-
-  for (size_t i = 0; i < format.size(); ++i) {
-    std::string line;
-    for (size_t j = 0; j < format[i].size(); ++j) {
-      const FormatElement& element = format[i][j];
-      if (element.IsField()) {
-        if (element.field == STREET_ADDRESS) {
-          // Street address field can contain multiple values.
-          for (size_t k = 0; k < address_lines.size(); ++k) {
-            line += address_lines[k];
-            if (k < address_lines.size() - 1) {
-              lines->push_back(line);
-              line.clear();
-            }
-          }
-        } else {
-          line += GetFieldValue(element.field);
-        }
-      } else {
-        line += element.literal;
-      }
-    }
-
-    if (!line.empty()) {
-      lines->push_back(line);
-    }
+bool AddressData::IsFieldEmpty(AddressField field) const {
+  assert(field >= 0);
+  assert(static_cast<size_t>(field) < arraysize(kStringField));
+  if (kStringField[field] != NULL) {
+    const std::string& value = GetFieldValue(field);
+    return IsStringEmpty(value);
+  } else {
+    const std::vector<std::string>& value = GetRepeatedFieldValue(field);
+    return std::find_if(value.begin(), value.end(),
+                        std::not1(std::ptr_fun(&IsStringEmpty))) ==
+           value.end();
   }
 }
 
-const std::string& AddressData::GetFieldValue(AddressField field) const {
-  const std::string* field_value = GetMemberForField(*this, field);
-  return field_value != NULL ? *field_value : country_code;
+const std::string& AddressData::GetFieldValue(
+    AddressField field) const {
+  assert(field >= 0);
+  assert(static_cast<size_t>(field) < arraysize(kStringField));
+  assert(kStringField[field] != NULL);
+  return this->*kStringField[field];
 }
 
 void AddressData::SetFieldValue(AddressField field, const std::string& value) {
-  std::string* field_value =
-      const_cast<std::string*>(GetMemberForField(*this, field));
-  if (field_value != NULL) {
-    *field_value = value;
-  }
+  assert(field >= 0);
+  assert(static_cast<size_t>(field) < arraysize(kStringField));
+  assert(kStringField[field] != NULL);
+  (this->*kStringField[field]).assign(value);
 }
 
-bool AddressData::HasAllRequiredFields() const {
-  if (country_code.empty())
-    return false;
+const std::vector<std::string>& AddressData::GetRepeatedFieldValue(
+    AddressField field) const {
+  assert(IsRepeatedFieldValue(field));
+  return this->*kVectorStringField[field];
+}
 
-  Rule rule;
-  rule.CopyFrom(Rule::GetDefault());
-  if (!rule.ParseSerializedRule(
-           RegionDataConstants::GetRegionData(country_code))) {
-    return false;
-  }
+bool AddressData::operator==(const AddressData& other) const {
+  return
+      region_code == other.region_code &&
+      address_line == other.address_line &&
+      administrative_area == other.administrative_area &&
+      locality == other.locality &&
+      dependent_locality == other.dependent_locality &&
+      postal_code == other.postal_code &&
+      sorting_code == other.sorting_code &&
+      language_code == other.language_code &&
+      recipient == other.recipient;
+}
 
-  std::vector< ::i18n::addressinput::AddressField> required_fields =
-      rule.GetRequired();
-  for (size_t i = 0; i < required_fields.size(); ++i) {
-    if (required_fields[i] == STREET_ADDRESS) {
-      if (address_lines.empty() || address_lines[0].empty()) {
-        return false;
-      }
-    } else if (GetFieldValue(required_fields[i]).empty()) {
-      return false;
-    }
-  }
-
-  return true;
+// static
+bool AddressData::IsRepeatedFieldValue(AddressField field) {
+  assert(field >= 0);
+  assert(static_cast<size_t>(field) < arraysize(kVectorStringField));
+  return kVectorStringField[field] != NULL;
 }
 
 }  // namespace addressinput
 }  // namespace i18n
+
+std::ostream& operator<<(std::ostream& o,
+                         const i18n::addressinput::AddressData& address) {
+  o << "region_code: \"" << address.region_code << "\"\n"
+    "administrative_area: \"" << address.administrative_area << "\"\n"
+    "locality: \"" << address.locality << "\"\n"
+    "dependent_locality: \"" << address.dependent_locality << "\"\n"
+    "postal_code: \"" << address.postal_code << "\"\n"
+    "sorting_code: \"" << address.sorting_code << "\"\n";
+
+  // TODO: Update the field order in the .h file to match the order they are
+  // printed out here, for consistency.
+  for (std::vector<std::string>::const_iterator it =
+           address.address_line.begin();
+       it != address.address_line.end(); ++it) {
+    o << "address_line: \"" << *it << "\"\n";
+  }
+
+  o << "language_code: \"" << address.language_code << "\"\n"
+    "recipient: \"" << address.recipient << "\"\n";
+
+  return o;
+}

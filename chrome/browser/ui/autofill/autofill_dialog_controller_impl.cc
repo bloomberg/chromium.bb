@@ -3613,7 +3613,7 @@ bool AutofillDialogControllerImpl::SectionIsValid(
 
 bool AutofillDialogControllerImpl::RulesAreLoaded(DialogSection section) {
   AddressData address_data;
-  address_data.country_code = CountryCodeForSection(section);
+  address_data.region_code = CountryCodeForSection(section);
   AddressValidator::Status status = GetValidator()->ValidateAddress(
       address_data, AddressProblemFilter(), NULL);
   return status == AddressValidator::SUCCESS;

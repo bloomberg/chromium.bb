@@ -23,7 +23,7 @@
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/form_structure.h"
 #include "third_party/libaddressinput/chromium/cpp/include/libaddressinput/address_data.h"
-#include "third_party/libaddressinput/chromium/cpp/include/libaddressinput/address_ui.h"
+#include "third_party/libaddressinput/chromium/cpp/include/libaddressinput/address_formatter.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
 
@@ -61,7 +61,7 @@ bool DataModelWrapper::GetDisplayText(
           base::Bind(&DataModelWrapper::GetInfo, base::Unretained(this)));
   address_data->language_code = GetLanguageCode();
   std::vector<std::string> lines;
-  address_data->FormatForDisplay(&lines);
+  ::i18n::addressinput::GetFormattedNationalAddress(*address_data, &lines);
 
   // Email and phone number aren't part of address formatting.
   base::string16 non_address_info;
@@ -71,14 +71,12 @@ bool DataModelWrapper::GetDisplayText(
 
   non_address_info += base::ASCIIToUTF16("\n") + phone;
 
-  // The separator is locale-specific.
-  std::string compact_separator =
-      ::i18n::addressinput::GetCompactAddressLinesSeparator(GetLanguageCode());
-  *vertically_compact =
-      base::UTF8ToUTF16(JoinString(lines, compact_separator)) +
-          non_address_info;
-  *horizontally_compact = base::UTF8ToUTF16(JoinString(lines, "\n")) +
-      non_address_info;
+  std::string line_address;
+  ::i18n::addressinput::GetFormattedNationalAddressLine(*address_data,
+                                                        &line_address);
+  *vertically_compact = base::UTF8ToUTF16(line_address) + non_address_info;
+  *horizontally_compact =
+      base::UTF8ToUTF16(JoinString(lines, "\n")) + non_address_info;
 
   return true;
 }
@@ -388,7 +386,7 @@ base::string16 I18nAddressDataWrapper::GetInfo(const AutofillType& type) const {
     return base::string16();
 
   if (field == ::i18n::addressinput::COUNTRY) {
-    return AutofillCountry(address_->country_code,
+    return AutofillCountry(address_->region_code,
                            g_browser_process->GetApplicationLocale()).name();
   }
 
