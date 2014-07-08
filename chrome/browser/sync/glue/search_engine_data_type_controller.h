@@ -26,11 +26,14 @@ class SearchEngineDataTypeController : public UIDataTypeController {
       Profile* profile,
       const DisableTypeCallback& disable_callback);
 
+  TemplateURLService::Subscription* GetSubscriptionForTesting();
+
  private:
   virtual ~SearchEngineDataTypeController();
 
   // FrontendDataTypeController implementations.
   virtual bool StartModels() OVERRIDE;
+  virtual void StopModels() OVERRIDE;
 
   void OnTemplateURLServiceLoaded();
 

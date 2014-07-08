@@ -29,6 +29,11 @@ SearchEngineDataTypeController::SearchEngineDataTypeController(
       profile_(profile) {
 }
 
+TemplateURLService::Subscription*
+SearchEngineDataTypeController::GetSubscriptionForTesting() {
+  return template_url_subscription_.get();
+}
+
 SearchEngineDataTypeController::~SearchEngineDataTypeController() {}
 
 // We want to start the TemplateURLService before we begin associating.
@@ -50,6 +55,10 @@ bool SearchEngineDataTypeController::StartModels() {
                  this));
 
   return false;  // Don't continue Start.
+}
+
+void SearchEngineDataTypeController::StopModels() {
+  template_url_subscription_.reset();
 }
 
 void SearchEngineDataTypeController::OnTemplateURLServiceLoaded() {

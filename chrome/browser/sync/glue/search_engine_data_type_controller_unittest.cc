@@ -109,11 +109,13 @@ TEST_F(SyncSearchEngineDataTypeControllerTest, StartURLServiceNotReady) {
   search_engine_dtc_->LoadModels(
       base::Bind(&ModelLoadCallbackMock::Run,
                  base::Unretained(&model_load_callback_)));
+  EXPECT_TRUE(search_engine_dtc_->GetSubscriptionForTesting());
   EXPECT_EQ(DataTypeController::MODEL_STARTING, search_engine_dtc_->state());
   EXPECT_FALSE(syncable_service_.syncing());
 
   // Send the notification that the TemplateURLService has started.
   PreloadTemplateURLService();
+  EXPECT_EQ(NULL, search_engine_dtc_->GetSubscriptionForTesting());
   EXPECT_EQ(DataTypeController::MODEL_LOADED, search_engine_dtc_->state());
 
   // Wait until WebDB is loaded before we shut it down.
@@ -150,6 +152,21 @@ TEST_F(SyncSearchEngineDataTypeControllerTest, Stop) {
   EXPECT_EQ(DataTypeController::RUNNING, search_engine_dtc_->state());
   EXPECT_TRUE(syncable_service_.syncing());
   search_engine_dtc_->Stop();
+  EXPECT_EQ(DataTypeController::NOT_RUNNING, search_engine_dtc_->state());
+  EXPECT_FALSE(syncable_service_.syncing());
+}
+
+TEST_F(SyncSearchEngineDataTypeControllerTest, StopBeforeLoaded) {
+  EXPECT_CALL(model_load_callback_, Run(_, _));
+  EXPECT_FALSE(syncable_service_.syncing());
+  search_engine_dtc_->LoadModels(
+      base::Bind(&ModelLoadCallbackMock::Run,
+                 base::Unretained(&model_load_callback_)));
+  EXPECT_TRUE(search_engine_dtc_->GetSubscriptionForTesting());
+  EXPECT_EQ(DataTypeController::MODEL_STARTING, search_engine_dtc_->state());
+  EXPECT_FALSE(syncable_service_.syncing());
+  search_engine_dtc_->Stop();
+  EXPECT_EQ(NULL, search_engine_dtc_->GetSubscriptionForTesting());
   EXPECT_EQ(DataTypeController::NOT_RUNNING, search_engine_dtc_->state());
   EXPECT_FALSE(syncable_service_.syncing());
 }
