@@ -200,8 +200,8 @@ bool IsDelegatedRendererEnabled() {
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   bool enabled = false;
 
-#if defined(USE_AURA)
-  // Enable on Aura.
+#if defined(USE_AURA) || defined(OS_MACOSX)
+  // Enable on Aura and Mac.
   enabled = true;
 #endif
 
