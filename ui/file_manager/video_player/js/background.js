@@ -50,8 +50,8 @@ function open(videos) {
     id: 'video',
     frame: 'none',
     singleton: false,
-    minWidth: 160,
-    minHeight: 100
+    minWidth: 480,
+    minHeight: 270
   },
   function(createdWindow) {
     // Stores the window for test purpose.
