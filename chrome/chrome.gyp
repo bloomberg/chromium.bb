@@ -423,20 +423,6 @@
                 '../breakpad/breakpad.gyp:dump_syms',
               ],
             }],
-            ['linux_strip_reliability_tests==1', {
-              'actions': [
-                {
-                  'action_name': 'strip_reliability_tests',
-                  'outputs': [
-                    '<(PRODUCT_DIR)/strip_reliability_tests.stamp',
-                  ],
-                  'action': ['strip',
-                             '-g',
-                             '<@(_inputs)'],
-                  'message': 'Stripping reliability tests',
-                },
-              ],
-            }],
           ],
         },
       ],

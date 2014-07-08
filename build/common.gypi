@@ -1275,8 +1275,6 @@
     'linux_dump_symbols%': 0,
     # And if we want to strip the binary after dumping symbols.
     'linux_strip_binary%': 0,
-    # Strip the test binaries needed for Linux reliability tests.
-    'linux_strip_reliability_tests%': 0,
     # If we want stack unwind support for backtrace().
     'debug_unwind_tables%': 1,
     'release_unwind_tables%': 1,
