@@ -73,6 +73,27 @@ PASS event.target.result.primaryKey is 0
 event.target.result.continue()
 PASS event.target.result is null
 
+indexObject.openKeyCursor(null, 'prevunique')
+PASS event.target.result.primaryKey is 17
+event.target.result.continue('A bit2')
+PASS event.target.result.primaryKey is 15
+event.target.result.continue()
+PASS event.target.result.primaryKey is 14
+event.target.result.continue(date)
+PASS event.target.result.primaryKey is 9
+event.target.result.continue()
+PASS event.target.result.primaryKey is 8
+event.target.result.continue(12)
+PASS event.target.result.primaryKey is 7
+event.target.result.continue(3.5)
+PASS event.target.result.primaryKey is 3
+event.target.result.continue()
+PASS event.target.result.primaryKey is 1
+event.target.result.continue()
+PASS event.target.result.primaryKey is 0
+event.target.result.continue()
+PASS event.target.result is null
+
 indexObject.openKeyCursor(null, 'next')
 PASS event.target.result.primaryKey is 0
 event.target.result.continue(3.14159)

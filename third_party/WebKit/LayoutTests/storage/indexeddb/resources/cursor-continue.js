@@ -140,6 +140,54 @@ function descendingCallback()
         evalAndLog("event.target.result.continue()");
     } else if (self.stage == 8) {
         shouldBeNull("event.target.result");
+        descendingUniqueTest();
+        return;
+    } else {
+        testFailed("Illegal stage.");
+    }
+    self.stage++;
+}
+
+function descendingUniqueTest()
+{
+    debug("");
+    var request = evalAndLog("indexObject.openKeyCursor(null, 'prevunique')");
+    request.onsuccess = descendingUniqueCallback;
+    request.onerror = unexpectedErrorCallback;
+    self.stage = 0;
+}
+
+function descendingUniqueCallback()
+{
+    if (self.stage == 0) {
+        shouldBe("event.target.result.primaryKey", "17");
+        evalAndLog("event.target.result.continue('A bit2')");
+    } else if (self.stage == 1) {
+        shouldBe("event.target.result.primaryKey", "15");
+        evalAndLog("event.target.result.continue()");
+    } else if (self.stage == 2) {
+        shouldBe("event.target.result.primaryKey", "14");
+        evalAndLog("event.target.result.continue(date)");
+    } else if (self.stage == 3) {
+        shouldBe("event.target.result.primaryKey", "9");
+        evalAndLog("event.target.result.continue()");
+    } else if (self.stage == 4) {
+        shouldBe("event.target.result.primaryKey", "8");
+        evalAndLog("event.target.result.continue(12)");
+    } else if (self.stage == 5) {
+        shouldBe("event.target.result.primaryKey", "7");
+        evalAndLog("event.target.result.continue(3.5)");
+    } else if (self.stage == 6) {
+        shouldBe("event.target.result.primaryKey", "3");
+        evalAndLog("event.target.result.continue()");
+    } else if (self.stage == 7) {
+        shouldBe("event.target.result.primaryKey", "1");
+        evalAndLog("event.target.result.continue()");
+    } else if (self.stage == 8) {
+        shouldBe("event.target.result.primaryKey", "0");
+        evalAndLog("event.target.result.continue()");
+    } else if (self.stage == 9) {
+        shouldBeNull("event.target.result");
         ascendingErrorTestLessThan();
         return;
     } else {
