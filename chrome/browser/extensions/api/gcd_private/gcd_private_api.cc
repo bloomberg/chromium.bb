@@ -9,6 +9,7 @@
 #include "chrome/browser/local_discovery/cloud_device_list.h"
 #include "chrome/browser/local_discovery/cloud_print_printer_list.h"
 #include "chrome/browser/local_discovery/gcd_constants.h"
+#include "chrome/browser/local_discovery/privet_device_lister_impl.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
@@ -18,14 +19,25 @@
 
 namespace extensions {
 
-using extensions::api::gcd_private::GCDDevice;
+namespace gcd_private = api::gcd_private;
 
 namespace {
+
+scoped_ptr<Event> MakeCloudDeviceStateChangedEvent(
+    bool available,
+    const gcd_private::GCDDevice& device) {
+  scoped_ptr<base::ListValue> params =
+      gcd_private::OnCloudDeviceStateChanged::Create(available, device);
+  scoped_ptr<Event> event(new Event(
+      gcd_private::OnCloudDeviceStateChanged::kEventName, params.Pass()));
+  return event.Pass();
+}
 
 const int kNumRequestsNeeded = 2;
 
 const char kIDPrefixCloudPrinter[] = "cloudprint:";
 const char kIDPrefixGcd[] = "gcd:";
+const char kIDPrefixMdns[] = "mdns:";
 
 GcdPrivateAPI::GCDApiFlowFactoryForTests* g_gcd_api_flow_factory = NULL;
 
@@ -54,16 +66,92 @@ scoped_ptr<local_discovery::GCDApiFlow> MakeGCDApiFlow(Profile* profile) {
 }  // namespace
 
 GcdPrivateAPI::GcdPrivateAPI(content::BrowserContext* context)
-    : browser_context_(context) {
+    : num_device_listeners_(0), browser_context_(context) {
+  DCHECK(browser_context_);
+  if (EventRouter::Get(context)) {
+    EventRouter::Get(context)->RegisterObserver(
+        this, gcd_private::OnCloudDeviceStateChanged::kEventName);
+  }
 }
 
 GcdPrivateAPI::~GcdPrivateAPI() {
+  if (EventRouter::Get(browser_context_)) {
+    EventRouter::Get(browser_context_)->UnregisterObserver(this);
+  }
 }
 
 // static
 BrowserContextKeyedAPIFactory<GcdPrivateAPI>*
 GcdPrivateAPI::GetFactoryInstance() {
   return g_factory.Pointer();
+}
+
+void GcdPrivateAPI::OnListenerAdded(const EventListenerInfo& details) {
+  num_device_listeners_++;
+
+  if (num_device_listeners_ == 1) {
+    service_discovery_client_ =
+        local_discovery::ServiceDiscoverySharedClient::GetInstance();
+    privet_device_lister_.reset(new local_discovery::PrivetDeviceListerImpl(
+        service_discovery_client_.get(), this));
+    privet_device_lister_->Start();
+  }
+
+  for (GCDDeviceMap::iterator i = known_devices_.begin();
+       i != known_devices_.end();
+       i++) {
+    EventRouter::Get(browser_context_)->DispatchEventToExtension(
+        details.extension_id,
+        MakeCloudDeviceStateChangedEvent(true, *i->second));
+  }
+}
+
+void GcdPrivateAPI::OnListenerRemoved(const EventListenerInfo& details) {
+  num_device_listeners_--;
+
+  if (num_device_listeners_ == 0) {
+    privet_device_lister_.reset();
+    service_discovery_client_ = NULL;
+  }
+}
+
+void GcdPrivateAPI::DeviceChanged(
+    bool added,
+    const std::string& name,
+    const local_discovery::DeviceDescription& description) {
+  linked_ptr<gcd_private::GCDDevice> device(new gcd_private::GCDDevice);
+  device->setup_type = gcd_private::SETUP_TYPE_MDNS;
+  device->id_string = kIDPrefixMdns + name;
+  device->device_type = description.type;
+  device->device_name = description.name;
+  device->device_description = description.description;
+  if (!description.id.empty())
+    device->cloud_id.reset(new std::string(description.id));
+
+  known_devices_[device->id_string] = device;
+
+  EventRouter::Get(browser_context_)
+      ->BroadcastEvent(MakeCloudDeviceStateChangedEvent(true, *device));
+}
+
+void GcdPrivateAPI::DeviceRemoved(const std::string& name) {
+  GCDDeviceMap::iterator found = known_devices_.find(kIDPrefixMdns + name);
+  linked_ptr<gcd_private::GCDDevice> device = found->second;
+  known_devices_.erase(found);
+
+  EventRouter::Get(browser_context_)
+      ->BroadcastEvent(MakeCloudDeviceStateChangedEvent(false, *device));
+}
+
+void GcdPrivateAPI::DeviceCacheFlushed() {
+  for (GCDDeviceMap::iterator i = known_devices_.begin();
+       i != known_devices_.end();
+       i++) {
+    EventRouter::Get(browser_context_)
+        ->BroadcastEvent(MakeCloudDeviceStateChangedEvent(false, *i->second));
+  }
+
+  known_devices_.clear();
 }
 
 // static
@@ -122,11 +210,11 @@ void GcdPrivateGetCloudDeviceListFunction::CheckListingDone() {
     return;
   }
 
-  std::vector<linked_ptr<GCDDevice> > devices;
+  std::vector<linked_ptr<gcd_private::GCDDevice> > devices;
 
   for (DeviceList::iterator i = devices_.begin(); i != devices_.end(); i++) {
-    linked_ptr<GCDDevice> device(new GCDDevice);
-    device->setup_type = extensions::api::gcd_private::SETUP_TYPE_CLOUD;
+    linked_ptr<gcd_private::GCDDevice> device(new gcd_private::GCDDevice);
+    device->setup_type = gcd_private::SETUP_TYPE_CLOUD;
     if (i->type == local_discovery::kGCDTypePrinter) {
       device->id_string = kIDPrefixCloudPrinter + i->id;
     } else {
@@ -141,8 +229,7 @@ void GcdPrivateGetCloudDeviceListFunction::CheckListingDone() {
     devices.push_back(device);
   }
 
-  results_ = extensions::api::gcd_private::GetCloudDeviceList::Results::Create(
-      devices);
+  results_ = gcd_private::GetCloudDeviceList::Results::Create(devices);
 
   SendResponse(true);
   Release();
