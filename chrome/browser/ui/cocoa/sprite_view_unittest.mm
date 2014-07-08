@@ -20,7 +20,7 @@ class SpriteViewTest : public CocoaTest {
   SpriteViewTest() {
     image_.reset(ResourceBundle::GetSharedInstance()
                      .GetNativeImageNamed(IDR_THROBBER)
-                     .ToNSImage());
+                     .CopyNSImage());
     view_.reset([[SpriteView alloc] init]);
     [view_ setImage:image_];
     [[test_window() contentView] addSubview:view_];
