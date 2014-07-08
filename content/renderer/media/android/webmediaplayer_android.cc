@@ -765,11 +765,8 @@ void WebMediaPlayerAndroid::OnDisconnectedFromRemoteDevice() {
 }
 
 void WebMediaPlayerAndroid::OnDidEnterFullscreen() {
-  if (!player_manager_->IsInFullscreen(frame_)) {
-    frame_->view()->willEnterFullScreen();
-    frame_->view()->didEnterFullScreen();
+  if (!player_manager_->IsInFullscreen(frame_))
     player_manager_->DidEnterFullscreen(frame_);
-  }
 }
 
 void WebMediaPlayerAndroid::OnDidExitFullscreen() {
@@ -786,8 +783,6 @@ void WebMediaPlayerAndroid::OnDidExitFullscreen() {
     player_manager_->RequestExternalSurface(player_id_, last_computed_rect_);
 #endif  // defined(VIDEO_HOLE)
 
-  frame_->view()->willExitFullScreen();
-  frame_->view()->didExitFullScreen();
   player_manager_->DidExitFullscreen();
   client_->repaint();
 }

@@ -428,6 +428,8 @@ void AwSettings::PopulateWebPreferencesLocked(
       Java_AwSettings_getAllowDisplayingInsecureContentLocked(env, obj);
   web_prefs->allow_running_insecure_content =
       Java_AwSettings_getAllowRunningInsecureContentLocked(env, obj);
+
+  web_prefs->disallow_fullscreen_for_non_media_elements = true;
 }
 
 static jlong Init(JNIEnv* env,

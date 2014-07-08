@@ -47,7 +47,8 @@ base::LazyInstance<AwJavaScriptDialogManager>::Leaky
 AwWebContentsDelegate::AwWebContentsDelegate(
     JNIEnv* env,
     jobject obj)
-    : WebContentsDelegateAndroid(env, obj) {
+    : WebContentsDelegateAndroid(env, obj),
+      is_fullscreen_(false) {
 }
 
 AwWebContentsDelegate::~AwWebContentsDelegate() {
@@ -206,6 +207,25 @@ void AwWebContentsDelegate::RequestMediaAccessPermission(
       scoped_ptr<AwPermissionRequestDelegate>(
           new MediaAccessPermissionRequest(request, callback)));
 }
+
+void AwWebContentsDelegate::ToggleFullscreenModeForTab(
+    content::WebContents* web_contents, bool enter_fullscreen) {
+  JNIEnv* env = AttachCurrentThread();
+
+  ScopedJavaLocalRef<jobject> java_delegate = GetJavaDelegate(env);
+  if (java_delegate.obj()) {
+    Java_AwWebContentsDelegate_toggleFullscreenModeForTab(
+        env, java_delegate.obj(), enter_fullscreen);
+  }
+  is_fullscreen_ = enter_fullscreen;
+  web_contents->GetRenderViewHost()->WasResized();
+}
+
+bool AwWebContentsDelegate::IsFullscreenForTabOrPending(
+    const content::WebContents* web_contents) const {
+  return is_fullscreen_;
+}
+
 
 static void FilesSelectedInChooser(
     JNIEnv* env, jclass clazz,

@@ -165,6 +165,7 @@ struct WEBKIT_COMMON_EXPORT WebPreferences {
   float font_scale_factor;
   float device_scale_adjustment;
   bool force_enable_zoom;
+  bool disallow_fullscreen_for_non_media_elements;
   bool double_tap_to_zoom_enabled;
   bool user_gesture_required_for_media_playback;
   GURL default_video_poster_url;

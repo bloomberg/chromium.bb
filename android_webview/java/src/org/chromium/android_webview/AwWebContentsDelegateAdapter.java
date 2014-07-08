@@ -13,6 +13,7 @@ import android.webkit.ConsoleMessage;
 import android.webkit.ValueCallback;
 
 import org.chromium.base.ThreadUtils;
+import org.chromium.content.browser.ContentVideoView;
 import org.chromium.content.browser.ContentViewCore;
 
 /**
@@ -190,5 +191,13 @@ class AwWebContentsDelegateAdapter extends AwWebContentsDelegate {
     @Override
     public void activateContents() {
         mContentsClient.onRequestFocus();
+    }
+
+    @Override
+    public void toggleFullscreenModeForTab(boolean enterFullscreen) {
+        if (!enterFullscreen) {
+            ContentVideoView videoView = ContentVideoView.getContentVideoView();
+            if (videoView != null) videoView.exitFullscreen(false);
+        }
     }
 }

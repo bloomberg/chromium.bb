@@ -294,6 +294,8 @@ void ApplyWebPreferences(const WebPreferences& prefs, WebView* web_view) {
   settings->setDeviceScaleAdjustment(prefs.device_scale_adjustment);
   web_view->setIgnoreViewportTagScaleLimits(prefs.force_enable_zoom);
   settings->setAutoZoomFocusedNodeToLegibleScale(true);
+  settings->setDisallowFullscreenForNonMediaElements(
+      prefs.disallow_fullscreen_for_non_media_elements);
   settings->setDoubleTapToZoomEnabled(prefs.double_tap_to_zoom_enabled);
   settings->setMediaControlsOverlayPlayButtonEnabled(true);
   settings->setMediaPlaybackRequiresUserGesture(

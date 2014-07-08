@@ -53,6 +53,13 @@ class AwWebContentsDelegate
       content::WebContents* web_contents,
       const content::MediaStreamRequest& request,
       const content::MediaResponseCallback& callback) OVERRIDE;
+  virtual void ToggleFullscreenModeForTab(content::WebContents* web_contents,
+                                          bool enter_fullscreen) OVERRIDE;
+  virtual bool IsFullscreenForTabOrPending(
+      const content::WebContents* web_contents) const OVERRIDE;
+
+ private:
+  bool is_fullscreen_;
 };
 
 bool RegisterAwWebContentsDelegate(JNIEnv* env);

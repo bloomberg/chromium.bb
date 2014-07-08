@@ -35,6 +35,10 @@ public abstract class AwWebContentsDelegate extends WebContentsDelegateAndroid {
     @CalledByNative
     public abstract void activateContents();
 
+    @Override
+    @CalledByNative
+    public abstract void toggleFullscreenModeForTab(boolean enterFullscreen);
+
     // Call in response to a prior runFileChooser call.
     protected static native void nativeFilesSelectedInChooser(int processId, int renderId,
             int mode_flags, String[] filePath);
