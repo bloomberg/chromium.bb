@@ -107,23 +107,23 @@ void PatchServiceManagerCalls() {
 
   DWORD patched = g_iat_patch_open_sc_manager.Patch(L"dwrite.dll",
       service_provider_dll, "OpenSCManagerW", OpenSCManagerWPatch);
-  CHECK(patched == 0);
+  DCHECK(patched == 0);
 
   patched = g_iat_patch_close_service_handle.Patch(L"dwrite.dll",
       service_provider_dll, "CloseServiceHandle", CloseServiceHandlePatch);
-  CHECK(patched == 0);
+  DCHECK(patched == 0);
 
   patched = g_iat_patch_open_service.Patch(L"dwrite.dll",
       service_provider_dll, "OpenServiceW", OpenServiceWPatch);
-  CHECK(patched == 0);
+  DCHECK(patched == 0);
 
   patched = g_iat_patch_start_service.Patch(L"dwrite.dll",
       service_provider_dll, "StartServiceW", StartServiceWPatch);
-  CHECK(patched == 0);
+  DCHECK(patched == 0);
 
   patched = g_iat_patch_nt_connect_port.Patch(L"dwrite.dll",
       "ntdll.dll", "NtAlpcConnectPort", NtALpcConnectPortPatch);
-  CHECK(patched == 0);
+  DCHECK(patched == 0);
 }
 
 
