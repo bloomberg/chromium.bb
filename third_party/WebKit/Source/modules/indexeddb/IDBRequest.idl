@@ -27,6 +27,11 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+enum IDBRequestReadyState {
+    "pending",
+    "done"
+};
+
 [
     ActiveDOMObject,
     GarbageCollected,
@@ -38,7 +43,7 @@
     readonly attribute IDBTransaction transaction;
 
     // States
-    readonly attribute DOMString readyState;
+    readonly attribute IDBRequestReadyState readyState;
 
     // Events
     attribute EventHandler onsuccess;
