@@ -35,7 +35,7 @@ TEST(SpdyFrameReaderTest, ReadUInt16) {
 TEST(SpdyFrameReaderTest, ReadUInt32) {
   // Frame data in network byte order.
   const uint32 kFrameData[] = {
-    htonl(1), htonl(1<<31),
+    htonl(1), htonl(0x80000000),
   };
 
   SpdyFrameReader frame_reader(reinterpret_cast<const char *>(kFrameData),

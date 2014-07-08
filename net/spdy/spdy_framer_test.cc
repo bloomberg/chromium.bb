@@ -266,7 +266,7 @@ class TestSpdyVisitor : public SpdyFramerVisitorInterface,
         header_buffer_(new char[kDefaultHeaderBufferSize]),
         header_buffer_length_(0),
         header_buffer_size_(kDefaultHeaderBufferSize),
-        header_stream_id_(-1),
+        header_stream_id_(static_cast<SpdyStreamId>(-1)),
         header_control_type_(DATA),
         header_buffer_valid_(false) {}
 

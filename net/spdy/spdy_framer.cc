@@ -53,7 +53,7 @@ const size_t kPriorityWeightPayloadSize = 1;
 
 }  // namespace
 
-const SpdyStreamId SpdyFramer::kInvalidStream = -1;
+const SpdyStreamId SpdyFramer::kInvalidStream = static_cast<SpdyStreamId>(-1);
 const size_t SpdyFramer::kHeaderDataChunkMaxSize = 1024;
 // largest control frame, which is SYN_STREAM. See GetSynStreamMinimumSize() for
 // calculation details.

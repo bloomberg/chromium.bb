@@ -21,8 +21,8 @@ class TestBufferedSpdyVisitor : public BufferedSpdyFramerVisitorInterface {
         syn_reply_frame_count_(0),
         headers_frame_count_(0),
         push_promise_frame_count_(0),
-        header_stream_id_(-1),
-        promised_stream_id_(-1) {
+        header_stream_id_(static_cast<SpdyStreamId>(-1)),
+        promised_stream_id_(static_cast<SpdyStreamId>(-1)) {
   }
 
   virtual void OnError(SpdyFramer::SpdyError error_code) OVERRIDE {

@@ -50,7 +50,7 @@ INSTANTIATE_TEST_CASE_P(SpdyProtocolDeathTests,
 TEST_P(SpdyProtocolDeathTest, TestSpdySettingsAndIdOutOfBounds) {
   scoped_ptr<SettingsFlagsAndId> flags_and_id;
 
-  EXPECT_DFATAL(flags_and_id.reset(new SettingsFlagsAndId(1, ~0)),
+  EXPECT_DFATAL(flags_and_id.reset(new SettingsFlagsAndId(1, 0xFFFFFFFF)),
                 "SPDY setting ID too large.");
   // Make sure that we get expected values in opt mode.
   if (flags_and_id.get() != NULL) {
