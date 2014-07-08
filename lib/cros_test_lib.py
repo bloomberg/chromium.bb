@@ -628,7 +628,7 @@ class TestCase(unittest.TestCase):
     os.umask(self.__saved_umask__)
 
   def assertRaises2(self, exception, functor, *args, **kwargs):
-    """Like assertRaises, just with checking of the excpetion.
+    """Like assertRaises, just with checking of the exception.
 
     args:
       exception: The expected exception type to intecept.

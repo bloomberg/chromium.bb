@@ -23,6 +23,26 @@ class DBException(Exception):
   """General exception class for this module."""
 
 
+class UnsupportedMethodException(DBException):
+  """Raised when a call is made that the database does not support."""
+
+
+def minimum_schema(min_version):
+  """Generate a decorator to specify a minimum schema version for a method.
+
+  This decorator should be applied only to instance methods of
+  SchemaVersionedMySQLConnection objects.
+  """
+
+  def decorator(f):
+    def wrapper(self, *args):
+      if self.schema_version < min_version:
+        raise UnsupportedMethodException()
+      return f(self, *args)
+    return wrapper
+  return decorator
+
+
 class SchemaVersionedMySQLConnection(object):
   """Connection to a database that is aware of its schema version."""
 
@@ -152,4 +172,12 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
   def __init__(self):
     super(CIDBConnection, self).__init__('cidb', CIDB_MIGRATIONS_DIR,
                                          TEST_DB_CREDENTIALS_DIR)
+
+  @minimum_schema(1)
+  def TestMethodSchemaTooLow(self):
+    """This method is a temporary one to test the minimum_schema decorator."""
+
+  @minimum_schema(0)
+  def TestMethodSchemaOK(self):
+    """This method is a temporary one to test the minimum_schema decorator."""
 

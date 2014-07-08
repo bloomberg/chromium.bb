@@ -21,16 +21,49 @@ from chromite.lib import cidb
 from chromite.lib import cros_test_lib
 
 
-class CIDBMigrationsTest(cros_test_lib.TestCase):
-  """Tests that migration scripts run without error."""
-  def testMigrations(self):
+class CIDBIntegrationTest(cros_test_lib.TestCase):
+  """Base class for cidb tests that connect to a test MySQL instance."""
+
+  def _PrepareFreshDatabase(self, max_schema_version=None):
+    """Create an empty database with migrations applied.
+
+    Args:
+      max_schema_version: The highest schema version migration to apply,
+      defaults to None in which case all migrations will be applied.
+
+    Returns:
+      A CIDBConnection instance, connected to a an empty database.
+    """
     # Connect to database and drop its contents.
     db = cidb.CIDBConnection()
     db.DropDatabase()
 
     # Connect to now fresh database and apply migrations.
     db = cidb.CIDBConnection()
-    db.ApplySchemaMigrations()
+    db.ApplySchemaMigrations(max_schema_version)
+
+    return db
+
+class CIDBMigrationsTest(CIDBIntegrationTest):
+  """Test that all migrations apply correctly."""
+
+  def testMigrations(self):
+    """Test that all migrations apply correctly."""
+    self._PrepareFreshDatabase()
+
+
+class CIDBAPITest(CIDBIntegrationTest):
+  """Tests of the CIDB API."""
+  def testSchemaVersionTooLow(self):
+    """Tests that the minimum_schema decorator works as expected."""
+    db = self._PrepareFreshDatabase(0)
+    self.assertRaises2(cidb.UnsupportedMethodException,
+                       db.TestMethodSchemaTooLow)
+
+  def testSchemaVersionOK(self):
+    """Tests that the minimum_schema decorator works as expected."""
+    db = self._PrepareFreshDatabase(0)
+    db.TestMethodSchemaOK()
 
 
 # TODO(akeshet): Allow command line args to specify alternate CIDB instance
