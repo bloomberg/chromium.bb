@@ -69,7 +69,7 @@ void RendererWebCookieJarImpl::deleteCookie(
 
 bool RendererWebCookieJarImpl::cookiesEnabled(
     const WebURL& url, const WebURL& first_party_for_cookies) {
-  bool cookies_enabled;
+  bool cookies_enabled = false;
   sender_->Send(new ViewHostMsg_CookiesEnabled(
       sender_->GetRoutingID(), url, first_party_for_cookies, &cookies_enabled));
   return cookies_enabled;

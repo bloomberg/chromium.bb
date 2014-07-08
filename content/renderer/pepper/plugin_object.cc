@@ -208,7 +208,8 @@ bool WrapperClass_Enumerate(NPObject* object,
           calloc(property_count, sizeof(NPIdentifier)));
       *count = 0;  // Will be the number of items successfully converted.
       for (uint32_t i = 0; i < property_count; ++i) {
-        if (!((*values)[i] = PPVarToNPIdentifier(properties[i]))) {
+        (*values)[i] = PPVarToNPIdentifier(properties[i]);
+        if (!(*values)[i]) {
           // Throw an exception for the failed convertion.
           *result_converter.exception() =
               StringVar::StringToPPVar(kInvalidValueException);

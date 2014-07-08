@@ -27,7 +27,7 @@ namespace content {
 class CompositorSoftwareOutputDevice
     : NON_EXPORTED_BASE(public cc::SoftwareOutputDevice),
       NON_EXPORTED_BASE(public base::NonThreadSafe) {
-public:
+ public:
   CompositorSoftwareOutputDevice();
   virtual ~CompositorSoftwareOutputDevice();
 
@@ -40,7 +40,7 @@ public:
 
   virtual void ReclaimSoftwareFrame(unsigned id) OVERRIDE;
 
-private:
+ private:
   // Internal buffer class that manages shared memory lifetime and ownership.
   // It also tracks buffers' history so we can calculate what's the minimum
   // damage rect difference between any two given buffers (see SetParent and

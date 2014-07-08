@@ -691,7 +691,7 @@ scoped_refptr<PluginModule> PluginModule::Create(
 
   // Out of process: have the browser start the plugin process for us.
   IPC::ChannelHandle channel_handle;
-  base::ProcessId peer_pid;
+  base::ProcessId peer_pid = 0;
   int plugin_child_id = 0;
   render_frame->Send(new ViewHostMsg_OpenChannelToPepperPlugin(
       path, &channel_handle, &peer_pid, &plugin_child_id));

@@ -526,7 +526,7 @@ bool RendererWebKitPlatformSupportImpl::FileUtilities::getFileInfo(
     const WebString& path,
     WebFileInfo& web_file_info) {
   base::File::Info file_info;
-  base::File::Error status;
+  base::File::Error status = base::File::FILE_ERROR_MAX;
   if (!SendSyncMessageFromAnyThread(new FileUtilitiesMsg_GetFileInfo(
            base::FilePath::FromUTF16Unsafe(path), &file_info, &status)) ||
       status != base::File::FILE_OK) {

@@ -114,7 +114,9 @@ void PepperVideoCaptureHost::PostErrorReply() {
   // the capture.
   SetStatus(PP_VIDEO_CAPTURE_STATUS_STOPPED, true);
   host()->SendUnsolicitedReply(
-      pp_resource(), PpapiPluginMsg_VideoCapture_OnError(PP_ERROR_FAILED));
+      pp_resource(),
+      PpapiPluginMsg_VideoCapture_OnError(
+          static_cast<uint32_t>(PP_ERROR_FAILED)));
 }
 
 void PepperVideoCaptureHost::OnFrameReady(

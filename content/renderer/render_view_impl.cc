@@ -1411,7 +1411,7 @@ WebView* RenderViewImpl::createView(WebLocalFrame* creator,
   int32 routing_id = MSG_ROUTING_NONE;
   int32 main_frame_routing_id = MSG_ROUTING_NONE;
   int32 surface_id = 0;
-  int64 cloned_session_storage_namespace_id;
+  int64 cloned_session_storage_namespace_id = 0;
 
   RenderThread::Get()->Send(
       new ViewHostMsg_CreateWindow(params,

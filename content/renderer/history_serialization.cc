@@ -99,7 +99,8 @@ void GenerateFrameStateFromItem(const WebHistoryItem& item,
 
   state->http_body.http_content_type = item.httpContentType();
   const WebHTTPBody& http_body = item.httpBody();
-  if (!(state->http_body.is_null = http_body.isNull())) {
+  state->http_body.is_null = http_body.isNull();
+  if (!state->http_body.is_null) {
     state->http_body.identifier = http_body.identifier();
     state->http_body.elements.resize(http_body.elementCount());
     for (size_t i = 0; i < http_body.elementCount(); ++i) {

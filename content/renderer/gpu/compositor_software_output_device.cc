@@ -15,6 +15,12 @@
 #include "third_party/skia/include/core/SkRegion.h"
 #include "ui/gfx/skia_util.h"
 
+namespace {
+
+const size_t kInvalidIndex = static_cast<size_t>(-1);
+
+}  // namespace
+
 namespace content {
 
 CompositorSoftwareOutputDevice::Buffer::Buffer(
@@ -56,7 +62,7 @@ bool CompositorSoftwareOutputDevice::Buffer::FindDamageDifferenceFrom(
 }
 
 CompositorSoftwareOutputDevice::CompositorSoftwareOutputDevice()
-    : current_index_(-1),
+    : current_index_(kInvalidIndex),
       next_buffer_id_(1),
       shared_bitmap_manager_(
           RenderThreadImpl::current()->shared_bitmap_manager()) {
@@ -113,7 +119,7 @@ void CompositorSoftwareOutputDevice::Resize(
   }
 
   buffers_.clear();
-  current_index_ = -1;
+  current_index_ = kInvalidIndex;
   viewport_pixel_size_ = viewport_pixel_size;
 }
 
@@ -126,7 +132,7 @@ void CompositorSoftwareOutputDevice::DiscardBackbuffer() {
     }
   }
   buffers_.clear();
-  current_index_ = -1;
+  current_index_ = kInvalidIndex;
 }
 
 void CompositorSoftwareOutputDevice::EnsureBackbuffer() {
@@ -137,7 +143,7 @@ SkCanvas* CompositorSoftwareOutputDevice::BeginPaint(
   DCHECK(CalledOnValidThread());
 
   Buffer* previous = NULL;
-  if (current_index_ != size_t(-1))
+  if (current_index_ != kInvalidIndex)
     previous = buffers_[current_index_];
   current_index_ = FindFreeBuffer(current_index_ + 1);
   Buffer* current = buffers_[current_index_];

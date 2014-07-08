@@ -769,7 +769,7 @@ void WebPluginDelegateProxy::SetFocus(bool focused) {
 bool WebPluginDelegateProxy::HandleInputEvent(
     const WebInputEvent& event,
     WebCursor::CursorInfo* cursor_info) {
-  bool handled;
+  bool handled = false;
   WebCursor cursor;
   // A windowless plugin can enter a modal loop in the context of a
   // NPP_HandleEvent call, in which case we need to pump messages to

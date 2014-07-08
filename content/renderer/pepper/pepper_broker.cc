@@ -88,7 +88,7 @@ int32_t PepperBrokerDispatcherWrapper::SendHandleToBroker(
   if (foreign_socket_handle == IPC::InvalidPlatformFileForTransit())
     return PP_ERROR_FAILED;
 
-  int32_t result;
+  int32_t result = PP_ERROR_FAILED;
   if (!dispatcher_->Send(new PpapiMsg_ConnectToPlugin(
           instance, foreign_socket_handle, &result))) {
     // The plugin did not receive the handle, so it must be closed.

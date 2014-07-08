@@ -116,7 +116,7 @@ uint64 RendererClipboardClient::GetSequenceNumber(ui::ClipboardType type) {
 
 bool RendererClipboardClient::IsFormatAvailable(content::ClipboardFormat format,
                                                 ui::ClipboardType type) {
-  bool result;
+  bool result = false;
   RenderThreadImpl::current()->Send(
       new ClipboardHostMsg_IsFormatAvailable(format, type, &result));
   return result;
@@ -156,7 +156,7 @@ void RendererClipboardClient::ReadRTF(ui::ClipboardType type,
 void RendererClipboardClient::ReadImage(ui::ClipboardType type,
                                         std::string* data) {
   base::SharedMemoryHandle image_handle;
-  uint32 image_size;
+  uint32 image_size = 0;
   RenderThreadImpl::current()->Send(
       new ClipboardHostMsg_ReadImage(type, &image_handle, &image_size));
   if (base::SharedMemory::IsHandleValid(image_handle)) {
