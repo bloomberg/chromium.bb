@@ -32,6 +32,8 @@ namespace {
 // Measured in seconds.
 const double kSmoothnessTakesPriorityExpirationDelay = 0.25;
 
+unsigned int nextBeginFrameId = 0;
+
 class SwapPromiseChecker {
  public:
   explicit SwapPromiseChecker(cc::LayerTreeHost* layer_tree_host)
@@ -688,9 +690,12 @@ void ThreadProxy::FinishAllRenderingOnImplThread(CompletionEvent* completion) {
 }
 
 void ThreadProxy::ScheduledActionSendBeginMainFrame() {
-  TRACE_EVENT0("cc", "ThreadProxy::ScheduledActionSendBeginMainFrame");
+  unsigned int begin_frame_id = nextBeginFrameId++;
+  benchmark_instrumentation::ScopedBeginFrameTask begin_frame_task(
+      benchmark_instrumentation::kSendBeginFrame, begin_frame_id);
   scoped_ptr<BeginMainFrameAndCommitState> begin_main_frame_state(
       new BeginMainFrameAndCommitState);
+  begin_main_frame_state->begin_frame_id = begin_frame_id;
   begin_main_frame_state->monotonic_frame_begin_time =
       impl().layer_tree_host_impl->CurrentFrameTimeTicks();
   begin_main_frame_state->scroll_info =
@@ -717,7 +722,9 @@ void ThreadProxy::ScheduledActionSendBeginMainFrame() {
 
 void ThreadProxy::BeginMainFrame(
     scoped_ptr<BeginMainFrameAndCommitState> begin_main_frame_state) {
-  TRACE_EVENT0("cc", "ThreadProxy::BeginMainFrame");
+  benchmark_instrumentation::ScopedBeginFrameTask begin_frame_task(
+      benchmark_instrumentation::kDoBeginFrame,
+      begin_main_frame_state->begin_frame_id);
   TRACE_EVENT_SYNTHETIC_DELAY_BEGIN("cc.BeginMainFrame");
   DCHECK(IsMainThread());
 
@@ -871,7 +878,7 @@ void ThreadProxy::BeginMainFrame(
 
     RenderingStatsInstrumentation* stats_instrumentation =
         layer_tree_host()->rendering_stats_instrumentation();
-    BenchmarkInstrumentation::IssueMainThreadRenderingStatsEvent(
+    benchmark_instrumentation::IssueMainThreadRenderingStatsEvent(
         stats_instrumentation->main_thread_rendering_stats());
     stats_instrumentation->AccumulateAndClearMainThreadStats();
   }

@@ -177,7 +177,7 @@ void SingleThreadProxy::DoCommit(scoped_ptr<ResourceUpdateQueue> queue) {
 
     RenderingStatsInstrumentation* stats_instrumentation =
         layer_tree_host_->rendering_stats_instrumentation();
-    BenchmarkInstrumentation::IssueMainThreadRenderingStatsEvent(
+    benchmark_instrumentation::IssueMainThreadRenderingStatsEvent(
         stats_instrumentation->main_thread_rendering_stats());
     stats_instrumentation->AccumulateAndClearMainThreadStats();
   }

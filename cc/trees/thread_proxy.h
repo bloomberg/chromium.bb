@@ -47,6 +47,7 @@ class CC_EXPORT ThreadProxy : public Proxy,
     BeginMainFrameAndCommitState();
     ~BeginMainFrameAndCommitState();
 
+    unsigned int begin_frame_id;
     base::TimeTicks monotonic_frame_begin_time;
     scoped_ptr<ScrollAndScaleSet> scroll_info;
     size_t memory_allocation_limit_bytes;

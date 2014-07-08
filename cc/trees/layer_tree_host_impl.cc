@@ -1498,7 +1498,7 @@ void LayerTreeHostImpl::DrawLayers(FrameData* frame,
   active_tree_->root_layer()->ResetAllChangeTrackingForSubtree();
 
   devtools_instrumentation::DidDrawFrame(id_);
-  BenchmarkInstrumentation::IssueImplThreadRenderingStatsEvent(
+  benchmark_instrumentation::IssueImplThreadRenderingStatsEvent(
       rendering_stats_instrumentation_->impl_thread_rendering_stats());
   rendering_stats_instrumentation_->AccumulateAndClearImplThreadStats();
 }
