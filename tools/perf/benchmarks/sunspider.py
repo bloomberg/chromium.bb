@@ -9,6 +9,7 @@ from metrics import power
 from telemetry import benchmark
 from telemetry.page import page_measurement
 from telemetry.page import page_set
+from telemetry.value import list_of_scalar_values
 
 
 _URL = 'http://www.webkit.org/perf/sunspider-1.0.2/sunspider-1.0.2/driver.html'
@@ -50,8 +51,10 @@ class _SunspiderMeasurement(page_measurement.PageMeasurement):
         total += value
       totals.append(total)
     for key, values in r.iteritems():
-      results.Add(key, 'ms', values, data_type='unimportant')
-    results.Add('Total', 'ms', totals)
+      results.AddValue(list_of_scalar_values.ListOfScalarValues(
+          results.current_page, key, 'ms', values, important=False))
+    results.AddValue(list_of_scalar_values.ListOfScalarValues(
+        results.current_page, 'Total', 'ms', totals))
 
 
 class Sunspider(benchmark.Benchmark):

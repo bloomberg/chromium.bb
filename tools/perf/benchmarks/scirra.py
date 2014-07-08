@@ -13,6 +13,7 @@ import os
 from telemetry import benchmark
 from telemetry.page import page_measurement
 from telemetry.page import page_set
+from telemetry.value import scalar
 
 
 class _ScirraMeasurement(page_measurement.PageMeasurement):
@@ -47,8 +48,8 @@ class _ScirraMeasurement(page_measurement.PageMeasurement):
         """ % {'tickcount': tickcount, 'fps': fps, 'object_count': object_count}
     tab.WaitForJavaScriptExpression(js_is_done, 300)
     total = int(tab.EvaluateJavaScript('window.sprites'))
-    results.Add('Count', 'count', total)
-
+    results.AddValue(scalar.ScalarValue(
+      results.current_page, 'Count', 'count', total))
 
 @benchmark.Disabled
 class ScirraBenchmark(benchmark.Benchmark):
