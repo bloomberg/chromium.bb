@@ -1044,76 +1044,6 @@ WebLayer* GraphicsLayer::platformLayer() const
     return m_layer->layer();
 }
 
-static bool copyWebCoreFilterOperationsToWebFilterOperations(const FilterOperations& filters, WebFilterOperations& webFilters)
-{
-    for (size_t i = 0; i < filters.size(); ++i) {
-        const FilterOperation& op = *filters.at(i);
-        switch (op.type()) {
-        case FilterOperation::REFERENCE:
-            return false; // Not supported.
-        case FilterOperation::GRAYSCALE:
-        case FilterOperation::SEPIA:
-        case FilterOperation::SATURATE:
-        case FilterOperation::HUE_ROTATE: {
-            float amount = toBasicColorMatrixFilterOperation(op).amount();
-            switch (op.type()) {
-            case FilterOperation::GRAYSCALE:
-                webFilters.appendGrayscaleFilter(amount);
-                break;
-            case FilterOperation::SEPIA:
-                webFilters.appendSepiaFilter(amount);
-                break;
-            case FilterOperation::SATURATE:
-                webFilters.appendSaturateFilter(amount);
-                break;
-            case FilterOperation::HUE_ROTATE:
-                webFilters.appendHueRotateFilter(amount);
-                break;
-            default:
-                ASSERT_NOT_REACHED();
-            }
-            break;
-        }
-        case FilterOperation::INVERT:
-        case FilterOperation::OPACITY:
-        case FilterOperation::BRIGHTNESS:
-        case FilterOperation::CONTRAST: {
-            float amount = toBasicComponentTransferFilterOperation(op).amount();
-            switch (op.type()) {
-            case FilterOperation::INVERT:
-                webFilters.appendInvertFilter(amount);
-                break;
-            case FilterOperation::OPACITY:
-                webFilters.appendOpacityFilter(amount);
-                break;
-            case FilterOperation::BRIGHTNESS:
-                webFilters.appendBrightnessFilter(amount);
-                break;
-            case FilterOperation::CONTRAST:
-                webFilters.appendContrastFilter(amount);
-                break;
-            default:
-                ASSERT_NOT_REACHED();
-            }
-            break;
-        }
-        case FilterOperation::BLUR: {
-            float pixelRadius = toBlurFilterOperation(op).stdDeviation().getFloatValue();
-            webFilters.appendBlurFilter(pixelRadius);
-            break;
-        }
-        case FilterOperation::DROP_SHADOW: {
-            const DropShadowFilterOperation& dropShadowOp = toDropShadowFilterOperation(op);
-            webFilters.appendDropShadowFilter(WebPoint(dropShadowOp.x(), dropShadowOp.y()), dropShadowOp.stdDeviation(), dropShadowOp.color().rgb());
-            break;
-        }
-        case FilterOperation::NONE:
-            break;
-        }
-    }
-    return true;
-}
-
 bool GraphicsLayer::setFilters(const FilterOperations& filters)
 {
     SkiaImageFilterBuilder builder;
@@ -1132,14 +1062,6 @@ bool GraphicsLayer::setFilters(const FilterOperations& filters)
     m_layer->layer()->setFilters(*webFilters);
     m_filters = filters;
     return true;
-}
-
-void GraphicsLayer::setBackgroundFilters(const FilterOperations& filters)
-{
-    OwnPtr<WebFilterOperations> webFilters = adoptPtr(Platform::current()->compositorSupport()->createFilterOperations());
-    if (!copyWebCoreFilterOperationsToWebFilterOperations(filters, *webFilters))
-        return;
-    m_layer->layer()->setBackgroundFilters(*webFilters);
 }
 
 void GraphicsLayer::setPaintingPhase(GraphicsLayerPaintingPhase phase)

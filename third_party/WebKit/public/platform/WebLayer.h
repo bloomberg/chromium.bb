@@ -127,13 +127,6 @@ public:
     // WebFilterOperations object.
     virtual void setFilters(const WebFilterOperations&) = 0;
 
-    // Apply filters to pixels that show through the background of this layer.
-    // Note: These filters are only possible on layers that are drawn directly
-    // to a root render surface with an opaque background. This means if an
-    // ancestor of the background-filtered layer sets certain properties
-    // (opacity, transforms), it may conflict and hide the background filters.
-    virtual void setBackgroundFilters(const WebFilterOperations&) = 0;
-
     // An animation delegate is notified when animations are started and
     // stopped. The WebLayer does not take ownership of the delegate, and it is
     // the responsibility of the client to reset the layer's delegate before

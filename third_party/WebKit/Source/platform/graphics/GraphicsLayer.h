@@ -189,7 +189,6 @@ public:
 
     // Returns true if filter can be rendered by the compositor
     bool setFilters(const FilterOperations&);
-    void setBackgroundFilters(const FilterOperations&);
 
     // Some GraphicsLayers paint only the foreground or the background content
     void setPaintingPhase(GraphicsLayerPaintingPhase);
