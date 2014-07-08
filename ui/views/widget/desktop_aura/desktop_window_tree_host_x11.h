@@ -276,12 +276,7 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11
   // Whether we used an ARGB visual for our window.
   bool use_argb_visual_;
 
-  scoped_ptr<DesktopDispatcherClient> dispatcher_client_;
-
   DesktopDragDropClientAuraX11* drag_drop_client_;
-
-  // Current Aura cursor.
-  gfx::NativeCursor current_cursor_;
 
   scoped_ptr<ui::EventHandler> x11_non_client_event_filter_;
   scoped_ptr<X11DesktopWindowMoveClient> x11_window_move_client_;
