@@ -201,6 +201,9 @@ cr.define('login', function() {
         this.actionBoxRemoveUserWarningButtonElement.addEventListener(
             'click',
             this.handleRemoveUserConfirmationClick_.bind(this));
+        this.actionBoxRemoveUserWarningButtonElement.addEventListener(
+            'keydown',
+            this.handleRemoveUserConfirmationKeyDown_.bind(this));
       }
     },
 
@@ -798,6 +801,15 @@ cr.define('login', function() {
     },
 
     /**
+     * Removes a user using the correct identifier based on user type.
+     * @param {Object} user User to be removed.
+     */
+    removeUser: function(user) {
+      chrome.send('removeUser',
+                  [user.isDesktopUser ? user.profilePath : user.username]);
+    },
+
+    /**
      * Handles a click event on action area button.
      * @param {Event} e Click event.
      */
@@ -864,6 +876,7 @@ cr.define('login', function() {
     showRemoveWarning_: function() {
       this.actionBoxMenuRemoveElement.hidden = true;
       this.actionBoxRemoveUserWarningElement.hidden = false;
+      this.actionBoxRemoveUserWarningButtonElement.focus();
     },
 
     /**
@@ -871,8 +884,30 @@ cr.define('login', function() {
      * @param {Event} e Click event.
      */
     handleRemoveUserConfirmationClick_: function(e) {
-      if (this.isActionBoxMenuActive)
-        chrome.send('removeUser', [this.user.username]);
+      if (this.isActionBoxMenuActive) {
+        this.isActionBoxMenuActive = false;
+        this.removeUser(this.user);
+        e.stopPropagation();
+      }
+    },
+
+    /**
+     * Handles a keydown event on remove user confirmation button.
+     * @param {Event} e KeyDown event.
+     */
+    handleRemoveUserConfirmationKeyDown_: function(e) {
+      if (!this.isActionBoxMenuActive)
+        return;
+
+      // Only handle pressing 'Enter' or 'Space', and let all other events
+      // bubble to the action box menu.
+      if (e.keyIdentifier == 'Enter' || e.keyIdentifier == 'U+0020') {
+        this.isActionBoxMenuActive = false;
+        this.removeUser(this.user);
+        e.stopPropagation();
+        // Prevent default so that we don't trigger a 'click' event.
+        e.preventDefault();
+      }
     },
 
     /**
@@ -884,7 +919,14 @@ cr.define('login', function() {
         return;
       switch (e.keyIdentifier) {
         case 'Enter':
-          chrome.send('removeUser', [this.user.username]);
+          if (this.user.locallyManagedUser || this.user.isDesktopUser) {
+            // Prevent default so that we don't trigger a 'click' event on the
+            // remove button that will be focused.
+            e.preventDefault();
+            this.showRemoveWarning_();
+          } else {
+            this.removeUser(this.user);
+          }
           e.stopPropagation();
           break;
         case 'Up':
@@ -1278,11 +1320,6 @@ cr.define('login', function() {
 
       if (this.isAuthTypeUserClick)
         chrome.send('attemptUnlock', [this.user.emailAddress]);
-    },
-
-    /** @override */
-    handleRemoveUserConfirmationClick_: function(e) {
-      chrome.send('removeUser', [this.user.profilePath]);
     },
   };
 
