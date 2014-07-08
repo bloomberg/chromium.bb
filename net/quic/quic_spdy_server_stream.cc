@@ -76,7 +76,7 @@ void QuicSpdyServerStream::OnFinRead() {
 // request_headers_received_. If not successful, it can just be tried again once
 // there's more data.
 void QuicSpdyServerStream::ParseRequestHeaders() {
-  SpdyFramer framer((kDefaultSpdyMajorVersion));
+  SpdyFramer framer(kDefaultSpdyMajorVersion);
   char* data = read_buf_->StartOfBuffer();
   size_t read_buf_len = static_cast<size_t>(read_buf_->offset());
   size_t len = framer.ParseHeaderBlockInBuffer(data, read_buf_len, &headers_);

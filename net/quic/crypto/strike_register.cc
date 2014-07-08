@@ -15,7 +15,7 @@ namespace net {
 // static
 const uint32 StrikeRegister::kExternalNodeSize = 24;
 // static
-const uint32 StrikeRegister::kNil = (1 << 31) | 1;
+const uint32 StrikeRegister::kNil = (1u << 31) | 1;
 // static
 const uint32 StrikeRegister::kExternalFlag = 1 << 23;
 

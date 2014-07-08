@@ -98,24 +98,8 @@ TEST(QuicServerIdTest, LessThan) {
   PrivacyMode left_privacy;
   PrivacyMode right_privacy;
   for (int i = 0; i < 4; i++) {
-    switch (i) {
-      case 0:
-        left_privacy = PRIVACY_MODE_DISABLED;
-        right_privacy = PRIVACY_MODE_DISABLED;
-        break;
-      case 1:
-        left_privacy = PRIVACY_MODE_DISABLED;
-        right_privacy = PRIVACY_MODE_ENABLED;
-        break;
-      case 2:
-        left_privacy = PRIVACY_MODE_ENABLED;
-        right_privacy = PRIVACY_MODE_DISABLED;
-        break;
-      case 3:
-        left_privacy = PRIVACY_MODE_ENABLED;
-        right_privacy = PRIVACY_MODE_ENABLED;
-        break;
-    }
+    left_privacy = static_cast<PrivacyMode>(i / 2);
+    right_privacy = static_cast<PrivacyMode>(i % 2);
     QuicServerId a_10_http_left_private(HostPortPair("a.com", 10), false,
                                         left_privacy);
     QuicServerId a_10_http_right_private(HostPortPair("a.com", 10), false,
@@ -216,16 +200,7 @@ TEST(QuicServerIdTest, Equals) {
   PrivacyMode left_privacy;
   PrivacyMode right_privacy;
   for (int i = 0; i < 2; i++) {
-    switch (i) {
-      case 0:
-        left_privacy = PRIVACY_MODE_DISABLED;
-        right_privacy = PRIVACY_MODE_DISABLED;
-        break;
-      case 1:
-        left_privacy = PRIVACY_MODE_ENABLED;
-        right_privacy = PRIVACY_MODE_ENABLED;
-        break;
-    }
+    left_privacy = right_privacy = static_cast<PrivacyMode>(i);
     QuicServerId a_10_http_right_private(HostPortPair("a.com", 10), false,
                                          right_privacy);
     QuicServerId a_10_https_right_private(HostPortPair("a.com", 10), true,
@@ -271,14 +246,7 @@ TEST(QuicServerIdTest, Equals) {
   }
 
   for (int i = 0; i < 2; i++) {
-    switch (i) {
-      case 0:
-        right_privacy = PRIVACY_MODE_DISABLED;
-        break;
-      case 1:
-        right_privacy = PRIVACY_MODE_ENABLED;
-        break;
-    }
+    right_privacy = static_cast<PrivacyMode>(i);
     QuicServerId a_10_http_right_private(HostPortPair("a.com", 10), false,
                                          right_privacy);
     QuicServerId a_10_https_right_private(HostPortPair("a.com", 10), true,

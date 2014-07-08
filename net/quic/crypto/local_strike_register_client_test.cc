@@ -83,8 +83,8 @@ TEST_F(LocalStrikeRegisterClientTest, IncorrectNonceLength) {
 
   {
     // Validation fails if you remove a byte from the nonce.
-    bool called;
-    bool is_valid;
+    bool called = false;
+    bool is_valid = false;
     string short_nonce = valid_nonce.substr(0, valid_nonce.length() - 1);
     strike_register_->VerifyNonceIsValidAndUnique(
         short_nonce,
@@ -96,8 +96,8 @@ TEST_F(LocalStrikeRegisterClientTest, IncorrectNonceLength) {
 
   {
     // Validation fails if you add a byte to the nonce.
-    bool called;
-    bool is_valid;
+    bool called = false;
+    bool is_valid = false;
     string long_nonce(valid_nonce);
     long_nonce.append("a");
     strike_register_->VerifyNonceIsValidAndUnique(
@@ -110,8 +110,8 @@ TEST_F(LocalStrikeRegisterClientTest, IncorrectNonceLength) {
 
   {
     // Verify that the base nonce validates was valid.
-    bool called;
-    bool is_valid;
+    bool called = false;
+    bool is_valid = false;
     strike_register_->VerifyNonceIsValidAndUnique(
         valid_nonce,
         QuicWallTime::FromUNIXSeconds(kCurrentTimeExternalSecs),

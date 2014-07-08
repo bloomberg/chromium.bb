@@ -19,7 +19,8 @@
 //
 // We use a macro to ensure that no static initialisers are created. Use the
 // MakeQuicTag function in normal code.
-#define TAG(a, b, c, d) ((d << 24) + (c << 16) + (b << 8) + a)
+#define TAG(a, b, c, d) \
+    static_cast<QuicTag>((d << 24) + (c << 16) + (b << 8) + a)
 
 namespace net {
 
