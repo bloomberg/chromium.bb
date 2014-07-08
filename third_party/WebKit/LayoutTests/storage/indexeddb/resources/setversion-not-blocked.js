@@ -6,7 +6,6 @@ if (this.importScripts) {
 description("Test that setVersion is not blocked if handle closed in versionchange handler.");
 
 indexedDBTest(prepareDatabase, onOpen);
-evalAndLog("blockedEventFired = false");
 evalAndLog("versionchangeEventFired = false");
 function prepareDatabase(evt)
 {
@@ -28,12 +27,7 @@ function onOpen(evt)
 {
     request = evalAndLog("indexedDB.open(dbname, 2)");
     request.onerror = unexpectedErrorCallback;
-    request.onblocked = function h2OpenBlocked(evt) {
-        preamble(evt);
-        shouldBe("event.oldVersion", "1");
-        shouldBe("event.newVersion", "2");
-        evalAndLog("blockedEventFired = true");
-    };
+    request.onblocked = unexpectedBlockedCallback;
     request.onupgradeneeded = function h2UpgradeNeeded(evt) {
         preamble(evt);
         shouldBe("event.oldVersion", "1");
@@ -42,8 +36,6 @@ function onOpen(evt)
     request.onsuccess = function h2OpenSuccess(evt) {
         preamble(evt);
         shouldBeTrue("versionchangeEventFired");
-        debug("FIXME: blocked should not have fired since connection closed; http://webkit.org/b/71130");
-        shouldBeFalse("blockedEventFired");
         finishJSTest();
     };
 }

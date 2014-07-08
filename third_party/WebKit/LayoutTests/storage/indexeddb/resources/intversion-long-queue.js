@@ -37,8 +37,8 @@ function connection2Blocked(evt)
 {
     preamble(evt);
     evalAndLog("request = indexedDB.deleteDatabase(dbname)");
-    evalAndLog("request.onblocked = deleteDatabaseBlockedCallback");
     evalAndLog("request.onsuccess = deleteDatabaseSuccessCallback");
+    request.onblocked = unexpectedBlockedCallback;
     request.onerror = unexpectedErrorCallback;
 
     evalAndLog("request = indexedDB.open(dbname, 3)");
@@ -46,13 +46,6 @@ function connection2Blocked(evt)
     evalAndLog("request.onsuccess = connection3Success");
     request.onerror = unexpectedErrorCallback;
     evalAndLog("connection1.close()");
-}
-
-function deleteDatabaseBlockedCallback(evt)
-{
-    preamble(evt);
-    shouldBe("event.oldVersion", "1");
-    shouldBeNull("event.newVersion");
 }
 
 function deleteDatabaseSuccessCallback(evt)

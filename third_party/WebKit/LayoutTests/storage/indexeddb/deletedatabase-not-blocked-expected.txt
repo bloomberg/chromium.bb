@@ -6,7 +6,6 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 indexedDB = self.indexedDB || self.webkitIndexedDB || self.mozIndexedDB || self.msIndexedDB || self.OIndexedDB;
 
 dbname = "deletedatabase-not-blocked.html"
-blockedEventFired = false
 indexedDB.open(dbname)
 
 openOnSuccess():
@@ -19,12 +18,8 @@ PASS event.oldVersion is 1
 PASS event.newVersion is null
 h.close()
 
-deleteDatabaseOnBlocked():
-blockedEventFired = true
-
 deleteDatabaseOnSuccess():
-FIXME: blocked event should not fire since connection closed. http://webkit.org/b/71130
-FAIL blockedEventFired should be false. Was true.
+PASS blocked event was not fired
 PASS successfullyParsed is true
 
 TEST COMPLETE

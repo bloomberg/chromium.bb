@@ -9,7 +9,8 @@ indexedDBTest(prepareDatabase, onOpenSuccess);
 function prepareDatabase(evt)
 {
     preamble(evt);
-    evalAndLog("versionChangeComplete = false");
+    evalAndLog("sawVersionChange = false");
+    evalAndLog("upgradeTransactionComplete = false");
     evalAndLog("h = event.target.result");
 
     h.onversionchange = function onVersionChange(evt) {
@@ -17,22 +18,25 @@ function prepareDatabase(evt)
         shouldBe("event.target.version", "1");
         shouldBe("event.oldVersion", "1");
         shouldBeNull("event.newVersion");
+        evalAndLog("sawVersionChange = true");
+        debug("Connection is not closed, so 'blocked' should fire");
     };
 
     transaction = event.target.transaction;
     transaction.oncomplete = function transactionOnComplete(evt) {
         preamble(evt);
-        evalAndLog("versionChangeComplete = true");
+        evalAndLog("upgradeTransactionComplete = true");
     };
 
     request = evalAndLog("indexedDB.deleteDatabase(dbname)");
     request.onerror = unexpectedErrorCallback;
     request.onblocked = function deleteDatabaseOnBlocked(evt) {
         preamble(evt);
+        shouldBeTrue("sawVersionChange");
     };
     request.onsuccess = function deleteDatabaseOnSuccess(evt) {
         preamble(evt);
-        shouldBeTrue("versionChangeComplete");
+        shouldBeTrue("upgradeTransactionComplete");
         finishJSTest();
     };
 }
@@ -42,4 +46,8 @@ function onOpenSuccess(evt)
     preamble(evt);
     evalAndLog("h = event.target.result");
     evalAndLog("h.close()");
+    debug("Closing too late to prevent the in-flight 'blocked' event");
+    // Event ordering between 'success' and 'blocked' is not strictly defined
+    // in the spec. This documents current Chromium behavior to detect
+    // unexpected changes.
 }

@@ -36,12 +36,12 @@ function upgradeNeeded1(evt)
     transaction.oncomplete = function transactionOnComplete() {
         preamble();
         evalAndLog("sawTransactionComplete = true");
-    }
+    };
     evalAndLog("db.onversionchange = onVersionChange");
     evalAndLog("request = indexedDB.open(dbname, 3)");
     evalAndLog("request.onupgradeneeded = upgradeNeeded2");
     evalAndLog("request.onsuccess = openSuccess2");
-    evalAndLog("request.onblocked = onBlocked");
+    request.onblocked = unexpectedBlockedCallback;
     request.onerror = unexpectedErrorCallback;
 }
 
@@ -59,11 +59,6 @@ function onVersionChange(evt)
 {
     preamble(evt);
     evalAndLog("db.close()");
-}
-
-function onBlocked(evt)
-{
-    preamble(evt);
 }
 
 function upgradeNeeded2(evt)

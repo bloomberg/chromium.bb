@@ -397,8 +397,13 @@ void IDBDatabase::onVersionChange(int64_t oldVersion, int64_t newVersion)
     if (m_contextStopped || !executionContext())
         return;
 
-    if (m_closePending)
+    if (m_closePending) {
+        // If we're pending, that means there's a busy transaction. We won't
+        // fire 'versionchange' but since we're not closing immediately the
+        // back-end should still send out 'blocked'.
+        m_backend->versionChangeIgnored();
         return;
+    }
 
     Nullable<unsigned long long> newVersionNullable = (newVersion == IDBDatabaseMetadata::NoIntVersion) ? Nullable<unsigned long long>() : Nullable<unsigned long long>(newVersion);
     enqueueEvent(IDBVersionChangeEvent::create(EventTypeNames::versionchange, oldVersion, newVersionNullable));
@@ -424,7 +429,11 @@ bool IDBDatabase::dispatchEvent(PassRefPtrWillBeRawPtr<Event> event)
         if (m_enqueuedEvents[i].get() == event.get())
             m_enqueuedEvents.remove(i);
     }
-    return EventTarget::dispatchEvent(event.get());
+
+    bool result = EventTarget::dispatchEvent(event.get());
+    if (event->type() == EventTypeNames::versionchange && !m_closePending && m_backend)
+        m_backend->versionChangeIgnored();
+    return result;
 }
 
 int64_t IDBDatabase::findObjectStoreId(const String& name) const

@@ -80,6 +80,8 @@ function testVersionChangeTransactionSteps()
     debug("\"Fire a versionchange event at each object in openDatabases that is open. The event must not be fired on objects which has the closePending flag set.\"");
 
     evalAndLog("request = indexedDB.open(dbname)");
+    request.onblocked = unexpectedBlockedCallback;
+    request.onupgradeneeded = unexpectedUpgradeNeededCallback;
     request.onerror = unexpectedErrorCallback;
     request.onsuccess = function() {
         evalAndLog("connection = request.result");

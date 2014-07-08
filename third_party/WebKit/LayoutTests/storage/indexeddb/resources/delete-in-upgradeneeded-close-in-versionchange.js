@@ -17,7 +17,6 @@ function test()
 
 var sawUpgradeNeeded = false;
 var sawVersionChange = false;
-var sawDeleteBlocked = false;
 
 function initiallyDeleted(evt) {
     preamble(evt);
@@ -39,7 +38,7 @@ function upgradeNeededCallback(evt)
     request2 = evalAndLog("deleteRequest = indexedDB.deleteDatabase(dbname)");
     evalAndLog("request2.onsuccess = deleteSuccessCallback");
     request2.onerror = unexpectedErrorCallback;
-    request2.onblocked = deleteBlockedCallback;
+    request2.onblocked = unexpectedBlockedCallback;;
 }
 
 function versionChangeCallback(evt) {
@@ -52,19 +51,10 @@ function versionChangeCallback(evt) {
     evalAndLog("db.close()");
 }
 
-function deleteBlockedCallback(evt)
-{
-    preamble(evt);
-    shouldBeTrue("sawVersionChange");
-    evalAndLog("sawDeleteBlocked = true");
-}
-
 function deleteSuccessCallback(evt)
 {
     preamble(evt);
     shouldBeTrue("sawVersionChange");
-    debug("FIXME: Blocked events shouldn't fire if connections close in versionchange handler. http://crbug.com/100123");
-    shouldBeFalse("sawDeleteBlocked");
     shouldBeTrue("sawUpgradeNeeded");
     finishJSTest();
 }

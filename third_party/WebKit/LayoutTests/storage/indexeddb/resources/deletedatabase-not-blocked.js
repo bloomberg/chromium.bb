@@ -9,8 +9,6 @@ function test() {
     removeVendorPrefixes();
     setDBNameFromPath();
 
-    evalAndLog("blockedEventFired = false");
-
     request = evalAndLog("indexedDB.open(dbname)");
     request.onblocked = unexpectedBlockedCallback;
     request.onerror = unexpectedErrorCallback;
@@ -28,14 +26,10 @@ function test() {
 
         request = evalAndLog("indexedDB.deleteDatabase(dbname)");
         request.onerror = unexpectedErrorCallback;
-        request.onblocked = function deleteDatabaseOnBlocked(evt) {
-            preamble(evt);
-            evalAndLog("blockedEventFired = true");
-        };
+        request.onblocked = unexpectedBlockedCallback;
         request.onsuccess = function deleteDatabaseOnSuccess(evt) {
             preamble(evt);
-            debug("FIXME: blocked event should not fire since connection closed. http://webkit.org/b/71130");
-            shouldBeFalse("blockedEventFired");
+            testPassed("blocked event was not fired");
             finishJSTest();
         };
     };

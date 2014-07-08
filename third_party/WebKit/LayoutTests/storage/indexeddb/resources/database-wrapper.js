@@ -71,15 +71,9 @@ function openAgain()
     preamble();
 
     var openRequest = evalAndLog("indexedDB.open(dbname, 2)");
-    openRequest.onblocked = onBlocked;
+    openRequest.onblocked = unexpectedBlockedCallback;
     openRequest.onerror = unexpectedErrorCallback;
     openRequest.onsuccess = openAgainSuccess;
-}
-
-function onBlocked()
-{
-    preamble();
-    debug("FIXME: Blocked event shouldn't fire. http://crbug.com/100123");
 }
 
 function openAgainSuccess(evt)

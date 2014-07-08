@@ -43,6 +43,13 @@ function h1OpenSuccess(evt)
             shouldBe("event.target.version", "1");
             shouldBe("event.oldVersion", "1");
             shouldBe("event.newVersion", "2");
+
+            h2.onversionchange = function h2OnSecondVersionChange(evt) {
+                preamble(evt);
+                shouldBe("event.target.version", "1");
+                shouldBe("event.oldVersion", "1");
+                shouldBe("event.newVersion", "null");
+            };
         };
 
         debug("Try to open h3:");

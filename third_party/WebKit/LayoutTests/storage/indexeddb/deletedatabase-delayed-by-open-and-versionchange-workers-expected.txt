@@ -11,7 +11,8 @@ Starting worker: resources/deletedatabase-delayed-by-open-and-versionchange.js
 [Worker] indexedDB.open(dbname)
 [Worker] 
 [Worker] prepareDatabase():
-[Worker] versionChangeComplete = false
+[Worker] sawVersionChange = false
+[Worker] upgradeTransactionComplete = false
 [Worker] h = event.target.result
 [Worker] indexedDB.deleteDatabase(dbname)
 [Worker] 
@@ -19,18 +20,22 @@ Starting worker: resources/deletedatabase-delayed-by-open-and-versionchange.js
 PASS [Worker] event.target.version is 1
 PASS [Worker] event.oldVersion is 1
 PASS [Worker] event.newVersion is null
-[Worker] 
-[Worker] deleteDatabaseOnBlocked():
+[Worker] sawVersionChange = true
+[Worker] Connection is not closed, so 'blocked' should fire
 [Worker] 
 [Worker] transactionOnComplete():
-[Worker] versionChangeComplete = true
+[Worker] upgradeTransactionComplete = true
 [Worker] 
 [Worker] onOpenSuccess():
 [Worker] h = event.target.result
 [Worker] h.close()
+[Worker] Closing too late to prevent the in-flight 'blocked' event
+[Worker] 
+[Worker] deleteDatabaseOnBlocked():
+PASS [Worker] sawVersionChange is true
 [Worker] 
 [Worker] deleteDatabaseOnSuccess():
-PASS [Worker] versionChangeComplete is true
+PASS [Worker] upgradeTransactionComplete is true
 PASS successfullyParsed is true
 
 TEST COMPLETE

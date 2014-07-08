@@ -51,7 +51,7 @@ public:
     virtual void deleteObjectStore(long long transactionId, long long objectStoreId) { BLINK_ASSERT_NOT_REACHED(); }
     virtual void createTransaction(long long id, WebIDBDatabaseCallbacks*, const WebVector<long long>& scope, blink::WebIDBTransactionMode) { BLINK_ASSERT_NOT_REACHED(); }
     virtual void close() { BLINK_ASSERT_NOT_REACHED(); }
-    virtual void forceClose() { BLINK_ASSERT_NOT_REACHED(); }
+    virtual void versionChangeIgnored() { BLINK_ASSERT_NOT_REACHED(); }
 
     virtual void abort(long long transactionId) { BLINK_ASSERT_NOT_REACHED(); }
     virtual void commit(long long transactionId) { BLINK_ASSERT_NOT_REACHED(); }

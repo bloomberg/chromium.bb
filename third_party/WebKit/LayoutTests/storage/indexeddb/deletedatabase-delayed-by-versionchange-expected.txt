@@ -33,16 +33,21 @@ PASS event.target.version is 1
 PASS event.oldVersion is 1
 PASS event.newVersion is 2
 
+h1SecondOnVersionChange():
+PASS event.target.version is 1
+PASS event.oldVersion is 1
+PASS event.newVersion is null
+
+h2OnSecondVersionChange():
+PASS event.target.version is 1
+PASS event.oldVersion is 1
+PASS event.newVersion is null
+
 h3Blocked():
 setVersionBlockedEventFired = true
 Try to open h4:
 indexedDB.open(dbname)
 h2.close()
-
-h1SecondOnVersionChange():
-PASS event.target.version is 1
-PASS event.oldVersion is 1
-PASS event.newVersion is null
 
 deleteDatabaseOnBlocked():
 deleteDatabaseBlockedEventFired = true

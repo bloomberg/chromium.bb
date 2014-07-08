@@ -33,16 +33,14 @@ function initialUpgradeNeeded(evt)
 
 function openSuccess(evt)
 {
-    event = evt;
-    debug("");
-    debug("openSuccess():");
+    preamble(evt);
     evalAndLog("connection1 = event.target.result");
     shouldBe("connection1.version", "1");
     evalAndLog("connection1.onversionchange = connection1VersionChangeCallback");
     evalAndLog("request = indexedDB.open(dbname, 2)");
-    request.onupgradeneeded = connection2UpgradeNeeded
+    request.onupgradeneeded = connection2UpgradeNeeded;
     request.onerror = unexpectedErrorCallback;
-    request.onblocked = connection2BlockedCallback;
+    request.onblocked = unexpectedBlockedCallback;
     request.onsuccess = connection2Success;
 }
 
@@ -50,12 +48,6 @@ function connection1VersionChangeCallback(evt)
 {
     preamble(evt);
     evalAndLog("connection1.close()");
-}
-
-function connection2BlockedCallback(evt)
-{
-    preamble(evt);
-    debug("This should not be called: http://crbug.com/100123");
 }
 
 function connection2UpgradeNeeded(evt)
