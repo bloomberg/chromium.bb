@@ -477,42 +477,6 @@ class NET_EXPORT ProxyService : public NetworkChangeNotifier::IPAddressObserver,
   DISALLOW_COPY_AND_ASSIGN(ProxyService);
 };
 
-// Wrapper for invoking methods on a ProxyService synchronously.
-class NET_EXPORT SyncProxyServiceHelper
-    : public base::RefCountedThreadSafe<SyncProxyServiceHelper> {
- public:
-  SyncProxyServiceHelper(base::MessageLoop* io_message_loop,
-                         ProxyService* proxy_service);
-
-  int ResolveProxy(const GURL& url,
-                   ProxyInfo* proxy_info,
-                   const BoundNetLog& net_log);
-  int ReconsiderProxyAfterError(const GURL& url,
-                                int net_error,
-                                ProxyInfo* proxy_info,
-                                const BoundNetLog& net_log);
-
- private:
-  friend class base::RefCountedThreadSafe<SyncProxyServiceHelper>;
-
-  virtual ~SyncProxyServiceHelper();
-
-  void StartAsyncResolve(const GURL& url, const BoundNetLog& net_log);
-  void StartAsyncReconsider(const GURL& url,
-                            int net_error,
-                            const BoundNetLog& net_log);
-
-  void OnCompletion(int result);
-
-  base::MessageLoop* io_message_loop_;
-  ProxyService* proxy_service_;
-
-  base::WaitableEvent event_;
-  CompletionCallback callback_;
-  ProxyInfo proxy_info_;
-  int result_;
-};
-
 }  // namespace net
 
 #endif  // NET_PROXY_PROXY_SERVICE_H_
