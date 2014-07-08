@@ -11,6 +11,9 @@ from telemetry.value import scalar
 class PowerMetric(Metric):
   """A metric for measuring power usage."""
 
+  # System power draw while idle.
+  _quiescent_power_draw_mwh = 0
+
   def __init__(self, browser, quiescent_measurement_time_s=0):
     """PowerMetric Constructor.
 
@@ -23,7 +26,6 @@ class PowerMetric(Metric):
     self._running = False
     self._starting_cpu_stats = None
     self._results = None
-    self._quiescent_power_draw_mwh = 0
     self._MeasureQuiescentPower(quiescent_measurement_time_s)
 
   def __del__(self):
@@ -53,10 +55,14 @@ class PowerMetric(Metric):
         not measurement_time_s:
       return
 
+    # Only perform quiescent measurement once per run.
+    if PowerMetric._quiescent_power_draw_mwh:
+      return
+
     platform.StartMonitoringPower(self._browser)
     time.sleep(measurement_time_s)
     power_results = platform.StopMonitoringPower()
-    self._quiescent_power_draw_mwh = (
+    PowerMetric._quiescent_power_draw_mwh = (
         power_results.get('energy_consumption_mwh', 0))
 
   def Start(self, _, tab):
@@ -95,7 +101,8 @@ class PowerMetric(Metric):
 
     if not application_energy_consumption_mwh and total_energy_consumption_mwh:
       application_energy_consumption_mwh = max(
-          total_energy_consumption_mwh - self._quiescent_power_draw_mwh, 0)
+          total_energy_consumption_mwh - PowerMetric._quiescent_power_draw_mwh,
+          0)
 
     if total_energy_consumption_mwh is not None:
       results.AddValue(scalar.ScalarValue(
