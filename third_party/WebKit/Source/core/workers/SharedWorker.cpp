@@ -108,6 +108,7 @@ void SharedWorker::unsetPreventGC()
 
 void SharedWorker::trace(Visitor* visitor)
 {
+    visitor->trace(m_port);
     AbstractWorker::trace(visitor);
     WillBeHeapSupplementable<SharedWorker>::trace(visitor);
 }

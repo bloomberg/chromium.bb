@@ -25,6 +25,8 @@
  *
  */
 
+// http://www.whatwg.org/specs/web-apps/current-work/#dedicated-workers-and-the-worker-interface
+
 [
     ActiveDOMObject,
     Constructor(DOMString scriptUrl),

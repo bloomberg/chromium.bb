@@ -60,7 +60,7 @@ public:
 private:
     explicit SharedWorker(ExecutionContext*);
 
-    RefPtr<MessagePort> m_port;
+    RefPtrWillBeMember<MessagePort> m_port;
 };
 
 } // namespace WebCore
