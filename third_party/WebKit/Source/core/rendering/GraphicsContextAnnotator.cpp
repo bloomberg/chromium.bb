@@ -32,6 +32,7 @@
 #include "config.h"
 #include "core/rendering/GraphicsContextAnnotator.h"
 
+#include "core/inspector/InspectorNodeIds.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderObject.h"
 #include "platform/graphics/GraphicsContextAnnotation.h"
@@ -121,8 +122,13 @@ void GraphicsContextAnnotator::annotate(const PaintInfo& paintInfo, const Render
     if ((mode & AnnotateElementTag) && element)
         elementTag = element->tagName();
 
+    int inspectorNodeId = 0;
+    if (mode & AnnotateInspectorId) {
+        if (Node* ownerNode = object->generatingNode())
+            inspectorNodeId = InspectorNodeIds::idForNode(ownerNode);
+    }
     m_context = paintInfo.context;
-    m_context->beginAnnotation(rendererName, paintPhase, elementId, elementClass, elementTag);
+    m_context->beginAnnotation(rendererName, paintPhase, elementId, elementClass, elementTag, inspectorNodeId);
 }
 
 void GraphicsContextAnnotator::finishAnnotation()

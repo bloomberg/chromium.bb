@@ -212,14 +212,14 @@ void GraphicsContext::restoreLayer()
 }
 
 void GraphicsContext::beginAnnotation(const char* rendererName, const char* paintPhase,
-    const String& elementId, const String& elementClass, const String& elementTag)
+    const String& elementId, const String& elementClass, const String& elementTag, int inspectorNodeId)
 {
     if (contextDisabled())
         return;
 
     canvas()->beginCommentGroup("GraphicsContextAnnotation");
 
-    GraphicsContextAnnotation annotation(rendererName, paintPhase, elementId, elementClass, elementTag);
+    GraphicsContextAnnotation annotation(rendererName, paintPhase, elementId, elementClass, elementTag, inspectorNodeId);
     AnnotationList annotations;
     annotation.asAnnotationList(annotations);
 

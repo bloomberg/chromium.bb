@@ -35,22 +35,24 @@
 
 namespace {
 
-const char* AnnotationKeyRendererName  = "RENDERER";
-const char* AnnotationKeyPaintPhase    = "PHASE";
-const char* AnnotationKeyElementId     = "ID";
-const char* AnnotationKeyElementClass  = "CLASS";
-const char* AnnotationKeyElementTag    = "TAG";
+const char AnnotationKeyRendererName[] = "RENDERER";
+const char AnnotationKeyPaintPhase[] = "PHASE";
+const char AnnotationKeyElementId[] = "ID";
+const char AnnotationKeyElementClass[] = "CLASS";
+const char AnnotationKeyElementTag[] = "TAG";
+const char AnnotationKeyInspectorNodeId[] = "INSPECTOR_ID";
 
 }
 
 namespace WebCore {
 
-GraphicsContextAnnotation::GraphicsContextAnnotation(const char* rendererName, const char* paintPhase, const String& elementId, const String& elementClass, const String& elementTag)
+GraphicsContextAnnotation::GraphicsContextAnnotation(const char* rendererName, const char* paintPhase, const String& elementId, const String& elementClass, const String& elementTag, int inspectorNodeId)
     : m_rendererName(rendererName)
     , m_paintPhase(paintPhase)
     , m_elementId(elementId)
     , m_elementClass(elementClass)
     , m_elementTag(elementTag)
+    , m_inspectorNodeId(inspectorNodeId)
 {
 }
 
@@ -72,6 +74,9 @@ void GraphicsContextAnnotation::asAnnotationList(AnnotationList &list) const
 
     if (!m_elementTag.isEmpty())
         list.append(std::make_pair(AnnotationKeyElementTag, m_elementTag));
+
+    if (m_inspectorNodeId)
+        list.append(std::make_pair(AnnotationKeyInspectorNodeId, String::number(m_inspectorNodeId)));
 }
 
 }

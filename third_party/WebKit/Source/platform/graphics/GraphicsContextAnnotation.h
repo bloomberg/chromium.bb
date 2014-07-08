@@ -42,8 +42,9 @@ enum AnnotationMode {
     AnnotateElementId       = 1 << 2,
     AnnotateElementClass    = 1 << 3,
     AnnotateElementTag      = 1 << 4,
+    AnnotateInspectorId     = 1 << 5,
 
-    AnnotateAll             = 0x1f
+    AnnotateAll             = 0x3f
 };
 
 typedef unsigned AnnotationModeFlags;
@@ -51,13 +52,7 @@ typedef Vector<std::pair<const char*, String> > AnnotationList;
 
 class GraphicsContextAnnotation {
 public:
-    GraphicsContextAnnotation(const char*, const char*, const String&, const String&, const String&);
-
-    String rendererName() const { return m_rendererName; }
-    String paintPhase() const { return m_paintPhase; }
-    String elementId() const { return m_elementId; }
-    String elementClass() const { return m_elementClass; }
-    String elementTag() const { return m_elementTag; }
+    GraphicsContextAnnotation(const char*, const char*, const String&, const String&, const String&, int inspectorNodeId);
 
     void asAnnotationList(AnnotationList&) const;
 
@@ -67,6 +62,7 @@ private:
     String m_elementId;
     String m_elementClass;
     String m_elementTag;
+    int m_inspectorNodeId;
 };
 
 } // namespace WebCore
