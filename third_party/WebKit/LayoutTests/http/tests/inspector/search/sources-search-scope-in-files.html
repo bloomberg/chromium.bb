@@ -34,7 +34,7 @@ function test()
             var paths = [];
             for (var i = 0; i < names.length; ++i)
                 paths.push("/var/www/" + names[i]);
-            manager.fileSystemWorkspaceBinding.searchCompleted(requestId, path, paths);
+            manager.fileSystemWorkspaceBinding._onSearchCompleted({data: {requestId: requestId, fileSystemPath: path, files: paths}});
         }
     }
 

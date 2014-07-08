@@ -50,7 +50,7 @@ function test()
                 function saveMock(url, data)
                 {
                     savedSnapshotData = data;
-                    WebInspector.fileManager.savedURL(url);
+                    WebInspector.fileManager._savedURL({data: url});
                 }
                 InspectorTest.override(InspectorFrontendHost, "save", saveMock);
 
@@ -58,7 +58,7 @@ function test()
                 InspectorFrontendHost.append = function appendMock(url, data)
                 {
                     savedSnapshotData += data;
-                    WebInspector.fileManager.appendedToURL(url);
+                    WebInspector.fileManager._appendedToURL({data: url});
                 }
                 function closeMock(url)
                 {

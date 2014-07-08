@@ -129,7 +129,7 @@ MockIsolatedFileSystemManager.prototype = {
 InspectorTest.addMockFileSystem = function(path)
 {
     var fileSystem = { fileSystemName: "", rootURL: "", fileSystemPath: path };
-    WebInspector.isolatedFileSystemDispatcher.fileSystemAdded("", fileSystem);
+    WebInspector.isolatedFileSystemManager._onFileSystemAdded({data: {fileSystem: fileSystem}});
     return MockIsolatedFileSystem._isolatedFileSystemMocks[path];
 }
 
