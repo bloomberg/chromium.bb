@@ -412,6 +412,8 @@
             'files': [
               'shell/renderer/test_runner/resources/fonts/AHEM____.TTF',
               'shell/renderer/test_runner/resources/fonts/fonts.conf',
+              '../third_party/gardiner_mod/GardinerModBug.ttf',
+              '../third_party/gardiner_mod/GardinerModCat.ttf',
             ]
           }],
         }],
