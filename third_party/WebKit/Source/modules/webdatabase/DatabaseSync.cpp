@@ -64,8 +64,10 @@ DatabaseSync::DatabaseSync(DatabaseContext* databaseContext,
 
 DatabaseSync::~DatabaseSync()
 {
+#if !ENABLE(OILPAN)
     if (executionContext())
         ASSERT(executionContext()->isContextThread());
+#endif
 }
 
 void DatabaseSync::trace(Visitor* visitor)
