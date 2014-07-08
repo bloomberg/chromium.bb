@@ -229,6 +229,7 @@ WebViewGuest::WebViewGuest(content::BrowserContext* browser_context,
       is_overriding_user_agent_(false),
       main_frame_id_(0),
       chromevox_injected_(false),
+      current_zoom_factor_(1.0),
       find_helper_(this),
       javascript_dialog_helper_(this) {
 }
