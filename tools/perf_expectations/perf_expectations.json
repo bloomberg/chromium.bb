@@ -384,7 +384,7 @@
  "mac-release/sizes/Chromium.app/Chromium.app": {"reva": 271545, "revb": 271559, "type": "absolute", "better": "lower", "improve": 129966080, "regress": 143646720, "sha1": "ab596e70"},
  "mac-release/sizes/Chromium/Chromium": {"reva": 165473, "revb": 165473, "type": "absolute", "better": "lower", "improve": 8132, "regress": 8988, "sha1": "8e448691"},
  "mac-release/sizes/ChromiumFramework/ChromiumFramework": {"reva": 280730, "revb": 280780, "type": "absolute", "better": "lower", "improve": 76114300, "regress": 84126366, "sha1": "e48521cd"},
- "mac-release/sizes/chrome-si/initializers": {"reva": 251218, "revb": 251218, "type": "absolute", "better": "lower", "improve": 1, "regress": 1, "tolerance": 0, "sha1": "557cb121"},
+ "mac-release/sizes/chrome-si/initializers": {"reva": 281731, "revb": 281731, "type": "absolute", "better": "lower", "improve": 0, "regress": 0, "tolerance": 0, "sha1": "01759b7f"},
  "win-release/media_tests_av_perf/audio_latency/latency": {"reva": 199840, "revb": 201303, "type": "absolute", "better": "lower", "improve": 57, "regress": 69, "sha1": "169d47dd"},
  "win-release/media_tests_av_perf/audio_latency/latency_bg_clip": {"reva": 199840, "revb": 201303, "type": "absolute", "better": "lower", "improve": 66, "regress": 78, "sha1": "708a71af"},
  "win-release/media_tests_av_perf/audio_pesq/actual": {"reva": 163215, "revb": 163382, "type": "absolute", "better": "higher", "improve": 4, "regress": 3, "sha1": "c8beccf7"},
