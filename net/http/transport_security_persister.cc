@@ -212,9 +212,6 @@ bool TransportSecurityPersister::Deserialize(const std::string& serialized,
       continue;
     }
 
-    std::string mode_string;
-    double expiry;
-    double dynamic_spki_hashes_expiry = 0.0;
     TransportSecurityState::DomainState domain_state;
 
     // kIncludeSubdomains is a legacy synonym for kStsIncludeSubdomains and
@@ -234,6 +231,8 @@ bool TransportSecurityPersister::Deserialize(const std::string& serialized,
       parsed_include_subdomains = true;
     }
 
+    std::string mode_string;
+    double expiry = 0;
     if (!parsed_include_subdomains ||
         !parsed->GetString(kMode, &mode_string) ||
         !parsed->GetDouble(kExpiry, &expiry)) {
@@ -243,6 +242,7 @@ bool TransportSecurityPersister::Deserialize(const std::string& serialized,
     }
 
     // Don't fail if this key is not present.
+    double dynamic_spki_hashes_expiry = 0;
     parsed->GetDouble(kDynamicSPKIHashesExpiry,
                       &dynamic_spki_hashes_expiry);
 

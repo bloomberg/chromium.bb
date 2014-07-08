@@ -942,7 +942,8 @@ EntryImpl::~EntryImpl() {
     bool ret = true;
     for (int index = 0; index < kNumStreams; index++) {
       if (user_buffers_[index].get()) {
-        if (!(ret = Flush(index, 0)))
+        ret = Flush(index, 0);
+        if (!ret)
           LOG(ERROR) << "Failed to save user data";
       }
       if (unreported_size_[index]) {

@@ -16,7 +16,7 @@ namespace {
 
 static const char kMsg1[] = "\0hello!\xff";
 static const int kLen1 = arraysize(kMsg1);
-static const char kMsg2[] = "\012345678\0";
+static const char kMsg2[] = "\0a2345678\0";
 static const int kLen2 = arraysize(kMsg2);
 static const char kMsg3[] = "bye!";
 static const int kLen3 = arraysize(kMsg3);

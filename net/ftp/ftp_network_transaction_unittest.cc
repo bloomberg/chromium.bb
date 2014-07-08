@@ -1186,7 +1186,8 @@ TEST_P(FtpNetworkTransactionTest, DownloadTransactionEvilEpsvReallyBadFormat5) {
   if (GetFamily() == AF_INET)
     return;
 
-  const char response[] = "227 Portscan (\0\0\031773\0)\r\n";
+  // Breaking the string in the next line prevents MSVC warning C4125.
+  const char response[] = "227 Portscan (\0\0\031" "773\0)\r\n";
   FtpSocketDataProviderEvilEpsv ctrl_socket(response, sizeof(response)-1,
                                             FtpSocketDataProvider::PRE_QUIT);
   ExecuteTransaction(&ctrl_socket, "ftp://host/file", 1, ERR_INVALID_RESPONSE);

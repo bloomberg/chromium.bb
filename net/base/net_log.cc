@@ -101,10 +101,10 @@ NetLog::ParametersCallback NetLog::Source::ToEventParametersCallback() const {
 // static
 bool NetLog::Source::FromEventParameters(base::Value* event_params,
                                          Source* source) {
-  base::DictionaryValue* dict;
-  base::DictionaryValue* source_dict;
-  int source_id;
-  int source_type;
+  base::DictionaryValue* dict = NULL;
+  base::DictionaryValue* source_dict = NULL;
+  int source_id = -1;
+  int source_type = NetLog::SOURCE_COUNT;
   if (!event_params ||
       !event_params->GetAsDictionary(&dict) ||
       !dict->GetDictionary("source_dependency", &source_dict) ||
@@ -114,7 +114,7 @@ bool NetLog::Source::FromEventParameters(base::Value* event_params,
     return false;
   }
 
-  DCHECK_LE(0, source_id);
+  DCHECK_GE(source_id, 0);
   DCHECK_LT(source_type, NetLog::SOURCE_COUNT);
   *source = Source(static_cast<SourceType>(source_type), source_id);
   return true;

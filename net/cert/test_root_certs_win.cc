@@ -160,8 +160,10 @@ bool TestRootCerts::Add(X509Certificate* certificate) {
 void TestRootCerts::Clear() {
   empty_ = true;
 
-  PCCERT_CONTEXT prev_cert = NULL;
-  while (prev_cert = CertEnumCertificatesInStore(temporary_roots_, NULL))
+  for (PCCERT_CONTEXT prev_cert =
+           CertEnumCertificatesInStore(temporary_roots_, NULL);
+       prev_cert;
+       prev_cert = CertEnumCertificatesInStore(temporary_roots_, NULL))
     CertDeleteCertificateFromStore(prev_cert);
 }
 

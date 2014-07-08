@@ -120,7 +120,7 @@ class NET_EXPORT HostResolver {
   static const size_t kDefaultParallelism = 0;
 
   // Set Options.max_retry_attempts to this to select a default retry value.
-  static const size_t kDefaultRetryAttempts = -1;
+  static const size_t kDefaultRetryAttempts = static_cast<size_t>(-1);
 
   // If any completion callbacks are pending when the resolver is destroyed,
   // the host resolutions are cancelled, and the completion callbacks will not

@@ -64,7 +64,7 @@ void QuicSpdyServerStream::OnFinRead() {
   }
 }
 
-int QuicSpdyServerStream::ParseRequestHeaders() {
+void QuicSpdyServerStream::ParseRequestHeaders() {
   size_t read_buf_len = static_cast<size_t>(read_buf_->offset());
   SpdyFramer framer(SPDY3);
   SpdyHeaderBlock headers;
@@ -72,12 +72,12 @@ int QuicSpdyServerStream::ParseRequestHeaders() {
   size_t len = framer.ParseHeaderBlockInBuffer(data, read_buf_->offset(),
                                                &headers);
   if (len == 0) {
-    return -1;
+    return;
   }
 
   if (!SpdyUtils::FillBalsaRequestHeaders(headers, &headers_)) {
     SendErrorResponse();
-    return -1;
+    return;
   }
 
   size_t delta = read_buf_len - len;
@@ -86,7 +86,6 @@ int QuicSpdyServerStream::ParseRequestHeaders() {
   }
 
   request_headers_received_ = true;
-  return len;
 }
 
 void QuicSpdyServerStream::SendResponse() {
