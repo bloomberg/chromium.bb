@@ -130,9 +130,19 @@ def GetClangCommandFromNinjaForFilename(chrome_root, filename):
   # Chromium's includes are relative to that.
   chrome_flags = ['-I' + os.path.join(chrome_root)]
 
+  # Default file to get a reasonable approximation of the flags for a Blink
+  # file.
+  blink_root = os.path.join(chrome_root, 'third_party', 'WebKit')
+  default_blink_file = os.path.join(blink_root, 'Source', 'core', 'Init.cpp')
+
   # Header files can't be built. Instead, try to match a header file to its
   # corresponding source file.
   if filename.endswith('.h'):
+    # Add config.h to Blink headers, which won't have it by default.
+    if filename.startswith(blink_root):
+      chrome_flags.append('-include')
+      chrome_flags.append(os.path.join(blink_root, 'Source', 'config.h'))
+
     alternates = ['.cc', '.cpp']
     for alt_extension in alternates:
       alt_name = filename[:-2] + alt_extension
@@ -140,9 +150,14 @@ def GetClangCommandFromNinjaForFilename(chrome_root, filename):
         filename = alt_name
         break
     else:
-      # If this is a standalone .h file with no source, the best we can do is
-      # try to use the default flags.
-      return chrome_flags
+      if filename.startswith(blink_root):
+        # If this is a Blink file, we can at least try to get a reasonable
+        # approximation.
+        filename = default_blink_file
+      else:
+        # If this is a standalone .h file with no source, the best we can do is
+        # try to use the default flags.
+        return chrome_flags
 
   # Ninja needs the path to the source file from the output build directory.
   # Cut off the common part and /.
