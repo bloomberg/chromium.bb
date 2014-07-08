@@ -146,7 +146,7 @@ def CheckForMissingDevices(options, adb_online_devs):
     bb_annotations.PrintSummaryText(devices_missing_msg)
 
     from_address = 'chrome-bot@chromium.org'
-    to_addresses = ['zty@chromium.org']
+    to_addresses = ['chrome-labs-tech-ticket@google.com']
     subject = 'Devices offline on %s, %s, %s' % (
       os.environ.get('BUILDBOT_SLAVENAME'),
       os.environ.get('BUILDBOT_BUILDERNAME'),
