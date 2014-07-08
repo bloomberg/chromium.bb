@@ -154,9 +154,6 @@ CompositingReasons CompositingReasonFinder::nonStyleDeterminedDirectReasons(cons
     RenderObject* renderer = layer->renderer();
 
     if (hasOverflowScrollTrigger()) {
-        // IsUnclippedDescendant is only actually stale during the chicken/egg code path.
-        // FIXME: Use compositingInputs().isUnclippedDescendant to ASSERT that
-        // this value isn't stale.
         if (layer->compositingInputs().isUnclippedDescendant)
             directReasons |= CompositingReasonOutOfFlowClipping;
 
