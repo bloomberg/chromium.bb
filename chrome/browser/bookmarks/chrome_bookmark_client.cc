@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/debug/leak_annotations.h"
 #include "base/logging.h"
 #include "base/values.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -165,17 +164,16 @@ void ChromeBookmarkClient::RecordAction(const base::UserMetricsAction& action) {
 bookmarks::LoadExtraCallback ChromeBookmarkClient::GetLoadExtraNodesCallback() {
   // Create the managed_node now; it will be populated in the LoadExtraNodes
   // callback.
-  managed_node_ = new BookmarkPermanentNode(0);
-  // The ownership of this object is in limbo until the LoadExtraNodes task
-  // runs, but in a ProfileBrowserTest this never happens.
-  // crbug.com/391508
-  ANNOTATE_LEAKING_OBJECT_PTR(managed_node_);
+  // The ownership of managed_node_ is in limbo until LoadExtraNodes runs,
+  // so we leave it in the care of the closure meanwhile.
+  scoped_ptr<BookmarkPermanentNode> managed(new BookmarkPermanentNode(0));
+  managed_node_ = managed.get();
 
   return base::Bind(
       &ChromeBookmarkClient::LoadExtraNodes,
       StartupTaskRunnerServiceFactory::GetForProfile(profile_)
           ->GetBookmarkTaskRunner(),
-      managed_node_,
+      base::Passed(&managed),
       base::Passed(managed_bookmarks_tracker_->GetInitialManagedBookmarks()));
 }
 
@@ -241,7 +239,7 @@ void ChromeBookmarkClient::BookmarkModelLoaded(BookmarkModel* model,
 // static
 bookmarks::BookmarkPermanentNodeList ChromeBookmarkClient::LoadExtraNodes(
     const scoped_refptr<base::DeferredSequencedTaskRunner>& profile_io_runner,
-    BookmarkPermanentNode* managed_node,
+    scoped_ptr<BookmarkPermanentNode> managed_node,
     scoped_ptr<base::ListValue> initial_managed_bookmarks,
     int64* next_node_id) {
   DCHECK(profile_io_runner->RunsTasksOnCurrentThread());
@@ -250,13 +248,15 @@ bookmarks::BookmarkPermanentNodeList ChromeBookmarkClient::LoadExtraNodes(
   int64 managed_id = *next_node_id;
   managed_node->set_id(managed_id);
   *next_node_id = policy::ManagedBookmarksTracker::LoadInitial(
-      managed_node, initial_managed_bookmarks.get(), managed_id + 1);
+      managed_node.get(), initial_managed_bookmarks.get(), managed_id + 1);
   managed_node->set_visible(!managed_node->empty());
   managed_node->SetTitle(
       l10n_util::GetStringUTF16(IDS_BOOKMARK_BAR_MANAGED_FOLDER_DEFAULT_NAME));
 
   bookmarks::BookmarkPermanentNodeList extra_nodes;
-  extra_nodes.push_back(managed_node);
+  // Ownership of the managed node passed to the caller.
+  extra_nodes.push_back(managed_node.release());
+
   return extra_nodes.Pass();
 }
 

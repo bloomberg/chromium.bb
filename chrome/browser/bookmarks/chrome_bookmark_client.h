@@ -84,7 +84,7 @@ class ChromeBookmarkClient : public bookmarks::BookmarkClient,
   // Helper for GetLoadExtraNodesCallback().
   static bookmarks::BookmarkPermanentNodeList LoadExtraNodes(
       const scoped_refptr<base::DeferredSequencedTaskRunner>& profile_io_runner,
-      BookmarkPermanentNode* managed_node,
+      scoped_ptr<BookmarkPermanentNode> managed_node,
       scoped_ptr<base::ListValue> initial_managed_bookmarks,
       int64* next_node_id);
 
