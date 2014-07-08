@@ -1391,10 +1391,6 @@
       'browser/sync/supervised_user_signin_manager_wrapper.h',
       'browser/sync/sync_error_controller.cc',
       'browser/sync/sync_error_controller.h',
-      'browser/sync/sync_error_notifier_ash.cc',
-      'browser/sync/sync_error_notifier_ash.h',
-      'browser/sync/sync_error_notifier_factory_ash.cc',
-      'browser/sync/sync_error_notifier_factory_ash.h',
       'browser/sync/sync_startup_tracker.cc',
       'browser/sync/sync_startup_tracker.h',
       'browser/tab_contents/navigation_metrics_recorder.cc',
@@ -2257,6 +2253,13 @@
       'browser/download/drag_download_item_views.cc',
       'browser/lifetime/application_lifetime_aura.cc',
       'browser/platform_util_aura.cc',
+    ],
+    # Cross-platform Ash sources.
+    'chrome_browser_ash_sources': [
+      'browser/sync/sync_error_notifier_ash.cc',
+      'browser/sync/sync_error_notifier_ash.h',
+      'browser/sync/sync_error_notifier_factory_ash.cc',
+      'browser/sync/sync_error_notifier_factory_ash.h',
     ],
     'chrome_browser_win_sources': [
       'browser/browser_process_platform_part_aurawin.cc',
@@ -3177,6 +3180,9 @@
             '../ui/gl/gl.gyp:gl',
           ],
         }],
+        ['use_ash==1', {
+          'sources': [ '<@(chrome_browser_ash_sources)' ],
+        }],
         ['use_x11==1', {
           'sources': [ '<@(chrome_browser_x11_sources)' ],
           'conditions': [
@@ -3416,6 +3422,7 @@
     {
       # Protobuf compiler / generator for the fraudulent certificate reporting
       # protocol buffer.
+      # GN version: //chrome/browser/net:cert_logger_proto
       'target_name': 'cert_logger_proto',
       'type': 'static_library',
       'sources': [ 'browser/net/cert_logger.proto', ],
@@ -3478,6 +3485,7 @@
     {
       # Protobuf compiler / generator for the InMemoryURLIndex caching
       # protocol buffer.
+      # GN version: //chrome/browser/history:in_memory_url_index_cache_proto
       'target_name': 'in_memory_url_index_cache_proto',
       'type': 'static_library',
       'sources': [ 'browser/history/in_memory_url_index_cache.proto' ],
@@ -3489,6 +3497,7 @@
     },
     {
       # Protobuf compiler / generator for Sync FileSystem protocol buffer.
+      # GN version: //chrome/browser/sync_file_system:sync_file_system_proto
       'target_name': 'sync_file_system_proto',
       'type': 'static_library',
       'sources': [
@@ -3502,6 +3511,7 @@
     },
     {
       # Protobuf compiler / generator for Sync FileSystem protocol buffer.
+      # GN version: //chrome/browser/sync_file_system/drive_backend:sync_file_system_drive_proto
       'target_name': 'sync_file_system_drive_proto',
       'type': 'static_library',
       'sources': [

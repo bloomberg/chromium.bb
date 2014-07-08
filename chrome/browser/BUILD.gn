@@ -11,9 +11,6 @@ about_credits_file = "$target_gen_dir/about_credits.html"
 additional_modules_list_file =
     "$root_gen_dir/chrome/browser/internal/additional_modules_list.txt"
 
-# TODO(brettw) uncomment this when this target compiles.
-if (false) {
-
 gypi_values = exec_script(
     "//build/gypi_to_gn.py",
     [ rebase_path("../chrome_browser.gypi") ],
@@ -35,7 +32,11 @@ static_library("browser") {
     "//chrome:resources",
     "//chrome:strings",
     "//chrome/app:generated_resources_map",
+    "//chrome/app/resources:platform_locale_settings",
     "//chrome/app/theme:theme_resources",
+    "//chrome/browser/history:in_memory_url_index_cache_proto",
+    "//chrome/browser/metrics/variations/proto:proto",
+    "//chrome/browser/net:cert_logger_proto",
     "//chrome/browser/net:probe_message_proto",
     "//chrome/browser/search/suggestions/proto",
     "//chrome/common",
@@ -74,9 +75,6 @@ static_library("browser") {
     "//ui/resources",
     # TODO(GYP)
     #"browser_ui",
-    #"cert_logger_proto",
-    #"chrome_resources.gyp:platform_locale_settings",
-    #"in_memory_url_index_cache_proto",
     #"../components/components.gyp:autocomplete",
     #"../components/components.gyp:bookmarks_browser",
     #"../components/components.gyp:captive_portal",
@@ -108,9 +106,6 @@ static_library("browser") {
     #"../third_party/libjingle/libjingle.gyp:libjingle",
     #"../ui/message_center/message_center.gyp:message_center",
     #"../ui/shell_dialogs/shell_dialogs.gyp:shell_dialogs",
-    # Note: variations dependency from GYP build is omitted because we pick it
-    # up via chrome/common, and GN doesn't have the GYP dependency bug that
-    # made it necessary to include here.
   ]
 
   forward_dependent_configs_from = [
@@ -142,6 +137,8 @@ static_library("browser") {
     deps += [
       "//cc",
       "//chrome/browser/performance_monitor",
+      "//chrome/browser/sync_file_system:sync_file_system_proto",
+      "//chrome/browser/sync_file_system/drive_backend:sync_file_system_drive_proto",
       "//chrome/common/extensions/api:api",
       "//components/keyed_service/content",
       "//components/url_matcher",
@@ -173,8 +170,6 @@ static_library("browser") {
       #"browser_extensions",
       #"debugger",
       #"installer_util",
-      #"sync_file_system_drive_proto",
-      #"sync_file_system_proto",
       #"../components/components.gyp:autofill_content_browser",
       #"../components/components.gyp:dom_distiller_content",
       #"../components/components.gyp:navigation_interception",
@@ -368,6 +363,11 @@ static_library("browser") {
   }
   if (ui_compositor_image_transport) {
     deps += [ "//ui/gl" ]
+  }
+
+  if (use_ash) {
+    sources += rebase_path(gypi_values.chrome_browser_ash_sources,
+                           ".", "//chrome")
   }
 
   if (use_x11) {
@@ -608,8 +608,6 @@ static_library("browser") {
     }
   }
 }
-
-}  # comment out chrome/browser
 
 # GYP version: chrome/chrome_resources.gyp:chrome_resources
 # (generate_browser_resources action)

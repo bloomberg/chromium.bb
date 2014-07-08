@@ -9,3 +9,21 @@ import("//tools/grit/grit_rule.gni")
 grit("locale_settings") {
   source = "locale_settings.grd"
 }
+
+# GYP version: chrome/chrome_resources.gyp:platform_locale_settings
+grit("platform_locale_settings") {
+  if (is_win) {
+    source = "locale_settings_win.grd"
+  } else if (is_mac || is_ios) {
+    source = "locale_settings_mac.grd"
+  } else if (is_chromeos) {
+    if (is_chrome_branded) {
+      source = "locale_settings_google_chromeos.grd"
+    } else {
+      source = "locale_settings_chromiumos.grd"
+    }
+  } else if (is_posix) {
+    # All other posix systems just use the Linux one.
+    source = "locale_settings_linux.grd"
+  }
+}

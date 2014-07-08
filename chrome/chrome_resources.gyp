@@ -301,6 +301,7 @@
       ],
     },
     {
+      # GN version: //chrome/app/resources:platform_locale_settings
       'target_name': 'platform_locale_settings',
       'type': 'none',
       'variables': {
