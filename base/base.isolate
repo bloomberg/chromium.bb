@@ -9,18 +9,22 @@
     '../third_party/icu/icu.isolate',
   ],
   'conditions': [
-    ['OS=="win" and component=="shared_library"', {
+    ['OS=="win" and component=="shared_library" and CONFIGURATION_NAME=="Debug"', {
       'variables': {
         'isolate_dependency_tracked': [
           # Copy the VS runtime DLLs into the isolate so that they
-          # don't have to be preinstalled on the target machine. Note
-          # that depending on whether the build is Debug or Release,
-          # half of these dependencies will be broken, so these
-          # dependencies require --ignore-broken-items to be passed to
-          # the isolate driver.
+          # don't have to be preinstalled on the target machine.
           '<(PRODUCT_DIR)/msvcp120d.dll',
-          '<(PRODUCT_DIR)/msvcp120.dll',
           '<(PRODUCT_DIR)/msvcr120d.dll',
+        ],
+      },
+    }],
+    ['OS=="win" and component=="shared_library" and CONFIGURATION_NAME=="Release"', {
+      'variables': {
+        'isolate_dependency_tracked': [
+          # Copy the VS runtime DLLs into the isolate so that they
+          # don't have to be preinstalled on the target machine.
+          '<(PRODUCT_DIR)/msvcp120.dll',
           '<(PRODUCT_DIR)/msvcr120.dll',
         ],
       },
