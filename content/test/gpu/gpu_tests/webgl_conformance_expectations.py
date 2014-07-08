@@ -27,12 +27,20 @@ class WebGLConformanceExpectations(test_expectations.TestExpectations):
     # Fails on all platforms
     self.Fail('conformance/glsl/misc/shaders-with-mis-matching-uniforms.html',
         bug=351396)
+    self.Fail('conformance/textures/texture-draw-with-2d-and-cube.html',
+        bug=391951)
+    self.Fail('conformance/renderbuffers/framebuffer-object-attachment.html',
+        ['win', 'linux'], bug=391953)
 
     # Flaky on Win
     self.Fail('conformance/extensions/webgl-draw-buffers.html',
         ['win'], bug=369349)
     self.Fail('conformance/context/context-lost-restored.html',
         ['win'], bug=374378)
+
+    # Win failures
+    self.Fail('conformance/glsl/misc/struct-equals.html',
+        ['win'], bug=391957)
 
     # Win7 / Intel failures
     self.Fail('conformance/rendering/gl-scissor-test.html',
@@ -114,6 +122,26 @@ class WebGLConformanceExpectations(test_expectations.TestExpectations):
         ['lion', 'intel'], bug=323736)
     self.Skip('conformance/ogles/GL/tan/tan_001_to_006.html',
         ['lion', 'intel'], bug=323736)
+
+    # Linux NVIDIA failures
+    self.Fail('conformance/glsl/constructors/glsl-construct-bvec2.html',
+        ['linux', 'nvidia'], bug=391960)
+    self.Fail('conformance/glsl/constructors/glsl-construct-bvec3.html',
+        ['linux', 'nvidia'], bug=391960)
+    self.Fail('conformance/glsl/constructors/glsl-construct-bvec4.html',
+        ['linux', 'nvidia'], bug=391960)
+    self.Fail('conformance/glsl/constructors/glsl-construct-ivec2.html',
+        ['linux', 'nvidia'], bug=391960)
+    self.Fail('conformance/glsl/constructors/glsl-construct-ivec3.html',
+        ['linux', 'nvidia'], bug=391960)
+    self.Fail('conformance/glsl/constructors/glsl-construct-ivec4.html',
+        ['linux', 'nvidia'], bug=391960)
+    self.Fail('conformance/glsl/constructors/glsl-construct-vec2.html',
+        ['linux', 'nvidia'], bug=391960)
+    self.Fail('conformance/glsl/constructors/glsl-construct-vec3.html',
+        ['linux', 'nvidia'], bug=391960)
+    self.Fail('conformance/glsl/constructors/glsl-construct-vec4.html',
+        ['linux', 'nvidia'], bug=391960)
 
     # Android failures
     # The following test is very slow and therefore times out on Android bot.
