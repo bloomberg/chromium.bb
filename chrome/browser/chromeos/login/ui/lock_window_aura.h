@@ -8,15 +8,21 @@
 #include "base/compiler_specific.h"
 #include "chrome/browser/chromeos/login/ui/lock_window.h"
 #include "ui/views/widget/widget.h"
+#include "ui/views/widget/widget_delegate.h"
 
 namespace chromeos {
 
 class LockWindowAura : public views::Widget,
+                       public views::WidgetDelegate,
                        public LockWindow {
  public:
   // LockWindow implementation:
   virtual void Grab() OVERRIDE;
   virtual views::Widget* GetWidget() OVERRIDE;
+
+  // views::WidgetDelegate implementation:
+  virtual views::View* GetInitiallyFocusedView() OVERRIDE;
+  virtual const views::Widget* GetWidget() const OVERRIDE;
 
  private:
   friend class LockWindow;

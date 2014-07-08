@@ -8,6 +8,7 @@
 #include "base/basictypes.h"
 
 namespace views {
+class View;
 class Widget;
 }
 
@@ -40,6 +41,11 @@ class LockWindow {
     observer_ = observer;
   }
 
+  // Sets the view which should be initially focused.
+  void set_initially_focused_view(views::View* view) {
+    initially_focused_view_ = view;
+  }
+
   // Creates an instance of the platform specific lock window.
   static LockWindow* Create();
 
@@ -48,6 +54,10 @@ class LockWindow {
   // window has finished all initialization.
   Observer* observer_;
 
+  // The view which should be initially focused.
+  views::View* initially_focused_view_;
+
+ private:
   DISALLOW_COPY_AND_ASSIGN(LockWindow);
 };
 

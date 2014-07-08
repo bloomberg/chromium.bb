@@ -86,6 +86,7 @@ void WebUIScreenLocker::LockScreen() {
   lock_time_ = base::TimeTicks::Now();
   LockWindow* lock_window = LockWindow::Create();
   lock_window->set_observer(this);
+  lock_window->set_initially_focused_view(this);
   lock_window_ = lock_window->GetWidget();
   lock_window_->AddObserver(this);
   WebUILoginView::Init();

@@ -35,6 +35,16 @@ views::Widget* LockWindowAura::GetWidget() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+// views::WidgetDelegate implementation:
+views::View* LockWindowAura::GetInitiallyFocusedView() {
+  return initially_focused_view_;
+}
+
+const views::Widget* LockWindowAura::GetWidget() const {
+  return this;
+}
+
+////////////////////////////////////////////////////////////////////////////////
 // LockWindowAura private:
 LockWindowAura::LockWindowAura() {
   Init();
@@ -46,6 +56,7 @@ LockWindowAura::~LockWindowAura() {
 void LockWindowAura::Init() {
   views::Widget::InitParams params(
       views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
+  params.delegate = this;
   params.show_state = ui::SHOW_STATE_FULLSCREEN;
   params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
   // TODO(oshima): move the lock screen harness to ash.

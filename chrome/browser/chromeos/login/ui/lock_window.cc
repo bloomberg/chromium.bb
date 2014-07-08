@@ -8,7 +8,7 @@
 
 namespace chromeos {
 
-LockWindow::LockWindow() : observer_(NULL) {
+LockWindow::LockWindow() : observer_(NULL), initially_focused_view_(NULL) {
 }
 
 }  // namespace chromeos
