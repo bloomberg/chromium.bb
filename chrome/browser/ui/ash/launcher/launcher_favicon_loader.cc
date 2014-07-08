@@ -30,7 +30,6 @@ class FaviconRawBitmapHandler : public content::WebContentsObserver {
                           LauncherFaviconLoader::Delegate* delegate)
       : content::WebContentsObserver(web_contents),
         delegate_(delegate),
-        web_contents_(web_contents),
         weak_ptr_factory_(this) {}
 
   virtual ~FaviconRawBitmapHandler() {}
@@ -54,8 +53,6 @@ class FaviconRawBitmapHandler : public content::WebContentsObserver {
   void AddFavicon(const GURL& image_url, const SkBitmap& new_bitmap);
 
   LauncherFaviconLoader::Delegate* delegate_;
-
-  content::WebContents* web_contents_;
 
   typedef std::set<GURL> UrlSet;
   // Map of pending download urls.
@@ -108,7 +105,7 @@ void FaviconRawBitmapHandler::DidUpdateFaviconURL(
     if (pending_requests_.find(*iter) != pending_requests_.end())
       continue;  // Skip already pending downloads.
     pending_requests_.insert(*iter);
-    web_contents_->DownloadImage(
+    web_contents()->DownloadImage(
         *iter,
         true,  // is a favicon
         0,     // no maximum size
