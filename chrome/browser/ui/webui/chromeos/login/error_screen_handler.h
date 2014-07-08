@@ -34,6 +34,9 @@ class ErrorScreenHandler : public BaseScreenHandler,
   virtual void SetDelegate(ErrorScreenActorDelegate* delegate) OVERRIDE;
   virtual void Show(OobeDisplay::Screen parent_screen,
                     base::DictionaryValue* params) OVERRIDE;
+  virtual void Show(OobeDisplay::Screen parent_screen,
+                    base::DictionaryValue* params,
+                    const base::Closure& on_hide) OVERRIDE;
   virtual void Hide() OVERRIDE;
   virtual void FixCaptivePortal() OVERRIDE;
   virtual void ShowCaptivePortal() OVERRIDE;
@@ -50,6 +53,9 @@ class ErrorScreenHandler : public BaseScreenHandler,
   void NetworkErrorShown();
 
   bool GetScreenName(OobeUI::Screen screen, std::string* name) const;
+
+  // Default hide_closure for Show/Hide.
+  void CheckAndShowScreen();
 
   // WebUI message handlers.
   void HandleShowCaptivePortal();
@@ -81,6 +87,10 @@ class ErrorScreenHandler : public BaseScreenHandler,
 
   // Keeps whether screen should be shown right after initialization.
   bool show_on_init_;
+
+  scoped_ptr<base::Closure> on_hide_;
+
+  base::WeakPtrFactory<ErrorScreenHandler> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ErrorScreenHandler);
 };

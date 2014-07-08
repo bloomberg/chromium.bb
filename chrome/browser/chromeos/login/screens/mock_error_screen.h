@@ -25,6 +25,9 @@ class MockErrorScreenActor : public ErrorScreenActor {
   MOCK_METHOD1(SetDelegate, void(ErrorScreenActorDelegate* delegate));
   MOCK_METHOD2(Show, void(OobeDisplay::Screen parent_screen,
                           base::DictionaryValue* params));
+  MOCK_METHOD3(Show, void(OobeDisplay::Screen parent_screen,
+                          base::DictionaryValue* params,
+                          const base::Closure& on_hide));
   MOCK_METHOD0(Hide, void(void));
   MOCK_METHOD0(FixCaptivePortal, void(void));
   MOCK_METHOD0(ShowCaptivePortal, void(void));

@@ -411,6 +411,9 @@ LoginDisplayHostImpl::~LoginDisplayHostImpl() {
       RemoveVirtualKeyboardStateObserver(this);
   ash::Shell::GetScreen()->RemoveObserver(this);
 
+  if (login_view_ && login_window_)
+    login_window_->RemoveRemovalsObserver(this);
+
   if (login::LoginScrollIntoViewEnabled())
     ResetKeyboardOverscrollOverride();
 
@@ -905,6 +908,16 @@ void LoginDisplayHostImpl::OnDisplayMetricsChanged(const gfx::Display& display,
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+// LoginDisplayHostImpl, views::WidgetRemovalsObserver implementation:
+void LoginDisplayHostImpl::OnWillRemoveView(views::Widget* widget,
+                                            views::View* view) {
+  if (view != static_cast<views::View*>(login_view_))
+    return;
+  login_view_ = NULL;
+  widget->RemoveRemovalsObserver(this);
+}
+
+////////////////////////////////////////////////////////////////////////////////
 // LoginDisplayHostImpl, private
 
 void LoginDisplayHostImpl::ShutdownDisplayHost(bool post_quit_task) {
@@ -1062,6 +1075,7 @@ void LoginDisplayHostImpl::InitLoginWindowAndView() {
       login_window_->GetNativeView(),
       wm::ANIMATE_HIDE);
 
+  login_window_->AddRemovalsObserver(this);
   login_window_->SetContentsView(login_view_);
 
   // If WebUI is initialized in hidden state, show it only if we're no

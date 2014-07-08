@@ -237,8 +237,12 @@ OobeUI::OobeUI(content::WebUI* web_ui, const GURL& url)
   hid_detection_screen_actor_ = hid_detection_screen_handler;
   AddScreenHandler(hid_detection_screen_handler);
 
+  error_screen_handler_ = new ErrorScreenHandler(network_state_informer_);
+  AddScreenHandler(error_screen_handler_);
+
   EnrollmentScreenHandler* enrollment_screen_handler =
-      new EnrollmentScreenHandler();
+      new EnrollmentScreenHandler(network_state_informer_,
+                                  error_screen_handler_);
   enrollment_screen_actor_ = enrollment_screen_handler;
   AddScreenHandler(enrollment_screen_handler);
 
@@ -251,9 +255,6 @@ OobeUI::OobeUI(content::WebUI* web_ui, const GURL& url)
       new UserImageScreenHandler();
   user_image_screen_actor_ = user_image_screen_handler;
   AddScreenHandler(user_image_screen_handler);
-
-  error_screen_handler_ = new ErrorScreenHandler(network_state_informer_);
-  AddScreenHandler(error_screen_handler_);
 
   gaia_screen_handler_ = new GaiaScreenHandler(network_state_informer_);
   AddScreenHandler(gaia_screen_handler_);
@@ -526,16 +527,13 @@ const std::string& OobeUI::GetScreenName(Screen screen) const {
 
 void OobeUI::OnCurrentScreenChanged(const std::string& screen) {
   previous_screen_ = current_screen_;
-  if (screen_ids_.count(screen)) {
-    Screen new_screen = screen_ids_[screen];
-    FOR_EACH_OBSERVER(Observer,
-                      observer_list_,
-                      OnCurrentScreenChanged(current_screen_, new_screen));
-    current_screen_ = new_screen;
-  } else {
-    NOTREACHED() << "Screen should be registered in InitializeScreenMaps()";
-    current_screen_ = SCREEN_UNKNOWN;
-  }
+  DCHECK(screen_ids_.count(screen))
+      << "Screen should be registered in InitializeScreenMaps()";
+  Screen new_screen = screen_ids_[screen];
+  FOR_EACH_OBSERVER(Observer,
+                    observer_list_,
+                    OnCurrentScreenChanged(current_screen_, new_screen));
+  current_screen_ = new_screen;
 }
 
 }  // namespace chromeos

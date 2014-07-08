@@ -53,6 +53,11 @@ class ErrorScreenActor {
   virtual void Show(OobeDisplay::Screen parent_screen,
                     base::DictionaryValue* params) = 0;
 
+  // Shows the screen and call |on_hide| on hide.
+  virtual void Show(OobeDisplay::Screen parent_screen,
+                    base::DictionaryValue* params,
+                    const base::Closure& on_hide) = 0;
+
   // Hides the screen.
   virtual void Hide() = 0;
 

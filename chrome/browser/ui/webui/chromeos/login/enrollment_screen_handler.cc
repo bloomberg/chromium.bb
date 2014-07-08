@@ -10,14 +10,18 @@
 #include "base/bind_helpers.h"
 #include "base/compiler_specific.h"
 #include "base/message_loop/message_loop.h"
+#include "base/strings/string_util.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_remover.h"
+#include "chrome/browser/chromeos/login/ui/login_display_host_impl.h"
 #include "chrome/browser/chromeos/policy/policy_oauth2_token_fetcher.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chromeos/login/authenticated_user_email_retriever.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
+#include "chromeos/network/network_state.h"
+#include "chromeos/network/network_state_handler.h"
 #include "components/policy/core/browser/cloud/message_util.h"
 #include "content/public/browser/web_contents.h"
 #include "google_apis/gaia/gaia_auth_fetcher.h"
@@ -56,9 +60,10 @@ std::string EnrollmentModeToString(EnrollmentScreenActor::EnrollmentMode mode) {
       return kEnrollmentModeForced;
     case EnrollmentScreenActor::ENROLLMENT_MODE_AUTO:
       return kEnrollmentModeAuto;
+    default:
+      NOTREACHED() << "Bad enrollment mode " << mode;
   }
 
-  NOTREACHED() << "Bad enrollment mode " << mode;
   return kEnrollmentModeManual;
 }
 
@@ -86,22 +91,69 @@ class TokenRevoker : public GaiaAuthConsumer {
   DISALLOW_COPY_AND_ASSIGN(TokenRevoker);
 };
 
+// Returns network name by service path.
+std::string GetNetworkName(const std::string& service_path) {
+  const NetworkState* network =
+      NetworkHandler::Get()->network_state_handler()->GetNetworkState(
+          service_path);
+  if (!network)
+    return std::string();
+  return network->name();
+}
+
+bool IsBehindCaptivePortal(NetworkStateInformer::State state,
+                           ErrorScreenActor::ErrorReason reason) {
+  return state == NetworkStateInformer::CAPTIVE_PORTAL ||
+         reason == ErrorScreenActor::ERROR_REASON_PORTAL_DETECTED;
+}
+
+bool IsProxyError(NetworkStateInformer::State state,
+                  ErrorScreenActor::ErrorReason reason) {
+  return state == NetworkStateInformer::PROXY_AUTH_REQUIRED ||
+         reason == ErrorScreenActor::ERROR_REASON_PROXY_AUTH_CANCELLED ||
+         reason == ErrorScreenActor::ERROR_REASON_PROXY_CONNECTION_FAILED;
+}
+
 }  // namespace
 
 // EnrollmentScreenHandler, public ------------------------------
 
-EnrollmentScreenHandler::EnrollmentScreenHandler()
+EnrollmentScreenHandler::EnrollmentScreenHandler(
+    const scoped_refptr<NetworkStateInformer>& network_state_informer,
+    ErrorScreenActor* error_screen_actor)
     : BaseScreenHandler(kJsScreenPath),
       controller_(NULL),
       show_on_init_(false),
       enrollment_mode_(ENROLLMENT_MODE_MANUAL),
-      browsing_data_remover_(NULL) {
+      browsing_data_remover_(NULL),
+      frame_error_(net::OK),
+      network_state_informer_(network_state_informer),
+      error_screen_actor_(error_screen_actor),
+      weak_ptr_factory_(this) {
   set_async_assets_load_id(OobeUI::kScreenOobeEnrollment);
+  DCHECK(network_state_informer_.get());
+  DCHECK(error_screen_actor_);
+  network_state_informer_->AddObserver(this);
+
+  if (chromeos::LoginDisplayHostImpl::default_host()) {
+    chromeos::WebUILoginView* login_view =
+        chromeos::LoginDisplayHostImpl::default_host()->GetWebUILoginView();
+    if (login_view)
+      login_view->AddFrameObserver(this);
+  }
 }
 
 EnrollmentScreenHandler::~EnrollmentScreenHandler() {
   if (browsing_data_remover_)
     browsing_data_remover_->RemoveObserver(this);
+  network_state_informer_->RemoveObserver(this);
+
+  if (chromeos::LoginDisplayHostImpl::default_host()) {
+    chromeos::WebUILoginView* login_view =
+        chromeos::LoginDisplayHostImpl::default_host()->GetWebUILoginView();
+    if (login_view)
+      login_view->RemoveFrameObserver(this);
+  }
 }
 
 // EnrollmentScreenHandler, WebUIMessageHandler implementation --
@@ -115,6 +167,8 @@ void EnrollmentScreenHandler::RegisterMessages() {
               &EnrollmentScreenHandler::HandleCompleteLogin);
   AddCallback("oauthEnrollRetry",
               &EnrollmentScreenHandler::HandleRetry);
+  AddCallback("frameLoadingCompleted",
+              &EnrollmentScreenHandler::HandleFrameLoadingCompleted);
 }
 
 // EnrollmentScreenHandler
@@ -354,6 +408,117 @@ void EnrollmentScreenHandler::OnBrowsingDataRemoverDone() {
   }
 }
 
+OobeUI::Screen EnrollmentScreenHandler::GetCurrentScreen() const {
+  OobeUI::Screen screen = OobeUI::SCREEN_UNKNOWN;
+  OobeUI* oobe_ui = static_cast<OobeUI*>(web_ui()->GetController());
+  if (oobe_ui)
+    screen = oobe_ui->current_screen();
+  return screen;
+}
+
+bool EnrollmentScreenHandler::IsOnEnrollmentScreen() const {
+  return (GetCurrentScreen() == OobeUI::SCREEN_OOBE_ENROLLMENT);
+}
+
+bool EnrollmentScreenHandler::IsEnrollmentScreenHiddenByError() const {
+  return (GetCurrentScreen() == OobeUI::SCREEN_ERROR_MESSAGE &&
+          error_screen_actor_->parent_screen() ==
+              OobeUI::SCREEN_OOBE_ENROLLMENT);
+}
+
+// TODO(rsorokin): This function is mostly copied from SigninScreenHandler and
+// should be refactored in the future.
+void EnrollmentScreenHandler::UpdateState(
+    ErrorScreenActor::ErrorReason reason) {
+  if (!IsOnEnrollmentScreen() && !IsEnrollmentScreenHiddenByError())
+    return;
+
+  NetworkStateInformer::State state = network_state_informer_->state();
+  const std::string network_path = network_state_informer_->network_path();
+  const bool is_online = (state == NetworkStateInformer::ONLINE);
+  const bool is_behind_captive_portal =
+      (state == NetworkStateInformer::CAPTIVE_PORTAL);
+  const bool is_frame_error =
+      (frame_error() != net::OK) ||
+      (reason == ErrorScreenActor::ERROR_REASON_FRAME_ERROR);
+
+  LOG(WARNING) << "EnrollmentScreenHandler::UpdateState(): "
+               << "state=" << NetworkStateInformer::StatusString(state) << ", "
+               << "reason=" << ErrorScreenActor::ErrorReasonString(reason);
+
+  if (is_online || !is_behind_captive_portal)
+    error_screen_actor_->HideCaptivePortal();
+
+  if (is_frame_error) {
+    LOG(WARNING) << "Retry page load";
+    // TODO(rsorokin): Too many consecutive reloads.
+    CallJS("doReload");
+  }
+
+  if (!is_online || is_frame_error)
+    SetupAndShowOfflineMessage(state, reason);
+  else
+    HideOfflineMessage(state, reason);
+}
+
+void EnrollmentScreenHandler::SetupAndShowOfflineMessage(
+    NetworkStateInformer::State state,
+    ErrorScreenActor::ErrorReason reason) {
+  const std::string network_path = network_state_informer_->network_path();
+  const bool is_behind_captive_portal = IsBehindCaptivePortal(state, reason);
+  const bool is_proxy_error = IsProxyError(state, reason);
+  const bool is_frame_error =
+      (frame_error() != net::OK) ||
+      (reason == ErrorScreenActor::ERROR_REASON_FRAME_ERROR);
+
+  if (is_proxy_error) {
+    error_screen_actor_->SetErrorState(ErrorScreen::ERROR_STATE_PROXY,
+                                       std::string());
+  } else if (is_behind_captive_portal) {
+    // Do not bother a user with obsessive captive portal showing. This
+    // check makes captive portal being shown only once: either when error
+    // screen is shown for the first time or when switching from another
+    // error screen (offline, proxy).
+    if (IsOnEnrollmentScreen() || (error_screen_actor_->error_state() !=
+                                   ErrorScreen::ERROR_STATE_PORTAL)) {
+      error_screen_actor_->FixCaptivePortal();
+    }
+    const std::string network_name = GetNetworkName(network_path);
+    error_screen_actor_->SetErrorState(ErrorScreen::ERROR_STATE_PORTAL,
+                                       network_name);
+  } else if (is_frame_error) {
+    error_screen_actor_->SetErrorState(
+        ErrorScreen::ERROR_STATE_AUTH_EXT_TIMEOUT, std::string());
+  } else {
+    error_screen_actor_->SetErrorState(ErrorScreen::ERROR_STATE_OFFLINE,
+                                       std::string());
+  }
+
+  if (GetCurrentScreen() != OobeUI::SCREEN_ERROR_MESSAGE) {
+    base::DictionaryValue params;
+    const std::string network_type = network_state_informer_->network_type();
+    params.SetString("lastNetworkType", network_type);
+    error_screen_actor_->SetUIState(ErrorScreen::UI_STATE_SIGNIN);
+    error_screen_actor_->Show(OobeUI::SCREEN_OOBE_ENROLLMENT,
+                              &params,
+                              base::Bind(&EnrollmentScreenHandler::DoShow,
+                                         weak_ptr_factory_.GetWeakPtr()));
+  }
+}
+
+void EnrollmentScreenHandler::HideOfflineMessage(
+    NetworkStateInformer::State state,
+    ErrorScreenActor::ErrorReason reason) {
+  if (IsEnrollmentScreenHiddenByError())
+    error_screen_actor_->Hide();
+}
+
+void EnrollmentScreenHandler::OnFrameError(
+    const std::string& frame_unique_name) {
+  if (frame_unique_name == "oauth-enroll-signin-frame") {
+    HandleFrameLoadingCompleted(net::ERR_FAILED);
+  }
+}
 // EnrollmentScreenHandler, private -----------------------------
 
 void EnrollmentScreenHandler::HandleRetrieveAuthenticatedUserEmail(
@@ -367,10 +532,7 @@ void EnrollmentScreenHandler::HandleRetrieveAuthenticatedUserEmail(
 }
 
 void EnrollmentScreenHandler::HandleClose(const std::string& reason) {
-  if (!controller_) {
-    NOTREACHED();
-    return;
-  }
+  DCHECK(controller_);
 
   if (reason == "cancel" || reason == "autocancel")
     controller_->OnCancel();
@@ -381,19 +543,25 @@ void EnrollmentScreenHandler::HandleClose(const std::string& reason) {
 }
 
 void EnrollmentScreenHandler::HandleCompleteLogin(const std::string& user) {
-  if (!controller_) {
-    NOTREACHED();
-    return;
-  }
+  DCHECK(controller_);
   controller_->OnLoginDone(gaia::SanitizeEmail(user));
 }
 
 void EnrollmentScreenHandler::HandleRetry() {
-  if (!controller_) {
-    NOTREACHED();
-    return;
-  }
+  DCHECK(controller_);
   controller_->OnRetry();
+}
+
+void EnrollmentScreenHandler::HandleFrameLoadingCompleted(int status) {
+  const net::Error frame_error = static_cast<net::Error>(status);
+  frame_error_ = frame_error;
+
+  if (network_state_informer_->state() != NetworkStateInformer::ONLINE)
+    return;
+  if (frame_error_)
+    UpdateState(ErrorScreenActor::ERROR_REASON_FRAME_ERROR);
+  else
+    UpdateState(ErrorScreenActor::ERROR_REASON_UPDATE);
 }
 
 void EnrollmentScreenHandler::ShowStep(const char* step) {

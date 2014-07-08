@@ -14,7 +14,9 @@
 #include "base/memory/scoped_vector.h"
 #include "chrome/browser/browsing_data/browsing_data_remover.h"
 #include "chrome/browser/chromeos/login/enrollment/enrollment_screen_actor.h"
+#include "chrome/browser/chromeos/login/ui/webui_login_view.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/network_state_informer.h"
 
 namespace policy {
 class PolicyOAuth2TokenFetcher;
@@ -29,9 +31,13 @@ class AuthenticatedUserEmailRetriever;
 class EnrollmentScreenHandler
     : public BaseScreenHandler,
       public EnrollmentScreenActor,
-      public BrowsingDataRemover::Observer {
+      public BrowsingDataRemover::Observer,
+      public NetworkStateInformer::NetworkStateInformerObserver,
+      public WebUILoginView::FrameObserver {
  public:
-  EnrollmentScreenHandler();
+  EnrollmentScreenHandler(
+      const scoped_refptr<NetworkStateInformer>& network_state_informer,
+      ErrorScreenActor* error_screen_actor);
   virtual ~EnrollmentScreenHandler();
 
   // Implements WebUIMessageHandler:
@@ -60,13 +66,26 @@ class EnrollmentScreenHandler
   // Implements BrowsingDataRemover::Observer:
   virtual void OnBrowsingDataRemoverDone() OVERRIDE;
 
+  // Implements NetworkStateInformer::NetworkStateInformerObserver
+  virtual void UpdateState(ErrorScreenActor::ErrorReason reason) OVERRIDE;
+
+  // Implements WebUILoginView::FrameObserver
+  virtual void OnFrameError(const std::string& frame_unique_name) OVERRIDE;
+
  private:
   // Handlers for WebUI messages.
   void HandleRetrieveAuthenticatedUserEmail(double attempt_token);
   void HandleClose(const std::string& reason);
   void HandleCompleteLogin(const std::string& user);
   void HandleRetry();
+  void HandleFrameLoadingCompleted(int status);
 
+  void SetupAndShowOfflineMessage(NetworkStateInformer::State state,
+                                  ErrorScreenActor::ErrorReason reason);
+  void HideOfflineMessage(NetworkStateInformer::State state,
+                          ErrorScreenActor::ErrorReason reason);
+
+  net::Error frame_error() const { return frame_error_; }
   // Shows a given enrollment step.
   void ShowStep(const char* step);
 
@@ -85,6 +104,16 @@ class EnrollmentScreenHandler
 
   // Shows the screen.
   void DoShow();
+
+  // Returns current visible screen.
+  OobeUI::Screen GetCurrentScreen() const;
+
+  // Returns true if current visible screen is the enrollment sign-in page.
+  bool IsOnEnrollmentScreen() const;
+
+  // Returns true if current visible screen is the error screen over
+  // enrollment sign-in page.
+  bool IsEnrollmentScreenHiddenByError() const;
 
   // Keeps the controller for this actor.
   Controller* controller_;
@@ -112,6 +141,16 @@ class EnrollmentScreenHandler
 
   // Helper that retrieves the authenticated user's e-mail address.
   scoped_ptr<AuthenticatedUserEmailRetriever> email_retriever_;
+
+  // Latest enrollment frame error.
+  net::Error frame_error_;
+
+  // Network state informer used to keep signin screen up.
+  scoped_refptr<NetworkStateInformer> network_state_informer_;
+
+  ErrorScreenActor* error_screen_actor_;
+
+  base::WeakPtrFactory<EnrollmentScreenHandler> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(EnrollmentScreenHandler);
 };

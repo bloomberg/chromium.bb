@@ -17,6 +17,7 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
       'showError',
       'showWorking',
       'setAuthenticatedUserEmail',
+      'doReload',
     ],
 
     /**
@@ -223,6 +224,11 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
         chrome.send('oauthEnrollCompleteLogin', [email]);
     },
 
+    doReload: function() {
+      $('oauth-enroll-signin-frame').contentWindow.location.href =
+          this.signInUrl_;
+    },
+
     /**
      * Handler for cancellations of an enforced auto-enrollment.
      */
@@ -304,6 +310,7 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
               msg.domain);
         }
         this.classList.toggle('saml', msg.isSAML);
+        chrome.send('frameLoadingCompleted', [0]);
       }
 
       if (msg.method == 'insecureContentBlocked') {

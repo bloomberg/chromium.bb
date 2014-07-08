@@ -27,6 +27,7 @@
 #include "ui/gfx/display_observer.h"
 #include "ui/gfx/rect.h"
 #include "ui/keyboard/keyboard_controller_observer.h"
+#include "ui/views/widget/widget_removals_observer.h"
 
 class PrefService;
 
@@ -53,7 +54,8 @@ class LoginDisplayHostImpl : public LoginDisplayHost,
                              public chromeos::CrasAudioHandler::AudioObserver,
                              public ash::VirtualKeyboardStateObserver,
                              public keyboard::KeyboardControllerObserver,
-                             public gfx::DisplayObserver {
+                             public gfx::DisplayObserver,
+                             public views::WidgetRemovalsObserver {
  public:
   explicit LoginDisplayHostImpl(const gfx::Rect& background_bounds);
   virtual ~LoginDisplayHostImpl();
@@ -136,6 +138,10 @@ class LoginDisplayHostImpl : public LoginDisplayHost,
   virtual void OnDisplayRemoved(const gfx::Display& old_display) OVERRIDE;
   virtual void OnDisplayMetricsChanged(const gfx::Display& display,
                                        uint32_t changed_metrics) OVERRIDE;
+
+  // Overriden from views::WidgetRemovalsObserver:
+  virtual void OnWillRemoveView(views::Widget* widget,
+                                views::View* view) OVERRIDE;
 
  private:
   // Way to restore if renderer have crashed.

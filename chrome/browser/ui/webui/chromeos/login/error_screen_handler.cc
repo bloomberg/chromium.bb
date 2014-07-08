@@ -42,7 +42,8 @@ ErrorScreenHandler::ErrorScreenHandler(
     : BaseScreenHandler(kJsScreenPath),
       delegate_(NULL),
       network_state_informer_(network_state_informer),
-      show_on_init_(false) {
+      show_on_init_(false),
+      weak_ptr_factory_(this) {
   DCHECK(network_state_informer_.get());
 }
 
@@ -53,12 +54,14 @@ void ErrorScreenHandler::SetDelegate(ErrorScreenActorDelegate* delegate) {
 }
 
 void ErrorScreenHandler::Show(OobeDisplay::Screen parent_screen,
-                              base::DictionaryValue* params) {
+                              base::DictionaryValue* params,
+                              const base::Closure& on_hide) {
   if (!page_is_ready()) {
     show_on_init_ = true;
     return;
   }
   parent_screen_ = parent_screen;
+  on_hide_.reset(new base::Closure(on_hide));
   ShowScreen(OobeUI::kScreenErrorMessage, params);
   NetworkErrorShown();
   NetworkPortalDetector::Get()->SetStrategy(
@@ -68,12 +71,25 @@ void ErrorScreenHandler::Show(OobeDisplay::Screen parent_screen,
   LOG(WARNING) << "Offline message is displayed";
 }
 
+void ErrorScreenHandler::CheckAndShowScreen() {
+  std::string screen_name;
+  if (GetScreenName(parent_screen(), &screen_name))
+    ShowScreen(screen_name.c_str(), NULL);
+}
+
+void ErrorScreenHandler::Show(OobeDisplay::Screen parent_screen,
+                              base::DictionaryValue* params) {
+  Show(parent_screen,
+       params,
+       base::Bind(&ErrorScreenHandler::CheckAndShowScreen,
+                  weak_ptr_factory_.GetWeakPtr()));
+}
+
 void ErrorScreenHandler::Hide() {
   if (parent_screen_ == OobeUI::SCREEN_UNKNOWN)
     return;
-  std::string screen_name;
-  if (GetScreenName(parent_screen_, &screen_name))
-    ShowScreen(screen_name.c_str(), NULL);
+  if (on_hide_)
+    on_hide_->Run();
   NetworkPortalDetector::Get()->SetStrategy(
       PortalDetectorStrategy::STRATEGY_ID_LOGIN_SCREEN);
   if (delegate_)

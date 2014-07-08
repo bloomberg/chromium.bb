@@ -312,6 +312,18 @@ void WebUILoginView::SetUIEnabled(bool enabled) {
   ash::Shell::GetInstance()->GetPrimarySystemTray()->SetEnabled(enabled);
 }
 
+void WebUILoginView::AddFrameObserver(FrameObserver* frame_observer) {
+  DCHECK(frame_observer);
+  DCHECK(!frame_observer_list_.HasObserver(frame_observer));
+  frame_observer_list_.AddObserver(frame_observer);
+}
+
+void WebUILoginView::RemoveFrameObserver(FrameObserver* frame_observer) {
+  DCHECK(frame_observer);
+  DCHECK(frame_observer_list_.HasObserver(frame_observer));
+  frame_observer_list_.RemoveObserver(frame_observer);
+}
+
 // WebUILoginView protected: ---------------------------------------------------
 
 void WebUILoginView::Layout() {
@@ -428,6 +440,9 @@ void WebUILoginView::DidFailProvisionalLoad(
     const GURL& validated_url,
     int error_code,
     const base::string16& error_description) {
+  FOR_EACH_OBSERVER(FrameObserver,
+                    frame_observer_list_,
+                    OnFrameError(render_frame_host->GetFrameName()));
   if (render_frame_host->GetFrameName() != "gaia-frame")
     return;
 
