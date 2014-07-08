@@ -27,8 +27,6 @@
 
 namespace net {
 
-using ::operator<<;
-
 class QuicAckNotifier;
 class QuicPacket;
 struct QuicPacketHeader;

@@ -233,7 +233,6 @@ bool FilePathWatcherImpl::SetupWatchHandle(const FilePath& dir,
       error_code != ERROR_ACCESS_DENIED &&
       error_code != ERROR_SHARING_VIOLATION &&
       error_code != ERROR_DIRECTORY) {
-    using ::operator<<; // Pick the right operator<< below.
     DPLOG(ERROR) << "FindFirstChangeNotification failed for "
                  << dir.value();
     return false;

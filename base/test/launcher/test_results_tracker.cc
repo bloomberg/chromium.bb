@@ -19,9 +19,6 @@
 
 namespace base {
 
-// See https://groups.google.com/a/chromium.org/d/msg/chromium-dev/nkdTP7sstSc/uT3FaE_sgkAJ .
-using ::operator<<;
-
 namespace {
 
 // The default output file for XML output.

@@ -233,6 +233,24 @@ TEST_F(LoggingTest, DcheckReleaseBehavior) {
   DCHECK_EQ(some_variable, 1) << "test";
 }
 
+// Test that defining an operator<< for a type in a namespace doesn't prevent
+// other code in that namespace from calling the operator<<(ostream, wstring)
+// defined by logging.h. This can fail if operator<<(ostream, wstring) can't be
+// found by ADL, since defining another operator<< prevents name lookup from
+// looking in the global namespace.
+namespace nested_test {
+  class Streamable {};
+  ALLOW_UNUSED std::ostream& operator<<(std::ostream& out, const Streamable&) {
+    return out << "Streamable";
+  }
+  TEST_F(LoggingTest, StreamingWstringFindsCorrectOperator) {
+    std::wstring wstr = L"Hello World";
+    std::ostringstream ostr;
+    ostr << wstr;
+    EXPECT_EQ("Hello World", ostr.str());
+  }
+}  // namespace nested_test
+
 }  // namespace
 
 }  // namespace logging
