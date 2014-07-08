@@ -372,7 +372,7 @@ function main() {
   the page will execute as you might expect. Imagine a content script with the
   following code as a simple example:
   <pre data-filename="content_script.js">
-    document.write("&lt;script&gt;'alert(1);&lt;/script&gt;'");
+    document.write("&lt;script&gt;alert(1);&lt;/script&gt;");
   </pre>
   This content script will cause an <code>alert</code> immediately upon the
   <code>document.write()</code>. Note that this will execute regardless of the
@@ -389,15 +389,28 @@ function main() {
     document.write("&lt;button onclick='alert(1);'&gt;click me&lt;/button&gt;'");
   </pre>
   If a user clicks on that button, the <code>onclick</code> script will
-  <em>not</em> execute. This is because the script did not immediately execute,
-  so it is not considered part of the content script, so the CSP
-  <em>of the page</em> (not of the extension) restricts its behavior. And since
-  that CSP does not specify <code>unsafe-inline</code>, the inline event handler
-  is blocked.
+  <em>not</em> execute. This is because the script did not immediately execute
+  and code not interpreted until the click event occurs is not considered part
+  of the content script, so the CSP <em>of the page</em> (not of the extension)
+  restricts its behavior. And since that CSP does not specify
+  <code>unsafe-inline</code>, the inline event handler is blocked.
 </p>
 
 <p>
-  Another similar case is if the content script executes the following:
+  The correct way to implement the desired behavior in this case would be to add
+  the <code>onclick</code> handler as a function from the content script as
+  follows:
+  <pre data-filename="content_script.js">
+    document.write("&lt;button id='mybutton'&gt;click me&lt;/button&gt;'");
+    var button = document.getElementById('mybutton');
+    button.onclick = function() {
+      alert(1);
+    };
+  </pre>
+</p>
+
+<p>
+  Another similar issue arises if the content script executes the following:
   <pre data-filename="content_script.js">
     var script = document.createElement('script');
     script.innerHTML = 'alert(1);'
