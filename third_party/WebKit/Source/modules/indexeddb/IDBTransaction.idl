@@ -24,13 +24,20 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// FIXME: de-duplicate this when crbug.com/390758 is fixed.
+enum IDBTransactionMode {
+    "readonly",
+    "readwrite",
+    "versionchange"
+};
+
 [
     ActiveDOMObject,
     GarbageCollected
 ] interface IDBTransaction : EventTarget {
 
     // Properties
-    readonly attribute DOMString mode;
+    readonly attribute IDBTransactionMode mode;
     readonly attribute IDBDatabase db;
     readonly attribute DOMError error;
 

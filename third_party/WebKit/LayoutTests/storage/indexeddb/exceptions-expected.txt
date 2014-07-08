@@ -106,7 +106,11 @@ Exception message: Failed to execute 'transaction' on 'IDBDatabase': One of the 
 The value for the mode parameter is invalid.
 Expecting TypeError exception from db.transaction('store', 'invalid-mode')
 PASS Exception was thrown.
-PASS db.transaction('store', 'invalid-mode') threw TypeError: Failed to execute 'transaction' on 'IDBDatabase': The mode provided ('invalid-mode') is not one of 'readonly' or 'readwrite'.
+PASS db.transaction('store', 'invalid-mode') threw TypeError: Failed to execute 'transaction' on 'IDBDatabase': parameter 2 ('invalid-mode') is not a valid enum value.
+The 'versionchange' value for the mode parameter can only be set internally during upgradeneeded.
+Expecting TypeError exception from db.transaction('store', 'versionchange')
+PASS Exception was thrown.
+PASS db.transaction('store', 'versionchange') threw TypeError: Failed to execute 'transaction' on 'IDBDatabase': The mode provided ('versionchange') is not one of 'readonly' or 'readwrite'.
 The function was called with an empty list of store names
 Expecting exception from db.transaction([])
 PASS Exception was thrown.

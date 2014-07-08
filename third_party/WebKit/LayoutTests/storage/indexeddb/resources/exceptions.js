@@ -94,6 +94,8 @@ function checkTransactionAndObjectStoreExceptions()
     evalAndExpectException("db.transaction('no-such-store')", "DOMException.NOT_FOUND_ERR", "'NotFoundError'");
     debug("The value for the mode parameter is invalid.");
     evalAndExpectExceptionClass("db.transaction('store', 'invalid-mode')", "TypeError");
+    debug("The 'versionchange' value for the mode parameter can only be set internally during upgradeneeded.");
+    evalAndExpectExceptionClass("db.transaction('store', 'versionchange')", "TypeError");
     debug("The function was called with an empty list of store names");
     evalAndExpectException("db.transaction([])", "DOMException.INVALID_ACCESS_ERR", "'InvalidAccessError'");
 
