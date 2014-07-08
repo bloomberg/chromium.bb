@@ -564,6 +564,31 @@ class Page26(KeySilkCasesPage):
     interaction.End()
 
 
+class SVGIconRaster(KeySilkCasesPage):
+
+  """ Why: Mutating SVG icons; these paint storm and paint slowly. """
+
+  def __init__(self, page_set):
+    super(SVGIconRaster, self).__init__(
+      url='http://wiltzius.github.io/shape-shifter/',
+      page_set=page_set)
+
+  def RunNavigateSteps(self, action_runner):
+    action_runner.NavigateToPage(self)
+    action_runner.WaitForJavaScriptCondition(
+        'loaded = true')
+    action_runner.Wait(1)
+
+  def RunSmoothness(self, action_runner):
+    for i in xrange(9):
+      button_func = ('document.getElementById("demo").$.'
+                     'buttons.children[%d]') % i
+      interaction = action_runner.BeginInteraction(
+            'Action_TapAction', is_smooth=True)
+      action_runner.TapElement(element_function=button_func)
+      action_runner.Wait(1)
+      interaction.End()
+
 class KeySilkCasesPageSet(page_set_module.PageSet):
 
   """ Pages hand-picked for project Silk. """
@@ -601,3 +626,4 @@ class KeySilkCasesPageSet(page_set_module.PageSet):
     self.AddPage(Page24(self))
     self.AddPage(Page25(self))
     self.AddPage(Page26(self))
+    self.AddPage(SVGIconRaster(self))

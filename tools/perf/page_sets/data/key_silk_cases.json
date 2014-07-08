@@ -4,8 +4,8 @@
         "key_silk_cases_009.wpr": [
             "http://jsfiddle.net/TLXLu/2/embedded/result/"
         ], 
-        "key_silk_cases_006.wpr": [
-            "http://jsfiddle.net/rF9Gh/3/embedded/result/"
+        "key_silk_cases_015.wpr": [
+            "http://jsfiddle.net/bNp2h/3/show/"
         ], 
         "key_silk_cases_000.wpr": [
             "http://staff.tumblr.com/", 
@@ -13,33 +13,9 @@
             "http://jsfiddle.net/3yDKh/1/show", 
             "http://jsfiddle.net/3yDKh/3/show"
         ], 
-        "key_silk_cases_002.wpr": [
-            "http://forecast.io?scroll", 
-            "http://www.google.com/#q=google", 
-            "http://forecast.io?swipe", 
-            "http://pr.gg/scroll6.html", 
-            "http://plus.google.com/app/basic/stream", 
-            "http://forecast.io?tap", 
-            "http://jsbin.com/UVIgUTa/6/quiet", 
-            "http://mobile-news.sandbox.google.com/news/pt1", 
-            "http://mobile-news.sandbox.google.com/news/pt0?scroll", 
-            "http://mobile-news.sandbox.google.com/news/pt0?swipe", 
-            "http://s.codepen.io/befamous/fullpage/pFsqb?scroll", 
-            "http://s.codepen.io/befamous/fullpage/pFsqb?flip", 
-            "http://s.codepen.io/befamous/fullpage/kbxnH?scroll", 
-            "http://s.codepen.io/befamous/fullpage/kbxnH?select", 
-            "http://famo.us?scroll", 
-            "http://famo.us?tap"
-        ], 
         "key_silk_cases_004.wpr": [
             "http://jankfree.org/silk/text-mask.html", 
             "http://jankfree.org/silk/rectangle_transition.html"
-        ], 
-        "key_silk_cases_015.wpr": [
-            "http://jsfiddle.net/bNp2h/3/show/"
-        ], 
-        "key_silk_cases_008.wpr": [
-            "http://jsfiddle.net/jx5De/13/embedded/result"
         ], 
         "key_silk_cases_011.wpr": [
             "http://jsfiddle.net/vBQHH/10/embedded/result/"
@@ -66,19 +42,6 @@
             "http://jsfiddle.net/FtR7p/42/embedded/result/", 
             "http://jsfiddle.net/ugkd4/9/embedded/result/"
         ], 
-        "key_silk_cases_007.wpr": [
-            "http://jsfiddle.net/jx5De/12/embedded/result"
-        ], 
-        "key_silk_cases_012.wpr": [
-            "http://jsfiddle.net/xLuvC/embedded/result/"
-        ], 
-        "key_silk_cases_010.wpr": [
-            "http://jsfiddle.net/cKB9D/6/embedded/result/"
-        ], 
-        "key_silk_cases_005.wpr": [
-            "http://jsfiddle.net/3yDKh/4/embedded/result", 
-            "http://jsfiddle.net/3yDKh/6/embedded/result"
-        ], 
         "key_silk_cases_014.wpr": [
             "http://jsfiddle.net/3yDKh/15/show/", 
             "http://jsfiddle.net/jx5De/14/show/", 
@@ -95,6 +58,46 @@
         ], 
         "key_silk_cases_013.wpr": [
             "http://jsfiddle.net/bNp2h/1/embedded/result/"
+        ], 
+        "key_silk_cases_002.wpr": [
+            "http://forecast.io?scroll", 
+            "http://www.google.com/#q=google", 
+            "http://forecast.io?swipe", 
+            "http://pr.gg/scroll6.html", 
+            "http://plus.google.com/app/basic/stream", 
+            "http://forecast.io?tap", 
+            "http://jsbin.com/UVIgUTa/6/quiet", 
+            "http://mobile-news.sandbox.google.com/news/pt1", 
+            "http://mobile-news.sandbox.google.com/news/pt0?scroll", 
+            "http://mobile-news.sandbox.google.com/news/pt0?swipe", 
+            "http://s.codepen.io/befamous/fullpage/pFsqb?scroll", 
+            "http://s.codepen.io/befamous/fullpage/pFsqb?flip", 
+            "http://s.codepen.io/befamous/fullpage/kbxnH?scroll", 
+            "http://s.codepen.io/befamous/fullpage/kbxnH?select", 
+            "http://famo.us?scroll", 
+            "http://famo.us?tap"
+        ], 
+        "key_silk_cases_005.wpr": [
+            "http://jsfiddle.net/3yDKh/4/embedded/result", 
+            "http://jsfiddle.net/3yDKh/6/embedded/result"
+        ], 
+        "key_silk_cases_006.wpr": [
+            "http://jsfiddle.net/rF9Gh/3/embedded/result/"
+        ], 
+        "key_silk_cases_008.wpr": [
+            "http://jsfiddle.net/jx5De/13/embedded/result"
+        ], 
+        "key_silk_cases_007.wpr": [
+            "http://jsfiddle.net/jx5De/12/embedded/result"
+        ], 
+        "key_silk_cases_012.wpr": [
+            "http://jsfiddle.net/xLuvC/embedded/result/"
+        ], 
+        "key_silk_cases_010.wpr": [
+            "http://jsfiddle.net/cKB9D/6/embedded/result/"
+        ], 
+        "key_silk_cases_016.wpr": [
+            "http://wiltzius.github.io/shape-shifter/"
         ]
     }
 }
