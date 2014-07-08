@@ -52,7 +52,7 @@ counter-increment custom_all
 counter-reset custom_all
 cursor custom_all
 direction custom_value
-display custom_inherit, custom_value
+display type_name=EDisplay
 empty-cells type_name=EEmptyCell
 flex-basis type_name=Length, converter=convertLengthOrAuto
 flex-direction

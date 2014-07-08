@@ -277,29 +277,6 @@ void StyleBuilderFunctions::applyValueCSSPropertyDirection(StyleResolverState& s
         element->document().setDirectionSetOnDocumentElement(true);
 }
 
-static inline bool isValidDisplayValue(StyleResolverState& state, EDisplay displayPropertyValue)
-{
-    if (state.element() && state.element()->isSVGElement() && state.style()->styleType() == NOPSEUDO)
-        return (displayPropertyValue == INLINE || displayPropertyValue == BLOCK || displayPropertyValue == NONE);
-    return true;
-}
-
-void StyleBuilderFunctions::applyInheritCSSPropertyDisplay(StyleResolverState& state)
-{
-    EDisplay display = state.parentStyle()->display();
-    if (!isValidDisplayValue(state, display))
-        return;
-    state.style()->setDisplay(display);
-}
-
-void StyleBuilderFunctions::applyValueCSSPropertyDisplay(StyleResolverState& state, CSSValue* value)
-{
-    EDisplay display = *toCSSPrimitiveValue(value);
-    if (!isValidDisplayValue(state, display))
-        return;
-    state.style()->setDisplay(display);
-}
-
 void StyleBuilderFunctions::applyInitialCSSPropertyFontFamily(StyleResolverState& state)
 {
     state.fontBuilder().setFontFamilyInitial();
