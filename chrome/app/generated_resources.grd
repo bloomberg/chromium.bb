@@ -6545,6 +6545,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
          If enabled, responses to certain types of queries will appear directly in the Omnibox suggestion list.
         </message>
       </if>
+      <message name="IDS_FLAGS_ENABLE_EMBEDDED_EXTENSION_OPTIONS_NAME" desc="Name of the flag that enables embedding extension options in chrome://extensions.">
+        Enable embedded extension options.
+      </message>
+      <message name="IDS_FLAGS_ENABLE_EMBEDDED_EXTENSION_OPTIONS_DESCRIPTION" desc="Description of the flag that enables embedding extension options in chrome://extensions.">
+        Display extension options as an embedded element in chrome://extensions rather than opening a new tab.
+      </message>
 
       <!-- Crashes -->
       <message name="IDS_CRASHES_TITLE" desc="Title for the chrome://crashes page.">

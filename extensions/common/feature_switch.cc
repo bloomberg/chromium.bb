@@ -47,7 +47,10 @@ class CommonSwitches {
             switches::kExtensionActionRedesign,
             FeatureSwitch::DEFAULT_DISABLED),
         scripts_require_action(switches::kScriptsRequireAction,
-                               FeatureSwitch::DEFAULT_DISABLED) {}
+                               FeatureSwitch::DEFAULT_DISABLED),
+        embedded_extension_options(
+            switches::kEmbeddedExtensionOptions,
+            FeatureSwitch::DEFAULT_DISABLED) {}
 
   // Enables extensions to be easily installed from sites other than the web
   // store.
@@ -64,6 +67,7 @@ class CommonSwitches {
   FeatureSwitch enable_override_bookmarks_ui;
   FeatureSwitch extension_action_redesign;
   FeatureSwitch scripts_require_action;
+  FeatureSwitch embedded_extension_options;
 };
 
 base::LazyInstance<CommonSwitches> g_common_switches =
@@ -94,6 +98,9 @@ FeatureSwitch* FeatureSwitch::extension_action_redesign() {
 }
 FeatureSwitch* FeatureSwitch::scripts_require_action() {
   return &g_common_switches.Get().scripts_require_action;
+}
+FeatureSwitch* FeatureSwitch::embedded_extension_options() {
+  return &g_common_switches.Get().embedded_extension_options;
 }
 
 FeatureSwitch::ScopedOverride::ScopedOverride(FeatureSwitch* feature,

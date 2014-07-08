@@ -1623,6 +1623,7 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
       autofill::switches::kLocalHeuristicsOnlyForPasswordGeneration,
       extensions::switches::kAllowHTTPBackgroundPage,
       extensions::switches::kAllowLegacyExtensionManifests,
+      extensions::switches::kEnableEmbeddedExtensionOptions,
       extensions::switches::kEnableExperimentalExtensionApis,
       extensions::switches::kEnableScriptsRequireAction,
       extensions::switches::kExtensionsOnChromeURLs,

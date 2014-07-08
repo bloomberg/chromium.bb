@@ -1961,6 +1961,13 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(chromeos::switches::kEnableOkGoogleVoiceSearch)
   },
 #endif
+  {
+    "enable-embedded-extension-options",
+    IDS_FLAGS_ENABLE_EMBEDDED_EXTENSION_OPTIONS_NAME,
+    IDS_FLAGS_ENABLE_EMBEDDED_EXTENSION_OPTIONS_DESCRIPTION,
+    kOsDesktop,
+    SINGLE_VALUE_TYPE(extensions::switches::kEnableEmbeddedExtensionOptions)
+  },
 };
 
 const Experiment* experiments = kExperiments;
