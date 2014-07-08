@@ -329,8 +329,8 @@ void ParallelAuthenticator::LoginRetailMode() {
                            false));  // user_is_new
   remove_user_data_on_failure_ = false;
   ephemeral_mount_attempted_ = true;
-  MountGuest(current_state_.get(),
-             scoped_refptr<ParallelAuthenticator>(this));
+  MountGuestAndGetHash(current_state_.get(),
+                       scoped_refptr<ParallelAuthenticator>(this));
 }
 
 void ParallelAuthenticator::LoginOffTheRecord() {
