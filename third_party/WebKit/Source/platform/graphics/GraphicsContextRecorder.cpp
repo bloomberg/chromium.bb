@@ -100,13 +100,19 @@ PassRefPtr<GraphicsContextSnapshot> GraphicsContextSnapshot::load(const char* da
     return adoptRef(new GraphicsContextSnapshot(picture, false));
 }
 
-PassOwnPtr<Vector<char> > GraphicsContextSnapshot::replay(unsigned fromStep, unsigned toStep) const
+PassOwnPtr<Vector<char> > GraphicsContextSnapshot::replay(unsigned fromStep, unsigned toStep, double scale) const
 {
+    int width = ceil(scale * m_picture->width());
+    int height = ceil(scale * m_picture->height());
     SkBitmap bitmap;
-    OwnPtr<Vector<char> > base64Data = adoptPtr(new Vector<char>());
-    bitmap.allocPixels(SkImageInfo::MakeN32Premul(m_picture->width(), m_picture->height()));
+    bitmap.allocPixels(SkImageInfo::MakeN32Premul(width, height));
     ReplayingCanvas canvas(bitmap, fromStep, toStep);
+    canvas.scale(scale, scale);
+    canvas.resetStepCount();
+
     m_picture->draw(&canvas, &canvas);
+
+    OwnPtr<Vector<char> > base64Data = adoptPtr(new Vector<char>());
     Vector<char> encodedImage;
     if (!PNGImageEncoder::encode(bitmap, reinterpret_cast<Vector<unsigned char>*>(&encodedImage)))
         return nullptr;

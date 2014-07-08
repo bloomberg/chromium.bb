@@ -63,6 +63,11 @@ ReplayingCanvas::ReplayingCanvas(SkBitmap bitmap, unsigned fromStep, unsigned to
 {
 }
 
+void ReplayingCanvas::resetStepCount()
+{
+    m_stepCount = 0;
+}
+
 void ReplayingCanvas::updateInRange()
 {
     if (m_toStep && m_stepCount > m_toStep)

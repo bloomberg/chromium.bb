@@ -367,12 +367,12 @@ const GraphicsContextSnapshot* InspectorLayerTreeAgent::snapshotById(ErrorString
     return it->value.get();
 }
 
-void InspectorLayerTreeAgent::replaySnapshot(ErrorString* errorString, const String& snapshotId, const int* fromStep, const int* toStep, String* dataURL)
+void InspectorLayerTreeAgent::replaySnapshot(ErrorString* errorString, const String& snapshotId, const int* fromStep, const int* toStep, const double* scale, String* dataURL)
 {
     const GraphicsContextSnapshot* snapshot = snapshotById(errorString, snapshotId);
     if (!snapshot)
         return;
-    OwnPtr<Vector<char> > base64Data = snapshot->replay(fromStep ? *fromStep : 0, toStep ? *toStep : 0);
+    OwnPtr<Vector<char> > base64Data = snapshot->replay(fromStep ? *fromStep : 0, toStep ? *toStep : 0, scale ? *scale : 1.0);
     if (!base64Data) {
         *errorString = "Image encoding failed";
         return;

@@ -47,7 +47,7 @@ public:
 
     static PassRefPtr<GraphicsContextSnapshot> load(const char*, size_t);
 
-    PassOwnPtr<Vector<char> > replay(unsigned fromStep = 0, unsigned toStep = 0) const;
+    PassOwnPtr<Vector<char> > replay(unsigned fromStep = 0, unsigned toStep = 0, double scale = 1.0) const;
     PassOwnPtr<Timings> profile(unsigned minIterations, double minDuration) const;
     PassRefPtr<JSONArray> snapshotCommandLog() const;
 

@@ -39,6 +39,8 @@ namespace WebCore {
 class ReplayingCanvas : public InterceptingCanvas, public SkDrawPictureCallback {
 public:
     ReplayingCanvas(SkBitmap, unsigned fromStep, unsigned toStep);
+    void resetStepCount();
+
     virtual bool abortDrawing() OVERRIDE;
 
     virtual void clear(SkColor) OVERRIDE;
