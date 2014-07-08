@@ -208,11 +208,8 @@ TEST(IndexedDBDatabaseTest, PendingDelete) {
   scoped_refptr<MockDeleteCallbacks> request2(new MockDeleteCallbacks());
   db->DeleteDatabase(request2);
 
-  // TODO(jsbell): Remove once Blink is updated. crbug.com/100123
-#if WEB_INDEXEDDB_FIRE_BLOCKED_ONLY_IF_IGNORED
   EXPECT_FALSE(request2->blocked_called());
   db->VersionChangeIgnored();
-#endif
   EXPECT_TRUE(request2->blocked_called());
 
   EXPECT_FALSE(backing_store->HasOneRef());  // local and db
