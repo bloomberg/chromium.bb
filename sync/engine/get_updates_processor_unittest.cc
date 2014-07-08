@@ -15,10 +15,22 @@
 #include "sync/sessions/status_controller.h"
 #include "sync/test/engine/fake_model_worker.h"
 #include "sync/test/engine/mock_update_handler.h"
+#include "sync/test/mock_invalidation.h"
 #include "sync/test/sessions/mock_debug_info_getter.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace syncer {
+
+namespace {
+
+scoped_ptr<InvalidationInterface> BuildInvalidation(
+    int64 version,
+    const std::string& payload) {
+  return MockInvalidation::Build(version, payload)
+      .PassAs<InvalidationInterface>();
+}
+
+}  // namespace
 
 using sessions::MockDebugInfoGetter;
 
@@ -133,11 +145,11 @@ TEST_F(GetUpdatesProcessorTest, BookmarkNudge) {
 TEST_F(GetUpdatesProcessorTest, NotifyMany) {
   sessions::NudgeTracker nudge_tracker;
   nudge_tracker.RecordRemoteInvalidation(
-      BuildInvalidationMap(AUTOFILL, 1, "autofill_payload"));
+      AUTOFILL, BuildInvalidation(1, "autofill_payload"));
   nudge_tracker.RecordRemoteInvalidation(
-      BuildInvalidationMap(BOOKMARKS, 1, "bookmark_payload"));
+      BOOKMARKS, BuildInvalidation(1, "bookmark_payload"));
   nudge_tracker.RecordRemoteInvalidation(
-      BuildInvalidationMap(PREFERENCES, 1, "preferences_payload"));
+      PREFERENCES, BuildInvalidation(1, "preferences_payload"));
   ModelTypeSet notified_types;
   notified_types.Put(AUTOFILL);
   notified_types.Put(BOOKMARKS);

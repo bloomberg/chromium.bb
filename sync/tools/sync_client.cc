@@ -42,6 +42,7 @@
 #include "sync/internal_api/public/util/weak_handle.h"
 #include "sync/js/js_event_details.h"
 #include "sync/js/js_event_handler.h"
+#include "sync/notifier/object_id_invalidation_map.h"
 #include "sync/test/fake_encryptor.h"
 #include "sync/tools/null_invalidation_state_tracker.h"
 
@@ -182,6 +183,78 @@ class LoggingJsEventHandler
       const JsEventDetails& details) OVERRIDE {
     VLOG(1) << name << ": " << details.ToString();
   }
+};
+
+class InvalidationAdapter : public syncer::InvalidationInterface {
+ public:
+  explicit InvalidationAdapter(const syncer::Invalidation& invalidation)
+      : invalidation_(invalidation) {}
+  virtual ~InvalidationAdapter() {}
+
+  virtual bool IsUnknownVersion() const OVERRIDE {
+    return invalidation_.is_unknown_version();
+  }
+
+  virtual const std::string& GetPayload() const OVERRIDE {
+    return invalidation_.payload();
+  }
+
+  virtual int64 GetVersion() const OVERRIDE {
+    return invalidation_.version();
+  }
+
+  virtual void Acknowledge() OVERRIDE {
+    invalidation_.Acknowledge();
+  }
+
+  virtual void Drop() OVERRIDE {
+    invalidation_.Drop();
+  }
+
+ private:
+  syncer::Invalidation invalidation_;
+};
+
+class InvalidatorShim : public InvalidationHandler {
+ public:
+  explicit InvalidatorShim(SyncManager* sync_manager)
+      : sync_manager_(sync_manager) {}
+
+  virtual void OnInvalidatorStateChange(InvalidatorState state) OVERRIDE {
+    sync_manager_->OnInvalidatorStateChange(state);
+  }
+
+  virtual void OnIncomingInvalidation(
+      const ObjectIdInvalidationMap& invalidation_map) OVERRIDE {
+    syncer::ObjectIdSet ids = invalidation_map.GetObjectIds();
+    for (syncer::ObjectIdSet::const_iterator ids_it = ids.begin();
+         ids_it != ids.end();
+         ++ids_it) {
+      syncer::ModelType type;
+      if (!NotificationTypeToRealModelType(ids_it->name(), &type)) {
+        DLOG(WARNING) << "Notification has invalid id: "
+                      << syncer::ObjectIdToString(*ids_it);
+      } else {
+        syncer::SingleObjectInvalidationSet invalidation_set =
+            invalidation_map.ForObject(*ids_it);
+        for (syncer::SingleObjectInvalidationSet::const_iterator inv_it =
+                 invalidation_set.begin();
+             inv_it != invalidation_set.end();
+             ++inv_it) {
+          scoped_ptr<syncer::InvalidationInterface> inv_adapter(
+              new InvalidationAdapter(*inv_it));
+          sync_manager_->OnIncomingInvalidation(type, inv_adapter.Pass());
+        }
+      }
+    }
+  }
+
+  virtual std::string GetOwnerName() const OVERRIDE {
+    return "InvalidatorShim";
+  }
+
+ private:
+  SyncManager* sync_manager_;
 };
 
 void LogUnrecoverableErrorContext() {
@@ -380,9 +453,10 @@ int SyncClientMain(int argc, char* argv[]) {
   // TODO(akalin): Avoid passing in model parameters multiple times by
   // organizing handling of model types.
   invalidator->UpdateCredentials(credentials.email, credentials.sync_token);
-  invalidator->RegisterHandler(sync_manager.get());
+  scoped_ptr<InvalidatorShim> shim(new InvalidatorShim(sync_manager.get()));
+  invalidator->RegisterHandler(shim.get());
   invalidator->UpdateRegisteredIds(
-      sync_manager.get(), ModelTypeSetToObjectIdSet(model_types));
+      shim.get(), ModelTypeSetToObjectIdSet(model_types));
   sync_manager->StartSyncingNormally(routing_info);
 
   sync_loop.Run();

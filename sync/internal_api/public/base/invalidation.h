@@ -35,6 +35,7 @@ class SYNC_EXPORT Invalidation {
   static scoped_ptr<Invalidation> InitFromValue(
       const base::DictionaryValue& value);
 
+  Invalidation(const Invalidation& other);
   ~Invalidation();
 
   // Compares two invalidations.  The comparison ignores ack-tracking state.
@@ -84,12 +85,9 @@ class SYNC_EXPORT Invalidation {
   // invalidations in order to allow the ack tracker to drop the invalidation,
   // too.
   //
-  // The drop record will be tracked by the specified
-  // DroppedInvalidationTracker.  The caller should hang on to this tracker.  It
-  // will need to use it when it recovers from this drop event, or if it needs
-  // to record another drop event for the same ObjectID.  Refer to the
-  // documentation of DroppedInvalidationTracker for more details.
-  void Drop(DroppedInvalidationTracker* tracker) const;
+  // To indicate recovery from a drop event, the client should call
+  // Acknowledge() on the most recently dropped inavlidation.
+  void Drop();
 
   scoped_ptr<base::DictionaryValue> ToValue() const;
   std::string ToString() const;

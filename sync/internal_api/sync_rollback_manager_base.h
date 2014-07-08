@@ -73,7 +73,8 @@ class SYNC_EXPORT_PRIVATE SyncRollbackManagerBase :
       const base::Closure& retry_task) OVERRIDE;
   virtual void OnInvalidatorStateChange(InvalidatorState state) OVERRIDE;
   virtual void OnIncomingInvalidation(
-      const ObjectIdInvalidationMap& invalidation_map) OVERRIDE;
+      syncer::ModelType type,
+      scoped_ptr<InvalidationInterface> invalidation) OVERRIDE;
   virtual void AddObserver(SyncManager::Observer* observer) OVERRIDE;
   virtual void RemoveObserver(SyncManager::Observer* observer) OVERRIDE;
   virtual SyncStatus GetDetailedStatus() const OVERRIDE;
@@ -85,7 +86,6 @@ class SYNC_EXPORT_PRIVATE SyncRollbackManagerBase :
   virtual bool HasUnsyncedItems() OVERRIDE;
   virtual SyncEncryptionHandler* GetEncryptionHandler() OVERRIDE;
   virtual void RefreshTypes(ModelTypeSet types) OVERRIDE;
-  virtual std::string GetOwnerName() const OVERRIDE;
   virtual SyncContextProxy* GetSyncContextProxy() OVERRIDE;
   virtual ScopedVector<ProtocolEvent> GetBufferedProtocolEvents()
       OVERRIDE;

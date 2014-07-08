@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "sync/internal_api/public/base/model_type_test_util.h"
-#include "sync/internal_api/public/base/ack_handle.h"
 
 namespace syncer {
 

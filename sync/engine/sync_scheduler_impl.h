@@ -65,7 +65,8 @@ class SYNC_EXPORT_PRIVATE SyncSchedulerImpl
       const tracked_objects::Location& nudge_location) OVERRIDE;
   virtual void ScheduleInvalidationNudge(
       const base::TimeDelta& desired_delay,
-      const ObjectIdInvalidationMap& invalidation_map,
+      syncer::ModelType type,
+      scoped_ptr<InvalidationInterface> invalidation,
       const tracked_objects::Location& nudge_location) OVERRIDE;
   virtual void SetNotificationsEnabled(bool notifications_enabled) OVERRIDE;
 

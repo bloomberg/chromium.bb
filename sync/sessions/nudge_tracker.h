@@ -11,6 +11,7 @@
 #include <map>
 
 #include "base/compiler_specific.h"
+#include "base/memory/scoped_ptr.h"
 #include "sync/base/sync_export.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/protocol/sync.pb.h"
@@ -57,8 +58,8 @@ class SYNC_EXPORT_PRIVATE NudgeTracker {
   void RecordLocalRefreshRequest(ModelTypeSet types);
 
   // Takes note of the receipt of an invalidation notice from the server.
-  void RecordRemoteInvalidation(
-      const ObjectIdInvalidationMap& invalidation_map);
+  void RecordRemoteInvalidation(syncer::ModelType type,
+                                scoped_ptr<InvalidationInterface> invalidation);
 
   // These functions should be called to keep this class informed of the status
   // of the connection to the invalidations server.
@@ -137,9 +138,10 @@ class SYNC_EXPORT_PRIVATE NudgeTracker {
   void SetNextRetryTime(base::TimeTicks next_retry_time);
 
  private:
-  typedef std::map<ModelType, DataTypeTracker> TypeTrackerMap;
+  typedef std::map<ModelType, DataTypeTracker*> TypeTrackerMap;
 
   TypeTrackerMap type_trackers_;
+  STLValueDeleter<TypeTrackerMap> type_tracker_deleter_;
 
   // Merged updates source.  This should be obsolete, but the server still
   // relies on it for some heuristics.

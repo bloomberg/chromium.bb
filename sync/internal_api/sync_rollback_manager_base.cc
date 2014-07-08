@@ -133,7 +133,8 @@ void SyncRollbackManagerBase::OnInvalidatorStateChange(InvalidatorState state) {
 }
 
 void SyncRollbackManagerBase::OnIncomingInvalidation(
-      const ObjectIdInvalidationMap& invalidation_map) {
+    syncer::ModelType type,
+    scoped_ptr<InvalidationInterface> invalidation) {
   NOTREACHED();
 }
 
@@ -231,10 +232,6 @@ void SyncRollbackManagerBase::NotifyInitializationFailure() {
           MakeWeakHandle(base::WeakPtr<JsBackend>()),
           MakeWeakHandle(base::WeakPtr<DataTypeDebugInfoListener>()),
           false, ModelTypeSet()));
-}
-
-std::string SyncRollbackManagerBase::GetOwnerName() const {
-  return "";
 }
 
 syncer::SyncContextProxy* SyncRollbackManagerBase::GetSyncContextProxy() {

@@ -18,7 +18,6 @@
 #include "google/cacheinvalidation/include/types.h"
 #include "jingle/notifier/listener/fake_push_client.h"
 #include "sync/internal_api/public/util/weak_handle.h"
-#include "sync/notifier/dropped_invalidation_tracker.h"
 #include "sync/notifier/invalidation_util.h"
 #include "sync/notifier/object_id_invalidation_map.h"
 #include "sync/notifier/unacked_invalidation_set_test_util.h"
@@ -138,8 +137,7 @@ class FakeInvalidationClient : public invalidation::InvalidationClient {
 class FakeDelegate : public SyncInvalidationListener::Delegate {
  public:
   explicit FakeDelegate(SyncInvalidationListener* listener)
-      : state_(TRANSIENT_INVALIDATION_ERROR),
-        drop_handlers_deleter_(&drop_handlers_) {}
+      : state_(TRANSIENT_INVALIDATION_ERROR) {}
   virtual ~FakeDelegate() {}
 
   size_t GetInvalidationCount(const ObjectId& id) const {
@@ -195,17 +193,6 @@ class FakeDelegate : public SyncInvalidationListener::Delegate {
     return state_;
   }
 
-  DroppedInvalidationTracker* GetDropTrackerForObject(const ObjectId& id) {
-    DropHandlers::iterator it = drop_handlers_.find(id);
-    if (it == drop_handlers_.end()) {
-      drop_handlers_.insert(
-          std::make_pair(id, new DroppedInvalidationTracker(id)));
-      return drop_handlers_.find(id)->second;
-    } else {
-      return it->second;
-    }
-  }
-
   void AcknowledgeNthInvalidation(const ObjectId& id, size_t n) {
     List& list = invalidations_[id];
     List::iterator it = list.begin() + n;
@@ -220,15 +207,19 @@ class FakeDelegate : public SyncInvalidationListener::Delegate {
   }
 
   void DropNthInvalidation(const ObjectId& id, size_t n) {
-    DroppedInvalidationTracker* drop_tracker = GetDropTrackerForObject(id);
     List& list = invalidations_[id];
     List::iterator it = list.begin() + n;
-    it->Drop(drop_tracker);
+    it->Drop();
+    dropped_invalidations_map_.erase(id);
+    dropped_invalidations_map_.insert(std::make_pair(id, *it));
   }
 
   void RecoverFromDropEvent(const ObjectId& id) {
-    DroppedInvalidationTracker* drop_tracker = GetDropTrackerForObject(id);
-    drop_tracker->RecordRecoveryFromDropEvent();
+    DropMap::iterator it = dropped_invalidations_map_.find(id);
+    if (it != dropped_invalidations_map_.end()) {
+      it->second.Acknowledge();
+      dropped_invalidations_map_.erase(it);
+    }
   }
 
   // SyncInvalidationListener::Delegate implementation.
@@ -250,14 +241,11 @@ class FakeDelegate : public SyncInvalidationListener::Delegate {
  private:
   typedef std::vector<Invalidation> List;
   typedef std::map<ObjectId, List, ObjectIdLessThan> Map;
-  typedef std::map<ObjectId,
-                   DroppedInvalidationTracker*,
-                   ObjectIdLessThan> DropHandlers;
+  typedef std::map<ObjectId, Invalidation, ObjectIdLessThan> DropMap;
 
   Map invalidations_;
   InvalidatorState state_;
-  DropHandlers drop_handlers_;
-  STLValueDeleter<DropHandlers> drop_handlers_deleter_;
+  DropMap dropped_invalidations_map_;
 };
 
 invalidation::InvalidationClient* CreateFakeInvalidationClient(

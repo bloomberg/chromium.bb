@@ -263,7 +263,8 @@ bool FakeSyncManager::HasDirectoryTypeDebugInfoObserver(
 void FakeSyncManager::RequestEmitDebugInfo() {}
 
 void FakeSyncManager::OnIncomingInvalidation(
-      const ObjectIdInvalidationMap& invalidation_map) {
+    syncer::ModelType type,
+    scoped_ptr<InvalidationInterface> invalidation) {
   // Do nothing.
 }
 
@@ -274,7 +275,5 @@ ModelTypeSet FakeSyncManager::GetLastRefreshRequestTypes() {
 void FakeSyncManager::OnInvalidatorStateChange(InvalidatorState state) {
   // Do nothing.
 }
-
-std::string FakeSyncManager::GetOwnerName() const { return "FakeSyncManager"; }
 
 }  // namespace syncer

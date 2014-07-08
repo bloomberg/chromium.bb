@@ -13,6 +13,7 @@
 #include "base/time/time.h"
 #include "sync/base/sync_export.h"
 #include "sync/engine/nudge_source.h"
+#include "sync/internal_api/public/base/invalidation_interface.h"
 #include "sync/sessions/sync_session.h"
 
 namespace tracked_objects {
@@ -21,7 +22,6 @@ class Location;
 
 namespace syncer {
 
-class ObjectIdInvalidationMap;
 struct ServerConnectionEvent;
 
 struct SYNC_EXPORT_PRIVATE ConfigurationParams {
@@ -115,7 +115,8 @@ class SYNC_EXPORT_PRIVATE SyncScheduler
   // order to fetch the update.
   virtual void ScheduleInvalidationNudge(
       const base::TimeDelta& desired_delay,
-      const ObjectIdInvalidationMap& invalidations,
+      syncer::ModelType type,
+      scoped_ptr<InvalidationInterface> invalidation,
       const tracked_objects::Location& nudge_location) = 0;
 
   // Change status of notifications in the SyncSessionContext.

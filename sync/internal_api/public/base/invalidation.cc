@@ -11,7 +11,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 #include "sync/notifier/ack_handler.h"
-#include "sync/notifier/dropped_invalidation_tracker.h"
 #include "sync/notifier/invalidation_util.h"
 
 namespace syncer {
@@ -41,6 +40,15 @@ Invalidation Invalidation::InitFromDroppedInvalidation(
     const Invalidation& dropped) {
   return Invalidation(dropped.id_, true, kInvalidVersion,
                       std::string(), dropped.ack_handle_);
+}
+
+Invalidation::Invalidation(const Invalidation& other)
+  : id_(other.id_),
+    is_unknown_version_(other.is_unknown_version_),
+    version_(other.version_),
+    payload_(other.payload_),
+    ack_handle_(other.ack_handle_),
+    ack_handler_(other.ack_handler_) {
 }
 
 scoped_ptr<Invalidation> Invalidation::InitFromValue(
@@ -128,9 +136,7 @@ void Invalidation::Acknowledge() const {
   }
 }
 
-void Invalidation::Drop(DroppedInvalidationTracker* tracker) const {
-  DCHECK(tracker->object_id() == object_id());
-  tracker->RecordDropEvent(ack_handler_, ack_handle_);
+void Invalidation::Drop() {
   if (SupportsAcknowledgement()) {
     ack_handler_.Call(FROM_HERE,
                       &AckHandler::Drop,

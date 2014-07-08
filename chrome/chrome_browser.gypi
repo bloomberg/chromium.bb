@@ -1320,6 +1320,8 @@
       'browser/sync/glue/frontend_data_type_controller.h',
       'browser/sync/glue/history_model_worker.cc',
       'browser/sync/glue/history_model_worker.h',
+      'browser/sync/glue/invalidation_adapter.cc',
+      'browser/sync/glue/invalidation_adapter.h',
       'browser/sync/glue/non_frontend_data_type_controller.cc',
       'browser/sync/glue/non_frontend_data_type_controller.h',
       'browser/sync/glue/password_data_type_controller.cc',

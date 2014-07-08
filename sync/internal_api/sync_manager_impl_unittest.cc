@@ -983,14 +983,6 @@ class SyncManagerTest : public testing::Test,
     sync_manager_.OnInvalidatorStateChange(state);
   }
 
-  void TriggerOnIncomingNotificationForTest(ModelTypeSet model_types) {
-    DCHECK(sync_manager_.thread_checker_.CalledOnValidThread());
-    ObjectIdSet id_set = ModelTypeSetToObjectIdSet(model_types);
-    ObjectIdInvalidationMap invalidation_map =
-        ObjectIdInvalidationMap::InvalidateAll(id_set);
-    sync_manager_.OnIncomingInvalidation(invalidation_map);
-  }
-
   void SetProgressMarkerForType(ModelType type, bool set) {
     if (set) {
       sync_pb::DataTypeProgressMarker marker;

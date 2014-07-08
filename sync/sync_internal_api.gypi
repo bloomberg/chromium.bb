@@ -64,6 +64,8 @@
     'internal_api/public/base/enum_set.h',
     'internal_api/public/base/invalidation.cc',
     'internal_api/public/base/invalidation.h',
+    'internal_api/public/base/invalidation_interface.cc',
+    'internal_api/public/base/invalidation_interface.h',
     'internal_api/public/base/invalidator_state.cc',
     'internal_api/public/base/invalidator_state.h',
     'internal_api/public/base/model_type.h',

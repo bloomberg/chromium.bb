@@ -7,6 +7,7 @@
 #include "base/file_util.h"
 #include "base/metrics/histogram.h"
 #include "chrome/browser/sync/glue/device_info.h"
+#include "chrome/browser/sync/glue/invalidation_adapter.h"
 #include "chrome/browser/sync/glue/sync_backend_registrar.h"
 #include "chrome/browser/sync/glue/synced_device_tracker.h"
 #include "chrome/common/chrome_version_info.h"
@@ -20,6 +21,8 @@
 #include "sync/internal_api/public/sync_context_proxy.h"
 #include "sync/internal_api/public/sync_manager.h"
 #include "sync/internal_api/public/sync_manager_factory.h"
+#include "sync/notifier/invalidation_util.h"
+#include "sync/notifier/object_id_invalidation_map.h"
 
 // Helper macros to log with the syncer thread name; useful when there
 // are multiple syncers involved.
@@ -369,7 +372,28 @@ void SyncBackendHostCore::DoOnInvalidatorStateChange(
 void SyncBackendHostCore::DoOnIncomingInvalidation(
     const syncer::ObjectIdInvalidationMap& invalidation_map) {
   DCHECK_EQ(base::MessageLoop::current(), sync_loop_);
-  sync_manager_->OnIncomingInvalidation(invalidation_map);
+
+  syncer::ObjectIdSet ids = invalidation_map.GetObjectIds();
+  for (syncer::ObjectIdSet::const_iterator ids_it = ids.begin();
+       ids_it != ids.end();
+       ++ids_it) {
+    syncer::ModelType type;
+    if (!NotificationTypeToRealModelType(ids_it->name(), &type)) {
+      DLOG(WARNING) << "Notification has invalid id: "
+                    << syncer::ObjectIdToString(*ids_it);
+    } else {
+      syncer::SingleObjectInvalidationSet invalidation_set =
+          invalidation_map.ForObject(*ids_it);
+      for (syncer::SingleObjectInvalidationSet::const_iterator inv_it =
+               invalidation_set.begin();
+           inv_it != invalidation_set.end();
+           ++inv_it) {
+        scoped_ptr<syncer::InvalidationInterface> inv_adapter(
+            new InvalidationAdapter(*inv_it));
+        sync_manager_->OnIncomingInvalidation(type, inv_adapter.Pass());
+      }
+    }
+  }
 }
 
 void SyncBackendHostCore::DoInitialize(

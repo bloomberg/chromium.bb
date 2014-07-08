@@ -20,6 +20,7 @@
 #include "sync/engine/syncer_types.h"
 #include "sync/internal_api/change_reorder_buffer.h"
 #include "sync/internal_api/public/base/cancelation_signal.h"
+#include "sync/internal_api/public/base/invalidation_interface.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/internal_api/public/base_node.h"
 #include "sync/internal_api/public/configure_reason.h"
@@ -979,29 +980,16 @@ void SyncManagerImpl::OnInvalidatorStateChange(InvalidatorState state) {
 }
 
 void SyncManagerImpl::OnIncomingInvalidation(
-    const ObjectIdInvalidationMap& invalidation_map) {
+    syncer::ModelType type,
+    scoped_ptr<InvalidationInterface> invalidation) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  // We should never receive IDs from non-sync objects.
-  ObjectIdSet ids = invalidation_map.GetObjectIds();
-  for (ObjectIdSet::const_iterator it = ids.begin(); it != ids.end(); ++it) {
-    ModelType type;
-    if (!ObjectIdToRealModelType(*it, &type)) {
-      DLOG(WARNING) << "Notification has invalid id: " << ObjectIdToString(*it);
-    }
-  }
-
-  if (invalidation_map.Empty()) {
-    LOG(WARNING) << "Sync received invalidation without any type information.";
-  } else {
-    scheduler_->ScheduleInvalidationNudge(
-        TimeDelta::FromMilliseconds(kSyncSchedulerDelayMsec),
-        invalidation_map, FROM_HERE);
-    debug_info_event_listener_.OnIncomingNotification(invalidation_map);
-  }
+  scheduler_->ScheduleInvalidationNudge(
+      TimeDelta::FromMilliseconds(kSyncSchedulerDelayMsec),
+      type,
+      invalidation.Pass(),
+      FROM_HERE);
 }
-
-std::string SyncManagerImpl::GetOwnerName() const { return "SyncManagerImpl"; }
 
 void SyncManagerImpl::RefreshTypes(ModelTypeSet types) {
   DCHECK(thread_checker_.CalledOnValidThread());

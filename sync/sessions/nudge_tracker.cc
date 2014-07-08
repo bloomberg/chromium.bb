@@ -16,18 +16,14 @@ namespace sessions {
 size_t NudgeTracker::kDefaultMaxPayloadsPerType = 10;
 
 NudgeTracker::NudgeTracker()
-    : invalidations_enabled_(false),
+    : type_tracker_deleter_(&type_trackers_),
+      invalidations_enabled_(false),
       invalidations_out_of_sync_(true) {
   ModelTypeSet protocol_types = ProtocolTypes();
   // Default initialize all the type trackers.
   for (ModelTypeSet::Iterator it = protocol_types.First(); it.Good();
        it.Inc()) {
-    invalidation::ObjectId id;
-    if (!RealModelTypeToObjectId(it.Get(), &id)) {
-      NOTREACHED();
-    } else {
-      type_trackers_.insert(std::make_pair(it.Get(), DataTypeTracker(id)));
-    }
+    type_trackers_.insert(std::make_pair(it.Get(), new DataTypeTracker()));
   }
 }
 
@@ -39,7 +35,7 @@ bool NudgeTracker::IsSyncRequired() const {
 
   for (TypeTrackerMap::const_iterator it = type_trackers_.begin();
        it != type_trackers_.end(); ++it) {
-    if (it->second.IsSyncRequired()) {
+    if (it->second->IsSyncRequired()) {
       return true;
     }
   }
@@ -56,7 +52,7 @@ bool NudgeTracker::IsGetUpdatesRequired() const {
 
   for (TypeTrackerMap::const_iterator it = type_trackers_.begin();
        it != type_trackers_.end(); ++it) {
-    if (it->second.IsGetUpdatesRequired()) {
+    if (it->second->IsGetUpdatesRequired()) {
       return true;
     }
   }
@@ -83,7 +79,7 @@ void NudgeTracker::RecordSuccessfulSyncCycle() {
 
   for (TypeTrackerMap::iterator it = type_trackers_.begin();
        it != type_trackers_.end(); ++it) {
-    it->second.RecordSuccessfulSyncCycle();
+    it->second->RecordSuccessfulSyncCycle();
   }
 }
 
@@ -92,7 +88,7 @@ void NudgeTracker::RecordLocalChange(ModelTypeSet types) {
        type_it.Inc()) {
     TypeTrackerMap::iterator tracker_it = type_trackers_.find(type_it.Get());
     DCHECK(tracker_it != type_trackers_.end());
-    tracker_it->second.RecordLocalChange();
+    tracker_it->second->RecordLocalChange();
   }
 }
 
@@ -100,34 +96,17 @@ void NudgeTracker::RecordLocalRefreshRequest(ModelTypeSet types) {
   for (ModelTypeSet::Iterator it = types.First(); it.Good(); it.Inc()) {
     TypeTrackerMap::iterator tracker_it = type_trackers_.find(it.Get());
     DCHECK(tracker_it != type_trackers_.end());
-    tracker_it->second.RecordLocalRefreshRequest();
+    tracker_it->second->RecordLocalRefreshRequest();
   }
 }
 
 void NudgeTracker::RecordRemoteInvalidation(
-    const ObjectIdInvalidationMap& invalidation_map) {
-  // Be very careful here.  The invalidations acknowledgement system requires a
-  // sort of manual memory management.  We'll leak a small amount of memory if
-  // we fail to acknowledge or drop any of these incoming invalidations.
-
-  ObjectIdSet id_set = invalidation_map.GetObjectIds();
-  for (ObjectIdSet::iterator it = id_set.begin(); it != id_set.end(); ++it) {
-    ModelType type;
-
-    // This should never happen.  If it does, we'll start to leak memory.
-    if (!ObjectIdToRealModelType(*it, &type)) {
-      NOTREACHED()
-          << "Object ID " << ObjectIdToString(*it)
-          << " does not map to valid model type";
-      continue;
-    }
-
-    // Forward the invalidations to the proper recipient.
-    TypeTrackerMap::iterator tracker_it = type_trackers_.find(type);
-    DCHECK(tracker_it != type_trackers_.end());
-    tracker_it->second.RecordRemoteInvalidations(
-        invalidation_map.ForObject(*it));
-  }
+    syncer::ModelType type,
+    scoped_ptr<InvalidationInterface> invalidation) {
+  // Forward the invalidations to the proper recipient.
+  TypeTrackerMap::iterator tracker_it = type_trackers_.find(type);
+  DCHECK(tracker_it != type_trackers_.end());
+  tracker_it->second->RecordRemoteInvalidation(invalidation.Pass());
 }
 
 void NudgeTracker::OnInvalidationsEnabled() {
@@ -145,21 +124,21 @@ void NudgeTracker::SetTypesThrottledUntil(
     base::TimeTicks now) {
   for (ModelTypeSet::Iterator it = types.First(); it.Good(); it.Inc()) {
     TypeTrackerMap::iterator tracker_it = type_trackers_.find(it.Get());
-    tracker_it->second.ThrottleType(length, now);
+    tracker_it->second->ThrottleType(length, now);
   }
 }
 
 void NudgeTracker::UpdateTypeThrottlingState(base::TimeTicks now) {
   for (TypeTrackerMap::iterator it = type_trackers_.begin();
        it != type_trackers_.end(); ++it) {
-    it->second.UpdateThrottleState(now);
+    it->second->UpdateThrottleState(now);
   }
 }
 
 bool NudgeTracker::IsAnyTypeThrottled() const {
   for (TypeTrackerMap::const_iterator it = type_trackers_.begin();
        it != type_trackers_.end(); ++it) {
-    if (it->second.IsThrottled()) {
+    if (it->second->IsThrottled()) {
       return true;
     }
   }
@@ -168,7 +147,7 @@ bool NudgeTracker::IsAnyTypeThrottled() const {
 
 bool NudgeTracker::IsTypeThrottled(ModelType type) const {
   DCHECK(type_trackers_.find(type) != type_trackers_.end());
-  return type_trackers_.find(type)->second.IsThrottled();
+  return type_trackers_.find(type)->second->IsThrottled();
 }
 
 base::TimeDelta NudgeTracker::GetTimeUntilNextUnthrottle(
@@ -179,10 +158,9 @@ base::TimeDelta NudgeTracker::GetTimeUntilNextUnthrottle(
   base::TimeDelta time_until_next_unthrottle = base::TimeDelta::Max();
   for (TypeTrackerMap::const_iterator it = type_trackers_.begin();
        it != type_trackers_.end(); ++it) {
-    if (it->second.IsThrottled()) {
-      time_until_next_unthrottle =
-          std::min(time_until_next_unthrottle,
-                   it->second.GetTimeUntilUnthrottle(now));
+    if (it->second->IsThrottled()) {
+      time_until_next_unthrottle = std::min(
+          time_until_next_unthrottle, it->second->GetTimeUntilUnthrottle(now));
     }
   }
   DCHECK(!time_until_next_unthrottle.is_max());
@@ -194,7 +172,7 @@ ModelTypeSet NudgeTracker::GetThrottledTypes() const {
   ModelTypeSet result;
   for (TypeTrackerMap::const_iterator it = type_trackers_.begin();
        it != type_trackers_.end(); ++it) {
-    if (it->second.IsThrottled()) {
+    if (it->second->IsThrottled()) {
       result.Put(it->first);
     }
   }
@@ -205,7 +183,7 @@ ModelTypeSet NudgeTracker::GetNudgedTypes() const {
   ModelTypeSet result;
   for (TypeTrackerMap::const_iterator it = type_trackers_.begin();
        it != type_trackers_.end(); ++it) {
-    if (it->second.HasLocalChangePending()) {
+    if (it->second->HasLocalChangePending()) {
       result.Put(it->first);
     }
   }
@@ -216,7 +194,7 @@ ModelTypeSet NudgeTracker::GetNotifiedTypes() const {
   ModelTypeSet result;
   for (TypeTrackerMap::const_iterator it = type_trackers_.begin();
        it != type_trackers_.end(); ++it) {
-    if (it->second.HasPendingInvalidation()) {
+    if (it->second->HasPendingInvalidation()) {
       result.Put(it->first);
     }
   }
@@ -227,7 +205,7 @@ ModelTypeSet NudgeTracker::GetRefreshRequestedTypes() const {
   ModelTypeSet result;
   for (TypeTrackerMap::const_iterator it = type_trackers_.begin();
        it != type_trackers_.end(); ++it) {
-    if (it->second.HasRefreshRequestPending()) {
+    if (it->second->HasRefreshRequestPending()) {
       result.Put(it->first);
     }
   }
@@ -238,7 +216,7 @@ void NudgeTracker::SetLegacyNotificationHint(
     ModelType type,
     sync_pb::DataTypeProgressMarker* progress) const {
   DCHECK(type_trackers_.find(type) != type_trackers_.end());
-  type_trackers_.find(type)->second.SetLegacyNotificationHint(progress);
+  type_trackers_.find(type)->second->SetLegacyNotificationHint(progress);
 }
 
 sync_pb::GetUpdatesCallerInfo::GetUpdatesSource NudgeTracker::GetLegacySource()
@@ -257,7 +235,7 @@ sync_pb::GetUpdatesCallerInfo::GetUpdatesSource NudgeTracker::GetLegacySource()
 
   for (TypeTrackerMap::const_iterator it = type_trackers_.begin();
        it != type_trackers_.end(); ++it) {
-    const DataTypeTracker& tracker = it->second;
+    const DataTypeTracker& tracker = *it->second;
     if (!tracker.IsThrottled() && tracker.HasPendingInvalidation()) {
       has_invalidation_pending = true;
     }
@@ -291,7 +269,7 @@ void NudgeTracker::FillProtoMessage(
   msg->set_invalidations_out_of_sync(invalidations_out_of_sync_);
 
   // Delegate the type-specific work to the DataTypeTracker class.
-  type_trackers_.find(type)->second.FillGetUpdatesTriggersMessage(msg);
+  type_trackers_.find(type)->second->FillGetUpdatesTriggersMessage(msg);
 }
 
 void NudgeTracker::SetSyncCycleStartTime(base::TimeTicks now) {
@@ -320,7 +298,7 @@ void NudgeTracker::SetSyncCycleStartTime(base::TimeTicks now) {
 void NudgeTracker::SetHintBufferSize(size_t size) {
   for (TypeTrackerMap::iterator it = type_trackers_.begin();
        it != type_trackers_.end(); ++it) {
-    it->second.UpdatePayloadBufferSize(size);
+    it->second->UpdatePayloadBufferSize(size);
   }
 }
 
