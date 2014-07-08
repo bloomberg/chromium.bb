@@ -131,6 +131,7 @@ class AwContents : public FindHelper::Listener,
   void ClearView(JNIEnv* env, jobject obj);
   void SetExtraHeadersForUrl(JNIEnv* env, jobject obj,
                              jstring url, jstring extra_headers);
+  void SendCheckRenderThreadResponsiveness(JNIEnv* env, jobject obj);
 
   void DrawGL(AwDrawGLInfo* draw_info);
 

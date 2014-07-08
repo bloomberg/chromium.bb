@@ -104,6 +104,10 @@ void AwRenderViewHostExt::SetJsOnlineProperty(bool network_up) {
   Send(new AwViewMsg_SetJsOnlineProperty(network_up));
 }
 
+void AwRenderViewHostExt::SendCheckRenderThreadResponsiveness() {
+  Send(new AwViewMsg_CheckRenderThreadResponsiveness());
+}
+
 void AwRenderViewHostExt::RenderViewCreated(
     content::RenderViewHost* render_view_host) {
   Send(new AwViewMsg_SetBackgroundColor(web_contents()->GetRoutingID(),

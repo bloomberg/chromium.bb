@@ -16,7 +16,10 @@ class VisitedLinkSlave;
 
 namespace android_webview {
 
-class AwContentRendererClient : public content::ContentRendererClient {
+class AwExecutionTerminationFilter;
+
+class AwContentRendererClient : public content::ContentRendererClient,
+                                public content::RenderProcessObserver {
  public:
   AwContentRendererClient();
   virtual ~AwContentRendererClient();
@@ -50,9 +53,13 @@ class AwContentRendererClient : public content::ContentRendererClient {
                                 blink::WebNavigationPolicy default_policy,
                                 bool is_redirect) OVERRIDE;
 
+  // content::RenderProcessObserver implementation.
+  virtual void WebKitInitialized() OVERRIDE;
+
  private:
   scoped_ptr<AwRenderProcessObserver> aw_render_process_observer_;
   scoped_ptr<visitedlink::VisitedLinkSlave> visited_link_slave_;
+  scoped_refptr<AwExecutionTerminationFilter> execution_termination_filter_;
 };
 
 }  // namespace android_webview

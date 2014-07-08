@@ -4,8 +4,11 @@
 
 package org.chromium.android_webview.test;
 
+import android.test.suitebuilder.annotation.LargeTest;
 import android.test.suitebuilder.annotation.SmallTest;
 import android.util.Pair;
+
+import junit.framework.Assert;
 
 import org.apache.http.Header;
 import org.apache.http.HttpRequest;
@@ -330,5 +333,72 @@ public class LoadUrlTest extends AwTestBase {
         } finally {
             if (webServer != null) webServer.shutdown();
         }
+    }
+
+    private static class TestController {
+        private final Object mLock = new Object();
+        private boolean mIsReady = false;
+        public void notifyPageIsReady() {
+            synchronized (mLock) {
+                mIsReady = true;
+                mLock.notify();
+            }
+        }
+        public void waitUntilIsReady() {
+            synchronized (mLock) {
+                while (!mIsReady) {
+                    try {
+                        mLock.wait(WAIT_TIMEOUT_MS);
+                    } catch (Exception e) {
+                        continue;
+                    }
+                    if (!mIsReady) {
+                        Assert.fail("Wait timed out");
+                    }
+                }
+                mIsReady = false;
+            }
+        }
+    }
+
+    // Verify that it is possible to interrupt JS scripts stuck in an infinite loop
+    // by calling loadUrl on a WebView.
+    @LargeTest
+    @Feature({"AndroidWebView"})
+    public void testLoadUrlInterruptsLoopedScripts() throws Throwable {
+        final String infiniteLoopPage =
+            "<html><head>" +
+            "  <script>" +
+            "    function infiniteLoop() {" +
+            "      test.notifyPageIsReady();" +
+            "      while(1);" +
+            "    }" +
+            "  </script>" +
+            "</head><body onload='setTimeout(infiniteLoop, 0)'>" +
+            "</body></html>";
+        final String simplePage = "<html><body onload='test.notifyPageIsReady()'></body></html>";
+        final String expectedTitle = "PASS";
+        final String pageWithTitle = "<html><body onload='document.title=\"" + expectedTitle +
+                "\"; test.notifyPageIsReady()'></body></html>";
+
+        final AwTestContainerView testContainerView =
+                createAwTestContainerViewOnMainSync(new TestAwContentsClient());
+        final AwContents awContents = testContainerView.getAwContents();
+        getAwSettingsOnUiThread(awContents).setJavaScriptEnabled(true);
+        final TestController testController = new TestController();
+        getInstrumentation().runOnMainSync(new Runnable() {
+            @Override
+            public void run() {
+                awContents.addPossiblyUnsafeJavascriptInterface(testController, "test", null);
+            }
+        });
+        loadDataAsync(awContents, infiniteLoopPage, "text/html", false);
+        testController.waitUntilIsReady();
+        loadDataAsync(awContents, simplePage, "text/html", false);
+        testController.waitUntilIsReady();
+        // Load another page that runs JS to make sure that the WebView is still functional.
+        loadDataAsync(awContents, pageWithTitle, "text/html", false);
+        testController.waitUntilIsReady();
+        assertEquals(expectedTitle, getTitleOnUiThread(awContents));
     }
 }
