@@ -287,7 +287,7 @@ public class ContentViewCore
     // whether the last selected text is still highlighted.
     private boolean mHasSelection;
     private String mLastSelectedText;
-    private boolean mSelectionEditable;
+    private boolean mFocusedNodeEditable;
     private ActionMode mActionMode;
     private boolean mUnselectAllOnActionModeDismiss;
 
@@ -1108,7 +1108,14 @@ public class ContentViewCore
      * @return Whether the current selection is editable (false if no text selected).
      */
     public boolean isSelectionEditable() {
-        return mHasSelection ? mSelectionEditable : false;
+        return mHasSelection ? mFocusedNodeEditable : false;
+    }
+
+    /**
+     * @return Whether the current focused node is editable.
+     */
+    public boolean isFocusedNodeEditable() {
+        return mFocusedNodeEditable;
     }
 
     // End FrameLayout overrides.
@@ -1884,7 +1891,7 @@ public class ContentViewCore
             getInsertionHandleController().allowAutomaticShowing();
             getSelectionHandleController().allowAutomaticShowing();
         } else {
-            if (mSelectionEditable) getInsertionHandleController().allowAutomaticShowing();
+            if (mFocusedNodeEditable) getInsertionHandleController().allowAutomaticShowing();
         }
     }
 
@@ -2127,7 +2134,7 @@ public class ContentViewCore
 
             @Override
             public boolean isSelectionEditable() {
-                return mSelectionEditable;
+                return mFocusedNodeEditable;
             }
 
             @Override
@@ -2364,7 +2371,7 @@ public class ContentViewCore
             int compositionStart, int compositionEnd, boolean showImeIfNeeded,
             boolean isNonImeChange) {
         TraceEvent.begin();
-        mSelectionEditable = (textInputType != ImeAdapter.getTextInputTypeNone());
+        mFocusedNodeEditable = (textInputType != ImeAdapter.getTextInputTypeNone());
 
         mImeAdapter.updateKeyboardVisibility(
                 nativeImeAdapterAndroid, textInputType, showImeIfNeeded);
@@ -2494,7 +2501,7 @@ public class ContentViewCore
         } else {
             mUnselectAllOnActionModeDismiss = false;
             hideSelectActionBar();
-            if (x1 != 0 && y1 != 0 && mSelectionEditable) {
+            if (x1 != 0 && y1 != 0 && mFocusedNodeEditable) {
                 // Selection is a caret, and a text field is focused.
                 if (mSelectionHandleController != null) {
                     mSelectionHandleController.hide();
