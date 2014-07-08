@@ -389,13 +389,12 @@ section {
   background-repeat: no-repeat;
   background-position: top __MSG_@@bidi_start_edge__;
   padding-__MSG_@@bidi_start_edge__: 30px;
-  padding-top: 5px;
   color: #900;
-}
 
-.error-state.multi-line-error-state {
-  padding-top: 0;
-  min-height: 22px;
+  /* Vertical align the text*/
+  display: table-cell;
+  vertical-align: middle;
+  height: 24px;
 }
 
 .expiring {
