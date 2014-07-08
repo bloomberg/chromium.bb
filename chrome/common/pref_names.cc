@@ -2090,14 +2090,6 @@ const char kCustomHandlersEnabled[] = "custom_handlers.enabled";
 // by the cloud policy subsystem.
 const char kDevicePolicyRefreshRate[] = "policy.device_refresh_rate";
 
-// String that represents the recovery component last downloaded version. This
-// takes the usual 'a.b.c.d' notation.
-const char kRecoveryComponentVersion[] = "recovery_component.version";
-
-// String that stores the component updater last known state. This is used for
-// troubleshooting.
-const char kComponentUpdaterState[] = "component_updater.state";
-
 // A boolean where true means that the browser has previously attempted to
 // enable autoupdate and failed, so the next out-of-date browser start should
 // not prompt the user to enable autoupdate, it should offer to reinstall Chrome

@@ -17,6 +17,7 @@
     'breakpad.gypi',
     'captive_portal.gypi',
     'cloud_devices.gypi',
+    'component_updater.gypi',
     'cronet.gypi',
     'data_reduction_proxy.gypi',
     'dom_distiller.gypi',

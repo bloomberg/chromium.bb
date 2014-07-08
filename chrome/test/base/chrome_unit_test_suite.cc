@@ -13,6 +13,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/utility/chrome_content_utility_client.h"
+#include "components/component_updater/component_updater_paths.h"
 #include "components/omaha_query_params/omaha_query_params.h"
 #include "content/public/common/content_paths.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -120,6 +121,10 @@ void ChromeUnitTestSuite::InitializeProviders() {
   chrome::RegisterPathProvider();
   content::RegisterPathProvider();
   ui::RegisterPathProvider();
+
+  base::FilePath user_data;
+  if (PathService::Get(chrome::DIR_USER_DATA, &user_data))
+    component_updater::RegisterPathProvider(user_data);
 
 #if defined(OS_CHROMEOS)
   chromeos::RegisterPathProvider();

@@ -727,8 +727,6 @@ extern const char kMessageCenterShowedFirstRunBalloon[];
 extern const char kMessageCenterShowIcon[];
 extern const char kMessageCenterForcedOnTaskbar[];
 
-extern const char kRecoveryComponentVersion[];
-extern const char kComponentUpdaterState[];
 extern const char kAttemptedToEnableAutoupdate[];
 
 #if defined(OS_WIN)

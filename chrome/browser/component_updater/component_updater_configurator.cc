@@ -12,7 +12,7 @@
 #include "base/compiler_specific.h"
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
-#include "chrome/common/chrome_switches.h"
+#include "components/component_updater/component_updater_switches.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "url/gurl.h"
 
@@ -208,7 +208,7 @@ bool ChromeConfigurator::UseBackgroundDownloader() const {
 }
 
 Configurator* MakeChromeComponentUpdaterConfigurator(
-    const CommandLine* cmdline,
+    const base::CommandLine* cmdline,
     net::URLRequestContextGetter* context_getter) {
   return new ChromeConfigurator(cmdline, context_getter);
 }

@@ -14,7 +14,7 @@
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/chrome_paths.h"
+#include "components/component_updater/component_updater_paths.h"
 #include "components/translate/content/browser/data_file_browser_cld_data_provider.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/ssl/ssl_config_service.h"
@@ -89,7 +89,7 @@ bool CldComponentInstallerTraits::VerifyInstallation(
 
 base::FilePath CldComponentInstallerTraits::GetBaseDirectory() const {
   base::FilePath result;
-  PathService::Get(chrome::DIR_COMPONENT_CLD2, &result);
+  PathService::Get(DIR_COMPONENT_CLD2, &result);
   return result;
 }
 

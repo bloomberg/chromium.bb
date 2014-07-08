@@ -2837,6 +2837,7 @@
         '../components/components.gyp:captive_portal',
         '../components/components.gyp:cloud_devices_common',
         '../components/components.gyp:component_metrics_proto',
+        '../components/components.gyp:component_updater',
         '../components/components.gyp:data_reduction_proxy_browser',
         '../components/components.gyp:domain_reliability',
         '../components/components.gyp:favicon_base',

@@ -34,6 +34,7 @@
 #include "chrome/plugin/chrome_content_plugin_client.h"
 #include "chrome/renderer/chrome_content_renderer_client.h"
 #include "chrome/utility/chrome_content_utility_client.h"
+#include "components/component_updater/component_updater_paths.h"
 #include "components/nacl/common/nacl_switches.h"
 #include "components/startup_metric_utils/startup_metric_utils.h"
 #include "content/public/common/content_client.h"
@@ -424,6 +425,9 @@ bool ChromeMainDelegate::BasicStartupComplete(int* exit_code) {
 #if !defined(DISABLE_NACL) && defined(OS_LINUX)
   nacl::RegisterPathProvider();
 #endif
+  base::FilePath user_data;
+  if (PathService::Get(chrome::DIR_USER_DATA, &user_data))
+    component_updater::RegisterPathProvider(user_data);
 
 // No support for ANDROID yet as DiagnosticsController needs wchar support.
 // TODO(gspencer): That's not true anymore, or at least there are no w-string

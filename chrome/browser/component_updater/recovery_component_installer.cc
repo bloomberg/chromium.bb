@@ -20,9 +20,8 @@
 #include "base/strings/string_util.h"
 #include "base/values.h"
 #include "chrome/browser/component_updater/component_updater_service.h"
-#include "chrome/common/chrome_paths.h"
-#include "chrome/common/chrome_version_info.h"
-#include "chrome/common/pref_names.h"
+#include "components/component_updater/component_updater_paths.h"
+#include "components/component_updater/pref_names.h"
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;
@@ -118,11 +117,11 @@ bool RecoveryComponentInstaller::Install(const base::DictionaryValue& manifest,
 
   // Passed the basic tests. Copy the installation to a permanent directory.
   base::FilePath path;
-  if (!PathService::Get(chrome::DIR_RECOVERY_BASE, &path))
+  if (!PathService::Get(DIR_RECOVERY_BASE, &path))
     return false;
   path = path.AppendASCII(version.GetString());
   if (base::PathExists(path) && !base::DeleteFile(path, true))
-      return false;
+    return false;
   if (!base::Move(unpack_path, path)) {
     DVLOG(1) << "Recovery component move failed.";
     return false;

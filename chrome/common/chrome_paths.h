@@ -94,8 +94,6 @@ enum {
   FILE_O1D_PLUGIN,              // Full path to the O1D Pepper plugin file.
   FILE_EFFECTS_PLUGIN,          // Full path to the Effects Pepper plugin file.
   FILE_GTALK_PLUGIN,            // Full path to the GTalk Pepper plugin file.
-  DIR_COMPONENT_CLD2,           // Directory that contains component-updated
-                                // Compact Language Detector files
   DIR_COMPONENT_WIDEVINE_CDM,   // Directory that contains component-updated
                                 // Widevine CDM files.
   FILE_WIDEVINE_CDM_ADAPTER,    // Full path to the Widevine CDM adapter file.
@@ -103,7 +101,6 @@ enum {
                                 // binary data (e.g., html files and images
                                 // used by internal pages).
   DIR_RESOURCES_EXTENSION,      // Full path to extension resources.
-  DIR_RECOVERY_BASE,            // Full path to the dir for Recovery component.
 #if defined(OS_CHROMEOS)
   DIR_CHROMEOS_WALLPAPERS,      // Directory where downloaded chromeos
                                 // wallpapers reside.

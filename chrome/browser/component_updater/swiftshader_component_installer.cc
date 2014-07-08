@@ -19,7 +19,7 @@
 #include "base/strings/string_util.h"
 #include "base/values.h"
 #include "chrome/browser/component_updater/component_updater_service.h"
-#include "chrome/common/chrome_paths.h"
+#include "components/component_updater/component_updater_paths.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/gpu_data_manager.h"
 #include "content/public/browser/gpu_data_manager_observer.h"
@@ -46,9 +46,6 @@ const base::FilePath::CharType kSwiftShaderGlesName[] =
 
 const char kSwiftShaderManifestName[] = "SwiftShader";
 
-const base::FilePath::CharType kSwiftShaderBaseDirectory[] =
-    FILE_PATH_LITERAL("SwiftShader");
-
 // If we don't have a SwiftShader component, this is the version we claim.
 const char kNullVersion[] = "0.0.0.0";
 
@@ -56,8 +53,9 @@ const char kNullVersion[] = "0.0.0.0";
 // <profile>\AppData\Local\Google\Chrome\User Data\SwiftShader\.
 base::FilePath GetSwiftShaderBaseDirectory() {
   base::FilePath result;
-  PathService::Get(chrome::DIR_USER_DATA, &result);
-  return result.Append(kSwiftShaderBaseDirectory);
+  if (!PathService::Get(DIR_SWIFT_SHADER, &result))
+    NOTREACHED() << "Couldn't get SwiftShader directory.";
+  return result;
 }
 
 // SwiftShader has version encoded in the path itself

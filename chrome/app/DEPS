@@ -9,6 +9,7 @@ include_rules = [
   "+chromeos/chromeos_paths.h",
   "+chromeos/chromeos_switches.h",
   "+components/breakpad",
+  "+components/component_updater",
   "+components/nacl/common",
   "+components/nacl/zygote",
   "+components/startup_metric_utils",

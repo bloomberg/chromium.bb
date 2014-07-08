@@ -16,7 +16,6 @@
 #include "chrome/browser/component_updater/component_patcher.h"
 #include "chrome/browser/component_updater/component_updater_service.h"
 #include "chrome/common/chrome_utility_messages.h"
-#include "chrome/common/extensions/extension_constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/utility_process_host.h"
 #include "courgette/courgette.h"
