@@ -40,8 +40,6 @@ public:
     static PassRefPtrWillBeRawPtr<HTMLStyleElement> create(Document&, bool createdByParser);
     virtual ~HTMLStyleElement();
 
-    void setType(const AtomicString&);
-
     ContainerNode* scopingNode();
 
     using StyleElement::sheet;

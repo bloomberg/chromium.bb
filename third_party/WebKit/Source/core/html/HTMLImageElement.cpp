@@ -416,11 +416,6 @@ const QualifiedName& HTMLImageElement::subResourceAttributeName() const
     return srcAttr;
 }
 
-const AtomicString& HTMLImageElement::alt() const
-{
-    return fastGetAttribute(altAttr);
-}
-
 bool HTMLImageElement::draggable() const
 {
     // Image elements are draggable by default.

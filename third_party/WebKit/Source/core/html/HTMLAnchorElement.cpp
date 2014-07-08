@@ -293,11 +293,6 @@ short HTMLAnchorElement::tabIndex() const
     return Element::tabIndex();
 }
 
-AtomicString HTMLAnchorElement::target() const
-{
-    return getAttribute(targetAttr);
-}
-
 bool HTMLAnchorElement::isLiveLink() const
 {
     return isLink() && !hasEditableStyle();
@@ -346,7 +341,7 @@ void HTMLAnchorElement::handleClick(Event* event)
 
         frame->loader().client()->loadURLExternally(request, NavigationPolicyDownload, suggestedName);
     } else {
-        FrameLoadRequest frameRequest(&document(), request, target());
+        FrameLoadRequest frameRequest(&document(), request, getAttribute(targetAttr));
         frameRequest.setTriggeringEvent(event);
         if (hasRel(RelationNoReferrer))
             frameRequest.setShouldSendReferrer(NeverSendReferrer);

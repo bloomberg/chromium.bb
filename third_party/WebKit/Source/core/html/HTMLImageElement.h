@@ -62,8 +62,6 @@ public:
 
     void setLoadManually(bool loadManually) { imageLoader().setLoadManually(loadManually); }
 
-    const AtomicString& alt() const;
-
     void setHeight(int);
 
     KURL src() const;

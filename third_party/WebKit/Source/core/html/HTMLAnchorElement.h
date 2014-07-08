@@ -104,7 +104,6 @@ private:
     virtual InsertionNotificationRequest insertedInto(ContainerNode*) OVERRIDE;
 
     void sendPings(const KURL& destinationURL);
-    AtomicString target() const;
     void handleClick(Event*);
 
     uint32_t m_linkRelations;

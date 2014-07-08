@@ -186,11 +186,6 @@ const QualifiedName& HTMLEmbedElement::subResourceAttributeName() const
     return srcAttr;
 }
 
-const AtomicString HTMLEmbedElement::imageSourceURL() const
-{
-    return getAttribute(srcAttr);
-}
-
 bool HTMLEmbedElement::isInteractiveContent() const
 {
     return true;
