@@ -182,6 +182,9 @@
             'utility/local_discovery/service_discovery_message_handler.h',
           ]
         }],
+        ['safe_browsing==1', {
+          'defines': [ 'FULL_SAFE_BROWSING' ],
+        }],
       ],
       # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
       'msvs_disabled_warnings': [ 4267, ],

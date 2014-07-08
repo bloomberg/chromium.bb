@@ -13,6 +13,7 @@ gypi_values = exec_script(
 
 static_library("utility") {
   sources = rebase_path(gypi_values.chrome_utility_sources, ".", "..")
+  defines = []
 
   deps = [
     "//base",
@@ -88,5 +89,9 @@ static_library("utility") {
       "local_discovery/service_discovery_message_handler.cc",
       "local_discovery/service_discovery_message_handler.h",
     ]
+  }
+
+  if (safe_browsing_mode == 1) {
+    defines += [ "FULL_SAFE_BROWSING" ]
   }
 }

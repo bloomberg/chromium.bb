@@ -193,11 +193,7 @@
       'common/ref_counted_util.h',
       'common/render_messages.cc',
       'common/render_messages.h',
-      'common/safe_browsing/download_protection_util.cc',
-      'common/safe_browsing/download_protection_util.h',
       'common/safe_browsing/safebrowsing_messages.h',
-      'common/safe_browsing/zip_analyzer.cc',
-      'common/safe_browsing/zip_analyzer.h',
       'common/search_provider.h',
       'common/search_types.h',
       'common/search_urls.cc',
@@ -264,6 +260,12 @@
       'common/extensions/api/url_handlers/url_handlers_parser.h',
       'common/extensions/api/webstore/webstore_api_constants.cc',
       'common/extensions/api/webstore/webstore_api_constants.h',
+    ],
+    'chrome_common_full_safe_browsing_sources': [
+      'common/safe_browsing/download_protection_util.cc',
+      'common/safe_browsing/download_protection_util.h',
+      'common/safe_browsing/zip_analyzer.cc',
+      'common/safe_browsing/zip_analyzer.h',
     ],
   },
   'targets': [
@@ -500,6 +502,13 @@
           'dependencies': [
             '<(DEPTH)/components/components.gyp:policy',
           ],
+        }],
+        ['safe_browsing==1', {
+          'defines': [ 'FULL_SAFE_BROWSING' ],
+          'sources': [ '<@(chrome_common_full_safe_browsing_sources)', ],
+        }],
+        ['safe_browsing==2', {
+          'defines': [ 'MOBILE_SAFE_BROWSING' ],
         }],
       ],
       'target_conditions': [

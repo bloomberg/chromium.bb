@@ -124,8 +124,10 @@ bool ChromeContentUtilityClient::OnMessageReceived(
     IPC_MESSAGE_HANDLER(ChromeUtilityMsg_PatchFileCourgette,
                         OnPatchFileCourgette)
     IPC_MESSAGE_HANDLER(ChromeUtilityMsg_StartupPing, OnStartupPing)
+#if defined(FULL_SAFE_BROWSING)
     IPC_MESSAGE_HANDLER(ChromeUtilityMsg_AnalyzeZipFileForDownloadProtection,
                         OnAnalyzeZipFileForDownloadProtection)
+#endif
 #if defined(ENABLE_EXTENSIONS)
     IPC_MESSAGE_HANDLER(ChromeUtilityMsg_ParseMediaMetadata,
                         OnParseMediaMetadata)
@@ -286,6 +288,7 @@ void ChromeContentUtilityClient::OnStartupPing() {
   // Don't release the process, we assume further messages are on the way.
 }
 
+#if defined(FULL_SAFE_BROWSING)
 void ChromeContentUtilityClient::OnAnalyzeZipFileForDownloadProtection(
     const IPC::PlatformFileForTransit& zip_file) {
   safe_browsing::zip_analyzer::Results results;
@@ -295,6 +298,7 @@ void ChromeContentUtilityClient::OnAnalyzeZipFileForDownloadProtection(
       results));
   ReleaseProcessIfNeeded();
 }
+#endif
 
 #if defined(ENABLE_EXTENSIONS)
 // TODO(thestig): Try to move this to

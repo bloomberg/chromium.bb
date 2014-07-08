@@ -79,10 +79,12 @@ IPC_MESSAGE_CONTROL3(ChromeUtilityMsg_CreateZipFile,
 // be used if the host process needs a handle to the running utility process.
 IPC_MESSAGE_CONTROL0(ChromeUtilityMsg_StartupPing)
 
+#if defined(FULL_SAFE_BROWSING)
 // Tells the utility process to analyze a zip file for malicious download
 // protection.
 IPC_MESSAGE_CONTROL1(ChromeUtilityMsg_AnalyzeZipFileForDownloadProtection,
                      IPC::PlatformFileForTransit /* zip_file */)
+#endif
 
 //------------------------------------------------------------------------------
 // Utility process host messages:
@@ -124,7 +126,9 @@ IPC_MESSAGE_CONTROL0(ChromeUtilityHostMsg_CreateZipFile_Failed)
 // Reply when the utility process has started.
 IPC_MESSAGE_CONTROL0(ChromeUtilityHostMsg_ProcessStarted)
 
+#if defined(FULL_SAFE_BROWSING)
 // Reply when a zip file has been analyzed for malicious download protection.
 IPC_MESSAGE_CONTROL1(
     ChromeUtilityHostMsg_AnalyzeZipFileForDownloadProtection_Finished,
     safe_browsing::zip_analyzer::Results)
+#endif

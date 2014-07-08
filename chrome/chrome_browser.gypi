@@ -2595,7 +2595,7 @@
       'browser/upgrade_detector_impl.cc',
       'browser/upgrade_detector_impl.h',
     ],
-    # Used for safe browsing in basic mode (safe_browsing=2) as well ass full
+    # Used for safe browsing in basic mode (safe_browsing=2) as well as full
     # mode (safe_browsing=1).
     'chrome_browser_basic_safe_browsing_sources': [
       'browser/renderer_host/safe_browsing_resource_throttle_factory.cc',

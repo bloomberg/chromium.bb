@@ -213,13 +213,17 @@
       'renderer/pepper/ppb_pdf_impl.cc',
       'renderer/pepper/ppb_pdf_impl.h',
     ],
+    # For safe_browsing==1 or safe_browsing==2.
+    'chrome_renderer_basic_safe_browsing_sources': [
+      'renderer/safe_browsing/malware_dom_details.cc',
+      'renderer/safe_browsing/malware_dom_details.h',
+    ],
+    # For safe_browsing==1 only.
     'chrome_renderer_safe_browsing_sources': [
       'renderer/safe_browsing/feature_extractor_clock.cc',
       'renderer/safe_browsing/feature_extractor_clock.h',
       'renderer/safe_browsing/features.cc',
       'renderer/safe_browsing/features.h',
-      'renderer/safe_browsing/malware_dom_details.cc',
-      'renderer/safe_browsing/malware_dom_details.h',
       'renderer/safe_browsing/murmurhash3_util.cc',
       'renderer/safe_browsing/murmurhash3_util.h',
       'renderer/safe_browsing/phishing_classifier.cc',
@@ -324,6 +328,11 @@
             '../ppapi/ppapi_internal.gyp:ppapi_shared',
           ],
         }],
+        ['safe_browsing==1 or safe_browsing==2', {
+          'sources': [
+            '<@(chrome_renderer_basic_safe_browsing_sources)',
+          ],
+        }],
         ['safe_browsing==1', {
           'sources': [
             '<@(chrome_renderer_safe_browsing_sources)',
@@ -334,6 +343,11 @@
           'dependencies': [
             'safe_browsing_proto',
             '../third_party/smhasher/smhasher.gyp:murmurhash3',
+          ],
+        }],
+        ['safe_browsing==2', {
+          'defines': [
+            'MOBILE_SAFE_BROWSING',
           ],
         }],
         ['enable_extensions==1', {
