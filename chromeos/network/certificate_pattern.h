@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "base/memory/scoped_ptr.h"
 #include "chromeos/chromeos_export.h"
 
 namespace base {
@@ -55,11 +56,12 @@ class CHROMEOS_EXPORT IssuerSubjectPattern {
     return organizational_unit_;
   }
 
-  // Creates a new dictionary with the issuer subject pattern as its contents.
-  // Caller assumes ownership.
-  base::DictionaryValue* CreateAsDictionary() const;
+  // Creates a new dictionary containing the data in this pattern.
+  scoped_ptr<base::DictionaryValue> CreateONCDictionary() const;
 
-  bool CopyFromDictionary(const base::DictionaryValue& dictionary);
+  // Replaces the content of this object with the values of |dictionary|.
+  // |dictionary| should be a valid ONC IssuerSubjectPattern dictionary.
+  void ReadFromONCDictionary(const base::DictionaryValue& dictionary);
 
  private:
   std::string common_name_;
@@ -102,12 +104,12 @@ class CHROMEOS_EXPORT CertificatePattern {
   }
 
   // Creates a new dictionary containing the data in the certificate pattern.
-  base::DictionaryValue* CreateAsDictionary() const;
+  scoped_ptr<base::DictionaryValue> CreateONCDictionary() const;
 
-  // Replaces the contents of this CertificatePattern object with
-  // the values in the dictionary.  Returns false if the dictionary is
-  // malformed.
-  bool CopyFromDictionary(const base::DictionaryValue& dictionary);
+  // Replaces the content of this object with the values of |dictionary|.
+  // |dictionary| should be a valid ONC CertificatePattern dictionary. Returns
+  // whether all required fields were present.
+  bool ReadFromONCDictionary(const base::DictionaryValue& dictionary);
 
  private:
   std::vector<std::string> issuer_ca_pems_;

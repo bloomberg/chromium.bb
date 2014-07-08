@@ -100,7 +100,7 @@ NetworkUIData::NetworkUIData(const base::DictionaryValue& dict) {
     const base::DictionaryValue* cert_dict = NULL;
     dict.GetDictionary(kKeyCertificatePattern, &cert_dict);
     if (cert_dict)
-      certificate_pattern_.CopyFromDictionary(*cert_dict);
+      certificate_pattern_.ReadFromONCDictionary(*cert_dict);
     if (certificate_pattern_.Empty()) {
       // This case may occur if UIData from an older CrOS version is read.
       LOG(WARNING) << "Couldn't parse a valid certificate pattern.";
@@ -138,7 +138,7 @@ void NetworkUIData::FillDictionary(base::DictionaryValue* dict) const {
     if (certificate_type_ == CLIENT_CERT_TYPE_PATTERN &&
         !certificate_pattern_.Empty()) {
       dict->Set(kKeyCertificatePattern,
-                certificate_pattern_.CreateAsDictionary());
+                certificate_pattern_.CreateONCDictionary().release());
     }
   }
   if (user_settings_)
@@ -169,7 +169,7 @@ void TranslateClientCertType(const std::string& client_cert_type,
 void TranslateCertificatePattern(const base::DictionaryValue& onc_object,
                                  NetworkUIData* ui_data) {
   CertificatePattern pattern;
-  bool success = pattern.CopyFromDictionary(onc_object);
+  bool success = pattern.ReadFromONCDictionary(onc_object);
   DCHECK(success);
   ui_data->set_certificate_pattern(pattern);
 }

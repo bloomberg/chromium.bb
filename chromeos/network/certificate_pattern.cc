@@ -12,15 +12,6 @@ namespace chromeos {
 
 namespace {
 
-// Keys for converting classes below to/from dictionaries.
-const char kCommonNameKey[] = "CommonName";
-const char kLocalityKey[] = "Locality";
-const char kOrganizationKey[] = "Organization";
-const char kOrganizationalUnitKey[] = "OrganizationalUnit";
-const char kIssuerKey[] = "Issuer";
-const char kSubjectKey[] = "Subject";
-const char kEnrollmentUriKey[] = "EnrollmentURI";
-
 bool GetAsListOfStrings(const base::Value& value,
                         std::vector<std::string>* result) {
   const base::ListValue* list = NULL;
@@ -41,8 +32,9 @@ base::ListValue* CreateListFromStrings(
     const std::vector<std::string>& strings) {
   base::ListValue* new_list = new base::ListValue;
   for (std::vector<std::string>::const_iterator iter = strings.begin();
-       iter != strings.end(); ++iter) {
-    new_list->Append(new base::StringValue(*iter));
+       iter != strings.end();
+       ++iter) {
+    new_list->AppendString(*iter);
   }
   return new_list;
 }
@@ -51,23 +43,25 @@ base::ListValue* CreateListFromStrings(
 
 ////////////////////////////////////////////////////////////////////////////////
 // IssuerSubjectPattern
-IssuerSubjectPattern::IssuerSubjectPattern(const std::string& common_name,
-                     const std::string& locality,
-                     const std::string& organization,
-                     const std::string& organizational_unit)
+IssuerSubjectPattern::IssuerSubjectPattern(
+    const std::string& common_name,
+    const std::string& locality,
+    const std::string& organization,
+    const std::string& organizational_unit)
     : common_name_(common_name),
       locality_(locality),
       organization_(organization),
-      organizational_unit_(organizational_unit) { }
+      organizational_unit_(organizational_unit) {
+}
 
-IssuerSubjectPattern::IssuerSubjectPattern() {}
+IssuerSubjectPattern::IssuerSubjectPattern() {
+}
 
-IssuerSubjectPattern::~IssuerSubjectPattern() {}
+IssuerSubjectPattern::~IssuerSubjectPattern() {
+}
 
 bool IssuerSubjectPattern::Empty() const {
-  return common_name_.empty() &&
-         locality_.empty() &&
-         organization_.empty() &&
+  return common_name_.empty() && locality_.empty() && organization_.empty() &&
          organizational_unit_.empty();
 }
 
@@ -78,45 +72,45 @@ void IssuerSubjectPattern::Clear() {
   organizational_unit_.clear();
 }
 
-base::DictionaryValue* IssuerSubjectPattern::CreateAsDictionary() const {
-  base::DictionaryValue* dict = new base::DictionaryValue;
+scoped_ptr<base::DictionaryValue> IssuerSubjectPattern::CreateONCDictionary()
+    const {
+  scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue);
   if (!common_name_.empty())
-    dict->SetString(kCommonNameKey, common_name_);
+    dict->SetString(onc::certificate::kCommonName, common_name_);
   if (!locality_.empty())
-    dict->SetString(kLocalityKey, locality_);
+    dict->SetString(onc::certificate::kLocality, locality_);
   if (!organization_.empty())
-    dict->SetString(kOrganizationKey, organization_);
+    dict->SetString(onc::certificate::kOrganization, organization_);
   if (!organizational_unit_.empty())
-    dict->SetString(kOrganizationalUnitKey, organizational_unit_);
-  return dict;
+    dict->SetString(onc::certificate::kOrganizationalUnit,
+                    organizational_unit_);
+  return dict.Pass();
 }
 
-bool IssuerSubjectPattern::CopyFromDictionary(
+void IssuerSubjectPattern::ReadFromONCDictionary(
     const base::DictionaryValue& dict) {
   Clear();
-  dict.GetString(kCommonNameKey, &common_name_);
-  dict.GetString(kLocalityKey, &locality_);
-  dict.GetString(kOrganizationKey, &organization_);
-  dict.GetString(kOrganizationalUnitKey, &organizational_unit_);
-  // If the dictionary wasn't empty, but we are, or vice versa, then something
-  // went wrong.
-  DCHECK(dict.empty() == Empty());
-  if (dict.empty() != Empty())
-    return false;
-  return true;
+
+  dict.GetStringWithoutPathExpansion(onc::certificate::kCommonName,
+                                     &common_name_);
+  dict.GetStringWithoutPathExpansion(onc::certificate::kLocality, &locality_);
+  dict.GetStringWithoutPathExpansion(onc::certificate::kOrganization,
+                                     &organization_);
+  dict.GetStringWithoutPathExpansion(onc::certificate::kOrganizationalUnit,
+                                     &organizational_unit_);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // CertificatePattern
 
-CertificatePattern::CertificatePattern() {}
+CertificatePattern::CertificatePattern() {
+}
 
-CertificatePattern::~CertificatePattern() {}
+CertificatePattern::~CertificatePattern() {
+}
 
 bool CertificatePattern::Empty() const {
-  return issuer_ca_pems_.empty() &&
-         issuer_.Empty() &&
-         subject_.Empty();
+  return issuer_ca_pems_.empty() && issuer_.Empty() && subject_.Empty();
 }
 
 void CertificatePattern::Clear() {
@@ -126,56 +120,61 @@ void CertificatePattern::Clear() {
   enrollment_uri_list_.clear();
 }
 
-base::DictionaryValue* CertificatePattern::CreateAsDictionary() const {
-  base::DictionaryValue* dict = new base::DictionaryValue;
+scoped_ptr<base::DictionaryValue> CertificatePattern::CreateONCDictionary()
+    const {
+  scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue);
 
   if (!issuer_ca_pems_.empty()) {
-    dict->Set(onc::certificate::kIssuerCAPEMs,
-              CreateListFromStrings(issuer_ca_pems_));
+    dict->SetWithoutPathExpansion(onc::certificate::kIssuerCAPEMs,
+                                  CreateListFromStrings(issuer_ca_pems_));
   }
 
   if (!issuer_.Empty())
-    dict->Set(kIssuerKey, issuer_.CreateAsDictionary());
+    dict->SetWithoutPathExpansion(onc::certificate::kIssuer,
+                                  issuer_.CreateONCDictionary().release());
 
   if (!subject_.Empty())
-    dict->Set(kSubjectKey, subject_.CreateAsDictionary());
+    dict->SetWithoutPathExpansion(onc::certificate::kSubject,
+                                  subject_.CreateONCDictionary().release());
 
   if (!enrollment_uri_list_.empty())
-    dict->Set(kEnrollmentUriKey, CreateListFromStrings(enrollment_uri_list_));
-  return dict;
+    dict->SetWithoutPathExpansion(onc::certificate::kEnrollmentURI,
+                                  CreateListFromStrings(enrollment_uri_list_));
+  return dict.Pass();
 }
 
-bool CertificatePattern::CopyFromDictionary(const base::DictionaryValue &dict) {
-  const base::DictionaryValue* child_dict = NULL;
-  const base::ListValue* child_list = NULL;
+bool CertificatePattern::ReadFromONCDictionary(
+    const base::DictionaryValue& dict) {
   Clear();
 
+  const base::DictionaryValue* child_dict = NULL;
+  const base::ListValue* child_list = NULL;
+
   // All of these are optional.
-  if (dict.GetList(onc::certificate::kIssuerCAPEMs, &child_list) &&
+  if (dict.GetListWithoutPathExpansion(onc::certificate::kIssuerCAPEMs,
+                                       &child_list) &&
       child_list) {
     if (!GetAsListOfStrings(*child_list, &issuer_ca_pems_))
       return false;
   }
-  if (dict.GetDictionary(kIssuerKey, &child_dict) && child_dict) {
-    if (!issuer_.CopyFromDictionary(*child_dict))
-      return false;
+  if (dict.GetDictionaryWithoutPathExpansion(onc::certificate::kIssuer,
+                                             &child_dict) &&
+      child_dict) {
+    issuer_.ReadFromONCDictionary(*child_dict);
   }
   child_dict = NULL;
-  if (dict.GetDictionary(kSubjectKey, &child_dict) && child_dict) {
-    if (!subject_.CopyFromDictionary(*child_dict))
-      return false;
+  if (dict.GetDictionaryWithoutPathExpansion(onc::certificate::kSubject,
+                                             &child_dict) &&
+      child_dict) {
+    subject_.ReadFromONCDictionary(*child_dict);
   }
   child_list = NULL;
-  if (dict.GetList(kEnrollmentUriKey, &child_list) && child_list) {
+  if (dict.GetListWithoutPathExpansion(onc::certificate::kEnrollmentURI,
+                                       &child_list) &&
+      child_list) {
     if (!GetAsListOfStrings(*child_list, &enrollment_uri_list_))
       return false;
   }
-
-  // If we didn't copy anything from the dictionary, then it had better be
-  // empty.
-  DCHECK(dict.empty() == Empty());
-  if (dict.empty() != Empty())
-    return false;
 
   return true;
 }
