@@ -187,10 +187,6 @@
     # all filters used in Blink support the optimized path properly
     'SK_DISABLE_OFFSETIMAGEFILTER_OPTIMIZATION',
 
-    # Disable this check because it is too strict for some Chromium-specific
-    # subclasses of SkPixelRef. See bug: crbug.com/171776.
-    'SK_DISABLE_PIXELREF_LOCKCOUNT_BALANCE_CHECK',
-
     'IGNORE_ROT_AA_RECT_OPT',
 
     'SK_IGNORE_BLURRED_RRECT_OPT',
