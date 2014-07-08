@@ -21,21 +21,6 @@ namespace sandbox {
 
 namespace {
 
-bool HasLinux32Bug() {
-#if defined(__i386__)
-  // On 3.2 kernels, Yama doesn't work for 32-bit binaries on 64-bit kernels.
-  // This is fixed in 3.4.
-  bool is_kernel_64bit =
-      base::SysInfo::OperatingSystemArchitecture() == "x86_64";
-  bool is_linux = base::SysInfo::OperatingSystemName() == "Linux";
-  bool is_3_dot_2 = StartsWithASCII(
-      base::SysInfo::OperatingSystemVersion(), "3.2", /*case_sensitive=*/false);
-  if (is_kernel_64bit && is_linux && is_3_dot_2)
-    return true;
-#endif  // defined(__i386__)
-  return false;
-}
-
 bool CanPtrace(pid_t pid) {
   int ret;
   ret = ptrace(PTRACE_ATTACH, pid, NULL, NULL);
@@ -127,9 +112,6 @@ void SetYamaRestrictions(bool enable_restriction) {
 }
 
 TEST(Yama, RestrictPtraceWorks) {
-  if (HasLinux32Bug())
-    return;
-
   ScopedProcess process1(base::Bind(&SetYamaRestrictions, true));
   ASSERT_TRUE(process1.WaitForClosureToRun());
 
@@ -152,7 +134,7 @@ TEST(Yama, RestrictPtraceWorks) {
 void DoNothing() {}
 
 SANDBOX_TEST(Yama, RestrictPtraceIsDefault) {
-  if (!Yama::IsPresent() || HasLinux32Bug())
+  if (!Yama::IsPresent())
     return;
 
   CHECK(Yama::DisableYamaRestrictions());
