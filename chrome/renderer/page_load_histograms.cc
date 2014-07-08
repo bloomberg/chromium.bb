@@ -687,25 +687,6 @@ void DumpDeprecatedHistograms(const WebPerformance& performance,
         break;
     }
   }
-
-  // Record page load time and abandonment rates for proxy cases.
-  if (document_state->was_fetched_via_proxy()) {
-    if (scheme_type == URLPattern::SCHEME_HTTPS) {
-      PLT_HISTOGRAM("PLT.StartToFinish.Proxy.https", start_to_finish_all_loads);
-    } else {
-      DCHECK(scheme_type == URLPattern::SCHEME_HTTP);
-      PLT_HISTOGRAM("PLT.StartToFinish.Proxy.http", start_to_finish_all_loads);
-    }
-  } else {
-    if (scheme_type == URLPattern::SCHEME_HTTPS) {
-      PLT_HISTOGRAM("PLT.StartToFinish.NoProxy.https",
-                    start_to_finish_all_loads);
-    } else {
-      DCHECK(scheme_type == URLPattern::SCHEME_HTTP);
-      PLT_HISTOGRAM("PLT.StartToFinish.NoProxy.http",
-                    start_to_finish_all_loads);
-    }
-  }
 }
 
 }  // namespace

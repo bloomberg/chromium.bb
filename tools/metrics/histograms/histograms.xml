@@ -21769,21 +21769,33 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="PLT.StartToFinish.NoProxy.http">
+  <obsolete>
+    Deprecated as of 07/2014.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>StartToFinish times when using http and no proxy.</summary>
 </histogram>
 
 <histogram name="PLT.StartToFinish.NoProxy.https">
+  <obsolete>
+    Deprecated as of 07/2014.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>StartToFinish times when using https and no proxy.</summary>
 </histogram>
 
 <histogram name="PLT.StartToFinish.Proxy.http">
+  <obsolete>
+    Deprecated as of 07/2014.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>StartToFinish times when using http over a proxy.</summary>
 </histogram>
 
 <histogram name="PLT.StartToFinish.Proxy.https">
+  <obsolete>
+    Deprecated as of 07/2014.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>StartToFinish times when using https over a proxy.</summary>
 </histogram>
