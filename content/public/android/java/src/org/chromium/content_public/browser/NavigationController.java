@@ -47,4 +47,34 @@ public interface NavigationController {
      * Goes to the navigation entry following the current one.
      */
     void goForward();
+
+    /**
+     * Loads the current navigation if there is a pending lazy load (after tab restore).
+     */
+    public void loadIfNecessary();
+
+    /**
+     * Requests the current navigation to be loaded upon the next call to loadIfNecessary().
+     */
+    public void requestRestoreLoad();
+
+    /**
+     * Reload the current page.
+     */
+    public void reload(boolean checkForRepost);
+
+    /**
+     * Reload the current page, ignoring the contents of the cache.
+     */
+    public void reloadIgnoringCache(boolean checkForRepost);
+
+    /**
+     * Cancel the pending reload.
+     */
+    public void cancelPendingReload();
+
+    /**
+     * Continue the pending reload.
+     */
+    public void continuePendingReload();
 }

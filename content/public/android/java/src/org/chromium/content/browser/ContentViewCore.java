@@ -1048,14 +1048,14 @@ public class ContentViewCore
      * Loads the current navigation if there is a pending lazy load (after tab restore).
      */
     public void loadIfNecessary() {
-        if (mNativeContentViewCore != 0) nativeLoadIfNecessary(mNativeContentViewCore);
+        if (mWebContents != null) mWebContents.getNavigationController().loadIfNecessary();
     }
 
     /**
      * Requests the current navigation to be loaded upon the next call to loadIfNecessary().
      */
     public void requestRestoreLoad() {
-        if (mNativeContentViewCore != 0) nativeRequestRestoreLoad(mNativeContentViewCore);
+        if (mWebContents != null) mWebContents.getNavigationController().requestRestoreLoad();
     }
 
     /**
@@ -1063,9 +1063,7 @@ public class ContentViewCore
      */
     public void reload(boolean checkForRepost) {
         mAccessibilityInjector.addOrRemoveAccessibilityApisIfNecessary();
-        if (mNativeContentViewCore != 0) {
-            nativeReload(mNativeContentViewCore, checkForRepost);
-        }
+        if (mWebContents != null) mWebContents.getNavigationController().reload(checkForRepost);
     }
 
     /**
@@ -1073,23 +1071,22 @@ public class ContentViewCore
      */
     public void reloadIgnoringCache(boolean checkForRepost) {
         mAccessibilityInjector.addOrRemoveAccessibilityApisIfNecessary();
-        if (mNativeContentViewCore != 0) {
-            nativeReloadIgnoringCache(mNativeContentViewCore, checkForRepost);
-        }
+        if (mWebContents != null) mWebContents.getNavigationController().reloadIgnoringCache(
+                checkForRepost);
     }
 
     /**
      * Cancel the pending reload.
      */
     public void cancelPendingReload() {
-        if (mNativeContentViewCore != 0) nativeCancelPendingReload(mNativeContentViewCore);
+        if (mWebContents != null) mWebContents.getNavigationController().cancelPendingReload();
     }
 
     /**
      * Continue the pending reload.
      */
     public void continuePendingReload() {
-        if (mNativeContentViewCore != 0) nativeContinuePendingReload(mNativeContentViewCore);
+        if (mWebContents != null) mWebContents.getNavigationController().continuePendingReload();
     }
 
     /**
@@ -3270,17 +3267,6 @@ public class ContentViewCore
             long nativeContentViewCoreImpl, boolean enabled);
     private native void nativeSetMultiTouchZoomSupportEnabled(
             long nativeContentViewCoreImpl, boolean enabled);
-
-    private native void nativeLoadIfNecessary(long nativeContentViewCoreImpl);
-    private native void nativeRequestRestoreLoad(long nativeContentViewCoreImpl);
-
-    private native void nativeReload(long nativeContentViewCoreImpl, boolean checkForRepost);
-    private native void nativeReloadIgnoringCache(
-            long nativeContentViewCoreImpl, boolean checkForRepost);
-
-    private native void nativeCancelPendingReload(long nativeContentViewCoreImpl);
-
-    private native void nativeContinuePendingReload(long nativeContentViewCoreImpl);
 
     private native void nativeSelectPopupMenuItems(long nativeContentViewCoreImpl, int[] indices);
 

@@ -1179,37 +1179,6 @@ void ContentViewCoreImpl::SetMultiTouchZoomSupportEnabled(JNIEnv* env,
     rwhv->SetMultiTouchZoomSupportEnabled(enabled);
 }
 
-void ContentViewCoreImpl::LoadIfNecessary(JNIEnv* env, jobject obj) {
-  web_contents_->GetController().LoadIfNecessary();
-}
-
-void ContentViewCoreImpl::RequestRestoreLoad(JNIEnv* env, jobject obj) {
-  web_contents_->GetController().SetNeedsReload();
-}
-
-void ContentViewCoreImpl::Reload(JNIEnv* env,
-                                 jobject obj,
-                                 jboolean check_for_repost) {
-  if (web_contents_->GetController().NeedsReload())
-    web_contents_->GetController().LoadIfNecessary();
-  else
-    web_contents_->GetController().Reload(check_for_repost);
-}
-
-void ContentViewCoreImpl::ReloadIgnoringCache(JNIEnv* env,
-                                              jobject obj,
-                                              jboolean check_for_repost) {
-  web_contents_->GetController().ReloadIgnoringCache(check_for_repost);
-}
-
-void ContentViewCoreImpl::CancelPendingReload(JNIEnv* env, jobject obj) {
-  web_contents_->GetController().CancelPendingReload();
-}
-
-void ContentViewCoreImpl::ContinuePendingReload(JNIEnv* env, jobject obj) {
-  web_contents_->GetController().ContinuePendingReload();
-}
-
 void ContentViewCoreImpl::ClearHistory(JNIEnv* env, jobject obj) {
   // TODO(creis): Do callers of this need to know if it fails?
   if (web_contents_->GetController().CanPruneAllButLastCommitted())

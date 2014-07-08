@@ -39,6 +39,12 @@ class CONTENT_EXPORT NavigationControllerAndroid {
   void GoBack(JNIEnv* env, jobject obj);
   void GoForward(JNIEnv* env, jobject obj);
   void GoToOffset(JNIEnv* env, jobject obj, jint offset);
+  void LoadIfNecessary(JNIEnv* env, jobject obj);
+  void ContinuePendingReload(JNIEnv* env, jobject obj);
+  void Reload(JNIEnv* env, jobject obj, jboolean check_for_repost);
+  void ReloadIgnoringCache(JNIEnv* env, jobject obj, jboolean check_for_repost);
+  void RequestRestoreLoad(JNIEnv* env, jobject obj);
+  void CancelPendingReload(JNIEnv* env, jobject obj);
   void GoToNavigationIndex(JNIEnv* env, jobject obj, jint index);
 
  private:

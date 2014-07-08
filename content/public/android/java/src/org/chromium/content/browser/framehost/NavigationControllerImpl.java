@@ -79,8 +79,52 @@ import org.chromium.content_public.browser.NavigationController;
         }
     }
 
+    @Override
+    public void loadIfNecessary() {
+        if (mNativeNavigationControllerAndroid != 0) {
+            nativeLoadIfNecessary(mNativeNavigationControllerAndroid);
+        }
+    }
+
+    @Override
+    public void requestRestoreLoad() {
+        if (mNativeNavigationControllerAndroid != 0) {
+            nativeRequestRestoreLoad(mNativeNavigationControllerAndroid);
+        }
+    }
+
+    @Override
+    public void reload(boolean checkForRepost) {
+        if (mNativeNavigationControllerAndroid != 0) {
+            nativeReload(mNativeNavigationControllerAndroid, checkForRepost);
+        }
+    }
+
+    @Override
+    public void reloadIgnoringCache(boolean checkForRepost) {
+        if (mNativeNavigationControllerAndroid != 0) {
+            nativeReloadIgnoringCache(mNativeNavigationControllerAndroid, checkForRepost);
+        }
+    }
+
+    @Override
+    public void cancelPendingReload() {
+        if (mNativeNavigationControllerAndroid != 0) {
+            nativeCancelPendingReload(mNativeNavigationControllerAndroid);
+        }
+    }
+
+    @Override
+    public void continuePendingReload() {
+        if (mNativeNavigationControllerAndroid != 0) {
+            nativeContinuePendingReload(mNativeNavigationControllerAndroid);
+        }
+    }
+
     private native boolean nativeCanGoBack(long nativeNavigationControllerAndroid);
     private native boolean nativeCanGoForward(long nativeNavigationControllerAndroid);
+    private native void nativeLoadIfNecessary(long nativeNavigationControllerAndroid);
+    private native void nativeRequestRestoreLoad(long nativeNavigationControllerAndroid);
     private native boolean nativeCanGoToOffset(
             long nativeNavigationControllerAndroid, int offset);
     private native void nativeGoBack(long nativeNavigationControllerAndroid);
@@ -88,4 +132,10 @@ import org.chromium.content_public.browser.NavigationController;
     private native void nativeGoToOffset(long nativeNavigationControllerAndroid, int offset);
     private native void nativeGoToNavigationIndex(
             long nativeNavigationControllerAndroid, int index);
+    private native void nativeCancelPendingReload(long nativeNavigationControllerAndroid);
+    private native void nativeContinuePendingReload(long nativeNavigationControllerAndroid);
+    private native void nativeReload(long nativeNavigationControllerAndroid,
+            boolean checkForRepost);
+    private native void nativeReloadIgnoringCache(long nativeNavigationControllerAndroid,
+            boolean checkForRepost);
 }

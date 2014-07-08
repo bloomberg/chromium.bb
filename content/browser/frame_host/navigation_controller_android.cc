@@ -64,6 +64,37 @@ void NavigationControllerAndroid::GoToOffset(JNIEnv* env,
   navigation_controller_->GoToOffset(offset);
 }
 
+void NavigationControllerAndroid::LoadIfNecessary(JNIEnv* env, jobject obj) {
+  navigation_controller_->LoadIfNecessary();
+}
+
+void NavigationControllerAndroid::ContinuePendingReload(JNIEnv* env,
+                                                        jobject obj) {
+  navigation_controller_->ContinuePendingReload();
+}
+
+void NavigationControllerAndroid::Reload(JNIEnv* env,
+                                         jobject obj,
+                                         jboolean check_for_repost) {
+  navigation_controller_->Reload(check_for_repost);
+}
+
+void NavigationControllerAndroid::ReloadIgnoringCache(
+    JNIEnv* env,
+    jobject obj,
+    jboolean check_for_repost) {
+  navigation_controller_->ReloadIgnoringCache(check_for_repost);
+}
+
+void NavigationControllerAndroid::RequestRestoreLoad(JNIEnv* env, jobject obj) {
+  navigation_controller_->SetNeedsReload();
+}
+
+void NavigationControllerAndroid::CancelPendingReload(JNIEnv* env,
+                                                      jobject obj) {
+  navigation_controller_->CancelPendingReload();
+}
+
 void NavigationControllerAndroid::GoToNavigationIndex(JNIEnv* env,
                                                       jobject obj,
                                                       jint index) {
