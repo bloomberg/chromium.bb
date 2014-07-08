@@ -542,6 +542,16 @@ LayoutUnit RenderLayerScrollableArea::scrollHeight() const
     return m_overflowRect.height();
 }
 
+int RenderLayerScrollableArea::pixelSnappedScrollWidth() const
+{
+    return snapSizeToPixel(scrollWidth(), box().clientLeft() + box().x());
+}
+
+int RenderLayerScrollableArea::pixelSnappedScrollHeight() const
+{
+    return snapSizeToPixel(scrollHeight(), box().clientTop() + box().y());
+}
+
 void RenderLayerScrollableArea::computeScrollDimensions()
 {
     m_scrollDimensionsDirty = false;
@@ -656,14 +666,14 @@ bool RenderLayerScrollableArea::hasHorizontalOverflow() const
 {
     ASSERT(!m_scrollDimensionsDirty);
 
-    return scrollWidth() > box().clientWidth();
+    return pixelSnappedScrollWidth() > box().pixelSnappedClientWidth();
 }
 
 bool RenderLayerScrollableArea::hasVerticalOverflow() const
 {
     ASSERT(!m_scrollDimensionsDirty);
 
-    return scrollHeight() > box().clientHeight();
+    return pixelSnappedScrollHeight() > box().pixelSnappedClientHeight();
 }
 
 bool RenderLayerScrollableArea::hasScrollableHorizontalOverflow() const

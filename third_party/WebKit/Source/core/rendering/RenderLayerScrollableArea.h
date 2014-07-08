@@ -141,6 +141,8 @@ public:
 
     LayoutUnit scrollWidth() const;
     LayoutUnit scrollHeight() const;
+    int pixelSnappedScrollWidth() const;
+    int pixelSnappedScrollHeight() const;
 
     int verticalScrollbarWidth(OverlayScrollbarSizeRelevancy = IgnoreOverlayScrollbarSize) const;
     int horizontalScrollbarHeight(OverlayScrollbarSizeRelevancy = IgnoreOverlayScrollbarSize) const;
