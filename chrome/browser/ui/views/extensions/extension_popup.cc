@@ -25,10 +25,6 @@
 #include "ui/wm/core/window_util.h"
 #include "ui/wm/public/activation_client.h"
 
-#if defined(OS_WIN)
-#include "ui/views/win/hwnd_util.h"
-#endif
-
 // The minimum/maximum dimensions of the popup.
 // The minimum is just a little larger than the size of the button itself.
 // The maximum is an arbitrary number that should be smaller than most screens.
