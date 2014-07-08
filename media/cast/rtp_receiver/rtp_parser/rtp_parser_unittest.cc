@@ -39,7 +39,7 @@ class RtpParserTest : public ::testing::Test {
   void ExpectParsesPacket() {
     RtpCastHeader parsed_header;
     const uint8* payload = NULL;
-    size_t payload_size = -1;
+    size_t payload_size = static_cast<size_t>(-1);
     EXPECT_TRUE(rtp_parser_.ParsePacket(
         packet_, kPacketLength, &parsed_header, &payload, &payload_size));
 
@@ -63,7 +63,7 @@ class RtpParserTest : public ::testing::Test {
   void ExpectDoesNotParsePacket() {
     RtpCastHeader parsed_header;
     const uint8* payload = NULL;
-    size_t payload_size = -1;
+    size_t payload_size = static_cast<size_t>(-1);
     EXPECT_FALSE(rtp_parser_.ParsePacket(
         packet_, kPacketLength, &parsed_header, &payload, &payload_size));
   }

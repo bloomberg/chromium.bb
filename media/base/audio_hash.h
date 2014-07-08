@@ -44,8 +44,7 @@ class MEDIA_EXPORT AudioHash {
   // Storage for the audio hash.  The number of buckets controls the importance
   // of position in the hash.  A higher number reduces the chance of false
   // positives related to incorrect sample position.  Value chosen by dice roll.
-  enum { kHashBuckets = 6 };
-  float audio_hash_[kHashBuckets];
+  float audio_hash_[6];
 
   // The total number of samples processed per channel.  Uses a uint32 instead
   // of size_t so overflows on 64-bit and 32-bit machines are equivalent.

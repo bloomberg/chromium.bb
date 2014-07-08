@@ -26,6 +26,9 @@ namespace media {
 
 class MFReaderCallback;
 
+const DWORD kFirstVideoStream =
+    static_cast<DWORD>(MF_SOURCE_READER_FIRST_VIDEO_STREAM);
+
 class MEDIA_EXPORT VideoCaptureDeviceMFWin
     : public base::NonThreadSafe,
       public VideoCaptureDevice {

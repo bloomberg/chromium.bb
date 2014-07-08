@@ -167,23 +167,26 @@ static void GetDeviceNamesMediaFoundation(
   if (!EnumerateVideoDevicesMediaFoundation(&devices, &count))
     return;
 
-  HRESULT hr;
   for (UINT32 i = 0; i < count; ++i) {
-    UINT32 name_size, id_size;
-    ScopedCoMem<wchar_t> name, id;
-    if (SUCCEEDED(hr = devices[i]->GetAllocatedString(
-            MF_DEVSOURCE_ATTRIBUTE_FRIENDLY_NAME, &name, &name_size)) &&
-        SUCCEEDED(hr = devices[i]->GetAllocatedString(
-            MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE_VIDCAP_SYMBOLIC_LINK, &id,
-            &id_size))) {
-      std::wstring name_w(name, name_size), id_w(id, id_size);
-      VideoCaptureDevice::Name device(base::SysWideToUTF8(name_w),
-          base::SysWideToUTF8(id_w),
-          VideoCaptureDevice::Name::MEDIA_FOUNDATION);
-      device_names->push_back(device);
-    } else {
-      DLOG(WARNING) << "GetAllocatedString failed: " << std::hex << hr;
+    ScopedCoMem<wchar_t> name;
+    UINT32 name_size;
+    HRESULT hr = devices[i]->GetAllocatedString(
+        MF_DEVSOURCE_ATTRIBUTE_FRIENDLY_NAME, &name, &name_size);
+    if (SUCCEEDED(hr)) {
+      ScopedCoMem<wchar_t> id;
+      UINT32 id_size;
+      hr = devices[i]->GetAllocatedString(
+          MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE_VIDCAP_SYMBOLIC_LINK, &id,
+          &id_size);
+      if (SUCCEEDED(hr)) {
+        device_names->push_back(VideoCaptureDevice::Name(
+            base::SysWideToUTF8(std::wstring(name, name_size)),
+            base::SysWideToUTF8(std::wstring(id, id_size)),
+            VideoCaptureDevice::Name::MEDIA_FOUNDATION));
+      }
     }
+    if (FAILED(hr))
+      DLOG(WARNING) << "GetAllocatedString failed: " << std::hex << hr;
     devices[i]->Release();
   }
 }
@@ -286,18 +289,21 @@ static void GetDeviceSupportedFormatsMediaFoundation(
     return;
   }
 
-  HRESULT hr;
   base::win::ScopedComPtr<IMFSourceReader> reader;
-  if (FAILED(hr = MFCreateSourceReaderFromMediaSource(source, NULL,
-                                                      reader.Receive()))) {
+  HRESULT hr =
+      MFCreateSourceReaderFromMediaSource(source, NULL, reader.Receive());
+  if (FAILED(hr)) {
     DLOG(ERROR) << "MFCreateSourceReaderFromMediaSource: " << std::hex << hr;
     return;
   }
 
   DWORD stream_index = 0;
   ScopedComPtr<IMFMediaType> type;
-  while (SUCCEEDED(hr = reader->GetNativeMediaType(
-         MF_SOURCE_READER_FIRST_VIDEO_STREAM, stream_index, type.Receive()))) {
+  for (hr = reader->GetNativeMediaType(kFirstVideoStream, stream_index,
+                                       type.Receive());
+       SUCCEEDED(hr);
+       hr = reader->GetNativeMediaType(kFirstVideoStream, stream_index,
+                                       type.Receive())) {
     UINT32 width, height;
     hr = MFGetAttributeSize(type, MF_MT_FRAME_SIZE, &width, &height);
     if (FAILED(hr)) {
@@ -380,14 +386,13 @@ scoped_ptr<VideoCaptureDevice> VideoCaptureDeviceFactoryWin::Create(
     }
     if (!static_cast<VideoCaptureDeviceMFWin*>(device.get())->Init(source))
       device.reset();
-  } else if (device_name.capture_api_type() ==
-             VideoCaptureDevice::Name::DIRECT_SHOW) {
+  } else {
+    DCHECK_EQ(device_name.capture_api_type(),
+              VideoCaptureDevice::Name::DIRECT_SHOW);
     device.reset(new VideoCaptureDeviceWin(device_name));
     DVLOG(1) << " DirectShow Device: " << device_name.name();
     if (!static_cast<VideoCaptureDeviceWin*>(device.get())->Init())
       device.reset();
-  } else {
-    NOTREACHED() << " Couldn't recognize VideoCaptureDevice type";
   }
   return device.Pass();
 }

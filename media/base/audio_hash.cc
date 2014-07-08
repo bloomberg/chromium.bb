@@ -16,7 +16,6 @@ namespace media {
 AudioHash::AudioHash()
     : audio_hash_(),
       sample_count_(0) {
-  COMPILE_ASSERT(arraysize(audio_hash_) == kHashBuckets, audio_hash_size_error);
 }
 
 AudioHash::~AudioHash() {}
@@ -27,7 +26,8 @@ void AudioHash::Update(const AudioBus* audio_bus, int frames) {
     const float* channel = audio_bus->channel(ch);
     for (uint32 i = 0; i < static_cast<uint32>(frames); ++i) {
       const uint32 kSampleIndex = sample_count_ + i;
-      const uint32 kHashIndex = (kSampleIndex * (ch + 1)) % kHashBuckets;
+      const uint32 kHashIndex =
+          (kSampleIndex * (ch + 1)) % arraysize(audio_hash_);
 
       // Mix in a sine wave with the result so we ensure that sequences of empty
       // buffers don't result in an empty hash.

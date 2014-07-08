@@ -236,8 +236,9 @@ void AudioVideoMetadataExtractor::ExtractDictionary(
   if (!metadata)
     return;
 
-  AVDictionaryEntry* tag = NULL;
-  while ((tag = av_dict_get(metadata, "", tag, AV_DICT_IGNORE_SUFFIX))) {
+  for (AVDictionaryEntry* tag =
+           av_dict_get(metadata, "", NULL, AV_DICT_IGNORE_SUFFIX);
+       tag; tag = av_dict_get(metadata, "", tag, AV_DICT_IGNORE_SUFFIX)) {
     if (raw_tags->find(tag->key) == raw_tags->end())
       (*raw_tags)[tag->key] = tag->value;
 

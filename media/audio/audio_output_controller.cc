@@ -223,7 +223,7 @@ void AudioOutputController::DoPause() {
   // Let the renderer know we've stopped.  Necessary to let PPAPI clients know
   // audio has been shutdown.  TODO(dalecurtis): This stinks.  PPAPI should have
   // a better way to know when it should exit PPB_Audio_Shared::Run().
-  sync_reader_->UpdatePendingBytes(-1);
+  sync_reader_->UpdatePendingBytes(kuint32max);
 
   handler_->OnPaused();
 }

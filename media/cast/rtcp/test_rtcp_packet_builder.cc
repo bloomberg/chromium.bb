@@ -65,21 +65,7 @@ void TestRtcpPacketBuilder::AddSdesCname(uint32 sender_ssrc,
   for (size_t i = 0; i < c_name.size(); ++i) {
     big_endian_writer_.WriteU8(c_name.c_str()[i]);
   }
-  int padding;
-  switch (c_name.size() % 4) {
-    case 0:
-      padding = 2;
-      break;
-    case 1:
-      padding = 1;
-      break;
-    case 2:
-      padding = 4;
-      break;
-    case 3:
-      padding = 3;
-      break;
-  }
+  const int padding = 4 - ((c_name.size() + 2) % 4);
   for (int j = 0; j < padding; ++j) {
     big_endian_writer_.WriteU8(0);
   }
