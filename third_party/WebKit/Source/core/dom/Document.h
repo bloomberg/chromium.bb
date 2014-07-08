@@ -1436,4 +1436,9 @@ Node* eventTargetNodeForDocument(Document*);
 
 } // namespace WebCore
 
+#ifndef NDEBUG
+// Outside the WebCore namespace for ease of invocation from gdb.
+void showLiveDocumentInstances();
+#endif
+
 #endif // Document_h

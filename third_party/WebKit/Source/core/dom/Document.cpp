@@ -358,6 +358,15 @@ static void printNavigationErrorMessage(const LocalFrame& frame, const KURL& act
 
 uint64_t Document::s_globalTreeVersion = 0;
 
+#ifndef NDEBUG
+typedef WillBeHeapHashSet<RawPtrWillBeWeakMember<Document> > WeakDocumentSet;
+static WeakDocumentSet& liveDocumentSet()
+{
+    DEFINE_STATIC_LOCAL(OwnPtrWillBePersistent<WeakDocumentSet>, set, (adoptPtrWillBeNoop(new WeakDocumentSet())));
+    return *set;
+}
+#endif
+
 // This class doesn't work with non-Document ExecutionContext.
 class AutofocusTask FINAL : public ExecutionContextTask {
 public:
@@ -535,6 +544,10 @@ Document::Document(const DocumentInit& initializer, DocumentClassFlags documentC
     // CSSFontSelector, need to initialize m_styleEngine after initializing
     // m_fetcher.
     m_styleEngine = StyleEngine::create(*this);
+
+#ifndef NDEBUG
+    liveDocumentSet().add(this);
+#endif
 }
 
 Document::~Document()
@@ -607,6 +620,10 @@ Document::~Document()
 
     for (unsigned i = 0; i < WTF_ARRAY_LENGTH(m_nodeListCounts); ++i)
         ASSERT(!m_nodeListCounts[i]);
+
+#ifndef NDEBUG
+    liveDocumentSet().remove(this);
+#endif
 #endif
 
     setClient(0);
@@ -5834,3 +5851,15 @@ void Document::trace(Visitor* visitor)
 }
 
 } // namespace WebCore
+
+#ifndef NDEBUG
+using namespace WebCore;
+void showLiveDocumentInstances()
+{
+    WeakDocumentSet& set = liveDocumentSet();
+    fprintf(stderr, "There are %u documents currently alive:\n", set.size());
+    for (WeakDocumentSet::const_iterator it = set.begin(); it != set.end(); ++it) {
+        fprintf(stderr, "- Document %p URL: %s\n", *it, (*it)->url().string().utf8().data());
+    }
+}
+#endif

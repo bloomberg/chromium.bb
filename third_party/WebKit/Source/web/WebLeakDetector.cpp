@@ -130,6 +130,10 @@ void WebLeakDetectorImpl::delayedReport(Timer<WebLeakDetectorImpl>*)
     result.numberOfLiveNodes = InspectorCounters::counterValue(InspectorCounters::NodeCounter);
 
     m_client->onLeakDetectionComplete(result);
+
+#ifndef NDEBUG
+    showLiveDocumentInstances();
+#endif
 }
 
 } // namespace
