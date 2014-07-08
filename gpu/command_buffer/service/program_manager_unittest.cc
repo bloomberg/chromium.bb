@@ -31,6 +31,16 @@ using ::testing::SetArrayArgument;
 using ::testing::SetArgumentPointee;
 using ::testing::StrEq;
 
+// ANGLE now uses GLenum values directory for types
+// TODO(jmadill): Delete these defines when the ANGLE
+//   roll reliably passes translator version 126
+#if (ANGLE_SH_VERSION >= 126)
+#define SH_FLOAT GL_FLOAT
+#define SH_FLOAT_VEC2 GL_FLOAT_VEC2
+#define SH_FLOAT_VEC3 GL_FLOAT_VEC3
+#define SH_FLOAT_VEC4 GL_FLOAT_VEC4
+#endif
+
 namespace gpu {
 namespace gles2 {
 

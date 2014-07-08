@@ -2,8 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <GLES2/gl2.h>
+
 #include "gpu/command_buffer/service/shader_translator.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+// The ANGLE shader translator now uses native GLenums
+// TODO(jmadill): delete these defines when the ANGLE
+//   roll reliably passes translator version 126
+#if (ANGLE_SH_VERSION >= 126)
+#define SH_VERTEX_SHADER GL_VERTEX_SHADER
+#define SH_FRAGMENT_SHADER GL_FRAGMENT_SHADER
+#define SH_FLOAT_VEC4 GL_FLOAT_VEC4
+#endif
 
 namespace gpu {
 namespace gles2 {

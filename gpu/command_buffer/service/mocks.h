@@ -79,12 +79,21 @@ class MockShaderTranslator : public ShaderTranslatorInterface {
   MockShaderTranslator();
   virtual ~MockShaderTranslator();
 
+#if (ANGLE_SH_VERSION >= 126)
+  MOCK_METHOD5(Init, bool(
+      sh::GLenum shader_type,
+      ShShaderSpec shader_spec,
+      const ShBuiltInResources* resources,
+      GlslImplementationType glsl_implementation_type,
+      ShCompileOptions driver_bug_workarounds));
+#else
   MOCK_METHOD5(Init, bool(
       ShShaderType shader_type,
       ShShaderSpec shader_spec,
       const ShBuiltInResources* resources,
       GlslImplementationType glsl_implementation_type,
       ShCompileOptions driver_bug_workarounds));
+#endif
   MOCK_METHOD1(Translate, bool(const char* shader));
   MOCK_CONST_METHOD0(translated_shader, const char*());
   MOCK_CONST_METHOD0(info_log, const char*());
