@@ -1584,7 +1584,7 @@ void RenderBox::invalidateTreeAfterLayout(const PaintInvalidationState& paintInv
         setShouldDoFullPaintInvalidationAfterLayout(true);
     }
 
-    if (!invalidatePaintIfNeeded(&newPaintInvalidationContainer, oldPaintInvalidationRect, oldPositionFromPaintInvalidationContainer))
+    if (!invalidatePaintIfNeeded(newPaintInvalidationContainer, oldPaintInvalidationRect, oldPositionFromPaintInvalidationContainer))
         invalidatePaintForOverflowIfNeeded();
 
     // Issue paint invalidations for any scrollbars if there is a scrollable area for this renderer.
@@ -4020,7 +4020,7 @@ bool RenderBox::avoidsFloats() const
     return isReplaced() || hasOverflowClip() || isHR() || isLegend() || isWritingModeRoot() || isFlexItemIncludingDeprecated();
 }
 
-InvalidationReason RenderBox::getPaintInvalidationReason(const RenderLayerModelObject* paintInvalidationContainer,
+InvalidationReason RenderBox::getPaintInvalidationReason(const RenderLayerModelObject& paintInvalidationContainer,
     const LayoutRect& oldBounds, const LayoutPoint& oldLocation, const LayoutRect& newBounds, const LayoutPoint& newLocation)
 {
     InvalidationReason invalidationReason = RenderBoxModelObject::getPaintInvalidationReason(paintInvalidationContainer, oldBounds, oldLocation, newBounds, newLocation);
@@ -4046,7 +4046,7 @@ InvalidationReason RenderBox::getPaintInvalidationReason(const RenderLayerModelO
     return invalidationReason;
 }
 
-void RenderBox::incrementallyInvalidatePaint(const RenderLayerModelObject* paintInvalidationContainer, const LayoutRect& oldBounds, const LayoutRect& newBounds)
+void RenderBox::incrementallyInvalidatePaint(const RenderLayerModelObject& paintInvalidationContainer, const LayoutRect& oldBounds, const LayoutRect& newBounds)
 {
     RenderBoxModelObject::incrementallyInvalidatePaint(paintInvalidationContainer, oldBounds, newBounds);
 
@@ -4073,7 +4073,7 @@ void RenderBox::incrementallyInvalidatePaint(const RenderLayerModelObject* paint
         LayoutUnit right = std::min<LayoutUnit>(newBounds.maxX(), oldBounds.maxX());
         if (rightRect.x() < right) {
             rightRect.setWidth(std::min(rightRect.width(), right - rightRect.x()));
-            invalidatePaintUsingContainer(paintInvalidationContainer, rightRect, InvalidationIncremental);
+            invalidatePaintUsingContainer(&paintInvalidationContainer, rightRect, InvalidationIncremental);
         }
     }
 
@@ -4094,7 +4094,7 @@ void RenderBox::incrementallyInvalidatePaint(const RenderLayerModelObject* paint
         LayoutUnit bottom = std::min(newBounds.maxY(), oldBounds.maxY());
         if (bottomRect.y() < bottom) {
             bottomRect.setHeight(std::min(bottomRect.height(), bottom - bottomRect.y()));
-            invalidatePaintUsingContainer(paintInvalidationContainer, bottomRect, InvalidationIncremental);
+            invalidatePaintUsingContainer(&paintInvalidationContainer, bottomRect, InvalidationIncremental);
         }
     }
 }

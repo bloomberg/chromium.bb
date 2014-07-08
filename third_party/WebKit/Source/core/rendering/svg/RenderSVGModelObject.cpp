@@ -156,7 +156,7 @@ void RenderSVGModelObject::invalidateTreeAfterLayout(const PaintInvalidationStat
         return;
     }
 
-    invalidatePaintIfNeeded(containerForPaintInvalidation(), oldPaintInvalidationRect, oldPositionFromPaintInvalidationContainer);
+    invalidatePaintIfNeeded(paintInvalidationState.paintInvalidationContainer(), oldPaintInvalidationRect, oldPositionFromPaintInvalidationContainer);
 
     RenderObject::invalidateTreeAfterLayout(paintInvalidationState);
 }
