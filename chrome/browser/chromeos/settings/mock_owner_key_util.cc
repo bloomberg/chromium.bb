@@ -17,11 +17,6 @@ bool MockOwnerKeyUtil::ImportPublicKey(std::vector<uint8>* output) {
   return !public_key_.empty();
 }
 
-crypto::RSAPrivateKey* MockOwnerKeyUtil::FindPrivateKey(
-    const std::vector<uint8>& key) {
-  return private_key_.get() ? private_key_->Copy() : NULL;
-}
-
 crypto::RSAPrivateKey* MockOwnerKeyUtil::FindPrivateKeyInSlot(
     const std::vector<uint8>& key,
     PK11SlotInfo* slot) {

@@ -83,11 +83,6 @@ bool OwnerKeyUtilImpl::ImportPublicKey(std::vector<uint8>* output) {
   return data_read == safe_file_size;
 }
 
-crypto::RSAPrivateKey* OwnerKeyUtilImpl::FindPrivateKey(
-    const std::vector<uint8>& key) {
-  return crypto::RSAPrivateKey::FindFromPublicKeyInfo(key);
-}
-
 crypto::RSAPrivateKey* OwnerKeyUtilImpl::FindPrivateKeyInSlot(
     const std::vector<uint8>& key,
     PK11SlotInfo* slot) {

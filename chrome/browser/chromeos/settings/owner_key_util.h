@@ -78,15 +78,6 @@ class OwnerKeyUtil : public base::RefCountedThreadSafe<OwnerKeyUtil> {
   // Upon success, returns true and populates |output|.  False on failure.
   virtual bool ImportPublicKey(std::vector<uint8>* output) = 0;
 
-  // Looks for the private key associated with |key| in the default slot,
-  // and returns it if it can be found.  Returns NULL otherwise.
-  // Caller takes ownership.
-  //
-  // TODO (ygorshenin@): this function is deprecated and should be
-  // removed, see crbug.com/372316.
-  virtual crypto::RSAPrivateKey* FindPrivateKey(
-      const std::vector<uint8>& key) = 0;
-
   // Looks for the private key associated with |key| in the |slot|
   // and returns it if it can be found.  Returns NULL otherwise.
   // Caller takes ownership.
@@ -114,8 +105,6 @@ class OwnerKeyUtilImpl : public OwnerKeyUtil {
 
   // OwnerKeyUtil:
   virtual bool ImportPublicKey(std::vector<uint8>* output) OVERRIDE;
-  virtual crypto::RSAPrivateKey* FindPrivateKey(
-      const std::vector<uint8>& key) OVERRIDE;
   virtual crypto::RSAPrivateKey* FindPrivateKeyInSlot(
       const std::vector<uint8>& key,
       PK11SlotInfo* slot) OVERRIDE;
