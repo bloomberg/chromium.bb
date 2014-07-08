@@ -472,7 +472,6 @@
       'common/url_schemes.cc',
       'common/url_schemes.h',
       'common/user_agent.cc',
-      'common/user_agent_ios.mm',
       'common/utility_messages.h',
       'common/view_message_enums.h',
       'common/view_messages.h',

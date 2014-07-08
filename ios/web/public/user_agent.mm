@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/public/common/user_agent.h"
+#include "ios/web/public/user_agent.h"
 
 #import <UIKit/UIKit.h>
 
@@ -58,10 +58,6 @@ const UAVersions& GetUAVersionsForCurrentOS() {
   return version_map[arraysize(version_map) - 1].ua_versions;
 }
 
-}  // namespace
-
-namespace content {
-
 std::string BuildOSCpuInfo() {
   int32 os_major_version = 0;
   int32 os_minor_version = 0;
@@ -102,6 +98,10 @@ std::string BuildOSCpuInfo() {
   return os_cpu;
 }
 
+}  // namespace
+
+namespace web {
+
 std::string BuildUserAgentFromProduct(const std::string& product) {
   // Retrieve the kernel build number.
   int mib[2] = {CTL_KERN, KERN_OSVERSION};
@@ -127,4 +127,4 @@ std::string BuildUserAgentFromProduct(const std::string& product) {
   return user_agent;
 }
 
-}  // namespace content
+}  // namespace web

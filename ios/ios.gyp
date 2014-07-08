@@ -11,8 +11,9 @@
       'type': 'none',
       'dependencies': [
         'ios_base.gyp:*',
-        'ios_web.gyp:*',
         'ios_tests_unit.gyp:*',
+        'provider/ios_provider_web.gyp:*',
+        'web/ios_web.gyp:*',
       ],
     },
   ],
