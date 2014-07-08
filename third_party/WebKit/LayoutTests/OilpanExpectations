@@ -18,9 +18,6 @@ crbug.com/356658 fast/dom/gc-dom-tree-lifetime.html [ Failure ]
 
 crbug.com/342574 [ Mac Debug ] fast/css-generated-content/crash-selection-editing-removes-pseudo.html [ Crash Timeout ]
 
-crbug.com/350316 [ Linux Win Debug ] http/tests/eventsource/workers/eventsource-simple.html [ Crash ]
-crbug.com/350316 [ Mac Debug ] http/tests/eventsource/workers/eventsource-simple.html [ Timeout ]
-
 # While moving object onto the oilpan heap the timing changed such that the order in which
 # scrollbars are added to an iframe has changed.
 crbug.com/345655 compositing/iframes/scrolling-iframe.html [ Failure ]
