@@ -201,6 +201,14 @@ RenderGrid::~RenderGrid()
 
 void RenderGrid::addChild(RenderObject* newChild, RenderObject* beforeChild)
 {
+    // If the new requested beforeChild is not one of our children is because it's wrapped by an anonymous container. If
+    // we do not special case this situation we could end up calling addChild() twice for the newChild, one with the
+    // initial beforeChild and another one with its parent.
+    if (beforeChild && beforeChild->parent() != this) {
+        ASSERT(beforeChild->parent()->isAnonymous());
+        beforeChild = splitAnonymousBoxesAroundChild(beforeChild);
+    }
+
     RenderBlock::addChild(newChild, beforeChild);
 
     if (gridIsDirty())
@@ -774,6 +782,7 @@ void RenderGrid::insertItemIntoGrid(RenderBox* child, const GridCoordinate& coor
             m_grid[row.toInt()][column.toInt()].append(child);
     }
 
+    RELEASE_ASSERT(!m_gridItemCoordinate.contains(child));
     m_gridItemCoordinate.set(child, coordinate);
 }
 
