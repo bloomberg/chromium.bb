@@ -39,8 +39,12 @@
                   ]
                 },
                 {
-                  "position": [285, 0],
-                  "bounds": [15, 300]
+                  "children": [
+                    {
+                      "position": [285, 0],
+                      "bounds": [15, 300]
+                    }
+                  ]
                 }
               ]
             },

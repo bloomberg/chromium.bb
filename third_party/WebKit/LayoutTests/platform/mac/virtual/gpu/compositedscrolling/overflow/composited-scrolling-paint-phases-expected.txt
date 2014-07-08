@@ -50,20 +50,25 @@
                   ]
                 },
                 {
-                  "position": [1, 186],
-                  "bounds": [185, 15],
-                  "paintingPhases": ["GraphicsLayerPaintBackground", "GraphicsLayerPaintForeground", "GraphicsLayerPaintMask"]
-                },
-                {
-                  "position": [186, 1],
-                  "bounds": [15, 185],
-                  "paintingPhases": ["GraphicsLayerPaintBackground", "GraphicsLayerPaintForeground", "GraphicsLayerPaintMask"]
-                },
-                {
-                  "position": [186, 186],
-                  "bounds": [15, 15],
-                  "drawsContent": true,
-                  "paintingPhases": ["GraphicsLayerPaintBackground", "GraphicsLayerPaintForeground", "GraphicsLayerPaintMask"]
+                  "paintingPhases": ["GraphicsLayerPaintBackground", "GraphicsLayerPaintForeground", "GraphicsLayerPaintMask"],
+                  "children": [
+                    {
+                      "position": [1, 186],
+                      "bounds": [185, 15],
+                      "paintingPhases": ["GraphicsLayerPaintBackground", "GraphicsLayerPaintForeground", "GraphicsLayerPaintMask"]
+                    },
+                    {
+                      "position": [186, 1],
+                      "bounds": [15, 185],
+                      "paintingPhases": ["GraphicsLayerPaintBackground", "GraphicsLayerPaintForeground", "GraphicsLayerPaintMask"]
+                    },
+                    {
+                      "position": [186, 186],
+                      "bounds": [15, 15],
+                      "drawsContent": true,
+                      "paintingPhases": ["GraphicsLayerPaintBackground", "GraphicsLayerPaintForeground", "GraphicsLayerPaintMask"]
+                    }
+                  ]
                 }
               ]
             }

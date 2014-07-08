@@ -29,8 +29,12 @@
               ]
             },
             {
-              "position": [85, 0],
-              "bounds": [15, 100]
+              "children": [
+                {
+                  "position": [85, 0],
+                  "bounds": [15, 100]
+                }
+              ]
             }
           ]
         },
@@ -57,8 +61,12 @@
               ]
             },
             {
-              "position": [0, 85],
-              "bounds": [100, 15]
+              "children": [
+                {
+                  "position": [0, 85],
+                  "bounds": [100, 15]
+                }
+              ]
             }
           ]
         },
@@ -85,17 +93,21 @@
               ]
             },
             {
-              "position": [0, 85],
-              "bounds": [85, 15]
-            },
-            {
-              "position": [85, 0],
-              "bounds": [15, 85]
-            },
-            {
-              "position": [85, 85],
-              "bounds": [15, 15],
-              "drawsContent": true
+              "children": [
+                {
+                  "position": [0, 85],
+                  "bounds": [85, 15]
+                },
+                {
+                  "position": [85, 0],
+                  "bounds": [15, 85]
+                },
+                {
+                  "position": [85, 85],
+                  "bounds": [15, 15],
+                  "drawsContent": true
+                }
+              ]
             }
           ]
         },
@@ -119,9 +131,13 @@
               ]
             },
             {
-              "position": [85, 85],
-              "bounds": [15, 15],
-              "drawsContent": true
+              "children": [
+                {
+                  "position": [85, 85],
+                  "bounds": [15, 15],
+                  "drawsContent": true
+                }
+              ]
             }
           ]
         }

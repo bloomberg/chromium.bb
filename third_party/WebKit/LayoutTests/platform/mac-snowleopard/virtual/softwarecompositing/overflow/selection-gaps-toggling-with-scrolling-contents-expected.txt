@@ -40,19 +40,23 @@ Lorem Ipsum
               ]
             },
             {
-              "position": [0, 485],
-              "bounds": [285, 15],
-              "drawsContent": true
-            },
-            {
-              "position": [285, 0],
-              "bounds": [15, 485],
-              "drawsContent": true
-            },
-            {
-              "position": [285, 485],
-              "bounds": [15, 15],
-              "drawsContent": true
+              "children": [
+                {
+                  "position": [0, 485],
+                  "bounds": [285, 15],
+                  "drawsContent": true
+                },
+                {
+                  "position": [285, 0],
+                  "bounds": [15, 485],
+                  "drawsContent": true
+                },
+                {
+                  "position": [285, 485],
+                  "bounds": [15, 15],
+                  "drawsContent": true
+                }
+              ]
             }
           ]
         },
@@ -135,10 +139,10 @@ Lorem Ipsum
 *** iteration 2: ***
 
 {
-  "bounds": [785, 2421],
+  "bounds": [785, 2481],
   "children": [
     {
-      "bounds": [785, 2421],
+      "bounds": [785, 2481],
       "contentsOpaque": true,
       "drawsContent": true,
       "children": [
@@ -165,19 +169,23 @@ Lorem Ipsum
               ]
             },
             {
-              "position": [0, 485],
-              "bounds": [285, 15],
-              "drawsContent": true
-            },
-            {
-              "position": [285, 0],
-              "bounds": [15, 485],
-              "drawsContent": true
-            },
-            {
-              "position": [285, 485],
-              "bounds": [15, 15],
-              "drawsContent": true
+              "children": [
+                {
+                  "position": [0, 485],
+                  "bounds": [285, 15],
+                  "drawsContent": true
+                },
+                {
+                  "position": [285, 0],
+                  "bounds": [15, 485],
+                  "drawsContent": true
+                },
+                {
+                  "position": [285, 485],
+                  "bounds": [15, 15],
+                  "drawsContent": true
+                }
+              ]
             }
           ]
         },
@@ -260,10 +268,10 @@ Lorem Ipsum
 *** iteration 3: ***
 
 {
-  "bounds": [785, 4296],
+  "bounds": [785, 4416],
   "children": [
     {
-      "bounds": [785, 4296],
+      "bounds": [785, 4416],
       "contentsOpaque": true,
       "drawsContent": true,
       "children": [
@@ -290,19 +298,23 @@ Lorem Ipsum
               ]
             },
             {
-              "position": [0, 485],
-              "bounds": [285, 15],
-              "drawsContent": true
-            },
-            {
-              "position": [285, 0],
-              "bounds": [15, 485],
-              "drawsContent": true
-            },
-            {
-              "position": [285, 485],
-              "bounds": [15, 15],
-              "drawsContent": true
+              "children": [
+                {
+                  "position": [0, 485],
+                  "bounds": [285, 15],
+                  "drawsContent": true
+                },
+                {
+                  "position": [285, 0],
+                  "bounds": [15, 485],
+                  "drawsContent": true
+                },
+                {
+                  "position": [285, 485],
+                  "bounds": [15, 15],
+                  "drawsContent": true
+                }
+              ]
             }
           ]
         },
@@ -385,10 +397,10 @@ Lorem Ipsum
 *** iteration 4: ***
 
 {
-  "bounds": [785, 6171],
+  "bounds": [785, 6351],
   "children": [
     {
-      "bounds": [785, 6171],
+      "bounds": [785, 6351],
       "contentsOpaque": true,
       "drawsContent": true,
       "children": [
@@ -413,19 +425,23 @@ Lorem Ipsum
               ]
             },
             {
-              "position": [0, 485],
-              "bounds": [285, 15],
-              "drawsContent": true
-            },
-            {
-              "position": [285, 0],
-              "bounds": [15, 485],
-              "drawsContent": true
-            },
-            {
-              "position": [285, 485],
-              "bounds": [15, 15],
-              "drawsContent": true
+              "children": [
+                {
+                  "position": [0, 485],
+                  "bounds": [285, 15],
+                  "drawsContent": true
+                },
+                {
+                  "position": [285, 0],
+                  "bounds": [15, 485],
+                  "drawsContent": true
+                },
+                {
+                  "position": [285, 485],
+                  "bounds": [15, 15],
+                  "drawsContent": true
+                }
+              ]
             }
           ]
         },

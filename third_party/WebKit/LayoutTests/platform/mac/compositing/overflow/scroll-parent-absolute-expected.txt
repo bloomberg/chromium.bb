@@ -29,17 +29,21 @@
               ]
             },
             {
-              "position": [0, 485],
-              "bounds": [485, 15]
-            },
-            {
-              "position": [485, 0],
-              "bounds": [15, 485]
-            },
-            {
-              "position": [485, 485],
-              "bounds": [15, 15],
-              "drawsContent": true
+              "children": [
+                {
+                  "position": [0, 485],
+                  "bounds": [485, 15]
+                },
+                {
+                  "position": [485, 0],
+                  "bounds": [15, 485]
+                },
+                {
+                  "position": [485, 485],
+                  "bounds": [15, 15],
+                  "drawsContent": true
+                }
+              ]
             }
           ]
         },

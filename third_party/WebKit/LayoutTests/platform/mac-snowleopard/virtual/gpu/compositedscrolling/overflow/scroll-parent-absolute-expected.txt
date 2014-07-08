@@ -29,19 +29,23 @@
               ]
             },
             {
-              "position": [0, 485],
-              "bounds": [485, 15],
-              "drawsContent": true
-            },
-            {
-              "position": [485, 0],
-              "bounds": [15, 485],
-              "drawsContent": true
-            },
-            {
-              "position": [485, 485],
-              "bounds": [15, 15],
-              "drawsContent": true
+              "children": [
+                {
+                  "position": [0, 485],
+                  "bounds": [485, 15],
+                  "drawsContent": true
+                },
+                {
+                  "position": [485, 0],
+                  "bounds": [15, 485],
+                  "drawsContent": true
+                },
+                {
+                  "position": [485, 485],
+                  "bounds": [15, 15],
+                  "drawsContent": true
+                }
+              ]
             }
           ]
         },
