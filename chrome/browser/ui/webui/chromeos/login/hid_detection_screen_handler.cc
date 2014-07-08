@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/webui/chromeos/login/hid_detection_screen_handler.h"
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/metrics/histogram.h"
@@ -15,6 +16,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/common/pref_names.h"
+#include "chromeos/chromeos_switches.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -105,7 +107,8 @@ void HIDDetectionScreenHandler::Show() {
     show_on_init_ = true;
     return;
   }
-  core_oobe_actor_->InitDemoModeDetection();
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableDemoMode))
+    core_oobe_actor_->InitDemoModeDetection();
   input_service_proxy_.AddObserver(this);
   first_time_screen_show_ = true;
   GetDevicesFirstTime();
