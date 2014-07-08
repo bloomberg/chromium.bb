@@ -336,6 +336,10 @@ class ProfileSyncServiceBookmarkTest : public testing::Test {
     test_user_share_.TearDown();
   }
 
+  bool CanSyncNode(const BookmarkNode* node) {
+    return model_->client()->CanSyncNode(node);
+  }
+
   // Inserts a folder directly to the share.
   // Do not use this after model association is complete.
   //
@@ -606,13 +610,14 @@ class ProfileSyncServiceBookmarkTest : public testing::Test {
       EXPECT_EQ(gnode.GetPredecessorId(), gprev.GetId());
       EXPECT_EQ(gnode.GetParentId(), gprev.GetParentId());
     }
-    // Note: the managed node comes next to the mobile node but isn't synced.
-    if (browser_index == bnode->parent()->child_count() - 1 ||
-        bnode == model_->mobile_node()) {
+    // Note: the managed node is the last child of the root_node but isn't
+    // synced; if CanSyncNode() is false then there is no next node to sync.
+    const BookmarkNode* bnext = NULL;
+    if (browser_index + 1 < bnode->parent()->child_count())
+        bnext = bnode->parent()->GetChild(browser_index + 1);
+    if (!bnext || !CanSyncNode(bnext)) {
       EXPECT_EQ(gnode.GetSuccessorId(), 0);
     } else {
-      const BookmarkNode* bnext =
-          bnode->parent()->GetChild(browser_index + 1);
       syncer::ReadNode gnext(trans);
       ASSERT_TRUE(InitSyncNodeFromChromeNode(bnext, &gnext));
       EXPECT_EQ(gnode.GetSuccessorId(), gnext.GetId());
@@ -633,11 +638,7 @@ class ProfileSyncServiceBookmarkTest : public testing::Test {
     const BookmarkNode* bnode =
         model_associator_->GetChromeNodeFromSyncId(sync_id);
     ASSERT_TRUE(bnode);
-
-    ChromeBookmarkClient* client =
-        ChromeBookmarkClientFactory::GetForProfile(&profile_);
-    ASSERT_TRUE(client);
-    ASSERT_FALSE(client->IsDescendantOfManagedNode(bnode));
+    ASSERT_TRUE(CanSyncNode(bnode));
 
     int64 id = model_associator_->GetSyncIdFromChromeId(bnode->id());
     EXPECT_EQ(id, sync_id);
@@ -2010,10 +2011,6 @@ TEST_F(ProfileSyncServiceBookmarkTestWithData, UpdateMetaInfoFromModel) {
 void ProfileSyncServiceBookmarkTestWithData::GetTransactionVersions(
     const BookmarkNode* root,
     BookmarkNodeVersionMap* node_versions) {
-  ChromeBookmarkClient* client =
-      ChromeBookmarkClientFactory::GetForProfile(&profile_);
-  ASSERT_TRUE(client);
-
   node_versions->clear();
   std::queue<const BookmarkNode*> nodes;
   nodes.push(root);
@@ -2026,7 +2023,7 @@ void ProfileSyncServiceBookmarkTestWithData::GetTransactionVersions(
 
     (*node_versions)[n->id()] = version;
     for (int i = 0; i < n->child_count(); ++i) {
-      if (client->IsDescendantOfManagedNode(n->GetChild(i)))
+      if (!CanSyncNode(n->GetChild(i)))
         continue;
       nodes.push(n->GetChild(i));
     }
