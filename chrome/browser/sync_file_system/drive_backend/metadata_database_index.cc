@@ -85,9 +85,8 @@ void ReadDatabaseContents(leveldb::DB* db,
     std::string key = itr->key().ToString();
     std::string value = itr->value().ToString();
 
-    if (StartsWithASCII(key, kFileMetadataKeyPrefix, true)) {
-      std::string file_id = RemovePrefix(key, kFileMetadataKeyPrefix);
-
+    std::string file_id;
+    if (RemovePrefix(key, kFileMetadataKeyPrefix, &file_id)) {
       scoped_ptr<FileMetadata> metadata(new FileMetadata);
       if (!metadata->ParseFromString(itr->value().ToString())) {
         util::Log(logging::LOG_WARNING, FROM_HERE,
@@ -99,10 +98,10 @@ void ReadDatabaseContents(leveldb::DB* db,
       continue;
     }
 
-    if (StartsWithASCII(key, kFileTrackerKeyPrefix, true)) {
+    std::string tracker_id_str;
+    if (RemovePrefix(key, kFileTrackerKeyPrefix, &tracker_id_str)) {
       int64 tracker_id = 0;
-      if (!base::StringToInt64(RemovePrefix(key, kFileTrackerKeyPrefix),
-                               &tracker_id)) {
+      if (!base::StringToInt64(tracker_id_str, &tracker_id)) {
         util::Log(logging::LOG_WARNING, FROM_HERE,
                   "Failed to parse TrackerID");
         continue;

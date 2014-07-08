@@ -82,10 +82,11 @@ std::string AddWapiIdPrefix(const std::string& resource_id,
 }
 
 std::string RemoveWapiIdPrefix(const std::string& resource_id) {
-  if (StartsWithASCII(resource_id, kWapiFileIdPrefix, true))
-    return RemovePrefix(resource_id, kWapiFileIdPrefix);
-  if (StartsWithASCII(resource_id, kWapiFolderIdPrefix, true))
-    return RemovePrefix(resource_id, kWapiFolderIdPrefix);
+  std::string value;
+  if (RemovePrefix(resource_id, kWapiFileIdPrefix, &value))
+    return value;
+  if (RemovePrefix(resource_id, kWapiFolderIdPrefix, &value))
+    return value;
   return resource_id;
 }
 
@@ -141,7 +142,8 @@ SyncStatusCode MigrateDatabaseFromV0ToV1(leveldb::DB* db) {
     std::string key = itr->key().ToString();
     if (!StartsWithASCII(key, kDriveMetadataKeyPrefix, true))
       break;
-    std::string serialized_url(RemovePrefix(key, kDriveMetadataKeyPrefix));
+    std::string serialized_url;
+    RemovePrefix(key, kDriveMetadataKeyPrefix, &serialized_url);
 
     GURL origin;
     base::FilePath path;

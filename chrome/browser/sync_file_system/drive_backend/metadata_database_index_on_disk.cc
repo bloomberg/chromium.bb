@@ -278,12 +278,12 @@ int64 MetadataDatabaseIndexOnDisk::PickDirtyTracker() const {
   if (!itr->Valid())
     return kInvalidTrackerID;
 
-  const std::string& key(itr->key().ToString());
-  if (!StartsWithASCII(key, kDirtyIDKeyPrefix, true))
+  std::string id_str;
+  if (!RemovePrefix(itr->key().ToString(), kDirtyIDKeyPrefix, &id_str))
     return kInvalidTrackerID;
 
   int64 tracker_id;
-  if (!base::StringToInt64(RemovePrefix(key, kDirtyIDKeyPrefix), &tracker_id))
+  if (!base::StringToInt64(id_str, &tracker_id))
     return kInvalidTrackerID;
 
   return tracker_id;
@@ -322,12 +322,12 @@ void MetadataDatabaseIndexOnDisk::PromoteDemotedDirtyTrackers(
     leveldb::WriteBatch* batch) {
   scoped_ptr<leveldb::Iterator> itr(db_->NewIterator(leveldb::ReadOptions()));
   for (itr->Seek(kDirtyIDKeyPrefix); itr->Valid(); itr->Next()) {
-    const std::string& key(itr->key().ToString());
-    if (!StartsWithASCII(key, kDirtyIDKeyPrefix, true))
+    std::string id_str;
+    if (!RemovePrefix(itr->key().ToString(), kDirtyIDKeyPrefix, &id_str))
       break;
 
     int64 tracker_id;
-    if (!base::StringToInt64(RemovePrefix(key, kDirtyIDKeyPrefix), &tracker_id))
+    if (!base::StringToInt64(id_str, &tracker_id))
       continue;
 
     batch->Delete(itr->key());
@@ -375,10 +375,10 @@ MetadataDatabaseIndexOnDisk::GetRegisteredAppIDs() const {
   std::vector<std::string> result;
   scoped_ptr<leveldb::Iterator> itr(db_->NewIterator(leveldb::ReadOptions()));
   for (itr->Seek(kAppRootIDByAppIDKeyPrefix); itr->Valid(); itr->Next()) {
-    const std::string& key(itr->key().ToString());
-    if (!StartsWithASCII(key, kAppRootIDByAppIDKeyPrefix, true))
+    std::string id;
+    if (!RemovePrefix(itr->key().ToString(), kAppRootIDByAppIDKeyPrefix, &id))
       break;
-    result.push_back(RemovePrefix(key, kAppRootIDByAppIDKeyPrefix));
+    result.push_back(id);
   }
   return result;
 }

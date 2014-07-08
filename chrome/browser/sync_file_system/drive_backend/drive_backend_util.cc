@@ -148,10 +148,17 @@ SyncStatusCode GDataErrorCodeToSyncStatusCode(
   return SYNC_STATUS_FAILED;
 }
 
-std::string RemovePrefix(const std::string& str, const std::string& prefix) {
-  if (StartsWithASCII(str, prefix, true))
-    return std::string(str.begin() + prefix.size(), str.end());
-  return str;
+bool RemovePrefix(const std::string& str, const std::string& prefix,
+                  std::string* out) {
+  if (!StartsWithASCII(str, prefix, true)) {
+    if (out)
+      *out = str;
+    return false;
+  }
+
+  if (out)
+    *out = str.substr(prefix.size());
+  return true;
 }
 
 }  // namespace drive_backend

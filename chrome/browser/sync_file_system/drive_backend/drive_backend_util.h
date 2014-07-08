@@ -50,7 +50,10 @@ std::string GetTrackerTitle(const FileTracker& tracker);
 SyncStatusCode GDataErrorCodeToSyncStatusCode(
     google_apis::GDataErrorCode error);
 
-std::string RemovePrefix(const std::string& str, const std::string& prefix);
+// Returns true if |str| starts with |prefix|, and removes |prefix| from |str|.
+// If |out| is not NULL, the result is stored in it.
+bool RemovePrefix(const std::string& str, const std::string& prefix,
+                  std::string* out);
 
 template <typename Src, typename Dest>
 void AppendContents(const Src& src, Dest* dest) {
