@@ -1123,6 +1123,8 @@
       'browser/resources_util.h',
       'browser/safe_browsing/safe_browsing_tab_observer.cc',
       'browser/safe_browsing/safe_browsing_tab_observer.h',
+      'browser/search/contextual_search_promo_source.cc',
+      'browser/search/contextual_search_promo_source.h',
       'browser/search/hotword_client.h',
       'browser/search/hotword_service.cc',
       'browser/search/hotword_service.h',
