@@ -495,7 +495,7 @@ void PictureLayerTiling::UpdateTilePriorities(
       is_occluded = occlusion_tracker->Occluded(
           render_target, tile_query_rect, draw_transform);
     }
-    tile->set_is_occluded(is_occluded);
+    tile->set_is_occluded(tree, is_occluded);
   }
 
   // Assign soon priority to skewport tiles.

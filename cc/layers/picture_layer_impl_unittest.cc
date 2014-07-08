@@ -2848,7 +2848,7 @@ TEST_F(OcclusionTrackingPictureLayerImplTest,
     Tile* tile = *it;
 
     // Occluded tiles should not be iterated over.
-    EXPECT_FALSE(tile->is_occluded());
+    EXPECT_FALSE(tile->is_occluded(PENDING_TREE));
 
     // Some tiles may not be visible (i.e. outside the viewport). The rest are
     // visible and at least partially unoccluded, verified by the above expect.
@@ -2877,7 +2877,7 @@ TEST_F(OcclusionTrackingPictureLayerImplTest,
        ++it) {
     Tile* tile = *it;
 
-    EXPECT_FALSE(tile->is_occluded());
+    EXPECT_FALSE(tile->is_occluded(PENDING_TREE));
 
     bool tile_is_visible =
         tile->content_rect().Intersects(pending_layer_->visible_content_rect());
@@ -2898,7 +2898,7 @@ TEST_F(OcclusionTrackingPictureLayerImplTest,
        ++it) {
     Tile* tile = *it;
 
-    EXPECT_FALSE(tile->is_occluded());
+    EXPECT_FALSE(tile->is_occluded(PENDING_TREE));
 
     bool tile_is_visible =
         tile->content_rect().Intersects(pending_layer_->visible_content_rect());
@@ -2940,7 +2940,7 @@ TEST_F(OcclusionTrackingPictureLayerImplTest,
       const Tile* tile = *iter;
 
       // Fully occluded tiles are not required for activation.
-      if (tile->is_occluded()) {
+      if (tile->is_occluded(PENDING_TREE)) {
         EXPECT_FALSE(tile->required_for_activation());
         occluded_tile_count++;
       }
@@ -2973,7 +2973,7 @@ TEST_F(OcclusionTrackingPictureLayerImplTest,
         continue;
       const Tile* tile = *iter;
 
-      if (tile->is_occluded()) {
+      if (tile->is_occluded(PENDING_TREE)) {
         EXPECT_FALSE(tile->required_for_activation());
         occluded_tile_count++;
       }
@@ -3009,7 +3009,7 @@ TEST_F(OcclusionTrackingPictureLayerImplTest,
         continue;
       const Tile* tile = *iter;
 
-      if (tile->is_occluded()) {
+      if (tile->is_occluded(PENDING_TREE)) {
         EXPECT_FALSE(tile->required_for_activation());
         occluded_tile_count++;
       }
@@ -3070,7 +3070,7 @@ TEST_F(OcclusionTrackingPictureLayerImplTest, OcclusionForDifferentScales) {
 
     occluded_tile_count = 0;
     for (size_t i = 0; i < tiles.size(); ++i) {
-      if (tiles[i]->is_occluded()) {
+      if (tiles[i]->is_occluded(PENDING_TREE)) {
         gfx::Rect scaled_content_rect = ScaleToEnclosingRect(
             tiles[i]->content_rect(), 1.0f / tiles[i]->contents_scale());
         EXPECT_GE(scaled_content_rect.x(), occluding_layer_position.x());
@@ -3099,6 +3099,110 @@ TEST_F(OcclusionTrackingPictureLayerImplTest, OcclusionForDifferentScales) {
   }
 
   EXPECT_EQ(tiling_count, 5);
+}
+
+TEST_F(OcclusionTrackingPictureLayerImplTest, DifferentOcclusionOnTrees) {
+  gfx::Size tile_size(102, 102);
+  gfx::Size layer_bounds(1000, 1000);
+  gfx::Size viewport_size(1000, 1000);
+  gfx::Point occluding_layer_position(310, 0);
+  gfx::Rect invalidation_rect(230, 230, 102, 102);
+
+  scoped_refptr<FakePicturePileImpl> pending_pile =
+      FakePicturePileImpl::CreateFilledPile(tile_size, layer_bounds);
+  scoped_refptr<FakePicturePileImpl> active_pile =
+      FakePicturePileImpl::CreateFilledPile(tile_size, layer_bounds);
+  SetupTrees(pending_pile, active_pile);
+
+  // Partially occlude the active layer.
+  active_layer_->AddChild(LayerImpl::Create(host_impl_.active_tree(), 2));
+  LayerImpl* layer1 = active_layer_->children()[0];
+  layer1->SetBounds(layer_bounds);
+  layer1->SetContentBounds(layer_bounds);
+  layer1->SetDrawsContent(true);
+  layer1->SetContentsOpaque(true);
+  layer1->SetPosition(occluding_layer_position);
+
+  // Partially invalidate the pending layer.
+  pending_layer_->set_invalidation(invalidation_rect);
+
+  host_impl_.SetViewportSize(viewport_size);
+
+  active_layer_->CreateDefaultTilingsAndTiles();
+  pending_layer_->CreateDefaultTilingsAndTiles();
+
+  for (size_t i = 0; i < pending_layer_->num_tilings(); ++i) {
+    PictureLayerTiling* tiling = pending_layer_->tilings()->tiling_at(i);
+
+    for (PictureLayerTiling::CoverageIterator iter(
+             tiling,
+             pending_layer_->contents_scale_x(),
+             gfx::Rect(layer_bounds));
+         iter;
+         ++iter) {
+      if (!*iter)
+        continue;
+      const Tile* tile = *iter;
+
+      // All tiles are unoccluded on the pending tree.
+      EXPECT_FALSE(tile->is_occluded(PENDING_TREE));
+
+      Tile* twin_tile =
+          pending_layer_->GetTwinTiling(tiling)->TileAt(iter.i(), iter.j());
+      gfx::Rect scaled_content_rect = ScaleToEnclosingRect(
+          tile->content_rect(), 1.0f / tile->contents_scale());
+
+      if (scaled_content_rect.Intersects(invalidation_rect)) {
+        // Tiles inside the invalidation rect are only on the pending tree.
+        EXPECT_NE(tile, twin_tile);
+
+        // Unshared tiles should be unoccluded on the active tree by default.
+        EXPECT_FALSE(tile->is_occluded(ACTIVE_TREE));
+      } else {
+        // Tiles outside the invalidation rect are shared between both trees.
+        EXPECT_EQ(tile, twin_tile);
+        // Shared tiles are occluded on the active tree iff they lie beneath the
+        // occluding layer.
+        EXPECT_EQ(tile->is_occluded(ACTIVE_TREE),
+                  scaled_content_rect.x() >= occluding_layer_position.x());
+      }
+    }
+  }
+
+  for (size_t i = 0; i < active_layer_->num_tilings(); ++i) {
+    PictureLayerTiling* tiling = active_layer_->tilings()->tiling_at(i);
+
+    for (PictureLayerTiling::CoverageIterator iter(
+             tiling,
+             active_layer_->contents_scale_x(),
+             gfx::Rect(layer_bounds));
+         iter;
+         ++iter) {
+      if (!*iter)
+        continue;
+      const Tile* tile = *iter;
+
+      Tile* twin_tile =
+          active_layer_->GetTwinTiling(tiling)->TileAt(iter.i(), iter.j());
+      gfx::Rect scaled_content_rect = ScaleToEnclosingRect(
+          tile->content_rect(), 1.0f / tile->contents_scale());
+
+      // Since we've already checked the shared tiles, only consider tiles in
+      // the invalidation rect.
+      if (scaled_content_rect.Intersects(invalidation_rect)) {
+        // Tiles inside the invalidation rect are only on the active tree.
+        EXPECT_NE(tile, twin_tile);
+
+        // Unshared tiles should be unoccluded on the pending tree by default.
+        EXPECT_FALSE(tile->is_occluded(PENDING_TREE));
+
+        // Unshared tiles are occluded on the active tree iff they lie beneath
+        // the occluding layer.
+        EXPECT_EQ(tile->is_occluded(ACTIVE_TREE),
+                  scaled_content_rect.x() >= occluding_layer_position.x());
+      }
+    }
+  }
 }
 }  // namespace
 }  // namespace cc

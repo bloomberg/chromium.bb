@@ -30,12 +30,13 @@ Tile::Tile(TileManager* tile_manager,
       content_rect_(content_rect),
       contents_scale_(contents_scale),
       opaque_rect_(opaque_rect),
-      is_occluded_(false),
       layer_id_(layer_id),
       source_frame_number_(source_frame_number),
       flags_(flags),
       id_(s_next_id_++) {
   set_picture_pile(picture_pile);
+  for (int i = 0; i < NUM_TREES; i++)
+    is_occluded_[i] = false;
 }
 
 Tile::~Tile() {

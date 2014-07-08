@@ -878,7 +878,7 @@ bool PictureLayerImpl::MarkVisibleTilesAsRequired(
       continue;
 
     // If the tile is occluded, don't mark it as required for activation.
-    if (tile->is_occluded())
+    if (tile->is_occluded(PENDING_TREE))
       continue;
 
     // If the missing region doesn't cover it, this tile is fully
@@ -1456,7 +1456,7 @@ PictureLayerImpl::LayerRasterTileIterator::LayerRasterTileIterator(
   IteratorType index = stages_[current_stage_].iterator_type;
   TilePriority::PriorityBin tile_type = stages_[current_stage_].tile_type;
   if (!iterators_[index] || iterators_[index].get_type() != tile_type ||
-      (*iterators_[index])->is_occluded())
+      (*iterators_[index])->is_occluded(tree))
     ++(*this);
 }
 
@@ -1469,6 +1469,9 @@ PictureLayerImpl::LayerRasterTileIterator::operator bool() const {
 PictureLayerImpl::LayerRasterTileIterator&
 PictureLayerImpl::LayerRasterTileIterator::
 operator++() {
+  WhichTree tree =
+      layer_->layer_tree_impl()->IsActiveTree() ? ACTIVE_TREE : PENDING_TREE;
+
   IteratorType index = stages_[current_stage_].iterator_type;
   TilePriority::PriorityBin tile_type = stages_[current_stage_].tile_type;
 
@@ -1477,7 +1480,7 @@ operator++() {
     ++iterators_[index];
 
   while (iterators_[index] && iterators_[index].get_type() == tile_type &&
-         (*iterators_[index])->is_occluded())
+         (*iterators_[index])->is_occluded(tree))
     ++iterators_[index];
 
   if (iterators_[index] && iterators_[index].get_type() == tile_type)
@@ -1491,7 +1494,7 @@ operator++() {
     tile_type = stages_[current_stage_].tile_type;
 
     if (iterators_[index] && iterators_[index].get_type() == tile_type &&
-        !(*iterators_[index])->is_occluded())
+        !(*iterators_[index])->is_occluded(tree))
       break;
     ++current_stage_;
   }
