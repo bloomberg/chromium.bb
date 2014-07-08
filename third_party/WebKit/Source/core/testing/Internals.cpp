@@ -116,6 +116,7 @@
 #include "core/testing/LayerRectList.h"
 #include "core/testing/MallocStatistics.h"
 #include "core/testing/MockPagePopupDriver.h"
+#include "core/testing/PrivateScriptTest.h"
 #include "core/testing/TypeConversions.h"
 #include "core/workers/WorkerThread.h"
 #include "platform/Cursor.h"
@@ -1946,6 +1947,11 @@ PassRefPtrWillBeRawPtr<MallocStatistics> Internals::mallocStatistics() const
 PassRefPtrWillBeRawPtr<TypeConversions> Internals::typeConversions() const
 {
     return TypeConversions::create();
+}
+
+PrivateScriptTest* Internals::privateScriptTest() const
+{
+    return PrivateScriptTest::create();
 }
 
 Vector<String> Internals::getReferencedFilePaths() const

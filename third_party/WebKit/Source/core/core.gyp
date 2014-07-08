@@ -805,6 +805,8 @@
         '<(bindings_core_v8_output_dir)/V8GCObservation.h',
         '<(bindings_core_v8_output_dir)/V8MallocStatistics.cpp',
         '<(bindings_core_v8_output_dir)/V8MallocStatistics.h',
+        '<(bindings_core_v8_output_dir)/V8PrivateScriptTest.cpp',
+        '<(bindings_core_v8_output_dir)/V8PrivateScriptTest.h',
         '<(bindings_core_v8_output_dir)/V8TypeConversions.cpp',
         '<(bindings_core_v8_output_dir)/V8TypeConversions.h',
         '<(bindings_core_v8_output_dir)/V8Internals.cpp',

@@ -168,7 +168,7 @@
         {
           'action_name': 'generatePrivateScriptForTesting',
            'private_script_files': [
-              'testing/Internals.js',
+              'testing/PrivateScriptTest.js',
            ],
            'inputs': [
               '../build/scripts/make_private_script_source.py',

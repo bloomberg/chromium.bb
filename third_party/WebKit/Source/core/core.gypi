@@ -3291,6 +3291,7 @@
           'testing/LayerRect.idl',
           'testing/LayerRectList.idl',
           'testing/MallocStatistics.idl',
+          'testing/PrivateScriptTest.idl',
           'testing/TypeConversions.idl',
         ],
         'generated_webcore_testing_idl_files': [
@@ -3318,6 +3319,7 @@
             'testing/MockPagePopupDriver.h',
             'testing/NullExecutionContext.cpp',
             'testing/NullExecutionContext.h',
+            'testing/PrivateScriptTest.h',
             'testing/TypeConversions.h',
             'testing/v8/WebCoreTestSupport.cpp',
             'testing/v8/WebCoreTestSupport.h',

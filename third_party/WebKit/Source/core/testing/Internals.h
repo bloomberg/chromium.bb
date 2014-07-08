@@ -63,6 +63,7 @@ class MallocStatistics;
 class Node;
 class Page;
 class PagePopupController;
+class PrivateScriptTest;
 class Range;
 class SerializedScriptValue;
 class StaticNodeList;
@@ -264,6 +265,7 @@ public:
 
     PassRefPtrWillBeRawPtr<MallocStatistics> mallocStatistics() const;
     PassRefPtrWillBeRawPtr<TypeConversions> typeConversions() const;
+    PrivateScriptTest* privateScriptTest() const;
 
     Vector<String> getReferencedFilePaths() const;
 

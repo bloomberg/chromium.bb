@@ -6,60 +6,61 @@
 <body>
 <script>
 description('Unittests for private scripts.');
-if (internals)
-    debug('This test needs window.internals.');
+if (!internals || !internals.privateScriptTest())
+    debug('This test needs window.internals.privateScriptTest().');
 
-internals.doNothing();
-shouldBe('internals.return123()', '123');
-shouldBe('internals.echoInteger(111)', '111');
-shouldBeEqualToString('internals.echoString("foo")', 'foo')
-shouldBe('internals.addInteger(111, 222)', '333');
-shouldBeEqualToString('internals.addString("foo", "bar")', 'foobar')
+var privateScriptTest = internals.privateScriptTest();
+privateScriptTest.doNothing();
+shouldBe('privateScriptTest.return123()', '123');
+shouldBe('privateScriptTest.echoInteger(111)', '111');
+shouldBeEqualToString('privateScriptTest.echoString("foo")', 'foo')
+shouldBe('privateScriptTest.addInteger(111, 222)', '333');
+shouldBeEqualToString('privateScriptTest.addString("foo", "bar")', 'foobar')
 
-shouldBe('internals.getIntegerFromPrototype()', '0');
-internals.setIntegerToPrototype(123);
-shouldBe('internals.getIntegerFromPrototype()', '123');
+shouldBe('privateScriptTest.getIntegerFromPrototype()', '0');
+privateScriptTest.setIntegerToPrototype(123);
+shouldBe('privateScriptTest.getIntegerFromPrototype()', '123');
 
-shouldBe('internals.getIntegerFromDocument(document)', '0');
-internals.setIntegerToDocument(document, 123);
-shouldBe('internals.getIntegerFromDocument(document)', '123');
+shouldBe('privateScriptTest.getIntegerFromDocument(document)', '0');
+privateScriptTest.setIntegerToDocument(document, 123);
+shouldBe('privateScriptTest.getIntegerFromDocument(document)', '123');
 
-var node1 = internals.createElement(document);
-var node2 = internals.createElement(document);
-var node3 = internals.createElement(document);
-var node4 = internals.createElement(document);
-internals.appendChild(node1, node2);
-internals.appendChild(node1, node3);
-internals.appendChild(node1, node4);
-shouldBe('internals.firstChild(node1)', 'node2');
-shouldBe('internals.nextSibling(node2)', 'node3');
-shouldBe('internals.nextSibling(node3)', 'node4');
-shouldBe('internals.nextSibling(node4)', 'null');
+var node1 = privateScriptTest.createElement(document);
+var node2 = privateScriptTest.createElement(document);
+var node3 = privateScriptTest.createElement(document);
+var node4 = privateScriptTest.createElement(document);
+privateScriptTest.appendChild(node1, node2);
+privateScriptTest.appendChild(node1, node3);
+privateScriptTest.appendChild(node1, node4);
+shouldBe('privateScriptTest.firstChild(node1)', 'node2');
+shouldBe('privateScriptTest.nextSibling(node2)', 'node3');
+shouldBe('privateScriptTest.nextSibling(node3)', 'node4');
+shouldBe('privateScriptTest.nextSibling(node4)', 'null');
 
-var node5 = internals.createElement(document);
-shouldBeEqualToString('internals.innerHTML(node5)', '')
-internals.setInnerHTML(node5, '<div>foo</div>');
-shouldBeEqualToString('internals.innerHTML(node5)', '<div>foo</div>')
-var node6 = internals.firstChild(node5);
-shouldBeEqualToString('internals.innerHTML(node6)', 'foo');
+var node5 = privateScriptTest.createElement(document);
+shouldBeEqualToString('privateScriptTest.innerHTML(node5)', '')
+privateScriptTest.setInnerHTML(node5, '<div>foo</div>');
+shouldBeEqualToString('privateScriptTest.innerHTML(node5)', '<div>foo</div>')
+var node6 = privateScriptTest.firstChild(node5);
+shouldBeEqualToString('privateScriptTest.innerHTML(node6)', 'foo');
 
-var node7 = internals.createElement(document);
-shouldBeEqualToString('internals.innerHTML(node7)', '')
-internals.addClickListener(node7);
-internals.clickNode(document, node7);
-shouldBeEqualToString('internals.innerHTML(node7)', 'clicked')
+var node7 = privateScriptTest.createElement(document);
+shouldBeEqualToString('privateScriptTest.innerHTML(node7)', '')
+privateScriptTest.addClickListener(node7);
+privateScriptTest.clickNode(document, node7);
+shouldBeEqualToString('privateScriptTest.innerHTML(node7)', 'clicked')
 
-shouldBe('internals.readonlyShortAttribute', '123');
-shouldBe('internals.shortAttribute', '-1');
-internals.shortAttribute = 111;
-shouldBe('internals.shortAttribute', '111');
-shouldBeEqualToString('internals.stringAttribute', 'xxx');
-internals.stringAttribute = "foo";
-shouldBeEqualToString('internals.stringAttribute', 'foo');
-shouldBe('internals.nodeAttribute', 'null');
-var node8 = internals.createElement(document);
-internals.nodeAttribute = node8;
-shouldBe('internals.nodeAttribute', 'node8');
+shouldBe('privateScriptTest.readonlyShortAttribute', '123');
+shouldBe('privateScriptTest.shortAttribute', '-1');
+privateScriptTest.shortAttribute = 111;
+shouldBe('privateScriptTest.shortAttribute', '111');
+shouldBeEqualToString('privateScriptTest.stringAttribute', 'xxx');
+privateScriptTest.stringAttribute = "foo";
+shouldBeEqualToString('privateScriptTest.stringAttribute', 'foo');
+shouldBe('privateScriptTest.nodeAttribute', 'null');
+var node8 = privateScriptTest.createElement(document);
+privateScriptTest.nodeAttribute = node8;
+shouldBe('privateScriptTest.nodeAttribute', 'node8');
 
 </script>
 </body>

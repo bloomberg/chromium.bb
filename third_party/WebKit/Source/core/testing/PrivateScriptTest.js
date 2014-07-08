@@ -4,7 +4,7 @@
 
 "use strict";
 
-installClass("Internals", function(global) {
+installClass("PrivateScriptTest", function(global) {
     var InternalsPrototype = Object.create(Element.prototype);
 
     InternalsPrototype.constructor = function() {
