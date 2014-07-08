@@ -1122,7 +1122,7 @@ PassRefPtrWillBeRawPtr<ScriptAsyncCallStack> InspectorDebuggerAgent::currentAsyn
     const AsyncCallStackTracker::AsyncCallStackVector& callStacks = chain->callStacks();
     if (callStacks.isEmpty())
         return nullptr;
-    RefPtrWillBeRawPtr<ScriptAsyncCallStack> result;
+    RefPtrWillBeRawPtr<ScriptAsyncCallStack> result = nullptr;
     for (AsyncCallStackTracker::AsyncCallStackVector::const_reverse_iterator it = callStacks.rbegin(); it != callStacks.rend(); ++it) {
         RefPtrWillBeRawPtr<JavaScriptCallFrame> callFrame = ScriptDebugServer::toJavaScriptCallFrame((*it)->callFrames());
         if (!callFrame)
