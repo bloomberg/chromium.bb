@@ -390,11 +390,6 @@ scoped_ptr<DialogNotification> GetWalletError(
       break;
 
     case wallet::WalletClient::INVALID_PARAMS:
-      // TODO(estade): re-enable this code when we can distinguish between
-      // Chrome-triggered errors and merchant-triggered ones. See
-      // http://crbug.com/354897
-      // error_ids = IDS_AUTOFILL_WALLET_UPGRADE_CHROME_ERROR;
-      // error_code = 42;
       error_ids = IDS_AUTOFILL_WALLET_BAD_TRANSACTION_AMOUNT;
       error_code = 76;
       break;
@@ -415,7 +410,7 @@ scoped_ptr<DialogNotification> GetWalletError(
       break;
 
     case wallet::WalletClient::INTERNAL_ERROR:
-      error_ids = IDS_AUTOFILL_WALLET_UNKNOWN_ERROR;
+      error_ids = IDS_AUTOFILL_WALLET_UPGRADE_CHROME_ERROR;
       error_code = 62;
       break;
 
