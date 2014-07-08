@@ -6,7 +6,6 @@
 
 #include "base/path_service.h"
 #include "base/process/process_handle.h"
-#include "base/metrics/stats_table.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/omaha_query_params/chrome_omaha_query_params_delegate.h"
@@ -100,12 +99,6 @@ void ChromeUnitTestSuite::Initialize() {
   InitializeProviders();
   RegisterInProcessThreads();
 
-  // Create an anonymous stats table since we don't need to share between
-  // processes.
-  stats_table_.reset(
-      new base::StatsTable(base::StatsTable::TableIdentifier(), 20, 200));
-  base::StatsTable::set_current(stats_table_.get());
-
   ChromeTestSuite::Initialize();
 
   // This needs to run after ChromeTestSuite::Initialize which calls content's
@@ -115,10 +108,6 @@ void ChromeUnitTestSuite::Initialize() {
 
 void ChromeUnitTestSuite::Shutdown() {
   ResourceBundle::CleanupSharedInstance();
-
-  base::StatsTable::set_current(NULL);
-  stats_table_.reset();
-
   ChromeTestSuite::Shutdown();
 }
 

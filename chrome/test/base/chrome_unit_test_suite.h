@@ -10,10 +10,6 @@
 #include "base/files/file_path.h"
 #include "chrome/test/base/chrome_test_suite.h"
 
-namespace base {
-class StatsTable;
-}
-
 // Test suite for unit tests. Creates additional stub services that are not
 // needed for browser tests (e.g. a TestingBrowserProcess).
 class ChromeUnitTestSuite : public ChromeTestSuite {
@@ -32,7 +28,6 @@ class ChromeUnitTestSuite : public ChromeTestSuite {
   static void InitializeResourceBundle();
 
  private:
-  scoped_ptr<base::StatsTable> stats_table_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeUnitTestSuite);
 };

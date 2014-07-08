@@ -42,9 +42,16 @@ namespace content {
 TestWebKitPlatformSupport::TestWebKitPlatformSupport() {
   url_loader_factory_.reset(new WebURLLoaderMockFactory());
   mock_clipboard_.reset(new MockWebClipboardImpl());
-  v8::V8::SetCounterFunction(base::StatsTable::FindLocation);
+
+  // Create an anonymous stats table since we don't need to share between
+  // processes.
+  stats_table_.reset(
+      new base::StatsTable(base::StatsTable::TableIdentifier(), 20, 200));
+  base::StatsTable::set_current(stats_table_.get());
 
   blink::initialize(this);
+  blink::mainThreadIsolate()->SetCounterFunction(
+      base::StatsTable::FindLocation);
   blink::setLayoutTestMode(true);
   blink::WebSecurityPolicy::registerURLSchemeAsLocal(
       blink::WebString::fromUTF8("test-shell-resource"));
@@ -97,6 +104,8 @@ TestWebKitPlatformSupport::~TestWebKitPlatformSupport() {
   url_loader_factory_.reset();
   mock_clipboard_.reset();
   blink::shutdown();
+  base::StatsTable::set_current(NULL);
+  stats_table_.reset();
 }
 
 blink::WebMimeRegistry* TestWebKitPlatformSupport::mimeRegistry() {

@@ -15,6 +15,10 @@
 #include "content/test/weburl_loader_mock_factory.h"
 #include "third_party/WebKit/public/platform/WebUnitTestSupport.h"
 
+namespace base {
+class StatsTable;
+}
+
 namespace blink {
 class WebLayerTreeView;
 }
@@ -91,6 +95,7 @@ class TestWebKitPlatformSupport
   base::ScopedTempDir file_system_root_;
   scoped_ptr<WebURLLoaderMockFactory> url_loader_factory_;
   WebCompositorSupportImpl compositor_support_;
+  scoped_ptr<base::StatsTable> stats_table_;
 
 #if defined(OS_WIN) || defined(OS_MACOSX)
   blink::WebThemeEngine* active_theme_engine_;

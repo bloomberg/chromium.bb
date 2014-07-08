@@ -331,7 +331,7 @@ void RenderThreadImpl::HistogramCustomizer::SetCommonHost(
   if (host != common_host_) {
     common_host_ = host;
     common_host_histogram_suffix_ = HostToCustomHistogramSuffix(host);
-    v8::V8::SetCreateHistogramFunction(CreateHistogram);
+    blink::mainThreadIsolate()->SetCreateHistogramFunction(CreateHistogram);
   }
 }
 
@@ -356,10 +356,6 @@ void RenderThreadImpl::Init() {
   base::debug::TraceLog::GetInstance()->SetThreadSortIndex(
       base::PlatformThread::CurrentId(),
       kTraceEventRendererMainThreadSortIndex);
-
-  v8::V8::SetCounterFunction(base::StatsTable::FindLocation);
-  v8::V8::SetCreateHistogramFunction(CreateHistogram);
-  v8::V8::SetAddHistogramSampleFunction(AddHistogramSample);
 
 #if defined(OS_MACOSX) || defined(OS_ANDROID)
   // On Mac and Android, the select popups are rendered by the browser.
@@ -790,6 +786,12 @@ void RenderThreadImpl::EnsureWebKitInitialized() {
 
   webkit_platform_support_.reset(new RendererWebKitPlatformSupportImpl);
   blink::initialize(webkit_platform_support_.get());
+
+  v8::Isolate* isolate = blink::mainThreadIsolate();
+
+  isolate->SetCounterFunction(base::StatsTable::FindLocation);
+  isolate->SetCreateHistogramFunction(CreateHistogram);
+  isolate->SetAddHistogramSampleFunction(AddHistogramSample);
 
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
 
