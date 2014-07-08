@@ -204,7 +204,6 @@ const char* Pipeline::GetStateString(State state) {
     RETURN_STRING(kInitDemuxer);
     RETURN_STRING(kInitAudioRenderer);
     RETURN_STRING(kInitVideoRenderer);
-    RETURN_STRING(kInitPrerolling);
     RETURN_STRING(kSeeking);
     RETURN_STRING(kPlaying);
     RETURN_STRING(kStopping);
@@ -232,17 +231,14 @@ Pipeline::State Pipeline::GetNextState() const {
         return kInitAudioRenderer;
       if (demuxer_->GetStream(DemuxerStream::VIDEO))
         return kInitVideoRenderer;
-      return kInitPrerolling;
+      return kPlaying;
 
     case kInitAudioRenderer:
       if (demuxer_->GetStream(DemuxerStream::VIDEO))
         return kInitVideoRenderer;
-      return kInitPrerolling;
+      return kPlaying;
 
     case kInitVideoRenderer:
-      return kInitPrerolling;
-
-    case kInitPrerolling:
       return kPlaying;
 
     case kSeeking:
@@ -372,34 +368,36 @@ void Pipeline::StateTransitionTask(PipelineStatus status) {
     case kInitVideoRenderer:
       return InitializeVideoRenderer(done_cb);
 
-    case kInitPrerolling:
-      filter_collection_.reset();
-      {
-        base::AutoLock l(lock_);
-        // We do not want to start the clock running. We only want to set the
-        // base media time so our timestamp calculations will be correct.
-        clock_->SetTime(base::TimeDelta(), base::TimeDelta());
-      }
-      if (!audio_renderer_ && !video_renderer_) {
-        done_cb.Run(PIPELINE_ERROR_COULD_NOT_RENDER);
-        return;
-      }
-
-      {
-        PipelineMetadata metadata;
-        metadata.has_audio = audio_renderer_;
-        metadata.has_video = video_renderer_;
-        metadata.timeline_offset = demuxer_->GetTimelineOffset();
-        DemuxerStream* stream = demuxer_->GetStream(DemuxerStream::VIDEO);
-        if (stream)
-          metadata.natural_size = stream->video_decoder_config().natural_size();
-        metadata_cb_.Run(metadata);
-      }
-
-      // TODO(scherkus): Fold kInitPrerolling state into kPlaying.
-      return done_cb.Run(PIPELINE_OK);
-
     case kPlaying:
+      // Finish initial start sequence the first time we enter the playing
+      // state.
+      if (filter_collection_) {
+        filter_collection_.reset();
+        {
+          base::AutoLock l(lock_);
+          // We do not want to start the clock running. We only want to set the
+          // base media time so our timestamp calculations will be correct.
+          clock_->SetTime(base::TimeDelta(), base::TimeDelta());
+        }
+        if (!audio_renderer_ && !video_renderer_) {
+          ErrorChangedTask(PIPELINE_ERROR_COULD_NOT_RENDER);
+          return;
+        }
+
+        {
+          PipelineMetadata metadata;
+          metadata.has_audio = audio_renderer_;
+          metadata.has_video = video_renderer_;
+          metadata.timeline_offset = demuxer_->GetTimelineOffset();
+          DemuxerStream* stream = demuxer_->GetStream(DemuxerStream::VIDEO);
+          if (stream) {
+            metadata.natural_size =
+                stream->video_decoder_config().natural_size();
+          }
+          metadata_cb_.Run(metadata);
+        }
+      }
+
       base::ResetAndReturn(&seek_cb_).Run(PIPELINE_OK);
 
       if (audio_renderer_)
