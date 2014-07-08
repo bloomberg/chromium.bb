@@ -57,11 +57,6 @@ int64 g_original_process_start_time;
 // The type of startup the the current app list show has gone through.
 StartupType g_app_show_startup_type;
 
-void RecordStartupInfo(StartupType startup_type, const base::Time& start_time) {
-  g_original_process_start_time = start_time.ToInternalValue();
-  g_app_show_startup_type = startup_type;
-}
-
 void RecordFirstPaintTiming() {
   base::Time start_time(
       base::Time::FromInternalValue(g_original_process_start_time));
@@ -78,6 +73,31 @@ void RecordFirstPaintTiming() {
                                elapsed);
       break;
   }
+}
+
+void RecordStartupInfo(AppListService* service,
+                       const CommandLine& command_line) {
+  base::Time start_time = GetOriginalProcessStartTime(command_line);
+  if (start_time.is_null())
+    return;
+
+  base::TimeDelta elapsed = base::Time::Now() - start_time;
+  StartupType startup_type = GetStartupType(command_line);
+  switch (startup_type) {
+    case COLD_START:
+      UMA_HISTOGRAM_LONG_TIMES("Startup.ShowAppListColdStart", elapsed);
+      break;
+    case WARM_START:
+      UMA_HISTOGRAM_LONG_TIMES("Startup.ShowAppListWarmStart", elapsed);
+      break;
+    case WARM_START_FAST:
+      UMA_HISTOGRAM_LONG_TIMES("Startup.ShowAppListWarmStartFast", elapsed);
+      break;
+  }
+
+  g_original_process_start_time = start_time.ToInternalValue();
+  g_app_show_startup_type = startup_type;
+  service->SetAppListNextPaintCallback(RecordFirstPaintTiming);
 }
 
 }  // namespace
@@ -106,26 +126,17 @@ void AppListService::RegisterPrefs(PrefRegistrySimple* registry) {
 }
 
 // static
-void AppListService::RecordShowTimings(const CommandLine& command_line) {
-  base::Time start_time = GetOriginalProcessStartTime(command_line);
-  if (start_time.is_null())
-    return;
+bool AppListService::HandleLaunchCommandLine(
+    const base::CommandLine& command_line,
+    Profile* launch_profile) {
+  InitAll(launch_profile);
+  if (!command_line.HasSwitch(switches::kShowAppList))
+    return false;
 
-  base::TimeDelta elapsed = base::Time::Now() - start_time;
-  StartupType startup = GetStartupType(command_line);
-  switch (startup) {
-    case COLD_START:
-      UMA_HISTOGRAM_LONG_TIMES("Startup.ShowAppListColdStart", elapsed);
-      break;
-    case WARM_START:
-      UMA_HISTOGRAM_LONG_TIMES("Startup.ShowAppListWarmStart", elapsed);
-      break;
-    case WARM_START_FAST:
-      UMA_HISTOGRAM_LONG_TIMES("Startup.ShowAppListWarmStartFast", elapsed);
-      break;
-  }
-
-  RecordStartupInfo(startup, start_time);
-  Get(chrome::HOST_DESKTOP_TYPE_NATIVE)->SetAppListNextPaintCallback(
-      RecordFirstPaintTiming);
+  // The --show-app-list switch is used for shortcuts on the native desktop.
+  AppListService* service = Get(chrome::HOST_DESKTOP_TYPE_NATIVE);
+  DCHECK(service);
+  RecordStartupInfo(service, command_line);
+  service->ShowForProfile(launch_profile);
+  return true;
 }

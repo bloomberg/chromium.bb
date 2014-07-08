@@ -68,4 +68,8 @@ void AppListService::InitAll(Profile* initial_profile) {}
 void AppListService::RegisterPrefs(PrefRegistrySimple* registry) {}
 
 // static
-void AppListService::RecordShowTimings(const base::CommandLine& command_line) {}
+bool AppListService::HandleLaunchCommandLine(
+    const base::CommandLine& command_line,
+    Profile* launch_profile) {
+  return false;
+}

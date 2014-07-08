@@ -335,7 +335,9 @@ bool StartupBrowserCreatorImpl::Launch(Profile* profile,
     profile->GetNetworkPredictor()->EnablePredictor(false);
   }
 
-  AppListService::InitAll(profile);
+  if (AppListService::HandleLaunchCommandLine(command_line_, profile))
+    return true;
+
   if (command_line_.HasSwitch(switches::kAppId)) {
     std::string app_id = command_line_.GetSwitchValueASCII(switches::kAppId);
     const Extension* extension = GetPlatformApp(profile, app_id);
@@ -353,12 +355,6 @@ bool StartupBrowserCreatorImpl::Launch(Profile* profile,
       OpenApplicationWithReenablePrompt(params);
       return true;
     }
-  } else if (command_line_.HasSwitch(switches::kShowAppList)) {
-    // This switch is used for shortcuts on the native desktop.
-    AppListService::RecordShowTimings(command_line_);
-    AppListService::Get(chrome::HOST_DESKTOP_TYPE_NATIVE)->
-        ShowForProfile(profile);
-    return true;
   }
 
   // Open the required browser windows and tabs. First, see if

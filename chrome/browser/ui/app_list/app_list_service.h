@@ -51,7 +51,10 @@ class AppListService {
 
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
-  static void RecordShowTimings(const base::CommandLine& command_line);
+  // Initializes the AppListService, and returns true if |command_line| is for
+  // showing the app list.
+  static bool HandleLaunchCommandLine(const base::CommandLine& command_line,
+                                      Profile* launch_profile);
 
   // Indicates that |callback| should be called next time the app list is
   // painted.
