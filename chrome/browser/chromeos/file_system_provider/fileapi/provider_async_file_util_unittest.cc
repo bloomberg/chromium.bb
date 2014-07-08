@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/chromeos/file_system_provider/fileapi/provider_async_file_util.h"
+
 #include <string>
 #include <vector>
 
@@ -12,7 +14,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
 #include "chrome/browser/chromeos/file_system_provider/fake_provided_file_system.h"
-#include "chrome/browser/chromeos/file_system_provider/fileapi/provider_async_file_util.h"
 #include "chrome/browser/chromeos/file_system_provider/service.h"
 #include "chrome/browser/chromeos/file_system_provider/service_factory.h"
 #include "chrome/test/base/testing_browser_process.h"

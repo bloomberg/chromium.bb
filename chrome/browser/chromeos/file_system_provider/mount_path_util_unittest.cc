@@ -2,12 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/chromeos/file_system_provider/mount_path_util.h"
+
 #include <string>
 
 #include "base/files/file.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/file_system_provider/fake_provided_file_system.h"
-#include "chrome/browser/chromeos/file_system_provider/mount_path_util.h"
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system_interface.h"
 #include "chrome/browser/chromeos/file_system_provider/service.h"
 #include "chrome/browser/chromeos/file_system_provider/service_factory.h"

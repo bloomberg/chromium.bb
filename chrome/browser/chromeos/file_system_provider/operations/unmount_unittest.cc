@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/chromeos/file_system_provider/operations/unmount.h"
+
 #include <string>
 #include <vector>
 
@@ -9,7 +11,6 @@
 #include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/file_system_provider/operations/test_util.h"
-#include "chrome/browser/chromeos/file_system_provider/operations/unmount.h"
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system_interface.h"
 #include "chrome/common/extensions/api/file_system_provider.h"
 #include "chrome/common/extensions/api/file_system_provider_internal.h"

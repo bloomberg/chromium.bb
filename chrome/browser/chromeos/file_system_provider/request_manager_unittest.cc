@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/chromeos/file_system_provider/request_manager.h"
+
 #include <map>
 #include <string>
 #include <vector>
@@ -15,7 +17,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
 #include "chrome/browser/chromeos/file_system_provider/notification_manager_interface.h"
-#include "chrome/browser/chromeos/file_system_provider/request_manager.h"
 #include "chrome/browser/chromeos/file_system_provider/request_value.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"

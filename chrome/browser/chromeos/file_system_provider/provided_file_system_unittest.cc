@@ -4,6 +4,8 @@
 
 // TODO(mtomasz): Move these test cases to operations/unmount_unittest.cc.
 
+#include "chrome/browser/chromeos/file_system_provider/provided_file_system.h"
+
 #include <string>
 #include <vector>
 
@@ -12,7 +14,6 @@
 #include "base/run_loop.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/file_system_provider/mount_path_util.h"
-#include "chrome/browser/chromeos/file_system_provider/provided_file_system.h"
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system_info.h"
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system_interface.h"
 #include "chrome/browser/chromeos/file_system_provider/request_manager.h"
