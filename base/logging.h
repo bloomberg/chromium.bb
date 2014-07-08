@@ -433,7 +433,7 @@ const LogSeverity LOG_0 = LOG_ERROR;
 // We make sure CHECK et al. always evaluates their arguments, as
 // doing CHECK(FunctionWithSideEffect()) is a common idiom.
 
-#if defined(OFFICIAL_BUILD) && defined(NDEBUG)
+#if defined(OFFICIAL_BUILD) && defined(NDEBUG) && !defined(OS_ANDROID)
 
 // Make all CHECK functions discard their log strings to reduce code
 // bloat for official release builds.
