@@ -945,7 +945,7 @@ AXObject* AXRenderObject::activeDescendant() const
 
 void AXRenderObject::accessibilityChildrenFromAttribute(QualifiedName attr, AccessibilityChildrenVector& children) const
 {
-    Vector<Element*> elements;
+    WillBeHeapVector<RawPtrWillBeMember<Element> > elements;
     elementsFromAttribute(elements, attr);
 
     AXObjectCache* cache = axObjectCache();
@@ -1884,7 +1884,7 @@ bool AXRenderObject::isTabItemSelected() const
     if (!focusedElement)
         return false;
 
-    Vector<Element*> elements;
+    WillBeHeapVector<RawPtrWillBeMember<Element> > elements;
     elementsFromAttribute(elements, aria_controlsAttr);
 
     unsigned count = elements.size();

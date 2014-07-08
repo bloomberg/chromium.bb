@@ -55,7 +55,7 @@ public:
 
     Element* adjustedFocusedElement() const;
     Element* getElementById(const AtomicString&) const;
-    const Vector<Element*>& getAllElementsById(const AtomicString&) const;
+    const WillBeHeapVector<RawPtrWillBeMember<Element> >& getAllElementsById(const AtomicString&) const;
     bool hasElementWithId(StringImpl* id) const;
     bool containsMultipleElementsWithId(const AtomicString& id) const;
     void addElementById(const AtomicString& elementId, Element*);
@@ -179,9 +179,9 @@ private:
     int m_guardRefCount;
 #endif
 
-    OwnPtr<DocumentOrderedMap> m_elementsById;
-    OwnPtr<DocumentOrderedMap> m_imageMapsByName;
-    OwnPtr<DocumentOrderedMap> m_labelsByForAttribute;
+    OwnPtrWillBeMember<DocumentOrderedMap> m_elementsById;
+    OwnPtrWillBeMember<DocumentOrderedMap> m_imageMapsByName;
+    OwnPtrWillBeMember<DocumentOrderedMap> m_labelsByForAttribute;
 
     OwnPtrWillBeMember<IdTargetObserverRegistry> m_idTargetObserverRegistry;
 

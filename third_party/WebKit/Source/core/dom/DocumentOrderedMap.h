@@ -31,6 +31,7 @@
 #ifndef DocumentOrderedMap_h
 #define DocumentOrderedMap_h
 
+#include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
 #include "wtf/HashMap.h"
 #include "wtf/text/StringImpl.h"
@@ -40,8 +41,9 @@ namespace WebCore {
 class Element;
 class TreeScope;
 
-class DocumentOrderedMap {
+class DocumentOrderedMap : public NoBaseWillBeGarbageCollected<DocumentOrderedMap> {
 public:
+    static PassOwnPtrWillBeRawPtr<DocumentOrderedMap> create();
     void add(StringImpl*, Element*);
     void remove(StringImpl*, Element*);
 
@@ -49,26 +51,32 @@ public:
     bool containsMultiple(StringImpl*) const;
     // concrete instantiations of the get<>() method template
     Element* getElementById(StringImpl*, const TreeScope*) const;
-    const Vector<Element*>& getAllElementsById(StringImpl*, const TreeScope*) const;
+    const WillBeHeapVector<RawPtrWillBeMember<Element> >& getAllElementsById(StringImpl*, const TreeScope*) const;
     Element* getElementByMapName(StringImpl*, const TreeScope*) const;
     Element* getElementByLowercasedMapName(StringImpl*, const TreeScope*) const;
     Element* getElementByLabelForAttribute(StringImpl*, const TreeScope*) const;
 
+    void trace(Visitor*);
+
 private:
     template<bool keyMatches(StringImpl*, Element&)> Element* get(StringImpl*, const TreeScope*) const;
 
-    struct MapEntry {
+    class MapEntry : public NoBaseWillBeGarbageCollected<MapEntry> {
+    public:
         explicit MapEntry(Element* firstElement)
             : element(firstElement)
             , count(1)
-        { }
+        {
+        }
 
-        Element* element;
+        void trace(Visitor*);
+
+        RawPtrWillBeMember<Element> element;
         unsigned count;
-        Vector<Element*> orderedList;
+        WillBeHeapVector<RawPtrWillBeMember<Element> > orderedList;
     };
 
-    typedef HashMap<StringImpl*, OwnPtr<MapEntry> > Map;
+    typedef WillBeHeapHashMap<StringImpl*, OwnPtrWillBeMember<MapEntry> > Map;
 
     mutable Map m_map;
 };

@@ -91,7 +91,7 @@ void SelectorFilter::setupParentStack(Element& parent)
         return;
     }
     // Otherwise climb up the tree.
-    Vector<Element*, 30> ancestors;
+    WillBeHeapVector<RawPtrWillBeMember<Element>, 30> ancestors;
     for (Element* ancestor = &parent; ancestor; ancestor = ancestor->parentOrShadowHostElement())
         ancestors.append(ancestor);
     for (size_t n = ancestors.size(); n; --n)

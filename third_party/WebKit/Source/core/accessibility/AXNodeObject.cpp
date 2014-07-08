@@ -91,7 +91,7 @@ static String accessibleNameForNode(Node* node)
     return String();
 }
 
-String AXNodeObject::accessibilityDescriptionForElements(Vector<Element*> &elements) const
+String AXNodeObject::accessibilityDescriptionForElements(WillBeHeapVector<RawPtrWillBeMember<Element> > &elements) const
 {
     StringBuilder builder;
     unsigned size = elements.size();
@@ -133,7 +133,7 @@ String AXNodeObject::ariaAccessibilityDescription() const
 }
 
 
-void AXNodeObject::ariaLabeledByElements(Vector<Element*>& elements) const
+void AXNodeObject::ariaLabeledByElements(WillBeHeapVector<RawPtrWillBeMember<Element> >& elements) const
 {
     elementsFromAttribute(elements, aria_labeledbyAttr);
     if (!elements.size())
@@ -258,7 +258,7 @@ AccessibilityRole AXNodeObject::determineAriaRoleAttribute() const
     return UnknownRole;
 }
 
-void AXNodeObject::elementsFromAttribute(Vector<Element*>& elements, const QualifiedName& attribute) const
+void AXNodeObject::elementsFromAttribute(WillBeHeapVector<RawPtrWillBeMember<Element> >& elements, const QualifiedName& attribute) const
 {
     Node* node = this->node();
     if (!node || !node->isElementNode())
@@ -1036,7 +1036,7 @@ String AXNodeObject::stringValue() const
 
 String AXNodeObject::ariaDescribedByAttribute() const
 {
-    Vector<Element*> elements;
+    WillBeHeapVector<RawPtrWillBeMember<Element> > elements;
     elementsFromAttribute(elements, aria_describedbyAttr);
 
     return accessibilityDescriptionForElements(elements);
@@ -1045,7 +1045,7 @@ String AXNodeObject::ariaDescribedByAttribute() const
 
 String AXNodeObject::ariaLabeledByAttribute() const
 {
-    Vector<Element*> elements;
+    WillBeHeapVector<RawPtrWillBeMember<Element> > elements;
     ariaLabeledByElements(elements);
 
     return accessibilityDescriptionForElements(elements);
@@ -1685,7 +1685,7 @@ void AXNodeObject::ariaLabeledByText(Vector<AccessibilityText>& textOrder) const
 {
     String ariaLabeledBy = ariaLabeledByAttribute();
     if (!ariaLabeledBy.isEmpty()) {
-        Vector<Element*> elements;
+        WillBeHeapVector<RawPtrWillBeMember<Element> > elements;
         ariaLabeledByElements(elements);
 
         unsigned length = elements.size();
