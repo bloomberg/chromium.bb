@@ -22,6 +22,7 @@ function test()
     var data = childDocument.getElementById("data");
     selection.selectAllChildren(data);
     childDocument.execCommand("copy");
+    textarea.focus();
     textarea.select();
     childDocument.execCommand("paste");
 }
