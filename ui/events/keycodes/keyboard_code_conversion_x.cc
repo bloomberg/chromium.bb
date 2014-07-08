@@ -476,7 +476,7 @@ KeyboardCode KeyboardCodeFromXKeyEvent(XEvent* xev) {
 
   KeySym keysym = NoSymbol;
   XKeyEvent xkey = xev->xkey;
-  xkey.state &= ~(ShiftMask | Mod1Mask);
+  xkey.state &= (~0xFF | Mod2Mask);  // Clears the xkey's state except numlock.
   // XLookupKeysym does not take into consideration the state of the lock/shift
   // etc. keys. So it is necessary to use XLookupString instead.
   XLookupString(&xkey, NULL, 0, &keysym, NULL);
