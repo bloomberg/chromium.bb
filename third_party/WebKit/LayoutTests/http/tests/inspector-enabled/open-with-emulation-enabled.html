@@ -11,7 +11,8 @@ function onload()
 
 function test()
 {
-    InspectorTest.dumpLoadedModules();
+    InspectorTest.addResult("Drawer visible: " + WebInspector.inspectorView.drawerVisible());
+    InspectorTest.addResult("Selected view in drawer: " + WebInspector.inspectorView.selectedViewInDrawer());
     InspectorTest.completeTest();
 }
 
@@ -19,6 +20,6 @@ function test()
 </head>
 
 <body onload="onload()">
-<p>This test checks that loading with emulation turned on by default loads elements module.</p>
+<p>This test checks that loading with emulation turned on by default selects the "Emulation" view in drawer.</p>
 </body>
 </html>
