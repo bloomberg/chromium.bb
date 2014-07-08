@@ -26,8 +26,8 @@ void* MappedFile::Init(const base::FilePath& name, size_t size) {
                  platform_file(), 0);
   init_ = true;
   view_size_ = size;
-  DCHECK(reinterpret_cast<intptr_t>(buffer_) != -1);
-  if (reinterpret_cast<intptr_t>(buffer_) == -1)
+  DPLOG_IF(FATAL, buffer_ == MAP_FAILED) << "Failed to mmap " << name.value();
+  if (buffer_ == MAP_FAILED)
     buffer_ = 0;
 
   // Make sure we detect hardware failures reading the headers.
