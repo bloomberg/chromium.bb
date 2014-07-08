@@ -26,22 +26,20 @@ def ConfigureContentSettingsDict(device, desired_settings):
         settings to configure.
   """
   try:
-    sdk_version = int(device.old_interface.system_properties[
-        'ro.build.version.sdk'])
+    sdk_version = int(device.GetProp('ro.build.version.sdk'))
   except ValueError:
     logging.error('Skipping content settings configuration, unknown sdk %s',
-                  device.old_interface.system_properties[
-                      'ro.build.version.sdk'])
+                  device.GetProp('ro.build.version.sdk'))
     return
 
   if sdk_version < 16:
     logging.error('Skipping content settings configuration due to outdated sdk')
     return
 
-  device.old_interface.system_properties['persist.sys.usb.config'] = 'adb'
+  device.SetProp('persist.sys.usb.config', 'adb')
   device.old_interface.WaitForDevicePm()
 
-  if device.old_interface.GetBuildType() == 'userdebug':
+  if device.GetProp('ro.build.type') == 'userdebug':
     for table, key_value in sorted(desired_settings.iteritems()):
       settings = content_settings.ContentSettings(table, device)
       for key, value in key_value.iteritems():
@@ -71,7 +69,7 @@ def SetLockScreenSettings(device):
     Exception if the setting was not properly set.
   """
   if (not device.old_interface.FileExistsOnDevice(_LOCK_SCREEN_SETTINGS_PATH) or
-      device.old_interface.GetBuildType() != 'userdebug'):
+      device.GetProp('ro.build.type') != 'userdebug'):
     return
 
   db = _LOCK_SCREEN_SETTINGS_PATH

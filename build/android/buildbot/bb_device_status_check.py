@@ -46,10 +46,10 @@ def DeviceInfo(serial, options):
   """
 
   device_adb = device_utils.DeviceUtils(serial)
-  device_type = device_adb.old_interface.GetBuildProduct()
-  device_build = device_adb.old_interface.GetBuildId()
-  device_build_type = device_adb.old_interface.GetBuildType()
-  device_product_name = device_adb.old_interface.GetProductName()
+  device_type = device_adb.GetProp('ro.build.product')
+  device_build = device_adb.GetProp('ro.build.id')
+  device_build_type = device_adb.GetProp('ro.build.type')
+  device_product_name = device_adb.GetProp('ro.product.name')
 
   try:
     battery_info = device_adb.old_interface.GetBatteryInfo()
@@ -71,12 +71,12 @@ def DeviceInfo(serial, options):
                         lambda x: x[-6:])
   report = ['Device %s (%s)' % (serial, device_type),
             '  Build: %s (%s)' %
-              (device_build, device_adb.old_interface.GetBuildFingerprint()),
+              (device_build, device_adb.GetProp('ro.build.fingerprint')),
             '  Current Battery Service state: ',
             '\n'.join(['    %s: %s' % (k, v)
                        for k, v in battery_info.iteritems()]),
             '  IMEI slice: %s' % imei_slice,
-            '  Wifi IP: %s' % device_adb.old_interface.GetWifiIP(),
+            '  Wifi IP: %s' % device_adb.GetProp('dhcp.wlan0.ipaddress'),
             '']
 
   errors = []
@@ -84,7 +84,7 @@ def DeviceInfo(serial, options):
     errors += ['Device critically low in battery. Turning off device.']
   if not options.no_provisioning_check:
     setup_wizard_disabled = (
-        device_adb.old_interface.GetSetupWizardStatus() == 'DISABLED')
+        device_adb.GetProp('ro.setupwizard.mode') == 'DISABLED')
     if not setup_wizard_disabled and device_build_type != 'user':
       errors += ['Setup wizard not disabled. Was it provisioned correctly?']
   if (device_product_name == 'mantaray' and

@@ -1230,7 +1230,7 @@ class AndroidCommands(object):
     """
     # Example output:
     # /foo/bar:
-    # -rw-r----- 1 user group   102 2011-05-12 12:29:54.131623387 +0100 baz.txt
+    # -rw-r----- user group   102 2011-05-12 12:29:54.131623387 +0100 baz.txt
     re_file = re.compile('^-(?P<perms>[^\s]+)\s+'
                          '(?P<user>[^\s]+)\s+'
                          '(?P<group>[^\s]+)\s+'
@@ -1260,7 +1260,8 @@ class AndroidCommands(object):
     temp_props_file = tempfile.NamedTemporaryFile()
     properties = ''
     if self._adb.Pull(LOCAL_PROPERTIES_PATH, temp_props_file.name):
-      properties = file(temp_props_file.name).read()
+      with open(temp_props_file.name) as f:
+        properties = f.read()
     re_search = re.compile(r'^\s*' + re.escape(JAVA_ASSERT_PROPERTY) +
                            r'\s*=\s*all\s*$', re.MULTILINE)
     if enable != bool(re.search(re_search, properties)):

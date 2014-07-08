@@ -546,6 +546,60 @@ class DeviceUtils(object):
     else:
       self.old_interface.SetFileContents(device_path, contents)
 
+  @decorators.WithTimeoutAndRetriesFromInstance()
+  def Ls(self, device_path, timeout=None, retries=None):
+    """Lists the contents of a directory on the device.
+
+    Args:
+      device_path: A string containing the path of the directory on the device
+                   to list.
+      timeout: Same as for |IsOnline|.
+      retries: Same as for |IsOnline|.
+    Returns:
+      The contents of the directory specified by |device_path|.
+    """
+    return self.old_interface.ListPathContents(device_path)
+
+  @decorators.WithTimeoutAndRetriesFromInstance()
+  def SetJavaAsserts(self, enabled, timeout=None, retries=None):
+    """Enables or disables Java asserts.
+
+    Args:
+      enabled: A boolean indicating whether Java asserts should be enabled
+               or disabled.
+      timeout: Same as for |IsOnline|.
+      retries: Same as for |IsOnline|.
+    """
+    self.old_interface.SetJavaAssertsEnabled(enabled)
+
+  @decorators.WithTimeoutAndRetriesFromInstance()
+  def GetProp(self, property_name, timeout=None, retries=None):
+    """Gets a property from the device.
+
+    Args:
+      property_name: A string containing the name of the property to get from
+                     the device.
+      timeout: Same as for |IsOnline|.
+      retries: Same as for |IsOnline|.
+    Returns:
+      The value of the device's |property_name| property.
+    """
+    return self.old_interface.system_properties[property_name]
+
+  @decorators.WithTimeoutAndRetriesFromInstance()
+  def SetProp(self, property_name, value, timeout=None, retries=None):
+    """Sets a property on the device.
+
+    Args:
+      property_name: A string containing the name of the property to set on
+                     the device.
+      value: A string containing the value to set to the property on the
+             device.
+      timeout: Same as for |IsOnline|.
+      retries: Same as for |IsOnline|.
+    """
+    self.old_interface.system_properties[property_name] = value
+
   def __str__(self):
     """Returns the device serial."""
     return self.old_interface.GetDevice()

@@ -12,8 +12,7 @@ class ContentSettings(dict):
 
   def __init__(self, table, device):
     super(ContentSettings, self).__init__()
-    sdk_version_string = device.old_interface.system_properties[
-        'ro.build.version.sdk']
+    sdk_version_string = device.GetProp('ro.build.version.sdk')
     try:
       sdk_version = int(sdk_version_string)
       assert sdk_version >= 16, (

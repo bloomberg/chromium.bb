@@ -166,7 +166,7 @@ class AndroidDevice(backends.Device):
         settings=backends.Settings(AndroidDevice._SETTINGS_KEYS))
     self.underlying_device = underlying_device
     self._id = underlying_device.old_interface.GetDevice()
-    self._name = underlying_device.old_interface.GetProductModel()
+    self._name = underlying_device.GetProp('ro.product.model')
     self._sys_stats = None
     self._last_device_stats = None
     self._sys_stats_last_update = None
@@ -192,15 +192,14 @@ class AndroidDevice(backends.Device):
 
   def IsNativeTracingEnabled(self):
     """Checks for the libc.debug.malloc system property."""
-    return bool(self.underlying_device.old_interface.system_properties[
-        _DLMALLOC_DEBUG_SYSPROP])
+    return bool(self.underlying_device.GetProp(
+        _DLMALLOC_DEBUG_SYSPROP))
 
   def EnableNativeTracing(self, enabled):
     """Enables libc.debug.malloc and restarts the shell."""
     assert(self._initialized)
     prop_value = '1' if enabled else ''
-    self.underlying_device.old_interface.system_properties[
-        _DLMALLOC_DEBUG_SYSPROP] = prop_value
+    self.underlying_device.SetProp(_DLMALLOC_DEBUG_SYSPROP, prop_value)
     assert(self.IsNativeTracingEnabled())
     # The libc.debug property takes effect only after restarting the Zygote.
     self.underlying_device.old_interface.RestartShell()

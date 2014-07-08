@@ -11,6 +11,8 @@ Unit tests for the contents of device_utils.py (mostly DeviceUtils).
 # pylint: disable=W0613
 
 import collections
+import datetime
+import logging
 import os
 import re
 import signal
@@ -62,6 +64,7 @@ class DeviceUtilsTest(unittest.TestCase):
     self.assertIsNone(d.old_interface.GetDevice())
 
 
+# TODO(jbudorick) Split this into separate classes by DeviceUtils function.
 class DeviceUtilsOldImplTest(unittest.TestCase):
 
   class AndroidCommandsCalls(object):
@@ -1187,7 +1190,151 @@ class DeviceUtilsOldImplTest(unittest.TestCase):
       self.device.WriteFile('/test/file/no.permissions.to.write',
                             'new test file contents', as_root=True)
 
+  def testLs_nothing(self):
+    with self.assertOldImplCallsSequence([
+        ("adb -s 0123456789abcdef shell 'ls -lR /this/file/does.not.exist'",
+         '/this/file/does.not.exist: No such file or directory\r\n'),
+        ("adb -s 0123456789abcdef shell 'date +%z'", '+0000')]):
+      self.assertEqual({}, self.device.Ls('/this/file/does.not.exist'))
+
+  def testLs_file(self):
+    with self.assertOldImplCallsSequence([
+        ("adb -s 0123456789abcdef shell 'ls -lR /this/is/a/test.file'",
+         '-rw-rw---- testuser testgroup 4096 1970-01-01 00:00 test.file\r\n'),
+        ("adb -s 0123456789abcdef shell 'date +%z'", '+0000')]):
+      self.assertEqual(
+          {'test.file': (4096, datetime.datetime(1970, 1, 1))},
+          self.device.Ls('/this/is/a/test.file'))
+
+  def testLs_directory(self):
+    with self.assertOldImplCallsSequence([
+        ("adb -s 0123456789abcdef shell 'ls -lR /this/is/a/test.directory'",
+         '\r\n'
+         '/this/is/a/test.directory:\r\n'
+         '-rw-rw---- testuser testgroup 4096 1970-01-01 18:19 test.file\r\n'),
+        ("adb -s 0123456789abcdef shell 'date +%z'", '+0000')]):
+      self.assertEqual(
+          {'test.file': (4096, datetime.datetime(1970, 1, 1, 18, 19))},
+          self.device.Ls('/this/is/a/test.directory'))
+
+  def testLs_directories(self):
+    with self.assertOldImplCallsSequence([
+        ("adb -s 0123456789abcdef shell 'ls -lR /this/is/a/test.directory'",
+         '\r\n'
+         '/this/is/a/test.directory:\r\n'
+         'drwxr-xr-x testuser testgroup 1970-01-01 00:00 test.subdirectory\r\n'
+         '\r\n'
+         '/this/is/a/test.directory/test.subdirectory:\r\n'
+         '-rw-rw---- testuser testgroup 4096 1970-01-01 00:00 test.file\r\n'),
+        ("adb -s 0123456789abcdef shell 'date +%z'", '-0700')]):
+      self.assertEqual(
+          {'test.subdirectory/test.file':
+              (4096, datetime.datetime(1970, 1, 1, 7, 0, 0))},
+          self.device.Ls('/this/is/a/test.directory'))
+
+  @staticmethod
+  def mockNamedTemporary(name='/tmp/file/property.file',
+                         read_contents=''):
+    mock_file = mock.MagicMock(spec=file)
+    mock_file.name = name
+    mock_file.__enter__.return_value = mock_file
+    mock_file.read.return_value = read_contents
+    return mock_file
+
+  def testSetJavaAsserts_enable(self):
+    mock_file = self.mockNamedTemporary()
+    with mock.patch('tempfile.NamedTemporaryFile',
+                    return_value=mock_file), (
+         mock.patch('__builtin__.open', return_value=mock_file)):
+      with self.assertOldImplCallsSequence(
+          [('adb -s 0123456789abcdef shell ls %s' %
+                constants.DEVICE_LOCAL_PROPERTIES_PATH,
+            '%s\r\n' % constants.DEVICE_LOCAL_PROPERTIES_PATH),
+           ('adb -s 0123456789abcdef pull %s %s' %
+                (constants.DEVICE_LOCAL_PROPERTIES_PATH, mock_file.name),
+            '100 B/s (100 bytes in 1.000s)\r\n'),
+           ('adb -s 0123456789abcdef push %s %s' %
+                (mock_file.name, constants.DEVICE_LOCAL_PROPERTIES_PATH),
+            '100 B/s (100 bytes in 1.000s)\r\n'),
+           ('adb -s 0123456789abcdef shell '
+                'getprop dalvik.vm.enableassertions',
+            '\r\n'),
+           ('adb -s 0123456789abcdef shell '
+                'setprop dalvik.vm.enableassertions "all"',
+            '')]):
+        self.device.SetJavaAsserts(True)
+
+  def testSetJavaAsserts_disable(self):
+    mock_file = self.mockNamedTemporary(
+        read_contents='dalvik.vm.enableassertions=all\n')
+    with mock.patch('tempfile.NamedTemporaryFile',
+                    return_value=mock_file), (
+         mock.patch('__builtin__.open', return_value=mock_file)):
+      with self.assertOldImplCallsSequence(
+          [('adb -s 0123456789abcdef shell ls %s' %
+                constants.DEVICE_LOCAL_PROPERTIES_PATH,
+            '%s\r\n' % constants.DEVICE_LOCAL_PROPERTIES_PATH),
+           ('adb -s 0123456789abcdef pull %s %s' %
+                (constants.DEVICE_LOCAL_PROPERTIES_PATH, mock_file.name),
+            '100 B/s (100 bytes in 1.000s)\r\n'),
+           ('adb -s 0123456789abcdef push %s %s' %
+                (mock_file.name, constants.DEVICE_LOCAL_PROPERTIES_PATH),
+            '100 B/s (100 bytes in 1.000s)\r\n'),
+           ('adb -s 0123456789abcdef shell '
+                'getprop dalvik.vm.enableassertions',
+            'all\r\n'),
+           ('adb -s 0123456789abcdef shell '
+                'setprop dalvik.vm.enableassertions ""',
+            '')]):
+        self.device.SetJavaAsserts(False)
+
+  def testSetJavaAsserts_alreadyEnabled(self):
+    mock_file = self.mockNamedTemporary(
+        read_contents='dalvik.vm.enableassertions=all\n')
+    with mock.patch('tempfile.NamedTemporaryFile',
+                    return_value=mock_file), (
+         mock.patch('__builtin__.open', return_value=mock_file)):
+      with self.assertOldImplCallsSequence(
+          [('adb -s 0123456789abcdef shell ls %s' %
+                constants.DEVICE_LOCAL_PROPERTIES_PATH,
+            '%s\r\n' % constants.DEVICE_LOCAL_PROPERTIES_PATH),
+           ('adb -s 0123456789abcdef pull %s %s' %
+                (constants.DEVICE_LOCAL_PROPERTIES_PATH, mock_file.name),
+            '100 B/s (100 bytes in 1.000s)\r\n'),
+           ('adb -s 0123456789abcdef shell '
+                'getprop dalvik.vm.enableassertions',
+            'all\r\n')]):
+        self.assertFalse(self.device.SetJavaAsserts(True))
+
+  def testGetProp_exists(self):
+    with self.assertOldImplCalls(
+        'adb -s 0123456789abcdef shell getprop this.is.a.test.property',
+        'test_property_value\r\n'):
+      self.assertEqual('test_property_value',
+                       self.device.GetProp('this.is.a.test.property'))
+
+  def testGetProp_doesNotExist(self):
+    with self.assertOldImplCalls(
+        'adb -s 0123456789abcdef shell '
+            'getprop this.property.does.not.exist', ''):
+      self.assertEqual('', self.device.GetProp('this.property.does.not.exist'))
+
+  def testGetProp_cachedRoProp(self):
+    with self.assertOldImplCalls(
+        'adb -s 0123456789abcdef shell '
+            'getprop ro.build.type', 'userdebug'):
+      self.assertEqual('userdebug', self.device.GetProp('ro.build.type'))
+      self.assertEqual('userdebug', self.device.GetProp('ro.build.type'))
+
+  def testSetProp(self):
+    with self.assertOldImplCalls(
+        'adb -s 0123456789abcdef shell '
+            'setprop this.is.a.test.property "test_property_value"',
+        ''):
+      self.device.SetProp('this.is.a.test.property', 'test_property_value')
+
 
 if __name__ == '__main__':
+  logging.getLogger().setLevel(logging.DEBUG)
   unittest.main(verbosity=2)
 

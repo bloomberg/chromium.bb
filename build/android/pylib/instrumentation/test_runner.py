@@ -151,7 +151,7 @@ class TestRunner(base_test_runner.BaseTestRunner):
       logging.warning('Unable to enable java asserts for %s, non rooted device',
                       str(self.device))
     else:
-      if self.device.old_interface.SetJavaAssertsEnabled(True):
+      if self.device.SetJavaAsserts(True):
         # TODO(jbudorick) How to best do shell restart after the
         #                 android_commands refactor?
         self.device.RunShellCommand('stop')

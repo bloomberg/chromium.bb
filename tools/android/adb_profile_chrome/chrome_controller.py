@@ -68,8 +68,7 @@ class ChromeTracingController(controllers.BaseController):
 
     if self._trace_memory:
       self._device.old_interface.EnableAdbRoot()
-      self._device.old_interface.system_properties \
-          [_HEAP_PROFILE_MMAP_PROPERTY] = 1
+      self._device.SetProp(_HEAP_PROFILE_MMAP_PROPERTY, 1)
 
     # Chrome logs two different messages related to tracing:
     #
@@ -91,8 +90,7 @@ class ChromeTracingController(controllers.BaseController):
     self._trace_file = self._device.old_interface.WaitForLogMatch(
         self._trace_finish_re, None, timeout=120).group(1)
     if self._trace_memory:
-      self._device.old_interface.system_properties \
-          [_HEAP_PROFILE_MMAP_PROPERTY] = 0
+      self._device.SetProp(_HEAP_PROFILE_MMAP_PROPERTY, 0)
 
   def PullTrace(self):
     # Wait a bit for the browser to finish writing the trace file.

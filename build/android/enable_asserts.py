@@ -27,7 +27,7 @@ def main(argv):
   devices = android_commands.GetAttachedDevices()
   for device in [device_utils.DeviceUtils(serial) for serial in devices]:
     if options.set_asserts != None:
-      if device.old_interface.SetJavaAssertsEnabled(options.set_asserts):
+      if device.SetJavaAsserts(options.set_asserts):
         # TODO(jbudorick) How to best do shell restarts after the
         #                 android_commands refactor?
         device.RunShellCommand('stop')

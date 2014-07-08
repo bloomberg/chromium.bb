@@ -46,7 +46,7 @@ class PerfControl(object):
 
   def SetDefaultPerfMode(self):
     """Sets the performance mode for the device to its default mode."""
-    product_model = self._device.old_interface.GetProductModel()
+    product_model = self._device.GetProp('ro.product.model')
     governor_mode = {
         'GT-I9300': 'pegasusq',
         'Galaxy Nexus': 'interactive',
