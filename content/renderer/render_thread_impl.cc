@@ -955,6 +955,9 @@ void RenderThreadImpl::IdleHandler() {
   if (!v8::V8::IdleNotification()) {
     continue_timer = true;
   }
+  if (!base::DiscardableMemory::ReduceMemoryUsage()) {
+    continue_timer = true;
+  }
 
   // Schedule next invocation.
   // Dampen the delay using the algorithm (if delay is in seconds):
@@ -996,10 +999,17 @@ void RenderThreadImpl::IdleHandlerInForegroundTab() {
     int idle_hint = static_cast<int>(new_delay_ms / 10);
     if (cpu_usage < kIdleCPUUsageThresholdInPercents) {
       base::allocator::ReleaseFreeMemory();
-      if (v8::V8::IdleNotification(idle_hint)) {
-        // V8 finished collecting garbage.
+
+      bool finished_idle_work = true;
+      if (!v8::V8::IdleNotification(idle_hint))
+        finished_idle_work = false;
+      if (!base::DiscardableMemory::ReduceMemoryUsage())
+        finished_idle_work = false;
+
+      // V8 finished collecting garbage and discardable memory system has no
+      // more idle work left.
+      if (finished_idle_work)
         new_delay_ms = kLongIdleHandlerDelayMs;
-      }
     }
   }
   ScheduleIdleHandler(new_delay_ms);

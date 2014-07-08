@@ -21,6 +21,7 @@ class DiscardableMemoryEmulated
 
   static void RegisterMemoryPressureListeners();
   static void UnregisterMemoryPressureListeners();
+  static bool ReduceMemoryUsage();
 
   static void PurgeForTesting();
 

@@ -21,6 +21,11 @@ void DiscardableMemory::UnregisterMemoryPressureListeners() {
 }
 
 // static
+bool DiscardableMemory::ReduceMemoryUsage() {
+  return internal::DiscardableMemoryEmulated::ReduceMemoryUsage();
+}
+
+// static
 void DiscardableMemory::GetSupportedTypes(
     std::vector<DiscardableMemoryType>* types) {
   const DiscardableMemoryType supported_types[] = {

@@ -45,13 +45,30 @@ class TestAllocationImpl : public internal::DiscardableMemoryManagerAllocation {
 // Tests can assume that the default limit is at least 1024. Tests that rely on
 // something else needs to explicit set the limit.
 const size_t kDefaultMemoryLimit = 1024;
+const size_t kDefaultSoftMemoryLimit = kDefaultMemoryLimit;
 const size_t kDefaultBytesToKeepUnderModeratePressure = kDefaultMemoryLimit;
+
+class TestDiscardableMemoryManagerImpl
+    : public internal::DiscardableMemoryManager {
+ public:
+  TestDiscardableMemoryManagerImpl()
+      : DiscardableMemoryManager(kDefaultMemoryLimit,
+                                 kDefaultSoftMemoryLimit,
+                                 kDefaultBytesToKeepUnderModeratePressure,
+                                 TimeDelta::Max()) {}
+
+  void SetNow(TimeTicks now) { now_ = now; }
+
+ private:
+  // Overriden from internal::DiscardableMemoryManager:
+  virtual TimeTicks Now() const OVERRIDE { return now_; }
+
+  TimeTicks now_;
+};
 
 class DiscardableMemoryManagerTestBase {
  public:
-  DiscardableMemoryManagerTestBase()
-      : manager_(kDefaultMemoryLimit,
-                 kDefaultBytesToKeepUnderModeratePressure) {
+  DiscardableMemoryManagerTestBase() {
     manager_.RegisterMemoryPressureListener();
   }
 
@@ -66,8 +83,14 @@ class DiscardableMemoryManagerTestBase {
 
   void SetMemoryLimit(size_t bytes) { manager_.SetMemoryLimit(bytes); }
 
+  void SetSoftMemoryLimit(size_t bytes) { manager_.SetSoftMemoryLimit(bytes); }
+
   void SetBytesToKeepUnderModeratePressure(size_t bytes) {
     manager_.SetBytesToKeepUnderModeratePressure(bytes);
+  }
+
+  void SetHardMemoryLimitExpirationTime(TimeDelta time) {
+    manager_.SetHardMemoryLimitExpirationTime(time);
   }
 
   void Register(TestAllocationImpl* allocation, size_t bytes) {
@@ -102,9 +125,13 @@ class DiscardableMemoryManagerTestBase {
     return manager_.CanBePurgedForTest(allocation);
   }
 
+  void SetNow(TimeTicks now) { manager_.SetNow(now); }
+
+  bool ReduceMemoryUsage() { return manager_.ReduceMemoryUsage(); }
+
  private:
   MessageLoopForIO message_loop_;
-  internal::DiscardableMemoryManager manager_;
+  TestDiscardableMemoryManagerImpl manager_;
 };
 
 class DiscardableMemoryManagerTest : public DiscardableMemoryManagerTestBase,
@@ -390,6 +417,51 @@ TEST_F(DiscardableMemoryManagerTest, DestructionAfterPurged) {
     Unregister(&allocation);
   }
   EXPECT_EQ(0u, BytesAllocated());
+}
+
+TEST_F(DiscardableMemoryManagerTest, ReduceMemoryUsage) {
+  SetMemoryLimit(3072);
+  SetSoftMemoryLimit(1024);
+  SetHardMemoryLimitExpirationTime(TimeDelta::FromInternalValue(1));
+
+  size_t size = 1024;
+  TestAllocationImpl allocation[3];
+  RegisterAndLock(&allocation[0], size);
+  RegisterAndLock(&allocation[1], size);
+  RegisterAndLock(&allocation[2], size);
+  EXPECT_EQ(3072u, BytesAllocated());
+
+  // Above soft limit but nothing that can be purged.
+  EXPECT_FALSE(ReduceMemoryUsage());
+
+  SetNow(TimeTicks::FromInternalValue(0));
+  Unlock(&allocation[0]);
+
+  // Above soft limit but still nothing that can be purged as all unlocked
+  // allocations are within the hard limit cutoff time.
+  EXPECT_FALSE(ReduceMemoryUsage());
+
+  SetNow(TimeTicks::FromInternalValue(1));
+  Unlock(&allocation[1]);
+
+  // One unlocked allocation is no longer within the hard limit cutoff time. It
+  // should be purged and ReduceMemoryUsage() should return false as we're not
+  // yet within the soft memory limit.
+  EXPECT_FALSE(ReduceMemoryUsage());
+  EXPECT_EQ(2048u, BytesAllocated());
+
+  // One more unlocked allocation is no longer within the hard limit cutoff
+  // time. It should be purged and ReduceMemoryUsage() should return true as
+  // we're now within the soft memory limit.
+  SetNow(TimeTicks::FromInternalValue(2));
+  EXPECT_TRUE(ReduceMemoryUsage());
+  EXPECT_EQ(1024u, BytesAllocated());
+
+  Unlock(&allocation[2]);
+
+  Unregister(&allocation[0]);
+  Unregister(&allocation[1]);
+  Unregister(&allocation[2]);
 }
 
 class ThreadedDiscardableMemoryManagerTest

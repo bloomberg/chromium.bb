@@ -25,7 +25,11 @@ namespace {
 const size_t kMacMemoryLimit = 512 * 1024 * 1024;
 
 struct SharedState {
-  SharedState() : manager(kMacMemoryLimit, kMacMemoryLimit) {}
+  SharedState()
+      : manager(kMacMemoryLimit,
+                kMacMemoryLimit,
+                kMacMemoryLimit,
+                TimeDelta::Max()) {}
 
   internal::DiscardableMemoryManager manager;
 };
@@ -163,6 +167,11 @@ void DiscardableMemory::RegisterMemoryPressureListeners() {
 // static
 void DiscardableMemory::UnregisterMemoryPressureListeners() {
   internal::DiscardableMemoryEmulated::UnregisterMemoryPressureListeners();
+}
+
+// static
+bool DiscardableMemory::ReduceMemoryUsage() {
+  return internal::DiscardableMemoryEmulated::ReduceMemoryUsage();
 }
 
 // static

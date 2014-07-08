@@ -32,7 +32,10 @@ size_t GetOptimalAshmemRegionSizeForAllocator() {
 // Holds the shared state used for allocations.
 struct SharedState {
   SharedState()
-      : manager(kAshmemMemoryLimit, kAshmemMemoryLimit),
+      : manager(kAshmemMemoryLimit,
+                kAshmemMemoryLimit,
+                kAshmemMemoryLimit,
+                TimeDelta::Max()),
         allocator(kAshmemAllocatorName,
                   GetOptimalAshmemRegionSizeForAllocator()) {}
 
@@ -51,6 +54,11 @@ void DiscardableMemory::RegisterMemoryPressureListeners() {
 // static
 void DiscardableMemory::UnregisterMemoryPressureListeners() {
   internal::DiscardableMemoryEmulated::UnregisterMemoryPressureListeners();
+}
+
+// static
+bool DiscardableMemory::ReduceMemoryUsage() {
+  return internal::DiscardableMemoryEmulated::ReduceMemoryUsage();
 }
 
 // static

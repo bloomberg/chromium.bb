@@ -19,7 +19,9 @@ const size_t kEmulatedBytesToKeepUnderModeratePressure =
 struct SharedState {
   SharedState()
       : manager(kEmulatedMemoryLimit,
-                kEmulatedBytesToKeepUnderModeratePressure) {}
+                kEmulatedMemoryLimit,
+                kEmulatedBytesToKeepUnderModeratePressure,
+                TimeDelta::Max()) {}
 
   internal::DiscardableMemoryManager manager;
 };
@@ -49,6 +51,11 @@ void DiscardableMemoryEmulated::RegisterMemoryPressureListeners() {
 // static
 void DiscardableMemoryEmulated::UnregisterMemoryPressureListeners() {
   g_shared_state.Pointer()->manager.UnregisterMemoryPressureListener();
+}
+
+// static
+bool DiscardableMemoryEmulated::ReduceMemoryUsage() {
+  return g_shared_state.Pointer()->manager.ReduceMemoryUsage();
 }
 
 // static

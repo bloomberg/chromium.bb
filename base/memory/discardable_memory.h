@@ -97,6 +97,16 @@ class BASE_EXPORT DiscardableMemory {
   // Create a DiscardableMemory instance with preferred type and |size|.
   static scoped_ptr<DiscardableMemory> CreateLockedMemory(size_t size);
 
+  // Discardable memory implementations might allow an elevated usage level
+  // while in frequent use. Call this to have the usage reduced to the base
+  // level. Returns true if there's no need to call this again until
+  // memory instances have been used. This indicates that all discardable
+  // memory implementations have reduced usage to the base level or below.
+  // Note: calling this too often or while discardable memory is in frequent
+  // use can hurt performance, whereas calling it too infrequently can result
+  // in memory bloat.
+  static bool ReduceMemoryUsage();
+
   // Locks the memory so that it will not be purged by the system. Returns
   // DISCARDABLE_MEMORY_LOCK_STATUS_SUCCESS on success. If the return value is
   // DISCARDABLE_MEMORY_LOCK_STATUS_FAILED then this object should be
