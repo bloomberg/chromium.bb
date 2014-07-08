@@ -1185,7 +1185,9 @@ void CanvasRenderingContext2D::scrollPathIntoView(Path2D* path2d)
 
 void CanvasRenderingContext2D::scrollPathIntoViewInternal(const Path& path)
 {
-    if (!state().m_invertibleCTM || path.isEmpty())
+    RenderObject* renderer = canvas()->renderer();
+    RenderBox* renderBox = canvas()->renderBox();
+    if (!renderer || !renderBox || !state().m_invertibleCTM || path.isEmpty())
         return;
 
     canvas()->document().updateLayoutIgnorePendingStylesheets();
@@ -1195,18 +1197,13 @@ void CanvasRenderingContext2D::scrollPathIntoViewInternal(const Path& path)
     transformedPath.transform(state().m_transform);
     FloatRect boundingRect = transformedPath.boundingRect();
 
-    // Offset by the canvas rect (We should take border and padding into account).
-    RenderBoxModelObject* rbmo = canvas()->renderBoxModelObject();
-    IntRect canvasRect = canvas()->renderer()->absoluteBoundingBoxRect();
-    canvasRect.move(rbmo->borderLeft() + rbmo->paddingLeft(),
-        rbmo->borderTop() + rbmo->paddingTop());
-    LayoutRect pathRect = enclosingLayoutRect(boundingRect);
-    pathRect.moveBy(canvasRect.location());
+    // Offset by the canvas rect
+    LayoutRect pathRect(boundingRect);
+    IntRect canvasRect = renderBox->absoluteContentBox();
+    pathRect.move(canvasRect.x(), canvasRect.y());
 
-    if (canvas()->renderer()) {
-        canvas()->renderer()->scrollRectToVisible(
-            pathRect, ScrollAlignment::alignCenterAlways, ScrollAlignment::alignTopAlways);
-    }
+    renderer->scrollRectToVisible(
+        pathRect, ScrollAlignment::alignCenterAlways, ScrollAlignment::alignTopAlways);
 
     // TODO: should implement "inform the user" that the caret and/or
     // selection the specified rectangle of the canvas. See http://crbug.com/357987
