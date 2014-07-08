@@ -50,7 +50,7 @@ tabpanel > div > div {
   width: 100%;
 }
 
-#tabpanel-prefs ul li button {
+#tabpanel-prefs button.dismissing {
   background-color: transparent;
   border-style: solid;
   border-width: 1px;
@@ -129,4 +129,8 @@ td.detection-logs-content div {
 
 .event-logs-message {
   width: 50%;
+}
+
+.prefs-setting-disabled {
+  display: none;
 }

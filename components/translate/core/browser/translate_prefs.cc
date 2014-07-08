@@ -278,6 +278,11 @@ bool TranslatePrefs::IsTooOftenDenied() const {
   return prefs_->GetBoolean(kPrefTranslateTooOftenDenied);
 }
 
+void TranslatePrefs::ResetDenialState() {
+  prefs_->SetDouble(kPrefTranslateLastDeniedTime, 0);
+  prefs_->SetBoolean(kPrefTranslateTooOftenDenied, false);
+}
+
 void TranslatePrefs::GetLanguageList(std::vector<std::string>* languages) {
   DCHECK(languages);
   DCHECK(languages->empty());

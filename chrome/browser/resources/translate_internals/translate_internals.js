@@ -60,6 +60,22 @@
       activateTabByHash();
     }
 
+    /*
+     * Creates a button to dismiss an item.
+     *
+     * @param {Function} func Callback called when the button is clicked.
+     */
+    function createDismissingButton(func) {
+      var button = document.createElement('button');
+      button.textContent = 'X';
+      button.classList.add('dismissing');
+      button.addEventListener('click', function(e) {
+        e.preventDefault();
+        func();
+      }, false);
+      return button;
+    }
+
     /**
      * Creates a new LI element with a button to dismiss the item.
      *
@@ -72,15 +88,7 @@
 
       var li = document.createElement('li');
       li.appendChild(span);
-
-      var button = document.createElement('button');
-      button.textContent = 'X';
-      button.addEventListener('click', function(e) {
-        e.preventDefault();
-        func();
-      }, false);
-
-      li.appendChild(button);
+      li.appendChild(createDismissingButton(func));
       return li;
     }
 
@@ -206,7 +214,13 @@
         });
       }
 
-      var p = document.querySelector('#prefs-dump p');
+      var p = $('prefs-too-often-denied');
+      p.classList.toggle('prefs-setting-disabled',
+                         !detail['translate_too_often_denied']);
+      p.appendChild(createDismissingButton(
+          chrome.send.bind(null, 'removePrefItem', ['too_often_denied'])));
+
+      p = document.querySelector('#prefs-dump p');
       var content = JSON.stringify(detail, null, 2);
       p.textContent = content;
     }

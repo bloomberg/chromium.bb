@@ -155,6 +155,8 @@ void TranslateInternalsHandler::OnRemovePrefItem(const base::ListValue* args) {
     if (!args->GetString(2, &to))
       return;
     translate_prefs->RemoveLanguagePairFromWhitelist(from, to);
+  } else if (pref_name == "too_often_denied") {
+    translate_prefs->ResetDenialState();
   } else {
     return;
   }
@@ -191,6 +193,8 @@ void TranslateInternalsHandler::SendPrefsToJs() {
   keys.push_back(TranslatePrefs::kPrefTranslateWhitelists);
   keys.push_back(TranslatePrefs::kPrefTranslateDeniedCount);
   keys.push_back(TranslatePrefs::kPrefTranslateAcceptedCount);
+  keys.push_back(TranslatePrefs::kPrefTranslateLastDeniedTime);
+  keys.push_back(TranslatePrefs::kPrefTranslateTooOftenDenied);
 
   for (std::vector<std::string>::const_iterator it = keys.begin();
        it != keys.end(); ++it) {

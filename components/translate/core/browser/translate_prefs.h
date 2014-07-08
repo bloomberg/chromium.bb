@@ -95,6 +95,9 @@ class TranslatePrefs {
   // Returns true if translation is denied too often.
   bool IsTooOftenDenied() const;
 
+  // Resets the prefs of denial state. Only used internally for diagnostics.
+  void ResetDenialState();
+
   // Gets the language list of the language settings.
   void GetLanguageList(std::vector<std::string>* languages);
 
