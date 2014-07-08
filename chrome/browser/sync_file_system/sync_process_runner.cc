@@ -6,7 +6,6 @@
 
 #include "base/format_macros.h"
 #include "chrome/browser/sync_file_system/logger.h"
-#include "chrome/browser/sync_file_system/sync_file_system_service.h"
 
 namespace sync_file_system {
 
@@ -66,11 +65,11 @@ bool WasSuccessfulSync(SyncStatusCode status) {
 
 SyncProcessRunner::SyncProcessRunner(
     const std::string& name,
-    SyncFileSystemService* sync_service,
+    Client* client,
     scoped_ptr<TimerHelper> timer_helper,
     int max_parallel_task)
     : name_(name),
-      sync_service_(sync_service),
+      client_(client),
       max_parallel_task_(max_parallel_task),
       running_tasks_(0),
       timer_helper_(timer_helper.Pass()),
@@ -130,7 +129,7 @@ void SyncProcessRunner::OnChangesUpdated(
   pending_changes_ = pending_changes;
   if (old_pending_changes != pending_changes) {
     if (pending_changes == 0)
-      sync_service()->OnSyncIdle();
+      client_->OnSyncIdle();
     util::Log(logging::LOG_VERBOSE, FROM_HERE,
               "[%s] pending_changes updated: %" PRId64,
               name_.c_str(), pending_changes);
@@ -138,8 +137,12 @@ void SyncProcessRunner::OnChangesUpdated(
   Schedule();
 }
 
+SyncFileSystemService* SyncProcessRunner::GetSyncService() {
+  return client_->GetSyncService();
+}
+
 SyncServiceState SyncProcessRunner::GetServiceState() {
-  return sync_service()->GetSyncServiceState();
+  return client_->GetSyncServiceState();
 }
 
 void SyncProcessRunner::Finished(const base::TimeTicks& start_time,

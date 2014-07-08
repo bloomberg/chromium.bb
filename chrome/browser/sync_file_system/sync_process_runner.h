@@ -25,6 +25,14 @@ class SyncFileSystemService;
 // with each other.
 class SyncProcessRunner {
  public:
+  class Client {
+   public:
+    virtual ~Client() {}
+    virtual void OnSyncIdle() {}
+    virtual SyncServiceState GetSyncServiceState() = 0;
+    virtual SyncFileSystemService* GetSyncService() = 0;
+  };
+
   class TimerHelper {
    public:
     virtual ~TimerHelper() {}
@@ -38,7 +46,7 @@ class SyncProcessRunner {
   };
 
   SyncProcessRunner(const std::string& name,
-                    SyncFileSystemService* sync_service,
+                    Client* client,
                     scoped_ptr<TimerHelper> timer_helper,
                     int max_parallel_task);
   virtual ~SyncProcessRunner();
@@ -54,7 +62,7 @@ class SyncProcessRunner {
 
  protected:
   void OnChangesUpdated(int64 pending_changes);
-  SyncFileSystemService* sync_service() { return sync_service_; }
+  SyncFileSystemService* GetSyncService();
 
   // Returns the current service state.  Default implementation returns
   // sync_service()->GetSyncServiceState().
@@ -66,7 +74,7 @@ class SyncProcessRunner {
   void ScheduleInternal(int64 delay);
 
   std::string name_;
-  SyncFileSystemService* sync_service_;
+  Client* client_;
   int max_parallel_task_;
   int running_tasks_;
   scoped_ptr<TimerHelper> timer_helper_;

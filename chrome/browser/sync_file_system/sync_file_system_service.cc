@@ -149,7 +149,7 @@ class LocalSyncRunner : public SyncProcessRunner,
         factory_(this) {}
 
   virtual void StartSync(const SyncStatusCallback& callback) OVERRIDE {
-    sync_service()->local_service_->ProcessLocalChange(
+    GetSyncService()->local_service_->ProcessLocalChange(
         base::Bind(&LocalSyncRunner::DidProcessLocalChange,
                    factory_.GetWeakPtr(), callback));
   }
@@ -161,7 +161,7 @@ class LocalSyncRunner : public SyncProcessRunner,
     OnChangesUpdated(pending_changes);
 
     // Kick other sync runners just in case they're not running.
-    sync_service()->RunForEachSyncRunners(
+    GetSyncService()->RunForEachSyncRunners(
         &SyncProcessRunner::ScheduleIfNotRunning);
   }
 
@@ -211,7 +211,7 @@ class RemoteSyncRunner : public SyncProcessRunner,
     OnChangesUpdated(pending_changes);
 
     // Kick other sync runners just in case they're not running.
-    sync_service()->RunForEachSyncRunners(
+    GetSyncService()->RunForEachSyncRunners(
         &SyncProcessRunner::ScheduleIfNotRunning);
   }
 
@@ -219,7 +219,7 @@ class RemoteSyncRunner : public SyncProcessRunner,
       RemoteServiceState state,
       const std::string& description) OVERRIDE {
     // Just forward to SyncFileSystemService.
-    sync_service()->OnRemoteServiceStateUpdated(state, description);
+    GetSyncService()->OnRemoteServiceStateUpdated(state, description);
     last_state_ = state;
   }
 
@@ -234,7 +234,7 @@ class RemoteSyncRunner : public SyncProcessRunner,
               url.DebugString().c_str());
 
     if (status == SYNC_STATUS_FILE_BUSY) {
-      sync_service()->local_service_->RegisterURLForWaitingSync(
+      GetSyncService()->local_service_->RegisterURLForWaitingSync(
           url, base::Bind(&RemoteSyncRunner::Schedule,
                           factory_.GetWeakPtr()));
     }
@@ -289,11 +289,6 @@ void SyncFileSystemService::InitializeForApp(
       app_origin, file_system_context,
       base::Bind(&SyncFileSystemService::DidInitializeFileSystem,
                  AsWeakPtr(), app_origin, callback));
-}
-
-SyncServiceState SyncFileSystemService::GetSyncServiceState() {
-  // For now we always query the state from the main RemoteFileSyncService.
-  return RemoteStateToSyncServiceState(remote_service_->GetCurrentState());
 }
 
 void SyncFileSystemService::GetExtensionStatusMap(
@@ -356,6 +351,33 @@ void SyncFileSystemService::RemoveSyncEventObserver(
 LocalChangeProcessor* SyncFileSystemService::GetLocalChangeProcessor(
     const GURL& origin) {
   return GetRemoteService(origin)->GetLocalChangeProcessor();
+}
+
+void SyncFileSystemService::OnSyncIdle() {
+  int64 remote_changes = 0;
+  for (ScopedVector<SyncProcessRunner>::iterator iter =
+           remote_sync_runners_.begin();
+       iter != remote_sync_runners_.end(); ++iter)
+    remote_changes += (*iter)->pending_changes();
+  if (remote_changes == 0)
+    local_service_->PromoteDemotedChanges();
+
+  int64 local_changes = 0;
+  for (ScopedVector<SyncProcessRunner>::iterator iter =
+           local_sync_runners_.begin();
+       iter != local_sync_runners_.end(); ++iter)
+    local_changes += (*iter)->pending_changes();
+  if (local_changes == 0 && v2_remote_service_)
+    v2_remote_service_->PromoteDemotedChanges();
+}
+
+SyncServiceState SyncFileSystemService::GetSyncServiceState() {
+  // For now we always query the state from the main RemoteFileSyncService.
+  return RemoteStateToSyncServiceState(remote_service_->GetCurrentState());
+}
+
+SyncFileSystemService* SyncFileSystemService::GetSyncService() {
+  return this;
 }
 
 SyncFileSystemService::SyncFileSystemService(Profile* profile)
@@ -579,24 +601,6 @@ void SyncFileSystemService::DidGetLocalChangeStatus(
       status,
       has_pending_local_changes ?
           SYNC_FILE_STATUS_HAS_PENDING_CHANGES : SYNC_FILE_STATUS_SYNCED);
-}
-
-void SyncFileSystemService::OnSyncIdle() {
-  int64 remote_changes = 0;
-  for (ScopedVector<SyncProcessRunner>::iterator iter =
-           remote_sync_runners_.begin();
-       iter != remote_sync_runners_.end(); ++iter)
-    remote_changes += (*iter)->pending_changes();
-  if (remote_changes == 0)
-    local_service_->PromoteDemotedChanges();
-
-  int64 local_changes = 0;
-  for (ScopedVector<SyncProcessRunner>::iterator iter =
-           local_sync_runners_.begin();
-       iter != local_sync_runners_.end(); ++iter)
-    local_changes += (*iter)->pending_changes();
-  if (local_changes == 0 && v2_remote_service_)
-    v2_remote_service_->PromoteDemotedChanges();
 }
 
 void SyncFileSystemService::OnRemoteServiceStateUpdated(

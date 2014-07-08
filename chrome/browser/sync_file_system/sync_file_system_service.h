@@ -20,6 +20,7 @@
 #include "chrome/browser/sync_file_system/file_status_observer.h"
 #include "chrome/browser/sync_file_system/remote_file_sync_service.h"
 #include "chrome/browser/sync_file_system/sync_callbacks.h"
+#include "chrome/browser/sync_file_system/sync_process_runner.h"
 #include "chrome/browser/sync_file_system/sync_service_state.h"
 #include "chrome/browser/sync_file_system/task_logger.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -39,10 +40,10 @@ class LocalFileSyncService;
 class LocalSyncRunner;
 class RemoteSyncRunner;
 class SyncEventObserver;
-class SyncProcessRunner;
 
 class SyncFileSystemService
     : public KeyedService,
+      public SyncProcessRunner::Client,
       public ProfileSyncServiceObserver,
       public FileStatusObserver,
       public extensions::ExtensionRegistryObserver,
@@ -60,7 +61,6 @@ class SyncFileSystemService
       const GURL& app_origin,
       const SyncStatusCallback& callback);
 
-  SyncServiceState GetSyncServiceState();
   void GetExtensionStatusMap(const ExtensionStatusMapCallback& callback);
   void DumpFiles(const GURL& origin, const DumpFilesCallback& callback);
   void DumpDatabase(const DumpFilesCallback& callback);
@@ -75,7 +75,10 @@ class SyncFileSystemService
 
   LocalChangeProcessor* GetLocalChangeProcessor(const GURL& origin);
 
-  void OnSyncIdle();
+  // SyncProcessRunner::Client implementations.
+  virtual void OnSyncIdle() OVERRIDE;
+  virtual SyncServiceState GetSyncServiceState() OVERRIDE;
+  virtual SyncFileSystemService* GetSyncService() OVERRIDE;
 
   TaskLogger* task_logger() { return &task_logger_; }
 
