@@ -2949,6 +2949,7 @@
             '../components/components.gyp:web_modal',
             '../media/cast/cast.gyp:cast_transport',
             '../media/media.gyp:media',
+            '../mojo/mojo.gyp:mojo_common_lib',
             '../mojo/mojo.gyp:mojo_cpp_bindings',
             '../mojo/mojo.gyp:mojo_environment_chromium',
             '../mojo/mojo.gyp:mojo_js_bindings',

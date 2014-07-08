@@ -32,7 +32,7 @@
         'mojo_input_events_bindings',
         'mojo_geometry_bindings',
         'mojo_geometry_lib',
-        'mojo_system_impl',
+        '<(mojo_system_for_component)',
       ],
       'sources': [
         'services/public/cpp/input_events/lib/input_events_type_converters.cc',
@@ -81,7 +81,7 @@
         '../ui/gfx/gfx.gyp:gfx_geometry',
         'mojo_environment_chromium',
         'mojo_geometry_bindings',
-        'mojo_system_impl',
+        '<(mojo_system_for_component)',
       ],
       'export_dependent_settings': [
         '../ui/gfx/gfx.gyp:gfx',
@@ -108,7 +108,7 @@
         'mojo_environment_chromium',
         'mojo_geometry_lib',
         'mojo_surfaces_bindings',
-        'mojo_system_impl',
+        '<(mojo_system_for_component)',
       ],
       'export_dependent_settings': [
         'mojo_geometry_lib',
@@ -213,7 +213,7 @@
         'mojo_gles2_service',
         'mojo_input_events_lib',
         'mojo_native_viewport_bindings',
-        'mojo_system_impl',
+        '<(mojo_system_for_component)',
       ],
       'defines': [
         'MOJO_NATIVE_VIEWPORT_IMPLEMENTATION',
@@ -275,7 +275,7 @@
     },
     {
       'target_name': 'mojo_network_service',
-      'type': 'shared_library',
+      'type': 'loadable_module',
       'dependencies': [
         '../base/base.gyp:base',
         '../net/net.gyp:net',
@@ -285,7 +285,7 @@
         'mojo_environment_chromium',
         'mojo_network_bindings',
         'mojo_profile_service_bindings',
-        'mojo_system_impl',
+        '<(mojo_system_for_loadable_module)',
       ],
       'export_dependent_settings': [
         'mojo_network_bindings',
@@ -324,7 +324,7 @@
     },
     {
       'target_name': 'mojo_launcher',
-      'type': 'shared_library',
+      'type': 'loadable_module',
       'dependencies': [
         '../base/base.gyp:base',
         '../url/url.gyp:url_lib',
@@ -333,8 +333,7 @@
         'mojo_environment_chromium',
         'mojo_launcher_bindings',
         'mojo_network_bindings',
-        'mojo_system_impl',
-        'mojo_utility',
+        '<(mojo_system_for_loadable_module)',
       ],
       'sources': [
         'services/launcher/launcher.cc',
@@ -468,8 +467,8 @@
         'mojo_application',
         'mojo_environment_standalone',
         'mojo_test_service_bindings',
-        'mojo_system',
         'mojo_utility',
+        '<(mojo_system_for_loadable_module)',
       ],
       'sources': [
         'public/cpp/application/lib/mojo_main_standalone.cc',
@@ -491,8 +490,8 @@
         'mojo_application',
         'mojo_environment_standalone',
         'mojo_test_service_bindings',
-        'mojo_system',
         'mojo_utility',
+        '<(mojo_system_for_loadable_module)',
       ],
       'sources': [
         'public/cpp/application/lib/mojo_main_standalone.cc',
@@ -562,9 +561,9 @@
             'mojo_input_events_bindings',
             'mojo_input_events_lib',
             'mojo_native_viewport_bindings',
-            'mojo_system_impl',
             'mojo_view_manager_bindings',
             'mojo_view_manager_common',
+            '<(mojo_system_for_component)',
           ],
           'sources': [
             'public/cpp/application/lib/mojo_main_chromium.cc',

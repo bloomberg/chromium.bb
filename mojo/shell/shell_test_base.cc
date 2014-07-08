@@ -26,18 +26,8 @@ ShellTestBase::~ShellTestBase() {
 ScopedMessagePipeHandle ShellTestBase::ConnectToService(
     const GURL& application_url,
     const std::string& service_name) {
-  base::FilePath base_dir;
-  CHECK(PathService::Get(base::DIR_EXE, &base_dir));
-  // On android, the library is bundled with the app.
-#if defined(OS_ANDROID)
-  // On Android, the library is bundled with the app.
   base::FilePath service_dir;
   CHECK(PathService::Get(base::DIR_MODULE, &service_dir));
-#else
-  // On other platforms, "loadable modules" are dumped beside the executables.
-  base::FilePath service_dir;
-  CHECK(PathService::Get(base::DIR_EXE, &service_dir));
-#endif
   shell_context_.mojo_url_resolver()->set_origin(
       net::FilePathToFileURL(service_dir).spec());
 

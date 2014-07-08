@@ -15,7 +15,6 @@ static_library("chromium") {
 
   deps = [
     ":chromium_impl",
-    "//mojo/common",
   ]
 
   forward_dependent_configs_from = [

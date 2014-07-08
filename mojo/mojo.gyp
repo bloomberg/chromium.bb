@@ -16,6 +16,36 @@
   'variables': {
     'chromium_code': 1,
     'mojo_shell_debug_url%': "",
+    'conditions': [
+      #
+      # The following mojo_system-prefixed variables are used to express a
+      # dependency on the mojo system APIs.
+      #
+      # In a component == "shared_library" build, everything can link against
+      # mojo_system_impl because it is built as a shared library. However, in a
+      # component != "shared_library" build, mojo_system_impl is linked into an
+      # executable (e.g., mojo_shell), and must be injected into other shared
+      # libraries (i.e., Mojo Apps) that need the mojo system API.
+      #
+      # For component targets, add <(mojo_system_for_component) to your
+      # dependencies section.  For loadable module targets (e.g., a Mojo App),
+      # add <(mojo_system_for_loadable_module) to your dependencies section.
+      #
+      # NOTE: component != "shared_library" implies that we are generating a
+      # static library, and in that case, it is expected that the target
+      # listing the component as a dependency will specify either mojo_system
+      # or mojo_system_impl to link against. This enables multiple targets to
+      # link against the same component library without having to agree on
+      # which Mojo system library they are using.
+      #
+      ['component=="shared_library"', {
+        'mojo_system_for_component': "mojo_system_impl",
+        'mojo_system_for_loadable_module': "mojo_system_impl",
+      }, {
+        'mojo_system_for_component': "mojo_none",
+        'mojo_system_for_loadable_module': "mojo_system",
+      }],
+    ],
   },
   'includes': [
     'mojo_apps.gypi',
@@ -102,6 +132,10 @@
           ],
         }],
       ]
+    },
+    {
+      'target_name': 'mojo_none',
+      'type': 'none',
     },
     {
       'target_name': 'mojo_external_service_bindings',
@@ -298,7 +332,7 @@
         'mojo_gles2',
         'mojo_gles2_bindings',
         'mojo_environment_chromium',
-        'mojo_system_impl',
+        '<(mojo_system_for_component)',
       ],
       'defines': [
         'MOJO_GLES2_IMPL_IMPLEMENTATION',
@@ -334,11 +368,10 @@
       'dependencies': [
         '../base/base.gyp:base',
         '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
-        'mojo_system_impl',
+        '<(mojo_system_for_component)',
       ],
       'export_dependent_settings': [
         '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
-        'mojo_system_impl',
       ],
       'sources': [
         'common/common_type_converters.cc',
@@ -397,7 +430,6 @@
       'target_name': 'mojo_environment_chromium',
       'type': 'static_library',
       'dependencies': [
-        'mojo_common_lib',
         'mojo_environment_chromium_impl',
       ],
       'sources': [
@@ -423,7 +455,8 @@
       'dependencies': [
         '../base/base.gyp:base',
         '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
-        'mojo_common_lib'
+        'mojo_common_lib',
+        '<(mojo_system_for_component)',
       ],
       'sources': [
         'environment/default_async_waiter_impl.cc',
@@ -450,7 +483,7 @@
         'mojo_common_lib',
         'mojo_environment_chromium',
         'mojo_service_provider_bindings',
-        'mojo_system_impl',
+        '<(mojo_system_for_component)',
       ],
       'sources': [
         'service_manager/background_service_loader.cc',
@@ -492,6 +525,7 @@
         '../net/net.gyp:net',
         '../url/url.gyp:url_lib',
         'mojo_application',
+        'mojo_common_lib',
         'mojo_external_service_bindings',
         'mojo_gles2_impl',
         'mojo_native_viewport_service',

@@ -69,10 +69,10 @@
     },
     {
       'target_name': 'mojo_js',
-      'type': 'shared_library',
+      'type': 'loadable_module',
       'dependencies': [
         'mojo_js_lib',
-        'mojo_system_impl',
+        '<(mojo_system_for_loadable_module)',
       ],
       'sources': [
         'apps/js/main.cc',
