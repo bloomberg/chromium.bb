@@ -7,6 +7,8 @@
 #include "ash/accessibility_delegate.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
+#include "base/test/simple_test_tick_clock.h"
+#include "base/time/time.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -16,13 +18,18 @@
 #include "ui/aura/window_tree_host.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/test/draw_waiter_for_test.h"
+#include "ui/events/event.h"
+#include "ui/events/event_utils.h"
 #include "ui/events/test/test_event_handler.h"
 
 namespace ui {
 
 class TouchExplorationTest : public InProcessBrowserTest {
  public:
-  TouchExplorationTest() {}
+  TouchExplorationTest() : simulated_clock_(new base::SimpleTestTickClock()) {
+    // Tests fail if time is ever 0.
+    simulated_clock_->Advance(base::TimeDelta::FromMilliseconds(10));
+  }
   virtual ~TouchExplorationTest() {}
 
  protected:
@@ -32,6 +39,14 @@ class TouchExplorationTest : public InProcessBrowserTest {
     if (on != ad->IsSpokenFeedbackEnabled())
       ad->ToggleSpokenFeedback(ash::A11Y_NOTIFICATION_NONE);
   }
+
+  base::TimeDelta Now() {
+    return base::TimeDelta::FromInternalValue(
+        simulated_clock_->NowTicks().ToInternalValue());
+  }
+
+  ui::GestureDetector::Config gesture_detector_config_;
+  base::SimpleTestTickClock* simulated_clock_;
 
 private:
   DISALLOW_COPY_AND_ASSIGN(TouchExplorationTest);
@@ -57,13 +72,26 @@ IN_PROC_BROWSER_TEST_F(TouchExplorationTest, ToggleOnOff) {
   SwitchTouchExplorationMode(true);
   aura::test::EventGenerator generator(root_window);
 
-  generator.set_current_location(gfx::Point(100, 200));
-  generator.PressTouchId(1);
+  base::TimeDelta initial_time = Now();
+  ui::TouchEvent initial_press(
+      ui::ET_TOUCH_PRESSED, gfx::Point(100, 200), 1, initial_time);
+  float delta_time =
+    (initial_press.location() - gfx::Point(109,209)).Length() /
+      gesture_detector_config_.minimum_swipe_velocity;
+  ui::TouchEvent touch_move(
+      ui::ET_TOUCH_MOVED,
+      gfx::Point(109, 209),
+      1,
+      initial_time + base::TimeDelta::FromSecondsD(delta_time));
+
+  generator.Dispatch(&initial_press);
+
   // Since the touch exploration controller doesn't know if the user is
   // double-tapping or not, touch exploration is only initiated if the
   // user moves more than 8 pixels away from the initial location (the "slop"),
-  // or after 300 ms has elapsed.
-  generator.MoveTouchId(gfx::Point(109, 209), 1);
+  // or after 300 ms has elapsed if the finger does not move fast enough.
+  generator.Dispatch(&touch_move);
+
   // Number of mouse events may be greater than 1 because of ET_MOUSE_ENTERED.
   EXPECT_GT(event_handler->num_mouse_events(), 0);
   EXPECT_EQ(0, event_handler->num_touch_events());
@@ -76,9 +104,20 @@ IN_PROC_BROWSER_TEST_F(TouchExplorationTest, ToggleOnOff) {
   event_handler->Reset();
 
   SwitchTouchExplorationMode(true);
-  generator.set_current_location(gfx::Point(500, 600));
-  generator.PressTouchId(2);
-  generator.MoveTouchId(gfx::Point(509, 609), 2);
+  initial_time = Now();
+  ui::TouchEvent second_initial_press(
+      ui::ET_TOUCH_PRESSED, gfx::Point(500, 600), 2, initial_time);
+  delta_time =
+      (second_initial_press.location() - gfx::Point(509, 609)).Length() /
+      gesture_detector_config_.minimum_swipe_velocity;
+  ui::TouchEvent second_move(
+      ui::ET_TOUCH_MOVED,
+      gfx::Point(509, 609),
+      2,
+      initial_time + base::TimeDelta::FromSecondsD(delta_time));
+
+  generator.Dispatch(&second_initial_press);
+  generator.Dispatch(&second_move);
   EXPECT_GT(event_handler->num_mouse_events(), 0);
   EXPECT_EQ(0, event_handler->num_touch_events());
 
