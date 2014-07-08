@@ -203,10 +203,9 @@ void RenderLayerCompositor::updateIfNeededRecursive()
     lifecycle().advanceTo(DocumentLifecycle::CompositingClean);
 
     DocumentAnimations::startPendingAnimations(m_renderView.document());
-    // TODO: Figure out why this fails on Chrome OS login page. crbug.com/365507
-    // ASSERT(lifecycle().state() == DocumentLifecycle::CompositingClean);
 
 #if ASSERT_ENABLED
+    ASSERT(lifecycle().state() == DocumentLifecycle::CompositingClean);
     assertNoUnresolvedDirtyBits();
     for (Frame* child = m_renderView.frameView()->frame().tree().firstChild(); child; child = child->tree().nextSibling()) {
         if (child->isLocalFrame())
