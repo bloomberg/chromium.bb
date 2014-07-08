@@ -699,6 +699,8 @@ PP_FileHandle OpenNaClExecutable(PP_Instance instance,
 
   content::PepperPluginInstance* plugin_instance =
       content::PepperPluginInstance::Get(instance);
+  if (!plugin_instance)
+    return PP_kInvalidFileHandle;
   // IMPORTANT: Make sure the document can request the given URL. If we don't
   // check, a malicious app could probe the extension system. This enforces a
   // same-origin policy which prevents the app from requesting resources from
