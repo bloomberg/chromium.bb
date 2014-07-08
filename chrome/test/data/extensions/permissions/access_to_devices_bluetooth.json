@@ -1,0 +1,13 @@
+{
+  "name": "Serial permissions",
+  "version": "1.0",
+  "manifest_version": 2,
+  "app": {
+    "background": {
+      "scripts": ["no-such-file.js"]
+    }
+  },
+  "bluetooth": {
+    "uuids": [ "1105" ]
+  }
+}

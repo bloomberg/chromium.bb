@@ -33,6 +33,16 @@ typename T::iterator FindMessageByID(T& messages, int id) {
 }
 
 template<typename T>
+typename T::const_iterator FindMessageByID(const T& messages, int id) {
+  for (typename T::const_iterator it = messages.begin();
+       it != messages.end(); ++it) {
+    if (it->id() == id)
+      return it;
+  }
+  return messages.end();
+}
+
+template<typename T>
 void SuppressMessage(T& messages,
                      int suppressing_message,
                      int suppressed_message) {
@@ -42,6 +52,21 @@ void SuppressMessage(T& messages,
       FindMessageByID(messages, suppressing_message) != messages.end()) {
     messages.erase(suppressed);
   }
+}
+
+bool ContainsMessages(const PermissionMessages& messages,
+                      int first_message,
+                      int second_message) {
+  return FindMessageByID(messages, first_message) != messages.end() &&
+         FindMessageByID(messages, second_message) != messages.end();
+}
+
+bool ContainsMessages(const PermissionMessages& messages,
+                      int first_message,
+                      int second_message,
+                      int third_message) {
+  return ContainsMessages(messages, first_message, second_message) &&
+         FindMessageByID(messages, third_message) != messages.end();
 }
 
 }  // namespace
@@ -111,76 +136,112 @@ std::vector<base::string16> ChromePermissionMessageProvider::GetWarningMessages(
   PermissionMessages messages =
       GetPermissionMessages(permissions, extension_type);
 
-  bool audio_capture = false;
-  bool video_capture = false;
-  bool media_galleries_read = false;
-  bool media_galleries_copy_to = false;
-  bool media_galleries_delete = false;
-  bool accessibility_read = false;
-  bool accessibility_write = false;
-  for (PermissionMessages::const_iterator i = messages.begin();
-       i != messages.end(); ++i) {
-    switch (i->id()) {
-      case PermissionMessage::kAudioCapture:
-        audio_capture = true;
-        break;
-      case PermissionMessage::kVideoCapture:
-        video_capture = true;
-        break;
-      case PermissionMessage::kMediaGalleriesAllGalleriesRead:
-        media_galleries_read = true;
-        break;
-      case PermissionMessage::kMediaGalleriesAllGalleriesCopyTo:
-        media_galleries_copy_to = true;
-        break;
-      case PermissionMessage::kMediaGalleriesAllGalleriesDelete:
-        media_galleries_delete = true;
-        break;
-      case PermissionMessage::kAccessibilityFeaturesRead:
-        accessibility_read = true;
-        break;
-      case PermissionMessage::kAccessibilityFeaturesModify:
-        accessibility_write = true;
-        break;
-      default:
-        break;
-    }
-  }
+  SuppressMessage(messages,
+                  PermissionMessage::kBluetooth,
+                  PermissionMessage::kBluetoothDevices);
 
   for (PermissionMessages::const_iterator i = messages.begin();
        i != messages.end(); ++i) {
     int id = i->id();
-    if (audio_capture && video_capture) {
-      if (id == PermissionMessage::kAudioCapture) {
-        message_strings.push_back(l10n_util::GetStringUTF16(
-            IDS_EXTENSION_PROMPT_WARNING_AUDIO_AND_VIDEO_CAPTURE));
+    // Access to users' devices should provide a single warning message
+    // specifying the transport method used; USB, serial and/or Bluetooth.
+    if (id == PermissionMessage::kBluetooth ||
+        id == PermissionMessage::kSerial ||
+        id == PermissionMessage::kUsb) {
+      if (ContainsMessages(messages,
+                           PermissionMessage::kBluetooth,
+                           PermissionMessage::kSerial,
+                           PermissionMessage::kUsb)) {
+        if (id == PermissionMessage::kBluetooth) {
+          message_strings.push_back(l10n_util::GetStringUTF16(
+              IDS_EXTENSION_PROMPT_WARNING_ALL_DEVICES));
+        }
         continue;
-      } else if (id == PermissionMessage::kVideoCapture) {
-        // The combined message will be pushed above.
+      }
+      if (ContainsMessages(messages,
+                           PermissionMessage::kBluetooth,
+                           PermissionMessage::kUsb)) {
+        if (id == PermissionMessage::kBluetooth) {
+          message_strings.push_back(l10n_util::GetStringUTF16(
+              IDS_EXTENSION_PROMPT_WARNING_USB_BLUETOOTH));
+        }
+        continue;
+      }
+      if (ContainsMessages(messages,
+                           PermissionMessage::kSerial,
+                           PermissionMessage::kUsb)) {
+        if (id == PermissionMessage::kSerial) {
+          message_strings.push_back(l10n_util::GetStringUTF16(
+              IDS_EXTENSION_PROMPT_WARNING_USB_SERIAL));
+        }
+        continue;
+      }
+      if (ContainsMessages(messages,
+                           PermissionMessage::kBluetooth,
+                           PermissionMessage::kSerial)) {
+        if (id == PermissionMessage::kBluetooth) {
+          message_strings.push_back(l10n_util::GetStringUTF16(
+              IDS_EXTENSION_PROMPT_WARNING_BLUETOOTH_SERIAL));
+        }
         continue;
       }
     }
-    if (accessibility_read && accessibility_write) {
-      if (id == PermissionMessage::kAccessibilityFeaturesRead) {
-        message_strings.push_back(l10n_util::GetStringUTF16(
-            IDS_EXTENSION_PROMPT_WARNING_ACCESSIBILITY_FEATURES_READ_MODIFY));
-        continue;
-      } else if (id == PermissionMessage::kAccessibilityFeaturesModify) {
-        // The combined message will be pushed above.
+    if (id == PermissionMessage::kAccessibilityFeaturesModify ||
+        id == PermissionMessage::kAccessibilityFeaturesRead) {
+      if (ContainsMessages(messages,
+                           PermissionMessage::kAccessibilityFeaturesModify,
+                           PermissionMessage::kAccessibilityFeaturesRead)) {
+        if (id == PermissionMessage::kAccessibilityFeaturesModify) {
+          message_strings.push_back(l10n_util::GetStringUTF16(
+              IDS_EXTENSION_PROMPT_WARNING_ACCESSIBILITY_FEATURES_READ_MODIFY));
+        }
         continue;
       }
     }
-    if (media_galleries_read &&
-        (media_galleries_copy_to || media_galleries_delete)) {
-      if (id == PermissionMessage::kMediaGalleriesAllGalleriesRead) {
-        int m_id = media_galleries_copy_to ?
-            IDS_EXTENSION_PROMPT_WARNING_MEDIA_GALLERIES_READ_WRITE :
-            IDS_EXTENSION_PROMPT_WARNING_MEDIA_GALLERIES_READ_DELETE;
-        message_strings.push_back(l10n_util::GetStringUTF16(m_id));
+    if (id == PermissionMessage::kAudioCapture ||
+        id == PermissionMessage::kVideoCapture) {
+      if (ContainsMessages(messages,
+                           PermissionMessage::kAudioCapture,
+                           PermissionMessage::kVideoCapture)) {
+        if (id == PermissionMessage::kAudioCapture) {
+          message_strings.push_back(l10n_util::GetStringUTF16(
+              IDS_EXTENSION_PROMPT_WARNING_AUDIO_AND_VIDEO_CAPTURE));
+        }
         continue;
-      } else if (id == PermissionMessage::kMediaGalleriesAllGalleriesCopyTo ||
-                 id == PermissionMessage::kMediaGalleriesAllGalleriesDelete) {
-        // The combined message will be pushed above.
+      }
+    }
+    if (id == PermissionMessage::kMediaGalleriesAllGalleriesCopyTo ||
+        id == PermissionMessage::kMediaGalleriesAllGalleriesDelete ||
+        id == PermissionMessage::kMediaGalleriesAllGalleriesRead) {
+      if (ContainsMessages(
+              messages,
+              PermissionMessage::kMediaGalleriesAllGalleriesCopyTo,
+              PermissionMessage::kMediaGalleriesAllGalleriesDelete,
+              PermissionMessage::kMediaGalleriesAllGalleriesRead)) {
+        if (id == PermissionMessage::kMediaGalleriesAllGalleriesCopyTo) {
+          message_strings.push_back(l10n_util::GetStringUTF16(
+              IDS_EXTENSION_PROMPT_WARNING_MEDIA_GALLERIES_READ_WRITE_DELETE));
+        }
+        continue;
+      }
+      if (ContainsMessages(
+              messages,
+              PermissionMessage::kMediaGalleriesAllGalleriesCopyTo,
+              PermissionMessage::kMediaGalleriesAllGalleriesRead)) {
+        if (id == PermissionMessage::kMediaGalleriesAllGalleriesCopyTo) {
+          message_strings.push_back(l10n_util::GetStringUTF16(
+              IDS_EXTENSION_PROMPT_WARNING_MEDIA_GALLERIES_READ_WRITE));
+        }
+        continue;
+      }
+      if (ContainsMessages(
+              messages,
+              PermissionMessage::kMediaGalleriesAllGalleriesDelete,
+              PermissionMessage::kMediaGalleriesAllGalleriesRead)) {
+        if (id == PermissionMessage::kMediaGalleriesAllGalleriesDelete) {
+          message_strings.push_back(l10n_util::GetStringUTF16(
+              IDS_EXTENSION_PROMPT_WARNING_MEDIA_GALLERIES_READ_DELETE));
+        }
         continue;
       }
     }

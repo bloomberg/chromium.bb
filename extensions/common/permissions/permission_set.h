@@ -122,6 +122,7 @@ class PermissionSet
 
  private:
   FRIEND_TEST_ALL_PREFIXES(PermissionsTest, GetWarningMessages_AudioVideo);
+  FRIEND_TEST_ALL_PREFIXES(PermissionsTest, AccessToDevicesMessages);
   friend class base::RefCountedThreadSafe<PermissionSet>;
 
   ~PermissionSet();

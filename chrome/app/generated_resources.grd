@@ -4363,7 +4363,19 @@ Make sure you do not expose any sensitive information.
         Read the list of your signed-in devices
       </message>
       <message name="IDS_EXTENSION_PROMPT_WARNING_HID" desc="Permission string for access to HID devices.">
-        Access input devices over USB and Bluetooth
+        Access your input devices
+      </message>
+      <message name="IDS_EXTENSION_PROMPT_WARNING_USB_BLUETOOTH" desc="Permission string for access to USB and Bluetooth devices.">
+        Access your USB and Bluetooth devices
+      </message>
+      <message name="IDS_EXTENSION_PROMPT_WARNING_USB_SERIAL" desc="Permission string for access to USB and serial connected devices.">
+        Access your USB and Serial devices
+      </message>
+      <message name="IDS_EXTENSION_PROMPT_WARNING_BLUETOOTH_SERIAL" desc="Permission string for access to Bluetooth and serial connected devices.">
+        Access your Bluetooth and Serial devices
+      </message>
+      <message name="IDS_EXTENSION_PROMPT_WARNING_ALL_DEVICES" desc="Permission string for access all user's connected devices.">
+        Access all your hardware devices
       </message>
       <message name="IDS_EXTENSION_PROMPT_WARNING_BLUETOOTH" desc="Permission string for general access to the Bluetooth API.">
         Access information about Bluetooth devices paired with your system and discover nearby Bluetooth devices.
@@ -4404,8 +4416,11 @@ Make sure you do not expose any sensitive information.
       <message name="IDS_EXTENSION_PROMPT_WARNING_MEDIA_GALLERIES_READ_DELETE" desc="Permission string for access to read and delete all of the user's media galleries.">
         Read and delete photos, music, and other media from your computer
       </message>
+      <message name="IDS_EXTENSION_PROMPT_WARNING_MEDIA_GALLERIES_READ_WRITE_DELETE" desc="Permission string for access to read, write and delete to all of the user's media galleries.">
+        Read, change and delete photos, music, and other media from your computer
+      </message>
       <message name="IDS_EXTENSION_PROMPT_WARNING_SERIAL" desc="Permission string for access to serial devices.">
-        Use serial devices attached to your computer
+        Access your serial devices
       </message>
       <message name="IDS_EXTENSION_PROMPT_WARNING_SYNCFILESYSTEM" desc="Permission string for synchronizing files to the user's Google Drive">
         Store data in your Google Drive account
