@@ -70,13 +70,15 @@ class GFX_EXPORT PlatformFontPango : public PlatformFont {
   // pango_font_description_from_string()) for the default UI font.
   static std::string GetDefaultFont();
 
-  // Initialize this object.
-  void InitWithNameAndSize(const std::string& font_name, int font_size);
-  void InitWithTypefaceNameSizeAndStyle(
+  // Initializes this object based on the passed-in details. If |typeface| is
+  // empty, a new typeface will be loaded.
+  void InitFromDetails(
       const skia::RefPtr<SkTypeface>& typeface,
       const std::string& font_family,
       int font_size,
       int style);
+
+  // Initializes this object as a copy of another PlatformFontPango.
   void InitFromPlatformFont(const PlatformFontPango* other);
 
   // Potentially slow call to get pango metrics (average width, underline info).
@@ -100,8 +102,8 @@ class GFX_EXPORT PlatformFontPango : public PlatformFont {
   int style_;
 
   // Cached metrics, generated at construction.
-  int height_pixels_;
   int ascent_pixels_;
+  int height_pixels_;
   int cap_height_pixels_;
 
   // The pango metrics are much more expensive so we wait until we need them
