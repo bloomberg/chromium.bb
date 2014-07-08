@@ -9,34 +9,85 @@ declare_args() {
   ozone_platform = "test"
 }
 
-platform_list_file = "$target_gen_dir/ozone_platform_list.cc"
+platform_list_cc_file = "$target_gen_dir/platform_list.cc"
+platform_list_h_file = "$target_gen_dir/platform_list.h"
+platform_list_txt_file = "$target_gen_dir/platform_list.txt"
+constructor_list_cc_file = "$target_gen_dir/constructor_list.cc"
+
+# GYP version: ui/ozone/ozone.gyp:ozone_base
+component("ozone_base") {
+  sources = [
+    "public/cursor_factory_ozone.cc",
+    "public/cursor_factory_ozone.h",
+    "public/event_factory_ozone.cc",
+    "public/event_factory_ozone.h",
+    "public/gpu_platform_support.cc",
+    "public/gpu_platform_support.h",
+    "public/gpu_platform_support_host.cc",
+    "public/gpu_platform_support_host.h",
+    "public/overlay_candidates_ozone.cc",
+    "public/overlay_candidates_ozone.h",
+    "public/surface_factory_ozone.cc",
+    "public/surface_factory_ozone.h",
+    "public/surface_ozone_canvas.h",
+    "public/surface_ozone_egl.h",
+  ]
+
+  defines = [ "OZONE_BASE_IMPLEMENTATION" ]
+
+  deps = [
+    "//base",
+    "//skia",
+    "//ui/gfx/geometry",
+  ]
+}
 
 component("ozone") {
   sources = [
-    platform_list_file,
+    platform_list_cc_file,
+    platform_list_h_file,
+    constructor_list_cc_file,
+
     # common/chromeos files are excluded automatically when building with
     # chromeos=0, by exclusion rules in filename_rules.gypi due to the
     # "chromeos" folder name.
     "common/chromeos/native_display_delegate_ozone.cc",
     "common/chromeos/native_display_delegate_ozone.h",
+    "common/chromeos/touchscreen_device_manager_ozone.cc",
+    "common/chromeos/touchscreen_device_manager_ozone.h",
+    "common/gpu/ozone_gpu_message_generator.cc",
+    "common/gpu/ozone_gpu_message_generator.h",
     "ozone_platform.cc",
     "ozone_platform.h",
     "ozone_switches.cc",
     "ozone_switches.h",
+    "platform_selection.cc",
+    "platform_selection.h",
   ]
 
   defines = [ "OZONE_IMPLEMENTATION" ]
 
   deps = [
+    ":generate_constructor_list",
     ":generate_ozone_platform_list",
+    ":ozone_base",
     "//base",
+    "//ipc",
     "//skia",
-    "//ui/base",
     "//ui/events",
+    "//ui/events/ozone",
     "//ui/gfx",
     "//ui/gfx/geometry",
-    "//ui/gfx/ozone",
+    "//ui/gfx/ipc",
+    # TODO(GYP) the GYP version has a way to add additional dependencies via
+    # build flags.
   ]
+
+  if (is_chromeos) {
+    deps += [
+      #'<(DEPTH)/ui/display/display.gyp:display_types',  TODO(GYP)
+    ]
+  }
 }
 
 # TODO(GYP) implement the ozone platforms. This should check the various
@@ -44,13 +95,45 @@ component("ozone") {
 # the script below.
 ozone_platforms = ""
 
+# GYP version: ui/ozone/ozone.gyp:generate_ozone_platform_list
 action("generate_ozone_platform_list") {
   script = "generate_ozone_platform_list.py"
-  outputs = [ platform_list_file ]
+  outputs = [
+    platform_list_cc_file,
+    platform_list_h_file,
+    platform_list_txt_file
+  ]
 
   args = [
-    "--output_file=" + rebase_path(platform_list_file, root_build_dir),
+    "--output_cc=" + rebase_path(platform_list_cc_file, root_build_dir),
+    "--output_h=" + rebase_path(platform_list_h_file, root_build_dir),
+    "--output_txt=" + rebase_path(platform_list_txt_file, root_build_dir),
     "--default=$ozone_platform",
     ozone_platforms,
   ]
 }
+
+# GYP version: ui/ozone/ozone.gyp:generate_constructor_list
+action("generate_constructor_list") {
+  script = "generate_constructor_list.py"
+
+  source_prereqs = [
+    platform_list_txt_file,
+  ]
+  outputs = [
+    constructor_list_cc_file,
+  ]
+
+  args = [
+    "--platform_list=" + rebase_path(platform_list_txt_file, root_build_dir),
+    "--output_cc=" + rebase_path(constructor_list_cc_file, root_build_dir),
+    "--namespace=ui",
+    "--typename=OzonePlatform",
+    "--include=ui/ozone/ozone_platform.h",
+  ]
+
+  deps = [ ":generate_ozone_platform_list" ]
+}
+
+# TODO(GYP) ozone_unittests
+# TODO(GYP) platform_caca, dri, other test stuff.

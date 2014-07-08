@@ -74,8 +74,8 @@ if (widevine_cdm_binary_files == []) {
 source_set("adapter") {
   if (is_chrome_branded) {
     deps = [
-      ":widevine_cdm_version_h",
-      ":widevine_cdm_binaries",
+      ":version_h",
+      ":binaries",
       "//ppapi:ppapi_cpp",
       #'<(DEPTH)/media/media_cdm_adapter.gyp:cdmadapter',  TODO(GYP)
     ]

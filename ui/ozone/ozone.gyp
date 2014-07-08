@@ -15,6 +15,7 @@
   },
   'targets': [
     {
+      # GN version: //ui/ozone:ozone_base
       'target_name': 'ozone_base',
       'type': '<(component)',
       'dependencies': [
@@ -44,6 +45,7 @@
       ],
     },
     {
+      # GN version: //ui/ozone
       'target_name': 'ozone',
       'type': '<(component)',
       'dependencies': [
@@ -99,6 +101,7 @@
       ],
       'actions': [
         {
+          # GN version: //ui/ozone:generate_ozone_platform_list
           'action_name': 'generate_ozone_platform_list',
           'variables': {
             'generator_path': 'generate_ozone_platform_list.py',
@@ -122,6 +125,7 @@
           ],
         },
         {
+          # GN version: //ui/ozone:generate_constructor_list
           'action_name': 'generate_constructor_list',
           'variables': {
             'generator_path': 'generate_constructor_list.py',
