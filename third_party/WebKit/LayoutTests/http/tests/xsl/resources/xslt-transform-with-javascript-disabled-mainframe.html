@@ -1,0 +1,17 @@
+<html>
+<head>
+<script>
+function shouldNotBeExecuted()
+{
+    var divElement = document.createElement("div");
+    divElement.innerHTML = "This text should not present";
+    document.body.appendChild(divElement);
+}
+
+</script>
+</head>
+<body>
+<script>shouldNotBeExecuted()</script>
+<iframe src="resources/xslt-transform-with-javascript-disabled.xml"></iframe>
+</body>
+</html>

@@ -2,14 +2,18 @@
 <body>
 <script>
     if (window.testRunner) {
-        testRunner.dumpAsText()
+        testRunner.dumpAsText();
+        testRunner.waitUntilDone();
+        testRunner.setCanOpenWindows();
+        testRunner.setCloseRemainingWindowsWhenComplete(true);
         testRunner.overridePreference("WebKitJavaScriptEnabled", false);
     }
 
     function loadstatus() {
-        if (window.testRunner)
-            document.getElementById("status").innerHTML = "FAIL";
+        var win = window.open("resources/override-preferences-window.html");
+        win.onload = function() { testRunner.notifyDone() };
     }
+
 </script>
 <body onload="loadstatus()">
     <p>This is a test that verifies that testRunner can have its default preferences overridden.  This test specifically checks that Javascript can be disabled, and you should see "PASS" below if viewing with a browser.</p>
