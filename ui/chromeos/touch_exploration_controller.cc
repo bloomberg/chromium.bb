@@ -18,17 +18,11 @@
 
 namespace ui {
 
-namespace {
-// In ChromeOS, VKEY_LWIN is synonymous for the search key.
-const ui::KeyboardCode kChromeOSSearchKey = ui::VKEY_LWIN;
-}  // namespace
-
 TouchExplorationController::TouchExplorationController(
     aura::Window* root_window)
     : root_window_(root_window),
       state_(NO_FINGERS_DOWN),
       event_handler_for_testing_(NULL),
-      gesture_provider_(this),
       prev_state_(NO_FINGERS_DOWN) {
   CHECK(root_window);
   root_window->GetHost()->GetEventSource()->AddEventRewriter(this);
@@ -54,10 +48,6 @@ bool TouchExplorationController::IsInNoFingersDownStateForTesting() const {
   return state_ == NO_FINGERS_DOWN;
 }
 
-bool TouchExplorationController::IsInGestureInProgressStateForTesting() const {
-  return state_ == GESTURE_IN_PROGRESS;
-}
-
 ui::EventRewriteStatus TouchExplorationController::RewriteEvent(
     const ui::Event& event,
     scoped_ptr<ui::Event>* rewritten_event) {
@@ -68,6 +58,9 @@ ui::EventRewriteStatus TouchExplorationController::RewriteEvent(
               << " Key code: " << key_event.key_code()
               << ", Flags: " << key_event.flags()
               << ", Is char: " << key_event.is_char();
+    }
+    if(event.IsGestureEvent()){
+      VLOG(0) << "\n Gesture event " << event.name();
     }
     return ui::EVENT_REWRITE_CONTINUE;
   }
@@ -130,8 +123,6 @@ ui::EventRewriteStatus TouchExplorationController::RewriteEvent(
       return InDoubleTapPressed(touch_event, rewritten_event);
     case TOUCH_EXPLORATION:
       return InTouchExploration(touch_event, rewritten_event);
-    case GESTURE_IN_PROGRESS:
-      return InGestureInProgress(touch_event, rewritten_event);
     case TOUCH_EXPLORE_SECOND_PRESS:
       return InTouchExploreSecondPress(touch_event, rewritten_event);
     case TWO_TO_ONE_FINGER:
@@ -161,9 +152,6 @@ ui::EventRewriteStatus TouchExplorationController::InNoFingersDown(
                      gesture_detector_config_.double_tap_timeout,
                      this,
                      &TouchExplorationController::OnTapTimerFired);
-    gesture_provider_.OnTouchEvent(event);
-    gesture_provider_.OnTouchEventAck(false);
-    ProcessGestureEvents();
     state_ = SINGLE_TAP_PRESSED;
     VLOG_STATE();
     return ui::EVENT_REWRITE_DISCARD;
@@ -194,33 +182,19 @@ ui::EventRewriteStatus TouchExplorationController::InSingleTapPressed(
     VLOG_STATE();
     return EVENT_REWRITE_DISCARD;
   } else if (type == ui::ET_TOUCH_MOVED) {
-    float distance = (event.location() - initial_press_->location()).Length();
-    // If the user does not move far enough from the original position, then the
-    // resulting movement should not be considered to be a deliberate gesture or
-    // touch exploration.
-    if (distance <= gesture_detector_config_.touch_slop)
-      return EVENT_REWRITE_DISCARD;
-
-    float delta_time =
-        (event.time_stamp() - initial_press_->time_stamp()).InSecondsF();
-    float velocity = distance / delta_time;
-    VLOG(0) << "\n Delta time: " << delta_time
-            << "\n Distance: " << distance
-            << "\n Velocity of click: " << velocity
-            << "\n Minimum swipe velocity: "
-            << gesture_detector_config_.minimum_swipe_velocity;
-
-    // If the user moves fast enough from the initial touch location, start
-    // gesture detection. Otherwise, jump to the touch exploration mode early.
-    if (velocity > gesture_detector_config_.minimum_swipe_velocity) {
-      state_ = GESTURE_IN_PROGRESS;
+    // If the user moves far enough from the initial touch location (outside
+    // the "slop" region, jump to the touch exploration mode early.
+    // TODO(evy, lisayin): Add gesture recognition here instead -
+    // we should probably jump to gesture mode here if the velocity is
+    // high enough, and touch exploration if the velocity is lower.
+    float delta = (event.location() - initial_press_->location()).Length();
+    if (delta > gesture_detector_config_.touch_slop) {
+      EnterTouchToMouseMode();
+      state_ = TOUCH_EXPLORATION;
       VLOG_STATE();
-      return InGestureInProgress(event, rewritten_event);
+      return InTouchExploration(event, rewritten_event);
     }
-    EnterTouchToMouseMode();
-    state_ = TOUCH_EXPLORATION;
-    VLOG_STATE();
-    return InTouchExploration(event, rewritten_event);
+    return EVENT_REWRITE_DISCARD;
   }
   NOTREACHED() << "Unexpected event type received.";
   return ui::EVENT_REWRITE_CONTINUE;
@@ -231,23 +205,13 @@ TouchExplorationController::InSingleTapOrTouchExploreReleased(
     const ui::TouchEvent& event,
     scoped_ptr<ui::Event>* rewritten_event) {
   const ui::EventType type = event.type();
-  // If there is more than one finger down, then discard to wait until only one
-  // finger is or no fingers are down.
-  if (current_touch_ids_.size() > 1) {
-    state_ = WAIT_FOR_RELEASE;
-    return ui::EVENT_REWRITE_DISCARD;
-  }
-  // If there is no touch exploration yet, discard.
-  if (!last_touch_exploration_ || type == ui::ET_TOUCH_RELEASED) {
-    if (current_touch_ids_.size() == 0) {
-      ResetToNoFingersDown();
-    }
-    return ui::EVENT_REWRITE_DISCARD;
-  }
-
   if (type == ui::ET_TOUCH_PRESSED) {
     // This is the second tap in a double-tap (or double tap-hold).
     // Rewrite at location of last touch exploration.
+    // If there is no touch exploration yet, discard instead.
+    if (!last_touch_exploration_) {
+      return ui::EVENT_REWRITE_DISCARD;
+    }
     rewritten_event->reset(
         new ui::TouchEvent(ui::ET_TOUCH_PRESSED,
                            last_touch_exploration_->location(),
@@ -257,6 +221,13 @@ TouchExplorationController::InSingleTapOrTouchExploreReleased(
     state_ = DOUBLE_TAP_PRESSED;
     VLOG_STATE();
     return ui::EVENT_REWRITE_REWRITTEN;
+  } else if (type == ui::ET_TOUCH_RELEASED && !last_touch_exploration_) {
+    // If the previous press was discarded, we need to also handle its
+    // release.
+    if (current_touch_ids_.size() == 0) {
+      ResetToNoFingersDown();
+    }
+    return ui::EVENT_REWRITE_DISCARD;
   }
   NOTREACHED() << "Unexpected event type received.";
   return ui::EVENT_REWRITE_CONTINUE;
@@ -272,7 +243,7 @@ ui::EventRewriteStatus TouchExplorationController::InDoubleTapPressed(
       return EVENT_REWRITE_DISCARD;
 
     // Rewrite release at location of last touch exploration with the same
-    // id as the previous press.
+    // id as the prevoius press.
     rewritten_event->reset(
         new ui::TouchEvent(ui::ET_TOUCH_RELEASED,
                            last_touch_exploration_->location(),
@@ -325,44 +296,6 @@ ui::EventRewriteStatus TouchExplorationController::InTouchExploration(
   return ui::EVENT_REWRITE_REWRITTEN;
 }
 
-ui::EventRewriteStatus TouchExplorationController::InGestureInProgress(
-    const ui::TouchEvent& event,
-    scoped_ptr<ui::Event>* rewritten_event) {
-  ui::EventType type = event.type();
-  // If additional fingers are added before a swipe gesture has been registered,
-  // then the state will no longer be GESTURE_IN_PROGRESS.
-  if (type == ui::ET_TOUCH_PRESSED ||
-      event.touch_id() != initial_press_->touch_id()) {
-    if (tap_timer_.IsRunning())
-      tap_timer_.Stop();
-    // Discard any pending gestures.
-    ignore_result(gesture_provider_.GetAndResetPendingGestures());
-    state_ = TWO_TO_ONE_FINGER;
-    last_two_to_one_.reset(new TouchEvent(event));
-    rewritten_event->reset(new ui::TouchEvent(ui::ET_TOUCH_PRESSED,
-                                              event.location(),
-                                              event.touch_id(),
-                                              event.time_stamp()));
-    (*rewritten_event)->set_flags(event.flags());
-    return EVENT_REWRITE_REWRITTEN;
-  }
-
-  // There should not be more than one finger down.
-  DCHECK(current_touch_ids_.size() <= 1);
-  if (type == ui::ET_TOUCH_MOVED) {
-    gesture_provider_.OnTouchEvent(event);
-    gesture_provider_.OnTouchEventAck(false);
-  }
-  if (type == ui::ET_TOUCH_RELEASED || type == ui::ET_TOUCH_CANCELLED) {
-    gesture_provider_.OnTouchEvent(event);
-    gesture_provider_.OnTouchEventAck(false);
-    if (current_touch_ids_.size() == 0)
-      ResetToNoFingersDown();
-  }
-
-  ProcessGestureEvents();
-  return ui::EVENT_REWRITE_DISCARD;
-}
 
 ui::EventRewriteStatus TouchExplorationController::InTwoToOneFinger(
     const ui::TouchEvent& event,
@@ -481,7 +414,6 @@ ui::EventRewriteStatus TouchExplorationController::InTouchExploreSecondPress(
                            initial_press_->touch_id(),
                            event.time_stamp()));
     (*rewritten_event)->set_flags(event.flags());
-    EnterTouchToMouseMode();
     state_ = TOUCH_EXPLORATION;
     VLOG_STATE();
     return ui::EVENT_REWRITE_REWRITTEN;
@@ -501,7 +433,6 @@ ui::EventRewriteStatus TouchExplorationController::InWaitForRelease(
   }
   if (current_touch_ids_.size() == 0) {
     state_ = NO_FINGERS_DOWN;
-    VLOG_STATE();
     ResetToNoFingersDown();
   }
   return EVENT_REWRITE_DISCARD;
@@ -517,9 +448,6 @@ void TouchExplorationController::OnTapTimerFired() {
       last_touch_exploration_.reset(new TouchEvent(*initial_press_));
       return;
     case SINGLE_TAP_PRESSED:
-    case GESTURE_IN_PROGRESS:
-      // Discard any pending gestures.
-      ignore_result(gesture_provider_.GetAndResetPendingGestures());
       EnterTouchToMouseMode();
       state_ = TOUCH_EXPLORATION;
       VLOG_STATE();
@@ -527,11 +455,12 @@ void TouchExplorationController::OnTapTimerFired() {
     default:
       return;
   }
-  scoped_ptr<ui::Event> mouse_move =
-      CreateMouseMoveEvent(initial_press_->location(), initial_press_->flags());
+
+  scoped_ptr<ui::Event> mouse_move = CreateMouseMoveEvent(
+      initial_press_->location(), initial_press_->flags());
   DispatchEvent(mouse_move.get());
   last_touch_exploration_.reset(new TouchEvent(*initial_press_));
- }
+}
 
 void TouchExplorationController::DispatchEvent(ui::Event* event) {
   if (event_handler_for_testing_) {
@@ -540,68 +469,6 @@ void TouchExplorationController::DispatchEvent(ui::Event* event) {
   }
   ui::EventDispatchDetails result ALLOW_UNUSED =
       root_window_->GetHost()->dispatcher()->OnEventFromSource(event);
-}
-
-void TouchExplorationController::OnGestureEvent(ui::GestureEvent* gesture) {
-  CHECK(gesture->IsGestureEvent());
-  VLOG(0) << " \n Gesture Triggered: " << gesture->name();
-  if (gesture->type() == ui::ET_GESTURE_SWIPE) {
-    if (tap_timer_.IsRunning())
-      tap_timer_.Stop();
-    OnSwipeEvent(gesture);
-    return;
-  }
-}
-
-void TouchExplorationController::ProcessGestureEvents() {
-  scoped_ptr<ScopedVector<ui::GestureEvent> > gestures(
-      gesture_provider_.GetAndResetPendingGestures());
-  if (gestures) {
-    for (ScopedVector<GestureEvent>::iterator i = gestures->begin();
-         i != gestures->end();
-         ++i) {
-      OnGestureEvent(*i);
-    }
-  }
-}
-
-void TouchExplorationController::OnSwipeEvent(ui::GestureEvent* swipe_gesture) {
-  // A swipe gesture contains details for the direction in which the swipe
-  // occurred.
-  GestureEventDetails event_details = swipe_gesture->details();
-  if (event_details.swipe_left()) {
-    DispatchShiftSearchKeyEvent(ui::VKEY_LEFT);
-    return;
-  } else if (event_details.swipe_right()) {
-    DispatchShiftSearchKeyEvent(ui::VKEY_RIGHT);
-    return;
-  } else if (event_details.swipe_up()) {
-    DispatchShiftSearchKeyEvent(ui::VKEY_UP);
-    return;
-  } else if (event_details.swipe_down()) {
-    DispatchShiftSearchKeyEvent(ui::VKEY_DOWN);
-    return;
-  }
-}
-
-void TouchExplorationController::DispatchShiftSearchKeyEvent(
-    const ui::KeyboardCode direction) {
-  // In order to activate the shortcut shift+search+<arrow key>
-  // three KeyPressed events must be dispatched in succession along
-  // with three KeyReleased events.
-  DispatchEvent(new ui::KeyEvent(
-      ui::ET_KEY_PRESSED, ui::VKEY_SHIFT, ui::EF_SHIFT_DOWN, false));
-  DispatchEvent(new ui::KeyEvent(
-      ui::ET_KEY_PRESSED, kChromeOSSearchKey, ui::EF_SHIFT_DOWN, false));
-  DispatchEvent(new ui::KeyEvent(
-      ui::ET_KEY_PRESSED, direction, ui::EF_SHIFT_DOWN, false));
-
-  DispatchEvent(new ui::KeyEvent(
-      ui::ET_KEY_RELEASED, direction, ui::EF_SHIFT_DOWN, false));
-  DispatchEvent(new ui::KeyEvent(
-      ui::ET_KEY_RELEASED, kChromeOSSearchKey, ui::EF_SHIFT_DOWN, false));
-  DispatchEvent(new ui::KeyEvent(
-      ui::ET_KEY_RELEASED, ui::VKEY_SHIFT, ui::EF_NONE, false));
 }
 
 scoped_ptr<ui::Event> TouchExplorationController::CreateMouseMoveEvent(
@@ -682,8 +549,6 @@ const char* TouchExplorationController::EnumStateToString(State state) {
       return "DOUBLE_TAP_PRESSED";
     case TOUCH_EXPLORATION:
       return "TOUCH_EXPLORATION";
-    case GESTURE_IN_PROGRESS:
-      return "GESTURE_IN_PROGRESS";
     case TOUCH_EXPLORE_SECOND_PRESS:
       return "TOUCH_EXPLORE_SECOND_PRESS";
     case TWO_TO_ONE_FINGER:
