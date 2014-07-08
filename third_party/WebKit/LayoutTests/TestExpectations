@@ -1303,3 +1303,5 @@ crbug.com/392046 [ Win ] fast/ruby/select-ruby.html [ Pass Failure ]
 crbug.com/392046 [ Win ] scrollbars/rtl/overflow-scroll-rtl.html [ Pass Failure ]
 
 crbug.com/391068 http/tests/websocket/workers/close-code-and-reason.html [ Timeout Pass ]
+
+crbug.com/392095 webaudio/realtimeanalyser-fft-scaling.html [ Pass Failure ]
