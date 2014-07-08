@@ -454,9 +454,6 @@ class TemplateURLService : public WebDataServiceConsumer,
   // Transitions to the loaded state.
   void ChangeToLoadedState();
 
-  // Callback that is called when the Google URL is updated.
-  void OnGoogleURLUpdated(GURL old_url, GURL new_url);
-
   // Called by DefaultSearchManager when the effective default search engine has
   // changed.
   void OnDefaultSearchChange(const TemplateURLData* new_dse_data,

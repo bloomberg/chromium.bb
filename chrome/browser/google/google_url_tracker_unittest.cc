@@ -39,7 +39,7 @@ class TestCallbackListener {
   void clear_notified() { notified_ = false; }
 
  private:
-  void OnGoogleURLUpdated(GURL old_url, GURL new_url);
+  void OnGoogleURLUpdated();
 
   bool notified_;
   scoped_ptr<GoogleURLTracker::Subscription> google_url_updated_subscription_;
@@ -51,7 +51,7 @@ TestCallbackListener::TestCallbackListener() : notified_(false) {
 TestCallbackListener::~TestCallbackListener() {
 }
 
-void TestCallbackListener::OnGoogleURLUpdated(GURL old_url, GURL new_url) {
+void TestCallbackListener::OnGoogleURLUpdated() {
   notified_ = true;
 }
 
@@ -71,7 +71,7 @@ void TestCallbackListener::RegisterCallback(
 
 class TestGoogleURLTrackerClient : public GoogleURLTrackerClient {
  public:
-  TestGoogleURLTrackerClient(Profile* profile_);
+  explicit TestGoogleURLTrackerClient(Profile* profile_);
   virtual ~TestGoogleURLTrackerClient();
 
   virtual void SetListeningForNavigationStart(bool listen) OVERRIDE;

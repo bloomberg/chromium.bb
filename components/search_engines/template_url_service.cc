@@ -1417,7 +1417,7 @@ void TemplateURLService::Init(const Initializer* initializers,
   if (google_url_tracker_) {
     google_url_updated_subscription_ =
         google_url_tracker_->RegisterCallback(base::Bind(
-            &TemplateURLService::OnGoogleURLUpdated, base::Unretained(this)));
+            &TemplateURLService::GoogleBaseURLChanged, base::Unretained(this)));
   }
 
   if (prefs_) {
@@ -1773,6 +1773,9 @@ void TemplateURLService::RequestGoogleURLTrackerServerCheckIfNecessary() {
 }
 
 void TemplateURLService::GoogleBaseURLChanged() {
+  if (!loaded_)
+    return;
+
   KeywordWebDataService::BatchModeScoper scoper(web_data_service_.get());
   bool something_changed = false;
   for (TemplateURLVector::iterator i(template_urls_.begin());
@@ -1805,11 +1808,6 @@ void TemplateURLService::GoogleBaseURLChanged() {
   }
   if (something_changed)
     NotifyObservers();
-}
-
-void TemplateURLService::OnGoogleURLUpdated(GURL old_url, GURL new_url) {
-  if (loaded_)
-    GoogleBaseURLChanged();
 }
 
 void TemplateURLService::OnDefaultSearchChange(

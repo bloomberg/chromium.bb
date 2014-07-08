@@ -69,8 +69,7 @@ void NavigationCorrectionTabObserver::RenderViewCreated(
 ////////////////////////////////////////////////////////////////////////////////
 // Internal helpers
 
-void NavigationCorrectionTabObserver::OnGoogleURLUpdated(GURL old_url,
-                                                         GURL new_url) {
+void NavigationCorrectionTabObserver::OnGoogleURLUpdated() {
   UpdateNavigationCorrectionInfo(web_contents()->GetRenderViewHost());
 }
 

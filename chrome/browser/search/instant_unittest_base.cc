@@ -74,8 +74,7 @@ void InstantUnitTestBase::NotifyGoogleBaseURLUpdate(
   // UIThreadSearchTermsData::GoogleBaseURLValue()
   // For simulating test behavior, this is overridden below.
   UIThreadSearchTermsData::SetGoogleBaseURL(new_google_base_url);
-  TemplateURLServiceFactory::GetForProfile(profile())->OnGoogleURLUpdated(
-      GURL("https://www.google.com"), GURL(new_google_base_url));
+  TemplateURLServiceFactory::GetForProfile(profile())->GoogleBaseURLChanged();
 }
 
 bool InstantUnitTestBase::IsInstantServiceObserver(

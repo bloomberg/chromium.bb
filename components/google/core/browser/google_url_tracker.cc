@@ -92,7 +92,7 @@ void GoogleURLTracker::AcceptGoogleURL(bool redo_searches) {
   PrefService* prefs = client_->GetPrefs();
   prefs->SetString(prefs::kLastKnownGoogleURL, google_url_.spec());
   prefs->SetString(prefs::kLastPromptedGoogleURL, google_url_.spec());
-  NotifyGoogleURLUpdated(old_google_url, google_url_);
+  NotifyGoogleURLUpdated();
 
   need_to_prompt_ = false;
   CloseAllEntries(redo_searches);
@@ -398,6 +398,6 @@ void GoogleURLTracker::UnregisterForEntrySpecificNotifications(
   }
 }
 
-void GoogleURLTracker::NotifyGoogleURLUpdated(GURL old_url, GURL new_url) {
-  callback_list_.Notify(old_url, new_url);
+void GoogleURLTracker::NotifyGoogleURLUpdated() {
+  callback_list_.Notify();
 }

@@ -36,7 +36,7 @@ class NavigationCorrectionTabObserver
   // Internal helpers ----------------------------------------------------------
 
   // Callback that is called when the Google URL is updated.
-  void OnGoogleURLUpdated(GURL old_url, GURL new_url);
+  void OnGoogleURLUpdated();
 
   // Returns the URL for the correction service.  If the returned URL
   // is empty, the default error pages will be used.

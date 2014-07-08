@@ -46,8 +46,8 @@ class GoogleURLTracker : public net::URLFetcherDelegate,
  public:
   // Callback that is called when the Google URL is updated. The arguments are
   // the old and new URLs.
-  typedef base::Callback<void(GURL, GURL)> OnGoogleURLUpdatedCallback;
-  typedef base::CallbackList<void(GURL, GURL)> CallbackList;
+  typedef base::Callback<void()> OnGoogleURLUpdatedCallback;
+  typedef base::CallbackList<void()> CallbackList;
   typedef CallbackList::Subscription Subscription;
 
   // The constructor does different things depending on which of these values
@@ -163,7 +163,7 @@ class GoogleURLTracker : public net::URLFetcherDelegate,
       GoogleURLTrackerMapEntry* map_entry,
       bool must_be_listening_for_commit);
 
-  void NotifyGoogleURLUpdated(GURL old_url, GURL new_url);
+  void NotifyGoogleURLUpdated();
 
   CallbackList callback_list_;
 

@@ -134,10 +134,8 @@ void TemplateURLServiceTestUtilBase::SetGoogleBaseURL(
     const GURL& base_url) const {
   DCHECK(base_url.is_valid());
   UIThreadSearchTermsData data(profile());
-  GURL old_url = GURL(data.GoogleBaseURLValue());
   UIThreadSearchTermsData::SetGoogleBaseURL(base_url.spec());
-  TemplateURLServiceFactory::GetForProfile(profile())
-      ->OnGoogleURLUpdated(old_url, base_url);
+  TemplateURLServiceFactory::GetForProfile(profile())->GoogleBaseURLChanged();
 }
 
 void TemplateURLServiceTestUtilBase::SetManagedDefaultSearchPreferences(
