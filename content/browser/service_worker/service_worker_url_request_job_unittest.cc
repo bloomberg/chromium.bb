@@ -187,16 +187,6 @@ TEST_F(ServiceWorkerURLRequestJobTest, Simple) {
   TestRequest(200, "OK", std::string());
 }
 
-TEST_F(ServiceWorkerURLRequestJobTest, WaitForActivation) {
-  ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_FAILED;
-  version_->SetStatus(ServiceWorkerVersion::INSTALLED);
-  version_->DispatchActivateEvent(CreateReceiverOnCurrentThread(&status));
-
-  TestRequest(200, "OK", std::string());
-
-  EXPECT_EQ(SERVICE_WORKER_OK, status);
-}
-
 // Responds to fetch events with a blob.
 class BlobResponder : public EmbeddedWorkerTestHelper {
  public:

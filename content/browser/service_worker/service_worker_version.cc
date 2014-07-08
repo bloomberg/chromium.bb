@@ -238,7 +238,7 @@ void ServiceWorkerVersion::SendMessage(
 void ServiceWorkerVersion::DispatchInstallEvent(
     int active_version_id,
     const StatusCallback& callback) {
-  DCHECK_EQ(NEW, status()) << status();
+  DCHECK_EQ(INSTALLING, status()) << status();
 
   if (running_status() != RUNNING) {
     // Schedule calling this method after starting the worker.
@@ -257,8 +257,7 @@ void ServiceWorkerVersion::DispatchInstallEvent(
 
 void ServiceWorkerVersion::DispatchActivateEvent(
     const StatusCallback& callback) {
-  DCHECK_EQ(INSTALLED, status()) << status();
-  SetStatus(ACTIVATING);
+  DCHECK_EQ(ACTIVATING, status()) << status();
 
   if (running_status() != RUNNING) {
     // Schedule calling this method after starting the worker.
@@ -513,7 +512,6 @@ void ServiceWorkerVersion::DispatchInstallEventAfterStartWorker(
     const StatusCallback& callback) {
   DCHECK_EQ(RUNNING, running_status())
       << "Worker stopped too soon after it was started.";
-  SetStatus(INSTALLING);
 
   int request_id = install_callbacks_.Add(new StatusCallback(callback));
   ServiceWorkerStatusCode status = embedded_worker_->SendMessage(
@@ -555,18 +553,16 @@ void ServiceWorkerVersion::OnGetClientDocuments(int request_id) {
 void ServiceWorkerVersion::OnActivateEventFinished(
     int request_id,
     blink::WebServiceWorkerEventResult result) {
+  DCHECK_EQ(ACTIVATING, status()) << status();
+
   StatusCallback* callback = activate_callbacks_.Lookup(request_id);
   if (!callback) {
     NOTREACHED() << "Got unexpected message: " << request_id;
     return;
   }
   ServiceWorkerStatusCode status = SERVICE_WORKER_OK;
-  if (result == blink::WebServiceWorkerEventResultRejected) {
+  if (result == blink::WebServiceWorkerEventResultRejected)
     status = SERVICE_WORKER_ERROR_ACTIVATE_WORKER_FAILED;
-    SetStatus(REDUNDANT);
-  } else {
-    SetStatus(ACTIVATED);
-  }
 
   scoped_refptr<ServiceWorkerVersion> protect(this);
   callback->Run(status);
@@ -576,18 +572,16 @@ void ServiceWorkerVersion::OnActivateEventFinished(
 void ServiceWorkerVersion::OnInstallEventFinished(
     int request_id,
     blink::WebServiceWorkerEventResult result) {
+  DCHECK_EQ(INSTALLING, status()) << status();
+
   StatusCallback* callback = install_callbacks_.Lookup(request_id);
   if (!callback) {
     NOTREACHED() << "Got unexpected message: " << request_id;
     return;
   }
   ServiceWorkerStatusCode status = SERVICE_WORKER_OK;
-  if (result == blink::WebServiceWorkerEventResultRejected) {
+  if (result == blink::WebServiceWorkerEventResultRejected)
     status = SERVICE_WORKER_ERROR_INSTALL_WORKER_FAILED;
-    SetStatus(REDUNDANT);
-  } else {
-    SetStatus(INSTALLED);
-  }
 
   scoped_refptr<ServiceWorkerVersion> protect(this);
   callback->Run(status);

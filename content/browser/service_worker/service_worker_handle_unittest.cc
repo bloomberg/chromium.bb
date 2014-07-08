@@ -89,9 +89,12 @@ TEST_F(ServiceWorkerHandleTest, OnVersionStateChanged) {
 
   // ...dispatch install event.
   status = SERVICE_WORKER_ERROR_FAILED;
+  version_->SetStatus(ServiceWorkerVersion::INSTALLING);
   version_->DispatchInstallEvent(-1, CreateReceiverOnCurrentThread(&status));
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(SERVICE_WORKER_OK, status);
+
+  version_->SetStatus(ServiceWorkerVersion::INSTALLED);
 
   ASSERT_EQ(4UL, ipc_sink()->message_count());
 

@@ -261,7 +261,7 @@ TEST_F(ServiceWorkerVersionTest, ReceiveMessageFromWorker) {
 }
 
 TEST_F(ServiceWorkerVersionTest, InstallAndWaitCompletion) {
-  EXPECT_EQ(ServiceWorkerVersion::NEW, version_->status());
+  version_->SetStatus(ServiceWorkerVersion::INSTALLING);
 
   // Dispatch an install event.
   ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_FAILED;
@@ -274,16 +274,14 @@ TEST_F(ServiceWorkerVersionTest, InstallAndWaitCompletion) {
 
   base::RunLoop().RunUntilIdle();
 
-  // After successful completion, version's status must be changed to
-  // INSTALLED, and status change callback must have been fired.
+  // Version's status must not have changed during installation.
   EXPECT_EQ(SERVICE_WORKER_OK, status);
-  EXPECT_TRUE(status_change_called);
-  EXPECT_EQ(ServiceWorkerVersion::INSTALLED, version_->status());
+  EXPECT_FALSE(status_change_called);
+  EXPECT_EQ(ServiceWorkerVersion::INSTALLING, version_->status());
 }
 
 TEST_F(ServiceWorkerVersionTest, ActivateAndWaitCompletion) {
-  version_->SetStatus(ServiceWorkerVersion::INSTALLED);
-  EXPECT_EQ(ServiceWorkerVersion::INSTALLED, version_->status());
+  version_->SetStatus(ServiceWorkerVersion::ACTIVATING);
 
   // Dispatch an activate event.
   ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_FAILED;
@@ -296,11 +294,10 @@ TEST_F(ServiceWorkerVersionTest, ActivateAndWaitCompletion) {
 
   base::RunLoop().RunUntilIdle();
 
-  // After successful completion, version's status must be changed to
-  // ACTIVATED, and status change callback must have been fired.
+  // Version's status must not have changed during activation.
   EXPECT_EQ(SERVICE_WORKER_OK, status);
-  EXPECT_TRUE(status_change_called);
-  EXPECT_EQ(ServiceWorkerVersion::ACTIVATED, version_->status());
+  EXPECT_FALSE(status_change_called);
+  EXPECT_EQ(ServiceWorkerVersion::ACTIVATING, version_->status());
 }
 
 TEST_F(ServiceWorkerVersionTest, RepeatedlyObserveStatusChanges) {
@@ -311,23 +308,19 @@ TEST_F(ServiceWorkerVersionTest, RepeatedlyObserveStatusChanges) {
   version_->RegisterStatusChangeCallback(
       base::Bind(&ObserveStatusChanges, version_, &statuses));
 
-  // Dispatch some events.
-  ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_FAILED;
-  version_->DispatchInstallEvent(-1, CreateReceiverOnCurrentThread(&status));
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(SERVICE_WORKER_OK, status);
-
-  status = SERVICE_WORKER_ERROR_FAILED;
-  version_->DispatchActivateEvent(CreateReceiverOnCurrentThread(&status));
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(SERVICE_WORKER_OK, status);
+  version_->SetStatus(ServiceWorkerVersion::INSTALLING);
+  version_->SetStatus(ServiceWorkerVersion::INSTALLED);
+  version_->SetStatus(ServiceWorkerVersion::ACTIVATING);
+  version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
+  version_->SetStatus(ServiceWorkerVersion::REDUNDANT);
 
   // Verify that we could successfully observe repeated status changes.
-  ASSERT_EQ(4U, statuses.size());
+  ASSERT_EQ(5U, statuses.size());
   ASSERT_EQ(ServiceWorkerVersion::INSTALLING, statuses[0]);
   ASSERT_EQ(ServiceWorkerVersion::INSTALLED, statuses[1]);
   ASSERT_EQ(ServiceWorkerVersion::ACTIVATING, statuses[2]);
   ASSERT_EQ(ServiceWorkerVersion::ACTIVATED, statuses[3]);
+  ASSERT_EQ(ServiceWorkerVersion::REDUNDANT, statuses[4]);
 }
 
 TEST_F(ServiceWorkerVersionTest, AddAndRemoveProcesses) {

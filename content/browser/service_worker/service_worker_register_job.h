@@ -118,9 +118,15 @@ class ServiceWorkerRegisterJob
   virtual void OnPausedAfterDownload() OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
-  // Associates a waiting version to documents matched with a scope of the
+  // Associates an installing version to documents matched with a scope of the
   // version.
   CONTENT_EXPORT static void AssociateInstallingVersionToDocuments(
+      base::WeakPtr<ServiceWorkerContextCore> context,
+      ServiceWorkerVersion* version);
+
+  // Associates a waiting version to documents matched with a scope of the
+  // version.
+  CONTENT_EXPORT static void AssociateWaitingVersionToDocuments(
       base::WeakPtr<ServiceWorkerContextCore> context,
       ServiceWorkerVersion* version);
 

@@ -75,8 +75,10 @@ net::URLRequestJob* ServiceWorkerContextRequestHandler::MaybeCreateJob(
 bool ServiceWorkerContextRequestHandler::ShouldAddToScriptCache(
     const GURL& url) {
   // We only write imports that occur during the initial eval.
-  if (version_->status() != ServiceWorkerVersion::NEW)
+  if (version_->status() != ServiceWorkerVersion::NEW &&
+      version_->status() != ServiceWorkerVersion::INSTALLING) {
     return false;
+  }
   return version_->script_cache_map()->Lookup(url) ==
             kInvalidServiceWorkerResponseId;
 }

@@ -33,7 +33,8 @@ int64 ServiceWorkerScriptCacheMap::Lookup(const GURL& url) {
 void ServiceWorkerScriptCacheMap::NotifyStartedCaching(
     const GURL& url, int64 resource_id) {
   DCHECK_EQ(kInvalidServiceWorkerResponseId, Lookup(url));
-  DCHECK(owner_->status() == ServiceWorkerVersion::NEW);
+  DCHECK(owner_->status() == ServiceWorkerVersion::NEW ||
+         owner_->status() == ServiceWorkerVersion::INSTALLING);
   resource_ids_[url] = resource_id;
   context_->storage()->StoreUncommittedReponseId(resource_id);
 }
@@ -41,7 +42,8 @@ void ServiceWorkerScriptCacheMap::NotifyStartedCaching(
 void ServiceWorkerScriptCacheMap::NotifyFinishedCaching(
     const GURL& url, bool success) {
   DCHECK_NE(kInvalidServiceWorkerResponseId, Lookup(url));
-  DCHECK(owner_->status() == ServiceWorkerVersion::NEW);
+  DCHECK(owner_->status() == ServiceWorkerVersion::NEW ||
+         owner_->status() == ServiceWorkerVersion::INSTALLING);
   if (!success) {
     context_->storage()->DoomUncommittedResponse(Lookup(url));
     has_error_ = true;
