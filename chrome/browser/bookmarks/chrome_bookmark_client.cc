@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/debug/leak_annotations.h"
 #include "base/logging.h"
 #include "base/values.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -165,6 +166,11 @@ bookmarks::LoadExtraCallback ChromeBookmarkClient::GetLoadExtraNodesCallback() {
   // Create the managed_node now; it will be populated in the LoadExtraNodes
   // callback.
   managed_node_ = new BookmarkPermanentNode(0);
+  // The ownership of this object is in limbo until the LoadExtraNodes task
+  // runs, but in a ProfileBrowserTest this never happens.
+  // crbug.com/391508
+  ANNOTATE_LEAKING_OBJECT_PTR(managed_node_);
+
   return base::Bind(
       &ChromeBookmarkClient::LoadExtraNodes,
       StartupTaskRunnerServiceFactory::GetForProfile(profile_)
