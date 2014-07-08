@@ -1,0 +1,68 @@
+<html>
+<head>
+<script src="../../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../../http/tests/inspector/debugger-test.js"></script>
+<script src="../../../http/tests/inspector/console-test.js"></script>
+<script>
+
+function testFunction()
+{
+    console.clear();
+    setTimeout(timeout1, 0);
+}
+
+function timeout1()
+{
+    console.trace();
+    setTimeout(timeout2, 0);
+}
+
+function timeout2()
+{
+    setTimeout(timeout3, 0);
+    throw Error("foo");
+}
+
+function timeout3()
+{
+    console.trace();
+    debugger;
+}
+
+var test = function()
+{
+    var maxAsyncCallStackDepth = 4;
+
+    InspectorTest.setQuiet(true);
+    InspectorTest.startDebuggerTest(step1);
+
+    function step1()
+    {
+        DebuggerAgent.setPauseOnExceptions(WebInspector.DebuggerModel.PauseOnExceptionsState.DontPauseOnExceptions);
+        DebuggerAgent.setAsyncCallStackDepth(0);
+        InspectorTest.runTestFunctionAndWaitUntilPaused(didPause);
+        DebuggerAgent.setAsyncCallStackDepth(maxAsyncCallStackDepth);
+    }
+
+    function didPause(callFrames, reason, breakpointIds, asyncStackTrace)
+    {
+        InspectorTest.expandConsoleMessages(dumpConsoleMessages);
+    }
+
+    function dumpConsoleMessages()
+    {
+        InspectorTest.dumpConsoleMessages(false, false, InspectorTest.textContentWithLineBreaks);
+        InspectorTest.completeDebuggerTest();
+    }
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+Tests asynchronous call stacks printed in console.
+</p>
+
+</body>
+</html>
