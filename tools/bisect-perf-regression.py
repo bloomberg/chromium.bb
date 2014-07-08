@@ -642,7 +642,7 @@ def CheckRunGit(command, cwd=None):
   return output
 
 
-def SetBuildSystemDefault(build_system, use_goma):
+def SetBuildSystemDefault(build_system, use_goma, goma_dir):
   """Sets up any environment variables needed to build with the specified build
   system.
 
@@ -671,6 +671,8 @@ def SetBuildSystemDefault(build_system, use_goma):
   if use_goma:
     os.environ['GYP_DEFINES'] = '%s %s' % (os.getenv('GYP_DEFINES', ''),
                                               'use_goma=1')
+    if goma_dir:
+      os.environ['GYP_DEFINES'] += ' gomadir=%s' % goma_dir
 
 
 def BuildWithMake(threads, targets, build_type='Release'):
@@ -759,7 +761,8 @@ class Builder(object):
           raise RuntimeError(
               'Path to visual studio could not be determined.')
       else:
-        SetBuildSystemDefault(opts.build_preference, opts.use_goma)
+        SetBuildSystemDefault(opts.build_preference, opts.use_goma,
+                              opts.goma_dir)
     else:
       if not opts.build_preference:
         if 'ninja' in os.getenv('GYP_GENERATORS'):
@@ -767,7 +770,7 @@ class Builder(object):
         else:
           opts.build_preference = 'make'
 
-      SetBuildSystemDefault(opts.build_preference, opts.use_goma)
+      SetBuildSystemDefault(opts.build_preference, opts.use_goma, opts.goma_dir)
 
     if not bisect_utils.SetupPlatformBuildEnvironment(opts):
       raise RuntimeError('Failed to set platform environment.')
@@ -3708,6 +3711,7 @@ class BisectOptions(object):
     self.good_revision = None
     self.bad_revision = None
     self.use_goma = None
+    self.goma_dir = None
     self.cros_board = None
     self.cros_remote_ip = None
     self.repeat_test_count = 20
@@ -3833,6 +3837,9 @@ class BisectOptions(object):
                      action="store_true",
                      help='Add a bunch of extra threads for goma, and enable '
                      'goma')
+    group.add_option('--goma_dir',
+                     help='Path to goma tools (or system default if not '
+                     'specified).')
     group.add_option('--output_buildbot_annotations',
                      action="store_true",
                      help='Add extra annotation output for buildbot.')

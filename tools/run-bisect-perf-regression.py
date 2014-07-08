@@ -196,6 +196,8 @@ def _CreateBisectOptionsFromConfig(config):
 
   if config.has_key('use_goma'):
     opts_dict['use_goma'] = config['use_goma']
+  if config.has_key('goma_dir'):
+    opts_dict['goma_dir'] = config['goma_dir']
 
   opts_dict['build_preference'] = 'ninja'
   opts_dict['output_buildbot_annotations'] = True
@@ -318,6 +320,7 @@ def _SetupAndRunPerformanceTest(config, path_to_file, path_to_goma):
   try:
     with Goma(path_to_goma) as goma:
       config['use_goma'] = bool(path_to_goma)
+      config['goma_dir'] = os.path.abspath(path_to_goma)
       _RunPerformanceTest(config, path_to_file)
     return 0
   except RuntimeError, e:
