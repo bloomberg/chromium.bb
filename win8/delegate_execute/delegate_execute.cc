@@ -93,8 +93,8 @@ using delegate_execute::DelegateExecuteOperation;
 using base::win::ScopedHandle;
 
 int RelaunchChrome(const DelegateExecuteOperation& operation) {
-  AtlTrace("Relaunching [%ls] with flags [%s]\n",
-           operation.mutex().c_str(), operation.relaunch_flags());
+  AtlTrace("Relaunching [%ls] with flags [%ls]\n",
+           operation.mutex().c_str(), operation.relaunch_flags().c_str());
   ScopedHandle mutex(OpenMutexW(SYNCHRONIZE, FALSE, operation.mutex().c_str()));
   if (mutex.IsValid()) {
     const int kWaitSeconds = 5;
