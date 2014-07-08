@@ -113,7 +113,9 @@ bool P2PSocketHostUdp::Init(const net::IPEndPoint& local_address,
 
   state_ = STATE_OPEN;
 
-  message_sender_->Send(new P2PMsg_OnSocketCreated(id_, address));
+  // NOTE: Remote address will be same as what renderer provided.
+  message_sender_->Send(new P2PMsg_OnSocketCreated(
+      id_, address, remote_address.ip_address));
 
   recv_buffer_ = new net::IOBuffer(kReadBufferSize);
   DoRead();

@@ -85,6 +85,14 @@ bool P2PSocketHostTcpBase::Init(const net::IPEndPoint& local_address,
 
   net::HostPortPair dest_host_port_pair =
       net::HostPortPair::FromIPEndPoint(remote_address.ip_address);
+  // If there is no resolved address, let's try with domain name, assuming
+  // socket layer will do the DNS resolve.
+  if (remote_address.ip_address.address().empty()) {
+    DCHECK(!remote_address.hostname.empty());
+    dest_host_port_pair = net::HostPortPair(
+      remote_address.hostname, remote_address.ip_address.port());
+  }
+
   // TODO(mallinath) - We are ignoring local_address altogether. We should
   // find a way to inject this into ProxyResolvingClientSocket. This could be
   // a problem on multi-homed host.
@@ -224,8 +232,8 @@ void P2PSocketHostTcpBase::OnOpen() {
 void P2PSocketHostTcpBase::DoSendSocketCreateMsg() {
   DCHECK(socket_.get());
 
-  net::IPEndPoint address;
-  int result = socket_->GetLocalAddress(&address);
+  net::IPEndPoint local_address;
+  int result = socket_->GetLocalAddress(&local_address);
   if (result < 0) {
     LOG(ERROR) << "P2PSocketHostTcpBase::OnConnected: unable to get local"
                << " address: " << result;
@@ -233,13 +241,28 @@ void P2PSocketHostTcpBase::DoSendSocketCreateMsg() {
     return;
   }
 
-  VLOG(1) << "Local address: " << address.ToString();
+  VLOG(1) << "Local address: " << local_address.ToString();
+
+  net::IPEndPoint remote_address;
+  result = socket_->GetPeerAddress(&remote_address);
+  if (result < 0) {
+    LOG(ERROR) << "P2PSocketHostTcpBase::OnConnected: unable to get peer"
+               << " address: " << result;
+    OnError();
+    return;
+  }
+  VLOG(1) << "Remote address: " << remote_address.ToString();
+  if (remote_address_.ip_address.address().empty()) {
+    // Save |remote_address| if address is empty.
+    remote_address_.ip_address = remote_address;
+  }
 
   // If we are not doing TLS, we are ready to send data now.
   // In case of TLS SignalConnect will be sent only after TLS handshake is
   // successfull. So no buffering will be done at socket handlers if any
   // packets sent before that by the application.
-  message_sender_->Send(new P2PMsg_OnSocketCreated(id_, address));
+  message_sender_->Send(new P2PMsg_OnSocketCreated(
+      id_, local_address, remote_address));
 }
 
 void P2PSocketHostTcpBase::DoRead() {

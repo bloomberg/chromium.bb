@@ -61,7 +61,10 @@ bool P2PSocketHostTcpServer::Init(const net::IPEndPoint& local_address,
   VLOG(1) << "Local address: " << local_address_.ToString();
 
   state_ = STATE_OPEN;
-  message_sender_->Send(new P2PMsg_OnSocketCreated(id_, local_address_));
+  // NOTE: Remote address can be empty as socket is just listening
+  // in this state.
+  message_sender_->Send(new P2PMsg_OnSocketCreated(
+      id_, local_address_, remote_address.ip_address));
   DoAccept();
   return true;
 }

@@ -74,7 +74,8 @@ class P2PSocketClientImpl : public P2PSocketClient {
   virtual ~P2PSocketClientImpl();
 
   // Message handlers that run on IPC thread.
-  void OnSocketCreated(const net::IPEndPoint& address);
+  void OnSocketCreated(const net::IPEndPoint& local_address,
+                       const net::IPEndPoint& remote_address);
   void OnIncomingTcpConnection(const net::IPEndPoint& address);
   void OnSendComplete(int packet_id);
   void OnSendComplete();
@@ -84,7 +85,8 @@ class P2PSocketClientImpl : public P2PSocketClient {
                       const base::TimeTicks& timestamp);
 
   // Proxy methods that deliver messages to the delegate thread.
-  void DeliverOnSocketCreated(const net::IPEndPoint& address);
+  void DeliverOnSocketCreated(const net::IPEndPoint& local_address,
+                              const net::IPEndPoint& remote_address);
   void DeliverOnIncomingTcpConnection(
       const net::IPEndPoint& address,
       scoped_refptr<P2PSocketClient> new_client);

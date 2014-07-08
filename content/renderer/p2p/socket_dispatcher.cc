@@ -139,10 +139,12 @@ void P2PSocketDispatcher::OnGetHostAddressResult(
 }
 
 void P2PSocketDispatcher::OnSocketCreated(
-    int socket_id, const net::IPEndPoint& address) {
+    int socket_id,
+    const net::IPEndPoint& local_address,
+    const net::IPEndPoint& remote_address) {
   P2PSocketClientImpl* client = GetClient(socket_id);
   if (client) {
-    client->OnSocketCreated(address);
+    client->OnSocketCreated(local_address, remote_address);
   }
 }
 

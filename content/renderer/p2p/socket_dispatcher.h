@@ -94,7 +94,9 @@ class CONTENT_EXPORT P2PSocketDispatcher : public IPC::MessageFilter {
   void OnNetworkListChanged(const net::NetworkInterfaceList& networks);
   void OnGetHostAddressResult(int32 request_id,
                               const net::IPAddressList& addresses);
-  void OnSocketCreated(int socket_id, const net::IPEndPoint& address);
+  void OnSocketCreated(int socket_id,
+                       const net::IPEndPoint& local_address,
+                       const net::IPEndPoint& remote_address);
   void OnIncomingTcpConnection(int socket_id, const net::IPEndPoint& address);
   void OnSendComplete(int socket_id);
   void OnError(int socket_id);

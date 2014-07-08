@@ -93,7 +93,8 @@ class IpcPacketSocket : public talk_base::AsyncPacketSocket,
   virtual void SetError(int error) OVERRIDE;
 
   // P2PSocketClientDelegate implementation.
-  virtual void OnOpen(const net::IPEndPoint& address) OVERRIDE;
+  virtual void OnOpen(const net::IPEndPoint& local_address,
+                      const net::IPEndPoint& remote_address) OVERRIDE;
   virtual void OnIncomingTcpConnection(
       const net::IPEndPoint& address,
       P2PSocketClient* client) OVERRIDE;
@@ -234,9 +235,9 @@ bool IpcPacketSocket::Init(P2PSocketType type,
   }
 
   net::IPEndPoint remote_endpoint;
-  if (!remote_address.IsNil() &&
-      !jingle_glue::SocketAddressToIPEndPoint(
-          remote_address, &remote_endpoint)) {
+  if (!remote_address.IsNil() && !jingle_glue::SocketAddressToIPEndPoint(
+      remote_address, &remote_endpoint) && !IsTcpClientSocket(type_)) {
+    // Non TCP sockets must have a resolved remote address.
     return false;
   }
 
@@ -426,10 +427,11 @@ void IpcPacketSocket::SetError(int error) {
   error_ = error;
 }
 
-void IpcPacketSocket::OnOpen(const net::IPEndPoint& address) {
+void IpcPacketSocket::OnOpen(const net::IPEndPoint& local_address,
+                             const net::IPEndPoint& remote_address) {
   DCHECK_EQ(base::MessageLoop::current(), message_loop_);
 
-  if (!jingle_glue::IPEndPointToSocketAddress(address, &local_address_)) {
+  if (!jingle_glue::IPEndPointToSocketAddress(local_address, &local_address_)) {
     // Always expect correct IPv4 address to be allocated.
     NOTREACHED();
     OnError();
@@ -446,8 +448,21 @@ void IpcPacketSocket::OnOpen(const net::IPEndPoint& address) {
   }
 
   SignalAddressReady(this, local_address_);
-  if (IsTcpClientSocket(type_))
+  if (IsTcpClientSocket(type_)) {
     SignalConnect(this);
+    // If remote address is unresolved, set resolved remote IP address received
+    // in the callback. This address will be used while sending the packets
+    // over the network.
+    if (remote_address_.IsUnresolvedIP()) {
+      talk_base::SocketAddress jingle_socket_address;
+      if (!jingle_glue::IPEndPointToSocketAddress(
+            remote_address, &jingle_socket_address)) {
+        NOTREACHED();
+      }
+      // Set only the IP address.
+      remote_address_.SetResolvedIP(jingle_socket_address.ipaddr());
+    }
+  }
 }
 
 void IpcPacketSocket::OnIncomingTcpConnection(

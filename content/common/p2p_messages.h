@@ -56,9 +56,10 @@ IPC_MESSAGE_CONTROL2(P2PMsg_GetHostAddressResult,
                      int32 /* request_id */,
                      net::IPAddressList /* address list*/)
 
-IPC_MESSAGE_CONTROL2(P2PMsg_OnSocketCreated,
+IPC_MESSAGE_CONTROL3(P2PMsg_OnSocketCreated,
                      int /* socket_id */,
-                     net::IPEndPoint /* socket_address */)
+                     net::IPEndPoint /* local_address */,
+                     net::IPEndPoint /* remote_address */)
 
 IPC_MESSAGE_CONTROL1(P2PMsg_OnSendComplete,
                      int /* socket_id */)
