@@ -14,12 +14,10 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/search/instant_io_context.h"
 #include "chrome/browser/search/suggestions/suggestions_service.h"
 #include "chrome/browser/search/suggestions/suggestions_service_factory.h"
 #include "chrome/common/url_constants.h"
 #include "net/base/escape.h"
-#include "net/url_request/url_request.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/image/image_skia.h"
 #include "url/gurl.h"
@@ -126,13 +124,6 @@ base::MessageLoop* SuggestionsSource::MessageLoopForRequestPath(
     const std::string& path) const {
   // This can be accessed from the IO thread.
   return content::URLDataSource::MessageLoopForRequestPath(path);
-}
-
-bool SuggestionsSource::ShouldServiceRequest(
-    const net::URLRequest* request) const {
-  if (request->url().SchemeIs(chrome::kChromeSearchScheme))
-    return InstantIOContext::ShouldServiceRequest(request);
-  return URLDataSource::ShouldServiceRequest(request);
 }
 
 void SuggestionsSource::OnSuggestionsAvailable(

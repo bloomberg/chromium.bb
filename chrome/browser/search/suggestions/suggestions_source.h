@@ -37,8 +37,6 @@ class SuggestionsSource : public content::URLDataSource {
   virtual std::string GetMimeType(const std::string& path) const OVERRIDE;
   virtual base::MessageLoop* MessageLoopForRequestPath(
       const std::string& path) const OVERRIDE;
-  virtual bool ShouldServiceRequest(
-      const net::URLRequest* request) const OVERRIDE;
 
  private:
   virtual ~SuggestionsSource();
