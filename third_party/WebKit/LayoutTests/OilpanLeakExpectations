@@ -8,3 +8,5 @@
 # FIXME: AudioNode objects are not destructed.
 crbug.com/389041 webaudio/mediaelementaudiosourcenode.html [ Leak ]
 crbug.com/389041 webaudio/mediaelementaudiosourcenode-gc.html [ Leak ]
+
+crbug.com/390094 svg/custom/svg-element-destructor-iteration-crash.html [ Leak ]
