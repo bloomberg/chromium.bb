@@ -4,7 +4,6 @@
 
 import("//build/config/ui.gni")
 import("//third_party/WebKit/Source/bindings/bindings.gni")
-import("//third_party/WebKit/Source/build/make_file_arrays.gni")
 import("//third_party/WebKit/Source/config.gni")
 import("//third_party/WebKit/Source/core/core.gni")
 import("//third_party/WebKit/Source/modules/modules.gni")
@@ -22,9 +21,6 @@ component("web") {
   output_name = "blink_web"
 
   deps = [
-    ":calendar_picker",
-    ":picker_common",
-    ":color_suggestion_picker",
     "//third_party/WebKit/Source/core",
     "//third_party/WebKit/Source/modules",
     "//third_party/WebKit/Source/platform",
@@ -108,31 +104,4 @@ test("webkit_unit_tests") {
     sources += platform_web_unittest_files
   }
 }
-}
-
-make_file_arrays("picker_common") {
-  resources = [
-    "resources/pickerCommon.css",
-    "resources/pickerCommon.js",
-  ]
-  filename = "web/PickerCommon"
-}
-
-make_file_arrays("color_suggestion_picker") {
-  resources = [
-    "resources/colorSuggestionPicker.css",
-    "resources/colorSuggestionPicker.js",
-  ]
-  filename = "web/ColorSuggestionPicker"
-}
-
-make_file_arrays("calendar_picker") {
-  resources = [
-    "resources/calendarPicker.css",
-    "resources/calendarPicker.js",
-    "resources/pickerButton.css",
-    "resources/suggestionPicker.css",
-    "resources/suggestionPicker.js",
-  ]
-  filename = "web/CalendarPicker"
 }
