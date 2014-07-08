@@ -213,31 +213,12 @@ bool GpuProcessHostUIShim::OnControlMessageReceived(
                         OnAcceleratedSurfaceRelease)
     IPC_MESSAGE_HANDLER(GpuHostMsg_VideoMemoryUsageStats,
                         OnVideoMemoryUsageStatsReceived);
-    IPC_MESSAGE_HANDLER(GpuHostMsg_UpdateVSyncParameters,
-                        OnUpdateVSyncParameters)
     IPC_MESSAGE_HANDLER(GpuHostMsg_FrameDrawn, OnFrameDrawn)
 
     IPC_MESSAGE_UNHANDLED_ERROR()
   IPC_END_MESSAGE_MAP()
 
   return true;
-}
-
-void GpuProcessHostUIShim::OnUpdateVSyncParameters(int surface_id,
-                                                   base::TimeTicks timebase,
-                                                   base::TimeDelta interval) {
-
-  int render_process_id = 0;
-  int render_widget_id = 0;
-  if (!GpuSurfaceTracker::Get()->GetRenderWidgetIDForSurface(
-      surface_id, &render_process_id, &render_widget_id)) {
-    return;
-  }
-  RenderWidgetHost* rwh =
-      RenderWidgetHost::FromID(render_process_id, render_widget_id);
-  if (!rwh)
-    return;
-  RenderWidgetHostImpl::From(rwh)->UpdateVSyncParameters(timebase, interval);
 }
 
 void GpuProcessHostUIShim::OnLogMessage(
