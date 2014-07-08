@@ -11,6 +11,7 @@
 #include "ui/events/event.h"
 #include "ui/events/event_rewriter.h"
 #include "ui/events/gesture_detection/gesture_detector.h"
+#include "ui/events/gestures/gesture_provider_aura.h"
 #include "ui/gfx/geometry/point.h"
 
 namespace aura {
@@ -21,10 +22,13 @@ namespace ui {
 
 class Event;
 class EventHandler;
+class GestureEvent;
+class GestureProviderAura;
 class TouchEvent;
 
 // TouchExplorationController is used in tandem with "Spoken Feedback" to
-// make the touch UI accessible.
+// make the touch UI accessible. Gestures are mapped to accessiblity key
+// shortcuts.
 //
 // ** Short version **
 //
@@ -32,7 +36,8 @@ class TouchEvent;
 // exploring the screen gets turned into mouse moves (which can then be
 // spoken by an accessibility service running), a single tap while the user
 // is in touch exploration or a double-tap simulates a click, and gestures
-// can be used to send high-level accessibility commands.
+// can be used to send high-level accessibility commands. For example, a swipe
+// right would correspond to the keyboard short cut shift+search+right.
 // When two or more fingers are pressed initially, from then on the events
 // are passed through, but with the initial finger removed - so if you swipe
 // down with two fingers, the running app will see a one-finger swipe.
@@ -61,6 +66,14 @@ class TouchEvent;
 // location. This allows the user to perform a single tap
 // anywhere to activate it.
 //
+// The user can perform swipe gestures in one of the four cardinal directions
+// which will be interpreted and used to control the UI. The gesture will only
+// be registered if the finger moves outside the slop and completed within the
+// grace period. If additional fingers are added during the grace period, the
+// state changes to passthrough. If the gesture fails to be completed within the
+// grace period, the state changes to touch exploration mode. Once the state has
+// changed, any gestures made during the grace period are discarded.
+//
 // If the user double-taps, the second tap is passed through, allowing the
 // user to click - however, the double-tap location is changed to the location
 // of the last successful touch exploration - that allows the user to explore
@@ -84,7 +97,8 @@ class TouchEvent;
 // The caller is expected to retain ownership of instances of this class and
 // destroy them before |root_window| is destroyed.
 class UI_CHROMEOS_EXPORT TouchExplorationController
-    : public ui::EventRewriter {
+    : public ui::EventRewriter,
+      public ui::GestureProviderAuraClient {
  public:
   explicit TouchExplorationController(aura::Window* root_window);
   virtual ~TouchExplorationController();
@@ -92,6 +106,7 @@ class UI_CHROMEOS_EXPORT TouchExplorationController
   void CallTapTimerNowForTesting();
   void SetEventHandlerForTesting(ui::EventHandler* event_handler_for_testing);
   bool IsInNoFingersDownStateForTesting() const;
+  bool IsInGestureInProgressStateForTesting() const;
 
  private:
   // Overridden from ui::EventRewriter
@@ -116,6 +131,8 @@ class UI_CHROMEOS_EXPORT TouchExplorationController
       const ui::TouchEvent& event, scoped_ptr<ui::Event>* rewritten_event);
   ui::EventRewriteStatus InPassthrough(
       const ui::TouchEvent& event, scoped_ptr<ui::Event>* rewritten_event);
+  ui::EventRewriteStatus InGestureInProgress(
+      const ui::TouchEvent& event, scoped_ptr<ui::Event>* rewritten_event);
   ui::EventRewriteStatus InTouchExploreSecondPress(
       const ui::TouchEvent& event, scoped_ptr<ui::Event>* rewritten_event);
   ui::EventRewriteStatus InWaitForRelease(
@@ -129,6 +146,23 @@ class UI_CHROMEOS_EXPORT TouchExplorationController
 
   // Dispatch a new event outside of the event rewriting flow.
   void DispatchEvent(ui::Event* event);
+
+  // Overridden from GestureProviderAuraClient.
+  //
+  // The gesture provider keeps track of all the touch events after
+  // the user moves fast enough to trigger a gesture. After the user
+  // completes their gesture, this method will decide what keyboard
+  // input their gesture corresponded to.
+  virtual void OnGestureEvent(ui::GestureEvent* gesture) OVERRIDE;
+
+  // Process the gesture events that have been created.
+  void ProcessGestureEvents();
+
+  void OnSwipeEvent(ui::GestureEvent* swipe_gesture);
+
+  // Dispatches the keyboard short cut Shift+Search+<arrow key>
+  // outside the event rewritting flow.
+  void DispatchShiftSearchKeyEvent(const ui::KeyboardCode direction);
 
   scoped_ptr<ui::Event> CreateMouseMoveEvent(const gfx::PointF& location,
                                              int flags);
@@ -171,6 +205,15 @@ class UI_CHROMEOS_EXPORT TouchExplorationController
     // moved the finger outside of the slop region. We'll stay in this
     // mode until all fingers are lifted.
     TOUCH_EXPLORATION,
+
+    // If the user moves their finger faster than the threshold velocity after a
+    // single tap, the touch events that follow will be translated into gesture
+    // events. If the user successfully completes a gesture within the grace
+    // period, the gesture will be interpreted and used to control the UI via
+    // discrete actions - currently by synthesizing key events corresponding to
+    // each gesture Otherwise, the collected gestures are discarded and the
+    // state changes to touch_exploration.
+    GESTURE_IN_PROGRESS,
 
     // The user was in touch exploration, but has placed down another finger.
     // If the user releases the second finger, a touch press and release
@@ -243,6 +286,9 @@ class UI_CHROMEOS_EXPORT TouchExplorationController
   // A default gesture detector config, so we can share the same
   // timeout and pixel slop constants.
   ui::GestureDetector::Config gesture_detector_config_;
+
+  // Gesture Handler to interpret the touch events.
+  ui::GestureProviderAura gesture_provider_;
 
   // The previous state entered.
   State prev_state_;
