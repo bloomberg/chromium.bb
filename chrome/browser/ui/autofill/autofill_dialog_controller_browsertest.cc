@@ -672,11 +672,15 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, FillInputFromAutofill) {
   full_profile.SetRawInfo(PHONE_HOME_WHOLE_NUMBER, formatted_phone);
   controller()->GetTestingManager()->AddTestingProfile(&full_profile);
 
+  // Dialog is already asking for a new billing address.
+  EXPECT_TRUE(controller()->IsManuallyEditingSection(SECTION_BILLING));
+
   // Select "Add new shipping address...".
   ui::MenuModel* model = controller()->MenuModelForSection(SECTION_SHIPPING);
   model->ActivatedAt(model->GetItemCount() - 2);
   ASSERT_TRUE(controller()->IsManuallyEditingSection(SECTION_SHIPPING));
 
+  // Enter something in a shipping input.
   const DetailInputs& inputs =
       controller()->RequestedFieldsForSection(SECTION_SHIPPING);
   const ServerFieldType triggering_type = inputs[0].type;
@@ -698,6 +702,21 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, FillInputFromAutofill) {
     // Double check the correct formatting is used for the phone number.
     if (inputs[i].type == PHONE_HOME_WHOLE_NUMBER)
       EXPECT_EQ(formatted_phone, view->GetTextContentsOfInput(inputs[i].type));
+  }
+
+  // Inputs from the other section (billing) should be left alone.
+  const DetailInputs& other_section_inputs =
+      controller()->RequestedFieldsForSection(SECTION_BILLING);
+  for (size_t i = 0; i < inputs.size(); ++i) {
+    base::string16 input_value =
+        view->GetTextContentsOfInput(other_section_inputs[i].type);
+    // If there's a combobox, the string should be non-empty.
+    if (controller()->ComboboxModelForAutofillType(
+            other_section_inputs[i].type)) {
+      EXPECT_NE(base::string16(), input_value);
+    } else {
+      EXPECT_EQ(base::string16(), input_value);
+    }
   }
 
   // Now simulate some user edits and try again.
@@ -1671,15 +1690,16 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest,
   ASSERT_EQ(ASCIIToUTF16("United States"),
             view->GetTextContentsOfInput(ADDRESS_HOME_COUNTRY));
 
-  base::string16 name = full_profile.GetRawInfo(NAME_FULL);
-  view->SetTextContentsOfInput(NAME_FULL, name.substr(0, name.size() / 2));
-  view->ActivateInput(NAME_FULL);
-  ASSERT_EQ(NAME_FULL, controller()->popup_input_type());
+  const ServerFieldType input_type = EMAIL_ADDRESS;
+  base::string16 name = full_profile.GetRawInfo(input_type);
+  view->SetTextContentsOfInput(input_type, name.substr(0, name.size() / 2));
+  view->ActivateInput(input_type);
+  ASSERT_EQ(input_type, controller()->popup_input_type());
   controller()->DidAcceptSuggestion(base::string16(), 0);
 
   EXPECT_EQ(ASCIIToUTF16("Germany"),
             view->GetTextContentsOfInput(ADDRESS_BILLING_COUNTRY));
-  EXPECT_EQ(ASCIIToUTF16("Germany"),
+  EXPECT_EQ(ASCIIToUTF16("United States"),
             view->GetTextContentsOfInput(ADDRESS_HOME_COUNTRY));
 }
 

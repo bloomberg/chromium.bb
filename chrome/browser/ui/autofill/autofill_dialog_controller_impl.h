@@ -756,6 +756,10 @@ class AutofillDialogControllerImpl
   // The type of the visible Autofill popup input (or UNKNOWN_TYPE if none).
   ServerFieldType popup_input_type_;
 
+  // The section of the dialog that's showing a popup, undefined if no popup
+  // is showing.
+  DialogSection popup_section_;
+
   scoped_ptr<AutofillDialogView> view_;
 
   // A NotificationRegistrar for tracking the completion of sign-in.

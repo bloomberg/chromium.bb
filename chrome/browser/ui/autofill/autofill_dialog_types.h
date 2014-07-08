@@ -69,7 +69,7 @@ enum DialogSection {
   SECTION_SHIPPING,
 
   // Upper boundary value for looping over all sections.
-  SECTION_MAX = SECTION_SHIPPING
+  SECTION_MAX = SECTION_SHIPPING,
 };
 
 // A notification to show in the autofill dialog. Ranges from information to

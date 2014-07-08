@@ -2168,6 +2168,7 @@ void AutofillDialogControllerImpl::UserEditedOrActivatedInput(
 
   // |popup_input_type_| must be set before calling |Show()|.
   popup_input_type_ = type;
+  popup_section_ = section;
 
   // TODO(estade): do we need separators and control rows like 'Clear
   // Form'?
@@ -2439,7 +2440,8 @@ void AutofillDialogControllerImpl::DidAcceptSuggestion(
 
   base::string16 billing_country =
       wrapper->GetInfo(AutofillType(ADDRESS_BILLING_COUNTRY));
-  if (!snapshot.count(ADDRESS_BILLING_COUNTRY) &&
+  if (popup_section_ == ActiveBillingSection() &&
+      !snapshot.count(ADDRESS_BILLING_COUNTRY) &&
       !billing_country.empty()) {
     billing_rebuilt = RebuildInputsForCountry(
         ActiveBillingSection(), billing_country, false);
@@ -2447,7 +2449,8 @@ void AutofillDialogControllerImpl::DidAcceptSuggestion(
 
   base::string16 shipping_country =
       wrapper->GetInfo(AutofillType(ADDRESS_HOME_COUNTRY));
-  if (!snapshot.count(ADDRESS_HOME_COUNTRY) &&
+  if (popup_section_ == SECTION_SHIPPING &&
+      !snapshot.count(ADDRESS_HOME_COUNTRY) &&
       !shipping_country.empty()) {
     shipping_rebuilt = RebuildInputsForCountry(
         SECTION_SHIPPING, shipping_country, false);
@@ -2461,14 +2464,9 @@ void AutofillDialogControllerImpl::DidAcceptSuggestion(
       UpdateSection(SECTION_SHIPPING);
   }
 
-  for (size_t i = SECTION_MIN; i <= SECTION_MAX; ++i) {
-    DialogSection section = static_cast<DialogSection>(i);
-    if (!SectionIsActive(section))
-      continue;
-
-    wrapper->FillInputs(MutableRequestedFieldsForSection(section));
-    view_->FillSection(section, popup_input_type);
-  }
+  DCHECK(SectionIsActive(popup_section_));
+  wrapper->FillInputs(MutableRequestedFieldsForSection(popup_section_));
+  view_->FillSection(popup_section_, popup_input_type);
 
   GetMetricLogger().LogDialogPopupEvent(
       AutofillMetrics::DIALOG_POPUP_FORM_FILLED);
@@ -2839,6 +2837,7 @@ AutofillDialogControllerImpl::AutofillDialogControllerImpl(
       suggested_shipping_(this),
       cares_about_shipping_(true),
       popup_input_type_(UNKNOWN_TYPE),
+      popup_section_(SECTION_MIN),
       waiting_for_explicit_sign_in_response_(false),
       has_accepted_legal_documents_(false),
       is_submitting_(false),
