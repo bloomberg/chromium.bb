@@ -62,12 +62,12 @@ void AXSpinButton::addChildren()
 {
     m_haveChildren = true;
 
-    AXSpinButtonPart* incrementor = static_cast<AXSpinButtonPart*>(axObjectCache()->getOrCreate(SpinButtonPartRole));
+    AXSpinButtonPart* incrementor = toAXSpinButtonPart(axObjectCache()->getOrCreate(SpinButtonPartRole));
     incrementor->setIsIncrementor(true);
     incrementor->setParent(this);
     m_children.append(incrementor);
 
-    AXSpinButtonPart* decrementor = static_cast<AXSpinButtonPart*>(axObjectCache()->getOrCreate(SpinButtonPartRole));
+    AXSpinButtonPart* decrementor = toAXSpinButtonPart(axObjectCache()->getOrCreate(SpinButtonPartRole));
     decrementor->setIsIncrementor(false);
     decrementor->setParent(this);
     m_children.append(decrementor);

@@ -25,8 +25,7 @@ public:
     virtual bool isLegacyStyleInterpolation() const OVERRIDE FINAL { return true; }
     PassRefPtrWillBeRawPtr<AnimatableValue> currentValue() const
     {
-        InterpolableAnimatableValue* value = static_cast<InterpolableAnimatableValue*>(m_cachedValue.get());
-        return value->value();
+        return toInterpolableAnimatableValue(m_cachedValue.get())->value();
     }
 
     virtual void trace(Visitor* visitor) OVERRIDE

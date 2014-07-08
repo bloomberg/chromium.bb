@@ -72,7 +72,7 @@ PassRefPtrWillBeRawPtr<CSSValue> valueForBasicShape(const RenderStyle& style, co
     RefPtrWillBeRawPtr<CSSBasicShape> basicShapeValue = nullptr;
     switch (basicShape->type()) {
     case BasicShape::BasicShapeCircleType: {
-        const BasicShapeCircle* circle = static_cast<const BasicShapeCircle*>(basicShape);
+        const BasicShapeCircle* circle = toBasicShapeCircle(basicShape);
         RefPtrWillBeRawPtr<CSSBasicShapeCircle> circleValue = CSSBasicShapeCircle::create();
 
         circleValue->setCenterX(valueForCenterCoordinate(pool, style, circle->centerX(), HORIZONTAL));
@@ -82,7 +82,7 @@ PassRefPtrWillBeRawPtr<CSSValue> valueForBasicShape(const RenderStyle& style, co
         break;
     }
     case BasicShape::BasicShapeEllipseType: {
-        const BasicShapeEllipse* ellipse = static_cast<const BasicShapeEllipse*>(basicShape);
+        const BasicShapeEllipse* ellipse = toBasicShapeEllipse(basicShape);
         RefPtrWillBeRawPtr<CSSBasicShapeEllipse> ellipseValue = CSSBasicShapeEllipse::create();
 
         ellipseValue->setCenterX(valueForCenterCoordinate(pool, style, ellipse->centerX(), HORIZONTAL));
@@ -93,7 +93,7 @@ PassRefPtrWillBeRawPtr<CSSValue> valueForBasicShape(const RenderStyle& style, co
         break;
     }
     case BasicShape::BasicShapePolygonType: {
-        const BasicShapePolygon* polygon = static_cast<const BasicShapePolygon*>(basicShape);
+        const BasicShapePolygon* polygon = toBasicShapePolygon(basicShape);
         RefPtrWillBeRawPtr<CSSBasicShapePolygon> polygonValue = CSSBasicShapePolygon::create();
 
         polygonValue->setWindRule(polygon->windRule());
@@ -105,7 +105,7 @@ PassRefPtrWillBeRawPtr<CSSValue> valueForBasicShape(const RenderStyle& style, co
         break;
     }
     case BasicShape::BasicShapeInsetType: {
-        const BasicShapeInset* inset = static_cast<const BasicShapeInset*>(basicShape);
+        const BasicShapeInset* inset = toBasicShapeInset(basicShape);
         RefPtrWillBeRawPtr<CSSBasicShapeInset> insetValue = CSSBasicShapeInset::create();
 
         insetValue->setTop(pool.createValue(inset->top(), style));

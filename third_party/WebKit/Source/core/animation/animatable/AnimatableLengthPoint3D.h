@@ -66,11 +66,7 @@ private:
     RefPtrWillBeMember<AnimatableValue> m_z;
 };
 
-inline const AnimatableLengthPoint3D* toAnimatableLengthPoint3D(const AnimatableValue* value)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(value && value->isLengthPoint3D());
-    return static_cast<const AnimatableLengthPoint3D*>(value);
-}
+DEFINE_ANIMATABLE_VALUE_TYPE_CASTS(AnimatableLengthPoint3D, isLengthPoint3D());
 
 } // namespace WebCore
 

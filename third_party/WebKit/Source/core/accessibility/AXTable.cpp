@@ -145,8 +145,7 @@ bool AXTable::isDataTable() const
         if (elementHasAriaRole(rowElement))
             return false;
         if (rowElement->hasTagName(trTag)) {
-            HTMLTableRowElement* row = static_cast<HTMLTableRowElement*>(rowElement);
-            RefPtrWillBeRawPtr<HTMLCollection> cells = row->cells();
+            RefPtrWillBeRawPtr<HTMLCollection> cells = toHTMLTableRowElement(rowElement)->cells();
             for (unsigned cellIndex = 0; cellIndex < cells->length(); ++cellIndex) {
                 if (elementHasAriaRole(cells->item(cellIndex)))
                     return false;
