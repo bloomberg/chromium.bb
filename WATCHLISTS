@@ -347,6 +347,12 @@
     'history_ui': {
       'filepath': 'chrome/browser/resources/history',
     },
+    'hotword': {
+      'filepath': 'chrome/browser/extensions/api/hotword_private/'\
+                  '|chrome/browser/resources/hotword_helper/'\
+                  '|chrome/browser/search/hotword*'\
+                  '|chrome/test/data/extensions/api_test/hotword_private/',
+    },
     'i18n': {
       'filepath': 'base/i18n/|base/string|l10n|icu|'\
         'locale_settings|encoding',
@@ -830,6 +836,7 @@
     'gn': ['tfarina@chromium.org'],
     'gpu': ['piman+watch@chromium.org'],
     'history_ui': ['dubroy@chromium.org', 'pam+watch@chromium.org'],
+    'hotword': ['rlp+watch@chromium.org'],
     'i18n': ['jshin+watch@chromium.org'],
     'imageburner': ['tbarzic+watch@chromium.org'],
     'importer': ['tfarina@chromium.org'],
@@ -915,7 +922,7 @@
     'site_instance': ['creis+watch@chromium.org', 'ajwong+watch@chromium.org',
                       'nasko+codewatch@chromium.org'],
     'spellcheck': ['groby+spellwatch@chromium.org',
-                   'rlp@chromium.org',
+                   'rlp+watch@chromium.org',
                    'rouslan+spellwatch@chromium.org'],
     'streams': ['zork+watch@chromium.org'],
     'sync': ['haitaol+watch@chromium.org',
