@@ -1168,7 +1168,7 @@ InjectedScript.RemoteObject.prototype = {
 
     /**
      * @param {!RuntimeAgent.ObjectPreview} preview
-     * @param {!Array.<Object>} descriptors
+     * @param {!Array.<!Object>} descriptors
      * @param {!Object} propertiesThreshold
      * @param {?Array.<string>=} secondLevelKeys
      * @param {boolean=} isTable
