@@ -219,7 +219,7 @@ class PackageInfo(object):
             raise RuntimeError(
                 'Package (%s) points to invalid archive file (%s).' %
                 (package_file, arch_path))
-          archive_desc = archive_info.ArchiveInfo(archive)
+          archive_desc = archive_info.ArchiveInfo(name=archive)
         else:
           archive_desc = archive_info.ArchiveInfo(archive_info_file=arch_path)
         self._archive_list.append(archive_desc)

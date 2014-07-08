@@ -28,8 +28,11 @@ class TestPackageInfo(unittest.TestCase):
     extract_dir = 'test_extraction_dir'
 
     package = package_info.PackageInfo()
-    archive = archive_info.ArchiveInfo(archive_name, archive_hash, archive_url,
-                                       tar_src_dir, extract_dir)
+    archive = archive_info.ArchiveInfo(name=archive_name,
+                                       hash=archive_hash,
+                                       url=archive_url,
+                                       tar_src_dir=tar_src_dir,
+                                       extract_dir=extract_dir)
     package.AppendArchive(archive)
 
     archive_list = package.GetArchiveList()
@@ -45,8 +48,11 @@ class TestPackageInfo(unittest.TestCase):
   def test_ClearArchiveListClearsEverything(self):
     # Check that clear archive list actually clears everything
     package1 = package_info.PackageInfo()
-    archive1 = archive_info.ArchiveInfo('name', 'hash', 'url', 'tar_src_dir',
-                                        'extract_dir')
+    archive1 = archive_info.ArchiveInfo(name='name',
+                                        hash='hash',
+                                        url='url',
+                                        tar_src_dir='tar_src_dir',
+                                        extract_dir='extract_dir')
     package1.AppendArchive(archive1)
     package1.ClearArchiveList()
 
@@ -65,12 +71,16 @@ class TestPackageInfo(unittest.TestCase):
     arch_hash2 = 'archive_hash2'
 
     package1 = package_info.PackageInfo()
-    package1.AppendArchive(archive_info.ArchiveInfo(arch_name1, arch_hash1))
-    package1.AppendArchive(archive_info.ArchiveInfo(arch_name2, arch_hash2))
+    package1.AppendArchive(archive_info.ArchiveInfo(name=arch_name1,
+                                                    hash=arch_hash1))
+    package1.AppendArchive(archive_info.ArchiveInfo(name=arch_name2,
+                                                    hash=arch_hash2))
 
     package2 = package_info.PackageInfo()
-    package2.AppendArchive(archive_info.ArchiveInfo(arch_name2, arch_hash2))
-    package2.AppendArchive(archive_info.ArchiveInfo(arch_name1, arch_hash1))
+    package2.AppendArchive(archive_info.ArchiveInfo(name=arch_name2,
+                                                    hash=arch_hash2))
+    package2.AppendArchive(archive_info.ArchiveInfo(name=arch_name1,
+                                                    hash=arch_hash1))
 
     self.assertEqual(len(package1.GetArchiveList()), 2)
     self.assertEqual(len(package2.GetArchiveList()), 2)
@@ -84,8 +94,10 @@ class TestPackageInfo(unittest.TestCase):
     arch_hash2 = 'archive_item_hash2'
 
     mast_package = package_info.PackageInfo()
-    mast_package.AppendArchive(archive_info.ArchiveInfo(arch_name1, arch_hash1))
-    mast_package.AppendArchive(archive_info.ArchiveInfo(arch_name2, arch_hash2))
+    mast_package.AppendArchive(archive_info.ArchiveInfo(name=arch_name1,
+                                                        hash=arch_hash1))
+    mast_package.AppendArchive(archive_info.ArchiveInfo(name=arch_name2,
+                                                        hash=arch_hash2))
     json_data = mast_package.DumpPackageJson()
 
     constructed_package = package_info.PackageInfo(json_data)
@@ -103,8 +115,10 @@ class TestPackageInfo(unittest.TestCase):
     arch_hash2 = 'archive_saveload_hash2'
 
     mast_package = package_info.PackageInfo()
-    mast_package.AppendArchive(archive_info.ArchiveInfo(arch_name1, arch_hash1))
-    mast_package.AppendArchive(archive_info.ArchiveInfo(arch_name2, arch_hash2))
+    mast_package.AppendArchive(archive_info.ArchiveInfo(name=arch_name1,
+                                                        hash=arch_hash1))
+    mast_package.AppendArchive(archive_info.ArchiveInfo(name=arch_name2,
+                                                        hash=arch_hash2))
 
     with pynacl.working_directory.TemporaryWorkingDirectory() as work_dir:
       package_file = os.path.join(work_dir, 'test_package.json')
@@ -125,8 +139,10 @@ class TestPackageInfo(unittest.TestCase):
     arch_hash2 = 'archive_json_hash2'
 
     mast_package = package_info.PackageInfo()
-    mast_package.AppendArchive(archive_info.ArchiveInfo(arch_name1, arch_hash1))
-    mast_package.AppendArchive(archive_info.ArchiveInfo(arch_name2, arch_hash2))
+    mast_package.AppendArchive(archive_info.ArchiveInfo(name=arch_name1,
+                                                        hash=arch_hash1))
+    mast_package.AppendArchive(archive_info.ArchiveInfo(name=arch_name2,
+                                                        hash=arch_hash2))
 
     json_package = package_info.PackageInfo(mast_package.DumpPackageJson())
     self.assertEqual(mast_package, json_package)

@@ -371,8 +371,8 @@ def ArchivePackageArchives(tar_dir, package_target, package_name, archives,
 
     archive_hash = archive_info.GetArchiveHash(archive)
     archive_name = os.path.basename(archive)
-    archive_desc = archive_info.ArchiveInfo(archive_name,
-                                            archive_hash,
+    archive_desc = archive_info.ArchiveInfo(name=archive_name,
+                                            hash=archive_hash,
                                             url=archive_url,
                                             tar_src_dir=tar_src_dir,
                                             extract_dir=extract_dir,
@@ -509,13 +509,8 @@ def UploadPackage(storage, revision, tar_dir, package_target, package_name,
       if annotate:
         print '@@@STEP_LINK@download@%s@@@' % url
 
-    archive_desc = archive_info.ArchiveInfo(
-        archive_desc.name,
-        archive_desc.hash,
-        url=url,
-        tar_src_dir=archive_desc.tar_src_dir,
-        extract_dir=archive_desc.extract_dir)
-    upload_package_desc.AppendArchive(archive_desc)
+    updated_archive_obj = archive_obj.Copy(url=url)
+    upload_package_desc.AppendArchive(updated_archive_obj)
 
   upload_package_file = local_package_file + '.upload'
   pynacl.file_tools.MakeParentDirectoryIfAbsent(upload_package_file)
@@ -988,7 +983,7 @@ def _DoFillEmptyTarsCmd(arguments):
         tar_hash = archive_info.GetArchiveHash(archive_file)
 
         empty_archive = archive_info.ArchiveInfo(name=archive_data.name,
-                                                 archive_hash=tar_hash)
+                                                 hash=tar_hash)
         output_package_desc.AppendArchive(empty_archive)
 
     output_package_desc.SavePackageFile(package_path)

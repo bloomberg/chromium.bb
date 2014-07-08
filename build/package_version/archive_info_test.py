@@ -26,8 +26,12 @@ class TestArchiveInfo(unittest.TestCase):
     extract_dir = 'test_extr' + str(random.random())
     log_url = 'test_log_url' + str(random.random())
 
-    archive = archive_info.ArchiveInfo(archive_name, archive_hash, archive_url,
-                                       tar_src_dir, extract_dir, log_url)
+    archive = archive_info.ArchiveInfo(name=archive_name,
+                                       hash=archive_hash,
+                                       url=archive_url,
+                                       tar_src_dir=tar_src_dir,
+                                       extract_dir=extract_dir,
+                                       log_url=log_url)
 
     return archive
 
@@ -59,8 +63,12 @@ class TestArchiveInfo(unittest.TestCase):
     extract_dir = 'test_extraction_dir'
     log_url = 'test_log_url'
 
-    archive = archive_info.ArchiveInfo(archive_name, archive_hash, archive_url,
-                                       tar_src_dir, extract_dir, log_url)
+    archive = archive_info.ArchiveInfo(name=archive_name,
+                                       hash=archive_hash,
+                                       url=archive_url,
+                                       tar_src_dir=tar_src_dir,
+                                       extract_dir=extract_dir,
+                                       log_url=log_url)
 
     archive_data = archive.GetArchiveData()
     self.assertEqual(archive_data.name, archive_name)

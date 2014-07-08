@@ -77,8 +77,8 @@ class TestPackageVersion(unittest.TestCase):
       archive_src_tar_dir = src_dir_dict.get(archive_file, '')
       archive_dir = dir_dict.get(archive_file, '')
       archive_log_url = log_url_dict.get(archive_file, None)
-      archive_desc = archive_info.ArchiveInfo(archive_name,
-                                              archive_hash,
+      archive_desc = archive_info.ArchiveInfo(name=archive_name,
+                                              hash=archive_hash,
                                               url=archive_url,
                                               tar_src_dir=archive_src_tar_dir,
                                               extract_dir=archive_dir,
@@ -158,8 +158,8 @@ class TestPackageVersion(unittest.TestCase):
     # Checks that we fail when the archive has no URL set.
     with pynacl.working_directory.TemporaryWorkingDirectory() as work_dir:
       package_desc = package_info.PackageInfo()
-      archive_desc = archive_info.ArchiveInfo('missing_name.tar',
-                                              'missing_hash',
+      archive_desc = archive_info.ArchiveInfo(name='missing_name.tar',
+                                              hash='missing_hash',
                                               url=None)
       package_desc.AppendArchive(archive_desc)
 
@@ -221,8 +221,8 @@ class TestPackageVersion(unittest.TestCase):
       self._fake_downloader.StoreURL(fake_url, mock_tar)
 
       package_desc = package_info.PackageInfo()
-      archive_desc = archive_info.ArchiveInfo('invalid_name.tar',
-                                              'invalid_hash',
+      archive_desc = archive_info.ArchiveInfo(name='invalid_name.tar',
+                                              hash='invalid_hash',
                                               url=fake_url)
       package_desc.AppendArchive(archive_desc)
 

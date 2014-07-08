@@ -22,6 +22,7 @@ DEFAULT_ARCHIVE_INFO = ArchiveInfoTuple(name='',
                                         extract_dir='',
                                         log_url=None)
 
+
 def GetArchiveHash(archive_file):
   """Gets the standardized hash value for a given archive.
 
@@ -38,30 +39,39 @@ def GetArchiveHash(archive_file):
   return None
 
 
-class ArchiveInfo(object):
-  """A archive_info file is a single json file describine an archive.
+def ConstructArchiveInfo(default_archive_info=None, **archive_args):
+  """Constructs an ArchiveInfoTuple using default values.
 
-  Archive Fields:
-    name: Name of the package archive.
-    hash: Hash value of the package archive, for validation purposes.
-    url: Web URL location where the archive can be found.
-    tar_src_dir: Where files are located within the tar archive.
-    extract_dir: Where files should be extracted to within destination dir.
+  This function fills in unspecified values using default values specified under
+  default_archive_info. This function also ignores extra arguments so if a field
+  is removed we can still properly load old files.
   """
-  def __init__(self, name='', archive_hash=0, url=None, tar_src_dir='',
-               extract_dir='', log_url=None, archive_info_file=None):
+  if default_archive_info is None:
+    default_archive_info = DEFAULT_ARCHIVE_INFO
+
+  archive_info_values = [(key, value) for key, value in archive_args.iteritems()
+                          if key in ArchiveInfoTuple._fields]
+
+  archive_info = default_archive_info._asdict()
+  archive_info.update(archive_info_values)
+  return ArchiveInfoTuple(**archive_info)
+
+
+class ArchiveInfo(object):
+  """An ArchiveInfo object represents informatinon about an archive."""
+  def __init__(self, archive_info_file=None, **archive_args):
     """Initialize ArchiveInfo object.
 
-    When an archive_info_file is specified, all other fields are ignored.
-    Otherwise, uses first fields as constructor for archive info object.
+    Args:
+      archive_info_file: A JSON file representing an ArchiveInfo object.
+      archive_args: Fields for an ArchiveInfoTuple when no file is specified.
     """
     self._archive_tuple = None
 
     if archive_info_file is not None:
       self.LoadArchiveInfoFile(archive_info_file)
     else:
-      self.SetArchiveData(name, archive_hash, url, tar_src_dir,
-                          extract_dir, log_url)
+      self.SetArchiveData(**archive_args)
 
   def __eq__(self, other):
     return (type(self) == type(other) and
@@ -69,6 +79,12 @@ class ArchiveInfo(object):
 
   def __repr__(self):
     return "ArchiveInfo(" + str(self._archive_tuple) + ")"
+
+  def Copy(self, **archive_args):
+    """Returns a copy of the ArchiveInfo object with fields overridden."""
+    arch_tuple = ConstructArchiveInfo(default_archive_info=self._archive_tuple,
+                                      **archive_args)
+    return ArchiveInfo(**arch_tuple._asdict())
 
   def LoadArchiveInfoFile(self, archive_info_file):
     """Loads a archive info file into this object.
@@ -87,12 +103,7 @@ class ArchiveInfo(object):
                          type(archive_info_file),
                          archive_info_file)
 
-    json_values = [(key, value) for key, value in archive_json.iteritems()
-                   if key in ArchiveInfoTuple._fields]
-
-    archive_info = DEFAULT_ARCHIVE_INFO._asdict()
-    archive_info.update(json_values)
-    self._archive_tuple = ArchiveInfoTuple(**archive_info)
+    self.SetArchiveData(**archive_json)
 
   def SaveArchiveInfoFile(self, archive_info_file):
     """Saves this object as a serialized JSON file if the object is valid.
@@ -113,11 +124,11 @@ class ArchiveInfo(object):
 
     return dict(self._archive_tuple._asdict())
 
-  def SetArchiveData(self, name, archive_hash, url=None, tar_src_dir='',
-                     extract_dir='', log_url=None):
-    """Replaces currently set with new ArchiveInfoTuple."""
-    self._archive_tuple = ArchiveInfoTuple(name, archive_hash, url,
-                                           tar_src_dir, extract_dir, log_url)
+  def SetArchiveData(self, **archive_args):
+    """Replaces currently set archive data with new ArchiveInfoTuple."""
+    self._archive_tuple = ConstructArchiveInfo(**archive_args)
+    if not self._archive_tuple.name:
+      raise RuntimeError('Invalid Archive Data - "name" is not set.')
 
   def GetArchiveData(self):
     """Returns the current ArchiveInfoTuple tuple."""

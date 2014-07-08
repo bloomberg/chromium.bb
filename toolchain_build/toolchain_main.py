@@ -312,12 +312,13 @@ class PackageBuilder(object):
             archive_name = component + '.tgz'
           cache_item = self._build_once.GetCachedCloudItemForPackage(component)
           if cache_item is None:
-            archive_desc = archive_info.ArchiveInfo(archive_name)
+            archive_desc = archive_info.ArchiveInfo(name=archive_name)
           else:
             if cache_item.dir_item:
               include_package = True
               archive_desc = archive_info.ArchiveInfo(
-                  archive_name, cache_item.dir_item.hash,
+                  name=archive_name,
+                  hash=cache_item.dir_item.hash,
                   url=cache_item.dir_item.url,
                   log_url=cache_item.log_url,
               )
