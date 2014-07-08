@@ -549,8 +549,6 @@ SpdySession::SpdySession(
       http_server_properties_(http_server_properties),
       read_buffer_(new IOBuffer(kReadBufferSize)),
       stream_hi_water_mark_(kFirstStreamId),
-      num_pushed_streams_(0u),
-      num_active_pushed_streams_(0u),
       in_flight_write_frame_type_(DATA),
       in_flight_write_frame_size_(0),
       is_secure_(false),
@@ -565,7 +563,6 @@ SpdySession::SpdySession(
       max_concurrent_streams_limit_(max_concurrent_streams_limit == 0
                                         ? kMaxConcurrentStreamLimit
                                         : max_concurrent_streams_limit),
-      max_concurrent_pushed_streams_(kMaxConcurrentPushedStreams),
       streams_initiated_count_(0),
       streams_pushed_count_(0),
       streams_pushed_and_claimed_count_(0),
@@ -780,7 +777,7 @@ int SpdySession::TryCreateStream(
     return err;
 
   if (!max_concurrent_streams_ ||
-      (active_streams_.size() + created_streams_.size() - num_pushed_streams_ <
+      (active_streams_.size() + created_streams_.size() <
        max_concurrent_streams_)) {
     return CreateStream(*request, stream);
   }
@@ -1221,12 +1218,8 @@ void SpdySession::CloseActiveStreamIterator(ActiveStreamMap::iterator it,
   // probably something that we still want to support, although server
   // push is hardly used. Write tests for this and fix this. (See
   // http://crbug.com/261712 .)
-  if (owned_stream->type() == SPDY_PUSH_STREAM) {
+  if (owned_stream->type() == SPDY_PUSH_STREAM)
     unclaimed_pushed_streams_.erase(owned_stream->url());
-    num_pushed_streams_--;
-    if (!owned_stream->IsReservedRemote())
-      num_active_pushed_streams_--;
-  }
 
   DeleteStream(owned_stream.Pass(), status);
   MaybeFinishGoingAway();
@@ -2102,18 +2095,6 @@ int SpdySession::OnInitialResponseHeadersReceived(
     SpdyStream* stream) {
   CHECK(in_io_loop_);
   SpdyStreamId stream_id = stream->stream_id();
-
-  if (stream->type() == SPDY_PUSH_STREAM) {
-    DCHECK(stream->IsReservedRemote());
-    if (max_concurrent_pushed_streams_ &&
-        num_active_pushed_streams_ >= max_concurrent_pushed_streams_) {
-      ResetStream(stream_id,
-                  RST_STREAM_REFUSED_STREAM,
-                  "Stream concurrency limit reached.");
-      return STATUS_CODE_REFUSED_STREAM;
-    }
-  }
-
   // May invalidate |stream|.
   int rv = stream->OnInitialResponseHeadersReceived(
       response_headers, response_time, recv_first_byte_time);
@@ -2121,12 +2102,6 @@ int SpdySession::OnInitialResponseHeadersReceived(
     DCHECK_NE(rv, ERR_IO_PENDING);
     DCHECK(active_streams_.find(stream_id) == active_streams_.end());
   }
-
-  if (stream->type() == SPDY_PUSH_STREAM) {
-    DCHECK(stream->IsLocallyClosed());
-    num_active_pushed_streams_++;
-  }
-
   return rv;
 }
 
@@ -2609,7 +2584,6 @@ bool SpdySession::TryCreatePushStream(SpdyStreamId stream_id,
 
   active_it->second.stream->OnPushPromiseHeadersReceived(headers);
   DCHECK(active_it->second.stream->IsReservedRemote());
-  num_pushed_streams_++;
   return true;
 }
 
