@@ -362,19 +362,21 @@ void RenderBlock::styleDidChange(StyleDifference diff, const RenderStyle* oldSty
         ResourceLoadPriorityOptimizer::resourceLoadPriorityOptimizer()->addRenderObject(this);
 }
 
-void RenderBlock::invalidateTreeAfterLayout(const RenderLayerModelObject& invalidationContainer)
+void RenderBlock::invalidateTreeAfterLayout(const PaintInvalidationState& paintInvalidationState)
 {
     // Note, we don't want to early out here using shouldCheckForInvalidationAfterLayout as
     // we have to make sure we go through any positioned objects as they won't be seen in
     // the normal tree walk.
 
     if (shouldCheckForPaintInvalidationAfterLayout())
-        RenderBox::invalidateTreeAfterLayout(invalidationContainer);
+        RenderBox::invalidateTreeAfterLayout(paintInvalidationState);
 
-    // Take care of positioned objects. This is required as LayoutState keeps a single clip rect.
+    // Take care of positioned objects. This is required as PaintInvalidationState keeps a single clip rect.
     if (TrackedRendererListHashSet* positionedObjects = this->positionedObjects()) {
         TrackedRendererListHashSet::iterator end = positionedObjects->end();
-        LayoutState state(*this, isTableRow() ? LayoutSize() : locationOffset());
+        bool establishesNewPaintInvalidationContainer = isPaintInvalidationContainer();
+        const RenderLayerModelObject& newPaintInvalidationContainer = *adjustCompositedContainerForSpecialAncestors(establishesNewPaintInvalidationContainer ? this : &paintInvalidationState.paintInvalidationContainer());
+        PaintInvalidationState childPaintInvalidationState(paintInvalidationState, *this, newPaintInvalidationContainer);
         for (TrackedRendererListHashSet::iterator it = positionedObjects->begin(); it != end; ++it) {
             RenderBox* box = *it;
 
@@ -382,22 +384,33 @@ void RenderBlock::invalidateTreeAfterLayout(const RenderLayerModelObject& invali
             // so we can't pass our own repaint container along.
             const RenderLayerModelObject& repaintContainerForChild = *box->containerForPaintInvalidation();
 
+            // If it's a new paint invalidation container, we won't have properly accumulated the offset into the
+            // PaintInvalidationState.
+            // FIXME: Teach PaintInvalidationState to handle this case. crbug.com/371485
+            if (&repaintContainerForChild != newPaintInvalidationContainer) {
+                ForceHorriblySlowRectMapping slowRectMapping(&childPaintInvalidationState);
+                PaintInvalidationState disabledPaintInvalidationState(childPaintInvalidationState, *this, repaintContainerForChild);
+                box->invalidateTreeAfterLayout(disabledPaintInvalidationState);
+                continue;
+            }
+
             // If the positioned renderer is absolutely positioned and it is inside
-            // a relatively positioend inline element, we need to account for
-            // the inline elements position in LayoutState.
+            // a relatively positioned inline element, we need to account for
+            // the inline elements position in PaintInvalidationState.
             if (box->style()->position() == AbsolutePosition) {
                 RenderObject* container = box->container(&repaintContainerForChild, 0);
                 if (container->isRelPositioned() && container->isRenderInline()) {
-                    // FIXME: We should be able to use layout-state for this.
-                    // Currently, we will place absolutly positioned elements inside
+                    // FIXME: We should be able to use PaintInvalidationState for this.
+                    // Currently, we will place absolutely positioned elements inside
                     // relatively positioned inline blocks in the wrong location. crbug.com/371485
-                    ForceHorriblySlowRectMapping slowRectMapping(*this);
-                    box->invalidateTreeAfterLayout(repaintContainerForChild);
+                    ForceHorriblySlowRectMapping slowRectMapping(&childPaintInvalidationState);
+                    PaintInvalidationState disabledPaintInvalidationState(childPaintInvalidationState, *this, repaintContainerForChild);
+                    box->invalidateTreeAfterLayout(disabledPaintInvalidationState);
                     continue;
                 }
             }
 
-            box->invalidateTreeAfterLayout(repaintContainerForChild);
+            box->invalidateTreeAfterLayout(childPaintInvalidationState);
         }
     }
 }
@@ -4003,8 +4016,6 @@ void RenderBlock::updateFirstLetterStyle(RenderObject* firstLetterBlock, RenderO
     RenderStyle* pseudoStyle = styleForFirstLetter(firstLetterBlock, firstLetterContainer);
     ASSERT(firstLetter->isFloating() || firstLetter->isInline());
 
-    ForceHorriblySlowRectMapping slowRectMapping(*this);
-
     if (RenderStyle::stylePropagationDiff(firstLetter->style(), pseudoStyle) == Reattach) {
         // The first-letter renderer needs to be replaced. Create a new renderer of the right type.
         RenderBoxModelObject* newFirstLetter;
@@ -4184,10 +4195,6 @@ void RenderBlock::updateFirstLetter()
     // Should counter be on this list? What about RenderTextFragment?
     if (!currChild->isText() || currChild->isBR() || toRenderText(currChild)->isWordBreak())
         return;
-
-    // Our layout state is not valid for the repaints we are going to trigger by
-    // adding and removing children of firstLetterContainer.
-    ForceHorriblySlowRectMapping slowRectMapping(*this);
 
     createFirstLetterRenderer(firstLetterBlock, currChild, length);
 }
@@ -4447,9 +4454,9 @@ void RenderBlock::absoluteQuads(Vector<FloatQuad>& quads, bool* wasFixed) const
     }
 }
 
-LayoutRect RenderBlock::rectWithOutlineForPaintInvalidation(const RenderLayerModelObject* paintInvalidationContainer, LayoutUnit outlineWidth) const
+LayoutRect RenderBlock::rectWithOutlineForPaintInvalidation(const RenderLayerModelObject* paintInvalidationContainer, LayoutUnit outlineWidth, const PaintInvalidationState* paintInvalidationState) const
 {
-    LayoutRect r(RenderBox::rectWithOutlineForPaintInvalidation(paintInvalidationContainer, outlineWidth));
+    LayoutRect r(RenderBox::rectWithOutlineForPaintInvalidation(paintInvalidationContainer, outlineWidth, paintInvalidationState));
     if (isAnonymousBlockContinuation())
         r.inflateY(collapsedMarginBefore()); // FIXME: This is wrong for block-flows that are horizontal.
     return r;

@@ -115,7 +115,6 @@ void RenderSVGForeignObject::computeLogicalHeight(LayoutUnit, LayoutUnit logical
 void RenderSVGForeignObject::layout()
 {
     ASSERT(needsLayout());
-    ASSERT(!view()->layoutStateCachedOffsetsEnabled()); // RenderSVGRoot disables layoutState for the SVG rendering tree.
 
     SVGForeignObjectElement* foreign = toSVGForeignObjectElement(node());
 
@@ -156,10 +155,10 @@ void RenderSVGForeignObject::layout()
 }
 
 void RenderSVGForeignObject::mapRectToPaintInvalidationBacking(const RenderLayerModelObject* paintInvalidationContainer,
-    LayoutRect& rect, bool fixed) const
+    LayoutRect& rect, bool fixed, const PaintInvalidationState* paintInvalidationState) const
 {
     FloatRect r(rect);
-    SVGRenderSupport::computeFloatRectForRepaint(this, paintInvalidationContainer, r, fixed);
+    SVGRenderSupport::computeFloatRectForRepaint(this, paintInvalidationContainer, r, fixed, paintInvalidationState);
     rect = enclosingLayoutRect(r);
 }
 
