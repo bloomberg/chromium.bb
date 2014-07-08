@@ -419,7 +419,7 @@ gfx::Rect PictureLayerTiling::ComputeSkewport(
 void PictureLayerTiling::UpdateTilePriorities(
     WhichTree tree,
     const gfx::Rect& visible_layer_rect,
-    float layer_contents_scale,
+    float ideal_contents_scale,
     double current_frame_time_in_seconds,
     const OcclusionTracker<LayerImpl>* occlusion_tracker,
     const LayerImpl* render_target,
@@ -469,7 +469,7 @@ void PictureLayerTiling::UpdateTilePriorities(
 
   TilePriority now_priority(resolution_, TilePriority::NOW, 0);
   float content_to_screen_scale =
-      1.0f / (contents_scale_ * layer_contents_scale);
+      1.0f / (contents_scale_ * ideal_contents_scale);
 
   // Assign now priority to all visible tiles.
   bool include_borders = true;

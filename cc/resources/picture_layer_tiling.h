@@ -212,7 +212,7 @@ class CC_EXPORT PictureLayerTiling {
   void UpdateTilePriorities(
       WhichTree tree,
       const gfx::Rect& visible_layer_rect,
-      float layer_contents_scale,
+      float ideal_contents_scale,
       double current_frame_time_in_seconds,
       const OcclusionTracker<LayerImpl>* occlusion_tracker,
       const LayerImpl* render_target,
