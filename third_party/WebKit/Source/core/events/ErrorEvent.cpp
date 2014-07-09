@@ -45,6 +45,11 @@ ErrorEventInit::ErrorEventInit()
 }
 
 ErrorEvent::ErrorEvent()
+    : m_sanitizedMessage()
+    , m_fileName()
+    , m_lineNumber(0)
+    , m_columnNumber(0)
+    , m_world(DOMWrapperWorld::current(v8::Isolate::GetCurrent()))
 {
     ScriptWrappable::init(this);
 }
