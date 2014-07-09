@@ -26,6 +26,9 @@ enum DisplayConnectionType {
   DISPLAY_CONNECTION_TYPE_DVI = 1 << 4,
   DISPLAY_CONNECTION_TYPE_DISPLAYPORT = 1 << 5,
   DISPLAY_CONNECTION_TYPE_NETWORK = 1 << 6,
+
+  // Update this when adding a new type.
+  DISPLAY_CONNECTION_TYPE_LAST = DISPLAY_CONNECTION_TYPE_NETWORK
 };
 
 // Content protection methods applied on video output.
