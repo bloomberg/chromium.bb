@@ -34079,7 +34079,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="WebCore.XHR.send.ArrayBufferOrView"
     enum="XMLHttpRequestSendArrayBufferOrView">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <obsolete>
+    Deprecated as of 7/2014. This histogram was used to determine when it would
+    be ok to remove the deprecated XMLHttpRequest.send(ArrayBuffer) overload.
+    The support for ArrayBuffer was un-deprecated in the WHATWG spec for XHR,
+    and subsequently un-deprecated in Blink.
+  </obsolete>
+  <owner>tyoshino@chromium.org</owner>
+  <owner>costan@gmail.com</owner>
   <summary>
     Count the number of XHR.send() calls for each argument type to see when we
     can deprecate the ArrayBuffer type support.
