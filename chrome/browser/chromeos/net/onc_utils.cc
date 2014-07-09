@@ -220,8 +220,8 @@ void ImportNetworksForUser(const chromeos::User* user,
         onc::TranslateONCObjectToShill(&onc::kNetworkConfigurationSignature,
                                        *normalized_network);
 
-    scoped_ptr<NetworkUIData> ui_data = NetworkUIData::CreateFromONC(
-        ::onc::ONC_SOURCE_USER_IMPORT, *normalized_network);
+    scoped_ptr<NetworkUIData> ui_data(
+        NetworkUIData::CreateFromONC(::onc::ONC_SOURCE_USER_IMPORT));
     base::DictionaryValue ui_data_dict;
     ui_data->FillDictionary(&ui_data_dict);
     std::string ui_data_json;

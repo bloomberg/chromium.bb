@@ -14,6 +14,7 @@
 #include "base/values.h"
 #include "chromeos/network/certificate_pattern.h"
 #include "chromeos/network/network_event_log.h"
+#include "components/onc/onc_constants.h"
 #include "net/base/net_errors.h"
 #include "net/cert/cert_database.h"
 #include "net/cert/nss_cert_database.h"
@@ -99,6 +100,24 @@ std::string GetStringFromDictionary(const base::DictionaryValue& dict,
   std::string s;
   dict.GetStringWithoutPathExpansion(key, &s);
   return s;
+}
+
+void GetClientCertTypeAndPattern(
+    const base::DictionaryValue& dict_with_client_cert,
+    ClientCertConfig* cert_config) {
+  using namespace ::onc::client_cert;
+  dict_with_client_cert.GetStringWithoutPathExpansion(
+      kClientCertType, &cert_config->client_cert_type);
+
+  if (cert_config->client_cert_type == kPattern) {
+    const base::DictionaryValue* pattern = NULL;
+    dict_with_client_cert.GetDictionaryWithoutPathExpansion(kClientCertPattern,
+                                                            &pattern);
+    if (pattern) {
+      bool success = cert_config->pattern.ReadFromONCDictionary(*pattern);
+      DCHECK(success);
+    }
+  }
 }
 
 }  // namespace
@@ -199,7 +218,7 @@ scoped_refptr<net::X509Certificate> GetCertificateMatch(
   return latest;
 }
 
-void SetShillProperties(const client_cert::ConfigType cert_config_type,
+void SetShillProperties(const ConfigType cert_config_type,
                         const std::string& tpm_slot,
                         const std::string& tpm_pin,
                         const std::string* pkcs11_id,
@@ -258,7 +277,67 @@ void SetShillProperties(const client_cert::ConfigType cert_config_type,
     properties->SetStringWithoutPathExpansion(tpm_pin_property, tpm_pin);
 }
 
-bool IsCertificateConfigured(const client_cert::ConfigType cert_config_type,
+ClientCertConfig::ClientCertConfig()
+    : location(CONFIG_TYPE_NONE),
+      client_cert_type(onc::client_cert::kClientCertTypeNone) {
+}
+
+void OncToClientCertConfig(const base::DictionaryValue& network_config,
+                           ClientCertConfig* cert_config) {
+  using namespace ::onc;
+
+  *cert_config = ClientCertConfig();
+
+  const base::DictionaryValue* dict_with_client_cert = NULL;
+
+  const base::DictionaryValue* wifi = NULL;
+  network_config.GetDictionaryWithoutPathExpansion(network_config::kWiFi,
+                                                   &wifi);
+  if (wifi) {
+    const base::DictionaryValue* eap = NULL;
+    wifi->GetDictionaryWithoutPathExpansion(wifi::kEAP, &eap);
+    if (!eap)
+      return;
+
+    dict_with_client_cert = eap;
+    cert_config->location = CONFIG_TYPE_EAP;
+  }
+
+  const base::DictionaryValue* vpn = NULL;
+  network_config.GetDictionaryWithoutPathExpansion(network_config::kVPN, &vpn);
+  if (vpn) {
+    const base::DictionaryValue* openvpn = NULL;
+    vpn->GetDictionaryWithoutPathExpansion(vpn::kOpenVPN, &openvpn);
+    const base::DictionaryValue* ipsec = NULL;
+    vpn->GetDictionaryWithoutPathExpansion(vpn::kIPsec, &ipsec);
+    if (openvpn) {
+      dict_with_client_cert = openvpn;
+      cert_config->location = CONFIG_TYPE_OPENVPN;
+    } else if (ipsec) {
+      dict_with_client_cert = ipsec;
+      cert_config->location = CONFIG_TYPE_IPSEC;
+    } else {
+      return;
+    }
+  }
+
+  const base::DictionaryValue* ethernet = NULL;
+  network_config.GetDictionaryWithoutPathExpansion(network_config::kEthernet,
+                                                   &ethernet);
+  if (ethernet) {
+    const base::DictionaryValue* eap = NULL;
+    ethernet->GetDictionaryWithoutPathExpansion(wifi::kEAP, &eap);
+    if (!eap)
+      return;
+    dict_with_client_cert = eap;
+    cert_config->location = CONFIG_TYPE_EAP;
+  }
+
+  if (dict_with_client_cert)
+    GetClientCertTypeAndPattern(*dict_with_client_cert, cert_config);
+}
+
+bool IsCertificateConfigured(const ConfigType cert_config_type,
                              const base::DictionaryValue& service_properties) {
   // VPN certificate properties are read from the Provider dictionary.
   const base::DictionaryValue* provider_properties = NULL;

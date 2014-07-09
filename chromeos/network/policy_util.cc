@@ -178,11 +178,7 @@ scoped_ptr<base::DictionaryValue> CreateShillConfiguration(
   shill_dictionary->SetStringWithoutPathExpansion(shill::kProfileProperty,
                                                   profile.path);
 
-  scoped_ptr<NetworkUIData> ui_data;
-  if (policy)
-    ui_data = NetworkUIData::CreateFromONC(onc_source, *policy);
-  else
-    ui_data.reset(new NetworkUIData());
+  scoped_ptr<NetworkUIData> ui_data(NetworkUIData::CreateFromONC(onc_source));
 
   if (settings) {
     // Shill doesn't know that sensitive data is contained in the UIData

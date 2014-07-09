@@ -91,7 +91,9 @@ class NetworkConnectionHandlerTest : public testing::Test {
     test_manager_client_->AddTechnology(shill::kTypeCellular,
                                         true /* enabled */);
     dbus_manager->GetShillProfileClient()->GetTestInterface()->AddProfile(
-        "profile_path", std::string() /* shared profile */);
+        "shared_profile_path", std::string() /* shared profile */);
+    dbus_manager->GetShillProfileClient()->GetTestInterface()->AddProfile(
+        "user_profile_path", user_.username_hash());
 
     base::RunLoop().RunUntilIdle();
     LoginState::Initialize();
@@ -220,36 +222,32 @@ class NetworkConnectionHandlerTest : public testing::Test {
     ASSERT_EQ(1U, loaded_certs->size());
   }
 
-  void SetupPolicy() {
-    const char* kNetworkConfigs =
-        "[ { \"GUID\": \"wifi1\","
-        "    \"Name\": \"wifi1\","
-        "    \"Type\": \"WiFi\","
-        "    \"WiFi\": {"
-        "      \"Security\": \"WPA-PSK\","
-        "      \"SSID\": \"wifi1\","
-        "      \"Passphrase\": \"passphrase\""
-        "    }"
-        "} ]";
-
+  void SetupPolicy(const std::string& network_configs_json,
+                   const base::DictionaryValue& global_config,
+                   bool user_policy) {
     std::string error;
     scoped_ptr<base::Value> network_configs_value(
-        base::JSONReader::ReadAndReturnError(
-            kNetworkConfigs, base::JSON_ALLOW_TRAILING_COMMAS, NULL, &error));
+        base::JSONReader::ReadAndReturnError(network_configs_json,
+                                             base::JSON_ALLOW_TRAILING_COMMAS,
+                                             NULL,
+                                             &error));
     ASSERT_TRUE(network_configs_value) << error;
 
     base::ListValue* network_configs = NULL;
     ASSERT_TRUE(network_configs_value->GetAsList(&network_configs));
 
-    base::DictionaryValue global_config;
-    global_config.SetBooleanWithoutPathExpansion(
-        ::onc::global_network_config::kAllowOnlyPolicyNetworksToAutoconnect,
-        true);
-
-    managed_config_handler_->SetPolicy(::onc::ONC_SOURCE_USER_POLICY,
-                                       "", // userhash
-                                       *network_configs,
-                                       global_config);
+    if (user_policy) {
+      managed_config_handler_->SetPolicy(
+          ::onc::ONC_SOURCE_USER_POLICY,
+          user_.username_hash(),
+          *network_configs,
+          global_config);
+    } else {
+      managed_config_handler_->SetPolicy(::onc::ONC_SOURCE_DEVICE_POLICY,
+                                         std::string(),  // no username hash
+                                         *network_configs,
+                                         global_config);
+    }
     base::RunLoop().RunUntilIdle();
   }
 
@@ -322,23 +320,34 @@ TEST_F(NetworkConnectionHandlerTest, NetworkConnectionHandlerConnectFailure) {
 
 namespace {
 
-const char* kConfigRequiresCertificateTemplate =
-    "{ \"GUID\": \"wifi4\", \"Type\": \"wifi\", \"Connectable\": false,"
-    "  \"Security\": \"802_1x\","
-    "  \"UIData\": \"{"
-    "    \\\"certificate_type\\\": \\\"pattern\\\","
-    "    \\\"certificate_pattern\\\": {"
-    "      \\\"Subject\\\": {\\\"CommonName\\\": \\\"%s\\\" }"
-    "   } }\" }";
+const char* kPolicyWithCertPatternTemplate =
+    "[ { \"GUID\": \"wifi4\","
+    "    \"Name\": \"wifi4\","
+    "    \"Type\": \"WiFi\","
+    "    \"WiFi\": {"
+    "      \"Security\": \"WPA-EAP\","
+    "      \"SSID\": \"wifi_ssid\","
+    "      \"EAP\": {"
+    "        \"Outer\": \"EAP-TLS\","
+    "        \"ClientCertType\": \"Pattern\","
+    "        \"ClientCertPattern\": {"
+    "          \"Subject\": {"
+    "            \"CommonName\" : \"%s\""
+    "          }"
+    "        }"
+    "      }"
+    "    }"
+    "} ]";
 
 }  // namespace
 
 // Handle certificates.
 TEST_F(NetworkConnectionHandlerTest, ConnectCertificateMissing) {
   StartCertLoader();
+  SetupPolicy(base::StringPrintf(kPolicyWithCertPatternTemplate, "unknown"),
+              base::DictionaryValue(),  // no global config
+              true);                    // load as user policy
 
-  EXPECT_TRUE(Configure(
-      base::StringPrintf(kConfigRequiresCertificateTemplate, "unknown")));
   Connect("wifi4");
   EXPECT_EQ(NetworkConnectionHandler::kErrorCertificateRequired,
             GetResultAndReset());
@@ -352,9 +361,10 @@ TEST_F(NetworkConnectionHandlerTest, ConnectWithCertificateSuccess) {
                          test_nssdb_.get(),
                          &certs);
 
-  EXPECT_TRUE(Configure(
-      base::StringPrintf(kConfigRequiresCertificateTemplate,
-                         certs[0]->subject().common_name.c_str())));
+  SetupPolicy(base::StringPrintf(kPolicyWithCertPatternTemplate,
+                                 certs[0]->subject().common_name.c_str()),
+              base::DictionaryValue(),  // no global config
+              true);                    // load as user policy
 
   Connect("wifi4");
   EXPECT_EQ(kSuccessResult, GetResultAndReset());
@@ -367,9 +377,10 @@ TEST_F(NetworkConnectionHandlerTest,
                          test_nssdb_.get(),
                          &certs);
 
-  EXPECT_TRUE(Configure(
-      base::StringPrintf(kConfigRequiresCertificateTemplate,
-                         certs[0]->subject().common_name.c_str())));
+  SetupPolicy(base::StringPrintf(kPolicyWithCertPatternTemplate,
+                                 certs[0]->subject().common_name.c_str()),
+              base::DictionaryValue(),  // no global config
+              true);                    // load as user policy
 
   Connect("wifi4");
 
@@ -412,6 +423,17 @@ const char* kConfigManagedSharedConnectable =
     "{ \"GUID\": \"wifi1\", \"Type\": \"wifi\", \"State\": \"idle\", "
     "  \"Connectable\": true }";
 
+const char* kPolicy =
+    "[ { \"GUID\": \"wifi1\","
+    "    \"Name\": \"wifi1\","
+    "    \"Type\": \"WiFi\","
+    "    \"WiFi\": {"
+    "      \"Security\": \"WPA-PSK\","
+    "      \"SSID\": \"wifi1\","
+    "      \"Passphrase\": \"passphrase\""
+    "    }"
+    "} ]";
+
 }  // namespace
 
 TEST_F(NetworkConnectionHandlerTest, ReconnectOnLoginEarlyPolicyLoading) {
@@ -426,8 +448,14 @@ TEST_F(NetworkConnectionHandlerTest, ReconnectOnLoginEarlyPolicyLoading) {
   EXPECT_EQ(shill::kStateIdle,
             GetServiceStringProperty("wifi1", shill::kStateProperty));
 
-  // Policy application should disconnect from the shared and unmanaged network.
-  SetupPolicy();
+  // Applying the policy which restricts autoconnect should disconnect from the
+  // shared, unmanaged network.
+  base::DictionaryValue global_config;
+  global_config.SetBooleanWithoutPathExpansion(
+      ::onc::global_network_config::kAllowOnlyPolicyNetworksToAutoconnect,
+      true);
+
+  SetupPolicy(kPolicy, global_config, false /* load as device policy */);
   EXPECT_EQ(shill::kStateIdle,
             GetServiceStringProperty("wifi0", shill::kStateProperty));
   EXPECT_EQ(shill::kStateIdle,
@@ -455,7 +483,14 @@ TEST_F(NetworkConnectionHandlerTest, ReconnectOnLoginLatePolicyLoading) {
   EXPECT_EQ(shill::kStateIdle,
             GetServiceStringProperty("wifi1", shill::kStateProperty));
 
-  SetupPolicy();
+  // Applying the policy which restricts autoconnect should disconnect from the
+  // shared, unmanaged network.
+  base::DictionaryValue global_config;
+  global_config.SetBooleanWithoutPathExpansion(
+      ::onc::global_network_config::kAllowOnlyPolicyNetworksToAutoconnect,
+      true);
+
+  SetupPolicy(kPolicy, global_config, false /* load as device policy */);
   EXPECT_EQ(shill::kStateIdle,
             GetServiceStringProperty("wifi0", shill::kStateProperty));
   EXPECT_EQ(shill::kStateOnline,

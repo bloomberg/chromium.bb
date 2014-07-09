@@ -6,10 +6,13 @@
 
 #include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_navigator.h"
+#include "chromeos/network/client_cert_util.h"
+#include "chromeos/network/managed_network_configuration_handler.h"
 #include "chromeos/network/network_event_log.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
@@ -216,11 +219,6 @@ DialogEnrollmentDelegate::~DialogEnrollmentDelegate() {}
 
 bool DialogEnrollmentDelegate::Enroll(const std::vector<std::string>& uri_list,
                                       const base::Closure& post_action) {
-  if (uri_list.empty()) {
-    NET_LOG_EVENT("No enrollment URIs", network_name_);
-    return false;
-  }
-
   // Keep the closure for later activation if we notice that
   // a certificate has been added.
 
@@ -267,27 +265,42 @@ bool CreateDialog(const std::string& service_path,
     NET_LOG_ERROR("Enrolling Unknown network", service_path);
     return false;
   }
+  Browser* browser = chrome::FindBrowserWithWindow(owning_window);
+  Profile* profile =
+      browser ? browser->profile() : ProfileManager::GetPrimaryUserProfile();
+  std::string username_hash = ProfileHelper::GetUserIdHashFromProfile(profile);
+
+  onc::ONCSource onc_source = onc::ONC_SOURCE_NONE;
+  const base::DictionaryValue* policy =
+      NetworkHandler::Get()
+          ->managed_network_configuration_handler()
+          ->FindPolicyByGUID(username_hash, network->guid(), &onc_source);
+
   // We skip certificate patterns for device policy ONC so that an unmanaged
   // user can't get to the place where a cert is presented for them
   // involuntarily.
-  if (network->ui_data().onc_source() == onc::ONC_SOURCE_DEVICE_POLICY)
+  if (!policy || onc_source == onc::ONC_SOURCE_DEVICE_POLICY)
     return false;
 
-  const CertificatePattern& certificate_pattern =
-      network->ui_data().certificate_pattern();
-  if (certificate_pattern.Empty()) {
-    NET_LOG_EVENT("No certificate pattern found", service_path);
+  client_cert::ClientCertConfig cert_config;
+  OncToClientCertConfig(*policy, &cert_config);
+
+  if (cert_config.client_cert_type != onc::client_cert::kPattern)
+    return false;
+
+  if (cert_config.pattern.Empty())
+    NET_LOG_ERROR("Certificate pattern is empty", service_path);
+
+  if (cert_config.pattern.enrollment_uri_list().empty()) {
+    NET_LOG_EVENT("No enrollment URIs", service_path);
     return false;
   }
 
   NET_LOG_USER("Enrolling", service_path);
 
-  Browser* browser = chrome::FindBrowserWithWindow(owning_window);
-  Profile* profile = browser ? browser->profile() :
-      ProfileManager::GetPrimaryUserProfile();
   DialogEnrollmentDelegate* enrollment =
       new DialogEnrollmentDelegate(owning_window, network->name(), profile);
-  return enrollment->Enroll(certificate_pattern.enrollment_uri_list(),
+  return enrollment->Enroll(cert_config.pattern.enrollment_uri_list(),
                             base::Bind(&EnrollmentComplete, service_path));
 }
 

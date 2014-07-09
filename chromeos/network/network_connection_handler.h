@@ -24,8 +24,8 @@
 
 namespace chromeos {
 
+class CertificatePattern;
 class NetworkState;
-class NetworkUIData;
 
 // The NetworkConnectionHandler class is used to manage network connection
 // requests. This is the only class that should make Shill Connect calls.
@@ -194,9 +194,9 @@ class CHROMEOS_EXPORT NetworkConnectionHandler
   void CheckPendingRequest(const std::string service_path);
   void CheckAllPendingRequests();
 
-  // Returns the PKCS#11 ID of a cert matching the certificate pattern in
-  // |ui_data|. Returns empty string otherwise.
-  std::string CertificateIsConfigured(NetworkUIData* ui_data);
+  // Returns the PKCS#11 ID of a cert matching the certificate pattern. Returns
+  // empty string otherwise.
+  std::string CertificateIsConfigured(const CertificatePattern& pattern);
   void ErrorCallbackForPendingRequest(const std::string& service_path,
                                       const std::string& error_name);
 

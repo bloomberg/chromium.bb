@@ -28,17 +28,6 @@ bool GetAsListOfStrings(const base::Value& value,
   return true;
 }
 
-base::ListValue* CreateListFromStrings(
-    const std::vector<std::string>& strings) {
-  base::ListValue* new_list = new base::ListValue;
-  for (std::vector<std::string>::const_iterator iter = strings.begin();
-       iter != strings.end();
-       ++iter) {
-    new_list->AppendString(*iter);
-  }
-  return new_list;
-}
-
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -72,21 +61,6 @@ void IssuerSubjectPattern::Clear() {
   organizational_unit_.clear();
 }
 
-scoped_ptr<base::DictionaryValue> IssuerSubjectPattern::CreateONCDictionary()
-    const {
-  scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue);
-  if (!common_name_.empty())
-    dict->SetString(onc::client_cert::kCommonName, common_name_);
-  if (!locality_.empty())
-    dict->SetString(onc::client_cert::kLocality, locality_);
-  if (!organization_.empty())
-    dict->SetString(onc::client_cert::kOrganization, organization_);
-  if (!organizational_unit_.empty())
-    dict->SetString(onc::client_cert::kOrganizationalUnit,
-                    organizational_unit_);
-  return dict.Pass();
-}
-
 void IssuerSubjectPattern::ReadFromONCDictionary(
     const base::DictionaryValue& dict) {
   Clear();
@@ -118,29 +92,6 @@ void CertificatePattern::Clear() {
   issuer_.Clear();
   subject_.Clear();
   enrollment_uri_list_.clear();
-}
-
-scoped_ptr<base::DictionaryValue> CertificatePattern::CreateONCDictionary()
-    const {
-  scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue);
-
-  if (!issuer_ca_pems_.empty()) {
-    dict->SetWithoutPathExpansion(onc::client_cert::kIssuerCAPEMs,
-                                  CreateListFromStrings(issuer_ca_pems_));
-  }
-
-  if (!issuer_.Empty())
-    dict->SetWithoutPathExpansion(onc::client_cert::kIssuer,
-                                  issuer_.CreateONCDictionary().release());
-
-  if (!subject_.Empty())
-    dict->SetWithoutPathExpansion(onc::client_cert::kSubject,
-                                  subject_.CreateONCDictionary().release());
-
-  if (!enrollment_uri_list_.empty())
-    dict->SetWithoutPathExpansion(onc::client_cert::kEnrollmentURI,
-                                  CreateListFromStrings(enrollment_uri_list_));
-  return dict.Pass();
 }
 
 bool CertificatePattern::ReadFromONCDictionary(

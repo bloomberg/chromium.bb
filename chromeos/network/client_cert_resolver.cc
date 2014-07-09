@@ -25,7 +25,6 @@
 #include "chromeos/network/client_cert_util.h"
 #include "chromeos/network/managed_network_configuration_handler.h"
 #include "chromeos/network/network_state.h"
-#include "chromeos/network/network_ui_data.h"
 #include "chromeos/tpm_token_loader.h"
 #include "components/onc/onc_constants.h"
 #include "dbus/object_path.h"
@@ -46,6 +45,7 @@ struct ClientCertResolver::NetworkAndMatchingCert {
 
   std::string service_path;
   client_cert::ConfigType cert_config_type;
+
   // The id of the matching certificate or empty if no certificate was found.
   std::string pkcs11_id;
 };
@@ -91,14 +91,12 @@ bool CompareCertExpiration(const CertAndIssuer& a,
 // |client_cert_pattern|.
 struct NetworkAndCertPattern {
   NetworkAndCertPattern(const std::string& network_path,
-                        client_cert::ConfigType config_type,
-                        const CertificatePattern& pattern)
+                        const client_cert::ClientCertConfig& client_cert_config)
       : service_path(network_path),
-        cert_config_type(config_type),
-        client_cert_pattern(pattern) {}
+        cert_config(client_cert_config) {}
+
   std::string service_path;
-  client_cert::ConfigType cert_config_type;
-  CertificatePattern client_cert_pattern;
+  client_cert::ClientCertConfig cert_config;
 };
 
 // A unary predicate that returns true if the given CertAndIssuer matches the
@@ -108,7 +106,7 @@ struct MatchCertWithPattern {
       : net_and_pattern(pattern) {}
 
   bool operator()(const CertAndIssuer& cert_and_issuer) {
-    const CertificatePattern& pattern = net_and_pattern.client_cert_pattern;
+    const CertificatePattern& pattern = net_and_pattern.cert_config.pattern;
     if (!pattern.issuer().Empty() &&
         !client_cert::CertPrincipalMatches(pattern.issuer(),
                                            cert_and_issuer.cert->issuer())) {
@@ -193,55 +191,8 @@ void FindCertificateMatches(const net::CertificateList& certs,
       }
     }
     matches->push_back(ClientCertResolver::NetworkAndMatchingCert(
-        it->service_path, it->cert_config_type, pkcs11_id));
+        it->service_path, it->cert_config.location, pkcs11_id));
   }
-}
-
-// Determines the type of the CertificatePattern configuration, i.e. is it a
-// pattern within an EAP, IPsec or OpenVPN configuration.
-client_cert::ConfigType OncToClientCertConfigurationType(
-    const base::DictionaryValue& network_config) {
-  using namespace ::onc;
-
-  const base::DictionaryValue* wifi = NULL;
-  network_config.GetDictionaryWithoutPathExpansion(network_config::kWiFi,
-                                                   &wifi);
-  if (wifi) {
-    const base::DictionaryValue* eap = NULL;
-    wifi->GetDictionaryWithoutPathExpansion(wifi::kEAP, &eap);
-    if (!eap)
-      return client_cert::CONFIG_TYPE_NONE;
-    return client_cert::CONFIG_TYPE_EAP;
-  }
-
-  const base::DictionaryValue* vpn = NULL;
-  network_config.GetDictionaryWithoutPathExpansion(network_config::kVPN, &vpn);
-  if (vpn) {
-    const base::DictionaryValue* openvpn = NULL;
-    vpn->GetDictionaryWithoutPathExpansion(vpn::kOpenVPN, &openvpn);
-    if (openvpn)
-      return client_cert::CONFIG_TYPE_OPENVPN;
-
-    const base::DictionaryValue* ipsec = NULL;
-    vpn->GetDictionaryWithoutPathExpansion(vpn::kIPsec, &ipsec);
-    if (ipsec)
-      return client_cert::CONFIG_TYPE_IPSEC;
-
-    return client_cert::CONFIG_TYPE_NONE;
-  }
-
-  const base::DictionaryValue* ethernet = NULL;
-  network_config.GetDictionaryWithoutPathExpansion(network_config::kEthernet,
-                                                   &ethernet);
-  if (ethernet) {
-    const base::DictionaryValue* eap = NULL;
-    ethernet->GetDictionaryWithoutPathExpansion(wifi::kEAP, &eap);
-    if (eap)
-      return client_cert::CONFIG_TYPE_EAP;
-    return client_cert::CONFIG_TYPE_NONE;
-  }
-
-  return client_cert::CONFIG_TYPE_NONE;
 }
 
 void LogError(const std::string& service_path,
@@ -405,26 +356,15 @@ void ClientCertResolver::ResolveNetworks(
     }
 
     VLOG(2) << "Inspecting network " << network->path();
-    // TODO(pneubeck): Access the ClientCertPattern without relying on
-    //   NetworkUIData, which also parses other things that we don't need here.
-    // The ONCSource is irrelevant here.
-    scoped_ptr<NetworkUIData> ui_data(
-        NetworkUIData::CreateFromONC(onc::ONC_SOURCE_NONE, *policy));
+    client_cert::ClientCertConfig cert_config;
+    OncToClientCertConfig(*policy, &cert_config);
 
     // Skip networks that don't have a ClientCertPattern.
-    if (ui_data->certificate_type() != CLIENT_CERT_TYPE_PATTERN)
+    if (cert_config.client_cert_type != ::onc::client_cert::kPattern)
       continue;
 
-    client_cert::ConfigType config_type =
-        OncToClientCertConfigurationType(*policy);
-    if (config_type == client_cert::CONFIG_TYPE_NONE) {
-      LOG(ERROR) << "UIData contains a CertificatePattern, but the policy "
-                 << "doesn't. Network: " << network->path();
-      continue;
-    }
-
-    networks_with_pattern->push_back(NetworkAndCertPattern(
-        network->path(), config_type, ui_data->certificate_pattern()));
+    networks_with_pattern->push_back(
+        NetworkAndCertPattern(network->path(), cert_config));
   }
   if (networks_with_pattern->empty())
     return;

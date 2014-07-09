@@ -3,5 +3,5 @@
   "GUID":"guid",
   "Profile": "/profile/user1/shill",
   "Type":"etherneteap",
-  "UIData": "{\"certificate_pattern\":{\"IssuerCAPEMs\":[\"pem1\"]},\"certificate_type\":\"pattern\",\"onc_source\":\"user_policy\"}"
+  "UIData": "{\"onc_source\":\"user_policy\"}"
 }

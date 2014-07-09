@@ -13,6 +13,7 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/shill_manager_client.h"
 #include "chromeos/dbus/shill_service_client.h"
+#include "chromeos/network/certificate_pattern.h"
 #include "chromeos/network/client_cert_util.h"
 #include "chromeos/network/managed_network_configuration_handler.h"
 #include "chromeos/network/network_configuration_handler.h"
@@ -21,7 +22,6 @@
 #include "chromeos/network/network_profile_handler.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
-#include "chromeos/network/network_ui_data.h"
 #include "chromeos/network/shill_property_util.h"
 #include "chromeos/tpm_token_loader.h"
 #include "dbus/object_path.h"
@@ -419,8 +419,17 @@ void NetworkConnectionHandler::VerifyConfiguredAndConnect(
     }
   }
 
-  scoped_ptr<NetworkUIData> ui_data =
-      shill_property_util::GetUIDataFromProperties(service_properties);
+  std::string guid;
+  service_properties.GetStringWithoutPathExpansion(shill::kGuidProperty, &guid);
+  std::string profile;
+  service_properties.GetStringWithoutPathExpansion(shill::kProfileProperty,
+                                                   &profile);
+  const base::DictionaryValue* user_policy =
+      managed_configuration_handler_->FindPolicyByGuidAndProfile(guid, profile);
+
+  client_cert::ClientCertConfig cert_config_from_policy;
+  if (user_policy)
+    client_cert::OncToClientCertConfig(*user_policy, &cert_config_from_policy);
 
   client_cert::ConfigType client_cert_type = client_cert::CONFIG_TYPE_NONE;
   if (type == shill::kTypeVPN) {
@@ -436,8 +445,10 @@ void NetworkConnectionHandler::VerifyConfiguredAndConnect(
       // to deduce the authentication type based on the
       // kL2tpIpsecClientCertIdProperty here (and also in VPNConfigView).
       if (!vpn_client_cert_id.empty() ||
-          (ui_data && ui_data->certificate_type() != CLIENT_CERT_TYPE_NONE))
+          cert_config_from_policy.client_cert_type !=
+              onc::client_cert::kClientCertTypeNone) {
         client_cert_type = client_cert::CONFIG_TYPE_IPSEC;
+      }
     }
   } else if (type == shill::kTypeWifi && security == shill::kSecurity8021x) {
     client_cert_type = client_cert::CONFIG_TYPE_EAP;
@@ -466,11 +477,12 @@ void NetworkConnectionHandler::VerifyConfiguredAndConnect(
     // non-empty string.
     std::string pkcs11_id;
 
-    // Check certificate properties in kUIDataProperty if configured.
-    // Note: Wifi/VPNConfigView set these properties explicitly, in which case
-    // only the TPM must be configured.
-    if (ui_data && ui_data->certificate_type() == CLIENT_CERT_TYPE_PATTERN) {
-      pkcs11_id = CertificateIsConfigured(ui_data.get());
+    // Check certificate properties from policy.
+    // Note: Wifi/VPNConfigView set the KeyID and CertID properties directly,
+    // in which case only the TPM must be configured.
+    if (cert_config_from_policy.client_cert_type ==
+        onc::client_cert::kPattern) {
+      pkcs11_id = CertificateIsConfigured(cert_config_from_policy.pattern);
       // Ensure the certificate is available and configured.
       if (!cert_loader_->IsHardwareBacked() || pkcs11_id.empty()) {
         ErrorCallbackForPendingRequest(service_path, kErrorCertificateRequired);
@@ -734,13 +746,12 @@ void NetworkConnectionHandler::CheckAllPendingRequests() {
 }
 
 std::string NetworkConnectionHandler::CertificateIsConfigured(
-    NetworkUIData* ui_data) {
-  if (ui_data->certificate_pattern().Empty())
+    const CertificatePattern& pattern) {
+  if (pattern.Empty())
     return std::string();
   // Find the matching certificate.
   scoped_refptr<net::X509Certificate> matching_cert =
-      client_cert::GetCertificateMatch(ui_data->certificate_pattern(),
-                                       cert_loader_->cert_list());
+      client_cert::GetCertificateMatch(pattern, cert_loader_->cert_list());
   if (!matching_cert.get())
     return std::string();
   return CertLoader::GetPkcs11IdForCert(*matching_cert.get());

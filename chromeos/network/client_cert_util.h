@@ -10,6 +10,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "chromeos/chromeos_export.h"
+#include "chromeos/network/certificate_pattern.h"
 
 namespace base {
 class DictionaryValue;
@@ -23,7 +24,6 @@ typedef std::vector<scoped_refptr<X509Certificate> > CertificateList;
 
 namespace chromeos {
 
-class CertificatePattern;
 class IssuerSubjectPattern;
 
 namespace client_cert {
@@ -33,6 +33,21 @@ enum ConfigType {
   CONFIG_TYPE_OPENVPN,
   CONFIG_TYPE_IPSEC,
   CONFIG_TYPE_EAP
+};
+
+struct CHROMEOS_EXPORT ClientCertConfig {
+  ClientCertConfig();
+
+  // Independent of whether the client cert (pattern or reference) is
+  // configured, the location determines whether this network configuration
+  // supports client certs and what kind of configuration it requires.
+  ConfigType location;
+
+  // One of the ClientCertTypes defined in ONC: kNone, kRef, or kPattern.
+  std::string client_cert_type;
+
+  // If |client_cert_type| equals kPattern, this contains the pattern.
+  CertificatePattern pattern;
 };
 
 // Returns true only if any fields set in this pattern match exactly with
@@ -60,6 +75,12 @@ void SetShillProperties(const ConfigType cert_config_type,
 // Returns true if all required configuration properties are set and not empty.
 bool IsCertificateConfigured(const client_cert::ConfigType cert_config_type,
                              const base::DictionaryValue& service_properties);
+
+// Determines the type of the CertificatePattern configuration, i.e. is it a
+// pattern within an EAP, IPsec or OpenVPN configuration.
+CHROMEOS_EXPORT void OncToClientCertConfig(
+    const base::DictionaryValue& network_config,
+    ClientCertConfig* cert_config);
 
 }  // namespace client_cert
 

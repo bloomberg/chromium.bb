@@ -6,14 +6,12 @@
 
 #include "base/logging.h"
 #include "base/values.h"
-#include "chromeos/network/onc/onc_signature.h"
+#include "components/onc/onc_constants.h"
 
 namespace chromeos {
 
 // Top-level UI data dictionary keys.
 const char NetworkUIData::kKeyONCSource[] = "onc_source";
-const char NetworkUIData::kKeyCertificatePattern[] = "certificate_pattern";
-const char NetworkUIData::kKeyCertificateType[] = "certificate_type";
 const char NetworkUIData::kKeyUserSettings[] = "user_settings";
 const char NetworkUIData::kONCSourceUserImport[] = "user_import";
 const char NetworkUIData::kONCSourceDevicePolicy[] = "device_policy";
@@ -31,12 +29,6 @@ const StringEnumEntry< ::onc::ONCSource> kONCSourceTable[] = {
   { NetworkUIData::kONCSourceUserImport, ::onc::ONC_SOURCE_USER_IMPORT },
   { NetworkUIData::kONCSourceDevicePolicy, ::onc::ONC_SOURCE_DEVICE_POLICY },
   { NetworkUIData::kONCSourceUserPolicy, ::onc::ONC_SOURCE_USER_POLICY }
-};
-
-const StringEnumEntry<ClientCertType> kClientCertTable[] = {
-  { "none", CLIENT_CERT_TYPE_NONE },
-  { "pattern", CLIENT_CERT_TYPE_PATTERN },
-  { "ref", CLIENT_CERT_TYPE_REF }
 };
 
 // Converts |enum_value| to the corresponding string according to |table|. If no
@@ -67,9 +59,7 @@ Enum StringToEnum(const StringEnumEntry<Enum>(& table)[N],
 
 }  // namespace
 
-NetworkUIData::NetworkUIData()
-    : onc_source_(::onc::ONC_SOURCE_NONE),
-      certificate_type_(CLIENT_CERT_TYPE_NONE) {
+NetworkUIData::NetworkUIData() : onc_source_(::onc::ONC_SOURCE_NONE) {
 }
 
 NetworkUIData::NetworkUIData(const NetworkUIData& other) {
@@ -77,12 +67,9 @@ NetworkUIData::NetworkUIData(const NetworkUIData& other) {
 }
 
 NetworkUIData& NetworkUIData::operator=(const NetworkUIData& other) {
-  certificate_pattern_ = other.certificate_pattern_;
   onc_source_ = other.onc_source_;
-  certificate_type_ = other.certificate_type_;
   if (other.user_settings_)
     user_settings_.reset(other.user_settings_->DeepCopy());
-  policy_guid_ = other.policy_guid_;
   return *this;
 }
 
@@ -92,21 +79,6 @@ NetworkUIData::NetworkUIData(const base::DictionaryValue& dict) {
   onc_source_ = StringToEnum(kONCSourceTable, source, ::onc::ONC_SOURCE_NONE);
 
   std::string type_string;
-  dict.GetString(kKeyCertificateType, &type_string);
-  certificate_type_ =
-      StringToEnum(kClientCertTable, type_string, CLIENT_CERT_TYPE_NONE);
-
-  if (certificate_type_ == CLIENT_CERT_TYPE_PATTERN) {
-    const base::DictionaryValue* cert_dict = NULL;
-    dict.GetDictionary(kKeyCertificatePattern, &cert_dict);
-    if (cert_dict)
-      certificate_pattern_.ReadFromONCDictionary(*cert_dict);
-    if (certificate_pattern_.Empty()) {
-      // This case may occur if UIData from an older CrOS version is read.
-      LOG(WARNING) << "Couldn't parse a valid certificate pattern.";
-      certificate_type_ = CLIENT_CERT_TYPE_NONE;
-    }
-  }
 
   const base::DictionaryValue* user_settings = NULL;
   if (dict.GetDictionary(kKeyUserSettings, &user_settings))
@@ -131,93 +103,17 @@ void NetworkUIData::FillDictionary(base::DictionaryValue* dict) const {
   if (!source_string.empty())
     dict->SetString(kKeyONCSource, source_string);
 
-  if (certificate_type_ != CLIENT_CERT_TYPE_NONE) {
-    std::string type_string = EnumToString(kClientCertTable, certificate_type_);
-    dict->SetString(kKeyCertificateType, type_string);
-
-    if (certificate_type_ == CLIENT_CERT_TYPE_PATTERN &&
-        !certificate_pattern_.Empty()) {
-      dict->Set(kKeyCertificatePattern,
-                certificate_pattern_.CreateONCDictionary().release());
-    }
-  }
   if (user_settings_)
     dict->SetWithoutPathExpansion(kKeyUserSettings,
                                   user_settings_->DeepCopy());
 }
 
-namespace {
-
-void GetAndTranslateClientCertType(const base::DictionaryValue& onc_object,
-                                   NetworkUIData* ui_data) {
-  using namespace ::onc::client_cert;
-
-  std::string client_cert_type;
-  if (!onc_object.GetStringWithoutPathExpansion(kClientCertType,
-                                                &client_cert_type)) {
-    return;
-  }
-
-  ClientCertType type;
-  if (client_cert_type == kClientCertTypeNone) {
-    type = CLIENT_CERT_TYPE_NONE;
-  } else if (client_cert_type == kRef) {
-    type = CLIENT_CERT_TYPE_REF;
-  } else if (client_cert_type == kPattern) {
-    type = CLIENT_CERT_TYPE_PATTERN;
-  } else {
-    type = CLIENT_CERT_TYPE_NONE;
-    NOTREACHED();
-  }
-
-  ui_data->set_certificate_type(type);
-}
-
-void TranslateCertificatePattern(const base::DictionaryValue& onc_object,
-                                 NetworkUIData* ui_data) {
-  CertificatePattern pattern;
-  bool success = pattern.ReadFromONCDictionary(onc_object);
-  DCHECK(success);
-  ui_data->set_certificate_pattern(pattern);
-}
-
-void TranslateONCHierarchy(const onc::OncValueSignature& signature,
-                           const base::DictionaryValue& onc_object,
-                           NetworkUIData* ui_data) {
-  if (&signature == &onc::kCertificatePatternSignature) {
-    TranslateCertificatePattern(onc_object, ui_data);
-  } else if (&signature == &onc::kEAPSignature ||
-             &signature == &onc::kIPsecSignature ||
-             &signature == &onc::kOpenVPNSignature) {
-    GetAndTranslateClientCertType(onc_object, ui_data);
-  }
-
-  // Recurse into nested objects.
-  for (base::DictionaryValue::Iterator it(onc_object); !it.IsAtEnd();
-       it.Advance()) {
-    const base::DictionaryValue* inner_object;
-    if (!it.value().GetAsDictionary(&inner_object))
-      continue;
-
-    const onc::OncFieldSignature* field_signature =
-        GetFieldSignature(signature, it.key());
-
-    TranslateONCHierarchy(*field_signature->value_signature, *inner_object,
-                          ui_data);
-  }
-}
-
-}  // namespace
-
 // static
 scoped_ptr<NetworkUIData> NetworkUIData::CreateFromONC(
-    ::onc::ONCSource onc_source,
-    const base::DictionaryValue& onc_network) {
+    ::onc::ONCSource onc_source) {
   scoped_ptr<NetworkUIData> ui_data(new NetworkUIData());
-  TranslateONCHierarchy(onc::kNetworkConfigurationSignature, onc_network,
-                        ui_data.get());
 
-  ui_data->set_onc_source(onc_source);
+  ui_data->onc_source_ = onc_source;
 
   return ui_data.Pass();
 }
