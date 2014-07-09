@@ -589,7 +589,8 @@ void HistoryURLProvider::Start(const AutocompleteInput& input,
     done_ = false;
     params_ = params.release();  // This object will be destroyed in
                                  // QueryComplete() once we're done with it.
-    history_service->ScheduleAutocomplete(this, params_);
+    history_service->ScheduleAutocomplete(
+        base::Bind(&HistoryURLProvider::ExecuteWithDB, this, params_));
   }
 }
 
@@ -659,9 +660,9 @@ AutocompleteMatch HistoryURLProvider::SuggestExactInput(
   return match;
 }
 
-void HistoryURLProvider::ExecuteWithDB(history::HistoryBackend* backend,
-                                       history::URLDatabase* db,
-                                       HistoryURLProviderParams* params) {
+void HistoryURLProvider::ExecuteWithDB(HistoryURLProviderParams* params,
+                                       history::HistoryBackend* backend,
+                                       history::URLDatabase* db) {
   // We may get called with a NULL database if it couldn't be properly
   // initialized.
   if (!db) {

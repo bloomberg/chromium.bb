@@ -42,11 +42,9 @@ class AndroidHistoryProviderService;
 #endif
 
 class GURL;
-class HistoryURLProvider;
 class PageUsageData;
 class PageUsageRequest;
 class Profile;
-struct HistoryURLProviderParams;
 struct ImportedFaviconUsage;
 
 namespace base {
@@ -561,8 +559,8 @@ class HistoryService : public CancelableRequestProvider,
   // Called by the HistoryURLProvider class to schedule an autocomplete, it
   // will be called back on the internal history thread with the history
   // database so it can query. See history_autocomplete.cc for a diagram.
-  void ScheduleAutocomplete(HistoryURLProvider* provider,
-                            HistoryURLProviderParams* params);
+  void ScheduleAutocomplete(const base::Callback<
+      void(history::HistoryBackend*, history::URLDatabase*)>& callback);
 
   // Broadcasts the given notification. This is called by the backend so that
   // the notification will be broadcast on the main thread.

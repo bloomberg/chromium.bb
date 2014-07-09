@@ -30,7 +30,6 @@
 #include "base/thread_task_runner_handle.h"
 #include "base/threading/thread.h"
 #include "base/time/time.h"
-#include "chrome/browser/autocomplete/history_url_provider.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/history/download_row.h"
@@ -966,11 +965,11 @@ bool HistoryService::Init(const base::FilePath& history_dir, bool no_db) {
   return true;
 }
 
-void HistoryService::ScheduleAutocomplete(HistoryURLProvider* provider,
-                                          HistoryURLProviderParams* params) {
+void HistoryService::ScheduleAutocomplete(const base::Callback<
+    void(history::HistoryBackend*, history::URLDatabase*)>& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  ScheduleAndForget(PRIORITY_UI, &HistoryBackend::ScheduleAutocomplete,
-                    scoped_refptr<HistoryURLProvider>(provider), params);
+  ScheduleAndForget(
+      PRIORITY_UI, &HistoryBackend::ScheduleAutocomplete, callback);
 }
 
 void HistoryService::ScheduleTask(SchedulePriority priority,

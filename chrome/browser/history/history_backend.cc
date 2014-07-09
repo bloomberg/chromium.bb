@@ -23,7 +23,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
-#include "chrome/browser/autocomplete/history_url_provider.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/favicon/favicon_changed_details.h"
 #include "chrome/browser/history/download_row.h"
@@ -1464,10 +1463,9 @@ void HistoryBackend::GetRedirectsToSpecificVisit(
   }
 }
 
-void HistoryBackend::ScheduleAutocomplete(HistoryURLProvider* provider,
-                                          HistoryURLProviderParams* params) {
-  // ExecuteWithDB should handle the NULL database case.
-  provider->ExecuteWithDB(this, db_.get(), params);
+void HistoryBackend::ScheduleAutocomplete(const base::Callback<
+    void(history::HistoryBackend*, history::URLDatabase*)>& callback) {
+  callback.Run(this, db_.get());
 }
 
 void HistoryBackend::DeleteFTSIndexDatabases() {

@@ -211,9 +211,9 @@ class HistoryURLProvider : public HistoryProvider {
   // system. The history database MAY BE NULL in which case it is not
   // available and we should return no data. Also schedules returning the
   // results to the main thread
-  void ExecuteWithDB(history::HistoryBackend* backend,
-                     history::URLDatabase* db,
-                     HistoryURLProviderParams* params);
+  void ExecuteWithDB(HistoryURLProviderParams* params,
+                     history::HistoryBackend* backend,
+                     history::URLDatabase* db);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(HistoryURLProviderTest, HUPScoringExperiment);
