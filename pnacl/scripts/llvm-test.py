@@ -252,14 +252,15 @@ def SetupEnvironment(options):
   return env
 
 
-def IsEmptyOrNonexistent(testdir):
+def ToolchainWorkDirExists(work_dir):
   # TODO(dschuff): Because this script is run directly from the buildbot
   # script and not as part of a toolchain_build rule, we do not know
   # whether the llvm target was actually built (in which case the working
   # directory is still there) or whether it was just retrieved from cache
   # (in which case it was clobbered, since the bots run with --clobber).
-  # So we have to just exit rather than fail here.
-  return not os.path.exists(testdir) or len(os.listdir(testdir)) == 0
+  # Check if ninja or make rule exists.
+  return (os.path.isfile(os.path.join(work_dir, 'build.ninja')) or
+          os.path.isfile(os.path.join(work_dir, 'Makefile')))
 
 
 def RunLitTest(testdir, testarg, lit_failures, env, options):
@@ -275,7 +276,7 @@ def RunLitTest(testdir, testarg, lit_failures, env, options):
     0 always
   """
   with remember_cwd():
-    if IsEmptyOrNonexistent(testdir):
+    if not ToolchainWorkDirExists(testdir):
       print 'Working directory %s is empty. Not running tests' % testdir
       if env['PNACL_BUILDBOT'] != 'false' or options.verbose:
         print '@@@STEP_TEXT (skipped)@@@'
@@ -477,7 +478,7 @@ def TestsuiteReport(env, config, options):
 
 def RunTestsuiteSteps(env, config, options):
   result = 0
-  if IsEmptyOrNonexistent(env['TC_BUILD_LLVM']):
+  if not ToolchainWorkDirExists(env['TC_BUILD_LLVM']):
     print ('LLVM build directory %s is empty. Skipping testsuite' %
            env['TC_BUILD_LLVM'])
     if env['PNACL_BUILDBOT'] != 'false' or options.verbose:
