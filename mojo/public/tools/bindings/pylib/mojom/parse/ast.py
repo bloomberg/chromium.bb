@@ -83,6 +83,22 @@ class AttributeList(NodeListBase):
   _list_item_type = Attribute
 
 
+class Module(NodeBase):
+  """Represents a module statement."""
+
+  def __init__(self, name, attribute_list, **kwargs):
+    # |name| is either none or a "wrapped identifier".
+    assert name is None or isinstance(name, tuple)
+    assert attribute_list is None or isinstance(attribute_list, AttributeList)
+    NodeBase.__init__(self, **kwargs)
+    self.name = name
+    self.attribute_list = attribute_list
+
+  def __eq__(self, other):
+    return self.name == other.name and \
+           self.attribute_list == other.attribute_list
+
+
 class Ordinal(NodeBase):
   """Represents an ordinal value labeling, e.g., a struct field."""
 

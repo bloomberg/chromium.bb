@@ -86,19 +86,22 @@ class Parser(object):
   #
   # See http://www.dabeaz.com/ply/ply.html#ply_nn25 for more details.
 
+  # TODO(vtl): Get rid of this ('MODULE', ...) stuff and replace it with an
+  # ast.Mojom node. This will require putting the imports into a list (say
+  # ast.ImportList).
+  # TODO(vtl): Get rid of the braces in the module "statement". (Consider
+  # renaming "module" -> "package".)
   def p_root(self, p):
     """root : import root
-            | module
+            | module LBRACE definition_list RBRACE
             | definition_list"""
-    if len(p) > 2:
-      p[0] = _ListFromConcat(p[1], p[2])
+    if len(p) == 3:
+      p[0] = p[2]
+      p[0].insert(0, p[1])
+    elif len(p) == 5:
+      p[0] = [('MODULE', p[1].name, p[1].attribute_list, p[3])]
     else:
-      # Generator expects a module. If one wasn't specified insert one with an
-      # empty name.
-      if p[1][0] != 'MODULE':
-        p[0] = [('MODULE', None, None, p[1])]
-      else:
-        p[0] = [p[1]]
+      p[0] = [('MODULE', None, None, p[1])]
 
   def p_import(self, p):
     """import : IMPORT STRING_LITERAL"""
@@ -106,9 +109,8 @@ class Parser(object):
     p[0] = ('IMPORT', eval(p[2]))
 
   def p_module(self, p):
-    """module : attribute_section MODULE identifier_wrapped LBRACE \
-                    definition_list RBRACE"""
-    p[0] = ('MODULE', p[3], p[1], p[5])
+    """module : attribute_section MODULE identifier_wrapped """
+    p[0] = ast.Module(p[3], p[1], filename=self.filename, lineno=p.lineno(2))
 
   def p_definition_list(self, p):
     """definition_list : definition definition_list
@@ -123,11 +125,13 @@ class Parser(object):
                   | const"""
     p[0] = p[1]
 
-  def p_attribute_section(self, p):
-    """attribute_section : LBRACKET attribute_list RBRACKET
-                         | """
-    if len(p) > 3:
-      p[0] = p[2]
+  def p_attribute_section_1(self, p):
+    """attribute_section : """
+    p[0] = None
+
+  def p_attribute_section_2(self, p):
+    """attribute_section : LBRACKET attribute_list RBRACKET"""
+    p[0] = p[2]
 
   def p_attribute_list_1(self, p):
     """attribute_list : """
