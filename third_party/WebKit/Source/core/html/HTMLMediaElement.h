@@ -250,7 +250,7 @@ public:
     // of one of them here.
     using HTMLElement::executionContext;
 
-    bool hasSingleSecurityOrigin() const { return !m_player || m_player->hasSingleSecurityOrigin(); }
+    bool hasSingleSecurityOrigin() const { return !m_player || (webMediaPlayer() && webMediaPlayer()->hasSingleSecurityOrigin()); }
 
     bool isFullscreen() const;
     void enterFullscreen();
