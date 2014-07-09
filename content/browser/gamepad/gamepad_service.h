@@ -92,7 +92,7 @@ class CONTENT_EXPORT GamepadService {
 
   virtual ~GamepadService();
 
-  void SetInstance();
+  static void SetInstance(GamepadService*);
 
   void OnUserGesture();
 

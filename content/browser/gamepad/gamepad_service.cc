@@ -22,23 +22,27 @@ GamepadService* g_gamepad_service = 0;
 GamepadService::GamepadService()
     : num_active_consumers_(0),
       gesture_callback_pending_(false) {
-  SetInstance();
+  SetInstance(this);
 }
 
 GamepadService::GamepadService(scoped_ptr<GamepadDataFetcher> fetcher)
     : provider_(new GamepadProvider(fetcher.Pass())),
       num_active_consumers_(0),
       gesture_callback_pending_(false) {
-  SetInstance();
+  SetInstance(this);
   thread_checker_.DetachFromThread();
 }
 
 GamepadService::~GamepadService() {
+  SetInstance(NULL);
 }
 
-void GamepadService::SetInstance() {
-  CHECK(!g_gamepad_service);
-  g_gamepad_service = this;
+void GamepadService::SetInstance(GamepadService* instance) {
+  // Unit tests can create multiple instances but only one should exist at any
+  // given time so g_gamepad_service should only go from NULL to non-NULL and
+  // vica versa.
+  CHECK(!!instance != !!g_gamepad_service);
+  g_gamepad_service = instance;
 }
 
 GamepadService* GamepadService::GetInstance() {
