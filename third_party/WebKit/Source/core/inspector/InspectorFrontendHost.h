@@ -69,6 +69,7 @@ public:
     String getSelectionForegroundColor();
 
     bool isUnderTest();
+    bool isStub();
 
     Page* frontendPage() { return m_frontendPage; }
 

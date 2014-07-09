@@ -245,4 +245,9 @@ bool InspectorFrontendHost::isUnderTest()
     return m_client && m_client->isUnderTest();
 }
 
+bool InspectorFrontendHost::isStub()
+{
+    return false;
+}
+
 } // namespace WebCore
