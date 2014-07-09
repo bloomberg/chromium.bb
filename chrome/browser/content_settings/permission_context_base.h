@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SERVICES_GCM_PERMISSION_CONTEXT_BASE_H_
-#define CHROME_BROWSER_SERVICES_GCM_PERMISSION_CONTEXT_BASE_H_
+#ifndef CHROME_BROWSER_CONTENT_SETTINGS_PERMISSION_CONTEXT_BASE_H_
+#define CHROME_BROWSER_CONTENT_SETTINGS_PERMISSION_CONTEXT_BASE_H_
 
 #include "base/callback.h"
 #include "base/containers/scoped_ptr_hash_map.h"
@@ -24,19 +24,30 @@ class WebContents;
 
 typedef base::Callback<void(bool)> BrowserPermissionCallback;
 
-// TODO(miguelg): Move this out of gcm into a generic place and make
-// Midi permissions and others use it.
-namespace gcm {
-
 // This base class contains common operations for granting permissions.
-// It is spit out of Midi and Push and will be moved to a common place
-// so it can be used by both classes (and eventually others) in a separate
-// patch.
-// It supports both infobars and bubbles, but it handles them differently.
-// For bubbles, it manages the life cycle of permission request and persists the
-// permission choices when stated by the user.
-// For infobars however all that logic is managed by the internal
-// PermissionQueueController object.
+// It offers the following functionality:
+//   - Creates a bubble or infobar when a permission is needed
+//   - If accepted/denied the permission is saved in content settings for
+//     future uses (for the domain that requested it).
+//   - If dismissed the permission is not saved but it's considered denied for
+//     this one request
+//   - In any case the BrowserPermissionCallback is executed once a decision
+//     about the permission is made by the user.
+// The bare minimum you need to create a new permission request is
+//   - Define your new permission in the ContentSettingsType enum.
+//   - Create a class that inherits from PermissionContextBase and passes the
+//     new permission.
+//   - Inherit from PermissionInfobarDelegate and implement
+//     |GetMessageText|
+//   - Edit the PermissionBubbleRequestImpl methods to add the new text for
+//     the bubble.
+//   - Hit several asserts for the missing plumbing and fix them :)
+// After this you can override several other methods to customize behavior,
+// in particular it is advised to override UpdateTabContext in order to manage
+// the permission from the omnibox.
+// See midi_permission_context.h/cc or push_permission_context.cc/h for some
+// examples.
+
 class PermissionContextBase : public KeyedService {
  public:
   PermissionContextBase(Profile* profile,
@@ -58,21 +69,21 @@ class PermissionContextBase : public KeyedService {
   // or NotifyPermissionSet if permission decided by presenting an infobar.
   void DecidePermission(content::WebContents* web_contents,
                         const PermissionRequestID& id,
-                        const GURL& requesting_frame,
-                        const GURL& embedder,
+                        const GURL& requesting_origin,
+                        const GURL& embedder_origin,
                         bool user_gesture,
                         const BrowserPermissionCallback& callback);
 
   // Called when permission is granted without interactively asking the user.
   void PermissionDecided(const PermissionRequestID& id,
-                         const GURL& requesting_frame,
-                         const GURL& embedder,
+                         const GURL& requesting_origin,
+                         const GURL& embedder_origin,
                          const BrowserPermissionCallback& callback,
                          bool allowed);
 
   void NotifyPermissionSet(const PermissionRequestID& id,
-                           const GURL& requesting_frame,
-                           const GURL& embedder,
+                           const GURL& requesting_origin,
+                           const GURL& embedder_origin,
                            const BrowserPermissionCallback& callback,
                            bool persist,
                            bool allowed);
@@ -80,7 +91,7 @@ class PermissionContextBase : public KeyedService {
   // Implementors can override this method to update the icons on the
   // url bar with the result of the new permission.
   virtual void UpdateTabContext(const PermissionRequestID& id,
-                                const GURL& requesting_frame,
+                                const GURL& requesting_origin,
                                 bool allowed) {}
 
   // Return an instance of the infobar queue controller, creating it if needed.
@@ -88,8 +99,8 @@ class PermissionContextBase : public KeyedService {
 
  private:
   void UpdateContentSetting(
-      const GURL& requesting_frame,
-      const GURL& embedder,
+      const GURL& requesting_origin,
+      const GURL& embedder_origin,
       bool allowed);
 
   // Called when a bubble is no longer used so it can be cleaned up.
@@ -103,6 +114,4 @@ class PermissionContextBase : public KeyedService {
       pending_bubbles_;
 };
 
-}  // namespace gcm
-
-#endif  // CHROME_BROWSER_SERVICES_GCM_PERMISSION_CONTEXT_BASE_H_
+#endif  // CHROME_BROWSER_CONTENT_SETTINGS_PERMISSION_CONTEXT_BASE_H_

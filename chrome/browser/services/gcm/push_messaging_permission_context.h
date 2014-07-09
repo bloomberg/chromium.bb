@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_SERVICES_GCM_PUSH_MESSAGING_PERMISSION_CONTEXT_H_
 #define CHROME_BROWSER_SERVICES_GCM_PUSH_MESSAGING_PERMISSION_CONTEXT_H_
 
-#include "chrome/browser/services/gcm/permission_context_base.h"
+#include "chrome/browser/content_settings/permission_context_base.h"
 
 namespace gcm {
 

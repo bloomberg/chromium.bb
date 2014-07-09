@@ -28,6 +28,7 @@
 #include "chrome/browser/content_settings/content_settings_utils.h"
 #include "chrome/browser/content_settings/cookie_settings.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
+#include "chrome/browser/content_settings/permission_request_id.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/devtools/chrome_devtools_manager_delegate.h"
@@ -2128,9 +2129,12 @@ void ChromeContentBrowserClient::RequestMidiSysExPermission(
   MidiPermissionContext* context =
       MidiPermissionContextFactory::GetForProfile(
           Profile::FromBrowserContext(web_contents->GetBrowserContext()));
-  context->RequestMidiSysExPermission(web_contents, bridge_id, requesting_frame,
-                                      user_gesture, result_callback,
-                                      cancel_callback);
+  int renderer_id = web_contents->GetRenderProcessHost()->GetID();
+  int render_view_id = web_contents->GetRenderViewHost()->GetRoutingID();
+  const PermissionRequestID id(renderer_id, render_view_id, bridge_id, GURL());
+
+  context->RequestPermission(web_contents, id, requesting_frame,
+                             user_gesture, result_callback);
 }
 
 void ChromeContentBrowserClient::RequestProtectedMediaIdentifierPermission(

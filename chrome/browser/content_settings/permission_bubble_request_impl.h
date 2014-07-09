@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SERVICES_GCM_PERMISSION_BUBBLE_REQUEST_IMPL_H_
-#define CHROME_BROWSER_SERVICES_GCM_PERMISSION_BUBBLE_REQUEST_IMPL_H_
+#ifndef CHROME_BROWSER_CONTENT_SETTINGS_PERMISSION_BUBBLE_REQUEST_IMPL_H_
+#define CHROME_BROWSER_CONTENT_SETTINGS_PERMISSION_BUBBLE_REQUEST_IMPL_H_
 
 #include "base/callback.h"
 #include "chrome/browser/content_settings/permission_request_id.h"
@@ -11,9 +11,6 @@
 #include "chrome/common/content_settings_types.h"
 
 class GURL;
-
-// TODO(miguelg): move this class out of GCM.
-namespace gcm {
 
 class PermissionContextBase;
 
@@ -66,5 +63,4 @@ class PermissionBubbleRequestImpl : public PermissionBubbleRequest {
   DISALLOW_COPY_AND_ASSIGN(PermissionBubbleRequestImpl);
 };
 
-}  // namespace gcm
-#endif  // CHROME_BROWSER_SERVICES_GCM_PERMISSION_BUBBLE_REQUEST_IMPL_H_
+#endif  // CHROME_BROWSER_CONTENT_SETTINGS_PERMISSION_BUBBLE_REQUEST_IMPL_H_

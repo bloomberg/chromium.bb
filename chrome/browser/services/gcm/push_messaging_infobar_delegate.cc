@@ -6,6 +6,7 @@
 
 #include "components/infobars/core/infobar.h"
 #include "grit/generated_resources.h"
+#include "grit/theme_resources.h"
 #include "net/base/net_util.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -40,8 +41,16 @@ PushMessagingInfoBarDelegate::~PushMessagingInfoBarDelegate() {
 
 base::string16 PushMessagingInfoBarDelegate::GetMessageText() const {
   return l10n_util::GetStringFUTF16(
-      IDS_PUSH_MESSAGES_PERMISSION_QUESTION,
-      net::FormatUrl(requesting_origin_, display_languages_));
+        IDS_PUSH_MESSAGES_PERMISSION_QUESTION,
+        net::FormatUrl(requesting_origin_, display_languages_,
+                       net::kFormatUrlOmitUsernamePassword |
+                       net::kFormatUrlOmitTrailingSlashOnBareHostname,
+                       net::UnescapeRule::SPACES, NULL, NULL, NULL));
+}
+
+int PushMessagingInfoBarDelegate::GetIconID() const {
+  // TODO(miguelg): change once we have an icon
+  return IDR_INFOBAR_WARNING;
 }
 
 }  // namespace gcm

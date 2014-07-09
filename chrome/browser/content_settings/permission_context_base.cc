@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/services/gcm/permission_context_base.h"
+#include "chrome/browser/content_settings/permission_context_base.h"
 
 #include "base/logging.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
+#include "chrome/browser/content_settings/permission_bubble_request_impl.h"
 #include "chrome/browser/content_settings/permission_queue_controller.h"
 #include "chrome/browser/content_settings/permission_request_id.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/services/gcm/permission_bubble_request_impl.h"
 #include "chrome/browser/ui/website_settings/permission_bubble_manager.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
@@ -19,7 +19,6 @@
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 
-namespace gcm {
 
 PermissionContextBase::PermissionContextBase(
     Profile* profile,
@@ -46,8 +45,8 @@ void PermissionContextBase::RequestPermission(
 
   DecidePermission(web_contents,
                    id,
-                   requesting_frame,
-                   requesting_frame,
+                   requesting_frame.GetOrigin(),
+                   web_contents->GetLastCommittedURL().GetOrigin(),
                    user_gesture,
                    callback);
 }
@@ -55,77 +54,81 @@ void PermissionContextBase::RequestPermission(
 void PermissionContextBase::DecidePermission(
     content::WebContents* web_contents,
     const PermissionRequestID& id,
-    const GURL& requesting_frame,
-    const GURL& embedder,
+    const GURL& requesting_origin,
+    const GURL& embedder_origin,
     bool user_gesture,
     const BrowserPermissionCallback& callback) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
   ContentSetting content_setting =
       profile_->GetHostContentSettingsMap()->GetContentSetting(
-          requesting_frame, embedder, permission_type_, std::string());
+          requesting_origin, embedder_origin, permission_type_, std::string());
   switch (content_setting) {
     case CONTENT_SETTING_BLOCK:
-      PermissionDecided(id, requesting_frame, embedder, callback, false);
-      break;
+      PermissionDecided(
+          id, requesting_origin, embedder_origin, callback, false);
+      return;
     case CONTENT_SETTING_ALLOW:
-      PermissionDecided(id, requesting_frame, embedder, callback, true);
-      break;
+      PermissionDecided(id, requesting_origin, embedder_origin, callback, true);
+      return;
     default:
-      if (PermissionBubbleManager::Enabled()) {
-        PermissionBubbleManager* bubble_manager =
-            PermissionBubbleManager::FromWebContents(web_contents);
-        DCHECK(bubble_manager);
-        scoped_ptr<PermissionBubbleRequest> request_ptr(
-            new PermissionBubbleRequestImpl(
-                requesting_frame,
-                user_gesture,
-                permission_type_,
-                profile_->GetPrefs()->GetString(prefs::kAcceptLanguages),
-                base::Bind(&PermissionContextBase::NotifyPermissionSet,
-                           weak_factory_.GetWeakPtr(),
-                           id,
-                           requesting_frame,
-                           embedder,
-                           callback),
-                           base::Bind(&PermissionContextBase::CleanUpBubble,
-                                      weak_factory_.GetWeakPtr(), id)));
-        PermissionBubbleRequest* request = request_ptr.get();
-
-        bool inserted = pending_bubbles_.add(
-            id.ToString(), request_ptr.Pass()).second;
-        DCHECK(inserted) << "Duplicate id " << id.ToString();
-        bubble_manager->AddRequest(request);
-        return;
-      }
-
-      // TODO(gbillock): Delete this and the infobar delegate when
-      // we're using only bubbles. crbug.com/337458
-      GetQueueController()->CreateInfoBarRequest(
-          id,
-          requesting_frame,
-          embedder,
-          std::string(),
-          base::Bind(&PermissionContextBase::NotifyPermissionSet,
-                     weak_factory_.GetWeakPtr(),
-                     id,
-                     requesting_frame,
-                     embedder,
-                     callback,
-                     // the queue controller takes care of persisting the
-                     // permission
-                     false));
+      break;
   }
+
+  if (PermissionBubbleManager::Enabled()) {
+    PermissionBubbleManager* bubble_manager =
+        PermissionBubbleManager::FromWebContents(web_contents);
+    DCHECK(bubble_manager);
+    scoped_ptr<PermissionBubbleRequest> request_ptr(
+        new PermissionBubbleRequestImpl(
+            requesting_origin,
+            user_gesture,
+            permission_type_,
+            profile_->GetPrefs()->GetString(prefs::kAcceptLanguages),
+            base::Bind(&PermissionContextBase::NotifyPermissionSet,
+                       weak_factory_.GetWeakPtr(),
+                       id,
+                       requesting_origin,
+                       embedder_origin,
+                       callback),
+            base::Bind(&PermissionContextBase::CleanUpBubble,
+                       weak_factory_.GetWeakPtr(), id)));
+    PermissionBubbleRequest* request = request_ptr.get();
+
+    bool inserted = pending_bubbles_.add(
+        id.ToString(), request_ptr.Pass()).second;
+    DCHECK(inserted) << "Duplicate id " << id.ToString();
+    bubble_manager->AddRequest(request);
+    return;
+  }
+
+  // TODO(gbillock): Delete this and the infobar delegate when
+  // we're using only bubbles. crbug.com/337458
+  GetQueueController()->CreateInfoBarRequest(
+      id,
+      requesting_origin,
+      embedder_origin,
+      std::string(),
+      base::Bind(&PermissionContextBase::NotifyPermissionSet,
+                 weak_factory_.GetWeakPtr(),
+                 id,
+                 requesting_origin,
+                 embedder_origin,
+                 callback,
+                 // the queue controller takes care of persisting the
+                 // permission
+                 false));
 }
 
 void PermissionContextBase::PermissionDecided(
     const PermissionRequestID& id,
-    const GURL& requesting_frame,
-    const GURL& embedder,
+    const GURL& requesting_origin,
+    const GURL& embedder_origin,
     const BrowserPermissionCallback& callback,
     bool allowed) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  NotifyPermissionSet(id, requesting_frame, embedder, callback, false, allowed);
+  NotifyPermissionSet(
+      id, requesting_origin, embedder_origin, callback, false, allowed);
 }
 
 PermissionQueueController* PermissionContextBase::GetQueueController() {
@@ -134,43 +137,36 @@ PermissionQueueController* PermissionContextBase::GetQueueController() {
 
 void PermissionContextBase::NotifyPermissionSet(
     const PermissionRequestID& id,
-    const GURL& requesting_frame,
-    const GURL& embedder,
+    const GURL& requesting_origin,
+    const GURL& embedder_origin,
     const BrowserPermissionCallback& callback,
     bool persist,
     bool allowed) {
-  if (persist) {
-    UpdateContentSetting(requesting_frame, embedder, allowed);
-  }
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  UpdateTabContext(id, requesting_frame, allowed);
+  if (persist)
+    UpdateContentSetting(requesting_origin, embedder_origin, allowed);
 
+  UpdateTabContext(id, requesting_origin, allowed);
   callback.Run(allowed);
 }
 
 void PermissionContextBase::CleanUpBubble(const PermissionRequestID& id) {
-  base::ScopedPtrHashMap<std::string, PermissionBubbleRequest>::iterator it;
-  it = pending_bubbles_.find(id.ToString());
-  if (it != pending_bubbles_.end()) {
-    pending_bubbles_.take_and_erase(it);
-    return;
-  }
-
-  NOTREACHED() << "Missing request";
+  size_t success = pending_bubbles_.erase(id.ToString());
+  DCHECK(success == 1) << "Missing request " << id.ToString();
 }
 
 void PermissionContextBase::UpdateContentSetting(
-    const GURL& requesting_frame,
-    const GURL& embedder,
+    const GURL& requesting_origin,
+    const GURL& embedder_origin,
     bool allowed) {
+  DCHECK_EQ(requesting_origin, requesting_origin.GetOrigin());
+  DCHECK_EQ(embedder_origin, embedder_origin.GetOrigin());
   ContentSetting content_setting =
       allowed ? CONTENT_SETTING_ALLOW : CONTENT_SETTING_BLOCK;
   profile_->GetHostContentSettingsMap()->SetContentSetting(
-      ContentSettingsPattern::FromURLNoWildcard(requesting_frame.GetOrigin()),
-      ContentSettingsPattern::FromURLNoWildcard(embedder.GetOrigin()),
+      ContentSettingsPattern::FromURLNoWildcard(requesting_origin),
+      ContentSettingsPattern::FromURLNoWildcard(embedder_origin),
       permission_type_,
       std::string(),
       content_setting);
 }
-
-}  // namespace gcm

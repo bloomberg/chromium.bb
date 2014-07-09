@@ -281,7 +281,8 @@ class ContentSettingBubbleWebContentsObserverBridge
     case CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC:
     case CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA:
     case CONTENT_SETTINGS_NUM_TYPES:
-    // TODO(miguelg): Remove this when bubble support is implemented
+    // TODO(miguelg): Remove this nib content settings support
+    // is implemented
     case CONTENT_SETTINGS_TYPE_PUSH_MESSAGING:
       NOTREACHED();
   }

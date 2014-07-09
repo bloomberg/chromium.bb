@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_SERVICES_GCM_PUSH_MESSAGING_INFOBAR_DELEGATE_H_
 #define CHROME_BROWSER_SERVICES_GCM_PUSH_MESSAGING_INFOBAR_DELEGATE_H_
 
-#include "chrome/browser/services/gcm/permission_infobar_delegate.h"
+#include "chrome/browser/content_settings/permission_infobar_delegate.h"
 
 class GURL;
 class InfoBarService;
@@ -15,7 +15,6 @@ namespace gcm {
 // Delegate to allow GCM push messages registration.
 class PushMessagingInfoBarDelegate : public PermissionInfobarDelegate {
  public:
-  virtual ~PushMessagingInfoBarDelegate();
 
   // Creates a Push Permission infobar and delegate and adds the infobar to
   // |infobar_service|.  Returns the infobar if it was successfully added.
@@ -30,9 +29,11 @@ class PushMessagingInfoBarDelegate : public PermissionInfobarDelegate {
                                const PermissionRequestID& id,
                                const GURL& requesting_frame,
                                const std::string& display_languages);
+  virtual ~PushMessagingInfoBarDelegate();
 
   // ConfirmInfoBarDelegate:
   virtual base::string16 GetMessageText() const OVERRIDE;
+  virtual int GetIconID() const OVERRIDE;
 
   const GURL requesting_origin_;
   const std::string display_languages_;

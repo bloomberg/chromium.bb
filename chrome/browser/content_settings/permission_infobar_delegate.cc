@@ -2,14 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/services/gcm/permission_infobar_delegate.h"
+#include "chrome/browser/content_settings/permission_infobar_delegate.h"
 
 #include "chrome/browser/content_settings/permission_queue_controller.h"
 #include "components/infobars/core/infobar.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
-
-namespace gcm {
 
 PermissionInfobarDelegate::~PermissionInfobarDelegate() {
 }
@@ -17,8 +15,8 @@ PermissionInfobarDelegate::~PermissionInfobarDelegate() {
 PermissionInfobarDelegate::PermissionInfobarDelegate(
     PermissionQueueController* controller,
     const PermissionRequestID& id,
-    const GURL& requesting_frame)
-    : controller_(controller), id_(id), requesting_frame_(requesting_frame) {
+    const GURL& requesting_origin)
+    : controller_(controller), id_(id), requesting_origin_(requesting_origin) {
 }
 
 void PermissionInfobarDelegate::InfoBarDismissed() {
@@ -49,8 +47,8 @@ bool PermissionInfobarDelegate::Cancel() {
 void PermissionInfobarDelegate::SetPermission(bool update_content_setting,
                                               bool allowed) {
   controller_->OnPermissionSet(
-      id_, requesting_frame_,
-      InfoBarService::WebContentsFromInfoBar(infobar())->GetURL(),
+      id_, requesting_origin_,
+      InfoBarService::WebContentsFromInfoBar(
+          infobar())->GetLastCommittedURL().GetOrigin(),
       update_content_setting, allowed);
 }
-}  // namespace gcm

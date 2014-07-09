@@ -14534,8 +14534,9 @@ Do you accept?
 
     <!-- Push messaging strings -->
     <message name="IDS_PUSH_MESSAGES_PERMISSION_QUESTION" desc="Question asked on the info bar whenever a domain wants to send push messages">
-      <ph name="URL"> $1<ex>maps.google.com</ex> </ph>
-       wants to send you notifications.
+        <ph name="URL">
+          $1<ex>push.google.com</ex>
+        </ph> wants to send you notifications.
     </message>
     <message name="IDS_PUSH_MESSAGES_TAB_LABEL" desc="Label for the push messages section on Content Settings dialog">
       Push Messages
@@ -14549,11 +14550,8 @@ Do you accept?
     <message name="IDS_PUSH_MESSSAGING_BLOCK_RADIO" desc="A radio button in Content Settings dialog to deny a site to send push messages.">
       Do not allow any sites to send push messages
     </message>
-    <message name="IDS_PUSH_MESSAGES_BUBBLE_TEXT" desc="Question asked on the info bar whenever a domain wants to send push messages">
-        notification tray.
-    </message>
     <message name="IDS_PUSH_MESSAGES_BUBBLE_FRAGMENT" desc="Question asked on the info bar whenever a domain wants to send push messages">
-        notifications
+        push notifications
     </message>
   </messages>
   </release>

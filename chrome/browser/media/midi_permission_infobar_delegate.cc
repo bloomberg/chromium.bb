@@ -38,36 +38,16 @@ MidiPermissionInfoBarDelegate::MidiPermissionInfoBarDelegate(
     const GURL& requesting_frame,
     int contents_unique_id,
     const std::string& display_languages)
-    : ConfirmInfoBarDelegate(),
-      controller_(controller),
-      id_(id),
+    : PermissionInfobarDelegate(controller, id, requesting_frame),
       requesting_frame_(requesting_frame),
-      contents_unique_id_(contents_unique_id),
       display_languages_(display_languages) {
 }
 
 MidiPermissionInfoBarDelegate::~MidiPermissionInfoBarDelegate() {
 }
 
-void MidiPermissionInfoBarDelegate::InfoBarDismissed() {
-  SetPermission(false, false);
-}
-
 int MidiPermissionInfoBarDelegate::GetIconID() const {
   return IDR_INFOBAR_MIDI;
-}
-
-infobars::InfoBarDelegate::Type MidiPermissionInfoBarDelegate::GetInfoBarType()
-    const {
-  return PAGE_ACTION_TYPE;
-}
-
-bool MidiPermissionInfoBarDelegate::ShouldExpireInternal(
-    const NavigationDetails& details) const {
-  // This implementation matches InfoBarDelegate::ShouldExpireInternal(), but
-  // uses the unique ID we set in the constructor instead of that stored in the
-  // base class.
-  return (contents_unique_id_ != details.entry_id) || details.is_reload;
 }
 
 base::string16 MidiPermissionInfoBarDelegate::GetMessageText() const {
@@ -77,28 +57,4 @@ base::string16 MidiPermissionInfoBarDelegate::GetMessageText() const {
                      net::kFormatUrlOmitUsernamePassword |
                      net::kFormatUrlOmitTrailingSlashOnBareHostname,
                      net::UnescapeRule::SPACES, NULL, NULL, NULL));
-}
-
-base::string16 MidiPermissionInfoBarDelegate::GetButtonLabel(
-    InfoBarButton button) const {
-  return l10n_util::GetStringUTF16((button == BUTTON_OK) ?
-      IDS_MIDI_SYSEX_ALLOW_BUTTON : IDS_MIDI_SYSEX_DENY_BUTTON);
-}
-
-bool MidiPermissionInfoBarDelegate::Accept() {
-  SetPermission(true, true);
-  return true;
-}
-
-bool MidiPermissionInfoBarDelegate::Cancel() {
-  SetPermission(true, false);
-  return true;
-}
-
-void MidiPermissionInfoBarDelegate::SetPermission(bool update_content_setting,
-                                                  bool allowed) {
-  content::WebContents* web_contents =
-      InfoBarService::WebContentsFromInfoBar(infobar());
-  controller_->OnPermissionSet(id_, requesting_frame_, web_contents->GetURL(),
-                               update_content_setting, allowed);
 }
