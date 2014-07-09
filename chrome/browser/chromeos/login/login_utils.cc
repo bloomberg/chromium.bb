@@ -120,9 +120,9 @@ bool NeedRestartToApplyPerSessionFlags(const CommandLine& user_flags) {
 }
 
 bool CanPerformEarlyRestart() {
-  // TODO(alemate): crbug/391357 - temporary disabling early restart before
-  // crbug.com/391793 is fixed.
-  return false;
+  // Desktop build is used for development only. Early restart is not supported.
+  if (!base::SysInfo::IsRunningOnChromeOS())
+    return false;
 
   const ExistingUserController* controller =
       ExistingUserController::current_controller();
@@ -351,6 +351,9 @@ void LoginUtilsImpl::DelegateDeleted(LoginUtils::Delegate* delegate) {
 
 bool LoginUtilsImpl::RestartToApplyPerSessionFlagsIfNeed(Profile* profile,
                                                          bool early_restart) {
+  if (ProfileHelper::IsSigninProfile(profile))
+    return false;
+
   if (early_restart && !CanPerformEarlyRestart())
     return false;
 
