@@ -177,11 +177,7 @@ void PrintSupportedDevices() {
 // TODO(lliabraa): Once all builders are on Xcode 6 this ifdef can be removed
 // (crbug.com/385030).
 #if defined(IOSSIM_USE_XCODE_6)
-  printf("Retrieving supported devices:\n");
-  Class simServiceConnectionManagerClass =
-      FindClassByName(@"SimServiceConnectionManager");
-  [[simServiceConnectionManagerClass sharedConnectionManager] connect];
-
+  printf("Supported device/SDK combinations:\n");
   Class simDeviceSetClass = FindClassByName(@"SimDeviceSet");
   id deviceSet =
       [simDeviceSetClass setForSetPath:[simDeviceSetClass defaultSetPath]];
@@ -757,7 +753,13 @@ int main(int argc, char* const argv[]) {
   NSString* appPath = nil;
   NSString* appName = nil;
   NSString* sdkVersion = nil;
+// TODO(lliabraa): Once all builders are on Xcode 6 this ifdef can be removed
+// (crbug.com/385030).
+#if defined(IOSSIM_USE_XCODE_6)
+  NSString* deviceName = @"iPhone 5";
+#else
   NSString* deviceName = @"iPhone";
+#endif
   NSString* simHomePath = nil;
   NSMutableArray* appArgs = [NSMutableArray array];
   NSMutableDictionary* appEnv = [NSMutableDictionary dictionary];
