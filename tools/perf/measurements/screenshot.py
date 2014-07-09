@@ -5,6 +5,7 @@ import os
 
 from telemetry.page import page_measurement
 from telemetry.page import page_test
+from telemetry.value import scalar
 
 
 class Screenshot(page_measurement.PageMeasurement):
@@ -45,4 +46,6 @@ class Screenshot(page_measurement.PageMeasurement):
     saved_picture_count = 0
     if os.path.exists(outpath) and os.path.getmtime(outpath) > previous_mtime:
       saved_picture_count = 1
-    results.Add('saved_picture_count', 'count', saved_picture_count)
+    results.AddValue(scalar.ScalarValue(
+        results.current_page, 'saved_picture_count', 'count',
+        saved_picture_count))
