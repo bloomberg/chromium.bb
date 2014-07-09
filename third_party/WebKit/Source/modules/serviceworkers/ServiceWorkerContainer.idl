@@ -33,10 +33,10 @@
     RuntimeEnabled=ServiceWorker,
     WillBeGarbageCollected
 ] interface ServiceWorkerContainer {
-    [Unforgeable] readonly attribute ServiceWorker active;
-    [Unforgeable] readonly attribute ServiceWorker controller;
-    [Unforgeable] readonly attribute ServiceWorker installing;
-    [Unforgeable] readonly attribute ServiceWorker waiting;
+    [Unforgeable] readonly attribute ServiceWorker? installing;
+    [Unforgeable] readonly attribute ServiceWorker? waiting;
+    [Unforgeable] readonly attribute ServiceWorker? active;
+    [Unforgeable] readonly attribute ServiceWorker? controller;
 
     [CallWith=ScriptState] readonly attribute Promise ready;
 
