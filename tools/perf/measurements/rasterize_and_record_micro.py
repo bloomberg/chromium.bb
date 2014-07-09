@@ -8,6 +8,8 @@ import time
 from telemetry.core.util import TimeoutException
 from telemetry.page import page_measurement
 from telemetry.page import page_test
+from telemetry.value import scalar
+
 
 class RasterizeAndRecordMicro(page_measurement.PageMeasurement):
   def __init__(self):
@@ -94,10 +96,14 @@ class RasterizeAndRecordMicro(page_measurement.PageMeasurement):
     pixels_rasterized = data['pixels_rasterized']
     rasterize_time = data['rasterize_time_ms']
 
-    results.Add('pixels_recorded', 'pixels', pixels_recorded)
-    results.Add('record_time', 'ms', record_time)
-    results.Add('pixels_rasterized', 'pixels', pixels_rasterized)
-    results.Add('rasterize_time', 'ms', rasterize_time)
+    results.AddValue(scalar.ScalarValue(
+        results.current_page, 'pixels_recorded', 'pixels', pixels_recorded))
+    results.AddValue(scalar.ScalarValue(
+        results.current_page, 'record_time', 'ms', record_time))
+    results.AddValue(scalar.ScalarValue(
+        results.current_page, 'pixels_rasterized', 'pixels', pixels_rasterized))
+    results.AddValue(scalar.ScalarValue(
+        results.current_page, 'rasterize_time', 'ms', rasterize_time))
 
     # TODO(skyostil): Remove this temporary workaround when reference build has
     # been updated to branch 1931 or later.
@@ -106,11 +112,15 @@ class RasterizeAndRecordMicro(page_measurement.PageMeasurement):
       record_time_sk_null_canvas = data['record_time_sk_null_canvas_ms']
       record_time_painting_disabled = data['record_time_painting_disabled_ms']
       record_time_skrecord = data['record_time_skrecord_ms']
-      results.Add('record_time_sk_null_canvas', 'ms',
-          record_time_sk_null_canvas)
-      results.Add('record_time_painting_disabled', 'ms',
-          record_time_painting_disabled)
-      results.Add('record_time_skrecord', 'ms', record_time_skrecord)
+      results.AddValue(scalar.ScalarValue(
+          results.current_page, 'record_time_sk_null_canvas', 'ms',
+          record_time_sk_null_canvas))
+      results.AddValue(scalar.ScalarValue(
+          results.current_page, 'record_time_painting_disabled', 'ms',
+          record_time_painting_disabled))
+      results.AddValue(scalar.ScalarValue(
+          results.current_page, 'record_time_skrecord', 'ms',
+          record_time_skrecord))
 
     if self.options.report_detailed_results:
       pixels_rasterized_with_non_solid_color = \
@@ -124,13 +134,20 @@ class RasterizeAndRecordMicro(page_measurement.PageMeasurement):
       total_picture_layers_off_screen = \
           data['total_picture_layers_off_screen']
 
-      results.Add('pixels_rasterized_with_non_solid_color', 'pixels',
-          pixels_rasterized_with_non_solid_color)
-      results.Add('pixels_rasterized_as_opaque', 'pixels',
-          pixels_rasterized_as_opaque)
-      results.Add('total_layers', 'count', total_layers)
-      results.Add('total_picture_layers', 'count', total_picture_layers)
-      results.Add('total_picture_layers_with_no_content', 'count',
-          total_picture_layers_with_no_content)
-      results.Add('total_picture_layers_off_screen', 'count',
-          total_picture_layers_off_screen)
+      results.AddValue(scalar.ScalarValue(
+          results.current_page, 'pixels_rasterized_with_non_solid_color',
+          'pixels', pixels_rasterized_with_non_solid_color))
+      results.AddValue(scalar.ScalarValue(
+          results.current_page, 'pixels_rasterized_as_opaque', 'pixels',
+          pixels_rasterized_as_opaque))
+      results.AddValue(scalar.ScalarValue(
+          results.current_page, 'total_layers', 'count', total_layers))
+      results.AddValue(scalar.ScalarValue(
+          results.current_page, 'total_picture_layers', 'count',
+          total_picture_layers))
+      results.AddValue(scalar.ScalarValue(
+          results.current_page, 'total_picture_layers_with_no_content', 'count',
+          total_picture_layers_with_no_content))
+      results.AddValue(scalar.ScalarValue(
+          results.current_page, 'total_picture_layers_off_screen', 'count',
+          total_picture_layers_off_screen))
