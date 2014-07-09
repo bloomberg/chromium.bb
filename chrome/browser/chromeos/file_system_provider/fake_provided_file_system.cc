@@ -142,9 +142,8 @@ void FakeProvidedFileSystem::ReadDirectory(
 
 void FakeProvidedFileSystem::OpenFile(const base::FilePath& file_path,
                                       OpenFileMode mode,
-                                      bool create,
                                       const OpenFileCallback& callback) {
-  if (mode == OPEN_FILE_MODE_WRITE || create) {
+  if (mode == OPEN_FILE_MODE_WRITE) {
     base::MessageLoopProxy::current()->PostTask(
         FROM_HERE,
         base::Bind(callback,

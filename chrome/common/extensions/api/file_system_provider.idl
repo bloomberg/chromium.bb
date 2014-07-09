@@ -90,7 +90,6 @@ namespace fileSystemProvider {
     long requestId;
     DOMString filePath;
     OpenFileMode mode;
-    boolean create;
   };
 
   // Options for the <code>onCloseFileRequested()</code> event.
@@ -195,9 +194,8 @@ namespace fileSystemProvider {
         EntriesCallback successCallback,
         ProviderErrorCallback errorCallback);
 
-    // Raised when opening a file at <code>filePath</code> is requested.
-    // If <code>create</code> is set to <code>true</code> and the file does not
-    // exist, then it should be created.
+    // Raised when opening a file at <code>filePath</code> is requested. If the
+    // file does not exist, then the operation must fail.
     [maxListeners=1] static void onOpenFileRequested(
         OpenFileRequestedOptions options,
         ProviderSuccessCallback successCallback,

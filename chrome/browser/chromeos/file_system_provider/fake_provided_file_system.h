@@ -48,7 +48,6 @@ class FakeProvidedFileSystem : public ProvidedFileSystemInterface {
       const fileapi::AsyncFileUtil::ReadDirectoryCallback& callback) OVERRIDE;
   virtual void OpenFile(const base::FilePath& file_path,
                         OpenFileMode mode,
-                        bool create,
                         const OpenFileCallback& callback) OVERRIDE;
   virtual void CloseFile(
       int file_handle,

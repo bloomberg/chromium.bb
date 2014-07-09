@@ -54,7 +54,7 @@ function onOpenFileRequested(options, onSuccess, onError) {
     return;
   }
 
-  if (options.mode != 'READ' || options.create) {
+  if (options.mode != 'READ') {
     onError('ACCESS_DENIED');  // enum ProviderError.
     return;
   }

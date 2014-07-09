@@ -49,7 +49,6 @@ void OpenFileOnUIThread(
   parser.file_system()->OpenFile(
       parser.file_path(),
       ProvidedFileSystemInterface::OPEN_FILE_MODE_READ,
-      false /* create */,
       base::Bind(
           callback, parser.file_system()->GetWeakPtr(), parser.file_path()));
 }

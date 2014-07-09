@@ -78,11 +78,10 @@ class ProvidedFileSystemInterface {
       const base::FilePath& directory_path,
       const fileapi::AsyncFileUtil::ReadDirectoryCallback& callback) = 0;
 
-  // Requests opening a file at |file_path|. If |create| is set to true, it will
-  // create a file and return success in case it didn't exist.
+  // Requests opening a file at |file_path|. If the file doesn't exist, then the
+  // operation will fail.
   virtual void OpenFile(const base::FilePath& file_path,
                         OpenFileMode mode,
-                        bool create,
                         const OpenFileCallback& callback) = 0;
 
   // Requests closing a file, previously opened with OpenFile() as a file with

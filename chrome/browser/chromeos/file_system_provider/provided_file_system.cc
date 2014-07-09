@@ -99,11 +99,9 @@ void ProvidedFileSystem::ReadFile(int file_handle,
 
 void ProvidedFileSystem::OpenFile(const base::FilePath& file_path,
                                   OpenFileMode mode,
-                                  bool create,
                                   const OpenFileCallback& callback) {
-  // Writing is not supported. Note, that this includes a situation, when a file
-  // exists, but |create| is set to true.
-  if (mode == OPEN_FILE_MODE_WRITE || create) {
+  // Writing is not supported.
+  if (mode == OPEN_FILE_MODE_WRITE) {
     callback.Run(0 /* file_handle */, base::File::FILE_ERROR_SECURITY);
     return;
   }
@@ -115,7 +113,6 @@ void ProvidedFileSystem::OpenFile(const base::FilePath& file_path,
                                        file_system_info_,
                                        file_path,
                                        mode,
-                                       create,
                                        callback)))) {
     callback.Run(0 /* file_handle */, base::File::FILE_ERROR_SECURITY);
   }

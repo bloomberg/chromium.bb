@@ -25,16 +25,14 @@ namespace chromeos {
 namespace file_system_provider {
 namespace operations {
 
-// Opens a file for either read or write, with optionally creating the file
-// first. Note, that this is part of fileapi::CreateOrOpen file, but it does
-// not download the file locally. Created per request.
+// Opens a file for either read or write. The file must exist, otherwise the
+// operation will fail. Created per request.
 class OpenFile : public Operation {
  public:
   OpenFile(extensions::EventRouter* event_router,
            const ProvidedFileSystemInfo& file_system_info,
            const base::FilePath& file_path,
            ProvidedFileSystemInterface::OpenFileMode mode,
-           bool create,
            const ProvidedFileSystemInterface::OpenFileCallback& callback);
   virtual ~OpenFile();
 
@@ -50,7 +48,6 @@ class OpenFile : public Operation {
  private:
   base::FilePath file_path_;
   ProvidedFileSystemInterface::OpenFileMode mode_;
-  bool create_;
   const ProvidedFileSystemInterface::OpenFileCallback callback_;
 
   DISALLOW_COPY_AND_ASSIGN(OpenFile);

@@ -57,7 +57,7 @@ var TESTING_BROKEN_TIRAMISU_FILE = Object.freeze({
  */
 function onOpenFileRequested(options, onSuccess, onError) {
   if (options.fileSystemId != test_util.FILE_SYSTEM_ID ||
-      options.mode != 'READ' || options.create) {
+      options.mode != 'READ') {
     onError('SECURITY');  // enum ProviderError.
     return;
   }
