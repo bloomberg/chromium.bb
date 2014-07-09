@@ -59,6 +59,7 @@ namespace blink {
         BLINK_EXPORT bool isTextField() const;
         // This returns true only for type=text.
         BLINK_EXPORT bool isText() const;
+        BLINK_EXPORT bool isEmailField() const;
         BLINK_EXPORT bool isPasswordField() const;
         BLINK_EXPORT bool isImageButton() const;
         BLINK_EXPORT bool isRadioButton() const;

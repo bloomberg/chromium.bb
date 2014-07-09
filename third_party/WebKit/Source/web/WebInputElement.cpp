@@ -57,6 +57,11 @@ bool WebInputElement::isText() const
     return constUnwrap<HTMLInputElement>()->isText();
 }
 
+bool WebInputElement::isEmailField() const
+{
+    return constUnwrap<HTMLInputElement>()->isEmailField();
+}
+
 bool WebInputElement::isPasswordField() const
 {
     return constUnwrap<HTMLInputElement>()->isPasswordField();
