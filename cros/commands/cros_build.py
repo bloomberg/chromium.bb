@@ -49,9 +49,11 @@ To just build a single package:
   @classmethod
   def AddParser(cls, parser):
     super(cls, BuildCommand).AddParser(parser)
-    board = parser.add_mutually_exclusive_group(required=True)
+    default_board = cros_build_lib.GetDefaultBoard()
+    board = parser.add_mutually_exclusive_group(
+        required=(default_board is None))
     board.add_argument('--board', help='The board to build packages for',
-                       default=None)
+                       default=default_board)
     board.add_argument('--host', help='Build packages for the chroot itself',
                        default=False, action='store_true')
     parser.add_argument('--no-binary', help="Don't use binary packages",
@@ -79,7 +81,7 @@ To just build a single package:
 
     Only print the output if this step fails or if we're in debug mode.
     """
-    if self.options.deps and self.options.board is not None:
+    if self.options.deps and not self.options.host:
       cmd = self._GetEmergeCommand(self.options.board)
       cmd += ['-pe', '--backtrack=0'] + self.options.packages
       try:
@@ -95,7 +97,7 @@ To just build a single package:
   def _GetEmergeCommand(self, board):
     cmd = [os.path.join(constants.CHROMITE_BIN_DIR, 'parallel_emerge')]
     if board is not None:
-      cmd += ['--board=%s' % self.options.board]
+      cmd += ['--board=%s' % board]
     return cmd
 
   def _Emerge(self, packages, board=None):
@@ -151,12 +153,13 @@ To just build a single package:
   def _Build(self):
     """Update the chroot, then merge the requested packages."""
     self._UpdateChroot()
-    self._Emerge(self.options.packages, self.options.board)
+    board = None if self.options.host else self.options.board
+    self._Emerge(self.options.packages, board)
 
   def _SetupBoardIfNeeded(self):
     """Create the board if it's missing."""
     board = self.options.board
-    if board is not None and not os.path.isdir(
+    if not self.options.host and not os.path.isdir(
         cros_build_lib.GetSysroot(board=board)):
       self._UpdateChroot()
       cmd = [os.path.join(constants.CROSUTILS_DIR, 'setup_board'),
