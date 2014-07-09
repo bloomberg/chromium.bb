@@ -42,6 +42,7 @@ namespace {
 
 class MockPasswordManagerClient : public StubPasswordManagerClient {
  public:
+  MOCK_CONST_METHOD0(IsPasswordManagerEnabledForCurrentPage, bool());
   MOCK_METHOD1(PromptUserToSavePassword, void(PasswordFormManager*));
   MOCK_METHOD0(GetPasswordStore, PasswordStore*());
   MOCK_METHOD0(GetPrefs, PrefService*());
@@ -82,6 +83,8 @@ class PasswordManagerTest : public testing::Test {
     EXPECT_CALL(*store_, ReportMetrics()).Times(AnyNumber());
     CHECK(store_->Init(syncer::SyncableService::StartSyncFlare()));
 
+    EXPECT_CALL(client_, IsPasswordManagerEnabledForCurrentPage())
+        .WillRepeatedly(Return(true));
     EXPECT_CALL(client_, GetPasswordStore()).WillRepeatedly(Return(store_));
     EXPECT_CALL(client_, GetPrefs()).WillRepeatedly(Return(&prefs_));
     EXPECT_CALL(client_, GetDriver()).WillRepeatedly(Return(&driver_));
@@ -614,6 +617,26 @@ TEST_F(PasswordManagerTest, AutofillingNotEnabledOnSSLErrors) {
   // attempt to autofill forms found on a website.
   EXPECT_CALL(driver_, DidLastPageLoadEncounterSSLErrors())
       .WillRepeatedly(Return(true));
+
+  // Let us pretend some forms were found on a website.
+  std::vector<PasswordForm> forms;
+  forms.push_back(MakeSimpleForm());
+
+  // Feed those forms to |manager()| and check that it does not try to find
+  // matching saved credentials for the forms.
+  EXPECT_CALL(*store_.get(), GetLogins(_, _, _)).Times(Exactly(0));
+  manager()->OnPasswordFormsParsed(forms);
+}
+
+TEST_F(PasswordManagerTest, SavingDisabledIfManagerDisabled) {
+  EXPECT_CALL(client_, IsPasswordManagerEnabledForCurrentPage())
+      .WillRepeatedly(Return(false));
+  EXPECT_FALSE(manager()->IsSavingEnabledForCurrentPage());
+}
+
+TEST_F(PasswordManagerTest, AutofillingDisabledIfManagerDisabled) {
+  EXPECT_CALL(client_, IsPasswordManagerEnabledForCurrentPage())
+      .WillRepeatedly(Return(false));
 
   // Let us pretend some forms were found on a website.
   std::vector<PasswordForm> forms;

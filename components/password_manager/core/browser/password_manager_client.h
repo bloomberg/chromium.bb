@@ -30,6 +30,10 @@ class PasswordManagerClient {
   // The default return value is false.
   virtual bool IsAutomaticPasswordSavingEnabled() const;
 
+  // If the password manager should work for the current page. Default
+  // always returns true.
+  virtual bool IsPasswordManagerEnabledForCurrentPage() const;
+
   // Informs the embedder of a password form that can be saved if the user
   // allows it. The embedder is not required to prompt the user if it decides
   // that this form doesn't need to be saved.

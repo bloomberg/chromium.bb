@@ -116,6 +116,11 @@ class PasswordManager : public LoginModel {
     MAX_FAILURE_VALUE
   };
 
+  // Returns if the password manager is enabled for this page. There are certain
+  // situations (e.g. bad SSL cert) where we disable the password manager
+  // temporarily.
+  bool IsEnabledForCurrentPage() const;
+
   // Log failure for UMA. Logs additional metrics if the |form_origin|
   // corresponds to one of the top, explicitly monitored websites. For some
   // values of |failure| also sends logs to the internals page through |logger|,

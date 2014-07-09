@@ -18,6 +18,7 @@
 #include "chrome/browser/ui/passwords/manage_passwords_ui_controller.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
+#include "chrome/common/url_constants.h"
 #include "components/autofill/content/common/autofill_messages.h"
 #include "components/autofill/core/browser/password_generator.h"
 #include "components/autofill/core/common/password_form.h"
@@ -28,6 +29,7 @@
 #include "components/password_manager/core/browser/password_manager_internals_service.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/common/password_manager_switches.h"
+#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 
@@ -79,6 +81,24 @@ bool ChromePasswordManagerClient::IsAutomaticPasswordSavingEnabled() const {
              password_manager::switches::kEnableAutomaticPasswordSaving) &&
          chrome::VersionInfo::GetChannel() ==
              chrome::VersionInfo::CHANNEL_UNKNOWN;
+}
+
+bool ChromePasswordManagerClient::IsPasswordManagerEnabledForCurrentPage()
+    const {
+  if (EnabledForSyncSignin())
+    return true;
+
+  DCHECK(web_contents());
+  content::NavigationEntry* entry =
+      web_contents()->GetController().GetLastCommittedEntry();
+  if (!entry) {
+    // TODO(gcasto): Determine if fix for crbug.com/388246 is relevant here.
+    return true;
+  }
+  // Do not fill nor save password when a user is signing in for sync. This
+  // is because users need to remember their password if they are syncing as
+  // this is effectively their master password.
+  return entry->GetURL().host() != chrome::kChromeUIChromeSigninHost;
 }
 
 void ChromePasswordManagerClient::PromptUserToSavePassword(
@@ -332,4 +352,20 @@ bool ChromePasswordManagerClient::IsTheHotNewBubbleUIEnabled() {
 
   // The bubble should be the default case that runs on the bots.
   return group_name != "Infobar";
+}
+
+bool ChromePasswordManagerClient::EnabledForSyncSignin() {
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(
+          password_manager::switches::kDisableManagerForSyncSignin))
+    return false;
+
+  if (command_line->HasSwitch(
+          password_manager::switches::kEnableManagerForSyncSignin))
+    return true;
+
+  // Default is enabled.
+  std::string group_name =
+      base::FieldTrialList::FindFullName("PasswordManagerStateForSyncSignin");
+  return group_name != "Disabled";
 }

@@ -8,6 +8,15 @@ namespace password_manager {
 
 namespace switches {
 
+// Disable both saving and filling for the sync signin form.
+const char kDisableManagerForSyncSignin[] =
+    "disable-manager-for-sync-signin";
+
+// Enable saving and filling for the sync signin form. Currently the default
+// behavior.
+const char kEnableManagerForSyncSignin[] =
+    "enable-manager-for-sync-signin";
+
 // Disables the save-password prompt. Passwords are then saved automatically,
 // without asking the user.
 const char kEnableAutomaticPasswordSaving[] =

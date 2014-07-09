@@ -111,9 +111,14 @@ void PasswordManager::SetFormHasGeneratedPassword(const PasswordForm& form) {
   // TODO(gcasto): Add UMA stats to track this.
 }
 
+bool PasswordManager::IsEnabledForCurrentPage() const {
+  return !driver_->DidLastPageLoadEncounterSSLErrors() &&
+      client_->IsPasswordManagerEnabledForCurrentPage();
+}
+
 bool PasswordManager::IsSavingEnabledForCurrentPage() const {
   return *password_manager_enabled_ && !driver_->IsOffTheRecord() &&
-         !driver_->DidLastPageLoadEncounterSSLErrors();
+      IsEnabledForCurrentPage();
 }
 
 void PasswordManager::ProvisionallySavePassword(const PasswordForm& form) {
@@ -318,8 +323,7 @@ void PasswordManager::OnPasswordFormsParsed(
 
 void PasswordManager::CreatePendingLoginManagers(
     const std::vector<PasswordForm>& forms) {
-  // Don't try to autofill or save passwords in the presence of SSL errors.
-  if (driver_->DidLastPageLoadEncounterSSLErrors())
+  if (!IsEnabledForCurrentPage())
     return;
 
   // Copy the weak pointers to the currently known login managers for comparison

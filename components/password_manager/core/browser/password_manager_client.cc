@@ -10,6 +10,10 @@ bool PasswordManagerClient::IsAutomaticPasswordSavingEnabled() const {
   return false;
 }
 
+bool PasswordManagerClient::IsPasswordManagerEnabledForCurrentPage() const {
+  return true;
+}
+
 base::FieldTrial::Probability
 PasswordManagerClient::GetProbabilityForExperiment(
     const std::string& experiment_name) {
