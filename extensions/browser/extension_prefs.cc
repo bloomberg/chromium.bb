@@ -1972,7 +1972,12 @@ void ExtensionPrefs::RegisterProfilePrefs(
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
   registry->RegisterListPref(pref_names::kKnownDisabled,
                              user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-#if defined(TOOLKIT_VIEWS)
+#if defined(OS_MACOSX)
+  registry->RegisterDoublePref(
+      pref_names::kBrowserActionContainerWidth,
+      0,
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+#else
   registry->RegisterIntegerPref(
       pref_names::kBrowserActionContainerWidth,
       0,

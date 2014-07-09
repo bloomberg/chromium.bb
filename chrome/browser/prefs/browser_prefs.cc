@@ -184,7 +184,6 @@
 #if defined(OS_MACOSX)
 #include "chrome/browser/ui/cocoa/apps/quit_with_apps_controller_mac.h"
 #include "chrome/browser/ui/cocoa/confirm_quit.h"
-#include "chrome/browser/ui/cocoa/extensions/browser_actions_controller_prefs.h"
 #endif
 
 #if defined(OS_WIN)
@@ -459,10 +458,6 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   extensions::EnterprisePlatformKeysPrivateChallengeUserKeyFunction::
       RegisterProfilePrefs(registry);
   FlagsUI::RegisterProfilePrefs(registry);
-#endif
-
-#if defined(OS_MACOSX)
-  RegisterBrowserActionsControllerProfilePrefs(registry);
 #endif
 
 #if defined(OS_WIN)

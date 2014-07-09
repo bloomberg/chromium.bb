@@ -416,8 +416,6 @@
       'browser/ui/cocoa/extensions/browser_actions_container_view.mm',
       'browser/ui/cocoa/extensions/browser_actions_controller.h',
       'browser/ui/cocoa/extensions/browser_actions_controller.mm',
-      'browser/ui/cocoa/extensions/browser_actions_controller_prefs.h',
-      'browser/ui/cocoa/extensions/browser_actions_controller_prefs.cc',
       'browser/ui/cocoa/extensions/extension_action_context_menu_controller.h',
       'browser/ui/cocoa/extensions/extension_action_context_menu_controller.mm',
       'browser/ui/cocoa/extensions/extension_install_dialog_controller.h',
