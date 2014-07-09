@@ -62,6 +62,9 @@ extern NSString* const kBundleTypeRoleViewer;
 // bundles, this overrides the bundle's file name.
 extern NSString* const kCFBundleDisplayNameKey;
 
+// The Chrome version string in the app shim bundle.
+extern NSString* const kCFBundleShortVersionStringKey;
+
 // The key specifying whether the display name should be localized. This makes
 // Finder look in localization folders in the app bundle for a display name.
 // (e.g. Content/Resources/en.lproj/)

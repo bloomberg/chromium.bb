@@ -16,6 +16,7 @@
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/mac/scoped_nsobject.h"
+#include "base/metrics/sparse_histogram.h"
 #include "base/path_service.h"
 #include "base/process/process_handle.h"
 #include "base/strings/string16.h"
@@ -24,6 +25,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/version.h"
 #include "chrome/browser/browser_process.h"
 #import "chrome/browser/mac/dock.h"
 #include "chrome/browser/browser_process.h"
@@ -495,6 +497,19 @@ web_app::ShortcutInfo BuildShortcutInfoFromBundle(
   return shortcut_info;
 }
 
+web_app::ShortcutInfo RecordAppShimErrorAndBuildShortcutInfo(
+    const base::FilePath& bundle_path) {
+  NSDictionary* plist = ReadPlist(GetPlistPath(bundle_path));
+  base::Version full_version(base::SysNSStringToUTF8(
+      [plist valueForKey:app_mode::kCFBundleShortVersionStringKey]));
+  int major_version = 0;
+  if (full_version.IsValid())
+    major_version = full_version.components()[0];
+  UMA_HISTOGRAM_SPARSE_SLOWLY("Apps.AppShimErrorVersion", major_version);
+
+  return BuildShortcutInfoFromBundle(bundle_path);
+}
+
 void UpdateFileTypes(NSMutableDictionary* plist,
                      const extensions::FileHandlersInfo& file_handlers_info) {
   NSMutableArray* document_types =
@@ -938,7 +953,7 @@ bool MaybeRebuildShortcut(const CommandLine& command_line) {
   base::PostTaskAndReplyWithResult(
       content::BrowserThread::GetBlockingPool(),
       FROM_HERE,
-      base::Bind(&BuildShortcutInfoFromBundle,
+      base::Bind(&RecordAppShimErrorAndBuildShortcutInfo,
                  command_line.GetSwitchValuePath(app_mode::kAppShimError)),
       base::Bind(&RebuildAppAndLaunch));
   return true;
