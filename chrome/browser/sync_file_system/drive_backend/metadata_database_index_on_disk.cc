@@ -359,15 +359,27 @@ size_t MetadataDatabaseIndexOnDisk::CountDirtyTracker() const {
 }
 
 size_t MetadataDatabaseIndexOnDisk::CountFileMetadata() const {
-  // TODO(peria): Implement here
-  NOTIMPLEMENTED();
-  return 0;
+  // TODO(peria): Cache the number of FileMetadata in the DB.
+  size_t count = 0;
+  scoped_ptr<leveldb::Iterator> itr(db_->NewIterator(leveldb::ReadOptions()));
+  for (itr->Seek(kFileMetadataKeyPrefix); itr->Valid(); itr->Next()) {
+    if (!StartsWithASCII(itr->key().ToString(), kFileMetadataKeyPrefix, true))
+      break;
+    ++count;
+  }
+  return count;
 }
 
 size_t MetadataDatabaseIndexOnDisk::CountFileTracker() const {
-  // TODO(peria): Implement here
-  NOTIMPLEMENTED();
-  return 0;
+  // TODO(peria): Cache the number of FileTracker in the DB.
+  size_t count = 0;
+  scoped_ptr<leveldb::Iterator> itr(db_->NewIterator(leveldb::ReadOptions()));
+  for (itr->Seek(kFileTrackerKeyPrefix); itr->Valid(); itr->Next()) {
+    if (!StartsWithASCII(itr->key().ToString(), kFileTrackerKeyPrefix, true))
+      break;
+    ++count;
+  }
+  return count;
 }
 
 std::vector<std::string>
@@ -384,16 +396,32 @@ MetadataDatabaseIndexOnDisk::GetRegisteredAppIDs() const {
 }
 
 std::vector<int64> MetadataDatabaseIndexOnDisk::GetAllTrackerIDs() const {
-  // TODO(peria): Implement here
-  NOTIMPLEMENTED();
-  return std::vector<int64>();
+  std::vector<int64> tracker_ids;
+  scoped_ptr<leveldb::Iterator> itr(db_->NewIterator(leveldb::ReadOptions()));
+  for (itr->Seek(kFileTrackerKeyPrefix); itr->Valid(); itr->Next()) {
+    std::string id_str;
+    if (!RemovePrefix(itr->key().ToString(), kFileTrackerKeyPrefix, &id_str))
+      break;
+
+    int64 tracker_id;
+    if (!base::StringToInt64(id_str, &tracker_id))
+      continue;
+    tracker_ids.push_back(tracker_id);
+  }
+  return tracker_ids;
 }
 
 std::vector<std::string>
 MetadataDatabaseIndexOnDisk::GetAllMetadataIDs() const {
-  // TODO(peria): Implement here
-  NOTIMPLEMENTED();
-  return std::vector<std::string>();
+  std::vector<std::string> file_ids;
+  scoped_ptr<leveldb::Iterator> itr(db_->NewIterator(leveldb::ReadOptions()));
+  for (itr->Seek(kFileMetadataKeyPrefix); itr->Valid(); itr->Next()) {
+    std::string file_id;
+    if (!RemovePrefix(itr->key().ToString(), kFileMetadataKeyPrefix, &file_id))
+      break;
+    file_ids.push_back(file_id);
+  }
+  return file_ids;
 }
 
 void MetadataDatabaseIndexOnDisk::AddToAppIDIndex(

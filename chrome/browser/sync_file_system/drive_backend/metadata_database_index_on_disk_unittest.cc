@@ -183,6 +183,27 @@ TEST_F(MetadataDatabaseIndexOnDiskTest, SetEntryTest) {
   EXPECT_FALSE(index()->GetFileTracker(tracker_id, NULL));
 }
 
+TEST_F(MetadataDatabaseIndexOnDiskTest, AllEntriesTest) {
+  CreateTestDatabase(true);
+
+  EXPECT_EQ(3U, index()->CountFileMetadata());
+  std::vector<std::string> file_ids(index()->GetAllMetadataIDs());
+  ASSERT_EQ(3U, file_ids.size());
+  std::sort(file_ids.begin(), file_ids.end());
+  EXPECT_EQ("app_root_folder_id", file_ids[0]);
+  EXPECT_EQ("file_id", file_ids[1]);
+  EXPECT_EQ("sync_root_folder_id", file_ids[2]);
+
+  EXPECT_EQ(4U, index()->CountFileTracker());
+  std::vector<int64> tracker_ids = index()->GetAllTrackerIDs();
+  ASSERT_EQ(4U, tracker_ids.size());
+  std::sort(tracker_ids.begin(), tracker_ids.end());
+  EXPECT_EQ(kSyncRootTrackerID, tracker_ids[0]);
+  EXPECT_EQ(kAppRootTrackerID, tracker_ids[1]);
+  EXPECT_EQ(kFileTrackerID, tracker_ids[2]);
+  EXPECT_EQ(kPlaceholderTrackerID, tracker_ids[3]);
+}
+
 TEST_F(MetadataDatabaseIndexOnDiskTest, IndexAppRootIDByAppIDTest) {
   CreateTestDatabase(true);
 
