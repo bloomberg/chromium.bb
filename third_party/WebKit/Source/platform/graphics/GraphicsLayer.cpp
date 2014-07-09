@@ -562,39 +562,44 @@ static PassRefPtr<JSONArray> rectAsJSONArray(const T& rect)
     return array;
 }
 
+static double roundCloseToZero(double number)
+{
+    return std::abs(number) < 1e-7 ? 0 : number;
+}
+
 static PassRefPtr<JSONArray> transformAsJSONArray(const TransformationMatrix& t)
 {
     RefPtr<JSONArray> array = adoptRef(new JSONArray);
     {
         RefPtr<JSONArray> row = adoptRef(new JSONArray);
-        row->pushNumber(t.m11());
-        row->pushNumber(t.m12());
-        row->pushNumber(t.m13());
-        row->pushNumber(t.m14());
+        row->pushNumber(roundCloseToZero(t.m11()));
+        row->pushNumber(roundCloseToZero(t.m12()));
+        row->pushNumber(roundCloseToZero(t.m13()));
+        row->pushNumber(roundCloseToZero(t.m14()));
         array->pushArray(row);
     }
     {
         RefPtr<JSONArray> row = adoptRef(new JSONArray);
-        row->pushNumber(t.m21());
-        row->pushNumber(t.m22());
-        row->pushNumber(t.m23());
-        row->pushNumber(t.m24());
+        row->pushNumber(roundCloseToZero(t.m21()));
+        row->pushNumber(roundCloseToZero(t.m22()));
+        row->pushNumber(roundCloseToZero(t.m23()));
+        row->pushNumber(roundCloseToZero(t.m24()));
         array->pushArray(row);
     }
     {
         RefPtr<JSONArray> row = adoptRef(new JSONArray);
-        row->pushNumber(t.m31());
-        row->pushNumber(t.m32());
-        row->pushNumber(t.m33());
-        row->pushNumber(t.m34());
+        row->pushNumber(roundCloseToZero(t.m31()));
+        row->pushNumber(roundCloseToZero(t.m32()));
+        row->pushNumber(roundCloseToZero(t.m33()));
+        row->pushNumber(roundCloseToZero(t.m34()));
         array->pushArray(row);
     }
     {
         RefPtr<JSONArray> row = adoptRef(new JSONArray);
-        row->pushNumber(t.m41());
-        row->pushNumber(t.m42());
-        row->pushNumber(t.m43());
-        row->pushNumber(t.m44());
+        row->pushNumber(roundCloseToZero(t.m41()));
+        row->pushNumber(roundCloseToZero(t.m42()));
+        row->pushNumber(roundCloseToZero(t.m43()));
+        row->pushNumber(roundCloseToZero(t.m44()));
         array->pushArray(row);
     }
     return array;
