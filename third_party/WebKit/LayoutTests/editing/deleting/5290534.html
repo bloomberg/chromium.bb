@@ -15,7 +15,7 @@ if (window.testRunner)
     window.testRunner.dumpAsText();
     
 var search = document.getElementById("search");
-search.setSelectionRange(0, 0);
+search.focus();
 document.execCommand("InsertText", false, "x");
 if (search.value != "x")
     log("Failure: text wasn't added to the search field.");

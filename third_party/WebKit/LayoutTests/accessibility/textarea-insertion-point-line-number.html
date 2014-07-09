@@ -50,7 +50,7 @@ line 3
 
             var contenteditableLine2 = document.getElementById("contenteditable-line2");
             shouldBe("contenteditableLine2.selectionStart = 1; contenteditableLine2.selectionEnd = 1;" +
-                     "contenteditableAXUIElement.insertionPointLineNumber;", "-1");
+                     "contenteditableAXUIElement.insertionPointLineNumber;", "0");
 
             var contenteditableLine3 = document.getElementById("contenteditable-line3");
             shouldBe("window.getSelection().setBaseAndExtent(contenteditableLine3, 1, contenteditableLine3, 1); " +

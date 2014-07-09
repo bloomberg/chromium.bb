@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="../../resources/js-test.js"></script>
+</head>
+<body>
+<input id="val1" type="text" />
+<input id="val2" type="text" />
+<script type="text/javascript">
+description('Test for BUG=367736: Blink does not respect input.selectionStart and input.selectionEnd for some cases.');
+var firstInput = document.getElementById('val1');
+var secondInput = document.getElementById('val2');
+firstInput.selectionStart = 2;
+firstInput.selectionEnd = 3;
+// Initially input field is empty so selectionStart and selectionEnd set above becomes 0
+firstInput.value = 'Parsed';
+shouldBe('firstInput.selectionStart', '0');
+shouldBe('firstInput.selectionEnd', '0');
+firstInput.selectionStart = 3;
+firstInput.selectionEnd = 5;
+shouldBe('firstInput.selectionStart', '3');
+shouldBe('firstInput.selectionEnd', '5');
+secondInput.value = 'P';
+secondInput.selectionStart = 3;
+secondInput.selectionEnd = 5;
+shouldBe('secondInput.selectionStart', '1');
+shouldBe('secondInput.selectionEnd', '1');
+secondInput.value = 'Parsed';
+shouldBe('secondInput.selectionStart', '1');
+shouldBe('secondInput.selectionEnd', '1');
+</script>
+</body>
+</html>
