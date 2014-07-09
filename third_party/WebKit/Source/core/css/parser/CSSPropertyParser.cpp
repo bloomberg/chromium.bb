@@ -1498,10 +1498,10 @@ bool CSSPropertyParser::parseValue(CSSPropertyID propId, bool important)
         parsedValue = parseShapeProperty(propId);
         break;
     case CSSPropertyShapeMargin:
-        validPrimitive = (RuntimeEnabledFeatures::cssShapesEnabled() && !id && validUnit(value, FLength | FPercent | FNonNeg));
+        validPrimitive = (!id && validUnit(value, FLength | FPercent | FNonNeg));
         break;
     case CSSPropertyShapeImageThreshold:
-        validPrimitive = (RuntimeEnabledFeatures::cssShapesEnabled() && !id && validUnit(value, FNumber));
+        validPrimitive = (!id && validUnit(value, FNumber));
         break;
 
     case CSSPropertyTouchAction:
@@ -4453,9 +4453,6 @@ static bool isBoxValue(CSSValueID valueId)
 
 PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseShapeProperty(CSSPropertyID propId)
 {
-    if (!RuntimeEnabledFeatures::cssShapesEnabled())
-        return nullptr;
-
     CSSParserValue* value = m_valueList->current();
     CSSValueID valueId = value->id;
 

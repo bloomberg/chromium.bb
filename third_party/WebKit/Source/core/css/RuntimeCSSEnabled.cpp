@@ -45,12 +45,6 @@ static void setCSSPropertiesEnabled(CSSPropertyID* properties, size_t length, bo
 
 static void setPropertySwitchesFromRuntimeFeatures()
 {
-    CSSPropertyID shapeProperties[] = {
-        CSSPropertyShapeMargin,
-        CSSPropertyShapeImageThreshold,
-        CSSPropertyShapeOutside,
-    };
-    setCSSPropertiesEnabled(shapeProperties, WTF_ARRAY_LENGTH(shapeProperties), RuntimeEnabledFeatures::cssShapesEnabled());
     CSSPropertyID css3TextDecorationProperties[] = {
         CSSPropertyTextDecorationColor,
         CSSPropertyTextDecorationLine,

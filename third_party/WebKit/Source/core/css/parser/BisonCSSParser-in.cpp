@@ -284,7 +284,7 @@ static inline bool isSimpleLengthPropertyID(CSSPropertyID propertyId, bool& acce
         return true;
     case CSSPropertyShapeMargin:
         acceptsNegativeNumbers = false;
-        return RuntimeEnabledFeatures::cssShapesEnabled();
+        return true;
     case CSSPropertyBottom:
     case CSSPropertyLeft:
     case CSSPropertyMarginBottom:
