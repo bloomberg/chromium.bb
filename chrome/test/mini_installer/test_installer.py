@@ -254,7 +254,7 @@ def IsComponentBuild(mini_installer_path):
   query_command = mini_installer_path + ' --query-component-build'
   script_dir = os.path.dirname(os.path.abspath(__file__))
   exit_status = subprocess.call(query_command, shell=True, cwd=script_dir)
-  return exit_status != 0
+  return exit_status == 0
 
 
 def main():
