@@ -62,7 +62,8 @@ base::LazyInstance<V8ExtensionConfigurator>::Leaky g_v8_extension_configurator =
 }  // namespace
 
 // Native JS functions for doing asserts.
-class ModuleSystemTest::AssertNatives : public ObjectBackedNativeHandler {
+class ModuleSystemTestEnvironment::AssertNatives
+    : public ObjectBackedNativeHandler {
  public:
   explicit AssertNatives(extensions::ChromeV8Context* context)
       : ObjectBackedNativeHandler(context),
@@ -95,7 +96,8 @@ class ModuleSystemTest::AssertNatives : public ObjectBackedNativeHandler {
 };
 
 // Source map that operates on std::strings.
-class ModuleSystemTest::StringSourceMap : public ModuleSystem::SourceMap {
+class ModuleSystemTestEnvironment::StringSourceMap
+    : public extensions::ModuleSystem::SourceMap {
  public:
   StringSourceMap() {}
   virtual ~StringSourceMap() {}
@@ -120,19 +122,20 @@ class ModuleSystemTest::StringSourceMap : public ModuleSystem::SourceMap {
   std::map<std::string, std::string> source_map_;
 };
 
-ModuleSystemTest::ModuleSystemTest()
-    : isolate_(v8::Isolate::GetCurrent()),
-      handle_scope_(isolate_),
-      context_(
-          new extensions::ChromeV8Context(
-              v8::Context::New(
-                  isolate_,
-                  g_v8_extension_configurator.Get().GetConfiguration()),
-              NULL,  // WebFrame
-              NULL,  // Extension
-              extensions::Feature::UNSPECIFIED_CONTEXT)),
-      source_map_(new StringSourceMap()),
-      should_assertions_be_made_(true) {
+ModuleSystemTestEnvironment::ModuleSystemTestEnvironment(
+    gin::IsolateHolder* isolate_holder)
+    : isolate_holder_(isolate_holder),
+      context_holder_(new gin::ContextHolder(isolate_holder_->isolate())),
+      handle_scope_(isolate_holder_->isolate()),
+      source_map_(new StringSourceMap()) {
+  context_holder_->SetContext(
+      v8::Context::New(isolate_holder->isolate(),
+                       g_v8_extension_configurator.Get().GetConfiguration()));
+  context_.reset(new extensions::ChromeV8Context(
+      context_holder_->context(),
+      NULL,  // WebFrame
+      NULL,  // Extension
+      extensions::Feature::UNSPECIFIED_CONTEXT));
   context_->v8_context()->Enter();
   assert_natives_ = new AssertNatives(context_.get());
 
@@ -152,30 +155,33 @@ ModuleSystemTest::ModuleSystemTest()
       scoped_ptr<ModuleSystem::ExceptionHandler>(new FailsOnException));
 }
 
-ModuleSystemTest::~ModuleSystemTest() {
-  context_->v8_context()->Exit();
+ModuleSystemTestEnvironment::~ModuleSystemTestEnvironment() {
+  if (context_)
+    context_->v8_context()->Exit();
 }
 
-void ModuleSystemTest::RegisterModule(const std::string& name,
-                                      const std::string& code) {
+void ModuleSystemTestEnvironment::RegisterModule(const std::string& name,
+                                                 const std::string& code) {
   source_map_->RegisterModule(name, code);
 }
 
-void ModuleSystemTest::RegisterModule(const std::string& name,
-                                      int resource_id) {
+void ModuleSystemTestEnvironment::RegisterModule(const std::string& name,
+                                                 int resource_id) {
   const std::string& code = ResourceBundle::GetSharedInstance().
       GetRawDataResource(resource_id).as_string();
   source_map_->RegisterModule(name, code);
 }
 
-void ModuleSystemTest::OverrideNativeHandler(const std::string& name,
-                                             const std::string& code) {
+void ModuleSystemTestEnvironment::OverrideNativeHandler(
+    const std::string& name,
+    const std::string& code) {
   RegisterModule(name, code);
   context_->module_system()->OverrideNativeHandlerForTest(name);
 }
 
-void ModuleSystemTest::RegisterTestFile(const std::string& module_name,
-                                        const std::string& file_name) {
+void ModuleSystemTestEnvironment::RegisterTestFile(
+    const std::string& module_name,
+    const std::string& file_name) {
   base::FilePath test_js_file_path;
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_js_file_path));
   test_js_file_path = test_js_file_path.AppendASCII("extensions")
@@ -185,22 +191,49 @@ void ModuleSystemTest::RegisterTestFile(const std::string& module_name,
   source_map_->RegisterModule(module_name, test_js);
 }
 
+void ModuleSystemTestEnvironment::ShutdownGin() {
+  context_holder_.reset();
+}
+
+void ModuleSystemTestEnvironment::ShutdownModuleSystem() {
+  context_->v8_context()->Exit();
+  context_.reset();
+}
+
+v8::Handle<v8::Object> ModuleSystemTestEnvironment::CreateGlobal(
+    const std::string& name) {
+  v8::Isolate* isolate = isolate_holder_->isolate();
+  v8::EscapableHandleScope handle_scope(isolate);
+  v8::Local<v8::Object> object = v8::Object::New(isolate);
+  isolate->GetCurrentContext()->Global()->Set(
+      v8::String::NewFromUtf8(isolate, name.c_str()), object);
+  return handle_scope.Escape(object);
+}
+
+ModuleSystemTest::ModuleSystemTest()
+    : isolate_holder_(v8::Isolate::GetCurrent(), NULL),
+      env_(CreateEnvironment()),
+      should_assertions_be_made_(true) {
+}
+
+ModuleSystemTest::~ModuleSystemTest() {
+}
+
 void ModuleSystemTest::TearDown() {
   // All tests must assert at least once unless otherwise specified.
   EXPECT_EQ(should_assertions_be_made_,
-            assert_natives_->assertion_made());
-  EXPECT_FALSE(assert_natives_->failed());
+            env_->assert_natives()->assertion_made());
+  EXPECT_FALSE(env_->assert_natives()->failed());
+}
+
+scoped_ptr<ModuleSystemTestEnvironment> ModuleSystemTest::CreateEnvironment() {
+  return make_scoped_ptr(new ModuleSystemTestEnvironment(&isolate_holder_));
 }
 
 void ModuleSystemTest::ExpectNoAssertionsMade() {
   should_assertions_be_made_ = false;
 }
 
-v8::Handle<v8::Object> ModuleSystemTest::CreateGlobal(const std::string& name) {
-  v8::Isolate* isolate = v8::Isolate::GetCurrent();
-  v8::EscapableHandleScope handle_scope(isolate);
-  v8::Local<v8::Object> object = v8::Object::New(isolate);
-  isolate->GetCurrentContext()->Global()->Set(
-      v8::String::NewFromUtf8(isolate, name.c_str()), object);
-  return handle_scope.Escape(object);
+void ModuleSystemTest::RunResolvedPromises() {
+  isolate_holder_.isolate()->RunMicrotasks();
 }

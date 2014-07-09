@@ -16,6 +16,7 @@
 #include "extensions/common/extension_api.h"
 #include "extensions/common/extension_urls.h"
 #include "extensions/common/features/base_feature_provider.h"
+#include "gin/per_context_data.h"
 #include "third_party/WebKit/public/web/WebDataSource.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
@@ -42,6 +43,7 @@ ScriptContext::ScriptContext(const v8::Handle<v8::Context>& v8_context,
           << "  extension id: " << GetExtensionID() << "\n"
           << "  frame:        " << web_frame_ << "\n"
           << "  context type: " << GetContextTypeDescription();
+  gin::PerContextData::From(v8_context)->set_runner(this);
 }
 
 ScriptContext::~ScriptContext() {
@@ -219,6 +221,23 @@ void ScriptContext::OnResponseReceived(const std::string& name,
   // string if a validation error has occured.
   DCHECK(retval.IsEmpty() || retval->IsUndefined())
       << *v8::String::Utf8Value(retval);
+}
+
+void ScriptContext::Run(const std::string& source,
+                        const std::string& resource_name) {
+  module_system_->RunString(source, resource_name);
+}
+
+v8::Handle<v8::Value> ScriptContext::Call(v8::Handle<v8::Function> function,
+                                          v8::Handle<v8::Value> receiver,
+                                          int argc,
+                                          v8::Handle<v8::Value> argv[]) {
+  return CallFunction(function, argc, argv);
+}
+
+gin::ContextHolder* ScriptContext::GetContextHolder() {
+  v8::HandleScope handle_scope(isolate());
+  return gin::PerContextData::From(v8_context())->context_holder();
 }
 
 }  // namespace extensions

@@ -17,6 +17,7 @@ include_rules = [
   "+content/public/renderer",
   "+extensions/common",
   "+extensions/renderer",
+  "+gin",
   "+grit",  # For generated headers
   "+ppapi/c",
   "+ppapi/shared_impl",

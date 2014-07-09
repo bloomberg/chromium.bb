@@ -12,26 +12,26 @@ namespace {
 class UtilsUnittest : public ModuleSystemTest {
  protected:
   void RegisterTestModule(const char* code) {
-    RegisterModule("test",
-                   base::StringPrintf(
-                       "var assert = requireNative('assert');\n"
-                       "var AssertTrue = assert.AssertTrue;\n"
-                       "var AssertFalse = assert.AssertFalse;\n"
-                       "var utils = require('utils');\n"
-                       "%s",
-                       code));
+    env()->RegisterModule("test",
+                          base::StringPrintf(
+                              "var assert = requireNative('assert');\n"
+                              "var AssertTrue = assert.AssertTrue;\n"
+                              "var AssertFalse = assert.AssertFalse;\n"
+                              "var utils = require('utils');\n"
+                              "%s",
+                              code));
   }
 
  private:
   virtual void SetUp() OVERRIDE {
     ModuleSystemTest::SetUp();
 
-    RegisterModule("utils", IDR_UTILS_JS);
-    OverrideNativeHandler("schema_registry",
-                          "exports.GetSchema = function() {};");
-    OverrideNativeHandler("logging",
-                          "exports.CHECK = function() {};\n"
-                          "exports.WARNING = function() {};");
+    env()->RegisterModule("utils", IDR_UTILS_JS);
+    env()->OverrideNativeHandler("schema_registry",
+                                 "exports.GetSchema = function() {};");
+    env()->OverrideNativeHandler("logging",
+                                 "exports.CHECK = function() {};\n"
+                                 "exports.WARNING = function() {};");
   }
 };
 
@@ -41,7 +41,7 @@ TEST_F(UtilsUnittest, TestNothing) {
 
 TEST_F(UtilsUnittest, SuperClass) {
   ModuleSystem::NativesEnabledScope natives_enabled_scope(
-      context_->module_system());
+      env()->module_system());
   RegisterTestModule(
       "function SuperClassImpl() {}\n"
       "\n"
@@ -116,7 +116,7 @@ TEST_F(UtilsUnittest, SuperClass) {
       "AssertTrue(subsub instanceof SubClass);\n"
       "AssertTrue(subsub instanceof SubSubClass);\n");
 
-  context_->module_system()->Require("test");
+  env()->module_system()->Require("test");
 }
 
 }  // namespace

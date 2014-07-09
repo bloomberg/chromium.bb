@@ -3,6 +3,8 @@ include_rules = [
   "+content/public/common",
   "+content/public/renderer",
 
+  "+gin",
+
   "+third_party/skia/include/core",
 
   "+third_party/WebKit/public/platform",

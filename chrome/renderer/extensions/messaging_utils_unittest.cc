@@ -12,19 +12,22 @@ namespace {
 class MessagingUtilsUnittest : public ModuleSystemTest {
  protected:
   void RegisterTestModule(const char* code) {
-    RegisterModule("test", base::StringPrintf(
-        "var assert = requireNative('assert');\n"
-        "var AssertTrue = assert.AssertTrue;\n"
-        "var AssertFalse = assert.AssertFalse;\n"
-        "var messagingUtils = require('messaging_utils');\n"
-        "%s", code));
+    env()->RegisterModule(
+        "test",
+        base::StringPrintf(
+            "var assert = requireNative('assert');\n"
+            "var AssertTrue = assert.AssertTrue;\n"
+            "var AssertFalse = assert.AssertFalse;\n"
+            "var messagingUtils = require('messaging_utils');\n"
+            "%s",
+            code));
   }
 
  private:
   virtual void SetUp() OVERRIDE {
     ModuleSystemTest::SetUp();
 
-    RegisterModule("messaging_utils", IDR_MESSAGING_UTILS_JS);
+    env()->RegisterModule("messaging_utils", IDR_MESSAGING_UTILS_JS);
   }
 
 };
@@ -35,65 +38,65 @@ TEST_F(MessagingUtilsUnittest, TestNothing) {
 
 TEST_F(MessagingUtilsUnittest, NoArguments) {
   ModuleSystem::NativesEnabledScope natives_enabled_scope(
-      context_->module_system());
+      env()->module_system());
   RegisterTestModule(
       "var args = messagingUtils.alignSendMessageArguments();\n"
       "AssertTrue(args === null);");
-  context_->module_system()->Require("test");
+  env()->module_system()->Require("test");
 }
 
 TEST_F(MessagingUtilsUnittest, ZeroArguments) {
   ModuleSystem::NativesEnabledScope natives_enabled_scope(
-    context_->module_system());
+      env()->module_system());
   RegisterTestModule(
       "var args = messagingUtils.alignSendMessageArguments([]);"
       "AssertTrue(args === null);");
-  context_->module_system()->Require("test");
+  env()->module_system()->Require("test");
 }
 
 TEST_F(MessagingUtilsUnittest, TooManyArgumentsNoOptions) {
   ModuleSystem::NativesEnabledScope natives_enabled_scope(
-      context_->module_system());
+      env()->module_system());
   RegisterTestModule(
       "var args = messagingUtils.alignSendMessageArguments(\n"
       "    ['a', 'b', 'c', 'd']);\n"
       "AssertTrue(args === null);");
-  context_->module_system()->Require("test");
+  env()->module_system()->Require("test");
 }
 
 TEST_F(MessagingUtilsUnittest, TooManyArgumentsWithOptions) {
   ModuleSystem::NativesEnabledScope natives_enabled_scope(
-      context_->module_system());
+      env()->module_system());
   RegisterTestModule(
       "var args = messagingUtils.alignSendMessageArguments(\n"
       "    ['a', 'b', 'c', 'd', 'e'], true);\n"
       "AssertTrue(args === null);");
-  context_->module_system()->Require("test");
+  env()->module_system()->Require("test");
 }
 
 TEST_F(MessagingUtilsUnittest, FinalArgumentIsNotAFunctionNoOptions) {
   ModuleSystem::NativesEnabledScope natives_enabled_scope(
-      context_->module_system());
+      env()->module_system());
   RegisterTestModule(
       "var args = messagingUtils.alignSendMessageArguments(\n"
       "    ['a', 'b', 'c']);\n"
       "AssertTrue(args === null);");
-  context_->module_system()->Require("test");
+  env()->module_system()->Require("test");
 }
 
 TEST_F(MessagingUtilsUnittest, FinalArgumentIsNotAFunctionWithOptions) {
   ModuleSystem::NativesEnabledScope natives_enabled_scope(
-      context_->module_system());
+      env()->module_system());
   RegisterTestModule(
       "var args = messagingUtils.alignSendMessageArguments(\n"
       "    ['a', 'b', 'c', 'd'], true);\n"
       "AssertTrue(args === null);");
-  context_->module_system()->Require("test");
+  env()->module_system()->Require("test");
 }
 
 TEST_F(MessagingUtilsUnittest, OneStringArgument) {
   ModuleSystem::NativesEnabledScope natives_enabled_scope(
-      context_->module_system());
+      env()->module_system());
   // Because the request argument is required, a single argument must get
   // mapped to it rather than to the optional targetId argument.
   RegisterTestModule(
@@ -102,12 +105,12 @@ TEST_F(MessagingUtilsUnittest, OneStringArgument) {
       "AssertTrue(args[0] === null);\n"
       "AssertTrue(args[1] == 'a');\n"
       "AssertTrue(args[2] === null);");
-  context_->module_system()->Require("test");
+  env()->module_system()->Require("test");
 }
 
 TEST_F(MessagingUtilsUnittest, OneStringAndOneNullArgument) {
   ModuleSystem::NativesEnabledScope natives_enabled_scope(
-      context_->module_system());
+      env()->module_system());
   // Explicitly specifying null as the request is allowed.
   RegisterTestModule(
       "var args = messagingUtils.alignSendMessageArguments(['a', null]);\n"
@@ -115,24 +118,24 @@ TEST_F(MessagingUtilsUnittest, OneStringAndOneNullArgument) {
       "AssertTrue(args[0] == 'a');\n"
       "AssertTrue(args[1] === null);\n"
       "AssertTrue(args[2] === null);");
-  context_->module_system()->Require("test");
+  env()->module_system()->Require("test");
 }
 
 TEST_F(MessagingUtilsUnittest, OneNullAndOneStringArgument) {
   ModuleSystem::NativesEnabledScope natives_enabled_scope(
-      context_->module_system());
+      env()->module_system());
   RegisterTestModule(
       "var args = messagingUtils.alignSendMessageArguments([null, 'a']);\n"
       "AssertTrue(args.length == 3);\n"
       "AssertTrue(args[0] === null);\n"
       "AssertTrue(args[1] == 'a');\n"
       "AssertTrue(args[2] === null);");
-  context_->module_system()->Require("test");
+  env()->module_system()->Require("test");
 }
 
 TEST_F(MessagingUtilsUnittest, OneStringAndOneFunctionArgument) {
   ModuleSystem::NativesEnabledScope natives_enabled_scope(
-      context_->module_system());
+      env()->module_system());
   // When the arguments are a string and a function, the function is
   // unambiguously the responseCallback. Because the request argument is
   // required, the remaining argument must get mapped to it rather than to the
@@ -144,12 +147,12 @@ TEST_F(MessagingUtilsUnittest, OneStringAndOneFunctionArgument) {
       "AssertTrue(args[0] === null);\n"
       "AssertTrue(args[1] == 'a');\n"
       "AssertTrue(args[2] == cb);");
-  context_->module_system()->Require("test");
+  env()->module_system()->Require("test");
 }
 
 TEST_F(MessagingUtilsUnittest, OneStringAndOneObjectArgument) {
   ModuleSystem::NativesEnabledScope natives_enabled_scope(
-      context_->module_system());
+      env()->module_system());
   // This tests an ambiguous set of arguments when options are present:
   // chrome.runtime.sendMessage('target', {'msg': 'this is a message'});
   // vs.
@@ -168,12 +171,12 @@ TEST_F(MessagingUtilsUnittest, OneStringAndOneObjectArgument) {
       "AssertTrue(args[1] == obj);\n"
       "AssertTrue(args[2] === null);\n"
       "AssertTrue(args[3] === null);");
-  context_->module_system()->Require("test");
+  env()->module_system()->Require("test");
 }
 
 TEST_F(MessagingUtilsUnittest, TwoObjectArguments) {
   ModuleSystem::NativesEnabledScope natives_enabled_scope(
-      context_->module_system());
+      env()->module_system());
   // When two non-string arguments are provided and options are present, the
   // two arguments must match request and options, respectively, because
   // targetId must be a string.
@@ -187,7 +190,7 @@ TEST_F(MessagingUtilsUnittest, TwoObjectArguments) {
       "AssertTrue(args[1] == obj1);\n"
       "AssertTrue(args[2] == obj2);\n"
       "AssertTrue(args[3] === null);");
-  context_->module_system()->Require("test");
+  env()->module_system()->Require("test");
 }
 
 }  // namespace

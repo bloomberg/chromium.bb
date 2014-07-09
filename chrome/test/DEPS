@@ -14,6 +14,7 @@ include_rules = [
   # within content/ and a test within chrome/.
   "+content/public",
 
+  "+gin/public",
   "+grit",  # For generated headers
   "+media/base",
   "+mojo/embedder",

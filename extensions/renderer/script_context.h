@@ -14,6 +14,7 @@
 #include "extensions/renderer/request_sender.h"
 #include "extensions/renderer/safe_builtins.h"
 #include "extensions/renderer/scoped_persistent.h"
+#include "gin/runner.h"
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -28,7 +29,7 @@ namespace extensions {
 class Extension;
 
 // Extensions wrapper for a v8 context.
-class ScriptContext : public RequestSender::Source {
+class ScriptContext : public RequestSender::Source, public gin::Runner {
  public:
   ScriptContext(const v8::Handle<v8::Context>& context,
                 blink::WebFrame* frame,
@@ -119,6 +120,15 @@ class ScriptContext : public RequestSender::Source {
                                   bool success,
                                   const base::ListValue& response,
                                   const std::string& error) OVERRIDE;
+
+  // gin::Runner overrides.
+  virtual void Run(const std::string& source,
+                   const std::string& resource_name) OVERRIDE;
+  virtual v8::Handle<v8::Value> Call(v8::Handle<v8::Function> function,
+                                     v8::Handle<v8::Value> receiver,
+                                     int argc,
+                                     v8::Handle<v8::Value> argv[]) OVERRIDE;
+  virtual gin::ContextHolder* GetContextHolder() OVERRIDE;
 
  protected:
   // The v8 context the bindings are accessible to.

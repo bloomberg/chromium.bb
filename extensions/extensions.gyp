@@ -476,6 +476,7 @@
       'dependencies': [
         'extensions_resources.gyp:extensions_resources',
         '../chrome/chrome_resources.gyp:chrome_resources',
+        '../gin/gin.gyp:gin',
         '../third_party/WebKit/public/blink.gyp:blink',
       ],
       'include_dirs': [

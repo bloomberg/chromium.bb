@@ -7,6 +7,8 @@
 #include "extensions/common/features/feature.h"
 #include "extensions/renderer/script_context.h"
 #include "extensions/renderer/script_context_set.h"
+#include "gin/public/context_holder.h"
+#include "gin/public/isolate_holder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "v8/include/v8.h"
@@ -19,15 +21,20 @@ TEST(ScriptContextSet, Lifecycle) {
   ScriptContextSet context_set;
 
   v8::Isolate* isolate = v8::Isolate::GetCurrent();
+  gin::IsolateHolder isolate_holder(isolate, NULL);
   v8::HandleScope handle_scope(isolate);
-  v8::Handle<v8::Context> v8_context(v8::Context::New(isolate));
+  gin::ContextHolder context_holder(isolate);
+  context_holder.SetContext(v8::Context::New(isolate));
 
   // Dirty hack, but we don't actually need the frame, and this is easier than
   // creating a whole webview.
   blink::WebFrame* frame = reinterpret_cast<blink::WebFrame*>(1);
   const Extension* extension = NULL;
-  ScriptContext* context = new ScriptContext(
-      v8_context, frame, extension, Feature::BLESSED_EXTENSION_CONTEXT);
+  ScriptContext* context =
+      new ScriptContext(context_holder.context(),
+                        frame,
+                        extension,
+                        Feature::BLESSED_EXTENSION_CONTEXT);
 
   context_set.Add(context);
   EXPECT_EQ(1u, context_set.GetAll().count(context));

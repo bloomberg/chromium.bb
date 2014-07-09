@@ -5,6 +5,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/test/base/module_system_test.h"
 #include "extensions/renderer/module_system.h"
+#include "gin/modules/module_registry.h"
 
 // TODO(cduvall/kalman): Put this file in extensions namespace.
 using extensions::ModuleSystem;
@@ -51,14 +52,14 @@ class TestExceptionHandler : public ModuleSystem::ExceptionHandler {
 
 TEST_F(ModuleSystemTest, TestExceptionHandling) {
   ModuleSystem::NativesEnabledScope natives_enabled_scope(
-      context_->module_system());
+      env()->module_system());
   TestExceptionHandler* handler = new TestExceptionHandler;
   scoped_ptr<ModuleSystem::ExceptionHandler> scoped_handler(handler);
   ASSERT_FALSE(handler->handled_exception());
-  context_->module_system()->SetExceptionHandlerForTest(scoped_handler.Pass());
+  env()->module_system()->SetExceptionHandlerForTest(scoped_handler.Pass());
 
-  RegisterModule("test", "throw 'hi';");
-  context_->module_system()->Require("test");
+  env()->RegisterModule("test", "throw 'hi';");
+  env()->module_system()->Require("test");
   ASSERT_TRUE(handler->handled_exception());
 
   ExpectNoAssertionsMade();
@@ -66,210 +67,423 @@ TEST_F(ModuleSystemTest, TestExceptionHandling) {
 
 TEST_F(ModuleSystemTest, TestRequire) {
   ModuleSystem::NativesEnabledScope natives_enabled_scope(
-      context_->module_system());
-  RegisterModule("add", "exports.Add = function(x, y) { return x + y; };");
-  RegisterModule("test",
-      "var Add = require('add').Add;"
-      "requireNative('assert').AssertTrue(Add(3, 5) == 8);");
-  context_->module_system()->Require("test");
+      env()->module_system());
+  env()->RegisterModule("add",
+                        "exports.Add = function(x, y) { return x + y; };");
+  env()->RegisterModule("test",
+                        "var Add = require('add').Add;"
+                        "requireNative('assert').AssertTrue(Add(3, 5) == 8);");
+  env()->module_system()->Require("test");
 }
 
 TEST_F(ModuleSystemTest, TestNestedRequire) {
   ModuleSystem::NativesEnabledScope natives_enabled_scope(
-      context_->module_system());
-  RegisterModule("add", "exports.Add = function(x, y) { return x + y; };");
-  RegisterModule("double",
-      "var Add = require('add').Add;"
-      "exports.Double = function(x) { return Add(x, x); };");
-  RegisterModule("test",
-      "var Double = require('double').Double;"
-      "requireNative('assert').AssertTrue(Double(3) == 6);");
-  context_->module_system()->Require("test");
+      env()->module_system());
+  env()->RegisterModule("add",
+                        "exports.Add = function(x, y) { return x + y; };");
+  env()->RegisterModule("double",
+                        "var Add = require('add').Add;"
+                        "exports.Double = function(x) { return Add(x, x); };");
+  env()->RegisterModule("test",
+                        "var Double = require('double').Double;"
+                        "requireNative('assert').AssertTrue(Double(3) == 6);");
+  env()->module_system()->Require("test");
 }
 
 TEST_F(ModuleSystemTest, TestModuleInsulation) {
   ModuleSystem::NativesEnabledScope natives_enabled_scope(
-      context_->module_system());
-  RegisterModule("x",
-      "var x = 10;"
-      "exports.X = function() { return x; };");
-  RegisterModule("y",
-      "var x = 15;"
-      "require('x');"
-      "exports.Y = function() { return x; };");
-  RegisterModule("test",
-      "var Y = require('y').Y;"
-      "var X = require('x').X;"
-      "var assert = requireNative('assert');"
-      "assert.AssertTrue(!this.hasOwnProperty('x'));"
-      "assert.AssertTrue(Y() == 15);"
-      "assert.AssertTrue(X() == 10);");
-  context_->module_system()->Require("test");
+      env()->module_system());
+  env()->RegisterModule("x",
+                        "var x = 10;"
+                        "exports.X = function() { return x; };");
+  env()->RegisterModule("y",
+                        "var x = 15;"
+                        "require('x');"
+                        "exports.Y = function() { return x; };");
+  env()->RegisterModule("test",
+                        "var Y = require('y').Y;"
+                        "var X = require('x').X;"
+                        "var assert = requireNative('assert');"
+                        "assert.AssertTrue(!this.hasOwnProperty('x'));"
+                        "assert.AssertTrue(Y() == 15);"
+                        "assert.AssertTrue(X() == 10);");
+  env()->module_system()->Require("test");
 }
 
 TEST_F(ModuleSystemTest, TestNativesAreDisabledOutsideANativesEnabledScope) {
-  RegisterModule("test",
-      "var assert;"
-      "try {"
-      "  assert = requireNative('assert');"
-      "} catch (e) {"
-      "  var caught = true;"
-      "}"
-      "if (assert) {"
-      "  assert.AssertTrue(true);"
-      "}");
-  context_->module_system()->Require("test");
+  env()->RegisterModule("test",
+                        "var assert;"
+                        "try {"
+                        "  assert = requireNative('assert');"
+                        "} catch (e) {"
+                        "  var caught = true;"
+                        "}"
+                        "if (assert) {"
+                        "  assert.AssertTrue(true);"
+                        "}");
+  env()->module_system()->Require("test");
   ExpectNoAssertionsMade();
 }
 
 TEST_F(ModuleSystemTest, TestNativesAreEnabledWithinANativesEnabledScope) {
-  RegisterModule("test",
-      "var assert = requireNative('assert');"
-      "assert.AssertTrue(true);");
+  env()->RegisterModule("test",
+                        "var assert = requireNative('assert');"
+                        "assert.AssertTrue(true);");
 
   {
-    ModuleSystem::NativesEnabledScope natives_enabled(
-        context_->module_system());
+    ModuleSystem::NativesEnabledScope natives_enabled(env()->module_system());
     {
       ModuleSystem::NativesEnabledScope natives_enabled_inner(
-          context_->module_system());
+          env()->module_system());
     }
-    context_->module_system()->Require("test");
+    env()->module_system()->Require("test");
   }
 }
 
 TEST_F(ModuleSystemTest, TestLazyField) {
   ModuleSystem::NativesEnabledScope natives_enabled_scope(
-      context_->module_system());
-  RegisterModule("lazy",
-      "exports.x = 5;");
+      env()->module_system());
+  env()->RegisterModule("lazy", "exports.x = 5;");
 
-  v8::Handle<v8::Object> object = CreateGlobal("object");
+  v8::Handle<v8::Object> object = env()->CreateGlobal("object");
 
-  context_->module_system()->SetLazyField(object, "blah", "lazy", "x");
+  env()->module_system()->SetLazyField(object, "blah", "lazy", "x");
 
-  RegisterModule("test",
-      "var assert = requireNative('assert');"
-      "assert.AssertTrue(object.blah == 5);");
-  context_->module_system()->Require("test");
+  env()->RegisterModule("test",
+                        "var assert = requireNative('assert');"
+                        "assert.AssertTrue(object.blah == 5);");
+  env()->module_system()->Require("test");
 }
 
 TEST_F(ModuleSystemTest, TestLazyFieldYieldingObject) {
   ModuleSystem::NativesEnabledScope natives_enabled_scope(
-      context_->module_system());
-  RegisterModule("lazy",
+      env()->module_system());
+  env()->RegisterModule(
+      "lazy",
       "var object = {};"
       "object.__defineGetter__('z', function() { return 1; });"
       "object.x = 5;"
       "object.y = function() { return 10; };"
       "exports.object = object;");
 
-  v8::Handle<v8::Object> object = CreateGlobal("object");
+  v8::Handle<v8::Object> object = env()->CreateGlobal("object");
 
-  context_->module_system()->SetLazyField(object, "thing", "lazy", "object");
+  env()->module_system()->SetLazyField(object, "thing", "lazy", "object");
 
-  RegisterModule("test",
-      "var assert = requireNative('assert');"
-      "assert.AssertTrue(object.thing.x == 5);"
-      "assert.AssertTrue(object.thing.y() == 10);"
-      "assert.AssertTrue(object.thing.z == 1);"
-      );
-  context_->module_system()->Require("test");
+  env()->RegisterModule("test",
+                        "var assert = requireNative('assert');"
+                        "assert.AssertTrue(object.thing.x == 5);"
+                        "assert.AssertTrue(object.thing.y() == 10);"
+                        "assert.AssertTrue(object.thing.z == 1);");
+  env()->module_system()->Require("test");
 }
 
 TEST_F(ModuleSystemTest, TestLazyFieldIsOnlyEvaledOnce) {
   ModuleSystem::NativesEnabledScope natives_enabled_scope(
-      context_->module_system());
-  context_->module_system()->RegisterNativeHandler(
+      env()->module_system());
+  env()->module_system()->RegisterNativeHandler(
       "counter",
-      scoped_ptr<NativeHandler>(new CounterNatives(context_.get())));
-  RegisterModule("lazy",
-      "requireNative('counter').Increment();"
-      "exports.x = 5;");
+      scoped_ptr<NativeHandler>(new CounterNatives(env()->context())));
+  env()->RegisterModule("lazy",
+                        "requireNative('counter').Increment();"
+                        "exports.x = 5;");
 
-  v8::Handle<v8::Object> object = CreateGlobal("object");
+  v8::Handle<v8::Object> object = env()->CreateGlobal("object");
 
-  context_->module_system()->SetLazyField(object, "x", "lazy", "x");
+  env()->module_system()->SetLazyField(object, "x", "lazy", "x");
 
-  RegisterModule("test",
-      "var assert = requireNative('assert');"
-      "var counter = requireNative('counter');"
-      "assert.AssertTrue(counter.Get() == 0);"
-      "object.x;"
-      "assert.AssertTrue(counter.Get() == 1);"
-      "object.x;"
-      "assert.AssertTrue(counter.Get() == 1);");
-  context_->module_system()->Require("test");
+  env()->RegisterModule("test",
+                        "var assert = requireNative('assert');"
+                        "var counter = requireNative('counter');"
+                        "assert.AssertTrue(counter.Get() == 0);"
+                        "object.x;"
+                        "assert.AssertTrue(counter.Get() == 1);"
+                        "object.x;"
+                        "assert.AssertTrue(counter.Get() == 1);");
+  env()->module_system()->Require("test");
 }
 
 TEST_F(ModuleSystemTest, TestRequireNativesAfterLazyEvaluation) {
   ModuleSystem::NativesEnabledScope natives_enabled_scope(
-      context_->module_system());
-  RegisterModule("lazy",
-      "exports.x = 5;");
-  v8::Handle<v8::Object> object = CreateGlobal("object");
+      env()->module_system());
+  env()->RegisterModule("lazy", "exports.x = 5;");
+  v8::Handle<v8::Object> object = env()->CreateGlobal("object");
 
-  context_->module_system()->SetLazyField(object, "x", "lazy", "x");
-  RegisterModule("test",
-      "object.x;"
-      "requireNative('assert').AssertTrue(true);");
-  context_->module_system()->Require("test");
+  env()->module_system()->SetLazyField(object, "x", "lazy", "x");
+  env()->RegisterModule("test",
+                        "object.x;"
+                        "requireNative('assert').AssertTrue(true);");
+  env()->module_system()->Require("test");
 }
 
 TEST_F(ModuleSystemTest, TestTransitiveRequire) {
   ModuleSystem::NativesEnabledScope natives_enabled_scope(
-      context_->module_system());
-  RegisterModule("dependency",
-      "exports.x = 5;");
-  RegisterModule("lazy",
-      "exports.output = require('dependency');");
+      env()->module_system());
+  env()->RegisterModule("dependency", "exports.x = 5;");
+  env()->RegisterModule("lazy", "exports.output = require('dependency');");
 
-  v8::Handle<v8::Object> object = CreateGlobal("object");
+  v8::Handle<v8::Object> object = env()->CreateGlobal("object");
 
-  context_->module_system()->SetLazyField(object, "thing", "lazy", "output");
+  env()->module_system()->SetLazyField(object, "thing", "lazy", "output");
 
-  RegisterModule("test",
-      "var assert = requireNative('assert');"
-      "assert.AssertTrue(object.thing.x == 5);");
-  context_->module_system()->Require("test");
+  env()->RegisterModule("test",
+                        "var assert = requireNative('assert');"
+                        "assert.AssertTrue(object.thing.x == 5);");
+  env()->module_system()->Require("test");
 }
 
 TEST_F(ModuleSystemTest, TestModulesOnlyGetEvaledOnce) {
   ModuleSystem::NativesEnabledScope natives_enabled_scope(
-      context_->module_system());
-  context_->module_system()->RegisterNativeHandler(
+      env()->module_system());
+  env()->module_system()->RegisterNativeHandler(
       "counter",
-      scoped_ptr<NativeHandler>(new CounterNatives(context_.get())));
+      scoped_ptr<NativeHandler>(new CounterNatives(env()->context())));
 
-  RegisterModule("incrementsWhenEvaled",
-      "requireNative('counter').Increment();");
-  RegisterModule("test",
-      "var assert = requireNative('assert');"
-      "var counter = requireNative('counter');"
-      "assert.AssertTrue(counter.Get() == 0);"
-      "require('incrementsWhenEvaled');"
-      "assert.AssertTrue(counter.Get() == 1);"
-      "require('incrementsWhenEvaled');"
-      "assert.AssertTrue(counter.Get() == 1);");
+  env()->RegisterModule("incrementsWhenEvaled",
+                        "requireNative('counter').Increment();");
+  env()->RegisterModule("test",
+                        "var assert = requireNative('assert');"
+                        "var counter = requireNative('counter');"
+                        "assert.AssertTrue(counter.Get() == 0);"
+                        "require('incrementsWhenEvaled');"
+                        "assert.AssertTrue(counter.Get() == 1);"
+                        "require('incrementsWhenEvaled');"
+                        "assert.AssertTrue(counter.Get() == 1);");
 
-  context_->module_system()->Require("test");
+  env()->module_system()->Require("test");
 }
 
 TEST_F(ModuleSystemTest, TestOverrideNativeHandler) {
   ModuleSystem::NativesEnabledScope natives_enabled_scope(
-      context_->module_system());
-  OverrideNativeHandler("assert", "exports.AssertTrue = function() {};");
-  RegisterModule("test", "requireNative('assert').AssertTrue(true);");
+      env()->module_system());
+  env()->OverrideNativeHandler("assert", "exports.AssertTrue = function() {};");
+  env()->RegisterModule("test", "requireNative('assert').AssertTrue(true);");
   ExpectNoAssertionsMade();
-  context_->module_system()->Require("test");
+  env()->module_system()->Require("test");
 }
 
 TEST_F(ModuleSystemTest, TestOverrideNonExistentNativeHandler) {
   ModuleSystem::NativesEnabledScope natives_enabled_scope(
-      context_->module_system());
-  OverrideNativeHandler("thing", "exports.x = 5;");
-  RegisterModule("test",
-      "var assert = requireNative('assert');"
-      "assert.AssertTrue(requireNative('thing').x == 5);");
-  context_->module_system()->Require("test");
+      env()->module_system());
+  env()->OverrideNativeHandler("thing", "exports.x = 5;");
+  env()->RegisterModule("test",
+                        "var assert = requireNative('assert');"
+                        "assert.AssertTrue(requireNative('thing').x == 5);");
+  env()->module_system()->Require("test");
+}
+
+TEST_F(ModuleSystemTest, TestRequireAsync) {
+  ModuleSystem::NativesEnabledScope natives_enabled_scope(
+      env()->module_system());
+  env()->RegisterModule("add",
+                        "define('add', [], function() {"
+                        "  return { Add: function(x, y) { return x + y; } };"
+                        "});");
+  env()->RegisterModule("math",
+                        "define('math', ['add'], function(add) {"
+                        "  return { Add: add.Add };"
+                        "});");
+  env()->RegisterModule(
+      "test",
+      "requireAsync('math').then(function(math) {"
+      "  requireNative('assert').AssertTrue(math.Add(3, 5) == 8);"
+      "});");
+  env()->module_system()->Require("test");
+  RunResolvedPromises();
+}
+
+TEST_F(ModuleSystemTest, TestRequireAsyncInParallel) {
+  ModuleSystem::NativesEnabledScope natives_enabled_scope(
+      env()->module_system());
+  env()->RegisterModule("add",
+                        "define('add', [], function() {"
+                        "  return { Add: function(x, y) { return x + y; } };"
+                        "});");
+  env()->RegisterModule(
+      "subtract",
+      "define('subtract', [], function() {"
+      "  return { Subtract: function(x, y) { return x - y; } };"
+      "});");
+  env()->RegisterModule(
+      "math",
+      "exports.AddAndSubtract = function(x, y, z) {"
+      "  return Promise.all([requireAsync('add'),"
+      "                      requireAsync('subtract')"
+      "  ]).then(function(modules) {"
+      "    return modules[1].Subtract(modules[0].Add(x, y), z);"
+      "  });"
+      "};");
+  env()->RegisterModule("test",
+                        "var AddAndSubtract = require('math').AddAndSubtract;"
+                        "AddAndSubtract(3, 5, 2).then(function(result) {"
+                        "  requireNative('assert').AssertTrue(result == 6);"
+                        "});");
+  env()->module_system()->Require("test");
+  RunResolvedPromises();
+}
+
+TEST_F(ModuleSystemTest, TestNestedRequireAsyncs) {
+  ModuleSystem::NativesEnabledScope natives_enabled_scope(
+      env()->module_system());
+  env()->RegisterModule("first",
+                        "define('first', [], function() {"
+                        "  return { next: 'second' };"
+                        "});");
+  env()->RegisterModule("second",
+                        "define('second', [], function() {"
+                        "  return { next: '' };"
+                        "});");
+  env()->RegisterModule(
+      "test",
+      "requireAsync('first').then(function(module) {"
+      "  return requireAsync(module.next)"
+      "}).then(function(module) {"
+      "  requireNative('assert').AssertTrue(module.next === '');"
+      "});");
+  env()->module_system()->Require("test");
+  RunResolvedPromises();
+}
+
+TEST_F(ModuleSystemTest, TestRequireFromAMDModule) {
+  ModuleSystem::NativesEnabledScope natives_enabled_scope(
+      env()->module_system());
+  env()->RegisterModule("add",
+                        "exports.Add = function(x, y) { return x + y; };");
+  env()->RegisterModule("math",
+                        "define('math', [], function() {"
+                        "  var add = require('add');"
+                        "  return { Add: add.Add };"
+                        "});");
+  env()->RegisterModule(
+      "test",
+      "requireAsync('math').then(function(math) {"
+      "  requireNative('assert').AssertTrue(math.Add(3, 5) == 8);"
+      "});");
+  env()->module_system()->Require("test");
+  RunResolvedPromises();
+}
+
+TEST_F(ModuleSystemTest, TestRequireAsyncFromAMDModule) {
+  ModuleSystem::NativesEnabledScope natives_enabled_scope(
+      env()->module_system());
+  env()->RegisterModule("add",
+                        "define('add', [], function() {"
+                        "  return { Add: function(x, y) { return x + y; } };"
+                        "});");
+  env()->RegisterModule("math",
+                        "define('math', [], function() {"
+                        "  function Add(x, y) {"
+                        "    return requireAsync('add').then(function(add) {"
+                        "      return add.Add(x, y);"
+                        "    });"
+                        "  }"
+                        "  return { Add: Add };"
+                        "});");
+  env()->RegisterModule("test",
+                        "requireAsync('math').then(function(math) {"
+                        "  return math.Add(3, 6);"
+                        "}).then(function(result) {"
+                        "  requireNative('assert').AssertTrue(result == 9);"
+                        "});");
+  env()->module_system()->Require("test");
+  RunResolvedPromises();
+}
+
+TEST_F(ModuleSystemTest, TestRequireAsyncFromAnotherContext) {
+  ModuleSystem::NativesEnabledScope natives_enabled_scope(
+      env()->module_system());
+  env()->RegisterModule(
+      "test",
+      "requireAsync('natives').then(function(natives) {"
+      "  natives.requireAsync('ping').then(function(ping) {"
+      "    return ping();"
+      "  }).then(function(result) {"
+      "    requireNative('assert').AssertTrue(result == 'pong');"
+      "  });"
+      "});");
+  scoped_ptr<ModuleSystemTestEnvironment> other_env = CreateEnvironment();
+  other_env->RegisterModule("ping",
+                            "define('ping', ['natives'], function(natives) {"
+                            "  return function() {"
+                            "    return 'pong';"
+                            "  }"
+                            "});");
+  gin::ModuleRegistry::From(env()->context()->v8_context())->AddBuiltinModule(
+      env()->isolate(), "natives", other_env->module_system()->NewInstance());
+  gin::ModuleRegistry::From(other_env->context()->v8_context())
+      ->AddBuiltinModule(
+          env()->isolate(), "natives", env()->module_system()->NewInstance());
+  env()->module_system()->Require("test");
+  RunResolvedPromises();
+}
+
+TEST_F(ModuleSystemTest, TestRequireAsyncBetweenContexts) {
+  ModuleSystem::NativesEnabledScope natives_enabled_scope(
+      env()->module_system());
+  env()->RegisterModule("pong",
+                        "define('pong', [], function() {"
+                        "  return function() { return 'done'; };"
+                        "});");
+  env()->RegisterModule(
+      "test",
+      "requireAsync('natives').then(function(natives) {"
+      "  natives.requireAsync('ping').then(function(ping) {"
+      "    return ping();"
+      "  }).then(function(pong) {"
+      "    return pong();"
+      "  }).then(function(result) {"
+      "    requireNative('assert').AssertTrue(result == 'done');"
+      "  });"
+      "});");
+  scoped_ptr<ModuleSystemTestEnvironment> other_env = CreateEnvironment();
+  other_env->RegisterModule("ping",
+                            "define('ping', ['natives'], function(natives) {"
+                            "  return function() {"
+                            "    return natives.requireAsync('pong');"
+                            "  }"
+                            "});");
+  gin::ModuleRegistry::From(env()->context()->v8_context())->AddBuiltinModule(
+      env()->isolate(), "natives", other_env->module_system()->NewInstance());
+  gin::ModuleRegistry::From(other_env->context()->v8_context())
+      ->AddBuiltinModule(
+          env()->isolate(), "natives", env()->module_system()->NewInstance());
+  env()->module_system()->Require("test");
+  RunResolvedPromises();
+}
+
+TEST_F(ModuleSystemTest, TestRequireAsyncFromContextWithNoModuleRegistry) {
+  ModuleSystem::NativesEnabledScope natives_enabled_scope(
+      env()->module_system());
+  env()->RegisterModule("test",
+                        "requireAsync('natives').then(function(natives) {"
+                        "  var AssertTrue = requireNative('assert').AssertTrue;"
+                        "  natives.requireAsync('foo').then(function() {"
+                        "    AssertTrue(false);"
+                        "  }).catch(function(error) {"
+                        "    AssertTrue(error.message == "
+                        "               'Extension view no longer exists');"
+                        "  });"
+                        "});");
+  scoped_ptr<ModuleSystemTestEnvironment> other_env = CreateEnvironment();
+  gin::ModuleRegistry::From(env()->context()->v8_context())->AddBuiltinModule(
+      env()->isolate(), "natives", other_env->module_system()->NewInstance());
+  other_env->ShutdownGin();
+  env()->module_system()->Require("test");
+  RunResolvedPromises();
+}
+
+TEST_F(ModuleSystemTest, TestRequireAsyncFromContextWithNoModuleSystem) {
+  ModuleSystem::NativesEnabledScope natives_enabled_scope(
+      env()->module_system());
+  env()->RegisterModule("test",
+                        "requireAsync('natives').then(function(natives) {"
+                        "  requireNative('assert').AssertTrue("
+                        "      natives.requireAsync('foo') === undefined);"
+                        "});");
+  scoped_ptr<ModuleSystemTestEnvironment> other_env = CreateEnvironment();
+  gin::ModuleRegistry::From(env()->context()->v8_context())->AddBuiltinModule(
+      env()->isolate(), "natives", other_env->module_system()->NewInstance());
+  other_env->ShutdownModuleSystem();
+  env()->module_system()->Require("test");
+  RunResolvedPromises();
 }

@@ -11,7 +11,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
-#include "extensions/renderer/scoped_persistent.h"
+#include "gin/public/context_holder.h"
 #include "v8/include/v8-util.h"
 #include "v8/include/v8.h"
 
@@ -43,9 +43,9 @@ class V8SchemaRegistry {
   typedef v8::StdPersistentValueMap<std::string, v8::Object> SchemaCache;
   scoped_ptr<SchemaCache> schema_cache_;
 
-  // Single per-instance v8::Context to create v8::Values.
+  // Single per-instance gin::ContextHolder to create v8::Values.
   // Created lazily via GetOrCreateContext.
-  ScopedPersistent<v8::Context> context_;
+  scoped_ptr<gin::ContextHolder> context_holder_;
 
   DISALLOW_COPY_AND_ASSIGN(V8SchemaRegistry);
 };

@@ -13,18 +13,18 @@ class JsonSchemaTest : public ModuleSystemTest {
   virtual void SetUp() OVERRIDE {
     ModuleSystemTest::SetUp();
 
-    RegisterModule("json_schema", IDR_JSON_SCHEMA_JS);
-    RegisterModule("utils", IDR_UTILS_JS);
+    env()->RegisterModule("json_schema", IDR_JSON_SCHEMA_JS);
+    env()->RegisterModule("utils", IDR_UTILS_JS);
 
-    context_->module_system()->RegisterNativeHandler("schema_registry",
-        schema_registry_.AsNativeHandler());
+    env()->module_system()->RegisterNativeHandler(
+        "schema_registry", schema_registry_.AsNativeHandler());
 
-    RegisterTestFile("json_schema_test", "json_schema_test.js");
+    env()->RegisterTestFile("json_schema_test", "json_schema_test.js");
   }
 
  protected:
   void TestFunction(const std::string& test_name) {
-    context_->module_system()->CallModuleMethod("json_schema_test", test_name);
+    env()->module_system()->CallModuleMethod("json_schema_test", test_name);
   }
 
  private:

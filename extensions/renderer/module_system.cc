@@ -16,6 +16,7 @@
 #include "extensions/renderer/console.h"
 #include "extensions/renderer/safe_builtins.h"
 #include "extensions/renderer/script_context.h"
+#include "gin/modules/module_registry.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebScopedMicrotaskSuppression.h"
 
@@ -121,13 +122,17 @@ ModuleSystem::ModuleSystem(ScriptContext* context, SourceMap* source_map)
       context_(context),
       source_map_(source_map),
       natives_enabled_(0),
-      exception_handler_(new DefaultExceptionHandler(context)) {
+      exception_handler_(new DefaultExceptionHandler(context)),
+      weak_factory_(this) {
   RouteFunction(
       "require",
       base::Bind(&ModuleSystem::RequireForJs, base::Unretained(this)));
   RouteFunction(
       "requireNative",
       base::Bind(&ModuleSystem::RequireNative, base::Unretained(this)));
+  RouteFunction(
+      "requireAsync",
+      base::Bind(&ModuleSystem::RequireAsync, base::Unretained(this)));
   RouteFunction("privates",
                 base::Bind(&ModuleSystem::Private, base::Unretained(this)));
 
@@ -137,6 +142,8 @@ ModuleSystem::ModuleSystem(ScriptContext* context, SourceMap* source_map)
                          v8::Object::New(isolate));
   global->SetHiddenValue(v8::String::NewFromUtf8(isolate, kModuleSystem),
                          v8::External::New(isolate, this));
+
+  gin::ModuleRegistry::From(context->v8_context())->AddObserver(this);
 }
 
 ModuleSystem::~ModuleSystem() { Invalidate(); }
@@ -215,55 +222,7 @@ v8::Local<v8::Value> ModuleSystem::RequireForJsInner(
   if (!exports->IsUndefined())
     return handle_scope.Escape(exports);
 
-  std::string module_name_str = *v8::String::Utf8Value(module_name);
-  v8::Handle<v8::Value> source(GetSource(module_name_str));
-  if (source.IsEmpty() || source->IsUndefined()) {
-    Fatal(context_, "No source for require(" + module_name_str + ")");
-    return v8::Undefined(GetIsolate());
-  }
-  v8::Handle<v8::String> wrapped_source(
-      WrapSource(v8::Handle<v8::String>::Cast(source)));
-  // Modules are wrapped in (function(){...}) so they always return functions.
-  v8::Handle<v8::Value> func_as_value = RunString(wrapped_source, module_name);
-  if (func_as_value.IsEmpty() || func_as_value->IsUndefined()) {
-    Fatal(context_, "Bad source for require(" + module_name_str + ")");
-    return v8::Undefined(GetIsolate());
-  }
-
-  v8::Handle<v8::Function> func = v8::Handle<v8::Function>::Cast(func_as_value);
-
-  exports = v8::Object::New(GetIsolate());
-  v8::Handle<v8::Object> natives(NewInstance());
-  CHECK(!natives.IsEmpty());  // this can happen if v8 has issues
-
-  // These must match the argument order in WrapSource.
-  v8::Handle<v8::Value> args[] = {
-      // CommonJS.
-      natives->Get(v8::String::NewFromUtf8(
-          GetIsolate(), "require", v8::String::kInternalizedString)),
-      natives->Get(v8::String::NewFromUtf8(
-          GetIsolate(), "requireNative", v8::String::kInternalizedString)),
-      exports,
-      // Libraries that we magically expose to every module.
-      console::AsV8Object(),
-      natives->Get(v8::String::NewFromUtf8(
-          GetIsolate(), "privates", v8::String::kInternalizedString)),
-      // Each safe builtin. Keep in order with the arguments in WrapSource.
-      context_->safe_builtins()->GetArray(),
-      context_->safe_builtins()->GetFunction(),
-      context_->safe_builtins()->GetJSON(),
-      context_->safe_builtins()->GetObjekt(),
-      context_->safe_builtins()->GetRegExp(),
-      context_->safe_builtins()->GetString(), };
-  {
-    v8::TryCatch try_catch;
-    try_catch.SetCaptureMessage(true);
-    context_->CallFunction(func, arraysize(args), args);
-    if (try_catch.HasCaught()) {
-      HandleException(try_catch);
-      return v8::Undefined(GetIsolate());
-    }
-  }
+  exports = LoadModule(*v8::String::Utf8Value(module_name));
   modules->Set(module_name, exports);
   return handle_scope.Escape(exports);
 }
@@ -558,12 +517,38 @@ v8::Handle<v8::Value> ModuleSystem::RequireNativeFromString(
   return i->second->NewInstance();
 }
 
+void ModuleSystem::RequireAsync(
+    const v8::FunctionCallbackInfo<v8::Value>& args) {
+  CHECK_EQ(1, args.Length());
+  std::string module_name = *v8::String::Utf8Value(args[0]->ToString());
+  v8::Handle<v8::Promise::Resolver> resolver(
+      v8::Promise::Resolver::New(GetIsolate()));
+  args.GetReturnValue().Set(resolver->GetPromise());
+  scoped_ptr<v8::UniquePersistent<v8::Promise::Resolver> > persistent_resolver(
+      new v8::UniquePersistent<v8::Promise::Resolver>(GetIsolate(), resolver));
+  gin::ModuleRegistry* module_registry =
+      gin::ModuleRegistry::From(context_->v8_context());
+  if (!module_registry) {
+    Warn(GetIsolate(), "Extension view no longer exists");
+    resolver->Reject(v8::Exception::Error(v8::String::NewFromUtf8(
+        GetIsolate(), "Extension view no longer exists")));
+    return;
+  }
+  module_registry->LoadModule(GetIsolate(),
+                              module_name,
+                              base::Bind(&ModuleSystem::OnModuleLoaded,
+                                         weak_factory_.GetWeakPtr(),
+                                         base::Passed(&persistent_resolver)));
+  if (module_registry->available_modules().count(module_name) == 0)
+    LoadModule(module_name);
+}
+
 v8::Handle<v8::String> ModuleSystem::WrapSource(v8::Handle<v8::String> source) {
   v8::EscapableHandleScope handle_scope(GetIsolate());
   // Keep in order with the arguments in RequireForJsInner.
   v8::Handle<v8::String> left = v8::String::NewFromUtf8(
       GetIsolate(),
-      "(function(require, requireNative, exports, "
+      "(function(define, require, requireNative, requireAsync, exports, "
       "console, privates,"
       "$Array, $Function, $JSON, $Object, $RegExp, $String) {"
       "'use strict';");
@@ -584,6 +569,100 @@ void ModuleSystem::Private(const v8::FunctionCallbackInfo<v8::Value>& args) {
     obj->SetHiddenValue(privates_key, privates);
   }
   args.GetReturnValue().Set(privates);
+}
+
+v8::Handle<v8::Value> ModuleSystem::LoadModule(const std::string& module_name) {
+  v8::EscapableHandleScope handle_scope(GetIsolate());
+  v8::Context::Scope context_scope(context()->v8_context());
+
+  v8::Handle<v8::Value> source(GetSource(module_name));
+  if (source.IsEmpty() || source->IsUndefined()) {
+    Fatal(context_, "No source for require(" + module_name + ")");
+    return v8::Undefined(GetIsolate());
+  }
+  v8::Handle<v8::String> wrapped_source(
+      WrapSource(v8::Handle<v8::String>::Cast(source)));
+  // Modules are wrapped in (function(){...}) so they always return functions.
+  v8::Handle<v8::Value> func_as_value =
+      RunString(wrapped_source,
+                v8::String::NewFromUtf8(GetIsolate(), module_name.c_str()));
+  if (func_as_value.IsEmpty() || func_as_value->IsUndefined()) {
+    Fatal(context_, "Bad source for require(" + module_name + ")");
+    return v8::Undefined(GetIsolate());
+  }
+
+  v8::Handle<v8::Function> func = v8::Handle<v8::Function>::Cast(func_as_value);
+
+  v8::Handle<v8::Object> define_object = v8::Object::New(GetIsolate());
+  gin::ModuleRegistry::InstallGlobals(GetIsolate(), define_object);
+
+  v8::Local<v8::Value> exports = v8::Object::New(GetIsolate());
+  v8::Handle<v8::Object> natives(NewInstance());
+  CHECK(!natives.IsEmpty());  // this can happen if v8 has issues
+
+  // These must match the argument order in WrapSource.
+  v8::Handle<v8::Value> args[] = {
+      // AMD.
+      define_object->Get(v8::String::NewFromUtf8(GetIsolate(), "define")),
+      // CommonJS.
+      natives->Get(v8::String::NewFromUtf8(
+          GetIsolate(), "require", v8::String::kInternalizedString)),
+      natives->Get(v8::String::NewFromUtf8(
+          GetIsolate(), "requireNative", v8::String::kInternalizedString)),
+      natives->Get(v8::String::NewFromUtf8(
+          GetIsolate(), "requireAsync", v8::String::kInternalizedString)),
+      exports,
+      // Libraries that we magically expose to every module.
+      console::AsV8Object(),
+      natives->Get(v8::String::NewFromUtf8(
+          GetIsolate(), "privates", v8::String::kInternalizedString)),
+      // Each safe builtin. Keep in order with the arguments in WrapSource.
+      context_->safe_builtins()->GetArray(),
+      context_->safe_builtins()->GetFunction(),
+      context_->safe_builtins()->GetJSON(),
+      context_->safe_builtins()->GetObjekt(),
+      context_->safe_builtins()->GetRegExp(),
+      context_->safe_builtins()->GetString(),
+  };
+  {
+    v8::TryCatch try_catch;
+    try_catch.SetCaptureMessage(true);
+    context_->CallFunction(func, arraysize(args), args);
+    if (try_catch.HasCaught()) {
+      HandleException(try_catch);
+      return v8::Undefined(GetIsolate());
+    }
+  }
+  return handle_scope.Escape(exports);
+}
+
+void ModuleSystem::OnDidAddPendingModule(
+    const std::string& id,
+    const std::vector<std::string>& dependencies) {
+  if (!source_map_->Contains(id))
+    return;
+
+  gin::ModuleRegistry* registry =
+      gin::ModuleRegistry::From(context_->v8_context());
+  DCHECK(registry);
+  for (std::vector<std::string>::const_iterator it = dependencies.begin();
+       it != dependencies.end();
+       ++it) {
+    if (registry->available_modules().count(*it) == 0)
+      LoadModule(*it);
+  }
+  registry->AttemptToLoadMoreModules(GetIsolate());
+}
+
+void ModuleSystem::OnModuleLoaded(
+    scoped_ptr<v8::UniquePersistent<v8::Promise::Resolver> > resolver,
+    v8::Handle<v8::Value> value) {
+  if (!is_valid())
+    return;
+  v8::HandleScope handle_scope(GetIsolate());
+  v8::Handle<v8::Promise::Resolver> resolver_local(
+      v8::Local<v8::Promise::Resolver>::New(GetIsolate(), *resolver));
+  resolver_local->Resolve(value);
 }
 
 }  // namespace extensions

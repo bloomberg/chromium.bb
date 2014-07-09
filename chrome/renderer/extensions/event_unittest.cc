@@ -14,38 +14,35 @@ class EventUnittest : public ModuleSystemTest {
   virtual void SetUp() OVERRIDE {
     ModuleSystemTest::SetUp();
 
-    RegisterModule(kEventBindings, IDR_EVENT_BINDINGS_JS);
-    RegisterModule("json_schema", IDR_JSON_SCHEMA_JS);
-    RegisterModule(kSchemaUtils, IDR_SCHEMA_UTILS_JS);
-    RegisterModule("uncaught_exception_handler",
-                   IDR_UNCAUGHT_EXCEPTION_HANDLER_JS);
-    RegisterModule("unload_event", IDR_UNLOAD_EVENT_JS);
-    RegisterModule("utils", IDR_UTILS_JS);
+    env()->RegisterModule(kEventBindings, IDR_EVENT_BINDINGS_JS);
+    env()->RegisterModule("json_schema", IDR_JSON_SCHEMA_JS);
+    env()->RegisterModule(kSchemaUtils, IDR_SCHEMA_UTILS_JS);
+    env()->RegisterModule("uncaught_exception_handler",
+                          IDR_UNCAUGHT_EXCEPTION_HANDLER_JS);
+    env()->RegisterModule("unload_event", IDR_UNLOAD_EVENT_JS);
+    env()->RegisterModule("utils", IDR_UTILS_JS);
 
     // Mock out the native handler for event_bindings. These mocks will fail if
     // any invariants maintained by the real event_bindings are broken.
-    OverrideNativeHandler("event_natives",
+    env()->OverrideNativeHandler(
+        "event_natives",
         "var assert = requireNative('assert');"
         "var attachedListeners = exports.attachedListeners = {};"
         "var attachedFilteredListeners = "
         "    exports.attachedFilteredListeners = {};"
         "var nextId = 0;"
         "var idToName = {};"
-
         "exports.AttachEvent = function(eventName) {"
         "  assert.AssertFalse(!!attachedListeners[eventName]);"
         "  attachedListeners[eventName] = 1;"
         "};"
-
         "exports.DetachEvent = function(eventName) {"
         "  assert.AssertTrue(!!attachedListeners[eventName]);"
         "  delete attachedListeners[eventName];"
         "};"
-
         "exports.IsEventAttached = function(eventName) {"
         "  return !!attachedListeners[eventName];"
         "};"
-
         "exports.AttachFilteredEvent = function(name, filters) {"
         "  var id = nextId++;"
         "  idToName[id] = name;"
@@ -54,23 +51,21 @@ class EventUnittest : public ModuleSystemTest {
         "  attachedFilteredListeners[name][id] = filters;"
         "  return id;"
         "};"
-
         "exports.DetachFilteredEvent = function(id, manual) {"
         "  var i = attachedFilteredListeners[idToName[id]].indexOf(id);"
         "  attachedFilteredListeners[idToName[id]].splice(i, 1);"
         "};"
-
         "exports.HasFilteredListener = function(name) {"
         "  return attachedFilteredListeners[name].length;"
         "};");
-    OverrideNativeHandler("sendRequest",
-        "exports.sendRequest = function() {};");
-    OverrideNativeHandler("apiDefinitions",
+    env()->OverrideNativeHandler("sendRequest",
+                                 "exports.sendRequest = function() {};");
+    env()->OverrideNativeHandler(
+        "apiDefinitions",
         "exports.GetExtensionAPIDefinitionsForTest = function() {};");
-    OverrideNativeHandler("logging",
-        "exports.DCHECK = function() {};");
-    OverrideNativeHandler("schema_registry",
-        "exports.GetSchema = function() {};");
+    env()->OverrideNativeHandler("logging", "exports.DCHECK = function() {};");
+    env()->OverrideNativeHandler("schema_registry",
+                                 "exports.GetSchema = function() {};");
   }
 };
 
@@ -80,8 +75,9 @@ TEST_F(EventUnittest, TestNothing) {
 
 TEST_F(EventUnittest, AddRemoveTwoListeners) {
   ModuleSystem::NativesEnabledScope natives_enabled_scope(
-      context_->module_system());
-  RegisterModule("test",
+      env()->module_system());
+  env()->RegisterModule(
+      "test",
       "var assert = requireNative('assert');"
       "var Event = require('event_bindings').Event;"
       "var eventNatives = requireNative('event_natives');"
@@ -94,13 +90,14 @@ TEST_F(EventUnittest, AddRemoveTwoListeners) {
       "assert.AssertTrue(!!eventNatives.attachedListeners['named-event']);"
       "myEvent.removeListener(cb2);"
       "assert.AssertFalse(!!eventNatives.attachedListeners['named-event']);");
-  context_->module_system()->Require("test");
+  env()->module_system()->Require("test");
 }
 
 TEST_F(EventUnittest, OnUnloadDetachesAllListeners) {
   ModuleSystem::NativesEnabledScope natives_enabled_scope(
-      context_->module_system());
-  RegisterModule("test",
+      env()->module_system());
+  env()->RegisterModule(
+      "test",
       "var assert = requireNative('assert');"
       "var Event = require('event_bindings').Event;"
       "var eventNatives = requireNative('event_natives');"
@@ -111,13 +108,14 @@ TEST_F(EventUnittest, OnUnloadDetachesAllListeners) {
       "myEvent.addListener(cb2);"
       "require('unload_event').dispatch();"
       "assert.AssertFalse(!!eventNatives.attachedListeners['named-event']);");
-  context_->module_system()->Require("test");
+  env()->module_system()->Require("test");
 }
 
 TEST_F(EventUnittest, OnUnloadDetachesAllListenersEvenDupes) {
   ModuleSystem::NativesEnabledScope natives_enabled_scope(
-      context_->module_system());
-  RegisterModule("test",
+      env()->module_system());
+  env()->RegisterModule(
+      "test",
       "var assert = requireNative('assert');"
       "var Event = require('event_bindings').Event;"
       "var eventNatives = requireNative('event_natives');"
@@ -127,13 +125,14 @@ TEST_F(EventUnittest, OnUnloadDetachesAllListenersEvenDupes) {
       "myEvent.addListener(cb1);"
       "require('unload_event').dispatch();"
       "assert.AssertFalse(!!eventNatives.attachedListeners['named-event']);");
-  context_->module_system()->Require("test");
+  env()->module_system()->Require("test");
 }
 
 TEST_F(EventUnittest, EventsThatSupportRulesMustHaveAName) {
   ModuleSystem::NativesEnabledScope natives_enabled_scope(
-      context_->module_system());
-  RegisterModule("test",
+      env()->module_system());
+  env()->RegisterModule(
+      "test",
       "var Event = require('event_bindings').Event;"
       "var eventOpts = {supportsRules: true};"
       "var assert = requireNative('assert');"
@@ -144,13 +143,14 @@ TEST_F(EventUnittest, EventsThatSupportRulesMustHaveAName) {
       "  caught = true;"
       "}"
       "assert.AssertTrue(caught);");
-  context_->module_system()->Require("test");
+  env()->module_system()->Require("test");
 }
 
 TEST_F(EventUnittest, NamedEventDispatch) {
   ModuleSystem::NativesEnabledScope natives_enabled_scope(
-      context_->module_system());
-  RegisterModule("test",
+      env()->module_system());
+  env()->RegisterModule(
+      "test",
       "var Event = require('event_bindings').Event;"
       "var dispatchEvent = require('event_bindings').dispatchEvent;"
       "var assert = requireNative('assert');"
@@ -159,33 +159,34 @@ TEST_F(EventUnittest, NamedEventDispatch) {
       "e.addListener(function() { called = true; });"
       "dispatchEvent('myevent', []);"
       "assert.AssertTrue(called);");
-  context_->module_system()->Require("test");
+  env()->module_system()->Require("test");
 }
 
 TEST_F(EventUnittest, AddListenerWithFiltersThrowsErrorByDefault) {
   ModuleSystem::NativesEnabledScope natives_enabled_scope(
-      context_->module_system());
-  RegisterModule("test",
-      "var Event = require('event_bindings').Event;"
-      "var assert = requireNative('assert');"
-      "var e = new Event('myevent');"
-      "var filter = [{"
-      "  url: {hostSuffix: 'google.com'},"
-      "}];"
-      "var caught = false;"
-      "try {"
-      "  e.addListener(function() {}, filter);"
-      "} catch (e) {"
-      "  caught = true;"
-      "}"
-      "assert.AssertTrue(caught);");
-  context_->module_system()->Require("test");
+      env()->module_system());
+  env()->RegisterModule("test",
+                        "var Event = require('event_bindings').Event;"
+                        "var assert = requireNative('assert');"
+                        "var e = new Event('myevent');"
+                        "var filter = [{"
+                        "  url: {hostSuffix: 'google.com'},"
+                        "}];"
+                        "var caught = false;"
+                        "try {"
+                        "  e.addListener(function() {}, filter);"
+                        "} catch (e) {"
+                        "  caught = true;"
+                        "}"
+                        "assert.AssertTrue(caught);");
+  env()->module_system()->Require("test");
 }
 
 TEST_F(EventUnittest, FilteredEventsAttachment) {
   ModuleSystem::NativesEnabledScope natives_enabled_scope(
-      context_->module_system());
-  RegisterModule("test",
+      env()->module_system());
+  env()->RegisterModule(
+      "test",
       "var Event = require('event_bindings').Event;"
       "var assert = requireNative('assert');"
       "var bindings = requireNative('event_natives');"
@@ -197,13 +198,14 @@ TEST_F(EventUnittest, FilteredEventsAttachment) {
       "assert.AssertTrue(bindings.HasFilteredListener('myevent'));"
       "e.removeListener(cb);"
       "assert.AssertFalse(bindings.HasFilteredListener('myevent'));");
-  context_->module_system()->Require("test");
+  env()->module_system()->Require("test");
 }
 
 TEST_F(EventUnittest, DetachFilteredEvent) {
   ModuleSystem::NativesEnabledScope natives_enabled_scope(
-      context_->module_system());
-  RegisterModule("test",
+      env()->module_system());
+  env()->RegisterModule(
+      "test",
       "var Event = require('event_bindings').Event;"
       "var assert = requireNative('assert');"
       "var bindings = requireNative('event_natives');"
@@ -216,13 +218,14 @@ TEST_F(EventUnittest, DetachFilteredEvent) {
       "e.addListener(cb2, filters);"
       "privates(e).impl.detach_();"
       "assert.AssertFalse(bindings.HasFilteredListener('myevent'));");
-  context_->module_system()->Require("test");
+  env()->module_system()->Require("test");
 }
 
 TEST_F(EventUnittest, AttachAndRemoveSameFilteredEventListener) {
   ModuleSystem::NativesEnabledScope natives_enabled_scope(
-      context_->module_system());
-  RegisterModule("test",
+      env()->module_system());
+  env()->RegisterModule(
+      "test",
       "var Event = require('event_bindings').Event;"
       "var assert = requireNative('assert');"
       "var bindings = requireNative('event_natives');"
@@ -237,13 +240,14 @@ TEST_F(EventUnittest, AttachAndRemoveSameFilteredEventListener) {
       "assert.AssertTrue(bindings.HasFilteredListener('myevent'));"
       "e.removeListener(cb);"
       "assert.AssertFalse(bindings.HasFilteredListener('myevent'));");
-  context_->module_system()->Require("test");
+  env()->module_system()->Require("test");
 }
 
 TEST_F(EventUnittest, AddingFilterWithUrlFieldNotAListThrowsException) {
   ModuleSystem::NativesEnabledScope natives_enabled_scope(
-      context_->module_system());
-  RegisterModule("test",
+      env()->module_system());
+  env()->RegisterModule(
+      "test",
       "var Event = require('event_bindings').Event;"
       "var assert = requireNative('assert');"
       "var eventOpts = {supportsListeners: true, supportsFilters: true};"
@@ -257,13 +261,14 @@ TEST_F(EventUnittest, AddingFilterWithUrlFieldNotAListThrowsException) {
       "  caught = true;"
       "}"
       "assert.AssertTrue(caught);");
-  context_->module_system()->Require("test");
+  env()->module_system()->Require("test");
 }
 
 TEST_F(EventUnittest, MaxListeners) {
   ModuleSystem::NativesEnabledScope natives_enabled_scope(
-      context_->module_system());
-  RegisterModule("test",
+      env()->module_system());
+  env()->RegisterModule(
+      "test",
       "var Event = require('event_bindings').Event;"
       "var assert = requireNative('assert');"
       "var eventOpts = {supportsListeners: true, maxListeners: 1};"
@@ -282,7 +287,7 @@ TEST_F(EventUnittest, MaxListeners) {
       "  caught = true;"
       "}"
       "assert.AssertTrue(caught);");
-  context_->module_system()->Require("test");
+  env()->module_system()->Require("test");
 }
 
 }  // namespace
