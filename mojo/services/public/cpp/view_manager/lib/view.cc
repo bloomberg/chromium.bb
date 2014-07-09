@@ -75,7 +75,7 @@ View::View(ViewManager* manager)
       manager_(manager) {}
 
 View::View()
-    : id_(-1),
+    : id_(static_cast<Id>(-1)),
       node_(NULL),
       manager_(NULL) {}
 

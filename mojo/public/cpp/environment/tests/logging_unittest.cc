@@ -19,6 +19,16 @@
 namespace mojo {
 namespace {
 
+class PtrToMemberHelper {
+ public:
+  int member;
+};
+
+bool DcheckTestHelper(bool* was_called) {
+  *was_called = true;
+  return false;
+}
+
 class LoggingTest : public testing::Test {
  public:
   LoggingTest() : environment_(NULL, &kMockLogger) {
@@ -169,28 +179,28 @@ TEST_F(LoggingTest, LogStream) {
   MOJO_LOG_STREAM(INFO) << "hello";
   EXPECT_TRUE(log_message_was_called());
   EXPECT_EQ(MOJO_LOG_LEVEL_INFO, last_log_level());
-  EXPECT_EQ(ExpectedLogMessage(__LINE__-3, "hello"), last_message());
+  EXPECT_EQ(ExpectedLogMessage(__LINE__ - 3, "hello"), last_message());
 
   ResetMockLogger();
 
   MOJO_LOG_STREAM(ERROR) << "hi " << 123;
   EXPECT_TRUE(log_message_was_called());
   EXPECT_EQ(MOJO_LOG_LEVEL_ERROR, last_log_level());
-  EXPECT_EQ(ExpectedLogMessage(__LINE__-3, "hi 123"), last_message());
+  EXPECT_EQ(ExpectedLogMessage(__LINE__ - 3, "hi 123"), last_message());
 }
 
 TEST_F(LoggingTest, LazyLogStream) {
   MOJO_LAZY_LOG_STREAM(INFO, true) << "hello";
   EXPECT_TRUE(log_message_was_called());
   EXPECT_EQ(MOJO_LOG_LEVEL_INFO, last_log_level());
-  EXPECT_EQ(ExpectedLogMessage(__LINE__-3, "hello"), last_message());
+  EXPECT_EQ(ExpectedLogMessage(__LINE__ - 3, "hello"), last_message());
 
   ResetMockLogger();
 
   MOJO_LAZY_LOG_STREAM(ERROR, true) << "hi " << 123;
   EXPECT_TRUE(log_message_was_called());
   EXPECT_EQ(MOJO_LOG_LEVEL_ERROR, last_log_level());
-  EXPECT_EQ(ExpectedLogMessage(__LINE__-3, "hi 123"), last_message());
+  EXPECT_EQ(ExpectedLogMessage(__LINE__ - 3, "hi 123"), last_message());
 
   ResetMockLogger();
 
@@ -204,15 +214,19 @@ TEST_F(LoggingTest, LazyLogStream) {
 
   ResetMockLogger();
 
-  bool x = false;
+  PtrToMemberHelper helper;
+  helper.member = 1;
+  int PtrToMemberHelper::*member_ptr = &PtrToMemberHelper::member;
+
   // This probably fails to compile if we forget to parenthesize the condition
-  // in the macro (= has low precedence, and needs an lvalue on the LHS).
-  MOJO_LAZY_LOG_STREAM(ERROR, x = true) << "hello";
+  // in the macro (.* has lower precedence than !, which can't apply to
+  // |helper|).
+  MOJO_LAZY_LOG_STREAM(ERROR, helper.*member_ptr == 1) << "hello";
   EXPECT_TRUE(log_message_was_called());
 
   ResetMockLogger();
 
-  MOJO_LAZY_LOG_STREAM(WARNING, x = false) << "hello";
+  MOJO_LAZY_LOG_STREAM(WARNING, helper.*member_ptr == 0) << "hello";
   EXPECT_FALSE(log_message_was_called());
 }
 
@@ -249,14 +263,14 @@ TEST_F(LoggingTest, Log) {
   MOJO_LOG(INFO) << "hello";
   EXPECT_TRUE(log_message_was_called());
   EXPECT_EQ(MOJO_LOG_LEVEL_INFO, last_log_level());
-  EXPECT_EQ(ExpectedLogMessage(__LINE__-3, "hello"), last_message());
+  EXPECT_EQ(ExpectedLogMessage(__LINE__ - 3, "hello"), last_message());
 
   ResetMockLogger();
 
   MOJO_LOG(ERROR) << "hello";
   EXPECT_TRUE(log_message_was_called());
   EXPECT_EQ(MOJO_LOG_LEVEL_ERROR, last_log_level());
-  EXPECT_EQ(ExpectedLogMessage(__LINE__-3, "hello"), last_message());
+  EXPECT_EQ(ExpectedLogMessage(__LINE__ - 3, "hello"), last_message());
 
   ResetMockLogger();
 
@@ -275,7 +289,7 @@ TEST_F(LoggingTest, Log) {
   MOJO_LOG(ERROR) << "hello";
   EXPECT_TRUE(log_message_was_called());
   EXPECT_EQ(MOJO_LOG_LEVEL_ERROR, last_log_level());
-  EXPECT_EQ(ExpectedLogMessage(__LINE__-3, "hello"), last_message());
+  EXPECT_EQ(ExpectedLogMessage(__LINE__ - 3, "hello"), last_message());
 }
 
 TEST_F(LoggingTest, LogIf) {
@@ -289,22 +303,12 @@ TEST_F(LoggingTest, LogIf) {
   EXPECT_FALSE(log_message_was_called());
 
   ResetMockLogger();
-
-  bool x = false;
-  // Also try to make sure that we parenthesize the condition properly.
-  MOJO_LOG_IF(INFO, x = true) << "hello";
-  EXPECT_TRUE(log_message_was_called());
-  EXPECT_EQ(MOJO_LOG_LEVEL_INFO, last_log_level());
-  EXPECT_EQ(ExpectedLogMessage(__LINE__-3, "hello"), last_message());
-
-  ResetMockLogger();
-
-  MOJO_LOG_IF(INFO, x = false) << "hello";
-  EXPECT_FALSE(log_message_was_called());
-
-  ResetMockLogger();
-
   Environment::GetDefaultLogger()->SetMinimumLogLevel(MOJO_LOG_LEVEL_ERROR);
+
+  bool x = true;
+  // Also try to make sure that we parenthesize the condition properly.
+  MOJO_LOG_IF(INFO, false || x) << "hello";
+  EXPECT_FALSE(log_message_was_called());
 
   ResetMockLogger();
 
@@ -313,19 +317,19 @@ TEST_F(LoggingTest, LogIf) {
 
   ResetMockLogger();
 
-  MOJO_LOG_IF(WARNING, 1+1 == 2) << "hello";
+  MOJO_LOG_IF(WARNING, 1 + 1 == 2) << "hello";
   EXPECT_FALSE(log_message_was_called());
 
   ResetMockLogger();
 
-  MOJO_LOG_IF(ERROR, 1*2 == 2) << "hello";
+  MOJO_LOG_IF(ERROR, 1 * 2 == 2) << "hello";
   EXPECT_TRUE(log_message_was_called());
   EXPECT_EQ(MOJO_LOG_LEVEL_ERROR, last_log_level());
-  EXPECT_EQ(ExpectedLogMessage(__LINE__-3, "hello"), last_message());
+  EXPECT_EQ(ExpectedLogMessage(__LINE__ - 3, "hello"), last_message());
 
   ResetMockLogger();
 
-  MOJO_LOG_IF(FATAL, 1*2 == 3) << "hello";
+  MOJO_LOG_IF(FATAL, 1 * 2 == 3) << "hello";
   EXPECT_FALSE(log_message_was_called());
 
   ResetMockLogger();
@@ -342,21 +346,25 @@ TEST_F(LoggingTest, Check) {
 
   ResetMockLogger();
 
-  bool x = true;
+  PtrToMemberHelper helper;
+  helper.member = 0;
+  int PtrToMemberHelper::*member_ptr = &PtrToMemberHelper::member;
+
   // Also try to make sure that we parenthesize the condition properly.
-  MOJO_CHECK(x = false) << "hello";
+  MOJO_CHECK(helper.*member_ptr == 1) << "hello";
   EXPECT_TRUE(log_message_was_called());
   EXPECT_EQ(MOJO_LOG_LEVEL_FATAL, last_log_level());
   // Different compilers have different ideas about the line number of a split
   // line.
   int line = __LINE__;
-  EXPECT_EQ(ExpectedLogMessage(line-5, "Check failed: x = false. hello"),
+  EXPECT_EQ(ExpectedLogMessage(line - 5,
+                               "Check failed: helper.*member_ptr == 1. hello"),
             last_message());
 
   ResetMockLogger();
 
   // Also test a "naked" |MOJO_CHECK()|s.
-  MOJO_CHECK(1+2 == 3);
+  MOJO_CHECK(1 + 2 == 3);
   EXPECT_FALSE(log_message_was_called());
 }
 
@@ -373,7 +381,7 @@ TEST_F(LoggingTest, Dlog) {
 #else
   EXPECT_TRUE(log_message_was_called());
   EXPECT_EQ(MOJO_LOG_LEVEL_INFO, last_log_level());
-  EXPECT_EQ(ExpectedLogMessage(__LINE__-6, "hello"), last_message());
+  EXPECT_EQ(ExpectedLogMessage(__LINE__ - 6, "hello"), last_message());
 #endif
 }
 
@@ -396,7 +404,7 @@ TEST_F(LoggingTest, DlogIf) {
 #else
   EXPECT_TRUE(log_message_was_called());
   EXPECT_EQ(MOJO_LOG_LEVEL_INFO, last_log_level());
-  EXPECT_EQ(ExpectedLogMessage(__LINE__-6, "hello"), last_message());
+  EXPECT_EQ(ExpectedLogMessage(__LINE__ - 6, "hello"), last_message());
 #endif
 
   ResetMockLogger();
@@ -411,7 +419,7 @@ TEST_F(LoggingTest, DlogIf) {
 #else
   EXPECT_TRUE(log_message_was_called());
   EXPECT_EQ(MOJO_LOG_LEVEL_WARNING, last_log_level());
-  EXPECT_EQ(ExpectedLogMessage(__LINE__-6, "hello"), last_message());
+  EXPECT_EQ(ExpectedLogMessage(__LINE__ - 6, "hello"), last_message());
 #endif
 }
 
@@ -429,19 +437,30 @@ TEST_F(LoggingTest, Dcheck) {
   // |MOJO_DCHECK()| should compile (but not evaluate) its condition even for
   // non-debug builds. (Hopefully, we'll get an unused variable error if it
   // fails to compile the condition.)
-  bool x = true;
-  MOJO_DCHECK(x = false) << "hello";
+  bool was_called = false;
+  MOJO_DCHECK(DcheckTestHelper(&was_called)) << "hello";
 #ifdef NDEBUG
+  EXPECT_FALSE(was_called);
   EXPECT_FALSE(log_message_was_called());
 #else
+  EXPECT_TRUE(was_called);
   EXPECT_TRUE(log_message_was_called());
   EXPECT_EQ(MOJO_LOG_LEVEL_FATAL, last_log_level());
   // Different compilers have different ideas about the line number of a split
   // line.
   int line = __LINE__;
-  EXPECT_EQ(ExpectedLogMessage(line-8, "Check failed: x = false. hello"),
-            last_message());
+  EXPECT_EQ(
+      ExpectedLogMessage(line - 10,
+                         "Check failed: DcheckTestHelper(&was_called). hello"),
+      last_message());
 #endif
+
+  ResetMockLogger();
+
+  // Also try to make sure that we parenthesize the condition properly.
+  bool x = true;
+  MOJO_DCHECK(false || x) << "hello";
+  EXPECT_FALSE(log_message_was_called());
 }
 
 }  // namespace

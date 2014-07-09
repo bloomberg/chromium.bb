@@ -354,7 +354,7 @@ void Node::Embed(const String& url) {
 
 Node::Node()
     : manager_(NULL),
-      id_(-1),
+      id_(static_cast<Id>(-1)),
       parent_(NULL),
       active_view_(NULL) {}
 
