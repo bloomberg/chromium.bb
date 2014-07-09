@@ -60,11 +60,8 @@
           '<(PRODUCT_DIR)/<(version_full).manifest',
           '<(PRODUCT_DIR)/chrome.dll',
           '<(PRODUCT_DIR)/chrome_elf.dll',
-          '<(PRODUCT_DIR)/d3dcompiler_46.dll',
           '<(PRODUCT_DIR)/ffmpegsumo.dll',
-          '<(PRODUCT_DIR)/libEGL.dll',
           '<(PRODUCT_DIR)/libexif.dll',
-          '<(PRODUCT_DIR)/libGLESv2.dll',
           '<(PRODUCT_DIR)/nacl64<(EXECUTABLE_SUFFIX)',
           '<(PRODUCT_DIR)/osmesa.dll',
           '<(PRODUCT_DIR)/ppGoogleNaClPluginChrome.dll',
@@ -80,6 +77,6 @@
     }],
   ],
   'includes': [
-    '../base/base.isolate',
+    'angle.isolate',
   ],
 }
