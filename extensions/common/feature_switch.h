@@ -21,7 +21,6 @@ class FeatureSwitch {
  public:
   static FeatureSwitch* easy_off_store_install();
   static FeatureSwitch* force_dev_mode_highlighting();
-  static FeatureSwitch* global_commands();
   static FeatureSwitch* prompt_for_external_extensions();
   static FeatureSwitch* error_console();
   static FeatureSwitch* enable_override_bookmarks_ui();

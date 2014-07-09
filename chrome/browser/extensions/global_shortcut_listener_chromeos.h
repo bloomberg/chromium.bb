@@ -7,15 +7,15 @@
 
 #include "chrome/browser/extensions/global_shortcut_listener.h"
 
-// TODO(finnur): Figure out what to do on ChromeOS, where the Commands API kind
-// of is global already...
+#include "ui/base/accelerators/accelerator.h"
 
 namespace extensions {
 
 // ChromeOS-specific implementation of the GlobalShortcutListener class that
 // listens for global shortcuts. Handles basic keyboard intercepting and
 // forwards its output to the base class for processing.
-class GlobalShortcutListenerChromeOS : public GlobalShortcutListener {
+class GlobalShortcutListenerChromeOS : public GlobalShortcutListener,
+                                       ui::AcceleratorTarget {
  public:
   GlobalShortcutListenerChromeOS();
   virtual ~GlobalShortcutListenerChromeOS();
@@ -28,6 +28,10 @@ class GlobalShortcutListenerChromeOS : public GlobalShortcutListener {
       const ui::Accelerator& accelerator) OVERRIDE;
   virtual void UnregisterAcceleratorImpl(
       const ui::Accelerator& accelerator) OVERRIDE;
+
+  // ui::AcceleratorTarget implementation.
+  virtual bool AcceleratorPressed(const ui::Accelerator& accelerator) OVERRIDE;
+  virtual bool CanHandleAccelerators() const OVERRIDE;
 
   // Whether this object is listening for global shortcuts.
   bool is_listening_;

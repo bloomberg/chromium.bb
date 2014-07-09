@@ -4,6 +4,8 @@
 
 #include "chrome/browser/extensions/global_shortcut_listener_chromeos.h"
 
+#include "ash/accelerators/accelerator_controller.h"
+#include "ash/shell.h"
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;
@@ -21,9 +23,6 @@ GlobalShortcutListener* GlobalShortcutListener::GetInstance() {
 GlobalShortcutListenerChromeOS::GlobalShortcutListenerChromeOS()
     : is_listening_(false) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  // TODO(implementor): Remove this.
-  LOG(ERROR) << "GlobalShortcutListenerChromeOS object created";
 }
 
 GlobalShortcutListenerChromeOS::~GlobalShortcutListenerChromeOS() {
@@ -33,32 +32,52 @@ GlobalShortcutListenerChromeOS::~GlobalShortcutListenerChromeOS() {
 
 void GlobalShortcutListenerChromeOS::StartListening() {
   DCHECK(!is_listening_);  // Don't start twice.
-  NOTIMPLEMENTED();
   is_listening_ = true;
 }
 
 void GlobalShortcutListenerChromeOS::StopListening() {
   DCHECK(is_listening_);  // No point if we are not already listening.
-  NOTIMPLEMENTED();
   is_listening_ = false;
 }
 
 bool GlobalShortcutListenerChromeOS::RegisterAcceleratorImpl(
     const ui::Accelerator& accelerator) {
-  NOTIMPLEMENTED();
-  // To implement:
-  // 1) Convert modifiers to platform specific modifiers.
-  // 2) Register for the hotkey.
-  // 3) If not successful, return false.
-  // 4) Else, return true.
+  ash::AcceleratorController* controller =
+      ash::Shell::GetInstance()->accelerator_controller();
+  if (controller->IsRegistered(accelerator))
+    return false;
 
-  return false;
+  // TODO(dtseng): Support search key mapping.
+  controller->Register(accelerator, this);
+  return controller->IsRegistered(accelerator);
 }
 
 void GlobalShortcutListenerChromeOS::UnregisterAcceleratorImpl(
     const ui::Accelerator& accelerator) {
-  NOTIMPLEMENTED();
-  // To implement: Unregister for the hotkey.
+  // This code path gets called during object destruction.
+  if (!ash::Shell::HasInstance())
+    return;
+  ash::Shell::GetInstance()->accelerator_controller()->Unregister(accelerator,
+                                                                  this);
+}
+
+bool GlobalShortcutListenerChromeOS::AcceleratorPressed(
+    const ui::Accelerator& accelerator) {
+  DCHECK(is_listening_);
+  ash::AcceleratorController* controller =
+      ash::Shell::GetInstance()->accelerator_controller();
+  ash::AcceleratorController::AcceleratorProcessingRestriction restriction =
+      controller->GetCurrentAcceleratorRestriction();
+  if (restriction == ash::AcceleratorController::RESTRICTION_NONE) {
+    NotifyKeyPressed(accelerator);
+    return true;
+  }
+  return restriction == ash::AcceleratorController::
+                            RESTRICTION_PREVENT_PROCESSING_AND_PROPAGATION;
+}
+
+bool GlobalShortcutListenerChromeOS::CanHandleAccelerators() const {
+  return is_listening_;
 }
 
 }  // namespace extensions

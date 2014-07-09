@@ -11,7 +11,6 @@
 #include "base/values.h"
 #include "extensions/common/error_utils.h"
 #include "extensions/common/extension.h"
-#include "extensions/common/feature_switch.h"
 #include "extensions/common/manifest_constants.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -447,8 +446,7 @@ bool Command::Parse(const base::DictionaryValue* command,
 
   // Check if this is a global or a regular shortcut.
   bool global = false;
-  if (FeatureSwitch::global_commands()->IsEnabled())
-    command->GetBoolean(keys::kGlobal, &global);
+  command->GetBoolean(keys::kGlobal, &global);
 
   // Normalize the suggestions.
   for (SuggestionMap::iterator iter = suggestions.begin();
@@ -539,10 +537,6 @@ base::DictionaryValue* Command::ToValue(const Extension* extension,
   extension_data->SetString("extension_id", extension->id());
   extension_data->SetBoolean("global", global());
   extension_data->SetBoolean("extension_action", extension_action);
-
-  if (FeatureSwitch::global_commands()->IsEnabled())
-    extension_data->SetBoolean("scope_ui_visible", true);
-
   return extension_data;
 }
 

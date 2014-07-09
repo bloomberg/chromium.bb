@@ -23,13 +23,6 @@ class CommonSwitches {
         force_dev_mode_highlighting(
             switches::kForceDevModeHighlighting,
             FeatureSwitch::DEFAULT_DISABLED),
-        global_commands(
-            switches::kGlobalCommands,
-#if defined(OS_CHROMEOS)
-            FeatureSwitch::DEFAULT_DISABLED),
-#else
-            FeatureSwitch::DEFAULT_ENABLED),
-#endif
         prompt_for_external_extensions(
             NULL,
 #if defined(OS_WIN)
@@ -57,7 +50,6 @@ class CommonSwitches {
   FeatureSwitch easy_off_store_install;
 
   FeatureSwitch force_dev_mode_highlighting;
-  FeatureSwitch global_commands;
 
   // Should we prompt the user before allowing external extensions to install?
   // Default is yes.
@@ -80,9 +72,6 @@ FeatureSwitch* FeatureSwitch::force_dev_mode_highlighting() {
 }
 FeatureSwitch* FeatureSwitch::easy_off_store_install() {
   return &g_common_switches.Get().easy_off_store_install;
-}
-FeatureSwitch* FeatureSwitch::global_commands() {
-  return &g_common_switches.Get().global_commands;
 }
 FeatureSwitch* FeatureSwitch::prompt_for_external_extensions() {
   return &g_common_switches.Get().prompt_for_external_extensions;

@@ -38,6 +38,21 @@ class ASH_EXPORT AcceleratorController : public ui::AcceleratorTarget {
   AcceleratorController();
   virtual ~AcceleratorController();
 
+  // A list of possible ways in which an accelerator should be restricted before
+  // processing. Any target registered with this controller should respect
+  // restrictions by calling |GetCurrentAcceleratorRestriction| during
+  // processing.
+  enum AcceleratorProcessingRestriction {
+    // Process the accelerator normally.
+    RESTRICTION_NONE,
+
+    // Don't process the accelerator.
+    RESTRICTION_PREVENT_PROCESSING,
+
+    // Don't process the accelerator and prevent propagation to other targets.
+    RESTRICTION_PREVENT_PROCESSING_AND_PROPAGATION
+  };
+
   // Registers a global keyboard accelerator for the specified target. If
   // multiple targets are registered for an accelerator, a target registered
   // later has higher priority.
@@ -70,6 +85,9 @@ class ASH_EXPORT AcceleratorController : public ui::AcceleratorTarget {
   // successfully.
   bool PerformAction(int action,
                      const ui::Accelerator& accelerator);
+
+  // Returns the restriction for the current context.
+  AcceleratorProcessingRestriction GetCurrentAcceleratorRestriction();
 
   // Overridden from ui::AcceleratorTarget:
   virtual bool AcceleratorPressed(const ui::Accelerator& accelerator) OVERRIDE;
@@ -108,6 +126,11 @@ class ASH_EXPORT AcceleratorController : public ui::AcceleratorTarget {
   // Registers the specified accelerators.
   void RegisterAccelerators(const AcceleratorData accelerators[],
                             size_t accelerators_length);
+
+  // Get the accelerator restriction for the given action. Supply an |action|
+  // of -1 to get restrictions that apply for the current context.
+  AcceleratorProcessingRestriction GetAcceleratorProcessingRestriction(
+      int action);
 
   void SetKeyboardBrightnessControlDelegate(
       scoped_ptr<KeyboardBrightnessControlDelegate>

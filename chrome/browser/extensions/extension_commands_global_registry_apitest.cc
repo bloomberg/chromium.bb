@@ -111,27 +111,17 @@ void SendNativeCommandShift(int key_code) {
 }
 #endif
 
-#if defined(OS_CHROMEOS)
-// Fully implemented everywhere except Chrome OS.
-#define MAYBE_GlobalCommand DISABLED_GlobalCommand
-#else
-#define MAYBE_GlobalCommand GlobalCommand
-#endif
-
 // Test the basics of global commands and make sure they work when Chrome
 // doesn't have focus. Also test that non-global commands are not treated as
 // global and that keys beyond Ctrl+Shift+[0..9] cannot be auto-assigned by an
 // extension.
-IN_PROC_BROWSER_TEST_F(GlobalCommandsApiTest, MAYBE_GlobalCommand) {
-  FeatureSwitch::ScopedOverride enable_global_commands(
-      FeatureSwitch::global_commands(), true);
-
+IN_PROC_BROWSER_TEST_F(GlobalCommandsApiTest, GlobalCommand) {
   // Load the extension in the non-incognito browser.
   ResultCatcher catcher;
   ASSERT_TRUE(RunExtensionTest("keybinding/global")) << message_;
   ASSERT_TRUE(catcher.GetNextResult());
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_CHROMEOS)
   // Our infrastructure for sending keys expects a browser to send them to, but
   // to properly test global shortcuts you need to send them to another target.
   // So, create an incognito browser to use as a target to send the shortcuts
@@ -149,9 +139,9 @@ IN_PROC_BROWSER_TEST_F(GlobalCommandsApiTest, MAYBE_GlobalCommand) {
   ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
       incognito_browser, ui::VKEY_A, true, true, false, false));
 
-  // Activate the shortcut (Ctrl+Shift+9). This should have an effect.
+  // Activate the shortcut (Ctrl+Shift+8). This should have an effect.
   ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
-      incognito_browser, ui::VKEY_9, true, true, false, false));
+      incognito_browser, ui::VKEY_8, true, true, false, false));
 #elif defined(OS_LINUX) && defined(USE_X11)
   // Create an incognito browser to capture the focus.
   CreateIncognitoBrowser();
@@ -163,7 +153,7 @@ IN_PROC_BROWSER_TEST_F(GlobalCommandsApiTest, MAYBE_GlobalCommand) {
   // is happening on X root window. So we simulate the keyboard input here.
   SendNativeKeyEventToXDisplay(ui::VKEY_1, true, true, false);
   SendNativeKeyEventToXDisplay(ui::VKEY_A, true, true, false);
-  SendNativeKeyEventToXDisplay(ui::VKEY_9, true, true, false);
+  SendNativeKeyEventToXDisplay(ui::VKEY_8, true, true, false);
 #elif defined(OS_MACOSX)
   // Create an incognito browser to capture the focus.
   CreateIncognitoBrowser();
@@ -171,7 +161,7 @@ IN_PROC_BROWSER_TEST_F(GlobalCommandsApiTest, MAYBE_GlobalCommand) {
   // Send some native mac key events.
   SendNativeCommandShift(kVK_ANSI_1);
   SendNativeCommandShift(kVK_ANSI_A);
-  SendNativeCommandShift(kVK_ANSI_9);
+  SendNativeCommandShift(kVK_ANSI_8);
 #endif
 
   // If this fails, it might be because the global shortcut failed to work,
@@ -181,7 +171,7 @@ IN_PROC_BROWSER_TEST_F(GlobalCommandsApiTest, MAYBE_GlobalCommand) {
 }
 
 #if defined(OS_WIN)
-// The feature is only fully implemented on Windows, other platforms coming.
+// Feature only fully implemented on Windows, other platforms coming.
 // TODO(smus): On mac, SendKeyPress must first support media keys.
 #define MAYBE_GlobalDuplicatedMediaKey GlobalDuplicatedMediaKey
 #else
@@ -189,9 +179,6 @@ IN_PROC_BROWSER_TEST_F(GlobalCommandsApiTest, MAYBE_GlobalCommand) {
 #endif
 
 IN_PROC_BROWSER_TEST_F(GlobalCommandsApiTest, MAYBE_GlobalDuplicatedMediaKey) {
-  FeatureSwitch::ScopedOverride enable_global_commands(
-      FeatureSwitch::global_commands(), true);
-
   ResultCatcher catcher;
   ASSERT_TRUE(RunExtensionTest("keybinding/global_media_keys_0")) << message_;
   ASSERT_TRUE(catcher.GetNextResult());
@@ -209,7 +196,7 @@ IN_PROC_BROWSER_TEST_F(GlobalCommandsApiTest, MAYBE_GlobalDuplicatedMediaKey) {
                             false,
                             false);
 
-  // We should get two success result.
+  // We should get two success results.
   ASSERT_TRUE(catcher.GetNextResult());
   ASSERT_TRUE(catcher.GetNextResult());
 }

@@ -361,8 +361,7 @@ Command CommandService::FindCommandByName(const std::string& extension_id,
     if (!IsForCurrentPlatform(shortcut))
       continue;
     bool global = false;
-    if (FeatureSwitch::global_commands()->IsEnabled())
-      item->GetBoolean(kGlobal, &global);
+    item->GetBoolean(kGlobal, &global);
 
     std::vector<std::string> tokens;
     base::SplitString(shortcut, ':', &tokens);

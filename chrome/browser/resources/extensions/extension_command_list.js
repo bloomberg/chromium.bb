@@ -264,30 +264,27 @@ cr.define('options', function() {
       commandClear.title = loadTimeData.getString('extensionCommandsDelete');
       commandClear.addEventListener('click', this.handleClear_.bind(this));
 
-      if (command.scope_ui_visible) {
-        var select = node.querySelector('.command-scope');
-        select.id = this.createElementId_(
-            'setCommandScope', command.extension_id, command.command_name);
-        select.hidden = false;
-        // Add the 'In Chrome' option.
-        var option = document.createElement('option');
-        option.textContent = loadTimeData.getString('extensionCommandsRegular');
+      var select = node.querySelector('.command-scope');
+      select.id = this.createElementId_(
+          'setCommandScope', command.extension_id, command.command_name);
+      select.hidden = false;
+      // Add the 'In Chrome' option.
+      var option = document.createElement('option');
+      option.textContent = loadTimeData.getString('extensionCommandsRegular');
+      select.appendChild(option);
+      if (command.extension_action) {
+        // Extension actions cannot be global, so we might as well disable the
+        // combo box, to signify that.
+        select.disabled = true;
+      } else {
+        // Add the 'Global' option.
+        option = document.createElement('option');
+        option.textContent = loadTimeData.getString('extensionCommandsGlobal');
         select.appendChild(option);
-        if (command.extension_action) {
-          // Extension actions cannot be global, so we might as well disable the
-          // combo box, to signify that.
-          select.disabled = true;
-        } else {
-          // Add the 'Global' option.
-          option = document.createElement('option');
-          option.textContent =
-              loadTimeData.getString('extensionCommandsGlobal');
-          select.appendChild(option);
-          select.selectedIndex = command.global ? 1 : 0;
+        select.selectedIndex = command.global ? 1 : 0;
 
-          select.addEventListener(
-              'change', this.handleSetCommandScope_.bind(this));
-        }
+        select.addEventListener(
+            'change', this.handleSetCommandScope_.bind(this));
       }
 
       this.appendChild(node);

@@ -58,9 +58,6 @@ const char kExtensionsOnChromeURLs[] = "extensions-on-chrome-urls";
 // Whether to force developer mode extensions highlighting.
 const char kForceDevModeHighlighting[] = "force-dev-mode-highlighting";
 
-// Enables setting global commands through the Extensions Commands API.
-const char kGlobalCommands[] = "global-commands";
-
 // Notify the user and require consent for extensions running scripts.
 // Appending --scripts-require-action=1 has the same effect as
 // --enable-scripts-require-action (see below).

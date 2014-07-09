@@ -20,9 +20,9 @@
           "Test fails if called (Ctrl+Shift+A not auto-assignable globally)",
       "global": true
     },
-    "Ctrl-Shift-9-Valid-Global-Shortcut": {
+    "Ctrl-Shift-8-Valid-Global-Shortcut": {
       "suggested_key": {
-        "default": "Ctrl+Shift+9"
+        "default": "Ctrl+Shift+8"
       },
       "description": "Test passes if called (global shortcut)",
       "global": true
