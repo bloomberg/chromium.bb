@@ -344,7 +344,9 @@ void ServiceWorkerRegisterJob::ActivateAndContinue() {
 
   // "5. Set serviceWorkerRegistration.activeWorker to activatingWorker."
   // "6. Set serviceWorkerRegistration.waitingWorker to null."
+  DisassociateVersionFromDocuments(context_, new_version());
   registration()->SetActiveVersion(new_version());
+  AssociateActiveVersionToDocuments(context_, new_version());
 
   // "7. Run the [[UpdateState]] algorithm passing registration.activeWorker and
   // "activating" as arguments."
@@ -478,6 +480,26 @@ void ServiceWorkerRegisterJob::AssociateWaitingVersionToDocuments(
       if (!host->CanAssociateVersion(version))
         continue;
       host->SetWaitingVersion(version);
+    }
+  }
+}
+
+// static
+void ServiceWorkerRegisterJob::AssociateActiveVersionToDocuments(
+    base::WeakPtr<ServiceWorkerContextCore> context,
+    ServiceWorkerVersion* version) {
+  DCHECK(context);
+  DCHECK(version);
+
+  for (scoped_ptr<ServiceWorkerContextCore::ProviderHostIterator> it =
+           context->GetProviderHostIterator();
+       !it->IsAtEnd(); it->Advance()) {
+    ServiceWorkerProviderHost* host = it->GetProviderHost();
+    if (ServiceWorkerUtils::ScopeMatches(version->scope(),
+                                         host->document_url())) {
+      if (!host->CanAssociateVersion(version))
+        continue;
+      host->SetActiveVersion(version);
     }
   }
 }

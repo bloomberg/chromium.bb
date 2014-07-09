@@ -126,7 +126,13 @@ class ServiceWorkerRegisterJob
 
   // Associates a waiting version to documents matched with a scope of the
   // version.
-  CONTENT_EXPORT static void AssociateWaitingVersionToDocuments(
+  static void AssociateWaitingVersionToDocuments(
+      base::WeakPtr<ServiceWorkerContextCore> context,
+      ServiceWorkerVersion* version);
+
+  // Associates an active version to documents matched with a scope of the
+  // version.
+  static void AssociateActiveVersionToDocuments(
       base::WeakPtr<ServiceWorkerContextCore> context,
       ServiceWorkerVersion* version);
 

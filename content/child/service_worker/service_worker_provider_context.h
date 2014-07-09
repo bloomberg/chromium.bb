@@ -44,6 +44,8 @@ class ServiceWorkerProviderContext
                                     const ServiceWorkerObjectInfo& info);
   void OnSetWaitingServiceWorker(int provider_id,
                                  const ServiceWorkerObjectInfo& info);
+  void OnSetActiveServiceWorker(int provider_id,
+                                const ServiceWorkerObjectInfo& info);
   void OnSetControllerServiceWorker(int provider_id,
                                     const ServiceWorkerObjectInfo& info);
 
@@ -51,6 +53,7 @@ class ServiceWorkerProviderContext
 
   ServiceWorkerHandleReference* installing();
   ServiceWorkerHandleReference* waiting();
+  ServiceWorkerHandleReference* active();
   ServiceWorkerHandleReference* controller();
 
   // Gets the handle ID of the installing Service Worker, or
@@ -63,7 +66,12 @@ class ServiceWorkerProviderContext
   // waiting Service Worker.
   int waiting_handle_id() const;
 
-  // Gets the handle ID of the controller, or
+  // Gets the handle ID of the active Service Worker, or
+  // kInvalidServiceWorkerHandleId if the provider does not have an active
+  // Service Worker.
+  int active_handle_id() const;
+
+  // Gets the handle ID of the controller Service Worker, or
   // kInvalidServiceWorkerHandleId if the provider is not controlled
   // by a Service Worker.
   int controller_handle_id() const;
@@ -77,6 +85,7 @@ class ServiceWorkerProviderContext
   scoped_refptr<ThreadSafeSender> thread_safe_sender_;
   scoped_ptr<ServiceWorkerHandleReference> installing_;
   scoped_ptr<ServiceWorkerHandleReference> waiting_;
+  scoped_ptr<ServiceWorkerHandleReference> active_;
   scoped_ptr<ServiceWorkerHandleReference> controller_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerProviderContext);

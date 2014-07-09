@@ -46,6 +46,11 @@ ServiceWorkerHandleReference* ServiceWorkerProviderContext::waiting() {
   return waiting_.get();
 }
 
+ServiceWorkerHandleReference* ServiceWorkerProviderContext::active() {
+  DCHECK(main_thread_loop_proxy_->RunsTasksOnCurrentThread());
+  return active_.get();
+}
+
 ServiceWorkerHandleReference* ServiceWorkerProviderContext::controller() {
   DCHECK(main_thread_loop_proxy_->RunsTasksOnCurrentThread());
   return controller_.get();
@@ -55,13 +60,14 @@ void ServiceWorkerProviderContext::OnServiceWorkerStateChanged(
     int handle_id,
     blink::WebServiceWorkerState state) {
   ServiceWorkerHandleReference* which = NULL;
-  if (handle_id == controller_handle_id()) {
+  if (handle_id == controller_handle_id())
     which = controller_.get();
-  } else if (handle_id == waiting_handle_id()) {
+  else if (handle_id == active_handle_id())
+    which = active_.get();
+  else if (handle_id == waiting_handle_id())
     which = waiting_.get();
-  } else if (handle_id == installing_handle_id()) {
+  else if (handle_id == installing_handle_id())
     which = installing_.get();
-  }
 
   // We should only get messages for ServiceWorkers associated with
   // this provider.
@@ -87,6 +93,13 @@ void ServiceWorkerProviderContext::OnSetWaitingServiceWorker(
   waiting_ = ServiceWorkerHandleReference::Adopt(info, thread_safe_sender_);
 }
 
+void ServiceWorkerProviderContext::OnSetActiveServiceWorker(
+    int provider_id,
+    const ServiceWorkerObjectInfo& info) {
+  DCHECK_EQ(provider_id_, provider_id);
+  active_ = ServiceWorkerHandleReference::Adopt(info, thread_safe_sender_);
+}
+
 void ServiceWorkerProviderContext::OnSetControllerServiceWorker(
     int provider_id,
     const ServiceWorkerObjectInfo& info) {
@@ -110,6 +123,12 @@ int ServiceWorkerProviderContext::waiting_handle_id() const {
   DCHECK(main_thread_loop_proxy_->RunsTasksOnCurrentThread());
   return waiting_ ? waiting_->info().handle_id
                   : kInvalidServiceWorkerHandleId;
+}
+
+int ServiceWorkerProviderContext::active_handle_id() const {
+  DCHECK(main_thread_loop_proxy_->RunsTasksOnCurrentThread());
+  return active_ ? active_->info().handle_id
+                 : kInvalidServiceWorkerHandleId;
 }
 
 int ServiceWorkerProviderContext::controller_handle_id() const {

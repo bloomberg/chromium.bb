@@ -78,6 +78,7 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
 
   // Associates |version| to the corresponding field or if |version| is NULL
   // clears the field.
+  void SetControllerVersion(ServiceWorkerVersion* version);
   void SetActiveVersion(ServiceWorkerVersion* version);
   void SetWaitingVersion(ServiceWorkerVersion* version);
   void SetInstallingVersion(ServiceWorkerVersion* version);
@@ -117,7 +118,6 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   const int provider_id_;
   GURL document_url_;
 
-  // TODO(michaeln): controlling_version_ is not used yet.
   scoped_refptr<ServiceWorkerVersion> controlling_version_;
   scoped_refptr<ServiceWorkerVersion> active_version_;
   scoped_refptr<ServiceWorkerVersion> waiting_version_;

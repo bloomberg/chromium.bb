@@ -30,8 +30,10 @@ ServiceWorkerProviderHost::ServiceWorkerProviderHost(
 }
 
 ServiceWorkerProviderHost::~ServiceWorkerProviderHost() {
+  if (controlling_version_)
+    controlling_version_->RemoveControllee(this);
   if (active_version_)
-    active_version_->RemoveControllee(this);
+    active_version_->RemovePotentialControllee(this);
   if (waiting_version_)
     waiting_version_->RemovePotentialControllee(this);
   if (installing_version_)
@@ -43,13 +45,13 @@ void ServiceWorkerProviderHost::SetDocumentUrl(const GURL& url) {
   document_url_ = url;
 }
 
-void ServiceWorkerProviderHost::SetActiveVersion(
+void ServiceWorkerProviderHost::SetControllerVersion(
     ServiceWorkerVersion* version) {
   DCHECK(CanAssociateVersion(version));
-  if (version == active_version_)
+  if (version == controlling_version_)
     return;
-  scoped_refptr<ServiceWorkerVersion> previous_version = active_version_;
-  active_version_ = version;
+  scoped_refptr<ServiceWorkerVersion> previous_version = controlling_version_;
+  controlling_version_ = version;
   if (version)
     version->AddControllee(this);
   if (previous_version)
@@ -59,6 +61,25 @@ void ServiceWorkerProviderHost::SetActiveVersion(
     return;  // Could be NULL in some tests.
 
   dispatcher_host_->Send(new ServiceWorkerMsg_SetControllerServiceWorker(
+      kDocumentMainThreadId, provider_id(), CreateHandleAndPass(version)));
+}
+
+void ServiceWorkerProviderHost::SetActiveVersion(
+    ServiceWorkerVersion* version) {
+  DCHECK(CanAssociateVersion(version));
+  if (version == active_version_)
+    return;
+  scoped_refptr<ServiceWorkerVersion> previous_version = active_version_;
+  active_version_ = version;
+  if (version)
+    version->AddPotentialControllee(this);
+  if (previous_version)
+    previous_version->RemovePotentialControllee(this);
+
+  if (!dispatcher_host_)
+    return;  // Could be NULL in some tests.
+
+  dispatcher_host_->Send(new ServiceWorkerMsg_SetActiveServiceWorker(
       kDocumentMainThreadId, provider_id(), CreateHandleAndPass(version)));
 }
 
@@ -109,6 +130,8 @@ void ServiceWorkerProviderHost::UnsetVersion(ServiceWorkerVersion* version) {
     SetWaitingVersion(NULL);
   else if (active_version_ == version)
     SetActiveVersion(NULL);
+  else if (controlling_version_ == version)
+    SetControllerVersion(NULL);
 }
 
 bool ServiceWorkerProviderHost::SetHostedVersionId(int64 version_id) {
@@ -161,6 +184,8 @@ bool ServiceWorkerProviderHost::CanAssociateVersion(
     return true;
 
   ServiceWorkerVersion* already_associated_version = NULL;
+  if (controlling_version_)
+    already_associated_version = controlling_version_;
   if (active_version_)
     already_associated_version = active_version_;
   else if (waiting_version_)

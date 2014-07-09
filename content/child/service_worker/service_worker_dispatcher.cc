@@ -62,6 +62,8 @@ void ServiceWorkerDispatcher::OnMessageReceived(const IPC::Message& msg) {
                         OnSetInstallingServiceWorker)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_SetWaitingServiceWorker,
                         OnSetWaitingServiceWorker)
+    IPC_MESSAGE_HANDLER(ServiceWorkerMsg_SetActiveServiceWorker,
+                        OnSetActiveServiceWorker)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_SetControllerServiceWorker,
                         OnSetControllerServiceWorker)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_MessageToDocument,
@@ -132,6 +134,7 @@ void ServiceWorkerDispatcher::RemoveProviderContext(
   provider_contexts_.erase(provider_context->provider_id());
   worker_to_provider_.erase(provider_context->installing_handle_id());
   worker_to_provider_.erase(provider_context->waiting_handle_id());
+  worker_to_provider_.erase(provider_context->active_handle_id());
   worker_to_provider_.erase(provider_context->controller_handle_id());
 }
 
@@ -310,6 +313,33 @@ void ServiceWorkerDispatcher::OnSetWaitingServiceWorker(
   if (found != script_clients_.end()) {
     // Populate the .waiting field with the new worker object.
     found->second->setWaiting(GetServiceWorker(info, false));
+  }
+}
+
+void ServiceWorkerDispatcher::OnSetActiveServiceWorker(
+    int thread_id,
+    int provider_id,
+    const ServiceWorkerObjectInfo& info) {
+  ProviderContextMap::iterator provider = provider_contexts_.find(provider_id);
+  if (provider != provider_contexts_.end()) {
+    int existing_active_id = provider->second->active_handle_id();
+    if (existing_active_id != info.handle_id &&
+        existing_active_id != kInvalidServiceWorkerHandleId) {
+      WorkerToProviderMap::iterator associated_provider =
+          worker_to_provider_.find(existing_active_id);
+      DCHECK(associated_provider != worker_to_provider_.end());
+      DCHECK(associated_provider->second->provider_id() == provider_id);
+      worker_to_provider_.erase(associated_provider);
+    }
+    provider->second->OnSetActiveServiceWorker(provider_id, info);
+    if (info.handle_id != kInvalidServiceWorkerHandleId)
+      worker_to_provider_[info.handle_id] = provider->second;
+  }
+
+  ScriptClientMap::iterator found = script_clients_.find(provider_id);
+  if (found != script_clients_.end()) {
+    // Populate the .active field with the new worker object.
+    found->second->setActive(GetServiceWorker(info, false));
   }
 }
 

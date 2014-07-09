@@ -94,8 +94,7 @@ void ServiceWorkerControlleeRequestHandler::PrepareForMainResource(
   DCHECK(context_);
   // The corresponding provider_host may already have associate version in
   // redirect case, unassociate it now.
-  provider_host_->SetActiveVersion(NULL);
-  provider_host_->SetWaitingVersion(NULL);
+  provider_host_->UnsetVersion(NULL);
 
   GURL stripped_url = net::SimplifyUrlForRequest(url);
   provider_host_->SetDocumentUrl(stripped_url);
@@ -122,6 +121,7 @@ ServiceWorkerControlleeRequestHandler::DidLookupRegistrationForMainResource(
   // so the versions in the pipeline (.installing, .waiting) show up in the
   // attribute values.
   DCHECK(registration);
+  provider_host_->SetControllerVersion(registration->active_version());
   provider_host_->SetActiveVersion(registration->active_version());
   provider_host_->SetWaitingVersion(registration->waiting_version());
   job_->ForwardToServiceWorker();
