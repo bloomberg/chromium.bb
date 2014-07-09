@@ -29,7 +29,7 @@
 #
 #       Example: defines = [ "FOO", "BAR=1" ]
 #
-#   source_prereqs, deps, visibility  (optional)
+#   inputs, deps, visibility  (optional)
 #       These have the same meaning as in an action.
 #
 # Example
@@ -115,8 +115,8 @@ template("yasm_assemble") {
     script = "//third_party/yasm/run_yasm.py"
     sources = invoker.sources
 
-    if (defined(invoker.source_prereqs)) {
-      source_prereqs = invoker.source_prereqs
+    if (defined(invoker.inputs)) {
+      inputs = invoker.inputs
     }
 
     # Executable (first in the args). The binary might be in the root build dir

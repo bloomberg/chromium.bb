@@ -61,7 +61,7 @@ if (need_d3dcompiler) {
     cabfile = "//third_party/directxsdk/files/Redist/Jun2010_D3DCompiler_43_x86.cab"
     dllfile = "D3DCompiler_43.dll"
 
-    source_prereqs = [ cabfile ]
+    inputs = [ cabfile ]
     outputs = [ "$root_out_dir/$dllfile" ]
 
     args = [

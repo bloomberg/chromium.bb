@@ -19,7 +19,7 @@ source_set("usb") {
 
 action("usb_device_ids") {
   script = "//device/usb/tools/usb_ids.py"
-  source_prereqs = [ source_ids ]
+  inputs = [ source_ids ]
   outputs = [ generated_ids ]
   args = [
     "-i", rebase_path(source_ids,  root_build_dir),

@@ -65,7 +65,7 @@ template("mojom") {
   action_foreach(generator_target_name) {
     visibility = target_visibility
     script = generator_script
-    source_prereqs = generator_sources
+    inputs = generator_sources
     sources = invoker.sources
     outputs = generator_cpp_outputs + generator_js_outputs
     args = [

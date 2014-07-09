@@ -38,7 +38,7 @@ template("generate_jni") {
     script = "//base/android/jni_generator/jni_generator.py"
     depfile = "$target_gen_dir/$target_name.{{source_name_part}}.d"
     sources = invoker.sources
-    source_prereqs = [ jni_generator_include ]
+    inputs = [ jni_generator_include ]
     outputs = [
       depfile,
       "${jni_output_dir}/{{source_name_part}}_jni.h"
@@ -182,7 +182,7 @@ template("generate_jar_jni") {
 #     file in sources, there will be one .java file in the final .srcjar. For a
 #     file named FooBar.template, a java file will be created with name
 #     FooBar.java.
-#   source_prereqs: additional compile-time dependencies. Any files
+#   inputs: additional compile-time dependencies. Any files
 #     `#include`-ed in the templates should be listed here.
 #   package_name: this will be the subdirectory for each .java file in the .srcjar.
 #
@@ -191,7 +191,7 @@ template("generate_jar_jni") {
 #     sources = [
 #       "android/java/templates/Foo.template",
 #     ]
-#     source_prereqs = [
+#     inputs = [
 #       "android/java/templates/native_foo_header.h",
 #     ]
 #
@@ -210,8 +210,8 @@ template("java_cpp_template") {
 
   action_foreach("${target_name}__apply_gcc") {
     script = "//build/android/gyp/gcc_preprocess.py"
-    if (defined(invoker.source_prereqs)) {
-      source_prereqs = invoker.source_prereqs + []
+    if (defined(invoker.inputs)) {
+      inputs = invoker.inputs + []
     }
     depfile = "${target_gen_dir}/${target_name}.d"
 

@@ -75,7 +75,7 @@ template("generated_extensions_api") {
   schema_generator_name = target_name + "_schema_generator"
   action_foreach(schema_generator_name) {
     script = compiler_script
-    source_prereqs = compiler_sources
+    inputs = compiler_sources
     sources = schemas
     outputs = [
       "$target_gen_dir/{{source_name_part}}.cc",
@@ -103,7 +103,7 @@ template("generated_extensions_api") {
     bundle_generator_name = target_name + "_bundle_generator"
     action(bundle_generator_name) {
       script = compiler_script
-      source_prereqs = compiler_sources + schemas + uncompiled_schemas
+      inputs = compiler_sources + schemas + uncompiled_schemas
       outputs = [
         "$target_gen_dir/generated_api.cc",
         "$target_gen_dir/generated_api.h",

@@ -24,7 +24,7 @@
 #       [list of strings] Same meaning as action/action_foreach.
 #
 #   visibility
-#   source_prereqs
+#   inputs
 #   deps
 #   args   (all optional)
 #       Same meaning as action/action_foreach.
@@ -40,7 +40,7 @@
 #     ]
 #
 #     # The tool takes this input.
-#     source_prereqs = [ "my_input_file.idl" ]
+#     inputs = [ "my_input_file.idl" ]
 #
 #     # In this case, the tool takes as arguments the input file and the output
 #     # build dir (both relative to the "cd" that the script will be run in)
@@ -74,8 +74,8 @@ template("compiled_action") {
 
     script = "//build/gn_run_binary.py"
 
-    if (defined(invoker.source_prereqs)) {
-      source_prereqs = invoker.source_prereqs
+    if (defined(invoker.inputs)) {
+      inputs = invoker.inputs
     }
     outputs = invoker.outputs
 
@@ -118,8 +118,8 @@ template("compiled_action_foreach") {
     script = "//build/gn_run_binary.py"
     sources = invoker.sources
 
-    if (defined(invoker.source_prereqs)) {
-      source_prereqs = invoker.source_prereqs
+    if (defined(invoker.inputs)) {
+      inputs = invoker.inputs
     }
     outputs = invoker.outputs
 

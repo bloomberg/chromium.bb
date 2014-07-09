@@ -6,7 +6,7 @@ action("devtools_protocol_constants") {
   script = "//content/public/browser/devtools_protocol_constants_generator.py"
 
   blink_protocol = "//third_party/WebKit/Source/devtools/protocol.json"
-  source_prereqs = [ blink_protocol ]
+  inputs = [ blink_protocol ]
   outputs = [
     "$target_gen_dir/devtools_protocol_constants.cc",
     "$target_gen_dir/devtools_protocol_constants.h",

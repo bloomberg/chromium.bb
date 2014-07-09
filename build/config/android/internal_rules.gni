@@ -72,7 +72,7 @@ template("zip") {
   action(target_name) {
     script = "//build/android/gn/zip.py"
     depfile = "$target_gen_dir/$target_name.d"
-    source_prereqs = invoker.inputs
+    inputs = invoker.inputs
     outputs = [
       depfile,
       invoker.output
@@ -152,7 +152,7 @@ template("java_library") {
       jar_path + ".md5.stamp"
     ]
     sources = java_files + java_srcjars
-    source_prereqs = system_jars + [ build_config ]
+    inputs = system_jars + [ build_config ]
 
     rebase_system_jars = rebase_path(system_jars, root_build_dir)
     rebase_java_srcjars = rebase_path(java_srcjars, root_build_dir)
@@ -184,7 +184,7 @@ template("java_library") {
       jar_toc_path,
       jar_toc_path + ".md5.stamp"
     ]
-    source_prereqs = [ jar_path ]
+    inputs = [ jar_path ]
     args = [
       "--depfile", rebase_path(depfile, root_build_dir),
       "--jar-path=${rebase_jar_path}",

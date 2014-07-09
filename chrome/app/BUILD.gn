@@ -17,10 +17,10 @@ action("make_generated_resources_map") {
 
   script = "//chrome/browser/metrics/variations/generate_resources_map.py"
 
-  source_prereqs = [ "$target_gen_dir/grit/generated_resources.h" ]
+  inputs = [ "$target_gen_dir/grit/generated_resources.h" ]
   outputs = [ "$target_gen_dir/generated_resources_map.cc" ]
 
-  args = rebase_path(source_prereqs, root_build_dir) +
+  args = rebase_path(inputs, root_build_dir) +
       rebase_path(outputs, root_build_dir)
 
   deps = [ ":generated_resources" ]

@@ -61,7 +61,7 @@ if (enable_configuration_policy) {
       chromeos_flag = "0"
     }
 
-    source_prereqs = [
+    inputs = [
       "resources/policy_templates.json",
     ]
     outputs = [

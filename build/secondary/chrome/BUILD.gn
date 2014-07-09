@@ -199,7 +199,7 @@ action("about_credits") {
   # is added or removed, it will change the result, but there is no way to
   # express this as a build dependency. We approximate this by depending on
   # the last change file to force an update whenever the code is updated.
-  source_prereqs = [ "//build/util/LASTCHANGE" ]
+  inputs = [ "//build/util/LASTCHANGE" ]
 
   args = [ "credits", build_relative_about_credits_file ]
 }

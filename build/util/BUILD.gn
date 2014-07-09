@@ -16,7 +16,7 @@ action("last_change") {
   script = "lastchange.py"
 
   # Rerun the script any time this file changes.
-  source_prereqs = [ "//build/util/LASTCHANGE" ]
+  inputs = [ "//build/util/LASTCHANGE" ]
 
   output_header = "$target_gen_dir/last_change.h"
   outputs = [ output_header ]
@@ -37,7 +37,7 @@ action("webkit_version") {
   lastchange_file = "LASTCHANGE.blink"
   # TODO(brettw) move from content to this directory.
   template_file = "//content/webkit_version.h.in"
-  source_prereqs = [ lastchange_file, template_file ]
+  inputs = [ lastchange_file, template_file ]
 
   output_file = "$root_gen_dir/webkit_version.h"
   outputs = [ output_file ]

@@ -1388,10 +1388,10 @@ if (is_android) {
   java_cpp_template("base_java_application_state") {
     sources = [
       "android/java/src/org/chromium/base/ApplicationState.template",
-      ]
-    source_prereqs = [
+    ]
+    inputs = [
       "android/application_state_list.h"
-      ]
+    ]
 
     package_name = "org/chromium/base"
   }
@@ -1399,10 +1399,10 @@ if (is_android) {
   java_cpp_template("base_java_memory_pressure_level_list") {
     sources = [
       "android/java/src/org/chromium/base/MemoryPressureLevelList.template",
-      ]
-    source_prereqs = [
+    ]
+    inputs = [
       "memory/memory_pressure_level_list.h"
-      ]
+    ]
 
     package_name = "org/chromium/base"
   }
@@ -1410,10 +1410,10 @@ if (is_android) {
   java_cpp_template("base_native_libraries_gen") {
     sources = [
       "android/java/templates/NativeLibraries.template",
-      ]
-    source_prereqs = [
+    ]
+    inputs = [
       "android/java/templates/native_libraries_array.h",
-      ]
+    ]
 
     package_name = "org/chromium/base/library_loader"
     include_path = "android/java/templates"

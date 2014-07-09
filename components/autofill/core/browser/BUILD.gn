@@ -20,7 +20,7 @@ action("regexes") {
   visibility = "//components/autofill/*"
   script = "//build/escape_unicode.py"
 
-  source_prereqs = [
+  inputs = [
     "autofill_regex_constants.cc.utf8",
   ]
   outputs = [
@@ -28,7 +28,7 @@ action("regexes") {
   ]
 
   args = [ "-o", rebase_path(target_gen_dir, root_build_dir) ]
-  args += rebase_path(source_prereqs, root_build_dir)
+  args += rebase_path(inputs, root_build_dir)
 }
 
 # GYP version: components/autofill.gyp:autofill_core_browser

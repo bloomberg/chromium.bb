@@ -263,7 +263,7 @@ action("generate_gl_bindings") {
   # should generate a .d file, which we should declare here. That will
   # eliminate the need bot both hardcoding the list here or calling the script
   # during GN-time.
-  source_prereqs = [
+  inputs = [
     "EGL/eglextchromium.h",
     "GL/glextchromium.h",
     "//third_party/mesa/src/include/GL/glext.h",

@@ -107,7 +107,7 @@ if (is_linux) {
       branding_path = "//chrome/app/theme/chromium/BRANDING"
     }
 
-    source_prereqs = [
+    inputs = [
       version_path,
       template_input_path,
       lastchange_path,

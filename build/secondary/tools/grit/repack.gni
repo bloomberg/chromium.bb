@@ -28,7 +28,7 @@ template("repack") {
 
     script = "//tools/grit/grit/format/repack.py"
 
-    source_prereqs = invoker.sources
+    inputs = invoker.sources
     outputs = [ invoker.output ]
 
     args = []
