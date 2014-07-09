@@ -5,18 +5,14 @@
 #ifndef MOJO_SPY_WEBSOCKET_SERVER_H_
 #define MOJO_SPY_WEBSOCKET_SERVER_H_
 
-#include <string>
-
-#include "mojo/spy/public/spy.mojom.h"
 #include "net/server/http_server.h"
 
-namespace mojo {
+namespace spy {
 
-class WebSocketServer : public net::HttpServer::Delegate,
-                        public spy_api::SpyClient {
+class WebSocketServer : public net::HttpServer::Delegate {
  public:
   // Pass 0 in |port| to listen in one available port.
-  explicit WebSocketServer(int port, ScopedMessagePipeHandle server_pipe);
+  explicit WebSocketServer(int port);
   virtual ~WebSocketServer();
   // Begin accepting HTTP requests. Must be called from an IO MessageLoop.
   bool Start();
@@ -36,27 +32,13 @@ class WebSocketServer : public net::HttpServer::Delegate,
       const std::string& data) OVERRIDE;
   virtual void OnClose(int connection_id) OVERRIDE;
 
-  // Overriden form spy_api::SpyClient.
-  virtual void OnFatalError(spy_api::Result result) OVERRIDE;
-  virtual void OnSessionEnd(spy_api::Result result) OVERRIDE;
-  virtual void OnClientConnection(
-      const mojo::String& name,
-      uint32_t id,
-      spy_api::ConnectionOptions options) OVERRIDE;
-  virtual void OnMessage(const spy_api::Message& message) OVERRIDE;
-
-  // Callbacks from calling spy_api::SpyServer.
-  void OnStartSession(spy_api::Result, mojo::String);
-
  private:
   int port_;
   int connection_id_;
-  scoped_refptr<net::HttpServer> web_server_;
-  spy_api::SpyServerPtr spy_server_;
-
+  scoped_refptr<net::HttpServer> server_;
   DISALLOW_COPY_AND_ASSIGN(WebSocketServer);
 };
 
-}  // namespace mojo
+}  // namespace spy
 
 #endif  // MOJO_SPY_WEBSOCKET_SERVER_H_
