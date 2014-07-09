@@ -45,12 +45,10 @@ class WebContentsMainFrameHelper : public content::WebContentsObserver {
     content::WebContentsObserver::Observe(web_contents);
   }
 
-  virtual void DidFinishLoad(
-      int64 frame_id,
-      const GURL& validated_url,
-      bool is_main_frame,
-      content::RenderViewHost* render_view_host) OVERRIDE {
-    if (is_main_frame && validated_url.scheme() == chrome::kDomDistillerScheme)
+  virtual void DidFinishLoad(content::RenderFrameHost* render_frame_host,
+                             const GURL& validated_url) OVERRIDE {
+    if (!render_frame_host->GetParent() &&
+        validated_url.scheme() == chrome::kDomDistillerScheme)
       callback_.Run();
   }
 

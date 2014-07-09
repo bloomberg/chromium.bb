@@ -41,12 +41,10 @@ class WebContentsObserverAndroid : public WebContentsObserver {
       const GURL& validated_url,
       int error_code,
       const base::string16& error_description) OVERRIDE;
-  virtual void DidFailLoad(int64 frame_id,
+  virtual void DidFailLoad(RenderFrameHost* render_frame_host,
                            const GURL& validated_url,
-                           bool is_main_frame,
                            int error_code,
-                           const base::string16& error_description,
-                           RenderViewHost* render_view_host) OVERRIDE;
+                           const base::string16& error_description) OVERRIDE;
   virtual void DidNavigateMainFrame(const LoadCommittedDetails& details,
                                     const FrameNavigateParams& params) OVERRIDE;
   virtual void DidNavigateAnyFrame(const LoadCommittedDetails& details,
@@ -61,12 +59,10 @@ class WebContentsObserverAndroid : public WebContentsObserver {
       RenderFrameHost* render_frame_host,
       const GURL& url,
       PageTransition transition_type) OVERRIDE;
-  virtual void DidFinishLoad(int64 frame_id,
-                             const GURL& validated_url,
-                             bool is_main_frame,
-                             RenderViewHost* render_view_host) OVERRIDE;
-  virtual void DocumentLoadedInFrame(int64 frame_id,
-                                     RenderViewHost* render_view_host) OVERRIDE;
+  virtual void DidFinishLoad(RenderFrameHost* render_frame_host,
+                             const GURL& validated_url) OVERRIDE;
+  virtual void DocumentLoadedInFrame(
+      RenderFrameHost* render_frame_host) OVERRIDE;
   virtual void NavigationEntryCommitted(
       const LoadCommittedDetails& load_details) OVERRIDE;
   virtual void WebContentsDestroyed() OVERRIDE;

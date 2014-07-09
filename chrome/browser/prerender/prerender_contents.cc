@@ -240,7 +240,6 @@ PrerenderContents::PrerenderContents(
       origin_(origin),
       experiment_id_(experiment_id),
       creator_child_id_(-1),
-      main_frame_id_(0),
       cookie_status_(0),
       cookie_send_type_(COOKIE_SEND_TYPE_NONE),
       network_bytes_(0) {
@@ -620,9 +619,8 @@ void PrerenderContents::DidStopLoading(
 }
 
 void PrerenderContents::DocumentLoadedInFrame(
-    int64 frame_id,
-    RenderViewHost* render_view_host) {
-  if (frame_id == main_frame_id_)
+    content::RenderFrameHost* render_frame_host) {
+  if (!render_frame_host->GetParent())
     NotifyPrerenderDomContentLoaded();
 }
 
@@ -645,20 +643,10 @@ void PrerenderContents::DidStartProvisionalLoadForFrame(
   }
 }
 
-void PrerenderContents::DidCommitProvisionalLoadForFrame(
+void PrerenderContents::DidFinishLoad(
     content::RenderFrameHost* render_frame_host,
-    const GURL& url,
-    content::PageTransition transition_type) {
-  if (!render_frame_host->GetParent()) {
-    main_frame_id_ = render_frame_host->GetRoutingID();
-  }
-}
-
-void PrerenderContents::DidFinishLoad(int64 frame_id,
-                                      const GURL& validated_url,
-                                      bool is_main_frame,
-                                      RenderViewHost* render_view_host) {
-  if (is_main_frame)
+    const GURL& validated_url) {
+  if (!render_frame_host->GetParent())
     has_finished_loading_ = true;
 }
 

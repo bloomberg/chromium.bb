@@ -18,11 +18,8 @@ class MetaTagObserver : public content::WebContentsObserver {
   virtual ~MetaTagObserver();
 
   // content::WebContentsObserver overrides:
-  virtual void DidFinishLoad(
-      int64 frame_id,
-      const GURL& validated_url,
-      bool is_main_frame,
-      content::RenderViewHost* render_view_host) OVERRIDE;
+  virtual void DidFinishLoad(content::RenderFrameHost* render_frame_host,
+                             const GURL& validated_url) OVERRIDE;
 
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 

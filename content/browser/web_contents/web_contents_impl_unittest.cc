@@ -272,18 +272,14 @@ class TestWebContentsObserver : public WebContentsObserver {
   }
   virtual ~TestWebContentsObserver() {}
 
-  virtual void DidFinishLoad(int64 frame_id,
-                             const GURL& validated_url,
-                             bool is_main_frame,
-                             RenderViewHost* render_view_host) OVERRIDE {
+  virtual void DidFinishLoad(RenderFrameHost* render_frame_host,
+                             const GURL& validated_url) OVERRIDE {
     last_url_ = validated_url;
   }
-  virtual void DidFailLoad(int64 frame_id,
+  virtual void DidFailLoad(RenderFrameHost* render_frame_host,
                            const GURL& validated_url,
-                           bool is_main_frame,
                            int error_code,
-                           const base::string16& error_description,
-                           RenderViewHost* render_view_host) OVERRIDE {
+                           const base::string16& error_description) OVERRIDE {
     last_url_ = validated_url;
   }
 

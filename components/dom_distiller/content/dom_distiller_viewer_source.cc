@@ -55,11 +55,8 @@ class DomDistillerViewerSource::RequestViewerHandle
       const content::FrameNavigateParams& params) OVERRIDE;
   virtual void RenderProcessGone(base::TerminationStatus status) OVERRIDE;
   virtual void WebContentsDestroyed() OVERRIDE;
-  virtual void DidFinishLoad(
-      int64 frame_id,
-      const GURL& validated_url,
-      bool is_main_frame,
-      content::RenderViewHost* render_view_host) OVERRIDE;
+  virtual void DidFinishLoad(content::RenderFrameHost* render_frame_host,
+                             const GURL& validated_url) OVERRIDE;
 
  private:
   // Sends JavaScript to the attached Viewer, buffering data if the viewer isn't
@@ -74,9 +71,6 @@ class DomDistillerViewerSource::RequestViewerHandle
   // The handle to the view request towards the DomDistillerService. It
   // needs to be kept around to ensure the distillation request finishes.
   scoped_ptr<ViewerHandle> viewer_handle_;
-
-  // WebContents associated with the Viewer's render process.
-  content::WebContents* web_contents_;
 
   // The scheme hosting the current view request;
   std::string expected_scheme_;
@@ -105,18 +99,15 @@ DomDistillerViewerSource::RequestViewerHandle::RequestViewerHandle(
     const std::string& expected_scheme,
     const std::string& expected_request_path,
     const content::URLDataSource::GotDataCallback& callback)
-    : web_contents_(web_contents),
-      expected_scheme_(expected_scheme),
+    : expected_scheme_(expected_scheme),
       expected_request_path_(expected_request_path),
       callback_(callback),
       page_count_(0),
       waiting_for_page_ready_(true) {
-  content::WebContentsObserver::Observe(web_contents_);
+  content::WebContentsObserver::Observe(web_contents);
 }
 
 DomDistillerViewerSource::RequestViewerHandle::~RequestViewerHandle() {
-  // Balanced with constructor although can be a no-op if frame navigated away.
-  content::WebContentsObserver::Observe(NULL);
 }
 
 void DomDistillerViewerSource::RequestViewerHandle::SendJavaScript(
@@ -124,8 +115,8 @@ void DomDistillerViewerSource::RequestViewerHandle::SendJavaScript(
   if (waiting_for_page_ready_) {
     buffer_ += buffer;
   } else {
-    if (web_contents_) {
-      web_contents_->GetMainFrame()->ExecuteJavaScript(
+    if (web_contents()) {
+      web_contents()->GetMainFrame()->ExecuteJavaScript(
           base::UTF8ToUTF16(buffer));
     }
   }
@@ -156,9 +147,6 @@ void DomDistillerViewerSource::RequestViewerHandle::WebContentsDestroyed() {
 }
 
 void DomDistillerViewerSource::RequestViewerHandle::Cancel() {
-  // Ensure we don't send any incremental updates to the Viewer.
-  web_contents_ = NULL;
-
   // No need to listen for notifications.
   content::WebContentsObserver::Observe(NULL);
 
@@ -168,21 +156,16 @@ void DomDistillerViewerSource::RequestViewerHandle::Cancel() {
 }
 
 void DomDistillerViewerSource::RequestViewerHandle::DidFinishLoad(
-     int64 frame_id,
-     const GURL& validated_url,
-     bool is_main_frame,
-     content::RenderViewHost* render_view_host)  {
-  if (!is_main_frame || web_contents_ == NULL) {
+    content::RenderFrameHost* render_frame_host,
+    const GURL& validated_url) {
+  if (render_frame_host->GetParent()) {
     return;
   }
   waiting_for_page_ready_ = false;
   if (buffer_.empty()) {
     return;
   }
-  if (web_contents_) {
-    web_contents_->GetMainFrame()->ExecuteJavaScript(
-        base::UTF8ToUTF16(buffer_));
-  }
+  web_contents()->GetMainFrame()->ExecuteJavaScript(base::UTF8ToUTF16(buffer_));
   buffer_.clear();
 }
 

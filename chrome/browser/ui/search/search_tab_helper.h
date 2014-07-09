@@ -154,11 +154,8 @@ class SearchTabHelper : public content::WebContentsObserver,
       const GURL& validated_url,
       int error_code,
       const base::string16& error_description) OVERRIDE;
-  virtual void DidFinishLoad(
-      int64 frame_id,
-      const GURL& validated_url,
-      bool is_main_frame,
-      content::RenderViewHost* render_view_host) OVERRIDE;
+  virtual void DidFinishLoad(content::RenderFrameHost* render_frame_host,
+                             const GURL& validated_url) OVERRIDE;
   virtual void NavigationEntryCommitted(
       const content::LoadCommittedDetails& load_details) OVERRIDE;
 

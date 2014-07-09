@@ -131,11 +131,9 @@ class WebContentsMainFrameHelper : public content::WebContentsObserver {
   WebContentsMainFrameHelper(content::WebContents* web_contents,
                              const base::Closure& callback,
                              bool wait_for_document_loaded)
-      : web_contents_(web_contents),
+      : WebContentsObserver(web_contents),
         callback_(callback),
-        wait_for_document_loaded_(wait_for_document_loaded) {
-    content::WebContentsObserver::Observe(web_contents);
-  }
+        wait_for_document_loaded_(wait_for_document_loaded) {}
 
   virtual void DidCommitProvisionalLoadForFrame(
       content::RenderFrameHost* render_frame_host,
@@ -148,18 +146,14 @@ class WebContentsMainFrameHelper : public content::WebContentsObserver {
   }
 
   virtual void DocumentLoadedInFrame(
-      int64 frame_id,
-      content::RenderViewHost* render_view_host) OVERRIDE {
+      content::RenderFrameHost* render_frame_host) OVERRIDE {
     if (wait_for_document_loaded_) {
-      if (web_contents_ &&
-          frame_id == web_contents_->GetMainFrame()->GetRoutingID()) {
+      if (!render_frame_host->GetParent())
         callback_.Run();
-      }
     }
   }
 
  private:
-  content::WebContents* web_contents_;
   base::Closure callback_;
   bool wait_for_document_loaded_;
 };

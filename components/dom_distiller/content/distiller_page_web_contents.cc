@@ -108,21 +108,18 @@ void DistillerPageWebContents::CreateNewWebContents(const GURL& url) {
 }
 
 void DistillerPageWebContents::DocumentLoadedInFrame(
-    int64 frame_id,
-    RenderViewHost* render_view_host) {
-  if (frame_id == web_contents_->GetMainFrame()->GetRoutingID()) {
+    content::RenderFrameHost* render_frame_host) {
+  if (render_frame_host == web_contents_->GetMainFrame()) {
     ExecuteJavaScript();
   }
 }
 
 void DistillerPageWebContents::DidFailLoad(
-    int64 frame_id,
+    content::RenderFrameHost* render_frame_host,
     const GURL& validated_url,
-    bool is_main_frame,
     int error_code,
-    const base::string16& error_description,
-    RenderViewHost* render_view_host) {
-  if (is_main_frame) {
+    const base::string16& error_description) {
+  if (!render_frame_host->GetParent()) {
     content::WebContentsObserver::Observe(NULL);
     DCHECK(state_ == LOADING_PAGE || state_ == EXECUTING_JAVASCRIPT);
     state_ = PAGELOAD_FAILED;

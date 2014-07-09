@@ -33,6 +33,7 @@
 #include "components/password_manager/core/common/password_manager_switches.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -80,15 +81,12 @@ class NavigationObserver : public content::WebContentsObserver,
   }
 
   // content::WebContentsObserver:
-  virtual void DidFinishLoad(
-      int64 frame_id,
-      const GURL& validated_url,
-      bool is_main_frame,
-      content::RenderViewHost* render_view_host) OVERRIDE {
+  virtual void DidFinishLoad(content::RenderFrameHost* render_frame_host,
+                             const GURL& validated_url) OVERRIDE {
     if (!wait_for_path_.empty()) {
       if (validated_url.path() == wait_for_path_)
         message_loop_runner_->Quit();
-    } else if (is_main_frame) {
+    } else if (!render_frame_host->GetParent()) {
       message_loop_runner_->Quit();
     }
   }

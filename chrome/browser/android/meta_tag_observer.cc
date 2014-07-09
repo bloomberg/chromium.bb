@@ -6,7 +6,7 @@
 
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/render_messages.h"
-#include "content/public/browser/render_view_host.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 
@@ -21,12 +21,10 @@ MetaTagObserver::MetaTagObserver(const std::string& meta_tag)
 MetaTagObserver::~MetaTagObserver() {
 }
 
-void MetaTagObserver::DidFinishLoad(
-    int64 frame_id,
-    const GURL& validated_url,
-    bool is_main_frame,
-    content::RenderViewHost* render_view_host) {
-  if (!is_main_frame) return;
+void MetaTagObserver::DidFinishLoad(content::RenderFrameHost* render_frame_host,
+                                    const GURL& validated_url) {
+  if (render_frame_host->GetParent())
+    return;
   validated_url_ = validated_url;
   Send(new ChromeViewMsg_RetrieveMetaTagContent(routing_id(),
                                                 validated_url,

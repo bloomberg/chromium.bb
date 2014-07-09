@@ -28,13 +28,11 @@ class WebContentsMainFrameObserver
 
   // content::WebContentsObserver implementation.
   virtual void DocumentLoadedInFrame(
-      int64 frame_id,
-      content::RenderViewHost* render_view_host) OVERRIDE;
+      content::RenderFrameHost* render_frame_host) OVERRIDE;
   virtual void DidNavigateMainFrame(
       const content::LoadCommittedDetails& details,
       const content::FrameNavigateParams& params) OVERRIDE;
   virtual void RenderProcessGone(base::TerminationStatus status) OVERRIDE;
-  virtual void WebContentsDestroyed() OVERRIDE;
 
  private:
   explicit WebContentsMainFrameObserver(content::WebContents* web_contents);
@@ -51,9 +49,6 @@ class WebContentsMainFrameObserver
   // Whether this object has been correctly initialized. This is set as soon as
   // at least one call to DidNavigateMainFrame has happened.
   bool is_initialized_;
-
-  // The WebContents this class is tracking.
-  content::WebContents* web_contents_;
 
   DISALLOW_COPY_AND_ASSIGN(WebContentsMainFrameObserver);
 };

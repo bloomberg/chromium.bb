@@ -346,10 +346,8 @@ void SessionCrashedBubbleView::DidStartNavigationToPendingEntry(
 }
 
 void SessionCrashedBubbleView::DidFinishLoad(
-      int64 frame_id,
-      const GURL& validated_url,
-      bool is_main_frame,
-      content::RenderViewHost* render_view_host) {
+    content::RenderFrameHost* render_frame_host,
+    const GURL& validated_url) {
   if (started_navigation_)
     CloseBubble();
 }

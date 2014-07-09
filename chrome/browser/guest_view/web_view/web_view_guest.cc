@@ -227,7 +227,6 @@ WebViewGuest::WebViewGuest(content::BrowserContext* browser_context,
       pending_context_menu_request_id_(0),
       next_permission_request_id_(0),
       is_overriding_user_agent_(false),
-      main_frame_id_(0),
       chromevox_injected_(false),
       current_zoom_factor_(1.0),
       find_helper_(this),
@@ -1043,10 +1042,8 @@ void WebViewGuest::DidCommitProvisionalLoadForFrame(
   DCHECK(zoom_controller);
   current_zoom_factor_ = zoom_controller->GetZoomLevel();
 
-  if (!render_frame_host->GetParent()) {
+  if (!render_frame_host->GetParent())
     chromevox_injected_ = false;
-    main_frame_id_ = render_frame_host->GetRoutingID();
-  }
 }
 
 void WebViewGuest::DidFailProvisionalLoad(
@@ -1074,10 +1071,9 @@ void WebViewGuest::DidStartProvisionalLoadForFrame(
 }
 
 void WebViewGuest::DocumentLoadedInFrame(
-    int64 frame_id,
-    content::RenderViewHost* render_view_host) {
-  if (frame_id == main_frame_id_)
-    InjectChromeVoxIfNeeded(render_view_host);
+    content::RenderFrameHost* render_frame_host) {
+  if (!render_frame_host->GetParent())
+    InjectChromeVoxIfNeeded(render_frame_host->GetRenderViewHost());
 }
 
 bool WebViewGuest::OnMessageReceived(const IPC::Message& message,

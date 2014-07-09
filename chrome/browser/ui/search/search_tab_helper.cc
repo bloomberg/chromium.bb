@@ -339,12 +339,9 @@ void SearchTabHelper::DidFailProvisionalLoad(
   }
 }
 
-void SearchTabHelper::DidFinishLoad(
-    int64 /* frame_id */,
-    const GURL&  /* validated_url */,
-    bool is_main_frame,
-    content::RenderViewHost* /* render_view_host */) {
-  if (is_main_frame) {
+void SearchTabHelper::DidFinishLoad(content::RenderFrameHost* render_frame_host,
+                                    const GURL& /* validated_url */) {
+  if (!render_frame_host->GetParent()) {
     if (chrome::IsInstantNTP(web_contents_))
       RecordNewTabLoadTime(web_contents_);
 

@@ -133,7 +133,7 @@ void DummyPrerenderContents::StartPrerendering(
   NotifyPrerenderStart();
 
   if (call_did_finish_load_)
-    DidFinishLoad(1, url_, true, NULL);
+    DidFinishLoad(prerender_contents_->GetMainFrame(), url_);
 }
 
 bool DummyPrerenderContents::GetChildId(int* child_id) const {

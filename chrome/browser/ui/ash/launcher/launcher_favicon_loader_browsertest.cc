@@ -39,11 +39,8 @@ class ContentsObserver : public WebContentsObserver {
   bool got_favicons() const { return got_favicons_; }
 
   // WebContentsObserver overrides.
-  virtual void DidFinishLoad(
-      int64 frame_id,
-      const GURL& validated_url,
-      bool is_main_frame,
-      content::RenderViewHost* render_view_host) OVERRIDE {
+  virtual void DidFinishLoad(content::RenderFrameHost* render_frame_host,
+                             const GURL& validated_url) OVERRIDE {
     loaded_ = true;
   }
 

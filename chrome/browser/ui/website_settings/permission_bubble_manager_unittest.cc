@@ -97,7 +97,8 @@ class PermissionBubbleManagerTest : public ChromeRenderViewHostTestHarness {
   }
 
   void WaitForFrameLoad() {
-    manager_->DocumentLoadedInFrame(0, NULL);
+    // PermissionBubbleManager ignores all parameters. Yay?
+    manager_->DocumentLoadedInFrame(NULL);
     base::MessageLoop::current()->RunUntilIdle();
   }
 

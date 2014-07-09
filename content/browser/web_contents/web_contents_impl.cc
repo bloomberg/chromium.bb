@@ -2356,12 +2356,10 @@ void WebContentsImpl::DidFailLoadWithError(
     const GURL& url,
     int error_code,
     const base::string16& error_description) {
-  int render_frame_id = render_frame_host->GetRoutingID();
-  bool is_main_frame = render_frame_host->frame_tree_node()->IsMainFrame();
-  RenderViewHost* render_view_host = render_frame_host->render_view_host();
-  FOR_EACH_OBSERVER(WebContentsObserver, observers_,
-                    DidFailLoad(render_frame_id, url, is_main_frame, error_code,
-                                error_description, render_view_host));
+  FOR_EACH_OBSERVER(
+      WebContentsObserver,
+      observers_,
+      DidFailLoad(render_frame_host, url, error_code, error_description));
 }
 
 void WebContentsImpl::NotifyChangedNavigationState(
@@ -2583,12 +2581,8 @@ void WebContentsImpl::OnDocumentLoadedInFrame() {
   CHECK(!render_view_message_source_);
   RenderFrameHostImpl* rfh =
       static_cast<RenderFrameHostImpl*>(render_frame_message_source_);
-
-  int render_frame_id = rfh->GetRoutingID();
-  RenderViewHost* render_view_host = rfh->render_view_host();
-  FOR_EACH_OBSERVER(WebContentsObserver,
-                    observers_,
-                    DocumentLoadedInFrame(render_frame_id, render_view_host));
+  FOR_EACH_OBSERVER(
+      WebContentsObserver, observers_, DocumentLoadedInFrame(rfh));
 }
 
 void WebContentsImpl::OnDidFinishLoad(
@@ -2606,12 +2600,8 @@ void WebContentsImpl::OnDidFinishLoad(
 
   RenderFrameHostImpl* rfh =
       static_cast<RenderFrameHostImpl*>(render_frame_message_source_);
-  int render_frame_id = rfh->GetRoutingID();
-  RenderViewHost* render_view_host = rfh->render_view_host();
-  bool is_main_frame = rfh->frame_tree_node()->IsMainFrame();
-  FOR_EACH_OBSERVER(WebContentsObserver, observers_,
-                    DidFinishLoad(render_frame_id, validated_url,
-                                  is_main_frame, render_view_host));
+  FOR_EACH_OBSERVER(
+      WebContentsObserver, observers_, DidFinishLoad(rfh, validated_url));
 }
 
 void WebContentsImpl::OnDidStartLoading(bool to_different_document) {

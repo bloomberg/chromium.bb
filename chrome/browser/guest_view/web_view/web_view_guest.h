@@ -359,8 +359,7 @@ class WebViewGuest : public GuestView<WebViewGuest>,
       bool is_error_page,
       bool is_iframe_srcdoc) OVERRIDE;
   virtual void DocumentLoadedInFrame(
-      int64 frame_id,
-      content::RenderViewHost* render_view_host) OVERRIDE;
+      content::RenderFrameHost* render_frame_host) OVERRIDE;
   virtual bool OnMessageReceived(
       const IPC::Message& message,
       content::RenderFrameHost* render_frame_host) OVERRIDE;
@@ -449,9 +448,6 @@ class WebViewGuest : public GuestView<WebViewGuest>,
 
   // True if the user agent is overridden.
   bool is_overriding_user_agent_;
-
-  // Main frame ID of last committed page.
-  int64 main_frame_id_;
 
   // Set to |true| if ChromeVox was already injected in main frame.
   bool chromevox_injected_;

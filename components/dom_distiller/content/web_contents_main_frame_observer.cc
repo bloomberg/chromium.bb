@@ -16,9 +16,7 @@ namespace dom_distiller {
 
 WebContentsMainFrameObserver::WebContentsMainFrameObserver(
     content::WebContents* web_contents)
-    : is_document_loaded_in_main_frame_(false),
-      is_initialized_(false),
-      web_contents_(web_contents) {
+    : is_document_loaded_in_main_frame_(false), is_initialized_(false) {
   content::WebContentsObserver::Observe(web_contents);
 }
 
@@ -27,10 +25,8 @@ WebContentsMainFrameObserver::~WebContentsMainFrameObserver() {
 }
 
 void WebContentsMainFrameObserver::DocumentLoadedInFrame(
-    int64 frame_id,
-    content::RenderViewHost* render_view_host) {
-  if (web_contents_ &&
-      frame_id == web_contents_->GetMainFrame()->GetRoutingID()) {
+    content::RenderFrameHost* render_frame_host) {
+  if (!render_frame_host->GetParent()) {
     is_document_loaded_in_main_frame_ = true;
   }
 }
@@ -49,13 +45,8 @@ void WebContentsMainFrameObserver::RenderProcessGone(
   CleanUp();
 }
 
-void WebContentsMainFrameObserver::WebContentsDestroyed() {
-  CleanUp();
-}
-
 void WebContentsMainFrameObserver::CleanUp() {
   content::WebContentsObserver::Observe(NULL);
-  web_contents_ = NULL;
 }
 
 }  // namespace dom_distiller

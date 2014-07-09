@@ -210,21 +210,14 @@ class PrerenderContents : public content::NotificationObserver,
   virtual void DidStopLoading(
       content::RenderViewHost* render_view_host) OVERRIDE;
   virtual void DocumentLoadedInFrame(
-      int64 frame_id, content::RenderViewHost* render_view_host) OVERRIDE;
+      content::RenderFrameHost* render_frame_host) OVERRIDE;
   virtual void DidStartProvisionalLoadForFrame(
       content::RenderFrameHost* render_frame_host,
       const GURL& validated_url,
       bool is_error_page,
       bool is_iframe_srcdoc) OVERRIDE;
-  virtual void DidCommitProvisionalLoadForFrame(
-      content::RenderFrameHost* render_frame_host,
-      const GURL& url,
-      content::PageTransition transition_type) OVERRIDE;
-  virtual void DidFinishLoad(
-      int64 frame_id,
-      const GURL& validated_url,
-      bool is_main_frame,
-      content::RenderViewHost* render_view_host) OVERRIDE;
+  virtual void DidFinishLoad(content::RenderFrameHost* render_frame_host,
+                             const GURL& validated_url) OVERRIDE;
   virtual void DidNavigateMainFrame(
       const content::LoadCommittedDetails& details,
       const content::FrameNavigateParams& params) OVERRIDE;
@@ -443,9 +436,6 @@ class PrerenderContents : public content::NotificationObserver,
 
   // The process that created the child id.
   int creator_child_id_;
-
-  // Main frame ID of last committed page.
-  int64 main_frame_id_;
 
   // The size of the WebView from the launching page.
   gfx::Size size_;

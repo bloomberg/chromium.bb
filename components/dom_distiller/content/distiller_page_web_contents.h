@@ -13,12 +13,6 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "url/gurl.h"
 
-namespace content {
-class RenderViewHost;
-}
-
-using content::RenderViewHost;
-
 namespace dom_distiller {
 
 class SourcePageHandleWebContents : public SourcePageHandle {
@@ -58,15 +52,13 @@ class DistillerPageWebContents : public DistillerPage,
   virtual ~DistillerPageWebContents();
 
   // content::WebContentsObserver implementation.
-  virtual void DocumentLoadedInFrame(int64 frame_id,
-                                     RenderViewHost* render_view_host) OVERRIDE;
+  virtual void DocumentLoadedInFrame(
+      content::RenderFrameHost* render_frame_host) OVERRIDE;
 
-  virtual void DidFailLoad(int64 frame_id,
+  virtual void DidFailLoad(content::RenderFrameHost* render_frame_host,
                            const GURL& validated_url,
-                           bool is_main_frame,
                            int error_code,
-                           const base::string16& error_description,
-                           RenderViewHost* render_view_host) OVERRIDE;
+                           const base::string16& error_description) OVERRIDE;
 
  protected:
   virtual void DistillPageImpl(const GURL& url,

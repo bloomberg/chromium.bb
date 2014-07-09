@@ -158,12 +158,10 @@ class DriveWebContentsManager : public content::WebContentsObserver,
       int error_code,
       const base::string16& error_description) OVERRIDE;
 
-  virtual void DidFailLoad(int64 frame_id,
+  virtual void DidFailLoad(content::RenderFrameHost* render_frame_host,
                            const GURL& validated_url,
-                           bool is_main_frame,
                            int error_code,
-                           const base::string16& error_description,
-                           content::RenderViewHost* render_view_host) OVERRIDE;
+                           const base::string16& error_description) OVERRIDE;
 
   // content::WebContentsDelegate overrides:
   virtual bool ShouldCreateWebContents(
@@ -268,13 +266,11 @@ void DriveWebContentsManager::DidFailProvisionalLoad(
 }
 
 void DriveWebContentsManager::DidFailLoad(
-    int64 frame_id,
+    content::RenderFrameHost* render_frame_host,
     const GURL& validated_url,
-    bool is_main_frame,
     int error_code,
-    const base::string16& error_description,
-    content::RenderViewHost* render_view_host) {
-  if (is_main_frame) {
+    const base::string16& error_description) {
+  if (!render_frame_host->GetParent()) {
     LOG(WARNING) << "Failed to load WebContents to enable offline mode.";
     OnOfflineInit(false,
                   DriveFirstRunController::OUTCOME_WEB_CONTENTS_LOAD_FAILED);

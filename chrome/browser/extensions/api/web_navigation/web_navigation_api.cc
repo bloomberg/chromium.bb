@@ -495,21 +495,23 @@ void WebNavigationTabObserver::DidFailProvisionalLoad(
 }
 
 void WebNavigationTabObserver::DocumentLoadedInFrame(
-    int64 frame_num,
-    content::RenderViewHost* render_view_host) {
+    content::RenderFrameHost* render_frame_host) {
+  content::RenderViewHost* render_view_host =
+      render_frame_host->GetRenderViewHost();
   DVLOG(2) << "DocumentLoadedInFrame("
            << "render_view_host=" << render_view_host
-           << ", frame_num=" << frame_num << ")";
+           << ", frame_num=" << render_frame_host->GetRoutingID() << ")";
   if (render_view_host != render_view_host_)
     return;
-  FrameNavigationState::FrameID frame_id(frame_num, render_view_host);
+  FrameNavigationState::FrameID frame_id(render_frame_host->GetRoutingID(),
+                                         render_view_host);
   if (!navigation_state_.CanSendEvents(frame_id))
     return;
   navigation_state_.SetParsingFinished(frame_id);
   helpers::DispatchOnDOMContentLoaded(web_contents(),
                                       navigation_state_.GetUrl(frame_id),
                                       navigation_state_.IsMainFrame(frame_id),
-                                      frame_num);
+                                      frame_id.frame_num);
 
   if (!navigation_state_.GetNavigationCompleted(frame_id))
     return;
@@ -520,21 +522,22 @@ void WebNavigationTabObserver::DocumentLoadedInFrame(
   helpers::DispatchOnCompleted(web_contents(),
                                navigation_state_.GetUrl(frame_id),
                                navigation_state_.IsMainFrame(frame_id),
-                               frame_num);
+                               frame_id.frame_num);
 }
 
 void WebNavigationTabObserver::DidFinishLoad(
-    int64 frame_num,
-    const GURL& validated_url,
-    bool is_main_frame,
-    content::RenderViewHost* render_view_host) {
+    content::RenderFrameHost* render_frame_host,
+    const GURL& validated_url) {
+  content::RenderViewHost* render_view_host =
+      render_frame_host->GetRenderViewHost();
   DVLOG(2) << "DidFinishLoad("
            << "render_view_host=" << render_view_host
-           << ", frame_num=" << frame_num
+           << ", frame_num=" << render_frame_host->GetRoutingID()
            << ", url=" << validated_url << ")";
   if (render_view_host != render_view_host_)
     return;
-  FrameNavigationState::FrameID frame_id(frame_num, render_view_host);
+  FrameNavigationState::FrameID frame_id(render_frame_host->GetRoutingID(),
+                                         render_view_host);
   // When showing replacement content, we might get load signals for frames
   // that weren't reguarly loaded.
   if (!navigation_state_.IsValidFrame(frame_id))
@@ -548,7 +551,8 @@ void WebNavigationTabObserver::DidFinishLoad(
        validated_url == GURL(url::kAboutBlankURL)))
       << "validated URL is " << validated_url << " but we expected "
       << navigation_state_.GetUrl(frame_id);
-  DCHECK_EQ(navigation_state_.IsMainFrame(frame_id), is_main_frame);
+  DCHECK_EQ(navigation_state_.IsMainFrame(frame_id),
+            !render_frame_host->GetParent());
 
   // The load might already have finished by the time we finished parsing. For
   // compatibility reasons, we artifically delay the load completed signal until
@@ -557,36 +561,36 @@ void WebNavigationTabObserver::DidFinishLoad(
     return;
   helpers::DispatchOnCompleted(web_contents(),
                                navigation_state_.GetUrl(frame_id),
-                               is_main_frame,
-                               frame_num);
+                               !render_frame_host->GetParent(),
+                               frame_id.frame_num);
 }
 
 void WebNavigationTabObserver::DidFailLoad(
-    int64 frame_num,
+    content::RenderFrameHost* render_frame_host,
     const GURL& validated_url,
-    bool is_main_frame,
     int error_code,
-    const base::string16& error_description,
-    content::RenderViewHost* render_view_host) {
+    const base::string16& error_description) {
+  content::RenderViewHost* render_view_host =
+      render_frame_host->GetRenderViewHost();
   DVLOG(2) << "DidFailLoad("
            << "render_view_host=" << render_view_host
-           << ", frame_num=" << frame_num
+           << ", frame_num=" << render_frame_host->GetRoutingID()
            << ", url=" << validated_url << ")";
   if (render_view_host != render_view_host_)
     return;
-  FrameNavigationState::FrameID frame_id(frame_num, render_view_host);
+  FrameNavigationState::FrameID frame_id(render_frame_host->GetRoutingID(),
+                                         render_view_host);
   // When showing replacement content, we might get load signals for frames
   // that weren't reguarly loaded.
   if (!navigation_state_.IsValidFrame(frame_id))
     return;
   if (navigation_state_.CanSendEvents(frame_id)) {
-    helpers::DispatchOnErrorOccurred(
-        web_contents(),
-        render_view_host->GetProcess()->GetID(),
-        navigation_state_.GetUrl(frame_id),
-        frame_num,
-        is_main_frame,
-        error_code);
+    helpers::DispatchOnErrorOccurred(web_contents(),
+                                     render_view_host->GetProcess()->GetID(),
+                                     navigation_state_.GetUrl(frame_id),
+                                     frame_id.frame_num,
+                                     !render_frame_host->GetParent(),
+                                     error_code);
   }
   navigation_state_.SetErrorOccurredInFrame(frame_id);
 }
