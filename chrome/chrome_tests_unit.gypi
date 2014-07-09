@@ -375,13 +375,16 @@
             ['exclude', '^renderer/printing/mock_printer.h'],
           ],
         }],
+        ['enable_extensions==0', {
+          'sources/': [
+            ['exclude', '^browser/drive/'],
+            ['exclude', '^browser/extensions/api/messaging/native_messaging_'],
+            ['exclude', '^browser/media_galleries/'],
+          ],
+        }],
         ['OS=="android"', {
           'dependencies!': [
             '../components/components.gyp:storage_monitor_test_support',
-          ],
-          'sources/': [
-            ['exclude', '^browser/media_galleries/'],
-            ['exclude', '^browser/extensions/api/messaging/native_messaging_'],
           ],
         }],
         ['OS=="win"', {
@@ -2111,6 +2114,7 @@
           'sources/': [
             ['exclude', '^../apps/'],
             ['exclude', '^../extensions/'],
+            ['exclude', '^browser/drive/'],
             ['exclude', '^browser/extensions/activity_log/'],
             ['exclude', '^browser/extensions/api/'],
             ['exclude', '^browser/extensions/error_console/'],

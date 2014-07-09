@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//build/config/crypto.gni")
+import("//build/config/features.gni")
 
 declare_args() {
   # You can set the variable 'use_official_google_api_keys' to true
@@ -79,36 +80,6 @@ source_set("google_apis") {
   sources = [
     "cup/client_update_protocol.cc",
     "cup/client_update_protocol.h",
-    "drive/auth_service.cc",
-    "drive/auth_service.h",
-    "drive/auth_service_interface.h",
-    "drive/auth_service_observer.h",
-    "drive/base_requests.cc",
-    "drive/base_requests.h",
-    "drive/drive_api_parser.cc",
-    "drive/drive_api_parser.h",
-    "drive/drive_api_requests.cc",
-    "drive/drive_api_requests.h",
-    "drive/drive_api_url_generator.cc",
-    "drive/drive_api_url_generator.h",
-    "drive/drive_common_callbacks.h",
-    "drive/drive_entry_kinds.h",
-    "drive/gdata_errorcode.cc",
-    "drive/gdata_errorcode.h",
-    "drive/gdata_wapi_requests.cc",
-    "drive/gdata_wapi_requests.h",
-    "drive/gdata_wapi_parser.cc",
-    "drive/gdata_wapi_parser.h",
-    "drive/gdata_wapi_url_generator.cc",
-    "drive/gdata_wapi_url_generator.h",
-    "drive/request_sender.cc",
-    "drive/request_sender.h",
-    "drive/request_util.cc",
-    "drive/request_util.h",
-    "drive/task_util.cc",
-    "drive/task_util.h",
-    "drive/time_util.cc",
-    "drive/time_util.h",
     "gaia/gaia_auth_consumer.cc",
     "gaia/gaia_auth_consumer.h",
     "gaia/gaia_auth_fetcher.cc",
@@ -167,14 +138,45 @@ source_set("google_apis") {
   } else {
     sources += [ "cup/client_update_protocol_nss.cc" ]
   }
+
+  if (enable_extensions) {
+    sources += [
+      "drive/auth_service.cc",
+      "drive/auth_service.h",
+      "drive/auth_service_interface.h",
+      "drive/auth_service_observer.h",
+      "drive/base_requests.cc",
+      "drive/base_requests.h",
+      "drive/drive_api_parser.cc",
+      "drive/drive_api_parser.h",
+      "drive/drive_api_requests.cc",
+      "drive/drive_api_requests.h",
+      "drive/drive_api_url_generator.cc",
+      "drive/drive_api_url_generator.h",
+      "drive/drive_common_callbacks.h",
+      "drive/drive_entry_kinds.h",
+      "drive/gdata_errorcode.cc",
+      "drive/gdata_errorcode.h",
+      "drive/gdata_wapi_requests.cc",
+      "drive/gdata_wapi_requests.h",
+      "drive/gdata_wapi_parser.cc",
+      "drive/gdata_wapi_parser.h",
+      "drive/gdata_wapi_url_generator.cc",
+      "drive/gdata_wapi_url_generator.h",
+      "drive/request_sender.cc",
+      "drive/request_sender.h",
+      "drive/request_util.cc",
+      "drive/request_util.h",
+      "drive/task_util.cc",
+      "drive/task_util.h",
+      "drive/time_util.cc",
+      "drive/time_util.h",
+    ]
+  }
 }
 
 source_set("test_support") {
   sources = [
-    "drive/dummy_auth_service.cc",
-    "drive/dummy_auth_service.h",
-    "drive/test_util.cc",
-    "drive/test_util.h",
     "gaia/fake_gaia.cc",
     "gaia/fake_gaia.h",
     "gaia/fake_identity_provider.cc",
@@ -193,23 +195,21 @@ source_set("test_support") {
     "//net:test_support",
   ]
   forward_dependent_configs_from = deps
+
+  if (enable_extensions) {
+    sources += [
+      "drive/dummy_auth_service.cc",
+      "drive/dummy_auth_service.h",
+      "drive/test_util.cc",
+      "drive/test_util.h",
+    ]
+  }
 }
 
 test("google_apis_unittest") {
   sources = [
     "google_api_keys_unittest.cc",
     "cup/client_update_protocol_unittest.cc",
-    "drive/base_requests_unittest.cc",
-    "drive/base_requests_server_unittest.cc",
-    "drive/drive_api_requests_unittest.cc",
-    "drive/drive_api_parser_unittest.cc",
-    "drive/drive_api_url_generator_unittest.cc",
-    "drive/gdata_wapi_parser_unittest.cc",
-    "drive/gdata_wapi_requests_unittest.cc",
-    "drive/gdata_wapi_url_generator_unittest.cc",
-    "drive/request_sender_unittest.cc",
-    "drive/request_util_unittest.cc",
-    "drive/time_util_unittest.cc",
     "gaia/gaia_auth_fetcher_unittest.cc",
     "gaia/gaia_auth_util_unittest.cc",
     "gaia/gaia_oauth_client_unittest.cc",
@@ -234,13 +234,19 @@ test("google_apis_unittest") {
     "//testing/gtest",
   ]
 
-  if (is_android) {
-    sources -= [
+  if (enable_extensions) {
+    sources += [
       "drive/base_requests_server_unittest.cc",
+      "drive/base_requests_unittest.cc",
       "drive/drive_api_parser_unittest.cc",
       "drive/drive_api_requests_unittest.cc",
+      "drive/drive_api_url_generator_unittest.cc",
       "drive/gdata_wapi_parser_unittest.cc",
       "drive/gdata_wapi_requests_unittest.cc",
+      "drive/gdata_wapi_url_generator_unittest.cc",
+      "drive/request_sender_unittest.cc",
+      "drive/request_util_unittest.cc",
+      "drive/time_util_unittest.cc",
     ]
   }
 }
