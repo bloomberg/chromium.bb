@@ -48,6 +48,7 @@ class UserManagerView : public views::DialogDelegateView {
   void Init(Profile* guest_profile, const GURL& url);
 
   // views::View:
+  virtual bool AcceleratorPressed(const ui::Accelerator& accelerator) OVERRIDE;
   virtual gfx::Size GetPreferredSize() const OVERRIDE;
 
   // views::DialogDelegateView:

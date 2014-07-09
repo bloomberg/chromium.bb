@@ -20,6 +20,7 @@
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
+#include "ui/views/window/dialog_client_view.h"
 
 #if defined(OS_WIN)
 #include "chrome/browser/shell_integration.h"
@@ -105,10 +106,17 @@ void UserManagerView::OnGuestProfileCreated(
 
 void UserManagerView::Init(Profile* guest_profile, const GURL& url) {
   web_view_ = new views::WebView(guest_profile);
-  SetLayoutManager(new views::FillLayout);
+  web_view_->set_allow_accelerators(true);
   AddChildView(web_view_);
+  SetLayoutManager(new views::FillLayout);
+  AddAccelerator(ui::Accelerator(ui::VKEY_W, ui::EF_CONTROL_DOWN));
 
   DialogDelegate::CreateDialogWidget(this, NULL, NULL);
+  // Since the User Manager can be the only top level window, we don't
+  // want to accidentally quit all of Chrome if the user is just trying to
+  // unfocus the selected pod in the WebView.
+  GetDialogClientView()->RemoveAccelerator(
+      ui::Accelerator(ui::VKEY_ESCAPE, ui::EF_NONE));
 
 #if defined(OS_WIN)
   // Set the app id for the task manager to the app id of its parent
@@ -121,6 +129,13 @@ void UserManagerView::Init(Profile* guest_profile, const GURL& url) {
 
   web_view_->LoadInitialURL(url);
   web_view_->RequestFocus();
+}
+
+bool UserManagerView::AcceleratorPressed(const ui::Accelerator& accelerator) {
+  DCHECK_EQ(ui::VKEY_W, accelerator.key_code());
+  DCHECK_EQ(ui::EF_CONTROL_DOWN, accelerator.modifiers());
+  GetWidget()->Close();
+  return true;
 }
 
 gfx::Size UserManagerView::GetPreferredSize() const {
