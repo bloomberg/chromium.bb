@@ -40,6 +40,11 @@ namespace gcdPrivate {
   interface Functions {
     static void getCloudDeviceList(CloudDeviceListCallback callback);
 
+    // Call this function *only* after registering for onDeviceStateChanged
+    // events, or it will do nothing. This will trigger an
+    // onLocalDeviceStateChanged event per device.
+    static void queryForNewLocalDevices();
+
     // Starts device setup process. Returns id of setup process. Id should be
     // used as |setupId| in all subsequent setup related calls, and for
     // filtering setup events.
