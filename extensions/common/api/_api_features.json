@@ -73,19 +73,12 @@
   "runtime.onMessage": {
     "contexts": ["blessed_extension", "unblessed_extension", "content_script"]
   },
-  "runtime.reload": {
-    "contexts": ["blessed_extension", "unblessed_extension", "content_script"]
-  },
-  "runtime.requestUpdateCheck": {
-    "contexts": ["blessed_extension", "unblessed_extension", "content_script"]
-  },
   "runtime.sendMessage": {
     "contexts": "all",
     "matches": ["<all_urls>"]
   },
   "runtime.setUninstallURL": {
-    "channel": "dev",
-    "contexts": ["blessed_extension", "unblessed_extension", "content_script"]
+    "channel": "dev"
   },
   "socket": {
     "dependencies": ["permission:socket"],
