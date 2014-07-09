@@ -14,6 +14,7 @@ from telemetry.page import page_measurement
 # All network metrics are Chrome only for now.
 from telemetry.core.backends.chrome import inspector_network
 from telemetry.timeline import recording_options
+from telemetry.value import scalar
 
 
 class NetworkMetricException(page_measurement.MeasurementFailure):
@@ -167,10 +168,14 @@ class NetworkMetric(Metric):
           logging.warning('original content length (%d) is less than content '
                         'lenght(%d) for resource %s', ocl, cl, resource)
         if self.add_result_for_resource:
-          results.Add('resource_data_saving_' + resource_signature,
-                      'percent', resp.data_saving_rate * 100)
-          results.Add('resource_original_content_length_' + resource_signature,
-                      'bytes', ocl)
+          results.AddValue(scalar.ScalarValue(
+              results.current_page,
+              'resource_data_saving_' + resource_signature, 'percent',
+              resp.data_saving_rate * 100))
+          results.AddValue(scalar.ScalarValue(
+              results.current_page,
+              'resource_original_content_length_' + resource_signature, 'bytes',
+              ocl))
         original_content_length += ocl
       else:
         original_content_length += cl
@@ -179,13 +184,18 @@ class NetworkMetric(Metric):
             'resource_content_length_' + resource_signature, 'bytes', cl)
       content_length += cl
 
-    results.Add('content_length', 'bytes', content_length)
-    results.Add('original_content_length', 'bytes', original_content_length)
+    results.AddValue(scalar.ScalarValue(
+        results.current_page, 'content_length', 'bytes', content_length))
+    results.AddValue(scalar.ScalarValue(
+        results.current_page, 'original_content_length', 'bytes',
+        original_content_length))
     if self.compute_data_saving:
       if (original_content_length > 0 and
           original_content_length >= content_length):
         saving = (float(original_content_length-content_length) * 100 /
                   original_content_length)
-        results.Add('data_saving', 'percent', saving)
+        results.AddValue(scalar.ScalarValue(
+            results.current_page, 'data_saving', 'percent', saving))
       else:
-        results.Add('data_saving', 'percent', 0.0)
+        results.AddValue(scalar.ScalarValue(
+            results.current_page, 'data_saving', 'percent', 0.0))
