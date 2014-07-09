@@ -1110,6 +1110,7 @@ TEST_F(PasswordAutofillAgentTest, PreviewSuggestion) {
 // Tests that |PreviewSuggestion| properly sets the username selection range.
 TEST_F(PasswordAutofillAgentTest, PreviewSuggestionSelectionRange) {
   username_element_.setValue(WebString::fromUTF8("ali"));
+  username_element_.setSelectionRange(3, 3);
   username_element_.setAutofilled(true);
 
   CheckTextFieldsDOMState("ali", true, std::string(), false);
@@ -1165,6 +1166,7 @@ TEST_F(PasswordAutofillAgentTest, ClearPreviewWithPasswordAutofilled) {
 // with username being previously autofilled.
 TEST_F(PasswordAutofillAgentTest, ClearPreviewWithUsernameAutofilled) {
   username_element_.setValue(WebString::fromUTF8("ali"));
+  username_element_.setSelectionRange(3, 3);
   username_element_.setAutofilled(true);
 
   // Simulate the browser sending the login info, but set |wait_for_username|
@@ -1194,6 +1196,7 @@ TEST_F(PasswordAutofillAgentTest, ClearPreviewWithUsernameAutofilled) {
 TEST_F(PasswordAutofillAgentTest,
        ClearPreviewWithAutofilledUsernameAndPassword) {
   username_element_.setValue(WebString::fromUTF8("ali"));
+  username_element_.setSelectionRange(3, 3);
   username_element_.setAutofilled(true);
   password_element_.setValue(WebString::fromUTF8("sec"));
   password_element_.setAutofilled(true);
