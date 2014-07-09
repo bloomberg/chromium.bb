@@ -99,7 +99,7 @@ void DownloadDirPolicyHandler::ApplyPolicySettingsWithParameters(
   if (expanded_value.empty())
     expanded_value = DownloadPrefs::GetDefaultDownloadDirectory().value();
   prefs->SetValue(prefs::kDownloadDefaultDirectory,
-                  base::Value::CreateStringValue(expanded_value));
+                  new base::StringValue(expanded_value));
 
   // If the policy is mandatory, prompt for download should be disabled.
   // Otherwise, it would enable a user to bypass the mandatory policy.

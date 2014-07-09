@@ -134,7 +134,7 @@ void ExtensionTtsEngineSpeak(Utterance* utterance, const VoiceData& voice) {
   bool sends_end_event = voice.events.find(TTS_EVENT_END) != voice.events.end();
 
   scoped_ptr<base::ListValue> args(new base::ListValue());
-  args->Set(0, base::Value::CreateStringValue(utterance->text()));
+  args->Set(0, new base::StringValue(utterance->text()));
 
   // Pass through most options to the speech engine, but remove some
   // that are handled internally.

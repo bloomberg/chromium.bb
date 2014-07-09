@@ -49,17 +49,13 @@ void JavaScriptDialogHelper::RunJavaScriptDialog(
   base::DictionaryValue request_info;
   request_info.Set(
       webview::kDefaultPromptText,
-      base::Value::CreateStringValue(base::UTF16ToUTF8(default_prompt_text)));
-  request_info.Set(
-      webview::kMessageText,
-      base::Value::CreateStringValue(base::UTF16ToUTF8(message_text)));
-  request_info.Set(
-      webview::kMessageType,
-      base::Value::CreateStringValue(
-          JavaScriptMessageTypeToString(javascript_message_type)));
-  request_info.Set(
-      guestview::kUrl,
-      base::Value::CreateStringValue(origin_url.spec()));
+      new base::StringValue(base::UTF16ToUTF8(default_prompt_text)));
+  request_info.Set(webview::kMessageText,
+                   new base::StringValue(base::UTF16ToUTF8(message_text)));
+  request_info.Set(webview::kMessageType,
+                   new base::StringValue(
+                       JavaScriptMessageTypeToString(javascript_message_type)));
+  request_info.Set(guestview::kUrl, new base::StringValue(origin_url.spec()));
   webview_guest_->RequestPermission(
       WEB_VIEW_PERMISSION_TYPE_JAVASCRIPT_DIALOG,
       request_info,

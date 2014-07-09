@@ -86,7 +86,7 @@ bool ExtensionListPolicyHandler::CheckAndGetList(
                        IDS_POLICY_VALUE_FORMAT_ERROR);
       continue;
     }
-    filtered_list->Append(base::Value::CreateStringValue(id));
+    filtered_list->Append(new base::StringValue(id));
   }
 
   if (extension_ids)

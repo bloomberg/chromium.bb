@@ -28,13 +28,12 @@ namespace {
 // Re-serializes the |location| into |dictionary|.
 void LocationSnapshotToValue(const LocationSnapshot& location,
                              base::DictionaryValue* dictionary) {
-  dictionary->Set("file_name",
-                  base::Value::CreateStringValue(location.file_name));
+  dictionary->Set("file_name", new base::StringValue(location.file_name));
   // Note: This function name is not escaped, and templates have less-than
   // characters, which means this is not suitable for display as HTML unless
   // properly escaped.
   dictionary->Set("function_name",
-                  base::Value::CreateStringValue(location.function_name));
+                  new base::StringValue(location.function_name));
   dictionary->Set("line_number",
                   base::Value::CreateIntegerValue(location.line_number));
 }
@@ -50,8 +49,7 @@ void BirthOnThreadSnapshotToValue(const BirthOnThreadSnapshot& birth,
   LocationSnapshotToValue(birth.location, location_value.get());
   dictionary->Set(prefix + "_location", location_value.release());
 
-  dictionary->Set(prefix + "_thread",
-                  base::Value::CreateStringValue(birth.thread_name));
+  dictionary->Set(prefix + "_thread", new base::StringValue(birth.thread_name));
 }
 
 // Re-serializes the |death_data| into |dictionary|.
@@ -88,8 +86,7 @@ void TaskSnapshotToValue(const TaskSnapshot& snapshot,
   dictionary->Set("death_data", death_data.release());
 
   dictionary->Set("death_thread",
-                  base::Value::CreateStringValue(snapshot.death_thread_name));
-
+                  new base::StringValue(snapshot.death_thread_name));
 }
 
 }  // anonymous namespace

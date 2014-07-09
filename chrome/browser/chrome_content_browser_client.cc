@@ -2413,8 +2413,8 @@ void ChromeContentBrowserClient::UpdateInspectorSetting(
       Profile::FromBrowserContext(browser_context)->GetPrefs(),
       prefs::kWebKitInspectorSettings);
   base::DictionaryValue* inspector_settings = update.Get();
-  inspector_settings->SetWithoutPathExpansion(
-      key, base::Value::CreateStringValue(value));
+  inspector_settings->SetWithoutPathExpansion(key,
+                                              new base::StringValue(value));
 }
 
 void ChromeContentBrowserClient::BrowserURLHandlerCreated(

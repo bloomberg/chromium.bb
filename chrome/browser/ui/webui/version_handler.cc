@@ -107,7 +107,7 @@ void VersionHandler::HandleRequestVersionInfo(const base::ListValue* args) {
   base::ListValue variations_list;
   for (std::vector<std::string>::const_iterator it = variations.begin();
       it != variations.end(); ++it) {
-    variations_list.Append(base::Value::CreateStringValue(*it));
+    variations_list.Append(new base::StringValue(*it));
   }
 
   // In release mode, this will return an empty list to clear the section.

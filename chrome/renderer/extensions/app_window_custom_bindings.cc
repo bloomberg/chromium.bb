@@ -117,12 +117,13 @@ void AppWindowCustomBindings::GetWindowControlsHtmlTemplate(
   v8::Handle<v8::Value> result = v8::String::Empty(args.GetIsolate());
   if (CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableAppWindowControls)) {
-    base::Value* value = base::Value::CreateStringValue(
-        ResourceBundle::GetSharedInstance().GetRawDataResource(
-            IDR_WINDOW_CONTROLS_TEMPLATE_HTML).as_string());
+    base::StringValue value(
+        ResourceBundle::GetSharedInstance()
+            .GetRawDataResource(IDR_WINDOW_CONTROLS_TEMPLATE_HTML)
+            .as_string());
     scoped_ptr<content::V8ValueConverter> converter(
         content::V8ValueConverter::create());
-    result = converter->ToV8Value(value, context()->v8_context());
+    result = converter->ToV8Value(&value, context()->v8_context());
   }
   args.GetReturnValue().Set(result);
 }

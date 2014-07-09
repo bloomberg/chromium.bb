@@ -1251,8 +1251,9 @@ void InternetOptionsHandler::SetServerHostnameCallback(
     NOTREACHED();
     return;
   }
-  SetNetworkProperty(service_path, shill::kProviderHostProperty,
-                     base::Value::CreateStringValue(server_hostname));
+  SetNetworkProperty(service_path,
+                     shill::kProviderHostProperty,
+                     new base::StringValue(server_hostname));
 }
 
 void InternetOptionsHandler::SetPreferNetworkCallback(

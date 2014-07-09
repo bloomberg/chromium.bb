@@ -359,7 +359,7 @@ base::DictionaryValue* ExtensionSettingsHandler::CreateExtensionDetailValue(
       base::ListValue* warnings_list = new base::ListValue;
       for (std::vector<std::string>::const_iterator iter = warnings.begin();
            iter != warnings.end(); ++iter) {
-        warnings_list->Append(base::Value::CreateStringValue(*iter));
+        warnings_list->Append(new base::StringValue(*iter));
       }
       extension_data->Set("warnings", warnings_list);
     }
@@ -1162,7 +1162,7 @@ void ExtensionSettingsHandler::HandleShowPath(const base::ListValue* args) {
 
 void ExtensionSettingsHandler::ShowAlert(const std::string& message) {
   base::ListValue arguments;
-  arguments.Append(base::Value::CreateStringValue(message));
+  arguments.Append(new base::StringValue(message));
   web_ui()->CallJavascriptFunction("alert", arguments);
 }
 

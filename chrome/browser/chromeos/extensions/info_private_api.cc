@@ -184,7 +184,7 @@ base::Value* ChromeosInfoPrivateGetFunction::GetValue(
     return base::Value::CreateBooleanValue(
         chromeos::UserManager::Get()->IsCurrentUserOwner());
   } else if (property_name == kPropertyClientId) {
-    return base::Value::CreateStringValue(GetClientId());
+    return new base::StringValue(GetClientId());
   } else if (property_name == kPropertyTimezone) {
     return chromeos::CrosSettings::Get()->GetPref(
             chromeos::kSystemTimezone)->DeepCopy();

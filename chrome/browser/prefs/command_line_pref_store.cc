@@ -98,9 +98,9 @@ void CommandLinePrefStore::ApplySimpleSwitches() {
   // Look for each switch we know about and set its preference accordingly.
   for (size_t i = 0; i < arraysize(string_switch_map_); ++i) {
     if (command_line_->HasSwitch(string_switch_map_[i].switch_name)) {
-      base::Value* value = base::Value::CreateStringValue(command_line_->
-          GetSwitchValueASCII(string_switch_map_[i].switch_name));
-      SetValue(string_switch_map_[i].preference_path, value);
+      SetValue(string_switch_map_[i].preference_path,
+               new base::StringValue(command_line_->GetSwitchValueASCII(
+                   string_switch_map_[i].switch_name)));
     }
   }
 
@@ -161,7 +161,7 @@ void CommandLinePrefStore::ApplySSLSwitches() {
     base::ListValue* list_value = new base::ListValue();
     for (std::vector<std::string>::const_iterator it = cipher_strings.begin();
          it != cipher_strings.end(); ++it) {
-      list_value->Append(base::Value::CreateStringValue(*it));
+      list_value->Append(new base::StringValue(*it));
     }
     SetValue(prefs::kCipherSuiteBlacklist, list_value);
   }
