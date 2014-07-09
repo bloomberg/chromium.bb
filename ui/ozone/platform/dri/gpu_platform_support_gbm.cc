@@ -14,8 +14,17 @@ GpuPlatformSupportGbm::GpuPlatformSupportGbm(DriSurfaceFactory* dri)
     : sender_(NULL), dri_(dri) {
 }
 
+GpuPlatformSupportGbm::~GpuPlatformSupportGbm() {}
+
+void GpuPlatformSupportGbm::AddHandler(scoped_ptr<GpuPlatformSupport> handler) {
+  handlers_.push_back(handler.release());
+}
+
 void GpuPlatformSupportGbm::OnChannelEstablished(IPC::Sender* sender) {
   sender_ = sender;
+
+  for (size_t i = 0; i < handlers_.size(); ++i)
+    handlers_[i]->OnChannelEstablished(sender);
 }
 
 bool GpuPlatformSupportGbm::OnMessageReceived(const IPC::Message& message) {
@@ -27,7 +36,12 @@ bool GpuPlatformSupportGbm::OnMessageReceived(const IPC::Message& message) {
   IPC_MESSAGE_UNHANDLED(handled = false);
   IPC_END_MESSAGE_MAP()
 
-  return handled;
+  if (!handled)
+    for (size_t i = 0; i < handlers_.size(); ++i)
+      if (handlers_[i]->OnMessageReceived(message))
+        return true;
+
+  return false;
 }
 
 void GpuPlatformSupportGbm::OnCursorSet(gfx::AcceleratedWidget widget,

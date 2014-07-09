@@ -5,6 +5,8 @@
 #ifndef UI_OZONE_PLATFORM_DRI_GPU_PLATFORM_SUPPORT_HOST_GBM_H_
 #define UI_OZONE_PLATFORM_DRI_GPU_PLATFORM_SUPPORT_HOST_GBM_H_
 
+#include <vector>
+
 #include "ui/gfx/native_widget_types.h"
 #include "ui/ozone/platform/dri/hardware_cursor_delegate.h"
 #include "ui/ozone/public/gpu_platform_support_host.h"
@@ -18,9 +20,14 @@ class Point;
 namespace ui {
 
 class GpuPlatformSupportHostGbm : public GpuPlatformSupportHost,
-                                  public HardwareCursorDelegate {
+                                  public HardwareCursorDelegate,
+                                  public IPC::Sender {
  public:
   GpuPlatformSupportHostGbm();
+  virtual ~GpuPlatformSupportHostGbm();
+
+  void RegisterHandler(GpuPlatformSupportHost* handler);
+  void UnregisterHandler(GpuPlatformSupportHost* handler);
 
   // GpuPlatformSupportHost:
   virtual void OnChannelEstablished(int host_id, IPC::Sender* sender) OVERRIDE;
@@ -28,6 +35,9 @@ class GpuPlatformSupportHostGbm : public GpuPlatformSupportHost,
 
   // IPC::Listener:
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+
+  // IPC::Sender:
+  virtual bool Send(IPC::Message* message) OVERRIDE;
 
   // HardwareCursorDelegate:
   virtual void SetHardwareCursor(gfx::AcceleratedWidget widget,
@@ -39,6 +49,7 @@ class GpuPlatformSupportHostGbm : public GpuPlatformSupportHost,
  private:
   int host_id_;
   IPC::Sender* sender_;
+  std::vector<GpuPlatformSupportHost*> handlers_;
 };
 
 }  // namespace ui

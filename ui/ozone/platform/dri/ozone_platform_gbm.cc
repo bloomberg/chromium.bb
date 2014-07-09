@@ -26,8 +26,10 @@
 #include "ui/ozone/public/gpu_platform_support_host.h"
 
 #if defined(OS_CHROMEOS)
-#include "ui/ozone/common/chromeos/native_display_delegate_ozone.h"
 #include "ui/ozone/common/chromeos/touchscreen_device_manager_ozone.h"
+#include "ui/ozone/platform/dri/chromeos/display_message_handler.h"
+#include "ui/ozone/platform/dri/chromeos/native_display_delegate_dri.h"
+#include "ui/ozone/platform/dri/chromeos/native_display_delegate_proxy.h"
 #endif
 
 namespace ui {
@@ -92,7 +94,8 @@ class OzonePlatformGbm : public OzonePlatform {
 #if defined(OS_CHROMEOS)
   virtual scoped_ptr<NativeDisplayDelegate> CreateNativeDisplayDelegate()
       OVERRIDE {
-    return scoped_ptr<NativeDisplayDelegate>(new NativeDisplayDelegateOzone());
+    return scoped_ptr<NativeDisplayDelegate>(new NativeDisplayDelegateProxy(
+        gpu_platform_support_host_.get(), device_manager_.get()));
   }
   virtual scoped_ptr<TouchscreenDeviceManager>
       CreateTouchscreenDeviceManager() OVERRIDE {
@@ -128,6 +131,14 @@ class OzonePlatformGbm : public OzonePlatform {
 
     gpu_platform_support_.reset(
         new GpuPlatformSupportGbm(surface_factory_ozone_.get()));
+#if defined(OS_CHROMEOS)
+    gpu_platform_support_->AddHandler(scoped_ptr<GpuPlatformSupport>(
+        new DisplayMessageHandler(
+            scoped_ptr<NativeDisplayDelegateDri>(new NativeDisplayDelegateDri(
+                dri_.get(),
+                screen_manager_.get(),
+                NULL)))));
+#endif
   }
 
  private:

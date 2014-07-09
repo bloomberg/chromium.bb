@@ -5,6 +5,8 @@
 #ifndef UI_OZONE_PLATFORM_DRI_GPU_PLATFORM_SUPPORT_GBM_H_
 #define UI_OZONE_PLATFORM_DRI_GPU_PLATFORM_SUPPORT_GBM_H_
 
+#include "base/memory/scoped_ptr.h"
+#include "base/memory/scoped_vector.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/ozone/public/gpu_platform_support.h"
 
@@ -21,6 +23,9 @@ class DriSurfaceFactory;
 class GpuPlatformSupportGbm : public GpuPlatformSupport {
  public:
   GpuPlatformSupportGbm(DriSurfaceFactory* dri);
+  virtual ~GpuPlatformSupportGbm();
+
+  void AddHandler(scoped_ptr<GpuPlatformSupport> handler);
 
   // GpuPlatformSupport:
   virtual void OnChannelEstablished(IPC::Sender* sender) OVERRIDE;
@@ -37,6 +42,7 @@ class GpuPlatformSupportGbm : public GpuPlatformSupport {
   void OnCursorMove(gfx::AcceleratedWidget widget, const gfx::Point& location);
 
   DriSurfaceFactory* dri_;
+  ScopedVector<GpuPlatformSupport> handlers_;
 };
 
 }  // namespace ui

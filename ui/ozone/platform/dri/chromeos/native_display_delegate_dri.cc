@@ -32,11 +32,21 @@ NativeDisplayDelegateDri::NativeDisplayDelegateDri(
 }
 
 NativeDisplayDelegateDri::~NativeDisplayDelegateDri() {
-  device_manager_->RemoveObserver(this);
+  if (device_manager_)
+    device_manager_->RemoveObserver(this);
+}
+
+DisplaySnapshot* NativeDisplayDelegateDri::FindDisplaySnapshot(int64_t id) {
+  for (size_t i = 0; i < cached_displays_.size(); ++i)
+    if (cached_displays_[i]->display_id() == id)
+      return cached_displays_[i];
+
+  return NULL;
 }
 
 void NativeDisplayDelegateDri::Initialize() {
-  device_manager_->AddObserver(this);
+  if (device_manager_)
+    device_manager_->AddObserver(this);
 
   ScopedVector<HardwareDisplayControllerInfo> displays =
       GetAvailableDisplayControllerInfos(dri_->get_fd());

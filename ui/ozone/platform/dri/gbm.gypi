@@ -31,6 +31,10 @@
       'sources': [
         'buffer_data.cc',
         'buffer_data.h',
+        'chromeos/display_message_handler.cc',
+        'chromeos/display_message_handler.h',
+        'chromeos/native_display_delegate_proxy.cc',
+        'chromeos/native_display_delegate_proxy.h',
         'gbm_buffer.cc',
         'gbm_buffer.h',
         'gbm_surface.cc',

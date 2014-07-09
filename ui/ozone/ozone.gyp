@@ -85,6 +85,12 @@
         # common/chromeos files are excluded automatically when building with
         # chromeos=0, by exclusion rules in filename_rules.gypi due to the
         # 'chromeos' folder name.
+        'common/chromeos/display_mode_proxy.cc',
+        'common/chromeos/display_mode_proxy.h',
+        'common/chromeos/display_snapshot_proxy.cc',
+        'common/chromeos/display_snapshot_proxy.h',
+        'common/chromeos/display_util.cc',
+        'common/chromeos/display_util.h',
         'common/chromeos/native_display_delegate_ozone.cc',
         'common/chromeos/native_display_delegate_ozone.h',
         'common/chromeos/touchscreen_device_manager_ozone.cc',
