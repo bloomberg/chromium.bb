@@ -18,14 +18,17 @@ template("make_file_arrays") {
   code_gen_target_name = target_name + "_code_gen"
 
   action(code_gen_target_name) {
-    source_prereqs = invoker.resources
     script = "//third_party/WebKit/Source/build/scripts/make-file-arrays.py"
+
     sources = [ script ]
     sources += invoker.resources
+
+    inputs = invoker.resources
     outputs = [
       "$root_gen_dir/blink/" + invoker.filename + ".h",
       "$root_gen_dir/blink/" + invoker.filename + ".cpp",
     ]
+
     args = [
       "--out-h=gen/blink/" + invoker.filename + ".h",
       "--out-cpp=gen/blink/" + invoker.filename + ".cpp",

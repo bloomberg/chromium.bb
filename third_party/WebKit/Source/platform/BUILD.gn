@@ -90,7 +90,7 @@ action("font_family_names") {
   script = "../build/scripts/make_names.py"
 
   font_family_names_in = "fonts/FontFamilyNames.in"
-  source_prereqs = make_names_files + [ font_family_names_in ]
+  inputs = make_names_files + [ font_family_names_in ]
 
   outputs = [
     "$blink_platform_output_dir/FontFamilyNames.cpp",
@@ -110,7 +110,7 @@ action("runtime_enabled_features") {
   script = "../build/scripts/make_runtime_features.py"
 
   runtime_enabled_features_in = "RuntimeEnabledFeatures.in"
-  source_prereqs = scripts_for_in_files + [
+  inputs = scripts_for_in_files + [
     runtime_enabled_features_in,
     "../build/scripts/templates/RuntimeEnabledFeatures.cpp.tmpl",
     "../build/scripts/templates/RuntimeEnabledFeatures.h.tmpl",
@@ -133,7 +133,7 @@ action("color_data") {
   script = "../build/scripts/gperf.py"
 
   color_data_gperf = "ColorData.gperf"
-  source_prereqs = [ color_data_gperf ]
+  inputs = [ color_data_gperf ]
 
   output_file = "$blink_platform_output_dir/ColorData.cpp"
   outputs = [ output_file ]

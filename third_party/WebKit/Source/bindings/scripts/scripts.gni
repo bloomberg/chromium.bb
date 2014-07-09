@@ -44,7 +44,7 @@ template("compute_interfaces_info_individual") {
     file_list = "$target_gen_dir/${target_name}_file_list.txt"
     write_file(file_list, rebase_path(invoker.sources_static, root_build_dir))
 
-    source_prereqs = [
+    inputs = [
       "$bindings_scripts_dir/utilities.py",
       file_list,
     ] + invoker.sources_static + invoker.sources_generated
@@ -84,7 +84,7 @@ template("generate_event_interfaces") {
     write_file(idl_files_list,
                rebase_path(invoker.sources, root_build_dir))
 
-    source_prereqs = [
+    inputs = [
       "//third_party/WebKit/Source/bindings/scripts/utilities.py",
       idl_files_list,
     ] + invoker.sources
@@ -121,10 +121,10 @@ template("idl_compiler") {
     # really expressible in GN now).
     script = "//third_party/WebKit/Source/bindings/scripts/idl_compiler.py"
 
-    source_prereqs =
+    inputs =
       idl_lexer_parser_files +  # to be explicit (covered by parsetab)
       idl_compiler_files
-    source_prereqs += [
+    inputs += [
       "$bindings_scripts_output_dir/lextab.py",
       "$bindings_scripts_output_dir/parsetab.pickle",
       "$bindings_scripts_output_dir/cached_jinja_templates.stamp",
@@ -142,7 +142,7 @@ template("idl_compiler") {
     # FIXME: This is too conservative, and causes excess rebuilds:
     # compute this file-by-file.  http://crbug.com/341748
     # This should theoretically just be the IDL files passed in.
-    source_prereqs += all_dependency_idl_files
+    inputs += all_dependency_idl_files
 
     sources = invoker.sources
     outputs = [
@@ -189,7 +189,7 @@ template("aggregate_generated_bindings") {
     idl_files_list = "$target_gen_dir/${target_name}_file_list.tmp"
     write_file(idl_files_list, rebase_path(invoker.sources, root_build_dir))
 
-    source_prereqs = [ idl_files_list ] + invoker.sources
+    inputs = [ idl_files_list ] + invoker.sources
     outputs = invoker.outputs
 
     args = [

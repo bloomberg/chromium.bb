@@ -19,7 +19,7 @@ visibility = "//third_party/WebKit/*"
 action("cached_lex_yacc_tables") {
   script = "blink_idl_parser.py"
 
-  source_prereqs = idl_lexer_parser_files
+  inputs = idl_lexer_parser_files
   outputs = [
     "$bindings_scripts_output_dir/lextab.py",
     "$bindings_scripts_output_dir/parsetab.pickle",
@@ -36,7 +36,7 @@ action("cached_lex_yacc_tables") {
 action("cached_jinja_templates") {
   script = "code_generator_v8.py"
 
-  source_prereqs = jinja_module_files + [ "code_generator_v8.py" ] +
+  inputs = jinja_module_files + [ "code_generator_v8.py" ] +
     code_generator_template_files
   # Dummy file to track dependency.
   stamp_file = "$bindings_scripts_output_dir/cached_jinja_templates.stamp"

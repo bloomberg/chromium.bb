@@ -89,7 +89,7 @@ compute_interfaces_info_individual("interfaces_info_individual_modules") {
 action("interfaces_info") {
   script = "$bindings_scripts_dir/compute_interfaces_info_overall.py"
 
-  source_prereqs = [
+  inputs = [
     "$bindings_core_output_dir/InterfacesInfoCoreIndividual.pickle",
     "$bindings_modules_output_dir/InterfacesInfoModulesIndividual.pickle",
   ]

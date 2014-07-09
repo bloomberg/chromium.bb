@@ -92,11 +92,11 @@ template("process_in_files") {
   action(target_name) {
     script = invoker.script
 
-    source_prereqs = invoker.in_files
+    inputs = invoker.in_files
     if (defined(invoker.other_inputs)) {
-      source_prereqs += invoker.other_inputs
+      inputs += invoker.other_inputs
     } else {
-      source_prereqs += scripts_for_in_files
+      inputs += scripts_for_in_files
     }
     outputs = invoker.outputs
 
@@ -162,7 +162,7 @@ template("make_token_matcher") {
   action(target_name) {
     script = "//third_party/WebKit/Source/build/scripts/make_token_matcher.py"
 
-    source_prereqs = scripts_for_in_files + [ invoker.input_file ]
+    inputs = scripts_for_in_files + [ invoker.input_file ]
     outputs = [ invoker.output_file ]
 
     args = [

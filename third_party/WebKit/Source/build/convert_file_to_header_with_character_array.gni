@@ -16,7 +16,7 @@ template("convert_file_to_header_with_character_array") {
   action(target_name) {
     script = "//third_party/WebKit/Source/build/scripts/xxd.py"
 
-    source_prereqs = [ invoker.input_file_path ]
+    inputs = [ invoker.input_file_path ]
     outputs = [ invoker.output_file_path ]
 
     args = [

@@ -36,7 +36,7 @@ generated_global_constructors_header_files = [
 action("global_objects") {
   script = "scripts/compute_global_objects.py"
 
-  source_prereqs = [
+  inputs = [
     "scripts/utilities.py",
     # Only look in main IDL files (exclude dependencies and testing,
     # which should not define global objects).
@@ -61,7 +61,7 @@ action("global_objects") {
 action("global_constructors_idls") {
   script = "scripts/generate_global_constructors.py"
 
-  source_prereqs = [
+  inputs = [
     "scripts/generate_global_constructors.py",
     "scripts/utilities.py",
     "$bindings_output_dir/GlobalObjects.pickle",

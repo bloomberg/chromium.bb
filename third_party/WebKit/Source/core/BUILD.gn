@@ -513,7 +513,7 @@ group("generated_testing_idls") {
 action("generated_testing_idls_settings") {
   script = "../build/scripts/make_settings.py"
 
-  source_prereqs = scripts_for_in_files + [
+  inputs = scripts_for_in_files + [
     "../build/scripts/make_settings.py",
     "../build/scripts/templates/InternalSettingsGenerated.idl.tmpl",
     "../build/scripts/templates/InternalSettingsGenerated.cpp.tmpl",
@@ -538,7 +538,7 @@ action("generated_testing_idls_settings") {
 action("generated_testing_idls_internal_runtime_flags") {
   script = "../build/scripts/make_internal_runtime_flags.py"
 
-  source_prereqs = scripts_for_in_files + [
+  inputs = scripts_for_in_files + [
     "../build/scripts/make_internal_runtime_flags.py",
     "../platform/RuntimeEnabledFeatures.in",
     "../build/scripts/templates/InternalRuntimeFlags.h.tmpl",
@@ -943,7 +943,7 @@ action("make_core_generated_private_script") {
   visibility = ":make_core_generated"
   script = "../build/scripts/make_private_script_source.py"
 
-  source_prereqs = [
+  inputs = [
     "../bindings/core/v8/PrivateScriptRunner.js",
   ]
   outputs = [
@@ -951,7 +951,7 @@ action("make_core_generated_private_script") {
   ]
 
   args = rebase_path(outputs, root_build_dir)
-  args += rebase_path(source_prereqs, root_build_dir)
+  args += rebase_path(inputs, root_build_dir)
 
   deps = make_core_generated_deps
 }
@@ -960,7 +960,7 @@ action("make_core_generated_private_script_for_testing") {
   visibility = ":make_core_generated"
   script = "../build/scripts/make_private_script_source.py"
 
-  source_prereqs = [
+  inputs = [
     "testing/PrivateScriptTest.js",
   ]
   outputs = [
@@ -968,7 +968,7 @@ action("make_core_generated_private_script_for_testing") {
   ]
 
   args = rebase_path(outputs, root_build_dir)
-  args += rebase_path(source_prereqs, root_build_dir)
+  args += rebase_path(inputs, root_build_dir)
 
   deps = make_core_generated_deps
 }
@@ -978,7 +978,7 @@ action("make_core_generated_xml_viewer_css") {
   visibility = ":make_core_generated"
   script = "../build/scripts/xxd.py"
 
-  source_prereqs = [
+  inputs = [
     "xml/XMLViewer.css",
   ]
   outputs = [
@@ -987,7 +987,7 @@ action("make_core_generated_xml_viewer_css") {
 
   args = [
     "XMLViewer_css",
-    rebase_path(source_prereqs[0], root_build_dir),
+    rebase_path(inputs[0], root_build_dir),
     rebase_path(outputs[0], root_build_dir),
   ]
 
@@ -999,7 +999,7 @@ action("make_core_generated_xml_viewer_js") {
   visibility = ":make_core_generated"
   script = "../build/scripts/xxd.py"
 
-  source_prereqs = [
+  inputs = [
     "xml/XMLViewer.js",
   ]
   outputs = [
@@ -1008,7 +1008,7 @@ action("make_core_generated_xml_viewer_js") {
 
   args = [
     "XMLViewer_js",
-    rebase_path(source_prereqs[0], root_build_dir),
+    rebase_path(inputs[0], root_build_dir),
     rebase_path(outputs[0], root_build_dir),
   ]
 
@@ -1020,7 +1020,7 @@ action("make_core_generated_html_entity_table") {
   visibility = ":make_core_generated"
   script = "html/parser/create-html-entity-table"
 
-  source_prereqs = [
+  inputs = [
     "html/parser/HTMLEntityNames.in",
   ]
   outputs = [
@@ -1028,7 +1028,7 @@ action("make_core_generated_html_entity_table") {
   ]
 
   args = [ "-o" ] + rebase_path(outputs, root_build_dir) 
-  args += rebase_path(source_prereqs, root_build_dir)
+  args += rebase_path(inputs, root_build_dir)
 
   deps = make_core_generated_deps
 }
@@ -1055,7 +1055,7 @@ action("make_core_generated_user_agent_style_sheets") {
   visibility = ":make_core_generated"
   script = "../build/scripts/make-file-arrays.py"
 
-  source_prereqs = [
+  inputs = [
     "css/html.css",
     "css/quirks.css",
     "css/view-source.css",
@@ -1086,7 +1086,7 @@ action("make_core_generated_user_agent_style_sheets") {
     [ "--namespace", "WebCore" ] +
     [ "--out-h=" + rebase_path(outputs[0], root_build_dir) ] +
     [ "--out-cpp=" + rebase_path(outputs[1], root_build_dir) ] +
-    rebase_path(source_prereqs, root_build_dir)
+    rebase_path(inputs, root_build_dir)
 
   deps = make_core_generated_deps
 }
@@ -1097,7 +1097,7 @@ action("make_core_generated_html_element_lookup_trie") {
   script = "../build/scripts/make_element_lookup_trie.py"
 
   input_file = "html/HTMLTagNames.in"
-  source_prereqs = scripts_for_in_files + [
+  inputs = scripts_for_in_files + [
     input_file,
     "../build/scripts/templates/ElementLookupTrie.cpp.tmpl",
     "../build/scripts/templates/ElementLookupTrie.h.tmpl",
