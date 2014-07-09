@@ -1,6 +1,7 @@
 {
   "Linux Trusty": {
     "gtest_tests": [
+      "accessibility_unittests",
       "app_list_unittests",
       "aura_unittests",
       "interactive_ui_tests",
@@ -54,6 +55,7 @@
   },
   "Linux Trusty (dbg)": {
     "gtest_tests": [
+      "accessibility_unittests",
       "app_list_unittests",
       "aura_unittests",
       "interactive_ui_tests",
@@ -107,6 +109,7 @@
   },
   "Linux Trusty (32)": {
     "gtest_tests": [
+      "accessibility_unittests",
       "app_list_unittests",
       "aura_unittests",
       "interactive_ui_tests",
@@ -160,6 +163,7 @@
   },
   "Linux Trusty (dbg)(32)": {
     "gtest_tests": [
+      "accessibility_unittests",
       "app_list_unittests",
       "aura_unittests",
       "interactive_ui_tests",
@@ -221,6 +225,7 @@
   },
   "Chromium Linux MSan": {
     "gtest_tests": [
+      "accessibility_unittests",
       "base_unittests",
       "cacheinvalidation_unittests",
       "cc_unittests",

@@ -26,6 +26,7 @@
   },
   "XP Tests (2)": {
     "gtest_tests": [
+      "accessibility_unittests",
       "base_unittests",
       "net_unittests",
       "views_unittests",
@@ -81,6 +82,7 @@
   },
   "Vista Tests (2)": {
     "gtest_tests": [
+      "accessibility_unittests",
       "base_unittests",
       "net_unittests",
       "views_unittests",
@@ -146,6 +148,7 @@
   },
   "Win7 Tests (2)": {
     "gtest_tests": [
+      "accessibility_unittests",
       "base_unittests",
       "net_unittests",
       "views_unittests",
@@ -211,6 +214,7 @@
   },
   "Win 7 Tests x64 (2)": {
     "gtest_tests": [
+      "accessibility_unittests",
       "base_unittests",
       "chrome_elf_unittests",
       "net_unittests",
@@ -245,6 +249,7 @@
   },
   "Win7 Tests (dbg)(1)": {
     "gtest_tests": [
+      "accessibility_unittests",
       "base_unittests",
       "cacheinvalidation_unittests",
       "cast_unittests",

@@ -1,6 +1,7 @@
 {
   "Linux Tests": {
     "gtest_tests": [
+      "accessibility_unittests",
       "app_list_unittests",
       "aura_unittests",
       "interactive_ui_tests",
@@ -55,6 +56,7 @@
   },
   "Linux GTK Tests": {
     "gtest_tests": [
+      "accessibility_unittests",
       "interactive_ui_tests",
       "base_unittests",
       "cacheinvalidation_unittests",
@@ -106,6 +108,7 @@
   },
   "Linux Tests (dbg)(2)(32)": {
     "gtest_tests": [
+      "accessibility_unittests",
       "app_list_unittests",
       "aura_unittests",
       "interactive_ui_tests",
@@ -162,6 +165,7 @@
   },
   "Linux Tests (dbg)(2)": {
     "gtest_tests": [
+      "accessibility_unittests",
       "app_list_unittests",
       "aura_unittests",
       "interactive_ui_tests",
@@ -211,6 +215,7 @@
   },
   "Linux Clang (dbg)": {
     "gtest_tests": [
+      "accessibility_unittests",
       "base_unittests",
       "components_unittests",
       "crypto_unittests",
