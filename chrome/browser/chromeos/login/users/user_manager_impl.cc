@@ -30,7 +30,6 @@
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/chromeos/login/auth/user_context.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_app_launcher.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
 #include "chrome/browser/chromeos/login/signin/auth_sync_observer.h"
@@ -57,7 +56,9 @@
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/cryptohome/async_method_caller.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/login/auth/user_context.h"
 #include "chromeos/login/login_state.h"
+#include "chromeos/login/user_names.h"
 #include "chromeos/settings/cros_settings_names.h"
 #include "components/user_manager/user_type.h"
 #include "content/public/browser/browser_thread.h"
@@ -393,9 +394,9 @@ void UserManagerImpl::UserLoggedIn(const std::string& user_id,
   }
 
   policy::DeviceLocalAccount::Type device_local_account_type;
-  if (user_id == UserManager::kGuestUserName) {
+  if (user_id == chromeos::login::kGuestUserName) {
     GuestUserLoggedIn();
-  } else if (user_id == UserManager::kRetailModeUserName) {
+  } else if (user_id == chromeos::login::kRetailModeUserName) {
     RetailModeUserLoggedIn();
   } else if (policy::IsDeviceLocalAccountUser(user_id,
                                               &device_local_account_type) &&
@@ -413,7 +414,7 @@ void UserManagerImpl::UserLoggedIn(const std::string& user_id,
                 user->GetType() == user_manager::USER_TYPE_LOCALLY_MANAGED) ||
                (!user &&
                 gaia::ExtractDomainName(user_id) ==
-                    UserManager::kLocallyManagedUserDomain)) {
+                    chromeos::login::kLocallyManagedUserDomain)) {
       LocallyManagedUserLoggedIn(user_id);
     } else if (browser_restart && user_id == g_browser_process->local_state()->
                    GetString(kPublicAccountPendingDataRemoval)) {
@@ -584,7 +585,7 @@ void UserManagerImpl::RemoveUserFromList(const std::string& user_id) {
     DeleteUser(RemoveRegularOrLocallyManagedUserFromList(user_id));
   } else if (user_loading_stage_ == STAGE_LOADING) {
     DCHECK(gaia::ExtractDomainName(user_id) ==
-        UserManager::kLocallyManagedUserDomain);
+           chromeos::login::kLocallyManagedUserDomain);
     // Special case, removing partially-constructed supervised user during user
     // list loading.
     ListPrefUpdate users_update(g_browser_process->local_state(),
@@ -944,7 +945,7 @@ bool UserManagerImpl::IsLoggedInAsKioskApp() const {
 
 bool UserManagerImpl::IsLoggedInAsStub() const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  return IsUserLoggedIn() && active_user_->email() == kStubUser;
+  return IsUserLoggedIn() && active_user_->email() == login::kStubUser;
 }
 
 bool UserManagerImpl::IsSessionStarted() const {
@@ -961,9 +962,8 @@ bool UserManagerImpl::IsUserNonCryptohomeDataEphemeral(
     const std::string& user_id) const {
   // Data belonging to the guest, retail mode and stub users is always
   // ephemeral.
-  if (user_id == UserManager::kGuestUserName ||
-      user_id == UserManager::kRetailModeUserName ||
-      user_id == kStubUser) {
+  if (user_id == login::kGuestUserName ||
+      user_id == login::kRetailModeUserName || user_id == login::kStubUser) {
     return true;
   }
 
@@ -1085,7 +1085,7 @@ void UserManagerImpl::EnsureUsersLoaded() {
        it != regular_users.end(); ++it) {
     User* user = NULL;
     const std::string domain = gaia::ExtractDomainName(*it);
-    if (domain == UserManager::kLocallyManagedUserDomain)
+    if (domain == chromeos::login::kLocallyManagedUserDomain)
       user = User::CreateLocallyManagedUser(*it);
     else
       user = User::CreateRegularUser(*it);
@@ -1214,7 +1214,7 @@ void UserManagerImpl::GuestUserLoggedIn() {
   // http://crosbug.com/230859
   active_user_->SetStubImage(User::kInvalidImageIndex, false);
   // Initializes wallpaper after active_user_ is set.
-  WallpaperManager::Get()->SetUserWallpaperNow(UserManager::kGuestUserName);
+  WallpaperManager::Get()->SetUserWallpaperNow(chromeos::login::kGuestUserName);
 }
 
 void UserManagerImpl::AddUserRecord(User* user) {
@@ -1375,11 +1375,10 @@ void UserManagerImpl::RetailModeUserLoggedIn() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   is_current_user_new_ = true;
   active_user_ = User::CreateRetailModeUser();
-  GetUserImageManager(UserManager::kRetailModeUserName)->UserLoggedIn(
-      is_current_user_new_,
-      true);
+  GetUserImageManager(chromeos::login::kRetailModeUserName)
+      ->UserLoggedIn(is_current_user_new_, true);
   WallpaperManager::Get()->SetUserWallpaperNow(
-      UserManager::kRetailModeUserName);
+      chromeos::login::kRetailModeUserName);
 }
 
 void UserManagerImpl::NotifyOnLogin() {

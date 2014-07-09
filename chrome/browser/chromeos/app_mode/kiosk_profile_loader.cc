@@ -11,16 +11,16 @@
 #include "base/sys_info.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/chromeos/login/auth/login_status_consumer.h"
-#include "chrome/browser/chromeos/login/auth/user_context.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_app_launcher.h"
 #include "chrome/browser/chromeos/login/login_utils.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host_impl.h"
-#include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chromeos/cryptohome/async_method_caller.h"
 #include "chromeos/dbus/cryptohome_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/login/auth/user_context.h"
+#include "chromeos/login/user_names.h"
 #include "content/public/browser/browser_thread.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 
@@ -157,7 +157,7 @@ void KioskProfileLoader::OnLoginSuccess(const UserContext& user_context)  {
   // we switch this back to the demo user name to correctly identify this
   // user as a demo user.
   UserContext context = user_context;
-  if (context.GetUserID() == UserManager::kGuestUserName)
+  if (context.GetUserID() == chromeos::login::kGuestUserName)
     context.SetUserID(DemoAppLauncher::kDemoUserName);
   LoginUtils::Get()->PrepareProfile(context,
                                     false,  // has_auth_cookies

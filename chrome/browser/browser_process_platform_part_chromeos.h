@@ -50,7 +50,7 @@ class BrowserProcessPlatformPart : public BrowserProcessPlatformPartBase,
   policy::BrowserPolicyConnectorChromeOS* browser_policy_connector_chromeos();
 
   // Overridden from BrowserProcessPlatformPartBase:
-  virtual void StartTearDown() OVERRIDE;
+    virtual void StartTearDown() OVERRIDE;
 
   virtual scoped_ptr<policy::BrowserPolicyConnector>
       CreateBrowserPolicyConnector() OVERRIDE;

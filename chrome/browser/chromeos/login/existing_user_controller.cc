@@ -28,7 +28,6 @@
 #include "chrome/browser/chromeos/customization_document.h"
 #include "chrome/browser/chromeos/first_run/first_run.h"
 #include "chrome/browser/chromeos/kiosk_mode/kiosk_mode_settings.h"
-#include "chrome/browser/chromeos/login/auth/user_context.h"
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/login_utils.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
@@ -48,6 +47,8 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_manager_client.h"
 #include "chromeos/dbus/session_manager_client.h"
+#include "chromeos/login/auth/user_context.h"
+#include "chromeos/login/user_names.h"
 #include "chromeos/settings/cros_settings_names.h"
 #include "components/google/core/browser/google_util.h"
 #include "components/policy/core/common/policy_service.h"
@@ -452,7 +453,7 @@ void ExistingUserController::PerformLogin(
 
   is_login_in_progress_ = true;
   if (gaia::ExtractDomainName(user_context.GetUserID()) ==
-          UserManager::kLocallyManagedUserDomain) {
+      chromeos::login::kLocallyManagedUserDomain) {
     login_performer_->LoginAsLocallyManagedUser(user_context);
   } else {
     login_performer_->PerformLogin(user_context, auth_mode);

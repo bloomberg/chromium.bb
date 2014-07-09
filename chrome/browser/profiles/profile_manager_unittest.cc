@@ -50,6 +50,7 @@
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
 #include "chromeos/chromeos_switches.h"
+#include "chromeos/login/user_names.h"
 #endif
 
 using base::ASCIIToUTF16;
@@ -398,14 +399,13 @@ class ProfileManagerGuestTest : public ProfileManagerTest  {
 
     cl->AppendSwitchASCII(chromeos::switches::kLoginProfile,
                           std::string(chrome::kProfileDirPrefix) +
-                              chromeos::UserManager::kGuestUserName);
+                              chromeos::login::kGuestUserName);
     cl->AppendSwitch(chromeos::switches::kGuestSession);
     cl->AppendSwitch(::switches::kIncognito);
 
-    chromeos::UserManager::Get()->UserLoggedIn(
-        chromeos::UserManager::kGuestUserName,
-        chromeos::UserManager::kGuestUserName,
-        false);
+    chromeos::UserManager::Get()->UserLoggedIn(chromeos::login::kGuestUserName,
+                                               chromeos::login::kGuestUserName,
+                                               false);
 #endif
   }
 };

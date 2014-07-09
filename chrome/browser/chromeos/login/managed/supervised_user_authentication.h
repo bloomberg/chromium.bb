@@ -9,8 +9,8 @@
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "base/values.h"
-#include "chrome/browser/chromeos/login/auth/user_context.h"
 #include "chrome/browser/chromeos/login/managed/supervised_user_login_flow.h"
+#include "chromeos/login/auth/user_context.h"
 
 namespace chromeos {
 

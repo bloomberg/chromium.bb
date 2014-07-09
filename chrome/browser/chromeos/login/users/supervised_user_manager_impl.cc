@@ -21,6 +21,7 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/supervised_user/supervised_user_service.h"
 #include "chrome/browser/supervised_user/supervised_user_service_factory.h"
+#include "chromeos/login/user_names.h"
 #include "chromeos/settings/cros_settings_names.h"
 #include "components/user_manager/user_type.h"
 #include "content/public/browser/browser_thread.h"
@@ -149,8 +150,8 @@ std::string SupervisedUserManagerImpl::GenerateUserId() {
   std::string id;
   bool user_exists;
   do {
-    id = base::StringPrintf("%d@%s", counter,
-        UserManager::kLocallyManagedUserDomain);
+    id = base::StringPrintf(
+        "%d@%s", counter, chromeos::login::kLocallyManagedUserDomain);
     counter++;
     user_exists = (NULL != owner_->FindUser(id));
     DCHECK(!user_exists);
@@ -430,7 +431,7 @@ void SupervisedUserManagerImpl::RollbackUserCreationTransaction() {
   }
 
   if (gaia::ExtractDomainName(user_id) !=
-          UserManager::kLocallyManagedUserDomain) {
+      chromeos::login::kLocallyManagedUserDomain) {
     LOG(WARNING) << "Clean up transaction for  non-locally managed user found :"
                  << user_id << ", will not remove data";
     prefs->ClearPref(kLocallyManagedUserCreationTransactionDisplayName);

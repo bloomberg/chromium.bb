@@ -2,12 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_LOGIN_AUTH_USER_CONTEXT_H_
-#define CHROME_BROWSER_CHROMEOS_LOGIN_AUTH_USER_CONTEXT_H_
+#ifndef CHROMEOS_LOGIN_AUTH_USER_CONTEXT_H_
+#define CHROMEOS_LOGIN_AUTH_USER_CONTEXT_H_
 
 #include <string>
 
-#include "chrome/browser/chromeos/login/auth/key.h"
+#include "chromeos/chromeos_export.h"
+#include "chromeos/login/auth/key.h"
 #include "components/user_manager/user_type.h"
 
 namespace chromeos {
@@ -16,7 +17,7 @@ namespace chromeos {
 // credentials may consist of a |user_id_|, |key_| pair or a GAIA |auth_code_|.
 // The |user_id_hash_| is used to locate the user's home directory
 // mount point for the user. It is set when the mount has been completed.
-class UserContext {
+class CHROMEOS_EXPORT UserContext {
  public:
   // The authentication flow used during sign-in.
   enum AuthFlow {
@@ -70,4 +71,4 @@ class UserContext {
 
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_CHROMEOS_LOGIN_AUTH_USER_CONTEXT_H_
+#endif  // CHROMEOS_LOGIN_AUTH_USER_CONTEXT_H_

@@ -8,7 +8,7 @@
 #include <string>
 
 #include "chrome/browser/chromeos/login/auth/login_status_consumer.h"
-#include "chrome/browser/chromeos/login/auth/user_context.h"
+#include "chromeos/login/auth/user_context.h"
 #include "components/user_manager/user_type.h"
 #include "google_apis/gaia/gaia_auth_consumer.h"
 #include "google_apis/gaia/gaia_auth_fetcher.h"

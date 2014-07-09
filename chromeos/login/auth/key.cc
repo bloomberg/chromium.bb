@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/login/auth/key.h"
+#include "chromeos/login/auth/key.h"
 
 #include "base/base64.h"
 #include "base/logging.h"
@@ -25,32 +25,27 @@ const int kKeySizeInBits = 256;
 Key::Key() : key_type_(KEY_TYPE_PASSWORD_PLAIN) {
 }
 
-Key::Key(const Key& other) : key_type_(other.key_type_),
-                             salt_(other.salt_),
-                             secret_(other.secret_),
-                             label_(other.label_) {
+Key::Key(const Key& other)
+    : key_type_(other.key_type_),
+      salt_(other.salt_),
+      secret_(other.secret_),
+      label_(other.label_) {
 }
 
 Key::Key(const std::string& plain_text_password)
-    : key_type_(KEY_TYPE_PASSWORD_PLAIN),
-      secret_(plain_text_password) {
+    : key_type_(KEY_TYPE_PASSWORD_PLAIN), secret_(plain_text_password) {
 }
 
 Key::Key(KeyType key_type, const std::string& salt, const std::string& secret)
-    : key_type_(key_type),
-      salt_(salt),
-      secret_(secret) {
-
+    : key_type_(key_type), salt_(salt), secret_(secret) {
 }
 
 Key::~Key() {
 }
 
 bool Key::operator==(const Key& other) const {
-  return other.key_type_ == key_type_ &&
-         other.salt_ == salt_ &&
-         other.secret_ == secret_ &&
-         other.label_ == label_;
+  return other.key_type_ == key_type_ && other.salt_ == salt_ &&
+         other.secret_ == secret_ && other.label_ == label_;
 }
 
 Key::KeyType Key::GetKeyType() const {
@@ -92,7 +87,8 @@ void Key::Transform(KeyType target_key_type, const std::string& salt) {
       secret_ = StringToLowerASCII(base::HexEncode(
           reinterpret_cast<const void*>(hash), sizeof(hash) / 2));
       break;
-    } case KEY_TYPE_SALTED_PBKDF2_AES256_1234: {
+    }
+    case KEY_TYPE_SALTED_PBKDF2_AES256_1234: {
       scoped_ptr<crypto::SymmetricKey> key(
           crypto::SymmetricKey::DeriveKeyFromPassword(crypto::SymmetricKey::AES,
                                                       secret_,
@@ -103,7 +99,8 @@ void Key::Transform(KeyType target_key_type, const std::string& salt) {
       key->GetRawKey(&raw_secret);
       base::Base64Encode(raw_secret, &secret_);
       break;
-    } default:
+    }
+    default:
       // The resulting key will be sent to cryptohomed. It should always be
       // hashed. If hashing fails, crash instead of sending a plain-text key.
       CHECK(false);

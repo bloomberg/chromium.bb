@@ -11,7 +11,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/login/auth/auth_attempt_state_resolver.h"
-#include "chrome/browser/chromeos/login/auth/user_context.h"
+#include "chromeos/login/auth/user_context.h"
 
 namespace content {
 class BrowserContext;

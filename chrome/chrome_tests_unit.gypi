@@ -764,7 +764,6 @@
         'browser/chromeos/input_method/input_method_util_unittest.cc',
         'browser/chromeos/kiosk_mode/kiosk_mode_idle_logout_unittest.cc',
         'browser/chromeos/kiosk_mode/kiosk_mode_settings_unittest.cc',
-        'browser/chromeos/login/auth/key_unittest.cc',
         'browser/chromeos/login/auth/mock_auth_attempt_state_resolver.cc',
         'browser/chromeos/login/auth/mock_auth_attempt_state_resolver.h',
         'browser/chromeos/login/auth/online_attempt_unittest.cc',

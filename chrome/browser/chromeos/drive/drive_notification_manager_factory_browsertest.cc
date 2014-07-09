@@ -12,6 +12,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chromeos/chromeos_switches.h"
+#include "chromeos/login/user_names.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace drive {
@@ -43,7 +44,7 @@ class DriveNotificationManagerFactoryGuestBrowserTest
     command_line->AppendSwitch(::switches::kIncognito);
     command_line->AppendSwitchASCII(chromeos::switches::kLoginProfile, "user");
     command_line->AppendSwitchASCII(chromeos::switches::kLoginUser,
-                                    chromeos::UserManager::kGuestUserName);
+                                    chromeos::login::kGuestUserName);
   }
 };
 

@@ -3,11 +3,11 @@
 // found in the LICENSE file.
 
 #include "base/command_line.h"
-#include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/ui/webui/options/options_ui_browsertest.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/chromeos_switches.h"
+#include "chromeos/login/user_names.h"
 
 namespace {
 
@@ -20,7 +20,7 @@ class GuestModeOptionsBrowserTest : public options::OptionsUIBrowserTest {
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     command_line->AppendSwitch(chromeos::switches::kGuestSession);
     command_line->AppendSwitchASCII(chromeos::switches::kLoginUser,
-                                    chromeos::UserManager::kGuestUserName);
+                                    chromeos::login::kGuestUserName);
     command_line->AppendSwitchASCII(chromeos::switches::kLoginProfile,
                                     TestingProfile::kTestUserProfileDir);
     command_line->AppendSwitch(switches::kIncognito);

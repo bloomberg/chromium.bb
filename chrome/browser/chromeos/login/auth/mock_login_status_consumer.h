@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_LOGIN_AUTH_MOCK_LOGIN_STATUS_CONSUMER_H_
 
 #include "chrome/browser/chromeos/login/auth/login_status_consumer.h"
-#include "chrome/browser/chromeos/login/auth/user_context.h"
+#include "chromeos/login/auth/user_context.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace chromeos {

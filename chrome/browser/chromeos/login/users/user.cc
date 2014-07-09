@@ -10,6 +10,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/chromeos/login/users/avatar/default_user_images.h"
 #include "chrome/browser/chromeos/login/users/user_manager.h"
+#include "chromeos/login/user_names.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "grit/theme_resources.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -244,7 +245,7 @@ bool RegularUser::CanSyncImage() const {
   return true;
 }
 
-GuestUser::GuestUser() : User(UserManager::kGuestUserName) {
+GuestUser::GuestUser() : User(chromeos::login::kGuestUserName) {
   set_display_email(std::string());
 }
 
@@ -280,7 +281,7 @@ std::string LocallyManagedUser::display_email() const {
   return base::UTF16ToUTF8(display_name());
 }
 
-RetailModeUser::RetailModeUser() : User(UserManager::kRetailModeUserName) {
+RetailModeUser::RetailModeUser() : User(chromeos::login::kRetailModeUserName) {
   set_display_email(std::string());
 }
 

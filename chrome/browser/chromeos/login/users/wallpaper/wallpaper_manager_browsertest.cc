@@ -31,6 +31,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chromeos/chromeos_switches.h"
+#include "chromeos/login/user_names.h"
 #include "content/public/test/test_utils.h"
 #include "ui/aura/env.h"
 #include "ui/gfx/image/image_skia.h"
@@ -344,7 +345,7 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTest,
                        HotPlugInScreenAtGAIALoginScreen) {
   UpdateDisplay("800x600");
   // Set initial wallpaper to the default wallpaper.
-  WallpaperManager::Get()->SetDefaultWallpaperNow(UserManager::kStubUser);
+  WallpaperManager::Get()->SetDefaultWallpaperNow(chromeos::login::kStubUser);
   wallpaper_manager_test_utils::WaitAsyncWallpaperLoadFinished();
 
   // Hook up a 2000x2000 display. The large resolution custom wallpaper should
@@ -748,7 +749,7 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTest, SmallGuestWallpaper) {
     return;
   CreateCmdlineWallpapers();
   UserManager::Get()->UserLoggedIn(
-      UserManager::kGuestUserName, UserManager::kGuestUserName, false);
+      chromeos::login::kGuestUserName, chromeos::login::kGuestUserName, false);
   UpdateDisplay("800x600");
   WallpaperManager::Get()->SetDefaultWallpaperNow(std::string());
   wallpaper_manager_test_utils::WaitAsyncWallpaperLoadFinished();
@@ -763,7 +764,7 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTest, LargeGuestWallpaper) {
 
   CreateCmdlineWallpapers();
   UserManager::Get()->UserLoggedIn(
-      UserManager::kGuestUserName, UserManager::kGuestUserName, false);
+      chromeos::login::kGuestUserName, chromeos::login::kGuestUserName, false);
   UpdateDisplay("1600x1200");
   WallpaperManager::Get()->SetDefaultWallpaperNow(std::string());
   wallpaper_manager_test_utils::WaitAsyncWallpaperLoadFinished();
@@ -777,7 +778,8 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTest,
   // Start loading the default wallpaper.
   UpdateDisplay("640x480");
   CreateCmdlineWallpapers();
-  UserManager::Get()->UserLoggedIn(UserManager::kStubUser, "test_hash", false);
+  UserManager::Get()->UserLoggedIn(
+      chromeos::login::kStubUser, "test_hash", false);
 
   WallpaperManager::Get()->SetDefaultWallpaperNow(std::string());
 
@@ -785,7 +787,7 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTest,
   // wallpaper load task.
   gfx::ImageSkia image = wallpaper_manager_test_utils::CreateTestImage(
       640, 480, wallpaper_manager_test_utils::kCustomWallpaperColor);
-  WallpaperManager::Get()->SetCustomWallpaper(UserManager::kStubUser,
+  WallpaperManager::Get()->SetCustomWallpaper(chromeos::login::kStubUser,
                                               "test_hash",
                                               "test-nofile.jpeg",
                                               WALLPAPER_LAYOUT_STRETCH,

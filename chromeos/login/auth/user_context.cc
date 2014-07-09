@@ -2,9 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/login/auth/user_context.h"
-
-#include "chrome/browser/chromeos/login/helper.h"
+#include "chromeos/login/auth/user_context.h"
+#include "chromeos/login/user_names.h"
 
 namespace chromeos {
 

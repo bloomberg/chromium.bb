@@ -43,6 +43,7 @@
 #include "chrome/common/pref_names.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/login/user_names.h"
 #include "components/user_manager/user_type.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
@@ -622,7 +623,7 @@ void WallpaperManager::InitializeWallpaper() {
 
   if (!user_manager->IsUserLoggedIn()) {
     if (!StartupUtils::IsDeviceRegistered())
-      SetDefaultWallpaperDelayed(UserManager::kSignInUser);
+      SetDefaultWallpaperDelayed(chromeos::login::kSignInUser);
     else
       InitializeRegisteredDeviceWallpaper();
     return;
@@ -1234,7 +1235,7 @@ void WallpaperManager::UpdateWallpaper(bool clear_cache) {
   // be set. It could result a black screen on external monitors.
   // See http://crbug.com/265689 for detail.
   if (last_selected_user_.empty()) {
-    SetDefaultWallpaperNow(UserManager::kSignInUser);
+    SetDefaultWallpaperNow(chromeos::login::kSignInUser);
     return;
   }
   SetUserWallpaperNow(last_selected_user_);
@@ -1386,7 +1387,7 @@ void WallpaperManager::InitializeRegisteredDeviceWallpaper() {
   int public_session_user_index = FindPublicSession(users);
   if ((!show_users && public_session_user_index == -1) || users.empty()) {
     // Boot into sign in form, preload default wallpaper.
-    SetDefaultWallpaperDelayed(UserManager::kSignInUser);
+    SetDefaultWallpaperDelayed(chromeos::login::kSignInUser);
     return;
   }
 

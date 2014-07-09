@@ -96,6 +96,7 @@
 #include "chromeos/ime/ime_keyboard.h"
 #include "chromeos/ime/input_method_manager.h"
 #include "chromeos/login/login_state.h"
+#include "chromeos/login/user_names.h"
 #include "chromeos/network/network_change_notifier_chromeos.h"
 #include "chromeos/network/network_change_notifier_factory_chromeos.h"
 #include "chromeos/network/network_handler.h"
@@ -153,7 +154,7 @@ void OptionallyRunChromeOSLoginManager(const CommandLine& parsed_command_line,
   std::string login_user = parsed_command_line.
       GetSwitchValueASCII(chromeos::switches::kLoginUser);
   if (!base::SysInfo::IsRunningOnChromeOS() &&
-      login_user == UserManager::kStubUser) {
+      login_user == chromeos::login::kStubUser) {
     return;
   }
 
@@ -311,8 +312,8 @@ void ChromeBrowserMainPartsChromeos::PreEarlyInitialization() {
       !parsed_command_line().HasSwitch(switches::kLoginManager) &&
       !parsed_command_line().HasSwitch(switches::kLoginUser) &&
       !parsed_command_line().HasSwitch(switches::kGuestSession)) {
-    singleton_command_line->AppendSwitchASCII(
-        switches::kLoginUser, UserManager::kStubUser);
+    singleton_command_line->AppendSwitchASCII(switches::kLoginUser,
+                                              chromeos::login::kStubUser);
     if (!parsed_command_line().HasSwitch(switches::kLoginProfile)) {
       singleton_command_line->AppendSwitchASCII(switches::kLoginProfile,
                                                 chrome::kTestUserProfileDir);
@@ -560,14 +561,15 @@ void ChromeBrowserMainPartsChromeos::PostProfileInit() {
   // 1. Chrome is restarted after crash.
   // 2. Chrome is started in browser_tests skipping the login flow.
   // 3. Chrome is started on dev machine i.e. not on Chrome OS device w/o
-  //    login flow. In that case --login-user=[UserManager::kStubUser] is added.
+  //    login flow. In that case --login-user=[chromeos::login::kStubUser] is
+  //    added.
   //    See PreEarlyInitialization().
   if (parsed_command_line().HasSwitch(switches::kLoginUser)) {
     std::string login_user = login::CanonicalizeUserID(
         parsed_command_line().GetSwitchValueASCII(
             chromeos::switches::kLoginUser));
     if (!base::SysInfo::IsRunningOnChromeOS() &&
-        login_user == UserManager::kStubUser) {
+        login_user == chromeos::login::kStubUser) {
       // For dev machines and stub user emulate as if sync has been initialized.
       profile()->GetPrefs()->SetString(prefs::kGoogleServicesUsername,
                                        login_user);

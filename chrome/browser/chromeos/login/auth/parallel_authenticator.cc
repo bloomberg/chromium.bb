@@ -11,9 +11,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/boot_times_loader.h"
 #include "chrome/browser/chromeos/login/auth/authentication_notification_details.h"
-#include "chrome/browser/chromeos/login/auth/key.h"
 #include "chrome/browser/chromeos/login/auth/login_status_consumer.h"
-#include "chrome/browser/chromeos/login/auth/user_context.h"
 #include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/chromeos/ownership/owner_settings_service.h"
 #include "chrome/browser/chromeos/ownership/owner_settings_service_factory.h"
@@ -23,7 +21,10 @@
 #include "chromeos/cryptohome/system_salt_getter.h"
 #include "chromeos/dbus/cryptohome_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/login/auth/key.h"
+#include "chromeos/login/auth/user_context.h"
 #include "chromeos/login/login_state.h"
+#include "chromeos/login/user_names.h"
 #include "components/user_manager/user_type.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
@@ -322,7 +323,7 @@ void ParallelAuthenticator::LoginRetailMode() {
   // Note: |kRetailModeUserEMail| is used in other places to identify a retail
   // mode session.
   current_state_.reset(
-      new AuthAttemptState(UserContext(UserManager::kRetailModeUserName),
+      new AuthAttemptState(UserContext(chromeos::login::kRetailModeUserName),
                            user_manager::USER_TYPE_RETAIL_MODE,
                            false,    // unlock
                            false,    // online_complete
@@ -336,7 +337,7 @@ void ParallelAuthenticator::LoginRetailMode() {
 void ParallelAuthenticator::LoginOffTheRecord() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   current_state_.reset(
-      new AuthAttemptState(UserContext(UserManager::kGuestUserName),
+      new AuthAttemptState(UserContext(chromeos::login::kGuestUserName),
                            user_manager::USER_TYPE_GUEST,
                            false,    // unlock
                            false,    // online_complete
@@ -370,7 +371,7 @@ void ParallelAuthenticator::LoginAsKioskAccount(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   const std::string user_id =
-      use_guest_mount ? UserManager::kGuestUserName : app_user_id;
+      use_guest_mount ? chromeos::login::kGuestUserName : app_user_id;
   current_state_.reset(new AuthAttemptState(UserContext(user_id),
                                             user_manager::USER_TYPE_KIOSK_APP,
                                             false,    // unlock

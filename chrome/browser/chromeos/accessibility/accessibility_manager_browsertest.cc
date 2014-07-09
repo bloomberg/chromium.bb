@@ -14,7 +14,6 @@
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/login_utils.h"
 #include "chrome/browser/chromeos/login/users/user_manager.h"
-#include "chrome/browser/chromeos/login/users/user_manager_impl.h"
 #include "chrome/browser/chromeos/preferences.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/extensions/api/braille_display_private/mock_braille_controller.h"
@@ -28,6 +27,7 @@
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/ime/component_extension_ime_manager.h"
 #include "chromeos/ime/input_method_manager.h"
+#include "chromeos/login/user_names.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -50,7 +50,7 @@ const char kTestUserName[] = "owner@invalid.domain";
 const int kTestAutoclickDelayMs = 2000;
 
 // Test user name for locally managed user. The domain part must be matched
-// with UserManager::kLocallyManagedUserDomain.
+// with chromeos::login::kLocallyManagedUserDomain.
 const char kTestLocallyManagedUserName[] = "test@locally-managed.localhost";
 
 class MockAccessibilityObserver {
@@ -564,8 +564,8 @@ INSTANTIATE_TEST_CASE_P(
     UserTypeInstantiation,
     AccessibilityManagerUserTypeTest,
     ::testing::Values(kTestUserName,
-                      UserManager::kGuestUserName,
-                      //UserManager::kRetailModeUserName,
+                      chromeos::login::kGuestUserName,
+                      // chromeos::login::kRetailModeUserName,
                       kTestLocallyManagedUserName));
 
 IN_PROC_BROWSER_TEST_P(AccessibilityManagerUserTypeTest,

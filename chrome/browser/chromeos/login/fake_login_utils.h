@@ -5,8 +5,8 @@
 #ifndef CHROME_BROWSER_CHROMEOS_LOGIN_FAKE_LOGIN_UTILS_H_
 #define CHROME_BROWSER_CHROMEOS_LOGIN_FAKE_LOGIN_UTILS_H_
 
-#include "chrome/browser/chromeos/login/auth/user_context.h"
 #include "chrome/browser/chromeos/login/login_utils.h"
+#include "chromeos/login/auth/user_context.h"
 
 namespace chromeos {
 

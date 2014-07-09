@@ -27,6 +27,7 @@
 #include "chrome/common/pref_names.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager_client.h"
+#include "chromeos/login/user_names.h"
 #include "chromeos/settings/cros_settings_names.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
@@ -199,7 +200,7 @@ void LoginPerformer::PerformLogin(const UserContext& user_context,
 
 void LoginPerformer::LoginAsLocallyManagedUser(
     const UserContext& user_context) {
-  DCHECK_EQ(UserManager::kLocallyManagedUserDomain,
+  DCHECK_EQ(chromeos::login::kLocallyManagedUserDomain,
             gaia::ExtractDomainName(user_context.GetUserID()));
 
   CrosSettings* cros_settings = CrosSettings::Get();

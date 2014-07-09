@@ -10,8 +10,8 @@
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/chromeos/login/auth/extended_authenticator.h"
-#include "chrome/browser/chromeos/login/auth/user_context.h"
 #include "chrome/browser/chromeos/login/user_flow.h"
+#include "chromeos/login/auth/user_context.h"
 
 namespace chromeos {
 

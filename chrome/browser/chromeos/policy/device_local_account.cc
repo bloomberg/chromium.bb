@@ -12,8 +12,8 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
-#include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
+#include "chromeos/login/user_names.h"
 #include "chromeos/settings/cros_settings_names.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 
@@ -62,7 +62,7 @@ bool IsDeviceLocalAccountUser(const std::string& user_id,
                               DeviceLocalAccount::Type* type) {
   // For historical reasons, the guest user ID does not contain an @ symbol and
   // therefore, cannot be parsed by gaia::ExtractDomainName().
-  if (user_id == chromeos::UserManager::kGuestUserName)
+  if (user_id == chromeos::login::kGuestUserName)
     return false;
   const std::string domain = gaia::ExtractDomainName(user_id);
   if (!EndsWith(domain, kDeviceLocalAccountDomainSuffix, true))

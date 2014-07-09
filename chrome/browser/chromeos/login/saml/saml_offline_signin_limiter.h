@@ -11,7 +11,7 @@
 #include "base/time/default_clock.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
-#include "chrome/browser/chromeos/login/auth/user_context.h"
+#include "chromeos/login/auth/user_context.h"
 #include "components/keyed_service/core/keyed_service.h"
 
 class Profile;

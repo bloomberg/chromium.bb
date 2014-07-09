@@ -7,8 +7,8 @@
 
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/chromeos/login/auth/authenticator.h"
-#include "chrome/browser/chromeos/login/auth/user_context.h"
 #include "chrome/browser/chromeos/login/login_utils.h"
+#include "chromeos/login/auth/user_context.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

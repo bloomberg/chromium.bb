@@ -13,23 +13,6 @@
 
 namespace chromeos {
 
-// static
-const char UserManager::kStubUser[] = "stub-user@example.com";
-
-// static
-const char UserManager::kSignInUser[] = "sign-in-user-id";
-
-// static
-// Should match cros constant in platform/libchromeos/chromeos/cryptohome.h
-const char UserManager::kGuestUserName[] = "$guest";
-
-// static
-const char UserManager::kLocallyManagedUserDomain[] =
-    "locally-managed.localhost";
-
-
-// static
-const char UserManager::kRetailModeUserName[] = "demouser@";
 static UserManager* g_user_manager = NULL;
 
 UserManager::Observer::~Observer() {

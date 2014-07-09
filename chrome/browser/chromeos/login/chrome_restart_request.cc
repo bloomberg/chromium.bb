@@ -31,6 +31,7 @@
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager_client.h"
+#include "chromeos/login/user_names.h"
 #include "components/policy/core/common/policy_switches.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_switches.h"
@@ -343,7 +344,7 @@ std::string GetOffTheRecordCommandLine(
   otr_switches.SetString(switches::kGuestSession, std::string());
   otr_switches.SetString(::switches::kIncognito, std::string());
   otr_switches.SetString(::switches::kLoggingLevel, kGuestModeLoggingLevel);
-  otr_switches.SetString(switches::kLoginUser, UserManager::kGuestUserName);
+  otr_switches.SetString(switches::kLoginUser, chromeos::login::kGuestUserName);
 
   // Override the home page.
   otr_switches.SetString(::switches::kHomePage,

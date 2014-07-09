@@ -8,7 +8,7 @@
 #include <string>
 
 #include "chrome/browser/chromeos/login/auth/authenticator.h"
-#include "chrome/browser/chromeos/login/auth/user_context.h"
+#include "chromeos/login/auth/user_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class Profile;

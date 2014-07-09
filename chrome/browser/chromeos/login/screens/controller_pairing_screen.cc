@@ -6,9 +6,9 @@
 
 #include "base/command_line.h"
 #include "base/values.h"
-#include "chrome/browser/chromeos/login/auth/user_context.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chromeos/chromeos_switches.h"
+#include "chromeos/login/auth/user_context.h"
 #include "chromeos/pairing/fake_controller_pairing_controller.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 

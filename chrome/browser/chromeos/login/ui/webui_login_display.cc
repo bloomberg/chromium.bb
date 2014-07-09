@@ -15,6 +15,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chromeos/ime/ime_keyboard.h"
 #include "chromeos/ime/input_method_manager.h"
+#include "chromeos/login/user_names.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -265,7 +266,8 @@ void WebUILoginDisplay::LoadWallpaper(const std::string& username) {
 }
 
 void WebUILoginDisplay::LoadSigninWallpaper() {
-  WallpaperManager::Get()->SetDefaultWallpaperDelayed(UserManager::kSignInUser);
+  WallpaperManager::Get()->SetDefaultWallpaperDelayed(
+      chromeos::login::kSignInUser);
 }
 
 void WebUILoginDisplay::OnSigninScreenReady() {

@@ -17,7 +17,6 @@
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/chromeos/policy/device_policy_builder.h"
 #include "chrome/browser/chromeos/policy/device_policy_cros_browser_test.h"
 #include "chrome/browser/chromeos/policy/proto/chrome_device_policy.pb.h"
@@ -39,6 +38,7 @@
 #include "chromeos/dbus/fake_session_manager_client.h"
 #include "chromeos/dbus/power_manager/policy.pb.h"
 #include "chromeos/dbus/power_policy_controller.h"
+#include "chromeos/login/user_names.h"
 #include "components/policy/core/common/cloud/cloud_policy_core.h"
 #include "components/policy/core/common/cloud/cloud_policy_store.h"
 #include "components/policy/core/common/cloud/policy_builder.h"
@@ -193,7 +193,7 @@ void PowerPolicyBrowserTestBase::SetUpOnMainThread() {
 
   // Initialize user policy.
   InstallUserKey();
-  user_policy_.policy_data().set_username(chromeos::UserManager::kStubUser);
+  user_policy_.policy_data().set_username(chromeos::login::kStubUser);
 }
 
 void PowerPolicyBrowserTestBase::InstallUserKey() {
@@ -201,7 +201,7 @@ void PowerPolicyBrowserTestBase::InstallUserKey() {
   ASSERT_TRUE(PathService::Get(chromeos::DIR_USER_POLICY_KEYS, &user_keys_dir));
   std::string sanitized_username =
       chromeos::CryptohomeClient::GetStubSanitizedUsername(
-          chromeos::UserManager::kStubUser);
+          chromeos::login::kStubUser);
   base::FilePath user_key_file =
       user_keys_dir.AppendASCII(sanitized_username)
                    .AppendASCII("policy.pub");

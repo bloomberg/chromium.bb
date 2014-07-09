@@ -39,11 +39,6 @@ namespace login {
 // displayed under all possible DPI values.
 const int kMaxUserImageSize = 512;
 
-// Canonicalizes a GAIA user ID, accounting for the legacy guest mode user ID
-// which does trips up gaia::CanonicalizeEmail() because it does not contain an
-// @ symbol.
-std::string CanonicalizeUserID(const std::string& user_id);
-
 // Returns true if lock/login should scroll user pods into view itself when
 // virtual keyboard is shown and disable vk overscroll.
 bool LoginScrollIntoViewEnabled();

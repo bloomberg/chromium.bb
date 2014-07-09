@@ -2,16 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_LOGIN_AUTH_KEY_H_
-#define CHROME_BROWSER_CHROMEOS_LOGIN_AUTH_KEY_H_
+#ifndef CHROMEOS_LOGIN_AUTH_KEY_H_
+#define CHROMEOS_LOGIN_AUTH_KEY_H_
 
 #include <string>
+
+#include "chromeos/chromeos_export.h"
 
 namespace chromeos {
 
 // Key for user authentication. The class supports hashing of plain text
 // passwords to generate keys as well as the use of pre-hashed keys.
-class Key {
+class CHROMEOS_EXPORT Key {
  public:
   enum KeyType {
     // Plain text password.
@@ -49,4 +51,4 @@ class Key {
 
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_CHROMEOS_LOGIN_AUTH_KEY_H_
+#endif  // CHROMEOS_LOGIN_AUTH_KEY_H_

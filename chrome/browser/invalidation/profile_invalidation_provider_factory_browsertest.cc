@@ -5,13 +5,13 @@
 #include "base/basictypes.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
-#include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/invalidation/profile_invalidation_provider_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chromeos/chromeos_switches.h"
+#include "chromeos/login/user_names.h"
 #include "components/invalidation/invalidation_service.h"
 #include "components/invalidation/profile_invalidation_provider.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -107,7 +107,7 @@ void ProfileInvalidationProviderFactoryGuestBrowserTest::SetUpCommandLine(
   command_line->AppendSwitch(::switches::kIncognito);
   command_line->AppendSwitchASCII(chromeos::switches::kLoginProfile, "user");
   command_line->AppendSwitchASCII(chromeos::switches::kLoginUser,
-                                  chromeos::UserManager::kGuestUserName);
+                                  chromeos::login::kGuestUserName);
 }
 
 // Verify that no InvalidationService is instantiated for the login profile or

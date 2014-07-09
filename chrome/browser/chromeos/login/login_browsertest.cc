@@ -7,7 +7,6 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/login_wizard.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host_impl.h"
-#include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profiles_state.h"
@@ -19,6 +18,7 @@
 #include "chrome/test/base/tracing.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "chromeos/chromeos_switches.h"
+#include "chromeos/login/user_names.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/extension_system.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -48,7 +48,7 @@ class LoginGuestTest : public InProcessBrowserTest {
     command_line->AppendSwitchASCII(chromeos::switches::kLoginProfile,
                                     "hash");
     command_line->AppendSwitchASCII(chromeos::switches::kLoginUser,
-                                    chromeos::UserManager::kGuestUserName);
+                                    chromeos::login::kGuestUserName);
   }
 };
 

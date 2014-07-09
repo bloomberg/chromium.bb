@@ -19,6 +19,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chromeos/login/user_names.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/plugin_service.h"
 #include "extensions/browser/extension_prefs.h"
@@ -63,8 +64,8 @@ class ExtensionGarbageCollectorChromeOSUnitTest
     user_manager_enabler_.reset(
         new chromeos::ScopedUserManagerEnabler(new chromeos::FakeUserManager));
 
-    GetFakeUserManager()->AddUser(chromeos::UserManager::kStubUser);
-    GetFakeUserManager()->LoginUser(chromeos::UserManager::kStubUser);
+    GetFakeUserManager()->AddUser(chromeos::login::kStubUser);
+    GetFakeUserManager()->LoginUser(chromeos::login::kStubUser);
     chromeos::ProfileHelper::Get()->SetUserToProfileMappingForTesting(
         GetFakeUserManager()->GetActiveUser(), profile_.get());
   }
@@ -160,14 +161,14 @@ TEST_F(ExtensionGarbageCollectorChromeOSUnitTest, SharedExtensions) {
   base::FilePath path_id1_2 = CreateSharedExtensionDir(
       kExtensionId1, "2.0", cache_dir());
   CreateSharedExtensionPrefs(
-      kExtensionId1, "2.0", chromeos::UserManager::kStubUser, path_id1_2);
+      kExtensionId1, "2.0", chromeos::login::kStubUser, path_id1_2);
   EXPECT_TRUE(base::PathExists(path_id1_2));
 
   // Version for current user that delayed install.
   base::FilePath path_id2_1 = CreateSharedExtensionDir(
       kExtensionId2, "1.0", cache_dir());
   CreateSharedExtensionPrefs(
-      kExtensionId2, "1.0", chromeos::UserManager::kStubUser, path_id2_1);
+      kExtensionId2, "1.0", chromeos::login::kStubUser, path_id2_1);
   scoped_refptr<Extension> extension2 = CreateExtension(kExtensionId2, "1.0",
                                                         path_id2_1);
   GetExtensionPrefs()->SetDelayedInstallInfo(

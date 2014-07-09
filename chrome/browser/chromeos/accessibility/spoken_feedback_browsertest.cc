@@ -13,7 +13,6 @@
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host_impl.h"
 #include "chrome/browser/chromeos/login/ui/webui_login_view.h"
-#include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/extensions/api/braille_display_private/stub_braille_controller.h"
 #include "chrome/browser/speech/tts_controller.h"
@@ -27,6 +26,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "chromeos/chromeos_switches.h"
+#include "chromeos/login/user_names.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -140,7 +140,7 @@ class SpokenFeedbackTest
       command_line->AppendSwitchASCII(chromeos::switches::kLoginProfile,
                                       "user");
       command_line->AppendSwitchASCII(chromeos::switches::kLoginUser,
-                                      chromeos::UserManager::kGuestUserName);
+                                      chromeos::login::kGuestUserName);
     }
   }
 };
@@ -219,7 +219,7 @@ class GuestSpokenFeedbackTest : public LoggedInSpokenFeedbackTest {
     command_line->AppendSwitch(::switches::kIncognito);
     command_line->AppendSwitchASCII(chromeos::switches::kLoginProfile, "user");
     command_line->AppendSwitchASCII(chromeos::switches::kLoginUser,
-                                    chromeos::UserManager::kGuestUserName);
+                                    chromeos::login::kGuestUserName);
   }
 
  private:
