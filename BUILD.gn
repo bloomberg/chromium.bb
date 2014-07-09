@@ -25,6 +25,7 @@ group("root") {
     "//chrome/common",
     "//chrome/plugin",
     "//chrome/renderer",
+    "//chrome/service",
     "//chrome/utility",
     "//components:all_components",
     "//content",
@@ -142,6 +143,7 @@ group("root") {
       "//chrome/common",  # Blocked on content.
       "//chrome/plugin",  # Blocked on content.
       "//chrome/renderer",  # Blocked on content.
+      "//chrome/service",  # Blocked on content.
       "//chrome/utility",  # Blocked on content.
       "//content",
       "//extensions/common/api:extensions_api",

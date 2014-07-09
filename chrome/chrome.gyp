@@ -686,6 +686,7 @@
     ['enable_printing==1', {
       'targets': [
         {
+          # GN version: //chrome/service
           'target_name': 'service',
           'type': 'static_library',
           'variables': { 'enable_wexit_time_destructors': 1, },
@@ -703,6 +704,7 @@
             '../third_party/libjingle/libjingle.gyp:libjingle',
           ],
           'sources': [
+            # Note: sources list duplicated in GN build.
             'service/cloud_print/cdd_conversion_win.cc',
             'service/cloud_print/cdd_conversion_win.h',
             'service/cloud_print/cloud_print_auth.cc',
