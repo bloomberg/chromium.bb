@@ -157,7 +157,7 @@ class PasswordFormManager : public PasswordStoreConsumer {
   }
 
   // Returns the best matches.
-  const autofill::PasswordFormMap best_matches() const {
+  const autofill::PasswordFormMap& best_matches() const {
     return best_matches_;
   }
 
