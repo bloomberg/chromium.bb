@@ -5,6 +5,7 @@
 #include "net/base/net_util.h"
 
 #include <errno.h>
+#include <string.h>
 
 #include <algorithm>
 #include <iterator>
@@ -499,6 +500,18 @@ bool IsIPAddressReserved(const IPAddressNumber& host_addr) {
       return true;
   }
   return false;
+}
+
+SockaddrStorage::SockaddrStorage(const SockaddrStorage& other)
+    : addr_len(other.addr_len),
+      addr(reinterpret_cast<struct sockaddr*>(&addr_storage)) {
+  memcpy(addr, other.addr, addr_len);
+}
+
+void SockaddrStorage::operator=(const SockaddrStorage& other) {
+  addr_len = other.addr_len;
+  // addr is already set to &this->addr_storage by default ctor.
+  memcpy(addr, other.addr, addr_len);
 }
 
 // Extracts the address and port portions of a sockaddr.

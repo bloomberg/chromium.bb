@@ -196,14 +196,10 @@ int TCPSocket::Listen(const std::string& address,
   DCHECK(!socket_.get());
   socket_mode_ = SERVER;
 
-  scoped_ptr<net::IPEndPoint> bind_address(new net::IPEndPoint());
-  if (!StringAndPortToIPEndPoint(address, port, bind_address.get()))
-    return net::ERR_INVALID_ARGUMENT;
-
   if (!server_socket_.get()) {
     server_socket_.reset(new net::TCPServerSocket(NULL, net::NetLog::Source()));
   }
-  int result = server_socket_->Listen(*bind_address, backlog);
+  int result = server_socket_->ListenWithAddressAndPort(address, port, backlog);
   if (result)
     *error_msg = kSocketListenError;
   return result;

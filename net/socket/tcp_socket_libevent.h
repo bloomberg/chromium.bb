@@ -8,30 +8,27 @@
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/compiler_specific.h"
-#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop/message_loop.h"
-#include "base/threading/non_thread_safe.h"
 #include "net/base/address_family.h"
 #include "net/base/completion_callback.h"
 #include "net/base/net_export.h"
 #include "net/base/net_log.h"
-#include "net/socket/socket_descriptor.h"
 
 namespace net {
 
 class AddressList;
 class IOBuffer;
 class IPEndPoint;
+class SocketLibevent;
 
-class NET_EXPORT TCPSocketLibevent : public base::NonThreadSafe {
+class NET_EXPORT TCPSocketLibevent {
  public:
   TCPSocketLibevent(NetLog* net_log, const NetLog::Source& source);
   virtual ~TCPSocketLibevent();
 
   int Open(AddressFamily family);
-  // Takes ownership of |socket|.
-  int AdoptConnectedSocket(int socket, const IPEndPoint& peer_address);
+  // Takes ownership of |socket_fd|.
+  int AdoptConnectedSocket(int socket_fd, const IPEndPoint& peer_address);
 
   int Bind(const IPEndPoint& address);
 
@@ -69,7 +66,7 @@ class NET_EXPORT TCPSocketLibevent : public base::NonThreadSafe {
   void Close();
 
   bool UsingTCPFastOpen() const;
-  bool IsValid() const { return socket_ != kInvalidSocket; }
+  bool IsValid() const;
 
   // Marks the start/end of a series of connect attempts for logging purpose.
   //
@@ -136,76 +133,39 @@ class NET_EXPORT TCPSocketLibevent : public base::NonThreadSafe {
     FAST_OPEN_MAX_VALUE
   };
 
-  // Watcher simply forwards notifications to Closure objects set via the
-  // constructor.
-  class Watcher: public base::MessageLoopForIO::Watcher {
-   public:
-    Watcher(const base::Closure& read_ready_callback,
-            const base::Closure& write_ready_callback);
-    virtual ~Watcher();
+  void AcceptCompleted(scoped_ptr<TCPSocketLibevent>* tcp_socket,
+                       IPEndPoint* address,
+                       const CompletionCallback& callback,
+                       int rv);
+  int HandleAcceptCompleted(scoped_ptr<TCPSocketLibevent>* tcp_socket,
+                            IPEndPoint* address,
+                            int rv);
+  int BuildTcpSocketLibevent(scoped_ptr<TCPSocketLibevent>* tcp_socket,
+                             IPEndPoint* address);
 
-    // base::MessageLoopForIO::Watcher methods.
-    virtual void OnFileCanReadWithoutBlocking(int fd) OVERRIDE;
-    virtual void OnFileCanWriteWithoutBlocking(int fd) OVERRIDE;
+  void ConnectCompleted(const CompletionCallback& callback, int rv) const;
+  int HandleConnectCompleted(int rv) const;
+  void LogConnectBegin(const AddressList& addresses) const;
+  void LogConnectEnd(int net_error) const;
 
-   private:
-    base::Closure read_ready_callback_;
-    base::Closure write_ready_callback_;
+  void ReadCompleted(IOBuffer* buf,
+                     const CompletionCallback& callback,
+                     int rv);
+  int HandleReadCompleted(IOBuffer* buf, int rv);
 
-    DISALLOW_COPY_AND_ASSIGN(Watcher);
-  };
-
-  int AcceptInternal(scoped_ptr<TCPSocketLibevent>* socket,
-                     IPEndPoint* address);
-
-  int DoConnect();
-  void DoConnectComplete(int result);
-
-  void LogConnectBegin(const AddressList& addresses);
-  void LogConnectEnd(int net_error);
-
-  void DidCompleteRead();
-  void DidCompleteWrite();
-  void DidCompleteConnect();
-  void DidCompleteConnectOrWrite();
-  void DidCompleteAccept();
-
-  // Internal function to write to a socket. Returns an OS error.
-  int InternalWrite(IOBuffer* buf, int buf_len);
+  void WriteCompleted(IOBuffer* buf,
+                      const CompletionCallback& callback,
+                      int rv) const;
+  int HandleWriteCompleted(IOBuffer* buf, int rv) const;
+  int TcpFastOpenWrite(IOBuffer* buf,
+                       int buf_len,
+                       const CompletionCallback& callback);
 
   // Called when the socket is known to be in a connected state.
   void RecordFastOpenStatus();
 
-  int socket_;
-
-  base::MessageLoopForIO::FileDescriptorWatcher accept_socket_watcher_;
-  Watcher accept_watcher_;
-
-  scoped_ptr<TCPSocketLibevent>* accept_socket_;
-  IPEndPoint* accept_address_;
-  CompletionCallback accept_callback_;
-
-  // The socket's libevent wrappers for reads and writes.
-  base::MessageLoopForIO::FileDescriptorWatcher read_socket_watcher_;
-  base::MessageLoopForIO::FileDescriptorWatcher write_socket_watcher_;
-
-  // The corresponding watchers for reads and writes.
-  Watcher read_watcher_;
-  Watcher write_watcher_;
-
-  // The buffer used for reads.
-  scoped_refptr<IOBuffer> read_buf_;
-  int read_buf_len_;
-
-  // The buffer used for writes.
-  scoped_refptr<IOBuffer> write_buf_;
-  int write_buf_len_;
-
-  // External callback; called when read is complete.
-  CompletionCallback read_callback_;
-
-  // External callback; called when write or connect is complete.
-  CompletionCallback write_callback_;
+  scoped_ptr<SocketLibevent> socket_;
+  scoped_ptr<SocketLibevent> accept_socket_;
 
   // Enables experimental TCP FastOpen option.
   const bool use_tcp_fastopen_;
@@ -214,14 +174,6 @@ class NET_EXPORT TCPSocketLibevent : public base::NonThreadSafe {
   bool tcp_fastopen_connected_;
 
   FastOpenStatus fast_open_status_;
-
-  // A connect operation is pending. In this case, |write_callback_| needs to be
-  // called when connect is complete.
-  bool waiting_connect_;
-
-  scoped_ptr<IPEndPoint> peer_address_;
-  // The OS error that a connect attempt last completed with.
-  int connect_os_error_;
 
   bool logging_multiple_connect_attempts_;
 

@@ -7,6 +7,7 @@
 #include <queue>
 #include <string>
 
+#include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/ref_counted.h"

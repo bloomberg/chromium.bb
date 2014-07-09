@@ -114,6 +114,9 @@ NET_EXPORT bool IsIPAddressReserved(const IPAddressNumber& address);
 struct SockaddrStorage {
   SockaddrStorage() : addr_len(sizeof(addr_storage)),
                       addr(reinterpret_cast<struct sockaddr*>(&addr_storage)) {}
+  SockaddrStorage(const SockaddrStorage& other);
+  void operator=(const SockaddrStorage& other);
+
   struct sockaddr_storage addr_storage;
   socklen_t addr_len;
   struct sockaddr* const addr;

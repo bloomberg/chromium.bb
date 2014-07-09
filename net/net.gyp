@@ -392,6 +392,8 @@
         [ 'OS == "win"', {
             'sources!': [
               'http/http_auth_handler_ntlm_portable.cc',
+              'socket/socket_libevent.cc',
+              'socket/socket_libevent.h',
               'socket/tcp_socket_libevent.cc',
               'socket/tcp_socket_libevent.h',
               'udp/udp_socket_libevent.cc',
