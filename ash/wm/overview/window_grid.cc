@@ -137,7 +137,6 @@ WindowGrid::WindowGrid(aura::Window* root_window,
       continue;
     (*iter)->AddObserver(this);
     observed_windows_.insert(*iter);
-    WindowSelectorItem* item = NULL;
 
     if ((*iter)->type() == ui::wm::WINDOW_TYPE_PANEL &&
         wm::GetWindowState(*iter)->panel_attached()) {
@@ -148,26 +147,25 @@ WindowGrid::WindowGrid(aura::Window* root_window,
         window_list_.push_back(panels_item);
       }
       panels_item->AddWindow(*iter);
-      item = panels_item;
     } else {
-      item = new WindowSelectorWindow(*iter);
-      item->PrepareForOverview();
-      window_list_.push_back(item);
+      window_list_.push_back(new WindowSelectorWindow(*iter));
     }
   }
   if (window_list_.empty())
     return;
-
-  if (panels_item)
-    panels_item->PrepareForOverview();
-
-  PositionWindows(true);
 }
 
 WindowGrid::~WindowGrid() {
   for (std::set<aura::Window*>::iterator iter = observed_windows_.begin();
        iter != observed_windows_.end(); iter++) {
     (*iter)->RemoveObserver(this);
+  }
+}
+
+void WindowGrid::PrepareForOverview() {
+  for (ScopedVector<WindowSelectorItem>::iterator iter = window_list_.begin();
+       iter != window_list_.end(); ++iter) {
+    (*iter)->PrepareForOverview();
   }
 }
 

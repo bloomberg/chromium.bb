@@ -179,6 +179,15 @@ WindowSelector::WindowSelector(const WindowList& windows,
     grid_list_.push_back(grid.release());
   }
 
+  // Do not call PrepareForOverview until all items are added to window_list_ as
+  // we don't want to cause any window updates until all windows in overview
+  // are observed. See http://crbug.com/384495.
+  for (ScopedVector<WindowGrid>::iterator iter = grid_list_.begin();
+       iter != grid_list_.end(); ++iter) {
+    (*iter)->PrepareForOverview();
+    (*iter)->PositionWindows(true);
+  }
+
   DCHECK(!grid_list_.empty());
   UMA_HISTOGRAM_COUNTS_100("Ash.WindowSelector.Items", num_items_);
 

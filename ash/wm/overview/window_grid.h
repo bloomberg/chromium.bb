@@ -51,6 +51,10 @@ class ASH_EXPORT WindowGrid : public aura::WindowObserver {
              WindowSelector* window_selector);
   virtual ~WindowGrid();
 
+  // Prepares the windows in this grid for overview. This will restore all
+  // minimized windows and ensure they are visible.
+  void PrepareForOverview();
+
   // Positions all the windows in the grid.
   void PositionWindows(bool animate);
 
