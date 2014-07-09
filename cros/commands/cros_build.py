@@ -8,6 +8,7 @@ import os
 import logging
 
 from chromite.cbuildbot import constants
+from chromite.lib import commandline
 from chromite.lib import cros_build_lib
 from chromite.lib import parallel
 from chromite.scripts import cros_list_modified_packages as workon
@@ -167,6 +168,7 @@ To just build a single package:
 
   def Run(self):
     """Run cros build."""
-    cros_build_lib.AssertInsideChroot()
+    if not cros_build_lib.IsInsideChroot():
+      raise commandline.ChrootRequiredError()
     self._SetupBoardIfNeeded()
     parallel.RunParallelSteps([self._CheckDependencies, self._Build])
