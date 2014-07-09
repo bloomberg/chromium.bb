@@ -1,11 +1,11 @@
 <!DOCTYPE html>
-<title>ServiceWorker: navigator.serviceWorker.waiting</title>
+<title>ServiceWorker: navigator.serviceWorker.installing</title>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
 <script src="resources/test-helpers.js"></script>
 <body>
 <script>
-// "waiting" is set
+// "installing" is set
 async_test(function(t) {
     var step = t.step_func.bind(t);
     var url = 'resources/worker-no-op.js';
@@ -24,7 +24,7 @@ async_test(function(t) {
         // Service Worker.
         return new Promise(step(function(resolve, reject) {
             serviceWorker.onstatechange = step(function() {
-                if (serviceWorker.state == 'installed') {
+                if (serviceWorker.state == 'installing') {
                     resolve();
                 }
             });
@@ -33,8 +33,8 @@ async_test(function(t) {
     .then(step(function() {
         var container = frame.contentWindow.navigator.serviceWorker;
         assert_equals(container.controller, null);
-        assert_equals(container.waiting.url, normalizeURL(url));
-        assert_equals(container.installing, null);
+        assert_equals(container.waiting, null);
+        assert_equals(container.installing.url, normalizeURL(url));
 
         // FIXME: Add a test for a frame created after installation.
         // Should the existing frame ("frame") block activation?
@@ -43,5 +43,5 @@ async_test(function(t) {
         frame.remove();
         return service_worker_unregister_and_done(t, scope);
     }));
-}, 'waiting is set');
+}, 'installing is set');
 </script>
