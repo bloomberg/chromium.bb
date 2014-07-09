@@ -764,12 +764,6 @@ v8::Local<v8::Context> toV8Context(LocalFrame* frame, DOMWrapperWorld& world)
     return frame == attachedFrame ? context : v8::Local<v8::Context>();
 }
 
-v8::Local<v8::Value> handleMaxRecursionDepthExceeded(v8::Isolate* isolate)
-{
-    throwError(v8RangeError, "Maximum call stack size exceeded.", isolate);
-    return v8::Local<v8::Value>();
-}
-
 void crashIfV8IsDead()
 {
     if (v8::V8::IsDead()) {

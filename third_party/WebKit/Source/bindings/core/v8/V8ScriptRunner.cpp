@@ -30,12 +30,39 @@
 #include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8GCController.h"
 #include "bindings/core/v8/V8RecursionScope.h"
+#include "bindings/core/v8/V8ThrowException.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/fetch/CachedMetadata.h"
 #include "core/fetch/ScriptResource.h"
 #include "platform/TraceEvent.h"
 
 namespace WebCore {
+
+namespace {
+
+// In order to make sure all pending messages to be processed in
+// v8::Function::Call, we don't call handleMaxRecursionDepthExceeded
+// directly. Instead, we create a v8::Function of
+// throwStackOverflowException and call it.
+void throwStackOverflowException(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    throwError(v8RangeError, "Maximum call stack size exceeded.", info.GetIsolate());
+}
+
+v8::Local<v8::Value> throwStackOverflowExceptionIfNeeded(v8::Isolate* isolate)
+{
+    if (V8PerIsolateData::from(isolate)->isHandlingRecursionLevelError()) {
+        // If we are already handling a recursion level error, we should
+        // not invoke v8::Function::Call.
+        return v8::Undefined(isolate);
+    }
+    V8PerIsolateData::from(isolate)->setIsHandlingRecursionLevelError(true);
+    v8::Local<v8::Value> result = v8::Function::New(isolate, throwStackOverflowException)->Call(v8::Undefined(isolate), 0, 0);
+    V8PerIsolateData::from(isolate)->setIsHandlingRecursionLevelError(false);
+    return result;
+}
+
+} // namespace
 
 v8::Local<v8::Script> V8ScriptRunner::compileScript(const ScriptSourceCode& source, v8::Isolate* isolate, AccessControlStatus corsStatus)
 {
@@ -94,7 +121,7 @@ v8::Local<v8::Value> V8ScriptRunner::runCompiledScript(v8::Handle<v8::Script> sc
     TRACE_EVENT1("v8", "v8.run", "fileName", TRACE_STR_COPY(*v8::String::Utf8Value(script->GetUnboundScript()->GetScriptName())));
 
     if (V8RecursionScope::recursionLevel(isolate) >= kMaxRecursionDepth)
-        return handleMaxRecursionDepthExceeded(isolate);
+        return throwStackOverflowExceptionIfNeeded(isolate);
 
     RELEASE_ASSERT(!context->isIteratingOverObservers());
 
@@ -132,7 +159,7 @@ v8::Local<v8::Value> V8ScriptRunner::callFunction(v8::Handle<v8::Function> funct
     TRACE_EVENT_SCOPED_SAMPLING_STATE("v8", "V8Execution");
 
     if (V8RecursionScope::recursionLevel(isolate) >= kMaxRecursionDepth)
-        return handleMaxRecursionDepthExceeded(isolate);
+        return throwStackOverflowExceptionIfNeeded(isolate);
 
     RELEASE_ASSERT(!context->isIteratingOverObservers());
 

@@ -68,6 +68,7 @@ V8PerIsolateData::V8PerIsolateData(v8::Isolate* isolate)
     , m_hiddenValue(adoptPtr(new V8HiddenValue()))
     , m_constructorMode(ConstructorMode::CreateNewObject)
     , m_recursionLevel(0)
+    , m_isHandlingRecursionLevelError(false)
 #ifndef NDEBUG
     , m_internalScriptRecursionLevel(0)
 #endif

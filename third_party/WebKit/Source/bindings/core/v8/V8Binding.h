@@ -892,7 +892,6 @@ LocalFrame* toFrameIfNotDetached(v8::Handle<v8::Context>);
 // If the current context causes out of memory, JavaScript setting
 // is disabled and it returns true.
 bool handleOutOfMemory();
-v8::Local<v8::Value> handleMaxRecursionDepthExceeded(v8::Isolate*);
 void crashIfV8IsDead();
 
 inline bool isUndefinedOrNull(v8::Handle<v8::Value> value)

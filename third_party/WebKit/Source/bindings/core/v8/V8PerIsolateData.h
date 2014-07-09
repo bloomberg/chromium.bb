@@ -72,6 +72,8 @@ public:
     int recursionLevel() const { return m_recursionLevel; }
     int incrementRecursionLevel() { return ++m_recursionLevel; }
     int decrementRecursionLevel() { return --m_recursionLevel; }
+    bool isHandlingRecursionLevelError() const { return m_isHandlingRecursionLevelError; }
+    void setIsHandlingRecursionLevelError(bool value) { m_isHandlingRecursionLevelError = value; }
 
     bool performingMicrotaskCheckpoint() const { return m_performingMicrotaskCheckpoint; }
     void setPerformingMicrotaskCheckpoint(bool performingMicrotaskCheckpoint) { m_performingMicrotaskCheckpoint = performingMicrotaskCheckpoint; }
@@ -122,6 +124,7 @@ private:
     friend class ConstructorMode;
 
     int m_recursionLevel;
+    bool m_isHandlingRecursionLevelError;
 
 #ifndef NDEBUG
     int m_internalScriptRecursionLevel;
