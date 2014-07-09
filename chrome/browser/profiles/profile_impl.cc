@@ -73,7 +73,6 @@
 #include "chrome/browser/sessions/session_service_factory.h"
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
 #include "chrome/browser/ui/webui/extensions/extension_icon_source.h"
-#include "chrome/browser/webdata/web_data_service.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths_internal.h"
 #include "chrome/common/chrome_switches.h"

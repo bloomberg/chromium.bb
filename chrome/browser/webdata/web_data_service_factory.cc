@@ -13,7 +13,6 @@
 #include "chrome/browser/webdata/autocomplete_syncable_service.h"
 #include "chrome/browser/webdata/logins_table.h"
 #include "chrome/browser/webdata/web_apps_table.h"
-#include "chrome/browser/webdata/web_data_service.h"
 #include "chrome/browser/webdata/web_intents_table.h"
 #include "components/autofill/core/browser/autofill_country.h"
 #include "components/autofill/core/browser/webdata/autofill_profile_syncable_service.h"
@@ -29,6 +28,10 @@
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 
+#if defined(OS_WIN)
+#include "chrome/browser/webdata/password_web_data_service_win.h"
+#endif
+
 using autofill::AutofillWebDataService;
 using autofill::AutofillProfileSyncableService;
 using content::BrowserThread;
@@ -40,7 +43,7 @@ void ProfileErrorCallback(ProfileErrorType type, sql::InitStatus status) {
   ShowProfileErrorDialog(
       type,
       (status == sql::INIT_FAILURE) ?
-      IDS_COULDNT_OPEN_PROFILE_ERROR : IDS_PROFILE_TOO_NEW_ERROR);
+          IDS_COULDNT_OPEN_PROFILE_ERROR : IDS_PROFILE_TOO_NEW_ERROR);
 }
 
 void InitSyncableServicesOnDBThread(
@@ -56,17 +59,18 @@ void InitSyncableServicesOnDBThread(
       autofill_web_data.get(), autofill_backend);
   AutocompleteSyncableService::FromWebDataService(autofill_web_data.get())
       ->InjectStartSyncFlare(
-            sync_start_util::GetFlareForSyncableService(profile_path));
+          sync_start_util::GetFlareForSyncableService(profile_path));
   AutofillProfileSyncableService::CreateForWebDataServiceAndBackend(
       autofill_web_data.get(), autofill_backend, app_locale);
   AutofillProfileSyncableService::FromWebDataService(autofill_web_data.get())
       ->InjectStartSyncFlare(
-            sync_start_util::GetFlareForSyncableService(profile_path));
+          sync_start_util::GetFlareForSyncableService(profile_path));
 }
 
 }  // namespace
 
-WebDataServiceWrapper::WebDataServiceWrapper() {}
+WebDataServiceWrapper::WebDataServiceWrapper() {
+}
 
 WebDataServiceWrapper::WebDataServiceWrapper(Profile* profile) {
   base::FilePath profile_path = profile->GetPath();
@@ -80,52 +84,56 @@ WebDataServiceWrapper::WebDataServiceWrapper(Profile* profile) {
 
   // All tables objects that participate in managing the database must
   // be added here.
-  web_database_->AddTable(
-      scoped_ptr<WebDatabaseTable>(new autofill::AutofillTable(
-          g_browser_process->GetApplicationLocale())));
-  web_database_->AddTable(
-      scoped_ptr<WebDatabaseTable>(new KeywordTable()));
+  web_database_->AddTable(scoped_ptr<WebDatabaseTable>(
+      new autofill::AutofillTable(g_browser_process->GetApplicationLocale())));
+  web_database_->AddTable(scoped_ptr<WebDatabaseTable>(new KeywordTable()));
   // TODO(mdm): We only really need the LoginsTable on Windows for IE7 password
   // access, but for now, we still create it on all platforms since it deletes
   // the old logins table. We can remove this after a while, e.g. in M22 or so.
-  web_database_->AddTable(
-      scoped_ptr<WebDatabaseTable>(new LoginsTable()));
+  web_database_->AddTable(scoped_ptr<WebDatabaseTable>(new LoginsTable()));
   web_database_->AddTable(
       scoped_ptr<WebDatabaseTable>(new TokenServiceTable()));
-  web_database_->AddTable(
-      scoped_ptr<WebDatabaseTable>(new WebAppsTable()));
+  // TODO(caitkp): Add a migration to delete the SQL table used by
+  // WebIntentsTable, then remove this.
+  web_database_->AddTable(scoped_ptr<WebDatabaseTable>(new WebAppsTable()));
   // TODO(thakis): Add a migration to delete the SQL table used by
   // WebIntentsTable, then remove this.
-  web_database_->AddTable(
-      scoped_ptr<WebDatabaseTable>(new WebIntentsTable()));
+  web_database_->AddTable(scoped_ptr<WebDatabaseTable>(new WebIntentsTable()));
 
   web_database_->LoadDatabase();
 
   autofill_web_data_ = new AutofillWebDataService(
-      web_database_, ui_thread, db_thread, base::Bind(
-          &ProfileErrorCallback, PROFILE_ERROR_DB_AUTOFILL_WEB_DATA));
+      web_database_,
+      ui_thread,
+      db_thread,
+      base::Bind(&ProfileErrorCallback, PROFILE_ERROR_DB_AUTOFILL_WEB_DATA));
   autofill_web_data_->Init();
 
   keyword_web_data_ = new KeywordWebDataService(
-      web_database_, ui_thread, base::Bind(
-          &ProfileErrorCallback, PROFILE_ERROR_DB_KEYWORD_WEB_DATA));
+      web_database_,
+      ui_thread,
+      base::Bind(&ProfileErrorCallback, PROFILE_ERROR_DB_KEYWORD_WEB_DATA));
   keyword_web_data_->Init();
 
   token_web_data_ = new TokenWebData(
-      web_database_, ui_thread, db_thread, base::Bind(
-         &ProfileErrorCallback, PROFILE_ERROR_DB_TOKEN_WEB_DATA));
+      web_database_,
+      ui_thread,
+      db_thread,
+      base::Bind(&ProfileErrorCallback, PROFILE_ERROR_DB_TOKEN_WEB_DATA));
   token_web_data_->Init();
 
-  web_data_ = new WebDataService(
-      web_database_, base::Bind(&ProfileErrorCallback,
-                                PROFILE_ERROR_DB_WEB_DATA));
-  web_data_->Init();
+#if defined(OS_WIN)
+  password_web_data_ = new PasswordWebDataService(
+      web_database_,
+      base::Bind(&ProfileErrorCallback, PROFILE_ERROR_DB_WEB_DATA));
+  password_web_data_->Init();
+#endif
 
   autofill_web_data_->GetAutofillBackend(
-         base::Bind(&InitSyncableServicesOnDBThread,
-                    autofill_web_data_,
-                    profile_path,
-                    g_browser_process->GetApplicationLocale()));
+      base::Bind(&InitSyncableServicesOnDBThread,
+                 autofill_web_data_,
+                 profile_path,
+                 g_browser_process->GetApplicationLocale()));
 }
 
 WebDataServiceWrapper::~WebDataServiceWrapper() {
@@ -135,7 +143,10 @@ void WebDataServiceWrapper::Shutdown() {
   autofill_web_data_->ShutdownOnUIThread();
   keyword_web_data_->ShutdownOnUIThread();
   token_web_data_->ShutdownOnUIThread();
-  web_data_->ShutdownOnUIThread();
+
+#if defined(OS_WIN)
+  password_web_data_->ShutdownOnUIThread();
+#endif
   web_database_->ShutdownDatabase();
 }
 
@@ -149,37 +160,26 @@ WebDataServiceWrapper::GetKeywordWebData() {
   return keyword_web_data_.get();
 }
 
-scoped_refptr<WebDataService> WebDataServiceWrapper::GetWebData() {
-  return web_data_.get();
-}
-
 scoped_refptr<TokenWebData> WebDataServiceWrapper::GetTokenWebData() {
   return token_web_data_.get();
 }
 
-// static
-scoped_refptr<WebDataService> WebDataService::FromBrowserContext(
-    content::BrowserContext* context) {
-  // For this service, the implicit/explicit distinction doesn't
-  // really matter; it's just used for a DCHECK.  So we currently
-  // cheat and always say EXPLICIT_ACCESS.
-  WebDataServiceWrapper* wrapper =
-      WebDataServiceFactory::GetForProfile(
-          static_cast<Profile*>(context), Profile::EXPLICIT_ACCESS);
-  if (wrapper)
-    return wrapper->GetWebData();
-  // |wrapper| can be NULL in Incognito mode.
-  return scoped_refptr<WebDataService>(NULL);
+#if defined(OS_WIN)
+scoped_refptr<PasswordWebDataService>
+WebDataServiceWrapper::GetPasswordWebData() {
+  return password_web_data_.get();
 }
+#endif
 
 WebDataServiceFactory::WebDataServiceFactory()
     : BrowserContextKeyedServiceFactory(
-        "WebDataService",
-        BrowserContextDependencyManager::GetInstance()) {
+          "WebDataService",
+          BrowserContextDependencyManager::GetInstance()) {
   // WebDataServiceFactory has no dependecies.
 }
 
-WebDataServiceFactory::~WebDataServiceFactory() {}
+WebDataServiceFactory::~WebDataServiceFactory() {
+}
 
 // static
 WebDataServiceWrapper* WebDataServiceFactory::GetForProfile(
@@ -190,7 +190,7 @@ WebDataServiceWrapper* WebDataServiceFactory::GetForProfile(
   // the *WebDataService::FromBrowserContext() functions (see above).
   DCHECK(access_type != Profile::IMPLICIT_ACCESS || !profile->IsOffTheRecord());
   return static_cast<WebDataServiceWrapper*>(
-          GetInstance()->GetServiceForBrowserContext(profile, true));
+      GetInstance()->GetServiceForBrowserContext(profile, true));
 }
 
 // static
@@ -202,7 +202,7 @@ WebDataServiceWrapper* WebDataServiceFactory::GetForProfileIfExists(
   // the *WebDataService::FromBrowserContext() functions (see above).
   DCHECK(access_type != Profile::IMPLICIT_ACCESS || !profile->IsOffTheRecord());
   return static_cast<WebDataServiceWrapper*>(
-          GetInstance()->GetServiceForBrowserContext(profile, false));
+      GetInstance()->GetServiceForBrowserContext(profile, false));
 }
 
 // static
@@ -231,16 +231,30 @@ WebDataServiceFactory::GetKeywordWebDataForProfile(
 }
 
 // static
-scoped_refptr<TokenWebData>
-WebDataServiceFactory::GetTokenWebDataForProfile(
+scoped_refptr<TokenWebData> WebDataServiceFactory::GetTokenWebDataForProfile(
     Profile* profile,
     Profile::ServiceAccessType access_type) {
   WebDataServiceWrapper* wrapper =
       WebDataServiceFactory::GetForProfile(profile, access_type);
   // |wrapper| can be NULL in Incognito mode.
-  return wrapper ? wrapper->GetTokenWebData()
-                 : scoped_refptr<TokenWebData>(NULL);
+  return wrapper ?
+      wrapper->GetTokenWebData() : scoped_refptr<TokenWebData>(NULL);
 }
+
+#if defined(OS_WIN)
+// static
+scoped_refptr<PasswordWebDataService>
+WebDataServiceFactory::GetPasswordWebDataForProfile(
+    Profile* profile,
+    Profile::ServiceAccessType access_type) {
+  WebDataServiceWrapper* wrapper =
+      WebDataServiceFactory::GetForProfile(profile, access_type);
+  // |wrapper| can be NULL in Incognito mode.
+  return wrapper ?
+      wrapper->GetPasswordWebData() :
+      scoped_refptr<PasswordWebDataService>(NULL);
+}
+#endif
 
 // static
 WebDataServiceFactory* WebDataServiceFactory::GetInstance() {

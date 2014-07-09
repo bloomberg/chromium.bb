@@ -9,7 +9,6 @@
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/sync/glue/sync_start_util.h"
-#include "chrome/browser/webdata/web_data_service.h"
 #include "chrome/browser/webdata/web_data_service_factory.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
@@ -24,6 +23,7 @@
 
 #if defined(OS_WIN)
 #include "chrome/browser/password_manager/password_store_win.h"
+#include "chrome/browser/webdata/password_web_data_service_win.h"
 #elif defined(OS_MACOSX)
 #include "chrome/browser/password_manager/password_store_mac.h"
 #include "crypto/apple_keychain.h"
@@ -148,7 +148,8 @@ KeyedService* PasswordStoreFactory::BuildServiceInstanceFor(
   ps = new PasswordStoreWin(main_thread_runner,
                             db_thread_runner,
                             login_db.release(),
-                            WebDataService::FromBrowserContext(profile));
+                            WebDataServiceFactory::GetPasswordWebDataForProfile(
+                                profile, Profile::EXPLICIT_ACCESS));
 #elif defined(OS_MACOSX)
   crypto::AppleKeychain* keychain =
       CommandLine::ForCurrentProcess()->HasSwitch(

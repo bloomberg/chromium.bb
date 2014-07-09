@@ -18,7 +18,6 @@
 #include "components/webdata/common/web_data_service_base.h"
 #include "components/webdata/common/web_data_service_consumer.h"
 
-class WebDataService;
 class WebDataServiceConsumer;
 class WebDataRequestManager;
 

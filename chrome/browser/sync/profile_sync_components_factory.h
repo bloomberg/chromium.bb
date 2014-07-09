@@ -20,7 +20,6 @@
 class PasswordStore;
 class Profile;
 class ProfileSyncService;
-class WebDataService;
 
 namespace browser_sync {
 class AssociatorInterface;

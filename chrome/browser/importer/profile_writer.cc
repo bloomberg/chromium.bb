@@ -22,7 +22,6 @@
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
-#include "chrome/browser/webdata/web_data_service.h"
 #include "chrome/common/importer/imported_bookmark_entry.h"
 #include "chrome/common/importer/imported_favicon_usage.h"
 #include "chrome/common/pref_names.h"
@@ -30,6 +29,11 @@
 #include "components/password_manager/core/browser/password_store.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_service.h"
+
+#if defined(OS_WIN)
+#include "chrome/browser/webdata/password_web_data_service_win.h"
+#include "chrome/browser/webdata/web_data_service_factory.h"
+#endif
 
 namespace {
 
@@ -86,7 +90,8 @@ void ProfileWriter::AddPasswordForm(const autofill::PasswordForm& form) {
 
 #if defined(OS_WIN)
 void ProfileWriter::AddIE7PasswordInfo(const IE7PasswordInfo& info) {
-  WebDataService::FromBrowserContext(profile_)->AddIE7Login(info);
+  WebDataServiceFactory::GetPasswordWebDataForProfile(
+      profile_, Profile::EXPLICIT_ACCESS)->AddIE7Login(info);
 }
 #endif
 

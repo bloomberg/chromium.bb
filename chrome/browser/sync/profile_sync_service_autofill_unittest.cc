@@ -209,7 +209,7 @@ class TokenWebDataServiceFake : public TokenWebData {
     return true;
   }
 
-  virtual WebDataService::Handle GetAllTokens(
+  virtual AutofillWebDataService::Handle GetAllTokens(
       WebDataServiceConsumer* consumer) OVERRIDE {
     // TODO(tim): It would be nice if WebDataService was injected on
     // construction of ProfileOAuth2TokenService rather than fetched by
@@ -343,7 +343,6 @@ class WebDataServiceFake : public AutofillWebDataService {
 
 KeyedService* BuildMockWebDataServiceWrapper(content::BrowserContext* profile) {
   return new MockWebDataServiceWrapper(
-      NULL,
       new WebDataServiceFake(),
       new TokenWebDataServiceFake());
 }

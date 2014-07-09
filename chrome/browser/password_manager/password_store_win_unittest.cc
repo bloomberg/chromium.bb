@@ -18,7 +18,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/password_manager/password_store_win.h"
 #include "chrome/browser/webdata/logins_table.h"
-#include "chrome/browser/webdata/web_data_service.h"
+#include "chrome/browser/webdata/password_web_data_service_win.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/os_crypt/ie7_password_win.h"
 #include "components/password_manager/core/browser/password_form_data.h"
@@ -52,7 +52,7 @@ class MockPasswordStoreConsumer : public PasswordStoreConsumer {
 class MockWebDataServiceConsumer : public WebDataServiceConsumer {
 public:
   MOCK_METHOD2(OnWebDataServiceRequestDone,
-               void(WebDataService::Handle, const WDTypedResult*));
+               void(PasswordWebDataService::Handle, const WDTypedResult*));
 };
 
 }  // anonymous namespace
@@ -125,8 +125,8 @@ class PasswordStoreWinTest : public testing::Test {
     // Need to add at least one table so the database gets created.
     wdbs_->AddTable(scoped_ptr<WebDatabaseTable>(new LoginsTable()));
     wdbs_->LoadDatabase();
-    wds_ = new WebDataService(wdbs_,
-                              WebDataServiceBase::ProfileErrorCallback());
+    wds_ = new PasswordWebDataService(
+        wdbs_, WebDataServiceBase::ProfileErrorCallback());
     wds_->Init();
   }
 
@@ -163,7 +163,7 @@ class PasswordStoreWinTest : public testing::Test {
   base::ScopedTempDir temp_dir_;
   scoped_ptr<TestingProfile> profile_;
   scoped_ptr<LoginDatabase> login_db_;
-  scoped_refptr<WebDataService> wds_;
+  scoped_refptr<PasswordWebDataService> wds_;
   scoped_refptr<WebDatabaseService> wdbs_;
   scoped_refptr<PasswordStore> store_;
 };

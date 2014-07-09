@@ -46,7 +46,6 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/storage_partition_descriptor.h"
 #include "chrome/browser/search_engines/template_url_fetcher_factory.h"
-#include "chrome/browser/webdata/web_data_service.h"
 #include "chrome/browser/webdata/web_data_service_factory.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"

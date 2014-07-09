@@ -7,7 +7,6 @@
 
 #include "base/basictypes.h"
 #include "base/message_loop/message_loop.h"
-#include "chrome/browser/webdata/web_data_service.h"
 #include "chrome/browser/webdata/web_data_service_factory.h"
 #include "components/signin/core/browser/webdata/token_web_data.h"
 
@@ -29,7 +28,6 @@ class MockWebDataServiceWrapperBase : public WebDataServiceWrapper {
 class MockWebDataServiceWrapper : public MockWebDataServiceWrapperBase {
  public:
   MockWebDataServiceWrapper(
-      scoped_refptr<WebDataService> fake_service,
       scoped_refptr<autofill::AutofillWebDataService> fake_autofill,
       scoped_refptr<TokenWebData> fake_token);
 
@@ -40,12 +38,9 @@ class MockWebDataServiceWrapper : public MockWebDataServiceWrapperBase {
 
   virtual scoped_refptr<TokenWebData> GetTokenWebData() OVERRIDE;
 
-  virtual scoped_refptr<WebDataService> GetWebData() OVERRIDE;
-
  protected:
   scoped_refptr<autofill::AutofillWebDataService> fake_autofill_web_data_;
   scoped_refptr<TokenWebData> fake_token_web_data_;
-  scoped_refptr<WebDataService> fake_web_data_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockWebDataServiceWrapper);

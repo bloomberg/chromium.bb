@@ -26,7 +26,6 @@ class PrefService;
 class PromoCounter;
 class ProtocolHandlerRegistry;
 class TestingProfile;
-class WebDataService;
 
 namespace android {
 class TabContentsProvider;

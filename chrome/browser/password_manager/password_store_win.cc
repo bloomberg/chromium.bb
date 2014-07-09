@@ -11,7 +11,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/webdata/web_data_service.h"
+#include "chrome/browser/webdata/password_web_data_service_win.h"
 #include "components/os_crypt/ie7_password_win.h"
 #include "components/password_manager/core/browser/password_manager.h"
 #include "content/public/browser/browser_thread.h"
@@ -20,10 +20,10 @@ using autofill::PasswordForm;
 using content::BrowserThread;
 using password_manager::PasswordStoreDefault;
 
-// Handles requests to WebDataService.
+// Handles requests to PasswordWebDataService.
 class PasswordStoreWin::DBHandler : public WebDataServiceConsumer {
  public:
-  DBHandler(WebDataService* web_data_service,
+  DBHandler(PasswordWebDataService* web_data_service,
             PasswordStoreWin* password_store)
       : web_data_service_(web_data_service),
         password_store_(password_store) {
@@ -51,7 +51,8 @@ class PasswordStoreWin::DBHandler : public WebDataServiceConsumer {
   };
 
   // Holds info associated with in-flight GetIE7Login requests.
-  typedef std::map<WebDataService::Handle, RequestInfo> PendingRequestMap;
+  typedef std::map<PasswordWebDataService::Handle, RequestInfo>
+      PendingRequestMap;
 
   // Gets logins from IE7 if no others are found. Also copies them into
   // Chrome's WebDatabase so we don't need to look next time.
@@ -61,10 +62,10 @@ class PasswordStoreWin::DBHandler : public WebDataServiceConsumer {
 
   // WebDataServiceConsumer implementation.
   virtual void OnWebDataServiceRequestDone(
-      WebDataService::Handle handle,
+      PasswordWebDataService::Handle handle,
       const WDTypedResult* result) OVERRIDE;
 
-  scoped_refptr<WebDataService> web_data_service_;
+  scoped_refptr<PasswordWebDataService> web_data_service_;
 
   // This creates a cycle between us and PasswordStore. The cycle is broken
   // from PasswordStoreWin::Shutdown, which deletes us.
@@ -92,7 +93,8 @@ void PasswordStoreWin::DBHandler::GetIE7Login(
   IE7PasswordInfo info;
   info.url_hash =
       ie7_password::GetUrlHash(base::UTF8ToWide(form.origin.spec()));
-  WebDataService::Handle handle = web_data_service_->GetIE7Login(info, this);
+  PasswordWebDataService::Handle handle =
+      web_data_service_->GetIE7Login(info, this);
   pending_requests_[handle] =
       RequestInfo(new PasswordForm(form), callback_runner);
 }
@@ -138,7 +140,7 @@ std::vector<PasswordForm*> PasswordStoreWin::DBHandler::GetIE7Results(
 }
 
 void PasswordStoreWin::DBHandler::OnWebDataServiceRequestDone(
-    WebDataService::Handle handle,
+    PasswordWebDataService::Handle handle,
     const WDTypedResult* result) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
 
@@ -168,7 +170,7 @@ PasswordStoreWin::PasswordStoreWin(
     scoped_refptr<base::SingleThreadTaskRunner> main_thread_runner,
     scoped_refptr<base::SingleThreadTaskRunner> db_thread_runner,
     password_manager::LoginDatabase* login_database,
-    WebDataService* web_data_service)
+    PasswordWebDataService* web_data_service)
     : PasswordStoreDefault(main_thread_runner,
                            db_thread_runner,
                            login_database) {
