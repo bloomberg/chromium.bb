@@ -988,6 +988,7 @@ source_set("prefs") {
 source_set("prefs_test_support") {
   sources = [
     "prefs/mock_pref_change_callback.cc",
+    "prefs/mock_pref_change_callback.h",
     "prefs/pref_store_observer_mock.cc",
     "prefs/pref_store_observer_mock.h",
     "prefs/testing_pref_service.cc",
@@ -1139,7 +1140,6 @@ test("base_unittests") {
     "power_monitor/power_monitor_unittest.cc",
     "prefs/default_pref_store_unittest.cc",
     "prefs/json_pref_store_unittest.cc",
-    "prefs/mock_pref_change_callback.h",
     "prefs/overlay_user_pref_store_unittest.cc",
     "prefs/pref_change_registrar_unittest.cc",
     "prefs/pref_member_unittest.cc",
