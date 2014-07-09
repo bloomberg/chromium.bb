@@ -73,14 +73,20 @@ std::string* PlatformFontPango::default_font_description_ = NULL;
 // PlatformFontPango, public:
 
 PlatformFontPango::PlatformFontPango() {
-  if (default_font_ == NULL) {
-    std::string font_name = GetDefaultFont();
+  if (!default_font_) {
+    std::string desc_string;
+#if defined(OS_CHROMEOS)
+    // Font name must have been provided by way of SetDefaultFontDescription().
+    CHECK(default_font_description_);
+    desc_string = *default_font_description_;
+#else
+    const gfx::LinuxFontDelegate* delegate = gfx::LinuxFontDelegate::instance();
+    desc_string = delegate ? delegate->GetDefaultFontDescription() : "sans 10";
+#endif
 
     ScopedPangoFontDescription desc(
-        pango_font_description_from_string(font_name.c_str()));
+        pango_font_description_from_string(desc_string.c_str()));
     default_font_ = new Font(desc.get());
-
-    DCHECK(default_font_);
   }
 
   InitFromPlatformFont(
@@ -247,18 +253,6 @@ PlatformFontPango::PlatformFontPango(const skia::RefPtr<SkTypeface>& typeface,
 }
 
 PlatformFontPango::~PlatformFontPango() {}
-
-// static
-std::string PlatformFontPango::GetDefaultFont() {
-#if defined(OS_CHROMEOS)
-  // Font name must have been provided by way of SetDefaultFontDescription().
-  CHECK(default_font_description_);
-  return *default_font_description_;
-#else
-  const gfx::LinuxFontDelegate* delegate = gfx::LinuxFontDelegate::instance();
-  return delegate ? delegate->GetDefaultFontDescription() : "sans 10";
-#endif    // defined(OS_CHROMEOS)
-}
 
 void PlatformFontPango::InitFromDetails(
     const skia::RefPtr<SkTypeface>& typeface,

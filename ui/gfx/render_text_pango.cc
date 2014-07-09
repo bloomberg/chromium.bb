@@ -307,12 +307,8 @@ void RenderTextPango::EnsureLayout() {
     cairo_destroy(cr);
     cairo_surface_destroy(surface);
 
-    SetupPangoLayoutWithFontDescription(layout_,
-                                        GetLayoutText(),
-                                        font_list().GetFontDescriptionString(),
-                                        0,
-                                        GetTextDirection(),
-                                        Canvas::DefaultCanvasTextAlignment());
+    SetUpPangoLayout(layout_, GetLayoutText(), font_list(), GetTextDirection(),
+                     Canvas::DefaultCanvasTextAlignment());
 
     // No width set so that the x-axis position is relative to the start of the
     // text. ToViewPoint and ToTextPoint take care of the position conversion

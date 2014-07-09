@@ -66,10 +66,6 @@ class GFX_EXPORT PlatformFontPango : public PlatformFont {
                     int style);
   virtual ~PlatformFontPango();
 
-  // Returns a Pango font description (suitable for parsing by
-  // pango_font_description_from_string()) for the default UI font.
-  static std::string GetDefaultFont();
-
   // Initializes this object based on the passed-in details. If |typeface| is
   // empty, a new typeface will be loaded.
   void InitFromDetails(

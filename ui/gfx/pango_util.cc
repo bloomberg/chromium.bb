@@ -5,22 +5,18 @@
 #include "ui/gfx/pango_util.h"
 
 #include <cairo/cairo.h>
-#include <fontconfig/fontconfig.h>
 #include <pango/pango.h>
 #include <pango/pangocairo.h>
 #include <string>
 
 #include <algorithm>
 #include <map>
-#include <vector>
 
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/gfx/canvas.h"
-#include "ui/gfx/font.h"
+#include "ui/gfx/font_list.h"
 #include "ui/gfx/font_render_params_linux.h"
-#include "ui/gfx/platform_font_pango.h"
-#include "ui/gfx/rect.h"
 #include "ui/gfx/text_utils.h"
 
 namespace gfx {
@@ -30,7 +26,13 @@ namespace {
 // Marker for accelerators in the text.
 const gunichar kAcceleratorChar = '&';
 
-// Return |cairo_font_options|. If needed, allocate and update it.
+// Creates and returns a PangoContext. The caller owns the context.
+PangoContext* GetPangoContext() {
+  PangoFontMap* font_map = pango_cairo_font_map_get_default();
+  return pango_font_map_create_context(font_map);
+}
+
+// Returns a static cairo_font_options_t. If needed, allocates and updates it.
 // TODO(derat): Return font-specific options: http://crbug.com/125235
 cairo_font_options_t* GetCairoFontOptions() {
   // Font settings that we initialize once and then use when drawing text.
@@ -88,6 +90,20 @@ cairo_font_options_t* GetCairoFontOptions() {
   return cairo_font_options;
 }
 
+// Returns the resolution (DPI) used by pango. A negative value means the
+// resolution hasn't been set.
+double GetPangoResolution() {
+  static double resolution;
+  static bool determined_resolution = false;
+  if (!determined_resolution) {
+    determined_resolution = true;
+    PangoContext* default_context = GetPangoContext();
+    resolution = pango_cairo_context_get_resolution(default_context);
+    g_object_unref(default_context);
+  }
+  return resolution;
+}
+
 // Returns the number of pixels in a point.
 // - multiply a point size by this to get pixels ("device units")
 // - divide a pixel size by this to get points
@@ -111,30 +127,13 @@ float GetPixelsInPoint() {
 
 }  // namespace
 
-PangoContext* GetPangoContext() {
-  PangoFontMap* font_map = pango_cairo_font_map_get_default();
-  return pango_font_map_create_context(font_map);
-}
-
-double GetPangoResolution() {
-  static double resolution;
-  static bool determined_resolution = false;
-  if (!determined_resolution) {
-    determined_resolution = true;
-    PangoContext* default_context = GetPangoContext();
-    resolution = pango_cairo_context_get_resolution(default_context);
-    g_object_unref(default_context);
-  }
-  return resolution;
-}
-
-// Pass a width greater than 0 to force wrapping and eliding.
-static void SetupPangoLayoutWithoutFont(
+void SetUpPangoLayout(
     PangoLayout* layout,
     const base::string16& text,
-    int width,
+    const FontList& font_list,
     base::i18n::TextDirection text_direction,
     int flags) {
+  // TODO(derat): Use rendering parameters from |font_list| instead of defaults.
   cairo_font_options_t* cairo_font_options = GetCairoFontOptions();
 
   // If we got an explicit request to turn off subpixel rendering, disable it on
@@ -163,9 +162,6 @@ static void SetupPangoLayoutWithoutFont(
   pango_context_set_base_dir(pango_layout_get_context(layout),
       (text_direction == base::i18n::RIGHT_TO_LEFT ?
        PANGO_DIRECTION_RTL : PANGO_DIRECTION_LTR));
-
-  if (width > 0)
-    pango_layout_set_width(layout, width * PANGO_SCALE);
 
   if (flags & Canvas::TEXT_ALIGN_CENTER) {
     // We don't support center aligned w/ eliding.
@@ -228,31 +224,9 @@ static void SetupPangoLayoutWithoutFont(
 
     pango_layout_set_text(layout, utf8.data(), utf8.size());
   }
-}
 
-void SetupPangoLayout(PangoLayout* layout,
-                      const base::string16& text,
-                      const Font& font,
-                      int width,
-                      base::i18n::TextDirection text_direction,
-                      int flags) {
-  SetupPangoLayoutWithoutFont(layout, text, width, text_direction, flags);
-
-  ScopedPangoFontDescription desc(font.GetNativeFont());
-  pango_layout_set_font_description(layout, desc.get());
-}
-
-void SetupPangoLayoutWithFontDescription(
-    PangoLayout* layout,
-    const base::string16& text,
-    const std::string& font_description,
-    int width,
-    base::i18n::TextDirection text_direction,
-    int flags) {
-  SetupPangoLayoutWithoutFont(layout, text, width, text_direction, flags);
-
-  ScopedPangoFontDescription desc(
-      pango_font_description_from_string(font_description.c_str()));
+  ScopedPangoFontDescription desc(pango_font_description_from_string(
+      font_list.GetFontDescriptionString().c_str()));
   pango_layout_set_font_description(layout, desc.get());
 }
 
