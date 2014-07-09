@@ -128,22 +128,11 @@ void SuggestionsSourceTopSites::OnSuggestionsUrlsAvailable(
 
 // static
 base::TimeDelta SuggestionsSourceTopSites::GetFilterWidth() {
-  const CommandLine* cli = CommandLine::ForCurrentProcess();
-  const std::string filter_width_switch =
-      cli->GetSwitchValueASCII(switches::kSuggestionNtpFilterWidth);
-  unsigned int filter_width;
-  if (base::StringToUint(filter_width_switch, &filter_width))
-    return base::TimeDelta::FromMinutes(filter_width);
   return base::TimeDelta::FromHours(1);
 }
 
 // static
 history::VisitFilter::SortingOrder
 SuggestionsSourceTopSites::GetSortingOrder() {
-  const CommandLine* cli = CommandLine::ForCurrentProcess();
-  if (cli->HasSwitch(switches::kSuggestionNtpGaussianFilter))
-    return history::VisitFilter::ORDER_BY_TIME_GAUSSIAN;
-  if (cli->HasSwitch(switches::kSuggestionNtpLinearFilter))
-    return history::VisitFilter::ORDER_BY_TIME_LINEAR;
   return history::VisitFilter::ORDER_BY_RECENCY;
 }

@@ -1160,18 +1160,6 @@ const char kSSLVersionMin[]                 = "ssl-version-min";
 // Starts the browser maximized, regardless of any previous settings.
 const char kStartMaximized[]                = "start-maximized";
 
-// Controls the width of time-of-day filters on the 'suggested' ntp page, in
-// minutes.
-const char kSuggestionNtpFilterWidth[]      = "suggestion-ntp-filter-width";
-
-// Enables a normal distribution dropoff to the relevancy of visits with respect
-// to the time of day.
-const char kSuggestionNtpGaussianFilter[]   = "suggestion-ntp-gaussian-filter";
-
-// Enables a linear dropoff to the relevancy of visits with respect to the time
-// of day.
-const char kSuggestionNtpLinearFilter[]     = "suggestion-ntp-linear-filter";
-
 // Sets the supervised user ID for any loaded or newly created profile to the
 // given value. Pass an empty string to mark the profile as non-supervised.
 // Used for testing.
