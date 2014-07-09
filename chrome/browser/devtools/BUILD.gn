@@ -115,6 +115,7 @@ static_library("devtools") {
       "browser_list_tabcontents_provider.cc",
       "devtools_file_system_indexer.cc",
       "devtools_target_impl.cc",
+      "devtools_ui_bindings.cc",
       "devtools_window.cc",
       "devtools_window_base.cc",
       "remote_debugging_server.cc",

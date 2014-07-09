@@ -103,6 +103,7 @@
             'browser/devtools/browser_list_tabcontents_provider.cc',
             'browser/devtools/devtools_file_system_indexer.cc',
             'browser/devtools/devtools_target_impl.cc',
+            'browser/devtools/devtools_ui_bindings.cc',
             'browser/devtools/devtools_window.cc',
             'browser/devtools/devtools_window_base.cc',
             'browser/devtools/remote_debugging_server.cc',
