@@ -145,7 +145,9 @@ TEST_F(ActivityLoggerTest, ScriptElement)
         "blinkAddElement | script | \n"
         "blinkAddElement | script | \n"
         "blinkAddElement | script | data:text/html;charset=utf-8,\n"
-        "blinkAddElement | script | data:text/html;charset=utf-8,";
+        "blinkRequestResource | Script | data:text/html;charset=utf-8,\n"
+        "blinkAddElement | script | data:text/html;charset=utf-8,\n"
+        "blinkRequestResource | Script | data:text/html;charset=utf-8,";
     executeScriptInMainWorld(code);
     ASSERT_TRUE(verifyActivities(""));
     executeScriptInIsolatedWorld(code);
@@ -165,10 +167,13 @@ TEST_F(ActivityLoggerTest, IFrameElement)
         "document.write('<body><iframe src=\\\'data:text/html;charset=utf-8,\\\'></iframe></body>');";
     const char* expectedActivities =
         "blinkAddElement | iframe | data:text/html;charset=utf-8,\n"
+        "blinkRequestResource | Main resource | data:text/html;charset=utf-8,\n"
         "blinkAddElement | iframe | \n"
         "blinkAddElement | iframe | \n"
         "blinkAddElement | iframe | data:text/html;charset=utf-8,\n"
-        "blinkAddElement | iframe | data:text/html;charset=utf-8,";
+        "blinkRequestResource | Main resource | data:text/html;charset=utf-8,\n"
+        "blinkAddElement | iframe | data:text/html;charset=utf-8,\n"
+        "blinkRequestResource | Main resource | data:text/html;charset=utf-8,";
     executeScriptInMainWorld(code);
     ASSERT_TRUE(verifyActivities(""));
     executeScriptInIsolatedWorld(code);
@@ -212,10 +217,13 @@ TEST_F(ActivityLoggerTest, LinkElement)
         "document.write('<body><link rel=\\\'stylesheet\\\' href=\\\'data:text/css;charset=utf-8,\\\'></link></body>');";
     const char* expectedActivities =
         "blinkAddElement | link | stylesheet | data:text/css;charset=utf-8,\n"
+        "blinkRequestResource | CSS stylesheet | data:text/css;charset=utf-8,\n"
         "blinkAddElement | link |  | \n"
         "blinkAddElement | link |  | \n"
         "blinkAddElement | link | stylesheet | data:text/css;charset=utf-8,\n"
-        "blinkAddElement | link | stylesheet | data:text/css;charset=utf-8,";
+        "blinkRequestResource | CSS stylesheet | data:text/css;charset=utf-8,\n"
+        "blinkAddElement | link | stylesheet | data:text/css;charset=utf-8,\n"
+        "blinkRequestResource | CSS stylesheet | data:text/css;charset=utf-8,";
     executeScriptInMainWorld(code);
     ASSERT_TRUE(verifyActivities(""));
     executeScriptInIsolatedWorld(code);
@@ -308,6 +316,7 @@ TEST_F(ActivityLoggerTest, IFrameSrcAttribute)
         "iframe.setAttributeNode(attr);";
     const char* expectedActivities =
         "blinkAddElement | iframe | data:text/html;charset=utf-8,A\n"
+        "blinkRequestResource | Main resource | data:text/html;charset=utf-8,A\n"
         "blinkSetAttribute | iframe | src | data:text/html;charset=utf-8,A | data:text/html;charset=utf-8,B\n"
         "blinkSetAttribute | iframe | src | data:text/html;charset=utf-8,B | data:text/html;charset=utf-8,C\n"
         "blinkSetAttribute | iframe | src | data:text/html;charset=utf-8,C | data:text/html;charset=utf-8,D\n"
@@ -354,10 +363,15 @@ TEST_F(ActivityLoggerTest, LinkHrefAttribute)
         "link.setAttributeNode(attr);";
     const char* expectedActivities =
         "blinkAddElement | link | stylesheet | data:text/css;charset=utf-8,A\n"
+        "blinkRequestResource | CSS stylesheet | data:text/css;charset=utf-8,A\n"
         "blinkSetAttribute | link | href | data:text/css;charset=utf-8,A | data:text/css;charset=utf-8,B\n"
+        "blinkRequestResource | CSS stylesheet | data:text/css;charset=utf-8,B\n"
         "blinkSetAttribute | link | href | data:text/css;charset=utf-8,B | data:text/css;charset=utf-8,C\n"
+        "blinkRequestResource | CSS stylesheet | data:text/css;charset=utf-8,C\n"
         "blinkSetAttribute | link | href | data:text/css;charset=utf-8,C | data:text/css;charset=utf-8,D\n"
-        "blinkSetAttribute | link | href | data:text/css;charset=utf-8,D | data:text/css;charset=utf-8,E";
+        "blinkRequestResource | CSS stylesheet | data:text/css;charset=utf-8,D\n"
+        "blinkSetAttribute | link | href | data:text/css;charset=utf-8,D | data:text/css;charset=utf-8,E\n"
+        "blinkRequestResource | CSS stylesheet | data:text/css;charset=utf-8,E";
     executeScriptInMainWorld(code);
     ASSERT_TRUE(verifyActivities(""));
     executeScriptInIsolatedWorld(code);
@@ -453,6 +467,29 @@ TEST_F(ActivityLoggerTest, LocalDOMWindowAttribute)
         "blinkSetAttribute | LocalDOMWindow | url | about:blank | about:blank?search\n"
         "blinkSetAttribute | LocalDOMWindow | url | about:blank | about:blank#hash\n"
         "blinkSetAttribute | LocalDOMWindow | url | about:blank#hash | about:blank\n";
+    executeScriptInMainWorld(code);
+    ASSERT_TRUE(verifyActivities(""));
+    executeScriptInIsolatedWorld(code);
+    ASSERT_TRUE(verifyActivities(expectedActivities));
+}
+
+TEST_F(ActivityLoggerTest, RequestResource)
+{
+    const char* code =
+        "document.write('<iframe src=\\\'data:text/html;charset=utf-8,A\\\'></iframe>');"
+        "document.write('<img src=\\\'data:text/html;charset=utf-8,B\\\'></img>');"
+        "document.write('<link rel=\\\'stylesheet\\\' href=\\\'data:text/html;charset=utf-8,C\\\'></link>');"
+        "document.write('<script src=\\\'data:text/html;charset=utf-8,D\\\'></script>');"
+        "var xhr = new XMLHttpRequest(); xhr.open('GET', 'data:text/html;charset=utf-8,E'); xhr.send();";
+    const char* expectedActivities =
+        "blinkAddElement | iframe | data:text/html;charset=utf-8,A\n"
+        "blinkRequestResource | Main resource | data:text/html;charset=utf-8,A\n"
+        "blinkRequestResource | Image | data:text/html;charset=utf-8,B\n"
+        "blinkAddElement | link | stylesheet | data:text/html;charset=utf-8,C\n"
+        "blinkRequestResource | CSS stylesheet | data:text/html;charset=utf-8,C\n"
+        "blinkAddElement | script | data:text/html;charset=utf-8,D\n"
+        "blinkRequestResource | Script | data:text/html;charset=utf-8,D\n"
+        "blinkRequestResource | XMLHttpRequest | data:text/html;charset=utf-8,E";
     executeScriptInMainWorld(code);
     ASSERT_TRUE(verifyActivities(""));
     executeScriptInIsolatedWorld(code);

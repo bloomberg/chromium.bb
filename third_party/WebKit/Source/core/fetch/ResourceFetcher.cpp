@@ -28,6 +28,8 @@
 #include "core/fetch/ResourceFetcher.h"
 
 #include "bindings/core/v8/ScriptController.h"
+#include "bindings/core/v8/V8DOMActivityLogger.h"
+#include "core/FetchInitiatorTypeNames.h"
 #include "core/dom/Document.h"
 #include "core/fetch/CSSStyleSheetResource.h"
 #include "core/fetch/CrossOriginAccessControl.h"
@@ -692,6 +694,21 @@ ResourcePtr<Resource> ResourceFetcher::requestResource(Resource::Type type, Fetc
 
     if (LocalFrame* f = frame())
         f->loader().client()->dispatchWillRequestResource(&request);
+
+    if (!request.forPreload()) {
+        V8DOMActivityLogger* activityLogger = 0;
+        if (request.options().initiatorInfo.name == FetchInitiatorTypeNames::xmlhttprequest)
+            activityLogger = V8DOMActivityLogger::currentActivityLogger();
+        else
+            activityLogger = V8DOMActivityLogger::currentActivityLoggerIfIsolatedWorld();
+
+        if (activityLogger) {
+            Vector<String> argv;
+            argv.append(Resource::resourceTypeToString(type, request.options().initiatorInfo));
+            argv.append(url);
+            activityLogger->logEvent("blinkRequestResource", argv.size(), argv.data());
+        }
+    }
 
     // See if we can use an existing resource from the cache.
     ResourcePtr<Resource> resource = memoryCache()->resourceForURL(url);
