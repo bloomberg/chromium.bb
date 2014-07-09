@@ -177,7 +177,7 @@ TEST_F(HTMLTextFormControlElementTest, SpellCheckDoesNotCauseUpdateLayout)
     document().frame()->selection().setSelection(newSelection, FrameSelection::CloseTyping | FrameSelection::ClearTypingStyle | FrameSelection::DoNotUpdateAppearance);
     ASSERT_EQ(3, input->selectionStart());
 
-    OwnPtrWillBeRawPtr<SpellChecker> spellChecker(SpellChecker::create(page().frame()));
+    OwnPtr<SpellChecker> spellChecker(SpellChecker::create(page().frame()));
     page().frameView().setFrameRect(IntRect(0, 0, 801, 601));
     int startCount = page().frameView().layoutCount();
     spellChecker->respondToChangedSelection(oldSelection, FrameSelection::CloseTyping | FrameSelection::ClearTypingStyle);
