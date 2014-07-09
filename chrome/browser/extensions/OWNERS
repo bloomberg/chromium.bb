@@ -12,14 +12,15 @@
 #   chrome/renderer/extensions/OWNERS
 #   chrome/renderer/resources/extensions/OWNERS
 #   extensions/OWNERS
-mek@chromium.org
-miket@chromium.org
-scheib@chromium.org
-rdevlin.cronin@chromium.org
-benwells@chromium.org
-jyasskin@chromium.org
-finnur@chromium.org
 yoz@chromium.org
-koz@chromium.org
-kalman@chromium.org
 asargent@chromium.org
+kalman@chromium.org
+scheib@chromium.org
+miket@chromium.org
+benwells@chromium.org
+rdevlin.cronin@chromium.org
+jyasskin@chromium.org
+rockot@chromium.org
+koz@chromium.org
+finnur@chromium.org
+mek@chromium.org
