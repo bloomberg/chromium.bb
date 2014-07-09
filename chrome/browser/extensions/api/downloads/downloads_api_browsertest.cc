@@ -2293,10 +2293,19 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
                           result_id)));
 }
 
+// flaky on mac: crbug.com/392288
+#if defined(OS_MACOSX)
+#define MAYBE_DownloadExtensionTest_Download_FileSystemURL \
+        DISABLED_DownloadExtensionTest_Download_FileSystemURL
+#else
+#define MAYBE_DownloadExtensionTest_Download_FileSystemURL \
+        DownloadExtensionTest_Download_FileSystemURL
+#endif
+
 // Test downloading filesystem: URLs.
 // NOTE: chrome disallows creating HTML5 FileSystem Files in incognito.
 IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
-                       DownloadExtensionTest_Download_FileSystemURL) {
+                       MAYBE_DownloadExtensionTest_Download_FileSystemURL) {
   static const char* kPayloadData = "on the record\ndata";
   GoOnTheRecord();
   LoadExtension("downloads_split");
