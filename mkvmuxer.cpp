@@ -95,6 +95,10 @@ bool WriteEbmlHeader(IMkvWriter* writer, uint64 doc_type_version) {
   return true;
 }
 
+bool WriteEbmlHeader(IMkvWriter* writer) {
+  return WriteEbmlHeader(writer, mkvmuxer::Segment::kDefaultDocTypeVersion);
+}
+
 bool ChunkedCopy(mkvparser::IMkvReader* source, mkvmuxer::IMkvWriter* dst,
                  mkvmuxer::int64 start, int64 size) {
   // TODO(vigneshv): Check if this is a reasonable value.

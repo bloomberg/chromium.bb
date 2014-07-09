@@ -57,6 +57,10 @@ class IMkvWriter {
 
 // Writes out the EBML header for a WebM file. This function must be called
 // before any other libwebm writing functions are called.
+bool WriteEbmlHeader(IMkvWriter* writer, uint64 doc_type_version);
+
+// Deprecated. Writes out EBML header with doc_type_version as
+// kDefaultDocTypeVersion. Exists for backward compatibility.
 bool WriteEbmlHeader(IMkvWriter* writer);
 
 // Copies in Chunk from source to destination between the given byte positions
