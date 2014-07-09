@@ -117,8 +117,10 @@ net::HostResolver* NaClHostMessageFilter::GetHostResolver() {
 void NaClHostMessageFilter::OnLaunchNaCl(
     const nacl::NaClLaunchParams& launch_params,
     IPC::Message* reply_msg) {
-  // PNaCl hack
-  if (!launch_params.enable_dyncode_syscalls) {
+  // If we're running llc or ld for the PNaCl translator, we don't need to look
+  // up permissions, and we don't have the right browser state to look up some
+  // of the whitelisting parameters anyway.
+  if (!launch_params.uses_irt) {
     uint32 perms = launch_params.permission_bits & ppapi::PERMISSION_DEV;
     LaunchNaClContinuation(
         launch_params,
