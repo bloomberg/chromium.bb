@@ -18,7 +18,6 @@ modules/mediastream/RTCDataChannel
 modules/mediastream/RTCPeerConnection
 modules/netinfo/NetworkInformation
 modules/notifications/Notification
-modules/screen_orientation/ScreenOrientation
 modules/serviceworkers/ServiceWorker
 modules/serviceworkers/ServiceWorkerGlobalScope
 modules/speech/SpeechRecognition

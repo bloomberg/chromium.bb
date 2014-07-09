@@ -1376,16 +1376,8 @@ void WebLocalFrameImpl::resetMatchCount()
 
 void WebLocalFrameImpl::sendOrientationChangeEvent()
 {
-    if (!frame())
-        return;
-
-    // Screen Orientation API
-    if (ScreenOrientationController::from(*frame()))
-        ScreenOrientationController::from(*frame())->notifyOrientationChanged();
-
-    // Legacy window.orientation API.
-    if (frame()->domWindow())
-        frame()->domWindow()->dispatchEvent(Event::create(EventTypeNames::orientationchange));
+    if (frame())
+        frame()->sendOrientationChangeEvent();
 }
 
 void WebLocalFrameImpl::dispatchMessageEventWithOriginCheck(const WebSecurityOrigin& intendedTargetOrigin, const WebDOMEvent& event)
@@ -1547,9 +1539,9 @@ void WebLocalFrameImpl::setWebCoreFrame(PassRefPtr<WebCore::LocalFrame> frame)
         provideGeolocationTo(*m_frame, m_geolocationClientProxy.get());
         m_geolocationClientProxy->setController(GeolocationController::from(m_frame.get()));
         provideMIDITo(*m_frame, MIDIClientProxy::create(m_client ? m_client->webMIDIClient() : 0));
+        if (RuntimeEnabledFeatures::screenOrientationEnabled())
+            ScreenOrientationController::provideTo(*m_frame, m_client ? m_client->webScreenOrientationClient() : 0);
         provideLocalFileSystemTo(*m_frame, LocalFileSystemClient::create());
-
-        ScreenOrientationController::provideTo(*m_frame, m_client ? m_client->webScreenOrientationClient() : 0);
     }
 }
 

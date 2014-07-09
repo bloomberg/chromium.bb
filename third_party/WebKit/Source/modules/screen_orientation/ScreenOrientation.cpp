@@ -10,8 +10,9 @@
 #include "core/dom/DOMException.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
+#include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
-#include "modules/EventTargetModules.h"
+#include "core/frame/Screen.h"
 #include "modules/screen_orientation/LockOrientationCallback.h"
 #include "modules/screen_orientation/ScreenOrientationController.h"
 #include "public/platform/WebScreenOrientationType.h"
@@ -83,76 +84,58 @@ static blink::WebScreenOrientationLockType stringToOrientationLock(const AtomicS
     return blink::WebScreenOrientationLockDefault;
 }
 
-// static
-ScreenOrientation* ScreenOrientation::create(LocalFrame* frame)
+ScreenOrientation::ScreenOrientation(Screen& screen)
+    : DOMWindowProperty(screen.frame())
 {
-    ASSERT(frame);
-
-    ScreenOrientation* orientation = adoptRefCountedGarbageCollectedWillBeNoop(new ScreenOrientation(frame));
-    ASSERT(orientation->controller());
-    // FIXME: ideally, we would like to provide the ScreenOrientationController
-    // the case where it is not defined but for the moment, it is eagerly
-    // created when the LocalFrame is created so we shouldn't be in that
-    // situtaion.
-    // In order to create the ScreenOrientationController lazily, we would need
-    // to be able to access WebFrameClient from modules/.
-
-    orientation->controller()->setOrientation(orientation);
-    return orientation;
 }
 
-ScreenOrientation::ScreenOrientation(LocalFrame* frame)
-    : DOMWindowProperty(frame)
-    , m_type(blink::WebScreenOrientationUndefined)
-    , m_angle(0)
+const char* ScreenOrientation::supplementName()
 {
-    ScriptWrappable::init(this);
+    return "ScreenOrientation";
+}
+
+Document* ScreenOrientation::document() const
+{
+    if (!m_associatedDOMWindow || !m_associatedDOMWindow->isCurrentlyDisplayedInFrame())
+        return 0;
+    ASSERT(m_associatedDOMWindow->document());
+    return m_associatedDOMWindow->document();
+}
+
+ScreenOrientation& ScreenOrientation::from(Screen& screen)
+{
+    ScreenOrientation* supplement = static_cast<ScreenOrientation*>(WillBeHeapSupplement<Screen>::from(screen, supplementName()));
+    if (!supplement) {
+        supplement = new ScreenOrientation(screen);
+        provideTo(screen, supplementName(), adoptPtrWillBeNoop(supplement));
+    }
+    return *supplement;
 }
 
 ScreenOrientation::~ScreenOrientation()
 {
 }
 
-const WTF::AtomicString& ScreenOrientation::interfaceName() const
+const AtomicString& ScreenOrientation::orientation(Screen& screen)
 {
-    return EventTargetNames::ScreenOrientation;
+    ScreenOrientation& screenOrientation = ScreenOrientation::from(screen);
+    if (!screenOrientation.frame()) {
+        // FIXME: we should try to return a better guess, like the latest known value.
+        return orientationTypeToString(blink::WebScreenOrientationPortraitPrimary);
+    }
+    ScreenOrientationController& controller = ScreenOrientationController::from(*screenOrientation.frame());
+    return orientationTypeToString(controller.orientation());
 }
 
-ExecutionContext* ScreenOrientation::executionContext() const
-{
-    if (!m_frame)
-        return 0;
-    return m_frame->document();
-}
-
-String ScreenOrientation::type() const
-{
-    return orientationTypeToString(m_type);
-}
-
-unsigned short ScreenOrientation::angle() const
-{
-    return m_angle;
-}
-
-void ScreenOrientation::setType(blink::WebScreenOrientationType type)
-{
-    m_type = type;
-}
-
-void ScreenOrientation::setAngle(unsigned short angle)
-{
-    m_angle = angle;
-}
-
-ScriptPromise ScreenOrientation::lock(ScriptState* state, const AtomicString& lockString)
+ScriptPromise ScreenOrientation::lockOrientation(ScriptState* state, Screen& screen, const AtomicString& lockString)
 {
     RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(state);
     ScriptPromise promise = resolver->promise();
 
-    Document* document = m_frame ? m_frame->document() : 0;
+    ScreenOrientation& screenOrientation = ScreenOrientation::from(screen);
+    Document* document = screenOrientation.document();
 
-    if (!document || !controller()) {
+    if (!document || !screenOrientation.frame()) {
         RefPtrWillBeRawPtr<DOMException> exception = DOMException::create(InvalidStateError, "The object is no longer associated to a document.");
         resolver->reject(exception);
         return promise;
@@ -164,29 +147,17 @@ ScriptPromise ScreenOrientation::lock(ScriptState* state, const AtomicString& lo
         return promise;
     }
 
-    controller()->lock(stringToOrientationLock(lockString), new LockOrientationCallback(resolver));
+    ScreenOrientationController::from(*screenOrientation.frame()).lockOrientation(stringToOrientationLock(lockString), new LockOrientationCallback(resolver));
     return promise;
 }
 
-void ScreenOrientation::unlock()
+void ScreenOrientation::unlockOrientation(Screen& screen)
 {
-    if (!controller())
+    ScreenOrientation& screenOrientation = ScreenOrientation::from(screen);
+    if (!screenOrientation.frame())
         return;
 
-    controller()->unlock();
-}
-
-ScreenOrientationController* ScreenOrientation::controller()
-{
-    if (!m_frame)
-        return 0;
-
-    return ScreenOrientationController::from(*m_frame);
-}
-
-void ScreenOrientation::trace(Visitor* visitor)
-{
-    EventTargetWithInlineData::trace(visitor);
+    ScreenOrientationController::from(*screenOrientation.frame()).unlockOrientation();
 }
 
 } // namespace WebCore

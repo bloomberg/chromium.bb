@@ -5,60 +5,42 @@
 #ifndef ScreenOrientation_h
 #define ScreenOrientation_h
 
-#include "bindings/core/v8/ScriptWrappable.h"
-#include "core/events/EventTarget.h"
 #include "core/frame/DOMWindowProperty.h"
+#include "platform/Supplementable.h"
+#include "platform/Timer.h"
 #include "platform/heap/Handle.h"
+#include "public/platform/WebScreenOrientationLockType.h"
 #include "public/platform/WebScreenOrientationType.h"
 #include "wtf/text/AtomicString.h"
 #include "wtf/text/WTFString.h"
 
 namespace WebCore {
 
-class ExecutionContext;
-class LocalFrame;
+class Document;
 class ScriptPromise;
 class ScriptState;
-class ScreenOrientationController;
+class Screen;
 
-class ScreenOrientation FINAL :
-    public RefCountedGarbageCollectedWillBeGarbageCollectedFinalized<ScreenOrientation>,
-    public EventTargetWithInlineData,
-    DOMWindowProperty {
-    DEFINE_EVENT_TARGET_REFCOUNTING_WILL_BE_REMOVED(RefCountedGarbageCollectedWillBeGarbageCollectedFinalized<ScreenOrientation>);
+class ScreenOrientation FINAL : public NoBaseWillBeGarbageCollectedFinalized<ScreenOrientation>, public WillBeHeapSupplement<Screen>, DOMWindowProperty {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(ScreenOrientation);
 public:
-    static ScreenOrientation* create(LocalFrame*);
-
+    static ScreenOrientation& from(Screen&);
     virtual ~ScreenOrientation();
 
-    // EventTarget implementation.
-    virtual const WTF::AtomicString& interfaceName() const OVERRIDE;
-    virtual ExecutionContext* executionContext() const OVERRIDE;
-
-    String type() const;
-    unsigned short angle() const;
-
-    void setType(blink::WebScreenOrientationType);
-    void setAngle(unsigned short);
-
-    ScriptPromise lock(ScriptState*, const AtomicString& orientation);
-    void unlock();
-
-    DEFINE_ATTRIBUTE_EVENT_LISTENER(change);
+    static const AtomicString& orientation(Screen&);
+    static ScriptPromise lockOrientation(ScriptState*, Screen&, const AtomicString& orientation);
+    static void unlockOrientation(Screen&);
 
     // Helper being used by this class and LockOrientationCallback.
     static const AtomicString& orientationTypeToString(blink::WebScreenOrientationType);
 
-    virtual void trace(Visitor*) OVERRIDE;
+    virtual void trace(Visitor* visitor) OVERRIDE { WillBeHeapSupplement<Screen>::trace(visitor); }
 
 private:
-    explicit ScreenOrientation(LocalFrame*);
+    explicit ScreenOrientation(Screen&);
 
-    ScreenOrientationController* controller();
-
-    blink::WebScreenOrientationType m_type;
-    unsigned short m_angle;
+    static const char* supplementName();
+    Document* document() const;
 };
 
 } // namespace WebCore
