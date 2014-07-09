@@ -309,9 +309,9 @@ class ResourceScheduler::Client {
 
  private:
   enum ShouldStartReqResult {
-      DO_NOT_START_REQUEST_AND_STOP_SEARCHING = -2,
-      DO_NOT_START_REQUEST_AND_KEEP_SEARCHING = -1,
-      START_REQUEST = 1,
+    DO_NOT_START_REQUEST_AND_STOP_SEARCHING,
+    DO_NOT_START_REQUEST_AND_KEEP_SEARCHING,
+    START_REQUEST,
   };
 
   void InsertInFlightRequest(ScheduledResourceRequest* request) {
