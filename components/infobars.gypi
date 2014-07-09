@@ -32,5 +32,19 @@
         'infobars/core/infobars_switches.h',
       ],
     },
+    {
+      'target_name': 'infobars_test_support',
+     'type': 'static_library',
+      'include_dirs': [
+        '..',
+      ],
+      'dependencies': [
+        '../base/base.gyp:base',
+        '../skia/skia.gyp:skia',
+      ],
+      'sources': [
+        'infobars/test/infobar_test.cc',
+      ],
+    },
   ],
 }

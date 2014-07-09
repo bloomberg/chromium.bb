@@ -13,11 +13,11 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
-#include "chrome/browser/metrics/variations/variations_http_header_provider.h"
 #include "chrome/browser/search/suggestions/blacklist_store.h"
 #include "chrome/browser/search/suggestions/suggestions_store.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/variations/variations_associated_data.h"
+#include "components/variations/variations_http_header_provider.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"
@@ -248,7 +248,7 @@ net::URLFetcher* SuggestionsService::CreateSuggestionsRequest(const GURL& url) {
   request->SetRequestContext(url_request_context_);
   // Add Chrome experiment state to the request headers.
   net::HttpRequestHeaders headers;
-  chrome_variations::VariationsHttpHeaderProvider::GetInstance()->AppendHeaders(
+  variations::VariationsHttpHeaderProvider::GetInstance()->AppendHeaders(
       request->GetOriginalURL(), false, false, &headers);
   request->SetExtraRequestHeaders(headers.ToString());
   return request;

@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/metrics/variations/variations_http_header_provider.h"
+#include "components/variations/variations_http_header_provider.h"
 
 #include <vector>
 
@@ -12,13 +12,19 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
-#include "chrome/browser/metrics/variations/proto/chrome_experiments.pb.h"
 #include "components/google/core/browser/google_util.h"
+#include "components/variations/proto/chrome_experiments.pb.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/http/http_request_headers.h"
 #include "url/gurl.h"
 
-namespace chrome_variations {
+// TODO(mathp): Once the move to variations namespace is complete, remove these.
+using chrome_variations::EMPTY_ID;
+using chrome_variations::GOOGLE_WEB_PROPERTIES;
+using chrome_variations::GOOGLE_WEB_PROPERTIES_TRIGGER;
+using chrome_variations::VariationID;
+
+namespace variations {
 
 namespace {
 
@@ -256,4 +262,4 @@ bool VariationsHttpHeaderProvider::ShouldAppendHeaders(const GURL& url) {
                                          google_util::ALLOW_NON_STANDARD_PORTS);
 }
 
-}  // namespace chrome_variations
+}  // namespace variations

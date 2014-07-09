@@ -14,6 +14,7 @@
       'dependencies': [
         '../base/base.gyp:base',
         '../third_party/mt19937ar/mt19937ar.gyp:mt19937ar',
+        'components.gyp:google_core_browser',
       ],
       'sources': [
         'variations/active_field_trials.cc',
@@ -32,6 +33,7 @@
         'variations/pref_names.h',
         'variations/processed_study.cc',
         'variations/processed_study.h',
+        'variations/proto/chrome_experiments.proto',
         'variations/proto/permuted_entropy_cache.proto',
         'variations/proto/study.proto',
         'variations/proto/variations_seed.proto',
@@ -39,6 +41,8 @@
         'variations/study_filtering.h',
         'variations/variations_associated_data.cc',
         'variations/variations_associated_data.h',
+        'variations/variations_http_header_provider.cc',
+        'variations/variations_http_header_provider.h',
         'variations/variations_seed_processor.cc',
         'variations/variations_seed_processor.h',
         'variations/variations_seed_simulator.cc',

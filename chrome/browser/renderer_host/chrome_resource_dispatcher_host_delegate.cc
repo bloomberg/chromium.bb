@@ -19,7 +19,6 @@
 #include "chrome/browser/download/download_resource_throttle.h"
 #include "chrome/browser/extensions/api/streams_private/streams_private_api.h"
 #include "chrome/browser/extensions/user_script_listener.h"
-#include "chrome/browser/metrics/variations/variations_http_header_provider.h"
 #include "chrome/browser/prefetch/prefetch.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_manager_factory.h"
@@ -40,6 +39,7 @@
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
 #include "components/google/core/browser/google_util.h"
+#include "components/variations/variations_http_header_provider.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
@@ -368,7 +368,7 @@ void ChromeResourceDispatcherHostDelegate::RequestBeginning(
     net::HttpRequestHeaders headers;
     headers.CopyFrom(request->extra_request_headers());
     bool is_off_the_record = io_data->IsOffTheRecord();
-    chrome_variations::VariationsHttpHeaderProvider::GetInstance()->
+    variations::VariationsHttpHeaderProvider::GetInstance()->
         AppendHeaders(request->url(),
                       is_off_the_record,
                       !is_off_the_record &&

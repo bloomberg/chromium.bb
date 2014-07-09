@@ -753,8 +753,6 @@
       'browser/metrics/tracking_synchronizer.h',
       'browser/metrics/tracking_synchronizer_observer.h',
       'browser/metrics/variations/generated_resources_map.h',
-      'browser/metrics/variations/variations_http_header_provider.cc',
-      'browser/metrics/variations/variations_http_header_provider.h',
       'browser/metrics/variations/variations_registry_syncer_win.cc',
       'browser/metrics/variations/variations_registry_syncer_win.h',
       'browser/metrics/variations/variations_request_scheduler.cc',
@@ -2835,7 +2833,6 @@
         'in_memory_url_index_cache_proto',
         'probe_message_proto',
         'suggestions_proto',
-        'variations_proto',
         '../components/components.gyp:autocomplete',
         '../components/components.gyp:autofill_core_browser',
         '../components/components.gyp:bookmarks_browser',
@@ -3404,21 +3401,6 @@
           ]
         }],
       ],
-    },
-    {
-      # Protobuf compiler / generator for UMA (User Metrics Analysis).
-
-      # GN version: //chrome/browser/metrics/variations/proto:proto
-      'target_name': 'variations_proto',
-      'type': 'static_library',
-      'sources': [
-        'browser/metrics/variations/proto/chrome_experiments.proto',
-      ],
-      'variables': {
-        'proto_in_dir': 'browser/metrics/variations/proto',
-        'proto_out_dir': 'chrome/browser/metrics/variations/proto',
-      },
-      'includes': [ '../build/protoc.gypi' ],
     },
     {
       # Protobuf compiler / generator for the fraudulent certificate reporting

@@ -22,7 +22,6 @@
 #include "chrome/browser/autocomplete/search_provider.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/history/top_sites.h"
-#include "chrome/browser/metrics/variations/variations_http_header_provider.h"
 #include "chrome/browser/omnibox/omnibox_field_trial.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
@@ -32,6 +31,7 @@
 #include "components/metrics/proto/omnibox_input_type.pb.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/search_engines/template_url_service.h"
+#include "components/variations/variations_http_header_provider.h"
 #include "content/public/browser/user_metrics.h"
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"
@@ -316,7 +316,7 @@ void ZeroSuggestProvider::Run(const GURL& suggest_url) {
   fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SAVE_COOKIES);
   // Add Chrome experiment state to the request headers.
   net::HttpRequestHeaders headers;
-  chrome_variations::VariationsHttpHeaderProvider::GetInstance()->AppendHeaders(
+  variations::VariationsHttpHeaderProvider::GetInstance()->AppendHeaders(
       fetcher_->GetOriginalURL(), profile_->IsOffTheRecord(), false, &headers);
   fetcher_->SetExtraRequestHeaders(headers.ToString());
   fetcher_->Start();

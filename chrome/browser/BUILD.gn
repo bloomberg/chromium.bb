@@ -35,7 +35,6 @@ static_library("browser") {
     "//chrome/app/resources:platform_locale_settings",
     "//chrome/app/theme:theme_resources",
     "//chrome/browser/history:in_memory_url_index_cache_proto",
-    "//chrome/browser/metrics/variations/proto:proto",
     "//chrome/browser/net:cert_logger_proto",
     "//chrome/browser/net:probe_message_proto",
     "//chrome/browser/search/suggestions/proto",

@@ -61,7 +61,6 @@
 #include "chrome/browser/metrics/field_trial_synchronizer.h"
 #include "chrome/browser/metrics/thread_watcher.h"
 #include "chrome/browser/metrics/tracking_synchronizer.h"
-#include "chrome/browser/metrics/variations/variations_http_header_provider.h"
 #include "chrome/browser/metrics/variations/variations_service.h"
 #include "chrome/browser/nacl_host/nacl_browser_delegate_impl.h"
 #include "chrome/browser/net/chrome_net_log.h"
@@ -113,6 +112,7 @@
 #include "components/signin/core/common/profile_management_switches.h"
 #include "components/startup_metric_utils/startup_metric_utils.h"
 #include "components/translate/core/browser/translate_download_manager.h"
+#include "components/variations/variations_http_header_provider.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -589,8 +589,8 @@ void ChromeBrowserMainParts::SetupMetricsAndFieldTrials() {
   if (command_line->HasSwitch(switches::kForceVariationIds)) {
     // Create default variation ids which will always be included in the
     // X-Client-Data request header.
-    chrome_variations::VariationsHttpHeaderProvider* provider =
-        chrome_variations::VariationsHttpHeaderProvider::GetInstance();
+    variations::VariationsHttpHeaderProvider* provider =
+        variations::VariationsHttpHeaderProvider::GetInstance();
     bool result = provider->SetDefaultVariationIds(
         command_line->GetSwitchValueASCII(switches::kForceVariationIds));
     CHECK(result) << "Invalid --" << switches::kForceVariationIds

@@ -201,6 +201,7 @@
             'variations/metrics_util_unittest.cc',
             'variations/study_filtering_unittest.cc',
             'variations/variations_associated_data_unittest.cc',
+            'variations/variations_http_header_provider_unittest.cc',
             'variations/variations_seed_processor_unittest.cc',
             'variations/variations_seed_simulator_unittest.cc',
             'visitedlink/test/visitedlink_unittest.cc',
@@ -282,6 +283,9 @@
             # Dependencies of history
             'components.gyp:history_core_browser',
             'components.gyp:history_core_common',
+
+            # Dependencies of infobar
+            'components.gyp:infobars_test_support',
 
             # Dependencies of invalidation
             'components.gyp:invalidation',

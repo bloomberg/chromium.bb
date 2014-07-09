@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_METRICS_VARIATIONS_VARIATIONS_HTTP_HEADER_PROVIDER_H_
-#define CHROME_BROWSER_METRICS_VARIATIONS_VARIATIONS_HTTP_HEADER_PROVIDER_H_
+#ifndef COMPONENTS_VARIATIONS_VARIATIONS_HTTP_HEADER_PROVIDER_H_
+#define COMPONENTS_VARIATIONS_VARIATIONS_HTTP_HEADER_PROVIDER_H_
 
 #include <set>
 #include <string>
@@ -23,12 +23,10 @@ class HttpRequestHeaders;
 }
 
 class GURL;
-class Profile;
-class ProfileIOData;
 
 template <typename T> struct DefaultSingletonTraits;
 
-namespace chrome_variations {
+namespace variations {
 
 // A helper class for maintaining Chrome experiments and metrics state
 // transmitted in custom HTTP request headers.
@@ -110,6 +108,6 @@ class VariationsHttpHeaderProvider : base::FieldTrialList::Observer {
   DISALLOW_COPY_AND_ASSIGN(VariationsHttpHeaderProvider);
 };
 
-}  // namespace chrome_variations
+}  // namespace variations
 
-#endif  // CHROME_BROWSER_METRICS_VARIATIONS_VARIATIONS_HTTP_HEADER_PROVIDER_H_
+#endif  // COMPONENTS_VARIATIONS_VARIATIONS_HTTP_HEADER_PROVIDER_H_

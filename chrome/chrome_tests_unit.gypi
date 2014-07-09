@@ -1109,7 +1109,6 @@
         'browser/metrics/thread_watcher_unittest.cc',
         'browser/metrics/thread_watcher_android_unittest.cc',
         'browser/metrics/time_ticks_experiment_unittest.cc',
-        'browser/metrics/variations/variations_http_header_provider_unittest.cc',
         'browser/metrics/variations/variations_request_scheduler_mobile_unittest.cc',
         'browser/metrics/variations/variations_request_scheduler_unittest.cc',
         'browser/metrics/variations/variations_seed_store_unittest.cc',
