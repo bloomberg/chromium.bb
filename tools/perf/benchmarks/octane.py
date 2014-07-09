@@ -20,7 +20,9 @@ from telemetry.page import page_set
 from telemetry.util import statistics
 from telemetry.value import scalar
 
+
 _GB = 1024 * 1024 * 1024
+
 
 class _OctaneMeasurement(page_measurement.PageMeasurement):
   def __init__(self):
@@ -69,7 +71,9 @@ class _OctaneMeasurement(page_measurement.PageMeasurement):
       if 'Skipped' not in score_and_name[1]:
         name = score_and_name[0]
         score = int(score_and_name[1])
-        results.Add(name, 'score', score, data_type='unimportant')
+        results.AddValue(scalar.ScalarValue(
+            results.current_page, name, 'score', score, important=False))
+
         # Collect all test scores to compute geometric mean.
         all_scores.append(score)
     total = statistics.GeometricMean(all_scores)
