@@ -926,10 +926,11 @@ void ThreadHeap<Header>::assertEmpty()
             // threads alive until their heaps become empty instead of
             // forcing the threads to die immediately?
             ASSERT(Heap::lastGCWasConservative() || basicHeader->isFree());
+            if (basicHeader->isFree())
+                addToFreeList(headerAddress, basicHeader->size());
             headerAddress += basicHeader->size();
         }
         ASSERT(headerAddress == end);
-        addToFreeList(page->payload(), end - page->payload());
     }
 
     ASSERT(Heap::lastGCWasConservative() || !m_firstLargeHeapObject);
