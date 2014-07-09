@@ -133,7 +133,7 @@ public class VideoCaptureAndroid extends VideoCapture {
                 for (Camera.Size size : supportedSizes) {
                     formatList.add(new CaptureFormat(size.width,
                                                      size.height,
-                                                     (fpsRange[0] + 999) / 1000,
+                                                     (fpsRange[1] + 999) / 1000,
                                                      pixelFormat));
                 }
             }
