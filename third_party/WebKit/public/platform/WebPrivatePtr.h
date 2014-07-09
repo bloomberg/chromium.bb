@@ -79,8 +79,7 @@ public:
     {
         release();
         T* val = other.get();
-        if (val)
-            val->ref();
+        WTF::refIfNotNull(val);
         m_ptr = val;
     }
 
@@ -88,8 +87,7 @@ public:
 
     void release()
     {
-        if (m_ptr)
-            m_ptr->deref();
+        WTF::derefIfNotNull(m_ptr);
         m_ptr = 0;
     }
 
