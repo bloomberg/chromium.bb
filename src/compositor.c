@@ -345,9 +345,10 @@ weston_view_create(struct weston_surface *surface)
 
 	wl_signal_init(&view->destroy_signal);
 	wl_list_init(&view->link);
-	wl_list_init(&view->layer_link);
+	wl_list_init(&view->layer_link.link);
 
 	view->plane = NULL;
+	view->layer_link.layer = NULL;
 
 	pixman_region32_init(&view->clip);
 
@@ -1366,8 +1367,7 @@ weston_view_unmap(struct weston_view *view)
 	weston_view_damage_below(view);
 	view->output = NULL;
 	view->plane = NULL;
-	wl_list_remove(&view->layer_link);
-	wl_list_init(&view->layer_link);
+	weston_layer_entry_remove(&view->layer_link);
 	wl_list_remove(&view->link);
 	wl_list_init(&view->link);
 	view->output_mask = 0;
@@ -1422,7 +1422,7 @@ weston_view_destroy(struct weston_view *view)
 	}
 
 	wl_list_remove(&view->link);
-	wl_list_remove(&view->layer_link);
+	weston_layer_entry_remove(&view->layer_link);
 
 	pixman_region32_fini(&view->clip);
 	pixman_region32_fini(&view->transform.boundingbox);
@@ -1783,18 +1783,18 @@ weston_compositor_build_view_list(struct weston_compositor *compositor)
 	struct weston_layer *layer;
 
 	wl_list_for_each(layer, &compositor->layer_list, link)
-		wl_list_for_each(view, &layer->view_list, layer_link)
+		wl_list_for_each(view, &layer->view_list.link, layer_link.link)
 			surface_stash_subsurface_views(view->surface);
 
 	wl_list_init(&compositor->view_list);
 	wl_list_for_each(layer, &compositor->layer_list, link) {
-		wl_list_for_each(view, &layer->view_list, layer_link) {
+		wl_list_for_each(view, &layer->view_list.link, layer_link.link) {
 			view_list_add(compositor, view);
 		}
 	}
 
 	wl_list_for_each(layer, &compositor->layer_list, link)
-		wl_list_for_each(view, &layer->view_list, layer_link)
+		wl_list_for_each(view, &layer->view_list.link, layer_link.link)
 			surface_free_unused_subsurface_views(view->surface);
 }
 
@@ -1913,9 +1913,26 @@ idle_repaint(void *data)
 }
 
 WL_EXPORT void
+weston_layer_entry_insert(struct weston_layer_entry *list,
+			  struct weston_layer_entry *entry)
+{
+	wl_list_insert(&list->link, &entry->link);
+	entry->layer = list->layer;
+}
+
+WL_EXPORT void
+weston_layer_entry_remove(struct weston_layer_entry *entry)
+{
+	wl_list_remove(&entry->link);
+	wl_list_init(&entry->link);
+	entry->layer = NULL;
+}
+
+WL_EXPORT void
 weston_layer_init(struct weston_layer *layer, struct wl_list *below)
 {
-	wl_list_init(&layer->view_list);
+	wl_list_init(&layer->view_list.link);
+	layer->view_list.layer = layer;
 	if (below != NULL)
 		wl_list_insert(below, &layer->link);
 }

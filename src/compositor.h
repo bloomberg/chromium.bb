@@ -526,8 +526,13 @@ enum {
                                          * to off */
 };
 
+struct weston_layer_entry {
+	struct wl_list link;
+	struct weston_layer *layer;
+};
+
 struct weston_layer {
-	struct wl_list view_list;
+	struct weston_layer_entry view_list;
 	struct wl_list link;
 };
 
@@ -731,7 +736,7 @@ struct weston_view {
 	struct wl_signal destroy_signal;
 
 	struct wl_list link;
-	struct wl_list layer_link;
+	struct weston_layer_entry layer_link;
 	struct weston_plane *plane;
 
 	pixman_region32_t clip;
@@ -996,6 +1001,11 @@ notify_touch(struct weston_seat *seat, uint32_t time, int touch_id,
 void
 notify_touch_frame(struct weston_seat *seat);
 
+void
+weston_layer_entry_insert(struct weston_layer_entry *list,
+			  struct weston_layer_entry *entry);
+void
+weston_layer_entry_remove(struct weston_layer_entry *entry);
 void
 weston_layer_init(struct weston_layer *layer, struct wl_list *below);
 

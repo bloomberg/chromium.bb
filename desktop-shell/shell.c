@@ -279,12 +279,12 @@ shell_surface_is_top_fullscreen(struct shell_surface *shsurf)
 
 	shell = shell_surface_get_shell(shsurf);
 
-	if (wl_list_empty(&shell->fullscreen_layer.view_list))
+	if (wl_list_empty(&shell->fullscreen_layer.view_list.link))
 		return false;
 
-	top_fs_ev = container_of(shell->fullscreen_layer.view_list.next,
+	top_fs_ev = container_of(shell->fullscreen_layer.view_list.link.next,
 			         struct weston_view,
-				 layer_link);
+				 layer_link.link);
 	return (shsurf == get_shell_surface(top_fs_ev->surface));
 }
 
@@ -361,7 +361,7 @@ get_output_panel_height(struct desktop_shell *shell,
 	if (!output)
 		return 0;
 
-	wl_list_for_each(view, &shell->panel_layer.view_list, layer_link) {
+	wl_list_for_each(view, &shell->panel_layer.view_list.link, layer_link.link) {
 		if (view->surface->output == output) {
 			panel_height = view->surface->height;
 			break;
@@ -675,7 +675,8 @@ focus_state_surface_destroy(struct wl_listener *listener, void *data)
 	main_surface = weston_surface_get_main_surface(state->keyboard_focus);
 
 	next = NULL;
-	wl_list_for_each(view, &state->ws->layer.view_list, layer_link) {
+	wl_list_for_each(view,
+			 &state->ws->layer.view_list.link, layer_link.link) {
 		if (view->surface == main_surface)
 			continue;
 		if (is_focus_view(view))
@@ -854,8 +855,8 @@ animate_focus_change(struct desktop_shell *shell, struct workspace *ws,
 
 		focus_surface_created = true;
 	} else {
-		wl_list_remove(&ws->fsurf_front->view->layer_link);
-		wl_list_remove(&ws->fsurf_back->view->layer_link);
+		weston_layer_entry_remove(&ws->fsurf_front->view->layer_link);
+		weston_layer_entry_remove(&ws->fsurf_back->view->layer_link);
 	}
 
 	if (ws->focus_animation) {
@@ -864,11 +865,11 @@ animate_focus_change(struct desktop_shell *shell, struct workspace *ws,
 	}
 
 	if (to)
-		wl_list_insert(&to->layer_link,
-			       &ws->fsurf_front->view->layer_link);
+		weston_layer_entry_insert(&to->layer_link,
+					  &ws->fsurf_front->view->layer_link);
 	else if (from)
-		wl_list_insert(&ws->layer.view_list,
-			       &ws->fsurf_front->view->layer_link);
+		weston_layer_entry_insert(&ws->layer.view_list,
+					  &ws->fsurf_front->view->layer_link);
 
 	if (focus_surface_created) {
 		ws->focus_animation = weston_fade_run(
@@ -876,15 +877,15 @@ animate_focus_change(struct desktop_shell *shell, struct workspace *ws,
 			ws->fsurf_front->view->alpha, 0.4, 300,
 			focus_animation_done, ws);
 	} else if (from) {
-		wl_list_insert(&from->layer_link,
-			       &ws->fsurf_back->view->layer_link);
+		weston_layer_entry_insert(&from->layer_link,
+					  &ws->fsurf_back->view->layer_link);
 		ws->focus_animation = weston_stable_fade_run(
 			ws->fsurf_front->view, 0.0,
 			ws->fsurf_back->view, 0.4,
 			focus_animation_done, ws);
 	} else if (to) {
-		wl_list_insert(&ws->layer.view_list,
-			       &ws->fsurf_back->view->layer_link);
+		weston_layer_entry_insert(&ws->layer.view_list,
+					  &ws->fsurf_back->view->layer_link);
 		ws->focus_animation = weston_stable_fade_run(
 			ws->fsurf_front->view, 0.0,
 			ws->fsurf_back->view, 0.4,
@@ -944,7 +945,7 @@ workspace_create(void)
 static int
 workspace_is_empty(struct workspace *ws)
 {
-	return wl_list_empty(&ws->layer.view_list);
+	return wl_list_empty(&ws->layer.view_list.link);
 }
 
 static struct workspace *
@@ -1009,7 +1010,7 @@ workspace_translate_out(struct workspace *ws, double fraction)
 	unsigned int height;
 	double d;
 
-	wl_list_for_each(view, &ws->layer.view_list, layer_link) {
+	wl_list_for_each(view, &ws->layer.view_list.link, layer_link.link) {
 		height = get_output_height(view->surface->output);
 		d = height * fraction;
 
@@ -1024,7 +1025,7 @@ workspace_translate_in(struct workspace *ws, double fraction)
 	unsigned int height;
 	double d;
 
-	wl_list_for_each(view, &ws->layer.view_list, layer_link) {
+	wl_list_for_each(view, &ws->layer.view_list.link, layer_link.link) {
 		height = get_output_height(view->surface->output);
 
 		if (fraction > 0)
@@ -1069,7 +1070,7 @@ workspace_deactivate_transforms(struct workspace *ws)
 	struct weston_view *view;
 	struct weston_transform *transform;
 
-	wl_list_for_each(view, &ws->layer.view_list, layer_link) {
+	wl_list_for_each(view, &ws->layer.view_list.link, layer_link.link) {
 		if (is_focus_view(view)) {
 			struct focus_surface *fsurf = get_focus_surface(view->surface);
 			transform = &fsurf->workspace_transform;
@@ -1099,7 +1100,7 @@ finish_workspace_change_animation(struct desktop_shell *shell,
 	 * visible after the workspace animation ends but before its layer
 	 * is hidden. In that case, we need to damage below those views so
 	 * that the screen is properly repainted. */
-	wl_list_for_each(view, &from->layer.view_list, layer_link)
+	wl_list_for_each(view, &from->layer.view_list.link, layer_link.link)
 		weston_view_damage_below(view);
 
 	wl_list_remove(&shell->workspaces.animation.link);
@@ -1218,7 +1219,7 @@ change_workspace(struct desktop_shell *shell, unsigned int index)
 		return;
 
 	/* Don't change workspace when there is any fullscreen surfaces. */
-	if (!wl_list_empty(&shell->fullscreen_layer.view_list))
+	if (!wl_list_empty(&shell->fullscreen_layer.view_list.link))
 		return;
 
 	from = get_current_workspace(shell);
@@ -1262,7 +1263,7 @@ change_workspace(struct desktop_shell *shell, unsigned int index)
 static bool
 workspace_has_only(struct workspace *ws, struct weston_surface *surface)
 {
-	struct wl_list *list = &ws->layer.view_list;
+	struct wl_list *list = &ws->layer.view_list.link;
 	struct wl_list *e;
 
 	if (wl_list_empty(list))
@@ -1273,7 +1274,7 @@ workspace_has_only(struct workspace *ws, struct weston_surface *surface)
 	if (e->next != list)
 		return false;
 
-	return container_of(e, struct weston_view, layer_link)->surface == surface;
+	return container_of(e, struct weston_view, layer_link.link)->surface == surface;
 }
 
 static void
@@ -1302,8 +1303,8 @@ move_surface_to_workspace(struct desktop_shell *shell,
 	from = get_current_workspace(shell);
 	to = get_workspace(shell, workspace);
 
-	wl_list_remove(&view->layer_link);
-	wl_list_insert(&to->layer.view_list, &view->layer_link);
+	weston_layer_entry_remove(&view->layer_link);
+	weston_layer_entry_insert(&to->layer.view_list, &view->layer_link);
 
 	shell_surface_update_child_surface_layers(shsurf);
 
@@ -1342,8 +1343,8 @@ take_surface_to_workspace_by_seat(struct desktop_shell *shell,
 	from = get_current_workspace(shell);
 	to = get_workspace(shell, index);
 
-	wl_list_remove(&view->layer_link);
-	wl_list_insert(&to->layer.view_list, &view->layer_link);
+	weston_layer_entry_remove(&view->layer_link);
+	weston_layer_entry_insert(&to->layer.view_list, &view->layer_link);
 
 	shsurf = get_shell_surface(surface);
 	if (shsurf != NULL)
@@ -2176,7 +2177,7 @@ restore_all_output_modes(struct weston_compositor *compositor)
 /* The surface will be inserted into the list immediately after the link
  * returned by this function (i.e. will be stacked immediately above the
  * returned link). */
-static struct wl_list *
+static struct weston_layer_entry *
 shell_surface_calculate_layer_link (struct shell_surface *shsurf)
 {
 	struct workspace *ws;
@@ -2202,7 +2203,8 @@ shell_surface_calculate_layer_link (struct shell_surface *shsurf)
 			/* TODO: Handle a parent with multiple views */
 			parent = get_default_view(shsurf->parent);
 			if (parent)
-				return parent->layer_link.prev;
+				return container_of(parent->layer_link.link.prev,
+						    struct weston_layer_entry, link);
 		}
 
 		/* Move the surface to a normal workspace layer so that surfaces
@@ -2219,16 +2221,19 @@ static void
 shell_surface_update_child_surface_layers (struct shell_surface *shsurf)
 {
 	struct shell_surface *child;
+	struct weston_layer_entry *prev;
 
 	/* Move the child layers to the same workspace as shsurf. They will be
 	 * stacked above shsurf. */
 	wl_list_for_each_reverse(child, &shsurf->children_list, children_link) {
-		if (shsurf->view->layer_link.prev != &child->view->layer_link) {
+		if (shsurf->view->layer_link.link.prev != &child->view->layer_link.link) {
 			weston_view_damage_below(child->view);
 			weston_view_geometry_dirty(child->view);
-			wl_list_remove(&child->view->layer_link);
-			wl_list_insert(shsurf->view->layer_link.prev,
-			               &child->view->layer_link);
+			prev = container_of(shsurf->view->layer_link.link.prev,
+					    struct weston_layer_entry, link);
+			weston_layer_entry_remove(&child->view->layer_link);
+			weston_layer_entry_insert(prev,
+						  &child->view->layer_link);
 			weston_view_geometry_dirty(child->view);
 			weston_surface_damage(child->surface);
 
@@ -2249,7 +2254,7 @@ shell_surface_update_child_surface_layers (struct shell_surface *shsurf)
 static void
 shell_surface_update_layer(struct shell_surface *shsurf)
 {
-	struct wl_list *new_layer_link;
+	struct weston_layer_entry *new_layer_link;
 
 	new_layer_link = shell_surface_calculate_layer_link(shsurf);
 
@@ -2259,8 +2264,8 @@ shell_surface_update_layer(struct shell_surface *shsurf)
 		return;
 
 	weston_view_geometry_dirty(shsurf->view);
-	wl_list_remove(&shsurf->view->layer_link);
-	wl_list_insert(new_layer_link, &shsurf->view->layer_link);
+	weston_layer_entry_remove(&shsurf->view->layer_link);
+	weston_layer_entry_insert(new_layer_link, &shsurf->view->layer_link);
 	weston_view_geometry_dirty(shsurf->view);
 	weston_surface_damage(shsurf->surface);
 
@@ -2522,10 +2527,10 @@ set_minimized(struct weston_surface *surface, uint32_t is_true)
 	shsurf = get_shell_surface(surface);
 	current_ws = get_current_workspace(shsurf->shell);
 
-	wl_list_remove(&view->layer_link);
+	weston_layer_entry_remove(&view->layer_link);
 	 /* hide or show, depending on the state */
 	if (is_true) {
-		wl_list_insert(&shsurf->shell->minimized_layer.view_list, &view->layer_link);
+		weston_layer_entry_insert(&shsurf->shell->minimized_layer.view_list, &view->layer_link);
 
 		drop_focus_state(shsurf->shell, current_ws, view->surface);
 		wl_list_for_each(seat, &shsurf->shell->compositor->seat_list, link) {
@@ -2537,7 +2542,7 @@ set_minimized(struct weston_surface *surface, uint32_t is_true)
 		}
 	}
 	else {
-		wl_list_insert(&current_ws->layer.view_list, &view->layer_link);
+		weston_layer_entry_insert(&current_ws->layer.view_list, &view->layer_link);
 
 		wl_list_for_each(seat, &shsurf->shell->compositor->seat_list, link) {
 			if (!seat->keyboard)
@@ -2703,9 +2708,9 @@ shell_ensure_fullscreen_black_view(struct shell_surface *shsurf)
 			                     output->height);
 
 	weston_view_geometry_dirty(shsurf->fullscreen.black_view);
-	wl_list_remove(&shsurf->fullscreen.black_view->layer_link);
-	wl_list_insert(&shsurf->view->layer_link,
-	               &shsurf->fullscreen.black_view->layer_link);
+	weston_layer_entry_remove(&shsurf->fullscreen.black_view->layer_link);
+	weston_layer_entry_insert(&shsurf->view->layer_link,
+				  &shsurf->fullscreen.black_view->layer_link);
 	weston_view_geometry_dirty(shsurf->fullscreen.black_view);
 	weston_surface_damage(shsurf->surface);
 
@@ -2727,8 +2732,8 @@ shell_configure_fullscreen(struct shell_surface *shsurf)
 		restore_output_mode(output);
 
 	/* Reverse the effect of lower_fullscreen_layer() */
-	wl_list_remove(&shsurf->view->layer_link);
-	wl_list_insert(&shsurf->shell->fullscreen_layer.view_list, &shsurf->view->layer_link);
+	weston_layer_entry_remove(&shsurf->view->layer_link);
+	weston_layer_entry_insert(&shsurf->shell->fullscreen_layer.view_list, &shsurf->view->layer_link);
 
 	shell_ensure_fullscreen_black_view(shsurf);
 
@@ -3887,7 +3892,7 @@ configure_static_view(struct weston_view *ev, struct weston_layer *layer)
 {
 	struct weston_view *v, *next;
 
-	wl_list_for_each_safe(v, next, &layer->view_list, layer_link) {
+	wl_list_for_each_safe(v, next, &layer->view_list.link, layer_link.link) {
 		if (v->output == ev->output && v != ev) {
 			weston_view_unmap(v);
 			v->surface->configure = NULL;
@@ -3896,8 +3901,8 @@ configure_static_view(struct weston_view *ev, struct weston_layer *layer)
 
 	weston_view_set_position(ev, ev->output->x, ev->output->y);
 
-	if (wl_list_empty(&ev->layer_link)) {
-		wl_list_insert(&layer->view_list, &ev->layer_link);
+	if (wl_list_empty(&ev->layer_link.link)) {
+		weston_layer_entry_insert(&layer->view_list, &ev->layer_link);
 		weston_compositor_schedule_repaint(ev->surface->compositor);
 	}
 }
@@ -4002,8 +4007,8 @@ lock_surface_configure(struct weston_surface *surface, int32_t sx, int32_t sy)
 	center_on_output(view, get_default_output(shell->compositor));
 
 	if (!weston_surface_is_mapped(surface)) {
-		wl_list_insert(&shell->lock_layer.view_list,
-			       &view->layer_link);
+		weston_layer_entry_insert(&shell->lock_layer.view_list,
+					  &view->layer_link);
 		weston_view_update_transform(view);
 		shell_fade(shell, FADE_IN);
 	}
@@ -4533,8 +4538,8 @@ lower_fullscreen_layer(struct desktop_shell *shell)
 
 	ws = get_current_workspace(shell);
 	wl_list_for_each_reverse_safe(view, prev,
-				      &shell->fullscreen_layer.view_list,
-				      layer_link) {
+				      &shell->fullscreen_layer.view_list.link,
+				      layer_link.link) {
 		struct shell_surface *shsurf = get_shell_surface(view->surface);
 
 		if (!shsurf)
@@ -4544,15 +4549,15 @@ lower_fullscreen_layer(struct desktop_shell *shell)
 		 * in the fullscreen layer. */
 		if (shsurf->state.fullscreen) {
 			/* Hide the black view */
-			wl_list_remove(&shsurf->fullscreen.black_view->layer_link);
-			wl_list_init(&shsurf->fullscreen.black_view->layer_link);
+			weston_layer_entry_remove(&shsurf->fullscreen.black_view->layer_link);
+			wl_list_init(&shsurf->fullscreen.black_view->layer_link.link);
 			weston_view_damage_below(shsurf->fullscreen.black_view);
 
 		}
 
 		/* Lower the view to the workspace layer */
-		wl_list_remove(&view->layer_link);
-		wl_list_insert(&ws->layer.view_list, &view->layer_link);
+		weston_layer_entry_remove(&view->layer_link);
+		weston_layer_entry_insert(&ws->layer.view_list, &view->layer_link);
 		weston_view_damage_below(view);
 		weston_surface_damage(view->surface);
 
@@ -4771,8 +4776,8 @@ shell_fade_create_surface(struct desktop_shell *shell)
 	weston_surface_set_size(surface, 8192, 8192);
 	weston_view_set_position(view, 0, 0);
 	weston_surface_set_color(surface, 0.0, 0.0, 0.0, 1.0);
-	wl_list_insert(&compositor->fade_layer.view_list,
-		       &view->layer_link);
+	weston_layer_entry_insert(&compositor->fade_layer.view_list,
+				  &view->layer_link);
 	pixman_region32_init(&surface->input);
 
 	return view;
@@ -5349,6 +5354,7 @@ screensaver_configure(struct weston_surface *surface, int32_t sx, int32_t sy)
 {
 	struct desktop_shell *shell = surface->configure_private;
 	struct weston_view *view;
+	struct weston_layer_entry *prev;
 
 	if (surface->width == 0)
 		return;
@@ -5360,9 +5366,10 @@ screensaver_configure(struct weston_surface *surface, int32_t sx, int32_t sy)
 	view = container_of(surface->views.next, struct weston_view, surface_link);
 	center_on_output(view, surface->output);
 
-	if (wl_list_empty(&view->layer_link)) {
-		wl_list_insert(shell->lock_layer.view_list.prev,
-			       &view->layer_link);
+	if (wl_list_empty(&view->layer_link.link)) {
+		prev = container_of(shell->lock_layer.view_list.link.prev,
+				    struct weston_layer_entry, link);
+		weston_layer_entry_insert(prev, &view->layer_link);
 		weston_view_update_transform(view);
 		wl_event_source_timer_update(shell->screensaver.timer,
 					     shell->screensaver.duration);
@@ -5445,14 +5452,14 @@ switcher_next(struct switcher *switcher)
 	 /* temporary re-display minimized surfaces */
 	struct weston_view *tmp;
 	struct weston_view **minimized;
-	wl_list_for_each_safe(view, tmp, &switcher->shell->minimized_layer.view_list, layer_link) {
-		wl_list_remove(&view->layer_link);
-		wl_list_insert(&ws->layer.view_list, &view->layer_link);
+	wl_list_for_each_safe(view, tmp, &switcher->shell->minimized_layer.view_list.link, layer_link.link) {
+		weston_layer_entry_remove(&view->layer_link);
+		weston_layer_entry_insert(&ws->layer.view_list, &view->layer_link);
 		minimized = wl_array_add(&switcher->minimized_array, sizeof *minimized);
 		*minimized = view;
 	}
 
-	wl_list_for_each(view, &ws->layer.view_list, layer_link) {
+	wl_list_for_each(view, &ws->layer.view_list.link, layer_link.link) {
 		shsurf = get_shell_surface(view->surface);
 		if (shsurf &&
 		    shsurf->type == SHELL_SURFACE_TOPLEVEL &&
@@ -5508,7 +5515,7 @@ switcher_destroy(struct switcher *switcher)
 	struct weston_keyboard *keyboard = switcher->grab.keyboard;
 	struct workspace *ws = get_current_workspace(switcher->shell);
 
-	wl_list_for_each(view, &ws->layer.view_list, layer_link) {
+	wl_list_for_each(view, &ws->layer.view_list.link, layer_link.link) {
 		if (is_focus_view(view))
 			continue;
 
@@ -5529,8 +5536,8 @@ switcher_destroy(struct switcher *switcher)
 	wl_array_for_each(minimized, &switcher->minimized_array) {
 		/* with the exception of the current selected */
 		if ((*minimized)->surface != switcher->current) {
-			wl_list_remove(&(*minimized)->layer_link);
-			wl_list_insert(&switcher->shell->minimized_layer.view_list, &(*minimized)->layer_link);
+			weston_layer_entry_remove(&(*minimized)->layer_link);
+			weston_layer_entry_insert(&switcher->shell->minimized_layer.view_list, &(*minimized)->layer_link);
 			weston_view_damage_below(*minimized);
 		}
 	}
@@ -5934,7 +5941,7 @@ shell_output_destroy_move_layer(struct desktop_shell *shell,
 	struct weston_output *output = data;
 	struct weston_view *view;
 
-	wl_list_for_each(view, &layer->view_list, layer_link) {
+	wl_list_for_each(view, &layer->view_list.link, layer_link.link) {
 		if (view->output != output)
 			continue;
 
@@ -5993,7 +6000,7 @@ handle_output_move_layer(struct desktop_shell *shell,
 	struct weston_view *view;
 	float x, y;
 
-	wl_list_for_each(view, &layer->view_list, layer_link) {
+	wl_list_for_each(view, &layer->view_list.link, layer_link.link) {
 		if (view->output != output)
 			continue;
 

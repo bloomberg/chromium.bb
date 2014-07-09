@@ -93,9 +93,9 @@ test_surface_configure(struct weston_surface *surface, int32_t sx, int32_t sy)
 	struct weston_test_surface *test_surface = surface->configure_private;
 	struct weston_test *test = test_surface->test;
 
-	if (wl_list_empty(&test_surface->view->layer_link))
-		wl_list_insert(&test->layer.view_list,
-			       &test_surface->view->layer_link);
+	if (wl_list_empty(&test_surface->view->layer_link.link))
+		weston_layer_entry_insert(&test->layer.view_list,
+					  &test_surface->view->layer_link);
 
 	weston_view_set_position(test_surface->view,
 				 test_surface->x, test_surface->y);

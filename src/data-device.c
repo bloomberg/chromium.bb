@@ -180,7 +180,7 @@ drag_surface_configure(struct weston_drag *drag,
 		       struct weston_surface *es,
 		       int32_t sx, int32_t sy)
 {
-	struct wl_list *list;
+	struct weston_layer_entry *list;
 	float fx, fy;
 
 	assert((pointer != NULL && touch == NULL) ||
@@ -193,8 +193,8 @@ drag_surface_configure(struct weston_drag *drag,
 		else
 			list = &es->compositor->cursor_layer.view_list;
 
-		wl_list_remove(&drag->icon->layer_link);
-		wl_list_insert(list, &drag->icon->layer_link);
+		weston_layer_entry_remove(&drag->icon->layer_link);
+		weston_layer_entry_insert(list, &drag->icon->layer_link);
 		weston_view_update_transform(drag->icon);
 		pixman_region32_clear(&es->pending.input);
 	}

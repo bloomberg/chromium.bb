@@ -75,8 +75,8 @@ show_input_panel_surface(struct input_panel_surface *ipsurf)
 		weston_view_set_position(ipsurf->view, x, y);
 	}
 
-	wl_list_insert(&shell->input_panel_layer.view_list,
-		       &ipsurf->view->layer_link);
+	weston_layer_entry_insert(&shell->input_panel_layer.view_list,
+	                          &ipsurf->view->layer_link);
 	weston_view_geometry_dirty(ipsurf->view);
 	weston_view_update_transform(ipsurf->view);
 	weston_surface_damage(ipsurf->surface);
@@ -135,7 +135,8 @@ hide_input_panels(struct wl_listener *listener, void *data)
 		wl_list_remove(&shell->input_panel_layer.link);
 
 	wl_list_for_each_safe(view, next,
-			      &shell->input_panel_layer.view_list, layer_link)
+			      &shell->input_panel_layer.view_list.link,
+			      layer_link.link)
 		weston_view_unmap(view);
 }
 
