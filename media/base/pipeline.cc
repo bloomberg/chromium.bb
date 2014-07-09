@@ -55,6 +55,7 @@ Pipeline::Pipeline(
   media_log_->AddEvent(media_log_->CreatePipelineStateChangedEvent(kCreated));
   media_log_->AddEvent(
       media_log_->CreateEvent(MediaLogEvent::PIPELINE_CREATED));
+  clock_->SetTime(base::TimeDelta(), base::TimeDelta());
 }
 
 Pipeline::~Pipeline() {
@@ -373,12 +374,6 @@ void Pipeline::StateTransitionTask(PipelineStatus status) {
       // state.
       if (filter_collection_) {
         filter_collection_.reset();
-        {
-          base::AutoLock l(lock_);
-          // We do not want to start the clock running. We only want to set the
-          // base media time so our timestamp calculations will be correct.
-          clock_->SetTime(base::TimeDelta(), base::TimeDelta());
-        }
         if (!audio_renderer_ && !video_renderer_) {
           ErrorChangedTask(PIPELINE_ERROR_COULD_NOT_RENDER);
           return;
@@ -399,6 +394,11 @@ void Pipeline::StateTransitionTask(PipelineStatus status) {
       }
 
       base::ResetAndReturn(&seek_cb_).Run(PIPELINE_OK);
+
+      {
+        base::AutoLock auto_lock(lock_);
+        clock_->SetTime(start_timestamp_, start_timestamp_);
+      }
 
       if (audio_renderer_)
         audio_renderer_->StartPlayingFrom(start_timestamp_);
@@ -441,6 +441,10 @@ void Pipeline::DoSeek(
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(!pending_callbacks_.get());
   SerialRunner::Queue bound_fns;
+  {
+    base::AutoLock auto_lock(lock_);
+    PauseClockAndStopRendering_Locked();
+  }
 
   // Pause.
   if (text_renderer_) {
@@ -683,12 +687,6 @@ void Pipeline::SeekTask(TimeDelta time, const PipelineStatusCB& seek_cb) {
   text_ended_ = false;
   start_timestamp_ = time;
 
-  // Kick off seeking!
-  {
-    base::AutoLock auto_lock(lock_);
-    PauseClockAndStopRendering_Locked();
-    clock_->SetTime(time, time);
-  }
   DoSeek(time, base::Bind(
       &Pipeline::OnStateTransition, base::Unretained(this)));
 }

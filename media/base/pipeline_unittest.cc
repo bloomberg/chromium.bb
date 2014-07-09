@@ -514,7 +514,6 @@ TEST_F(PipelineTest, Seek) {
   // Initialize then seek!
   InitializePipeline(PIPELINE_OK);
 
-  AddTextStream();
   message_loop_.RunUntilIdle();
 
   // Every filter should receive a call to Seek().
