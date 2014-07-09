@@ -38,6 +38,7 @@ const char kDeviceTypeMouse[] = "mouse";
 const char kInputControl[] = "/opt/google/input/inputcontrol";
 
 const char kRemoraRequisition[] = "remora";
+const char kSharkRequisition[] = "shark";
 
 typedef base::RefCountedData<bool> RefCountedBool;
 
@@ -247,10 +248,9 @@ bool InputDeviceSettingsImpl::ForceKeyboardDrivenUINavigation() {
   if (!policy_manager)
     return false;
 
-  if (base::strcasecmp(policy_manager->GetDeviceRequisition().c_str(),
-                       kRemoraRequisition) == 0) {
+  const std::string requisition = policy_manager->GetDeviceRequisition();
+  if (requisition == kRemoraRequisition || requisition == kSharkRequisition)
     return true;
-  }
 
   bool keyboard_driven = false;
   if (chromeos::system::StatisticsProvider::GetInstance()->GetMachineFlag(

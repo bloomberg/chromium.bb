@@ -98,6 +98,8 @@ void CoreOobeHandler::DeclareLocalizedValues(LocalizedValuesBuilder* builder) {
                IDS_CONFIRM_MESSAGEBOX_YES_BUTTON_LABEL);
   builder->Add("deviceRequisitionRemoraPromptText",
                IDS_ENTERPRISE_DEVICE_REQUISITION_REMORA_PROMPT_TEXT);
+  builder->Add("deviceRequisitionSharkPromptText",
+               IDS_ENTERPRISE_DEVICE_REQUISITION_SHARK_PROMPT_TEXT);
 }
 
 void CoreOobeHandler::Initialize() {

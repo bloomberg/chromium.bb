@@ -5255,7 +5255,10 @@ All users must sign out to continue.
     Use this device requisition when enrolling the device for enterprise management:
   </message>
   <message name="IDS_ENTERPRISE_DEVICE_REQUISITION_REMORA_PROMPT_TEXT" desc="Prompt shown in the device requisition remora prompt popup.">
-    Are you sure, you want to set up this device as a Chromebox for Meetings device?
+    Are you sure you want to set up this device as a Chromebox for Meetings device?
+  </message>
+  <message name="IDS_ENTERPRISE_DEVICE_REQUISITION_SHARK_PROMPT_TEXT" desc="Prompt shown in the device requisition shark prompt popup.">
+    Are you sure you want to set up this device as a "Shark"?
   </message>
 
   <message name="IDS_ENTERPRISE_ENROLLMENT_STATUS_REGISTRATION_FAILED" desc="Error message shown on the enrollment screen upon failed device registration.">

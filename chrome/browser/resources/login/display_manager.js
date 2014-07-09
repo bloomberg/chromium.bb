@@ -41,6 +41,8 @@
 /** @const */ var ACCELERATOR_DEVICE_REQUISITION = 'device_requisition';
 /** @const */ var ACCELERATOR_DEVICE_REQUISITION_REMORA =
     'device_requisition_remora';
+/** @const */ var ACCELERATOR_DEVICE_REQUISITION_SHARK =
+    'device_requisition_shark';
 /** @const */ var ACCELERATOR_APP_LAUNCH_BAILOUT = 'app_launch_bailout';
 /** @const */ var ACCELERATOR_APP_LAUNCH_NETWORK_CONFIG =
     'app_launch_network_config';
@@ -357,7 +359,12 @@ cr.define('cr.ui.login', function() {
           this.showDeviceRequisitionPrompt_();
       } else if (name == ACCELERATOR_DEVICE_REQUISITION_REMORA) {
         if (this.isOobeUI())
-          this.showDeviceRequisitionRemoraPrompt_();
+          this.showDeviceRequisitionRemoraPrompt_(
+              'deviceRequisitionRemoraPromptText', 'remora');
+      } else if (name == ACCELERATOR_DEVICE_REQUISITION_SHARK) {
+        if (this.isOobeUI())
+          this.showDeviceRequisitionRemoraPrompt_(
+              'deviceRequisitionSharkPromptText', 'shark');
       } else if (name == ACCELERATOR_APP_LAUNCH_BAILOUT) {
         if (currentStepId == SCREEN_APP_LAUNCH_SPLASH)
           chrome.send('cancelAppLaunch');
@@ -776,10 +783,10 @@ cr.define('cr.ui.login', function() {
     },
 
     /**
-     * Shows the special remora device requisition prompt.
+     * Shows the special remora/shark device requisition prompt.
      * @private
      */
-    showDeviceRequisitionRemoraPrompt_: function() {
+    showDeviceRequisitionRemoraPrompt_: function(promptText, requisition) {
       if (!this.deviceRequisitionRemoraDialog_) {
         this.deviceRequisitionRemoraDialog_ =
             new cr.ui.dialogs.ConfirmDialog(document.body);
@@ -789,9 +796,9 @@ cr.define('cr.ui.login', function() {
             loadTimeData.getString('deviceRequisitionRemoraPromptCancel'));
       }
       this.deviceRequisitionRemoraDialog_.show(
-          loadTimeData.getString('deviceRequisitionRemoraPromptText'),
+          loadTimeData.getString(promptText),
           function() {  // onShow
-            chrome.send('setDeviceRequisition', ['remora']);
+            chrome.send('setDeviceRequisition', [requisition]);
           },
           function() {  // onCancel
             chrome.send('setDeviceRequisition', ['none']);
