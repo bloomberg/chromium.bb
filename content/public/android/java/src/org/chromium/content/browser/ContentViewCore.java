@@ -29,6 +29,7 @@ import android.text.Editable;
 import android.text.Selection;
 import android.text.TextUtils;
 import android.util.Log;
+import android.util.Pair;
 import android.view.ActionMode;
 import android.view.HapticFeedbackConstants;
 import android.view.InputDevice;
@@ -118,9 +119,12 @@ public class ContentViewCore
     // native side. However we still need a strong reference on the Java side to
     // prevent garbage collection if the embedder doesn't maintain their own ref to the
     // interface object - the Java side ref won't create a new GC root.
-    // This map stores those refernces. We put into the map on addJavaScriptInterface()
-    // and remove from it in removeJavaScriptInterface().
-    private final Map<String, Object> mJavaScriptInterfaces = new HashMap<String, Object>();
+    // This map stores those references. We put into the map on addJavaScriptInterface()
+    // and remove from it in removeJavaScriptInterface(). The annotation class is stored for
+    // the purpose of migrating injected objects from one instance of CVC to another, which
+    // is used by Android WebView to support WebChromeClient.onCreateWindow scenario.
+    private final Map<String, Pair<Object, Class>> mJavaScriptInterfaces =
+            new HashMap<String, Pair<Object, Class>>();
 
     // Additionally, we keep track of all Java bound JS objects that are in use on the
     // current page to ensure that they are not garbage collected until the page is
@@ -2684,6 +2688,16 @@ public class ContentViewCore
     }
 
     /**
+     * Returns JavaScript interface objects previously injected via
+     * {@link #addJavascriptInterface(Object, String)}.
+     *
+     * @return the mapping of names to interface objects and corresponding annotation classes
+     */
+    public Map<String, Pair<Object, Class>> getJavascriptInterfaces() {
+        return mJavaScriptInterfaces;
+    }
+
+    /**
      * This will mimic {@link #addPossiblyUnsafeJavascriptInterface(Object, String, Class)}
      * and automatically pass in {@link JavascriptInterface} as the required annotation.
      *
@@ -2740,7 +2754,7 @@ public class ContentViewCore
     public void addPossiblyUnsafeJavascriptInterface(Object object, String name,
             Class<? extends Annotation> requiredAnnotation) {
         if (mNativeContentViewCore != 0 && object != null) {
-            mJavaScriptInterfaces.put(name, object);
+            mJavaScriptInterfaces.put(name, new Pair<Object, Class>(object, requiredAnnotation));
             nativeAddJavascriptInterface(mNativeContentViewCore, object, name, requiredAnnotation);
         }
     }

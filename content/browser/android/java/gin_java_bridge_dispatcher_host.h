@@ -72,10 +72,10 @@ class GinJavaBridgeDispatcherHost
                       IPC::Message* reply_msg);
 
  private:
-  typedef std::set<RenderFrameHost*> RendererSet;
   void OnObjectWrapperDeleted(RenderFrameHost* render_frame_host,
                               GinJavaBoundObject::ObjectID object_id);
 
+  bool IsValidRenderFrameHost(RenderFrameHost* render_frame_host);
   void SendReply(RenderFrameHost* render_frame_host, IPC::Message* reply_msg);
   void SendMethods(RenderFrameHost* render_frame_host,
                    IPC::Message* reply_msg,
@@ -110,7 +110,6 @@ class GinJavaBridgeDispatcherHost
   // roots that would prevent ContentViewCore from being garbage collected.
   JavaObjectWeakGlobalRef retained_object_set_;
   bool allow_object_contents_inspection_;
-  RendererSet renderers_;
   GinJavaBoundObject::ObjectMap objects_;
   typedef std::map<std::string, GinJavaBoundObject::ObjectID> NamedObjectMap;
   NamedObjectMap named_objects_;

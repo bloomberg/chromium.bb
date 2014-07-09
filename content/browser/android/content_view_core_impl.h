@@ -28,7 +28,7 @@ class WindowAndroid;
 }
 
 namespace content {
-class JavaBridgeDispatcherHostManager;
+class GinJavaBridgeDispatcherHost;
 class RenderWidgetHostViewAndroid;
 struct MenuItem;
 
@@ -396,8 +396,8 @@ class ContentViewCoreImpl : public ContentViewCore,
   bool accessibility_enabled_;
 
   // Manages injecting Java objects.
-  scoped_ptr<JavaBridgeDispatcherHostManager>
-      java_bridge_dispatcher_host_manager_;
+  scoped_ptr<GinJavaBridgeDispatcherHost>
+      java_bridge_dispatcher_host_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentViewCoreImpl);
 };

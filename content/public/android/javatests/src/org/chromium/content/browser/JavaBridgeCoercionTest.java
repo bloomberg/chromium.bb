@@ -172,9 +172,8 @@ public class JavaBridgeCoercionTest extends JavaBridgeTestBase {
         executeJavaScript("testObject.setByteValue(" + Byte.MAX_VALUE + " + 42);");
         assertEquals(Byte.MIN_VALUE + 42 - 1, mTestObject.waitForByteValue());
 
-        // LIVECONNECT_COMPLIANCE: Should convert to numeric char value.
         executeJavaScript("testObject.setCharValue(42);");
-        assertEquals('\u0000', mTestObject.waitForCharValue());
+        assertEquals(42, mTestObject.waitForCharValue());
 
         executeJavaScript("testObject.setShortValue(42);");
         assertEquals(42, mTestObject.waitForShortValue());

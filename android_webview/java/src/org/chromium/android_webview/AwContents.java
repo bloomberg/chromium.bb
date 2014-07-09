@@ -23,6 +23,7 @@ import android.os.Bundle;
 import android.os.Message;
 import android.text.TextUtils;
 import android.util.Log;
+import android.util.Pair;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
@@ -804,6 +805,13 @@ public class AwContents {
         if (wasAttached) onDetachedFromWindow();
         if (!wasPaused) onPause();
 
+        // Save injected JavaScript interfaces.
+        Map<String, Pair<Object, Class>> javascriptInterfaces =
+                new HashMap<String, Pair<Object, Class>>();
+        if (mContentViewCore != null) {
+            javascriptInterfaces.putAll(mContentViewCore.getJavascriptInterfaces());
+        }
+
         setNewAwContents(popupNativeAwContents);
 
         // Finally refresh all view state for mContentViewCore and mNativeAwContents.
@@ -817,6 +825,14 @@ public class AwContents {
         if (wasViewVisible) setViewVisibilityInternal(true);
         if (wasWindowFocused) onWindowFocusChanged(wasWindowFocused);
         if (wasFocused) onFocusChanged(true, 0, null);
+
+        // Restore injected JavaScript interfaces.
+        for (Map.Entry<String, Pair<Object, Class>> entry : javascriptInterfaces.entrySet()) {
+            mContentViewCore.addPossiblyUnsafeJavascriptInterface(
+                    entry.getValue().first,
+                    entry.getKey(),
+                    entry.getValue().second);
+        }
     }
 
     /**

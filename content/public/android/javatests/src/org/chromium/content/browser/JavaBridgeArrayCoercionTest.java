@@ -169,9 +169,8 @@ public class JavaBridgeArrayCoercionTest extends JavaBridgeTestBase {
         executeJavaScript("testObject.setByteArray([42]);");
         assertEquals(42, mTestObject.waitForByteArray()[0]);
 
-        // LIVECONNECT_COMPLIANCE: Should convert to numeric char value.
         executeJavaScript("testObject.setCharArray([42]);");
-        assertEquals('\u0000', mTestObject.waitForCharArray()[0]);
+        assertEquals(42, mTestObject.waitForCharArray()[0]);
 
         executeJavaScript("testObject.setShortArray([42]);");
         assertEquals(42, mTestObject.waitForShortArray()[0]);
@@ -643,7 +642,7 @@ public class JavaBridgeArrayCoercionTest extends JavaBridgeTestBase {
         assertEquals(42, mTestObject.waitForByteArray()[0]);
 
         executeJavaScript("testObject.setCharArray(int8_array);");
-        assertEquals('\u0000', mTestObject.waitForCharArray()[0]);
+        assertEquals(42, mTestObject.waitForCharArray()[0]);
 
         executeJavaScript("testObject.setShortArray(int8_array);");
         assertEquals(42, mTestObject.waitForShortArray()[0]);
@@ -685,7 +684,7 @@ public class JavaBridgeArrayCoercionTest extends JavaBridgeTestBase {
         assertEquals(42, mTestObject.waitForByteArray()[0]);
 
         executeJavaScript("testObject.setCharArray(uint8_array);");
-        assertEquals('\u0000', mTestObject.waitForCharArray()[0]);
+        assertEquals(42, mTestObject.waitForCharArray()[0]);
 
         executeJavaScript("testObject.setShortArray(uint8_array);");
         assertEquals(42, mTestObject.waitForShortArray()[0]);
@@ -727,7 +726,7 @@ public class JavaBridgeArrayCoercionTest extends JavaBridgeTestBase {
         assertEquals(42, mTestObject.waitForByteArray()[0]);
 
         executeJavaScript("testObject.setCharArray(int16_array);");
-        assertEquals('\u0000', mTestObject.waitForCharArray()[0]);
+        assertEquals(42, mTestObject.waitForCharArray()[0]);
 
         executeJavaScript("testObject.setShortArray(int16_array);");
         assertEquals(42, mTestObject.waitForShortArray()[0]);
@@ -769,7 +768,7 @@ public class JavaBridgeArrayCoercionTest extends JavaBridgeTestBase {
         assertEquals(42, mTestObject.waitForByteArray()[0]);
 
         executeJavaScript("testObject.setCharArray(uint16_array);");
-        assertEquals('\u0000', mTestObject.waitForCharArray()[0]);
+        assertEquals(42, mTestObject.waitForCharArray()[0]);
 
         executeJavaScript("testObject.setShortArray(uint16_array);");
         assertEquals(42, mTestObject.waitForShortArray()[0]);
@@ -811,7 +810,7 @@ public class JavaBridgeArrayCoercionTest extends JavaBridgeTestBase {
         assertEquals(42, mTestObject.waitForByteArray()[0]);
 
         executeJavaScript("testObject.setCharArray(int32_array);");
-        assertEquals('\u0000', mTestObject.waitForCharArray()[0]);
+        assertEquals(42, mTestObject.waitForCharArray()[0]);
 
         executeJavaScript("testObject.setShortArray(int32_array);");
         assertEquals(42, mTestObject.waitForShortArray()[0]);
@@ -853,7 +852,7 @@ public class JavaBridgeArrayCoercionTest extends JavaBridgeTestBase {
         assertEquals(42, mTestObject.waitForByteArray()[0]);
 
         executeJavaScript("testObject.setCharArray(uint32_array);");
-        assertEquals('\u0000', mTestObject.waitForCharArray()[0]);
+        assertEquals(42, mTestObject.waitForCharArray()[0]);
 
         executeJavaScript("testObject.setShortArray(uint32_array);");
         assertEquals(42, mTestObject.waitForShortArray()[0]);

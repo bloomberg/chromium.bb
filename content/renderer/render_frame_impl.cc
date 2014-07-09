@@ -59,7 +59,6 @@
 #include "content/renderer/image_loading_helper.h"
 #include "content/renderer/ime_event_guard.h"
 #include "content/renderer/internal_document_state_data.h"
-#include "content/renderer/java/java_bridge_dispatcher.h"
 #include "content/renderer/media/audio_renderer_mixer_manager.h"
 #include "content/renderer/media/media_stream_dispatcher.h"
 #include "content/renderer/media/media_stream_impl.h"
@@ -129,6 +128,7 @@
 
 #include "content/common/gpu/client/context_provider_command_buffer.h"
 #include "content/renderer/android/synchronous_compositor_factory.h"
+#include "content/renderer/java/gin_java_bridge_dispatcher.h"
 #include "content/renderer/media/android/renderer_media_player_manager.h"
 #include "content/renderer/media/android/stream_texture_factory_impl.h"
 #include "content/renderer/media/android/webmediaplayer_android.h"
@@ -419,7 +419,7 @@ RenderFrameImpl::RenderFrameImpl(RenderViewImpl* render_view, int routing_id)
   render_view_->RegisterRenderFrame(this);
 
 #if defined(OS_ANDROID)
-  new JavaBridgeDispatcher(this);
+  new GinJavaBridgeDispatcher(this);
 #endif
 
 #if defined(ENABLE_NOTIFICATIONS)

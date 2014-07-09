@@ -4,11 +4,8 @@
 
 package org.chromium.content.browser;
 
-import android.os.Handler;
-import android.os.Looper;
 import android.test.suitebuilder.annotation.SmallTest;
 
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer;
 import org.chromium.content_shell_apk.ContentShellActivity;
@@ -462,19 +459,8 @@ public class JavaBridgeBasicsTest extends JavaBridgeTestBase {
         assertEquals(null, object.weakRefForInner.get());
     }
 
-    /*
-     * The current Java bridge implementation doesn't reuse JS wrappers when returning
-     * the same object from a method. That looks wrong. For example, in the case of DOM,
-     * wrappers are reused, which allows JS code to attach custom properties to interface
-     * objects and use them regardless of the way the reference has been obtained:
-     * via copying a JS reference or by calling the method one more time (assuming that
-     * the method is supposed to return a reference to the same object each time).
-     * TODO(mnaganov): Fix this in the new implementation.
-     *
-     * @SmallTest
-     * @Feature({"AndroidWebView", "Android-JavaBridge"})
-     */
-    @DisabledTest
+    @SmallTest
+    @Feature({"AndroidWebView", "Android-JavaBridge"})
     public void testSameReturnedObjectUsesSameWrapper() throws Throwable {
         class InnerObject {
         }
@@ -853,60 +839,6 @@ public class JavaBridgeBasicsTest extends JavaBridgeTestBase {
     public void testAccessToObjectGetClassIsBlocked() throws Throwable {
         injectObjectAndReload(new Object(), "testObject");
         assertEquals("function", executeJavaScriptAndGetStringResult("typeof testObject.getClass"));
-        boolean securityExceptionThrown = false;
-        try {
-            final String result = executeJavaScriptAndWaitForExceptionSynchronously(
-                    "typeof testObject.getClass()");
-            fail("A call to java.lang.Object.getClass has been allowed, result: '" + result + "'");
-        } catch (SecurityException exception) {
-            securityExceptionThrown = true;
-        }
-        assertTrue(securityExceptionThrown);
-    }
-
-    // Unlike executeJavaScriptAndGetStringResult, this method is sitting on the UI thread
-    // until a non-null result is obtained or a Java exception has been thrown. This method is
-    // capable of catching Java RuntimeExceptions happening on the UI thread asynchronously.
-    private String executeJavaScriptAndWaitForExceptionSynchronously(final String script)
-            throws Throwable {
-        class ExitLoopException extends RuntimeException {
-        }
-        mTestController.setStringValue(null);
-        runTestOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                getContentViewCore().loadUrl(new LoadUrlParams("javascript:(function() { " +
-                                "testController.setStringValue(" + script + ") })()"));
-                do {
-                    final Boolean[] deactivateExitLoopTask = new Boolean[1];
-                    deactivateExitLoopTask[0] = false;
-                    // We can't use Loop.quit(), as this is the main looper, so we throw
-                    // an exception to bail out from the loop.
-                    new Handler(Looper.myLooper()).post(new Runnable() {
-                        @Override
-                        public void run() {
-                            if (!deactivateExitLoopTask[0]) {
-                                throw new ExitLoopException();
-                            }
-                        }
-                    });
-                    try {
-                        Looper.loop();
-                    } catch (ExitLoopException e) {
-                        // Intentionally empty.
-                    } catch (RuntimeException e) {
-                        // Prevent the task that throws the ExitLoopException from exploding
-                        // on the main loop outside of this function.
-                        deactivateExitLoopTask[0] = true;
-                        throw e;
-                    }
-                } while (mTestController.getStringValue() == null ||
-                        // When an exception in an injected method happens, the function returns
-                        // null. We ignore this and wait until the exception on the browser side
-                        // will be thrown.
-                        mTestController.getStringValue().equals("null"));
-            }
-        });
-        return mTestController.getStringValue();
+        assertRaisesException("testObject.getClass()");
     }
 }

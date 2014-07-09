@@ -18,6 +18,7 @@
 #include "content/common/gin_java_bridge_messages.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/web_contents.h"
 #include "ipc/ipc_message_utils.h"
 
 #if !defined(OS_ANDROID)
@@ -59,7 +60,6 @@ GinJavaBridgeDispatcherHost::~GinJavaBridgeDispatcherHost() {
 
 void GinJavaBridgeDispatcherHost::RenderFrameCreated(
     RenderFrameHost* render_frame_host) {
-  renderers_.insert(render_frame_host);
   for (NamedObjectMap::const_iterator iter = named_objects_.begin();
        iter != named_objects_.end();
        ++iter) {
@@ -70,7 +70,6 @@ void GinJavaBridgeDispatcherHost::RenderFrameCreated(
 
 void GinJavaBridgeDispatcherHost::RenderFrameDeleted(
     RenderFrameHost* render_frame_host) {
-  renderers_.erase(render_frame_host);
   RemoveHolder(render_frame_host,
                GinJavaBoundObject::ObjectMap::iterator(&objects_),
                objects_.size());
@@ -182,11 +181,8 @@ void GinJavaBridgeDispatcherHost::AddNamedObject(
   }
   named_objects_[name] = object_id;
 
-  for (RendererSet::iterator iter = renderers_.begin();
-      iter != renderers_.end(); ++iter) {
-    (*iter)->Send(new GinJavaBridgeMsg_AddNamedObject(
-        (*iter)->GetRoutingID(), name, object_id));
-  }
+  web_contents()->SendToAllFrames(
+      new GinJavaBridgeMsg_AddNamedObject(MSG_ROUTING_NONE, name, object_id));
 }
 
 void GinJavaBridgeDispatcherHost::RemoveNamedObject(
@@ -213,11 +209,8 @@ void GinJavaBridgeDispatcherHost::RemoveNamedObject(
     }
   }
 
-  for (RendererSet::iterator iter = renderers_.begin();
-      iter != renderers_.end(); ++iter) {
-    (*iter)->Send(new GinJavaBridgeMsg_RemoveNamedObject(
-        (*iter)->GetRoutingID(), name));
-  }
+  web_contents()->SendToAllFrames(
+      new GinJavaBridgeMsg_RemoveNamedObject(MSG_ROUTING_NONE, name));
 }
 
 void GinJavaBridgeDispatcherHost::SetAllowObjectContentsInspection(bool allow) {
@@ -319,11 +312,47 @@ bool GinJavaBridgeDispatcherHost::OnMessageReceived(
   return handled;
 }
 
+namespace {
+
+class IsValidRenderFrameHostHelper
+    : public base::RefCounted<IsValidRenderFrameHostHelper> {
+ public:
+  explicit IsValidRenderFrameHostHelper(RenderFrameHost* rfh_to_match)
+      : rfh_to_match_(rfh_to_match), rfh_found_(false) {}
+
+  bool rfh_found() { return rfh_found_; }
+
+  void OnFrame(RenderFrameHost* rfh) {
+    if (rfh_to_match_ == rfh) rfh_found_ = true;
+  }
+
+ private:
+  friend class base::RefCounted<IsValidRenderFrameHostHelper>;
+
+  ~IsValidRenderFrameHostHelper() {}
+
+  RenderFrameHost* rfh_to_match_;
+  bool rfh_found_;
+
+  DISALLOW_COPY_AND_ASSIGN(IsValidRenderFrameHostHelper);
+};
+
+}  // namespace
+
+bool GinJavaBridgeDispatcherHost::IsValidRenderFrameHost(
+    RenderFrameHost* render_frame_host) {
+  scoped_refptr<IsValidRenderFrameHostHelper> helper =
+      new IsValidRenderFrameHostHelper(render_frame_host);
+  web_contents()->ForEachFrame(
+      base::Bind(&IsValidRenderFrameHostHelper::OnFrame, helper));
+  return helper->rfh_found();
+}
+
 void GinJavaBridgeDispatcherHost::SendReply(
     RenderFrameHost* render_frame_host,
     IPC::Message* reply_msg) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (renderers_.find(render_frame_host) != renderers_.end()) {
+  if (IsValidRenderFrameHost(render_frame_host)) {
     render_frame_host->Send(reply_msg);
   } else {
     delete reply_msg;
@@ -455,7 +484,7 @@ void GinJavaBridgeDispatcherHost::ProcessMethodInvocationObjectResult(
     IPC::Message* reply_msg,
     scoped_refptr<GinJavaMethodInvocationHelper> result) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (renderers_.find(render_frame_host) == renderers_.end()) {
+  if (!IsValidRenderFrameHost(render_frame_host)) {
     delete reply_msg;
     return;
   }

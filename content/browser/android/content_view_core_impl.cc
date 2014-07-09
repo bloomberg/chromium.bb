@@ -19,8 +19,7 @@
 #include "cc/output/begin_frame_args.h"
 #include "content/browser/android/gesture_event_type.h"
 #include "content/browser/android/interstitial_page_delegate_android.h"
-#include "content/browser/android/java/java_bound_object.h"
-#include "content/browser/android/java/java_bridge_dispatcher_host_manager.h"
+#include "content/browser/android/java/gin_java_bridge_dispatcher_host.h"
 #include "content/browser/android/load_url_params.h"
 #include "content/browser/frame_host/interstitial_page_impl.h"
 #include "content/browser/frame_host/navigation_controller_impl.h"
@@ -54,7 +53,6 @@
 #include "content/public/common/page_transition_types.h"
 #include "content/public/common/user_agent.h"
 #include "jni/ContentViewCore_jni.h"
-#include "third_party/WebKit/public/web/WebBindings.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "ui/base/android/view_android.h"
 #include "ui/base/android/window_android.h"
@@ -246,9 +244,9 @@ ContentViewCoreImpl::ContentViewCoreImpl(
       BuildUserAgentFromOSAndProduct(kLinuxInfoStr, product);
   web_contents->SetUserAgentOverride(spoofed_ua);
 
-  java_bridge_dispatcher_host_manager_.reset(
-      new JavaBridgeDispatcherHostManager(web_contents,
-                                          java_bridge_retained_object_set));
+  java_bridge_dispatcher_host_.reset(
+      new GinJavaBridgeDispatcherHost(web_contents,
+                                      java_bridge_retained_object_set));
 
   InitWebContents();
 }
@@ -1199,7 +1197,7 @@ void ContentViewCoreImpl::SetAllowJavascriptInterfacesInspection(
     JNIEnv* env,
     jobject obj,
     jboolean allow) {
-  java_bridge_dispatcher_host_manager_->SetAllowObjectContentsInspection(allow);
+  java_bridge_dispatcher_host_->SetAllowObjectContentsInspection(allow);
 }
 
 void ContentViewCoreImpl::AddJavascriptInterface(
@@ -1210,24 +1208,15 @@ void ContentViewCoreImpl::AddJavascriptInterface(
     jclass safe_annotation_clazz) {
   ScopedJavaLocalRef<jobject> scoped_object(env, object);
   ScopedJavaLocalRef<jclass> scoped_clazz(env, safe_annotation_clazz);
-
-  // JavaBoundObject creates the NPObject with a ref count of 1, and
-  // JavaBridgeDispatcherHostManager takes its own ref.
-  NPObject* bound_object = JavaBoundObject::Create(
-      scoped_object,
-      scoped_clazz,
-      java_bridge_dispatcher_host_manager_->AsWeakPtr(),
-      java_bridge_dispatcher_host_manager_->GetAllowObjectContentsInspection());
-  java_bridge_dispatcher_host_manager_->AddNamedObject(
-      ConvertJavaStringToUTF16(env, name), bound_object);
-  blink::WebBindings::releaseObject(bound_object);
+  java_bridge_dispatcher_host_->AddNamedObject(
+      ConvertJavaStringToUTF8(env, name), scoped_object, scoped_clazz);
 }
 
 void ContentViewCoreImpl::RemoveJavascriptInterface(JNIEnv* env,
                                                     jobject /* obj */,
                                                     jstring name) {
-  java_bridge_dispatcher_host_manager_->RemoveNamedObject(
-      ConvertJavaStringToUTF16(env, name));
+  java_bridge_dispatcher_host_->RemoveNamedObject(
+      ConvertJavaStringToUTF8(env, name));
 }
 
 void ContentViewCoreImpl::WasResized(JNIEnv* env, jobject obj) {
