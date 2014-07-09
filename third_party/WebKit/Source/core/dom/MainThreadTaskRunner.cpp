@@ -29,6 +29,7 @@
 
 #include "core/dom/ExecutionContext.h"
 #include "core/dom/ExecutionContextTask.h"
+#include "core/inspector/InspectorInstrumentation.h"
 #include "wtf/Assertions.h"
 #include "wtf/MainThread.h"
 
@@ -78,6 +79,8 @@ MainThreadTaskRunner::~MainThreadTaskRunner()
 
 void MainThreadTaskRunner::postTask(PassOwnPtr<ExecutionContextTask> task)
 {
+    if (!task->taskNameForInstrumentation().isEmpty())
+        InspectorInstrumentation::didPostExecutionContextTask(m_context, task.get());
     callOnMainThread(PerformTaskContext::didReceiveTask, new PerformTaskContext(m_weakFactory.createWeakPtr(), task, false));
 }
 
@@ -93,7 +96,12 @@ void MainThreadTaskRunner::perform(PassOwnPtr<ExecutionContextTask> task, bool i
         return;
     }
 
+    const bool instrumenting = !isInspectorTask && !task->taskNameForInstrumentation().isEmpty();
+    if (instrumenting)
+        InspectorInstrumentation::willPerformExecutionContextTask(m_context, task.get());
     task->performTask(m_context);
+    if (instrumenting)
+        InspectorInstrumentation::didPerformExecutionContextTask(m_context);
 }
 
 void MainThreadTaskRunner::suspend()
@@ -117,7 +125,12 @@ void MainThreadTaskRunner::pendingTasksTimerFired(Timer<MainThreadTaskRunner>*)
     while (!m_pendingTasks.isEmpty()) {
         OwnPtr<ExecutionContextTask> task = m_pendingTasks[0].release();
         m_pendingTasks.remove(0);
+        const bool instrumenting = !task->taskNameForInstrumentation().isEmpty();
+        if (instrumenting)
+            InspectorInstrumentation::willPerformExecutionContextTask(m_context, task.get());
         task->performTask(m_context);
+        if (instrumenting)
+            InspectorInstrumentation::didPerformExecutionContextTask(m_context);
     }
 }
 

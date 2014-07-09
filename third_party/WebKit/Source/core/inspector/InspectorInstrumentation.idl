@@ -190,6 +190,18 @@ interface InspectorInstrumentation {
     [Debugger, Inline=FastReturn]
     void didDeliverMutationRecords(ExecutionContext*);
 
+    [Debugger, Inline=FastReturn]
+    void didPostExecutionContextTask([Keep] ExecutionContext*, ExecutionContextTask*);
+
+    [Debugger, Inline=FastReturn]
+    void didKillAllExecutionContextTasks([Keep] ExecutionContext*);
+
+    [Debugger, Inline=FastReturn]
+    void willPerformExecutionContextTask([Keep] ExecutionContext*, ExecutionContextTask*);
+
+    [Debugger, Inline=FastReturn]
+    void didPerformExecutionContextTask(ExecutionContext*);
+
     [Timeline, Inline=FastReturn]
     InspectorInstrumentationCookie willEvaluateScript([Keep] LocalFrame*, const String& url, int lineNumber);
 

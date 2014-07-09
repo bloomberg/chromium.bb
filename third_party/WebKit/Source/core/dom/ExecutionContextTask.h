@@ -31,6 +31,7 @@
 #include "wtf/Functional.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/PassOwnPtr.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 
@@ -45,6 +46,7 @@ public:
     virtual void performTask(ExecutionContext*) = 0;
     // Certain tasks get marked specially so that they aren't discarded, and are executed, when the context is shutting down its message queue.
     virtual bool isCleanupTask() const { return false; }
+    virtual const String& taskNameForInstrumentation() const { return emptyString(); }
 };
 
 class CallClosureTask FINAL : public ExecutionContextTask {

@@ -41,9 +41,9 @@ namespace {
 
 class DispatchCallbackTask FINAL : public ExecutionContextTask {
 public:
-    static PassOwnPtr<DispatchCallbackTask> create(PassOwnPtr<StringCallback> callback, const String& data)
+    static PassOwnPtr<DispatchCallbackTask> create(PassOwnPtr<StringCallback> callback, const String& data, const String& taskName)
     {
-        return adoptPtr(new DispatchCallbackTask(callback, data));
+        return adoptPtr(new DispatchCallbackTask(callback, data, taskName));
     }
 
     virtual void performTask(ExecutionContext*) OVERRIDE
@@ -51,22 +51,29 @@ public:
         m_callback->handleEvent(m_data);
     }
 
+    virtual const String& taskNameForInstrumentation() const OVERRIDE
+    {
+        return m_taskName;
+    }
+
 private:
-    DispatchCallbackTask(PassOwnPtr<StringCallback> callback, const String& data)
+    DispatchCallbackTask(PassOwnPtr<StringCallback> callback, const String& data, const String& taskName)
         : m_callback(callback)
         , m_data(data)
+        , m_taskName(taskName)
     {
     }
 
     OwnPtr<StringCallback> m_callback;
     const String m_data;
+    const String m_taskName;
 };
 
 } // namespace
 
-void StringCallback::scheduleCallback(PassOwnPtr<StringCallback> callback, ExecutionContext* context, const String& data)
+void StringCallback::scheduleCallback(PassOwnPtr<StringCallback> callback, ExecutionContext* context, const String& data, const String& instrumentationName)
 {
-    context->postTask(DispatchCallbackTask::create(callback, data));
+    context->postTask(DispatchCallbackTask::create(callback, data, instrumentationName));
 }
 
 } // namespace WebCore

@@ -76,7 +76,7 @@ void DataTransferItem::getAsString(ExecutionContext* context, PassOwnPtr<StringC
     if (!callback || m_item->kind() != DataObjectItem::StringKind)
         return;
 
-    StringCallback::scheduleCallback(callback, context, m_item->getAsString());
+    StringCallback::scheduleCallback(callback, context, m_item->getAsString(), "DataTransferItem.getAsString");
 }
 
 PassRefPtrWillBeRawPtr<Blob> DataTransferItem::getAsFile() const

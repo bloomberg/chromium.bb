@@ -35,6 +35,7 @@
 #include "bindings/core/v8/ScriptSourceCode.h"
 #include "bindings/core/v8/ScriptValue.h"
 #include "core/dom/Document.h"
+#include "core/dom/ExecutionContextTask.h"
 #include "core/fetch/Resource.h"
 #include "core/inspector/ContentSearchUtils.h"
 #include "core/inspector/InjectedScriptManager.h"
@@ -804,6 +805,30 @@ void InspectorDebuggerAgent::willDeliverMutationRecords(ExecutionContext* contex
 }
 
 void InspectorDebuggerAgent::didDeliverMutationRecords()
+{
+    if (m_asyncCallStackTracker.isEnabled())
+        m_asyncCallStackTracker.didFireAsyncCall();
+}
+
+void InspectorDebuggerAgent::didPostExecutionContextTask(ExecutionContext* context, ExecutionContextTask* task)
+{
+    if (m_asyncCallStackTracker.isEnabled() && !task->taskNameForInstrumentation().isEmpty())
+        m_asyncCallStackTracker.didPostExecutionContextTask(context, task, scriptDebugServer().currentCallFramesForAsyncStack());
+}
+
+void InspectorDebuggerAgent::didKillAllExecutionContextTasks(ExecutionContext* context)
+{
+    if (m_asyncCallStackTracker.isEnabled())
+        m_asyncCallStackTracker.didKillAllExecutionContextTasks(context);
+}
+
+void InspectorDebuggerAgent::willPerformExecutionContextTask(ExecutionContext* context, ExecutionContextTask* task)
+{
+    if (m_asyncCallStackTracker.isEnabled())
+        m_asyncCallStackTracker.willPerformExecutionContextTask(context, task);
+}
+
+void InspectorDebuggerAgent::didPerformExecutionContextTask()
 {
     if (m_asyncCallStackTracker.isEnabled())
         m_asyncCallStackTracker.didFireAsyncCall();

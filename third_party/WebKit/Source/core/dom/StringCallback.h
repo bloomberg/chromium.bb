@@ -43,7 +43,7 @@ public:
     virtual void handleEvent(const String& data) = 0;
 
     // Helper to post callback task.
-    static void scheduleCallback(PassOwnPtr<StringCallback>, ExecutionContext*, const String& data);
+    static void scheduleCallback(PassOwnPtr<StringCallback>, ExecutionContext*, const String& data, const String& instrumentationName);
 };
 
 } // namespace WebCore

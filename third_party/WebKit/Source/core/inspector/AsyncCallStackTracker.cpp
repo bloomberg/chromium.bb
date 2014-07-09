@@ -35,6 +35,7 @@
 #include "bindings/core/v8/V8RecursionScope.h"
 #include "core/dom/ContextLifecycleObserver.h"
 #include "core/dom/ExecutionContext.h"
+#include "core/dom/ExecutionContextTask.h"
 #include "core/events/Event.h"
 #include "core/events/EventTarget.h"
 #include "core/xml/XMLHttpRequest.h"
@@ -81,6 +82,7 @@ public:
     HashMap<Event*, RefPtr<AsyncCallChain> > m_eventCallChains;
     HashMap<EventTarget*, RefPtr<AsyncCallChain> > m_xhrCallChains;
     HashMap<MutationObserver*, RefPtr<AsyncCallChain> > m_mutationObserverCallChains;
+    HashMap<ExecutionContextTask*, RefPtr<AsyncCallChain> > m_executionContextTaskCallChains;
 };
 
 static XMLHttpRequest* toXmlHttpRequest(EventTarget* eventTarget)
@@ -292,6 +294,34 @@ void AsyncCallStackTracker::willDeliverMutationRecords(ExecutionContext* context
     ASSERT(isEnabled());
     if (ExecutionContextData* data = m_executionContextDataMap.get(context))
         setCurrentAsyncCallChain(context, data->m_mutationObserverCallChains.take(observer));
+    else
+        setCurrentAsyncCallChain(context, nullptr);
+}
+
+void AsyncCallStackTracker::didPostExecutionContextTask(ExecutionContext* context, ExecutionContextTask* task, const ScriptValue& callFrames)
+{
+    ASSERT(context);
+    ASSERT(isEnabled());
+    if (!validateCallFrames(callFrames))
+        return;
+    ExecutionContextData* data = createContextDataIfNeeded(context);
+    data->m_executionContextTaskCallChains.set(task, createAsyncCallChain(task->taskNameForInstrumentation(), callFrames));
+}
+
+void AsyncCallStackTracker::didKillAllExecutionContextTasks(ExecutionContext* context)
+{
+    ASSERT(context);
+    ASSERT(isEnabled());
+    if (ExecutionContextData* data = m_executionContextDataMap.get(context))
+        data->m_executionContextTaskCallChains.clear();
+}
+
+void AsyncCallStackTracker::willPerformExecutionContextTask(ExecutionContext* context, ExecutionContextTask* task)
+{
+    ASSERT(context);
+    ASSERT(isEnabled());
+    if (ExecutionContextData* data = m_executionContextDataMap.get(context))
+        setCurrentAsyncCallChain(context, data->m_executionContextTaskCallChains.take(task));
     else
         setCurrentAsyncCallChain(context, nullptr);
 }

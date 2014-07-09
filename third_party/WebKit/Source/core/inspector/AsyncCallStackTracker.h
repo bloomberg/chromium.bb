@@ -45,6 +45,7 @@ class Event;
 class EventListener;
 class EventTarget;
 class ExecutionContext;
+class ExecutionContextTask;
 class MutationObserver;
 class XMLHttpRequest;
 
@@ -97,6 +98,10 @@ public:
     bool hasEnqueuedMutationRecord(ExecutionContext*, MutationObserver*);
     void didClearAllMutationRecords(ExecutionContext*, MutationObserver*);
     void willDeliverMutationRecords(ExecutionContext*, MutationObserver*);
+
+    void didPostExecutionContextTask(ExecutionContext*, ExecutionContextTask*, const ScriptValue& callFrames);
+    void didKillAllExecutionContextTasks(ExecutionContext*);
+    void willPerformExecutionContextTask(ExecutionContext*, ExecutionContextTask*);
 
     void didFireAsyncCall();
     void clear();

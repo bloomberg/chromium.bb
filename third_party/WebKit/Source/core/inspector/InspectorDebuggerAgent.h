@@ -51,6 +51,7 @@ class Document;
 class Event;
 class EventListener;
 class EventTarget;
+class ExecutionContextTask;
 class FormData;
 class HTTPHeaderMap;
 class InjectedScriptManager;
@@ -159,6 +160,10 @@ public:
     void didClearAllMutationRecords(ExecutionContext*, MutationObserver*);
     void willDeliverMutationRecords(ExecutionContext*, MutationObserver*);
     void didDeliverMutationRecords();
+    void didPostExecutionContextTask(ExecutionContext*, ExecutionContextTask*);
+    void didKillAllExecutionContextTasks(ExecutionContext*);
+    void willPerformExecutionContextTask(ExecutionContext*, ExecutionContextTask*);
+    void didPerformExecutionContextTask();
     bool canBreakProgram();
     void breakProgram(InspectorFrontend::Debugger::Reason::Enum breakReason, PassRefPtr<JSONObject> data);
     void scriptExecutionBlockedByCSP(const String& directiveText);
