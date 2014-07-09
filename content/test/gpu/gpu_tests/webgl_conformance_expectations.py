@@ -27,8 +27,6 @@ class WebGLConformanceExpectations(test_expectations.TestExpectations):
     # Fails on all platforms
     self.Fail('conformance/glsl/misc/shaders-with-mis-matching-uniforms.html',
         bug=351396)
-    self.Fail('conformance/textures/texture-draw-with-2d-and-cube.html',
-        bug=391951)
     self.Fail('conformance/renderbuffers/framebuffer-object-attachment.html',
         ['win', 'linux', 'android', 'chromeos'], bug=391953)
 
