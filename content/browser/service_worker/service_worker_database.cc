@@ -968,11 +968,15 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::WriteResourceIdsInBatch(
   if (status != STATUS_OK)
     return status;
 
+  if (ids.empty())
+    return STATUS_OK;
   for (std::set<int64>::const_iterator itr = ids.begin();
        itr != ids.end(); ++itr) {
     // Value should be empty.
     batch->Put(CreateResourceIdKey(id_key_prefix, *itr), "");
   }
+  // std::set is sorted, so the last element is the largest.
+  BumpNextResourceIdIfNeeded(*ids.rbegin(), batch);
   return STATUS_OK;
 }
 
@@ -1051,6 +1055,15 @@ void ServiceWorkerDatabase::BumpNextRegistrationIdIfNeeded(
   if (next_avail_registration_id_ <= used_id) {
     next_avail_registration_id_ = used_id + 1;
     batch->Put(kNextRegIdKey, base::Int64ToString(next_avail_registration_id_));
+  }
+}
+
+void ServiceWorkerDatabase::BumpNextResourceIdIfNeeded(
+    int64 used_id, leveldb::WriteBatch* batch) {
+  DCHECK(batch);
+  if (next_avail_resource_id_ <= used_id) {
+    next_avail_resource_id_ = used_id + 1;
+    batch->Put(kNextResIdKey, base::Int64ToString(next_avail_resource_id_));
   }
 }
 

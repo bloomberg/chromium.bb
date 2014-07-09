@@ -280,6 +280,9 @@ class CONTENT_EXPORT ServiceWorkerDatabase {
   void BumpNextRegistrationIdIfNeeded(
       int64 used_id,
       leveldb::WriteBatch* batch);
+  void BumpNextResourceIdIfNeeded(
+      int64 used_id,
+      leveldb::WriteBatch* batch);
   void BumpNextVersionIdIfNeeded(
       int64 used_id,
       leveldb::WriteBatch* batch);

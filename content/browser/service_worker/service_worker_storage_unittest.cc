@@ -524,11 +524,13 @@ class ServiceWorkerResourceStorageTest : public ServiceWorkerStorageTest {
     registration_->waiting_version()->SetStatus(ServiceWorkerVersion::NEW);
 
     // Add the resources ids to the uncommitted list.
-    std::set<int64> resource_ids;
-    resource_ids.insert(resource_id1_);
-    resource_ids.insert(resource_id2_);
+    storage()->StoreUncommittedResponseId(resource_id1_);
+    storage()->StoreUncommittedResponseId(resource_id2_);
+    base::RunLoop().RunUntilIdle();
+    std::set<int64> verify_ids;
     EXPECT_EQ(ServiceWorkerDatabase::STATUS_OK,
-              storage()->database_->WriteUncommittedResourceIds(resource_ids));
+              storage()->database_->GetUncommittedResourceIds(&verify_ids));
+    EXPECT_EQ(2u, verify_ids.size());
 
     // And dump something in the disk cache for them.
     WriteBasicResponse(storage(), resource_id1_);
@@ -541,7 +543,7 @@ class ServiceWorkerResourceStorageTest : public ServiceWorkerStorageTest {
     EXPECT_EQ(
         SERVICE_WORKER_OK,
         StoreRegistration(registration_, registration_->waiting_version()));
-    std::set<int64> verify_ids;
+    verify_ids.clear();
     EXPECT_EQ(ServiceWorkerDatabase::STATUS_OK,
               storage()->database_->GetUncommittedResourceIds(&verify_ids));
     EXPECT_TRUE(verify_ids.empty());
@@ -699,7 +701,20 @@ TEST_F(ServiceWorkerResourceStorageDiskTest, MAYBE_CleanupOnRestart) {
   EXPECT_TRUE(VerifyBasicResponse(storage(), resource_id1_, true));
   EXPECT_TRUE(VerifyBasicResponse(storage(), resource_id2_, true));
 
-  // Simulate browser restart. This should trigger stale resource purging.
+  // Also add an uncommitted resource.
+  int64 kStaleUncommittedResourceId = storage()->NewResourceId();
+  storage()->StoreUncommittedResponseId(kStaleUncommittedResourceId);
+  base::RunLoop().RunUntilIdle();
+  verify_ids.clear();
+  EXPECT_EQ(ServiceWorkerDatabase::STATUS_OK,
+            storage()->database_->GetUncommittedResourceIds(&verify_ids));
+  EXPECT_EQ(1u, verify_ids.size());
+  WriteBasicResponse(storage(), kStaleUncommittedResourceId);
+  EXPECT_TRUE(
+      VerifyBasicResponse(storage(), kStaleUncommittedResourceId, true));
+
+  // Simulate browser shutdown. The purgeable and uncommitted resources are now
+  // stale.
   context_.reset();
   context_.reset(new ServiceWorkerContextCore(GetUserDataDirectory(),
                                               base::MessageLoopProxy::current(),
@@ -707,18 +722,31 @@ TEST_F(ServiceWorkerResourceStorageDiskTest, MAYBE_CleanupOnRestart) {
                                               NULL,
                                               NULL,
                                               NULL));
-  // Use FindRegistration to force storage system initialization.
-  scoped_refptr<ServiceWorkerRegistration> found_registration;
-  FindRegistrationForDocument(document_url_, &found_registration);
+  storage()->LazyInitialize(base::Bind(&base::DoNothing));
   base::RunLoop().RunUntilIdle();
 
-  // Stale resources should be gone.
+  // Store a new uncommitted resource. This triggers stale resource cleanup.
+  int64 kNewResourceId = storage()->NewResourceId();
+  WriteBasicResponse(storage(), kNewResourceId);
+  storage()->StoreUncommittedResponseId(kNewResourceId);
+  base::RunLoop().RunUntilIdle();
+
+  // The stale resources should be purged, but the new resource should persist.
+  verify_ids.clear();
+  EXPECT_EQ(ServiceWorkerDatabase::STATUS_OK,
+            storage()->database_->GetUncommittedResourceIds(&verify_ids));
+  ASSERT_EQ(1u, verify_ids.size());
+  EXPECT_EQ(kNewResourceId, *verify_ids.begin());
+
   verify_ids.clear();
   EXPECT_EQ(ServiceWorkerDatabase::STATUS_OK,
             storage()->database_->GetPurgeableResourceIds(&verify_ids));
   EXPECT_TRUE(verify_ids.empty());
   EXPECT_FALSE(VerifyBasicResponse(storage(), resource_id1_, false));
   EXPECT_FALSE(VerifyBasicResponse(storage(), resource_id2_, false));
+  EXPECT_FALSE(
+      VerifyBasicResponse(storage(), kStaleUncommittedResourceId, false));
+  EXPECT_TRUE(VerifyBasicResponse(storage(), kNewResourceId, true));
 }
 
 TEST_F(ServiceWorkerResourceStorageTest, UpdateRegistration) {

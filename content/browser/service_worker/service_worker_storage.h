@@ -118,7 +118,7 @@ class CONTENT_EXPORT ServiceWorkerStorage
 
   // Adds |id| to the set of resources ids that are in the disk
   // cache but not yet stored with a registration.
-  void StoreUncommittedReponseId(int64 id);
+  void StoreUncommittedResponseId(int64 id);
 
   // Removes |id| from uncommitted list, adds it to the
   // purgeable list and purges it.
@@ -159,7 +159,6 @@ class CONTENT_EXPORT ServiceWorkerStorage
     int64 next_version_id;
     int64 next_resource_id;
     std::set<GURL> origins;
-    std::set<int64> purgeable_resource_ids;
 
     InitialData();
     ~InitialData();
@@ -185,6 +184,9 @@ class CONTENT_EXPORT ServiceWorkerStorage
       const ServiceWorkerDatabase::RegistrationData& data,
       const ResourceList& resources,
       ServiceWorkerDatabase::Status status)> FindInDBCallback;
+  typedef base::Callback<void(const std::vector<int64>& resource_ids,
+                              ServiceWorkerDatabase::Status status)>
+      GetResourcesCallback;
 
   ServiceWorkerStorage(const base::FilePath& path,
                        base::WeakPtr<ServiceWorkerContextCore> context,
@@ -262,7 +264,18 @@ class CONTENT_EXPORT ServiceWorkerStorage
   void PurgeResource(int64 id);
   void OnResourcePurged(int64 id, int rv);
 
+  // Deletes purgeable and uncommitted resources left over from the previous
+  // browser session. This must be called once per session before any database
+  // operation that may mutate the purgeable or uncommitted resource lists.
+  void DeleteStaleResources();
+  void DidCollectStaleResources(const std::vector<int64>& stale_resource_ids,
+                                ServiceWorkerDatabase::Status status);
+
   // Static cross-thread helpers.
+  static void CollectStaleResourcesFromDB(
+      ServiceWorkerDatabase* database,
+      scoped_refptr<base::SequencedTaskRunner> original_task_runner,
+      const GetResourcesCallback& callback);
   static void ReadInitialDataFromDB(
       ServiceWorkerDatabase* database,
       scoped_refptr<base::SequencedTaskRunner> original_task_runner,
@@ -337,6 +350,7 @@ class CONTENT_EXPORT ServiceWorkerStorage
   scoped_ptr<ServiceWorkerDiskCache> disk_cache_;
   std::deque<int64> purgeable_resource_ids_;
   bool is_purge_pending_;
+  bool has_checked_for_stale_resources_;
   std::map<int64, std::vector<int64> > deleted_version_resource_ids_;
 
   base::WeakPtrFactory<ServiceWorkerStorage> weak_factory_;

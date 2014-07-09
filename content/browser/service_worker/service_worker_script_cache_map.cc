@@ -36,7 +36,7 @@ void ServiceWorkerScriptCacheMap::NotifyStartedCaching(
   DCHECK(owner_->status() == ServiceWorkerVersion::NEW ||
          owner_->status() == ServiceWorkerVersion::INSTALLING);
   resource_ids_[url] = resource_id;
-  context_->storage()->StoreUncommittedReponseId(resource_id);
+  context_->storage()->StoreUncommittedResponseId(resource_id);
 }
 
 void ServiceWorkerScriptCacheMap::NotifyFinishedCaching(

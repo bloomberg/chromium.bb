@@ -271,8 +271,8 @@ void ServiceWorkerStorage::StoreRegistration(
   DCHECK(registration);
   DCHECK(version);
 
-  DCHECK(state_ == INITIALIZED || state_ == DISABLED);
-  if (state_ != INITIALIZED || !context_) {
+  DCHECK(state_ == INITIALIZED || state_ == DISABLED) << state_;
+  if (IsDisabled() || !context_) {
     RunSoon(FROM_HERE, base::Bind(callback, SERVICE_WORKER_ERROR_FAILED));
     return;
   }
@@ -288,6 +288,9 @@ void ServiceWorkerStorage::StoreRegistration(
 
   ResourceList resources;
   version->script_cache_map()->GetResources(&resources);
+
+  if (!has_checked_for_stale_resources_)
+    DeleteStaleResources();
 
   database_task_runner_->PostTask(
       FROM_HERE,
@@ -305,8 +308,8 @@ void ServiceWorkerStorage::UpdateToActiveState(
     const StatusCallback& callback) {
   DCHECK(registration);
 
-  DCHECK(state_ == INITIALIZED || state_ == DISABLED);
-  if (state_ != INITIALIZED || !context_) {
+  DCHECK(state_ == INITIALIZED || state_ == DISABLED) << state_;
+  if (IsDisabled() || !context_) {
     RunSoon(FROM_HERE, base::Bind(callback, SERVICE_WORKER_ERROR_FAILED));
     return;
   }
@@ -327,11 +330,14 @@ void ServiceWorkerStorage::DeleteRegistration(
     int64 registration_id,
     const GURL& origin,
     const StatusCallback& callback) {
-  DCHECK(state_ == INITIALIZED || state_ == DISABLED);
-  if (state_ != INITIALIZED || !context_) {
+  DCHECK(state_ == INITIALIZED || state_ == DISABLED) << state_;
+  if (IsDisabled() || !context_) {
     RunSoon(FROM_HERE, base::Bind(callback, SERVICE_WORKER_ERROR_FAILED));
     return;
   }
+
+  if (!has_checked_for_stale_resources_)
+    DeleteStaleResources();
 
   database_task_runner_->PostTask(
       FROM_HERE,
@@ -360,8 +366,13 @@ ServiceWorkerStorage::CreateResponseWriter(int64 response_id) {
       new ServiceWorkerResponseWriter(response_id, disk_cache()));
 }
 
-void ServiceWorkerStorage::StoreUncommittedReponseId(int64 id) {
+void ServiceWorkerStorage::StoreUncommittedResponseId(int64 id) {
   DCHECK_NE(kInvalidServiceWorkerResponseId, id);
+  DCHECK_EQ(INITIALIZED, state_);
+
+  if (!has_checked_for_stale_resources_)
+    DeleteStaleResources();
+
   database_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(base::IgnoreResult(
@@ -470,6 +481,7 @@ ServiceWorkerStorage::ServiceWorkerStorage(
       disk_cache_thread_(disk_cache_thread),
       quota_manager_proxy_(quota_manager_proxy),
       is_purge_pending_(false),
+      has_checked_for_stale_resources_(false),
       weak_factory_(this) {
   database_.reset(new ServiceWorkerDatabase(GetDatabasePath()));
 }
@@ -526,9 +538,6 @@ void ServiceWorkerStorage::DidReadInitialData(
     next_resource_id_ = data->next_resource_id;
     registered_origins_.swap(data->origins);
     state_ = INITIALIZED;
-    StartPurgingResources(
-        std::vector<int64>(data->purgeable_resource_ids.begin(),
-                           data->purgeable_resource_ids.end()));
   } else {
     // TODO(nhiroki): Stringify |status| using StatusToString() defined in
     // service_worker_database.cc.
@@ -863,6 +872,7 @@ void ServiceWorkerStorage::SchedulePurgeResources(
 
 void ServiceWorkerStorage::StartPurgingResources(
     const std::vector<int64>& ids) {
+  DCHECK(has_checked_for_stale_resources_);
   for (size_t i = 0; i < ids.size(); ++i)
     purgeable_resource_ids_.push_back(ids[i]);
   ContinuePurgingResources();
@@ -870,6 +880,7 @@ void ServiceWorkerStorage::StartPurgingResources(
 
 void ServiceWorkerStorage::StartPurgingResources(
     const ResourceList& resources) {
+  DCHECK(has_checked_for_stale_resources_);
   for (size_t i = 0; i < resources.size(); ++i)
     purgeable_resource_ids_.push_back(resources[i].resource_id);
   ContinuePurgingResources();
@@ -912,6 +923,58 @@ void ServiceWorkerStorage::OnResourcePurged(int64 id, int rv) {
   ContinuePurgingResources();
 }
 
+void ServiceWorkerStorage::DeleteStaleResources() {
+  DCHECK(!has_checked_for_stale_resources_);
+  has_checked_for_stale_resources_ = true;
+  database_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&ServiceWorkerStorage::CollectStaleResourcesFromDB,
+                 database_.get(),
+                 base::MessageLoopProxy::current(),
+                 base::Bind(&ServiceWorkerStorage::DidCollectStaleResources,
+                            weak_factory_.GetWeakPtr())));
+}
+
+void ServiceWorkerStorage::DidCollectStaleResources(
+    const std::vector<int64>& stale_resource_ids,
+    ServiceWorkerDatabase::Status status) {
+  DCHECK_EQ(ServiceWorkerDatabase::STATUS_OK, status);
+  if (status != ServiceWorkerDatabase::STATUS_OK)
+    return;
+  StartPurgingResources(stale_resource_ids);
+}
+
+void ServiceWorkerStorage::CollectStaleResourcesFromDB(
+    ServiceWorkerDatabase* database,
+    scoped_refptr<base::SequencedTaskRunner> original_task_runner,
+    const GetResourcesCallback& callback) {
+  std::set<int64> ids;
+  ServiceWorkerDatabase::Status status =
+      database->GetUncommittedResourceIds(&ids);
+  if (status != ServiceWorkerDatabase::STATUS_OK) {
+    original_task_runner->PostTask(
+        FROM_HERE,
+        base::Bind(
+            callback, std::vector<int64>(ids.begin(), ids.end()), status));
+    return;
+  }
+
+  status = database->PurgeUncommittedResourceIds(ids);
+  if (status != ServiceWorkerDatabase::STATUS_OK) {
+    original_task_runner->PostTask(
+        FROM_HERE,
+        base::Bind(
+            callback, std::vector<int64>(ids.begin(), ids.end()), status));
+    return;
+  }
+
+  ids.clear();
+  status = database->GetPurgeableResourceIds(&ids);
+  original_task_runner->PostTask(
+      FROM_HERE,
+      base::Bind(callback, std::vector<int64>(ids.begin(), ids.end()), status));
+}
+
 void ServiceWorkerStorage::ReadInitialDataFromDB(
     ServiceWorkerDatabase* database,
     scoped_refptr<base::SequencedTaskRunner> original_task_runner,
@@ -931,14 +994,6 @@ void ServiceWorkerStorage::ReadInitialDataFromDB(
   }
 
   status = database->GetOriginsWithRegistrations(&data->origins);
-  if (status != ServiceWorkerDatabase::STATUS_OK) {
-    original_task_runner->PostTask(
-        FROM_HERE, base::Bind(callback, base::Owned(data.release()), status));
-    return;
-  }
-
-  // TODO: Also purge uncommitted resources.
-  status = database->GetPurgeableResourceIds(&data->purgeable_resource_ids);
   original_task_runner->PostTask(
       FROM_HERE, base::Bind(callback, base::Owned(data.release()), status));
 }
