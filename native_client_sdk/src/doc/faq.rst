@@ -70,28 +70,32 @@ Portable Native client further enhances the above:
 For more details, refer to the :doc:`history behind and comparison of
 NaCl and PNaCl <nacl-and-pnacl>`.
 
-When should I use Native Client?
---------------------------------
+When should I use Portable Native Client instead of Native Client?
+------------------------------------------------------------------
+
+See :doc:`NaCl and PNaCl <nacl-and-pnacl>`. In short: PNaCl works on the Open
+Web platform delivered by Chrome whereas NaCl only works on the Chrome Web
+Store.
+
+When should I use Portable Native Client / Native Client?
+---------------------------------------------------------
 
 The following are some typical use cases. For details, see the
 :doc:`Technical Overview <overview>`.
 
-* Porting existing software components for use in a web application.
-* Porting legacy desktop applications.
-* Handling browser-side encryption and decryption for an enterprise
-  application.
-* Handling multimedia for a web application.
-* Handling various aspects of web-based games, including physics engines
-  and AI.
+* Porting existing applications or software components, written in C/C++ or
+  virtual machines written in C/C++, for use in a web application.
+* Using compute-intensive applications, including threads and SIMD, such as:
 
-Native Client is a versatile technology; we expect that it will also be
+  * Scientific computing.
+  * Handling multimedia for a web application.
+  * Various aspects of web-based games, including physics engines and AI.
+
+* Running untrusted code on a server or within an application (such as a plugin
+  system for a game).
+
+Portable Native Client and Native Client are versatile technologies which are
 used in many other contexts outside of Chrome.
-
-When should I use Portable Native Client?
------------------------------------------
-
-See :doc:`NaCl and PNaCl <nacl-and-pnacl>`. In short: PNaCl works on the
-open web whereas NaCl only works on the Chrome Web Store.
 
 How fast does code run in Portable Native Client?
 -------------------------------------------------
@@ -119,10 +123,9 @@ native code such as :ref:`threading <language_support_threading>` and
 
 For details, see:
 
-* `Adapting Software Fault Isolation to Contemporary CPU Architectures
-  <https://nativeclient.googlecode.com/svn/data/site/NaCl_SFI.pdf>`_ (PDF).
-* `Native Client: A Sandbox for Portable, Untrusted x86 Code
-  <http://research.google.com/pubs/pub34913.html>`_ (PDF).
+* `PNaCl SIMD: Speed on the Web`_.
+* `Adapting Software Fault Isolation to Contemporary CPU Architectures`_ (PDF).
+* `Native Client: A Sandbox for Portable, Untrusted x86 Code`_ (PDF).
 
 If your code isn't performing as close to native speed as you'd expect,
 :doc:`let us know <help>`!
@@ -158,11 +161,12 @@ Development Environments and Tools
 What development environment and development operating system do you recommend?
 -------------------------------------------------------------------------------
 
-You can develop on Windows, Mac, or Linux, and the resulting Native
-Client or Portable Native Client application will run inside the Google
-Chrome browser on all those platforms as well as ChromeOS. You can also
-develop on ChromeOS with Crouton_, and we're working on
-self-hosting a full development environment on Portable Native Client.
+You can develop on Windows, Mac, or Linux, and the resulting Native Client or
+Portable Native Client application will run inside the Google Chrome browser on
+all those platforms as well as ChromeOS. You can also develop on ChromeOS with
+Crouton_ or our `experimental development environment which runs within NaCl`_,
+and we're working on self-hosting a full development environment on Portable
+Native Client.
 
 Any editor+shell combination should work as well as IDEs like Eclipse,
 Visual Studio with the :doc:`Native Client Add-In
@@ -176,10 +180,9 @@ instructions <devguide/devcycle/building>` useful, and you can look at
 the code and Makefiles for the SDK examples to understand how the
 examples are built and run.
 
-You'll need to learn how to use some tools (like GCC, LLVM, make,
-Eclipse, Visual Studio, or Xcode) before you can get very far with the
-SDK. Try seaching for an `introduction to GCC
-<https://www.google.com/search?q=gcc+introduction>`_.
+You'll need to learn how to use some tools (like GCC, LLVM, make, Eclipse,
+Visual Studio, or Xcode) before you can get very far with the SDK. Try seaching
+for an `introduction to GCC`_.
 
 
 Openness, and Supported Architectures and Languages
@@ -224,26 +227,19 @@ it's platform-independent, and we'd like it to stay that way.
 Do I have to use C or C++? I'd really like to use another language.
 -------------------------------------------------------------------
 
-Right now only C and C++ are supported directly by the toolchain in the
-SDK. C# and other languages in the .NET family are supported via the
-`Mono port <https://github.com/elijahtaylor/mono>`_ for Native
-Client. Moreover, there are several ongoing projects to support
-additional language runtimes (e.g. `naclports supports Lua, Python and
-Ruby
-<https://code.google.com/p/naclports/source/browse#svn%2Ftrunk%2Fsrc%2Fexamples%2Ftools>`_)
-as well as to compile more languages to LLVM's intermediate
-representation (e.g. support Haskell with `GHC
-<http://www.haskell.org/ghc/docs/latest/html/users_guide/code-generators.html>`_
-or support Fortran with `flang
-<https://flang-gsoc.blogspot.ie/2013/09/end-of-gsoc-report.html>`_), or
+Right now only C and C++ are supported directly by the toolchain in the SDK. C#
+and other languages in the .NET family are supported via the `Mono port`_ for
+Native Client. Moreover, there are several ongoing projects to support
+additional language runtimes (e.g. `naclports supports Lua, Python and Ruby`_)
+as well as to compile more languages to LLVM's intermediate representation
+(e.g. support Halide_, Haskell with GHC_ or support Fortran with flang_), or
 transpile languages to C/C++ (source-to-source compilation).
 
 If you're interested in getting other languages working, please contact the
-Native Client team by way of the `native-client-discuss mailing list
-<https://groups.google.com/group/native-client-discuss>`_.
+Native Client team by way of the native-client-discuss_ mailing list.
 
-Will you only support Chrome? What about other browsers?
---------------------------------------------------------
+Do you only support Chrome? What about other browsers?
+------------------------------------------------------
 
 We aim to support multiple browsers. However, a number of features that
 we consider requirements for a production-quality system that keeps the
@@ -265,9 +261,7 @@ Client has transitioned from using NPAPI to using Pepper.
 Is NPAPI part of the Native Client SDK?
 ---------------------------------------
 
-NPAPI is not supported by the Native Client SDK, and is `deprecated in
-Chrome
-<http://blog.chromium.org/2013/09/saying-goodbye-to-our-old-friend-npapi.html>`_.
+NPAPI is not supported by the Native Client SDK, and is `deprecated in Chrome`_.
 
 Does Native Client support SIMD vector instructions?
 ----------------------------------------------------
@@ -281,21 +275,18 @@ Portable Native Client supports portable SIMD vectors, as detailed in
 Can I use Native Client for 3D graphics?
 ----------------------------------------
 
-Yes. Native Client supports `OpenGL ES 2.0
-<https://www.khronos.org/opengles/>`_.
+Yes. Native Client supports `OpenGL ES 2.0`_.
 
 To alert the user regarding their hardware platform's 3D feature set
 before loading a large NaCl application, see :doc:`Vetting the driver in
 Javascript <devguide/coding/3D-graphics>`.
 
-Some GL extensions are exposed to Native Client applications, see the
-`GLES2 file
-<https://src.chromium.org/viewvc/chrome/trunk/src/ppapi/lib/gl/gles2/gles2.c>`_.
-This file is part of the GL wrapper supplied by the library
-``ppapi_gles2`` which you'll want to include in your project.  In most
-cases extensions map to extensions available on other platforms, or
-differ very slightly (if they differ, the extension is usually CHROMIUM
-or ANGLE instead of EXT).
+Some GL extensions are exposed to Native Client applications, see the `GLES2
+file`_.  This file is part of the GL wrapper supplied by the library
+``ppapi_gles2`` which you'll want to include in your project.  In most cases
+extensions map to extensions available on other platforms, or differ very
+slightly (if they differ, the extension is usually CHROMIUM or ANGLE instead of
+EXT).
 
 .. TODO Improve documentation for GL extensions.
 
@@ -347,11 +338,8 @@ information to Google: Google counts the number of such crashes, but
 does so anonymously without sending your application's data or its debug
 information.
 
-For additional information about privacy and Chrome, see the `Google
-Chrome privacy policy
-<https://www.google.com/chrome/intl/en/privacy.html>`_ and the `Google
-Chrome Terms of Service
-<https://www.google.com/chrome/intl/en/eula_text.html>`_.
+For additional information about privacy and Chrome, see the `Google Chrome
+privacy policy`_ and the `Google Chrome Terms of Service`_.
 
 How does Native Client prevent sandboxed code from doing Bad Things?
 --------------------------------------------------------------------
@@ -380,27 +368,25 @@ even the ``.pexe`` to ``.nexe`` translator, a simplified compiler
 backend, isn't trusted: it is validated before executing, and so is its
 output.
 
-In addition to static analysis of untrusted code, the Native Client
-runtime also includes an outer sandbox that mediates system calls. For
-more details about both sandboxes, see `Native Client: A Sandbox for
-Portable, Untrusted x86 Code <http://research.google.com/pubs/pub34913.html>`_
+In addition to static analysis of untrusted code, the Native Client runtime also
+includes an outer sandbox that mediates system calls. For more details about
+both sandboxes, see `Native Client: A Sandbox for Portable, Untrusted x86 Code`_
 (PDF).
 
 How does Google know that the safety measures in Native Client are sufficient?
 ------------------------------------------------------------------------------
 
-Google has taken several steps to ensure that Native Client's security
-works, including:
+Google has taken several steps to ensure that Native Client's security works,
+including:
 
 * Open source, peer-reviewed papers describing the design.
 * A :doc:`security contest <community/security-contest/index>`.
 * Multiple internal and external security reviews.
 * The ongoing vigilance of our engineering and developer community.
 
-Google is committed to making Native Client safer than JavaScript and
-other popular browser technologies. If you have suggestions for security
-improvements, let the team know, by way of the `native-client-discuss
-mailing list <https://groups.google.com/group/native-client-discuss>`_.
+Google is committed to making Native Client safer than JavaScript and other
+popular browser technologies. If you have suggestions for security improvements,
+let the team know, by way of the native-client-discuss_ mailing list.
 
 Development
 ===========
@@ -456,11 +442,10 @@ the standard UNIX ``mmap()`` system call.
 Is my favorite third-party library available for Native Client?
 ---------------------------------------------------------------
 
-Google has ported several third-party libraries to Native Client; such
-libraries are available in the naclports_ project. We encourage you to
-contribute libraries to naclports, and/or to host your own ported
-libraries, and to `let the team know about it
-<https://groups.google.com/group/native-client-discuss>`_ when you do.
+Google has ported several third-party libraries to Native Client; such libraries
+are available in the naclports_ project. We encourage you to contribute
+libraries to naclports, and/or to host your own ported libraries, and to let the
+team know about it on native-client-discuss_ when you do.
 
 Do all the files in an application need to be served from the same domain?
 --------------------------------------------------------------------------
@@ -571,6 +556,23 @@ Here are ways to resolve some common problems that can prevent loading:
   Client.
 * If things still aren't working, :doc:`ask for help <help>`!
 
-.. _CORS: http://en.wikipedia.org/wiki/Cross-origin_resource_sharing
-.. _naclports: https://code.google.com/p/naclports
+
+.. _`PNaCl SIMD: Speed on the Web`: https://www.youtube.com/watch?v=675znN6tntw&list=PLOU2XLYxmsIIwGK7v7jg3gQvIAWJzdat_
+.. _Adapting Software Fault Isolation to Contemporary CPU Architectures: https://nativeclient.googlecode.com/svn/data/site/NaCl_SFI.pdf
+.. _`Native Client: A Sandbox for Portable, Untrusted x86 Code`: http://research.google.com/pubs/pub34913.html
 .. _Crouton: https://github.com/dnschneid/crouton
+.. _experimental development environment which runs within NaCl: https://www.youtube.com/watch?v=OzNuzBDEWzk&list=PLOU2XLYxmsIIwGK7v7jg3gQvIAWJzdat_
+.. _introduction to GCC: https://www.google.com/search?q=gcc+introduction
+.. _Mono port: https://github.com/elijahtaylor/mono
+.. _naclports supports Lua, Python and Ruby: https://code.google.com/p/naclports/source/browse#svn%2Ftrunk%2Fsrc%2Fexamples%2Ftools
+.. _Halide: http://halide-lang.org/
+.. _GHC: http://www.haskell.org/ghc/docs/latest/html/users_guide/code-generators.html
+.. _flang: https://flang-gsoc.blogspot.ie/2013/09/end-of-gsoc-report.html
+.. _native-client-discuss: https://groups.google.com/group/native-client-discuss
+.. _deprecated in Chrome: http://blog.chromium.org/2013/09/saying-goodbye-to-our-old-friend-npapi.html
+.. _OpenGL ES 2.0: https://www.khronos.org/opengles/
+.. _GLES2 file: https://code.google.com/p/chromium/codesearch#chromium/src/ppapi/lib/gl/gles2/gles2.c
+.. _Google Chrome privacy policy: https://www.google.com/chrome/intl/en/privacy.html
+.. _Google Chrome Terms of Service: https://www.google.com/chrome/intl/en/eula_text.html
+.. _naclports: https://code.google.com/p/naclports
+.. _CORS: http://en.wikipedia.org/wiki/Cross-origin_resource_sharing
