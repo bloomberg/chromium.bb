@@ -59,6 +59,11 @@ class GPU_EXPORT GLES2Decoder : public base::SupportsWeakPtr<GLES2Decoder>,
   typedef error::Error Error;
   typedef base::Callback<bool(uint32 id)> WaitSyncPointCallback;
 
+  // The default stencil mask, which has all bits set.  This really should be a
+  // GLuint, but we can't #include gl_bindings.h in this file without causing
+  // macro redefinitions.
+  static const unsigned int kDefaultStencilMask;
+
   // Creates a decoder.
   static GLES2Decoder* Create(ContextGroup* group);
 

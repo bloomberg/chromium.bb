@@ -505,15 +505,16 @@ TEST_P(GLES2DecoderManualInitTest, StencilEnableWithStencil) {
   SetupDefaultProgram();
   SetupTexture();
   AddExpectationsForSimulatedAttrib0(kNumVertices, 0);
-  SetupExpectationsForApplyingDirtyState(true,    // Framebuffer is RGB
-                                         false,   // Framebuffer has depth
-                                         true,    // Framebuffer has stencil
-                                         0x1110,  // color bits
-                                         false,   // depth mask
-                                         false,   // depth enabled
-                                         -1,      // front stencil mask
-                                         -1,      // back stencil mask
-                                         true);   // stencil enabled
+  SetupExpectationsForApplyingDirtyState(
+      true,                               // Framebuffer is RGB
+      false,                              // Framebuffer has depth
+      true,                               // Framebuffer has stencil
+      0x1110,                             // color bits
+      false,                              // depth mask
+      false,                              // depth enabled
+      GLES2Decoder::kDefaultStencilMask,  // front stencil mask
+      GLES2Decoder::kDefaultStencilMask,  // back stencil mask
+      true);                              // stencil enabled
 
   EXPECT_CALL(*gl_, DrawArrays(GL_TRIANGLES, 0, kNumVertices))
       .Times(1)
@@ -2256,7 +2257,8 @@ TEST_P(GLES2DecoderManualInitTest, DrawClearsDepthTexture) {
       .RetiresOnSaturation();
 
   EXPECT_CALL(*gl_, ClearStencil(0)).Times(1).RetiresOnSaturation();
-  SetupExpectationsForStencilMask(-1, -1);
+  SetupExpectationsForStencilMask(GLES2Decoder::kDefaultStencilMask,
+                                  GLES2Decoder::kDefaultStencilMask);
   EXPECT_CALL(*gl_, ClearDepth(1.0f)).Times(1).RetiresOnSaturation();
   SetupExpectationsForDepthMask(true);
   SetupExpectationsForEnableDisable(GL_SCISSOR_TEST, false);

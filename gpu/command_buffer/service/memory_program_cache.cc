@@ -21,12 +21,12 @@
 namespace {
 
 size_t GetCacheSizeBytes() {
-  size_t size;
   const CommandLine* command_line = CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kGpuProgramCacheSizeKb) &&
-      base::StringToSizeT(command_line->GetSwitchValueNative(
-          switches::kGpuProgramCacheSizeKb),
-          &size)) {
+  if (command_line->HasSwitch(switches::kGpuProgramCacheSizeKb)) {
+    size_t size;
+    if (base::StringToSizeT(
+        command_line->GetSwitchValueNative(switches::kGpuProgramCacheSizeKb),
+        &size))
       return size * 1024;
   }
   return gpu::kDefaultMaxProgramCacheMemoryBytes;

@@ -465,7 +465,7 @@ TEST_P(GLES2DecoderTest, GetMultipleIntegervCHROMIUMInvalidArgs) {
   // Check bad count.
   cmd.Init(kSharedMemoryId,
            kSharedMemoryOffset + kPnameOffset,
-           -1,
+           static_cast<GLuint>(-1),
            kSharedMemoryId,
            kSharedMemoryOffset + kResultsOffset,
            result_size);

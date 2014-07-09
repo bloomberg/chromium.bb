@@ -347,8 +347,7 @@ class GLES2DecoderTestBase : public ::testing::TestWithParam<bool> {
                                      bool green,
                                      bool blue,
                                      bool alpha);
-  void SetupExpectationsForStencilMask(uint32 front_mask,
-                                       uint32 back_mask);
+  void SetupExpectationsForStencilMask(GLuint front_mask, GLuint back_mask);
 
   void SetupExpectationsForApplyingDirtyState(
       bool framebuffer_is_rgb,
@@ -536,8 +535,8 @@ class GLES2DecoderTestBase : public ::testing::TestWithParam<bool> {
   bool cached_color_mask_blue_;
   bool cached_color_mask_alpha_;
   bool cached_depth_mask_;
-  uint32 cached_stencil_front_mask_;
-  uint32 cached_stencil_back_mask_;
+  GLuint cached_stencil_front_mask_;
+  GLuint cached_stencil_back_mask_;
 
   struct EnableFlags {
     EnableFlags();

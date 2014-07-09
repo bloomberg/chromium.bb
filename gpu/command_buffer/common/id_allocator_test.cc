@@ -50,7 +50,7 @@ TEST_F(IdAllocatorTest, TestAdvanced) {
   IdAllocator *allocator = id_allocator();
 
   // Allocate the highest possible ID, to make life awkward.
-  allocator->AllocateIDAtOrAbove(-1);
+  allocator->AllocateIDAtOrAbove(~static_cast<ResourceId>(0));
 
   // Allocate a significant number of resources.
   const unsigned int kNumResources = 100;
@@ -98,9 +98,9 @@ TEST_F(IdAllocatorTest, AllocateIdAtOrAbove) {
   EXPECT_GT(id3, kOffset);
 }
 
-// Checks that AllocateIdAtOrAbove wraps around at the maximum 32-bit value.
+// Checks that AllocateIdAtOrAbove wraps around at the maximum value.
 TEST_F(IdAllocatorTest, AllocateIdAtOrAboveWrapsAround) {
-  const ResourceId kMaxPossibleOffset = -1;
+  const ResourceId kMaxPossibleOffset = ~static_cast<ResourceId>(0);
   IdAllocator* allocator = id_allocator();
   ResourceId id1 = allocator->AllocateIDAtOrAbove(kMaxPossibleOffset);
   EXPECT_EQ(kMaxPossibleOffset, id1);

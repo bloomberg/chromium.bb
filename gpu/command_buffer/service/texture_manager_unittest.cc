@@ -1062,8 +1062,8 @@ TEST_F(TextureTest, GetLevelType) {
                          GL_RGBA,
                          GL_UNSIGNED_BYTE,
                          true);
-  GLenum type = -1;
-  GLenum format = -1;
+  GLenum type = 0;
+  GLenum format = 0;
   Texture* texture = texture_ref_->texture();
   EXPECT_FALSE(texture->GetLevelType(GL_TEXTURE_2D, -1, &type, &format));
   EXPECT_FALSE(texture->GetLevelType(GL_TEXTURE_2D, 1000, &type, &format));
