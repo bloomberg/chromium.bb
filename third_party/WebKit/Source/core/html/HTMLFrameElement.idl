@@ -22,8 +22,8 @@ interface HTMLFrameElement : HTMLElement {
 
     [Reflect] attribute DOMString frameBorder;
     [Reflect, URL] attribute DOMString longDesc;
-    [Reflect, TreatNullAs=NullString] attribute DOMString marginHeight;
-    [Reflect, TreatNullAs=NullString] attribute DOMString marginWidth;
+    [Reflect, TreatNullAs=EmptyString] attribute DOMString marginHeight;
+    [Reflect, TreatNullAs=EmptyString] attribute DOMString marginWidth;
     [Reflect] attribute DOMString name;
     [Reflect] attribute boolean noResize;
     [Reflect] attribute DOMString scrolling;

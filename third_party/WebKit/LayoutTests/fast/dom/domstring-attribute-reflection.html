@@ -5,7 +5,7 @@
 <script>
 var element;
 
-function testDOMStringReflection(elementName, contentAttributeName, idlAttributeName) {
+function testDOMStringReflection(elementName, contentAttributeName, idlAttributeName, treatNullAsEmptyString) {
     idlAttributeName = idlAttributeName || contentAttributeName;
     element = document.createElement(elementName);
     debug('Reflected DOMString attribute test for ' + elementName + '/@' + contentAttributeName);
@@ -22,8 +22,13 @@ function testDOMStringReflection(elementName, contentAttributeName, idlAttribute
     shouldBeEqualToString('element.getAttribute("' + contentAttributeName + '")', ' bar\n');
 
     debug('Setting null via the IDL attribute:');
-    shouldBeEqualToString('element.' + idlAttributeName + ' = null; element.' + idlAttributeName, 'null');
-    shouldBeEqualToString('element.getAttribute("' + contentAttributeName + '")', 'null');
+    if (treatNullAsEmptyString) {
+        shouldBeEqualToString('element.' + idlAttributeName + ' = null; element.' + idlAttributeName, '');
+        shouldBeEqualToString('element.getAttribute("' + contentAttributeName + '")', '');
+    } else {
+        shouldBeEqualToString('element.' + idlAttributeName + ' = null; element.' + idlAttributeName, 'null');
+        shouldBeEqualToString('element.getAttribute("' + contentAttributeName + '")', 'null');
+    }
 
     debug('Setting null via the content attribute:');
     shouldBeEqualToString('element.setAttribute("' + contentAttributeName + '", null); element.' + idlAttributeName, 'null');
@@ -58,6 +63,27 @@ testDOMStringReflection('object', 'name');
 testDOMStringReflection('output', 'name');
 testDOMStringReflection('select', 'name');
 testDOMStringReflection('textarea', 'name');
+
+// [TreatNullAs=EmptyString]
+testDOMStringReflection('frame', 'marginheight', 'marginHeight', true);
+testDOMStringReflection('frame', 'marginwidth', 'marginWidth', true);
+testDOMStringReflection('iframe', 'marginheight', 'marginHeight', true);
+testDOMStringReflection('iframe', 'marginwidth', 'marginWidth', true);
+testDOMStringReflection('body', 'text', 'text', true);
+testDOMStringReflection('body', 'link', 'link', true);
+testDOMStringReflection('body', 'alink', 'aLink', true);
+testDOMStringReflection('body', 'vlink', 'vLink', true);
+testDOMStringReflection('body', 'bgcolor', 'bgColor', true);
+testDOMStringReflection('font', 'color', 'color', true);
+testDOMStringReflection('img', 'border', 'border', true);
+testDOMStringReflection('object', 'border', 'border', true);
+testDOMStringReflection('table', 'bgcolor', 'bgColor', true);
+testDOMStringReflection('table', 'cellpadding', 'cellPadding', true);
+testDOMStringReflection('table', 'cellspacing', 'cellSpacing', true);
+testDOMStringReflection('td', 'bgcolor', 'bgColor', true);
+testDOMStringReflection('th', 'bgcolor', 'bgColor', true);
+testDOMStringReflection('tr', 'bgcolor', 'bgColor', true);
+
 
 // Add more DOMString attributes!
 

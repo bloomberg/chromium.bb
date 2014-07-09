@@ -23,8 +23,8 @@ interface HTMLIFrameElement : HTMLElement {
     [Reflect] attribute DOMString frameBorder;
     [Reflect] attribute DOMString height;
     [Reflect, URL] attribute DOMString longDesc;
-    [Reflect, TreatNullAs=NullString] attribute DOMString marginHeight;
-    [Reflect, TreatNullAs=NullString] attribute DOMString marginWidth;
+    [Reflect, TreatNullAs=EmptyString] attribute DOMString marginHeight;
+    [Reflect, TreatNullAs=EmptyString] attribute DOMString marginWidth;
     [Reflect] attribute DOMString name;
     [Reflect, TreatNullAs=NullString] attribute DOMString sandbox;
     [Reflect] attribute DOMString scrolling;

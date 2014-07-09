@@ -26,7 +26,7 @@
 ] interface HTMLImageElement : HTMLElement {
     [Reflect] attribute DOMString align;
     [Reflect] attribute DOMString alt;
-    [Reflect, TreatNullAs=NullString] attribute DOMString border;
+    [Reflect, TreatNullAs=EmptyString] attribute DOMString border;
     readonly attribute boolean complete;
     [Reflect, ReflectOnly="anonymous"|"use-credentials", ReflectEmpty="anonymous", ReflectInvalid="anonymous"] attribute DOMString crossOrigin;
     attribute long height;
