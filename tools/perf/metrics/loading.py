@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 from metrics import Metric
+from telemetry.value import scalar
 
 class LoadingMetric(Metric):
   """A metric for page loading time based entirely on window.performance"""
@@ -19,39 +20,50 @@ class LoadingMetric(Metric):
     # NavigationStart relative markers in milliseconds.
     load_start = (
       float(load_timings['loadEventStart']) - load_timings['navigationStart'])
-    results.Add('load_start', 'ms', load_start)
+    results.AddValue(scalar.ScalarValue(
+        results.current_page, 'load_start', 'ms', load_start))
 
     dom_content_loaded_start = (
       float(load_timings['domContentLoadedEventStart']) -
       load_timings['navigationStart'])
-    results.Add('dom_content_loaded_start', 'ms', dom_content_loaded_start)
+    results.AddValue(scalar.ScalarValue(
+        results.current_page, 'dom_content_loaded_start', 'ms',
+        dom_content_loaded_start))
 
     fetch_start = (
         float(load_timings['fetchStart']) - load_timings['navigationStart'])
-    results.Add('fetch_start', 'ms', fetch_start, data_type='unimportant')
+    results.AddValue(scalar.ScalarValue(
+        results.current_page, 'fetch_start', 'ms', fetch_start,
+        important=False))
 
     request_start = (
         float(load_timings['requestStart']) - load_timings['navigationStart'])
-    results.Add('request_start', 'ms', request_start, data_type='unimportant')
+    results.AddValue(scalar.ScalarValue(
+        results.current_page, 'request_start', 'ms', request_start,
+        important=False))
 
     # Phase measurements in milliseconds.
     domain_lookup_duration = (
         float(load_timings['domainLookupEnd']) -
         load_timings['domainLookupStart'])
-    results.Add('domain_lookup_duration', 'ms', domain_lookup_duration,
-                data_type='unimportant')
+    results.AddValue(scalar.ScalarValue(
+        results.current_page, 'domain_lookup_duration', 'ms',
+        domain_lookup_duration, important=False))
 
     connect_duration = (
         float(load_timings['connectEnd']) - load_timings['connectStart'])
-    results.Add('connect_duration', 'ms', connect_duration,
-                data_type='unimportant')
+    results.AddValue(scalar.ScalarValue(
+        results.current_page, 'connect_duration', 'ms', connect_duration,
+        important=False))
 
     request_duration = (
         float(load_timings['responseStart']) - load_timings['requestStart'])
-    results.Add('request_duration', 'ms', request_duration,
-                data_type='unimportant')
+    results.AddValue(scalar.ScalarValue(
+        results.current_page, 'request_duration', 'ms', request_duration,
+        important=False))
 
     response_duration = (
         float(load_timings['responseEnd']) - load_timings['responseStart'])
-    results.Add('response_duration', 'ms', response_duration,
-                data_type='unimportant')
+    results.AddValue(scalar.ScalarValue(
+        results.current_page, 'response_duration', 'ms', response_duration,
+        important=False))
