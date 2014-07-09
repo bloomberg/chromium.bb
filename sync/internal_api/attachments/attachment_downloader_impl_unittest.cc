@@ -8,6 +8,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/thread_task_runner_handle.h"
 #include "google_apis/gaia/fake_oauth2_token_service.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "net/url_request/test_url_fetcher_factory.h"
@@ -111,7 +112,7 @@ class TokenServiceProvider
 };
 
 TokenServiceProvider::TokenServiceProvider(OAuth2TokenService* token_service)
-    : task_runner_(base::MessageLoopProxy::current()),
+    : task_runner_(base::ThreadTaskRunnerHandle::Get()),
       token_service_(token_service) {
   DCHECK(token_service_);
 }

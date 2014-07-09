@@ -15,6 +15,7 @@
 #include "base/metrics/histogram.h"
 #include "base/observer_list.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "sync/engine/sync_scheduler.h"
 #include "sync/engine/syncer_types.h"
@@ -403,7 +404,7 @@ void SyncManagerImpl::Init(
   weak_core.get();
 
   sync_context_proxy_.reset(
-      new SyncContextProxyImpl(base::MessageLoopProxy::current(), weak_core));
+      new SyncContextProxyImpl(base::ThreadTaskRunnerHandle::Get(), weak_core));
 
   // Build a SyncSessionContext and store the worker in it.
   DVLOG(1) << "Sync is bringing up SyncSessionContext.";

@@ -5,7 +5,7 @@
 #include "sync/api/attachments/attachment_service_proxy_for_test.h"
 
 #include "base/message_loop/message_loop.h"
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/thread_task_runner_handle.h"
 #include "sync/api/attachments/attachment_service_impl.h"
 
 namespace syncer {
@@ -39,7 +39,7 @@ AttachmentServiceProxy AttachmentServiceProxyForTest::Create() {
       new OwningCore(wrapped.Pass(), weak_ptr_factory.Pass()));
 
   scoped_refptr<base::SequencedTaskRunner> runner(
-      base::MessageLoopProxy::current());
+      base::ThreadTaskRunnerHandle::Get());
   if (!runner) {
     // Dummy runner for tests that don't care about AttachmentServiceProxy.
     DVLOG(1) << "Creating dummy MessageLoop for AttachmentServiceProxy.";

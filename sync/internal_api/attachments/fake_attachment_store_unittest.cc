@@ -8,6 +8,7 @@
 #include "base/memory/ref_counted_memory.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
+#include "base/thread_task_runner_handle.h"
 #include "sync/api/attachments/attachment.h"
 #include "sync/protocol/sync.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -32,7 +33,7 @@ class FakeAttachmentStoreTest : public testing::Test {
   scoped_refptr<base::RefCountedString> some_data1;
   scoped_refptr<base::RefCountedString> some_data2;
 
-  FakeAttachmentStoreTest() : store(base::MessageLoopProxy::current()) {}
+  FakeAttachmentStoreTest() : store(base::ThreadTaskRunnerHandle::Get()) {}
 
   virtual void SetUp() {
     Clear();

@@ -8,7 +8,7 @@
 
 #include "base/memory/ref_counted_memory.h"
 #include "base/message_loop/message_loop.h"
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "sync/api/attachments/attachment_id.h"
 #include "sync/api/attachments/attachment_service.h"
@@ -35,7 +35,7 @@ class SyncDataTest : public testing::Test {
       : attachment_service(AttachmentServiceImpl::CreateForTest()),
         attachment_service_weak_ptr_factory(attachment_service.get()),
         attachment_service_proxy(
-            base::MessageLoopProxy::current(),
+            base::ThreadTaskRunnerHandle::Get(),
             attachment_service_weak_ptr_factory.GetWeakPtr()) {}
   base::MessageLoop loop;
   sync_pb::EntitySpecifics specifics;

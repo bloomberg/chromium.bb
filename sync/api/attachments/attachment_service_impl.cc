@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
+#include "base/thread_task_runner_handle.h"
 #include "sync/api/attachments/attachment.h"
 #include "sync/internal_api/public/attachments/fake_attachment_downloader.h"
 #include "sync/internal_api/public/attachments/fake_attachment_store.h"
@@ -127,7 +128,7 @@ AttachmentServiceImpl::~AttachmentServiceImpl() {
 // Static.
 scoped_ptr<syncer::AttachmentService> AttachmentServiceImpl::CreateForTest() {
   scoped_ptr<syncer::AttachmentStore> attachment_store(
-      new syncer::FakeAttachmentStore(base::MessageLoopProxy::current()));
+      new syncer::FakeAttachmentStore(base::ThreadTaskRunnerHandle::Get()));
   scoped_ptr<AttachmentUploader> attachment_uploader(
       new FakeAttachmentUploader);
   scoped_ptr<AttachmentDownloader> attachment_downloader(

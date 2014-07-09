@@ -124,6 +124,7 @@ TestDirectory::TestDirectory(Encryptor* encryptor,
 TestDirectory::~TestDirectory() { }
 
 TEST(OnDiskSyncableDirectory, FailInitialWrite) {
+  base::MessageLoop message_loop;
   FakeEncryptor encryptor;
   TestUnrecoverableErrorHandler handler;
   base::ScopedTempDir temp_dir;

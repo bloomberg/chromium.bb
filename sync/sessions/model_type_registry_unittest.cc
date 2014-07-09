@@ -6,6 +6,7 @@
 
 #include "base/deferred_sequenced_task_runner.h"
 #include "base/message_loop/message_loop.h"
+#include "base/thread_task_runner_handle.h"
 #include "sync/engine/model_type_sync_proxy_impl.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/sessions/model_type_registry.h"
@@ -143,7 +144,8 @@ TEST_F(ModelTypeRegistryTest, NonBlockingTypes) {
   ModelTypeSyncProxyImpl themes_sync_proxy(syncer::THEMES);
   ModelTypeSyncProxyImpl sessions_sync_proxy(syncer::SESSIONS);
   scoped_refptr<base::DeferredSequencedTaskRunner> task_runner =
-      new base::DeferredSequencedTaskRunner(base::MessageLoopProxy::current());
+      new base::DeferredSequencedTaskRunner(
+          base::ThreadTaskRunnerHandle::Get());
 
   EXPECT_TRUE(registry()->GetEnabledTypes().Empty());
 
@@ -173,7 +175,8 @@ TEST_F(ModelTypeRegistryTest, NonBlockingTypesWithDirectoryTypes) {
   ModelTypeSyncProxyImpl themes_sync_proxy(syncer::THEMES);
   ModelTypeSyncProxyImpl sessions_sync_proxy(syncer::SESSIONS);
   scoped_refptr<base::DeferredSequencedTaskRunner> task_runner =
-      new base::DeferredSequencedTaskRunner(base::MessageLoopProxy::current());
+      new base::DeferredSequencedTaskRunner(
+          base::ThreadTaskRunnerHandle::Get());
 
   ModelSafeRoutingInfo routing_info1;
   routing_info1.insert(std::make_pair(NIGORI, GROUP_PASSIVE));
@@ -222,7 +225,8 @@ TEST_F(ModelTypeRegistryTest, DeletionOrdering) {
   scoped_ptr<ModelTypeSyncProxyImpl> sessions_sync_proxy(
       new ModelTypeSyncProxyImpl(syncer::SESSIONS));
   scoped_refptr<base::DeferredSequencedTaskRunner> task_runner =
-      new base::DeferredSequencedTaskRunner(base::MessageLoopProxy::current());
+      new base::DeferredSequencedTaskRunner(
+          base::ThreadTaskRunnerHandle::Get());
 
   EXPECT_TRUE(registry()->GetEnabledTypes().Empty());
 

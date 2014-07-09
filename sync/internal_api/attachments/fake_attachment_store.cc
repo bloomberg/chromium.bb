@@ -7,9 +7,9 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/memory/ref_counted_memory.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "sync/api/attachments/attachment.h"
 
 namespace syncer {
@@ -96,7 +96,7 @@ void FakeAttachmentStore::Backend::Drop(const AttachmentIdList& ids,
 
 FakeAttachmentStore::FakeAttachmentStore(
     const scoped_refptr<base::SequencedTaskRunner>& backend_task_runner)
-    : backend_(new Backend(base::MessageLoopProxy::current())),
+    : backend_(new Backend(base::ThreadTaskRunnerHandle::Get())),
       backend_task_runner_(backend_task_runner) {}
 
 FakeAttachmentStore::~FakeAttachmentStore() {}

@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/location.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "sync/engine/model_type_entity.h"
 #include "sync/engine/model_type_sync_worker.h"
 #include "sync/internal_api/public/sync_context_proxy.h"

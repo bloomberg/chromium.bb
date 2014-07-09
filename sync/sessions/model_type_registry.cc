@@ -5,8 +5,8 @@
 #include "sync/sessions/model_type_registry.h"
 
 #include "base/bind.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "base/observer_list.h"
+#include "base/thread_task_runner_handle.h"
 #include "sync/engine/directory_commit_contributor.h"
 #include "sync/engine/directory_update_handler.h"
 #include "sync/engine/model_type_sync_proxy.h"
@@ -200,7 +200,7 @@ void ModelTypeRegistry::ConnectSyncTypeToWorker(
   scoped_ptr<ModelTypeSyncWorker> wrapped_worker(
       new ModelTypeSyncWorkerWrapper(worker->AsWeakPtr(),
                                      scoped_refptr<base::SequencedTaskRunner>(
-                                         base::MessageLoopProxy::current())));
+                                         base::ThreadTaskRunnerHandle::Get())));
   type_task_runner->PostTask(FROM_HERE,
                              base::Bind(&ModelTypeSyncProxyImpl::OnConnect,
                                         proxy_impl,

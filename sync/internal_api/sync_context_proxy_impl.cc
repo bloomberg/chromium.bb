@@ -6,7 +6,8 @@
 
 #include "base/bind.h"
 #include "base/location.h"
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "sync/engine/non_blocking_sync_common.h"
 #include "sync/internal_api/public/sync_context.h"
 
@@ -31,7 +32,7 @@ void SyncContextProxyImpl::ConnectTypeToSync(
                                          sync_context_,
                                          type,
                                          data_type_state,
-                                         base::MessageLoopProxy::current(),
+                                         base::ThreadTaskRunnerHandle::Get(),
                                          type_sync_proxy));
 }
 

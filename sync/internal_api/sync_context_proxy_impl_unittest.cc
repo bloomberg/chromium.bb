@@ -3,9 +3,9 @@
 // found in the LICENSE file.
 
 #include "base/message_loop/message_loop.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "base/run_loop.h"
 #include "base/sequenced_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "sync/engine/model_type_sync_proxy_impl.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/internal_api/public/sync_context.h"
@@ -18,8 +18,8 @@ namespace syncer {
 class SyncContextProxyImplTest : public ::testing::Test {
  public:
   SyncContextProxyImplTest()
-      : sync_task_runner_(base::MessageLoopProxy::current()),
-        type_task_runner_(base::MessageLoopProxy::current()),
+      : sync_task_runner_(base::ThreadTaskRunnerHandle::Get()),
+        type_task_runner_(base::ThreadTaskRunnerHandle::Get()),
         registry_(new ModelTypeRegistry()),
         context_proxy_(sync_task_runner_, registry_->AsWeakPtr()) {}
 
