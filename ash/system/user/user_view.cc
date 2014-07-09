@@ -211,7 +211,8 @@ UserView::UserView(SystemTrayItem* owner,
       is_user_card_button_(false),
       logout_button_(NULL),
       add_user_disabled_(false),
-      for_detailed_view_(for_detailed_view) {
+      for_detailed_view_(for_detailed_view),
+      focus_manager_(NULL) {
   CHECK_NE(user::LOGGED_IN_NONE, login);
   if (!index) {
     // Only the logged in user will have a background. All other users will have
@@ -533,15 +534,19 @@ void UserView::ToggleAddUserMenuOption() {
       new views::MouseWatcher(new UserViewMouseWatcherHost(area), this));
   mouse_watcher_->Start();
   // Install a listener to focus changes so that we can remove the card when
-  // the focus gets changed.
-  user_card_view_->GetFocusManager()->AddFocusChangeListener(this);
+  // the focus gets changed. When called through the destruction of the bubble,
+  // the FocusManager cannot be determined anymore and we remember it here.
+  focus_manager_ = user_card_view_->GetFocusManager();
+  focus_manager_->AddFocusChangeListener(this);
 }
 
 void UserView::RemoveAddUserMenuOption() {
   if (!add_menu_option_.get())
     return;
-  user_card_view_->GetFocusManager()->RemoveFocusChangeListener(this);
-  user_card_view_->GetFocusManager()->ClearFocus();
+  focus_manager_->RemoveFocusChangeListener(this);
+  focus_manager_ = NULL;
+  if (user_card_view_->GetFocusManager())
+    user_card_view_->GetFocusManager()->ClearFocus();
   popup_message_.reset();
   mouse_watcher_.reset();
   add_menu_option_.reset();
