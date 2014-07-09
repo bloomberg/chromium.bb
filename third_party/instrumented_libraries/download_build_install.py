@@ -205,13 +205,10 @@ def build_and_install(parsed_arguments, environment, install_prefix):
     libcap2_make_install(parsed_arguments, environment, install_prefix)
   elif parsed_arguments.build_method == 'custom_libpci3':
     libpci3_make_install(parsed_arguments, environment, install_prefix)
-  elif parsed_arguments.build_method == 'custom_libappindicator1':
-    environment['CSC'] = '/usr/bin/mono-csc'
-    destdir_configure_make_install(
-        parsed_arguments, environment, install_prefix)
   else:
     raise Exception('Unrecognized build method: %s' %
                     parsed_arguments.build_method)
+
 
 def unescape_flags(s):
   # GYP escapes the build flags as if they are going to be inserted directly
@@ -219,7 +216,8 @@ def unescape_flags(s):
   # the double quotes accordingly. 
   return ' '.join(shlex.split(s))
 
-def download_build_install(parsed_arguments):
+
+def build_environment(parsed_arguments, product_directory, install_prefix):
   environment = os.environ.copy()
   # The CC/CXX environment variables take precedence over the command line
   # flags.
@@ -227,10 +225,6 @@ def download_build_install(parsed_arguments):
     environment['CC'] = parsed_arguments.cc
   if 'CXX' not in environment and parsed_arguments.cxx:
     environment['CXX'] = parsed_arguments.cxx
-
-  product_directory = os.path.normpath('%s/%s' % (
-      get_script_absolute_path(),
-      parsed_arguments.product_directory))
 
   cflags = unescape_flags(parsed_arguments.cflags)
   if parsed_arguments.sanitizer_blacklist:
@@ -240,14 +234,33 @@ def download_build_install(parsed_arguments):
   environment['CFLAGS'] = cflags
   environment['CXXFLAGS'] = cflags
 
-  install_prefix = '%s/instrumented_libraries/%s' % (
-      product_directory,
-      parsed_arguments.sanitizer_type)
-
   ldflags = unescape_flags(parsed_arguments.ldflags)
   # Make sure the linker searches the instrumented libraries dir for
   # library dependencies.
   environment['LDFLAGS'] = '%s -L%s/lib' % (ldflags, install_prefix)
+
+  if parsed_arguments.sanitizer_type == 'asan':
+    # Do not report leaks during the build process.
+    environment['ASAN_OPTIONS'] = '%s:detect_leaks=0' % \
+        environment.get('ASAN_OPTIONS', '')
+
+  # libappindicator1 needs this.
+  environment['CSC'] = '/usr/bin/mono-csc'
+  return environment
+
+
+
+def download_build_install(parsed_arguments):
+  product_directory = os.path.normpath('%s/%s' % (
+      get_script_absolute_path(),
+      parsed_arguments.product_directory))
+
+  install_prefix = '%s/instrumented_libraries/%s' % (
+      product_directory,
+      parsed_arguments.sanitizer_type)
+
+  environment = build_environment(parsed_arguments, product_directory,
+                                  install_prefix)
 
   package_directory = '%s/%s' % (parsed_arguments.intermediate_directory,
                                  parsed_arguments.package)

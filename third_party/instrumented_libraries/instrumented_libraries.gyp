@@ -560,7 +560,6 @@
           '--disable-introspection',
       ],
       'dependencies=': [],
-      'build_method': 'custom_libappindicator1',
       'jobs': 1,
       'includes': ['standard_instrumented_package_target.gypi'],
     },
