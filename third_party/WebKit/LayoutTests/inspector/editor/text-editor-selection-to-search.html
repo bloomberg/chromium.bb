@@ -8,7 +8,6 @@
 
 function test()
 {
-    WebInspector.moduleManager.loadModule("search");
     var panel = WebInspector.inspectorView.showPanel("sources");
 
     InspectorTest.showScriptSource("edit-me.js", step1);
@@ -23,16 +22,8 @@ function test()
     {
         panel.searchableView().showSearchField();
         InspectorTest.addResult("Search controller: '" + panel.searchableView()._searchInputElement.value + "'");
-        var extensions = WebInspector.moduleManager.extensions("drawer-view");
-        var searchView;
-        for (var i = 0; i < extensions.length; ++i) {
-            if (extensions[i].descriptor()["name"] === "search") {
-                searchView = extensions[i].instance();
-                break;
-            }
-        }
-        searchView.toggle();
-        InspectorTest.addResult("Advanced search controller: '" + searchView._search.value + "'");
+        new WebInspector.AdvancedSearchView.ToggleDrawerViewActionDelegate().handleAction();
+        InspectorTest.addResult("Advanced search controller: '" + WebInspector.AdvancedSearchView._instance._search.value + "'");
         InspectorTest.completeTest();
     }
 
