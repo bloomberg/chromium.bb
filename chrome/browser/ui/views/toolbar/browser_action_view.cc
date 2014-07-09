@@ -15,6 +15,7 @@
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/extensions/accelerator_priority.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/toolbar/browser_actions_container.h"
@@ -378,6 +379,12 @@ scoped_ptr<LabelButtonBorder> BrowserActionButton::CreateDefaultBorder() const {
 
 bool BrowserActionButton::AcceleratorPressed(
     const ui::Accelerator& accelerator) {
+  // Normal priority shortcuts must be handled via standard browser commands to
+  // be processed at the proper time.
+  if (GetAcceleratorPriority(accelerator, extension_) ==
+      ui::AcceleratorManager::kNormalPriority)
+    return false;
+
   delegate_->OnBrowserActionExecuted(this);
   return true;
 }
@@ -424,7 +431,10 @@ void BrowserActionButton::MaybeRegisterExtensionCommand() {
     keybinding_.reset(new ui::Accelerator(
         browser_action_command.accelerator()));
     GetFocusManager()->RegisterAccelerator(
-        *keybinding_.get(), ui::AcceleratorManager::kHighPriority, this);
+        *keybinding_.get(),
+        GetAcceleratorPriority(browser_action_command.accelerator(),
+                               extension_),
+        this);
   }
 }
 

@@ -6,8 +6,8 @@
 
 #include "chrome/browser/extensions/api/commands/command_service.h"
 #include "chrome/browser/extensions/extension_keybinding_registry.h"
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/extensions/accelerator_priority.h"
 #include "extensions/common/extension.h"
 #include "ui/views/focus/focus_manager.h"
 
@@ -54,15 +54,13 @@ void ExtensionKeybindingRegistryViews::AddExtensionKeybinding(
   for (; iter != commands.end(); ++iter) {
     if (!command_name.empty() && (iter->second.command_name() != command_name))
       continue;
-    if (!IsAcceleratorRegistered(iter->second.accelerator())) {
-      focus_manager_->RegisterAccelerator(iter->second.accelerator(),
-                                          ui::AcceleratorManager::kHighPriority,
-                                          this);
+    const ui::Accelerator &accelerator = iter->second.accelerator();
+    if (!IsAcceleratorRegistered(accelerator)) {
+      focus_manager_->RegisterAccelerator(
+          accelerator, GetAcceleratorPriority(accelerator, extension), this);
     }
 
-    AddEventTarget(iter->second.accelerator(),
-                   extension->id(),
-                   iter->second.command_name());
+    AddEventTarget(accelerator, extension->id(), iter->second.command_name());
   }
 }
 
@@ -74,7 +72,14 @@ void ExtensionKeybindingRegistryViews::RemoveExtensionKeybindingImpl(
 
 bool ExtensionKeybindingRegistryViews::AcceleratorPressed(
     const ui::Accelerator& accelerator) {
-  return ExtensionKeybindingRegistry::NotifyEventTargets(accelerator);
+  std::string extension_id, command_name;
+  GetFirstTarget(accelerator, &extension_id, &command_name);
+  const ui::AcceleratorManager::HandlerPriority priority =
+      GetAcceleratorPriorityById(accelerator, extension_id, browser_context());
+  // Normal priority shortcuts must be handled via standard browser commands to
+  // be processed at the proper time.
+  return (priority == ui::AcceleratorManager::kHighPriority) &&
+      ExtensionKeybindingRegistry::NotifyEventTargets(accelerator);
 }
 
 bool ExtensionKeybindingRegistryViews::CanHandleAccelerators() const {

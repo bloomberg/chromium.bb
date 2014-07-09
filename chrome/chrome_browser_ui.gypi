@@ -766,6 +766,8 @@
       'browser/ui/cocoa/wrench_menu/wrench_menu_controller.mm',
       'browser/ui/confirm_bubble.h',
       'browser/ui/crypto_module_password_dialog.h',
+      'browser/ui/extensions/accelerator_priority.cc',
+      'browser/ui/extensions/accelerator_priority.h',
       'browser/ui/extensions/extension_installed_bubble.cc',
       'browser/ui/extensions/extension_installed_bubble.h',
       'browser/ui/extensions/extension_enable_flow.cc',

@@ -17,6 +17,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_id.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/extensions/accelerator_priority.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/browser/ui/webui/extensions/extension_info_ui.h"
@@ -65,7 +66,7 @@ PageActionImageView::PageActionImageView(LocationBarView* owner,
         new ui::Accelerator(page_action_command.accelerator()));
     owner_->GetFocusManager()->RegisterAccelerator(
         *page_action_keybinding_.get(),
-        ui::AcceleratorManager::kHighPriority,
+        GetAcceleratorPriority(page_action_command.accelerator(), extension),
         this);
   }
 }
@@ -177,8 +178,14 @@ bool PageActionImageView::AcceleratorPressed(
     const ui::Accelerator& accelerator) {
   DCHECK(visible());  // Should not have happened due to CanHandleAccelerator.
 
-  ExecuteAction(ExtensionPopup::SHOW);
-  return true;
+  const std::string extension_id = page_action()->extension_id();
+  const ui::AcceleratorManager::HandlerPriority priority =
+      GetAcceleratorPriorityById(accelerator, extension_id, owner_->profile());
+  // Normal priority shortcuts must be handled via standard browser commands
+  // to be processed at the proper time.
+  if (priority == ui::AcceleratorManager::kHighPriority)
+    ExecuteAction(ExtensionPopup::SHOW);
+  return priority == ui::AcceleratorManager::kHighPriority;
 }
 
 bool PageActionImageView::CanHandleAccelerators() const {

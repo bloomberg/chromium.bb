@@ -282,6 +282,114 @@ IN_PROC_BROWSER_TEST_F(CommandsApiTest, OverwriteBookmarkShortcut) {
   ASSERT_TRUE(result);
 }
 
+// Behavior to be implemented on Mac. See http://crbug.com/389340.
+#if defined(OS_MACOSX)
+#define MAYBE_OverwriteBookmarkShortcutDoesNotOverrideWebKeybinding DISABLED_OverwriteBookmarkShortcutDoesNotOverrideWebKeybinding
+#else
+#define MAYBE_OverwriteBookmarkShortcutDoesNotOverrideWebKeybinding OverwriteBookmarkShortcutDoesNotOverrideWebKeybinding
+#endif
+// This test validates that an extension override of the Chrome bookmark
+// shortcut does not supersede the same keybinding by web pages.
+IN_PROC_BROWSER_TEST_F(
+    CommandsApiTest,
+    MAYBE_OverwriteBookmarkShortcutDoesNotOverrideWebKeybinding) {
+  ASSERT_TRUE(test_server()->Start());
+
+  ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
+
+  // This functionality requires a feature flag.
+  CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      "--enable-override-bookmarks-ui",
+      "1");
+
+  ASSERT_TRUE(RunExtensionTest("keybinding/overwrite_bookmark_shortcut"))
+      << message_;
+
+  ui_test_utils::NavigateToURL(browser(),
+      test_server()->GetURL(
+          "files/extensions/test_file_with_ctrl-d_keybinding.html"));
+
+  WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_TRUE(tab);
+
+  // Activate the shortcut (Ctrl+D) which should be handled by the page and make
+  // the background color magenta.
+#if defined(OS_MACOSX)
+  ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
+      browser(), ui::VKEY_D, false, false, false, true));
+#else
+  ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
+      browser(), ui::VKEY_D, true, false, false, false));
+#endif
+
+  bool result = false;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+      tab,
+      "setInterval(function() {"
+      "  if (document.body.bgColor == 'magenta') {"
+      "    window.domAutomationController.send(true)}}, 100)",
+      &result));
+  ASSERT_TRUE(result);
+}
+
+// Behavior to be implemented on Mac. See http://crbug.com/389340.
+#if defined(OS_MACOSX)
+#define MAYBE_OverwriteBookmarkShortcutByUserOverridesWebKeybinding DISABLED_OverwriteBookmarkShortcutByUserOverridesWebKeybinding
+#else
+#define MAYBE_OverwriteBookmarkShortcutByUserOverridesWebKeybinding OverwriteBookmarkShortcutByUserOverridesWebKeybinding
+#endif
+// This test validates that user-set override of the Chrome bookmark shortcut in
+// an extension that does not request it does supersede the same keybinding by
+// web pages.
+IN_PROC_BROWSER_TEST_F(
+    CommandsApiTest,
+    MAYBE_OverwriteBookmarkShortcutByUserOverridesWebKeybinding) {
+  ASSERT_TRUE(test_server()->Start());
+
+  ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
+
+  // This functionality requires a feature flag.
+  CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      "--enable-override-bookmarks-ui",
+      "1");
+
+  ASSERT_TRUE(RunExtensionTest("keybinding/basics"))
+      << message_;
+
+  CommandService* command_service = CommandService::Get(browser()->profile());
+
+  const Extension* extension = GetSingleLoadedExtension();
+  // Simulate the user setting the keybinding to Ctrl+D.
+  command_service->UpdateKeybindingPrefs(
+      extension->id(), manifest_values::kBrowserActionCommandEvent, "Ctrl+D");
+
+  ui_test_utils::NavigateToURL(browser(),
+      test_server()->GetURL(
+          "files/extensions/test_file_with_ctrl-d_keybinding.html"));
+
+  WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_TRUE(tab);
+
+  // Activate the shortcut (Ctrl+D) which should be handled by the extension and
+  // make the background color red.
+#if defined(OS_MACOSX)
+  ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
+      browser(), ui::VKEY_D, false, false, false, true));
+#else
+  ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
+      browser(), ui::VKEY_D, true, false, false, false));
+#endif
+
+  bool result = false;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+      tab,
+      "setInterval(function() {"
+      "  if (document.body.bgColor == 'red') {"
+      "    window.domAutomationController.send(true)}}, 100)",
+      &result));
+  ASSERT_TRUE(result);
+}
+
 #if defined(OS_WIN)
 // Currently this feature is implemented on Windows only.
 #define MAYBE_AllowDuplicatedMediaKeys AllowDuplicatedMediaKeys

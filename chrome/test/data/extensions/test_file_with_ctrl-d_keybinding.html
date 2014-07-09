@@ -1,0 +1,17 @@
+<head>
+  <script type="text/javascript">
+var ctrlDown = false;
+document.onkeyup = function(e) {
+  if (e.keyCode == 17)
+    ctrlDown = false;
+}
+document.onkeydown = function(e) {
+  if (e.keyCode == 17)
+    ctrlDown = true;
+  else if (String.fromCharCode(e.keyCode) == 'D' && ctrlDown) {
+    document.body.bgColor = "magenta";
+    return false;
+  }
+};
+  </script>
+</head>

@@ -121,6 +121,9 @@ class ExtensionKeybindingRegistry : public content::NotificationObserver,
   // Returns true if the |event_targets_| is empty; otherwise returns false.
   bool IsEventTargetsEmpty() const;
 
+  // Returns the BrowserContext for this registry.
+  content::BrowserContext* browser_context() const { return browser_context_; }
+
  private:
   // Overridden from content::NotificationObserver:
   virtual void Observe(int type,
