@@ -21,6 +21,7 @@ from telemetry.util import statistics
 from telemetry.value import merge_values
 from telemetry.value import scalar
 
+
 class _PeaceKeeperMeasurement(page_measurement.PageMeasurement):
 
   def WillNavigateToPage(self, page, tab):
@@ -54,8 +55,9 @@ class _PeaceKeeperMeasurement(page_measurement.PageMeasurement):
     tab.WaitForJavaScriptExpression('_done', 600)
     result = tab.EvaluateJavaScript('__results')
 
-    results.Add('Score', 'score', int(result['score']), result['test'],
-                'unimportant')
+    results.AddValue(scalar.ScalarValue(
+        results.current_page, '%s.Score' % result['test'], 'score',
+        int(result['score'])), important=False)
 
   def DidRunTest(self, browser, results):
     # Calculate geometric mean as the total for the combined tests.
