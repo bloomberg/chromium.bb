@@ -5,6 +5,7 @@
 #ifndef EXTENSIONS_COMMON_URL_PATTERN_SET_H_
 #define EXTENSIONS_COMMON_URL_PATTERN_SET_H_
 
+#include <iosfwd>
 #include <set>
 
 #include "base/memory/scoped_ptr.h"
@@ -99,6 +100,9 @@ class URLPatternSet {
   // The list of URL patterns that comprise the extent.
   std::set<URLPattern> patterns_;
 };
+
+std::ostream& operator<<(std::ostream& out,
+                         const URLPatternSet& url_pattern_set);
 
 }  // namespace extensions
 

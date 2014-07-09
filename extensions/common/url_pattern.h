@@ -5,6 +5,7 @@
 #define EXTENSIONS_COMMON_URL_PATTERN_H_
 
 #include <functional>
+#include <iosfwd>
 #include <string>
 #include <vector>
 
@@ -247,6 +248,8 @@ class URLPattern {
   // A string representing this URLPattern.
   mutable std::string spec_;
 };
+
+std::ostream& operator<<(std::ostream& out, const URLPattern& url_pattern);
 
 typedef std::vector<URLPattern> URLPatternList;
 

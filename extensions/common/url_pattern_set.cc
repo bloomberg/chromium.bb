@@ -5,6 +5,7 @@
 #include "extensions/common/url_pattern_set.h"
 
 #include <iterator>
+#include <ostream>
 
 #include "base/logging.h"
 #include "base/memory/linked_ptr.h"
@@ -97,6 +98,27 @@ URLPatternSet& URLPatternSet::operator=(const URLPatternSet& rhs) {
 
 bool URLPatternSet::operator==(const URLPatternSet& other) const {
   return patterns_ == other.patterns_;
+}
+
+std::ostream& operator<<(std::ostream& out,
+                         const URLPatternSet& url_pattern_set) {
+  out << "{ ";
+
+  std::set<URLPattern>::const_iterator iter =
+      url_pattern_set.patterns().begin();
+  if (!url_pattern_set.patterns().empty()) {
+    out << *iter;
+    ++iter;
+  }
+
+  for (;iter != url_pattern_set.patterns().end(); ++iter)
+    out << ", " << *iter;
+
+  if (!url_pattern_set.patterns().empty())
+    out << " ";
+
+  out << "}";
+  return out;
 }
 
 bool URLPatternSet::is_empty() const {

@@ -4,6 +4,8 @@
 
 #include "extensions/common/url_pattern.h"
 
+#include <ostream>
+
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
@@ -157,6 +159,10 @@ bool URLPattern::operator>(const URLPattern& other) const {
 
 bool URLPattern::operator==(const URLPattern& other) const {
   return GetAsString() == other.GetAsString();
+}
+
+std::ostream& operator<<(std::ostream& out, const URLPattern& url_pattern) {
+  return out << '"' << url_pattern.GetAsString() << '"';
 }
 
 URLPattern::ParseResult URLPattern::Parse(const std::string& pattern) {
