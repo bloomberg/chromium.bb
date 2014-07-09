@@ -16,6 +16,7 @@
 #include "base/command_line.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/sequenced_worker_pool.h"
+#include "base/threading/worker_pool.h"
 #include "components/data_reduction_proxy/browser/data_reduction_proxy_config_service.h"
 #include "components/data_reduction_proxy/browser/data_reduction_proxy_settings.h"
 #include "content/public/browser/browser_thread.h"
@@ -31,6 +32,7 @@
 #include "net/http/http_stream_factory.h"
 #include "net/proxy/proxy_service.h"
 #include "net/socket/next_proto.h"
+#include "net/ssl/default_server_bound_cert_store.h"
 #include "net/url_request/data_protocol_handler.h"
 #include "net/url_request/file_protocol_handler.h"
 #include "net/url_request/url_request_context_builder.h"
@@ -197,6 +199,12 @@ void AwURLRequestContextGetter::InitializeURLRequestContext() {
   ApplyCmdlineOverridesToURLRequestContextBuilder(&builder);
 
   url_request_context_.reset(builder.Build());
+  server_bound_cert_service_.reset(
+      new net::ServerBoundCertService(
+          new net::DefaultServerBoundCertStore(NULL),
+          base::WorkerPool::GetTaskRunner(true)));
+  url_request_context_->set_server_bound_cert_service(
+      server_bound_cert_service_.get());
   // TODO(mnaganov): Fix URLRequestContextBuilder to use proper threads.
   net::HttpNetworkSession::Params network_session_params;
 
