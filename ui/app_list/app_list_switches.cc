@@ -15,6 +15,9 @@ const char kDisableAppInfo[] = "disable-app-list-app-info";
 // Disables syncing of the app list independent of extensions.
 const char kDisableSyncAppList[] = "disable-sync-app-list";
 
+// If set, the voice search is disabled in app list UI.
+const char kDisableVoiceSearch[] = "disable-app-list-voice-search";
+
 // If set, the app list will be centered and wide instead of tall.
 const char kEnableCenteredAppList[] = "enable-centered-app-list";
 
@@ -48,7 +51,7 @@ bool IsFolderUIEnabled() {
 bool IsVoiceSearchEnabled() {
   // Speech recognition in AppList is only for ChromeOS right now.
 #if defined(OS_CHROMEOS)
-  return true;
+  return !CommandLine::ForCurrentProcess()->HasSwitch(kDisableVoiceSearch);
 #else
   return false;
 #endif
