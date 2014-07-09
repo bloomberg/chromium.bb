@@ -261,8 +261,7 @@ bool DrawingBuffer::prepareMailbox(blink::WebExternalTextureMailbox* outMailbox,
 
     m_contentsChanged = false;
 
-    m_context->bindTexture(GL_TEXTURE_2D, frontColorBufferMailbox->textureInfo.textureId);
-    m_context->produceTextureCHROMIUM(GL_TEXTURE_2D, frontColorBufferMailbox->mailbox.name);
+    m_context->produceTextureDirectCHROMIUM(frontColorBufferMailbox->textureInfo.textureId, GL_TEXTURE_2D, frontColorBufferMailbox->mailbox.name);
     m_context->flush();
     frontColorBufferMailbox->mailbox.syncPoint = m_context->insertSyncPoint();
     frontColorBufferMailbox->mailbox.allowOverlay = frontColorBufferMailbox->textureInfo.imageId != 0;
@@ -519,8 +518,7 @@ void DrawingBuffer::paintCompositedResultsToCanvas(ImageBuffer* imageBuffer)
     if (tex) {
         RefPtr<MailboxInfo> bufferMailbox = adoptRef(new MailboxInfo());
         m_context->genMailboxCHROMIUM(bufferMailbox->mailbox.name);
-        m_context->bindTexture(GL_TEXTURE_2D, m_frontColorBuffer.textureId);
-        m_context->produceTextureCHROMIUM(GL_TEXTURE_2D, bufferMailbox->mailbox.name);
+        m_context->produceTextureDirectCHROMIUM(m_frontColorBuffer.textureId, GL_TEXTURE_2D, bufferMailbox->mailbox.name);
         m_context->flush();
 
         bufferMailbox->mailbox.syncPoint = m_context->insertSyncPoint();
@@ -532,15 +530,10 @@ void DrawingBuffer::paintCompositedResultsToCanvas(ImageBuffer* imageBuffer)
         if (!context || !context->makeContextCurrent())
             return;
 
-        Platform3DObject sourceTexture = context->createTexture();
-        GLint boundTexture = 0;
-        context->getIntegerv(GL_TEXTURE_BINDING_2D, &boundTexture);
-        context->bindTexture(GL_TEXTURE_2D, sourceTexture);
         context->waitSyncPoint(bufferMailbox->mailbox.syncPoint);
-        context->consumeTextureCHROMIUM(GL_TEXTURE_2D, bufferMailbox->mailbox.name);
+        Platform3DObject sourceTexture = context->createAndConsumeTextureCHROMIUM(GL_TEXTURE_2D, bufferMailbox->mailbox.name);
         context->copyTextureCHROMIUM(GL_TEXTURE_2D, sourceTexture,
             tex, 0, GL_RGBA, GL_UNSIGNED_BYTE);
-        context->bindTexture(GL_TEXTURE_2D, boundTexture);
         context->deleteTexture(sourceTexture);
         context->flush();
         m_context->waitSyncPoint(context->insertSyncPoint());

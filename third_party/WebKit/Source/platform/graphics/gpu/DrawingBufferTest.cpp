@@ -87,10 +87,11 @@ public:
         memset(mailbox, m_currentMailboxByte, sizeof(temp.name));
     }
 
-    virtual void produceTextureCHROMIUM(WGC3Denum target, const WGC3Dbyte* mailbox)
+    virtual void produceTextureDirectCHROMIUM(WebGLId texture, WGC3Denum target, const WGC3Dbyte* mailbox)
     {
         ASSERT_EQ(target, static_cast<WGC3Denum>(GL_TEXTURE_2D));
-        m_mostRecentlyProducedSize = m_textureSizes.get(m_boundTexture);
+        ASSERT_TRUE(m_textureSizes.contains(texture));
+        m_mostRecentlyProducedSize = m_textureSizes.get(texture);
     }
 
     IntSize mostRecentlyProducedSize()
