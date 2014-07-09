@@ -5,6 +5,7 @@
 {
   'targets': [
     {
+      # GN version: //components/domain_reliability
       'target_name': 'domain_reliability',
       'type': '<(component)',
       'dependencies': [
@@ -21,6 +22,7 @@
         'DOMAIN_RELIABILITY_IMPLEMENTATION',
       ],
       'sources': [
+        # Note: sources list duplicated in GN build.
         'domain_reliability/baked_in_configs.h',
         'domain_reliability/beacon.cc',
         'domain_reliability/beacon.h',

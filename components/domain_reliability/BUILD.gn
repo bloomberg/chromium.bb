@@ -1,0 +1,62 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+action("bake_in_configs") {
+  visibility = ":*"
+  script = "bake_in_configs.py"
+
+  inputs = [
+    "baked_in_configs/apis_google_com.json",
+    "baked_in_configs/ddm_google_com.json",
+    "baked_in_configs/drive_google_com.json",
+    "baked_in_configs/mail_google_com.json",
+    "baked_in_configs/ssl_gstatic_com.json",
+    "baked_in_configs/www_google_com.json",
+    "baked_in_configs/www_youtube_com.json",
+  ]
+  outputs = [
+    "$target_gen_dir/baked_in_configs.cc",
+  ]
+
+  args = rebase_path(inputs, root_build_dir) +
+         rebase_path(outputs, root_build_dir)
+}
+
+component("domain_reliability") {
+  sources = [
+    "baked_in_configs.h",
+    "beacon.cc",
+    "beacon.h",
+    "clear_mode.h",
+    "config.cc",
+    "config.h",
+    "context.cc",
+    "context.h",
+    "dispatcher.cc",
+    "dispatcher.h",
+    "domain_reliability_export.h",
+    "monitor.cc",
+    "monitor.h",
+    "scheduler.cc",
+    "scheduler.h",
+    "service.cc",
+    "service.h",
+    "uploader.cc",
+    "uploader.h",
+    "util.cc",
+    "util.h",
+  ]
+  sources += get_target_outputs(":bake_in_configs")
+
+  defines = [ "DOMAIN_RELIABILITY_IMPLEMENTATION" ]
+
+  deps = [
+    ":bake_in_configs",
+    "//base",
+    "//components/keyed_service/core",
+    "//content/public/browser",
+    "//net",
+    "//url",
+  ]
+}

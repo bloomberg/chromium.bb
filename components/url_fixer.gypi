@@ -5,6 +5,7 @@
 {
   'targets': [
     {
+      # GN version: //components/url_fixer
       'target_name': 'url_fixer',
       'type': 'static_library',
       'include_dirs': [
@@ -15,6 +16,7 @@
         '../net/net.gyp:net',
       ],
       'sources': [
+        # Note: sources list duplicated in GN build.
         'url_fixer/url_fixer.cc',
         'url_fixer/url_fixer.h',
       ],
