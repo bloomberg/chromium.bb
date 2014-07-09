@@ -16,9 +16,9 @@ PASS axBounds.width is within 1 of 25
 PASS axBounds.height is within 1 of 17
 
 Testing bounds of word: Hitchhiker
-PASS axBounds.x is within 1 of 36
+PASS axBounds.x is within 1 of 37
 PASS axBounds.y is within 1 of 8
-PASS axBounds.width is within 1 of 69
+PASS axBounds.width is within 1 of 68
 PASS axBounds.height is within 1 of 17
 
 Testing bounds of word: Guide

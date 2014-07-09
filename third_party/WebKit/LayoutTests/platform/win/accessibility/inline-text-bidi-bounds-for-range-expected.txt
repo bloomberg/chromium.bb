@@ -21,21 +21,21 @@ PASS axBounds.width is within 2 of 24
 PASS axBounds.height is within 2 of 17
 
 Testing bounds of word three in horizontalParagraph
-PASS axBounds.x is within 2 of 124
+PASS axBounds.x is within 2 of 125
 PASS axBounds.y is within 2 of 8
-PASS axBounds.width is within 2 of 33
+PASS axBounds.width is within 2 of 32
 PASS axBounds.height is within 2 of 17
 
 Testing bounds of word four in horizontalParagraph
-PASS axBounds.x is within 2 of 160
+PASS axBounds.x is within 2 of 161
 PASS axBounds.y is within 2 of 8
-PASS axBounds.width is within 2 of 27
+PASS axBounds.width is within 2 of 26
 PASS axBounds.height is within 2 of 17
 
 Testing bounds of word אחתשתיים in horizontalParagraph
 PASS axBounds.x is within 2 of 63.1015625
 PASS axBounds.y is within 2 of 8
-PASS axBounds.width is within 2 of 57.8984375
+PASS axBounds.width is within 2 of 57.7421875
 PASS axBounds.height is within 2 of 17
 
 Testing bounds of word שלושהארבעה in horizontalParagraph
@@ -58,21 +58,21 @@ PASS axBounds.height is within 2 of 24
 
 Testing bounds of word three in verticalParagraph
 PASS axBounds.x is within 2 of 24
-PASS axBounds.y is within 2 of 158
+PASS axBounds.y is within 2 of 159
 PASS axBounds.width is within 2 of 17
-PASS axBounds.height is within 2 of 33
+PASS axBounds.height is within 2 of 32
 
 Testing bounds of word four in verticalParagraph
 PASS axBounds.x is within 2 of 24
-PASS axBounds.y is within 2 of 194
+PASS axBounds.y is within 2 of 195
 PASS axBounds.width is within 2 of 17
-PASS axBounds.height is within 2 of 27
+PASS axBounds.height is within 2 of 26
 
 Testing bounds of word אחתשתיים in verticalParagraph
 PASS axBounds.x is within 2 of 24
 PASS axBounds.y is within 2 of 97.1015625
 PASS axBounds.width is within 2 of 17
-PASS axBounds.height is within 2 of 57.8984375
+PASS axBounds.height is within 2 of 57.7421875
 
 Testing bounds of word שלושהארבעה in verticalParagraph
 PASS axBounds.x is within 2 of 24
