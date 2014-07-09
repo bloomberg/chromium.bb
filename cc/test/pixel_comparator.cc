@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "base/logging.h"
+#include "ui/gfx/rect.h"
 
 namespace cc {
 
@@ -18,6 +19,8 @@ bool ExactPixelComparator::Compare(const SkBitmap& actual_bmp,
                                    const SkBitmap& expected_bmp) const {
   // Number of pixels with an error
   int error_pixels_count = 0;
+
+  gfx::Rect error_bounding_rect = gfx::Rect();
 
   // Check that bitmaps have identical dimensions.
   DCHECK(actual_bmp.width() == expected_bmp.width() &&
@@ -34,26 +37,16 @@ bool ExactPixelComparator::Compare(const SkBitmap& actual_bmp,
         actual_color = SkColorSetA(actual_color, 0);
         expected_color = SkColorSetA(expected_color, 0);
       }
-
       if (actual_color != expected_color) {
         ++error_pixels_count;
-        LOG(ERROR) << "Pixel error at x=" << x << " y=" << y << "; "
-                   << "actual RGBA=("
-                   << SkColorGetR(actual_color) << ","
-                   << SkColorGetG(actual_color) << ","
-                   << SkColorGetB(actual_color) << ","
-                   << SkColorGetA(actual_color) << "); "
-                   << "expected RGBA=("
-                   << SkColorGetR(expected_color) << ","
-                   << SkColorGetG(expected_color) << ","
-                   << SkColorGetB(expected_color) << ","
-                   << SkColorGetA(expected_color) << ")";
+        error_bounding_rect.Union(gfx::Rect(x, y, 1, 1));
       }
     }
   }
 
   if (error_pixels_count != 0) {
     LOG(ERROR) << "Number of pixel with an error: " << error_pixels_count;
+    LOG(ERROR) << "Error Bounding Box : " << error_bounding_rect.ToString();
     return false;
   }
 
@@ -91,6 +84,8 @@ bool FuzzyPixelComparator::Compare(const SkBitmap& actual_bmp,
   int max_abs_error_g = 0;
   int max_abs_error_b = 0;
   int max_abs_error_a = 0;
+
+  gfx::Rect error_bounding_rect = gfx::Rect();
 
   // Check that bitmaps have identical dimensions.
   DCHECK(actual_bmp.width() == expected_bmp.width() &&
@@ -201,22 +196,11 @@ bool FuzzyPixelComparator::Compare(const SkBitmap& actual_bmp,
             actual_color = SkColorSetA(actual_color, 0);
             expected_color = SkColorSetA(expected_color, 0);
           }
-          if (actual_color != expected_color) {
-            LOG(ERROR) << "Pixel error at x=" << x << " y=" << y << "; "
-                       << "actual RGBA=("
-                       << SkColorGetR(actual_color) << ","
-                       << SkColorGetG(actual_color) << ","
-                       << SkColorGetB(actual_color) << ","
-                       << SkColorGetA(actual_color) << "); "
-                       << "expected RGBA=("
-                       << SkColorGetR(expected_color) << ","
-                       << SkColorGetG(expected_color) << ","
-                       << SkColorGetB(expected_color) << ","
-                       << SkColorGetA(expected_color) << ")";
-          }
+          if (actual_color != expected_color)
+            error_bounding_rect.Union(gfx::Rect(x, y, 1, 1));
         }
       }
-
+      LOG(ERROR) << "Error Bounding Box : " << error_bounding_rect.ToString();
     return false;
   } else {
     return true;
