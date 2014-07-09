@@ -30,7 +30,7 @@ class CC_EXPORT CompositorFrameMetadata {
 
   // These limits can be used together with the scroll/scale fields above to
   // determine if scrolling/scaling in a particular direction is possible.
-  gfx::SizeF viewport_size;
+  gfx::SizeF scrollable_viewport_size;
   gfx::SizeF root_layer_size;
   float min_page_scale_factor;
   float max_page_scale_factor;

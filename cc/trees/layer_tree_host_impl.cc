@@ -1364,7 +1364,7 @@ CompositorFrameMetadata LayerTreeHostImpl::MakeCompositorFrameMetadata() const {
   CompositorFrameMetadata metadata;
   metadata.device_scale_factor = device_scale_factor_;
   metadata.page_scale_factor = active_tree_->total_page_scale_factor();
-  metadata.viewport_size = active_tree_->ScrollableViewportSize();
+  metadata.scrollable_viewport_size = active_tree_->ScrollableViewportSize();
   metadata.root_layer_size = active_tree_->ScrollableSize();
   metadata.min_page_scale_factor = active_tree_->min_page_scale_factor();
   metadata.max_page_scale_factor = active_tree_->max_page_scale_factor();

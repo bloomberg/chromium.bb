@@ -1582,7 +1582,7 @@ TEST_F(LayerTreeHostImplTest, CompositorFrameMetadata) {
         host_impl_->MakeCompositorFrameMetadata();
     EXPECT_EQ(gfx::Vector2dF(), metadata.root_scroll_offset);
     EXPECT_EQ(1.f, metadata.page_scale_factor);
-    EXPECT_EQ(gfx::SizeF(50.f, 50.f), metadata.viewport_size);
+    EXPECT_EQ(gfx::SizeF(50.f, 50.f), metadata.scrollable_viewport_size);
     EXPECT_EQ(gfx::SizeF(100.f, 100.f), metadata.root_layer_size);
     EXPECT_EQ(0.5f, metadata.min_page_scale_factor);
     EXPECT_EQ(4.f, metadata.max_page_scale_factor);
@@ -1615,7 +1615,7 @@ TEST_F(LayerTreeHostImplTest, CompositorFrameMetadata) {
         host_impl_->MakeCompositorFrameMetadata();
     EXPECT_EQ(gfx::Vector2dF(0.f, 10.f), metadata.root_scroll_offset);
     EXPECT_EQ(2.f, metadata.page_scale_factor);
-    EXPECT_EQ(gfx::SizeF(25.f, 25.f), metadata.viewport_size);
+    EXPECT_EQ(gfx::SizeF(25.f, 25.f), metadata.scrollable_viewport_size);
     EXPECT_EQ(gfx::SizeF(100.f, 100.f), metadata.root_layer_size);
     EXPECT_EQ(0.5f, metadata.min_page_scale_factor);
     EXPECT_EQ(4.f, metadata.max_page_scale_factor);
@@ -1630,7 +1630,7 @@ TEST_F(LayerTreeHostImplTest, CompositorFrameMetadata) {
         host_impl_->MakeCompositorFrameMetadata();
     EXPECT_EQ(gfx::Vector2dF(0.f, 10.f), metadata.root_scroll_offset);
     EXPECT_EQ(4.f, metadata.page_scale_factor);
-    EXPECT_EQ(gfx::SizeF(12.5f, 12.5f), metadata.viewport_size);
+    EXPECT_EQ(gfx::SizeF(12.5f, 12.5f), metadata.scrollable_viewport_size);
     EXPECT_EQ(gfx::SizeF(100.f, 100.f), metadata.root_layer_size);
     EXPECT_EQ(0.5f, metadata.min_page_scale_factor);
     EXPECT_EQ(4.f, metadata.max_page_scale_factor);

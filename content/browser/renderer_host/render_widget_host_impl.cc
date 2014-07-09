@@ -108,8 +108,8 @@ int GetInputRouterViewFlagsFromCompositorFrameMetadata(
   if (metadata.min_page_scale_factor == metadata.max_page_scale_factor)
     view_flags |= InputRouter::FIXED_PAGE_SCALE;
 
-  const float window_width_dip =
-      std::ceil(metadata.page_scale_factor * metadata.viewport_size.width());
+  const float window_width_dip = std::ceil(
+      metadata.page_scale_factor * metadata.scrollable_viewport_size.width());
   const float content_width_css = metadata.root_layer_size.width();
   if (content_width_css <= window_width_dip)
     view_flags |= InputRouter::MOBILE_VIEWPORT;

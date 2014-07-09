@@ -127,7 +127,8 @@ OverscrollGlow::DisplayParameters CreateOverscrollDisplayParameters(
   // the viewport and offset by the distance of each viewport edge to the
   // respective content edge.
   OverscrollGlow::DisplayParameters params;
-  params.size = gfx::ScaleSize(frame_metadata.viewport_size, scale_factor);
+  params.size = gfx::ScaleSize(
+      frame_metadata.scrollable_viewport_size, scale_factor);
   params.edge_offsets[EdgeEffect::EDGE_TOP] =
       -frame_metadata.root_scroll_offset.y() * scale_factor;
   params.edge_offsets[EdgeEffect::EDGE_LEFT] =
@@ -135,11 +136,11 @@ OverscrollGlow::DisplayParameters CreateOverscrollDisplayParameters(
   params.edge_offsets[EdgeEffect::EDGE_BOTTOM] =
       (frame_metadata.root_layer_size.height() -
        frame_metadata.root_scroll_offset.y() -
-       frame_metadata.viewport_size.height()) * scale_factor;
+       frame_metadata.scrollable_viewport_size.height()) * scale_factor;
   params.edge_offsets[EdgeEffect::EDGE_RIGHT] =
       (frame_metadata.root_layer_size.width() -
        frame_metadata.root_scroll_offset.x() -
-       frame_metadata.viewport_size.width()) * scale_factor;
+       frame_metadata.scrollable_viewport_size.width()) * scale_factor;
   params.device_scale_factor = frame_metadata.device_scale_factor;
 
   return params;
@@ -159,7 +160,8 @@ bool HasFixedPageScale(const cc::CompositorFrameMetadata& frame_metadata) {
 
 bool HasMobileViewport(const cc::CompositorFrameMetadata& frame_metadata) {
   float window_width_dip =
-      frame_metadata.page_scale_factor * frame_metadata.viewport_size.width();
+      frame_metadata.page_scale_factor *
+          frame_metadata.scrollable_viewport_size.width();
   float content_width_css = frame_metadata.root_layer_size.width();
   return content_width_css <= window_width_dip + kMobileViewportWidthEpsilon;
 }
@@ -998,7 +1000,7 @@ void RenderWidgetHostViewAndroid::OnFrameMetadataUpdated(
       gfx::Vector2dF(frame_metadata.min_page_scale_factor,
                      frame_metadata.max_page_scale_factor),
       frame_metadata.root_layer_size,
-      frame_metadata.viewport_size,
+      frame_metadata.scrollable_viewport_size,
       frame_metadata.location_bar_offset,
       frame_metadata.location_bar_content_translation,
       frame_metadata.overdraw_bottom_height);
