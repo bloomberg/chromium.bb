@@ -2811,14 +2811,16 @@ void FrameView::updateLayoutAndStyleForPainting()
     updateLayoutAndStyleIfNeededRecursive();
 
     if (RenderView* view = renderView()) {
-        InspectorInstrumentation::willUpdateLayerTree(view->frame());
+        TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "UpdateLayerTree", "frame", m_frame.get());
+        // FIXME(361045): remove InspectorInstrumentation calls once DevTools Timeline migrates to tracing.
+        InspectorInstrumentation::willUpdateLayerTree(m_frame.get());
 
         view->compositor()->updateIfNeededRecursive();
 
         if (view->compositor()->inCompositingMode() && m_frame->isMainFrame())
             m_frame->page()->scrollingCoordinator()->updateAfterCompositingChangeIfNeeded();
 
-        InspectorInstrumentation::didUpdateLayerTree(view->frame());
+        InspectorInstrumentation::didUpdateLayerTree(m_frame.get());
 
         invalidateTreeIfNeededRecursive();
     }
