@@ -180,10 +180,7 @@ OutputFile NinjaHelper::GetTargetOutputFile(const Target* target) const {
 
   // Binaries and loadable libraries go into the toolchain root.
   if (target->output_type() == Target::EXECUTABLE ||
-      (target->settings()->IsMac() &&
-          (target->output_type() == Target::SHARED_LIBRARY ||
-           target->output_type() == Target::STATIC_LIBRARY)) ||
-      (target->settings()->IsWin() &&
+      ((target->settings()->IsMac() || target->settings()->IsWin()) &&
        target->output_type() == Target::SHARED_LIBRARY)) {
     // Generate a name like "<toolchain>/<prefix><name>.<extension>".
     ret.value().append(prefix);
