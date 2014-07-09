@@ -96,7 +96,7 @@ class Parser(object):
       # Generator expects a module. If one wasn't specified insert one with an
       # empty name.
       if p[1][0] != 'MODULE':
-        p[0] = [('MODULE', '', None, p[1])]
+        p[0] = [('MODULE', None, None, p[1])]
       else:
         p[0] = [p[1]]
 
@@ -106,8 +106,8 @@ class Parser(object):
     p[0] = ('IMPORT', eval(p[2]))
 
   def p_module(self, p):
-    """module : attribute_section MODULE identifier LBRACE definition_list \
-                    RBRACE"""
+    """module : attribute_section MODULE identifier_wrapped LBRACE \
+                    definition_list RBRACE"""
     p[0] = ('MODULE', p[3], p[1], p[5])
 
   def p_definition_list(self, p):
@@ -315,6 +315,8 @@ class Parser(object):
     """identifier_wrapped : identifier"""
     p[0] = ('IDENTIFIER', p[1])
 
+  # TODO(vtl): Make this produce a "wrapped" identifier (probably as an
+  # |ast.Identifier|, to be added) and get rid of identifier_wrapped.
   def p_identifier(self, p):
     """identifier : NAME
                   | NAME DOT identifier"""

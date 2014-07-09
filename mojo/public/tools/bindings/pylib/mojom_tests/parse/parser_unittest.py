@@ -41,15 +41,15 @@ class ParserTest(unittest.TestCase):
         module my_module {
         }
         """
-    self.assertEquals(parser.Parse(source, "my_file.mojom"),
-                      [("MODULE", "my_module", None, None)])
+    expected = [('MODULE', ('IDENTIFIER', 'my_module'), None, None)]
+    self.assertEquals(parser.Parse(source, "my_file.mojom"), expected)
 
   def testSourceWithCrLfs(self):
     """Tests a .mojom source with CR-LFs instead of LFs."""
 
     source = "// This is a comment.\r\n\r\nmodule my_module {\r\n}\r\n"
-    self.assertEquals(parser.Parse(source, "my_file.mojom"),
-                      [("MODULE", "my_module", None, None)])
+    expected = [('MODULE', ('IDENTIFIER', 'my_module'), None, None)]
+    self.assertEquals(parser.Parse(source, "my_file.mojom"), expected)
 
   def testUnexpectedEOF(self):
     """Tests a "truncated" .mojom source."""
@@ -141,7 +141,7 @@ class ParserTest(unittest.TestCase):
         """
     expected = \
         [('MODULE',
-          'my_module',
+          ('IDENTIFIER', 'my_module'),
           None,
           [('STRUCT',
             'MyStruct',
@@ -161,7 +161,7 @@ class ParserTest(unittest.TestCase):
         """
     expected = \
         [('MODULE',
-          '',
+          None,
           None,
           [('STRUCT',
             'MyStruct',
@@ -219,7 +219,7 @@ class ParserTest(unittest.TestCase):
         """
     expected = \
         [('MODULE',
-          'my_module',
+          ('IDENTIFIER', 'my_module'),
           None,
           [('ENUM',
             'MyEnum1',
@@ -281,7 +281,7 @@ class ParserTest(unittest.TestCase):
         """
     expected = \
         [('MODULE',
-          'my_module',
+          ('IDENTIFIER', 'my_module'),
           None,
           [('STRUCT',
             'MyStruct', None,
@@ -330,7 +330,7 @@ class ParserTest(unittest.TestCase):
         """
     expected = \
         [('MODULE',
-          'my_module',
+          ('IDENTIFIER', 'my_module'),
           None,
           [('STRUCT',
             'MyStruct',
@@ -427,7 +427,7 @@ class ParserTest(unittest.TestCase):
         """
     expected = \
         [('MODULE',
-          'my.mod',
+          ('IDENTIFIER', 'my.mod'),
           None,
           [('STRUCT',
             'MyStruct',
@@ -451,7 +451,7 @@ class ParserTest(unittest.TestCase):
         """
     expected = \
         [('MODULE',
-          '',
+          None,
           None,
           [('STRUCT',
             'MyStruct',
@@ -513,7 +513,7 @@ class ParserTest(unittest.TestCase):
         """
     expected = \
         [('MODULE',
-          '',
+          None,
           None,
           [('STRUCT',
             'MyStruct',
@@ -555,7 +555,7 @@ class ParserTest(unittest.TestCase):
         """
     expected = \
         [('MODULE',
-          '',
+          None,
           None,
           [('STRUCT',
             'MyStruct',
@@ -573,7 +573,7 @@ class ParserTest(unittest.TestCase):
     source = "struct MyStruct { int32[][] nested_array; };"
     expected = \
         [('MODULE',
-          '',
+          None,
           None,
           [('STRUCT',
             'MyStruct',
@@ -624,7 +624,7 @@ class ParserTest(unittest.TestCase):
     source1 = "interface MyInterface { MyMethod(int32 a); };"
     expected1 = \
         [('MODULE',
-          '',
+          None,
           None,
           [('INTERFACE',
             'MyInterface',
@@ -644,7 +644,7 @@ class ParserTest(unittest.TestCase):
         """
     expected2 = \
         [('MODULE',
-          '',
+          None,
           None,
           [('INTERFACE',
             'MyInterface',
@@ -669,7 +669,7 @@ class ParserTest(unittest.TestCase):
         """
     expected3 = \
         [('MODULE',
-          '',
+          None,
           None,
           [('INTERFACE',
             'MyInterface',
@@ -720,7 +720,7 @@ class ParserTest(unittest.TestCase):
     source1 = "[] struct MyStruct {};"
     expected1 = \
         [('MODULE',
-          '',
+          None,
           None,
           [('STRUCT',
             'MyStruct',
@@ -732,7 +732,7 @@ class ParserTest(unittest.TestCase):
     source2 = "[MyAttribute=MyName] struct MyStruct {};"
     expected2 = \
         [('MODULE',
-          '',
+          None,
           None,
           [('STRUCT',
             'MyStruct',
@@ -744,7 +744,7 @@ class ParserTest(unittest.TestCase):
     source3 = "[MyAttribute1 = \"hello\", MyAttribute2 = 5] struct MyStruct {};"
     expected3 = \
         [('MODULE',
-          '',
+          None,
           None,
           [('STRUCT',
             'MyStruct',

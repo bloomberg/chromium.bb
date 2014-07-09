@@ -120,17 +120,6 @@ def _MapConstant(tree):
   constant['value'] = tree[3]
   return constant
 
-def _MapModule(tree, name):
-  mojom = {}
-  mojom['name'] = name
-  mojom['namespace'] = tree[1]
-  mojom['attributes'] = _AttributeListToDict(tree[2])
-  mojom['structs'] = _MapTree(_MapStruct, tree[3], 'STRUCT')
-  mojom['interfaces'] = _MapTree(_MapInterface, tree[3], 'INTERFACE')
-  mojom['enums'] = _MapTree(_MapEnum, tree[3], 'ENUM')
-  mojom['constants'] = _MapTree(_MapConstant, tree[3], 'CONST')
-  return mojom
-
 def _MapImport(tree):
   import_item = {}
   import_item['filename'] = tree[1]
@@ -142,7 +131,19 @@ class _MojomBuilder(object):
     self.mojom = {}
 
   def Build(self, tree, name):
-    modules = [_MapModule(item, name) for item in tree if item[0] == 'MODULE']
+    def MapModule(tree, name):
+      assert tree[1] is None or tree[1][0] == 'IDENTIFIER'
+      mojom = {}
+      mojom['name'] = name
+      mojom['namespace'] = '' if not tree[1] else tree[1][1]
+      mojom['attributes'] = _AttributeListToDict(tree[2])
+      mojom['structs'] = _MapTree(_MapStruct, tree[3], 'STRUCT')
+      mojom['interfaces'] = _MapTree(_MapInterface, tree[3], 'INTERFACE')
+      mojom['enums'] = _MapTree(_MapEnum, tree[3], 'ENUM')
+      mojom['constants'] = _MapTree(_MapConstant, tree[3], 'CONST')
+      return mojom
+
+    modules = [MapModule(item, name) for item in tree if item[0] == 'MODULE']
     if len(modules) != 1:
       raise Exception('A mojom file must contain exactly 1 module.')
     self.mojom = modules[0]
