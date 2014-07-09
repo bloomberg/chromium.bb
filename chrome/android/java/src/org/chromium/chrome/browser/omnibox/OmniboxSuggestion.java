@@ -115,14 +115,6 @@ public class OmniboxSuggestion {
         }
     }
 
-    /* TODO(groby): Remove - see http://crbug.com/375482 */
-    public OmniboxSuggestion(int nativeType, int relevance, int transition,
-            String text, String description, String fillIntoEdit, String url,
-            String formattedUrl, boolean isStarred, boolean isDeletable) {
-        this(nativeType, relevance, transition, text, description, null, null, fillIntoEdit, url,
-            formattedUrl, isStarred, isDeletable);
-    }
-
     public Type getType() {
         return mType;
     }
