@@ -91,6 +91,7 @@ class PageCyclerTop10Mobile(benchmark.Benchmark):
   options = {'pageset_repeat': 10}
 
 
+@benchmark.Disabled('android')
 class PageCyclerKeyMobileSites(benchmark.Benchmark):
   test = page_cycler.PageCycler
   page_set = page_sets.KeyMobileSitesPageSet

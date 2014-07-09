@@ -29,6 +29,7 @@ class _MSEMeasurement(page_measurement.PageMeasurement):
                 value=float(metrics[m]), important=True))
 
 
+@benchmark.Disabled('android')
 class Media(benchmark.Benchmark):
   """Obtains media metrics for key user scenarios."""
   test = media.Media
