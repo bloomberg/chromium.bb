@@ -31,15 +31,9 @@ SVGTextChunkBuilder::SVGTextChunkBuilder()
 {
 }
 
-void SVGTextChunkBuilder::transformationForTextBox(SVGInlineTextBox* textBox, AffineTransform& transform) const
+AffineTransform SVGTextChunkBuilder::transformationForTextBox(SVGInlineTextBox* textBox) const
 {
-    DEFINE_STATIC_LOCAL(const AffineTransform, s_identityTransform, ());
-    if (!m_textBoxTransformations.contains(textBox)) {
-        transform = s_identityTransform;
-        return;
-    }
-
-    transform = m_textBoxTransformations.get(textBox);
+    return m_textBoxTransformations.get(textBox);
 }
 
 void SVGTextChunkBuilder::buildTextChunks(Vector<SVGInlineTextBox*>& lineLayoutBoxes)

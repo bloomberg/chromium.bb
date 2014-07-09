@@ -292,10 +292,9 @@ void SVGTextLayoutEngine::finalizeTransformMatrices(Vector<SVGInlineTextBox*>& b
     if (!boxCount)
         return;
 
-    AffineTransform textBoxTransformation;
     for (unsigned boxPosition = 0; boxPosition < boxCount; ++boxPosition) {
         SVGInlineTextBox* textBox = boxes.at(boxPosition);
-        m_chunkLayoutBuilder.transformationForTextBox(textBox, textBoxTransformation);
+        AffineTransform textBoxTransformation = m_chunkLayoutBuilder.transformationForTextBox(textBox);
         if (textBoxTransformation.isIdentity())
             continue;
 
