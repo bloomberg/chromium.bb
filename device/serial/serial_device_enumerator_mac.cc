@@ -36,7 +36,7 @@ mojo::Array<serial::DeviceInfoPtr> SerialDeviceEnumeratorMac::GetDevices() {
   valid_patterns.insert("/dev/tty.*");
   valid_patterns.insert("/dev/cu.*");
 
-  mojo::Array<serial::DeviceInfoPtr> devices;
+  mojo::Array<serial::DeviceInfoPtr> devices(0);
   base::FileEnumerator enumerator(kDevRoot, false, kFilesAndSymLinks);
   do {
     const base::FilePath next_device_path(enumerator.Next());

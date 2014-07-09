@@ -29,7 +29,7 @@ SerialDeviceEnumeratorWin::~SerialDeviceEnumeratorWin() {}
 mojo::Array<serial::DeviceInfoPtr> SerialDeviceEnumeratorWin::GetDevices() {
   base::win::RegistryValueIterator iter_key(
       HKEY_LOCAL_MACHINE, L"HARDWARE\\DEVICEMAP\\SERIALCOMM\\");
-  mojo::Array<serial::DeviceInfoPtr> devices;
+  mojo::Array<serial::DeviceInfoPtr> devices(0);
   for (; iter_key.Valid(); ++iter_key) {
     serial::DeviceInfoPtr info(serial::DeviceInfo::New());
     info->path = base::UTF16ToASCII(iter_key.Value());

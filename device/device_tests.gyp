@@ -11,8 +11,9 @@
       'target_name': 'device_unittests',
       'type': '<(gtest_target_type)',
       'dependencies': [
-        '../base/base.gyp:run_all_unittests',
         '../base/base.gyp:test_support_base',
+        '../mojo/mojo.gyp:mojo_environment_chromium',
+        '../mojo/mojo.gyp:mojo_system_impl',
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
         'bluetooth/bluetooth.gyp:device_bluetooth',
@@ -20,6 +21,7 @@
         'nfc/nfc.gyp:device_nfc',
         'usb/usb.gyp:device_usb',
         'hid/hid.gyp:device_hid',
+        'serial/serial.gyp:device_serial',
       ],
       'sources': [
         'bluetooth/bluetooth_adapter_mac_unittest.mm',
@@ -41,6 +43,8 @@
         'hid/hid_report_descriptor_unittest.cc',
         'hid/hid_service_unittest.cc',
         'hid/input_service_linux_unittest.cc',
+        'serial/serial_service_unittest.cc',
+        'test/run_all_unittests.cc',
       ],
       'conditions': [
         ['chromeos==1', {

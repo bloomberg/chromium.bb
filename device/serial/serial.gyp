@@ -28,7 +28,11 @@
         '../../mojo/public/tools/bindings/mojom_bindings_generator.gypi',
       ],
       'dependencies': [
+        '../../mojo/mojo.gyp:mojo_cpp_bindings',
         '../../net/net.gyp:net',
+      ],
+      'export_dependent_settings': [
+        '../../mojo/mojo.gyp:mojo_cpp_bindings',
       ],
       'sources': [
         'serial.mojom',
@@ -46,6 +50,8 @@
         'serial_io_handler_posix.h',
         'serial_io_handler_win.cc',
         'serial_io_handler_win.h',
+        'serial_service_impl.cc',
+        'serial_service_impl.h',
       ],
     },
   ],

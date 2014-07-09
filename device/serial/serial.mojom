@@ -79,4 +79,8 @@ struct DeviceControlSignals {
   bool dsr;
 };
 
+interface SerialService {
+  GetDevices() => (DeviceInfo[] devices);
+};
+
 }
