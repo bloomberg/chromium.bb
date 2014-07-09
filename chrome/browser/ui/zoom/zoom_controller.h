@@ -120,11 +120,6 @@ class ZoomController : public content::WebContentsObserver,
   // meaning the change should apply to ~all sites. If it is not empty, the
   // change only affects sites with the given host.
   void UpdateState(const std::string& host);
-  // Same as UpdateState, but takes into account whether a temporary zoom level
-  // has been set on |host| when deciding whether to show the zoom notification
-  // bubble.
-  void UpdateStateIncludingTemporary(const std::string& host,
-                                     bool is_temporary_zoom);
 
   // The current zoom mode.
   ZoomMode zoom_mode_;

@@ -258,17 +258,10 @@ void ZoomController::DidNavigateMainFrame(
 
 void ZoomController::OnZoomLevelChanged(
     const content::HostZoomMap::ZoomLevelChange& change) {
-  UpdateStateIncludingTemporary(
-      change.host,
-      change.mode == content::HostZoomMap::ZOOM_CHANGED_TEMPORARY_ZOOM);
+  UpdateState(change.host);
 }
 
 void ZoomController::UpdateState(const std::string& host) {
-  UpdateStateIncludingTemporary(host, false);
-}
-
-void ZoomController::UpdateStateIncludingTemporary(const std::string& host,
-                                                   bool is_temporary_zoom) {
   // If |host| is empty, all observers should be updated.
   if (!host.empty()) {
     // Use the navigation entry's URL instead of the WebContents' so virtual
@@ -281,18 +274,16 @@ void ZoomController::UpdateStateIncludingTemporary(const std::string& host,
     }
   }
 
-  // The zoom bubble can be shown for all normal, per-origin zoom changes
-  // (where the host will not be empty and the zoom is not temporary), or any
-  // special zoom changes (where the zoom mode will not be "default").
-  bool can_show_bubble =
-      zoom_mode_ != ZOOM_MODE_DEFAULT || (!host.empty() && !is_temporary_zoom);
+  // The zoom bubble can be shown for all zoom changes where the host is
+  // not empty.
+  bool can_show_bubble = !host.empty();
 
   if (event_data_) {
     // For state changes initiated within the ZoomController, information about
     // the change should be sent.
     ZoomChangedEventData zoom_change_data = *event_data_;
     event_data_.reset();
-    zoom_change_data.can_show_bubble |= can_show_bubble;
+    zoom_change_data.can_show_bubble = can_show_bubble;
     FOR_EACH_OBSERVER(
         ZoomObserver, observers_, OnZoomChanged(zoom_change_data));
   } else {

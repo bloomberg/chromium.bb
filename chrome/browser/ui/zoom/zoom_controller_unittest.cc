@@ -110,7 +110,7 @@ TEST_F(ZoomControllerTest, Observe_ZoomController) {
       old_zoom_level,
       old_zoom_level,
       ZoomController::ZOOM_MODE_ISOLATED,
-      true /* can_show_bubble */);
+      false /* can_show_bubble */);
   EXPECT_CALL(zoom_observer_, OnZoomChanged(zoom_change_data1)).Times(1);
 
   zoom_controller_->SetZoomMode(ZoomController::ZOOM_MODE_ISOLATED);
@@ -120,7 +120,7 @@ TEST_F(ZoomControllerTest, Observe_ZoomController) {
       old_zoom_level,
       new_zoom_level,
       ZoomController::ZOOM_MODE_ISOLATED,
-      true /* can_show_bubble */);
+      false /* can_show_bubble */);
   EXPECT_CALL(zoom_observer_, OnZoomChanged(zoom_change_data2)).Times(1);
 
   zoom_controller_->SetZoomLevel(new_zoom_level);
