@@ -494,6 +494,11 @@ Running: testBreakpointInCollectedReload
     Location created: a.js:10
 
   Waiting for breakpoint to be set in debugger again:
+    breakpointRemoved(a.js, 10, 0)
+    breakpointAdded(a.js, 10, 0, , true)
+    Location disposed: a.js:10
+    breakpointRemoved(a.js, 10, 0)
+    breakpointAdded(a.js, 10, 0, , true)
     Location created: a.js:10
   Dumping Breakpoint Locations
     UISourceCode (url='a.js', uri='a.js')
@@ -502,7 +507,6 @@ Running: testBreakpointInCollectedReload
     a.js:10 enabled:true condition:
   Resetting breakpoint manager
     breakpointRemoved(a.js, 10, 0)
-    Location disposed: a.js:10
     Location disposed: a.js:10
     debuggerModel.removeBreakpoint(a.js:10)
   Dumping Breakpoint Locations
