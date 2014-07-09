@@ -137,12 +137,6 @@ while [[ $# > 0 ]]; do
   shift
 done
 
-# Remove clang on bots where it was autoinstalled in r262025.
-if [[ -f "${LLVM_BUILD_DIR}/autoinstall_stamp" ]]; then
-  echo Removing autoinstalled clang and clobbering
-  rm -rf "${LLVM_BUILD_DIR}"
-fi
-
 if [[ -n "$if_needed" ]]; then
   if [[ "${OS}" == "Darwin" ]]; then
     # clang is used on Mac.
@@ -153,6 +147,12 @@ if [[ -n "$if_needed" ]]; then
   elif [[ -d "${LLVM_BUILD_DIR}" ]]; then
     # clang previously downloaded, remove third_party/llvm-build to prevent
     # updating.
+    true
+  elif [[ "${OS}" == "Linux" ]]; then
+    # Temporarily use clang on linux. Leave a stamp file behind, so that
+    # this script can remove clang again on machines where it was autoinstalled.
+    mkdir -p "${LLVM_BUILD_DIR}"
+    touch "${LLVM_BUILD_DIR}/autoinstall_stamp"
     true
   else
     # clang wasn't needed, not doing anything.
