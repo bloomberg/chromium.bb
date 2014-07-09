@@ -385,10 +385,14 @@ TEST_F(VolumeManagerTest, OnDiskEvent_Removed) {
   volume_manager()->OnDiskEvent(
       chromeos::disks::DiskMountManager::DISK_REMOVED, &kMountedDisk);
 
-  ASSERT_EQ(1U, observer.events().size());
+  ASSERT_EQ(2U, observer.events().size());
   const LoggingObserver::Event& event = observer.events()[0];
   EXPECT_EQ(LoggingObserver::Event::DISK_REMOVED, event.type);
   EXPECT_EQ("device1", event.device_path);
+
+  // Since the Disk has non-empty mount_path, it's regarded as hard unplugging.
+  EXPECT_EQ(LoggingObserver::Event::HARD_UNPLUGGED,
+            observer.events()[1].type);
 
   ASSERT_EQ(1U, disk_mount_manager_->unmount_requests().size());
   const FakeDiskMountManager::UnmountRequest& unmount_request =
@@ -524,31 +528,38 @@ TEST_F(VolumeManagerTest, OnMountEvent_Remounting) {
   disk_mount_manager_->MountPath(
       "device1", "", "", chromeos::MOUNT_TYPE_DEVICE);
 
-  // Emulate system suspend and then resume.
-  {
-    power_manager_client_->SendSuspendImminent();
-    power_manager_client_->SendSuspendDone();
-
-    // After resume, the device is unmounted and then mounted.
-    disk_mount_manager_->UnmountPath(
-        "device1", chromeos::UNMOUNT_OPTIONS_NONE,
-        chromeos::disks::DiskMountManager::UnmountPathCallback());
-    disk_mount_manager_->MountPath(
-        "device1", "", "", chromeos::MOUNT_TYPE_DEVICE);
-  }
-
-  LoggingObserver observer;
-  volume_manager()->AddObserver(&observer);
-
   const chromeos::disks::DiskMountManager::MountPointInfo kMountPoint(
       "device1",
       "mount1",
       chromeos::MOUNT_TYPE_DEVICE,
       chromeos::disks::MOUNT_CONDITION_NONE);
 
-  volume_manager()->OnMountEvent(chromeos::disks::DiskMountManager::MOUNTING,
-                                chromeos::MOUNT_ERROR_NONE,
-                                kMountPoint);
+  volume_manager()->OnMountEvent(
+      chromeos::disks::DiskMountManager::MOUNTING,
+      chromeos::MOUNT_ERROR_NONE,
+      kMountPoint);
+
+  LoggingObserver observer;
+
+  // Emulate system suspend and then resume.
+  {
+    power_manager_client_->SendSuspendImminent();
+    power_manager_client_->SendSuspendDone();
+
+    // After resume, the device is unmounted and then mounted.
+    volume_manager()->OnMountEvent(
+        chromeos::disks::DiskMountManager::UNMOUNTING,
+        chromeos::MOUNT_ERROR_NONE,
+        kMountPoint);
+
+    // Observe what happened for the mount event.
+    volume_manager()->AddObserver(&observer);
+
+    volume_manager()->OnMountEvent(
+        chromeos::disks::DiskMountManager::MOUNTING,
+        chromeos::MOUNT_ERROR_NONE,
+        kMountPoint);
+  }
 
   ASSERT_EQ(1U, observer.events().size());
   const LoggingObserver::Event& event = observer.events()[0];

@@ -254,8 +254,7 @@ VolumeManager::VolumeManager(
     : profile_(profile),
       drive_integration_service_(drive_integration_service),
       disk_mount_manager_(disk_mount_manager),
-      mounted_disk_monitor_(
-          new MountedDiskMonitor(power_manager_client, disk_mount_manager)),
+      mounted_disk_monitor_(new MountedDiskMonitor(power_manager_client)),
       file_system_provider_service_(file_system_provider_service),
       snapshot_manager_(new SnapshotManager(profile_)),
       weak_ptr_factory_(this) {
@@ -505,6 +504,8 @@ void VolumeManager::OnDiskEvent(
     const chromeos::disks::DiskMountManager::Disk* disk) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
+  mounted_disk_monitor_->OnDiskEvent(event, disk);
+
   // Disregard hidden devices.
   if (disk->is_hidden())
     return;
@@ -565,8 +566,10 @@ void VolumeManager::OnDeviceEvent(
     chromeos::disks::DiskMountManager::DeviceEvent event,
     const std::string& device_path) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  DVLOG(1) << "OnDeviceEvent: " << event << ", " << device_path;
 
+  mounted_disk_monitor_->OnDeviceEvent(event, device_path);
+
+  DVLOG(1) << "OnDeviceEvent: " << event << ", " << device_path;
   switch (event) {
     case chromeos::disks::DiskMountManager::DEVICE_ADDED:
       FOR_EACH_OBSERVER(VolumeManagerObserver, observers_,
@@ -591,6 +594,10 @@ void VolumeManager::OnMountEvent(
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK_NE(chromeos::MOUNT_TYPE_INVALID, mount_info.mount_type);
 
+  const chromeos::disks::DiskMountManager::Disk* disk =
+      disk_mount_manager_->FindDiskBySourcePath(mount_info.source_path);
+  mounted_disk_monitor_->OnMountEvent(event, error_code, mount_info, disk);
+
   if (mount_info.mount_type == chromeos::MOUNT_TYPE_ARCHIVE) {
     // If the file is not mounted now, tell it to drive file system so that
     // it can handle file caching correctly.
@@ -611,8 +618,6 @@ void VolumeManager::OnMountEvent(
   }
 
   // Notify a mounting/unmounting event to observers.
-  const chromeos::disks::DiskMountManager::Disk* disk =
-      disk_mount_manager_->FindDiskBySourcePath(mount_info.source_path);
   VolumeInfo volume_info =
       CreateVolumeInfoFromMountPointInfo(mount_info, disk);
   switch (event) {

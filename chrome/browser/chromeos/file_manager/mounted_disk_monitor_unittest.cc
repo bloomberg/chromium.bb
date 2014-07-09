@@ -7,8 +7,6 @@
 #include "base/basictypes.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
-#include "base/stl_util.h"
-#include "chrome/browser/chromeos/file_manager/fake_disk_mount_manager.h"
 #include "chromeos/dbus/fake_power_manager_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -29,25 +27,16 @@ scoped_ptr<chromeos::disks::DiskMountManager::Disk> CreateDisk(
 
 class MountedDiskMonitorTest : public testing::Test {
  protected:
-  MountedDiskMonitorTest() {
-  }
-
-  virtual ~MountedDiskMonitorTest() {
-  }
-
   virtual void SetUp() OVERRIDE {
     power_manager_client_.reset(new chromeos::FakePowerManagerClient);
-    disk_mount_manager_.reset(new FakeDiskMountManager);
     mounted_disk_monitor_.reset(new MountedDiskMonitor(
-        power_manager_client_.get(),
-        disk_mount_manager_.get()));
+        power_manager_client_.get()));
     mounted_disk_monitor_->set_resuming_time_span_for_testing(
         base::TimeDelta::FromSeconds(0));
   }
 
   base::MessageLoop message_loop_;
   scoped_ptr<chromeos::FakePowerManagerClient> power_manager_client_;
-  scoped_ptr<FakeDiskMountManager> disk_mount_manager_;
   scoped_ptr<MountedDiskMonitor> mounted_disk_monitor_;
 };
 
@@ -57,36 +46,35 @@ TEST_F(MountedDiskMonitorTest, WithoutSuspend) {
   scoped_ptr<chromeos::disks::DiskMountManager::Disk> disk(
       CreateDisk("removable_device1", "uuid1"));
 
-  chromeos::disks::DiskMountManager::Disk* disk_ptr = disk.get();
-
   const chromeos::disks::DiskMountManager::MountPointInfo kMountPoint(
       "removable_device1", "/tmp/removable_device1",
       chromeos::MOUNT_TYPE_DEVICE, chromeos::disks::MOUNT_CONDITION_NONE);
 
-  ASSERT_TRUE(disk_mount_manager_->AddDiskForTest(disk.release()));
-
   // First, the disk is not remounting.
-  EXPECT_FALSE(mounted_disk_monitor_->DiskIsRemounting(*disk_ptr));
+  EXPECT_FALSE(mounted_disk_monitor_->DiskIsRemounting(*disk));
 
   // Simple mounting and unmounting doesn't affect remounting state.
   mounted_disk_monitor_->OnMountEvent(
       chromeos::disks::DiskMountManager::MOUNTING,
       chromeos::MOUNT_ERROR_NONE,
-      kMountPoint);
-  EXPECT_FALSE(mounted_disk_monitor_->DiskIsRemounting(*disk_ptr));
+      kMountPoint,
+      disk.get());
+  EXPECT_FALSE(mounted_disk_monitor_->DiskIsRemounting(*disk));
 
   mounted_disk_monitor_->OnMountEvent(
       chromeos::disks::DiskMountManager::UNMOUNTING,
       chromeos::MOUNT_ERROR_NONE,
-      kMountPoint);
-  EXPECT_FALSE(mounted_disk_monitor_->DiskIsRemounting(*disk_ptr));
+      kMountPoint,
+      disk.get());
+  EXPECT_FALSE(mounted_disk_monitor_->DiskIsRemounting(*disk));
 
   // Mounting again also should not affect remounting state.
   mounted_disk_monitor_->OnMountEvent(
       chromeos::disks::DiskMountManager::MOUNTING,
       chromeos::MOUNT_ERROR_NONE,
-      kMountPoint);
-  EXPECT_FALSE(mounted_disk_monitor_->DiskIsRemounting(*disk_ptr));
+      kMountPoint,
+      disk.get());
+  EXPECT_FALSE(mounted_disk_monitor_->DiskIsRemounting(*disk));
 }
 
 // Makes sure that the unmounting after system resuming triggers the
@@ -97,9 +85,6 @@ TEST_F(MountedDiskMonitorTest, SuspendAndResume) {
   scoped_ptr<chromeos::disks::DiskMountManager::Disk> disk2(
       CreateDisk("removable_device2", "uuid2"));
 
-  chromeos::disks::DiskMountManager::Disk* disk1_ptr = disk1.get();
-  chromeos::disks::DiskMountManager::Disk* disk2_ptr = disk2.get();
-
   const chromeos::disks::DiskMountManager::MountPointInfo kMountPoint1(
       "removable_device1", "/tmp/removable_device1",
       chromeos::MOUNT_TYPE_DEVICE, chromeos::disks::MOUNT_CONDITION_NONE);
@@ -107,15 +92,13 @@ TEST_F(MountedDiskMonitorTest, SuspendAndResume) {
       "removable_device2", "/tmp/removable_device2",
       chromeos::MOUNT_TYPE_DEVICE, chromeos::disks::MOUNT_CONDITION_NONE);
 
-  ASSERT_TRUE(disk_mount_manager_->AddDiskForTest(disk1.release()));
-  ASSERT_TRUE(disk_mount_manager_->AddDiskForTest(disk2.release()));
-
   // Mount |disk1|.
   mounted_disk_monitor_->OnMountEvent(
       chromeos::disks::DiskMountManager::MOUNTING,
       chromeos::MOUNT_ERROR_NONE,
-      kMountPoint1);
-  EXPECT_FALSE(mounted_disk_monitor_->DiskIsRemounting(*disk1_ptr));
+      kMountPoint1,
+      disk1.get());
+  EXPECT_FALSE(mounted_disk_monitor_->DiskIsRemounting(*disk1));
 
   // Pseudo system suspend and resume.
   mounted_disk_monitor_->SuspendImminent();
@@ -126,27 +109,30 @@ TEST_F(MountedDiskMonitorTest, SuspendAndResume) {
   mounted_disk_monitor_->OnMountEvent(
       chromeos::disks::DiskMountManager::UNMOUNTING,
       chromeos::MOUNT_ERROR_NONE,
-      kMountPoint1);
-  EXPECT_TRUE(mounted_disk_monitor_->DiskIsRemounting(*disk1_ptr));
+      kMountPoint1,
+      disk1.get());
+  EXPECT_TRUE(mounted_disk_monitor_->DiskIsRemounting(*disk1));
 
   mounted_disk_monitor_->OnMountEvent(
       chromeos::disks::DiskMountManager::MOUNTING,
       chromeos::MOUNT_ERROR_NONE,
-      kMountPoint1);
-  EXPECT_TRUE(mounted_disk_monitor_->DiskIsRemounting(*disk1_ptr));
+      kMountPoint1,
+      disk1.get());
+  EXPECT_TRUE(mounted_disk_monitor_->DiskIsRemounting(*disk1));
 
   // New disk should not be "remounting."
-  EXPECT_FALSE(mounted_disk_monitor_->DiskIsRemounting(*disk2_ptr));
+  EXPECT_FALSE(mounted_disk_monitor_->DiskIsRemounting(*disk2));
   mounted_disk_monitor_->OnMountEvent(
       chromeos::disks::DiskMountManager::MOUNTING,
       chromeos::MOUNT_ERROR_NONE,
-      kMountPoint2);
-  EXPECT_FALSE(mounted_disk_monitor_->DiskIsRemounting(*disk2_ptr));
+      kMountPoint2,
+      disk2.get());
+  EXPECT_FALSE(mounted_disk_monitor_->DiskIsRemounting(*disk2));
 
   // After certain period, remounting state should be cleared.
   base::RunLoop().RunUntilIdle();  // Emulate time passage.
-  EXPECT_FALSE(mounted_disk_monitor_->DiskIsRemounting(*disk1_ptr));
-  EXPECT_FALSE(mounted_disk_monitor_->DiskIsRemounting(*disk2_ptr));
+  EXPECT_FALSE(mounted_disk_monitor_->DiskIsRemounting(*disk1));
+  EXPECT_FALSE(mounted_disk_monitor_->DiskIsRemounting(*disk2));
 }
 
 }  // namespace file_manager

@@ -22,22 +22,16 @@ const base::TimeDelta kResumingTimeSpan = base::TimeDelta::FromSeconds(5);
 }  // namespace
 
 MountedDiskMonitor::MountedDiskMonitor(
-    chromeos::PowerManagerClient* power_manager_client,
-    chromeos::disks::DiskMountManager* disk_mount_manager)
+    chromeos::PowerManagerClient* power_manager_client)
     : power_manager_client_(power_manager_client),
-      disk_mount_manager_(disk_mount_manager),
       is_resuming_(false),
       resuming_time_span_(kResumingTimeSpan),
       weak_factory_(this) {
   DCHECK(power_manager_client_);
-  DCHECK(disk_mount_manager_);
   power_manager_client_->AddObserver(this);
-  disk_mount_manager_->AddObserver(this);
-  disk_mount_manager_->RequestMountInfoRefresh();
 }
 
 MountedDiskMonitor::~MountedDiskMonitor() {
-  disk_mount_manager_->RemoveObserver(this);
   power_manager_client_->RemoveObserver(this);
 }
 
@@ -80,14 +74,13 @@ void MountedDiskMonitor::MarkAsHardUnpluggedReported(
 void MountedDiskMonitor::OnMountEvent(
     chromeos::disks::DiskMountManager::MountEvent event,
     chromeos::MountError error_code,
-    const chromeos::disks::DiskMountManager::MountPointInfo& mount_info) {
+    const chromeos::disks::DiskMountManager::MountPointInfo& mount_info,
+    const DiskMountManager::Disk* disk) {
   if (mount_info.mount_type != chromeos::MOUNT_TYPE_DEVICE)
     return;
 
   switch (event) {
     case DiskMountManager::MOUNTING: {
-      const DiskMountManager::Disk* disk =
-          disk_mount_manager_->FindDiskBySourcePath(mount_info.source_path);
       if (!disk || error_code != chromeos::MOUNT_ERROR_NONE)
         return;
       mounted_disks_[mount_info.source_path] = disk->fs_uuid();
@@ -131,12 +124,6 @@ void MountedDiskMonitor::OnDeviceEvent(
     if (it != hard_unplugged_.end())
       hard_unplugged_.erase(it);
   }
-}
-
-void MountedDiskMonitor::OnFormatEvent(
-    chromeos::disks::DiskMountManager::FormatEvent event,
-    chromeos::FormatError error_code,
-    const std::string& device_path) {
 }
 
 void MountedDiskMonitor::Reset() {
