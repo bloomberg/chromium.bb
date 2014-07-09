@@ -55,6 +55,7 @@ public:
     void clearPaginationInformation();
     bool isPaginatingColumns() const { return m_columnInfo; }
     bool isPaginated() const { return m_isPaginated; }
+    bool isClipped() const { return m_clipped; }
 
     // The page logical offset is the object's offset from the top of the page in the page progression
     // direction (so an x-offset in vertical text and a y-offset for horizontal text).
@@ -75,20 +76,41 @@ public:
 
     ColumnInfo* columnInfo() const { return m_columnInfo; }
 
+    bool cachedOffsetsEnabled() const { return m_cachedOffsetsEnabled; }
+
+    const LayoutRect& clipRect() const
+    {
+        ASSERT(m_cachedOffsetsEnabled);
+        return m_clipRect;
+    }
+    const LayoutSize& paintOffset() const
+    {
+        ASSERT(m_cachedOffsetsEnabled);
+        return m_paintOffset;
+    }
+
     RenderObject& renderer() const { return m_renderer; }
 
 private:
     friend class ForceHorriblySlowRectMapping;
 
     // Do not add anything apart from bitfields until after m_columnInfo. See https://bugs.webkit.org/show_bug.cgi?id=100173
-    bool m_isPaginated : 1;
+    bool m_clipped:1;
+    bool m_isPaginated:1;
     // If our page height has changed, this will force all blocks to relayout.
-    bool m_pageLogicalHeightChanged : 1;
+    bool m_pageLogicalHeightChanged:1;
 
+    bool m_cachedOffsetsEnabled:1;
     // If the enclosing pagination model is a column model, then this will store column information for easy retrieval/manipulation.
     ColumnInfo* m_columnInfo;
     LayoutState* m_next;
 
+    // FIXME: Distinguish between the layout clip rect and the paint clip rect which may be larger,
+    // e.g., because of composited scrolling.
+    LayoutRect m_clipRect;
+
+    // x/y offset from container. Includes relative positioning and scroll offsets.
+    LayoutSize m_paintOffset;
     // x/y offset from container. Does not include relative positioning or scroll offsets.
     LayoutSize m_layoutOffset;
 

@@ -1545,7 +1545,7 @@ bool RenderBox::repaintLayerRectsForImage(WrappedImagePtr image, const FillLayer
     return false;
 }
 
-void RenderBox::invalidateTreeAfterLayout(const PaintInvalidationState& paintInvalidationState)
+void RenderBox::invalidateTreeAfterLayout(const RenderLayerModelObject& paintInvalidationContainer)
 {
     // FIXME: Currently only using this logic for RenderBox and its ilk. Ideally, RenderBlockFlows with
     // inline children should track a dirty rect in local coordinates for dirty lines instead of invalidating
@@ -1559,21 +1559,21 @@ void RenderBox::invalidateTreeAfterLayout(const PaintInvalidationState& paintInv
         return;
 
     bool establishesNewPaintInvalidationContainer = isPaintInvalidationContainer();
-    const RenderLayerModelObject& newPaintInvalidationContainer = *adjustCompositedContainerForSpecialAncestors(establishesNewPaintInvalidationContainer ? this : &paintInvalidationState.paintInvalidationContainer());
+    const RenderLayerModelObject& newPaintInvalidationContainer = *adjustCompositedContainerForSpecialAncestors(establishesNewPaintInvalidationContainer ? this : &paintInvalidationContainer);
     // FIXME: This assert should be re-enabled when we move paint invalidation to after compositing update. crbug.com/360286
     // ASSERT(&newPaintInvalidationContainer == containerForPaintInvalidation());
 
     const LayoutRect oldPaintInvalidationRect = previousPaintInvalidationRect();
     const LayoutPoint oldPositionFromPaintInvalidationContainer = previousPositionFromPaintInvalidationContainer();
-    setPreviousPaintInvalidationRect(boundsRectForPaintInvalidation(&newPaintInvalidationContainer, &paintInvalidationState));
-    setPreviousPositionFromPaintInvalidationContainer(RenderLayer::positionFromPaintInvalidationContainer(this, &newPaintInvalidationContainer, &paintInvalidationState));
+    setPreviousPaintInvalidationRect(boundsRectForPaintInvalidation(&newPaintInvalidationContainer));
+    setPreviousPositionFromPaintInvalidationContainer(RenderLayer::positionFromPaintInvalidationContainer(this, &newPaintInvalidationContainer));
 
     // If we are set to do a full paint invalidation that means the RenderView will be
     // issue paint invalidations. We can then skip issuing of paint invalidations for the child
     // renderers as they'll be covered by the RenderView.
     if (view()->doingFullRepaint()) {
-        PaintInvalidationState childTreeWalkState(paintInvalidationState, *this, newPaintInvalidationContainer);
-        RenderObject::invalidateTreeAfterLayout(childTreeWalkState);
+        LayoutState state(*this, isTableRow() ? LayoutSize() : locationOffset());
+        RenderObject::invalidateTreeAfterLayout(newPaintInvalidationContainer);
         return;
     }
 
@@ -1584,7 +1584,7 @@ void RenderBox::invalidateTreeAfterLayout(const PaintInvalidationState& paintInv
         setShouldDoFullPaintInvalidationAfterLayout(true);
     }
 
-    if (!invalidatePaintIfNeeded(newPaintInvalidationContainer, oldPaintInvalidationRect, oldPositionFromPaintInvalidationContainer))
+    if (!invalidatePaintIfNeeded(&newPaintInvalidationContainer, oldPaintInvalidationRect, oldPositionFromPaintInvalidationContainer))
         invalidatePaintForOverflowIfNeeded();
 
     // Issue paint invalidations for any scrollbars if there is a scrollable area for this renderer.
@@ -1598,8 +1598,17 @@ void RenderBox::invalidateTreeAfterLayout(const PaintInvalidationState& paintInv
         }
     }
 
-    PaintInvalidationState childTreeWalkState(paintInvalidationState, *this, newPaintInvalidationContainer);
-    RenderObject::invalidateTreeAfterLayout(childTreeWalkState);
+    // FIXME: LayoutState should be enabled for other paint invalidation containers than the RenderView. crbug.com/363834
+    if (establishesNewPaintInvalidationContainer && !isRenderView()) {
+        ForceHorriblySlowRectMapping slowRectMapping(*this);
+        RenderObject::invalidateTreeAfterLayout(newPaintInvalidationContainer);
+    } else {
+        // FIXME: This concept of a tree walking state for fast lookups should be generalized away from
+        // just layout.
+        // FIXME: Table rows shouldn't be special-cased.
+        LayoutState state(*this, isTableRow() ? LayoutSize() : locationOffset());
+        RenderObject::invalidateTreeAfterLayout(newPaintInvalidationContainer);
+    }
 }
 
 bool RenderBox::pushContentsClip(PaintInfo& paintInfo, const LayoutPoint& accumulatedOffset, ContentsClipBehavior contentsClipBehavior)
@@ -1780,17 +1789,20 @@ LayoutUnit RenderBox::perpendicularContainingBlockLogicalHeight() const
     return cb->adjustContentBoxLogicalHeightForBoxSizing(logicalHeightLength.value());
 }
 
-void RenderBox::mapLocalToContainer(const RenderLayerModelObject* repaintContainer, TransformState& transformState, MapCoordinatesFlags mode, bool* wasFixed, const PaintInvalidationState* paintInvalidationState) const
+void RenderBox::mapLocalToContainer(const RenderLayerModelObject* repaintContainer, TransformState& transformState, MapCoordinatesFlags mode, bool* wasFixed) const
 {
     if (repaintContainer == this)
         return;
 
-    if (paintInvalidationState && paintInvalidationState->canMapToContainer(repaintContainer)) {
-        LayoutSize offset = paintInvalidationState->paintOffset() + locationOffset();
-        if (style()->hasInFlowPosition() && layer())
-            offset += layer()->offsetForInFlowPosition();
-        transformState.move(offset);
-        return;
+    if (RenderView* v = view()) {
+        if (v->canMapUsingLayoutStateForContainer(repaintContainer)) {
+            LayoutState* layoutState = v->layoutState();
+            LayoutSize offset = layoutState->paintOffset() + locationOffset();
+            if (style()->hasInFlowPosition() && layer())
+                offset += layer()->offsetForInFlowPosition();
+            transformState.move(offset);
+            return;
+        }
     }
 
     bool containerSkipped;
@@ -1835,6 +1847,9 @@ void RenderBox::mapLocalToContainer(const RenderLayerModelObject* repaintContain
 
 void RenderBox::mapAbsoluteToLocalPoint(MapCoordinatesFlags mode, TransformState& transformState) const
 {
+    // We don't expect to be called during layout.
+    ASSERT(!view() || !view()->layoutStateCachedOffsetsEnabled());
+
     bool isFixedPos = style()->position() == FixedPosition;
     bool hasTransform = hasLayer() && layer()->transform();
     if (hasTransform && !isFixedPos) {
@@ -1952,17 +1967,17 @@ void RenderBox::deleteLineBoxWrapper()
     }
 }
 
-LayoutRect RenderBox::clippedOverflowRectForPaintInvalidation(const RenderLayerModelObject* paintInvalidationContainer, const PaintInvalidationState* paintInvalidationState) const
+LayoutRect RenderBox::clippedOverflowRectForPaintInvalidation(const RenderLayerModelObject* paintInvalidationContainer) const
 {
     if (style()->visibility() != VISIBLE && enclosingLayer()->subtreeIsInvisible())
         return LayoutRect();
 
     LayoutRect r = visualOverflowRect();
-    mapRectToPaintInvalidationBacking(paintInvalidationContainer, r, paintInvalidationState);
+    mapRectToPaintInvalidationBacking(paintInvalidationContainer, r);
     return r;
 }
 
-void RenderBox::mapRectToPaintInvalidationBacking(const RenderLayerModelObject* paintInvalidationContainer, LayoutRect& rect, bool fixed, const PaintInvalidationState* paintInvalidationState) const
+void RenderBox::mapRectToPaintInvalidationBacking(const RenderLayerModelObject* paintInvalidationContainer, LayoutRect& rect, bool fixed) const
 {
     // The rect we compute at each step is shifted by our x/y offset in the parent container's coordinate space.
     // Only when we cross a writing mode boundary will we have to possibly flipForWritingMode (to convert into a more appropriate
@@ -1973,20 +1988,24 @@ void RenderBox::mapRectToPaintInvalidationBacking(const RenderLayerModelObject* 
     // physical when we hit a paintInvalidationContainer boundary. Therefore the final rect returned is always in the
     // physical coordinate space of the paintInvalidationContainer.
     RenderStyle* styleToUse = style();
+    if (RenderView* v = view()) {
+        // LayoutState is only valid for root-relative, non-fixed position repainting
+        if (v->canMapUsingLayoutStateForContainer(paintInvalidationContainer) && styleToUse->position() != FixedPosition) {
+            LayoutState* layoutState = v->layoutState();
 
-    if (paintInvalidationState && paintInvalidationState->canMapToContainer(paintInvalidationContainer) && styleToUse->position() != FixedPosition) {
-        if (layer() && layer()->transform())
-            rect = layer()->transform()->mapRect(pixelSnappedIntRect(rect));
+            if (layer() && layer()->transform())
+                rect = layer()->transform()->mapRect(pixelSnappedIntRect(rect));
 
-        // We can't trust the bits on RenderObject, because this might be called while re-resolving style.
-        if (styleToUse->hasInFlowPosition() && layer())
-            rect.move(layer()->offsetForInFlowPosition());
+            // We can't trust the bits on RenderObject, because this might be called while re-resolving style.
+            if (styleToUse->hasInFlowPosition() && layer())
+                rect.move(layer()->offsetForInFlowPosition());
 
-        rect.moveBy(location());
-        rect.move(paintInvalidationState->paintOffset());
-        if (paintInvalidationState->isClipped())
-            rect.intersect(paintInvalidationState->clipRect());
-        return;
+            rect.moveBy(location());
+            rect.move(layoutState->paintOffset());
+            if (layoutState->isClipped())
+                rect.intersect(layoutState->clipRect());
+            return;
+        }
     }
 
     if (hasReflection())
@@ -2055,7 +2074,7 @@ void RenderBox::mapRectToPaintInvalidationBacking(const RenderLayerModelObject* 
         return;
     }
 
-    o->mapRectToPaintInvalidationBacking(paintInvalidationContainer, rect, fixed, paintInvalidationState);
+    o->mapRectToPaintInvalidationBacking(paintInvalidationContainer, rect, fixed);
 }
 
 void RenderBox::invalidatePaintForOverhangingFloats(bool)
@@ -4020,7 +4039,7 @@ bool RenderBox::avoidsFloats() const
     return isReplaced() || hasOverflowClip() || isHR() || isLegend() || isWritingModeRoot() || isFlexItemIncludingDeprecated();
 }
 
-InvalidationReason RenderBox::getPaintInvalidationReason(const RenderLayerModelObject& paintInvalidationContainer,
+InvalidationReason RenderBox::getPaintInvalidationReason(const RenderLayerModelObject* paintInvalidationContainer,
     const LayoutRect& oldBounds, const LayoutPoint& oldLocation, const LayoutRect& newBounds, const LayoutPoint& newLocation)
 {
     InvalidationReason invalidationReason = RenderBoxModelObject::getPaintInvalidationReason(paintInvalidationContainer, oldBounds, oldLocation, newBounds, newLocation);
@@ -4046,7 +4065,7 @@ InvalidationReason RenderBox::getPaintInvalidationReason(const RenderLayerModelO
     return invalidationReason;
 }
 
-void RenderBox::incrementallyInvalidatePaint(const RenderLayerModelObject& paintInvalidationContainer, const LayoutRect& oldBounds, const LayoutRect& newBounds)
+void RenderBox::incrementallyInvalidatePaint(const RenderLayerModelObject* paintInvalidationContainer, const LayoutRect& oldBounds, const LayoutRect& newBounds)
 {
     RenderBoxModelObject::incrementallyInvalidatePaint(paintInvalidationContainer, oldBounds, newBounds);
 
@@ -4073,7 +4092,7 @@ void RenderBox::incrementallyInvalidatePaint(const RenderLayerModelObject& paint
         LayoutUnit right = std::min<LayoutUnit>(newBounds.maxX(), oldBounds.maxX());
         if (rightRect.x() < right) {
             rightRect.setWidth(std::min(rightRect.width(), right - rightRect.x()));
-            invalidatePaintUsingContainer(&paintInvalidationContainer, rightRect, InvalidationIncremental);
+            invalidatePaintUsingContainer(paintInvalidationContainer, rightRect, InvalidationIncremental);
         }
     }
 
@@ -4094,7 +4113,7 @@ void RenderBox::incrementallyInvalidatePaint(const RenderLayerModelObject& paint
         LayoutUnit bottom = std::min(newBounds.maxY(), oldBounds.maxY());
         if (bottomRect.y() < bottom) {
             bottomRect.setHeight(std::min(bottomRect.height(), bottom - bottomRect.y()));
-            invalidatePaintUsingContainer(&paintInvalidationContainer, bottomRect, InvalidationIncremental);
+            invalidatePaintUsingContainer(paintInvalidationContainer, bottomRect, InvalidationIncremental);
         }
     }
 }

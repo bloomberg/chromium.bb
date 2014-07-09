@@ -76,7 +76,7 @@ private:
     virtual void computePreferredLogicalWidths() OVERRIDE FINAL;
     virtual void paintReplaced(PaintInfo&, const LayoutPoint&) { }
 
-    virtual LayoutRect clippedOverflowRectForPaintInvalidation(const RenderLayerModelObject* paintInvalidationContainer, const PaintInvalidationState* = 0) const OVERRIDE;
+    virtual LayoutRect clippedOverflowRectForPaintInvalidation(const RenderLayerModelObject* paintInvalidationContainer) const OVERRIDE;
 
     virtual PositionWithAffinity positionForPoint(const LayoutPoint&) OVERRIDE FINAL;
 

@@ -563,7 +563,7 @@ bool RenderReplaced::isSelected() const
     ASSERT(0);
     return false;
 }
-LayoutRect RenderReplaced::clippedOverflowRectForPaintInvalidation(const RenderLayerModelObject* paintInvalidationContainer, const PaintInvalidationState* paintInvalidationState) const
+LayoutRect RenderReplaced::clippedOverflowRectForPaintInvalidation(const RenderLayerModelObject* paintInvalidationContainer) const
 {
     if (style()->visibility() != VISIBLE && !enclosingLayer()->hasVisibleContent())
         return LayoutRect();
@@ -571,7 +571,7 @@ LayoutRect RenderReplaced::clippedOverflowRectForPaintInvalidation(const RenderL
     // The selectionRect can project outside of the overflowRect, so take their union
     // for repainting to avoid selection painting glitches.
     LayoutRect r = isSelected() ? localSelectionRect() : visualOverflowRect();
-    mapRectToPaintInvalidationBacking(paintInvalidationContainer, r, false /* fixed */, paintInvalidationState);
+    mapRectToPaintInvalidationBacking(paintInvalidationContainer, r);
     return r;
 }
 

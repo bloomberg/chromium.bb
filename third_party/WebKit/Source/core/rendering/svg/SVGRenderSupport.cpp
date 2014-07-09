@@ -43,7 +43,7 @@
 
 namespace WebCore {
 
-LayoutRect SVGRenderSupport::clippedOverflowRectForRepaint(const RenderObject* object, const RenderLayerModelObject* repaintContainer, const PaintInvalidationState* paintInvalidationState)
+LayoutRect SVGRenderSupport::clippedOverflowRectForRepaint(const RenderObject* object, const RenderLayerModelObject* repaintContainer)
 {
     // Return early for any cases where we don't actually paint
     if (object->style()->visibility() != VISIBLE && !object->enclosingLayer()->hasVisibleContent())
@@ -52,20 +52,20 @@ LayoutRect SVGRenderSupport::clippedOverflowRectForRepaint(const RenderObject* o
     // Pass our local paint rect to computeRectForRepaint() which will
     // map to parent coords and recurse up the parent chain.
     FloatRect repaintRect = object->paintInvalidationRectInLocalCoordinates();
-    object->computeFloatRectForPaintInvalidation(repaintContainer, repaintRect, paintInvalidationState);
+    object->computeFloatRectForPaintInvalidation(repaintContainer, repaintRect);
     return enclosingLayoutRect(repaintRect);
 }
 
-void SVGRenderSupport::computeFloatRectForRepaint(const RenderObject* object, const RenderLayerModelObject* repaintContainer, FloatRect& repaintRect, bool fixed, const PaintInvalidationState* paintInvalidationState)
+void SVGRenderSupport::computeFloatRectForRepaint(const RenderObject* object, const RenderLayerModelObject* repaintContainer, FloatRect& repaintRect, bool fixed)
 {
     repaintRect.inflate(object->style()->outlineWidth());
 
     // Translate to coords in our parent renderer, and then call computeFloatRectForPaintInvalidation() on our parent.
     repaintRect = object->localToParentTransform().mapRect(repaintRect);
-    object->parent()->computeFloatRectForPaintInvalidation(repaintContainer, repaintRect, fixed, paintInvalidationState);
+    object->parent()->computeFloatRectForPaintInvalidation(repaintContainer, repaintRect, fixed);
 }
 
-void SVGRenderSupport::mapLocalToContainer(const RenderObject* object, const RenderLayerModelObject* repaintContainer, TransformState& transformState, bool* wasFixed, const PaintInvalidationState* paintInvalidationState)
+void SVGRenderSupport::mapLocalToContainer(const RenderObject* object, const RenderLayerModelObject* repaintContainer, TransformState& transformState, bool* wasFixed)
 {
     transformState.applyTransform(object->localToParentTransform());
 
@@ -78,7 +78,7 @@ void SVGRenderSupport::mapLocalToContainer(const RenderObject* object, const Ren
         transformState.applyTransform(toRenderSVGRoot(parent)->localToBorderBoxTransform());
 
     MapCoordinatesFlags mode = UseTransforms;
-    parent->mapLocalToContainer(repaintContainer, transformState, mode, wasFixed, paintInvalidationState);
+    parent->mapLocalToContainer(repaintContainer, transformState, mode, wasFixed);
 }
 
 const RenderObject* SVGRenderSupport::pushMappingToContainer(const RenderObject* object, const RenderLayerModelObject* ancestorToStopAt, RenderGeometryMap& geometryMap)

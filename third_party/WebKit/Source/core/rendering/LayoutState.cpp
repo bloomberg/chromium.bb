@@ -34,8 +34,10 @@
 namespace WebCore {
 
 LayoutState::LayoutState(LayoutUnit pageLogicalHeight, bool pageLogicalHeightChanged, RenderView& view)
-    : m_isPaginated(pageLogicalHeight)
+    : m_clipped(false)
+    , m_isPaginated(pageLogicalHeight)
     , m_pageLogicalHeightChanged(pageLogicalHeightChanged)
+    , m_cachedOffsetsEnabled(true)
     , m_columnInfo(0)
     , m_next(0)
     , m_pageLogicalHeight(pageLogicalHeight)
@@ -51,21 +53,44 @@ LayoutState::LayoutState(RenderBox& renderer, const LayoutSize& offset, LayoutUn
     , m_renderer(renderer)
 {
     renderer.view()->pushLayoutState(*this);
+    m_cachedOffsetsEnabled = m_next->m_cachedOffsetsEnabled && renderer.supportsLayoutStateCachedOffsets();
     bool fixed = renderer.isOutOfFlowPositioned() && renderer.style()->position() == FixedPosition;
     if (fixed) {
         // FIXME: This doesn't work correctly with transforms.
         FloatPoint fixedOffset = renderer.view()->localToAbsolute(FloatPoint(), IsFixed);
-        m_layoutOffset = LayoutSize(fixedOffset.x(), fixedOffset.y()) + offset;
+        m_paintOffset = LayoutSize(fixedOffset.x(), fixedOffset.y()) + offset;
     } else {
-        m_layoutOffset = m_next->m_layoutOffset + offset;
+        m_paintOffset = m_next->m_paintOffset + offset;
     }
 
     if (renderer.isOutOfFlowPositioned() && !fixed) {
         if (RenderObject* container = renderer.container()) {
-            if (container->style()->hasInFlowPosition() && container->isRenderInline())
-                m_layoutOffset += toRenderInline(container)->offsetForInFlowPositionedInline(renderer);
+            if (container->isRelPositioned() && container->isRenderInline())
+                m_paintOffset += toRenderInline(container)->offsetForInFlowPositionedInline(renderer);
         }
     }
+
+    m_layoutOffset = m_paintOffset;
+
+    if (renderer.isRelPositioned() && renderer.hasLayer())
+        m_paintOffset += renderer.layer()->offsetForInFlowPosition();
+
+    m_clipped = !fixed && m_next->m_clipped;
+    if (m_clipped)
+        m_clipRect = m_next->m_clipRect;
+
+    if (renderer.hasOverflowClip()) {
+        LayoutRect clipRect(toPoint(m_paintOffset), renderer.cachedSizeForOverflowClip());
+        if (m_clipped)
+            m_clipRect.intersect(clipRect);
+        else {
+            m_clipRect = clipRect;
+            m_clipped = true;
+        }
+
+        m_paintOffset -= renderer.scrolledContentOffset();
+    }
+
     // If we establish a new page height, then cache the offset to the top of the first page.
     // We can compare this later on to figure out what part of the page we're actually on,
     if (pageLogicalHeight || m_columnInfo || renderer.isRenderFlowThread()) {
@@ -97,9 +122,49 @@ LayoutState::LayoutState(RenderBox& renderer, const LayoutSize& offset, LayoutUn
     // FIXME: <http://bugs.webkit.org/show_bug.cgi?id=13443> Apply control clip if present.
 }
 
+LayoutState::LayoutState(RenderInline& renderer)
+    : m_next(renderer.view()->layoutState())
+    , m_renderer(renderer)
+{
+    ASSERT(m_next);
+
+    renderer.view()->pushLayoutState(*this);
+    m_cachedOffsetsEnabled = m_next->m_cachedOffsetsEnabled && renderer.supportsLayoutStateCachedOffsets();
+
+    m_paintOffset = m_next->m_paintOffset;
+    // Handle relative positioned inline.
+    if (renderer.style()->hasInFlowPosition() && renderer.layer())
+        m_paintOffset += renderer.layer()->offsetForInFlowPosition();
+
+    // RenderInline can't be out-of-flow positioned.
+
+    // The following can't apply to RenderInline so we just propagate them.
+    m_clipped = m_next->m_clipped;
+    m_clipRect = m_next->m_clipRect;
+
+    m_pageLogicalHeight = m_next->m_pageLogicalHeight;
+    m_pageLogicalHeightChanged = m_next->m_pageLogicalHeightChanged;
+    m_pageOffset = m_next->m_pageOffset;
+
+    m_columnInfo = m_next->m_columnInfo;
+}
+
+inline static bool shouldDisableLayoutStateForSubtree(RenderObject& renderer)
+{
+    RenderObject* object = &renderer;
+    while (object) {
+        if (object->supportsLayoutStateCachedOffsets())
+            return true;
+        object = object->container();
+    }
+    return false;
+}
+
 LayoutState::LayoutState(RenderObject& root)
-    : m_isPaginated(false)
+    : m_clipped(false)
+    , m_isPaginated(false)
     , m_pageLogicalHeightChanged(false)
+    , m_cachedOffsetsEnabled(shouldDisableLayoutStateForSubtree(root))
     , m_columnInfo(0)
     , m_next(root.view()->layoutState())
     , m_pageLogicalHeight(0)
@@ -115,7 +180,14 @@ LayoutState::LayoutState(RenderObject& root)
 
     RenderObject* container = root.container();
     FloatPoint absContentPoint = container->localToAbsolute(FloatPoint(), UseTransforms);
-    m_layoutOffset = LayoutSize(absContentPoint.x(), absContentPoint.y());
+    m_paintOffset = LayoutSize(absContentPoint.x(), absContentPoint.y());
+
+    if (container->hasOverflowClip()) {
+        m_clipped = true;
+        RenderBox* containerBox = toRenderBox(container);
+        m_clipRect = LayoutRect(toPoint(m_paintOffset), containerBox->cachedSizeForOverflowClip());
+        m_paintOffset -= containerBox->scrolledContentOffset();
+    }
 }
 
 LayoutState::~LayoutState()

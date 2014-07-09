@@ -2632,6 +2632,9 @@ bool RenderBoxModelObject::shouldAntialiasLines(GraphicsContext* context)
 
 void RenderBoxModelObject::mapAbsoluteToLocalPoint(MapCoordinatesFlags mode, TransformState& transformState) const
 {
+    // We don't expect to be called during layout.
+    ASSERT(!view() || !view()->layoutStateCachedOffsetsEnabled());
+
     RenderObject* o = container();
     if (!o)
         return;

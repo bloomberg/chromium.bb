@@ -274,6 +274,9 @@ void RenderListItem::updateMarkerLocationAndInvalidateWidth()
     // FIXME: We should not modify the structure of the render tree
     // during layout. crbug.com/370461
     DeprecatedDisableModifyRenderTreeStructureAsserts disabler;
+    // Removing and adding the marker can trigger repainting in
+    // containers other than ourselves, so we need to disable LayoutState.
+    ForceHorriblySlowRectMapping slowRectMapping(*this);
     if (updateMarkerLocation()) {
         // If the marker is inside we need to redo the preferred width calculations
         // as the size of the item now includes the size of the list marker.

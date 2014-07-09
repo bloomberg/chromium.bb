@@ -119,7 +119,7 @@ private:
     InlineBox* culledInlineFirstLineBox() const;
     InlineBox* culledInlineLastLineBox() const;
 
-    virtual void invalidateTreeAfterLayout(const PaintInvalidationState&) OVERRIDE FINAL;
+    virtual void invalidateTreeAfterLayout(const RenderLayerModelObject&) OVERRIDE FINAL;
 
     template<typename GeneratorContext>
     void generateLineBoxRects(GeneratorContext& yield) const;
@@ -147,11 +147,11 @@ private:
     virtual LayoutUnit offsetWidth() const OVERRIDE FINAL { return linesBoundingBox().width(); }
     virtual LayoutUnit offsetHeight() const OVERRIDE FINAL { return linesBoundingBox().height(); }
 
-    virtual LayoutRect clippedOverflowRectForPaintInvalidation(const RenderLayerModelObject* paintInvalidationContainer, const PaintInvalidationState* = 0) const OVERRIDE;
-    virtual LayoutRect rectWithOutlineForPaintInvalidation(const RenderLayerModelObject* paintInvalidationContainer, LayoutUnit outlineWidth, const PaintInvalidationState* = 0) const OVERRIDE FINAL;
-    virtual void mapRectToPaintInvalidationBacking(const RenderLayerModelObject* paintInvalidationContainer, LayoutRect&, bool fixed, const PaintInvalidationState* = 0) const OVERRIDE FINAL;
+    virtual LayoutRect clippedOverflowRectForPaintInvalidation(const RenderLayerModelObject* paintInvalidationContainer) const OVERRIDE;
+    virtual LayoutRect rectWithOutlineForPaintInvalidation(const RenderLayerModelObject* paintInvalidationContainer, LayoutUnit outlineWidth) const OVERRIDE FINAL;
+    virtual void mapRectToPaintInvalidationBacking(const RenderLayerModelObject* paintInvalidationContainer, LayoutRect&, bool fixed) const OVERRIDE FINAL;
 
-    virtual void mapLocalToContainer(const RenderLayerModelObject* repaintContainer, TransformState&, MapCoordinatesFlags = ApplyContainerFlip, bool* wasFixed = 0, const PaintInvalidationState* = 0) const OVERRIDE;
+    virtual void mapLocalToContainer(const RenderLayerModelObject* repaintContainer, TransformState&, MapCoordinatesFlags = ApplyContainerFlip, bool* wasFixed = 0) const OVERRIDE;
 
     virtual PositionWithAffinity positionForPoint(const LayoutPoint&) OVERRIDE FINAL;
 

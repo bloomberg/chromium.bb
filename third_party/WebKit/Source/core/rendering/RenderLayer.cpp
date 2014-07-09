@@ -552,22 +552,29 @@ void RenderLayer::updatePagination()
     }
 }
 
-LayoutPoint RenderLayer::positionFromPaintInvalidationContainer(const RenderObject* renderObject, const RenderLayerModelObject* paintInvalidationContainer, const PaintInvalidationState* paintInvalidationState)
+LayoutPoint RenderLayer::positionFromPaintInvalidationContainer(const RenderObject* renderObject, const RenderLayerModelObject* paintInvalidationContainer)
 {
     if (!paintInvalidationContainer || !paintInvalidationContainer->layer()->groupedMapping())
-        return renderObject->positionFromPaintInvalidationContainer(paintInvalidationContainer, paintInvalidationState);
+        return renderObject->positionFromPaintInvalidationContainer(paintInvalidationContainer);
 
     RenderLayerModelObject* transformedAncestor = paintInvalidationContainer->layer()->enclosingTransformedAncestor()->renderer();
     if (!transformedAncestor)
-        return renderObject->positionFromPaintInvalidationContainer(paintInvalidationContainer, paintInvalidationState);
+        return renderObject->positionFromPaintInvalidationContainer(paintInvalidationContainer);
 
-    LayoutPoint point = renderObject->positionFromPaintInvalidationContainer(transformedAncestor, paintInvalidationState);
+    // If the transformedAncestor is actually the RenderView, we might get
+    // confused and think that we can use LayoutState. Ideally, we'd made
+    // LayoutState work for all composited layers as well, but until then
+    // we need to disable LayoutState for squashed layers.
+    ForceHorriblySlowRectMapping slowRectMapping(*transformedAncestor);
+
+    LayoutPoint point = renderObject->positionFromPaintInvalidationContainer(transformedAncestor);
     point.moveBy(-paintInvalidationContainer->layer()->groupedMapping()->squashingOffsetFromTransformedAncestor());
     return point;
 }
 
 void RenderLayer::mapRectToPaintBackingCoordinates(const RenderLayerModelObject* paintInvalidationContainer, LayoutRect& rect)
 {
+
     RenderLayer* paintInvalidationLayer = paintInvalidationContainer->layer();
     if (!paintInvalidationLayer->groupedMapping()) {
         rect.move(paintInvalidationLayer->compositedLayerMapping()->contentOffsetInCompositingLayer());
@@ -578,6 +585,12 @@ void RenderLayer::mapRectToPaintBackingCoordinates(const RenderLayerModelObject*
     if (!transformedAncestor)
         return;
 
+    // If the transformedAncestor is actually the RenderView, we might get
+    // confused and think that we can use LayoutState. Ideally, we'd made
+    // LayoutState work for all composited layers as well, but until then
+    // we need to disable LayoutState for squashed layers.
+    ForceHorriblySlowRectMapping slowRectMapping(*transformedAncestor);
+
     // |repaintContainer| may have a local 2D transform on it, so take that into account when mapping into the space of the
     // transformed ancestor.
     rect = LayoutRect(paintInvalidationContainer->localToContainerQuad(FloatRect(rect), transformedAncestor).boundingBox());
@@ -585,10 +598,10 @@ void RenderLayer::mapRectToPaintBackingCoordinates(const RenderLayerModelObject*
     rect.moveBy(-paintInvalidationLayer->groupedMapping()->squashingOffsetFromTransformedAncestor());
 }
 
-void RenderLayer::mapRectToPaintInvalidationBacking(const RenderObject* renderObject, const RenderLayerModelObject* paintInvalidationContainer, LayoutRect& rect, const PaintInvalidationState* paintInvalidationState)
+void RenderLayer::mapRectToPaintInvalidationBacking(const RenderObject* renderObject, const RenderLayerModelObject* paintInvalidationContainer, LayoutRect& rect)
 {
     if (!paintInvalidationContainer->layer()->groupedMapping()) {
-        renderObject->mapRectToPaintInvalidationBacking(paintInvalidationContainer, rect, paintInvalidationState);
+        renderObject->mapRectToPaintInvalidationBacking(paintInvalidationContainer, rect);
         return;
     }
 
@@ -596,17 +609,17 @@ void RenderLayer::mapRectToPaintInvalidationBacking(const RenderObject* renderOb
     // layer. This is because all layers that squash together need to repaint w.r.t. a single container that is
     // an ancestor of all of them, in order to properly take into account any local transforms etc.
     // FIXME: remove this special-case code that works around the repainting code structure.
-    renderObject->mapRectToPaintInvalidationBacking(paintInvalidationContainer, rect, paintInvalidationState);
+    renderObject->mapRectToPaintInvalidationBacking(paintInvalidationContainer, rect);
 
     RenderLayer::mapRectToPaintBackingCoordinates(paintInvalidationContainer, rect);
 }
 
-LayoutRect RenderLayer::computePaintInvalidationRect(const RenderObject* renderObject, const RenderLayer* paintInvalidationContainer, const PaintInvalidationState* paintInvalidationState)
+LayoutRect RenderLayer::computePaintInvalidationRect(const RenderObject* renderObject, const RenderLayer* paintInvalidationContainer)
 {
     if (!paintInvalidationContainer->groupedMapping())
         return renderObject->computePaintInvalidationRect(paintInvalidationContainer->renderer());
     LayoutRect rect = renderObject->clippedOverflowRectForPaintInvalidation(paintInvalidationContainer->renderer());
-    mapRectToPaintInvalidationBacking(paintInvalidationContainer->renderer(), paintInvalidationContainer->renderer(), rect, paintInvalidationState);
+    mapRectToPaintInvalidationBacking(paintInvalidationContainer->renderer(), paintInvalidationContainer->renderer(), rect);
     return rect;
 }
 

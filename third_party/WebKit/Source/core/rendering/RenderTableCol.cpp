@@ -94,7 +94,7 @@ bool RenderTableCol::canHaveChildren() const
     return isTableColumnGroup();
 }
 
-LayoutRect RenderTableCol::clippedOverflowRectForPaintInvalidation(const RenderLayerModelObject* paintInvalidationContainer, const PaintInvalidationState* paintInvalidationState) const
+LayoutRect RenderTableCol::clippedOverflowRectForPaintInvalidation(const RenderLayerModelObject* paintInvalidationContainer) const
 {
     // For now, just repaint the whole table.
     // FIXME: Find a better way to do this, e.g., need to repaint all the cells that we
@@ -104,7 +104,7 @@ LayoutRect RenderTableCol::clippedOverflowRectForPaintInvalidation(const RenderL
     RenderTable* parentTable = table();
     if (!parentTable)
         return LayoutRect();
-    return parentTable->clippedOverflowRectForPaintInvalidation(paintInvalidationContainer, paintInvalidationState);
+    return parentTable->clippedOverflowRectForPaintInvalidation(paintInvalidationContainer);
 }
 
 void RenderTableCol::imageChanged(WrappedImagePtr, const IntRect*)
