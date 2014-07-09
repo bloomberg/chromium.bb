@@ -1473,7 +1473,9 @@ TEST_F(PipelineIntegrationTest,
 }
 
 // Verify that VP9 video with 4:4:4 subsampling can be played back.
-TEST_F(PipelineIntegrationTest, P444_VP9_WebM) {
+// TODO(johannkoenig): Reenable after landing libvpx roll
+// http://www.crbug.com/392309
+TEST_F(PipelineIntegrationTest, DISABLED_P444_VP9_WebM) {
   ASSERT_TRUE(Start(GetTestDataFilePath("bear-320x240-P444.webm"),
                     PIPELINE_OK));
   Play();
