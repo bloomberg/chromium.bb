@@ -104,9 +104,13 @@ class UI_CHROMEOS_EXPORT TouchExplorationController
   virtual ~TouchExplorationController();
 
   void CallTapTimerNowForTesting();
+  void CallTapTimerNowIfRunningForTesting();
   void SetEventHandlerForTesting(ui::EventHandler* event_handler_for_testing);
   bool IsInNoFingersDownStateForTesting() const;
   bool IsInGestureInProgressStateForTesting() const;
+  // VLOGs should be suppressed in tests that generate a lot of logs,
+  // for example permutations of nine touch events.
+  void SuppressVLOGsForTesting(bool suppress);
 
  private:
   // Overridden from ui::EventRewriter
@@ -295,6 +299,9 @@ class UI_CHROMEOS_EXPORT TouchExplorationController
 
   // A copy of the previous event passed.
   scoped_ptr<ui::TouchEvent> prev_event_;
+
+  // This toggles whether VLOGS are turned on or not.
+  bool VLOG_on_;
 
   DISALLOW_COPY_AND_ASSIGN(TouchExplorationController);
 };

@@ -29,7 +29,8 @@ TouchExplorationController::TouchExplorationController(
       state_(NO_FINGERS_DOWN),
       event_handler_for_testing_(NULL),
       gesture_provider_(this),
-      prev_state_(NO_FINGERS_DOWN) {
+      prev_state_(NO_FINGERS_DOWN),
+      VLOG_on_(true) {
   CHECK(root_window);
   root_window->GetHost()->GetEventSource()->AddEventRewriter(this);
 }
@@ -45,6 +46,13 @@ void TouchExplorationController::CallTapTimerNowForTesting() {
   OnTapTimerFired();
 }
 
+void TouchExplorationController::CallTapTimerNowIfRunningForTesting() {
+  if (tap_timer_.IsRunning()) {
+    tap_timer_.Stop();
+    OnTapTimerFired();
+  }
+}
+
 void TouchExplorationController::SetEventHandlerForTesting(
     ui::EventHandler* event_handler_for_testing) {
   event_handler_for_testing_ = event_handler_for_testing;
@@ -58,14 +66,18 @@ bool TouchExplorationController::IsInGestureInProgressStateForTesting() const {
   return state_ == GESTURE_IN_PROGRESS;
 }
 
+void TouchExplorationController::SuppressVLOGsForTesting(bool suppress) {
+    VLOG_on_ = !suppress;
+}
+
 ui::EventRewriteStatus TouchExplorationController::RewriteEvent(
     const ui::Event& event,
     scoped_ptr<ui::Event>* rewritten_event) {
   if (!event.IsTouchEvent()) {
     if (event.IsKeyEvent()) {
       const ui::KeyEvent& key_event = static_cast<const ui::KeyEvent&>(event);
-      VLOG(0) << "\nKeyboard event: " << key_event.name() << "\n"
-              << " Key code: " << key_event.key_code()
+      VLOG(0) << "\nKeyboard event: " << key_event.name()
+              << "\n Key code: " << key_event.key_code()
               << ", Flags: " << key_event.flags()
               << ", Is char: " << key_event.is_char();
     }
@@ -168,7 +180,7 @@ ui::EventRewriteStatus TouchExplorationController::InNoFingersDown(
     VLOG_STATE();
     return ui::EVENT_REWRITE_DISCARD;
   }
-  NOTREACHED() << "Unexpected event type received.";
+  NOTREACHED() << "Unexpected event type received: " << event.name();;
   return ui::EVENT_REWRITE_CONTINUE;
 }
 
@@ -222,7 +234,7 @@ ui::EventRewriteStatus TouchExplorationController::InSingleTapPressed(
     VLOG_STATE();
     return InTouchExploration(event, rewritten_event);
   }
-  NOTREACHED() << "Unexpected event type received.";
+  NOTREACHED() << "Unexpected event type received: " << event.name();;
   return ui::EVENT_REWRITE_CONTINUE;
 }
 
@@ -257,8 +269,17 @@ TouchExplorationController::InSingleTapOrTouchExploreReleased(
     state_ = DOUBLE_TAP_PRESSED;
     VLOG_STATE();
     return ui::EVENT_REWRITE_REWRITTEN;
+  } else if (type == ui::ET_TOUCH_RELEASED && !last_touch_exploration_) {
+    // If the previous press was discarded, we need to also handle its
+    // release.
+    if (current_touch_ids_.size() == 0) {
+      ResetToNoFingersDown();
+    }
+    return ui::EVENT_REWRITE_DISCARD;
+  } else if (type == ui::ET_TOUCH_MOVED){
+    return ui::EVENT_REWRITE_DISCARD;
   }
-  NOTREACHED() << "Unexpected event type received.";
+  NOTREACHED() << "Unexpected event type received: " << event.name();
   return ui::EVENT_REWRITE_CONTINUE;
 }
 
@@ -284,7 +305,7 @@ ui::EventRewriteStatus TouchExplorationController::InDoubleTapPressed(
   } else if (type == ui::ET_TOUCH_MOVED) {
     return ui::EVENT_REWRITE_DISCARD;
   }
-  NOTREACHED() << "Unexpected event type received.";
+  NOTREACHED() << "Unexpected event type received: " << event.name();
   return ui::EVENT_REWRITE_CONTINUE;
 }
 
@@ -315,7 +336,7 @@ ui::EventRewriteStatus TouchExplorationController::InTouchExploration(
     state_ = TOUCH_EXPLORE_RELEASED;
     VLOG_STATE();
   } else if (type != ui::ET_TOUCH_MOVED) {
-    NOTREACHED() << "Unexpected event type received.";
+    NOTREACHED() << "Unexpected event type received: " << event.name();
     return ui::EVENT_REWRITE_CONTINUE;
   }
 
@@ -422,7 +443,7 @@ ui::EventRewriteStatus TouchExplorationController::InTwoToOneFinger(
       return ui::EVENT_REWRITE_REWRITTEN;
     }
   }
-  NOTREACHED() << "Unexpected event type received";
+  NOTREACHED() << "Unexpected event type received: " << event.name();
   return ui::EVENT_REWRITE_CONTINUE;
 }
 
@@ -433,7 +454,7 @@ ui::EventRewriteStatus TouchExplorationController::InPassthrough(
 
   if (!(type == ui::ET_TOUCH_RELEASED || type == ui::ET_TOUCH_CANCELLED ||
         type == ui::ET_TOUCH_MOVED || type == ui::ET_TOUCH_PRESSED)) {
-    NOTREACHED() << "Unexpected event type received.";
+    NOTREACHED() << "Unexpected event type received: " << event.name();
     return ui::EVENT_REWRITE_CONTINUE;
   }
 
@@ -486,7 +507,7 @@ ui::EventRewriteStatus TouchExplorationController::InTouchExploreSecondPress(
     VLOG_STATE();
     return ui::EVENT_REWRITE_REWRITTEN;
   }
-  NOTREACHED() << "Unexpected event type received.";
+  NOTREACHED() << "Unexpected event type received: " << event.name();
   return ui::EVENT_REWRITE_CONTINUE;
 }
 
@@ -496,7 +517,7 @@ ui::EventRewriteStatus TouchExplorationController::InWaitForRelease(
   ui::EventType type = event.type();
   if (!(type == ui::ET_TOUCH_PRESSED || type == ui::ET_TOUCH_MOVED ||
         type == ui::ET_TOUCH_RELEASED || type == ui::ET_TOUCH_CANCELLED)) {
-    NOTREACHED() << "Unexpected event type received.";
+    NOTREACHED() << "Unexpected event type received: " << event.name();
     return ui::EVENT_REWRITE_CONTINUE;
   }
   if (current_touch_ids_.size() == 0) {
@@ -640,6 +661,8 @@ void TouchExplorationController::ResetToNoFingersDown() {
 }
 
 void TouchExplorationController::VlogState(const char* function_name) {
+  if (!VLOG_on_)
+    return;
   if (prev_state_ == state_)
     return;
   prev_state_ = state_;
@@ -650,6 +673,9 @@ void TouchExplorationController::VlogState(const char* function_name) {
 
 void TouchExplorationController::VlogEvent(const ui::TouchEvent& touch_event,
                                            const char* function_name) {
+  if (!VLOG_on_)
+    return;
+
   CHECK(touch_event.IsTouchEvent());
   if (prev_event_ != NULL &&
       prev_event_->type() == touch_event.type() &&
