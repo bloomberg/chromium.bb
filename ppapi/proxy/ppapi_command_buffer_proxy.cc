@@ -57,7 +57,7 @@ void PpapiCommandBufferProxy::WaitForTokenInRange(int32 start, int32 end) {
   if (last_state_.error != gpu::error::kNoError)
     return;
 
-  bool success;
+  bool success = false;
   gpu::CommandBuffer::State state;
   if (Send(new PpapiHostMsg_PPBGraphics3D_WaitForTokenInRange(
           ppapi::API_ID_PPB_GRAPHICS_3D,
@@ -73,7 +73,7 @@ void PpapiCommandBufferProxy::WaitForGetOffsetInRange(int32 start, int32 end) {
   if (last_state_.error != gpu::error::kNoError)
     return;
 
-  bool success;
+  bool success = false;
   gpu::CommandBuffer::State state;
   if (Send(new PpapiHostMsg_PPBGraphics3D_WaitForGetOffsetInRange(
           ppapi::API_ID_PPB_GRAPHICS_3D,

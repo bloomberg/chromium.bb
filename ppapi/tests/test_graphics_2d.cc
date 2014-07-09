@@ -566,7 +566,7 @@ std::string TestGraphics2D::TestReplace() {
   dc.ReplaceContents(&weird_size);
 
   // Fill the background with blue but don't flush yet.
-  const int32_t background_color = 0xFF0000FF;
+  const uint32_t background_color = 0xFF0000FF;
   pp::ImageData background(instance_, PP_IMAGEDATAFORMAT_BGRA_PREMUL,
                            pp::Size(w, h), true);
   ASSERT_FALSE(background.is_null());

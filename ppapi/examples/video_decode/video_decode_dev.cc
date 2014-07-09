@@ -226,13 +226,16 @@ VideoDecodeDemoInstance::VideoDecodeDemoInstance(PP_Instance instance,
       first_frame_delivered_ticks_(-1),
       swap_ticks_(0),
       callback_factory_(this),
+      console_if_(static_cast<const PPB_Console*>(
+          module->GetBrowserInterface(PPB_CONSOLE_INTERFACE))),
+      core_if_(static_cast<const PPB_Core*>(
+          module->GetBrowserInterface(PPB_CORE_INTERFACE))),
+      gles2_if_(static_cast<const PPB_OpenGLES2*>(
+          module->GetBrowserInterface(PPB_OPENGLES2_INTERFACE))),
       context_(NULL) {
-  assert((console_if_ = static_cast<const PPB_Console*>(
-      module->GetBrowserInterface(PPB_CONSOLE_INTERFACE))));
-  assert((core_if_ = static_cast<const PPB_Core*>(
-      module->GetBrowserInterface(PPB_CORE_INTERFACE))));
-  assert((gles2_if_ = static_cast<const PPB_OpenGLES2*>(
-      module->GetBrowserInterface(PPB_OPENGLES2_INTERFACE))));
+  assert(console_if_);
+  assert(core_if_);
+  assert(gles2_if_);
 }
 
 VideoDecodeDemoInstance::~VideoDecodeDemoInstance() {

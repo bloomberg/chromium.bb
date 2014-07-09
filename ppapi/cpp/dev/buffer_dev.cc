@@ -59,11 +59,13 @@ Buffer_Dev& Buffer_Dev::operator=(const Buffer_Dev& rhs) {
 }
 
 void Buffer_Dev::Init() {
-  if (!get_interface<PPB_Buffer_Dev>()->Describe(pp_resource(), &size_) ||
-      !(data_ = get_interface<PPB_Buffer_Dev>()->Map(pp_resource()))) {
-    data_ = NULL;
-    size_ = 0;
+  if (get_interface<PPB_Buffer_Dev>()->Describe(pp_resource(), &size_)) {
+    data_ = get_interface<PPB_Buffer_Dev>()->Map(pp_resource());
+    if (data_)
+      return;
   }
+  data_ = NULL;
+  size_ = 0;
 }
 
 }  // namespace pp

@@ -17,17 +17,15 @@ typedef EnterResource<PPB_BrowserFont_Trusted_API> EnterBrowserFont;
 
 PP_Var GetFontFamilies(PP_Instance instance) {
   EnterInstanceAPI<PPB_BrowserFont_Singleton_API> enter(instance);
-  if (enter.failed())
-    return PP_MakeUndefined();
-  return enter.functions()->GetFontFamilies(instance);
+  return enter.succeeded() ?
+      enter.functions()->GetFontFamilies(instance) : PP_MakeUndefined();
 }
 
 PP_Resource Create(PP_Instance instance,
                    const PP_BrowserFont_Trusted_Description* description) {
   EnterResourceCreation enter(instance);
-  if (enter.failed())
-    return 0;
-  return enter.functions()->CreateBrowserFont(instance, description);
+  return enter.succeeded() ?
+      enter.functions()->CreateBrowserFont(instance, description) : 0;
 }
 
 PP_Bool IsBrowserFont(PP_Resource resource) {
@@ -39,9 +37,8 @@ PP_Bool Describe(PP_Resource font_id,
                  PP_BrowserFont_Trusted_Description* description,
                  PP_BrowserFont_Trusted_Metrics* metrics) {
   EnterBrowserFont enter(font_id, true);
-  if (enter.failed())
-    return PP_FALSE;
-  return enter.object()->Describe(description, metrics);
+  return enter.succeeded() ?
+      enter.object()->Describe(description, metrics) : PP_FALSE;
 }
 
 PP_Bool DrawTextAt(PP_Resource font_id,
@@ -52,36 +49,33 @@ PP_Bool DrawTextAt(PP_Resource font_id,
                    const PP_Rect* clip,
                    PP_Bool image_data_is_opaque) {
   EnterBrowserFont enter(font_id, true);
-  if (enter.failed())
-    return PP_FALSE;
-  return enter.object()->DrawTextAt(image_data, text, position, color, clip,
-                                    image_data_is_opaque);
+  return enter.succeeded() ?
+      enter.object()->DrawTextAt(image_data, text, position, color, clip,
+                                 image_data_is_opaque) :
+      PP_FALSE;
 }
 
 int32_t MeasureText(PP_Resource font_id,
                     const PP_BrowserFont_Trusted_TextRun* text) {
   EnterBrowserFont enter(font_id, true);
-  if (enter.failed())
-    return -1;
-  return enter.object()->MeasureText(text);
+  return enter.succeeded() ? enter.object()->MeasureText(text) : -1;
 }
 
 uint32_t CharacterOffsetForPixel(PP_Resource font_id,
                                  const PP_BrowserFont_Trusted_TextRun* text,
                                  int32_t pixel_position) {
   EnterBrowserFont enter(font_id, true);
-  if (enter.failed())
-    return -1;
-  return enter.object()->CharacterOffsetForPixel(text, pixel_position);
+  return enter.succeeded() ?
+      enter.object()->CharacterOffsetForPixel(text, pixel_position) :
+      0xFFFFFFFF;
 }
 
 int32_t PixelOffsetForCharacter(PP_Resource font_id,
                                 const PP_BrowserFont_Trusted_TextRun* text,
                                 uint32_t char_offset) {
   EnterBrowserFont enter(font_id, true);
-  if (enter.failed())
-    return -1;
-  return enter.object()->PixelOffsetForCharacter(text, char_offset);
+  return enter.succeeded() ?
+      enter.object()->PixelOffsetForCharacter(text, char_offset) : -1;
 }
 
 const PPB_BrowserFont_Trusted_1_0 g_ppb_browser_font_trusted_thunk = {

@@ -92,9 +92,12 @@ PP_ImageDataFormat ImageData::GetNativeImageDataFormat() {
 void ImageData::InitData() {
   if (!has_interface<PPB_ImageData_1_0>())
     return;
-  if (!get_interface<PPB_ImageData_1_0>()->Describe(pp_resource(), &desc_) ||
-      !(data_ = get_interface<PPB_ImageData_1_0>()->Map(pp_resource())))
-    *this = ImageData();
+  if (get_interface<PPB_ImageData_1_0>()->Describe(pp_resource(), &desc_)) {
+    data_ = get_interface<PPB_ImageData_1_0>()->Map(pp_resource());
+    if (data_)
+      return;
+  }
+  *this = ImageData();
 }
 
 }  // namespace pp

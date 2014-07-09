@@ -498,7 +498,7 @@ void PPB_Instance_Proxy::ZoomLimitsChanged(PP_Instance instance,
 PP_Var PPB_Instance_Proxy::GetDocumentURL(PP_Instance instance,
                                           PP_URLComponents_Dev* components) {
   ReceiveSerializedVarReturnValue result;
-  PP_URLComponents_Dev url_components;
+  PP_URLComponents_Dev url_components = {{0}};
   dispatcher()->Send(new PpapiHostMsg_PPBInstance_GetDocumentURL(
       API_ID_PPB_INSTANCE, instance, &url_components, &result));
   if (components)

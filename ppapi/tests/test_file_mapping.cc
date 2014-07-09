@@ -303,7 +303,7 @@ std::string TestFileMapping::TestBadParameters() {
           instance_->pp_instance(),
           file_io.pp_resource(),
           page_size,
-          ~PP_FILEMAPPROTECTION_READ,
+          ~static_cast<uint32_t>(PP_FILEMAPPROTECTION_READ),
           PP_FILEMAPFLAG_PRIVATE,
           0,
           &address,
@@ -349,7 +349,7 @@ std::string TestFileMapping::TestBadParameters() {
           file_io.pp_resource(),
           page_size,
           PP_FILEMAPPROTECTION_READ,
-          ~PP_FILEMAPFLAG_SHARED,
+          ~static_cast<uint32_t>(PP_FILEMAPFLAG_SHARED),
           0,
           &address,
           callback.GetCallback().pp_completion_callback()));
@@ -364,7 +364,7 @@ std::string TestFileMapping::TestBadParameters() {
           file_io.pp_resource(),
           page_size,
           PP_FILEMAPPROTECTION_READ,
-          ~PP_FILEMAPFLAG_SHARED,
+          ~static_cast<uint32_t>(PP_FILEMAPFLAG_SHARED),
           1,
           &address,
           callback.GetCallback().pp_completion_callback()));

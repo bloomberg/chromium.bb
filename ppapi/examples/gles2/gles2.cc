@@ -85,11 +85,12 @@ class GLES2DemoInstance : public pp::Instance,
 GLES2DemoInstance::GLES2DemoInstance(PP_Instance instance, pp::Module* module)
     : pp::Instance(instance), pp::Graphics3DClient(this),
       callback_factory_(this),
+      gles2_if_(static_cast<const PPB_OpenGLES2*>(
+          module->GetBrowserInterface(PPB_OPENGLES2_INTERFACE))),
       module_(module),
       context_(NULL),
       fullscreen_(false) {
-  assert((gles2_if_ = static_cast<const PPB_OpenGLES2*>(
-      module->GetBrowserInterface(PPB_OPENGLES2_INTERFACE))));
+  assert(gles2_if_);
   RequestInputEvents(PP_INPUTEVENT_CLASS_MOUSE);
 }
 
