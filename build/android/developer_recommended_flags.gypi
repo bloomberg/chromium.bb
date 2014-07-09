@@ -23,14 +23,17 @@
 
 {
   'variables': {
+    'variables': {
+      # Set component to 'shared_library' to enable the component build. This builds native code as
+      # many small shared libraries instead of one monolithic library. This slightly reduces the time
+      # required for incremental builds.
+      'component%': 'shared_library',
+    },
+    'component%': '<(component)',
+
     # When set to 1, only write jni generated files if they've changed. This can prevent unnecessary
     # compiling/linking of native libraries when editing java files.
     'optimize_jni_generation%': 1,
-
-    # Set component to 'shared_library' to enable the component build. This builds native code as
-    # many small shared libraries instead of one monolithic library. This slightly reduces the time
-    # required for incremental builds.
-    'component%': 'shared_library',
 
     # When gyp_managed_install is set to 1, building an APK will install that APK on the connected
     # device(/emulator). To install on multiple devices (or onto a new device), build the APK once
