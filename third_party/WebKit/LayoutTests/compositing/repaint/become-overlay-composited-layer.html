@@ -48,14 +48,16 @@
 
       function runTest()
       {
-        document.getElementById("container").className = "right";
-        window.setTimeout(function() {
-          document.getElementById("container").className = "";
-          window.setTimeout(function() {
+        var container = document.getElementById("container");
+        var fader = document.getElementById("fader");
+        fader.addEventListener('webkitTransitionEnd', function() {
+          fader.addEventListener('webkitTransitionEnd', function() {
             if (window.testRunner)
               testRunner.notifyDone();
-          }, 250);
-        }, 250);
+          });
+          container.className = "";
+        });
+        container.className = "right";
       }
 
       window.addEventListener('load', runTest, false);
