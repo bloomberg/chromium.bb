@@ -10,7 +10,6 @@
 
 #include "base/basictypes.h"
 #include "base/strings/string16.h"
-#include "chrome/common/autocomplete_match_type.h"
 #include "content/public/common/page_transition_types.h"
 #include "url/gurl.h"
 
@@ -32,45 +31,6 @@ struct InstantSuggestion {
   // JSON metadata from the server response which produced this suggestion.
   std::string metadata;
 };
-
-// Omnibox dropdown matches provided by the native autocomplete providers.
-struct InstantAutocompleteResult {
-  InstantAutocompleteResult();
-  ~InstantAutocompleteResult();
-
-  // The provider name, as returned by AutocompleteProvider::GetName().
-  base::string16 provider;
-
-  // The type of the result.
-  AutocompleteMatchType::Type type;
-
-  // The description (title), same as AutocompleteMatch::description.
-  base::string16 description;
-
-  // The URL of the match, same as AutocompleteMatch::destination_url.
-  base::string16 destination_url;
-
-  // The search query for this match. Only set for matches coming from
-  // SearchProvider. Populated using AutocompleteMatch::contents.
-  base::string16 search_query;
-
-  // The transition type to use when the user opens this match. Same as
-  // AutocompleteMatch::transition.
-  content::PageTransition transition;
-
-  // The relevance score of this match, same as AutocompleteMatch::relevance.
-  int relevance;
-
-  // The index of the match in AutocompleteResult. Used to get the instant
-  // suggestion metadata details. Set to kNoMatchIndex if the
-  // suggestion is displayed on the Instant NTP and set to a positive value if
-  // the suggestion is displayed on the Local NTP.
-  size_t autocomplete_match_index;
-};
-
-// An InstantAutocompleteResult along with its assigned restricted ID.
-typedef std::pair<InstantRestrictedID, InstantAutocompleteResult>
-    InstantAutocompleteResultIDPair;
 
 // The alignment of the theme background image.
 enum ThemeBackgroundImageAlignment {
