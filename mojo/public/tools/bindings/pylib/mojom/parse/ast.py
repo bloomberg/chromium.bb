@@ -2,11 +2,12 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Node objects for the AST for a Mojo IDL file."""
+"""Node classes for the AST for a Mojo IDL file."""
 
 # Note: For convenience of testing, you probably want to define __eq__() methods
 # for all node types; it's okay to be slightly lax (e.g., not compare filename
-# and lineno).
+# and lineno). You may also define __repr__() to help with analyzing test
+# failures, especially for more complex types.
 
 
 class NodeBase(object):
@@ -17,6 +18,7 @@ class NodeBase(object):
     self.lineno = lineno
 
 
+# TODO(vtl): Some of this is complicated enough that it should be tested.
 class NodeListBase(NodeBase):
   """Represents a list of other nodes, all having the same type. (This is meant
   to be subclassed, with subclasses defining _list_item_type to be the class of
@@ -43,12 +45,15 @@ class NodeListBase(NodeBase):
     return self.elements.__iter__()
 
   def __eq__(self, other):
-    if type(self) != type(other):
-      return False
-    for element in self.elements:
-      if self.elements != other.elements:
-        return False
-    return True
+    return type(self) == type(other) and \
+           len(self.elements) == len(other.elements) and \
+           all(self.elements[i] == other.elements[i] \
+                   for i in xrange(len(self.elements)))
+
+  # Implement this so that on failure, we get slightly more sensible output.
+  def __repr__(self):
+    return self.__class__.__name__ + "([" + \
+           ", ".join([repr(elem) for elem in self.elements]) + "])"
 
   def Append(self, item):
     assert isinstance(item, self._list_item_type)
