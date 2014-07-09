@@ -12,7 +12,7 @@ struct DeviceMetrics {
   int width;
   int height;
   double device_scale_factor;
-  bool emulate_viewport;
+  bool mobile;
   bool fit_window;
   bool text_autosizing;
   double font_scale_factor;

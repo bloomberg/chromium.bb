@@ -11,6 +11,7 @@
 #include "chrome/test/chromedriver/chrome/mobile_emulation_override_manager.h"
 #include "chrome/test/chromedriver/chrome/status.h"
 #include "chrome/test/chromedriver/chrome/stub_devtools_client.h"
+#include "chrome/test/chromedriver/chrome/version.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -58,19 +59,19 @@ void AssertDeviceMetricsCommand(const Command& command,
   ASSERT_EQ("Page.setDeviceMetricsOverride", command.method);
   int width, height;
   double device_scale_factor, font_scale_factor;
-  bool emulate_viewport, fit_window, text_autosizing;
+  bool mobile, fit_window, text_autosizing;
   ASSERT_TRUE(command.params.GetInteger("width", &width));
   ASSERT_TRUE(command.params.GetInteger("height", &height));
   ASSERT_TRUE(command.params.GetDouble("deviceScaleFactor",
                                        &device_scale_factor));
-  ASSERT_TRUE(command.params.GetBoolean("emulateViewport", &emulate_viewport));
+  ASSERT_TRUE(command.params.GetBoolean("mobile", &mobile));
   ASSERT_TRUE(command.params.GetBoolean("fitWindow", &fit_window));
   ASSERT_TRUE(command.params.GetBoolean("textAutosizing", &text_autosizing));
   ASSERT_TRUE(command.params.GetDouble("fontScaleFactor", &font_scale_factor));
   ASSERT_EQ(device_metrics.width, width);
   ASSERT_EQ(device_metrics.height, height);
   ASSERT_EQ(device_metrics.device_scale_factor, device_scale_factor);
-  ASSERT_EQ(device_metrics.emulate_viewport, emulate_viewport);
+  ASSERT_EQ(device_metrics.mobile, mobile);
   ASSERT_EQ(device_metrics.fit_window, fit_window);
   ASSERT_EQ(device_metrics.text_autosizing, text_autosizing);
   ASSERT_EQ(device_metrics.font_scale_factor, font_scale_factor);
@@ -81,7 +82,10 @@ void AssertDeviceMetricsCommand(const Command& command,
 TEST(MobileEmulationOverrideManager, SendsCommandOnConnect) {
   RecorderDevToolsClient client;
   DeviceMetrics device_metrics(1, 2, 3.0);
-  MobileEmulationOverrideManager manager(&client, &device_metrics);
+  BrowserInfo browser_info;
+  MobileEmulationOverrideManager manager(&client,
+                                         &device_metrics,
+                                         &browser_info);
   ASSERT_EQ(0u, client.commands_.size());
   ASSERT_EQ(kOk, manager.OnConnected(&client).code());
 
@@ -95,7 +99,10 @@ TEST(MobileEmulationOverrideManager, SendsCommandOnConnect) {
 TEST(MobileEmulationOverrideManager, SendsCommandOnNavigation) {
   RecorderDevToolsClient client;
   DeviceMetrics device_metrics(1, 2, 3.0);
-  MobileEmulationOverrideManager manager(&client, &device_metrics);
+  BrowserInfo browser_info;
+  MobileEmulationOverrideManager manager(&client,
+                                         &device_metrics,
+                                         &browser_info);
   base::DictionaryValue main_frame_params;
   ASSERT_EQ(kOk,
             manager.OnEvent(&client, "Page.frameNavigated", main_frame_params)
