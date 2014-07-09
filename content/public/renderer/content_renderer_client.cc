@@ -85,7 +85,9 @@ blink::WebSpeechSynthesizer* ContentRendererClient::OverrideSpeechSynthesizer(
 }
 
 bool ContentRendererClient::RunIdleHandlerWhenWidgetsHidden() {
-  return true;
+  // TODO(wfh): http://crbug.com/381820 change this back to true after testing
+  // whether this affects tabs hanging.
+  return false;
 }
 
 bool ContentRendererClient::AllowPopup() {

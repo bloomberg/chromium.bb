@@ -1564,8 +1564,11 @@ void RenderThreadImpl::WidgetHidden() {
 #if !defined(SYSTEM_NATIVELY_SIGNALS_MEMORY_PRESSURE)
     // TODO(vollick): Remove this this heavy-handed approach once we're polling
     // the real system memory pressure.
-    base::MemoryPressureListener::NotifyMemoryPressure(
-        base::MemoryPressureListener::MEMORY_PRESSURE_MODERATE);
+
+    // TODO(wfh): http://crbug.com/381820 remove this after testing whether
+    // this affects tabs hanging.
+    // base::MemoryPressureListener::NotifyMemoryPressure(
+    //     base::MemoryPressureListener::MEMORY_PRESSURE_MODERATE);
 #endif
     if (GetContentClient()->renderer()->RunIdleHandlerWhenWidgetsHidden())
       ScheduleIdleHandler(kInitialIdleHandlerDelayMs);
