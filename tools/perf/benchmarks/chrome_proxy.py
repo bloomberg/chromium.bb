@@ -7,7 +7,7 @@ import page_sets
 from telemetry import benchmark
 
 
-@benchmark.Enabled('android')
+@benchmark.Disabled
 class ChromeProxyLatency(benchmark.Benchmark):
   tag = 'latency'
   test = chrome_proxy.ChromeProxyLatency
@@ -18,7 +18,7 @@ class ChromeProxyLatency(benchmark.Benchmark):
     options.AppendExtraBrowserArgs('--enable-spdy-proxy-auth')
 
 
-@benchmark.Enabled('android')
+@benchmark.Disabled
 class ChromeProxyLatencyDirect(benchmark.Benchmark):
   tag = 'latency_direct'
   test = chrome_proxy.ChromeProxyLatency
@@ -26,17 +26,17 @@ class ChromeProxyLatencyDirect(benchmark.Benchmark):
   options = {'pageset_repeat_iters': 2}
 
 
-@benchmark.Enabled('android')
+@benchmark.Disabled
 class ChromeProxyLatencySynthetic(ChromeProxyLatency):
   page_set = page_sets.SyntheticPageSet
 
 
-@benchmark.Enabled('android')
+@benchmark.Disabled
 class ChromeProxyLatencySyntheticDirect(ChromeProxyLatencyDirect):
   page_set = page_sets.SyntheticPageSet
 
 
-@benchmark.Enabled('android')
+@benchmark.Disabled
 class ChromeProxyDataSaving(benchmark.Benchmark):
   tag = 'data_saving'
   test = chrome_proxy.ChromeProxyDataSaving
@@ -46,7 +46,7 @@ class ChromeProxyDataSaving(benchmark.Benchmark):
     options.AppendExtraBrowserArgs('--enable-spdy-proxy-auth')
 
 
-@benchmark.Enabled('android')
+@benchmark.Disabled
 class ChromeProxyDataSavingDirect(benchmark.Benchmark):
   tag = 'data_saving_direct'
   test = chrome_proxy.ChromeProxyDataSaving
@@ -54,52 +54,52 @@ class ChromeProxyDataSavingDirect(benchmark.Benchmark):
   options = {'pageset_repeat_iters': 2}
 
 
-@benchmark.Enabled('android')
+@benchmark.Disabled
 class ChromeProxyDataSavingSynthetic(ChromeProxyDataSaving):
   page_set = page_sets.SyntheticPageSet
 
 
-@benchmark.Enabled('android')
+@benchmark.Disabled
 class ChromeProxyDataSavingSyntheticDirect(ChromeProxyDataSavingDirect):
   page_set = page_sets.SyntheticPageSet
 
 
-@benchmark.Enabled('android')
+@benchmark.Disabled
 class ChromeProxyHeaderValidation(benchmark.Benchmark):
   tag = 'header_validation'
   test = chrome_proxy.ChromeProxyHeaders
   page_set = page_sets.Top20PageSet
 
 
-@benchmark.Enabled('android')
+@benchmark.Disabled
 class ChromeProxyBypass(benchmark.Benchmark):
   tag = 'bypass'
   test = chrome_proxy.ChromeProxyBypass
   page_set = page_sets.BypassPageSet
 
 
-@benchmark.Enabled('android')
+@benchmark.Disabled
 class ChromeProxySafeBrowsing(benchmark.Benchmark):
   tag = 'safebrowsing'
   test = chrome_proxy.ChromeProxySafebrowsing
   page_set = page_sets.SafebrowsingPageSet
 
 
-@benchmark.Enabled('android')
+@benchmark.Disabled
 class ChromeProxyHTTPFallbackProbeURL(benchmark.Benchmark):
   tag = 'fallback-probe'
   test = chrome_proxy.ChromeProxyHTTPFallbackProbeURL
   page_set = page_sets.SyntheticPageSet
 
 
-@benchmark.Enabled('android')
+@benchmark.Disabled
 class ChromeProxyHTTPFallbackViaHeader(benchmark.Benchmark):
   tag = 'fallback-viaheader'
   test = chrome_proxy.ChromeProxyHTTPFallbackViaHeader
   page_set = page_sets.FallbackViaHeaderPageSet
 
 
-@benchmark.Enabled('android')
+@benchmark.Disabled
 class ChromeProxySmoke(benchmark.Benchmark):
   tag = 'smoke'
   test = chrome_proxy.ChromeProxySmoke
