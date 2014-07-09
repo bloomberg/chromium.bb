@@ -37,9 +37,9 @@ class SVGTextLayoutEngineBaseline {
 public:
     SVGTextLayoutEngineBaseline(const Font&);
 
-    float calculateBaselineShift(const SVGRenderStyle*, SVGElement* lengthContext) const;
+    float calculateBaselineShift(const SVGRenderStyle&, SVGElement* lengthContext) const;
     float calculateAlignmentBaselineShift(bool isVerticalText, const RenderObject* textRenderer) const;
-    float calculateGlyphOrientationAngle(bool isVerticalText, const SVGRenderStyle*, const UChar& character) const;
+    float calculateGlyphOrientationAngle(bool isVerticalText, const SVGRenderStyle&, const UChar& character) const;
     float calculateGlyphAdvanceAndOrientation(bool isVerticalText, SVGTextMetrics&, float angle, float& xOrientationShift, float& yOrientationShift) const;
 
 private:

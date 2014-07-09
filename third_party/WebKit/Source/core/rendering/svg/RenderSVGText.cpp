@@ -427,8 +427,8 @@ bool RenderSVGText::nodeAtFloatPoint(const HitTestRequest& request, HitTestResul
     bool isVisible = (style()->visibility() == VISIBLE);
     if (isVisible || !hitRules.requireVisible) {
         if ((hitRules.canHitBoundingBox && !objectBoundingBox().isEmpty())
-            || (hitRules.canHitStroke && (style()->svgStyle()->hasStroke() || !hitRules.requireStroke))
-            || (hitRules.canHitFill && (style()->svgStyle()->hasFill() || !hitRules.requireFill))) {
+            || (hitRules.canHitStroke && (style()->svgStyle().hasStroke() || !hitRules.requireStroke))
+            || (hitRules.canHitFill && (style()->svgStyle().hasFill() || !hitRules.requireFill))) {
             FloatPoint localPoint = localToParentTransform().inverse().mapPoint(pointInParent);
 
             if (!SVGRenderSupport::pointInClippingArea(this, localPoint))
@@ -493,14 +493,14 @@ void RenderSVGText::paint(PaintInfo& paintInfo, const LayoutPoint&)
 FloatRect RenderSVGText::strokeBoundingBox() const
 {
     FloatRect strokeBoundaries = objectBoundingBox();
-    const SVGRenderStyle* svgStyle = style()->svgStyle();
-    if (!svgStyle->hasStroke())
+    const SVGRenderStyle& svgStyle = style()->svgStyle();
+    if (!svgStyle.hasStroke())
         return strokeBoundaries;
 
     ASSERT(node());
     ASSERT(node()->isSVGElement());
     SVGLengthContext lengthContext(toSVGElement(node()));
-    strokeBoundaries.inflate(svgStyle->strokeWidth()->value(lengthContext));
+    strokeBoundaries.inflate(svgStyle.strokeWidth()->value(lengthContext));
     return strokeBoundaries;
 }
 

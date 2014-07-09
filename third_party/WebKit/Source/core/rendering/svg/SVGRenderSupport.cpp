@@ -335,16 +335,15 @@ void SVGRenderSupport::applyStrokeStyleToContext(GraphicsContext* context, const
     ASSERT(object->node());
     ASSERT(object->node()->isSVGElement());
 
-    const SVGRenderStyle* svgStyle = style->svgStyle();
-    ASSERT(svgStyle);
+    const SVGRenderStyle& svgStyle = style->svgStyle();
 
     SVGLengthContext lengthContext(toSVGElement(object->node()));
-    context->setStrokeThickness(svgStyle->strokeWidth()->value(lengthContext));
-    context->setLineCap(svgStyle->capStyle());
-    context->setLineJoin(svgStyle->joinStyle());
-    context->setMiterLimit(svgStyle->strokeMiterLimit());
+    context->setStrokeThickness(svgStyle.strokeWidth()->value(lengthContext));
+    context->setLineCap(svgStyle.capStyle());
+    context->setLineJoin(svgStyle.joinStyle());
+    context->setMiterLimit(svgStyle.strokeMiterLimit());
 
-    RefPtr<SVGLengthList> dashes = svgStyle->strokeDashArray();
+    RefPtr<SVGLengthList> dashes = svgStyle.strokeDashArray();
     if (dashes->isEmpty())
         return;
 
@@ -354,7 +353,7 @@ void SVGRenderSupport::applyStrokeStyleToContext(GraphicsContext* context, const
     for (; it != itEnd; ++it)
         dashArray.append(it->value(lengthContext));
 
-    context->setLineDash(dashArray, svgStyle->strokeDashOffset()->value(lengthContext));
+    context->setLineDash(dashArray, svgStyle.strokeDashOffset()->value(lengthContext));
 }
 
 void SVGRenderSupport::applyStrokeStyleToStrokeData(StrokeData* strokeData, const RenderStyle* style, const RenderObject* object)
@@ -365,16 +364,15 @@ void SVGRenderSupport::applyStrokeStyleToStrokeData(StrokeData* strokeData, cons
     ASSERT(object->node());
     ASSERT(object->node()->isSVGElement());
 
-    const SVGRenderStyle* svgStyle = style->svgStyle();
-    ASSERT(svgStyle);
+    const SVGRenderStyle& svgStyle = style->svgStyle();
 
     SVGLengthContext lengthContext(toSVGElement(object->node()));
-    strokeData->setThickness(svgStyle->strokeWidth()->value(lengthContext));
-    strokeData->setLineCap(svgStyle->capStyle());
-    strokeData->setLineJoin(svgStyle->joinStyle());
-    strokeData->setMiterLimit(svgStyle->strokeMiterLimit());
+    strokeData->setThickness(svgStyle.strokeWidth()->value(lengthContext));
+    strokeData->setLineCap(svgStyle.capStyle());
+    strokeData->setLineJoin(svgStyle.joinStyle());
+    strokeData->setMiterLimit(svgStyle.strokeMiterLimit());
 
-    RefPtr<SVGLengthList> dashes = svgStyle->strokeDashArray();
+    RefPtr<SVGLengthList> dashes = svgStyle.strokeDashArray();
     if (dashes->isEmpty())
         return;
 
@@ -383,7 +381,7 @@ void SVGRenderSupport::applyStrokeStyleToStrokeData(StrokeData* strokeData, cons
     for (size_t i = 0; i < length; ++i)
         dashArray.append(dashes->at(i)->value(lengthContext));
 
-    strokeData->setLineDash(dashArray, svgStyle->strokeDashOffset()->value(lengthContext));
+    strokeData->setLineDash(dashArray, svgStyle.strokeDashOffset()->value(lengthContext));
 }
 
 bool SVGRenderSupport::isRenderableTextNode(const RenderObject* object)

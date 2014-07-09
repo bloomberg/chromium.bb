@@ -119,8 +119,8 @@ bool CSSPropertyEquality::propertiesEqual(CSSPropertyID prop, const RenderStyle&
     case CSSPropertyColor:
         return a.color() == b.color() && a.visitedLinkColor() == b.visitedLinkColor();
     case CSSPropertyFill: {
-        const SVGRenderStyle& aSVG = *a.svgStyle();
-        const SVGRenderStyle& bSVG = *b.svgStyle();
+        const SVGRenderStyle& aSVG = a.svgStyle();
+        const SVGRenderStyle& bSVG = b.svgStyle();
         return aSVG.fillPaintType() == bSVG.fillPaintType()
             && (aSVG.fillPaintType() != SVG_PAINTTYPE_RGBCOLOR || aSVG.fillPaintColor() == bSVG.fillPaintColor())
             && aSVG.visitedLinkFillPaintType() == bSVG.visitedLinkFillPaintType()
@@ -208,8 +208,8 @@ bool CSSPropertyEquality::propertiesEqual(CSSPropertyID prop, const RenderStyle&
     case CSSPropertyStopOpacity:
         return a.stopOpacity() == b.stopOpacity();
     case CSSPropertyStroke: {
-        const SVGRenderStyle& aSVG = *a.svgStyle();
-        const SVGRenderStyle& bSVG = *b.svgStyle();
+        const SVGRenderStyle& aSVG = a.svgStyle();
+        const SVGRenderStyle& bSVG = b.svgStyle();
         return aSVG.strokePaintType() == bSVG.strokePaintType()
             && (aSVG.strokePaintType() != SVG_PAINTTYPE_RGBCOLOR || aSVG.strokePaintColor() == bSVG.strokePaintColor())
             && aSVG.visitedLinkStrokePaintType() == bSVG.visitedLinkStrokePaintType()

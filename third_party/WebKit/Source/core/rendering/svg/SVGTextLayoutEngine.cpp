@@ -249,7 +249,7 @@ void SVGTextLayoutEngine::layoutInlineTextBox(SVGInlineTextBox* textBox)
     ASSERT(style);
 
     textBox->clearTextFragments();
-    m_isVerticalText = style->svgStyle()->isVerticalWritingMode();
+    m_isVerticalText = style->svgStyle().isVerticalWritingMode();
     layoutTextOnLineOrPath(textBox, &text, style);
 
     if (m_inPathLayout) {
@@ -433,8 +433,7 @@ void SVGTextLayoutEngine::layoutTextOnLineOrPath(SVGInlineTextBox* textBox, Rend
     RenderObject* textParent = text->parent();
     bool definesTextLength = textParent ? parentDefinesTextLength(textParent) : false;
 
-    const SVGRenderStyle* svgStyle = style->svgStyle();
-    ASSERT(svgStyle);
+    const SVGRenderStyle& svgStyle = style->svgStyle();
 
     m_visualMetricsListOffset = 0;
     m_visualCharacterOffset = 0;

@@ -112,9 +112,8 @@ bool SVGTextQuery::executeQuery(Data* queryData, ProcessTextFragmentCallback fra
         queryData->textBox = m_textBoxes.at(textBoxPosition);
         queryData->textRenderer = &toRenderSVGInlineText(queryData->textBox->textRenderer());
         ASSERT(queryData->textRenderer->style());
-        ASSERT(queryData->textRenderer->style()->svgStyle());
 
-        queryData->isVerticalText = queryData->textRenderer->style()->svgStyle()->isVerticalWritingMode();
+        queryData->isVerticalText = queryData->textRenderer->style()->svgStyle().isVerticalWritingMode();
         const Vector<SVGTextFragment>& fragments = queryData->textBox->textFragments();
 
         // Loop over all text fragments in this text box, firing a callback for each.

@@ -88,11 +88,10 @@ void RenderSVGResourceMasker::postApplyResource(RenderObject* object, GraphicsCo
 
     FloatRect repaintRect = object->paintInvalidationRectInLocalCoordinates();
 
-    const SVGRenderStyle* svgStyle = style()->svgStyle();
-    ASSERT(svgStyle);
-    ColorFilter maskLayerFilter = svgStyle->maskType() == MT_LUMINANCE
+    const SVGRenderStyle& svgStyle = style()->svgStyle();
+    ColorFilter maskLayerFilter = svgStyle.maskType() == MT_LUMINANCE
         ? ColorFilterLuminanceToAlpha : ColorFilterNone;
-    ColorFilter maskContentFilter = svgStyle->colorInterpolation() == CI_LINEARRGB
+    ColorFilter maskContentFilter = svgStyle.colorInterpolation() == CI_LINEARRGB
         ? ColorFilterSRGBToLinearRGB : ColorFilterNone;
 
     // Mask layer start.

@@ -42,8 +42,7 @@ void SVGResourcesCache::addResourcesFromRenderObject(RenderObject* object, const
     ASSERT(style);
     ASSERT(!m_cache.contains(object));
 
-    const SVGRenderStyle* svgStyle = style->svgStyle();
-    ASSERT(svgStyle);
+    const SVGRenderStyle& svgStyle = style->svgStyle();
 
     // Build a list of all resources associated with the passed RenderObject
     OwnPtr<SVGResources> newResources = SVGResources::buildResources(object, svgStyle);

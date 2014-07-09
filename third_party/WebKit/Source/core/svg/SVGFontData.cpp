@@ -185,7 +185,7 @@ bool SVGFontData::applySVGGlyphSelection(WidthIterator& iterator, GlyphData& gly
         RenderObject* parentRenderObject = renderObject->isText() ? renderObject->parent() : renderObject;
         ASSERT(parentRenderObject);
 
-        isVerticalText = parentRenderObject->style()->svgStyle()->isVerticalWritingMode();
+        isVerticalText = parentRenderObject->style()->svgStyle().isVerticalWritingMode();
         if (Element* parentRenderObjectElement = toElement(parentRenderObject->node())) {
             language = parentRenderObjectElement->getAttribute(XMLNames::langAttr);
 

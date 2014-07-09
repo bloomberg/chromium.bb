@@ -109,8 +109,7 @@ void SVGRenderingContext::prepareToRenderSVGContent(RenderObject* object, PaintI
     RenderStyle* style = m_object->style();
     ASSERT(style);
 
-    const SVGRenderStyle* svgStyle = style->svgStyle();
-    ASSERT(svgStyle);
+    const SVGRenderStyle& svgStyle = style->svgStyle();
 
     // Setup transparency layers before setting up SVG resources!
     bool isRenderingMask = isRenderingMaskImage(m_object);
@@ -146,7 +145,7 @@ void SVGRenderingContext::prepareToRenderSVGContent(RenderObject* object, PaintI
 
     SVGResources* resources = SVGResourcesCache::cachedResourcesForRenderObject(m_object);
     if (!resources) {
-        if (svgStyle->hasFilter())
+        if (svgStyle.hasFilter())
             return;
 
         m_renderingFlags |= RenderingPrepared;

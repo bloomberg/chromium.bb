@@ -143,8 +143,7 @@ bool RenderSVGResourcePattern::applyResource(RenderObject* object, RenderStyle* 
     if (!patternData)
         return false;
 
-    const SVGRenderStyle* svgStyle = style->svgStyle();
-    ASSERT(svgStyle);
+    const SVGRenderStyle& svgStyle = style->svgStyle();
 
     AffineTransform computedPatternSpaceTransform = computeResourceSpaceTransform(object, patternData->transform, svgStyle, resourceMode);
     patternData->pattern->setPatternSpaceTransform(computedPatternSpaceTransform);
@@ -153,11 +152,11 @@ bool RenderSVGResourcePattern::applyResource(RenderObject* object, RenderStyle* 
     context->save();
 
     if (resourceMode & ApplyToFillMode) {
-        context->setAlphaAsFloat(svgStyle->fillOpacity());
+        context->setAlphaAsFloat(svgStyle.fillOpacity());
         context->setFillPattern(patternData->pattern);
-        context->setFillRule(svgStyle->fillRule());
+        context->setFillRule(svgStyle.fillRule());
     } else if (resourceMode & ApplyToStrokeMode) {
-        context->setAlphaAsFloat(svgStyle->strokeOpacity());
+        context->setAlphaAsFloat(svgStyle.strokeOpacity());
         context->setStrokePattern(patternData->pattern);
         SVGRenderSupport::applyStrokeStyleToContext(context, style, object);
     }

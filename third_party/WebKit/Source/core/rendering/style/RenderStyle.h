@@ -1407,39 +1407,39 @@ public:
     bool requiresAcceleratedCompositingForExternalReasons(bool b) { return rareNonInheritedData->m_requiresAcceleratedCompositingForExternalReasons; }
     void setRequiresAcceleratedCompositingForExternalReasons(bool b) { SET_VAR(rareNonInheritedData, m_requiresAcceleratedCompositingForExternalReasons, b); }
 
-    const SVGRenderStyle* svgStyle() const { return m_svgStyle.get(); }
-    SVGRenderStyle* accessSVGStyle() { return m_svgStyle.access(); }
+    const SVGRenderStyle& svgStyle() const { return *m_svgStyle.get(); }
+    SVGRenderStyle& accessSVGStyle() { return *m_svgStyle.access(); }
 
-    const SVGPaintType& fillPaintType() const { return svgStyle()->fillPaintType(); }
-    Color fillPaintColor() const { return svgStyle()->fillPaintColor(); }
-    float fillOpacity() const { return svgStyle()->fillOpacity(); }
-    void setFillOpacity(float f) { accessSVGStyle()->setFillOpacity(f); }
+    const SVGPaintType& fillPaintType() const { return svgStyle().fillPaintType(); }
+    Color fillPaintColor() const { return svgStyle().fillPaintColor(); }
+    float fillOpacity() const { return svgStyle().fillOpacity(); }
+    void setFillOpacity(float f) { accessSVGStyle().setFillOpacity(f); }
 
-    const SVGPaintType& strokePaintType() const { return svgStyle()->strokePaintType(); }
-    Color strokePaintColor() const { return svgStyle()->strokePaintColor(); }
-    float strokeOpacity() const { return svgStyle()->strokeOpacity(); }
-    void setStrokeOpacity(float f) { accessSVGStyle()->setStrokeOpacity(f); }
-    SVGLength* strokeWidth() const { return svgStyle()->strokeWidth(); }
-    void setStrokeWidth(PassRefPtr<SVGLength> w) { accessSVGStyle()->setStrokeWidth(w); }
-    SVGLengthList* strokeDashArray() const { return svgStyle()->strokeDashArray(); }
-    void setStrokeDashArray(PassRefPtr<SVGLengthList> array) { accessSVGStyle()->setStrokeDashArray(array); }
-    SVGLength* strokeDashOffset() const { return svgStyle()->strokeDashOffset(); }
-    void setStrokeDashOffset(PassRefPtr<SVGLength> d) { accessSVGStyle()->setStrokeDashOffset(d); }
-    float strokeMiterLimit() const { return svgStyle()->strokeMiterLimit(); }
-    void setStrokeMiterLimit(float f) { accessSVGStyle()->setStrokeMiterLimit(f); }
+    const SVGPaintType& strokePaintType() const { return svgStyle().strokePaintType(); }
+    Color strokePaintColor() const { return svgStyle().strokePaintColor(); }
+    float strokeOpacity() const { return svgStyle().strokeOpacity(); }
+    void setStrokeOpacity(float f) { accessSVGStyle().setStrokeOpacity(f); }
+    SVGLength* strokeWidth() const { return svgStyle().strokeWidth(); }
+    void setStrokeWidth(PassRefPtr<SVGLength> w) { accessSVGStyle().setStrokeWidth(w); }
+    SVGLengthList* strokeDashArray() const { return svgStyle().strokeDashArray(); }
+    void setStrokeDashArray(PassRefPtr<SVGLengthList> array) { accessSVGStyle().setStrokeDashArray(array); }
+    SVGLength* strokeDashOffset() const { return svgStyle().strokeDashOffset(); }
+    void setStrokeDashOffset(PassRefPtr<SVGLength> d) { accessSVGStyle().setStrokeDashOffset(d); }
+    float strokeMiterLimit() const { return svgStyle().strokeMiterLimit(); }
+    void setStrokeMiterLimit(float f) { accessSVGStyle().setStrokeMiterLimit(f); }
 
-    float floodOpacity() const { return svgStyle()->floodOpacity(); }
-    void setFloodOpacity(float f) { accessSVGStyle()->setFloodOpacity(f); }
+    float floodOpacity() const { return svgStyle().floodOpacity(); }
+    void setFloodOpacity(float f) { accessSVGStyle().setFloodOpacity(f); }
 
-    float stopOpacity() const { return svgStyle()->stopOpacity(); }
-    void setStopOpacity(float f) { accessSVGStyle()->setStopOpacity(f); }
+    float stopOpacity() const { return svgStyle().stopOpacity(); }
+    void setStopOpacity(float f) { accessSVGStyle().setStopOpacity(f); }
 
-    void setStopColor(const Color& c) { accessSVGStyle()->setStopColor(c); }
-    void setFloodColor(const Color& c) { accessSVGStyle()->setFloodColor(c); }
-    void setLightingColor(const Color& c) { accessSVGStyle()->setLightingColor(c); }
+    void setStopColor(const Color& c) { accessSVGStyle().setStopColor(c); }
+    void setFloodColor(const Color& c) { accessSVGStyle().setFloodColor(c); }
+    void setLightingColor(const Color& c) { accessSVGStyle().setLightingColor(c); }
 
-    SVGLength* baselineShiftValue() const { return svgStyle()->baselineShiftValue(); }
-    void setBaselineShiftValue(PassRefPtr<SVGLength> s) { accessSVGStyle()->setBaselineShiftValue(s); }
+    SVGLength* baselineShiftValue() const { return svgStyle().baselineShiftValue(); }
+    void setBaselineShiftValue(PassRefPtr<SVGLength> s) { accessSVGStyle().setBaselineShiftValue(s); }
 
     void setShapeOutside(PassRefPtr<ShapeValue> value)
     {
@@ -1797,9 +1797,9 @@ private:
 
     Color colorIncludingFallback(int colorProperty, bool visitedLink) const;
 
-    Color stopColor() const { return svgStyle()->stopColor(); }
-    Color floodColor() const { return svgStyle()->floodColor(); }
-    Color lightingColor() const { return svgStyle()->lightingColor(); }
+    Color stopColor() const { return svgStyle().stopColor(); }
+    Color floodColor() const { return svgStyle().floodColor(); }
+    Color lightingColor() const { return svgStyle().lightingColor(); }
 
     void appendContent(PassOwnPtr<ContentData>);
     void addAppliedTextDecoration(const AppliedTextDecoration&);

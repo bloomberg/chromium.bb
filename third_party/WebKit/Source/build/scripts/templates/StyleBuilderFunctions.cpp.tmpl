@@ -26,7 +26,7 @@ void StyleBuilderFunctions::applyValue{{property_id}}(StyleResolverState& state,
 {%- endmacro %}
 {% macro set_value(property) %}
 {% if property.svg %}
-state.style()->accessSVGStyle()->{{property.setter}}
+state.style()->accessSVGStyle().{{property.setter}}
 {%- elif property.font %}
 state.fontBuilder().{{property.setter}}
 {%- else %}
@@ -55,7 +55,7 @@ namespace WebCore {
 {{declare_inherit_function(property_id)}}
 {
     {% if property.svg %}
-    {{set_value(property)}}(state.parentStyle()->svgStyle()->{{property.getter}}());
+    {{set_value(property)}}(state.parentStyle()->svgStyle().{{property.getter}}());
     {% elif property.font %}
     {{set_value(property)}}(state.parentFontDescription().{{property.getter}}());
     {% else %}
@@ -596,11 +596,11 @@ static bool lengthTypeAndValueMatch(const BorderImageLengthBox& borderImageLengt
 
 {{declare_inherit_function(property_id)}}
 {
-    const SVGRenderStyle* svgParentStyle = state.parentStyle()->svgStyle();
+    const SVGRenderStyle& svgParentStyle = state.parentStyle()->svgStyle();
     {{set_value(property)}}(
-        svgParentStyle->{{paint_type|lower_first}}Type(),
-        svgParentStyle->{{paint_type|lower_first}}Color(),
-        svgParentStyle->{{paint_type|lower_first}}Uri(),
+        svgParentStyle.{{paint_type|lower_first}}Type(),
+        svgParentStyle.{{paint_type|lower_first}}Color(),
+        svgParentStyle.{{paint_type|lower_first}}Uri(),
         state.applyPropertyToRegularStyle(),
         state.applyPropertyToVisitedLinkStyle());
 }

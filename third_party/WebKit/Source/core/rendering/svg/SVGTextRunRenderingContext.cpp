@@ -112,7 +112,7 @@ void SVGTextRunRenderingContext::drawSVGGlyphs(GraphicsContext* context, const T
     if (parentRenderObject) {
         parentRenderObjectStyle = parentRenderObject->style();
         ASSERT(parentRenderObjectStyle);
-        isVerticalText = parentRenderObjectStyle->svgStyle()->isVerticalWritingMode();
+        isVerticalText = parentRenderObjectStyle->svgStyle().isVerticalWritingMode();
     }
 
     float scale = scaleEmToUnits(fontData->platformData().size(), fontFaceElement->unitsPerEm());

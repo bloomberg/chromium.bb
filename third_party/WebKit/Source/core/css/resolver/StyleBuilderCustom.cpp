@@ -340,9 +340,9 @@ void StyleBuilderFunctions::applyValueCSSPropertyFontWeight(StyleResolverState& 
 void StyleBuilderFunctions::applyValueCSSPropertyGlyphOrientationVertical(StyleResolverState& state, CSSValue* value)
 {
     if (value->isPrimitiveValue() && toCSSPrimitiveValue(value)->getValueID() == CSSValueAuto)
-        state.style()->accessSVGStyle()->setGlyphOrientationVertical(GO_AUTO);
+        state.style()->accessSVGStyle().setGlyphOrientationVertical(GO_AUTO);
     else
-        state.style()->accessSVGStyle()->setGlyphOrientationVertical(StyleBuilderConverter::convertGlyphOrientation(state, value));
+        state.style()->accessSVGStyle().setGlyphOrientationVertical(StyleBuilderConverter::convertGlyphOrientation(state, value));
 }
 
 void StyleBuilderFunctions::applyInitialCSSPropertyGridTemplateAreas(StyleResolverState& state)
@@ -1373,12 +1373,12 @@ void StyleBuilderFunctions::applyValueCSSPropertyWebkitFontFeatureSettings(Style
 
 void StyleBuilderFunctions::applyInheritCSSPropertyBaselineShift(StyleResolverState& state)
 {
-    const SVGRenderStyle* parentSvgStyle = state.parentStyle()->svgStyle();
-    EBaselineShift baselineShift = parentSvgStyle->baselineShift();
-    SVGRenderStyle* svgStyle = state.style()->accessSVGStyle();
-    svgStyle->setBaselineShift(baselineShift);
+    const SVGRenderStyle& parentSvgStyle = state.parentStyle()->svgStyle();
+    EBaselineShift baselineShift = parentSvgStyle.baselineShift();
+    SVGRenderStyle& svgStyle = state.style()->accessSVGStyle();
+    svgStyle.setBaselineShift(baselineShift);
     if (baselineShift == BS_LENGTH)
-        svgStyle->setBaselineShiftValue(parentSvgStyle->baselineShiftValue());
+        svgStyle.setBaselineShiftValue(parentSvgStyle.baselineShiftValue());
 }
 
 void StyleBuilderFunctions::applyValueCSSPropertyBaselineShift(StyleResolverState& state, CSSValue* value)
@@ -1386,25 +1386,25 @@ void StyleBuilderFunctions::applyValueCSSPropertyBaselineShift(StyleResolverStat
     if (!value->isPrimitiveValue())
         return;
 
-    SVGRenderStyle* svgStyle = state.style()->accessSVGStyle();
+    SVGRenderStyle& svgStyle = state.style()->accessSVGStyle();
     CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
     if (primitiveValue->getValueID()) {
         switch (primitiveValue->getValueID()) {
         case CSSValueBaseline:
-            svgStyle->setBaselineShift(BS_BASELINE);
+            svgStyle.setBaselineShift(BS_BASELINE);
             break;
         case CSSValueSub:
-            svgStyle->setBaselineShift(BS_SUB);
+            svgStyle.setBaselineShift(BS_SUB);
             break;
         case CSSValueSuper:
-            svgStyle->setBaselineShift(BS_SUPER);
+            svgStyle.setBaselineShift(BS_SUPER);
             break;
         default:
             break;
         }
     } else {
-        svgStyle->setBaselineShift(BS_LENGTH);
-        svgStyle->setBaselineShiftValue(SVGLength::fromCSSPrimitiveValue(primitiveValue));
+        svgStyle.setBaselineShift(BS_LENGTH);
+        svgStyle.setBaselineShiftValue(SVGLength::fromCSSPrimitiveValue(primitiveValue));
     }
 }
 

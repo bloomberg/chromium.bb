@@ -145,7 +145,7 @@ void RenderSVGImage::paint(PaintInfo& paintInfo, const LayoutPoint&)
             SVGRenderingContext::DontSaveGraphicsContext : SVGRenderingContext::SaveGraphicsContext);
 
         if (renderingContext.isRenderingPrepared()) {
-            if (style()->svgStyle()->bufferedRendering() == BR_STATIC && renderingContext.bufferForeground(m_bufferedForeground))
+            if (style()->svgStyle().bufferedRendering() == BR_STATIC && renderingContext.bufferForeground(m_bufferedForeground))
                 return;
 
             paintForeground(childPaintInfo);
@@ -166,7 +166,7 @@ void RenderSVGImage::paintForeground(PaintInfo& paintInfo)
     imageElement->preserveAspectRatio()->currentValue()->transformRect(destRect, srcRect);
 
     InterpolationQuality interpolationQuality = InterpolationDefault;
-    if (style()->svgStyle()->bufferedRendering() != BR_STATIC)
+    if (style()->svgStyle().bufferedRendering() != BR_STATIC)
         interpolationQuality = ImageQualityController::imageQualityController()->chooseInterpolationQuality(paintInfo.context, this, image.get(), image.get(), LayoutSize(destRect.size()));
 
     InterpolationQuality previousInterpolationQuality = paintInfo.context->imageInterpolationQuality();
