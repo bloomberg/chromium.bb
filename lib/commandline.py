@@ -39,6 +39,29 @@ CheckoutInfo = collections.namedtuple(
     'CheckoutInfo', ['type', 'root', 'chrome_src_dir'])
 
 
+class ChrootRequiredError(Exception):
+  """Raised when a command must be run in the chroot
+
+  This exception is intended to be caught by code which will restart execution
+  in the chroot. If none of the arguments passed to the script need to be
+  adjusted when that happens, it can be constructed with no parameters. If
+  something does need to be adjusted, for instance an argument that's a path,
+  the command can construct a custom command line and pass it into this
+  exception which will be used instead.
+
+  When customizing the command line, argv[0] will have to be fixed up manually
+  like any other element of argv.
+  """
+
+  def __init__(self, new_argv=None, *args, **kwargs):
+    Exception.__init__(self, *args, **kwargs)
+    if new_argv is None:
+      new_argv = sys.argv[:]
+      new_argv = [git.ReinterpretPathForChroot(new_argv[0])] + new_argv[1:]
+
+    self.new_argv = new_argv
+
+
 def DetermineCheckout(cwd):
   """Gather information on the checkout we are in.
 
@@ -512,6 +535,12 @@ def _DefaultHandler(signum, _frame):
       signum, "Received signal %i; shutting down" % (signum,))
 
 
+def _RestartInChroot(argv):
+  """Rerun the current command inside the chroot"""
+  return cros_build_lib.RunCommand(argv, enter_chroot=True, error_code_ok=True,
+                                   cwd=constants.SOURCE_ROOT).returncode
+
+
 def ScriptWrapperMain(find_target_func, argv=None,
                       log_level=logging.DEBUG,
                       log_format=constants.LOGGER_FMT):
@@ -566,6 +595,8 @@ def ScriptWrapperMain(find_target_func, argv=None,
     # Right now, let this crash through- longer term, we'll update the scripts
     # in question to not use sys.exit, and make this into a flagged error.
     raise
+  except ChrootRequiredError as e:
+    ret = _RestartInChroot(e.new_argv)
   except Exception as e:
     sys.stdout.flush()
     print >> sys.stderr, ("%s: Unhandled exception:" % (name,))

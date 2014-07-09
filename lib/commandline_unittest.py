@@ -324,5 +324,41 @@ class ParseArgsTest(cros_test_lib.TestCase):
     self._TestParser(self._CreateArgumentParser(commandline.ArgumentParser))
 
 
+class ScriptWrapperMainTest(cros_test_lib.MockTestCase):
+  """Test the behavior of the ScriptWrapperMain function."""
+
+  def setUp(self):
+    self.PatchObject(sys, 'exit')
+
+  # pylint: disable=W0613
+  @staticmethod
+  def _DummyChrootTarget(args):
+    raise commandline.ChrootRequiredError()
+
+  DUMMY_CHROOT_TARGET_ARGS = ['cmd', 'arg1', 'arg2']
+
+  @staticmethod
+  def _DummyChrootTargetArgs(args):
+    args = ScriptWrapperMainTest.DUMMY_CHROOT_TARGET_ARGS
+    raise commandline.ChrootRequiredError(args)
+
+  def testRestartInChroot(self):
+    rc = self.StartPatcher(cros_build_lib_unittest.RunCommandMock())
+    rc.SetDefaultCmdResult()
+
+    ret = lambda x: ScriptWrapperMainTest._DummyChrootTarget
+    commandline.ScriptWrapperMain(ret)
+    rc.assertCommandContains(enter_chroot=True)
+    rc.assertCommandContains(self.DUMMY_CHROOT_TARGET_ARGS, expected=False)
+
+  def testRestartInChrootArgs(self):
+    rc = self.StartPatcher(cros_build_lib_unittest.RunCommandMock())
+    rc.SetDefaultCmdResult()
+
+    ret = lambda x: ScriptWrapperMainTest._DummyChrootTargetArgs
+    commandline.ScriptWrapperMain(ret)
+    rc.assertCommandContains(self.DUMMY_CHROOT_TARGET_ARGS, enter_chroot=True)
+
+
 if __name__ == '__main__':
   cros_test_lib.main()
