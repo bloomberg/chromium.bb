@@ -4,24 +4,20 @@
 if (window.testRunner) {
     testRunner.dumpAsText();
     testRunner.dumpChildFramesAsText();
-    testRunner.waitUntilDone();
-    testRunner.setCanOpenWindows();
-    testRunner.setCloseRemainingWindowsWhenComplete(true);
     testRunner.overridePreference("WebKitJavaScriptEnabled", false);
 }
 
-function transferResult(sourceWindow) {
-    document.body.innerHTML = sourceWindow.document.body.innerHTML;
-    testRunner.notifyDone();
-}
-
-function runTest() {
-    var win = window.open("resources/xslt-transform-with-javascript-disabled-mainframe.html");
-    win.onload = function() { transferResult(win) };
+function shouldNotBeExecuted()
+{
+    var divElement = document.createElement("div");
+    divElement.innerHTML = "This text should not present";
+    document.body.appendChild(divElement);
 }
 
 </script>
 </head>
-<body onLoad="runTest();">
+
+<body onLoad="shouldNotBeExecuted();">
+    <iframe src="resources/xslt-transform-with-javascript-disabled.xml"/>
 </body>
 </html>

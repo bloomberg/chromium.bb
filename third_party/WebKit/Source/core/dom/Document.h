@@ -880,8 +880,6 @@ public:
     bool allowInlineEventHandlers(Node*, EventListener*, const String& contextURL, const WTF::OrdinalNumber& contextLine);
     bool allowExecutingScripts(Node*);
 
-    bool scriptEnabled();
-
     void statePopped(PassRefPtr<SerializedScriptValue>);
 
     enum LoadEventProgress {
@@ -1272,13 +1270,6 @@ private:
     double m_startTime;
 
     OwnPtrWillBeMember<ScriptRunner> m_scriptRunner;
-
-    enum ScriptEnabledState {
-        Uninitialized,
-        Enabled,
-        Disabled
-    };
-    ScriptEnabledState m_scriptEnabled;
 
     WillBeHeapVector<RefPtrWillBeMember<HTMLScriptElement> > m_currentScriptStack;
 

@@ -466,7 +466,6 @@ Document::Document(const DocumentInit& initializer, DocumentClassFlags documentC
     , m_loadEventProgress(LoadEventNotRun)
     , m_startTime(currentTime())
     , m_scriptRunner(ScriptRunner::create(this))
-    , m_scriptEnabled(Uninitialized)
     , m_xmlVersion("1.0")
     , m_xmlStandalone(StandaloneUnspecified)
     , m_hasXMLDeclaration(0)
@@ -4897,13 +4896,6 @@ bool Document::allowExecutingScripts(Node* node)
     if (!frame->script().canExecuteScripts(AboutToExecuteScript))
         return false;
     return true;
-}
-
-bool Document::scriptEnabled()
-{
-    if (m_scriptEnabled == Uninitialized)
-        m_scriptEnabled = m_frame->loader().client()->allowScript(settings() && settings()->scriptEnabled()) ? Enabled : Disabled;
-    return m_scriptEnabled == Enabled;
 }
 
 void Document::updateSecurityOrigin(PassRefPtr<SecurityOrigin> origin)
