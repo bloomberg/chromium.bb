@@ -7,7 +7,8 @@
 
 #include "bindings/core/v8/Dictionary.h"
 #include "bindings/core/v8/ScriptWrappable.h"
-#include "modules/serviceworkers/HeaderMap.h"
+#include "modules/serviceworkers/FetchRequestData.h"
+#include "modules/serviceworkers/Headers.h"
 #include "platform/weborigin/KURL.h"
 #include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"
@@ -19,30 +20,40 @@ namespace WebCore {
 
 struct RequestInit;
 class ResourceRequest;
+struct ResourceLoaderOptions;
+struct ThreadableLoaderOptions;
 
-class Request FINAL : public ScriptWrappable, public RefCounted<Request> {
+class Request FINAL : public RefCounted<Request>, public ScriptWrappable {
 public:
-    static PassRefPtr<Request> create();
-    static PassRefPtr<Request> create(const Dictionary&);
+    static PassRefPtr<Request> create(ExecutionContext*, const String&, ExceptionState&);
+    static PassRefPtr<Request> create(ExecutionContext*, const String&, const Dictionary&, ExceptionState&);
+    static PassRefPtr<Request> create(ExecutionContext*, Request*, ExceptionState&);
+    static PassRefPtr<Request> create(ExecutionContext*, Request*, const Dictionary&, ExceptionState&);
+
+    static PassRefPtr<Request> create(PassRefPtr<FetchRequestData>);
+
     static PassRefPtr<Request> create(const blink::WebServiceWorkerRequest&);
+
     ~Request() { };
 
-    void setURL(const String& value);
-    void setMethod(const String& value);
+    PassRefPtr<FetchRequestData> request() { return m_request; }
 
-    String url() const { return m_url.string(); }
-    String method() const { return m_method; }
-    String origin() const;
-    PassRefPtr<HeaderMap> headers() const { return m_headers; }
+    String method() const;
+    String url() const;
+    PassRefPtr<Headers> headers() const { return m_headers; }
+    // FIXME: Support body.
+    String referrer() const;
+    String mode() const;
+    String credentials() const;
 
     PassOwnPtr<ResourceRequest> createResourceRequest() const;
 
 private:
-    explicit Request(const RequestInit&);
+    explicit Request(PassRefPtr<FetchRequestData>);
     explicit Request(const blink::WebServiceWorkerRequest&);
-    KURL m_url;
-    String m_method;
-    RefPtr<HeaderMap> m_headers;
+
+    RefPtr<FetchRequestData> m_request;
+    RefPtr<Headers> m_headers;
 };
 
 } // namespace WebCore

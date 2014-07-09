@@ -19,6 +19,7 @@ class FetchHeaderList FINAL : public RefCounted<FetchHeaderList> {
 public:
     typedef std::pair<String, String> Header;
     static PassRefPtr<FetchHeaderList> create();
+    PassRefPtr<FetchHeaderList> createCopy();
 
     ~FetchHeaderList();
     void append(const String&, const String&);

@@ -7,13 +7,16 @@
 
 #include "WebCommon.h"
 #include "public/platform/WebPrivatePtr.h"
+#include "public/platform/WebReferrerPolicy.h"
 #include "public/platform/WebString.h"
 #include "public/platform/WebURL.h"
 
 #if INSIDE_BLINK
+#include "platform/network/HTTPHeaderMap.h"
+#include "platform/weborigin/Referrer.h"
 #include "wtf/Forward.h"
-#include "wtf/HashMap.h"
 #include "wtf/text/StringHash.h"
+#include <utility>
 #endif
 
 namespace blink {
@@ -44,11 +47,14 @@ public:
 
     void setHeader(const WebString& key, const WebString& value);
 
+    void setReferrer(const WebString&, WebReferrerPolicy);
+
     void setIsReload(bool);
     bool isReload() const;
 
 #if INSIDE_BLINK
-    const HashMap<String, String>& headers() const;
+    const WebCore::HTTPHeaderMap& headers() const;
+    const WebCore::Referrer& referrer() const;
 #endif
 
 private:

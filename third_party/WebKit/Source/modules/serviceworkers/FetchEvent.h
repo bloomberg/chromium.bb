@@ -24,7 +24,7 @@ public:
     static PassRefPtrWillBeRawPtr<FetchEvent> create(PassRefPtr<RespondWithObserver>, PassRefPtr<Request>);
     virtual ~FetchEvent() { }
 
-    Request* request() const;
+    PassRefPtr<Request> request() const;
     bool isReload() const;
 
     void respondWith(ScriptState*, const ScriptValue&);

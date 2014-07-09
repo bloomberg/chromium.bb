@@ -17,6 +17,14 @@ PassRefPtr<FetchHeaderList> FetchHeaderList::create()
     return adoptRef(new FetchHeaderList());
 }
 
+PassRefPtr<FetchHeaderList> FetchHeaderList::createCopy()
+{
+    RefPtr<FetchHeaderList> list(create());
+    for (size_t i = 0; i < m_headerList.size(); ++i)
+        list->append(m_headerList[i]->first, m_headerList[i]->second);
+    return list.release();
+}
+
 FetchHeaderList::FetchHeaderList()
 {
 }
@@ -159,7 +167,7 @@ bool FetchHeaderList::isForbiddenHeaderName(const String& name)
     //   `Transfer-Encoding`, `Upgrade`, `User-Agent`, `Via`
     // or starts with `Proxy-` or `Sec-` (including when it is just `Proxy-` or
     // `Sec-`)."
-    return !XMLHttpRequest::isAllowedHTTPHeader(name);
+    return !XMLHttpRequest::isAllowedHTTPHeader(name) || equalIgnoringCase(name, "DNT");
 }
 
 bool FetchHeaderList::isForbiddenResponseHeaderName(const String& name)

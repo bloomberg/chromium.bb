@@ -3,24 +3,27 @@
 // found in the LICENSE file.
 
 // http://fetch.spec.whatwg.org/#request-class
+
+enum RequestMode { "same-origin", "no-cors", "cors" };
+enum RequestCredentials { "omit", "same-origin", "include" };
+
 [
-    Constructor(optional Dictionary requestInitDict),
+    Constructor(ScalarValueString input, optional Dictionary requestInitDict),
+    Constructor(Request input, optional Dictionary requestInitDict),
+    ConstructorCallWith=ExecutionContext,
     RuntimeEnabled=ServiceWorker,
-    Exposed=ServiceWorker
+    Exposed=ServiceWorker,
+    RaisesException=Constructor
 ] interface Request {
-    attribute ScalarValueString url;
-    attribute ByteString method;
-    readonly attribute DOMString origin;
-    readonly attribute HeaderMap headers;
+    readonly attribute ByteString method;
+    readonly attribute ScalarValueString url;
+    readonly attribute Headers headers;
+
+    readonly attribute DOMString referrer;
+    readonly attribute RequestMode mode;
+    readonly attribute RequestCredentials credentials;
 
     // FIXME: Implement the following:
-    // attribute unsigned long timeout;
-    // readonly attribute Mode mode;
-    // attribute boolean synchronous;
-    // readonly attribute unsigned long redirectCount;
-    // attribute boolean forcePreflight;
-    // attribute boolean forceSameOrigin;
-    // attribute boolean omitCredentials;
-    // readonly attribute DOMString referrer;
-    // attribute any body;
+    // readonly attribute FetchBodyStream body;
+    // readonly attribute RequestContext context;
 };

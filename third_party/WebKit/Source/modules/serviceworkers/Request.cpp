@@ -6,22 +6,174 @@
 #include "Request.h"
 
 #include "bindings/core/v8/Dictionary.h"
-#include "core/dom/DOMURLUtilsReadOnly.h"
+#include "core/dom/ExecutionContext.h"
+#include "core/fetch/CrossOriginAccessControl.h"
+#include "core/fetch/ResourceLoaderOptions.h"
+#include "core/loader/ThreadableLoader.h"
+#include "core/xml/XMLHttpRequest.h"
+#include "modules/serviceworkers/FetchManager.h"
 #include "modules/serviceworkers/RequestInit.h"
 #include "platform/NotImplemented.h"
+#include "platform/network/HTTPParsers.h"
 #include "platform/network/ResourceRequest.h"
+#include "platform/weborigin/Referrer.h"
 #include "public/platform/WebServiceWorkerRequest.h"
 
 namespace WebCore {
 
-PassRefPtr<Request> Request::create()
+namespace {
+
+PassRefPtr<Request> createRequestWithRequestData(PassRefPtr<FetchRequestData> request, const RequestInit& init, FetchRequestData::Mode mode, FetchRequestData::Credentials credentials, ExceptionState& exceptionState)
 {
-    return create(Dictionary());
+    // "6. Let |mode| be |init|'s mode member if it is present, and
+    // |fallbackMode| otherwise."
+    // "7. If |mode| is non-null, set |request|'s mode to |mode|."
+    if (init.mode == "same-origin") {
+        request->setMode(FetchRequestData::SameOriginMode);
+    } else if (init.mode == "no-cors") {
+        request->setMode(mode = FetchRequestData::NoCORSMode);
+    } else if (init.mode == "cors") {
+        request->setMode(FetchRequestData::CORSMode);
+    } else {
+        // Instead of using null as a special fallback value, we pass the
+        // current mode in Request::create(). So we just set here.
+        request->setMode(mode);
+    }
+
+    // "8. Let |credentials| be |init|'s credentials member if it is present,
+    // and |fallbackCredentials| otherwise."
+    // "9. If |credentials| is non-null, set |request|'s credentials mode to
+    // |credentials|.
+    if (init.credentials == "omit") {
+        request->setCredentials(FetchRequestData::OmitCredentials);
+    } else if (init.credentials == "same-origin") {
+        request->setCredentials(FetchRequestData::SameOriginCredentials);
+    } else if (init.credentials == "include") {
+        request->setCredentials(FetchRequestData::IncludeCredentials);
+    } else {
+        // Instead of using null as a special fallback value, we pass the
+        // current credentials in Request::create(). So we just set here.
+        request->setCredentials(credentials);
+    }
+
+    // "10. If |init|'s method member is present, let |method| be it and run
+    // these substeps:"
+    if (!init.method.isEmpty()) {
+        // "1. If |method| is not a useful method, throw a TypeError."
+        if (!FetchManager::isUsefulMethod(init.method)) {
+            exceptionState.throwTypeError("'" + init.method + "' HTTP method is unsupported.");
+            return nullptr;
+        }
+        if (!isValidHTTPToken(init.method)) {
+            exceptionState.throwTypeError("'" + init.method + "' is not a valid HTTP method.");
+            return nullptr;
+        }
+        // FIXME: "2. Add case correction as in XMLHttpRequest?"
+        // "3. Set |request|'s method to |method|."
+        request->setMethod(XMLHttpRequest::uppercaseKnownHTTPMethod(AtomicString(init.method)));
+    }
+    // "11. Let |r| be a new Request object associated with |request|, Headers
+    // object, and FetchBodyStream object."
+    RefPtr<Request> r = Request::create(request);
+    // "12. If |r|'s request's mode is no CORS, run these substeps:
+    if (r->request()->mode() == FetchRequestData::NoCORSMode) {
+        // "1. If |r|'s request's method is not a simple method, throw a
+        // TypeError."
+        if (!FetchManager::isSimpleMethod(r->request()->method())) {
+            exceptionState.throwTypeError("'" + r->request()->method() + "' is unsupported in no-cors mode.");
+            return nullptr;
+        }
+        // "Set |r|'s Headers object's guard to |request-no-CORS|.
+        r->headers()->setGuard(Headers::RequestNoCORSGuard);
+    }
+
+    // "13. If |init|'s headers member is present, run these substeps:"
+    if (init.headers) {
+        ASSERT(init.headersDictionary.isUndefinedOrNull());
+        // "1. Empty |r|'s request's header list."
+        r->request()->headerList()->clearList();
+        // "2. Fill |r|'s Headers object with |init|'s headers member. Rethrow
+        // any exceptions."
+        r->headers()->fillWith(init.headers.get(), exceptionState);
+        if (exceptionState.hadException())
+            return nullptr;
+    } else if (!init.headersDictionary.isUndefinedOrNull()) {
+        // "1. Empty |r|'s request's header list."
+        r->request()->headerList()->clearList();
+        // "2. Fill |r|'s Headers object with |init|'s headers member. Rethrow
+        // any exceptions."
+        r->headers()->fillWith(init.headersDictionary, exceptionState);
+        if (exceptionState.hadException())
+            return nullptr;
+    }
+    // FIXME: Support body.
+    // "17. Return |r|."
+    return r.release();
 }
 
-PassRefPtr<Request> Request::create(const Dictionary& requestInit)
+
+} // namespace
+
+PassRefPtr<Request> Request::create(ExecutionContext* context, const String& input, ExceptionState& exceptionState)
 {
-    return adoptRef(new Request(RequestInit(requestInit)));
+    return create(context, input, Dictionary(), exceptionState);
+}
+
+PassRefPtr<Request> Request::create(ExecutionContext* context, const String& input, const Dictionary& init, ExceptionState& exceptionState)
+{
+    // "1. Let |request| be |input|'s associated request, if |input| is a
+    // Request object, and a new request otherwise."
+    RefPtr<FetchRequestData> request(FetchRequestData::create(context));
+    // "2. Set |request| to a restricted copy of itself."
+    request = request->createRestrictedCopy(context, SecurityOrigin::create(context->url()));
+    // "5. If |input| is a string, run these substeps:"
+    // "1. Let |parsedURL| be the result of parsing |input| with entry settings
+    // object's API base URL."
+    KURL parsedURL = context->completeURL(input);
+    // "2. If |parsedURL| is failure, throw a TypeError."
+    if (!parsedURL.isValid()) {
+        exceptionState.throwTypeError("Invalid URL");
+        return nullptr;
+    }
+    // "3. Set |request|'s url to |parsedURL|."
+    request->setURL(parsedURL);
+    // "4. Set |fallbackMode| to CORS."
+    // "5. Set |fallbackCredentials| to omit."
+    return createRequestWithRequestData(request.release(), RequestInit(init), FetchRequestData::CORSMode, FetchRequestData::OmitCredentials, exceptionState);
+}
+
+
+PassRefPtr<Request> Request::create(ExecutionContext* context, Request* input, ExceptionState& exceptionState)
+{
+    return create(context, input, Dictionary(), exceptionState);
+}
+
+PassRefPtr<Request> Request::create(ExecutionContext* context, Request* input, const Dictionary& init, ExceptionState& exceptionState)
+{
+    // "1. Let |request| be |input|'s associated request, if |input| is a
+    // Request object, and a new request otherwise."
+    // "2. Set |request| to a restricted copy of itself."
+    RefPtr<FetchRequestData> request(input->request()->createRestrictedCopy(context, SecurityOrigin::create(context->url())));
+    // "3. Let |fallbackMode| be null."
+    // "4. Let |fallbackCredentials| be null."
+    // Instead of using null as a special fallback value, just pass the current
+    // mode and credentials; it has the same effect.
+    const FetchRequestData::Mode currentMode = request->mode();
+    const FetchRequestData::Credentials currentCredentials = request->credentials();
+    return createRequestWithRequestData(request.release(), RequestInit(init), currentMode, currentCredentials, exceptionState);
+}
+
+PassRefPtr<Request> Request::create(PassRefPtr<FetchRequestData> request)
+{
+    return adoptRef(new Request(request));
+}
+
+Request::Request(PassRefPtr<FetchRequestData> request)
+    : m_request(request)
+    , m_headers(Headers::create(m_request->headerList()))
+{
+    m_headers->setGuard(Headers::RequestGuard);
+    ScriptWrappable::init(this);
 }
 
 PassRefPtr<Request> Request::create(const blink::WebServiceWorkerRequest& webRequest)
@@ -29,46 +181,78 @@ PassRefPtr<Request> Request::create(const blink::WebServiceWorkerRequest& webReq
     return adoptRef(new Request(webRequest));
 }
 
-void Request::setURL(const String& value)
+Request::Request(const blink::WebServiceWorkerRequest& webRequest)
+    : m_request(FetchRequestData::create(webRequest))
+    , m_headers(Headers::create(m_request->headerList()))
 {
-    m_url = KURL(ParsedURLString, value);
+    m_headers->setGuard(Headers::RequestGuard);
+    ScriptWrappable::init(this);
 }
 
-void Request::setMethod(const String& value)
+String Request::method() const
 {
-    m_method = value;
+    // "The method attribute's getter must return request's method."
+    return m_request->method();
 }
 
-String Request::origin() const
+String Request::url() const
 {
-    return DOMURLUtilsReadOnly::origin(m_url);
+    // The url attribute's getter must return request's url, serialized with the exclude fragment flag set.
+    if (!m_request->url().hasFragmentIdentifier())
+        return m_request->url();
+    KURL url(m_request->url());
+    url.removeFragmentIdentifier();
+    return url;
+}
+
+String Request::referrer() const
+{
+    // "The referrer attribute's getter must return the empty string if
+    // request's referrer is none, and request's referrer, serialized,
+    // otherwise."
+    return m_request->referrer().referrer().referrer;
+}
+
+String Request::mode() const
+{
+    // "The mode attribute's getter must return the value corresponding to the
+    // first matching statement, switching on request's mode:"
+    switch (m_request->mode()) {
+    case FetchRequestData::SameOriginMode:
+        return "same-origin";
+    case FetchRequestData::NoCORSMode:
+        return "no-cors";
+    case FetchRequestData::CORSMode:
+    case FetchRequestData::CORSWithForcedPreflight:
+        return "cors";
+    }
+    ASSERT_NOT_REACHED();
+    return "";
+}
+
+String Request::credentials() const
+{
+    // "The credentials attribute's getter must return the value corresponding
+    // to the first matching statement, switching on request's credentials
+    // mode:"
+    switch (m_request->credentials()) {
+    case FetchRequestData::OmitCredentials:
+        return "omit";
+    case FetchRequestData::SameOriginCredentials:
+        return "same-origin";
+    case FetchRequestData::IncludeCredentials:
+        return "include";
+    }
+    ASSERT_NOT_REACHED();
+    return "";
 }
 
 PassOwnPtr<ResourceRequest> Request::createResourceRequest() const
 {
-    OwnPtr<ResourceRequest> request = adoptPtr(new ResourceRequest(m_url));
+    OwnPtr<ResourceRequest> request = adoptPtr(new ResourceRequest(url()));
     request->setHTTPMethod("GET");
     // FIXME: Fill more info.
     return request.release();
-}
-
-Request::Request(const RequestInit& requestInit)
-    : m_url(KURL(ParsedURLString, requestInit.url))
-    , m_method(requestInit.method)
-    , m_headers(requestInit.headers)
-{
-    ScriptWrappable::init(this);
-
-    if (!m_headers)
-        m_headers = HeaderMap::create();
-}
-
-Request::Request(const blink::WebServiceWorkerRequest& webRequest)
-    : m_url(webRequest.url())
-    , m_method(webRequest.method())
-    , m_headers(HeaderMap::create(webRequest.headers()))
-{
-    ScriptWrappable::init(this);
 }
 
 } // namespace WebCore

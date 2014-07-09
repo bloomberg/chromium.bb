@@ -12,6 +12,7 @@
 #include "core/fileapi/Blob.h"
 #include "core/loader/ThreadableLoader.h"
 #include "core/loader/ThreadableLoaderClient.h"
+#include "core/xml/XMLHttpRequest.h"
 #include "modules/serviceworkers/Response.h"
 #include "modules/serviceworkers/ResponseInit.h"
 #include "platform/network/ResourceRequest.h"
@@ -172,6 +173,25 @@ ScriptPromise FetchManager::fetch(ScriptState* scriptState, PassOwnPtr<ResourceR
 void FetchManager::onLoaderFinished(Loader* loader)
 {
     m_loaders.remove(loader);
+}
+
+bool FetchManager::isSimpleMethod(const String& method)
+{
+    // "A simple method is a method that is `GET`, `HEAD`, or `POST`."
+    return isOnAccessControlSimpleRequestMethodWhitelist(method);
+}
+
+bool FetchManager::isForbiddenMethod(const String& method)
+{
+    // "A forbidden method is a method that is a byte case-insensitive match for one of `CONNECT`, `TRACE`, and `TRACK`."
+    return !XMLHttpRequest::isAllowedHTTPMethod(method);
+}
+
+bool FetchManager::isUsefulMethod(const String& method)
+{
+    // "A useful method is a method that is not a forbidden method."
+    // "A forbidden method is a method that is a byte case-insensitive match for one of `CONNECT`, `TRACE`, and `TRACK`."
+    return XMLHttpRequest::isAllowedHTTPMethod(method);
 }
 
 } // namespace WebCore

@@ -6,24 +6,28 @@
 #define RequestInit_h
 
 #include "bindings/core/v8/Dictionary.h"
-#include "modules/serviceworkers/HeaderMap.h"
+#include "modules/serviceworkers/Headers.h"
 #include "wtf/RefPtr.h"
 
 namespace WebCore {
 
 struct RequestInit {
     explicit RequestInit(const Dictionary& options)
-        : method("GET")
     {
-        options.get("url", url);
-        // FIXME: Spec uses ByteString for method. http://crbug.com/347426
         options.get("method", method);
         options.get("headers", headers);
+        if (!headers) {
+            options.get("headers", headersDictionary);
+        }
+        options.get("mode", mode);
+        options.get("credentials", credentials);
     }
 
-    String url;
     String method;
-    RefPtr<HeaderMap> headers;
+    RefPtr<Headers> headers;
+    Dictionary headersDictionary;
+    String mode;
+    String credentials;
 };
 
 }

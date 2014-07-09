@@ -21,9 +21,9 @@ PassRefPtrWillBeRawPtr<FetchEvent> FetchEvent::create(PassRefPtr<RespondWithObse
     return adoptRefWillBeNoop(new FetchEvent(observer, request));
 }
 
-Request* FetchEvent::request() const
+PassRefPtr<Request> FetchEvent::request() const
 {
-    return m_request.get();
+    return m_request;
 }
 
 bool FetchEvent::isReload() const

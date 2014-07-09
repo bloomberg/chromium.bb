@@ -643,6 +643,8 @@
       'serviceworkers/FetchHeaderList.h',
       'serviceworkers/FetchManager.cpp',
       'serviceworkers/FetchManager.h',
+      'serviceworkers/FetchRequestData.cpp',
+      'serviceworkers/FetchRequestData.h',
       'serviceworkers/HeaderMap.cpp',
       'serviceworkers/HeaderMap.h',
       'serviceworkers/HeaderMapForEachCallback.h',

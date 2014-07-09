@@ -47,14 +47,15 @@ public:
     void setGuard(Guard guard) { m_guard = guard; }
     Guard guard() const { return m_guard; }
 
+    // These methods should only be called when size() would return 0.
+    void fillWith(const Headers*, ExceptionState&);
+    void fillWith(const Dictionary&, ExceptionState&);
+
 private:
     Headers();
     // Shares the FetchHeaderList. Called when creating a Request or Response.
     explicit Headers(FetchHeaderList*);
     void forEachInternal(PassOwnPtr<HeadersForEachCallback>, ScriptValue*);
-
-    void fillWith(const Headers*, ExceptionState&);
-    void fillWith(const Dictionary&, ExceptionState&);
 
     RefPtr<FetchHeaderList> m_headerList;
     Guard m_guard;
