@@ -1188,6 +1188,10 @@ class GLES2DecoderImpl : public GLES2Decoder,
   // Generates GL error if not.
   bool CheckBoundFramebuffersValid(const char* func_name);
 
+  // Check that the currently bound read framebuffer has a color image
+  // attached. Generates GL error if not.
+  bool CheckBoundReadFramebufferColorAttachment(const char* func_name);
+
   // Check if a framebuffer meets our requirements.
   bool CheckFramebufferValid(
       Framebuffer* framebuffer,
@@ -3195,6 +3199,21 @@ bool GLES2DecoderImpl::CheckBoundFramebuffersValid(const char* func_name) {
          CheckFramebufferValid(framebuffer_state_.bound_read_framebuffer.get(),
                                GL_READ_FRAMEBUFFER_EXT,
                                func_name);
+}
+
+bool GLES2DecoderImpl::CheckBoundReadFramebufferColorAttachment(
+    const char* func_name) {
+  Framebuffer* framebuffer = features().chromium_framebuffer_multisample ?
+      framebuffer_state_.bound_read_framebuffer.get() :
+      framebuffer_state_.bound_draw_framebuffer.get();
+  if (!framebuffer)
+    return true;
+  if (framebuffer->GetAttachment(GL_COLOR_ATTACHMENT0) == NULL) {
+    LOCAL_SET_GL_ERROR(
+        GL_INVALID_OPERATION, func_name, "no color image attached");
+    return false;
+  }
+  return true;
 }
 
 gfx::Size GLES2DecoderImpl::GetBoundReadFrameBufferSize() {
@@ -7439,6 +7458,10 @@ error::Error GLES2DecoderImpl::HandleReadPixels(
     return error::kNoError;
   }
 
+  if (!CheckBoundReadFramebufferColorAttachment("glReadPixels")) {
+    return error::kNoError;
+  }
+
   if (!CheckBoundFramebuffersValid("glReadPixels")) {
     return error::kNoError;
   }
@@ -8490,6 +8513,10 @@ void GLES2DecoderImpl::DoCopyTexImage2D(
     return;
   }
 
+  if (!CheckBoundReadFramebufferColorAttachment("glCopyTexImage2D")) {
+    return;
+  }
+
   if (!CheckBoundFramebuffersValid("glCopyTexImage2D")) {
     return;
   }
@@ -8597,6 +8624,10 @@ void GLES2DecoderImpl::DoCopyTexSubImage2D(
     LOCAL_SET_GL_ERROR(
         GL_INVALID_OPERATION,
         "glCopySubImage2D", "can not be used with depth or stencil textures");
+    return;
+  }
+
+  if (!CheckBoundReadFramebufferColorAttachment("glCopyTexSubImage2D")) {
     return;
   }
 
