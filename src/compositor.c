@@ -349,8 +349,11 @@ weston_view_create(struct weston_surface *surface)
 
 	view->plane = NULL;
 	view->layer_link.layer = NULL;
+	view->parent_view = NULL;
 
 	pixman_region32_init(&view->clip);
+	pixman_region32_init(&view->transform.masked_boundingbox);
+	pixman_region32_init(&view->transform.masked_opaque);
 
 	view->alpha = 1.0;
 	pixman_region32_init(&view->transform.opaque);
@@ -783,7 +786,7 @@ weston_view_damage_below(struct weston_view *view)
 	pixman_region32_t damage;
 
 	pixman_region32_init(&damage);
-	pixman_region32_subtract(&damage, &view->transform.boundingbox,
+	pixman_region32_subtract(&damage, &view->transform.masked_boundingbox,
 				 &view->clip);
 	if (view->plane)
 		pixman_region32_union(&view->plane->damage,
@@ -1009,10 +1012,20 @@ weston_view_update_transform_enable(struct weston_view *view)
 	return 0;
 }
 
+static struct weston_layer *
+get_view_layer(struct weston_view *view)
+{
+	if (view->parent_view)
+		return get_view_layer(view->parent_view);
+	return view->layer_link.layer;
+}
+
 WL_EXPORT void
 weston_view_update_transform(struct weston_view *view)
 {
 	struct weston_view *parent = view->geometry.parent;
+	struct weston_layer *layer;
+	pixman_region32_t mask;
 
 	if (!view->transform.dirty)
 		return;
@@ -1038,6 +1051,16 @@ weston_view_update_transform(struct weston_view *view)
 	} else {
 		if (weston_view_update_transform_enable(view) < 0)
 			weston_view_update_transform_disable(view);
+	}
+
+	layer = get_view_layer(view);
+	if (layer) {
+		pixman_region32_init_with_extents(&mask, &layer->mask);
+		pixman_region32_intersect(&view->transform.masked_boundingbox,
+					&view->transform.boundingbox, &mask);
+		pixman_region32_intersect(&view->transform.masked_opaque,
+					&view->transform.opaque, &mask);
+		pixman_region32_fini(&mask);
 	}
 
 	weston_view_damage_below(view);
@@ -1331,10 +1354,15 @@ weston_compositor_pick_view(struct weston_compositor *compositor,
 			    wl_fixed_t *vx, wl_fixed_t *vy)
 {
 	struct weston_view *view;
+        int ix = wl_fixed_to_int(x);
+        int iy = wl_fixed_to_int(y);
 
 	wl_list_for_each(view, &compositor->view_list, link) {
 		weston_view_from_global_fixed(view, x, y, vx, vy);
-		if (pixman_region32_contains_point(&view->surface->input,
+		if (pixman_region32_contains_point(
+			&view->transform.masked_boundingbox,
+						   ix, iy, NULL) &&
+		    pixman_region32_contains_point(&view->surface->input,
 						   wl_fixed_to_int(*vx),
 						   wl_fixed_to_int(*vy),
 						   NULL))
@@ -1426,6 +1454,8 @@ weston_view_destroy(struct weston_view *view)
 
 	pixman_region32_fini(&view->clip);
 	pixman_region32_fini(&view->transform.boundingbox);
+	pixman_region32_fini(&view->transform.masked_boundingbox);
+	pixman_region32_fini(&view->transform.masked_opaque);
 
 	weston_view_set_transform_parent(view, NULL);
 
@@ -1625,7 +1655,7 @@ view_accumulate_damage(struct weston_view *view,
 			      &view->plane->damage, &damage);
 	pixman_region32_fini(&damage);
 	pixman_region32_copy(&view->clip, opaque);
-	pixman_region32_union(opaque, opaque, &view->transform.opaque);
+	pixman_region32_union(opaque, opaque, &view->transform.masked_opaque);
 }
 
 static void
@@ -1740,6 +1770,7 @@ view_list_add_subsurface_view(struct weston_compositor *compositor,
 		weston_view_set_transform_parent(view, parent);
 	}
 
+	view->parent_view = parent;
 	weston_view_update_transform(view);
 
 	if (wl_list_empty(&sub->surface->subsurface_list)) {
@@ -1933,8 +1964,32 @@ weston_layer_init(struct weston_layer *layer, struct wl_list *below)
 {
 	wl_list_init(&layer->view_list.link);
 	layer->view_list.layer = layer;
+	weston_layer_set_mask_infinite(layer);
 	if (below != NULL)
 		wl_list_insert(below, &layer->link);
+}
+
+WL_EXPORT void
+weston_layer_set_mask(struct weston_layer *layer,
+		      int x, int y, int width, int height)
+{
+	struct weston_view *view;
+
+	layer->mask.x1 = x;
+	layer->mask.x2 = x + width;
+	layer->mask.y1 = y;
+	layer->mask.y2 = y + height;
+
+	wl_list_for_each(view, &layer->view_list.link, layer_link.link) {
+		weston_view_geometry_dirty(view);
+	}
+}
+
+WL_EXPORT void
+weston_layer_set_mask_infinite(struct weston_layer *layer)
+{
+	weston_layer_set_mask(layer, INT32_MIN, INT32_MIN,
+				     UINT32_MAX, UINT32_MAX);
 }
 
 WL_EXPORT void

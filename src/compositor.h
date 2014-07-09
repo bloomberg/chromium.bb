@@ -534,6 +534,7 @@ struct weston_layer_entry {
 struct weston_layer {
 	struct weston_layer_entry view_list;
 	struct wl_list link;
+	pixman_box32_t mask;
 };
 
 struct weston_plane {
@@ -738,6 +739,7 @@ struct weston_view {
 	struct wl_list link;
 	struct weston_layer_entry layer_link;
 	struct weston_plane *plane;
+	struct weston_view *parent_view;
 
 	pixman_region32_t clip;
 	float alpha;                     /* part of geometry, see below */
@@ -769,6 +771,8 @@ struct weston_view {
 
 		pixman_region32_t boundingbox;
 		pixman_region32_t opaque;
+		pixman_region32_t masked_boundingbox;
+		pixman_region32_t masked_opaque;
 
 		/* matrix and inverse are used only if enabled = 1.
 		 * If enabled = 0, use x, y, width, height directly.
@@ -1008,6 +1012,12 @@ void
 weston_layer_entry_remove(struct weston_layer_entry *entry);
 void
 weston_layer_init(struct weston_layer *layer, struct wl_list *below);
+
+void
+weston_layer_set_mask(struct weston_layer *layer, int x, int y, int width, int height);
+
+void
+weston_layer_set_mask_infinite(struct weston_layer *layer);
 
 void
 weston_plane_init(struct weston_plane *plane,
