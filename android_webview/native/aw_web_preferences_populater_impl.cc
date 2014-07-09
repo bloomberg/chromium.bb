@@ -16,11 +16,11 @@ AwWebPreferencesPopulaterImpl::~AwWebPreferencesPopulaterImpl() {
 
 void AwWebPreferencesPopulaterImpl::PopulateFor(
     content::WebContents* web_contents,
-    WebPreferences* web_prefs) {
+    content::WebPreferences* web_prefs) {
   AwSettings* aw_settings = AwSettings::FromWebContents(web_contents);
   if (aw_settings) {
     aw_settings->PopulateWebPreferences(web_prefs);
   }
 }
 
-}
+}  // namespace android_webview

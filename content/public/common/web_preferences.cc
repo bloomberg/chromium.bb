@@ -1,8 +1,8 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/common/webpreferences.h"
+#include "content/public/common/web_preferences.h"
 
 #include "base/basictypes.h"
 #include "base/strings/string_util.h"
@@ -10,8 +10,26 @@
 #include "third_party/WebKit/public/web/WebSettings.h"
 #include "third_party/icu/source/common/unicode/uchar.h"
 
-using base::ASCIIToWide;
 using blink::WebSettings;
+
+namespace content {
+
+// "Zyyy" is the ISO 15924 script code for undetermined script aka Common.
+const char kCommonScript[] = "Zyyy";
+
+#define COMPILE_ASSERT_MATCHING_ENUMS(content_name, blink_name)         \
+    COMPILE_ASSERT(                                                     \
+        static_cast<int>(content_name) == static_cast<int>(blink_name), \
+        mismatching_enums)
+
+COMPILE_ASSERT_MATCHING_ENUMS(EDITING_BEHAVIOR_MAC,
+                              WebSettings::EditingBehaviorMac);
+COMPILE_ASSERT_MATCHING_ENUMS(EDITING_BEHAVIOR_WIN,
+                              WebSettings::EditingBehaviorWin);
+COMPILE_ASSERT_MATCHING_ENUMS(EDITING_BEHAVIOR_UNIX,
+                              WebSettings::EditingBehaviorUnix);
+COMPILE_ASSERT_MATCHING_ENUMS(EDITING_BEHAVIOR_ANDROID,
+                              WebSettings::EditingBehaviorAndroid);
 
 WebPreferences::WebPreferences()
     : default_font_size(16),
@@ -86,15 +104,15 @@ WebPreferences::WebPreferences()
       should_respect_image_orientation(false),
       number_of_cpu_cores(1),
 #if defined(OS_MACOSX)
-      editing_behavior(webkit_glue::EDITING_BEHAVIOR_MAC),
+      editing_behavior(EDITING_BEHAVIOR_MAC),
 #elif defined(OS_WIN)
-      editing_behavior(webkit_glue::EDITING_BEHAVIOR_WIN),
+      editing_behavior(EDITING_BEHAVIOR_WIN),
 #elif defined(OS_ANDROID)
-      editing_behavior(webkit_glue::EDITING_BEHAVIOR_ANDROID),
+      editing_behavior(EDITING_BEHAVIOR_ANDROID),
 #elif defined(OS_POSIX)
-      editing_behavior(webkit_glue::EDITING_BEHAVIOR_UNIX),
+      editing_behavior(EDITING_BEHAVIOR_UNIX),
 #else
-      editing_behavior(webkit_glue::EDITING_BEHAVIOR_MAC),
+      editing_behavior(EDITING_BEHAVIOR_MAC),
 #endif
       supports_multiple_windows(true),
       viewport_enabled(false),
@@ -136,42 +154,18 @@ WebPreferences::WebPreferences()
       report_screen_size_in_physical_pixels_quirk(false)
 #endif
 {
-  standard_font_family_map[webkit_glue::kCommonScript] =
+  standard_font_family_map[kCommonScript] =
       base::ASCIIToUTF16("Times New Roman");
-  fixed_font_family_map[webkit_glue::kCommonScript] =
-      base::ASCIIToUTF16("Courier New");
-  serif_font_family_map[webkit_glue::kCommonScript] =
-      base::ASCIIToUTF16("Times New Roman");
-  sans_serif_font_family_map[webkit_glue::kCommonScript] =
-      base::ASCIIToUTF16("Arial");
-  cursive_font_family_map[webkit_glue::kCommonScript] =
-      base::ASCIIToUTF16("Script");
-  fantasy_font_family_map[webkit_glue::kCommonScript] =
-      base::ASCIIToUTF16("Impact");
-  pictograph_font_family_map[webkit_glue::kCommonScript] =
+  fixed_font_family_map[kCommonScript] = base::ASCIIToUTF16("Courier New");
+  serif_font_family_map[kCommonScript] = base::ASCIIToUTF16("Times New Roman");
+  sans_serif_font_family_map[kCommonScript] = base::ASCIIToUTF16("Arial");
+  cursive_font_family_map[kCommonScript] = base::ASCIIToUTF16("Script");
+  fantasy_font_family_map[kCommonScript] = base::ASCIIToUTF16("Impact");
+  pictograph_font_family_map[kCommonScript] =
       base::ASCIIToUTF16("Times New Roman");
 }
 
 WebPreferences::~WebPreferences() {
 }
 
-namespace webkit_glue {
-
-// "Zyyy" is the ISO 15924 script code for undetermined script aka Common.
-const char kCommonScript[] = "Zyyy";
-
-#define COMPILE_ASSERT_MATCHING_ENUMS(webkit_glue_name, webkit_name)         \
-    COMPILE_ASSERT(                                                          \
-        static_cast<int>(webkit_glue_name) == static_cast<int>(webkit_name), \
-        mismatching_enums)
-
-COMPILE_ASSERT_MATCHING_ENUMS(
-    webkit_glue::EDITING_BEHAVIOR_MAC, WebSettings::EditingBehaviorMac);
-COMPILE_ASSERT_MATCHING_ENUMS(
-    webkit_glue::EDITING_BEHAVIOR_WIN, WebSettings::EditingBehaviorWin);
-COMPILE_ASSERT_MATCHING_ENUMS(
-    webkit_glue::EDITING_BEHAVIOR_UNIX, WebSettings::EditingBehaviorUnix);
-COMPILE_ASSERT_MATCHING_ENUMS(
-    webkit_glue::EDITING_BEHAVIOR_ANDROID, WebSettings::EditingBehaviorAndroid);
-
-}  // namespace webkit_glue
+}  // namespace content

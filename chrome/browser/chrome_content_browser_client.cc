@@ -122,6 +122,7 @@
 #include "content/public/common/child_process_host.h"
 #include "content/public/common/content_descriptors.h"
 #include "content/public/common/url_utils.h"
+#include "content/public/common/web_preferences.h"
 #include "extensions/browser/extension_host.h"
 #include "extensions/browser/extension_message_filter.h"
 #include "extensions/browser/extension_registry.h"
@@ -150,7 +151,6 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "webkit/browser/fileapi/external_mount_points.h"
-#include "webkit/common/webpreferences.h"
 
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
@@ -261,6 +261,7 @@ using content::RenderViewHost;
 using content::ResourceType;
 using content::SiteInstance;
 using content::WebContents;
+using content::WebPreferences;
 using extensions::APIPermission;
 using extensions::Extension;
 using extensions::InfoMap;
@@ -495,7 +496,7 @@ bool CertMatchesFilter(const net::X509Certificate& cert,
 // Fills |map| with the per-script font prefs under path |map_name|.
 void FillFontFamilyMap(const PrefService* prefs,
                        const char* map_name,
-                       webkit_glue::ScriptFontFamilyMap* map) {
+                       content::ScriptFontFamilyMap* map) {
   // TODO(falken): Get rid of the brute-force scan over possible
   // (font family / script) combinations - see http://crbug.com/308095.
   for (size_t i = 0; i < prefs::kWebKitScriptsForFontFamilyMapsLength; ++i) {

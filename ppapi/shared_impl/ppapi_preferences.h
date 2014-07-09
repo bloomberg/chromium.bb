@@ -5,23 +5,25 @@
 #ifndef PPAPI_SHARED_IMPL_PPAPI_PREFERENCES_H_
 #define PPAPI_SHARED_IMPL_PPAPI_PREFERENCES_H_
 
-#include "ppapi/shared_impl/ppapi_shared_export.h"
-#include "webkit/common/webpreferences.h"
+#include <map>
+#include <string>
 
-struct WebPreferences;
+#include "base/strings/string16.h"
+#include "ppapi/shared_impl/ppapi_shared_export.h"
 
 namespace ppapi {
 
 struct PPAPI_SHARED_EXPORT Preferences {
  public:
+  typedef std::map<std::string, base::string16> ScriptFontFamilyMap;
+
   Preferences();
-  explicit Preferences(const WebPreferences& prefs);
   ~Preferences();
 
-  webkit_glue::ScriptFontFamilyMap standard_font_family_map;
-  webkit_glue::ScriptFontFamilyMap fixed_font_family_map;
-  webkit_glue::ScriptFontFamilyMap serif_font_family_map;
-  webkit_glue::ScriptFontFamilyMap sans_serif_font_family_map;
+  ScriptFontFamilyMap standard_font_family_map;
+  ScriptFontFamilyMap fixed_font_family_map;
+  ScriptFontFamilyMap serif_font_family_map;
+  ScriptFontFamilyMap sans_serif_font_family_map;
   int default_font_size;
   int default_fixed_font_size;
   int number_of_cpu_cores;

@@ -6,14 +6,7 @@
 #define ANDROID_WEBVIEW_NATIVE_AW_WEB_PREFERENCES_POPULATER_IMPL_H_
 
 #include "android_webview/browser/aw_web_preferences_populater.h"
-
 #include "base/compiler_specific.h"
-
-struct WebPreferences;
-
-namespace content {
-class WebContents;
-}
 
 namespace android_webview {
 
@@ -26,9 +19,9 @@ class AwWebPreferencesPopulaterImpl : public AwWebPreferencesPopulater {
 
   // AwWebPreferencesPopulater
   virtual void PopulateFor(content::WebContents* web_contents,
-                           WebPreferences* web_prefs) OVERRIDE;
+                           content::WebPreferences* web_prefs) OVERRIDE;
 };
 
-}
+}  // namespace android_webview
 
 #endif  // ANDROID_WEBVIEW_NATIVE_AW_WEB_PREFERENCES_POPULATER_IMPL_H_

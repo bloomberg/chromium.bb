@@ -11,8 +11,6 @@
 #include "ipc/ipc_sender.h"
 #include "third_party/WebKit/public/web/WebNavigationPolicy.h"
 
-struct WebPreferences;
-
 namespace blink {
 class WebFrame;
 class WebLocalFrame;
@@ -28,6 +26,7 @@ class RenderView;
 class ServiceRegistry;
 struct ContextMenuParams;
 struct WebPluginInfo;
+struct WebPreferences;
 
 // This interface wraps functionality, which is specific to frames, such as
 // navigation. It provides communication with a corresponding RenderFrameHost

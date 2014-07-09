@@ -41,7 +41,7 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/common/frame_navigate_params.h"
-#include "webkit/common/webpreferences.h"
+#include "content/public/common/web_preferences.h"
 
 #if defined(USE_AURA)
 #include "ui/aura/window.h"
@@ -115,6 +115,7 @@ using content::NavigationController;
 using content::NavigationEntry;
 using content::RenderViewHost;
 using content::WebContents;
+using content::WebPreferences;
 using content::WebUIMessageHandler;
 using ui::WebDialogDelegate;
 

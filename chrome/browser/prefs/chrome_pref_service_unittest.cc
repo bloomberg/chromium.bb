@@ -23,11 +23,12 @@
 #include "components/policy/core/browser/configuration_policy_pref_store.h"
 #include "components/policy/core/common/mock_configuration_policy_provider.h"
 #include "components/pref_registry/pref_registry_syncable.h"
+#include "content/public/common/web_preferences.h"
 #include "content/public/test/web_contents_tester.h"
 #include "ui/base/test/data/resource.h"
-#include "webkit/common/webpreferences.h"
 
 using content::WebContentsTester;
+using content::WebPreferences;
 
 TEST(ChromePrefServiceTest, UpdateCommandLinePrefStore) {
   TestingPrefServiceSimple prefs;

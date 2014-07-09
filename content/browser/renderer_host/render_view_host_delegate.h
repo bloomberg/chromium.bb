@@ -24,7 +24,6 @@ class SkBitmap;
 struct ViewHostMsg_CreateWindow_Params;
 struct FrameHostMsg_DidCommitProvisionalLoad_Params;
 struct ViewMsg_PostMessage_Params;
-struct WebPreferences;
 
 namespace base {
 class ListValue;
@@ -59,6 +58,7 @@ struct GlobalRequestID;
 struct NativeWebKeyboardEvent;
 struct Referrer;
 struct RendererPreferences;
+struct WebPreferences;
 
 //
 // RenderViewHostDelegate

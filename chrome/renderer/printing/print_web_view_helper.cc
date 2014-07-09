@@ -20,10 +20,10 @@
 #include "chrome/common/print_messages.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/renderer/prerender/prerender_helper.h"
+#include "content/public/common/web_preferences.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/render_view.h"
-#include "content/public/renderer/web_preferences.h"
 #include "grit/browser_resources.h"
 #include "net/base/escape.h"
 #include "printing/metafile.h"
@@ -46,7 +46,8 @@
 #include "third_party/WebKit/public/web/WebView.h"
 #include "third_party/WebKit/public/web/WebViewClient.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "webkit/common/webpreferences.h"
+
+using content::WebPreferences;
 
 namespace printing {
 
@@ -696,7 +697,7 @@ void PrepareFrameAndViewForPrint::CopySelection(
 
   blink::WebView* web_view = blink::WebView::create(this);
   owns_web_view_ = true;
-  content::ApplyWebPreferences(prefs, web_view);
+  content::RenderView::ApplyWebPreferences(prefs, web_view);
   web_view->setMainFrame(blink::WebLocalFrame::create(this));
   frame_.Reset(web_view->mainFrame()->toWebLocalFrame());
   node_to_print_.reset();
@@ -1596,9 +1597,8 @@ bool PrintWebViewHelper::RenderPagesForPrint(blink::WebLocalFrame* frame,
     return false;
   const PrintMsg_PrintPages_Params& params = *print_pages_params_;
   const PrintMsg_Print_Params& print_params = params.params;
-  prep_frame_view_.reset(
-      new PrepareFrameAndViewForPrint(print_params, frame, node,
-                                      ignore_css_margins_));
+  prep_frame_view_.reset(new PrepareFrameAndViewForPrint(
+      print_params, frame, node, ignore_css_margins_));
   DCHECK(!print_pages_params_->params.selection_only ||
          print_pages_params_->pages.empty());
   prep_frame_view_->CopySelectionIfNeeded(

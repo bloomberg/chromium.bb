@@ -13,6 +13,7 @@
 #include "content/public/common/referrer.h"
 #include "content/public/common/security_style.h"
 #include "content/public/common/ssl_status.h"
+#include "content/public/common/web_preferences.h"
 #include "content/public/common/webplugininfo.h"
 #include "ipc/ipc_message_macros.h"
 #include "net/base/network_change_notifier.h"
@@ -23,7 +24,6 @@
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
 #include "third_party/WebKit/public/web/WebWindowFeatures.h"
 #include "ui/base/window_open_disposition.h"
-#include "webkit/common/webpreferences.h"
 
 #undef IPC_MESSAGE_EXPORT
 #define IPC_MESSAGE_EXPORT CONTENT_EXPORT
@@ -37,8 +37,8 @@ IPC_ENUM_TRAITS_MAX_VALUE(content::SecurityStyle,
                           content::SECURITY_STYLE_LAST)
 IPC_ENUM_TRAITS_MAX_VALUE(blink::WebReferrerPolicy,
                           blink::WebReferrerPolicyLast)
-IPC_ENUM_TRAITS_MAX_VALUE(webkit_glue::EditingBehavior,
-                          webkit_glue::EDITING_BEHAVIOR_LAST)
+IPC_ENUM_TRAITS_MAX_VALUE(content::EditingBehavior,
+                          content::EDITING_BEHAVIOR_LAST)
 IPC_ENUM_TRAITS_MAX_VALUE(WindowOpenDisposition,
                           WINDOW_OPEN_DISPOSITION_LAST)
 IPC_ENUM_TRAITS_MAX_VALUE(net::RequestPriority, net::MAXIMUM_PRIORITY)
@@ -87,7 +87,7 @@ IPC_STRUCT_TRAITS_BEGIN(content::WebPluginInfo)
   IPC_STRUCT_TRAITS_MEMBER(pepper_permissions)
 IPC_STRUCT_TRAITS_END()
 
-IPC_STRUCT_TRAITS_BEGIN(WebPreferences)
+IPC_STRUCT_TRAITS_BEGIN(content::WebPreferences)
   IPC_STRUCT_TRAITS_MEMBER(standard_font_family_map)
   IPC_STRUCT_TRAITS_MEMBER(fixed_font_family_map)
   IPC_STRUCT_TRAITS_MEMBER(serif_font_family_map)

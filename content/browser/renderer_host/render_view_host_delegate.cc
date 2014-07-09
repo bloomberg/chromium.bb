@@ -4,8 +4,8 @@
 
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 
+#include "content/public/common/web_preferences.h"
 #include "url/gurl.h"
-#include "webkit/common/webpreferences.h"
 
 namespace content {
 

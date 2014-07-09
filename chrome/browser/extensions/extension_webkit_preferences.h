@@ -7,7 +7,9 @@
 
 #include "extensions/common/view_type.h"
 
+namespace content {
 struct WebPreferences;
+}
 
 namespace extensions {
 class Extension;
@@ -17,7 +19,7 @@ namespace extension_webkit_preferences {
 
 void SetPreferences(const extensions::Extension* extension,
                     extensions::ViewType render_view_type,
-                    WebPreferences* webkit_prefs);
+                    content::WebPreferences* webkit_prefs);
 
 }  // namespace extension_webkit_preferences
 

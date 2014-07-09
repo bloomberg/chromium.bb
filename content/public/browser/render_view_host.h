@@ -16,15 +16,19 @@
 #include "third_party/WebKit/public/web/WebDragOperation.h"
 
 class GURL;
-struct WebPreferences;
-
-namespace gfx {
-class Point;
-}
 
 namespace base {
 class FilePath;
 class Value;
+}
+
+namespace blink {
+struct WebMediaPlayerAction;
+struct WebPluginAction;
+}
+
+namespace gfx {
+class Point;
 }
 
 namespace media {
@@ -35,11 +39,6 @@ namespace ui {
 struct SelectedFileInfo;
 }
 
-namespace blink {
-struct WebMediaPlayerAction;
-struct WebPluginAction;
-}
-
 namespace content {
 
 class ChildProcessSecurityPolicy;
@@ -48,6 +47,7 @@ class RenderViewHostDelegate;
 class SessionStorageNamespace;
 class SiteInstance;
 struct DropData;
+struct WebPreferences;
 
 // A RenderViewHost is responsible for creating and talking to a RenderView
 // object in a child process. It exposes a high level API to users, for things

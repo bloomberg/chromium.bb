@@ -127,6 +127,8 @@
       'public/common/url_utils.cc',
       'public/common/url_utils.h',
       'public/common/user_agent.h',
+      'public/common/web_preferences.cc',
+      'public/common/web_preferences.h',
       'public/common/webplugininfo.cc',
       'public/common/webplugininfo.h',
       'public/common/window_container_type.cc',

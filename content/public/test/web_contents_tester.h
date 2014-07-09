@@ -8,15 +8,15 @@
 #include "content/public/common/page_transition_types.h"
 
 class GURL;
-struct WebPreferences;
 
 namespace content {
 
 class BrowserContext;
-struct Referrer;
 class RenderViewHost;
 class SiteInstance;
 class WebContents;
+struct Referrer;
+struct WebPreferences;
 
 // This interface allows embedders of content/ to write tests that depend on a
 // test version of WebContents.  This interface can be retrieved from any

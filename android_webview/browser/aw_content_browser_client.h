@@ -11,8 +11,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "content/public/browser/content_browser_client.h"
 
-struct WebPreferences;
-
 namespace android_webview {
 
 class AwBrowserContext;
@@ -175,7 +173,7 @@ class AwContentBrowserClient : public content::ContentBrowserClient {
       const content::SocketPermissionRequest* params) OVERRIDE;
   virtual void OverrideWebkitPrefs(content::RenderViewHost* rvh,
                                    const GURL& url,
-                                   WebPreferences* web_prefs) OVERRIDE;
+                                   content::WebPreferences* web_prefs) OVERRIDE;
 #if defined(VIDEO_HOLE)
   virtual content::ExternalVideoSurfaceContainer*
       OverrideCreateExternalVideoSurfaceContainer(

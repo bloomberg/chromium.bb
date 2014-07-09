@@ -43,8 +43,6 @@
         'data_element.cc',
         'data_element.h',
         'webkit_common_export.h',
-        'webpreferences.cc',
-        'webpreferences.h',
       ],
 
       'conditions': [

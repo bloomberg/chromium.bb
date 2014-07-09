@@ -17,14 +17,15 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/renderer_preferences.h"
+#include "content/public/common/web_preferences.h"
 #include "jni/AwSettings_jni.h"
 #include "ui/gfx/font_render_params_linux.h"
-#include "webkit/common/webpreferences.h"
 
 using base::android::ConvertJavaStringToUTF16;
 using base::android::ConvertUTF8ToJavaString;
 using base::android::ScopedJavaLocalRef;
 using content::RendererPreferences;
+using content::WebPreferences;
 
 namespace android_webview {
 
@@ -304,27 +305,27 @@ void AwSettings::PopulateWebPreferencesLocked(
     render_view_host_ext->SetTextZoomFactor(text_size_percent / 100.0f);
   }
 
-  web_prefs->standard_font_family_map[webkit_glue::kCommonScript] =
+  web_prefs->standard_font_family_map[content::kCommonScript] =
       ConvertJavaStringToUTF16(
           Java_AwSettings_getStandardFontFamilyLocked(env, obj));
 
-  web_prefs->fixed_font_family_map[webkit_glue::kCommonScript] =
+  web_prefs->fixed_font_family_map[content::kCommonScript] =
       ConvertJavaStringToUTF16(
           Java_AwSettings_getFixedFontFamilyLocked(env, obj));
 
-  web_prefs->sans_serif_font_family_map[webkit_glue::kCommonScript] =
+  web_prefs->sans_serif_font_family_map[content::kCommonScript] =
       ConvertJavaStringToUTF16(
           Java_AwSettings_getSansSerifFontFamilyLocked(env, obj));
 
-  web_prefs->serif_font_family_map[webkit_glue::kCommonScript] =
+  web_prefs->serif_font_family_map[content::kCommonScript] =
       ConvertJavaStringToUTF16(
           Java_AwSettings_getSerifFontFamilyLocked(env, obj));
 
-  web_prefs->cursive_font_family_map[webkit_glue::kCommonScript] =
+  web_prefs->cursive_font_family_map[content::kCommonScript] =
       ConvertJavaStringToUTF16(
           Java_AwSettings_getCursiveFontFamilyLocked(env, obj));
 
-  web_prefs->fantasy_font_family_map[webkit_glue::kCommonScript] =
+  web_prefs->fantasy_font_family_map[content::kCommonScript] =
       ConvertJavaStringToUTF16(
           Java_AwSettings_getFantasyFontFamilyLocked(env, obj));
 

@@ -9,8 +9,8 @@
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/web_preferences.h"
 #include "jni/ContentSettings_jni.h"
-#include "webkit/common/webpreferences.h"
 
 namespace content {
 

@@ -8,17 +8,14 @@
 #include <string>
 #include <vector>
 
-struct WebPreferences;
-
 namespace base {
 class FilePath;
 }
 
-struct WebPreferences;
-
 namespace content {
 
 struct TestPreferences;
+struct WebPreferences;
 
 // The TestRunner library keeps its settings in a WebPreferenes object.
 // The content_shell, however, uses WebPreferences. This method exports the

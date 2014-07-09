@@ -43,6 +43,7 @@
 #include "content/renderer/pepper/pepper_url_loader_host.h"
 #include "content/renderer/pepper/plugin_module.h"
 #include "content/renderer/pepper/plugin_object.h"
+#include "content/renderer/pepper/ppapi_preferences_builder.h"
 #include "content/renderer/pepper/ppb_buffer_impl.h"
 #include "content/renderer/pepper/ppb_graphics_3d_impl.h"
 #include "content/renderer/pepper/ppb_image_data_impl.h"
@@ -844,10 +845,10 @@ bool PepperPluginInstanceImpl::Initialize(
   UpdateTouchEventRequest();
   container_->setWantsWheelEvents(IsAcceptingWheelEvents());
 
-  SetGPUHistogram(
-      ppapi::Preferences(render_frame_->render_view()->webkit_preferences()),
-      arg_names,
-      arg_values);
+  SetGPUHistogram(ppapi::Preferences(PpapiPreferencesBuilder::Build(
+                      render_frame_->render_view()->webkit_preferences())),
+                  arg_names,
+                  arg_values);
 
   argn_ = arg_names;
   argv_ = arg_values;

@@ -12,7 +12,9 @@
 #include "base/memory/scoped_ptr.h"
 #include "content/public/browser/web_contents_observer.h"
 
+namespace content{
 struct WebPreferences;
+}
 
 namespace android_webview {
 
@@ -37,7 +39,7 @@ class AwSettings : public content::WebContentsObserver {
   void UpdateFormDataPreferencesLocked(JNIEnv* env, jobject obj);
   void UpdateRendererPreferencesLocked(JNIEnv* env, jobject obj);
 
-  void PopulateWebPreferences(WebPreferences* web_prefs);
+  void PopulateWebPreferences(content::WebPreferences* web_prefs);
 
  private:
   AwRenderViewHostExt* GetAwRenderViewHostExt();

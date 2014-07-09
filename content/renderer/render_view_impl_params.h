@@ -11,8 +11,6 @@
 #include "content/common/content_export.h"
 #include "content/common/view_message_enums.h"
 
-struct WebPreferences;
-
 namespace blink {
 struct WebScreenInfo;
 }
@@ -20,6 +18,7 @@ struct WebScreenInfo;
 namespace content {
 
 struct RendererPreferences;
+struct WebPreferences;
 
 // Container for all parameters passed to RenderViewImpl's constructor.
 struct CONTENT_EXPORT RenderViewImplParams {

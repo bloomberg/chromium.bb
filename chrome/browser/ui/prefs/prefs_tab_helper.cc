@@ -23,12 +23,12 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/web_preferences.h"
 #include "grit/locale_settings.h"
 #include "grit/platform_locale_settings.h"
 #include "third_party/icu/source/common/unicode/uchar.h"
 #include "third_party/icu/source/common/unicode/uscript.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "webkit/common/webpreferences.h"
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX) && defined(ENABLE_THEMES)
 #include "chrome/browser/themes/theme_service.h"
@@ -40,6 +40,7 @@
 #endif
 
 using content::WebContents;
+using content::WebPreferences;
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(PrefsTabHelper);
 
@@ -282,7 +283,7 @@ void OverrideFontFamily(WebPreferences* prefs,
                         const std::string& generic_family,
                         const std::string& script,
                         const std::string& pref_value) {
-  webkit_glue::ScriptFontFamilyMap* map = NULL;
+  content::ScriptFontFamilyMap* map = NULL;
   if (generic_family == "standard")
     map = &prefs->standard_font_family_map;
   else if (generic_family == "fixed")

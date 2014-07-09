@@ -5,10 +5,9 @@
 #ifndef ANDROID_WEBVIEW_BROWSER_AW_WEB_PREFERENCES_POPULATER_H_
 #define ANDROID_WEBVIEW_BROWSER_AW_WEB_PREFERENCES_POPULATER_H_
 
-struct WebPreferences;
-
 namespace content {
 class WebContents;
+struct WebPreferences;
 }
 
 namespace android_webview {
@@ -19,7 +18,7 @@ class AwWebPreferencesPopulater {
   virtual ~AwWebPreferencesPopulater();
 
   virtual void PopulateFor(content::WebContents* web_contents,
-                           WebPreferences* web_prefs) = 0;
+                           content::WebPreferences* web_prefs) = 0;
 };
 
 }  // namespace android_webview

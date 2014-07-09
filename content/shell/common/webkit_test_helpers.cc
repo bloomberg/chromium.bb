@@ -10,22 +10,20 @@
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/web_preferences.h"
 #include "content/shell/common/shell_switches.h"
 #include "content/shell/common/test_runner/test_preferences.h"
-#include "webkit/common/webpreferences.h"
 
 namespace content {
 
-void ExportLayoutTestSpecificPreferences(
-    const TestPreferences& from,
-    WebPreferences* to) {
+void ExportLayoutTestSpecificPreferences(const TestPreferences& from,
+                                         WebPreferences* to) {
   to->allow_universal_access_from_file_urls =
       from.allow_universal_access_from_file_urls;
   to->dom_paste_enabled = from.dom_paste_allowed;
   to->javascript_can_access_clipboard = from.java_script_can_access_clipboard;
   to->xss_auditor_enabled = from.xss_auditor_enabled;
-  to->editing_behavior = static_cast<webkit_glue::EditingBehavior>(
-      from.editing_behavior);
+  to->editing_behavior = static_cast<EditingBehavior>(from.editing_behavior);
   to->default_font_size = from.default_font_size;
   to->minimum_font_size = from.minimum_font_size;
   to->default_encoding = from.default_text_encoding_name.utf8().data();
@@ -62,9 +60,9 @@ void ApplyLayoutTestDefaultPreferences(WebPreferences* prefs) {
   prefs->xslt_enabled = true;
   prefs->xss_auditor_enabled = false;
 #if defined(OS_MACOSX)
-  prefs->editing_behavior = webkit_glue::EDITING_BEHAVIOR_MAC;
+  prefs->editing_behavior = EDITING_BEHAVIOR_MAC;
 #else
-  prefs->editing_behavior = webkit_glue::EDITING_BEHAVIOR_WIN;
+  prefs->editing_behavior = EDITING_BEHAVIOR_WIN;
 #endif
   prefs->java_enabled = false;
   prefs->application_cache_enabled = true;
@@ -75,26 +73,21 @@ void ApplyLayoutTestDefaultPreferences(WebPreferences* prefs) {
   prefs->webgl_errors_to_console_enabled = false;
   base::string16 serif;
 #if defined(OS_MACOSX)
-  prefs->cursive_font_family_map[webkit_glue::kCommonScript] =
+  prefs->cursive_font_family_map[kCommonScript] =
       base::ASCIIToUTF16("Apple Chancery");
-  prefs->fantasy_font_family_map[webkit_glue::kCommonScript] =
-      base::ASCIIToUTF16("Papyrus");
+  prefs->fantasy_font_family_map[kCommonScript] = base::ASCIIToUTF16("Papyrus");
   serif = base::ASCIIToUTF16("Times");
 #else
-  prefs->cursive_font_family_map[webkit_glue::kCommonScript] =
+  prefs->cursive_font_family_map[kCommonScript] =
       base::ASCIIToUTF16("Comic Sans MS");
-  prefs->fantasy_font_family_map[webkit_glue::kCommonScript] =
-      base::ASCIIToUTF16("Impact");
+  prefs->fantasy_font_family_map[kCommonScript] = base::ASCIIToUTF16("Impact");
   serif = base::ASCIIToUTF16("times new roman");
 #endif
-  prefs->serif_font_family_map[webkit_glue::kCommonScript] =
-      serif;
-  prefs->standard_font_family_map[webkit_glue::kCommonScript] =
-      serif;
-  prefs->fixed_font_family_map[webkit_glue::kCommonScript] =
-      base::ASCIIToUTF16("Courier");
-  prefs->sans_serif_font_family_map[
-      webkit_glue::kCommonScript] = base::ASCIIToUTF16("Helvetica");
+  prefs->serif_font_family_map[kCommonScript] = serif;
+  prefs->standard_font_family_map[kCommonScript] = serif;
+  prefs->fixed_font_family_map[kCommonScript] = base::ASCIIToUTF16("Courier");
+  prefs->sans_serif_font_family_map[kCommonScript] =
+      base::ASCIIToUTF16("Helvetica");
   prefs->minimum_logical_font_size = 9;
   prefs->asynchronous_spell_checking_enabled = false;
   prefs->accelerated_2d_canvas_enabled =

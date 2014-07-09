@@ -23,7 +23,6 @@
 #include "gpu/config/gpu_info.h"
 
 class GURL;
-struct WebPreferences;
 
 namespace base {
 class CommandLine;
@@ -32,6 +31,7 @@ class CommandLine;
 namespace content {
 
 class GpuDataManagerImplPrivate;
+struct WebPreferences;
 
 class CONTENT_EXPORT GpuDataManagerImpl
     : public NON_EXPORTED_BASE(GpuDataManager) {

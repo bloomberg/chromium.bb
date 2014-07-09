@@ -7,7 +7,8 @@
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/numerics/safe_conversions.h"
-#include "content/public/renderer/web_preferences.h"
+#include "content/public/common/web_preferences.h"
+#include "content/public/renderer/render_view.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/WebKit/public/platform/WebSize.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
@@ -19,7 +20,6 @@
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebPluginContainer.h"
 #include "third_party/WebKit/public/web/WebView.h"
-#include "webkit/common/webpreferences.h"
 
 using blink::WebCanvas;
 using blink::WebCursorInfo;
@@ -40,6 +40,7 @@ using blink::WebURLRequest;
 using blink::WebURLResponse;
 using blink::WebVector;
 using blink::WebView;
+using content::WebPreferences;
 
 WebViewPlugin::WebViewPlugin(WebViewPlugin::Delegate* delegate,
                              const WebPreferences& preferences)
@@ -50,7 +51,7 @@ WebViewPlugin::WebViewPlugin(WebViewPlugin::Delegate* delegate,
       focused_(false) {
   // ApplyWebPreferences before making a WebLocalFrame so that the frame sees a
   // consistent view of our preferences.
-  content::ApplyWebPreferences(preferences, web_view_);
+  content::RenderView::ApplyWebPreferences(preferences, web_view_);
   web_frame_ = WebLocalFrame::create(this);
   web_view_->setMainFrame(web_frame_);
 }

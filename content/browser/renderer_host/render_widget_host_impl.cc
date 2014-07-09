@@ -59,6 +59,7 @@
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/result_codes.h"
+#include "content/public/common/web_preferences.h"
 #include "skia/ext/image_operations.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/WebKit/public/web/WebCompositionUnderline.h"
@@ -68,7 +69,6 @@
 #include "ui/gfx/skbitmap_operations.h"
 #include "ui/gfx/vector2d_conversions.h"
 #include "ui/snapshot/snapshot.h"
-#include "webkit/common/webpreferences.h"
 
 #if defined(OS_WIN)
 #include "content/common/plugin_constants_win.h"

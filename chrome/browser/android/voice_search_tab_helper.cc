@@ -7,8 +7,8 @@
 #include "components/google/core/browser/google_util.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/web_preferences.h"
 #include "jni/VoiceSearchTabHelper_jni.h"
-#include "webkit/common/webpreferences.h"
 
 using content::WebContents;
 
@@ -22,7 +22,7 @@ static void UpdateAutoplayStatus(JNIEnv* env,
                                  jobject j_web_contents) {
   WebContents* web_contents = WebContents::FromJavaWebContents(j_web_contents);
   content::RenderViewHost* host = web_contents->GetRenderViewHost();
-  WebPreferences prefs = host->GetWebkitPreferences();
+  content::WebPreferences prefs = host->GetWebkitPreferences();
 
   // In the case where media autoplay has been enabled by default (e.g. in
   // performance media tests) do not update it based on navigation changes.

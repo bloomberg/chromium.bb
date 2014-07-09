@@ -6,15 +6,15 @@
 
 #include "base/command_line.h"
 #include "chrome/common/chrome_switches.h"
+#include "content/public/common/web_preferences.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest.h"
-#include "webkit/common/webpreferences.h"
 
 namespace extension_webkit_preferences {
 
 void SetPreferences(const extensions::Extension* extension,
                     extensions::ViewType render_view_type,
-                    WebPreferences* webkit_prefs) {
+                    content::WebPreferences* webkit_prefs) {
   if (!extension)
     return;
 

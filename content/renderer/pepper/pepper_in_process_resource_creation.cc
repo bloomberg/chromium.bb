@@ -11,6 +11,7 @@
 #include "content/child/browser_font_resource_trusted.h"
 #include "content/renderer/pepper/pepper_in_process_router.h"
 #include "content/renderer/pepper/pepper_plugin_instance_impl.h"
+#include "content/renderer/pepper/ppapi_preferences_builder.h"
 #include "content/renderer/pepper/renderer_ppapi_host_impl.h"
 #include "content/renderer/render_view_impl.h"
 #include "ipc/ipc_message.h"
@@ -52,8 +53,8 @@ PP_Resource PepperInProcessResourceCreation::CreateBrowserFont(
     const PP_BrowserFont_Trusted_Description* description) {
   if (!BrowserFontResource_Trusted::IsPPFontDescriptionValid(*description))
     return 0;
-  ppapi::Preferences prefs(
-      host_impl_->GetRenderViewForInstance(instance)->GetWebkitPreferences());
+  ppapi::Preferences prefs(PpapiPreferencesBuilder::Build(
+      host_impl_->GetRenderViewForInstance(instance)->GetWebkitPreferences()));
   return (new BrowserFontResource_Trusted(
               host_impl_->in_process_router()->GetPluginConnection(instance),
               instance,

@@ -5,10 +5,10 @@
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/ui/browser.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/common/web_preferences.h"
 #include "extensions/browser/extension_host.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/process_manager.h"
-#include "webkit/common/webpreferences.h"
 
 // Tests that background pages are marked as never visible to prevent GPU
 // resource allocation. See crbug.com/362165 and crbug.com/163698.

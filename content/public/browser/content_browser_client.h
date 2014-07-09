@@ -37,7 +37,6 @@
 #endif
 
 class GURL;
-struct WebPreferences;
 
 namespace base {
 class CommandLine;
@@ -106,6 +105,7 @@ class WebContentsViewDelegate;
 struct MainFunctionParams;
 struct Referrer;
 struct ShowDesktopNotificationHostMsgParams;
+struct WebPreferences;
 
 // A mapping from the scheme name to the protocol handler that services its
 // content.

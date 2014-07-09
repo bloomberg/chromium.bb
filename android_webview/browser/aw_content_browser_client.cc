@@ -28,13 +28,13 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
+#include "content/public/common/web_preferences.h"
 #include "grit/ui_resources.h"
 #include "net/android/network_library.h"
 #include "net/ssl/ssl_cert_request_info.h"
 #include "net/ssl/ssl_info.h"
 #include "ui/base/l10n/l10n_util_android.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "webkit/common/webpreferences.h"
 
 using content::BrowserThread;
 using content::ResourceType;
@@ -573,9 +573,10 @@ bool AwContentBrowserClient::AllowPepperSocketAPI(
   return false;
 }
 
-void AwContentBrowserClient::OverrideWebkitPrefs(content::RenderViewHost* rvh,
-                                                 const GURL& url,
-                                                 WebPreferences* web_prefs) {
+void AwContentBrowserClient::OverrideWebkitPrefs(
+    content::RenderViewHost* rvh,
+    const GURL& url,
+    content::WebPreferences* web_prefs) {
   if (!preferences_populater_.get()) {
     preferences_populater_ = make_scoped_ptr(native_factory_->
         CreateWebPreferencesPopulater());

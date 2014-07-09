@@ -5,5 +5,7 @@
 #include "android_webview/browser/aw_web_preferences_populater.h"
 
 namespace android_webview {
+
 AwWebPreferencesPopulater::~AwWebPreferencesPopulater() {}
+
 }  // namespace android_webview

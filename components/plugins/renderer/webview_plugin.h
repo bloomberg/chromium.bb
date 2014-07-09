@@ -16,10 +16,13 @@
 #include "third_party/WebKit/public/web/WebPlugin.h"
 #include "third_party/WebKit/public/web/WebViewClient.h"
 
-struct WebPreferences;
-
 namespace blink {
 class WebMouseEvent;
+}
+
+namespace content {
+class RenderView;
+struct WebPreferences;
 }
 
 // This class implements the WebPlugin interface by forwarding drawing and
@@ -51,7 +54,7 @@ class WebViewPlugin : public blink::WebPlugin,
   // and displaying |html_data|. |url| should be a (fake) chrome:// URL; it is
   // only used for navigation and never actually resolved.
   static WebViewPlugin* Create(Delegate* delegate,
-                               const WebPreferences& preferences,
+                               const content::WebPreferences& preferences,
                                const std::string& html_data,
                                const GURL& url);
 
@@ -135,7 +138,7 @@ class WebViewPlugin : public blink::WebPlugin,
 
  private:
   friend class base::DeleteHelper<WebViewPlugin>;
-  WebViewPlugin(Delegate* delegate, const WebPreferences& preferences);
+  WebViewPlugin(Delegate* delegate, const content::WebPreferences& preferences);
   virtual ~WebViewPlugin();
 
   // Manages its own lifetime.

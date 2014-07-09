@@ -15,8 +15,6 @@
 #include "third_party/WebKit/public/web/WebPageVisibilityState.h"
 #include "ui/gfx/native_widget_types.h"
 
-struct WebPreferences;
-
 namespace blink {
 class WebElement;
 class WebFrame;
@@ -37,6 +35,7 @@ namespace content {
 class RenderFrame;
 class RenderViewVisitor;
 struct SSLStatus;
+struct WebPreferences;
 
 class CONTENT_EXPORT RenderView : public IPC::Sender {
  public:
@@ -49,6 +48,10 @@ class CONTENT_EXPORT RenderView : public IPC::Sender {
   // Visit all RenderViews with a live WebView (i.e., RenderViews that have
   // been closed but not yet destroyed are excluded).
   static void ForEach(RenderViewVisitor* visitor);
+
+  // Applies WebKit related preferences to this view.
+  static void ApplyWebPreferences(const WebPreferences& preferences,
+                                  blink::WebView* web_view);
 
   // Returns the main RenderFrame.
   virtual RenderFrame* GetMainRenderFrame() = 0;
