@@ -3437,9 +3437,9 @@ static PP_Bool Pnacl_M25_PPB_NaCl_Private_GetManifestProgramURL(PP_Instance inst
   return iface->GetManifestProgramURL(instance, full_url, pnacl_options, uses_nonsfi_mode);
 }
 
-static PP_Bool Pnacl_M25_PPB_NaCl_Private_GetPnaclResourceInfo(PP_Instance instance, const char* filename, struct PP_Var* llc_tool_name, struct PP_Var* ld_tool_name) {
+static PP_Bool Pnacl_M25_PPB_NaCl_Private_GetPnaclResourceInfo(PP_Instance instance, struct PP_Var* llc_tool_name, struct PP_Var* ld_tool_name) {
   const struct PPB_NaCl_Private_1_0 *iface = Pnacl_WrapperInfo_PPB_NaCl_Private_1_0.real_iface;
-  return iface->GetPnaclResourceInfo(instance, filename, llc_tool_name, ld_tool_name);
+  return iface->GetPnaclResourceInfo(instance, llc_tool_name, ld_tool_name);
 }
 
 static void Pnacl_M25_PPB_NaCl_Private_GetCpuFeatureAttrs(struct PP_Var* _struct_result) {
@@ -5251,7 +5251,7 @@ static const struct PPB_NaCl_Private_1_0 Pnacl_Wrappers_PPB_NaCl_Private_1_0 = {
     .ProcessNaClManifest = (void (*)(PP_Instance instance, const char* program_url))&Pnacl_M25_PPB_NaCl_Private_ProcessNaClManifest,
     .DevInterfacesEnabled = (PP_Bool (*)(PP_Instance instance))&Pnacl_M25_PPB_NaCl_Private_DevInterfacesEnabled,
     .GetManifestProgramURL = (PP_Bool (*)(PP_Instance instance, struct PP_Var* full_url, struct PP_PNaClOptions* pnacl_options, PP_Bool* uses_nonsfi_mode))&Pnacl_M25_PPB_NaCl_Private_GetManifestProgramURL,
-    .GetPnaclResourceInfo = (PP_Bool (*)(PP_Instance instance, const char* filename, struct PP_Var* llc_tool_name, struct PP_Var* ld_tool_name))&Pnacl_M25_PPB_NaCl_Private_GetPnaclResourceInfo,
+    .GetPnaclResourceInfo = (PP_Bool (*)(PP_Instance instance, struct PP_Var* llc_tool_name, struct PP_Var* ld_tool_name))&Pnacl_M25_PPB_NaCl_Private_GetPnaclResourceInfo,
     .GetCpuFeatureAttrs = (struct PP_Var (*)(void))&Pnacl_M25_PPB_NaCl_Private_GetCpuFeatureAttrs,
     .PostMessageToJavaScript = (void (*)(PP_Instance instance, const char* message))&Pnacl_M25_PPB_NaCl_Private_PostMessageToJavaScript,
     .DownloadNexe = (void (*)(PP_Instance instance, const char* url, struct PP_NaClFileInfo* file_info, struct PP_CompletionCallback callback))&Pnacl_M25_PPB_NaCl_Private_DownloadNexe,

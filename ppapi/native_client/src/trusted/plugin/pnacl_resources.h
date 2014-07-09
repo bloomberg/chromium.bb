@@ -59,5 +59,5 @@ class PnaclResources {
   PP_NaClFileInfo ld_file_info_;
 };
 
-}  // namespace plugin;
+}  // namespace plugin
 #endif  // NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_PNACL_RESOURCES_H_

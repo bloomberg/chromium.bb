@@ -363,11 +363,8 @@ interface PPB_NaCl_Private {
                                 [out] PP_PNaClOptions pnacl_options,
                                 [out] PP_Bool uses_nonsfi_mode);
 
-  /* Returns the filenames for the llc and ld tools, parsing that information
-   * from the file given in |filename|.
-   */
+  /* Returns the filenames for the llc and ld tools. */
   PP_Bool GetPnaclResourceInfo([in] PP_Instance instance,
-                               [in] str_t filename,
                                [out] PP_Var llc_tool_name,
                                [out] PP_Var ld_tool_name);
 

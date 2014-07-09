@@ -42,7 +42,6 @@ bool PnaclResources::ReadResourceInfo() {
   PP_Var pp_ld_tool_name_var;
   if (!plugin_->nacl_interface()->GetPnaclResourceInfo(
           plugin_->pp_instance(),
-          "chrome://pnacl-translator/pnacl.json",
           &pp_llc_tool_name_var,
           &pp_ld_tool_name_var)) {
     return false;

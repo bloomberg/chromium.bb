@@ -337,7 +337,7 @@ bool PnaclTranslateThread::RunLdSubprocess() {
   PP_NaClFileInfo ld_file_info = resources_->TakeLdFileInfo();
   // On success, ownership of ld_file_info is transferred.
   nacl::scoped_ptr<NaClSubprocess> ld_subprocess(
-      plugin_->LoadHelperNaClModule(resources_->GetLlcUrl(),
+      plugin_->LoadHelperNaClModule(resources_->GetLdUrl(),
                                     ld_file_info,
                                     &error_info));
   if (ld_subprocess.get() == NULL) {

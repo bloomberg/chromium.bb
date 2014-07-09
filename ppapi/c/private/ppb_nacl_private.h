@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From private/ppb_nacl_private.idl modified Wed Jul  2 12:11:51 2014. */
+/* From private/ppb_nacl_private.idl modified Wed Jul  9 11:09:04 2014. */
 
 #ifndef PPAPI_C_PRIVATE_PPB_NACL_PRIVATE_H_
 #define PPAPI_C_PRIVATE_PPB_NACL_PRIVATE_H_
@@ -369,11 +369,8 @@ struct PPB_NaCl_Private_1_0 {
                                    struct PP_Var* full_url,
                                    struct PP_PNaClOptions* pnacl_options,
                                    PP_Bool* uses_nonsfi_mode);
-  /* Returns the filenames for the llc and ld tools, parsing that information
-   * from the file given in |filename|.
-   */
+  /* Returns the filenames for the llc and ld tools. */
   PP_Bool (*GetPnaclResourceInfo)(PP_Instance instance,
-                                  const char* filename,
                                   struct PP_Var* llc_tool_name,
                                   struct PP_Var* ld_tool_name);
   /* PP_Var string of attributes describing the CPU features supported
