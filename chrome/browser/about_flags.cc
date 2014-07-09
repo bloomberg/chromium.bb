@@ -1527,13 +1527,6 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(app_list::switches::kDisableAppInfo)
   },
   {
-    "disable-app-list-voice-search",
-    IDS_FLAGS_DISABLE_APP_LIST_VOICE_SEARCH,
-    IDS_FLAGS_DISABLE_APP_LIST_VOICE_SEARCH_DESCRIPTION,
-    kOsCrOS,
-    SINGLE_VALUE_TYPE(app_list::switches::kDisableVoiceSearch)
-  },
-  {
     "enable-drive-apps-in-app-list",
     IDS_FLAGS_ENABLE_DRIVE_APPS_IN_APP_LIST_NAME,
     IDS_FLAGS_ENABLE_DRIVE_APPS_IN_APP_LIST_DESCRIPTION,
