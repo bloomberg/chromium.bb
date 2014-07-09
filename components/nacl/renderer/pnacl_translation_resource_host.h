@@ -7,10 +7,13 @@
 
 #include <map>
 
+#include "base/callback.h"
+#include "base/message_loop/message_loop_proxy.h"
 #include "ipc/ipc_platform_file.h"
 #include "ipc/message_filter.h"
+#include "ppapi/c/pp_bool.h"
+#include "ppapi/c/pp_instance.h"
 #include "ppapi/c/private/pp_file_handle.h"
-#include "ppapi/shared_impl/tracked_callback.h"
 
 namespace nacl {
 struct PnaclCacheInfo;
@@ -24,36 +27,25 @@ struct PnaclCacheInfo;
 // needs from the browser since "Resource" is a Pepper thing...
 class PnaclTranslationResourceHost : public IPC::MessageFilter {
  public:
+  typedef base::Callback<void(int32_t, bool, PP_FileHandle)>
+          RequestNexeFdCallback;
+
   explicit PnaclTranslationResourceHost(
       const scoped_refptr<base::MessageLoopProxy>& io_message_loop);
   void RequestNexeFd(int render_view_id,
                      PP_Instance instance,
                      const nacl::PnaclCacheInfo& cache_info,
-                     PP_Bool* is_hit,
-                     PP_FileHandle* file_handle,
-                     scoped_refptr<ppapi::TrackedCallback> callback);
+                     RequestNexeFdCallback callback);
   void ReportTranslationFinished(PP_Instance instance, PP_Bool success);
 
  protected:
   virtual ~PnaclTranslationResourceHost();
 
  private:
-  class CacheRequestInfo {
-   public:
-    CacheRequestInfo(PP_Bool* hit,
-                     PP_FileHandle* handle,
-                     scoped_refptr<ppapi::TrackedCallback> cb);
-
-    ~CacheRequestInfo();
-
-    PP_Bool* is_hit;
-    PP_FileHandle* file_handle;
-    scoped_refptr<ppapi::TrackedCallback> callback;
-  };
-
   // Maps the instance with an outstanding cache request to the info
   // about that request.
-  typedef std::map<PP_Instance, CacheRequestInfo> CacheRequestInfoMap;
+  typedef std::map<PP_Instance, RequestNexeFdCallback> CacheRequestInfoMap;
+
   // IPC::MessageFilter implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
   virtual void OnFilterAdded(IPC::Sender* sender) OVERRIDE;
@@ -63,9 +55,7 @@ class PnaclTranslationResourceHost : public IPC::MessageFilter {
   void SendRequestNexeFd(int render_view_id,
                          PP_Instance instance,
                          const nacl::PnaclCacheInfo& cache_info,
-                         PP_Bool* is_hit,
-                         PP_FileHandle* file_handle,
-                         scoped_refptr<ppapi::TrackedCallback> callback);
+                         RequestNexeFdCallback callback);
   void SendReportTranslationFinished(PP_Instance instance,
                                      PP_Bool success);
   void OnNexeTempFileReply(PP_Instance instance,

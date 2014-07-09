@@ -8,16 +8,7 @@
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/shared_impl/ppapi_globals.h"
 
-using ppapi::TrackedCallback;
 using ppapi::PpapiGlobals;
-
-PnaclTranslationResourceHost::CacheRequestInfo::CacheRequestInfo(
-    PP_Bool* hit,
-    PP_FileHandle* handle,
-    scoped_refptr<TrackedCallback> cb)
-    : is_hit(hit), file_handle(handle), callback(cb) {}
-
-PnaclTranslationResourceHost::CacheRequestInfo::~CacheRequestInfo() {}
 
 PnaclTranslationResourceHost::PnaclTranslationResourceHost(
     const scoped_refptr<base::MessageLoopProxy>& io_message_loop)
@@ -58,9 +49,7 @@ void PnaclTranslationResourceHost::RequestNexeFd(
     int render_view_id,
     PP_Instance instance,
     const nacl::PnaclCacheInfo& cache_info,
-    PP_Bool* is_hit,
-    PP_FileHandle* file_handle,
-    scoped_refptr<TrackedCallback> callback) {
+    RequestNexeFdCallback callback) {
   DCHECK(PpapiGlobals::Get()->
          GetMainThreadMessageLoop()->BelongsToCurrentThread());
   io_message_loop_->PostTask(
@@ -70,8 +59,6 @@ void PnaclTranslationResourceHost::RequestNexeFd(
                  render_view_id,
                  instance,
                  cache_info,
-                 is_hit,
-                 file_handle,
                  callback));
   return;
 }
@@ -80,21 +67,19 @@ void PnaclTranslationResourceHost::SendRequestNexeFd(
     int render_view_id,
     PP_Instance instance,
     const nacl::PnaclCacheInfo& cache_info,
-    PP_Bool* is_hit,
-    PP_FileHandle* file_handle,
-    scoped_refptr<TrackedCallback> callback) {
+    RequestNexeFdCallback callback) {
   DCHECK(io_message_loop_->BelongsToCurrentThread());
   if (!sender_ || !sender_->Send(new NaClHostMsg_NexeTempFileRequest(
           render_view_id, instance, cache_info))) {
-    PpapiGlobals::Get()->GetMainThreadMessageLoop()
-        ->PostTask(FROM_HERE,
-                   base::Bind(&TrackedCallback::Run,
-                              callback,
-                              static_cast<int32_t>(PP_ERROR_FAILED)));
+    PpapiGlobals::Get()->GetMainThreadMessageLoop()->PostTask(
+        FROM_HERE,
+        base::Bind(callback,
+                   static_cast<int32_t>(PP_ERROR_FAILED),
+                   false,
+                   PP_kInvalidFileHandle));
     return;
   }
-  pending_cache_requests_.insert(std::make_pair(
-      instance, CacheRequestInfo(is_hit, file_handle, callback)));
+  pending_cache_requests_.insert(std::make_pair(instance, callback));
 }
 
 void PnaclTranslationResourceHost::ReportTranslationFinished(
@@ -133,10 +118,9 @@ void PnaclTranslationResourceHost::OnNexeTempFileReply(
   CacheRequestInfoMap::iterator it = pending_cache_requests_.find(instance);
   int32_t status = PP_ERROR_FAILED;
   // Handle the expected successful case first.
-  if (it != pending_cache_requests_.end() && base_file.IsValid() &&
-      TrackedCallback::IsPending(it->second.callback)) {
-    *it->second.is_hit = PP_FromBool(is_hit);
-    *it->second.file_handle = base_file.TakePlatformFile();
+  PP_FileHandle file_handle = PP_kInvalidFileHandle;
+  if (it != pending_cache_requests_.end() && base_file.IsValid()) {
+    file_handle = base_file.TakePlatformFile();
     status = PP_OK;
   }
   if (it == pending_cache_requests_.end()) {
@@ -144,7 +128,7 @@ void PnaclTranslationResourceHost::OnNexeTempFileReply(
   } else {
     PpapiGlobals::Get()->GetMainThreadMessageLoop()->PostTask(
         FROM_HERE,
-        base::Bind(&TrackedCallback::Run, it->second.callback, status));
+        base::Bind(it->second, status, is_hit, file_handle));
     pending_cache_requests_.erase(it);
   }
   if (!base_file.IsValid()) {
@@ -157,7 +141,12 @@ void PnaclTranslationResourceHost::CleanupCacheRequests() {
   for (CacheRequestInfoMap::iterator it = pending_cache_requests_.begin();
        it != pending_cache_requests_.end();
        ++it) {
-    it->second.callback->PostAbort();
+    PpapiGlobals::Get()->GetMainThreadMessageLoop()->PostTask(
+        FROM_HERE,
+        base::Bind(it->second,
+                   static_cast<int32_t>(PP_ERROR_ABORTED),
+                   false,
+                   PP_kInvalidFileHandle));
   }
   pending_cache_requests_.clear();
 }
