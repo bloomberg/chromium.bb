@@ -2,16 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+
+// storage_unit_id is skipped because it is generated to point at a temporary
+// file.
 var expectedDevices = [{
   'vendor': 'Vendor 1',
   'model': 'Model 1',
-  'capacity': 1 << 20,
-  'storageUnitId': '/test/id/1',
+  'capacity': 1 << 15,
   }, {
   'vendor': 'Vendor 2',
   'model': 'Model 2',
-  'capacity': 1 << 22,
-  'storageUnitId': '/test/id/2',
+  'capacity': 1 << 17,
   }];
 
 
@@ -34,7 +35,6 @@ function listRemovableDevicesCallback(deviceList) {
     chrome.test.assertEq(expected.vendor, dev.vendor);
     chrome.test.assertEq(expected.model, dev.model);
     chrome.test.assertEq(expected.capacity, dev.capacity);
-    chrome.test.assertEq(expected.storageUnitId, dev.storageUnitId);
   });
 }
 

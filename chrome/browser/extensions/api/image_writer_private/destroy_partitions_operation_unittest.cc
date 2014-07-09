@@ -22,16 +22,12 @@ class ImageWriterDestroyPartitionsOperationTest
 TEST_F(ImageWriterDestroyPartitionsOperationTest, EndToEnd) {
   TestingProfile profile;
   MockOperationManager manager(&profile);
-  scoped_refptr<FakeImageWriterClient> client = FakeImageWriterClient::Create();
 
   scoped_refptr<DestroyPartitionsOperation> operation(
-      new DestroyPartitionsOperation(manager.AsWeakPtr(),
-                                     kDummyExtensionId,
-                                     test_device_path_.AsUTF8Unsafe()));
-
-#if !defined(OS_CHROMEOS)
-  operation->SetUtilityClientForTesting(client);
-#endif
+      new DestroyPartitionsOperation(
+          manager.AsWeakPtr(),
+          kDummyExtensionId,
+          test_utils_.GetDevicePath().AsUTF8Unsafe()));
 
   EXPECT_CALL(
       manager,
@@ -54,10 +50,10 @@ TEST_F(ImageWriterDestroyPartitionsOperationTest, EndToEnd) {
   base::RunLoop().RunUntilIdle();
 
 #if !defined(OS_CHROMEOS)
-  client->Progress(0);
-  client->Progress(50);
-  client->Progress(100);
-  client->Success();
+  test_utils_.GetUtilityClient()->Progress(0);
+  test_utils_.GetUtilityClient()->Progress(50);
+  test_utils_.GetUtilityClient()->Progress(100);
+  test_utils_.GetUtilityClient()->Success();
 
   base::RunLoop().RunUntilIdle();
 #endif

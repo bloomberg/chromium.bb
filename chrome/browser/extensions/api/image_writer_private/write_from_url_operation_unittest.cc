@@ -77,7 +77,8 @@ class ImageWriterWriteFromUrlOperationTest : public ImageWriterUnitTestBase {
     // Turn on interception and set up our dummy file.
     net::URLFetcher::SetEnableInterceptionForTests(true);
     get_interceptor_.reset(new GetInterceptor());
-    get_interceptor_->SetResponse(GURL(kTestImageUrl), test_image_path_);
+    get_interceptor_->SetResponse(GURL(kTestImageUrl),
+                                  test_utils_.GetImagePath());
   }
 
   virtual void TearDown() OVERRIDE {
@@ -95,7 +96,7 @@ class ImageWriterWriteFromUrlOperationTest : public ImageWriterUnitTestBase {
                              test_profile_.GetRequestContext(),
                              url,
                              hash,
-                             test_device_path_.AsUTF8Unsafe()));
+                             test_utils_.GetDevicePath().AsUTF8Unsafe()));
     operation->Start();
     return operation;
   }
@@ -140,8 +141,8 @@ TEST_F(ImageWriterWriteFromUrlOperationTest, DownloadFile) {
   scoped_refptr<OperationForTest> operation =
       CreateOperation(GURL(kTestImageUrl), "");
 
-  EXPECT_TRUE(
-      base::CreateTemporaryFileInDir(temp_dir_.path(), &download_target_path));
+  EXPECT_TRUE(base::CreateTemporaryFileInDir(test_utils_.GetTempDir(),
+                                             &download_target_path));
   operation->SetImagePath(download_target_path);
 
   EXPECT_CALL(
@@ -164,7 +165,8 @@ TEST_F(ImageWriterWriteFromUrlOperationTest, DownloadFile) {
 
   runloop.Run();
 
-  EXPECT_TRUE(base::ContentsEqual(test_image_path_, operation->GetImagePath()));
+  EXPECT_TRUE(base::ContentsEqual(test_utils_.GetImagePath(),
+                                  operation->GetImagePath()));
 
   EXPECT_EQ(1, get_interceptor_->GetHitCount());
 
@@ -173,7 +175,7 @@ TEST_F(ImageWriterWriteFromUrlOperationTest, DownloadFile) {
 
 TEST_F(ImageWriterWriteFromUrlOperationTest, VerifyFile) {
   scoped_ptr<char[]> data_buffer(new char[kTestFileSize]);
-  base::ReadFile(test_image_path_, data_buffer.get(), kTestFileSize);
+  base::ReadFile(test_utils_.GetImagePath(), data_buffer.get(), kTestFileSize);
   base::MD5Digest expected_digest;
   base::MD5Sum(data_buffer.get(), kTestFileSize, &expected_digest);
   std::string expected_hash = base::MD5DigestToBase16(expected_digest);
@@ -194,7 +196,7 @@ TEST_F(ImageWriterWriteFromUrlOperationTest, VerifyFile) {
                          image_writer_api::STAGE_VERIFYDOWNLOAD,
                          100)).Times(AtLeast(1));
 
-  operation->SetImagePath(test_image_path_);
+  operation->SetImagePath(test_utils_.GetImagePath());
   content::BrowserThread::PostTask(content::BrowserThread::FILE,
                                    FROM_HERE,
                                    base::Bind(&OperationForTest::VerifyDownload,

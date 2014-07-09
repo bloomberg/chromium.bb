@@ -77,6 +77,9 @@ void FakeImageWriterClient::Write(const ProgressCallback& progress_callback,
   progress_callback_ = progress_callback;
   success_callback_ = success_callback;
   error_callback_ = error_callback;
+
+  if (!write_callback_.is_null())
+    write_callback_.Run();
 }
 
 void FakeImageWriterClient::Verify(const ProgressCallback& progress_callback,
@@ -87,6 +90,9 @@ void FakeImageWriterClient::Verify(const ProgressCallback& progress_callback,
   progress_callback_ = progress_callback;
   success_callback_ = success_callback;
   error_callback_ = error_callback;
+
+  if (!verify_callback_.is_null())
+    verify_callback_.Run();
 }
 
 void FakeImageWriterClient::Cancel(const CancelCallback& cancel_callback) {
@@ -95,35 +101,55 @@ void FakeImageWriterClient::Cancel(const CancelCallback& cancel_callback) {
 
 void FakeImageWriterClient::Shutdown() {
   // Clear handlers to not hold any reference to the caller.
-  success_callback_ = base::Closure();
-  progress_callback_ = base::Callback<void(int64)>();
-  error_callback_ = base::Callback<void(const std::string&)>();
-  cancel_callback_ = base::Closure();
+  success_callback_.Reset();
+  progress_callback_.Reset();
+  error_callback_.Reset();
+  cancel_callback_.Reset();
+
+  write_callback_.Reset();
+  verify_callback_.Reset();
+}
+
+void FakeImageWriterClient::SetWriteCallback(
+    const base::Closure& write_callback) {
+  write_callback_ = write_callback;
+}
+
+void FakeImageWriterClient::SetVerifyCallback(
+    const base::Closure& verify_callback) {
+  verify_callback_ = verify_callback;
 }
 
 void FakeImageWriterClient::Progress(int64 progress) {
-  progress_callback_.Run(progress);
+  if (!progress_callback_.is_null())
+    progress_callback_.Run(progress);
 }
 
-void FakeImageWriterClient::Success() { success_callback_.Run(); }
+void FakeImageWriterClient::Success() {
+  if (!success_callback_.is_null())
+    success_callback_.Run();
+}
 
 void FakeImageWriterClient::Error(const std::string& message) {
-  error_callback_.Run(message);
+  if (!error_callback_.is_null())
+    error_callback_.Run(message);
 }
 
-void FakeImageWriterClient::Cancel() { cancel_callback_.Run(); }
-
-scoped_refptr<FakeImageWriterClient> FakeImageWriterClient::Create() {
-  return scoped_refptr<FakeImageWriterClient>(new FakeImageWriterClient());
+void FakeImageWriterClient::Cancel() {
+  if (!cancel_callback_.is_null())
+    cancel_callback_.Run();
 }
 
-ImageWriterUnitTestBase::ImageWriterUnitTestBase()
-    : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP) {}
-ImageWriterUnitTestBase::~ImageWriterUnitTestBase() {}
+ImageWriterTestUtils::ImageWriterTestUtils() {
+}
+ImageWriterTestUtils::~ImageWriterTestUtils() {
+}
 
-void ImageWriterUnitTestBase::SetUp() {
-  testing::Test::SetUp();
+void ImageWriterTestUtils::SetUp() {
+  SetUp(false);
+}
 
+void ImageWriterTestUtils::SetUp(bool is_browser_test) {
   ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
   ASSERT_TRUE(base::CreateTemporaryFileInDir(temp_dir_.path(),
                                              &test_image_path_));
@@ -137,11 +163,20 @@ void ImageWriterUnitTestBase::SetUp() {
   if (!chromeos::DBusThreadManager::IsInitialized()) {
     chromeos::FakeDBusThreadManager* fake_dbus_thread_manager =
         new chromeos::FakeDBusThreadManager;
+    fake_dbus_thread_manager->SetFakeClients();
     scoped_ptr<chromeos::ImageBurnerClient>
         image_burner_fake(new ImageWriterFakeImageBurnerClient());
     fake_dbus_thread_manager->SetImageBurnerClient(image_burner_fake.Pass());
-    chromeos::DBusThreadManager::InitializeForTesting(fake_dbus_thread_manager);
+
+    if (is_browser_test) {
+      chromeos::DBusThreadManager::SetInstanceForTesting(
+          fake_dbus_thread_manager);
+    } else {
+      chromeos::DBusThreadManager::InitializeForTesting(
+          fake_dbus_thread_manager);
+    }
   }
+
   FakeDiskMountManager* disk_manager = new FakeDiskMountManager();
   chromeos::disks::DiskMountManager::InitializeForTesting(disk_manager);
 
@@ -162,30 +197,53 @@ void ImageWriterUnitTestBase::SetUp() {
       true,
       false);
   disk_manager->SetupDefaultReplies();
+#else
+  client_ = new FakeImageWriterClient();
+  image_writer::Operation::SetUtilityClientForTesting(client_);
 #endif
 }
 
-void ImageWriterUnitTestBase::TearDown() {
+void ImageWriterTestUtils::TearDown() {
 #if defined(OS_CHROMEOS)
-  chromeos::DBusThreadManager::Shutdown();
+  if (chromeos::DBusThreadManager::IsInitialized()) {
+    chromeos::DBusThreadManager::Shutdown();
+  }
   chromeos::disks::DiskMountManager::Shutdown();
+#else
+  image_writer::Operation::SetUtilityClientForTesting(NULL);
 #endif
 }
 
-bool ImageWriterUnitTestBase::ImageWrittenToDevice(
-    const base::FilePath& image_path,
-    const base::FilePath& device_path) {
+const base::FilePath& ImageWriterTestUtils::GetTempDir() {
+  return temp_dir_.path();
+}
+
+const base::FilePath& ImageWriterTestUtils::GetImagePath() {
+  return test_image_path_;
+}
+
+const base::FilePath& ImageWriterTestUtils::GetDevicePath() {
+  return test_device_path_;
+}
+
+#if !defined(OS_CHROMEOS)
+FakeImageWriterClient* ImageWriterTestUtils::GetUtilityClient() {
+  return client_.get();
+}
+#endif
+
+bool ImageWriterTestUtils::ImageWrittenToDevice() {
   scoped_ptr<char[]> image_buffer(new char[kTestFileSize]);
   scoped_ptr<char[]> device_buffer(new char[kTestFileSize]);
 
   int image_bytes_read =
-      ReadFile(image_path, image_buffer.get(), kTestFileSize);
+      ReadFile(test_image_path_, image_buffer.get(), kTestFileSize);
 
   if (image_bytes_read < 0)
     return false;
 
   int device_bytes_read =
-      ReadFile(device_path, device_buffer.get(), kTestFileSize);
+      ReadFile(test_device_path_, device_buffer.get(), kTestFileSize);
 
   if (image_bytes_read != device_bytes_read)
     return false;
@@ -193,13 +251,29 @@ bool ImageWriterUnitTestBase::ImageWrittenToDevice(
   return memcmp(image_buffer.get(), device_buffer.get(), image_bytes_read) == 0;
 }
 
-bool ImageWriterUnitTestBase::FillFile(const base::FilePath& file,
-                                       const int pattern,
-                                       const int length) {
+bool ImageWriterTestUtils::FillFile(const base::FilePath& file,
+                                    const int pattern,
+                                    const int length) {
   scoped_ptr<char[]> buffer(new char[length]);
   memset(buffer.get(), pattern, length);
 
   return base::WriteFile(file, buffer.get(), length) == length;
+}
+
+ImageWriterUnitTestBase::ImageWriterUnitTestBase()
+    : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP) {
+}
+ImageWriterUnitTestBase::~ImageWriterUnitTestBase() {
+}
+
+void ImageWriterUnitTestBase::SetUp() {
+  testing::Test::SetUp();
+  test_utils_.SetUp();
+}
+
+void ImageWriterUnitTestBase::TearDown() {
+  testing::Test::TearDown();
+  test_utils_.TearDown();
 }
 
 }  // namespace image_writer

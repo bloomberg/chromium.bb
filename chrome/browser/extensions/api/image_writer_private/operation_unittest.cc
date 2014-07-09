@@ -71,26 +71,25 @@ class ImageWriterOperationTest : public ImageWriterUnitTestBase {
     ImageWriterUnitTestBase::SetUp();
 
     // Create the zip file.
-    base::FilePath image_dir = temp_dir_.path().AppendASCII("zip");
+    base::FilePath image_dir = test_utils_.GetTempDir().AppendASCII("zip");
     ASSERT_TRUE(base::CreateDirectory(image_dir));
     ASSERT_TRUE(base::CreateTemporaryFileInDir(image_dir, &image_path_));
 
-    FillFile(image_path_, kImagePattern, kTestFileSize);
+    test_utils_.FillFile(image_path_, kImagePattern, kTestFileSize);
 
-    zip_file_ = temp_dir_.path().AppendASCII("test_image.zip");
+    zip_file_ = test_utils_.GetTempDir().AppendASCII("test_image.zip");
     ASSERT_TRUE(zip::Zip(image_dir, zip_file_, true));
 
     // Operation setup.
-    operation_ = new OperationForTest(manager_.AsWeakPtr(),
-                                      kDummyExtensionId,
-                                      test_device_path_.AsUTF8Unsafe());
-    client_ = FakeImageWriterClient::Create();
-    operation_->SetImagePath(test_image_path_);
+    operation_ =
+        new OperationForTest(manager_.AsWeakPtr(),
+                             kDummyExtensionId,
+                             test_utils_.GetDevicePath().AsUTF8Unsafe());
+    operation_->SetImagePath(test_utils_.GetImagePath());
   }
 
   virtual void TearDown() OVERRIDE {
     // Ensure all callbacks have been destroyed and cleanup occurs.
-    client_->Shutdown();
     operation_->Cancel();
 
     ImageWriterUnitTestBase::TearDown();
@@ -102,7 +101,6 @@ class ImageWriterOperationTest : public ImageWriterUnitTestBase {
   scoped_ptr<TestingProfile> profile_;
 
   MockOperationManager manager_;
-  scoped_refptr<FakeImageWriterClient> client_;
   scoped_refptr<OperationForTest> operation_;
 };
 
@@ -154,10 +152,6 @@ TEST_F(ImageWriterOperationTest, UnzipZipFile) {
 
 #if defined(OS_LINUX)
 TEST_F(ImageWriterOperationTest, WriteImageToDevice) {
-#if !defined(OS_CHROMEOS)
-  operation_->SetUtilityClientForTesting(client_);
-#endif
-
   EXPECT_CALL(manager_, OnError(kDummyExtensionId, _, _, _)).Times(0);
   EXPECT_CALL(manager_,
               OnProgress(kDummyExtensionId, image_writer_api::STAGE_WRITE, _))
@@ -179,10 +173,10 @@ TEST_F(ImageWriterOperationTest, WriteImageToDevice) {
   base::RunLoop().RunUntilIdle();
 
 #if !defined(OS_CHROMEOS)
-  client_->Progress(0);
-  client_->Progress(kTestFileSize / 2);
-  client_->Progress(kTestFileSize);
-  client_->Success();
+  test_utils_.GetUtilityClient()->Progress(0);
+  test_utils_.GetUtilityClient()->Progress(kTestFileSize / 2);
+  test_utils_.GetUtilityClient()->Progress(kTestFileSize);
+  test_utils_.GetUtilityClient()->Success();
 
   base::RunLoop().RunUntilIdle();
 #endif
@@ -194,8 +188,6 @@ TEST_F(ImageWriterOperationTest, WriteImageToDevice) {
 // are skipped.
 
 TEST_F(ImageWriterOperationTest, VerifyFileSuccess) {
-  operation_->SetUtilityClientForTesting(client_);
-
   EXPECT_CALL(manager_, OnError(kDummyExtensionId, _, _, _)).Times(0);
   EXPECT_CALL(
       manager_,
@@ -210,7 +202,8 @@ TEST_F(ImageWriterOperationTest, VerifyFileSuccess) {
       OnProgress(kDummyExtensionId, image_writer_api::STAGE_VERIFYWRITE, 100))
       .Times(AtLeast(1));
 
-  FillFile(test_device_path_, kImagePattern, kTestFileSize);
+  test_utils_.FillFile(
+      test_utils_.GetDevicePath(), kImagePattern, kTestFileSize);
 
   operation_->Start();
   content::BrowserThread::PostTask(content::BrowserThread::FILE,
@@ -221,17 +214,17 @@ TEST_F(ImageWriterOperationTest, VerifyFileSuccess) {
 
   base::RunLoop().RunUntilIdle();
 
-  client_->Progress(0);
-  client_->Progress(kTestFileSize / 2);
-  client_->Progress(kTestFileSize);
-  client_->Success();
+#if !defined(OS_CHROMEOS)
+  test_utils_.GetUtilityClient()->Progress(0);
+  test_utils_.GetUtilityClient()->Progress(kTestFileSize / 2);
+  test_utils_.GetUtilityClient()->Progress(kTestFileSize);
+  test_utils_.GetUtilityClient()->Success();
+#endif
 
   base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(ImageWriterOperationTest, VerifyFileFailure) {
-  operation_->SetUtilityClientForTesting(client_);
-
   EXPECT_CALL(
       manager_,
       OnProgress(kDummyExtensionId, image_writer_api::STAGE_VERIFYWRITE, _))
@@ -246,7 +239,8 @@ TEST_F(ImageWriterOperationTest, VerifyFileFailure) {
       OnError(kDummyExtensionId, image_writer_api::STAGE_VERIFYWRITE, _, _))
       .Times(1);
 
-  FillFile(test_device_path_, kDevicePattern, kTestFileSize);
+  test_utils_.FillFile(
+      test_utils_.GetDevicePath(), kDevicePattern, kTestFileSize);
 
   operation_->Start();
   content::BrowserThread::PostTask(content::BrowserThread::FILE,
@@ -257,9 +251,9 @@ TEST_F(ImageWriterOperationTest, VerifyFileFailure) {
 
   base::RunLoop().RunUntilIdle();
 
-  client_->Progress(0);
-  client_->Progress(kTestFileSize / 2);
-  client_->Error(error::kVerificationFailed);
+  test_utils_.GetUtilityClient()->Progress(0);
+  test_utils_.GetUtilityClient()->Progress(kTestFileSize / 2);
+  test_utils_.GetUtilityClient()->Error(error::kVerificationFailed);
 
   base::RunLoop().RunUntilIdle();
 }

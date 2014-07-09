@@ -65,20 +65,6 @@ class FakeDiskMountManager : public chromeos::disks::MockDiskMountManager {
   virtual void UnmountDeviceRecursively(
       const std::string& device_path,
       const UnmountDeviceRecursivelyCallbackType& callback) OVERRIDE;
-  /*
-  MOCK_METHOD1(AddObserver, void(chromeos::disks::DiskMountManager::Observer*));
-  MOCK_METHOD1(RemoveObserver,
-  void(chromeos::disks::DiskMountManager::Observer*));
-  MOCK_CONST_METHOD0(disks, const DiskMap&());
-  MOCK_CONST_METHOD1(FindDiskBySourcePath, const Disk*(const std::string&));
-  MOCK_CONST_METHOD0(mount_points, const MountPointMap&());
-  MOCK_METHOD0(RequestMountInfoRefresh, void());
-  MOCK_METHOD4(MountPath, void(const std::string&, const std::string&, const
-  std::string&, chromeos::MountType));
-  MOCK_METHOD3(UnmountPath, void(const std::string&, chromeos::UnmountOptions,
-  const UnmountPathCallback&));
-  MOCK_METHOD1(FormatMountedDevice, void(const std::string&));
-  */
 
  private:
   DiskMap disks_;
@@ -105,11 +91,19 @@ class FakeImageWriterClient : public ImageWriterUtilityClient {
 
   virtual void Shutdown() OVERRIDE;
 
+  // Sets a callback for when a Write call is made.
+  void SetWriteCallback(const base::Closure& write_callback);
+  // Sets a callback for when a Verify call is made.
+  void SetVerifyCallback(const base::Closure& verify_callback);
+
+  // Triggers the progress callback.
   void Progress(int64 progress);
+  // Triggers the success callback.
   void Success();
+  // Triggers the error callback.
   void Error(const std::string& message);
+  // Triggers the cancel callback.
   void Cancel();
-  static scoped_refptr<FakeImageWriterClient> Create();
 
  private:
   virtual ~FakeImageWriterClient();
@@ -118,6 +112,55 @@ class FakeImageWriterClient : public ImageWriterUtilityClient {
   SuccessCallback success_callback_;
   ErrorCallback error_callback_;
   CancelCallback cancel_callback_;
+
+  base::Closure write_callback_;
+  base::Closure verify_callback_;
+};
+
+class ImageWriterTestUtils {
+ public:
+  ImageWriterTestUtils();
+  virtual ~ImageWriterTestUtils();
+
+  // Verifies that the data in image_path was written to the file at
+  // device_path.  This is different from base::ContentsEqual because the device
+  // may be larger than the image.
+  bool ImageWrittenToDevice();
+
+  // Fills |file| with |length| bytes of |pattern|, overwriting any existing
+  // data.
+  bool FillFile(const base::FilePath& file,
+                const int pattern,
+                const int length);
+
+  // Set up the test utils, creating temporary folders and such.
+  // Note that browser tests should use the alternate form and pass "true" as an
+  // argument.
+  virtual void SetUp();
+  // Set up the test utils, creating temporary folders and such.  If
+  // |is_browser_test| is true then it will use alternate initialization
+  // appropriate for a browser test.  This should be run in
+  // |SetUpInProcessBrowserTestFixture|.
+  virtual void SetUp(bool is_browser_test);
+
+  virtual void TearDown();
+
+  const base::FilePath& GetTempDir();
+  const base::FilePath& GetImagePath();
+  const base::FilePath& GetDevicePath();
+
+#if !defined(OS_CHROMEOS)
+  FakeImageWriterClient* GetUtilityClient();
+#endif
+
+ protected:
+  base::ScopedTempDir temp_dir_;
+  base::FilePath test_image_path_;
+  base::FilePath test_device_path_;
+
+#if !defined(OS_CHROMEOS)
+  scoped_refptr<FakeImageWriterClient> client_;
+#endif
 };
 
 // Base class for unit tests that manages creating image and device files.
@@ -127,24 +170,9 @@ class ImageWriterUnitTestBase : public testing::Test {
   virtual ~ImageWriterUnitTestBase();
 
   virtual void SetUp() OVERRIDE;
-
   virtual void TearDown() OVERRIDE;
 
-  // Verifies that the data in image_path was written to the file at
-  // device_path.  This is different from base::ContentsEqual because the device
-  // may be larger than the image.
-  bool ImageWrittenToDevice(const base::FilePath& image_path,
-                            const base::FilePath& device_path);
-
-  // Fills |file| with |length| bytes of |pattern|, overwriting any existing
-  // data.
-  bool FillFile(const base::FilePath& file,
-                const int pattern,
-                const int length);
-
-  base::ScopedTempDir temp_dir_;
-  base::FilePath test_image_path_;
-  base::FilePath test_device_path_;
+  ImageWriterTestUtils test_utils_;
 
  private:
   content::TestBrowserThreadBundle thread_bundle_;

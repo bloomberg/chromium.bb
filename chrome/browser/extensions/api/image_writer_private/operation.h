@@ -74,7 +74,7 @@ class Operation : public base::RefCountedThreadSafe<Operation> {
 
 #if !defined(OS_CHROMEOS)
   // Set an ImageWriterClient to use.  Should be called only when testing.
-  void SetUtilityClientForTesting(
+  static void SetUtilityClientForTesting(
       scoped_refptr<ImageWriterUtilityClient> client);
 #endif
 

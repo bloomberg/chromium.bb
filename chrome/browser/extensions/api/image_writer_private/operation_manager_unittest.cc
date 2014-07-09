@@ -58,8 +58,7 @@ KeyedService* BuildFakeExtensionSystem(content::BrowserContext* profile) {
 
 namespace {
 
-class ImageWriterOperationManagerTest
-    : public ImageWriterUnitTestBase {
+class ImageWriterOperationManagerTest : public ImageWriterUnitTestBase {
  public:
   void StartCallback(bool success, const std::string& error) {
     started_ = true;
@@ -111,11 +110,11 @@ TEST_F(ImageWriterOperationManagerTest, WriteFromFile) {
   OperationManager manager(&test_profile_);
 
   manager.StartWriteFromFile(
-    kDummyExtensionId,
-    test_image_path_,
-    test_device_path_.AsUTF8Unsafe(),
-    base::Bind(&ImageWriterOperationManagerTest::StartCallback,
-               base::Unretained(this)));
+      kDummyExtensionId,
+      test_utils_.GetImagePath(),
+      test_utils_.GetDevicePath().AsUTF8Unsafe(),
+      base::Bind(&ImageWriterOperationManagerTest::StartCallback,
+                 base::Unretained(this)));
 
   EXPECT_TRUE(started_);
   EXPECT_TRUE(start_success_);
@@ -138,7 +137,7 @@ TEST_F(ImageWriterOperationManagerTest, DestroyPartitions) {
 
   manager.DestroyPartitions(
       kDummyExtensionId,
-      test_device_path_.AsUTF8Unsafe(),
+      test_utils_.GetDevicePath().AsUTF8Unsafe(),
       base::Bind(&ImageWriterOperationManagerTest::StartCallback,
                  base::Unretained(this)));
 
