@@ -163,9 +163,6 @@ void RenderSVGRoot::layout()
 {
     ASSERT(needsLayout());
 
-    // Arbitrary affine transforms are incompatible with LayoutState.
-    ForceHorriblySlowRectMapping slowRectMapping(*this);
-
     bool needsLayout = selfNeedsLayout();
 
     LayoutSize oldSize = size();
@@ -347,7 +344,7 @@ const AffineTransform& RenderSVGRoot::localToParentTransform() const
     return m_localToParentTransform;
 }
 
-LayoutRect RenderSVGRoot::clippedOverflowRectForPaintInvalidation(const RenderLayerModelObject* paintInvalidationContainer) const
+LayoutRect RenderSVGRoot::clippedOverflowRectForPaintInvalidation(const RenderLayerModelObject* paintInvalidationContainer, const PaintInvalidationState* paintInvalidationState) const
 {
     // This is an open-coded aggregate of SVGRenderSupport::clippedOverflowRectForPaintInvalidation,
     // RenderSVGRoot::computeFloatRectForPaintInvalidation and RenderReplaced::clippedOverflowRectForPaintInvalidation.
@@ -377,11 +374,11 @@ LayoutRect RenderSVGRoot::clippedOverflowRectForPaintInvalidation(const RenderLa
 
     // Compute the repaint rect in the parent coordinate space.
     LayoutRect rect = enclosingIntRect(repaintRect);
-    RenderReplaced::mapRectToPaintInvalidationBacking(paintInvalidationContainer, rect);
+    RenderReplaced::mapRectToPaintInvalidationBacking(paintInvalidationContainer, rect, paintInvalidationState);
     return rect;
 }
 
-void RenderSVGRoot::computeFloatRectForPaintInvalidation(const RenderLayerModelObject* paintInvalidationContainer, FloatRect& paintInvalidationRect, bool fixed) const
+void RenderSVGRoot::computeFloatRectForPaintInvalidation(const RenderLayerModelObject* paintInvalidationContainer, FloatRect& paintInvalidationRect, bool fixed, const PaintInvalidationState* paintInvalidationState) const
 {
     // Apply our local transforms (except for x/y translation), then our shadow,
     // and then call RenderBox's method to handle all the normal CSS Box model bits
@@ -392,21 +389,21 @@ void RenderSVGRoot::computeFloatRectForPaintInvalidation(const RenderLayerModelO
         paintInvalidationRect.intersect(pixelSnappedBorderBoxRect());
 
     LayoutRect rect = enclosingIntRect(paintInvalidationRect);
-    RenderReplaced::mapRectToPaintInvalidationBacking(paintInvalidationContainer, rect, fixed);
+    RenderReplaced::mapRectToPaintInvalidationBacking(paintInvalidationContainer, rect, fixed, paintInvalidationState);
     paintInvalidationRect = rect;
 }
 
 // This method expects local CSS box coordinates.
 // Callers with local SVG viewport coordinates should first apply the localToBorderBoxTransform
 // to convert from SVG viewport coordinates to local CSS box coordinates.
-void RenderSVGRoot::mapLocalToContainer(const RenderLayerModelObject* repaintContainer, TransformState& transformState, MapCoordinatesFlags mode, bool* wasFixed) const
+void RenderSVGRoot::mapLocalToContainer(const RenderLayerModelObject* repaintContainer, TransformState& transformState, MapCoordinatesFlags mode, bool* wasFixed, const PaintInvalidationState* paintInvalidationState) const
 {
     ASSERT(mode & ~IsFixed); // We should have no fixed content in the SVG rendering tree.
     // We used to have this ASSERT here, but we removed it when enabling layer squashing.
     // See http://crbug.com/364901
     // ASSERT(mode & UseTransforms); // mapping a point through SVG w/o respecting trasnforms is useless.
 
-    RenderReplaced::mapLocalToContainer(repaintContainer, transformState, mode | ApplyContainerFlip, wasFixed);
+    RenderReplaced::mapLocalToContainer(repaintContainer, transformState, mode | ApplyContainerFlip, wasFixed, paintInvalidationState);
 }
 
 const RenderObject* RenderSVGRoot::pushMappingToContainer(const RenderLayerModelObject* ancestorToStopAt, RenderGeometryMap& geometryMap) const

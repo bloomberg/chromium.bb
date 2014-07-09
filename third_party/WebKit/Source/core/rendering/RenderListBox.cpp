@@ -199,16 +199,14 @@ void RenderListBox::layout()
         }
     }
 
-    if (m_scrollToRevealSelectionAfterLayout) {
-        ForceHorriblySlowRectMapping slowRectMapping(*this);
+    if (m_scrollToRevealSelectionAfterLayout)
         scrollToRevealSelection();
-    }
 }
 
-void RenderListBox::invalidateTreeAfterLayout(const RenderLayerModelObject& invalidationContainer)
+void RenderListBox::invalidateTreeAfterLayout(const PaintInvalidationState& paintInvalidationState)
 {
     repaintScrollbarIfNeeded();
-    RenderBox::invalidateTreeAfterLayout(invalidationContainer);
+    RenderBox::invalidateTreeAfterLayout(paintInvalidationState);
 }
 
 void RenderListBox::scrollToRevealSelection()

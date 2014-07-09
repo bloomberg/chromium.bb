@@ -315,14 +315,14 @@ LayoutSize RenderTableCell::offsetFromContainer(const RenderObject* o, const Lay
     return offset;
 }
 
-LayoutRect RenderTableCell::clippedOverflowRectForPaintInvalidation(const RenderLayerModelObject* paintInvalidationContainer) const
+LayoutRect RenderTableCell::clippedOverflowRectForPaintInvalidation(const RenderLayerModelObject* paintInvalidationContainer, const PaintInvalidationState* paintInvalidationState) const
 {
     // If the table grid is dirty, we cannot get reliable information about adjoining cells,
     // so we ignore outside borders. This should not be a problem because it means that
     // the table is going to recalculate the grid, relayout and repaint its current rect, which
     // includes any outside borders of this cell.
     if (!table()->collapseBorders() || table()->needsSectionRecalc())
-        return RenderBlockFlow::clippedOverflowRectForPaintInvalidation(paintInvalidationContainer);
+        return RenderBlockFlow::clippedOverflowRectForPaintInvalidation(paintInvalidationContainer, paintInvalidationState);
 
     bool rtl = !styleForCellFlow()->isLeftToRightDirection();
     int outlineSize = style()->outlineSize();
@@ -357,19 +357,18 @@ LayoutRect RenderTableCell::clippedOverflowRectForPaintInvalidation(const Render
     LayoutPoint location(std::max<LayoutUnit>(left, -visualOverflowRect().x()), std::max<LayoutUnit>(top, -visualOverflowRect().y()));
     LayoutRect r(-location.x(), -location.y(), location.x() + std::max(width() + right, visualOverflowRect().maxX()), location.y() + std::max(height() + bottom, visualOverflowRect().maxY()));
 
-    mapRectToPaintInvalidationBacking(paintInvalidationContainer, r);
+    mapRectToPaintInvalidationBacking(paintInvalidationContainer, r, false /* fixed */, paintInvalidationState);
     return r;
 }
 
-void RenderTableCell::mapRectToPaintInvalidationBacking(const RenderLayerModelObject* paintInvalidationContainer, LayoutRect& r, bool fixed) const
+void RenderTableCell::mapRectToPaintInvalidationBacking(const RenderLayerModelObject* paintInvalidationContainer, LayoutRect& r, bool fixed, const PaintInvalidationState* paintInvalidationState) const
 {
     if (paintInvalidationContainer == this)
         return;
     r.setY(r.y());
-    RenderView* v = view();
-    if ((!v || !v->canMapUsingLayoutStateForContainer(paintInvalidationContainer)) && parent())
+    if ((!paintInvalidationState || !paintInvalidationState->canMapToContainer(paintInvalidationContainer)) && parent())
         r.moveBy(-parentBox()->location()); // Rows are in the same coordinate space, so don't add their offset in.
-    RenderBlockFlow::mapRectToPaintInvalidationBacking(paintInvalidationContainer, r, fixed);
+    RenderBlockFlow::mapRectToPaintInvalidationBacking(paintInvalidationContainer, r, fixed, paintInvalidationState);
 }
 
 LayoutUnit RenderTableCell::cellBaselinePosition() const

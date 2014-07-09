@@ -86,9 +86,9 @@ void RenderSVGBlock::styleDidChange(StyleDifference diff, const RenderStyle* old
     SVGResourcesCache::clientStyleChanged(this, diff, style());
 }
 
-void RenderSVGBlock::mapLocalToContainer(const RenderLayerModelObject* repaintContainer, TransformState& transformState, MapCoordinatesFlags, bool* wasFixed) const
+void RenderSVGBlock::mapLocalToContainer(const RenderLayerModelObject* repaintContainer, TransformState& transformState, MapCoordinatesFlags, bool* wasFixed, const PaintInvalidationState* paintInvalidationState) const
 {
-    SVGRenderSupport::mapLocalToContainer(this, repaintContainer, transformState, wasFixed);
+    SVGRenderSupport::mapLocalToContainer(this, repaintContainer, transformState, wasFixed, paintInvalidationState);
 }
 
 const RenderObject* RenderSVGBlock::pushMappingToContainer(const RenderLayerModelObject* ancestorToStopAt, RenderGeometryMap& geometryMap) const
@@ -96,14 +96,14 @@ const RenderObject* RenderSVGBlock::pushMappingToContainer(const RenderLayerMode
     return SVGRenderSupport::pushMappingToContainer(this, ancestorToStopAt, geometryMap);
 }
 
-LayoutRect RenderSVGBlock::clippedOverflowRectForPaintInvalidation(const RenderLayerModelObject* paintInvalidationContainer) const
+LayoutRect RenderSVGBlock::clippedOverflowRectForPaintInvalidation(const RenderLayerModelObject* paintInvalidationContainer, const PaintInvalidationState* paintInvalidationState) const
 {
-    return SVGRenderSupport::clippedOverflowRectForRepaint(this, paintInvalidationContainer);
+    return SVGRenderSupport::clippedOverflowRectForRepaint(this, paintInvalidationContainer, paintInvalidationState);
 }
 
-void RenderSVGBlock::computeFloatRectForPaintInvalidation(const RenderLayerModelObject* paintInvalidationContainer, FloatRect& paintInvalidationRect, bool fixed) const
+void RenderSVGBlock::computeFloatRectForPaintInvalidation(const RenderLayerModelObject* paintInvalidationContainer, FloatRect& paintInvalidationRect, bool fixed, const PaintInvalidationState* paintInvalidationState) const
 {
-    SVGRenderSupport::computeFloatRectForRepaint(this, paintInvalidationContainer, paintInvalidationRect, fixed);
+    SVGRenderSupport::computeFloatRectForRepaint(this, paintInvalidationContainer, paintInvalidationRect, fixed, paintInvalidationState);
 }
 
 bool RenderSVGBlock::nodeAtPoint(const HitTestRequest&, HitTestResult&, const HitTestLocation&, const LayoutPoint&, HitTestAction)
@@ -112,13 +112,13 @@ bool RenderSVGBlock::nodeAtPoint(const HitTestRequest&, HitTestResult&, const Hi
     return false;
 }
 
-void RenderSVGBlock::invalidateTreeAfterLayout(const RenderLayerModelObject& paintInvalidationContainer)
+void RenderSVGBlock::invalidateTreeAfterLayout(const PaintInvalidationState& paintInvalidationState)
 {
     if (!shouldCheckForPaintInvalidationAfterLayout())
         return;
 
-    ForceHorriblySlowRectMapping slowRectMapping(*this);
-    RenderBlockFlow::invalidateTreeAfterLayout(paintInvalidationContainer);
+    ForceHorriblySlowRectMapping slowRectMapping(&paintInvalidationState);
+    RenderBlockFlow::invalidateTreeAfterLayout(paintInvalidationState);
 }
 
 }
