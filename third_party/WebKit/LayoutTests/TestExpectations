@@ -211,11 +211,8 @@ crbug.com/318980 [ Linux ] virtual/deferred/fast/images/imagemap-focus-ring-zoom
 crbug.com/318980 [ Linux ] virtual/deferred/fast/images/imagemap-focus-ring-zoom.html [ ImageOnlyFailure Pass ]
 
 # Tests that have new baselines but are probably still failing on Linux Aura.
-#crbug.com/318980 [ Linux ] editing/selection/7152-1.html [ Pass ]
 crbug.com/318980 [ Linux ] editing/selection/linux_selection_color.html [ Pass ]
 crbug.com/318980 [ Linux ] fast/ruby/select-ruby.html [ Pass ]
-#crbug.com/318980 [ Linux ] fast/sub-pixel/selection/selection-gaps-at-fractional-offsets.html [ Pass ]
-#crbug.com/318980 [ Linux ] svg/W3C-SVG-1.1/text-tselect-02-f.svg [ Pass ]
 
 # ICU 52 requires rebaseline for these tests
 crbug.com/378919 [ Linux ] fast/forms/calendar-picker/calendar-picker-appearance-ar.html [ NeedsManualRebaseline ]
@@ -298,8 +295,6 @@ crbug.com/237270 http/tests/images/jpeg-partial-load.html [ Pass Timeout ]
 crbug.com/237270 http/tests/images/png-partial-load.html [ Pass Timeout ]
 crbug.com/237270 http/tests/images/png-partial-load-no-alpha.html [ Pass Timeout ]
 
-#crbug.com/317806 [ Mac XP ] fast/sub-pixel/selection/selection-gaps-at-fractional-offsets.html [ Pass ImageOnlyFailure ]
-
 crbug.com/341435 http/tests/images/image-with-origin-header.html [ Pass Timeout ]
 
 crbug.com/248938 virtual/threaded/animations/3d/transform-origin-vs-functions.html [ Pass Failure ]
@@ -377,25 +372,9 @@ crbug.com/248938 [ Win Debug ] virtual/threaded/transitions/blendmode-transition
 crbug.com/248938 [ Win Debug ] virtual/threaded/transitions/cubic-bezier-overflow-svg-length.html [ Pass Timeout ]
 crbug.com/248938 [ Win Debug ] virtual/threaded/animations/compositor-start-event-timing.html [ Pass Timeout ]
 crbug.com/248938 [ Debug ] virtual/threaded/animations/animation-hit-test-transform.html [ Pass Failure Timeout ]
-# Commented out temporarily to avoid duplication; see lines marked as crbug.com/391637 below.
-# crbug.com/248938 virtual/threaded/animations/change-keyframes.html [ Pass Failure Timeout ]
-# crbug.com/248938 virtual/threaded/animations/play-state-initially-paused.html [ Pass Failure ]
-# crbug.com/248938 animations/play-state-initially-paused.html [ Pass Failure ]
-# crbug.com/248938 [ Debug ] virtual/threaded/transitions/change-duration-during-transition.html [ Pass Failure Timeout ]
-crbug.com/248938 [ Release ] virtual/threaded/animations/change-keyframes.html [ Pass Failure Timeout ]
-#crbug.com/248938 [ Release ] virtual/threaded/animations/play-state-initially-paused.html [ Pass Failure ]
-crbug.com/248938 [ Release ] animations/play-state-initially-paused.html [ Pass Failure ]
-
-# dumpAsText() not called due to "Uncaught illegal access" error in V8.
-# When this is fixed, please don't forget to uncomment the lines labeled with crbug.com/248938 above.
-crbug.com/390732 [ Debug ] animations/change-keyframes.html [ Missing ]
-crbug.com/390732 [ Debug ] animations/play-state-initially-paused.html [ Missing ]
-crbug.com/390732 [ Debug ] transitions/change-duration-during-transition.html [ Missing ]
-crbug.com/390732 [ Debug ] transitions/interrupt-zero-duration.html [ Missing ]
-crbug.com/390732 [ Debug ] virtual/threaded/animations/change-keyframes.html [ Missing ]
-#crbug.com/390732 [ Debug ] virtual/threaded/animations/play-state-initially-paused.html [ Missing ]
-crbug.com/390732 [ Debug ] virtual/threaded/transitions/change-duration-during-transition.html [ Missing ]
-crbug.com/390732 [ Debug ] virtual/threaded/transitions/interrupt-zero-duration.html [ Missing ]
+crbug.com/248938 virtual/threaded/animations/change-keyframes.html [ Pass Failure Timeout ]
+crbug.com/248938 animations/play-state-initially-paused.html [ Pass Failure ]
+crbug.com/248938 [ Debug ] virtual/threaded/transitions/change-duration-during-transition.html [ Pass Failure Timeout ]
 
 crbug.com/364640 animations/compositor-start-event-timing.html [ Pass Failure ]
 
