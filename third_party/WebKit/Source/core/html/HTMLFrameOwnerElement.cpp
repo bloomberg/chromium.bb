@@ -45,6 +45,12 @@ static WidgetToParentMap& widgetNewParentMap()
     return map;
 }
 
+WillBeHeapHashCountedSet<RawPtrWillBeMember<Node> >& SubframeLoadingDisabler::disabledSubtreeRoots()
+{
+    DEFINE_STATIC_LOCAL(OwnPtrWillBePersistent<WillBeHeapHashCountedSet<RawPtrWillBeMember<Node> > >, nodes, (adoptPtrWillBeNoop(new WillBeHeapHashCountedSet<RawPtrWillBeMember<Node> >())));
+    return *nodes;
+}
+
 static unsigned s_updateSuspendCount = 0;
 
 HTMLFrameOwnerElement::UpdateSuspendScope::UpdateSuspendScope()

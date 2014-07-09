@@ -1651,7 +1651,7 @@ void Range::getBorderAndTextQuads(Vector<FloatQuad>& quads) const
     Node* endContainer = m_end.container();
     Node* stopNode = pastLastNode();
 
-    HashSet<Node*> nodeSet;
+    WillBeHeapHashSet<RawPtrWillBeMember<Node> > nodeSet;
     for (Node* node = firstNode(); node != stopNode; node = NodeTraversal::next(*node)) {
         if (node->isElementNode())
             nodeSet.add(node);

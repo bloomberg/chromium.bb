@@ -936,8 +936,8 @@ template class PLATFORM_EXPORT DummyBase<void>;
 #define WillBePersistentHeapVector WTF::Vector
 #define WillBeHeapDeque WTF::Deque
 #define WillBePersistentHeapDeque WTF::Deque
-#define WillBeHeapHeapCountedSet WTF::HeapCountedSet
-#define WillBePersistentHeapHeapCountedSet WTF::HeapCountedSet
+#define WillBeHeapHashCountedSet WTF::HashCountedSet
+#define WillBePersistentHeapHashCountedSet WTF::HashCountedSet
 #define WillBeGarbageCollectedMixin WebCore::DummyBase<void>
 #define WillBeHeapSupplement WebCore::Supplement
 #define WillBeHeapSupplementable WebCore::Supplementable

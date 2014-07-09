@@ -59,7 +59,7 @@ public:
     MutationRecordDeliveryOptions deliveryOptions() const { return m_options & (MutationObserver::AttributeOldValue | MutationObserver::CharacterDataOldValue); }
     MutationObserverOptions mutationTypes() const { return m_options & MutationObserver::AllMutationTypes; }
 
-    void addRegistrationNodesToSet(HashSet<Node*>&) const;
+    void addRegistrationNodesToSet(WillBeHeapHashSet<RawPtrWillBeMember<Node> >&) const;
 
     void trace(Visitor*);
 

@@ -966,7 +966,7 @@ void InspectorDOMAgent::performSearch(ErrorString*, const String& whitespaceTrim
         attributeQuery = attributeQuery.left(attributeQuery.length() - 1);
 
     Vector<Document*> docs = documents();
-    ListHashSet<Node*> resultCollector;
+    WillBeHeapListHashSet<RawPtrWillBeMember<Node> > resultCollector;
 
     for (Vector<Document*>::iterator it = docs.begin(); it != docs.end(); ++it) {
         Document* document = *it;
@@ -1059,7 +1059,7 @@ void InspectorDOMAgent::performSearch(ErrorString*, const String& whitespaceTrim
     *searchId = IdentifiersFactory::createIdentifier();
     WillBeHeapVector<RefPtrWillBeMember<Node> >* resultsIt = &m_searchResults.add(*searchId, WillBeHeapVector<RefPtrWillBeMember<Node> >()).storedValue->value;
 
-    for (ListHashSet<Node*>::iterator it = resultCollector.begin(); it != resultCollector.end(); ++it)
+    for (WillBeHeapListHashSet<RawPtrWillBeMember<Node> >::iterator it = resultCollector.begin(); it != resultCollector.end(); ++it)
         resultsIt->append(*it);
 
     *resultCount = resultsIt->size();

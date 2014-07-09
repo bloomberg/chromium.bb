@@ -121,11 +121,7 @@ public:
     }
 
 private:
-    static HashCountedSet<Node*>& disabledSubtreeRoots()
-    {
-        DEFINE_STATIC_LOCAL(HashCountedSet<Node*>, nodes, ());
-        return nodes;
-    }
+    static WillBeHeapHashCountedSet<RawPtrWillBeMember<Node> >& disabledSubtreeRoots();
 
     Node& m_root;
 };

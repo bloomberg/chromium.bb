@@ -40,7 +40,7 @@
 
 namespace WebCore {
 
-static HashSet<Node*>* gNodesDispatchingSimulatedClicks = 0;
+static WillBeHeapHashSet<RawPtrWillBeMember<Node> >* gNodesDispatchingSimulatedClicks = 0;
 
 bool EventDispatcher::dispatchEvent(Node* node, PassRefPtrWillBeRawPtr<EventDispatchMediator> mediator)
 {
@@ -79,7 +79,7 @@ void EventDispatcher::dispatchSimulatedClick(Node* node, Event* underlyingEvent,
         return;
 
     if (!gNodesDispatchingSimulatedClicks)
-        gNodesDispatchingSimulatedClicks = new HashSet<Node*>;
+        gNodesDispatchingSimulatedClicks = new WillBeHeapHashSet<RawPtrWillBeMember<Node> >();
     else if (gNodesDispatchingSimulatedClicks->contains(node))
         return;
 

@@ -205,9 +205,9 @@ void MutationObserver::setHasTransientRegistration()
     activateObserver(this);
 }
 
-HashSet<Node*> MutationObserver::getObservedNodes() const
+WillBeHeapHashSet<RawPtrWillBeMember<Node> > MutationObserver::getObservedNodes() const
 {
-    HashSet<Node*> observedNodes;
+    WillBeHeapHashSet<RawPtrWillBeMember<Node> > observedNodes;
     for (MutationObserverRegistrationSet::const_iterator iter = m_registrations.begin(); iter != m_registrations.end(); ++iter)
         (*iter)->addRegistrationNodesToSet(observedNodes);
     return observedNodes;

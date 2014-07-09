@@ -93,7 +93,7 @@ public:
     void setHasTransientRegistration();
     bool canDeliver();
 
-    HashSet<Node*> getObservedNodes() const;
+    WillBeHeapHashSet<RawPtrWillBeMember<Node> > getObservedNodes() const;
 
     void trace(Visitor*);
 
