@@ -381,7 +381,8 @@ bool FrameProcessor::ProcessFrame(
              << ", TrackID=" << frame->track_id()
              << ", PTS=" << presentation_timestamp.InSecondsF()
              << ", DTS=" << decode_timestamp.InSecondsF()
-             << ", DUR=" << frame_duration.InSecondsF();
+             << ", DUR=" << frame_duration.InSecondsF()
+             << ", RAP=" << frame->IsKeyframe();
 
     // Sanity check the timestamps.
     if (presentation_timestamp == kNoTimestamp()) {
@@ -553,14 +554,6 @@ bool FrameProcessor::ProcessFrame(
         frame_end_timestamp > append_window_end) {
       track_buffer->set_needs_random_access_point(true);
       DVLOG(3) << "Dropping frame that is outside append window.";
-
-      if (!sequence_mode_) {
-        // This also triggers a discontinuity so we need to treat the next
-        // frames appended within the append window as if they were the
-        // beginning of a new segment.
-        *new_media_segment = true;
-      }
-
       return true;
     }
 

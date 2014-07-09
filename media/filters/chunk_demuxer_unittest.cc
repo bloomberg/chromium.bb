@@ -397,60 +397,138 @@ class ChunkDemuxerTest : public ::testing::Test {
                       timecode, end_timecode, track_number, block_duration));
   }
 
-  // |cluster_description| - A space delimited string of buffer info that
-  //  is used to construct a cluster. Each buffer info is a timestamp in
-  //  milliseconds and optionally followed by a 'K' to indicate that a buffer
-  //  should be marked as a keyframe. For example "0K 30 60" should constuct
-  //  a cluster with 3 blocks: a keyframe with timestamp 0 and 2 non-keyframes
-  //  at 30ms and 60ms.
-  void AppendSingleStreamCluster(const std::string& source_id, int track_number,
-                                 const std::string& cluster_description) {
-    std::vector<std::string> timestamps;
-    base::SplitString(cluster_description, ' ', &timestamps);
+  struct BlockInfo {
+    BlockInfo()
+        : track_number(0),
+          timestamp_in_ms(0),
+          flags(0),
+          duration(0) {
+    }
 
-    ClusterBuilder cb;
-    std::vector<uint8> data(10);
+    BlockInfo(int tn, int ts, int f, int d)
+        : track_number(tn),
+          timestamp_in_ms(ts),
+          flags(f),
+          duration(d) {
+    }
+
+    int track_number;
+    int timestamp_in_ms;
+    int flags;
+    int duration;
+
+    bool operator< (const BlockInfo& rhs) const {
+      return timestamp_in_ms < rhs.timestamp_in_ms;
+    }
+  };
+
+  // |track_number| - The track number to place in
+  // |block_descriptions| - A space delimited string of block info that
+  //  is used to populate |blocks|. Each block info has a timestamp in
+  //  milliseconds and optionally followed by a 'K' to indicate that a block
+  //  should be marked as a keyframe. For example "0K 30 60" should populate
+  //  |blocks| with 3 BlockInfo objects: a keyframe with timestamp 0 and 2
+  //  non-keyframes at 30ms and 60ms.
+  void ParseBlockDescriptions(int track_number,
+                              const std::string block_descriptions,
+                              std::vector<BlockInfo>* blocks) {
+    std::vector<std::string> timestamps;
+    base::SplitString(block_descriptions, ' ', &timestamps);
+
     for (size_t i = 0; i < timestamps.size(); ++i) {
       std::string timestamp_str = timestamps[i];
-      int block_flags = 0;
+      BlockInfo block_info;
+      block_info.track_number = track_number;
+      block_info.flags = 0;
+      block_info.duration = 0;
+
       if (EndsWith(timestamp_str, "K", true)) {
-        block_flags = kWebMFlagKeyframe;
+        block_info.flags = kWebMFlagKeyframe;
         // Remove the "K" off of the token.
         timestamp_str = timestamp_str.substr(0, timestamps[i].length() - 1);
       }
-      int timestamp_in_ms;
-      CHECK(base::StringToInt(timestamp_str, &timestamp_in_ms));
-
-      if (i == 0)
-        cb.SetClusterTimecode(timestamp_in_ms);
+      CHECK(base::StringToInt(timestamp_str, &block_info.timestamp_in_ms));
 
       if (track_number == kTextTrackNum ||
           track_number == kAlternateTextTrackNum) {
-        cb.AddBlockGroup(track_number, timestamp_in_ms, kTextBlockDuration,
-                         block_flags, &data[0], data.size());
+        block_info.duration = kTextBlockDuration;
+        ASSERT_EQ(kWebMFlagKeyframe, block_info.flags)
+            << "Text block with timestamp " << block_info.timestamp_in_ms
+            << " was not marked as a keyframe."
+            << " All text blocks must be keyframes";
+      }
+
+      blocks->push_back(block_info);
+    }
+  }
+
+  scoped_ptr<Cluster> GenerateCluster(const std::vector<BlockInfo>& blocks,
+                                      bool unknown_size) {
+    DCHECK_GT(blocks.size(), 0u);
+    ClusterBuilder cb;
+
+    std::vector<uint8> data(10);
+    for (size_t i = 0; i < blocks.size(); ++i) {
+      if (i == 0)
+        cb.SetClusterTimecode(blocks[i].timestamp_in_ms);
+
+      if (blocks[i].duration) {
+        if (blocks[i].track_number == kVideoTrackNum) {
+          AddVideoBlockGroup(&cb,
+                             blocks[i].track_number, blocks[i].timestamp_in_ms,
+                             blocks[i].duration, blocks[i].flags);
+        } else {
+          cb.AddBlockGroup(blocks[i].track_number, blocks[i].timestamp_in_ms,
+                           blocks[i].duration, blocks[i].flags,
+                           &data[0], data.size());
+        }
       } else {
-        cb.AddSimpleBlock(track_number, timestamp_in_ms, block_flags,
+        cb.AddSimpleBlock(blocks[i].track_number, blocks[i].timestamp_in_ms,
+                          blocks[i].flags,
                           &data[0], data.size());
       }
     }
-    AppendCluster(source_id, cb.Finish());
+
+    return unknown_size ? cb.FinishWithUnknownSize() : cb.Finish();
+  }
+
+  scoped_ptr<Cluster> GenerateCluster(
+      std::priority_queue<BlockInfo> block_queue,
+      bool unknown_size) {
+    std::vector<BlockInfo> blocks(block_queue.size());
+    for (size_t i = block_queue.size() - 1; !block_queue.empty(); --i) {
+      blocks[i] = block_queue.top();
+      block_queue.pop();
+    }
+
+    return GenerateCluster(blocks, unknown_size);
+  }
+
+  // |block_descriptions| - The block descriptions used to construct the
+  // cluster. See the documentation for ParseBlockDescriptions() for details on
+  // the string format.
+  void AppendSingleStreamCluster(const std::string& source_id, int track_number,
+                                 const std::string& block_descriptions) {
+    std::vector<BlockInfo> blocks;
+    ParseBlockDescriptions(track_number, block_descriptions, &blocks);
+    AppendCluster(source_id, GenerateCluster(blocks, false));
   }
 
   struct MuxedStreamInfo {
     MuxedStreamInfo()
         : track_number(0),
-          cluster_description("")
+          block_descriptions("")
     {}
 
-    MuxedStreamInfo(int track_num, const char* cluster_desc)
+    MuxedStreamInfo(int track_num, const char* block_desc)
         : track_number(track_num),
-          cluster_description(cluster_desc) {
+          block_descriptions(block_desc) {
     }
 
     int track_number;
-    // The cluster description passed to AppendSingleStreamCluster().
+    // The block description passed to ParseBlockDescriptions().
     // See the documentation for that method for details on the string format.
-    const char* cluster_description;
+    const char* block_descriptions;
   };
 
   void AppendMuxedCluster(const MuxedStreamInfo& msi_1,
@@ -472,11 +550,17 @@ class ChunkDemuxerTest : public ::testing::Test {
   }
 
   void AppendMuxedCluster(const std::vector<MuxedStreamInfo> msi) {
+    std::priority_queue<BlockInfo> block_queue;
     for (size_t i = 0; i < msi.size(); ++i) {
-      AppendSingleStreamCluster(kSourceId,
-                                msi[i].track_number,
-                                msi[i].cluster_description);
+      std::vector<BlockInfo> track_blocks;
+      ParseBlockDescriptions(msi[i].track_number, msi[i].block_descriptions,
+                             &track_blocks);
+
+      for (size_t j = 0; j < track_blocks.size(); ++j)
+        block_queue.push(track_blocks[j]);
     }
+
+    AppendCluster(kSourceId, GenerateCluster(block_queue, false));
   }
 
   void AppendData(const std::string& source_id,
@@ -721,17 +805,14 @@ class ChunkDemuxerTest : public ::testing::Test {
                                       bool unknown_size) {
     CHECK_GT(block_count, 0);
 
-    int size = 10;
-    scoped_ptr<uint8[]> data(new uint8[size]);
-
-    ClusterBuilder cb;
-    cb.SetClusterTimecode(std::min(first_audio_timecode, first_video_timecode));
+    std::priority_queue<BlockInfo> block_queue;
 
     if (block_count == 1) {
-      cb.AddBlockGroup(kAudioTrackNum, first_audio_timecode,
-                       kAudioBlockDuration, kWebMFlagKeyframe,
-                       data.get(), size);
-      return cb.Finish();
+      block_queue.push(BlockInfo(kAudioTrackNum,
+                                 first_audio_timecode,
+                                 kWebMFlagKeyframe,
+                                 kAudioBlockDuration));
+      return GenerateCluster(block_queue, unknown_size);
     }
 
     int audio_timecode = first_audio_timecode;
@@ -742,33 +823,34 @@ class ChunkDemuxerTest : public ::testing::Test {
     uint8 video_flag = kWebMFlagKeyframe;
     for (int i = 0; i < block_count - 2; i++) {
       if (audio_timecode <= video_timecode) {
-        cb.AddSimpleBlock(kAudioTrackNum, audio_timecode, kWebMFlagKeyframe,
-                          data.get(), size);
+        block_queue.push(BlockInfo(kAudioTrackNum,
+                                   audio_timecode,
+                                   kWebMFlagKeyframe,
+                                   0));
         audio_timecode += kAudioBlockDuration;
         continue;
       }
 
-      cb.AddSimpleBlock(kVideoTrackNum, video_timecode, video_flag, data.get(),
-                        size);
+      block_queue.push(BlockInfo(kVideoTrackNum,
+                                 video_timecode,
+                                 video_flag,
+                                 0));
       video_timecode += kVideoBlockDuration;
       video_flag = 0;
     }
 
     // Make the last 2 blocks BlockGroups so that they don't get delayed by the
     // block duration calculation logic.
-    if (audio_timecode <= video_timecode) {
-      cb.AddBlockGroup(kAudioTrackNum, audio_timecode, kAudioBlockDuration,
-                       kWebMFlagKeyframe, data.get(), size);
-      AddVideoBlockGroup(&cb, kVideoTrackNum, video_timecode,
-                         kVideoBlockDuration, video_flag);
-    } else {
-      AddVideoBlockGroup(&cb, kVideoTrackNum, video_timecode,
-                         kVideoBlockDuration, video_flag);
-      cb.AddBlockGroup(kAudioTrackNum, audio_timecode, kAudioBlockDuration,
-                       kWebMFlagKeyframe, data.get(), size);
-    }
+    block_queue.push(BlockInfo(kAudioTrackNum,
+                               audio_timecode,
+                               kWebMFlagKeyframe,
+                               kAudioBlockDuration));
+    block_queue.push(BlockInfo(kVideoTrackNum,
+                               video_timecode,
+                               video_flag,
+                               kVideoBlockDuration));
 
-    return unknown_size ? cb.FinishWithUnknownSize() : cb.Finish();
+    return GenerateCluster(block_queue, unknown_size);
   }
 
   scoped_ptr<Cluster> GenerateSingleStreamCluster(int timecode,
@@ -1290,21 +1372,19 @@ TEST_F(ChunkDemuxerTest, InitSegmentSetsNeedRandomAccessPointFlag) {
   AppendMuxedCluster(
       MuxedStreamInfo(kAudioTrackNum, "0 23K"),
       MuxedStreamInfo(kVideoTrackNum, "0 30K"),
-      MuxedStreamInfo(kTextTrackNum, "0 40K"));
-  CheckExpectedRanges(kSourceId, "{ [30,46) }");
+      MuxedStreamInfo(kTextTrackNum, "25K 40K"));
+  CheckExpectedRanges(kSourceId, "{ [23,46) }");
 
   AppendInitSegment(HAS_TEXT | HAS_AUDIO | HAS_VIDEO);
   AppendMuxedCluster(
       MuxedStreamInfo(kAudioTrackNum, "46 69K"),
       MuxedStreamInfo(kVideoTrackNum, "60 90K"),
-      MuxedStreamInfo(kTextTrackNum, "80 90K"));
-  CheckExpectedRanges(kSourceId, "{ [30,92) }");
+      MuxedStreamInfo(kTextTrackNum, "80K 90K"));
+  CheckExpectedRanges(kSourceId, "{ [23,92) }");
 
   CheckExpectedBuffers(audio_stream, "23 69");
   CheckExpectedBuffers(video_stream, "30 90");
-
-  // WebM parser marks all text buffers as keyframes.
-  CheckExpectedBuffers(text_stream, "0 40 80 90");
+  CheckExpectedBuffers(text_stream, "25 40 80 90");
 }
 
 // Make sure that the demuxer reports an error if Shutdown()
@@ -2468,7 +2548,6 @@ TEST_F(ChunkDemuxerTest, GetBufferedRanges_EndOfStream) {
 
   // Append and remove data so that the 2 streams' end ranges do not overlap.
 
-  EXPECT_CALL(host_, SetDuration(base::TimeDelta::FromMilliseconds(246)));
   EXPECT_CALL(host_, SetDuration(base::TimeDelta::FromMilliseconds(398)));
   AppendMuxedCluster(
       MuxedStreamInfo(kAudioTrackNum, "200K 223K"),
@@ -3353,7 +3432,7 @@ TEST_F(ChunkDemuxerTest, AppendWindow_Text) {
   // Verify that text cues that start outside the window are not included
   // in the buffer. Also verify that cues that extend beyond the
   // window are not included.
-  CheckExpectedRanges(kSourceId, "{ [120,270) }");
+  CheckExpectedRanges(kSourceId, "{ [100,270) }");
   CheckExpectedBuffers(video_stream, "120 150 180 210 240");
   CheckExpectedBuffers(text_stream, "100");
 
@@ -3365,7 +3444,7 @@ TEST_F(ChunkDemuxerTest, AppendWindow_Text) {
       MuxedStreamInfo(kVideoTrackNum,
                       "360 390 420K 450 480 510 540K 570 600 630K"),
       MuxedStreamInfo(kTextTrackNum, "400K 500K 600K 700K" ));
-  CheckExpectedRanges(kSourceId, "{ [120,270) [420,630) }");
+  CheckExpectedRanges(kSourceId, "{ [100,270) [400,630) }");
 
   // Seek to the new range and verify that the expected buffers are returned.
   Seek(base::TimeDelta::FromMilliseconds(420));
@@ -3498,7 +3577,7 @@ TEST_F(ChunkDemuxerTest, SeekCompletesWithoutTextCues) {
   message_loop_.RunUntilIdle();
   EXPECT_TRUE(text_read_done);
 
-  // NOTE: we start at 175 here because the buffer at 125 was returned
+  // NOTE: we start at 275 here because the buffer at 225 was returned
   // to the pending read initiated above.
   CheckExpectedBuffers(text_stream, "275 325");
 
