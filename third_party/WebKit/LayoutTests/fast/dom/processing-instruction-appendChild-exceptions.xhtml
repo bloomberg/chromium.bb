@@ -5,7 +5,7 @@
 <![CDATA[
 description("Test that appropriate exceptions are thrown when adding children to a ProcessingInstruction.");
 var pi = document.createProcessingInstruction('target', 'data');
-shouldThrow("pi.appendChild(null)", '"HierarchyRequestError: Failed to execute \'appendChild\' on \'Node\': This node type does not support this method."');
+shouldThrow("pi.appendChild(null)", '"TypeError: Failed to execute \'appendChild\' on \'Node\': parameter 1 is not of type \'Node\'."');
 var div = document.createElement('div');
 shouldThrow("pi.appendChild(div)", '"HierarchyRequestError: Failed to execute \'appendChild\' on \'Node\': This node type does not support this method."');
 var textNode = document.createTextNode('sometext');

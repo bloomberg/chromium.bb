@@ -28,11 +28,11 @@ var aNode = document.createElement("div");
 var aSecondNode = document.createElement("div");
 aNode.appendChild(aSecondNode);
 
-shouldThrow("aNode.appendChild(aDOMImplementation)", '"NotFoundError: Failed to execute \'appendChild\' on \'Node\': The new child element is null."');
+shouldThrow("aNode.appendChild(aDOMImplementation)", '"TypeError: Failed to execute \'appendChild\' on \'Node\': parameter 1 is not of type \'Node\'."');
 
-shouldThrow("aNode.appendChild('knort')", '"NotFoundError: Failed to execute \'appendChild\' on \'Node\': The new child element is null."');
+shouldThrow("aNode.appendChild('knort')", '"TypeError: Failed to execute \'appendChild\' on \'Node\': parameter 1 is not of type \'Node\'."');
 
-shouldThrow("aNode.appendChild(void 0)", '"NotFoundError: Failed to execute \'appendChild\' on \'Node\': The new child element is null."');
+shouldThrow("aNode.appendChild(void 0)", '"TypeError: Failed to execute \'appendChild\' on \'Node\': parameter 1 is not of type \'Node\'."');
 
 shouldBeFalse("aNode.isSameNode(aDOMImplementation)");
 shouldBeFalse("aNode.isSameNode('foo')");

@@ -107,16 +107,25 @@ void V8Node::removeChildMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& 
 
 void V8Node::appendChildMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    v8::Handle<v8::Object> holder = info.Holder();
-    Node* impl = V8Node::toNative(holder);
-
-    CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
-
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "appendChild", "Node", info.Holder(), info.GetIsolate());
-    Node* newChild = V8Node::toNativeWithTypeCheck(info.GetIsolate(), info[0]);
+    Node* impl = V8Node::toNative(info.Holder());
+    CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
+    Node* newChild;
+    {
+        v8::TryCatch block;
+        V8RethrowTryCatchScope rethrow(block);
+        if (info.Length() > 0 && !V8Node::hasInstance(info[0], info.GetIsolate())) {
+            exceptionState.throwTypeError("parameter 1 is not of type 'Node'.");
+            exceptionState.throwIfNeeded();
+            return;
+        }
+        TONATIVE_VOID_INTERNAL(newChild, V8Node::toNativeWithTypeCheck(info.GetIsolate(), info[0]));
+    }
     impl->appendChild(newChild, exceptionState);
-    if (exceptionState.throwIfNeeded())
+    if (exceptionState.hadException()) {
+        exceptionState.throwIfNeeded();
         return;
+    }
     v8SetReturnValue(info, info[0]);
 }
 
