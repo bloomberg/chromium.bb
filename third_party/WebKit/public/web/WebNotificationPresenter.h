@@ -67,6 +67,7 @@ public:
     // Requests permission for a given origin.  This operation is asynchronous and the callback provided
     // will be invoked when the permission decision is made.  Callback pointer must remain
     // valid until called.
+    // FIXME: Remove once permission requests will be routed through the NotificationPermissionClient.
     virtual void requestPermission(const WebSecurityOrigin&, WebNotificationPermissionCallback*) = 0;
 };
 

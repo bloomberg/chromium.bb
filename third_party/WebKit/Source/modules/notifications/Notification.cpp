@@ -44,7 +44,7 @@ namespace WebCore {
 
 Notification* Notification::create(ExecutionContext* context, const String& title, const Dictionary& options)
 {
-    NotificationClient& client = NotificationController::clientFrom(toDocument(context)->frame());
+    NotificationClient& client = NotificationController::clientFrom(context);
     Notification* notification = adoptRefCountedGarbageCollectedWillBeNoop(new Notification(title, context, &client));
 
     String argument;
@@ -162,16 +162,14 @@ const String& Notification::permissionString(NotificationClient::Permission perm
 
 const String& Notification::permission(ExecutionContext* context)
 {
-    ASSERT(toDocument(context)->page());
-
     UseCounter::count(context, UseCounter::NotificationPermission);
-    return permissionString(NotificationController::clientFrom(toDocument(context)->frame()).checkPermission(context));
+    return permissionString(NotificationController::clientFrom(context).checkPermission(context));
 }
 
 void Notification::requestPermission(ExecutionContext* context, PassOwnPtr<NotificationPermissionCallback> callback)
 {
     ASSERT(toDocument(context)->page());
-    NotificationController::clientFrom(toDocument(context)->frame()).requestPermission(context, callback);
+    NotificationController::clientFrom(context).requestPermission(context, callback);
 }
 
 bool Notification::dispatchEvent(PassRefPtrWillBeRawPtr<Event> event)

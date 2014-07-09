@@ -83,6 +83,7 @@ class WebMediaStreamCenter;
 class WebMediaStreamCenterClient;
 class WebMessagePortChannel;
 class WebMimeRegistry;
+class WebNotificationPresenter;
 class WebPluginListBuilder;
 class WebPrescientNetworking;
 class WebPublicSuffixList;
@@ -633,6 +634,11 @@ public:
     // WebDatabase --------------------------------------------------------
 
     virtual WebDatabaseObserver* databaseObserver() { return 0; }
+
+
+    // Web Notifications --------------------------------------------------
+
+    virtual WebNotificationPresenter* notificationPresenter() { return 0; }
 
 
 protected:

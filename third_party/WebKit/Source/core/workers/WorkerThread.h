@@ -42,7 +42,6 @@ class WebWaitableEvent;
 namespace WebCore {
 
     class KURL;
-    class NotificationClient;
     class WorkerGlobalScope;
     class WorkerLoaderProxy;
     class WorkerReportingProxy;
@@ -68,9 +67,6 @@ namespace WebCore {
 
         // Number of active worker threads.
         static unsigned workerThreadCount();
-
-        NotificationClient* getNotificationClient() { return m_notificationClient; }
-        void setNotificationClient(NotificationClient* client) { m_notificationClient = client; }
 
     protected:
         WorkerThread(WorkerLoaderProxy&, WorkerReportingProxy&, PassOwnPtrWillBeRawPtr<WorkerThreadStartupData>);
@@ -98,8 +94,6 @@ namespace WebCore {
         Mutex m_threadCreationMutex;
 
         OwnPtrWillBePersistent<WorkerThreadStartupData> m_startupData;
-
-        NotificationClient* m_notificationClient;
 
         // Used to signal thread shutdown.
         OwnPtr<blink::WebWaitableEvent> m_shutdownEvent;

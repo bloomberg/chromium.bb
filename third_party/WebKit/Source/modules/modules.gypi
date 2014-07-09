@@ -588,6 +588,8 @@
       'notifications/NotificationController.cpp',
       'notifications/NotificationController.h',
       'notifications/NotificationPermissionCallback.h',
+      'notifications/NotificationPermissionClient.cpp',
+      'notifications/NotificationPermissionClient.h',
       'performance/SharedWorkerPerformance.cpp',
       'performance/WorkerGlobalScopePerformance.cpp',
       'performance/WorkerGlobalScopePerformance.h',

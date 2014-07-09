@@ -31,6 +31,8 @@
 #ifndef WebNotificationPermissionCallback_h
 #define WebNotificationPermissionCallback_h
 
+#include "public/web/WebNotificationPresenter.h"
+
 namespace blink {
 
 // Callback object used with WebNotificationPresenter.
@@ -38,6 +40,9 @@ class WebNotificationPermissionCallback {
 public:
     // Method to be invoked when the async permission request involving
     // this object has been completed.
+    virtual void permissionRequestComplete(WebNotificationPresenter::Permission) = 0;
+
+    // FIXME: Deprecated. Use the version with expecting an argument instead.
     virtual void permissionRequestComplete() = 0;
 
 protected:

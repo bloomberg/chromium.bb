@@ -52,7 +52,14 @@ public:
     {
     }
 
-    virtual void permissionRequestComplete()
+    virtual void permissionRequestComplete(WebNotificationPresenter::Permission permission) OVERRIDE
+    {
+        if (m_callback)
+            m_callback->handleEvent(Notification::permissionString(static_cast<NotificationClient::Permission>(permission)));
+        delete this;
+    }
+
+    virtual void permissionRequestComplete() OVERRIDE
     {
         if (m_callback)
             m_callback->handleEvent(Notification::permissionString(static_cast<NotificationClient::Permission>(m_presenter->checkPermission(WebSecurityOrigin(m_securityOrigin)))));

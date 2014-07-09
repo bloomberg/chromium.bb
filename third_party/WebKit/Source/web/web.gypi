@@ -59,6 +59,8 @@
       'MIDIClientProxy.h',
       'NavigatorContentUtilsClientImpl.cpp',
       'NavigatorContentUtilsClientImpl.h',
+      'NotificationPermissionClientImpl.cpp',
+      'NotificationPermissionClientImpl.h',
       'NotificationPresenterImpl.cpp',
       'NotificationPresenterImpl.h',
       'OpenedFrameTracker.cpp',
