@@ -457,12 +457,6 @@ bool Validator::ValidateToplevelConfiguration(base::DictionaryValue* result) {
   if (FieldExistsAndHasNoValidValue(*result, kType, valid_types))
     return false;
 
-  // Not part of the ONC spec:
-  // - We don't require the type field (we assume that it's an
-  //   UnencryptedConfiguration then).
-  // - We don't require specific toplevel objects to be present (e.g. at least
-  //   one of NetworkConfiguration or Certificates).
-
   if (IsGlobalNetworkConfigInUserImport(*result))
     return false;
 

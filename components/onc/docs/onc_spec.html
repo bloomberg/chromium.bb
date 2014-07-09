@@ -189,7 +189,8 @@
     <dt class="field">Type</dt>
     <dd>
       <span class="field_meta">
-        (required)
+        (optional, defaults to <span class="value">UnencryptedConfiguration
+         </span>)
         <span class="type">string</span>
       </span>
       Must be <span class="value">UnencryptedConfiguration</span>.
@@ -214,9 +215,10 @@
     </dd>
   </dl>
 
-  Besides the field <span class="field">Type</span>, at least one other field
+  At least one actual configuration field
   (<span class="field">NetworkConfigurations</span> or
-   <span class="field">Certificates</span>) should be present.
+   <span class="field">Certificates</span>) should be present, however it should
+  not be considered an error if no such field is present.
 
 <section>
   <h1>Network Configuration</h1>
