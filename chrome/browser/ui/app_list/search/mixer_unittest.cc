@@ -20,14 +20,14 @@ namespace test {
 
 class TestSearchResult : public ChromeSearchResult {
  public:
-  TestSearchResult(const std::string& id, double relevance) {
+  TestSearchResult(const std::string& id, double relevance)
+      : instance_id_(instantiation_count++) {
     set_id(id);
     set_title(base::UTF8ToUTF16(id));
     set_relevance(relevance);
   }
   virtual ~TestSearchResult() {}
 
- private:
   // ChromeSearchResult overides:
   virtual void Open(int event_flags) OVERRIDE {}
   virtual void InvokeAction(int action_index, int event_flags) OVERRIDE {}
@@ -39,8 +39,21 @@ class TestSearchResult : public ChromeSearchResult {
     return SEARCH_RESULT_TYPE_BOUNDARY;
   }
 
+  // For reference equality testing. (Addresses cannot be used to test reference
+  // equality because it is possible that an object will be allocated at the
+  // same address as a previously deleted one.)
+  static int GetInstanceId(SearchResult* result) {
+    return static_cast<const TestSearchResult*>(result)->instance_id_;
+  }
+
+ private:
+  static int instantiation_count;
+
+  int instance_id_;
+
   DISALLOW_COPY_AND_ASSIGN(TestSearchResult);
 };
+int TestSearchResult::instantiation_count = 0;
 
 class TestSearchProvider : public SearchProvider {
  public:
@@ -180,6 +193,69 @@ TEST_F(MixerTest, RemoveDuplicates) {
 
   // Only three results with unique id are kept.
   EXPECT_EQ("dup0,dup1,dup2", GetResults());
+}
+
+TEST_F(MixerTest, Publish) {
+  scoped_ptr<ChromeSearchResult> result1(new TestSearchResult("app1", 0));
+  scoped_ptr<ChromeSearchResult> result2(new TestSearchResult("app2", 0));
+  scoped_ptr<ChromeSearchResult> result3(new TestSearchResult("app3", 0));
+  scoped_ptr<ChromeSearchResult> result3_copy = result3->Duplicate();
+  scoped_ptr<ChromeSearchResult> result4(new TestSearchResult("app4", 0));
+
+  AppListModel::SearchResults ui_results;
+
+  // Publish the first three results to |ui_results|.
+  Mixer::SortedResults new_results;
+  new_results.push_back(Mixer::SortData(result1.get(), 1.0f));
+  new_results.push_back(Mixer::SortData(result2.get(), 1.0f));
+  new_results.push_back(Mixer::SortData(result3.get(), 1.0f));
+
+  Mixer::Publish(new_results, &ui_results);
+  EXPECT_EQ(3u, ui_results.item_count());
+  // The objects in |ui_results| should be new copies because the input results
+  // are owned and |ui_results| needs to own its results as well.
+  EXPECT_NE(TestSearchResult::GetInstanceId(new_results[0].result),
+            TestSearchResult::GetInstanceId(ui_results.GetItemAt(0)));
+  EXPECT_NE(TestSearchResult::GetInstanceId(new_results[1].result),
+            TestSearchResult::GetInstanceId(ui_results.GetItemAt(1)));
+  EXPECT_NE(TestSearchResult::GetInstanceId(new_results[2].result),
+            TestSearchResult::GetInstanceId(ui_results.GetItemAt(2)));
+
+  // Save the current |ui_results| instance ids for comparison later.
+  std::vector<int> old_ui_result_ids;
+  for (size_t i = 0; i < ui_results.item_count(); ++i) {
+    old_ui_result_ids.push_back(
+        TestSearchResult::GetInstanceId(ui_results.GetItemAt(i)));
+  }
+
+  // Change the first result to a totally new object (with a new ID).
+  new_results[0] = Mixer::SortData(result4.get(), 1.0f);
+
+  // Change the second result's title, but keep the same id. (The result will
+  // keep the id "app2" but change its title to "New App 2 Title".)
+  const base::string16 kNewAppTitle = base::UTF8ToUTF16("New App 2 Title");
+  new_results[1].result->set_title(kNewAppTitle);
+
+  // Change the third result's object address (it points to an object with the
+  // same data).
+  new_results[2] = Mixer::SortData(result3_copy.get(), 1.0f);
+
+  Mixer::Publish(new_results, &ui_results);
+  EXPECT_EQ(3u, ui_results.item_count());
+
+  // The first result will be a new object, as the ID has changed.
+  EXPECT_NE(old_ui_result_ids[0],
+            TestSearchResult::GetInstanceId(ui_results.GetItemAt(0)));
+
+  // The second result will still use the original object, but have a different
+  // title, since the ID did not change.
+  EXPECT_EQ(old_ui_result_ids[1],
+            TestSearchResult::GetInstanceId(ui_results.GetItemAt(1)));
+  EXPECT_EQ(kNewAppTitle, ui_results.GetItemAt(1)->title());
+
+  // The third result will use the original object as the ID did not change.
+  EXPECT_EQ(old_ui_result_ids[2],
+            TestSearchResult::GetInstanceId(ui_results.GetItemAt(2)));
 }
 
 }  // namespace test

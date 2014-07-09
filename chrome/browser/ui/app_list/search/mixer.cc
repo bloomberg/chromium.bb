@@ -25,74 +25,19 @@ const size_t kMaxPeopleResults = 2;
 // A value to indicate no max number of results limit.
 const size_t kNoMaxResultsLimit = 0;
 
-// Used for sorting and mixing results.
-struct SortData {
-  SortData()
-      : result(NULL),
-        score(0.0) {
-  }
-  SortData(ChromeSearchResult* result, double score)
-      : result(result),
-        score(score) {
-  }
-
-  bool operator<(const SortData& other) const {
-    // This data precedes (less than) |other| if it has higher score.
-    return score > other.score;
-  }
-
-  ChromeSearchResult* result;  // Not owned.
-  double score;
-};
-typedef std::vector<SortData> SortedResults;
-
-// Removes duplicates from |results|.
-void RemoveDuplicates(SortedResults* results) {
-  SortedResults final;
-  final.reserve(results->size());
-
-  std::set<std::string> id_set;
-  for (SortedResults::iterator it = results->begin();
-       it != results->end();
-       ++it) {
-    const std::string& id = it->result->id();
-    if (id_set.find(id) != id_set.end())
-      continue;
-
-    id_set.insert(id);
-    final.push_back(*it);
-  }
-
-  results->swap(final);
-}
-
-// Publishes the given |results| to |ui_results|. Reuse existing ones to avoid
-// flickering.
-void Publish(const SortedResults& results,
-             AppListModel::SearchResults* ui_results) {
-  for (size_t i = 0; i < results.size(); ++i) {
-    ChromeSearchResult* result = results[i].result;
-
-    ChromeSearchResult* ui_result = i < ui_results->item_count() ?
-        static_cast<ChromeSearchResult*>(ui_results->GetItemAt(i)) : NULL;
-    if (ui_result && ui_result->id() == result->id()) {
-      ui_result->set_title(result->title());
-      ui_result->set_title_tags(result->title_tags());
-      ui_result->set_details(result->details());
-      ui_result->set_details_tags(result->details_tags());
-      ui_results->NotifyItemsChanged(i, 1);
-    } else {
-      if (ui_result)
-        ui_results->DeleteAt(i);
-      ui_results->AddAt(i, result->Duplicate().release());
-    }
-  }
-
-  while (ui_results->item_count() > results.size())
-    ui_results->DeleteAt(ui_results->item_count() - 1);
-}
-
 }  // namespace
+
+Mixer::SortData::SortData() : result(NULL), score(0.0) {
+}
+
+Mixer::SortData::SortData(ChromeSearchResult* result, double score)
+    : result(result), score(score) {
+}
+
+bool Mixer::SortData::operator<(const SortData& other) const {
+  // This data precedes (less than) |other| if it has higher score.
+  return score > other.score;
+}
 
 // Used to group relevant providers together fox mixing their results.
 class Mixer::Group {
@@ -224,6 +169,50 @@ void Mixer::MixAndPublish(const KnownResults& known_results) {
     results.resize(kMaxResults);
 
   Publish(results, ui_results_);
+}
+
+void Mixer::Publish(const SortedResults& results,
+                    AppListModel::SearchResults* ui_results) {
+  for (size_t i = 0; i < results.size(); ++i) {
+    ChromeSearchResult* result = results[i].result;
+
+    ChromeSearchResult* ui_result =
+        i < ui_results->item_count()
+            ? static_cast<ChromeSearchResult*>(ui_results->GetItemAt(i))
+            : NULL;
+    if (ui_result && ui_result->id() == result->id()) {
+      ui_result->set_title(result->title());
+      ui_result->set_title_tags(result->title_tags());
+      ui_result->set_details(result->details());
+      ui_result->set_details_tags(result->details_tags());
+      ui_results->NotifyItemsChanged(i, 1);
+    } else {
+      if (ui_result)
+        ui_results->DeleteAt(i);
+      ui_results->AddAt(i, result->Duplicate().release());
+    }
+  }
+
+  while (ui_results->item_count() > results.size())
+    ui_results->DeleteAt(ui_results->item_count() - 1);
+}
+
+void Mixer::RemoveDuplicates(SortedResults* results) {
+  SortedResults final;
+  final.reserve(results->size());
+
+  std::set<std::string> id_set;
+  for (SortedResults::iterator it = results->begin(); it != results->end();
+       ++it) {
+    const std::string& id = it->result->id();
+    if (id_set.find(id) != id_set.end())
+      continue;
+
+    id_set.insert(id);
+    final.push_back(*it);
+  }
+
+  results->swap(final);
 }
 
 void Mixer::FetchResults(const KnownResults& known_results) {
