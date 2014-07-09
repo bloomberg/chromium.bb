@@ -11,6 +11,7 @@
 
 class Browser;
 class ExtensionInfoBarDelegate;
+class ExtensionViewViews;
 
 namespace views {
 class ImageView;
@@ -39,6 +40,7 @@ class ExtensionInfoBar : public InfoBarView,
   void OnImageLoaded(const gfx::Image& image);
   ExtensionInfoBarDelegate* GetDelegate();
   const ExtensionInfoBarDelegate* GetDelegate() const;
+  ExtensionViewViews* GetExtensionView();
 
   // Returns the width of all content other than the extension view.  Layout()
   // uses this to determine how much space the extension view can take.

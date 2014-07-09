@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/views/extensions/extension_view_views.h"
 
+#include "chrome/browser/extensions/extension_view_host.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/views/extensions/extension_popup.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/render_view_host.h"
@@ -71,16 +73,24 @@ void ExtensionViewViews::ViewHierarchyChanged(
     CreateWidgetHostView();
 }
 
-void ExtensionViewViews::DidStopLoading() {
-  ShowIfCompletelyLoaded();
-}
-
 void ExtensionViewViews::SetIsClipped(bool is_clipped) {
   if (is_clipped_ != is_clipped) {
     is_clipped_ = is_clipped;
     if (visible())
       ShowIfCompletelyLoaded();
   }
+}
+
+void ExtensionViewViews::Init() {
+  // Initialization continues in ViewHierarchyChanged().
+}
+
+Browser* ExtensionViewViews::GetBrowser() {
+  return browser_;
+}
+
+gfx::NativeView ExtensionViewViews::GetNativeView() {
+  return native_view();
 }
 
 void ExtensionViewViews::ResizeDueToAutoResize(const gfx::Size& new_size) {
@@ -105,9 +115,20 @@ void ExtensionViewViews::RenderViewCreated() {
 }
 
 void ExtensionViewViews::HandleKeyboardEvent(
+    content::WebContents* source,
     const content::NativeWebKeyboardEvent& event) {
+  if (browser_) {
+    // Handle lower priority browser shortcuts such as Ctrl-f.
+    browser_->HandleKeyboardEvent(source, event);
+    return;
+  }
+
   unhandled_keyboard_event_handler_.HandleKeyboardEvent(event,
                                                         GetFocusManager());
+}
+
+void ExtensionViewViews::DidStopLoading() {
+  ShowIfCompletelyLoaded();
 }
 
 bool ExtensionViewViews::SkipDefaultKeyEventProcessing(const ui::KeyEvent& e) {
@@ -163,3 +184,18 @@ void ExtensionViewViews::CleanUp() {
     Detach();
   initialized_ = false;
 }
+
+namespace extensions {
+
+// static
+scoped_ptr<ExtensionView> ExtensionViewHost::CreateExtensionView(
+    ExtensionViewHost* host,
+    Browser* browser) {
+  scoped_ptr<ExtensionViewViews> view(new ExtensionViewViews(host, browser));
+  // We own |view_|, so don't auto delete when it's removed from the view
+  // hierarchy.
+  view->set_owned_by_client();
+  return view.PassAs<ExtensionView>();
+}
+
+}  // namespace extensions

@@ -10,14 +10,6 @@
 #include "components/web_modal/web_contents_modal_dialog_manager_delegate.h"
 #include "extensions/browser/extension_host.h"
 
-#if defined(TOOLKIT_VIEWS)
-#include "chrome/browser/ui/views/extensions/extension_view_views.h"
-#elif defined(OS_MACOSX)
-#include "chrome/browser/ui/cocoa/extensions/extension_view_mac.h"
-#elif defined(OS_ANDROID)
-#include "chrome/browser/ui/android/extensions/extension_view_android.h"
-#endif
-
 class Browser;
 
 namespace content {
@@ -26,6 +18,8 @@ class WebContents;
 }
 
 namespace extensions {
+
+class ExtensionView;
 
 // The ExtensionHost for an extension that backs a view in the browser UI. For
 // example, this could be an extension popup, infobar or dialog, but not a
@@ -41,18 +35,8 @@ class ExtensionViewHost
                     ViewType host_type);
   virtual ~ExtensionViewHost();
 
-  // TODO(jamescook): Create platform specific subclasses?
-#if defined(TOOLKIT_VIEWS)
-  typedef ExtensionViewViews PlatformExtensionView;
-#elif defined(OS_MACOSX)
-  typedef ExtensionViewMac PlatformExtensionView;
-#elif defined(OS_ANDROID)
-  // Android does not support extensions.
-  typedef ExtensionViewAndroid PlatformExtensionView;
-#endif
-
-  PlatformExtensionView* view() { return view_.get(); }
-  const PlatformExtensionView* view() const { return view_.get(); }
+  ExtensionView* view() { return view_.get(); }
+  const ExtensionView* view() const { return view_.get(); }
 
   // Create an ExtensionView and tie it to this host and |browser|.  Note NULL
   // is a valid argument for |browser|.  Extension views may be bound to
@@ -129,11 +113,15 @@ class ExtensionViewHost
                        const content::NotificationDetails& details) OVERRIDE;
 
  private:
+  // Implemented per-platform. Create the platform-specific ExtensionView.
+  static scoped_ptr<ExtensionView> CreateExtensionView(ExtensionViewHost* host,
+                                                       Browser* browser);
+
   // Insert a default style sheet for Extension Infobars.
   void InsertInfobarCSS();
 
   // Optional view that shows the rendered content in the UI.
-  scoped_ptr<PlatformExtensionView> view_;
+  scoped_ptr<ExtensionView> view_;
 
   // The relevant WebContents associated with this ExtensionViewHost, if any.
   content::WebContents* associated_web_contents_;

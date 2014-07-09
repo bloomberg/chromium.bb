@@ -6,6 +6,7 @@
 
 #include "base/strings/string_piece.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/extensions/extension_view.h"
 #include "chrome/browser/extensions/window_controller.h"
 #include "chrome/browser/file_select_helper.h"
 #include "chrome/browser/platform_util.h"
@@ -76,18 +77,8 @@ ExtensionViewHost::~ExtensionViewHost() {
 }
 
 void ExtensionViewHost::CreateView(Browser* browser) {
-#if defined(TOOLKIT_VIEWS)
-  view_.reset(new ExtensionViewViews(this, browser));
-  // We own |view_|, so don't auto delete when it's removed from the view
-  // hierarchy.
-  view_->set_owned_by_client();
-#elif defined(OS_MACOSX)
-  view_.reset(new ExtensionViewMac(this, browser));
+  view_ = CreateExtensionView(this, browser);
   view_->Init();
-#else
-  // TODO(port)
-  NOTREACHED();
-#endif
 }
 
 void ExtensionViewHost::SetAssociatedWebContents(WebContents* web_contents) {
@@ -104,28 +95,14 @@ void ExtensionViewHost::SetAssociatedWebContents(WebContents* web_contents) {
 void ExtensionViewHost::UnhandledKeyboardEvent(
     WebContents* source,
     const content::NativeWebKeyboardEvent& event) {
-  Browser* browser = view_->browser();
-  if (browser) {
-    // Handle lower priority browser shortcuts such as Ctrl-f.
-    return browser->HandleKeyboardEvent(source, event);
-  } else {
-#if defined(TOOLKIT_VIEWS)
-    // In case there's no Browser (e.g. for dialogs), pass it to
-    // ExtensionViewViews to handle accelerators. The view's FocusManager does
-    // not know anything about Browser accelerators, but might know others such
-    // as Ash's.
-    view_->HandleKeyboardEvent(event);
-#endif
-  }
+  view_->HandleKeyboardEvent(source, event);
 }
 
 // ExtensionHost overrides:
 
 void ExtensionViewHost::OnDidStopLoading() {
   DCHECK(did_stop_loading());
-#if defined(TOOLKIT_VIEWS) || defined(OS_MACOSX)
   view_->DidStopLoading();
-#endif
 }
 
 void ExtensionViewHost::OnDocumentAvailable() {
@@ -176,7 +153,7 @@ WebContents* ExtensionViewHost::OpenURLFromTab(
     case OFF_THE_RECORD: {
       // Only allow these from hosts that are bound to a browser (e.g. popups).
       // Otherwise they are not driven by a user gesture.
-      Browser* browser = view_->browser();
+      Browser* browser = view_->GetBrowser();
       return browser ? browser->OpenURL(params) : NULL;
     }
     default:
@@ -197,7 +174,7 @@ bool ExtensionViewHost::PreHandleKeyboardEvent(
   }
 
   // Handle higher priority browser shortcuts such as Ctrl-w.
-  Browser* browser = view_->browser();
+  Browser* browser = view_->GetBrowser();
   if (browser)
     return browser->PreHandleKeyboardEvent(source, event, is_keyboard_shortcut);
 
@@ -279,7 +256,7 @@ bool ExtensionViewHost::IsWebContentsVisible(WebContents* web_contents) {
 }
 
 gfx::NativeView ExtensionViewHost::GetHostView() const {
-  return view_->native_view();
+  return view_->GetNativeView();
 }
 
 gfx::Point ExtensionViewHost::GetDialogPosition(const gfx::Size& size) {
@@ -306,8 +283,8 @@ void ExtensionViewHost::RemoveObserver(
 }
 
 WindowController* ExtensionViewHost::GetExtensionWindowController() const {
-  return view_->browser() ? view_->browser()->extension_window_controller()
-                          : NULL;
+  Browser* browser = view_->GetBrowser();
+  return browser ? browser->extension_window_controller() : NULL;
 }
 
 WebContents* ExtensionViewHost::GetAssociatedWebContents() const {

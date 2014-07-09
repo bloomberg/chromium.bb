@@ -25,6 +25,14 @@
 #include "ui/wm/core/window_util.h"
 #include "ui/wm/public/activation_client.h"
 
+namespace {
+
+ExtensionViewViews* GetExtensionView(extensions::ExtensionViewHost* host) {
+  return static_cast<ExtensionViewViews*>(host->view());
+}
+
+}  // namespace
+
 // The minimum/maximum dimensions of the popup.
 // The minimum is just a little larger than the size of the button itself.
 // The maximum is an arbitrary number that should be smaller than most screens.
@@ -47,8 +55,8 @@ ExtensionPopup::ExtensionPopup(extensions::ExtensionViewHost* host,
   const int margin = views::BubbleBorder::GetCornerRadius() / 2;
   set_margins(gfx::Insets(margin, margin, margin, margin));
   SetLayoutManager(new views::FillLayout());
-  AddChildView(host->view());
-  host->view()->set_container(this);
+  AddChildView(GetExtensionView(host));
+  GetExtensionView(host)->set_container(this);
   // ExtensionPopup closes itself on very specific de-activation conditions.
   set_close_on_deactivate(false);
 
@@ -62,14 +70,15 @@ ExtensionPopup::ExtensionPopup(extensions::ExtensionViewHost* host,
   content::DevToolsManager::GetInstance()->AddAgentStateCallback(
       devtools_callback_);
 
-  host_->view()->browser()->tab_strip_model()->AddObserver(this);
+  GetExtensionView(host)->GetBrowser()->tab_strip_model()->AddObserver(this);
 }
 
 ExtensionPopup::~ExtensionPopup() {
   content::DevToolsManager::GetInstance()->RemoveAgentStateCallback(
       devtools_callback_);
 
-  host_->view()->browser()->tab_strip_model()->RemoveObserver(this);
+  GetExtensionView(
+      host_.get())->GetBrowser()->tab_strip_model()->RemoveObserver(this);
 }
 
 void ExtensionPopup::Observe(int type,

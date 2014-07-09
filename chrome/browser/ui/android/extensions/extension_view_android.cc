@@ -2,14 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/android/extensions/extension_view_android.h"
+#include "chrome/browser/extensions/extension_view.h"
+#include "chrome/browser/extensions/extension_view_host.h"
 
-#include "base/logging.h"
+namespace extensions {
 
-void ExtensionViewAndroid::ResizeDueToAutoResize(const gfx::Size& new_size) {
+// static
+scoped_ptr<ExtensionView> ExtensionViewHost::CreateExtensionView(
+    ExtensionViewHost* host,
+    Browser* browser) {
   NOTIMPLEMENTED();
+  return scoped_ptr<ExtensionView>();
 }
 
-void ExtensionViewAndroid::RenderViewCreated() {
-  NOTIMPLEMENTED();
-}
+}  // namespace extensions

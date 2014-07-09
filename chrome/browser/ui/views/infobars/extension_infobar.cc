@@ -8,6 +8,7 @@
 #include "chrome/browser/extensions/extension_infobar_delegate.h"
 #include "chrome/browser/extensions/extension_view_host.h"
 #include "chrome/browser/platform_util.h"
+#include "chrome/browser/ui/views/extensions/extension_view_views.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "extensions/browser/image_loader.h"
 #include "extensions/common/constants.h"
@@ -99,8 +100,7 @@ void ExtensionInfoBar::Layout() {
   InfoBarView::Layout();
 
   infobar_icon_->SetPosition(gfx::Point(StartX(), OffsetY(infobar_icon_)));
-  ExtensionViewViews* extension_view =
-      GetDelegate()->extension_view_host()->view();
+  ExtensionViewViews* extension_view = GetExtensionView();
   // TODO(pkasting): We'd like to simply set the extension view's desired height
   // at creation time and position using OffsetY() like for other infobar items,
   // but the NativeViewHost inside does not seem to be clipped by the ClipRect()
@@ -143,8 +143,8 @@ void ExtensionInfoBar::ViewHierarchyChanged(
   // AddChildView() call triggers InfoBarView::ViewHierarchyChanged(), it can
   // read the correct height off this object in order to calculate the overall
   // desired infobar height.
-  extension_view_host->view()->SetSize(gfx::Size(0, GetDelegate()->height()));
-  AddChildView(extension_view_host->view());
+  GetExtensionView()->SetSize(gfx::Size(0, GetDelegate()->height()));
+  AddChildView(GetExtensionView());
 
   // This must happen after adding all other children so InfoBarView can ensure
   // the close button is the last child.
@@ -170,9 +170,8 @@ void ExtensionInfoBar::ViewHierarchyChanged(
 }
 
 int ExtensionInfoBar::ContentMinimumWidth() const {
-  return NonExtensionViewWidth() +
-      delegate()->AsExtensionInfoBarDelegate()->extension_view_host()->
-      view()->GetMinimumSize().width();
+  return NonExtensionViewWidth() + static_cast<const ExtensionViewViews*>(
+      GetDelegate()->extension_view_host()->view())->GetMinimumSize().width();
 }
 
 void ExtensionInfoBar::OnMenuButtonClicked(views::View* source,
@@ -225,6 +224,11 @@ ExtensionInfoBarDelegate* ExtensionInfoBar::GetDelegate() {
 
 const ExtensionInfoBarDelegate* ExtensionInfoBar::GetDelegate() const {
   return delegate()->AsExtensionInfoBarDelegate();
+}
+
+ExtensionViewViews* ExtensionInfoBar::GetExtensionView() {
+  return static_cast<ExtensionViewViews*>(
+      GetDelegate()->extension_view_host()->view());
 }
 
 int ExtensionInfoBar::NonExtensionViewWidth() const {

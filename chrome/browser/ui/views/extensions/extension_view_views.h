@@ -7,6 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "chrome/browser/extensions/extension_view.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "extensions/browser/extension_host.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -20,7 +21,8 @@ class RenderViewHost;
 }
 
 // This handles the display portion of an ExtensionHost.
-class ExtensionViewViews : public views::NativeViewHost {
+class ExtensionViewViews : public views::NativeViewHost,
+                           public extensions::ExtensionView {
  public:
   // A class that represents the container that this view is in.
   // (bottom shelf, side bar, etc.)
@@ -46,24 +48,23 @@ class ExtensionViewViews : public views::NativeViewHost {
   content::RenderViewHost* render_view_host() const {
     return host_->render_view_host();
   }
-  Browser* browser() const { return browser_; }
   void set_minimum_size(const gfx::Size& minimum_size) {
     minimum_size_ = minimum_size;
   }
   void set_container(Container* container) { container_ = container; }
 
-  void DidStopLoading();
   void SetIsClipped(bool is_clipped);
 
-  // Notification from ExtensionHost.
-  void ResizeDueToAutoResize(const gfx::Size& new_size);
-
-  // Method for the ExtensionHost to notify us when the RenderViewHost has a
-  // connection.
-  void RenderViewCreated();
-
-  // Handles unhandled keyboard messages coming back from the renderer process.
-  void HandleKeyboardEvent(const content::NativeWebKeyboardEvent& event);
+  // extensions::ExtensionView:
+  virtual void Init() OVERRIDE;
+  virtual Browser* GetBrowser() OVERRIDE;
+  virtual gfx::NativeView GetNativeView() OVERRIDE;
+  virtual void ResizeDueToAutoResize(const gfx::Size& new_size) OVERRIDE;
+  virtual void RenderViewCreated() OVERRIDE;
+  virtual void HandleKeyboardEvent(
+      content::WebContents* source,
+      const content::NativeWebKeyboardEvent& event) OVERRIDE;
+  virtual void DidStopLoading() OVERRIDE;
 
  private:
   friend class extensions::ExtensionHost;

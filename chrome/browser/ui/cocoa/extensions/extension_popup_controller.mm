@@ -60,6 +60,10 @@ CGFloat Clamp(CGFloat value, CGFloat min, CGFloat max) {
 
 // Called when the extension view is shown.
 - (void)onViewDidShow;
+
+// Called when the window moves or resizes. Notifies the extension.
+- (void)onWindowChanged;
+
 @end
 
 class ExtensionPopupContainer : public ExtensionViewMac::Container {
@@ -171,9 +175,10 @@ class DevtoolsNotificationBridge : public content::NotificationObserver {
     InfoBubbleView* view = self.bubble;
     [view setArrowLocation:arrowLocation];
 
-    extensionView_ = host->view()->native_view();
+    extensionView_ = host->view()->GetNativeView();
     container_.reset(new ExtensionPopupContainer(self));
-    host->view()->set_container(container_.get());
+    static_cast<ExtensionViewMac*>(host->view())
+        ->set_container(container_.get());
 
     NSNotificationCenter* center = [NSNotificationCenter defaultCenter];
     [center addObserver:self
@@ -224,7 +229,7 @@ class DevtoolsNotificationBridge : public content::NotificationObserver {
   if (gPopup == self)
     gPopup = nil;
   if (host_->view())
-    host_->view()->set_container(NULL);
+    static_cast<ExtensionViewMac*>(host_->view())->set_container(NULL);
   host_.reset();
 }
 
@@ -397,16 +402,20 @@ class DevtoolsNotificationBridge : public content::NotificationObserver {
   [self onSizeChanged:pendingSize_];
 }
 
-- (void)windowDidResize:(NSNotification*)notification {
+- (void)onWindowChanged {
+  ExtensionViewMac* extensionView =
+      static_cast<ExtensionViewMac*>(host_->view());
   // Let the extension view know, so that it can tell plugins.
-  if (host_->view())
-    host_->view()->WindowFrameChanged();
+  if (extensionView)
+    extensionView->WindowFrameChanged();
+}
+
+- (void)windowDidResize:(NSNotification*)notification {
+  [self onWindowChanged];
 }
 
 - (void)windowDidMove:(NSNotification*)notification {
-  // Let the extension view know, so that it can tell plugins.
-  if (host_->view())
-    host_->view()->WindowFrameChanged();
+  [self onWindowChanged];
 }
 
 // Private (TestingAPI)

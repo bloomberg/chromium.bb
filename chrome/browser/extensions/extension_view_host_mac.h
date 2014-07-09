@@ -17,18 +17,13 @@ class Extension;
 class ExtensionViewHostMac : public ExtensionViewHost {
  public:
   ExtensionViewHostMac(const Extension* extension,
-                   content::SiteInstance* site_instance,
-                   const GURL& url,
-                   ViewType host_type) :
-      ExtensionViewHost(extension, site_instance, url, host_type) {}
+                       content::SiteInstance* site_instance,
+                       const GURL& url,
+                       ViewType host_type)
+      : ExtensionViewHost(extension, site_instance, url, host_type) {}
   virtual ~ExtensionViewHostMac();
 
  private:
-  // ExtensionViewHost overrides:
-  virtual void UnhandledKeyboardEvent(
-      content::WebContents* source,
-      const content::NativeWebKeyboardEvent& event) OVERRIDE;
-
   DISALLOW_COPY_AND_ASSIGN(ExtensionViewHostMac);
 };
 

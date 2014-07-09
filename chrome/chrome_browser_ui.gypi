@@ -42,7 +42,6 @@
       'browser/ui/android/extensions/extension_install_ui_android.cc',
       'browser/ui/android/extensions/extension_install_ui_android.h',
       'browser/ui/android/extensions/extension_view_android.cc',
-      'browser/ui/android/extensions/extension_view_android.h',
       'browser/ui/android/external_protocol_dialog_android.cc',
       'browser/ui/android/javascript_app_modal_dialog_android.cc',
       'browser/ui/android/login_prompt_android.cc',
