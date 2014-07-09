@@ -9,6 +9,7 @@ from metrics import Metric
 from metrics import histogram_util
 
 from telemetry.core import util
+from telemetry.value import scalar
 
 
 class StartupMetric(Metric):
@@ -84,8 +85,9 @@ class StartupMetric(Metric):
     foreground_tab_stats = tab_load_times[0]
     foreground_tab_load_complete = ((foreground_tab_stats.load_start_ms +
         foreground_tab_stats.load_duration_ms) - browser_main_entry_time_ms)
-    results.Add(
-        'foreground_tab_load_complete', 'ms', foreground_tab_load_complete)
+    results.AddValue(scalar.ScalarValue(
+        results.current_page, 'foreground_tab_load_complete', 'ms',
+        foreground_tab_load_complete))
 
   def AddResults(self, tab, results):
     get_histogram_js = 'statsCollectionController.getBrowserHistogram("%s")'
@@ -103,7 +105,8 @@ class StartupMetric(Metric):
         measured_time = \
             (result['buckets'][0]['high'] + result['buckets'][0]['low']) / 2
 
-      results.Add(display_name, 'ms', measured_time)
+      results.AddValue(scalar.ScalarValue(
+          results.current_page, display_name, 'ms', measured_time))
 
     # Get tab load times.
     browser_main_entry_time_ms = self._GetBrowserMainEntryTime(tab)
