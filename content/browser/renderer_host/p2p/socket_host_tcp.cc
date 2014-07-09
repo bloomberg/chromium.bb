@@ -83,14 +83,16 @@ bool P2PSocketHostTcpBase::Init(const net::IPEndPoint& local_address,
   remote_address_ = remote_address;
   state_ = STATE_CONNECTING;
 
-  net::HostPortPair dest_host_port_pair =
-      net::HostPortPair::FromIPEndPoint(remote_address.ip_address);
+  net::HostPortPair dest_host_port_pair;
   // If there is no resolved address, let's try with domain name, assuming
   // socket layer will do the DNS resolve.
   if (remote_address.ip_address.address().empty()) {
     DCHECK(!remote_address.hostname.empty());
-    dest_host_port_pair = net::HostPortPair(
-      remote_address.hostname, remote_address.ip_address.port());
+    dest_host_port_pair = net::HostPortPair::FromString(
+        remote_address.hostname);
+  } else {
+    dest_host_port_pair = net::HostPortPair::FromIPEndPoint(
+        remote_address.ip_address);
   }
 
   // TODO(mallinath) - We are ignoring local_address altogether. We should
