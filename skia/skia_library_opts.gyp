@@ -225,7 +225,7 @@
       'conditions': [
         [ 'OS in ["linux", "freebsd", "openbsd", "solaris", "android"]', {
           'cflags': [
-            '-msse4',
+            '-msse4.1',
           ],
         }],
         [ 'OS == "mac"', {

@@ -136,6 +136,10 @@ config("skia_config") {
       "USE_CHROMIUM_SKIA",
     ]
   }
+
+  if (is_mac) {
+    defines += [ "SK_BUILD_FOR_MAC" ]
+  }
 }
 
 # Internal-facing config for Skia library code.
@@ -556,7 +560,7 @@ source_set("skia_opts") {
     }
 
     if (is_linux || is_mac) {
-      cflags += [ "-msse4" ]
+      cflags += [ "-msse4.1" ]
     }
   } else if (cpu_arch == "arm") {
     sources = [
