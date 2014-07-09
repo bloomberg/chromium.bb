@@ -6231,10 +6231,3 @@
    fun:_Znw*
    fun:_ZN20data_reduction_proxy69DataReductionProxyUsageStatsTest_isDataReductionProxyUnreachable_Test8TestBodyEv
 }
-{
-   bug_390108
-   Memcheck:Leak
-   fun:_Zna*
-   fun:_ZN3url17AddStandardSchemeEPKc
-   fun:_ZN36AutocompleteInputTest_InputType_Test8TestBodyEv
-}
