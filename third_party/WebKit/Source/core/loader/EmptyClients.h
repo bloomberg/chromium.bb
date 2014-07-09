@@ -248,8 +248,10 @@ public:
     virtual PassOwnPtr<blink::WebApplicationCacheHost> createApplicationCacheHost(blink::WebApplicationCacheHostClient*) OVERRIDE;
 };
 
-class EmptyTextCheckerClient FINAL : public TextCheckerClient {
+class EmptyTextCheckerClient : public TextCheckerClient {
 public:
+    ~EmptyTextCheckerClient() { }
+
     virtual bool shouldEraseMarkersAfterChangeSelection(TextCheckingType) const OVERRIDE { return true; }
     virtual void checkSpellingOfString(const String&, int*, int*) OVERRIDE { }
     virtual String getAutoCorrectSuggestionForMisspelledWord(const String&) OVERRIDE { return String(); }
@@ -257,7 +259,7 @@ public:
     virtual void requestCheckingOfString(PassRefPtr<TextCheckingRequest>) OVERRIDE;
 };
 
-class EmptySpellCheckerClient FINAL : public SpellCheckerClient {
+class EmptySpellCheckerClient : public SpellCheckerClient {
     WTF_MAKE_NONCOPYABLE(EmptySpellCheckerClient); WTF_MAKE_FAST_ALLOCATED;
 public:
     EmptySpellCheckerClient() { }

@@ -58,6 +58,17 @@ bool isSelectionInTextField(const VisibleSelection& selection)
     return isHTMLInputElement(textControl) && toHTMLInputElement(textControl)->isTextField();
 }
 
+bool isSelectionInTextArea(const VisibleSelection& selection)
+{
+    HTMLTextFormControlElement* textControl = enclosingTextFormControl(selection.start());
+    return isHTMLTextAreaElement(textControl);
+}
+
+bool isSelectionInTextFormControl(const VisibleSelection& selection)
+{
+    return !!enclosingTextFormControl(selection.start());
+}
+
 } // namespace
 
 PassOwnPtr<SpellChecker> SpellChecker::create(LocalFrame& frame)
@@ -759,8 +770,14 @@ void SpellChecker::respondToChangedSelection(const VisibleSelection& oldSelectio
         VisibleSelection newAdjacentWords;
         VisibleSelection newSelectedSentence;
         bool caretBrowsing = m_frame.settings() && m_frame.settings()->caretBrowsingEnabled();
-        if (m_frame.selection().selection().isContentEditable() || caretBrowsing) {
-            VisiblePosition newStart(m_frame.selection().selection().visibleStart());
+        const VisibleSelection newSelection = m_frame.selection().selection();
+        if (isSelectionInTextFormControl(newSelection)) {
+            Position newStart = newSelection.start();
+            newAdjacentWords.setWithoutValidation(HTMLTextFormControlElement::startOfWord(newStart), HTMLTextFormControlElement::endOfWord(newStart));
+            if (isContinuousGrammarCheckingEnabled)
+                newSelectedSentence.setWithoutValidation(HTMLTextFormControlElement::startOfSentence(newStart), HTMLTextFormControlElement::endOfSentence(newStart));
+        } else if (newSelection.isContentEditable() || caretBrowsing) {
+            VisiblePosition newStart(newSelection.visibleStart());
             newAdjacentWords = VisibleSelection(startOfWord(newStart, LeftWordIfOnBoundary), endOfWord(newStart, RightWordIfOnBoundary));
             if (isContinuousGrammarCheckingEnabled)
                 newSelectedSentence = VisibleSelection(startOfSentence(newStart), endOfSentence(newStart));
@@ -772,14 +789,19 @@ void SpellChecker::respondToChangedSelection(const VisibleSelection& oldSelectio
         // When typing we check spelling elsewhere, so don't redo it here.
         // If this is a change in selection resulting from a delete operation,
         // oldSelection may no longer be in the document.
+        // FIXME(http://crbug.com/382809): if oldSelection is on a textarea
+        // element, we cause synchronous layout.
         if (shouldCheckSpellingAndGrammar
             && closeTyping
-            && oldSelection.isContentEditable()
-            && oldSelection.start().inDocument()
-            && !isSelectionInTextField(oldSelection)) {
+            && !isSelectionInTextField(oldSelection)
+            && (isSelectionInTextArea(oldSelection) || oldSelection.isContentEditable())
+            && oldSelection.start().inDocument()) {
             spellCheckOldSelection(oldSelection, newAdjacentWords);
         }
 
+        // FIXME(http://crbug.com/382809):
+        // shouldEraseMarkersAfterChangeSelection is true, we cause synchronous
+        // layout.
         if (textChecker().shouldEraseMarkersAfterChangeSelection(TextCheckingTypeSpelling)) {
             if (RefPtrWillBeRawPtr<Range> wordRange = newAdjacentWords.toNormalizedRange())
                 m_frame.document()->markers().removeMarkers(wordRange.get(), DocumentMarker::Spelling);

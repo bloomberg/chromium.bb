@@ -60,7 +60,7 @@ class DummyPageHolder {
     WTF_MAKE_NONCOPYABLE(DummyPageHolder);
     WTF_MAKE_FAST_ALLOCATED;
 public:
-    static PassOwnPtr<DummyPageHolder> create(const IntSize& initialViewSize = IntSize());
+    static PassOwnPtr<DummyPageHolder> create(const IntSize& initialViewSize = IntSize(), Page::PageClients* = 0);
     ~DummyPageHolder();
 
     Page& page() const;
@@ -69,7 +69,7 @@ public:
     Document& document() const;
 
 private:
-    explicit DummyPageHolder(const IntSize& initialViewSize);
+    explicit DummyPageHolder(const IntSize& initialViewSize, Page::PageClients*);
 
     OwnPtrWillBePersistent<Page> m_page;
     RefPtr<LocalFrame> m_frame;

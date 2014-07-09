@@ -8,11 +8,16 @@
 #include "core/dom/Position.h"
 #include "core/dom/Text.h"
 #include "core/editing/FrameSelection.h"
+#include "core/editing/SpellChecker.h"
 #include "core/editing/VisibleSelection.h"
 #include "core/editing/VisibleUnits.h"
 #include "core/frame/FrameView.h"
 #include "core/html/HTMLBRElement.h"
 #include "core/html/HTMLDocument.h"
+#include "core/html/HTMLInputElement.h"
+#include "core/html/HTMLTextAreaElement.h"
+#include "core/loader/EmptyClients.h"
+#include "core/page/SpellCheckerClient.h"
 #include "core/rendering/RenderTreeAsText.h"
 #include "core/testing/DummyPageHolder.h"
 #include "wtf/OwnPtr.h"
@@ -26,21 +31,48 @@ class HTMLTextFormControlElementTest : public ::testing::Test {
 protected:
     virtual void SetUp() OVERRIDE;
 
+    DummyPageHolder& page() const { return *m_dummyPageHolder; }
     HTMLDocument& document() const { return *m_document; }
     HTMLTextFormControlElement& textControl() const { return *m_textControl; }
 
 private:
+    OwnPtr<SpellCheckerClient> m_spellCheckerClient;
     OwnPtr<DummyPageHolder> m_dummyPageHolder;
 
     RefPtrWillBePersistent<HTMLDocument> m_document;
     RefPtrWillBePersistent<HTMLTextFormControlElement> m_textControl;
 };
 
+class DummyTextCheckerClient : public EmptyTextCheckerClient {
+public:
+    ~DummyTextCheckerClient() { }
+
+    virtual bool shouldEraseMarkersAfterChangeSelection(TextCheckingType) const OVERRIDE { return false; }
+};
+
+class DummySpellCheckerClient : public EmptySpellCheckerClient {
+public:
+    virtual ~DummySpellCheckerClient() { }
+
+    virtual bool isContinuousSpellCheckingEnabled() OVERRIDE { return true; }
+    virtual bool isGrammarCheckingEnabled() OVERRIDE { return true; }
+
+    virtual TextCheckerClient& textChecker() OVERRIDE { return m_dummyTextCheckerClient; }
+
+private:
+    DummyTextCheckerClient m_dummyTextCheckerClient;
+};
+
 void HTMLTextFormControlElementTest::SetUp()
 {
-    m_dummyPageHolder = DummyPageHolder::create(IntSize(800, 600));
+    Page::PageClients pageClients;
+    fillWithEmptyClients(pageClients);
+    m_spellCheckerClient = adoptPtr(new DummySpellCheckerClient);
+    pageClients.spellCheckerClient = m_spellCheckerClient.get();
+    m_dummyPageHolder = DummyPageHolder::create(IntSize(800, 600), &pageClients);
+
     m_document = toHTMLDocument(&m_dummyPageHolder->document());
-    m_document->documentElement()->setInnerHTML("<body><textarea id=textarea></textarea></body>", ASSERT_NO_EXCEPTION);
+    m_document->documentElement()->setInnerHTML("<body><textarea id=textarea></textarea><input id=input /></body>", ASSERT_NO_EXCEPTION);
     m_document->view()->updateLayoutAndStyleIfNeededRecursive();
     m_textControl = toHTMLTextFormControlElement(m_document->getElementById("textarea"));
     m_textControl->focus();
@@ -131,6 +163,25 @@ TEST_F(HTMLTextFormControlElementTest, WordAndSentenceBoundary)
         innerText->appendChild(Text::create(document(), "xt form."));
         testBoundary(document(), textControl());
     }
+}
+
+TEST_F(HTMLTextFormControlElementTest, SpellCheckDoesNotCauseUpdateLayout)
+{
+    HTMLInputElement* input = toHTMLInputElement(document().getElementById("input"));
+    input->focus();
+    input->setValue("Hello, input field");
+    VisibleSelection oldSelection = document().frame()->selection().selection();
+
+    Position newPosition(input->innerEditorElement()->firstChild(), 3, Position::PositionIsOffsetInAnchor);
+    VisibleSelection newSelection(newPosition, DOWNSTREAM);
+    document().frame()->selection().setSelection(newSelection, FrameSelection::CloseTyping | FrameSelection::ClearTypingStyle | FrameSelection::DoNotUpdateAppearance);
+    ASSERT_EQ(3, input->selectionStart());
+
+    OwnPtrWillBeRawPtr<SpellChecker> spellChecker(SpellChecker::create(page().frame()));
+    page().frameView().setFrameRect(IntRect(0, 0, 801, 601));
+    int startCount = page().frameView().layoutCount();
+    spellChecker->respondToChangedSelection(oldSelection, FrameSelection::CloseTyping | FrameSelection::ClearTypingStyle);
+    EXPECT_EQ(startCount, page().frameView().layoutCount());
 }
 
 }
