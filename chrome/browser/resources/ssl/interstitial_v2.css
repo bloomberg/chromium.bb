@@ -90,6 +90,10 @@ h2 {
   width: 72px;
 }
 
+input[type=checkbox] {
+  visibility: hidden;
+}
+
 .interstitial-wrapper {
   box-sizing: border-box;
   font-size: 1em;
