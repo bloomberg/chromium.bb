@@ -62,6 +62,7 @@ MEDIA_EXPORT
 - (NSString*)localizedName;
 - (BOOL)isSuspended;
 - (NSArray*)formats;
+- (int32_t)transportType;
 
 @end
 

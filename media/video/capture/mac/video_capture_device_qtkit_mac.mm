@@ -29,9 +29,15 @@
       });
 
   for (QTCaptureDevice* device in captureDevices) {
-    if (![[device attributeForKey:QTCaptureDeviceSuspendedAttribute] boolValue])
-      [deviceNames setObject:[device localizedDisplayName]
-                      forKey:[device uniqueID]];
+    if ([[device attributeForKey:QTCaptureDeviceSuspendedAttribute] boolValue])
+      continue;
+    DeviceNameAndTransportType* nameAndTransportType =
+        [[[DeviceNameAndTransportType alloc]
+             initWithName:[device localizedDisplayName]
+            transportType:media::kIOAudioDeviceTransportTypeUnknown]
+            autorelease];
+    [deviceNames setObject:nameAndTransportType
+                    forKey:[device uniqueID]];
   }
 }
 

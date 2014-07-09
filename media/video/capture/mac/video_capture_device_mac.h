@@ -10,9 +10,12 @@
 #ifndef MEDIA_VIDEO_CAPTURE_MAC_VIDEO_CAPTURE_DEVICE_MAC_H_
 #define MEDIA_VIDEO_CAPTURE_MAC_VIDEO_CAPTURE_DEVICE_MAC_H_
 
+#import <Foundation/Foundation.h>
+
 #include <string>
 
 #include "base/compiler_specific.h"
+#include "base/mac/scoped_nsobject.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "media/video/capture/video_capture_device.h"
@@ -24,7 +27,29 @@ namespace base {
 class SingleThreadTaskRunner;
 }
 
+// Small class to bundle device name and connection type into a dictionary.
+MEDIA_EXPORT
+@interface DeviceNameAndTransportType : NSObject {
+ @private
+  base::scoped_nsobject<NSString> deviceName_;
+  // The transport type of the device (USB, PCI, etc), values are defined in
+  // <IOKit/audio/IOAudioTypes.h> as kIOAudioDeviceTransportType*.
+  int32_t transportType_;
+}
+
+- (id)initWithName:(NSString*)name transportType:(int32_t)transportType;
+
+- (NSString*)deviceName;
+- (int32_t)transportType;
+@end
+
 namespace media {
+
+enum {
+  // Unknown transport type, addition to the kIOAudioDeviceTransportType*
+  // family for QTKit devices where this attribute isn't published.
+  kIOAudioDeviceTransportTypeUnknown = 'unkn'
+};
 
 // Called by VideoCaptureManager to open, close and start, stop Mac video
 // capture devices.

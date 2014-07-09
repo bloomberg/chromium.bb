@@ -4,6 +4,8 @@
 
 #include "media/video/capture/mac/video_capture_device_factory_mac.h"
 
+#import <IOKit/audio/IOAudioTypes.h>
+
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/strings/string_util.h"
@@ -32,7 +34,7 @@ EnumerateDevicesUsingQTKit() {
   [VideoCaptureDeviceQTKit getDeviceNames:capture_devices];
   for (NSString* key in capture_devices) {
     VideoCaptureDevice::Name name(
-        [[capture_devices valueForKey:key] UTF8String],
+        [[[capture_devices valueForKey:key] deviceName] UTF8String],
         [key UTF8String], VideoCaptureDevice::Name::QTKIT);
     device_names->push_back(name);
   }
@@ -103,9 +105,17 @@ void VideoCaptureDeviceFactoryMac::GetDeviceNames(
     // Enumerate all devices found by AVFoundation, translate the info for each
     // to class Name and add it to |device_names|.
     for (NSString* key in capture_devices) {
+      int transport_type = [[capture_devices valueForKey:key] transportType];
+      // Transport types are defined for Audio devices and reused for video.
+      VideoCaptureDevice::Name::TransportType device_transport_type =
+          (transport_type == kIOAudioDeviceTransportTypeBuiltIn ||
+              transport_type == kIOAudioDeviceTransportTypeUSB)
+          ? VideoCaptureDevice::Name::USB_OR_BUILT_IN
+          : VideoCaptureDevice::Name::OTHER_TRANSPORT;
       VideoCaptureDevice::Name name(
-          [[capture_devices valueForKey:key] UTF8String],
-          [key UTF8String], VideoCaptureDevice::Name::AVFOUNDATION);
+          [[[capture_devices valueForKey:key] deviceName] UTF8String],
+          [key UTF8String], VideoCaptureDevice::Name::AVFOUNDATION,
+          device_transport_type);
       device_names->push_back(name);
       for (size_t i = 0; i < arraysize(kBlacklistedCameras); ++i) {
         is_any_device_blacklisted = EndsWith(name.id(),
@@ -121,7 +131,7 @@ void VideoCaptureDeviceFactoryMac::GetDeviceNames(
     if (is_any_device_blacklisted) {
       capture_devices = [VideoCaptureDeviceQTKit deviceNames];
       for (NSString* key in capture_devices) {
-        NSString* device_name = [capture_devices valueForKey:key];
+        NSString* device_name = [[capture_devices valueForKey:key] deviceName];
         for (size_t i = 0; i < arraysize(kBlacklistedCameras); ++i) {
           if ([device_name rangeOfString:@(kBlacklistedCameras[i].name)
                                  options:NSCaseInsensitiveSearch].length != 0) {

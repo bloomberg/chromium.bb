@@ -38,9 +38,8 @@ class MEDIA_EXPORT VideoCaptureDevice {
   // VideoCaptureDevice::Create.
   class MEDIA_EXPORT Name {
    public:
-    Name() {}
-    Name(const std::string& name, const std::string& id)
-        : device_name_(name), unique_id_(id) {}
+    Name();
+    Name(const std::string& name, const std::string& id);
 
 #if defined(OS_WIN)
     // Windows targets Capture Api type: it can only be set on construction.
@@ -57,14 +56,24 @@ class MEDIA_EXPORT VideoCaptureDevice {
       QTKIT,
       API_TYPE_UNKNOWN
     };
+    // For AVFoundation Api, identify devices that are built-in or USB.
+    enum TransportType {
+      USB_OR_BUILT_IN,
+      OTHER_TRANSPORT
+    };
 #endif
 #if defined(OS_WIN) || defined(OS_MACOSX)
     Name(const std::string& name,
          const std::string& id,
-         const CaptureApiType api_type)
-        : device_name_(name), unique_id_(id), capture_api_class_(api_type) {}
+         const CaptureApiType api_type);
 #endif
-    ~Name() {}
+#if defined(OS_MACOSX)
+    Name(const std::string& name,
+         const std::string& id,
+         const CaptureApiType api_type,
+         const TransportType transport_type);
+#endif
+    ~Name();
 
     // Friendly name of a device
     const std::string& name() const { return device_name_; }
@@ -95,6 +104,11 @@ class MEDIA_EXPORT VideoCaptureDevice {
     CaptureApiType capture_api_type() const {
       return capture_api_class_.capture_api_type();
     }
+#endif
+#if defined(OS_MACOSX)
+    TransportType transport_type() const {
+      return transport_type_;
+    }
 #endif  // if defined(OS_WIN)
 
    private:
@@ -117,6 +131,9 @@ class MEDIA_EXPORT VideoCaptureDevice {
     };
 
     CaptureApiClass capture_api_class_;
+#endif
+#if defined(OS_MACOSX)
+    TransportType transport_type_;
 #endif
     // Allow generated copy constructor and assignment.
   };

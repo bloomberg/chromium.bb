@@ -45,6 +45,11 @@ void FileVideoCaptureDeviceFactory::GetDeviceNames(
   device_names->push_back(VideoCaptureDevice::Name(
       base::SysWideToUTF8(command_line_file_path.value()),
       kFileVideoCaptureDeviceName));
+#elif defined(OS_MACOSX)
+  device_names->push_back(VideoCaptureDevice::Name(
+      command_line_file_path.value(),
+      kFileVideoCaptureDeviceName,
+      VideoCaptureDevice::Name::AVFOUNDATION));
 #else
   device_names->push_back(VideoCaptureDevice::Name(
       command_line_file_path.value(),

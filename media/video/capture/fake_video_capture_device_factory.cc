@@ -29,8 +29,14 @@ void FakeVideoCaptureDeviceFactory::GetDeviceNames(
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(device_names->empty());
   for (int n = 0; n < number_of_devices_; ++n) {
+#if !defined(OS_MACOSX)
     VideoCaptureDevice::Name name(base::StringPrintf("fake_device_%d", n),
                                   base::StringPrintf("/dev/video%d", n));
+#else
+    VideoCaptureDevice::Name name(base::StringPrintf("fake_device_%d", n),
+                                  base::StringPrintf("/dev/video%d", n),
+                                  VideoCaptureDevice::Name::AVFOUNDATION);
+#endif
     device_names->push_back(name);
   }
 }

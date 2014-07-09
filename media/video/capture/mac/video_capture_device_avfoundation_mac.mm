@@ -23,7 +23,11 @@
     if (([device hasMediaType:AVFoundationGlue::AVMediaTypeVideo()] ||
          [device hasMediaType:AVFoundationGlue::AVMediaTypeMuxed()]) &&
         ![device isSuspended]) {
-      [deviceNames setObject:[device localizedName]
+      DeviceNameAndTransportType* nameAndTransportType =
+          [[[DeviceNameAndTransportType alloc]
+                 initWithName:[device localizedName]
+                transportType:[device transportType]] autorelease];
+      [deviceNames setObject:nameAndTransportType
                       forKey:[device uniqueID]];
     }
   }

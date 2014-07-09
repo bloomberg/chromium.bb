@@ -21,6 +21,26 @@
 #import "media/video/capture/mac/video_capture_device_avfoundation_mac.h"
 #import "media/video/capture/mac/video_capture_device_qtkit_mac.h"
 
+@implementation DeviceNameAndTransportType
+
+- (id)initWithName:(NSString*)deviceName transportType:(int32_t)transportType {
+  if (self = [super init]) {
+    deviceName_.reset([deviceName copy]);
+    transportType_ = transportType;
+  }
+  return self;
+}
+
+- (NSString*)deviceName {
+  return deviceName_;
+}
+
+- (int32_t)transportType {
+  return transportType_;
+}
+
+@end  // @implementation DeviceNameAndTransportType
+
 namespace media {
 
 const int kMinFrameRate = 1;
@@ -307,10 +327,12 @@ static void SetAntiFlickerInUsbDevice(const int vendor_id,
 }
 
 const std::string VideoCaptureDevice::Name::GetModel() const {
-  // Both PID and VID are 4 characters.
-  if (unique_id_.size() < 2 * kVidPidSize) {
+  // Skip the AVFoundation's not USB nor built-in devices.
+  if (capture_api_type() == AVFOUNDATION && transport_type() != USB_OR_BUILT_IN)
     return "";
-  }
+  // Both PID and VID are 4 characters.
+  if (unique_id_.size() < 2 * kVidPidSize)
+    return "";
 
   // The last characters of device id is a concatenation of VID and then PID.
   const size_t vid_location = unique_id_.size() - 2 * kVidPidSize;
