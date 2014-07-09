@@ -26,6 +26,11 @@ class HomeCardLayoutManager : public aura::LayoutManager {
       : container_(container) {}
   virtual ~HomeCardLayoutManager() {}
 
+  void UpdateVirtualKeyboardBounds(const gfx::Rect& bounds) {
+    virtual_keyboard_bounds_ = bounds;
+    Layout();
+  }
+
  private:
   // aura::LayoutManager:
   virtual void OnWindowResized() OVERRIDE { Layout(); }
@@ -55,7 +60,10 @@ class HomeCardLayoutManager : public aura::LayoutManager {
     aura::Window* home_card = container_->children()[0];
     if (!home_card->IsVisible())
       return;
+
     gfx::Rect screen_bounds = home_card->GetRootWindow()->bounds();
+    if (!virtual_keyboard_bounds_.IsEmpty())
+      screen_bounds.set_height(virtual_keyboard_bounds_.y());
     gfx::Rect card_bounds = screen_bounds;
     card_bounds.Inset(kHomeCardHorizontalMargin,
                       screen_bounds.height() - kHomeCardHeight,
@@ -66,6 +74,7 @@ class HomeCardLayoutManager : public aura::LayoutManager {
   }
 
   aura::Window* container_;
+  gfx::Rect virtual_keyboard_bounds_;
 
   DISALLOW_COPY_AND_ASSIGN(HomeCardLayoutManager);
 };
@@ -86,6 +95,8 @@ class HomeCardImpl : public HomeCard, public AcceleratorHandler {
   // Overridden from HomeCard:
   virtual void RegisterSearchProvider(
       app_list::SearchProvider* search_provider) OVERRIDE;
+  virtual void UpdateVirtualKeyboardBounds(
+      const gfx::Rect& bounds) OVERRIDE;
 
   // AcceleratorHandler:
   virtual bool IsCommandEnabled(int command_id) const OVERRIDE { return true; }
@@ -103,6 +114,7 @@ class HomeCardImpl : public HomeCard, public AcceleratorHandler {
 
   views::Widget* home_card_widget_;
   AppListViewDelegate* view_delegate_;
+  HomeCardLayoutManager* layout_manager_;
 
   // Right now HomeCard allows only one search provider.
   // TODO(mukai): port app-list's SearchController and Mixer.
@@ -113,7 +125,8 @@ class HomeCardImpl : public HomeCard, public AcceleratorHandler {
 
 HomeCardImpl::HomeCardImpl(AppModelBuilder* model_builder)
     : model_builder_(model_builder),
-      home_card_widget_(NULL) {
+      home_card_widget_(NULL),
+      layout_manager_(NULL) {
   DCHECK(!instance);
   instance = this;
 }
@@ -132,12 +145,18 @@ void HomeCardImpl::RegisterSearchProvider(
   view_delegate_->RegisterSearchProvider(search_provider_.get());
 }
 
+void HomeCardImpl::UpdateVirtualKeyboardBounds(
+    const gfx::Rect& bounds) {
+  layout_manager_->UpdateVirtualKeyboardBounds(bounds);
+}
+
 void HomeCardImpl::Init() {
   InstallAccelerators();
 
   aura::Window* container =
       ScreenManager::Get()->CreateContainer("HomeCardContainer");
-  container->SetLayoutManager(new HomeCardLayoutManager(container));
+  layout_manager_ = new HomeCardLayoutManager(container);
+  container->SetLayoutManager(layout_manager_);
   wm::SetChildWindowVisibilityChangesAnimated(container);
 
   view_delegate_ = new AppListViewDelegate(model_builder_.get());

@@ -14,6 +14,7 @@ include_rules = [
   "+ui/compositor",
   "+ui/events",
   "+ui/gl",
+  "+ui/keyboard",
   "+ui/wm/core",
 ]
 

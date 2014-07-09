@@ -11,6 +11,10 @@ namespace app_list {
 class SearchProvider;
 }
 
+namespace gfx {
+class Rect;
+}
+
 namespace athena {
 class AppModelBuilder;
 
@@ -28,6 +32,10 @@ class ATHENA_EXPORT HomeCard {
   // the ownership of the specified provider.
   virtual void RegisterSearchProvider(
       app_list::SearchProvider* search_provider) = 0;
+
+  // Called when the virtual keyboard changed has changed to |bounds|.
+  virtual void UpdateVirtualKeyboardBounds(
+      const gfx::Rect& bounds) = 0;
 };
 
 }  // namespace athena

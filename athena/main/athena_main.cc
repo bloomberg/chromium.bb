@@ -24,6 +24,8 @@
 #include "content/public/app/content_main.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/keyboard/keyboard_controller.h"
+#include "ui/keyboard/keyboard_controller_observer.h"
 #include "ui/wm/core/visibility_controller.h"
 
 namespace {
@@ -33,6 +35,27 @@ namespace {
 const char kDefaultAppPath[] =
     "chrome/common/extensions/docs/examples/apps/calculator/app";
 }  // namespace
+
+// This class observes the change of the virtual keyboard and distribute the
+// change to appropriate modules of athena.
+// TODO(oshima): move the VK bounds logic to screen manager.
+class VirtualKeyboardObserver : public keyboard::KeyboardControllerObserver {
+ public:
+  VirtualKeyboardObserver() {
+    keyboard::KeyboardController::GetInstance()->AddObserver(this);
+  }
+
+  virtual ~VirtualKeyboardObserver() {
+    keyboard::KeyboardController::GetInstance()->RemoveObserver(this);
+  }
+
+ private:
+  virtual void OnKeyboardBoundsChanging(const gfx::Rect& new_bounds) OVERRIDE {
+    athena::HomeCard::Get()->UpdateVirtualKeyboardBounds(new_bounds);
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(VirtualKeyboardObserver);
+};
 
 class AthenaBrowserMainDelegate : public apps::ShellBrowserMainDelegate {
  public:
@@ -62,12 +85,16 @@ class AthenaBrowserMainDelegate : public apps::ShellBrowserMainDelegate {
     athena::HomeCard::Get()->RegisterSearchProvider(
         new athena::UrlSearchProvider(context));
     athena::VirtualKeyboardManager::Create(context);
+    keyboard_observer_.reset(new VirtualKeyboardObserver());
 
     CreateTestPages(context);
     CreateDebugWindow();
   }
 
-  virtual void Shutdown() OVERRIDE { athena::ShutdownAthena(); }
+  virtual void Shutdown() OVERRIDE {
+    keyboard_observer_.reset();
+    athena::ShutdownAthena();
+  }
 
   virtual apps::ShellDesktopController* CreateDesktopController() OVERRIDE {
     // TODO(mukai): create Athena's own ShellDesktopController subclass so that
@@ -78,6 +105,8 @@ class AthenaBrowserMainDelegate : public apps::ShellBrowserMainDelegate {
   }
 
  private:
+  scoped_ptr<VirtualKeyboardObserver> keyboard_observer_;
+
   DISALLOW_COPY_AND_ASSIGN(AthenaBrowserMainDelegate);
 };
 
