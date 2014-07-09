@@ -11,9 +11,9 @@
 #include "base/compiler_specific.h"
 #include "base/synchronization/cancellation_flag.h"
 #include "chrome/browser/autocomplete/history_provider.h"
-#include "chrome/browser/autocomplete/history_provider_util.h"
 #include "chrome/browser/omnibox/omnibox_field_trial.h"
 #include "components/autocomplete/autocomplete_input.h"
+#include "components/history/core/browser/history_match.h"
 #include "components/search_engines/template_url.h"
 
 class Profile;

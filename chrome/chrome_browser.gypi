@@ -143,8 +143,6 @@
       'browser/autocomplete/chrome_autocomplete_scheme_classifier.h',
       'browser/autocomplete/history_provider.cc',
       'browser/autocomplete/history_provider.h',
-      'browser/autocomplete/history_provider_util.cc',
-      'browser/autocomplete/history_provider_util.h',
       'browser/autocomplete/history_quick_provider.cc',
       'browser/autocomplete/history_quick_provider.h',
       'browser/autocomplete/history_url_provider.cc',

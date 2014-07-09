@@ -21,6 +21,8 @@
       'sources': [
         'history/core/browser/history_client.cc',
         'history/core/browser/history_client.h',
+        'history/core/browser/history_match.cc',
+        'history/core/browser/history_match.h',
         'history/core/browser/in_memory_database.cc',
         'history/core/browser/in_memory_database.h',
         'history/core/browser/keyword_id.h',

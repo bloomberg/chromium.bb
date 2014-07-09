@@ -19,7 +19,6 @@ include_rules = [
   # http://crbug.com/370850
   "!chrome/browser/autocomplete/autocomplete_match.h",
   "!chrome/browser/autocomplete/autocomplete_result.h",
-  "!chrome/browser/autocomplete/history_provider_util.h",
   "!chrome/browser/autocomplete/history_url_provider.h",
   "!chrome/browser/bookmarks/bookmark_model_factory.h",
   "!chrome/browser/browser_process.h",
