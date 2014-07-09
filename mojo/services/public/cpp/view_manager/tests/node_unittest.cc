@@ -349,6 +349,12 @@ class OrderChangeObserver : public NodeObserver {
 
  private:
   // Overridden from NodeObserver:
+  virtual void OnNodeReordering(Node* node,
+                                Node* relative_node,
+                                OrderDirection direction) OVERRIDE {
+    OnNodeReordered(node, relative_node, direction);
+  }
+
   virtual void OnNodeReordered(Node* node,
                                Node* relative_node,
                                OrderDirection direction) OVERRIDE {
