@@ -1,7 +1,5 @@
-This test checks that loading with emulation turned on by default loads elements module.
+This test checks that loading with emulation turned on by default selects the "Emulation" view in drawer.
 
-Loaded modules:
-    main
-    elements
-    console
+Drawer visible: true
+Selected view in drawer: emulation
 
