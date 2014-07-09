@@ -8,13 +8,13 @@ onload = function() {
       chrome.gcdPrivate.getCloudDeviceList(function(services) {
         // Sort to avoid order dependence
         services.sort(function(a,b) {
-          return a.idString.localeCompare(b.idString);
+          return a.deviceId.localeCompare(b.deviceId);
         });
 
         chrome.test.assertEq(2, services.length);
 
         chrome.test.assertEq(services[0].setupType, "cloud");
-        chrome.test.assertEq(services[0].idString,
+        chrome.test.assertEq(services[0].deviceId,
                              "cloudprint:someCloudPrintID");
         chrome.test.assertEq(services[0].cloudId, "someCloudPrintID");
         chrome.test.assertEq(services[0].deviceType, "printer");
@@ -24,7 +24,7 @@ onload = function() {
                              "someCloudPrintDescription");
 
         chrome.test.assertEq(services[1].setupType, "cloud");
-        chrome.test.assertEq(services[1].idString, "gcd:someGCDID");
+        chrome.test.assertEq(services[1].deviceId, "gcd:someGCDID");
         chrome.test.assertEq(services[1].cloudId, "someGCDID");
         chrome.test.assertEq(services[1].deviceType, "someType");
         chrome.test.assertEq(services[1].deviceName, "someGCDDisplayName");
