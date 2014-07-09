@@ -5,6 +5,7 @@
 from metrics import power
 from telemetry.page import page_measurement
 from telemetry.timeline import model
+from telemetry.value import scalar
 
 
 class ImageDecoding(page_measurement.PageMeasurement):
@@ -67,9 +68,11 @@ class ImageDecoding(page_measurement.PageMeasurement):
     assert durations, 'Failed to find "Decode Image" trace events.'
 
     image_decoding_avg = sum(durations) / len(durations)
-    results.Add('ImageDecoding_avg', 'ms', image_decoding_avg)
-    results.Add('ImageLoading_avg', 'ms',
-                tab.EvaluateJavaScript('averageLoadingTimeMs()'))
+    results.AddValue(scalar.ScalarValue(
+        results.current_page, 'ImageDecoding_avg', 'ms', image_decoding_avg))
+    results.AddValue(scalar.ScalarValue(
+        results.current_page, 'ImageLoading_avg', 'ms',
+        tab.EvaluateJavaScript('averageLoadingTimeMs()')))
 
   def CleanUpAfterPage(self, page, tab):
     if tab.browser.is_tracing_running:
