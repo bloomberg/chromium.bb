@@ -112,7 +112,8 @@ size_t TiledLayerImpl::GPUMemoryUsageInBytes() const {
        iter != tiler_->tiles().end();
        ++iter) {
     const DrawableTile* tile = static_cast<DrawableTile*>(iter->second);
-    if (!tile || !tile->resource_id())
+    DCHECK(tile);
+    if (!tile->resource_id())
       continue;
     amount += kMemoryUsagePerTileInBytes;
   }
@@ -133,7 +134,7 @@ void TiledLayerImpl::PushPropertiesTo(LayerImpl* layer) {
     int i = iter->first.first;
     int j = iter->first.second;
     DrawableTile* tile = static_cast<DrawableTile*>(iter->second);
-
+    DCHECK(tile);
     tiled_layer->PushTileProperties(i,
                                     j,
                                     tile->resource_id(),
