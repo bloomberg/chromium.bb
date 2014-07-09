@@ -810,12 +810,6 @@ void ViewManagerServiceImpl::OnNodeHierarchyChanged(const Node* node,
   root_node_manager_->ProcessNodeHierarchyChanged(node, new_parent, old_parent);
 }
 
-void ViewManagerServiceImpl::OnNodeBoundsChanged(const Node* node,
-                                                 const gfx::Rect& old_bounds,
-                                                 const gfx::Rect& new_bounds) {
-  root_node_manager_->ProcessNodeBoundsChanged(node, old_bounds, new_bounds);
-}
-
 void ViewManagerServiceImpl::OnNodeViewReplaced(const Node* node,
                                                 const View* new_view,
                                                 const View* old_view) {

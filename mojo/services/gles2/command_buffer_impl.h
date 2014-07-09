@@ -21,10 +21,6 @@ class GLES2Decoder;
 }
 }
 
-namespace gfx {
-class GLSurface;
-}
-
 namespace mojo {
 namespace services {
 
@@ -53,8 +49,6 @@ class CommandBufferImpl : public InterfaceImpl<CommandBuffer> {
  private:
   bool DoInitialize(mojo::ScopedSharedBufferHandle shared_state);
 
-  void OnResize(gfx::Size size, float scale_factor);
-
   void OnParseError();
 
   void DrawAnimationFrame();
@@ -67,7 +61,6 @@ class CommandBufferImpl : public InterfaceImpl<CommandBuffer> {
   scoped_ptr<gpu::gles2::GLES2Decoder> decoder_;
   scoped_ptr<gpu::GpuScheduler> scheduler_;
   scoped_ptr<gpu::GpuControlService> gpu_control_;
-  scoped_refptr<gfx::GLSurface> surface_;
   base::RepeatingTimer<CommandBufferImpl> timer_;
 
   DISALLOW_COPY_AND_ASSIGN(CommandBufferImpl);

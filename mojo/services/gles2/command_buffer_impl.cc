@@ -73,17 +73,18 @@ void CommandBufferImpl::Initialize(
 bool CommandBufferImpl::DoInitialize(
     mojo::ScopedSharedBufferHandle shared_state) {
   // TODO(piman): offscreen surface.
-  surface_ = gfx::GLSurface::CreateViewGLSurface(widget_);
-  if (!surface_.get())
+  scoped_refptr<gfx::GLSurface> surface =
+      gfx::GLSurface::CreateViewGLSurface(widget_);
+  if (!surface.get())
     return false;
 
   // TODO(piman): context sharing, virtual contexts, gpu preference.
   scoped_refptr<gfx::GLContext> context = gfx::GLContext::CreateGLContext(
-      NULL, surface_.get(), gfx::PreferIntegratedGpu);
+      NULL, surface.get(), gfx::PreferIntegratedGpu);
   if (!context.get())
     return false;
 
-  if (!context->MakeCurrent(surface_.get()))
+  if (!context->MakeCurrent(surface.get()))
     return false;
 
   // TODO(piman): ShaderTranslatorCache is currently per-ContextGroup but
@@ -105,14 +106,12 @@ bool CommandBufferImpl::DoInitialize(
   scheduler_.reset(new gpu::GpuScheduler(
       command_buffer_.get(), decoder_.get(), decoder_.get()));
   decoder_->set_engine(scheduler_.get());
-  decoder_->SetResizeCallback(
-      base::Bind(&CommandBufferImpl::OnResize, base::Unretained(this)));
 
   gpu::gles2::DisallowedFeatures disallowed_features;
 
   // TODO(piman): attributes.
   std::vector<int32> attrib_vector;
-  if (!decoder_->Initialize(surface_,
+  if (!decoder_->Initialize(surface,
                             context,
                             false /* offscreen */,
                             size_,
@@ -194,10 +193,6 @@ void CommandBufferImpl::OnParseError() {
 }
 
 void CommandBufferImpl::DrawAnimationFrame() { client()->DrawAnimationFrame(); }
-
-void CommandBufferImpl::OnResize(gfx::Size size, float scale_factor) {
-  surface_->Resize(size);
-}
 
 }  // namespace services
 }  // namespace mojo
