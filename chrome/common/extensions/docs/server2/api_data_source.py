@@ -98,11 +98,11 @@ class _APINodeCursor(object):
     self._node_availabilities = availability_finder.GetAPINodeAvailability(
         namespace_name)
     self._namespace_name = namespace_name
+    self._ignored_categories = []
 
   def _AssertIsValidCategory(self, category):
     assert category in _NODE_CATEGORIES, \
-        '%s is not a valid category. Full path: %s' % (category,
-                                                       self._lookup_path)
+        '%s is not a valid category. Full path: %s' % (category, str(self))
 
   def _GetParentPath(self):
     '''Returns the path pointing to this node's parent.
@@ -127,19 +127,13 @@ class _APINodeCursor(object):
     self._AssertIsValidCategory(self._lookup_path[-2])
     return self._lookup_path[:-2]
 
-  def _LookupNodeAvailability(self):
+  def _LookupNodeAvailability(self, lookup_path):
     '''Returns the ChannelInfo object for this node.
     '''
     return self._node_availabilities.Lookup(self._namespace_name,
-                                            *self._lookup_path).annotation
+                                            *lookup_path).annotation
 
-  def _LookupParentNodeAvailability(self):
-    '''Returns the ChannelInfo object for this node's parent.
-    '''
-    return self._node_availabilities.Lookup(self._namespace_name,
-                                            *self._GetParentPath()).annotation
-
-  def _CheckNamespacePrefix(self):
+  def _CheckNamespacePrefix(self, lookup_path):
     '''API schemas may prepend the namespace name to top-level types
     (e.g. declarativeWebRequest > types > declarativeWebRequest.IgnoreRules),
     but just the base name (here, 'IgnoreRules') will be in the |lookup_path|.
@@ -147,63 +141,87 @@ class _APINodeCursor(object):
     '''
     # lookup_path[0] is always the node category (e.g. types, functions, etc.).
     # Thus, lookup_path[1] is always the top-level node name.
-    self._AssertIsValidCategory(self._lookup_path[0])
-    base_name = self._lookup_path[1]
-    self._lookup_path[1] = '%s.%s' % (self._namespace_name, base_name)
+    self._AssertIsValidCategory(lookup_path[0])
+    base_name = lookup_path[1]
+    lookup_path[1] = '%s.%s' % (self._namespace_name, base_name)
     try:
-      node_availability = self._LookupNodeAvailability()
+      node_availability = self._LookupNodeAvailability(lookup_path)
       if node_availability is not None:
         return node_availability
     finally:
       # Restore lookup_path.
-      self._lookup_path[1] = base_name
+      lookup_path[1] = base_name
     return None
 
-  def _CheckEventCallback(self):
+  def _CheckEventCallback(self, lookup_path):
     '''Within API schemas, an event has a list of 'properties' that the event's
     callback expects. The callback itself is not explicitly represented in the
     schema. However, when creating an event node in _JSCModel, a callback node
     is generated and acts as the parent for the event's properties.
     Modify |lookup_path| to check the original schema format.
     '''
-    if 'events' in self._lookup_path:
-      assert 'callback' in self._lookup_path
-      callback_index = self._lookup_path.index('callback')
+    if 'events' in lookup_path:
+      assert 'callback' in lookup_path, self
+      callback_index = lookup_path.index('callback')
       try:
-        self._lookup_path.pop(callback_index)
-        node_availability = self._LookupNodeAvailability()
+        lookup_path.pop(callback_index)
+        node_availability = self._LookupNodeAvailability(lookup_path)
       finally:
-        self._lookup_path.insert(callback_index, 'callback')
+        lookup_path.insert(callback_index, 'callback')
       return node_availability
     return None
 
-  def _LookupAvailability(self):
+  def _LookupAvailability(self, lookup_path):
     '''Runs all the lookup checks on self._lookup_path and
     returns the node availability if found, None otherwise.
     '''
     for lookup in (self._LookupNodeAvailability,
                    self._CheckEventCallback,
                    self._CheckNamespacePrefix):
-      node_availability = lookup()
+      node_availability = lookup(lookup_path)
       if node_availability is not None:
         return node_availability
     return None
 
+  def _GetCategory(self):
+    '''Returns the category this node belongs to.
+    '''
+    if self._lookup_path[-2] in _NODE_CATEGORIES:
+      return self._lookup_path[-2]
+    # If lookup_path[-2] is not in _NODE_CATEGORIES and
+    # lookup_path[-1] is 'callback', then we know we have
+    # an event callback.
+    if self._lookup_path[-1] == 'callback':
+      return 'events'
+    if self._lookup_path[-2] == 'parameters':
+      # Function parameters are modelled as properties.
+      return 'properties'
+    if (self._lookup_path[-1].endswith('Type') and
+        (self._lookup_path[-1][:-len('Type')] == self._lookup_path[-2] or
+         self._lookup_path[-1][:-len('ReturnType')] == self._lookup_path[-2])):
+      # Array elements and function return objects have 'Type' and 'ReturnType'
+      # appended to their names, respectively, in model.py. This results in
+      # lookup paths like
+      # 'events > types > Rule > properties > tags > tagsType'.
+      # These nodes are treated as properties.
+      return 'properties'
+    if self._lookup_path[0] == 'events':
+      # HACK(ahernandez.miralles): This catches a few edge cases,
+      # such as 'webviewTag > events > consolemessage > level'.
+      return 'properties'
+    raise AssertionError('Could not classify node %s' % self)
+
   def GetAvailability(self):
     '''Returns availability information for this node.
     '''
-    node_availability = self._LookupAvailability()
+    if self._GetCategory() in self._ignored_categories:
+      return None
+    node_availability = self._LookupAvailability(self._lookup_path)
     if node_availability is None:
-      logging.warning('No availability found for: %s > %s' %
-          (self._namespace_name, ' > '.join(self._lookup_path)))
+      logging.warning('No availability found for: %s' % self)
       return None
 
-    try:
-      current_path = self._lookup_path
-      self._lookup_path = self._GetParentPath()
-      parent_node_availability = self._LookupAvailability()
-    finally:
-      self._lookup_path = current_path
+    parent_node_availability = self._LookupAvailability(self._GetParentPath())
     # If the parent node availability couldn't be found, something
     # is very wrong.
     assert parent_node_availability is not None
@@ -214,15 +232,31 @@ class _APINodeCursor(object):
       return None
     return node_availability
 
-  def Descend(self, *path):
+  def Descend(self, *path, **kwargs):
     '''Moves down the APISchemaGraph, following |path|.
+    |ignore| should be a tuple of category strings (e.g. ('types',))
+    for which nodes should not have availability data generated.
     '''
+    ignore = kwargs.get('ignore')
     class scope(object):
       def __enter__(self2):
-        self._lookup_path.extend(path)
+        if ignore:
+          self._ignored_categories.extend(ignore)
+        if path:
+          self._lookup_path.extend(path)
+
       def __exit__(self2, _, __, ___):
-        self._lookup_path[:] = self._lookup_path[:-len(path)]
+        if ignore:
+          self._ignored_categories[:] = self._ignored_categories[:-len(ignore)]
+        if path:
+          self._lookup_path[:] = self._lookup_path[:-len(path)]
     return scope()
+
+  def __str__(self):
+    return repr(self)
+
+  def __repr__(self):
+    return '%s > %s' % (self._namespace_name, ' > '.join(self._lookup_path))
 
 
 class _JSCModel(object):
@@ -300,6 +334,7 @@ class _JSCModel(object):
         'functions': self._GenerateFunctions(type_.functions),
         'events': self._GenerateEvents(type_.events),
         'id': _CreateId(type_, 'type'),
+        'availability': self._GetAvailabilityTemplate()
       }
       self._RenderTypeInformation(type_, type_dict)
       return type_dict
@@ -309,7 +344,9 @@ class _JSCModel(object):
       return [self._GenerateFunction(f) for f in functions.values()]
 
   def _GenerateFunction(self, function):
-    with self._current_node.Descend(function.simple_name):
+    # When ignoring types, properties must be ignored as well.
+    with self._current_node.Descend(function.simple_name,
+                                    ignore=('types', 'properties')):
       function_dict = {
         'name': function.simple_name,
         'description': function.description,
@@ -322,8 +359,10 @@ class _JSCModel(object):
       self._AddCommonProperties(function_dict, function)
       if function.returns:
         function_dict['returns'] = self._GenerateType(function.returns)
-      for param in function.params:
-        function_dict['parameters'].append(self._GenerateProperty(param))
+    with self._current_node.Descend(function.simple_name):
+      with self._current_node.Descend('parameters'):
+        for param in function.params:
+          function_dict['parameters'].append(self._GenerateProperty(param))
       if function.callback is not None:
         # Show the callback as an extra parameter.
         function_dict['parameters'].append(
@@ -343,7 +382,7 @@ class _JSCModel(object):
               if e.supports_dom]
 
   def _GenerateEvent(self, event):
-    with self._current_node.Descend(event.simple_name):
+    with self._current_node.Descend(event.simple_name, ignore=('properties',)):
       event_dict = {
         'name': event.simple_name,
         'description': event.description,
@@ -356,7 +395,9 @@ class _JSCModel(object):
         'properties': [],
         'id': _CreateId(event, 'event'),
         'byName': {},
+        'availability': self._GetAvailabilityTemplate()
       }
+    with self._current_node.Descend(event.simple_name):
       self._AddCommonProperties(event_dict, event)
       # Add the Event members to each event in this object.
       if self._event_byname_future:
@@ -379,6 +420,7 @@ class _JSCModel(object):
           'callback': self._GenerateFunction(callback_object),
           'parameters': [callback_parameters]
         }
+    with self._current_node.Descend(event.simple_name, ignore=('properties',)):
       if event.supports_dom:
         # Treat params as properties of the custom Event object associated with
         # this DOM Event.
@@ -395,58 +437,66 @@ class _JSCModel(object):
       'optional': callback.optional,
       'parameters': []
     }
-    for param in callback.params:
-      callback_dict['parameters'].append(self._GenerateProperty(param))
+    with self._current_node.Descend('parameters',
+                                    callback.simple_name,
+                                    'parameters'):
+      for param in callback.params:
+        callback_dict['parameters'].append(self._GenerateProperty(param))
     if (len(callback_dict['parameters']) > 0):
       callback_dict['parameters'][-1]['last'] = True
     return callback_dict
 
   def _GenerateProperties(self, properties):
-    return [self._GenerateProperty(v) for v in properties.values()]
+    with self._current_node.Descend('properties'):
+      return [self._GenerateProperty(v) for v in properties.values()]
 
   def _GenerateProperty(self, property_):
-    if not hasattr(property_, 'type_'):
-      for d in dir(property_):
-        if not d.startswith('_'):
-          print ('%s -> %s' % (d, getattr(property_, d)))
-    type_ = property_.type_
+    with self._current_node.Descend(property_.simple_name):
+      if not hasattr(property_, 'type_'):
+        for d in dir(property_):
+          if not d.startswith('_'):
+            print ('%s -> %s' % (d, getattr(property_, d)))
+      type_ = property_.type_
 
-    # Make sure we generate property info for arrays, too.
-    # TODO(kalman): what about choices?
-    if type_.property_type == model.PropertyType.ARRAY:
-      properties = type_.item_type.properties
-    else:
-      properties = type_.properties
-
-    property_dict = {
-      'name': property_.simple_name,
-      'optional': property_.optional,
-      'description': property_.description,
-      'properties': self._GenerateProperties(type_.properties),
-      'functions': self._GenerateFunctions(type_.functions),
-      'parameters': [],
-      'returns': None,
-      'id': _CreateId(property_, 'property'),
-    }
-    self._AddCommonProperties(property_dict, property_)
-
-    if type_.property_type == model.PropertyType.FUNCTION:
-      function = type_.function
-      for param in function.params:
-        property_dict['parameters'].append(self._GenerateProperty(param))
-      if function.returns:
-        property_dict['returns'] = self._GenerateType(function.returns)
-
-    value = property_.value
-    if value is not None:
-      if isinstance(value, int):
-        property_dict['value'] = _FormatValue(value)
+      # Make sure we generate property info for arrays, too.
+      # TODO(kalman): what about choices?
+      if type_.property_type == model.PropertyType.ARRAY:
+        properties = type_.item_type.properties
       else:
-        property_dict['value'] = value
-    else:
-      self._RenderTypeInformation(type_, property_dict)
+        properties = type_.properties
 
-    return property_dict
+      property_dict = {
+        'name': property_.simple_name,
+        'optional': property_.optional,
+        'description': property_.description,
+        'properties': self._GenerateProperties(type_.properties),
+        'functions': self._GenerateFunctions(type_.functions),
+        'parameters': [],
+        'returns': None,
+        'id': _CreateId(property_, 'property'),
+        'availability': self._GetAvailabilityTemplate()
+      }
+      self._AddCommonProperties(property_dict, property_)
+
+      if type_.property_type == model.PropertyType.FUNCTION:
+        function = type_.function
+        with self._current_node.Descend('parameters'):
+          for param in function.params:
+            property_dict['parameters'].append(self._GenerateProperty(param))
+        if function.returns:
+          with self._current_node.Descend(ignore=('types', 'properties')):
+            property_dict['returns'] = self._GenerateType(function.returns)
+
+      value = property_.value
+      if value is not None:
+        if isinstance(value, int):
+          property_dict['value'] = _FormatValue(value)
+        else:
+          property_dict['value'] = value
+      else:
+        self._RenderTypeInformation(type_, property_dict)
+
+      return property_dict
 
   def _GenerateCallbackProperty(self, callback):
     property_dict = {
@@ -463,27 +513,28 @@ class _JSCModel(object):
     return property_dict
 
   def _RenderTypeInformation(self, type_, dst_dict):
-    dst_dict['is_object'] = type_.property_type == model.PropertyType.OBJECT
-    if type_.property_type == model.PropertyType.CHOICES:
-      dst_dict['choices'] = self._GenerateTypes(type_.choices)
-      # We keep track of which == last for knowing when to add "or" between
-      # choices in templates.
-      if len(dst_dict['choices']) > 0:
-        dst_dict['choices'][-1]['last'] = True
-    elif type_.property_type == model.PropertyType.REF:
-      dst_dict['link'] = self._GetLink(type_.ref_type)
-    elif type_.property_type == model.PropertyType.ARRAY:
-      dst_dict['array'] = self._GenerateType(type_.item_type)
-    elif type_.property_type == model.PropertyType.ENUM:
-      dst_dict['enum_values'] = [
-          {'name': value.name, 'description': value.description}
-          for value in type_.enum_values]
-      if len(dst_dict['enum_values']) > 0:
-        dst_dict['enum_values'][-1]['last'] = True
-    elif type_.instance_of is not None:
-      dst_dict['simple_type'] = type_.instance_of
-    else:
-      dst_dict['simple_type'] = type_.property_type.name
+    with self._current_node.Descend(ignore=('types', 'properties')):
+      dst_dict['is_object'] = type_.property_type == model.PropertyType.OBJECT
+      if type_.property_type == model.PropertyType.CHOICES:
+        dst_dict['choices'] = self._GenerateTypes(type_.choices)
+        # We keep track of which == last for knowing when to add "or" between
+        # choices in templates.
+        if len(dst_dict['choices']) > 0:
+          dst_dict['choices'][-1]['last'] = True
+      elif type_.property_type == model.PropertyType.REF:
+        dst_dict['link'] = self._GetLink(type_.ref_type)
+      elif type_.property_type == model.PropertyType.ARRAY:
+        dst_dict['array'] = self._GenerateType(type_.item_type)
+      elif type_.property_type == model.PropertyType.ENUM:
+        dst_dict['enum_values'] = [
+            {'name': value.name, 'description': value.description}
+            for value in type_.enum_values]
+        if len(dst_dict['enum_values']) > 0:
+          dst_dict['enum_values'][-1]['last'] = True
+      elif type_.instance_of is not None:
+        dst_dict['simple_type'] = type_.instance_of
+      else:
+        dst_dict['simple_type'] = type_.property_type.name
 
   def _GetIntroTableList(self):
     '''Create a generic data structure that can be traversed by the templates

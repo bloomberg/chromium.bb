@@ -38,21 +38,6 @@ class _FakeTemplateCache(object):
     return Future(value='handlebar %s' % key)
 
 
-class _FakeAvailabilityFinder(object):
-  def __init__(self, fake_availability):
-    self._fake_availability = fake_availability
-
-  def GetAPIAvailability(self, api_name):
-    return self._fake_availability
-
-  def GetAPINodeAvailability(self, api_name):
-    '''The tests that use this fake class don't
-    use the node availability, so just return a
-    dummy graph.
-    '''
-    return APISchemaGraph(_graph={'dummy': 'graph'})
-
-
 class _FakeFeaturesBundle(object):
   def GetAPIFeatures(self):
     return Future(value={
@@ -73,11 +58,12 @@ class _FakeAvailabilityFinder(object):
     return self._fake_availability
 
   def GetAPINodeAvailability(self, api_name):
-    '''The tests that use this fake class don't
-    use the node availability, so just return a
-    dummy graph.
-    '''
-    return APISchemaGraph(_graph={'dummy': 'graph'})
+    schema_graph = APISchemaGraph()
+    api_graph = APISchemaGraph(json.loads(
+        CANNED_TRUNK_FS_DATA['api'][api_name + '.json']))
+    # Give the graph fake ChannelInfo; it's not used in tests.
+    schema_graph.Update(api_graph, annotation=ChannelInfo('stable', '28', 28))
+    return schema_graph
 
 
 class APIDataSourceTest(unittest.TestCase):
@@ -162,7 +148,6 @@ class APIDataSourceTest(unittest.TestCase):
     fake_avail_finder = _FakeAvailabilityFinder(self._fake_availability)
     dict_ = _JSCModel(self._api_models.GetModel('add_rules_tester').Get(),
                       fake_avail_finder,
-                      #self._fake_availability,
                       self._json_cache,
                       _FakeTemplateCache(),
                       self._features_bundle,

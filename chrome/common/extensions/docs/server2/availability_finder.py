@@ -26,26 +26,6 @@ _EXTENSION_API_MAX_VERSION = 17
 _SVN_MIN_VERSION = 5
 
 
-def _GetNamespaceFromFilename(api_name):
-  '''API names passed in from the templates follow a different naming
-  convention than the actual API namespace names. Convert |api_name|
-  to its proper namespace name.
-  '''
-  # Devtools APIs are located in a devtools/ directory
-  # (e.g. devtools/panels.json). The namespace will be devtools.panels.
-  if 'devtools/' in api_name:
-    api_name = api_name.replace('/', '.')
-  # Experimental API filenames have a 'experimental_' prefixed to them (e.g.
-  # devtools/experimental_audits.json). The namespace always has
-  # 'experimental.' prefixed to it (e.g. experimental.devtools.audits).
-  if 'experimental_' in api_name:
-    api_name = 'experimental.' + api_name.replace('experimental_', '')
-  # API filenames use '_'s as separators; the separator for namespaces is
-  # always a '.'.
-  api_name = api_name.replace('_', '.')
-  return api_name
-
-
 def _GetChannelFromFeatures(api_name, features):
   '''Finds API channel information for |api_name| from |features|.
   Returns None if channel information for the API cannot be located.
@@ -319,7 +299,6 @@ class AvailabilityFinder(object):
     '''Returns an APISchemaGraph annotated with each node's availability (the
     ChannelInfo at the oldest channel it's available in).
     '''
-    api_name = _GetNamespaceFromFilename(api_name)
     availability_graph = self._node_level_object_store.Get(api_name).Get()
     if availability_graph is not None:
       return availability_graph

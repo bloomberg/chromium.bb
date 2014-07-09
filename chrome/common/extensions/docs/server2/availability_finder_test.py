@@ -7,9 +7,7 @@ import sys
 import unittest
 
 import api_schema_graph
-from availability_finder import (AvailabilityFinder,
-                                 AvailabilityInfo,
-                                 _GetNamespaceFromFilename)
+from availability_finder import AvailabilityFinder, AvailabilityInfo
 from branch_utility import BranchUtility, ChannelInfo
 from compiled_file_system import CompiledFileSystem
 from fake_host_file_system_provider import FakeHostFileSystemProvider
@@ -73,23 +71,6 @@ class AvailabilityFinderTest(unittest.TestCase):
         # The earliest version represented with the tabs' test data is 13.
         self._branch_utility.GetStableChannelInfo(13),
         stat_paths)
-
-  def testGetNamespaceFromFilename(self):
-    # Test simple name
-    self.assertEqual('storage', _GetNamespaceFromFilename('storage'))
-    # Test multi-word names
-    self.assertEqual('contextMenus',
-                     _GetNamespaceFromFilename('contextMenus'))
-    self.assertEqual('app.window', _GetNamespaceFromFilename('app_window'))
-    # Test devtools API
-    self.assertEqual('devtools.inspectedWindow',
-                     _GetNamespaceFromFilename('devtools/inspectedWindow'))
-    # Test experimental API
-    self.assertEqual('experimental.infobars',
-                     _GetNamespaceFromFilename('experimental_infobars'))
-    # Test experimental API in devtools
-    self.assertEqual('experimental.devtools.audits',
-                     _GetNamespaceFromFilename('devtools/experimental_audits'))
 
   def testGraphOptimization(self):
     for platform in GetPlatforms():

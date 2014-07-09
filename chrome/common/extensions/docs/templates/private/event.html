@@ -3,6 +3,9 @@
   <h3 id="{{id}}">{{name}}</h3>
   {{+partials.warning_deprecated item:event/}}
   <div class="description">
+    {{?availability}}
+    <span class="availability">{{+availability.partial content:availability/}}</span>
+    {{/availability}}
     {{?description}}<p>
       {{{description}}}
     </p>{{/description}}

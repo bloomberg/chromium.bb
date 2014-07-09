@@ -6,6 +6,10 @@
 {{?deprecated}}
   {{+partials.warning_deprecated item:property/}}
 {{/deprecated}}
+{{?availability}}
+<span class="availability">{{+availability.partial content:availability/}}</span>
+{{/availability}}
+
 {{?description}}
   {{{description}}}
 {{/description}}
