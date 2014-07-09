@@ -9,14 +9,13 @@ import posixpath
 
 from data_source import DataSource
 from docs_server_utils import StringIdentity
-from environment import IsPreviewServer
+from environment import IsPreviewServer, IsReleaseServer
 from extensions_paths import JSON_TEMPLATES, PRIVATE_TEMPLATES
 from file_system import FileNotFoundError
 from future import Future, Collect
 from platform_util import GetPlatforms
 import third_party.json_schema_compiler.json_parse as json_parse
 import third_party.json_schema_compiler.model as model
-from environment import IsPreviewServer
 from third_party.json_schema_compiler.memoize import memoize
 
 
@@ -218,7 +217,9 @@ class _APINodeCursor(object):
       return None
     node_availability = self._LookupAvailability(self._lookup_path)
     if node_availability is None:
-      logging.warning('No availability found for: %s' % self)
+      if not IsReleaseServer():
+        # Bad, and happens a lot :(
+        logging.warning('No availability found for: %s' % self)
       return None
 
     parent_node_availability = self._LookupAvailability(self._GetParentPath())
