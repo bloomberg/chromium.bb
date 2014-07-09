@@ -58,6 +58,7 @@ class SyncProcessRunner {
     virtual void Start(const tracked_objects::Location& from_here,
                        const base::TimeDelta& delay,
                        const base::Closure& closure) = 0;
+    virtual base::TimeTicks Now() const = 0;
 
    protected:
     TimerHelper() {}

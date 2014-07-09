@@ -36,6 +36,10 @@ class BaseTimerHelper : public SyncProcessRunner::TimerHelper {
     timer_.Start(from_here, delay, closure);
   }
 
+  virtual base::TimeTicks Now() const OVERRIDE {
+    return base::TimeTicks::Now();
+  }
+
   virtual ~BaseTimerHelper() {}
 
  private:
@@ -145,7 +149,7 @@ void SyncProcessRunner::Finished(const base::TimeTicks& start_time,
   util::Log(logging::LOG_VERBOSE, FROM_HERE,
             "[%s] * Finished (elapsed: %" PRId64 " sec)",
             name_.c_str(),
-            (base::TimeTicks::Now() - start_time).InSeconds());
+            (timer_helper_->Now() - start_time).InSeconds());
   if (status == SYNC_STATUS_NO_CHANGE_TO_SYNC ||
       status == SYNC_STATUS_FILE_BUSY)
     ScheduleInternal(kSyncDelayMaxInMilliseconds);
@@ -160,7 +164,7 @@ void SyncProcessRunner::Run() {
   if (running_tasks_ >= max_parallel_task_)
     return;
   ++running_tasks_;
-  last_scheduled_ = base::TimeTicks::Now();
+  last_scheduled_ = timer_helper_->Now();
   last_delay_ = current_delay_;
 
   util::Log(logging::LOG_VERBOSE, FROM_HERE,
@@ -177,7 +181,7 @@ void SyncProcessRunner::ScheduleInternal(int64 delay) {
     if (current_delay_ == delay)
       return;
 
-    base::TimeDelta elapsed = base::TimeTicks::Now() - last_scheduled_;
+    base::TimeDelta elapsed = timer_helper_->Now() - last_scheduled_;
     if (elapsed < time_to_next) {
       time_to_next = time_to_next - elapsed;
     } else {
