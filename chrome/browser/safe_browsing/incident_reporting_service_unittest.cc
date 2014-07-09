@@ -118,6 +118,7 @@ class IncidentReportingServiceTest : public testing::Test {
   enum OnProfileAdditionAction {
     ON_PROFILE_ADDITION_NO_ACTION,
     ON_PROFILE_ADDITION_ADD_INCIDENT,  // Add an incident to the service.
+    ON_PROFILE_ADDITION_ADD_TWO_INCIDENTS,  // Add two incidents to the service.
   };
 
   // A type for specifying the action to be taken by the test fixture when the
@@ -220,14 +221,16 @@ class IncidentReportingServiceTest : public testing::Test {
     instance_->GetAddIncidentCallback(profile).Run(MakeTestIncident().Pass());
   }
 
-  // Confirms that the test incident was uploaded by the service, then clears
-  // the instance for subsequent incidents.
-  void ExpectTestIncidentUploaded() {
+  // Confirms that the test incident(s) was/were uploaded by the service, then
+  // clears the instance for subsequent incidents.
+  void ExpectTestIncidentUploaded(int incident_count) {
     ASSERT_TRUE(uploaded_report_);
-    ASSERT_EQ(1, uploaded_report_->incident_size());
-    ASSERT_TRUE(uploaded_report_->incident(0).has_incident_time_msec());
-    ASSERT_EQ(kIncidentTimeMsec,
-              uploaded_report_->incident(0).incident_time_msec());
+    ASSERT_EQ(incident_count, uploaded_report_->incident_size());
+    for (int i = 0; i < incident_count; ++i) {
+      ASSERT_TRUE(uploaded_report_->incident(i).has_incident_time_msec());
+      ASSERT_EQ(kIncidentTimeMsec,
+                uploaded_report_->incident(i).incident_time_msec());
+    }
     ASSERT_TRUE(uploaded_report_->has_environment());
     ASSERT_TRUE(uploaded_report_->environment().has_os());
     ASSERT_TRUE(uploaded_report_->environment().os().has_os_name());
@@ -355,6 +358,10 @@ class IncidentReportingServiceTest : public testing::Test {
       case ON_PROFILE_ADDITION_ADD_INCIDENT:
         AddTestIncident(profile);
         break;
+      case ON_PROFILE_ADDITION_ADD_TWO_INCIDENTS:
+        AddTestIncident(profile);
+        AddTestIncident(profile);
+        break;
       default:
         ASSERT_EQ(
             ON_PROFILE_ADDITION_NO_ACTION,
@@ -451,7 +458,30 @@ TEST_F(IncidentReportingServiceTest, AddIncident) {
 
   // Verify that report upload took place and contained the incident,
   // environment data, and download details.
-  ExpectTestIncidentUploaded();
+  ExpectTestIncidentUploaded(1);
+
+  // Verify that the download finder and the uploader were destroyed.
+  ASSERT_TRUE(DownloadFinderDestroyed());
+  ASSERT_TRUE(UploaderDestroyed());
+}
+
+// Tests that multiple incidents are coalesced into the same report.
+TEST_F(IncidentReportingServiceTest, CoalesceIncidents) {
+  CreateProfile(
+      "profile1", SAFE_BROWSING_OPT_IN, ON_PROFILE_ADDITION_ADD_TWO_INCIDENTS);
+
+  // Let all tasks run.
+  task_runner_->RunUntilIdle();
+
+  // Verify that environment collection took place.
+  EXPECT_TRUE(HasCollectedEnvironmentData());
+
+  // Verify that the most recent download was looked for.
+  EXPECT_TRUE(HasCreatedDownloadFinder());
+
+  // Verify that report upload took place and contained the incident,
+  // environment data, and download details.
+  ExpectTestIncidentUploaded(2);
 
   // Verify that the download finder and the uploader were destroyed.
   ASSERT_TRUE(DownloadFinderDestroyed());
@@ -524,7 +554,7 @@ TEST_F(IncidentReportingServiceTest, OnlyOneUpload) {
 
   // Verify that report upload took place and contained the incident and
   // environment data.
-  ExpectTestIncidentUploaded();
+  ExpectTestIncidentUploaded(1);
 
   // Add the incident to the service again.
   AddTestIncident(profile);
@@ -548,7 +578,7 @@ TEST_F(IncidentReportingServiceTest, TwoProfilesTwoUploads) {
 
   // Verify that report upload took place and contained the incident and
   // environment data.
-  ExpectTestIncidentUploaded();
+  ExpectTestIncidentUploaded(1);
 
   // Create a second profile with its own incident on addition.
   CreateProfile(
@@ -558,7 +588,7 @@ TEST_F(IncidentReportingServiceTest, TwoProfilesTwoUploads) {
   task_runner_->RunUntilIdle();
 
   // Verify that a second report upload took place.
-  ExpectTestIncidentUploaded();
+  ExpectTestIncidentUploaded(1);
 }
 
 // Tests that an upload succeeds if the profile is destroyed while it is
@@ -577,7 +607,7 @@ TEST_F(IncidentReportingServiceTest, ProfileDestroyedDuringUpload) {
 
   // Verify that report upload took place and contained the incident and
   // environment data.
-  ExpectTestIncidentUploaded();
+  ExpectTestIncidentUploaded(1);
 
   // The lack of a crash indicates that the deleted profile was not accessed by
   // the service while handling the upload response.
