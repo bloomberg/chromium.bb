@@ -258,6 +258,4 @@ class AutocompleteProvider
   DISALLOW_COPY_AND_ASSIGN(AutocompleteProvider);
 };
 
-typedef std::vector<AutocompleteProvider*> ACProviders;
-
 #endif  // CHROME_BROWSER_AUTOCOMPLETE_AUTOCOMPLETE_PROVIDER_H_

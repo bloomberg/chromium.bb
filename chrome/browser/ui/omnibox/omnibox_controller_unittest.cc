@@ -19,7 +19,7 @@ class OmniboxControllerTest : public testing::Test {
   void AssertProviders(int expected_providers);
 
   PrefService* GetPrefs() { return profile_.GetPrefs(); }
-  const ACProviders* GetAutocompleteProviders() const {
+  const AutocompleteController::Providers& GetAutocompleteProviders() const {
     return omnibox_controller_->autocomplete_controller()->providers();
   }
 
@@ -43,11 +43,12 @@ void OmniboxControllerTest::CreateController() {
 // Checks that the list of autocomplete providers used by the OmniboxController
 // matches the one in the |expected_providers| bit field.
 void OmniboxControllerTest::AssertProviders(int expected_providers) {
-  const ACProviders* providers = GetAutocompleteProviders();
+  const AutocompleteController::Providers& providers =
+      GetAutocompleteProviders();
 
-  for (size_t i = 0; i < providers->size(); ++i) {
+  for (size_t i = 0; i < providers.size(); ++i) {
     // Ensure this is a provider we wanted.
-    int type = providers->at(i)->type();
+    int type = providers[i]->type();
     ASSERT_TRUE(expected_providers & type);
 
     // Remove it from expectations so we fail if it's there twice.
@@ -62,9 +63,10 @@ TEST_F(OmniboxControllerTest, CheckDefaultAutocompleteProviders) {
   CreateController();
   // First collect the basic providers.
   int observed_providers = 0;
-  const ACProviders* providers = GetAutocompleteProviders();
-  for (size_t i = 0; i < providers->size(); ++i)
-    observed_providers |= providers->at(i)->type();
+  const AutocompleteController::Providers& providers =
+      GetAutocompleteProviders();
+  for (size_t i = 0; i < providers.size(); ++i)
+    observed_providers |= providers[i]->type();
   // Ensure we have at least one provider.
   ASSERT_NE(0, observed_providers);
 

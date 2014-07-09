@@ -210,9 +210,6 @@ AutocompleteController::AutocompleteController(
     if (zero_suggest_provider_)
       providers_.push_back(zero_suggest_provider_);
   }
-
-  for (ACProviders::iterator i(providers_.begin()); i != providers_.end(); ++i)
-    (*i)->AddRef();
 }
 
 AutocompleteController::~AutocompleteController() {
@@ -224,11 +221,6 @@ AutocompleteController::~AutocompleteController() {
   // shutdown too, so we don't ask Stop() to clear |result_| (and notify).
   result_.Reset();  // Not really necessary.
   Stop(false);
-
-  for (ACProviders::iterator i(providers_.begin()); i != providers_.end(); ++i)
-    (*i)->Release();
-
-  providers_.clear();  // Not really necessary.
 }
 
 void AutocompleteController::Start(const AutocompleteInput& input) {
@@ -254,8 +246,7 @@ void AutocompleteController::Start(const AutocompleteInput& input) {
   // Start the new query.
   in_start_ = true;
   base::TimeTicks start_time = base::TimeTicks::Now();
-  for (ACProviders::iterator i(providers_.begin()); i != providers_.end();
-       ++i) {
+  for (Providers::iterator i(providers_.begin()); i != providers_.end(); ++i) {
     // TODO(mpearson): Remove timing code once bugs 178705 / 237703 / 168933
     // are resolved.
     base::TimeTicks provider_start_time = base::TimeTicks::Now();
@@ -308,7 +299,7 @@ void AutocompleteController::Start(const AutocompleteInput& input) {
 }
 
 void AutocompleteController::Stop(bool clear_result) {
-  for (ACProviders::const_iterator i(providers_.begin()); i != providers_.end();
+  for (Providers::const_iterator i(providers_.begin()); i != providers_.end();
        ++i) {
     (*i)->Stop(clear_result);
   }
@@ -333,8 +324,7 @@ void AutocompleteController::StartZeroSuggest(const AutocompleteInput& input) {
   // Call Start() on all prefix-based providers with an INVALID
   // AutocompleteInput to clear out cached |matches_|, which ensures that
   // they aren't used with zero suggest.
-  for (ACProviders::iterator i(providers_.begin()); i != providers_.end();
-      ++i) {
+  for (Providers::iterator i(providers_.begin()); i != providers_.end(); ++i) {
     if (*i == zero_suggest_provider_)
       (*i)->Start(input, false);
     else
@@ -383,7 +373,7 @@ void AutocompleteController::OnProviderUpdate(bool updated_matches) {
 void AutocompleteController::AddProvidersInfo(
     ProvidersInfo* provider_info) const {
   provider_info->clear();
-  for (ACProviders::const_iterator i(providers_.begin()); i != providers_.end();
+  for (Providers::const_iterator i(providers_.begin()); i != providers_.end();
        ++i) {
     // Add per-provider info, if any.
     (*i)->AddProviderInfo(provider_info);
@@ -394,7 +384,7 @@ void AutocompleteController::AddProvidersInfo(
 }
 
 void AutocompleteController::ResetSession() {
-  for (ACProviders::const_iterator i(providers_.begin()); i != providers_.end();
+  for (Providers::const_iterator i(providers_.begin()); i != providers_.end();
        ++i)
     (*i)->ResetSession();
 }
@@ -446,7 +436,7 @@ void AutocompleteController::UpdateResult(
   AutocompleteResult last_result;
   last_result.Swap(&result_);
 
-  for (ACProviders::const_iterator i(providers_.begin());
+  for (Providers::const_iterator i(providers_.begin());
        i != providers_.end(); ++i)
     result_.AppendMatches((*i)->matches());
 
@@ -626,7 +616,7 @@ void AutocompleteController::NotifyChanged(bool notify_default_match) {
 }
 
 void AutocompleteController::CheckIfDone() {
-  for (ACProviders::const_iterator i(providers_.begin()); i != providers_.end();
+  for (Providers::const_iterator i(providers_.begin()); i != providers_.end();
        ++i) {
     if (!(*i)->done()) {
       done_ = false;

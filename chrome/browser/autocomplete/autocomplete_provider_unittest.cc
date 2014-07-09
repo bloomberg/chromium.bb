@@ -253,7 +253,7 @@ void AutocompleteProviderTest::ResetControllerWithTestProviders(
   RegisterTemplateURL(base::ASCIIToUTF16(kTestTemplateURLKeyword),
                       "http://aqs/{searchTerms}/{google:assistedQueryStats}");
 
-  ACProviders providers;
+  AutocompleteController::Providers providers;
 
   // Construct two new providers, with either the same or different prefixes.
   TestProvider* provider1 = new TestProvider(
@@ -261,7 +261,6 @@ void AutocompleteProviderTest::ResetControllerWithTestProviders(
       base::ASCIIToUTF16("http://a"),
       &profile_,
       base::ASCIIToUTF16(kTestTemplateURLKeyword));
-  provider1->AddRef();
   providers.push_back(provider1);
 
   TestProvider* provider2 = new TestProvider(
@@ -270,7 +269,6 @@ void AutocompleteProviderTest::ResetControllerWithTestProviders(
                         : base::ASCIIToUTF16("http://b"),
       &profile_,
       base::string16());
-  provider2->AddRef();
   providers.push_back(provider2);
 
   // Reset the controller to contain our new providers.

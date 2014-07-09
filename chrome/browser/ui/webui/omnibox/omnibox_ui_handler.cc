@@ -94,10 +94,10 @@ class TypeConverter<AutocompleteMatchMojoPtr, AutocompleteMatch> {
 
 template <>
 class TypeConverter<AutocompleteResultsForProviderMojoPtr,
-                    AutocompleteProvider*> {
+                    scoped_refptr<AutocompleteProvider> > {
  public:
   static AutocompleteResultsForProviderMojoPtr ConvertFrom(
-      const AutocompleteProvider* input) {
+      const scoped_refptr<AutocompleteProvider>& input) {
     AutocompleteResultsForProviderMojoPtr result(
         AutocompleteResultsForProviderMojo::New());
     result->provider_name = input->GetName();
@@ -140,7 +140,7 @@ void OmniboxUIHandler::OnResultChanged(bool default_match_changed) {
   }
   result->results_by_provider =
       mojo::Array<AutocompleteResultsForProviderMojoPtr>::From(
-          *controller_->providers());
+          controller_->providers());
   client()->HandleNewAutocompleteResult(result.Pass());
 }
 
