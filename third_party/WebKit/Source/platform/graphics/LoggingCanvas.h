@@ -110,7 +110,7 @@ private:
     String verbName(SkPath::Verb);
     VerbParams segmentParams(SkPath::Verb);
     PassRefPtr<JSONObject> objectForSkPath(const SkPath&);
-    String configName(SkBitmap::Config);
+    String colorTypeName(SkColorType);
     PassRefPtr<JSONObject> objectForBitmapData(const SkBitmap&);
     PassRefPtr<JSONObject> objectForSkBitmap(const SkBitmap&);
     PassRefPtr<JSONObject> objectForSkShader(const SkShader&);

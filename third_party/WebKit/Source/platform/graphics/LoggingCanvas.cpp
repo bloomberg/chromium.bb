@@ -595,15 +595,15 @@ PassRefPtr<JSONObject> LoggingCanvas::objectForSkPath(const SkPath& path)
     return pathItem.release();
 }
 
-String LoggingCanvas::configName(SkBitmap::Config config)
+String LoggingCanvas::colorTypeName(SkColorType colorType)
 {
-    switch (config) {
-    case SkBitmap::kNo_Config: return "None";
-    case SkBitmap::kA8_Config: return "A8";
-    case SkBitmap::kIndex8_Config: return "Index8";
-    case SkBitmap::kRGB_565_Config: return "RGB565";
-    case SkBitmap::kARGB_4444_Config: return "ARGB4444";
-    case SkBitmap::kARGB_8888_Config: return "ARGB8888";
+    switch (colorType) {
+    case kUnknown_SkColorType: return "None";
+    case kAlpha_8_SkColorType: return "A8";
+    case kIndex_8_SkColorType: return "Index8";
+    case kRGB_565_SkColorType: return "RGB565";
+    case kARGB_4444_SkColorType: return "ARGB4444";
+    case kN32_SkColorType: return "ARGB8888";
     default:
         ASSERT_NOT_REACHED();
         return "?";
@@ -625,7 +625,7 @@ PassRefPtr<JSONObject> LoggingCanvas::objectForSkBitmap(const SkBitmap& bitmap)
     RefPtr<JSONObject> bitmapItem = JSONObject::create();
     bitmapItem->setNumber("width", bitmap.width());
     bitmapItem->setNumber("height", bitmap.height());
-    bitmapItem->setString("config", configName(bitmap.config()));
+    bitmapItem->setString("config", colorTypeName(bitmap.colorType()));
     bitmapItem->setBoolean("opaque", bitmap.isOpaque());
     bitmapItem->setBoolean("immutable", bitmap.isImmutable());
     bitmapItem->setBoolean("volatile", bitmap.isVolatile());
