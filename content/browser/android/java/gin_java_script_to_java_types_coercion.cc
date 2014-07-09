@@ -12,8 +12,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/common/android/gin_java_bridge_value.h"
-
-using base::android::ConvertUTF8ToJavaString;
+#include "third_party/WebKit/public/platform/WebString.h"
 
 namespace content {
 
@@ -21,6 +20,13 @@ namespace {
 
 const char kJavaLangString[] = "java/lang/String";
 const char kUndefined[] = "undefined";
+
+// This is an intermediate solution until we fix http://crbug.com/391492.
+jstring ConvertUTF8ToJString(JNIEnv* env, const std::string& string) {
+  base::string16 utf16(
+      blink::WebString::fromUTF8(string.c_str(), string.size()));
+  return env->NewString(utf16.data(), utf16.length());
+}
 
 double RoundDoubleTowardsZero(const double& x) {
   if (std::isnan(x)) {
@@ -100,8 +106,7 @@ jvalue CoerceJavaScriptIntegerToJavaValue(JNIEnv* env,
       break;
     case JavaType::TypeString:
       result.l = coerce_to_string
-                     ? ConvertUTF8ToJavaString(
-                           env, base::Int64ToString(int_value)).Release()
+                     ? ConvertUTF8ToJString(env, base::Int64ToString(int_value))
                      : NULL;
       break;
     case JavaType::TypeBoolean:
@@ -161,11 +166,10 @@ jvalue CoerceJavaScriptDoubleToJavaValue(JNIEnv* env,
       result.l = NULL;
       break;
     case JavaType::TypeString:
-      result.l =
-          coerce_to_string
-              ? ConvertUTF8ToJavaString(
-                    env, base::StringPrintf("%.6lg", double_value)).Release()
-              : NULL;
+      result.l = coerce_to_string
+                     ? ConvertUTF8ToJString(
+                           env, base::StringPrintf("%.6lg", double_value))
+                     : NULL;
       break;
     case JavaType::TypeBoolean:
       // LIVECONNECT_COMPLIANCE: Existing behavior is to convert to false. Spec
@@ -203,10 +207,9 @@ jvalue CoerceJavaScriptBooleanToJavaValue(JNIEnv* env,
       result.l = NULL;
       break;
     case JavaType::TypeString:
-      result.l = coerce_to_string
-                     ? ConvertUTF8ToJavaString(
-                           env, boolean_value ? "true" : "false").Release()
-                     : NULL;
+      result.l = coerce_to_string ? ConvertUTF8ToJString(
+                                        env, boolean_value ? "true" : "false")
+                                  : NULL;
       break;
     case JavaType::TypeByte:
     case JavaType::TypeChar:
@@ -243,7 +246,7 @@ jvalue CoerceJavaScriptStringToJavaValue(JNIEnv* env,
     case JavaType::TypeString: {
       std::string string_result;
       value->GetAsString(&string_result);
-      result.l = ConvertUTF8ToJavaString(env, string_result).Release();
+      result.l = ConvertUTF8ToJString(env, string_result);
       break;
     }
     case JavaType::TypeObject:
@@ -397,7 +400,7 @@ jvalue CoerceJavaScriptNullOrUndefinedToJavaValue(JNIEnv* env,
       // LIVECONNECT_COMPLIANCE: Existing behavior is to convert undefined to
       // "undefined". Spec requires converting undefined to NULL.
       result.l = (coerce_to_string && is_undefined)
-                     ? ConvertUTF8ToJavaString(env, kUndefined).Release()
+                     ? ConvertUTF8ToJString(env, kUndefined)
                      : NULL;
       break;
     case JavaType::TypeByte:
@@ -583,9 +586,8 @@ jvalue CoerceJavaScriptObjectToJavaValue(JNIEnv* env,
     case JavaType::TypeString:
       // LIVECONNECT_COMPLIANCE: Existing behavior is to convert to
       // "undefined". Spec requires calling toString() on the Java object.
-      result.l = coerce_to_string
-                     ? ConvertUTF8ToJavaString(env, kUndefined).Release()
-                     : NULL;
+      result.l =
+          coerce_to_string ? ConvertUTF8ToJString(env, kUndefined) : NULL;
       break;
     case JavaType::TypeByte:
     case JavaType::TypeShort:
