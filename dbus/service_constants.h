@@ -1636,6 +1636,7 @@ const char kDebugdServicePath[] = "/org/chromium/debugd";
 const char kDebugdServiceName[] = "org.chromium.debugd";
 
 // Methods.
+const char kDumpDebugLogs[] = "DumpDebugLogs";
 const char kGetDebugLogs[] = "GetDebugLogs";
 const char kGetInterfaces[] = "GetInterfaces";
 const char kGetModemStatus[] = "GetModemStatus";
