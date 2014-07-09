@@ -96,8 +96,8 @@ void ServiceWorkerProviderHost::SetInstallingVersion(
   if (!dispatcher_host_)
     return;  // Could be NULL in some tests.
 
-  // TODO(michaeln,nhiroki): Send SetInstallingServiceWorker msg once the
-  // renderer side understands the .installing attribute value.
+  dispatcher_host_->Send(new ServiceWorkerMsg_SetInstallingServiceWorker(
+      kDocumentMainThreadId, provider_id(), CreateHandleAndPass(version)));
 }
 
 void ServiceWorkerProviderHost::UnsetVersion(ServiceWorkerVersion* version) {

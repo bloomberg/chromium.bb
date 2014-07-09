@@ -40,6 +40,8 @@ class ServiceWorkerProviderContext
   // Called from ServiceWorkerDispatcher.
   void OnServiceWorkerStateChanged(int handle_id,
                                    blink::WebServiceWorkerState state);
+  void OnSetInstallingServiceWorker(int provider_id,
+                                    const ServiceWorkerObjectInfo& info);
   void OnSetWaitingServiceWorker(int provider_id,
                                  const ServiceWorkerObjectInfo& info);
   void OnSetControllerServiceWorker(int provider_id,
@@ -47,8 +49,14 @@ class ServiceWorkerProviderContext
 
   int provider_id() const { return provider_id_; }
 
+  ServiceWorkerHandleReference* installing();
   ServiceWorkerHandleReference* waiting();
   ServiceWorkerHandleReference* controller();
+
+  // Gets the handle ID of the installing Service Worker, or
+  // kInvalidServiceWorkerHandleId if the provider does not have a
+  // installing Service Worker.
+  int installing_handle_id() const;
 
   // Gets the handle ID of the waiting Service Worker, or
   // kInvalidServiceWorkerHandleId if the provider does not have a
@@ -67,6 +75,7 @@ class ServiceWorkerProviderContext
   const int provider_id_;
   scoped_refptr<base::MessageLoopProxy> main_thread_loop_proxy_;
   scoped_refptr<ThreadSafeSender> thread_safe_sender_;
+  scoped_ptr<ServiceWorkerHandleReference> installing_;
   scoped_ptr<ServiceWorkerHandleReference> waiting_;
   scoped_ptr<ServiceWorkerHandleReference> controller_;
 

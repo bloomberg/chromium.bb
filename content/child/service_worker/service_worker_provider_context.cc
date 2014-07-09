@@ -36,6 +36,11 @@ ServiceWorkerProviderContext::~ServiceWorkerProviderContext() {
   }
 }
 
+ServiceWorkerHandleReference* ServiceWorkerProviderContext::installing() {
+  DCHECK(main_thread_loop_proxy_->RunsTasksOnCurrentThread());
+  return installing_.get();
+}
+
 ServiceWorkerHandleReference* ServiceWorkerProviderContext::waiting() {
   DCHECK(main_thread_loop_proxy_->RunsTasksOnCurrentThread());
   return waiting_.get();
@@ -54,6 +59,8 @@ void ServiceWorkerProviderContext::OnServiceWorkerStateChanged(
     which = controller_.get();
   } else if (handle_id == waiting_handle_id()) {
     which = waiting_.get();
+  } else if (handle_id == installing_handle_id()) {
+    which = installing_.get();
   }
 
   // We should only get messages for ServiceWorkers associated with
@@ -64,6 +71,13 @@ void ServiceWorkerProviderContext::OnServiceWorkerStateChanged(
 
   // TODO(kinuko): We can forward the message to other threads here
   // when we support navigator.serviceWorker in dedicated workers.
+}
+
+void ServiceWorkerProviderContext::OnSetInstallingServiceWorker(
+    int provider_id,
+    const ServiceWorkerObjectInfo& info) {
+  DCHECK_EQ(provider_id_, provider_id);
+  installing_ = ServiceWorkerHandleReference::Adopt(info, thread_safe_sender_);
 }
 
 void ServiceWorkerProviderContext::OnSetWaitingServiceWorker(
@@ -86,15 +100,22 @@ void ServiceWorkerProviderContext::OnSetControllerServiceWorker(
   // when we support navigator.serviceWorker in dedicated workers.
 }
 
-int ServiceWorkerProviderContext::controller_handle_id() const {
+int ServiceWorkerProviderContext::installing_handle_id() const {
   DCHECK(main_thread_loop_proxy_->RunsTasksOnCurrentThread());
-  return controller_ ? controller_->info().handle_id
+  return installing_ ? installing_->info().handle_id
                      : kInvalidServiceWorkerHandleId;
 }
 
 int ServiceWorkerProviderContext::waiting_handle_id() const {
   DCHECK(main_thread_loop_proxy_->RunsTasksOnCurrentThread());
-  return waiting_ ? waiting_->info().handle_id : kInvalidServiceWorkerHandleId;
+  return waiting_ ? waiting_->info().handle_id
+                  : kInvalidServiceWorkerHandleId;
+}
+
+int ServiceWorkerProviderContext::controller_handle_id() const {
+  DCHECK(main_thread_loop_proxy_->RunsTasksOnCurrentThread());
+  return controller_ ? controller_->info().handle_id
+                     : kInvalidServiceWorkerHandleId;
 }
 
 }  // namespace content

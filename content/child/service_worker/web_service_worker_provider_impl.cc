@@ -47,6 +47,11 @@ void WebServiceWorkerProviderImpl::setClient(
   // for more context)
   GetDispatcher()->AddScriptClient(provider_id_, client);
 
+  if (context_->installing_handle_id() != kInvalidServiceWorkerHandleId) {
+    client->setInstalling(GetDispatcher()->GetServiceWorker(
+        context_->installing()->info(), false));
+  }
+
   if (context_->waiting_handle_id() != kInvalidServiceWorkerHandleId) {
     client->setWaiting(GetDispatcher()->GetServiceWorker(
         context_->waiting()->info(), false));
