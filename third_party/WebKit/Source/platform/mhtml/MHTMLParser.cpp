@@ -32,6 +32,7 @@
 #include "platform/mhtml/MHTMLParser.h"
 
 #include "platform/MIMETypeRegistry.h"
+#include "platform/mhtml/ArchiveResource.h"
 #include "platform/mhtml/MHTMLArchive.h"
 #include "platform/network/ParsedContentType.h"
 #include "platform/text/QuotedPrintable.h"
@@ -46,8 +47,13 @@
 namespace WebCore {
 
 // This class is a limited MIME parser used to parse the MIME headers of MHTML files.
-class MIMEHeader : public RefCounted<MIMEHeader> {
+class MIMEHeader : public RefCountedWillBeGarbageCollectedFinalized<MIMEHeader> {
 public:
+    static PassRefPtrWillBeRawPtr<MIMEHeader> create()
+    {
+        return adoptRefWillBeNoop(new MIMEHeader());
+    }
+
     enum Encoding {
         QuotedPrintable,
         Base64,
@@ -57,7 +63,7 @@ public:
         Unknown
     };
 
-    static PassRefPtr<MIMEHeader> parseHeader(SharedBufferChunkReader* crLFLineReader);
+    static PassRefPtrWillBeRawPtr<MIMEHeader> parseHeader(SharedBufferChunkReader* crLFLineReader);
 
     bool isMultipart() const { return m_contentType.startsWith("multipart/"); }
 
@@ -70,6 +76,8 @@ public:
     String multiPartType() const { return m_multipartType; }
     String endOfPartBoundary() const { return m_endOfPartBoundary; }
     String endOfDocumentBoundary() const { return m_endOfDocumentBoundary; }
+
+    void trace(Visitor*) { }
 
 private:
     MIMEHeader();
@@ -123,9 +131,9 @@ static KeyValueMap retrieveKeyValuePairs(WebCore::SharedBufferChunkReader* buffe
     return keyValuePairs;
 }
 
-PassRefPtr<MIMEHeader> MIMEHeader::parseHeader(SharedBufferChunkReader* buffer)
+PassRefPtrWillBeRawPtr<MIMEHeader> MIMEHeader::parseHeader(SharedBufferChunkReader* buffer)
 {
-    RefPtr<MIMEHeader> mimeHeader = adoptRef(new MIMEHeader);
+    RefPtrWillBeRawPtr<MIMEHeader> mimeHeader = MIMEHeader::create();
     KeyValueMap keyValuePairs = retrieveKeyValuePairs(buffer);
     KeyValueMap::iterator mimeParametersIterator = keyValuePairs.find("content-type");
     if (mimeParametersIterator != keyValuePairs.end()) {
@@ -194,24 +202,24 @@ MHTMLParser::MHTMLParser(SharedBuffer* data)
 {
 }
 
-PassRefPtr<MHTMLArchive> MHTMLParser::parseArchive()
+PassRefPtrWillBeRawPtr<MHTMLArchive> MHTMLParser::parseArchive()
 {
-    RefPtr<MIMEHeader> header = MIMEHeader::parseHeader(&m_lineReader);
+    RefPtrWillBeRawPtr<MIMEHeader> header = MIMEHeader::parseHeader(&m_lineReader);
     return parseArchiveWithHeader(header.get());
 }
 
-PassRefPtr<MHTMLArchive> MHTMLParser::parseArchiveWithHeader(MIMEHeader* header)
+PassRefPtrWillBeRawPtr<MHTMLArchive> MHTMLParser::parseArchiveWithHeader(MIMEHeader* header)
 {
     if (!header) {
         WTF_LOG_ERROR("Failed to parse MHTML part: no header.");
         return nullptr;
     }
 
-    RefPtr<MHTMLArchive> archive = MHTMLArchive::create();
+    RefPtrWillBeRawPtr<MHTMLArchive> archive = MHTMLArchive::create();
     if (!header->isMultipart()) {
         // With IE a page with no resource is not multi-part.
         bool endOfArchiveReached = false;
-        RefPtr<ArchiveResource> resource = parseNextPart(*header, String(), String(), endOfArchiveReached);
+        RefPtrWillBeRawPtr<ArchiveResource> resource = parseNextPart(*header, String(), String(), endOfArchiveReached);
         if (!resource)
             return nullptr;
         archive->setMainResource(resource);
@@ -223,14 +231,14 @@ PassRefPtr<MHTMLArchive> MHTMLParser::parseArchiveWithHeader(MIMEHeader* header)
 
     bool endOfArchive = false;
     while (!endOfArchive) {
-        RefPtr<MIMEHeader> resourceHeader = MIMEHeader::parseHeader(&m_lineReader);
+        RefPtrWillBeRawPtr<MIMEHeader> resourceHeader = MIMEHeader::parseHeader(&m_lineReader);
         if (!resourceHeader) {
             WTF_LOG_ERROR("Failed to parse MHTML, invalid MIME header.");
             return nullptr;
         }
         if (resourceHeader->contentType() == "multipart/alternative") {
             // Ignore IE nesting which makes little sense (IE seems to nest only some of the frames).
-            RefPtr<MHTMLArchive> subframeArchive = parseArchiveWithHeader(resourceHeader.get());
+            RefPtrWillBeRawPtr<MHTMLArchive> subframeArchive = parseArchiveWithHeader(resourceHeader.get());
             if (!subframeArchive) {
                 WTF_LOG_ERROR("Failed to parse MHTML subframe.");
                 return nullptr;
@@ -244,7 +252,7 @@ PassRefPtr<MHTMLArchive> MHTMLParser::parseArchiveWithHeader(MIMEHeader* header)
             continue;
         }
 
-        RefPtr<ArchiveResource> resource = parseNextPart(*resourceHeader, header->endOfPartBoundary(), header->endOfDocumentBoundary(), endOfArchive);
+        RefPtrWillBeRawPtr<ArchiveResource> resource = parseNextPart(*resourceHeader, header->endOfPartBoundary(), header->endOfDocumentBoundary(), endOfArchive);
         if (!resource) {
             WTF_LOG_ERROR("Failed to parse MHTML part.");
             return nullptr;
@@ -270,12 +278,12 @@ void MHTMLParser::addResourceToArchive(ArchiveResource* resource, MHTMLArchive* 
         return;
     }
 
-    RefPtr<MHTMLArchive> subframe = MHTMLArchive::create();
+    RefPtrWillBeRawPtr<MHTMLArchive> subframe = MHTMLArchive::create();
     subframe->setMainResource(resource);
     m_frames.append(subframe);
 }
 
-PassRefPtr<ArchiveResource> MHTMLParser::parseNextPart(const MIMEHeader& mimeHeader, const String& endOfPartBoundary, const String& endOfDocumentBoundary, bool& endOfArchiveReached)
+PassRefPtrWillBeRawPtr<ArchiveResource> MHTMLParser::parseNextPart(const MIMEHeader& mimeHeader, const String& endOfPartBoundary, const String& endOfDocumentBoundary, bool& endOfArchiveReached)
 {
     ASSERT(endOfPartBoundary.isEmpty() == endOfDocumentBoundary.isEmpty());
 

@@ -30,6 +30,7 @@
 #define ArchiveResource_h
 
 #include "platform/SharedBuffer.h"
+#include "platform/heap/Handle.h"
 #include "platform/network/ResourceResponse.h"
 #include "platform/weborigin/KURL.h"
 #include "wtf/RefCounted.h"
@@ -37,12 +38,14 @@
 
 namespace WebCore {
 
-class PLATFORM_EXPORT ArchiveResource : public RefCounted<ArchiveResource> {
+class PLATFORM_EXPORT ArchiveResource FINAL : public RefCountedWillBeGarbageCollectedFinalized<ArchiveResource> {
 public:
-    static PassRefPtr<ArchiveResource> create(PassRefPtr<SharedBuffer>, const KURL&, const ResourceResponse&);
-    static PassRefPtr<ArchiveResource> create(PassRefPtr<SharedBuffer>, const KURL&,
+    static PassRefPtrWillBeRawPtr<ArchiveResource> create(PassRefPtr<SharedBuffer>, const KURL&, const ResourceResponse&);
+    static PassRefPtrWillBeRawPtr<ArchiveResource> create(PassRefPtr<SharedBuffer>, const KURL&,
         const AtomicString& mimeType, const AtomicString& textEncoding, const String& frameName,
         const ResourceResponse& = ResourceResponse());
+
+    ~ArchiveResource();
 
     const KURL& url() const { return m_url; }
     const ResourceResponse& response() const { return m_response; }
@@ -50,6 +53,8 @@ public:
     const AtomicString& mimeType() const { return m_mimeType; }
     const AtomicString& textEncoding() const { return m_textEncoding; }
     const String& frameName() const { return m_frameName; }
+
+    void trace(Visitor*) { }
 
 private:
     ArchiveResource(PassRefPtr<SharedBuffer>, const KURL&, const AtomicString& mimeType, const AtomicString& textEncoding, const String& frameName, const ResourceResponse&);

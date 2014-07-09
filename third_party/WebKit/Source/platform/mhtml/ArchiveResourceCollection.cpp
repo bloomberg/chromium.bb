@@ -29,11 +29,17 @@
 #include "config.h"
 #include "platform/mhtml/ArchiveResourceCollection.h"
 
+#include "platform/mhtml/ArchiveResource.h"
+#include "platform/mhtml/MHTMLArchive.h"
 #include "platform/weborigin/KURL.h"
 
 namespace WebCore {
 
 ArchiveResourceCollection::ArchiveResourceCollection()
+{
+}
+
+ArchiveResourceCollection::~ArchiveResourceCollection()
 {
 }
 
@@ -43,13 +49,13 @@ void ArchiveResourceCollection::addAllResources(MHTMLArchive* archive)
     if (!archive)
         return;
 
-    const Vector<RefPtr<ArchiveResource> >& subresources = archive->subresources();
-    for (Vector<RefPtr<ArchiveResource> >::const_iterator iterator = subresources.begin(); iterator != subresources.end(); ++iterator)
+    const MHTMLArchive::SubArchiveResources& subresources = archive->subresources();
+    for (MHTMLArchive::SubArchiveResources::const_iterator iterator = subresources.begin(); iterator != subresources.end(); ++iterator)
         m_subresources.set((*iterator)->url(), iterator->get());
 
-    const Vector<RefPtr<MHTMLArchive> >& subframes = archive->subframeArchives();
-    for (Vector<RefPtr<MHTMLArchive> >::const_iterator iterator = subframes.begin(); iterator != subframes.end(); ++iterator) {
-        RefPtr<MHTMLArchive> archive = *iterator;
+    const MHTMLArchive::SubFrameArchives& subframes = archive->subframeArchives();
+    for (MHTMLArchive::SubFrameArchives::const_iterator iterator = subframes.begin(); iterator != subframes.end(); ++iterator) {
+        RefPtrWillBeRawPtr<MHTMLArchive> archive = *iterator;
         ASSERT(archive->mainResource());
 
         const String& frameName = archive->mainResource()->frameName();
@@ -64,7 +70,7 @@ void ArchiveResourceCollection::addAllResources(MHTMLArchive* archive)
 
 // FIXME: Adding a resource directly to a DocumentLoader/ArchiveResourceCollection seems like bad design, but is API some apps rely on.
 // Can we change the design in a manner that will let us deprecate that API without reducing functionality of those apps?
-void ArchiveResourceCollection::addResource(PassRefPtr<ArchiveResource> resource)
+void ArchiveResourceCollection::addResource(PassRefPtrWillBeRawPtr<ArchiveResource> resource)
 {
     ASSERT(resource);
     if (!resource)
@@ -83,13 +89,19 @@ ArchiveResource* ArchiveResourceCollection::archiveResourceForURL(const KURL& ur
     return resource;
 }
 
-PassRefPtr<MHTMLArchive> ArchiveResourceCollection::popSubframeArchive(const String& frameName, const KURL& url)
+PassRefPtrWillBeRawPtr<MHTMLArchive> ArchiveResourceCollection::popSubframeArchive(const String& frameName, const KURL& url)
 {
-    RefPtr<MHTMLArchive> archive = m_subframes.take(frameName);
+    RefPtrWillBeRawPtr<MHTMLArchive> archive = m_subframes.take(frameName);
     if (archive)
         return archive.release();
 
     return m_subframes.take(url.string());
+}
+
+void ArchiveResourceCollection::trace(Visitor* visitor)
+{
+    visitor->trace(m_subresources);
+    visitor->trace(m_subframes);
 }
 
 }

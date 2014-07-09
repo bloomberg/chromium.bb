@@ -35,6 +35,7 @@
 #include "platform/MIMETypeRegistry.h"
 #include "platform/SerializedResource.h"
 #include "platform/SharedBuffer.h"
+#include "platform/mhtml/ArchiveResource.h"
 #include "platform/mhtml/MHTMLParser.h"
 #include "platform/text/QuotedPrintable.h"
 #include "platform/weborigin/SchemeRegistry.h"
@@ -86,29 +87,31 @@ MHTMLArchive::MHTMLArchive()
 
 MHTMLArchive::~MHTMLArchive()
 {
+#if !ENABLE(OILPAN)
     // Because all frames know about each other we need to perform a deep clearing of the archives graph.
     clearAllSubframeArchives();
+#endif
 }
 
-PassRefPtr<MHTMLArchive> MHTMLArchive::create()
+PassRefPtrWillBeRawPtr<MHTMLArchive> MHTMLArchive::create()
 {
-    return adoptRef(new MHTMLArchive);
+    return adoptRefWillBeNoop(new MHTMLArchive);
 }
 
-PassRefPtr<MHTMLArchive> MHTMLArchive::create(const KURL& url, SharedBuffer* data)
+PassRefPtrWillBeRawPtr<MHTMLArchive> MHTMLArchive::create(const KURL& url, SharedBuffer* data)
 {
     // For security reasons we only load MHTML pages from local URLs.
     if (!SchemeRegistry::shouldTreatURLSchemeAsLocal(url.protocol()))
         return nullptr;
 
     MHTMLParser parser(data);
-    RefPtr<MHTMLArchive> mainArchive = parser.parseArchive();
+    RefPtrWillBeRawPtr<MHTMLArchive> mainArchive = parser.parseArchive();
     if (!mainArchive)
         return nullptr; // Invalid MHTML file.
 
     // Since MHTML is a flat format, we need to make all frames aware of all resources.
     for (size_t i = 0; i < parser.frameCount(); ++i) {
-        RefPtr<MHTMLArchive> archive = parser.frameAt(i);
+        RefPtrWillBeRawPtr<MHTMLArchive> archive = parser.frameAt(i);
         for (size_t j = 1; j < parser.frameCount(); ++j) {
             if (i != j)
                 archive->addSubframeArchive(parser.frameAt(j));
@@ -214,21 +217,45 @@ PassRefPtr<SharedBuffer> MHTMLArchive::generateMHTMLData(const Vector<Serialized
     return mhtmlData.release();
 }
 
+#if !ENABLE(OILPAN)
 void MHTMLArchive::clearAllSubframeArchives()
 {
-    Vector<RefPtr<MHTMLArchive> > clearedArchives;
+    SubFrameArchives clearedArchives;
     clearAllSubframeArchivesImpl(&clearedArchives);
 }
 
-void MHTMLArchive::clearAllSubframeArchivesImpl(Vector<RefPtr<MHTMLArchive> >* clearedArchives)
+void MHTMLArchive::clearAllSubframeArchivesImpl(SubFrameArchives* clearedArchives)
 {
-    for (Vector<RefPtr<MHTMLArchive> >::iterator it = m_subframeArchives.begin(); it != m_subframeArchives.end(); ++it) {
+    for (SubFrameArchives::iterator it = m_subframeArchives.begin(); it != m_subframeArchives.end(); ++it) {
         if (!clearedArchives->contains(*it)) {
             clearedArchives->append(*it);
             (*it)->clearAllSubframeArchivesImpl(clearedArchives);
         }
     }
     m_subframeArchives.clear();
+}
+#endif
+
+void MHTMLArchive::setMainResource(PassRefPtrWillBeRawPtr<ArchiveResource> mainResource)
+{
+    m_mainResource = mainResource;
+}
+
+void MHTMLArchive::addSubresource(PassRefPtrWillBeRawPtr<ArchiveResource> subResource)
+{
+    m_subresources.append(subResource);
+}
+
+void MHTMLArchive::addSubframeArchive(PassRefPtrWillBeRawPtr<MHTMLArchive> subframeArchive)
+{
+    m_subframeArchives.append(subframeArchive);
+}
+
+void MHTMLArchive::trace(Visitor* visitor)
+{
+    visitor->trace(m_mainResource);
+    visitor->trace(m_subresources);
+    visitor->trace(m_subframeArchives);
 }
 
 }

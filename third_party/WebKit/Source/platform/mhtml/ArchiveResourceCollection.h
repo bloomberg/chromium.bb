@@ -29,29 +29,39 @@
 #ifndef ArchiveResourceCollection_h
 #define ArchiveResourceCollection_h
 
-#include "platform/mhtml/ArchiveResource.h"
-#include "platform/mhtml/MHTMLArchive.h"
+#include "platform/heap/Handle.h"
 #include "wtf/HashMap.h"
 #include "wtf/text/WTFString.h"
 
 namespace WebCore {
 
+class ArchiveResource;
 class KURL;
+class MHTMLArchive;
 
-class PLATFORM_EXPORT ArchiveResourceCollection {
-    WTF_MAKE_NONCOPYABLE(ArchiveResourceCollection); WTF_MAKE_FAST_ALLOCATED;
+class PLATFORM_EXPORT ArchiveResourceCollection FINAL : public NoBaseWillBeGarbageCollectedFinalized<ArchiveResourceCollection> {
+    WTF_MAKE_NONCOPYABLE(ArchiveResourceCollection); WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
 public:
-    ArchiveResourceCollection();
+    static PassOwnPtrWillBeRawPtr<ArchiveResourceCollection> create()
+    {
+        return adoptPtrWillBeNoop(new ArchiveResourceCollection);
+    }
 
-    void addResource(PassRefPtr<ArchiveResource>);
+    ~ArchiveResourceCollection();
+
+    void addResource(PassRefPtrWillBeRawPtr<ArchiveResource>);
     void addAllResources(MHTMLArchive*);
 
     ArchiveResource* archiveResourceForURL(const KURL&);
-    PassRefPtr<MHTMLArchive> popSubframeArchive(const String& frameName, const KURL&);
+    PassRefPtrWillBeRawPtr<MHTMLArchive> popSubframeArchive(const String& frameName, const KURL&);
+
+    void trace(Visitor*);
 
 private:
-    HashMap<String, RefPtr<ArchiveResource> > m_subresources;
-    HashMap<String, RefPtr<MHTMLArchive> > m_subframes;
+    ArchiveResourceCollection();
+
+    WillBeHeapHashMap<String, RefPtrWillBeMember<ArchiveResource> > m_subresources;
+    WillBeHeapHashMap<String, RefPtrWillBeMember<MHTMLArchive> > m_subframes;
 };
 
 }

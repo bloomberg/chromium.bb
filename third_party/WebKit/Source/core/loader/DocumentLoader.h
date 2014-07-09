@@ -209,8 +209,8 @@ namespace WebCore {
         // benefit of the various policy handlers.
         NavigationAction m_triggeringAction;
 
-        OwnPtr<ArchiveResourceCollection> m_archiveResourceCollection;
-        RefPtr<MHTMLArchive> m_archive;
+        OwnPtrWillBePersistent<ArchiveResourceCollection> m_archiveResourceCollection;
+        RefPtrWillBePersistent<MHTMLArchive> m_archive;
 
         bool m_loadingMainResource;
         DocumentLoadTiming m_documentLoadTiming;

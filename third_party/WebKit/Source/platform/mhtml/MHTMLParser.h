@@ -32,6 +32,7 @@
 #define MHTMLParser_h
 
 #include "platform/SharedBufferChunkReader.h"
+#include "platform/heap/Handle.h"
 #include "wtf/RefPtr.h"
 #include "wtf/Vector.h"
 
@@ -46,11 +47,12 @@ class MHTMLArchive;
 class MIMEHeader;
 class SharedBuffer;
 
-class PLATFORM_EXPORT MHTMLParser {
+class PLATFORM_EXPORT MHTMLParser FINAL {
+    STACK_ALLOCATED();
 public:
     explicit MHTMLParser(SharedBuffer*);
 
-    PassRefPtr<MHTMLArchive> parseArchive();
+    PassRefPtrWillBeRawPtr<MHTMLArchive> parseArchive();
 
     size_t frameCount() const;
     MHTMLArchive* frameAt(size_t) const;
@@ -59,17 +61,16 @@ public:
     ArchiveResource* subResourceAt(size_t) const;
 
 private:
-    PassRefPtr<MHTMLArchive> parseArchiveWithHeader(MIMEHeader*);
-    PassRefPtr<ArchiveResource> parseNextPart(const MIMEHeader&, const String& endOfPartBoundary, const String& endOfDocumentBoundary, bool& endOfArchiveReached);
+    PassRefPtrWillBeRawPtr<MHTMLArchive> parseArchiveWithHeader(MIMEHeader*);
+    PassRefPtrWillBeRawPtr<ArchiveResource> parseNextPart(const MIMEHeader&, const String& endOfPartBoundary, const String& endOfDocumentBoundary, bool& endOfArchiveReached);
 
     void addResourceToArchive(ArchiveResource*, MHTMLArchive*);
 
     SharedBufferChunkReader m_lineReader;
-    Vector<RefPtr<ArchiveResource> > m_resources;
-    Vector<RefPtr<MHTMLArchive> > m_frames;
+    WillBeHeapVector<RefPtrWillBeMember<ArchiveResource> > m_resources;
+    WillBeHeapVector<RefPtrWillBeMember<MHTMLArchive> > m_frames;
 };
 
 }
 
 #endif
-

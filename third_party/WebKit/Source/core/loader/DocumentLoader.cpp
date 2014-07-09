@@ -52,6 +52,7 @@
 #include "core/frame/Settings.h"
 #include "platform/Logging.h"
 #include "platform/UserGestureIndicator.h"
+#include "platform/mhtml/ArchiveResource.h"
 #include "platform/mhtml/ArchiveResourceCollection.h"
 #include "platform/mhtml/MHTMLArchive.h"
 #include "platform/plugins/PluginData.h"
@@ -622,7 +623,7 @@ void DocumentLoader::addAllArchiveResources(MHTMLArchive* archive)
 {
     ASSERT(archive);
     if (!m_archiveResourceCollection)
-        m_archiveResourceCollection = adoptPtr(new ArchiveResourceCollection);
+        m_archiveResourceCollection = ArchiveResourceCollection::create();
     m_archiveResourceCollection->addAllResources(archive);
 }
 

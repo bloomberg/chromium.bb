@@ -42,19 +42,22 @@ inline ArchiveResource::ArchiveResource(PassRefPtr<SharedBuffer> data, const KUR
     ASSERT(m_data);
 }
 
-PassRefPtr<ArchiveResource> ArchiveResource::create(PassRefPtr<SharedBuffer> data, const KURL& url, const AtomicString& mimeType, const AtomicString& textEncoding, const String& frameName, const ResourceResponse& response)
+ArchiveResource::~ArchiveResource()
+{
+}
+
+PassRefPtrWillBeRawPtr<ArchiveResource> ArchiveResource::create(PassRefPtr<SharedBuffer> data, const KURL& url, const AtomicString& mimeType, const AtomicString& textEncoding, const String& frameName, const ResourceResponse& response)
 {
     if (!data)
         return nullptr;
     if (response.isNull()) {
-        unsigned dataSize = data->size();
-        return adoptRef(new ArchiveResource(data, url, mimeType, textEncoding, frameName,
-            ResourceResponse(url, mimeType, dataSize, textEncoding, String())));
+        const ResourceResponse& resourceResponse = ResourceResponse(url, mimeType, data->size(), textEncoding, String());
+        return adoptRefWillBeNoop(new ArchiveResource(data, url, mimeType, textEncoding, frameName, resourceResponse));
     }
-    return adoptRef(new ArchiveResource(data, url, mimeType, textEncoding, frameName, response));
+    return adoptRefWillBeNoop(new ArchiveResource(data, url, mimeType, textEncoding, frameName, response));
 }
 
-PassRefPtr<ArchiveResource> ArchiveResource::create(PassRefPtr<SharedBuffer> data, const KURL& url, const ResourceResponse& response)
+PassRefPtrWillBeRawPtr<ArchiveResource> ArchiveResource::create(PassRefPtr<SharedBuffer> data, const KURL& url, const ResourceResponse& response)
 {
     return create(data, url, response.mimeType(), response.textEncodingName(), String(), response);
 }

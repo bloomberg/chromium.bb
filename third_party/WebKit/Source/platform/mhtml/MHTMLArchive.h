@@ -31,7 +31,7 @@
 #ifndef MHTMLArchive_h
 #define MHTMLArchive_h
 
-#include "platform/mhtml/ArchiveResource.h"
+#include "platform/heap/Handle.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"
@@ -39,16 +39,18 @@
 
 namespace WebCore {
 
+class ArchiveResource;
 class KURL;
 class MHTMLParser;
 class SharedBuffer;
 
 struct SerializedResource;
 
-class PLATFORM_EXPORT MHTMLArchive FINAL : public RefCounted<MHTMLArchive> {
+class PLATFORM_EXPORT MHTMLArchive FINAL : public RefCountedWillBeGarbageCollectedFinalized<MHTMLArchive> {
 public:
-    static PassRefPtr<MHTMLArchive> create();
-    static PassRefPtr<MHTMLArchive> create(const KURL&, SharedBuffer*);
+    static PassRefPtrWillBeRawPtr<MHTMLArchive> create();
+    static PassRefPtrWillBeRawPtr<MHTMLArchive> create(const KURL&, SharedBuffer*);
+    ~MHTMLArchive();
 
     enum EncodingPolicy {
         UseDefaultEncoding,
@@ -58,25 +60,31 @@ public:
     // Binary encoding results in smaller MHTML files but they might not work in other browsers.
     static PassRefPtr<SharedBuffer> generateMHTMLData(const Vector<SerializedResource>&, EncodingPolicy, const String& title, const String& mimeType);
 
-    ~MHTMLArchive();
+    typedef WillBeHeapVector<RefPtrWillBeMember<ArchiveResource> > SubArchiveResources;
+    typedef WillBeHeapVector<RefPtrWillBeMember<MHTMLArchive> > SubFrameArchives;
+
     ArchiveResource* mainResource() { return m_mainResource.get(); }
-    const Vector<RefPtr<ArchiveResource> >& subresources() const { return m_subresources; }
-    const Vector<RefPtr<MHTMLArchive> >& subframeArchives() const { return m_subframeArchives; }
+    const SubArchiveResources& subresources() const { return m_subresources; }
+    const SubFrameArchives& subframeArchives() const { return m_subframeArchives; }
+
+    void trace(Visitor*);
 
 private:
     friend class MHTMLParser;
     MHTMLArchive();
 
-    void setMainResource(PassRefPtr<ArchiveResource> mainResource) { m_mainResource = mainResource; }
-    void addSubresource(PassRefPtr<ArchiveResource> subResource) { m_subresources.append(subResource); }
-    void addSubframeArchive(PassRefPtr<MHTMLArchive> subframeArchive) { m_subframeArchives.append(subframeArchive); }
+    void setMainResource(PassRefPtrWillBeRawPtr<ArchiveResource>);
+    void addSubresource(PassRefPtrWillBeRawPtr<ArchiveResource>);
+    void addSubframeArchive(PassRefPtrWillBeRawPtr<MHTMLArchive>);
 
+#if !ENABLE(OILPAN)
     void clearAllSubframeArchives();
-    void clearAllSubframeArchivesImpl(Vector<RefPtr<MHTMLArchive> >* clearedArchives);
+    void clearAllSubframeArchivesImpl(SubFrameArchives* clearedArchives);
+#endif
 
-    RefPtr<ArchiveResource> m_mainResource;
-    Vector<RefPtr<ArchiveResource> > m_subresources;
-    Vector<RefPtr<MHTMLArchive> > m_subframeArchives;
+    RefPtrWillBeMember<ArchiveResource> m_mainResource;
+    SubArchiveResources m_subresources;
+    SubFrameArchives m_subframeArchives;
 };
 
 }
