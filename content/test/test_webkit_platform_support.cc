@@ -35,11 +35,16 @@
 
 #if defined(OS_MACOSX)
 #include "base/mac/mac_util.h"
+#include "base/mac/scoped_nsautorelease_pool.h"
 #endif
 
 namespace content {
 
 TestWebKitPlatformSupport::TestWebKitPlatformSupport() {
+#if defined(OS_MACOSX)
+  base::mac::ScopedNSAutoreleasePool autorelease_pool;
+#endif
+
   url_loader_factory_.reset(new WebURLLoaderMockFactory());
   mock_clipboard_.reset(new MockWebClipboardImpl());
 
