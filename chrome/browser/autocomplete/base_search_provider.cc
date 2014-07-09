@@ -65,15 +65,6 @@ AutocompleteMatchType::Type GetAutocompleteMatchType(const std::string& type) {
   return AutocompleteMatchType::SEARCH_SUGGEST;
 }
 
-base::string16 StringForURLDisplayWithAcceptLanguages(Profile* profile,
-                                                      const GURL& url) {
-  std::string languages = profile ?
-      profile->GetPrefs()->GetString(prefs::kAcceptLanguages) : std::string();
-  return net::FormatUrl(url, languages,
-                        net::kFormatUrlOmitAll & ~net::kFormatUrlOmitHTTP,
-                        net::UnescapeRule::SPACES, NULL, NULL, NULL);
-}
-
 } // namespace
 
 // SuggestionDeletionHandler -------------------------------------------------
@@ -364,8 +355,7 @@ int BaseSearchProvider::SuggestResult::CalculateRelevance(
 // BaseSearchProvider::NavigationResult ----------------------------------------
 
 BaseSearchProvider::NavigationResult::NavigationResult(
-    const AutocompleteProvider& provider,
-    Profile* profile,
+    const AutocompleteSchemeClassifier& scheme_classifier,
     const GURL& url,
     AutocompleteMatchType::Type type,
     const base::string16& description,
@@ -379,8 +369,10 @@ BaseSearchProvider::NavigationResult::NavigationResult(
              deletion_url),
       url_(url),
       formatted_url_(AutocompleteInput::FormattedStringWithEquivalentMeaning(
-          url, StringForURLDisplayWithAcceptLanguages(profile, url),
-          ChromeAutocompleteSchemeClassifier(profile))),
+          url, net::FormatUrl(url, languages,
+                              net::kFormatUrlOmitAll & ~net::kFormatUrlOmitHTTP,
+                              net::UnescapeRule::SPACES, NULL, NULL, NULL),
+          scheme_classifier)),
       description_(description) {
   DCHECK(url_.is_valid());
   CalculateAndClassifyMatchContents(true, input_text, languages);
@@ -913,9 +905,9 @@ bool BaseSearchProvider::ParseSuggestResults(const base::Value& root_val,
         if (descriptions != NULL)
           descriptions->GetString(index, &title);
         results->navigation_results.push_back(NavigationResult(
-            *this, profile_, url, match_type, title, deletion_url,
-            is_keyword_result, relevance, relevances != NULL, input.text(),
-            languages));
+            ChromeAutocompleteSchemeClassifier(profile_), url, match_type,
+            title, deletion_url, is_keyword_result, relevance,
+            relevances != NULL, input.text(), languages));
       }
     } else {
       base::string16 match_contents = suggestion;

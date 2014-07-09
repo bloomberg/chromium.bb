@@ -248,9 +248,7 @@ class BaseSearchProvider : public AutocompleteProvider,
 
   class NavigationResult : public Result {
    public:
-    // |provider| and |profile| are both used to compute |formatted_url_|.
-    NavigationResult(const AutocompleteProvider& provider,
-                     Profile* profile,
+    NavigationResult(const AutocompleteSchemeClassifier& scheme_classifier,
                      const GURL& url,
                      AutocompleteMatchType::Type type,
                      const base::string16& description,
