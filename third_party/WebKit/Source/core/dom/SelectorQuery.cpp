@@ -120,6 +120,8 @@ inline bool SelectorDataList::selectorMatches(const CSSSelector& selector, Eleme
     SelectorChecker selectorChecker(element.document(), SelectorChecker::QueryingRules);
     SelectorChecker::SelectorCheckingContext selectorCheckingContext(selector, &element, SelectorChecker::VisitedMatchDisabled);
     selectorCheckingContext.scope = !rootNode.isDocumentNode() ? &rootNode : 0;
+    if (selectorCheckingContext.scope)
+        selectorCheckingContext.contextFlags = SelectorChecker::ScopeContainsLastMatchedElement;
     return selectorChecker.match(selectorCheckingContext, DOMSiblingTraversalStrategy()) == SelectorChecker::SelectorMatches;
 }
 

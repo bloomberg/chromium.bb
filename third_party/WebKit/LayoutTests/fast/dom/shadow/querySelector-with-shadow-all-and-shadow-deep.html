@@ -1,11 +1,7 @@
 <!DOCTYPE html>
-<html>
-<head>
 <script src="resources/shadow-dom.js"></script>
 <script src="../../../resources/js-test.js"></script>
-</head>
-<body>
-</body>
+<body></body>
 <script>
 document.body.appendChild(
     createDOM('div', {'id': 'foo-host'},
@@ -18,9 +14,6 @@ document.body.appendChild(
                     createDOM('span', {'id': 'nested'})),
                 createDOM('span', {'id': 'inner-host'}))),
         createDOM('span', {'id': 'outer-host'})));
-
-document.body.appendChild(
-    createDOM('pre', {'id': 'console'}));
 
 description('crbug.com/337616: test for querySelectorAll with ::shadow and /deep/');
 
@@ -82,6 +75,11 @@ shouldBe('barShadowRoot.querySelectorAll(":host-context(div#foo-host)::shadow sp
 shouldBe('barShadowRoot.querySelectorAll(":host-context(div#foo-host)::shadow span")[0].id', '"nested"');
 shouldBe('barShadowRoot.querySelectorAll(":host-context(div#foo-host) /deep/ span").length', '1');
 shouldBe('barShadowRoot.querySelectorAll(":host-context(div#foo-host) /deep/ span")[0].id', '"nested"');
-</script>
-</html>
 
+// crbug.com/390301
+var fooHost = document.getElementById("foo-host");
+shouldBe('fooHost.querySelectorAll("::shadow span").length', '3');
+shouldBe('fooHost.querySelectorAll("::shadow span")[0].id', '"not-top"');
+shouldBe('fooHost.querySelectorAll("::shadow span")[1].id', '"top"');
+shouldBe('fooHost.querySelectorAll("::shadow span")[2].id', '"inner-host"');
+</script>
