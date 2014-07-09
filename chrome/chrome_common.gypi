@@ -91,6 +91,8 @@
       'common/extensions/features/chrome_channel_feature_filter.h',
       'common/extensions/features/feature_channel.cc',
       'common/extensions/features/feature_channel.h',
+      'common/extensions/image_writer/image_writer_util_mac.cc',
+      'common/extensions/image_writer/image_writer_util_mac.h',
       'common/extensions/manifest_handlers/app_isolation_info.cc',
       'common/extensions/manifest_handlers/app_isolation_info.h',
       'common/extensions/manifest_handlers/app_launch_info.cc',

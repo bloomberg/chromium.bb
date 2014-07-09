@@ -2,15 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <CoreFoundation/CoreFoundation.h>
+#include <IOKit/IOBSD.h>
+#include <IOKit/IOKitLib.h>
+#include <IOKit/storage/IOBlockStorageDevice.h>
+#include <IOKit/storage/IOMedia.h>
 #include <IOKit/storage/IOStorageProtocolCharacteristics.h>
 #include <sys/socket.h>
 
 #include "base/command_line.h"
 #include "base/files/scoped_file.h"
+#include "base/mac/scoped_cftyperef.h"
+#include "base/mac/scoped_ioobject.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/process/kill.h"
 #include "base/process/launch.h"
 #include "base/strings/stringprintf.h"
+#include "base/strings/sys_string_conversions.h"
+#include "chrome/common/extensions/image_writer/image_writer_util_mac.h"
 #include "chrome/utility/image_writer/disk_unmounter_mac.h"
 #include "chrome/utility/image_writer/error_messages.h"
 #include "chrome/utility/image_writer/image_writer.h"
@@ -20,37 +29,36 @@ namespace image_writer {
 static const char kAuthOpenPath[] = "/usr/libexec/authopen";
 
 bool ImageWriter::IsValidDevice() {
-  base::ScopedCFTypeRef<DASessionRef> session(DASessionCreate(NULL));
-  base::ScopedCFTypeRef<DADiskRef> disk(DADiskCreateFromBSDName(
-      kCFAllocatorDefault, session, device_path_.value().c_str()));
+  base::ScopedCFTypeRef<CFStringRef> cf_bsd_name(
+      base::SysUTF8ToCFStringRef(device_path_.value()));
+  CFMutableDictionaryRef matching = IOServiceMatching(kIOMediaClass);
+  CFDictionaryAddValue(matching, CFSTR(kIOMediaWholeKey), kCFBooleanTrue);
+  CFDictionaryAddValue(matching, CFSTR(kIOMediaWritableKey), kCFBooleanTrue);
+  CFDictionaryAddValue(matching, CFSTR(kIOBSDNameKey), cf_bsd_name);
 
-  if (!disk)
-    return false;
+  io_service_t disk_obj =
+      IOServiceGetMatchingService(kIOMasterPortDefault, matching);
+  base::mac::ScopedIOObject<io_service_t> iterator_ref(disk_obj);
 
-  base::ScopedCFTypeRef<CFDictionaryRef> disk_description(
-      DADiskCopyDescription(disk));
+  if (disk_obj) {
+    CFMutableDictionaryRef dict;
+    if (IORegistryEntryCreateCFProperties(
+            disk_obj, &dict, kCFAllocatorDefault, 0) != KERN_SUCCESS) {
+      LOG(ERROR) << "Unable to get properties of disk object.";
+      return false;
+    }
+    base::ScopedCFTypeRef<CFMutableDictionaryRef> dict_ref(dict);
 
-  CFBooleanRef ejectable = base::mac::GetValueFromDictionary<CFBooleanRef>(
-      disk_description, kDADiskDescriptionMediaEjectableKey);
-  CFBooleanRef removable = base::mac::GetValueFromDictionary<CFBooleanRef>(
-      disk_description, kDADiskDescriptionMediaRemovableKey);
-  CFBooleanRef writable = base::mac::GetValueFromDictionary<CFBooleanRef>(
-      disk_description, kDADiskDescriptionMediaWritableKey);
-  CFBooleanRef whole = base::mac::GetValueFromDictionary<CFBooleanRef>(
-      disk_description, kDADiskDescriptionMediaWholeKey);
-  CFStringRef kind = base::mac::GetValueFromDictionary<CFStringRef>(
-      disk_description, kDADiskDescriptionMediaKindKey);
+    CFBooleanRef cf_removable = base::mac::GetValueFromDictionary<CFBooleanRef>(
+        dict, CFSTR(kIOMediaRemovableKey));
+    bool removable = CFBooleanGetValue(cf_removable);
 
-  // A drive is valid if it is
-  // - ejectable
-  // - removable
-  // - writable
-  // - a whole drive
-  // - it is of type IOMedia (external DVD drives and the like are IOCDMedia or
-  //   IODVDMedia)
-  return CFBooleanGetValue(ejectable) && CFBooleanGetValue(removable) &&
-         CFBooleanGetValue(writable) && CFBooleanGetValue(whole) &&
-         CFStringCompare(kind, CFSTR("IOMedia"), 0) == kCFCompareEqualTo;
+    bool is_usb = extensions::IsUsbDevice(disk_obj);
+
+    return removable || is_usb;
+  }
+
+  return false;
 }
 
 void ImageWriter::UnmountVolumes(const base::Closure& continuation) {

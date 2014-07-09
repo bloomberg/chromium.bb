@@ -16,6 +16,7 @@
 #include "base/mac/scoped_ioobject.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/threading/thread_restrictions.h"
+#include "chrome/common/extensions/image_writer/image_writer_util_mac.h"
 
 namespace extensions {
 
@@ -23,11 +24,9 @@ namespace extensions {
 bool RemovableStorageProvider::PopulateDeviceList(
     scoped_refptr<StorageDeviceList> device_list) {
   base::ThreadRestrictions::AssertIOAllowed();
-  // Match only removable, ejectable, non-internal, whole disks.
+  // Match only writable whole-disks.
   CFMutableDictionaryRef matching = IOServiceMatching(kIOMediaClass);
   CFDictionaryAddValue(matching, CFSTR(kIOMediaWholeKey), kCFBooleanTrue);
-  CFDictionaryAddValue(matching, CFSTR(kIOMediaEjectableKey), kCFBooleanTrue);
-  CFDictionaryAddValue(matching, CFSTR(kIOMediaRemovableKey), kCFBooleanTrue);
   CFDictionaryAddValue(matching, CFSTR(kIOMediaWritableKey), kCFBooleanTrue);
 
   io_service_t disk_iterator;
@@ -59,6 +58,16 @@ bool RemovableStorageProvider::PopulateDeviceList(
     uint64 size_in_bytes = 0;
     if (size_number)
       CFNumberGetValue(size_number, kCFNumberLongLongType, &size_in_bytes);
+
+    CFBooleanRef cf_removable = base::mac::GetValueFromDictionary<CFBooleanRef>(
+        dict, CFSTR(kIOMediaRemovableKey));
+    bool removable = CFBooleanGetValue(cf_removable);
+
+    bool is_usb = IsUsbDevice(disk_obj);
+
+    if (!removable && !is_usb) {
+      continue;
+    }
 
     base::ScopedCFTypeRef<CFDictionaryRef> characteristics(
         static_cast<CFDictionaryRef>(IORegistryEntrySearchCFProperty(
