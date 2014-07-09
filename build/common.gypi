@@ -3886,16 +3886,6 @@
               '-std=gnu++11',
             ],
           }],
-          ['clang==1 and OS=="android"', {
-            # Android uses stlport, whose include/new defines
-            # `void  operator delete[](void* ptr) throw();`, which
-            # clang's -Wimplicit-exception-spec-mismatch warns about for some
-            # reason -- http://llvm.org/PR16638. TODO(thakis): Include stlport
-            # via -isystem instead.
-            'cflags_cc': [
-              '-Wno-implicit-exception-spec-mismatch',
-            ],
-          }],
           ['clang==1 and clang_use_chrome_plugins==1', {
             'cflags': [
               '<@(clang_chrome_plugins_flags)',
@@ -4525,7 +4515,7 @@
                 ],
               }, { # else: use_system_stlport!=1
                 'cflags': [
-                  '-I<(android_stlport_include)',
+                  '-isystem<(android_stlport_include)',
                 ],
                 'ldflags': [
                   '-L<(android_stlport_libs_dir)',
