@@ -10,27 +10,23 @@ import("//native_client/build/toolchain/nacl/nacl_sdk.gni")
 validator32 = "gen/validator_x86_32.c"
 validator64 = "gen/validator_x86_64.c"
 
-features = [
+static_library("dfa_validate") {
+  sources = [
     "validator_features_all.c",
-    "validator_features_validator.c"
-]
-
-static_library("dfa_validate_caller_x86_32") {
-  sources = [
-    "dfa_validate_32.c",
+    "validator_features_validator.c",
     "dfa_validate_common.c",
-    validator32
   ]
-  sources += features
-}
-
-static_library("dfa_validate_caller_x86_64") {
-  sources = [
-    "dfa_validate_64.c",
-    "dfa_validate_common.c",
-    validator64
-  ]
-  sources += features
+  if (cpu_arch == "x86") {
+    sources += [
+      validator32,
+      "dfa_validate_32.c",
+    ]
+  } else {
+    sources += [
+      validator64,
+      "dfa_validate_64.c",
+    ]
+  }
 }
 
 # Low-level platform-independent interface supporting both 32 and 64 bit,
@@ -38,8 +34,9 @@ static_library("dfa_validate_caller_x86_64") {
 static_library("rdfa_validator") {
   sources = [
     validator32,
-    validator64
+    validator64,
+    "validator_features_all.c",
+    "validator_features_validator.c"
   ]
-  sources += features
   defines = ["VALIDATOR_EXPORT=DLLEXPORT"]
 }

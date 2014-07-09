@@ -58,6 +58,10 @@ static_library("platform_qual_lib") {
       "linux/nacl_os_qualify.c",
     ]
   }
+
+  deps = [
+    "//native_client/src/trusted/cpu_features:cpu_features",
+  ]
 }
 
 if (cpu_arch != "arm") {

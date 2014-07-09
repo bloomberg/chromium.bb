@@ -1,0 +1,23 @@
+# Copyright (c) 2014 The Native ClientAuthors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+#  Generated from GYP
+
+static_library("validators") {
+  defines = [
+    "NACL_VALIDATOR_RAGEL=1",
+  ]
+  sources = [
+    "validator_init.c",
+  ]
+}
+
+static_library("validation_cache") {
+  sources = [
+    "validation_cache.c",
+  ]
+  deps = [
+    "//native_client/src/shared/platform:platform",
+  ]
+}

@@ -2,8 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-
-import("//native_client/build/toolchain/nacl/nacl_sdk.gni")
+#  Generated from GYP
 
 static_library("arm_validator_core") {
   sources = [
@@ -16,20 +15,23 @@ static_library("arm_validator_core") {
     "gen/arm32_decode_actuals_1.cc",
     "gen/arm32_decode_actuals_2.cc",
   ]
-  cflags_cc = [
-    "-Weffc++",
-    "-Woverloaded-virtual",
-    "-fomit-frame-pointer"
+  deps = [
+    "//native_client/src/trusted/cpu_features:cpu_features",
+  ]
+}
+
+static_library("ncvalidate_arm_v2") {
+  sources = [
+    "ncvalidate.cc",
+  ]
+  deps = [
+    ":arm_validator_core",
+    "//native_client/src/trusted/validator:validation_cache",
   ]
 }
 
 static_library("arm_validator_reporters") {
   sources = [
-    "problem_reporter.cc"
-  ]
-  cflags_cc = [
-    "-Weffc++",
-    "-Woverloaded-virtual",
-    "-fomit-frame-pointer"
+    "problem_reporter.cc",
   ]
 }

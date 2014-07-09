@@ -1,0 +1,12 @@
+# Copyright (c) 2014 The Native ClientAuthors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+#  Generated from GYP
+
+static_library("nccopy") {
+  sources = [
+    "nccopycode.c",
+    "nccopycode_stores.S",
+  ]
+}

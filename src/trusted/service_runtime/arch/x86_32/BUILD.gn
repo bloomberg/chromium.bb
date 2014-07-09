@@ -1,0 +1,37 @@
+# Copyright (c) 2014 The Native ClientAuthors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+#  Generated from GYP
+
+static_library("service_runtime_x86_32") {
+  sources = [
+    "nacl_app_32.c",
+    "nacl_switch_32.S",
+    "nacl_switch_all_regs_32.c",
+    "nacl_switch_all_regs_asm_32.S",
+    "nacl_switch_to_app_32.c",
+    "nacl_syscall_32.S",
+    "nacl_tls_32.c",
+    "sel_addrspace_x86_32.c",
+    "sel_ldr_x86_32.c",
+    "sel_rt_32.c",
+    "springboard.S",
+    "tramp_32.S",
+  ]
+  if (is_mac) {
+    sources += [
+      "../../osx/nacl_signal_32.c",
+    ]
+  }
+  if (is_linux) {
+    sources += [
+      "../../linux/nacl_signal_32.c",
+    ]
+  }
+  if (is_win) {
+    sources += [
+      "../../win/nacl_signal_32.c",
+    ]
+  }
+}
