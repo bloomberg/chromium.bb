@@ -15,8 +15,8 @@
 namespace {
 
 // Permanent bookmark folders as defined in bookmark_model_associator.cc.
+// No mobile bookmarks because they only exists with sync enabled.
 const char kBookmarkBarTag[] = "bookmark_bar";
-const char kMobileBookmarksTag[] = "synced_bookmarks";
 const char kOtherBookmarksTag[] = "other_bookmarks";
 
 class DummyEntryptionHandler : public syncer::SyncEncryptionHandler {
@@ -120,7 +120,6 @@ void SyncRollbackManagerBase::ConfigureSyncer(
     if (InitTypeRootNode(type.Get())) {
       if (type.Get() == BOOKMARKS) {
         InitBookmarkFolder(kBookmarkBarTag);
-        InitBookmarkFolder(kMobileBookmarksTag);
         InitBookmarkFolder(kOtherBookmarksTag);
       }
     }

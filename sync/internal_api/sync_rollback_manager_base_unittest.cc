@@ -58,7 +58,7 @@ TEST_F(SyncRollbackManagerBaseTest, InitTypeOnConfiguration) {
   EXPECT_EQ(BaseNode::INIT_OK,
             bookmark_bar.InitByTagLookupForBookmarks("bookmark_bar"));
   ReadNode bookmark_mobile(&trans);
-  EXPECT_EQ(BaseNode::INIT_OK,
+  EXPECT_EQ(BaseNode::INIT_FAILED_ENTRY_NOT_GOOD,
             bookmark_mobile.InitByTagLookupForBookmarks("synced_bookmarks"));
   ReadNode bookmark_other(&trans);
   EXPECT_EQ(BaseNode::INIT_OK,

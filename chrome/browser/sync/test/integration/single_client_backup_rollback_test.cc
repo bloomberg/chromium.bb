@@ -24,6 +24,12 @@ using bookmarks_helper::Move;
 using bookmarks_helper::Remove;
 using sync_integration_test_util::AwaitCommitActivityCompletion;
 
+namespace {
+const char kUrl1[] = "http://www.google.com";
+const char kUrl2[] = "http://map.google.com";
+const char kUrl3[] = "http://plus.google.com";
+}  // anonymous namespace
+
 class SingleClientBackupRollbackTest : public SyncTest {
  public:
   SingleClientBackupRollbackTest() : SyncTest(SINGLE_CLIENT) {}
@@ -222,10 +228,6 @@ IN_PROC_BROWSER_TEST_F(SingleClientBackupRollbackTest,
                        MAYBE_TestPrefBackupRollback) {
   EnableRollback();
 
-  const char kUrl1[] = "http://www.google.com";
-  const char kUrl2[] = "http://map.google.com";
-  const char kUrl3[] = "http://plus.google.com";
-
   ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
 
   preferences_helper::ChangeStringPref(0, prefs::kHomePage, kUrl1);
@@ -305,4 +307,34 @@ IN_PROC_BROWSER_TEST_F(SingleClientBackupRollbackTest,
   ASSERT_EQ(1, GetOtherNode(0)->child_count());
   ASSERT_EQ(GURL("http://www.nhl.com"),
             GetOtherNode(0)->GetChild(0)->url());
+}
+
+#if defined(ENABLE_PRE_SYNC_BACKUP)
+#define MAYBE_DontChangeBookmarkOrdering DontChangeBookmarkOrdering
+#else
+#define MAYBE_DontChangeBookmarkOrdering DISABLED_DontChangeBookmarkOrdering
+#endif
+IN_PROC_BROWSER_TEST_F(SingleClientBackupRollbackTest,
+                       MAYBE_DontChangeBookmarkOrdering) {
+  ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
+
+  const BookmarkNode* sub_folder = AddFolder(0, GetOtherNode(0), 0, "test");
+  ASSERT_TRUE(AddURL(0, sub_folder, 0, "", GURL(kUrl1)));
+  ASSERT_TRUE(AddURL(0, sub_folder, 1, "", GURL(kUrl2)));
+  ASSERT_TRUE(AddURL(0, sub_folder, 2, "", GURL(kUrl3)));
+
+  BackupModeChecker checker(GetSyncService(0),
+                            base::TimeDelta::FromSeconds(15));
+  ASSERT_TRUE(checker.Wait());
+
+  // Restart backup.
+  GetSyncService(0)->StartStopBackupForTesting();
+  GetSyncService(0)->StartStopBackupForTesting();
+  ASSERT_TRUE(checker.Wait());
+
+  // Verify bookmarks are unchanged.
+  ASSERT_EQ(3, sub_folder->child_count());
+  ASSERT_EQ(GURL(kUrl1), sub_folder->GetChild(0)->url());
+  ASSERT_EQ(GURL(kUrl2), sub_folder->GetChild(1)->url());
+  ASSERT_EQ(GURL(kUrl3), sub_folder->GetChild(2)->url());
 }
