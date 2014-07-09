@@ -394,7 +394,7 @@ class AndroidCommands(object):
             'Unable to find $EXTERNAL_STORAGE')
     return self._external_storage
 
-  def WaitForDevicePm(self):
+  def WaitForDevicePm(self, timeout=120):
     """Blocks until the device's package manager is available.
 
     To workaround http://b/5201039, we restart the shell and retry if the
@@ -407,7 +407,7 @@ class AndroidCommands(object):
     retries = 3
     while retries:
       try:
-        self._adb.WaitForDevicePm()
+        self._adb.WaitForDevicePm(wait_time=timeout)
         return  # Success
       except errors.WaitForResponseTimedOutError as e:
         last_err = e
@@ -446,7 +446,7 @@ class AndroidCommands(object):
       timeout = 120
     # To run tests we need at least the package manager and the sd card (or
     # other external storage) to be ready.
-    self.WaitForDevicePm()
+    self.WaitForDevicePm(timeout)
     self.WaitForSdCardReady(timeout)
 
   def Shutdown(self):

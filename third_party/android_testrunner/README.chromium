@@ -16,6 +16,8 @@ Local Modifications:
   |longMsg| to provide more information when debugging.
 3. Applied the patch file patch.diff to fix a race condition and subproccess
    bugs in run_command.py.
+4. Fixed a bug where wait_time wasn't properly respected in
+    _WaitForShellCommandContents.
 
 Here is the detail steps
 1. Checkout Android source code

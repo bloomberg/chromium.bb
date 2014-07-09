@@ -318,7 +318,7 @@ class AdbInterface:
       respond.
     """
     logger.Log("Waiting for device package manager...")
-    self.SendCommand("wait-for-device")
+    self.SendCommand("wait-for-device", timeout_time=wait_time, retry_count=0)
     # Now the device is there, but may not be running.
     # Query the package manager with a basic command
     try:
@@ -409,7 +409,8 @@ class AdbInterface:
     while not success and (attempts*wait_period) < wait_time:
       # assume the command will always contain expected in the success case
       try:
-        output = self.SendShellCommand(command, retry_count=1)
+        output = self.SendShellCommand(command, retry_count=1,
+                                       timeout_time=wait_time)
         if ((not invert and expected in output)
             or (invert and expected not in output)):
           success = True
