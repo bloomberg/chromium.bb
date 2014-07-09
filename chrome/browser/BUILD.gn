@@ -328,7 +328,7 @@ static_library("browser") {
     deps += [ "//device/media_transfer_protocol" ]
   }
   if (is_linux && !is_chromeos) {
-    deps += [ "//build/config/linux:libspeechd" ]
+    deps += [ "//third_party/speech-dispatcher" ]
   }
 
   if (is_chromeos) {

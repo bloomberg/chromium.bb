@@ -862,6 +862,7 @@
       },
     },
     {
+      # GN version: //third_party/speech-dispatcher
       'target_name': 'libspeechd',
       'type': 'static_library',
       'direct_dependent_settings': {

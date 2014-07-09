@@ -158,26 +158,4 @@ generate_library_loader("libpci") {
   ]
 }
 
-generate_library_loader("libspeechd") {
-  name = "LibSpeechdLoader"
-  output_h = "libspeechd.h"
-  output_cc = "libspeechd.cc"
-  header = "<libspeechd.h>"
-  bundled_header = "\"third_party/speech-dispatcher/libspeechd.h\""
-
-  functions = [
-    "spd_open",
-    "spd_say",
-    "spd_stop",
-    "spd_close",
-    "spd_pause",
-    "spd_resume",
-    "spd_set_notification_on",
-    "spd_set_voice_rate",
-    "spd_set_voice_pitch",
-    "spd_list_synthesis_voices",
-    "spd_set_synthesis_voice",
-    "spd_list_modules",
-    "spd_set_output_module",
-  ]
-}
+# Looking for libspeechd? Use //third_party/speech-dispatcher
