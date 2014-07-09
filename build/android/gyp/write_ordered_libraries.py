@@ -33,7 +33,11 @@ _library_re = re.compile(
 
 
 def FullLibraryPath(library_name):
-  return '%s/%s' % (_options.libraries_dir, library_name)
+  for directory in _options.libraries_dir.split(','):
+    path = '%s/%s' % (directory, library_name)
+    if os.path.exists(path):
+      return path
+  return library_name
 
 
 def IsSystemLibrary(library_name):
@@ -106,11 +110,12 @@ def main():
   _options, _ = parser.parse_args()
 
   libraries = build_utils.ParseGypList(_options.input_libraries)
-  if libraries[0].endswith('.so'):
-    libraries = [os.path.basename(lib) for lib in libraries]
-    libraries = GetSortedTransitiveDependencies(libraries)
-  else:
-    libraries = GetSortedTransitiveDependenciesForExecutable(libraries[0])
+  if len(libraries):
+    if libraries[0].endswith('.so'):
+      libraries = [os.path.basename(lib) for lib in libraries]
+      libraries = GetSortedTransitiveDependencies(libraries)
+    else:
+      libraries = GetSortedTransitiveDependenciesForExecutable(libraries[0])
 
   build_utils.WriteJson(libraries, _options.output, only_if_changed=True)
 

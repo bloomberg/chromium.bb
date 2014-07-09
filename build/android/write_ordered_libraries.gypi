@@ -19,10 +19,11 @@
 #
 
 {
-  'action_name': 'ordered_libraries_<(_target_name)',
+  'action_name': 'ordered_libraries_<(_target_name)<(subtarget)',
   'message': 'Writing dependency ordered libraries for <(_target_name)',
   'variables': {
     'input_libraries%': [],
+    'subtarget%': '',
   },
   'inputs': [
     '<(DEPTH)/build/android/gyp/util/build_utils.py',
@@ -35,7 +36,7 @@
   'action': [
     'python', '<(DEPTH)/build/android/gyp/write_ordered_libraries.py',
     '--input-libraries=<(input_libraries)',
-    '--libraries-dir=<(SHARED_LIB_DIR)',
+    '--libraries-dir=<(SHARED_LIB_DIR),<(PRODUCT_DIR)',
     '--readelf=<(android_readelf)',
     '--output=<(ordered_libraries_file)',
   ],

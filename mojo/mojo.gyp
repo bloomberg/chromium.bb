@@ -919,6 +919,9 @@
             'java_in_dir': '<(DEPTH)/mojo/shell/android/apk',
             'resource_dir': '<(DEPTH)/mojo/shell/android/apk/res',
             'native_lib_target': 'libmojo_shell',
+            'additional_bundled_libs': [
+              '<(PRODUCT_DIR)/libmojo_network_service.so',
+            ],
           },
           'includes': [ '../build/java_apk.gypi' ],
         }

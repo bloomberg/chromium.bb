@@ -47,7 +47,7 @@
     '--android-strip=<(android_strip)',
     '--android-strip-arg=--strip-unneeded',
     '--stripped-libraries-dir=<(stripped_libraries_dir)',
-    '--libraries-dir=<(SHARED_LIB_DIR)',
+    '--libraries-dir=<(SHARED_LIB_DIR),<(PRODUCT_DIR)',
     '--libraries-file=<(ordered_libraries_file)',
     '--stamp=<(stamp)',
   ],
