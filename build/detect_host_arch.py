@@ -10,8 +10,13 @@ import re
 import sys
 
 
-def HostArch():
-  """Returns the host architecture with a predictable string."""
+def main():
+  print DoMain([])
+  return 0
+
+def DoMain(_):
+  """Hook to be called from gyp without starting a separate python
+  interpreter."""
   host_arch = platform.machine()
 
   # Convert machine type to format recognized by gyp.
@@ -31,10 +36,5 @@ def HostArch():
 
   return host_arch
 
-def DoMain(_):
-  """Hook to be called from gyp without starting a separate python
-  interpreter."""
-  return HostArch()
-
 if __name__ == '__main__':
-  print DoMain([])
+  sys.exit(main())

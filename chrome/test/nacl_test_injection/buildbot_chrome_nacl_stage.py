@@ -15,11 +15,6 @@ import sys
 
 import find_chrome
 
-THIS_DIR = os.path.abspath(os.path.dirname(__file__))
-CHROMIUM_DIR = os.path.abspath(os.path.join(THIS_DIR, '..', '..', '..'))
-sys.path.append(os.path.join(CHROMIUM_DIR, 'build'))
-import detect_host_arch
-
 
 # Copied from buildbot/buildbot_lib.py
 def TryToCleanContents(path, file_name_filter=lambda fn: True):
@@ -154,11 +149,17 @@ def BuildAndTest(options):
         bits = 32
     scons = [python, 'scons.py']
   else:
+    p = subprocess.Popen(
+        'uname -m | '
+        'sed -e "s/i.86/ia32/;s/x86_64/x64/;s/amd64/x64/;s/arm.*/arm/"',
+        shell=True, stdout=subprocess.PIPE)
+    (p_stdout, _) = p.communicate()
+    assert p.returncode == 0
     if options.bits == 64:
       bits = 64
     elif options.bits == 32:
       bits = 32
-    elif '64' in detect_host_arch.HostArch():
+    elif p_stdout.find('64') >= 0:
       bits = 64
     else:
       bits = 32
