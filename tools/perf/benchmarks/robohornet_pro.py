@@ -10,6 +10,7 @@ from metrics import power
 from telemetry import benchmark
 from telemetry.page import page_measurement
 from telemetry.page import page_set
+from telemetry.value import scalar
 
 
 class _RobohornetProMeasurement(page_measurement.PageMeasurement):
@@ -36,7 +37,9 @@ class _RobohornetProMeasurement(page_measurement.PageMeasurement):
     self._power_metric.AddResults(tab, results)
 
     result = int(tab.EvaluateJavaScript('stopTime - startTime'))
-    results.Add('Total', 'ms', result)
+    results.AddValue(
+        scalar.ScalarValue(results.current_page, 'Total', 'ms', result))
+
 
 
 class RobohornetPro(benchmark.Benchmark):
