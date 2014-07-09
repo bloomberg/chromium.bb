@@ -95,6 +95,7 @@ class ProfileInfoCache : public ProfileInfoInterface,
   size_t GetAvatarIconIndexOfProfileAtIndex(size_t index) const;
 
   void SetProfileActiveTimeAtIndex(size_t index);
+  // Warning: This will re-sort profiles and thus may change indices!
   void SetNameOfProfileAtIndex(size_t index, const base::string16& name);
   void SetShortcutNameOfProfileAtIndex(size_t index,
                                        const base::string16& name);
@@ -107,7 +108,9 @@ class ProfileInfoCache : public ProfileInfoInterface,
                                                const std::string& auth);
   void SetBackgroundStatusOfProfileAtIndex(size_t index,
                                            bool running_background_apps);
+  // Warning: This will re-sort profiles and thus may change indices!
   void SetGAIANameOfProfileAtIndex(size_t index, const base::string16& name);
+  // Warning: This will re-sort profiles and thus may change indices!
   void SetGAIAGivenNameOfProfileAtIndex(size_t index,
                                         const base::string16& name);
   void SetGAIAPictureOfProfileAtIndex(size_t index, const gfx::Image* image);

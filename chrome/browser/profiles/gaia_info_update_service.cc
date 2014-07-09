@@ -118,10 +118,13 @@ void GAIAInfoUpdateService::OnProfileDownloadSuccess(
     return;
 
   cache.SetGAIANameOfProfileAtIndex(profile_index, full_name);
-  cache.SetGAIAGivenNameOfProfileAtIndex(profile_index, given_name);
-
   // The profile index may have changed.
   profile_index = cache.GetIndexOfProfileWithPath(profile_->GetPath());
+
+  cache.SetGAIAGivenNameOfProfileAtIndex(profile_index, given_name);
+  // The profile index may have changed.
+  profile_index = cache.GetIndexOfProfileWithPath(profile_->GetPath());
+
   if (profile_index == std::string::npos)
     return;
   if (picture_status == ProfileDownloader::PICTURE_SUCCESS) {
