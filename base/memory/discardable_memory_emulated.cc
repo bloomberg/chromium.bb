@@ -10,18 +10,19 @@
 namespace base {
 namespace {
 
-// This is admittedly pretty magical. It's approximately enough memory for four
-// 2560x1600 images.
-const size_t kEmulatedMemoryLimit = 64 * 1024 * 1024;
-const size_t kEmulatedBytesToKeepUnderModeratePressure =
-    kEmulatedMemoryLimit / 4;
+// This is admittedly pretty magical.
+const size_t kEmulatedMemoryLimit = 512 * 1024 * 1024;
+const size_t kEmulatedSoftMemoryLimit = 32 * 1024 * 1024;
+const size_t kEmulatedBytesToKeepUnderModeratePressure = 4 * 1024 * 1024;
+const size_t kEmulatedHardMemoryLimitExpirationTimeMs = 1000;
 
 struct SharedState {
   SharedState()
       : manager(kEmulatedMemoryLimit,
-                kEmulatedMemoryLimit,
+                kEmulatedSoftMemoryLimit,
                 kEmulatedBytesToKeepUnderModeratePressure,
-                TimeDelta::Max()) {}
+                TimeDelta::FromMilliseconds(
+                    kEmulatedHardMemoryLimitExpirationTimeMs)) {}
 
   internal::DiscardableMemoryManager manager;
 };
