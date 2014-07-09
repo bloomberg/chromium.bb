@@ -1511,6 +1511,7 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
       dl_params->set_referrer(
           content::Referrer(referrer, params_.referrer_policy));
       dl_params->set_referrer_encoding(params_.frame_charset);
+      dl_params->set_suggested_name(params_.suggested_filename);
       dl_params->set_prompt(true);
       dlm->DownloadUrl(dl_params.Pass());
       break;

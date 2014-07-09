@@ -40,6 +40,7 @@ ContextMenuParams ContextMenuParamsBuilder::Build(
   params.edit_flags = data.editFlags;
   params.frame_charset = data.frameEncoding.utf8();
   params.referrer_policy = data.referrerPolicy;
+  params.suggested_filename = data.suggestedFilename;
 
   for (size_t i = 0; i < data.dictionarySuggestions.size(); ++i)
     params.dictionary_suggestions.push_back(data.dictionarySuggestions[i]);

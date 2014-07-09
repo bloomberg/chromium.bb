@@ -230,6 +230,39 @@ IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest, OpenIncognitoNoneReferrer) {
   ASSERT_EQ(kEmptyReferrer, page_referrer);
 }
 
+// Check filename on clicking "Save Link As" via a "real" context menu.
+IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest, SuggestedFileName) {
+  // Register observer.
+  SaveLinkAsContextMenuObserver menu_observer(
+      content::NotificationService::AllSources());
+
+  // Go to a page with a link having download attribute.
+  const std::string kSuggestedFilename("test_filename.png");
+  ui_test_utils::NavigateToURL(
+      browser(),
+      GURL("data:text/html,<a href='about:blank' download='" +
+           kSuggestedFilename + "'>link</a>"));
+
+  // Open a context menu.
+  blink::WebMouseEvent mouse_event;
+  mouse_event.type = blink::WebInputEvent::MouseDown;
+  mouse_event.button = blink::WebMouseEvent::ButtonRight;
+  mouse_event.x = 15;
+  mouse_event.y = 15;
+  content::WebContents* tab =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  tab->GetRenderViewHost()->ForwardMouseEvent(mouse_event);
+  mouse_event.type = blink::WebInputEvent::MouseUp;
+  tab->GetRenderViewHost()->ForwardMouseEvent(mouse_event);
+
+  // Wait for context menu to be visible.
+  menu_observer.WaitForMenu();
+
+  // Compare filename.
+  base::string16 suggested_filename = menu_observer.GetSuggestedFilename();
+  ASSERT_EQ(kSuggestedFilename, base::UTF16ToUTF8(suggested_filename).c_str());
+}
+
 // Ensure that View Page Info won't crash if there is no visible entry.
 // See http://crbug.com/370863.
 IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest, ViewPageInfoWithNoEntry) {
