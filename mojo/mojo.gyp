@@ -508,9 +508,16 @@
         '../url/url.gyp:url_lib',
         'mojo_service_manager',
       ],
+      'variables': {
+        'mojom_base_output_dir': 'mojo',
+      },
+      'includes': [ 'public/tools/bindings/mojom_bindings_generator.gypi' ],
       'sources': [
+        'spy/public/spy.mojom',
         'spy/spy.cc',
         'spy/spy.h',
+        'spy/spy_server_impl.h',
+        'spy/spy_server_impl.cc',
         'spy/websocket_server.cc',
         'spy/websocket_server.h',
       ],
