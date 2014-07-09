@@ -211,6 +211,11 @@
             '../net/third_party/nss/ssl.gyp:*',
           ],
         }],
+        ['use_openssl==1', {
+          'dependencies': [
+            '../third_party/boringssl/boringssl.gyp:*',
+          ],
+        }],
         ['enable_app_list==1', {
           'dependencies': [
             '../ui/app_list/app_list.gyp:*',
