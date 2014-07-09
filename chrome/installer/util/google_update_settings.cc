@@ -296,14 +296,14 @@ bool GoogleUpdateSettings::SetCollectStatsConsentAtLevel(bool system_install,
   return (result == ERROR_SUCCESS);
 }
 
-bool GoogleUpdateSettings::GetMetricsId(std::string* metrics_id) {
+bool GoogleUpdateSettings::LoadMetricsClientId(std::string* metrics_id) {
   base::string16 metrics_id16;
   bool rv = ReadGoogleUpdateStrKey(google_update::kRegMetricsId, &metrics_id16);
   *metrics_id = base::UTF16ToUTF8(metrics_id16);
   return rv;
 }
 
-bool GoogleUpdateSettings::SetMetricsId(const std::string& metrics_id) {
+bool GoogleUpdateSettings::StoreMetricsClientId(const std::string& metrics_id) {
   base::string16 metrics_id16 = base::UTF8ToUTF16(metrics_id);
   return WriteGoogleUpdateStrKey(google_update::kRegMetricsId, metrics_id16);
 }

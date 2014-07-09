@@ -46,7 +46,9 @@ class BreakpadClient {
 
   // Sets the Breakpad client ID, which is a unique identifier for the client
   // that is sending crash reports. After it is set, it should not be changed.
-  virtual void SetClientID(const std::string& client_id);
+  // |client_guid| may either be a full GUID or a GUID that was already stripped
+  // from its dashes.
+  virtual void SetBreakpadClientIdFromGUID(const std::string& client_guid);
 
 #if defined(OS_WIN)
   // Returns true if an alternative location to store the minidump files was

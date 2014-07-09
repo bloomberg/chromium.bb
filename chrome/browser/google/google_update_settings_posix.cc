@@ -14,8 +14,9 @@
 
 namespace {
 
-base::LazyInstance<std::string>::Leaky g_posix_guid = LAZY_INSTANCE_INITIALIZER;
-base::LazyInstance<base::Lock>::Leaky g_posix_guid_lock =
+base::LazyInstance<std::string>::Leaky g_posix_client_id =
+    LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<base::Lock>::Leaky g_posix_client_id_lock =
     LAZY_INSTANCE_INITIALIZER;
 
 // File name used in the user data dir to indicate consent.
@@ -28,11 +29,15 @@ bool GoogleUpdateSettings::GetCollectStatsConsent() {
   base::FilePath consent_file;
   PathService::Get(chrome::DIR_USER_DATA, &consent_file);
   consent_file = consent_file.Append(kConsentToSendStats);
+
+  if (!base::DirectoryExists(consent_file.DirName()))
+    return false;
+
   std::string tmp_guid;
   bool consented = base::ReadFileToString(consent_file, &tmp_guid);
   if (consented) {
-    base::AutoLock lock(g_posix_guid_lock.Get());
-    g_posix_guid.Get().assign(tmp_guid);
+    base::AutoLock lock(g_posix_client_id_lock.Get());
+    g_posix_client_id.Get().assign(tmp_guid);
   }
   return consented;
 }
@@ -44,44 +49,40 @@ bool GoogleUpdateSettings::SetCollectStatsConsent(bool consented) {
   if (!base::DirectoryExists(consent_dir))
     return false;
 
-  base::AutoLock lock(g_posix_guid_lock.Get());
+  base::AutoLock lock(g_posix_client_id_lock.Get());
 
   base::FilePath consent_file = consent_dir.AppendASCII(kConsentToSendStats);
   if (consented) {
     if ((!base::PathExists(consent_file)) ||
-        (base::PathExists(consent_file) && !g_posix_guid.Get().empty())) {
-      const char* c_str = g_posix_guid.Get().c_str();
-      int size = g_posix_guid.Get().size();
+        (base::PathExists(consent_file) && !g_posix_client_id.Get().empty())) {
+      const char* c_str = g_posix_client_id.Get().c_str();
+      int size = g_posix_client_id.Get().size();
       return base::WriteFile(consent_file, c_str, size) == size;
     }
   } else {
-    g_posix_guid.Get().clear();
+    g_posix_client_id.Get().clear();
     return base::DeleteFile(consent_file, false);
   }
   return true;
 }
 
 // static
-bool GoogleUpdateSettings::GetMetricsId(std::string* metrics_id) {
-  base::AutoLock lock(g_posix_guid_lock.Get());
-  *metrics_id = g_posix_guid.Get();
+bool GoogleUpdateSettings::LoadMetricsClientId(std::string* metrics_id) {
+  base::AutoLock lock(g_posix_client_id_lock.Get());
+  *metrics_id = g_posix_client_id.Get();
   return true;
 }
 
 // static
-bool GoogleUpdateSettings::SetMetricsId(const std::string& client_id) {
+bool GoogleUpdateSettings::StoreMetricsClientId(const std::string& client_id) {
   // Make sure that user has consented to send crashes.
-  base::FilePath consent_dir;
-  PathService::Get(chrome::DIR_USER_DATA, &consent_dir);
-  if (!base::DirectoryExists(consent_dir) ||
-      !GoogleUpdateSettings::GetCollectStatsConsent()) {
+  if (!GoogleUpdateSettings::GetCollectStatsConsent())
     return false;
-  }
 
   {
     // Since user has consented, write the metrics id to the file.
-    base::AutoLock lock(g_posix_guid_lock.Get());
-    g_posix_guid.Get() = client_id;
+    base::AutoLock lock(g_posix_client_id_lock.Get());
+    g_posix_client_id.Get() = client_id;
   }
   return GoogleUpdateSettings::SetCollectStatsConsent(true);
 }

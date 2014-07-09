@@ -1470,7 +1470,7 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
 #if defined(OS_POSIX)
   if (breakpad::IsCrashReporterEnabled()) {
     std::string enable_crash_reporter;
-    GoogleUpdateSettings::GetMetricsId(&enable_crash_reporter);
+    GoogleUpdateSettings::LoadMetricsClientId(&enable_crash_reporter);
     command_line->AppendSwitchASCII(switches::kEnableCrashReporter,
                                     enable_crash_reporter);
   }

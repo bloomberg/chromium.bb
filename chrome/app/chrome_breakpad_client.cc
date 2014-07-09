@@ -80,8 +80,9 @@ ChromeBreakpadClient::ChromeBreakpadClient() {}
 
 ChromeBreakpadClient::~ChromeBreakpadClient() {}
 
-void ChromeBreakpadClient::SetClientID(const std::string& client_id) {
-  crash_keys::SetClientID(client_id);
+void ChromeBreakpadClient::SetBreakpadClientIdFromGUID(
+    const std::string& client_guid) {
+  crash_keys::SetCrashClientIdFromGUID(client_guid);
 }
 
 #if defined(OS_WIN)

@@ -27,7 +27,8 @@ BreakpadClient* GetBreakpadClient() {
 BreakpadClient::BreakpadClient() {}
 BreakpadClient::~BreakpadClient() {}
 
-void BreakpadClient::SetClientID(const std::string& client_id) {
+void BreakpadClient::SetBreakpadClientIdFromGUID(
+    const std::string& client_guid) {
 }
 
 #if defined(OS_WIN)

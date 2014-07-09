@@ -22,9 +22,9 @@ class MetricsServiceClient {
  public:
   virtual ~MetricsServiceClient() {}
 
-  // Register the client id with other services (e.g. crash reporting), called
+  // Registers the client id with other services (e.g. crash reporting), called
   // when metrics recording gets enabled.
-  virtual void SetClientID(const std::string& client_id) = 0;
+  virtual void SetMetricsClientId(const std::string& client_id) = 0;
 
   // Whether there's an "off the record" (aka "Incognito") session active.
   virtual bool IsOffTheRecordSessionActive() = 0;

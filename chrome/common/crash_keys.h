@@ -21,8 +21,11 @@ namespace crash_keys {
 // reporting server. Returns the size of the union of all keys.
 size_t RegisterChromeCrashKeys();
 
-// Sets the GUID by which this crash reporting client can be identified.
-void SetClientID(const std::string& client_id);
+// Sets the ID (based on |client_guid| which may either be a full GUID or a
+// GUID that was already stripped from its dashes -- in either cases this method
+// will strip remaining dashes before setting the crash key) by which this crash
+// reporting client can be identified.
+void SetCrashClientIdFromGUID(const std::string& client_guid);
 
 // Sets the kSwitch and kNumSwitches keys based on the given |command_line|.
 void SetSwitchesFromCommandLine(const base::CommandLine* command_line);

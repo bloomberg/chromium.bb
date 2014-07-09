@@ -65,12 +65,13 @@ void Init() {
   base::debug::SetCrashKeyReportingFunctions(
       &SetCrashKeyValueTrampoline, &ClearCrashKeyValueTrampoline);
 
-  // This would be handled by BreakpadClient::SetClientID(), but because of the
-  // aforementioned issue, crash keys aren't ready yet at the time of Breakpad
-  // initialization.
-  std::string client_id;
-  if (GoogleUpdateSettings::GetMetricsId(&client_id))
-    base::debug::SetCrashKeyValue(crash_keys::kClientID, client_id);
+  // This would be handled by BreakpadClient::SetCrashClientIdFromGUID(), but
+  // because of the aforementioned issue, crash keys aren't ready yet at the
+  // time of Breakpad initialization, load the client id backed up in Google
+  // Update settings instead.
+  std::string client_guid;
+  if (GoogleUpdateSettings::LoadMetricsClientId(&client_guid))
+    crash_keys::SetCrashClientIdFromGUID(client_guid);
 }
 
 }  // namespace child_process_logging

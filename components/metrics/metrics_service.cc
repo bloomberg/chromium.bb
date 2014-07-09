@@ -404,7 +404,7 @@ void MetricsService::EnableRecording() {
   recording_active_ = true;
 
   state_manager_->ForceClientIdCreation();
-  client_->SetClientID(state_manager_->client_id());
+  client_->SetMetricsClientId(state_manager_->client_id());
   if (!log_manager_.current_log())
     OpenNewLog();
 

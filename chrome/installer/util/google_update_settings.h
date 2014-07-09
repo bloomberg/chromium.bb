@@ -86,12 +86,12 @@ class GoogleUpdateSettings {
                                             bool consented);
 #endif
 
-  // Returns the metrics id set in the registry (that can be used in crash
-  // reports). If none found, returns empty string.
-  static bool GetMetricsId(std::string* metrics_id);
+  // Returns the metrics client id backed up in the registry. If none found,
+  // returns empty string.
+  static bool LoadMetricsClientId(std::string* metrics_id);
 
-  // Sets the metrics id to be used in crash reports.
-  static bool SetMetricsId(const std::string& metrics_id);
+  // Stores a backup of the metrics client id in the registry.
+  static bool StoreMetricsClientId(const std::string& metrics_id);
 
   // Sets the machine-wide EULA consented flag required on OEM installs.
   // Returns false if the setting could not be recorded.

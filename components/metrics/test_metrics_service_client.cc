@@ -19,7 +19,8 @@ TestMetricsServiceClient::TestMetricsServiceClient()
 TestMetricsServiceClient::~TestMetricsServiceClient() {
 }
 
-void TestMetricsServiceClient::SetClientID(const std::string& client_id) {
+void TestMetricsServiceClient::SetMetricsClientId(
+    const std::string& client_id) {
   client_id_ = client_id;
 }
 

@@ -238,9 +238,9 @@ void InitCrashReporter(const std::string& process_type) {
 
   if (!is_browser) {
     // Get the guid from the command line switch.
-    std::string guid =
+    std::string client_guid =
         command_line->GetSwitchValueASCII(switches::kEnableCrashReporter);
-    GetBreakpadClient()->SetClientID(guid);
+    GetBreakpadClient()->SetBreakpadClientIdFromGUID(client_guid);
   }
 
   logging::SetLogMessageHandler(&FatalMessageHandler);

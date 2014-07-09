@@ -76,7 +76,7 @@ void GetPreReadPopulationAndGroup(double* population, double* group) {
   // By default we use the metrics id for the user as stable pseudo-random
   // input to a hash.
   std::string metrics_id;
-  GoogleUpdateSettings::GetMetricsId(&metrics_id);
+  GoogleUpdateSettings::LoadMetricsClientId(&metrics_id);
 
   // If this user has not metrics id, we fall back to a purely random value
   // per browser session.
