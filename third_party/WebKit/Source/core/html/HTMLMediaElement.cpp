@@ -1936,9 +1936,7 @@ void HTMLMediaElement::seek(double time, ExceptionState& exceptionState)
     // fire a 'seeked' event.
     double mediaTime = webMediaPlayer()->mediaTimeForTimeValue(time);
     if (time != mediaTime) {
-#if !LOG_DISABLED
         WTF_LOG(Media, "HTMLMediaElement::seek(%f) - media timeline equivalent is %f", time, mediaTime);
-#endif
         time = mediaTime;
     }
 
