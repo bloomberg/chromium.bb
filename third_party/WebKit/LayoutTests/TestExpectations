@@ -823,8 +823,7 @@ crbug.com/356997 http/tests/security/isolatedWorld/events.html [ Failure Pass ]
 crbug.com/357002 [ Linux ] http/tests/misc/cache-hit-resource-timing-buffer-full-crash.html [ Failure Pass ]
 crbug.com/357068 css3/images/cross-fade-invalidation.html [ ImageOnlyFailure Pass ]
 crbug.com/357071 gamepad/gamepad-polling-access.html [ Crash Pass ]
-Bug(ojan) http/tests/misc/object-embedding-svg-delayed-size-negotiation-2.htm [ Pass Timeout NeedsManualRebaseline ]
-# crbug.com/357074 [ Win ] http/tests/misc/object-embedding-svg-delayed-size-negotiation-2.htm [ Pass Timeout ]
+crbug.com/357074 [ Win ] http/tests/misc/object-embedding-svg-delayed-size-negotiation-2.htm [ Pass Timeout ]
 crbug.com/357075 [ Win Release ] http/tests/security/contentSecurityPolicy/report-cross-origin-no-cookies.html [ Failure Pass ]
 crbug.com/357075 [ Win Debug ] http/tests/security/contentSecurityPolicy/report-cross-origin-no-cookies.html [ Pass Timeout ]
 crbug.com/357079 inspector/audits/audits-panel-functional.html [ Failure Pass ]
@@ -1229,7 +1228,7 @@ crbug.com/30536 [ Win7 ] http/tests/xmlhttprequest/origin-exact-matching/30.html
 crbug.com/30536 [ Win7 ] http/tests/xmlhttprequest/origin-exact-matching/36.html [ Failure ]
 
 # switching to apache-win32 flakiness that needs triaging.
-crbug.com/30536 [ Win7 ] http/tests/navigation/forward-and-cancel.html [ Timeout Pass ] 
+crbug.com/30536 [ Win7 ] http/tests/navigation/forward-and-cancel.html [ Timeout Pass ]
 crbug.com/30536 [ Win7 ] http/tests/navigation/ping-cookie.html [ Failure Pass ]
 crbug.com/30536 [ Win7 ] http/tests/navigation/ping-same-origin.html [ Failure Pass ]
 crbug.com/30536 [ Win7 ] http/tests/security/contentSecurityPolicy/report-uri-from-child-frame.html [ Failure Pass Timeout ]
