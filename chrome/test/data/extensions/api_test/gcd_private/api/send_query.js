@@ -4,10 +4,11 @@
 
 onload = function() {
   chrome.test.runTests([
-      function receiveNewDevice() {
-        chrome.gcdPrivate.onDeviceStateChanged.addListener(function(device) {});
-        chrome.gcdPrivate.queryForNewLocalDevices();
-        chrome.test.notifyPass();
-      }
-  ]);
+    function receiveNewDevice() {
+      chrome.gcdPrivate.onCloudDeviceStateChanged.addListener(
+        function(available, device) {});
+
+      chrome.gcdPrivate.queryForNewLocalDevices();
+      chrome.test.notifyPass();
+  }]);
 };

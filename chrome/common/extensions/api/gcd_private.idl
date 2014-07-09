@@ -10,11 +10,11 @@ namespace gcdPrivate {
 
   // Represents a GCD device discovered locally or registered to a given user.
   dictionary GCDDevice {
-    // Opaque device identifier to be passed to API.
-    DOMString deviceId;
-
     // How this device was discovered.
     SetupType setupType;
+
+    // Opaque device identifier to be passed to API.
+    DOMString idString;
 
     // Cloud identifier string.
     DOMString? cloudId;
@@ -29,47 +29,39 @@ namespace gcdPrivate {
     DOMString deviceDescription;
   };
 
+  // Represents wifi network credentials.
+  dictionary WiFiCredentials {
+    DOMString ssid;
+    DOMString password;
+  };
+
   callback CloudDeviceListCallback = void(GCDDevice[] devices);
 
-  // |commandDefinitions| : Is "commandDefs" value of device described at
-  // https://developers.google.com/cloud-devices/v1/reference/devices
-  // TODO(vitalybuka): consider to describe object in IDL.
-  callback CommandDefinitionsCallback = void(object commandDefinitions);
-
-  // |command| : Described at
-  // https://developers.google.com/cloud-devices/v1/reference/commands
-  // TODO(vitalybuka): consider to describe object in IDL.
-  callback CommandCallback = void(object command);
-
-  // |commands| : Array of commands described at
-  // https://developers.google.com/cloud-devices/v1/reference/commands
-  // TODO(vitalybuka): consider to describe object in IDL.
-  callback CommandListCallback = void(object[] commands);
-
   interface Functions {
-    // Returns the list of cloud devices visible locally or available in the
-    // cloud for user account.
     static void getCloudDeviceList(CloudDeviceListCallback callback);
 
-    // Queries network for local devices. Triggers an onDeviceStateChanged and
-    // onDeviceRemoved events. Call this function *only* after registering for
-    // onDeviceStateChanged and onDeviceRemoved events, or it will do nothing.
+    // Call this function *only* after registering for onDeviceStateChanged
+    // events, or it will do nothing. This will trigger an
+    // onLocalDeviceStateChanged event per device.
     static void queryForNewLocalDevices();
 
     // Starts device setup process. Returns id of setup process. Id should be
     // used as |setupId| in all subsequent setup related calls, and for
     // filtering setup events.
-    static long startSetup(DOMString deviceId);
+    static long startSetup(GCDDevice device);
 
-    // Sets WiFi network as reply to |onGetWifiNetworks| event.
+    // Sets WiFi network list as reply to |onGetWifiNetworks| event.
     // |setupId| : The value returned by |startSetup|.
-    // |network| : The wifi network for device setup.
-    static void setWiFiNetwork(long setupId, DOMString network);
+    // |networks| : The list of network device should be registered on.
+    static void setWiFiNetworks(long setupId, DOMString[] networks);
 
-    // Sets WiFi network password as reply to |onGetWifiPassword| event.
+    // Sets WiFi network credentials as reply to |onGetWifiCredentials|
+    // event.
     // |setupId| : The value returned by |startSetup|.
-    // |password| : The password for network selected with |setWiFiNetwork|.
-    static void setWiFiPassword(long setupId, DOMString password);
+    // |credentials| : The list of ssid with passwoors. The list is not required
+    // to match |networks| provided with |setWiFiNetworks| or
+    // |onGetWifiCredentials|.
+    static void setWiFiCredentials(long setupId, WiFiCredentials[] credentials);
 
     // Confirms that security code known to application match to the code known
     // to device.
@@ -81,70 +73,24 @@ namespace gcdPrivate {
     // starting new registration.
     // |setupId| : The value returned by |startSetup|.
     static void stopSetup(long setupId);
-
-    // Returns command definitions.
-    // |deviceId| : The device to get command definitions for.
-    // |callback| : The result callback.
-    static void getCommandDefinitions(DOMString deviceId,
-                                      CommandDefinitionsCallback callback);
-
-    // Creates and sends a new command.
-    // |deviceId| : The device to send the command to.
-    // |expireInMs| : The number of milliseconds since now before the command
-    // expires. Expired command should not be executed by device. Acceptable
-    // values are 10000 to 2592000000, inclusive. All values outside that range
-    // will be replaced by 2592000000.
-    // |command| : Described at
-    // https://developers.google.com/cloud-devices/v1/reference/commands
-    // |callback| : The result callback.
-    static void insertCommand(DOMString deviceId,
-                              long expireInMs,
-                              object command,
-                              CommandCallback callback);
-
-    // Returns a particular command.
-    // |commandId| : Unique command ID.
-    // |callback| : The result callback.
-    static void getCommand(DOMString commandId, CommandCallback callback);
-
-    // Cancels a command.
-    // |commandId| : Unique command ID.
-    // |callback| : The result callback.
-    static void cancelCommand(DOMString commandId, CommandCallback callback);
-
-    // Lists all commands in order of creation.
-    // |deviceId| : The device to get the commands for.
-    // |byUser| : List all the commands issued by the user. Special value 'me'
-    // can be used to list by the current user.
-    // |state| : Command state.
-    // |callback| : The result callback.
-    static void getCommandsList(DOMString deviceId,
-                                DOMString byUser,
-                                DOMString state,
-                                CommandListCallback callback);
   };
 
   interface Events {
-    // Subscribe to this event to start listening new or updated devices. New
-    // listeners will get called with all known devices on the network, and
-    // status updates for devices available through the cloud.
-    static void onDeviceStateChanged(GCDDevice device);
+    // Subscribe to this event to start listening to cloud devices. New
+    // listeners will get called with all known devices on the network.
+    static void onCloudDeviceStateChanged(boolean available, GCDDevice device);
 
-    // Notifies that device has disappeared.
-    // |deviceId| : The device has disappeared.
-    static void onDeviceRemoved(DOMString deviceId);
-
-    // Notifies app that setup is waiting for a wifi network. App should reply
-    // with |setWiFiNetwork|.
+    // Notifies app that setup is waiting for network list. App should reply
+    // with |setWiFiNetworks|.
     // |setupId| : The value returned by |startSetup|.
-    static void onGetWifiNetwork(long setupId);
+    static void onGetWifiNetworks(long setupId);
 
-    // Notifies app that setup is waiting for password for the network provided
-    // with |setWiFiNetwork|. Even will be called if setup flow would unable to
-    // get password from the system.
-    // App should reply with |setWiFiPassword|.
+    // Notifies app that setup is waiting for credentions for |networks| list.
+    // App should reply with |setWiFiCredentials|.
     // |setupId| : The value returned by |startSetup|.
-    static void onGetWifiPassword(long setupId);
+    // |networks| : A subset of the list provided in |setWiFiNetworks| for which
+    // setup flow is unable to find credentials
+    static void onGetWifiCredentials(long setupId, DOMString[] networks);
 
     // Notifies app that setup is waiting for confirmation that code is the same
     // as code known to device. App should reply with |confirmCode|, or
@@ -157,7 +103,7 @@ namespace gcdPrivate {
     // |setupId| : The value returned by |startSetup|.
     static void onSetupSuccess(long setupId);
 
-    // Notifies app that setup is failed or stopped.
+    // Notifies app that setup is failed or stoped.
     // |setupId| : The value returned by |startSetup|.
     static void onSetupError(long setupId);
   };
