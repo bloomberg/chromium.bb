@@ -124,3 +124,7 @@ LOAD_FLAG(MAYBE_USER_GESTURE, 1 << 27)
 // be honored, but that other forms of authority may be used.
 LOAD_FLAG(DO_NOT_USE_EMBEDDED_IDENTITY, 1 << 28)
 
+// Send request directly to the origin if the effective proxy is the data
+// reduction proxy.
+// TODO(rcs): Remove this flag as soon as http://crbug.com/339237 is resolved.
+LOAD_FLAG(BYPASS_DATA_REDUCTION_PROXY, 1 << 29)

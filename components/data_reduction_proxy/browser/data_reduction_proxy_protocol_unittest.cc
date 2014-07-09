@@ -8,14 +8,17 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/metrics/field_trial.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "components/data_reduction_proxy/browser/data_reduction_proxy_params_test_utils.h"
 #include "net/base/completion_callback.h"
 #include "net/base/host_port_pair.h"
+#include "net/base/load_flags.h"
 #include "net/base/network_delegate.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_transaction_test_util.h"
+#include "net/proxy/proxy_service.h"
 #include "net/socket/socket_test_util.h"
 #include "net/url_request/static_http_user_agent_settings.h"
 #include "net/url_request/url_request.h"
@@ -609,6 +612,82 @@ TEST_F(DataReductionProxyProtocolTest,
 
   // We should have no entries in our bad proxy list.
   TestBadProxies(0, -1, "", "");
+}
+
+class BadEntropyProvider : public base::FieldTrial::EntropyProvider {
+ public:
+  virtual ~BadEntropyProvider() {}
+
+  virtual double GetEntropyForTrial(const std::string& trial_name,
+                                    uint32 randomization_seed) const OVERRIDE {
+    return 0.5;
+  }
+};
+
+TEST_F(DataReductionProxyProtocolTest, OnResolveProxyHandler) {
+  int load_flags = net::LOAD_NORMAL;
+  GURL url("http://www.google.com/");
+
+  TestDataReductionProxyParams test_params(
+            DataReductionProxyParams::kAllowed |
+            DataReductionProxyParams::kFallbackAllowed |
+            DataReductionProxyParams::kPromoAllowed,
+            TestDataReductionProxyParams::HAS_EVERYTHING &
+            ~TestDataReductionProxyParams::HAS_DEV_ORIGIN);
+
+  // Data reduction proxy
+  net::ProxyInfo info1;
+  std::string data_reduction_proxy;
+  base::TrimString(test_params.DefaultOrigin(), "/", &data_reduction_proxy);
+  info1.UseNamedProxy(data_reduction_proxy);
+  EXPECT_FALSE(info1.is_empty());
+
+  // Other proxy
+  net::ProxyInfo info2;
+  info2.UseNamedProxy("proxy.com");
+  EXPECT_FALSE(info2.is_empty());
+
+  // Without DataCompressionProxyCriticalBypass Finch trial set, should never
+  // bypass.
+  OnResolveProxyHandler(url, load_flags, &test_params, &info1);
+  EXPECT_FALSE(info1.is_direct());
+
+  OnResolveProxyHandler(url, load_flags, &test_params,&info2);
+  EXPECT_FALSE(info2.is_direct());
+
+  load_flags |= net::LOAD_BYPASS_DATA_REDUCTION_PROXY;
+
+  OnResolveProxyHandler(url, load_flags, &test_params, &info1);
+  EXPECT_FALSE(info1.is_direct());
+
+  OnResolveProxyHandler(url, load_flags, &test_params, &info2);
+  EXPECT_FALSE(info2.is_direct());
+
+  // With Finch trial set, should only bypass if LOAD flag is set and the
+  // effective proxy is the data compression proxy.
+  base::FieldTrialList field_trial_list(new BadEntropyProvider());
+  base::FieldTrialList::CreateFieldTrial("DataCompressionProxyRollout",
+                                         "Enabled");
+  base::FieldTrialList::CreateFieldTrial("DataCompressionProxyCriticalBypass",
+                                         "Enabled");
+  EXPECT_TRUE(
+      DataReductionProxyParams::IsIncludedInCriticalPathBypassFieldTrial());
+
+  load_flags = net::LOAD_NORMAL;
+
+  OnResolveProxyHandler(url, load_flags, &test_params, &info1);
+  EXPECT_FALSE(info1.is_direct());
+
+  OnResolveProxyHandler(url, load_flags, &test_params, &info2);
+  EXPECT_FALSE(info2.is_direct());
+
+  load_flags |= net::LOAD_BYPASS_DATA_REDUCTION_PROXY;
+
+  OnResolveProxyHandler(url, load_flags, &test_params, &info2);
+  EXPECT_FALSE(info2.is_direct());
+
+  OnResolveProxyHandler(url, load_flags, &test_params, &info1);
+  EXPECT_TRUE(info1.is_direct());
 }
 
 }  // namespace data_reduction_proxy

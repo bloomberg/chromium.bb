@@ -47,6 +47,10 @@ class DataReductionProxyParams {
   // hinting.
   static bool IsIncludedInPreconnectHintingFieldTrial();
 
+  // Returns true if this client is part of a field trial that bypasses the
+  // proxy if the request resource type is on the critical path (e.g. HTML).
+  static bool IsIncludedInCriticalPathBypassFieldTrial();
+
   // Constructs configuration parameters. If |kAllowed|, then the standard
   // data reduction proxy configuration is allowed to be used. If
   // |kfallbackAllowed| a fallback proxy can be used if the primary proxy is

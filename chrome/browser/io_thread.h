@@ -15,6 +15,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/prefs/pref_member.h"
 #include "base/time/time.h"
+#include "chrome/browser/net/chrome_network_delegate.h"
 #include "chrome/browser/net/ssl_config_service_manager.h"
 #include "components/data_reduction_proxy/browser/data_reduction_proxy_auth_request_handler.h"
 #include "components/data_reduction_proxy/browser/data_reduction_proxy_params.h"
@@ -196,6 +197,7 @@ class IOThread : public content::BrowserThreadDelegate {
         data_reduction_proxy_usage_stats;
     scoped_ptr<data_reduction_proxy::DataReductionProxyAuthRequestHandler>
         data_reduction_proxy_auth_request_handler;
+    ChromeNetworkDelegate::OnResolveProxyHandler on_resolve_proxy_handler;
   };
 
   // |net_log| must either outlive the IOThread or be NULL.

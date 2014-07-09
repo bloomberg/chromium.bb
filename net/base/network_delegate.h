@@ -61,6 +61,8 @@ class NET_EXPORT NetworkDelegate : public base::NonThreadSafe {
   int NotifyBeforeURLRequest(URLRequest* request,
                              const CompletionCallback& callback,
                              GURL* new_url);
+  void NotifyResolveProxy(const GURL& url, int load_flags,
+                          ProxyInfo* result);
   int NotifyBeforeSendHeaders(URLRequest* request,
                               const CompletionCallback& callback,
                               HttpRequestHeaders* headers);
@@ -120,6 +122,13 @@ class NET_EXPORT NetworkDelegate : public base::NonThreadSafe {
   virtual int OnBeforeURLRequest(URLRequest* request,
                                  const CompletionCallback& callback,
                                  GURL* new_url);
+
+  // Called as the proxy is being resolved for |url|. Allows the delegate to
+  // override the proxy resolution decision made by ProxyService. The delegate
+  // may override the decision by modifying the ProxyInfo |result|.
+  virtual void OnResolveProxy(const GURL& url,
+                              int load_flags,
+                              ProxyInfo* result);
 
   // Called right before the HTTP headers are sent. Allows the delegate to
   // read/write |headers| before they get sent out. |callback| and |headers| are

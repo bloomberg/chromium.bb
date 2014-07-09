@@ -995,6 +995,8 @@ void ProfileIOData::Init(
       io_thread_globals->data_reduction_proxy_usage_stats.get());
   network_delegate->set_data_reduction_proxy_auth_request_handler(
       io_thread_globals->data_reduction_proxy_auth_request_handler.get());
+  network_delegate->set_on_resolve_proxy_handler(
+      io_thread_globals->on_resolve_proxy_handler);
   if (command_line.HasSwitch(switches::kEnableClientHints))
     network_delegate->SetEnableClientHints();
   network_delegate->set_extension_info_map(

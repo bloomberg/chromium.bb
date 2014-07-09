@@ -21,6 +21,13 @@ int NetworkDelegate::NotifyBeforeURLRequest(
   return OnBeforeURLRequest(request, callback, new_url);
 }
 
+void NetworkDelegate::NotifyResolveProxy(const GURL& url, int load_flags,
+     ProxyInfo* result) {
+  DCHECK(CalledOnValidThread());
+  DCHECK(result);
+  OnResolveProxy(url, load_flags, result);
+}
+
 int NetworkDelegate::NotifyBeforeSendHeaders(
     URLRequest* request, const CompletionCallback& callback,
     HttpRequestHeaders* headers) {
@@ -153,6 +160,10 @@ int NetworkDelegate::OnBeforeURLRequest(URLRequest* request,
                                         const CompletionCallback& callback,
                                         GURL* new_url) {
   return OK;
+}
+
+void NetworkDelegate::OnResolveProxy(const GURL& url, int load_flags,
+                                     ProxyInfo* result) {
 }
 
 int NetworkDelegate::OnBeforeSendHeaders(URLRequest* request,

@@ -10,6 +10,7 @@
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "net/base/io_buffer.h"
+#include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_network_session.h"
 #include "net/socket/client_socket_handle.h"
@@ -137,9 +138,11 @@ int ProxyResolvingClientSocket::Connect(
   // First we try and resolve the proxy.
   int status = network_session_->proxy_service()->ResolveProxy(
       proxy_url_,
+      net::LOAD_NORMAL,
       &proxy_info_,
       proxy_resolve_callback_,
       &pac_request_,
+      NULL,
       bound_net_log_);
   if (status != net::ERR_IO_PENDING) {
     // We defer execution of ProcessProxyResolveDone instead of calling it
@@ -277,8 +280,8 @@ int ProxyResolvingClientSocket::ReconsiderProxyAfterError(int error) {
   }
 
   int rv = network_session_->proxy_service()->ReconsiderProxyAfterError(
-      proxy_url_, error, &proxy_info_, proxy_resolve_callback_, &pac_request_,
-      bound_net_log_);
+      proxy_url_, net::LOAD_NORMAL, error, &proxy_info_,
+      proxy_resolve_callback_, &pac_request_, NULL, bound_net_log_);
   if (rv == net::OK || rv == net::ERR_IO_PENDING) {
     CloseTransportSocket();
   } else {

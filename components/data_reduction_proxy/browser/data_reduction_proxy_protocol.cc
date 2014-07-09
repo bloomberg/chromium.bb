@@ -19,6 +19,7 @@
 #include "url/gurl.h"
 
 namespace {
+
 bool SetProxyServerFromGURL(const GURL& gurl,
                             net::ProxyServer* proxy_server) {
   DCHECK(proxy_server);
@@ -30,6 +31,7 @@ bool SetProxyServerFromGURL(const GURL& gurl,
                                    net::HostPortPair::FromURL(gurl));
   return true;
 }
+
 }  // namespace
 
 namespace data_reduction_proxy {
@@ -88,7 +90,20 @@ bool MaybeBypassProxyAndPrepareToRetry(
   return true;
 }
 
-
+void OnResolveProxyHandler(const GURL& url,
+                           int load_flags,
+                           const DataReductionProxyParams* params,
+                           net::ProxyInfo* result) {
+  if ((load_flags & net::LOAD_BYPASS_DATA_REDUCTION_PROXY) &&
+      DataReductionProxyParams::IsIncludedInCriticalPathBypassFieldTrial() &&
+      !result->is_empty() &&
+      !result->is_direct() &&
+      params &&
+      params->IsDataReductionProxy(
+          result->proxy_server().host_port_pair(), NULL)) {
+    result->UseDirect();
+  }
+}
 
 bool IsRequestIdempotent(const net::URLRequest* request) {
   DCHECK(request);

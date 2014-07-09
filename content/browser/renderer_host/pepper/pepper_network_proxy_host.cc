@@ -11,6 +11,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/socket_permission_request.h"
+#include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/proxy/proxy_info.h"
 #include "net/url_request/url_request_context.h"
@@ -145,9 +146,11 @@ void PepperNetworkProxyHost::TryToSendUnsentRequests() {
                      request.reply_context,
                      base::Owned(proxy_info));
       int result = proxy_service_->ResolveProxy(request.url,
+                                                net::LOAD_NORMAL,
                                                 proxy_info,
                                                 callback,
                                                 &pending_request,
+                                                NULL,
                                                 net::BoundNetLog());
       pending_requests_.push(pending_request);
       // If it was handled synchronously, we must run the callback now;

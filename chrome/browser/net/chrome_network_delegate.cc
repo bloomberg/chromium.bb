@@ -475,6 +475,14 @@ int ChromeNetworkDelegate::OnBeforeURLRequest(
   return rv;
 }
 
+void ChromeNetworkDelegate::OnResolveProxy(
+    const GURL& url, int load_flags, net::ProxyInfo* result) {
+  if (!on_resolve_proxy_handler_.is_null()) {
+    on_resolve_proxy_handler_.Run(url, load_flags,
+                                  data_reduction_proxy_params_, result);
+  }
+}
+
 int ChromeNetworkDelegate::OnBeforeSendHeaders(
     net::URLRequest* request,
     const net::CompletionCallback& callback,

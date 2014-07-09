@@ -94,6 +94,7 @@
 #if defined(OS_ANDROID) || defined(OS_IOS)
 #include "components/data_reduction_proxy/browser/data_reduction_proxy_auth_request_handler.h"
 #include "components/data_reduction_proxy/browser/data_reduction_proxy_params.h"
+#include "components/data_reduction_proxy/browser/data_reduction_proxy_protocol.h"
 #include "components/data_reduction_proxy/browser/data_reduction_proxy_settings.h"
 #endif
 
@@ -638,6 +639,9 @@ void IOThread::InitAsync() {
   globals_->data_reduction_proxy_params.reset(proxy_params);
   globals_->data_reduction_proxy_auth_request_handler.reset(
       new DataReductionProxyAuthRequestHandler(proxy_params));
+  globals_->on_resolve_proxy_handler =
+      ChromeNetworkDelegate::OnResolveProxyHandler(
+          base::Bind(data_reduction_proxy::OnResolveProxyHandler));
   DataReductionProxyUsageStats* proxy_usage_stats =
       new DataReductionProxyUsageStats(proxy_params,
           BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
@@ -647,6 +651,8 @@ void IOThread::InitAsync() {
   network_delegate->set_data_reduction_proxy_usage_stats(proxy_usage_stats);
   network_delegate->set_data_reduction_proxy_auth_request_handler(
       globals_->data_reduction_proxy_auth_request_handler.get());
+  network_delegate->set_on_resolve_proxy_handler(
+      globals_->on_resolve_proxy_handler);
 #endif  // defined(SPDY_PROXY_AUTH_ORIGIN)
 #endif  // defined(OS_ANDROID) || defined(OS_IOS)
   globals_->http_auth_handler_factory.reset(CreateDefaultAuthHandlerFactory(

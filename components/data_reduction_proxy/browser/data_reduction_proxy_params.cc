@@ -45,6 +45,13 @@ bool DataReductionProxyParams::IsIncludedInPreconnectHintingFieldTrial() {
           "DataCompressionProxyPreconnectHints") == kEnabled;
 }
 
+// static
+bool DataReductionProxyParams::IsIncludedInCriticalPathBypassFieldTrial() {
+  return IsIncludedInFieldTrial() &&
+      FieldTrialList::FindFullName(
+          "DataCompressionProxyCriticalBypass") == kEnabled;
+}
+
 DataReductionProxyParams::DataReductionProxyParams(int flags)
     : allowed_((flags & kAllowed) == kAllowed),
       fallback_allowed_((flags & kFallbackAllowed) == kFallbackAllowed),

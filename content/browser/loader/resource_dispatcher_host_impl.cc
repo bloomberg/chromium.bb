@@ -1987,6 +1987,11 @@ int ResourceDispatcherHostImpl::BuildLoadFlagsForRequest(
     load_flags &= ~net::LOAD_REPORT_RAW_HEADERS;
   }
 
+  // Add a flag to selectively bypass the data reduction proxy if the resource
+  // type is not an image.
+  if (request_data.resource_type != ResourceType::IMAGE)
+    load_flags |= net::LOAD_BYPASS_DATA_REDUCTION_PROXY;
+
   return load_flags;
 }
 

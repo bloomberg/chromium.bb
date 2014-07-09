@@ -124,9 +124,11 @@ class NET_EXPORT ProxyService : public NetworkChangeNotifier::IPAddressObserver,
   //
   // Profiling information for the request is saved to |net_log| if non-NULL.
   int ResolveProxy(const GURL& url,
+                   int load_flags,
                    ProxyInfo* results,
                    const net::CompletionCallback& callback,
                    PacRequest** pac_request,
+                   NetworkDelegate* network_delegate,
                    const BoundNetLog& net_log);
 
   // This method is called after a failure to connect or resolve a host name.
@@ -144,10 +146,12 @@ class NET_EXPORT ProxyService : public NetworkChangeNotifier::IPAddressObserver,
   //
   // Profiling information for the request is saved to |net_log| if non-NULL.
   int ReconsiderProxyAfterError(const GURL& url,
+                                int load_flags,
                                 int net_error,
                                 ProxyInfo* results,
                                 const CompletionCallback& callback,
                                 PacRequest** pac_request,
+                                NetworkDelegate* network_delegate,
                                 const BoundNetLog& net_log);
 
   // Explicitly trigger proxy fallback for the given |results| by updating our
@@ -367,7 +371,10 @@ class NET_EXPORT ProxyService : public NetworkChangeNotifier::IPAddressObserver,
   // Returns ERR_IO_PENDING if the request cannot be completed synchronously.
   // Otherwise it fills |result| with the proxy information for |url|.
   // Completing synchronously means we don't need to query ProxyResolver.
-  int TryToCompleteSynchronously(const GURL& url, ProxyInfo* result);
+  int TryToCompleteSynchronously(const GURL& url,
+                                 int load_flags,
+                                 NetworkDelegate* network_delegate,
+                                 ProxyInfo* result);
 
   // Cancels all of the requests sent to the ProxyResolver. These will be
   // restarted when calling SetReady().
@@ -386,7 +393,10 @@ class NET_EXPORT ProxyService : public NetworkChangeNotifier::IPAddressObserver,
   // Called when proxy resolution has completed (either synchronously or
   // asynchronously). Handles logging the result, and cleaning out
   // bad entries from the results list.
-  int DidFinishResolvingProxy(ProxyInfo* result,
+  int DidFinishResolvingProxy(const GURL& url,
+                              int load_flags,
+                              NetworkDelegate* network_delegate,
+                              ProxyInfo* result,
                               int result_code,
                               const BoundNetLog& net_log);
 

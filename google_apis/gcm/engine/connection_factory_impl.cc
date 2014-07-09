@@ -10,6 +10,7 @@
 #include "google_apis/gcm/engine/connection_handler_impl.h"
 #include "google_apis/gcm/monitoring/gcm_stats_recorder.h"
 #include "google_apis/gcm/protocol/mcs.pb.h"
+#include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_network_session.h"
 #include "net/http/http_request_headers.h"
@@ -280,10 +281,12 @@ void ConnectionFactoryImpl::ConnectImpl() {
   recorder_->RecordConnectionInitiated(current_endpoint.host());
   int status = network_session_->proxy_service()->ResolveProxy(
       current_endpoint,
+      net::LOAD_NORMAL,
       &proxy_info_,
       base::Bind(&ConnectionFactoryImpl::OnProxyResolveDone,
                  weak_ptr_factory_.GetWeakPtr()),
       &pac_request_,
+      NULL,
       bound_net_log_);
   if (status != net::ERR_IO_PENDING)
     OnProxyResolveDone(status);
@@ -497,10 +500,11 @@ int ConnectionFactoryImpl::ReconsiderProxyAfterError(int error) {
   }
 
   int status = network_session_->proxy_service()->ReconsiderProxyAfterError(
-      GetCurrentEndpoint(), error, &proxy_info_,
+      GetCurrentEndpoint(), net::LOAD_NORMAL, error, &proxy_info_,
       base::Bind(&ConnectionFactoryImpl::OnProxyResolveDone,
                  weak_ptr_factory_.GetWeakPtr()),
       &pac_request_,
+      NULL,
       bound_net_log_);
   if (status == net::OK || status == net::ERR_IO_PENDING) {
     CloseSocket();

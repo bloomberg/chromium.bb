@@ -14,6 +14,7 @@ class TimeDelta;
 
 namespace net {
 class HttpResponseHeaders;
+class ProxyInfo;
 class ProxyServer;
 class URLRequest;
 }
@@ -32,6 +33,17 @@ bool MaybeBypassProxyAndPrepareToRetry(
     net::URLRequest* request,
     const net::HttpResponseHeaders* original_response_headers,
     scoped_refptr<net::HttpResponseHeaders>* override_response_headers);
+
+// Configure |result| to proceed directly to the origin if |result|'s current
+// proxy is the data reduction proxy, the
+// |net::LOAD_BYPASS_DATA_REDUCTION_PROXY| |load_flag| is set, and the
+// DataCompressionProxyCriticalBypass Finch trial is set.
+// This handler is intended to be invoked only by
+// |ChromeNetworkDelegate.NotifyResolveProxy|.
+void OnResolveProxyHandler(const GURL& url,
+                           int load_flags,
+                           const DataReductionProxyParams* params,
+                           net::ProxyInfo* result);
 
 // Returns true if the request method is idempotent. Only idempotent requests
 // are retried on a bypass. Visible as part of the public API for testing.

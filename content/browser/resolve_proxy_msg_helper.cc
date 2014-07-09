@@ -8,6 +8,7 @@
 #include "base/bind_helpers.h"
 #include "base/compiler_specific.h"
 #include "content/common/view_messages.h"
+#include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -91,10 +92,10 @@ void ResolveProxyMsgHelper::StartPendingRequest() {
 
   // Start the request.
   int result = proxy_service_->ResolveProxy(
-      req.url, &proxy_info_,
+      req.url, net::LOAD_NORMAL, &proxy_info_,
       base::Bind(&ResolveProxyMsgHelper::OnResolveProxyCompleted,
                  base::Unretained(this)),
-      &req.pac_req, net::BoundNetLog());
+      &req.pac_req, NULL, net::BoundNetLog());
 
   // Completed synchronously.
   if (result != net::ERR_IO_PENDING)

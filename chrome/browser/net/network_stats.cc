@@ -14,6 +14,7 @@
 #include "base/time/time.h"
 #include "chrome/common/chrome_version_info.h"
 #include "content/public/browser/browser_thread.h"
+#include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/base/network_change_notifier.h"
 #include "net/base/test_completion_callback.h"
@@ -820,9 +821,11 @@ void ProxyDetector::StartResolveProxy() {
   DCHECK(proxy_service_);
   int rv = proxy_service_->ResolveProxy(
       gurl,
+      net::LOAD_NORMAL,
       &proxy_info_,
       base::Bind(&ProxyDetector::OnResolveProxyComplete,
                  base::Unretained(this)),
+      NULL,
       NULL,
       net::BoundNetLog());
   if (rv != net::ERR_IO_PENDING)

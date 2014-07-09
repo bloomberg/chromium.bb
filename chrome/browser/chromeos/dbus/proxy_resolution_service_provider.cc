@@ -12,6 +12,7 @@
 #include "dbus/bus.h"
 #include "dbus/message.h"
 #include "dbus/exported_object.h"
+#include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/proxy/proxy_service.h"
 #include "net/url_request/url_request_context.h"
@@ -134,8 +135,8 @@ class ProxyResolverImpl : public ProxyResolverInterface {
     VLOG(1) << "Starting network proxy resolution for "
             << request->source_url_;
     const int result = proxy_service->ResolveProxy(
-        GURL(request->source_url_), &request->proxy_info_,
-        request->callback_, NULL, net::BoundNetLog());
+        GURL(request->source_url_), net::LOAD_NORMAL, &request->proxy_info_,
+        request->callback_, NULL, NULL, net::BoundNetLog());
     if (result != net::ERR_IO_PENDING) {
       VLOG(1) << "Network proxy resolution completed synchronously.";
       request->OnCompletion(result);
