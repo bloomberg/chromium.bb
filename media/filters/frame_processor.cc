@@ -67,6 +67,14 @@ class MseTrackBuffer {
   // monotonically increasing.
   void SetHighestPresentationTimestampIfIncreased(base::TimeDelta timestamp);
 
+  // Adds |frame| to the end of |processed_frames_|.
+  void EnqueueProcessedFrame(const scoped_refptr<StreamParserBuffer>& frame);
+
+  // Appends |processed_frames_|, if not empty, to |stream_| and clears
+  // |processed_frames_|. Returns false if append failed, true otherwise.
+  // |processed_frames_| is cleared in both cases.
+  bool FlushProcessedFrames();
+
  private:
   // The decode timestamp of the last coded frame appended in the current coded
   // frame group. Initially kNoTimestamp(), meaning "unset".
@@ -90,6 +98,11 @@ class MseTrackBuffer {
   // Pointer to the stream associated with this track. The stream is not owned
   // by |this|.
   ChunkDemuxerStream* const stream_;
+
+  // Queue of processed frames that have not yet been appended to |stream_|.
+  // EnqueueProcessedFrame() adds to this queue, and FlushProcessedFrames()
+  // clears it.
+  StreamParser::BufferQueue processed_frames_;
 
   DISALLOW_COPY_AND_ASSIGN(MseTrackBuffer);
 };
@@ -122,6 +135,23 @@ void MseTrackBuffer::SetHighestPresentationTimestampIfIncreased(
       timestamp > highest_presentation_timestamp_) {
     highest_presentation_timestamp_ = timestamp;
   }
+}
+
+void MseTrackBuffer::EnqueueProcessedFrame(
+    const scoped_refptr<StreamParserBuffer>& frame) {
+  processed_frames_.push_back(frame);
+}
+
+bool MseTrackBuffer::FlushProcessedFrames() {
+  if (processed_frames_.empty())
+    return true;
+
+  bool result = stream_->Append(processed_frames_);
+  processed_frames_.clear();
+  DVLOG_IF(3, !result) << __FUNCTION__
+                       << "(): Failure appending processed frames to stream";
+
+  return result;
 }
 
 FrameProcessor::FrameProcessor(const UpdateDurationCB& update_duration_cb)
@@ -180,9 +210,13 @@ bool FrameProcessor::ProcessFrames(
        frames_itr != frames.end(); ++frames_itr) {
     if (!ProcessFrame(*frames_itr, append_window_start, append_window_end,
                       timestamp_offset, new_media_segment)) {
+      FlushProcessedFrames();
       return false;
     }
   }
+
+  if (!FlushProcessedFrames())
+    return false;
 
   // 2. - 4. Are handled by the WebMediaPlayer / Pipeline / Media Element.
 
@@ -276,6 +310,20 @@ void FrameProcessor::NotifyNewMediaSegmentStarting(
        ++itr) {
     itr->second->stream()->OnNewMediaSegment(segment_timestamp);
   }
+}
+
+bool FrameProcessor::FlushProcessedFrames() {
+  DVLOG(2) << __FUNCTION__ << "()";
+
+  bool result = true;
+  for (TrackBufferMap::iterator itr = track_buffers_.begin();
+       itr != track_buffers_.end();
+       ++itr) {
+    if (!itr->second->FlushProcessedFrames())
+      result = false;
+  }
+
+  return result;
 }
 
 bool FrameProcessor::HandlePartialAppendWindowTrimming(
@@ -595,6 +643,11 @@ bool FrameProcessor::ProcessFrame(
     // If it is the first in a new media segment or following a discontinuity,
     // notify all the track buffers' streams that a new segment is beginning.
     if (*new_media_segment) {
+      // First, complete the append to track buffer streams of previous media
+      // segment's frames, if any.
+      if (!FlushProcessedFrames())
+        return false;
+
       *new_media_segment = false;
       NotifyNewMediaSegmentStarting(decode_timestamp);
     }
@@ -603,16 +656,12 @@ bool FrameProcessor::ProcessFrame(
              << "PTS=" << presentation_timestamp.InSecondsF()
              << ", DTS=" << decode_timestamp.InSecondsF();
 
-    // Steps 13-18:
-    // TODO(wolenetz): Collect and emit more than one buffer at a time, if
-    // possible. Also refactor SourceBufferStream to conform to spec GC timing.
+    // Steps 13-18: Note, we optimize by appending groups of contiguous
+    // processed frames for each track buffer at end of ProcessFrames() or prior
+    // to NotifyNewMediaSegmentStarting().
+    // TODO(wolenetz): Refactor SourceBufferStream to conform to spec GC timing.
     // See http://crbug.com/371197.
-    StreamParser::BufferQueue buffer_to_append;
-    buffer_to_append.push_back(frame);
-    if (!track_buffer->stream()->Append(buffer_to_append)) {
-      DVLOG(3) << __FUNCTION__ << ": Failure appending frame to stream";
-      return false;
-    }
+    track_buffer->EnqueueProcessedFrame(frame);
 
     // 19. Set last decode timestamp for track buffer to decode timestamp.
     track_buffer->set_last_decode_timestamp(decode_timestamp);

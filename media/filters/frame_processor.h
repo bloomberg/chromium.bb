@@ -101,6 +101,11 @@ class MEDIA_EXPORT FrameProcessor {
   // with timestamp |segment_timestamp|.
   void NotifyNewMediaSegmentStarting(base::TimeDelta segment_timestamp);
 
+  // Helper that signals each track buffer to append any processed, but not yet
+  // appended, frames to its stream. Returns true on success, or false if one or
+  // more of the appends failed.
+  bool FlushProcessedFrames();
+
   // Handles partial append window trimming of |buffer|.  Returns true if the
   // given |buffer| can be partially trimmed or have preroll added; otherwise,
   // returns false.
