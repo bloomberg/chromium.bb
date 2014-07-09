@@ -9,26 +9,18 @@
 
 namespace sync_file_system {
 
-namespace {
-
-// Default delay when more changes are available.
-const int64 kSyncDelayInMilliseconds = 1 * base::Time::kMillisecondsPerSecond;
-
-// Default delay when the previous change has had an error (but remote service
-// is running).
-const int64 kSyncDelayWithSyncError = 3 * base::Time::kMillisecondsPerSecond;
-
-// Default delay when there're more than 10 pending changes.
-const int64 kSyncDelayFastInMilliseconds = 100;
-const int kPendingChangeThresholdForFastSync = 10;
-
-// Default delay when remote service is temporarily unavailable.
-const int64 kSyncDelaySlowInMilliseconds =
-    30 * base::Time::kMillisecondsPerSecond;  // Start with 30 sec + exp backoff
-
-// Default delay when there're no changes.
-const int64 kSyncDelayMaxInMilliseconds =
+const int64 SyncProcessRunner::kSyncDelayInMilliseconds =
+    1 * base::Time::kMillisecondsPerSecond; // 1 sec
+const int64 SyncProcessRunner::kSyncDelayWithSyncError =
+    3 * base::Time::kMillisecondsPerSecond; // 3 sec
+const int64 SyncProcessRunner::kSyncDelayFastInMilliseconds = 100;  // 100 ms
+const int SyncProcessRunner::kPendingChangeThresholdForFastSync = 10;
+const int64 SyncProcessRunner::kSyncDelaySlowInMilliseconds =
+    30 * base::Time::kMillisecondsPerSecond;  // 30 sec
+const int64 SyncProcessRunner::kSyncDelayMaxInMilliseconds =
     30 * 60 * base::Time::kMillisecondsPerSecond;  // 30 min
+
+namespace {
 
 class BaseTimerHelper : public SyncProcessRunner::TimerHelper {
  public:

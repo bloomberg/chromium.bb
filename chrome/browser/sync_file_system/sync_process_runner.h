@@ -25,6 +25,24 @@ class SyncFileSystemService;
 // with each other.
 class SyncProcessRunner {
  public:
+  // Default delay when more changes are available.
+  static const int64 kSyncDelayInMilliseconds;
+
+  // Default delay when the previous change has had an error (but remote service
+  // is running).
+  static const int64 kSyncDelayWithSyncError;
+
+  // Default delay when there're more than 10 pending changes.
+  static const int64 kSyncDelayFastInMilliseconds;
+  static const int kPendingChangeThresholdForFastSync;
+
+  // Default delay when remote service is temporarily unavailable.
+  // The delay backs off exponentially from initial value on repeated failure.
+  static const int64 kSyncDelaySlowInMilliseconds;
+
+  // Default delay when there're no changes.
+  static const int64 kSyncDelayMaxInMilliseconds;
+
   class Client {
    public:
     virtual ~Client() {}
