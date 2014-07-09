@@ -79,6 +79,7 @@
 #include "ui/base/resource/resource_bundle.h"
 
 #if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/file_manager/filesystem_api_util.h"
 #include "chrome/browser/chromeos/login/users/user.h"
 #include "chrome/browser/chromeos/net/onc_utils.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -245,6 +246,7 @@ void WriteDebugLogToFile(const StoreDebugLogsCallback& callback,
     LOG(ERROR) <<
         "Can't create debug log file: " << file_path.AsUTF8Unsafe() << ", " <<
         "error: " << file->error_details();
+    callback.Run(file_path, false);
     return;
   }
   chromeos::DBusThreadManager::Get()->GetDebugDaemonClient()->GetDebugLogs(
@@ -1532,9 +1534,12 @@ void NetInternalsMessageHandler::OnStoreDebugLogs(const base::ListValue* list) {
 
   SendJavascriptCommand("receivedStoreDebugLogs",
                         new base::StringValue("Creating log file..."));
-  const DownloadPrefs* const prefs =
-      DownloadPrefs::FromBrowserContext(Profile::FromWebUI(web_ui()));
-  StoreDebugLogs(prefs->DownloadPath(),
+  Profile* const profile = Profile::FromWebUI(web_ui());
+  const DownloadPrefs* const prefs = DownloadPrefs::FromBrowserContext(profile);
+  base::FilePath path = prefs->DownloadPath();
+  if (file_manager::util::IsUnderNonNativeLocalPath(profile, path))
+    path = prefs->GetDefaultDownloadDirectoryForProfile();
+  StoreDebugLogs(path,
       base::Bind(&NetInternalsMessageHandler::OnStoreDebugLogsCompleted,
                  AsWeakPtr()));
 }
