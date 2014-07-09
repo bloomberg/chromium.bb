@@ -1099,12 +1099,6 @@ crbug.com/350853 fast/multicol/widows2.html [ Skip ]
 crbug.com/350853 fast/pagination/auto-height.html [ Skip ]
 crbug.com/350853 fast/pagination/auto-height-with-break.html [ Skip ]
 
-crbug.com/388823 fast/sub-pixel/selection/selection-gaps-at-fractional-offsets.html [ NeedsManualRebaseline ]
-crbug.com/388823 editing/selection/7152-1.html [ NeedsManualRebaseline ]
-crbug.com/388823 scrollbars/rtl/overflow-scroll-rtl.html [ NeedsManualRebaseline ]
-crbug.com/388823 svg/W3C-SVG-1.1/text-tselect-02-f.svg [ NeedsManualRebaseline ]
-crbug.com/388823 virtual/threaded/animations/play-state-initially-paused.html [ NeedsManualRebaseline ]
-
 crbug.com/374569 [ Win ] http/tests/navigation/beacon-cross-origin.html [ Pass Failure Timeout ]
 crbug.com/374572 svg/filters/feImage-target-reappend-to-document.svg [ Pass Failure ]
 crbug.com/374572 svg/dynamic-updates/SVGImageElement-svgdom-preserveAspectRatio-prop.html [ Pass ImageOnlyFailure ]
@@ -1262,7 +1256,7 @@ crbug.com/392046 [ Win ] fast/text/whitespace/016.html [ Pass Failure ]
 crbug.com/392046 [ Win ] fast/text/whitespace/017.html [ Pass Failure ]
 crbug.com/392046 [ Win ] fast/text/whitespace/018.html [ Pass Failure ]
 crbug.com/392046 [ Win ] fast/ruby/select-ruby.html [ Pass Failure ]
-#crbug.com/392046 [ Win ] scrollbars/rtl/overflow-scroll-rtl.html [ Pass Failure ]
+crbug.com/392046 [ Win ] scrollbars/rtl/overflow-scroll-rtl.html [ Pass Failure ]
 
 crbug.com/391068 http/tests/websocket/workers/close-code-and-reason.html [ Timeout Pass ]
 
