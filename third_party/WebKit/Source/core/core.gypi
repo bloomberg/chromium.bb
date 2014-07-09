@@ -1511,8 +1511,6 @@
             'rendering/LayoutState.cpp',
             'rendering/OrderIterator.cpp',
             'rendering/OrderIterator.h',
-            'rendering/PaintInvalidationState.cpp',
-            'rendering/PaintInvalidationState.h',
             'rendering/PointerEventsHitRules.cpp',
             'rendering/PointerEventsHitRules.h',
             'rendering/RenderApplet.cpp',

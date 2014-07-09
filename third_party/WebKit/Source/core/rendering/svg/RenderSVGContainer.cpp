@@ -52,6 +52,9 @@ void RenderSVGContainer::layout()
 {
     ASSERT(needsLayout());
 
+    // RenderSVGRoot disables layoutState for the SVG rendering tree.
+    ASSERT(!view()->layoutStateCachedOffsetsEnabled());
+
     // Allow RenderSVGViewportContainer to update its viewport.
     calcViewport();
 

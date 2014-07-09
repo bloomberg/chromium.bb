@@ -260,7 +260,7 @@ void RenderView::layout()
     clearNeedsLayout();
 }
 
-void RenderView::mapLocalToContainer(const RenderLayerModelObject* repaintContainer, TransformState& transformState, MapCoordinatesFlags mode, bool* wasFixed, const PaintInvalidationState* paintInvalidationState) const
+void RenderView::mapLocalToContainer(const RenderLayerModelObject* repaintContainer, TransformState& transformState, MapCoordinatesFlags mode, bool* wasFixed) const
 {
     ASSERT_UNUSED(wasFixed, !wasFixed || *wasFixed == static_cast<bool>(mode & IsFixed));
 
@@ -281,7 +281,7 @@ void RenderView::mapLocalToContainer(const RenderLayerModelObject* repaintContai
             transformState.move(-frame()->view()->scrollOffset());
             if (parentDocRenderer->isBox())
                 transformState.move(toLayoutSize(toRenderBox(parentDocRenderer)->contentBoxRect().location()));
-            parentDocRenderer->mapLocalToContainer(repaintContainer, transformState, mode, wasFixed, paintInvalidationState);
+            parentDocRenderer->mapLocalToContainer(repaintContainer, transformState, mode, wasFixed);
             return;
         }
     }
@@ -444,7 +444,7 @@ void RenderView::paintBoxDecorationBackground(PaintInfo& paintInfo, const Layout
     }
 }
 
-void RenderView::invalidateTreeAfterLayout(const PaintInvalidationState& paintInvalidationState)
+void RenderView::invalidateTreeAfterLayout(const RenderLayerModelObject& paintInvalidationContainer)
 {
     ASSERT(!needsLayout());
 
@@ -453,7 +453,8 @@ void RenderView::invalidateTreeAfterLayout(const PaintInvalidationState& paintIn
     if (doingFullRepaint() && !viewRect().isEmpty())
         repaintViewRectangle(viewRect());
 
-    RenderBlock::invalidateTreeAfterLayout(paintInvalidationState);
+    LayoutState rootLayoutState(0, false, *this);
+    RenderBlock::invalidateTreeAfterLayout(paintInvalidationContainer);
 }
 
 void RenderView::repaintViewRectangle(const LayoutRect& repaintRect) const
@@ -495,7 +496,7 @@ void RenderView::repaintViewAndCompositedLayers()
         compositor()->repaintCompositedLayers();
 }
 
-void RenderView::mapRectToPaintInvalidationBacking(const RenderLayerModelObject* paintInvalidationContainer, LayoutRect& rect, bool fixed, const PaintInvalidationState* paintInvalidationState) const
+void RenderView::mapRectToPaintInvalidationBacking(const RenderLayerModelObject* paintInvalidationContainer, LayoutRect& rect, bool fixed) const
 {
     // If a container was specified, and was not 0 or the RenderView,
     // then we should have found it by now.

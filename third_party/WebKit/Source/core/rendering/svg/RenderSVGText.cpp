@@ -94,10 +94,10 @@ const RenderSVGText* RenderSVGText::locateRenderSVGTextAncestor(const RenderObje
     return toRenderSVGText(start);
 }
 
-void RenderSVGText::mapRectToPaintInvalidationBacking(const RenderLayerModelObject* paintInvalidationContainer, LayoutRect& rect, bool fixed, const PaintInvalidationState* paintInvalidationState) const
+void RenderSVGText::mapRectToPaintInvalidationBacking(const RenderLayerModelObject* paintInvalidationContainer, LayoutRect& rect, bool fixed) const
 {
     FloatRect repaintRect = rect;
-    computeFloatRectForPaintInvalidation(paintInvalidationContainer, repaintRect, fixed, paintInvalidationState);
+    computeFloatRectForPaintInvalidation(paintInvalidationContainer, repaintRect, fixed);
     rect = enclosingLayoutRect(repaintRect);
 }
 

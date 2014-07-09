@@ -1569,7 +1569,7 @@ LayoutRect RenderText::linesVisualOverflowBoundingBox() const
     return rect;
 }
 
-LayoutRect RenderText::clippedOverflowRectForPaintInvalidation(const RenderLayerModelObject* paintInvalidationContainer, const PaintInvalidationState* paintInvalidationState) const
+LayoutRect RenderText::clippedOverflowRectForPaintInvalidation(const RenderLayerModelObject* paintInvalidationContainer) const
 {
     RenderObject* rendererToRepaint = containingBlock();
 
@@ -1580,9 +1580,9 @@ LayoutRect RenderText::clippedOverflowRectForPaintInvalidation(const RenderLayer
 
     // The renderer we chose to repaint may be an ancestor of paintInvalidationContainer, but we need to do a paintInvalidationContainer-relative repaint.
     if (paintInvalidationContainer && paintInvalidationContainer != rendererToRepaint && !rendererToRepaint->isDescendantOf(paintInvalidationContainer))
-        return paintInvalidationContainer->clippedOverflowRectForPaintInvalidation(paintInvalidationContainer, paintInvalidationState);
+        return paintInvalidationContainer->clippedOverflowRectForPaintInvalidation(paintInvalidationContainer);
 
-    return rendererToRepaint->clippedOverflowRectForPaintInvalidation(paintInvalidationContainer, paintInvalidationState);
+    return rendererToRepaint->clippedOverflowRectForPaintInvalidation(paintInvalidationContainer);
 }
 
 LayoutRect RenderText::selectionRectForPaintInvalidation(const RenderLayerModelObject* paintInvalidationContainer, bool clipToVisibleContent)
