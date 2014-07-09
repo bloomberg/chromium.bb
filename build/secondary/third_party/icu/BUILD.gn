@@ -2,6 +2,12 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+declare_args() {
+  # Tells icu to load an external data file rather than rely on the icudata
+  # being linked directly into the binary.
+  icu_use_data_file = false
+}
+
 # Meta target that includes both icuuc and icui18n. Most targets want both.
 # You can depend on the individually if you need to.
 group("icu") {
@@ -394,7 +400,6 @@ component("icuuc") {
     "source/common/uvectr32.cpp",
     "source/common/uvectr64.cpp",
     "source/common/wintz.c",
-    "source/stubdata/stubdata.c",
   ]
   defines = [
     "U_COMMON_IMPLEMENTATION",
@@ -415,30 +420,57 @@ component("icuuc") {
 
   direct_dependent_configs = [ ":icu_config" ]
 
-  if (!is_win) {
-    sources -= [ "source/stubdata/stubdata.c" ]
+  if (is_win || icu_use_data_file) {
+    sources += [ "source/stubdata/stubdata.c" ]
   }
 }
 
-if (is_win) {
-  # On Windows the target DLL is pre-built so just use a copy rule.
-  copy("icudata") {
-    sources = [ "windows/icudt.dll" ]
-    outputs = [ "$root_out_dir/icudt.dll" ]
+# TODO(GYP) support use_system_icu.
+if (icu_use_data_file) {
+  if (is_ios) {
+    # TODO(GYP): Support mac resource bundle shown below.
+    # 'link_settings': {
+    #   'mac_bundle_resources': [
+    #     'source/data/in/icudtl.dat',
+    #   ],
+    # }
+  } else {
+    copy("icudata") {
+      if (is_android) {
+        sources = [ "android/icudt.dat" ]
+      } else {
+        sources = [ "source/data/in/icudtl.dat" ]
+      }
+
+      outputs = [ "$root_out_dir/icudtl.dat" ]
+    }
   }
 } else {
-  source_set("icudata") {
-    sources = [
+  if (is_win) {
+    # On Windows the target DLL is pre-built so just use a copy rule.
+    copy("icudata") {
+      sources = [ "windows/icudt.dll" ]
+      outputs = [ "$root_out_dir/icudt.dll" ]
+    }
+  } else {
+    source_set("icudata") {
       # These are hand-generated, but will do for now.  The linux version is an
       # identical copy of the (mac) icudt46l_dat.S file, modulo removal of the
       # .private_extern and .const directives and with no leading underscore on
       # the icudt46_dat symbol.
-      "android/icudt46l_dat.S",
-      "linux/icudt46l_dat.S",
-      "mac/icudt46l_dat.S",
-    ]
-    defines = [ "U_HIDE_DATA_SYMBOL" ]
-
-    # TODO(brettw) support use_system_icu and icu_use_data_file_flag.
+      #
+      # TODO(GYP): Gyp has considerations here for QNX and for the host toolchain
+      #  that have not been ported over.
+      if (is_linux) {
+        sources = [ "linux/icudt46l_dat.S" ]
+      } else if (is_mac) {
+        sources = [ "mac/icudt46l_dat.S" ]
+      } else if (is_android) {
+        sources = [ "android/icudt46l_dat.S" ]
+      } else {
+        assert(false, "No icu data for this platform")
+      }
+      defines = [ "U_HIDE_DATA_SYMBOL" ]
+    }
   }
 }
