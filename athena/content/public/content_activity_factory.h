@@ -6,7 +6,7 @@
 #define ATHENA_CONTENT_PUBLIC_CONTENT_ACTIVITY_FACTORY_H_
 
 #include "athena/activity/public/activity_factory.h"
-#include "athena/athena_export.h"
+#include "athena/common/athena_export.h"
 #include "base/macros.h"
 
 namespace athena {

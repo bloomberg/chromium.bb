@@ -5,7 +5,7 @@
 #ifndef ATHENA_ACTIVITY_PUBLIC_ACTIVITY_VIEW_MODEL_H_
 #define ATHENA_ACTIVITY_PUBLIC_ACTIVITY_VIEW_MODEL_H_
 
-#include "athena/athena_export.h"
+#include "athena/common/athena_export.h"
 #include "base/strings/string16.h"
 
 typedef unsigned int SkColor;

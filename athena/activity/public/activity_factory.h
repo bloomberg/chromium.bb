@@ -5,7 +5,7 @@
 #ifndef ATHENA_ACTIVITY_PUBLIC_ACTIVITY_FACTORY_H_
 #define ATHENA_ACTIVITY_PUBLIC_ACTIVITY_FACTORY_H_
 
-#include "athena/athena_export.h"
+#include "athena/common/athena_export.h"
 #include "url/gurl.h"
 
 namespace apps {

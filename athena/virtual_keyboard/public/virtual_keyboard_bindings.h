@@ -5,7 +5,7 @@
 #ifndef ATHENA_VIRTUAL_KEYBOARD_PUBLIC_VIRTUAL_KEYBOARD_BINDINGS_H_
 #define ATHENA_VIRTUAL_KEYBOARD_PUBLIC_VIRTUAL_KEYBOARD_BINDINGS_H_
 
-#include "athena/athena_export.h"
+#include "athena/common/athena_export.h"
 
 namespace content {
 class RenderView;

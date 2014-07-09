@@ -5,7 +5,7 @@
 #ifndef ATHENA_HOME_PUBLIC_HOME_CARD_H_
 #define ATHENA_HOME_PUBLIC_HOME_CARD_H_
 
-#include "athena/athena_export.h"
+#include "athena/common/athena_export.h"
 
 namespace app_list {
 class SearchProvider;

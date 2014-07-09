@@ -5,7 +5,7 @@
 #ifndef ATHENA_SCREEN_PUBLIC_WINDOW_MANAGER_H_
 #define ATHENA_SCREEN_PUBLIC_WINDOW_MANAGER_H_
 
-#include "athena/athena_export.h"
+#include "athena/common/athena_export.h"
 
 namespace athena {
 

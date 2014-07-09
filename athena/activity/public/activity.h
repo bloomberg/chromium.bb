@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "athena/athena_export.h"
+#include "athena/common/athena_export.h"
 
 namespace athena {
 
