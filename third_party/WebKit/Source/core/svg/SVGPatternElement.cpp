@@ -179,7 +179,7 @@ static void setPatternAttributes(const SVGPatternElement* element, PatternAttrib
 
 void SVGPatternElement::collectPatternAttributes(PatternAttributes& attributes) const
 {
-    HashSet<const SVGPatternElement*> processedPatterns;
+    WillBeHeapHashSet<RawPtrWillBeMember<const SVGPatternElement> > processedPatterns;
     const SVGPatternElement* current = this;
 
     while (true) {

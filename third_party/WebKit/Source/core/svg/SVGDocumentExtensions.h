@@ -44,7 +44,7 @@ class Element;
 class SVGDocumentExtensions : public NoBaseWillBeGarbageCollectedFinalized<SVGDocumentExtensions> {
     WTF_MAKE_NONCOPYABLE(SVGDocumentExtensions); WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
 public:
-    typedef HashSet<Element*> SVGPendingElements;
+    typedef WillBeHeapHashSet<RawPtrWillBeMember<Element> > SVGPendingElements;
     explicit SVGDocumentExtensions(Document*);
     ~SVGDocumentExtensions();
 
@@ -99,8 +99,8 @@ private:
     WillBeHeapHashSet<RefPtrWillBeMember<SVGFontFaceElement> > m_pendingSVGFontFaceElementsForRemoval;
 #endif
     HashMap<AtomicString, RenderSVGResourceContainer*> m_resources;
-    HashMap<AtomicString, OwnPtr<SVGPendingElements> > m_pendingResources; // Resources that are pending.
-    HashMap<AtomicString, OwnPtr<SVGPendingElements> > m_pendingResourcesForRemoval; // Resources that are pending and scheduled for removal.
+    WillBeHeapHashMap<AtomicString, OwnPtrWillBeMember<SVGPendingElements> > m_pendingResources; // Resources that are pending.
+    WillBeHeapHashMap<AtomicString, OwnPtrWillBeMember<SVGPendingElements> > m_pendingResourcesForRemoval; // Resources that are pending and scheduled for removal.
     OwnPtr<SVGResourcesCache> m_resourcesCache;
     WillBeHeapHashSet<RawPtrWillBeMember<SVGSVGElement> > m_relativeLengthSVGRoots; // Root SVG elements with relative length descendants.
     FloatPoint m_translate;
@@ -118,7 +118,7 @@ public:
     bool isElementPendingResource(Element*, const AtomicString& id) const;
     void clearHasPendingResourcesIfPossible(Element*);
     void removeElementFromPendingResources(Element*);
-    PassOwnPtr<SVGPendingElements> removePendingResource(const AtomicString& id);
+    PassOwnPtrWillBeRawPtr<SVGPendingElements> removePendingResource(const AtomicString& id);
 
     void serviceAnimations(double monotonicAnimationStartTime);
 
@@ -127,7 +127,7 @@ public:
     Element* removeElementFromPendingResourcesForRemoval(const AtomicString&);
 
 private:
-    PassOwnPtr<SVGPendingElements> removePendingResourceForRemoval(const AtomicString&);
+    PassOwnPtrWillBeRawPtr<SVGPendingElements> removePendingResourceForRemoval(const AtomicString&);
 };
 
 }
