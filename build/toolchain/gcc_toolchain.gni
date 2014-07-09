@@ -64,14 +64,14 @@ template("gcc_toolchain") {
       command = "$cc -MMD -MF \$out.d \$defines \$includes \$cflags \$cflags_c -c \$in -o \$out"
       description = "CC \$out"
       depfile = "\$out.d"
-      deps = "gcc"
+      depsformat = "gcc"
     }
     tool("cxx") {
       # cflags_pch_cc
       command = "$cxx -MMD -MF \$out.d \$defines \$includes \$cflags \$cflags_cc -c \$in -o \$out"
       description = "CXX \$out"
       depfile = "\$out.d"
-      deps = "gcc"
+      depsformat = "gcc"
     }
     tool("alink") {
       command = "rm -f \$out && $ar rcs \$out @\$rspfile"

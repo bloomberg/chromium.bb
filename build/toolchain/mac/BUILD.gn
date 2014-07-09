@@ -59,25 +59,25 @@ template("mac_clang_toolchain") {
       command = "$cc -MMD -MF \$out.d \$defines \$includes \$cflags \$cflags_c \$cflags_pch_c -c \$in -o \$out"
       description = "CC \$out"
       depfile = "\$out.d"
-      deps = "gcc"
+      depsformat = "gcc"
     }
     tool("cxx") {
       command = "$cxx -MMD -MF \$out.d \$defines \$includes \$cflags \$cflags_cc \$cflags_pch_cc -c \$in -o \$out"
       description = "CXX \$out"
       depfile = "\$out.d"
-      deps = "gcc"
+      depsformat = "gcc"
     }
     tool("objc") {
       command = "$cc -MMD -MF \$out.d \$defines \$includes \$cflags \$cflags_c \$cflags_objc \$cflags_pch_objc -c \$in -o \$out"
       description = "OBJC \$out"
       depfile = "\$out.d"
-      deps = "gcc"
+      depsformat = "gcc"
     }
     tool("objcxx") {
       command = "$cxx -MMD -MF \$out.d \$defines \$includes \$cflags \$cflags_cc \$cflags_objcc \$cflags_pch_objcc -c \$in -o \$out"
       description = "OBJCXX \$out"
       depfile = "\$out.d"
-      deps = "gcc"
+      depsformat = "gcc"
     }
     tool("alink") {
       command = "rm -f \$out && ./gyp-mac-tool filter-libtool libtool \$libtool_flags -static -o \$out \$in \$postbuilds"

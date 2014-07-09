@@ -12,14 +12,14 @@ toolchain("x86_newlib") {
     command = "$cc -MMD -MF \$out.d \$defines \$includes \$cflags \$cflags_c -c \$in -o \$out"
     description = "CC(NaCl x86 Newlib) \$out"
     depfile = "\$out.d"
-    deps = "gcc"
+    depsformat = "gcc"
   }
   tool("cxx") {
     # cflags_pch_cc
     command = "$cxx -MMD -MF \$out.d \$defines \$includes \$cflags \$cflags_cc -c \$in -o \$out"
     description = "CXX(NaCl x86 Newlib) \$out"
     depfile = "\$out.d"
-    deps = "gcc"
+    depsformat = "gcc"
   }
   tool("alink") {
     command = "rm -f \$out && ${toolprefix}ar rcs \$out \$in"

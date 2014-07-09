@@ -35,14 +35,14 @@ toolchain("32") {
     description = "CC \$out"
     rspfile = "\$out.rsp"
     rspfile_content = "\$defines \$includes \$cflags \$cflags_c"
-    deps = "msvc"
+    depsformat = "msvc"
   }
   tool("cxx") {
     command = cc_command  # Same as above
     description = "CXX \$out"
     rspfile = "\$out.rsp"
     rspfile_content = "\$defines \$includes \$cflags \$cflags_cc"
-    deps = "msvc"
+    depsformat = "msvc"
   }
   tool("rc") {
     command = "$python_path gyp-win-tool rc-wrapper environment.x86 rc.exe \$defines \$includes \$rcflags /fo\$out \$in"
@@ -94,14 +94,14 @@ toolchain("64") {
     description = "CC \$out"
     rspfile = "\$out.rsp"
     rspfile_content = "\$defines \$includes \$cflags \$cflags_c"
-    deps = "msvc"
+    depsformat = "msvc"
   }
   tool("cxx") {
     command = cc_command  # Same as above
     description = "CXX \$out"
     rspfile = "\$out.rsp"
     rspfile_content = "\$defines \$includes \$cflags \$cflags_cc"
-    deps = "msvc"
+    depsformat = "msvc"
   }
   tool("rc") {
     command = "$python_path gyp-win-tool rc-wrapper environment.x64 rc.exe \$defines \$includes \$rcflags /fo\$out \$in"
