@@ -382,6 +382,7 @@ static inline void UNREACHABLE_FOR_PLATFORM()
 /* DEFINE_COMPARISON_OPERATORS_WITH_REFERENCES */
 
 // Allow equality comparisons of Objects by reference or pointer, interchangeably.
+// This can be only used on types whose equality makes no other sense than pointer equality.
 #define DEFINE_COMPARISON_OPERATORS_WITH_REFERENCES(thisType) \
     inline bool operator==(const thisType& a, const thisType& b) { return &a == &b; } \
     inline bool operator==(const thisType& a, const thisType* b) { return &a == b; } \

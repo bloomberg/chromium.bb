@@ -199,12 +199,7 @@ inline bool TreeScope::containsMultipleElementsWithId(const AtomicString& id) co
     return m_elementsById && m_elementsById->containsMultiple(id.impl());
 }
 
-inline bool operator==(const TreeScope& a, const TreeScope& b) { return &a == &b; }
-inline bool operator==(const TreeScope& a, const TreeScope* b) { return &a == b; }
-inline bool operator==(const TreeScope* a, const TreeScope& b) { return a == &b; }
-inline bool operator!=(const TreeScope& a, const TreeScope& b) { return !(a == b); }
-inline bool operator!=(const TreeScope& a, const TreeScope* b) { return !(a == b); }
-inline bool operator!=(const TreeScope* a, const TreeScope& b) { return !(a == b); }
+DEFINE_COMPARISON_OPERATORS_WITH_REFERENCES(TreeScope)
 
 HitTestResult hitTestInDocument(const Document*, int x, int y);
 TreeScope* commonTreeScope(Node*, Node*);

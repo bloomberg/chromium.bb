@@ -431,12 +431,7 @@ inline void InlineBox::setHasBadParent()
     DEFINE_TYPE_CASTS(typeName, InlineBox, box, box->is##typeName(), box.is##typeName())
 
 // Allow equality comparisons of InlineBox's by reference or pointer, interchangeably.
-inline bool operator==(const InlineBox& a, const InlineBox& b) { return &a == &b; }
-inline bool operator==(const InlineBox& a, const InlineBox* b) { return &a == b; }
-inline bool operator==(const InlineBox* a, const InlineBox& b) { return a == &b; }
-inline bool operator!=(const InlineBox& a, const InlineBox& b) { return !(a == b); }
-inline bool operator!=(const InlineBox& a, const InlineBox* b) { return !(a == b); }
-inline bool operator!=(const InlineBox* a, const InlineBox& b) { return !(a == b); }
+DEFINE_COMPARISON_OPERATORS_WITH_REFERENCES(InlineBox)
 
 } // namespace WebCore
 

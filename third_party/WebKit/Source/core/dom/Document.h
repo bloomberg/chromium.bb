@@ -1426,13 +1426,8 @@ DEFINE_NODE_TYPE_CASTS(Document, isDocumentNode());
 #define DEFINE_DOCUMENT_TYPE_CASTS(thisType) \
     DEFINE_TYPE_CASTS(thisType, Document, document, document->is##thisType(), document.is##thisType())
 
-// All these varations are needed to avoid ambiguous overloads with the Node and TreeScope versions.
-inline bool operator==(const Document& a, const Document& b) { return &a == &b; }
-inline bool operator==(const Document& a, const Document* b) { return &a == b; }
-inline bool operator==(const Document* a, const Document& b) { return a == &b; }
-inline bool operator!=(const Document& a, const Document& b) { return !(a == b); }
-inline bool operator!=(const Document& a, const Document* b) { return !(a == b); }
-inline bool operator!=(const Document* a, const Document& b) { return !(a == b); }
+// This is needed to avoid ambiguous overloads with the Node and TreeScope versions.
+DEFINE_COMPARISON_OPERATORS_WITH_REFERENCES(Document)
 
 // Put these methods here, because they require the Document definition, but we really want to inline them.
 
