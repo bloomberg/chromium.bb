@@ -127,7 +127,8 @@ void TemplateURLFetcherTest::StartDownload(
 
   TemplateURLFetcherFactory::GetForProfile(
       test_util_.profile())->ScheduleDownload(
-          keyword, osdd_url, favicon_url, NULL,
+          keyword, osdd_url, favicon_url,
+          TemplateURLFetcher::URLFetcherCustomizeCallback(),
           base::Bind(&TemplateURLFetcherTest::ConfirmAddSearchProvider,
                      base::Unretained(this),
                      base::Owned(callback_destruction_notifier)),

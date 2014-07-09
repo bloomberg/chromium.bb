@@ -16,8 +16,11 @@
 #include "content/public/browser/favicon_status.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
+#include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/frame_navigate_params.h"
+#include "content/public/common/url_fetcher.h"
 
 using content::NavigationController;
 using content::NavigationEntry;
@@ -59,6 +62,15 @@ base::string16 GenerateKeywordFromNavigationEntry(
     return base::string16();
 
   return TemplateURL::GenerateKeyword(url);
+}
+
+void AssociateURLFetcherWithWebContents(content::WebContents* web_contents,
+                                        net::URLFetcher* url_fetcher) {
+  content::AssociateURLFetcherWithRenderFrame(
+      url_fetcher,
+      web_contents->GetURL(),
+      web_contents->GetRenderProcessHost()->GetID(),
+      web_contents->GetMainFrame()->GetRoutingID());
 }
 
 }  // namespace
@@ -134,7 +146,8 @@ void SearchEngineTabHelper::OnPageHasOSDD(
   // Download the OpenSearch description document. If this is successful, a
   // new keyword will be created when done.
   TemplateURLFetcherFactory::GetForProfile(profile)->ScheduleDownload(
-      keyword, osdd_url, entry->GetFavicon().url, web_contents(),
+      keyword, osdd_url, entry->GetFavicon().url,
+      base::Bind(&AssociateURLFetcherWithWebContents, web_contents()),
       base::Bind(&SearchEngineTabHelper::OnDownloadedOSDD,
                  weak_ptr_factory_.GetWeakPtr()),
       provider_type);
