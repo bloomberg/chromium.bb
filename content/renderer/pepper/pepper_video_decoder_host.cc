@@ -139,6 +139,9 @@ int32_t PepperVideoDecoderHost::OnHostMsgInitialize(
   }
   decoder_.reset();
 
+#if defined(OS_ANDROID)
+  return PP_ERROR_NOTSUPPORTED;
+#else
   if (!allow_software_fallback)
     return PP_ERROR_NOTSUPPORTED;
 
@@ -147,6 +150,7 @@ int32_t PepperVideoDecoderHost::OnHostMsgInitialize(
   decoder_->Initialize(media_profile, this);
 
   return PP_OK_COMPLETIONPENDING;
+#endif
 }
 
 int32_t PepperVideoDecoderHost::OnHostMsgGetShm(

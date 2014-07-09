@@ -840,6 +840,15 @@
       'sources': [
         '<@(private_renderer_plugin_sources)',
       ],
+      'conditions': [
+        ['OS=="android"', {
+          'sources!': [
+            # Android does not build FFmpeg, which these depend on.
+            'renderer/pepper/video_decoder_shim.cc',
+            'renderer/pepper/video_decoder_shim.h',
+          ],
+        }],
+      ],
       'dependencies': [
         '../ppapi/ppapi_internal.gyp:ppapi_host',
         '../ppapi/ppapi_internal.gyp:ppapi_proxy',
