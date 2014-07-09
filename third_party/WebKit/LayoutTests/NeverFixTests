@@ -144,6 +144,14 @@ virtual/softwarecompositing/webgl [ WontFix ]
 [ Snowleopard Debug ] inspector/sources/debugger/dom-breakpoints.html [ WontFix ]
 [ Snowleopard Debug ] inspector/sources/debugger/event-listener-breakpoints.html [ WontFix ]
 
+# Subpixel font scaling requires DirectWrite on windows (which isn't supported
+# on XP) and antialiasing on mac (which isn't enabled tests).
+[ XP Mac ] fast/text/sub-pixel/text-scaling-ltr.html [ WontFix ]
+[ XP Mac ] fast/text/sub-pixel/text-scaling-pixel.html [ WontFix ]
+[ XP Mac ] fast/text/sub-pixel/text-scaling-rtl.html [ WontFix ]
+[ XP Mac ] fast/text/sub-pixel/text-scaling-vertical.html [ WontFix ]
+[ XP Mac ] fast/text/sub-pixel/text-scaling-webfont.html [ WontFix ]
+
 # These two printing tests fail with the threaded compositor but they
 # aren't critical to run in this mode.
 virtual/threaded/printing/setPrinting.html [ WontFix ]

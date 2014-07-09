@@ -380,13 +380,6 @@ crbug.com/364640 animations/compositor-start-event-timing.html [ Pass Failure ]
 crbug.com/320477 [ Debug ] inspector/sources/debugger/debugger-pause-in-internal.html [ Pass Crash ]
 crbug.com/347484 [ Debug ] inspector/profiler/canvas2d/canvas-replay-log-grid.html [ Timeout ]
 
-# Not yet supported on XP/Mac. See bug for details.
-crbug.com/290411 [ XP Mac ] fast/text/sub-pixel/text-scaling-ltr.html [ Skip ]
-crbug.com/290411 [ XP Mac ] fast/text/sub-pixel/text-scaling-pixel.html [ Skip ]
-crbug.com/290411 [ XP Mac ] fast/text/sub-pixel/text-scaling-rtl.html [ Skip ]
-crbug.com/290411 [ XP Mac ] fast/text/sub-pixel/text-scaling-vertical.html [ Skip ]
-crbug.com/290411 [ XP Mac ] fast/text/sub-pixel/text-scaling-webfont.html [ Skip ]
-
 # Printing Layout broken in these tests.
 crbug.com/377696 printing/setPrinting.html [ Skip ]
 crbug.com/377696 printing/width-overflow.html [ Skip ]
