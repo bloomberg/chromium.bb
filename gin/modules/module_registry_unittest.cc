@@ -4,6 +4,7 @@
 
 #include "gin/modules/module_registry.h"
 
+#include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 #include "gin/modules/module_registry_observer.h"
 #include "gin/modules/module_runner_delegate.h"
@@ -54,6 +55,21 @@ class ModuleRegistryObserverImpl : public ModuleRegistryObserver {
   DISALLOW_COPY_AND_ASSIGN(ModuleRegistryObserverImpl);
 };
 
+void NestedCallback(v8::Handle<v8::Value> value) {
+  FAIL() << "Should not be called";
+}
+
+void OnModuleLoaded(TestHelper* helper,
+                    v8::Isolate* isolate,
+                    int64_t* counter,
+                    v8::Handle<v8::Value> value) {
+  ASSERT_TRUE(value->IsNumber());
+  v8::Handle<v8::Integer> int_value = v8::Handle<v8::Integer>::Cast(value);
+  *counter += int_value->Value();
+  ModuleRegistry::From(helper->runner->GetContextHolder()->context())
+      ->LoadModule(isolate, "two", base::Bind(NestedCallback));
+}
+
 }  // namespace
 
 typedef V8Test ModuleRegistryTest;
@@ -94,6 +110,27 @@ TEST_F(ModuleRegistryTest, ModuleRegistryObserverTest) {
   ASSERT_EQ(2u, observer.dependencies().size());
   EXPECT_EQ("dep1", observer.dependencies()[0]);
   EXPECT_EQ("dep2", observer.dependencies()[1]);
+}
+
+// Verifies that multiple LoadModule calls for the same module are handled
+// correctly.
+TEST_F(ModuleRegistryTest, LoadModuleTest) {
+  TestHelper helper(instance_->isolate());
+  int64_t counter = 0;
+  std::string source =
+      "define('one', [], function() {"
+      "  return 1;"
+      "});";
+
+  ModuleRegistry::LoadModuleCallback callback =
+      base::Bind(OnModuleLoaded, &helper, instance_->isolate(), &counter);
+  for (int i = 0; i < 3; i++) {
+    ModuleRegistry::From(helper.runner->GetContextHolder()->context())
+        ->LoadModule(instance_->isolate(), "one", callback);
+  }
+  EXPECT_EQ(0, counter);
+  helper.runner->Run(source, "script");
+  EXPECT_EQ(3, counter);
 }
 
 }  // namespace gin

@@ -167,9 +167,7 @@ void ModuleRegistry::LoadModule(Isolate* isolate,
     callback.Run(GetModule(isolate, id));
     return;
   }
-  // Should we support multiple callers waiting on the same module?
-  DCHECK(waiting_callbacks_.find(id) == waiting_callbacks_.end());
-  waiting_callbacks_[id] = callback;
+  waiting_callbacks_.insert(std::make_pair(id, callback));
   unsatisfied_dependencies_.insert(id);
 }
 
@@ -184,13 +182,21 @@ void ModuleRegistry::RegisterModule(Isolate* isolate,
   v8::Handle<Object> modules = Local<Object>::New(isolate, modules_);
   modules->Set(StringToSymbol(isolate, id), module);
 
-  LoadModuleCallbackMap::iterator it = waiting_callbacks_.find(id);
-  if (it == waiting_callbacks_.end())
-    return;
-  LoadModuleCallback callback = it->second;
-  waiting_callbacks_.erase(it);
-  // Should we call the callback asynchronously?
-  callback.Run(module);
+  std::pair<LoadModuleCallbackMap::iterator, LoadModuleCallbackMap::iterator>
+      range = waiting_callbacks_.equal_range(id);
+  std::vector<LoadModuleCallback> callbacks;
+  callbacks.reserve(waiting_callbacks_.count(id));
+  for (LoadModuleCallbackMap::iterator it = range.first; it != range.second;
+       ++it) {
+    callbacks.push_back(it->second);
+  }
+  waiting_callbacks_.erase(range.first, range.second);
+  for (std::vector<LoadModuleCallback>::iterator it = callbacks.begin();
+       it != callbacks.end();
+       ++it) {
+    // Should we call the callback asynchronously?
+    it->Run(module);
+  }
 }
 
 bool ModuleRegistry::CheckDependencies(PendingModule* pending) {

@@ -77,7 +77,7 @@ class GIN_EXPORT ModuleRegistry {
 
  private:
   typedef ScopedVector<PendingModule> PendingModuleVector;
-  typedef std::map<std::string, LoadModuleCallback> LoadModuleCallbackMap;
+  typedef std::multimap<std::string, LoadModuleCallback> LoadModuleCallbackMap;
 
   explicit ModuleRegistry(v8::Isolate* isolate);
 
