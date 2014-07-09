@@ -13,6 +13,7 @@
 #include "mojo/services/public/cpp/geometry/geometry_type_converters.h"
 #include "mojo/services/public/cpp/input_events/input_events_type_converters.h"
 #include "mojo/services/public/cpp/view_manager/node.h"
+#include "mojo/services/public/cpp/view_manager/node_observer.h"
 #include "mojo/services/public/cpp/view_manager/view.h"
 #include "mojo/services/public/cpp/view_manager/view_event_dispatcher.h"
 #include "mojo/services/public/cpp/view_manager/view_manager.h"
@@ -156,6 +157,36 @@ class KeyboardManager : public KeyboardClient {
   DISALLOW_COPY_AND_ASSIGN(KeyboardManager);
 };
 
+class RootLayoutManager : public NodeObserver {
+ public:
+  explicit RootLayoutManager(ViewManager* view_manager,
+                             Node* root,
+                             Id content_node_id)
+                            : root_(root),
+                              view_manager_(view_manager),
+                              content_node_id_(content_node_id) {}
+  virtual ~RootLayoutManager() {}
+
+ private:
+  // Overridden from NodeObserver:
+  virtual void OnNodeBoundsChanged(Node* node,
+                                   const gfx::Rect& /*old_bounds*/,
+                                   const gfx::Rect& new_bounds) OVERRIDE {
+    DCHECK_EQ(node, root_);
+    Node* content_node = view_manager_->GetNodeById(content_node_id_);
+    content_node->SetBounds(new_bounds);
+    // Force the view's bitmap to be recreated
+    content_node->active_view()->SetColor(SK_ColorBLUE);
+    // TODO(hansmuller): Do Layout
+  }
+
+  Node* root_;
+  ViewManager* view_manager_;
+  Id content_node_id_;
+
+  DISALLOW_COPY_AND_ASSIGN(RootLayoutManager);
+};
+
 class WindowManager : public ApplicationDelegate,
                       public DebugPanel::Delegate,
                       public ViewObserver,
@@ -250,9 +281,13 @@ class WindowManager : public ApplicationDelegate,
     view_manager_->SetEventDispatcher(this);
 
     Node* node = Node::Create(view_manager);
-    view_manager->GetRoots().front()->AddChild(node);
-    node->SetBounds(gfx::Rect(800, 600));
+    root->AddChild(node);
+    node->SetBounds(gfx::Rect(root->bounds().size()));
     content_node_id_ = node->id();
+
+    root_layout_manager_.reset(
+        new RootLayoutManager(view_manager, root, content_node_id_));
+    root->AddObserver(root_layout_manager_.get());
 
     View* view = View::Create(view_manager);
     node->SetActiveView(view);
@@ -395,6 +430,7 @@ class WindowManager : public ApplicationDelegate,
   Node* launcher_ui_;
   std::vector<Node*> windows_;
   ViewManager* view_manager_;
+  scoped_ptr<RootLayoutManager> root_layout_manager_;
 
   // Id of the node most content is added to. The keyboard is NOT added here.
   Id content_node_id_;

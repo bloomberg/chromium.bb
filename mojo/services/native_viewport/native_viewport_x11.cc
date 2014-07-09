@@ -7,6 +7,7 @@
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 
+#include "base/command_line.h"
 #include "base/message_loop/message_loop.h"
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
@@ -133,6 +134,7 @@ class NativeViewportX11 : public NativeViewport,
       case ButtonPress:
       case ButtonRelease:
       case MotionNotify:
+      case ConfigureNotify:
         return true;
       case ClientMessage:
         return event->xclient.message_type == atom_wm_protocols_;
@@ -159,6 +161,9 @@ class NativeViewportX11 : public NativeViewport,
         ui::MouseEvent mouse_event(event);
         delegate_->OnEvent(&mouse_event);
       }
+    } else if (event->type == ConfigureNotify) {
+      bounds_ = gfx::Rect(event->xconfigure.width, event->xconfigure.height);
+      delegate_->OnBoundsChanged(bounds_);
     }
     return ui::POST_DISPATCH_NONE;
   }

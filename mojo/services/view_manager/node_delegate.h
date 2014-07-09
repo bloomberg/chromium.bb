@@ -11,6 +11,10 @@ namespace ui {
 class Event;
 }
 
+namespace gfx {
+class Rect;
+}
+
 namespace mojo {
 namespace view_manager {
 namespace service {
@@ -24,6 +28,10 @@ class MOJO_VIEW_MANAGER_EXPORT NodeDelegate {
   virtual void OnNodeHierarchyChanged(const Node* node,
                                       const Node* new_parent,
                                       const Node* old_parent) = 0;
+
+  virtual void OnNodeBoundsChanged(const Node* node,
+                                   const gfx::Rect& old_bounds,
+                                   const gfx::Rect& new_bounds) = 0;
 
   // Invoked when the View associated with a node changes.
   virtual void OnNodeViewReplaced(const Node* node,
