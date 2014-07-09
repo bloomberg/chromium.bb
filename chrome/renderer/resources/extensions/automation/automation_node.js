@@ -78,15 +78,15 @@ AutomationNodeImpl.prototype = {
     this.performAction_('doDefault');
   },
 
-  focus: function(opt_callback) {
+  focus: function() {
     this.performAction_('focus');
   },
 
-  makeVisible: function(opt_callback) {
+  makeVisible: function() {
     this.performAction_('makeVisible');
   },
 
-  setSelection: function(startIndex, endIndex, opt_callback) {
+  setSelection: function(startIndex, endIndex) {
     this.performAction_('setSelection',
                         { startIndex: startIndex,
                           endIndex: endIndex });
@@ -376,6 +376,14 @@ AutomationRootNodeImpl.prototype = {
     nodeImpl.loaded = false;
     nodeImpl.id = id;
     delete this.axNodeDataCache_[id];
+  },
+
+  load: function(callback) {
+    // TODO(dtseng/aboxhall): Implement.
+    if (!this.loaded)
+      throw 'Unsupported state: root node is not loaded.';
+
+    setTimeout(callback, 0);
   },
 
   deleteOldChildren_: function(node, newChildIds) {

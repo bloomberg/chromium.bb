@@ -304,9 +304,6 @@
     // TODO(aboxhall/dtseng): implement loading. Kept separate to not include
     // in generated docs.
 
-    // TODO(dtseng/aboxhall): Implement non-trivial |load| function before going
-    // to dev.
-
     // Whether this AutomationRootNode is loaded or not. If false, call load()
     // to get the contents.
     boolean loaded;
