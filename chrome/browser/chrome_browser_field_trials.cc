@@ -14,8 +14,8 @@
 #include "chrome/browser/omnibox/omnibox_field_trial.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
-#include "chrome/common/pref_names.h"
 #include "chrome/common/variations/uniformity_field_trials.h"
+#include "components/metrics/metrics_pref_names.h"
 
 #if defined(OS_ANDROID) || defined(OS_IOS)
 #include "chrome/browser/chrome_browser_field_trials_mobile.h"
@@ -33,7 +33,7 @@ ChromeBrowserFieldTrials::~ChromeBrowserFieldTrials() {
 
 void ChromeBrowserFieldTrials::SetupFieldTrials(PrefService* local_state) {
   const base::Time install_time = base::Time::FromTimeT(
-      local_state->GetInt64(prefs::kInstallDate));
+      local_state->GetInt64(metrics::prefs::kInstallDate));
   DCHECK(!install_time.is_null());
 
   // Field trials that are shared by all platforms.

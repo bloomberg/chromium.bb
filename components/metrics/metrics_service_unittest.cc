@@ -161,7 +161,8 @@ TEST_F(MetricsServiceTest, InitialStabilityLogAfterCrash) {
   metrics::TestMetricsServiceClient client;
   TestMetricsLog log("client", 1, &client, GetLocalState());
   log.RecordEnvironment(std::vector<metrics::MetricsProvider*>(),
-                        std::vector<variations::ActiveGroupId>());
+                        std::vector<variations::ActiveGroupId>(),
+                        0);
 
   // Record stability build time and version from previous session, so that
   // stability metrics (including exited cleanly flag) won't be cleared.

@@ -241,7 +241,6 @@ TEST_F(MetricsLogTest, HistogramBucketFields) {
 
 TEST_F(MetricsLogTest, RecordEnvironment) {
   TestMetricsServiceClient client;
-  client.set_install_date(kInstallDate);
   TestMetricsLog log(
       kClientId, kSessionId, MetricsLog::ONGOING_LOG, &client, &prefs_);
 
@@ -251,7 +250,8 @@ TEST_F(MetricsLogTest, RecordEnvironment) {
   synthetic_trials.push_back(kSyntheticTrials[1]);
 
   log.RecordEnvironment(std::vector<MetricsProvider*>(),
-                        synthetic_trials);
+                        synthetic_trials,
+                        kInstallDate);
   // Check that the system profile on the log has the correct values set.
   CheckSystemProfile(log.system_profile());
 
@@ -273,7 +273,6 @@ TEST_F(MetricsLogTest, LoadSavedEnvironmentFromPrefs) {
       prefs::kStabilitySavedSystemProfileHash;
 
   TestMetricsServiceClient client;
-  client.set_install_date(kInstallDate);
 
   // The pref value is empty, so loading it from prefs should fail.
   {
@@ -287,7 +286,8 @@ TEST_F(MetricsLogTest, LoadSavedEnvironmentFromPrefs) {
     TestMetricsLog log(
         kClientId, kSessionId, MetricsLog::ONGOING_LOG, &client, &prefs_);
     log.RecordEnvironment(std::vector<MetricsProvider*>(),
-                          std::vector<variations::ActiveGroupId>());
+                          std::vector<variations::ActiveGroupId>(),
+                          kInstallDate);
     EXPECT_FALSE(prefs_.GetString(kSystemProfilePref).empty());
     EXPECT_FALSE(prefs_.GetString(kSystemProfileHashPref).empty());
   }
@@ -310,7 +310,8 @@ TEST_F(MetricsLogTest, LoadSavedEnvironmentFromPrefs) {
         kClientId, kSessionId, MetricsLog::ONGOING_LOG, &client, &prefs_);
     // Call RecordEnvironment() to record the pref again.
     log.RecordEnvironment(std::vector<MetricsProvider*>(),
-                          std::vector<variations::ActiveGroupId>());
+                          std::vector<variations::ActiveGroupId>(),
+                          kInstallDate);
   }
 
   {
@@ -334,7 +335,8 @@ TEST_F(MetricsLogTest, InitialLogStabilityMetrics) {
                      &prefs_);
   std::vector<MetricsProvider*> metrics_providers;
   log.RecordEnvironment(metrics_providers,
-                        std::vector<variations::ActiveGroupId>());
+                        std::vector<variations::ActiveGroupId>(),
+                        kInstallDate);
   log.RecordStabilityMetrics(metrics_providers, base::TimeDelta(),
                              base::TimeDelta());
   const SystemProfileProto_Stability& stability =
@@ -356,7 +358,8 @@ TEST_F(MetricsLogTest, OngoingLogStabilityMetrics) {
       kClientId, kSessionId, MetricsLog::ONGOING_LOG, &client, &prefs_);
   std::vector<MetricsProvider*> metrics_providers;
   log.RecordEnvironment(metrics_providers,
-                        std::vector<variations::ActiveGroupId>());
+                        std::vector<variations::ActiveGroupId>(),
+                        kInstallDate);
   log.RecordStabilityMetrics(metrics_providers, base::TimeDelta(),
                              base::TimeDelta());
   const SystemProfileProto_Stability& stability =

@@ -146,7 +146,6 @@ scoped_ptr<ChromeMetricsServiceClient> ChromeMetricsServiceClient::Create(
 
 // static
 void ChromeMetricsServiceClient::RegisterPrefs(PrefRegistrySimple* registry) {
-  registry->RegisterInt64Pref(prefs::kInstallDate, 0);
   registry->RegisterInt64Pref(prefs::kUninstallLastLaunchTimeSec, 0);
   registry->RegisterInt64Pref(prefs::kUninstallLastObservedRunTimeSec, 0);
 
@@ -196,10 +195,6 @@ std::string ChromeMetricsServiceClient::GetVersionString() {
   if (!version_info.IsOfficialBuild())
     version.append("-devel");
   return version;
-}
-
-int64 ChromeMetricsServiceClient::GetInstallDate() {
-  return g_browser_process->local_state()->GetInt64(prefs::kInstallDate);
 }
 
 void ChromeMetricsServiceClient::OnLogUploadComplete() {

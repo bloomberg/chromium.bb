@@ -96,7 +96,8 @@ class MetricsLog {
   // is determined by the pref value.
   void RecordEnvironment(
       const std::vector<metrics::MetricsProvider*>& metrics_providers,
-      const std::vector<variations::ActiveGroupId>& synthetic_trials);
+      const std::vector<variations::ActiveGroupId>& synthetic_trials,
+      int64 install_date);
 
   // Loads the environment proto that was saved by the last RecordEnvironment()
   // call from prefs and clears the pref value. Returns true on success or false

@@ -64,6 +64,7 @@
 #include "components/autofill/core/browser/validation.h"
 #include "components/autofill/core/common/autofill_pref_names.h"
 #include "components/autofill/core/common/form_data.h"
+#include "components/metrics/metrics_service.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/geolocation_provider.h"
@@ -2892,7 +2893,7 @@ void AutofillDialogControllerImpl::LoadRiskFingerprintData() {
   std::string accept_languages =
       user_prefs->GetString(::prefs::kAcceptLanguages);
   base::Time install_time = base::Time::FromTimeT(
-      g_browser_process->local_state()->GetInt64(::prefs::kInstallDate));
+      g_browser_process->metrics_service()->GetInstallDate());
 
   risk::GetFingerprint(
       obfuscated_gaia_id, window_bounds, web_contents(),

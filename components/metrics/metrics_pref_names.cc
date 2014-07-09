@@ -7,6 +7,10 @@
 namespace metrics {
 namespace prefs {
 
+// Set once, to the current epoch time, on the first run of chrome on this
+// machine. Attached to metrics reports forever thereafter.
+const char kInstallDate[] = "uninstall_metrics.installation_date2";
+
 // The metrics client GUID.
 // Note: The name client_id2 is a result of creating
 // new prefs to do a one-time reset of the previous values.

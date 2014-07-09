@@ -286,6 +286,8 @@ void MetricsService::RegisterPrefs(PrefRegistrySimple* registry) {
   metrics::MetricsStateManager::RegisterPrefs(registry);
   MetricsLog::RegisterPrefs(registry);
 
+  registry->RegisterInt64Pref(metrics::prefs::kInstallDate, 0);
+
   registry->RegisterInt64Pref(metrics::prefs::kStabilityLaunchTimeSec, 0);
   registry->RegisterInt64Pref(metrics::prefs::kStabilityLastTimestampSec, 0);
   registry->RegisterStringPref(metrics::prefs::kStabilityStatsVersion,
@@ -381,6 +383,10 @@ void MetricsService::DisableReporting() {
 
 std::string MetricsService::GetClientId() {
   return state_manager_->client_id();
+}
+
+int64 MetricsService::GetInstallDate() {
+  return local_state_->GetInt64(metrics::prefs::kInstallDate);
 }
 
 scoped_ptr<const base::FieldTrial::EntropyProvider>
@@ -740,7 +746,8 @@ void MetricsService::CloseCurrentLog() {
   DCHECK(current_log);
   std::vector<variations::ActiveGroupId> synthetic_trials;
   GetCurrentSyntheticFieldTrials(&synthetic_trials);
-  current_log->RecordEnvironment(metrics_providers_.get(), synthetic_trials);
+  current_log->RecordEnvironment(
+      metrics_providers_.get(), synthetic_trials, GetInstallDate());
   base::TimeDelta incremental_uptime;
   base::TimeDelta uptime;
   GetUptimes(local_state_, &incremental_uptime, &uptime);
@@ -953,7 +960,8 @@ void MetricsService::PrepareInitialMetricsLog() {
   std::vector<variations::ActiveGroupId> synthetic_trials;
   GetCurrentSyntheticFieldTrials(&synthetic_trials);
   initial_metrics_log_->RecordEnvironment(metrics_providers_.get(),
-                                          synthetic_trials);
+                                          synthetic_trials,
+                                          GetInstallDate());
   base::TimeDelta incremental_uptime;
   base::TimeDelta uptime;
   GetUptimes(local_state_, &incremental_uptime, &uptime);

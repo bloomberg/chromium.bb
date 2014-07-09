@@ -105,6 +105,7 @@
 #include "chrome/installer/util/google_update_settings.h"
 #include "components/google/core/browser/google_util.h"
 #include "components/language_usage_metrics/language_usage_metrics.h"
+#include "components/metrics/metrics_pref_names.h"
 #include "components/metrics/metrics_service.h"
 #include "components/nacl/browser/nacl_browser.h"
 #include "components/nacl/browser/nacl_process_host.h"
@@ -939,9 +940,11 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
   // Now that all preferences have been registered, set the install date
   // for the uninstall metrics if this is our first run. This only actually
   // gets used if the user has metrics reporting enabled at uninstall time.
-  int64 install_date = local_state_->GetInt64(prefs::kInstallDate);
-  if (install_date == 0)
-    local_state_->SetInt64(prefs::kInstallDate, base::Time::Now().ToTimeT());
+  int64 install_date = local_state_->GetInt64(metrics::prefs::kInstallDate);
+  if (install_date == 0) {
+    local_state_->SetInt64(metrics::prefs::kInstallDate,
+                           base::Time::Now().ToTimeT());
+  }
 
 #if defined(OS_MACOSX)
   // Get the Keychain API to register for distributed notifications on the main

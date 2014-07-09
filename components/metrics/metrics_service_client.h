@@ -42,9 +42,6 @@ class MetricsServiceClient {
   // Returns the version of the application as a string.
   virtual std::string GetVersionString() = 0;
 
-  // Returns the install date of the application, in seconds since the epoch.
-  virtual int64 GetInstallDate() = 0;
-
   // Called by the metrics service when a log has been uploaded.
   virtual void OnLogUploadComplete() = 0;
 

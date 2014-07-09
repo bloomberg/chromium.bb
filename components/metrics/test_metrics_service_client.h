@@ -27,7 +27,6 @@ class TestMetricsServiceClient : public MetricsServiceClient {
   virtual bool GetBrand(std::string* brand_code) OVERRIDE;
   virtual SystemProfileProto::Channel GetChannel() OVERRIDE;
   virtual std::string GetVersionString() OVERRIDE;
-  virtual int64 GetInstallDate() OVERRIDE;
   virtual void OnLogUploadComplete() OVERRIDE;
   virtual void StartGatheringMetrics(
       const base::Closure& done_callback) OVERRIDE;
@@ -39,12 +38,10 @@ class TestMetricsServiceClient : public MetricsServiceClient {
       const base::Callback<void(int)>& on_upload_complete) OVERRIDE;
 
   const std::string& get_client_id() const { return client_id_; }
-  void set_install_date(int64 install_date) { install_date_ = install_date; }
   void set_version_string(const std::string& str) { version_string_ = str; }
 
  private:
   std::string client_id_;
-  int64 install_date_;
   std::string version_string_;
 
   DISALLOW_COPY_AND_ASSIGN(TestMetricsServiceClient);
