@@ -96,11 +96,27 @@ Ribbon.prototype.disable = function() {
  * @private
  */
 Ribbon.prototype.onSplice_ = function(event) {
-  if (event.removed.length == 0)
-    return;
-
   if (event.removed.length > 1) {
-    console.error('Cannot remove multiple items');
+    console.error('Cannot remove multiple items.');
+    return;
+  }
+
+  if (event.removed.length > 0 && event.added.length > 0) {
+    console.error('Replacing is not implemented.');
+    return;
+  }
+
+  if (event.added.length > 0) {
+    for (var i = 0; i < event.added.length; i++) {
+      var index = this.dataModel_.indexOf(event.added[i]);
+      if (index === -1)
+        continue;
+      var element = this.renderThumbnail_(index);
+      var nextItem = this.dataModel_.item(index + 1);
+      var nextElement =
+          nextItem && this.renderCache_[nextItem.getEntry().toURL()];
+      this.insertBefore(element, nextElement);
+    }
     return;
   }
 
@@ -160,8 +176,7 @@ Ribbon.prototype.onSelection_ = function() {
 
   // TODO(dgozman): use margin instead of 2 here.
   var itemWidth = this.clientHeight - 2;
-  var fullItems = Ribbon.ITEMS_COUNT;
-  fullItems = Math.min(fullItems, length);
+  var fullItems = Math.min(Ribbon.ITEMS_COUNT, length);
   var right = Math.floor((fullItems - 1) / 2);
 
   var fullWidth = fullItems * itemWidth;
@@ -242,11 +257,13 @@ Ribbon.prototype.onSelection_ = function() {
   }
 
   var oldSelected = this.querySelector('[selected]');
-  if (oldSelected) oldSelected.removeAttribute('selected');
+  if (oldSelected)
+    oldSelected.removeAttribute('selected');
 
   var newSelected =
       this.renderCache_[this.dataModel_.item(selectedIndex).getEntry().toURL()];
-  if (newSelected) newSelected.setAttribute('selected', true);
+  if (newSelected)
+    newSelected.setAttribute('selected', true);
 };
 
 /**

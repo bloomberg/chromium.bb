@@ -101,15 +101,15 @@ GalleryDataModel.prototype.saveItem = function(item, canvas, overwrite) {
           // The item's entry is updated to the latest entry. Update metadata.
           item.setMetadata(newMetadata);
 
-          if (util.isSameEntry(oldEntry, item.getEntry())) {
-            // Current entry is updated.
-            // Dispatch an event.
-            var event = new Event('content');
-            event.item = item;
-            event.oldEntry = item.getEntry();
-            event.metadata = newMetadata;
-            this.dispatchEvent(event);
+          // Current entry is updated.
+          // Dispatch an event.
+          var event = new Event('content');
+          event.item = item;
+          event.oldEntry = oldEntry;
+          event.metadata = newMetadata;
+          this.dispatchEvent(event);
 
+          if (util.isSameEntry(oldEntry, item.getEntry())) {
             // Need an update of metdataCache.
             this.metadataCache_.set(
                 item.getEntry(),
@@ -120,7 +120,11 @@ GalleryDataModel.prototype.saveItem = function(item, canvas, overwrite) {
             // Add another item for the old entry.
             var anotherItem = new Gallery.Item(
                 oldEntry, oldMetadata, this.metadataCache_);
-            this.splice(this.indexOf(item), 0, anotherItem);
+            // The item must be added behind the existing item so that it does
+            // not change the index of the existing item.
+            // TODO(hirono): Update the item index of the selection model
+            // correctly.
+            this.splice(this.indexOf(item) + 1, 0, anotherItem);
           }
 
           fulfill();
