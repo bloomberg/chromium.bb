@@ -2648,6 +2648,12 @@
             # GCMDriverAndroid is not yet implemented.
             'browser/extensions/extension_gcm_app_handler_unittest.cc',
             'browser/services/gcm/gcm_profile_service_unittest.cc',
+
+            # Android doesn't support download feedbacks.
+            'browser/safe_browsing/download_feedback_unittest.cc',
+            'browser/safe_browsing/download_feedback_service_unittest.cc',
+            'browser/safe_browsing/download_protection_service_unittest.cc',
+            'browser/safe_browsing/two_phase_uploader_unittest.cc',
           ],
           'sources/': [
             ['exclude', '^browser/captive_portal/'],

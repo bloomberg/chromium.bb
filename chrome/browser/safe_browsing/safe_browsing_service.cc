@@ -224,6 +224,7 @@ void SafeBrowsingService::Initialize() {
           make_scoped_refptr(g_browser_process->system_request_context())));
 
 #if defined(FULL_SAFE_BROWSING)
+#if !defined(OS_ANDROID)
   if (!CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableClientSidePhishingDetection)) {
     csd_service_.reset(safe_browsing::ClientSideDetectionService::Create(
@@ -231,6 +232,7 @@ void SafeBrowsingService::Initialize() {
   }
   download_service_.reset(new safe_browsing::DownloadProtectionService(
       this, url_request_context_getter_.get()));
+#endif
 
   if (IsIncidentReportingServiceEnabled()) {
     incident_service_.reset(new safe_browsing::IncidentReportingService(

@@ -257,6 +257,11 @@ TEST_F(PhishingTermFeatureExtractorTest, ExtractFeatures) {
   ExpectFeatureMapsAreEqual(features, expected_features);
   EXPECT_THAT(expected_shingle_hashes, testing::ContainerEq(shingle_hashes));
 
+#if !defined(OS_ANDROID)
+  // The test code is disabled due to http://crbug.com/392234
+  // The client-side detection feature is not enabled on Android yet.
+  // If we decided to enable the feature, we need to fix the bug first.
+
   // Chinese translation of the phrase "hello goodbye hello goodbye". This tests
   // that we can correctly separate terms in languages that don't use spaces.
   page_text =
@@ -277,6 +282,7 @@ TEST_F(PhishingTermFeatureExtractorTest, ExtractFeatures) {
   ASSERT_TRUE(ExtractFeatures(&page_text, &features, &shingle_hashes));
   ExpectFeatureMapsAreEqual(features, expected_features);
   EXPECT_THAT(expected_shingle_hashes, testing::ContainerEq(shingle_hashes));
+#endif
 }
 
 TEST_F(PhishingTermFeatureExtractorTest, Continuation) {
