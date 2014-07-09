@@ -774,6 +774,11 @@
               ],
             },
           ]
+        }, {
+          'sources!': [
+            'ozone/media_ozone_platform.cc',
+            'ozone/media_ozone_platform.h',
+          ]
         }],
         ['OS!="linux"', {
           'sources!': [
@@ -1595,10 +1600,6 @@
           },
           'includes': ['../build/apk_test.gypi'],
         },
-      ],
-    }],
-    ['OS=="android"', {
-      'targets': [
         {
           'target_name': 'media_android_jni_headers',
           'type': 'none',
@@ -1712,7 +1713,6 @@
             '../base/base.gyp:base',
             '../base/base.gyp:base_i18n',
             '../base/base.gyp:test_support_base',
-            '../base/base.gyp:test_support_perf',
             '../testing/gtest.gyp:gtest',
             '../third_party/ffmpeg/ffmpeg.gyp:ffmpeg',
             'media',

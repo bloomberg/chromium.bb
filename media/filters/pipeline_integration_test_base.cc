@@ -246,8 +246,10 @@ PipelineIntegrationTestBase::CreateFilterCollection(
   collection->SetDemuxer(demuxer_.get());
 
   ScopedVector<VideoDecoder> video_decoders;
+#if !defined(MEDIA_DISABLE_LIBVPX)
   video_decoders.push_back(
       new VpxVideoDecoder(message_loop_.message_loop_proxy()));
+#endif  // !defined(MEDIA_DISABLE_LIBVPX)
   video_decoders.push_back(
       new FFmpegVideoDecoder(message_loop_.message_loop_proxy()));
 
