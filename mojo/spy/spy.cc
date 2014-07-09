@@ -4,10 +4,13 @@
 
 #include "mojo/spy/spy.h"
 
+#include <vector>
+
 #include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/location.h"
 #include "base/memory/ref_counted.h"
+#include "base/message_loop/message_loop_proxy.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/threading/thread.h"
@@ -15,7 +18,10 @@
 
 #include "mojo/public/cpp/system/core.h"
 #include "mojo/service_manager/service_manager.h"
+#include "mojo/spy/public/spy.mojom.h"
+#include "mojo/spy/spy_server_impl.h"
 #include "mojo/spy/websocket_server.h"
+#include "url/gurl.h"
 
 namespace {
 
@@ -33,11 +39,9 @@ void CloseHandles(MojoHandle* handles, size_t count) {
 class MessageProcessor :
     public base::RefCountedThreadSafe<MessageProcessor> {
  public:
-
   MessageProcessor()
       : last_result_(MOJO_RESULT_OK),
         bytes_transfered_(0) {
-
     message_count_[0] = 0;
     message_count_[1] = 0;
     handle_count_[0] = 0;
@@ -107,24 +111,30 @@ class MessageProcessor :
   }
 
  private:
-   friend class base::RefCountedThreadSafe<MessageProcessor>;
-   virtual ~MessageProcessor() {}
+  friend class base::RefCountedThreadSafe<MessageProcessor>;
+  virtual ~MessageProcessor() {}
 
-   bool CheckResult(MojoResult mr) {
-     if (mr == MOJO_RESULT_OK)
-       return true;
-     last_result_ = mr;
-     return false;
-   }
+  bool CheckResult(MojoResult mr) {
+    if (mr == MOJO_RESULT_OK)
+      return true;
+    last_result_ = mr;
+    return false;
+  }
 
-   MojoResult last_result_;
-   uint32_t bytes_transfered_;
-   uint32_t message_count_[2];
-   uint32_t handle_count_[2];
+  MojoResult last_result_;
+  uint32_t bytes_transfered_;
+  uint32_t message_count_[2];
+  uint32_t handle_count_[2];
 };
 
 // In charge of intercepting access to the service manager.
 class SpyInterceptor : public mojo::ServiceManager::Interceptor {
+ public:
+  explicit SpyInterceptor(scoped_refptr<mojo::SpyServerImpl> spy_server)
+      : spy_server_(spy_server),
+        proxy_(base::MessageLoopProxy::current()) {
+  }
+
  private:
   virtual mojo::ServiceProviderPtr OnConnectToClient(
     const GURL& url, mojo::ServiceProviderPtr real_client) OVERRIDE {
@@ -156,15 +166,21 @@ class SpyInterceptor : public mojo::ServiceManager::Interceptor {
 
   bool MustIntercept(const GURL& url) {
     // TODO(cpu): manage who and when to intercept.
+    proxy_->PostTask(
+        FROM_HERE,
+        base::Bind(&mojo::SpyServerImpl::OnIntercept, spy_server_, url));
     return true;
   }
+
+  scoped_refptr<mojo::SpyServerImpl> spy_server_;
+  scoped_refptr<base::MessageLoopProxy> proxy_;
 };
 
-spy::WebSocketServer* ws_server = NULL;
+mojo::WebSocketServer* ws_server = NULL;
 
-void StartServer(int port) {
+void StartWebServer(int port, mojo::ScopedMessagePipeHandle pipe) {
   // TODO(cpu) figure out lifetime of the server. See Spy() dtor.
-  ws_server = new spy::WebSocketServer(port);
+  ws_server = new mojo::WebSocketServer(port, pipe.Pass());
   ws_server->Start();
 }
 
@@ -199,18 +215,23 @@ namespace mojo {
 
 Spy::Spy(mojo::ServiceManager* service_manager, const std::string& options) {
   SpyOptions spy_options = ProcessOptions(options);
+
+  spy_server_ = new SpyServerImpl();
+
   // Start the tread what will accept commands from the frontend.
   control_thread_.reset(new base::Thread("mojo_spy_control_thread"));
   base::Thread::Options thread_options(base::MessageLoop::TYPE_IO, 0);
   control_thread_->StartWithOptions(thread_options);
   control_thread_->message_loop_proxy()->PostTask(
-      FROM_HERE, base::Bind(&StartServer, spy_options.websocket_port));
+      FROM_HERE, base::Bind(&StartWebServer,
+                            spy_options.websocket_port,
+                            base::Passed(spy_server_->ServerPipe())));
 
   // Start intercepting mojo services.
-  service_manager->SetInterceptor(new SpyInterceptor());
+  service_manager->SetInterceptor(new SpyInterceptor(spy_server_));
 }
 
-Spy::~Spy(){
+Spy::~Spy() {
   // TODO(cpu): Do not leak the interceptor. Lifetime between the
   // service_manager and the spy is still unclear hence the leak.
 }

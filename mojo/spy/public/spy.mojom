@@ -1,0 +1,50 @@
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+module mojo.spy_api {
+
+enum Result {
+  ALL_OK,
+  INTERNAL_ERROR,
+  INVALID_ID,
+  NO_MORE_IDS,
+  INVALID_CALL,
+  INVALID_PARAMS,
+  BAD_STATE,
+  RESOURCE_LIMIT
+};
+
+struct Version {
+  uint32 v_major;
+  uint32 v_minor;
+};
+
+enum ConnectionOptions {
+  SKIP,
+  PAUSE,
+  RESUME,
+  PEEK_MESSAGES
+};
+
+struct Message {
+  uint32 id;
+  uint32 time;
+  uint8[] data;
+};
+
+[Client=SpyClient]
+interface SpyServer {
+  StartSession(Version version) => (Result result, string name);
+  StopSession() => (Result result);
+  TrackConnection(uint32 id, ConnectionOptions options) => (Result result);
+};
+
+interface SpyClient {
+  OnFatalError(Result result);
+  OnSessionEnd(Result result);
+  OnClientConnection(string name, uint32 id, ConnectionOptions options);
+  OnMessage(Message message);
+};
+
+}
