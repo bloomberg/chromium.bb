@@ -229,7 +229,7 @@ void SubstringSetMatcher::CreateFailureEdges() {
   }
 }
 
-const uint32 SubstringSetMatcher::AhoCorasickNode::kNoSuchEdge = ~0;
+const uint32 SubstringSetMatcher::AhoCorasickNode::kNoSuchEdge = 0xFFFFFFFF;
 
 SubstringSetMatcher::AhoCorasickNode::AhoCorasickNode()
     : failure_(kNoSuchEdge) {}

@@ -1466,13 +1466,14 @@ Frequency WiFiServiceImpl::GetFrequencyToConnect(
     const std::string& network_guid) const {
   // Check whether desired frequency is set in |connect_properties_|.
   const base::DictionaryValue* properties;
-  const base::DictionaryValue* wifi;
-  int frequency;
-  if (connect_properties_.GetDictionaryWithoutPathExpansion(
-          network_guid, &properties) &&
-      properties->GetDictionary(onc::network_type::kWiFi, &wifi) &&
-      wifi->GetInteger(onc::wifi::kFrequency, &frequency)) {
-    return GetNormalizedFrequency(frequency);
+  if (connect_properties_.GetDictionaryWithoutPathExpansion(network_guid,
+                                                            &properties)) {
+    const base::DictionaryValue* wifi;
+    if (properties->GetDictionary(onc::network_type::kWiFi, &wifi)) {
+      int frequency;
+      if (wifi->GetInteger(onc::wifi::kFrequency, &frequency))
+        return GetNormalizedFrequency(frequency);
+    }
   }
   return kFrequencyAny;
 }

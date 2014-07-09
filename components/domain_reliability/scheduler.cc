@@ -13,7 +13,7 @@
 
 namespace {
 
-const unsigned kInvalidCollectorIndex = -1;
+const unsigned kInvalidCollectorIndex = static_cast<unsigned>(-1);
 
 const unsigned kDefaultMinimumUploadDelaySec = 60;
 const unsigned kDefaultMaximumUploadDelaySec = 300;

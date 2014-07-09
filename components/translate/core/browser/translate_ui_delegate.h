@@ -24,7 +24,7 @@ class TranslatePrefs;
 // feature to the user.
 class TranslateUIDelegate {
  public:
-  enum { NO_INDEX = -1, };
+  static const size_t kNoIndex = static_cast<size_t>(-1);
 
   TranslateUIDelegate(const base::WeakPtr<TranslateManager>& translate_manager,
                       const std::string& original_language,

@@ -629,8 +629,9 @@ void PasswordFormManager::CheckForAccountCreationForm(
     if (!pending.form_data.fields.empty() &&
         pending_structure.FormSignature() !=
             observed_structure.FormSignature()) {
-      autofill::AutofillManager* autofill_manager;
-      if ((autofill_manager = driver_->GetAutofillManager())) {
+      autofill::AutofillManager* autofill_manager =
+          driver_->GetAutofillManager();
+      if (autofill_manager) {
         // Note that this doesn't guarantee that the upload succeeded, only that
         // |pending.form_data| is considered uploadable.
         bool success =

@@ -1100,7 +1100,7 @@ ScopedVector<TemplateURLData> GetPrepopulatedTemplateURLData(
     std::string search_url;
     std::string favicon_url;
     std::string encoding;
-    int id;
+    int id = -1;
     // The following fields are required for each search engine configuration.
     if (list->GetDictionary(i, &engine) &&
         engine->GetString("name", &name) && !name.empty() &&

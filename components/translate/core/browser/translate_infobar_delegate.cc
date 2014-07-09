@@ -42,7 +42,7 @@ const int kNeverTranslateMinCount = 3;
 
 }  // namespace
 
-const size_t TranslateInfoBarDelegate::kNoIndex = TranslateUIDelegate::NO_INDEX;
+const size_t TranslateInfoBarDelegate::kNoIndex = TranslateUIDelegate::kNoIndex;
 
 TranslateInfoBarDelegate::~TranslateInfoBarDelegate() {
 }

@@ -227,7 +227,7 @@ TemplateURLRef::SearchTermsArgs::ContextualSearchParams::
 TemplateURLRef::TemplateURLRef(TemplateURL* owner, Type type)
     : owner_(owner),
       type_(type),
-      index_in_owner_(-1),
+      index_in_owner_(0),
       parsed_(false),
       valid_(false),
       supports_replacements_(false),
