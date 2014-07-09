@@ -1253,20 +1253,23 @@ class LayerTreeHostAnimationTestAnimationsAddedToNewAndExistingLayers
 
   virtual void UpdateAnimationState(LayerTreeHostImpl* host_impl,
                                     bool has_unfinished_animation) OVERRIDE {
-    Animation* root_animation = host_impl->active_tree()
-                                    ->root_layer()
-                                    ->layer_animation_controller()
-                                    ->GetAnimation(Animation::Opacity);
+    LayerAnimationController* root_controller_impl =
+        host_impl->active_tree()->root_layer()->layer_animation_controller();
+    Animation* root_animation =
+        root_controller_impl->GetAnimation(Animation::Opacity);
     if (!root_animation || root_animation->run_state() != Animation::Running)
       return;
 
-    Animation* child_animation = host_impl->active_tree()
-                                     ->root_layer()
-                                     ->children()[0]
-                                     ->layer_animation_controller()
-                                     ->GetAnimation(Animation::Opacity);
+    LayerAnimationController* child_controller_impl =
+        host_impl->active_tree()->root_layer()->children()
+            [0]->layer_animation_controller();
+    Animation* child_animation =
+        child_controller_impl->GetAnimation(Animation::Opacity);
     EXPECT_EQ(Animation::Running, child_animation->run_state());
     EXPECT_EQ(root_animation->start_time(), child_animation->start_time());
+    root_controller_impl->AbortAnimations(Animation::Opacity);
+    root_controller_impl->AbortAnimations(Animation::Transform);
+    child_controller_impl->AbortAnimations(Animation::Opacity);
     EndTest();
   }
 
