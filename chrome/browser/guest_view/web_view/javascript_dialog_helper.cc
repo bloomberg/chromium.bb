@@ -9,6 +9,7 @@
 #include "chrome/browser/guest_view/guest_view_constants.h"
 #include "chrome/browser/guest_view/web_view/web_view_constants.h"
 #include "chrome/browser/guest_view/web_view/web_view_guest.h"
+#include "chrome/browser/guest_view/web_view/web_view_permission_helper.h"
 #include "chrome/browser/guest_view/web_view/web_view_permission_types.h"
 
 namespace {
@@ -31,7 +32,7 @@ std::string JavaScriptMessageTypeToString(
 }  // namespace
 
 JavaScriptDialogHelper::JavaScriptDialogHelper(WebViewGuest* guest)
-    : webview_guest_(guest) {
+    : web_view_guest_(guest) {
 }
 
 JavaScriptDialogHelper::~JavaScriptDialogHelper() {
@@ -56,7 +57,9 @@ void JavaScriptDialogHelper::RunJavaScriptDialog(
                    new base::StringValue(
                        JavaScriptMessageTypeToString(javascript_message_type)));
   request_info.Set(guestview::kUrl, new base::StringValue(origin_url.spec()));
-  webview_guest_->RequestPermission(
+  WebViewPermissionHelper* web_view_permission_helper =
+      WebViewPermissionHelper::FromWebContents(web_contents);
+  web_view_permission_helper->RequestPermission(
       WEB_VIEW_PERMISSION_TYPE_JAVASCRIPT_DIALOG,
       request_info,
       base::Bind(&JavaScriptDialogHelper::OnPermissionResponse,
@@ -94,6 +97,6 @@ void JavaScriptDialogHelper::OnPermissionResponse(
     const DialogClosedCallback& callback,
     bool allow,
     const std::string& user_input) {
-  callback.Run(allow && webview_guest_->attached(),
+  callback.Run(allow && web_view_guest_->attached(),
                base::UTF8ToUTF16(user_input));
 }

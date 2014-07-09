@@ -302,7 +302,7 @@ GuestViewBase::~GuestViewBase() {
   pending_events_.clear();
 }
 
-void GuestViewBase::DispatchEvent(Event* event) {
+void GuestViewBase::DispatchEventToEmbedder(Event* event) {
   scoped_ptr<Event> event_ptr(event);
   if (!in_extension()) {
     NOTREACHED();
@@ -337,7 +337,7 @@ void GuestViewBase::SendQueuedEvents() {
   while (!pending_events_.empty()) {
     linked_ptr<Event> event_ptr = pending_events_.front();
     pending_events_.pop_front();
-    DispatchEvent(event_ptr.release());
+    DispatchEventToEmbedder(event_ptr.release());
   }
 }
 

@@ -9,7 +9,7 @@
 #if defined(ENABLE_EXTENSIONS)
 #include "chrome/browser/content_settings/permission_request_id.h"
 #include "chrome/browser/extensions/suggest_permission_util.h"
-#include "chrome/browser/guest_view/web_view/web_view_guest.h"
+#include "chrome/browser/guest_view/web_view/web_view_permission_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/process_map.h"
@@ -41,12 +41,11 @@ bool GeolocationPermissionContextExtensions::RequestPermission(
 #if defined(ENABLE_EXTENSIONS)
   GURL requesting_frame_origin = requesting_frame.GetOrigin();
 
-  WebViewGuest* guest = WebViewGuest::FromWebContents(web_contents);
-  if (guest) {
-    guest->RequestGeolocationPermission(bridge_id,
-                                        requesting_frame,
-                                        user_gesture,
-                                        callback);
+  WebViewPermissionHelper* web_view_permission_helper =
+      WebViewPermissionHelper::FromWebContents(web_contents);
+  if (web_view_permission_helper) {
+    web_view_permission_helper->RequestGeolocationPermission(
+        bridge_id, requesting_frame, user_gesture, callback);
     *permission_set = false;
     *new_permission = false;
     return true;
@@ -91,10 +90,11 @@ bool GeolocationPermissionContextExtensions::CancelPermissionRequest(
     content::WebContents* web_contents,
     int bridge_id) {
 #if defined(ENABLE_EXTENSIONS)
-  WebViewGuest* guest =
-      web_contents ? WebViewGuest::FromWebContents(web_contents) : NULL;
-  if (guest) {
-    guest->CancelGeolocationPermissionRequest(bridge_id);
+  WebViewPermissionHelper* web_view_permission_helper =
+      web_contents ? WebViewPermissionHelper::FromWebContents(web_contents)
+                   : NULL;
+  if (web_view_permission_helper) {
+    web_view_permission_helper->CancelGeolocationPermissionRequest(bridge_id);
     return true;
   }
 #endif  // defined(ENABLE_EXTENSIONS)

@@ -14,7 +14,7 @@
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 
 #if defined(ENABLE_EXTENSIONS)
-#include "chrome/browser/guest_view/web_view/web_view_guest.h"
+#include "chrome/browser/guest_view/web_view/web_view_permission_helper.h"
 #include "chrome/browser/guest_view/web_view/web_view_renderer_state.h"
 #endif
 
@@ -208,14 +208,16 @@ void ChromeRenderMessageFilter::OnRequestFileSystemAccessSync(
       WebViewRendererState::GetInstance()->IsGuest(render_process_id_);
   if (is_web_view_guest) {
     // Record access to file system for potential display in UI.
-    BrowserThread::PostTask(BrowserThread::UI,
-                            FROM_HERE,
-                            base::Bind(&WebViewGuest::FileSystemAccessedSync,
-                                       render_process_id_,
-                                       render_frame_id,
-                                       origin_url,
-                                       !allowed,
-                                       reply_msg));
+    BrowserThread::PostTask(
+        BrowserThread::UI,
+        FROM_HERE,
+        base::Bind(&ChromeRenderMessageFilter::
+                   FileSystemAccessedSyncOnUIThread,
+                   render_process_id_,
+                   render_frame_id,
+                   origin_url,
+                   !allowed,
+                   reply_msg));
     return;
   }
 #endif
@@ -233,6 +235,24 @@ void ChromeRenderMessageFilter::OnRequestFileSystemAccessSync(
                  !allowed));
 }
 
+#if defined(ENABLE_EXTENSIONS)
+void ChromeRenderMessageFilter::FileSystemAccessedSyncOnUIThread(
+    int render_process_id,
+    int render_frame_id,
+    const GURL& url,
+    bool blocked_by_policy,
+    IPC::Message* reply_msg) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  WebViewPermissionHelper* web_view_permission_helper =
+      WebViewPermissionHelper::FromFrameID(render_process_id, render_frame_id);
+  web_view_permission_helper->FileSystemAccessedSync(render_process_id,
+                                                     render_frame_id,
+                                                     url,
+                                                     blocked_by_policy,
+                                                     reply_msg);
+}
+#endif
+
 void ChromeRenderMessageFilter::OnRequestFileSystemAccessAsync(
     int render_frame_id,
     int request_id,
@@ -248,14 +268,16 @@ void ChromeRenderMessageFilter::OnRequestFileSystemAccessAsync(
       WebViewRendererState::GetInstance()->IsGuest(render_process_id_);
   if (is_web_view_guest) {
     // Record access to file system for potential display in UI.
-    BrowserThread::PostTask(BrowserThread::UI,
-                            FROM_HERE,
-                            base::Bind(&WebViewGuest::FileSystemAccessedAsync,
-                                       render_process_id_,
-                                       render_frame_id,
-                                       request_id,
-                                       origin_url,
-                                       !allowed));
+    BrowserThread::PostTask(
+        BrowserThread::UI,
+        FROM_HERE,
+        base::Bind(&ChromeRenderMessageFilter::
+                   FileSystemAccessedAsyncOnUIThread,
+                   render_process_id_,
+                   render_frame_id,
+                   request_id,
+                   origin_url,
+                   !allowed));
     return;
   }
 #endif
@@ -272,6 +294,24 @@ void ChromeRenderMessageFilter::OnRequestFileSystemAccessAsync(
                 origin_url,
                 !allowed));
 }
+
+#if defined(ENABLE_EXTENSIONS)
+void ChromeRenderMessageFilter::FileSystemAccessedAsyncOnUIThread(
+    int render_process_id,
+    int render_frame_id,
+    int request_id,
+    const GURL& url,
+    bool blocked_by_policy) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  WebViewPermissionHelper* web_view_permission_helper =
+      WebViewPermissionHelper::FromFrameID(render_process_id, render_frame_id);
+  web_view_permission_helper->FileSystemAccessedAsync(render_process_id,
+                                                      render_frame_id,
+                                                      request_id,
+                                                      url,
+                                                      blocked_by_policy);
+}
+#endif
 
 void ChromeRenderMessageFilter::OnAllowIndexedDB(int render_frame_id,
                                                  const GURL& origin_url,

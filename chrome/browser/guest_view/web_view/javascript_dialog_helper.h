@@ -45,7 +45,7 @@ class JavaScriptDialogHelper : public content::JavaScriptDialogManager {
       const std::string& user_input);
 
   // Pointer to the webview that is being helped.
-  WebViewGuest* const webview_guest_;
+  WebViewGuest* const web_view_guest_;
 
   DISALLOW_COPY_AND_ASSIGN(JavaScriptDialogHelper);
 };

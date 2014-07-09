@@ -1526,6 +1526,8 @@
       'browser/guest_view/web_view/web_view_guest.cc',
       'browser/guest_view/web_view/web_view_guest.h',
       'browser/guest_view/web_view/web_view_permission_types.h',
+      'browser/guest_view/web_view/web_view_permission_helper.cc',
+      'browser/guest_view/web_view/web_view_permission_helper.h',
       'browser/guest_view/web_view/web_view_renderer_state.cc',
       'browser/guest_view/web_view/web_view_renderer_state.h',
       'browser/infobars/infobar_extension_api.cc',
@@ -1761,8 +1763,6 @@
     ],
     # See also the plugin_installation_sources list below.
     'chrome_browser_plugins_sources': [
-      'browser/guest_view/web_view/plugin_permission_helper.cc',
-      'browser/guest_view/web_view/plugin_permission_helper.h',
       'browser/metrics/plugin_metrics_provider.cc',
       'browser/metrics/plugin_metrics_provider.h',
       'browser/pepper_broker_infobar_delegate.cc',

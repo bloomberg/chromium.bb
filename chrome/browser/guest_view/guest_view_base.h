@@ -204,14 +204,14 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
       content::WebContents* embedder_web_contents,
       const base::DictionaryValue& extra_params) OVERRIDE FINAL;
 
+  // Dispatches an event |event_name| to the embedder with the |event| fields.
+  void DispatchEventToEmbedder(Event* event);
+
  protected:
   GuestViewBase(content::BrowserContext* browser_context,
                 int guest_instance_id);
 
   virtual ~GuestViewBase();
-
-  // Dispatches an event |event_name| to the embedder with the |event| fields.
-  void DispatchEvent(Event* event);
 
  private:
   class EmbedderWebContentsObserver;
