@@ -130,9 +130,11 @@ class DeviceRegistryPropertyValue {
   Create(DWORD property_type, scoped_ptr<UINT8[]> value, size_t value_size) {
     if (property_type == REG_SZ) {
       // Ensure string is zero terminated.
-      CHECK_GE(value_size, 1u);
+      size_t character_size = value_size / sizeof(WCHAR);
+      CHECK_EQ(character_size * sizeof(WCHAR), value_size);
+      CHECK_GE(character_size, 1u);
       WCHAR* value_string = reinterpret_cast<WCHAR*>(value.get());
-      value_string[value_size - 1] = 0;
+      value_string[character_size - 1] = 0;
     }
     return scoped_ptr<DeviceRegistryPropertyValue>(
         new DeviceRegistryPropertyValue(
