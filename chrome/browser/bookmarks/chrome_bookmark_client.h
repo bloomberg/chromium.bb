@@ -9,7 +9,6 @@
 
 #include "base/deferred_sequenced_task_runner.h"
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
 #include "components/bookmarks/browser/base_bookmark_model_observer.h"
 #include "components/bookmarks/browser/bookmark_client.h"
 #include "components/policy/core/browser/managed_bookmarks_tracker.h"
@@ -83,7 +82,6 @@ class ChromeBookmarkClient : public bookmarks::BookmarkClient,
 
   // Helper for GetLoadExtraNodesCallback().
   static bookmarks::BookmarkPermanentNodeList LoadExtraNodes(
-      const scoped_refptr<base::DeferredSequencedTaskRunner>& profile_io_runner,
       scoped_ptr<BookmarkPermanentNode> managed_node,
       scoped_ptr<base::ListValue> initial_managed_bookmarks,
       int64* next_node_id);

@@ -17,8 +17,6 @@
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/policy/profile_policy_connector_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/profiles/startup_task_runner_service.h"
-#include "chrome/browser/profiles/startup_task_runner_service_factory.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_node.h"
 #include "components/history/core/browser/url_database.h"
@@ -171,8 +169,6 @@ bookmarks::LoadExtraCallback ChromeBookmarkClient::GetLoadExtraNodesCallback() {
 
   return base::Bind(
       &ChromeBookmarkClient::LoadExtraNodes,
-      StartupTaskRunnerServiceFactory::GetForProfile(profile_)
-          ->GetBookmarkTaskRunner(),
       base::Passed(&managed),
       base::Passed(managed_bookmarks_tracker_->GetInitialManagedBookmarks()));
 }
@@ -238,11 +234,9 @@ void ChromeBookmarkClient::BookmarkModelLoaded(BookmarkModel* model,
 
 // static
 bookmarks::BookmarkPermanentNodeList ChromeBookmarkClient::LoadExtraNodes(
-    const scoped_refptr<base::DeferredSequencedTaskRunner>& profile_io_runner,
     scoped_ptr<BookmarkPermanentNode> managed_node,
     scoped_ptr<base::ListValue> initial_managed_bookmarks,
     int64* next_node_id) {
-  DCHECK(profile_io_runner->RunsTasksOnCurrentThread());
   // Load the initial contents of the |managed_node| now, and assign it an
   // unused ID.
   int64 managed_id = *next_node_id;

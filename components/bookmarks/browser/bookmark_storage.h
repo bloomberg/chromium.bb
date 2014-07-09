@@ -159,7 +159,7 @@ class BookmarkStorage : public base::ImportantFileWriter::DataSerializer {
   void BookmarkModelDeleted();
 
   // Callback from backend after loading the bookmark file.
-  void OnLoadFinished();
+  void OnLoadFinished(scoped_ptr<BookmarkLoadDetails> details);
 
   // ImportantFileWriter::DataSerializer implementation.
   virtual bool SerializeData(std::string* output) OVERRIDE;
@@ -174,9 +174,6 @@ class BookmarkStorage : public base::ImportantFileWriter::DataSerializer {
 
   // Helper to write bookmark data safely.
   base::ImportantFileWriter writer_;
-
-  // See class description of BookmarkLoadDetails for details on this.
-  scoped_ptr<BookmarkLoadDetails> details_;
 
   // Sequenced task runner where file I/O operations will be performed at.
   scoped_refptr<base::SequencedTaskRunner> sequenced_task_runner_;
