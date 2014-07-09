@@ -228,7 +228,7 @@ class Instance : public pp::InstancePrivate,
   int GetDocumentPixelHeight() const;
 
   // Draws a rectangle with the specified dimensions and color in our buffer.
-  void FillRect(const pp::Rect& rect, unsigned int color);
+  void FillRect(const pp::Rect& rect, uint32 color);
 
   std::vector<pp::ImageData> GetThumbnailResources();
   std::vector<pp::ImageData> GetProgressBarResources(pp::ImageData* background);
@@ -410,7 +410,7 @@ class Instance : public pp::InstancePrivate,
 
   struct BackgroundPart {
     pp::Rect location;
-    unsigned int color;
+    uint32 color;
   };
   std::vector<BackgroundPart> background_parts_;
 

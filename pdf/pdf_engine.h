@@ -29,10 +29,7 @@ namespace pp {
 class InputEvent;
 }
 
-#define kBackgroundColorR 204
-#define kBackgroundColorG 204
-#define kBackgroundColorB 204
-#define kBackgroundColorA 255
+const uint32 kBackgroundColor = 0xFFCCCCCC;
 
 namespace chrome_pdf {
 

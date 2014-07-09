@@ -55,10 +55,7 @@ namespace chrome_pdf {
 #define kHighlightColorG 193
 #define kHighlightColorB 218
 
-#define kPendingPageColorR 238
-#define kPendingPageColorG 238
-#define kPendingPageColorB 238
-#define kPendingPageColorA 255
+const uint32 kPendingPageColor = 0xFFEEEEEE;
 
 #define kFormHighlightColor 0xFFE4DD
 #define kFormHighlightAlpha 100
@@ -1058,7 +1055,7 @@ pp::Buffer_Dev PDFiumEngine::PrintPagesAsRasterPDF(
 
     // Clear the bitmap
     FPDFBitmap_FillRect(bitmap, 0, 0, bitmap_size.width(),
-                        bitmap_size.height(), 255, 255, 255, 255);
+                        bitmap_size.height(), 0xFFFFFFFF);
 
     pp::Rect page_rect = pages_to_print[i].rect();
     FPDF_RenderPageBitmap(bitmap, pages_to_print[i].GetPrintPage(),
@@ -1931,18 +1928,15 @@ void PDFiumEngine::PaintThumbnail(pp::ImageData* image_data, int index) {
       FPDFBitmap_BGRx, image_data->data(), image_data->stride());
 
   if (pages_[index]->available()) {
-    FPDFBitmap_FillRect(
-        bitmap, 0, 0, image_data->size().width(), image_data->size().height(),
-        255, 255, 255, 255);
+    FPDFBitmap_FillRect(bitmap, 0, 0, image_data->size().width(),
+                        image_data->size().height(), 0xFFFFFFFF);
 
     FPDF_RenderPageBitmap(
         bitmap, pages_[index]->GetPage(), 0, 0, image_data->size().width(),
         image_data->size().height(), 0, GetRenderingFlags());
   } else {
-    FPDFBitmap_FillRect(
-        bitmap, 0, 0, image_data->size().width(), image_data->size().height(),
-        kPendingPageColorR, kPendingPageColorG, kPendingPageColorB,
-        kPendingPageColorA);
+    FPDFBitmap_FillRect(bitmap, 0, 0, image_data->size().width(),
+                        image_data->size().height(), kPendingPageColor);
   }
 
   FPDFBitmap_Destroy(bitmap);
@@ -2346,9 +2340,8 @@ bool PDFiumEngine::ContinuePaint(int progressive_index,
     int start_x, start_y, size_x, size_y;
     GetPDFiumRect(
         page_index, dirty, &start_x, &start_y, &size_x, &size_y);
-    FPDFBitmap_FillRect(
-        progressive_paints_[progressive_index].bitmap, start_x, start_y, size_x,
-        size_y, 255, 255, 255, 255);
+    FPDFBitmap_FillRect(progressive_paints_[progressive_index].bitmap, start_x,
+                        start_y, size_x, size_y, 0xFFFFFFFF);
     rv = FPDF_RenderPageBitmap_Start(
         progressive_paints_[progressive_index].bitmap,
         pages_[page_index]->GetPage(), start_x, start_y, size_x, size_y,
@@ -2408,11 +2401,9 @@ void PDFiumEngine::FillPageSides(int progressive_index) {
                       kPageShadowBottom + kPageSeparatorThickness);
     left = GetScreenRect(left).Intersect(dirty_in_screen);
 
-    FPDFBitmap_FillRect(
-        bitmap, left.x() - dirty_in_screen.x(),
-        left.y() - dirty_in_screen.y(), left.width(), left.height(),
-        kBackgroundColorR, kBackgroundColorG, kBackgroundColorB,
-        kBackgroundColorA);
+    FPDFBitmap_FillRect(bitmap, left.x() - dirty_in_screen.x(),
+                        left.y() - dirty_in_screen.y(), left.width(),
+                        left.height(), kBackgroundColor);
   }
 
   if (page_rect.right() < document_size_.width()) {
@@ -2424,11 +2415,9 @@ void PDFiumEngine::FillPageSides(int progressive_index) {
                        kPageShadowBottom + kPageSeparatorThickness);
     right = GetScreenRect(right).Intersect(dirty_in_screen);
 
-    FPDFBitmap_FillRect(
-        bitmap, right.x() - dirty_in_screen.x(),
-        right.y() - dirty_in_screen.y(), right.width(), right.height(),
-        kBackgroundColorR, kBackgroundColorG, kBackgroundColorB,
-        kBackgroundColorA);
+    FPDFBitmap_FillRect(bitmap, right.x() - dirty_in_screen.x(),
+                        right.y() - dirty_in_screen.y(), right.width(),
+                        right.height(), kBackgroundColor);
   }
 
   // Paint separator.
@@ -2438,11 +2427,9 @@ void PDFiumEngine::FillPageSides(int progressive_index) {
                   kPageSeparatorThickness);
   bottom = GetScreenRect(bottom).Intersect(dirty_in_screen);
 
-  FPDFBitmap_FillRect(
-      bitmap, bottom.x() - dirty_in_screen.x(),
-      bottom.y() - dirty_in_screen.y(), bottom.width(), bottom.height(),
-      kBackgroundColorR, kBackgroundColorG, kBackgroundColorB,
-      kBackgroundColorA);
+  FPDFBitmap_FillRect(bitmap, bottom.x() - dirty_in_screen.x(),
+                      bottom.y() - dirty_in_screen.y(), bottom.width(),
+                      bottom.height(), kBackgroundColor);
 }
 
 void PDFiumEngine::PaintPageShadow(int progressive_index,
@@ -2515,8 +2502,7 @@ void PDFiumEngine::PaintUnavailablePage(int page_index,
   GetPDFiumRect(page_index, dirty, &start_x, &start_y, &size_x, &size_y);
   FPDF_BITMAP bitmap = CreateBitmap(dirty, image_data);
   FPDFBitmap_FillRect(bitmap, start_x, start_y, size_x, size_y,
-      kPendingPageColorR, kPendingPageColorG, kPendingPageColorB,
-      kPendingPageColorA);
+                      kPendingPageColor);
 
   pp::Rect loading_text_in_screen(
       pages_[page_index]->rect().width() / 2,
@@ -2817,10 +2803,6 @@ void PDFiumEngine::DrawPageShadow(const pp::Rect& page_rc,
 
   // Page drop shadow parameters.
   const double factor = 0.5;
-  const uint32 background = (kBackgroundColorA << 24) |
-                            (kBackgroundColorR << 16) |
-                            (kBackgroundColorG << 8) |
-                            kBackgroundColorB;
   uint32 depth = std::max(
       std::max(page_rect.x() - shadow_rect.x(),
                page_rect.y() - shadow_rect.y()),
@@ -2830,7 +2812,7 @@ void PDFiumEngine::DrawPageShadow(const pp::Rect& page_rc,
 
   // We need to check depth only to verify our copy of shadow matrix is correct.
   if (!page_shadow_.get() || page_shadow_->depth() != depth)
-    page_shadow_.reset(new ShadowMatrix(depth, factor, background));
+    page_shadow_.reset(new ShadowMatrix(depth, factor, kBackgroundColor));
 
   DCHECK(!image_data->is_null());
   DrawShadow(image_data, shadow_rect, page_rect, clip_rect, *page_shadow_);
@@ -3314,8 +3296,7 @@ bool PDFiumEngineExports::RenderPDFPageToDC(const void* pdf_buffer,
     FPDF_BITMAP bitmap = FPDFBitmap_Create(dest.width(), dest.height(),
                                            FPDFBitmap_BGRx);
       // Clear the bitmap
-    FPDFBitmap_FillRect(bitmap, 0, 0, dest.width(), dest.height(), 255, 255,
-                        255, 255);
+    FPDFBitmap_FillRect(bitmap, 0, 0, dest.width(), dest.height(), 0xFFFFFFFF);
     FPDF_RenderPageBitmap(
         bitmap, page, 0, 0, dest.width(), dest.height(), rotate,
         FPDF_ANNOT | FPDF_PRINTING | FPDF_NO_CATCH);
@@ -3368,7 +3349,7 @@ bool PDFiumEngineExports::RenderPDFPageToBitmap(
                           settings.bounds.width() * 4);
   // Clear the bitmap
   FPDFBitmap_FillRect(bitmap, 0, 0, settings.bounds.width(),
-                      settings.bounds.height(), 255, 255, 255, 255);
+                      settings.bounds.height(), 0xFFFFFFFF);
   // Shift top-left corner of bounds to (0, 0) if it's not there.
   dest.set_point(dest.point() - settings.bounds.point());
   FPDF_RenderPageBitmap(

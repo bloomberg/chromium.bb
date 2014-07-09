@@ -159,7 +159,7 @@ class OutOfProcessInstance : public pp::Instance,
   int GetDocumentPixelHeight() const;
 
   // Draws a rectangle with the specified dimensions and color in our buffer.
-  void FillRect(const pp::Rect& rect, unsigned int color);
+  void FillRect(const pp::Rect& rect, uint32 color);
 
   void LoadUrl(const std::string& url);
   void LoadPreviewUrl(const std::string& url);
@@ -240,7 +240,7 @@ class OutOfProcessInstance : public pp::Instance,
 
   struct BackgroundPart {
     pp::Rect location;
-    unsigned int color;
+    uint32 color;
   };
   std::vector<BackgroundPart> background_parts_;
 

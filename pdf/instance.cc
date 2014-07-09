@@ -768,11 +768,7 @@ void Instance::OnPaint(const std::vector<pp::Rect>& paint_rects,
   if (first_paint_) {
     first_paint_ = false;
     pp::Rect rect = pp::Rect(pp::Point(), plugin_size_);
-    unsigned int color = kBackgroundColorA << 24 |
-                         kBackgroundColorR << 16 |
-                         kBackgroundColorG << 8 |
-                         kBackgroundColorB;
-    FillRect(rect, color);
+    FillRect(rect, kBackgroundColor);
     ready->push_back(PaintManager::ReadyRect(rect, image_data_, true));
     *pending = paint_rects;
     return;
@@ -1024,12 +1020,10 @@ void Instance::CalculateBackgroundParts() {
 
   // Add the left, right, and bottom rectangles.  Note: we assume only
   // horizontal centering.
-  BackgroundPart part;
-  part.color = kBackgroundColorA << 24 |
-               kBackgroundColorR << 16 |
-               kBackgroundColorG << 8 |
-               kBackgroundColorB;
-  part.location = pp::Rect(0, 0, left_width, bottom);
+  BackgroundPart part = {
+    pp::Rect(0, 0, left_width, bottom),
+    kBackgroundColor
+  };
   if (!part.location.IsEmpty())
     background_parts_.push_back(part);
   part.location = pp::Rect(right_start, 0, right_width, bottom);
@@ -1066,17 +1060,17 @@ int Instance::GetDocumentPixelHeight() const {
                                device_scale_));
 }
 
-void Instance::FillRect(const pp::Rect& rect, unsigned int color) {
+void Instance::FillRect(const pp::Rect& rect, uint32 color) {
   DCHECK(!image_data_.is_null() || rect.IsEmpty());
-  unsigned int* buffer_start = static_cast<unsigned int*>(image_data_.data());
+  uint32* buffer_start = static_cast<uint32*>(image_data_.data());
   int stride = image_data_.stride();
-  unsigned int* ptr = buffer_start + rect.y() * stride / 4 + rect.x();
+  uint32* ptr = buffer_start + rect.y() * stride / 4 + rect.x();
   int height = rect.height();
   int width = rect.width();
   for (int y = 0; y < height; ++y) {
     for (int x = 0; x < width; ++x)
       *(ptr + x) = color;
-    ptr += stride /4;
+    ptr += stride / 4;
   }
 }
 
