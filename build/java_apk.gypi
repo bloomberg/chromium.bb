@@ -103,7 +103,7 @@
     'obfuscate_stamp': '<(intermediate_dir)/obfuscate.stamp',
     'pack_arm_relocations_stamp': '<(intermediate_dir)/pack_arm_relocations.stamp',
     'strip_stamp': '<(intermediate_dir)/strip.stamp',
-    'stripped_libraries_dir': '<(SHARED_INTERMEDIATE_DIR)/stripped_libraries',
+    'stripped_libraries_dir': '<(intermediate_dir)/stripped_libraries',
     'strip_additional_stamp': '<(intermediate_dir)/strip_additional.stamp',
     'classes_dir': '<(intermediate_dir)/classes/2',
     'javac_includes': [],
@@ -374,9 +374,6 @@
             ],
             'stamp': '<(pack_arm_relocations_stamp)',
           },
-          'dependencies': [
-            'strip_native_libraries',
-          ],
           'includes': ['../build/android/pack_arm_relocations.gypi'],
         },
         {
@@ -452,7 +449,7 @@
                   'variables': {
                     'inputs': [
                       '<(ordered_libraries_file)',
-                      '<(strip_stamp)',
+                      '<(pack_arm_relocations_stamp)',
                       '<(strip_additional_stamp)',
                     ],
                     'input_apk_path': '<(unsigned_apk_path)',
@@ -469,7 +466,7 @@
           'variables': {
             'libraries_source_dir': '<(apk_package_native_libs_dir)/<(android_app_abi)',
             'package_input_paths': [
-              '<(strip_stamp)',
+              '<(pack_arm_relocations_stamp)',
               '<(strip_additional_stamp)',
             ],
           },
