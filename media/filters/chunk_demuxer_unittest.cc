@@ -3022,6 +3022,45 @@ TEST_F(ChunkDemuxerTest, EmitBuffersDuringAbort) {
   EXPECT_EQ(range_after_abort.start(0), range_before_abort.start(0));
   EXPECT_GT(range_after_abort.end(0), range_before_abort.end(0));
 }
+
+TEST_F(ChunkDemuxerTest, SeekCompleteDuringAbort) {
+  EXPECT_CALL(*this, DemuxerOpened());
+  demuxer_->Initialize(
+      &host_, CreateInitDoneCB(kInfiniteDuration(), PIPELINE_OK), true);
+  EXPECT_EQ(ChunkDemuxer::kOk, AddIdForMp2tSource(kSourceId));
+
+  // For info:
+  // DTS/PTS derived using dvbsnoop -s ts -if bear-1280x720.ts -tssubdecode
+  // Video: first PES:
+  //        PTS: 126912 (0x0001efc0)  [= 90 kHz-Timestamp: 0:00:01.4101]
+  //        DTS: 123909 (0x0001e405)  [= 90 kHz-Timestamp: 0:00:01.3767]
+  // Audio: first PES:
+  //        PTS: 126000 (0x0001ec30)  [= 90 kHz-Timestamp: 0:00:01.4000]
+  //        DTS: 123910 (0x0001e406)  [= 90 kHz-Timestamp: 0:00:01.3767]
+  // Video: last PES:
+  //        PTS: 370155 (0x0005a5eb)  [= 90 kHz-Timestamp: 0:00:04.1128]
+  //        DTS: 367152 (0x00059a30)  [= 90 kHz-Timestamp: 0:00:04.0794]
+  // Audio: last PES:
+  //        PTS: 353788 (0x000565fc)  [= 90 kHz-Timestamp: 0:00:03.9309]
+
+  scoped_refptr<DecoderBuffer> buffer = ReadTestDataFile("bear-1280x720.ts");
+  AppendData(kSourceId, buffer->data(), buffer->data_size());
+
+  // Confirm we're in the middle of parsing a media segment.
+  ASSERT_TRUE(demuxer_->IsParsingMediaSegment(kSourceId));
+
+  // Seek to a time corresponding to buffers that will be emitted during the
+  // abort.
+  Seek(base::TimeDelta::FromMilliseconds(4110));
+
+  // Abort on the Mpeg2 TS parser triggers the emission of the last video
+  // buffer which is pending in the stream parser.
+  demuxer_->Abort(kSourceId,
+                  append_window_start_for_next_append_,
+                  append_window_end_for_next_append_,
+                  &timestamp_offset_map_[kSourceId]);
+}
+
 #endif
 #endif
 

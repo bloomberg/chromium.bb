@@ -1304,9 +1304,16 @@ void ChunkDemuxer::Abort(const std::string& id,
   base::AutoLock auto_lock(lock_);
   DCHECK(!id.empty());
   CHECK(IsValidId(id));
+  bool old_waiting_for_data = IsSeekWaitingForData_Locked();
   source_state_map_[id]->Abort(append_window_start,
                                append_window_end,
                                timestamp_offset);
+  // Abort can possibly emit some buffers.
+  // Need to check whether seeking can be completed.
+  if (old_waiting_for_data && !IsSeekWaitingForData_Locked() &&
+      !seek_cb_.is_null()) {
+    base::ResetAndReturn(&seek_cb_).Run(PIPELINE_OK);
+  }
 }
 
 void ChunkDemuxer::Remove(const std::string& id, TimeDelta start,
