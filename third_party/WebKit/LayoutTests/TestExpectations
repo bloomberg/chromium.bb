@@ -228,8 +228,7 @@ crbug.com/378919 [ Linux Android ] fast/forms/suggestion-picker/datetimelocal-su
 
 # Untriaged Linux-specific Aura failures
 
-# Not yet ready for activation.
-crbug.com/381684 fonts/family-fallback-gardiner.html [ Skip ]
+crbug.com/381684 [ Win Android Mac ] fonts/family-fallback-gardiner.html [ Skip ]
 
 # Untriaged Mavericks failures
 
