@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/strings/sys_string_conversions.h"
 #include "device/bluetooth/bluetooth_low_energy_win.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -45,6 +46,29 @@ TEST_F(BluetoothLowEnergyWinTest, ExtractInvalidBluetoothAddress) {
 
   EXPECT_FALSE(success);
   EXPECT_FALSE(error.empty());
+}
+
+TEST_F(BluetoothLowEnergyWinTest, DeviceRegistryPropertyValueAsString) {
+  std::string test_value = "String used for round trip test.";
+  std::wstring wide_value = base::SysUTF8ToWide(test_value);
+  size_t buffer_size = (wide_value.size() + 1) * sizeof(wchar_t);
+  scoped_ptr<uint8_t[]> buffer(new uint8_t[buffer_size]);
+  memcpy(buffer.get(), wide_value.c_str(), buffer_size);
+  scoped_ptr<device::win::DeviceRegistryPropertyValue> value =
+      device::win::DeviceRegistryPropertyValue::Create(
+          REG_SZ, buffer.Pass(), buffer_size).Pass();
+  EXPECT_EQ(test_value, value->AsString());
+}
+
+TEST_F(BluetoothLowEnergyWinTest, DeviceRegistryPropertyValueAsDWORD) {
+  DWORD test_value = 5u;
+  size_t buffer_size = sizeof(DWORD);
+  scoped_ptr<uint8_t[]> buffer(new uint8_t[buffer_size]);
+  memcpy(buffer.get(), &test_value, buffer_size);
+  scoped_ptr<device::win::DeviceRegistryPropertyValue> value =
+      device::win::DeviceRegistryPropertyValue::Create(
+          REG_DWORD, buffer.Pass(), buffer_size).Pass();
+  EXPECT_EQ(test_value, value->AsDWORD());
 }
 
 }  // namespace device

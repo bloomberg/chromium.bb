@@ -40,11 +40,43 @@ DEFINE_GUID(GUID_BLUETOOTHLE_DEVICE_INTERFACE,
 #include <bluetoothapis.h>
 
 #include "base/files/file_path.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/win/scoped_handle.h"
 
 namespace device {
 namespace win {
+
+// Represents a device registry property value
+class DeviceRegistryPropertyValue {
+ public:
+  // Creates a property value instance, where |property_type| is one of REG_xxx
+  // registry value type (e.g. REG_SZ, REG_DWORD), |value| is a byte array
+  // containing the propery value and |value_size| is the number of bytes in
+  // |value|. Note the returned instance takes ownership of |value| array.
+  static scoped_ptr<DeviceRegistryPropertyValue> Create(
+      DWORD property_type,
+      scoped_ptr<uint8_t[]> value,
+      size_t value_size);
+  ~DeviceRegistryPropertyValue();
+
+  // Returns the vaue type a REG_xxx value (e.g. REG_SZ, REG_DWORD, ...)
+  DWORD property_type() const { return property_type_; }
+
+  std::string AsString() const;
+  DWORD AsDWORD() const;
+
+ private:
+  DeviceRegistryPropertyValue(DWORD property_type,
+                              scoped_ptr<uint8_t[]> value,
+                              size_t value_size);
+
+  DWORD property_type_;
+  scoped_ptr<uint8_t[]> value_;
+  size_t value_size_;
+
+  DISALLOW_COPY_AND_ASSIGN(DeviceRegistryPropertyValue);
+};
 
 // Returns true only on Windows platforms supporting Bluetooth Low Energy.
 bool IsBluetoothLowEnergySupported();

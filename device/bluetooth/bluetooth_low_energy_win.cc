@@ -5,11 +5,12 @@
 #include "device/bluetooth/bluetooth_low_energy_win.h"
 
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/win/windows_version.h"
 
 namespace {
+
+using device::win::DeviceRegistryPropertyValue;
 
 const char kPlatformNotSupported[] =
     "Bluetooth Low energy is only supported on Windows 8 and later.";
@@ -19,6 +20,7 @@ const char kDeviceInfoError[] =
 const char kDeviceAddressError[] =
     "Device instance ID value does not seem to contain a Bluetooth Adapter "
     "address.";
+const char kDeviceFriendlyNameError[] = "Device name is not valid.";
 const char kInvalidBluetoothAddress[] = "Bluetooth address format is invalid.";
 
 // Like ScopedHandle but for HDEVINFO.  Only use this on HDEVINFO returned from
@@ -123,50 +125,6 @@ bool CheckExpectedLength(size_t actual_length,
   return true;
 }
 
-// Represents a device registry property value
-class DeviceRegistryPropertyValue {
- public:
-  static scoped_ptr<DeviceRegistryPropertyValue>
-  Create(DWORD property_type, scoped_ptr<UINT8[]> value, size_t value_size) {
-    if (property_type == REG_SZ) {
-      // Ensure string is zero terminated.
-      size_t character_size = value_size / sizeof(WCHAR);
-      CHECK_EQ(character_size * sizeof(WCHAR), value_size);
-      CHECK_GE(character_size, 1u);
-      WCHAR* value_string = reinterpret_cast<WCHAR*>(value.get());
-      value_string[character_size - 1] = 0;
-    }
-    return scoped_ptr<DeviceRegistryPropertyValue>(
-        new DeviceRegistryPropertyValue(
-            property_type, value.Pass(), value_size));
-  }
-
-  bool AsString(std::string* value, std::string* error) {
-    if (property_type_ != REG_SZ) {
-      *error = "Property is not a string";
-      return false;
-    }
-
-    WCHAR* value_string = reinterpret_cast<WCHAR*>(value_.get());
-    *value = base::SysWideToUTF8(value_string);
-    return true;
-  }
-
- private:
-  DeviceRegistryPropertyValue(DWORD property_type,
-                              scoped_ptr<UINT8[]> value,
-                              size_t value_size)
-      : property_type_(property_type),
-        value_(value.Pass()),
-        value_size_(value_size) {}
-
-  DWORD property_type_;
-  scoped_ptr<UINT8[]> value_;
-  size_t value_size_;
-
-  DISALLOW_COPY_AND_ASSIGN(DeviceRegistryPropertyValue);
-};
-
 bool CollectBluetoothLowEnergyDeviceRegistryProperty(
     const ScopedDeviceInfoSetHandle& device_info_handle,
     PSP_DEVINFO_DATA device_info_data,
@@ -252,10 +210,12 @@ bool CollectDeviceFriendlyName(
     return false;
   }
 
-  if (!property_value->AsString(&device_info->friendly_name, error)) {
+  if (property_value->property_type() != REG_SZ) {
+    *error = kDeviceFriendlyNameError;
     return false;
   }
 
+  device_info->friendly_name = property_value->AsString();
   return true;
 }
 
@@ -419,6 +379,54 @@ HRESULT OpenBluetoothLowEnergyService(const GUID& service_guid,
 
 namespace device {
 namespace win {
+
+// static
+scoped_ptr<DeviceRegistryPropertyValue> DeviceRegistryPropertyValue::Create(
+    DWORD property_type,
+    scoped_ptr<uint8_t[]> value,
+    size_t value_size) {
+  switch (property_type) {
+    case REG_SZ: {
+      // Ensure string is zero terminated.
+      size_t character_size = value_size / sizeof(WCHAR);
+      CHECK_EQ(character_size * sizeof(WCHAR), value_size);
+      CHECK_GE(character_size, 1u);
+      WCHAR* value_string = reinterpret_cast<WCHAR*>(value.get());
+      value_string[character_size - 1] = 0;
+      break;
+    }
+    case REG_DWORD: {
+      CHECK_EQ(value_size, sizeof(DWORD));
+      break;
+    }
+  }
+  return scoped_ptr<DeviceRegistryPropertyValue>(
+      new DeviceRegistryPropertyValue(property_type, value.Pass(), value_size));
+}
+
+DeviceRegistryPropertyValue::DeviceRegistryPropertyValue(
+    DWORD property_type,
+    scoped_ptr<uint8_t[]> value,
+    size_t value_size)
+    : property_type_(property_type),
+      value_(value.Pass()),
+      value_size_(value_size) {
+}
+
+DeviceRegistryPropertyValue::~DeviceRegistryPropertyValue() {
+}
+
+std::string DeviceRegistryPropertyValue::AsString() const {
+  CHECK_EQ(property_type_, static_cast<DWORD>(REG_SZ));
+  WCHAR* value_string = reinterpret_cast<WCHAR*>(value_.get());
+  return base::SysWideToUTF8(value_string);
+}
+
+DWORD DeviceRegistryPropertyValue::AsDWORD() const {
+  CHECK_EQ(property_type_, static_cast<DWORD>(REG_DWORD));
+  DWORD* value = reinterpret_cast<DWORD*>(value_.get());
+  return *value;
+}
 
 bool IsBluetoothLowEnergySupported() {
   return base::win::GetVersion() >= base::win::VERSION_WIN8;
