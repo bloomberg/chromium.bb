@@ -26,9 +26,6 @@
 #ifndef WebIDBTypes_h
 #define WebIDBTypes_h
 
-// FIXME: Remove once Chromium's old code path is removed. crbug.com/100123
-#define WEB_INDEXEDDB_FIRE_BLOCKED_ONLY_IF_IGNORED 1
-
 namespace blink {
 
 enum WebIDBKeyType {
