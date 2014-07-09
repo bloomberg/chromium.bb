@@ -8,6 +8,7 @@
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/sequenced_task_runner.h"
+#include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/policy/device_policy_decoder_chromeos.h"
 #include "chrome/browser/chromeos/policy/enterprise_install_attributes.h"
 #include "chrome/browser/chromeos/policy/proto/chrome_device_policy.pb.h"
@@ -25,7 +26,7 @@ DeviceCloudPolicyStoreChromeOS::DeviceCloudPolicyStoreChromeOS(
     : device_settings_service_(device_settings_service),
       install_attributes_(install_attributes),
       background_task_runner_(background_task_runner),
-      uma_done_(false),
+      first_update_(true),
       weak_factory_(this) {
   device_settings_service_->AddObserver(this);
 }
@@ -141,17 +142,25 @@ void DeviceCloudPolicyStoreChromeOS::UpdateFromService() {
   // is not a definitive result (policy load will be retried).
   const chromeos::DeviceSettingsService::Status status =
       device_settings_service_->status();
-  if (!uma_done_ &&
+  if (first_update_ &&
       status != chromeos::DeviceSettingsService::STORE_TEMP_VALIDATION_ERROR) {
-    uma_done_ = true;
+    first_update_ = false;
     const bool has_dm_token =
         status == chromeos::DeviceSettingsService::STORE_SUCCESS &&
         device_settings_service_->policy_data() &&
         device_settings_service_->policy_data()->has_request_token();
+
+    // At the time LoginDisplayHostImpl decides whether enrollment flow is to be
+    // started, policy hasn't been read yet, so LoginDisplayHostImpl is not in a
+    // position to decide whether recovery is required.  To work around this,
+    // upon policy load on machines requiring recovery, a flag is stored in
+    // prefs which is accessed by LoginDisplayHostImpl early during (next) boot.
+    if (!has_dm_token) {
+      LOG(ERROR) << "Policy read on enrolled device yields no DM token! "
+                 << "Status: " << status << ".";
+      chromeos::StartupUtils::MarkEnrollmentRecoveryRequired();
+    }
     UMA_HISTOGRAM_BOOLEAN("Enterprise.EnrolledPolicyHasDMToken", has_dm_token);
-    LOG_IF(ERROR, !has_dm_token)
-        << "Policy read on enrolled device yields no DM token! "
-        << "Status: " << status << ".";
   }
 
   switch (device_settings_service_->status()) {

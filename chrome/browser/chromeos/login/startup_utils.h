@@ -13,7 +13,7 @@ class PrefRegistrySimple;
 
 namespace chromeos {
 
-// Static utitliy methods used in startup time to get/change bits of device
+// Static utility methods used at startup time to get/change bits of device
 // state.
 class StartupUtils {
  public:
@@ -37,6 +37,12 @@ class StartupUtils {
 
   // Marks device registered. i.e. second part of OOBE is completed.
   static void MarkDeviceRegistered(const base::Closure& done_callback);
+
+  // Returns whether enrollment recovery is required.
+  static bool IsEnrollmentRecoveryRequired();
+
+  // Mark a device as requiring enrollment recovery.
+  static void MarkEnrollmentRecoveryRequired();
 
   // Returns initial locale from local settings.
   static std::string GetInitialLocale();

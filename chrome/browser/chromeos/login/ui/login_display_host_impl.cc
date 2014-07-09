@@ -1206,11 +1206,12 @@ void ShowLoginWizard(const std::string& first_screen_name) {
 
   policy::BrowserPolicyConnectorChromeOS* connector =
       g_browser_process->platform_part()->browser_policy_connector_chromeos();
-  bool should_show_enrollment_screen =
-      first_screen_name.empty() && oobe_complete &&
-      chromeos::WizardController::ShouldAutoStartEnrollment() &&
-      !connector->IsEnterpriseManaged();
-  if (should_show_enrollment_screen) {
+  bool enrollment_screen_wanted =
+      chromeos::WizardController::ShouldRecoverEnrollment() ||
+      (chromeos::WizardController::ShouldAutoStartEnrollment() &&
+       oobe_complete &&
+       !connector->IsEnterpriseManaged());
+  if (enrollment_screen_wanted && first_screen_name.empty()) {
     // Shows networks screen instead of enrollment screen to resume the
     // interrupted auto start enrollment flow because enrollment screen does
     // not handle flaky network. See http://crbug.com/332572

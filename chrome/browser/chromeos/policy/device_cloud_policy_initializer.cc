@@ -11,6 +11,7 @@
 #include "base/sequenced_task_runner.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_store_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_status_collector.h"
@@ -128,6 +129,22 @@ bool DeviceCloudPolicyInitializer::ShouldAutoStartEnrollment() const {
   return GetMachineFlag(chromeos::system::kOemIsEnterpriseManagedKey, false);
 }
 
+bool DeviceCloudPolicyInitializer::ShouldRecoverEnrollment() const {
+  if (install_attributes_->IsEnterpriseDevice() &&
+      chromeos::StartupUtils::IsEnrollmentRecoveryRequired()) {
+    LOG(WARNING) << "Enrollment recovery required according to pref.";
+    std::string machine_id;
+    bool machine_id_success =
+        chromeos::system::StatisticsProvider::GetInstance()
+            ->GetMachineStatistic(chromeos::system::kHardwareClassKey,
+                                  &machine_id);
+    if (machine_id_success && machine_id != "")
+      return true;
+    LOG(WARNING) << "Postponing recovery because machine id is missing.";
+  }
+  return false;
+}
+
 bool DeviceCloudPolicyInitializer::CanExitEnrollment() const {
   if (GetRestoreMode() == kDeviceStateRestoreModeReEnrollmentEnforced)
     return false;
@@ -194,6 +211,7 @@ scoped_ptr<CloudPolicyClient> DeviceCloudPolicyInitializer::CreateClient(
 void DeviceCloudPolicyInitializer::TryToCreateClient() {
   if (device_store_->is_initialized() &&
       device_store_->has_policy() &&
+      !device_store_->policy()->request_token().empty() &&
       !state_keys_broker_->pending() &&
       !enrollment_handler_) {
     DeviceManagementService* service;

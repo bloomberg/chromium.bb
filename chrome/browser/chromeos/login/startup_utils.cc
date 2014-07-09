@@ -52,6 +52,7 @@ void StartupUtils::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(prefs::kOobeComplete, false);
   registry->RegisterStringPref(prefs::kOobeScreenPending, "");
   registry->RegisterIntegerPref(prefs::kDeviceRegistered, -1);
+  registry->RegisterBooleanPref(prefs::kEnrollmentRecoveryRequired, false);
   registry->RegisterStringPref(prefs::kInitialLocale, "en-US");
 }
 
@@ -77,6 +78,9 @@ void StartupUtils::MarkOobeCompleted() {
   // side-effects.
   g_browser_process->local_state()->ClearPref(prefs::kOobeScreenPending);
   SaveBoolPreferenceForced(prefs::kOobeComplete, true);
+
+  // Successful enrollment implies that recovery is not required.
+  SaveBoolPreferenceForced(prefs::kEnrollmentRecoveryRequired, false);
 }
 
 void StartupUtils::SaveOobePendingScreen(const std::string& screen) {
@@ -151,6 +155,17 @@ void StartupUtils::MarkDeviceRegistered(const base::Closure& done_callback) {
         base::Bind(&CreateOobeCompleteFlagFile),
         done_callback);
   }
+}
+
+// static
+bool StartupUtils::IsEnrollmentRecoveryRequired() {
+  return g_browser_process->local_state()
+      ->GetBoolean(prefs::kEnrollmentRecoveryRequired);
+}
+
+// static
+void StartupUtils::MarkEnrollmentRecoveryRequired() {
+  SaveBoolPreferenceForced(prefs::kEnrollmentRecoveryRequired, true);
 }
 
 // static

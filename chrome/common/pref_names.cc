@@ -1871,6 +1871,10 @@ const char kOobeScreenPending[] = "OobeScreenPending";
 // A boolean pref of the device registered flag (second part after first login).
 const char kDeviceRegistered[] = "DeviceRegistered";
 
+// Boolean pref to signal corrupted enrollment to force the device through
+// enrollment recovery flow upon next boot.
+const char kEnrollmentRecoveryRequired[] = "EnrollmentRecoveryRequired";
+
 // List of usernames that used certificates pushed by policy before.
 // This is used to prevent these users from joining multiprofile sessions.
 const char kUsedPolicyCertificates[] = "policy.used_policy_certificates";

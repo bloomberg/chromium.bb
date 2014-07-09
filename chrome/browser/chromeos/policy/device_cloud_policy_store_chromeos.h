@@ -76,8 +76,9 @@ class DeviceCloudPolicyStoreChromeOS
 
   scoped_refptr<base::SequencedTaskRunner> background_task_runner_;
 
-  // Ensure that UMA stats are only reported once per browser start.
-  bool uma_done_;
+  // Run enrollment sanity check and UMA stats only upon the first policy
+  // read/update.
+  bool first_update_;
 
   base::WeakPtrFactory<DeviceCloudPolicyStoreChromeOS> weak_factory_;
 

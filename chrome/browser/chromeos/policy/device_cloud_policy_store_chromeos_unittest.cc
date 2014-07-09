@@ -14,6 +14,8 @@
 #include "chrome/browser/chromeos/policy/enterprise_install_attributes.h"
 #include "chrome/browser/chromeos/policy/proto/chrome_device_policy.pb.h"
 #include "chrome/browser/chromeos/settings/device_settings_test_helper.h"
+#include "chrome/test/base/scoped_testing_local_state.h"
+#include "chrome/test/base/testing_browser_process.h"
 #include "chromeos/cryptohome/cryptohome_util.h"
 #include "chromeos/dbus/fake_cryptohome_client.h"
 #include "chromeos/dbus/fake_dbus_thread_manager.h"
@@ -37,7 +39,8 @@ class DeviceCloudPolicyStoreChromeOSTest
     : public chromeos::DeviceSettingsTestBase {
  protected:
   DeviceCloudPolicyStoreChromeOSTest()
-      : fake_cryptohome_client_(new chromeos::FakeCryptohomeClient()),
+      : local_state_(TestingBrowserProcess::GetGlobal()),
+        fake_cryptohome_client_(new chromeos::FakeCryptohomeClient()),
         install_attributes_(
             new EnterpriseInstallAttributes(fake_cryptohome_client_)),
         store_(new DeviceCloudPolicyStoreChromeOS(
@@ -110,6 +113,7 @@ class DeviceCloudPolicyStoreChromeOSTest
                                            base::MessageLoopProxy::current()));
   }
 
+  ScopedTestingLocalState local_state_;
   chromeos::FakeCryptohomeClient* fake_cryptohome_client_;
   scoped_ptr<EnterpriseInstallAttributes> install_attributes_;
 
