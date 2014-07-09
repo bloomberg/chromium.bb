@@ -18,7 +18,7 @@ public:
     DictionaryBuilder(v8::Handle<v8::Object> holder, v8::Isolate* isolate)
         : m_holder(holder)
         , m_isolate(isolate)
-        , m_dictionary(isolate)
+        , m_dictionary(Dictionary::createEmpty(isolate))
     {
     }
 
@@ -36,7 +36,7 @@ public:
     {
         ASSERT(algorithm.paramsType() == blink::WebCryptoAlgorithmParamsTypeNone);
 
-        Dictionary algorithmValue(m_isolate);
+        Dictionary algorithmValue = Dictionary::createEmpty(m_isolate);
         algorithmValue.set("name", blink::WebCryptoAlgorithm::lookupAlgorithmInfo(algorithm.id())->name);
         m_dictionary.set(propertyName, algorithmValue);
     }

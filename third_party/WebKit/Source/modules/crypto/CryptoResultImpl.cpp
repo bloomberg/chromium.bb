@@ -158,7 +158,7 @@ void CryptoResultImpl::completeWithKeyPair(const blink::WebCryptoKey& publicKey,
         ScriptState* scriptState = m_resolver->scriptState();
         ScriptState::Scope scope(scriptState);
 
-        Dictionary keyPair(scriptState->isolate());
+        Dictionary keyPair = Dictionary::createEmpty(scriptState->isolate());
 
         v8::Handle<v8::Value> publicKeyValue = toV8NoInline(CryptoKey::create(publicKey), scriptState->context()->Global(), scriptState->isolate());
         v8::Handle<v8::Value> privateKeyValue = toV8NoInline(CryptoKey::create(privateKey), scriptState->context()->Global(), scriptState->isolate());

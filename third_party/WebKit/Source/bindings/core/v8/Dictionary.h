@@ -66,12 +66,15 @@ class Dictionary {
     ALLOW_ONLY_INLINE_ALLOCATION();
 public:
     Dictionary();
-    // Creates an empty dictionary
-    explicit Dictionary(v8::Isolate*);
     Dictionary(const v8::Handle<v8::Value>& options, v8::Isolate*);
     ~Dictionary();
 
     Dictionary& operator=(const Dictionary&);
+
+    // This is different from the default constructor:
+    //   * isObject() is true when using createEmpty().
+    //   * isUndefinedOrNull() is true when using default constructor.
+    static Dictionary createEmpty(v8::Isolate*);
 
     bool isObject() const;
     bool isUndefinedOrNull() const;

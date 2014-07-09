@@ -65,12 +65,6 @@ Dictionary::Dictionary()
 {
 }
 
-Dictionary::Dictionary(v8::Isolate* isolate)
-    : m_options(v8::Object::New(isolate))
-    , m_isolate(isolate)
-{
-}
-
 Dictionary::Dictionary(const v8::Handle<v8::Value>& options, v8::Isolate* isolate)
     : m_options(options)
     , m_isolate(isolate)
@@ -87,6 +81,11 @@ Dictionary& Dictionary::operator=(const Dictionary& optionsObject)
     m_options = optionsObject.m_options;
     m_isolate = optionsObject.m_isolate;
     return *this;
+}
+
+Dictionary Dictionary::createEmpty(v8::Isolate* isolate)
+{
+    return Dictionary(v8::Object::New(isolate), isolate);
 }
 
 bool Dictionary::isObject() const
