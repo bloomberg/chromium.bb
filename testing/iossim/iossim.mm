@@ -609,16 +609,34 @@ DTiPhoneSimulatorSessionConfig* BuildSessionConfig(
   NSString* identifier = systemRoot.runtime.identifier;
   id simRuntime = [simRuntimeClass supportedRuntimesByIdentifier][identifier];
 
+  // Attempt to use an existing device, but create one if a suitable match can't
+  // be found. For example, if the simulator is running with a non-default home
+  // directory (e.g. via iossim's -u command line arg) then there won't be any
+  // devices so one will have to be created.
   Class simDeviceSetClass = FindClassByName(@"SimDeviceSet");
-  NSError* error = nil;
-  id simDevice =
-      [[simDeviceSetClass defaultSet] createDeviceWithType:simDeviceType
-                                                   runtime:simRuntime
-                                                      name:@"iossim"
-                                                     error:&error];
-  if (error) {
-    LogError(@"Failed to create device: %@", error);
-    exit(kExitInitializationFailure);
+  id deviceSet =
+      [simDeviceSetClass setForSetPath:[simDeviceSetClass defaultSetPath]];
+  id simDevice = nil;
+  for (id device in [deviceSet availableDevices]) {
+    if ([device runtime] == simRuntime &&
+        [device deviceType] == simDeviceType) {
+      simDevice = device;
+      break;
+    }
+  }
+  if (!simDevice) {
+    NSError* error = nil;
+    // n.b. only the device name is necessary because the iOS Simulator menu
+    // already splits devices by runtime version.
+    NSString* name = [NSString stringWithFormat:@"iossim - %@ ", deviceName];
+    simDevice = [deviceSet createDeviceWithType:simDeviceType
+                                        runtime:simRuntime
+                                           name:name
+                                          error:&error];
+    if (error) {
+      LogError(@"Failed to create device: %@", error);
+      exit(kExitInitializationFailure);
+    }
   }
   sessionConfig.device = simDevice;
 #endif
@@ -866,14 +884,21 @@ int main(int argc, char* const argv[]) {
 
   // Determine the deviceFamily based on the deviceName
   NSNumber* deviceFamily = nil;
+// TODO(lliabraa): Once all builders are on Xcode 6 this ifdef can be removed
+// (crbug.com/385030).
+#if defined(IOSSIM_USE_XCODE_6)
+  Class simDeviceTypeClass = FindClassByName(@"SimDeviceType");
+  if ([simDeviceTypeClass supportedDeviceTypesByName][deviceName] == nil) {
+    LogError(@"Invalid device name: %@.", deviceName);
+    PrintSupportedDevices();
+    exit(kExitInvalidArguments);
+  }
+#else
   if (!deviceName || CaseInsensitivePrefixSearch(deviceName, @"iPhone")) {
     deviceFamily = [NSNumber numberWithInt:kIPhoneFamily];
   } else if (CaseInsensitivePrefixSearch(deviceName, @"iPad")) {
     deviceFamily = [NSNumber numberWithInt:kIPadFamily];
   }
-// TODO(lliabraa): Once all builders are on Xcode 6 this ifdef can be removed
-// (crbug.com/385030).
-#if !defined(IOSSIM_USE_XCODE_6)
   else {
     LogError(@"Invalid device name: %@. Must begin with 'iPhone' or 'iPad'",
              deviceName);
@@ -881,22 +906,14 @@ int main(int argc, char* const argv[]) {
   }
 #endif  // !defined(IOSSIM_USE_XCODE_6)
 
-  // Set up the user home directory for the simulator
-  if (!simHomePath) {
-    NSString* dirNameTemplate =
-        [NSString stringWithFormat:@"iossim-%@-%@-XXXXXX", appName, deviceName];
-    simHomePath = CreateTempDirectory(dirNameTemplate);
-    if (!simHomePath) {
-      LogError(@"Unable to create unique directory for template %@",
-               dirNameTemplate);
+  // Set up the user home directory for the simulator only if a non-default
+  // value was specified.
+  if (simHomePath) {
+    if (!InitializeSimulatorUserHome(simHomePath)) {
+      LogError(@"Unable to initialize home directory for simulator: %@",
+               simHomePath);
       exit(kExitInitializationFailure);
     }
-  }
-
-  if (!InitializeSimulatorUserHome(simHomePath)) {
-    LogError(@"Unable to initialize home directory for simulator: %@",
-             simHomePath);
-    exit(kExitInitializationFailure);
   }
 
   // Create the config and simulator session.
