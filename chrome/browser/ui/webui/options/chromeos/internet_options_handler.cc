@@ -145,35 +145,19 @@ const char kTagControlledBy[] = "controlledBy";
 const char kTagDeviceConnected[] = "deviceConnected";
 const char kTagDisconnect[] = "disconnect";
 const char kTagErrorState[] = "errorState";
-const char kTagEsn[] = "esn";
-const char kTagFirmwareRevision[] = "firmwareRevision";
 const char kTagForget[] = "forget";
-const char kTagGsm[] = "gsm";
-const char kTagHardwareRevision[] = "hardwareRevision";
 const char kTagIdentity[] = "identity";
-const char kTagIccid[] = "iccid";
-const char kTagImei[] = "imei";
-const char kTagImsi[] = "imsi";
 const char kTagLanguage[] = "language";
 const char kTagLastGoodApn[] = "lastGoodApn";
 const char kTagLocalizedName[] = "localizedName";
-const char kTagCellularManufacturer[] = "cellularManufacturer";
-const char kTagMdn[] = "mdn";
-const char kTagMeid[] = "meid";
-const char kTagMin[] = "min";
-const char kTagModelId[] = "modelId";
 const char kTagName[] = "name";
 const char kTagNameServersGoogle[] = "nameServersGoogle";
 const char kTagNameServerType[] = "nameServerType";
 const char kTagNetworkId[] = "networkId";
-const char kTagNetworkTechnology[] = "networkTechnology";
-const char kTagOperatorCode[] = "operatorCode";
-const char kTagOperatorName[] = "operatorName";
 const char kTagOptions[] = "options";
 const char kTagPassword[] = "password";
 const char kTagPolicy[] = "policy";
 const char kTagPreferred[] = "preferred";
-const char kTagPrlVersion[] = "prlVersion";
 const char kTagProviderType[] = "providerType";
 const char kTagProviderApnList[] = "providerApnList";
 const char kTagRecommended[] = "recommended";
@@ -349,18 +333,6 @@ base::DictionaryValue* BuildIPInfoDictionary(
   return ip_info_dict.release();
 }
 
-bool CanForgetNetworkType(const std::string& type) {
-  return type == shill::kTypeWifi ||
-         type == shill::kTypeWimax ||
-         type == shill::kTypeVPN;
-}
-
-bool CanAddNetworkType(const std::string& type) {
-  return type == shill::kTypeWifi ||
-         type == shill::kTypeVPN ||
-         type == shill::kTypeCellular;
-}
-
 // Decorate dictionary |value_dict| with policy information from |ui_data|.
 void DecorateValueDictionary(const NetworkPropertyUIData& ui_data,
                              const base::Value& value,
@@ -422,21 +394,6 @@ std::string CopyStringFromDictionary(const base::DictionaryValue& source,
   if (source.GetStringWithoutPathExpansion(src_key, &string_value))
     dest->SetStringWithoutPathExpansion(dest_key, string_value);
   return string_value;
-}
-
-void CopyIntegerFromDictionary(const base::DictionaryValue& source,
-                               const std::string& src_key,
-                               const std::string& dest_key,
-                               bool as_string,
-                               base::DictionaryValue* dest) {
-  int int_value;
-  if (!source.GetIntegerWithoutPathExpansion(src_key, &int_value))
-    return;
-  if (as_string) {
-    dest->SetStringWithoutPathExpansion(dest_key, base::IntToString(int_value));
-  } else {
-    dest->SetIntegerWithoutPathExpansion(dest_key, int_value);
-  }
 }
 
 // Fills |dictionary| with the configuration details of |vpn|. |onc| is required
@@ -541,30 +498,15 @@ void PopulateCellularDetails(const NetworkState* cellular,
                          CommandLine::ForCurrentProcess()->HasSwitch(
                              chromeos::switches::kEnableCarrierSwitching));
   // Cellular network / connection settings.
-  dictionary->SetString(kTagNetworkTechnology, cellular->network_technology());
   dictionary->SetString(kTagActivationState,
                         internet_options_strings::ActivationStateString(
                             cellular->activation_state()));
   dictionary->SetString(kTagRoamingState,
                         internet_options_strings::RoamingStateString(
                             cellular->roaming()));
-  dictionary->SetString(
-      kTagRestrictedPool,
-      internet_options_strings::RestrictedStateString(
-          cellular->connection_state()));
-
-  const base::DictionaryValue* serving_operator = NULL;
-  if (shill_properties.GetDictionaryWithoutPathExpansion(
-          shill::kServingOperatorProperty, &serving_operator)) {
-    CopyStringFromDictionary(*serving_operator,
-                             shill::kOperatorNameKey,
-                             kTagOperatorName,
-                             dictionary);
-    CopyStringFromDictionary(*serving_operator,
-                             shill::kOperatorCodeKey,
-                             kTagOperatorCode,
-                             dictionary);
-  }
+  dictionary->SetString(kTagRestrictedPool,
+                        internet_options_strings::RestrictedStateString(
+                            cellular->connection_state()));
 
   const base::DictionaryValue* olp = NULL;
   if (shill_properties.GetDictionaryWithoutPathExpansion(
@@ -598,56 +540,16 @@ void PopulateCellularDetails(const NetworkState* cellular,
       NetworkHandler::Get()->network_state_handler()->GetDeviceState(
           cellular->device_path());
   if (device) {
-    // TODO(stevenjb): Add NetworkDeviceHandler::GetProperties() and use that
-    // to retrieve the complete dictionary of device properties, instead of
-    // caching them (will be done for the new UI).
     const base::DictionaryValue& device_properties = device->properties();
     const NetworkPropertyUIData cellular_property_ui_data(
         cellular->ui_data().onc_source());
-    CopyStringFromDictionary(device_properties,
-                             shill::kManufacturerProperty,
-                             kTagCellularManufacturer,
-                             dictionary);
-    CopyStringFromDictionary(
-        device_properties, shill::kModelIDProperty, kTagModelId, dictionary);
-    CopyStringFromDictionary(device_properties,
-                             shill::kFirmwareRevisionProperty,
-                             kTagFirmwareRevision,
-                             dictionary);
-    CopyStringFromDictionary(device_properties,
-                             shill::kHardwareRevisionProperty,
-                             kTagHardwareRevision,
-                             dictionary);
-    CopyIntegerFromDictionary(device_properties,
-                              shill::kPRLVersionProperty,
-                              kTagPrlVersion,
-                              true,
-                              dictionary);
-    CopyStringFromDictionary(
-        device_properties, shill::kMeidProperty, kTagMeid, dictionary);
-    CopyStringFromDictionary(
-        device_properties, shill::kIccidProperty, kTagIccid, dictionary);
-    CopyStringFromDictionary(
-        device_properties, shill::kImeiProperty, kTagImei, dictionary);
-    mdn = CopyStringFromDictionary(
-        device_properties, shill::kMdnProperty, kTagMdn, dictionary);
-    CopyStringFromDictionary(
-        device_properties, shill::kImsiProperty, kTagImsi, dictionary);
-    CopyStringFromDictionary(
-        device_properties, shill::kEsnProperty, kTagEsn, dictionary);
-    CopyStringFromDictionary(
-        device_properties, shill::kMinProperty, kTagMin, dictionary);
-    std::string family;
-    device_properties.GetStringWithoutPathExpansion(
-        shill::kTechnologyFamilyProperty, &family);
-    dictionary->SetBoolean(kTagGsm, family == shill::kNetworkTechnologyGsm);
-
     SetValueDictionary(dictionary,
                        kTagSimCardLockEnabled,
                        new base::FundamentalValue(device->sim_lock_enabled()),
                        cellular_property_ui_data);
 
     carrier_id = device->home_provider_id();
+    device_properties.GetStringWithoutPathExpansion(shill::kMdnProperty, &mdn);
 
     MobileConfig* config = MobileConfig::GetInstance();
     if (config->IsReady()) {
@@ -747,9 +649,22 @@ void PopulateCellularDetails(const NetworkState* cellular,
 scoped_ptr<base::DictionaryValue> PopulateConnectionDetails(
     const NetworkState* network,
     const base::DictionaryValue& shill_properties) {
+  // TODO(stevenjb): Once we eliminate all references to Shill properties,
+  // we can switch to using managed_network_configuration_handler which
+  // includes Device properties for Cellular (and skip the call to
+  // onc::TranslateShillServiceToONCPart). For now we copy them over here.
+  scoped_ptr<base::DictionaryValue> shill_properties_with_device(
+      shill_properties.DeepCopy());
+  const DeviceState* device =
+      NetworkHandler::Get()->network_state_handler()->GetDeviceState(
+          network->device_path());
+  if (device) {
+    shill_properties_with_device->Set(shill::kDeviceProperty,
+                                      device->properties().DeepCopy());
+  }
   scoped_ptr<base::DictionaryValue> dictionary =
       onc::TranslateShillServiceToONCPart(
-          shill_properties, &onc::kNetworkWithStateSignature);
+          *shill_properties_with_device, &onc::kNetworkWithStateSignature);
 
   dictionary->SetString(kNetworkInfoKeyServicePath, network->path());
   dictionary->SetString(
@@ -1152,8 +1067,7 @@ std::string InternetOptionsHandler::GetIconDataUrl(int resource_id) const {
 void InternetOptionsHandler::RefreshNetworkData() {
   base::DictionaryValue dictionary;
   FillNetworkInfo(&dictionary);
-  web_ui()->CallJavascriptFunction(
-      kRefreshNetworkDataFunction, dictionary);
+  web_ui()->CallJavascriptFunction(kRefreshNetworkDataFunction, dictionary);
 }
 
 void InternetOptionsHandler::UpdateConnectionData(
@@ -1541,16 +1455,13 @@ void InternetOptionsHandler::NetworkCommandCallback(
   }
   // Process commands that do not require an existing network.
   if (command == kTagAddConnection) {
-    if (CanAddNetworkType(type))
-      AddConnection(type);
+    AddConnection(type);
   } else if (command == kTagForget) {
-    if (CanForgetNetworkType(type)) {
-      NetworkHandler::Get()->network_configuration_handler()->
-          RemoveConfiguration(
-              service_path,
-              base::Bind(&base::DoNothing),
-              base::Bind(&ShillError, "NetworkCommand: " + command));
-    }
+    NetworkHandler::Get()->network_configuration_handler()->
+        RemoveConfiguration(
+            service_path,
+            base::Bind(&base::DoNothing),
+            base::Bind(&ShillError, "NetworkCommand: " + command));
   } else if (command == kTagOptions) {
     NetworkHandler::Get()->network_configuration_handler()->GetProperties(
         service_path,
@@ -1603,7 +1514,7 @@ void InternetOptionsHandler::AddConnection(const std::string& type) {
   } else if (type == shill::kTypeCellular) {
     ChooseMobileNetworkDialog::ShowDialog(GetNativeWindow());
   } else {
-    NOTREACHED();
+    LOG(ERROR) << "Unsupported type for AddConnection";
   }
 }
 

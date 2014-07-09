@@ -1138,19 +1138,25 @@ cr.define('options.internet', function() {
         $('service-name').textContent = getNetworkName(data);
       }
 
-      $('network-technology').textContent = data.networkTechnology;
+      $('network-technology').textContent = data.Cellular.NetworkTechnology;
       $('activation-state').textContent = data.activationState;
       $('roaming-state').textContent = data.roamingState;
       $('restricted-pool').textContent = data.restrictedPool;
       $('error-state').textContent = data.errorState;
-      $('manufacturer').textContent = data.cellularManufacturer;
-      $('model-id').textContent = data.modelId;
-      $('firmware-revision').textContent = data.firmwareRevision;
-      $('hardware-revision').textContent = data.hardwareRevision;
-      $('mdn').textContent = data.mdn;
-      $('operator-name').textContent = data.operatorName;
-      $('operator-code').textContent = data.operatorCode;
+      $('manufacturer').textContent = data.Cellular.Manufacturer;
+      $('model-id').textContent = data.Cellular.ModelID;
+      $('firmware-revision').textContent = data.Cellular.FirmwareRevision;
+      $('hardware-revision').textContent = data.Cellular.HardwareRevision;
+      $('mdn').textContent = data.Cellular.MDN;
 
+      // Show ServingOperator properties only if available.
+      if (data.Cellular.ServingOperator) {
+        $('operator-name').textContent = data.Cellular.ServingOperator.Name;
+        $('operator-code').textContent = data.Cellular.ServingOperator.Code;
+      } else {
+        $('operator-name').parentElement.hidden = true;
+        $('operator-code').parentElement.hidden = true;
+      }
       // Make sure that GSM/CDMA specific properties that shouldn't be hidden
       // are visible.
       updateHidden('#details-internet-page .gsm-only', false);
@@ -1158,23 +1164,22 @@ cr.define('options.internet', function() {
 
       // Show IMEI/ESN/MEID/MIN/PRL only if they are available.
       (function() {
-        var setContentOrHide = function(property) {
-          var value = data[property];
+        var setContentOrHide = function(field, value) {
           if (value)
-            $(property).textContent = value;
+            $(field).textContent = value;
           else
-            $(property).parentElement.hidden = true;
+            $(field).parentElement.hidden = true;
         };
-        setContentOrHide('esn');
-        setContentOrHide('imei');
-        setContentOrHide('meid');
-        setContentOrHide('min');
-        setContentOrHide('prl-version');
+        setContentOrHide('esn', data.Cellular.ESN);
+        setContentOrHide('imei', data.Cellular.IMEI);
+        setContentOrHide('meid', data.Cellular.MEID);
+        setContentOrHide('min', data.Cellular.MIN);
+        setContentOrHide('prl-version', data.Cellular.PRLVersion);
       })();
-      detailsPage.gsm = data.gsm;
-      if (data.gsm) {
-        $('iccid').textContent = stringFromValue(data.iccid);
-        $('imsi').textContent = stringFromValue(data.imsi);
+      detailsPage.gsm = data.Cellular.Family == 'GSM';
+      if (detailsPage.gsm) {
+        $('iccid').textContent = data.Cellular.ICCID;
+        $('imsi').textContent = data.Cellular.IMSI;
 
         var apnSelector = $('select-apn');
         // Clear APN lists, keep only last element that "other".

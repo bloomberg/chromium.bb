@@ -21,6 +21,7 @@
 #include "chromeos/dbus/shill_profile_client.h"
 #include "chromeos/dbus/shill_service_client.h"
 #include "chromeos/network/network_event_log.h"
+#include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/shill_property_util.h"
 #include "dbus/object_path.h"
@@ -303,11 +304,12 @@ void NetworkConfigurationHandler::RemoveConfiguration(
     const network_handler::ErrorCallback& error_callback) {
   // Service.Remove is not reliable. Instead, request the profile entries
   // for the service and remove each entry.
-  if (ContainsKey(profile_entry_deleters_,service_path)) {
+  if (ContainsKey(profile_entry_deleters_, service_path)) {
     InvokeErrorCallback(
         service_path, error_callback, "RemoveConfigurationInProgress");
     return;
   }
+
   NET_LOG_USER("Remove Configuration", service_path);
   ProfileEntryDeleter* deleter =
       new ProfileEntryDeleter(this, service_path, callback, error_callback);
