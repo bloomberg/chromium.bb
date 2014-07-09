@@ -79,7 +79,7 @@ class PathContext(object):
   """A PathContext is used to carry the information used to construct URLs and
   paths when dealing with the storage server and archives."""
   def __init__(self, base_url, platform, good_revision, bad_revision,
-               is_official, is_aura, flash_path = None):
+               is_official, is_aura, use_local_repo, flash_path = None):
     super(PathContext, self).__init__()
     # Store off the input parameters.
     self.base_url = base_url
@@ -97,6 +97,12 @@ class PathContext(object):
 
     # The name of the ZIP file in a revision directory on the server.
     self.archive_name = None
+
+    # If the script is run from a local Chromium checkout,
+    # "--use-local-repo" option can be used to make the script run faster.
+    # It uses "git svn find-rev <SHA1>" command to convert git hash to svn
+    # revision number.
+    self.use_local_repo = use_local_repo
 
     # Set some internal members:
     #   _listing_platform_dir = Directory that holds revisions. Ends with a '/'.
@@ -253,7 +259,7 @@ class PathContext(object):
       self.githash_svn_dict.update(new_dict)
     return revisions
 
-  def GetSVNRevisionFromGitHash(self, git_sha1, depot='chromium'):
+  def _GetSVNRevisionFromGitHashWithoutGitCheckout(self, git_sha1, depot):
     json_url = GITHASH_TO_SVN_URL[depot] % git_sha1
     try:
       response = urllib.urlopen(json_url)
@@ -270,6 +276,42 @@ class PathContext(object):
         return result.group(1)
     print 'Failed to get svn revision number for %s' % git_sha1
     return None
+
+  def _GetSVNRevisionFromGitHashFromGitCheckout(self, git_sha1, depot):
+    def _RunGit(command, path):
+      command = ['git'] + command
+      if path:
+        original_path = os.getcwd()
+        os.chdir(path)
+      shell = sys.platform.startswith('win')
+      proc = subprocess.Popen(command, shell=shell, stdout=subprocess.PIPE,
+                              stderr=subprocess.PIPE)
+      (output, _) = proc.communicate()
+
+      if path:
+        os.chdir(original_path)
+      return (output, proc.returncode)
+
+    path = None
+    if depot == 'blink':
+      path = os.path.join(os.getcwd(), 'third_party', 'WebKit')
+    if os.path.basename(os.getcwd()) == 'src':
+      command = ['svn', 'find-rev', git_sha1]
+      (git_output, return_code) = _RunGit(command, path)
+      if not return_code:
+        return git_output.strip('\n')
+      return None
+    else:
+      print ('Script should be run from src folder. ' +
+             'Eg: python tools/bisect-builds.py -g 280588 -b 280590' +
+             '--archive linux64 --use-local-repo')
+      sys.exit(1)
+
+  def GetSVNRevisionFromGitHash(self, git_sha1, depot='chromium'):
+    if not self.use_local_repo:
+      return self._GetSVNRevisionFromGitHashWithoutGitCheckout(git_sha1, depot)
+    else:
+      return self._GetSVNRevisionFromGitHashFromGitCheckout(git_sha1, depot)
 
   def GetRevList(self):
     """Gets the list of revision numbers between self.good_revision and
@@ -513,6 +555,7 @@ def Bisect(base_url,
            platform,
            official_builds,
            is_aura,
+           use_local_repo,
            good_rev=0,
            bad_rev=0,
            num_runs=1,
@@ -556,7 +599,7 @@ def Bisect(base_url,
     profile = 'profile'
 
   context = PathContext(base_url, platform, good_rev, bad_rev,
-                        official_builds, is_aura, flash_path)
+                        official_builds, is_aura, use_local_repo, flash_path)
   cwd = os.getcwd()
 
   print "Downloading list of known revisions..."
@@ -845,6 +888,13 @@ def main():
                     action='store_true',
                     default=False,
                     help='Allow the script to bisect aura builds')
+  parser.add_option('--use-local-repo',
+                    dest='use_local_repo',
+                    action='store_true',
+                    default=False,
+                    help='Allow the script to convert git SHA1 to SVN ' +
+                    'revision using "git svn find-rev <SHA1>" ' +
+                    'command from a Chromium checkout.')
 
   (opts, args) = parser.parse_args()
 
@@ -867,7 +917,8 @@ def main():
 
   # Create the context. Initialize 0 for the revisions as they are set below.
   context = PathContext(base_url, opts.archive, 0, 0,
-                        opts.official_builds, opts.aura, None)
+                        opts.official_builds, opts.aura, opts.use_local_repo,
+                        None)
   # Pick a starting point, try to get HEAD for this.
   if opts.bad:
     bad_rev = opts.bad
@@ -901,9 +952,9 @@ def main():
     return 1
 
   (min_chromium_rev, max_chromium_rev) = Bisect(
-      base_url, opts.archive, opts.official_builds, opts.aura, good_rev,
-      bad_rev, opts.times, opts.command, args, opts.profile, opts.flash_path,
-      not opts.not_interactive)
+      base_url, opts.archive, opts.official_builds, opts.aura,
+      opts.use_local_repo, good_rev, bad_rev, opts.times, opts.command,
+      args, opts.profile, opts.flash_path, not opts.not_interactive)
 
   # Get corresponding blink revisions.
   try:
