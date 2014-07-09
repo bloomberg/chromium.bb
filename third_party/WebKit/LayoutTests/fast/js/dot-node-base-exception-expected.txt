@@ -3,7 +3,7 @@ This test checks that a correct exception is raised when calculating the base va
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
-PASS (document.appendChild()).foobar() threw exception NotFoundError: Failed to execute 'appendChild' on 'Node': The new child element is null..
+PASS (document.appendChild()).foobar() threw exception TypeError: Failed to execute 'appendChild' on 'Node': 1 argument required, but only 0 present..
 PASS successfullyParsed is true
 
 TEST COMPLETE

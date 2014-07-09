@@ -108,6 +108,10 @@ void V8Node::removeChildMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& 
 void V8Node::appendChildMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "appendChild", "Node", info.Holder(), info.GetIsolate());
+    if (UNLIKELY(info.Length() < 1)) {
+        throwMinimumArityTypeErrorForMethod("appendChild", "Node", 1, info.Length(), info.GetIsolate());
+        return;
+    }
     Node* impl = V8Node::toNative(info.Holder());
     CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
     Node* newChild;
