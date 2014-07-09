@@ -11,6 +11,7 @@
 #include "base/i18n/break_iterator.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "third_party/icu/source/common/unicode/rbbi.h"
 #include "third_party/icu/source/common/unicode/utf16.h"
@@ -1170,6 +1171,12 @@ void RenderText::UpdateLayoutText() {
     // style than the preceding text. See crbug.com/327850.
     layout_text_.assign(ElideText(layout_text_));
   }
+
+  // Replace the newline character with a newline symbol in single line mode.
+  static const base::char16 kNewline[] = { '\n', 0 };
+  static const base::char16 kNewlineSymbol[] = { 0x2424, 0 };
+  if (!multiline_)
+    base::ReplaceChars(layout_text_, kNewline, kNewlineSymbol, &layout_text_);
 
   ResetLayout();
 }

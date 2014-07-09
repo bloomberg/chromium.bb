@@ -40,6 +40,10 @@ FindTabHelper::~FindTabHelper() {
 void FindTabHelper::StartFinding(base::string16 search_string,
                                  bool forward_direction,
                                  bool case_sensitive) {
+  // Remove the carriage return character, which generally isn't in web content.
+  const base::char16 kInvalidChars[] = { '\r', 0 };
+  base::RemoveChars(search_string, kInvalidChars, &search_string);
+
   // If search_string is empty, it means FindNext was pressed with a keyboard
   // shortcut so unless we have something to search for we return early.
   if (search_string.empty() && find_text_.empty()) {
