@@ -72,9 +72,9 @@ TYPED_ARRAYS = {
     'Uint32Array': ('unsigned int', 'v8::kExternalUnsignedIntArray'),
 }
 
-IdlType.is_typed_array_type = property(
+IdlType.is_typed_array_element_type = property(
     lambda self: self.base_type in TYPED_ARRAYS)
-IdlUnionType.is_typed_array_type = False
+IdlUnionType.is_typed_array_element_type = False
 
 
 IdlType.is_wrapper_type = property(
@@ -151,12 +151,12 @@ def cpp_type(idl_type, extended_attributes=None, raw_type=False, used_as_argumen
 
     # Composite types
     if used_as_variadic_argument:
-        array_or_sequence_type = idl_type
+        native_array_element_type = idl_type
     else:
-        array_or_sequence_type = idl_type.array_or_sequence_type
-    if array_or_sequence_type:
-        vector_type = cpp_ptr_type('Vector', 'HeapVector', array_or_sequence_type.gc_type)
-        return cpp_template_type(vector_type, array_or_sequence_type.cpp_type_args(used_in_cpp_sequence=True))
+        native_array_element_type = idl_type.native_array_element_type
+    if native_array_element_type:
+        vector_type = cpp_ptr_type('Vector', 'HeapVector', native_array_element_type.gc_type)
+        return cpp_template_type(vector_type, native_array_element_type.cpp_type_args(used_in_cpp_sequence=True))
 
     # Simple types
     base_idl_type = idl_type.base_type
@@ -177,7 +177,7 @@ def cpp_type(idl_type, extended_attributes=None, raw_type=False, used_as_argumen
             return 'String'
         return 'V8StringResource<%s>' % string_mode()
 
-    if idl_type.is_typed_array_type and raw_type:
+    if idl_type.is_typed_array_element_type and raw_type:
         return base_idl_type + '*'
     if idl_type.is_interface_type:
         implemented_as_class = idl_type.implemented_as
@@ -320,9 +320,9 @@ def includes_for_type(idl_type):
     idl_type = idl_type.preprocessed_type
 
     # Composite types
-    array_or_sequence_type = idl_type.array_or_sequence_type
-    if array_or_sequence_type:
-        return includes_for_type(array_or_sequence_type)
+    native_array_element_type = idl_type.native_array_element_type
+    if native_array_element_type:
+        return includes_for_type(native_array_element_type)
 
     # Simple types
     base_idl_type = idl_type.base_type
@@ -330,7 +330,7 @@ def includes_for_type(idl_type):
         return INCLUDES_FOR_TYPE[base_idl_type]
     if idl_type.is_basic_type:
         return set()
-    if idl_type.is_typed_array_type:
+    if idl_type.is_typed_array_element_type:
         return set(['bindings/core/v8/custom/V8%sCustom.h' % base_idl_type])
     if base_idl_type.endswith('ConstructorConstructor'):
         # FIXME: rename to NamedConstructor
@@ -416,9 +416,9 @@ def v8_value_to_cpp_value(idl_type, extended_attributes, v8_value, index, isolat
         return ''
 
     # Composite types
-    array_or_sequence_type = idl_type.array_or_sequence_type
-    if array_or_sequence_type:
-        return v8_value_to_cpp_value_array_or_sequence(array_or_sequence_type, v8_value, index)
+    native_array_element_type = idl_type.native_array_element_type
+    if native_array_element_type:
+        return v8_value_to_cpp_value_array_or_sequence(native_array_element_type, v8_value, index)
 
     # Simple types
     idl_type = idl_type.preprocessed_type
@@ -434,7 +434,7 @@ def v8_value_to_cpp_value(idl_type, extended_attributes, v8_value, index, isolat
 
     if base_idl_type in V8_VALUE_TO_CPP_VALUE:
         cpp_expression_format = V8_VALUE_TO_CPP_VALUE[base_idl_type]
-    elif idl_type.is_typed_array_type:
+    elif idl_type.is_typed_array_element_type:
         cpp_expression_format = (
             '{v8_value}->Is{idl_type}() ? '
             'V8{idl_type}::toNative(v8::Handle<v8::{idl_type}>::Cast({v8_value})) : 0')
@@ -445,24 +445,24 @@ def v8_value_to_cpp_value(idl_type, extended_attributes, v8_value, index, isolat
     return cpp_expression_format.format(arguments=arguments, idl_type=base_idl_type, v8_value=v8_value, isolate=isolate)
 
 
-def v8_value_to_cpp_value_array_or_sequence(array_or_sequence_type, v8_value, index, isolate='info.GetIsolate()'):
+def v8_value_to_cpp_value_array_or_sequence(native_array_element_type, v8_value, index, isolate='info.GetIsolate()'):
     # Index is None for setters, index (starting at 0) for method arguments,
     # and is used to provide a human-readable exception message
     if index is None:
         index = 0  # special case, meaning "setter"
     else:
         index += 1  # human-readable index
-    if (array_or_sequence_type.is_interface_type and
-        array_or_sequence_type.name != 'Dictionary'):
+    if (native_array_element_type.is_interface_type and
+        native_array_element_type.name != 'Dictionary'):
         this_cpp_type = None
-        ref_ptr_type = cpp_ptr_type('RefPtr', 'Member', array_or_sequence_type.gc_type)
-        expression_format = '(to{ref_ptr_type}NativeArray<{array_or_sequence_type}, V8{array_or_sequence_type}>({v8_value}, {index}, {isolate}))'
-        add_includes_for_type(array_or_sequence_type)
+        ref_ptr_type = cpp_ptr_type('RefPtr', 'Member', native_array_element_type.gc_type)
+        expression_format = '(to{ref_ptr_type}NativeArray<{native_array_element_type}, V8{native_array_element_type}>({v8_value}, {index}, {isolate}))'
+        add_includes_for_type(native_array_element_type)
     else:
         ref_ptr_type = None
-        this_cpp_type = array_or_sequence_type.cpp_type
+        this_cpp_type = native_array_element_type.cpp_type
         expression_format = 'toNativeArray<{cpp_type}>({v8_value}, {index}, {isolate})'
-    expression = expression_format.format(array_or_sequence_type=array_or_sequence_type.name, cpp_type=this_cpp_type, index=index, ref_ptr_type=ref_ptr_type, v8_value=v8_value, isolate=isolate)
+    expression = expression_format.format(native_array_element_type=native_array_element_type.name, cpp_type=this_cpp_type, index=index, ref_ptr_type=ref_ptr_type, v8_value=v8_value, isolate=isolate)
     return expression
 
 
@@ -478,7 +478,7 @@ def v8_value_to_local_cpp_value(idl_type, extended_attributes, v8_value, variabl
     idl_type = idl_type.preprocessed_type
     cpp_value = v8_value_to_cpp_value(idl_type, extended_attributes, v8_value, index, isolate)
     args = [variable_name, cpp_value]
-    if idl_type.base_type == 'DOMString' and not idl_type.array_or_sequence_type:
+    if idl_type.base_type == 'DOMString' and not idl_type.native_array_element_type:
         macro = 'TOSTRING_DEFAULT' if used_in_private_script else 'TOSTRING_VOID'
     elif idl_type.may_raise_exception_on_conversion:
         macro = 'TONATIVE_DEFAULT_EXCEPTIONSTATE' if used_in_private_script else 'TONATIVE_VOID_EXCEPTIONSTATE'
@@ -553,10 +553,10 @@ def v8_conversion_type(idl_type, extended_attributes):
     extended_attributes = extended_attributes or {}
 
     # Composite types
-    array_or_sequence_type = idl_type.array_or_sequence_type
-    if array_or_sequence_type:
-        if array_or_sequence_type.is_interface_type:
-            add_includes_for_type(array_or_sequence_type)
+    native_array_element_type = idl_type.native_array_element_type
+    if native_array_element_type:
+        if native_array_element_type.is_interface_type:
+            add_includes_for_type(native_array_element_type)
         return 'array'
 
     # Simple types

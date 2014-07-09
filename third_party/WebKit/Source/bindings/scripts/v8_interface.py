@@ -731,9 +731,9 @@ def resolution_tests_methods(effective_overloads):
         # http://crbug.com/321462
         idl_type, method = next((idl_type, method)
                                 for idl_type, method in idl_types_methods
-                                if (idl_type.array_or_sequence_type or
+                                if (idl_type.native_array_element_type or
                                     idl_type.name == 'Dictionary'))
-        if idl_type.array_or_sequence_type:
+        if idl_type.native_array_element_type:
             # (We test for Array instead of generic Object to type-check.)
             # FIXME: test for Object during resolution, then have type check for
             # Array in overloaded method: http://crbug.com/262383

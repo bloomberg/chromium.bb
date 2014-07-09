@@ -85,7 +85,7 @@ def attribute_context(interface, attribute):
     # Nullable type where the corresponding C++ type supports a null value.
     is_nullable_simple = idl_type.is_nullable and (
         (idl_type.is_string_type or idl_type.is_wrapper_type) and
-        not idl_type.array_or_sequence_type)
+        not idl_type.native_array_element_type)
 
     context = {
         'access_control_list': access_control_list(attribute),
@@ -376,7 +376,7 @@ def setter_expression(interface, attribute, context):
             arguments.append('V8EventListenerList::findOrCreateWrapper<V8ErrorHandler>(v8Value, true, ScriptState::current(info.GetIsolate()))')
         else:
             arguments.append('V8EventListenerList::getEventListener(ScriptState::current(info.GetIsolate()), v8Value, true, ListenerFindOrCreate)')
-    elif idl_type.is_interface_type and not idl_type.array_type:
+    elif idl_type.is_interface_type and not idl_type.array_element_type:
         # FIXME: should be able to eliminate WTF::getPtr in most or all cases
         arguments.append('WTF::getPtr(cppValue)')
     else:

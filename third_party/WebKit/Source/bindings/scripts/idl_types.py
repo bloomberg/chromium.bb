@@ -133,24 +133,22 @@ class IdlType(object):
             return type_string
         return type_string
 
-    # FIXME: rename to native_array_element_type and move to v8_types.py
+    # FIXME: move to v8_types.py
     @property
-    def array_or_sequence_type(self):
-        return self.array_type or self.sequence_type
+    def native_array_element_type(self):
+        return self.array_element_type or self.sequence_element_type
 
-    # FIXME: rename to array_element_type
     @property
-    def array_type(self):
+    def array_element_type(self):
         return self.is_array and IdlType(self.base_type)
 
-    # FIXME: rename to sequence_element_type
     @property
-    def sequence_type(self):
+    def sequence_element_type(self):
         return self.is_sequence and IdlType(self.base_type)
 
     @property
     def is_basic_type(self):
-        return self.base_type in BASIC_TYPES and not self.array_or_sequence_type
+        return self.base_type in BASIC_TYPES and not self.native_array_element_type
 
     @property
     def is_callback_function(self):
@@ -163,8 +161,8 @@ class IdlType(object):
     @property
     def is_composite_type(self):
         return (self.name == 'Any' or
-                self.array_type or
-                self.sequence_type or
+                self.array_element_type or
+                self.sequence_element_type or
                 self.is_union_type)
 
     @property
@@ -179,15 +177,15 @@ class IdlType(object):
 
     @property
     def is_integer_type(self):
-        return self.base_type in INTEGER_TYPES and not self.array_or_sequence_type
+        return self.base_type in INTEGER_TYPES and not self.native_array_element_type
 
     @property
     def is_numeric_type(self):
-        return self.base_type in NUMERIC_TYPES and not self.array_or_sequence_type
+        return self.base_type in NUMERIC_TYPES and not self.native_array_element_type
 
     @property
     def is_primitive_type(self):
-        return self.base_type in PRIMITIVE_TYPES and not self.array_or_sequence_type
+        return self.base_type in PRIMITIVE_TYPES and not self.native_array_element_type
 
     @property
     def is_interface_type(self):
@@ -282,12 +280,12 @@ class IdlUnionType(object):
         self.is_nullable = is_nullable
 
     @property
-    def array_or_sequence_type(self):
-        return False
+    def native_array_element_type(self):
+        return None
 
     @property
-    def array_type(self):
-        return False
+    def array_element_type(self):
+        return None
 
     @property
     def is_array(self):
