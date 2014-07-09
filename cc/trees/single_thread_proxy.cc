@@ -201,8 +201,6 @@ void SingleThreadProxy::SetNextCommitWaitsForActivation() {
 }
 
 void SingleThreadProxy::SetDeferCommits(bool defer_commits) {
-  // Thread-only feature.
-  NOTREACHED();
 }
 
 bool SingleThreadProxy::CommitRequested() const { return false; }
