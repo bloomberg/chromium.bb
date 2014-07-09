@@ -346,6 +346,9 @@ class MEDIA_EXPORT Pipeline : public DemuxerHost {
   // the filters.
   float playback_rate_;
 
+  // Current duration as reported by |demuxer_|.
+  base::TimeDelta duration_;
+
   // base::TickClock used by |clock_|.
   base::DefaultTickClock default_tick_clock_;
 

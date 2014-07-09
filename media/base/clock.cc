@@ -17,8 +17,7 @@ Clock::Clock(base::TickClock* clock)
       playing_(false),
       underflow_(false),
       playback_rate_(1.0f),
-      max_time_(kNoTimestamp()),
-      duration_(kNoTimestamp()) {
+      max_time_(kNoTimestamp()) {
   DCHECK(clock_);
 }
 
@@ -57,9 +56,6 @@ void Clock::SetTime(base::TimeDelta current_time, base::TimeDelta max_time) {
 }
 
 base::TimeDelta Clock::Elapsed() {
-  if (duration_ == kNoTimestamp())
-    return base::TimeDelta();
-
   // The clock is not advancing, so return the last recorded time.
   if (!playing_ || underflow_)
     return media_time_;
@@ -85,15 +81,6 @@ void Clock::SetMaxTime(base::TimeDelta max_time) {
     media_time_ = max_time_;
 }
 
-void Clock::SetDuration(base::TimeDelta duration) {
-  DCHECK(duration > base::TimeDelta());
-  duration_ = duration;
-
-  media_time_ = ClampToValidTimeRange(media_time_);
-  if (max_time_ != kNoTimestamp())
-    max_time_ = ClampToValidTimeRange(max_time_);
-}
-
 base::TimeDelta Clock::ElapsedViaProvidedTime(
     const base::TimeTicks& time) const {
   // TODO(scherkus): floating point badness scaling time by playback rate.
@@ -103,15 +90,7 @@ base::TimeDelta Clock::ElapsedViaProvidedTime(
 }
 
 base::TimeDelta Clock::ClampToValidTimeRange(base::TimeDelta time) const {
-  if (duration_ == kNoTimestamp())
-    return base::TimeDelta();
-  return std::max(std::min(time, duration_), base::TimeDelta());
-}
-
-base::TimeDelta Clock::Duration() const {
-  if (duration_ == kNoTimestamp())
-    return base::TimeDelta();
-  return duration_;
+  return std::max(base::TimeDelta(), time);
 }
 
 void Clock::UpdateReferencePoints() {

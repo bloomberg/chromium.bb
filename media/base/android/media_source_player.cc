@@ -173,7 +173,7 @@ void MediaSourcePlayer::SeekTo(base::TimeDelta timestamp) {
 }
 
 base::TimeDelta MediaSourcePlayer::GetCurrentTime() {
-  return clock_.Elapsed();
+  return std::min(clock_.Elapsed(), duration_);
 }
 
 base::TimeDelta MediaSourcePlayer::GetDuration() {
@@ -237,7 +237,6 @@ void MediaSourcePlayer::OnDemuxerConfigsAvailable(
   DVLOG(1) << __FUNCTION__;
   DCHECK(!HasAudio() && !HasVideo());
   duration_ = configs.duration;
-  clock_.SetDuration(duration_);
 
   audio_decoder_job_->SetDemuxerConfigs(configs);
   video_decoder_job_->SetDemuxerConfigs(configs);
@@ -257,7 +256,6 @@ void MediaSourcePlayer::OnDemuxerDataAvailable(const DemuxerData& data) {
 
 void MediaSourcePlayer::OnDemuxerDurationChanged(base::TimeDelta duration) {
   duration_ = duration;
-  clock_.SetDuration(duration_);
 }
 
 void MediaSourcePlayer::OnMediaCryptoReady() {

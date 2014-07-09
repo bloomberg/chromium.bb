@@ -156,7 +156,7 @@ void Pipeline::SetVolume(float volume) {
 
 TimeDelta Pipeline::GetMediaTime() const {
   base::AutoLock auto_lock(lock_);
-  return clock_->Elapsed();
+  return std::min(clock_->Elapsed(), duration_);
 }
 
 Ranges<TimeDelta> Pipeline::GetBufferedTimeRanges() const {
@@ -166,7 +166,7 @@ Ranges<TimeDelta> Pipeline::GetBufferedTimeRanges() const {
 
 TimeDelta Pipeline::GetMediaDuration() const {
   base::AutoLock auto_lock(lock_);
-  return clock_->Duration();
+  return duration_;
 }
 
 bool Pipeline::DidLoadingProgress() {
@@ -320,7 +320,7 @@ void Pipeline::SetDuration(TimeDelta duration) {
   UMA_HISTOGRAM_LONG_TIMES("Media.Duration", duration);
 
   base::AutoLock auto_lock(lock_);
-  clock_->SetDuration(duration);
+  duration_ = duration;
   if (!duration_change_cb_.is_null())
     duration_change_cb_.Run();
 }
@@ -705,7 +705,7 @@ void Pipeline::DoAudioRendererEnded() {
   // Start clock since there is no more audio to trigger clock updates.
   {
     base::AutoLock auto_lock(lock_);
-    clock_->SetMaxTime(clock_->Duration());
+    clock_->SetMaxTime(duration_);
     StartClockIfWaitingForTimeUpdate_Locked();
   }
 
@@ -751,7 +751,7 @@ void Pipeline::RunEndedCallbackIfNeeded() {
   {
     base::AutoLock auto_lock(lock_);
     PauseClockAndStopRendering_Locked();
-    clock_->SetTime(clock_->Duration(), clock_->Duration());
+    clock_->SetTime(duration_, duration_);
   }
 
   DCHECK_EQ(status_, PIPELINE_OK);
@@ -882,7 +882,7 @@ void Pipeline::StartPlayback() {
   } else {
     base::AutoLock auto_lock(lock_);
     clock_state_ = CLOCK_PLAYING;
-    clock_->SetMaxTime(clock_->Duration());
+    clock_->SetMaxTime(duration_);
     clock_->Play();
   }
 }

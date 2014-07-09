@@ -2,46 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/test/simple_test_tick_clock.h"
-#include "base/time/clock.h"
 #include "media/base/clock.h"
-#include "testing/gmock/include/gmock/gmock.h"
-
-using ::testing::InSequence;
-using ::testing::Return;
-using ::testing::StrictMock;
-
-namespace base {
-
-// Provide a stream output operator so we can use EXPECT_EQ(...) with TimeDelta.
-//
-// TODO(scherkus): move this into the testing package.
-static std::ostream& operator<<(std::ostream& stream, const TimeDelta& time) {
-  return (stream << time.ToInternalValue());
-}
-
-}  // namespace
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace media {
 
-static const int kDurationInSeconds = 120;
-
 class ClockTest : public ::testing::Test {
  public:
-  ClockTest() : clock_(&test_tick_clock_) {
-    SetDuration();
-  }
+  ClockTest() : clock_(&test_tick_clock_) {}
 
  protected:
-  void SetDuration() {
-    const base::TimeDelta kDuration =
-        base::TimeDelta::FromSeconds(kDurationInSeconds);
-    clock_.SetDuration(kDuration);
-    EXPECT_EQ(kDuration, clock_.Duration());
-  }
-
   void AdvanceSystemTime(base::TimeDelta delta) {
     test_tick_clock_.Advance(delta);
   }
@@ -154,10 +126,11 @@ TEST_F(ClockTest, Pause) {
 TEST_F(ClockTest, SetTime_Paused) {
   const base::TimeDelta kFirstTime = base::TimeDelta::FromSeconds(4);
   const base::TimeDelta kSecondTime = base::TimeDelta::FromSeconds(16);
+  const base::TimeDelta kArbitraryMaxTime = base::TimeDelta::FromSeconds(100);
 
-  clock_.SetTime(kFirstTime, clock_.Duration());
+  clock_.SetTime(kFirstTime, kArbitraryMaxTime);
   EXPECT_EQ(kFirstTime, clock_.Elapsed());
-  clock_.SetTime(kSecondTime, clock_.Duration());
+  clock_.SetTime(kSecondTime, kArbitraryMaxTime);
   EXPECT_EQ(kSecondTime, clock_.Elapsed());
 }
 
@@ -167,42 +140,15 @@ TEST_F(ClockTest, SetTime_Playing) {
   const base::TimeDelta kZero;
   const base::TimeDelta kPlayDuration = base::TimeDelta::FromSeconds(4);
   const base::TimeDelta kUpdatedTime = base::TimeDelta::FromSeconds(12);
+  const base::TimeDelta kArbitraryMaxTime = base::TimeDelta::FromSeconds(100);
   const base::TimeDelta kExpected = kUpdatedTime + kPlayDuration;
 
   EXPECT_EQ(kZero, clock_.Play());
   AdvanceSystemTime(kPlayDuration);
 
-  clock_.SetTime(kUpdatedTime, clock_.Duration());
+  clock_.SetTime(kUpdatedTime, kArbitraryMaxTime);
   AdvanceSystemTime(kPlayDuration);
   EXPECT_EQ(kExpected, clock_.Elapsed());
-}
-
-TEST_F(ClockTest, CapAtMediaDuration_Paused) {
-  const base::TimeDelta kDuration =
-      base::TimeDelta::FromSeconds(kDurationInSeconds);
-  const base::TimeDelta kTimeOverDuration =
-      base::TimeDelta::FromSeconds(kDurationInSeconds + 4);
-
-  // Elapsed time should always be capped at the duration of the media.
-  clock_.SetTime(kTimeOverDuration, kTimeOverDuration);
-  EXPECT_EQ(kDuration, clock_.Elapsed());
-}
-
-TEST_F(ClockTest, CapAtMediaDuration_Playing) {
-  const base::TimeDelta kZero;
-  const base::TimeDelta kDuration =
-      base::TimeDelta::FromSeconds(kDurationInSeconds);
-  const base::TimeDelta kTimeOverDuration =
-      base::TimeDelta::FromSeconds(kDurationInSeconds + 4);
-
-  // Play for twice as long as the duration of the media.
-  EXPECT_EQ(kZero, clock_.Play());
-  AdvanceSystemTime(2 * kDuration);
-  EXPECT_EQ(kDuration, clock_.Elapsed());
-
-  // Manually set the time past the duration.
-  clock_.SetTime(kTimeOverDuration, kTimeOverDuration);
-  EXPECT_EQ(kDuration, clock_.Elapsed());
 }
 
 TEST_F(ClockTest, SetMaxTime) {
@@ -225,11 +171,12 @@ TEST_F(ClockTest, SetMaxTime) {
 TEST_F(ClockTest, SetMaxTime_MultipleTimes) {
   const base::TimeDelta kZero;
   const base::TimeDelta kTimeInterval = base::TimeDelta::FromSeconds(4);
+  const base::TimeDelta kMaxTime0 = base::TimeDelta::FromSeconds(120);
   const base::TimeDelta kMaxTime1 = base::TimeDelta::FromSeconds(6);
   const base::TimeDelta kMaxTime2 = base::TimeDelta::FromSeconds(12);
 
   EXPECT_EQ(kZero, clock_.Play());
-  clock_.SetMaxTime(clock_.Duration());
+  clock_.SetMaxTime(kMaxTime0);
   AdvanceSystemTime(kTimeInterval);
   EXPECT_EQ(kTimeInterval, clock_.Elapsed());
 
