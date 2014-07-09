@@ -186,7 +186,7 @@ class DevToolsWindow : public DevToolsUIBindings::Delegate,
   friend class DevToolsSanityTest;
   friend class BrowserWindowControllerTest;
 
-  // DevTools initialization typically follows this way:
+  // DevTools lifecycle typically follows this way:
   // - Toggle/Open: client call;
   // - Create;
   // - ScheduleShow: setup window to be functional, but not yet show;
@@ -194,12 +194,17 @@ class DevToolsWindow : public DevToolsUIBindings::Delegate,
   // - SetIsDocked: frontend decided on docking state;
   // - OnLoadCompleted: ready to present frontend;
   // - Show: actually placing frontend WebContents to a Browser or docked place;
-  // - DoAction: perform action passed in Toggle/Open.
-  enum LoadState {
+  // - DoAction: perform action passed in Toggle/Open;
+  // - ...;
+  // - CloseWindow: initiates before unload handling;
+  // - CloseContents: destroys frontend;
+  // - DevToolsWindow is dead once it's main_web_contents dies.
+  enum LifeStage {
     kNotLoaded,
     kOnLoadFired, // Implies SetIsDocked was not yet called.
     kIsDockedSet, // Implies DocumentOnLoadCompleted was not yet called.
-    kLoadCompleted
+    kLoadCompleted,
+    kClosing
   };
 
   DevToolsWindow(Profile* profile,
@@ -306,7 +311,7 @@ class DevToolsWindow : public DevToolsUIBindings::Delegate,
   Browser* browser_;
   bool is_docked_;
   const bool can_dock_;
-  LoadState load_state_;
+  LifeStage life_stage_;
   DevToolsToggleAction action_on_load_;
   bool ignore_set_is_docked_;
   DevToolsContentsResizingStrategy contents_resizing_strategy_;

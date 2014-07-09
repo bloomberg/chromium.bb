@@ -363,13 +363,13 @@ content::WebContents* DevToolsWindow::GetInTabWebContents(
     DevToolsContentsResizingStrategy* out_strategy) {
   DevToolsWindow* window = GetInstanceForInspectedWebContents(
       inspected_web_contents);
-  if (!window)
+  if (!window || window->life_stage_ == kClosing)
     return NULL;
 
   // Not yet loaded window is treated as docked, but we should not present it
   // until we decided on docking.
-  bool is_docked_set = window->load_state_ == kLoadCompleted ||
-      window->load_state_ == kIsDockedSet;
+  bool is_docked_set = window->life_stage_ == kLoadCompleted ||
+      window->life_stage_ == kIsDockedSet;
   if (!is_docked_set)
     return NULL;
 
@@ -539,7 +539,7 @@ void DevToolsWindow::InspectElement(content::RenderViewHost* inspected_rvh,
 }
 
 void DevToolsWindow::ScheduleShow(const DevToolsToggleAction& action) {
-  if (load_state_ == kLoadCompleted) {
+  if (life_stage_ == kLoadCompleted) {
     Show(action);
     return;
   }
@@ -555,6 +555,9 @@ void DevToolsWindow::ScheduleShow(const DevToolsToggleAction& action) {
 }
 
 void DevToolsWindow::Show(const DevToolsToggleAction& action) {
+  if (life_stage_ == kClosing)
+    return;
+
   if (action.type() == DevToolsToggleAction::kNoOp)
     return;
 
@@ -629,7 +632,7 @@ bool DevToolsWindow::InterceptPageBeforeUnload(WebContents* contents) {
     return false;
 
   // Not yet loaded frontend will not handle beforeunload.
-  if (window->load_state_ != kLoadCompleted)
+  if (window->life_stage_ != kLoadCompleted)
     return false;
 
   window->intercepted_page_beforeunload_ = true;
@@ -692,12 +695,12 @@ DevToolsWindow::DevToolsWindow(Profile* profile,
       // This initialization allows external front-end to work without changes.
       // We don't wait for docking call, but instead immediately show undocked.
       // Passing "dockSide=undocked" parameter ensures proper UI.
-      load_state_(can_dock ? kNotLoaded : kIsDockedSet),
+      life_stage_(can_dock ? kNotLoaded : kIsDockedSet),
       action_on_load_(DevToolsToggleAction::NoOp()),
       ignore_set_is_docked_(false),
       intercepted_page_beforeunload_(false) {
   // Set up delegate, so we get fully-functional window immediately.
-  // It will not appear in UI though until |load_state_ == kLoadCompleted|.
+  // It will not appear in UI though until |life_stage_ == kLoadCompleted|.
   main_web_contents_->SetDelegate(this);
   bindings_ = new DevToolsUIBindings(
       main_web_contents_,
@@ -871,14 +874,7 @@ void DevToolsWindow::WebContentsCreated(WebContents* source_contents,
 
 void DevToolsWindow::CloseContents(WebContents* source) {
   CHECK(is_docked_);
-  // Do this first so that when GetDockedInstanceForInspectedTab is called
-  // from UpdateDevTools it won't return this instance
-  // see crbug.com/372504
-  content::DevToolsManager::GetInstance()->ClientHostClosing(
-      bindings_->frontend_host());
-  // This will prevent any activity after frontend is loaded.
-  action_on_load_ = DevToolsToggleAction::NoOp();
-  ignore_set_is_docked_ = true;
+  life_stage_ = kClosing;
   UpdateBrowserWindow();
   // In case of docked main_web_contents_, we own it so delete here.
   // Embedding DevTools window will be deleted as a result of
@@ -987,9 +983,7 @@ void DevToolsWindow::ActivateWindow() {
 
 void DevToolsWindow::CloseWindow() {
   DCHECK(is_docked_);
-  // This will prevent any activity after frontend is loaded.
-  action_on_load_ = DevToolsToggleAction::NoOp();
-  ignore_set_is_docked_ = true;
+  life_stage_ = kClosing;
   main_web_contents_->DispatchBeforeUnload(false);
 }
 
@@ -1030,24 +1024,25 @@ void DevToolsWindow::MoveWindow(int x, int y) {
 
 void DevToolsWindow::SetIsDockedAndShowImmediatelyForTest(bool is_docked) {
   DCHECK(!is_docked || can_dock_);
-  if (load_state_ == kLoadCompleted) {
+  DCHECK(life_stage_ != kClosing);
+  if (life_stage_ == kLoadCompleted) {
     SetIsDocked(is_docked);
   } else {
     is_docked_ = is_docked;
     // Load is completed when both kIsDockedSet and kOnLoadFired happened.
     // Note that kIsDockedSet may be already set when can_dock_ is false.
-    load_state_ = load_state_ == kOnLoadFired ? kLoadCompleted : kIsDockedSet;
+    life_stage_ = life_stage_ == kOnLoadFired ? kLoadCompleted : kIsDockedSet;
     // Note that action_on_load_ will be performed after the load is actually
     // completed. For now, just show the window.
     Show(DevToolsToggleAction::Show());
-    if (load_state_ == kLoadCompleted)
+    if (life_stage_ == kLoadCompleted)
       LoadCompleted();
   }
   ignore_set_is_docked_ = true;
 }
 
 void DevToolsWindow::SetIsDocked(bool dock_requested) {
-  if (ignore_set_is_docked_)
+  if (ignore_set_is_docked_ || life_stage_ == kClosing)
     return;
 
   DCHECK(can_dock_ || !dock_requested);
@@ -1057,10 +1052,10 @@ void DevToolsWindow::SetIsDocked(bool dock_requested) {
   bool was_docked = is_docked_;
   is_docked_ = dock_requested;
 
-  if (load_state_ != kLoadCompleted) {
+  if (life_stage_ != kLoadCompleted) {
     // This is a first time call we waited for to initialize.
-    load_state_ = load_state_ == kOnLoadFired ? kLoadCompleted : kIsDockedSet;
-    if (load_state_ == kLoadCompleted)
+    life_stage_ = life_stage_ == kOnLoadFired ? kLoadCompleted : kIsDockedSet;
+    if (life_stage_ == kLoadCompleted)
       LoadCompleted();
     return;
   }
@@ -1119,9 +1114,7 @@ void DevToolsWindow::SetWhitelistedShortcuts(
 
 void DevToolsWindow::InspectedContentsClosing() {
   intercepted_page_beforeunload_ = false;
-  // This will prevent any activity after frontend is loaded.
-  action_on_load_ = DevToolsToggleAction::NoOp();
-  ignore_set_is_docked_ = true;
+  life_stage_ = kClosing;
   main_web_contents_->GetRenderViewHost()->ClosePage();
 }
 
@@ -1152,13 +1145,16 @@ void DevToolsWindow::OnLoadCompleted() {
     }
   }
 
+  if (life_stage_ == kClosing)
+    return;
+
   // We could be in kLoadCompleted state already if frontend reloads itself.
-  if (load_state_ != kLoadCompleted) {
+  if (life_stage_ != kLoadCompleted) {
     // Load is completed when both kIsDockedSet and kOnLoadFired happened.
     // Here we set kOnLoadFired.
-    load_state_ = load_state_ == kIsDockedSet ? kLoadCompleted : kOnLoadFired;
+    life_stage_ = life_stage_ == kIsDockedSet ? kLoadCompleted : kOnLoadFired;
   }
-  if (load_state_ == kLoadCompleted)
+  if (life_stage_ == kLoadCompleted)
     LoadCompleted();
 }
 
@@ -1257,7 +1253,7 @@ void DevToolsWindow::LoadCompleted() {
 }
 
 void DevToolsWindow::SetLoadCompletedCallback(const base::Closure& closure) {
-  if (load_state_ == kLoadCompleted) {
+  if (life_stage_ == kLoadCompleted) {
     if (!closure.is_null())
       closure.Run();
     return;
