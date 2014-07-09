@@ -113,7 +113,7 @@ def BuildAndTest(options):
   else:
     chrome_filename = find_chrome.FindChrome(src_dir, [options.mode])
     if chrome_filename is None:
-      raise Exception('Cannot find a chome binary - specify one with '
+      raise Exception('Cannot find a chrome binary - specify one with '
                       '--browser_path?')
 
   env = dict(os.environ)
