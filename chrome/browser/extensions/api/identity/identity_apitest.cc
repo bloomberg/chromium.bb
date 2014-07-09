@@ -20,6 +20,8 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/guest_view/guest_view_base.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/signin/account_reconcilor_factory.h"
+#include "chrome/browser/signin/fake_account_reconcilor.h"
 #include "chrome/browser/signin/fake_profile_oauth2_token_service.h"
 #include "chrome/browser/signin/fake_profile_oauth2_token_service_builder.h"
 #include "chrome/browser/signin/fake_signin_manager.h"
@@ -680,6 +682,8 @@ class GetAuthTokenFunctionTest : public AsyncExtensionBrowserTest {
         context, &FakeSigninManagerBase::Build);
     ProfileOAuth2TokenServiceFactory::GetInstance()->SetTestingFactory(
         context, &BuildFakeProfileOAuth2TokenService);
+    AccountReconcilorFactory::GetInstance()->SetTestingFactory(
+        context, &FakeAccountReconcilor::Build);
   }
 
   virtual void SetUpOnMainThread() OVERRIDE {

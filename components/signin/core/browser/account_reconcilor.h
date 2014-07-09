@@ -61,6 +61,16 @@ class AccountReconcilor : public KeyedService,
   ProfileOAuth2TokenService* token_service() { return token_service_; }
   SigninClient* client() { return client_; }
 
+ protected:
+  // Used during GetAccountsFromCookie.
+  // Stores a callback for the next action to perform.
+  typedef base::Callback<
+      void(const GoogleServiceAuthError& error,
+           const std::vector<std::pair<std::string, bool> >&)>
+      GetAccountsFromCookieCallback;
+
+  virtual void GetAccountsFromCookie(GetAccountsFromCookieCallback callback);
+
  private:
   // An std::set<> for use with email addresses that uses
   // gaia::CanonicalizeEmail() during comparisons.
@@ -99,12 +109,6 @@ class AccountReconcilor : public KeyedService,
     return invalid_chrome_accounts_;
   }
 
-  // Used during GetAccountsFromCookie.
-  // Stores a callback for the next action to perform.
-  typedef base::Callback<
-      void(const GoogleServiceAuthError& error,
-           const std::vector<std::pair<std::string, bool> >&)>
-      GetAccountsFromCookieCallback;
 
   friend class AccountReconcilorTest;
   FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest, SigninManagerRegistration);
@@ -173,7 +177,6 @@ class AccountReconcilor : public KeyedService,
   void HandleRefreshTokenFetched(const std::string& account_id,
                                  const std::string& refresh_token);
 
-  void GetAccountsFromCookie(GetAccountsFromCookieCallback callback);
   void ContinueReconcileActionAfterGetGaiaAccounts(
       const GoogleServiceAuthError& error,
       const std::vector<std::pair<std::string, bool> >& accounts);
