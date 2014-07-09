@@ -8,6 +8,7 @@ import os
 
 from telemetry.page import page_measurement
 from metrics import network
+from telemetry.value import scalar
 
 
 class ChromeProxyMetricException(page_measurement.MeasurementFailure):
@@ -123,9 +124,14 @@ class ChromeProxyMetric(network.NetworkMetric):
       else:
         resources_direct += 1
 
-    results.Add('resources_via_proxy', 'count', resources_via_proxy)
-    results.Add('resources_from_cache', 'count', resources_from_cache)
-    results.Add('resources_direct', 'count', resources_direct)
+    results.AddValue(scalar.ScalarValue(
+        results.current_page, 'resources_via_proxy', 'count',
+        resources_via_proxy))
+    results.AddValue(scalar.ScalarValue(
+        results.current_page, 'resources_from_cache', 'count',
+        resources_from_cache))
+    results.AddValue(scalar.ScalarValue(
+        results.current_page, 'resources_direct', 'count', resources_direct))
 
   def AddResultsForHeaderValidation(self, tab, results):
     via_count = 0
@@ -141,8 +147,10 @@ class ChromeProxyMetric(network.NetworkMetric):
         raise ChromeProxyMetricException, (
             '%s: Via header (%s) is not valid (refer=%s, status=%d)' % (
                 r.url, r.GetHeader('Via'), r.GetHeader('Referer'), r.status))
-    results.Add('checked_via_header', 'count', via_count)
-    results.Add('request_bypassed', 'count', bypass_count)
+    results.AddValue(scalar.ScalarValue(
+        results.current_page, 'checked_via_header', 'count', via_count))
+    results.AddValue(scalar.ScalarValue(
+        results.current_page, 'request_bypassed', 'count', bypass_count))
 
   def IsProxyBypassed(self, tab):
     """ Returns True if all configured proxies are bypassed."""
@@ -209,7 +217,8 @@ class ChromeProxyMetric(network.NetworkMetric):
           [self.effective_proxies['proxy'],
            self.effective_proxies['fallback']])
 
-    results.Add('bypass', 'count', bypass_count)
+    results.AddValue(scalar.ScalarValue(
+        results.current_page, 'bypass', 'count', bypass_count))
 
   def AddResultsForSafebrowsing(self, tab, results):
     count = 0
@@ -225,7 +234,8 @@ class ChromeProxyMetric(network.NetworkMetric):
             'Reponse: status=(%d, %s)\nHeaders:\n %s' % (
                 r.url, r.status, r.status_text, r.headers))
     if count == safebrowsing_count:
-      results.Add('safebrowsing', 'boolean', True)
+      results.AddValue(scalar.ScalarValue(
+          results.current_page, 'safebrowsing', 'boolean', True))
     else:
       raise ChromeProxyMetricException, (
           'Safebrowsing failed (count=%d, safebrowsing_count=%d)\n' % (
@@ -258,4 +268,5 @@ class ChromeProxyMetric(network.NetworkMetric):
       raise ChromeProxyMetricException, (
           'Wrong bad proxies (%s). Expect: "%s"' % (
           str(bad_proxies), str(expected_bad_proxies)))
-    results.Add('http_fallback', 'boolean', True)
+    results.AddValue(scalar.ScalarValue(
+        results.current_page, 'http_fallback', 'boolean', True))
