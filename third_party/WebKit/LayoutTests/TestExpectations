@@ -407,9 +407,6 @@ crbug.com/371725 http/tests/webfont/slow-loading.html [ Pass ImageOnlyFailure Ti
 crbug.com/334269 [ Mac ] virtual/antialiasedtext/fast/text/font-variant-ligatures.html [ ImageOnlyFailure ]
 crbug.com/334269 [ Mac ] virtual/antialiasedtext/fast/text/international/zerowidthjoiner.html [ ImageOnlyFailure ]
 crbug.com/334269 [ Mac ] virtual/antialiasedtext/fast/text/international/bdo-bidi-width.html [ ImageOnlyFailure ]
-crbug.com/348911 [ Mac ] virtual/antialiasedtext/fast/text/international/rtl-space-in-ltr-element.html [ ImageOnlyFailure ]
-crbug.com/367078 [ Mac ] virtual/antialiasedtext/fast/text/international/text-overflow-ellipsis-bidi.html [ ImageOnlyFailure ]
-crbug.com/367078 [ Mac ] virtual/antialiasedtext/fast/text/international/inline-block-with-mixed-direction-words.html  [ ImageOnlyFailure ]
 crbug.com/290411 [ Mac ] virtual/antialiasedtext/fast/text/sub-pixel/text-scaling-pixel.html [ Pass ImageOnlyFailure ]
 
 crbug.com/334269 [ Mac ] fast/text/international/bdo-bidi-width.html [ ImageOnlyFailure ]
