@@ -8,7 +8,7 @@
 </iframe>
 
 <script>
-    var test = async_test("Test subframes receive 'orientationchange' events");
+    var test = async_test("Test subframes receive orientation change events");
 
     var orientations = [
         'portrait-primary',
@@ -17,7 +17,7 @@
         'landscape-secondary'
     ];
 
-    var currentIndex = orientations.indexOf(window.screen.orientation);
+    var currentIndex = orientations.indexOf(window.screen.orientation.type);
     var eventsReceived = 0;
 
     function getNextIndex() {
@@ -30,7 +30,7 @@
     }
 
     window.onmessage = test.step_func(function (ev) {
-        assert_equals(ev.data, orientations[currentIndex], "subframe receives 'orientationchange' event");
+        assert_equals(ev.data, orientations[currentIndex], "subframe receives orientation change event");
         ++eventsReceived;
         if (eventsReceived < 4)
             changeOrientation()

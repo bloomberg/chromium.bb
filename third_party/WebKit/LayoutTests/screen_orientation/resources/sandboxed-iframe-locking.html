@@ -2,7 +2,7 @@
 <html>
 <script>
     var msg = "";
-    screen.lockOrientation("portrait-primary").then(function() {
+    screen.orientation.lock("portrait-primary").then(function() {
     }, function(error) {
         msg = error.name;
     });

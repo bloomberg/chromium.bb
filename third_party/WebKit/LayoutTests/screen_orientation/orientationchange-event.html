@@ -12,28 +12,21 @@ var orientations = [
   'landscape-secondary'
 ];
 
-var currentIndex = orientations.indexOf(window.screen.orientation);
-// Count the number of calls received from the EventHandler set on window.onorientationchange.
+var currentIndex = orientations.indexOf(window.screen.orientation.type);
+// Count the number of calls received from the EventHandler set on screen.orientation.onchange.
 var orientationChangeEventHandlerCalls = 0;
-// Count the number of calls received from the listener set with window.addEventListene().
+// Count the number of calls received from the listener set with screen.orientation.addEventListene().
 var orientationChangeEventListenerCalls = 0;
-
-// TODO: window.onorientationchange is enabled on Android only. We will enable
-// it with ScreenOrientation later, at which point this test will fail. We will
-// then have to fix it.
-function todo_equals(actual, expected) {
-  assert_not_equals(actual, expected, "TODO: if this fails, it means that something got fixed.");
-}
 
 function getNextIndex() {
   return (currentIndex + 1) % orientations.length;
 }
 
-window.onorientationchange = function() {
+window.screen.orientation.onchange = function() {
   orientationChangeEventHandlerCalls++;
 };
 
-window.addEventListener('orientationchange', function() {
+window.screen.orientation.addEventListener('change', function() {
   orientationChangeEventListenerCalls++;
 });
 
@@ -42,18 +35,18 @@ for (var i = 0; i < 4; ++i) {
     window.testRunner.setMockScreenOrientation(orientations[getNextIndex()]);
 
     currentIndex = getNextIndex();
-    assert_equals(screen.orientation, orientations[currentIndex]);
+    assert_equals(screen.orientation.type, orientations[currentIndex]);
 
-    todo_equals(orientationChangeEventHandlerCalls, i + 1);
+    assert_equals(orientationChangeEventHandlerCalls, i + 1);
     assert_equals(orientationChangeEventListenerCalls, i + 1);
   }, "Test that orientationchange event is fired when the orientation changes");
 }
 
 test(function() {
   window.testRunner.setMockScreenOrientation(orientations[currentIndex]);
-  assert_equals(screen.orientation, orientations[currentIndex]);
+  assert_equals(screen.orientation.type, orientations[currentIndex]);
 
-  todo_equals(orientationChangeEventHandlerCalls, 4);
+  assert_equals(orientationChangeEventHandlerCalls, 4);
   assert_equals(orientationChangeEventListenerCalls, 4);
 }, "Test that orientationchange event is not fired when the orientation does not change");
 

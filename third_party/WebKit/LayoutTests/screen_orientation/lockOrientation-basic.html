@@ -10,19 +10,19 @@ var previousOrientation = screen.orientation;
 test(function() {
     var caught = false;
     try {
-        screen.unlockOrientation();
+        screen.orientation.unlock();
     } catch (e) {
         caught = true;
     }
 
     assert_false(caught);
-}, "Test that unlockOrientation() doesn't throw when there is no lock");
+}, "Test that screen.orientation.unlock() doesn't throw when there is no lock");
 
 test(function() {
     [ 'any', 'portrait', 'landscape', 'portrait-primary', 'portrait-secondary',
       'landscape-primary', 'landscape-secondary' ].forEach(function(orientation) {
         var pending = true;
-        screen.lockOrientation(orientation).then(function() {
+        screen.orientation.lock(orientation).then(function() {
             pending = false;
         }, function() {
             pending = false;
@@ -30,22 +30,22 @@ test(function() {
 
         assert_true(pending);
     });
-}, "Test that screen.lockOrientation returns a pending promise.");
+}, "Test that screen.orientation.lock returns a pending promise.");
 
 test(function() {
     assert_equals(screen.orientation, previousOrientation);
-}, "Test that screen.lockOrientation() is actually async");
+}, "Test that screen.orientation.lock() is actually async");
 
 test(function() {
     var caught = false;
     try {
-        screen.unlockOrientation();
+        screen.orientation.unlock();
     } catch (e) {
         caught = true;
     }
 
     assert_false(caught);
-}, "Test that unlockOrientation doesn't throw when there is a lock");
+}, "Test that screen.unlock() doesn't throw when there is a lock");
 
 </script>
 </body>
