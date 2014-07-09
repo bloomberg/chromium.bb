@@ -6,7 +6,7 @@
   'conditions': [
     ['OS=="linux" or OS=="android"', {
       'variables': {
-        'host_arch': '<!(uname -m)',
+        'host_arch': '<!pymod_do_main(detect_host_arch)',
       },
       'conditions': [
         ['host_arch=="x86_64"', {
