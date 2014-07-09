@@ -3,8 +3,8 @@
  * found in the LICENSE file. */
 
 .buttonbar button.combobutton {
-  -webkit-box-align: stretch;
-  display: -webkit-box;
+  align-items: stretch;
+  display: flex;
 }
 
 .buttonbar .combobutton > .action {

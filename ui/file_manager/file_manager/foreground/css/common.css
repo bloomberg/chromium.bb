@@ -61,7 +61,7 @@ input.common[type='checkbox'].white:checked::after {
 
 input.common[type='checkbox']::after {
   content: '';
-  display: -webkit-box;
+  display: flex;
   height: 15px;
   left: -2px;
   position: absolute;
@@ -116,7 +116,7 @@ input.common[type='checkbox']::after {
 }
 
 .buttonbar {
-  display: -webkit-box;
+  display: flex;
   height: 31px;
 }
 
@@ -365,11 +365,11 @@ html[dir='rtl'] .entry-name {
 /* Pop-up dialogs. */
 
 .cr-dialog-container {
-  -webkit-box-align: center;
-  -webkit-box-pack: center;
   -webkit-user-select: none;
-  display: -webkit-box;
+  align-items: center;
+  display: flex;
   height: 100%;
+  justify-content: center;
   left: 0;
   overflow: hidden;
   position: absolute;
@@ -380,14 +380,14 @@ html[dir='rtl'] .entry-name {
 }
 
 .cr-dialog-frame {
-  -webkit-box-orient: vertical;
   background-color: rgb(250, 250, 250);
   border: 1px solid rgb(255, 255, 255);
   border-radius: 2px;
   box-shadow: 0 1px 4px 0 rgba(0, 0, 0, .5);
   color: rgb(34, 34, 34);
   cursor: default;
-  display: -webkit-box;
+  display: flex;
+  flex-direction: column;
   padding: 20px;
   position: relative;
   width: 460px;
@@ -476,9 +476,9 @@ html[dir='rtl'] .entry-name {
 }
 
 .cr-dialog-buttons {
-  -webkit-box-orient: horizontal;
-  -webkit-box-pack: end;
-  display: -webkit-box;
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
   padding-top: 10px;
 }
 

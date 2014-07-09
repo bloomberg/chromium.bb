@@ -13,13 +13,13 @@ html.col-resize * {
 }
 
 .table-row {
-  display: -webkit-box;
+  display: flex;
   text-align: start;
   width: 100%;
 }
 
 .table-row-cell {
-  display: -webkit-box;
+  display: flex;
   overflow: hidden;
 }
 
@@ -37,7 +37,7 @@ html.col-resize * {
 .table-header-inner {
   -webkit-user-select: none;
   cursor: default;
-  display: -webkit-box;
+  display: flex;
   position: relative;
   text-align: start;
 }
