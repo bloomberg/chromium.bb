@@ -592,9 +592,6 @@ crbug.com/302529 svg/custom/js-late-clipPath-and-object-creation.svg [ Failure P
 crbug.com/255714 [ Linux ] editing/execCommand/switch-list-type-with-orphaned-li.html [ Failure Pass ]
 crbug.com/231910 fast/dom/vertical-scrollbar-in-rtl.html [ Failure Pass ]
 
-# Complex text failures on XP (likely caused by r158845).
-crbug.com/305290 [ XP ] fast/text/international/plane2.html [ Failure ]
-
 crbug.com/310323 http/tests/pointer-lock/iframe-sandboxed-allow-pointer-lock.html [ Crash Pass ]
 crbug.com/310323 http/tests/pointer-lock/iframe-sandboxed-allow-pointer-lock-prefixed.html [ Crash Pass ]
 
