@@ -4193,7 +4193,7 @@
               # gcc -- http://gcc.gnu.org/onlinedocs/gcc-4.8.0/gcc/Optimize-Options.html
               # TODO(mithro): Watch for clang support at following thread:
               # http://clang-developers.42468.n3.nabble.com/Adding-fuse-ld-support-to-clang-td4032180.html
-              ['gcc_version>=48', {
+              ['gcc_version>=48 and clang==0', {
                 'target_conditions': [
                   ['_toolset=="target"', {
                     'ldflags': [
@@ -4202,7 +4202,7 @@
                   }],
                 ],
               }],
-              ['host_gcc_version>=48', {
+              ['host_gcc_version>=48 and clang==0', {
                 'target_conditions': [
                   ['_toolset=="host"', {
                     'ldflags': [
@@ -4240,7 +4240,7 @@
               '-Wl,--disable-new-dtags',
             ],
           }],
-          ['gcc_version>=48', {
+          ['gcc_version>=48 and clang==0', {
             'target_conditions': [
               ['_toolset=="target"', {
                 'cflags_cc': [
@@ -4253,7 +4253,7 @@
               }],
             ],
           }],
-          ['host_gcc_version>=48', {
+          ['host_gcc_version>=48 and clang==0', {
             'target_conditions': [
               ['_toolset=="host"', {
                 'cflags_cc': [
@@ -5487,7 +5487,7 @@
     # Don't warn about the "typedef 'foo' locally defined but not used"
     # for gcc 4.8.
     # TODO: remove this flag once all builds work. See crbug.com/227506
-    ['gcc_version>=48', {
+    ['gcc_version>=48 and clang==0', {
       'target_defaults': {
         'cflags': [
           '-Wno-unused-local-typedefs',
