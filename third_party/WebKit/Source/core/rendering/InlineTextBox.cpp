@@ -322,28 +322,14 @@ float InlineTextBox::placeEllipsisBox(bool flowIsLTR, float visibleLeftEdge, flo
     return -1;
 }
 
-Color correctedTextColor(Color textColor, Color backgroundColor)
+static Color textColorForWhiteBackground(Color textColor)
 {
-    // Adjust the text color if it is too close to the background color,
-    // by darkening or lightening it to move it further away.
-
-    int d = differenceSquared(textColor, backgroundColor);
-    // semi-arbitrarily chose 65025 (255^2) value here after a few tests;
-    if (d > 65025) {
-        return textColor;
-    }
-
     int distanceFromWhite = differenceSquared(textColor, Color::white);
-    int distanceFromBlack = differenceSquared(textColor, Color::black);
-
-    if (distanceFromWhite < distanceFromBlack) {
-        return textColor.dark();
-    }
-
-    return textColor.light();
+    // semi-arbitrarily chose 65025 (255^2) value here after a few tests;
+    return distanceFromWhite > 65025 ? textColor : textColor.dark();
 }
 
-void updateGraphicsContext(GraphicsContext* context, const Color& fillColor, const Color& strokeColor, float strokeThickness)
+static void updateGraphicsContext(GraphicsContext* context, const Color& fillColor, const Color& strokeColor, float strokeThickness)
 {
     TextDrawingModeFlags mode = context->textDrawingMode();
     if (strokeThickness > 0) {
@@ -520,9 +506,9 @@ TextPaintingStyle textPaintingStyle(RenderText& renderer, RenderStyle* style, bo
                 forceBackgroundToWhite = false;
         }
         if (forceBackgroundToWhite) {
-            textStyle.fillColor = correctedTextColor(textStyle.fillColor, Color::white);
-            textStyle.strokeColor = correctedTextColor(textStyle.strokeColor, Color::white);
-            textStyle.emphasisMarkColor = correctedTextColor(textStyle.emphasisMarkColor, Color::white);
+            textStyle.fillColor = textColorForWhiteBackground(textStyle.fillColor);
+            textStyle.strokeColor = textColorForWhiteBackground(textStyle.strokeColor);
+            textStyle.emphasisMarkColor = textColorForWhiteBackground(textStyle.emphasisMarkColor);
         }
 
         // Text shadows are disabled when printing. http://crbug.com/258321

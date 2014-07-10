@@ -37,10 +37,6 @@ class GraphicsContext;
 const unsigned short cNoTruncation = USHRT_MAX;
 const unsigned short cFullTruncation = USHRT_MAX - 1;
 
-// Helper functions shared by InlineTextBox / SVGRootInlineBox
-void updateGraphicsContext(GraphicsContext*, const Color& fillColor, const Color& strokeColor, float strokeThickness, ColorSpace);
-Color correctedTextColor(Color textColor, Color backgroundColor);
-
 class InlineTextBox : public InlineBox {
 public:
     InlineTextBox(RenderObject& obj)
@@ -120,7 +116,7 @@ protected:
     virtual bool nodeAtPoint(const HitTestRequest&, HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, LayoutUnit lineTop, LayoutUnit lineBottom) OVERRIDE;
 
 public:
-    RenderText& textRenderer() const;
+    RenderText& textRenderer() const { return toRenderText(renderer()); }
 
 private:
     virtual void deleteLine() OVERRIDE FINAL;
@@ -199,10 +195,7 @@ private:
 
 DEFINE_INLINE_BOX_TYPE_CASTS(InlineTextBox);
 
-inline RenderText& InlineTextBox::textRenderer() const
-{
-    return toRenderText(renderer());
-}
+void alignSelectionRectToDevicePixels(FloatRect&);
 
 inline AffineTransform InlineTextBox::rotation(const FloatRect& boxRect, RotationDirection rotationDirection)
 {
