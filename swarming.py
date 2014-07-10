@@ -593,7 +593,7 @@ def trigger_by_manifest(swarming, manifest):
   result = net.url_read(swarming + '/test', data={'request': manifest_text})
   if not result:
     on_error.report('Failed to trigger task %s' % manifest.task_name)
-    return None
+    return None, None
   try:
     data = json.loads(result)
   except (ValueError, TypeError):
