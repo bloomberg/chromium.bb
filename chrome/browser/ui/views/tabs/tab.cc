@@ -1015,6 +1015,10 @@ void Tab::OnGestureEvent(ui::GestureEvent* event) {
 void Tab::GetAccessibleState(ui::AXViewState* state) {
   state->role = ui::AX_ROLE_TAB;
   state->name = data_.title;
+  state->AddStateFlag(ui::AX_STATE_MULTISELECTABLE);
+  state->AddStateFlag(ui::AX_STATE_SELECTABLE);
+  if (IsSelected())
+    state->AddStateFlag(ui::AX_STATE_SELECTED);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

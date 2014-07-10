@@ -325,16 +325,12 @@ ui::AXEvent AXEventFromBlink(blink::WebAXEvent event) {
       return ui::AX_EVENT_ARIA_ATTRIBUTE_CHANGED;
     case blink::WebAXEventAutocorrectionOccured:
       return ui::AX_EVENT_AUTOCORRECTION_OCCURED;
-    case blink::WebAXEventBlur:
-      return ui::AX_EVENT_BLUR;
     case blink::WebAXEventCheckedStateChanged:
       return ui::AX_EVENT_CHECKED_STATE_CHANGED;
     case blink::WebAXEventChildrenChanged:
       return ui::AX_EVENT_CHILDREN_CHANGED;
     case blink::WebAXEventFocus:
       return ui::AX_EVENT_FOCUS;
-    case blink::WebAXEventHide:
-      return ui::AX_EVENT_HIDE;
     case blink::WebAXEventInvalidStatusChanged:
       return ui::AX_EVENT_INVALID_STATUS_CHANGED;
     case blink::WebAXEventLayoutComplete:
@@ -362,15 +358,9 @@ ui::AXEvent AXEventFromBlink(blink::WebAXEvent event) {
     case blink::WebAXEventSelectedChildrenChanged:
       return ui::AX_EVENT_SELECTED_CHILDREN_CHANGED;
     case blink::WebAXEventSelectedTextChanged:
-      return ui::AX_EVENT_SELECTED_TEXT_CHANGED;
-    case blink::WebAXEventShow:
-      return ui::AX_EVENT_SHOW;
+      return ui::AX_EVENT_TEXT_SELECTION_CHANGED;
     case blink::WebAXEventTextChanged:
       return ui::AX_EVENT_TEXT_CHANGED;
-    case blink::WebAXEventTextInserted:
-      return ui::AX_EVENT_TEXT_INSERTED;
-    case blink::WebAXEventTextRemoved:
-      return ui::AX_EVENT_TEXT_REMOVED;
     case blink::WebAXEventValueChanged:
       return ui::AX_EVENT_VALUE_CHANGED;
     default:

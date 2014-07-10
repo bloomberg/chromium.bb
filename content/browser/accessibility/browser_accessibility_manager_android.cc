@@ -168,7 +168,7 @@ void BrowserAccessibilityManagerAndroid::NotifyAccessibilityEvent(
               env, android_node->GetText()).obj());
       break;
     }
-    case ui::AX_EVENT_SELECTED_TEXT_CHANGED:
+    case ui::AX_EVENT_TEXT_SELECTION_CHANGED:
       Java_BrowserAccessibilityManager_handleTextSelectionChanged(
           env, obj.obj(), node->GetId());
       break;

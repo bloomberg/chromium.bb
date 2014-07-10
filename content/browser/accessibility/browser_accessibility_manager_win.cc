@@ -242,17 +242,11 @@ void BrowserAccessibilityManagerWin::NotifyAccessibilityEvent(
     case ui::AX_EVENT_SELECTED_CHILDREN_CHANGED:
       event_id = EVENT_OBJECT_SELECTIONWITHIN;
       break;
-    case ui::AX_EVENT_SELECTED_TEXT_CHANGED:
-      event_id = IA2_EVENT_TEXT_CARET_MOVED;
-      break;
     case ui::AX_EVENT_TEXT_CHANGED:
       event_id = EVENT_OBJECT_NAMECHANGE;
       break;
-    case ui::AX_EVENT_TEXT_INSERTED:
-      event_id = IA2_EVENT_TEXT_INSERTED;
-      break;
-    case ui::AX_EVENT_TEXT_REMOVED:
-      event_id = IA2_EVENT_TEXT_REMOVED;
+    case ui::AX_EVENT_TEXT_SELECTION_CHANGED:
+      event_id = IA2_EVENT_TEXT_CARET_MOVED;
       break;
     case ui::AX_EVENT_VALUE_CHANGED:
       event_id = EVENT_OBJECT_VALUECHANGE;

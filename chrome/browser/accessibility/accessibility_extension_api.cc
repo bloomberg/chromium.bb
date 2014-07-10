@@ -113,7 +113,7 @@ void ExtensionAccessibilityEventRouter::HandleControlEvent(
 
   switch (event) {
     case ui::AX_EVENT_TEXT_CHANGED:
-    case ui::AX_EVENT_SELECTION_CHANGED:
+    case ui::AX_EVENT_TEXT_SELECTION_CHANGED:
       OnTextChanged(info);
       break;
     case ui::AX_EVENT_VALUE_CHANGED:

@@ -49,7 +49,7 @@ void AccessibilityEventRouterViews::HandleAccessibilityEvent(
   }
 
   if (event_type == ui::AX_EVENT_TEXT_CHANGED ||
-      event_type == ui::AX_EVENT_SELECTION_CHANGED) {
+      event_type == ui::AX_EVENT_TEXT_SELECTION_CHANGED) {
     // These two events should only be sent for views that have focus. This
     // enforces the invariant that we fire events triggered by user action and
     // not by programmatic logic. For example, the location bar can be updated

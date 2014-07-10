@@ -41,11 +41,14 @@
     scrolledToAnchor,
     selectedChildrenChanged,
     selectedTextChanged,
-    selectionChanged,
+    selection,
+    selectionAdd,
+    selectionRemove,
     show,
     textChanged,
     textInserted,
     textRemoved,
+    textSelectionChanged,
     valueChanged
   };
 

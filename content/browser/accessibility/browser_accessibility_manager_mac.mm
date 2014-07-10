@@ -96,12 +96,6 @@ void BrowserAccessibilityManagerMac::NotifyAccessibilityEvent(
     case ui::AX_EVENT_MENU_LIST_VALUE_CHANGED:
       // Not used on Mac.
       return;
-    case ui::AX_EVENT_SHOW:
-      // Not used on Mac.
-      return;
-    case ui::AX_EVENT_HIDE:
-      // Not used on Mac.
-      return;
     case ui::AX_EVENT_ROW_COUNT_CHANGED:
       event_id = NSAccessibilityRowCountChangedNotification;
       break;
@@ -117,15 +111,9 @@ void BrowserAccessibilityManagerMac::NotifyAccessibilityEvent(
     case ui::AX_EVENT_SELECTED_CHILDREN_CHANGED:
       event_id = NSAccessibilitySelectedChildrenChangedNotification;
       break;
-    case ui::AX_EVENT_SELECTED_TEXT_CHANGED:
+    case ui::AX_EVENT_TEXT_SELECTION_CHANGED:
       event_id = NSAccessibilitySelectedTextChangedNotification;
       break;
-    case ui::AX_EVENT_TEXT_INSERTED:
-      // Not used on Mac.
-      return;
-    case ui::AX_EVENT_TEXT_REMOVED:
-      // Not used on Mac.
-      return;
     case ui::AX_EVENT_VALUE_CHANGED:
       event_id = NSAccessibilityValueChangedNotification;
       break;

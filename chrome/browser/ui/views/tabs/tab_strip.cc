@@ -824,12 +824,30 @@ void TabStrip::SetSelection(const ui::ListSelectionModel& old_selection,
     }
   }
 
+  // Use STLSetDifference to get the indices of elements newly selected
+  // and no longer selected, since selected_indices() is always sorted.
   ui::ListSelectionModel::SelectedIndices no_longer_selected =
       base::STLSetDifference<ui::ListSelectionModel::SelectedIndices>(
           old_selection.selected_indices(),
           new_selection.selected_indices());
-  for (size_t i = 0; i < no_longer_selected.size(); ++i)
+  ui::ListSelectionModel::SelectedIndices newly_selected =
+      base::STLSetDifference<ui::ListSelectionModel::SelectedIndices>(
+          new_selection.selected_indices(),
+          old_selection.selected_indices());
+
+  // Fire accessibility events that reflect the changes to selection, and
+  // stop the mini tab title animation on tabs no longer selected.
+  for (size_t i = 0; i < no_longer_selected.size(); ++i) {
     tab_at(no_longer_selected[i])->StopMiniTabTitleAnimation();
+    tab_at(no_longer_selected[i])->NotifyAccessibilityEvent(
+        ui::AX_EVENT_SELECTION_REMOVE, true);
+  }
+  for (size_t i = 0; i < newly_selected.size(); ++i) {
+    tab_at(newly_selected[i])->NotifyAccessibilityEvent(
+        ui::AX_EVENT_SELECTION_ADD, true);
+  }
+  tab_at(new_selection.active())->NotifyAccessibilityEvent(
+      ui::AX_EVENT_SELECTION, true);
 }
 
 void TabStrip::TabTitleChangedNotLoading(int model_index) {

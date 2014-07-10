@@ -1224,9 +1224,15 @@ int32 NativeViewAccessibilityWin::MSAAEvent(ui::AXEvent event) {
       return EVENT_SYSTEM_MENUPOPUPSTART;
     case ui::AX_EVENT_MENU_POPUP_END:
       return EVENT_SYSTEM_MENUPOPUPEND;
+    case ui::AX_EVENT_SELECTION:
+      return EVENT_OBJECT_SELECTION;
+    case ui::AX_EVENT_SELECTION_ADD:
+      return EVENT_OBJECT_SELECTIONADD;
+    case ui::AX_EVENT_SELECTION_REMOVE:
+      return EVENT_OBJECT_SELECTIONREMOVE;
     case ui::AX_EVENT_TEXT_CHANGED:
       return EVENT_OBJECT_NAMECHANGE;
-    case ui::AX_EVENT_SELECTION_CHANGED:
+    case ui::AX_EVENT_TEXT_SELECTION_CHANGED:
       return IA2_EVENT_TEXT_CARET_MOVED;
     case ui::AX_EVENT_VALUE_CHANGED:
       return EVENT_OBJECT_VALUECHANGE;
@@ -1335,6 +1341,8 @@ int32 NativeViewAccessibilityWin::MSAAState(const ui::AXViewState& state) {
     msaa_state |= STATE_SYSTEM_PROTECTED;
   if (state.HasStateFlag(ui::AX_STATE_READ_ONLY))
     msaa_state |= STATE_SYSTEM_READONLY;
+  if (state.HasStateFlag(ui::AX_STATE_SELECTABLE))
+    msaa_state |= STATE_SYSTEM_SELECTABLE;
   if (state.HasStateFlag(ui::AX_STATE_SELECTED))
     msaa_state |= STATE_SYSTEM_SELECTED;
   if (state.HasStateFlag(ui::AX_STATE_FOCUSED))
