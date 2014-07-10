@@ -28,7 +28,7 @@ std::string GetDeviceModeString(DeviceMode mode) {
     case DEVICE_MODE_CONSUMER:
       return EnterpriseInstallAttributes::kConsumerDeviceMode;
     case DEVICE_MODE_ENTERPRISE:
-      return EnterpriseInstallAttributes::kEnterpiseDeviceMode;
+      return EnterpriseInstallAttributes::kEnterpriseDeviceMode;
     case DEVICE_MODE_RETAIL_KIOSK:
       return EnterpriseInstallAttributes::kRetailKioskDeviceMode;
     case DEVICE_MODE_CONSUMER_KIOSK_AUTOLAUNCH:
@@ -46,7 +46,7 @@ DeviceMode GetDeviceModeFromString(
     const std::string& mode) {
   if (mode == EnterpriseInstallAttributes::kConsumerDeviceMode)
     return DEVICE_MODE_CONSUMER;
-  else if (mode == EnterpriseInstallAttributes::kEnterpiseDeviceMode)
+  else if (mode == EnterpriseInstallAttributes::kEnterpriseDeviceMode)
     return DEVICE_MODE_ENTERPRISE;
   else if (mode == EnterpriseInstallAttributes::kRetailKioskDeviceMode)
     return DEVICE_MODE_RETAIL_KIOSK;
@@ -70,7 +70,7 @@ bool ReadMapKey(const std::map<std::string, std::string>& map,
 }  // namespace
 
 const char EnterpriseInstallAttributes::kConsumerDeviceMode[] = "consumer";
-const char EnterpriseInstallAttributes::kEnterpiseDeviceMode[] = "enterprise";
+const char EnterpriseInstallAttributes::kEnterpriseDeviceMode[] = "enterprise";
 const char EnterpriseInstallAttributes::kRetailKioskDeviceMode[] = "kiosk";
 const char EnterpriseInstallAttributes::kConsumerKioskDeviceMode[] =
     "consumer_kiosk";
