@@ -11,6 +11,7 @@
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/speech/extension_api/tts_engine_extension_api.h"
+#include "chrome/browser/speech/extension_api/tts_engine_extension_observer.h"
 #include "chrome/browser/speech/extension_api/tts_extension_api_constants.h"
 #include "chrome/browser/speech/tts_controller.h"
 #include "extensions/browser/event_router.h"
@@ -350,6 +351,9 @@ TtsAPI::TtsAPI(content::BrowserContext* context) {
   registry->RegisterFunction<TtsStopSpeakingFunction>();
   registry->RegisterFunction<TtsPauseFunction>();
   registry->RegisterFunction<TtsResumeFunction>();
+
+  // Ensure we're observing newly added engines for the given context.
+  TtsEngineExtensionObserver::GetInstance(Profile::FromBrowserContext(context));
 }
 
 TtsAPI::~TtsAPI() {
