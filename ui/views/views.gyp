@@ -627,6 +627,8 @@
         'test/views_test_helper.h',
         'test/views_test_helper_aura.cc',
         'test/views_test_helper_aura.h',
+        'test/views_test_helper_mac.h',
+        'test/views_test_helper_mac.mm',
         'test/widget_test.cc',
         'test/widget_test.h',
         'test/widget_test_aura.cc',

@@ -6,14 +6,6 @@
 
 namespace views {
 
-#if !defined(USE_AURA)
-// static
-ViewsTestHelper* ViewsTestHelper::Create(base::MessageLoopForUI* message_loop,
-                                         ui::ContextFactory* context_factory) {
-  return new ViewsTestHelper;
-}
-#endif
-
 ViewsTestHelper::ViewsTestHelper() {
 }
 
