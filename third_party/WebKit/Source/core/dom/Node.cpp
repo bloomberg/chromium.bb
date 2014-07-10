@@ -101,6 +101,13 @@ namespace WebCore {
 
 using namespace HTMLNames;
 
+struct SameSizeAsNode : NODE_BASE_CLASSES {
+    uint32_t m_nodeFlags;
+    void* m_pointer[5];
+};
+
+COMPILE_ASSERT(sizeof(Node) <= sizeof(SameSizeAsNode), Node_should_stay_small);
+
 #if !ENABLE(OILPAN)
 void* Node::operator new(size_t size)
 {
