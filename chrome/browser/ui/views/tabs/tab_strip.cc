@@ -1057,8 +1057,6 @@ void TabStrip::MaybeStartDrag(
   // creating the DragController remembers the WebContents delegates and we need
   // to make sure the existing DragController isn't still a delegate.
   drag_controller_.reset();
-  TabDragController::DetachBehavior detach_behavior =
-      TabDragController::DETACHABLE;
   TabDragController::MoveBehavior move_behavior =
       TabDragController::REORDER;
   // Use MOVE_VISIBILE_TABS in the following conditions:
@@ -1081,7 +1079,7 @@ void TabStrip::MaybeStartDrag(
   drag_controller_.reset(new TabDragController);
   drag_controller_->Init(
       this, tab, tabs, gfx::Point(x, y), event.x(), selection_model,
-      detach_behavior, move_behavior, EventSourceFromEvent(event));
+      move_behavior, EventSourceFromEvent(event));
 }
 
 void TabStrip::ContinueDrag(views::View* view, const ui::LocatedEvent& event) {

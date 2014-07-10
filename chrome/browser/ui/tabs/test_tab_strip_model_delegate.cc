@@ -44,9 +44,6 @@ bool TestTabStripModelDelegate::CanDuplicateContentsAt(int index) {
 void TestTabStripModelDelegate::DuplicateContentsAt(int index) {
 }
 
-void TestTabStripModelDelegate::CloseFrameAfterDragSession() {
-}
-
 void TestTabStripModelDelegate::CreateHistoricalTab(
     content::WebContents* contents) {
 }

@@ -102,18 +102,6 @@ void BrowserTabStripModelDelegate::DuplicateContentsAt(int index) {
   DuplicateTabAt(browser_, index);
 }
 
-void BrowserTabStripModelDelegate::CloseFrameAfterDragSession() {
-#if !defined(OS_MACOSX)
-  // This is scheduled to run after we return to the message loop because
-  // otherwise the frame will think the drag session is still active and ignore
-  // the request.
-  base::MessageLoop::current()->PostTask(
-      FROM_HERE,
-      base::Bind(&BrowserTabStripModelDelegate::CloseFrame,
-                 weak_factory_.GetWeakPtr()));
-#endif
-}
-
 void BrowserTabStripModelDelegate::CreateHistoricalTab(
     content::WebContents* contents) {
   // We don't create historical tabs for incognito windows or windows without

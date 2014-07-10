@@ -25,7 +25,6 @@ class TestTabStripModelDelegate : public TabStripModelDelegate {
   virtual int GetDragActions() const OVERRIDE;
   virtual bool CanDuplicateContentsAt(int index) OVERRIDE;
   virtual void DuplicateContentsAt(int index) OVERRIDE;
-  virtual void CloseFrameAfterDragSession() OVERRIDE;
   virtual void CreateHistoricalTab(content::WebContents* contents) OVERRIDE;
   virtual bool ShouldRunUnloadListenerBeforeClosing(
       content::WebContents* contents) OVERRIDE;

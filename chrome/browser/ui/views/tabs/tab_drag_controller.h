@@ -15,7 +15,6 @@
 #include "chrome/browser/ui/views/tabs/tab_strip_types.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
-#include "content/public/browser/web_contents_delegate.h"
 #include "ui/base/models/list_selection_model.h"
 #include "ui/gfx/rect.h"
 #include "ui/views/widget/widget_observer.h"
@@ -47,16 +46,10 @@ class TabStripModel;
 // that the tabs should be moved out of the tab strip a new Browser is created
 // and RunMoveLoop() is invoked on the Widget to drag the browser around. This
 // is the default on aura.
-class TabDragController : public content::WebContentsDelegate,
-                          public content::NotificationObserver,
+class TabDragController : public content::NotificationObserver,
                           public views::WidgetObserver,
                           public TabStripModelObserver {
  public:
-  enum DetachBehavior {
-    DETACHABLE,
-    NOT_DETACHABLE
-  };
-
   // What should happen as the mouse is dragged within the tabstrip.
   enum MoveBehavior {
     // Only the set of visible tabs should change. This is only applicable when
@@ -94,7 +87,6 @@ class TabDragController : public content::WebContentsDelegate,
             const gfx::Point& mouse_offset,
             int source_tab_offset,
             const ui::ListSelectionModel& initial_selection_model,
-            DetachBehavior detach_behavior,
             MoveBehavior move_behavior,
             EventSource event_source);
 
@@ -191,11 +183,6 @@ class TabDragController : public content::WebContentsDelegate,
     // The WebContents being dragged.
     content::WebContents* contents;
 
-    // content::WebContentsDelegate for |contents| before it was detached from
-    // the browser window. We store this so that we can forward certain delegate
-    // notifications back to it if we can't handle them locally.
-    content::WebContentsDelegate* original_delegate;
-
     // This is the index of the tab in |source_tabstrip_| when the drag
     // began. This is used to restore the previous state if the drag is aborted.
     int source_model_index;
@@ -212,26 +199,6 @@ class TabDragController : public content::WebContentsDelegate,
   // Sets |drag_data| from |tab|. This also registers for necessary
   // notifications and resets the delegate of the WebContents.
   void InitTabDragData(Tab* tab, TabDragData* drag_data);
-
-  // Overridden from content::WebContentsDelegate:
-  virtual content::WebContents* OpenURLFromTab(
-      content::WebContents* source,
-      const content::OpenURLParams& params) OVERRIDE;
-  virtual void NavigationStateChanged(const content::WebContents* source,
-                                      unsigned changed_flags) OVERRIDE;
-  virtual void AddNewContents(content::WebContents* source,
-                              content::WebContents* new_contents,
-                              WindowOpenDisposition disposition,
-                              const gfx::Rect& initial_pos,
-                              bool user_gesture,
-                              bool* was_blocked) OVERRIDE;
-  virtual bool ShouldSuppressDialogs() OVERRIDE;
-  virtual content::JavaScriptDialogManager*
-      GetJavaScriptDialogManager() OVERRIDE;
-  virtual void RequestMediaAccessPermission(
-      content::WebContents* web_contents,
-      const content::MediaStreamRequest& request,
-      const content::MediaResponseCallback& callback) OVERRIDE;
 
   // Overridden from content::NotificationObserver:
   virtual void Observe(int type,
@@ -400,18 +367,12 @@ class TabDragController : public content::WebContentsDelegate,
   // Maximizes the attached window.
   void MaximizeAttachedWindow();
 
-  // Resets the delegates of the WebContents.
-  void ResetDelegates();
-
   // Returns the bounds (in screen coordinates) of the specified View.
   gfx::Rect GetViewScreenBounds(views::View* tabstrip) const;
 
   // Hides the frame for the window that contains the TabStrip the current
   // drag session was initiated from.
   void HideFrame();
-
-  // Closes a hidden frame at the end of a drag session.
-  void CleanUpHiddenFrame();
 
   void BringWindowUnderPointToFront(const gfx::Point& point_in_screen);
 
@@ -479,9 +440,6 @@ class TabDragController : public content::WebContentsDelegate,
   gfx::NativeWindow GetLocalProcessWindow(const gfx::Point& screen_point,
                                           bool exclude_dragged_view);
 
-  // If true detaching creates a new browser and enters a nested message loop.
-  bool detach_into_browser_;
-
   // Handles registering for notifications.
   content::NotificationRegistrar registrar_;
 
@@ -532,13 +490,6 @@ class TabDragController : public content::WebContentsDelegate,
   // This is used to calculate |window_create_point_|.
   gfx::Point first_source_tab_point_;
 
-  // The bounds of the browser window before the last Tab was detached. When
-  // the last Tab is detached, rather than destroying the frame (which would
-  // abort the drag session), the frame is moved off-screen. If the drag is
-  // aborted (e.g. by the user pressing Esc, or capture being lost), the Tab is
-  // attached to the hidden frame and the frame moved back to these bounds.
-  gfx::Rect restore_bounds_;
-
   // Storage ID in ViewStorage where the last view that had focus in the window
   // containing |source_tab_| is saved. This is saved so that focus can be
   // restored properly when a drag begins and ends within this same window.
@@ -582,7 +533,6 @@ class TabDragController : public content::WebContentsDelegate,
   // touch mode.
   std::vector<int> initial_tab_positions_;
 
-  DetachBehavior detach_behavior_;
   MoveBehavior move_behavior_;
 
   // Updated as the mouse is moved when attached. Indicates whether the mouse

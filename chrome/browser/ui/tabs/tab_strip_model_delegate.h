@@ -86,10 +86,6 @@ class TabStripModelDelegate {
   // window.
   virtual void DuplicateContentsAt(int index) = 0;
 
-  // Called when a drag session has completed and the frame that initiated the
-  // the session should be closed.
-  virtual void CloseFrameAfterDragSession() = 0;
-
   // Creates an entry in the historical tab database for the specified
   // WebContents.
   virtual void CreateHistoricalTab(content::WebContents* contents) = 0;
