@@ -1446,6 +1446,7 @@
         'browser/sync_file_system/sync_file_system_service_unittest.cc',
         'browser/sync_file_system/sync_file_system_test_util.cc',
         'browser/sync_file_system/sync_file_system_test_util.h',
+        'browser/sync_file_system/sync_process_runner_unittest.cc',
         'browser/sync_file_system/syncable_file_system_util_unittest.cc',
         'browser/task_manager/task_manager_unittest.cc',
         'browser/task_manager/task_manager_util_unittest.cc',
