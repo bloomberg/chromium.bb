@@ -1201,6 +1201,8 @@ crbug.com/30536 [ Win7 ] http/tests/xmlhttprequest/origin-exact-matching/29.html
 crbug.com/30536 [ Win7 ] http/tests/xmlhttprequest/origin-exact-matching/30.html [ Failure ]
 crbug.com/30536 [ Win7 ] http/tests/xmlhttprequest/origin-exact-matching/36.html [ Failure ]
 
+crbug.com/259352 editing/selection/repaint-rect-for-vertical-writing-mode-with-positioned-root.html [ NeedsRebaseline ]
+
 # switching to apache-win32 flakiness that needs triaging.
 crbug.com/30536 [ Win7 ] http/tests/navigation/forward-and-cancel.html [ Timeout Pass ]
 crbug.com/30536 [ Win7 ] http/tests/navigation/ping-cookie.html [ Failure Pass ]

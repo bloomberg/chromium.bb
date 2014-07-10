@@ -2022,7 +2022,7 @@ void RenderBox::mapRectToPaintInvalidationBacking(const RenderLayerModelObject* 
     if (!o)
         return;
 
-    if (isWritingModeRoot() && !isOutOfFlowPositioned())
+    if (isWritingModeRoot())
         flipForWritingMode(rect);
 
     LayoutPoint topLeft = rect.location();
