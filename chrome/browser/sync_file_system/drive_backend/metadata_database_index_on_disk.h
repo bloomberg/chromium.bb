@@ -78,6 +78,15 @@ class MetadataDatabaseIndexOnDisk : public MetadataDatabaseIndexInterface {
   void RemoveFromAppIDIndex(const FileTracker& tracker,
                             leveldb::WriteBatch* batch);
 
+  // Maintain indexes from remote file IDs to tracker IDs
+  void AddToFileIDIndexes(const FileTracker& new_tracker,
+                          leveldb::WriteBatch* batch);
+  void UpdateInFileIDIndexes(const FileTracker& old_tracker,
+                             const FileTracker& new_tracker,
+                             leveldb::WriteBatch* batch);
+  void RemoveFromFileIDIndexes(const FileTracker& tracker,
+                               leveldb::WriteBatch* batch);
+
   // Maintain dirty tracker IDs.
   void AddToDirtyTrackerIndexes(const FileTracker& new_tracker,
                                 leveldb::WriteBatch* batch);
@@ -86,6 +95,11 @@ class MetadataDatabaseIndexOnDisk : public MetadataDatabaseIndexInterface {
                                    leveldb::WriteBatch* batch);
   void RemoveFromDirtyTrackerIndexes(const FileTracker& tracker,
                                      leveldb::WriteBatch* batch);
+
+  // Returns a TrackerIDSet built from IDs which are found with given key
+  // and key prefix.
+  TrackerIDSet GetTrackerIDSetByPrefix(
+      const std::string& active_key, const std::string& key_prefix) const;
 
   // Checks if |db_| has an entry whose key is |key|.
   bool DBHasKey(const std::string& key);

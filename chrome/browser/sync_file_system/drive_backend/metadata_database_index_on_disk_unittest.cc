@@ -268,6 +268,62 @@ TEST_F(MetadataDatabaseIndexOnDiskTest, IndexAppRootIDByAppIDTest) {
   EXPECT_EQ(kInvalidTrackerID, index()->GetAppRootTracker("app_id_3"));
 }
 
+TEST_F(MetadataDatabaseIndexOnDiskTest, TrackerIDSetByFileIDTest) {
+  CreateTestDatabase(true);
+
+  FileTracker app_root_tracker;
+  EXPECT_TRUE(index()->GetFileTracker(kAppRootTrackerID, &app_root_tracker));
+  FileMetadata metadata;
+  EXPECT_TRUE(index()->GetFileMetadata("file_id", &metadata));
+
+  // Testing GetFileTrackerIDsByFileID
+  TrackerIDSet tracker_ids = index()->GetFileTrackerIDsByFileID("file_id");
+  EXPECT_EQ(1U, tracker_ids.size());
+  EXPECT_EQ(kFileTrackerID, tracker_ids.active_tracker());
+
+  const int64 tracker_id = 21;
+  // Testing AddToFileIDIndexes
+  scoped_ptr<FileTracker> file_tracker =
+      test_util::CreateTracker(metadata, tracker_id, &app_root_tracker);
+
+  scoped_ptr<leveldb::WriteBatch> batch(new leveldb::WriteBatch);
+  index()->StoreFileTracker(file_tracker.Pass(), batch.get());
+  WriteToDB(batch.Pass());
+  tracker_ids = index()->GetFileTrackerIDsByFileID("file_id");
+  EXPECT_EQ(2U, tracker_ids.size());
+  EXPECT_EQ(tracker_id, tracker_ids.active_tracker());
+
+  // Testing UpdateInFileIDIndexes
+  batch.reset(new leveldb::WriteBatch);
+  file_tracker =
+      test_util::CreateTracker(metadata, tracker_id, &app_root_tracker);
+  file_tracker->set_active(false);
+
+  index()->StoreFileTracker(file_tracker.Pass(), batch.get());
+  WriteToDB(batch.Pass());
+  tracker_ids = index()->GetFileTrackerIDsByFileID("file_id");
+  EXPECT_EQ(2U, tracker_ids.size());
+  EXPECT_EQ(kInvalidTrackerID, tracker_ids.active_tracker());
+
+  batch.reset(new leveldb::WriteBatch);
+  file_tracker =
+      test_util::CreateTracker(metadata, tracker_id, &app_root_tracker);
+
+  index()->StoreFileTracker(file_tracker.Pass(), batch.get());
+  WriteToDB(batch.Pass());
+  tracker_ids = index()->GetFileTrackerIDsByFileID("file_id");
+  EXPECT_EQ(2U, tracker_ids.size());
+  EXPECT_EQ(tracker_id, tracker_ids.active_tracker());
+
+  // Testing RemoveFromFileIDIndexes
+  batch.reset(new leveldb::WriteBatch);
+  index()->RemoveFileTracker(tracker_id, batch.get());
+  WriteToDB(batch.Pass());
+  tracker_ids = index()->GetFileTrackerIDsByFileID("file_id");
+  EXPECT_EQ(1U, tracker_ids.size());
+  EXPECT_EQ(kInvalidTrackerID, tracker_ids.active_tracker());
+}
+
 TEST_F(MetadataDatabaseIndexOnDiskTest, DirtyTrackersTest) {
   CreateTestDatabase(true);
 

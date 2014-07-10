@@ -21,6 +21,9 @@ const char kFileMetadataKeyPrefix[] = "FILE: ";
 const char kFileTrackerKeyPrefix[] = "TRACKER: ";
 
 const char kAppRootIDByAppIDKeyPrefix[] = "APP_ROOT: ";
+const char kActiveIDByFileIDKeyPrefix[] = "ACTIVE_FILE: ";
+const char kTrackerIDByFileIDKeyPrefix[] = "TRACKER_FILE: ";
+const char kMultiTrackerByFileIDKeyPrefix[] = "MULTI_FILE: ";
 const char kDirtyIDKeyPrefix[] = "DIRTY: ";
 const char kDemotedDirtyIDKeyPrefix[] = "DEMOTED_DIRTY: ";
 
