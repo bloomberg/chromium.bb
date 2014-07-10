@@ -40,6 +40,7 @@ struct Foo {
   handle<data_pipe_producer>[] output_streams@11;
   bool[][] array_of_array_of_bools@12;
   string[][][] multi_array_of_strings@13;
+  bool[] array_of_bools@14;
 };
 
 struct DefaultsTest {

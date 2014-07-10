@@ -229,6 +229,20 @@ define("mojo/public/js/bindings/codec", [
     return val;
   };
 
+  Decoder.prototype.decodeBoolArray = function() {
+    var numberOfBytes = this.readUint32();
+    var numberOfElements = this.readUint32();
+
+    var val = new Array(numberOfElements);
+    var byte;
+    for (var i = 0; i < numberOfElements; ++i) {
+        if (i % 8 == 0)
+            byte = this.readUint8();
+        val[i] = (byte & (1 << i % 8)) ? true : false;
+    }
+    return val;
+  };
+
   Decoder.prototype.decodeStruct = function(cls) {
     return cls.decode(this);
   };
@@ -247,6 +261,14 @@ define("mojo/public/js/bindings/codec", [
       return null;
     }
     return this.decodeAndCreateDecoder(pointer).decodeArray(cls);
+  };
+
+  Decoder.prototype.decodeBoolArrayPointer = function() {
+    var pointer = this.decodePointer();
+    if (!pointer) {
+      return null;
+    }
+    return this.decodeAndCreateDecoder(pointer).decodeBoolArray();
   };
 
   Decoder.prototype.decodeStringPointer = function() {
@@ -364,12 +386,13 @@ define("mojo/public/js/bindings/codec", [
     this.next += numberOfElements;
   };
 
-  Encoder.prototype.encodeArray = function(cls, val) {
-    var numberOfElements = val.length;
-    var numberOfBytes = kArrayHeaderSize + cls.encodedSize * numberOfElements;
+  Encoder.prototype.encodeArray = function(cls, val, numberOfElements) {
+    if (numberOfElements === undefined)
+      numberOfElements = val.length;
+    var numberOfBytes = kArrayHeaderSize + cls.encodedSize * val.length;
     this.writeUint32(numberOfBytes);
     this.writeUint32(numberOfElements);
-    for (var i = 0; i < numberOfElements; ++i) {
+    for (var i = 0; i < val.length; ++i) {
       cls.encode(this, val[i]);
     }
   };
@@ -395,6 +418,23 @@ define("mojo/public/js/bindings/codec", [
     var encodedSize = kArrayHeaderSize + cls.encodedSize * val.length;
     var encoder = this.createAndEncodeEncoder(encodedSize);
     encoder.encodeArray(cls, val);
+  };
+
+  Encoder.prototype.encodeBoolArrayPointer = function(val) {
+    if (!val) {
+      this.encodePointer(val);
+      return;
+    }
+    var numberOfElements = val.length;
+    var encodedSize = kArrayHeaderSize + Math.ceil(numberOfElements / 8);
+    var encoder = this.createAndEncodeEncoder(encodedSize);
+
+    var bits = new Uint8Array(Math.ceil(numberOfElements / 8));
+    for (var i = 0; i < numberOfElements; i++) {
+        if (val[i])
+            bits[Math.floor(i / 8)] |= (1 << i % 8);
+    }
+    encoder.encodeArray(Uint8, bits, numberOfElements);
   };
 
   Encoder.prototype.encodeStringPointer = function(val) {
@@ -696,6 +736,19 @@ define("mojo/public/js/bindings/codec", [
     encoder.encodeArrayPointer(this.cls, val);
   };
 
+  function ArrayOfBoolArrayPointers() {
+  }
+
+  ArrayOfBoolArrayPointers.prototype.encodedSize = 8;
+
+  ArrayOfBoolArrayPointers.prototype.decode = function(decoder) {
+    return decoder.decodeBoolArrayPointer();
+  };
+
+  ArrayOfBoolArrayPointers.prototype.encode = function(encoder, val) {
+    encoder.encodeBoolArrayPointer(val);
+  };
+
   function Handle() {
   }
 
@@ -734,6 +787,7 @@ define("mojo/public/js/bindings/codec", [
   exports.String = String;
   exports.PointerTo = PointerTo;
   exports.ArrayOf = ArrayOf;
+  exports.ArrayOfBoolArrayPointers = ArrayOfBoolArrayPointers;
   exports.Handle = Handle;
   return exports;
 });
