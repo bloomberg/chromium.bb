@@ -551,6 +551,32 @@ bool test_stat(const char *test_file) {
   ASSERT_MSG(buf.st_mode & S_IRUSR, "stat() failed to report S_IRUSR");
   ASSERT_MSG(buf.st_mode & S_IWUSR, "stat() failed to report S_IWUSR");
 
+  // Test fstat and compare the result with the result of stat.
+  int fd = open(test_file, O_RDONLY);
+  ASSERT_NE(fd, -1);
+  struct stat buf2;
+  int rc = fstat(fd, &buf2);
+  ASSERT_EQ(rc, 0);
+  ASSERT_EQ(buf.st_dev, buf2.st_dev);
+  ASSERT_EQ(buf.st_mode, buf2.st_mode);
+  ASSERT_EQ(buf.st_nlink, buf2.st_nlink);
+  ASSERT_EQ(buf.st_uid, buf2.st_uid);
+  ASSERT_EQ(buf.st_gid, buf2.st_gid);
+  ASSERT_EQ(buf.st_rdev, buf2.st_rdev);
+  ASSERT_EQ(buf.st_size, buf2.st_size);
+  ASSERT_EQ(buf.st_blksize, buf2.st_blksize);
+  ASSERT_EQ(buf.st_blocks, buf2.st_blocks);
+  ASSERT_EQ(buf.st_atime, buf2.st_atime);  // atime is not updated by open.
+  ASSERT_EQ(buf.st_mtime, buf2.st_mtime);
+  ASSERT_EQ(buf.st_ctime, buf2.st_ctime);
+  rc = close(fd);
+  ASSERT_EQ(rc, 0);
+
+  // An invalid fstat call.
+  errno = 0;
+  ASSERT_EQ(fstat(-1, &buf2), -1);
+  ASSERT_EQ(errno, EBADF);
+
   // Test a new read-only file
   // The current unlink() implemenation in the sel_ldr for Windows
   // doesn't support removing read-only files.

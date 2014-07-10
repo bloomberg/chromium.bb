@@ -85,6 +85,7 @@ def BuildScriptX86(status, context):
                 'hello_world',
                 'irt_futex',
                 'malloc_realloc_calloc_free',
+                'syscall',
                 'thread']]
       # Extra non-IRT-using test to run for x86-32
       tests.extend(['run_clock_get_test',
@@ -130,7 +131,7 @@ def BuildScriptX86(status, context):
       tests = ['run_' + test + '_test_irt' for test in
                ['hello_world', 'irt_futex', 'thread', 'float',
                 'malloc_realloc_calloc_free', 'dup', 'cond_timedwait',
-                'syscall', 'getpid']]
+                'getpid']]
     else:
       # TODO(mseaborn): Use the same test list as on Linux when the threading
       # tests pass for Mac.

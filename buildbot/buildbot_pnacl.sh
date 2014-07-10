@@ -34,10 +34,11 @@ readonly SCONS_S_M_IRT="small_tests_irt medium_tests_irt"
 # the tests works so far.
 # TODO(hamaji): Enable more tests.
 readonly SCONS_NONSFI_NEWLIB_TESTS="\
-    run_hello_world_test_irt \
+    run_dup_test_irt \
     run_float_test_irt \
+    run_hello_world_test_irt \
     run_malloc_realloc_calloc_free_test_irt \
-    run_dup_test_irt"
+    run_syscall_test_irt"
 # This uses the host-libc-based nonsfi_loader, for which only a subset of
 # the tests works so far.
 # Using skip_nonstable_bitcode=1 here disables the tests for zero-cost C++

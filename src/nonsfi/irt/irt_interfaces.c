@@ -262,9 +262,12 @@ static int irt_seek(int fd, nacl_abi_off_t offset, int whence,
   return 0;
 }
 
-static int irt_fstat(int fd, struct stat *st) {
-  /* TODO(mseaborn): Implement this and convert "struct stat". */
-  return ENOSYS;
+static int irt_fstat(int fd, struct stat *st_nacl) {
+  struct stat st;
+  if (fstat(fd, &st) != 0)
+    return errno;
+  convert_to_nacl_stat(st_nacl, &st);
+  return 0;
 }
 
 static void irt_exit(int status) {
