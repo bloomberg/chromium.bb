@@ -444,6 +444,8 @@ public:
     void enterFullScreenForElement(WebCore::Element*);
     void exitFullScreenForElement(WebCore::Element*);
 
+    void clearCompositedSelectionBounds();
+
     // Exposed for the purpose of overriding device metrics.
     void sendResizeEventAndRepaint();
 

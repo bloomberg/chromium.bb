@@ -186,6 +186,8 @@ public:
     virtual void enterFullScreenForElement(Element*) { }
     virtual void exitFullScreenForElement(Element*) { }
 
+    virtual void clearCompositedSelectionBounds() { }
+
     virtual void needTouchEvents(bool) = 0;
 
     virtual void setTouchAction(TouchAction) = 0;

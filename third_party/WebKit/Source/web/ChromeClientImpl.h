@@ -148,6 +148,8 @@ public:
     virtual void enterFullScreenForElement(WebCore::Element*) OVERRIDE;
     virtual void exitFullScreenForElement(WebCore::Element*) OVERRIDE;
 
+    virtual void clearCompositedSelectionBounds() OVERRIDE;
+
     // ChromeClient methods:
     virtual void postAccessibilityNotification(WebCore::AXObject*, WebCore::AXObjectCache::AXNotification) OVERRIDE;
     virtual String acceptLanguages() OVERRIDE;

@@ -46,6 +46,7 @@ CSSViewport status=experimental
 CSSWillChange status=stable
 CSS3Text status=experimental
 CSS3TextDecorations status=experimental
+CompositedSelectionUpdates
 CustomSchemeHandler depends_on=NavigatorContentUtils, status=experimental
 Database status=stable
 DeviceLight status=test

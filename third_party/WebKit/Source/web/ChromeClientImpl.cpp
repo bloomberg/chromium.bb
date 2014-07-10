@@ -711,6 +711,11 @@ void ChromeClientImpl::exitFullScreenForElement(Element* element)
     m_webView->exitFullScreenForElement(element);
 }
 
+void ChromeClientImpl::clearCompositedSelectionBounds()
+{
+    m_webView->clearCompositedSelectionBounds();
+}
+
 bool ChromeClientImpl::hasOpenedPopup() const
 {
     return m_webView->hasOpenedPopup();

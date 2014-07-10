@@ -66,6 +66,7 @@
 #include "platform/scroll/ScrollbarTheme.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebFloatRect.h"
+#include "public/platform/WebSelectionBound.h"
 #include "public/platform/WebThread.h"
 #include "public/platform/WebURL.h"
 #include "public/platform/WebURLResponse.h"
@@ -3858,6 +3859,124 @@ TEST_F(WebFrameTest, MoveCaretStaysHorizontallyAlignedWhenMoved)
     EXPECT_EQ(endRect, initialEndRect);
 }
 #endif
+
+class CompositedSelectionBoundsTestLayerTreeView : public WebLayerTreeView {
+public:
+    CompositedSelectionBoundsTestLayerTreeView() : m_selectionCleared(false) { }
+    virtual ~CompositedSelectionBoundsTestLayerTreeView() { }
+
+    virtual void setSurfaceReady()  OVERRIDE { }
+    virtual void setRootLayer(const WebLayer&)  OVERRIDE { }
+    virtual void clearRootLayer()  OVERRIDE { }
+    virtual void setViewportSize(const WebSize& deviceViewportSize)  OVERRIDE { }
+    virtual WebSize deviceViewportSize() const  OVERRIDE { return WebSize(); }
+    virtual void setDeviceScaleFactor(float) OVERRIDE { }
+    virtual float deviceScaleFactor() const  OVERRIDE { return 1.f; }
+    virtual void setBackgroundColor(WebColor)  OVERRIDE { }
+    virtual void setHasTransparentBackground(bool)  OVERRIDE { }
+    virtual void setVisible(bool)  OVERRIDE { }
+    virtual void setPageScaleFactorAndLimits(float pageScaleFactor, float minimum, float maximum)  OVERRIDE { }
+    virtual void startPageScaleAnimation(const WebPoint& destination, bool useAnchor, float newPageScale, double durationSec)  OVERRIDE { }
+    virtual void setNeedsAnimate()  OVERRIDE { }
+    virtual bool commitRequested() const  OVERRIDE { return false; }
+    virtual void finishAllRendering()  OVERRIDE { }
+    virtual void registerSelection(const WebSelectionBound& start, const WebSelectionBound& end) OVERRIDE
+    {
+        m_start = adoptPtr(new WebSelectionBound(start));
+        m_end = adoptPtr(new WebSelectionBound(end));
+    }
+    virtual void clearSelection() OVERRIDE
+    {
+        m_selectionCleared = true;
+        m_start.clear();
+        m_end.clear();
+    }
+
+    bool getAndResetSelectionCleared()
+    {
+        bool selectionCleared  = m_selectionCleared;
+        m_selectionCleared = false;
+        return selectionCleared;
+    }
+
+    const WebSelectionBound* start() const { return m_start.get(); }
+    const WebSelectionBound* end() const { return m_start.get(); }
+
+private:
+    bool m_selectionCleared;
+    OwnPtr<WebSelectionBound> m_start;
+    OwnPtr<WebSelectionBound> m_end;
+};
+
+class CompositedSelectionBoundsTestWebViewClient : public FrameTestHelpers::TestWebViewClient {
+public:
+    virtual ~CompositedSelectionBoundsTestWebViewClient() { }
+    virtual WebLayerTreeView* layerTreeView() OVERRIDE { return &m_testLayerTreeView; }
+
+    CompositedSelectionBoundsTestLayerTreeView& selectionLayerTreeView() { return m_testLayerTreeView; }
+
+private:
+    CompositedSelectionBoundsTestLayerTreeView m_testLayerTreeView;
+};
+
+TEST_F(WebFrameTest, CompositedSelectionBoundsCleared)
+{
+    WebCore::RuntimeEnabledFeatures::setCompositedSelectionUpdatesEnabled(true);
+
+    registerMockedHttpURLLoad("select_range_basic.html");
+    registerMockedHttpURLLoad("select_range_scroll.html");
+
+    int viewWidth = 500;
+    int viewHeight = 500;
+
+    CompositedSelectionBoundsTestWebViewClient fakeSelectionWebViewClient;
+    CompositedSelectionBoundsTestLayerTreeView& fakeSelectionLayerTreeView = fakeSelectionWebViewClient.selectionLayerTreeView();
+
+    FrameTestHelpers::WebViewHelper webViewHelper;
+    webViewHelper.initialize(true, 0, &fakeSelectionWebViewClient);
+    webViewHelper.webView()->settings()->setDefaultFontSize(12);
+    webViewHelper.webView()->setPageScaleFactorLimits(1, 1);
+    webViewHelper.webView()->resize(WebSize(viewWidth, viewHeight));
+    FrameTestHelpers::loadFrame(webViewHelper.webView()->mainFrame(), m_baseURL + "select_range_basic.html");
+
+    // The frame starts with a non-empty selection.
+    WebFrame* frame = webViewHelper.webView()->mainFrame();
+    ASSERT_TRUE(frame->hasSelection());
+    EXPECT_FALSE(fakeSelectionLayerTreeView.getAndResetSelectionCleared());
+
+    // The selection cleared notification should be triggered upon layout.
+    frame->executeCommand(WebString::fromUTF8("Unselect"));
+    ASSERT_FALSE(frame->hasSelection());
+    EXPECT_FALSE(fakeSelectionLayerTreeView.getAndResetSelectionCleared());
+    webViewHelper.webView()->layout();
+    EXPECT_TRUE(fakeSelectionLayerTreeView.getAndResetSelectionCleared());
+
+    frame->executeCommand(WebString::fromUTF8("SelectAll"));
+    webViewHelper.webView()->layout();
+    ASSERT_TRUE(frame->hasSelection());
+    EXPECT_FALSE(fakeSelectionLayerTreeView.getAndResetSelectionCleared());
+
+    FrameTestHelpers::loadFrame(webViewHelper.webView()->mainFrame(), m_baseURL + "select_range_scroll.html");
+    ASSERT_TRUE(frame->hasSelection());
+    EXPECT_FALSE(fakeSelectionLayerTreeView.getAndResetSelectionCleared());
+
+    // Transitions between non-empty selections should not trigger a clearing.
+    WebRect startWebRect;
+    WebRect endWebRect;
+    webViewHelper.webViewImpl()->selectionBounds(startWebRect, endWebRect);
+    WebPoint movedEnd(bottomRightMinusOne(endWebRect));
+    endWebRect.x -= 20;
+    frame->selectRange(topLeft(startWebRect), movedEnd);
+    webViewHelper.webView()->layout();
+    ASSERT_TRUE(frame->hasSelection());
+    EXPECT_FALSE(fakeSelectionLayerTreeView.getAndResetSelectionCleared());
+
+    frame = webViewHelper.webView()->mainFrame();
+    frame->executeCommand(WebString::fromUTF8("Unselect"));
+    webViewHelper.webView()->layout();
+    ASSERT_FALSE(frame->hasSelection());
+    EXPECT_TRUE(fakeSelectionLayerTreeView.getAndResetSelectionCleared());
+}
 
 class DisambiguationPopupTestWebViewClient : public FrameTestHelpers::TestWebViewClient {
 public:

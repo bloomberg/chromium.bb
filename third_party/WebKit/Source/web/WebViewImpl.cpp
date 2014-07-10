@@ -1815,6 +1815,12 @@ void WebViewImpl::exitFullScreenForElement(WebCore::Element* element)
     m_fullscreenController->exitFullScreenForElement(element);
 }
 
+void WebViewImpl::clearCompositedSelectionBounds()
+{
+    if (m_layerTreeView)
+        m_layerTreeView->clearSelection();
+}
+
 bool WebViewImpl::hasHorizontalScrollbar()
 {
     return mainFrameImpl()->frameView()->horizontalScrollbar();

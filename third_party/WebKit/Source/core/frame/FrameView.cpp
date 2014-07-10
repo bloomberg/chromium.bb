@@ -1704,6 +1704,23 @@ void FrameView::updateFixedElementPaintInvalidationRectsAfterScroll()
     }
 }
 
+void FrameView::updateCompositedSelectionBoundsIfNeeded()
+{
+    if (!RuntimeEnabledFeatures::compositedSelectionUpdatesEnabled())
+        return;
+
+    Page* page = frame().page();
+    ASSERT(page);
+
+    LocalFrame* frame = toLocalFrame(page->focusController().focusedOrMainFrame());
+    if (!frame || !frame->selection().isCaretOrRange()) {
+        page->chrome().client().clearCompositedSelectionBounds();
+        return;
+    }
+
+    // TODO(jdduke): Compute and route selection bounds through ChromeClient.
+}
+
 bool FrameView::isRubberBandInProgress() const
 {
     if (scrollbarsSuppressed())
@@ -2819,6 +2836,8 @@ void FrameView::updateLayoutAndStyleForPainting()
 
         if (view->compositor()->inCompositingMode() && m_frame->isMainFrame())
             m_frame->page()->scrollingCoordinator()->updateAfterCompositingChangeIfNeeded();
+
+        updateCompositedSelectionBoundsIfNeeded();
 
         InspectorInstrumentation::didUpdateLayerTree(m_frame.get());
 

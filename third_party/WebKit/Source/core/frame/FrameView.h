@@ -396,6 +396,7 @@ private:
 
     void updateLayersAndCompositingAfterScrollIfNeeded();
     void updateFixedElementPaintInvalidationRectsAfterScroll();
+    void updateCompositedSelectionBoundsIfNeeded();
 
     bool hasCustomScrollbars() const;
     bool shouldUseCustomScrollbars(Element*& customScrollbarElement, LocalFrame*& customScrollbarFrame);

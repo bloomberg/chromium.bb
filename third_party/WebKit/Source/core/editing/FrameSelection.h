@@ -244,6 +244,7 @@ private:
     LayoutUnit lineDirectionPointForBlockDirectionNavigation(EPositionType);
 
     void notifyAccessibilityForSelectionChange();
+    void notifyCompositorForSelectionChange();
 
     void focusedOrActiveStateChanged();
 

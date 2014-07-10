@@ -127,10 +127,10 @@ public:
     virtual void clearViewportLayers() { }
 
     // Used to update the active selection bounds.
-    // If the (empty) selection is an insertion point, |anchor| and |focus| will be identical with type |Caret|.
-    // If the (non-empty) selection has mixed RTL/LTR text, |anchor| and |focus| may share the same type,
+    // If the (empty) selection is an insertion point, |start| and |end| will be identical with type |Caret|.
+    // If the (non-empty) selection has mixed RTL/LTR text, |start| and |end| may share the same type,
     // |SelectionLeft| or |SelectionRight|.
-    virtual void registerSelection(const WebSelectionBound& anchor, const WebSelectionBound& focus) { }
+    virtual void registerSelection(const WebSelectionBound& start, const WebSelectionBound& end) { }
     virtual void clearSelection() { }
 
     // Debugging / dangerous ---------------------------------------------

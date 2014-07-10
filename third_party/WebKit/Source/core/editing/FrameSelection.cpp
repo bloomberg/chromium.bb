@@ -297,6 +297,7 @@ void FrameSelection::setSelection(const VisibleSelection& newSelection, SetSelec
     }
 
     notifyAccessibilityForSelectionChange();
+    notifyCompositorForSelectionChange();
     m_frame->domWindow()->enqueueDocumentEvent(Event::create(EventTypeNames::selectionchange));
 }
 
@@ -1447,6 +1448,15 @@ void FrameSelection::notifyAccessibilityForSelectionChange()
         if (AXObjectCache* cache = m_frame->document()->existingAXObjectCache())
             cache->selectionChanged(m_selection.start().containerNode());
     }
+}
+
+void FrameSelection::notifyCompositorForSelectionChange()
+{
+    if (!RuntimeEnabledFeatures::compositedSelectionUpdatesEnabled())
+        return;
+
+    if (Page* page = m_frame->page())
+        page->animator().scheduleVisualUpdate();
 }
 
 void FrameSelection::focusedOrActiveStateChanged()
