@@ -47,14 +47,6 @@ void ChangeStringPref(int index,
                       const char* pref_name,
                       const std::string& new_value);
 
-// Modifies the value of the string preference with name |pref_name| in the
-// profile with index |index| by appending |append_value| to its current
-// value. Also changes its value in |verifier| if DisableVerifier() hasn't
-// been called.
-void AppendStringPref(int index,
-                      const char* pref_name,
-                      const std::string& append_value);
-
 // Changes the value of the file path preference with name |pref_name| in the
 // profile with index |index| to |new_value|. Also changes its value in
 // |verifier| if DisableVerifier() hasn't been called.
@@ -107,6 +99,18 @@ bool ListPrefMatches(const char* pref_name) WARN_UNUSED_RESULT;
 // This is the version of ListPrefMatches that waits for the preference list
 // to match in all profiles. Returns false if this operation times out.
 bool AwaitListPrefMatches(const char* pref_name) WARN_UNUSED_RESULT;
+
+// Blocks the test until the specified pref matches on all relevant clients or
+// a timeout occurs.  Returns false if it returns because of a timeout.
+bool AwaitBooleanPrefMatches(const char* pref_name) WARN_UNUSED_RESULT;
+
+// Blocks the test until the specified pref matches on all relevant clients or
+// a timeout occurs.  Returns false if it returns because of a timeout.
+bool AwaitIntegerPrefMatches(const char* pref_name) WARN_UNUSED_RESULT;
+
+// Blocks the test until the specified pref matches on all relevant clients or
+// a timeout occurs.  Returns false if it returns because of a timeout.
+bool AwaitStringPrefMatches(const char* pref_name) WARN_UNUSED_RESULT;
 
 }  // namespace preferences_helper
 

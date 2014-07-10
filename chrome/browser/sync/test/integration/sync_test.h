@@ -190,6 +190,9 @@ class SyncTest : public InProcessBrowserTest {
   // Checks if encryption is complete for profile |index|.
   bool IsEncryptionComplete(int index);
 
+  // Waits until IsEncryptionComplete returns true or a timeout is reached.
+  bool AwaitEncryptionComplete(int index);
+
   // Blocks until all sync clients have completed their mutual sync cycles.
   // Returns true if a quiescent state was successfully reached.
   bool AwaitQuiescence();

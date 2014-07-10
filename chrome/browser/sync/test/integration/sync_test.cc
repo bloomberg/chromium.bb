@@ -835,15 +835,18 @@ bool SyncTest::EnableEncryption(int index) {
   bool sync_everything = synced_datatypes.Equals(syncer::ModelTypeSet::All());
   service->OnUserChoseDatatypes(sync_everything, synced_datatypes);
 
-  // Wait some time to let the enryption finish.
-  EncryptionChecker checker(service);
-  checker.Wait();
-
-  return !checker.TimedOut();
+  return AwaitEncryptionComplete(index);
 }
 
 bool SyncTest::IsEncryptionComplete(int index) {
   return ::IsEncryptionComplete(GetClient(index)->service());
+}
+
+bool SyncTest::AwaitEncryptionComplete(int index) {
+  ProfileSyncService* service = GetClient(index)->service();
+  EncryptionChecker checker(service);
+  checker.Wait();
+  return !checker.TimedOut();
 }
 
 bool SyncTest::AwaitQuiescence() {
