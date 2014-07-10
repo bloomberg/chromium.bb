@@ -1,0 +1,18 @@
+Test that setting scrollTop on a listbox works with both scroll behaviors
+
+
+This is a testharness.js-based test.
+PASS Scroll x:0, y:34, smooth:false 
+PASS Scroll x:0, y:51, smooth:false 
+PASS Scroll x:0, y:68, smooth:false 
+PASS Scroll x:0, y:85, smooth:false 
+FAIL Scroll x:0, y:255, smooth:true assert_equals: expected "0, 85" but got "0, 255"
+FAIL Scroll x:0, y:340, smooth:true assert_equals: expected "0, 255" but got "0, 340"
+FAIL Scroll x:0, y:510, smooth:true assert_equals: expected "0, 340" but got "0, 510"
+FAIL Scroll x:0, y:595, smooth:true assert_equals: expected "0, 510" but got "0, 595"
+FAIL Scroll x:0, y:6970, smooth:true assert_equals: expected "0, 595" but got "0, 6970"
+FAIL Scroll x:0, y:340, smooth:true assert_equals: expected "0, 6970" but got "0, 340"
+FAIL Scroll x:0, y:6800, smooth:true assert_equals: expected "0, 340" but got "0, 6800"
+FAIL Scroll x:0, y:85, smooth:true assert_equals: expected "0, 6800" but got "0, 85"
+Harness: the test ran to completion.
+
