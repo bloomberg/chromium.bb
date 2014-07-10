@@ -4,71 +4,33 @@
 
 package org.chromium.chrome.browser.infobar;
 
-import android.content.Context;
-
-import org.chromium.chrome.R;
 
 /**
  * A simple infobar that contains a message and a close icon on the right side.
  * This is used only in the context of Java code and is not associated with any native
  * InfoBarDelegate.
+ *
+ * TODO(newt): merge this into InfoBar.java
  */
 public class MessageInfoBar extends InfoBar {
-    private final CharSequence mTitle;
 
     /**
-     * Creates and returns an infobar with a white background and a close button on the right.
+     * Creates an infobar with a message and a close button.
      * @param title the text displayed in the infobar
-     * @return the infobar.
      */
-    public static MessageInfoBar createInfoBar(CharSequence title) {
-        return new MessageInfoBar(null, 0, title);
+    public MessageInfoBar(CharSequence title) {
+        this(null, 0, title);
     }
 
     /**
-     * Creates and returns an infobar with a white background and a close button on the right.
-     * @param iconResourceId the icon shown on the right
-     * @param title the text displayed in the infobar
-     * @return the infobar.
+     * Creates an infobar with an icon, a message and a close button.
+     * @param listener A listener to be notified when the infobar is dismissed, or null.
+     * @param iconResourceId The icon to display in the infobar, or 0 if no icon should be shown.
+     * @param title The text to display in the infobar.
      */
-    public static MessageInfoBar createInfoBar(int iconResourceId, CharSequence title) {
-        return new MessageInfoBar(null, iconResourceId, title);
-    }
-
-    /**
-     * Creates a warning infobar, with a yellow background and a warning icon on the right.
-     * @param title the text displayed in the infobar
-     * @return the infobar.
-     */
-    public static MessageInfoBar createWarningInfoBar(CharSequence title) {
-        return createWarningInfoBar(null, title);
-    }
-
-    /**
-     * Creates a warning infobar, with a yellow background and a warning icon on the right.
-     * @param listener an infobar dismissed listener
-     * @param title the text displayed in the infobar
-     * @return the infobar.
-     */
-    public static MessageInfoBar createWarningInfoBar(InfoBarListeners.Dismiss listener,
+    public MessageInfoBar(InfoBarListeners.Dismiss listener, int iconResourceId,
             CharSequence title) {
-        return new MessageInfoBar(listener, R.drawable.infobar_warning, title);
-    }
-
-    protected MessageInfoBar(InfoBarListeners.Dismiss listener, int iconResourceId,
-            CharSequence title, int backgroundType) {
-        this(listener, iconResourceId, title);
-    }
-
-    protected MessageInfoBar(InfoBarListeners.Dismiss listener, int iconResourceId,
-            CharSequence title) {
-        super(listener, iconResourceId);
-        mTitle = title;
-    }
-
-    @Override
-    public CharSequence getMessageText(Context context) {
-        return mTitle;
+        super(listener, iconResourceId, title);
     }
 
     @Override

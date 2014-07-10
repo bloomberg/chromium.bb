@@ -4,7 +4,6 @@
 package org.chromium.chrome.browser.infobar;
 
 import android.content.Context;
-import android.widget.TextView;
 
 import org.chromium.chrome.R;
 
@@ -25,11 +24,9 @@ public class TranslateNeverPanel implements TranslateSubPanel {
     public void createContent(Context context, InfoBarLayout layout) {
         String changeLanguage = context.getString(
                 R.string.translate_never_translate_message_text, mOptions.sourceLanguage());
+        layout.setMessage(changeLanguage);
 
-        TextView panelMessage = (TextView) layout.findViewById(R.id.infobar_message);
-        panelMessage.setText(changeLanguage);
-
-        layout.addButtons(
+        layout.setButtons(
                 context.getString(R.string.translate_never_translate_site),
                 context.getString(R.string.translate_never_translate_language,
                         mOptions.sourceLanguage()));

@@ -4,92 +4,38 @@
 
 package org.chromium.chrome.browser.infobar;
 
-import android.content.Context;
-import android.text.SpannableStringBuilder;
-import android.text.Spanned;
-import android.text.TextUtils;
-import android.text.style.ClickableSpan;
-import android.view.View;
-
 /**
- * An infobar that presents the user with 2 buttons (typically OK, Cancel).
+ * An infobar that presents the user with several buttons.
+ *
+ * TODO(newt): merge this into InfoBar.java.
  */
-public class ConfirmInfoBar extends TwoButtonInfoBar {
-    // Message to prompt the user.
-    private final String mMessage;
-
-    // Link text shown to the user, in addition to the message.
-    private final String mLinkText;
-
-    // Typically set to "OK", or some other positive action.
+public class ConfirmInfoBar extends InfoBar {
+    /** Text shown on the primary button, e.g. "OK". */
     private final String mPrimaryButtonText;
 
-    // Typically set to "Cancel", or some other negative action.
+    /** Text shown on the secondary button, e.g. "Cancel".*/
     private final String mSecondaryButtonText;
 
-    // Listens for when either of the buttons is clicked.
+    /** Text shown on the extra button, e.g. "More info". */
+    private final String mTertiaryButtonText;
+
+    /** Notified when one of the buttons is clicked. */
     private final InfoBarListeners.Confirm mConfirmListener;
-
-    public ConfirmInfoBar(InfoBarListeners.Confirm confirmListener, int backgroundType,
-            int iconDrawableId, String message, String primaryButtonText,
-            String secondaryButtonText) {
-        this(confirmListener, iconDrawableId, message, primaryButtonText, secondaryButtonText);
-    }
-
-    public ConfirmInfoBar(InfoBarListeners.Confirm confirmListener, int iconDrawableId,
-            String message, String primaryButtonText, String secondaryButtonText) {
-        this(confirmListener, iconDrawableId, message, null, primaryButtonText,
-                secondaryButtonText);
-    }
-
-    public ConfirmInfoBar(InfoBarListeners.Confirm confirmListener, int iconDrawableId,
-            String message, String linkText, String primaryButtonText, String secondaryButtonText) {
-        this(0, confirmListener, iconDrawableId, message, linkText, primaryButtonText,
-                secondaryButtonText);
-    }
 
     public ConfirmInfoBar(long nativeInfoBar, InfoBarListeners.Confirm confirmListener,
             int iconDrawableId, String message, String linkText, String primaryButtonText,
             String secondaryButtonText) {
-        super(confirmListener, iconDrawableId);
-        mMessage = message;
-        mLinkText = linkText;
+        super(confirmListener, iconDrawableId, message);
         mPrimaryButtonText = primaryButtonText;
         mSecondaryButtonText = secondaryButtonText;
+        mTertiaryButtonText = linkText;
         mConfirmListener = confirmListener;
         setNativeInfoBar(nativeInfoBar);
     }
 
     @Override
-    public CharSequence getMessageText(Context context) {
-        // Construct text to be displayed on the infobar.
-        SpannableStringBuilder infobarMessage = new SpannableStringBuilder(mMessage);
-
-        // If we have a link text to display, append it.
-        if (!TextUtils.isEmpty(mLinkText)) {
-            SpannableStringBuilder spannableLinkText = new SpannableStringBuilder(mLinkText);
-            ClickableSpan onLinkClicked = new ClickableSpan() {
-                @Override
-                public void onClick(View view) {
-                    onLinkClicked();
-                }
-            };
-            spannableLinkText.setSpan(onLinkClicked, 0, spannableLinkText.length(),
-                    Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-            infobarMessage.append(" ");
-            infobarMessage.append(spannableLinkText);
-        }
-        return infobarMessage;
-    }
-
-    @Override
-    public String getPrimaryButtonText(Context context) {
-        return mPrimaryButtonText;
-    }
-
-    @Override
-    public String getSecondaryButtonText(Context context) {
-        return mSecondaryButtonText;
+    public void createContent(InfoBarLayout layout) {
+        layout.setButtons(mPrimaryButtonText, mSecondaryButtonText, mTertiaryButtonText);
     }
 
     @Override

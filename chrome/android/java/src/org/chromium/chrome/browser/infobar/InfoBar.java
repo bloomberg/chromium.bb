@@ -36,11 +36,8 @@ public abstract class InfoBar implements InfoBarView {
     public static final int ACTION_TYPE_TRANSLATE = 3;
     public static final int ACTION_TYPE_TRANSLATE_SHOW_ORIGINAL = 4;
 
-    // Background types
-    public static final int BACKGROUND_TYPE_INFO = 0;
-    public static final int BACKGROUND_TYPE_WARNING = 1;
-
     private final int mIconDrawableId;
+    private final CharSequence mMessage;
 
     private InfoBarListeners.Dismiss mListener;
     private ContentWrapperView mContentView;
@@ -66,12 +63,21 @@ public abstract class InfoBar implements InfoBarView {
     /**
      * @param listener Listens to when buttons have been clicked on the InfoBar.
      * @param iconDrawableId ID of the resource to use for the Icon.  If 0, no icon will be shown.
+     * @param message The message to show in the infobar.
      */
-    public InfoBar(InfoBarListeners.Dismiss listener, int iconDrawableId) {
+    public InfoBar(InfoBarListeners.Dismiss listener, int iconDrawableId, CharSequence message) {
         mListener = listener;
         mId = generateId();
         mIconDrawableId = iconDrawableId;
+        mMessage = message;
         mExpireOnNavigation = true;
+    }
+
+    /**
+     * @return The message shown in the infobar, useful for accessibility.
+     */
+    public CharSequence getMessage() {
+        return mMessage;
     }
 
     /**
@@ -96,13 +102,13 @@ public abstract class InfoBar implements InfoBarView {
     }
 
     /**
-     * Determine if the infobar should be dismissed when |url| is loaded. Calling
+     * Determine if the infobar should be dismissed when a new page starts loading. Calling
      * setExpireOnNavigation(true/false) causes this method always to return true/false.
      * This only applies to java-only infobars. C++ infobars will use the same logic
      * as other platforms so they are not attempted to be dismissed twice.
      * It should really be removed once all infobars have a C++ counterpart.
      */
-    public final boolean shouldExpire(String url) {
+    public final boolean shouldExpire() {
         return mExpireOnNavigation && mNativeInfoBarPtr == 0;
     }
 
@@ -146,7 +152,10 @@ public abstract class InfoBar implements InfoBarView {
      */
     protected final View createView() {
         assert mContext != null;
-        return new InfoBarLayout(mContext, this, mIconDrawableId);
+
+        InfoBarLayout layout = new InfoBarLayout(mContext, this, mIconDrawableId, mMessage);
+        createContent(layout);
+        return layout;
     }
 
     /**
@@ -207,10 +216,16 @@ public abstract class InfoBar implements InfoBarView {
     public void setControlsEnabled(boolean state) {
         mControlsEnabled = state;
 
-        // Handle the close button.
+        // Disable all buttons on the infobar.
         if (mContentView != null) {
             View closeButton = mContentView.findViewById(R.id.infobar_close_button);
+            View primaryButton = mContentView.findViewById(R.id.button_primary);
+            View secondaryButton = mContentView.findViewById(R.id.button_secondary);
+            View tertiaryButton = mContentView.findViewById(R.id.button_tertiary);
             if (closeButton != null) closeButton.setEnabled(state);
+            if (primaryButton != null) primaryButton.setEnabled(state);
+            if (secondaryButton != null) secondaryButton.setEnabled(state);
+            if (tertiaryButton != null) tertiaryButton.setEnabled(state);
         }
     }
 
@@ -225,16 +240,6 @@ public abstract class InfoBar implements InfoBarView {
 
     @Override
     public void createContent(InfoBarLayout layout) {
-    }
-
-    @Override
-    public String getPrimaryButtonText(Context context) {
-        return null;
-    }
-
-    @Override
-    public String getSecondaryButtonText(Context context) {
-        return null;
     }
 
     /**

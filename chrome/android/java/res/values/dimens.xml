@@ -31,16 +31,16 @@
     <!-- Text size of the infobar message. -->
     <dimen name="infobar_text_size">16sp</dimen>
     <!-- Text size of text inside infobar buttons. -->
-    <dimen name="infobar_button_text_size">16sp</dimen>
-    <!-- Minimum dimension (height or width) of the upper row of an infobar. -->
-    <dimen name="infobar_min_size">60dp</dimen>
+    <dimen name="infobar_button_text_size">12sp</dimen>
+    <!-- Minimum width of an infobar. -->
+    <dimen name="infobar_min_width">220dp</dimen>
     <!-- Margin between items in an infobar. -->
-    <dimen name="infobar_margin">10dp</dimen>
+    <dimen name="infobar_margin">16dp</dimen>
     <!-- Left/right padding for infobar button text. -->
-    <dimen name="infobar_button_horizontal_padding">30dp</dimen>
+    <dimen name="infobar_button_horizontal_padding">20dp</dimen>
     <!-- Minimum height for a touch target. -->
     <dimen name="infobar_touch_target_height">40dp</dimen>
-    <!-- Height and width of the infobar icon. -->
+    <!-- Width and height of the infobar icon. -->
     <dimen name="infobar_icon_size">36dp</dimen>
 
     <!-- App banner dimensions -->

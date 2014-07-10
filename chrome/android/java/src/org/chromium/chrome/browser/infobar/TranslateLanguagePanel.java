@@ -70,15 +70,14 @@ public class TranslateLanguagePanel
         mTargetSpinner = null;
 
         String changeLanguage = context.getString(R.string.translate_infobar_change_languages);
-        TextView panelMessage = (TextView) layout.findViewById(R.id.infobar_message);
-        panelMessage.setText(changeLanguage);
+        layout.setMessage(changeLanguage);
 
         // Set up the spinners.
         createSpinners(context);
-        layout.addGroup(mSourceSpinner, mTargetSpinner);
+        layout.setCustomContent(mSourceSpinner, mTargetSpinner);
 
         // Set up the buttons.
-        layout.addButtons(context.getString(R.string.translate_button_done),
+        layout.setButtons(context.getString(R.string.translate_button_done),
                 context.getString(R.string.cancel));
     }
 

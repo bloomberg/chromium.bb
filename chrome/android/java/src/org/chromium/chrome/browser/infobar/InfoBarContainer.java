@@ -369,11 +369,11 @@ public class InfoBarContainer extends LinearLayout {
     }
 
     // Called by the tab when it has started loading a new page.
-    public void onPageStarted(String url) {
+    public void onPageStarted() {
         LinkedList<InfoBar> barsToRemove = new LinkedList<InfoBar>();
 
         for (InfoBar infoBar : mInfoBars) {
-            if (infoBar.shouldExpire(url)) {
+            if (infoBar.shouldExpire()) {
                 barsToRemove.add(infoBar);
             }
         }

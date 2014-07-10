@@ -19,7 +19,7 @@ import org.chromium.ui.base.DeviceFormFactor;
 /**
  * Java version of the translate infobar
  */
-public class TranslateInfoBar extends TwoButtonInfoBar implements SubPanelListener {
+public class TranslateInfoBar extends InfoBar implements SubPanelListener {
     // Needs to be kept in sync with the Type enum in translate_infobar_delegate.h.
     public static final int BEFORE_TRANSLATE_INFOBAR = 0;
     public static final int TRANSLATING_INFOBAR = 1;
@@ -45,8 +45,7 @@ public class TranslateInfoBar extends TwoButtonInfoBar implements SubPanelListen
             int infoBarType, int sourceLanguageIndex, int targetLanguageIndex,
             boolean autoTranslatePair, boolean shouldShowNeverBar,
             boolean triggeredFromMenu, String[] languages) {
-        super(null, R.drawable.infobar_translate);
-
+        super(null, R.drawable.infobar_translate, null);
         mTranslateDelegate = delegate;
         mOptions = new TranslateOptions(sourceLanguageIndex, targetLanguageIndex, languages,
                 autoTranslatePair, triggeredFromMenu);
@@ -111,8 +110,7 @@ public class TranslateInfoBar extends TwoButtonInfoBar implements SubPanelListen
         return action;
     }
 
-    @Override
-    public CharSequence getMessageText(Context context) {
+    private CharSequence getMessageText(Context context) {
         switch (getInfoBarType()) {
             case BEFORE_TRANSLATE_INFOBAR:
                 String template = context.getString(R.string.translate_infobar_text);
@@ -137,8 +135,7 @@ public class TranslateInfoBar extends TwoButtonInfoBar implements SubPanelListen
         }
     }
 
-    @Override
-    public String getPrimaryButtonText(Context context) {
+    private String getPrimaryButtonText(Context context) {
         switch (getInfoBarType()) {
             case BEFORE_TRANSLATE_INFOBAR:
                 return context.getString(R.string.translate_button);
@@ -154,8 +151,7 @@ public class TranslateInfoBar extends TwoButtonInfoBar implements SubPanelListen
         }
     }
 
-    @Override
-    public String getSecondaryButtonText(Context context) {
+    private String getSecondaryButtonText(Context context) {
         switch (getInfoBarType()) {
             case BEFORE_TRANSLATE_INFOBAR:
                 return context.getString(R.string.translate_nope);
@@ -181,15 +177,17 @@ public class TranslateInfoBar extends TwoButtonInfoBar implements SubPanelListen
             return;
         }
 
+        Context context = layout.getContext();
+        layout.setMessage(getMessageText(context));
+        layout.setButtons(getPrimaryButtonText(context), getSecondaryButtonText(context));
+
         if (getInfoBarType() == AFTER_TRANSLATE_INFOBAR &&
                 !needsAlwaysPanel() &&
                 !mOptions.triggeredFromMenu()) {
             // Long always translate version
-             TranslateCheckBox checkBox = new TranslateCheckBox(mOptions, this);
-             checkBox.createContent(getContext(), layout);
+            TranslateCheckBox checkBox = new TranslateCheckBox(context, mOptions, this);
+            layout.setCustomContent(checkBox);
         }
-
-        super.createContent(layout);
     }
 
     // SubPanelListener implementation

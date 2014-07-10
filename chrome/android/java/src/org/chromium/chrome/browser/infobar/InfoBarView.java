@@ -4,52 +4,24 @@
 
 package org.chromium.chrome.browser.infobar;
 
-import android.content.Context;
 
 /**
  * Functions needed to display an InfoBar UI.
  */
 public interface InfoBarView {
     /**
-     * Prepare the InfoBar for display and adding InfoBar-specific controls to the layout.
+     * Prepares the InfoBar for display and adds InfoBar-specific controls to the layout.
      * @param layout Layout containing all of the controls.
      */
     public void createContent(InfoBarLayout layout);
 
     /**
-     * Returns the message indicating what the InfoBar is informing or asking the user about.
-     * @param context Context to pull the string from.
-     * @return The string to display.
-     */
-    public CharSequence getMessageText(Context context);
-
-    /**
-     * Returns text to display on the primary button indicating that some action will be taken.
-     * Setting this to null prevents the button from being created.
-     * @param context Context to pull the string from.
-     * @return The string to display.
-     */
-    public String getPrimaryButtonText(Context context);
-
-    /**
-     * Returns text to display on the secondary button, typically indicating that some action will
-     * not be taken.
-     *
-     * Example text includes "Cancel" or "Nope".  Setting this to null prevents the button from
-     * being created.  It is illegal to have a secondary button without a primary button.
-     *
-     * @param context Context to pull the string from.
-     * @return The string to display.
-     */
-    public String getSecondaryButtonText(Context context);
-
-    /**
-     * Take some action related to the link being clicked.
+     * Takes some action related to the link being clicked.
      */
     public void onLinkClicked();
 
     /**
-     * Take some action related to the close button being clicked.
+     * Takes some action related to the close button being clicked.
      */
     public void onCloseButtonClicked();
 

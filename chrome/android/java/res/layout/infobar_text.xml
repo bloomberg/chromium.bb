@@ -11,6 +11,7 @@
     android:layout_marginBottom="@dimen/infobar_margin"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
+    android:lineSpacingMultiplier="1.25"
     android:textDirection="locale"
     android:textSize="@dimen/infobar_text_size"
     android:textColor="@color/infobar_text" />

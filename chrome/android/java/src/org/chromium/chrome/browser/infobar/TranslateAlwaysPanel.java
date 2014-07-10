@@ -4,7 +4,6 @@
 package org.chromium.chrome.browser.infobar;
 
 import android.content.Context;
-import android.widget.TextView;
 
 import org.chromium.chrome.R;
 
@@ -23,16 +22,15 @@ public class TranslateAlwaysPanel implements TranslateSubPanel {
 
     @Override
     public void createContent(Context context, InfoBarLayout layout) {
-        TextView panelMessage = (TextView) layout.findViewById(R.id.infobar_message);
-        panelMessage.setText(context.getString(
+        layout.setMessage(context.getString(
                 R.string.translate_infobar_translation_done, mOptions.targetLanguage()));
 
         if (!mOptions.triggeredFromMenu()) {
-            TranslateCheckBox checkBox = new TranslateCheckBox(mOptions, mListener);
-            checkBox.createContent(context, layout);
+            TranslateCheckBox checkBox = new TranslateCheckBox(context, mOptions, mListener);
+            layout.setCustomContent(checkBox);
         }
 
-        layout.addButtons(context.getString(R.string.translate_button_done),
+        layout.setButtons(context.getString(R.string.translate_button_done),
                 context.getString(R.string.translate_show_original));
     }
 

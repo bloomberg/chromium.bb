@@ -32,7 +32,7 @@ public class SavePasswordInfoBar extends ConfirmInfoBar {
             mUseAdditionalAuthenticationCheckbox = new CheckBox(getContext());
             mUseAdditionalAuthenticationCheckbox.setText(
                     PasswordAuthenticationManager.getPasswordProtectionString());
-            layout.addGroup(mUseAdditionalAuthenticationCheckbox);
+            layout.setCustomContent(mUseAdditionalAuthenticationCheckbox);
         }
 
         super.createContent(layout);

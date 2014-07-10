@@ -236,8 +236,7 @@ public class AnimationHelper implements ViewTreeObserver.OnGlobalLayoutListener 
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN && mToShow != null &&
                         (mAnimationType == ANIMATION_TYPE_SHOW ||
                                 mAnimationType == ANIMATION_TYPE_SWAP)) {
-                    mToShow.announceForAccessibility(
-                            mInfoBar.getMessageText(mContainer.getContext()));
+                    mToShow.announceForAccessibility(mInfoBar.getMessage());
                 }
             }
         });
