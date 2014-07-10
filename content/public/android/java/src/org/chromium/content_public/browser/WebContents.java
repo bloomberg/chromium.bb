@@ -19,6 +19,11 @@ public interface WebContents {
     String getTitle();
 
     /**
+     * @return The URL for the current visible page.
+     */
+    String getVisibleUrl();
+
+    /**
      * Stop any pending navigation.
      */
     void stop();

@@ -9,6 +9,10 @@ import android.content.res.Configuration;
 import android.graphics.Canvas;
 import android.graphics.Rect;
 import android.os.Build;
+import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
@@ -25,7 +29,9 @@ import org.chromium.base.TraceEvent;
  * exposes the various {@link View} functionality to it.
  */
 public class ContentView extends FrameLayout
-        implements ContentViewCore.InternalAccessDelegate {
+        implements ContentViewCore.InternalAccessDelegate, SmartClipProvider {
+
+    private static final String TAG = "ContentView";
 
     protected final ContentViewCore mContentViewCore;
 
@@ -247,26 +253,35 @@ public class ContentView extends FrameLayout
         mContentViewCore.onVisibilityChanged(changedView, visibility);
     }
 
-    /**
-     * Initiate extraction of text, HTML, and other information for clipping puposes (smart clip)
-     * from the rectangle area defined by starting positions (x and y), and width height.
-     *
-     * NOTE: Some platforms may call this function to extract smart clip data.
-     * You should not remove it even when there is no caller in the code base.
-     */
+    // Implements SmartClipProvider
+    @Override
     public void extractSmartClipData(int x, int y, int width, int height) {
         mContentViewCore.extractSmartClipData(x, y, width, height);
     }
 
-    /**
-     * Register a listener for smart clip data extraction. Once extraction is done,
-     * the listener's onSmartClipDataExtracted callback will be called.
-     *
-     * NOTE: Some platforms may call this function to extract smart clip data.
-     * You should not remove it even when there is no caller in the code base.
-     */
-    public void setSmartClipDataListener(ContentViewCore.SmartClipDataListener listener) {
-        mContentViewCore.setSmartClipDataListener(listener);
+    // Implements SmartClipProvider
+    @Override
+    public void setSmartClipResultHandler(final Handler resultHandler) {
+        if (resultHandler == null) {
+            mContentViewCore.setSmartClipDataListener(null);
+            return;
+        }
+        mContentViewCore.setSmartClipDataListener(new ContentViewCore.SmartClipDataListener() {
+            public void onSmartClipDataExtracted(String text, Rect clipRect) {
+                Bundle bundle = new Bundle();
+                bundle.putString("url", mContentViewCore.getWebContents().getVisibleUrl());
+                bundle.putString("title", mContentViewCore.getWebContents().getTitle());
+                bundle.putParcelable("area", clipRect);
+                bundle.putString("text", text);
+                try {
+                    Message msg = Message.obtain(resultHandler, 0);
+                    msg.setData(bundle);
+                    msg.sendToTarget();
+                } catch (Exception e) {
+                    Log.e(TAG, "Error calling handler for smart clip data: ", e);
+                }
+            }
+        });
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////
