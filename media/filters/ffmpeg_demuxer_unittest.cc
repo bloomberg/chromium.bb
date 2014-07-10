@@ -916,6 +916,42 @@ TEST_F(FFmpegDemuxerTest, IsValidAnnexB) {
   }
 }
 
+TEST_F(FFmpegDemuxerTest, Rotate_Metadata_0) {
+  CreateDemuxer("bear_rotate_0.mp4");
+  InitializeDemuxer();
+
+  DemuxerStream* stream = demuxer_->GetStream(DemuxerStream::VIDEO);
+  ASSERT_TRUE(stream);
+  ASSERT_EQ(VIDEO_ROTATION_0, stream->video_rotation());
+}
+
+TEST_F(FFmpegDemuxerTest, Rotate_Metadata_90) {
+  CreateDemuxer("bear_rotate_90.mp4");
+  InitializeDemuxer();
+
+  DemuxerStream* stream = demuxer_->GetStream(DemuxerStream::VIDEO);
+  ASSERT_TRUE(stream);
+  ASSERT_EQ(VIDEO_ROTATION_90, stream->video_rotation());
+}
+
+TEST_F(FFmpegDemuxerTest, Rotate_Metadata_180) {
+  CreateDemuxer("bear_rotate_180.mp4");
+  InitializeDemuxer();
+
+  DemuxerStream* stream = demuxer_->GetStream(DemuxerStream::VIDEO);
+  ASSERT_TRUE(stream);
+  ASSERT_EQ(VIDEO_ROTATION_180, stream->video_rotation());
+}
+
+TEST_F(FFmpegDemuxerTest, Rotate_Metadata_270) {
+  CreateDemuxer("bear_rotate_270.mp4");
+  InitializeDemuxer();
+
+  DemuxerStream* stream = demuxer_->GetStream(DemuxerStream::VIDEO);
+  ASSERT_TRUE(stream);
+  ASSERT_EQ(VIDEO_ROTATION_270, stream->video_rotation());
+}
+
 #endif
 
 }  // namespace media

@@ -19,6 +19,7 @@
 #include "media/base/pipeline_status.h"
 #include "media/base/ranges.h"
 #include "media/base/serial_runner.h"
+#include "media/base/video_rotation.h"
 #include "ui/gfx/size.h"
 
 namespace base {
@@ -37,11 +38,13 @@ class VideoRenderer;
 
 // Metadata describing a pipeline once it has been initialized.
 struct PipelineMetadata {
-  PipelineMetadata() : has_audio(false), has_video(false) {}
+  PipelineMetadata()
+      : has_audio(false), has_video(false), video_rotation(VIDEO_ROTATION_0) {}
 
   bool has_audio;
   bool has_video;
   gfx::Size natural_size;
+  VideoRotation video_rotation;
   base::Time timeline_offset;
 };
 

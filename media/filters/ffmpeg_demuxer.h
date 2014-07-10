@@ -92,6 +92,7 @@ class FFmpegDemuxerStream : public DemuxerStream {
   virtual bool SupportsConfigChanges() OVERRIDE;
   virtual AudioDecoderConfig audio_decoder_config() OVERRIDE;
   virtual VideoDecoderConfig video_decoder_config() OVERRIDE;
+  virtual VideoRotation video_rotation() OVERRIDE;
 
   // Returns the range of buffered data in this stream.
   Ranges<base::TimeDelta> GetBufferedRanges() const;
@@ -133,6 +134,7 @@ class FFmpegDemuxerStream : public DemuxerStream {
   bool end_of_stream_;
   base::TimeDelta last_packet_timestamp_;
   Ranges<base::TimeDelta> buffered_ranges_;
+  VideoRotation video_rotation_;
 
   DecoderBufferQueue buffer_queue_;
   ReadCB read_cb_;
@@ -276,6 +278,8 @@ class MEDIA_EXPORT FFmpegDemuxer : public Demuxer {
   // The Time associated with timestamp 0. Set to a null
   // time if the file doesn't have an association to Time.
   base::Time timeline_offset_;
+
+  VideoRotation video_rotation_;
 
   // Liveness of the stream.
   Liveness liveness_;

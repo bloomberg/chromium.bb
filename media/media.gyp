@@ -349,6 +349,7 @@
         'base/video_frame_pool.h',
         'base/video_renderer.cc',
         'base/video_renderer.h',
+        'base/video_rotation.h',
         'base/video_util.cc',
         'base/video_util.h',
         'base/yuv_convert.cc',

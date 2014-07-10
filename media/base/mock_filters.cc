@@ -48,6 +48,10 @@ void MockDemuxerStream::set_video_decoder_config(
   video_decoder_config_ = config;
 }
 
+VideoRotation MockDemuxerStream::video_rotation() {
+  return VIDEO_ROTATION_0;
+}
+
 MockVideoDecoder::MockVideoDecoder() {
   EXPECT_CALL(*this, HasAlpha()).WillRepeatedly(Return(false));
 }

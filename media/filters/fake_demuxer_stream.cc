@@ -97,6 +97,10 @@ bool FakeDemuxerStream::SupportsConfigChanges() {
   return config_changes_;
 }
 
+VideoRotation FakeDemuxerStream::video_rotation() {
+  return VIDEO_ROTATION_0;
+}
+
 void FakeDemuxerStream::HoldNextRead() {
   DCHECK(task_runner_->BelongsToCurrentThread());
   read_to_hold_ = next_read_num_;

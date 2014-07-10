@@ -389,6 +389,7 @@ void Pipeline::StateTransitionTask(PipelineStatus status) {
           if (stream) {
             metadata.natural_size =
                 stream->video_decoder_config().natural_size();
+            metadata.video_rotation = stream->video_rotation();
           }
           metadata_cb_.Run(metadata);
         }

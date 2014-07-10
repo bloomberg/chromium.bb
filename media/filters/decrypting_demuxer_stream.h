@@ -56,6 +56,7 @@ class MEDIA_EXPORT DecryptingDemuxerStream : public DemuxerStream {
   virtual Type type() OVERRIDE;
   virtual void EnableBitstreamConverter() OVERRIDE;
   virtual bool SupportsConfigChanges() OVERRIDE;
+  virtual VideoRotation video_rotation() OVERRIDE;
 
  private:
   // For a detailed state diagram please see this link: http://goo.gl/8jAok

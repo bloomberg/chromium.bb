@@ -14,6 +14,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/metrics/sparse_histogram.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/sys_byteorder.h"
@@ -92,11 +93,14 @@ FFmpegDemuxerStream::FFmpegDemuxerStream(FFmpegDemuxer* demuxer,
       type_(UNKNOWN),
       end_of_stream_(false),
       last_packet_timestamp_(kNoTimestamp()),
+      video_rotation_(VIDEO_ROTATION_0),
       bitstream_converter_enabled_(false),
       fixup_negative_ogg_timestamps_(false) {
   DCHECK(demuxer_);
 
   bool is_encrypted = false;
+  int rotation = 0;
+  AVDictionaryEntry* rotation_entry = NULL;
 
   // Determine our media format.
   switch (stream->codec->codec_type) {
@@ -109,6 +113,28 @@ FFmpegDemuxerStream::FFmpegDemuxerStream(FFmpegDemuxer* demuxer,
       type_ = VIDEO;
       AVStreamToVideoDecoderConfig(stream, &video_config_, true);
       is_encrypted = video_config_.is_encrypted();
+
+      rotation_entry = av_dict_get(stream->metadata, "rotate", NULL, 0);
+      if (rotation_entry && rotation_entry->value && rotation_entry->value[0])
+        base::StringToInt(rotation_entry->value, &rotation);
+
+      switch (rotation) {
+        case 0:
+          break;
+        case 90:
+          video_rotation_ = VIDEO_ROTATION_90;
+          break;
+        case 180:
+          video_rotation_ = VIDEO_ROTATION_180;
+          break;
+        case 270:
+          video_rotation_ = VIDEO_ROTATION_270;
+          break;
+        default:
+          LOG(ERROR) << "Unsupported video rotation metadata: " << rotation;
+          break;
+      }
+
       break;
     case AVMEDIA_TYPE_SUBTITLE:
       type_ = TEXT;
@@ -378,6 +404,10 @@ VideoDecoderConfig FFmpegDemuxerStream::video_decoder_config() {
   DCHECK(task_runner_->BelongsToCurrentThread());
   CHECK_EQ(type_, VIDEO);
   return video_config_;
+}
+
+VideoRotation FFmpegDemuxerStream::video_rotation() {
+  return video_rotation_;
 }
 
 FFmpegDemuxerStream::~FFmpegDemuxerStream() {

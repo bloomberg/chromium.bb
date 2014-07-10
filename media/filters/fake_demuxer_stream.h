@@ -34,6 +34,7 @@ class FakeDemuxerStream : public DemuxerStream {
   virtual Type type() OVERRIDE;
   virtual void EnableBitstreamConverter() OVERRIDE;
   virtual bool SupportsConfigChanges() OVERRIDE;
+  virtual VideoRotation video_rotation() OVERRIDE;
 
   void Initialize();
 

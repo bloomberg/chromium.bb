@@ -165,6 +165,10 @@ bool DecryptingDemuxerStream::SupportsConfigChanges() {
   return demuxer_stream_->SupportsConfigChanges();
 }
 
+VideoRotation DecryptingDemuxerStream::video_rotation() {
+  return VIDEO_ROTATION_0;
+}
+
 DecryptingDemuxerStream::~DecryptingDemuxerStream() {
   DVLOG(2) << __FUNCTION__ << " : state_ = " << state_;
 }

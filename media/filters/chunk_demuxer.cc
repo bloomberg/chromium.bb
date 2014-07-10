@@ -952,6 +952,10 @@ TextTrackConfig ChunkDemuxerStream::text_track_config() {
   return stream_->GetCurrentTextTrackConfig();
 }
 
+VideoRotation ChunkDemuxerStream::video_rotation() {
+  return VIDEO_ROTATION_0;
+}
+
 void ChunkDemuxerStream::ChangeState_Locked(State state) {
   lock_.AssertAcquired();
   DVLOG(1) << "ChunkDemuxerStream::ChangeState_Locked() : "
