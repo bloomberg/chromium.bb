@@ -388,7 +388,11 @@ PasswordStoreChangeList LoginDatabase::UpdateLogin(const PasswordForm& form) {
                                           "possible_usernames = ?, "
                                           "times_used = ?, "
                                           "submit_element = ?, "
-                                          "date_synced = ? "
+                                          "date_synced = ?, "
+                                          "date_created = ?, "
+                                          "blacklisted_by_user = ?, "
+                                          "scheme = ?, "
+                                          "password_type = ? "
                                           "WHERE origin_url = ? AND "
                                           "username_element = ? AND "
                                           "username_value = ? AND "
@@ -404,12 +408,16 @@ PasswordStoreChangeList LoginDatabase::UpdateLogin(const PasswordForm& form) {
   s.BindInt(5, form.times_used);
   s.BindString16(6, form.submit_element);
   s.BindInt64(7, form.date_synced.ToInternalValue());
+  s.BindInt64(8, form.date_created.ToTimeT());
+  s.BindInt(9, form.blacklisted_by_user);
+  s.BindInt(10, form.scheme);
+  s.BindInt(11, form.type);
 
-  s.BindString(8, form.origin.spec());
-  s.BindString16(9, form.username_element);
-  s.BindString16(10, form.username_value);
-  s.BindString16(11, form.password_element);
-  s.BindString(12, form.signon_realm);
+  s.BindString(12, form.origin.spec());
+  s.BindString16(13, form.username_element);
+  s.BindString16(14, form.username_value);
+  s.BindString16(15, form.password_element);
+  s.BindString(16, form.signon_realm);
 
   if (!s.Run())
     return PasswordStoreChangeList();
