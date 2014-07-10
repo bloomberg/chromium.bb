@@ -33,7 +33,7 @@ ResultCode DuplicateHandleProxy(HANDLE source_handle,
     return code;
 
   if (answer.win32_result) {
-    ::SetLastError(answer.nt_status);
+    ::SetLastError(answer.win32_result);
     return SBOX_ERROR_GENERIC;
   }
 

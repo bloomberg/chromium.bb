@@ -44,7 +44,6 @@ bool HandleDispatcher::DuplicateHandleProxy(IPCInfo* ipc,
                                             DWORD target_process_id,
                                             DWORD desired_access,
                                             DWORD options) {
-  NTSTATUS error;
   static NtQueryObject QueryObject = NULL;
   if (!QueryObject)
     ResolveNTFunctionPtr("NtQueryObject", &QueryObject);
@@ -65,9 +64,10 @@ bool HandleDispatcher::DuplicateHandleProxy(IPCInfo* ipc,
   OBJECT_TYPE_INFORMATION* type_info =
       reinterpret_cast<OBJECT_TYPE_INFORMATION*>(buffer);
   ULONG size = sizeof(buffer) - sizeof(wchar_t);
-  error = QueryObject(handle, ObjectTypeInformation, type_info, size, &size);
+  NTSTATUS error =
+      QueryObject(handle, ObjectTypeInformation, type_info, size, &size);
   if (!NT_SUCCESS(error)) {
-    ipc->return_info.win32_result = error;
+    ipc->return_info.nt_status = error;
     return false;
   }
   type_info->Name.Buffer[type_info->Name.Length / sizeof(wchar_t)] = L'\0';

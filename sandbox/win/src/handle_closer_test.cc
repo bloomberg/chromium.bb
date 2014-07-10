@@ -157,7 +157,8 @@ void WINAPI ThreadPoolTask(void* event, BOOLEAN timeout) {
 // Run a thread pool inside a sandbox without a CSRSS connection.
 SBOX_TESTS_COMMAND int RunThreadPool(int argc, wchar_t **argv) {
   HANDLE wait_list[20];
-  CHECK(finish_event = ::CreateEvent(NULL, TRUE, FALSE, NULL));
+  finish_event = ::CreateEvent(NULL, TRUE, FALSE, NULL);
+  CHECK(finish_event);
 
   // Set up a bunch of waiters.
   HANDLE pool = NULL;

@@ -154,28 +154,20 @@ SBOX_TESTS_COMMAND int Process_RunApp4(int argc, wchar_t **argv) {
   // TEST 4: Try file name in the app_name and current directory sets correctly.
   base::string16 system32 = MakeFullPathToSystem32(L"");
   wchar_t current_directory[MAX_PATH + 1];
-  int result4;
-  bool test_succeeded = false;
   DWORD ret = ::GetCurrentDirectory(MAX_PATH, current_directory);
   if (!ret)
     return SBOX_TEST_FIRST_ERROR;
+  if (ret >= MAX_PATH)
+    return SBOX_TEST_FAILED;
 
-  if (ret < MAX_PATH) {
-    current_directory[ret] = L'\\';
-    current_directory[ret+1] = L'\0';
-    if (::SetCurrentDirectory(system32.c_str())) {
-      result4 = CreateProcessHelper(argv[0], base::string16());
-      if (::SetCurrentDirectory(current_directory)) {
-        test_succeeded = true;
-      }
-    } else {
-      return SBOX_TEST_SECOND_ERROR;
-    }
+  current_directory[ret] = L'\\';
+  current_directory[ret+1] = L'\0';
+  if (!::SetCurrentDirectory(system32.c_str())) {
+    return SBOX_TEST_SECOND_ERROR;
   }
-  if (!test_succeeded)
-    result4 = SBOX_TEST_FAILED;
 
-  return result4;
+  const int result4 = CreateProcessHelper(argv[0], base::string16());
+  return ::SetCurrentDirectory(current_directory) ? result4 : SBOX_TEST_FAILED;
 }
 
 SBOX_TESTS_COMMAND int Process_RunApp5(int argc, wchar_t **argv) {

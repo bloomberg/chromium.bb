@@ -35,12 +35,11 @@ SyncDispatcher::SyncDispatcher(PolicyBase* policy_base)
 
 bool SyncDispatcher::SetupService(InterceptionManager* manager,
                                   int service) {
-  if (IPC_CREATEEVENT_TAG == service) {
+  if (service == IPC_CREATEEVENT_TAG) {
     return INTERCEPT_NT(manager, NtCreateEvent, CREATE_EVENT_ID, 24);
-  } else if (IPC_OPENEVENT_TAG == service) {
-    return INTERCEPT_NT(manager, NtOpenEvent, OPEN_EVENT_ID, 16);
   }
-  return false;
+  return (service == IPC_OPENEVENT_TAG) &&
+      INTERCEPT_NT(manager, NtOpenEvent, OPEN_EVENT_ID, 16);
 }
 
 bool SyncDispatcher::CreateEvent(IPCInfo* ipc, base::string16* name,
@@ -52,11 +51,9 @@ bool SyncDispatcher::CreateEvent(IPCInfo* ipc, base::string16* name,
   EvalResult result = policy_base_->EvalPolicy(IPC_CREATEEVENT_TAG,
                                                params.GetBase());
   HANDLE handle = NULL;
-  DWORD ret = SyncPolicy::CreateEventAction(result, *ipc->client_info, *name,
-                                            event_type, initial_state,
-                                            &handle);
   // Return operation status on the IPC.
-  ipc->return_info.nt_status = ret;
+  ipc->return_info.nt_status = SyncPolicy::CreateEventAction(
+      result, *ipc->client_info, *name, event_type, initial_state, &handle);
   ipc->return_info.handle = handle;
   return true;
 }
@@ -72,10 +69,9 @@ bool SyncDispatcher::OpenEvent(IPCInfo* ipc, base::string16* name,
   EvalResult result = policy_base_->EvalPolicy(IPC_OPENEVENT_TAG,
                                                params.GetBase());
   HANDLE handle = NULL;
-  DWORD ret = SyncPolicy::OpenEventAction(result, *ipc->client_info, *name,
-                                          desired_access, &handle);
   // Return operation status on the IPC.
-  ipc->return_info.win32_result = ret;
+  ipc->return_info.nt_status = SyncPolicy::OpenEventAction(
+      result, *ipc->client_info, *name, desired_access, &handle);
   ipc->return_info.handle = handle;
   return true;
 }

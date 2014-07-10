@@ -276,8 +276,8 @@ int TestOpenAlternateDesktop(wchar_t *desktop_name) {
   }
 
   // Open by name with WRITE_DAC.
-  if ((desktop = ::OpenDesktop(desktop_name, 0, FALSE, WRITE_DAC)) ||
-      ::GetLastError() != ERROR_ACCESS_DENIED) {
+  desktop = ::OpenDesktop(desktop_name, 0, FALSE, WRITE_DAC);
+  if (desktop || ::GetLastError() != ERROR_ACCESS_DENIED) {
     ::CloseDesktop(desktop);
     return SBOX_TEST_SUCCEEDED;
   }

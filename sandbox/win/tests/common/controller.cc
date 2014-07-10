@@ -247,13 +247,13 @@ int TestRunner::InternalRunTest(const wchar_t* command) {
   }
 
   if (WAIT_TIMEOUT == ::WaitForSingleObject(target.hProcess, timeout_)) {
-    ::TerminateProcess(target.hProcess, SBOX_TEST_TIMED_OUT);
+    ::TerminateProcess(target.hProcess, static_cast<UINT>(SBOX_TEST_TIMED_OUT));
     ::CloseHandle(target.hProcess);
     ::CloseHandle(target.hThread);
     return SBOX_TEST_TIMED_OUT;
   }
 
-  DWORD exit_code = SBOX_TEST_LAST_RESULT;
+  DWORD exit_code = static_cast<DWORD>(SBOX_TEST_LAST_RESULT);
   if (!::GetExitCodeProcess(target.hProcess, &exit_code)) {
     ::CloseHandle(target.hProcess);
     ::CloseHandle(target.hThread);

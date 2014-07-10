@@ -176,12 +176,12 @@ bool SyncPolicy::GenerateRules(const wchar_t* name,
   return true;
 }
 
-DWORD SyncPolicy::CreateEventAction(EvalResult eval_result,
-                                    const ClientInfo& client_info,
-                                    const base::string16 &event_name,
-                                    uint32 event_type,
-                                    uint32 initial_state,
-                                    HANDLE *handle) {
+NTSTATUS SyncPolicy::CreateEventAction(EvalResult eval_result,
+                                       const ClientInfo& client_info,
+                                       const base::string16 &event_name,
+                                       uint32 event_type,
+                                       uint32 initial_state,
+                                       HANDLE *handle) {
   NtCreateEventFunction NtCreateEvent = NULL;
   ResolveNTFunctionPtr("NtCreateEvent", &NtCreateEvent);
 
@@ -214,11 +214,11 @@ DWORD SyncPolicy::CreateEventAction(EvalResult eval_result,
   return status;
 }
 
-DWORD SyncPolicy::OpenEventAction(EvalResult eval_result,
-                                  const ClientInfo& client_info,
-                                  const base::string16 &event_name,
-                                  uint32 desired_access,
-                                  HANDLE *handle) {
+NTSTATUS SyncPolicy::OpenEventAction(EvalResult eval_result,
+                                     const ClientInfo& client_info,
+                                     const base::string16 &event_name,
+                                     uint32 desired_access,
+                                     HANDLE *handle) {
   NtOpenEventFunction NtOpenEvent = NULL;
   ResolveNTFunctionPtr("NtOpenEvent", &NtOpenEvent);
 
