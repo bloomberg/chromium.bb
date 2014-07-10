@@ -16,7 +16,6 @@
 #include "base/observer_list.h"
 #include "base/synchronization/lock.h"
 #include "base/time/time.h"
-#include "chrome/browser/chromeos/login/login_utils.h"
 #include "chrome/browser/chromeos/login/users/avatar/user_image_manager_impl.h"
 #include "chrome/browser/chromeos/login/users/multi_profile_user_controller_delegate.h"
 #include "chrome/browser/chromeos/login/users/user.h"
@@ -26,7 +25,6 @@
 #include "chrome/browser/chromeos/policy/device_local_account_policy_service.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
-#include "chromeos/dbus/session_manager_client.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
@@ -47,7 +45,6 @@ class SessionLengthLimiter;
 // Implementation of the UserManager.
 class UserManagerImpl
     : public UserManager,
-      public LoginUtils::Delegate,
       public content::NotificationObserver,
       public policy::CloudExternalDataPolicyObserver::Delegate,
       public policy::DeviceLocalAccountPolicyService::Observer,
@@ -71,7 +68,6 @@ class UserManagerImpl
                             const std::string& user_id_hash,
                             bool browser_restart) OVERRIDE;
   virtual void SwitchActiveUser(const std::string& user_id) OVERRIDE;
-  virtual void RestoreActiveSessions() OVERRIDE;
   virtual void SessionStarted() OVERRIDE;
   virtual void RemoveUser(const std::string& user_id,
                           RemoveUserDelegate* delegate) OVERRIDE;
@@ -113,7 +109,6 @@ class UserManagerImpl
   virtual bool IsLoggedInAsKioskApp() const OVERRIDE;
   virtual bool IsLoggedInAsStub() const OVERRIDE;
   virtual bool IsSessionStarted() const OVERRIDE;
-  virtual bool UserSessionsRestored() const OVERRIDE;
   virtual bool IsUserNonCryptohomeDataEphemeral(
       const std::string& user_id) const OVERRIDE;
   virtual void AddObserver(UserManager::Observer* obs) OVERRIDE;
@@ -169,10 +164,6 @@ class UserManagerImpl
   };
 
   UserManagerImpl();
-
-  // LoginUtils::Delegate implementation:
-  // Used when restoring user sessions after crash.
-  virtual void OnProfilePrepared(Profile* profile) OVERRIDE;
 
   // Loads |users_| from Local State if the list has not been loaded yet.
   // Subsequent calls have no effect. Must be called on the UI thread.
@@ -289,9 +280,6 @@ class UserManagerImpl
   // Notifies observers that active user_id hash has changed.
   void NotifyActiveUserHashChanged(const std::string& hash);
 
-  // Notifies observers that user pending sessions restore has finished.
-  void NotifyPendingUserSessionsRestoreFinished();
-
   // Lazily creates default user flow.
   UserFlow* GetDefaultUserFlow() const;
 
@@ -304,17 +292,6 @@ class UserManagerImpl
   // Adds |user| to users list, and adds it to front of LRU list. It is assumed
   // that there is no user with same id.
   void AddUserRecord(User* user);
-
-  // Callback to process RetrieveActiveSessions() request results.
-  void OnRestoreActiveSessions(
-      const SessionManagerClient::ActiveSessionsMap& sessions,
-      bool success);
-
-  // Called by OnRestoreActiveSessions() when there're user sessions in
-  // |pending_user_sessions_| that has to be restored one by one.
-  // Also called after first user session from that list is restored and so on.
-  // Process continues till |pending_user_sessions_| map is not empty.
-  void RestorePendingUserSessions();
 
   // Sends metrics in response to a regular user logging in.
   void SendRegularUserLoginMetrics(const std::string& user_id);
@@ -387,10 +364,6 @@ class UserManagerImpl
   // True if SessionStarted() has been called.
   bool session_started_;
 
-  // True is user sessions has been restored after crash.
-  // On a normal boot then login into user sessions this will be false.
-  bool user_sessions_restored_;
-
   // Cached flag of whether currently logged-in user is owner or not.
   // May be accessed on different threads, requires locking.
   bool is_current_user_owner_;
@@ -441,10 +414,6 @@ class UserManagerImpl
   // Specific flows by user e-mail. Keys should be canonicalized before
   // access.
   FlowMap specific_flows_;
-
-  // User sessions that have to be restored after browser crash.
-  // [user_id] > [user_id_hash]
-  SessionManagerClient::ActiveSessionsMap pending_user_sessions_;
 
   // Time at which this object was created.
   base::TimeTicks manager_creation_time_;

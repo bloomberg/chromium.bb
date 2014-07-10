@@ -49,9 +49,6 @@ class UserManager {
     // on user_id hash would be accessing up-to-date value.
     virtual void ActiveUserHashChanged(const std::string& hash);
 
-    // Called when UserManager finishes restoring user sessions after crash.
-    virtual void PendingUserSessionsRestoreFinished();
-
    protected:
     virtual ~UserSessionStateObserver();
   };
@@ -159,13 +156,6 @@ class UserManager {
   // before the session has been started.
   // Fires NOTIFICATION_SESSION_STARTED.
   virtual void SessionStarted() = 0;
-
-  // Usually is called when Chrome is restarted after a crash and there's an
-  // active session. First user (one that is passed with --login-user) Chrome
-  // session has been already restored at this point. This method asks session
-  // manager for all active user sessions, marks them as logged in
-  // and notifies observers.
-  virtual void RestoreActiveSessions() = 0;
 
   // Removes the user from the device. Note, it will verify that the given user
   // isn't the owner, so calling this method for the owner will take no effect.
@@ -285,10 +275,6 @@ class UserManager {
   // browser_creator.LaunchBrowser(...) was called after sign in
   // or restart after crash.
   virtual bool IsSessionStarted() const = 0;
-
-  // Returns true iff browser has been restarted after crash and UserManager
-  // finished restoring user sessions.
-  virtual bool UserSessionsRestored() const = 0;
 
   // Returns true if data stored or cached for the user with the given user id
   // address outside that user's cryptohome (wallpaper, avatar, OAuth token

@@ -33,7 +33,6 @@ class MockUserManager : public UserManager {
       const std::string&, const std::string&, bool));
   MOCK_METHOD1(SwitchActiveUser, void(const std::string& email));
   MOCK_METHOD0(SessionStarted, void(void));
-  MOCK_METHOD0(RestoreActiveSessions, void(void));
   MOCK_METHOD2(RemoveUser, void(const std::string&, RemoveUserDelegate*));
   MOCK_METHOD1(RemoveUserFromList, void(const std::string&));
   MOCK_CONST_METHOD1(IsKnownUser, bool(const std::string&));
@@ -63,7 +62,6 @@ class MockUserManager : public UserManager {
   MOCK_CONST_METHOD0(IsLoggedInAsKioskApp, bool(void));
   MOCK_CONST_METHOD0(IsLoggedInAsStub, bool(void));
   MOCK_CONST_METHOD0(IsSessionStarted, bool(void));
-  MOCK_CONST_METHOD0(UserSessionsRestored, bool(void));
   MOCK_CONST_METHOD1(IsUserNonCryptohomeDataEphemeral,
                      bool(const std::string&));
   MOCK_METHOD1(AddObserver, void(UserManager::Observer*));

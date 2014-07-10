@@ -144,10 +144,9 @@ bool CanPerformEarlyRestart() {
 
 struct DoBrowserLaunchOnLocaleLoadedData;
 
-class LoginUtilsImpl
-    : public LoginUtils,
-      public base::SupportsWeakPtr<LoginUtilsImpl>,
-      public UserSessionManager::Delegate {
+class LoginUtilsImpl : public LoginUtils,
+                       public base::SupportsWeakPtr<LoginUtilsImpl>,
+                       public UserSessionManagerDelegate {
  public:
   LoginUtilsImpl()
       : delegate_(NULL) {
@@ -337,11 +336,8 @@ void LoginUtilsImpl::PrepareProfile(
   // creation and initialization to SessionManager. Later LoginUtils will be
   // removed and all LoginUtils clients will just work with SessionManager
   // directly.
-  UserSessionManager::GetInstance()->StartSession(user_context,
-                                              authenticator_,
-                                              has_auth_cookies,
-                                              has_active_session,
-                                              this);
+  UserSessionManager::GetInstance()->StartSession(
+      user_context, authenticator_, has_auth_cookies, has_active_session, this);
 }
 
 void LoginUtilsImpl::DelegateDeleted(LoginUtils::Delegate* delegate) {

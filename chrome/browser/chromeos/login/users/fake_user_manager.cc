@@ -248,10 +248,6 @@ bool FakeUserManager::IsSessionStarted() const {
   return false;
 }
 
-bool FakeUserManager::UserSessionsRestored() const {
-  return false;
-}
-
 bool FakeUserManager::IsUserNonCryptohomeDataEphemeral(
     const std::string& email) const {
   return false;

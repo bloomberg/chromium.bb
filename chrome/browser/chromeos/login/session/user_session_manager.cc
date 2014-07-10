@@ -56,6 +56,7 @@
 #include "chromeos/network/portal_detector/network_portal_detector.h"
 #include "chromeos/network/portal_detector/network_portal_detector_strategy.h"
 #include "components/signin/core/browser/signin_manager_base.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 
 namespace chromeos {
@@ -129,6 +130,20 @@ void OnGetNSSCertDatabaseForUser(net::NSSCertDatabase* database) {
 
 }  // namespace
 
+#if defined(ENABLE_RLZ)
+void UserSessionManagerDelegate::OnRlzInitialized() {
+}
+#endif
+
+UserSessionManagerDelegate::~UserSessionManagerDelegate() {
+}
+
+void UserSessionStateObserver::PendingUserSessionsRestoreFinished() {
+}
+
+UserSessionStateObserver::~UserSessionStateObserver() {
+}
+
 // static
 UserSessionManager* UserSessionManager::GetInstance() {
   return Singleton<UserSessionManager,
@@ -163,6 +178,7 @@ void UserSessionManager::RegisterPrefs(PrefRegistrySimple* registry) {
 UserSessionManager::UserSessionManager()
     : delegate_(NULL),
       has_auth_cookies_(false),
+      user_sessions_restored_(false),
       exit_after_session_restore_(false),
       session_restore_strategy_(
           OAuth2LoginManager::RESTORE_FROM_SAVED_OAUTH2_REFRESH_TOKEN) {
@@ -173,11 +189,12 @@ UserSessionManager::~UserSessionManager() {
   net::NetworkChangeNotifier::RemoveConnectionTypeObserver(this);
 }
 
-void UserSessionManager::StartSession(const UserContext& user_context,
-                                  scoped_refptr<Authenticator> authenticator,
-                                  bool has_auth_cookies,
-                                  bool has_active_session,
-                                  Delegate* delegate) {
+void UserSessionManager::StartSession(
+    const UserContext& user_context,
+    scoped_refptr<Authenticator> authenticator,
+    bool has_auth_cookies,
+    bool has_active_session,
+    UserSessionManagerDelegate* delegate) {
   authenticator_ = authenticator;
   delegate_ = delegate;
 
@@ -227,15 +244,26 @@ void UserSessionManager::RestoreAuthenticationSession(Profile* user_profile) {
   User* user = ProfileHelper::Get()->GetUserByProfile(user_profile);
   DCHECK(user);
   if (!net::NetworkChangeNotifier::IsOffline()) {
-    pending_restore_sessions_.erase(user->email());
+    pending_signin_restore_sessions_.erase(user->email());
     RestoreAuthSessionImpl(user_profile, false /* has_auth_cookies */);
   } else {
     // Even if we're online we should wait till initial
     // OnConnectionTypeChanged() call. Otherwise starting fetchers too early may
     // end up canceling all request when initial network connection type is
     // processed. See http://crbug.com/121643.
-    pending_restore_sessions_.insert(user->email());
+    pending_signin_restore_sessions_.insert(user->email());
   }
+}
+
+void UserSessionManager::RestoreActiveSessions() {
+  DBusThreadManager::Get()->GetSessionManagerClient()->RetrieveActiveSessions(
+      base::Bind(&UserSessionManager::OnRestoreActiveSessions,
+                 base::Unretained(this)));
+}
+
+bool UserSessionManager::UserSessionsRestored() const {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  return user_sessions_restored_;
 }
 
 void UserSessionManager::InitRlz(Profile* profile) {
@@ -367,6 +395,18 @@ bool UserSessionManager::RespectLocalePreference(
   return true;
 }
 
+void UserSessionManager::AddSessionStateObserver(
+    UserSessionStateObserver* observer) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  session_state_observer_list_.AddObserver(observer);
+}
+
+void UserSessionManager::RemoveSessionStateObserver(
+    UserSessionStateObserver* observer) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  session_state_observer_list_.RemoveObserver(observer);
+}
+
 void UserSessionManager::OnSessionRestoreStateChanged(
     Profile* user_profile,
     OAuth2LoginManager::SessionRestoreState state) {
@@ -442,8 +482,8 @@ void UserSessionManager::OnConnectionTypeChanged(
 
     Profile* user_profile = ProfileHelper::Get()->GetProfileByUser(*it);
     bool should_restore_session =
-        pending_restore_sessions_.find((*it)->email()) !=
-            pending_restore_sessions_.end();
+        pending_signin_restore_sessions_.find((*it)->email()) !=
+        pending_signin_restore_sessions_.end();
     OAuth2LoginManager* login_manager =
         OAuth2LoginManagerFactory::GetInstance()->GetForProfile(user_profile);
     if (login_manager->state() ==
@@ -452,10 +492,26 @@ void UserSessionManager::OnConnectionTypeChanged(
       // we need to kick off OAuth token verification process again.
       login_manager->ContinueSessionRestore();
     } else if (should_restore_session) {
-      pending_restore_sessions_.erase((*it)->email());
+      pending_signin_restore_sessions_.erase((*it)->email());
       RestoreAuthSessionImpl(user_profile, false /* has_auth_cookies */);
     }
   }
+}
+
+void UserSessionManager::OnProfilePrepared(Profile* profile) {
+  LoginUtils::Get()->DoBrowserLaunch(profile, NULL);  // host_, not needed here
+
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(::switches::kTestName)) {
+    // Did not log in (we crashed or are debugging), need to restore Sync.
+    // TODO(nkostylev): Make sure that OAuth state is restored correctly for all
+    // users once it is fully multi-profile aware. http://crbug.com/238987
+    // For now if we have other user pending sessions they'll override OAuth
+    // session restore for previous users.
+    UserSessionManager::GetInstance()->RestoreAuthenticationSession(profile);
+  }
+
+  // Restore other user sessions if any.
+  RestorePendingUserSessions();
 }
 
 void UserSessionManager::CreateUserSession(const UserContext& user_context,
@@ -755,6 +811,85 @@ void UserSessionManager::InitializeCertsForPrimaryUser(Profile* profile) {
     GetNSSCertDatabaseForProfile(profile,
                                  base::Bind(&OnGetNSSCertDatabaseForUser));
   }
+}
+
+void UserSessionManager::OnRestoreActiveSessions(
+    const SessionManagerClient::ActiveSessionsMap& sessions,
+    bool success) {
+  if (!success) {
+    LOG(ERROR) << "Could not get list of active user sessions after crash.";
+    // If we could not get list of active user sessions it is safer to just
+    // sign out so that we don't get in the inconsistent state.
+    DBusThreadManager::Get()->GetSessionManagerClient()->StopSession();
+    return;
+  }
+
+  // One profile has been already loaded on browser start.
+  UserManager* user_manager = UserManager::Get();
+  DCHECK(user_manager->GetLoggedInUsers().size() == 1);
+  DCHECK(user_manager->GetActiveUser());
+  std::string active_user_id = user_manager->GetActiveUser()->email();
+
+  SessionManagerClient::ActiveSessionsMap::const_iterator it;
+  for (it = sessions.begin(); it != sessions.end(); ++it) {
+    if (active_user_id == it->first)
+      continue;
+    pending_user_sessions_[it->first] = it->second;
+  }
+  RestorePendingUserSessions();
+}
+
+void UserSessionManager::RestorePendingUserSessions() {
+  if (pending_user_sessions_.empty()) {
+    NotifyPendingUserSessionsRestoreFinished();
+    return;
+  }
+
+  // Get next user to restore sessions and delete it from list.
+  SessionManagerClient::ActiveSessionsMap::const_iterator it =
+      pending_user_sessions_.begin();
+  std::string user_id = it->first;
+  std::string user_id_hash = it->second;
+  DCHECK(!user_id.empty());
+  DCHECK(!user_id_hash.empty());
+  pending_user_sessions_.erase(user_id);
+
+  // Check that this user is not logged in yet.
+  UserList logged_in_users = UserManager::Get()->GetLoggedInUsers();
+  bool user_already_logged_in = false;
+  for (UserList::const_iterator it = logged_in_users.begin();
+       it != logged_in_users.end();
+       ++it) {
+    const User* user = (*it);
+    if (user->email() == user_id) {
+      user_already_logged_in = true;
+      break;
+    }
+  }
+  DCHECK(!user_already_logged_in);
+
+  if (!user_already_logged_in) {
+    UserContext user_context(user_id);
+    user_context.SetUserIDHash(user_id_hash);
+    user_context.SetIsUsingOAuth(false);
+
+    // Will call OnProfilePrepared() once profile has been loaded.
+    StartSession(user_context,
+                 NULL,   // authenticator
+                 false,  // has_auth_cookies
+                 true,   // has_active_session
+                 this);
+  } else {
+    RestorePendingUserSessions();
+  }
+}
+
+void UserSessionManager::NotifyPendingUserSessionsRestoreFinished() {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  user_sessions_restored_ = true;
+  FOR_EACH_OBSERVER(UserSessionStateObserver,
+                    session_state_observer_list_,
+                    PendingUserSessionsRestoreFinished());
 }
 
 }  // namespace chromeos

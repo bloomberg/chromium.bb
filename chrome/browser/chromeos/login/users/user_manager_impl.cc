@@ -38,14 +38,12 @@
 #include "chrome/browser/chromeos/login/users/multi_profile_user_controller.h"
 #include "chrome/browser/chromeos/login/users/remove_user_delegate.h"
 #include "chrome/browser/chromeos/login/users/supervised_user_manager_impl.h"
-#include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_local_account.h"
 #include "chrome/browser/chromeos/profiles/multiprofiles_session_aborted_dialog.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/session_length_limiter.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/supervised_user/chromeos/manager_password_service_factory.h"
 #include "chrome/browser/supervised_user/chromeos/supervised_user_password_service_factory.h"
 #include "chrome/common/chrome_constants.h"
@@ -184,7 +182,6 @@ UserManagerImpl::UserManagerImpl()
       active_user_(NULL),
       primary_user_(NULL),
       session_started_(false),
-      user_sessions_restored_(false),
       is_current_user_owner_(false),
       is_current_user_new_(false),
       is_current_user_ephemeral_regular_user_(false),
@@ -491,12 +488,6 @@ void UserManagerImpl::SwitchActiveUser(const std::string& user_id) {
 
   NotifyActiveUserHashChanged(active_user_->username_hash());
   NotifyActiveUserChanged(active_user_);
-}
-
-void UserManagerImpl::RestoreActiveSessions() {
-  DBusThreadManager::Get()->GetSessionManagerClient()->RetrieveActiveSessions(
-      base::Bind(&UserManagerImpl::OnRestoreActiveSessions,
-                 base::Unretained(this)));
 }
 
 void UserManagerImpl::SessionStarted() {
@@ -953,11 +944,6 @@ bool UserManagerImpl::IsSessionStarted() const {
   return session_started_;
 }
 
-bool UserManagerImpl::UserSessionsRestored() const {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  return user_sessions_restored_;
-}
-
 bool UserManagerImpl::IsUserNonCryptohomeDataEphemeral(
     const std::string& user_id) const {
   // Data belonging to the guest, retail mode and stub users is always
@@ -1020,23 +1006,6 @@ void UserManagerImpl::NotifyLocalStateChanged() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   FOR_EACH_OBSERVER(UserManager::Observer, observer_list_,
                     LocalStateChanged(this));
-}
-
-void UserManagerImpl::OnProfilePrepared(Profile* profile) {
-  LoginUtils::Get()->DoBrowserLaunch(profile,
-                                     NULL);     // host_, not needed here
-
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(::switches::kTestName)) {
-    // Did not log in (we crashed or are debugging), need to restore Sync.
-    // TODO(nkostylev): Make sure that OAuth state is restored correctly for all
-    // users once it is fully multi-profile aware. http://crbug.com/238987
-    // For now if we have other user pending sessions they'll override OAuth
-    // session restore for previous users.
-    UserSessionManager::GetInstance()->RestoreAuthenticationSession(profile);
-  }
-
-  // Restore other user sessions if any.
-  RestorePendingUserSessions();
 }
 
 void UserManagerImpl::EnsureUsersLoaded() {
@@ -1699,14 +1668,6 @@ void UserManagerImpl::NotifyActiveUserHashChanged(const std::string& hash) {
                     ActiveUserHashChanged(hash));
 }
 
-void UserManagerImpl::NotifyPendingUserSessionsRestoreFinished() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  user_sessions_restored_ = true;
-  FOR_EACH_OBSERVER(UserManager::UserSessionStateObserver,
-                    session_state_observer_list_,
-                    PendingUserSessionsRestoreFinished());
-}
-
 void UserManagerImpl::UpdateLoginState() {
   if (!LoginState::IsInitialized())
     return;  // LoginState may not be intialized in tests.
@@ -1747,73 +1708,6 @@ void UserManagerImpl::SetLRUUser(User* user) {
   if (it != lru_logged_in_users_.end())
     lru_logged_in_users_.erase(it);
   lru_logged_in_users_.insert(lru_logged_in_users_.begin(), user);
-}
-
-void UserManagerImpl::OnRestoreActiveSessions(
-    const SessionManagerClient::ActiveSessionsMap& sessions,
-    bool success) {
-  if (!success) {
-    LOG(ERROR) << "Could not get list of active user sessions after crash.";
-    // If we could not get list of active user sessions it is safer to just
-    // sign out so that we don't get in the inconsistent state.
-    DBusThreadManager::Get()->GetSessionManagerClient()->StopSession();
-    return;
-  }
-
-  // One profile has been already loaded on browser start.
-  DCHECK(GetLoggedInUsers().size() == 1);
-  DCHECK(GetActiveUser());
-  std::string active_user_id = GetActiveUser()->email();
-
-  SessionManagerClient::ActiveSessionsMap::const_iterator it;
-  for (it = sessions.begin(); it != sessions.end(); ++it) {
-    if (active_user_id == it->first)
-      continue;
-    pending_user_sessions_[it->first] = it->second;
-  }
-  RestorePendingUserSessions();
-}
-
-void UserManagerImpl::RestorePendingUserSessions() {
-  if (pending_user_sessions_.empty()) {
-    NotifyPendingUserSessionsRestoreFinished();
-    return;
-  }
-
-  // Get next user to restore sessions and delete it from list.
-  SessionManagerClient::ActiveSessionsMap::const_iterator it =
-      pending_user_sessions_.begin();
-  std::string user_id = it->first;
-  std::string user_id_hash = it->second;
-  DCHECK(!user_id.empty());
-  DCHECK(!user_id_hash.empty());
-  pending_user_sessions_.erase(user_id);
-
-  // Check that this user is not logged in yet.
-  UserList logged_in_users = GetLoggedInUsers();
-  bool user_already_logged_in = false;
-  for (UserList::const_iterator it = logged_in_users.begin();
-       it != logged_in_users.end(); ++it) {
-    const User* user = (*it);
-    if (user->email() == user_id) {
-      user_already_logged_in = true;
-      break;
-    }
-  }
-  DCHECK(!user_already_logged_in);
-
-  if (!user_already_logged_in) {
-    UserContext user_context(user_id);
-    user_context.SetUserIDHash(user_id_hash);
-    user_context.SetIsUsingOAuth(false);
-    // Will call OnProfilePrepared() once profile has been loaded.
-    LoginUtils::Get()->PrepareProfile(user_context,
-                                      false,          // has_auth_cookies
-                                      true,           // has_active_session
-                                      this);
-  } else {
-    RestorePendingUserSessions();
-  }
 }
 
 void UserManagerImpl::SendRegularUserLoginMetrics(const std::string& user_id) {

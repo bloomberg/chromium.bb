@@ -590,7 +590,7 @@ void ChromeBrowserMainPartsChromeos::PostProfileInit() {
     // First user has been already marked as logged in and active in
     // PreProfileInit(). Chrome should tread other user in a session as active
     // in the background.
-    UserManager::Get()->RestoreActiveSessions();
+    UserSessionManager::GetInstance()->RestoreActiveSessions();
   }
 
   // Initialize the network portal detector for Chrome OS. The network

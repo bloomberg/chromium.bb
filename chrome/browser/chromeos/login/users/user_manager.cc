@@ -33,10 +33,6 @@ void UserManager::UserSessionStateObserver::ActiveUserHashChanged(
     const std::string& hash) {
 }
 
-void UserManager::UserSessionStateObserver::
-PendingUserSessionsRestoreFinished() {
-}
-
 UserManager::UserSessionStateObserver::~UserSessionStateObserver() {
 }
 

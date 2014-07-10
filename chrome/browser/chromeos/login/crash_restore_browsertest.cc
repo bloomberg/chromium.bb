@@ -8,6 +8,7 @@
 #include "base/command_line.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
+#include "chrome/browser/chromeos/login/session/user_session_manager.h"
 #include "chrome/browser/chromeos/login/users/user.h"
 #include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -68,20 +69,20 @@ IN_PROC_BROWSER_TEST_F(CrashRestoreSimpleTest, RestoreSessionForOneUser) {
 }
 
 // Observer that keeps track of user sessions restore event.
-class UserSessionRestoreObserver :
-    public UserManager::UserSessionStateObserver {
+class UserSessionRestoreObserver : public UserSessionStateObserver {
  public:
   UserSessionRestoreObserver()
       : running_loop_(false),
-        user_sessions_restored_(UserManager::Get()->UserSessionsRestored()) {
+        user_sessions_restored_(
+            UserSessionManager::GetInstance()->UserSessionsRestored()) {
     if (!user_sessions_restored_)
-      UserManager::Get()->AddSessionStateObserver(this);
+      UserSessionManager::GetInstance()->AddSessionStateObserver(this);
   }
   virtual ~UserSessionRestoreObserver() {}
 
   virtual void PendingUserSessionsRestoreFinished() OVERRIDE {
     user_sessions_restored_ = true;
-    UserManager::Get()->RemoveSessionStateObserver(this);
+    UserSessionManager::GetInstance()->RemoveSessionStateObserver(this);
     if (!running_loop_)
       return;
 
@@ -127,11 +128,11 @@ IN_PROC_BROWSER_TEST_F(CrashRestoreComplexTest, RestoreSessionForThreeUsers) {
     restore_observer.Wait();
   }
 
-  UserManager* user_manager = UserManager::Get();
-  DCHECK(user_manager->UserSessionsRestored());
+  DCHECK(UserSessionManager::GetInstance()->UserSessionsRestored());
 
   // User that is last in the user sessions map becomes active. This behavior
   // will become better defined once each user gets a separate user desktop.
+  UserManager* user_manager = UserManager::Get();
   User* user = user_manager->GetActiveUser();
   ASSERT_TRUE(user);
   EXPECT_EQ(kUserId3, user->email());
