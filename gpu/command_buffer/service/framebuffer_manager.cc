@@ -374,11 +374,6 @@ bool Framebuffer::HasUnclearedColorAttachments() const {
 }
 
 void Framebuffer::ChangeDrawBuffersHelper(bool recover) const {
-  // There will always be only one buffer, GL_COLOR_ATTACHMENT0, if
-  // GL_ARB_draw_buffers is not present, even if this FBO has no attachment.
-  if (!gfx::g_driver_gl.ext.b_GL_ARB_draw_buffers)
-    return;
-
   scoped_ptr<GLenum[]> buffers(new GLenum[manager_->max_draw_buffers_]);
   for (uint32 i = 0; i < manager_->max_draw_buffers_; ++i)
     buffers[i] = GL_NONE;
