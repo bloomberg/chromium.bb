@@ -11,7 +11,8 @@ struct AutocompleteMatchType {
   // Type of AutocompleteMatch. Typedef'ed in autocomplete_match.h. Defined here
   // to pass the type details back and forth between the browser and renderer.
   //
-  // These values are stored in ShortcutsDatabase and cannot be renumbered.
+  // These values are stored in ShortcutsDatabase and in GetDemotionsByType()
+  // and cannot be renumbered.
   enum Type {
     URL_WHAT_YOU_TYPED    = 0,  // The input as a URL.
     HISTORY_URL           = 1,  // A past page whose URL contains the input.

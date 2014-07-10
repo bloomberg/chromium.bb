@@ -325,7 +325,7 @@ void OmniboxFieldTrial::GetDemotionsByType(
   if (demotion_rule.empty() &&
       (current_page_classification ==
        OmniboxEventProto::INSTANT_NTP_WITH_FAKEBOX_AS_STARTING_FOCUS))
-    demotion_rule = "1:61,2:61,3:61,4:61,12:61";
+    demotion_rule = "1:61,2:61,3:61,4:61,16:61";
 
   // The value of the DemoteByType rule is a comma-separated list of
   // {ResultType + ":" + Number} where ResultType is an AutocompleteMatchType::
