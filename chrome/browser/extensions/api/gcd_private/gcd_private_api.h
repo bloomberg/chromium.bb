@@ -37,8 +37,6 @@ class GcdPrivateAPI : public BrowserContextKeyedAPI,
   // BrowserContextKeyedAPI implementation.
   static BrowserContextKeyedAPIFactory<GcdPrivateAPI>* GetFactoryInstance();
 
-  bool QueryForDevices();
-
  private:
   friend class BrowserContextKeyedAPIFactory<GcdPrivateAPI>;
 
@@ -100,7 +98,7 @@ class GcdPrivateGetCloudDeviceListFunction
 };
 
 class GcdPrivateQueryForNewLocalDevicesFunction
-    : public ChromeSyncExtensionFunction {
+    : public ChromeAsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("gcdPrivate.queryForNewLocalDevices",
                              GCDPRIVATE_QUERYFORNEWLOCALDEVICES)
@@ -110,8 +108,8 @@ class GcdPrivateQueryForNewLocalDevicesFunction
  protected:
   virtual ~GcdPrivateQueryForNewLocalDevicesFunction();
 
-  // SyncExtensionFunction overrides.
-  virtual bool RunSync() OVERRIDE;
+  // AsyncExtensionFunction overrides.
+  virtual bool RunAsync() OVERRIDE;
 };
 
 class GcdPrivateStartSetupFunction : public ChromeAsyncExtensionFunction {

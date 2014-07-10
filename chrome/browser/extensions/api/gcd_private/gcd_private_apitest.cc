@@ -130,22 +130,6 @@ const uint8 kGoodbyePacket[] = {
     'o',  'c',  'a',  'l',  0x00,
 };
 
-const uint8 kQueryPacket[] = {
-    // Header
-    0x00, 0x00,  // ID is zeroed out
-    0x00, 0x00,  // No flags.
-    0x00, 0x01,  // One question.
-    0x00, 0x00,  // 0 RRs (answers)
-    0x00, 0x00,  // 0 authority RRs
-    0x00, 0x00,  // 0 additional RRs
-
-    // Question
-    // This part is echoed back from the respective query.
-    0x07, '_',  'p', 'r', 'i', 'v', 'e', 't',  0x04, '_',  't', 'c',
-    'p',  0x05, 'l', 'o', 'c', 'a', 'l', 0x00, 0x00, 0x0c,  // TYPE is PTR.
-    0x00, 0x01,                                             // CLASS is IN.
-};
-
 #endif  // ENABLE_MDNS
 
 // Sentinel value to signify the request should fail.
@@ -268,14 +252,6 @@ IN_PROC_BROWSER_TEST_F(GcdPrivateAPITest, AddRemove) {
       base::TimeDelta::FromSeconds(1));
 
   EXPECT_TRUE(RunExtensionSubtest("gcd_private/api", "remove_device.html"));
-}
-
-IN_PROC_BROWSER_TEST_F(GcdPrivateAPITest, SendQuery) {
-  EXPECT_CALL(*test_service_discovery_client_,
-              OnSendTo(std::string(reinterpret_cast<const char*>(kQueryPacket),
-                                   sizeof(kQueryPacket)))).Times(2);
-
-  EXPECT_TRUE(RunExtensionSubtest("gcd_private/api", "send_query.html"));
 }
 
 #endif  // ENABLE_MDNS
