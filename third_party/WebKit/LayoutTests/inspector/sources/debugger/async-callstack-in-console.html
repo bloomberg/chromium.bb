@@ -7,6 +7,7 @@
 
 function testFunction()
 {
+    debugger;
     console.clear();
     setTimeout(timeout1, 0);
 }
@@ -40,8 +41,17 @@ var test = function()
     {
         DebuggerAgent.setPauseOnExceptions(WebInspector.DebuggerModel.PauseOnExceptionsState.DontPauseOnExceptions);
         DebuggerAgent.setAsyncCallStackDepth(0);
-        InspectorTest.runTestFunctionAndWaitUntilPaused(didPause);
-        DebuggerAgent.setAsyncCallStackDepth(maxAsyncCallStackDepth);
+        InspectorTest.runTestFunctionAndWaitUntilPaused(step2);
+    }
+
+    function step2()
+    {
+        DebuggerAgent.setAsyncCallStackDepth(maxAsyncCallStackDepth, step3);
+    }
+
+    function step3()
+    {
+        InspectorTest.resumeExecution(InspectorTest.waitUntilPaused.bind(InspectorTest, didPause));
     }
 
     function didPause(callFrames, reason, breakpointIds, asyncStackTrace)
