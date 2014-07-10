@@ -148,7 +148,6 @@ DrawingBuffer::DrawingBuffer(PassOwnPtr<blink::WebGraphicsContext3D> context,
     , m_sampleCount(0)
     , m_packAlignment(4)
     , m_destructionInProgress(false)
-    , m_isHidden(false)
     , m_contextEvictionManager(contextEvictionManager)
 {
     // Used by browser tests to detect the use of a DrawingBuffer.
@@ -186,26 +185,6 @@ void DrawingBuffer::markLayerComposited()
     m_layerComposited = true;
 }
 
-
-void DrawingBuffer::setIsHidden(bool hidden)
-{
-    ASSERT(!m_destructionInProgress);
-    if (m_isHidden == hidden)
-        return;
-    m_isHidden = hidden;
-    if (m_isHidden)
-        freeRecycledMailboxes();
-}
-
-void DrawingBuffer::freeRecycledMailboxes()
-{
-    if (m_recycledMailboxQueue.isEmpty())
-        return;
-    m_context->makeContextCurrent();
-    while (!m_recycledMailboxQueue.isEmpty())
-        deleteMailbox(m_recycledMailboxQueue.takeLast());
-}
-
 blink::WebGraphicsContext3D* DrawingBuffer::context()
 {
     return m_context.get();
@@ -213,7 +192,6 @@ blink::WebGraphicsContext3D* DrawingBuffer::context()
 
 bool DrawingBuffer::prepareMailbox(blink::WebExternalTextureMailbox* outMailbox, blink::WebExternalBitmap* bitmap)
 {
-    ASSERT(!m_isHidden);
     if (!m_contentsChanged)
         return false;
 
@@ -299,8 +277,8 @@ bool DrawingBuffer::prepareMailbox(blink::WebExternalTextureMailbox* outMailbox,
 
 void DrawingBuffer::mailboxReleased(const blink::WebExternalTextureMailbox& mailbox)
 {
-    if (m_destructionInProgress || m_isHidden) {
-        mailboxReleasedWithoutRecycling(mailbox);
+    if (m_destructionInProgress) {
+        mailboxReleasedWhileDestructionInProgress(mailbox);
         return;
     }
 
@@ -317,7 +295,7 @@ void DrawingBuffer::mailboxReleased(const blink::WebExternalTextureMailbox& mail
     ASSERT_NOT_REACHED();
 }
 
-void DrawingBuffer::mailboxReleasedWithoutRecycling(const blink::WebExternalTextureMailbox& mailbox)
+void DrawingBuffer::mailboxReleasedWhileDestructionInProgress(const blink::WebExternalTextureMailbox& mailbox)
 {
     ASSERT(m_textureMailboxes.size());
     m_context->makeContextCurrent();
