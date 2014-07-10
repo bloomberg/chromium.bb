@@ -51,6 +51,9 @@ class BrowserActionOverflowMenuController : public views::MenuDelegate {
   // Closes the overflow menu (and its context menu if open as well).
   void CancelMenu();
 
+  // Notify the menu that the associated BrowserActionViews have been deleted.
+  void NotifyBrowserActionViewsDeleting();
+
   // Overridden from views::MenuDelegate:
   virtual bool IsCommandEnabled(int id) const OVERRIDE;
   virtual void ExecuteCommand(int id) OVERRIDE;

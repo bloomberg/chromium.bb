@@ -236,6 +236,8 @@ void BrowserActionsContainer::CreateBrowserActionViews() {
 
 void BrowserActionsContainer::DeleteBrowserActionViews() {
   HidePopup();
+  if (overflow_menu_)
+    overflow_menu_->NotifyBrowserActionViewsDeleting();
   STLDeleteElements(&browser_action_views_);
 }
 

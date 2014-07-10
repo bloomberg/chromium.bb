@@ -30,8 +30,7 @@
 // action button's icon has been updated.
 class IconUpdater : public BrowserActionButton::IconObserver {
  public:
-  IconUpdater(views::MenuItemView* menu_item_view,
-              BrowserActionButton* button)
+  IconUpdater(views::MenuItemView* menu_item_view, BrowserActionButton* button)
       : menu_item_view_(menu_item_view),
         button_(button) {
     DCHECK(menu_item_view);
@@ -126,6 +125,10 @@ bool BrowserActionOverflowMenuController::RunMenu(views::Widget* window,
 
 void BrowserActionOverflowMenuController::CancelMenu() {
   menu_->Cancel();
+}
+
+void BrowserActionOverflowMenuController::NotifyBrowserActionViewsDeleting() {
+  icon_updaters_.clear();
 }
 
 bool BrowserActionOverflowMenuController::IsCommandEnabled(int id) const {
