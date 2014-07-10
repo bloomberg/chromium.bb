@@ -37,6 +37,8 @@
             'ExceptionState.h',
             'ExceptionStatePlaceholder.cpp',
             'ExceptionStatePlaceholder.h',
+            'ModuleProxy.cpp',
+            'ModuleProxy.h',
             'NPV8Object.cpp',
             'NPV8Object.h',
             'Nullable.h',

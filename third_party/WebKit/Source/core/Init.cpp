@@ -108,6 +108,7 @@ void CoreInitializer::init()
     Partitions::init();
     EventTracer::initialize();
 
+    initBindings();
     registerEventFactory();
 
     // Ensure that the main thread's thread-local data is initialized before

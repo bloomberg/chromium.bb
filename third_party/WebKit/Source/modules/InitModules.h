@@ -18,6 +18,7 @@ public:
     virtual void registerEventFactory() OVERRIDE;
     virtual void initEventNames() OVERRIDE;
     virtual void initEventTargetNames() OVERRIDE;
+    virtual void initBindings() OVERRIDE;
 };
 
 PassRefPtrWillBeRawPtr<Event> createEventModules(const String& eventType, ExceptionState&);

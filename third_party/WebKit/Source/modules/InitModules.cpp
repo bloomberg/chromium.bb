@@ -5,6 +5,7 @@
 #include "config.h"
 #include "InitModules.h"
 
+#include "bindings/modules/v8/ModuleBindingsInitializer.h"
 #include "core/EventTypeNames.h"
 #include "core/dom/Document.h"
 #include "modules/EventModulesFactory.h"
@@ -29,6 +30,11 @@ void ModulesInitializer::registerEventFactory()
 {
     CoreInitializer::registerEventFactory();
     Document::registerEventFactory(EventModulesFactory::create());
+}
+
+void ModulesInitializer::initBindings()
+{
+    ModuleBindingsInitializer::init();
 }
 
 } // namespace WebCore

@@ -11,6 +11,8 @@
             '<@(bindings_modules_v8_custom_files)',
             'IDBBindingUtilities.cpp',
             'IDBBindingUtilities.h',
+            'ModuleBindingsInitializer.cpp',
+            'ModuleBindingsInitializer.h',
         ],
         'bindings_modules_v8_unittest_files': [
             'IDBBindingUtilitiesTest.cpp',

@@ -42,6 +42,7 @@ public:
     virtual void registerEventFactory();
     virtual void initEventNames();
     virtual void initEventTargetNames();
+    virtual void initBindings() { }
 
 private:
     bool m_isInited;
