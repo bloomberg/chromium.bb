@@ -114,7 +114,7 @@ class MOJO_VIEW_MANAGER_EXPORT RootNodeManager
   // Returns the View identified by |id|.
   View* GetView(const ViewId& id);
 
-  Node* root() { return &root_; }
+  Node* root() { return root_.get(); }
 
   bool IsProcessingChange() const { return current_change_ != NULL; }
 
@@ -137,6 +137,7 @@ class MOJO_VIEW_MANAGER_EXPORT RootNodeManager
 
   // These functions trivially delegate to all ViewManagerServiceImpls, which in
   // term notify their clients.
+  void ProcessNodeDestroyed(Node* node);
   void ProcessNodeBoundsChanged(const Node* node,
                                 const gfx::Rect& old_bounds,
                                 const gfx::Rect& new_bounds);
@@ -187,6 +188,7 @@ class MOJO_VIEW_MANAGER_EXPORT RootNodeManager
                                    const Array<Id>& node_ids);
 
   // Overridden from NodeDelegate:
+  virtual void OnNodeDestroyed(const Node* node) OVERRIDE;
   virtual void OnNodeHierarchyChanged(const Node* node,
                                       const Node* new_parent,
                                       const Node* old_parent) OVERRIDE;
@@ -214,7 +216,7 @@ class MOJO_VIEW_MANAGER_EXPORT RootNodeManager
   RootViewManager root_view_manager_;
 
   // Root node.
-  Node root_;
+  scoped_ptr<Node> root_;
 
   // Set of ViewManagerServiceImpls created by way of Connect(). These have to
   // be explicitly destroyed.

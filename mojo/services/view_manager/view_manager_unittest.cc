@@ -415,8 +415,8 @@ void EmbedRootCallback(bool* result_cache,
   run_loop->Quit();
 }
 
-// Resposible for establishing the initial ViewManagerService connection. Blocks
-// until result is determined.
+// Responsible for establishing the initial ViewManagerService connection.
+// Blocks until result is determined.
 bool EmbedRoot(ViewManagerInitService* view_manager_init,
                const std::string& url) {
   bool result = false;

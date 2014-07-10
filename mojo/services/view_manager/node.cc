@@ -37,11 +37,17 @@ Node::Node(NodeDelegate* delegate, const NodeId& id)
 }
 
 Node::~Node() {
-  SetView(NULL);
   // This is implicitly done during deletion of the window, but we do it here so
   // that we're in a known state.
   if (window_.parent())
     window_.parent()->RemoveChild(&window_);
+
+  // This must be done *after* updating the hierarchy since the hierarchy change
+  // will remove the node from the connections that know about it, preventing
+  // this notification from being sent after the destruction notification.
+  SetView(NULL);
+
+  delegate_->OnNodeDestroyed(this);
 }
 
 // static
@@ -133,7 +139,12 @@ void Node::OnWindowHierarchyChanged(
       params.new_parent->GetProperty(kNodeKey) : NULL;
   const Node* old_parent = params.old_parent ?
       params.old_parent->GetProperty(kNodeKey) : NULL;
-  delegate_->OnNodeHierarchyChanged(this, new_parent, old_parent);
+  // This check is needed because even the root Node's aura::Window has a
+  // parent, but the Node itself has no parent (so it's possible for us to
+  // receive this notification from aura when no logical Node hierarchy change
+  // has actually ocurred).
+  if (new_parent != old_parent)
+    delegate_->OnNodeHierarchyChanged(this, new_parent, old_parent);
 }
 
 gfx::Size Node::GetMinimumSize() const {

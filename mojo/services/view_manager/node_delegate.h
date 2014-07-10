@@ -24,6 +24,10 @@ class View;
 
 class MOJO_VIEW_MANAGER_EXPORT NodeDelegate {
  public:
+  // Invoked at the end of the Node's destructor (after it has been removed from
+  // the hierarchy and its active view has been reset).
+  virtual void OnNodeDestroyed(const Node* node) = 0;
+
   // Invoked when the hierarchy has changed.
   virtual void OnNodeHierarchyChanged(const Node* node,
                                       const Node* new_parent,

@@ -47,33 +47,19 @@ ViewManagerServiceImpl::ViewManagerServiceImpl(
 }
 
 ViewManagerServiceImpl::~ViewManagerServiceImpl() {
-  // Delete any views we own.
+  // Delete any views we created.
   while (!view_map_.empty()) {
     bool result = DeleteViewImpl(this, view_map_.begin()->second->id());
     DCHECK(result);
   }
 
-  // We're about to destroy all our nodes. Detach any views from them.
-  for (NodeMap::iterator i = node_map_.begin(); i != node_map_.end(); ++i) {
-    if (i->second->view()) {
-      bool result = SetViewImpl(i->second, ViewId());
-      DCHECK(result);
-    }
-  }
-
+  // Ditto the nodes.
   if (!node_map_.empty()) {
     RootNodeManager::ScopedChange change(
         this, root_node_manager_,
         RootNodeManager::CHANGE_TYPE_ADVANCE_SERVER_CHANGE_ID, true);
-    while (!node_map_.empty()) {
-      scoped_ptr<Node> node(node_map_.begin()->second);
-      Node* parent = node->GetParent();
-      const NodeId node_id(node->id());
-      if (parent)
-        parent->Remove(node.get());
-      root_node_manager_->ProcessNodeDeleted(node_id);
-      node_map_.erase(NodeIdToTransportId(node_id));
-    }
+    while (!node_map_.empty())
+      delete node_map_.begin()->second;
   }
 
   root_node_manager_->RemoveConnection(this);
@@ -205,6 +191,8 @@ void ViewManagerServiceImpl::ProcessNodeViewReplaced(
 void ViewManagerServiceImpl::ProcessNodeDeleted(const NodeId& node,
                                                 Id server_change_id,
                                                 bool originated_change) {
+  node_map_.erase(node.node_id);
+
   const bool in_known = known_nodes_.erase(NodeIdToTransportId(node)) > 0;
   const bool in_roots = roots_.erase(NodeIdToTransportId(node)) > 0;
 
@@ -382,16 +370,7 @@ bool ViewManagerServiceImpl::DeleteNodeImpl(ViewManagerServiceImpl* source,
   RootNodeManager::ScopedChange change(
       source, root_node_manager_,
       RootNodeManager::CHANGE_TYPE_ADVANCE_SERVER_CHANGE_ID, true);
-  if (node->GetParent())
-    node->GetParent()->Remove(node);
-  std::vector<Node*> children(node->GetChildren());
-  for (size_t i = 0; i < children.size(); ++i)
-    node->Remove(children[i]);
-  DCHECK(node->GetChildren().empty());
-  node_map_.erase(node_id.node_id);
   delete node;
-  node = NULL;
-  root_node_manager_->ProcessNodeDeleted(node_id);
   return true;
 }
 
@@ -570,7 +549,7 @@ void ViewManagerServiceImpl::CreateNode(
     callback.Run(false);
     return;
   }
-  node_map_[node_id.node_id] = new Node(this, node_id);
+  node_map_[node_id.node_id] = new Node(root_node_manager_, node_id);
   known_nodes_.insert(transport_node_id);
   callback.Run(true);
 }
@@ -800,29 +779,6 @@ void ViewManagerServiceImpl::DispatchOnViewInputEvent(Id transport_view_id,
         event.Pass(),
         base::Bind(&base::DoNothing));
   }
-}
-
-void ViewManagerServiceImpl::OnNodeHierarchyChanged(const Node* node,
-                                                    const Node* new_parent,
-                                                    const Node* old_parent) {
-  root_node_manager_->ProcessNodeHierarchyChanged(node, new_parent, old_parent);
-}
-
-void ViewManagerServiceImpl::OnNodeBoundsChanged(const Node* node,
-                                                 const gfx::Rect& old_bounds,
-                                                 const gfx::Rect& new_bounds) {
-  root_node_manager_->ProcessNodeBoundsChanged(node, old_bounds, new_bounds);
-}
-
-void ViewManagerServiceImpl::OnNodeViewReplaced(const Node* node,
-                                                const View* new_view,
-                                                const View* old_view) {
-  root_node_manager_->ProcessNodeViewReplaced(node, new_view, old_view);
-}
-
-void ViewManagerServiceImpl::OnViewInputEvent(const View* view,
-                                              const ui::Event* event) {
-  root_node_manager_->DispatchViewInputEventToWindowManager(view, event);
 }
 
 void ViewManagerServiceImpl::OnConnectionEstablished() {

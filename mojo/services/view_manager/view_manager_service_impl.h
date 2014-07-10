@@ -14,7 +14,6 @@
 #include "base/containers/hash_tables.h"
 #include "mojo/services/public/interfaces/view_manager/view_manager.mojom.h"
 #include "mojo/services/view_manager/ids.h"
-#include "mojo/services/view_manager/node_delegate.h"
 #include "mojo/services/view_manager/view_manager_export.h"
 
 namespace gfx {
@@ -38,8 +37,7 @@ class View;
 
 // Manages a connection from the client.
 class MOJO_VIEW_MANAGER_EXPORT ViewManagerServiceImpl
-    : public InterfaceImpl<ViewManagerService>,
-      public NodeDelegate {
+    : public InterfaceImpl<ViewManagerService> {
  public:
   ViewManagerServiceImpl(RootNodeManager* root_node_manager,
                          ConnectionSpecificId creator_id,
@@ -216,19 +214,6 @@ class MOJO_VIEW_MANAGER_EXPORT ViewManagerServiceImpl
   virtual void DispatchOnViewInputEvent(Id transport_view_id,
                                         EventPtr event) OVERRIDE;
 
-  // Overridden from NodeDelegate:
-  virtual void OnNodeHierarchyChanged(const Node* node,
-                                      const Node* new_parent,
-                                      const Node* old_parent) OVERRIDE;
-  virtual void OnNodeBoundsChanged(const Node* node,
-                                   const gfx::Rect& old_bounds,
-                                   const gfx::Rect& new_bounds) OVERRIDE;
-  virtual void OnNodeViewReplaced(const Node* node,
-                                  const View* new_view,
-                                  const View* old_view) OVERRIDE;
-  virtual void OnViewInputEvent(const View* view,
-                                const ui::Event* event) OVERRIDE;
-
   // InterfaceImp overrides:
   virtual void OnConnectionEstablished() MOJO_OVERRIDE;
 
@@ -247,8 +232,9 @@ class MOJO_VIEW_MANAGER_EXPORT ViewManagerServiceImpl
   // The URL of the app that embedded the app this connection was created for.
   const std::string creator_url_;
 
+  // The nodes and views created by this connection. This connection owns these
+  // objects.
   NodeMap node_map_;
-
   ViewMap view_map_;
 
   // The set of nodes that has been communicated to the client.
