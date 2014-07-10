@@ -6,6 +6,7 @@
 #include "base/command_line.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_info_cache_observer.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -20,6 +21,9 @@
 #include "chrome/test/base/test_switches.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/autofill/core/common/password_form.h"
+#include "components/password_manager/core/browser/password_store.h"
+#include "components/password_manager/core/browser/password_store_consumer.h"
 
 #if defined(OS_CHROMEOS)
 #include "base/path_service.h"
@@ -83,6 +87,31 @@ class ProfileRemovalObserver : public ProfileInfoCacheObserver {
   std::string last_used_profile_name_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileRemovalObserver);
+};
+
+// The class serves to retrieve passwords from PasswordStore asynchronously. It
+// used by ProfileManagerBrowserTest.DeletePasswords on some platforms.
+class PasswordStoreConsumerVerifier :
+    public password_manager::PasswordStoreConsumer {
+ public:
+  PasswordStoreConsumerVerifier() : called_(false) {}
+
+  virtual void OnGetPasswordStoreResults(
+      const std::vector<autofill::PasswordForm*>& results) OVERRIDE {
+    EXPECT_FALSE(called_);
+    called_ = true;
+    password_entries_.clear();
+    password_entries_.assign(results.begin(), results.end());
+  }
+
+  bool IsCalled() const { return called_; }
+
+  const std::vector<autofill::PasswordForm*>& GetPasswords() const {
+    return password_entries_.get();
+  }
+ private:
+  ScopedVector<autofill::PasswordForm> password_entries_;
+  bool called_;
 };
 
 } // namespace
@@ -369,3 +398,51 @@ IN_PROC_BROWSER_TEST_F(ProfileManagerBrowserTest, EphemeralProfile) {
   ASSERT_EQ(1U, cache.GetNumberOfProfiles());
 }
 
+// The test makes sense on those platforms where the keychain exists.
+#if !defined(OS_WIN) && !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
+IN_PROC_BROWSER_TEST_F(ProfileManagerBrowserTest, DeletePasswords) {
+  Profile* profile = ProfileManager::GetActiveUserProfile();
+  ASSERT_TRUE(profile);
+
+  autofill::PasswordForm form;
+  form.scheme = autofill::PasswordForm::SCHEME_HTML;
+  form.origin = GURL("http://accounts.google.com/LoginAuth");
+  form.signon_realm = "http://accounts.google.com/";
+  form.username_value = base::ASCIIToUTF16("my_username");
+  form.password_value = base::ASCIIToUTF16("my_password");
+  form.ssl_valid = false;
+  form.preferred = true;
+  form.blacklisted_by_user = false;
+
+  scoped_refptr<password_manager::PasswordStore> password_store =
+      PasswordStoreFactory::GetForProfile(profile, Profile::EXPLICIT_ACCESS)
+          .get();
+  ASSERT_TRUE(password_store);
+
+  password_store->AddLogin(form);
+  PasswordStoreConsumerVerifier verify_add;
+  password_store->GetAutofillableLogins(&verify_add);
+
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+  profile_manager->ScheduleProfileForDeletion(profile->GetPath(),
+                                              ProfileManager::CreateCallback());
+  content::RunAllPendingInMessageLoop();
+  PasswordStoreConsumerVerifier verify_delete;
+  password_store->GetAutofillableLogins(&verify_delete);
+
+  // Run the password background thread.
+  base::RunLoop run_loop;
+  base::Closure task = base::Bind(
+      base::IgnoreResult(&content::BrowserThread::PostTask),
+      content::BrowserThread::UI,
+      FROM_HERE,
+      run_loop.QuitClosure());
+  EXPECT_TRUE(password_store->ScheduleTask(task));
+  run_loop.Run();
+
+  EXPECT_TRUE(verify_add.IsCalled());
+  EXPECT_EQ(1u, verify_add.GetPasswords().size());
+  EXPECT_TRUE(verify_delete.IsCalled());
+  EXPECT_EQ(0u, verify_delete.GetPasswords().size());
+}
+#endif  // !defined(OS_WIN) && !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
