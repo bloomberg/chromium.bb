@@ -201,7 +201,7 @@ void ConsoleMessage::addToFrontend(InspectorFrontend::Console* frontend, Injecte
     jsonObj->setColumn(static_cast<int>(m_column));
     jsonObj->setUrl(m_url);
     ScriptState* scriptState = m_scriptState.get();
-    if (scriptState && scriptState->executionContext()->isDocument())
+    if (scriptState)
         jsonObj->setExecutionContextId(injectedScriptManager->injectedScriptIdFor(scriptState));
     if (m_source == NetworkMessageSource && !m_requestId.isEmpty())
         jsonObj->setNetworkRequestId(m_requestId);
