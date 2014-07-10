@@ -526,7 +526,7 @@ void ComponentLoader::AddDefaultComponentExtensionsWithBackgroundPages(
   if (!skip_session_components) {
 #if defined(GOOGLE_CHROME_BUILD)
     if (!command_line->HasSwitch(
-            chromeos::switches::kDisableQuickofficeComponentApp)) {
+            chromeos::switches::kDisableOfficeEditingComponentApp)) {
       std::string id = Add(IDR_QUICKOFFICE_MANIFEST, base::FilePath(
           FILE_PATH_LITERAL("/usr/share/chromeos-assets/quickoffice")));
       EnableFileSystemInGuestMode(id);

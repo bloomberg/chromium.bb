@@ -1100,11 +1100,11 @@ Press any key to continue exploring.
   <message name="IDS_ECHO_CONSENT_DISMISS_BUTTON" desc="Dismiss dialog button label for disabled echo dialog.">
     Dismiss
   </message>
-  <message name="IDS_FLAGS_DISABLE_QUICKOFFICE_COMPONENT_APP_NAME" desc="Name for the flag to disable Chrome Office Viewer component extension.">
-    Disable Quickoffice component extension
+  <message name="IDS_FLAGS_DISABLE_OFFICE_EDITING_COMPONENT_APP_NAME" desc="Name for the flag to disable Office Editing for Docs, Sheets &amp; Slides component extension.">
+    Disable Office Editing for Docs, Sheets &amp; Slides
   </message>
-  <message name="IDS_FLAGS_DISABLE_QUICKOFFICE_COMPONENT_APP_DESCRIPTION" desc="Description for the flag to disable Chrome Office component extension.">
-    Disable Quickoffice component extension for testing purposes.
+  <message name="IDS_FLAGS_DISABLE_OFFICE_EDITING_COMPONENT_APP_DESCRIPTION" desc="Description for the flag to disable Office Editing for Docs, Sheets &amp; Slides component extension.">
+    Disable Office Editing for Docs, Sheets &amp; Slides for testing purposes
   </message>
   <message name="IDS_FLAGS_DISABLE_DISPLAY_COLOR_CALIBRATION_NAME" desc="Name for the flag to disable the color calibration of the display.">
     Disable the color calibration of the display.

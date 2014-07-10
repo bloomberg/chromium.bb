@@ -35,7 +35,7 @@ CHROMEOS_EXPORT extern const char kDisableLoginScrollIntoView[];
 CHROMEOS_EXPORT extern const char kDisableNetworkPortalNotification[];
 CHROMEOS_EXPORT extern const char kDisableNewChannelSwitcherUI[];
 CHROMEOS_EXPORT extern const char kDisableNewKioskUI[];
-CHROMEOS_EXPORT extern const char kDisableQuickofficeComponentApp[];
+CHROMEOS_EXPORT extern const char kDisableOfficeEditingComponentApp[];
 CHROMEOS_EXPORT extern const char kDisableRollbackOption[];
 CHROMEOS_EXPORT extern const char kDisableSamlSignin[];
 CHROMEOS_EXPORT extern const char kDisableVolumeAdjustSound[];

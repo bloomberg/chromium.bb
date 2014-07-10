@@ -1046,11 +1046,11 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(chromeos::switches::kEnableVideoPlayerChromecastSupport)
   },
   {
-    "disable-quickoffice-component-app",
-    IDS_FLAGS_DISABLE_QUICKOFFICE_COMPONENT_APP_NAME,
-    IDS_FLAGS_DISABLE_QUICKOFFICE_COMPONENT_APP_DESCRIPTION,
+    "disable-office-editing-component-app",
+    IDS_FLAGS_DISABLE_OFFICE_EDITING_COMPONENT_APP_NAME,
+    IDS_FLAGS_DISABLE_OFFICE_EDITING_COMPONENT_APP_DESCRIPTION,
     kOsCrOS,
-    SINGLE_VALUE_TYPE(chromeos::switches::kDisableQuickofficeComponentApp),
+    SINGLE_VALUE_TYPE(chromeos::switches::kDisableOfficeEditingComponentApp),
   },
   {
     "disable-saml-signin",
