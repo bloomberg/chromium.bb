@@ -489,14 +489,15 @@ public class Linker {
         if (bundle != null) {
             bundle.setClassLoader(LibInfo.class.getClassLoader());
             clonedBundle = new Bundle(LibInfo.class.getClassLoader());
-            Parcel p = Parcel.obtain();
-            bundle.writeToParcel(p, 0);
-            clonedBundle.readFromParcel(p);
-            p.recycle();
+            Parcel parcel = Parcel.obtain();
+            bundle.writeToParcel(parcel, 0);
+            parcel.setDataPosition(0);
+            clonedBundle.readFromParcel(parcel);
+            parcel.recycle();
         }
         if (DEBUG) {
             Log.i(TAG, "useSharedRelros() called with " + bundle +
-                    ",cloned " + clonedBundle);
+                    ", cloned " + clonedBundle);
         }
         synchronized (Linker.class) {
             // Note that in certain cases, this can be called before
