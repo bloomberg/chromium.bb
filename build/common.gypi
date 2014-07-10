@@ -3439,13 +3439,20 @@
                   'debug_optimize%': 's',
                 },
                 'cflags': [
-                  '-fomit-frame-pointer',
                   '-fdata-sections',
                   '-ffunction-sections',
                 ],
                 'ldflags': [
                   '-Wl,-O1',
                   '-Wl,--as-needed',
+                ],
+              }],
+              ['OS=="android" and android_full_debug==0 and target_arch!="arm64"', {
+                # We don't omit frame pointers on arm64 since they are required
+                # to correctly unwind stackframes which contain system library
+                # function frames (crbug.com/391706).
+                'cflags': [
+                  '-fomit-frame-pointer',
                 ],
               }],
               ['OS=="linux" and target_arch=="ia32"', {
@@ -3503,13 +3510,18 @@
                   '-Wl,--gc-sections',
                 ],
               }],
+              ['OS=="android" and target_arch!="arm64"', {
+                # We don't omit frame pointers on arm64 since they are required
+                # to correctly unwind stackframes which contain system library
+                # function frames (crbug.com/391706).
+                'cflags': [
+                  '-fomit-frame-pointer',
+                ]
+              }],
               ['OS=="android"', {
                 'variables': {
                   'release_optimize%': 's',
                 },
-                'cflags': [
-                  '-fomit-frame-pointer',
-                ],
                 'ldflags': [
                   # Warn in case of text relocations.
                   '-Wl,--warn-shared-textrel',
