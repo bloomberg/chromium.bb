@@ -502,8 +502,8 @@ ui::EventRewriteStatus TouchExplorationController::InTouchExploreSecondPress(
                            initial_press_->touch_id(),
                            event.time_stamp()));
     (*rewritten_event)->set_flags(event.flags());
-    EnterTouchToMouseMode();
     state_ = TOUCH_EXPLORATION;
+    EnterTouchToMouseMode();
     VLOG_STATE();
     return ui::EVENT_REWRITE_REWRITTEN;
   }

@@ -14,6 +14,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/test/browser_test_utils.h"
+#include "ui/aura/client/cursor_client.h"
 #include "ui/aura/test/event_generator.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/compositor/compositor.h"
@@ -33,6 +34,27 @@ class TouchExplorationTest : public InProcessBrowserTest {
   virtual ~TouchExplorationTest() {}
 
  protected:
+  virtual void SetUpOnMainThread() OVERRIDE {
+    // The RenderView for WebContents is created as a result of the
+    // navigation to the New Tab page which is done as part of the test
+    // SetUp. The creation involves sending a resize message to the renderer
+    // process. Here we wait for the resize ack to be received, because
+    // currently WindowEventDispatcher has code to hold touch and mouse
+    // move events until resize is complete (crbug.com/384342) which
+    // interferes with this test.
+    content::WebContents* web_contents =
+        browser()->tab_strip_model()->GetActiveWebContents();
+    content::WaitForResizeComplete(web_contents);
+    root_window_ = ash::Shell::GetInstance()->GetPrimaryRootWindow();
+    event_handler_.reset(new ui::test::TestEventHandler());
+    root_window_->AddPreTargetHandler(event_handler_.get());
+  }
+
+  virtual void CleanUpOnMainThread() OVERRIDE {
+    SwitchTouchExplorationMode(false);
+    root_window_->RemovePreTargetHandler(event_handler_.get());
+  }
+
   void SwitchTouchExplorationMode(bool on) {
     ash::AccessibilityDelegate* ad =
         ash::Shell::GetInstance()->accessibility_delegate();
@@ -47,6 +69,8 @@ class TouchExplorationTest : public InProcessBrowserTest {
 
   ui::GestureDetector::Config gesture_detector_config_;
   base::SimpleTestTickClock* simulated_clock_;
+  aura::Window* root_window_;
+  scoped_ptr<ui::test::TestEventHandler> event_handler_;
 
 private:
   DISALLOW_COPY_AND_ASSIGN(TouchExplorationTest);
@@ -56,73 +80,110 @@ private:
 // get rewritten when the touch exploration mode is on, and aren't affected
 // after the touch exploration mode is turned off.
 IN_PROC_BROWSER_TEST_F(TouchExplorationTest, ToggleOnOff) {
-  // The RenderView for WebContents is created as a result of the navigation
-  // to the New Tab page which is done as part of the test SetUp. The creation
-  // involves sending a resize message to the renderer process. Here we wait
-  // for the resize ack to be received, because currently WindowEventDispatcher
-  // has code to hold touch and mouse move events until resize is complete
-  // (crbug.com/384342) which interferes with this test.
-  content::WebContents* web_contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  content::WaitForResizeComplete(web_contents);
-  aura::Window* root_window = ash::Shell::GetInstance()->GetPrimaryRootWindow();
-  scoped_ptr<ui::test::TestEventHandler>
-      event_handler(new ui::test::TestEventHandler());
-  root_window->AddPreTargetHandler(event_handler.get());
   SwitchTouchExplorationMode(true);
-  aura::test::EventGenerator generator(root_window);
+  aura::test::EventGenerator generator(root_window_);
 
   base::TimeDelta initial_time = Now();
   ui::TouchEvent initial_press(
       ui::ET_TOUCH_PRESSED, gfx::Point(100, 200), 1, initial_time);
-  float delta_time =
-    (initial_press.location() - gfx::Point(109,209)).Length() /
-      gesture_detector_config_.minimum_swipe_velocity;
-  ui::TouchEvent touch_move(
-      ui::ET_TOUCH_MOVED,
-      gfx::Point(109, 209),
-      1,
-      initial_time + base::TimeDelta::FromSecondsD(delta_time));
-
   generator.Dispatch(&initial_press);
 
   // Since the touch exploration controller doesn't know if the user is
   // double-tapping or not, touch exploration is only initiated if the
-  // user moves more than 8 pixels away from the initial location (the "slop"),
-  // or after 300 ms has elapsed if the finger does not move fast enough.
-  generator.Dispatch(&touch_move);
+  // 300 ms has elapsed and the finger does not move fast enough to begin
+  // gestures. Here, the touch move event is not important as a move, but
+  // a way to create time advancement.
+  ui::TouchEvent touch_time_advance(ui::ET_TOUCH_MOVED,
+                            gfx::Point(100, 200),
+                            1,
+                            initial_time +
+                                gesture_detector_config_.double_tap_timeout +
+                                base::TimeDelta::FromMilliseconds(1));
+  generator.Dispatch(&touch_time_advance);
 
   // Number of mouse events may be greater than 1 because of ET_MOUSE_ENTERED.
-  EXPECT_GT(event_handler->num_mouse_events(), 0);
-  EXPECT_EQ(0, event_handler->num_touch_events());
-  event_handler->Reset();
+  EXPECT_GT(event_handler_->num_mouse_events(), 0);
+  EXPECT_EQ(0, event_handler_->num_touch_events());
+  event_handler_->Reset();
 
   SwitchTouchExplorationMode(false);
   generator.MoveTouchId(gfx::Point(11, 12), 1);
-  EXPECT_EQ(0, event_handler->num_mouse_events());
-  EXPECT_EQ(1, event_handler->num_touch_events());
-  event_handler->Reset();
+  EXPECT_EQ(0, event_handler_->num_mouse_events());
+  EXPECT_EQ(1, event_handler_->num_touch_events());
+  event_handler_->Reset();
 
   SwitchTouchExplorationMode(true);
   initial_time = Now();
   ui::TouchEvent second_initial_press(
       ui::ET_TOUCH_PRESSED, gfx::Point(500, 600), 2, initial_time);
-  delta_time =
-      (second_initial_press.location() - gfx::Point(509, 609)).Length() /
-      gesture_detector_config_.minimum_swipe_velocity;
-  ui::TouchEvent second_move(
-      ui::ET_TOUCH_MOVED,
-      gfx::Point(509, 609),
-      2,
-      initial_time + base::TimeDelta::FromSecondsD(delta_time));
-
   generator.Dispatch(&second_initial_press);
-  generator.Dispatch(&second_move);
-  EXPECT_GT(event_handler->num_mouse_events(), 0);
-  EXPECT_EQ(0, event_handler->num_touch_events());
+  ui::TouchEvent second_touch_time_advance(
+      ui::ET_TOUCH_MOVED,
+      gfx::Point(500, 600),
+      2,
+      initial_time + gesture_detector_config_.double_tap_timeout +
+          base::TimeDelta::FromMilliseconds(1));
+  generator.Dispatch(&second_touch_time_advance);
+  EXPECT_GT(event_handler_->num_mouse_events(), 0);
+  EXPECT_EQ(0, event_handler_->num_touch_events());
+}
 
-  SwitchTouchExplorationMode(false);
-  root_window->RemovePreTargetHandler(event_handler.get());
+// This test makes sure that after the user clicks with split tap,
+// they continue to touch exploration mode if the original touch exploration
+// finger is still on the screen.
+IN_PROC_BROWSER_TEST_F(TouchExplorationTest, SplitTapExplore) {
+  SwitchTouchExplorationMode(true);
+  aura::test::EventGenerator generator(root_window_);
+  aura::client::CursorClient* cursor_client =
+      aura::client::GetCursorClient(root_window_);
+
+  // Mouse events should show the cursor.
+  generator.MoveMouseTo(gfx::Point(30, 31));
+  EXPECT_TRUE(cursor_client->IsMouseEventsEnabled());
+  EXPECT_TRUE(cursor_client->IsCursorVisible());
+
+  // The cursor should be shown immediately after the  press, and hidden
+  // after the move.
+  base::TimeDelta initial_time = Now();
+  ui::TouchEvent initial_press(
+      ui::ET_TOUCH_PRESSED, gfx::Point(100, 200), 1, initial_time);
+  generator.Dispatch(&initial_press);
+  EXPECT_TRUE(cursor_client->IsMouseEventsEnabled());
+  EXPECT_TRUE(cursor_client->IsCursorVisible());
+
+  // Initiate touch explore by waiting for the tap timer timeout. Time is
+  // advanced by sending a move event after the timeout period.
+  ui::TouchEvent touch_time_advance(
+      ui::ET_TOUCH_MOVED,
+      gfx::Point(100, 200),
+      1,
+      initial_time + gesture_detector_config_.double_tap_timeout +
+          base::TimeDelta::FromMilliseconds(1));
+  generator.Dispatch(&touch_time_advance);
+  EXPECT_TRUE(cursor_client->IsMouseEventsEnabled());
+  EXPECT_FALSE(cursor_client->IsCursorVisible());
+  event_handler_->Reset();
+
+  // Press and release with a second finger for split tap. This should send
+  // touch press and release events which should send a click press and release.
+  // Once the press is passed through, mouse events should be disabled.
+  // Mouse events are reenabled after the release.
+  generator.set_current_location(gfx::Point(102, 202));
+  generator.PressTouchId(2);
+  EXPECT_FALSE(cursor_client->IsMouseEventsEnabled());
+  EXPECT_FALSE(cursor_client->IsCursorVisible());
+  generator.ReleaseTouchId(2);
+  EXPECT_TRUE(cursor_client->IsMouseEventsEnabled());
+  EXPECT_FALSE(cursor_client->IsCursorVisible());
+  EXPECT_EQ(2, event_handler_->num_touch_events());
+  event_handler_->Reset();
+
+  // Continuing to move the touch exploration finger should send more mouse
+  // events.
+  generator.MoveTouchId(gfx::Point(509, 609), 1);
+  EXPECT_EQ(0, event_handler_->num_touch_events());
+  EXPECT_TRUE(cursor_client->IsMouseEventsEnabled());
+  EXPECT_FALSE(cursor_client->IsCursorVisible());
 }
 
 }  // namespace ui
