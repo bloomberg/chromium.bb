@@ -37,7 +37,7 @@ int InspectorNodeIds::idForNode(Node* node)
     if (it != nodeToIdMap().end())
         return it->value;
     int id = s_nextNodeId++;
-    it->value = id;
+    nodeToIdMap().set(node, id);
     ASSERT(idToNodeMap().find(id) == idToNodeMap().end());
     idToNodeMap().set(id, node);
     return id;
