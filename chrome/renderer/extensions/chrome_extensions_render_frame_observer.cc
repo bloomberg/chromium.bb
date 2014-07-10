@@ -6,7 +6,7 @@
 
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/common/render_messages.h"
+#include "chrome/common/extensions/chrome_extension_messages.h"
 #include "content/public/renderer/render_frame.h"
 #include "extensions/common/stack_frame.h"
 #include "third_party/WebKit/public/web/WebFrame.h"

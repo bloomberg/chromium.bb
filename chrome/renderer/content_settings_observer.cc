@@ -27,6 +27,10 @@
 #include "third_party/WebKit/public/web/WebView.h"
 #include "webkit/child/weburlresponse_extradata_impl.h"
 
+#if defined(ENABLE_EXTENSIONS)
+#include "chrome/common/extensions/chrome_extension_messages.h"
+#endif
+
 using blink::WebDataSource;
 using blink::WebDocument;
 using blink::WebFrame;

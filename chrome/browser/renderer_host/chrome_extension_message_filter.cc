@@ -18,7 +18,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/extensions/api/i18n/default_locale_handler.h"
-#include "chrome/common/render_messages.h"
+#include "chrome/common/extensions/chrome_extension_messages.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
 #include "extensions/browser/extension_system.h"
@@ -33,7 +33,7 @@ using extensions::APIPermission;
 namespace {
 
 const uint32 kFilteredMessageClasses[] = {
-  ChromeMsgStart,
+  ChromeExtensionMsgStart,
   ExtensionMsgStart,
 };
 

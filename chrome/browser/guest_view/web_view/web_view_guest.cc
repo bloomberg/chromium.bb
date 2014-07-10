@@ -25,6 +25,7 @@
 #include "chrome/browser/ui/pdf/pdf_tab_helper.h"
 #include "chrome/browser/ui/zoom/zoom_controller.h"
 #include "chrome/common/chrome_version_info.h"
+#include "chrome/common/extensions/chrome_extension_messages.h"
 #include "chrome/common/render_messages.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_security_policy.h"
@@ -167,7 +168,7 @@ void ParsePartitionParam(const base::DictionaryValue& create_params,
 
 WebViewGuest::WebViewGuest(content::BrowserContext* browser_context,
                            int guest_instance_id)
-   :  GuestView<WebViewGuest>(browser_context, guest_instance_id),
+    : GuestView<WebViewGuest>(browser_context, guest_instance_id),
       pending_context_menu_request_id_(0),
       is_overriding_user_agent_(false),
       chromevox_injected_(false),

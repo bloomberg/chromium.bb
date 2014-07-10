@@ -51,6 +51,10 @@
 #include "ui/gfx/skbitmap_operations.h"
 #include "v8/include/v8-testing.h"
 
+#if defined(ENABLE_EXTENSIONS)
+#include "chrome/common/extensions/chrome_extension_messages.h"
+#endif
+
 using blink::WebAXObject;
 using blink::WebCString;
 using blink::WebDataSource;

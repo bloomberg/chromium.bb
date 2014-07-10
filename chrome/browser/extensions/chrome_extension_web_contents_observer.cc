@@ -7,7 +7,7 @@
 #include "chrome/browser/extensions/api/messaging/message_service.h"
 #include "chrome/browser/extensions/error_console/error_console.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/common/render_messages.h"
+#include "chrome/common/extensions/chrome_extension_messages.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
