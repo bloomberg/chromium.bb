@@ -801,18 +801,11 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FindRestarts_Issue1155639) {
   EXPECT_EQ(1, ordinal);
 }
 
-// Disable the test for win, mac and ChromeOS as it started being flaky, see
-// http://crbug/367701.
-#if defined(OS_MACOSX) && !defined(OS_IOS) || defined(OS_WIN) || \
-    defined(OS_CHROMEOS)
-#define MAYBE_FindRestarts_Issue70505 DISABLED_FindRestarts_Issue70505
-#else
-#define MAYBE_FindRestarts_Issue70505 FindRestarts_Issue70505
-#endif
 // Make sure we don't get into an infinite loop when text box contains very
 // large amount of text.
+// Disable the test as it started being flaky, see http://crbug/367701.
 IN_PROC_BROWSER_TEST_F(FindInPageControllerTest,
-                       MAYBE_FindRestarts_Issue70505) {
+                       DISABLED_FindRestarts_Issue70505) {
   // First we navigate to our page.
   GURL url = GetURL(kLongTextareaPage);
   ui_test_utils::NavigateToURL(browser(), url);
