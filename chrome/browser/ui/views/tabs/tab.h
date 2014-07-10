@@ -27,6 +27,7 @@ class Animation;
 class AnimationContainer;
 class LinearAnimation;
 class MultiAnimation;
+class ThrobAnimation;
 }
 namespace views {
 class ImageButton;
@@ -218,9 +219,7 @@ class Tab : public gfx::AnimationDelegate,
 
   // Paint various portions of the Tab
   void PaintTabBackground(gfx::Canvas* canvas);
-  void PaintInactiveTabBackgroundWithTitleChange(
-      gfx::Canvas* canvas,
-      gfx::MultiAnimation* animation);
+  void PaintInactiveTabBackgroundWithTitleChange(gfx::Canvas* canvas);
   void PaintInactiveTabBackground(gfx::Canvas* canvas);
   void PaintInactiveTabBackgroundUsingResourceId(gfx::Canvas* canvas,
                                                  int tab_id);
@@ -329,7 +328,9 @@ class Tab : public gfx::AnimationDelegate,
   bool should_display_crashed_favicon_;
 
   // Whole-tab throbbing "pulse" animation.
-  scoped_ptr<gfx::Animation> tab_animation_;
+  scoped_ptr<gfx::ThrobAnimation> pulse_animation_;
+
+  scoped_ptr<gfx::MultiAnimation> mini_title_change_animation_;
 
   // Crash icon animation (in place of favicon).
   scoped_ptr<gfx::LinearAnimation> crash_icon_animation_;

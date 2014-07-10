@@ -186,6 +186,13 @@ chrome::HostDesktopType GetHostDesktopType(views::View* view) {
       widget ? widget->GetNativeView() : NULL);
 }
 
+// Stop()s |animation| and then deletes it. We do this rather than just deleting
+// so that the delegate is notified before the destruction.
+void StopAndDeleteAnimation(scoped_ptr<gfx::Animation> animation) {
+  if (animation)
+    animation->Stop();
+}
+
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -518,10 +525,8 @@ void Tab::SetData(const TabRendererData& data) {
   }
 
   if (old.mini != data_.mini) {
-    if (tab_animation_.get() && tab_animation_->is_animating()) {
-      tab_animation_->Stop();
-      tab_animation_.reset(NULL);
-    }
+    StopAndDeleteAnimation(
+        mini_title_change_animation_.PassAs<gfx::Animation>());
   }
 
   DataChanged(old);
@@ -544,27 +549,21 @@ void Tab::UpdateLoadingAnimation(TabRendererData::NetworkState state) {
 }
 
 void Tab::StartPulse() {
-  gfx::ThrobAnimation* animation = new gfx::ThrobAnimation(this);
-  animation->SetSlideDuration(kPulseDurationMs);
-  if (animation_container_.get())
-    animation->SetContainer(animation_container_.get());
-  animation->StartThrobbing(std::numeric_limits<int>::max());
-  tab_animation_.reset(animation);
+  pulse_animation_.reset(new gfx::ThrobAnimation(this));
+  pulse_animation_->SetSlideDuration(kPulseDurationMs);
+  if (animation_container_)
+    pulse_animation_->SetContainer(animation_container_.get());
+  pulse_animation_->StartThrobbing(std::numeric_limits<int>::max());
 }
 
 void Tab::StopPulse() {
-  if (!tab_animation_.get())
-    return;
-  tab_animation_->Stop();
-  tab_animation_.reset(NULL);
+  StopAndDeleteAnimation(pulse_animation_.PassAs<gfx::Animation>());
 }
 
 void Tab::StartMiniTabTitleAnimation() {
-  // We can only do this animation if the tab is mini because we will
-  // upcast tab_animation back to MultiAnimation when we draw.
   if (!data().mini)
     return;
-  if (!tab_animation_.get()) {
+  if (!mini_title_change_animation_) {
     gfx::MultiAnimation::Parts parts;
     parts.push_back(
         gfx::MultiAnimation::Part(kMiniTitleChangeAnimationDuration1MS,
@@ -581,20 +580,16 @@ void Tab::StartMiniTabTitleAnimation() {
     parts[2].end_time_ms = kMiniTitleChangeAnimationEnd3MS;
     base::TimeDelta timeout =
         base::TimeDelta::FromMilliseconds(kMiniTitleChangeAnimationIntervalMS);
-    gfx::MultiAnimation* animation = new gfx::MultiAnimation(parts, timeout);
-    if (animation_container_.get())
-      animation->SetContainer(animation_container_.get());
-    animation->set_delegate(this);
-    tab_animation_.reset(animation);
+    mini_title_change_animation_.reset(new gfx::MultiAnimation(parts, timeout));
+    if (animation_container_)
+      mini_title_change_animation_->SetContainer(animation_container_.get());
+    mini_title_change_animation_->set_delegate(this);
   }
-  tab_animation_->Start();
+  mini_title_change_animation_->Start();
 }
 
 void Tab::StopMiniTabTitleAnimation() {
-  if (!tab_animation_.get())
-    return;
-  tab_animation_->Stop();
-  tab_animation_.reset(NULL);
+  StopAndDeleteAnimation(mini_title_change_animation_.PassAs<gfx::Animation>());
 }
 
 // static
@@ -650,7 +645,7 @@ int Tab::GetImmersiveHeight() {
 void Tab::AnimationProgressed(const gfx::Animation* animation) {
   // Ignore if the pulse animation is being performed on active tab because
   // it repaints the same image. See |Tab::PaintTabBackground()|.
-  if (animation == tab_animation_.get() && IsActive())
+  if (animation == pulse_animation_.get() && IsActive())
     return;
   SchedulePaint();
 }
@@ -1087,10 +1082,8 @@ void Tab::PaintTab(gfx::Canvas* canvas) {
 void Tab::PaintImmersiveTab(gfx::Canvas* canvas) {
   // Use transparency for the draw-attention animation.
   int alpha = 255;
-  if (tab_animation_ &&
-      tab_animation_->is_animating() &&
-      !data().mini) {
-    alpha = tab_animation_->CurrentValueBetween(
+  if (pulse_animation_ && pulse_animation_->is_animating() && !data().mini) {
+    alpha = pulse_animation_->CurrentValueBetween(
         255, static_cast<int>(255 * kImmersiveTabMinThrobOpacity));
   }
 
@@ -1134,12 +1127,9 @@ void Tab::PaintTabBackground(gfx::Canvas* canvas) {
   if (IsActive()) {
     PaintActiveTabBackground(canvas);
   } else {
-    if (tab_animation_.get() &&
-        tab_animation_->is_animating() &&
-        data().mini) {
-      gfx::MultiAnimation* animation =
-          static_cast<gfx::MultiAnimation*>(tab_animation_.get());
-      PaintInactiveTabBackgroundWithTitleChange(canvas, animation);
+    if (mini_title_change_animation_ &&
+        mini_title_change_animation_->is_animating()) {
+      PaintInactiveTabBackgroundWithTitleChange(canvas);
     } else {
       PaintInactiveTabBackground(canvas);
     }
@@ -1154,9 +1144,7 @@ void Tab::PaintTabBackground(gfx::Canvas* canvas) {
   }
 }
 
-void Tab::PaintInactiveTabBackgroundWithTitleChange(
-    gfx::Canvas* canvas,
-    gfx::MultiAnimation* animation) {
+void Tab::PaintInactiveTabBackgroundWithTitleChange(gfx::Canvas* canvas) {
   // Render the inactive tab background. We'll use this for clipping.
   gfx::Canvas background_canvas(size(), canvas->image_scale(), false);
   PaintInactiveTabBackground(&background_canvas);
@@ -1170,12 +1158,12 @@ void Tab::PaintInactiveTabBackgroundWithTitleChange(
   int x1 = radius;
   int x2 = -radius;
   int x;
-  if (animation->current_part_index() == 0) {
-    x = animation->CurrentValueBetween(x0, x1);
-  } else if (animation->current_part_index() == 1) {
+  if (mini_title_change_animation_->current_part_index() == 0) {
+    x = mini_title_change_animation_->CurrentValueBetween(x0, x1);
+  } else if (mini_title_change_animation_->current_part_index() == 1) {
     x = x1;
   } else {
-    x = animation->CurrentValueBetween(x1, x2);
+    x = mini_title_change_animation_->CurrentValueBetween(x1, x2);
   }
   SkPoint center_point;
   center_point.iset(x, 0);
@@ -1198,8 +1186,8 @@ void Tab::PaintInactiveTabBackgroundWithTitleChange(
   canvas->DrawImageInt(background_image, 0, 0);
 
   // And then the gradient on top of that.
-  if (animation->current_part_index() == 2) {
-    uint8 alpha = animation->CurrentValueBetween(255, 0);
+  if (mini_title_change_animation_->current_part_index() == 2) {
+    uint8 alpha = mini_title_change_animation_->CurrentValueBetween(255, 0);
     canvas->DrawImageInt(hover_image, 0, 0, alpha);
   } else {
     canvas->DrawImageInt(hover_image, 0, 0);
@@ -1512,13 +1500,16 @@ bool Tab::ShouldShowCloseBox() const {
 }
 
 double Tab::GetThrobValue() {
-  bool is_selected = IsSelected();
-  double min = is_selected ? kSelectedTabOpacity : 0;
-  double scale = is_selected ? kSelectedTabThrobScale : 1;
+  const bool is_selected = IsSelected();
+  const double min = is_selected ? kSelectedTabOpacity : 0;
+  const double scale = is_selected ? kSelectedTabThrobScale : 1;
 
-  if (!data().mini) {
-    if (tab_animation_.get() && tab_animation_->is_animating())
-      return tab_animation_->GetCurrentValue() * kHoverOpacity * scale + min;
+  // Showing both the pulse and title change animation at the same time is too
+  // much.
+  if (pulse_animation_ && pulse_animation_->is_animating() &&
+      (!mini_title_change_animation_ ||
+       !mini_title_change_animation_->is_animating())) {
+    return pulse_animation_->GetCurrentValue() * kHoverOpacity * scale + min;
   }
 
   if (hover_controller_.ShouldDraw()) {
