@@ -29,10 +29,7 @@ class ClipboardEvent;
 class CursorShapeInfo;
 }  // namespace protocol
 
-namespace client {
-class LogToServer;
-}
-
+class ClientStatusLogger;
 class VideoRenderer;
 class TokenFetcherProxy;
 
@@ -166,7 +163,7 @@ class ChromotingJniInstance
   scoped_ptr<ChromotingClient> client_;
   XmppSignalStrategy::XmppServerConfig xmpp_config_;
   scoped_ptr<XmppSignalStrategy> signaling_;  // Must outlive client_
-  scoped_ptr<client::LogToServer> log_to_server_;
+  scoped_ptr<ClientStatusLogger> client_status_logger_;
   base::WeakPtr<TokenFetcherProxy> token_fetcher_proxy_;
 
   // Pass this the user's PIN once we have it. To be assigned and accessed on

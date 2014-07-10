@@ -1,18 +1,12 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/host/log_to_server.h"
+#include "remoting/jingle_glue/log_to_server.h"
 
-#include "base/bind.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "remoting/base/constants.h"
-#include "remoting/host/host_status_monitor.h"
-#include "remoting/host/server_log_entry_host.h"
 #include "remoting/jingle_glue/iq_sender.h"
-#include "remoting/jingle_glue/server_log_entry.h"
 #include "remoting/jingle_glue/signal_strategy.h"
-#include "remoting/protocol/transport.h"
 #include "third_party/libjingle/source/talk/xmllite/xmlelement.h"
 #include "third_party/libjingle/source/talk/xmpp/constants.h"
 
@@ -21,38 +15,17 @@ using buzz::XmlElement;
 
 namespace remoting {
 
-LogToServer::LogToServer(base::WeakPtr<HostStatusMonitor> monitor,
-                         ServerLogEntry::Mode mode,
+LogToServer::LogToServer(ServerLogEntry::Mode mode,
                          SignalStrategy* signal_strategy,
                          const std::string& directory_bot_jid)
-    : monitor_(monitor),
-      mode_(mode),
+    : mode_(mode),
       signal_strategy_(signal_strategy),
       directory_bot_jid_(directory_bot_jid) {
-  monitor_->AddStatusObserver(this);
   signal_strategy_->AddListener(this);
 }
 
 LogToServer::~LogToServer() {
   signal_strategy_->RemoveListener(this);
-  if (monitor_.get())
-    monitor_->RemoveStatusObserver(this);
-}
-
-void LogToServer::LogSessionStateChange(const std::string& jid,
-                                        bool connected) {
-  DCHECK(CalledOnValidThread());
-
-  scoped_ptr<ServerLogEntry> entry(
-      MakeLogEntryForSessionStateChange(connected));
-  AddHostFieldsToLogEntry(entry.get());
-  entry->AddModeField(mode_);
-
-  if (connected) {
-    DCHECK(connection_route_type_.count(jid) == 1);
-    AddConnectionTypeToLogEntry(entry.get(), connection_route_type_[jid]);
-  }
-  Log(*entry.get());
 }
 
 void LogToServer::OnSignalStrategyStateChange(SignalStrategy::State state) {
@@ -69,27 +42,6 @@ void LogToServer::OnSignalStrategyStateChange(SignalStrategy::State state) {
 bool LogToServer::OnSignalStrategyIncomingStanza(
     const buzz::XmlElement* stanza) {
   return false;
-}
-
-void LogToServer::OnClientConnected(const std::string& jid) {
-  DCHECK(CalledOnValidThread());
-  LogSessionStateChange(jid, true);
-}
-
-void LogToServer::OnClientDisconnected(const std::string& jid) {
-  DCHECK(CalledOnValidThread());
-  LogSessionStateChange(jid, false);
-  connection_route_type_.erase(jid);
-}
-
-void LogToServer::OnClientRouteChange(const std::string& jid,
-                                      const std::string& channel_name,
-                                      const protocol::TransportRoute& route) {
-  // Store connection type for the video channel. It is logged later
-  // when client authentication is finished.
-  if (channel_name == kVideoChannelName) {
-    connection_route_type_[jid] = route.type;
-  }
 }
 
 void LogToServer::Log(const ServerLogEntry& entry) {

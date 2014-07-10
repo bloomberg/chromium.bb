@@ -2,20 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/client/log_to_server.h"
+#include "remoting/client/client_status_logger.h"
 
 #include "base/macros.h"
 #include "base/rand_util.h"
-#include "remoting/base/constants.h"
 #include "remoting/client/chromoting_stats.h"
 #include "remoting/client/server_log_entry_client.h"
-#include "remoting/jingle_glue/iq_sender.h"
-#include "remoting/jingle_glue/signal_strategy.h"
-#include "third_party/libjingle/source/talk/xmllite/xmlelement.h"
-#include "third_party/libjingle/source/talk/xmpp/constants.h"
 
-using buzz::QName;
-using buzz::XmlElement;
 using remoting::protocol::ConnectionToHost;
 
 namespace {
@@ -49,22 +42,16 @@ bool ShouldAddDuration(ConnectionToHost::State state) {
 
 namespace remoting {
 
-namespace client {
-
-LogToServer::LogToServer(ServerLogEntry::Mode mode,
-                         SignalStrategy* signal_strategy,
-                         const std::string& directory_bot_jid)
-    : mode_(mode),
-      signal_strategy_(signal_strategy),
-      directory_bot_jid_(directory_bot_jid) {
-  signal_strategy_->AddListener(this);
+ClientStatusLogger::ClientStatusLogger(ServerLogEntry::Mode mode,
+                                       SignalStrategy* signal_strategy,
+                                       const std::string& directory_bot_jid)
+    : log_to_server_(mode, signal_strategy, directory_bot_jid) {
 }
 
-LogToServer::~LogToServer() {
-  signal_strategy_->RemoveListener(this);
+ClientStatusLogger::~ClientStatusLogger() {
 }
 
-void LogToServer::LogSessionStateChange(
+void ClientStatusLogger::LogSessionStateChange(
     protocol::ConnectionToHost::State state,
     protocol::ErrorCode error) {
   DCHECK(CalledOnValidThread());
@@ -72,7 +59,7 @@ void LogToServer::LogSessionStateChange(
   scoped_ptr<ServerLogEntry> entry(
       MakeLogEntryForSessionStateChange(state, error));
   AddClientFieldsToLogEntry(entry.get());
-  entry->AddModeField(mode_);
+  entry->AddModeField(log_to_server_.mode());
 
   MaybeExpireSessionId();
   if (IsStartOfSession(state)) {
@@ -100,65 +87,26 @@ void LogToServer::LogSessionStateChange(
     session_id_.clear();
   }
 
-  Log(*entry.get());
+  log_to_server_.Log(*entry.get());
 }
 
-void LogToServer::LogStatistics(ChromotingStats* statistics) {
+void ClientStatusLogger::LogStatistics(ChromotingStats* statistics) {
   DCHECK(CalledOnValidThread());
 
   MaybeExpireSessionId();
 
   scoped_ptr<ServerLogEntry> entry(MakeLogEntryForStatistics(statistics));
   AddClientFieldsToLogEntry(entry.get());
-  entry->AddModeField(mode_);
+  entry->AddModeField(log_to_server_.mode());
   AddSessionIdToLogEntry(entry.get(), session_id_);
-  Log(*entry.get());
+  log_to_server_.Log(*entry.get());
 }
 
-void LogToServer::OnSignalStrategyStateChange(SignalStrategy::State state) {
-  DCHECK(CalledOnValidThread());
-
-  if (state == SignalStrategy::CONNECTED) {
-    iq_sender_.reset(new IqSender(signal_strategy_));
-    SendPendingEntries();
-  } else if (state == SignalStrategy::DISCONNECTED) {
-    iq_sender_.reset();
-  }
+void ClientStatusLogger::SetSignalingStateForTest(SignalStrategy::State state) {
+  log_to_server_.OnSignalStrategyStateChange(state);
 }
 
-bool LogToServer::OnSignalStrategyIncomingStanza(
-    const buzz::XmlElement* stanza) {
-  return false;
-}
-
-void LogToServer::Log(const ServerLogEntry& entry) {
-  pending_entries_.push_back(entry);
-  SendPendingEntries();
-}
-
-void LogToServer::SendPendingEntries() {
-  if (iq_sender_ == NULL) {
-    return;
-  }
-  if (pending_entries_.empty()) {
-    return;
-  }
-  // Make one stanza containing all the pending entries.
-  scoped_ptr<XmlElement> stanza(ServerLogEntry::MakeStanza());
-  while (!pending_entries_.empty()) {
-    ServerLogEntry& entry = pending_entries_.front();
-    stanza->AddElement(entry.ToStanza().release());
-    pending_entries_.pop_front();
-  }
-  // Send the stanza to the server.
-  scoped_ptr<IqRequest> req = iq_sender_->SendIq(
-      buzz::STR_SET, directory_bot_jid_, stanza.Pass(),
-      IqSender::ReplyCallback());
-  // We ignore any response, so let the IqRequest be destroyed.
-  return;
-}
-
-void LogToServer::GenerateSessionId() {
+void ClientStatusLogger::GenerateSessionId() {
   session_id_.resize(kSessionIdLength);
   for (int i = 0; i < kSessionIdLength; i++) {
     const int alphabet_size = arraysize(kSessionIdAlphabet) - 1;
@@ -167,7 +115,7 @@ void LogToServer::GenerateSessionId() {
   session_id_generation_time_ = base::TimeTicks::Now();
 }
 
-void LogToServer::MaybeExpireSessionId() {
+void ClientStatusLogger::MaybeExpireSessionId() {
   if (session_id_.empty()) {
     return;
   }
@@ -176,19 +124,17 @@ void LogToServer::MaybeExpireSessionId() {
   if (base::TimeTicks::Now() - session_id_generation_time_ > max_age) {
     // Log the old session ID.
     scoped_ptr<ServerLogEntry> entry(MakeLogEntryForSessionIdOld(session_id_));
-    entry->AddModeField(mode_);
-    Log(*entry.get());
+    entry->AddModeField(log_to_server_.mode());
+    log_to_server_.Log(*entry.get());
 
     // Generate a new session ID.
     GenerateSessionId();
 
     // Log the new session ID.
     entry = MakeLogEntryForSessionIdNew(session_id_);
-    entry->AddModeField(mode_);
-    Log(*entry.get());
+    entry->AddModeField(log_to_server_.mode());
+    log_to_server_.Log(*entry.get());
   }
 }
-
-}  // namespace client
 
 }  // namespace remoting

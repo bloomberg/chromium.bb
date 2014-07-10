@@ -6,12 +6,52 @@
 
 #include <sstream>
 
+#include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/libjingle/source/talk/xmllite/xmlelement.h"
 
+using buzz::QName;
 using buzz::XmlAttr;
 using buzz::XmlElement;
 
 namespace remoting {
+
+const char kJabberClientNamespace[] = "jabber:client";
+const char kChromotingNamespace[] = "google:remoting";
+
+XmlElement* GetLogElementFromStanza(XmlElement* stanza) {
+  if (stanza->Name() != QName(kJabberClientNamespace, "iq")) {
+    ADD_FAILURE() << "Expected element 'iq'";
+    return NULL;
+  }
+  XmlElement* log_element = stanza->FirstChild()->AsElement();
+  if (log_element->Name() != QName(kChromotingNamespace, "log")) {
+    ADD_FAILURE() << "Expected element 'log'";
+    return NULL;
+  }
+  if (log_element->NextChild()) {
+    ADD_FAILURE() << "Expected only 1 child of 'iq'";
+    return NULL;
+  }
+  return log_element;
+}
+
+XmlElement* GetSingleLogEntryFromStanza(XmlElement* stanza) {
+  XmlElement* log_element = GetLogElementFromStanza(stanza);
+  if (!log_element) {
+    // Test failure already recorded, so just return NULL here.
+    return NULL;
+  }
+  XmlElement* entry = log_element->FirstChild()->AsElement();
+  if (entry->Name() != QName(kChromotingNamespace, "entry")) {
+    ADD_FAILURE() << "Expected element 'entry'";
+    return NULL;
+  }
+  if (entry->NextChild()) {
+    ADD_FAILURE() << "Expected only 1 child of 'log'";
+    return NULL;
+  }
+  return entry;
+}
 
 bool VerifyStanza(
     const std::map<std::string, std::string>& key_value_pairs,

@@ -53,12 +53,12 @@
 #include "remoting/host/host_event_logger.h"
 #include "remoting/host/host_exit_codes.h"
 #include "remoting/host/host_main.h"
+#include "remoting/host/host_status_logger.h"
 #include "remoting/host/host_status_sender.h"
 #include "remoting/host/ipc_constants.h"
 #include "remoting/host/ipc_desktop_environment.h"
 #include "remoting/host/ipc_host_event_logger.h"
 #include "remoting/host/json_host_config.h"
-#include "remoting/host/log_to_server.h"
 #include "remoting/host/logging.h"
 #include "remoting/host/me2me_desktop_environment.h"
 #include "remoting/host/pairing_registry_delegate.h"
@@ -308,7 +308,7 @@ class HostProcess
   scoped_ptr<HeartbeatSender> heartbeat_sender_;
   scoped_ptr<HostStatusSender> host_status_sender_;
   scoped_ptr<HostChangeNotificationListener> host_change_notification_listener_;
-  scoped_ptr<LogToServer> log_to_server_;
+  scoped_ptr<HostStatusLogger> host_status_logger_;
   scoped_ptr<HostEventLogger> host_event_logger_;
 
   scoped_ptr<ChromotingHost> host_;
@@ -1220,9 +1220,9 @@ void HostProcess::StartHost() {
   host_change_notification_listener_.reset(new HostChangeNotificationListener(
       this, host_id_, signal_strategy_.get(), directory_bot_jid_));
 
-  log_to_server_.reset(
-      new LogToServer(host_->AsWeakPtr(), ServerLogEntry::ME2ME,
-                      signal_strategy_.get(), directory_bot_jid_));
+  host_status_logger_.reset(
+      new HostStatusLogger(host_->AsWeakPtr(), ServerLogEntry::ME2ME,
+                           signal_strategy_.get(), directory_bot_jid_));
 
   // Set up repoting the host status notifications.
 #if defined(REMOTING_MULTI_PROCESS)
@@ -1294,7 +1294,7 @@ void HostProcess::ShutdownOnNetworkThread() {
 
   host_.reset();
   host_event_logger_.reset();
-  log_to_server_.reset();
+  host_status_logger_.reset();
   heartbeat_sender_.reset();
   host_status_sender_.reset();
   host_change_notification_listener_.reset();

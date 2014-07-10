@@ -16,6 +16,7 @@
 #include "base/strings/stringize_macros.h"
 #include "base/threading/thread.h"
 #include "base/values.h"
+#include "net/base/net_util.h"
 #include "net/url_request/url_fetcher.h"
 #include "remoting/base/auth_token_util.h"
 #include "remoting/base/service_urls.h"

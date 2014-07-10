@@ -16,6 +16,7 @@
 #include "remoting/host/chromoting_host_context.h"
 #include "remoting/host/host_event_logger.h"
 #include "remoting/host/host_secret.h"
+#include "remoting/host/host_status_logger.h"
 #include "remoting/host/it2me_desktop_environment.h"
 #include "remoting/host/policy_hack/policy_watcher.h"
 #include "remoting/host/register_support_host_request.h"
@@ -205,9 +206,9 @@ void It2MeHost::FinishConnect() {
       host_context_->network_task_runner(),
       host_context_->ui_task_runner()));
   host_->AddStatusObserver(this);
-  log_to_server_.reset(
-      new LogToServer(host_->AsWeakPtr(), ServerLogEntry::IT2ME,
-                      signal_strategy_.get(), directory_bot_jid_));
+  host_status_logger_.reset(
+      new HostStatusLogger(host_->AsWeakPtr(), ServerLogEntry::IT2ME,
+                           signal_strategy_.get(), directory_bot_jid_));
 
   // Disable audio by default.
   // TODO(sergeyu): Add UI to enable it.
@@ -239,7 +240,7 @@ void It2MeHost::ShutdownOnNetworkThread() {
     host_.reset();
 
     register_request_.reset();
-    log_to_server_.reset();
+    host_status_logger_.reset();
     signal_strategy_.reset();
     SetState(kDisconnected);
   }

@@ -9,7 +9,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
-#include "remoting/host/log_to_server.h"
+#include "remoting/host/host_status_observer.h"
 #include "remoting/jingle_glue/xmpp_signal_strategy.h"
 
 namespace base {
@@ -23,6 +23,7 @@ class ChromotingHostContext;
 class DesktopEnvironmentFactory;
 class HostEventLogger;
 class HostNPScriptObject;
+class HostStatusLogger;
 class RegisterSupportHostRequest;
 class RsaKeyPair;
 
@@ -46,11 +47,9 @@ enum It2MeHostState {
 };
 
 // Internal implementation of the plugin's It2Me host function.
-class It2MeHost
-    : public base::RefCountedThreadSafe<It2MeHost>,
-      public HostStatusObserver {
+class It2MeHost : public base::RefCountedThreadSafe<It2MeHost>,
+                  public HostStatusObserver {
  public:
-
   class Observer {
    public:
     virtual void OnClientAuthenticated(const std::string& client_username) = 0;
@@ -146,7 +145,7 @@ class It2MeHost
   scoped_refptr<RsaKeyPair> host_key_pair_;
   scoped_ptr<SignalStrategy> signal_strategy_;
   scoped_ptr<RegisterSupportHostRequest> register_request_;
-  scoped_ptr<LogToServer> log_to_server_;
+  scoped_ptr<HostStatusLogger> host_status_logger_;
   scoped_ptr<DesktopEnvironmentFactory> desktop_environment_factory_;
   scoped_ptr<HostEventLogger> host_event_logger_;
 

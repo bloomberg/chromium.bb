@@ -12,9 +12,9 @@
 #include "net/socket/client_socket_factory.h"
 #include "remoting/base/service_urls.h"
 #include "remoting/client/audio_player.h"
+#include "remoting/client/client_status_logger.h"
 #include "remoting/client/jni/android_keymap.h"
 #include "remoting/client/jni/chromoting_jni_runtime.h"
-#include "remoting/client/log_to_server.h"
 #include "remoting/client/software_video_renderer.h"
 #include "remoting/client/token_fetcher_proxy.h"
 #include "remoting/jingle_glue/chromium_port_allocator.h"
@@ -254,7 +254,7 @@ void ChromotingJniInstance::OnConnectionState(
 
   EnableStatsLogging(state == protocol::ConnectionToHost::CONNECTED);
 
-  log_to_server_->LogSessionStateChange(state, error);
+  client_status_logger_->LogSessionStateChange(state, error);
 
   if (create_pairing_ && state == protocol::ConnectionToHost::CONNECTED) {
     protocol::PairingRequest request;
@@ -378,10 +378,10 @@ void ChromotingJniInstance::ConnectToHostOnNetworkThread() {
       net::ClientSocketFactory::GetDefaultFactory(),
       jni_runtime_->url_requester(), xmpp_config_));
 
-  log_to_server_.reset(
-      new client::LogToServer(ServerLogEntry::ME2ME,
-                              signaling_.get(),
-                              ServiceUrls::GetInstance()->directory_bot_jid()));
+  client_status_logger_.reset(
+      new ClientStatusLogger(ServerLogEntry::ME2ME,
+                             signaling_.get(),
+                             ServiceUrls::GetInstance()->directory_bot_jid()));
 
   NetworkSettings network_settings(NetworkSettings::NAT_TRAVERSAL_FULL);
 
@@ -409,7 +409,7 @@ void ChromotingJniInstance::DisconnectFromHostOnNetworkThread() {
   // |client_| must be torn down before |signaling_|.
   connection_.reset();
   client_.reset();
-  log_to_server_.reset();
+  client_status_logger_.reset();
 }
 
 void ChromotingJniInstance::FetchSecret(
@@ -488,7 +488,7 @@ void ChromotingJniInstance::LogPerfStats() {
                       stats->video_paint_ms()->Average(),
                       stats->round_trip_ms()->Average());
 
-  log_to_server_->LogStatistics(stats);
+  client_status_logger_->LogStatistics(stats);
 
   jni_runtime_->network_task_runner()->PostDelayedTask(
       FROM_HERE, base::Bind(&ChromotingJniInstance::LogPerfStats, this),

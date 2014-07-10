@@ -1,11 +1,12 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+
+#include "remoting/host/host_status_logger.h"
 
 #include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "remoting/host/host_status_monitor_fake.h"
-#include "remoting/host/log_to_server.h"
 #include "remoting/jingle_glue/mock_objects.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gmock_mutant.h"
@@ -49,7 +50,7 @@ MATCHER_P(IsClientConnected, connection_type, "") {
     return false;
   }
   buzz::XmlElement* log_stanza = arg->FirstChild()->AsElement();
-  if (log_stanza->Name() !=QName(kChromotingNamespace, "log")) {
+  if (log_stanza->Name() != QName(kChromotingNamespace, "log")) {
     return false;
   }
   if (log_stanza->NextChild()) {
@@ -70,7 +71,7 @@ MATCHER_P2(IsTwoClientsConnected, connection_type1, connection_type2, "") {
     return false;
   }
   buzz::XmlElement* log_stanza = arg->FirstChild()->AsElement();
-  if (log_stanza->Name() !=QName(kChromotingNamespace, "log")) {
+  if (log_stanza->Name() != QName(kChromotingNamespace, "log")) {
     return false;
   }
   if (log_stanza->NextChild()) {
@@ -121,17 +122,17 @@ MATCHER(IsClientDisconnected, "") {
 
 }  // namespace
 
-class LogToServerTest : public testing::Test {
+class HostStatusLoggerTest : public testing::Test {
  public:
-  LogToServerTest() {}
+  HostStatusLoggerTest() {}
   virtual void SetUp() OVERRIDE {
     message_loop_proxy_ = base::MessageLoopProxy::current();
     EXPECT_CALL(signal_strategy_, AddListener(_));
-    log_to_server_.reset(
-        new LogToServer(host_status_monitor_.AsWeakPtr(),
-                        ServerLogEntry::ME2ME,
-                        &signal_strategy_,
-                        kTestBotJid));
+    host_status_logger_.reset(
+        new HostStatusLogger(host_status_monitor_.AsWeakPtr(),
+                             ServerLogEntry::ME2ME,
+                             &signal_strategy_,
+                             kTestBotJid));
     EXPECT_CALL(signal_strategy_, RemoveListener(_));
   }
 
@@ -139,11 +140,11 @@ class LogToServerTest : public testing::Test {
   base::MessageLoop message_loop_;
   scoped_refptr<base::MessageLoopProxy> message_loop_proxy_;
   MockSignalStrategy signal_strategy_;
-  scoped_ptr<LogToServer> log_to_server_;
+  scoped_ptr<HostStatusLogger> host_status_logger_;
   HostStatusMonitorFake host_status_monitor_;
 };
 
-TEST_F(LogToServerTest, SendNow) {
+TEST_F(HostStatusLoggerTest, SendNow) {
   {
     InSequence s;
     EXPECT_CALL(signal_strategy_, GetLocalJid())
@@ -156,22 +157,23 @@ TEST_F(LogToServerTest, SendNow) {
         .WillOnce(QuitMainMessageLoop(&message_loop_))
         .RetiresOnSaturation();
   }
-  log_to_server_->OnSignalStrategyStateChange(SignalStrategy::CONNECTED);
+  host_status_logger_->SetSignalingStateForTest(SignalStrategy::CONNECTED);
   protocol::TransportRoute route;
   route.type = protocol::TransportRoute::DIRECT;
-  log_to_server_->OnClientRouteChange(kClientJid1, "video", route);
-  log_to_server_->OnClientAuthenticated(kClientJid1);
-  log_to_server_->OnClientConnected(kClientJid1);
-  log_to_server_->OnSignalStrategyStateChange(SignalStrategy::DISCONNECTED);
+  host_status_logger_->OnClientRouteChange(kClientJid1, "video", route);
+  host_status_logger_->OnClientAuthenticated(kClientJid1);
+  host_status_logger_->OnClientConnected(kClientJid1);
+  host_status_logger_->SetSignalingStateForTest(
+      SignalStrategy::DISCONNECTED);
   message_loop_.Run();
 }
 
-TEST_F(LogToServerTest, SendLater) {
+TEST_F(HostStatusLoggerTest, SendLater) {
   protocol::TransportRoute route;
   route.type = protocol::TransportRoute::DIRECT;
-  log_to_server_->OnClientRouteChange(kClientJid1, "video", route);
-  log_to_server_->OnClientAuthenticated(kClientJid1);
-  log_to_server_->OnClientConnected(kClientJid1);
+  host_status_logger_->OnClientRouteChange(kClientJid1, "video", route);
+  host_status_logger_->OnClientAuthenticated(kClientJid1);
+  host_status_logger_->OnClientConnected(kClientJid1);
   {
     InSequence s;
     EXPECT_CALL(signal_strategy_, GetLocalJid())
@@ -184,41 +186,41 @@ TEST_F(LogToServerTest, SendLater) {
         .WillOnce(QuitMainMessageLoop(&message_loop_))
         .RetiresOnSaturation();
   }
-  log_to_server_->OnSignalStrategyStateChange(SignalStrategy::CONNECTED);
-  log_to_server_->OnSignalStrategyStateChange(SignalStrategy::DISCONNECTED);
+  host_status_logger_->SetSignalingStateForTest(SignalStrategy::CONNECTED);
+  host_status_logger_->SetSignalingStateForTest(SignalStrategy::DISCONNECTED);
   message_loop_.Run();
 }
 
-TEST_F(LogToServerTest, SendTwoEntriesLater) {
+TEST_F(HostStatusLoggerTest, SendTwoEntriesLater) {
   protocol::TransportRoute route1;
   route1.type = protocol::TransportRoute::DIRECT;
-  log_to_server_->OnClientRouteChange(kClientJid1, "video", route1);
-  log_to_server_->OnClientAuthenticated(kClientJid1);
-  log_to_server_->OnClientConnected(kClientJid1);
+  host_status_logger_->OnClientRouteChange(kClientJid1, "video", route1);
+  host_status_logger_->OnClientAuthenticated(kClientJid1);
+  host_status_logger_->OnClientConnected(kClientJid1);
   protocol::TransportRoute route2;
   route2.type = protocol::TransportRoute::STUN;
-  log_to_server_->OnClientRouteChange(kClientJid2, "video", route2);
-  log_to_server_->OnClientAuthenticated(kClientJid2);
-  log_to_server_->OnClientConnected(kClientJid2);
+  host_status_logger_->OnClientRouteChange(kClientJid2, "video", route2);
+  host_status_logger_->OnClientAuthenticated(kClientJid2);
+  host_status_logger_->OnClientConnected(kClientJid2);
   {
     InSequence s;
     EXPECT_CALL(signal_strategy_, GetLocalJid())
         .WillRepeatedly(Return(kHostJid));
     EXPECT_CALL(signal_strategy_, AddListener(_));
     EXPECT_CALL(signal_strategy_, GetNextId());
-    EXPECT_CALL(signal_strategy_, SendStanzaPtr(
-            IsTwoClientsConnected("direct", "stun")))
-        .WillOnce(DoAll(DeleteArg<0>(), Return(true)));
+    EXPECT_CALL(signal_strategy_,
+        SendStanzaPtr(IsTwoClientsConnected("direct", "stun")))
+            .WillOnce(DoAll(DeleteArg<0>(), Return(true)));
     EXPECT_CALL(signal_strategy_, RemoveListener(_))
         .WillOnce(QuitMainMessageLoop(&message_loop_))
         .RetiresOnSaturation();
   }
-  log_to_server_->OnSignalStrategyStateChange(SignalStrategy::CONNECTED);
-  log_to_server_->OnSignalStrategyStateChange(SignalStrategy::DISCONNECTED);
+  host_status_logger_->SetSignalingStateForTest(SignalStrategy::CONNECTED);
+  host_status_logger_->SetSignalingStateForTest(SignalStrategy::DISCONNECTED);
   message_loop_.Run();
 }
 
-TEST_F(LogToServerTest, HandleRouteChangeInUnusualOrder) {
+TEST_F(HostStatusLoggerTest, HandleRouteChangeInUnusualOrder) {
   {
     InSequence s;
     EXPECT_CALL(signal_strategy_, GetLocalJid())
@@ -237,19 +239,19 @@ TEST_F(LogToServerTest, HandleRouteChangeInUnusualOrder) {
         .WillOnce(QuitMainMessageLoop(&message_loop_))
         .RetiresOnSaturation();
   }
-  log_to_server_->OnSignalStrategyStateChange(SignalStrategy::CONNECTED);
+  host_status_logger_->SetSignalingStateForTest(SignalStrategy::CONNECTED);
   protocol::TransportRoute route1;
   route1.type = protocol::TransportRoute::DIRECT;
-  log_to_server_->OnClientRouteChange(kClientJid1, "video", route1);
-  log_to_server_->OnClientAuthenticated(kClientJid1);
-  log_to_server_->OnClientConnected(kClientJid1);
+  host_status_logger_->OnClientRouteChange(kClientJid1, "video", route1);
+  host_status_logger_->OnClientAuthenticated(kClientJid1);
+  host_status_logger_->OnClientConnected(kClientJid1);
   protocol::TransportRoute route2;
   route2.type = protocol::TransportRoute::STUN;
-  log_to_server_->OnClientRouteChange(kClientJid2, "video", route2);
-  log_to_server_->OnClientDisconnected(kClientJid1);
-  log_to_server_->OnClientAuthenticated(kClientJid2);
-  log_to_server_->OnClientConnected(kClientJid2);
-  log_to_server_->OnSignalStrategyStateChange(SignalStrategy::DISCONNECTED);
+  host_status_logger_->OnClientRouteChange(kClientJid2, "video", route2);
+  host_status_logger_->OnClientDisconnected(kClientJid1);
+  host_status_logger_->OnClientAuthenticated(kClientJid2);
+  host_status_logger_->OnClientConnected(kClientJid2);
+  host_status_logger_->SetSignalingStateForTest(SignalStrategy::DISCONNECTED);
   message_loop_.Run();
 }
 
