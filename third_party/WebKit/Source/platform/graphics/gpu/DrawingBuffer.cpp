@@ -331,7 +331,14 @@ PassRefPtr<DrawingBuffer::MailboxInfo> DrawingBuffer::recycledMailbox()
     if (m_recycledMailboxQueue.isEmpty())
         return PassRefPtr<MailboxInfo>();
 
-    blink::WebExternalTextureMailbox mailbox = m_recycledMailboxQueue.takeLast();
+    blink::WebExternalTextureMailbox mailbox;
+    while (!m_recycledMailboxQueue.isEmpty()) {
+        mailbox = m_recycledMailboxQueue.takeLast();
+        // Never have more than one mailbox in the released state.
+        if (!m_recycledMailboxQueue.isEmpty())
+            deleteMailbox(mailbox);
+    }
+
     RefPtr<MailboxInfo> mailboxInfo;
     for (size_t i = 0; i < m_textureMailboxes.size(); i++) {
         if (nameEquals(m_textureMailboxes[i]->mailbox, mailbox)) {
