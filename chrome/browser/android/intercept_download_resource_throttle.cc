@@ -13,6 +13,9 @@
 
 namespace chrome {
 
+static const char kOmaDrmContentMime[]  = "application/vnd.oma.drm.content";
+static const char kOmaDrmMessageMime[]  = "application/vnd.oma.drm.message";
+
 InterceptDownloadResourceThrottle::InterceptDownloadResourceThrottle(
     net::URLRequest* request,
     int render_process_id,
@@ -40,6 +43,13 @@ const char* InterceptDownloadResourceThrottle::GetNameForLogging() const {
 }
 
 void InterceptDownloadResourceThrottle::ProcessDownloadRequest() {
+  if (request_->url_chain().empty())
+    return;
+
+  GURL url = request_->url_chain().back();
+  if (!url.SchemeIsHTTPOrHTTPS())
+    return;
+
   if (request_->method() != net::HttpRequestHeaders::kGetMethod)
     return;
 
@@ -62,11 +72,11 @@ void InterceptDownloadResourceThrottle::ProcessDownloadRequest() {
 #endif
   }
 
-  if (request_->url_chain().empty())
-    return;
-
-  GURL url = request_->url_chain().back();
-  if (!url.SchemeIsHTTPOrHTTPS())
+  // For OMA DRM downloads, Android Download Manager doesn't handle them
+  // correctly. Use chromium network stack instead. http://crbug.com/382698.
+  std::string mime;
+  const_cast<net::URLRequest*>(request_)->GetMimeType(&mime);
+  if (!mime.compare(kOmaDrmContentMime) || !mime.compare(kOmaDrmMessageMime))
     return;
 
   content::DownloadControllerAndroid::Get()->CreateGETDownload(
