@@ -38,6 +38,9 @@ group.add_argument('--buildbot', action='store_true',
                  help='Buildbot mode (build and archive the toolchain)')
 group.add_argument('--trybot', action='store_true',
                  help='Trybot mode (build but do not archove the toolchain)')
+parser.add_argument('--tests-arch', choices=['x86-32', 'x86-64'],
+                    default='x86-64',
+                    help='Host architecture for tests in buildbot_pnacl.sh')
 args = parser.parse_args()
 
 host_os = buildbot_lib.GetHostPlatform()
@@ -199,10 +202,7 @@ buildbot_shell = os.path.join(NACL_DIR, 'buildbot', 'buildbot_pnacl.sh')
 
 # Generate flags for buildbot_pnacl.sh
 
-# TODO(dschuff): Figure out if it makes sense to import the utilities from
-# build/ into scripts from buildbot/ or only use things from buildbot_lib,
-# or unify them in some way.
-arch = 'x8664' if platform.machine() == 'x86_64' else 'x8632'
+arch = 'x8664' if args.tests_arch == 'x86-64' else 'x8632'
 
 if args.buildbot:
   trybot_mode = 'false'

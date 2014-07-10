@@ -198,24 +198,18 @@ BOT_ASSIGNMENT = {
         ' toolchain_build_bionic',
 
     # Pnacl toolchain builders.
-    'linux-armtools-x86_32':
-        bash + ' buildbot/buildbot_toolchain_arm_trusted.sh',
     'linux-pnacl-x86_32':
-        python + ' buildbot/buildbot_pnacl_toolchain.py --buildbot',
+        python +
+        ' buildbot/buildbot_pnacl_toolchain.py --buildbot --tests-arch x86-32',
     'linux-pnacl-x86_64':
-        python + ' buildbot/buildbot_pnacl_toolchain.py --buildbot',
-    'precise-pnacl-x86_32':
-        python + ' buildbot/buildbot_pnacl_toolchain.py --buildbot',
-    'precise-pnacl-x86_64':
-        python + ' buildbot/buildbot_pnacl_toolchain.py --buildbot',
+        python +
+        ' buildbot/buildbot_pnacl_toolchain.py --buildbot --tests-arch x86-64',
     'mac-pnacl-x86_32':
-        python + ' buildbot/buildbot_pnacl_toolchain.py --buildbot',
-    # TODO(robertm): Delete this once we are using win-pnacl-x86_64
+        python +
+        ' buildbot/buildbot_pnacl_toolchain.py --buildbot',
     'win-pnacl-x86_32':
-        python + ' buildbot/buildbot_pnacl_toolchain.py --buildbot',
-    # TODO(robertm): use this in favor or the misnamed win-pnacl-x86_32
-    'win-pnacl-x86_64':
-        python + ' buildbot/buildbot_pnacl_toolchain.py --buildbot',
+        python +
+        ' buildbot/buildbot_pnacl_toolchain.py --buildbot',
 
     # Pnacl toolchain testers
     'linux-pnacl-x86_64-tests-x86_64':
@@ -259,15 +253,12 @@ BOT_ASSIGNMENT = {
 
     # Pnacl toolchain trybots.
     'nacl-toolchain-linux-pnacl-x86_32':
-        python + ' buildbot/buildbot_pnacl_toolchain.py --trybot',
+        python +
+        ' buildbot/buildbot_pnacl_toolchain.py --trybot --tests-arch x86-32',
     'nacl-toolchain-linux-pnacl-x86_64':
-        python + ' buildbot/buildbot_pnacl_toolchain.py --trybot',
+        python +
+        ' buildbot/buildbot_pnacl_toolchain.py --trybot --tests-arch x86-64',
     'nacl-toolchain-linux-pnacl-mips': echo + ' "TODO(mseaborn)"',
-    'nacl-toolchain-precise-pnacl-x86_32':
-        python + ' buildbot/buildbot_pnacl_toolchain.py --trybot',
-    'nacl-toolchain-precise-pnacl-x86_64':
-        python + ' buildbot/buildbot_pnacl_toolchain.py --trybot',
-    'nacl-toolchain-precise-pnacl-mips': echo + ' "TODO(mseaborn)"',
     'nacl-toolchain-mac-pnacl-x86_32':
         python + ' buildbot/buildbot_pnacl_toolchain.py --trybot',
     'nacl-toolchain-win7-pnacl-x86_64':
