@@ -253,10 +253,6 @@ SK_API void SkDebugf_FileLine(const char* file, int line, bool fatal,
     #define SK_SUPPORT_LEGACY_GETTOPDEVICE
 #endif
 
-#ifndef SK_SUPPORT_LEGACY_BITMAP_CONFIG
-    #define SK_SUPPORT_LEGACY_BITMAP_CONFIG
-#endif
-
 // ===== End Chrome-specific definitions =====
 
 #endif

@@ -429,7 +429,7 @@ class CompositingRenderWidgetHostViewBrowserTestTabCapture
         expected_copy_from_compositing_surface_bitmap_;
     EXPECT_EQ(expected_bitmap.width(), bitmap.width());
     EXPECT_EQ(expected_bitmap.height(), bitmap.height());
-    EXPECT_EQ(expected_bitmap.config(), bitmap.config());
+    EXPECT_EQ(expected_bitmap.colorType(), bitmap.colorType());
     SkAutoLockPixels expected_bitmap_lock(expected_bitmap);
     SkAutoLockPixels bitmap_lock(bitmap);
     int fails = 0;

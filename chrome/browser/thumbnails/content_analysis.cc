@@ -233,7 +233,7 @@ void ApplyGaussianGradientMagnitudeFilter(SkBitmap* input_bitmap,
   SkAutoLockPixels source_lock(*input_bitmap);
   DCHECK(input_bitmap);
   DCHECK(input_bitmap->getPixels());
-  DCHECK_EQ(SkBitmap::kA8_Config, input_bitmap->config());
+  DCHECK_EQ(kAlpha_8_SkColorType, input_bitmap->colorType());
 
   // To perform computations we will need one intermediate buffer. It can
   // very well be just another bitmap.
@@ -383,7 +383,7 @@ void ExtractImageProfileInformation(const SkBitmap& input_bitmap,
   DCHECK(rows);
   DCHECK(columns);
   DCHECK(input_bitmap.getPixels());
-  DCHECK_EQ(SkBitmap::kA8_Config, input_bitmap.config());
+  DCHECK_EQ(kAlpha_8_SkColorType, input_bitmap.colorType());
   DCHECK_GE(area.x(), 0);
   DCHECK_GE(area.y(), 0);
   DCHECK_LE(area.right(), input_bitmap.width());

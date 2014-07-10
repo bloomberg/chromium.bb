@@ -156,7 +156,7 @@ void WebClipboardImpl::writeImage(const WebImage& image,
   if (!image.isNull()) {
     const SkBitmap& bitmap = image.getSkBitmap();
     // WriteBitmapFromPixels expects 32-bit data.
-    DCHECK_EQ(bitmap.config(), SkBitmap::kARGB_8888_Config);
+    DCHECK_EQ(bitmap.colorType(), kN32_SkColorType);
 
     SkAutoLockPixels locked(bitmap);
     void *pixels = bitmap.getPixels();

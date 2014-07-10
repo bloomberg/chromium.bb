@@ -495,7 +495,7 @@ SkBitmap ImageOperations::ResizeBasic(const SkBitmap& source,
            (method <= ImageOperations::RESIZE_LAST_ALGORITHM_METHOD));
 
   SkAutoLockPixels locker(source);
-  if (!source.readyToDraw() || source.config() != SkBitmap::kARGB_8888_Config)
+  if (!source.readyToDraw() || source.colorType() != kN32_SkColorType)
     return SkBitmap();
 
   ResizeFilter filter(method, source.width(), source.height(),

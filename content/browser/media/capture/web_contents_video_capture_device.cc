@@ -474,7 +474,7 @@ void RenderVideoFrame(const SkBitmap& input,
     DVLOG(1) << "input unacceptable (size="
              << input.getSize()
              << ", ready=" << input.readyToDraw()
-             << ", config=" << input.config() << ')';
+             << ", colorType=" << input.colorType() << ')';
     return;
   }
 

@@ -88,7 +88,7 @@ SkColor ComputeAverageColor(const SkBitmap& bitmap) {
     ADD_FAILURE() << "Bitmap has no pixelref.";
     return SkColorSetARGB(0, 0, 0, 0);
   }
-  if (bitmap.config() == SkBitmap::kNo_Config) {
+  if (bitmap.colorType() == kUnknown_SkColorType) {
     ADD_FAILURE() << "Bitmap has not been configured.";
     return SkColorSetARGB(0, 0, 0, 0);
   }

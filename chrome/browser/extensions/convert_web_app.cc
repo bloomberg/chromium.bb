@@ -134,7 +134,7 @@ scoped_refptr<Extension> ConvertWebAppToExtension(
   }
   for (size_t i = 0; i < web_app.icons.size(); ++i) {
     // Skip unfetched bitmaps.
-    if (web_app.icons[i].data.config() == SkBitmap::kNo_Config)
+    if (web_app.icons[i].data.colorType() == kUnknown_SkColorType)
       continue;
 
     base::FilePath icon_file = icons_dir.AppendASCII(

@@ -110,7 +110,7 @@ bool AddGfxImageToIconFamily(IconFamilyHandle icon_family,
   // have all the representations desired here for mac, from the kDesiredSizes
   // array in web_app.cc.
   SkBitmap bitmap = image.AsBitmap();
-  if (bitmap.config() != SkBitmap::kARGB_8888_Config ||
+  if (bitmap.colorType() != kN32_SkColorType ||
       bitmap.width() != bitmap.height()) {
     return false;
   }

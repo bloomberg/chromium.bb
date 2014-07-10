@@ -32,7 +32,7 @@ namespace {
 unsigned long ImagePixelSum(const SkBitmap& bitmap, const gfx::Rect& rect) {
   // Get the sum of pixel values in the rectangle. Applicable only to
   // monochrome bitmaps.
-  DCHECK_EQ(SkBitmap::kA8_Config, bitmap.config());
+  DCHECK_EQ(kAlpha_8_SkColorType, bitmap.colorType());
   unsigned long total = 0;
   for (int r = rect.y(); r < rect.bottom(); ++r) {
     const uint8* row_data = static_cast<const uint8*>(

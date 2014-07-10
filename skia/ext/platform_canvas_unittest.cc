@@ -413,8 +413,8 @@ TEST(PlatformBitmapTest, PlatformBitmap) {
   EXPECT_EQ(kHeight, platform_bitmap->GetBitmap().height());
   EXPECT_LE(static_cast<size_t>(platform_bitmap->GetBitmap().width()*4),
             platform_bitmap->GetBitmap().rowBytes());
-  EXPECT_EQ(SkBitmap::kARGB_8888_Config,  // Same for all platforms.
-            platform_bitmap->GetBitmap().config());
+  EXPECT_EQ(kN32_SkColorType,  // Same for all platforms.
+            platform_bitmap->GetBitmap().colorType());
   EXPECT_TRUE(platform_bitmap->GetBitmap().lockPixelsAreWritable());
   EXPECT_TRUE(platform_bitmap->GetBitmap().pixelRef()->isLocked());
   EXPECT_EQ(1, platform_bitmap->GetBitmap().pixelRef()->getRefCnt());

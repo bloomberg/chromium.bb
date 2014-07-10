@@ -95,7 +95,7 @@ TEST(IPCMessageTest, Bitmap) {
   PickleIterator iter(msg);
   EXPECT_TRUE(IPC::ParamTraits<SkBitmap>::Read(&msg, &iter, &output));
 
-  EXPECT_EQ(bitmap.config(), output.config());
+  EXPECT_EQ(bitmap.colorType(), output.colorType());
   EXPECT_EQ(bitmap.width(), output.width());
   EXPECT_EQ(bitmap.height(), output.height());
   EXPECT_EQ(bitmap.rowBytes(), output.rowBytes());

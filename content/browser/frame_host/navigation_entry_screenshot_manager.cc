@@ -53,7 +53,7 @@ class ScreenshotData : public base::RefCountedThreadSafe<ScreenshotData> {
 
   void EncodeOnWorker(const SkBitmap& bitmap) {
     std::vector<unsigned char> data;
-    // Paint |bitmap| to a kA8_Config SkBitmap
+    // Paint |bitmap| to a kAlpha_8_SkColorType SkBitmap
     SkBitmap a8Bitmap;
     a8Bitmap.allocPixels(SkImageInfo::MakeA8(bitmap.width(), bitmap.height()));
     SkCanvas canvas(a8Bitmap);
