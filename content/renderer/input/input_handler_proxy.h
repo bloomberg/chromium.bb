@@ -116,6 +116,8 @@ class CONTENT_EXPORT InputHandlerProxy
   // Non-zero only within the scope of |scrollBy|.
   gfx::Vector2dF current_fling_velocity_;
 
+  bool smooth_scroll_enabled_;
+
   DISALLOW_COPY_AND_ASSIGN(InputHandlerProxy);
 };
 

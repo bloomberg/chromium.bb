@@ -476,7 +476,7 @@ TEST(LayerAnimationControllerTest, TrivialTransitionOnImpl) {
   controller_impl->UpdateState(true, events.get());
   EXPECT_TRUE(controller_impl->HasActiveAnimation());
   EXPECT_EQ(0.f, dummy_impl.opacity());
-  EXPECT_EQ(2u, events->size());
+  EXPECT_EQ(1u, events->size());
   const AnimationEvent* start_opacity_event =
       GetMostRecentPropertyUpdateEvent(events.get());
   EXPECT_EQ(0.f, start_opacity_event->opacity);
@@ -486,7 +486,7 @@ TEST(LayerAnimationControllerTest, TrivialTransitionOnImpl) {
   controller_impl->UpdateState(true, events.get());
   EXPECT_EQ(1.f, dummy_impl.opacity());
   EXPECT_FALSE(controller_impl->HasActiveAnimation());
-  EXPECT_EQ(4u, events->size());
+  EXPECT_EQ(2u, events->size());
   const AnimationEvent* end_opacity_event =
       GetMostRecentPropertyUpdateEvent(events.get());
   EXPECT_EQ(1.f, end_opacity_event->opacity);
@@ -526,7 +526,7 @@ TEST(LayerAnimationControllerTest, TrivialTransformOnImpl) {
   controller_impl->UpdateState(true, events.get());
   EXPECT_TRUE(controller_impl->HasActiveAnimation());
   EXPECT_EQ(gfx::Transform(), dummy_impl.transform());
-  EXPECT_EQ(2u, events->size());
+  EXPECT_EQ(1u, events->size());
   const AnimationEvent* start_transform_event =
       GetMostRecentPropertyUpdateEvent(events.get());
   ASSERT_TRUE(start_transform_event);
@@ -541,7 +541,7 @@ TEST(LayerAnimationControllerTest, TrivialTransformOnImpl) {
   controller_impl->UpdateState(true, events.get());
   EXPECT_EQ(expected_transform, dummy_impl.transform());
   EXPECT_FALSE(controller_impl->HasActiveAnimation());
-  EXPECT_EQ(4u, events->size());
+  EXPECT_EQ(2u, events->size());
   const AnimationEvent* end_transform_event =
       GetMostRecentPropertyUpdateEvent(events.get());
   EXPECT_EQ(expected_transform, end_transform_event->transform);
@@ -627,7 +627,7 @@ TEST(LayerAnimationControllerTest, FilterTransitionOnImplOnly) {
   controller_impl->UpdateState(true, events.get());
   EXPECT_TRUE(controller_impl->HasActiveAnimation());
   EXPECT_EQ(start_filters, dummy_impl.filters());
-  EXPECT_EQ(2u, events->size());
+  EXPECT_EQ(1u, events->size());
   const AnimationEvent* start_filter_event =
       GetMostRecentPropertyUpdateEvent(events.get());
   EXPECT_TRUE(start_filter_event);
@@ -639,7 +639,7 @@ TEST(LayerAnimationControllerTest, FilterTransitionOnImplOnly) {
   controller_impl->UpdateState(true, events.get());
   EXPECT_EQ(end_filters, dummy_impl.filters());
   EXPECT_FALSE(controller_impl->HasActiveAnimation());
-  EXPECT_EQ(4u, events->size());
+  EXPECT_EQ(2u, events->size());
   const AnimationEvent* end_filter_event =
       GetMostRecentPropertyUpdateEvent(events.get());
   EXPECT_TRUE(end_filter_event);
@@ -887,21 +887,17 @@ class FakeAnimationDelegate : public AnimationDelegate {
 };
 
 // Tests that impl-only animations lead to start and finished notifications
-// being sent to the main thread controller's animation delegate.
+// on the impl thread controller's animation delegate.
 TEST(LayerAnimationControllerTest,
-     NotificationsForImplOnlyAnimationsAreSentToMainThreadDelegate) {
+     NotificationsForImplOnlyAnimationsAreSentToImplThreadDelegate) {
   FakeLayerAnimationValueObserver dummy_impl;
   scoped_refptr<LayerAnimationController> controller_impl(
       LayerAnimationController::Create(0));
   controller_impl->AddValueObserver(&dummy_impl);
   scoped_ptr<AnimationEventsVector> events(
       make_scoped_ptr(new AnimationEventsVector));
-  FakeLayerAnimationValueObserver dummy;
-  scoped_refptr<LayerAnimationController> controller(
-      LayerAnimationController::Create(0));
-  controller->AddValueObserver(&dummy);
   FakeAnimationDelegate delegate;
-  controller->set_layer_animation_delegate(&delegate);
+  controller_impl->set_layer_animation_delegate(&delegate);
 
   scoped_ptr<Animation> to_add(CreateAnimation(
       scoped_ptr<AnimationCurve>(new FakeFloatTransition(1.0, 0.f, 1.f)).Pass(),
@@ -910,38 +906,21 @@ TEST(LayerAnimationControllerTest,
   to_add->set_is_impl_only(true);
   controller_impl->AddAnimation(to_add.Pass());
 
+  EXPECT_FALSE(delegate.started());
+  EXPECT_FALSE(delegate.finished());
+
   controller_impl->Animate(kInitialTickTime);
   controller_impl->UpdateState(true, events.get());
 
-  // We should receive 2 events (a started notification and a property update).
-  EXPECT_EQ(2u, events->size());
-  EXPECT_EQ(AnimationEvent::Started, (*events)[0].type);
-  EXPECT_TRUE((*events)[0].is_impl_only);
-  EXPECT_EQ(AnimationEvent::PropertyUpdate, (*events)[1].type);
-  EXPECT_TRUE((*events)[1].is_impl_only);
-
-  // Passing on the start event to the main thread controller should cause the
-  // delegate to get notified.
-  EXPECT_FALSE(delegate.started());
-  controller->NotifyAnimationStarted((*events)[0]);
   EXPECT_TRUE(delegate.started());
+  EXPECT_FALSE(delegate.finished());
 
   events.reset(new AnimationEventsVector);
   controller_impl->Animate(kInitialTickTime +
                            TimeDelta::FromMilliseconds(1000));
   controller_impl->UpdateState(true, events.get());
 
-  // We should receive 2 events (a finished notification and a property update).
-  EXPECT_EQ(2u, events->size());
-  EXPECT_EQ(AnimationEvent::Finished, (*events)[0].type);
-  EXPECT_TRUE((*events)[0].is_impl_only);
-  EXPECT_EQ(AnimationEvent::PropertyUpdate, (*events)[1].type);
-  EXPECT_TRUE((*events)[1].is_impl_only);
-
-  // Passing on the finished event to the main thread controller should cause
-  // the delegate to get notified.
-  EXPECT_FALSE(delegate.finished());
-  controller->NotifyAnimationFinished((*events)[0]);
+  EXPECT_TRUE(delegate.started());
   EXPECT_TRUE(delegate.finished());
 }
 

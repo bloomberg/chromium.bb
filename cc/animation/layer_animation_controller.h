@@ -112,6 +112,11 @@ class CC_EXPORT LayerAnimationController
     layer_animation_delegate_ = delegate;
   }
 
+  void remove_layer_animation_delegate(AnimationDelegate* delegate) {
+    if (layer_animation_delegate_ == delegate)
+      layer_animation_delegate_ = NULL;
+  }
+
   bool HasFilterAnimationThatInflatesBounds() const;
   bool HasTransformAnimationThatInflatesBounds() const;
   bool HasAnimationThatInflatesBounds() const {

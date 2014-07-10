@@ -76,6 +76,9 @@ class CC_EXPORT InputHandler {
   virtual ScrollStatus ScrollBegin(const gfx::Point& viewport_point,
                                    ScrollInputType type) = 0;
 
+  virtual ScrollStatus ScrollAnimated(const gfx::Point& viewport_point,
+                                      const gfx::Vector2dF& scroll_delta) = 0;
+
   // Scroll the selected layer starting at the given position. If the scroll
   // type given to ScrollBegin was a gesture, then the scroll point and delta
   // should be in viewport (logical pixel) coordinates. Otherwise they are in

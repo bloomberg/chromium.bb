@@ -11,6 +11,7 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
+#include "cc/animation/animation_delegate.h"
 #include "cc/animation/layer_animation_controller.h"
 #include "cc/animation/layer_animation_value_observer.h"
 #include "cc/animation/layer_animation_value_provider.h"
@@ -65,7 +66,8 @@ enum DrawMode {
 };
 
 class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
-                            public LayerAnimationValueProvider {
+                            public LayerAnimationValueProvider,
+                            public AnimationDelegate {
  public:
   // Allows for the ownership of the total scroll offset to be delegated outside
   // of the layer.
@@ -101,6 +103,14 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
       const gfx::Vector2dF& scroll_offset) OVERRIDE;
   virtual void OnAnimationWaitingForDeletion() OVERRIDE;
   virtual bool IsActive() const OVERRIDE;
+
+  // AnimationDelegate implementation.
+  virtual void NotifyAnimationStarted(
+      base::TimeTicks monotonic_time,
+      Animation::TargetProperty target_property) OVERRIDE{};
+  virtual void NotifyAnimationFinished(
+      base::TimeTicks monotonic_time,
+      Animation::TargetProperty target_property) OVERRIDE;
 
   // Tree structure.
   LayerImpl* parent() { return parent_; }

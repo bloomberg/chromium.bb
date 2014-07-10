@@ -90,6 +90,7 @@ class CC_EXPORT LayerTreeImpl {
   scoped_ptr<ScrollbarAnimationController> CreateScrollbarAnimationController(
       LayerImpl* scrolling_layer);
   void DidAnimateScrollOffset();
+  void InputScrollAnimationFinished();
   bool use_gpu_rasterization() const;
   bool create_low_res_tiling() const;
 

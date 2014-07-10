@@ -5,11 +5,13 @@
 #include "content/renderer/input/input_handler_proxy.h"
 
 #include "base/auto_reset.h"
+#include "base/command_line.h"
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "content/common/input/did_overscroll_params.h"
 #include "content/common/input/web_input_event_traits.h"
+#include "content/public/common/content_switches.h"
 #include "content/renderer/input/input_handler_proxy_client.h"
 #include "third_party/WebKit/public/platform/Platform.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
@@ -157,6 +159,8 @@ InputHandlerProxy::InputHandlerProxy(cc::InputHandler* input_handler,
       has_fling_animation_started_(false) {
   DCHECK(client);
   input_handler_->BindToClient(this);
+  smooth_scroll_enabled_ = CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableSmoothScrolling);
 }
 
 InputHandlerProxy::~InputHandlerProxy() {}
@@ -206,6 +210,20 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleInputEvent(
       // Wheel events involving the control key never trigger scrolling, only
       // event handlers.  Forward to the main thread.
       return DID_NOT_HANDLE;
+    }
+    if (smooth_scroll_enabled_) {
+      cc::InputHandler::ScrollStatus scroll_status =
+          input_handler_->ScrollAnimated(
+              gfx::Point(wheel_event.x, wheel_event.y),
+              gfx::Vector2dF(-wheel_event.deltaX, -wheel_event.deltaY));
+      switch (scroll_status) {
+        case cc::InputHandler::ScrollStarted:
+          return DID_HANDLE;
+        case cc::InputHandler::ScrollIgnored:
+          return DROP_EVENT;
+        default:
+          return DID_NOT_HANDLE;
+      }
     }
     cc::InputHandler::ScrollStatus scroll_status = input_handler_->ScrollBegin(
         gfx::Point(wheel_event.x, wheel_event.y), cc::InputHandler::Wheel);

@@ -687,7 +687,10 @@ void LayerAnimationController::PromoteStartedAnimations(
                                      animations_[i]->target_property(),
                                      monotonic_time);
         started_event.is_impl_only = animations_[i]->is_impl_only();
-        events->push_back(started_event);
+        if (started_event.is_impl_only)
+          NotifyAnimationStarted(started_event);
+        else
+          events->push_back(started_event);
       }
     }
   }
@@ -767,7 +770,10 @@ void LayerAnimationController::MarkAnimationsForDeletion(
                                           animations_[j]->target_property(),
                                           monotonic_time);
             finished_event.is_impl_only = animations_[j]->is_impl_only();
-            events->push_back(finished_event);
+            if (finished_event.is_impl_only)
+              NotifyAnimationFinished(finished_event);
+            else
+              events->push_back(finished_event);
           }
           animations_[j]->SetRunState(Animation::WaitingForDeletion,
                                       monotonic_time);

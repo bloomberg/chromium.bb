@@ -13,6 +13,8 @@
 #include "base/metrics/histogram.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
+#include "cc/animation/animation_id_provider.h"
+#include "cc/animation/scroll_offset_animation_curve.h"
 #include "cc/animation/scrollbar_animation_controller.h"
 #include "cc/animation/timing_function.h"
 #include "cc/base/latency_info_swap_promise_monitor.h"
@@ -2284,6 +2286,64 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollBegin(
     return ScrollStarted;
   }
   return ScrollIgnored;
+}
+
+InputHandler::ScrollStatus LayerTreeHostImpl::ScrollAnimated(
+    const gfx::Point& viewport_point,
+    const gfx::Vector2dF& scroll_delta) {
+  if (CurrentlyScrollingLayer()) {
+    // TODO(skobes): Update the target of the existing animation.
+    return ScrollIgnored;
+  }
+  // ScrollAnimated is only used for wheel scrolls. We use the same bubbling
+  // behavior as ScrollBy to determine which layer to animate, but we do not
+  // do the Android-specific things in ScrollBy like showing top controls.
+  InputHandler::ScrollStatus scroll_status = ScrollBegin(viewport_point, Wheel);
+  if (scroll_status == ScrollStarted) {
+    gfx::Vector2dF pending_delta = scroll_delta;
+    for (LayerImpl* layer_impl = CurrentlyScrollingLayer(); layer_impl;
+         layer_impl = layer_impl->parent()) {
+      if (!layer_impl->scrollable())
+        continue;
+
+      gfx::Vector2dF current_offset = layer_impl->TotalScrollOffset();
+      gfx::Vector2dF target_offset = current_offset + pending_delta;
+      target_offset.SetToMax(gfx::Vector2dF());
+      target_offset.SetToMin(layer_impl->MaxScrollOffset());
+      gfx::Vector2dF actual_delta = target_offset - current_offset;
+
+      const float kEpsilon = 0.1f;
+      bool can_layer_scroll = (std::abs(actual_delta.x()) > kEpsilon ||
+                               std::abs(actual_delta.y()) > kEpsilon);
+
+      if (!can_layer_scroll) {
+        layer_impl->ScrollBy(actual_delta);
+        pending_delta -= actual_delta;
+        continue;
+      }
+
+      active_tree_->SetCurrentlyScrollingLayer(layer_impl);
+
+      scoped_ptr<ScrollOffsetAnimationCurve> curve =
+          ScrollOffsetAnimationCurve::Create(target_offset,
+                                             EaseInOutTimingFunction::Create());
+      curve->SetInitialValue(current_offset);
+
+      scoped_ptr<Animation> animation =
+          Animation::Create(curve->Clone().Pass(),
+                            AnimationIdProvider::NextAnimationId(),
+                            AnimationIdProvider::NextGroupId(),
+                            Animation::ScrollOffset);
+      animation->set_is_impl_only(true);
+
+      layer_impl->layer_animation_controller()->AddAnimation(animation.Pass());
+
+      SetNeedsAnimate();
+      return ScrollStarted;
+    }
+  }
+  ScrollEnd();
+  return scroll_status;
 }
 
 gfx::Vector2dF LayerTreeHostImpl::ScrollLayerWithViewportSpaceDelta(

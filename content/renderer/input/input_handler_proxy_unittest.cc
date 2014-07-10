@@ -86,6 +86,9 @@ class MockInputHandler : public cc::InputHandler {
   MOCK_METHOD2(ScrollBegin,
                ScrollStatus(const gfx::Point& viewport_point,
                             cc::InputHandler::ScrollInputType type));
+  MOCK_METHOD2(ScrollAnimated,
+               ScrollStatus(const gfx::Point& viewport_point,
+                            const gfx::Vector2dF& scroll_delta));
   MOCK_METHOD2(ScrollBy,
                bool(const gfx::Point& viewport_point,
                     const gfx::Vector2dF& scroll_delta));

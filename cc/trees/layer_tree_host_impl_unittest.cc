@@ -6723,5 +6723,36 @@ TEST_F(LayerTreeHostImplTest, ExternalTransformReflectedInNextDraw) {
       external_transform, layer->draw_properties().target_space_transform);
 }
 
+TEST_F(LayerTreeHostImplTest, ScrollAnimated) {
+  SetupScrollAndContentsLayers(gfx::Size(100, 100));
+  host_impl_->SetViewportSize(gfx::Size(50, 50));
+  DrawFrame();
+
+  base::TimeTicks start_time =
+      base::TimeTicks() + base::TimeDelta::FromMilliseconds(100);
+
+  EXPECT_EQ(InputHandler::ScrollStarted,
+            host_impl_->ScrollAnimated(gfx::Point(), gfx::Vector2d(0, 50)));
+
+  LayerImpl* scrolling_layer = host_impl_->CurrentlyScrollingLayer();
+
+  host_impl_->Animate(start_time);
+  host_impl_->UpdateAnimationState(true);
+
+  EXPECT_EQ(gfx::Vector2dF(), scrolling_layer->TotalScrollOffset());
+
+  host_impl_->Animate(start_time + base::TimeDelta::FromMilliseconds(50));
+  host_impl_->UpdateAnimationState(true);
+
+  float y = scrolling_layer->TotalScrollOffset().y();
+  EXPECT_TRUE(y > 1 && y < 49);
+
+  host_impl_->Animate(start_time + base::TimeDelta::FromMilliseconds(200));
+  host_impl_->UpdateAnimationState(true);
+
+  EXPECT_EQ(gfx::Vector2dF(0, 50), scrolling_layer->TotalScrollOffset());
+  EXPECT_EQ(NULL, host_impl_->CurrentlyScrollingLayer());
+}
+
 }  // namespace
 }  // namespace cc

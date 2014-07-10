@@ -1373,4 +1373,8 @@ void LayerTreeImpl::UnregisterPictureLayerImpl(PictureLayerImpl* layer) {
   layer_tree_host_impl_->UnregisterPictureLayerImpl(layer);
 }
 
+void LayerTreeImpl::InputScrollAnimationFinished() {
+  layer_tree_host_impl_->ScrollEnd();
+}
+
 }  // namespace cc

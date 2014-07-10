@@ -126,6 +126,9 @@ class CC_EXPORT LayerTreeHostImpl
   virtual InputHandler::ScrollStatus ScrollBegin(
       const gfx::Point& viewport_point,
       InputHandler::ScrollInputType type) OVERRIDE;
+  virtual InputHandler::ScrollStatus ScrollAnimated(
+      const gfx::Point& viewport_point,
+      const gfx::Vector2dF& scroll_delta) OVERRIDE;
   virtual bool ScrollBy(const gfx::Point& viewport_point,
                         const gfx::Vector2dF& scroll_delta) OVERRIDE;
   virtual bool ScrollVerticallyByPage(const gfx::Point& viewport_point,

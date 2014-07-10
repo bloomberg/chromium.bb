@@ -10,7 +10,7 @@
 
 namespace cc {
 
-class AnimationDelegate {
+class CC_EXPORT AnimationDelegate {
  public:
   virtual void NotifyAnimationStarted(
       base::TimeTicks monotonic_time,
