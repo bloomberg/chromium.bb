@@ -188,10 +188,12 @@ InspectorTest.getPageMetrics = function(full, callback)
 InspectorTest.applyEmulationAndReload = function(enabled, width, height, deviceScaleFactor, viewport, callback)
 {
     InspectorTest.addSniffer(WebInspector.overridesSupport, "_deviceMetricsOverrideAppliedForTest", emulateCallback);
-    if (enabled)
-        WebInspector.overridesSupport.emulateDevice(new WebInspector.OverridesSupport.Device(width + "x" + height + "x" + deviceScaleFactor + "x1x1", ""));
-    else
+    if (enabled) {
+        var device = {title: "", width: width, height: height, deviceScaleFactor: deviceScaleFactor, userAgent: "", touch: false, mobile: true};
+        WebInspector.overridesSupport.emulateDevice(device);
+    } else {
         WebInspector.overridesSupport.reset();
+    }
     WebInspector.overridesSupport.settings._emulationEnabled.set(enabled);
 
     function emulateCallback()
