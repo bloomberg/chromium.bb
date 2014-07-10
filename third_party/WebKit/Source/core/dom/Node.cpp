@@ -306,6 +306,9 @@ Node::~Node()
 
     if (m_treeScope)
         m_treeScope->guardDeref();
+
+    if (getFlag(HasWeakReferencesFlag))
+        WeakNodeMap::notifyNodeDestroyed(this);
 #else
     // With Oilpan, the rare data finalizer also asserts for
     // this condition (we cannot directly access it here.)
@@ -313,9 +316,6 @@ Node::~Node()
 #endif
 
     InspectorCounters::decrementCounter(InspectorCounters::NodeCounter);
-
-    if (getFlag(HasWeakReferencesFlag))
-        WeakNodeMap::notifyNodeDestroyed(this);
 }
 
 #if !ENABLE(OILPAN)

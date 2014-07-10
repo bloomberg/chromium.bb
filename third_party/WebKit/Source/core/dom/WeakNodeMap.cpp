@@ -9,6 +9,7 @@
 
 namespace WebCore {
 
+#if !ENABLE(OILPAN)
 class NodeToWeakNodeMaps {
 public:
     bool addedToMap(Node*, WeakNodeMap*);
@@ -100,5 +101,6 @@ void WeakNodeMap::notifyNodeDestroyed(Node* node)
 {
     NodeToWeakNodeMaps::instance().nodeDestroyed(node);
 }
+#endif
 
 }
