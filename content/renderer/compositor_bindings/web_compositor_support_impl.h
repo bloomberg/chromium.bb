@@ -48,12 +48,10 @@ class CONTENT_EXPORT WebCompositorSupportImpl
       int animation_id);
   virtual blink::WebFilterAnimationCurve* createFilterAnimationCurve();
   virtual blink::WebFloatAnimationCurve* createFloatAnimationCurve();
-#if WEB_SCROLL_OFFSET_ANIMATION_CURVE_IS_DEFINED
   virtual blink::WebScrollOffsetAnimationCurve*
       createScrollOffsetAnimationCurve(
           blink::WebFloatPoint target_value,
           blink::WebAnimationCurve::TimingFunctionType timing_function);
-#endif
   virtual blink::WebTransformAnimationCurve* createTransformAnimationCurve();
   virtual blink::WebTransformOperations* createTransformOperations();
   virtual blink::WebFilterOperations* createFilterOperations();

@@ -40,9 +40,7 @@ using blink::WebScrollbar;
 using blink::WebScrollbarLayer;
 using blink::WebScrollbarThemeGeometry;
 using blink::WebScrollbarThemePainter;
-#if WEB_SCROLL_OFFSET_ANIMATION_CURVE_IS_DEFINED
 using blink::WebScrollOffsetAnimationCurve;
-#endif
 using blink::WebSolidColorLayer;
 using blink::WebTransformAnimationCurve;
 using blink::WebTransformOperations;
@@ -115,14 +113,12 @@ WebFloatAnimationCurve* WebCompositorSupportImpl::createFloatAnimationCurve() {
   return new WebFloatAnimationCurveImpl();
 }
 
-#if WEB_SCROLL_OFFSET_ANIMATION_CURVE_IS_DEFINED
 WebScrollOffsetAnimationCurve*
 WebCompositorSupportImpl::createScrollOffsetAnimationCurve(
     blink::WebFloatPoint target_value,
     blink::WebAnimationCurve::TimingFunctionType timing_function) {
   return new WebScrollOffsetAnimationCurveImpl(target_value, timing_function);
 }
-#endif
 
 WebTransformAnimationCurve*
 WebCompositorSupportImpl::createTransformAnimationCurve() {

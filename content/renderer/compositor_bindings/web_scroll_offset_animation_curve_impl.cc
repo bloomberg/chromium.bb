@@ -4,8 +4,6 @@
 
 #include "content/renderer/compositor_bindings/web_scroll_offset_animation_curve_impl.h"
 
-#if WEB_SCROLL_OFFSET_ANIMATION_CURVE_IS_DEFINED
-
 #include "cc/animation/scroll_offset_animation_curve.h"
 #include "cc/animation/timing_function.h"
 #include "content/renderer/compositor_bindings/web_animation_curve_common.h"
@@ -50,6 +48,4 @@ WebScrollOffsetAnimationCurveImpl::CloneToAnimationCurve() const {
 }
 
 }  // namespace content
-
-#endif  // WEB_SCROLL_OFFSET_ANIMATION_CURVE_IS_DEFINED
 

@@ -52,14 +52,12 @@ WebAnimationImpl::WebAnimationImpl(const WebAnimationCurve& web_curve,
       curve = filter_curve_impl->CloneToAnimationCurve();
       break;
     }
-#if WEB_SCROLL_OFFSET_ANIMATION_CURVE_IS_DEFINED
     case WebAnimationCurve::AnimationCurveTypeScrollOffset: {
       const WebScrollOffsetAnimationCurveImpl* scroll_curve_impl =
           static_cast<const WebScrollOffsetAnimationCurveImpl*>(&web_curve);
       curve = scroll_curve_impl->CloneToAnimationCurve();
       break;
     }
-#endif
   }
   animation_ = Animation::Create(
       curve.Pass(),

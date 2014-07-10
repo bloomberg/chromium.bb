@@ -5,10 +5,6 @@
 #ifndef CONTENT_RENDERER_COMPOSITOR_BINDINGS_WEB_SCROLL_OFFSET_ANIMATION_CURVE_IMPL_H_
 #define CONTENT_RENDERER_COMPOSITOR_BINDINGS_WEB_SCROLL_OFFSET_ANIMATION_CURVE_IMPL_H_
 
-#include "third_party/WebKit/public/platform/WebAnimationCurve.h"
-
-#if WEB_SCROLL_OFFSET_ANIMATION_CURVE_IS_DEFINED
-
 #include "base/memory/scoped_ptr.h"
 #include "content/common/content_export.h"
 #include "third_party/WebKit/public/platform/WebScrollOffsetAnimationCurve.h"
@@ -45,8 +41,6 @@ class WebScrollOffsetAnimationCurveImpl
 };
 
 }  // namespace content
-
-#endif  // WEB_SCROLL_OFFSET_ANIMATION_CURVE_IS_DEFINED
 
 #endif  // CONTENT_RENDERER_COMPOSITOR_BINDINGS_WEB_SCROLL_OFFSET_ANIMATION_CURVE_IMPL_H_
 
