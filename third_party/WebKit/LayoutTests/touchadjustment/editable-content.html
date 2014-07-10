@@ -73,7 +73,7 @@ Another line of text separated by a blank line.</textarea>
 
     function testTouchOnBoundary(position) {
         var touchpoint = offsetTouchPoint(findAbsoluteBounds(element), position, touchOffset, touchRadius, touchRadius);
-        testTouchPoint(touchpoint, element);
+        testTouchPoint(touchpoint, element, /* allowTextNodes */ false, /* disallowShadowDOM */ true);
     }
 
     function testIndirectTouches() {

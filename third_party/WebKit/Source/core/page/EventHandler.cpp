@@ -2491,18 +2491,8 @@ bool EventHandler::bestClickableNodeForHitTestResult(const HitTestResult& result
     WillBeHeapVector<RefPtrWillBeMember<Node>, 11> nodes;
     copyToVector(result.rectBasedTestResult(), nodes);
 
-    // FIXME: Should be able to handle targetNode being a shadow DOM node to avoid performing uncessary hit tests
-    // in the case where further processing on the node is required. Returning the shadow ancestor prevents a
-    // regression in touchadjustment/html-label.html. Some refinement is required to testing/internals to
-    // handle targetNode being a shadow DOM node.
-
     // FIXME: the explicit Vector conversion copies into a temporary and is wasteful.
-    // FIXME: targetNode and success are only used by Internals functions. We should
-    // instead have dedicated test methods so we only do this work in tests.
-    bool success = findBestClickableCandidate(targetNode, targetPoint, touchCenter, touchRect, WillBeHeapVector<RefPtrWillBeMember<Node> > (nodes));
-    if (success && targetNode)
-        targetNode = targetNode->deprecatedShadowAncestorNode();
-    return success;
+    return findBestClickableCandidate(targetNode, targetPoint, touchCenter, touchRect, WillBeHeapVector<RefPtrWillBeMember<Node> > (nodes));
 }
 
 bool EventHandler::bestContextMenuNodeForHitTestResult(const HitTestResult& result, IntPoint& targetPoint, Node*& targetNode)

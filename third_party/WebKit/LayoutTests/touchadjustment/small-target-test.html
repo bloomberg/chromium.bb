@@ -117,7 +117,7 @@
     function testTouch(id, relativePosition)
     {
         var element = document.getElementById(id);
-        testTouchPoint(offsetTouchPoint(findAbsoluteBounds(element), relativePosition, touchOffset, touchRadius), element);
+        testTouchPoint(offsetTouchPoint(findAbsoluteBounds(element), relativePosition, touchOffset, touchRadius), element, /* allowTextNodes */ false, /* disallowShadowDOM */ true);
     }
 
     function testDirectTouches()

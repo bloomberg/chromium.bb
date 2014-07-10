@@ -3,19 +3,19 @@ Test the case where a clickable target contains a shadow-DOM element. The adjust
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
-PASS adjustedNode.id is element.id
+PASS adjusted node was DIV#targetDiv.
 PASS adjustedPoint.x is within 10 of 88
 PASS adjustedPoint.y is within 10 of 28
-PASS adjustedNode.id is element.id
+PASS adjusted node was DIV#targetDiv.
 PASS adjustedPoint.x is within 10 of 88
 PASS adjustedPoint.y is within 10 of 28
-PASS adjustedNode.id is element.id
+PASS adjusted node was DIV#targetDiv.
 PASS adjustedPoint.x is within 10 of 88
 PASS adjustedPoint.y is within 10 of 28
-PASS adjustedNode.id is element.id
+PASS adjusted node was DIV#targetDiv.
 PASS adjustedPoint.x is within 10 of 88
 PASS adjustedPoint.y is within 10 of 28
-PASS adjustedNode.id is element.id
+PASS adjusted node was DIV#targetDiv.
 PASS adjustedPoint.x is within 1 of 58
 PASS adjustedPoint.y is within 1 of 58
 PASS successfullyParsed is true

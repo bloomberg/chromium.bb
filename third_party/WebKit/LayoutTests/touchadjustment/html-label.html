@@ -40,14 +40,14 @@
     function testDirectTouch(element)
     {
         var touchpoint = offsetTouchPoint(findAbsoluteBounds(element), 'center', 0, 20, 30);
-        testTouchPoint(touchpoint, element);
+        testTouchPoint(touchpoint, element, /* allowTextNodes */ false, /* disallowShadowDOM */ true);
     }
 
     function testIndirectTouch(element, offset)
     {
         // Touch just right of the element.
         var touchpoint = offsetTouchPoint(findAbsoluteBounds(element), 'right', offset, 30, 20);
-        testTouchPoint(touchpoint, element);
+        testTouchPoint(touchpoint, element, /* allowTextNodes */ false, /* disallowShadowDOM */ true);
     }
 
     function testDirectTouches()

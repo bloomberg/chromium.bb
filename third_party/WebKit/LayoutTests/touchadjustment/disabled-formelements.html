@@ -42,7 +42,7 @@
         testTouchPoint(touchPoint(16, 8, 5), null);
         testTouchPoint(touchPoint(16, 38, 5), e.label2);
         testTouchPoint(touchPoint(60, 8, 5), null);
-        testTouchPoint(touchPoint(60, 38, 5), e.input2);
+        testTouchPoint(touchPoint(60, 38, 5), e.input2, /* allowTextNodes */ false, /* disallowShadowDOM */ true);
     }
 
     function testAdjustedTouches()
@@ -52,9 +52,9 @@
         testTouchPoint(touchPoint(16, 20, 15), e.label2);
         testTouchPoint(touchPoint(16, 16, 20), e.label2);
 
-        testTouchPoint(touchPoint(60, 25, 10), e.input2);
-        testTouchPoint(touchPoint(60, 20, 15), e.input2);
-        testTouchPoint(touchPoint(60, 16, 20), e.input2);
+        testTouchPoint(touchPoint(60, 25, 10), e.input2, /* allowTextNodes */ false, /* disallowShadowDOM */ true);
+        testTouchPoint(touchPoint(60, 20, 15), e.input2, /* allowTextNodes */ false, /* disallowShadowDOM */ true);
+        testTouchPoint(touchPoint(60, 16, 20), e.input2, /* allowTextNodes */ false, /* disallowShadowDOM */ true);
     }
 
     function runTests()
