@@ -18,7 +18,7 @@ extern const char kOsPasswordBlank[];
 extern const char kOsPasswordLastChanged[];
 #endif
 extern const char kPasswordManagerAllowShowPasswords[];
-extern const char kPasswordManagerEnabled[];
+extern const char kPasswordManagerSavingEnabled[];
 extern const char kPasswordManagerGroupsForDomains[];
 
 #if !defined(OS_MACOSX) && !defined(OS_CHROMEOS) && defined(OS_POSIX)

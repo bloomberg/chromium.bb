@@ -97,7 +97,7 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     prefs::kForceSafeSearch,
     base::Value::TYPE_BOOLEAN },
   { key::kPasswordManagerEnabled,
-    password_manager::prefs::kPasswordManagerEnabled,
+    password_manager::prefs::kPasswordManagerSavingEnabled,
     base::Value::TYPE_BOOLEAN },
   { key::kPasswordManagerAllowShowPasswords,
     password_manager::prefs::kPasswordManagerAllowShowPasswords,

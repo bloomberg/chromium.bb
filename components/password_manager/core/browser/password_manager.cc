@@ -62,7 +62,7 @@ const char PasswordManager::kOtherPossibleUsernamesExperiment[] =
 void PasswordManager::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterBooleanPref(
-      prefs::kPasswordManagerEnabled,
+      prefs::kPasswordManagerSavingEnabled,
       true,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
   registry->RegisterBooleanPref(
@@ -77,10 +77,10 @@ PasswordManager::PasswordManager(PasswordManagerClient* client)
     : client_(client), driver_(client->GetDriver()) {
   DCHECK(client_);
   DCHECK(driver_);
-  password_manager_enabled_.Init(prefs::kPasswordManagerEnabled,
+  saving_passwords_enabled_.Init(prefs::kPasswordManagerSavingEnabled,
                                  client_->GetPrefs());
 
-  ReportMetrics(*password_manager_enabled_);
+  ReportMetrics(*saving_passwords_enabled_);
 }
 
 PasswordManager::~PasswordManager() {
@@ -117,8 +117,8 @@ bool PasswordManager::IsEnabledForCurrentPage() const {
 }
 
 bool PasswordManager::IsSavingEnabledForCurrentPage() const {
-  return *password_manager_enabled_ && !driver_->IsOffTheRecord() &&
-      IsEnabledForCurrentPage();
+  return *saving_passwords_enabled_ && !driver_->IsOffTheRecord() &&
+         IsEnabledForCurrentPage();
 }
 
 void PasswordManager::ProvisionallySavePassword(const PasswordForm& form) {
@@ -356,7 +356,7 @@ void PasswordManager::CreatePendingLoginManagers(
     // Avoid prompting the user for access to a password if they don't have
     // password saving enabled.
     PasswordStore::AuthorizationPromptPolicy prompt_policy =
-        *password_manager_enabled_ ? PasswordStore::ALLOW_PROMPT
+        *saving_passwords_enabled_ ? PasswordStore::ALLOW_PROMPT
                                    : PasswordStore::DISALLOW_PROMPT;
 
     manager->FetchMatchingLoginsFromPasswordStore(prompt_policy);

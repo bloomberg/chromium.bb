@@ -56,7 +56,7 @@ class TestPasswordManagerClient : public StubPasswordManagerClient {
  public:
   explicit TestPasswordManagerClient(PasswordStore* password_store)
       : password_store_(password_store) {
-    prefs_.registry()->RegisterBooleanPref(prefs::kPasswordManagerEnabled,
+    prefs_.registry()->RegisterBooleanPref(prefs::kPasswordManagerSavingEnabled,
                                            true);
   }
 

@@ -111,7 +111,7 @@ class PasswordGenerationManagerTest : public testing::Test {
     // it off to |client_|, as the initialization flow of |client_| will
     // indirectly cause those prefs to be immediately accessed.
     scoped_ptr<TestingPrefServiceSimple> prefs(new TestingPrefServiceSimple());
-    prefs->registry()->RegisterBooleanPref(prefs::kPasswordManagerEnabled,
+    prefs->registry()->RegisterBooleanPref(prefs::kPasswordManagerSavingEnabled,
                                            true);
     client_.reset(new TestPasswordManagerClient(prefs.PassAs<PrefService>()));
   }
@@ -142,7 +142,7 @@ TEST_F(PasswordGenerationManagerTest, IsGenerationEnabled) {
   // Enabling the PasswordManager and password sync should cause generation to
   // be enabled.
   PrefService* prefs = client_->GetPrefs();
-  prefs->SetBoolean(prefs::kPasswordManagerEnabled, true);
+  prefs->SetBoolean(prefs::kPasswordManagerSavingEnabled, true);
   client_->set_is_password_sync_enabled(true);
   EXPECT_TRUE(IsGenerationEnabled());
 
@@ -152,7 +152,7 @@ TEST_F(PasswordGenerationManagerTest, IsGenerationEnabled) {
 
   // Disabling the PasswordManager should cause generation to be disabled even
   // if syncing is enabled.
-  prefs->SetBoolean(prefs::kPasswordManagerEnabled, false);
+  prefs->SetBoolean(prefs::kPasswordManagerSavingEnabled, false);
   client_->set_is_password_sync_enabled(true);
   EXPECT_FALSE(IsGenerationEnabled());
 }
@@ -160,7 +160,7 @@ TEST_F(PasswordGenerationManagerTest, IsGenerationEnabled) {
 TEST_F(PasswordGenerationManagerTest, DetectAccountCreationForms) {
   // Setup so that IsGenerationEnabled() returns true.
   PrefService* prefs = client_->GetPrefs();
-  prefs->SetBoolean(prefs::kPasswordManagerEnabled, true);
+  prefs->SetBoolean(prefs::kPasswordManagerSavingEnabled, true);
   client_->set_is_password_sync_enabled(true);
 
   autofill::FormData login_form;
@@ -214,7 +214,7 @@ TEST_F(PasswordGenerationManagerTest, UpdatePasswordSyncStateIncognito) {
   // be disabled.
   GetTestDriver()->set_is_off_the_record(true);
   PrefService* prefs = client_->GetPrefs();
-  prefs->SetBoolean(prefs::kPasswordManagerEnabled, true);
+  prefs->SetBoolean(prefs::kPasswordManagerSavingEnabled, true);
   client_->set_is_password_sync_enabled(true);
 
   EXPECT_FALSE(IsGenerationEnabled());

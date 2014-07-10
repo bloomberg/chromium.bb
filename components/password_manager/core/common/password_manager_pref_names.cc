@@ -23,9 +23,13 @@ const char kOsPasswordLastChanged[] =
 const char kPasswordManagerAllowShowPasswords[] =
     "profile.password_manager_allow_show_passwords";
 
-// Boolean that is true if the password manager is on (will record new
-// passwords and fill in known passwords).
-const char kPasswordManagerEnabled[] = "profile.password_manager_enabled";
+// Boolean that is true if password saving is on (will record new
+// passwords and fill in known passwords). When it is false, it doesn't
+// ask if you want to save passwords but will continue to fill passwords.
+// Constant name and its value differ because of historical reasons as it
+// was not deemed important enough to add migration code just for name change.
+// See http://crbug.com/392387
+const char kPasswordManagerSavingEnabled[] = "profile.password_manager_enabled";
 
 // A list of numbers. Each number corresponds to one of the domains monitored
 // for save-password-prompt breakages. That number is a random index into
