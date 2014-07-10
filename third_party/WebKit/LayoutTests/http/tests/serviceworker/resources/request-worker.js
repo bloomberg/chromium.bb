@@ -258,5 +258,10 @@ test(function() {
         request = new Request(URL, {mode: 'no-cors', headers: headers});
         assert_equals(request.headers.size, 1,
                       'No-CORS Request.headers should only support simple headers');
+        ['same-origin', 'cors', 'no-cors'].forEach(function(mode) {
+            request = new Request(new Request(URL, {mode: mode, headers: headers}), {mode: 'no-cors'});
+            assert_equals(request.headers.size, 1,
+                          'No-CORS Request.headers should only support simple headers');
+        });
     });
 }, 'Request headers test in ServiceWorkerGlobalScope');

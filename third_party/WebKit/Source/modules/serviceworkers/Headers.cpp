@@ -55,6 +55,14 @@ PassRefPtr<Headers> Headers::create(FetchHeaderList* headerList)
     return adoptRef(new Headers(headerList));
 }
 
+PassRefPtr<Headers> Headers::createCopy() const
+{
+    RefPtr<FetchHeaderList> headerList = m_headerList->createCopy();
+    RefPtr<Headers> headers = create(headerList.get());
+    headers->m_guard = m_guard;
+    return headers.release();
+}
+
 Headers::~Headers()
 {
 }

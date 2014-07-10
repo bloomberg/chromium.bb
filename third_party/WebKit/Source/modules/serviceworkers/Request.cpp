@@ -75,7 +75,20 @@ PassRefPtr<Request> createRequestWithRequestData(PassRefPtr<FetchRequestData> re
     // "11. Let |r| be a new Request object associated with |request|, Headers
     // object, and FetchBodyStream object."
     RefPtr<Request> r = Request::create(request);
-    // "12. If |r|'s request's mode is no CORS, run these substeps:
+
+    // "12. Let |headers| be a copy of |r|'s Headers object."
+    // "13. If |init|'s headers member is present, set |headers| to |init|'s
+    // headers member."
+    // We don't create a copy of r's Headers object when init's headers member
+    // is present.
+    RefPtr<Headers> headers;
+    if (!init.headers && init.headersDictionary.isUndefinedOrNull()) {
+        headers = r->headers()->createCopy();
+    }
+    // "14. Empty |r|'s request's header list."
+    r->request()->headerList()->clearList();
+
+    // "15. If |r|'s request's mode is no CORS, run these substeps:
     if (r->request()->mode() == FetchRequestData::NoCORSMode) {
         // "1. If |r|'s request's method is not a simple method, throw a
         // TypeError."
@@ -87,27 +100,20 @@ PassRefPtr<Request> createRequestWithRequestData(PassRefPtr<FetchRequestData> re
         r->headers()->setGuard(Headers::RequestNoCORSGuard);
     }
 
-    // "13. If |init|'s headers member is present, run these substeps:"
+    // "16. Fill |r|'s Headers object with |headers|. Rethrow any exceptions."
     if (init.headers) {
         ASSERT(init.headersDictionary.isUndefinedOrNull());
-        // "1. Empty |r|'s request's header list."
-        r->request()->headerList()->clearList();
-        // "2. Fill |r|'s Headers object with |init|'s headers member. Rethrow
-        // any exceptions."
         r->headers()->fillWith(init.headers.get(), exceptionState);
-        if (exceptionState.hadException())
-            return nullptr;
     } else if (!init.headersDictionary.isUndefinedOrNull()) {
-        // "1. Empty |r|'s request's header list."
-        r->request()->headerList()->clearList();
-        // "2. Fill |r|'s Headers object with |init|'s headers member. Rethrow
-        // any exceptions."
         r->headers()->fillWith(init.headersDictionary, exceptionState);
-        if (exceptionState.hadException())
-            return nullptr;
+    } else {
+        ASSERT(headers);
+        r->headers()->fillWith(headers.get(), exceptionState);
     }
+    if (exceptionState.hadException())
+        return nullptr;
     // FIXME: Support body.
-    // "17. Return |r|."
+    // "20. Return |r|."
     return r.release();
 }
 

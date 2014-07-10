@@ -28,10 +28,12 @@ public:
     static PassRefPtr<Headers> create(const Headers*, ExceptionState&);
     static PassRefPtr<Headers> create(const Dictionary&, ExceptionState&);
 
-    ~Headers();
-
     // Shares the FetchHeaderList. Called when creating a Request or Response.
     static PassRefPtr<Headers> create(FetchHeaderList*);
+
+    PassRefPtr<Headers> createCopy() const;
+
+    ~Headers();
 
     // Headers.idl implementation.
     void append(const String& name, const String& value, ExceptionState&);
