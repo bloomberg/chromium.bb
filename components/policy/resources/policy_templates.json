@@ -1017,7 +1017,6 @@
         'dynamic_refresh': False,
         'per_profile': False,
       },
-      'future': True,
       'example_value': False,
       'id': 265,
       'caption': '''Enables the old web-based signin''',
