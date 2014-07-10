@@ -188,6 +188,7 @@ static int find_matching_rules(widechar *text,
 			case CTO_UpperCase:
 			case CTO_LowerCase:
 			case CTO_Punctuation:
+			case CTO_Always:
 				break;
 			default:
 				goto next_rule; }
@@ -353,6 +354,7 @@ extern void findRelevantRules(widechar *text, widechar **rules_str) {
 			while (offset) {
 				rule = (TranslationTableRule *)&table->ruleArea[offset];
 				switch (rule->opcode) {
+				case CTO_Always:
 				case CTO_WholeWord:
 				case CTO_BegWord:
 				case CTO_EndWord:
