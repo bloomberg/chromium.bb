@@ -93,7 +93,10 @@ class WGetApp : public ApplicationDelegate, public URLLoaderClient {
              MOJO_HANDLE_SIGNAL_READABLE,
              MOJO_DEADLINE_INDEFINITE);
       } else if (result == MOJO_RESULT_OK) {
-        fwrite(buf, num_bytes, 1, stdout);
+        if (fwrite(buf, num_bytes, 1, stdout) != num_bytes) {
+          printf("\nUnexpected error writing to file\n");
+          break;
+        }
       } else {
         break;
       }
