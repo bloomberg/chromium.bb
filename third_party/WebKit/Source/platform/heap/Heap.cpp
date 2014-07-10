@@ -663,9 +663,6 @@ void ThreadHeap<Header>::addToFreeList(Address address, size_t size)
     // from them we are 8 byte aligned due to the header size).
     ASSERT(!((reinterpret_cast<uintptr_t>(address) + sizeof(Header)) & allocationMask));
     ASSERT(!(size & allocationMask));
-#if defined(NDEBUG) && !defined(LEAK_SANITIZER) && !defined(ADDRESS_SANITIZER)
-    memset(address, 0, size);
-#endif
     ASAN_POISON_MEMORY_REGION(address, size);
     FreeListEntry* entry;
     if (size < sizeof(*entry)) {
@@ -1069,7 +1066,18 @@ void HeapPage<Header>::sweep()
         ASSERT(basicHeader->size() < blinkPagePayloadSize());
 
         if (basicHeader->isFree()) {
-            headerAddress += basicHeader->size();
+            size_t size = basicHeader->size();
+#if defined(NDEBUG) && !defined(LEAK_SANITIZER) && !defined(ADDRESS_SANITIZER)
+            // Zero the memory in the free list header to maintain the
+            // invariant that memory on the free list is zero filled.
+            // The rest of the memory is already on the free list and is
+            // therefore already zero filled.
+            if (size < sizeof(FreeListEntry))
+                memset(headerAddress, 0, size);
+            else
+                memset(headerAddress, 0, sizeof(FreeListEntry));
+#endif
+            headerAddress += size;
             continue;
         }
         // At this point we know this is a valid object of type Header
@@ -1081,8 +1089,14 @@ void HeapPage<Header>::sweep()
             // on the object, but not have other finalizers be allowed to access it.
             ASAN_UNPOISON_MEMORY_REGION(header->payload(), header->payloadSize());
             finalize(header);
+            size_t size = header->size();
+#if defined(NDEBUG) && !defined(LEAK_SANITIZER) && !defined(ADDRESS_SANITIZER)
+            // This memory will be added to the freelist. Maintain the invariant
+            // that memory on the freelist is zero filled.
+            memset(headerAddress, 0, size);
+#endif
             ASAN_POISON_MEMORY_REGION(header->payload(), header->payloadSize());
-            headerAddress += header->size();
+            headerAddress += size;
             continue;
         }
 
