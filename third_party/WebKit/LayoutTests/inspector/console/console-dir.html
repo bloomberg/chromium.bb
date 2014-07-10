@@ -23,6 +23,10 @@ function onload()
     // This should correctly display information about the function.
     console.dir(function() {});
 
+    // Test function inferred name in prototype constructor.
+    var outer = { inner: function() {} };
+    console.dir(new outer.inner());
+
     runTest();
 }
 

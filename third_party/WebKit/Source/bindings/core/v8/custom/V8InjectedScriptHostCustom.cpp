@@ -95,6 +95,23 @@ void V8InjectedScriptHost::inspectedObjectMethodCustom(const v8::FunctionCallbac
     v8SetReturnValue(info, object->get(ScriptState::current(info.GetIsolate())).v8Value());
 }
 
+static v8::Handle<v8::String> functionDisplayName(v8::Handle<v8::Function> function)
+{
+    v8::Handle<v8::Value> value = function->GetDisplayName();
+    if (value->IsString() && v8::Handle<v8::String>::Cast(value)->Length())
+        return v8::Handle<v8::String>::Cast(value);
+
+    value = function->GetName();
+    if (value->IsString() && v8::Handle<v8::String>::Cast(value)->Length())
+        return v8::Handle<v8::String>::Cast(value);
+
+    value = function->GetInferredName();
+    if (value->IsString() && v8::Handle<v8::String>::Cast(value)->Length())
+        return v8::Handle<v8::String>::Cast(value);
+
+    return v8::Handle<v8::String>();
+}
+
 void V8InjectedScriptHost::internalConstructorNameMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     if (info.Length() < 1)
@@ -103,7 +120,23 @@ void V8InjectedScriptHost::internalConstructorNameMethodCustom(const v8::Functio
     if (!info[0]->IsObject())
         return;
 
-    v8SetReturnValue(info, info[0]->ToObject()->GetConstructorName());
+    v8::Local<v8::Object> object = info[0]->ToObject();
+    v8::Local<v8::String> result = object->GetConstructorName();
+
+    if (!result.IsEmpty() && toCoreStringWithUndefinedOrNullCheck(result) == "Object") {
+        v8::Local<v8::String> constructorSymbol = v8AtomicString(info.GetIsolate(), "constructor");
+        if (object->HasRealNamedProperty(constructorSymbol) && !object->HasRealNamedCallbackProperty(constructorSymbol)) {
+            v8::TryCatch tryCatch;
+            v8::Local<v8::Value> constructor = object->GetRealNamedProperty(constructorSymbol);
+            if (!constructor.IsEmpty() && constructor->IsFunction()) {
+                v8::Local<v8::String> constructorName = functionDisplayName(v8::Handle<v8::Function>::Cast(constructor));
+                if (!constructorName.IsEmpty() && !tryCatch.HasCaught())
+                    result = constructorName;
+            }
+        }
+    }
+
+    v8SetReturnValue(info, result);
 }
 
 void V8InjectedScriptHost::isHTMLAllCollectionMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -180,15 +213,6 @@ void V8InjectedScriptHost::typeMethodCustom(const v8::FunctionCallbackInfo<v8::V
     }
 }
 
-static bool setFunctionName(v8::Handle<v8::Object>& result, const v8::Handle<v8::Value>& value, v8::Isolate* isolate)
-{
-    if (value->IsString() && v8::Handle<v8::String>::Cast(value)->Length()) {
-        result->Set(v8AtomicString(isolate, "functionName"), value);
-        return true;
-    }
-    return false;
-}
-
 void V8InjectedScriptHost::functionDetailsMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     if (info.Length() < 1)
@@ -211,10 +235,8 @@ void V8InjectedScriptHost::functionDetailsMethodCustom(const v8::FunctionCallbac
     v8::Local<v8::Object> result = v8::Object::New(isolate);
     result->Set(v8AtomicString(isolate, "location"), location);
 
-    if (!setFunctionName(result, function->GetDisplayName(), isolate)
-        && !setFunctionName(result, function->GetName(), isolate)
-        && !setFunctionName(result, function->GetInferredName(), isolate))
-        result->Set(v8AtomicString(isolate, "functionName"), v8AtomicString(isolate, ""));
+    v8::Handle<v8::String> name = functionDisplayName(function);
+    result->Set(v8AtomicString(isolate, "functionName"), name.IsEmpty() ? v8AtomicString(isolate, "") : name);
 
     InjectedScriptHost* host = V8InjectedScriptHost::toNative(info.Holder());
     ScriptDebugServer& debugServer = host->scriptDebugServer();

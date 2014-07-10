@@ -4,20 +4,44 @@
 <script src="../../http/tests/inspector/console-test.js"></script>
 <script>
 
+function throwGetter()
+{
+   console.error("FAIL: Should not be called!");
+   throw new Error("FAIL");
+}
+
 function foo()
 {
     Object.defineProperty(Array.prototype, "push", {
-        get: function () { throw new Error("FAIL"); }
+        get: throwGetter
     });
     Object.defineProperty(Math, "max", {
-        get: function () { throw new Error("FAIL"); }
+        get: throwGetter
     });
     return [1, 2, 3];
+}
+
+function testOverriddenConstructorName()
+{
+    var obj = {};
+    obj.constructor = { name: "foo" };
+    return obj;
+}
+
+function testThrowConstructorName()
+{
+    var obj = {};
+    Object.defineProperty(obj, "constructor", {
+        get: throwGetter
+    });
+    return obj;
 }
 
 function test()
 {
     InspectorTest.evaluateInConsole("foo()");
+    InspectorTest.evaluateInConsole("testOverriddenConstructorName()");
+    InspectorTest.evaluateInConsole("testThrowConstructorName()");
     InspectorTest.runAfterPendingDispatches(step1);
 
     function step1()

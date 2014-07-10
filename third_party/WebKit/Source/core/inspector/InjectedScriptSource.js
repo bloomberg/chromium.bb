@@ -1041,13 +1041,6 @@ InjectedScript.prototype = {
             }
         }
 
-        if (className === "Object") {
-            // In Chromium DOM wrapper prototypes will have Object as their constructor name,
-            // get the real DOM wrapper name from the constructor property.
-            var constructorName = obj.constructor && obj.constructor.name;
-            if (constructorName)
-                return constructorName;
-        }
         return className;
     }
 }
