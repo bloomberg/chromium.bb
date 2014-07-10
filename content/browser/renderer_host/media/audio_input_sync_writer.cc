@@ -28,6 +28,7 @@ AudioInputSyncWriter::AudioInputSyncWriter(base::SharedMemory* shared_memory,
   DVLOG(1) << "SharedMemory::requested_size: "
            << shared_memory->requested_size();
   DVLOG(1) << "shared_memory_segment_count: " << shared_memory_segment_count;
+  DVLOG(1) << "audio_bus_memory_size: " << audio_bus_memory_size_;
 
   // Create vector of audio buses by wrapping existing blocks of memory.
   uint8* ptr = static_cast<uint8*>(shared_memory_->memory());

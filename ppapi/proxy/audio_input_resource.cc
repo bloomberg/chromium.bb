@@ -8,6 +8,7 @@
 #include "base/logging.h"
 #include "ipc/ipc_platform_file.h"
 #include "media/audio/audio_parameters.h"
+#include "media/base/audio_bus.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/resource_message_params.h"
@@ -22,9 +23,8 @@
 namespace ppapi {
 namespace proxy {
 
-AudioInputResource::AudioInputResource(
-    Connection connection,
-    PP_Instance instance)
+AudioInputResource::AudioInputResource(Connection connection,
+                                       PP_Instance instance)
     : PluginResource(connection, instance),
       open_state_(BEFORE_OPEN),
       capturing_(false),
@@ -33,7 +33,9 @@ AudioInputResource::AudioInputResource(
       audio_input_callback_(NULL),
       user_data_(NULL),
       enumeration_helper_(this),
-      bytes_per_second_(0) {
+      bytes_per_second_(0),
+      sample_frame_count_(0),
+      client_buffer_size_bytes_(0) {
   SendCreate(RENDERER, PpapiHostMsg_AudioInput_Create());
 }
 
@@ -181,14 +183,33 @@ void AudioInputResource::SetStreamInfo(
   socket_.reset(new base::CancelableSyncSocket(socket_handle));
   shared_memory_.reset(new base::SharedMemory(shared_memory_handle, false));
   shared_memory_size_ = shared_memory_size;
+  DCHECK(!shared_memory_->memory());
 
-  if (!shared_memory_->Map(shared_memory_size_)) {
-    PpapiGlobals::Get()->LogWithSource(
-        pp_instance(),
-        PP_LOGLEVEL_WARNING,
-        std::string(),
-        "Failed to map shared memory for PPB_AudioInput_Shared.");
-  }
+  // If we fail to map the shared memory into the caller's address space we
+  // might as well fail here since nothing will work if this is the case.
+  CHECK(shared_memory_->Map(shared_memory_size_));
+
+  // Create a new audio bus and wrap the audio data section in shared memory.
+  media::AudioInputBuffer* buffer =
+      static_cast<media::AudioInputBuffer*>(shared_memory_->memory());
+  audio_bus_ = media::AudioBus::WrapMemory(
+      kAudioInputChannels, sample_frame_count_, buffer->audio);
+
+  // Ensure that the size of the created audio bus matches the allocated
+  // size in shared memory.
+  // Example: DCHECK_EQ(8208 - 16, 8192) for |sample_frame_count_| = 2048.
+  const uint32_t audio_bus_size_bytes = media::AudioBus::CalculateMemorySize(
+      audio_bus_->channels(), audio_bus_->frames());
+  DCHECK_EQ(shared_memory_size_ - sizeof(media::AudioInputBufferParameters),
+            audio_bus_size_bytes);
+
+  // Create an extra integer audio buffer for user audio data callbacks.
+  // Data in shared memory will be copied to this buffer, after interleaving
+  // and truncation, before each input callback to match the format expected
+  // by the client.
+  client_buffer_size_bytes_ = audio_bus_->frames() * audio_bus_->channels() *
+      kBitsPerAudioInputSample / 8;
+  client_buffer_.reset(new uint8_t[client_buffer_size_bytes_]);
 
   // There is a pending capture request before SetStreamInfo().
   if (capturing_) {
@@ -202,7 +223,8 @@ void AudioInputResource::SetStreamInfo(
 void AudioInputResource::StartThread() {
   // Don't start the thread unless all our state is set up correctly.
   if ((!audio_input_callback_0_3_ && !audio_input_callback_) ||
-      !socket_.get() || !capturing_ || !shared_memory_->memory()) {
+      !socket_.get() || !capturing_ || !shared_memory_->memory() ||
+      !audio_bus_.get() || !client_buffer_.get()) {
     return;
   }
   DCHECK(!audio_input_thread_.get());
@@ -223,28 +245,42 @@ void AudioInputResource::StopThread() {
 
 void AudioInputResource::Run() {
   // The shared memory represents AudioInputBufferParameters and the actual data
-  // buffer.
+  // buffer stored as an audio bus.
   media::AudioInputBuffer* buffer =
       static_cast<media::AudioInputBuffer*>(shared_memory_->memory());
-  uint32_t data_buffer_size =
+  const uint32_t audio_bus_size_bytes =
       shared_memory_size_ - sizeof(media::AudioInputBufferParameters);
-  int pending_data;
 
-  while (sizeof(pending_data) == socket_->Receive(&pending_data,
-                                                  sizeof(pending_data)) &&
-         pending_data >= 0) {
+  while (true) {
+    int pending_data = 0;
+    size_t bytes_read = socket_->Receive(&pending_data, sizeof(pending_data));
+    if (bytes_read != sizeof(pending_data)) {
+      DCHECK_EQ(bytes_read, 0U);
+      break;
+    }
+    if (pending_data < 0)
+      break;
+
+    // Convert an AudioBus from deinterleaved float to interleaved integer data.
+    // Store the result in a preallocated |client_buffer_|.
+    audio_bus_->ToInterleaved(audio_bus_->frames(),
+                              kBitsPerAudioInputSample / 8,
+                              client_buffer_.get());
+
     // While closing the stream, we may receive buffers whose size is different
     // from |data_buffer_size|.
-    CHECK_LE(buffer->params.size, data_buffer_size);
+    CHECK_LE(buffer->params.size, audio_bus_size_bytes);
     if (buffer->params.size > 0) {
       if (audio_input_callback_) {
         PP_TimeDelta latency =
             static_cast<double>(pending_data) / bytes_per_second_;
-        audio_input_callback_(&buffer->audio[0], buffer->params.size, latency,
+        audio_input_callback_(client_buffer_.get(),
+                              client_buffer_size_bytes_,
+                              latency,
                               user_data_);
       } else {
-        audio_input_callback_0_3_(&buffer->audio[0], buffer->params.size,
-                                  user_data_);
+        audio_input_callback_0_3_(
+            client_buffer_.get(), client_buffer_size_bytes_, user_data_);
       }
     }
   }
@@ -287,6 +323,7 @@ int32_t AudioInputResource::CommonOpen(
   open_callback_ = callback;
   bytes_per_second_ = kAudioInputChannels * (kBitsPerAudioInputSample / 8) *
                       enter_config.object()->GetSampleRate();
+  sample_frame_count_ = enter_config.object()->GetSampleFrameCount();
 
   PpapiHostMsg_AudioInput_Open msg(
       device_id, enter_config.object()->GetSampleRate(),

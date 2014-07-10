@@ -3,6 +3,7 @@ include_rules = [
   "+gpu",
   "+ipc",
   "+media/audio",
+  "+media/base",
   "+skia",
   "+ui/surface",
   "+ui/events",

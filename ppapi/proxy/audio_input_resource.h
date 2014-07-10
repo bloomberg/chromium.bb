@@ -17,6 +17,10 @@
 #include "ppapi/shared_impl/scoped_pp_resource.h"
 #include "ppapi/thunk/ppb_audio_input_api.h"
 
+namespace media {
+class AudioBus;
+}
+
 namespace ppapi {
 namespace proxy {
 
@@ -132,6 +136,14 @@ class AudioInputResource : public PluginResource,
   // The data size (in bytes) of one second of audio input. Used to calculate
   // latency.
   size_t bytes_per_second_;
+
+  // AudioBus for shuttling data across the shared memory.
+  scoped_ptr<media::AudioBus> audio_bus_;
+  int sample_frame_count_;
+
+  // Internal buffer for client's integer audio data.
+  int client_buffer_size_bytes_;
+  scoped_ptr<uint8_t[]> client_buffer_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioInputResource);
 };
