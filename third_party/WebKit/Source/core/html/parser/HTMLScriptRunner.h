@@ -73,8 +73,6 @@ public:
 private:
     HTMLScriptRunner(Document*, HTMLScriptRunnerHost*);
 
-    LocalFrame* frame() const;
-
     enum PendingScriptType {
         PendingScriptBlockingParser,
         PendingScriptDeferred

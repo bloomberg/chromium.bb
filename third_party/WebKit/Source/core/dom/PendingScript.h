@@ -26,6 +26,7 @@
 #ifndef PendingScript_h
 #define PendingScript_h
 
+#include "core/dom/Element.h"
 #include "core/fetch/ResourceClient.h"
 #include "core/fetch/ResourceOwner.h"
 #include "core/fetch/ScriptResource.h"
@@ -36,7 +37,6 @@
 
 namespace WebCore {
 
-class Element;
 class ScriptResource;
 
 // A container for an external script which may be loaded and executed.
