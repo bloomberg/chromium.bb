@@ -21,6 +21,7 @@
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/fill_layout.h"
+#include "ui/views/masked_targeter_delegate.h"
 #include "ui/views/shadow_border.h"
 
 namespace app_list {
@@ -69,17 +70,16 @@ void SoundLevelIndicator::OnPaint(gfx::Canvas* canvas) {
   canvas->DrawCircle(bounds().CenterPoint(), width() / 2, paint);
 }
 
-// MicButton is an image button with circular hit area.
-class MicButton : public views::ImageButton {
+// MicButton is an image button with a circular hit test mask.
+class MicButton : public views::ImageButton,
+                  public views::MaskedTargeterDelegate {
  public:
   explicit MicButton(views::ButtonListener* listener);
   virtual ~MicButton();
 
  private:
-  // Overridden from views::View:
-  virtual bool HasHitTestMask() const OVERRIDE;
-  virtual void GetHitTestMaskDeprecated(views::View::HitTestSource source,
-                                        gfx::Path* mask) const OVERRIDE;
+  // views::MaskedTargeterDelegate:
+  virtual bool GetHitTestMask(gfx::Path* mask) const OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(MicButton);
 };
@@ -89,15 +89,10 @@ MicButton::MicButton(views::ButtonListener* listener)
 
 MicButton::~MicButton() {}
 
-bool MicButton::HasHitTestMask() const {
-  return true;
-}
-
-void MicButton::GetHitTestMaskDeprecated(views::View::HitTestSource source,
-                                         gfx::Path* mask) const {
+bool MicButton::GetHitTestMask(gfx::Path* mask) const {
   DCHECK(mask);
 
-  // The mic button icon is a circle. |source| doesn't matter.
+  // The mic button icon is a circle.
   gfx::Rect local_bounds = GetLocalBounds();
   int radius = local_bounds.width() / 2 + kIndicatorRadiusMinOffset;
   gfx::Point center = local_bounds.CenterPoint();
@@ -105,6 +100,7 @@ void MicButton::GetHitTestMaskDeprecated(views::View::HitTestSource source,
   mask->addCircle(SkIntToScalar(center.x()),
                   SkIntToScalar(center.y()),
                   SkIntToScalar(radius));
+  return true;
 }
 
 }  // namespace
@@ -138,8 +134,11 @@ SpeechView::SpeechView(AppListViewDelegate* delegate)
   indicator_->SetVisible(false);
   container->AddChildView(indicator_);
 
-  mic_button_ = new MicButton(this);
+  MicButton* mic_button = new MicButton(this);
+  mic_button_ = mic_button;
   container->AddChildView(mic_button_);
+  mic_button_->SetEventTargeter(
+      scoped_ptr<views::ViewTargeter>(new views::ViewTargeter(mic_button)));
 
   // TODO(mukai): use BoundedLabel to cap 2 lines.
   ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
