@@ -242,6 +242,12 @@ class BaseTestServer {
            type == BaseTestServer::TYPE_WSS;
   }
 
+  // Enable HTTP basic authentication. Currently this only works for TYPE_WS and
+  // TYPE_WSS.
+  void set_websocket_basic_auth(bool ws_basic_auth) {
+    ws_basic_auth_ = ws_basic_auth;
+  }
+
  protected:
   virtual ~BaseTestServer();
   Type type() const { return type_; }
@@ -307,6 +313,9 @@ class BaseTestServer {
 
   // Enables logging of the server to the console.
   bool log_to_console_;
+
+  // Is WebSocket basic HTTP authentication enabled?
+  bool ws_basic_auth_;
 
   scoped_ptr<ScopedPortException> allowed_port_;
 

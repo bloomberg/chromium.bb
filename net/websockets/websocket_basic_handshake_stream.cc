@@ -539,20 +539,11 @@ void WebSocketBasicHandshakeStream::ReadResponseHeadersCallback(
 }
 
 void WebSocketBasicHandshakeStream::OnFinishOpeningHandshake() {
-  DCHECK(connect_delegate_);
   DCHECK(http_response_info_);
-  scoped_refptr<HttpResponseHeaders> headers = http_response_info_->headers;
-  // If the headers are too large, HttpStreamParser will just not parse them at
-  // all.
-  if (headers) {
-    scoped_ptr<WebSocketHandshakeResponseInfo> response(
-        new WebSocketHandshakeResponseInfo(url_,
-                                           headers->response_code(),
-                                           headers->GetStatusText(),
-                                           headers,
-                                           http_response_info_->response_time));
-    connect_delegate_->OnFinishOpeningHandshake(response.Pass());
-  }
+  WebSocketDispatchOnFinishOpeningHandshake(connect_delegate_,
+                                            url_,
+                                            http_response_info_->headers,
+                                            http_response_info_->response_time);
 }
 
 int WebSocketBasicHandshakeStream::ValidateResponse(int rv) {

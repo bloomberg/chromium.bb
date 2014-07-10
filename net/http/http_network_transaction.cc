@@ -61,6 +61,7 @@
 #include "net/ssl/ssl_cert_request_info.h"
 #include "net/ssl/ssl_connection_status_flags.h"
 #include "url/gurl.h"
+#include "url/url_canon.h"
 
 #if defined(SPDY_PROXY_AUTH_ORIGIN)
 #include <algorithm>
@@ -1545,6 +1546,17 @@ GURL HttpNetworkTransaction::AuthURL(HttpAuth::Target target) const {
                   proxy_info_.proxy_server().host_port_pair().ToString());
     }
     case HttpAuth::AUTH_SERVER:
+      if (ForWebSocketHandshake()) {
+        const GURL& url = request_->url;
+        url::Replacements<char> ws_to_http;
+        if (url.SchemeIs("ws")) {
+          ws_to_http.SetScheme("http", url::Component(0, 4));
+        } else {
+          DCHECK(url.SchemeIs("wss"));
+          ws_to_http.SetScheme("https", url::Component(0, 5));
+        }
+        return url.ReplaceComponents(ws_to_http);
+      }
       return request_->url;
     default:
      return GURL();
