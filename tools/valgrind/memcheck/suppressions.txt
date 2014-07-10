@@ -6231,3 +6231,14 @@
    fun:_Znw*
    fun:_ZN20data_reduction_proxy69DataReductionProxyUsageStatsTest_isDataReductionProxyUnreachable_Test8TestBodyEv
 }
+{
+   bug_392912
+   Memcheck:Uninitialized
+   fun:_ZNK8SkStroke10strokePathERK6SkPathPS0_
+   fun:_ZNK11SkStrokeRec11applyToPathEP6SkPathRKS0_
+   fun:_ZNK7SkPaint11getFillPathERK6SkPathPS0_PK6SkRect
+   fun:_ZNK6SkDraw8drawPathERK6SkPathRK7SkPaintPK8SkMatrixbb
+   fun:_ZNK6SkDraw8drawPathERK6SkPathRK7SkPaintPK8SkMatrixb
+   fun:_ZN14SkBitmapDevice8drawPathERK6SkDrawRK6SkPathRK7SkPaintPK8SkMatrixb
+   fun:_ZN8SkCanvas8drawPathERK6SkPathRK7SkPaint
+}
