@@ -4,6 +4,7 @@
 
 from telemetry.page import page
 from telemetry.page import page_measurement
+from telemetry.value import scalar
 
 
 class PageForPolymerLoad(page.Page):
@@ -30,4 +31,5 @@ class PageForPolymerLoad(page.Page):
 class PolymerLoadMeasurement(page_measurement.PageMeasurement):
   def MeasurePage(self, _, tab, results):
     result = int(tab.EvaluateJavaScript('__polymer_ready_time'))
-    results.Add('Total', 'ms', result)
+    results.AddValue(scalar.ScalarValue(
+        results.current_page, 'Total', 'ms', result))
