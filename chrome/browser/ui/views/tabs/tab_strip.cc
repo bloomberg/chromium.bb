@@ -46,7 +46,9 @@
 #include "ui/gfx/rect_conversions.h"
 #include "ui/gfx/screen.h"
 #include "ui/gfx/size.h"
+#include "ui/gfx/skia_util.h"
 #include "ui/views/controls/image_view.h"
+#include "ui/views/masked_targeter_delegate.h"
 #include "ui/views/mouse_watcher_view_host.h"
 #include "ui/views/rect_based_targeting_utils.h"
 #include "ui/views/view_model_utils.h"
@@ -229,7 +231,8 @@ TabDragController::EventSource EventSourceFromEvent(
 //  A subclass of button that hit-tests to the shape of the new tab button and
 //  does custom drawing.
 
-class NewTabButton : public views::ImageButton {
+class NewTabButton : public views::ImageButton,
+                     public views::MaskedTargeterDelegate {
  public:
   NewTabButton(TabStrip* tab_strip, views::ButtonListener* listener);
   virtual ~NewTabButton();
@@ -241,19 +244,19 @@ class NewTabButton : public views::ImageButton {
   }
 
  protected:
-  // Overridden from views::View:
-  virtual bool HasHitTestMask() const OVERRIDE;
-  virtual void GetHitTestMaskDeprecated(HitTestSource source,
-                                        gfx::Path* path) const OVERRIDE;
+  // views::View:
 #if defined(OS_WIN)
   virtual void OnMouseReleased(const ui::MouseEvent& event) OVERRIDE;
 #endif
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
 
-  // Overridden from ui::EventHandler:
+  // ui::EventHandler:
   virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
 
  private:
+  // views::MaskedTargeterDelegate:
+  virtual bool GetHitTestMask(gfx::Path* mask) const OVERRIDE;
+
   bool ShouldWindowContentsBeTransparent() const;
   gfx::ImageSkia GetBackgroundImage(views::CustomButton::ButtonState state,
                                     float scale) const;
@@ -288,35 +291,6 @@ NewTabButton::~NewTabButton() {
     *destroyed_ = true;
 }
 
-bool NewTabButton::HasHitTestMask() const {
-  // When the button is sized to the top of the tab strip we want the user to
-  // be able to click on complete bounds, and so don't return a custom hit
-  // mask.
-  return !tab_strip_->SizeTabButtonToTopOfTabStrip();
-}
-
-void NewTabButton::GetHitTestMaskDeprecated(HitTestSource source,
-                                            gfx::Path* path) const {
-  DCHECK(path);
-
-  SkScalar w = SkIntToScalar(width());
-  SkScalar v_offset = SkIntToScalar(TabStrip::kNewTabButtonVerticalOffset);
-
-  // These values are defined by the shape of the new tab image. Should that
-  // image ever change, these values will need to be updated. They're so
-  // custom it's not really worth defining constants for.
-  // These values are correct for regular and USE_ASH versions of the image.
-  path->moveTo(0, v_offset + 1);
-  path->lineTo(w - 7, v_offset + 1);
-  path->lineTo(w - 4, v_offset + 4);
-  path->lineTo(w, v_offset + 16);
-  path->lineTo(w - 1, v_offset + 17);
-  path->lineTo(7, v_offset + 17);
-  path->lineTo(4, v_offset + 13);
-  path->lineTo(0, v_offset + 1);
-  path->close();
-}
-
 #if defined(OS_WIN)
 void NewTabButton::OnMouseReleased(const ui::MouseEvent& event) {
   if (event.IsOnlyRightMouseButton()) {
@@ -346,6 +320,39 @@ void NewTabButton::OnGestureEvent(ui::GestureEvent* event) {
   // start consuming gestures.
   views::ImageButton::OnGestureEvent(event);
   event->SetHandled();
+}
+
+bool NewTabButton::GetHitTestMask(gfx::Path* mask) const {
+  DCHECK(mask);
+
+  // When the button is sized to the top of the tab strip, we want the hit
+  // test mask to be defined as the complete (rectangular) bounds of the
+  // button.
+  if (tab_strip_->SizeTabButtonToTopOfTabStrip()) {
+    gfx::Rect button_bounds(GetContentsBounds());
+    button_bounds.set_x(GetMirroredXForRect(button_bounds));
+    mask->addRect(RectToSkRect(button_bounds));
+    return true;
+  }
+
+  SkScalar w = SkIntToScalar(width());
+  SkScalar v_offset = SkIntToScalar(TabStrip::kNewTabButtonVerticalOffset);
+
+  // These values are defined by the shape of the new tab image. Should that
+  // image ever change, these values will need to be updated. They're so
+  // custom it's not really worth defining constants for.
+  // These values are correct for regular and USE_ASH versions of the image.
+  mask->moveTo(0, v_offset + 1);
+  mask->lineTo(w - 7, v_offset + 1);
+  mask->lineTo(w - 4, v_offset + 4);
+  mask->lineTo(w, v_offset + 16);
+  mask->lineTo(w - 1, v_offset + 17);
+  mask->lineTo(7, v_offset + 17);
+  mask->lineTo(4, v_offset + 13);
+  mask->lineTo(0, v_offset + 1);
+  mask->close();
+
+  return true;
 }
 
 bool NewTabButton::ShouldWindowContentsBeTransparent() const {
@@ -1470,7 +1477,10 @@ void TabStrip::Init() {
       l10n_util::GetStringUTF16(IDS_ACCNAME_NEWTAB));
   newtab_button_->SetImageAlignment(views::ImageButton::ALIGN_LEFT,
                                     views::ImageButton::ALIGN_BOTTOM);
+  newtab_button_->SetEventTargeter(
+      scoped_ptr<views::ViewTargeter>(new views::ViewTargeter(newtab_button_)));
   AddChildView(newtab_button_);
+
   if (drop_indicator_width == 0) {
     // Direction doesn't matter, both images are the same size.
     gfx::ImageSkia* drop_image = GetDropArrowImage(true);
