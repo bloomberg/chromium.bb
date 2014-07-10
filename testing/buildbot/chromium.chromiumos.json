@@ -57,6 +57,7 @@
       "components_unittests",
       "crypto_unittests",
       "dbus_unittests",
+      "display_unittests",
       "gcm_unit_tests",
       "google_apis_unittests",
       "gpu_unittests",
