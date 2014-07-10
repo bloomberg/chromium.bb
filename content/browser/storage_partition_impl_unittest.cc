@@ -55,10 +55,10 @@ const quota::StorageType kPersistent = quota::kStorageTypePersistent;
 const quota::QuotaClient::ID kClientFile = quota::QuotaClient::kFileSystem;
 
 const uint32 kAllQuotaRemoveMask =
-    StoragePartition::REMOVE_DATA_MASK_INDEXEDDB |
-    StoragePartition::REMOVE_DATA_MASK_WEBSQL |
+    StoragePartition::REMOVE_DATA_MASK_APPCACHE |
     StoragePartition::REMOVE_DATA_MASK_FILE_SYSTEMS |
-    StoragePartition::REMOVE_DATA_MASK_APPCACHE;
+    StoragePartition::REMOVE_DATA_MASK_INDEXEDDB |
+    StoragePartition::REMOVE_DATA_MASK_WEBSQL;
 
 class AwaitCompletionHelper {
  public:
@@ -246,11 +246,10 @@ bool DoesOriginMatchUnprotected(
 
 void ClearQuotaData(content::StoragePartition* partition,
                     base::RunLoop* loop_to_quit) {
-  partition->ClearData(
-      kAllQuotaRemoveMask,
-      StoragePartition::QUOTA_MANAGED_STORAGE_MASK_ALL,
-      GURL(), StoragePartition::OriginMatcherFunction(),
-      base::Time(), base::Time::Max(), loop_to_quit->QuitClosure());
+  partition->ClearData(kAllQuotaRemoveMask,
+                       StoragePartition::QUOTA_MANAGED_STORAGE_MASK_ALL, GURL(),
+                       StoragePartition::OriginMatcherFunction(), base::Time(),
+                       base::Time::Max(), loop_to_quit->QuitClosure());
 }
 
 void ClearQuotaDataWithOriginMatcher(
@@ -280,13 +279,11 @@ void ClearQuotaDataForNonPersistent(
     content::StoragePartition* partition,
     const base::Time delete_begin,
     base::RunLoop* loop_to_quit) {
-  uint32 quota_storage_remove_mask_no_persistent =
-      StoragePartition::QUOTA_MANAGED_STORAGE_MASK_ALL &
-      ~StoragePartition::QUOTA_MANAGED_STORAGE_MASK_PERSISTENT;
   partition->ClearData(
-      kAllQuotaRemoveMask, quota_storage_remove_mask_no_persistent,
-      GURL(), StoragePartition::OriginMatcherFunction(),
-      delete_begin, base::Time::Max(), loop_to_quit->QuitClosure());
+      kAllQuotaRemoveMask,
+      ~StoragePartition::QUOTA_MANAGED_STORAGE_MASK_PERSISTENT,
+      GURL(), StoragePartition::OriginMatcherFunction(), delete_begin,
+      base::Time::Max(), loop_to_quit->QuitClosure());
 }
 
 void ClearCookies(content::StoragePartition* partition,
@@ -432,11 +429,7 @@ TEST_F(StoragePartitionImplTest, QuotaClientMaskGeneration) {
             quota::QuotaClient::kDatabase |
             quota::QuotaClient::kAppcache |
             quota::QuotaClient::kIndexedDatabase,
-            StoragePartitionImpl::GenerateQuotaClientMask(
-                StoragePartition::REMOVE_DATA_MASK_FILE_SYSTEMS |
-                StoragePartition::REMOVE_DATA_MASK_WEBSQL |
-                StoragePartition::REMOVE_DATA_MASK_APPCACHE |
-                StoragePartition::REMOVE_DATA_MASK_INDEXEDDB));
+            StoragePartitionImpl::GenerateQuotaClientMask(kAllQuotaRemoveMask));
 }
 
 void PopulateTestQuotaManagedPersistentData(MockQuotaManager* manager) {

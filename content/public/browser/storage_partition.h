@@ -8,9 +8,16 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/callback_forward.h"
 #include "base/files/file_path.h"
+#include "base/time/time.h"
+#include "content/common/content_export.h"
 
 class GURL;
+
+namespace base {
+class Time;
+}
 
 namespace fileapi {
 class FileSystemContext;
@@ -43,7 +50,7 @@ class ServiceWorkerContext;
 // persistent state inside the BrowserContext. This is used to implement
 // isolated storage where a renderer with isolated storage cannot see
 // the cookies, localStorage, etc., that normal web renderers have access to.
-class StoragePartition {
+class CONTENT_EXPORT StoragePartition {
  public:
   virtual base::FilePath GetPath() = 0;
   virtual net::URLRequestContextGetter* GetURLRequestContext() = 0;
@@ -56,30 +63,23 @@ class StoragePartition {
   virtual IndexedDBContext* GetIndexedDBContext() = 0;
   virtual ServiceWorkerContext* GetServiceWorkerContext() = 0;
 
-  enum RemoveDataMask {
-    REMOVE_DATA_MASK_APPCACHE = 1 << 0,
-    REMOVE_DATA_MASK_COOKIES = 1 << 1,
-    REMOVE_DATA_MASK_FILE_SYSTEMS = 1 << 2,
-    REMOVE_DATA_MASK_INDEXEDDB = 1 << 3,
-    REMOVE_DATA_MASK_LOCAL_STORAGE = 1 << 4,
-    REMOVE_DATA_MASK_SHADER_CACHE = 1 << 5,
-    REMOVE_DATA_MASK_WEBSQL = 1 << 6,
-    REMOVE_DATA_MASK_WEBRTC_IDENTITY = 1 << 7,
-    REMOVE_DATA_MASK_ALL = -1
-  };
+  static const uint32 REMOVE_DATA_MASK_APPCACHE;
+  static const uint32 REMOVE_DATA_MASK_COOKIES;
+  static const uint32 REMOVE_DATA_MASK_FILE_SYSTEMS;
+  static const uint32 REMOVE_DATA_MASK_INDEXEDDB;
+  static const uint32 REMOVE_DATA_MASK_LOCAL_STORAGE;
+  static const uint32 REMOVE_DATA_MASK_SHADER_CACHE;
+  static const uint32 REMOVE_DATA_MASK_WEBSQL;
+  static const uint32 REMOVE_DATA_MASK_WEBRTC_IDENTITY;
+  static const uint32 REMOVE_DATA_MASK_ALL;
 
-  enum QuotaManagedStorageMask {
-    // Corresponds to quota::kStorageTypeTemporary.
-    QUOTA_MANAGED_STORAGE_MASK_TEMPORARY = 1 << 0,
-
-    // Corresponds to quota::kStorageTypePersistent.
-    QUOTA_MANAGED_STORAGE_MASK_PERSISTENT = 1 << 1,
-
-    // Corresponds to quota::kStorageTypeSyncable.
-    QUOTA_MANAGED_STORAGE_MASK_SYNCABLE = 1 << 2,
-
-    QUOTA_MANAGED_STORAGE_MASK_ALL = -1
-  };
+  // Corresponds to quota::kStorageTypeTemporary.
+  static const uint32 QUOTA_MANAGED_STORAGE_MASK_TEMPORARY;
+  // Corresponds to quota::kStorageTypePersistent.
+  static const uint32 QUOTA_MANAGED_STORAGE_MASK_PERSISTENT;
+  // Corresponds to quota::kStorageTypeSyncable.
+  static const uint32 QUOTA_MANAGED_STORAGE_MASK_SYNCABLE;
+  static const uint32 QUOTA_MANAGED_STORAGE_MASK_ALL;
 
   // Starts an asynchronous task that does a best-effort clear the data
   // corresponding to the given |remove_mask| and |quota_storage_remove_mask|

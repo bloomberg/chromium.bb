@@ -827,11 +827,9 @@ TEST_F(BrowsingDataRemoverTest, RemoveCookieForever) {
   // Verify that storage partition was instructed to remove the cookies.
   StoragePartitionRemovalData removal_data = GetStoragePartitionRemovalData();
   EXPECT_EQ(removal_data.remove_mask,
-            static_cast<uint32>(
-                StoragePartition::REMOVE_DATA_MASK_COOKIES));
+            StoragePartition::REMOVE_DATA_MASK_COOKIES);
   EXPECT_EQ(removal_data.quota_storage_remove_mask,
-            static_cast<uint32>(
-                StoragePartition::QUOTA_MANAGED_STORAGE_MASK_ALL));
+            StoragePartition::QUOTA_MANAGED_STORAGE_MASK_ALL);
   EXPECT_TRUE(removal_data.remove_origin.is_empty());
   EXPECT_EQ(removal_data.remove_begin, GetBeginTime());
 }
@@ -847,14 +845,11 @@ TEST_F(BrowsingDataRemoverTest, RemoveCookieLastHour) {
   // Verify that storage partition was instructed to remove the cookies.
   StoragePartitionRemovalData removal_data = GetStoragePartitionRemovalData();
   EXPECT_EQ(removal_data.remove_mask,
-            static_cast<uint32>(
-                StoragePartition::REMOVE_DATA_MASK_COOKIES));
+            StoragePartition::REMOVE_DATA_MASK_COOKIES);
   // Removing with time period other than EVERYTHING should not clear
   // persistent storage data.
   EXPECT_EQ(removal_data.quota_storage_remove_mask,
-            static_cast<uint32>(
-                StoragePartition::QUOTA_MANAGED_STORAGE_MASK_ALL &
-                ~StoragePartition::QUOTA_MANAGED_STORAGE_MASK_PERSISTENT));
+            ~StoragePartition::QUOTA_MANAGED_STORAGE_MASK_PERSISTENT);
   EXPECT_TRUE(removal_data.remove_origin.is_empty());
   EXPECT_EQ(removal_data.remove_begin, GetBeginTime());
 }
@@ -948,11 +943,9 @@ TEST_F(BrowsingDataRemoverTest, RemoveUnprotectedLocalStorageForever) {
   // Verify that storage partition was instructed to remove the data correctly.
   StoragePartitionRemovalData removal_data = GetStoragePartitionRemovalData();
   EXPECT_EQ(removal_data.remove_mask,
-            static_cast<uint32>(
-                StoragePartition::REMOVE_DATA_MASK_LOCAL_STORAGE));
+            StoragePartition::REMOVE_DATA_MASK_LOCAL_STORAGE);
   EXPECT_EQ(removal_data.quota_storage_remove_mask,
-            static_cast<uint32>(
-                StoragePartition::QUOTA_MANAGED_STORAGE_MASK_ALL));
+            StoragePartition::QUOTA_MANAGED_STORAGE_MASK_ALL);
   EXPECT_TRUE(removal_data.remove_origin.is_empty());
   EXPECT_EQ(removal_data.remove_begin, GetBeginTime());
 
@@ -981,11 +974,9 @@ TEST_F(BrowsingDataRemoverTest, RemoveProtectedLocalStorageForever) {
   // Verify that storage partition was instructed to remove the data correctly.
   StoragePartitionRemovalData removal_data = GetStoragePartitionRemovalData();
   EXPECT_EQ(removal_data.remove_mask,
-            static_cast<uint32>(
-                StoragePartition::REMOVE_DATA_MASK_LOCAL_STORAGE));
+            StoragePartition::REMOVE_DATA_MASK_LOCAL_STORAGE);
   EXPECT_EQ(removal_data.quota_storage_remove_mask,
-            static_cast<uint32>(
-                StoragePartition::QUOTA_MANAGED_STORAGE_MASK_ALL));
+            StoragePartition::QUOTA_MANAGED_STORAGE_MASK_ALL);
   EXPECT_TRUE(removal_data.remove_origin.is_empty());
   EXPECT_EQ(removal_data.remove_begin, GetBeginTime());
 
@@ -1012,13 +1003,10 @@ TEST_F(BrowsingDataRemoverTest, RemoveLocalStorageForLastWeek) {
   // Verify that storage partition was instructed to remove the data correctly.
   StoragePartitionRemovalData removal_data = GetStoragePartitionRemovalData();
   EXPECT_EQ(removal_data.remove_mask,
-            static_cast<uint32>(
-                StoragePartition::REMOVE_DATA_MASK_LOCAL_STORAGE));
+            StoragePartition::REMOVE_DATA_MASK_LOCAL_STORAGE);
   // Persistent storage won't be deleted.
   EXPECT_EQ(removal_data.quota_storage_remove_mask,
-            static_cast<uint32>(
-                StoragePartition::QUOTA_MANAGED_STORAGE_MASK_ALL &
-                ~StoragePartition::QUOTA_MANAGED_STORAGE_MASK_PERSISTENT));
+            ~StoragePartition::QUOTA_MANAGED_STORAGE_MASK_PERSISTENT);
   EXPECT_TRUE(removal_data.remove_origin.is_empty());
   EXPECT_EQ(removal_data.remove_begin, GetBeginTime());
 
@@ -1112,11 +1100,9 @@ TEST_F(BrowsingDataRemoverTest, RemoveMultipleTypes) {
   // partition was requested to remove cookie.
   StoragePartitionRemovalData removal_data = GetStoragePartitionRemovalData();
   EXPECT_EQ(removal_data.remove_mask,
-            static_cast<uint32>(
-                StoragePartition::REMOVE_DATA_MASK_COOKIES));
+            StoragePartition::REMOVE_DATA_MASK_COOKIES);
   EXPECT_EQ(removal_data.quota_storage_remove_mask,
-            static_cast<uint32>(
-                StoragePartition::QUOTA_MANAGED_STORAGE_MASK_ALL));
+            StoragePartition::QUOTA_MANAGED_STORAGE_MASK_ALL);
 }
 
 // This should crash (DCHECK) in Debug, but death tests don't work properly
@@ -1147,13 +1133,10 @@ TEST_F(BrowsingDataRemoverTest, RemoveMultipleTypesHistoryProhibited) {
   // the partition was requested to remove cookie.
   StoragePartitionRemovalData removal_data = GetStoragePartitionRemovalData();
   EXPECT_EQ(removal_data.remove_mask,
-            static_cast<uint32>(
-                StoragePartition::REMOVE_DATA_MASK_COOKIES));
+            StoragePartition::REMOVE_DATA_MASK_COOKIES);
   // Persistent storage won't be deleted, since EVERYTHING was not specified.
   EXPECT_EQ(removal_data.quota_storage_remove_mask,
-            static_cast<uint32>(
-                StoragePartition::QUOTA_MANAGED_STORAGE_MASK_ALL &
-                ~StoragePartition::QUOTA_MANAGED_STORAGE_MASK_PERSISTENT));
+            ~StoragePartition::QUOTA_MANAGED_STORAGE_MASK_PERSISTENT);
 }
 #endif
 
@@ -1174,14 +1157,12 @@ TEST_F(BrowsingDataRemoverTest, RemoveQuotaManagedDataForeverBoth) {
   // Verify storage partition related stuffs.
   StoragePartitionRemovalData removal_data = GetStoragePartitionRemovalData();
   EXPECT_EQ(removal_data.remove_mask,
-            static_cast<uint32>(
-                StoragePartition::REMOVE_DATA_MASK_FILE_SYSTEMS |
+            StoragePartition::REMOVE_DATA_MASK_FILE_SYSTEMS |
                 StoragePartition::REMOVE_DATA_MASK_WEBSQL |
                 StoragePartition::REMOVE_DATA_MASK_APPCACHE |
-                StoragePartition::REMOVE_DATA_MASK_INDEXEDDB));
+                StoragePartition::REMOVE_DATA_MASK_INDEXEDDB);
   EXPECT_EQ(removal_data.quota_storage_remove_mask,
-            static_cast<uint32>(
-                StoragePartition::QUOTA_MANAGED_STORAGE_MASK_ALL));
+            StoragePartition::QUOTA_MANAGED_STORAGE_MASK_ALL);
   EXPECT_TRUE(removal_data.remove_origin.is_empty());
 }
 
@@ -1207,14 +1188,12 @@ TEST_F(BrowsingDataRemoverTest, RemoveQuotaManagedDataForeverOnlyTemporary) {
   StoragePartitionRemovalData removal_data = GetStoragePartitionRemovalData();
 
   EXPECT_EQ(removal_data.remove_mask,
-            static_cast<uint32>(
-                StoragePartition::REMOVE_DATA_MASK_FILE_SYSTEMS |
+            StoragePartition::REMOVE_DATA_MASK_FILE_SYSTEMS |
                 StoragePartition::REMOVE_DATA_MASK_WEBSQL |
                 StoragePartition::REMOVE_DATA_MASK_APPCACHE |
-                StoragePartition::REMOVE_DATA_MASK_INDEXEDDB));
+                StoragePartition::REMOVE_DATA_MASK_INDEXEDDB);
   EXPECT_EQ(removal_data.quota_storage_remove_mask,
-            static_cast<uint32>(
-                StoragePartition::QUOTA_MANAGED_STORAGE_MASK_ALL));
+            StoragePartition::QUOTA_MANAGED_STORAGE_MASK_ALL);
   EXPECT_TRUE(removal_data.remove_origin.is_empty());
 
   // Check that all related origin data would be removed, that is, origin
@@ -1246,14 +1225,12 @@ TEST_F(BrowsingDataRemoverTest, RemoveQuotaManagedDataForeverOnlyPersistent) {
   StoragePartitionRemovalData removal_data = GetStoragePartitionRemovalData();
 
   EXPECT_EQ(removal_data.remove_mask,
-            static_cast<uint32>(
-                StoragePartition::REMOVE_DATA_MASK_FILE_SYSTEMS |
+            StoragePartition::REMOVE_DATA_MASK_FILE_SYSTEMS |
                 StoragePartition::REMOVE_DATA_MASK_WEBSQL |
                 StoragePartition::REMOVE_DATA_MASK_APPCACHE |
-                StoragePartition::REMOVE_DATA_MASK_INDEXEDDB));
+                StoragePartition::REMOVE_DATA_MASK_INDEXEDDB);
   EXPECT_EQ(removal_data.quota_storage_remove_mask,
-            static_cast<uint32>(
-                StoragePartition::QUOTA_MANAGED_STORAGE_MASK_ALL));
+            StoragePartition::QUOTA_MANAGED_STORAGE_MASK_ALL);
   EXPECT_TRUE(removal_data.remove_origin.is_empty());
 
   // Check that all related origin data would be removed, that is, origin
@@ -1286,14 +1263,12 @@ TEST_F(BrowsingDataRemoverTest, RemoveQuotaManagedDataForeverNeither) {
   StoragePartitionRemovalData removal_data = GetStoragePartitionRemovalData();
 
   EXPECT_EQ(removal_data.remove_mask,
-            static_cast<uint32>(
-                StoragePartition::REMOVE_DATA_MASK_FILE_SYSTEMS |
+            StoragePartition::REMOVE_DATA_MASK_FILE_SYSTEMS |
                 StoragePartition::REMOVE_DATA_MASK_WEBSQL |
                 StoragePartition::REMOVE_DATA_MASK_APPCACHE |
-                StoragePartition::REMOVE_DATA_MASK_INDEXEDDB));
+                StoragePartition::REMOVE_DATA_MASK_INDEXEDDB);
   EXPECT_EQ(removal_data.quota_storage_remove_mask,
-            static_cast<uint32>(
-                StoragePartition::QUOTA_MANAGED_STORAGE_MASK_ALL));
+            StoragePartition::QUOTA_MANAGED_STORAGE_MASK_ALL);
   EXPECT_TRUE(removal_data.remove_origin.is_empty());
 
   // Check that all related origin data would be removed, that is, origin
@@ -1322,14 +1297,12 @@ TEST_F(BrowsingDataRemoverTest, RemoveQuotaManagedDataForeverSpecificOrigin) {
   StoragePartitionRemovalData removal_data = GetStoragePartitionRemovalData();
 
   EXPECT_EQ(removal_data.remove_mask,
-            static_cast<uint32>(
-                StoragePartition::REMOVE_DATA_MASK_FILE_SYSTEMS |
+            StoragePartition::REMOVE_DATA_MASK_FILE_SYSTEMS |
                 StoragePartition::REMOVE_DATA_MASK_WEBSQL |
                 StoragePartition::REMOVE_DATA_MASK_APPCACHE |
-                StoragePartition::REMOVE_DATA_MASK_INDEXEDDB));
+                StoragePartition::REMOVE_DATA_MASK_INDEXEDDB);
   EXPECT_EQ(removal_data.quota_storage_remove_mask,
-            static_cast<uint32>(
-                StoragePartition::QUOTA_MANAGED_STORAGE_MASK_ALL));
+            StoragePartition::QUOTA_MANAGED_STORAGE_MASK_ALL);
   EXPECT_EQ(removal_data.remove_origin, kOrigin1);
 }
 
@@ -1351,11 +1324,10 @@ TEST_F(BrowsingDataRemoverTest, RemoveQuotaManagedDataForLastHour) {
   StoragePartitionRemovalData removal_data = GetStoragePartitionRemovalData();
 
   EXPECT_EQ(removal_data.remove_mask,
-            static_cast<uint32>(
-                StoragePartition::REMOVE_DATA_MASK_FILE_SYSTEMS |
+            StoragePartition::REMOVE_DATA_MASK_FILE_SYSTEMS |
                 StoragePartition::REMOVE_DATA_MASK_WEBSQL |
                 StoragePartition::REMOVE_DATA_MASK_APPCACHE |
-                StoragePartition::REMOVE_DATA_MASK_INDEXEDDB));
+                StoragePartition::REMOVE_DATA_MASK_INDEXEDDB);
 
   // Persistent data would be left out since we are not removing from
   // beginning of time.
@@ -1385,11 +1357,10 @@ TEST_F(BrowsingDataRemoverTest, RemoveQuotaManagedDataForLastWeek) {
   StoragePartitionRemovalData removal_data = GetStoragePartitionRemovalData();
 
   EXPECT_EQ(removal_data.remove_mask,
-            static_cast<uint32>(
-                StoragePartition::REMOVE_DATA_MASK_FILE_SYSTEMS |
+            StoragePartition::REMOVE_DATA_MASK_FILE_SYSTEMS |
                 StoragePartition::REMOVE_DATA_MASK_WEBSQL |
                 StoragePartition::REMOVE_DATA_MASK_APPCACHE |
-                StoragePartition::REMOVE_DATA_MASK_INDEXEDDB));
+                StoragePartition::REMOVE_DATA_MASK_INDEXEDDB);
 
   // Persistent data would be left out since we are not removing from
   // beginning of time.
@@ -1425,14 +1396,12 @@ TEST_F(BrowsingDataRemoverTest, RemoveQuotaManagedUnprotectedOrigins) {
   StoragePartitionRemovalData removal_data = GetStoragePartitionRemovalData();
 
   EXPECT_EQ(removal_data.remove_mask,
-            static_cast<uint32>(
-                StoragePartition::REMOVE_DATA_MASK_FILE_SYSTEMS |
+            StoragePartition::REMOVE_DATA_MASK_FILE_SYSTEMS |
                 StoragePartition::REMOVE_DATA_MASK_WEBSQL |
                 StoragePartition::REMOVE_DATA_MASK_APPCACHE |
-                StoragePartition::REMOVE_DATA_MASK_INDEXEDDB));
+                StoragePartition::REMOVE_DATA_MASK_INDEXEDDB);
   EXPECT_EQ(removal_data.quota_storage_remove_mask,
-            static_cast<uint32>(
-                StoragePartition::QUOTA_MANAGED_STORAGE_MASK_ALL));
+            StoragePartition::QUOTA_MANAGED_STORAGE_MASK_ALL);
   EXPECT_TRUE(removal_data.remove_origin.is_empty());
 
   // Check OriginMatcherFunction, |kOrigin1| would not match mask since it
@@ -1467,14 +1436,12 @@ TEST_F(BrowsingDataRemoverTest, RemoveQuotaManagedProtectedSpecificOrigin) {
   StoragePartitionRemovalData removal_data = GetStoragePartitionRemovalData();
 
   EXPECT_EQ(removal_data.remove_mask,
-            static_cast<uint32>(
-                StoragePartition::REMOVE_DATA_MASK_FILE_SYSTEMS |
+            StoragePartition::REMOVE_DATA_MASK_FILE_SYSTEMS |
                 StoragePartition::REMOVE_DATA_MASK_WEBSQL |
                 StoragePartition::REMOVE_DATA_MASK_APPCACHE |
-                StoragePartition::REMOVE_DATA_MASK_INDEXEDDB));
+                StoragePartition::REMOVE_DATA_MASK_INDEXEDDB);
   EXPECT_EQ(removal_data.quota_storage_remove_mask,
-            static_cast<uint32>(
-                StoragePartition::QUOTA_MANAGED_STORAGE_MASK_ALL));
+            StoragePartition::QUOTA_MANAGED_STORAGE_MASK_ALL);
   EXPECT_EQ(removal_data.remove_origin, kOrigin1);
 
   // Check OriginMatcherFunction, |kOrigin1| would not match mask since it
@@ -1510,14 +1477,12 @@ TEST_F(BrowsingDataRemoverTest, RemoveQuotaManagedProtectedOrigins) {
   StoragePartitionRemovalData removal_data = GetStoragePartitionRemovalData();
 
   EXPECT_EQ(removal_data.remove_mask,
-            static_cast<uint32>(
-                StoragePartition::REMOVE_DATA_MASK_FILE_SYSTEMS |
+            StoragePartition::REMOVE_DATA_MASK_FILE_SYSTEMS |
                 StoragePartition::REMOVE_DATA_MASK_WEBSQL |
                 StoragePartition::REMOVE_DATA_MASK_APPCACHE |
-                StoragePartition::REMOVE_DATA_MASK_INDEXEDDB));
+                StoragePartition::REMOVE_DATA_MASK_INDEXEDDB);
   EXPECT_EQ(removal_data.quota_storage_remove_mask,
-            static_cast<uint32>(
-                StoragePartition::QUOTA_MANAGED_STORAGE_MASK_ALL));
+            StoragePartition::QUOTA_MANAGED_STORAGE_MASK_ALL);
   EXPECT_TRUE(removal_data.remove_origin.is_empty());
 
   // Check OriginMatcherFunction, |kOrigin1| would match mask since we
@@ -1549,14 +1514,12 @@ TEST_F(BrowsingDataRemoverTest, RemoveQuotaManagedIgnoreExtensionsAndDevTools) {
   StoragePartitionRemovalData removal_data = GetStoragePartitionRemovalData();
 
   EXPECT_EQ(removal_data.remove_mask,
-            static_cast<uint32>(
-                StoragePartition::REMOVE_DATA_MASK_FILE_SYSTEMS |
+            StoragePartition::REMOVE_DATA_MASK_FILE_SYSTEMS |
                 StoragePartition::REMOVE_DATA_MASK_WEBSQL |
                 StoragePartition::REMOVE_DATA_MASK_APPCACHE |
-                StoragePartition::REMOVE_DATA_MASK_INDEXEDDB));
+                StoragePartition::REMOVE_DATA_MASK_INDEXEDDB);
   EXPECT_EQ(removal_data.quota_storage_remove_mask,
-            static_cast<uint32>(
-                StoragePartition::QUOTA_MANAGED_STORAGE_MASK_ALL));
+            StoragePartition::QUOTA_MANAGED_STORAGE_MASK_ALL);
   EXPECT_TRUE(removal_data.remove_origin.is_empty());
 
   // Check that extension and devtools data wouldn't be removed, that is,

@@ -191,6 +191,21 @@ void ClearSessionStorageOnUIThread(
 
 }  // namespace
 
+// static
+const uint32 StoragePartition::REMOVE_DATA_MASK_APPCACHE        = 1 << 0;
+const uint32 StoragePartition::REMOVE_DATA_MASK_COOKIES         = 1 << 1;
+const uint32 StoragePartition::REMOVE_DATA_MASK_FILE_SYSTEMS    = 1 << 2;
+const uint32 StoragePartition::REMOVE_DATA_MASK_INDEXEDDB       = 1 << 3;
+const uint32 StoragePartition::REMOVE_DATA_MASK_LOCAL_STORAGE   = 1 << 4;
+const uint32 StoragePartition::REMOVE_DATA_MASK_SHADER_CACHE    = 1 << 5;
+const uint32 StoragePartition::REMOVE_DATA_MASK_WEBSQL          = 1 << 6;
+const uint32 StoragePartition::REMOVE_DATA_MASK_WEBRTC_IDENTITY = 1 << 7;
+const uint32 StoragePartition::REMOVE_DATA_MASK_ALL         = 0xFFFFFFFF;
+const uint32 StoragePartition::QUOTA_MANAGED_STORAGE_MASK_TEMPORARY  = 1 << 0;
+const uint32 StoragePartition::QUOTA_MANAGED_STORAGE_MASK_PERSISTENT = 1 << 1;
+const uint32 StoragePartition::QUOTA_MANAGED_STORAGE_MASK_SYNCABLE   = 1 << 2;
+const uint32 StoragePartition::QUOTA_MANAGED_STORAGE_MASK_ALL    = 0xFFFFFFFF;
+
 // Static.
 int StoragePartitionImpl::GenerateQuotaClientMask(uint32 remove_mask) {
   int quota_client_mask = 0;

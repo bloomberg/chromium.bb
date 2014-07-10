@@ -494,8 +494,7 @@ void StoragePartitionImplMap::AsyncObliterate(
     if (config.partition_domain == partition_domain) {
       it->second->ClearData(
           // All except shader cache.
-          StoragePartition::REMOVE_DATA_MASK_ALL &
-            (~StoragePartition::REMOVE_DATA_MASK_SHADER_CACHE),
+          ~StoragePartition::REMOVE_DATA_MASK_SHADER_CACHE,
           StoragePartition::QUOTA_MANAGED_STORAGE_MASK_ALL,
           GURL(),
           StoragePartition::OriginMatcherFunction(),
