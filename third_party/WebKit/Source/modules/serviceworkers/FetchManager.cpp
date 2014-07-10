@@ -5,6 +5,7 @@
 #include "config.h"
 #include "FetchManager.h"
 
+#include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/V8ThrowException.h"
@@ -85,7 +86,8 @@ void FetchManager::Loader::didFinishLoading(unsigned long, double)
     // FIXME: fill options.
     RefPtrWillBeRawPtr<Blob> blob = Blob::create(BlobDataHandle::create(blobData.release(), m_downloadedBlobLength));
     // FIXME: Handle response status correctly.
-    m_resolver->resolve(Response::create(blob.get(), responseInit));
+    NonThrowableExceptionState exceptionState;
+    m_resolver->resolve(Response::create(blob.get(), responseInit, exceptionState));
     notifyFinished();
 }
 

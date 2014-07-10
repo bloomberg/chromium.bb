@@ -3,18 +3,22 @@
 // found in the LICENSE file.
 
 // http://fetch.spec.whatwg.org/#response-class
-// FIXME: Split this idl/impl into AbstractResponse and Response.
+
+enum ResponseType { "basic", "cors", "default", "error", "opaque" };
+
 [
-    // FIXME: Add ctors for String, Stream, and ArrayBuffer/ArrayBufferView response bodies.
+    // FIXME: Add ctors for ArrayBuffer, ArrayBufferView, FormData,
+    // ScalarValueString and URLSearchParams response bodies.
     Constructor(Blob body, optional Dictionary responseInitDict),
     RuntimeEnabled=ServiceWorker,
-    Exposed=ServiceWorker
+    Exposed=ServiceWorker,
+    RaisesException=Constructor
 ] interface Response {
-    attribute unsigned short status;
-    attribute ByteString statusText;
-    readonly attribute HeaderMap headers;
-
-    // FIXME: Implement the following:
-    // attribute DOMString url;
-    // Promise<Blob> toBlob();
+    // FIXME: Implement redirect().
+    readonly attribute ResponseType type;
+    readonly attribute ScalarValueString url;
+    readonly attribute unsigned short status;
+    readonly attribute ByteString statusText;
+    readonly attribute Headers headers;
+    // FIXME: Implement FetchBodyStream body;
 };
