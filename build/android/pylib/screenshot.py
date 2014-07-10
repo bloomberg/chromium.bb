@@ -24,7 +24,7 @@ class VideoRecorder(object):
           default.
     rotate: If True, the video will be rotated 90 degrees.
   """
-  def __init__(self, device, host_file, megabits_per_second=4, size=None,
+  def __init__(self, device, megabits_per_second=4, size=None,
                rotate=False):
     # TODO(jbudorick) Remove once telemetry gets switched over.
     if isinstance(device, pylib.android_commands.AndroidCommands):
@@ -32,9 +32,6 @@ class VideoRecorder(object):
     self._device = device
     self._device_file = (
         '%s/screen-recording.mp4' % device.GetExternalStoragePath())
-    self._host_file = host_file or ('screen-recording-%s.mp4' %
-                                    device.old_interface.GetTimestamp())
-    self._host_file = os.path.abspath(self._host_file)
     self._recorder = None
     self._recorder_pids = None
     self._recorder_stdout = None
@@ -53,7 +50,6 @@ class VideoRecorder(object):
 
   def Start(self):
     """Start recording video."""
-    self._device.old_interface.EnsureHostDirectory(self._host_file)
     self._recorder_stdout = tempfile.mkstemp()[1]
     self._recorder = cmd_helper.Popen(
         self._args, stdout=open(self._recorder_stdout, 'w'))
@@ -80,12 +76,15 @@ class VideoRecorder(object):
         'kill -SIGINT ' + ' '.join(self._recorder_pids))
     self._recorder.wait()
 
-  def Pull(self):
+  def Pull(self, host_file):
     """Pull resulting video file from the device.
 
-    Returns:
-      Output video file name on the host.
+    Args:
+      host_file: Path to the video file to store on the host.
     """
-    self._device.PullFile(self._device_file, self._host_file)
+    host_file_name = host_file or ('screen-recording-%s.mp4' %
+                                   self._device.old_interface.GetTimestamp())
+    host_file = os.path.abspath(host_file_name)
+    self._device.old_interface.EnsureHostDirectory(self._host_file)
+    self._device.PullFile(self._device_file, host_file_name)
     self._device.RunShellCommand('rm -f "%s"' % self._device_file)
-    return self._host_file
