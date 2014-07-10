@@ -2093,8 +2093,6 @@ void RenderObject::styleWillChange(StyleDifference diff, const RenderStyle& newS
                     layer->setHasVisibleContent();
                 } else if (layer->hasVisibleContent() && (this == layer->renderer() || layer->renderer()->style()->visibility() != VISIBLE)) {
                     layer->dirtyVisibleContentStatus();
-                    if (diff.needsLayout())
-                        paintInvalidationForWholeRenderer();
                 }
             }
         }
