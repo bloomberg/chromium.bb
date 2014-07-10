@@ -10,8 +10,6 @@ from telemetry.core import util
 from telemetry.page import page
 from telemetry.page import page_set
 from telemetry.page import page_test
-# pylint: disable=W0401,W0614
-from telemetry.page.actions.all_page_actions import *
 
 data_path = os.path.join(
     util.GetChromiumSrcDir(), 'content', 'test', 'data', 'gpu')

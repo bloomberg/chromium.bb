@@ -7,8 +7,6 @@ from measurements import smoothness
 from telemetry.core import wpr_modes
 from telemetry.page import page
 from telemetry.page import page_measurement_unittest_base
-# pylint: disable=W0401,W0614
-from telemetry.page.actions.all_page_actions import *
 from telemetry.unittest import options_for_unittests
 
 class FakePlatform(object):

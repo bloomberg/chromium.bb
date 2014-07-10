@@ -4,8 +4,6 @@
 
 import re
 
-# pylint: disable=W0401,W0614
-from telemetry.page.actions.all_page_actions import *
 from telemetry.page import page as page_module
 from telemetry.page import page_set as page_set_module
 

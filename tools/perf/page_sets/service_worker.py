@@ -4,7 +4,6 @@
 
 from telemetry.page import page
 from telemetry.page import page_set
-from telemetry.page.actions import all_page_actions as actions
 
 
 archive_data_file_path = 'data/service_worker.json'
@@ -12,7 +11,7 @@ archive_data_file_path = 'data/service_worker.json'
 
 class ServiceWorkerPage(page.Page):
   def RunNavigateSteps(self, action_runner):
-    action_runner.RunAction(actions.NavigateAction())
+    action_runner.NavigateToPage()
     action_runner.WaitForJavaScriptCondition('window.done')
 
 
