@@ -1220,8 +1220,7 @@ std::string ProcessSubjectPublicKeyInfo(
 
 std::string ProcessRawBitsSignatureWrap(
     net::X509Certificate::OSCertHandle cert_handle) {
-  // TODO(bulach): implement me.
-  return "";
+  return ProcessRawAsn1String(cert_handle->signature);
 }
 
 }  // namespace x509_certificate_model

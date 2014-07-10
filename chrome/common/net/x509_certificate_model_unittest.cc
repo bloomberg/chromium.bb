@@ -409,3 +409,28 @@ TEST(X509CertificateModelTest, ProcessSubjectPublicKeyInfo) {
             cert->os_cert_handle()));
   }
 }
+
+TEST(X509CertificateModelTest, ProcessRawBitsSignatureWrap) {
+  scoped_refptr<net::X509Certificate> cert(net::ImportCertFromFile(
+      net::GetTestCertsDirectory(), "root_ca_cert.pem"));
+  ASSERT_TRUE(cert.get());
+  EXPECT_EQ(
+      "A8 58 42 E4 7C B1 46 11 EE 56 B7 09 08 FB 06 44\n"
+      "F0 A9 60 03 F0 05 23 09 3C 36 D6 28 1B E5 D6 61\n"
+      "15 A0 6F DE 69 AC 28 58 05 F1 CE 9B 61 C2 58 B0\n"
+      "5D ED 6C 75 44 E2 68 01 91 59 B1 4F F3 51 F2 23\n"
+      "F6 47 42 41 57 26 4F 87 1E D2 9F 94 3A E2 D0 4E\n"
+      "6F 02 D2 92 76 2C 0A DD 58 93 E1 47 B9 02 A3 3D\n"
+      "75 B4 BA 24 70 87 32 87 CF 76 4E A0 41 8B 86 42\n"
+      "18 55 ED A5 AE 5D 6A 3A 8C 28 70 4C F1 C5 36 6C\n"
+      "EC 01 A9 D6 51 39 32 31 30 24 82 9F 88 D9 F5 C1\n"
+      "09 6B 5A 6B F1 95 D3 9D 3F E0 42 63 FC B7 32 90\n"
+      "55 56 F2 76 1B 71 38 BD BD FB 3B 23 50 46 4C 2C\n"
+      "4E 49 48 52 EA 05 5F 16 F2 98 51 AF 2F 79 36 2A\n"
+      "A0 BA 36 68 1B 29 8B 7B E8 8C EA 73 31 E5 86 D7\n"
+      "2C D8 56 06 43 D7 72 D2 F0 27 4E 64 0A 2B 27 38\n"
+      "36 CD BE C1 33 DB 74 4B 4E 74 BE 21 BD F6 81 66\n"
+      "D2 FD 2B 7F F4 55 36 C0 ED A7 44 CA B1 78 1D 0F",
+      x509_certificate_model::ProcessRawBitsSignatureWrap(
+          cert->os_cert_handle()));
+}
