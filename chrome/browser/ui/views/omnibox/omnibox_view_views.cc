@@ -15,6 +15,7 @@
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/autocomplete/chrome_autocomplete_scheme_classifier.h"
 #include "chrome/browser/command_updater.h"
+#include "chrome/browser/omnibox/omnibox_field_trial.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/ui/omnibox/omnibox_edit_controller.h"
 #include "chrome/browser/ui/omnibox/omnibox_edit_model.h"
@@ -256,7 +257,8 @@ void OmniboxViewViews::Update() {
 }
 
 void OmniboxViewViews::UpdatePlaceholderText() {
-  if (chrome::ShouldDisplayOriginChip())
+  if (chrome::ShouldDisplayOriginChip() ||
+      OmniboxFieldTrial::DisplayHintTextWhenPossible())
     set_placeholder_text(GetHintText());
 }
 

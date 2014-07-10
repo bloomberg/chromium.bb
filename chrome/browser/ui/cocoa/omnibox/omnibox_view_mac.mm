@@ -14,6 +14,7 @@
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/autocomplete/chrome_autocomplete_scheme_classifier.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/omnibox/omnibox_field_trial.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/ui/cocoa/location_bar/autocomplete_text_field_cell.h"
 #import "chrome/browser/ui/cocoa/location_bar/autocomplete_text_field_editor.h"
@@ -234,7 +235,8 @@ void OmniboxViewMac::Update() {
 }
 
 void OmniboxViewMac::UpdatePlaceholderText() {
-  if (chrome::ShouldDisplayOriginChip()) {
+  if (chrome::ShouldDisplayOriginChip() ||
+      OmniboxFieldTrial::DisplayHintTextWhenPossible()) {
     NSDictionary* placeholder_attributes = @{
       NSFontAttributeName : GetFieldFont(gfx::Font::NORMAL),
       NSForegroundColorAttributeName : [NSColor disabledControlTextColor]

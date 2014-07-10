@@ -310,6 +310,15 @@ class OmniboxFieldTrial {
   static bool AddUWYTMatchEvenIfPromotedURLs();
 
   // ---------------------------------------------------------
+  // For the DisplayHintTextWhenPossible experiment that's part of the
+  // bundled omnibox field trial.
+
+  // Returns true if the omnibox should display hint text (Search
+  // <search engine> or type URL) when possible (i.e., the omnibox
+  // is otherwise non-empty).
+  static bool DisplayHintTextWhenPossible();
+
+  // ---------------------------------------------------------
   // Exposed publicly for the sake of unittests.
   static const char kBundledExperimentFieldTrialName[];
   // Rule names used by the bundled experiment.
@@ -326,6 +335,7 @@ class OmniboxFieldTrial {
   static const char kDisableInliningRule[];
   static const char kAnswersInSuggestRule[];
   static const char kAddUWYTMatchEvenIfPromotedURLsRule[];
+  static const char kDisplayHintTextWhenPossibleRule[];
 
   // Parameter names used by the HUP new scoring experiments.
   static const char kHUPNewScoringEnabledParam[];
