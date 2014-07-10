@@ -3622,6 +3622,51 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="DiskBasedCertCache.CertIo" enum="CertificateChainPosition">
+  <owner>brandonsalmon@chromium.org</owner>
+  <summary>
+    Records information about DiskBasedCertCache operations with respect to
+    certificate chain positions. Zero indicates that a certificate is root, one
+    indicates that it is the first intermediate certificate, etc.
+  </summary>
+</histogram>
+
+<histogram name="DiskBasedCertCache.CertIoReadSuccessLeaf"
+    enum="BooleanSuccess">
+  <owner>brandonsalmon@chromium.org</owner>
+  <summary>
+    Whether or not the leaf certificate of a certificate chain was successfuly
+    read from the disk cache.
+  </summary>
+</histogram>
+
+<histogram name="DiskBasedCertCache.CertIoWriteSuccessLeaf"
+    enum="BooleanSuccess">
+  <owner>brandonsalmon@chromium.org</owner>
+  <summary>
+    Whether or not the leaf certificate of a certificate chain was successfully
+    written to the disk cache.
+  </summary>
+</histogram>
+
+<histogram name="DiskBasedCertCache.ChainReadTime" units="milliseconds">
+  <owner>brandonsalmon@chromium.org</owner>
+  <summary>
+    Measures the wall clock time spent reading a certificate chain. The starting
+    time is when the read command is issued, and the ending time is when all of
+    the  certificates in the chain have been read into memory.
+  </summary>
+</histogram>
+
+<histogram name="DiskBasedCertCache.ChainWriteTime" units="milliseconds">
+  <owner>brandonsalmon@chromium.org</owner>
+  <summary>
+    Measures the wall clock time spent writing a certificate chain to disk. The
+    starting time is when the write command is issued, and the ending time is
+    when all the certificates in the chain have been written to disk.
+  </summary>
+</histogram>
+
 <histogram name="DiskCache.0.FilesAge" units="hours">
   <owner>rvargas@chromium.org</owner>
   <summary>The age of the cache's files (wall time).</summary>
@@ -35789,6 +35834,10 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="20" label="FutureCat (&gt;10.10), 8-bit (?)"/>
 </enum>
 
+<enum name="CertificateChainPosition" type="int">
+  <int value="0" label="Root Certificate"/>
+</enum>
+
 <enum name="ChannelLayout" type="int">
   <int value="0" label="CHANNEL_LAYOUT_NONE"/>
   <int value="1" label="CHANNEL_LAYOUT_UNSUPPORTED"/>
@@ -48170,6 +48219,18 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <affected-histogram name="CertificateType.NonBR"/>
   <affected-histogram name="CertificateType2.BR"/>
   <affected-histogram name="CertificateType2.NonBR"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="CertIo" separator="">
+  <suffix name="ReadSuccess"
+      label="success rate of reading a certificate from the disk cache"/>
+  <suffix name="ReadFailure"
+      label="failure rate of reading a certificate from the disk cache"/>
+  <suffix name="WriteSuccess"
+      label="success rate of writing a certificate to the disk cache"/>
+  <suffix name="WriteFailure"
+      label="failure rate of writing a certificate to the disk cache"/>
+  <affected-histogram name="DiskBasedCertCache.CertIo"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="CloudPrintRequests" separator=".">
