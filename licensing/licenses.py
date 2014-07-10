@@ -655,7 +655,7 @@ being scraped currently).""",
       raise AssertionError("portage couldn't find %s, missing version number?" %
                            fullnamewithrev)
 
-    (self.category, self.name, self.version, self.revision) = (
+    self.category, self.name, self.version, self.revision = (
         cpv.category, cpv.package, cpv.version_no_rev, cpv.rev)
 
     if self.revision is not None:
@@ -673,7 +673,7 @@ being scraped currently).""",
       self.skip = True
       return
 
-  def _ReadEbuildInfo(self):
+  def _FindEbuildPath(self):
     """Populate package info from an ebuild retrieved via equery."""
     # By default, equery returns the latest version of the package. A
     # build may have used an older version than what is currently
@@ -682,9 +682,9 @@ being scraped currently).""",
     # reasons). Therefore we need to tell equery that we want the
     # exact version number used in the image build as opposed to the
     # latest available in the source tree.
-    args = ['equery-%s' % self.board, 'which', self.fullnamerev]
+    args = ['equery-%s' % self.board, '-q', '-C', 'which', self.fullnamerev]
     try:
-      path = cros_build_lib.RunCommand(args, print_cmd=debug,
+      path = cros_build_lib.RunCommand(args, print_cmd=True,
                                        redirect_stdout=True).output.strip()
       if not path:
         raise AssertionError
@@ -700,6 +700,8 @@ being scraped currently).""",
 
     self.ebuild_path = path
 
+  def _ReadEbuildMetadata(self):
+    """Read package metadata retrieved via portageq."""
     args = ['portageq-%s' % self.board, 'metadata',
             cros_build_lib.GetSysroot(board=self.board), 'ebuild',
             self.fullnamerev, 'HOMEPAGE', 'LICENSE']
@@ -712,8 +714,23 @@ being scraped currently).""",
     # Returns:
     # http://www.gnu.org/software/wget/
     # GPL-3
-    (self.homepages, self.ebuild_license_names) = (
+    self.homepages, self.ebuild_license_names = (
         lines[0].split(), lines[1].split())
+
+  def _TestEbuildContents(self):
+    """Discover if the ebuild installed any files.
+
+    Returns:
+      bool which tells if any files were installed.
+    """
+    # Search for anything the ebuild might install, other than a directory.
+    args = ['equery-%s' % self.board, '-q', '-C', 'files', self.fullnamerev,
+            '-f', 'obj']
+    tmp = cros_build_lib.RunCommand(args, print_cmd=debug, redirect_stdout=True)
+    lines = tmp.output.splitlines()
+
+    # lines is an array of the file names installed by the ebuild.
+    return bool(lines)
 
   def GetLicenses(self):
     """Get licenses from the ebuild field and the unpacked source code.
@@ -729,10 +746,18 @@ being scraped currently).""",
       PackageLicenseError: couldn't find license in ebuild and source.
     """
     if self.build_source_tree:
+      # If the total size installed is zero, we installed no content to license.
+      if self._BuildInfo("SIZE").strip() == '0':
+        self.skip = True
+        return
       self.homepages = self._BuildInfo("HOMEPAGE").split()
       self.ebuild_license_names = self._BuildInfo("LICENSE").split()
     else:
-      self._ReadEbuildInfo()
+      self._FindEbuildPath()
+      self._ReadEbuildMetadata()
+      self.skip = self.skip or not self._TestEbuildContents()
+      if self.skip:
+        return
 
     if self.fullname in PACKAGE_HOMEPAGES:
       self.homepages = PACKAGE_HOMEPAGES[self.fullname]
@@ -782,7 +807,7 @@ being scraped currently).""",
     # like BSD that requires looking for copyright attribution, but we can
     # chose another license like GPL, we do that.
 
-    if not self.ebuild_license_names:
+    if not self.skip and not self.ebuild_license_names:
       logging.error("%s: no license found in ebuild. FIXME!", self.fullnamerev)
       # In a bind, you could comment this out. I'm making the output fail to
       # get your attention since this error really should be fixed, but if you
