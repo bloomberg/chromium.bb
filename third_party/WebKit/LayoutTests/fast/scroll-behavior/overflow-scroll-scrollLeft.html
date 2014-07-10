@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    #container {
+      width: 200px;
+      height: 200px;
+      overflow: scroll;
+    }
+
+    #content {
+      width: 7500px;
+      height: 7500px;
+      background-color: blue;
+    }
+  </style>
+  <script src="../../resources/testharness.js"></script>
+  <script src="../../resources/testharnessreport.js"></script>
+  <script src="resources/scroll-behavior-test.js"></script>
+  <script type="text/javascript">
+    function getEndPosition(testCase, startPosition) {
+      var endPosition = {};
+      endPosition.x = testCase.x;
+      endPosition.y = startPosition.y;
+      return endPosition;
+    }
+
+    function jsScroll(testCase) {
+      var element = document.getElementById("container");
+      if (testCase.js) {
+        element.scrollLeft = {x: testCase.x, behavior: testCase.js};
+      } else {
+        element.scrollLeft = testCase.x;
+      }
+    }
+
+    const testScrolls = [
+      {js: "instant", css: "instant", x: 1, y: 0},
+      {js: "instant", css: "smooth", x: 2, y: 0},
+      {js: "auto", css: "instant", x: 3, y: 0},
+      {js: "", css: "instant", x: 4, y: 0},
+      {js: "smooth", css: "instant", waitForEnd: true, x: 10, y: 0},
+      {js: "smooth", css: "smooth", waitForEnd: true, x: 20, y: 0},
+      {js: "auto", css: "smooth", waitForEnd: true, x: 30, y: 0},
+      {js: "", css: "smooth", waitForEnd: true, x: 40, y: 0},
+      {js: "smooth", css: "instant", waitForEnd: false, x: 4000, y: 0},
+      {js: "smooth", css: "smooth", waitForEnd: false, x: 15, y: 0},
+      {js: "auto", css: "smooth", waitForEnd: false, x: 4100, y: 0},
+      {js: "", css: "smooth", waitForEnd: false, x: 10, y: 0},
+    ];
+
+    function doTest()
+    {
+      var testCases = [];
+      for (var i = 0; i < testScrolls.length; i++) {
+        testCases.push(new ScrollBehaviorTestCase(testScrolls[i]));
+      }
+
+      var element = document.getElementById("container");
+      var scrollBehaviorTest = new ScrollBehaviorTest(element,
+                                                      element,
+                                                      testCases,
+                                                      getEndPosition,
+                                                      jsScroll);
+      scrollBehaviorTest.run();
+    }
+
+    window.addEventListener('load', doTest, false);
+  </script>
+</head>
+
+<body>
+  <p>Test that setting scrollLeft on an overflow:scroll element works with both scroll behaviors</p>
+  <div id="container">
+    <div id="content"></div>
+  </div>
+</body>
+</html>

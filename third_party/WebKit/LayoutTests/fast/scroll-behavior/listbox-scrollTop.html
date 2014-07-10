@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <script src="../../resources/testharness.js"></script>
+  <script src="../../resources/testharnessreport.js"></script>
+  <script src="resources/scroll-behavior-test.js"></script>
+  <script type="text/javascript">
+    const numItems = 500;
+
+    function getEndPosition(testCase, startPosition) {
+      var endPosition = {};
+      endPosition.x = startPosition.x;
+      endPosition.y = testCase.y;
+      return endPosition;
+    }
+
+    function jsScroll(testCase) {
+      var element = document.getElementById("listbox");
+      if (testCase.js) {
+        element.scrollTop = {y: testCase.y, behavior: testCase.js};
+      } else {
+        element.scrollTop = testCase.y;
+      }
+    }
+
+    var testScrolls = [
+      {js: "instant", css: "instant", index: 2},
+      {js: "instant", css: "smooth", index: 3},
+      {js: "auto", css: "instant", index: 4},
+      {js: "", css: "instant", index: 5},
+      {js: "smooth", css: "instant", waitForEnd: true, index: 15},
+      {js: "smooth", css: "smooth", waitForEnd: true, index: 20},
+      {js: "auto", css: "smooth", waitForEnd: true, index: 30},
+      {js: "", css: "smooth", waitForEnd: true, index: 35},
+      {js: "smooth", css: "instant", waitForEnd: false, index: 410},
+      {js: "smooth", css: "smooth", waitForEnd: false, index: 20},
+      {js: "auto", css: "smooth", waitForEnd: false, index: 400},
+      {js: "", css: "smooth", waitForEnd: false, index: 5},
+    ];
+
+    function initializeContents(listbox)
+    {
+      for (var i = 0; i < numItems; i++) {
+        var option = document.createElement("option");
+        option.appendChild(document.createTextNode(i));
+        listbox.appendChild(option);
+      }
+    }
+
+function doTest()
+    {
+      var element = document.getElementById("listbox");
+      initializeContents(element);
+      var itemHeight = (listbox.scrollHeight - listbox.clientHeight) / (numItems - listbox.size);
+
+      var testCases = [];
+      for (var i = 0; i < testScrolls.length; i++) {
+        // Convert from list box item index to a scroll offset.
+        testScrolls[i].y = testScrolls[i].index * itemHeight;
+        testScrolls[i].x = 0;
+        testCases.push(new ScrollBehaviorTestCase(testScrolls[i]));
+      }
+
+      var scrollBehaviorTest = new ScrollBehaviorTest(element,
+                                                      element,
+                                                      testCases,
+                                                      getEndPosition,
+                                                      jsScroll);
+      scrollBehaviorTest.run();
+    }
+
+    window.addEventListener('load', doTest, false);
+  </script>
+</head>
+
+<body>
+  <p>Test that setting scrollTop on a listbox works with both scroll behaviors</p>
+  <select size="4" id="listbox"></select>
+</body>
+</html>
