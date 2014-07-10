@@ -7,8 +7,7 @@
 
 #include "bindings/core/v8/Dictionary.h"
 #include "bindings/core/v8/ScriptWrappable.h"
-#include "modules/serviceworkers/FetchResponseData.h"
-#include "modules/serviceworkers/Headers.h"
+#include "modules/serviceworkers/HeaderMap.h"
 #include "platform/blob/BlobData.h"
 #include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"
@@ -19,32 +18,30 @@ namespace blink { class WebServiceWorkerResponse; }
 namespace WebCore {
 
 class Blob;
-class ExceptionState;
 struct ResponseInit;
 
-class Response FINAL : public RefCounted<Response>, public ScriptWrappable {
+class Response FINAL : public ScriptWrappable, public RefCounted<Response> {
 public:
-    static PassRefPtr<Response> create(Blob*, const Dictionary&, ExceptionState&);
-    static PassRefPtr<Response> create(Blob*, const ResponseInit&, ExceptionState&);
-
-    static PassRefPtr<Response> create(PassRefPtr<FetchResponseData>);
+    static PassRefPtr<Response> create(Blob*, const Dictionary&);
+    static PassRefPtr<Response> create(Blob*, const ResponseInit&);
     ~Response() { };
 
-    String type() const;
-    String url() const;
-    unsigned short status() const;
-    String statusText() const;
-    PassRefPtr<Headers> headers() const;
+    unsigned short status() const { return m_status; }
+    void setStatus(unsigned short value) { m_status = value; }
+
+    String statusText() const { return m_statusText; }
+    void setStatusText(const String& value) { m_statusText = value; }
+
+    PassRefPtr<HeaderMap> headers() const;
 
     void populateWebServiceWorkerResponse(blink::WebServiceWorkerResponse&);
 
 private:
-    Response();
-    Response(PassRefPtr<FetchResponseData>);
-
-    RefPtr<FetchResponseData> m_response;
-    RefPtr<Headers> m_headers;
-    // FIXME: Support FetchBodyStream.
+    Response(PassRefPtr<BlobDataHandle>, const ResponseInit&);
+    unsigned short m_status;
+    String m_statusText;
+    RefPtr<HeaderMap> m_headers;
+    RefPtr<BlobDataHandle> m_blobDataHandle;
 };
 
 } // namespace WebCore
