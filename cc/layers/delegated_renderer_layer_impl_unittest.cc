@@ -1509,5 +1509,33 @@ TEST_F(DelegatedRendererLayerImplTest, Occlusion) {
   }
 }
 
+TEST_F(DelegatedRendererLayerImplTest, PushPropertiesTo) {
+  gfx::Size layer_size(1000, 1000);
+
+  scoped_ptr<FakeDelegatedRendererLayerImpl> delegated_renderer_layer_impl =
+      FakeDelegatedRendererLayerImpl::Create(host_impl_->active_tree(), 5);
+  delegated_renderer_layer_impl->SetBounds(layer_size);
+  delegated_renderer_layer_impl->SetContentBounds(layer_size);
+  delegated_renderer_layer_impl->SetDrawsContent(true);
+
+  RenderPassList delegated_render_passes;
+  // |pass1| covers the whole layer.
+  RenderPass::Id pass1_id = RenderPass::Id(5, 0);
+  AddRenderPass(&delegated_render_passes,
+                pass1_id,
+                gfx::Rect(layer_size),
+                gfx::Transform());
+  delegated_renderer_layer_impl->SetFrameDataForRenderPasses(
+      2.f, &delegated_render_passes);
+  EXPECT_EQ(0.5f, delegated_renderer_layer_impl->inverse_device_scale_factor());
+
+  scoped_ptr<DelegatedRendererLayerImpl> other_layer =
+      DelegatedRendererLayerImpl::Create(host_impl_->active_tree(), 6);
+
+  delegated_renderer_layer_impl->PushPropertiesTo(other_layer.get());
+
+  EXPECT_EQ(0.5f, other_layer->inverse_device_scale_factor());
+}
+
 }  // namespace
 }  // namespace cc

@@ -72,6 +72,7 @@ void DelegatedRendererLayerImpl::PushPropertiesTo(LayerImpl* layer) {
   // have already deleted its old child_id.
   DCHECK(delegated_layer->child_id_ == 0 ||
          delegated_layer->child_id_ == child_id_);
+  delegated_layer->inverse_device_scale_factor_ = inverse_device_scale_factor_;
   delegated_layer->child_id_ = child_id_;
   delegated_layer->own_child_id_ = true;
   own_child_id_ = false;
