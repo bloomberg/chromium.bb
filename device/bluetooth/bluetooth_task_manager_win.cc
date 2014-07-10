@@ -406,7 +406,10 @@ void BluetoothTaskManagerWin::GetKnownDevices() {
         DeviceState* device_state = new DeviceState();
         device_state->name = device_info->friendly_name;
         device_state->address = BluetoothAddressToString(device_info->address);
+        device_state->visible = device_info->visible;
+        device_state->authenticated = device_info->authenticated;
         device_state->connected = device_info->connected;
+        device_state->path = device_info->path;
         device_list->push_back(device_state);
       }
     }
