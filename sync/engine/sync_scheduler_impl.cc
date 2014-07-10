@@ -16,7 +16,6 @@
 #include "base/message_loop/message_loop.h"
 #include "sync/engine/backoff_delay_provider.h"
 #include "sync/engine/syncer.h"
-#include "sync/notifier/object_id_invalidation_map.h"
 #include "sync/protocol/proto_enum_conversions.h"
 #include "sync/protocol/sync.pb.h"
 #include "sync/util/data_type_histogram.h"

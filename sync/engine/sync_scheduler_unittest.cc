@@ -13,8 +13,6 @@
 #include "sync/engine/syncer.h"
 #include "sync/internal_api/public/base/cancelation_signal.h"
 #include "sync/internal_api/public/base/model_type_test_util.h"
-#include "sync/notifier/invalidation_util.h"
-#include "sync/notifier/object_id_invalidation_map.h"
 #include "sync/sessions/test_util.h"
 #include "sync/test/callback_counter.h"
 #include "sync/test/engine/fake_model_worker.h"

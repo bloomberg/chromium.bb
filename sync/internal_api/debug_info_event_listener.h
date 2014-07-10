@@ -73,7 +73,6 @@ class SYNC_EXPORT_PRIVATE DebugInfoEventListener
 
   // Sync manager events.
   void OnNudgeFromDatatype(ModelType datatype);
-  void OnIncomingNotification(const ObjectIdInvalidationMap& invalidations);
 
   // DebugInfoGetter implementation.
   virtual void GetDebugInfo(sync_pb::DebugInfo* debug_info) OVERRIDE;

@@ -4,7 +4,6 @@
 
 #include "sync/internal_api/debug_info_event_listener.h"
 
-#include "sync/notifier/object_id_invalidation_map.h"
 #include "sync/util/cryptographer.h"
 
 namespace syncer {
@@ -125,21 +124,6 @@ void DebugInfoEventListener::OnNudgeFromDatatype(ModelType datatype) {
   sync_pb::DebugEventInfo event_info;
   event_info.set_nudging_datatype(
       GetSpecificsFieldNumberFromModelType(datatype));
-  AddEventToQueue(event_info);
-}
-
-void DebugInfoEventListener::OnIncomingNotification(
-    const ObjectIdInvalidationMap& invalidation_map) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  sync_pb::DebugEventInfo event_info;
-  ModelTypeSet types =
-      ObjectIdSetToModelTypeSet(invalidation_map.GetObjectIds());
-
-  for (ModelTypeSet::Iterator it = types.First(); it.Good(); it.Inc()) {
-    event_info.add_datatypes_notified_from_server(
-        GetSpecificsFieldNumberFromModelType(it.Get()));
-  }
-
   AddEventToQueue(event_info);
 }
 

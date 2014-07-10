@@ -25,6 +25,7 @@
   'sources': [
     'notifier/ack_handler.cc',
     'notifier/ack_handler.h',
+    'notifier/invalidation_handler.cc',
     'notifier/invalidation_handler.h',
     'notifier/invalidation_state_tracker.cc',
     'notifier/invalidation_state_tracker.h',
@@ -32,6 +33,7 @@
     'notifier/invalidation_util.h',
     'notifier/unacked_invalidation_set.cc',
     'notifier/unacked_invalidation_set.h',
+    'notifier/invalidator.cc',
     'notifier/invalidator.h',
     'notifier/mock_ack_handler.cc',
     'notifier/mock_ack_handler.h',

@@ -30,7 +30,6 @@
 #include "sync/internal_api/public/util/report_unrecoverable_error_function.h"
 #include "sync/internal_api/public/util/unrecoverable_error_handler.h"
 #include "sync/internal_api/public/util/weak_handle.h"
-#include "sync/notifier/invalidation_handler.h"
 #include "sync/protocol/sync_protocol_error.h"
 
 namespace sync_pb {
@@ -312,7 +311,7 @@ class SYNC_EXPORT SyncManager {
       const base::Closure& retry_task) = 0;
 
   // Inform the syncer of a change in the invalidator's state.
-  virtual void OnInvalidatorStateChange(InvalidatorState state) = 0;
+  virtual void SetInvalidatorEnabled(bool invalidator_enabled) = 0;
 
   // Inform the syncer that its cached information about a type is obsolete.
   virtual void OnIncomingInvalidation(

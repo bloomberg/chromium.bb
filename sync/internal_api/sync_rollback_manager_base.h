@@ -71,7 +71,7 @@ class SYNC_EXPORT_PRIVATE SyncRollbackManagerBase :
       const ModelSafeRoutingInfo& new_routing_info,
       const base::Closure& ready_task,
       const base::Closure& retry_task) OVERRIDE;
-  virtual void OnInvalidatorStateChange(InvalidatorState state) OVERRIDE;
+  virtual void SetInvalidatorEnabled(bool invalidator_enabled) OVERRIDE;
   virtual void OnIncomingInvalidation(
       syncer::ModelType type,
       scoped_ptr<InvalidationInterface> invalidation) OVERRIDE;

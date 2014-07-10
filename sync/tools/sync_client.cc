@@ -221,7 +221,7 @@ class InvalidatorShim : public InvalidationHandler {
       : sync_manager_(sync_manager) {}
 
   virtual void OnInvalidatorStateChange(InvalidatorState state) OVERRIDE {
-    sync_manager_->OnInvalidatorStateChange(state);
+    sync_manager_->SetInvalidatorEnabled(state == INVALIDATIONS_ENABLED);
   }
 
   virtual void OnIncomingInvalidation(

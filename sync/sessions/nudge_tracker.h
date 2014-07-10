@@ -13,6 +13,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "sync/base/sync_export.h"
+#include "sync/internal_api/public/base/invalidation_interface.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/protocol/sync.pb.h"
 #include "sync/sessions/data_type_tracker.h"

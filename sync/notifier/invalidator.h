@@ -11,6 +11,7 @@
 
 #include <string>
 
+#include "base/callback.h"
 #include "sync/base/sync_export.h"
 #include "sync/internal_api/public/base/invalidator_state.h"
 #include "sync/internal_api/public/base/model_type.h"
@@ -21,8 +22,8 @@ class InvalidationHandler;
 
 class SYNC_EXPORT Invalidator {
  public:
-  Invalidator() {}
-  virtual ~Invalidator() {}
+  Invalidator();
+  virtual ~Invalidator();
 
   // Clients should follow the pattern below:
   //

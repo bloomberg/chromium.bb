@@ -67,7 +67,7 @@ class FakeSyncManager : public SyncManager {
       scoped_ptr<InvalidationInterface> interface) OVERRIDE;
 
   // Posts a method to update the invalidator state on the sync thread.
-  virtual void OnInvalidatorStateChange(InvalidatorState state) OVERRIDE;
+  virtual void SetInvalidatorEnabled(bool invalidator_enabled) OVERRIDE;
 
   // Block until the sync thread has finished processing any pending messages.
   void WaitForSyncThread();

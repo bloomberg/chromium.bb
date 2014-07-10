@@ -18,8 +18,6 @@
 #include "sync/internal_api/public/http_post_provider_factory.h"
 #include "sync/internal_api/public/internal_components_factory.h"
 #include "sync/internal_api/public/util/weak_handle.h"
-#include "sync/notifier/invalidator.h"
-#include "sync/notifier/object_id_invalidation_map.h"
 #include "sync/syncable/directory.h"
 #include "sync/test/fake_sync_encryption_handler.h"
 
@@ -272,7 +270,7 @@ ModelTypeSet FakeSyncManager::GetLastRefreshRequestTypes() {
   return last_refresh_request_types_;
 }
 
-void FakeSyncManager::OnInvalidatorStateChange(InvalidatorState state) {
+void FakeSyncManager::SetInvalidatorEnabled(bool invalidator_enabled) {
   // Do nothing.
 }
 

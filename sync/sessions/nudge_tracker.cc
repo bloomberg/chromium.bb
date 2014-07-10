@@ -5,9 +5,6 @@
 #include "sync/sessions/nudge_tracker.h"
 
 #include "base/basictypes.h"
-#include "sync/internal_api/public/base/invalidation.h"
-#include "sync/notifier/invalidation_util.h"
-#include "sync/notifier/object_id_invalidation_map.h"
 #include "sync/protocol/sync.pb.h"
 
 namespace syncer {

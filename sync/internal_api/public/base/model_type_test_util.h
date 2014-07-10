@@ -8,25 +8,9 @@
 #include <ostream>
 
 #include "sync/internal_api/public/base/model_type.h"
-#include "sync/notifier/object_id_invalidation_map.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace syncer {
-
-// Builds an invaliation map that contains a single invalidation with specified
-// type, version, and payload.  The type will be converted from a ModelType to
-// and ObjectId.
-ObjectIdInvalidationMap BuildInvalidationMap(
-    ModelType type,
-    int version,
-    const std::string& payload);
-
-// Builds an invalidation.  Similar to Invalidation::Init, but its first
-// parameter is a ModelType rather than an ObjectId.
-syncer::Invalidation BuildInvalidation(
-    ModelType type,
-    int version,
-    const std::string& payload);
 
 // Defined for googletest.  Forwards to ModelTypeSetToString().
 void PrintTo(ModelTypeSet model_types, ::std::ostream* os);

@@ -45,8 +45,6 @@
 #include "sync/js/js_backend.h"
 #include "sync/js/js_event_handler.h"
 #include "sync/js/js_test_util.h"
-#include "sync/notifier/invalidation_handler.h"
-#include "sync/notifier/invalidator.h"
 #include "sync/protocol/bookmark_specifics.pb.h"
 #include "sync/protocol/encryption.pb.h"
 #include "sync/protocol/extension_specifics.pb.h"
@@ -979,7 +977,7 @@ class SyncManagerTest : public testing::Test,
 
   void SimulateInvalidatorStateChangeForTest(InvalidatorState state) {
     DCHECK(sync_manager_.thread_checker_.CalledOnValidThread());
-    sync_manager_.OnInvalidatorStateChange(state);
+    sync_manager_.SetInvalidatorEnabled(state == INVALIDATIONS_ENABLED);
   }
 
   void SetProgressMarkerForType(ModelType type, bool set) {

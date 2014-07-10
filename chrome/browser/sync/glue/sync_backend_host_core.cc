@@ -366,7 +366,7 @@ void SyncBackendHostCore::OnProtocolEvent(
 void SyncBackendHostCore::DoOnInvalidatorStateChange(
     syncer::InvalidatorState state) {
   DCHECK_EQ(base::MessageLoop::current(), sync_loop_);
-  sync_manager_->OnInvalidatorStateChange(state);
+  sync_manager_->SetInvalidatorEnabled(state == syncer::INVALIDATIONS_ENABLED);
 }
 
 void SyncBackendHostCore::DoOnIncomingInvalidation(

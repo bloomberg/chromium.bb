@@ -26,7 +26,6 @@
 #include "sync/internal_api/public/user_share.h"
 #include "sync/internal_api/sync_encryption_handler_impl.h"
 #include "sync/js/js_backend.h"
-#include "sync/notifier/invalidation_handler.h"
 #include "sync/syncable/directory_change_delegate.h"
 #include "sync/util/cryptographer.h"
 #include "sync/util/time.h"
@@ -104,7 +103,7 @@ class SYNC_EXPORT_PRIVATE SyncManagerImpl
       const ModelSafeRoutingInfo& new_routing_info,
       const base::Closure& ready_task,
       const base::Closure& retry_task) OVERRIDE;
-  virtual void OnInvalidatorStateChange(InvalidatorState state) OVERRIDE;
+  virtual void SetInvalidatorEnabled(bool invalidator_enabled) OVERRIDE;
   virtual void OnIncomingInvalidation(
       syncer::ModelType type,
       scoped_ptr<InvalidationInterface> invalidation) OVERRIDE;
@@ -213,8 +212,6 @@ class SYNC_EXPORT_PRIVATE SyncManagerImpl
  private:
   friend class SyncManagerTest;
   FRIEND_TEST_ALL_PREFIXES(SyncManagerTest, NudgeDelayTest);
-  FRIEND_TEST_ALL_PREFIXES(SyncManagerTest, OnNotificationStateChange);
-  FRIEND_TEST_ALL_PREFIXES(SyncManagerTest, OnIncomingNotification);
   FRIEND_TEST_ALL_PREFIXES(SyncManagerTest, PurgeDisabledTypes);
   FRIEND_TEST_ALL_PREFIXES(SyncManagerTest, PurgeUnappliedTypes);
 
@@ -345,8 +342,6 @@ class SYNC_EXPORT_PRIVATE SyncManagerImpl
   bool initialized_;
 
   bool observing_network_connectivity_changes_;
-
-  InvalidatorState invalidator_state_;
 
   // Map used to store the notification info to be displayed in
   // about:sync page.

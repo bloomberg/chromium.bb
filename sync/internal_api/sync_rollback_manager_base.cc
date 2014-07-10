@@ -128,7 +128,7 @@ void SyncRollbackManagerBase::ConfigureSyncer(
   ready_task.Run();
 }
 
-void SyncRollbackManagerBase::OnInvalidatorStateChange(InvalidatorState state) {
+void SyncRollbackManagerBase::SetInvalidatorEnabled(bool invalidator_enabled) {
 }
 
 void SyncRollbackManagerBase::OnIncomingInvalidation(
