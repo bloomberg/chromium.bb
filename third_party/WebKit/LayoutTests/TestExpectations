@@ -1224,6 +1224,7 @@ crbug.com/390204 [ Mac XP Debug ] inspector/console/console-viewport-selection.h
 crbug.com/374961 [ SnowLeopard Debug ] inspector/sources/debugger/frameworks-skip-step-in.html [ Crash ]
 crbug.com/374961 [ SnowLeopard Debug ] inspector/sources/debugger/frameworks-steppings.html [ Crash ]
 crbug.com/374961 [ SnowLeopard Debug ] inspector/sources/debugger/frameworks-with-async-callstack.html [ Crash ]
+crbug.com/374961 [ SnowLeopard Debug ] inspector/sources/debugger/async-callstack-get-as-string.html [ Crash ]
 
 # Ahem font is sometimes not loaded on Windows.
 crbug.com/392046 [ Win ] fast/inline/justify-emphasis-inline-box.html [ Pass Failure ]
@@ -1252,3 +1253,12 @@ crbug.com/391068 http/tests/websocket/workers/close-code-and-reason.html [ Timeo
 crbug.com/392095 webaudio/realtimeanalyser-fft-scaling.html [ Pass Failure ]
 
 crbug.com/392706 virtual/threaded/animations/play-state-initially-paused.html [ Failure ]
+
+# V8 3.28.19
+crbug.com/392762 fast/js/nested-object-gc.html [ Pass Crash ]
+
+# Linux switching to Clang (Chromium r282246).
+crbug.com/392764 [ Linux ] compositing/layer-creation/overlap-transformed-preserved-3d.html [ Failure ]
+crbug.com/392764 [ Linux ] virtual/softwarecompositing/layer-creation/overlap-transformed-preserved-3d.html [ Failure ]
+# Linux32 only. There seems to be no way to selectively specify Linux32, so marking as flaky (it actually isn't).
+crbug.com/392764 [ Linux ] webaudio/distance-linear.html [ Pass Failure ]
