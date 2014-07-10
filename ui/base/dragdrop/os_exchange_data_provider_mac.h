@@ -5,7 +5,10 @@
 #ifndef UI_BASE_DRAGDROP_OS_EXCHANGE_DATA_PROVIDER_MAC_H_
 #define UI_BASE_DRAGDROP_OS_EXCHANGE_DATA_PROVIDER_MAC_H_
 
+#import "base/mac/scoped_nsobject.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
+
+@class NSPasteboard;
 
 namespace ui {
 
@@ -14,6 +17,7 @@ class UI_BASE_EXPORT OSExchangeDataProviderMac
     : public OSExchangeData::Provider {
  public:
   OSExchangeDataProviderMac();
+  explicit OSExchangeDataProviderMac(NSPasteboard* pasteboard);
   virtual ~OSExchangeDataProviderMac();
 
   // Overridden from OSExchangeData::Provider:
@@ -42,6 +46,8 @@ class UI_BASE_EXPORT OSExchangeDataProviderMac
       const OSExchangeData::CustomFormat& format) const OVERRIDE;
 
  private:
+  base::scoped_nsobject<NSPasteboard> pasteboard_;
+
   DISALLOW_COPY_AND_ASSIGN(OSExchangeDataProviderMac);
 };
 

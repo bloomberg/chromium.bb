@@ -91,6 +91,7 @@ class UI_BASE_EXPORT Clipboard : NON_EXPORTED_BASE(public base::ThreadChecker) {
 #elif defined(USE_AURA)
     const std::string& ToString() const { return data_; }
 #elif defined(OS_MACOSX)
+    NSString* ToNSString() const { return data_; }
     // Custom copy and assignment constructor to handle NSString.
     FormatType(const FormatType& other);
     FormatType& operator=(const FormatType& other);
@@ -120,7 +121,6 @@ class UI_BASE_EXPORT Clipboard : NON_EXPORTED_BASE(public base::ThreadChecker) {
     std::string data_;
 #elif defined(OS_MACOSX)
     explicit FormatType(NSString* native_format);
-    NSString* ToNSString() const { return data_; }
     NSString* data_;
 #elif defined(OS_ANDROID)
     explicit FormatType(const std::string& native_format);

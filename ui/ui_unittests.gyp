@@ -171,9 +171,16 @@
         }],
         ['OS=="mac"',  {
           'dependencies': [
+            '../third_party/mozilla/mozilla.gyp:mozilla',
             'events/events.gyp:events_test_support',
             'gfx/gfx.gyp:gfx_test_support',
             'ui_unittests_bundle',
+          ],
+          'conditions': [
+            ['component=="static_library"', {
+              # Needed for mozilla.gyp.
+              'xcode_settings': {'OTHER_LDFLAGS': ['-Wl,-ObjC']},
+            }],
           ],
         }],
         ['use_aura==1 or toolkit_views==1',  {

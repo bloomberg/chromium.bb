@@ -4,19 +4,30 @@
 
 #include "ui/base/dragdrop/os_exchange_data_provider_mac.h"
 
+#import <Cocoa/Cocoa.h>
+
 #include "base/logging.h"
+#include "base/pickle.h"
+#include "base/strings/sys_string_conversions.h"
+#import "third_party/mozilla/NSPasteboard+Utils.h"
+#import "ui/base/dragdrop/cocoa_dnd_util.h"
+#include "url/gurl.h"
 
 namespace ui {
 
-OSExchangeDataProviderMac::OSExchangeDataProviderMac() {
+OSExchangeDataProviderMac::OSExchangeDataProviderMac()
+    : pasteboard_([[NSPasteboard pasteboardWithUniqueName] retain]) {
+}
+
+OSExchangeDataProviderMac::OSExchangeDataProviderMac(NSPasteboard* pasteboard)
+    : pasteboard_([pasteboard retain]) {
 }
 
 OSExchangeDataProviderMac::~OSExchangeDataProviderMac() {
 }
 
 OSExchangeData::Provider* OSExchangeDataProviderMac::Clone() const {
-  NOTIMPLEMENTED();
-  return new OSExchangeDataProviderMac();
+  return new OSExchangeDataProviderMac(pasteboard_);
 }
 
 void OSExchangeDataProviderMac::MarkOriginatedFromRenderer() {
@@ -29,12 +40,13 @@ bool OSExchangeDataProviderMac::DidOriginateFromRenderer() const {
 }
 
 void OSExchangeDataProviderMac::SetString(const base::string16& string) {
-  NOTIMPLEMENTED();
+  [pasteboard_ writeObjects:@[ base::SysUTF16ToNSString(string) ]];
 }
 
 void OSExchangeDataProviderMac::SetURL(const GURL& url,
                                        const base::string16& title) {
-  NOTIMPLEMENTED();
+  [pasteboard_ setDataForURL:base::SysUTF8ToNSString(url.spec())
+                       title:base::SysUTF16ToNSString(title)];
 }
 
 void OSExchangeDataProviderMac::SetFilename(const base::FilePath& path) {
@@ -49,20 +61,27 @@ void OSExchangeDataProviderMac::SetFilenames(
 void OSExchangeDataProviderMac::SetPickledData(
     const OSExchangeData::CustomFormat& format,
     const Pickle& data) {
-  NOTIMPLEMENTED();
+  NSData* ns_data = [NSData dataWithBytes:data.data() length:data.size()];
+  [pasteboard_ setData:ns_data forType:format.ToNSString()];
 }
 
 bool OSExchangeDataProviderMac::GetString(base::string16* data) const {
-  NOTIMPLEMENTED();
-  return false;
+  DCHECK(data);
+  NSArray* items = [pasteboard_ readObjectsForClasses:@[ [NSString class] ]
+                                              options:@{ }];
+  if ([items count] == 0)
+    return false;
+
+  *data = base::SysNSStringToUTF16([items objectAtIndex:0]);
+  return true;
 }
 
 bool OSExchangeDataProviderMac::GetURLAndTitle(
     OSExchangeData::FilenameToURLPolicy policy,
     GURL* url,
     base::string16* title) const {
-  NOTIMPLEMENTED();
-  return false;
+  return PopulateURLAndTitleFromPasteboard(
+      url, title, pasteboard_, policy == OSExchangeData::CONVERT_FILENAMES);
 }
 
 bool OSExchangeDataProviderMac::GetFilename(base::FilePath* path) const {
@@ -79,19 +98,25 @@ bool OSExchangeDataProviderMac::GetFilenames(
 bool OSExchangeDataProviderMac::GetPickledData(
     const OSExchangeData::CustomFormat& format,
     Pickle* data) const {
-  NOTIMPLEMENTED();
-  return false;
+  DCHECK(data);
+  NSData* ns_data = [pasteboard_ dataForType:format.ToNSString()];
+  if (!ns_data)
+    return false;
+
+  *data = Pickle(static_cast<const char*>([ns_data bytes]), [ns_data length]);
+  return true;
 }
 
 bool OSExchangeDataProviderMac::HasString() const {
-  NOTIMPLEMENTED();
-  return false;
+  NSArray* classes = @[ [NSString class] ];
+  return [pasteboard_ canReadObjectForClasses:classes options:nil];
 }
 
 bool OSExchangeDataProviderMac::HasURL(
     OSExchangeData::FilenameToURLPolicy policy) const {
-  NOTIMPLEMENTED();
-  return false;
+  GURL url;
+  base::string16 title;
+  return GetURLAndTitle(policy, &url, &title);
 }
 
 bool OSExchangeDataProviderMac::HasFile() const {
@@ -101,8 +126,7 @@ bool OSExchangeDataProviderMac::HasFile() const {
 
 bool OSExchangeDataProviderMac::HasCustomFormat(
     const OSExchangeData::CustomFormat& format) const {
-  NOTIMPLEMENTED();
-  return false;
+  return [[pasteboard_ types] containsObject:format.ToNSString()];
 }
 
 ///////////////////////////////////////////////////////////////////////////////
