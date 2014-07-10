@@ -53,6 +53,8 @@ group("root") {
     "//third_party/angle:translator",
     "//third_party/brotli",
     "//third_party/cacheinvalidation",
+    "//third_party/cld",
+    "//third_party/cld_2",
     "//third_party/ffmpeg",
     "//third_party/flac",
     "//third_party/harfbuzz-ng",
@@ -167,6 +169,7 @@ group("root") {
       "//third_party/WebKit/public:all_blink",
 
       # Not tested on Android yet:
+      "//third_party/cld_2",
       "//third_party/libaddressinput",
       "//third_party/ffmpeg",
       "//ui/web_dialogs",

@@ -5,6 +5,7 @@
 {
   'targets': [
     {
+      # GN version: //components/translate/core/browser
       'target_name': 'translate_core_browser',
       'type': 'static_library',
       'dependencies': [
@@ -25,6 +26,7 @@
         '..',
       ],
       'sources': [
+        # Note: sources list duplicated in GN build.
         'translate/core/browser/language_state.cc',
         'translate/core/browser/language_state.h',
         'translate/core/browser/options_menu_model.cc',
@@ -61,6 +63,7 @@
        ],
     },
     {
+      # GN version: //components/translate/core/common
       'target_name': 'translate_core_common',
       'type': 'static_library',
       'dependencies': [
@@ -71,6 +74,7 @@
         '..',
       ],
       'sources': [
+        # Note: sources list duplicated in GN build.
         'translate/core/common/translate_constants.cc',
         'translate/core/common/translate_constants.h',
         'translate/core/common/translate_errors.h',
@@ -87,6 +91,7 @@
       ],
     },
     {
+      # GN version: //components/translate/core/language_detection
       'target_name': 'translate_core_language_detection',
       'type': 'static_library',
       'dependencies': [
@@ -98,6 +103,7 @@
         '..',
       ],
       'sources': [
+        # Note: sources list duplicated in GN build.
         'translate/core/language_detection/language_detection_util.cc',
         'translate/core/language_detection/language_detection_util.h',
       ],
@@ -119,6 +125,7 @@
     ['OS != "ios"', {
       'targets': [
         {
+          # GN version: //components/translate/content/browser
           'target_name': 'translate_content_browser',
           'type': 'static_library',
           'dependencies': [
@@ -130,6 +137,7 @@
             '..',
           ],
           'sources': [
+            # Note: sources list duplicated in GN build.
             'translate/content/browser/browser_cld_data_provider.h',
             'translate/content/browser/content_translate_driver.cc',
             'translate/content/browser/content_translate_driver.h',
@@ -150,6 +158,7 @@
           ],
         },
         {
+          # GN version: //components/translate/content/common
           'target_name': 'translate_content_common',
           'type': 'static_library',
           'dependencies': [
@@ -163,6 +172,7 @@
             '..',
           ],
           'sources': [
+            # Note: sources list duplicated in GN build.
             'translate/content/common/translate_messages.cc',
             'translate/content/common/translate_messages.h',
            ],
@@ -176,6 +186,7 @@
            ],
         },
         {
+          # GN version: //components/translate/content/renderer
           'target_name': 'translate_content_renderer',
           'type': 'static_library',
           'dependencies': [
@@ -187,6 +198,7 @@
             '..',
           ],
           'sources': [
+            # Note: sources list duplicated in GN build.
             'translate/content/renderer/renderer_cld_data_provider.h',
            ],
           'conditions': [

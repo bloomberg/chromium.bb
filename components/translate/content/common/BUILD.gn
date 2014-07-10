@@ -1,0 +1,27 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//build/config/features.gni")
+
+static_library("common") {
+  sources = [
+    "translate_messages.cc",
+    "translate_messages.h",
+  ]
+
+  deps = [
+    "//base",
+    "//components/translate/core/common",
+    "//components/translate/core/language_detection",
+    "//content/public/common",
+    "//ipc",
+  ]
+
+  if (cld2_data_source == "standalone" || cld2_data_source == "component") {
+    sources += [
+      "data_file_cld_data_provider_messages.cc",
+      "data_file_cld_data_provider_messages.h",
+    ]
+  }
+}

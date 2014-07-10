@@ -1,0 +1,37 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+static_library("web_modal") {
+  sources = [
+    "modal_dialog_host.cc",
+    "modal_dialog_host.h",
+    "native_web_contents_modal_dialog.h",
+    "single_web_contents_dialog_manager.h",
+    "web_contents_modal_dialog_host.cc",
+    "web_contents_modal_dialog_host.h",
+    "web_contents_modal_dialog_manager.cc",
+    "web_contents_modal_dialog_manager.h",
+    "web_contents_modal_dialog_manager_delegate.cc",
+    "web_contents_modal_dialog_manager_delegate.h",
+  ]
+
+  deps = [
+    "//base",
+    "//content/public/browser",
+    "//skia",
+  ]
+}
+
+static_library("test_support") {
+  sources = [
+    "test_web_contents_modal_dialog_host.cc",
+    "test_web_contents_modal_dialog_host.h",
+    "test_web_contents_modal_dialog_manager_delegate.cc",
+    "test_web_contents_modal_dialog_manager_delegate.h",
+  ]
+
+  deps = [
+    ":web_modal",
+  ]
+}

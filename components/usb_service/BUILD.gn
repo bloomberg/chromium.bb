@@ -1,0 +1,37 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+component("usb_service") {
+  sources = [
+    "usb_context.cc",
+    "usb_context.h",
+    "usb_device_impl.cc",
+    "usb_device_impl.h",
+    "usb_device.h",
+    "usb_device_handle_impl.cc",
+    "usb_device_handle_impl.h",
+    "usb_device_handle.h",
+    "usb_error.cc",
+    "usb_error.h",
+    "usb_interface.h",
+    "usb_interface_impl.cc",
+    "usb_interface_impl.h",
+    "usb_service.h",
+    "usb_service_impl.cc",
+  ]
+
+  defines = [ "USB_SERVICE_IMPLEMENTATION" ]
+
+  deps = [
+    "//base",
+    "//base/third_party/dynamic_annotations",
+    "//content/public/browser",
+    "//net",
+    "//third_party/libusb",
+  ]
+
+  if (is_linux) {
+    configs += [ "//build/config/linux:udev" ]
+  }
+}

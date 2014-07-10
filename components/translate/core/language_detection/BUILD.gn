@@ -1,0 +1,25 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//build/config/features.gni")
+
+static_library("language_detection") {
+  sources = [
+    "language_detection_util.cc",
+    "language_detection_util.h",
+  ]
+
+  deps = [
+    "//base",
+    "//components/translate/core/common",
+    "//url",
+  ]
+
+  if (cld_version == 0 || cld_version == 1) {
+    deps += [ "//third_party/cld" ]
+  }
+  if (cld_version == 0 || cld_version == 2) {
+    deps += [ "//third_party/cld_2" ]
+  }
+}

@@ -31,7 +31,6 @@ static_library("common") {
 
   deps = [
     ":version",
-    #":installer_util",  TODO(GYP)
     "//base:base",
     "//base:i18n",
     "//base:prefs",
@@ -42,17 +41,15 @@ static_library("common") {
     "//chrome/common:constants",
     "//chrome/common/net",
     "//chrome/common/safe_browsing:proto",
-    #"//components/cloud_devices:common",  TODO(GYP)
-    #"//components/json_schema",  TODO(GYP)
-    "//components/metrics",  
-    #"//components/components.gyp:policy_component_common",  TODO(GYP)
-    "//components/translate:translate_core_common",
+    "//components/cloud_devices/common",
+    "//components/metrics",
+    "//components/policy:policy_component_common",
+    "//components/translate/core/common",
     "//components/variations",
     "//content/public/common",
     "//crypto",
     "//extensions:extensions_resources",
     "//extensions/strings",
-    #"//media/cast/cast.gyp:cast_transport",  TODO(GYP)
     "//net",
     "//skia",
     "//third_party/icu",
@@ -61,24 +58,27 @@ static_library("common") {
     "//third_party/zlib:zip",
     "//ui/resources:resources",
     "//url",
+    #":installer_util",  TODO(GYP)
+    #"//components/json_schema",  TODO(GYP)
+    #"//media/cast/cast.gyp:cast_transport",  TODO(GYP)
   ]
 
   if (!is_ios) {
     deps += [
       "//chrome/common/extensions/api",
-      #'<(DEPTH)/components/components.gyp:autofill_core_common',  TODO(GYP)
-      #'<(DEPTH)/components/components.gyp:autofill_content_common',  TODO(GYP)
-      #'<(DEPTH)/components/components.gyp:password_manager_core_common',  TODO(GYP)
-      #'<(DEPTH)/components/components.gyp:signin_core_common',  TODO(GYP)
-      #'<(DEPTH)/components/components.gyp:translate_content_common',  TODO(GYP)
-      #'<(DEPTH)/components/nacl.gyp:nacl_common',  TODO(GYP)
       "//components/visitedlink/common",
-      #'<(DEPTH)/extensions/common/api/api.gyp:extensions_api',  TODO(GYP)
-      #'<(DEPTH)/extensions/extensions.gyp:extensions_common',  TODO(GYP)
+      "//components/autofill/content/common",
+      "//components/autofill/core/common",
+      "//components/translate/content/common",
       "//ipc",
       "//third_party/adobe/flash:flapper_version_h",
       "//third_party/re2",
       "//third_party/widevine/cdm:version_h",
+      #'<(DEPTH)/components/components.gyp:password_manager_core_common',  TODO(GYP)
+      #'<(DEPTH)/components/components.gyp:signin_core_common',  TODO(GYP)
+      #'<(DEPTH)/components/nacl.gyp:nacl_common',  TODO(GYP)
+      #'<(DEPTH)/extensions/common/api/api.gyp:extensions_api',  TODO(GYP)
+      #'<(DEPTH)/extensions/extensions.gyp:extensions_common',  TODO(GYP)
     ]
   }
 

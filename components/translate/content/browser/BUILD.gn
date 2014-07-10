@@ -1,0 +1,31 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//build/config/features.gni")
+
+static_library("browser") {
+  sources = [
+    "browser_cld_data_provider.h",
+    "content_translate_driver.cc",
+    "content_translate_driver.h",
+  ]
+
+  deps = [
+    "//base",
+    "//components/translate/core/browser",
+    "//content/public/browser",
+  ]
+
+  if (cld2_data_source == "standalone" || cld2_data_source == "component") {
+    sources += [
+      "data_file_browser_cld_data_provider.cc",
+      "data_file_browser_cld_data_provider.h",
+    ]
+  } else if (cld2_data_source == "static") {
+    sources += [
+      "static_browser_cld_data_provider.cc",
+      "static_browser_cld_data_provider.h",
+    ]
+  }
+}

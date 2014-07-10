@@ -1,0 +1,33 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//build/config/features.gni")
+
+static_library("renderer") {
+  sources = [
+    "renderer_cld_data_provider.h",
+  ]
+
+  deps = [
+    "//base",
+    "//content/public/common",
+    "//ipc",
+  ]
+
+  if (cld_version == 0 || cld_version == 2) {
+    deps += [ "//third_party/cld_2" ]
+  }
+
+  if (cld2_data_source == "standalone" || cld2_data_source == "component") {
+    sources += [
+      "data_file_renderer_cld_data_provider.cc",
+      "data_file_renderer_cld_data_provider.h",
+    ]
+  } else if (cld2_data_source == "static") {
+    sources += [
+      "static_renderer_cld_data_provider.cc",
+      "static_renderer_cld_data_provider.h",
+    ]
+  }
+}

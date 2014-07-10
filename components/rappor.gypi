@@ -5,6 +5,7 @@
 {
   'targets': [
     {
+      # GN version: //components/rappor
       'target_name': 'rappor',
       'type': 'static_library',
       'include_dirs': [
@@ -19,6 +20,7 @@
         'variations',
       ],
       'sources': [
+        # Note: sources list duplicated in GN build.
         'rappor/bloom_filter.cc',
         'rappor/bloom_filter.h',
         'rappor/byte_vector_utils.cc',

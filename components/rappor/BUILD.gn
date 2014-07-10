@@ -1,0 +1,32 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+static_library("rappor") {
+  sources = [
+    "bloom_filter.cc",
+    "bloom_filter.h",
+    "byte_vector_utils.cc",
+    "byte_vector_utils.h",
+    "log_uploader.cc",
+    "log_uploader.h",
+    "rappor_metric.cc",
+    "rappor_metric.h",
+    "rappor_parameters.cc",
+    "rappor_parameters.h",
+    "rappor_pref_names.cc",
+    "rappor_pref_names.h",
+    "rappor_service.cc",
+    "rappor_service.h",
+  ]
+
+  deps = [
+    "//base",
+    "//components/metrics",
+    "//components/rappor/proto",
+    "//components/variations",
+    "//crypto",
+    "//net",
+    "//third_party/smhasher:cityhash",
+  ]
+}

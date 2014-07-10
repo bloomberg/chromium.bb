@@ -17,6 +17,7 @@
 {
   'targets': [
     {
+      # GN version: //third_party/cld_2:cld_2_dynamic_data_tool
       'target_name': 'cld_2_dynamic_data_tool',
       'type': 'executable',
       'include_dirs': [
@@ -24,6 +25,7 @@
         'src/public',
       ],
       'sources': [
+        # Note: sources list duplicated in GN build.
         'src/internal/cld2_dynamic_data.h',
         'src/internal/cld2_dynamic_data.cc',
         'src/internal/cld2_dynamic_data_extractor.h',
@@ -104,6 +106,7 @@
       ],
     },
     {
+      # GN version: //third_party/cld_2
       'target_name': 'cld_2',
       'type': 'static_library',
       'include_dirs': [
@@ -111,6 +114,7 @@
         'src/public',
       ],
       'sources': [
+        # Note: sources list duplicated in GN build.
         'src/internal/cld2tablesummary.h',
         'src/internal/cldutil.cc',
         'src/internal/cldutil.h',

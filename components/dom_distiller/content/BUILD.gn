@@ -21,7 +21,11 @@ if (!is_ios) {
       "//content/public/browser",
       "//net",
       "//skia",
-     #'../sync/sync.gyp:sync',  TODO(GYP)
+      "//sync",
+    ]
+
+    forward_dependent_configs_from = [
+      "//components/dom_distiller/core",
     ]
   }
 }

@@ -4,6 +4,7 @@
 
 {
   'targets': [{
+    # GN version: //components/usb_service
     'target_name': 'usb_service',
     'type': '<(component)',
     'dependencies': [
@@ -20,6 +21,7 @@
       '..',
     ],
     'sources': [
+      # Note: sources list duplicated in GN build.
       'usb_service/usb_context.cc',
       'usb_service/usb_context.h',
       'usb_service/usb_device_impl.cc',

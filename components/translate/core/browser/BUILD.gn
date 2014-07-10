@@ -1,0 +1,42 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+static_library("browser") {
+  sources = [
+    "language_state.cc",
+    "language_state.h",
+    "page_translated_details.h",
+    "translate_accept_languages.cc",
+    "translate_accept_languages.h",
+    "translate_browser_metrics.cc",
+    "translate_browser_metrics.h",
+    "translate_client.h",
+    "translate_download_manager.cc",
+    "translate_download_manager.h",
+    "translate_driver.h",
+    "translate_error_details.h",
+    "translate_event_details.cc",
+    "translate_event_details.h",
+    "translate_language_list.cc",
+    "translate_language_list.h",
+    "translate_prefs.cc",
+    "translate_prefs.h",
+    "translate_script.cc",
+    "translate_script.h",
+    "translate_url_fetcher.cc",
+    "translate_url_fetcher.h",
+    "translate_url_util.cc",
+    "translate_url_util.h",
+  ]
+
+  deps = [
+    "//base",
+    "//components/language_usage_metrics",
+    "//components/resources:components_resources",
+    "//components/translate/core/common",
+    "//net",
+    "//ui/base",
+    "//url",
+  ]
+}

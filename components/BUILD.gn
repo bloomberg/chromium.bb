@@ -8,10 +8,14 @@ group("all_components") {
   visibility = "//:*"  # Only for the root targets to bring in.
 
   deps = [
+    "//components/autocomplete",
     "//components/autofill/content/browser",
     "//components/autofill/content/common",
     "//components/autofill/content/renderer",
+    "//components/captive_portal",
     "//components/cloud_devices/common",
+    "//components/data_reduction_proxy/browser",
+    "//components/data_reduction_proxy/common",
     "//components/dom_distiller/core",
     "//components/domain_reliability",
     "//components/favicon_base",
@@ -28,19 +32,25 @@ group("all_components") {
     "//components/policy",
     "//components/pref_registry",
     "//components/query_parser",
+    "//components/rappor",
     "//components/resources:components_resources",
     "//components/startup_metric_utils",
     "//components/strings",
     "//components/tracing",
-    "//components/translate:translate_core_browser",
-    "//components/translate:translate_core_common",
+    "//components/translate/content/browser",
+    "//components/translate/content/common",
+    "//components/translate/content/renderer",
+    "//components/translate/core/browser",
+    "//components/translate/core/common",
     "//components/url_fixer",
     "//components/url_matcher",
+    "//components/usb_service",
     "//components/user_prefs",
     "//components/variations",
     "//components/visitedlink/browser",
     "//components/visitedlink/common",
-    "//components/visitedlink/renderer",  # Blocked on blink
+    "//components/visitedlink/renderer",
+    "//components/web_modal",
   ]
 
   if (is_win || is_mac) {
@@ -55,10 +65,14 @@ group("all_components") {
 
   if (is_android) {
     deps -= [
+      "//components/autocomplete",  # Should work, needs checking.
       "//components/autofill/content/browser",  # Blocked on content/blink.
       "//components/autofill/content/common",  # Blocked on content.
       "//components/autofill/content/renderer",  # Blocked on content/blink.
+      "//components/captive_portal",  # Should work, needs checking.
       "//components/cloud_devices/common",  # Should work, needs checking.
+      "//components/data_reduction_proxy/browser",  # Should work, needs checking.
+      "//components/data_reduction_proxy/common",  # Should work, needs checking.
       "//components/dom_distiller/core",  # Blocked on content.
       "//components/domain_reliability",  # Blocked on content.
       "//components/favicon_base",  # Should work, needs checking.
@@ -69,10 +83,16 @@ group("all_components") {
       "//components/json_schema",  # Should work, needs checking.
       "//components/keyed_service/content",  # Blocked on content.
       "//components/policy",  # Blocked on content (indirectly via autofill).
+      "//components/rappor",  # Should work, needs checking.
+      "//components/translate/content/browser",  # Blocked on content.
+      "//components/translate/content/common",  # Blocked on content.
+      "//components/translate/content/renderer",  # Blocked on content.
+      "//components/usb_service",  # Blocked on content.
       "//components/user_prefs",  # Blocked on content.
       "//components/visitedlink/browser",  # Blocked on content.
       "//components/visitedlink/common",  # Blocked on content.
       "//components/visitedlink/renderer",  # Blocked on blink
+      "//components/web_modal",  # Blocked on content.
     ]
   }
 }

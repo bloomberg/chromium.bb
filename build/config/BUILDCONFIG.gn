@@ -318,6 +318,7 @@ _native_compiler_configs = [
 
   "//build/config/compiler:compiler",
   "//build/config/compiler:chromium_code",
+  "//build/config/compiler:default_include_dirs",
   "//build/config/compiler:default_warnings",
   "//build/config/compiler:no_rtti",
   "//build/config/compiler:runtime_library",

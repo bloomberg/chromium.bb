@@ -5,6 +5,7 @@
 {
   'targets': [
     {
+      # GN version: //components/captive_portal
       'target_name': 'captive_portal',
       'type': '<(component)',
       'dependencies': [
@@ -19,6 +20,7 @@
         'CAPTIVE_PORTAL_IMPLEMENTATION',
       ],
       'sources': [
+        # Note: sources list duplicated in GN build.
         'captive_portal/captive_portal_detector.cc',
         'captive_portal/captive_portal_detector.h',
         'captive_portal/captive_portal_types.cc',
@@ -27,6 +29,7 @@
       ],
     },
     {
+      # GN version: //components/captive_portal:test_support
       'target_name': 'captive_portal_test_support',
       'type': 'static_library',
       'dependencies': [
@@ -36,6 +39,7 @@
         '../url/url.gyp:url_lib',
       ],
       'sources': [
+        # Note: sources list duplicated in GN build.
         'captive_portal/captive_portal_testing_utils.cc',
         'captive_portal/captive_portal_testing_utils.h',
       ],
