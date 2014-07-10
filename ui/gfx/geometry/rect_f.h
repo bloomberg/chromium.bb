@@ -5,6 +5,7 @@
 #ifndef UI_GFX_GEOMETRY_RECT_F_H_
 #define UI_GFX_GEOMETRY_RECT_F_H_
 
+#include <iosfwd>
 #include <string>
 
 #include "ui/gfx/geometry/point_f.h"
@@ -107,6 +108,11 @@ GFX_EXPORT RectF BoundingRect(const PointF& p1, const PointF& p2);
 #if !defined(COMPILER_MSVC)
 extern template class RectBase<RectF, PointF, SizeF, InsetsF, Vector2dF, float>;
 #endif
+
+// This is declared here for use in gtest-based unit tests but is defined in
+// the gfx_test_support target. Depend on that to use this in your unit test.
+// This should not be used in production code - call ToString() instead.
+void PrintTo(const RectF& rect, ::std::ostream* os);
 
 }  // namespace gfx
 

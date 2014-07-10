@@ -414,6 +414,7 @@
     },
     {
       'target_name': 'gfx_test_support',
+      'type': 'static_library',
       'sources': [
         'test/gfx_util.cc',
         'test/gfx_util.h',
@@ -433,15 +434,7 @@
             ],
           },
         }],
-        ['OS!="ios"', {
-          'type': 'static_library',
-        }, {  # OS=="ios"
-          # None of the sources in this target are built on iOS, resulting in
-          # link errors when building targets that depend on this target
-          # because the static library isn't found. If this target is changed
-          # to have sources that are built on iOS, the target should be changed
-          # to be of type static_library on all platforms.
-          'type': 'none',
+        ['OS=="ios"', {
           # The cocoa files don't apply to iOS.
           'sources/': [
             ['exclude', 'cocoa']

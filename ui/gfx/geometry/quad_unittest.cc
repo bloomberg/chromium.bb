@@ -20,34 +20,34 @@ TEST(QuadTest, Construction) {
   QuadF q2(e, e, e, e);
   QuadF q3(a, b, c, d);
   QuadF q4(BoundingRect(a, c));
-  EXPECT_EQ(q1.ToString(), q2.ToString());
-  EXPECT_EQ(q3.ToString(), q4.ToString());
+  EXPECT_EQ(q1, q2);
+  EXPECT_EQ(q3, q4);
 
   // Verify getters.
-  EXPECT_EQ(q3.p1().ToString(), a.ToString());
-  EXPECT_EQ(q3.p2().ToString(), b.ToString());
-  EXPECT_EQ(q3.p3().ToString(), c.ToString());
-  EXPECT_EQ(q3.p4().ToString(), d.ToString());
+  EXPECT_EQ(q3.p1(), a);
+  EXPECT_EQ(q3.p2(), b);
+  EXPECT_EQ(q3.p3(), c);
+  EXPECT_EQ(q3.p4(), d);
 
   // Verify setters.
   q3.set_p1(b);
   q3.set_p2(c);
   q3.set_p3(d);
   q3.set_p4(a);
-  EXPECT_EQ(q3.p1().ToString(), b.ToString());
-  EXPECT_EQ(q3.p2().ToString(), c.ToString());
-  EXPECT_EQ(q3.p3().ToString(), d.ToString());
-  EXPECT_EQ(q3.p4().ToString(), a.ToString());
+  EXPECT_EQ(q3.p1(), b);
+  EXPECT_EQ(q3.p2(), c);
+  EXPECT_EQ(q3.p3(), d);
+  EXPECT_EQ(q3.p4(), a);
 
   // Verify operator=(Rect)
-  EXPECT_NE(q1.ToString(), q4.ToString());
+  EXPECT_NE(q1, q4);
   q1 = BoundingRect(a, c);
-  EXPECT_EQ(q1.ToString(), q4.ToString());
+  EXPECT_EQ(q1, q4);
 
   // Verify operator=(Quad)
-  EXPECT_NE(q1.ToString(), q3.ToString());
+  EXPECT_NE(q1, q3);
   q1 = q3;
-  EXPECT_EQ(q1.ToString(), q3.ToString());
+  EXPECT_EQ(q1, q3);
 }
 
 TEST(QuadTest, AddingVectors) {
@@ -64,8 +64,8 @@ TEST(QuadTest, AddingVectors) {
                   PointF(5.5f, -1.5f),
                   PointF(5.5f, -0.5f),
                   PointF(4.5f, -0.5f));
-  EXPECT_EQ(expected1.ToString(), added.ToString());
-  EXPECT_EQ(expected1.ToString(), q1.ToString());
+  EXPECT_EQ(expected1, added);
+  EXPECT_EQ(expected1, q1);
 
   QuadF q2(a, b, c, d);
   QuadF subtracted = q2 - v;
@@ -74,14 +74,14 @@ TEST(QuadTest, AddingVectors) {
                   PointF(-1.5f, 3.5f),
                   PointF(-1.5f, 4.5f),
                   PointF(-2.5f, 4.5f));
-  EXPECT_EQ(expected2.ToString(), subtracted.ToString());
-  EXPECT_EQ(expected2.ToString(), q2.ToString());
+  EXPECT_EQ(expected2, subtracted);
+  EXPECT_EQ(expected2, q2);
 
   QuadF q3(a, b, c, d);
   q3 += v;
   q3 -= v;
-  EXPECT_EQ(QuadF(a, b, c, d).ToString(), q3.ToString());
-  EXPECT_EQ(q3.ToString(), (q3 + v - v).ToString());
+  EXPECT_EQ(QuadF(a, b, c, d), q3);
+  EXPECT_EQ(q3, (q3 + v - v));
 }
 
 TEST(QuadTest, IsRectilinear) {
@@ -237,7 +237,7 @@ TEST(QuadTest, IsCounterClockwise) {
 
 TEST(QuadTest, BoundingBox) {
   RectF r(3.2f, 5.4f, 7.007f, 12.01f);
-  EXPECT_EQ(r.ToString(), QuadF(r).BoundingBox().ToString());
+  EXPECT_EQ(r, QuadF(r).BoundingBox());
 
   PointF a(1.3f, 1.4f);
   PointF b(-0.7f, 4.9f);
@@ -247,8 +247,8 @@ TEST(QuadTest, BoundingBox) {
   float top = 1.4f;
   float right = 2.1f;
   float bottom = 6.2f;
-  EXPECT_EQ(RectF(left, top, right - left, bottom - top).ToString(),
-            QuadF(a, b, c, d).BoundingBox().ToString());
+  EXPECT_EQ(RectF(left, top, right - left, bottom - top),
+            QuadF(a, b, c, d).BoundingBox());
 }
 
 TEST(QuadTest, ContainsPoint) {
@@ -348,12 +348,11 @@ TEST(QuadTest, Scale) {
   PointF b_scaled = ScalePoint(b, 1.5f);
   PointF c_scaled = ScalePoint(c, 1.5f);
   PointF d_scaled = ScalePoint(d, 1.5f);
-  EXPECT_EQ(q1.ToString(),
-            QuadF(a_scaled, b_scaled, c_scaled, d_scaled).ToString());
+  EXPECT_EQ(q1, QuadF(a_scaled, b_scaled, c_scaled, d_scaled));
 
   QuadF q2;
   q2.Scale(1.5f);
-  EXPECT_EQ(q2.ToString(), q2.ToString());
+  EXPECT_EQ(q2, q2);
 }
 
 }  // namespace gfx

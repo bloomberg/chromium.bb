@@ -5,6 +5,7 @@
 #ifndef UI_GFX_GEOMETRY_SIZE_H_
 #define UI_GFX_GEOMETRY_SIZE_H_
 
+#include <iosfwd>
 #include <string>
 
 #include "base/compiler_specific.h"
@@ -61,6 +62,11 @@ inline bool operator!=(const Size& lhs, const Size& rhs) {
 #if !defined(COMPILER_MSVC)
 extern template class SizeBase<Size, int>;
 #endif
+
+// This is declared here for use in gtest-based unit tests but is defined in
+// the gfx_test_support target. Depend on that to use this in your unit test.
+// This should not be used in production code - call ToString() instead.
+void PrintTo(const Size& size, ::std::ostream* os);
 
 }  // namespace gfx
 

@@ -401,6 +401,7 @@ test("gfx_unittests") {
 
   deps = [
     ":gfx",
+    ":gfx_test_support",
     "//base",
     "//base/test:test_support",
     "//testing/gtest",

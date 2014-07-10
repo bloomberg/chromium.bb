@@ -11,7 +11,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/box_f.h"
-
+#include "ui/gfx/geometry/rect_f.h"
 
 namespace gfx {
 
@@ -23,6 +23,14 @@ namespace gfx {
                                                const char* rhs_expr,
                                                const BoxF& lhs,
                                                const BoxF& rhs);
+
+#define EXPECT_RECTF_EQ(a, b) \
+  EXPECT_PRED_FORMAT2(::gfx::AssertRectFloatEqual, a, b)
+
+::testing::AssertionResult AssertRectFloatEqual(const char* lhs_expr,
+                                                const char* rhs_expr,
+                                                const RectF& lhs,
+                                                const RectF& rhs);
 
 #define EXPECT_SKCOLOR_EQ(a, b) \
   EXPECT_PRED_FORMAT2(::gfx::AssertSkColorsEqual, a, b)

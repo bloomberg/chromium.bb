@@ -5,6 +5,9 @@
 #ifndef UI_GFX_GEOMETRY_POINT_H_
 #define UI_GFX_GEOMETRY_POINT_H_
 
+#include <iosfwd>
+#include <string>
+
 #include "ui/gfx/geometry/point_base.h"
 #include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/geometry/vector2d.h"
@@ -84,6 +87,11 @@ inline Point PointAtOffsetFromOrigin(const Vector2d& offset_from_origin) {
 #if !defined(COMPILER_MSVC)
 extern template class PointBase<Point, int, Vector2d>;
 #endif
+
+// This is declared here for use in gtest-based unit tests but is defined in
+// the gfx_test_support target. Depend on that to use this in your unit test.
+// This should not be used in production code - call ToString() instead.
+void PrintTo(const Point& point, ::std::ostream* os);
 
 }  // namespace gfx
 

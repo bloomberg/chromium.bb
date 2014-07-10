@@ -8,6 +8,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_conversions.h"
+#include "ui/gfx/test/gfx_util.h"
 
 #if defined(OS_WIN)
 #include <windows.h>
@@ -228,64 +229,64 @@ TEST(RectTest, Subtract) {
   // Matching
   result = Rect(10, 10, 20, 20);
   result.Subtract(Rect(10, 10, 20, 20));
-  EXPECT_EQ(Rect(0, 0, 0, 0).ToString(), result.ToString());
+  EXPECT_EQ(Rect(0, 0, 0, 0), result);
 
   // Contains
   result = Rect(10, 10, 20, 20);
   result.Subtract(Rect(5, 5, 30, 30));
-  EXPECT_EQ(Rect(0, 0, 0, 0).ToString(), result.ToString());
+  EXPECT_EQ(Rect(0, 0, 0, 0), result);
 
   // No intersection
   result = Rect(10, 10, 20, 20);
   result.Subtract(Rect(30, 30, 30, 30));
-  EXPECT_EQ(Rect(10, 10, 20, 20).ToString(), result.ToString());
+  EXPECT_EQ(Rect(10, 10, 20, 20), result);
 
   // Not a complete intersection in either direction
   result = Rect(10, 10, 20, 20);
   result.Subtract(Rect(15, 15, 20, 20));
-  EXPECT_EQ(Rect(10, 10, 20, 20).ToString(), result.ToString());
+  EXPECT_EQ(Rect(10, 10, 20, 20), result);
 
   // Complete intersection in the x-direction, top edge is fully covered.
   result = Rect(10, 10, 20, 20);
   result.Subtract(Rect(10, 15, 20, 20));
-  EXPECT_EQ(Rect(10, 10, 20, 5).ToString(), result.ToString());
+  EXPECT_EQ(Rect(10, 10, 20, 5), result);
 
   // Complete intersection in the x-direction, top edge is fully covered.
   result = Rect(10, 10, 20, 20);
   result.Subtract(Rect(5, 15, 30, 20));
-  EXPECT_EQ(Rect(10, 10, 20, 5).ToString(), result.ToString());
+  EXPECT_EQ(Rect(10, 10, 20, 5), result);
 
   // Complete intersection in the x-direction, bottom edge is fully covered.
   result = Rect(10, 10, 20, 20);
   result.Subtract(Rect(5, 5, 30, 20));
-  EXPECT_EQ(Rect(10, 25, 20, 5).ToString(), result.ToString());
+  EXPECT_EQ(Rect(10, 25, 20, 5), result);
 
   // Complete intersection in the x-direction, none of the edges is fully
   // covered.
   result = Rect(10, 10, 20, 20);
   result.Subtract(Rect(5, 15, 30, 1));
-  EXPECT_EQ(Rect(10, 10, 20, 20).ToString(), result.ToString());
+  EXPECT_EQ(Rect(10, 10, 20, 20), result);
 
   // Complete intersection in the y-direction, left edge is fully covered.
   result = Rect(10, 10, 20, 20);
   result.Subtract(Rect(10, 10, 10, 30));
-  EXPECT_EQ(Rect(20, 10, 10, 20).ToString(), result.ToString());
+  EXPECT_EQ(Rect(20, 10, 10, 20), result);
 
   // Complete intersection in the y-direction, left edge is fully covered.
   result = Rect(10, 10, 20, 20);
   result.Subtract(Rect(5, 5, 20, 30));
-  EXPECT_EQ(Rect(25, 10, 5, 20).ToString(), result.ToString());
+  EXPECT_EQ(Rect(25, 10, 5, 20), result);
 
   // Complete intersection in the y-direction, right edge is fully covered.
   result = Rect(10, 10, 20, 20);
   result.Subtract(Rect(20, 5, 20, 30));
-  EXPECT_EQ(Rect(10, 10, 10, 20).ToString(), result.ToString());
+  EXPECT_EQ(Rect(10, 10, 10, 20), result);
 
   // Complete intersection in the y-direction, none of the edges is fully
   // covered.
   result = Rect(10, 10, 20, 20);
   result.Subtract(Rect(15, 5, 1, 30));
-  EXPECT_EQ(Rect(10, 10, 20, 20).ToString(), result.ToString());
+  EXPECT_EQ(Rect(10, 10, 20, 20), result);
 }
 
 TEST(RectTest, IsEmpty) {
@@ -569,13 +570,13 @@ TEST(RectTest, ToEnclosingRect) {
 
 TEST(RectTest, ToNearestRect) {
   Rect rect;
-  EXPECT_EQ(rect.ToString(), ToNearestRect(RectF(rect)).ToString());
+  EXPECT_EQ(rect, ToNearestRect(RectF(rect)));
 
   rect = Rect(-1, -1, 3, 3);
-  EXPECT_EQ(rect.ToString(), ToNearestRect(RectF(rect)).ToString());
+  EXPECT_EQ(rect, ToNearestRect(RectF(rect)));
 
   RectF rectf(-1.00001f, -0.999999f, 3.0000001f, 2.999999f);
-  EXPECT_EQ(rect.ToString(), ToNearestRect(rectf).ToString());
+  EXPECT_EQ(rect, ToNearestRect(rectf));
 }
 
 TEST(RectTest, ToFlooredRect) {
@@ -651,7 +652,7 @@ TEST(RectTest, ScaleToEnclosedRect) {
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(tests); ++i) {
     Rect result = ScaleToEnclosedRect(tests[i].input_rect,
                                       tests[i].input_scale);
-    EXPECT_EQ(tests[i].expected_rect.ToString(), result.ToString());
+    EXPECT_EQ(tests[i].expected_rect, result);
   }
 }
 
@@ -695,7 +696,7 @@ TEST(RectTest, ScaleToEnclosingRect) {
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(tests); ++i) {
     Rect result = ScaleToEnclosingRect(tests[i].input_rect,
                                        tests[i].input_scale);
-    EXPECT_EQ(tests[i].expected_rect.ToString(), result.ToString());
+    EXPECT_EQ(tests[i].expected_rect, result);
   }
 }
 
@@ -714,7 +715,7 @@ TEST(RectTest, ToRectF) {
   RectF b(10, 20, 30, 40);
 
   RectF intersect = IntersectRects(a, b);
-  EXPECT_EQ(b.ToString(), intersect.ToString());
+  EXPECT_EQ(b, intersect);
 
   EXPECT_EQ(a, b);
   EXPECT_EQ(b, a);
@@ -744,7 +745,7 @@ TEST(RectTest, BoundingRect) {
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(int_tests); ++i) {
     Rect actual = BoundingRect(int_tests[i].a, int_tests[i].b);
-    EXPECT_EQ(int_tests[i].expected.ToString(), actual.ToString());
+    EXPECT_EQ(int_tests[i].expected, actual);
   }
 
   struct {
@@ -781,7 +782,7 @@ TEST(RectTest, BoundingRect) {
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(float_tests); ++i) {
     RectF actual = BoundingRect(float_tests[i].a, float_tests[i].b);
-    EXPECT_EQ(float_tests[i].expected.ToString(), actual.ToString());
+    EXPECT_RECTF_EQ(float_tests[i].expected, actual);
   }
 }
 
@@ -818,40 +819,37 @@ TEST(RectTest, IsExpressibleAsRect) {
 TEST(RectTest, Offset) {
   Rect i(1, 2, 3, 4);
 
-  EXPECT_EQ(Rect(2, 1, 3, 4).ToString(), (i + Vector2d(1, -1)).ToString());
-  EXPECT_EQ(Rect(2, 1, 3, 4).ToString(), (Vector2d(1, -1) + i).ToString());
+  EXPECT_EQ(Rect(2, 1, 3, 4), (i + Vector2d(1, -1)));
+  EXPECT_EQ(Rect(2, 1, 3, 4), (Vector2d(1, -1) + i));
   i += Vector2d(1, -1);
-  EXPECT_EQ(Rect(2, 1, 3, 4).ToString(), i.ToString());
-  EXPECT_EQ(Rect(1, 2, 3, 4).ToString(), (i - Vector2d(1, -1)).ToString());
+  EXPECT_EQ(Rect(2, 1, 3, 4), i);
+  EXPECT_EQ(Rect(1, 2, 3, 4), (i - Vector2d(1, -1)));
   i -= Vector2d(1, -1);
-  EXPECT_EQ(Rect(1, 2, 3, 4).ToString(), i.ToString());
+  EXPECT_EQ(Rect(1, 2, 3, 4), i);
 
   RectF f(1.1f, 2.2f, 3.3f, 4.4f);
-  EXPECT_EQ(RectF(2.2f, 1.1f, 3.3f, 4.4f).ToString(),
-            (f + Vector2dF(1.1f, -1.1f)).ToString());
-  EXPECT_EQ(RectF(2.2f, 1.1f, 3.3f, 4.4f).ToString(),
-            (Vector2dF(1.1f, -1.1f) + f).ToString());
+  EXPECT_EQ(RectF(2.2f, 1.1f, 3.3f, 4.4f), (f + Vector2dF(1.1f, -1.1f)));
+  EXPECT_EQ(RectF(2.2f, 1.1f, 3.3f, 4.4f), (Vector2dF(1.1f, -1.1f) + f));
   f += Vector2dF(1.1f, -1.1f);
-  EXPECT_EQ(RectF(2.2f, 1.1f, 3.3f, 4.4f).ToString(), f.ToString());
-  EXPECT_EQ(RectF(1.1f, 2.2f, 3.3f, 4.4f).ToString(),
-            (f - Vector2dF(1.1f, -1.1f)).ToString());
+  EXPECT_EQ(RectF(2.2f, 1.1f, 3.3f, 4.4f), f);
+  EXPECT_EQ(RectF(1.1f, 2.2f, 3.3f, 4.4f), (f - Vector2dF(1.1f, -1.1f)));
   f -= Vector2dF(1.1f, -1.1f);
-  EXPECT_EQ(RectF(1.1f, 2.2f, 3.3f, 4.4f).ToString(), f.ToString());
+  EXPECT_EQ(RectF(1.1f, 2.2f, 3.3f, 4.4f), f);
 }
 
 TEST(RectTest, Corners) {
   Rect i(1, 2, 3, 4);
   RectF f(1.1f, 2.1f, 3.1f, 4.1f);
 
-  EXPECT_EQ(Point(1, 2).ToString(), i.origin().ToString());
-  EXPECT_EQ(Point(4, 2).ToString(), i.top_right().ToString());
-  EXPECT_EQ(Point(1, 6).ToString(), i.bottom_left().ToString());
-  EXPECT_EQ(Point(4, 6).ToString(), i.bottom_right().ToString());
+  EXPECT_EQ(Point(1, 2), i.origin());
+  EXPECT_EQ(Point(4, 2), i.top_right());
+  EXPECT_EQ(Point(1, 6), i.bottom_left());
+  EXPECT_EQ(Point(4, 6), i.bottom_right());
 
-  EXPECT_EQ(PointF(1.1f, 2.1f).ToString(), f.origin().ToString());
-  EXPECT_EQ(PointF(4.2f, 2.1f).ToString(), f.top_right().ToString());
-  EXPECT_EQ(PointF(1.1f, 6.2f).ToString(), f.bottom_left().ToString());
-  EXPECT_EQ(PointF(4.2f, 6.2f).ToString(), f.bottom_right().ToString());
+  EXPECT_EQ(PointF(1.1f, 2.1f), f.origin());
+  EXPECT_EQ(PointF(4.2f, 2.1f), f.top_right());
+  EXPECT_EQ(PointF(1.1f, 6.2f), f.bottom_left());
+  EXPECT_EQ(PointF(4.2f, 6.2f), f.bottom_right());
 }
 
 TEST(RectTest, ManhattanDistanceToPoint) {

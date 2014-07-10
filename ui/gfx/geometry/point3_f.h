@@ -5,6 +5,7 @@
 #ifndef UI_GFX_GEOMETRY_POINT3_F_H_
 #define UI_GFX_GEOMETRY_POINT3_F_H_
 
+#include <iosfwd>
 #include <string>
 
 #include "ui/gfx/geometry/point_f.h"
@@ -114,6 +115,11 @@ inline Point3F ScalePoint(const Point3F& p,
 inline Point3F ScalePoint(const Point3F& p, float scale) {
   return ScalePoint(p, scale, scale, scale);
 }
+
+// This is declared here for use in gtest-based unit tests but is defined in
+// the gfx_test_support target. Depend on that to use this in your unit test.
+// This should not be used in production code - call ToString() instead.
+void PrintTo(const Point3F& point, ::std::ostream* os);
 
 }  // namespace gfx
 

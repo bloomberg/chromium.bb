@@ -5,6 +5,9 @@
 #ifndef UI_GFX_GEOMETRY_BOX_F_H_
 #define UI_GFX_GEOMETRY_BOX_F_H_
 
+#include <iosfwd>
+#include <string>
+
 #include "ui/gfx/geometry/point3_f.h"
 #include "ui/gfx/geometry/vector3d_f.h"
 
@@ -154,6 +157,11 @@ inline BoxF operator+(const BoxF& b, const Vector3dF& v) {
               b.height(),
               b.depth());
 }
+
+// This is declared here for use in gtest-based unit tests but is defined in
+// the gfx_test_support target. Depend on that to use this in your unit test.
+// This should not be used in production code - call ToString() instead.
+void PrintTo(const BoxF& box, ::std::ostream* os);
 
 }  // namespace gfx
 

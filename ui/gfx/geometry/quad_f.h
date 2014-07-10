@@ -7,6 +7,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <iosfwd>
 #include <string>
 
 #include "ui/gfx/geometry/point_f.h"
@@ -103,6 +104,11 @@ GFX_EXPORT QuadF operator+(const QuadF& lhs, const Vector2dF& rhs);
 // Subtract a vector from a quad, offseting each point in the quad by the
 // inverse of the vector.
 GFX_EXPORT QuadF operator-(const QuadF& lhs, const Vector2dF& rhs);
+
+// This is declared here for use in gtest-based unit tests but is defined in
+// the gfx_test_support target. Depend on that to use this in your unit test.
+// This should not be used in production code - call ToString() instead.
+void PrintTo(const QuadF& quad, ::std::ostream* os);
 
 }  // namespace gfx
 

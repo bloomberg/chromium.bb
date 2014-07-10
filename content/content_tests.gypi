@@ -1331,10 +1331,11 @@
             '../testing/gtest.gyp:gtest',
             '../third_party/WebKit/public/blink.gyp:blink',
             '../ui/base/ui_base.gyp:ui_base',
-            '../v8/tools/gyp/v8.gyp:v8',
             '../ui/gfx/gfx.gyp:gfx',
             '../ui/gfx/gfx.gyp:gfx_geometry',
+            '../ui/gfx/gfx.gyp:gfx_test_support',
             '../ui/gl/gl.gyp:gl',
+            '../v8/tools/gyp/v8.gyp:v8',
             # The following dependency provides the missing symbol
             # HeapProfilerStart in Linux component builds.
             '../webkit/child/webkit_child.gyp:webkit_child',
@@ -1391,6 +1392,7 @@
               '../testing/gtest.gyp:gtest',
               '../ui/base/ui_base.gyp:ui_base',
               '../ui/gfx/gfx.gyp:gfx',
+              '../ui/gfx/gfx.gyp:gfx_test_support',
               '../ui/gfx/gfx.gyp:gfx_geometry',
               '../ui/gl/gl.gyp:gl',
               'content.gyp:content',
@@ -1489,6 +1491,7 @@
             '../ui/base/ui_base.gyp:ui_base',
             '../ui/gfx/gfx.gyp:gfx',
             '../ui/gfx/gfx.gyp:gfx_geometry',
+            '../ui/gfx/gfx.gyp:gfx_test_support',
             '../ui/gl/gl.gyp:gl',
             'content.gyp:content',
           ],

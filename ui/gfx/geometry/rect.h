@@ -13,6 +13,7 @@
 #define UI_GFX_GEOMETRY_RECT_H_
 
 #include <cmath>
+#include <iosfwd>
 #include <string>
 
 #include "ui/gfx/geometry/point.h"
@@ -133,6 +134,11 @@ inline Rect ScaleToEnclosedRect(const Rect& rect, float scale) {
 #if !defined(COMPILER_MSVC)
 extern template class RectBase<Rect, Point, Size, Insets, Vector2d, int>;
 #endif
+
+// This is declared here for use in gtest-based unit tests but is defined in
+// the gfx_test_support target. Depend on that to use this in your unit test.
+// This should not be used in production code - call ToString() instead.
+void PrintTo(const Rect& rect, ::std::ostream* os);
 
 }  // namespace gfx
 

@@ -10,6 +10,7 @@
 #ifndef UI_GFX_GEOMETRY_VECTOR2D_F_H_
 #define UI_GFX_GEOMETRY_VECTOR2D_F_H_
 
+#include <iosfwd>
 #include <string>
 
 #include "ui/gfx/gfx_export.h"
@@ -106,6 +107,11 @@ GFX_EXPORT Vector2dF ScaleVector2d(const Vector2dF& v,
 inline Vector2dF ScaleVector2d(const Vector2dF& v, float scale) {
   return ScaleVector2d(v, scale, scale);
 }
+
+// This is declared here for use in gtest-based unit tests but is defined in
+// the gfx_test_support target. Depend on that to use this in your unit test.
+// This should not be used in production code - call ToString() instead.
+void PrintTo(const Vector2dF& vector, ::std::ostream* os);
 
 }  // namespace gfx
 
