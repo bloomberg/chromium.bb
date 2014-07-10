@@ -252,8 +252,7 @@ if (!{{method.cpp_value}})
     return;
 {% elif method.is_constructor %}
 {{method.cpp_type}} impl = {{cpp_value}};
-{% elif method.is_call_with_script_state or method.is_raises_exception %}
-{# FIXME: consider always using a local variable #}
+{% elif method.use_local_result and not method.union_arguments %}
 {{method.cpp_type}} result = {{cpp_value}};
 {% endif %}
 {# Post-call #}
@@ -269,7 +268,14 @@ if (exceptionState.hadException()) {
 {%- elif method.union_arguments %}
 {{union_type_method_call_and_set_return_value(method)}}
 {%- elif v8_set_return_value %}
+{% if method.is_nullable %}
+if (result.isNull())
+    v8SetReturnValueNull(info);
+else
+    {{v8_set_return_value}};
+{% else %}
 {{v8_set_return_value}};
+{% endif %}
 {%- endif %}{# None for void #}
 {# Post-set #}
 {% if interface_name == 'EventTarget' and method.name in ('addEventListener',

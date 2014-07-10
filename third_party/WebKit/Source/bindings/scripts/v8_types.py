@@ -721,3 +721,17 @@ def literal_cpp_value(idl_type, idl_literal):
     return literal_value
 
 IdlType.literal_cpp_value = literal_cpp_value
+
+
+def is_nullable_simple(idl_type):
+    # Nullable type where the corresponding C++ type supports a null value.
+    # - String types (String/AtomicString) represent null as a null string,
+    #   i.e. one for which String::isNull() returns true.
+    # - Wrapper types (raw pointer or RefPtr/PassRefPtr) represent null as
+    #   a null pointer.
+    return idl_type.is_nullable and (
+        (idl_type.is_string_type or idl_type.is_wrapper_type) and
+        not idl_type.native_array_element_type)
+
+IdlType.is_nullable_simple = property(is_nullable_simple)
+IdlUnionType.is_nullable_simple = False

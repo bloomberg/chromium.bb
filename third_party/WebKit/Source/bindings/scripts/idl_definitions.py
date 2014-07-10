@@ -769,7 +769,8 @@ def type_node_inner_to_type(node, is_array=False, is_nullable=False):
     elif node_class == 'Sequence':
         if is_array:
             raise ValueError('Arrays of sequences are not supported')
-        return sequence_node_to_type(node, is_nullable=is_nullable)
+        sequence_is_nullable = node.GetProperty('NULLABLE') or False
+        return sequence_node_to_type(node, is_nullable=sequence_is_nullable)
     elif node_class == 'UnionType':
         if is_array:
             raise ValueError('Arrays of unions are not supported')

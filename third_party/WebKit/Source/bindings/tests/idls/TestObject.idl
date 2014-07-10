@@ -360,6 +360,10 @@ interface TestObject {
     void voidMethodSequenceStringArg(sequence<DOMString> stringSequenceArg);
     void voidMethodSequenceTestInterfaceEmptyArg(sequence<TestInterfaceEmpty> testInterfaceEmptySequenceArg);
     // Nullable types
+    long? nullableLongMethod();
+    DOMString? nullableStringMethod();
+    TestInterface? nullableTestInterfaceMethod();
+    sequence<long>? nullableLongSequenceMethod();
     // Currently only used on interface type arguments
     void voidMethodTestInterfaceEmptyOrNullArg(TestInterfaceEmpty? nullableTestInterfaceEmptyArg);
     // Callback interface types
