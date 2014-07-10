@@ -164,7 +164,8 @@ void DisplayConfigurator::SetDelegatesForTesting(
   DCHECK(!native_display_delegate_);
   DCHECK(!touchscreen_delegate_);
 
-  InitializeDelegates(display_delegate.Pass(), touchscreen_delegate.Pass());
+  native_display_delegate_ = display_delegate.Pass();
+  touchscreen_delegate_ = touchscreen_delegate.Pass();
   configure_display_ = true;
 }
 
@@ -179,18 +180,15 @@ void DisplayConfigurator::Init(bool is_panel_fitting_enabled) {
   if (!configure_display_)
     return;
 
-  PlatformInitialize();
-}
-
-void DisplayConfigurator::InitializeDelegates(
-    scoped_ptr<NativeDisplayDelegate> display_delegate,
-    scoped_ptr<TouchscreenDelegate> touchscreen_delegate) {
-  if (!native_display_delegate_ && !touchscreen_delegate_) {
-    native_display_delegate_ = display_delegate.Pass();
-    touchscreen_delegate_ = touchscreen_delegate.Pass();
-
+  // If the delegates are already initialized don't update them (For example,
+  // tests set their own delegates).
+  if (!native_display_delegate_) {
+    native_display_delegate_ = CreatePlatformNativeDisplayDelegate();
     native_display_delegate_->AddObserver(this);
   }
+
+  if (!touchscreen_delegate_)
+    touchscreen_delegate_ = CreatePlatformTouchscreenDelegate();
 }
 
 void DisplayConfigurator::ForceInitialConfigure(

@@ -10,12 +10,16 @@
 
 namespace ui {
 
-void DisplayConfigurator::PlatformInitialize() {
-  InitializeDelegates(
-      scoped_ptr<NativeDisplayDelegate>(new NativeDisplayDelegateX11()),
-      scoped_ptr<TouchscreenDelegate>(new TouchscreenDelegateImpl(
-          scoped_ptr<TouchscreenDeviceManager>(
-              new TouchscreenDeviceManagerX11()))));
+scoped_ptr<NativeDisplayDelegate>
+DisplayConfigurator::CreatePlatformNativeDisplayDelegate() {
+  return scoped_ptr<NativeDisplayDelegate>(new NativeDisplayDelegateX11());
+}
+
+scoped_ptr<DisplayConfigurator::TouchscreenDelegate>
+DisplayConfigurator::CreatePlatformTouchscreenDelegate() {
+  return scoped_ptr<TouchscreenDelegate>(new TouchscreenDelegateImpl(
+      scoped_ptr<TouchscreenDeviceManager>(
+          new TouchscreenDeviceManagerX11())));
 }
 
 }  // namespace ui

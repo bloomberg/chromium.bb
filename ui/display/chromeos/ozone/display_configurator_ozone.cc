@@ -11,11 +11,15 @@
 
 namespace ui {
 
-void DisplayConfigurator::PlatformInitialize() {
-  InitializeDelegates(
-      ui::OzonePlatform::GetInstance()->CreateNativeDisplayDelegate(),
-      scoped_ptr<TouchscreenDelegate>(new TouchscreenDelegateImpl(
-          ui::OzonePlatform::GetInstance()->CreateTouchscreenDeviceManager())));
+scoped_ptr<NativeDisplayDelegate>
+DisplayConfigurator::CreatePlatformNativeDisplayDelegate() {
+  return ui::OzonePlatform::GetInstance()->CreateNativeDisplayDelegate();
+}
+
+scoped_ptr<DisplayConfigurator::TouchscreenDelegate>
+DisplayConfigurator::CreatePlatformTouchscreenDelegate() {
+  return scoped_ptr<TouchscreenDelegate>(new TouchscreenDelegateImpl(
+      ui::OzonePlatform::GetInstance()->CreateTouchscreenDeviceManager()));
 }
 
 }  // namespace ui

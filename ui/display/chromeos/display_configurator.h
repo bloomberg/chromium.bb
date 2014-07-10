@@ -255,14 +255,9 @@ class DISPLAY_EXPORT DisplayConfigurator : public NativeDisplayObserver {
   typedef std::map<ContentProtectionClientId, ContentProtections>
       ProtectionRequests;
 
-  // If |native_display_delegate_| and |touchscreen_delegate_| are not set, then
-  // set them to the passed in values.
-  void InitializeDelegates(
-      scoped_ptr<NativeDisplayDelegate> display_delegate,
-      scoped_ptr<TouchscreenDelegate> touchscreen_delegate);
-
   // Performs platform specific delegate initialization.
-  void PlatformInitialize();
+  scoped_ptr<NativeDisplayDelegate> CreatePlatformNativeDisplayDelegate();
+  scoped_ptr<TouchscreenDelegate> CreatePlatformTouchscreenDelegate();
 
   // Updates |cached_displays_| to contain currently-connected displays. Calls
   // |delegate_->GetDisplays()| and then does additional work, like finding the
