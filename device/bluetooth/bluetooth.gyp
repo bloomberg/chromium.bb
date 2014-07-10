@@ -110,6 +110,7 @@
                   # Despite MSDN stating that Bthprops.dll contains the
                   # symbols declared by bthprops.lib, they actually reside here:
                   'Bthprops.cpl',
+                  'setupapi.dll',
                 ],
               },
             },
