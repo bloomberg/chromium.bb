@@ -14,7 +14,6 @@
 #include "content/public/browser/cookie_store_factory.h"
 
 namespace chrome_browser_net {
-class HttpServerPropertiesManager;
 class Predictor;
 }  // namespace chrome_browser_net
 
@@ -29,6 +28,7 @@ class DomainReliabilityMonitor;
 namespace net {
 class FtpTransactionFactory;
 class HttpServerProperties;
+class HttpServerPropertiesManager;
 class HttpTransactionFactory;
 class SDCHManager;
 }  // namespace net
@@ -211,8 +211,7 @@ class ProfileImplIOData : public ProfileIOData {
 
   // Same as |ProfileIOData::http_server_properties_|, owned there to maintain
   // destruction ordering.
-  mutable chrome_browser_net::HttpServerPropertiesManager*
-    http_server_properties_manager_;
+  mutable net::HttpServerPropertiesManager* http_server_properties_manager_;
 
   mutable scoped_ptr<chrome_browser_net::Predictor> predictor_;
 

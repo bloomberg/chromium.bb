@@ -37,7 +37,7 @@
 #include "chrome/browser/media/media_stream_devices_controller.h"
 #include "chrome/browser/metrics/chrome_metrics_service_client.h"
 #include "chrome/browser/metrics/variations/variations_service.h"
-#include "chrome/browser/net/http_server_properties_manager.h"
+#include "chrome/browser/net/http_server_properties_manager_factory.h"
 #include "chrome/browser/net/net_pref_observer.h"
 #include "chrome/browser/net/prediction_options.h"
 #include "chrome/browser/net/predictor.h"
@@ -96,6 +96,7 @@
 #include "components/translate/core/browser/translate_prefs.h"
 #include "content/public/browser/render_process_host.h"
 #include "extensions/browser/extension_prefs.h"
+#include "net/http/http_server_properties_manager.h"
 
 #if defined(ENABLE_AUTOFILL_DIALOG)
 #include "chrome/browser/ui/autofill/autofill_dialog_controller.h"
@@ -352,7 +353,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   sync_driver::SyncPrefs::RegisterProfilePrefs(registry);
   ChromeContentBrowserClient::RegisterProfilePrefs(registry);
   ChromeVersionService::RegisterProfilePrefs(registry);
-  chrome_browser_net::HttpServerPropertiesManager::RegisterProfilePrefs(
+  chrome_browser_net::HttpServerPropertiesManagerFactory::RegisterProfilePrefs(
       registry);
   chrome_browser_net::Predictor::RegisterProfilePrefs(registry);
   chrome_browser_net::RegisterPredictionOptionsProfilePrefs(registry);
