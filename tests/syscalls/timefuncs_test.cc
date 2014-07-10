@@ -199,13 +199,13 @@ int TestNanoSleep(struct timespec *t_suspend) {
 }
 
 /*
- * function testSuite()
+ * function TestSuite()
  *
  *   Run through a complete sequence of file tests.
  *
- * returns true if all tests succeed.  false if one or more fail.
+ * Returns the number of failed tests.
  */
-bool TestSuite() {
+int TestSuite() {
   int fail_count = 0;
 
   fail_count += TestTimeFuncs();
