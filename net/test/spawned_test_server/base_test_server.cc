@@ -165,8 +165,7 @@ const char BaseTestServer::kLocalhost[] = "127.0.0.1";
 BaseTestServer::BaseTestServer(Type type, const std::string& host)
     : type_(type),
       started_(false),
-      log_to_console_(false),
-      ws_basic_auth_(false) {
+      log_to_console_(false) {
   Init(host);
 }
 
@@ -174,8 +173,7 @@ BaseTestServer::BaseTestServer(Type type, const SSLOptions& ssl_options)
     : ssl_options_(ssl_options),
       type_(type),
       started_(false),
-      log_to_console_(false),
-      ws_basic_auth_(false) {
+      log_to_console_(false) {
   DCHECK(UsingSSL(type));
   Init(GetHostname(type, ssl_options));
 }
@@ -385,11 +383,6 @@ bool BaseTestServer::GenerateArguments(base::DictionaryValue* arguments) const {
 
   if (VLOG_IS_ON(1) || log_to_console_)
     arguments->Set("log-to-console", base::Value::CreateNullValue());
-
-  if (ws_basic_auth_) {
-    DCHECK(type_ == TYPE_WS || type_ == TYPE_WSS);
-    arguments->Set("ws-basic-auth", base::Value::CreateNullValue());
-  }
 
   if (UsingSSL(type_)) {
     // Check the certificate arguments of the HTTPS server.

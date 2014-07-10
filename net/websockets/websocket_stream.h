@@ -10,10 +10,8 @@
 
 #include "base/basictypes.h"
 #include "base/callback_forward.h"
-#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
-#include "base/time/time.h"
 #include "net/base/completion_callback.h"
 #include "net/base/net_export.h"
 #include "net/websockets/websocket_event_interface.h"
@@ -199,16 +197,6 @@ class NET_EXPORT_PRIVATE WebSocketStream {
  private:
   DISALLOW_COPY_AND_ASSIGN(WebSocketStream);
 };
-
-// A helper function used in the implementation of CreateAndConnectStream() and
-// WebSocketBasicHandshakeStream. It creates a WebSocketHandshakeResponseInfo
-// object and dispatches it to the OnFinishOpeningHandshake() method of the
-// supplied |connect_delegate|.
-void WebSocketDispatchOnFinishOpeningHandshake(
-    WebSocketStream::ConnectDelegate* connect_delegate,
-    const GURL& gurl,
-    const scoped_refptr<HttpResponseHeaders>& headers,
-    base::Time response_time);
 
 }  // namespace net
 

@@ -19,11 +19,6 @@ Multiple tests may share one resource, or URI handler.
      content::TitleWatcher.
      Used by WorkerTest.WebSocketSharedWorker.
 
-- connect_to.html : A page which makes a connection to the WebSocket server
-     specified in the "url" parameter,
-     eg. connect_to.html?url=ws://localhost/echo Sets the title to "PASS" if
-     connection succeeds and "FAIL" otherwise.
-
 - websocket_worker_simple.js : A JavaScript runs on Workers created from the
      websocket_shared_worker.html.
      Used by WorkerTest.WebSocketSharedWorker.

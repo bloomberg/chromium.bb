@@ -10,7 +10,6 @@
 #include "base/metrics/sparse_histogram.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_request_headers.h"
-#include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
@@ -134,18 +133,7 @@ class StreamRequestImpl : public WebSocketStreamRequest {
           break;
       }
     }
-    ReportFailureWithMessage(failure_message_);
-  }
-
-  void ReportFailureWithMessage(const std::string& failure_message) {
-    connect_delegate_->OnFailure(failure_message);
-  }
-
-  void OnFinishOpeningHandshake() {
-    WebSocketDispatchOnFinishOpeningHandshake(connect_delegate(),
-                                              url_request_.url(),
-                                              url_request_.response_headers(),
-                                              url_request_.response_time());
+    connect_delegate_->OnFailure(failure_message_);
   }
 
   WebSocketStream::ConnectDelegate* connect_delegate() const {
@@ -210,16 +198,7 @@ void Delegate::OnResponseStarted(URLRequest* request) {
       return;
 
     case HTTP_UNAUTHORIZED:
-      result_ = FAILED;
-      owner_->OnFinishOpeningHandshake();
-      owner_->ReportFailureWithMessage(
-          "HTTP Authentication failed; no valid credentials available");
-      return;
-
     case HTTP_PROXY_AUTHENTICATION_REQUIRED:
-      result_ = FAILED;
-      owner_->OnFinishOpeningHandshake();
-      owner_->ReportFailureWithMessage("Proxy authentication failed");
       return;
 
     default:
@@ -304,22 +283,6 @@ scoped_ptr<WebSocketStreamRequest> CreateAndConnectStreamForTesting(
                             create_helper.Pass()));
   request->Start();
   return request.PassAs<WebSocketStreamRequest>();
-}
-
-void WebSocketDispatchOnFinishOpeningHandshake(
-    WebSocketStream::ConnectDelegate* connect_delegate,
-    const GURL& url,
-    const scoped_refptr<HttpResponseHeaders>& headers,
-    base::Time response_time) {
-  DCHECK(connect_delegate);
-  if (headers) {
-    connect_delegate->OnFinishOpeningHandshake(make_scoped_ptr(
-        new WebSocketHandshakeResponseInfo(url,
-                                           headers->response_code(),
-                                           headers->GetStatusText(),
-                                           headers,
-                                           response_time)));
-  }
 }
 
 }  // namespace net
