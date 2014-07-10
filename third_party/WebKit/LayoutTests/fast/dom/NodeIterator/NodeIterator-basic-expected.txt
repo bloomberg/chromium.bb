@@ -2,8 +2,7 @@ CONSOLE WARNING: 'NodeIterator.expandEntityReferences' is deprecated and has bee
 This test checks the basic functionality of NodeIterator.
 
 This is a testharness.js-based test.
-PASS Construct a NodeIterator by document.createNodeIterator(root). 
-PASS Construct a NodeIterator by document.createNodeIterator(root, undefined, undefined). 
+PASS Construct a NodeIterator by document.createNodeIterator(). 
 PASS Give an invalid root node to document.createNodeIterator(). 
 PASS Iterate over all nodes forward then backward. 
 PASS Iterate over all elements forward then backward. 

@@ -2,8 +2,7 @@ CONSOLE WARNING: 'TreeWalker.expandEntityReferences' is deprecated and has been 
 This test checks the basic functionality of TreeWalker.
 
 This is a testharness.js-based test.
-PASS Construct a TreeWalker by document.createTreeWalker(root). 
-PASS Construct a TreeWalker by document.createTreeWalker(root, undefined, undefined). 
+PASS Construct a TreeWalker by document.createTreeWalker(). 
 PASS Give an invalid root node to document.createTreeWalker(). 
 PASS Walk over nodes. 
 PASS Test that the fourth argument (expandEntityReferences) is ignored. 

@@ -70,7 +70,7 @@ static void {{method.name}}{{method.overload_index}}Method{{world_suffix}}(const
     {% endif %}
     {% for argument in method.arguments %}
     {% if argument.default_value %}
-    if (!info[{{argument.index}}]->IsUndefined()) {
+    if (info.Length() > {{argument.index}}) {
         {{generate_argument(method, argument, world_suffix) | indent(8)}}
     } else {
         {{argument.name}} = {{argument.default_value}};
