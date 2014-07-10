@@ -127,11 +127,6 @@ class MEDIA_EXPORT AudioRendererImpl
   // DecodedAudioReady().
   void HandleAbortedReadOrDecodeError(bool is_decode_error);
 
-  // Estimate earliest time when current buffer can stop playing.
-  void UpdateEarliestEndTime_Locked(int frames_filled,
-                                    const base::TimeDelta& playback_delay,
-                                    const base::TimeTicks& time_now);
-
   void StartRendering_Locked();
   void StopRendering_Locked();
 
@@ -256,23 +251,6 @@ class MEDIA_EXPORT AudioRendererImpl
   scoped_ptr<AudioClock> audio_clock_;
 
   base::TimeDelta start_timestamp_;
-
-  // We're supposed to know amount of audio data OS or hardware buffered, but
-  // that is not always so -- on my Linux box
-  // AudioBuffersState::hardware_delay_bytes never reaches 0.
-  //
-  // As a result we cannot use it to find when stream ends. If we just ignore
-  // buffered data we will notify host that stream ended before it is actually
-  // did so, I've seen it done ~140ms too early when playing ~150ms file.
-  //
-  // Instead of trying to invent OS-specific solution for each and every OS we
-  // are supporting, use simple workaround: every time we fill the buffer we
-  // remember when it should stop playing, and do not assume that buffer is
-  // empty till that time. Workaround is not bulletproof, as we don't exactly
-  // know when that particular data would start playing, but it is much better
-  // than nothing.
-  base::TimeTicks earliest_end_time_;
-  size_t total_frames_filled_;
 
   // End variables which must be accessed under |lock_|. ----------------------
 

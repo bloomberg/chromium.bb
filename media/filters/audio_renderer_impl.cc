@@ -97,7 +97,6 @@ void AudioRendererImpl::StartRendering_Locked() {
   DCHECK_NE(algorithm_->playback_rate(), 0);
   lock_.AssertAcquired();
 
-  earliest_end_time_ = now_cb_.Run();
   sink_playing_ = true;
 
   base::AutoUnlock auto_unlock(lock_);
@@ -179,7 +178,6 @@ void AudioRendererImpl::ResetDecoderDone() {
     if (buffering_state_ != BUFFERING_HAVE_NOTHING)
       SetBufferingState_Locked(BUFFERING_HAVE_NOTHING);
 
-    earliest_end_time_ = now_cb_.Run();
     splicer_->Reset();
     if (buffer_converter_)
       buffer_converter_->Reset();
@@ -581,10 +579,7 @@ int AudioRendererImpl::Render(AudioBus* audio_bus,
     //   1) Algorithm can not fill the audio callback buffer
     //   2) We received an end of stream buffer
     //   3) We haven't already signalled that we've ended
-    //   4) Our estimated earliest end time has expired
-    //
-    // TODO(enal): we should replace (4) with a check that the browser has no
-    // more audio data or at least use a delayed callback.
+    //   4) We've played all known audio data sent to hardware
     //
     // We use the following conditions to determine underflow:
     //   1) Algorithm can not fill the audio callback buffer
@@ -602,10 +597,9 @@ int AudioRendererImpl::Render(AudioBus* audio_bus,
     audio_clock_->WroteSilence(requested_frames - frames_written, delay_frames);
 
     if (frames_written == 0) {
-      const base::TimeTicks now = now_cb_.Run();
-
       if (received_end_of_stream_ && !rendered_end_of_stream_ &&
-          now >= earliest_end_time_) {
+          audio_clock_->CurrentMediaTimestamp() ==
+              audio_clock_->last_endpoint_timestamp()) {
         rendered_end_of_stream_ = true;
         ended_cb_.Run();
       } else if (!received_end_of_stream_ && state_ == kPlaying) {
@@ -613,10 +607,6 @@ int AudioRendererImpl::Render(AudioBus* audio_bus,
           algorithm_->IncreaseQueueCapacity();
           SetBufferingState_Locked(BUFFERING_HAVE_NOTHING);
         }
-      } else {
-        // We can't write any data this cycle. For example, we may have
-        // sent all available data to the audio device while not reaching
-        // |earliest_end_time_|.
       }
     }
 
@@ -635,11 +625,6 @@ int AudioRendererImpl::Render(AudioBus* audio_bus,
                            audio_clock_->CurrentMediaTimestamp(),
                            audio_clock_->last_endpoint_timestamp());
     }
-
-    if (frames_written > 0) {
-      UpdateEarliestEndTime_Locked(
-          frames_written, playback_delay, now_cb_.Run());
-    }
   }
 
   if (!time_cb.is_null())
@@ -647,20 +632,6 @@ int AudioRendererImpl::Render(AudioBus* audio_bus,
 
   DCHECK_LE(frames_written, requested_frames);
   return frames_written;
-}
-
-void AudioRendererImpl::UpdateEarliestEndTime_Locked(
-    int frames_filled, const base::TimeDelta& playback_delay,
-    const base::TimeTicks& time_now) {
-  DCHECK_GT(frames_filled, 0);
-
-  base::TimeDelta predicted_play_time = base::TimeDelta::FromMicroseconds(
-      static_cast<float>(frames_filled) * base::Time::kMicrosecondsPerSecond /
-      audio_parameters_.sample_rate());
-
-  lock_.AssertAcquired();
-  earliest_end_time_ = std::max(
-      earliest_end_time_, time_now + playback_delay + predicted_play_time);
 }
 
 void AudioRendererImpl::OnRenderError() {
