@@ -3122,6 +3122,7 @@ bool GLES2DecoderImpl::CheckFramebufferValid(
       bool reset_draw_buffer = false;
       if ((backbuffer_needs_clear_bits_ | GL_COLOR_BUFFER_BIT) != 0 &&
           group_->draw_buffer() == GL_NONE) {
+        DCHECK(gfx::g_driver_gl.ext.b_GL_ARB_draw_buffers);
         reset_draw_buffer = true;
         GLenum buf = GL_BACK;
         if (GetBackbufferServiceId() != 0)  // emulated backbuffer
