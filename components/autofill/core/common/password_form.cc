@@ -39,8 +39,8 @@ bool PasswordForm::operator==(const PasswordForm& form) const {
       password_element == form.password_element &&
       password_value == form.password_value &&
       password_autocomplete_set == form.password_autocomplete_set &&
-      old_password_element == form.old_password_element &&
-      old_password_value == form.old_password_value &&
+      new_password_element == form.new_password_element &&
+      new_password_value == form.new_password_value &&
       ssl_valid == form.ssl_valid &&
       preferred == form.preferred &&
       date_created == form.date_created &&
@@ -66,10 +66,10 @@ std::ostream& operator<<(std::ostream& os, const PasswordForm& form) {
             << " username_value: " << base::UTF16ToUTF8(form.username_value)
             << " password_elem: " << base::UTF16ToUTF8(form.password_element)
             << " password_value: " << base::UTF16ToUTF8(form.password_value)
-            << " old_password_element: "
-            << base::UTF16ToUTF8(form.old_password_element)
-            << " old_password_value: "
-            << base::UTF16ToUTF8(form.old_password_value)
+            << " new_password_element: "
+            << base::UTF16ToUTF8(form.new_password_element)
+            << " new_password_value: "
+            << base::UTF16ToUTF8(form.new_password_value)
             << " autocomplete_set:" << form.password_autocomplete_set
             << " blacklisted: " << form.blacklisted_by_user
             << " preferred: " << form.preferred

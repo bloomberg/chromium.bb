@@ -163,11 +163,12 @@ TEST_F(PasswordFormConversionUtilsTest,
   EXPECT_EQ(GURL(kTestFormActionURL), password_form->action);
   EXPECT_EQ(base::UTF8ToUTF16("username1"), password_form->username_element);
   EXPECT_EQ(base::UTF8ToUTF16("John"), password_form->username_value);
-  EXPECT_EQ(base::UTF8ToUTF16("password2"), password_form->password_element);
-  EXPECT_EQ(base::UTF8ToUTF16("secret"), password_form->password_value);
   EXPECT_EQ(base::UTF8ToUTF16("password1"),
-            password_form->old_password_element);
-  EXPECT_EQ(base::UTF8ToUTF16("oldsecret"), password_form->old_password_value);
+            password_form->password_element);
+  EXPECT_EQ(base::UTF8ToUTF16("oldsecret"), password_form->password_value);
+  EXPECT_EQ(base::UTF8ToUTF16("password2"),
+            password_form->new_password_element);
+  EXPECT_EQ(base::UTF8ToUTF16("secret"), password_form->new_password_value);
   ASSERT_EQ(2u, password_form->other_possible_usernames.size());
   EXPECT_EQ(base::UTF8ToUTF16("William"),
             password_form->other_possible_usernames[0]);

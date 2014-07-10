@@ -69,7 +69,7 @@ TEST(SavePasswordProgressLoggerTest, LogPasswordFormElementID) {
   const std::string kSpecialCharsInsideExpected("x  a  b  c  d  e  x");
   form.username_element = UTF8ToUTF16(kHTMLInside);
   form.password_element = UTF8ToUTF16(kIPAddressInside);
-  form.old_password_element = UTF8ToUTF16(kSpecialCharsInside);
+  form.new_password_element = UTF8ToUTF16(kSpecialCharsInside);
   logger.LogPasswordForm(SavePasswordProgressLogger::STRING_MESSAGE, form);
   SCOPED_TRACE(testing::Message() << "Log string = ["
                                   << logger.accumulated_log() << "]");

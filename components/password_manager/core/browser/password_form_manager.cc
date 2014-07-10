@@ -227,7 +227,8 @@ bool PasswordFormManager::HasValidPasswordForm() {
   if (observed_form_.scheme != PasswordForm::SCHEME_HTML)
     return true;
   return !observed_form_.username_element.empty() &&
-      !observed_form_.password_element.empty();
+         (!observed_form_.password_element.empty() ||
+          !observed_form_.new_password_element.empty());
 }
 
 void PasswordFormManager::ProvisionallySave(
@@ -235,6 +236,14 @@ void PasswordFormManager::ProvisionallySave(
     OtherPossibleUsernamesAction action) {
   DCHECK_EQ(state_, POST_MATCHING_PHASE);
   DCHECK_NE(RESULT_NO_MATCH, DoesManage(credentials));
+
+  // If this was a sign-up or change password form, we want to persist the new
+  // password; if this was a login form, then the current password (which might
+  // still be "new" in the sense that we see these credentials for the first
+  // time, or that the user manually entered his actual password to overwrite an
+  // obsolete password we had in the store).
+  base::string16 password_to_save(credentials.new_password_element.empty() ?
+      credentials.password_value : credentials.new_password_value);
 
   // Make sure the important fields stay the same as the initially observed or
   // autofilled ones, as they may have changed if the user experienced a login
@@ -253,7 +262,7 @@ void PasswordFormManager::ProvisionallySave(
       user_action_ = kUserActionChoosePslMatch;
 
     // Check to see if we're using a known username but a new password.
-    if (pending_credentials_.password_value != credentials.password_value)
+    if (pending_credentials_.password_value != password_to_save)
       user_action_ = kUserActionOverridePassword;
   } else if (action == ALLOW_OTHER_POSSIBLE_USERNAMES &&
              UpdatePendingCredentialsIfOtherPossibleUsername(
@@ -271,6 +280,19 @@ void PasswordFormManager::ProvisionallySave(
     pending_credentials_.username_value = credentials.username_value;
     pending_credentials_.other_possible_usernames =
         credentials.other_possible_usernames;
+
+    // The password value will be filled in later, remove any garbage for now.
+    pending_credentials_.password_value.clear();
+    pending_credentials_.new_password_value.clear();
+
+    // If this was a sign-up or change password form, the names of the elements
+    // are likely different than those on a login form, so do not bother saving
+    // them. We will fill them with meaningful values in UpdateLogin() when the
+    // user goes onto a real login form for the first time.
+    if (!credentials.new_password_element.empty()) {
+      pending_credentials_.password_element.clear();
+      pending_credentials_.new_password_element.clear();
+    }
   }
 
   pending_credentials_.action = credentials.action;
@@ -280,7 +302,7 @@ void PasswordFormManager::ProvisionallySave(
   if (pending_credentials_.action.is_empty())
     pending_credentials_.action = observed_form_.action;
 
-  pending_credentials_.password_value = credentials.password_value;
+  pending_credentials_.password_value = password_to_save;
   pending_credentials_.preferred = credentials.preferred;
 
   if (user_action_ == kUserActionOverridePassword &&
@@ -453,16 +475,13 @@ void PasswordFormManager::OnGetPasswordStoreResults(
 }
 
 bool PasswordFormManager::IgnoreResult(const PasswordForm& form) const {
-  // Ignore change password forms until we have some change password
-  // functionality
-  if (observed_form_.old_password_element.length() != 0) {
+  // Do not autofill on sign-up or change password forms (until we have some
+  // working change password functionality).
+  if (!observed_form_.new_password_element.empty())
     return true;
-  }
-  // Don't match an invalid SSL form with one saved under secure
-  // circumstances.
-  if (form.ssl_valid && !observed_form_.ssl_valid) {
+  // Don't match an invalid SSL form with one saved under secure circumstances.
+  if (form.ssl_valid && !observed_form_.ssl_valid)
     return true;
-  }
   return false;
 }
 
@@ -590,12 +609,16 @@ void PasswordFormManager::UpdateLogin() {
     copy.origin = observed_form_.origin;
     copy.action = observed_form_.action;
     password_store->AddLogin(copy);
-  } else if (pending_credentials_.password_element.empty() ||
-             pending_credentials_.username_element.empty() ||
-             pending_credentials_.submit_element.empty()) {
-    // password_element and username_element can't be updated because they are
-    // part of Sync and PasswordStore primary key. Thus, we must delete the old
-    // one and add again.
+  } else if (observed_form_.new_password_element.empty() &&
+             (pending_credentials_.password_element.empty() ||
+              pending_credentials_.username_element.empty() ||
+              pending_credentials_.submit_element.empty())) {
+    // If |observed_form_| was a sign-up or change password form, there is no
+    // point in trying to update element names: they are likely going to be
+    // different than those on a login form.
+    // Otherwise, given that |password_element| and |username_element| can't be
+    // updated because they are part of Sync and PasswordStore primary key, we
+    // must delete the old credentials altogether and then add the new ones.
     password_store->RemoveLogin(pending_credentials_);
     pending_credentials_.password_element = observed_form_.password_element;
     pending_credentials_.username_element = observed_form_.username_element;

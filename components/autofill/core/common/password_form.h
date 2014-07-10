@@ -116,12 +116,16 @@ struct PasswordForm {
   // When parsing an HTML form, this is typically empty.
   std::vector<base::string16> other_possible_usernames;
 
-  // The name of the password input element, Optional (improves scoring).
+  // The name of the input element corresponding to the current password.
+  // Optional (improves scoring).
   //
-  // When parsing an HTML form, this must always be set.
+  // When parsing an HTML form, this will always be set, unless it is a sign-up
+  // form or a change password form that does not ask for the current password.
+  // In these two cases the |new_password_element| will always be set.
   base::string16 password_element;
 
-  // The password. Required.
+  // The current password. Must be non-empty for PasswordForm instances that are
+  // meant to be persisted to the password store.
   //
   // When parsing an HTML form, this is typically empty.
   base::string16 password_value;
@@ -130,12 +134,12 @@ struct PasswordForm {
   // True otherwise.
   bool password_autocomplete_set;
 
-  // If the form was a change password form, the name of the
-  // 'old password' input element. Optional.
-  base::string16 old_password_element;
+  // If the form was a sign-up or a change password form, the name of the input
+  // element corresponding to the new password. Optional, and not persisted.
+  base::string16 new_password_element;
 
-  // The old password. Optional.
-  base::string16 old_password_value;
+  // The new password. Optional, and not persisted.
+  base::string16 new_password_value;
 
   // Whether or not this login was saved under an HTTPS session with a valid
   // SSL cert. We will never match or autofill a PasswordForm where

@@ -34,11 +34,11 @@ bool HasAutocompleteAttributeValue(const WebInputElement* element,
                               value_in_lowercase);
 }
 
-// Helper to determine which password is the main one, and which is
-// an old password (e.g on a "make new password" form), if any.
+// Helper to determine which password is the main (current) one, and which is
+// the new password (e.g., on a sign-up or change password form), if any.
 bool LocateSpecificPasswords(std::vector<WebInputElement> passwords,
                              WebInputElement* password,
-                             WebInputElement* old_password) {
+                             WebInputElement* new_password) {
   switch (passwords.size()) {
     case 1:
       // Single password, easy.
@@ -46,26 +46,33 @@ bool LocateSpecificPasswords(std::vector<WebInputElement> passwords,
       break;
     case 2:
       if (passwords[0].value() == passwords[1].value()) {
-        // Treat two identical passwords as a single password.
-        *password = passwords[0];
+        // Two identical passwords: assume we are seeing a new password with a
+        // confirmation. This can be either a sign-up form or a password change
+        // form that does not ask for the old password.
+        *new_password = passwords[0];
       } else {
         // Assume first is old password, second is new (no choice but to guess).
-        *old_password = passwords[0];
-        *password = passwords[1];
+        *password = passwords[0];
+        *new_password = passwords[1];
       }
       break;
     case 3:
-      if (passwords[0].value() == passwords[1].value() &&
+      if (!passwords[0].value().isEmpty() &&
+          passwords[0].value() == passwords[1].value() &&
           passwords[0].value() == passwords[2].value()) {
-        // All three passwords the same? Just treat as one and hope.
-        *password = passwords[0];
-      } else if (passwords[0].value() == passwords[1].value()) {
-        // Two the same and one different -> old password is duplicated one.
-        *old_password = passwords[0];
-        *password = passwords[2];
+        // All three passwords are the same and non-empty? This does not make
+        // any sense, give up.
+        return false;
       } else if (passwords[1].value() == passwords[2].value()) {
-        *old_password = passwords[0];
-        *password = passwords[1];
+        // New password is the duplicated one, and comes second; or empty form
+        // with 3 password fields, in which case we will assume this layout.
+        *password = passwords[0];
+        *new_password = passwords[1];
+      } else if (passwords[0].value() == passwords[1].value()) {
+        // It is strange that the new password comes first, but trust more which
+        // fields are duplicated than the ordering of fields.
+        *password = passwords[2];
+        *new_password = passwords[0];
       } else {
         // Three different passwords, or first and last match with middle
         // different. No idea which is which, so no luck.
@@ -78,8 +85,7 @@ bool LocateSpecificPasswords(std::vector<WebInputElement> passwords,
   return true;
 }
 
-// Get information about a login form that encapsulated in the
-// PasswordForm struct.
+// Get information about a login form encapsulated in a PasswordForm struct.
 void GetPasswordForm(const WebFormElement& form, PasswordForm* password_form) {
   WebInputElement latest_input_element;
   WebInputElement username_element;
@@ -180,8 +186,8 @@ void GetPasswordForm(const WebFormElement& form, PasswordForm* password_form) {
     return;
 
   WebInputElement password;
-  WebInputElement old_password;
-  if (!LocateSpecificPasswords(passwords, &password, &old_password))
+  WebInputElement new_password;
+  if (!LocateSpecificPasswords(passwords, &password, &new_password))
     return;
 
   // We want to keep the path but strip any authentication data, as well as
@@ -204,9 +210,9 @@ void GetPasswordForm(const WebFormElement& form, PasswordForm* password_form) {
     password_form->password_value = password.value();
     password_form->password_autocomplete_set = password.autoComplete();
   }
-  if (!old_password.isNull()) {
-    password_form->old_password_element = old_password.nameForAutofill();
-    password_form->old_password_value = old_password.value();
+  if (!new_password.isNull()) {
+    password_form->new_password_element = new_password.nameForAutofill();
+    password_form->new_password_value = new_password.value();
   }
 
   password_form->scheme = PasswordForm::SCHEME_HTML;
