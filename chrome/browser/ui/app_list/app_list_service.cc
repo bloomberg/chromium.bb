@@ -21,6 +21,15 @@ enum StartupType {
   WARM_START_FAST,
 };
 
+// For when an app list show request is received via CommandLine. Indicates
+// whether the Profile the app list was previously showing was the SAME, OTHER
+// or NONE with respect to the new Profile to show.
+enum ProfileLoadState {
+  PROFILE_LOADED_SAME,
+  PROFILE_LOADED_OTHER,
+  PROFILE_LOADED_NONE,
+};
+
 base::Time GetOriginalProcessStartTime(const CommandLine& command_line) {
   if (command_line.HasSwitch(switches::kOriginalProcessStartTime)) {
     std::string start_time_string =
@@ -57,26 +66,39 @@ int64 g_original_process_start_time;
 // The type of startup the the current app list show has gone through.
 StartupType g_app_show_startup_type;
 
+// The state of the active app list profile at the most recent launch.
+ProfileLoadState g_profile_load_state;
+
 void RecordFirstPaintTiming() {
   base::Time start_time(
       base::Time::FromInternalValue(g_original_process_start_time));
   base::TimeDelta elapsed = base::Time::Now() - start_time;
   switch (g_app_show_startup_type) {
     case COLD_START:
+      DCHECK_EQ(PROFILE_LOADED_NONE, g_profile_load_state);
       UMA_HISTOGRAM_LONG_TIMES("Startup.AppListFirstPaintColdStart", elapsed);
       break;
     case WARM_START:
-      UMA_HISTOGRAM_LONG_TIMES("Startup.AppListFirstPaintWarmStart", elapsed);
+      // For warm starts, only record showing the same profile. "NONE" should
+      // only occur in the first 30 seconds after startup. "OTHER" only occurs
+      // for multi-profile cases. In these cases, timings are also affected by
+      // whether or not a profile has been loaded from disk, which makes the
+      // profile load asynchronous and skews results unpredictably.
+      if (g_profile_load_state == PROFILE_LOADED_SAME)
+        UMA_HISTOGRAM_LONG_TIMES("Startup.AppListFirstPaintWarmStart", elapsed);
       break;
     case WARM_START_FAST:
-      UMA_HISTOGRAM_LONG_TIMES("Startup.AppListFirstPaintWarmStartFast",
-                               elapsed);
+      if (g_profile_load_state == PROFILE_LOADED_SAME) {
+        UMA_HISTOGRAM_LONG_TIMES("Startup.AppListFirstPaintWarmStartFast",
+                                 elapsed);
+      }
       break;
   }
 }
 
 void RecordStartupInfo(AppListService* service,
-                       const CommandLine& command_line) {
+                       const CommandLine& command_line,
+                       Profile* launch_profile) {
   base::Time start_time = GetOriginalProcessStartTime(command_line);
   if (start_time.is_null())
     return;
@@ -97,6 +119,15 @@ void RecordStartupInfo(AppListService* service,
 
   g_original_process_start_time = start_time.ToInternalValue();
   g_app_show_startup_type = startup_type;
+
+  Profile* current_profile = service->GetCurrentAppListProfile();
+  if (!current_profile)
+    g_profile_load_state = PROFILE_LOADED_NONE;
+  else if (current_profile == launch_profile)
+    g_profile_load_state = PROFILE_LOADED_SAME;
+  else
+    g_profile_load_state = PROFILE_LOADED_OTHER;
+
   service->SetAppListNextPaintCallback(RecordFirstPaintTiming);
 }
 
@@ -136,7 +167,7 @@ bool AppListService::HandleLaunchCommandLine(
   // The --show-app-list switch is used for shortcuts on the native desktop.
   AppListService* service = Get(chrome::HOST_DESKTOP_TYPE_NATIVE);
   DCHECK(service);
-  RecordStartupInfo(service, command_line);
+  RecordStartupInfo(service, command_line, launch_profile);
   service->ShowForProfile(launch_profile);
   return true;
 }

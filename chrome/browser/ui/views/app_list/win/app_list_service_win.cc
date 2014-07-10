@@ -275,7 +275,10 @@ void AppListServiceWin::OnLoadProfileForWarmup(Profile* initial_profile) {
 }
 
 void AppListServiceWin::SetAppListNextPaintCallback(void (*callback)()) {
-  next_paint_callback_ = base::Bind(callback);
+  if (shower().app_list())
+    shower().app_list()->SetNextPaintCallback(base::Bind(callback));
+  else
+    next_paint_callback_ = base::Bind(callback);
 }
 
 void AppListServiceWin::HandleFirstRun() {
