@@ -3,9 +3,7 @@
 // found in the LICENSE file.
 
 #include <map>
-#include <utility>
 
-#include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
@@ -57,9 +55,8 @@
 #include "grit/generated_resources.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/libaddressinput/chromium/chrome_address_validator.h"
-#include "third_party/libaddressinput/src/cpp/include/libaddressinput/address_field.h"
-#include "third_party/libaddressinput/src/cpp/include/libaddressinput/address_problem.h"
+#include "third_party/libaddressinput/chromium/cpp/include/libaddressinput/address_data.h"
+#include "third_party/libaddressinput/chromium/cpp/include/libaddressinput/address_validator.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
@@ -74,7 +71,11 @@ namespace autofill {
 
 namespace {
 
-using ::i18n::addressinput::FieldProblemMap;
+using ::i18n::addressinput::AddressData;
+using ::i18n::addressinput::AddressProblemFilter;
+using ::i18n::addressinput::AddressProblem;
+using ::i18n::addressinput::AddressProblems;
+using ::i18n::addressinput::AddressValidator;
 using testing::AtLeast;
 using testing::DoAll;
 using testing::Return;
@@ -1020,9 +1021,11 @@ TEST_F(AutofillDialogControllerTest, AutofillProfilesPopInvalidIntoEdit) {
   // Now make up a problem and make sure the profile isn't in the list.
   Reset();
   SwitchToAutofill();
-  FieldProblemMap problems;
-  problems.insert(std::make_pair(::i18n::addressinput::POSTAL_CODE,
-                                 ::i18n::addressinput::MISMATCHING_VALUE));
+  AddressProblems problems;
+  problems.push_back(
+      AddressProblem(::i18n::addressinput::POSTAL_CODE,
+                     AddressProblem::MISMATCHING_VALUE,
+                     IDS_LEARN_MORE));
   EXPECT_CALL(*controller()->GetMockValidator(),
               ValidateAddress(CountryCodeMatcher("US"), _, _)).
       WillRepeatedly(DoAll(SetArgPointee<2>(problems),
@@ -1050,9 +1053,11 @@ TEST_F(AutofillDialogControllerTest, AutofillProfilesRevalidateAfterRulesLoad) {
   EXPECT_FALSE(controller()->IsManuallyEditingSection(SECTION_SHIPPING));
   EXPECT_FALSE(controller()->IsManuallyEditingSection(SECTION_BILLING));
 
-  FieldProblemMap problems;
-  problems.insert(std::make_pair(::i18n::addressinput::POSTAL_CODE,
-                                 ::i18n::addressinput::MISMATCHING_VALUE));
+  AddressProblems problems;
+  problems.push_back(
+      AddressProblem(::i18n::addressinput::POSTAL_CODE,
+                     AddressProblem::MISMATCHING_VALUE,
+                     IDS_LEARN_MORE));
   EXPECT_CALL(*controller()->GetMockValidator(),
               ValidateAddress(CountryCodeMatcher("US"), _, _)).
       WillRepeatedly(DoAll(SetArgPointee<2>(problems),

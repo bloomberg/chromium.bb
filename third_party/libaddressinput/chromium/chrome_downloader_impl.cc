@@ -55,9 +55,27 @@ ChromeDownloaderImpl::~ChromeDownloaderImpl() {
   STLDeleteValues(&requests_);
 }
 
-void ChromeDownloaderImpl::Download(const std::string& url,
-                                    const Callback& downloaded) const {
-  const_cast<ChromeDownloaderImpl*>(this)->DoDownload(url, downloaded);
+void ChromeDownloaderImpl::Download(
+    const std::string& url,
+    scoped_ptr<Callback> downloaded) {
+  GURL resource(url);
+  if (!resource.SchemeIsSecure()) {
+    (*downloaded)(false, url, make_scoped_ptr(new std::string()));
+    return;
+  }
+
+  scoped_ptr<net::URLFetcher> fetcher(
+      net::URLFetcher::Create(resource, net::URLFetcher::GET, this));
+  fetcher->SetLoadFlags(
+      net::LOAD_DO_NOT_SEND_COOKIES | net::LOAD_DO_NOT_SAVE_COOKIES);
+  fetcher->SetRequestContext(getter_);
+
+  Request* request = new Request(url, fetcher.Pass(), downloaded.Pass());
+  request->fetcher->SaveResponseWithWriter(
+      scoped_ptr<net::URLFetcherResponseWriter>(
+          new UnownedStringWriter(&request->data)));
+  requests_[request->fetcher.get()] = request;
+  request->fetcher->Start();
 }
 
 void ChromeDownloaderImpl::OnURLFetchComplete(const net::URLFetcher* source) {
@@ -69,7 +87,7 @@ void ChromeDownloaderImpl::OnURLFetchComplete(const net::URLFetcher* source) {
   scoped_ptr<std::string> data(new std::string());
   if (ok)
     data->swap(request->second->data);
-  request->second->callback(ok, request->second->url, data.release());
+  (*request->second->callback)(ok, request->second->url, data.Pass());
 
   delete request->second;
   requests_.erase(request);
@@ -77,31 +95,9 @@ void ChromeDownloaderImpl::OnURLFetchComplete(const net::URLFetcher* source) {
 
 ChromeDownloaderImpl::Request::Request(const std::string& url,
                                        scoped_ptr<net::URLFetcher> fetcher,
-                                       const Callback& callback)
+                                       scoped_ptr<Callback> callback)
     : url(url),
       fetcher(fetcher.Pass()),
-      callback(callback) {}
-
-void ChromeDownloaderImpl::DoDownload(const std::string& url,
-                                      const Callback& downloaded) {
-  GURL resource(url);
-  if (!resource.SchemeIsSecure()) {
-    downloaded(false, url, NULL);
-    return;
-  }
-
-  scoped_ptr<net::URLFetcher> fetcher(
-      net::URLFetcher::Create(resource, net::URLFetcher::GET, this));
-  fetcher->SetLoadFlags(
-      net::LOAD_DO_NOT_SEND_COOKIES | net::LOAD_DO_NOT_SAVE_COOKIES);
-  fetcher->SetRequestContext(getter_);
-
-  Request* request = new Request(url, fetcher.Pass(), downloaded);
-  request->fetcher->SaveResponseWithWriter(
-      scoped_ptr<net::URLFetcherResponseWriter>(
-          new UnownedStringWriter(&request->data)));
-  requests_[request->fetcher.get()] = request;
-  request->fetcher->Start();
-}
+      callback(callback.Pass()) {}
 
 }  // namespace autofill

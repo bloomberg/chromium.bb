@@ -12,7 +12,13 @@
 #include "chrome/browser/ui/autofill/autofill_dialog_common.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_types.h"
 #include "components/autofill/core/browser/autofill_type.h"
-#include "third_party/libaddressinput/src/cpp/include/libaddressinput/address_field.h"
+#include "third_party/libaddressinput/chromium/cpp/include/libaddressinput/address_field.h"
+
+namespace i18n {
+namespace addressinput {
+struct AddressData;
+}
+}
 
 namespace autofill {
 

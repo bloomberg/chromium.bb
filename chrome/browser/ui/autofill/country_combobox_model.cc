@@ -4,9 +4,6 @@
 
 #include "chrome/browser/ui/autofill/country_combobox_model.h"
 
-#include <algorithm>
-#include <iterator>
-
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
@@ -17,7 +14,7 @@
 
 // TODO(rouslan): Remove this check. http://crbug.com/337587
 #if defined(ENABLE_AUTOFILL_DIALOG)
-#include "third_party/libaddressinput/src/cpp/include/libaddressinput/address_ui.h"
+#include "third_party/libaddressinput/chromium/cpp/include/libaddressinput/address_ui.h"
 #endif
 
 namespace autofill {
@@ -44,22 +41,12 @@ void CountryComboboxModel::SetCountries(
   }
 
   // The sorted list of countries.
+#if defined(ENABLE_AUTOFILL_DIALOG)
+  const std::vector<std::string>& available_countries =
+      ::i18n::addressinput::GetRegionCodes();
+#else
   std::vector<std::string> available_countries;
   AutofillCountry::GetAvailableCountries(&available_countries);
-
-#if defined(ENABLE_AUTOFILL_DIALOG)
-  // Filter out the countries that do not have rules for address input and
-  // validation.
-  const std::vector<std::string>& addressinput_countries =
-      ::i18n::addressinput::GetRegionCodes();
-  std::vector<std::string> filtered_countries;
-  filtered_countries.reserve(available_countries.size());
-  std::set_intersection(available_countries.begin(),
-                        available_countries.end(),
-                        addressinput_countries.begin(),
-                        addressinput_countries.end(),
-                        std::back_inserter(filtered_countries));
-  available_countries.swap(filtered_countries);
 #endif
 
   std::vector<AutofillCountry*> sorted_countries;

@@ -17,5 +17,9 @@ https://i18napis.appspot.com/ssl-aggregate-address. The library is used in
 requestAutocomplete dialog and autofill.
 
 Local Modifications:
-- Use Chrome's version of JSON reader in chromium/json.cc.
-- Use Chrome's version of loose string comparison in chromium/string_compare.cc.
+- The package is libaddressinput at revision 176 plus the Chrome-specific
+  validation logic, which will be upstreamed back to libaddressinput
+  (http://crbug.com/327046). The Chrome-specific version is in chromium/cpp/
+  subdirectory. The original source code is in src/cpp/ subdirectory. Both
+  versions use the original test data file src/testdata/countryinfo.txt.
+- Serbia and Montenegro (YU) was removed as a supported region.

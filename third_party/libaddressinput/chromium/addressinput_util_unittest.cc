@@ -5,7 +5,7 @@
 #include "third_party/libaddressinput/chromium/addressinput_util.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/libaddressinput/src/cpp/include/libaddressinput/address_data.h"
+#include "third_party/libaddressinput/chromium/cpp/include/libaddressinput/address_data.h"
 
 namespace autofill {
 namespace addressinput {

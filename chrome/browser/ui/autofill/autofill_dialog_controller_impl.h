@@ -35,7 +35,8 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/ssl_status.h"
-#include "third_party/libaddressinput/chromium/chrome_address_validator.h"
+#include "third_party/libaddressinput/chromium/cpp/include/libaddressinput/address_validator.h"
+#include "third_party/libaddressinput/chromium/cpp/include/libaddressinput/load_rules_delegate.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/base/ui_base_types.h"
@@ -47,12 +48,6 @@ class Profile;
 
 namespace content {
 class WebContents;
-}
-
-namespace i18n {
-namespace addressinput {
-struct AddressData;
-}
 }
 
 namespace autofill {
@@ -84,7 +79,7 @@ class AutofillDialogControllerImpl
       public PersonalDataManagerObserver,
       public AccountChooserModelDelegate,
       public gfx::AnimationDelegate,
-      public LoadRulesListener {
+      public ::i18n::addressinput::LoadRulesDelegate {
  public:
   virtual ~AutofillDialogControllerImpl();
 
@@ -223,7 +218,7 @@ class AutofillDialogControllerImpl
   virtual void AnimationEnded(const gfx::Animation* animation) OVERRIDE;
   virtual void AnimationProgressed(const gfx::Animation* animation) OVERRIDE;
 
-  // LoadRulesListener implementation.
+  // ::i18n::addressinput::LoadRulesDelegate implementation.
   virtual void OnAddressValidationRulesLoaded(const std::string& country_code,
                                               bool success) OVERRIDE;
 
@@ -254,7 +249,7 @@ class AutofillDialogControllerImpl
   virtual PersonalDataManager* GetManager() const;
 
   // Returns an address validation helper. May be NULL during tests.
-  virtual AddressValidator* GetValidator();
+  virtual ::i18n::addressinput::AddressValidator* GetValidator();
 
   // Returns the WalletClient* this class uses to talk to Online Wallet. Exposed
   // for testing.
@@ -660,7 +655,7 @@ class AutofillDialogControllerImpl
   wallet::WalletClient wallet_client_;
 
   // A helper to validate international address input.
-  scoped_ptr<AddressValidator> validator_;
+  scoped_ptr< ::i18n::addressinput::AddressValidator> validator_;
 
   // True if |this| has ever called GetWalletItems().
   bool wallet_items_requested_;
