@@ -3935,11 +3935,9 @@ void WebViewImpl::setIsAcceleratedCompositingActive(bool active)
 
     if (!active) {
         m_isAcceleratedCompositingActive = false;
-        if (!m_layerTreeViewCommitsDeferred
-            && blink::Platform::current()->isThreadedCompositingEnabled()) {
+        if (!m_layerTreeViewCommitsDeferred) {
             ASSERT(m_layerTreeView);
-            // In threaded compositing mode, force compositing mode is always on so setIsAcceleratedCompositingActive(false)
-            // means that we're transitioning to a new page. Suppress commits until WebKit generates invalidations so
+            // This means that we're transitioning to a new page. Suppress commits until WebKit generates invalidations so
             // we don't attempt to paint too early in the next page load.
             m_layerTreeView->setDeferCommits(true);
             m_layerTreeViewCommitsDeferred = true;
