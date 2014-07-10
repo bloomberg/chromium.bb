@@ -5,6 +5,8 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 
 PASS new Text("one").data is "one"
 PASS new Text().data is ""
+PASS new Text(undefined).data is ""
+PASS new Text(null).data is "null"
 PASS new Text("two").ownerDocument is document
 PASS typeof new Text is "object"
 PASS Object.prototype.toString.call(new Text) is "[object Text]"

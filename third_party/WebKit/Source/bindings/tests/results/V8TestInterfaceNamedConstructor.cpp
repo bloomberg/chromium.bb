@@ -102,7 +102,7 @@ static void V8TestInterfaceNamedConstructorConstructorCallback(const v8::Functio
         TONATIVE_VOID_INTERNAL(defaultUndefinedOptionalBooleanArg, info[1]->BooleanValue());
         TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(defaultUndefinedOptionalLongArg, toInt32(info[2], exceptionState), exceptionState);
         TOSTRING_VOID_INTERNAL(defaultUndefinedOptionalStringArg, info[3]);
-        if (info.Length() > 4) {
+        if (!info[4]->IsUndefined()) {
             TOSTRING_VOID_INTERNAL(defaultNullStringOptionalstringArg, info[4]);
         } else {
             defaultNullStringOptionalstringArg = nullptr;

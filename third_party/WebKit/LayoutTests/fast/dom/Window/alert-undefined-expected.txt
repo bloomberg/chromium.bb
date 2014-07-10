@@ -1,8 +1,8 @@
 ALERT: undefined
 ALERT: null
-CONFIRM: undefined
+CONFIRM: 
 CONFIRM: null
-PROMPT: undefined, default text: 
+PROMPT: , default text: 
 PROMPT: null, default text: 
 ALERT: 
 CONFIRM: 

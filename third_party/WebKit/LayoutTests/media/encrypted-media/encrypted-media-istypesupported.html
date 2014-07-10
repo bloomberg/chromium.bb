@@ -21,6 +21,14 @@
                         assert_true(type.length == 1 || type.length == 2);
                         assert_equals(MediaKeys.isTypeSupported.apply(
                             this, type), expectation, 'isTypeSupported');
+                        if (type.length == 1) {
+                            // Calling with undefined as the second argument
+                            // should behave same as calling with only one
+                            // argument.
+                            type.push(undefined);
+                            assert_equals(MediaKeys.isTypeSupported.apply(
+                                this, type), expectation, 'isTypeSupported');
+                        }
                     },  description + ": '" + type.join("', '") + "'",
                     { timeout: 60000 });
                 }

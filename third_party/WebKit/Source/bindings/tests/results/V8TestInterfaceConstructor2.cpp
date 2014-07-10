@@ -93,7 +93,7 @@ static void constructor3(const v8::FunctionCallbackInfo<v8::Value>& info)
         TONATIVE_VOID_INTERNAL(testInterfaceEmptyArg, V8TestInterfaceEmpty::toNativeWithTypeCheck(info.GetIsolate(), info[0]));
         TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(longArg, toInt32(info[1], exceptionState), exceptionState);
         TOSTRING_VOID_INTERNAL(defaultUndefinedOptionalStringArg, info[2]);
-        if (info.Length() > 3) {
+        if (!info[3]->IsUndefined()) {
             TOSTRING_VOID_INTERNAL(defaultNullStringOptionalStringArg, info[3]);
         } else {
             defaultNullStringOptionalStringArg = nullptr;
