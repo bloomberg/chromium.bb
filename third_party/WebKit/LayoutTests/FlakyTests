@@ -50,7 +50,6 @@ crbug.com/356957 [ Debug Win7 ] editing/spelling/spellcheck-editable-on-focus.ht
 Bug(gardener) [ Release Win7 ] fast/css-generated-content/nested-tables-with-before-after-content-crash.html [ Failure Pass ]
 Bug(gardener) [ Release Mavericks ] fast/css/absolute-child-with-percent-height-inside-relative-parent.html [ ImageOnlyFailure Pass ]
 Bug(gardener) [ Debug Win7 ] fast/css/counters/element-removal-crash.xhtml [ Failure Pass ]
-Bug(gardener) [ Debug Linux ] fast/css/css-selector-deeply-nested.html [ Crash Pass ]
 Bug(gardener) [ Debug Linux ] fast/css/css-set-selector-text-crash.html [ Crash Pass ]
 Bug(gardener) [ Debug Linux ] fast/css/css-set-selector-text.html [ Crash Pass ]
 Bug(gardener) [ Debug Linux ] fast/css/cssom-modify-font-face-rule.html [ Crash Pass ]
