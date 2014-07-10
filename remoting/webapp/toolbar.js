@@ -121,7 +121,8 @@ remoting.Toolbar.prototype.toggle = function() {
 remoting.Toolbar.prototype.setClientSession = function(clientSession) {
   this.optionsMenu_.setClientSession(clientSession);
   var connectedTo = document.getElementById('connected-to');
-  connectedTo.innerText = clientSession.getHostDisplayName();
+  connectedTo.innerText =
+      clientSession ? clientSession.getHostDisplayName() : "";
 };
 
 /**
