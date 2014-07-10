@@ -25,7 +25,7 @@
             ['OS == "mac"', {
               'sources': [ '<@(boringssl_mac_x86_sources)' ],
             }],
-            ['OS == "linux"', {
+            ['OS == "linux" or OS == "android"', {
               'sources': [ '<@(boringssl_linux_x86_sources)' ],
             }],
             ['OS != "mac" and OS != "linux"', {
@@ -38,7 +38,7 @@
             ['OS == "mac"', {
               'sources': [ '<@(boringssl_mac_x86_64_sources)' ],
             }],
-            ['OS == "linux"', {
+            ['OS == "linux" or OS == "android"', {
               'sources': [ '<@(boringssl_linux_x86_64_sources)' ],
             }],
             ['OS == "win"', {
