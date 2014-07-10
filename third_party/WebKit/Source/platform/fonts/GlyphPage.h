@@ -143,14 +143,12 @@ public:
         m_glyphs[index] = glyph;
         setCustomFontToLoad(index, 0);
 
-        // GlyphPage getters will always return a null SimpleFontData* for glyph #0 if there's no per-glyph font array.
         if (hasPerGlyphFontData()) {
-            m_perGlyphFontData[index] = glyph ? fontData : 0;
-            return;
+            m_perGlyphFontData[index] = fontData;
+        } else {
+            // A single-font GlyphPage already assigned m_fontDataForAllGlyphs in the constructor.
+            ASSERT(!glyph || fontData == m_fontDataForAllGlyphs);
         }
-
-        // A single-font GlyphPage already assigned m_fontDataForAllGlyphs in the constructor.
-        ASSERT(!glyph || fontData == m_fontDataForAllGlyphs);
     }
 
     void setGlyphDataForIndex(unsigned index, const GlyphData& glyphData)
