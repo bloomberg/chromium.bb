@@ -144,7 +144,7 @@ static_library("browser") {
     "//skia",
     "//sql",
     "//third_party/icu",
-    "//third_party/libaddressinput",
+    "//third_party/libaddressinput:util",
     "//third_party/libphonenumber",
     "//ui/base",
     "//ui/gfx",

@@ -80,14 +80,16 @@
 #include "grit/component_scaled_resources.h"
 #include "grit/components_strings.h"
 #include "grit/generated_resources.h"
-#include "grit/libaddressinput_strings.h"
 #include "grit/platform_locale_settings.h"
 #include "grit/theme_resources.h"
 #include "net/cert/cert_status_flags.h"
 #include "third_party/libaddressinput/chromium/chrome_downloader_impl.h"
 #include "third_party/libaddressinput/chromium/chrome_storage_impl.h"
-#include "third_party/libaddressinput/chromium/cpp/include/libaddressinput/address_data.h"
-#include "third_party/libaddressinput/chromium/cpp/include/libaddressinput/address_problem.h"
+#include "third_party/libaddressinput/messages.h"
+#include "third_party/libaddressinput/src/cpp/include/libaddressinput/address_data.h"
+#include "third_party/libaddressinput/src/cpp/include/libaddressinput/address_field.h"
+#include "third_party/libaddressinput/src/cpp/include/libaddressinput/address_problem.h"
+#include "third_party/libaddressinput/src/cpp/include/libaddressinput/localization.h"
 #include "ui/base/base_window.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/combobox_model.h"
@@ -99,9 +101,12 @@
 using ::i18n::addressinput::AddressData;
 using ::i18n::addressinput::AddressField;
 using ::i18n::addressinput::AddressProblem;
-using ::i18n::addressinput::AddressProblemFilter;
-using ::i18n::addressinput::AddressProblems;
-using ::i18n::addressinput::AddressValidator;
+using ::i18n::addressinput::ADMIN_AREA;
+using ::i18n::addressinput::DEPENDENT_LOCALITY;
+using ::i18n::addressinput::Downloader;
+using ::i18n::addressinput::FieldProblemMap;
+using ::i18n::addressinput::Localization;
+using ::i18n::addressinput::MISSING_REQUIRED_FIELD;
 
 namespace autofill {
 
@@ -867,12 +872,12 @@ void AutofillDialogControllerImpl::Show() {
   if (account_chooser_model_->WalletIsSelected())
     FetchWalletCookie();
 
-  scoped_ptr< ::i18n::addressinput::Downloader> downloader(
-      new autofill::ChromeDownloaderImpl(profile_->GetRequestContext()));
-  validator_ = AddressValidator::Build(
-      downloader.Pass(),
+  validator_.reset(new AddressValidator(
+      I18N_ADDRESS_VALIDATION_DATA_URL,
+      scoped_ptr<Downloader>(
+          new autofill::ChromeDownloaderImpl(profile_->GetRequestContext())),
       ValidationRulesStorageFactory::CreateStorage(),
-      this);
+      this));
 
   SuggestionsUpdated();
   SubmitButtonDelayBegin();
@@ -1944,14 +1949,14 @@ base::string16 AutofillDialogControllerImpl::InputValidityMessage(
     case CREDIT_CARD_EXP_MONTH:
       if (!InputWasEdited(CREDIT_CARD_EXP_MONTH, value)) {
         return l10n_util::GetStringUTF16(
-            IDS_LIBADDRESSINPUT_I18N_MISSING_REQUIRED_FIELD);
+            IDS_LIBADDRESSINPUT_MISSING_REQUIRED_FIELD);
       }
       break;
 
     case CREDIT_CARD_EXP_4_DIGIT_YEAR:
       if (!InputWasEdited(CREDIT_CARD_EXP_4_DIGIT_YEAR, value)) {
         return l10n_util::GetStringUTF16(
-            IDS_LIBADDRESSINPUT_I18N_MISSING_REQUIRED_FIELD);
+            IDS_LIBADDRESSINPUT_MISSING_REQUIRED_FIELD);
       }
       break;
 
@@ -1983,7 +1988,7 @@ base::string16 AutofillDialogControllerImpl::InputValidityMessage(
   }
 
   return value.empty() ? l10n_util::GetStringUTF16(
-                             IDS_LIBADDRESSINPUT_I18N_MISSING_REQUIRED_FIELD) :
+                             IDS_LIBADDRESSINPUT_MISSING_REQUIRED_FIELD) :
                          base::string16();
 }
 
@@ -2004,17 +2009,19 @@ ValidityMessages AutofillDialogControllerImpl::InputsAreValid(
             profile, g_browser_process->GetApplicationLocale());
     address_data->language_code = AddressLanguageCodeForSection(section);
 
-    AddressProblems problems;
-    status = GetValidator()->ValidateAddress(*address_data,
-                                             AddressProblemFilter(),
-                                             &problems);
+    Localization localization;
+    localization.SetGetter(l10n_util::GetStringUTF8);
+    FieldProblemMap problems;
+    status = GetValidator()->ValidateAddress(*address_data, NULL, &problems);
     common::AddressType address_type = section == SECTION_SHIPPING ?
         common::ADDRESS_TYPE_SHIPPING : common::ADDRESS_TYPE_BILLING;
-    for (size_t i = 0; i < problems.size(); ++i) {
-      const AddressProblem& problem = problems[i];
-      bool sure = problem.type != AddressProblem::MISSING_REQUIRED_FIELD;
-      base::string16 text = l10n_util::GetStringUTF16(problem.description_id);
-      messages.Set(i18ninput::TypeForField(problem.field, address_type),
+
+    for (FieldProblemMap::const_iterator iter = problems.begin();
+         iter != problems.end(); ++iter) {
+      bool sure = iter->second != MISSING_REQUIRED_FIELD;
+      base::string16 text = base::UTF8ToUTF16(localization.GetErrorMessage(
+          *address_data, iter->first, iter->second, true, false));
+      messages.Set(i18ninput::TypeForField(iter->first, address_type),
                    ValidityMessage(text, sure));
     }
   }
@@ -3431,9 +3438,7 @@ void AutofillDialogControllerImpl::GetI18nValidatorSuggestions(
     // region of the suggested address:
     //    ADMIN_AREA > LOCALITY > DEPENDENT_LOCALITY
     popup_labels->push_back(base::string16());
-    for (int field = ::i18n::addressinput::DEPENDENT_LOCALITY;
-         field >= ::i18n::addressinput::ADMIN_AREA;
-         --field) {
+    for (int field = DEPENDENT_LOCALITY; field >= ADMIN_AREA; --field) {
       const std::string& field_value =
           i18n_validator_suggestions_[i].GetFieldValue(
               static_cast<AddressField>(field));
@@ -3616,7 +3621,7 @@ bool AutofillDialogControllerImpl::RulesAreLoaded(DialogSection section) {
   AddressData address_data;
   address_data.region_code = CountryCodeForSection(section);
   AddressValidator::Status status = GetValidator()->ValidateAddress(
-      address_data, AddressProblemFilter(), NULL);
+      address_data, NULL, NULL);
   return status == AddressValidator::SUCCESS;
 }
 
@@ -3668,10 +3673,8 @@ bool AutofillDialogControllerImpl::HasInvalidAddress(
       i18n::CreateAddressDataFromAutofillProfile(
           profile, g_browser_process->GetApplicationLocale());
 
-  AddressProblems problems;
-  GetValidator()->ValidateAddress(*address_data,
-                                  AddressProblemFilter(),
-                                  &problems);
+  FieldProblemMap problems;
+  GetValidator()->ValidateAddress(*address_data, NULL, &problems);
   return !problems.empty();
 }
 

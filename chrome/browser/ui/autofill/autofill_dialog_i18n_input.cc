@@ -13,10 +13,11 @@
 #include "components/autofill/core/browser/field_types.h"
 #include "grit/components_strings.h"
 #include "third_party/libaddressinput/chromium/addressinput_util.h"
-#include "third_party/libaddressinput/chromium/cpp/include/libaddressinput/address_data.h"
-#include "third_party/libaddressinput/chromium/cpp/include/libaddressinput/address_field.h"
-#include "third_party/libaddressinput/chromium/cpp/include/libaddressinput/address_ui.h"
-#include "third_party/libaddressinput/chromium/cpp/include/libaddressinput/address_ui_component.h"
+#include "third_party/libaddressinput/src/cpp/include/libaddressinput/address_data.h"
+#include "third_party/libaddressinput/src/cpp/include/libaddressinput/address_field.h"
+#include "third_party/libaddressinput/src/cpp/include/libaddressinput/address_ui.h"
+#include "third_party/libaddressinput/src/cpp/include/libaddressinput/address_ui_component.h"
+#include "third_party/libaddressinput/src/cpp/include/libaddressinput/localization.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace autofill {
@@ -25,9 +26,19 @@ namespace i18ninput {
 namespace {
 
 using base::UTF16ToUTF8;
-using ::i18n::addressinput::AddressData;
 using ::i18n::addressinput::AddressField;
 using ::i18n::addressinput::AddressUiComponent;
+using ::i18n::addressinput::Localization;
+
+std::vector<AddressUiComponent> BuildComponents(const std::string& country_code,
+                                                std::string* language_code) {
+  Localization localization;
+  localization.SetGetter(l10n_util::GetStringUTF8);
+  std::string not_used;
+  return ::i18n::addressinput::BuildComponents(
+      country_code, localization, g_browser_process->GetApplicationLocale(),
+      language_code == NULL ? &not_used : language_code);
+}
 
 DetailInput::Length LengthFromHint(AddressUiComponent::LengthHint hint) {
   if (hint == AddressUiComponent::HINT_SHORT)
@@ -42,10 +53,8 @@ void BuildAddressInputs(common::AddressType address_type,
                         const std::string& country_code,
                         DetailInputs* inputs,
                         std::string* language_code) {
-  std::vector<AddressUiComponent> components(
-      ::i18n::addressinput::BuildComponents(
-          country_code, g_browser_process->GetApplicationLocale(),
-          language_code));
+  const std::vector<AddressUiComponent>& components(
+      BuildComponents(country_code, language_code));
 
   const bool billing = address_type == common::ADDRESS_TYPE_BILLING;
 
@@ -53,7 +62,7 @@ void BuildAddressInputs(common::AddressType address_type,
     const AddressUiComponent& component = components[i];
     ServerFieldType server_type = TypeForField(component.field, address_type);
     DetailInput::Length length = LengthFromHint(component.length_hint);
-    base::string16 placeholder = l10n_util::GetStringUTF16(component.name_id);
+    base::string16 placeholder = base::UTF8ToUTF16(component.name);
     DetailInput input = { length, server_type, placeholder };
     inputs->push_back(input);
   }
@@ -134,8 +143,7 @@ ServerFieldType TypeForField(AddressField address_field,
   return UNKNOWN_TYPE;
 }
 
-bool FieldForType(ServerFieldType server_type,
-                  ::i18n::addressinput::AddressField* field) {
+bool FieldForType(ServerFieldType server_type, AddressField* field) {
   switch (server_type) {
     case ADDRESS_BILLING_COUNTRY:
     case ADDRESS_HOME_COUNTRY:

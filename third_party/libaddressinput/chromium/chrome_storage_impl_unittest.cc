@@ -7,9 +7,9 @@
 #include <string>
 
 #include "base/prefs/value_map_pref_store.h"
-#include "cpp/test/storage_test_runner.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/libaddressinput/chromium/cpp/include/libaddressinput/callback.h"
+#include "third_party/libaddressinput/chromium/storage_test_runner.h"
+#include "third_party/libaddressinput/src/cpp/include/libaddressinput/callback.h"
 
 namespace autofill {
 
@@ -25,7 +25,7 @@ class ChromeStorageImplTest : public testing::Test {
 
   scoped_refptr<ValueMapPrefStore> store_;
   ChromeStorageImpl storage_;
-  i18n::addressinput::StorageTestRunner runner_;
+  StorageTestRunner runner_;
 };
 
 TEST_F(ChromeStorageImplTest, StandardStorageTests) {
