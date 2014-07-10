@@ -52,6 +52,7 @@ AudioRendererImpl::AudioRendererImpl(
                            decoders.Pass(),
                            set_decryptor_ready_cb),
       hardware_config_(hardware_config),
+      now_cb_(base::Bind(&base::TimeTicks::Now)),
       state_(kUninitialized),
       buffering_state_(BUFFERING_HAVE_NOTHING),
       rendering_(false),

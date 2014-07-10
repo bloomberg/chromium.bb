@@ -80,6 +80,12 @@ class MEDIA_EXPORT AudioRendererImpl
   virtual void StartPlayingFrom(base::TimeDelta timestamp) OVERRIDE;
   virtual void SetVolume(float volume) OVERRIDE;
 
+  // Allows injection of a custom time callback for non-realtime testing.
+  typedef base::Callback<base::TimeTicks()> NowCB;
+  void set_now_cb_for_testing(const NowCB& now_cb) {
+    now_cb_ = now_cb;
+  }
+
  private:
   friend class AudioRendererImplTest;
 
@@ -214,6 +220,9 @@ class MEDIA_EXPORT AudioRendererImpl
 
   // Callback provided to Flush().
   base::Closure flush_cb_;
+
+  // Typically calls base::TimeTicks::Now() but can be overridden by a test.
+  NowCB now_cb_;
 
   // After Initialize() has completed, all variables below must be accessed
   // under |lock_|. ------------------------------------------------------------
