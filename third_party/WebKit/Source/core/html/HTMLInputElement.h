@@ -181,7 +181,6 @@ public:
     int maxResults() const { return m_maxResults; }
 
     const AtomicString& defaultValue() const;
-    void setDefaultValue(const AtomicString&);
 
     Vector<String> acceptMIMETypes();
     Vector<String> acceptFileExtensions();

@@ -1233,11 +1233,6 @@ const AtomicString& HTMLInputElement::defaultValue() const
     return fastGetAttribute(valueAttr);
 }
 
-void HTMLInputElement::setDefaultValue(const AtomicString& value)
-{
-    setAttribute(valueAttr, value);
-}
-
 static inline bool isRFC2616TokenCharacter(UChar ch)
 {
     return isASCII(ch) && ch > ' ' && ch != '"' && ch != '(' && ch != ')' && ch != ',' && ch != '/' && (ch < ':' || ch > '@') && (ch < '[' || ch > ']') && ch != '{' && ch != '}' && ch != 0x7f;
