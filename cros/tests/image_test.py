@@ -205,4 +205,4 @@ class LinkageTest(NonForgivingImageTestCase):
       except lddtree.exceptions.ELFError:
         continue
       except IOError as e:
-        self.fail(e)
+        self.fail('Fail linkage test for %s: %s' % (to_test, e))
