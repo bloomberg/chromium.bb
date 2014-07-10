@@ -53,7 +53,8 @@ class DeviceRegistryPropertyValue {
   // Creates a property value instance, where |property_type| is one of REG_xxx
   // registry value type (e.g. REG_SZ, REG_DWORD), |value| is a byte array
   // containing the propery value and |value_size| is the number of bytes in
-  // |value|. Note the returned instance takes ownership of |value| array.
+  // |value|. Note the returned instance takes ownership of the bytes in
+  // |value|.
   static scoped_ptr<DeviceRegistryPropertyValue> Create(
       DWORD property_type,
       scoped_ptr<uint8_t[]> value,
@@ -78,16 +79,41 @@ class DeviceRegistryPropertyValue {
   DISALLOW_COPY_AND_ASSIGN(DeviceRegistryPropertyValue);
 };
 
+// Represents the value associated to a DEVPROPKEY.
+class DevicePropertyValue {
+ public:
+  // Creates a property value instance, where |property_type| is one of
+  // DEVPROP_TYPE_xxx value type , |value| is a byte array containing the
+  // propery value and |value_size| is the number of bytes in |value|. Note the
+  // returned instance takes ownership of the bytes in |value|.
+  DevicePropertyValue(DEVPROPTYPE property_type,
+                      scoped_ptr<uint8_t[]> value,
+                      size_t value_size);
+
+  DEVPROPTYPE property_type() const { return property_type_; }
+
+  uint32_t AsUint32() const;
+
+ private:
+  DEVPROPTYPE property_type_;
+  scoped_ptr<uint8_t[]> value_;
+  size_t value_size_;
+
+  DISALLOW_COPY_AND_ASSIGN(DevicePropertyValue);
+};
+
 // Returns true only on Windows platforms supporting Bluetooth Low Energy.
 bool IsBluetoothLowEnergySupported();
 
 struct BluetoothLowEnergyDeviceInfo {
-  BluetoothLowEnergyDeviceInfo() { address.ullLong = BLUETOOTH_NULL_ADDRESS; }
+  BluetoothLowEnergyDeviceInfo();
+  ~BluetoothLowEnergyDeviceInfo();
 
   base::FilePath path;
   std::string id;
   std::string friendly_name;
   BLUETOOTH_ADDRESS address;
+  bool connected;
 };
 
 // Enumerates the list of known (i.e. already paired) Bluetooth LE devices on
