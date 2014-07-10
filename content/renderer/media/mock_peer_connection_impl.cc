@@ -274,9 +274,10 @@ bool MockPeerConnectionImpl::GetStats(
   report.id = "1234";
   report.type = "ssrc";
   report.timestamp = 42;
-  webrtc::StatsReport::Value value;
-  value.name = "trackname";
-  value.value = "trackvalue";
+  webrtc::StatsReport::Value value = {
+    webrtc::StatsReport::kStatsValueNameFingerprint,
+    "trackvalue"
+  };
   report.values.push_back(value);
   // If selector is given, we pass back one report.
   // If selector is not given, we pass back two.
@@ -286,9 +287,11 @@ bool MockPeerConnectionImpl::GetStats(
     report2.type = "generic";
     report2.timestamp = 44;
     report2.values.push_back(value);
-    value.name = "somename";
-    value.value = "somevalue";
-    report2.values.push_back(value);
+    webrtc::StatsReport::Value value2 = {
+      webrtc::StatsReport::kStatsValueNameFingerprintAlgorithm,
+      "somevalue"
+    };
+    report2.values.push_back(value2);
   }
   // Note that the callback is synchronous, not asynchronous; it will
   // happen before the request call completes.
