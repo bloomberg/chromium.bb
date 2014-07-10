@@ -1846,7 +1846,7 @@ void Browser::OnZoomChanged(const ZoomController::ZoomChangedEventData& data) {
   if (data.web_contents == tab_strip_model_->GetActiveWebContents()) {
     // Only show the zoom bubble for zoom changes in the active window.
     window_->ZoomChangedForActiveTab(data.can_show_bubble &&
-                                     window_->IsActive() && !is_devtools());
+                                     window_->IsActive());
   }
 }
 

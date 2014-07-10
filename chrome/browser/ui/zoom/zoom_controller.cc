@@ -27,6 +27,7 @@ DEFINE_WEB_CONTENTS_USER_DATA_KEY(ZoomController);
 
 ZoomController::ZoomController(content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
+      can_show_bubble_(true),
       zoom_mode_(ZOOM_MODE_DEFAULT),
       zoom_level_(1.0),
       browser_context_(web_contents->GetBrowserContext()) {
@@ -274,9 +275,9 @@ void ZoomController::UpdateState(const std::string& host) {
     }
   }
 
-  // The zoom bubble can be shown for all zoom changes where the host is
-  // not empty.
-  bool can_show_bubble = !host.empty();
+  // The zoom bubble should not be shown for zoom changes where the host is
+  // empty.
+  bool can_show_bubble = can_show_bubble_ && !host.empty();
 
   if (event_data_) {
     // For state changes initiated within the ZoomController, information about

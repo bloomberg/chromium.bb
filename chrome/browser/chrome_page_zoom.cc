@@ -69,6 +69,7 @@ std::vector<double> PresetZoomLevels(double custom_level) {
 void Zoom(content::WebContents* web_contents, content::PageZoom zoom) {
   ZoomController* zoom_controller =
       ZoomController::FromWebContents(web_contents);
+  DCHECK(zoom_controller);
 
   double current_zoom_level = zoom_controller->GetZoomLevel();
   double default_zoom_level =
