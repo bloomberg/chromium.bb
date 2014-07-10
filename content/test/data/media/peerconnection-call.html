@@ -18,7 +18,6 @@
   // Default transform functions, overridden by some test cases.
   var transformSdp = function(sdp) { return sdp; };
   var transformRemoteSdp = function(sdp) { return sdp; };
-  var transformCandidate = function(candidate) { return candidate; };
   var onLocalDescriptionError = function(error) { failTest(error); };
   var onRemoteDescriptionError = function(error) { failTest(error); };
 
@@ -47,10 +46,6 @@
     'data': 'a=crypto:1 AES_CM_128_HMAC_SHA1_80 ' +
         'inline:NzB4d1BINUAvLEw6UzF3WSJ+PSdFcGdUJShpX1Zj'
   };
-
-  // When using GICE, the ICE credentials can be chosen by javascript.
-  var EXTERNAL_GICE_UFRAG = '1234567890123456';
-  var EXTERNAL_GICE_PWD = '123456789012345678901234';
 
   setAllEventsOccuredHandler(reportTestSuccess);
 
@@ -201,7 +196,6 @@
     transformSdp = function(sdp) {
       return removeBundle(useGice(useExternalSdes(sdp)));
     };
-    transformCandidate = addGiceCredsToCandidate;
     createConnections({
       'mandatory': {'RtpDataChannels': true, 'DtlsSrtpKeyAgreement': false}
     });
@@ -717,7 +711,7 @@
   }
 
   function receiveOffer(offerSdp, caller, callee) {
-    console.log("Receiving offer...");
+    console.log("Receiving offer...\n" + offerSdp);
     offerSdp = transformRemoteSdp(offerSdp);
 
     var parsedOffer = new RTCSessionDescription({ type: 'offer',
@@ -766,10 +760,6 @@
     sdp = sdp.replace(/t=.*\r\n/g, function(subString) {
       return subString + 'a=ice-options:google-ice\r\n';
     });
-    sdp = sdp.replace(/a=ice-ufrag:.*\r\n/g,
-                      'a=ice-ufrag:' + EXTERNAL_GICE_UFRAG + '\r\n');
-    sdp = sdp.replace(/a=ice-pwd:.*\r\n/g,
-                      'a=ice-pwd:' + EXTERNAL_GICE_PWD + '\r\n');
     return sdp;
   }
 
@@ -811,15 +801,9 @@
     callee.onicecandidate = function(event) { onIceCandidate(event, caller); }
   }
 
-  function addGiceCredsToCandidate(candidate) {
-    return candidate.trimRight() +
-        ' username ' + EXTERNAL_GICE_UFRAG + ' password ' + EXTERNAL_GICE_PWD;
-  }
-
   function onIceCandidate(event, target) {
     if (event.candidate) {
       var candidate = new RTCIceCandidate(event.candidate);
-      candidate.candidate = transformCandidate(candidate.candidate);
       target.addIceCandidate(candidate);
     }
   }
