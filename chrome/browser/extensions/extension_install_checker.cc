@@ -163,8 +163,12 @@ void ExtensionInstallChecker::MaybeInvokeCallback() {
     running_checks_ = 0;
     ++current_sequence_number_;
 
-    callback_.Run(failed_mask);
+    Callback callback_copy = callback_;
     callback_.Reset();
+
+    // This instance may be owned by the callback recipient and deleted here,
+    // so reset |callback_| first and invoke a copy of the callback.
+    callback_copy.Run(failed_mask);
   }
 }
 

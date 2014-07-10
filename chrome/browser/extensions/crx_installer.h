@@ -14,8 +14,8 @@
 #include "base/memory/weak_ptr.h"
 #include "base/version.h"
 #include "chrome/browser/extensions/blacklist.h"
+#include "chrome/browser/extensions/extension_install_checker.h"
 #include "chrome/browser/extensions/extension_install_prompt.h"
-#include "chrome/browser/extensions/extension_installer.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/sandboxed_unpacker.h"
 #include "chrome/browser/extensions/webstore_installer.h"
@@ -195,9 +195,9 @@ class CrxInstaller
 
   bool did_handle_successfully() const { return did_handle_successfully_; }
 
-  Profile* profile() { return installer_.profile(); }
+  Profile* profile() { return install_checker_.profile(); }
 
-  const Extension* extension() { return installer_.extension().get(); }
+  const Extension* extension() { return install_checker_.extension().get(); }
 
   const std::string& current_version() const { return current_version_; }
 
@@ -229,11 +229,12 @@ class CrxInstaller
                                const Extension* extension,
                                const SkBitmap& install_icon) OVERRIDE;
 
-  // Called on the UI thread to start the requirements check on the extension.
-  void CheckImportsAndRequirements();
+  // Called on the UI thread to start the requirements, policy and blacklist
+  // checks on the extension.
+  void CheckInstall();
 
-  // Runs on the UI thread. Callback from RequirementsChecker.
-  void OnRequirementsChecked(std::vector<std::string> requirement_errors);
+  // Runs on the UI thread. Callback from ExtensionInstallChecker.
+  void OnInstallChecksComplete(int failed_checks);
 
   // Runs on the UI thread. Callback from Blacklist.
   void OnBlacklistChecked(
@@ -417,8 +418,8 @@ class CrxInstaller
   // The flags for ExtensionService::OnExtensionInstalled.
   int install_flags_;
 
-  // Gives access to common methods and data of an extension installer.
-  ExtensionInstaller installer_;
+  // Performs requirements, policy and blacklist checks on the extension.
+  ExtensionInstallChecker install_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(CrxInstaller);
 };

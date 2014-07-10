@@ -13,14 +13,13 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/extensions/extension_installer.h"
+#include "chrome/browser/extensions/extension_install_checker.h"
 
 class ExtensionService;
 
 namespace extensions {
 
 class Extension;
-class RequirementsChecker;
 
 // Installs and loads an unpacked extension. Because internal state needs to be
 // held about the instalation process, only one call to Load*() should be made
@@ -82,11 +81,11 @@ class UnpackedInstaller
   // Must be called from the UI thread.
   void ShowInstallPrompt();
 
-  // Calls CheckRequirements.
-  void CallCheckRequirements();
+  // Begin management policy and requirements checks.
+  void StartInstallChecks();
 
-  // Callback from RequirementsChecker.
-  void OnRequirementsChecked(std::vector<std::string> requirement_errors);
+  // Callback from ExtensionInstallChecker.
+  void OnInstallChecksComplete(int failed_checks);
 
   // Verifies if loading unpacked extensions is allowed.
   bool IsLoadingUnpackedAllowed() const;
@@ -108,11 +107,13 @@ class UnpackedInstaller
   // Notify the frontend that there was an error loading an extension.
   void ReportExtensionLoadError(const std::string& error);
 
-  // Called when an unpacked extension has been loaded and installed.
-  void ConfirmInstall();
+  // Passes the extension onto extension service.
+  void InstallExtension();
 
   // Helper to get the Extension::CreateFlags for the installing extension.
   int GetFlags();
+
+  const Extension* extension() { return install_checker_.extension().get(); }
 
   // The service we will report results back to.
   base::WeakPtr<ExtensionService> service_weak_;
@@ -135,8 +136,9 @@ class UnpackedInstaller
   // Whether or not to be noisy (show a dialog) on failure. Defaults to true.
   bool be_noisy_on_failure_;
 
-  // Gives access to common methods and data of an extension installer.
-  ExtensionInstaller installer_;
+  // Checks management policies and requirements before the extension can be
+  // installed.
+  ExtensionInstallChecker install_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(UnpackedInstaller);
 };

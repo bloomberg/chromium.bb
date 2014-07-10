@@ -133,7 +133,7 @@ CrxInstaller::CrxInstaller(base::WeakPtr<ExtensionService> service_weak,
       error_on_unsupported_requirements_(false),
       update_from_settings_page_(false),
       install_flags_(kInstallFlagNone),
-      installer_(service_weak->profile()) {
+      install_checker_(service_weak->profile()) {
   installer_task_runner_ = service_weak->GetFileTaskRunner();
   if (!approval)
     return;
@@ -369,7 +369,7 @@ CrxInstallerError CrxInstaller::AllowInstall(const Extension* extension) {
     }
   }
 
-  if (installer_.extension()->is_app()) {
+  if (install_checker_.extension()->is_app()) {
     // If the app was downloaded, apps_require_extension_mime_type_
     // will be set.  In this case, check that it was served with the
     // right mime type.  Make an exception for file URLs, which come
@@ -404,7 +404,7 @@ CrxInstallerError CrxInstaller::AllowInstall(const Extension* extension) {
       pattern.SetHost(download_url_.host());
       pattern.SetMatchSubdomains(true);
 
-      URLPatternSet patterns = installer_.extension()->web_extent();
+      URLPatternSet patterns = install_checker_.extension()->web_extent();
       for (URLPatternSet::const_iterator i = patterns.begin();
            i != patterns.end(); ++i) {
         if (!pattern.MatchesHost(i->host())) {
@@ -448,7 +448,7 @@ void CrxInstaller::OnUnpackSuccess(
                             install_cause(),
                             extension_misc::NUM_INSTALL_CAUSES);
 
-  installer_.set_extension(extension);
+  install_checker_.set_extension(extension);
   temp_dir_ = temp_dir;
   if (!install_icon.empty())
     install_icon_.reset(new SkBitmap(install_icon));
@@ -468,13 +468,13 @@ void CrxInstaller::OnUnpackSuccess(
     return;
   }
 
-  if (!BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        base::Bind(&CrxInstaller::CheckImportsAndRequirements, this)))
+  if (!BrowserThread::PostTask(BrowserThread::UI,
+                               FROM_HERE,
+                               base::Bind(&CrxInstaller::CheckInstall, this)))
     NOTREACHED();
 }
 
-void CrxInstaller::CheckImportsAndRequirements() {
+void CrxInstaller::CheckInstall() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   ExtensionService* service = service_weak_.get();
   if (!service || service->browser_terminating())
@@ -505,42 +505,36 @@ void CrxInstaller::CheckImportsAndRequirements() {
       }
     }
   }
-  installer_.CheckRequirements(base::Bind(&CrxInstaller::OnRequirementsChecked,
-                                          this));
+
+  // Run the policy, requirements and blacklist checks in parallel.
+  install_checker_.Start(
+      ExtensionInstallChecker::CHECK_ALL,
+      false /* fail fast */,
+      base::Bind(&CrxInstaller::OnInstallChecksComplete, this));
 }
 
-void CrxInstaller::OnRequirementsChecked(
-    std::vector<std::string> requirement_errors) {
+void CrxInstaller::OnInstallChecksComplete(int failed_checks) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!service_weak_)
     return;
 
-  if (!requirement_errors.empty()) {
+  // Check for requirement errors.
+  if (!install_checker_.requirement_errors().empty()) {
     if (error_on_unsupported_requirements_) {
-      ReportFailureFromUIThread(CrxInstallerError(
-          base::UTF8ToUTF16(JoinString(requirement_errors, ' '))));
+      ReportFailureFromUIThread(CrxInstallerError(base::UTF8ToUTF16(
+          JoinString(install_checker_.requirement_errors(), ' '))));
       return;
     }
     install_flags_ |= kInstallFlagHasRequirementErrors;
   }
 
-  ExtensionSystem::Get(profile())->blacklist()->IsBlacklisted(
-      extension()->id(),
-      base::Bind(&CrxInstaller::OnBlacklistChecked, this));
-}
-
-void CrxInstaller::OnBlacklistChecked(
-    extensions::BlacklistState blacklist_state) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (!service_weak_)
-    return;
-
-  if (blacklist_state == extensions::BLACKLISTED_MALWARE) {
+  // Check the blacklist state.
+  if (install_checker_.blacklist_state() == extensions::BLACKLISTED_MALWARE) {
     install_flags_ |= kInstallFlagIsBlacklistedForMalware;
   }
 
-  if ((blacklist_state == extensions::BLACKLISTED_MALWARE ||
-       blacklist_state == extensions::BLACKLISTED_UNKNOWN) &&
+  if ((install_checker_.blacklist_state() == extensions::BLACKLISTED_MALWARE ||
+       install_checker_.blacklist_state() == extensions::BLACKLISTED_UNKNOWN) &&
       !allow_silent_install_) {
     // User tried to install a blacklisted extension. Show an error and
     // refuse to install it.
@@ -556,6 +550,19 @@ void CrxInstaller::OnBlacklistChecked(
   // NOTE: extension may still be blacklisted, but we're forced to silently
   // install it. In this case, ExtensionService::OnExtensionInstalled needs to
   // deal with it.
+
+  // Check for policy errors.
+  if (!install_checker_.policy_error().empty()) {
+    // We don't want to show the error infobar for installs from the WebStore,
+    // because the WebStore already shows an error dialog itself.
+    // Note: |client_| can be NULL in unit_tests!
+    if (extension()->from_webstore() && client_)
+      client_->install_ui()->set_skip_post_install_ui(true);
+    ReportFailureFromUIThread(
+        CrxInstallerError(base::UTF8ToUTF16(install_checker_.policy_error())));
+    return;
+  }
+
   ConfirmInstall();
 }
 
@@ -565,7 +572,7 @@ void CrxInstaller::ConfirmInstall() {
   if (!service || service->browser_terminating())
     return;
 
-  if (KioskModeInfo::IsKioskOnly(installer_.extension())) {
+  if (KioskModeInfo::IsKioskOnly(install_checker_.extension())) {
     bool in_kiosk_mode = false;
 #if defined(OS_CHROMEOS)
     chromeos::UserManager* user_manager = chromeos::UserManager::Get();
@@ -577,17 +584,6 @@ void CrxInstaller::ConfirmInstall() {
               IDS_EXTENSION_INSTALL_KIOSK_MODE_ONLY)));
       return;
     }
-  }
-
-  base::string16 error = installer_.CheckManagementPolicy();
-  if (!error.empty()) {
-    // We don't want to show the error infobar for installs from the WebStore,
-    // because the WebStore already shows an error dialog itself.
-    // Note: |client_| can be NULL in unit_tests!
-    if (extension()->from_webstore() && client_)
-      client_->install_ui()->set_skip_post_install_ui(true);
-    ReportFailureFromUIThread(CrxInstallerError(error));
-    return;
   }
 
   // Check whether this install is initiated from the settings page to
@@ -722,7 +718,7 @@ void CrxInstaller::ReloadExtensionAfterInstall(
   // with base::string16
   std::string extension_id = extension()->id();
   std::string error;
-  installer_.set_extension(
+  install_checker_.set_extension(
       file_util::LoadExtension(
           version_dir,
           install_source_,
