@@ -180,8 +180,9 @@ class NetworkMetric(Metric):
       else:
         original_content_length += cl
       if self.add_result_for_resource:
-        results.Add(
-            'resource_content_length_' + resource_signature, 'bytes', cl)
+        results.AddValue(scalar.ScalarValue(
+            results.current_page,
+            'resource_content_length_' + resource_signature, 'bytes', cl))
       content_length += cl
 
     results.AddValue(scalar.ScalarValue(
