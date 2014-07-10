@@ -264,10 +264,9 @@ hb_font_t* CreateHarfBuzzFont(SkTypeface* skia_face, int text_size) {
   }
 
   hb_font_t* harfbuzz_font = hb_font_create(face_cache->first);
-  // TODO(ckocagil): Investigate whether disabling hinting here has any effect
-  // on text quality.
-  int upem = hb_face_get_upem(face_cache->first);
-  hb_font_set_scale(harfbuzz_font, upem, upem);
+
+  const int scale = SkScalarToFixed(text_size);
+  hb_font_set_scale(harfbuzz_font, scale, scale);
   FontData* hb_font_data = new FontData(&face_cache->second);
   hb_font_data->paint_.setTypeface(skia_face);
   hb_font_data->paint_.setTextSize(text_size);
@@ -990,7 +989,7 @@ void RenderTextHarfBuzz::ShapeRun(internal::TextRunHarfBuzz* run) {
         SkScalarRoundToInt(SkFixedToScalar(hb_positions[i].x_offset));
     const int y_offset =
         SkScalarRoundToInt(SkFixedToScalar(hb_positions[i].y_offset));
-    run->positions[i].set(run->width + x_offset, y_offset);
+    run->positions[i].set(run->width + x_offset, -y_offset);
     run->width +=
         SkScalarRoundToInt(SkFixedToScalar(hb_positions[i].x_advance));
   }
