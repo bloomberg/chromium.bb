@@ -11,7 +11,7 @@
 #include "ui/ozone/ozone_platform.h"
 #include "ui/ozone/ozone_switches.h"
 #include "ui/ozone/platform/test/file_surface_factory.h"
-#include "ui/ozone/public/cursor_factory_ozone.h"
+#include "ui/ozone/platform/test/test_cursor_factory.h"
 #include "ui/ozone/public/gpu_platform_support.h"
 #include "ui/ozone/public/gpu_platform_support_host.h"
 
@@ -66,7 +66,7 @@ class OzonePlatformTest : public OzonePlatform {
     surface_factory_ozone_.reset(new FileSurfaceFactory(file_path_));
     event_factory_ozone_.reset(
         new EventFactoryEvdev(NULL, device_manager_.get()));
-    cursor_factory_ozone_.reset(new CursorFactoryOzone());
+    cursor_factory_ozone_.reset(new TestCursorFactory());
     gpu_platform_support_host_.reset(CreateStubGpuPlatformSupportHost());
   }
 

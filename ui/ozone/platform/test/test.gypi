@@ -29,6 +29,8 @@
         'file_surface_factory.h',
         'ozone_platform_test.cc',
         'ozone_platform_test.h',
+        'test_cursor_factory.cc',
+        'test_cursor_factory.h',
       ],
     },
   ],
