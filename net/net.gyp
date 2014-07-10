@@ -549,7 +549,7 @@
         'net',
         'net_derived_sources',
         'net_test_support',
-        'quic_ported_server',
+        'quic_tools',
       ],
       'sources': [
         '<@(net_test_sources)',
@@ -1121,7 +1121,7 @@
     {
       # This is a temporary target which will be merged into 'net' once the
       # dependency on balsa is eliminated and the classes are actually used.
-      'target_name': 'quic_ported_server',
+      'target_name': 'quic_tools',
       'type': 'static_library',
       'dependencies': [
 	'../base/base.gyp:base',
@@ -1509,7 +1509,7 @@
           'dependencies': [
             '../base/base.gyp:base',
             'net',
-            'quic_ported_server',
+            'quic_tools',
           ],
           'sources': [
             'quic/quic_server_bin.cc',

@@ -32,10 +32,14 @@ QuicSpdyServerStream::~QuicSpdyServerStream() {
 }
 
 uint32 QuicSpdyServerStream::ProcessData(const char* data, uint32 data_len) {
+  if (data_len > INT_MAX) {
+    LOG(DFATAL) << "Data length too long: " << data_len;
+    return 0;
+  }
   // Are we still reading the request headers.
   if (!request_headers_received_) {
     // Grow the read buffer if necessary.
-    while (read_buf_->RemainingCapacity() < (int)data_len) {
+    while (read_buf_->RemainingCapacity() < static_cast<int>(data_len)) {
       read_buf_->SetCapacity(read_buf_->capacity() * 2);
     }
     memcpy(read_buf_->data(), data, data_len);
@@ -76,13 +80,13 @@ void QuicSpdyServerStream::OnFinRead() {
 // request_headers_received_. If not successful, it can just be tried again once
 // there's more data.
 void QuicSpdyServerStream::ParseRequestHeaders() {
-  SpdyFramer framer(kDefaultSpdyMajorVersion);
-  char* data = read_buf_->StartOfBuffer();
+  SpdyFramer framer((kDefaultSpdyMajorVersion));
+  const char* data = read_buf_->StartOfBuffer();
   size_t read_buf_len = static_cast<size_t>(read_buf_->offset());
   size_t len = framer.ParseHeaderBlockInBuffer(data, read_buf_len, &headers_);
   if (len == 0) {
     // Not enough data yet, presumably. (If we still don't succeed by the end of
-    // the stream, then we'll error above.)
+    // the stream, then we'll error in OnFinRead().)
     return;
   }
 
