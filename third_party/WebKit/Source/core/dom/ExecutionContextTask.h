@@ -51,6 +51,8 @@ public:
 
 class CallClosureTask FINAL : public ExecutionContextTask {
 public:
+    // Do not use |create| other than in createCrossThreadTask.
+    // See http://crbug.com/390851
     static PassOwnPtr<CallClosureTask> create(const Closure& closure)
     {
         return adoptPtr(new CallClosureTask(closure));

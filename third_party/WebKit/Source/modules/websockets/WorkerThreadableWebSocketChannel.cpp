@@ -497,10 +497,7 @@ bool WorkerThreadableWebSocketChannel::Bridge::connect(const KURL& url, const St
         return false;
 
     RefPtrWillBeRawPtr<Bridge> protect(this);
-    // It is important to seprate task creation from calling
-    // waitForMethodCompletion. See the above comment.
-    OwnPtr<ExecutionContextTask> task = CallClosureTask::create(bind(&Peer::connect, m_peer, url.copy(), protocol.isolatedCopy()));
-    if (!waitForMethodCompletion(task.release()))
+    if (!waitForMethodCompletion(createCrossThreadTask(&Peer::connect, m_peer, url, protocol)))
         return false;
 
     return m_syncHelper->connectRequestResult();
@@ -512,10 +509,7 @@ WebSocketChannel::SendResult WorkerThreadableWebSocketChannel::Bridge::send(cons
         return WebSocketChannel::SendFail;
 
     RefPtrWillBeRawPtr<Bridge> protect(this);
-    // It is important to seprate task creation from calling
-    // waitForMethodCompletion. See the above comment.
-    OwnPtr<ExecutionContextTask> task = CallClosureTask::create(bind(&Peer::send, m_peer, message.isolatedCopy()));
-    if (!waitForMethodCompletion(task.release()))
+    if (!waitForMethodCompletion(createCrossThreadTask(&Peer::send, m_peer, message)))
         return WebSocketChannel::SendFail;
 
     return m_syncHelper->sendRequestResult();
@@ -532,10 +526,7 @@ WebSocketChannel::SendResult WorkerThreadableWebSocketChannel::Bridge::send(cons
         memcpy(data->data(), static_cast<const char*>(binaryData.data()) + byteOffset, byteLength);
 
     RefPtrWillBeRawPtr<Bridge> protect(this);
-    // It is important to seprate task creation from calling
-    // waitForMethodCompletion. See the above comment.
-    OwnPtr<ExecutionContextTask> task = CallClosureTask::create(bind(&Peer::sendArrayBuffer, m_peer, data.release()));
-    if (!waitForMethodCompletion(task.release()))
+    if (!waitForMethodCompletion(createCrossThreadTask(&Peer::sendArrayBuffer, m_peer, data.release())))
         return WebSocketChannel::SendFail;
 
     return m_syncHelper->sendRequestResult();
@@ -547,10 +538,7 @@ WebSocketChannel::SendResult WorkerThreadableWebSocketChannel::Bridge::send(Pass
         return WebSocketChannel::SendFail;
 
     RefPtrWillBeRawPtr<Bridge> protect(this);
-    // It is important to seprate task creation from calling
-    // waitForMethodCompletion. See the above comment.
-    OwnPtr<ExecutionContextTask> task = CallClosureTask::create(bind(&Peer::sendBlob, m_peer, data));
-    if (!waitForMethodCompletion(task.release()))
+    if (!waitForMethodCompletion(createCrossThreadTask(&Peer::sendBlob, m_peer, data)))
         return WebSocketChannel::SendFail;
 
     return m_syncHelper->sendRequestResult();
@@ -561,10 +549,7 @@ void WorkerThreadableWebSocketChannel::Bridge::close(int code, const String& rea
     if (hasTerminatedPeer())
         return;
 
-    // It is important to seprate task creation from calling
-    // waitForMethodCompletion. See the above comment.
-    OwnPtr<ExecutionContextTask> task = CallClosureTask::create(bind(&Peer::close, m_peer, code, reason.isolatedCopy()));
-    m_loaderProxy.postTaskToLoader(task.release());
+    m_loaderProxy.postTaskToLoader(createCrossThreadTask(&Peer::close, m_peer, code, reason));
 }
 
 void WorkerThreadableWebSocketChannel::Bridge::fail(const String& reason, MessageLevel level, const String& sourceURL, unsigned lineNumber)
@@ -572,10 +557,7 @@ void WorkerThreadableWebSocketChannel::Bridge::fail(const String& reason, Messag
     if (hasTerminatedPeer())
         return;
 
-    // It is important to seprate task creation from calling
-    // waitForMethodCompletion. See the above comment.
-    OwnPtr<ExecutionContextTask> task = CallClosureTask::create(bind(&Peer::fail, m_peer, reason.isolatedCopy(), level, sourceURL.isolatedCopy(), lineNumber));
-    m_loaderProxy.postTaskToLoader(task.release());
+    m_loaderProxy.postTaskToLoader(createCrossThreadTask(&Peer::fail, m_peer, reason, level, sourceURL, lineNumber));
 }
 
 void WorkerThreadableWebSocketChannel::Bridge::disconnect()
@@ -615,17 +597,14 @@ void WorkerThreadableWebSocketChannel::Bridge::terminatePeer()
 {
     ASSERT(!hasTerminatedPeer());
 
-    // It is important to seprate task creation from calling
-    // waitForMethodCompletion. See the above comment.
-    OwnPtr<ExecutionContextTask> task = CallClosureTask::create(bind(&Peer::destroy, m_peer));
 #if ENABLE(OILPAN)
     // The worker thread has to wait for the main thread to complete Peer::destroy,
     // because the worker thread has to make sure that the main thread does not have any
     // references to on-heap objects allocated in the thread heap of the worker thread
     // before the worker thread shuts down.
-    waitForMethodCompletion(task.release());
+    waitForMethodCompletion(createCrossThreadTask(&Peer::destroy, m_peer));
 #else
-    m_loaderProxy.postTaskToLoader(task.release());
+    m_loaderProxy.postTaskToLoader(createCrossThreadTask(&Peer::destroy, m_peer));
 #endif
 
     // Peer::destroy() deletes m_peer and then m_syncHelper will be released.

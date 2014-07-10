@@ -303,13 +303,6 @@ void ExecutionContext::postTask(PassOwnPtr<ExecutionContextTask> task)
     m_client->postTask(task);
 }
 
-void ExecutionContext::postTask(const Closure& closure)
-{
-    if (!m_client)
-        return;
-    m_client->postTask(CallClosureTask::create(closure));
-}
-
 PassOwnPtr<LifecycleNotifier<ExecutionContext> > ExecutionContext::createLifecycleNotifier()
 {
     return ContextLifecycleNotifier::create(this);

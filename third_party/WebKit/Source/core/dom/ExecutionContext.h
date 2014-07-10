@@ -74,7 +74,6 @@ public:
     LocalDOMWindow* executingWindow() const;
     String userAgent(const KURL&) const;
     void postTask(PassOwnPtr<ExecutionContextTask>);
-    void postTask(const Closure&);
     double timerAlignmentInterval() const;
 
     virtual void reportBlockedScriptExecutionToInspector(const String& directiveText) = 0;
