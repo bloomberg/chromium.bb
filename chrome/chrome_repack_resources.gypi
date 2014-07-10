@@ -8,7 +8,7 @@
       '<(SHARED_INTERMEDIATE_DIR)/chrome/chrome_unscaled_resources.pak',
       '<(SHARED_INTERMEDIATE_DIR)/components/component_resources.pak',
       '<(SHARED_INTERMEDIATE_DIR)/net/net_resources.pak',
-      '<(SHARED_INTERMEDIATE_DIR)/ui/resources/webui_resources.pak',
+      '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources/webui_resources.pak',
       '<(grit_out_dir)/browser_resources.pak',
       '<(grit_out_dir)/common_resources.pak',
       '<(grit_out_dir)/invalidations_resources.pak',

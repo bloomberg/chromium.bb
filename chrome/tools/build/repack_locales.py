@@ -89,8 +89,8 @@ def calc_inputs(locale):
     inputs.append(os.path.join(SHARE_INT_DIR, 'webkit',
                   'webkit_strings_%s.pak' % locale))
 
-    #e.g. '<(SHARED_INTERMEDIATE_DIR)/ui/strings_da.pak',
-    inputs.append(os.path.join(SHARE_INT_DIR, 'ui', 'strings',
+    #e.g. '<(SHARED_INTERMEDIATE_DIR)/ui/ui_strings_da.pak',
+    inputs.append(os.path.join(SHARE_INT_DIR, 'ui', 'ui_strings',
                   'ui_strings_%s.pak' % locale))
 
     #e.g. '<(SHARED_INTERMEDIATE_DIR)/device/bluetooth/strings/

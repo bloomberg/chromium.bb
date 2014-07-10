@@ -20,9 +20,7 @@ group("root") {
     #"//base(//build/toolchain/nacl:x86_newlib)",
 
     "//cc",
-    "//chrome/browser",
     "//chrome/browser/devtools",
-    "//chrome/browser/ui",
     "//chrome/browser/ui/views",
     "//chrome/common",
     "//chrome/plugin",
@@ -140,9 +138,7 @@ group("root") {
   if (is_android) {
     deps -= [
       "//cc",
-      "//chrome/browser",  # Blocked on content.
       "//chrome/browser/devtools",  # Blocked on content.
-      "//chrome/browser/ui",  # Blocked on content.
       "//chrome/browser/ui/views",  # Blocked on content.
       "//chrome/common",  # Blocked on content.
       "//chrome/plugin",  # Blocked on content.

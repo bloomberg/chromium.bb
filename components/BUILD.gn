@@ -12,11 +12,10 @@ group("all_components") {
     "//components/autofill/content/common",
     "//components/autofill/content/renderer",
     "//components/cloud_devices/common",
-    "//components/domain_reliability",
     "//components/dom_distiller/core",
+    "//components/domain_reliability",
     "//components/favicon_base",
     "//components/favicon/core",
-    "//components/feedback",
     "//components/history/core/browser",
     "//components/history/core/common",
     "//components/history/core/test",
@@ -64,7 +63,6 @@ group("all_components") {
       "//components/domain_reliability",  # Blocked on content.
       "//components/favicon_base",  # Should work, needs checking.
       "//components/favicon/core",  # Blocked on keyed service.
-      "//components/feedback",  # Blocked on content.
       "//components/history/core/browser",  # Should work, needs checking.
       "//components/history/core/common",  # Should work, needs checking.
       "//components/history/core/test",  # Should work, needs checking.

@@ -16,7 +16,7 @@
           'action_name': 'ui_strings',
           'variables': {
             'grit_grd_file': 'ui_strings.grd',
-            'grit_out_dir': '<(grit_base_out_dir)/strings',
+            'grit_out_dir': '<(grit_base_out_dir)/ui_strings',
           },
           'includes': [ '../../build/grit_action.gypi' ],
         },
@@ -32,7 +32,7 @@
       'direct_dependent_settings': {
         'include_dirs': [
           '<(grit_base_out_dir)/app_locale_settings',
-          '<(grit_base_out_dir)/strings',
+          '<(grit_base_out_dir)/ui_strings',
         ],
       },
     },

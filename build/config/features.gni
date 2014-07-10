@@ -23,12 +23,6 @@ declare_args() {
 
   # Enables Native Client support.
   enable_nacl = (!is_ios && !is_android)
-
-  # If debug_devtools is set to true, JavaScript files for DevTools are stored
-  # as is and loaded from disk. Otherwise, a concatenated file is stored in
-  # resources.pak. It is still possible to load JS files from disk by passing
-  # --debug-devtools cmdline switch.
-  debug_devtools = false
 }
 
 # Additional dependent variables -----------------------------------------------
@@ -150,9 +144,3 @@ enable_image_loader_extension = is_chromeos
 enable_remoting = !is_ios && !is_android
 
 enable_google_now = !is_ios && !is_android
-
-enable_one_click_signin = is_win || is_mac || (is_linux && !is_chromeos)
-
-# Chrome OS: whether to also build the upcoming version of
-# ChromeVox, which can then be enabled via a command-line switch.
-enable_chromevox_next = false

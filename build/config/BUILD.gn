@@ -31,6 +31,7 @@ config("feature_flags") {
   # TODO(brettw) most of these need to be parameterized.
   defines = [
       "CHROMIUM_BUILD",
+      "ENABLE_ONE_CLICK_SIGNIN",
       "ENABLE_NOTIFICATIONS",
       "ENABLE_EGLIMAGE=1",
       "ENABLE_BACKGROUND=1",
@@ -179,9 +180,6 @@ config("feature_flags") {
   }
   if (enable_google_now) {
     defines += [ "ENABLE_GOOGLE_NOW=1" ]
-  }
-  if (enable_one_click_signin) {
-    defines += [ "ENABLE_ONE_CLICK_SIGNIN" ]
   }
 }
 
