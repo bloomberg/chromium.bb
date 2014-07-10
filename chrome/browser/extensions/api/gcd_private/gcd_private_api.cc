@@ -168,6 +168,15 @@ void GcdPrivateAPI::DeviceCacheFlushed() {
   known_devices_.clear();
 }
 
+bool GcdPrivateAPI::QueryForDevices() {
+  if (!privet_device_lister_)
+    return false;
+
+  privet_device_lister_->DiscoverNewDevices(true);
+
+  return true;
+}
+
 // static
 void GcdPrivateAPI::SetGCDApiFlowFactoryForTests(
     GCDApiFlowFactoryForTests* factory) {
@@ -176,6 +185,7 @@ void GcdPrivateAPI::SetGCDApiFlowFactoryForTests(
 
 GcdPrivateGetCloudDeviceListFunction::GcdPrivateGetCloudDeviceListFunction() {
 }
+
 GcdPrivateGetCloudDeviceListFunction::~GcdPrivateGetCloudDeviceListFunction() {
 }
 
@@ -258,7 +268,20 @@ GcdPrivateQueryForNewLocalDevicesFunction::
 }
 
 bool GcdPrivateQueryForNewLocalDevicesFunction::RunSync() {
-  return false;
+  GcdPrivateAPI* gcd_api =
+      BrowserContextKeyedAPIFactory<GcdPrivateAPI>::Get(GetProfile());
+
+  if (!gcd_api)
+    return false;
+
+  if (!gcd_api->QueryForDevices()) {
+    error_ =
+        "You must first subscribe to onDeviceStateChanged or onDeviceRemoved "
+        "notifications";
+    return false;
+  }
+
+  return true;
 }
 
 GcdPrivateStartSetupFunction::GcdPrivateStartSetupFunction() {

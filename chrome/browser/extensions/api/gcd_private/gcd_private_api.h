@@ -37,6 +37,8 @@ class GcdPrivateAPI : public BrowserContextKeyedAPI,
   // BrowserContextKeyedAPI implementation.
   static BrowserContextKeyedAPIFactory<GcdPrivateAPI>* GetFactoryInstance();
 
+  bool QueryForDevices();
+
  private:
   friend class BrowserContextKeyedAPIFactory<GcdPrivateAPI>;
 
