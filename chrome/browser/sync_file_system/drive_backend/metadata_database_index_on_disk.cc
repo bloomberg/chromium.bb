@@ -80,8 +80,8 @@ std::string GenerateAppRootIDByAppIDKey(const std::string& app_id) {
   return kAppRootIDByAppIDKeyPrefix + app_id;
 }
 
-std::string GenerateActiveIDByFileIDKey(const std::string& file_id) {
-  return kActiveIDByFileIDKeyPrefix + file_id;
+std::string GenerateActiveTrackerIDByFileIDKey(const std::string& file_id) {
+  return kActiveTrackerIDByFileIDKeyPrefix + file_id;
 }
 
 std::string GenerateTrackerIDByFileIDKeyPrefix(const std::string& file_id) {
@@ -229,8 +229,9 @@ void MetadataDatabaseIndexOnDisk::RemoveFileTracker(
 
 TrackerIDSet MetadataDatabaseIndexOnDisk::GetFileTrackerIDsByFileID(
     const std::string& file_id) const {
-  return GetTrackerIDSetByPrefix(kActiveIDByFileIDKeyPrefix + file_id,
-                                 GenerateTrackerIDByFileIDKeyPrefix(file_id));
+  return GetTrackerIDSetByPrefix(
+      GenerateActiveTrackerIDByFileIDKey(file_id),
+      GenerateTrackerIDByFileIDKeyPrefix(file_id));
 }
 
 int64 MetadataDatabaseIndexOnDisk::GetAppRootTracker(
@@ -322,7 +323,7 @@ void MetadataDatabaseIndexOnDisk::DemoteDirtyTracker(
   }
 
   batch->Delete(key);
-  batch->Put(GenerateDemotedDirtyIDKey(tracker_id), "");
+  batch->Put(GenerateDemotedDirtyIDKey(tracker_id), std::string());
 }
 
 bool MetadataDatabaseIndexOnDisk::HasDemotedDirtyTracker() const {
@@ -346,7 +347,7 @@ void MetadataDatabaseIndexOnDisk::PromoteDemotedDirtyTrackers(
       continue;
 
     batch->Delete(itr->key());
-    batch->Put(GenerateDemotedDirtyIDKey(tracker_id), "");
+    batch->Put(GenerateDemotedDirtyIDKey(tracker_id), std::string());
   }
 }
 
@@ -498,11 +499,9 @@ void MetadataDatabaseIndexOnDisk::AddToFileIDIndexes(
   const std::string prefix =
       GenerateTrackerIDByFileIDKeyPrefix(new_tracker.file_id());
 
-  batch->Put(prefix + base::Int64ToString(new_tracker.tracker_id()), "");
-  if (new_tracker.active()) {
-    batch->Put(GenerateActiveIDByFileIDKey(new_tracker.file_id()),
-               base::Int64ToString(new_tracker.tracker_id()));
-  }
+  AddToTrackerIDSetWithPrefix(
+      GenerateActiveTrackerIDByFileIDKey(new_tracker.file_id()),
+      prefix, new_tracker, batch);
 
   scoped_ptr<leveldb::Iterator> itr(db_->NewIterator(leveldb::ReadOptions()));
   for (itr->Seek(prefix); itr->Valid(); itr->Next()) {
@@ -517,7 +516,7 @@ void MetadataDatabaseIndexOnDisk::AddToFileIDIndexes(
 
     DVLOG_IF(1, !DBHasKey(GenerateMultiTrackerKey(new_tracker.file_id())))
         << "  Add to multi-tracker file IDs: " << new_tracker.file_id();
-    batch->Put(GenerateMultiTrackerKey(new_tracker.file_id()), "");
+    batch->Put(GenerateMultiTrackerKey(new_tracker.file_id()), std::string());
     break;
   }
 }
@@ -530,14 +529,17 @@ void MetadataDatabaseIndexOnDisk::UpdateInFileIDIndexes(
   DCHECK_EQ(old_tracker.file_id(), new_tracker.file_id());
 
   const std::string& file_id = new_tracker.file_id();
-  DCHECK(DBHasKey(GenerateTrackerIDByFileIDKeyPrefix(file_id) +
-                  base::Int64ToString(new_tracker.tracker_id())));
+  const std::string prefix = GenerateTrackerIDByFileIDKeyPrefix(file_id);
+  DCHECK(DBHasKey(prefix + base::Int64ToString(new_tracker.tracker_id())));
 
   if (old_tracker.active() && !new_tracker.active()) {
-    batch->Delete(GenerateActiveIDByFileIDKey(file_id));
+    DeactivateInTrackerIDSetWithPrefix(
+        GenerateActiveTrackerIDByFileIDKey(file_id), prefix,
+        new_tracker.tracker_id(), batch);
   } else if (!old_tracker.active() && new_tracker.active()) {
-    batch->Put(GenerateActiveIDByFileIDKey(file_id),
-               base::Int64ToString(new_tracker.tracker_id()));
+    ActivateInTrackerIDSetWithPrefix(
+        GenerateActiveTrackerIDByFileIDKey(file_id), prefix,
+        new_tracker.tracker_id(), batch);
   }
 }
 
@@ -545,26 +547,13 @@ void MetadataDatabaseIndexOnDisk::RemoveFromFileIDIndexes(
     const FileTracker& tracker, leveldb::WriteBatch* batch) {
   const std::string prefix =
       GenerateTrackerIDByFileIDKeyPrefix(tracker.file_id());
-  const std::string key = prefix + base::Int64ToString(tracker.tracker_id());
 
-  std::string value;
-  leveldb::Status status = db_->Get(leveldb::ReadOptions(), key, &value);
-  if (status.IsNotFound())
+  if (!EraseInTrackerIDSetWithPrefix(
+          GenerateActiveTrackerIDByFileIDKey(tracker.file_id()), prefix,
+          tracker.tracker_id(), batch))
     return;
 
   DVLOG(1) << "  Remove from trackers by file ID: " << tracker.tracker_id();
-  batch->Delete(key);
-
-  const std::string active_key =
-      GenerateActiveIDByFileIDKey(tracker.file_id());
-  status = db_->Get(leveldb::ReadOptions(), active_key, &value);
-  if (status.IsNotFound())
-    return;
-  int64 active_id;
-  if (base::StringToInt64(value, &active_id) &&
-      active_id == tracker.tracker_id()) {
-    batch->Delete(active_key);
-  }
 
   // Deletions are not done yet, so the number looks +1 larger than expected.
   size_t count = 0;
@@ -582,9 +571,6 @@ void MetadataDatabaseIndexOnDisk::RemoveFromFileIDIndexes(
   DVLOG_IF(1, DBHasKey(multi_key))
       << "  Remove from multi-tracker file IDs: " << tracker.file_id();
   batch->Delete(multi_key);
-
-  if (count == 0)
-    batch->Delete(GenerateActiveIDByFileIDKey(tracker.file_id()));
 }
 
 void MetadataDatabaseIndexOnDisk::AddToDirtyTrackerIndexes(
@@ -596,7 +582,7 @@ void MetadataDatabaseIndexOnDisk::AddToDirtyTrackerIndexes(
 
   if (new_tracker.dirty()) {
     DVLOG(1) << "  Add to dirty tracker IDs: " << new_tracker.tracker_id();
-    batch->Put(dirty_key, "");
+    batch->Put(dirty_key, std::string());
   }
 }
 
@@ -622,7 +608,7 @@ void MetadataDatabaseIndexOnDisk::UpdateInDirtyTrackerIndexes(
 
     DVLOG(1) << "  Add to dirty tracker IDs: " << tracker_id;
 
-    batch->Put(dirty_key, "");
+    batch->Put(dirty_key, std::string());
   }
 }
 
@@ -641,7 +627,8 @@ void MetadataDatabaseIndexOnDisk::RemoveFromDirtyTrackerIndexes(
 }
 
 TrackerIDSet MetadataDatabaseIndexOnDisk::GetTrackerIDSetByPrefix(
-    const std::string& active_key, const std::string& ids_prefix) const {
+    const std::string& active_tracker_key,
+    const std::string& ids_prefix) const {
   TrackerIDSet trackers;
 
   // Seek IDs.
@@ -660,12 +647,97 @@ TrackerIDSet MetadataDatabaseIndexOnDisk::GetTrackerIDSetByPrefix(
 
   // Set an active tracker ID, if available.
   std::string value;
-  leveldb::Status status = db_->Get(leveldb::ReadOptions(), active_key, &value);
+  leveldb::Status status = db_->Get(leveldb::ReadOptions(),
+                                    active_tracker_key, &value);
   int64 active_tracker;
-  if (status.ok() && base::StringToInt64(value, &active_tracker))
+  if (status.ok() && base::StringToInt64(value, &active_tracker) &&
+      active_tracker != kInvalidTrackerID) {
     trackers.Activate(active_tracker);
+  }
 
   return trackers;
+}
+
+void MetadataDatabaseIndexOnDisk::AddToTrackerIDSetWithPrefix(
+    const std::string& active_tracker_key, const std::string& key_prefix,
+    const FileTracker& tracker, leveldb::WriteBatch* batch) {
+  DCHECK(tracker.tracker_id());
+
+  const std::string id_str = base::Int64ToString(tracker.tracker_id());
+  batch->Put(key_prefix + id_str, std::string());
+  if (tracker.active())
+    batch->Put(active_tracker_key, id_str);
+}
+
+bool MetadataDatabaseIndexOnDisk::EraseInTrackerIDSetWithPrefix(
+    const std::string& active_tracker_key, const std::string& key_prefix,
+    int64 tracker_id, leveldb::WriteBatch* batch) {
+  std::string value;
+  const std::string del_key = key_prefix + base::Int64ToString(tracker_id);
+  leveldb::Status status = db_->Get(leveldb::ReadOptions(), del_key, &value);
+  if (status.IsNotFound())
+    return false;
+
+  batch->Delete(del_key);
+
+  size_t count = 0;
+  scoped_ptr<leveldb::Iterator> itr(db_->NewIterator(leveldb::ReadOptions()));
+  for (itr->Seek(key_prefix); itr->Valid(); itr->Next()) {
+    const std::string key = itr->key().ToString();
+    if (!StartsWithASCII(key, key_prefix, true))
+      break;
+    // Entry for |del_key| is not deleted yet.
+    if (key == del_key)
+      continue;
+    ++count;
+    break;
+  }
+
+  if (count > 0) {
+    // TrackerIDSet is still alive.  Deactivate if the tracker is active.
+    leveldb::Status status =
+        db_->Get(leveldb::ReadOptions(), active_tracker_key, &value);
+    int64 active_tracker_id;
+    if (status.ok() && base::StringToInt64(value, &active_tracker_id) &&
+        active_tracker_id == tracker_id) {
+      batch->Put(active_tracker_key, base::Int64ToString(kInvalidTrackerID));
+    }
+  } else {
+    // TrackerIDSet is no longer alive.  Erase active tracker entry.
+    batch->Delete(active_tracker_key);
+  }
+
+  return true;
+}
+
+void MetadataDatabaseIndexOnDisk::ActivateInTrackerIDSetWithPrefix(
+    const std::string& active_tracker_key, const std::string& key_prefix,
+    int64 tracker_id, leveldb::WriteBatch* batch) {
+  DCHECK(DBHasKey(key_prefix + base::Int64ToString(tracker_id)));
+
+  std::string value;
+  leveldb::Status status = db_->Get(leveldb::ReadOptions(),
+                                    active_tracker_key, &value);
+  int64 active_tracker_id;
+  if (status.ok() && base::StringToInt64(value, &active_tracker_id)) {
+    DCHECK(active_tracker_id != tracker_id);
+    batch->Put(active_tracker_key, base::Int64ToString(tracker_id));
+  }
+}
+
+void MetadataDatabaseIndexOnDisk::DeactivateInTrackerIDSetWithPrefix(
+    const std::string& active_tracker_key, const std::string& key_prefix,
+    int64 tracker_id, leveldb::WriteBatch* batch) {
+  DCHECK(DBHasKey(key_prefix + base::Int64ToString(tracker_id)));
+
+  std::string value;
+  leveldb::Status status = db_->Get(leveldb::ReadOptions(),
+                                    active_tracker_key, &value);
+  int64 active_tracker_id;
+  if (status.ok() && base::StringToInt64(value, &active_tracker_id)) {
+    DCHECK(active_tracker_id == tracker_id);
+    batch->Put(active_tracker_key, base::Int64ToString(kInvalidTrackerID));
+  }
 }
 
 bool MetadataDatabaseIndexOnDisk::DBHasKey(const std::string& key) {

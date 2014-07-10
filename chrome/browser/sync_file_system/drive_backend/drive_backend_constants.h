@@ -23,7 +23,7 @@ extern const char kFileMetadataKeyPrefix[];
 extern const char kFileTrackerKeyPrefix[];
 
 extern const char kAppRootIDByAppIDKeyPrefix[];
-extern const char kActiveIDByFileIDKeyPrefix[];
+extern const char kActiveTrackerIDByFileIDKeyPrefix[];
 extern const char kTrackerIDByFileIDKeyPrefix[];
 extern const char kMultiTrackerByFileIDKeyPrefix[];
 extern const char kDirtyIDKeyPrefix[];

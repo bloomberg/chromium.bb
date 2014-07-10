@@ -99,7 +99,43 @@ class MetadataDatabaseIndexOnDisk : public MetadataDatabaseIndexInterface {
   // Returns a TrackerIDSet built from IDs which are found with given key
   // and key prefix.
   TrackerIDSet GetTrackerIDSetByPrefix(
-      const std::string& active_key, const std::string& key_prefix) const;
+      const std::string& active_tracker_key,
+      const std::string& key_prefix) const;
+
+
+  // Simulate behavior of TrackerIDSet class.
+
+  // Adds an entry with |key_prefix| and tracker ID of |tracker|.  If |tracker|
+  // is active, an entry for |active_key| is added.
+  void AddToTrackerIDSetWithPrefix(
+      const std::string& active_tracker_key,
+      const std::string& key_prefix,
+      const FileTracker& tracker,
+      leveldb::WriteBatch* batch);
+
+  // Returns true if |tracker_id| is removed successfully.  If no other entries
+  // are stored with |key_prefix|, the entry for |active_key| is also removed.
+  bool EraseInTrackerIDSetWithPrefix(
+      const std::string& active_tracker_key,
+      const std::string& key_prefix,
+      int64 tracker_id,
+      leveldb::WriteBatch* batch);
+
+  // Adds an entry for |active_key| on DB, if |tracker_id| has an entry with
+  // |key_prefix|.
+  void ActivateInTrackerIDSetWithPrefix(
+      const std::string& active_tracker_key,
+      const std::string& key_prefix,
+      int64 tracker_id,
+      leveldb::WriteBatch* batch);
+
+  // Removes an entry for |active_key| on DB, if the value of |active_key| key
+  // is |tracker_id|.
+  void DeactivateInTrackerIDSetWithPrefix(
+      const std::string& active_tracker_key,
+      const std::string& key_prefix,
+      int64 tracker_id,
+      leveldb::WriteBatch* batch);
 
   // Checks if |db_| has an entry whose key is |key|.
   bool DBHasKey(const std::string& key);
