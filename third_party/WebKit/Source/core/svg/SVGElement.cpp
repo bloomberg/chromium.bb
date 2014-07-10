@@ -836,32 +836,35 @@ static bool hasLoadListener(Element* element)
     return false;
 }
 
-void SVGElement::sendSVGLoadEventIfPossible(bool sendParentLoadEvents)
+bool SVGElement::sendSVGLoadEventIfPossible()
 {
-    RefPtrWillBeRawPtr<SVGElement> currentTarget = this;
-    while (currentTarget && currentTarget->haveLoadedRequiredResources()) {
-        RefPtrWillBeRawPtr<Element> parent = nullptr;
-        if (sendParentLoadEvents)
-            parent = currentTarget->parentOrShadowHostElement(); // save the next parent to dispatch too incase dispatching the event changes the tree
-        if (hasLoadListener(currentTarget.get())
-            && (currentTarget->isStructurallyExternal() || isSVGSVGElement(*currentTarget)))
-            currentTarget->dispatchEvent(Event::create(EventTypeNames::load));
-        currentTarget = (parent && parent->isSVGElement()) ? static_pointer_cast<SVGElement>(parent) : nullptr;
-        SVGElement* element = currentTarget.get();
-        if (!element || !element->isOutermostSVGSVGElement())
-            continue;
+    if (!haveLoadedRequiredResources())
+        return false;
+    if ((isStructurallyExternal() || isSVGSVGElement(*this)) && hasLoadListener(this))
+        dispatchEvent(Event::create(EventTypeNames::load));
+    return true;
+}
 
-        // Consider <svg onload="foo()"><image xlink:href="foo.png" externalResourcesRequired="true"/></svg>.
-        // If foo.png is not yet loaded, the first SVGLoad event will go to the <svg> element, sent through
-        // Document::implicitClose(). Then the SVGLoad event will fire for <image>, once its loaded.
-        ASSERT(sendParentLoadEvents);
+void SVGElement::sendSVGLoadEventToSelfAndAncestorChainIfPossible()
+{
+    // Let Document::implicitClose() dispatch the 'load' to the outermost SVG root.
+    if (isOutermostSVGSVGElement())
+        return;
 
-        // If the load event was not sent yet by Document::implicitClose(), but the <image> from the example
-        // above, just appeared, don't send the SVGLoad event to the outermost <svg>, but wait for the document
-        // to be "ready to render", first.
-        if (!document().loadEventFinished())
-            break;
-    }
+    // Save the next parent to dispatch to in case dispatching the event mutates the tree.
+    RefPtrWillBeRawPtr<Element> parent = parentOrShadowHostElement();
+    if (!sendSVGLoadEventIfPossible())
+        return;
+
+    // If document/window 'load' has been sent already, then only deliver to
+    // the element in question.
+    if (document().loadEventFinished())
+        return;
+
+    if (!parent || !parent->isSVGElement())
+        return;
+
+    toSVGElement(parent)->sendSVGLoadEventToSelfAndAncestorChainIfPossible();
 }
 
 void SVGElement::sendSVGLoadEventIfPossibleAsynchronously()

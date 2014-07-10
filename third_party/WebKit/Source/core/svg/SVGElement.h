@@ -102,7 +102,8 @@ public:
     PassRefPtr<SVGAnimatedPropertyBase> propertyFromAttribute(const QualifiedName& attributeName);
     static AnimatedPropertyType animatedPropertyTypeForCSSAttribute(const QualifiedName& attributeName);
 
-    void sendSVGLoadEventIfPossible(bool sendParentLoadEvents = false);
+    void sendSVGLoadEventToSelfAndAncestorChainIfPossible();
+    bool sendSVGLoadEventIfPossible();
     void sendSVGLoadEventIfPossibleAsynchronously();
     void svgLoadEventTimerFired(Timer<SVGElement>*);
     virtual Timer<SVGElement>* svgLoadEventTimer();
