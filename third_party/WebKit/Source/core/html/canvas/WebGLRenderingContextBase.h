@@ -102,8 +102,6 @@ class WebGLRenderingContextBase: public CanvasRenderingContext, public ActiveDOM
 public:
     virtual ~WebGLRenderingContextBase();
 
-    virtual bool is3d() const OVERRIDE { return true; }
-    virtual bool isAccelerated() const OVERRIDE { return true; }
     virtual unsigned version() const = 0;
     virtual String contextName() const = 0;
     virtual void registerContextExtensions() = 0;
@@ -330,13 +328,11 @@ public:
 
     blink::WebGraphicsContext3D* webContext() const { return m_drawingBuffer->context(); }
     WebGLContextGroup* contextGroup() const { return m_contextGroup.get(); }
-    virtual blink::WebLayer* platformLayer() const OVERRIDE;
     Extensions3DUtil* extensionsUtil();
 
     void reshape(int width, int height);
 
     void markLayerComposited();
-    virtual void paintRenderingResultsToCanvas() OVERRIDE;
     PassRefPtrWillBeRawPtr<ImageData> paintRenderingResultsToImageData();
 
     void removeSharedObject(WebGLSharedObject*);
@@ -367,6 +363,13 @@ protected:
     PassRefPtr<DrawingBuffer> createDrawingBuffer(PassOwnPtr<blink::WebGraphicsContext3D>);
     void initializeNewContext();
     void setupFlags();
+
+    // CanvasRenderingContext implementation.
+    virtual bool is3d() const OVERRIDE { return true; }
+    virtual bool isAccelerated() const OVERRIDE { return true; }
+    virtual void setIsHidden(bool) OVERRIDE;
+    virtual void paintRenderingResultsToCanvas() OVERRIDE;
+    virtual blink::WebLayer* platformLayer() const OVERRIDE;
 
     void addSharedObject(WebGLSharedObject*);
     void addContextObject(WebGLContextObject*);
