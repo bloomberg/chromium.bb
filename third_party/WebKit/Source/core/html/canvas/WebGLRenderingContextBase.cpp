@@ -118,8 +118,6 @@ void WebGLRenderingContextBase::forciblyLoseOldestContext(const String& reason)
     // Must make sure that the context is not deleted until the call stack unwinds.
     RefPtrWillBeRawPtr<WebGLRenderingContextBase> protect(candidate);
 
-    activeContexts().remove(candidateID);
-
     candidate->printWarningToConsole(reason);
     InspectorInstrumentation::didFireWebGLWarning(candidate->canvas());
 
@@ -133,12 +131,12 @@ size_t WebGLRenderingContextBase::oldestContextIndex()
         return maxGLActiveContexts;
 
     WebGLRenderingContextBase* candidate = activeContexts().first();
-    blink::WebGraphicsContext3D* candidateWGC3D = candidate->isContextLost() ? 0 : candidate->webContext();
+    ASSERT(!candidate->isContextLost());
     size_t candidateID = 0;
     for (size_t ii = 1; ii < activeContexts().size(); ++ii) {
         WebGLRenderingContextBase* context = activeContexts()[ii];
-        blink::WebGraphicsContext3D* contextWGC3D = context->isContextLost() ? 0 : context->webContext();
-        if (contextWGC3D && candidateWGC3D && contextWGC3D->lastFlushID() < candidateWGC3D->lastFlushID()) {
+        ASSERT(!context->isContextLost());
+        if (context->webContext()->lastFlushID() < candidate->webContext()->lastFlushID()) {
             candidate = context;
             candidateID = ii;
         }
@@ -169,17 +167,22 @@ void WebGLRenderingContextBase::activateContext(WebGLRenderingContextBase* conte
         removedContexts++;
     }
 
+    ASSERT(!context->isContextLost());
     if (!activeContexts().contains(context))
         activeContexts().append(context);
 }
 
-void WebGLRenderingContextBase::deactivateContext(WebGLRenderingContextBase* context, bool addToEvictedList)
+void WebGLRenderingContextBase::deactivateContext(WebGLRenderingContextBase* context)
 {
     size_t position = activeContexts().find(context);
     if (position != WTF::kNotFound)
         activeContexts().remove(position);
+}
 
-    if (addToEvictedList && !forciblyEvictedContexts().contains(context))
+void WebGLRenderingContextBase::addToEvictedList(WebGLRenderingContextBase* context)
+{
+    ASSERT(context->m_restoreAllowed);
+    if (!forciblyEvictedContexts().contains(context))
         forciblyEvictedContexts().append(context);
 }
 
@@ -189,23 +192,18 @@ void WebGLRenderingContextBase::willDestroyContext(WebGLRenderingContextBase* co
     if (position != WTF::kNotFound)
         forciblyEvictedContexts().remove(position);
 
-    deactivateContext(context, false);
+    deactivateContext(context);
 
     // Try to re-enable the oldest inactive contexts.
     while(activeContexts().size() < maxGLActiveContexts && forciblyEvictedContexts().size()) {
         WebGLRenderingContextBase* evictedContext = forciblyEvictedContexts().first();
-        if (!evictedContext->m_restoreAllowed) {
-            forciblyEvictedContexts().remove(0);
-            continue;
-        }
-
+        ASSERT(evictedContext->m_restoreAllowed);
         IntSize desiredSize = DrawingBuffer::adjustSize(evictedContext->clampedCanvasSize(), IntSize(), evictedContext->m_maxTextureSize);
 
         // If there's room in the pixel budget for this context, restore it.
         if (!desiredSize.isEmpty()) {
             forciblyEvictedContexts().remove(0);
             evictedContext->forceRestoreContext();
-            activeContexts().append(evictedContext);
         }
         break;
     }
@@ -4234,6 +4232,7 @@ void WebGLRenderingContextBase::loseContextImpl(WebGLRenderingContextBase::LostC
     // Don't allow restoration unless the context lost event has both been
     // dispatched and its default behavior prevented.
     m_restoreAllowed = false;
+    deactivateContext(this);
 
     // Always defer the dispatch of the context lost event, to implement
     // the spec behavior of queueing a task.
@@ -5450,9 +5449,13 @@ void WebGLRenderingContextBase::dispatchContextLostEvent(Timer<WebGLRenderingCon
     RefPtrWillBeRawPtr<WebGLContextEvent> event = WebGLContextEvent::create(EventTypeNames::webglcontextlost, false, true, "");
     canvas()->dispatchEvent(event);
     m_restoreAllowed = event->defaultPrevented();
-    deactivateContext(this, m_contextLostMode != RealLostContext && m_restoreAllowed);
-    if ((m_contextLostMode == RealLostContext || m_contextLostMode == AutoRecoverSyntheticLostContext) && m_restoreAllowed)
-        m_restoreTimer.startOneShot(0, FROM_HERE);
+    if (m_restoreAllowed) {
+        if ((m_contextLostMode == RealLostContext || m_contextLostMode == AutoRecoverSyntheticLostContext)) {
+            m_restoreTimer.startOneShot(0, FROM_HERE);
+        } else {
+            addToEvictedList(this);
+        }
+    }
 }
 
 void WebGLRenderingContextBase::maybeRestoreContext(Timer<WebGLRenderingContextBase>*)
