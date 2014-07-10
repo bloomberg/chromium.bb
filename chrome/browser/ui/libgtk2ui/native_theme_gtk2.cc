@@ -151,6 +151,9 @@ void NativeThemeGtk2::Paint(SkCanvas* canvas,
 }
 
 SkColor NativeThemeGtk2::GetSystemColor(ColorId color_id) const {
+  if (color_id == kColorId_BlueButtonShadowColor)
+    return SK_ColorTRANSPARENT;
+
   return GdkColorToSkColor(GetSystemGdkColor(color_id));
 }
 
@@ -270,6 +273,10 @@ GdkColor NativeThemeGtk2::GetSystemGdkColor(ColorId color_id) const {
       return GetButtonStyle()->bg[GTK_STATE_PRELIGHT];
     case kColorId_BlueButtonPressedColor:
       return GetButtonStyle()->text[GTK_STATE_ACTIVE];
+    case kColorId_BlueButtonShadowColor:
+      // Should be handled in GetSystemColor().
+      NOTREACHED();
+      return GetButtonStyle()->text[GTK_STATE_NORMAL];
 
     // Textfield
     case kColorId_TextfieldDefaultColor:

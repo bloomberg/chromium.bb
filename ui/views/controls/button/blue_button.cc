@@ -9,13 +9,6 @@
 #include "ui/gfx/sys_color_change_listener.h"
 #include "ui/views/controls/button/label_button_border.h"
 
-namespace {
-
-// Default shadow color for the blue button.
-const SkColor kBlueButtonShadowColor = SkColorSetRGB(0x53, 0x8C, 0xEA);
-
-}  // namespace
-
 namespace views {
 
 // static
@@ -42,9 +35,13 @@ void BlueButton::ResetColorsFromNativeTheme() {
     SetTextColor(STATE_DISABLED, GetNativeTheme()->
         GetSystemColor(ui::NativeTheme::kColorId_BlueButtonDisabledColor));
 
-    // TODO(estade): this is not great on system themes.
-    label()->set_shadows(gfx::ShadowValues(1,
-        gfx::ShadowValue(gfx::Point(0, 1), 0, kBlueButtonShadowColor)));
+    label()->set_shadows(gfx::ShadowValues(
+        1,
+        gfx::ShadowValue(
+            gfx::Point(0, 1),
+            0,
+            GetNativeTheme()->GetSystemColor(
+                ui::NativeTheme::kColorId_BlueButtonShadowColor))));
   }
 }
 
