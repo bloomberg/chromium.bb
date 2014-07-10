@@ -507,6 +507,7 @@ void RenderMessageFilter::OnCreateWindow(
     *route_id = MSG_ROUTING_NONE;
     *main_frame_route_id = MSG_ROUTING_NONE;
     *surface_id = 0;
+    *cloned_session_storage_namespace_id = 0;
     return;
   }
 
