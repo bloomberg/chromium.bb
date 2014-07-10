@@ -602,6 +602,12 @@ class MockDomainReliabilityService : public DomainReliabilityService {
     callback.Run();
   }
 
+  virtual void GetWebUIData(
+      const base::Callback<void(scoped_ptr<base::Value>)>& callback)
+      const OVERRIDE {
+    NOTREACHED();
+  }
+
   int clear_count() const { return clear_count_; }
 
   DomainReliabilityClearMode last_clear_mode() const {

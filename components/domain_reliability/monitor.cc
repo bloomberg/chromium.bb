@@ -120,6 +120,20 @@ void DomainReliabilityMonitor::ClearBrowsingData(
   }
 }
 
+scoped_ptr<base::Value> DomainReliabilityMonitor::GetWebUIData() const {
+  base::ListValue* contexts_value = new base::ListValue();
+  for (ContextMap::const_iterator it = contexts_.begin();
+       it != contexts_.end();
+       ++it) {
+    contexts_value->Append(it->second->GetWebUIData().release());
+  }
+
+  base::DictionaryValue* data_value = new base::DictionaryValue();
+  data_value->Set("contexts", contexts_value);
+
+  return scoped_ptr<base::Value>(data_value);
+}
+
 DomainReliabilityContext* DomainReliabilityMonitor::AddContextForTesting(
     scoped_ptr<const DomainReliabilityConfig> config) {
   DCHECK(thread_checker_ && thread_checker_->CalledOnValidThread());

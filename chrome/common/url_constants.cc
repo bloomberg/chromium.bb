@@ -39,6 +39,8 @@ const char kChromeUICreditsURL[] = "chrome://credits/";
 const char kChromeUIDevicesURL[] = "chrome://devices/";
 const char kChromeUIDevToolsURL[] =
     "chrome-devtools://devtools/bundled/devtools.html";
+const char kChromeUIDomainReliabilityInternalsURL[] =
+    "chrome://domain-reliability-internals/";
 const char kChromeUIDownloadsURL[] = "chrome://downloads/";
 const char kChromeUIEditSearchEngineDialogURL[] = "chrome://editsearchengine/";
 const char kChromeUIExtensionIconURL[] = "chrome://extension-icon/";
@@ -173,6 +175,8 @@ const char kChromeUIDevToolsHost[] = "devtools";
 const char kChromeUIDevToolsBundledPath[] = "bundled";
 const char kChromeUIDevToolsRemotePath[] = "remote";
 const char kChromeUIDNSHost[] = "dns";
+const char kChromeUIDomainReliabilityInternalsHost[] =
+    "domain-reliability-internals";
 const char kChromeUIDownloadsHost[] = "downloads";
 const char kChromeUIDriveInternalsHost[] = "drive-internals";
 const char kChromeUIEditSearchEngineDialogHost[] = "editsearchengine";

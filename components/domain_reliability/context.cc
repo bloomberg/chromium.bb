@@ -38,7 +38,10 @@ class DomainReliabilityContext::ResourceState {
       : context(context),
         config(config),
         successful_requests(0),
-        failed_requests(0) {}
+        failed_requests(0),
+        uploading_beacons_size(0),
+        uploading_successful_requests(0),
+        uploading_failed_requests(0) {}
   ~ResourceState() {}
 
   // Serializes the resource state into a Value to be included in an upload.
@@ -136,6 +139,7 @@ DomainReliabilityContext::DomainReliabilityContext(
       dispatcher_(dispatcher),
       uploader_(uploader),
       beacon_count_(0),
+      uploading_beacon_count_(0),
       weak_factory_(this) {
   InitializeResourceStates();
 }
@@ -190,6 +194,18 @@ void DomainReliabilityContext::ClearBeacons() {
   }
   beacon_count_ = 0;
   uploading_beacon_count_ = 0;
+}
+
+scoped_ptr<base::Value> DomainReliabilityContext::GetWebUIData() const {
+  base::DictionaryValue* context_value = new base::DictionaryValue();
+
+  context_value->SetString("domain", config().domain);
+  context_value->SetInteger("beacon_count", static_cast<int>(beacon_count_));
+  context_value->SetInteger("uploading_beacon_count",
+      static_cast<int>(uploading_beacon_count_));
+  context_value->Set("scheduler", scheduler_.GetWebUIData());
+
+  return scoped_ptr<base::Value>(context_value);
 }
 
 void DomainReliabilityContext::GetQueuedDataForTesting(

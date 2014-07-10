@@ -16,9 +16,13 @@
 #include "components/domain_reliability/domain_reliability_export.h"
 #include "components/keyed_service/core/keyed_service.h"
 
+namespace base {
+class Value;
+}  // namespace base
+
 namespace net {
 class URLRequestContextGetter;
-};
+}  // namespace net
 
 namespace domain_reliability {
 
@@ -50,6 +54,10 @@ class DOMAIN_RELIABILITY_EXPORT DomainReliabilityService
   // called first.
   virtual void ClearBrowsingData(DomainReliabilityClearMode clear_mode,
                                  const base::Closure& callback) = 0;
+
+  virtual void GetWebUIData(
+      const base::Callback<void(scoped_ptr<base::Value>)>& callback)
+      const = 0;
 
  protected:
   DomainReliabilityService();

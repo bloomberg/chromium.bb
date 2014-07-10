@@ -8,6 +8,7 @@
 #include <map>
 
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "components/domain_reliability/beacon.h"
@@ -26,6 +27,7 @@
 namespace base {
 class SingleThreadTaskRunner;
 class ThreadChecker;
+class Value;
 }  // namespace base
 
 namespace net {
@@ -70,6 +72,10 @@ class DOMAIN_RELIABILITY_EXPORT DomainReliabilityMonitor {
   // place but clears beacons (which betray browsing history); with
   // CLEAR_CONTEXTS, removes all contexts (which can behave as cookies).
   void ClearBrowsingData(DomainReliabilityClearMode mode);
+
+  // Gets a Value containing data that can be formatted into a web page for
+  // debugging purposes.
+  scoped_ptr<base::Value> GetWebUIData() const;
 
   DomainReliabilityContext* AddContextForTesting(
       scoped_ptr<const DomainReliabilityConfig> config);

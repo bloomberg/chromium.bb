@@ -26,6 +26,7 @@
 #include "chrome/browser/ui/webui/constrained_web_dialog_ui.h"
 #include "chrome/browser/ui/webui/crashes_ui.h"
 #include "chrome/browser/ui/webui/devtools_ui.h"
+#include "chrome/browser/ui/webui/domain_reliability_internals_ui.h"
 #include "chrome/browser/ui/webui/downloads_ui.h"
 #include "chrome/browser/ui/webui/extensions/extension_info_ui.h"
 #include "chrome/browser/ui/webui/extensions/extensions_ui.h"
@@ -276,6 +277,8 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     return &NewWebUI<LocalDiscoveryUI>;
   }
 #endif
+  if (url.host() == chrome::kChromeUIDomainReliabilityInternalsHost)
+    return &NewWebUI<DomainReliabilityInternalsUI>;
   if (url.host() == chrome::kChromeUIFlagsHost)
     return &NewWebUI<FlagsUI>;
   if (url.host() == chrome::kChromeUIHistoryFrameHost)

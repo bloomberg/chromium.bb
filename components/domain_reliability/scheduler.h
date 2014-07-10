@@ -11,6 +11,10 @@
 #include "base/time/time.h"
 #include "components/domain_reliability/domain_reliability_export.h"
 
+namespace base {
+class Value;
+}  // namespace base
+
 namespace domain_reliability {
 
 class DomainReliabilityConfig;
@@ -65,6 +69,8 @@ class DOMAIN_RELIABILITY_EXPORT DomainReliabilityScheduler {
   // upload was successful, and false otherwise.
   void OnUploadComplete(bool success);
 
+  base::Value* GetWebUIData() const;
+
  private:
   struct CollectorState {
     CollectorState();
@@ -111,6 +117,16 @@ class DOMAIN_RELIABILITY_EXPORT DomainReliabilityScheduler {
 
   // first_beacon_time_ saved during uploads.  Restored if upload fails.
   base::TimeTicks old_first_beacon_time_;
+
+  // Extra bits to return in GetWebUIData.
+  base::TimeTicks scheduled_min_time_;
+  base::TimeTicks scheduled_max_time_;
+  // Whether the other last_upload_* fields are populated.
+  bool last_upload_finished_;
+  base::TimeTicks last_upload_start_time_;
+  base::TimeTicks last_upload_end_time_;
+  size_t last_upload_collector_index_;
+  bool last_upload_success_;
 };
 
 }  // namespace domain_reliability

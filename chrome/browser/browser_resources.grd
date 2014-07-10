@@ -128,6 +128,9 @@
       <if expr="not is_ios">
         <include name="IDR_DEVTOOLS_DISCOVERY_PAGE_HTML" file="devtools\frontend\devtools_discovery_page.html" type="BINDATA"/>
       </if>
+      <include name="IDR_DOMAIN_RELIABILITY_INTERNALS_HTML" file="resources\domain_reliability_internals.html" type="BINDATA" />
+      <include name="IDR_DOMAIN_RELIABILITY_INTERNALS_CSS" file="resources\domain_reliability_internals.css" type="BINDATA" />
+      <include name="IDR_DOMAIN_RELIABILITY_INTERNALS_JS" file="resources\domain_reliability_internals.js" type="BINDATA" />
       <if expr="not is_android">
         <include name="IDR_DOWNLOADS_JS" file="resources\downloads\downloads.js" type="BINDATA" />
       </if>

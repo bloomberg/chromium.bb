@@ -17,6 +17,10 @@
 
 class GURL;
 
+namespace base {
+class Value;
+}
+
 namespace domain_reliability {
 
 struct DomainReliabilityBeacon;
@@ -44,6 +48,10 @@ class DOMAIN_RELIABILITY_EXPORT DomainReliabilityContext {
 
   // Called to clear browsing data, since beacons are like browsing history.
   void ClearBeacons();
+
+  // Gets a Value containing data that can be formatted into a web page for
+  // debugging purposes.
+  scoped_ptr<base::Value> GetWebUIData() const;
 
   void GetQueuedDataForTesting(
       size_t resource_index,

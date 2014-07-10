@@ -1048,6 +1048,8 @@
       'browser/ui/webui/crashes_ui.h',
       'browser/ui/webui/devtools_ui.cc',
       'browser/ui/webui/devtools_ui.h',
+      'browser/ui/webui/domain_reliability_internals_ui.cc',
+      'browser/ui/webui/domain_reliability_internals_ui.h',
       'browser/ui/webui/extensions/chromeos/kiosk_apps_handler.cc',
       'browser/ui/webui/extensions/chromeos/kiosk_apps_handler.h',
       'browser/ui/webui/extensions/extension_basic_info.cc',
