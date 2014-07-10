@@ -494,7 +494,9 @@ PP_Resource PPB_ImageData_Proxy::CreateProxyResource(
   }
 
   HostResource result;
-  PP_ImageDataDesc desc;
+  // Initialize desc so we don't send unitialized memory over IPC.
+  // https://crbug.com/391023.
+  PP_ImageDataDesc desc = {};
   switch (type) {
     case PPB_ImageData_Shared::SIMPLE: {
       ppapi::proxy::SerializedHandle image_handle_wrapper;
