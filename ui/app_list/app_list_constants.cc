@@ -74,10 +74,6 @@ const int kExperimentalPreferredRows = 3;
 // Radius of the circle, in which if entered, show re-order preview.
 const int kReorderDroppingCircleRadius = 35;
 
-// Height of separator between the main view and contents switcher and of
-// the launcher page indicator.
-const int kContentsSwitcherSeparatorHeight = 1;
-
 // Max items allowed in a folder.
 size_t kMaxFolderItems = 16;
 

@@ -6,7 +6,6 @@
 #define UI_APP_LIST_VIEWS_CONTENTS_SWITCHER_VIEW_H_
 
 #include "base/basictypes.h"
-#include "ui/app_list/pagination_model_observer.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/view.h"
 
@@ -16,9 +15,7 @@ class ContentsView;
 
 // A view that contains buttons to switch the displayed view in the given
 // ContentsView.
-class ContentsSwitcherView : public views::View,
-                             public views::ButtonListener,
-                             public PaginationModelObserver {
+class ContentsSwitcherView : public views::View, public views::ButtonListener {
  public:
   explicit ContentsSwitcherView(ContentsView* contents_view);
   virtual ~ContentsSwitcherView();
@@ -39,16 +36,8 @@ class ContentsSwitcherView : public views::View,
   virtual void ButtonPressed(views::Button* sender,
                              const ui::Event& event) OVERRIDE;
 
-  // Overridden from PaginationModelObserver:
-  virtual void TotalPagesChanged() OVERRIDE;
-  virtual void SelectedPageChanged(int old_selected, int new_selected) OVERRIDE;
-  virtual void TransitionStarted() OVERRIDE;
-  virtual void TransitionChanged() OVERRIDE;
-
   ContentsView* contents_view_;  // Owned by views hierarchy.
   views::View* buttons_;         // Owned by views hierarchy.
-  // Stores Views owned by views hierarchy.
-  std::vector<views::View*> page_active_indicators_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentsSwitcherView);
 };

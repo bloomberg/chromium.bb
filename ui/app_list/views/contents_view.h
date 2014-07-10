@@ -65,7 +65,10 @@ class APP_LIST_EXPORT ContentsView : public views::View,
   void SetDragAndDropHostOfCurrentAppList(
       ApplicationDragAndDropHost* drag_and_drop_host);
 
-  void SetContentsSwitcherView(ContentsSwitcherView* contents_switcher_view);
+  void set_contents_switcher_view(
+      ContentsSwitcherView* contents_switcher_view) {
+    contents_switcher_view_ = contents_switcher_view;
+  }
 
   void ShowSearchResults(bool show);
   void ShowFolderContent(AppListFolderItem* folder);
@@ -106,9 +109,6 @@ class APP_LIST_EXPORT ContentsView : public views::View,
   virtual void SelectedPageChanged(int old_selected, int new_selected) OVERRIDE;
   virtual void TransitionStarted() OVERRIDE;
   virtual void TransitionChanged() OVERRIDE;
-
-  // Returns the pagination model for the ContentsView.
-  const PaginationModel& pagination_model() { return pagination_model_; }
 
  private:
   // Sets the active launcher page, accounting for whether the change is for

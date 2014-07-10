@@ -46,8 +46,6 @@ ContentsView::ContentsView(AppListMainView* app_list_main_view)
 
 ContentsView::~ContentsView() {
   pagination_model_.RemoveObserver(this);
-  if (contents_switcher_view_)
-    pagination_model_.RemoveObserver(contents_switcher_view_);
 }
 
 void ContentsView::InitNamedPages(AppListModel* model,
@@ -97,14 +95,6 @@ void ContentsView::CancelDrag() {
 void ContentsView::SetDragAndDropHostOfCurrentAppList(
     ApplicationDragAndDropHost* drag_and_drop_host) {
   apps_container_view_->SetDragAndDropHostOfCurrentAppList(drag_and_drop_host);
-}
-
-void ContentsView::SetContentsSwitcherView(
-    ContentsSwitcherView* contents_switcher_view) {
-  DCHECK(!contents_switcher_view_);
-  contents_switcher_view_ = contents_switcher_view;
-  if (contents_switcher_view_)
-    pagination_model_.AddObserver(contents_switcher_view_);
 }
 
 void ContentsView::SetActivePage(int page_index) {
@@ -254,9 +244,9 @@ int ContentsView::AddLauncherPage(views::View* view, int resource_id) {
   int page_index = view_model_->view_size();
   AddChildView(view);
   view_model_->Add(view, page_index);
+  pagination_model_.SetTotalPages(view_model_->view_size());
   if (contents_switcher_view_)
     contents_switcher_view_->AddSwitcherButton(resource_id, page_index);
-  pagination_model_.SetTotalPages(view_model_->view_size());
   return page_index;
 }
 

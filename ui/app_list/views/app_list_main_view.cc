@@ -139,7 +139,7 @@ void AppListMainView::AddContentsViews() {
   contents_view_ = new ContentsView(this);
   if (app_list::switches::IsExperimentalAppListEnabled()) {
     contents_switcher_view_ = new ContentsSwitcherView(contents_view_);
-    contents_view_->SetContentsSwitcherView(contents_switcher_view_);
+    contents_view_->set_contents_switcher_view(contents_switcher_view_);
   }
   contents_view_->InitNamedPages(model_, delegate_);
   AddChildView(contents_view_);
