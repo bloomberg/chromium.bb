@@ -267,9 +267,12 @@ void ImageLoader::doUpdateFromElement(bool bypassMainWorldCSP)
     updatedHasPendingEvent();
 }
 
-void ImageLoader::updateFromElement(LoadType loadType)
+void ImageLoader::updateFromElement(UpdateFromElementBehavior behavior, LoadType loadType)
 {
     AtomicString attr = m_element->imageSourceURL();
+
+    if (behavior == UpdateIgnorePreviousError)
+        clearFailedLoadURL();
 
     if (!m_failedLoadURL.isEmpty() && attr == m_failedLoadURL)
         return;
@@ -296,12 +299,6 @@ void ImageLoader::updateFromElement(LoadType loadType)
     } else {
         doUpdateFromElement(false);
     }
-}
-
-void ImageLoader::updateFromElementIgnoringPreviousError()
-{
-    clearFailedLoadURL();
-    updateFromElement();
 }
 
 KURL ImageLoader::imageURL() const

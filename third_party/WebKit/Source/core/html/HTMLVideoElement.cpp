@@ -117,7 +117,7 @@ void HTMLVideoElement::parseAttribute(const QualifiedName& name, const AtomicStr
         if (shouldDisplayPosterImage()) {
             if (!m_imageLoader)
                 m_imageLoader = HTMLImageLoader::create(this);
-            m_imageLoader->updateFromElementIgnoringPreviousError();
+            m_imageLoader->updateFromElement(ImageLoader::UpdateIgnorePreviousError);
         } else {
             if (renderer())
                 toRenderImage(renderer())->imageResource()->setImageResource(0);

@@ -66,13 +66,17 @@ public:
         ForceLoadImmediately
     };
 
-    // This function should be called when the element is attached to a document; starts
-    // loading if a load hasn't already been started.
-    void updateFromElement(LoadType = LoadNormally);
+    enum UpdateFromElementBehavior {
+        // This should be the update behavior when the element is attached to a document, or when DOM mutations trigger a new load.
+        // Starts loading if a load hasn't already been started.
+        UpdateNormal,
+        // This should be the update behavior when the resource was changed (via 'src', 'srcset' or 'sizes').
+        // Starts a new load even if a previous load of the same resource have failed, to match Firefox's behavior.
+        // FIXME - Verify that this is the right behavior according to the spec.
+        UpdateIgnorePreviousError
+    };
 
-    // This function should be called whenever the 'src' attribute is set, even if its value
-    // doesn't change; starts new load unconditionally (matches Firefox and Opera behavior).
-    void updateFromElementIgnoringPreviousError();
+    void updateFromElement(UpdateFromElementBehavior = UpdateNormal, LoadType = LoadNormally);
 
     void elementDidMoveToNewDocument();
 

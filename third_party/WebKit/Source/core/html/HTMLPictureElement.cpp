@@ -8,6 +8,7 @@
 #include "core/HTMLNames.h"
 #include "core/dom/ElementTraversal.h"
 #include "core/html/HTMLImageElement.h"
+#include "core/loader/ImageLoader.h"
 
 namespace WebCore {
 
@@ -24,7 +25,7 @@ DEFINE_NODE_FACTORY(HTMLPictureElement)
 void HTMLPictureElement::sourceOrMediaChanged()
 {
     for (HTMLImageElement* imageElement = Traversal<HTMLImageElement>::firstChild(*this); imageElement; imageElement = Traversal<HTMLImageElement>::nextSibling(*imageElement)) {
-        imageElement->selectSourceURL(HTMLImageElement::UpdateNormal);
+        imageElement->selectSourceURL(ImageLoader::UpdateNormal);
     }
 }
 

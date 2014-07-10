@@ -136,7 +136,7 @@ void ImageInputType::srcAttributeChanged()
 {
     if (!element().renderer())
         return;
-    element().imageLoader()->updateFromElementIgnoringPreviousError();
+    element().imageLoader()->updateFromElement(ImageLoader::UpdateIgnorePreviousError);
 }
 
 void ImageInputType::startResourceLoading()

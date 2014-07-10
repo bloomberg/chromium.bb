@@ -145,7 +145,7 @@ void SVGImageElement::svgAttributeChanged(const QualifiedName& attrName)
 
     if (SVGURIReference::isKnownAttribute(attrName)) {
         if (inDocument())
-            imageLoader().updateFromElementIgnoringPreviousError();
+            imageLoader().updateFromElement(ImageLoader::UpdateIgnorePreviousError);
         else
             m_needsLoaderURIUpdate = true;
         return;
@@ -208,7 +208,7 @@ Node::InsertionNotificationRequest SVGImageElement::insertedInto(ContainerNode* 
     // We can only resolve base URIs properly after tree insertion - hence, URI mutations while
     // detached are deferred until this point.
     if (m_needsLoaderURIUpdate) {
-        imageLoader().updateFromElementIgnoringPreviousError();
+        imageLoader().updateFromElement(ImageLoader::UpdateIgnorePreviousError);
         m_needsLoaderURIUpdate = false;
     } else {
         // A previous loader update may have failed to actually fetch the image if the document

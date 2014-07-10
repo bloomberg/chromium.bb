@@ -93,12 +93,8 @@ public:
     virtual FloatSize defaultDestinationSize() const OVERRIDE;
     virtual const KURL& sourceURL() const OVERRIDE;
 
-    enum UpdateFromElementBehavior {
-        UpdateNormal,
-        UpdateIgnorePreviousError
-    };
     // public so that HTMLPictureElement can call this as well.
-    void selectSourceURL(UpdateFromElementBehavior);
+    void selectSourceURL(ImageLoader::UpdateFromElementBehavior);
 protected:
     explicit HTMLImageElement(Document&, HTMLFormElement* = 0, bool createdByParser = false);
 

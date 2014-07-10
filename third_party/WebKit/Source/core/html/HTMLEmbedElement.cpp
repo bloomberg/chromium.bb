@@ -104,7 +104,7 @@ void HTMLEmbedElement::parseAttribute(const QualifiedName& name, const AtomicStr
         if (renderer() && isImageType()) {
             if (!m_imageLoader)
                 m_imageLoader = HTMLImageLoader::create(this);
-            m_imageLoader->updateFromElementIgnoringPreviousError();
+            m_imageLoader->updateFromElement(ImageLoader::UpdateIgnorePreviousError);
         }
     } else {
         HTMLPlugInElement::parseAttribute(name, value);

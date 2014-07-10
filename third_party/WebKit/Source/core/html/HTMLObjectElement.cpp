@@ -116,7 +116,7 @@ void HTMLObjectElement::parseAttribute(const QualifiedName& name, const AtomicSt
             setNeedsWidgetUpdate(true);
             if (!m_imageLoader)
                 m_imageLoader = HTMLImageLoader::create(this);
-            m_imageLoader->updateFromElementIgnoringPreviousError();
+            m_imageLoader->updateFromElement(ImageLoader::UpdateIgnorePreviousError);
         } else {
             reloadPluginOnAttributeChange(name);
         }
