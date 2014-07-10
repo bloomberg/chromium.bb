@@ -174,10 +174,7 @@ void AddUserView::AddContent() {
 
   add_user_ = new views::View;
   add_user_->SetBorder(views::Border::CreateEmptyBorder(
-      kTrayPopupUserCardVerticalPadding,
-      kTrayPopupPaddingHorizontal - kTrayUserTileHoverBorderInset,
-      kTrayPopupUserCardVerticalPadding,
-      kTrayPopupPaddingHorizontal - kTrayUserTileHoverBorderInset));
+      0, kTrayUserTileHoverBorderInset, 0, 0));
 
   add_user_->SetLayoutManager(new views::BoxLayout(
       views::BoxLayout::kHorizontal, 0, 0, kTrayPopupPaddingBetweenItems));
