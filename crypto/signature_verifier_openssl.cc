@@ -13,6 +13,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/stl_util.h"
 #include "crypto/openssl_util.h"
+#include "crypto/scoped_openssl_types.h"
 
 namespace crypto {
 
@@ -31,7 +32,7 @@ const EVP_MD* ToOpenSSLDigest(SignatureVerifier::HashAlgorithm hash_alg) {
 }  // namespace
 
 struct SignatureVerifier::VerifyContext {
-  ScopedOpenSSL<EVP_MD_CTX, EVP_MD_CTX_destroy> ctx;
+  ScopedEVP_MD_CTX ctx;
 };
 
 SignatureVerifier::SignatureVerifier()
@@ -49,7 +50,7 @@ bool SignatureVerifier::VerifyInit(const uint8* signature_algorithm,
                                    const uint8* public_key_info,
                                    int public_key_info_len) {
   OpenSSLErrStackTracer err_tracer(FROM_HERE);
-  ScopedOpenSSL<X509_ALGOR, X509_ALGOR_free> algorithm(
+  ScopedOpenSSL<X509_ALGOR, X509_ALGOR_free>::Type algorithm(
       d2i_X509_ALGOR(NULL, &signature_algorithm, signature_algorithm_len));
   if (!algorithm.get())
     return false;
@@ -135,13 +136,11 @@ bool SignatureVerifier::CommonInit(const EVP_MD* digest,
 
   // BIO_new_mem_buf is not const aware, but it does not modify the buffer.
   char* data = reinterpret_cast<char*>(const_cast<uint8*>(public_key_info));
-  ScopedOpenSSL<BIO, BIO_free_all> bio(BIO_new_mem_buf(data,
-                                                       public_key_info_len));
+  ScopedBIO bio(BIO_new_mem_buf(data, public_key_info_len));
   if (!bio.get())
     return false;
 
-  ScopedOpenSSL<EVP_PKEY, EVP_PKEY_free> public_key(
-      d2i_PUBKEY_bio(bio.get(), NULL));
+  ScopedEVP_PKEY public_key(d2i_PUBKEY_bio(bio.get(), NULL));
   if (!public_key.get())
     return false;
 

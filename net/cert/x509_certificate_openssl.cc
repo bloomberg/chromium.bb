@@ -19,6 +19,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "crypto/openssl_util.h"
+#include "crypto/scoped_openssl_types.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"
 #include "net/cert/x509_util_openssl.h"
@@ -32,12 +33,15 @@ namespace net {
 
 namespace {
 
+typedef crypto::ScopedOpenSSL<GENERAL_NAMES, GENERAL_NAMES_free>::Type
+    ScopedGENERAL_NAMES;
+
 void CreateOSCertHandlesFromPKCS7Bytes(
     const char* data, int length,
     X509Certificate::OSCertHandles* handles) {
   crypto::EnsureOpenSSLInit();
   const unsigned char* der_data = reinterpret_cast<const unsigned char*>(data);
-  crypto::ScopedOpenSSL<PKCS7, PKCS7_free> pkcs7_cert(
+  crypto::ScopedOpenSSL<PKCS7, PKCS7_free>::Type pkcs7_cert(
       d2i_PKCS7(NULL, &der_data, length));
   if (!pkcs7_cert.get())
     return;
@@ -105,7 +109,7 @@ void ParseSubjectAltName(X509Certificate::OSCertHandle cert,
   if (!alt_name_ext)
     return;
 
-  crypto::ScopedOpenSSL<GENERAL_NAMES, GENERAL_NAMES_free> alt_names(
+  ScopedGENERAL_NAMES alt_names(
       reinterpret_cast<GENERAL_NAMES*>(X509V3_EXT_d2i(alt_name_ext)));
   if (!alt_names.get())
     return;
@@ -182,7 +186,7 @@ class X509InitSingleton {
   }
 
   int der_cache_ex_index_;
-  crypto::ScopedOpenSSL<X509_STORE, X509_STORE_free> store_;
+  crypto::ScopedOpenSSL<X509_STORE, X509_STORE_free>::Type store_;
 
   DISALLOW_COPY_AND_ASSIGN(X509InitSingleton);
 };
@@ -437,8 +441,7 @@ void X509Certificate::GetPublicKeyInfo(OSCertHandle cert_handle,
   *type = kPublicKeyTypeUnknown;
   *size_bits = 0;
 
-  crypto::ScopedOpenSSL<EVP_PKEY, EVP_PKEY_free> scoped_key(
-      X509_get_pubkey(cert_handle));
+  crypto::ScopedEVP_PKEY scoped_key(X509_get_pubkey(cert_handle));
   if (!scoped_key.get())
     return;
 
@@ -472,7 +475,7 @@ bool X509Certificate::IsIssuedByEncoded(
 
   // Convert to a temporary list of X509_NAME objects.
   // It will own the objects it points to.
-  crypto::ScopedOpenSSL<STACK_OF(X509_NAME), sk_X509_NAME_free_all>
+  crypto::ScopedOpenSSL<STACK_OF(X509_NAME), sk_X509_NAME_free_all>::Type
       issuer_names(sk_X509_NAME_new_null());
   if (!issuer_names.get())
     return false;

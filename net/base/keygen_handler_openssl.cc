@@ -10,6 +10,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "crypto/openssl_util.h"
 #include "crypto/rsa_private_key.h"
+#include "crypto/scoped_openssl_types.h"
 #include "net/base/openssl_private_key_store.h"
 
 namespace net {
@@ -22,8 +23,8 @@ std::string KeygenHandler::GenKeyAndSignChallenge() {
   if (stores_key_)
     OpenSSLPrivateKeyStore::StoreKeyPair(url_, pkey);
 
-  crypto::ScopedOpenSSL<NETSCAPE_SPKI, NETSCAPE_SPKI_free> spki(
-       NETSCAPE_SPKI_new());
+  crypto::ScopedOpenSSL<NETSCAPE_SPKI, NETSCAPE_SPKI_free>::Type spki(
+      NETSCAPE_SPKI_new());
   ASN1_STRING_set(spki.get()->spkac->challenge,
                   challenge_.data(), challenge_.size());
   NETSCAPE_SPKI_set_pubkey(spki.get(), pkey);

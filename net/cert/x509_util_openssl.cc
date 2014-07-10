@@ -13,12 +13,25 @@
 #include "crypto/ec_private_key.h"
 #include "crypto/openssl_util.h"
 #include "crypto/rsa_private_key.h"
+#include "crypto/scoped_openssl_types.h"
 #include "net/cert/x509_cert_types.h"
 #include "net/cert/x509_util.h"
 
 namespace net {
 
 namespace {
+
+typedef crypto::ScopedOpenSSL<ASN1_INTEGER, ASN1_INTEGER_free>::Type
+    ScopedASN1_INTEGER;
+typedef crypto::ScopedOpenSSL<ASN1_OCTET_STRING, ASN1_OCTET_STRING_free>::Type
+    ScopedASN1_OCTET_STRING;
+typedef crypto::ScopedOpenSSL<ASN1_STRING, ASN1_STRING_free>::Type
+    ScopedASN1_STRING;
+typedef crypto::ScopedOpenSSL<ASN1_TIME, ASN1_TIME_free>::Type ScopedASN1_TIME;
+typedef crypto::ScopedOpenSSL<X509, X509_free>::Type ScopedX509;
+typedef crypto::ScopedOpenSSL<X509_EXTENSION, X509_EXTENSION_free>::Type
+    ScopedX509_EXTENSION;
+typedef crypto::ScopedOpenSSL<X509_NAME, X509_NAME_free>::Type ScopedX509_NAME;
 
 const EVP_MD* ToEVP(x509_util::DigestAlgorithm alg) {
   switch (alg) {
@@ -43,8 +56,7 @@ X509* CreateCertificate(EVP_PKEY* key,
                         base::Time not_valid_before,
                         base::Time not_valid_after) {
   // Put the serial number into an OpenSSL-friendly object.
-  crypto::ScopedOpenSSL<ASN1_INTEGER, ASN1_INTEGER_free> asn1_serial(
-      ASN1_INTEGER_new());
+  ScopedASN1_INTEGER asn1_serial(ASN1_INTEGER_new());
   if (!asn1_serial.get() ||
       !ASN1_INTEGER_set(asn1_serial.get(), static_cast<long>(serial_number))) {
     LOG(ERROR) << "Invalid serial number " << serial_number;
@@ -52,7 +64,7 @@ X509* CreateCertificate(EVP_PKEY* key,
   }
 
   // Do the same for the time stamps.
-  crypto::ScopedOpenSSL<ASN1_TIME, ASN1_TIME_free> asn1_not_before_time(
+  ScopedASN1_TIME asn1_not_before_time(
       ASN1_TIME_set(NULL, not_valid_before.ToTimeT()));
   if (!asn1_not_before_time.get()) {
     LOG(ERROR) << "Invalid not_valid_before time: "
@@ -60,7 +72,7 @@ X509* CreateCertificate(EVP_PKEY* key,
     return NULL;
   }
 
-  crypto::ScopedOpenSSL<ASN1_TIME, ASN1_TIME_free> asn1_not_after_time(
+  ScopedASN1_TIME asn1_not_after_time(
       ASN1_TIME_set(NULL, not_valid_after.ToTimeT()));
   if (!asn1_not_after_time.get()) {
     LOG(ERROR) << "Invalid not_valid_after time: " << not_valid_after.ToTimeT();
@@ -87,7 +99,7 @@ X509* CreateCertificate(EVP_PKEY* key,
   int common_name_len =
       static_cast<int>(common_name.size() - kCommonNamePrefixLen);
 
-  crypto::ScopedOpenSSL<X509_NAME, X509_NAME_free> name(X509_NAME_new());
+  ScopedX509_NAME name(X509_NAME_new());
   if (!name.get() || !X509_NAME_add_entry_by_NID(name.get(),
                                                  NID_commonName,
                                                  MBSTRING_ASC,
@@ -100,7 +112,7 @@ X509* CreateCertificate(EVP_PKEY* key,
   }
 
   // Now create certificate and populate it.
-  crypto::ScopedOpenSSL<X509, X509_free> cert(X509_new());
+  ScopedX509 cert(X509_new());
   if (!cert.get() || !X509_set_version(cert.get(), 2L) /* i.e. version 3 */ ||
       !X509_set_pubkey(cert.get(), key) ||
       !X509_set_serialNumber(cert.get(), asn1_serial.get()) ||
@@ -221,20 +233,18 @@ bool CreateDomainBoundCertEC(
     std::string* der_cert) {
   crypto::OpenSSLErrStackTracer err_tracer(FROM_HERE);
   // Create certificate.
-  crypto::ScopedOpenSSL<X509, X509_free> cert(
-      CreateCertificate(key->key(),
-                        alg,
-                        "CN=anonymous.invalid",
-                        serial_number,
-                        not_valid_before,
-                        not_valid_after));
+  ScopedX509 cert(CreateCertificate(key->key(),
+                                    alg,
+                                    "CN=anonymous.invalid",
+                                    serial_number,
+                                    not_valid_before,
+                                    not_valid_after));
   if (!cert.get())
     return false;
 
   // Add TLS-Channel-ID extension to the certificate before signing it.
   // The value must be stored DER-encoded, as a ASN.1 IA5String.
-  crypto::ScopedOpenSSL<ASN1_STRING, ASN1_STRING_free> domain_ia5(
-      ASN1_IA5STRING_new());
+  ScopedASN1_STRING domain_ia5(ASN1_IA5STRING_new());
   if (!domain_ia5.get() ||
       !ASN1_STRING_set(domain_ia5.get(), domain.data(), domain.size()))
     return false;
@@ -250,15 +260,13 @@ bool CreateDomainBoundCertEC(
   if (i2d_ASN1_IA5STRING(domain_ia5.get(), &domain_der_data) < 0)
     return false;
 
-  crypto::ScopedOpenSSL<ASN1_OCTET_STRING, ASN1_OCTET_STRING_free> domain_str(
-      ASN1_OCTET_STRING_new());
+  ScopedASN1_OCTET_STRING domain_str(ASN1_OCTET_STRING_new());
   if (!domain_str.get() ||
       !ASN1_STRING_set(domain_str.get(), domain_der.data(), domain_der.size()))
     return false;
 
-  crypto::ScopedOpenSSL<X509_EXTENSION, X509_EXTENSION_free> ext(
-      X509_EXTENSION_create_by_OBJ(
-          NULL, GetDomainBoundOid(), 1 /* critical */, domain_str.get()));
+  ScopedX509_EXTENSION ext(X509_EXTENSION_create_by_OBJ(
+      NULL, GetDomainBoundOid(), 1 /* critical */, domain_str.get()));
   if (!ext.get() || !X509_add_ext(cert.get(), ext.get(), -1)) {
     return false;
   }
@@ -275,13 +283,12 @@ bool CreateSelfSignedCert(crypto::RSAPrivateKey* key,
                           base::Time not_valid_after,
                           std::string* der_encoded) {
   crypto::OpenSSLErrStackTracer err_tracer(FROM_HERE);
-  crypto::ScopedOpenSSL<X509, X509_free> cert(
-      CreateCertificate(key->key(),
-                        alg,
-                        common_name,
-                        serial_number,
-                        not_valid_before,
-                        not_valid_after));
+  ScopedX509 cert(CreateCertificate(key->key(),
+                                    alg,
+                                    common_name,
+                                    serial_number,
+                                    not_valid_before,
+                                    not_valid_after));
   if (!cert.get())
     return false;
 

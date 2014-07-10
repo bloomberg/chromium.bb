@@ -30,8 +30,7 @@ P256KeyExchange* P256KeyExchange::New(StringPiece key) {
   }
 
   const uint8* keyp = reinterpret_cast<const uint8*>(key.data());
-  crypto::ScopedOpenSSL<EC_KEY, EC_KEY_free> private_key(
-      d2i_ECPrivateKey(NULL, &keyp, key.size()));
+  crypto::ScopedEC_KEY private_key(d2i_ECPrivateKey(NULL, &keyp, key.size()));
   if (!private_key.get() || !EC_KEY_check_key(private_key.get())) {
     DVLOG(1) << "Private key is invalid.";
     return NULL;
@@ -51,8 +50,7 @@ P256KeyExchange* P256KeyExchange::New(StringPiece key) {
 
 // static
 string P256KeyExchange::NewPrivateKey() {
-  crypto::ScopedOpenSSL<EC_KEY, EC_KEY_free> key(
-      EC_KEY_new_by_curve_name(NID_X9_62_prime256v1));
+  crypto::ScopedEC_KEY key(EC_KEY_new_by_curve_name(NID_X9_62_prime256v1));
   if (!key.get() || !EC_KEY_generate_key(key.get())) {
     DVLOG(1) << "Can't generate a new private key.";
     return string();
@@ -85,7 +83,7 @@ bool P256KeyExchange::CalculateSharedKey(const StringPiece& peer_public_value,
     return false;
   }
 
-  crypto::ScopedOpenSSL<EC_POINT, EC_POINT_free> point(
+  crypto::ScopedOpenSSL<EC_POINT, EC_POINT_free>::Type point(
       EC_POINT_new(EC_KEY_get0_group(private_key_.get())));
   if (!point.get() ||
       !EC_POINT_oct2point( /* also test if point is on curve */

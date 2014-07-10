@@ -26,6 +26,7 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "crypto/openssl_util.h"
+#include "crypto/scoped_openssl_types.h"
 #include "net/android/keystore.h"
 #include "net/ssl/ssl_client_cert_type.h"
 
@@ -101,11 +102,7 @@ namespace android {
 
 namespace {
 
-typedef crypto::ScopedOpenSSL<EVP_PKEY, EVP_PKEY_free> ScopedEVP_PKEY;
-typedef crypto::ScopedOpenSSL<RSA, RSA_free> ScopedRSA;
-typedef crypto::ScopedOpenSSL<DSA, DSA_free> ScopedDSA;
-typedef crypto::ScopedOpenSSL<EC_KEY, EC_KEY_free> ScopedEC_KEY;
-typedef crypto::ScopedOpenSSL<EC_GROUP, EC_GROUP_free> ScopedEC_GROUP;
+typedef crypto::ScopedOpenSSL<EC_GROUP, EC_GROUP_free>::Type ScopedEC_GROUP;
 
 // Custom RSA_METHOD that uses the platform APIs.
 // Note that for now, only signing through RSA_sign() is really supported.
@@ -283,7 +280,7 @@ bool SwapBigNumPtrFromBytes(const std::vector<uint8>& new_bytes,
 // IMPORTANT: The EVP_PKEY will *only* work on Android >= 4.2. For older
 // platforms, use GetRsaLegacyKey() instead.
 bool GetRsaPkeyWrapper(jobject private_key, EVP_PKEY* pkey) {
-  ScopedRSA rsa(RSA_new());
+  crypto::ScopedRSA rsa(RSA_new());
   RSA_set_method(rsa.get(), &android_rsa_method);
 
   // HACK: RSA_size() doesn't work with custom RSA_METHODs. To ensure that
@@ -327,7 +324,7 @@ class KeystoreEngineWorkaround {
   void LeakRsaEngine(EVP_PKEY* pkey) {
     if (leaked_engine_)
       return;
-    ScopedRSA rsa(EVP_PKEY_get1_RSA(pkey));
+    crypto::ScopedRSA rsa(EVP_PKEY_get1_RSA(pkey));
     if (!rsa.get() ||
         !rsa.get()->engine ||
         strcmp(ENGINE_get_id(rsa.get()->engine), "keystore") ||
@@ -480,7 +477,7 @@ const DSA_METHOD android_dsa_method = {
 // On success, this creates a global JNI reference to the same object
 // that will be owned by and destroyed with the EVP_PKEY.
 bool GetDsaPkeyWrapper(jobject private_key, EVP_PKEY* pkey) {
-  ScopedDSA dsa(DSA_new());
+  crypto::ScopedDSA dsa(DSA_new());
   DSA_set_method(dsa.get(), &android_dsa_method);
 
   // DSA_size() doesn't work with custom DSA_METHODs. To ensure it
@@ -649,7 +646,7 @@ const ECDSA_METHOD android_ecdsa_method = {
 // is owned by and destroyed with the EVP_PKEY. I.e. the caller shall
 // always free |private_key| after the call.
 bool GetEcdsaPkeyWrapper(jobject private_key, EVP_PKEY* pkey) {
-  ScopedEC_KEY eckey(EC_KEY_new());
+  crypto::ScopedEC_KEY eckey(EC_KEY_new());
   ECDSA_set_method(eckey.get(), &android_ecdsa_method);
 
   // To ensure that ECDSA_size() works properly, craft a custom EC_GROUP
@@ -688,7 +685,7 @@ bool GetEcdsaPkeyWrapper(jobject private_key, EVP_PKEY* pkey) {
 
 EVP_PKEY* GetOpenSSLPrivateKeyWrapper(jobject private_key) {
   // Create new empty EVP_PKEY instance.
-  ScopedEVP_PKEY pkey(EVP_PKEY_new());
+  crypto::ScopedEVP_PKEY pkey(EVP_PKEY_new());
   if (!pkey.get())
     return NULL;
 

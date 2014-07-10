@@ -17,6 +17,7 @@
 #include "content/child/webcrypto/status.h"
 #include "content/child/webcrypto/webcrypto_util.h"
 #include "crypto/openssl_util.h"
+#include "crypto/scoped_openssl_types.h"
 #include "third_party/WebKit/public/platform/WebCryptoAlgorithm.h"
 #include "third_party/WebKit/public/platform/WebCryptoAlgorithmParams.h"
 #include "third_party/WebKit/public/platform/WebCryptoKeyAlgorithm.h"
@@ -99,7 +100,7 @@ Status AesCbcEncryptDecrypt(EncryptOrDecrypt mode,
   }
 
   // Note: PKCS padding is enabled by default
-  crypto::ScopedOpenSSL<EVP_CIPHER_CTX, EVP_CIPHER_CTX_free> context(
+  crypto::ScopedOpenSSL<EVP_CIPHER_CTX, EVP_CIPHER_CTX_free>::Type context(
       EVP_CIPHER_CTX_new());
 
   if (!context.get())
@@ -233,7 +234,7 @@ class DigestorOpenSSL : public blink::WebCryptoDigestor {
   }
 
   bool initialized_;
-  crypto::ScopedOpenSSL<EVP_MD_CTX, EVP_MD_CTX_destroy> digest_context_;
+  crypto::ScopedEVP_MD_CTX digest_context_;
   blink::WebCryptoAlgorithmId algorithm_id_;
   unsigned char result_[EVP_MAX_MD_SIZE];
 };
@@ -435,7 +436,8 @@ Status EncryptDecryptAesGcm(EncryptOrDecrypt mode,
     return Status::OperationError();
   }
 
-  crypto::ScopedOpenSSL<EVP_AEAD_CTX, EVP_AEAD_CTX_cleanup> ctx_cleanup(&ctx);
+  crypto::ScopedOpenSSL<EVP_AEAD_CTX, EVP_AEAD_CTX_cleanup>::Type ctx_cleanup(
+      &ctx);
 
   ssize_t len;
 

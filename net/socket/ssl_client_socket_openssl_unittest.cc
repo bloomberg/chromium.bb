@@ -19,6 +19,7 @@
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/values.h"
 #include "crypto/openssl_util.h"
+#include "crypto/scoped_openssl_types.h"
 #include "net/base/address_list.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
@@ -48,16 +49,6 @@ namespace {
 
 // These client auth tests are currently dependent on OpenSSL's struct X509.
 #if defined(USE_OPENSSL_CERTS)
-typedef OpenSSLClientKeyStore::ScopedEVP_PKEY ScopedEVP_PKEY;
-
-// BIO_free is a macro, it can't be used as a template parameter.
-void BIO_free_func(BIO* bio) {
-    BIO_free(bio);
-}
-
-typedef crypto::ScopedOpenSSL<BIO, BIO_free_func> ScopedBIO;
-typedef crypto::ScopedOpenSSL<RSA, RSA_free> ScopedRSA;
-typedef crypto::ScopedOpenSSL<BIGNUM, BN_free> ScopedBIGNUM;
 
 const SSLConfig kDefaultSSLConfig;
 
@@ -74,10 +65,9 @@ bool LoadPrivateKeyOpenSSL(
                << filepath.value() << ": " << strerror(errno);
     return false;
   }
-  ScopedBIO bio(
-      BIO_new_mem_buf(
-          const_cast<char*>(reinterpret_cast<const char*>(data.data())),
-          static_cast<int>(data.size())));
+  crypto::ScopedBIO bio(BIO_new_mem_buf(
+      const_cast<char*>(reinterpret_cast<const char*>(data.data())),
+      static_cast<int>(data.size())));
   if (!bio.get()) {
     LOG(ERROR) << "Could not allocate BIO for buffer?";
     return false;

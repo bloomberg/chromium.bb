@@ -13,8 +13,15 @@
 #include "base/logging.h"
 #include "crypto/ec_private_key.h"
 #include "crypto/openssl_util.h"
+#include "crypto/scoped_openssl_types.h"
 
 namespace crypto {
+
+namespace {
+
+typedef ScopedOpenSSL<ECDSA_SIG, ECDSA_SIG_free>::Type ScopedECDSA_SIG;
+
+}  // namespace
 
 ECSignatureCreatorImpl::ECSignatureCreatorImpl(ECPrivateKey* key)
     : key_(key), signature_len_(0) {
@@ -27,7 +34,7 @@ bool ECSignatureCreatorImpl::Sign(const uint8* data,
                                   int data_len,
                                   std::vector<uint8>* signature) {
   OpenSSLErrStackTracer err_tracer(FROM_HERE);
-  ScopedOpenSSL<EVP_MD_CTX, EVP_MD_CTX_destroy> ctx(EVP_MD_CTX_create());
+  ScopedEVP_MD_CTX ctx(EVP_MD_CTX_create());
   size_t sig_len = 0;
   if (!ctx.get() ||
       !EVP_DigestSignInit(ctx.get(), NULL, EVP_sha256(), NULL, key_->key()) ||
@@ -52,7 +59,7 @@ bool ECSignatureCreatorImpl::DecodeSignature(const std::vector<uint8>& der_sig,
   OpenSSLErrStackTracer err_tracer(FROM_HERE);
   // Create ECDSA_SIG object from DER-encoded data.
   const unsigned char* der_data = &der_sig.front();
-  ScopedOpenSSL<ECDSA_SIG, ECDSA_SIG_free> ecdsa_sig(
+  ScopedECDSA_SIG ecdsa_sig(
       d2i_ECDSA_SIG(NULL, &der_data, static_cast<long>(der_sig.size())));
   if (!ecdsa_sig.get())
     return false;

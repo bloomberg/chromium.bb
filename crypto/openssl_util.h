@@ -11,36 +11,6 @@
 
 namespace crypto {
 
-// A helper class that takes care of destroying OpenSSL objects when they go out
-// of scope.
-template <typename T, void (*destructor)(T*)>
-class ScopedOpenSSL {
- public:
-  ScopedOpenSSL() : ptr_(NULL) { }
-  explicit ScopedOpenSSL(T* ptr) : ptr_(ptr) { }
-  ~ScopedOpenSSL() {
-    reset(NULL);
-  }
-
-  T* get() const { return ptr_; }
-  T* release() {
-    T* ptr = ptr_;
-    ptr_ = NULL;
-    return ptr;
-  }
-  void reset(T* ptr) {
-    if (ptr != ptr_) {
-      if (ptr_) (*destructor)(ptr_);
-      ptr_ = ptr;
-    }
-  }
-
- private:
-  T* ptr_;
-
-  DISALLOW_COPY_AND_ASSIGN(ScopedOpenSSL);
-};
-
 // Provides a buffer of at least MIN_SIZE bytes, for use when calling OpenSSL's
 // SHA256, HMAC, etc functions, adapting the buffer sizing rules to meet those
 // of the our base wrapper APIs.

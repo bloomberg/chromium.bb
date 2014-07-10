@@ -5,6 +5,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "crypto/ec_private_key.h"
 #include "crypto/openssl_util.h"
+#include "crypto/scoped_openssl_types.h"
 #include "net/cert/x509_util.h"
 #include "net/cert/x509_util_openssl.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -12,6 +13,8 @@
 namespace net {
 
 namespace {
+
+typedef crypto::ScopedOpenSSL<X509, X509_free>::Type ScopedX509;
 
 // Verify that a given certificate was signed with the private key corresponding
 // to a given public key.
@@ -22,8 +25,7 @@ void VerifyCertificateSignature(const std::string& der_cert,
   const unsigned char* cert_data =
       reinterpret_cast<const unsigned char*>(der_cert.data());
   int cert_data_len = static_cast<int>(der_cert.size());
-  crypto::ScopedOpenSSL<X509, X509_free> cert(
-      d2i_X509(NULL, &cert_data, cert_data_len));
+  ScopedX509 cert(d2i_X509(NULL, &cert_data, cert_data_len));
   ASSERT_TRUE(cert.get());
 
   // NOTE: SignatureVerifier wants the DER-encoded ASN.1 AlgorithmIdentifier
@@ -31,8 +33,7 @@ void VerifyCertificateSignature(const std::string& der_cert,
   // Use X509_verify() directly instead, which takes an EVP_PKEY.
   const unsigned char* pub_key_data = &der_spki.front();
   int pub_key_len = static_cast<int>(der_spki.size());
-  crypto::ScopedOpenSSL<EVP_PKEY, EVP_PKEY_free> pub_key(
-      d2i_PUBKEY(NULL, &pub_key_data, pub_key_len));
+  crypto::ScopedEVP_PKEY pub_key(d2i_PUBKEY(NULL, &pub_key_data, pub_key_len));
   ASSERT_TRUE(pub_key.get());
 
   // NOTE: X509_verify() returns 1 in case of succes, 0 or -1 on error.
@@ -46,15 +47,14 @@ void VerifyDomainBoundCert(const std::string& domain,
                            const std::string& der_cert) {
   // Origin Bound Cert OID.
   static const char oid_string[] = "1.3.6.1.4.1.11129.2.1.6";
-  crypto::ScopedOpenSSL<ASN1_OBJECT, ASN1_OBJECT_free> oid_obj(
+  crypto::ScopedOpenSSL<ASN1_OBJECT, ASN1_OBJECT_free>::Type oid_obj(
       OBJ_txt2obj(oid_string, 0));
   ASSERT_TRUE(oid_obj.get());
 
   const unsigned char* cert_data =
       reinterpret_cast<const unsigned char*>(der_cert.data());
   int cert_data_len = static_cast<int>(der_cert.size());
-  crypto::ScopedOpenSSL<X509, X509_free> cert(
-      d2i_X509(NULL, &cert_data, cert_data_len));
+  ScopedX509 cert(d2i_X509(NULL, &cert_data, cert_data_len));
   ASSERT_TRUE(cert.get());
 
   // Find the extension.

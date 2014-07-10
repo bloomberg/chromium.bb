@@ -14,9 +14,7 @@
 
 #if defined(USE_OPENSSL)
 #include "crypto/openssl_util.h"
-// Forward declaration for openssl/*.h
-typedef struct ec_key_st EC_KEY;
-extern "C" void EC_KEY_free(EC_KEY* key);
+#include "crypto/scoped_openssl_types.h"
 #else
 #include "crypto/ec_private_key.h"
 #include "crypto/scoped_nss_types.h"
@@ -63,7 +61,7 @@ class NET_EXPORT_PRIVATE P256KeyExchange : public KeyExchange {
   // |public_key| consists of |kUncompressedP256PointBytes| bytes.
   P256KeyExchange(EC_KEY* private_key, const uint8* public_key);
 
-  crypto::ScopedOpenSSL<EC_KEY, EC_KEY_free> private_key_;
+  crypto::ScopedEC_KEY private_key_;
 #else
   // P256KeyExchange takes ownership of |key_pair|, and expects
   // |public_key| consists of |kUncompressedP256PointBytes| bytes.

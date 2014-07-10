@@ -334,6 +334,7 @@
       'cert/nss_profile_filter_chromeos.cc',
       'cert/nss_profile_filter_chromeos.h',
       'cert/scoped_nss_types.h',
+      'cert/scoped_openssl_types.h',
       'cert/sct_status_flags.h',
       'cert/test_root_certs.cc',
       'cert/test_root_certs.h',

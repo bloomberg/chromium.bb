@@ -18,6 +18,7 @@
 #include "base/synchronization/lock.h"
 #include "crypto/ec_private_key.h"
 #include "crypto/openssl_util.h"
+#include "crypto/scoped_openssl_types.h"
 #include "net/base/net_errors.h"
 #include "net/cert/cert_verifier.h"
 #include "net/cert/single_request_cert_verifier.h"
@@ -96,6 +97,10 @@ std::string GetSocketSessionCacheKey(const SSLClientSocketOpenSSL& socket) {
   return result;
 }
 
+static void FreeX509Stack(STACK_OF(X509) * ptr) {
+  sk_X509_pop_free(ptr, X509_free);
+}
+
 }  // namespace
 
 class SSLClientSocketOpenSSL::SSLContext {
@@ -170,7 +175,7 @@ class SSLClientSocketOpenSSL::SSLContext {
   // SSLClientSocketOpenSSL object from an SSL instance.
   int ssl_socket_data_index_;
 
-  crypto::ScopedOpenSSL<SSL_CTX, SSL_CTX_free> ssl_ctx_;
+  crypto::ScopedOpenSSL<SSL_CTX, SSL_CTX_free>::Type ssl_ctx_;
   // |session_cache_| must be destroyed before |ssl_ctx_|.
   SSLSessionCacheOpenSSL session_cache_;
 };
@@ -209,13 +214,10 @@ class SSLClientSocketOpenSSL::PeerCertificateChain {
   bool IsValid() { return os_chain_.get() && openssl_chain_.get(); }
 
  private:
-  static void FreeX509Stack(STACK_OF(X509)* cert_chain) {
-    sk_X509_pop_free(cert_chain, X509_free);
-  }
+  typedef crypto::ScopedOpenSSL<STACK_OF(X509), FreeX509Stack>::Type
+      ScopedX509Stack;
 
-  friend class crypto::ScopedOpenSSL<STACK_OF(X509), FreeX509Stack>;
-
-  crypto::ScopedOpenSSL<STACK_OF(X509), FreeX509Stack> openssl_chain_;
+  ScopedX509Stack openssl_chain_;
 
   scoped_refptr<X509Certificate> os_chain_;
 };
