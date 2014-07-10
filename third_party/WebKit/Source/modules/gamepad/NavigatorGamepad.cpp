@@ -126,6 +126,7 @@ void NavigatorGamepad::trace(Visitor* visitor)
 {
     visitor->trace(m_gamepads);
     visitor->trace(m_webkitGamepads);
+    visitor->trace(m_pendingEvents);
     WillBeHeapSupplement<Navigator>::trace(visitor);
 }
 
@@ -152,14 +153,28 @@ void NavigatorGamepad::didUpdateData()
     sampleGamepad(change.index, *gamepad, change.pad);
     m_gamepads->set(change.index, gamepad);
 
-    const AtomicString& eventName = change.pad.connected ? EventTypeNames::gamepadconnected : EventTypeNames::gamepaddisconnected;
+    m_pendingEvents.append(gamepad);
+    m_dispatchOneEventRunner.runAsync();
+}
+
+void NavigatorGamepad::dispatchOneEvent()
+{
+    ASSERT(window());
+    ASSERT(!m_pendingEvents.isEmpty());
+
+    Gamepad* gamepad = m_pendingEvents.takeFirst();
+    const AtomicString& eventName = gamepad->connected() ? EventTypeNames::gamepadconnected : EventTypeNames::gamepaddisconnected;
     window()->dispatchEvent(GamepadEvent::create(eventName, false, true, gamepad));
+
+    if (!m_pendingEvents.isEmpty())
+        m_dispatchOneEventRunner.runAsync();
 }
 
 NavigatorGamepad::NavigatorGamepad(LocalFrame* frame)
     : DOMWindowProperty(frame)
     , DeviceEventControllerBase(frame ? frame->page() : 0)
     , DOMWindowLifecycleObserver(frame ? frame->domWindow() : 0)
+    , m_dispatchOneEventRunner(this, &NavigatorGamepad::dispatchOneEvent)
 {
 }
 
@@ -187,10 +202,12 @@ void NavigatorGamepad::willDetachGlobalObjectFromFrame()
 void NavigatorGamepad::registerWithDispatcher()
 {
     GamepadDispatcher::instance().addController(this);
+    m_dispatchOneEventRunner.resume();
 }
 
 void NavigatorGamepad::unregisterWithDispatcher()
 {
+    m_dispatchOneEventRunner.suspend();
     GamepadDispatcher::instance().removeController(this);
 }
 
@@ -219,22 +236,58 @@ void NavigatorGamepad::didRemoveEventListener(LocalDOMWindow* window, const Atom
     if (isGamepadEvent(eventType)
         && !window->hasEventListeners(EventTypeNames::gamepadconnected)
         && !window->hasEventListeners(EventTypeNames::gamepaddisconnected)) {
-        m_hasEventListener = false;
+        didRemoveGamepadEventListeners();
     }
 }
 
 void NavigatorGamepad::didRemoveAllEventListeners(LocalDOMWindow*)
 {
+    didRemoveGamepadEventListeners();
+}
+
+void NavigatorGamepad::didRemoveGamepadEventListeners()
+{
     m_hasEventListener = false;
+    m_dispatchOneEventRunner.stop();
+    m_pendingEvents.clear();
 }
 
 void NavigatorGamepad::pageVisibilityChanged()
 {
     // Inform the embedder whether it needs to provide gamepad data for us.
-    if (page()->visibilityState() == PageVisibilityStateVisible && (m_hasEventListener || m_gamepads || m_webkitGamepads))
+    bool visible = page()->visibilityState() == PageVisibilityStateVisible;
+    if (visible && (m_hasEventListener || m_gamepads || m_webkitGamepads))
         startUpdating();
     else
         stopUpdating();
+
+    if (!visible || !m_hasEventListener)
+        return;
+
+    // Tell the page what has changed. m_gamepads contains the state before we became hidden.
+    // We create a new snapshot and compare them.
+    GamepadList* oldGamepads = m_gamepads.release();
+    gamepads();
+    GamepadList* newGamepads = m_gamepads.get();
+    ASSERT(newGamepads);
+
+    for (unsigned i = 0; i < blink::WebGamepads::itemsLengthCap; ++i) {
+        Gamepad* oldGamepad = oldGamepads ? oldGamepads->item(i) : 0;
+        Gamepad* newGamepad = newGamepads->item(i);
+        bool oldWasConnected = oldGamepad && oldGamepad->connected();
+        bool newIsConnected = newGamepad && newGamepad->connected();
+        bool connectedGamepadChanged = oldWasConnected && newIsConnected && oldGamepad->id() != newGamepad->id();
+        if (connectedGamepadChanged || (oldWasConnected && !newIsConnected)) {
+            oldGamepad->setConnected(false);
+            m_pendingEvents.append(oldGamepad);
+        }
+        if (connectedGamepadChanged || (!oldWasConnected && newIsConnected)) {
+            m_pendingEvents.append(newGamepad);
+        }
+    }
+
+    if (!m_pendingEvents.isEmpty())
+        m_dispatchOneEventRunner.runAsync();
 }
 
 } // namespace WebCore

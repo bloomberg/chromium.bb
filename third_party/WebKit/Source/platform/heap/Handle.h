@@ -827,6 +827,7 @@ template<typename T, typename U> inline bool operator!=(const Persistent<T>& a, 
 #define WillBeHeapTerminatedArrayBuilder WebCore::HeapTerminatedArrayBuilder
 #define WillBeHeapLinkedStack WebCore::HeapLinkedStack
 #define PersistentHeapHashSetWillBeHeapHashSet WebCore::HeapHashSet
+#define PersistentHeapDequeWillBeHeapDeque WebCore::HeapDeque
 
 template<typename T> PassRefPtrWillBeRawPtr<T> adoptRefWillBeNoop(T* ptr)
 {
@@ -946,6 +947,7 @@ template class PLATFORM_EXPORT DummyBase<void>;
 #define WillBeHeapTerminatedArrayBuilder WTF::TerminatedArrayBuilder
 #define WillBeHeapLinkedStack WTF::LinkedStack
 #define PersistentHeapHashSetWillBeHeapHashSet WebCore::PersistentHeapHashSet
+#define PersistentHeapDequeWillBeHeapDeque WebCore::PersistentHeapDeque
 
 template<typename T> PassRefPtrWillBeRawPtr<T> adoptRefWillBeNoop(T* ptr) { return adoptRef(ptr); }
 template<typename T> PassRefPtrWillBeRawPtr<T> adoptRefWillBeRefCountedGarbageCollected(T* ptr) { return adoptRef(ptr); }
