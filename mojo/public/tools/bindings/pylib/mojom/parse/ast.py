@@ -79,7 +79,9 @@ class Attribute(NodeBase):
     self.value = value
 
   def __eq__(self, other):
-    return self.key == other.key and self.value == other.value
+    return type(self) == type(other) and \
+           self.key == other.key and \
+           self.value == other.value
 
 
 class AttributeList(NodeListBase):
@@ -97,7 +99,8 @@ class Import(NodeBase):
     self.import_filename = import_filename
 
   def __eq__(self, other):
-    return self.import_filename == other.import_filename
+    return type(self) == type(other) and \
+           self.import_filename == other.import_filename
 
 
 class ImportList(NodeListBase):
@@ -118,8 +121,32 @@ class Module(NodeBase):
     self.attribute_list = attribute_list
 
   def __eq__(self, other):
-    return self.name == other.name and \
+    return type(self) == type(other) and \
+           self.name == other.name and \
            self.attribute_list == other.attribute_list
+
+
+class Mojom(NodeBase):
+  """Represents an entire .mojom file. (This is the root node."""
+
+  def __init__(self, module, import_list, definition_list, **kwargs):
+    assert module is None or isinstance(module, Module)
+    assert isinstance(import_list, ImportList)
+    assert isinstance(definition_list, list)
+    NodeBase.__init__(self, **kwargs)
+    self.module = module
+    self.import_list = import_list
+    self.definition_list = definition_list
+
+  def __eq__(self, other):
+    return type(self) == type(other) and \
+           self.module == other.module and \
+           self.import_list == other.import_list and \
+           self.definition_list == other.definition_list
+
+  def __repr__(self):
+    return "%s(%r, %r, %r)" % (self.__class__.__name__, self.module,
+                               self.import_list, self.definition_list)
 
 
 class Ordinal(NodeBase):
@@ -131,7 +158,7 @@ class Ordinal(NodeBase):
     self.value = value
 
   def __eq__(self, other):
-    return self.value == other.value
+    return type(self) == type(other) and self.value == other.value
 
 
 class Parameter(NodeBase):
@@ -145,7 +172,8 @@ class Parameter(NodeBase):
     self.ordinal = ordinal
 
   def __eq__(self, other):
-    return self.typename == other.typename and \
+    return type(self) == type(other) and \
+           self.typename == other.typename and \
            self.name == other.name and \
            self.ordinal == other.ordinal
 

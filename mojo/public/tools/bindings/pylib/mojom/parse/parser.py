@@ -86,20 +86,16 @@ class Parser(object):
   #
   # See http://www.dabeaz.com/ply/ply.html#ply_nn25 for more details.
 
-  # TODO(vtl): Get rid of this ('MODULE', ...) stuff and replace it with an
-  # ast.Mojom node. (The ('IMPORT', ...) stuff is a hack until I do this and
-  # update translate.py.)
   # TODO(vtl): Get rid of the braces in the module "statement". (Consider
-  # renaming "module" -> "package".)
-  def p_root(self, p):
-    """root : import_list module LBRACE definition_list RBRACE
-            | import_list definition_list"""
-    p[0] = [('IMPORT', import_statement.import_filename) \
-                for import_statement in p[1]]
-    if len(p) == 6:
-      p[0].append(('MODULE', p[2].name, p[2].attribute_list, p[4]))
-    else:
-      p[0].append(('MODULE', None, None, p[2]))
+  # renaming "module" -> "package".) Then we'll be able to have a single rule
+  # for root (by making module "optional").
+  def p_root_1(self, p):
+    """root : import_list module LBRACE definition_list RBRACE"""
+    p[0] = ast.Mojom(p[2], p[1], p[4])
+
+  def p_root_2(self, p):
+    """root : import_list definition_list"""
+    p[0] = ast.Mojom(None, p[1], p[2])
 
   def p_import_list_1(self, p):
     """import_list : """
@@ -124,7 +120,10 @@ class Parser(object):
     """definition_list : definition definition_list
                        | """
     if len(p) > 1:
-      p[0] = _ListFromConcat(p[1], p[2])
+      p[0] = p[2]
+      p[0].insert(0, p[1])
+    else:
+      p[0] = []
 
   def p_definition(self, p):
     """definition : struct
