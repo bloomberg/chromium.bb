@@ -16,7 +16,6 @@
 #include "build/build_config.h"
 #include "content/common/view_messages.h"
 #include "content/public/renderer/content_renderer_client.h"
-#include "content/renderer/pepper/common.h"
 #include "content/renderer/pepper/host_dispatcher_wrapper.h"
 #include "content/renderer/pepper/host_globals.h"
 #include "content/renderer/pepper/pepper_hung_plugin_filter.h"
@@ -208,9 +207,9 @@ void CallOnMainThread(int delay_in_msec,
 }
 
 PP_Bool IsMainThread() {
-  return BoolToPPBool(PpapiGlobals::Get()
-                          ->GetMainThreadMessageLoop()
-                          ->BelongsToCurrentThread());
+  return PP_FromBool(PpapiGlobals::Get()
+                         ->GetMainThreadMessageLoop()
+                         ->BelongsToCurrentThread());
 }
 
 const PPB_Core core_interface = {&AddRefResource,   &ReleaseResource,
@@ -225,7 +224,7 @@ PP_Bool ReadImageData(PP_Resource device_context_2d,
   EnterResource<PPB_Graphics2D_API> enter(device_context_2d, true);
   if (enter.failed())
     return PP_FALSE;
-  return BoolToPPBool(enter.object()->ReadImageData(image, top_left));
+  return PP_FromBool(enter.object()->ReadImageData(image, top_left));
 }
 
 void RunMessageLoop(PP_Instance instance) {
@@ -598,7 +597,7 @@ void PluginModule::SetReserveInstanceIDCallback(
 
 bool PluginModule::ReserveInstanceID(PP_Instance instance) {
   if (reserve_instance_id_)
-    return PPBoolToBool(reserve_instance_id_(pp_module_, instance));
+    return PP_ToBool(reserve_instance_id_(pp_module_, instance));
   return true;  // Instance ID is usable.
 }
 

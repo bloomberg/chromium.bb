@@ -15,7 +15,6 @@
 #include "base/strings/utf_string_conversion_utils.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/common/input/web_touch_event_traits.h"
-#include "content/renderer/pepper/common.h"
 #include "content/renderer/pepper/usb_key_code_conversion.h"
 #include "ppapi/c/pp_input_event.h"
 #include "ppapi/shared_impl/ppb_input_event_shared.h"

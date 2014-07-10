@@ -5,7 +5,6 @@
 #include "content/renderer/pepper/ppb_audio_impl.h"
 
 #include "base/logging.h"
-#include "content/renderer/pepper/common.h"
 #include "content/renderer/pepper/pepper_platform_audio_output.h"
 #include "content/renderer/pepper/pepper_plugin_instance_impl.h"
 #include "content/renderer/render_frame_impl.h"
@@ -58,7 +57,7 @@ PP_Bool PPB_Audio_Impl::StartPlayback() {
   if (playing())
     return PP_TRUE;
   SetStartPlaybackState();
-  return BoolToPPBool(audio_->StartPlayback());
+  return PP_FromBool(audio_->StartPlayback());
 }
 
 PP_Bool PPB_Audio_Impl::StopPlayback() {

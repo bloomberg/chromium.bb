@@ -6,7 +6,6 @@
 
 #include "base/logging.h"
 #include "content/common/view_messages.h"
-#include "content/renderer/pepper/common.h"
 #include "content/renderer/pepper/host_globals.h"
 #include "content/renderer/pepper/pepper_broker.h"
 #include "content/renderer/pepper/pepper_plugin_instance_impl.h"

@@ -6,7 +6,6 @@
 
 #include <limits>
 
-#include "content/renderer/pepper/common.h"
 #include "content/renderer/pepper/host_globals.h"
 #include "content/renderer/pepper/npapi_glue.h"
 #include "content/renderer/pepper/npobject_var.h"
@@ -164,12 +163,12 @@ PP_Bool HasProperty(PP_Var var, PP_Var name, PP_Var* exception) {
   ObjectAccessorWithIdentifierTryCatch accessor(var, name, exception);
   if (accessor.has_exception())
     return PP_FALSE;
-  return BoolToPPBool(WebBindings::hasProperty(
+  return PP_FromBool(WebBindings::hasProperty(
       NULL, accessor.object()->np_object(), accessor.identifier()));
 }
 
 bool HasPropertyDeprecated(PP_Var var, PP_Var name, PP_Var* exception) {
-  return PPBoolToBool(HasProperty(var, name, exception));
+  return PP_ToBool(HasProperty(var, name, exception));
 }
 
 bool HasMethodDeprecated(PP_Var var, PP_Var name, PP_Var* exception) {

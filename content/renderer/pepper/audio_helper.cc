@@ -5,7 +5,6 @@
 #include "content/renderer/pepper/audio_helper.h"
 
 #include "base/logging.h"
-#include "content/renderer/pepper/common.h"
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_errors.h"
 
