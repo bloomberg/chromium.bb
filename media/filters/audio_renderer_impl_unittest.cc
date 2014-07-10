@@ -4,17 +4,11 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
-#include "base/gtest_prod_util.h"
-#include "base/memory/scoped_vector.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
-#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
-#include "media/base/audio_buffer.h"
 #include "media/base/audio_buffer_converter.h"
 #include "media/base/audio_hardware_config.h"
 #include "media/base/audio_splicer.h"
-#include "media/base/audio_timestamp_helper.h"
 #include "media/base/fake_audio_renderer_sink.h"
 #include "media/base/gmock_callback_support.h"
 #include "media/base/mock_filters.h"
@@ -22,12 +16,8 @@
 #include "media/filters/audio_renderer_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using ::base::Time;
-using ::base::TimeTicks;
 using ::base::TimeDelta;
 using ::testing::_;
-using ::testing::AnyNumber;
-using ::testing::Invoke;
 using ::testing::Return;
 using ::testing::SaveArg;
 
@@ -43,11 +33,6 @@ static int kSamplesPerSecond = 44100;
 // Use a different output sample rate so the AudioBufferConverter is invoked.
 static int kOutputSamplesPerSecond = 48000;
 
-// Constants for distinguishing between muted audio and playing audio when using
-// ConsumeBufferedData(). Must match the type needed by kSampleFormat.
-static float kMutedAudio = 0.0f;
-static float kPlayingAudio = 0.5f;
-
 static const int kDataSize = 1024;
 
 ACTION_P(EnterPendingDecoderInitStateAction, test) {
@@ -62,7 +47,8 @@ class AudioRendererImplTest : public ::testing::Test {
         needs_stop_(true),
         demuxer_stream_(DemuxerStream::AUDIO),
         decoder_(new MockAudioDecoder()),
-        last_time_update_(kNoTimestamp()) {
+        last_time_update_(kNoTimestamp()),
+        ended_(false) {
     AudioDecoderConfig audio_config(kCodec,
                                     kSampleFormat,
                                     kChannelLayout,
@@ -98,10 +84,6 @@ class AudioRendererImplTest : public ::testing::Test {
                                           decoders.Pass(),
                                           SetDecryptorReadyCB(),
                                           &hardware_config_));
-
-    // Stub out time.
-    renderer_->set_now_cb_for_testing(base::Bind(
-        &AudioRendererImplTest::GetTime, base::Unretained(this)));
   }
 
   virtual ~AudioRendererImplTest() {
@@ -138,7 +120,8 @@ class AudioRendererImplTest : public ::testing::Test {
                    base::Unretained(this)),
         base::Bind(&AudioRendererImplTest::OnBufferingStateChange,
                    base::Unretained(this)),
-        ended_event_.GetClosure(),
+        base::Bind(&AudioRendererImplTest::OnEnded,
+                   base::Unretained(this)),
         base::Bind(&AudioRendererImplTest::OnError,
                    base::Unretained(this)));
   }
@@ -241,11 +224,6 @@ class AudioRendererImplTest : public ::testing::Test {
     renderer_->StopRendering();
   }
 
-  void WaitForEnded() {
-    SCOPED_TRACE("WaitForEnded()");
-    ended_event_.RunAndWait();
-  }
-
   bool IsReadPending() const {
     return !decode_cb_.is_null();
   }
@@ -275,7 +253,7 @@ class AudioRendererImplTest : public ::testing::Test {
                                kChannelLayout,
                                kChannelCount,
                                kSamplesPerSecond,
-                               kPlayingAudio,
+                               1.0f,
                                0.0f,
                                size,
                                next_timestamp_->GetTimestamp());
@@ -313,46 +291,13 @@ class AudioRendererImplTest : public ::testing::Test {
   }
 
   // Attempts to consume |requested_frames| frames from |renderer_|'s internal
-  // buffer, returning true if all |requested_frames| frames were consumed,
-  // false if less than |requested_frames| frames were consumed.
-  //
-  // |muted| is optional and if passed will get set if the value of
-  // the consumed data is muted audio.
-  bool ConsumeBufferedData(int requested_frames, bool* muted) {
+  // buffer, returning the actual number of frames consumed.
+  int ConsumeBufferedData(int requested_frames) {
     scoped_ptr<AudioBus> bus =
         AudioBus::Create(kChannels, std::max(requested_frames, 1));
-    int frames_read;
-    if (!sink_->Render(bus.get(), 0, &frames_read)) {
-      if (muted)
-        *muted = true;
-      return false;
-    }
-
-    if (muted)
-      *muted = frames_read < 1 || bus->channel(0)[0] == kMutedAudio;
-    return frames_read == requested_frames;
-  }
-
-  // Attempts to consume all data available from the renderer.  Returns the
-  // number of frames read.  Since time is frozen, the audio delay will increase
-  // as frames come in.
-  int ConsumeAllBufferedData() {
     int frames_read = 0;
-    int total_frames_read = 0;
-
-    scoped_ptr<AudioBus> bus = AudioBus::Create(kChannels, 1024);
-
-    do {
-      TimeDelta audio_delay = TimeDelta::FromMicroseconds(
-          total_frames_read * Time::kMicrosecondsPerSecond /
-          static_cast<float>(hardware_config_.GetOutputConfig().sample_rate()));
-
-      frames_read = renderer_->Render(
-          bus.get(), audio_delay.InMilliseconds());
-      total_frames_read += frames_read;
-    } while (frames_read > 0);
-
-    return total_frames_read;
+    EXPECT_TRUE(sink_->Render(bus.get(), 0, &frames_read));
+    return frames_read;
   }
 
   int frames_buffered() {
@@ -372,55 +317,6 @@ class AudioRendererImplTest : public ::testing::Test {
     return buffer_capacity() - frames_buffered();
   }
 
-  TimeDelta CalculatePlayTime(int frames_filled) {
-    return TimeDelta::FromMicroseconds(
-        frames_filled * Time::kMicrosecondsPerSecond /
-        renderer_->audio_parameters_.sample_rate());
-  }
-
-  void EndOfStreamTest(float playback_rate) {
-    Initialize();
-    Preroll();
-    StartRendering();
-    renderer_->SetPlaybackRate(playback_rate);
-
-    // Drain internal buffer, we should have a pending read.
-    EXPECT_CALL(*this, OnBufferingStateChange(BUFFERING_HAVE_NOTHING));
-    int total_frames = frames_buffered();
-    int frames_filled = ConsumeAllBufferedData();
-    WaitForPendingRead();
-
-    // Due to how the cross-fade algorithm works we won't get an exact match
-    // between the ideal and expected number of frames consumed.  In the faster
-    // than normal playback case, more frames are created than should exist and
-    // vice versa in the slower than normal playback case.
-    const float kEpsilon = 0.20 * (total_frames / playback_rate);
-    EXPECT_NEAR(frames_filled, total_frames / playback_rate, kEpsilon);
-
-    // Figure out how long until the ended event should fire.
-    TimeDelta audio_play_time = CalculatePlayTime(frames_filled);
-    DVLOG(1) << "audio_play_time = " << audio_play_time.InSecondsF();
-
-    // Fulfill the read with an end-of-stream packet.  We shouldn't report ended
-    // nor have a read until we drain the internal buffer.
-    EXPECT_CALL(*this, OnBufferingStateChange(BUFFERING_HAVE_ENOUGH));
-    DeliverEndOfStream();
-
-    // Advance time half way without an ended expectation.
-    AdvanceTime(audio_play_time / 2);
-    ConsumeBufferedData(frames_buffered(), NULL);
-
-    // Advance time by other half and expect the ended event.
-    AdvanceTime(audio_play_time / 2);
-    ConsumeBufferedData(frames_buffered(), NULL);
-    WaitForEnded();
-  }
-
-  void AdvanceTime(TimeDelta time) {
-    base::AutoLock auto_lock(lock_);
-    time_ += time;
-  }
-
   void force_config_change() {
     renderer_->OnConfigChange();
   }
@@ -437,6 +333,8 @@ class AudioRendererImplTest : public ::testing::Test {
     return last_time_update_;
   }
 
+  bool ended() const { return ended_; }
+
   // Fixture members.
   base::MessageLoop message_loop_;
   scoped_ptr<AudioRendererImpl> renderer_;
@@ -448,11 +346,6 @@ class AudioRendererImplTest : public ::testing::Test {
   bool needs_stop_;
 
  private:
-  TimeTicks GetTime() {
-    base::AutoLock auto_lock(lock_);
-    return time_;
-  }
-
   void DecodeDecoder(const scoped_refptr<DecoderBuffer>& buffer,
                      const AudioDecoder::DecodeCB& decode_cb) {
     // We shouldn't ever call Read() after Stop():
@@ -498,12 +391,13 @@ class AudioRendererImplTest : public ::testing::Test {
     message_loop_.RunUntilIdle();
   }
 
+  void OnEnded() {
+    CHECK(!ended_);
+    ended_ = true;
+  }
+
   MockDemuxerStream demuxer_stream_;
   MockAudioDecoder* decoder_;
-
-  // Used for stubbing out time in the audio callback thread.
-  base::Lock lock_;
-  TimeTicks time_;
 
   // Used for satisfying reads.
   AudioDecoder::OutputCB output_cb_;
@@ -511,14 +405,13 @@ class AudioRendererImplTest : public ::testing::Test {
   base::Closure reset_cb_;
   scoped_ptr<AudioTimestampHelper> next_timestamp_;
 
-  WaitableMessageLoopEvent ended_event_;
-
   // Run during DecodeDecoder() to unblock WaitForPendingRead().
   base::Closure wait_for_pending_decode_cb_;
   base::Closure stop_decoder_cb_;
 
   PipelineStatusCB init_decoder_cb_;
   base::TimeDelta last_time_update_;
+  bool ended_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioRendererImplTest);
 };
@@ -543,20 +436,35 @@ TEST_F(AudioRendererImplTest, StartRendering) {
   StartRendering();
 
   // Drain internal buffer, we should have a pending read.
-  EXPECT_TRUE(ConsumeBufferedData(frames_buffered(), NULL));
+  EXPECT_EQ(frames_buffered(), ConsumeBufferedData(frames_buffered()));
   WaitForPendingRead();
 }
 
 TEST_F(AudioRendererImplTest, EndOfStream) {
-  EndOfStreamTest(1.0);
-}
+  Initialize();
+  Preroll();
+  StartRendering();
 
-TEST_F(AudioRendererImplTest, EndOfStream_FasterPlaybackSpeed) {
-  EndOfStreamTest(2.0);
-}
+  // Drain internal buffer, we should have a pending read.
+  EXPECT_EQ(frames_buffered(), ConsumeBufferedData(frames_buffered()));
+  WaitForPendingRead();
 
-TEST_F(AudioRendererImplTest, EndOfStream_SlowerPlaybackSpeed) {
-  EndOfStreamTest(0.5);
+  // Forcefully trigger underflow.
+  EXPECT_EQ(0, ConsumeBufferedData(1));
+  EXPECT_CALL(*this, OnBufferingStateChange(BUFFERING_HAVE_NOTHING));
+
+  // Fulfill the read with an end-of-stream buffer. Doing so should change our
+  // buffering state so playback resumes.
+  EXPECT_CALL(*this, OnBufferingStateChange(BUFFERING_HAVE_ENOUGH));
+  DeliverEndOfStream();
+
+  // Consume all remaining data. We shouldn't have signal ended yet.
+  EXPECT_EQ(frames_buffered(), ConsumeBufferedData(frames_buffered()));
+  EXPECT_FALSE(ended());
+
+  // Ended should trigger on next render call.
+  EXPECT_EQ(0, ConsumeBufferedData(1));
+  EXPECT_TRUE(ended());
 }
 
 TEST_F(AudioRendererImplTest, Underflow) {
@@ -565,27 +473,24 @@ TEST_F(AudioRendererImplTest, Underflow) {
   StartRendering();
 
   // Drain internal buffer, we should have a pending read.
-  EXPECT_TRUE(ConsumeBufferedData(frames_buffered(), NULL));
+  EXPECT_EQ(frames_buffered(), ConsumeBufferedData(frames_buffered()));
   WaitForPendingRead();
 
   // Verify the next FillBuffer() call triggers a buffering state change
   // update.
   EXPECT_CALL(*this, OnBufferingStateChange(BUFFERING_HAVE_NOTHING));
-  EXPECT_FALSE(ConsumeBufferedData(kDataSize, NULL));
+  EXPECT_EQ(0, ConsumeBufferedData(kDataSize));
 
   // Verify we're still not getting audio data.
-  bool muted = false;
   EXPECT_EQ(0, frames_buffered());
-  EXPECT_FALSE(ConsumeBufferedData(kDataSize, &muted));
-  EXPECT_TRUE(muted);
+  EXPECT_EQ(0, ConsumeBufferedData(kDataSize));
 
   // Deliver enough data to have enough for buffering.
   EXPECT_CALL(*this, OnBufferingStateChange(BUFFERING_HAVE_ENOUGH));
   DeliverRemainingAudio();
 
   // Verify we're getting audio data.
-  EXPECT_TRUE(ConsumeBufferedData(kDataSize, &muted));
-  EXPECT_FALSE(muted);
+  EXPECT_EQ(kDataSize, ConsumeBufferedData(kDataSize));
 }
 
 TEST_F(AudioRendererImplTest, Underflow_CapacityResetsAfterFlush) {
@@ -594,14 +499,14 @@ TEST_F(AudioRendererImplTest, Underflow_CapacityResetsAfterFlush) {
   StartRendering();
 
   // Drain internal buffer, we should have a pending read.
-  EXPECT_TRUE(ConsumeBufferedData(frames_buffered(), NULL));
+  EXPECT_EQ(frames_buffered(), ConsumeBufferedData(frames_buffered()));
   WaitForPendingRead();
 
   // Verify the next FillBuffer() call triggers the underflow callback
   // since the decoder hasn't delivered any data after it was drained.
   int initial_capacity = buffer_capacity();
   EXPECT_CALL(*this, OnBufferingStateChange(BUFFERING_HAVE_NOTHING));
-  EXPECT_FALSE(ConsumeBufferedData(kDataSize, NULL));
+  EXPECT_EQ(0, ConsumeBufferedData(kDataSize));
 
   // Verify that the buffer capacity increased as a result of underflowing.
   EXPECT_GT(buffer_capacity(), initial_capacity);
@@ -617,10 +522,10 @@ TEST_F(AudioRendererImplTest, Underflow_Flush) {
   StartRendering();
 
   // Force underflow.
-  EXPECT_TRUE(ConsumeBufferedData(frames_buffered(), NULL));
+  EXPECT_EQ(frames_buffered(), ConsumeBufferedData(frames_buffered()));
   WaitForPendingRead();
   EXPECT_CALL(*this, OnBufferingStateChange(BUFFERING_HAVE_NOTHING));
-  EXPECT_FALSE(ConsumeBufferedData(kDataSize, NULL));
+  EXPECT_EQ(0, ConsumeBufferedData(kDataSize));
   WaitForPendingRead();
   StopRendering();
 
@@ -635,7 +540,7 @@ TEST_F(AudioRendererImplTest, PendingRead_Flush) {
   StartRendering();
 
   // Partially drain internal buffer so we get a pending read.
-  EXPECT_TRUE(ConsumeBufferedData(frames_buffered() / 2, NULL));
+  EXPECT_EQ(frames_buffered() / 2, ConsumeBufferedData(frames_buffered() / 2));
   WaitForPendingRead();
 
   StopRendering();
@@ -657,7 +562,7 @@ TEST_F(AudioRendererImplTest, PendingRead_Stop) {
   StartRendering();
 
   // Partially drain internal buffer so we get a pending read.
-  EXPECT_TRUE(ConsumeBufferedData(frames_buffered() / 2, NULL));
+  EXPECT_EQ(frames_buffered() / 2, ConsumeBufferedData(frames_buffered() / 2));
   WaitForPendingRead();
 
   StopRendering();
@@ -682,7 +587,7 @@ TEST_F(AudioRendererImplTest, PendingFlush_Stop) {
   StartRendering();
 
   // Partially drain internal buffer so we get a pending read.
-  EXPECT_TRUE(ConsumeBufferedData(frames_buffered() / 2, NULL));
+  EXPECT_EQ(frames_buffered() / 2, ConsumeBufferedData(frames_buffered() / 2));
   WaitForPendingRead();
 
   StopRendering();
@@ -716,7 +621,7 @@ TEST_F(AudioRendererImplTest, ConfigChangeDrainsConverter) {
   StartRendering();
 
   // Drain internal buffer, we should have a pending read.
-  EXPECT_TRUE(ConsumeBufferedData(frames_buffered(), NULL));
+  EXPECT_EQ(frames_buffered(), ConsumeBufferedData(frames_buffered()));
   WaitForPendingRead();
 
   // Deliver a little bit of data.  Use an odd data size to ensure there is data
@@ -742,7 +647,7 @@ TEST_F(AudioRendererImplTest, TimeUpdatesOnFirstBuffer) {
 
   // Preroll() should be buffered some data, consume half of it now.
   int frames_to_consume = frames_buffered() / 2;
-  EXPECT_TRUE(ConsumeBufferedData(frames_to_consume, NULL));
+  EXPECT_EQ(frames_to_consume, ConsumeBufferedData(frames_to_consume));
   WaitForPendingRead();
   base::RunLoop().RunUntilIdle();
 
@@ -755,7 +660,7 @@ TEST_F(AudioRendererImplTest, TimeUpdatesOnFirstBuffer) {
   // The next time update should match the remaining frames_buffered(), but only
   // after running the message loop.
   frames_to_consume = frames_buffered();
-  EXPECT_TRUE(ConsumeBufferedData(frames_to_consume, NULL));
+  EXPECT_EQ(frames_to_consume, ConsumeBufferedData(frames_to_consume));
   EXPECT_EQ(timestamp_helper.GetTimestamp(), last_time_update());
 
   base::RunLoop().RunUntilIdle();
@@ -775,8 +680,9 @@ TEST_F(AudioRendererImplTest, ImmediateEndOfStream) {
   StartRendering();
 
   // Read a single frame. We shouldn't be able to satisfy it.
-  EXPECT_FALSE(ConsumeBufferedData(1, NULL));
-  WaitForEnded();
+  EXPECT_FALSE(ended());
+  EXPECT_EQ(0, ConsumeBufferedData(1));
+  EXPECT_TRUE(ended());
 }
 
 TEST_F(AudioRendererImplTest, OnRenderErrorCausesDecodeError) {
