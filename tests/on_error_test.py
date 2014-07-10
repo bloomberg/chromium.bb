@@ -146,6 +146,7 @@ class OnErrorBase(auto_stub.TestCase):
     self.mock(on_error, '_ENABLED_DOMAINS', (self.HOSTNAME,))
     self.mock(on_error, '_HOSTNAME', None)
     self.mock(on_error, '_SERVER', None)
+    self.mock(on_error, '_is_in_test', lambda: False)
 
 
 class OnErrorTest(OnErrorBase):
@@ -182,14 +183,6 @@ class OnErrorServerTest(OnErrorBase):
     self.assertEqual(['r', 'v'], params.keys())
     self.assertEqual('1', params['v'])
     return params['r']
-
-  def test_shell_out_normal(self):
-    # Rerun itself, report an error, ensure the error was reported.
-    httpd = start_server()
-    out = self.call(httpd.url, 'normal', 1)
-    self.assertEqual([], httpd.requests)
-    self.assertEqual('Failure to register the handler\n', out)
-    httpd.stop()
 
   def test_shell_out_hacked(self):
     # Rerun itself, report an error, ensure the error was reported.
@@ -365,9 +358,11 @@ class OnErrorServerTest(OnErrorBase):
 
 
 def run_shell_out(url, mode):
-  if mode != 'normal':
-    # Hack it out so registering works.
-    on_error._ENABLED_DOMAINS = (socket.getfqdn(),)
+  # Enable 'report_on_exception_exit' even though main file is *_test.py.
+  on_error._is_in_test = lambda: False
+
+  # Hack it out so registering works.
+  on_error._ENABLED_DOMAINS = (socket.getfqdn(),)
 
   if not on_error.report_on_exception_exit(url):
     print 'Failure to register the handler'

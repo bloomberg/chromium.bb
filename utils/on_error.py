@@ -199,6 +199,12 @@ def _check_for_exception_on_exit():
       ''.join(traceback.format_tb(last_tb)))
 
 
+def _is_in_test():
+  """Returns True if filename of __main__ module ends with _test.py(c)."""
+  main_file = os.path.basename(getattr(sys.modules['__main__'], '__file__', ''))
+  return os.path.splitext(main_file)[0].endswith('_test')
+
+
 ### Public API.
 
 
@@ -210,6 +216,10 @@ def report_on_exception_exit(server):
   global _SERVER
   if _SERVER:
     raise ValueError('on_error.report_on_exception_exit() was called twice')
+
+  if _is_in_test():
+    # Disable when running inside unit tests process.
+    return False
 
   if not server.startswith('https://'):
     # Only allow report over HTTPS. Silently drop it.
@@ -250,4 +260,3 @@ def report(error):
     sys.stderr.write(error + '\n')
   if exc_info[1]:
     sys.stderr.write(_format_exception(exc_info[1]) + '\n')
-

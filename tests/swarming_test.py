@@ -150,6 +150,19 @@ def get_swarm_results(keys, output_collector=None):
           'http://host:9001', keys, 10., None, True, output_collector))
 
 
+def collect(url, task_name, shards):
+  """Simplifies the call to swarming.collect()."""
+  return swarming.collect(
+    url=url,
+    task_name=task_name,
+    shards=shards,
+    timeout=10,
+    decorate=True,
+    print_status_updates=True,
+    task_summary_json=None,
+    task_output_dir=None)
+
+
 def gen_trigger_response(priority=101):
   # As seen in services/swarming/handlers_frontend.py.
   return {
@@ -420,9 +433,7 @@ class TestGetSwarmResults(TestCase):
   def test_collect_nothing(self):
     self.mock(swarming, 'get_task_keys', lambda *_: ['task_key'])
     self.mock(swarming, 'yield_results', lambda *_: [])
-    self.assertEqual(
-        1,
-        swarming.collect('url', 'name', 2, 'timeout', 'decorate', True, None))
+    self.assertEqual(1, collect('url', 'name', 2))
     self._check_output('', 'Results from some shards are missing: 0, 1\n')
 
   def test_collect_success(self):
@@ -434,9 +445,7 @@ class TestGetSwarmResults(TestCase):
       'output': 'Foo\n',
     }
     self.mock(swarming, 'yield_results', lambda *_: [(0, data)])
-    self.assertEqual(
-        0,
-        swarming.collect('url', 'name', 1, 'timeout', 'decorate', True, None))
+    self.assertEqual(0, collect('url', 'name', 1))
     self._check_output(
         '\n================================================================\n'
         'Begin output from shard index 0 (machine tag: 0, id: unknown)\n'
@@ -457,9 +466,7 @@ class TestGetSwarmResults(TestCase):
       'output': 'Foo\n',
     }
     self.mock(swarming, 'yield_results', lambda *_: [(0, data)])
-    self.assertEqual(
-        1,
-        swarming.collect('url', 'name', 1, 'timeout', 'decorate', True, None))
+    self.assertEqual(1, collect('url', 'name', 1))
     self._check_output(
         '\n================================================================\n'
         'Begin output from shard index 0 (machine tag: 0, id: unknown)\n'
@@ -480,9 +487,7 @@ class TestGetSwarmResults(TestCase):
       'output': 'Foo\n',
     }
     self.mock(swarming, 'yield_results', lambda *_: [(0, data)])
-    self.assertEqual(
-        1,
-        swarming.collect('url', 'name', 1, 'timeout', 'decorate', True, None))
+    self.assertEqual(1, collect('url', 'name', 1))
     self._check_output(
         '\n================================================================\n'
         'Begin output from shard index 0 (machine tag: 0, id: unknown)\n'
@@ -503,9 +508,7 @@ class TestGetSwarmResults(TestCase):
       'output': 'Foo\n',
     }
     self.mock(swarming, 'yield_results', lambda *_: [(0, data)])
-    self.assertEqual(
-        1,
-        swarming.collect('url', 'name', 2, 'timeout', 'decorate', True, None))
+    self.assertEqual(1, collect('url', 'name', 2))
     self._check_output(
         '\n================================================================\n'
         'Begin output from shard index 0 (machine tag: 0, id: unknown)\n'
@@ -1435,7 +1438,7 @@ class TaskOutputCollectorTest(auto_stub.TestCase):
         self.tempdir, 'task/name', len(logs))
     for index, log in enumerate(logs):
       collector.process_shard_result(index, gen_data(log, '0, 0'))
-    collector.finalize()
+    summary = collector.finalize()
 
     # Ensure it fetches the files from first two shards only.
     expected_calls = [
@@ -1461,9 +1464,7 @@ class TaskOutputCollectorTest(auto_stub.TestCase):
     self.assertEqual('https://server', storage.location)
     self.assertEqual('namespace', storage.namespace)
 
-    # Ensure summary dump is correct.
-    with open(os.path.join(self.tempdir, 'summary.json'), 'r') as f:
-      summary = json.load(f)
+    # Ensure collected summary is correct.
     expected_summary = {
       'task_name': 'task/name',
       'shards': [
@@ -1471,6 +1472,11 @@ class TaskOutputCollectorTest(auto_stub.TestCase):
       ]
     }
     self.assertEqual(expected_summary, summary)
+
+    # Ensure summary dumped to a file is correct as well.
+    with open(os.path.join(self.tempdir, 'summary.json'), 'r') as f:
+      summary_dump = json.load(f)
+    self.assertEqual(expected_summary, summary_dump)
 
   def test_ensures_same_server(self):
     # Two shard results, attempt to use different servers.
