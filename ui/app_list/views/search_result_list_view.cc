@@ -261,7 +261,7 @@ void SearchResultListView::ListItemMoved(size_t index, size_t target_index) {
 }
 
 void SearchResultListView::ListItemsChanged(size_t start, size_t count) {
-  ScheduleUpdate();
+  NOTREACHED();
 }
 
 void SearchResultListView::SearchResultActivated(SearchResultView* view,

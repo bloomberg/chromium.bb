@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/app_list/search/mixer.h"
 
 #include <algorithm>
+#include <map>
 #include <set>
 #include <string>
 #include <vector>
@@ -24,6 +25,14 @@ const size_t kMaxPeopleResults = 2;
 
 // A value to indicate no max number of results limit.
 const size_t kNoMaxResultsLimit = 0;
+
+void UpdateResult(const ChromeSearchResult& source,
+                  ChromeSearchResult* target) {
+  target->set_title(source.title());
+  target->set_title_tags(source.title_tags());
+  target->set_details(source.details());
+  target->set_details_tags(source.details_tags());
+}
 
 }  // namespace
 
@@ -171,30 +180,57 @@ void Mixer::MixAndPublish(const KnownResults& known_results) {
   Publish(results, ui_results_);
 }
 
-void Mixer::Publish(const SortedResults& results,
+void Mixer::Publish(const SortedResults& new_results,
                     AppListModel::SearchResults* ui_results) {
-  for (size_t i = 0; i < results.size(); ++i) {
-    ChromeSearchResult* result = results[i].result;
+  typedef std::map<std::string, ChromeSearchResult*> IdToResultMap;
 
+  // The following algorithm is used:
+  // 1. Transform the |ui_results| list into an unordered map from result ID
+  // to item.
+  // 2. Use the order of items in |new_results| to build an ordered list. If the
+  // result IDs exist in the map, update and use the item in the map and delete
+  // it from the map afterwards. Otherwise, clone new items from |new_results|.
+  // 3. Delete the objects remaining in the map as they are unused.
+
+  // A map of the items in |ui_results| that takes ownership of the items.
+  IdToResultMap ui_results_map;
+  for (size_t i = 0; i < ui_results->item_count(); ++i) {
     ChromeSearchResult* ui_result =
-        i < ui_results->item_count()
-            ? static_cast<ChromeSearchResult*>(ui_results->GetItemAt(i))
-            : NULL;
-    if (ui_result && ui_result->id() == result->id()) {
-      ui_result->set_title(result->title());
-      ui_result->set_title_tags(result->title_tags());
-      ui_result->set_details(result->details());
-      ui_result->set_details_tags(result->details_tags());
-      ui_results->NotifyItemsChanged(i, 1);
+        static_cast<ChromeSearchResult*>(ui_results->GetItemAt(i));
+    ui_results_map[ui_result->id()] = ui_result;
+  }
+  // We have to erase all results at once so that observers are notified with
+  // meaningful indexes.
+  ui_results->RemoveAll();
+
+  // Add items back to |ui_results| in the order of |new_results|.
+  for (size_t i = 0; i < new_results.size(); ++i) {
+    ChromeSearchResult* new_result = new_results[i].result;
+    IdToResultMap::const_iterator ui_result_it =
+        ui_results_map.find(new_result->id());
+    if (ui_result_it != ui_results_map.end()) {
+      // Update and use the old result if it exists.
+      ChromeSearchResult* ui_result = ui_result_it->second;
+      UpdateResult(*new_result, ui_result);
+
+      // |ui_results| takes back ownership from |ui_results_map| here.
+      ui_results->Add(ui_result);
+
+      // Remove the item from the map so that it ends up only with unused
+      // results.
+      ui_results_map.erase(ui_result->id());
     } else {
-      if (ui_result)
-        ui_results->DeleteAt(i);
-      ui_results->AddAt(i, result->Duplicate().release());
+      // Copy the result from |new_results| otherwise.
+      ui_results->Add(new_result->Duplicate().release());
     }
   }
 
-  while (ui_results->item_count() > results.size())
-    ui_results->DeleteAt(ui_results->item_count() - 1);
+  // Delete the results remaining in the map as they are not in the new results.
+  for (IdToResultMap::const_iterator ui_result_it = ui_results_map.begin();
+       ui_result_it != ui_results_map.end();
+       ++ui_result_it) {
+    delete ui_result_it->second;
+  }
 }
 
 void Mixer::RemoveDuplicates(SortedResults* results) {

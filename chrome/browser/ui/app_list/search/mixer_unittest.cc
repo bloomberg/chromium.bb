@@ -201,6 +201,7 @@ TEST_F(MixerTest, Publish) {
   scoped_ptr<ChromeSearchResult> result3(new TestSearchResult("app3", 0));
   scoped_ptr<ChromeSearchResult> result3_copy = result3->Duplicate();
   scoped_ptr<ChromeSearchResult> result4(new TestSearchResult("app4", 0));
+  scoped_ptr<ChromeSearchResult> result5(new TestSearchResult("app5", 0));
 
   AppListModel::SearchResults ui_results;
 
@@ -254,6 +255,30 @@ TEST_F(MixerTest, Publish) {
   EXPECT_EQ(kNewAppTitle, ui_results.GetItemAt(1)->title());
 
   // The third result will use the original object as the ID did not change.
+  EXPECT_EQ(old_ui_result_ids[2],
+            TestSearchResult::GetInstanceId(ui_results.GetItemAt(2)));
+
+  // Save the current |ui_results| order which should is app4, app2, app3.
+  old_ui_result_ids.clear();
+  for (size_t i = 0; i < ui_results.item_count(); ++i) {
+    old_ui_result_ids.push_back(
+        TestSearchResult::GetInstanceId(ui_results.GetItemAt(i)));
+  }
+
+  // Reorder the existing results and add a new one in the second place.
+  new_results[0] = Mixer::SortData(result2.get(), 1.0f);
+  new_results[1] = Mixer::SortData(result5.get(), 1.0f);
+  new_results[2] = Mixer::SortData(result3.get(), 1.0f);
+  new_results.push_back(Mixer::SortData(result4.get(), 1.0f));
+
+  Mixer::Publish(new_results, &ui_results);
+  EXPECT_EQ(4u, ui_results.item_count());
+
+  // The reordered results should use the original objects.
+  EXPECT_EQ(old_ui_result_ids[0],
+            TestSearchResult::GetInstanceId(ui_results.GetItemAt(3)));
+  EXPECT_EQ(old_ui_result_ids[1],
+            TestSearchResult::GetInstanceId(ui_results.GetItemAt(0)));
   EXPECT_EQ(old_ui_result_ids[2],
             TestSearchResult::GetInstanceId(ui_results.GetItemAt(2)));
 }

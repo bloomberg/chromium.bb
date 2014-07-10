@@ -67,8 +67,9 @@ class Mixer {
   class Group;
   typedef ScopedVector<Group> Groups;
 
-  // Publishes the given |results| to |ui_results|. Reuse existing ones to avoid
-  // flickering.
+  // Publishes the given |new_results| to |ui_results|, deleting any existing
+  // results that are not in |new_results|. Results that already exist in
+  // |ui_results| are reused to avoid flickering caused by icon reload.
   static void Publish(const SortedResults& results,
                       AppListModel::SearchResults* ui_results);
 
