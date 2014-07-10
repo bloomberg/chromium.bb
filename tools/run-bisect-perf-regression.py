@@ -20,7 +20,8 @@ import subprocess
 import sys
 import traceback
 
-import bisect_utils
+from auto_bisect import bisect_utils
+
 bisect = imp.load_source('bisect-perf-regression',
     os.path.join(os.path.abspath(os.path.dirname(sys.argv[0])),
         'bisect-perf-regression.py'))

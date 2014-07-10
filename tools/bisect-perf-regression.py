@@ -53,8 +53,8 @@ import zipfile
 
 sys.path.append(os.path.join(os.path.dirname(__file__), 'telemetry'))
 
-import bisect_utils
-import post_perf_builder_job as bisect_builder
+from auto_bisect import bisect_utils
+from auto_bisect import post_perf_builder_job
 from telemetry.page import cloud_storage
 
 # The additional repositories that might need to be bisected.

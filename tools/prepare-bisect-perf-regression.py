@@ -21,7 +21,7 @@ the depot.
 import optparse
 import sys
 
-import bisect_utils
+from auto_bisect import bisect_utils
 
 
 def main():
