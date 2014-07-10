@@ -514,6 +514,7 @@
       'includes': [ 'public/tools/bindings/mojom_bindings_generator.gypi' ],
       'sources': [
         'spy/public/spy.mojom',
+        'spy/common.h',
         'spy/spy.cc',
         'spy/spy.h',
         'spy/spy_server_impl.h',

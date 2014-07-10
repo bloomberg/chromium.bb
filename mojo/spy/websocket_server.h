@@ -7,8 +7,15 @@
 
 #include <string>
 
+#include "mojo/spy/common.h"
 #include "mojo/spy/public/spy.mojom.h"
 #include "net/server/http_server.h"
+
+namespace base {
+class Time;
+};
+
+class GURL;
 
 namespace mojo {
 
@@ -22,6 +29,12 @@ class WebSocketServer : public net::HttpServer::Delegate,
   bool Start();
   // Returns the listening port, useful if 0 was passed to the contructor.
   int port() const { return port_; }
+
+  // Maintains a log of the message passed in.
+  void LogMessageInfo(
+      const mojo::MojoRequestHeader& message_header,
+      const GURL& url,
+      const base::Time& message_time);
 
  protected:
   // Overridden from net::HttpServer::Delegate.
@@ -47,6 +60,8 @@ class WebSocketServer : public net::HttpServer::Delegate,
 
   // Callbacks from calling spy_api::SpyServer.
   void OnStartSession(spy_api::Result, mojo::String);
+
+  bool Connected() const;
 
  private:
   int port_;

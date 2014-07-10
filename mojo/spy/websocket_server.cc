@@ -7,19 +7,28 @@
 #include <string>
 
 #include "base/bind.h"
+#include "base/logging.h"
 #include "base/strings/stringprintf.h"
-
 #include "mojo/public/cpp/bindings/message.h"
-
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
 #include "net/server/http_server_request_info.h"
 #include "net/server/http_server_response_info.h"
 #include "net/socket/tcp_listen_socket.h"
+#include "url/gurl.h"
 
 namespace mojo {
 
 const int kNotConnected = -1;
+
+#define MOJO_DEBUGGER_MESSAGE_FORMAT "\"url: %s\n," \
+                                     "time: %02d:%02d:%02d\n,"\
+                                     "bytes: %u\n,"\
+                                     "fields: %u\n,"\
+                                     "name: %u\n,"\
+                                     "requestId: %llu\n,"\
+                                     "type: %s\n,"\
+                                     "end:\n\""
 
 WebSocketServer::WebSocketServer(int port,
                                  mojo::ScopedMessagePipeHandle server_pipe)
@@ -39,6 +48,36 @@ bool WebSocketServer::Start() {
   int error = web_server_->GetLocalAddress(&address);
   port_ = address.port();
   return (error == net::OK);
+}
+
+void WebSocketServer::LogMessageInfo(
+    const mojo::MojoRequestHeader& message_header,
+    const GURL& url,
+    const base::Time& message_time) {
+  base::Time::Exploded exploded;
+  message_time.LocalExplode(&exploded);
+
+  std::string output_message = base::StringPrintf(
+      MOJO_DEBUGGER_MESSAGE_FORMAT,
+      url.spec().c_str(),
+      exploded.hour,
+      exploded.minute,
+      exploded.second,
+      static_cast<unsigned>(message_header.num_bytes),
+      static_cast<unsigned>(message_header.num_fields),
+      static_cast<unsigned>(message_header.name),
+      static_cast<unsigned long long>(
+          message_header.num_fields == 3 ? message_header.request_id
+              : 0),
+      message_header.flags != 0 ?
+        (message_header.flags & mojo::kMessageExpectsResponse ?
+            "Expects response" : "Response message")
+        : "Not a request or response message");
+  if (Connected()) {
+    web_server_->SendOverWebSocket(connection_id_, output_message.c_str());
+  } else {
+    DVLOG(1) << output_message;
+  }
 }
 
 void WebSocketServer::OnHttpRequest(
@@ -113,4 +152,9 @@ void WebSocketServer::OnStartSession(spy_api::Result, mojo::String) {
   web_server_->SendOverWebSocket(connection_id_, "\"ok start\"");
 }
 
+bool WebSocketServer::Connected() const {
+  return connection_id_ !=  kNotConnected;
+}
+
 }  // namespace mojo
+
