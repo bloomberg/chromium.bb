@@ -74,17 +74,6 @@ class UI_BASE_EXPORT WindowEventTarget {
                                          WPARAM w_param,
                                          LPARAM l_param,
                                          bool* handled) = 0;
-
-  // Handles the WM_SYSCOMMAND message
-  // The |message| parameter identifies the message.
-  // The |w_param| and |l_param| values are as per MSDN docs.
-  // The |handled| parameter is an output parameter which when set to false
-  // indicates that the message should be DefProc'ed.
-  // Returns the result of processing the message.
-  virtual LRESULT HandleSysCommand(unsigned int message,
-                                   WPARAM w_param,
-                                   LPARAM l_param,
-                                   bool* handled) = 0;
  protected:
   WindowEventTarget();
   virtual ~WindowEventTarget();

@@ -239,11 +239,6 @@ class VIEWS_EXPORT HWNDMessageHandler :
                                          LPARAM l_param,
                                          bool* handled) OVERRIDE;
 
-  virtual LRESULT HandleSysCommand(unsigned int message,
-                                   WPARAM w_param,
-                                   LPARAM l_param,
-                                   bool* handled);
-
   // Returns the auto-hide edges of the appbar. See
   // ViewsDelegate::GetAppbarAutohideEdges() for details. If the edges change,
   // OnAppbarAutohideEdgesChanged() is called.

@@ -83,7 +83,6 @@ class CONTENT_EXPORT LegacyRenderWidgetHostHWND
                           OnMouseRange)
     MESSAGE_HANDLER_EX(WM_NCCALCSIZE, OnNCCalcSize)
     MESSAGE_HANDLER_EX(WM_SIZE, OnSize)
-    MESSAGE_HANDLER_EX(WM_SYSCOMMAND, OnSysCommand)
   END_MSG_MAP()
 
   HWND hwnd() { return m_hWnd; }

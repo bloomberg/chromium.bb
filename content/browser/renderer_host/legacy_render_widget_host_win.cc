@@ -224,6 +224,15 @@ LRESULT LegacyRenderWidgetHostHWND::OnMouseRange(UINT message,
     ret = GetWindowEventTarget(GetParent())->HandleMouseMessage(
         message, w_param, l_param, &msg_handled);
     handled = msg_handled;
+    // If the parent did not handle non client mouse messages, we call
+    // DefWindowProc on the message with the parent window handle. This
+    // ensures that WM_SYSCOMMAND is generated for the parent and we are
+    // out of the picture.
+    if (!handled &&
+         (message >= WM_NCMOUSEMOVE && message <= WM_NCXBUTTONDBLCLK)) {
+      ret = ::DefWindowProc(GetParent(), message, w_param, l_param);
+      handled = TRUE;
+    }
   }
   return ret;
 }
@@ -360,20 +369,6 @@ LRESULT LegacyRenderWidgetHostHWND::OnSize(UINT message,
   ::SetWindowLong(hwnd(), GWL_STYLE,
                   current_style | WS_VSCROLL | WS_HSCROLL);
   return 0;
-}
-
-LRESULT LegacyRenderWidgetHostHWND::OnSysCommand(UINT message,
-                                                 WPARAM w_param,
-                                                 LPARAM l_param) {
-  LRESULT ret = 0;
-  if (GetWindowEventTarget(GetParent())) {
-    bool msg_handled = false;
-    ret = GetWindowEventTarget(
-        GetParent())->HandleSysCommand(message, w_param, l_param,
-                                       &msg_handled);
-    SetMsgHandled(msg_handled);
-  }
-  return ret;
 }
 
 }  // namespace content
