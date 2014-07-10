@@ -20,6 +20,8 @@
       'sources': [
         'autocomplete/autocomplete_input.cc',
         'autocomplete/autocomplete_input.h',
+        'autocomplete/autocomplete_match_type.cc',
+        'autocomplete/autocomplete_match_type.h',
         'autocomplete/autocomplete_scheme_classifier.h',
         'autocomplete/url_prefix.cc',
         'autocomplete/url_prefix.h',

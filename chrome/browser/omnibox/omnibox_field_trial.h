@@ -11,7 +11,7 @@
 
 #include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
-#include "chrome/common/autocomplete_match_type.h"
+#include "components/autocomplete/autocomplete_match_type.h"
 #include "components/metrics/proto/omnibox_event.pb.h"
 
 namespace base {

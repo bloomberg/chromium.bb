@@ -11,8 +11,6 @@
       'common/attrition_experiments.h',
       'common/auto_start_linux.cc',
       'common/auto_start_linux.h',
-      'common/autocomplete_match_type.cc',
-      'common/autocomplete_match_type.h',
       'common/badge_util.cc',
       'common/badge_util.h',
       'common/child_process_logging.h',

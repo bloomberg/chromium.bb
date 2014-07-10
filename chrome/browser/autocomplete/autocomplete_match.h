@@ -10,7 +10,7 @@
 #include <vector>
 
 #include "base/memory/scoped_ptr.h"
-#include "chrome/common/autocomplete_match_type.h"
+#include "components/autocomplete/autocomplete_match_type.h"
 #include "components/search_engines/template_url.h"
 #include "content/public/common/page_transition_types.h"
 #include "url/gurl.h"
