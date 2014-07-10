@@ -255,6 +255,17 @@ TEST_P(QuicCryptoServerStreamTest, WithoutCertificates) {
 
 TEST_P(QuicCryptoServerStreamTest, ChannelID) {
   client_options_.channel_id_enabled = true;
+  client_options_.channel_id_source_async = false;
+  // CompleteCryptoHandshake verifies
+  // stream_.crypto_negotiated_params().channel_id is correct.
+  EXPECT_EQ(2, CompleteCryptoHandshake());
+  EXPECT_TRUE(stream_.encryption_established());
+  EXPECT_TRUE(stream_.handshake_confirmed());
+}
+
+TEST_P(QuicCryptoServerStreamTest, ChannelIDAsync) {
+  client_options_.channel_id_enabled = true;
+  client_options_.channel_id_source_async = true;
   // CompleteCryptoHandshake verifies
   // stream_.crypto_negotiated_params().channel_id is correct.
   EXPECT_EQ(2, CompleteCryptoHandshake());

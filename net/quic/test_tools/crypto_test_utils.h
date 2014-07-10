@@ -38,6 +38,19 @@ class PacketSavingConnection;
 
 class CryptoTestUtils {
  public:
+  // An interface for a source of work. This may be use for invoking callbacks
+  // asynchronously.
+  //
+  // Call the DoPendingWork method regularly to do the work from this source.
+  class WorkSource {
+   public:
+    virtual ~WorkSource() {}
+
+    // Does pending work in this source. If there is no pending work, does
+    // nothing.
+    virtual void DoPendingWork() = 0;
+  };
+
   // FakeClientOptions bundles together a number of options for configuring
   // HandshakeWithFakeClient.
   struct FakeClientOptions {
@@ -50,6 +63,10 @@ class CryptoTestUtils {
     // If channel_id_enabled is true then the client will attempt to send a
     // ChannelID.
     bool channel_id_enabled;
+
+    // If channel_id_source_async is true then the client will use an async
+    // ChannelIDSource for testing. Ignored if channel_id_enabled is false.
+    bool channel_id_source_async;
   };
 
   // returns: the number of client hellos that the client sent.
@@ -75,6 +92,17 @@ class CryptoTestUtils {
                                            QuicCryptoStream* a,
                                            PacketSavingConnection* b_conn,
                                            QuicCryptoStream* b);
+
+  // CommunicateHandshakeMessagesAndDoWork moves messages from |a| to |b| and
+  // back until |a|'s handshake has completed. If |work_source| is not NULL,
+  // CommunicateHandshakeMessagesAndDoWork also does work from |work_source|
+  // between processing messages.
+  static void CommunicateHandshakeMessagesAndDoWork(
+      PacketSavingConnection* a_conn,
+      QuicCryptoStream* a,
+      PacketSavingConnection* b_conn,
+      QuicCryptoStream* b,
+      WorkSource* work_source);
 
   // AdvanceHandshake attempts to moves messages from |a| to |b| and |b| to |a|.
   // Returns the number of messages moved.
