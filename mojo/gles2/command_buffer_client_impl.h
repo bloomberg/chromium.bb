@@ -20,9 +20,6 @@ class RunLoop;
 }
 
 namespace mojo {
-template <typename S>
-class SyncDispatcher;
-
 namespace gles2 {
 class CommandBufferClientImpl;
 
@@ -34,7 +31,6 @@ class CommandBufferDelegate {
 };
 
 class CommandBufferClientImpl : public CommandBufferClient,
-                                public CommandBufferSyncClient,
                                 public ErrorHandler,
                                 public gpu::CommandBuffer,
                                 public gpu::GpuControl {
@@ -80,16 +76,15 @@ class CommandBufferClientImpl : public CommandBufferClient,
   void CancelAnimationFrames();
 
  private:
+  class SyncClientImpl;
+
   // CommandBufferClient implementation:
-  virtual void DidInitialize(bool success) OVERRIDE;
-  virtual void DidMakeProgress(CommandBufferStatePtr state) OVERRIDE;
   virtual void DidDestroy() OVERRIDE;
   virtual void LostContext(int32_t lost_reason) OVERRIDE;
+  virtual void DrawAnimationFrame() OVERRIDE;
 
   // ErrorHandler implementation:
   virtual void OnConnectionError() OVERRIDE;
-
-  virtual void DrawAnimationFrame() OVERRIDE;
 
   void TryUpdateState();
   void MakeProgressAndUpdateState();
@@ -98,7 +93,7 @@ class CommandBufferClientImpl : public CommandBufferClient,
 
   CommandBufferDelegate* delegate_;
   CommandBufferPtr command_buffer_;
-  scoped_ptr<SyncDispatcher<CommandBufferSyncClient> > sync_dispatcher_;
+  scoped_ptr<SyncClientImpl> sync_client_impl_;
 
   State last_state_;
   mojo::ScopedSharedBufferHandle shared_state_handle_;
@@ -106,7 +101,6 @@ class CommandBufferClientImpl : public CommandBufferClient,
   int32 last_put_offset_;
   int32 next_transfer_buffer_id_;
 
-  bool initialize_result_;
   const MojoAsyncWaiter* async_waiter_;
 };
 

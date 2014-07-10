@@ -8,7 +8,6 @@
 
 #include "base/logging.h"
 #include "base/process/process_handle.h"
-#include "mojo/public/cpp/bindings/sync_dispatcher.h"
 #include "mojo/services/gles2/command_buffer_type_conversions.h"
 #include "mojo/services/gles2/mojo_buffer_backing.h"
 
@@ -39,12 +38,43 @@ bool CreateMapAndDupSharedBuffer(size_t size,
 
   return true;
 }
-}
+
+}  // namespace
 
 CommandBufferDelegate::~CommandBufferDelegate() {}
 
 void CommandBufferDelegate::ContextLost() {}
 void CommandBufferDelegate::DrawAnimationFrame() {}
+
+class CommandBufferClientImpl::SyncClientImpl
+    : public InterfaceImpl<CommandBufferSyncClient> {
+ public:
+  SyncClientImpl() : initialized_successfully_(false) {}
+
+  bool WaitForInitialization() {
+    if (!WaitForIncomingMethodCall())
+      return false;
+    return initialized_successfully_;
+  }
+
+  CommandBufferStatePtr WaitForProgress() {
+    if (!WaitForIncomingMethodCall())
+      return CommandBufferStatePtr();
+    return command_buffer_state_.Pass();
+  }
+
+ private:
+  // CommandBufferSyncClient methods:
+  virtual void DidInitialize(bool success) OVERRIDE {
+    initialized_successfully_ = success;
+  }
+  virtual void DidMakeProgress(CommandBufferStatePtr state) OVERRIDE {
+    command_buffer_state_ = state.Pass();
+  }
+
+  bool initialized_successfully_;
+  CommandBufferStatePtr command_buffer_state_;
+};
 
 CommandBufferClientImpl::CommandBufferClientImpl(
     CommandBufferDelegate* delegate,
@@ -54,7 +84,6 @@ CommandBufferClientImpl::CommandBufferClientImpl(
       shared_state_(NULL),
       last_put_offset_(-1),
       next_transfer_buffer_id_(0),
-      initialize_result_(false),
       async_waiter_(async_waiter) {
   command_buffer_.Bind(command_buffer_handle.Pass(), async_waiter);
   command_buffer_.set_error_handler(this);
@@ -76,20 +105,18 @@ bool CommandBufferClientImpl::Initialize() {
 
   shared_state()->Initialize();
 
-  // TODO(darin): We need better sugar for sync calls.
-  MessagePipe sync_pipe;
-  sync_dispatcher_.reset(new SyncDispatcher<CommandBufferSyncClient>(
-      sync_pipe.handle0.Pass(), this));
-  CommandBufferSyncClientPtr sync_client =
-      MakeProxy<CommandBufferSyncClient>(sync_pipe.handle1.Pass(),
-                                         async_waiter_);
+  CommandBufferSyncClientPtr sync_client;
+  sync_client_impl_.reset(
+      BindToProxy(new SyncClientImpl(), &sync_client, async_waiter_));
+
   command_buffer_->Initialize(sync_client.Pass(), duped.Pass());
+
   // Wait for DidInitialize to come on the sync client pipe.
-  if (!sync_dispatcher_->WaitAndDispatchOneMessage()) {
+  if (!sync_client_impl_->WaitForInitialization()) {
     VLOG(1) << "Channel encountered error while creating command buffer";
     return false;
   }
-  return initialize_result_;
+  return true;
 }
 
 gpu::CommandBuffer::State CommandBufferClientImpl::GetLastState() {
@@ -233,15 +260,6 @@ void CommandBufferClientImpl::CancelAnimationFrames() {
   command_buffer_->CancelAnimationFrames();
 }
 
-void CommandBufferClientImpl::DidInitialize(bool success) {
-  initialize_result_ = success;
-}
-
-void CommandBufferClientImpl::DidMakeProgress(CommandBufferStatePtr state) {
-  if (state->generation - last_state_.generation < 0x80000000U)
-    last_state_ = state.To<State>();
-}
-
 void CommandBufferClientImpl::DidDestroy() {
   LostContext(gpu::error::kUnknown);
 }
@@ -251,6 +269,10 @@ void CommandBufferClientImpl::LostContext(int32_t lost_reason) {
   last_state_.context_lost_reason =
       static_cast<gpu::error::ContextLostReason>(lost_reason);
   delegate_->ContextLost();
+}
+
+void CommandBufferClientImpl::DrawAnimationFrame() {
+  delegate_->DrawAnimationFrame();
 }
 
 void CommandBufferClientImpl::OnConnectionError() {
@@ -264,16 +286,17 @@ void CommandBufferClientImpl::TryUpdateState() {
 
 void CommandBufferClientImpl::MakeProgressAndUpdateState() {
   command_buffer_->MakeProgress(last_state_.get_offset);
-  if (!sync_dispatcher_->WaitAndDispatchOneMessage()) {
+
+  CommandBufferStatePtr state = sync_client_impl_->WaitForProgress();
+  if (!state.get()) {
     VLOG(1) << "Channel encountered error while waiting for command buffer";
     // TODO(piman): is it ok for this to re-enter?
     DidDestroy();
     return;
   }
-}
 
-void CommandBufferClientImpl::DrawAnimationFrame() {
-  delegate_->DrawAnimationFrame();
+  if (state->generation - last_state_.generation < 0x80000000U)
+    last_state_ = state.To<State>();
 }
 
 }  // namespace gles2
