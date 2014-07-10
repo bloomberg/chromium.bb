@@ -873,6 +873,42 @@ SelectionModel RenderText::GetSelectionModelForSelectionStart() {
                         sel.is_reversed() ? CURSOR_BACKWARD : CURSOR_FORWARD);
 }
 
+const Vector2d& RenderText::GetUpdatedDisplayOffset() {
+  UpdateCachedBoundsAndOffset();
+  return display_offset_;
+}
+
+void RenderText::SetDisplayOffset(int horizontal_offset) {
+  const int extra_content = GetContentWidth() - display_rect_.width();
+
+  int min_offset = 0;
+  int max_offset = 0;
+  if (extra_content > 0) {
+    switch (horizontal_alignment_) {
+      case ALIGN_LEFT:
+        min_offset = -extra_content;
+        break;
+      case ALIGN_RIGHT:
+        max_offset = extra_content;
+        break;
+      case ALIGN_CENTER:
+        min_offset = -extra_content / 2;
+        max_offset = extra_content / 2;
+        break;
+      default:
+        break;
+    }
+  }
+  if (horizontal_offset < min_offset)
+    horizontal_offset = min_offset;
+  else if (horizontal_offset > max_offset)
+    horizontal_offset = max_offset;
+
+  cached_bounds_and_offset_valid_ = true;
+  display_offset_.set_x(horizontal_offset);
+  cursor_bounds_ = GetCursorBounds(selection_model_, insert_mode_);
+}
+
 RenderText::RenderText()
     : horizontal_alignment_(base::i18n::IsRTL() ? ALIGN_RIGHT : ALIGN_LEFT),
       directionality_mode_(DIRECTIONALITY_FROM_TEXT),
@@ -897,11 +933,6 @@ RenderText::RenderText()
       clip_to_display_rect_(true),
       baseline_(kInvalidBaseline),
       cached_bounds_and_offset_valid_(false) {
-}
-
-const Vector2d& RenderText::GetUpdatedDisplayOffset() {
-  UpdateCachedBoundsAndOffset();
-  return display_offset_;
 }
 
 SelectionModel RenderText::GetAdjacentSelectionModel(

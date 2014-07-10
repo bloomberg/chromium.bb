@@ -421,6 +421,9 @@ class GFX_EXPORT RenderText {
   // Rect can't have a negative width.)
   virtual Range GetGlyphBounds(size_t index) = 0;
 
+  const Vector2d& GetUpdatedDisplayOffset();
+  void SetDisplayOffset(int horizontal_offset);
+
  protected:
   RenderText();
 
@@ -453,8 +456,6 @@ class GFX_EXPORT RenderText {
   // layout engine, and it changes depending on the text.  GetAlignmentOffset()
   // returns the difference between them.
   virtual int GetLayoutTextBaseline() = 0;
-
-  const Vector2d& GetUpdatedDisplayOffset();
 
   void set_cached_bounds_and_offset_valid(bool valid) {
     cached_bounds_and_offset_valid_ = valid;
