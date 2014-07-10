@@ -219,10 +219,8 @@ void ToplevelWindowEventHandler::OnGestureEvent(ui::GestureEvent* event) {
   }
 
   if (event->details().touch_points() > 2) {
-    if (window_resizer_.get()) {
-      CompleteDrag(DRAG_COMPLETE);
+    if (CompleteDrag(DRAG_COMPLETE))
       event->StopPropagation();
-    }
     return;
   }
 
@@ -446,20 +444,30 @@ bool ToplevelWindowEventHandler::AttemptToStartDrag(
   return true;
 }
 
-void ToplevelWindowEventHandler::CompleteDrag(DragCompletionStatus status) {
+bool ToplevelWindowEventHandler::CompleteDrag(DragCompletionStatus status) {
+  if (!window_resizer_)
+    return false;
+
   scoped_ptr<ScopedWindowResizer> resizer(window_resizer_.release());
-  if (resizer) {
-    if (status == DRAG_COMPLETE)
+  switch (status) {
+    case DRAG_COMPLETE:
       resizer->resizer()->CompleteDrag();
-    else
+      break;
+    case DRAG_REVERT:
       resizer->resizer()->RevertDrag();
+      break;
+    case DRAG_RESIZER_WINDOW_DESTROYED:
+      // We explicitly do not invoke RevertDrag() since that may do things to
+      // WindowResizer::GetTarget() which was destroyed.
+      break;
   }
-  drag_reverted_ = (status == DRAG_REVERT);
+  drag_reverted_ = (status != DRAG_COMPLETE);
 
   first_finger_hittest_ = HTNOWHERE;
   in_gesture_drag_ = false;
   if (in_move_loop_)
     quit_closure_.Run();
+  return true;
 }
 
 void ToplevelWindowEventHandler::HandleMousePressed(
@@ -494,20 +502,8 @@ void ToplevelWindowEventHandler::HandleMouseReleased(
   if (event->phase() != ui::EP_PRETARGET)
     return;
 
-  if (window_resizer_) {
-    CompleteDrag(event->type() == ui::ET_MOUSE_RELEASED ?
-                     DRAG_COMPLETE : DRAG_REVERT);
-  }
-
-  // Completing the drag may result in hiding the window. If this happens
-  // mark the event as handled so no other handlers/observers act upon the
-  // event. They should see the event on a hidden window, to determine targets
-  // of destructive actions such as hiding. They should not act upon them.
-  if (window_resizer_ &&
-      event->type() == ui::ET_MOUSE_CAPTURE_CHANGED &&
-      !target->IsVisible()) {
-    event->SetHandled();
-  }
+  CompleteDrag(event->type() == ui::ET_MOUSE_RELEASED ?
+                   DRAG_COMPLETE : DRAG_REVERT);
 }
 
 void ToplevelWindowEventHandler::HandleDrag(
@@ -611,11 +607,7 @@ void ToplevelWindowEventHandler::SetWindowStateTypeFromGesture(
 }
 
 void ToplevelWindowEventHandler::ResizerWindowDestroyed() {
-  // We explicitly don't invoke RevertDrag() since that may do things to window.
-  // Instead we destroy the resizer.
-  window_resizer_.reset();
-
-  CompleteDrag(DRAG_REVERT);
+  CompleteDrag(DRAG_RESIZER_WINDOW_DESTROYED);
 }
 
 }  // namespace ash

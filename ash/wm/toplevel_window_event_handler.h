@@ -58,7 +58,12 @@ class ASH_EXPORT ToplevelWindowEventHandler
 
   enum DragCompletionStatus {
     DRAG_COMPLETE,
-    DRAG_REVERT
+    DRAG_REVERT,
+
+    // To be used when WindowResizer::GetTarget() is destroyed. Neither
+    // completes nor reverts the drag because both access the WindowResizer's
+    // window.
+    DRAG_RESIZER_WINDOW_DESTROYED
   };
 
   // Attempts to start a drag if one is not already in progress. Returns true if
@@ -68,8 +73,9 @@ class ASH_EXPORT ToplevelWindowEventHandler
                           int window_component,
                           aura::client::WindowMoveSource source);
 
-  // Finishes the drag.
-  void CompleteDrag(DragCompletionStatus status);
+  // Completes or reverts the drag if one is in progress. Returns true if a
+  // drag was completed or reverted.
+  bool CompleteDrag(DragCompletionStatus status);
 
   void HandleMousePressed(aura::Window* target, ui::MouseEvent* event);
   void HandleMouseReleased(aura::Window* target, ui::MouseEvent* event);
