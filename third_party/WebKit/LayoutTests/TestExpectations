@@ -885,7 +885,7 @@ crbug.com/362503 http/tests/xmlhttprequest/xmlhttprequest-responseXML-exception.
 crbug.com/364250 [ Debug ] virtual/threaded/animations/interpolation/webkit-transform-interpolation.html [ Pass Crash Timeout ]
 
 # Added in r171958 and timing out on some platforms ever since.
-crbug.com/392640 svg/as-object/sizing/svg-in-object-placeholder-height-auto.html [ Pass Timeout ]
+crbug.com/392640 svg/as-object/sizing/svg-in-object-placeholder-height-auto.html [ Pass Failure ]
 crbug.com/392640 [ Win Mac ] svg/as-object/sizing/svg-in-object-placeholder-height-fixed.html [ Pass Timeout ]
 crbug.com/392640 [ Linux Release ] svg/as-object/sizing/svg-in-object-placeholder-height-fixed.html [ Pass Timeout ]
 crbug.com/392640 [ Linux Debug ] svg/as-object/sizing/svg-in-object-placeholder-height-fixed.html [ Pass Failure Timeout ]
