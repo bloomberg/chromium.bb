@@ -92,9 +92,11 @@ class TestComboboxModel : public ui::ComboboxModel {
   TestComboboxModel() {}
   virtual ~TestComboboxModel() {}
 
+  static const int kItemCount = 10;
+
   // ui::ComboboxModel:
   virtual int GetItemCount() const OVERRIDE {
-    return 10;
+    return kItemCount;
   }
   virtual base::string16 GetItemAt(int index) OVERRIDE {
     if (IsItemSeparatorAt(index)) {
@@ -105,6 +107,16 @@ class TestComboboxModel : public ui::ComboboxModel {
   }
   virtual bool IsItemSeparatorAt(int index) OVERRIDE {
     return separators_.find(index) != separators_.end();
+  }
+
+  virtual int GetDefaultIndex() const OVERRIDE {
+    // Return the first index that is not a separator.
+    for (int index = 0; index < kItemCount; ++index) {
+      if (separators_.find(index) == separators_.end())
+        return index;
+    }
+    NOTREACHED();
+    return 0;
   }
 
   void SetSeparators(const std::set<int>& separators) {
@@ -200,8 +212,11 @@ class ComboboxTest : public ViewsTestBase {
     ViewsTestBase::TearDown();
   }
 
-  void InitCombobox() {
+  void InitCombobox(const std::set<int>* separators) {
     model_.reset(new TestComboboxModel());
+
+    if (separators)
+      model_->SetSeparators(*separators);
 
     ASSERT_FALSE(combobox_);
     combobox_ = new TestCombobox(model_.get());
@@ -262,7 +277,7 @@ class ComboboxTest : public ViewsTestBase {
 };
 
 TEST_F(ComboboxTest, KeyTest) {
-  InitCombobox();
+  InitCombobox(NULL);
   SendKeyEvent(ui::VKEY_END);
   EXPECT_EQ(combobox_->selected_index() + 1, model_->GetItemCount());
   SendKeyEvent(ui::VKEY_HOME);
@@ -304,10 +319,9 @@ TEST_F(ComboboxTest, DisabilityTest) {
 // Verifies that we don't select a separator line in combobox when navigating
 // through keyboard.
 TEST_F(ComboboxTest, SkipSeparatorSimple) {
-  InitCombobox();
   std::set<int> separators;
   separators.insert(2);
-  model_->SetSeparators(separators);
+  InitCombobox(&separators);
   EXPECT_EQ(0, combobox_->selected_index());
   SendKeyEvent(ui::VKEY_DOWN);
   EXPECT_EQ(1, combobox_->selected_index());
@@ -326,17 +340,16 @@ TEST_F(ComboboxTest, SkipSeparatorSimple) {
 // Verifies that we never select the separator that is in the beginning of the
 // combobox list when navigating through keyboard.
 TEST_F(ComboboxTest, SkipSeparatorBeginning) {
-  InitCombobox();
   std::set<int> separators;
   separators.insert(0);
-  model_->SetSeparators(separators);
-  EXPECT_EQ(0, combobox_->selected_index());
-  SendKeyEvent(ui::VKEY_DOWN);
+  InitCombobox(&separators);
   EXPECT_EQ(1, combobox_->selected_index());
   SendKeyEvent(ui::VKEY_DOWN);
   EXPECT_EQ(2, combobox_->selected_index());
+  SendKeyEvent(ui::VKEY_DOWN);
+  EXPECT_EQ(3, combobox_->selected_index());
   SendKeyEvent(ui::VKEY_UP);
-  EXPECT_EQ(1, combobox_->selected_index());
+  EXPECT_EQ(2, combobox_->selected_index());
   SendKeyEvent(ui::VKEY_HOME);
   EXPECT_EQ(1, combobox_->selected_index());
   SendKeyEvent(ui::VKEY_PRIOR);
@@ -348,10 +361,9 @@ TEST_F(ComboboxTest, SkipSeparatorBeginning) {
 // Verifies that we never select the separator that is in the end of the
 // combobox list when navigating through keyboard.
 TEST_F(ComboboxTest, SkipSeparatorEnd) {
-  InitCombobox();
   std::set<int> separators;
-  separators.insert(model_->GetItemCount() - 1);
-  model_->SetSeparators(separators);
+  separators.insert(TestComboboxModel::kItemCount - 1);
+  InitCombobox(&separators);
   combobox_->SetSelectedIndex(8);
   SendKeyEvent(ui::VKEY_DOWN);
   EXPECT_EQ(8, combobox_->selected_index());
@@ -365,15 +377,14 @@ TEST_F(ComboboxTest, SkipSeparatorEnd) {
 // consecutive) that appear in the beginning of the combobox list when
 // navigating through keyboard.
 TEST_F(ComboboxTest, SkipMultipleSeparatorsAtBeginning) {
-  InitCombobox();
   std::set<int> separators;
   separators.insert(0);
   separators.insert(1);
   separators.insert(2);
-  model_->SetSeparators(separators);
-  EXPECT_EQ(0, combobox_->selected_index());
-  SendKeyEvent(ui::VKEY_DOWN);
+  InitCombobox(&separators);
   EXPECT_EQ(3, combobox_->selected_index());
+  SendKeyEvent(ui::VKEY_DOWN);
+  EXPECT_EQ(4, combobox_->selected_index());
   SendKeyEvent(ui::VKEY_UP);
   EXPECT_EQ(3, combobox_->selected_index());
   SendKeyEvent(ui::VKEY_NEXT);
@@ -390,12 +401,11 @@ TEST_F(ComboboxTest, SkipMultipleSeparatorsAtBeginning) {
 // consecutive) that appear in the middle of the combobox list when navigating
 // through keyboard.
 TEST_F(ComboboxTest, SkipMultipleAdjacentSeparatorsAtMiddle) {
-  InitCombobox();
   std::set<int> separators;
   separators.insert(4);
   separators.insert(5);
   separators.insert(6);
-  model_->SetSeparators(separators);
+  InitCombobox(&separators);
   combobox_->SetSelectedIndex(3);
   SendKeyEvent(ui::VKEY_DOWN);
   EXPECT_EQ(7, combobox_->selected_index());
@@ -407,12 +417,11 @@ TEST_F(ComboboxTest, SkipMultipleAdjacentSeparatorsAtMiddle) {
 // consecutive) that appear in the end of the combobox list when navigating
 // through keyboard.
 TEST_F(ComboboxTest, SkipMultipleSeparatorsAtEnd) {
-  InitCombobox();
   std::set<int> separators;
   separators.insert(7);
   separators.insert(8);
   separators.insert(9);
-  model_->SetSeparators(separators);
+  InitCombobox(&separators);
   combobox_->SetSelectedIndex(6);
   SendKeyEvent(ui::VKEY_DOWN);
   EXPECT_EQ(6, combobox_->selected_index());
@@ -429,12 +438,11 @@ TEST_F(ComboboxTest, SkipMultipleSeparatorsAtEnd) {
 }
 
 TEST_F(ComboboxTest, GetTextForRowTest) {
-  InitCombobox();
   std::set<int> separators;
   separators.insert(0);
   separators.insert(1);
   separators.insert(9);
-  model_->SetSeparators(separators);
+  InitCombobox(&separators);
   for (int i = 0; i < combobox_->GetRowCount(); ++i) {
     if (separators.count(i) != 0) {
       EXPECT_TRUE(combobox_->GetTextForRow(i).empty()) << i;
@@ -447,7 +455,7 @@ TEST_F(ComboboxTest, GetTextForRowTest) {
 
 // Verifies selecting the first matching value (and returning whether found).
 TEST_F(ComboboxTest, SelectValue) {
-  InitCombobox();
+  InitCombobox(NULL);
   ASSERT_EQ(model_->GetDefaultIndex(), combobox_->selected_index());
   EXPECT_TRUE(combobox_->SelectValue(ASCIIToUTF16("PEANUT BUTTER")));
   EXPECT_EQ(0, combobox_->selected_index());
@@ -467,7 +475,7 @@ TEST_F(ComboboxTest, SelectValue) {
 }
 
 TEST_F(ComboboxTest, SelectIndexActionStyle) {
-  InitCombobox();
+  InitCombobox(NULL);
 
   // With the action style, the selected index is always 0.
   combobox_->SetStyle(Combobox::STYLE_ACTION);
@@ -500,7 +508,7 @@ TEST_F(ComboboxTest, ListenerHandlesDelete) {
 }
 
 TEST_F(ComboboxTest, Click) {
-  InitCombobox();
+  InitCombobox(NULL);
 
   TestComboboxListener listener;
   combobox_->set_listener(&listener);
@@ -520,7 +528,7 @@ TEST_F(ComboboxTest, Click) {
 }
 
 TEST_F(ComboboxTest, ClickButDisabled) {
-  InitCombobox();
+  InitCombobox(NULL);
 
   TestComboboxListener listener;
   combobox_->set_listener(&listener);
@@ -541,7 +549,7 @@ TEST_F(ComboboxTest, ClickButDisabled) {
 }
 
 TEST_F(ComboboxTest, NotifyOnClickWithReturnKey) {
-  InitCombobox();
+  InitCombobox(NULL);
 
   TestComboboxListener listener;
   combobox_->set_listener(&listener);
@@ -558,7 +566,7 @@ TEST_F(ComboboxTest, NotifyOnClickWithReturnKey) {
 }
 
 TEST_F(ComboboxTest, NotifyOnClickWithSpaceKey) {
-  InitCombobox();
+  InitCombobox(NULL);
 
   TestComboboxListener listener;
   combobox_->set_listener(&listener);
@@ -579,7 +587,7 @@ TEST_F(ComboboxTest, NotifyOnClickWithSpaceKey) {
 }
 
 TEST_F(ComboboxTest, NotifyOnClickWithMouse) {
-  InitCombobox();
+  InitCombobox(NULL);
 
   TestComboboxListener listener;
   combobox_->set_listener(&listener);
@@ -613,7 +621,7 @@ TEST_F(ComboboxTest, NotifyOnClickWithMouse) {
 }
 
 TEST_F(ComboboxTest, ConsumingPressKeyEvents) {
-  InitCombobox();
+  InitCombobox(NULL);
 
   EXPECT_FALSE(combobox_->OnKeyPressed(
       ui::KeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_RETURN, 0, false)));
@@ -664,7 +672,7 @@ TEST_F(ComboboxTest, ContentWidth) {
 }
 
 TEST_F(ComboboxTest, TypingPrefixNotifiesListener) {
-  InitCombobox();
+  InitCombobox(NULL);
 
   TestComboboxListener listener;
   combobox_->set_listener(&listener);
