@@ -36,7 +36,8 @@ bool ExtensionAPI::IsAnyFeatureAvailableToContext(const Feature& api,
   return false;
 }
 
-bool ExtensionAPI::IsPrivileged(const std::string& full_name) {
+bool ExtensionAPI::IsAvailableInUntrustedContext(const std::string& full_name,
+                                                 const Extension* extension) {
   return false;
 }
 

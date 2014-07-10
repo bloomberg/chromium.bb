@@ -104,11 +104,10 @@ class ExtensionAPI {
                                       Feature::Context context,
                                       const GURL& url);
 
-  // Returns true if |name| is a privileged API path. Privileged paths can only
-  // be called from extension code which is running in its own designated
-  // extension process. They cannot be called from extension code running in
-  // content scripts, or other low-privileged contexts.
-  bool IsPrivileged(const std::string& name);
+  // Returns true if |name| is available to |extension| in any untrusted
+  // extension context, such as content scripts, iframes, or web pages.
+  bool IsAvailableInUntrustedContext(const std::string& name,
+                                     const Extension* extension);
 
   // Gets the schema for the extension API with namespace |full_name|.
   // Ownership remains with this object.

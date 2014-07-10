@@ -289,7 +289,7 @@ TEST_F(ExtensionSimpleFeatureTest, PackageType) {
 TEST_F(ExtensionSimpleFeatureTest, Context) {
   SimpleFeature feature;
   feature.set_name("somefeature");
-  feature.GetContexts()->insert(Feature::BLESSED_EXTENSION_CONTEXT);
+  feature.contexts()->insert(Feature::BLESSED_EXTENSION_CONTEXT);
   feature.extension_types()->insert(Manifest::TYPE_LEGACY_PACKAGED_APP);
   feature.platforms()->insert(Feature::CHROMEOS_PLATFORM);
   feature.set_min_manifest_version(21);
@@ -328,9 +328,9 @@ TEST_F(ExtensionSimpleFeatureTest, Context) {
 
   feature.extension_types()->clear();
   feature.extension_types()->insert(Manifest::TYPE_LEGACY_PACKAGED_APP);
-  feature.GetContexts()->clear();
-  feature.GetContexts()->insert(Feature::UNBLESSED_EXTENSION_CONTEXT);
-  feature.GetContexts()->insert(Feature::CONTENT_SCRIPT_CONTEXT);
+  feature.contexts()->clear();
+  feature.contexts()->insert(Feature::UNBLESSED_EXTENSION_CONTEXT);
+  feature.contexts()->insert(Feature::CONTENT_SCRIPT_CONTEXT);
   {
     Feature::Availability availability = feature.IsAvailableToContext(
         extension.get(), Feature::BLESSED_EXTENSION_CONTEXT,
@@ -341,7 +341,7 @@ TEST_F(ExtensionSimpleFeatureTest, Context) {
               availability.message());
   }
 
-  feature.GetContexts()->insert(Feature::WEB_PAGE_CONTEXT);
+  feature.contexts()->insert(Feature::WEB_PAGE_CONTEXT);
   {
     Feature::Availability availability = feature.IsAvailableToContext(
         extension.get(), Feature::BLESSED_EXTENSION_CONTEXT,
@@ -352,8 +352,8 @@ TEST_F(ExtensionSimpleFeatureTest, Context) {
               availability.message());
   }
 
-  feature.GetContexts()->clear();
-  feature.GetContexts()->insert(Feature::BLESSED_EXTENSION_CONTEXT);
+  feature.contexts()->clear();
+  feature.contexts()->insert(Feature::BLESSED_EXTENSION_CONTEXT);
   feature.set_location(SimpleFeature::COMPONENT_LOCATION);
   EXPECT_EQ(Feature::INVALID_LOCATION, feature.IsAvailableToContext(
       extension.get(), Feature::BLESSED_EXTENSION_CONTEXT,
@@ -496,7 +496,7 @@ TEST_F(ExtensionSimpleFeatureTest, ParseNull) {
   feature->Parse(value.get());
   EXPECT_TRUE(feature->whitelist()->empty());
   EXPECT_TRUE(feature->extension_types()->empty());
-  EXPECT_TRUE(feature->GetContexts()->empty());
+  EXPECT_TRUE(feature->contexts()->empty());
   EXPECT_EQ(SimpleFeature::UNSPECIFIED_LOCATION, feature->location());
   EXPECT_TRUE(feature->platforms()->empty());
   EXPECT_EQ(0, feature->min_manifest_version());
@@ -554,22 +554,17 @@ TEST_F(ExtensionSimpleFeatureTest, ParseContexts) {
   value->Set("contexts", contexts);
   scoped_ptr<SimpleFeature> feature(new SimpleFeature());
   feature->Parse(value.get());
-  EXPECT_EQ(5u, feature->GetContexts()->size());
-  EXPECT_TRUE(
-      feature->GetContexts()->count(Feature::BLESSED_EXTENSION_CONTEXT));
-  EXPECT_TRUE(
-      feature->GetContexts()->count(Feature::UNBLESSED_EXTENSION_CONTEXT));
-  EXPECT_TRUE(
-      feature->GetContexts()->count(Feature::CONTENT_SCRIPT_CONTEXT));
-  EXPECT_TRUE(
-      feature->GetContexts()->count(Feature::WEB_PAGE_CONTEXT));
-  EXPECT_TRUE(
-      feature->GetContexts()->count(Feature::BLESSED_WEB_PAGE_CONTEXT));
+  EXPECT_EQ(5u, feature->contexts()->size());
+  EXPECT_TRUE(feature->contexts()->count(Feature::BLESSED_EXTENSION_CONTEXT));
+  EXPECT_TRUE(feature->contexts()->count(Feature::UNBLESSED_EXTENSION_CONTEXT));
+  EXPECT_TRUE(feature->contexts()->count(Feature::CONTENT_SCRIPT_CONTEXT));
+  EXPECT_TRUE(feature->contexts()->count(Feature::WEB_PAGE_CONTEXT));
+  EXPECT_TRUE(feature->contexts()->count(Feature::BLESSED_WEB_PAGE_CONTEXT));
 
   value->SetString("contexts", "all");
   scoped_ptr<SimpleFeature> feature2(new SimpleFeature());
   feature2->Parse(value.get());
-  EXPECT_EQ(*(feature->GetContexts()), *(feature2->GetContexts()));
+  EXPECT_EQ(*(feature->contexts()), *(feature2->contexts()));
 }
 
 TEST_F(ExtensionSimpleFeatureTest, ParseLocation) {
@@ -625,7 +620,7 @@ TEST_F(ExtensionSimpleFeatureTest, Inheritance) {
   SimpleFeature feature;
   feature.whitelist()->insert("foo");
   feature.extension_types()->insert(Manifest::TYPE_THEME);
-  feature.GetContexts()->insert(Feature::BLESSED_EXTENSION_CONTEXT);
+  feature.contexts()->insert(Feature::BLESSED_EXTENSION_CONTEXT);
   feature.set_location(SimpleFeature::COMPONENT_LOCATION);
   feature.platforms()->insert(Feature::CHROMEOS_PLATFORM);
   feature.set_min_manifest_version(1);
@@ -637,7 +632,7 @@ TEST_F(ExtensionSimpleFeatureTest, Inheritance) {
   feature.Parse(&definition);
   EXPECT_EQ(1u, feature.whitelist()->size());
   EXPECT_EQ(1u, feature.extension_types()->size());
-  EXPECT_EQ(1u, feature.GetContexts()->size());
+  EXPECT_EQ(1u, feature.contexts()->size());
   EXPECT_EQ(1u, feature.whitelist()->count("foo"));
   EXPECT_EQ(SimpleFeature::COMPONENT_LOCATION, feature.location());
   EXPECT_EQ(1u, feature.platforms()->size());
@@ -661,11 +656,11 @@ TEST_F(ExtensionSimpleFeatureTest, Inheritance) {
   feature.Parse(&definition);
   EXPECT_EQ(1u, feature.whitelist()->size());
   EXPECT_EQ(1u, feature.extension_types()->size());
-  EXPECT_EQ(1u, feature.GetContexts()->size());
+  EXPECT_EQ(1u, feature.contexts()->size());
   EXPECT_EQ(1u, feature.whitelist()->count("bar"));
   EXPECT_EQ(1u, feature.extension_types()->count(Manifest::TYPE_EXTENSION));
   EXPECT_EQ(1u,
-            feature.GetContexts()->count(Feature::UNBLESSED_EXTENSION_CONTEXT));
+            feature.contexts()->count(Feature::UNBLESSED_EXTENSION_CONTEXT));
   EXPECT_EQ(2, feature.min_manifest_version());
   EXPECT_EQ(3, feature.max_manifest_version());
 }

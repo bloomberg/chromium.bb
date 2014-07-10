@@ -287,10 +287,14 @@ std::string SimpleFeature::Parse(const base::DictionaryValue* value) {
   value->GetBoolean("component_extensions_auto_granted",
                     &component_extensions_auto_granted_);
 
-  if (matches_.is_empty() && contexts_.count(WEB_PAGE_CONTEXT) != 0) {
-    return name() + ": Allowing web_page contexts requires supplying a value " +
-        "for matches.";
-  }
+  // NOTE: ideally we'd sanity check that "matches" can be specified if and
+  // only if there's a "web_page" context, but without (Simple)Features being
+  // aware of their own heirarchy this is impossible.
+  //
+  // For example, we might have feature "foo" available to "web_page" context
+  // and "matches" google.com/*. Then a sub-feature "foo.bar" might override
+  // "matches" to be chromium.org/*. That sub-feature doesn't need to specify
+  // "web_page" context because it's inherited, but we don't know that here.
 
   for (FilterList::iterator filter_iter = filters_.begin();
        filter_iter != filters_.end();
@@ -395,7 +399,7 @@ Feature::Availability SimpleFeature::IsAvailableToContext(
   if (!contexts_.empty() && contexts_.find(context) == contexts_.end())
     return CreateAvailability(INVALID_CONTEXT, context);
 
-  if (!matches_.is_empty() && !matches_.MatchesURL(url))
+  if (context == WEB_PAGE_CONTEXT && !matches_.MatchesURL(url))
     return CreateAvailability(INVALID_URL, url);
 
   for (FilterList::const_iterator filter_iter = filters_.begin();
@@ -500,10 +504,6 @@ Feature::Availability SimpleFeature::CreateAvailability(
   return Availability(
       result, GetAvailabilityMessage(result, Manifest::TYPE_UNKNOWN, GURL(),
                                      context));
-}
-
-std::set<Feature::Context>* SimpleFeature::GetContexts() {
-  return &contexts_;
 }
 
 bool SimpleFeature::IsInternal() const {

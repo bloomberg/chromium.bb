@@ -8,8 +8,8 @@
     "contexts": ["blessed_extension"]
   },
   "test2": {
-    "contexts": ["blessed_extension"],
-    "dependencies": ["api:test1"]
+    "channel": "trunk",
+    "contexts": ["blessed_extension"]
   },
   "test2.foo": {
     "channel": "trunk",
@@ -20,8 +20,8 @@
     "contexts": ["content_script", "blessed_extension"]
   },
   "test2.baz": {
-    "contexts": ["blessed_extension"],
-    "dependencies": ["api:test2.foo"]
+    "channel": "trunk",
+    "contexts": ["blessed_extension"]
   },
   "test3": {
     "channel": "trunk",
@@ -32,7 +32,12 @@
     "contexts": ["blessed_extension"]
   },
   "test4": {
-    "contexts": ["content_script"],
-    "dependencies": ["api:test1.foo"]
+    "channel": "trunk",
+    "contexts": ["web_page"],
+    "matches": ["<all_urls>"]
+  },
+  "test5": {
+    "channel": "trunk",
+    "contexts": ["blessed_web_page"]
   }
 }

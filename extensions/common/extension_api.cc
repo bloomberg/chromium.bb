@@ -262,6 +262,7 @@ bool ExtensionAPI::IsAnyFeatureAvailableToContext(const Feature& api,
                                                   const GURL& url) {
   FeatureProviderMap::iterator provider = dependency_providers_.find("api");
   CHECK(provider != dependency_providers_.end());
+
   if (api.IsAvailableToContext(extension, context, url).is_available())
     return true;
 
@@ -289,13 +290,17 @@ Feature::Availability ExtensionAPI::IsAvailable(const std::string& full_name,
   return feature->IsAvailableToContext(extension, context, url);
 }
 
-bool ExtensionAPI::IsPrivileged(const std::string& full_name) {
-  Feature* feature = GetFeatureDependency(full_name);
-  CHECK(feature) << full_name;
-  DCHECK(!feature->GetContexts()->empty()) << full_name;
-  // An API is 'privileged' if it can only be run in a blessed context.
-  return feature->GetContexts()->size() ==
-      feature->GetContexts()->count(Feature::BLESSED_EXTENSION_CONTEXT);
+bool ExtensionAPI::IsAvailableInUntrustedContext(const std::string& name,
+                                                 const Extension* extension) {
+  return IsAvailable(name, extension, Feature::CONTENT_SCRIPT_CONTEXT, GURL())
+             .is_available() ||
+         IsAvailable(
+             name, extension, Feature::UNBLESSED_EXTENSION_CONTEXT, GURL())
+             .is_available() ||
+         IsAvailable(name, extension, Feature::BLESSED_WEB_PAGE_CONTEXT, GURL())
+             .is_available() ||
+         IsAvailable(name, extension, Feature::WEB_PAGE_CONTEXT, GURL())
+             .is_available();
 }
 
 const base::DictionaryValue* ExtensionAPI::GetSchema(

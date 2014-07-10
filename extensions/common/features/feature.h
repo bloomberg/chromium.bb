@@ -108,8 +108,6 @@ class Feature {
   // Gets the platform the code is currently running on.
   static Platform GetCurrentPlatform();
 
-  virtual std::set<Context>* GetContexts() = 0;
-
   // Tests whether this is an internal API or not.
   virtual bool IsInternal() const = 0;
 

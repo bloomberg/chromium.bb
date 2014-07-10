@@ -85,43 +85,73 @@ TEST(ExtensionAPITest, SplitDependencyName) {
   }
 }
 
-TEST(ExtensionAPITest, IsPrivileged) {
+TEST(ExtensionAPITest, IsAvailableInUntrustedContext) {
   scoped_ptr<ExtensionAPI> extension_api(
       ExtensionAPI::CreateWithDefaultConfiguration());
+  scoped_refptr<const Extension> extension =
+      ExtensionBuilder()
+          .SetManifest(DictionaryBuilder()
+                           .Set("name", "extension")
+                           .Set("version", "1")
+                           .Set("permissions", ListBuilder().Append("storage"))
+                           .Set("manifest_version", 2))
+          .Build();
 
-  EXPECT_FALSE(extension_api->IsPrivileged("runtime.connect"));
-  EXPECT_FALSE(extension_api->IsPrivileged("runtime.onConnect"));
-  EXPECT_FALSE(extension_api->IsPrivileged("runtime.lastError"));
+  EXPECT_TRUE(extension_api->IsAvailableInUntrustedContext("runtime.connect",
+                                                           extension.get()));
+  EXPECT_TRUE(extension_api->IsAvailableInUntrustedContext("runtime.onConnect",
+                                                           extension.get()));
+  EXPECT_TRUE(extension_api->IsAvailableInUntrustedContext("runtime.lastError",
+                                                           extension.get()));
 
   // Exists, but privileged.
-  EXPECT_TRUE(extension_api->IsPrivileged("extension.getViews"));
-  EXPECT_TRUE(extension_api->IsPrivileged("history.search"));
+  EXPECT_FALSE(extension_api->IsAvailableInUntrustedContext(
+      "extension.getViews", extension.get()));
+  EXPECT_FALSE(extension_api->IsAvailableInUntrustedContext("history.search",
+                                                            extension.get()));
 
   // Whole APIs that are unprivileged.
-  EXPECT_FALSE(extension_api->IsPrivileged("app.getDetails"));
-  EXPECT_FALSE(extension_api->IsPrivileged("app.isInstalled"));
-  EXPECT_FALSE(extension_api->IsPrivileged("storage.local"));
-  EXPECT_FALSE(extension_api->IsPrivileged("storage.local.onChanged"));
-  EXPECT_FALSE(extension_api->IsPrivileged("storage.local.set"));
-  EXPECT_FALSE(extension_api->IsPrivileged("storage.local.MAX_ITEMS"));
-  EXPECT_FALSE(extension_api->IsPrivileged("storage.set"));
+  EXPECT_TRUE(
+      extension_api->IsAvailableInUntrustedContext("app", extension.get()));
+  EXPECT_TRUE(extension_api->IsAvailableInUntrustedContext("app.getDetails",
+                                                           extension.get()));
+  // There is no feature "app.isInstalled" (it's "app.getIsInstalled") but
+  // this should be available nonetheless.
+  EXPECT_TRUE(extension_api->IsAvailableInUntrustedContext("app.isInstalled",
+                                                           extension.get()));
+  EXPECT_TRUE(extension_api->IsAvailableInUntrustedContext("storage.local",
+                                                           extension.get()));
+  EXPECT_TRUE(extension_api->IsAvailableInUntrustedContext(
+      "storage.local.onChanged", extension.get()));
+  EXPECT_TRUE(extension_api->IsAvailableInUntrustedContext("storage.local.set",
+                                                           extension.get()));
+  EXPECT_TRUE(extension_api->IsAvailableInUntrustedContext(
+      "storage.local.MAX_ITEMS", extension.get()));
+  EXPECT_TRUE(extension_api->IsAvailableInUntrustedContext("storage.set",
+                                                           extension.get()));
+
+  // APIs which override unprivileged APIs.
+  EXPECT_FALSE(extension_api->IsAvailableInUntrustedContext("app.runtime",
+                                                            extension.get()));
+  EXPECT_FALSE(extension_api->IsAvailableInUntrustedContext("app.window",
+                                                            extension.get()));
 }
 
-TEST(ExtensionAPITest, IsPrivilegedFeatures) {
+TEST(ExtensionAPITest, IsAvailableInUntrustedContextFeatures) {
   struct {
     std::string api_full_name;
-    bool expect_is_privilged;
-  } test_data[] = {
-    { "test1", false },
-    { "test1.foo", true },
-    { "test2", true },
-    { "test2.foo", false },
-    { "test2.bar", false },
-    { "test2.baz", true },
-    { "test3", false },
-    { "test3.foo", true },
-    { "test4", false }
-  };
+    bool expect_is_available;
+  } test_data[] = {{"test1", true},
+                   {"test1.foo", false},
+                   {"test2", false},
+                   {"test2.foo", true},
+                   {"test2.bar", true},
+                   {"test2.baz", false},
+                   {"test2.qux", false},
+                   {"test3", true},
+                   {"test3.foo", false},
+                   {"test4", true},
+                   {"test5", true}};
 
   base::FilePath api_features_path;
   PathService::Get(chrome::DIR_TEST_DATA, &api_features_path);
@@ -137,11 +167,16 @@ TEST(ExtensionAPITest, IsPrivilegedFeatures) {
       base::JSONReader::Read(api_features_str)));
   BaseFeatureProvider api_feature_provider(*value, CreateAPIFeature);
 
+  scoped_refptr<Extension> extension =
+      BuildExtension(ExtensionBuilder().Pass()).Build();
+
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_data); ++i) {
     ExtensionAPI api;
     api.RegisterDependencyProvider("api", &api_feature_provider);
-    EXPECT_EQ(test_data[i].expect_is_privilged,
-              api.IsPrivileged(test_data[i].api_full_name)) << i;
+    EXPECT_EQ(test_data[i].expect_is_available,
+              api.IsAvailableInUntrustedContext(test_data[i].api_full_name,
+                                                extension.get()))
+        << i;
   }
 }
 
@@ -707,10 +742,6 @@ TEST(ExtensionAPITest, DefaultConfigurationFeatures) {
 
     EXPECT_TRUE(feature->whitelist()->empty());
     EXPECT_TRUE(feature->extension_types()->empty());
-
-    EXPECT_EQ(1u, feature->GetContexts()->size());
-    EXPECT_TRUE(feature->GetContexts()->count(
-        Feature::BLESSED_EXTENSION_CONTEXT));
 
     EXPECT_EQ(SimpleFeature::UNSPECIFIED_LOCATION, feature->location());
     EXPECT_TRUE(feature->platforms()->empty());

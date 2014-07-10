@@ -44,7 +44,7 @@ std::string ManifestFeature::Parse(const base::DictionaryValue* value) {
         "value for extension_types.";
   }
 
-  if (!GetContexts()->empty())
+  if (value->HasKey("contexts"))
     return name() + ": Manifest features do not support contexts.";
 
   return std::string();

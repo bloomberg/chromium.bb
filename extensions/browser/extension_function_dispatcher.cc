@@ -474,7 +474,7 @@ ExtensionFunction* ExtensionFunctionDispatcher::CreateExtensionFunction(
 
   // Privileged APIs can only be called from the process the extension
   // is running in.
-  if (allowed && api->IsPrivileged(params.name))
+  if (allowed && !api->IsAvailableInUntrustedContext(params.name, extension))
     allowed = process_map.Contains(extension->id(), requesting_process_id);
 
   if (!allowed) {

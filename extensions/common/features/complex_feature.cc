@@ -12,18 +12,14 @@ ComplexFeature::ComplexFeature(scoped_ptr<FeatureList> features) {
   no_parent_ = features_[0]->no_parent();
 
 #if !defined(NDEBUG) || defined(DCHECK_ALWAYS_ON)
-  // Verify GetContexts, IsInternal, & IsBlockedInServiceWorker are consistent
-  // across all features.
-  std::set<Feature::Context>* first_contexts = features_[0]->GetContexts();
+  // Verify IsInternal and IsBlockedInServiceWorker are consistent across all
+  // features.
   bool first_is_internal = features_[0]->IsInternal();
   bool first_blocked_in_service_worker =
       features_[0]->IsBlockedInServiceWorker();
   for (FeatureList::const_iterator it = features_.begin() + 1;
        it != features_.end();
        ++it) {
-    DCHECK(*first_contexts == *(*it)->GetContexts())
-        << "Complex feature must have consistent values of "
-           "contexts across all sub features.";
     DCHECK(first_is_internal == (*it)->IsInternal())
         << "Complex feature must have consistent values of "
            "internal across all sub features.";
@@ -112,16 +108,9 @@ bool ComplexFeature::IsBlockedInServiceWorker() const {
   return features_[0]->IsBlockedInServiceWorker();
 }
 
-std::set<Feature::Context>* ComplexFeature::GetContexts() {
-  // TODO(justinlin): Current use cases for ComplexFeatures are simple (e.g.
-  // allow API in dev channel for everyone but stable channel for a whitelist),
-  // but if they get more complicated, we need to return some meaningful context
-  // set. Either that or remove this method from the Feature interface.
-  return features_[0]->GetContexts();
-}
-
 bool ComplexFeature::IsInternal() const {
-  // TODO(justinlin): Same as the above TODO.
+  // Constructor verifies that composed features are consistent, thus we can
+  // return just the first feature's value.
   return features_[0]->IsInternal();
 }
 

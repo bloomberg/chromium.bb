@@ -49,8 +49,6 @@ class ComplexFeature : public Feature {
       const GURL& url,
       Context context) const OVERRIDE;
 
-  virtual std::set<Context>* GetContexts() OVERRIDE;
-
   virtual bool IsInternal() const OVERRIDE;
 
  private:
