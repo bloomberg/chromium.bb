@@ -44,7 +44,8 @@ enum TextStyle {
 
 // Elision behaviors of text that exceeds constrained dimensions.
 enum ElideBehavior {
-  TRUNCATE = 0, // Do not elide or fade; the text may be truncated at the end.
+  NO_ELIDE = 0, // Do not modify the text, it may overflow its available bounds.
+  TRUNCATE,     // Do not elide or fade, just truncate at the end of the string.
   ELIDE_HEAD,   // Add an ellipsis at the start of the string.
   ELIDE_MIDDLE, // Add an ellipsis in the middle of the string.
   ELIDE_TAIL,   // Add an ellipsis at the end of the string.

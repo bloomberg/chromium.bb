@@ -302,17 +302,12 @@ TEST(TextEliderTest, MAYBE_ElideTextEllipsisFront) {
 static void CheckSurrogatePairs(const base::string16& text,
                                 base::char16 first_char,
                                 base::char16 second_char) {
-  size_t index = text.find_first_of(first_char);
-  while (index != base::string16::npos) {
-    EXPECT_LT(index, text.length() - 1);
-    EXPECT_EQ(second_char, text[index + 1]);
-    index = text.find_first_of(first_char, index + 1);
-  }
-  index = text.find_first_of(second_char);
-  while (index != base::string16::npos) {
-    EXPECT_GT(index, 0U);
-    EXPECT_EQ(first_char, text[index - 1]);
-    index = text.find_first_of(second_char, index + 1);
+  for (size_t index = 0; index < text.length(); ++index) {
+    EXPECT_NE(second_char, text[index]);
+    if (text[index] == first_char) {
+      ASSERT_LT(++index, text.length());
+      EXPECT_EQ(second_char, text[index]);
+    }
   }
 }
 
@@ -327,8 +322,7 @@ TEST(TextEliderTest, MAYBE_ElideTextSurrogatePairs) {
   // The below is 'MUSICAL SYMBOL G CLEF', which is represented in UTF-16 as
   // two characters forming a surrogate pair 0x0001D11E.
   const std::string kSurrogate = "\xF0\x9D\x84\x9E";
-  const base::string16 kTestString =
-      UTF8ToUTF16(kSurrogate + "ab" + kSurrogate + kSurrogate + "cd");
+  const base::string16 kTestString = UTF8ToUTF16(kSurrogate + "x" + kSurrogate);
   const float kTestStringWidth = GetStringWidthF(kTestString, font_list);
   const base::char16 kSurrogateFirstChar = kTestString[0];
   const base::char16 kSurrogateSecondChar = kTestString[1];

@@ -82,6 +82,15 @@ Size RenderTextPango::GetStringSize() {
   EnsureLayout();
   int width = 0, height = 0;
   pango_layout_get_pixel_size(layout_, &width, &height);
+
+  // Pango returns 0 widths for very long strings (of 0x40000 chars or more).
+  // This is caused by an int overflow in pango_glyph_string_extents_range.
+  // Absurdly long strings may even report non-zero garbage values for width;
+  // while detecting that isn't worthwhile, this handles the 0 width cases.
+  const long kAbsurdLength = 100000;
+  if (width == 0 && g_utf8_strlen(layout_text_, -1) > kAbsurdLength)
+    width = font_list().GetExpectedTextWidth(g_utf8_strlen(layout_text_, -1));
+
   // Keep a consistent height between this particular string's PangoLayout and
   // potentially larger text supported by the FontList.
   // For example, if a text field contains a Japanese character, which is

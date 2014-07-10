@@ -121,7 +121,7 @@ void AppInfoPermissionsPanel::CreateActivePermissionsControl() {
     active_permissions_heading_ = CreateHeading(l10n_util::GetStringUTF16(
         IDS_APPLICATION_INFO_ACTIVE_PERMISSIONS_TEXT));
     active_permissions_list_ =
-        CreateBulletedListView(permission_strings, true, gfx::TRUNCATE);
+        CreateBulletedListView(permission_strings, true, gfx::NO_ELIDE);
   }
 }
 

@@ -137,7 +137,7 @@ void Label::SetLineHeight(int height) {
 
 void Label::SetMultiLine(bool multi_line) {
   DCHECK(!multi_line || (elide_behavior_ == gfx::ELIDE_TAIL ||
-                         elide_behavior_ == gfx::TRUNCATE));
+                         elide_behavior_ == gfx::NO_ELIDE));
   if (multi_line != is_multi_line_) {
     is_multi_line_ = multi_line;
     ResetCachedSize();
@@ -164,7 +164,7 @@ void Label::SetAllowCharacterBreak(bool allow_character_break) {
 
 void Label::SetElideBehavior(gfx::ElideBehavior elide_behavior) {
   DCHECK(!is_multi_line_ || (elide_behavior_ == gfx::ELIDE_TAIL ||
-                             elide_behavior_ == gfx::TRUNCATE));
+                             elide_behavior_ == gfx::NO_ELIDE));
   if (elide_behavior != elide_behavior_) {
     elide_behavior_ = elide_behavior;
     ResetCachedSize();
@@ -496,7 +496,7 @@ void Label::CalculateDrawStringParams(base::string16* paint_text,
                                       int* flags) const {
   DCHECK(paint_text && text_bounds && flags);
 
-  const bool forbid_ellipsis = elide_behavior_ == gfx::TRUNCATE ||
+  const bool forbid_ellipsis = elide_behavior_ == gfx::NO_ELIDE ||
                                elide_behavior_ == gfx::FADE_TAIL;
   if (is_multi_line_ || forbid_ellipsis) {
     *paint_text = layout_text();

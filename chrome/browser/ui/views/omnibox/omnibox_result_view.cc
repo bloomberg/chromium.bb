@@ -29,7 +29,6 @@
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/range/range.h"
 #include "ui/gfx/render_text.h"
-#include "ui/gfx/text_elider.h"
 #include "ui/gfx/text_utils.h"
 #include "ui/native_theme/native_theme.h"
 
@@ -338,6 +337,7 @@ int OmniboxResultView::DrawRenderText(
 scoped_ptr<gfx::RenderText> OmniboxResultView::CreateRenderText(
     const base::string16& text) const {
   scoped_ptr<gfx::RenderText> render_text(gfx::RenderText::CreateInstance());
+  render_text->SetDisplayRect(gfx::Rect(gfx::Size(INT_MAX, 0)));
   render_text->SetCursorEnabled(false);
   render_text->SetElideBehavior(gfx::ELIDE_TAIL);
   render_text->SetFontList(font_list_);

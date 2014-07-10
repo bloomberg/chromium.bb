@@ -75,7 +75,7 @@ ContentSettingImageView::ContentSettingImageView(
                               parent_background_color,
                               SkColorGetA(background_image_color)));
   text_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  text_label_->SetElideBehavior(gfx::TRUNCATE);
+  text_label_->SetElideBehavior(gfx::NO_ELIDE);
   AddChildView(text_label_);
 
   slide_animator_.SetSlideDuration(kAnimationDurationMS);

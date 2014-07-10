@@ -1267,6 +1267,18 @@ TEST_F(RenderTextTest, StringSizeSanity) {
   EXPECT_GT(string_size.height(), 0);
 }
 
+TEST_F(RenderTextTest, StringSizeLongStrings) {
+  scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
+  Size previous_string_size;
+  for (size_t length = 10; length < 1000000; length *= 10) {
+    render_text->SetText(base::string16(length, 'a'));
+    const Size string_size = render_text->GetStringSize();
+    EXPECT_GT(string_size.width(), previous_string_size.width());
+    EXPECT_GT(string_size.height(), 0);
+    previous_string_size = string_size;
+  }
+}
+
 // TODO(asvitkine): This test fails because PlatformFontMac uses point font
 //                  sizes instead of pixel sizes like other implementations.
 #if !defined(OS_MACOSX)

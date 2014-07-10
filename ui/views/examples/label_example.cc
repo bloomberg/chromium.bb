@@ -25,8 +25,8 @@ namespace examples {
 
 namespace {
 
-const char* kElideBehaviors[] = { "Truncate", "Elide Head", "Elide Middle",
-                                  "Elide Tail", "Elide Email", "Fade Tail" };
+const char* kElideBehaviors[] = { "No Elide", "Truncate", "Elide Head",
+    "Elide Middle", "Elide Tail", "Elide Email", "Fade Tail" };
 const char* kAlignments[] = { "Left", "Center", "Right", "Head" };
 
 // A Label with a clamped preferred width to demonstrate eliding or wrapping.
@@ -190,7 +190,7 @@ void LabelExample::AddCustomLabel(View* container) {
   layout->StartRow(0, 2);
   custom_label_ = new PreferredSizeLabel();
   custom_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  custom_label_->SetElideBehavior(gfx::TRUNCATE);
+  custom_label_->SetElideBehavior(gfx::NO_ELIDE);
   custom_label_->SetText(textfield_->text());
   layout->AddView(custom_label_);
 

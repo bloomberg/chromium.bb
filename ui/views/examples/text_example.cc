@@ -46,7 +46,7 @@ const wchar_t kRightToLeftText[] =
     L"\x5e9\x5dc\x5d5\x5dd \x5d4\x5e2\x5d5\x5dc\x5dd!";
 
 const char* kTextExamples[] = { "Short", "Long", "Ampersands", "RTL Hebrew", };
-const char* kElideBehaviors[] = { "Elide", "Truncate", "Fade", };
+const char* kElideBehaviors[] = { "Elide", "No Elide", "Fade", };
 const char* kPrefixOptions[] = { "Default", "Show", "Hide", };
 const char* kHorizontalAligments[] = { "Default", "Left", "Center", "Right", };
 
@@ -67,7 +67,7 @@ class TextExample::TextExampleView : public View {
     : text_(base::ASCIIToUTF16(kShortText)),
       flags_(0),
       halo_(false),
-      elide_(gfx::TRUNCATE) {
+      elide_(gfx::NO_ELIDE) {
   }
 
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE {
@@ -239,7 +239,7 @@ void TextExample::OnPerformAction(Combobox* combobox) {
         text_view_->set_elide(gfx::ELIDE_TAIL);
         break;
       case 1:
-        text_view_->set_elide(gfx::TRUNCATE);
+        text_view_->set_elide(gfx::NO_ELIDE);
         break;
       case 2:
         text_view_->set_elide(gfx::FADE_TAIL);

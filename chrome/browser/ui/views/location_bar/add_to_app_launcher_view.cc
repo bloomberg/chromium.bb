@@ -86,7 +86,7 @@ AddToAppLauncherView::AddToAppLauncherView(LocationBarView* parent,
                               parent_background_color,
                               SkColorGetA(background_image_color)));
   text_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  text_label_->SetElideBehavior(gfx::TRUNCATE);
+  text_label_->SetElideBehavior(gfx::NO_ELIDE);
   text_label_->SetText(base::UTF8ToUTF16(
       l10n_util::GetStringUTF8(IDS_ADD_TO_APP_LIST_NOTIFICATION_TEXT)));
   AddChildView(text_label_);

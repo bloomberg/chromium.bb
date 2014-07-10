@@ -23,7 +23,6 @@
 #include "ui/gfx/scoped_canvas.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/gfx/switches.h"
-#include "ui/gfx/text_constants.h"
 #include "ui/gfx/text_elider.h"
 #include "ui/gfx/text_utils.h"
 #include "ui/gfx/utf16_indexing.h"
@@ -514,7 +513,7 @@ void RenderText::SetDisplayRect(const Rect& r) {
     baseline_ = kInvalidBaseline;
     cached_bounds_and_offset_valid_ = false;
     lines_.clear();
-    if (elide_behavior_ != TRUNCATE)
+    if (elide_behavior_ != NO_ELIDE)
       UpdateLayoutText();
   }
 }
@@ -746,8 +745,8 @@ SizeF RenderText::GetStringSizeF() {
   return SizeF(size.width(), size.height());
 }
 
-int RenderText::GetContentWidth() {
-  return GetStringSize().width() + (cursor_enabled_ ? 1 : 0);
+float RenderText::GetContentWidth() {
+  return GetStringSizeF().width() + (cursor_enabled_ ? 1 : 0);
 }
 
 int RenderText::GetBaseline() {
@@ -927,7 +926,7 @@ RenderText::RenderText()
       obscured_(false),
       obscured_reveal_index_(-1),
       truncate_length_(0),
-      elide_behavior_(TRUNCATE),
+      elide_behavior_(NO_ELIDE),
       multiline_(false),
       background_is_transparent_(false),
       clip_to_display_rect_(true),
@@ -1191,16 +1190,30 @@ void RenderText::UpdateLayoutText() {
   if (truncate_length_ > 0 && truncate_length_ < text.length()) {
     // Truncate the text at a valid character break and append an ellipsis.
     icu::StringCharacterIterator iter(text.c_str());
-    iter.setIndex32(truncate_length_ - 1);
-    layout_text_.assign(text.substr(0, iter.getIndex()) + kEllipsisUTF16);
+    // Respect ELIDE_HEAD and ELIDE_MIDDLE preferences during truncation.
+    if (elide_behavior_ == ELIDE_HEAD) {
+      iter.setIndex32(text.length() - truncate_length_ + 1);
+      layout_text_.assign(kEllipsisUTF16 + text.substr(iter.getIndex()));
+    } else if (elide_behavior_ == ELIDE_MIDDLE) {
+      iter.setIndex32(truncate_length_ / 2);
+      const size_t ellipsis_start = iter.getIndex();
+      iter.setIndex32(text.length() - (truncate_length_ / 2));
+      const size_t ellipsis_end = iter.getIndex();
+      DCHECK_LE(ellipsis_start, ellipsis_end);
+      layout_text_.assign(text.substr(0, ellipsis_start) + kEllipsisUTF16 +
+                          text.substr(ellipsis_end));
+    } else {
+      iter.setIndex32(truncate_length_ - 1);
+      layout_text_.assign(text.substr(0, iter.getIndex()) + kEllipsisUTF16);
+    }
   }
 
-  if (elide_behavior_ != TRUNCATE && elide_behavior_ != FADE_TAIL &&
-      display_rect_.width() > 0 && !layout_text_.empty() &&
-      GetContentWidth() > display_rect_.width()) {
+  if (elide_behavior_ != NO_ELIDE && elide_behavior_ != FADE_TAIL &&
+      !layout_text_.empty() && GetContentWidth() > display_rect_.width()) {
     // This doesn't trim styles so ellipsis may get rendered as a different
     // style than the preceding text. See crbug.com/327850.
-    layout_text_.assign(ElideText(layout_text_));
+    layout_text_.assign(
+        Elide(layout_text_, display_rect_.width(), elide_behavior_));
   }
 
   // Replace the newline character with a newline symbol in single line mode.
@@ -1212,45 +1225,36 @@ void RenderText::UpdateLayoutText() {
   ResetLayout();
 }
 
-// TODO(skanuj): Fix code duplication with ElideText in ui/gfx/text_elider.cc
-// See crbug.com/327846
-base::string16 RenderText::ElideText(const base::string16& text) {
-  const bool insert_ellipsis = (elide_behavior_ != TRUNCATE);
+base::string16 RenderText::Elide(const base::string16& text,
+                                 float available_width,
+                                 ElideBehavior behavior) {
+  if (available_width <= 0 || text.empty())
+    return base::string16();
+  if (behavior == ELIDE_EMAIL)
+    return ElideEmail(text, available_width);
+
   // Create a RenderText copy with attributes that affect the rendering width.
   scoped_ptr<RenderText> render_text(CreateInstance());
   render_text->SetFontList(font_list_);
   render_text->SetDirectionalityMode(directionality_mode_);
   render_text->SetCursorEnabled(cursor_enabled_);
-
+  render_text->set_truncate_length(truncate_length_);
   render_text->styles_ = styles_;
   render_text->colors_ = colors_;
   render_text->SetText(text);
-  const int current_text_pixel_width = render_text->GetContentWidth();
-
-  const base::string16 ellipsis = base::string16(kEllipsisUTF16);
-  const bool elide_in_middle = false;
-  const bool elide_at_beginning = false;
-  StringSlicer slicer(text, ellipsis, elide_in_middle, elide_at_beginning);
-
-  // Pango will return 0 width for absurdly long strings. Cut the string in
-  // half and try again.
-  // This is caused by an int overflow in Pango (specifically, in
-  // pango_glyph_string_extents_range). It's actually more subtle than just
-  // returning 0, since on super absurdly long strings, the int can wrap and
-  // return positive numbers again. Detecting that is probably not worth it
-  // (eliding way too much from a ridiculous string is probably still
-  // ridiculous), but we should check other widths for bogus values as well.
-  if (current_text_pixel_width <= 0 && !text.empty())
-    return ElideText(slicer.CutString(text.length() / 2, insert_ellipsis));
-
-  if (current_text_pixel_width <= display_rect_.width())
+  if (render_text->GetContentWidth() <= available_width)
     return text;
 
-  render_text->SetText(base::string16());
-  render_text->SetText(ellipsis);
-  const int ellipsis_width = render_text->GetContentWidth();
+  const base::string16 ellipsis = base::string16(kEllipsisUTF16);
+  const bool insert_ellipsis = (behavior != TRUNCATE);
+  const bool elide_in_middle = (behavior == ELIDE_MIDDLE);
+  const bool elide_at_beginning = (behavior == ELIDE_HEAD);
+  StringSlicer slicer(text, ellipsis, elide_in_middle, elide_at_beginning);
 
-  if (insert_ellipsis && (ellipsis_width >= display_rect_.width()))
+  render_text->SetText(ellipsis);
+  const float ellipsis_width = render_text->GetContentWidth();
+
+  if (insert_ellipsis && (ellipsis_width > available_width))
     return base::string16();
 
   // Use binary search to compute the elided text.
@@ -1261,12 +1265,13 @@ base::string16 RenderText::ElideText(const base::string16& text) {
     // Restore styles and colors. They will be truncated to size by SetText.
     render_text->styles_ = styles_;
     render_text->colors_ = colors_;
-    base::string16 new_text = slicer.CutString(guess, false);
+    base::string16 new_text =
+        slicer.CutString(guess, insert_ellipsis && behavior != ELIDE_TAIL);
     render_text->SetText(new_text);
 
     // This has to be an additional step so that the ellipsis is rendered with
     // same style as trailing part of the text.
-    if (insert_ellipsis) {
+    if (insert_ellipsis && behavior == ELIDE_TAIL) {
       // When ellipsis follows text whose directionality is not the same as that
       // of the whole text, it will be rendered with the directionality of the
       // whole text. Since we want ellipsis to indicate continuation of the
@@ -1286,13 +1291,12 @@ base::string16 RenderText::ElideText(const base::string16& text) {
 
     // We check the width of the whole desired string at once to ensure we
     // handle kerning/ligatures/etc. correctly.
-    const int guess_width = render_text->GetContentWidth();
-    if (guess_width == display_rect_.width())
+    const float guess_width = render_text->GetContentWidth();
+    if (guess_width == available_width)
       break;
-    if (guess_width > display_rect_.width()) {
+    if (guess_width > available_width) {
       hi = guess - 1;
-      // Move back if we are on loop terminating condition, and guess is wider
-      // than available.
+      // Move back on the loop terminating condition when the guess is too wide.
       if (hi < lo)
         lo = hi;
     } else {
@@ -1301,6 +1305,61 @@ base::string16 RenderText::ElideText(const base::string16& text) {
   }
 
   return render_text->text();
+}
+
+base::string16 RenderText::ElideEmail(const base::string16& email,
+                                      float available_width) {
+  // The returned string will have at least one character besides the ellipsis
+  // on either side of '@'; if that's impossible, a single ellipsis is returned.
+  // If possible, only the username is elided. Otherwise, the domain is elided
+  // in the middle, splitting available width equally with the elided username.
+  // If the username is short enough that it doesn't need half the available
+  // width, the elided domain will occupy that extra width.
+
+  // Split the email into its local-part (username) and domain-part. The email
+  // spec allows for @ symbols in the username under some special requirements,
+  // but not in the domain part, so splitting at the last @ symbol is safe.
+  const size_t split_index = email.find_last_of('@');
+  DCHECK_NE(split_index, base::string16::npos);
+  base::string16 username = email.substr(0, split_index);
+  base::string16 domain = email.substr(split_index + 1);
+  DCHECK(!username.empty());
+  DCHECK(!domain.empty());
+
+  // Subtract the @ symbol from the available width as it is mandatory.
+  const base::string16 kAtSignUTF16 = base::ASCIIToUTF16("@");
+  available_width -= GetStringWidthF(kAtSignUTF16, font_list());
+
+  // Check whether eliding the domain is necessary: if eliding the username
+  // is sufficient, the domain will not be elided.
+  const float full_username_width = GetStringWidthF(username, font_list());
+  const float available_domain_width = available_width -
+      std::min(full_username_width,
+          GetStringWidthF(username.substr(0, 1) + kEllipsisUTF16, font_list()));
+  if (GetStringWidthF(domain, font_list()) > available_domain_width) {
+    // Elide the domain so that it only takes half of the available width.
+    // Should the username not need all the width available in its half, the
+    // domain will occupy the leftover width.
+    // If |desired_domain_width| is greater than |available_domain_width|: the
+    // minimal username elision allowed by the specifications will not fit; thus
+    // |desired_domain_width| must be <= |available_domain_width| at all cost.
+    const float desired_domain_width =
+        std::min<float>(available_domain_width,
+            std::max<float>(available_width - full_username_width,
+                            available_width / 2));
+    domain = Elide(domain, desired_domain_width, ELIDE_MIDDLE);
+    // Failing to elide the domain such that at least one character remains
+    // (other than the ellipsis itself) remains: return a single ellipsis.
+    if (domain.length() <= 1U)
+      return base::string16(kEllipsisUTF16);
+  }
+
+  // Fit the username in the remaining width (at this point the elided username
+  // is guaranteed to fit with at least one character remaining given all the
+  // precautions taken earlier).
+  available_width -= GetStringWidthF(domain, font_list());
+  username = Elide(username, available_width, ELIDE_TAIL);
+  return username + kAtSignUTF16 + domain;
 }
 
 void RenderText::UpdateCachedBoundsAndOffset() {
