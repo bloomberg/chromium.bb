@@ -26,7 +26,8 @@ class OmahaQueryParams {
   };
 
   // Generates a string of URL query parameters for Omaha. Includes the
-  // following fields: os, arch, prod, prodchannel, prodversion, lang.
+  // following fields: "os", "arch", "nacl_arch", "prod", "prodchannel",
+  // "prodversion", and "lang"
   static std::string Get(ProdId prod);
 
   // Returns the value we use for the "prod=" parameter. Possible return values
