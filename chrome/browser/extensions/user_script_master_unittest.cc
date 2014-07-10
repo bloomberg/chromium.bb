@@ -90,8 +90,8 @@ class UserScriptMasterTest : public testing::Test,
 // Test that we get notified even when there are no scripts.
 TEST_F(UserScriptMasterTest, NoScripts) {
   TestingProfile profile;
-  scoped_refptr<UserScriptMaster> master(new UserScriptMaster(&profile));
-  master->StartLoad();
+  UserScriptMaster master(&profile);
+  master.StartLoad();
   message_loop_.PostTask(FROM_HERE, base::MessageLoop::QuitClosure());
   message_loop_.Run();
 
@@ -117,8 +117,7 @@ TEST_F(UserScriptMasterTest, Parse1) {
     "alert('hoo!');\n");
 
   UserScript script;
-  EXPECT_TRUE(UserScriptMaster::ScriptReloader::ParseMetadataHeader(
-      text, &script));
+  EXPECT_TRUE(UserScriptMaster::ParseMetadataHeader(text, &script));
   ASSERT_EQ(3U, script.globs().size());
   EXPECT_EQ("*mail.google.com*", script.globs()[0]);
   EXPECT_EQ("*mail.yahoo.com*", script.globs()[1]);
@@ -129,8 +128,7 @@ TEST_F(UserScriptMasterTest, Parse2) {
   const std::string text("default to @include *");
 
   UserScript script;
-  EXPECT_TRUE(UserScriptMaster::ScriptReloader::ParseMetadataHeader(
-      text, &script));
+  EXPECT_TRUE(UserScriptMaster::ParseMetadataHeader(text, &script));
   ASSERT_EQ(1U, script.globs().size());
   EXPECT_EQ("*", script.globs()[0]);
 }
@@ -142,7 +140,7 @@ TEST_F(UserScriptMasterTest, Parse3) {
     "// ==/UserScript=="); // no trailing newline
 
   UserScript script;
-  UserScriptMaster::ScriptReloader::ParseMetadataHeader(text, &script);
+  UserScriptMaster::ParseMetadataHeader(text, &script);
   ASSERT_EQ(1U, script.globs().size());
   EXPECT_EQ("*foo*", script.globs()[0]);
 }
@@ -159,8 +157,7 @@ TEST_F(UserScriptMasterTest, Parse4) {
   AddPattern(&expected_patterns, "http://mail.yahoo.com/*");
 
   UserScript script;
-  EXPECT_TRUE(UserScriptMaster::ScriptReloader::ParseMetadataHeader(
-      text, &script));
+  EXPECT_TRUE(UserScriptMaster::ParseMetadataHeader(text, &script));
   EXPECT_EQ(0U, script.globs().size());
   EXPECT_EQ(expected_patterns, script.url_patterns());
 }
@@ -173,8 +170,7 @@ TEST_F(UserScriptMasterTest, Parse5) {
 
   // Invalid @match value.
   UserScript script;
-  EXPECT_FALSE(UserScriptMaster::ScriptReloader::ParseMetadataHeader(
-      text, &script));
+  EXPECT_FALSE(UserScriptMaster::ParseMetadataHeader(text, &script));
 }
 
 TEST_F(UserScriptMasterTest, Parse6) {
@@ -186,8 +182,7 @@ TEST_F(UserScriptMasterTest, Parse6) {
 
   // Allowed to match @include and @match.
   UserScript script;
-  EXPECT_TRUE(UserScriptMaster::ScriptReloader::ParseMetadataHeader(
-      text, &script));
+  EXPECT_TRUE(UserScriptMaster::ParseMetadataHeader(text, &script));
 }
 
 TEST_F(UserScriptMasterTest, Parse7) {
@@ -200,8 +195,7 @@ TEST_F(UserScriptMasterTest, Parse7) {
     "// ==/UserScript==\n");
 
   UserScript script;
-  EXPECT_TRUE(UserScriptMaster::ScriptReloader::ParseMetadataHeader(
-      text, &script));
+  EXPECT_TRUE(UserScriptMaster::ParseMetadataHeader(text, &script));
   ASSERT_EQ("hello", script.name());
   ASSERT_EQ("wiggity woo", script.description());
   ASSERT_EQ(1U, script.url_patterns().patterns().size());
@@ -218,8 +212,7 @@ TEST_F(UserScriptMasterTest, Parse8) {
     "// ==/UserScript==\n");
 
   UserScript script;
-  EXPECT_TRUE(UserScriptMaster::ScriptReloader::ParseMetadataHeader(
-      text, &script));
+  EXPECT_TRUE(UserScriptMaster::ParseMetadataHeader(text, &script));
   ASSERT_EQ("myscript", script.name());
   ASSERT_EQ(1U, script.url_patterns().patterns().size());
   EXPECT_EQ("http://www.google.com/*",
@@ -242,11 +235,7 @@ TEST_F(UserScriptMasterTest, SkipBOMAtTheBeginning) {
   UserScriptList user_scripts;
   user_scripts.push_back(user_script);
 
-  UserScriptMaster::ScriptReloader* script_reloader =
-      new UserScriptMaster::ScriptReloader(NULL);
-  script_reloader->AddRef();
-  script_reloader->LoadUserScripts(&user_scripts);
-  script_reloader->Release();
+  UserScriptMaster::LoadScriptsForTest(&user_scripts);
 
   EXPECT_EQ(content.substr(3),
             user_scripts[0].js_scripts()[0].GetContent().as_string());
@@ -265,11 +254,7 @@ TEST_F(UserScriptMasterTest, LeaveBOMNotAtTheBeginning) {
   UserScriptList user_scripts;
   user_scripts.push_back(user_script);
 
-  UserScriptMaster::ScriptReloader* script_reloader =
-      new UserScriptMaster::ScriptReloader(NULL);
-  script_reloader->AddRef();
-  script_reloader->LoadUserScripts(&user_scripts);
-  script_reloader->Release();
+  UserScriptMaster::LoadScriptsForTest(&user_scripts);
 
   EXPECT_EQ(content, user_scripts[0].js_scripts()[0].GetContent().as_string());
 }

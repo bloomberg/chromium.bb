@@ -45,8 +45,7 @@ scoped_refptr<Extension> ConvertUserScriptToExtension(
   }
 
   UserScript script;
-  if (!UserScriptMaster::ScriptReloader::ParseMetadataHeader(content,
-                                                             &script)) {
+  if (!UserScriptMaster::ParseMetadataHeader(content, &script)) {
     *error = base::ASCIIToUTF16("Invalid script header.");
     return NULL;
   }

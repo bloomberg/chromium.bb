@@ -110,7 +110,7 @@ class ExtensionSystemImpl : public ExtensionSystem {
     scoped_ptr<LazyBackgroundTaskQueue> lazy_background_task_queue_;
     scoped_ptr<EventRouter> event_router_;
     scoped_ptr<NavigationObserver> navigation_observer_;
-    scoped_refptr<UserScriptMaster> user_script_master_;
+    scoped_ptr<UserScriptMaster> user_script_master_;
     scoped_ptr<Blacklist> blacklist_;
     // StandardManagementPolicyProvider depends on Blacklist.
     scoped_ptr<StandardManagementPolicyProvider>
