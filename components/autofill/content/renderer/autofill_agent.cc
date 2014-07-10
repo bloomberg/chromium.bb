@@ -80,8 +80,7 @@ void GetDataListSuggestions(const WebInputElement& element,
   base::string16 prefix;
   if (!ignore_current_value) {
     prefix = element.editingValue();
-    if (element.isMultiple() &&
-        element.formControlType() == WebString::fromUTF8("email")) {
+    if (element.isMultiple() && element.isEmailField()) {
       std::vector<base::string16> parts;
       base::SplitStringDontTrim(prefix, ',', &parts);
       if (parts.size() > 0) {
@@ -418,8 +417,7 @@ void AutofillAgent::AcceptDataListSuggestion(
   base::string16 new_value = suggested_value;
   // If this element takes multiple values then replace the last part with
   // the suggestion.
-  if (input_element->isMultiple() &&
-      input_element->formControlType() == WebString::fromUTF8("email")) {
+  if (input_element->isMultiple() && input_element->isEmailField()) {
     std::vector<base::string16> parts;
 
     base::SplitStringDontTrim(input_element->editingValue(), ',', &parts);
