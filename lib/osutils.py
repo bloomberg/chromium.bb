@@ -627,7 +627,7 @@ def UmountDir(path, lazy=True, sudo=True, cleanup=True):
         # errno is bubbled up to us and we can detect it specifically without
         # potentially ignoring all other possible failures.
         return e.errno == errno.EBUSY
-    retry_util.GenericRetry(_retry, 9, RmDir, path, sudo=sudo, sleep=1)
+    retry_util.GenericRetry(_retry, 9, RmDir, path, sudo=sudo, sleep=60)
 
 
 def SetEnvironment(env):

@@ -7,7 +7,6 @@
 
 import logging
 import os
-import shutil
 import unittest
 
 from chromite.cbuildbot import constants
@@ -83,10 +82,6 @@ def main(args):
   image_file = FindImage(opts.image_dir)
   tmp_in_chroot = cros_build_lib.FromChrootPath('/tmp')
   with osutils.TempDir(base_dir=tmp_in_chroot) as temp_dir:
-    # Copy the image file to a temp dir so that we own it toally, no sharing
-    # in the mount/umount commands.
-    shutil.copy(image_file, temp_dir)
-    image_file = os.path.join(temp_dir, os.path.basename(image_file))
     with osutils.MountImageContext(image_file, temp_dir):
       with osutils.ChdirContext(temp_dir):
         # Run non-forgiving tests first so that exceptions in forgiving tests
