@@ -4,21 +4,19 @@
 
 onload = function() {
   chrome.test.runTests([
-    function receiveNewDevice() {
-      chrome.gcdPrivate.onCloudDeviceStateChanged.addListener(
-        function(available, device) {
-        chrome.test.assertTrue(available);
+      function receiveNewDevice() {
+        chrome.gcdPrivate.onDeviceStateChanged.addListener(
+            function(device) {
+              chrome.test.assertEq(device.setupType, "mdns");
+              chrome.test.assertEq(device.deviceId,
+                                   "mdns:myService._privet._tcp.local");
+              chrome.test.assertEq(device.deviceType, "printer");
+              chrome.test.assertEq(device.deviceName,
+                                   "Sample device");
+              chrome.test.assertEq(device.deviceDescription,
+                                   "Sample device description");
 
-        chrome.test.assertEq(device.setupType, "mdns");
-        chrome.test.assertEq(device.idString,
-                             "mdns:myService._privet._tcp.local");
-        chrome.test.assertEq(device.deviceType, "printer");
-        chrome.test.assertEq(device.deviceName,
-                             "Sample device");
-        chrome.test.assertEq(device.deviceDescription,
-                             "Sample device description");
-
-        chrome.test.notifyPass();
-    })
+              chrome.test.notifyPass();
+      })
   }]);
 };

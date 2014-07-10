@@ -98,7 +98,7 @@ class GcdPrivateGetCloudDeviceListFunction
 };
 
 class GcdPrivateQueryForNewLocalDevicesFunction
-    : public ChromeAsyncExtensionFunction {
+    : public ChromeSyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("gcdPrivate.queryForNewLocalDevices",
                              GCDPRIVATE_QUERYFORNEWLOCALDEVICES)
@@ -108,8 +108,8 @@ class GcdPrivateQueryForNewLocalDevicesFunction
  protected:
   virtual ~GcdPrivateQueryForNewLocalDevicesFunction();
 
-  // AsyncExtensionFunction overrides.
-  virtual bool RunAsync() OVERRIDE;
+  // SyncExtensionFunction overrides.
+  virtual bool RunSync() OVERRIDE;
 };
 
 class GcdPrivateStartSetupFunction : public ChromeAsyncExtensionFunction {
@@ -128,15 +128,15 @@ class GcdPrivateStartSetupFunction : public ChromeAsyncExtensionFunction {
  private:
 };
 
-class GcdPrivateSetWiFiNetworksFunction : public ChromeAsyncExtensionFunction {
+class GcdPrivateSetWiFiNetworkFunction : public ChromeAsyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION("gcdPrivate.setWiFiNetworks",
-                             GCDPRIVATE_SETWIFINETWORKS)
+  DECLARE_EXTENSION_FUNCTION("gcdPrivate.setWiFiNetwork",
+                             GCDPRIVATE_SETWIFINETWORK)
 
-  GcdPrivateSetWiFiNetworksFunction();
+  GcdPrivateSetWiFiNetworkFunction();
 
  protected:
-  virtual ~GcdPrivateSetWiFiNetworksFunction();
+  virtual ~GcdPrivateSetWiFiNetworkFunction();
 
   // AsyncExtensionFunction overrides.
   virtual bool RunAsync() OVERRIDE;
@@ -144,16 +144,15 @@ class GcdPrivateSetWiFiNetworksFunction : public ChromeAsyncExtensionFunction {
  private:
 };
 
-class GcdPrivateSetWiFiCredentialsFunction
-    : public ChromeAsyncExtensionFunction {
+class GcdPrivateSetWiFiPasswordFunction : public ChromeAsyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION("gcdPrivate.setWiFiCredentials",
-                             GCDPRIVATE_SETWIFICREDENTIALS)
+  DECLARE_EXTENSION_FUNCTION("gcdPrivate.setWiFiPassword",
+                             GCDPRIVATE_SETWIFIPASSWORD)
 
-  GcdPrivateSetWiFiCredentialsFunction();
+  GcdPrivateSetWiFiPasswordFunction();
 
  protected:
-  virtual ~GcdPrivateSetWiFiCredentialsFunction();
+  virtual ~GcdPrivateSetWiFiPasswordFunction();
 
   // AsyncExtensionFunction overrides.
   virtual bool RunAsync() OVERRIDE;
@@ -184,6 +183,86 @@ class GcdPrivateStopSetupFunction : public ChromeAsyncExtensionFunction {
 
  protected:
   virtual ~GcdPrivateStopSetupFunction();
+
+  // AsyncExtensionFunction overrides.
+  virtual bool RunAsync() OVERRIDE;
+
+ private:
+};
+
+class GcdPrivateGetCommandDefinitionsFunction
+    : public ChromeAsyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("gcdPrivate.getCommandDefinitions",
+                             GCDPRIVATE_GETCOMMANDDEFINITIONS)
+
+  GcdPrivateGetCommandDefinitionsFunction();
+
+ protected:
+  virtual ~GcdPrivateGetCommandDefinitionsFunction();
+
+  // AsyncExtensionFunction overrides.
+  virtual bool RunAsync() OVERRIDE;
+
+ private:
+};
+
+class GcdPrivateInsertCommandFunction : public ChromeAsyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("gcdPrivate.insertCommand",
+                             GCDPRIVATE_INSERTCOMMAND)
+
+  GcdPrivateInsertCommandFunction();
+
+ protected:
+  virtual ~GcdPrivateInsertCommandFunction();
+
+  // AsyncExtensionFunction overrides.
+  virtual bool RunAsync() OVERRIDE;
+
+ private:
+};
+
+class GcdPrivateGetCommandFunction : public ChromeAsyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("gcdPrivate.getCommand", GCDPRIVATE_GETCOMMAND)
+
+  GcdPrivateGetCommandFunction();
+
+ protected:
+  virtual ~GcdPrivateGetCommandFunction();
+
+  // AsyncExtensionFunction overrides.
+  virtual bool RunAsync() OVERRIDE;
+
+ private:
+};
+
+class GcdPrivateCancelCommandFunction : public ChromeAsyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("gcdPrivate.cancelCommand",
+                             GCDPRIVATE_CANCELCOMMAND)
+
+  GcdPrivateCancelCommandFunction();
+
+ protected:
+  virtual ~GcdPrivateCancelCommandFunction();
+
+  // AsyncExtensionFunction overrides.
+  virtual bool RunAsync() OVERRIDE;
+
+ private:
+};
+
+class GcdPrivateGetCommandsListFunction : public ChromeAsyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("gcdPrivate.getCommandsList",
+                             GCDPRIVATE_GETCOMMANDSLIST)
+
+  GcdPrivateGetCommandsListFunction();
+
+ protected:
+  virtual ~GcdPrivateGetCommandsListFunction();
 
   // AsyncExtensionFunction overrides.
   virtual bool RunAsync() OVERRIDE;
