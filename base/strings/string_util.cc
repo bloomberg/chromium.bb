@@ -223,7 +223,7 @@ void TruncateUTF8ToByteSize(const std::string& input,
   // truncate the string to the end of that character.
   while (char_index >= 0) {
     int32 prev = char_index;
-    uint32 code_point = 0;
+    base_icu::UChar32 code_point = 0;
     CBU8_NEXT(data, char_index, truncation_length, code_point);
     if (!IsValidCharacter(code_point) ||
         !IsValidCodepoint(code_point)) {
@@ -734,11 +734,11 @@ static void EatSameChars(const CHAR** pattern, const CHAR* pattern_end,
     const CHAR* string_next = *string;
     base_icu::UChar32 pattern_char = next(&pattern_next, pattern_end);
     if (pattern_char == next(&string_next, string_end) &&
-        pattern_char != (base_icu::UChar32) CBU_SENTINEL) {
+        pattern_char != CBU_SENTINEL) {
       *pattern = pattern_next;
       *string = string_next;
     } else {
-      // Uh ho, it did not match, we are done. If the last char was an
+      // Uh oh, it did not match, we are done. If the last char was an
       // escapement, that means that it was an error to advance the ptr here,
       // let's put it back where it was. This also mean that the MatchPattern
       // function will return false because if we can't match an escape char

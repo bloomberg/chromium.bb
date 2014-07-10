@@ -21,7 +21,7 @@
 
 namespace base_icu {
 
-typedef uint32 UChar32;
+typedef int32 UChar32;
 typedef uint16 UChar;
 typedef int8 UBool;
 
