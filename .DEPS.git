@@ -48,7 +48,7 @@ deps = {
     'src/third_party/bidichecker':
         Var('git_url') + '/external/bidichecker/lib.git@97f2aa645b74c28c57eca56992235c79850fa9e0',
     'src/third_party/boringssl/src':
-        'https://boringssl.googlesource.com/boringssl.git@2f1f89d6afefb89aa19257b5c624e3b3eb15203d',
+        'https://boringssl.googlesource.com/boringssl.git@09020c2f08df11179b93e6548117806a4c0d0d45',
     'src/third_party/brotli/src':
         Var('git_url') + '/external/font-compression-reference.git@6cef49677dc4c650ef6e3f56041e0a41803afa8c',
     'src/third_party/cacheinvalidation/src':
