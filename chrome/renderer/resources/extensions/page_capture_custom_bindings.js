@@ -6,6 +6,7 @@
 
 var binding = require('binding').Binding.create('pageCapture');
 
+var handleUncaughtException = require('uncaught_exception_handler').handle;
 var pageCaptureNatives = requireNative('page_capture');
 var CreateBlob = pageCaptureNatives.CreateBlob;
 var SendResponseAck = pageCaptureNatives.SendResponseAck;
@@ -15,16 +16,23 @@ binding.registerCustomHook(function(bindingsAPI) {
 
   apiFunctions.setCustomCallback('saveAsMHTML',
                                  function(name, request, response) {
-    var path = response.mhtmlFilePath;
-    var size = response.mhtmlFileLength;
-
-    if (request.callback)
-      request.callback(CreateBlob(path, size));
+    var callback = request.callback;
     request.callback = null;
+    if (response)
+      response = CreateBlob(response.mhtmlFilePath, response.mhtmlFileLength);
 
-    // Notify the browser. Now that the blob is referenced from JavaScript,
-    // the browser can drop its reference to it.
-    SendResponseAck(request.id);
+    try {
+      callback(response);
+    } catch (e) {
+      var message = "Error in chrome.pageCapture.saveAsMHTML callback: " + e;
+      if (request.stack)
+        message += "\n" + request.stack;
+      handleUncaughtException(message, e);
+    } finally {
+      // Notify the browser. Now that the blob is referenced from JavaScript,
+      // the browser can drop its reference to it.
+      SendResponseAck(request.id);
+    }
   });
 });
 

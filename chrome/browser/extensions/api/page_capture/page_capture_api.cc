@@ -32,7 +32,7 @@ namespace {
 const char kFileTooBigError[] = "The MHTML file generated is too big.";
 const char kMHTMLGenerationFailedError[] = "Failed to generate MHTML.";
 const char kTemporaryFileError[] = "Failed to create a temporary file.";
-const char kTabClosedError[] = "Cannot find the tab for thie request.";
+const char kTabClosedError[] = "Cannot find the tab for this request.";
 
 }  // namespace
 
