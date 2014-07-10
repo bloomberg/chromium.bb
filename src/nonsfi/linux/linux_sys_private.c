@@ -26,6 +26,7 @@
 #include "native_client/src/nonsfi/linux/linux_syscall_wrappers.h"
 #include "native_client/src/nonsfi/linux/linux_syscalls.h"
 #include "native_client/src/public/linux_syscalls/poll.h"
+#include "native_client/src/public/linux_syscalls/sys/prctl.h"
 #include "native_client/src/public/linux_syscalls/sys/socket.h"
 #include "native_client/src/untrusted/nacl/tls.h"
 
@@ -369,6 +370,12 @@ int pipe(int pipefd[2]) {
 int poll(struct pollfd *fds, nfds_t nfds, int timeout) {
   return errno_value_call(
       linux_syscall3(__NR_poll, (uintptr_t) fds, nfds, timeout));
+}
+
+int prctl(int option, uintptr_t arg2, uintptr_t arg3,
+          uintptr_t arg4, uintptr_t arg5) {
+  return errno_value_call(
+      linux_syscall5(__NR_prctl, option, arg2, arg3, arg4, arg5));
 }
 
 static uintptr_t socketcall(int op, void *args) {

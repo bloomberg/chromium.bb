@@ -34,3 +34,11 @@ nexe = env.ComponentProgram('socket_test',
 node = env.CommandSelLdrTestNacl('socket_test.out', nexe)
 
 env.AddNodeToTestSuite(node, ['small_tests'], 'run_socket_test')
+
+nexe = env.ComponentProgram('prctl_test',
+                            'prctl_test.cc',
+                            EXTRA_LIBS=['${NONIRT_LIBS}'])
+
+node = env.CommandSelLdrTestNacl('prctl_test.out', nexe)
+
+env.AddNodeToTestSuite(node, ['small_tests'], 'run_prctl_test')
