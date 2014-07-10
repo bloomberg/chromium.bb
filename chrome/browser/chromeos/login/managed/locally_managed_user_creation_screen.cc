@@ -17,7 +17,6 @@
 #include "chrome/browser/chromeos/login/screens/error_screen.h"
 #include "chrome/browser/chromeos/login/screens/screen_observer.h"
 #include "chrome/browser/chromeos/login/signin_specifics.h"
-#include "chrome/browser/chromeos/login/users/avatar/user_image.h"
 #include "chrome/browser/chromeos/login/users/avatar/user_image_manager.h"
 #include "chrome/browser/chromeos/login/users/supervised_user_manager.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
@@ -29,6 +28,7 @@
 #include "chromeos/login/auth/key.h"
 #include "chromeos/login/auth/user_context.h"
 #include "chromeos/network/network_state.h"
+#include "components/user_manager/user_image/user_image.h"
 #include "content/public/browser/browser_thread.h"
 #include "grit/generated_resources.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -460,7 +460,8 @@ void LocallyManagedUserCreationScreen::ApplyPicture() {
         apply_photo_after_decoding_ = true;
         return;
       }
-      image_manager->SaveUserImage(UserImage::CreateAndEncode(user_photo_));
+      image_manager->SaveUserImage(
+          user_manager::UserImage::CreateAndEncode(user_photo_));
       break;
     case User::kProfileImageIndex:
       NOTREACHED() << "Supervised users have no profile pictures";

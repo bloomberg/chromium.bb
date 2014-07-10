@@ -19,9 +19,12 @@ namespace gfx {
 class ImageSkia;
 }
 
+namespace user_manager {
+class UserImage;
+}
+
 namespace chromeos {
 
-class UserImage;
 class UserImageSyncObserver;
 
 // Base class that provides a mechanism for updating user images.
@@ -46,7 +49,7 @@ class UserImageManager {
 
   // Saves image to file, sends LOGIN_USER_IMAGE_CHANGED notification and
   // updates Local State.
-  virtual void SaveUserImage(const UserImage& user_image) = 0;
+  virtual void SaveUserImage(const user_manager::UserImage& user_image) = 0;
 
   // Tries to load user image from disk; if successful, sets it for the user,
   // sends LOGIN_USER_IMAGE_CHANGED notification and updates Local State.

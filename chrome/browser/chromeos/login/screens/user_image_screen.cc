@@ -21,7 +21,6 @@
 #include "chrome/browser/chromeos/login/login_utils.h"
 #include "chrome/browser/chromeos/login/screens/screen_observer.h"
 #include "chrome/browser/chromeos/login/users/avatar/default_user_images.h"
-#include "chrome/browser/chromeos/login/users/avatar/user_image.h"
 #include "chrome/browser/chromeos/login/users/avatar/user_image_manager.h"
 #include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
@@ -33,6 +32,7 @@
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/core/common/policy_namespace.h"
 #include "components/policy/core/common/policy_service.h"
+#include "components/user_manager/user_image/user_image.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "grit/generated_resources.h"
@@ -188,7 +188,8 @@ void UserImageScreen::OnImageAccepted() {
         accept_photo_after_decoding_ = true;
         return;
       }
-      image_manager->SaveUserImage(UserImage::CreateAndEncode(user_photo_));
+      image_manager->SaveUserImage(
+          user_manager::UserImage::CreateAndEncode(user_photo_));
       uma_index = kHistogramImageFromCamera;
       break;
     case User::kProfileImageIndex:

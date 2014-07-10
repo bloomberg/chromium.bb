@@ -28,7 +28,6 @@
 #include "chrome/browser/chromeos/login/login_manager_test.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/users/avatar/default_user_images.h"
-#include "chrome/browser/chromeos/login/users/avatar/user_image.h"
 #include "chrome/browser/chromeos/login/users/avatar/user_image_manager.h"
 #include "chrome/browser/chromeos/login/users/avatar/user_image_manager_impl.h"
 #include "chrome/browser/chromeos/login/users/avatar/user_image_manager_test_util.h"
@@ -53,6 +52,7 @@
 #include "components/policy/core/common/cloud/cloud_policy_core.h"
 #include "components/policy/core/common/cloud/cloud_policy_store.h"
 #include "components/policy/core/common/cloud/policy_builder.h"
+#include "components/user_manager/user_image/user_image.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/test/test_utils.h"
@@ -429,7 +429,8 @@ IN_PROC_BROWSER_TEST_F(UserImageManagerTest, SaveUserImage) {
   run_loop_.reset(new base::RunLoop);
   UserImageManager* user_image_manager =
       UserManager::Get()->GetUserImageManager(kTestUser1);
-  user_image_manager->SaveUserImage(UserImage::CreateAndEncode(custom_image));
+  user_image_manager->SaveUserImage(
+      user_manager::UserImage::CreateAndEncode(custom_image));
   run_loop_->Run();
 
   EXPECT_FALSE(user->HasDefaultImage());

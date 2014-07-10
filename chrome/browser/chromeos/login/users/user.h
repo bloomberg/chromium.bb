@@ -11,7 +11,7 @@
 #include "ash/session/user_info.h"
 #include "base/basictypes.h"
 #include "base/strings/string16.h"
-#include "chrome/browser/chromeos/login/users/avatar/user_image.h"
+#include "components/user_manager/user_image/user_image.h"
 #include "components/user_manager/user_type.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/image/image_skia.h"
@@ -83,12 +83,12 @@ class User : public ash::UserInfo {
   int image_index() const { return image_index_; }
   bool has_raw_image() const { return user_image_.has_raw_image(); }
   // Returns raw representation of static user image.
-  const UserImage::RawImage& raw_image() const {
+  const user_manager::UserImage::RawImage& raw_image() const {
     return user_image_.raw_image();
   }
   bool has_animated_image() const { return user_image_.has_animated_image(); }
   // Returns raw representation of animated user image.
-  const UserImage::RawImage& animated_image() const {
+  const user_manager::UserImage::RawImage& animated_image() const {
     return user_image_.animated_image();
   }
 
@@ -163,7 +163,7 @@ class User : public ash::UserInfo {
   // Setters are private so only UserManager can call them.
   void SetAccountLocale(const std::string& resolved_account_locale);
 
-  void SetImage(const UserImage& user_image, int image_index);
+  void SetImage(const user_manager::UserImage& user_image, int image_index);
 
   void SetImageURL(const GURL& image_url);
 
@@ -184,7 +184,7 @@ class User : public ash::UserInfo {
     display_email_ = display_email;
   }
 
-  const UserImage& user_image() const { return user_image_; }
+  const user_manager::UserImage& user_image() const { return user_image_; }
 
   void set_oauth_token_status(OAuthTokenStatus status) {
     oauth_token_status_ = status;
@@ -223,7 +223,7 @@ class User : public ash::UserInfo {
   base::string16 given_name_;
   // The displayed user email, defaults to |email_|.
   std::string display_email_;
-  UserImage user_image_;
+  user_manager::UserImage user_image_;
   OAuthTokenStatus oauth_token_status_;
   bool force_online_signin_;
 

@@ -209,7 +209,8 @@ void User::SetAccountLocale(const std::string& resolved_account_locale) {
   account_locale_.reset(new std::string(resolved_account_locale));
 }
 
-void User::SetImage(const UserImage& user_image, int image_index) {
+void User::SetImage(const user_manager::UserImage& user_image,
+                    int image_index) {
   user_image_ = user_image;
   image_index_ = image_index;
   image_is_stub_ = false;
@@ -222,9 +223,9 @@ void User::SetImageURL(const GURL& image_url) {
 }
 
 void User::SetStubImage(int image_index, bool is_loading) {
-  user_image_ = UserImage(
-      *ResourceBundle::GetSharedInstance().
-          GetImageSkiaNamed(IDR_PROFILE_PICTURE_LOADING));
+  user_image_ = user_manager::UserImage(
+      *ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
+          IDR_PROFILE_PICTURE_LOADING));
   image_index_ = image_index;
   image_is_stub_ = true;
   image_is_loading_ = is_loading;

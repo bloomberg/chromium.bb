@@ -22,7 +22,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/threading/worker_pool.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/login/users/avatar/user_image.h"
 #include "chrome/browser/chromeos/login/users/user.h"
 #include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/chromeos/login/users/wallpaper/wallpaper_manager.h"

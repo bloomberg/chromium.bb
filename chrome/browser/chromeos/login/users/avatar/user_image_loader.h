@@ -19,9 +19,11 @@ namespace base {
 class SequencedTaskRunner;
 }
 
-namespace chromeos {
-
+namespace user_manager {
 class UserImage;
+}
+
+namespace chromeos {
 
 // Helper that reads, decodes and optionally resizes an image on a background
 // thread. Returns the image in the form of an SkBitmap.
@@ -29,7 +31,8 @@ class UserImageLoader : public base::RefCountedThreadSafe<UserImageLoader>,
                         public ImageDecoder::Delegate {
  public:
   // Callback used to return the result of an image load operation.
-  typedef base::Callback<void(const UserImage& user_image)> LoadedCallback;
+  typedef base::Callback<void(const user_manager::UserImage& user_image)>
+      LoadedCallback;
 
   // All file I/O, decoding and resizing are done via |background_task_runner|.
   UserImageLoader(

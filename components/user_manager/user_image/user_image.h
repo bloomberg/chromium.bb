@@ -2,21 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_LOGIN_USERS_AVATAR_USER_IMAGE_H_
-#define CHROME_BROWSER_CHROMEOS_LOGIN_USERS_AVATAR_USER_IMAGE_H_
+#ifndef COMPONENTS_USER_MANAGER_USER_IMAGE_USER_IMAGE_H_
+#define COMPONENTS_USER_MANAGER_USER_IMAGE_USER_IMAGE_H_
 
 #include <string>
 #include <vector>
 
+#include "components/user_manager/user_manager_export.h"
 #include "ui/gfx/image/image_skia.h"
 #include "url/gurl.h"
 
-namespace chromeos {
+namespace user_manager {
 
 // Wrapper class storing a still image and it's raw representation.  Could be
 // used for storing profile images (including animated profile images) and user
 // wallpapers.
-class UserImage {
+class USER_MANAGER_EXPORT UserImage {
  public:
   // TODO(ivankr): replace with RefCountedMemory to prevent copying.
   typedef std::vector<unsigned char> RawImage;
@@ -78,6 +79,6 @@ class UserImage {
   bool is_safe_format_;
 };
 
-}  // namespace chromeos
+}  // namespace user_manager
 
-#endif  // CHROME_BROWSER_CHROMEOS_LOGIN_USERS_AVATAR_USER_IMAGE_H_
+#endif  // COMPONENTS_USER_MANAGER_USER_IMAGE_USER_IMAGE_H_

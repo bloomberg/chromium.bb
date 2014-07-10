@@ -33,7 +33,6 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/customization_document.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
-#include "chrome/browser/chromeos/login/users/avatar/user_image.h"
 #include "chrome/browser/chromeos/login/users/user.h"
 #include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
@@ -44,6 +43,7 @@
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/login/user_names.h"
+#include "components/user_manager/user_image/user_image.h"
 #include "components/user_manager/user_type.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
@@ -834,7 +834,7 @@ base::FilePath WallpaperManager::GetCustomWallpaperPath(
 
 void WallpaperManager::SetPolicyControlledWallpaper(
     const std::string& user_id,
-    const UserImage& user_image) {
+    const user_manager::UserImage& user_image) {
   const User *user = chromeos::UserManager::Get()->FindUser(user_id);
   if (!user) {
     NOTREACHED() << "Unknown user.";
@@ -1539,7 +1539,7 @@ void WallpaperManager::OnWallpaperDecoded(
     ash::WallpaperLayout layout,
     bool update_wallpaper,
     MovableOnDestroyCallbackHolder on_finish,
-    const UserImage& user_image) {
+    const user_manager::UserImage& user_image) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   TRACE_EVENT_ASYNC_END0("ui", "LoadAndDecodeWallpaper", this);
 
@@ -1657,7 +1657,7 @@ void WallpaperManager::SetCustomizedDefaultWallpaperAfterCheck(
 void WallpaperManager::OnCustomizedDefaultWallpaperDecoded(
     const GURL& wallpaper_url,
     scoped_ptr<CustomizedWallpaperRescaledFiles> rescaled_files,
-    const UserImage& wallpaper) {
+    const user_manager::UserImage& wallpaper) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // If decoded wallpaper is empty, we have probably failed to decode the file.
@@ -1699,7 +1699,7 @@ void WallpaperManager::OnCustomizedDefaultWallpaperDecoded(
 
 void WallpaperManager::ResizeCustomizedDefaultWallpaper(
     scoped_ptr<gfx::ImageSkia> image,
-    const UserImage::RawImage& raw_image,
+    const user_manager::UserImage::RawImage& raw_image,
     const CustomizedWallpaperRescaledFiles* rescaled_files,
     bool* success,
     gfx::ImageSkia* small_wallpaper_image,
@@ -1828,10 +1828,10 @@ void WallpaperManager::SetDefaultWallpaperPathsFromCommandLine(
 void WallpaperManager::OnDefaultWallpaperDecoded(
     const base::FilePath& path,
     const ash::WallpaperLayout layout,
-    scoped_ptr<chromeos::UserImage>* result_out,
+    scoped_ptr<user_manager::UserImage>* result_out,
     MovableOnDestroyCallbackHolder on_finish,
-    const UserImage& user_image) {
-  result_out->reset(new UserImage(user_image));
+    const user_manager::UserImage& user_image) {
+  result_out->reset(new user_manager::UserImage(user_image));
   ash::Shell::GetInstance()->desktop_background_controller()->SetWallpaperImage(
       user_image.image(), layout);
 }
@@ -1840,7 +1840,7 @@ void WallpaperManager::StartLoadAndSetDefaultWallpaper(
     const base::FilePath& path,
     const ash::WallpaperLayout layout,
     MovableOnDestroyCallbackHolder on_finish,
-    scoped_ptr<chromeos::UserImage>* result_out) {
+    scoped_ptr<user_manager::UserImage>* result_out) {
   wallpaper_loader_->Start(
       path.value(),
       0,  // Do not crop.
@@ -1883,13 +1883,15 @@ void WallpaperManager::SetDefaultWallpaperPath(
   default_wallpaper_image_.reset();
   if (GetAppropriateResolution() == WALLPAPER_RESOLUTION_SMALL) {
     if (small_wallpaper_image) {
-      default_wallpaper_image_.reset(new UserImage(*small_wallpaper_image));
+      default_wallpaper_image_.reset(
+          new user_manager::UserImage(*small_wallpaper_image));
       default_wallpaper_image_->set_file_path(
           default_small_wallpaper_file.value());
     }
   } else {
     if (large_wallpaper_image) {
-      default_wallpaper_image_.reset(new UserImage(*large_wallpaper_image));
+      default_wallpaper_image_.reset(
+          new user_manager::UserImage(*large_wallpaper_image));
       default_wallpaper_image_->set_file_path(
           default_large_wallpaper_file.value());
     }
@@ -1907,7 +1909,7 @@ void WallpaperManager::CreateSolidDefaultWallpaper() {
   bitmap.allocN32Pixels(1, 1);
   bitmap.eraseColor(kDefaultWallpaperColor);
   const gfx::ImageSkia image = gfx::ImageSkia::CreateFrom1xBitmap(bitmap);
-  default_wallpaper_image_.reset(new UserImage(image));
+  default_wallpaper_image_.reset(new user_manager::UserImage(image));
 }
 
 }  // namespace chromeos

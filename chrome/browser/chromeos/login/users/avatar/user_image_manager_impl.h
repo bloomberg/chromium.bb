@@ -24,11 +24,14 @@
 #include "ui/gfx/image/image_skia.h"
 
 class ProfileDownloader;
-class UserImage;
 
 namespace base {
 class FilePath;
 class SequencedTaskRunner;
+}
+
+namespace user_manager {
+class UserImage;
 }
 
 namespace chromeos {
@@ -48,7 +51,8 @@ class UserImageManagerImpl
   virtual void LoadUserImage() OVERRIDE;
   virtual void UserLoggedIn(bool user_is_new, bool user_is_local) OVERRIDE;
   virtual void SaveUserDefaultImageIndex(int default_image_index) OVERRIDE;
-  virtual void SaveUserImage(const UserImage& user_image) OVERRIDE;
+  virtual void SaveUserImage(
+      const user_manager::UserImage& user_image) OVERRIDE;
   virtual void SaveUserImageFromFile(const base::FilePath& path) OVERRIDE;
   virtual void SaveUserImageFromProfileImage() OVERRIDE;
   virtual void DeleteUserImage() OVERRIDE;

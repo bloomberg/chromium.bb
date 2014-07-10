@@ -11,9 +11,9 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/login/user_flow.h"
 #include "chrome/browser/chromeos/login/users/avatar/mock_user_image_manager.h"
-#include "chrome/browser/chromeos/login/users/avatar/user_image.h"
 #include "chrome/browser/chromeos/login/users/user.h"
 #include "chrome/browser/chromeos/login/users/user_manager.h"
+#include "components/user_manager/user_image/user_image.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace chromeos {

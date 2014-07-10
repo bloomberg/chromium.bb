@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/login/users/avatar/user_image.h"
+#include "components/user_manager/user_image/user_image.h"
 
 #include "base/debug/trace_event.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/codec/jpeg_codec.h"
 
-namespace chromeos {
+namespace user_manager {
 
 namespace {
 
@@ -98,4 +98,4 @@ void UserImage::MarkAsSafe() {
   is_safe_format_ = true;
 }
 
-}  // namespace chromeos
+}  // namespace user_manager

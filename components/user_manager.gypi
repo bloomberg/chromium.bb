@@ -8,6 +8,9 @@
     'type': '<(component)',
     'dependencies': [
       '../base/base.gyp:base',
+      '../skia/skia.gyp:skia',
+      '../ui/gfx/gfx.gyp:gfx',
+      '../url/url.gyp:url_lib',
     ],
     'defines': [
       'USER_MANAGER_IMPLEMENTATION',
@@ -16,6 +19,8 @@
       '..',
     ],
     'sources': [
+      'user_manager/user_image/user_image.cc',
+      'user_manager/user_image/user_image.h',
       'user_manager/user_type.h',
       'user_manager/user_manager_export.h',
     ],

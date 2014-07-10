@@ -12,7 +12,7 @@
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/sequenced_task_runner.h"
 #include "chrome/browser/chromeos/login/helper.h"
-#include "chrome/browser/chromeos/login/users/avatar/user_image.h"
+#include "components/user_manager/user_image/user_image.h"
 #include "skia/ext/image_operations.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/codec/png_codec.h"
@@ -126,7 +126,8 @@ void UserImageLoader::OnImageDecoded(const ImageDecoder* decoder,
   gfx::ImageSkia final_image_skia =
       gfx::ImageSkia::CreateFrom1xBitmap(final_image);
   final_image_skia.MakeThreadSafe();
-  UserImage user_image(final_image_skia, decoder->get_image_data());
+  user_manager::UserImage user_image(final_image_skia,
+                                     decoder->get_image_data());
   user_image.set_file_path(file_path);
   if (image_codec_ == ImageDecoder::ROBUST_JPEG_CODEC)
     user_image.MarkAsSafe();
@@ -145,8 +146,8 @@ void UserImageLoader::OnDecodeImageFailed(const ImageDecoder* decoder) {
   const LoadedCallback loaded_cb = it->second.loaded_cb;
   image_info_map_.erase(it);
 
-  foreground_task_runner_->PostTask(FROM_HERE,
-                                    base::Bind(loaded_cb, UserImage()));
+  foreground_task_runner_->PostTask(
+      FROM_HERE, base::Bind(loaded_cb, user_manager::UserImage()));
 }
 
 }  // namespace chromeos

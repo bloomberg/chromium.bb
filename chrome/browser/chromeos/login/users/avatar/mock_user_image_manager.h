@@ -8,8 +8,8 @@
 #include <string>
 
 #include "base/files/file_path.h"
-#include "chrome/browser/chromeos/login/users/avatar/user_image.h"
 #include "chrome/browser/chromeos/login/users/avatar/user_image_manager.h"
+#include "components/user_manager/user_image/user_image.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace chromeos {
@@ -20,7 +20,7 @@ class MockUserImageManager : public UserImageManager {
   virtual ~MockUserImageManager();
 
   MOCK_METHOD1(SaveUserDefaultImageIndex, void(int));
-  MOCK_METHOD1(SaveUserImage, void(const UserImage&));
+  MOCK_METHOD1(SaveUserImage, void(const user_manager::UserImage&));
   MOCK_METHOD1(SaveUserImageFromFile, void(const base::FilePath&));
   MOCK_METHOD0(SaveUserImageFromProfileImage, void());
   MOCK_METHOD1(DownloadProfileImage, void(const std::string&));
