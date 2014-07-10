@@ -22,10 +22,6 @@ using blink::WebVector;
 namespace autofill {
 namespace {
 
-// Maximum number of password fields we will observe before throwing our
-// hands in the air and giving up with a given form.
-static const size_t kMaxPasswords = 3;
-
 // Checks in a case-insensitive way if the autocomplete attribute for the given
 // |element| is present and has the specified |value_in_lowercase|.
 bool HasAutocompleteAttributeValue(const WebInputElement& element,
@@ -132,8 +128,7 @@ void GetPasswordForm(const WebFormElement& form, PasswordForm* password_form) {
     if (!input_element || !input_element->isEnabled())
       continue;
 
-    if ((passwords.size() < kMaxPasswords) &&
-        input_element->isPasswordField()) {
+    if (input_element->isPasswordField()) {
       passwords.push_back(*input_element);
       // If we have not yet considered any element to be the username so far,
       // provisionally select the input element just before the first password
