@@ -171,7 +171,7 @@ InspectorTest.checkConsoleMessagesDontHaveParameters = function()
 
 InspectorTest.waitUntilMessageReceived = function(callback)
 {
-    InspectorTest.addSniffer(WebInspector.console, "addMessage", callback, false);
+    InspectorTest.addSniffer(WebInspector.consoleModel, "addMessage", callback, false);
 }
 
 InspectorTest.waitUntilNthMessageReceived = function(count, callback)
@@ -181,9 +181,9 @@ InspectorTest.waitUntilNthMessageReceived = function(count, callback)
         if (--count === 0)
             InspectorTest.safeWrap(callback)();
         else
-            InspectorTest.addSniffer(WebInspector.console, "addMessage", override, false);
+            InspectorTest.addSniffer(WebInspector.consoleModel, "addMessage", override, false);
     }
-    InspectorTest.addSniffer(WebInspector.console, "addMessage", override, false);
+    InspectorTest.addSniffer(WebInspector.consoleModel, "addMessage", override, false);
 }
 
 InspectorTest.changeExecutionContext = function(namePrefix)
@@ -203,6 +203,5 @@ InspectorTest.changeExecutionContext = function(namePrefix)
     option.selected = true;
     WebInspector.ConsolePanel._view()._executionContextChanged();
 }
-
 
 }

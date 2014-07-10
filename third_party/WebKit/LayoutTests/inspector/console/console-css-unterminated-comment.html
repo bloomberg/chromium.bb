@@ -13,7 +13,7 @@
 
 function test()
 {
-    WebInspector.console.messages.forEach(function(message)
+    WebInspector.consoleModel.messages.forEach(function(message)
     {
         InspectorTest.addResult(message.message + " (line " + message.line + ")");
     });

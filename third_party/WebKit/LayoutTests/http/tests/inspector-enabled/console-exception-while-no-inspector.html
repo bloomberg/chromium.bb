@@ -40,10 +40,10 @@ function showInspectorAndRunTest()
 
 function test()
 {
-    if (WebInspector.console.messages.length !== 1)
-        InspectorTest.addResult("FAIL: found too many console messages: " + WebInspector.console.messages.length);
+    if (WebInspector.consoleModel.messages.length !== 1)
+        InspectorTest.addResult("FAIL: found too many console messages: " + WebInspector.consoleModel.messages.length);
 
-    var message = WebInspector.console.messages[0];
+    var message = WebInspector.consoleModel.messages[0];
     var stack = message.stackTrace;
     if (stack)
         InspectorTest.addResult("FAIL: found message with stack trace");

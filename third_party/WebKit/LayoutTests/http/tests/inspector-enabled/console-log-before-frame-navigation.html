@@ -26,7 +26,7 @@ function receiveMessage(event) {
 
 function test()
 {
-    var messages = WebInspector.console.messages;
+    var messages = WebInspector.consoleModel.messages;
     InspectorTest.addResult("Received console messages:");
     for (var i = 0; i < messages.length; ++i) {
         var m = messages[i];

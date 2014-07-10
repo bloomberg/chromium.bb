@@ -19,7 +19,7 @@ function test()
     InspectorTest.addResult("=== Before clear ==="); 
     InspectorTest.dumpConsoleMessages();
 
-    WebInspector.console.requestClearMessages();
+    WebInspector.consoleModel.requestClearMessages();
     
     function callback()
     {

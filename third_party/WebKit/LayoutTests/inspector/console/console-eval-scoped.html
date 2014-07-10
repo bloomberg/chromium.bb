@@ -49,7 +49,7 @@ function test()
     {
         InspectorTest.runAfterPendingDispatches(function() {
             InspectorTest.dumpConsoleMessages();
-            WebInspector.console.requestClearMessages();
+            WebInspector.consoleModel.requestClearMessages();
             InspectorTest.runAfterPendingDispatches(next);
         });
     }
