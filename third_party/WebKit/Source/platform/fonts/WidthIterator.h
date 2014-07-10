@@ -23,7 +23,6 @@
 #define WidthIterator_h
 
 #include "platform/PlatformExport.h"
-#include "platform/fonts/Font.h"
 #include "platform/fonts/SVGGlyph.h"
 #include "platform/text/TextRun.h"
 #include "wtf/HashSet.h"
@@ -58,12 +57,6 @@ public:
     Vector<SVGGlyph::ArabicForm>& arabicForms() { return m_arabicForms; }
 #endif
 
-    static bool supportsTypesettingFeatures(const Font& font)
-    {
-
-        return !font.fontDescription().typesettingFeatures();
-    }
-
     const Font* m_font;
 
     const TextRun& m_run;
@@ -83,9 +76,6 @@ private:
     template <typename TextIterator>
     inline unsigned advanceInternal(TextIterator&, GlyphBuffer*);
 
-    bool shouldApplyFontTransforms() const { return m_run.length() > 1 && (m_typesettingFeatures & (Kerning | Ligatures)); }
-
-    TypesettingFeatures m_typesettingFeatures;
     HashSet<const SimpleFontData*>* m_fallbackFonts;
     bool m_accountForGlyphBounds;
     float m_maxGlyphBoundingBoxY;
