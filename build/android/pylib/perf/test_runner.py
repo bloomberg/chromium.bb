@@ -240,6 +240,9 @@ class TestRunner(base_test_runner.BaseTestRunner):
     try:
       exit_code, output = cmd_helper.GetCmdStatusAndOutputWithTimeout(
           full_cmd, timeout, cwd=cwd, shell=True, logfile=logfile)
+    except cmd_helper.TimeoutError as e:
+      exit_code = -1
+      output = str(e)
     finally:
       if self._options.single_step:
         logfile.stop()
