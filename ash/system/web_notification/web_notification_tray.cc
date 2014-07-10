@@ -17,6 +17,7 @@
 #include "ash/system/tray/tray_bubble_wrapper.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_utils.h"
+#include "ash/system/web_notification/ash_popup_alignment_delegate.h"
 #include "base/auto_reset.h"
 #include "base/i18n/number_formatting.h"
 #include "base/i18n/rtl.h"
@@ -68,134 +69,6 @@ const SkColor kWebNotificationColorNoUnread =
     SkColorSetARGB(128, 255, 255, 255);
 const SkColor kWebNotificationColorWithUnread = SK_ColorWHITE;
 
-}
-
-// Observes the change of work area (including temporary change by auto-hide)
-// and notifies MessagePopupCollection.
-class WorkAreaObserver : public ShelfLayoutManagerObserver,
-                         public ShellObserver {
- public:
-  WorkAreaObserver();
-  virtual ~WorkAreaObserver();
-
-  void SetSystemTrayHeight(int height);
-
-  // Starts observing |shelf| and shell and sends the change to |collection|.
-  void StartObserving(message_center::MessagePopupCollection* collection,
-                      aura::Window* root_window);
-
-  // Stops the observing session.
-  void StopObserving();
-
-  // Overridden from ShellObserver:
-  virtual void OnDisplayWorkAreaInsetsChanged() OVERRIDE;
-
-  // Overridden from ShelfLayoutManagerObserver:
-  virtual void OnAutoHideStateChanged(ShelfAutoHideState new_state) OVERRIDE;
-
- private:
-  // Updates |shelf_| from |root_window_|.
-  void UpdateShelf();
-
-  message_center::MessagePopupCollection* collection_;
-  aura::Window* root_window_;
-  ShelfLayoutManager* shelf_;
-  int system_tray_height_;
-
-  DISALLOW_COPY_AND_ASSIGN(WorkAreaObserver);
-};
-
-WorkAreaObserver::WorkAreaObserver()
-    : collection_(NULL),
-      root_window_(NULL),
-      shelf_(NULL),
-      system_tray_height_(0) {
-}
-
-WorkAreaObserver::~WorkAreaObserver() {
-  StopObserving();
-}
-
-void WorkAreaObserver::SetSystemTrayHeight(int height) {
-  system_tray_height_ = height;
-
-  // If the shelf is shown during auto-hide state, the distance from the edge
-  // should be reduced by the height of shelf's shown height.
-  if (shelf_ && shelf_->visibility_state() == SHELF_AUTO_HIDE &&
-      shelf_->auto_hide_state() == SHELF_AUTO_HIDE_SHOWN) {
-    system_tray_height_ -= kShelfSize - ShelfLayoutManager::kAutoHideSize;
-  }
-
-  if (system_tray_height_ > 0)
-    system_tray_height_ += message_center::kMarginBetweenItems;
-
-  if (!shelf_)
-    return;
-
-  OnAutoHideStateChanged(shelf_->auto_hide_state());
-}
-
-void WorkAreaObserver::StartObserving(
-    message_center::MessagePopupCollection* collection,
-    aura::Window* root_window) {
-  DCHECK(collection);
-  collection_ = collection;
-  root_window_ = root_window;
-  UpdateShelf();
-  Shell::GetInstance()->AddShellObserver(this);
-  if (system_tray_height_ > 0)
-    OnAutoHideStateChanged(shelf_->auto_hide_state());
-}
-
-void WorkAreaObserver::StopObserving() {
-  Shell::GetInstance()->RemoveShellObserver(this);
-  if (shelf_)
-    shelf_->RemoveObserver(this);
-  collection_ = NULL;
-  shelf_ = NULL;
-}
-
-void WorkAreaObserver::OnDisplayWorkAreaInsetsChanged() {
-  UpdateShelf();
-
-  collection_->OnDisplayMetricsChanged(
-      Shell::GetScreen()->GetDisplayNearestWindow(
-          shelf_->shelf_widget()->GetNativeView()),
-      gfx::DisplayObserver::DISPLAY_METRIC_WORK_AREA);
-}
-
-void WorkAreaObserver::OnAutoHideStateChanged(ShelfAutoHideState new_state) {
-  gfx::Display display = Shell::GetScreen()->GetDisplayNearestWindow(
-      shelf_->shelf_widget()->GetNativeView());
-  gfx::Rect work_area = display.work_area();
-  int width = 0;
-  if ((shelf_->visibility_state() == SHELF_AUTO_HIDE) &&
-      new_state == SHELF_AUTO_HIDE_SHOWN) {
-    // Since the work_area is already reduced by kAutoHideSize, the inset width
-    // should be just the difference.
-    width = kShelfSize - ShelfLayoutManager::kAutoHideSize;
-  }
-  work_area.Inset(shelf_->SelectValueForShelfAlignment(
-      gfx::Insets(0, 0, width, 0),
-      gfx::Insets(0, width, 0, 0),
-      gfx::Insets(0, 0, 0, width),
-      gfx::Insets(width, 0, 0, 0)));
-  if (system_tray_height_ > 0) {
-    work_area.set_height(
-        std::max(0, work_area.height() - system_tray_height_));
-    if (shelf_->GetAlignment() == SHELF_ALIGNMENT_TOP)
-      work_area.set_y(work_area.y() + system_tray_height_);
-  }
-  collection_->SetDisplayInfo(work_area, display.bounds());
-}
-
-void WorkAreaObserver::UpdateShelf() {
-  if (shelf_)
-    return;
-
-  shelf_ = ShelfLayoutManager::ForShelf(root_window_);
-  if (shelf_)
-    shelf_->AddObserver(this);
 }
 
 // Class to initialize and manage the WebNotificationBubble and
@@ -308,25 +181,25 @@ WebNotificationTray::WebNotificationTray(StatusAreaWidget* status_area_widget)
   message_center_tray_.reset(new message_center::MessageCenterTray(
       this,
       message_center::MessageCenter::Get()));
+  popup_alignment_delegate_.reset(new AshPopupAlignmentDelegate());
   popup_collection_.reset(new message_center::MessagePopupCollection(
       ash::Shell::GetContainer(
           status_area_widget->GetNativeView()->GetRootWindow(),
           kShellWindowId_StatusContainer),
       message_center(),
       message_center_tray_.get(),
-      true));
-  work_area_observer_.reset(new WorkAreaObserver());
-  work_area_observer_->StartObserving(
-      popup_collection_.get(),
-      status_area_widget->GetNativeView()->GetRootWindow());
+      popup_alignment_delegate_.get()));
+  const gfx::Display& display = Shell::GetScreen()->GetDisplayNearestWindow(
+      status_area_widget->GetNativeView());
+  popup_alignment_delegate_->StartObserving(Shell::GetScreen(), display);
   OnMessageCenterTrayChanged();
 }
 
 WebNotificationTray::~WebNotificationTray() {
   // Release any child views that might have back pointers before ~View().
   message_center_bubble_.reset();
+  popup_alignment_delegate_.reset();
   popup_collection_.reset();
-  work_area_observer_.reset();
 }
 
 // Public methods.
@@ -398,7 +271,7 @@ void WebNotificationTray::HideMessageCenter() {
 }
 
 void WebNotificationTray::SetSystemTrayHeight(int height) {
-  work_area_observer_->SetSystemTrayHeight(height);
+  popup_alignment_delegate_->SetSystemTrayHeight(height);
 }
 
 bool WebNotificationTray::ShowPopups() {

@@ -14,6 +14,7 @@
 #include "ash/system/status_area_widget.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/system_tray_item.h"
+#include "ash/system/web_notification/ash_popup_alignment_delegate.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/status_area_widget_test_helper.h"
 #include "ash/test/test_system_tray_delegate.h"
@@ -134,12 +135,12 @@ class WebNotificationTrayTest : public test::AshTestBase {
     return GetTray()->GetWidget();
   }
 
-  gfx::Rect GetPopupWorkArea() {
-    return GetPopupWorkAreaForTray(GetTray());
+  int GetPopupWorkAreaBottom() {
+    return GetPopupWorkAreaBottomForTray(GetTray());
   }
 
-  gfx::Rect GetPopupWorkAreaForTray(WebNotificationTray* tray) {
-    return tray->popup_collection_->work_area_;
+  int GetPopupWorkAreaBottomForTray(WebNotificationTray* tray) {
+    return tray->popup_alignment_delegate_->GetWorkAreaBottom();
   }
 
   bool IsPopupVisible() {
@@ -319,44 +320,40 @@ TEST_F(WebNotificationTrayTest, MAYBE_PopupAndSystemTray) {
 
   AddNotification("test_id");
   EXPECT_TRUE(GetTray()->IsPopupVisible());
-  gfx::Rect work_area = GetPopupWorkArea();
+  int bottom = GetPopupWorkAreaBottom();
 
   // System tray is created, the popup's work area should be narrowed but still
   // visible.
   GetSystemTray()->ShowDefaultView(BUBBLE_CREATE_NEW);
   EXPECT_TRUE(GetTray()->IsPopupVisible());
-  gfx::Rect work_area_with_tray = GetPopupWorkArea();
-  EXPECT_GT(work_area.size().GetArea(), work_area_with_tray.size().GetArea());
+  int bottom_with_tray = GetPopupWorkAreaBottom();
+  EXPECT_GT(bottom, bottom_with_tray);
 
   // System tray notification is also created, the popup's work area is narrowed
   // even more, but still visible.
   GetSystemTray()->ShowNotificationView(test_item);
   EXPECT_TRUE(GetTray()->IsPopupVisible());
-  gfx::Rect work_area_with_tray_notification = GetPopupWorkArea();
-  EXPECT_GT(work_area.size().GetArea(),
-            work_area_with_tray_notification.size().GetArea());
-  EXPECT_GT(work_area_with_tray.size().GetArea(),
-            work_area_with_tray_notification.size().GetArea());
+  int bottom_with_tray_notification = GetPopupWorkAreaBottom();
+  EXPECT_GT(bottom, bottom_with_tray_notification);
+  EXPECT_GT(bottom_with_tray, bottom_with_tray_notification);
 
   // Close system tray, only system tray notifications.
   GetSystemTray()->ClickedOutsideBubble();
   EXPECT_TRUE(GetTray()->IsPopupVisible());
-  gfx::Rect work_area_with_notification = GetPopupWorkArea();
-  EXPECT_GT(work_area.size().GetArea(),
-            work_area_with_notification.size().GetArea());
-  EXPECT_LT(work_area_with_tray_notification.size().GetArea(),
-            work_area_with_notification.size().GetArea());
+  int bottom_with_notification = GetPopupWorkAreaBottom();
+  EXPECT_GT(bottom, bottom_with_notification);
+  EXPECT_LT(bottom_with_tray_notification, bottom_with_notification);
 
   // Close the system tray notifications.
   GetSystemTray()->HideNotificationView(test_item);
   EXPECT_TRUE(GetTray()->IsPopupVisible());
-  EXPECT_EQ(work_area.ToString(), GetPopupWorkArea().ToString());
+  EXPECT_EQ(bottom, GetPopupWorkAreaBottom());
 }
 
 TEST_F(WebNotificationTrayTest, MAYBE_PopupAndAutoHideShelf) {
   AddNotification("test_id");
   EXPECT_TRUE(GetTray()->IsPopupVisible());
-  gfx::Rect work_area = GetPopupWorkArea();
+  int bottom = GetPopupWorkAreaBottom();
 
   // Shelf's auto-hide state won't be HIDDEN unless window exists.
   scoped_ptr<aura::Window> window(
@@ -366,14 +363,14 @@ TEST_F(WebNotificationTrayTest, MAYBE_PopupAndAutoHideShelf) {
   shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
 
   EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->auto_hide_state());
-  gfx::Rect work_area_auto_hidden = GetPopupWorkArea();
-  EXPECT_LT(work_area.size().GetArea(), work_area_auto_hidden.size().GetArea());
+  int bottom_auto_hidden = GetPopupWorkAreaBottom();
+  EXPECT_LT(bottom, bottom_auto_hidden);
 
   // Close the window, which shows the shelf.
   window.reset();
   EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->auto_hide_state());
-  gfx::Rect work_area_auto_shown = GetPopupWorkArea();
-  EXPECT_EQ(work_area.ToString(), work_area_auto_shown.ToString());
+  int bottom_auto_shown = GetPopupWorkAreaBottom();
+  EXPECT_EQ(bottom, bottom_auto_shown);
 
   // Create the system tray during auto-hide.
   window.reset(CreateTestWindowInShellWithBounds(gfx::Rect(1, 2, 3, 4)));
@@ -383,42 +380,38 @@ TEST_F(WebNotificationTrayTest, MAYBE_PopupAndAutoHideShelf) {
 
   EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->auto_hide_state());
   EXPECT_TRUE(GetTray()->IsPopupVisible());
-  gfx::Rect work_area_with_tray = GetPopupWorkArea();
-  EXPECT_GT(work_area_auto_shown.size().GetArea(),
-            work_area_with_tray.size().GetArea());
+  int bottom_with_tray = GetPopupWorkAreaBottom();
+  EXPECT_GT(bottom_auto_shown, bottom_with_tray);
 
   // Create tray notification.
   GetSystemTray()->ShowNotificationView(test_item);
   EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->auto_hide_state());
-  gfx::Rect work_area_with_tray_notification = GetPopupWorkArea();
-  EXPECT_GT(work_area_with_tray.size().GetArea(),
-            work_area_with_tray_notification.size().GetArea());
+  int bottom_with_tray_notification = GetPopupWorkAreaBottom();
+  EXPECT_GT(bottom_with_tray, bottom_with_tray_notification);
 
   // Close the system tray.
   GetSystemTray()->ClickedOutsideBubble();
   shelf->UpdateAutoHideState();
   RunAllPendingInMessageLoop();
   EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->auto_hide_state());
-  gfx::Rect work_area_hidden_with_tray_notification = GetPopupWorkArea();
-  EXPECT_LT(work_area_with_tray_notification.size().GetArea(),
-            work_area_hidden_with_tray_notification.size().GetArea());
-  EXPECT_GT(work_area_auto_hidden.size().GetArea(),
-            work_area_hidden_with_tray_notification.size().GetArea());
+  int bottom_hidden_with_tray_notification = GetPopupWorkAreaBottom();
+  EXPECT_LT(bottom_with_tray_notification,
+            bottom_hidden_with_tray_notification);
+  EXPECT_GT(bottom_auto_hidden, bottom_hidden_with_tray_notification);
 
   // Close the window again, which shows the shelf.
   window.reset();
   EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->auto_hide_state());
-  gfx::Rect work_area_shown_with_tray_notification = GetPopupWorkArea();
-  EXPECT_GT(work_area_hidden_with_tray_notification.size().GetArea(),
-            work_area_shown_with_tray_notification.size().GetArea());
-  EXPECT_GT(work_area_auto_shown.size().GetArea(),
-            work_area_shown_with_tray_notification.size().GetArea());
+  int bottom_shown_with_tray_notification = GetPopupWorkAreaBottom();
+  EXPECT_GT(bottom_hidden_with_tray_notification,
+            bottom_shown_with_tray_notification);
+  EXPECT_GT(bottom_auto_shown, bottom_shown_with_tray_notification);
 }
 
 TEST_F(WebNotificationTrayTest, MAYBE_PopupAndFullscreen) {
   AddNotification("test_id");
   EXPECT_TRUE(IsPopupVisible());
-  gfx::Rect work_area = GetPopupWorkArea();
+  int bottom = GetPopupWorkAreaBottom();
 
   // Checks the work area for normal auto-hidden state.
   scoped_ptr<aura::Window> window(
@@ -427,7 +420,7 @@ TEST_F(WebNotificationTrayTest, MAYBE_PopupAndFullscreen) {
       Shell::GetPrimaryRootWindowController()->GetShelfLayoutManager();
   shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
   EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->auto_hide_state());
-  gfx::Rect work_area_auto_hidden = GetPopupWorkArea();
+  int bottom_auto_hidden = GetPopupWorkAreaBottom();
   shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_NEVER);
 
   // Put |window| into fullscreen without forcing the shelf to hide. Currently,
@@ -440,9 +433,8 @@ TEST_F(WebNotificationTrayTest, MAYBE_PopupAndFullscreen) {
   // The work area for auto-hidden status of fullscreen is a bit larger
   // since it doesn't even have the 3-pixel width.
   EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->auto_hide_state());
-  gfx::Rect work_area_fullscreen_hidden = GetPopupWorkArea();
-  EXPECT_EQ(work_area_auto_hidden.ToString(),
-            work_area_fullscreen_hidden.ToString());
+  int bottom_fullscreen_hidden = GetPopupWorkAreaBottom();
+  EXPECT_EQ(bottom_auto_hidden, bottom_fullscreen_hidden);
 
   // Move the mouse cursor at the bottom, which shows the shelf.
   aura::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
@@ -452,27 +444,27 @@ TEST_F(WebNotificationTrayTest, MAYBE_PopupAndFullscreen) {
   generator.MoveMouseTo(bottom_right);
   shelf->UpdateAutoHideStateNow();
   EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->auto_hide_state());
-  EXPECT_EQ(work_area.ToString(), GetPopupWorkArea().ToString());
+  EXPECT_EQ(bottom, GetPopupWorkAreaBottom());
 
-  generator.MoveMouseTo(work_area.CenterPoint());
+  generator.MoveMouseTo(
+      Shell::GetScreen()->GetPrimaryDisplay().bounds().CenterPoint());
   shelf->UpdateAutoHideStateNow();
   EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->auto_hide_state());
-  EXPECT_EQ(work_area_auto_hidden.ToString(), GetPopupWorkArea().ToString());
+  EXPECT_EQ(bottom_auto_hidden, GetPopupWorkAreaBottom());
 }
 
 TEST_F(WebNotificationTrayTest, MAYBE_PopupAndSystemTrayMultiDisplay) {
   UpdateDisplay("800x600,600x400");
 
   AddNotification("test_id");
-  gfx::Rect work_area = GetPopupWorkArea();
-  gfx::Rect work_area_second = GetPopupWorkAreaForTray(GetSecondaryTray());
+  int bottom = GetPopupWorkAreaBottom();
+  int bottom_second = GetPopupWorkAreaBottomForTray(GetSecondaryTray());
 
   // System tray is created on the primary display. The popups in the secondary
   // tray aren't affected.
   GetSystemTray()->ShowDefaultView(BUBBLE_CREATE_NEW);
-  EXPECT_GT(work_area.size().GetArea(), GetPopupWorkArea().size().GetArea());
-  EXPECT_EQ(work_area_second.ToString(),
-            GetPopupWorkAreaForTray(GetSecondaryTray()).ToString());
+  EXPECT_GT(bottom, GetPopupWorkAreaBottom());
+  EXPECT_EQ(bottom_second, GetPopupWorkAreaBottomForTray(GetSecondaryTray()));
 }
 
 }  // namespace ash

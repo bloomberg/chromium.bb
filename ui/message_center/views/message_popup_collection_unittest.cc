@@ -15,6 +15,7 @@
 #include "ui/gfx/display.h"
 #include "ui/gfx/rect.h"
 #include "ui/message_center/fake_message_center.h"
+#include "ui/message_center/views/desktop_popup_alignment_delegate.h"
 #include "ui/message_center/views/toast_contents_view.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/widget/widget.h"
@@ -29,15 +30,14 @@ class MessagePopupCollectionTest : public views::ViewsTestBase {
     views::ViewsTestBase::SetUp();
     MessageCenter::Initialize();
     MessageCenter::Get()->DisableTimersForTest();
+    alignment_delegate_.reset(new DesktopPopupAlignmentDelegate);
     collection_.reset(new MessagePopupCollection(
-        GetContext(), MessageCenter::Get(), NULL, false));
+        GetContext(), MessageCenter::Get(), NULL, alignment_delegate_.get()));
     // This size fits test machines resolution and also can keep a few toasts
     // w/o ill effects of hitting the screen overflow. This allows us to assume
     // and verify normal layout of the toast stack.
-    collection_->SetDisplayInfo(gfx::Rect(0, 0, 600, 390),
-                                gfx::Rect(0, 0, 600, 400));  // Simulate a
-                                                             // taskbar at the
-                                                             // bottom.
+    SetDisplayInfo(gfx::Rect(0, 0, 600, 390),  // taskbar at the bottom.
+                   gfx::Rect(0, 0, 600, 400));
     id_ = 0;
     PrepareForWait();
   }
@@ -68,8 +68,17 @@ class MessagePopupCollectionTest : public views::ViewsTestBase {
     return collection_->GetWidgetForTest(id);
   }
 
+  void SetDisplayInfo(const gfx::Rect& work_area,
+                      const gfx::Rect& display_bounds) {
+    gfx::Display dummy_display;
+    dummy_display.set_bounds(display_bounds);
+    dummy_display.set_work_area(work_area);
+    alignment_delegate_->RecomputeAlignment(dummy_display);
+    PrepareForWait();
+  }
+
   gfx::Rect GetWorkArea() {
-    return collection_->work_area_;
+    return alignment_delegate_->work_area_;
   }
 
   ToastContentsView* GetToast(const std::string& id) {
@@ -118,6 +127,7 @@ class MessagePopupCollectionTest : public views::ViewsTestBase {
 
  private:
   scoped_ptr<MessagePopupCollection> collection_;
+  scoped_ptr<DesktopPopupAlignmentDelegate> alignment_delegate_;
   int id_;
 };
 
@@ -201,8 +211,8 @@ TEST_F(MessagePopupCollectionTest, DefaultPositioningWithRightTaskbar) {
   // If taskbar is on the right we show the toasts bottom to top as usual.
 
   // Simulate a taskbar at the right.
-  collection()->SetDisplayInfo(gfx::Rect(0, 0, 590, 400),   // Work-area.
-                               gfx::Rect(0, 0, 600, 400));  // Display-bounds.
+  SetDisplayInfo(gfx::Rect(0, 0, 590, 400),   // Work-area.
+                 gfx::Rect(0, 0, 600, 400));  // Display-bounds.
   std::string id0 = AddNotification();
   std::string id1 = AddNotification();
   WaitForTransitionsDone();
@@ -223,14 +233,14 @@ TEST_F(MessagePopupCollectionTest, DefaultPositioningWithRightTaskbar) {
   EXPECT_EQ(0u, GetToastCounts());
 
   // Restore simulated taskbar position to bottom.
-  collection()->SetDisplayInfo(gfx::Rect(0, 0, 600, 390),  // Work-area.
-                               gfx::Rect(0, 0, 600, 400)); // Display-bounds.
+  SetDisplayInfo(gfx::Rect(0, 0, 600, 390),  // Work-area.
+                 gfx::Rect(0, 0, 600, 400)); // Display-bounds.
 }
 
 TEST_F(MessagePopupCollectionTest, TopDownPositioningWithTopTaskbar) {
   // Simulate a taskbar at the top.
-  collection()->SetDisplayInfo(gfx::Rect(0, 10, 600, 390),  // Work-area.
-                               gfx::Rect(0, 0, 600, 400));  // Display-bounds.
+  SetDisplayInfo(gfx::Rect(0, 10, 600, 390),  // Work-area.
+                 gfx::Rect(0, 0, 600, 400));  // Display-bounds.
   std::string id0 = AddNotification();
   std::string id1 = AddNotification();
   WaitForTransitionsDone();
@@ -251,8 +261,8 @@ TEST_F(MessagePopupCollectionTest, TopDownPositioningWithTopTaskbar) {
   EXPECT_EQ(0u, GetToastCounts());
 
   // Restore simulated taskbar position to bottom.
-  collection()->SetDisplayInfo(gfx::Rect(0, 0, 600, 390),   // Work-area.
-                               gfx::Rect(0, 0, 600, 400));  // Display-bounds.
+  SetDisplayInfo(gfx::Rect(0, 0, 600, 390),   // Work-area.
+                 gfx::Rect(0, 0, 600, 400));  // Display-bounds.
 }
 
 TEST_F(MessagePopupCollectionTest, TopDownPositioningWithLeftAndTopTaskbar) {
@@ -260,8 +270,8 @@ TEST_F(MessagePopupCollectionTest, TopDownPositioningWithLeftAndTopTaskbar) {
   // assumed that the actual taskbar is the top one.
 
   // Simulate a taskbar at the top and left.
-  collection()->SetDisplayInfo(gfx::Rect(10, 10, 590, 390),  // Work-area.
-                               gfx::Rect(0, 0, 600, 400));   // Display-bounds.
+  SetDisplayInfo(gfx::Rect(10, 10, 590, 390),  // Work-area.
+                 gfx::Rect(0, 0, 600, 400));   // Display-bounds.
   std::string id0 = AddNotification();
   std::string id1 = AddNotification();
   WaitForTransitionsDone();
@@ -282,8 +292,8 @@ TEST_F(MessagePopupCollectionTest, TopDownPositioningWithLeftAndTopTaskbar) {
   EXPECT_EQ(0u, GetToastCounts());
 
   // Restore simulated taskbar position to bottom.
-  collection()->SetDisplayInfo(gfx::Rect(0, 0, 600, 390),   // Work-area.
-                               gfx::Rect(0, 0, 600, 400));  // Display-bounds.
+  SetDisplayInfo(gfx::Rect(0, 0, 600, 390),   // Work-area.
+                 gfx::Rect(0, 0, 600, 400));  // Display-bounds.
 }
 
 TEST_F(MessagePopupCollectionTest, TopDownPositioningWithBottomAndTopTaskbar) {
@@ -291,8 +301,8 @@ TEST_F(MessagePopupCollectionTest, TopDownPositioningWithBottomAndTopTaskbar) {
   // assumed that the actual taskbar is the top one.
 
   // Simulate a taskbar at the top and bottom.
-  collection()->SetDisplayInfo(gfx::Rect(0, 10, 580, 400),  // Work-area.
-                               gfx::Rect(0, 0, 600, 400));  // Display-bounds.
+  SetDisplayInfo(gfx::Rect(0, 10, 580, 400),  // Work-area.
+                 gfx::Rect(0, 0, 600, 400));  // Display-bounds.
   std::string id0 = AddNotification();
   std::string id1 = AddNotification();
   WaitForTransitionsDone();
@@ -313,14 +323,14 @@ TEST_F(MessagePopupCollectionTest, TopDownPositioningWithBottomAndTopTaskbar) {
   EXPECT_EQ(0u, GetToastCounts());
 
   // Restore simulated taskbar position to bottom.
-  collection()->SetDisplayInfo(gfx::Rect(0, 0, 600, 390),   // Work-area.
-                               gfx::Rect(0, 0, 600, 400));  // Display-bounds.
+  SetDisplayInfo(gfx::Rect(0, 0, 600, 390),   // Work-area.
+                 gfx::Rect(0, 0, 600, 400));  // Display-bounds.
 }
 
 TEST_F(MessagePopupCollectionTest, LeftPositioningWithLeftTaskbar) {
   // Simulate a taskbar at the left.
-  collection()->SetDisplayInfo(gfx::Rect(10, 0, 590, 400),  // Work-area.
-                               gfx::Rect(0, 0, 600, 400));  // Display-bounds.
+  SetDisplayInfo(gfx::Rect(10, 0, 590, 400),  // Work-area.
+                 gfx::Rect(0, 0, 600, 400));  // Display-bounds.
   std::string id0 = AddNotification();
   std::string id1 = AddNotification();
   WaitForTransitionsDone();
@@ -344,8 +354,8 @@ TEST_F(MessagePopupCollectionTest, LeftPositioningWithLeftTaskbar) {
   EXPECT_EQ(0u, GetToastCounts());
 
   // Restore simulated taskbar position to bottom.
-  collection()->SetDisplayInfo(gfx::Rect(0, 0, 600, 390),   // Work-area.
-                               gfx::Rect(0, 0, 600, 400));  // Display-bounds.
+  SetDisplayInfo(gfx::Rect(0, 0, 600, 390),   // Work-area.
+                 gfx::Rect(0, 0, 600, 400));  // Display-bounds.
 }
 
 TEST_F(MessagePopupCollectionTest, DetectMouseHover) {

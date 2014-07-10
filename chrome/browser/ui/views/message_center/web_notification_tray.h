@@ -38,6 +38,7 @@ namespace message_center {
 
 struct PositionInfo;
 
+class DesktopPopupAlignmentDelegate;
 class MessageCenterWidgetDelegate;
 
 // A MessageCenterTrayDelegate implementation that exposes the MessageCenterTray
@@ -113,6 +114,7 @@ class WebNotificationTray : public message_center::MessageCenterTrayDelegate,
 
   MessageCenterWidgetDelegate* message_center_delegate_;
   scoped_ptr<message_center::MessagePopupCollection> popup_collection_;
+  scoped_ptr<message_center::DesktopPopupAlignmentDelegate> alignment_delegate_;
 
   StatusIcon* status_icon_;
   StatusIconMenuModel* status_icon_menu_;

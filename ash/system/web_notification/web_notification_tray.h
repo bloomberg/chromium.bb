@@ -41,7 +41,7 @@ namespace ash {
 class StatusAreaWidget;
 class WebNotificationBubbleWrapper;
 class WebNotificationButton;
-class WorkAreaObserver;
+class AshPopupAlignmentDelegate;
 
 class ASH_EXPORT WebNotificationTray
     : public TrayBackgroundView,
@@ -175,8 +175,7 @@ class ASH_EXPORT WebNotificationTray
   // flickers of the shelf from hidden to shown. See: crbug.com/181213
   bool should_block_shelf_auto_hide_;
 
-  // Observes the work area for |popup_collection_| and notifies to it.
-  scoped_ptr<WorkAreaObserver> work_area_observer_;
+  scoped_ptr<AshPopupAlignmentDelegate> popup_alignment_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(WebNotificationTray);
 };

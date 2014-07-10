@@ -47,6 +47,7 @@ class ShelfLayoutManagerTest;
 class ShelfWidget;
 class StatusAreaWidget;
 class WorkspaceController;
+FORWARD_DECLARE_TEST(AshPopupAlignmentDelegateTest, AutoHide);
 FORWARD_DECLARE_TEST(WebNotificationTrayTest, PopupAndFullscreen);
 
 // ShelfLayoutManager is the layout manager responsible for the shelf and
@@ -226,6 +227,7 @@ class ASH_EXPORT ShelfLayoutManager :
   friend class ash::ScreenAsh;
   friend class PanelLayoutManagerTest;
   friend class ShelfLayoutManagerTest;
+  FRIEND_TEST_ALL_PREFIXES(ash::AshPopupAlignmentDelegateTest, AutoHide);
   FRIEND_TEST_ALL_PREFIXES(ash::WebNotificationTrayTest, PopupAndFullscreen);
 
   struct TargetBounds {
