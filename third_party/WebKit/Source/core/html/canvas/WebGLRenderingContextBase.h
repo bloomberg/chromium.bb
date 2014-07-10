@@ -895,8 +895,7 @@ protected:
     static Vector<WebGLRenderingContextBase*>& forciblyEvictedContexts();
 
     static void activateContext(WebGLRenderingContextBase*);
-    static void deactivateContext(WebGLRenderingContextBase*);
-    static void addToEvictedList(WebGLRenderingContextBase*);
+    static void deactivateContext(WebGLRenderingContextBase*, bool addToInactiveList);
     static void willDestroyContext(WebGLRenderingContextBase*);
     static void forciblyLoseOldestContext(const String& reason);
     // Return the least recently used context's position in the active context vector.
