@@ -8,7 +8,6 @@
 #include <string>
 #include <vector>
 
-#include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_vector.h"
 #include "base/observer_list.h"
@@ -54,17 +53,13 @@ class BluetoothTaskManagerWin
   struct DeviceState {
     DeviceState();
     ~DeviceState();
-    // Properties common to Bluetooth Radio and LE devices.
     std::string name;
     std::string address;
+    uint32 bluetooth_class;
     bool visible;
     bool connected;
     bool authenticated;
     ScopedVector<ServiceRecordState> service_record_states;
-    // Properties specific to Bluetooth Radio devices.
-    uint32 bluetooth_class;
-    // Properties specific to Bluetooth LE devices.
-    base::FilePath path;
   };
 
   class Observer {

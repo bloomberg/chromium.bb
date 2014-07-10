@@ -113,8 +113,6 @@ struct BluetoothLowEnergyDeviceInfo {
   std::string id;
   std::string friendly_name;
   BLUETOOTH_ADDRESS address;
-  bool visible;
-  bool authenticated;
   bool connected;
 };
 
