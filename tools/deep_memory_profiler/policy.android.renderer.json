@@ -39,7 +39,6 @@
     "mmap-catch-all",
     "tc-webcore-fontcache",
     "tc-skia",
-    "tc-renderobject",
     "tc-renderstyle",
     "tc-webcore-sharedbuf",
     "tc-webcore-XHRcreate",
@@ -285,11 +284,6 @@
     {
       "name": "tc-skia",
       "stacktrace": ".* Sk[A-Za-z_]+::.*",
-      "allocator": "malloc"
-    },
-    {
-      "name": "tc-renderobject",
-      "stacktrace": ".*WebCore::RenderArena::allocate.*",
       "allocator": "malloc"
     },
     {

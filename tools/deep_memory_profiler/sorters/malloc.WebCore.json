@@ -6,10 +6,6 @@
   "order": {},
   "rules": [
     {
-      "name": "RenderArena",
-      "backtrace_function": ".*WebCore::RenderArena::allocate.*"
-    },
-    {
       "name": "RenderStyle",
       "backtrace_function": ".*WebCore::RenderStyle::(create|clone).*"
     },

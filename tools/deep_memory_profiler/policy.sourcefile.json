@@ -123,7 +123,7 @@
     },
     {
       "name": "tc-webcore",
-      "stacksourcefile": ".*\\.\\./\\.\\./third_party/WebKit/Source/WebCore/.*",
+      "stacksourcefile": ".*\\.\\./\\.\\./third_party/WebKit/Source/core/.*",
       "allocator": "malloc"
     },
     {

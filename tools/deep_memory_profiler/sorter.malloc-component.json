@@ -7,7 +7,6 @@
     "preset1": [
       "tc-webcore-fontcache",
       "tc-skia",
-      "tc-renderobject",
       "tc-renderstyle",
       "tc-webcore-sharedbuf",
       "tc-webcore-XHRcreate",
@@ -48,10 +47,6 @@
     {
       "name": "tc-skia",
       "backtrace_function": ".* Sk[A-Za-z_]+::.*"
-    },
-    {
-      "name": "tc-renderobject",
-      "backtrace_function": ".*WebCore::RenderArena::allocate.*"
     },
     {
       "name": "tc-renderstyle",
