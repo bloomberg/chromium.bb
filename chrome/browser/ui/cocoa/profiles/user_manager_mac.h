@@ -12,7 +12,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_window.h"
 
-class UserManagerMac;
 @class UserManagerWindowController;
 
 namespace content {

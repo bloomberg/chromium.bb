@@ -4,10 +4,15 @@
 
 #include "chrome/browser/ui/cocoa/profiles/user_manager_mac.h"
 
+#include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser_dialogs.h"
+#import "chrome/browser/ui/cocoa/browser_window_utils.h"
+#include "chrome/browser/ui/cocoa/chrome_event_processing_window.h"
+#include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_delegate.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
@@ -36,10 +41,40 @@ void HideUserManager() {
 
 }  // namespace chrome
 
+// Custom WebContentsDelegate that allows handling of hotkeys.
+class UserManagerWebContentsDelegate : public content::WebContentsDelegate {
+ public:
+  UserManagerWebContentsDelegate(ChromeEventProcessingWindow* window)
+    : window_(window) {}
+
+  // WebContentsDelegate implementation. Forwards all unhandled keyboard events
+  // to the current window.
+  virtual void HandleKeyboardEvent(
+      content::WebContents* source,
+      const content::NativeWebKeyboardEvent& event) OVERRIDE {
+    if (![BrowserWindowUtils shouldHandleKeyboardEvent:event])
+      return;
+
+    int commandId = [BrowserWindowUtils getCommandId:event];
+
+    // Since the User Manager is a "top level" window, only handle close events.
+    if (commandId == IDC_CLOSE_WINDOW || commandId == IDC_EXIT) {
+      // Not invoking +[BrowserWindowUtils handleKeyboardEvent here], since the
+      // window in question is a ConstrainedWindowCustomWindow, not a
+      // BrowserWindow.
+      [window_ redispatchKeyEvent:event.os_event];
+    }
+  }
+
+ private:
+  ChromeEventProcessingWindow* window_;  // Used to redispatch key events.
+};
+
 // Window controller for the User Manager view.
 @interface UserManagerWindowController : NSWindowController <NSWindowDelegate> {
  @private
   scoped_ptr<content::WebContents> webContents_;
+  scoped_ptr<UserManagerWebContentsDelegate> webContentsDelegate_;
   UserManagerMac* userManagerObserver_;  // Weak.
 }
 - (void)windowWillClose:(NSNotification*)notification;
@@ -66,7 +101,7 @@ void HideUserManager() {
   NSRect contentRect = NSMakeRect((screenWidth - kWindowWidth) / 2,
                                   (screenHeight - kWindowHeight) / 2,
                                   kWindowWidth, kWindowHeight);
-  NSWindow* window = [[NSWindow alloc]
+  ChromeEventProcessingWindow* window = [[ChromeEventProcessingWindow alloc]
       initWithContentRect:contentRect
                 styleMask:NSTitledWindowMask |
                           NSClosableWindowMask |
@@ -83,6 +118,8 @@ void HideUserManager() {
     webContents_.reset(content::WebContents::Create(
         content::WebContents::CreateParams(profile)));
     window.contentView = webContents_->GetNativeView();
+    webContentsDelegate_.reset(new UserManagerWebContentsDelegate(window));
+    webContents_->SetDelegate(webContentsDelegate_.get());
     DCHECK(window.contentView);
 
     [[NSNotificationCenter defaultCenter]
