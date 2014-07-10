@@ -502,7 +502,7 @@ crbug.com/377696 printing/setPrinting.html [ Skip ]
 crbug.com/377696 printing/width-overflow.html [ Skip ]
 
 # Test changes due to disabling SVG Fonts on non-GDI platforms.
-crbug.com/242735 [ XP ] svg/custom/svg-font-support.html [ Failure ]
+crbug.com/242735 [ XP ] svg/custom/svg-font-support.html [ ImageOnlyFailure ]
 
 # Reftests that needs investigation.
 crbug.com/378610 [ Win7 ] css3/flexbox/auto-margins.html [ ImageOnlyFailure ]
