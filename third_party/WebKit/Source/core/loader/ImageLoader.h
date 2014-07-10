@@ -34,6 +34,8 @@
 namespace WebCore {
 
 class IncrementLoadEventDelayCount;
+class FetchRequest;
+class Document;
 
 class ImageLoaderClient : public WillBeGarbageCollectedMixin {
 public:
@@ -76,6 +78,11 @@ public:
         UpdateIgnorePreviousError
     };
 
+    enum BypassMainWorldBehavior {
+        BypassMainWorldCSP,
+        DoNotBypassMainWorldCSP
+    };
+
     void updateFromElement(UpdateFromElementBehavior = UpdateNormal, LoadType = LoadNormally);
 
     void elementDidMoveToNewDocument();
@@ -89,7 +96,7 @@ public:
     ImageResource* image() const { return m_image.get(); }
     void setImage(ImageResource*); // Cancels pending load events, and doesn't dispatch new ones.
 
-    void setLoadManually(bool loadManually) { m_loadManually = loadManually; }
+    void setLoadingImageDocument() { m_loadingImageDocument = true; }
 
     bool hasPendingActivity() const
     {
@@ -111,7 +118,7 @@ private:
     class Task;
 
     // Called from the task or from updateFromElement to initiate the load.
-    void doUpdateFromElement(bool bypassMainWorldCSP = false);
+    void doUpdateFromElement(BypassMainWorldBehavior);
 
     virtual void dispatchLoadEvent() = 0;
     virtual String sourceURI(const AtomicString&) const = 0;
@@ -127,14 +134,17 @@ private:
     void setImageWithoutConsideringPendingLoadEvent(ImageResource*);
     void sourceImageChanged();
     void clearFailedLoadURL();
+    void crossSiteOrCSPViolationOccured(AtomicString);
+    void enqueueImageLoadingMicroTask();
+    static ResourcePtr<ImageResource> createImageResourceForImageDocument(Document&, FetchRequest&);
 
     void timerFired(Timer<ImageLoader>*);
 
-    KURL imageURL() const;
+    KURL imageSourceToKURL(AtomicString) const;
 
     // Used to determine whether to immediately initiate the load
     // or to schedule a microtask.
-    bool shouldLoadImmediately(const KURL&) const;
+    bool shouldLoadImmediately(const KURL&, LoadType) const;
 
     void willRemoveClient(ImageLoaderClient&);
 
@@ -168,11 +178,11 @@ private:
     Timer<ImageLoader> m_derefElementTimer;
     AtomicString m_failedLoadURL;
     WeakPtr<Task> m_pendingTask; // owned by Microtask
-    OwnPtr<IncrementLoadEventDelayCount> m_delayLoad;
+    OwnPtr<IncrementLoadEventDelayCount> m_loadDelayCounter;
     bool m_hasPendingLoadEvent : 1;
     bool m_hasPendingErrorEvent : 1;
     bool m_imageComplete : 1;
-    bool m_loadManually : 1;
+    bool m_loadingImageDocument : 1;
     bool m_elementIsProtected : 1;
     unsigned m_highPriorityClientCount;
 };

@@ -60,7 +60,7 @@ public:
     ImageResource* cachedImage() const { return imageLoader().image(); }
     void setImageResource(ImageResource* i) { imageLoader().setImage(i); };
 
-    void setLoadManually(bool loadManually) { imageLoader().setLoadManually(loadManually); }
+    void setLoadingImageDocument() { imageLoader().setLoadingImageDocument(); }
 
     void setHeight(int);
 

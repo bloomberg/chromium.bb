@@ -199,7 +199,7 @@ void ImageDocument::createDocumentStructure()
 
     m_imageElement = HTMLImageElement::create(*this);
     m_imageElement->setAttribute(styleAttr, "-webkit-user-select: none");
-    m_imageElement->setLoadManually(true);
+    m_imageElement->setLoadingImageDocument();
     m_imageElement->setSrc(url().string());
     body->appendChild(m_imageElement.get());
 

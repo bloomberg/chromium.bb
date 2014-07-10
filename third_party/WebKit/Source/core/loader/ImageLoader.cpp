@@ -60,15 +60,28 @@ static inline bool pageIsBeingDismissed(Document* document)
     return document->pageDismissalEventBeingDispatched() != Document::NoDismissal;
 }
 
+static ImageLoader::BypassMainWorldBehavior shouldBypassMainWorldCSP(ImageLoader* loader)
+{
+    ASSERT(loader);
+    ASSERT(loader->element());
+    ASSERT(loader->element()->document().frame());
+    if (loader->element()->document().frame()->script().shouldBypassMainWorldCSP())
+        return ImageLoader::BypassMainWorldCSP;
+    return ImageLoader::DoNotBypassMainWorldCSP;
+}
+
 class ImageLoader::Task : public blink::WebThread::Task {
 public:
+    static PassOwnPtrWillBeRawPtr<Task> create(ImageLoader* loader)
+    {
+        return adoptPtr(new Task(loader));
+    }
+
     Task(ImageLoader* loader)
         : m_loader(loader)
-        , m_shouldBypassMainWorldCSP(false)
+        , m_shouldBypassMainWorldCSP(shouldBypassMainWorldCSP(loader))
         , m_weakFactory(this)
     {
-        LocalFrame* frame = loader->m_element->document().frame();
-        m_shouldBypassMainWorldCSP = frame->script().shouldBypassMainWorldCSP();
     }
 
     virtual void run() OVERRIDE
@@ -90,7 +103,7 @@ public:
 
 private:
     ImageLoader* m_loader;
-    bool m_shouldBypassMainWorldCSP;
+    BypassMainWorldBehavior m_shouldBypassMainWorldCSP;
     WeakPtrFactory<Task> m_weakFactory;
 };
 
@@ -101,7 +114,7 @@ ImageLoader::ImageLoader(Element* element)
     , m_hasPendingLoadEvent(false)
     , m_hasPendingErrorEvent(false)
     , m_imageComplete(true)
-    , m_loadManually(false)
+    , m_loadingImageDocument(false)
     , m_elementIsProtected(false)
     , m_highPriorityClientCount(0)
 {
@@ -164,23 +177,63 @@ void ImageLoader::setImageWithoutConsideringPendingLoadEvent(ImageResource* newI
         imageResource->resetAnimation();
 }
 
-void ImageLoader::doUpdateFromElement(bool bypassMainWorldCSP)
+static void configureRequest(FetchRequest& request, ImageLoader::BypassMainWorldBehavior bypassBehavior, Element& element)
+{
+    if (bypassBehavior == ImageLoader::BypassMainWorldCSP)
+        request.setContentSecurityCheck(DoNotCheckContentSecurityPolicy);
+
+    AtomicString crossOriginMode = element.fastGetAttribute(HTMLNames::crossoriginAttr);
+    if (!crossOriginMode.isNull())
+        request.setCrossOriginAccessControl(element.document().securityOrigin(), crossOriginMode);
+}
+
+ResourcePtr<ImageResource> ImageLoader::createImageResourceForImageDocument(Document& document, FetchRequest& request)
+{
+    bool autoLoadOtherImages = document.fetcher()->autoLoadImages();
+    document.fetcher()->setAutoLoadImages(false);
+    ResourcePtr<ImageResource> newImage = new ImageResource(request.resourceRequest());
+    newImage->setLoading(true);
+    document.fetcher()->m_documentResources.set(newImage->url(), newImage.get());
+    document.fetcher()->setAutoLoadImages(autoLoadOtherImages);
+    return newImage;
+}
+
+inline void ImageLoader::crossSiteOrCSPViolationOccured(AtomicString imageSourceURL)
+{
+    m_failedLoadURL = imageSourceURL;
+    m_hasPendingErrorEvent = true;
+    errorEventSender().dispatchEventSoon(this);
+}
+
+inline void ImageLoader::clearFailedLoadURL()
+{
+    m_failedLoadURL = AtomicString();
+}
+
+inline void ImageLoader::enqueueImageLoadingMicroTask()
+{
+    OwnPtr<Task> task = Task::create(this);
+    m_pendingTask = task->createWeakPtr();
+    Microtask::enqueueMicrotask(task.release());
+    m_loadDelayCounter = IncrementLoadEventDelayCount::create(m_element->document());
+}
+
+void ImageLoader::doUpdateFromElement(BypassMainWorldBehavior bypassBehavior)
 {
     // We don't need to call clearLoader here: Either we were called from the
     // task, or our caller updateFromElement cleared the task's loader (and set
     // m_pendingTask to null).
     m_pendingTask.clear();
     // Make sure to only decrement the count when we exit this function
-    OwnPtr<IncrementLoadEventDelayCount> delayLoad;
-    delayLoad.swap(m_delayLoad);
+    OwnPtr<IncrementLoadEventDelayCount> loadDelayCounter;
+    loadDelayCounter.swap(m_loadDelayCounter);
 
     Document& document = m_element->document();
     if (!document.isActive())
         return;
 
-    AtomicString attr = m_element->imageSourceURL();
-
-    KURL url = imageURL();
+    AtomicString imageSourceURL = m_element->imageSourceURL();
+    KURL url = imageSourceToKURL(imageSourceURL);
     ResourcePtr<ImageResource> newImage = 0;
     if (!url.isNull()) {
         // Unlike raw <img>, we block mixed content inside of <picture> or <img srcset>.
@@ -188,36 +241,19 @@ void ImageLoader::doUpdateFromElement(bool bypassMainWorldCSP)
         if (isHTMLPictureElement(element()->parentNode()) || !element()->fastGetAttribute(HTMLNames::srcsetAttr).isEmpty())
             resourceLoaderOptions.mixedContentBlockingTreatment = TreatAsActiveContent;
         FetchRequest request(ResourceRequest(url), element()->localName(), resourceLoaderOptions);
-        if (bypassMainWorldCSP)
-            request.setContentSecurityCheck(DoNotCheckContentSecurityPolicy);
+        configureRequest(request, bypassBehavior, *m_element);
 
-        AtomicString crossOriginMode = m_element->fastGetAttribute(HTMLNames::crossoriginAttr);
-        if (!crossOriginMode.isNull())
-            request.setCrossOriginAccessControl(document.securityOrigin(), crossOriginMode);
-
-        if (m_loadManually) {
-            bool autoLoadOtherImages = document.fetcher()->autoLoadImages();
-            document.fetcher()->setAutoLoadImages(false);
-            newImage = new ImageResource(request.resourceRequest());
-            newImage->setLoading(true);
-            document.fetcher()->m_documentResources.set(newImage->url(), newImage.get());
-            document.fetcher()->setAutoLoadImages(autoLoadOtherImages);
-        } else {
+        if (m_loadingImageDocument)
+            newImage = createImageResourceForImageDocument(document, request);
+        else
             newImage = document.fetcher()->fetchImage(request);
-        }
 
-        // If we do not have an image here, it means that a cross-site
-        // violation occurred, or that the image was blocked via Content
-        // Security Policy, or the page is being dismissed. Trigger an
-        // error event if the page is not being dismissed.
-        if (!newImage && !pageIsBeingDismissed(&document)) {
-            m_failedLoadURL = attr;
-            m_hasPendingErrorEvent = true;
-            errorEventSender().dispatchEventSoon(this);
-        } else
+        if (!newImage && !pageIsBeingDismissed(&document))
+            crossSiteOrCSPViolationOccured(imageSourceURL);
+        else
             clearFailedLoadURL();
-    } else if (!attr.isNull()) {
-        // Fire an error event if the url is empty.
+    } else if (!imageSourceURL.isNull()) {
+        // Fire an error event if the url string is not empty, but the KURL is.
         m_hasPendingErrorEvent = true;
         errorEventSender().dispatchEventSoon(this);
     }
@@ -244,16 +280,11 @@ void ImageLoader::doUpdateFromElement(bool bypassMainWorldCSP)
         m_hasPendingLoadEvent = newImage;
         m_imageComplete = !newImage;
 
-        if (newImage) {
-            updateRenderer();
-
-            // If newImage is cached, addClient() will result in the load event
-            // being queued to fire. Ensure this happens after beforeload is
-            // dispatched.
+        updateRenderer();
+        // If newImage exists and is cached, addClient() will result in the load event
+        // being queued to fire. Ensure this happens after beforeload is dispatched.
+        if (newImage)
             newImage->addClient(this);
-        } else {
-            updateRenderer();
-        }
 
         if (oldImage)
             oldImage->removeClient(this);
@@ -269,12 +300,12 @@ void ImageLoader::doUpdateFromElement(bool bypassMainWorldCSP)
 
 void ImageLoader::updateFromElement(UpdateFromElementBehavior behavior, LoadType loadType)
 {
-    AtomicString attr = m_element->imageSourceURL();
+    AtomicString imageSourceURL = m_element->imageSourceURL();
 
     if (behavior == UpdateIgnorePreviousError)
         clearFailedLoadURL();
 
-    if (!m_failedLoadURL.isEmpty() && attr == m_failedLoadURL)
+    if (!m_failedLoadURL.isEmpty() && imageSourceURL == m_failedLoadURL)
         return;
 
     // If we have a pending task, we have to clear it -- either we're
@@ -284,24 +315,15 @@ void ImageLoader::updateFromElement(UpdateFromElementBehavior behavior, LoadType
         m_pendingTask.clear();
     }
 
-    KURL url = imageURL();
-    if (!attr.isNull() && !url.isNull()) {
-        bool loadImmediately = shouldLoadImmediately(url) || (loadType == ForceLoadImmediately);
-        if (loadImmediately) {
-            doUpdateFromElement(false);
-        } else {
-            OwnPtr<Task> task = adoptPtr(new Task(this));
-            m_pendingTask = task->createWeakPtr();
-            Microtask::enqueueMicrotask(task.release());
-            m_delayLoad = adoptPtr(new IncrementLoadEventDelayCount(m_element->document()));
-            return;
-        }
-    } else {
-        doUpdateFromElement(false);
+    KURL url = imageSourceToKURL(imageSourceURL);
+    if (imageSourceURL.isNull() || url.isNull() || shouldLoadImmediately(url, loadType)) {
+        doUpdateFromElement(DoNotBypassMainWorldCSP);
+        return;
     }
+    enqueueImageLoadingMicroTask();
 }
 
-KURL ImageLoader::imageURL() const
+KURL ImageLoader::imageSourceToKURL(AtomicString imageSourceURL) const
 {
     KURL url;
 
@@ -311,28 +333,21 @@ KURL ImageLoader::imageURL() const
     if (!document.isActive())
         return url;
 
-    AtomicString attr = m_element->imageSourceURL();
-
     // Do not load any image if the 'src' attribute is missing or if it is
     // an empty string.
-    if (!attr.isNull() && !stripLeadingAndTrailingHTMLSpaces(attr).isEmpty()) {
-        url = document.completeURL(sourceURI(attr));
-    }
+    if (!imageSourceURL.isNull() && !stripLeadingAndTrailingHTMLSpaces(imageSourceURL).isEmpty())
+        url = document.completeURL(sourceURI(imageSourceURL));
     return url;
 }
 
-bool ImageLoader::shouldLoadImmediately(const KURL& url) const
+bool ImageLoader::shouldLoadImmediately(const KURL& url, LoadType loadType) const
 {
-    if (m_loadManually)
-        return true;
-    if (isHTMLObjectElement(m_element) || isHTMLEmbedElement(m_element))
-        return true;
-
-    if (url.protocolIsData())
-        return true;
-    if (memoryCache()->resourceForURL(url))
-        return true;
-    return false;
+    return (m_loadingImageDocument
+        || isHTMLObjectElement(m_element)
+        || isHTMLEmbedElement(m_element)
+        || url.protocolIsData()
+        || memoryCache()->resourceForURL(url)
+        || loadType == ForceLoadImmediately);
 }
 
 void ImageLoader::notifyFinished(Resource* resource)
@@ -511,9 +526,8 @@ void ImageLoader::dispatchPendingErrorEvents()
 
 void ImageLoader::elementDidMoveToNewDocument()
 {
-    if (m_delayLoad) {
-        m_delayLoad->documentChanged(m_element->document());
-    }
+    if (m_loadDelayCounter)
+        m_loadDelayCounter->documentChanged(m_element->document());
     clearFailedLoadURL();
     setImage(0);
 }
@@ -532,11 +546,6 @@ void ImageLoader::sourceImageChanged()
         handle->notifyImageSourceChanged();
     }
 #endif
-}
-
-inline void ImageLoader::clearFailedLoadURL()
-{
-    m_failedLoadURL = AtomicString();
 }
 
 #if ENABLE(OILPAN)

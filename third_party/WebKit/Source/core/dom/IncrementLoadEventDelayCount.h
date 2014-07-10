@@ -19,13 +19,14 @@ class IncrementLoadEventDelayCount {
     WTF_MAKE_NONCOPYABLE(IncrementLoadEventDelayCount);
 
 public:
-    IncrementLoadEventDelayCount(Document&);
+    static PassOwnPtr<IncrementLoadEventDelayCount> create(Document&);
     ~IncrementLoadEventDelayCount();
 
     // Increments the new document's count and decrements the old count.
     void documentChanged(Document& newDocument);
 
 private:
+    IncrementLoadEventDelayCount(Document&);
     RefPtrWillBePersistent<Document> m_document;
 };
 }
