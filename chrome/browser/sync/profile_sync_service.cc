@@ -32,6 +32,7 @@
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/invalidation/profile_invalidation_provider_factory.h"
 #include "chrome/browser/net/chrome_cookie_notification_details.h"
+#include "chrome/browser/prefs/chrome_pref_service_factory.h"
 #include "chrome/browser/prefs/pref_service_syncable.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/services/gcm/gcm_profile_service.h"
@@ -521,11 +522,20 @@ bool ProfileSyncService::ShouldDeleteSyncFolder() {
   if (backend_mode_ == SYNC)
     return !HasSyncSetupCompleted();
 
-  // Start fresh if it's the first time backup after user stopped syncing.
-  // This is needed because backup DB may contain items deleted by user during
-  // sync period and can cause back-from-dead issues.
-  if (backend_mode_ == BACKUP && !sync_prefs_.GetFirstSyncTime().is_null())
-    return true;
+  if (backend_mode_ == BACKUP) {
+    base::Time reset_time = chrome_prefs::GetResetTime(profile_);
+
+    // Start fresh if:
+    // * It's the first time backup after user stopped syncing because backup
+    //   DB may contain items deleted by user during sync period and can cause
+    //   back-from-dead issues if user didn't choose rollback.
+    // * Settings are reset during startup because of tampering to avoid
+    //   restoring settings from backup.
+    if (!sync_prefs_.GetFirstSyncTime().is_null() ||
+        (!reset_time.is_null() && profile_->GetStartTime() <= reset_time)) {
+      return true;
+    }
+  }
 
   return false;
 }
