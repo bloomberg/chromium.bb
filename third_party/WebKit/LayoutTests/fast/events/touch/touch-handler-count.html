@@ -236,20 +236,20 @@ debug("Test that nested Documents' touch handlers are properly tracked in their 
     nestedDocument.open('text/html', 'replace');
     nestedDocument.write('<!DOCTYPE html>\n<script>\nwindow.ontouchstart=function(){};\n</' + 'script>\n' +
         '<div id=twoHandlers ontouchmove="function(){}" ontouchcancel="function(){}"></div>');
-    shouldBe('window.internals.touchEventHandlerCount(nestedDocument)', '3');
-    shouldBe('window.internals.touchEventHandlerCount(document)', '2');
+    shouldBe('window.internals.touchEventHandlerCount(nestedDocument)', '4');
+    shouldBe('window.internals.touchEventHandlerCount(document)', '4');
 
     nestedDocument.write('<script>window.ontouchstart=undefined</' + 'script>\n');
-    shouldBe('window.internals.touchEventHandlerCount(nestedDocument)', '2');
-    shouldBe('window.internals.touchEventHandlerCount(document)', '2');
+    shouldBe('window.internals.touchEventHandlerCount(nestedDocument)', '3');
+    shouldBe('window.internals.touchEventHandlerCount(document)', '3');
 
     nestedDocument.write('<script>document.addEventListener("touchmove", function(){});</' + 'script>\n');
-    shouldBe('window.internals.touchEventHandlerCount(nestedDocument)', '3');
-    shouldBe('window.internals.touchEventHandlerCount(document)', '2');
+    shouldBe('window.internals.touchEventHandlerCount(nestedDocument)', '4');
+    shouldBe('window.internals.touchEventHandlerCount(document)', '4');
     
     nestedDocument.write('<script>document.getElementById("twoHandlers").remove();</' + 'script>\n');
     gc();
-    shouldBe('window.internals.touchEventHandlerCount(nestedDocument)', '1');
+    shouldBe('window.internals.touchEventHandlerCount(nestedDocument)', '2');
     shouldBe('window.internals.touchEventHandlerCount(document)', '2');
     nestedDocument.close();    
 
