@@ -48,12 +48,14 @@ struct CONTENT_EXPORT ServiceWorkerFetchRequest {
   ServiceWorkerFetchRequest(const GURL& url,
                             const std::string& method,
                             const std::map<std::string, std::string>& headers,
+                            const GURL& referrer,
                             bool is_reload);
   ~ServiceWorkerFetchRequest();
 
   GURL url;
   std::string method;
   std::map<std::string, std::string> headers;
+  GURL referrer;
   bool is_reload;
 };
 
