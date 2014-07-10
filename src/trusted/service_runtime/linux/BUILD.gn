@@ -1,0 +1,166 @@
+# Copyright (c) 2014 The Native ClientAuthors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+#  Generated from GYP
+
+if (cpu_arch == "arm") {
+  import("//native_client/build/config/arm.gni")
+}
+
+
+bootstrap_hdr_path = "$root_out_dir/nacl_bootstrap_munge_phdr"
+bootstrap_lib_path = "$target_out_dir/libnacl_bootstrap_lib.a"
+bootstrap_raw_path = "$target_gen_dir/nacl_bootstrap_raw"
+bootstrap_exe_path = "$root_out_dir/nacl_helper_bootstrap"
+
+print(bootstrap_hdr_path)
+print(bootstrap_lib_path)
+
+linker_script_path = rebase_path("nacl_bootstrap.x")
+
+if (cpu_arch=="x64") {
+  nacl_reserve_top = "0x0"
+  linker_emulation = "elf_x86_64"
+}
+if (cpu_arch=="x86") {
+  nacl_reserve_top = "0x40000000"
+  linker_emulation = "elf_i386"
+}
+if (cpu_arch=="arm") {
+  nacl_reserve_top = "0x40002000"
+  linker_emulation = "armelf_linux_eabi"
+}
+if (cpu_arch=="mipsel") {
+  nacl_reserve_top = "0x40008000"
+  linker_emulation = "elf32ltsmip"
+}
+
+if (is_android) {
+  compiler = "g++"
+} else {
+  compiler = "g++"
+}
+
+executable("nacl_bootstrap_munge_phdr") {
+  libs = [
+    "elf"
+  ]
+  sources = [
+    "nacl_bootstrap_munge_phdr.c"
+  ]
+}
+
+static_library("nacl_bootstrap_lib") {
+  configs = []
+  cflags = []
+  ldflags = []
+
+  if (cpu_arch == "x86") {
+    cflags += ["-m32"]
+    ldflags += ["-m32"]
+  }
+  if (cpu_arch == "x64") {
+    cflags += ["-m64"]
+    ldflags += ["-m64"]
+  }
+  if (cpu_arch == "arm") {
+    if (!is_android_webview_build) {
+      cflags += [
+        "-march=$arm_arch",
+        "-mfpu=$arm_fpu",
+        "-mfloat-abi=$arm_float_abi",
+      ]
+      if (arm_tune != "") {
+        cflags += [ "-mtune=$arm_tune" ]
+      }
+      if (arm_use_thumb) {
+        cflags += [ "-mthumb" ]
+        if (is_android && !is_clang) {  # Clang doesn't support this option.
+          cflags += [ "-mthumb-interwork" ]
+        }
+      }
+    }
+  }
+
+  if (!defined(include_dirs)) {
+    include_dirs = []
+  }
+  include_dirs += [
+    "//native_client",
+    "//"
+  ]
+  if (is_clang) {
+    cflags += [
+      "-Qunused-arguments",
+    ]
+  }
+  sources = [
+    "nacl_bootstrap.c",
+  ]
+  cflags += [
+    "-fno-builtin",
+    "-fno-stack-protector",
+    "-fno-pic",
+    "-fno-PIC",
+    "-fno-pie",
+    "-fno-PIE",
+  ]
+}
+
+
+action("nacl_bootstrap_raw") {
+  deps = [
+    ":nacl_bootstrap_lib",
+  ]
+  script = "ld_bfd.py"
+
+
+  sources = [
+    linker_script_path,
+    bootstrap_lib_path
+  ]
+  outputs = [
+    bootstrap_raw_path
+  ]
+  args = [
+    "--compiler", compiler,
+    "-m", linker_emulation,
+    "--build-id",
+    # This program is (almost) entirely
+    # standalone.  It has its own startup code, so
+    # no crt1.o for it.  It is statically linked,
+    # and on x86 it does not use libc at all.
+    # However, on ARM it needs a few (safe) things
+    # from libc.
+    "-static",
+    # Link with custom linker script for special
+    # layout.  The script uses the symbol RESERVE_TOP.
+    "--defsym", "RESERVE_TOP=" + nacl_reserve_top,
+    "--script=" + rebase_path(linker_script_path),
+    "-o", rebase_path(bootstrap_raw_path),
+    # On x86-64, the default page size with some
+    # linkers is 2M rather than the real Linux page
+    # size of 4K.  A larger page size is incompatible
+    # with our custom linker script's special layout.
+    "-z", "max-page-size=0x1000",
+    "--whole-archive", rebase_path(bootstrap_lib_path), "--no-whole-archive"
+  ]
+}
+
+action("nacl_helper_bootstrap") {
+  datadeps = [
+    ":nacl_bootstrap_raw",
+    ":nacl_bootstrap_munge_phdr"
+  ]
+
+  script = "nacl_bootstrap_munge_phdr.py"
+  inputs = [
+    bootstrap_hdr_path,
+    bootstrap_raw_path,
+  ]
+  outputs = [
+    bootstrap_exe_path
+  ]
+  args = rebase_path(inputs + outputs)
+}

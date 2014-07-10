@@ -266,5 +266,10 @@ executable("sel_ldr") {
     libs = ["rt"]
     ldflags = ["-pie"]
   }
+  if (is_linux) {
+    datadeps = [
+      "//native_client/src/trusted/service_runtime/linux:nacl_helper_bootstrap"
+    ]
+  }
 }
 

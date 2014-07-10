@@ -292,8 +292,23 @@ def BuildScript(status, context):
   with Step('medium_tests under IRT', status, halt_on_fail=False):
     SCons(context, mode=context['default_scons_mode'] + ['nacl_irt_test'],
           args=['medium_tests_irt'])
-
   ### END tests ###
+
+  ### BEGIN GN tests ###
+  if gn_path:
+    arch_name = {
+      'arm': 'arm',
+      '32': 'x86',
+      '64': 'x64'
+    }[context['arch']]
+    gn_sel_ldr = '../out/trusted_%s/sel_ldr' % arch_name
+    with Step('small_tests under GN', status, halt_on_fail=False):
+      SCons(context, args=['small_tests', 'force_sel_ldr=' + gn_sel_ldr])
+    with Step('medium_tests under GN', status, halt_on_fail=False):
+      SCons(context, args=['medium_tests', 'force_sel_ldr=' + gn_sel_ldr])
+    with Step('large_tests under GN', status, halt_on_fail=False):
+      SCons(context, args=['large_tests', 'force_sel_ldr=' + gn_sel_ldr])
+  ### END GN tests ###
 
   if not context['no_gyp']:
     # Build with ragel-based validator using GYP.
