@@ -11,6 +11,7 @@ class GURL;
 
 namespace base {
 class CommandLine;
+class Version;
 }
 
 namespace net {
@@ -52,6 +53,21 @@ class Configurator {
   // The url where the completion pings are sent. Invalid if and only if
   // pings are disabled.
   virtual GURL PingUrl() const = 0;
+
+  // Version of the application. Used to compare the component manifests.
+  virtual base::Version GetBrowserVersion() const = 0;
+
+  // Returns the value we use for the "updaterchannel=" and "prodchannel="
+  // parameters. Possible return values include: "canary", "dev", "beta", and
+  // "stable".
+  virtual std::string GetChannel() const = 0;
+
+  // Returns the language for the present locale. Possible return values are
+  // standard tags for languages, such as "en", "en-US", "de", "fr", "af", etc.
+  virtual std::string GetLang() const = 0;
+
+  // Returns the OS's long name like "Windows", "Mac OS X", etc.
+  virtual std::string GetOSLongName() const = 0;
 
   // Parameters added to each url request. It can be empty if none are needed.
   // The return string must be safe for insertion as an attribute in an

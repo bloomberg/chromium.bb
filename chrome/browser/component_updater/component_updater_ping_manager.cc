@@ -40,7 +40,7 @@ class PingSender : public net::URLFetcherDelegate {
  public:
   PingSender();
 
-  void SendPing(const GURL& ping_url,
+  void SendPing(const Configurator& config,
                 net::URLRequestContextGetter* url_request_context_getter,
                 const CrxUpdateItem* item);
 
@@ -50,7 +50,8 @@ class PingSender : public net::URLFetcherDelegate {
   // Overrides for URLFetcherDelegate.
   virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
 
-  static std::string BuildPing(const CrxUpdateItem* item);
+  static std::string BuildPing(const Configurator& config,
+                               const CrxUpdateItem* item);
   static std::string BuildDownloadCompleteEventElements(
       const CrxUpdateItem* item);
   static std::string BuildUpdateCompleteEventElement(const CrxUpdateItem* item);
@@ -71,20 +72,23 @@ void PingSender::OnURLFetchComplete(const net::URLFetcher* source) {
 }
 
 void PingSender::SendPing(
-    const GURL& ping_url,
+    const Configurator& config,
     net::URLRequestContextGetter* url_request_context_getter,
     const CrxUpdateItem* item) {
   DCHECK(item);
 
-  if (!ping_url.is_valid())
+  if (!config.PingUrl().is_valid())
     return;
 
-  url_fetcher_.reset(SendProtocolRequest(
-      ping_url, BuildPing(item), this, url_request_context_getter));
+  url_fetcher_.reset(SendProtocolRequest(config.PingUrl(),
+                                         BuildPing(config, item),
+                                         this,
+                                         url_request_context_getter));
 }
 
 // Builds a ping message for the specified update item.
-std::string PingSender::BuildPing(const CrxUpdateItem* item) {
+std::string PingSender::BuildPing(const Configurator& config,
+                                  const CrxUpdateItem* item) {
   const char app_element_format[] =
       "<app appid=\"%s\" version=\"%s\" nextversion=\"%s\">"
       "%s"
@@ -98,7 +102,12 @@ std::string PingSender::BuildPing(const CrxUpdateItem* item) {
       BuildUpdateCompleteEventElement(item).c_str(),       // update event
       BuildDownloadCompleteEventElements(item).c_str()));  // download events
 
-  return BuildProtocolRequest(app_element, "");
+  return BuildProtocolRequest(config.GetBrowserVersion().GetString(),
+                              config.GetChannel(),
+                              config.GetLang(),
+                              config.GetOSLongName(),
+                              app_element,
+                              "");
 }
 
 // Returns a string representing a sequence of download complete events
@@ -190,7 +199,7 @@ PingManager::~PingManager() {
 // sender object self-deletes after sending the ping.
 void PingManager::OnUpdateComplete(const CrxUpdateItem* item) {
   PingSender* ping_sender(new PingSender);
-  ping_sender->SendPing(config_.PingUrl(), config_.RequestContext(), item);
+  ping_sender->SendPing(config_, config_.RequestContext(), item);
 }
 
 }  // namespace component_updater

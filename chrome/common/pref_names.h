@@ -729,10 +729,6 @@ extern const char kMessageCenterForcedOnTaskbar[];
 
 extern const char kAttemptedToEnableAutoupdate[];
 
-#if defined(OS_WIN)
-extern const char kSwReporterExecuteTryCount[];
-#endif
-
 extern const char kMediaGalleriesUniqueId[];
 extern const char kMediaGalleriesRememberedGalleries[];
 extern const char kMediaGalleriesLastScanTime[];

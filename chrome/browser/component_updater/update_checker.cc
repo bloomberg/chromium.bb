@@ -33,7 +33,8 @@ namespace component_updater {
 //        <package fp="abcd" />
 //      </packages>
 //    </app>
-std::string BuildUpdateCheckRequest(const std::vector<CrxUpdateItem*>& items,
+std::string BuildUpdateCheckRequest(const Configurator& config,
+                                    const std::vector<CrxUpdateItem*>& items,
                                     const std::string& additional_attributes) {
   std::string app_elements;
   for (size_t i = 0; i != items.size(); ++i) {
@@ -59,7 +60,12 @@ std::string BuildUpdateCheckRequest(const std::vector<CrxUpdateItem*>& items,
     VLOG(1) << "Appending to update request: " << app;
   }
 
-  return BuildProtocolRequest(app_elements, additional_attributes);
+  return BuildProtocolRequest(config.GetBrowserVersion().GetString(),
+                              config.GetChannel(),
+                              config.GetLang(),
+                              config.GetOSLongName(),
+                              app_elements,
+                              additional_attributes);
 }
 
 class UpdateCheckerImpl : public UpdateChecker, public net::URLFetcherDelegate {
@@ -114,7 +120,7 @@ bool UpdateCheckerImpl::CheckForUpdates(
 
   url_fetcher_.reset(SendProtocolRequest(
       config_.UpdateUrl(),
-      BuildUpdateCheckRequest(items_to_check, additional_attributes),
+      BuildUpdateCheckRequest(config_, items_to_check, additional_attributes),
       this,
       config_.RequestContext()));
 

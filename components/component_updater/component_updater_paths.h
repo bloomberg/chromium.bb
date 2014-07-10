@@ -16,6 +16,7 @@ enum {
   DIR_RECOVERY_BASE,                // Full path to the dir for Recovery
                                     // component.
   DIR_SWIFT_SHADER,                 // Path to the SwiftShader component.
+  DIR_SW_REPORTER,                  // Path to the SwReporter component.
   PATH_END
 };
 

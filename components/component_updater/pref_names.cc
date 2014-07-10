@@ -10,4 +10,11 @@ namespace prefs {
 // takes the usual 'a.b.c.d' notation.
 const char kRecoveryComponentVersion[] = "recovery_component.version";
 
+#if defined(OS_WIN)
+// The number of attempts left to execute the SwReporter. This starts at the max
+// number of retries allowed, and goes down as attempts are made and is cleared
+// back to 0 when it successfully completes.
+const char kSwReporterExecuteTryCount[] = "software_reporter.execute_try_count";
+#endif
+
 }  // namespace prefs

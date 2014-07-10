@@ -28,8 +28,8 @@
 #include "chrome/browser/component_updater/component_updater_service.h"
 #include "chrome/browser/component_updater/component_updater_utils.h"
 #include "chrome/browser/component_updater/default_component_installer.h"
-#include "chrome/common/chrome_paths.h"
-#include "chrome/common/pref_names.h"
+#include "components/component_updater/component_updater_paths.h"
+#include "components/component_updater/pref_names.h"
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;
@@ -162,8 +162,8 @@ class SwReporterInstallerTraits : public ComponentInstallerTraits {
     // The base directory on windows looks like:
     // <profile>\AppData\Local\Google\Chrome\User Data\SwReporter\.
     base::FilePath result;
-    PathService::Get(chrome::DIR_USER_DATA, &result);
-    return result.Append(FILE_PATH_LITERAL("SwReporter"));
+    PathService::Get(DIR_SW_REPORTER, &result);
+    return result;
   }
 
   static std::string ID() {

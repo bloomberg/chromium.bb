@@ -2099,13 +2099,6 @@ const char kDevicePolicyRefreshRate[] = "policy.device_refresh_rate";
 const char kAttemptedToEnableAutoupdate[] =
     "browser.attempted_to_enable_autoupdate";
 
-#if defined(OS_WIN)
-// The number of attempts left to execute the SwReporter. This starts at the max
-// number of retries allowed, and goes down as attempts are made and is cleared
-// back to 0 when it successfully completes.
-const char kSwReporterExecuteTryCount[] = "software_reporter.execute_try_count";
-#endif
-
 // The next media gallery ID to assign.
 const char kMediaGalleriesUniqueId[] = "media_galleries.gallery_id";
 

@@ -29,6 +29,9 @@ bool PathProvider(int key, base::FilePath* result) {
     case DIR_SWIFT_SHADER:
       cur = cur.Append(FILE_PATH_LITERAL("SwiftShader"));
       break;
+    case DIR_SW_REPORTER:
+      cur = cur.Append(FILE_PATH_LITERAL("SwReporter"));
+      break;
     default:
       return false;
   }

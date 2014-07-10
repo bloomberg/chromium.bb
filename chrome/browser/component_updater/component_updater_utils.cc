@@ -15,9 +15,8 @@
 #include "base/strings/stringprintf.h"
 #include "base/sys_info.h"
 #include "base/win/windows_version.h"
+#include "chrome/browser/component_updater/component_updater_configurator.h"
 #include "chrome/browser/component_updater/crx_update_item.h"
-#include "chrome/browser/omaha_query_params/chrome_omaha_query_params_delegate.h"
-#include "chrome/common/chrome_version_info.h"
 #include "components/omaha_query_params/omaha_query_params.h"
 #include "extensions/common/extension.h"
 #include "net/base/load_flags.h"
@@ -40,14 +39,14 @@ int GetPhysicalMemoryGB() {
 
 }  // namespace
 
-std::string BuildProtocolRequest(const std::string& request_body,
+std::string BuildProtocolRequest(const std::string& browser_version,
+                                 const std::string& channel,
+                                 const std::string& lang,
+                                 const std::string& os_long_name,
+                                 const std::string& request_body,
                                  const std::string& additional_attributes) {
   const std::string prod_id(
       OmahaQueryParams::GetProdIdString(OmahaQueryParams::CHROME));
-  const chrome::VersionInfo chrome_version_info;
-  const std::string chrome_version(chrome_version_info.Version());
-  const std::string channel(ChromeOmahaQueryParamsDelegate::GetChannelString());
-  const std::string lang(ChromeOmahaQueryParamsDelegate::GetLang());
 
   std::string request(
       "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
@@ -63,8 +62,8 @@ std::string BuildProtocolRequest(const std::string& request_body,
       "requestid=\"{%s}\" lang=\"%s\" updaterchannel=\"%s\" prodchannel=\"%s\" "
       "os=\"%s\" arch=\"%s\" nacl_arch=\"%s\"",
       prod_id.c_str(),
-      chrome_version.c_str(),            // "version"
-      chrome_version.c_str(),            // "prodversion"
+      browser_version.c_str(),           // "version"
+      browser_version.c_str(),           // "prodversion"
       base::GenerateGUID().c_str(),      // "requestid"
       lang.c_str(),                      // "lang",
       channel.c_str(),                   // "updaterchannel"
@@ -89,7 +88,7 @@ std::string BuildProtocolRequest(const std::string& request_body,
   base::StringAppendF(
       &request,
       "<os platform=\"%s\" version=\"%s\" arch=\"%s\"/>",
-      chrome::VersionInfo().OSType().c_str(),                  // "platform"
+      os_long_name.c_str(),                                    // "platform"
       base::SysInfo().OperatingSystemVersion().c_str(),        // "version"
       base::SysInfo().OperatingSystemArchitecture().c_str());  // "arch"
 

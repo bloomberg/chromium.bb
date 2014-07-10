@@ -5,6 +5,7 @@
 #include <string>
 
 #include "base/run_loop.h"
+#include "base/version.h"
 #include "chrome/browser/component_updater/test/test_configurator.h"
 #include "content/public/browser/browser_thread.h"
 #include "url/gurl.h"
@@ -64,6 +65,23 @@ GURL TestConfigurator::UpdateUrl() const {
 
 GURL TestConfigurator::PingUrl() const {
   return UpdateUrl();
+}
+
+base::Version TestConfigurator::GetBrowserVersion() const {
+  // Needs to be larger than the required version in tested component manifests.
+  return base::Version("30.0");
+}
+
+std::string TestConfigurator::GetChannel() const {
+  return "fake_channel_string";
+}
+
+std::string TestConfigurator::GetLang() const {
+  return "fake_lang";
+}
+
+std::string TestConfigurator::GetOSLongName() const {
+  return "Fake Operating System";
 }
 
 std::string TestConfigurator::ExtraRequestParams() const {

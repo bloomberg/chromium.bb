@@ -22,6 +22,7 @@ class URLRequestContextGetter;
 
 namespace component_updater {
 
+class Configurator;
 struct CrxUpdateItem;
 
 // An update protocol request starts with a common preamble which includes
@@ -44,7 +45,11 @@ struct CrxUpdateItem;
 // If specified, |additional_attributes| are appended as attributes of the
 // request element. The additional attributes have to be well-formed for
 // insertion in the request element.
-std::string BuildProtocolRequest(const std::string& request_body,
+std::string BuildProtocolRequest(const std::string& browser_version,
+                                 const std::string& channel,
+                                 const std::string& lang,
+                                 const std::string& os_long_name,
+                                 const std::string& request_body,
                                  const std::string& additional_attributes);
 
 // Sends a protocol request to the the service endpoint specified by |url|.

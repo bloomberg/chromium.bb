@@ -29,7 +29,6 @@
 #include "chrome/browser/component_updater/crx_update_item.h"
 #include "chrome/browser/component_updater/update_checker.h"
 #include "chrome/browser/component_updater/update_response.h"
-#include "chrome/common/chrome_version_info.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/resource_controller.h"
 #include "content/public/browser/resource_throttle.h"
@@ -263,8 +262,6 @@ class CrxUpdateService : public ComponentUpdateService, public OnDemandUpdater {
 
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
 
-  const Version chrome_version_;
-
   bool running_;
 
   ObserverList<Observer> observer_list_;
@@ -282,7 +279,6 @@ CrxUpdateService::CrxUpdateService(Configurator* config)
               GetSequencedTaskRunnerWithShutdownBehavior(
                   BrowserThread::GetBlockingPool()->GetSequenceToken(),
                   base::SequencedWorkerPool::SKIP_ON_SHUTDOWN)),
-      chrome_version_(chrome::VersionInfo().Version()),
       running_(false) {
 }
 
@@ -720,7 +716,8 @@ void CrxUpdateService::OnUpdateCheckSucceeded(
     }
 
     if (!it->manifest.browser_min_version.empty()) {
-      if (IsVersionNewer(chrome_version_, it->manifest.browser_min_version)) {
+      if (IsVersionNewer(config_->GetBrowserVersion(),
+                         it->manifest.browser_min_version)) {
         // The component is not compatible with this Chrome version.
         VLOG(1) << "Ignoring incompatible component: " << crx->id;
         ChangeItemState(crx, CrxUpdateItem::kNoUpdate);

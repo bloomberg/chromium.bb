@@ -5,9 +5,15 @@
 #ifndef COMPONENTS_COMPONENT_UPDATER_PREF_NAMES_H_
 #define COMPONENTS_COMPONENT_UPDATER_PREF_NAMES_H_
 
+#include "build/build_config.h"
+
 namespace prefs {
 
 extern const char kRecoveryComponentVersion[];
+
+#if defined(OS_WIN)
+extern const char kSwReporterExecuteTryCount[];
+#endif
 
 }  // namespace prefs
 
