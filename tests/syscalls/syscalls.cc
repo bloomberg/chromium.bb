@@ -566,7 +566,8 @@ bool test_stat(const char *test_file) {
   ASSERT_EQ(buf.st_size, buf2.st_size);
   ASSERT_EQ(buf.st_blksize, buf2.st_blksize);
   ASSERT_EQ(buf.st_blocks, buf2.st_blocks);
-  ASSERT_EQ(buf.st_atime, buf2.st_atime);  // atime is not updated by open.
+  // Do not check st_atime as it seems to be updated by open or fstat
+  // on Windows.
   ASSERT_EQ(buf.st_mtime, buf2.st_mtime);
   ASSERT_EQ(buf.st_ctime, buf2.st_ctime);
   rc = close(fd);
