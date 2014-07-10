@@ -55,11 +55,11 @@ using testing::InvokeWithoutArgs;
 using testing::Mock;
 using testing::StrictMock;
 
-#if defined(OS_ANDROID)
+#if defined(OS_ANDROID) || defined(OS_IOS)
 static const bool kExpectMobileBookmarks = true;
 #else
 static const bool kExpectMobileBookmarks = false;
-#endif  // defined(OS_ANDROID)
+#endif  // defined(OS_ANDROID) || defined(OS_IOS)
 
 namespace {
 
@@ -438,7 +438,14 @@ class ProfileSyncServiceBookmarkTest : public testing::Test {
 
     const int kNumPermanentNodes = 3;
     const std::string permanent_tags[kNumPermanentNodes] = {
-      "bookmark_bar", "other_bookmarks", "synced_bookmarks"
+#if defined(OS_IOS)
+      "synced_bookmarks",
+#endif
+      "bookmark_bar",
+      "other_bookmarks",
+#if !defined(OS_IOS)
+      "synced_bookmarks",
+#endif
     };
     syncer::WriteTransaction trans(FROM_HERE, test_user_share_.user_share());
     syncer::ReadNode root(&trans);
@@ -689,9 +696,15 @@ class ProfileSyncServiceBookmarkTest : public testing::Test {
 
   void ExpectModelMatch(syncer::BaseTransaction* trans) {
     const BookmarkNode* root = model_->root_node();
+#if defined(OS_IOS)
+    EXPECT_EQ(root->GetIndexOf(model_->mobile_node()), 0);
+    EXPECT_EQ(root->GetIndexOf(model_->bookmark_bar_node()), 1);
+    EXPECT_EQ(root->GetIndexOf(model_->other_node()), 2);
+#else
     EXPECT_EQ(root->GetIndexOf(model_->bookmark_bar_node()), 0);
     EXPECT_EQ(root->GetIndexOf(model_->other_node()), 1);
     EXPECT_EQ(root->GetIndexOf(model_->mobile_node()), 2);
+#endif
 
     std::stack<int64> stack;
     stack.push(bookmark_bar_id());
