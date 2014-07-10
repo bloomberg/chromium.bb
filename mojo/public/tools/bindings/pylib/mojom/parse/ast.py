@@ -88,6 +88,24 @@ class AttributeList(NodeListBase):
   _list_item_type = Attribute
 
 
+class Import(NodeBase):
+  """Represents an import statement."""
+
+  def __init__(self, import_filename, **kwargs):
+    assert isinstance(import_filename, str)
+    NodeBase.__init__(self, **kwargs)
+    self.import_filename = import_filename
+
+  def __eq__(self, other):
+    return self.import_filename == other.import_filename
+
+
+class ImportList(NodeListBase):
+  """Represents a list (i.e., sequence) of import statements."""
+
+  _list_item_type = Import
+
+
 class Module(NodeBase):
   """Represents a module statement."""
 
