@@ -650,9 +650,6 @@ crbug.com/313846 http/tests/images/webp-partial-load.html [ ImageOnlyFailure Tim
 
 crbug.com/316730 canvas/synchronous-create-pattern.html [ ImageOnlyFailure Pass ]
 
-crbug.com/320099 webaudio/oscillator-sawtooth.html [ NeedsManualRebaseline ]
-crbug.com/320099 webaudio/oscillator-triangle.html [ NeedsManualRebaseline ]
-
 crbug.com/326139 media/video-frame-accurate-seek.html [ Pass ImageOnlyFailure ]
 
 crbug.com/245556 compositing/transitions/transform-on-large-layer.html [ ImageOnlyFailure ]
@@ -756,10 +753,6 @@ crbug.com/356828 fast/dom/gc-dom-tree-lifetime.html [ Timeout Pass ]
 # Heap buffer overflow failures on Linux ASAN
 crbug.com/347365 [ Linux ] dom/xhtml/level3/core/canonicalform08.xhtml [ Crash Pass ]
 crbug.com/347365 [ Linux ] dom/xhtml/level3/core/canonicalform09.xhtml [ Crash Pass ]
-
-crbug.com/309197 [ Win Debug ] webaudio/oscillator-custom.html [ Skip ]
-crbug.com/309197 [ Win Debug ] webaudio/oscillator-sine.html [ Skip ]
-crbug.com/309197 [ Win Debug ] webaudio/oscillator-square.html [ Skip ]
 
 crbug.com/352464 http/tests/security/dataURL/xss-DENIED-to-data-url-in-foreign-domain-subframe-location-change.html [ Pass Failure Missing ]
 crbug.com/372425 http/tests/security/dataURL/xss-DENIED-to-data-url-in-foreign-domain-subframe.html [ Pass Failure Timeout ]
