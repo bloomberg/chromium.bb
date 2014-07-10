@@ -83,7 +83,15 @@ gin::ObjectTemplateBuilder GinJavaBridgeObject::GetObjectTemplateBuilder(
 v8::Local<v8::Value> GinJavaBridgeObject::GetNamedProperty(
     v8::Isolate* isolate,
     const std::string& property) {
-  if (dispatcher_ && dispatcher_->HasJavaMethod(object_id_, property)) {
+  std::map<std::string, bool>::iterator method_pos =
+      known_methods_.find(property);
+  if (method_pos == known_methods_.end()) {
+    if (!dispatcher_) {
+      return v8::Local<v8::Value>();
+    }
+    known_methods_[property] = dispatcher_->HasJavaMethod(object_id_, property);
+  }
+  if (known_methods_[property]) {
     return gin::CreateFunctionTemplate(
                isolate,
                base::Bind(&GinJavaBridgeObject::InvokeMethod,
