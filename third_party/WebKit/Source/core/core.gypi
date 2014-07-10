@@ -1920,7 +1920,6 @@
             'dom/Comment.cpp',
             'dom/Comment.h',
             'dom/ContainerNode.cpp',
-            'dom/ContainerNodeAlgorithms.h',
             'dom/ContextFeatures.cpp',
             'dom/ContextFeatures.h',
             'dom/ContextLifecycleNotifier.cpp',

@@ -38,11 +38,6 @@ class HTMLCollection;
 class StaticNodeList;
 class TagCollection;
 
-namespace Private {
-    template<class GenericNode, class GenericNodeContainer>
-    void addChildNodesToDeletionQueue(GenericNode*& head, GenericNode*& tail, GenericNodeContainer&);
-}
-
 enum DynamicRestyleFlags {
     ChildrenOrSiblingsAffectedByFocus = 1 << 0,
     ChildrenOrSiblingsAffectedByHover = 1 << 1,
@@ -183,9 +178,6 @@ public:
 protected:
     ContainerNode(TreeScope*, ConstructionType = CreateContainer);
 
-    template<class GenericNode, class GenericNodeContainer>
-    friend void Private::addChildNodesToDeletionQueue(GenericNode*& head, GenericNode*& tail, GenericNodeContainer&);
-
 #if !ENABLE(OILPAN)
     void removeDetachedChildren();
 #endif
@@ -200,6 +192,8 @@ private:
     void updateTreeAfterInsertion(Node& child);
     void willRemoveChildren();
     void willRemoveChild(Node& child);
+    void removeDetachedChildrenInContainer(ContainerNode&);
+    void addChildNodesToDeletionQueue(Node*&, Node*&, ContainerNode&);
 
     void notifyNodeInsertedInternal(Node&, NodeVector& postInsertionNotificationTargets);
 

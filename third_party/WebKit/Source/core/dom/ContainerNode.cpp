@@ -27,7 +27,6 @@
 #include "core/dom/ChildFrameDisconnector.h"
 #include "core/dom/ChildListMutationScope.h"
 #include "core/dom/ClassCollection.h"
-#include "core/dom/ContainerNodeAlgorithms.h"
 #include "core/dom/ElementTraversal.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/FullscreenElementStack.h"
@@ -82,7 +81,7 @@ void ContainerNode::removeDetachedChildren()
 {
     ASSERT(!connectedSubframeCount());
     ASSERT(needsAttach());
-    removeDetachedChildrenInContainer<Node, ContainerNode>(*this);
+    removeDetachedChildrenInContainer(*this);
 }
 #endif
 
@@ -425,6 +424,72 @@ void ContainerNode::willRemoveChildren()
 
     ChildFrameDisconnector(*this).disconnect(ChildFrameDisconnector::DescendantsOnly);
 }
+
+#if !ENABLE(OILPAN)
+void ContainerNode::removeDetachedChildrenInContainer(ContainerNode& container)
+{
+    // List of nodes to be deleted.
+    Node* head = 0;
+    Node* tail = 0;
+
+    addChildNodesToDeletionQueue(head, tail, container);
+
+    Node* n;
+    Node* next;
+    while ((n = head) != 0) {
+        ASSERT_WITH_SECURITY_IMPLICATION(n->m_deletionHasBegun);
+
+        next = n->nextSibling();
+        n->setNextSibling(0);
+
+        head = next;
+        if (next == 0)
+            tail = 0;
+
+        if (n->hasChildren())
+            addChildNodesToDeletionQueue(head, tail, toContainerNode(*n));
+
+        delete n;
+    }
+}
+
+void ContainerNode::addChildNodesToDeletionQueue(Node*& head, Node*& tail, ContainerNode& container)
+{
+    // We have to tell all children that their parent has died.
+    Node* next = 0;
+    for (Node* n = container.firstChild(); n; n = next) {
+        ASSERT_WITH_SECURITY_IMPLICATION(!n->m_deletionHasBegun);
+
+        next = n->nextSibling();
+        n->setNextSibling(0);
+        n->setParentOrShadowHostNode(0);
+        container.setFirstChild(next);
+        if (next)
+            next->setPreviousSibling(0);
+
+        if (!n->refCount()) {
+#if SECURITY_ASSERT_ENABLED
+            n->m_deletionHasBegun = true;
+#endif
+            // Add the node to the list of nodes to be deleted.
+            // Reuse the nextSibling pointer for this purpose.
+            if (tail)
+                tail->setNextSibling(n);
+            else
+                head = n;
+
+            tail = n;
+        } else {
+            RefPtrWillBeRawPtr<Node> protect(n); // removedFromDocument may remove all references to this node.
+            container.document().adoptIfNeeded(*n);
+            if (n->inDocument())
+                container.notifyNodeRemoved(*n);
+        }
+    }
+
+    container.setLastChild(0);
+}
+#endif
 
 void ContainerNode::disconnectDescendantFrames()
 {
