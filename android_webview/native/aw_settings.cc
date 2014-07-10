@@ -9,13 +9,11 @@
 #include "android_webview/native/aw_contents.h"
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
-#include "base/command_line.h"
 #include "base/supports_user_data.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/content_switches.h"
 #include "content/public/common/renderer_preferences.h"
 #include "content/public/common/web_preferences.h"
 #include "jni/AwSettings_jni.h"
@@ -114,9 +112,6 @@ class AwSettingsUserData : public base::SupportsUserData::Data {
 AwSettings::AwSettings(JNIEnv* env, jobject obj, jlong web_contents)
     : WebContentsObserver(
           reinterpret_cast<content::WebContents*>(web_contents)),
-      accelerated_2d_canvas_disabled_by_switch_(
-          CommandLine::ForCurrentProcess()->HasSwitch(
-              switches::kDisableAccelerated2dCanvas)),
       renderer_prefs_initialized_(false),
       aw_settings_(env, obj) {
   reinterpret_cast<content::WebContents*>(web_contents)->
@@ -414,16 +409,24 @@ void AwSettings::PopulateWebPreferencesLocked(
   web_prefs->spatial_navigation_enabled =
       Java_AwSettings_getSpatialNavigationLocked(env, obj);
 
+  bool enable_supported_hardware_accelerated_features =
+      Java_AwSettings_getEnableSupportedHardwareAcceleratedFeaturesLocked(
+                env, obj);
+
+  bool accelerated_2d_canvas_enabled_by_switch =
+      web_prefs->accelerated_2d_canvas_enabled;
   web_prefs->accelerated_2d_canvas_enabled = true;
-  if (accelerated_2d_canvas_disabled_by_switch_ ||
-      !Java_AwSettings_getEnableSupportedHardwareAcceleratedFeaturesLocked(
-          env, obj)) {
+  if (!accelerated_2d_canvas_enabled_by_switch ||
+      !enable_supported_hardware_accelerated_features) {
     // Any canvas smaller than this will fallback to software. Abusing this
     // slightly to turn canvas off without changing
     // accelerated_2d_canvas_enabled, which also affects compositing mode.
     // Using 100M instead of max int to avoid overflows.
     web_prefs->minimum_accelerated_2d_canvas_size = 100 * 1000 * 1000;
   }
+  web_prefs->experimental_webgl_enabled =
+      web_prefs->experimental_webgl_enabled &&
+      enable_supported_hardware_accelerated_features;
 
   web_prefs->allow_displaying_insecure_content =
       Java_AwSettings_getAllowDisplayingInsecureContentLocked(env, obj);
