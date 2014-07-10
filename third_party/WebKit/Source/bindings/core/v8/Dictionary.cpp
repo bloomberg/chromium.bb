@@ -43,7 +43,6 @@
 #include "bindings/core/v8/custom/V8ArrayBufferViewCustom.h"
 #include "bindings/core/v8/custom/V8Uint8ArrayCustom.h"
 #include "bindings/modules/v8/V8Gamepad.h"
-#include "bindings/modules/v8/V8HeaderMap.h"
 #include "bindings/modules/v8/V8Headers.h"
 #include "bindings/modules/v8/V8IDBKeyRange.h"
 #include "bindings/modules/v8/V8MIDIPort.h"
@@ -582,16 +581,6 @@ bool Dictionary::get(const String& key, Dictionary& value) const
         value = Dictionary(v8Value, m_isolate);
     }
 
-    return true;
-}
-
-bool Dictionary::get(const String& key, RefPtr<HeaderMap>& value) const
-{
-    v8::Local<v8::Value> v8Value;
-    if (!getKey(key, v8Value))
-        return false;
-
-    value = V8HeaderMap::toNativeWithTypeCheck(m_isolate, v8Value);
     return true;
 }
 
