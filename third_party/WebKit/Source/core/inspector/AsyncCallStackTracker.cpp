@@ -40,8 +40,8 @@
 #include "core/events/EventTarget.h"
 #include "core/xml/XMLHttpRequest.h"
 #include "core/xml/XMLHttpRequestUpload.h"
-#include "wtf/text/AtomicStringHash.h"
 #include "wtf/text/StringBuilder.h"
+#include "wtf/text/StringHash.h"
 #include <v8.h>
 
 namespace {
@@ -83,6 +83,7 @@ public:
     HashMap<EventTarget*, RefPtr<AsyncCallChain> > m_xhrCallChains;
     HashMap<MutationObserver*, RefPtr<AsyncCallChain> > m_mutationObserverCallChains;
     HashMap<ExecutionContextTask*, RefPtr<AsyncCallChain> > m_executionContextTaskCallChains;
+    HashMap<String, RefPtr<AsyncCallChain> > m_v8AsyncTaskCallChains;
 };
 
 static XMLHttpRequest* toXmlHttpRequest(EventTarget* eventTarget)
@@ -326,6 +327,34 @@ void AsyncCallStackTracker::willPerformExecutionContextTask(ExecutionContext* co
         setCurrentAsyncCallChain(context, nullptr);
 }
 
+static String makeV8AsyncTaskUniqueId(const String& eventName, int id)
+{
+    StringBuilder builder;
+    builder.append(eventName);
+    builder.appendNumber(id);
+    return builder.toString();
+}
+
+void AsyncCallStackTracker::didEnqueueV8AsyncTask(ExecutionContext* context, const String& eventName, int id, const ScriptValue& callFrames)
+{
+    ASSERT(context);
+    ASSERT(isEnabled());
+    if (!validateCallFrames(callFrames))
+        return;
+    ExecutionContextData* data = createContextDataIfNeeded(context);
+    data->m_v8AsyncTaskCallChains.set(makeV8AsyncTaskUniqueId(eventName, id), createAsyncCallChain(eventName, callFrames));
+}
+
+void AsyncCallStackTracker::willHandleV8AsyncTask(ExecutionContext* context, const String& eventName, int id)
+{
+    ASSERT(context);
+    ASSERT(isEnabled());
+    if (ExecutionContextData* data = m_executionContextDataMap.get(context))
+        setCurrentAsyncCallChain(context, data->m_v8AsyncTaskCallChains.take(makeV8AsyncTaskUniqueId(eventName, id)));
+    else
+        setCurrentAsyncCallChain(context, nullptr);
+}
+
 void AsyncCallStackTracker::didFireAsyncCall()
 {
     clearCurrentAsyncCallChain();
@@ -333,6 +362,10 @@ void AsyncCallStackTracker::didFireAsyncCall()
 
 PassRefPtr<AsyncCallStackTracker::AsyncCallChain> AsyncCallStackTracker::createAsyncCallChain(const String& description, const ScriptValue& callFrames)
 {
+    if (callFrames.isEmpty()) {
+        ASSERT(m_currentAsyncCallChain);
+        return m_currentAsyncCallChain; // Propogate async call stack chain.
+    }
     RefPtr<AsyncCallChain> chain = adoptRef(m_currentAsyncCallChain ? new AsyncCallStackTracker::AsyncCallChain(*m_currentAsyncCallChain) : new AsyncCallStackTracker::AsyncCallChain());
     ensureMaxAsyncCallChainDepth(chain.get(), m_maxAsyncCallStackDepth - 1);
     chain->m_callStacks.prepend(adoptRef(new AsyncCallStackTracker::AsyncCallStack(description, callFrames)));
@@ -368,7 +401,7 @@ void AsyncCallStackTracker::ensureMaxAsyncCallChainDepth(AsyncCallChain* chain, 
 
 bool AsyncCallStackTracker::validateCallFrames(const ScriptValue& callFrames)
 {
-    return !callFrames.isEmpty();
+    return !callFrames.isEmpty() || m_currentAsyncCallChain;
 }
 
 AsyncCallStackTracker::ExecutionContextData* AsyncCallStackTracker::createContextDataIfNeeded(ExecutionContext* context)

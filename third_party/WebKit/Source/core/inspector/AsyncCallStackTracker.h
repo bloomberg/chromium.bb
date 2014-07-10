@@ -103,6 +103,9 @@ public:
     void didKillAllExecutionContextTasks(ExecutionContext*);
     void willPerformExecutionContextTask(ExecutionContext*, ExecutionContextTask*);
 
+    void didEnqueueV8AsyncTask(ExecutionContext*, const String& eventName, int id, const ScriptValue& callFrames);
+    void willHandleV8AsyncTask(ExecutionContext*, const String& eventName, int id);
+
     void didFireAsyncCall();
     void clear();
 
@@ -113,7 +116,7 @@ private:
     void setCurrentAsyncCallChain(ExecutionContext*, PassRefPtr<AsyncCallChain>);
     void clearCurrentAsyncCallChain();
     static void ensureMaxAsyncCallChainDepth(AsyncCallChain*, unsigned);
-    static bool validateCallFrames(const ScriptValue& callFrames);
+    bool validateCallFrames(const ScriptValue& callFrames);
 
     class ExecutionContextData;
     ExecutionContextData* createContextDataIfNeeded(ExecutionContext*);

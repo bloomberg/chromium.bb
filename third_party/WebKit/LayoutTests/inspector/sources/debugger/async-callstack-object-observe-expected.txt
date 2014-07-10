@@ -1,0 +1,15 @@
+Tests asynchronous call stacks for Object.observe().
+
+Set timer for test function.
+Captured call stacks in no particular order:
+Call stack:
+    0) observer (async-callstack-object-observe.html:32)
+    [Object.observe]
+    0) addProperties (async-callstack-object-observe.html:26)
+    1) timeout2 (async-callstack-object-observe.html:21)
+    [setTimeout]
+    0) timeout1 (async-callstack-object-observe.html:16)
+    [setTimeout]
+    0) testFunction (async-callstack-object-observe.html:10)
+
+

@@ -37,6 +37,8 @@
 #include "wtf/text/WTFString.h"
 
 namespace WebCore {
+
+class ExecutionContext;
 class ScriptValue;
 
 class ScriptDebugListener {
@@ -75,6 +77,7 @@ public:
     virtual void failedToParseSource(const String& url, const String& data, int firstLine, int errorLine, const String& errorMessage) = 0;
     virtual SkipPauseRequest didPause(ScriptState*, const ScriptValue& callFrames, const ScriptValue& exception, const Vector<String>& hitBreakpoints) = 0;
     virtual void didContinue() = 0;
+    virtual void didReceiveV8AsyncTaskEvent(ExecutionContext*, const String& eventType, const String& eventName, int id) = 0;
 };
 
 } // namespace WebCore

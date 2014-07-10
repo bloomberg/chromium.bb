@@ -60,6 +60,14 @@ using WebCore::TypeBuilder::Debugger::ScriptId;
 using WebCore::TypeBuilder::Debugger::StackTrace;
 using WebCore::TypeBuilder::Runtime::RemoteObject;
 
+namespace {
+
+static const char v8AsyncTaskEventEnqueue[] = "enqueue";
+static const char v8AsyncTaskEventWillHandle[] = "willHandle";
+static const char v8AsyncTaskEventDidHandle[] = "didHandle";
+
+}
+
 namespace WebCore {
 
 namespace DebuggerAgentState {
@@ -832,6 +840,20 @@ void InspectorDebuggerAgent::didPerformExecutionContextTask()
 {
     if (m_asyncCallStackTracker.isEnabled())
         m_asyncCallStackTracker.didFireAsyncCall();
+}
+
+void InspectorDebuggerAgent::didReceiveV8AsyncTaskEvent(ExecutionContext* context, const String& eventType, const String& eventName, int id)
+{
+    if (!m_asyncCallStackTracker.isEnabled())
+        return;
+    if (eventType == v8AsyncTaskEventEnqueue)
+        m_asyncCallStackTracker.didEnqueueV8AsyncTask(context, eventName, id, scriptDebugServer().currentCallFramesForAsyncStack());
+    else if (eventType == v8AsyncTaskEventWillHandle)
+        m_asyncCallStackTracker.willHandleV8AsyncTask(context, eventName, id);
+    else if (eventType == v8AsyncTaskEventDidHandle)
+        m_asyncCallStackTracker.didFireAsyncCall();
+    else
+        ASSERT_NOT_REACHED();
 }
 
 void InspectorDebuggerAgent::pause(ErrorString*)
