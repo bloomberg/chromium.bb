@@ -29,13 +29,15 @@
 
 #include "core/dom/ContainerNode.h"
 #include "core/dom/DocumentOrderedList.h"
+#include "platform/heap/Handle.h"
 #include "wtf/FastAllocBase.h"
 #include "wtf/ListHashSet.h"
 
 namespace WebCore {
 
 class StyleSheetScopingNodeList {
-    WTF_MAKE_NONCOPYABLE(StyleSheetScopingNodeList); WTF_MAKE_FAST_ALLOCATED;
+    WTF_MAKE_NONCOPYABLE(StyleSheetScopingNodeList);
+    DISALLOW_ALLOCATION();
 public:
     StyleSheetScopingNodeList() { }
 
@@ -54,12 +56,14 @@ public:
         m_scopingNodesRemoved->clear();
     }
 
-    DocumentOrderedList* scopingNodes() { return m_scopingNodes.get(); }
-    ListHashSet<Node*, 4>* scopingNodesRemoved() { return m_scopingNodesRemoved.get(); }
+    DocumentOrderedList* scopingNodes() { return &m_scopingNodes; }
+    WillBeHeapListHashSet<RawPtrWillBeMember<Node>, 4>* scopingNodesRemoved() { return m_scopingNodesRemoved.get(); }
+
+    void trace(Visitor*);
 
 private:
-    OwnPtr<DocumentOrderedList> m_scopingNodes;
-    OwnPtr<ListHashSet<Node*, 4> > m_scopingNodesRemoved;
+    DocumentOrderedList m_scopingNodes;
+    OwnPtrWillBeMember<WillBeHeapListHashSet<RawPtrWillBeMember<Node>, 4> > m_scopingNodesRemoved;
 };
 
 }

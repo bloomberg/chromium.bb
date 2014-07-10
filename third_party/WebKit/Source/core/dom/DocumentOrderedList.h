@@ -28,6 +28,7 @@
 #ifndef DocumentOrderedList_h
 #define DocumentOrderedList_h
 
+#include "platform/heap/Handle.h"
 #include "wtf/FastAllocBase.h"
 #include "wtf/ListHashSet.h"
 
@@ -35,8 +36,9 @@ namespace WebCore {
 
 class Node;
 
-class DocumentOrderedList {
-    WTF_MAKE_NONCOPYABLE(DocumentOrderedList); WTF_MAKE_FAST_ALLOCATED;
+class DocumentOrderedList FINAL {
+    WTF_MAKE_NONCOPYABLE(DocumentOrderedList);
+    DISALLOW_ALLOCATION();
 public:
     DocumentOrderedList() { }
 
@@ -47,13 +49,15 @@ public:
     void clear() { m_nodes.clear(); }
     size_t size() const { return m_nodes.size(); }
 
-    typedef ListHashSet<Node*, 32>::iterator iterator;
+    typedef WillBeHeapListHashSet<RawPtrWillBeMember<Node>, 32>::iterator iterator;
 
     iterator begin() { return m_nodes.begin(); }
     iterator end() { return m_nodes.end(); }
 
+    void trace(Visitor*);
+
 private:
-    ListHashSet<Node*, 32> m_nodes;
+    WillBeHeapListHashSet<RawPtrWillBeMember<Node>, 32> m_nodes;
 };
 
 }

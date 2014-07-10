@@ -57,15 +57,12 @@ public:
 
     DocumentOrderedList& styleSheetCandidateNodes() { return m_styleSheetCandidateNodes; }
     DocumentOrderedList* scopingNodesForStyleScoped() { return m_scopingNodesForStyleScoped.scopingNodes(); }
-    ListHashSet<Node*, 4>* scopingNodesRemoved() { return m_scopingNodesForStyleScoped.scopingNodesRemoved(); }
+    WillBeHeapListHashSet<RawPtrWillBeMember<Node>, 4>* scopingNodesRemoved() { return m_scopingNodesForStyleScoped.scopingNodesRemoved(); }
 
     void clearMediaQueryRuleSetStyleSheets();
     void enableExitTransitionStylesheets();
 
-    virtual void trace(Visitor* visitor) OVERRIDE
-    {
-        StyleSheetCollection::trace(visitor);
-    }
+    virtual void trace(Visitor*) OVERRIDE;
 
 protected:
     explicit TreeScopeStyleSheetCollection(TreeScope&);

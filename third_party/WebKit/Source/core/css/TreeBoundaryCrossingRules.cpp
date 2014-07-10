@@ -107,4 +107,10 @@ void TreeBoundaryCrossingRules::collectFeaturesTo(RuleFeatureSet& features)
         collectFeaturesFromRuleSubSet(it->get(), features);
 }
 
+void TreeBoundaryCrossingRules::trace(Visitor* visitor)
+{
+    visitor->trace(m_treeBoundaryCrossingRuleSetMap);
+    visitor->trace(m_scopingNodes);
+}
+
 } // namespace WebCore

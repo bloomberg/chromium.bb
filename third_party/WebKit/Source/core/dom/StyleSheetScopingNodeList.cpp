@@ -38,9 +38,7 @@ void StyleSheetScopingNodeList::add(ContainerNode* node)
     if (isTreeScopeRoot(node))
         return;
 
-    if (!m_scopingNodes)
-        m_scopingNodes = adoptPtr(new DocumentOrderedList());
-    m_scopingNodes->add(node);
+    m_scopingNodes.add(node);
 
     if (m_scopingNodesRemoved)
         m_scopingNodesRemoved->remove(node);
@@ -48,17 +46,23 @@ void StyleSheetScopingNodeList::add(ContainerNode* node)
 
 void StyleSheetScopingNodeList::remove(ContainerNode* node)
 {
-    if (isTreeScopeRoot(node) || !m_scopingNodes)
+    if (isTreeScopeRoot(node))
         return;
 
     // If the node is still working as a scoping node, we cannot remove.
     if (node->inDocument())
         return;
 
-    m_scopingNodes->remove(node);
+    m_scopingNodes.remove(node);
     if (!m_scopingNodesRemoved)
-        m_scopingNodesRemoved = adoptPtr(new ListHashSet<Node*, 4>());
+        m_scopingNodesRemoved = adoptPtrWillBeNoop(new WillBeHeapListHashSet<RawPtrWillBeMember<Node>, 4>());
     m_scopingNodesRemoved->add(node);
+}
+
+void StyleSheetScopingNodeList::trace(Visitor* visitor)
+{
+    visitor->trace(m_scopingNodes);
+    visitor->trace(m_scopingNodesRemoved);
 }
 
 }

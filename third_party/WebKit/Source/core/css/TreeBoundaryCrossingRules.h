@@ -37,7 +37,7 @@ class ContainerNode;
 class ElementRuleCollector;
 class RuleFeatureSet;
 
-class TreeBoundaryCrossingRules {
+class TreeBoundaryCrossingRules FINAL {
     DISALLOW_ALLOCATION();
 public:
     void addTreeBoundaryCrossingRules(const RuleSet&, ContainerNode& scope, CSSStyleSheet*);
@@ -46,7 +46,7 @@ public:
     void collectFeaturesTo(RuleFeatureSet&);
     void collectTreeBoundaryCrossingRules(Element*, ElementRuleCollector&, bool includeEmptyRules);
 
-    void trace(Visitor* visitor) { visitor->trace(m_treeBoundaryCrossingRuleSetMap); }
+    void trace(Visitor*);
 
 private:
     size_t size() const { return m_scopingNodes.size(); }

@@ -69,5 +69,10 @@ void DocumentOrderedList::remove(const Node* node)
     m_nodes.remove(const_cast<Node*>(node));
 }
 
+void DocumentOrderedList::trace(Visitor* visitor)
+{
+    visitor->trace(m_nodes);
+}
+
 }
 

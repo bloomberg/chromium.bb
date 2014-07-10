@@ -209,8 +209,8 @@ void TreeScopeStyleSheetCollection::resetAllRuleSetsInTreeScope(StyleResolver* s
         for (DocumentOrderedList::iterator it = styleScopedScopingNodes->begin(); it != styleScopedScopingNodes->end(); ++it)
             styleResolver->resetAuthorStyle(toContainerNode(*it));
     }
-    if (ListHashSet<Node*, 4>* removedNodes = scopingNodesRemoved()) {
-        for (ListHashSet<Node*, 4>::iterator it = removedNodes->begin(); it != removedNodes->end(); ++it)
+    if (WillBeHeapListHashSet<RawPtrWillBeMember<Node>, 4>* removedNodes = scopingNodesRemoved()) {
+        for (WillBeHeapListHashSet<RawPtrWillBeMember<Node>, 4>::iterator it = removedNodes->begin(); it != removedNodes->end(); ++it)
             styleResolver->resetAuthorStyle(toContainerNode(*it));
     }
     styleResolver->resetAuthorStyle(&m_treeScope.rootNode());
@@ -228,6 +228,13 @@ static bool styleSheetsUseRemUnits(const WillBeHeapVector<RefPtrWillBeMember<CSS
 void TreeScopeStyleSheetCollection::updateUsesRemUnits()
 {
     m_usesRemUnits = styleSheetsUseRemUnits(m_activeAuthorStyleSheets);
+}
+
+void TreeScopeStyleSheetCollection::trace(Visitor* visitor)
+{
+    visitor->trace(m_styleSheetCandidateNodes);
+    visitor->trace(m_scopingNodesForStyleScoped);
+    StyleSheetCollection::trace(visitor);
 }
 
 }
