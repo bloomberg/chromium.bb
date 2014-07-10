@@ -213,49 +213,6 @@ SkBitmap NativeImageSkia::extractScaledImageFragment(const SkRect& srcRect, floa
     return resizedBitmap(scaledImageSize, enclosingScaledSrcRect);
 }
 
-// This does a lot of computation to resample only the portion of the bitmap
-// that will only be drawn. This is critical for performance since when we are
-// scrolling, for example, we are only drawing a small strip of the image.
-// Resampling the whole image every time is very slow, so this speeds up things
-// dramatically.
-//
-// Note: this code is only used when the canvas transformation is limited to
-// scaling or translation.
-void NativeImageSkia::drawResampledBitmap(GraphicsContext* context, SkPaint& paint, const SkRect& srcRect, const SkRect& destRect) const
-{
-    TRACE_EVENT0("skia", "drawResampledBitmap");
-    if (context->paintingDisabled())
-        return;
-    // We want to scale |destRect| with transformation in the canvas to obtain
-    // the final scale. The final scale is a combination of scale transform
-    // in canvas and explicit scaling (srcRect and destRect).
-    SkRect screenRect;
-    context->getTotalMatrix().mapRect(&screenRect, destRect);
-    float realScaleX = screenRect.width() / srcRect.width();
-    float realScaleY = screenRect.height() / srcRect.height();
-
-    // This part of code limits scaling only to visible portion in the
-    SkRect destRectVisibleSubset;
-    if (!context->canvas()->getClipBounds(&destRectVisibleSubset))
-        return;
-
-    // ClipRectToCanvas often overshoots, resulting in a larger region than our
-    // original destRect. Intersecting gets us back inside.
-    if (!destRectVisibleSubset.intersect(destRect))
-        return; // Nothing visible in destRect.
-
-    // Find the corresponding rect in the source image.
-    SkMatrix destToSrcTransform;
-    SkRect srcRectVisibleSubset;
-    destToSrcTransform.setRectToRect(destRect, srcRect, SkMatrix::kFill_ScaleToFit);
-    destToSrcTransform.mapRect(&srcRectVisibleSubset, destRectVisibleSubset);
-
-    SkRect scaledSrcRect;
-    SkBitmap scaledImageFragment = extractScaledImageFragment(srcRectVisibleSubset, realScaleX, realScaleY, &scaledSrcRect);
-
-    context->drawBitmapRect(scaledImageFragment, &scaledSrcRect, destRectVisibleSubset, &paint);
-}
-
 NativeImageSkia::NativeImageSkia()
     : m_resizeRequests(0)
 {
@@ -386,24 +343,15 @@ void NativeImageSkia::draw(GraphicsContext* context, const SkRect& srcRect, cons
     }
     resampling = limitInterpolationQuality(context, resampling);
 
-    // FIXME: Bicubic filtering in Skia is only applied to defer-decoded images
-    // as an experiment. Once this filtering code path becomes stable we should
-    // turn this on for all cases, including non-defer-decoded images.
-    bool useBicubicFilter = resampling == InterpolationHigh && isLazyDecoded;
-
+    bool useBicubicFilter = resampling == InterpolationHigh;
     paint.setFilterLevel(convertToSkiaFilterLevel(useBicubicFilter, resampling));
 
-    if (resampling == InterpolationHigh && !useBicubicFilter) {
-        // Resample the image and then draw the result to canvas with bilinear
-        // filtering.
-        drawResampledBitmap(context, paint, srcRect, destRect);
-    } else {
-        // We want to filter it if we decided to do interpolation above, or if
-        // there is something interesting going on with the matrix (like a rotation).
-        // Note: for serialization, we will want to subset the bitmap first so we
-        // don't send extra pixels.
-        context->drawBitmapRect(bitmap(), &srcRect, destRect, &paint);
-    }
+    // We want to filter it if we decided to do interpolation above, or if
+    // there is something interesting going on with the matrix (like a rotation).
+    // Note: for serialization, we will want to subset the bitmap first so we
+    // don't send extra pixels.
+    context->drawBitmapRect(bitmap(), &srcRect, destRect, &paint);
+
     if (isLazyDecoded)
         PlatformInstrumentation::didDrawLazyPixelRef(bitmap().getGenerationID());
     context->didDrawRect(destRect, paint, &bitmap());

@@ -13,18 +13,6 @@ DecodeImage Properties:
     startTime : <number>
     type : "DecodeImage"
 }
-ResizeImage Properties:
-{
-    children : <object>
-    data : {
-        backendNodeId : <number>
-        cached : true
-        url : .../inspector/timeline/resources/test.bmp
-    }
-    endTime : <number>
-    startTime : <number>
-    type : "ResizeImage"
-}
 DecodeImage Properties:
 {
     children : <object>
@@ -36,18 +24,6 @@ DecodeImage Properties:
     endTime : <number>
     startTime : <number>
     type : "DecodeImage"
-}
-ResizeImage Properties:
-{
-    children : <object>
-    data : {
-        backendNodeId : <number>
-        cached : true
-        url : .../inspector/timeline/resources/test.gif
-    }
-    endTime : <number>
-    startTime : <number>
-    type : "ResizeImage"
 }
 DecodeImage Properties:
 {
@@ -61,18 +37,6 @@ DecodeImage Properties:
     startTime : <number>
     type : "DecodeImage"
 }
-ResizeImage Properties:
-{
-    children : <object>
-    data : {
-        backendNodeId : <number>
-        cached : true
-        url : .../inspector/timeline/resources/test.ico
-    }
-    endTime : <number>
-    startTime : <number>
-    type : "ResizeImage"
-}
 DecodeImage Properties:
 {
     children : <object>
@@ -85,18 +49,6 @@ DecodeImage Properties:
     startTime : <number>
     type : "DecodeImage"
 }
-ResizeImage Properties:
-{
-    children : <object>
-    data : {
-        backendNodeId : <number>
-        cached : true
-        url : .../inspector/timeline/resources/test.jpg
-    }
-    endTime : <number>
-    startTime : <number>
-    type : "ResizeImage"
-}
 DecodeImage Properties:
 {
     children : <object>
@@ -108,18 +60,6 @@ DecodeImage Properties:
     endTime : <number>
     startTime : <number>
     type : "DecodeImage"
-}
-ResizeImage Properties:
-{
-    children : <object>
-    data : {
-        backendNodeId : <number>
-        cached : true
-        url : .../inspector/timeline/resources/test.png
-    }
-    endTime : <number>
-    startTime : <number>
-    type : "ResizeImage"
 }
 DecodeImage Properties:
 {
@@ -133,18 +73,6 @@ DecodeImage Properties:
     startTime : <number>
     type : "DecodeImage"
 }
-ResizeImage Properties:
-{
-    children : <object>
-    data : {
-        backendNodeId : <number>
-        cached : true
-        url : .../inspector/timeline/resources/test.webp
-    }
-    endTime : <number>
-    startTime : <number>
-    type : "ResizeImage"
-}
 DecodeImage Properties:
 {
     children : <object>
@@ -156,17 +84,5 @@ DecodeImage Properties:
     endTime : <number>
     startTime : <number>
     type : "DecodeImage"
-}
-ResizeImage Properties:
-{
-    children : <object>
-    data : {
-        backendNodeId : <number>
-        cached : true
-        url : .../inspector/timeline/resources/big.png
-    }
-    endTime : <number>
-    startTime : <number>
-    type : "ResizeImage"
 }
 

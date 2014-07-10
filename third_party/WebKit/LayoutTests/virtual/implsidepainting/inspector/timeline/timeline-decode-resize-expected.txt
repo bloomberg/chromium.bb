@@ -35,18 +35,6 @@ DecodeImage Properties:
     startTime : <number>
     type : "DecodeImage"
 }
-ResizeImage Properties:
-{
-    children : <object>
-    data : {
-        backendNodeId : <number>
-        cached : true
-        url : .../inspector/timeline/resources/test.ico
-    }
-    endTime : <number>
-    startTime : <number>
-    type : "ResizeImage"
-}
 DecodeImage Properties:
 {
     data : {
