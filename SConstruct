@@ -141,6 +141,9 @@ ACCEPTABLE_ARGUMENTS = set([
     # If the replacement memcheck command only works for trusted code,
     # set memcheck_trusted_only to non-zero.
     'memcheck_trusted_only',
+    # When building with MSan, this can be set to values 0 (fastest, least
+    # useful reports) through 2 (slowest, most useful reports). Default is 1.
+    'msan_track_origins',
     # colon-separated list of linker flags, e.g. "-lfoo:-Wl,-u,bar".
     'nacl_linkflags',
     # colon-separated list of pnacl bcld flags, e.g. "-lfoo:-Wl,-u,bar".
@@ -511,6 +514,11 @@ pre_base_env.SetBitFromOption('asan', False)
 if pre_base_env.Bit('asan'):
   pre_base_env.SetBits('clang')
 
+DeclareBit('msan',
+           'Use MemorySanitizer to build trusted code (implies --clang)')
+pre_base_env.SetBitFromOption('msan', False)
+if pre_base_env.Bit('msan'):
+  pre_base_env.SetBits('clang')
 
 # CODE COVERAGE
 DeclareBit('coverage_enabled', 'The build should be instrumented to generate'
@@ -1277,6 +1285,10 @@ pre_base_env.AddMethod(SupportsSeccompBpfSandbox)
 
 
 def GetBootstrap(env):
+  if env.Bit('msan'):
+    # Bootstrap doens't currently work with MSan. However, MSan is only
+    # available on x86_64 where we don't need bootstrap anyway.
+    return None, None
   if 'TRUSTED_ENV' in env:
     trusted_env = env['TRUSTED_ENV']
     if trusted_env.Bit('linux'):
@@ -2307,7 +2319,10 @@ def SetUpClang(env):
   if env.Bit('asan'):
     if not (env.Bit('host_linux') or env.Bit('host_mac')):
       raise UserError("ERROR: ASan is only available for Linux and Mac")
-    env['CLANG_OPTS'].append('-fsanitize=address')
+    env.Append(CLANG_OPTS=['-fsanitize=address',
+                           '-gline-tables-only',
+                           '-fno-omit-frame-pointer',
+                           '-DADDRESS_SANITIZER'])
     if env.Bit('host_mac'):
       # The built executables will try to find this library at runtime
       # in the directory containing the executable itself.  In the
@@ -2323,6 +2338,16 @@ def SetUpClang(env):
       if 'PROPAGATE_ENV' not in env:
         env['PROPAGATE_ENV'] = []
       env['PROPAGATE_ENV'].append('DYLD_LIBRARY_PATH')
+
+  if env.Bit('msan'):
+    if not env.Bit('host_linux') or not env.Bit('build_x86_64'):
+      raise UserError('ERROR: MSan is only available for x86-64 Linux')
+    track_origins = ARGUMENTS.get('msan_track_origins', '1')
+    env.Append(CLANG_OPTS=['-fsanitize=memory',
+                           '-fsanitize-memory-track-origins=%s' % track_origins,
+                           '-gline-tables-only',
+                           '-fno-omit-frame-pointer',
+                           '-DMEMORY_SANITIZER'])
 
   env['CC'] = '${CLANG_DIR}/clang ${CLANG_OPTS}'
   env['CXX'] = '${CLANG_DIR}/clang++ ${CLANG_OPTS}'

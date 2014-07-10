@@ -6,6 +6,10 @@
 
 #include <string.h>
 
+#if defined(MEMORY_SANITIZER)
+#include <sanitizer/msan_interface.h>
+#endif
+
 #include "native_client/src/trusted/service_runtime/nacl_copy.h"
 
 #include "native_client/src/shared/platform/nacl_check.h"
@@ -81,6 +85,15 @@ int NaClCopyOutToUser(struct NaClApp  *nap,
   if (kNaClBadAddress == dst_sys_addr) {
     return 0;
   }
+
+#if defined(MEMORY_SANITIZER)
+  /*
+   * Make sure we don't leak information into the sandbox by copying
+   * uninitialized values.
+   */
+  __msan_check_mem_is_initialized(src_sys_ptr, num_bytes);
+#endif
+
   NaClCopyTakeLock(nap);
   memcpy((void *) dst_sys_addr, src_sys_ptr, num_bytes);
   NaClCopyDropLock(nap);
