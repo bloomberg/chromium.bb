@@ -61,7 +61,7 @@ class CC_SURFACES_EXPORT Display : public OutputSurfaceClient,
       const gfx::Transform& transform,
       const gfx::Rect& viewport,
       const gfx::Rect& clip,
-      bool valid_for_tile_management) OVERRIDE {}
+      bool resourceless_software_draw) OVERRIDE {}
   virtual void SetMemoryPolicy(const ManagedMemoryPolicy& policy) OVERRIDE {}
   virtual void SetTreeActivationCallback(
       const base::Closure& callback) OVERRIDE {}

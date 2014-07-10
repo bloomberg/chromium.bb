@@ -319,11 +319,13 @@ TEST_F(PictureLayerImplTest, InvalidViewportForPrioritizingTiles) {
   SetupDrawPropertiesAndUpdateTiles(active_layer_, 1.f, 1.f, 1.f, 1.f, false);
 
   // UpdateTiles with valid viewport. Should update tile viewport.
-  bool valid_for_tile_management = true;
+  // Note viewport is considered invalid if and only if in resourceless
+  // software draw.
+  bool resourceless_software_draw = false;
   gfx::Rect viewport = gfx::Rect(layer_bounds);
   gfx::Transform transform;
   host_impl_.SetExternalDrawConstraints(
-      transform, viewport, viewport, valid_for_tile_management);
+      transform, viewport, viewport, resourceless_software_draw);
   active_layer_->draw_properties().visible_content_rect = viewport;
   active_layer_->draw_properties().screen_space_transform = transform;
   active_layer_->UpdateTiles(NULL);
@@ -341,13 +343,13 @@ TEST_F(PictureLayerImplTest, InvalidViewportForPrioritizingTiles) {
   // Should not update tile viewport.
   time_ticks += base::TimeDelta::FromMilliseconds(200);
   host_impl_.SetCurrentFrameTimeTicks(time_ticks);
-  valid_for_tile_management = false;
+  resourceless_software_draw = true;
   viewport = gfx::ScaleToEnclosingRect(viewport, 2);
   transform.Translate(1.f, 1.f);
   active_layer_->draw_properties().visible_content_rect = viewport;
   active_layer_->draw_properties().screen_space_transform = transform;
   host_impl_.SetExternalDrawConstraints(
-      transform, viewport, viewport, valid_for_tile_management);
+      transform, viewport, viewport, resourceless_software_draw);
   active_layer_->UpdateTiles(NULL);
 
   EXPECT_RECT_EQ(visible_rect_for_tile_priority,
@@ -361,9 +363,9 @@ TEST_F(PictureLayerImplTest, InvalidViewportForPrioritizingTiles) {
   // Keep expanded viewport but mark it valid. Should update tile viewport.
   time_ticks += base::TimeDelta::FromMilliseconds(200);
   host_impl_.SetCurrentFrameTimeTicks(time_ticks);
-  valid_for_tile_management = true;
+  resourceless_software_draw = false;
   host_impl_.SetExternalDrawConstraints(
-      transform, viewport, viewport, valid_for_tile_management);
+      transform, viewport, viewport, resourceless_software_draw);
   active_layer_->UpdateTiles(NULL);
 
   EXPECT_FALSE(visible_rect_for_tile_priority ==
@@ -391,10 +393,10 @@ TEST_F(PictureLayerImplTest, InvalidViewportAfterReleaseResources) {
   Region invalidation;
   AddDefaultTilingsWithInvalidation(invalidation);
 
-  bool valid_for_tile_management = false;
+  bool resourceless_software_draw = true;
   gfx::Rect viewport = gfx::Rect(layer_bounds);
   host_impl_.SetExternalDrawConstraints(
-      gfx::Transform(), viewport, viewport, valid_for_tile_management);
+      gfx::Transform(), viewport, viewport, resourceless_software_draw);
   ResetTilingsAndRasterScales();
   host_impl_.pending_tree()->UpdateDrawProperties();
   host_impl_.active_tree()->UpdateDrawProperties();
@@ -2418,11 +2420,13 @@ TEST_F(NoLowResPictureLayerImplTest, InvalidViewportForPrioritizingTiles) {
   SetupDrawPropertiesAndUpdateTiles(active_layer_, 1.f, 1.f, 1.f, 1.f, false);
 
   // UpdateTiles with valid viewport. Should update tile viewport.
-  bool valid_for_tile_management = true;
+  // Note viewport is considered invalid if and only if in resourceless
+  // software draw.
+  bool resourceless_software_draw = false;
   gfx::Rect viewport = gfx::Rect(layer_bounds);
   gfx::Transform transform;
   host_impl_.SetExternalDrawConstraints(
-      transform, viewport, viewport, valid_for_tile_management);
+      transform, viewport, viewport, resourceless_software_draw);
   active_layer_->draw_properties().visible_content_rect = viewport;
   active_layer_->draw_properties().screen_space_transform = transform;
   active_layer_->UpdateTiles(NULL);
@@ -2440,13 +2444,13 @@ TEST_F(NoLowResPictureLayerImplTest, InvalidViewportForPrioritizingTiles) {
   // Should not update tile viewport.
   time_ticks += base::TimeDelta::FromMilliseconds(200);
   host_impl_.SetCurrentFrameTimeTicks(time_ticks);
-  valid_for_tile_management = false;
+  resourceless_software_draw = true;
   viewport = gfx::ScaleToEnclosingRect(viewport, 2);
   transform.Translate(1.f, 1.f);
   active_layer_->draw_properties().visible_content_rect = viewport;
   active_layer_->draw_properties().screen_space_transform = transform;
   host_impl_.SetExternalDrawConstraints(
-      transform, viewport, viewport, valid_for_tile_management);
+      transform, viewport, viewport, resourceless_software_draw);
   active_layer_->UpdateTiles(NULL);
 
   EXPECT_RECT_EQ(visible_rect_for_tile_priority,
@@ -2460,9 +2464,9 @@ TEST_F(NoLowResPictureLayerImplTest, InvalidViewportForPrioritizingTiles) {
   // Keep expanded viewport but mark it valid. Should update tile viewport.
   time_ticks += base::TimeDelta::FromMilliseconds(200);
   host_impl_.SetCurrentFrameTimeTicks(time_ticks);
-  valid_for_tile_management = true;
+  resourceless_software_draw = false;
   host_impl_.SetExternalDrawConstraints(
-      transform, viewport, viewport, valid_for_tile_management);
+      transform, viewport, viewport, resourceless_software_draw);
   active_layer_->UpdateTiles(NULL);
 
   EXPECT_FALSE(visible_rect_for_tile_priority ==
@@ -2490,10 +2494,10 @@ TEST_F(NoLowResPictureLayerImplTest, InvalidViewportAfterReleaseResources) {
   Region invalidation;
   AddDefaultTilingsWithInvalidation(invalidation);
 
-  bool valid_for_tile_management = false;
+  bool resourceless_software_draw = true;
   gfx::Rect viewport = gfx::Rect(layer_bounds);
   host_impl_.SetExternalDrawConstraints(
-      gfx::Transform(), viewport, viewport, valid_for_tile_management);
+      gfx::Transform(), viewport, viewport, resourceless_software_draw);
   ResetTilingsAndRasterScales();
   host_impl_.pending_tree()->UpdateDrawProperties();
   host_impl_.active_tree()->UpdateDrawProperties();

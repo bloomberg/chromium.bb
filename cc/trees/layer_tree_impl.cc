@@ -459,8 +459,7 @@ bool LayerTreeImpl::UpdateDrawProperties() {
                  source_frame_number_);
     LayerImpl* page_scale_layer =
         page_scale_layer_ ? page_scale_layer_ : InnerViewportContainerLayer();
-    bool can_render_to_separate_surface =
-        !output_surface()->ForcedDrawToSoftwareDevice();
+    bool can_render_to_separate_surface = !resourceless_software_draw();
 
     ++render_surface_layer_list_id_;
     LayerTreeHostCommon::CalcDrawPropsImplInputs inputs(
@@ -680,8 +679,9 @@ MemoryHistory* LayerTreeImpl::memory_history() const {
   return layer_tree_host_impl_->memory_history();
 }
 
-bool LayerTreeImpl::device_viewport_valid_for_tile_management() const {
-  return layer_tree_host_impl_->device_viewport_valid_for_tile_management();
+bool LayerTreeImpl::resourceless_software_draw() const {
+  return layer_tree_host_impl_->GetDrawMode() ==
+         DRAW_MODE_RESOURCELESS_SOFTWARE;
 }
 
 gfx::Size LayerTreeImpl::device_viewport_size() const {

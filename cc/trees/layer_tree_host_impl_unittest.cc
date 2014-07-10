@@ -5586,8 +5586,14 @@ TEST_F(LayerTreeHostImplTest, ForcedDrawToSoftwareDeviceBasicRender) {
 
   SetupScrollAndContentsLayers(gfx::Size(100, 100));
 
-  output_surface->set_forced_draw_to_software_device(true);
-  EXPECT_TRUE(output_surface->ForcedDrawToSoftwareDevice());
+  const gfx::Transform external_transform;
+  const gfx::Rect external_viewport;
+  const gfx::Rect external_clip;
+  const bool resourceless_software_draw = true;
+  host_impl_->SetExternalDrawConstraints(external_transform,
+                                         external_viewport,
+                                         external_clip,
+                                         resourceless_software_draw);
 
   EXPECT_EQ(0, software_device->frames_began_);
   EXPECT_EQ(0, software_device->frames_ended_);
@@ -5613,8 +5619,14 @@ TEST_F(LayerTreeHostImplTest,
   EXPECT_TRUE(CreateHostImpl(DefaultSettings(),
                              scoped_ptr<OutputSurface>(output_surface)));
 
-  output_surface->set_forced_draw_to_software_device(true);
-  EXPECT_TRUE(output_surface->ForcedDrawToSoftwareDevice());
+  const gfx::Transform external_transform;
+  const gfx::Rect external_viewport;
+  const gfx::Rect external_clip;
+  const bool resourceless_software_draw = true;
+  host_impl_->SetExternalDrawConstraints(external_transform,
+                                         external_viewport,
+                                         external_clip,
+                                         resourceless_software_draw);
 
   // SolidColorLayerImpl will be drawn.
   scoped_ptr<SolidColorLayerImpl> root_layer =
@@ -6702,13 +6714,13 @@ TEST_F(LayerTreeHostImplTest, ExternalTransformReflectedInNextDraw) {
   gfx::Transform external_transform;
   const gfx::Rect external_viewport(layer_size);
   const gfx::Rect external_clip(layer_size);
-  const bool valid_for_tile_management = true;
+  const bool resourceless_software_draw = false;
   LayerImpl* layer = SetupScrollAndContentsLayers(layer_size);
 
   host_impl_->SetExternalDrawConstraints(external_transform,
                                          external_viewport,
                                          external_clip,
-                                         valid_for_tile_management);
+                                         resourceless_software_draw);
   DrawFrame();
   EXPECT_TRANSFORMATION_MATRIX_EQ(
       external_transform, layer->draw_properties().target_space_transform);
@@ -6717,7 +6729,7 @@ TEST_F(LayerTreeHostImplTest, ExternalTransformReflectedInNextDraw) {
   host_impl_->SetExternalDrawConstraints(external_transform,
                                          external_viewport,
                                          external_clip,
-                                         valid_for_tile_management);
+                                         resourceless_software_draw);
   DrawFrame();
   EXPECT_TRANSFORMATION_MATRIX_EQ(
       external_transform, layer->draw_properties().target_space_transform);

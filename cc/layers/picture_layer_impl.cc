@@ -401,7 +401,9 @@ void PictureLayerImpl::UpdateTiles(
   DCHECK(!occlusion_tracker ||
          layer_tree_impl()->settings().use_occlusion_for_tile_prioritization);
 
-  if (layer_tree_impl()->device_viewport_valid_for_tile_management()) {
+  // Transforms and viewport are invalid for tile management inside a
+  // resourceless software draw, so don't update them.
+  if (!layer_tree_impl()->resourceless_software_draw()) {
     visible_rect_for_tile_priority_ = visible_content_rect();
     viewport_size_for_tile_priority_ = layer_tree_impl()->DrawViewportSize();
     screen_space_transform_for_tile_priority_ = screen_space_transform();

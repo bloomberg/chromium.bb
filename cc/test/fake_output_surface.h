@@ -97,11 +97,6 @@ class FakeOutputSurface : public OutputSurface {
   virtual void SetNeedsBeginFrame(bool enable) OVERRIDE;
   bool needs_begin_frame() const { return needs_begin_frame_; }
 
-  void set_forced_draw_to_software_device(bool forced) {
-    forced_draw_to_software_device_ = forced;
-  }
-  virtual bool ForcedDrawToSoftwareDevice() const OVERRIDE;
-
   virtual bool BindToClient(OutputSurfaceClient* client) OVERRIDE;
 
   using OutputSurface::ReleaseGL;
@@ -144,7 +139,6 @@ class FakeOutputSurface : public OutputSurface {
   CompositorFrame last_sent_frame_;
   size_t num_sent_frames_;
   bool needs_begin_frame_;
-  bool forced_draw_to_software_device_;
   bool has_external_stencil_test_;
   TransferableResourceArray resources_held_by_parent_;
   base::WeakPtrFactory<FakeOutputSurface> fake_weak_ptr_factory_;

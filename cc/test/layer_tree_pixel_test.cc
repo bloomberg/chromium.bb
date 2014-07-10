@@ -75,7 +75,9 @@ void LayerTreePixelTest::CommitCompleteOnThread(LayerTreeHostImpl* impl) {
   EXPECT_EQ(gfx::Point().ToString(), viewport.origin().ToString());
   // Be that influence!
   viewport += gfx::Vector2d(20, 10);
-  impl->SetExternalDrawConstraints(gfx::Transform(), viewport, viewport, true);
+  bool resourceless_software_draw = false;
+  impl->SetExternalDrawConstraints(
+      gfx::Transform(), viewport, viewport, resourceless_software_draw);
   EXPECT_EQ(viewport.ToString(), impl->DeviceViewport().ToString());
 }
 

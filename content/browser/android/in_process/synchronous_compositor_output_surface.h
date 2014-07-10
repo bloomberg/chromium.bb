@@ -55,7 +55,6 @@ class SynchronousCompositorOutputSurface
   virtual ~SynchronousCompositorOutputSurface();
 
   // OutputSurface.
-  virtual bool ForcedDrawToSoftwareDevice() const OVERRIDE;
   virtual bool BindToClient(cc::OutputSurfaceClient* surface_client) OVERRIDE;
   virtual void Reshape(const gfx::Size& size, float scale_factor) OVERRIDE;
   virtual void SetNeedsBeginFrame(bool enable) OVERRIDE;
@@ -80,7 +79,7 @@ class SynchronousCompositorOutputSurface
   void InvokeComposite(const gfx::Transform& transform,
                        gfx::Rect viewport,
                        gfx::Rect clip,
-                       bool valid_for_tile_management);
+                       bool hardware_draw);
   bool CalledOnValidThread() const;
   SynchronousCompositorOutputSurfaceDelegate* GetDelegate();
 

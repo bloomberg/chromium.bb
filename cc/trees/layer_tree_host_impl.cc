@@ -246,7 +246,7 @@ LayerTreeHostImpl::LayerTreeHostImpl(
       device_scale_factor_(1.f),
       overhang_ui_resource_id_(0),
       overdraw_bottom_height_(0.f),
-      device_viewport_valid_for_tile_management_(true),
+      resourceless_software_draw_(false),
       begin_impl_frame_interval_(BeginFrameArgs::DefaultInterval()),
       animation_registrar_(AnimationRegistrar::Create()),
       rendering_stats_instrumentation_(rendering_stats_instrumentation),
@@ -569,17 +569,17 @@ void LayerTreeHostImpl::FrameData::AppendRenderPass(
   render_passes.push_back(render_pass.Pass());
 }
 
-static DrawMode GetDrawMode(OutputSurface* output_surface) {
-  if (output_surface->ForcedDrawToSoftwareDevice()) {
+DrawMode LayerTreeHostImpl::GetDrawMode() const {
+  if (resourceless_software_draw_) {
     return DRAW_MODE_RESOURCELESS_SOFTWARE;
-  } else if (output_surface->context_provider()) {
+  } else if (output_surface_->context_provider()) {
     return DRAW_MODE_HARDWARE;
   } else {
-    DCHECK_EQ(!output_surface->software_device(),
-              output_surface->capabilities().delegated_rendering &&
-                  !output_surface->capabilities().deferred_gl_initialization)
-        << output_surface->capabilities().delegated_rendering << " "
-        << output_surface->capabilities().deferred_gl_initialization;
+    DCHECK_EQ(!output_surface_->software_device(),
+              output_surface_->capabilities().delegated_rendering &&
+                  !output_surface_->capabilities().deferred_gl_initialization)
+        << output_surface_->capabilities().delegated_rendering << " "
+        << output_surface_->capabilities().deferred_gl_initialization;
     return DRAW_MODE_SOFTWARE;
   }
 }
@@ -798,7 +798,7 @@ DrawResult LayerTreeHostImpl::CalculateRenderPasses(
 
   int layers_drawn = 0;
 
-  const DrawMode draw_mode = GetDrawMode(output_surface_.get());
+  const DrawMode draw_mode = GetDrawMode();
 
   LayerIteratorType end =
       LayerIteratorType::End(frame->render_surface_layer_list);
@@ -935,8 +935,9 @@ DrawResult LayerTreeHostImpl::CalculateRenderPasses(
   DCHECK(!frame->render_passes.empty());
 
   // Should only have one render pass in resourceless software mode.
-  if (output_surface_->ForcedDrawToSoftwareDevice())
-    DCHECK_EQ(1u, frame->render_passes.size());
+  DCHECK(draw_mode != DRAW_MODE_RESOURCELESS_SOFTWARE ||
+         frame->render_passes.size() == 1u)
+      << frame->render_passes.size();
 
   return draw_result;
 }
@@ -1325,15 +1326,16 @@ void LayerTreeHostImpl::SetExternalDrawConstraints(
     const gfx::Transform& transform,
     const gfx::Rect& viewport,
     const gfx::Rect& clip,
-    bool valid_for_tile_management) {
-  if (external_transform_ != transform || external_viewport_ != viewport) {
+    bool resourceless_software_draw) {
+  if (external_transform_ != transform || external_viewport_ != viewport ||
+      resourceless_software_draw_ != resourceless_software_draw) {
     active_tree_->set_needs_update_draw_properties();
   }
 
   external_transform_ = transform;
   external_viewport_ = viewport;
   external_clip_ = clip;
-  device_viewport_valid_for_tile_management_ = valid_for_tile_management;
+  resourceless_software_draw_ = resourceless_software_draw;
 }
 
 void LayerTreeHostImpl::SetNeedsRedrawRect(const gfx::Rect& damage_rect) {
@@ -1476,16 +1478,18 @@ void LayerTreeHostImpl::DrawLayers(FrameData* frame,
        TracedValue::FromValue(AsValueWithFrame(frame).release()));
   }
 
+  const DrawMode draw_mode = GetDrawMode();
+
   // Because the contents of the HUD depend on everything else in the frame, the
   // contents of its texture are updated as the last thing before the frame is
   // drawn.
   if (active_tree_->hud_layer()) {
     TRACE_EVENT0("cc", "DrawLayers.UpdateHudTexture");
-    active_tree_->hud_layer()->UpdateHudTexture(
-        GetDrawMode(output_surface_.get()), resource_provider_.get());
+    active_tree_->hud_layer()->UpdateHudTexture(draw_mode,
+                                                resource_provider_.get());
   }
 
-  if (output_surface_->ForcedDrawToSoftwareDevice()) {
+  if (draw_mode == DRAW_MODE_RESOURCELESS_SOFTWARE) {
     bool disable_picture_quad_image_filtering =
         IsCurrentlyScrolling() || needs_animate_layers();
 

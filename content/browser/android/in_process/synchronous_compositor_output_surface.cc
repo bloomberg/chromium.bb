@@ -95,14 +95,6 @@ SynchronousCompositorOutputSurface::~SynchronousCompositorOutputSurface() {
     delegate->DidDestroySynchronousOutputSurface(this);
 }
 
-bool SynchronousCompositorOutputSurface::ForcedDrawToSoftwareDevice() const {
-  // |current_sw_canvas_| indicates we're in a DemandDrawSw call. In addition
-  // |invoking_composite_| == false indicates an attempt to draw outside of
-  // the synchronous compositor's control: force it into SW path and hence to
-  // the null canvas (and will log a warning there).
-  return current_sw_canvas_ != NULL || !invoking_composite_;
-}
-
 bool SynchronousCompositorOutputSurface::BindToClient(
     cc::OutputSurfaceClient* surface_client) {
   DCHECK(CalledOnValidThread());
@@ -207,7 +199,7 @@ void SynchronousCompositorOutputSurface::InvokeComposite(
     const gfx::Transform& transform,
     gfx::Rect viewport,
     gfx::Rect clip,
-    bool valid_for_tile_management) {
+    bool hardware_draw) {
   DCHECK(!invoking_composite_);
   DCHECK(!frame_holder_.get());
   base::AutoReset<bool> invoking_composite_resetter(&invoking_composite_, true);
@@ -215,20 +207,23 @@ void SynchronousCompositorOutputSurface::InvokeComposite(
   gfx::Transform adjusted_transform = transform;
   AdjustTransform(&adjusted_transform, viewport);
   SetExternalDrawConstraints(
-      adjusted_transform, viewport, clip, valid_for_tile_management);
+      adjusted_transform, viewport, clip, !hardware_draw);
   SetNeedsRedrawRect(gfx::Rect(viewport.size()));
   client_->BeginFrame(cc::BeginFrameArgs::CreateForSynchronousCompositor());
 
   // After software draws (which might move the viewport arbitrarily), restore
   // the previous hardware viewport to allow CC's tile manager to prioritize
   // properly.
-  if (valid_for_tile_management) {
+  if (hardware_draw) {
     cached_hw_transform_ = adjusted_transform;
     cached_hw_viewport_ = viewport;
     cached_hw_clip_ = clip;
   } else {
-    SetExternalDrawConstraints(
-        cached_hw_transform_, cached_hw_viewport_, cached_hw_clip_, true);
+    bool resourceless_software_draw = false;
+    SetExternalDrawConstraints(cached_hw_transform_,
+                               cached_hw_viewport_,
+                               cached_hw_clip_,
+                               resourceless_software_draw);
   }
 
   if (frame_holder_.get())

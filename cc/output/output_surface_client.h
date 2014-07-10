@@ -41,7 +41,7 @@ class CC_EXPORT OutputSurfaceClient {
   virtual void SetExternalDrawConstraints(const gfx::Transform& transform,
                                           const gfx::Rect& viewport,
                                           const gfx::Rect& clip,
-                                          bool valid_for_tile_management) = 0;
+                                          bool resourceless_software_draw) = 0;
   virtual void SetMemoryPolicy(const ManagedMemoryPolicy& policy) = 0;
   // If set, |callback| will be called subsequent to each new tree activation,
   // regardless of the compositor visibility or damage. |callback| must remain

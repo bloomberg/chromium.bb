@@ -472,7 +472,9 @@ void SoftwareRenderer::DrawTextureQuad(const DrawingFrame* frame,
 
 void SoftwareRenderer::DrawTileQuad(const DrawingFrame* frame,
                                     const TileDrawQuad* quad) {
-  DCHECK(!output_surface_->ForcedDrawToSoftwareDevice());
+  // |resource_provider_| can be NULL in resourceless software draws, which
+  // should never produce tile quads in the first place.
+  DCHECK(resource_provider_);
   DCHECK(IsSoftwareResource(quad->resource_id));
 
   ResourceProvider::ScopedReadLockSoftware lock(resource_provider_,

@@ -21,7 +21,6 @@ FakeOutputSurface::FakeOutputSurface(
       client_(NULL),
       num_sent_frames_(0),
       needs_begin_frame_(false),
-      forced_draw_to_software_device_(false),
       has_external_stencil_test_(false),
       fake_weak_ptr_factory_(this) {
   if (delegated_rendering) {
@@ -36,7 +35,6 @@ FakeOutputSurface::FakeOutputSurface(
     : OutputSurface(software_device.Pass()),
       client_(NULL),
       num_sent_frames_(0),
-      forced_draw_to_software_device_(false),
       has_external_stencil_test_(false),
       fake_weak_ptr_factory_(this) {
   if (delegated_rendering) {
@@ -52,7 +50,6 @@ FakeOutputSurface::FakeOutputSurface(
     : OutputSurface(context_provider, software_device.Pass()),
       client_(NULL),
       num_sent_frames_(0),
-      forced_draw_to_software_device_(false),
       has_external_stencil_test_(false),
       fake_weak_ptr_factory_(this) {
   if (delegated_rendering) {
@@ -102,10 +99,6 @@ void FakeOutputSurface::OnBeginFrame() {
   client_->BeginFrame(CreateBeginFrameArgsForTesting());
 }
 
-
-bool FakeOutputSurface::ForcedDrawToSoftwareDevice() const {
-  return forced_draw_to_software_device_;
-}
 
 bool FakeOutputSurface::BindToClient(OutputSurfaceClient* client) {
   if (OutputSurface::BindToClient(client)) {

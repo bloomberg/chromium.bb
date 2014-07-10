@@ -27,9 +27,10 @@ void ParentOutputSurface::SetDrawConstraints(const gfx::Size& surface_size,
                                              const gfx::Rect& clip) {
   DCHECK(client_);
   surface_size_ = surface_size;
-  gfx::Transform identity;
-  gfx::Rect empty;
-  SetExternalDrawConstraints(identity, empty, clip, true);
+  const gfx::Transform identity;
+  const gfx::Rect empty;
+  const bool resourceless_software_draw = false;
+  SetExternalDrawConstraints(identity, empty, clip, resourceless_software_draw);
 }
 
 }  // namespace android_webview

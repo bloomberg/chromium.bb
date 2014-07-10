@@ -91,12 +91,13 @@ void OutputSurface::SetExternalStencilTest(bool enabled) {
   external_stencil_test_enabled_ = enabled;
 }
 
-void OutputSurface::SetExternalDrawConstraints(const gfx::Transform& transform,
-                                               const gfx::Rect& viewport,
-                                               const gfx::Rect& clip,
-                                               bool valid_for_tile_management) {
+void OutputSurface::SetExternalDrawConstraints(
+    const gfx::Transform& transform,
+    const gfx::Rect& viewport,
+    const gfx::Rect& clip,
+    bool resourceless_software_draw) {
   client_->SetExternalDrawConstraints(
-      transform, viewport, clip, valid_for_tile_management);
+      transform, viewport, clip, resourceless_software_draw);
 }
 
 OutputSurface::~OutputSurface() {
@@ -106,8 +107,6 @@ OutputSurface::~OutputSurface() {
 bool OutputSurface::HasExternalStencilTest() const {
   return external_stencil_test_enabled_;
 }
-
-bool OutputSurface::ForcedDrawToSoftwareDevice() const { return false; }
 
 bool OutputSurface::BindToClient(OutputSurfaceClient* client) {
   DCHECK(client);
