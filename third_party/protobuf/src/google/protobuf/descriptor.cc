@@ -4021,7 +4021,6 @@ static bool IsLite(const FileDescriptor* file) {
   // TODO(kenton):  I don't even remember how many of these conditions are
   //   actually possible.  I'm just being super-safe.
   return file != NULL &&
-         &file->options() != NULL &&
          &file->options() != &FileOptions::default_instance() &&
          file->options().optimize_for() == FileOptions::LITE_RUNTIME;
 }
