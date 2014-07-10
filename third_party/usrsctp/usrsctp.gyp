@@ -127,7 +127,7 @@
           'cflags!': [ '-Werror', '-Wall' ],
           'cflags': [ '-w' ],
         }],
-        ['OS=="mac"', {
+        ['OS=="mac" or OS=="ios"', {
           'defines': [
             'HAVE_SA_LEN',
             'HAVE_SCONN_LEN',
