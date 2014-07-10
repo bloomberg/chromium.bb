@@ -584,8 +584,8 @@ TEST_F(AssociatedURLLoaderTest, UntrustedCheckHeaders)
     CheckHeaderFails("content-length");
     CheckHeaderFails("cookie");
     CheckHeaderFails("cookie2");
+    CheckHeaderFails("content-transfer-encoding");
     CheckHeaderFails("date");
-    CheckHeaderFails("dnt");
     CheckHeaderFails("expect");
     CheckHeaderFails("host");
     CheckHeaderFails("keep-alive");
