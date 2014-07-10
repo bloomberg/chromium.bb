@@ -129,7 +129,7 @@
                 '../base/win/dllmain.cc',
 
                 # Cursors.
-                '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources/ui_unscaled_resources.rc',
+                '<(SHARED_INTERMEDIATE_DIR)/ui/resources/ui_unscaled_resources.rc',
               ],
               'include_dirs': [
                 '<(DEPTH)/third_party/wtl/include',

@@ -80,7 +80,7 @@ source_set("browser") {
       "$root_gen_dir/webkit/grit/devtools_resources_map.cc",
       "$root_gen_dir/webkit/grit/devtools_resources_map.h",
       "$root_gen_dir/content/browser/tracing/grit/tracing_resources.h",
-      "$root_gen_dir/ui/ui_resources/grit/webui_resources_map.cc",
+      "$root_gen_dir/ui/resources/grit/webui_resources_map.cc",
       "$root_gen_dir/content/browser/devtools/devtools_protocol_constants.cc",
       "$root_gen_dir/content/browser/devtools/devtools_protocol_constants.h",
     ], ".")

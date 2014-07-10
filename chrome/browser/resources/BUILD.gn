@@ -32,3 +32,26 @@ grit("translate_internals_resources") {
   source = "translate_internals_resources.grd"
 }
 
+# GYP version: copy command of chrome_extra_resources
+copy("extension_resource_demo") {
+  sources = [ "extension_resource/demo/library.js" ]
+  outputs = [ "$root_out_dir/resources/extension/demo/library.js" ]
+}
+
+if (!is_ios) {
+  grit("component_extension_resources") {
+    source = "component_extension_resources.grd"
+  }
+
+  grit("options_resources") {
+    source = "options_resources.grd"
+  }
+  
+  grit("quota_internals_resources") {
+    source = "quota_internals_resources.grd"
+  }
+
+  grit("sync_file_system_internals_resources") {
+    source = "sync_file_system_internals_resources.grd"
+  }
+}

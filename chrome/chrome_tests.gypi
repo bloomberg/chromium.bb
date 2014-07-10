@@ -337,7 +337,7 @@
             # but that causes errors in other targets when
             # resulting .res files get referenced multiple times.
             '<(SHARED_INTERMEDIATE_DIR)/chrome_version/other_version.rc',
-            '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources/ui_unscaled_resources.rc',
+            '<(SHARED_INTERMEDIATE_DIR)/ui/resources/ui_unscaled_resources.rc',
 
             'browser/ui/views/accessibility/browser_views_accessibility_browsertest.cc',
           ],
@@ -1848,7 +1848,7 @@
         ['OS=="win"', {
           'sources': [
             '<(SHARED_INTERMEDIATE_DIR)/chrome_version/other_version.rc',
-            '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources/ui_unscaled_resources.rc',
+            '<(SHARED_INTERMEDIATE_DIR)/ui/resources/ui_unscaled_resources.rc',
           ],
           'include_dirs': [
             '<(DEPTH)/third_party/wtl/include',
@@ -2170,7 +2170,7 @@
         ['OS=="win"', {
           'sources': [
             '<(SHARED_INTERMEDIATE_DIR)/chrome_version/other_version.rc',
-            '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources/ui_unscaled_resources.rc',
+            '<(SHARED_INTERMEDIATE_DIR)/ui/resources/ui_unscaled_resources.rc',
           ],
           'include_dirs': [
             '<(DEPTH)/third_party/wtl/include',
@@ -2457,7 +2457,7 @@
         ['OS=="win"', {
           'sources': [
             '<(SHARED_INTERMEDIATE_DIR)/chrome_version/other_version.rc',
-            '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources/ui_unscaled_resources.rc',
+            '<(SHARED_INTERMEDIATE_DIR)/ui/resources/ui_unscaled_resources.rc',
           ],
           'include_dirs': [
             '<(DEPTH)/third_party/wtl/include',

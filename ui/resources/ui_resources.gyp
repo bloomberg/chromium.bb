@@ -9,7 +9,7 @@
       'target_name': 'ui_resources',
       'type': 'none',
       'variables': {
-        'grit_out_dir': '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources',
+        'grit_out_dir': '<(SHARED_INTERMEDIATE_DIR)/ui/resources',
       },
       'actions': [
         {
@@ -53,9 +53,9 @@
           'variables': {
             'pak_inputs': [
               '<(SHARED_INTERMEDIATE_DIR)/ui/app_locale_settings/app_locale_settings_en-US.pak',
-              '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources/ui_resources_100_percent.pak',
-              '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources/webui_resources.pak',
-              '<(SHARED_INTERMEDIATE_DIR)/ui/ui_strings/ui_strings_en-US.pak',
+              '<(SHARED_INTERMEDIATE_DIR)/ui/resources/ui_resources_100_percent.pak',
+              '<(SHARED_INTERMEDIATE_DIR)/ui/resources/webui_resources.pak',
+              '<(SHARED_INTERMEDIATE_DIR)/ui/strings/ui_strings_en-US.pak',
             ],
             'pak_output': '<(PRODUCT_DIR)/ui_test.pak',
           },
@@ -69,7 +69,7 @@
               # GN version //ui/resources:copy_ui_resources_100_percent
               'destination': '<(PRODUCT_DIR)/ui',
               'files': [
-                '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources/ui_resources_100_percent.pak',
+                '<(SHARED_INTERMEDIATE_DIR)/ui/resources/ui_resources_100_percent.pak',
               ],
             },
           ],
