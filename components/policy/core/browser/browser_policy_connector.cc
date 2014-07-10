@@ -44,7 +44,16 @@ bool MatchDomain(const base::string16& domain, const base::string16& pattern) {
   UErrorCode status = U_ZERO_ERROR;
   const icu::UnicodeString icu_pattern(pattern.data(), pattern.length());
   icu::RegexMatcher matcher(icu_pattern, UREGEX_CASE_INSENSITIVE, status);
-  DCHECK(U_SUCCESS(status)) << "Invalid domain pattern: " << pattern;
+  if (!U_SUCCESS(status)) {
+    // http://crbug.com/365351 - if for some reason the matcher creation fails
+    // just return that the pattern doesn't match the domain. This is safe
+    // because the calling method (IsNonEnterpriseUser()) is just used to enable
+    // an optimization for non-enterprise users - better to skip the
+    // optimization than crash.
+    DLOG(ERROR) << "Possible invalid domain pattern: " << pattern
+                << " - Error: " << status;
+    return false;
+  }
   icu::UnicodeString icu_input(domain.data(), domain.length());
   matcher.reset(icu_input);
   status = U_ZERO_ERROR;
