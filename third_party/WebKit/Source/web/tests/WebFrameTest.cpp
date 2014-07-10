@@ -5562,9 +5562,9 @@ TEST_F(WebFrameTest, NodeImageTestFloatLeft)
     nodeImageTestValidation(WebCore::IntSize(40, 40), dragImage.get());
 }
 
-class BrandColorTestWebFrameClient : public FrameTestHelpers::TestWebFrameClient {
+class ThemeColorTestWebFrameClient : public FrameTestHelpers::TestWebFrameClient {
 public:
-    BrandColorTestWebFrameClient()
+    ThemeColorTestWebFrameClient()
         : m_didNotify(false)
     {
     }
@@ -5580,7 +5580,7 @@ public:
     }
 
 private:
-    virtual void didChangeBrandColor()
+    virtual void didChangeThemeColor()
     {
         m_didNotify = true;
     }
@@ -5588,31 +5588,31 @@ private:
     bool m_didNotify;
 };
 
-TEST_F(WebFrameTest, BrandColor)
+TEST_F(WebFrameTest, ThemeColor)
 {
-    registerMockedHttpURLLoad("brand_color_test.html");
+    registerMockedHttpURLLoad("theme_color_test.html");
     FrameTestHelpers::WebViewHelper webViewHelper;
-    BrandColorTestWebFrameClient client;
-    webViewHelper.initializeAndLoad(m_baseURL + "brand_color_test.html", true, &client);
+    ThemeColorTestWebFrameClient client;
+    webViewHelper.initializeAndLoad(m_baseURL + "theme_color_test.html", true, &client);
     EXPECT_TRUE(client.didNotify());
     WebLocalFrameImpl* frame = webViewHelper.webViewImpl()->mainFrameImpl();
-    EXPECT_EQ(0xff0000ff, frame->document().brandColor());
+    EXPECT_EQ(0xff0000ff, frame->document().themeColor());
     // Change color by rgb.
     client.reset();
-    frame->executeScript(WebScriptSource("document.getElementById('bc1').setAttribute('content', 'rgb(0, 0, 0)');"));
+    frame->executeScript(WebScriptSource("document.getElementById('tc1').setAttribute('content', 'rgb(0, 0, 0)');"));
     EXPECT_TRUE(client.didNotify());
-    EXPECT_EQ(0xff000000, frame->document().brandColor());
+    EXPECT_EQ(0xff000000, frame->document().themeColor());
     // Change color by hsl.
     client.reset();
-    frame->executeScript(WebScriptSource("document.getElementById('bc1').setAttribute('content', 'hsl(240,100%, 50%)');"));
+    frame->executeScript(WebScriptSource("document.getElementById('tc1').setAttribute('content', 'hsl(240,100%, 50%)');"));
     EXPECT_TRUE(client.didNotify());
-    EXPECT_EQ(0xff0000ff, frame->document().brandColor());
-    // Change of second brand-color meta tag will not change frame's brand
+    EXPECT_EQ(0xff0000ff, frame->document().themeColor());
+    // Change of second theme-color meta tag will not change frame's theme
     // color.
     client.reset();
-    frame->executeScript(WebScriptSource("document.getElementById('bc2').setAttribute('content', '#00FF00');"));
+    frame->executeScript(WebScriptSource("document.getElementById('tc2').setAttribute('content', '#00FF00');"));
     EXPECT_TRUE(client.didNotify());
-    EXPECT_EQ(0xff0000ff, frame->document().brandColor());
+    EXPECT_EQ(0xff0000ff, frame->document().themeColor());
 }
 
 class WebFrameSwapTest : public WebFrameTest {

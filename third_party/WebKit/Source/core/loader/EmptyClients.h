@@ -199,7 +199,7 @@ public:
     virtual void dispatchDidFinishDocumentLoad() OVERRIDE { }
     virtual void dispatchDidFinishLoad() OVERRIDE { }
     virtual void dispatchDidFirstVisuallyNonEmptyLayout() OVERRIDE { }
-    virtual void dispatchDidChangeBrandColor() OVERRIDE { };
+    virtual void dispatchDidChangeThemeColor() OVERRIDE { };
 
     virtual NavigationPolicy decidePolicyForNavigation(const ResourceRequest&, DocumentLoader*, NavigationPolicy) OVERRIDE;
 

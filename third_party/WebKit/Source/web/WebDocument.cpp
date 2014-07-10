@@ -97,9 +97,9 @@ WebString WebDocument::referrer() const
     return constUnwrap<Document>()->referrer();
 }
 
-WebColor WebDocument::brandColor() const
+WebColor WebDocument::themeColor() const
 {
-    return constUnwrap<Document>()->brandColor().rgb();
+    return constUnwrap<Document>()->themeColor().rgb();
 }
 
 WebURL WebDocument::openSearchDescriptionURL() const

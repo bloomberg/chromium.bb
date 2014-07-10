@@ -4728,14 +4728,14 @@ Vector<IconURL> Document::iconURLs(int iconTypesMask)
     return iconURLs;
 }
 
-Color Document::brandColor() const
+Color Document::themeColor() const
 {
-    if (!RuntimeEnabledFeatures::brandColorEnabled())
+    if (!RuntimeEnabledFeatures::themeColorEnabled())
         return Color();
 
     for (HTMLMetaElement* metaElement = head() ? Traversal<HTMLMetaElement>::firstChild(*head()) : 0; metaElement; metaElement = Traversal<HTMLMetaElement>::nextSibling(*metaElement)) {
         RGBA32 rgb;
-        if (equalIgnoringCase(metaElement->name(), "brand-color") && BisonCSSParser::parseColor(rgb, metaElement->content().string().stripWhiteSpace(), true))
+        if (equalIgnoringCase(metaElement->name(), "theme-color") && BisonCSSParser::parseColor(rgb, metaElement->content().string().stripWhiteSpace(), true))
             return Color(rgb);
     }
     return Color();
