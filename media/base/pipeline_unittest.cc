@@ -10,7 +10,6 @@
 #include "base/test/simple_test_tick_clock.h"
 #include "base/threading/simple_thread.h"
 #include "base/time/clock.h"
-#include "media/base/clock.h"
 #include "media/base/fake_text_track_stream.h"
 #include "media/base/gmock_callback_support.h"
 #include "media/base/media_log.h"
@@ -19,6 +18,7 @@
 #include "media/base/test_helpers.h"
 #include "media/base/text_renderer.h"
 #include "media/base/text_track_config.h"
+#include "media/base/time_delta_interpolator.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/size.h"
 
@@ -619,9 +619,9 @@ TEST_F(PipelineTest, AudioStreamShorterThanVideo) {
   streams.push_back(audio_stream());
   streams.push_back(video_stream());
 
-  // Replace the clock so we can simulate wall clock time advancing w/o using
-  // Sleep().
-  pipeline_->SetClockForTesting(new Clock(&test_tick_clock_));
+  // Replace what's used for interpolating to simulate wall clock time.
+  pipeline_->SetTimeDeltaInterpolatorForTesting(
+      new TimeDeltaInterpolator(&test_tick_clock_));
 
   InitializeDemuxer(&streams, duration);
   InitializeAudioRenderer(audio_stream());

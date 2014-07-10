@@ -1,17 +1,17 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "base/logging.h"
 #include "base/test/simple_test_tick_clock.h"
-#include "media/base/clock.h"
+#include "media/base/time_delta_interpolator.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace media {
 
-class ClockTest : public ::testing::Test {
+class TimeDeltaInterpolatorTest : public ::testing::Test {
  public:
-  ClockTest() : clock_(&test_tick_clock_) {}
+  TimeDeltaInterpolatorTest() : interpolator_(&test_tick_clock_) {}
 
  protected:
   void AdvanceSystemTime(base::TimeDelta delta) {
@@ -19,45 +19,44 @@ class ClockTest : public ::testing::Test {
   }
 
   base::SimpleTestTickClock test_tick_clock_;
-  Clock clock_;
-  base::TimeDelta time_elapsed_;
+  TimeDeltaInterpolator interpolator_;
 };
 
-TEST_F(ClockTest, Created) {
+TEST_F(TimeDeltaInterpolatorTest, Created) {
   const base::TimeDelta kExpected = base::TimeDelta::FromSeconds(0);
-  EXPECT_EQ(kExpected, clock_.Elapsed());
+  EXPECT_EQ(kExpected, interpolator_.GetInterpolatedTime());
 }
 
-TEST_F(ClockTest, Play_NormalSpeed) {
+TEST_F(TimeDeltaInterpolatorTest, StartInterpolating_NormalSpeed) {
   const base::TimeDelta kZero;
   const base::TimeDelta kTimeToAdvance = base::TimeDelta::FromSeconds(2);
 
-  EXPECT_EQ(kZero, clock_.Play());
+  EXPECT_EQ(kZero, interpolator_.StartInterpolating());
   AdvanceSystemTime(kTimeToAdvance);
-  EXPECT_EQ(kTimeToAdvance, clock_.Elapsed());
+  EXPECT_EQ(kTimeToAdvance, interpolator_.GetInterpolatedTime());
 }
 
-TEST_F(ClockTest, Play_DoubleSpeed) {
+TEST_F(TimeDeltaInterpolatorTest, StartInterpolating_DoubleSpeed) {
   const base::TimeDelta kZero;
   const base::TimeDelta kTimeToAdvance = base::TimeDelta::FromSeconds(5);
 
-  clock_.SetPlaybackRate(2.0f);
-  EXPECT_EQ(kZero, clock_.Play());
+  interpolator_.SetPlaybackRate(2.0f);
+  EXPECT_EQ(kZero, interpolator_.StartInterpolating());
   AdvanceSystemTime(kTimeToAdvance);
-  EXPECT_EQ(2 * kTimeToAdvance, clock_.Elapsed());
+  EXPECT_EQ(2 * kTimeToAdvance, interpolator_.GetInterpolatedTime());
 }
 
-TEST_F(ClockTest, Play_HalfSpeed) {
+TEST_F(TimeDeltaInterpolatorTest, StartInterpolating_HalfSpeed) {
   const base::TimeDelta kZero;
   const base::TimeDelta kTimeToAdvance = base::TimeDelta::FromSeconds(4);
 
-  clock_.SetPlaybackRate(0.5f);
-  EXPECT_EQ(kZero, clock_.Play());
+  interpolator_.SetPlaybackRate(0.5f);
+  EXPECT_EQ(kZero, interpolator_.StartInterpolating());
   AdvanceSystemTime(kTimeToAdvance);
-  EXPECT_EQ(kTimeToAdvance / 2, clock_.Elapsed());
+  EXPECT_EQ(kTimeToAdvance / 2, interpolator_.GetInterpolatedTime());
 }
 
-TEST_F(ClockTest, Play_ZeroSpeed) {
+TEST_F(TimeDeltaInterpolatorTest, StartInterpolating_ZeroSpeed) {
   // We'll play for 2 seconds at normal speed, 4 seconds at zero speed, and 8
   // seconds at normal speed.
   const base::TimeDelta kZero;
@@ -66,18 +65,18 @@ TEST_F(ClockTest, Play_ZeroSpeed) {
   const base::TimeDelta kPlayDuration3 = base::TimeDelta::FromSeconds(8);
   const base::TimeDelta kExpected = kPlayDuration1 + kPlayDuration3;
 
-  EXPECT_EQ(kZero, clock_.Play());
+  EXPECT_EQ(kZero, interpolator_.StartInterpolating());
 
   AdvanceSystemTime(kPlayDuration1);
-  clock_.SetPlaybackRate(0.0f);
+  interpolator_.SetPlaybackRate(0.0f);
   AdvanceSystemTime(kPlayDuration2);
-  clock_.SetPlaybackRate(1.0f);
+  interpolator_.SetPlaybackRate(1.0f);
   AdvanceSystemTime(kPlayDuration3);
 
-  EXPECT_EQ(kExpected, clock_.Elapsed());
+  EXPECT_EQ(kExpected, interpolator_.GetInterpolatedTime());
 }
 
-TEST_F(ClockTest, Play_MultiSpeed) {
+TEST_F(TimeDeltaInterpolatorTest, StartInterpolating_MultiSpeed) {
   // We'll play for 2 seconds at half speed, 4 seconds at normal speed, and 8
   // seconds at double speed.
   const base::TimeDelta kZero;
@@ -87,19 +86,19 @@ TEST_F(ClockTest, Play_MultiSpeed) {
   const base::TimeDelta kExpected =
       kPlayDuration1 / 2 + kPlayDuration2 + 2 * kPlayDuration3;
 
-  clock_.SetPlaybackRate(0.5f);
-  EXPECT_EQ(kZero, clock_.Play());
+  interpolator_.SetPlaybackRate(0.5f);
+  EXPECT_EQ(kZero, interpolator_.StartInterpolating());
   AdvanceSystemTime(kPlayDuration1);
 
-  clock_.SetPlaybackRate(1.0f);
+  interpolator_.SetPlaybackRate(1.0f);
   AdvanceSystemTime(kPlayDuration2);
 
-  clock_.SetPlaybackRate(2.0f);
+  interpolator_.SetPlaybackRate(2.0f);
   AdvanceSystemTime(kPlayDuration3);
-  EXPECT_EQ(kExpected, clock_.Elapsed());
+  EXPECT_EQ(kExpected, interpolator_.GetInterpolatedTime());
 }
 
-TEST_F(ClockTest, Pause) {
+TEST_F(TimeDeltaInterpolatorTest, StopInterpolating) {
   const base::TimeDelta kZero;
   const base::TimeDelta kPlayDuration = base::TimeDelta::FromSeconds(4);
   const base::TimeDelta kPauseDuration = base::TimeDelta::FromSeconds(20);
@@ -107,34 +106,34 @@ TEST_F(ClockTest, Pause) {
   const base::TimeDelta kExpectedSecondPause = 2 * kPlayDuration;
 
   // Play for 4 seconds.
-  EXPECT_EQ(kZero, clock_.Play());
+  EXPECT_EQ(kZero, interpolator_.StartInterpolating());
   AdvanceSystemTime(kPlayDuration);
 
   // Pause for 20 seconds.
-  EXPECT_EQ(kExpectedFirstPause, clock_.Pause());
-  EXPECT_EQ(kExpectedFirstPause, clock_.Elapsed());
+  EXPECT_EQ(kExpectedFirstPause, interpolator_.StopInterpolating());
+  EXPECT_EQ(kExpectedFirstPause, interpolator_.GetInterpolatedTime());
   AdvanceSystemTime(kPauseDuration);
-  EXPECT_EQ(kExpectedFirstPause, clock_.Elapsed());
+  EXPECT_EQ(kExpectedFirstPause, interpolator_.GetInterpolatedTime());
 
   // Play again for 4 more seconds.
-  EXPECT_EQ(kExpectedFirstPause, clock_.Play());
+  EXPECT_EQ(kExpectedFirstPause, interpolator_.StartInterpolating());
   AdvanceSystemTime(kPlayDuration);
-  EXPECT_EQ(kExpectedSecondPause, clock_.Pause());
-  EXPECT_EQ(kExpectedSecondPause, clock_.Elapsed());
+  EXPECT_EQ(kExpectedSecondPause, interpolator_.StopInterpolating());
+  EXPECT_EQ(kExpectedSecondPause, interpolator_.GetInterpolatedTime());
 }
 
-TEST_F(ClockTest, SetTime_Paused) {
+TEST_F(TimeDeltaInterpolatorTest, SetBounds_Stopped) {
   const base::TimeDelta kFirstTime = base::TimeDelta::FromSeconds(4);
   const base::TimeDelta kSecondTime = base::TimeDelta::FromSeconds(16);
   const base::TimeDelta kArbitraryMaxTime = base::TimeDelta::FromSeconds(100);
 
-  clock_.SetTime(kFirstTime, kArbitraryMaxTime);
-  EXPECT_EQ(kFirstTime, clock_.Elapsed());
-  clock_.SetTime(kSecondTime, kArbitraryMaxTime);
-  EXPECT_EQ(kSecondTime, clock_.Elapsed());
+  interpolator_.SetBounds(kFirstTime, kArbitraryMaxTime);
+  EXPECT_EQ(kFirstTime, interpolator_.GetInterpolatedTime());
+  interpolator_.SetBounds(kSecondTime, kArbitraryMaxTime);
+  EXPECT_EQ(kSecondTime, interpolator_.GetInterpolatedTime());
 }
 
-TEST_F(ClockTest, SetTime_Playing) {
+TEST_F(TimeDeltaInterpolatorTest, SetBounds_Started) {
   // We'll play for 4 seconds, then set the time to 12, then play for 4 more
   // seconds.
   const base::TimeDelta kZero;
@@ -143,58 +142,58 @@ TEST_F(ClockTest, SetTime_Playing) {
   const base::TimeDelta kArbitraryMaxTime = base::TimeDelta::FromSeconds(100);
   const base::TimeDelta kExpected = kUpdatedTime + kPlayDuration;
 
-  EXPECT_EQ(kZero, clock_.Play());
+  EXPECT_EQ(kZero, interpolator_.StartInterpolating());
   AdvanceSystemTime(kPlayDuration);
 
-  clock_.SetTime(kUpdatedTime, kArbitraryMaxTime);
+  interpolator_.SetBounds(kUpdatedTime, kArbitraryMaxTime);
   AdvanceSystemTime(kPlayDuration);
-  EXPECT_EQ(kExpected, clock_.Elapsed());
+  EXPECT_EQ(kExpected, interpolator_.GetInterpolatedTime());
 }
 
-TEST_F(ClockTest, SetMaxTime) {
+TEST_F(TimeDeltaInterpolatorTest, SetUpperBound) {
   const base::TimeDelta kZero;
   const base::TimeDelta kTimeInterval = base::TimeDelta::FromSeconds(4);
   const base::TimeDelta kMaxTime = base::TimeDelta::FromSeconds(6);
 
-  EXPECT_EQ(kZero, clock_.Play());
-  clock_.SetMaxTime(kMaxTime);
+  EXPECT_EQ(kZero, interpolator_.StartInterpolating());
+  interpolator_.SetUpperBound(kMaxTime);
   AdvanceSystemTime(kTimeInterval);
-  EXPECT_EQ(kTimeInterval, clock_.Elapsed());
+  EXPECT_EQ(kTimeInterval, interpolator_.GetInterpolatedTime());
 
   AdvanceSystemTime(kTimeInterval);
-  EXPECT_EQ(kMaxTime, clock_.Elapsed());
+  EXPECT_EQ(kMaxTime, interpolator_.GetInterpolatedTime());
 
   AdvanceSystemTime(kTimeInterval);
-  EXPECT_EQ(kMaxTime, clock_.Elapsed());
+  EXPECT_EQ(kMaxTime, interpolator_.GetInterpolatedTime());
 }
 
-TEST_F(ClockTest, SetMaxTime_MultipleTimes) {
+TEST_F(TimeDeltaInterpolatorTest, SetUpperBound_MultipleTimes) {
   const base::TimeDelta kZero;
   const base::TimeDelta kTimeInterval = base::TimeDelta::FromSeconds(4);
   const base::TimeDelta kMaxTime0 = base::TimeDelta::FromSeconds(120);
   const base::TimeDelta kMaxTime1 = base::TimeDelta::FromSeconds(6);
   const base::TimeDelta kMaxTime2 = base::TimeDelta::FromSeconds(12);
 
-  EXPECT_EQ(kZero, clock_.Play());
-  clock_.SetMaxTime(kMaxTime0);
+  EXPECT_EQ(kZero, interpolator_.StartInterpolating());
+  interpolator_.SetUpperBound(kMaxTime0);
   AdvanceSystemTime(kTimeInterval);
-  EXPECT_EQ(kTimeInterval, clock_.Elapsed());
+  EXPECT_EQ(kTimeInterval, interpolator_.GetInterpolatedTime());
 
-  clock_.SetMaxTime(kMaxTime1);
+  interpolator_.SetUpperBound(kMaxTime1);
   AdvanceSystemTime(kTimeInterval);
-  EXPECT_EQ(kMaxTime1, clock_.Elapsed());
-
-  AdvanceSystemTime(kTimeInterval);
-  EXPECT_EQ(kMaxTime1, clock_.Elapsed());
-
-  clock_.SetMaxTime(kMaxTime2);
-  EXPECT_EQ(kMaxTime1, clock_.Elapsed());
+  EXPECT_EQ(kMaxTime1, interpolator_.GetInterpolatedTime());
 
   AdvanceSystemTime(kTimeInterval);
-  EXPECT_EQ(kMaxTime1 + kTimeInterval, clock_.Elapsed());
+  EXPECT_EQ(kMaxTime1, interpolator_.GetInterpolatedTime());
+
+  interpolator_.SetUpperBound(kMaxTime2);
+  EXPECT_EQ(kMaxTime1, interpolator_.GetInterpolatedTime());
 
   AdvanceSystemTime(kTimeInterval);
-  EXPECT_EQ(kMaxTime2, clock_.Elapsed());
+  EXPECT_EQ(kMaxTime1 + kTimeInterval, interpolator_.GetInterpolatedTime());
+
+  AdvanceSystemTime(kTimeInterval);
+  EXPECT_EQ(kMaxTime2, interpolator_.GetInterpolatedTime());
 }
 
 }  // namespace media

@@ -19,11 +19,11 @@
 #include "base/synchronization/condition_variable.h"
 #include "media/base/audio_decoder.h"
 #include "media/base/audio_renderer.h"
-#include "media/base/clock.h"
 #include "media/base/filter_collection.h"
 #include "media/base/media_log.h"
 #include "media/base/text_renderer.h"
 #include "media/base/text_track_config.h"
+#include "media/base/time_delta_interpolator.h"
 #include "media/base/video_decoder.h"
 #include "media/base/video_decoder_config.h"
 #include "media/base/video_renderer.h"
@@ -41,8 +41,8 @@ Pipeline::Pipeline(
       did_loading_progress_(false),
       volume_(1.0f),
       playback_rate_(0.0f),
-      clock_(new Clock(&default_tick_clock_)),
-      clock_state_(CLOCK_PAUSED),
+      interpolator_(new TimeDeltaInterpolator(&default_tick_clock_)),
+      interpolation_state_(INTERPOLATION_STOPPED),
       status_(PIPELINE_OK),
       state_(kCreated),
       audio_ended_(false),
@@ -55,7 +55,7 @@ Pipeline::Pipeline(
   media_log_->AddEvent(media_log_->CreatePipelineStateChangedEvent(kCreated));
   media_log_->AddEvent(
       media_log_->CreateEvent(MediaLogEvent::PIPELINE_CREATED));
-  clock_->SetTime(base::TimeDelta(), base::TimeDelta());
+  interpolator_->SetBounds(base::TimeDelta(), base::TimeDelta());
 }
 
 Pipeline::~Pipeline() {
@@ -157,7 +157,7 @@ void Pipeline::SetVolume(float volume) {
 
 TimeDelta Pipeline::GetMediaTime() const {
   base::AutoLock auto_lock(lock_);
-  return std::min(clock_->Elapsed(), duration_);
+  return std::min(interpolator_->GetInterpolatedTime(), duration_);
 }
 
 Ranges<TimeDelta> Pipeline::GetBufferedTimeRanges() const {
@@ -182,8 +182,9 @@ PipelineStatistics Pipeline::GetStatistics() const {
   return statistics_;
 }
 
-void Pipeline::SetClockForTesting(Clock* clock) {
-  clock_.reset(clock);
+void Pipeline::SetTimeDeltaInterpolatorForTesting(
+    TimeDeltaInterpolator* interpolator) {
+  interpolator_.reset(interpolator);
 }
 
 void Pipeline::SetErrorForTesting(PipelineStatus status) {
@@ -287,15 +288,15 @@ void Pipeline::OnAudioTimeUpdate(TimeDelta time, TimeDelta max_time) {
   DCHECK_LE(time.InMicroseconds(), max_time.InMicroseconds());
   base::AutoLock auto_lock(lock_);
 
-  if (clock_state_ == CLOCK_WAITING_FOR_AUDIO_TIME_UPDATE &&
-      time < clock_->Elapsed()) {
+  if (interpolation_state_ == INTERPOLATION_WAITING_FOR_AUDIO_TIME_UPDATE &&
+      time < interpolator_->GetInterpolatedTime()) {
     return;
   }
 
   if (state_ == kSeeking)
     return;
 
-  clock_->SetTime(time, max_time);
+  interpolator_->SetBounds(time, max_time);
   StartClockIfWaitingForTimeUpdate_Locked();
 }
 
@@ -309,8 +310,8 @@ void Pipeline::OnVideoTimeUpdate(TimeDelta max_time) {
     return;
 
   base::AutoLock auto_lock(lock_);
-  DCHECK_NE(clock_state_, CLOCK_WAITING_FOR_AUDIO_TIME_UPDATE);
-  clock_->SetMaxTime(max_time);
+  DCHECK_NE(interpolation_state_, INTERPOLATION_WAITING_FOR_AUDIO_TIME_UPDATE);
+  interpolator_->SetUpperBound(max_time);
 }
 
 void Pipeline::SetDuration(TimeDelta duration) {
@@ -397,7 +398,7 @@ void Pipeline::StateTransitionTask(PipelineStatus status) {
 
       {
         base::AutoLock auto_lock(lock_);
-        clock_->SetTime(start_timestamp_, start_timestamp_);
+        interpolator_->SetBounds(start_timestamp_, start_timestamp_);
       }
 
       if (audio_renderer_)
@@ -642,7 +643,7 @@ void Pipeline::PlaybackRateChangedTask(float playback_rate) {
 
   {
     base::AutoLock auto_lock(lock_);
-    clock_->SetPlaybackRate(playback_rate);
+    interpolator_->SetPlaybackRate(playback_rate);
   }
 
   if (audio_renderer_)
@@ -703,7 +704,7 @@ void Pipeline::DoAudioRendererEnded() {
   // Start clock since there is no more audio to trigger clock updates.
   {
     base::AutoLock auto_lock(lock_);
-    clock_->SetMaxTime(duration_);
+    interpolator_->SetUpperBound(duration_);
     StartClockIfWaitingForTimeUpdate_Locked();
   }
 
@@ -749,7 +750,7 @@ void Pipeline::RunEndedCallbackIfNeeded() {
   {
     base::AutoLock auto_lock(lock_);
     PauseClockAndStopRendering_Locked();
-    clock_->SetTime(duration_, duration_);
+    interpolator_->SetBounds(duration_, duration_);
   }
 
   DCHECK_EQ(status_, PIPELINE_OK);
@@ -822,7 +823,7 @@ void Pipeline::BufferingStateChanged(BufferingState* buffering_state,
   // Disable underflow by ignoring updates that renderers have ran out of data
   // after we have started the clock.
   if (state_ == kPlaying && underflow_disabled_for_testing_ &&
-      clock_state_ != CLOCK_PAUSED) {
+      interpolation_state_ != INTERPOLATION_STOPPED) {
     return;
   }
 
@@ -867,7 +868,7 @@ void Pipeline::PausePlayback() {
 void Pipeline::StartPlayback() {
   DVLOG(1) << __FUNCTION__;
   DCHECK_EQ(state_, kPlaying);
-  DCHECK_EQ(clock_state_, CLOCK_PAUSED);
+  DCHECK_EQ(interpolation_state_, INTERPOLATION_STOPPED);
   DCHECK(!WaitingForEnoughData());
   DCHECK(task_runner_->BelongsToCurrentThread());
 
@@ -875,43 +876,43 @@ void Pipeline::StartPlayback() {
     // We use audio stream to update the clock. So if there is such a
     // stream, we pause the clock until we receive a valid timestamp.
     base::AutoLock auto_lock(lock_);
-    clock_state_ = CLOCK_WAITING_FOR_AUDIO_TIME_UPDATE;
+    interpolation_state_ = INTERPOLATION_WAITING_FOR_AUDIO_TIME_UPDATE;
     audio_renderer_->StartRendering();
   } else {
     base::AutoLock auto_lock(lock_);
-    clock_state_ = CLOCK_PLAYING;
-    clock_->SetMaxTime(duration_);
-    clock_->Play();
+    interpolation_state_ = INTERPOLATION_STARTED;
+    interpolator_->SetUpperBound(duration_);
+    interpolator_->StartInterpolating();
   }
 }
 
 void Pipeline::PauseClockAndStopRendering_Locked() {
   lock_.AssertAcquired();
-  switch (clock_state_) {
-    case CLOCK_PAUSED:
+  switch (interpolation_state_) {
+    case INTERPOLATION_STOPPED:
       return;
 
-    case CLOCK_WAITING_FOR_AUDIO_TIME_UPDATE:
+    case INTERPOLATION_WAITING_FOR_AUDIO_TIME_UPDATE:
       audio_renderer_->StopRendering();
       break;
 
-    case CLOCK_PLAYING:
+    case INTERPOLATION_STARTED:
       if (audio_renderer_)
         audio_renderer_->StopRendering();
-      clock_->Pause();
+      interpolator_->StopInterpolating();
       break;
   }
 
-  clock_state_ = CLOCK_PAUSED;
+  interpolation_state_ = INTERPOLATION_STOPPED;
 }
 
 void Pipeline::StartClockIfWaitingForTimeUpdate_Locked() {
   lock_.AssertAcquired();
-  if (clock_state_ != CLOCK_WAITING_FOR_AUDIO_TIME_UPDATE)
+  if (interpolation_state_ != INTERPOLATION_WAITING_FOR_AUDIO_TIME_UPDATE)
     return;
 
-  clock_state_ = CLOCK_PLAYING;
-  clock_->Play();
+  interpolation_state_ = INTERPOLATION_STARTED;
+  interpolator_->StartInterpolating();
 }
 
 }  // namespace media

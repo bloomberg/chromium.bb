@@ -28,11 +28,11 @@ class TimeDelta;
 
 namespace media {
 
-class Clock;
 class FilterCollection;
 class MediaLog;
 class TextRenderer;
 class TextTrackConfig;
+class TimeDeltaInterpolator;
 class VideoRenderer;
 
 // Metadata describing a pipeline once it has been initialized.
@@ -176,7 +176,7 @@ class MEDIA_EXPORT Pipeline : public DemuxerHost {
   void set_underflow_disabled_for_testing(bool disabled) {
     underflow_disabled_for_testing_ = disabled;
   }
-  void SetClockForTesting(Clock* clock);
+  void SetTimeDeltaInterpolatorForTesting(TimeDeltaInterpolator* interpolator);
   void SetErrorForTesting(PipelineStatus status);
 
  private:
@@ -349,26 +349,25 @@ class MEDIA_EXPORT Pipeline : public DemuxerHost {
   // Current duration as reported by |demuxer_|.
   base::TimeDelta duration_;
 
-  // base::TickClock used by |clock_|.
+  // base::TickClock used by |interpolator_|.
   base::DefaultTickClock default_tick_clock_;
 
-  // Reference clock.  Keeps track of current playback time.  Uses system
-  // clock and linear interpolation, but can have its time manually set
-  // by filters.
-  scoped_ptr<Clock> clock_;
+  // Tracks the most recent media time update and provides interpolated values
+  // as playback progresses.
+  scoped_ptr<TimeDeltaInterpolator> interpolator_;
 
-  enum ClockState {
-    // Audio (if present) is not rendering. Clock isn't playing.
-    CLOCK_PAUSED,
+  enum InterpolationState {
+    // Audio (if present) is not rendering. Time isn't being interpolated.
+    INTERPOLATION_STOPPED,
 
-    // Audio (if present) is rendering. Clock isn't playing.
-    CLOCK_WAITING_FOR_AUDIO_TIME_UPDATE,
+    // Audio (if present) is rendering. Time isn't being interpolated.
+    INTERPOLATION_WAITING_FOR_AUDIO_TIME_UPDATE,
 
-    // Audio (if present) is rendering. Clock is playing.
-    CLOCK_PLAYING,
+    // Audio (if present) is rendering. Time is being interpolated.
+    INTERPOLATION_STARTED,
   };
 
-  ClockState clock_state_;
+  InterpolationState interpolation_state_;
 
   // Status of the pipeline.  Initialized to PIPELINE_OK which indicates that
   // the pipeline is operating correctly. Any other value indicates that the

@@ -23,8 +23,8 @@
 #include "media/base/android/media_decoder_job.h"
 #include "media/base/android/media_drm_bridge.h"
 #include "media/base/android/media_player_android.h"
-#include "media/base/clock.h"
 #include "media/base/media_export.h"
+#include "media/base/time_delta_interpolator.h"
 
 namespace media {
 
@@ -200,11 +200,12 @@ class MEDIA_EXPORT MediaSourcePlayer : public MediaPlayerAndroid,
   base::TimeDelta duration_;
   bool playing_;
 
-  // base::TickClock used by |clock_|.
+  // base::TickClock used by |interpolator_|.
   base::DefaultTickClock default_tick_clock_;
 
-  // Reference clock. Keeps track of current playback time.
-  Clock clock_;
+  // Tracks the most recent media time update and provides interpolated values
+  // as playback progresses.
+  TimeDeltaInterpolator interpolator_;
 
   // Timestamps for providing simple A/V sync. When start decoding an audio
   // chunk, we record its presentation timestamp and the current system time.

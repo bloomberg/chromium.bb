@@ -6,8 +6,8 @@
 
 #include "base/bind.h"
 #include "base/memory/scoped_vector.h"
-#include "media/base/clock.h"
 #include "media/base/media_log.h"
+#include "media/base/time_delta_interpolator.h"
 #include "media/filters/audio_renderer_impl.h"
 #include "media/filters/chunk_demuxer.h"
 #include "media/filters/ffmpeg_audio_decoder.h"
@@ -132,8 +132,10 @@ bool PipelineIntegrationTestBase::Start(const base::FilePath& file_path,
                                         kTestType test_type) {
   hashing_enabled_ = test_type == kHashed;
   clockless_playback_ = test_type == kClockless;
-  if (clockless_playback_)
-    pipeline_->SetClockForTesting(new Clock(&dummy_clock_));
+  if (clockless_playback_) {
+    pipeline_->SetTimeDeltaInterpolatorForTesting(
+        new TimeDeltaInterpolator(&dummy_clock_));
+  }
   return Start(file_path, expected_status);
 }
 
