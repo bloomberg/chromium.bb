@@ -67,10 +67,9 @@ TEST_F(CCMessagesPerfTest, DelegatedFrame_ManyQuads_1_4000) {
   scoped_ptr<RenderPass> render_pass = RenderPass::Create();
   render_pass->CreateAndAppendSharedQuadState();
   for (int i = 0; i < 4000; ++i) {
-    render_pass->quad_list.push_back(
-        PictureDrawQuad::Create().PassAs<DrawQuad>());
-    render_pass->quad_list.back()->shared_quad_state =
-        render_pass->shared_quad_state_list.back();
+    PictureDrawQuad* quad =
+        render_pass->CreateAndAppendDrawQuad<PictureDrawQuad>();
+    quad->shared_quad_state = render_pass->shared_quad_state_list.back();
   }
 
   frame->delegated_frame_data.reset(new DelegatedFrameData);
@@ -85,10 +84,9 @@ TEST_F(CCMessagesPerfTest, DelegatedFrame_ManyQuads_1_100000) {
   scoped_ptr<RenderPass> render_pass = RenderPass::Create();
   render_pass->CreateAndAppendSharedQuadState();
   for (int i = 0; i < 100000; ++i) {
-    render_pass->quad_list.push_back(
-        PictureDrawQuad::Create().PassAs<DrawQuad>());
-    render_pass->quad_list.back()->shared_quad_state =
-        render_pass->shared_quad_state_list.back();
+    PictureDrawQuad* quad =
+        render_pass->CreateAndAppendDrawQuad<PictureDrawQuad>();
+    quad->shared_quad_state = render_pass->shared_quad_state_list.back();
   }
 
   frame->delegated_frame_data.reset(new DelegatedFrameData);
@@ -103,10 +101,9 @@ TEST_F(CCMessagesPerfTest, DelegatedFrame_ManyQuads_4000_4000) {
   scoped_ptr<RenderPass> render_pass = RenderPass::Create();
   for (int i = 0; i < 4000; ++i) {
     render_pass->CreateAndAppendSharedQuadState();
-    render_pass->quad_list.push_back(
-        PictureDrawQuad::Create().PassAs<DrawQuad>());
-    render_pass->quad_list.back()->shared_quad_state =
-        render_pass->shared_quad_state_list.back();
+    PictureDrawQuad* quad =
+        render_pass->CreateAndAppendDrawQuad<PictureDrawQuad>();
+    quad->shared_quad_state = render_pass->shared_quad_state_list.back();
   }
 
   frame->delegated_frame_data.reset(new DelegatedFrameData);
@@ -121,10 +118,9 @@ TEST_F(CCMessagesPerfTest, DelegatedFrame_ManyQuads_100000_100000) {
   scoped_ptr<RenderPass> render_pass = RenderPass::Create();
   for (int i = 0; i < 100000; ++i) {
     render_pass->CreateAndAppendSharedQuadState();
-    render_pass->quad_list.push_back(
-        PictureDrawQuad::Create().PassAs<DrawQuad>());
-    render_pass->quad_list.back()->shared_quad_state =
-        render_pass->shared_quad_state_list.back();
+    PictureDrawQuad* quad =
+        render_pass->CreateAndAppendDrawQuad<PictureDrawQuad>();
+    quad->shared_quad_state = render_pass->shared_quad_state_list.back();
   }
 
   frame->delegated_frame_data.reset(new DelegatedFrameData);
@@ -142,10 +138,9 @@ TEST_F(CCMessagesPerfTest,
     scoped_ptr<RenderPass> render_pass = RenderPass::Create();
     for (int j = 0; j < 100; ++j) {
       render_pass->CreateAndAppendSharedQuadState();
-      render_pass->quad_list.push_back(
-          PictureDrawQuad::Create().PassAs<DrawQuad>());
-      render_pass->quad_list.back()->shared_quad_state =
-          render_pass->shared_quad_state_list.back();
+      PictureDrawQuad* quad =
+          render_pass->CreateAndAppendDrawQuad<PictureDrawQuad>();
+      quad->shared_quad_state = render_pass->shared_quad_state_list.back();
     }
     frame->delegated_frame_data->render_pass_list.push_back(render_pass.Pass());
   }

@@ -46,7 +46,8 @@ class DelegatedFrameProviderTest
                       ResourceProvider::ResourceId resource_id) {
     SharedQuadState* sqs =
         frame->render_pass_list[0]->CreateAndAppendSharedQuadState();
-    scoped_ptr<TextureDrawQuad> quad = TextureDrawQuad::Create();
+    TextureDrawQuad* quad =
+        frame->render_pass_list[0]->CreateAndAppendDrawQuad<TextureDrawQuad>();
     float vertex_opacity[4] = {1.f, 1.f, 1.f, 1.f};
     quad->SetNew(sqs,
                  gfx::Rect(0, 0, 10, 10),
@@ -59,7 +60,6 @@ class DelegatedFrameProviderTest
                  SK_ColorTRANSPARENT,
                  vertex_opacity,
                  false);
-    frame->render_pass_list[0]->quad_list.push_back(quad.PassAs<DrawQuad>());
   }
 
   virtual void SetUp() OVERRIDE {

@@ -70,14 +70,14 @@ TEST_F(SurfacesPixelTest, DrawSimpleFrame) {
   CreateAndAppendTestSharedQuadState(
       pass.get(), gfx::Transform(), device_viewport_size_);
 
-  scoped_ptr<SolidColorDrawQuad> color_quad = SolidColorDrawQuad::Create();
+  SolidColorDrawQuad* color_quad =
+      pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
   bool force_anti_aliasing_off = false;
   color_quad->SetNew(pass->shared_quad_state_list.back(),
                      rect,
                      rect,
                      SK_ColorGREEN,
                      force_anti_aliasing_off);
-  pass->quad_list.push_back(color_quad.PassAs<DrawQuad>());
 
   scoped_ptr<DelegatedFrameData> delegated_frame_data(new DelegatedFrameData);
   delegated_frame_data->render_pass_list.push_back(pass.Pass());
@@ -119,21 +119,21 @@ TEST_F(SurfacesPixelTest, DrawSimpleAggregatedFrame) {
     CreateAndAppendTestSharedQuadState(
         pass.get(), gfx::Transform(), device_viewport_size_);
 
-    scoped_ptr<SurfaceDrawQuad> surface_quad = SurfaceDrawQuad::Create();
+    SurfaceDrawQuad* surface_quad =
+        pass->CreateAndAppendDrawQuad<SurfaceDrawQuad>();
     surface_quad->SetNew(pass->shared_quad_state_list.back(),
                          gfx::Rect(child_size),
                          gfx::Rect(child_size),
                          child_surface_id);
-    pass->quad_list.push_back(surface_quad.PassAs<DrawQuad>());
 
-    scoped_ptr<SolidColorDrawQuad> color_quad = SolidColorDrawQuad::Create();
+    SolidColorDrawQuad* color_quad =
+        pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
     bool force_anti_aliasing_off = false;
     color_quad->SetNew(pass->shared_quad_state_list.back(),
                        rect,
                        rect,
                        SK_ColorYELLOW,
                        force_anti_aliasing_off);
-    pass->quad_list.push_back(color_quad.PassAs<DrawQuad>());
 
     scoped_ptr<DelegatedFrameData> delegated_frame_data(new DelegatedFrameData);
     delegated_frame_data->render_pass_list.push_back(pass.Pass());
@@ -153,14 +153,14 @@ TEST_F(SurfacesPixelTest, DrawSimpleAggregatedFrame) {
     CreateAndAppendTestSharedQuadState(
         pass.get(), gfx::Transform(), child_size);
 
-    scoped_ptr<SolidColorDrawQuad> color_quad = SolidColorDrawQuad::Create();
+    SolidColorDrawQuad* color_quad =
+        pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
     bool force_anti_aliasing_off = false;
     color_quad->SetNew(pass->shared_quad_state_list.back(),
                        rect,
                        rect,
                        SK_ColorBLUE,
                        force_anti_aliasing_off);
-    pass->quad_list.push_back(color_quad.PassAs<DrawQuad>());
 
     scoped_ptr<DelegatedFrameData> delegated_frame_data(new DelegatedFrameData);
     delegated_frame_data->render_pass_list.push_back(pass.Pass());
@@ -214,23 +214,23 @@ TEST_F(SurfacesPixelTest, DrawAggregatedFrameWithSurfaceTransforms) {
     CreateAndAppendTestSharedQuadState(
         pass.get(), surface_transform, device_viewport_size_);
 
-    scoped_ptr<SurfaceDrawQuad> left_surface_quad = SurfaceDrawQuad::Create();
+    SurfaceDrawQuad* left_surface_quad =
+        pass->CreateAndAppendDrawQuad<SurfaceDrawQuad>();
     left_surface_quad->SetNew(pass->shared_quad_state_list.back(),
                               gfx::Rect(child_size),
                               gfx::Rect(child_size),
                               left_child_id);
-    pass->quad_list.push_back(left_surface_quad.PassAs<DrawQuad>());
 
     surface_transform.Translate(100, 0);
     CreateAndAppendTestSharedQuadState(
         pass.get(), surface_transform, device_viewport_size_);
 
-    scoped_ptr<SurfaceDrawQuad> right_surface_quad = SurfaceDrawQuad::Create();
+    SurfaceDrawQuad* right_surface_quad =
+        pass->CreateAndAppendDrawQuad<SurfaceDrawQuad>();
     right_surface_quad->SetNew(pass->shared_quad_state_list.back(),
                                gfx::Rect(child_size),
                                gfx::Rect(child_size),
                                right_child_id);
-    pass->quad_list.push_back(right_surface_quad.PassAs<DrawQuad>());
 
     scoped_ptr<DelegatedFrameData> delegated_frame_data(new DelegatedFrameData);
     delegated_frame_data->render_pass_list.push_back(pass.Pass());
@@ -250,24 +250,22 @@ TEST_F(SurfacesPixelTest, DrawAggregatedFrameWithSurfaceTransforms) {
     CreateAndAppendTestSharedQuadState(
         pass.get(), gfx::Transform(), child_size);
 
-    scoped_ptr<SolidColorDrawQuad> top_color_quad =
-        SolidColorDrawQuad::Create();
+    SolidColorDrawQuad* top_color_quad =
+        pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
     bool force_anti_aliasing_off = false;
     top_color_quad->SetNew(pass->shared_quad_state_list.back(),
                            gfx::Rect(quad_size),
                            gfx::Rect(quad_size),
                            SK_ColorGREEN,
                            force_anti_aliasing_off);
-    pass->quad_list.push_back(top_color_quad.PassAs<DrawQuad>());
 
-    scoped_ptr<SolidColorDrawQuad> bottom_color_quad =
-        SolidColorDrawQuad::Create();
+    SolidColorDrawQuad* bottom_color_quad =
+        pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
     bottom_color_quad->SetNew(pass->shared_quad_state_list.back(),
                               gfx::Rect(0, 100, 100, 100),
                               gfx::Rect(0, 100, 100, 100),
                               SK_ColorBLUE,
                               force_anti_aliasing_off);
-    pass->quad_list.push_back(bottom_color_quad.PassAs<DrawQuad>());
 
     scoped_ptr<DelegatedFrameData> delegated_frame_data(new DelegatedFrameData);
     delegated_frame_data->render_pass_list.push_back(pass.Pass());
@@ -287,24 +285,22 @@ TEST_F(SurfacesPixelTest, DrawAggregatedFrameWithSurfaceTransforms) {
     CreateAndAppendTestSharedQuadState(
         pass.get(), gfx::Transform(), child_size);
 
-    scoped_ptr<SolidColorDrawQuad> top_color_quad =
-        SolidColorDrawQuad::Create();
+    SolidColorDrawQuad* top_color_quad =
+        pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
     bool force_anti_aliasing_off = false;
     top_color_quad->SetNew(pass->shared_quad_state_list.back(),
                            gfx::Rect(quad_size),
                            gfx::Rect(quad_size),
                            SK_ColorBLUE,
                            force_anti_aliasing_off);
-    pass->quad_list.push_back(top_color_quad.PassAs<DrawQuad>());
 
-    scoped_ptr<SolidColorDrawQuad> bottom_color_quad =
-        SolidColorDrawQuad::Create();
+    SolidColorDrawQuad* bottom_color_quad =
+        pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
     bottom_color_quad->SetNew(pass->shared_quad_state_list.back(),
                               gfx::Rect(0, 100, 100, 100),
                               gfx::Rect(0, 100, 100, 100),
                               SK_ColorGREEN,
                               force_anti_aliasing_off);
-    pass->quad_list.push_back(bottom_color_quad.PassAs<DrawQuad>());
 
     scoped_ptr<DelegatedFrameData> delegated_frame_data(new DelegatedFrameData);
     delegated_frame_data->render_pass_list.push_back(pass.Pass());

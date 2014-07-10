@@ -488,13 +488,13 @@ void AddSolidColorQuadWithBlendMode(const gfx::Size& size,
               blend_mode,
               0);
 
-  scoped_ptr<SolidColorDrawQuad> color_quad = SolidColorDrawQuad::Create();
+  SolidColorDrawQuad* color_quad =
+      pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
   color_quad->SetNew(pass->shared_quad_state_list.back(),
                      visible_content_rect,
                      visible_content_rect,
                      SK_ColorGREEN,
                      force_anti_aliasing_off);
-  pass->quad_list.push_back(color_quad.PassAs<DrawQuad>());
 }
 
 // This tests that we update shared quad state pointers correctly within
@@ -555,14 +555,12 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, AggregateSharedQuadStateProperties) {
       pass_id, output_rect, damage_rect, transform_to_root_target);
   AddSolidColorQuadWithBlendMode(
       SurfaceSize(), child_one_pass.get(), blend_modes[1]);
-  scoped_ptr<SurfaceDrawQuad> grandchild_surface_quad =
-      SurfaceDrawQuad::Create();
+  SurfaceDrawQuad* grandchild_surface_quad =
+      child_one_pass->CreateAndAppendDrawQuad<SurfaceDrawQuad>();
   grandchild_surface_quad->SetNew(child_one_pass->shared_quad_state_list.back(),
                                   gfx::Rect(SurfaceSize()),
                                   gfx::Rect(SurfaceSize()),
                                   grandchild_surface_id);
-  child_one_pass->quad_list.push_back(
-      grandchild_surface_quad.PassAs<DrawQuad>());
   AddSolidColorQuadWithBlendMode(
       SurfaceSize(), child_one_pass.get(), blend_modes[3]);
   QueuePassAsFrame(child_one_pass.Pass(), child_one_surface_id);
@@ -583,22 +581,20 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, AggregateSharedQuadStateProperties) {
 
   AddSolidColorQuadWithBlendMode(
       SurfaceSize(), root_pass.get(), blend_modes[0]);
-  scoped_ptr<SurfaceDrawQuad> child_one_surface_quad =
-      SurfaceDrawQuad::Create();
+  SurfaceDrawQuad* child_one_surface_quad =
+      root_pass->CreateAndAppendDrawQuad<SurfaceDrawQuad>();
   child_one_surface_quad->SetNew(root_pass->shared_quad_state_list.back(),
                                  gfx::Rect(SurfaceSize()),
                                  gfx::Rect(SurfaceSize()),
                                  child_one_surface_id);
-  root_pass->quad_list.push_back(child_one_surface_quad.PassAs<DrawQuad>());
   AddSolidColorQuadWithBlendMode(
       SurfaceSize(), root_pass.get(), blend_modes[4]);
-  scoped_ptr<SurfaceDrawQuad> child_two_surface_quad =
-      SurfaceDrawQuad::Create();
+  SurfaceDrawQuad* child_two_surface_quad =
+      root_pass->CreateAndAppendDrawQuad<SurfaceDrawQuad>();
   child_two_surface_quad->SetNew(root_pass->shared_quad_state_list.back(),
                                  gfx::Rect(SurfaceSize()),
                                  gfx::Rect(SurfaceSize()),
                                  child_two_surface_id);
-  root_pass->quad_list.push_back(child_two_surface_quad.PassAs<DrawQuad>());
   AddSolidColorQuadWithBlendMode(
       SurfaceSize(), root_pass.get(), blend_modes[6]);
 
@@ -824,7 +820,7 @@ void SubmitFrameWithResources(ResourceProvider::ResourceId* resource_ids,
     resource.id = resource_ids[i];
     resource.is_software = true;
     frame_data->resource_list.push_back(resource);
-    scoped_ptr<TextureDrawQuad> quad(TextureDrawQuad::Create());
+    TextureDrawQuad* quad = pass->CreateAndAppendDrawQuad<TextureDrawQuad>();
     const gfx::Rect rect;
     const gfx::Rect opaque_rect;
     const gfx::Rect visible_rect;
@@ -849,7 +845,6 @@ void SubmitFrameWithResources(ResourceProvider::ResourceId* resource_ids,
                  flipped);
 
     quad->shared_quad_state = sqs;
-    pass->quad_list.push_back(quad.PassAs<DrawQuad>());
   }
   frame_data->render_pass_list.push_back(pass.Pass());
   scoped_ptr<CompositorFrame> frame(new CompositorFrame);

@@ -114,15 +114,15 @@ TEST_F(SoftwareRendererTest, SolidColorQuad) {
                             1.0,
                             SkXfermode::kSrcOver_Mode,
                             0);
-  scoped_ptr<SolidColorDrawQuad> outer_quad = SolidColorDrawQuad::Create();
-  outer_quad->SetNew(
-      shared_quad_state, outer_rect, outer_rect, SK_ColorYELLOW, false);
-  scoped_ptr<SolidColorDrawQuad> inner_quad = SolidColorDrawQuad::Create();
+  SolidColorDrawQuad* inner_quad =
+      root_render_pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
   inner_quad->SetNew(
       shared_quad_state, inner_rect, inner_rect, SK_ColorCYAN, false);
   inner_quad->visible_rect = visible_rect;
-  root_render_pass->AppendQuad(inner_quad.PassAs<DrawQuad>());
-  root_render_pass->AppendQuad(outer_quad.PassAs<DrawQuad>());
+  SolidColorDrawQuad* outer_quad =
+      root_render_pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
+  outer_quad->SetNew(
+      shared_quad_state, outer_rect, outer_rect, SK_ColorYELLOW, false);
 
   RenderPassList list;
   list.push_back(root_render_pass.PassAs<RenderPass>());
@@ -197,16 +197,8 @@ TEST_F(SoftwareRendererTest, TileQuad) {
                             1.0,
                             SkXfermode::kSrcOver_Mode,
                             0);
-  scoped_ptr<TileDrawQuad> outer_quad = TileDrawQuad::Create();
-  outer_quad->SetNew(shared_quad_state,
-                     outer_rect,
-                     outer_rect,
-                     outer_rect,
-                     resource_yellow,
-                     gfx::RectF(outer_size),
-                     outer_size,
-                     false);
-  scoped_ptr<TileDrawQuad> inner_quad = TileDrawQuad::Create();
+  TileDrawQuad* inner_quad =
+      root_render_pass->CreateAndAppendDrawQuad<TileDrawQuad>();
   inner_quad->SetNew(shared_quad_state,
                      inner_rect,
                      inner_rect,
@@ -215,8 +207,16 @@ TEST_F(SoftwareRendererTest, TileQuad) {
                      gfx::RectF(inner_size),
                      inner_size,
                      false);
-  root_render_pass->AppendQuad(inner_quad.PassAs<DrawQuad>());
-  root_render_pass->AppendQuad(outer_quad.PassAs<DrawQuad>());
+  TileDrawQuad* outer_quad =
+      root_render_pass->CreateAndAppendDrawQuad<TileDrawQuad>();
+  outer_quad->SetNew(shared_quad_state,
+                     outer_rect,
+                     outer_rect,
+                     outer_rect,
+                     resource_yellow,
+                     gfx::RectF(outer_size),
+                     outer_size,
+                     false);
 
   RenderPassList list;
   list.push_back(root_render_pass.PassAs<RenderPass>());
@@ -279,7 +279,8 @@ TEST_F(SoftwareRendererTest, TileQuadVisibleRect) {
                             1.0,
                             SkXfermode::kSrcOver_Mode,
                             0);
-  scoped_ptr<TileDrawQuad> quad = TileDrawQuad::Create();
+  TileDrawQuad* quad =
+      root_render_pass->CreateAndAppendDrawQuad<TileDrawQuad>();
   quad->SetNew(shared_quad_state,
                tile_rect,
                tile_rect,
@@ -289,7 +290,6 @@ TEST_F(SoftwareRendererTest, TileQuadVisibleRect) {
                tile_size,
                false);
   quad->visible_rect = visible_rect;
-  root_render_pass->AppendQuad(quad.PassAs<DrawQuad>());
 
   RenderPassList list;
   list.push_back(root_render_pass.PassAs<RenderPass>());

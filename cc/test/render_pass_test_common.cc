@@ -19,10 +19,6 @@
 
 namespace cc {
 
-void TestRenderPass::AppendQuad(scoped_ptr<DrawQuad> quad) {
-  quad_list.push_back(quad.Pass());
-}
-
 void TestRenderPass::AppendOneOfEveryQuadType(
     ResourceProvider* resource_provider,
     RenderPass::Id child_pass) {
@@ -83,17 +79,16 @@ void TestRenderPass::AppendOneOfEveryQuadType(
                        SkXfermode::kSrcOver_Mode,
                        0);
 
-  scoped_ptr<CheckerboardDrawQuad> checkerboard_quad =
-      CheckerboardDrawQuad::Create();
+  CheckerboardDrawQuad* checkerboard_quad =
+      this->CreateAndAppendDrawQuad<CheckerboardDrawQuad>();
   checkerboard_quad->SetNew(shared_state, rect, visible_rect, SK_ColorRED);
-  AppendQuad(checkerboard_quad.PassAs<DrawQuad>());
 
-  scoped_ptr<DebugBorderDrawQuad> debug_border_quad =
-      DebugBorderDrawQuad::Create();
+  DebugBorderDrawQuad* debug_border_quad =
+      this->CreateAndAppendDrawQuad<DebugBorderDrawQuad>();
   debug_border_quad->SetNew(shared_state, rect, visible_rect, SK_ColorRED, 1);
-  AppendQuad(debug_border_quad.PassAs<DrawQuad>());
 
-  scoped_ptr<IOSurfaceDrawQuad> io_surface_quad = IOSurfaceDrawQuad::Create();
+  IOSurfaceDrawQuad* io_surface_quad =
+      this->CreateAndAppendDrawQuad<IOSurfaceDrawQuad>();
   io_surface_quad->SetNew(shared_state,
                           rect,
                           opaque_rect,
@@ -101,11 +96,10 @@ void TestRenderPass::AppendOneOfEveryQuadType(
                           gfx::Size(50, 50),
                           resource7,
                           IOSurfaceDrawQuad::FLIPPED);
-  AppendQuad(io_surface_quad.PassAs<DrawQuad>());
 
   if (child_pass.layer_id) {
-    scoped_ptr<RenderPassDrawQuad> render_pass_quad =
-        RenderPassDrawQuad::Create();
+    RenderPassDrawQuad* render_pass_quad =
+        this->CreateAndAppendDrawQuad<RenderPassDrawQuad>();
     render_pass_quad->SetNew(shared_state,
                              rect,
                              visible_rect,
@@ -116,10 +110,9 @@ void TestRenderPass::AppendOneOfEveryQuadType(
                              gfx::RectF(),
                              FilterOperations(),
                              FilterOperations());
-    AppendQuad(render_pass_quad.PassAs<DrawQuad>());
 
-    scoped_ptr<RenderPassDrawQuad> render_pass_replica_quad =
-        RenderPassDrawQuad::Create();
+    RenderPassDrawQuad* render_pass_replica_quad =
+        this->CreateAndAppendDrawQuad<RenderPassDrawQuad>();
     render_pass_replica_quad->SetNew(shared_state,
                                      rect,
                                      visible_rect,
@@ -130,26 +123,24 @@ void TestRenderPass::AppendOneOfEveryQuadType(
                                      gfx::RectF(),
                                      FilterOperations(),
                                      FilterOperations());
-    AppendQuad(render_pass_replica_quad.PassAs<DrawQuad>());
   }
 
-  scoped_ptr<SolidColorDrawQuad> solid_color_quad =
-      SolidColorDrawQuad::Create();
+  SolidColorDrawQuad* solid_color_quad =
+      this->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
   solid_color_quad->SetNew(
       shared_state, rect, visible_rect, SK_ColorRED, false);
-  AppendQuad(solid_color_quad.PassAs<DrawQuad>());
 
-  scoped_ptr<StreamVideoDrawQuad> stream_video_quad =
-      StreamVideoDrawQuad::Create();
+  StreamVideoDrawQuad* stream_video_quad =
+      this->CreateAndAppendDrawQuad<StreamVideoDrawQuad>();
   stream_video_quad->SetNew(shared_state,
                             rect,
                             opaque_rect,
                             visible_rect,
                             resource6,
                             gfx::Transform());
-  AppendQuad(stream_video_quad.PassAs<DrawQuad>());
 
-  scoped_ptr<TextureDrawQuad> texture_quad = TextureDrawQuad::Create();
+  TextureDrawQuad* texture_quad =
+      this->CreateAndAppendDrawQuad<TextureDrawQuad>();
   texture_quad->SetNew(shared_state,
                        rect,
                        opaque_rect,
@@ -161,9 +152,9 @@ void TestRenderPass::AppendOneOfEveryQuadType(
                        SK_ColorTRANSPARENT,
                        vertex_opacity,
                        false);
-  AppendQuad(texture_quad.PassAs<DrawQuad>());
 
-  scoped_ptr<TileDrawQuad> scaled_tile_quad = TileDrawQuad::Create();
+  TileDrawQuad* scaled_tile_quad =
+      this->CreateAndAppendDrawQuad<TileDrawQuad>();
   scaled_tile_quad->SetNew(shared_state,
                            rect,
                            opaque_rect,
@@ -172,7 +163,6 @@ void TestRenderPass::AppendOneOfEveryQuadType(
                            gfx::RectF(0, 0, 50, 50),
                            gfx::Size(50, 50),
                            false);
-  AppendQuad(scaled_tile_quad.PassAs<DrawQuad>());
 
   SharedQuadState* transformed_state = this->CreateAndAppendSharedQuadState();
   transformed_state->CopyFrom(shared_state);
@@ -180,7 +170,8 @@ void TestRenderPass::AppendOneOfEveryQuadType(
   rotation.Rotate(45);
   transformed_state->content_to_target_transform =
       transformed_state->content_to_target_transform * rotation;
-  scoped_ptr<TileDrawQuad> transformed_tile_quad = TileDrawQuad::Create();
+  TileDrawQuad* transformed_tile_quad =
+      this->CreateAndAppendDrawQuad<TileDrawQuad>();
   transformed_tile_quad->SetNew(transformed_state,
                                 rect,
                                 opaque_rect,
@@ -189,7 +180,6 @@ void TestRenderPass::AppendOneOfEveryQuadType(
                                 gfx::RectF(0, 0, 100, 100),
                                 gfx::Size(100, 100),
                                 false);
-  AppendQuad(transformed_tile_quad.PassAs<DrawQuad>());
 
   SharedQuadState* shared_state2 = this->CreateAndAppendSharedQuadState();
   shared_state->SetAll(gfx::Transform(),
@@ -201,7 +191,7 @@ void TestRenderPass::AppendOneOfEveryQuadType(
                        SkXfermode::kSrcOver_Mode,
                        0);
 
-  scoped_ptr<TileDrawQuad> tile_quad = TileDrawQuad::Create();
+  TileDrawQuad* tile_quad = this->CreateAndAppendDrawQuad<TileDrawQuad>();
   tile_quad->SetNew(shared_state2,
                     rect,
                     opaque_rect,
@@ -210,7 +200,6 @@ void TestRenderPass::AppendOneOfEveryQuadType(
                     gfx::RectF(0, 0, 100, 100),
                     gfx::Size(100, 100),
                     false);
-  AppendQuad(tile_quad.PassAs<DrawQuad>());
 
   ResourceProvider::ResourceId plane_resources[4];
   for (int i = 0; i < 4; ++i) {
@@ -223,7 +212,8 @@ void TestRenderPass::AppendOneOfEveryQuadType(
     resource_provider->AllocateForTesting(plane_resources[i]);
   }
   YUVVideoDrawQuad::ColorSpace color_space = YUVVideoDrawQuad::REC_601;
-  scoped_ptr<YUVVideoDrawQuad> yuv_quad = YUVVideoDrawQuad::Create();
+  YUVVideoDrawQuad* yuv_quad =
+      this->CreateAndAppendDrawQuad<YUVVideoDrawQuad>();
   yuv_quad->SetNew(shared_state2,
                    rect,
                    opaque_rect,
@@ -234,7 +224,6 @@ void TestRenderPass::AppendOneOfEveryQuadType(
                    plane_resources[2],
                    plane_resources[3],
                    color_space);
-  AppendQuad(yuv_quad.PassAs<DrawQuad>());
 }
 
 }  // namespace cc

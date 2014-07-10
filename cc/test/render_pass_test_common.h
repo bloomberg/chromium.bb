@@ -19,8 +19,6 @@ class TestRenderPass : public RenderPass {
     return make_scoped_ptr(new TestRenderPass);
   }
 
-  void AppendQuad(scoped_ptr<DrawQuad> quad);
-
   void AppendOneOfEveryQuadType(ResourceProvider* resource_provider,
                                 RenderPass::Id child_pass);
 
