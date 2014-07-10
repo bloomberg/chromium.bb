@@ -243,14 +243,14 @@ Geolocation* Geolocation::create(ExecutionContext* context)
 
 Geolocation::Geolocation(ExecutionContext* context)
     : ActiveDOMObject(context)
-    , m_allowGeolocation(Unknown)
+    , m_geolocationPermission(PermissionUnknown)
 {
     ScriptWrappable::init(this);
 }
 
 Geolocation::~Geolocation()
 {
-    ASSERT(m_allowGeolocation != InProgress);
+    ASSERT(m_geolocationPermission != PermissionRequested);
 }
 
 void Geolocation::trace(Visitor* visitor)
@@ -275,10 +275,11 @@ LocalFrame* Geolocation::frame() const
 void Geolocation::stop()
 {
     LocalFrame* frame = this->frame();
-    if (frame && m_allowGeolocation == InProgress)
+    if (frame && m_geolocationPermission == PermissionRequested)
         GeolocationController::from(frame)->cancelPermissionRequest(this);
+
     // The frame may be moving to a new page and we want to get the permissions from the new page's client.
-    m_allowGeolocation = Unknown;
+    m_geolocationPermission = PermissionUnknown;
     cancelAllRequests();
     stopUpdating();
     m_pendingForPermissionNotifiers.clear();
@@ -436,9 +437,8 @@ void Geolocation::clearWatch(int watchID)
 
 void Geolocation::setIsAllowed(bool allowed)
 {
-    // This may be due to either a new position from the service, or a cached
-    // position.
-    m_allowGeolocation = allowed ? Yes : No;
+    // This may be due to either a new position from the service, or a cached position.
+    m_geolocationPermission = allowed ? PermissionAllowed : PermissionDenied;
 
     // Permission request was made during the startRequest process
     if (!m_pendingForPermissionNotifiers.isEmpty()) {
@@ -585,14 +585,14 @@ void Geolocation::handleError(PositionError* error)
 
 void Geolocation::requestPermission()
 {
-    if (m_allowGeolocation > Unknown)
+    if (m_geolocationPermission != PermissionUnknown)
         return;
 
     LocalFrame* frame = this->frame();
     if (!frame)
         return;
 
-    m_allowGeolocation = InProgress;
+    m_geolocationPermission = PermissionRequested;
 
     // Ask the embedder: it maintains the geolocation challenge policy itself.
     GeolocationController::from(frame)->requestPermission(this);

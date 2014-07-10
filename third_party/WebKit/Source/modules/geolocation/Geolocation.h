@@ -73,7 +73,7 @@ public:
 
     void setIsAllowed(bool);
 
-    bool isAllowed() const { return m_allowGeolocation == Yes; }
+    bool isAllowed() const { return m_geolocationPermission == PermissionAllowed; }
 
     // Notifies this that a new position is available. Must never be called
     // before permission is granted by the user.
@@ -86,7 +86,7 @@ private:
     // Returns the last known position, if any. May return null.
     Geoposition* lastPosition();
 
-    bool isDenied() const { return m_allowGeolocation == No; }
+    bool isDenied() const { return m_geolocationPermission == PermissionDenied; }
 
     explicit Geolocation(ExecutionContext*);
 
@@ -232,12 +232,17 @@ private:
     GeoNotifierSet m_pendingForPermissionNotifiers;
     Member<Geoposition> m_lastPosition;
 
-    enum {
-        Unknown,
-        InProgress,
-        Yes,
-        No
-    } m_allowGeolocation;
+    // States of Geolocation permission as granted by the embedder. Unknown
+    // means that the embedder still has to be asked for the current permission
+    // level; Requested means that the user has yet to make a decision.
+    enum Permission {
+        PermissionUnknown,
+        PermissionRequested,
+        PermissionAllowed,
+        PermissionDenied
+    };
+
+    Permission m_geolocationPermission;
 
     GeoNotifierSet m_requestsAwaitingCachedPosition;
 };
