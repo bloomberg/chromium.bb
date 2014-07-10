@@ -18,6 +18,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
+#include "chrome/browser/ui/zoom/zoom_controller.h"
 #include "chrome/browser/webdata/web_data_service_factory.h"
 #include "chrome/common/url_constants.h"
 #include "components/autofill/content/browser/content_autofill_driver.h"
@@ -37,6 +38,16 @@ namespace autofill {
 ChromeAutofillClient::ChromeAutofillClient(content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents), web_contents_(web_contents) {
   DCHECK(web_contents);
+  // Since ZoomController is also a WebContentsObserver, we need to be careful
+  // about disconnecting from it since the relative order of destruction of
+  // WebContentsObservers is not guaranteed. ZoomController silently clears
+  // its ZoomObserver list during WebContentsDestroyed() so there's no need
+  // to explicitly remove ourselves on destruction.
+  ZoomController* zoom_controller =
+      ZoomController::FromWebContents(web_contents);
+  // There may not always be a ZoomController, e.g. on Android.
+  if (zoom_controller)
+    zoom_controller->AddObserver(this);
 #if defined(OS_MACOSX) && !defined(OS_IOS)
   RegisterForKeystoneNotifications();
 #endif  // defined(OS_MACOSX) && !defined(OS_IOS)
@@ -169,6 +180,11 @@ void ChromeAutofillClient::HideRequestAutocompleteDialog() {
 }
 
 void ChromeAutofillClient::WebContentsDestroyed() {
+  HideAutofillPopup();
+}
+
+void ChromeAutofillClient::OnZoomChanged(
+    const ZoomController::ZoomChangedEventData& data) {
   HideAutofillPopup();
 }
 

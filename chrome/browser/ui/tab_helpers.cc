@@ -112,6 +112,11 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
   // SessionTabHelper comes first because it sets up the tab ID, and other
   // helpers may rely on that.
   SessionTabHelper::CreateForWebContents(web_contents);
+#if !defined(OS_ANDROID)
+  // ZoomController comes before common tab helpers since ChromeAutofillClient
+  // may want to register as a ZoomObserver with it.
+  ZoomController::CreateForWebContents(web_contents);
+#endif
 
   // --- Common tab helpers ---
 
@@ -164,7 +169,6 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
   TabContentsSyncedTabDelegate::CreateForWebContents(web_contents);
   ThumbnailTabHelper::CreateForWebContents(web_contents);
   web_modal::WebContentsModalDialogManager::CreateForWebContents(web_contents);
-  ZoomController::CreateForWebContents(web_contents);
 #endif
 
 #if defined(OS_WIN)

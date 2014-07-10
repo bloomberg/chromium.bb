@@ -9,6 +9,7 @@
 #include "base/compiler_specific.h"
 #include "base/i18n/rtl.h"
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/ui/zoom/zoom_observer.h"
 #include "components/autofill/core/browser/autofill_client.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
@@ -30,7 +31,8 @@ struct FormData;
 class ChromeAutofillClient
     : public AutofillClient,
       public content::WebContentsUserData<ChromeAutofillClient>,
-      public content::WebContentsObserver {
+      public content::WebContentsObserver,
+      public ZoomObserver {
  public:
   virtual ~ChromeAutofillClient();
 
@@ -71,6 +73,10 @@ class ChromeAutofillClient
 
   // content::WebContentsObserver implementation.
   virtual void WebContentsDestroyed() OVERRIDE;
+
+  // ZoomObserver implementation.
+  virtual void OnZoomChanged(
+      const ZoomController::ZoomChangedEventData& data) OVERRIDE;
 
   // Exposed for testing.
   AutofillDialogController* GetDialogControllerForTesting() {

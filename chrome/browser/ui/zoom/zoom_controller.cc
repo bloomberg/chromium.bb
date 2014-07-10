@@ -257,6 +257,12 @@ void ZoomController::DidNavigateMainFrame(
   UpdateState(std::string());
 }
 
+void ZoomController::WebContentsDestroyed() {
+  // At this point we should no longer be sending any zoom events with this
+  // WebContents.
+  observers_.Clear();
+}
+
 void ZoomController::OnZoomLevelChanged(
     const content::HostZoomMap::ZoomLevelChange& change) {
   UpdateState(change.host);

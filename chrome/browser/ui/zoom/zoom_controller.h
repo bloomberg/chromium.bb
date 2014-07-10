@@ -114,6 +114,7 @@ class ZoomController : public content::WebContentsObserver,
   virtual void DidNavigateMainFrame(
       const content::LoadCommittedDetails& details,
       const content::FrameNavigateParams& params) OVERRIDE;
+  virtual void WebContentsDestroyed() OVERRIDE;
 
  private:
   explicit ZoomController(content::WebContents* web_contents);
