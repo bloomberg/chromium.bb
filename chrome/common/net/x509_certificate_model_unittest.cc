@@ -361,3 +361,51 @@ TEST(X509CertificateModelTest, ProcessSecAlgorithms) {
                   cert->os_cert_handle()));
   }
 }
+
+TEST(X509CertificateModelTest, ProcessSubjectPublicKeyInfo) {
+  {
+    scoped_refptr<net::X509Certificate> cert(net::ImportCertFromFile(
+        net::GetTestCertsDirectory(), "root_ca_cert.pem"));
+    ASSERT_TRUE(cert.get());
+    EXPECT_EQ(
+        "Modulus (2048 bits):\n"
+        "  AB A3 84 16 05 AE F4 80 85 81 A7 A8 59 FA BB 0E\n"
+        "5E 7B 04 DC C4 44 7A 41 05 37 9D 45 A1 6B DE E8\n"
+        "FE 0F 89 D3 39 78 EB 68 01 4F 15 C0 4B 13 A4 4C\n"
+        "25 95 ED A4 BB D9 AD F7 54 0C F1 33 4E D7 25 88\n"
+        "B0 28 5E 64 01 F0 33 7C 4D 3B D8 5C 48 04 AF 77\n"
+        "52 6F EA 99 B0 07 E6 6D BB 63 9E 33 AD 18 94 30\n"
+        "96 46 F4 41 D6 69 E3 EE 55 DE FA C3 D4 36 D3 D1\n"
+        "71 87 28 3B B8 FC 4B 2D BF 3C E2 FB 8C E8 FA 99\n"
+        "44 0C BD 5D CB E3 A9 F6 0D 3D 1C EB B6 80 1E BE\n"
+        "A5 51 B5 60 04 77 72 47 96 17 0D 8E 44 EE FA C4\n"
+        "5F AB 31 16 DC 68 9A 9F 9A 79 94 04 B9 0F 14 DF\n"
+        "C1 9A FA 37 AB 7F 70 B8 80 DD 48 25 ED BD 43 67\n"
+        "01 C1 32 9D 76 A1 FE C1 64 D8 00 77 73 D1 3F 21\n"
+        "86 92 72 E8 91 36 45 84 8B B7 14 5E B0 32 5C A3\n"
+        "ED 30 DA 36 45 DB DF 55 41 18 CF FE 36 37 ED BB\n"
+        "D3 09 1F D6 D6 91 D2 D8 5F 73 02 52 D3 AA 0D 23\n"
+        "\n"
+#if defined(USE_OPENSSL)
+        "  Public Exponent (17 bits):\n"
+#else
+        "  Public Exponent (24 bits):\n"
+#endif
+        "  01 00 01",
+        x509_certificate_model::ProcessSubjectPublicKeyInfo(
+            cert->os_cert_handle()));
+  }
+  {
+    scoped_refptr<net::X509Certificate> cert(net::ImportCertFromFile(
+        net::GetTestCertsDirectory(), "prime256v1-ecdsa-intermediate.pem"));
+    ASSERT_TRUE(cert.get());
+    EXPECT_EQ(
+        "04 D1 35 14 53 74 2F E1 E4 9B 41 9E 42 9D 10 6B\n"
+        "0B F4 16 8F BC A7 C7 A4 39 09 73 34 CB 87 DF 2F\n"
+        "7E 4A 5F B1 B5 E4 DC 49 41 4E A8 81 34 B5 DA 7D\n"
+        "27 7D 05 C1 BD 0A 29 6D AD A3 5D 37 7B 56 B7 1B\n"
+        "60",
+        x509_certificate_model::ProcessSubjectPublicKeyInfo(
+            cert->os_cert_handle()));
+  }
+}

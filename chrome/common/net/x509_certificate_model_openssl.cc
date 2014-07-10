@@ -45,6 +45,13 @@ std::string ProcessRawAsn1Type(ASN1_TYPE* data) {
   return ProcessRawBytes(buf.get(), len);
 }
 
+std::string ProcessRawBignum(BIGNUM* n) {
+  int len = BN_num_bytes(n);
+  scoped_ptr<unsigned char[]> buf(new unsigned char[len]);
+  len = BN_bn2bin(n, buf.get());
+  return ProcessRawBytes(buf.get(), len);
+}
+
 std::string Asn1StringToUTF8(ASN1_STRING* asn1_string) {
   std::string rv;
   unsigned char* buf = NULL;
@@ -1184,8 +1191,29 @@ std::string ProcessSecAlgorithmSignatureWrap(
 
 std::string ProcessSubjectPublicKeyInfo(
     net::X509Certificate::OSCertHandle cert_handle) {
-  // TODO(bulach): implement me.
-  return "";
+  std::string rv;
+  crypto::ScopedOpenSSL<EVP_PKEY, EVP_PKEY_free> public_key(
+      X509_get_pubkey(cert_handle));
+  if (!public_key.get())
+    return rv;
+  switch (EVP_PKEY_type(public_key.get()->type)) {
+    case EVP_PKEY_RSA: {
+      crypto::ScopedOpenSSL<RSA, RSA_free> rsa_key(
+          EVP_PKEY_get1_RSA(public_key.get()));
+      if (!rsa_key.get())
+        return rv;
+      rv = l10n_util::GetStringFUTF8(
+          IDS_CERT_RSA_PUBLIC_KEY_DUMP_FORMAT,
+          base::UintToString16(BN_num_bits(rsa_key.get()->n)),
+          base::UTF8ToUTF16(ProcessRawBignum(rsa_key.get()->n)),
+          base::UintToString16(BN_num_bits(rsa_key.get()->e)),
+          base::UTF8ToUTF16(ProcessRawBignum(rsa_key.get()->e)));
+      return rv;
+    }
+    default:
+      rv = ProcessRawAsn1String(X509_get_X509_PUBKEY(cert_handle)->public_key);
+      return rv;
+  }
 }
 
 std::string ProcessRawBitsSignatureWrap(
