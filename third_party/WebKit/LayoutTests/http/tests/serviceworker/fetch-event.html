@@ -8,7 +8,7 @@ var worker = 'resources/fetch-event-test-worker.js';
 
 (function() {
     var t = async_test('Service Worker responds to fetch event with blob body');
-    var scope = 'helloworld';
+    var scope = 'referrer';
     service_worker_unregister_and_register(t, worker, scope).then(t.step_func(onRegister));
 
     function onRegister(sw) {
@@ -19,8 +19,8 @@ var worker = 'resources/fetch-event-test-worker.js';
         if (event.target.state != 'activated')
             return;
         with_iframe(scope, t.step_func(function(frame) {
-            assert_equals(frame.contentDocument.body.textContent, 'hello, world',
-                          'Service Worker should respond to fetch with a fixed-string body');
+            assert_equals(frame.contentDocument.body.textContent, 'Referrer: ' + document.location.href,
+                          'Service Worker should respond to fetch with the referrer URL');
             service_worker_unregister_and_done(t, scope);
         }));
     }

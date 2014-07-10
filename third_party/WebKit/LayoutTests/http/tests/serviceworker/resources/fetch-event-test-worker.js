@@ -1,5 +1,5 @@
-function handleHelloWorld(event) {
-    event.respondWith(new Response(new Blob(["hello, world"])));
+function handleReferrer(event) {
+    event.respondWith(new Response(new Blob(["Referrer: " + event.request.referrer])));
 }
 
 function handleNullBody(event) {
@@ -19,7 +19,7 @@ function handleFetch(event) {
 self.addEventListener('fetch', function(event) {
     var url = event.request.url;
     var handlers = [
-        { pattern: 'helloworld', fn: handleHelloWorld },
+        { pattern: 'referrer', fn: handleReferrer },
         { pattern: '?ignore', fn: function() {} },
         { pattern: '?null', fn: handleNullBody },
         { pattern: '?reject', fn: handleReject },
