@@ -32,7 +32,8 @@
         'activity/public/activity_manager.h',
         'activity/public/activity_view_manager.h',
         'activity/public/activity_view_model.h',
-        'common/athena_export.h',
+        # move athena_export.h to common/
+        'athena_export.h',
         'common/fill_layout_manager.cc',
         'common/fill_layout_manager.h',
         'common/switches.cc',

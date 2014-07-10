@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ATHENA_COMMON_ATHENA_EXPORT_H_
-#define ATHENA_COMMON_ATHENA_EXPORT_H_
+#ifndef ATHENA_ATHENA_EXPORT_H_
+#define ATHENA_ATHENA_EXPORT_H_
 
 // Defines ATHENA_EXPORT so that functionality implemented by the ATHENA module
 // can be exported to consumers.
@@ -29,4 +29,4 @@
 #define ATHENA_EXPORT
 #endif
 
-#endif  // ATHENA_COMMON_ATHENA_EXPORT_H_
+#endif  // ATHENA_ATHENA_EXPORT_H_

@@ -5,7 +5,7 @@
 #ifndef ATHENA_ACTIVITY_PUBLIC_ACTIVITY_MANAGER_H_
 #define ATHENA_ACTIVITY_PUBLIC_ACTIVITY_MANAGER_H_
 
-#include "athena/common/athena_export.h"
+#include "athena/athena_export.h"
 
 namespace athena {
 

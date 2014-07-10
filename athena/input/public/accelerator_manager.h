@@ -5,7 +5,7 @@
 #ifndef ATHENA_INPUT_PUBLIC_ACCELERATOR_MANAGER_H_
 #define ATHENA_INPUT_PUBLIC_ACCELERATOR_MANAGER_H_
 
-#include "athena/common/athena_export.h"
+#include "athena/athena_export.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 

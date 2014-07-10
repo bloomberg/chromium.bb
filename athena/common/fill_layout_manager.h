@@ -5,7 +5,7 @@
 #ifndef ATHENA_COMMON_FILL_LAYOUT_MANAGER_H_
 #define ATHENA_COMMON_FILL_LAYOUT_MANAGER_H_
 
-#include "athena/common/athena_export.h"
+#include "athena/athena_export.h"
 #include "ui/aura/layout_manager.h"
 
 namespace athena {

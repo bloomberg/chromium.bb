@@ -5,7 +5,7 @@
 #ifndef ATHENA_INPUT_PUBLIC_INPUT_MANAGER_H_
 #define ATHENA_INPUT_PUBLIC_INPUT_MANAGER_H_
 
-#include "athena/common/athena_export.h"
+#include "athena/athena_export.h"
 
 namespace aura {
 class Window;

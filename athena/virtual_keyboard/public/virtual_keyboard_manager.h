@@ -5,7 +5,7 @@
 #ifndef ATHENA_VIRTUAL_KEYBOARD_PUBLIC_VIRTUAL_KEYBOARD_MANAGER_H_
 #define ATHENA_VIRTUAL_KEYBOARD_PUBLIC_VIRTUAL_KEYBOARD_MANAGER_H_
 
-#include "athena/common/athena_export.h"
+#include "athena/athena_export.h"
 
 namespace aura {
 class Window;
