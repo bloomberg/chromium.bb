@@ -34,6 +34,7 @@
 #include "core/fetch/FontResource.h"
 #include "core/fetch/ResourceFetcher.h"
 #include "core/svg/SVGFontFaceElement.h"
+#include "platform/fonts/FontCache.h"
 #include "platform/fonts/FontCustomPlatformData.h"
 #include "wtf/text/StringBuilder.h"
 
@@ -57,11 +58,20 @@ bool CSSFontFaceSrcValue::isSupportedFormat() const
         return true;
     }
 
-    return FontCustomPlatformData::supportsFormat(m_format)
+    if (FontCustomPlatformData::supportsFormat(m_format))
+        return true;
+
+    // We have removed SVG font support on non-gdi platforms. For details, see:
+    // https://groups.google.com/a/chromium.org/d/msg/blink-dev/pYbbUcYvlYY/LQvFvM8KZZEJ
 #if ENABLE(SVG_FONTS)
-           || isSVGFontFaceSrc()
+    if (RuntimeEnabledFeatures::svgFontsOnNonGDIPlatformsEnabled()
+#if OS(WIN)
+        || !FontCache::useDirectWrite()
 #endif
-           ;
+        )
+        return isSVGFontFaceSrc();
+#endif
+    return false;
 }
 
 String CSSFontFaceSrcValue::customCSSText() const
