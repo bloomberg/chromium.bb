@@ -25,16 +25,16 @@ const int kPixelDistanceToRecord = 8000;
 // script and find a sweet spot.
 const float kDensityThreshold = 0.5f;
 
-bool rect_sort_y(const gfx::Rect &r1, const gfx::Rect &r2) {
+bool rect_sort_y(const gfx::Rect& r1, const gfx::Rect& r2) {
   return r1.y() < r2.y() || (r1.y() == r2.y() && r1.x() < r2.x());
 }
 
-bool rect_sort_x(const gfx::Rect &r1, const gfx::Rect &r2) {
+bool rect_sort_x(const gfx::Rect& r1, const gfx::Rect& r2) {
   return r1.x() < r2.x() || (r1.x() == r2.x() && r1.y() < r2.y());
 }
 
-float do_clustering(const std::vector<gfx::Rect>& tiles,
-                    std::vector<gfx::Rect>* clustered_rects) {
+float PerformClustering(const std::vector<gfx::Rect>& tiles,
+                        std::vector<gfx::Rect>* clustered_rects) {
   // These variables track the record area and invalid area
   // for the entire clustering
   int total_record_area = 0;
@@ -89,7 +89,7 @@ float do_clustering(const std::vector<gfx::Rect>& tiles,
 
   return static_cast<float>(total_invalid_area) /
          static_cast<float>(total_record_area);
-  }
+}
 
 float ClusterTiles(const std::vector<gfx::Rect>& invalid_tiles,
                    std::vector<gfx::Rect>* record_rects) {
@@ -113,8 +113,8 @@ float ClusterTiles(const std::vector<gfx::Rect>& invalid_tiles,
 
   float vertical_density;
   std::vector<gfx::Rect> vertical_clustering;
-  vertical_density = do_clustering(invalid_tiles_vertical,
-                                   &vertical_clustering);
+  vertical_density = PerformClustering(invalid_tiles_vertical,
+                                       &vertical_clustering);
 
   // Now try again with a horizontal sort, see which one is best
   // TODO(humper): Heuristics for skipping this step?
@@ -125,8 +125,8 @@ float ClusterTiles(const std::vector<gfx::Rect>& invalid_tiles,
 
   float horizontal_density;
   std::vector<gfx::Rect> horizontal_clustering;
-  horizontal_density = do_clustering(invalid_tiles_vertical,
-                                     &horizontal_clustering);
+  horizontal_density = PerformClustering(invalid_tiles_vertical,
+                                         &horizontal_clustering);
 
   if (vertical_density < horizontal_density) {
     *record_rects = horizontal_clustering;
