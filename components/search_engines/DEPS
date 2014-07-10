@@ -10,9 +10,10 @@ include_rules = [
   "+components/webdata",
   "+google_apis",
   "+grit/components_strings.h",
+  "+libxml",
   "+net",
   "+policy",
   "+sql",
   "+sync",
-  "+ui/gfx/geometry",
+  "+ui/gfx",
 ]

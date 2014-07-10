@@ -6,9 +6,9 @@
 
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/search_engines/template_url_fetcher.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
+#include "components/search_engines/template_url_fetcher.h"
 
 // static
 TemplateURLFetcher* TemplateURLFetcherFactory::GetForProfile(

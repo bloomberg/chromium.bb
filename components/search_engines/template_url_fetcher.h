@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SEARCH_ENGINES_TEMPLATE_URL_FETCHER_H_
-#define CHROME_BROWSER_SEARCH_ENGINES_TEMPLATE_URL_FETCHER_H_
+#ifndef COMPONENTS_SEARCH_ENGINES_TEMPLATE_URL_FETCHER_H_
+#define COMPONENTS_SEARCH_ENGINES_TEMPLATE_URL_FETCHER_H_
 
 #include "base/callback_forward.h"
 #include "base/memory/ref_counted.h"
@@ -86,4 +86,4 @@ class TemplateURLFetcher : public KeyedService {
   DISALLOW_COPY_AND_ASSIGN(TemplateURLFetcher);
 };
 
-#endif  // CHROME_BROWSER_SEARCH_ENGINES_TEMPLATE_URL_FETCHER_H_
+#endif  // COMPONENTS_SEARCH_ENGINES_TEMPLATE_URL_FETCHER_H_

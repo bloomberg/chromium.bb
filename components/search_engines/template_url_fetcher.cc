@@ -1,15 +1,15 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "build/build_config.h"
 
-#include "chrome/browser/search_engines/template_url_fetcher.h"
+#include "components/search_engines/template_url_fetcher.h"
 
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/search_engines/template_url_parser.h"
 #include "components/search_engines/template_url.h"
+#include "components/search_engines/template_url_parser.h"
 #include "components/search_engines/template_url_service.h"
 #include "net/base/load_flags.h"
 #include "net/url_request/url_fetcher.h"
