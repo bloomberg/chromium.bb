@@ -19,7 +19,6 @@ import sys
 import tempfile
 
 import elftools
-import ldtools
 # filetype needs to be imported here because pnacl-driver injects calls to
 # filetype.ForceFileType into argument parse actions.
 # TODO(dschuff): That's ugly. Find a better way.

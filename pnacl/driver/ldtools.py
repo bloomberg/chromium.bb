@@ -9,22 +9,12 @@
 # updates the copy in the toolchain/ tree.
 #
 
-# Tool for reading linker scripts and searching for libraries.
-# There is still a circular dependence on filetype.IsNative/IsBitcode
-# (filetype uses IsLinkerScript from here)
-# TODO(dschuff): fix.
+# Tool for searching for libraries.
 
-import os
 
 import driver_log
 import filetype
 import pathtools
-
-
-def IsLinkerScript(filename):
-  _, ext = os.path.splitext(filename)
-  return (len(ext) > 0 and ext[1:] in ('o', 'so', 'a', 'po', 'pa', 'x') and
-      ParseLinkerScript(filename) is not None)
 
 
 class LibraryTypes(object):
@@ -34,139 +24,12 @@ class LibraryTypes(object):
   ANY = 3
 
 
-# Parses a linker script to determine additional ld arguments specified.
-# Returns a list of linker arguments.
-#
-# For example, if the linker script contains
-#
-#     GROUP ( libc.so.6 libc_nonshared.a  AS_NEEDED ( ld-linux.so.2 ) )
-#
-# Then this function will return:
-#
-#     ['--start-group', '-l:libc.so.6', '-l:libc_nonshared.a',
-#      '--as-needed', '-l:ld-linux.so.2', '--no-as-needed', '--end-group']
-#
-# Returns None on any parse error.
-def ParseLinkerScript(filename):
-  fp = driver_log.DriverOpen(filename, 'r')
-
-  ret = []
-  stack = []
-  expect = ''  # Expected next token
-  while True:
-    token = GetNextToken(fp)
-    if token is None:
-      # Tokenization error
-      return None
-
-    if not token:
-      # EOF
-      break
-
-    if expect:
-      if token == expect:
-        expect = ''
-        continue
-      else:
-        return None
-
-    if not stack:
-      if token == 'INPUT':
-        expect = '('
-        stack.append(token)
-      elif token == 'GROUP':
-        expect = '('
-        ret.append('--start-group')
-        stack.append(token)
-      elif token == 'OUTPUT_FORMAT':
-        expect = '('
-        stack.append(token)
-      elif token == 'EXTERN':
-        expect = '('
-        stack.append(token)
-      elif token == ';':
-        pass
-      else:
-        return None
-    else:
-      if token == ')':
-        section = stack.pop()
-        if section == 'AS_NEEDED':
-          ret.append('--no-as-needed')
-        elif section == 'GROUP':
-          ret.append('--end-group')
-      elif token == 'AS_NEEDED':
-        expect = '('
-        ret.append('--as-needed')
-        stack.append('AS_NEEDED')
-      elif stack[-1] == 'OUTPUT_FORMAT':
-        # Ignore stuff inside OUTPUT_FORMAT
-        pass
-      elif stack[-1] == 'EXTERN':
-        ret.append('--undefined=' + token)
-      else:
-        ret.append('-l:' + token)
-
-  fp.close()
-  return ret
-
-
-# Get the next token from the linker script
-# Returns: ''   for EOF.
-#          None on error.
-def GetNextToken(fp):
-  token = ''
-  while True:
-    ch = fp.read(1)
-
-    if not ch:
-      break
-
-    # Whitespace terminates a token
-    # (but ignore whitespace before the token)
-    if ch in (' ', '\t', '\n'):
-      if token:
-        break
-      else:
-        continue
-
-    # ( and ) are tokens themselves (or terminate existing tokens)
-    if ch in ('(',')'):
-      if token:
-        fp.seek(-1, os.SEEK_CUR)
-        break
-      else:
-        token = ch
-        break
-
-    token += ch
-    if token.endswith('/*'):
-      if not ReadPastComment(fp, '*/'):
-        return None
-      token = token[:-2]
-
-  return token
-
-def ReadPastComment(fp, terminator):
-  s = ''
-  while True:
-    ch = fp.read(1)
-    if not ch:
-      return False
-    s += ch
-    if s.endswith(terminator):
-      break
-
-  return True
-
-##############################################################################
-
 def FindFirstLinkerScriptInput(inputs):
   for i in xrange(len(inputs)):
     f = inputs[i]
     if IsFlag(f):
       continue
-    if IsLinkerScript(f):
+    if filetype.IsLinkerScript(f):
       return (i, f)
   return (None, None)
 
@@ -179,7 +42,7 @@ def ExpandLinkerScripts(inputs, searchdirs, static_only):
     if path is None:
       break
 
-    new_inputs = ParseLinkerScript(path)
+    new_inputs = filetype.ParseLinkerScript(path)
     ExpandLibFlags(new_inputs, searchdirs, static_only,
                    LibraryTypes.ANY)
     inputs = inputs[:i] + new_inputs + inputs[i+1:]
@@ -263,7 +126,7 @@ def FindFile(search_names, search_dirs, acceptable_types):
         if acceptable_types == LibraryTypes.ANY:
           return path
         # Linker scripts aren't classified as Native or Bitcode.
-        if IsLinkerScript(path):
+        if filetype.IsLinkerScript(path):
           return path
         if (acceptable_types == LibraryTypes.NATIVE and
             filetype.IsNative(path)):

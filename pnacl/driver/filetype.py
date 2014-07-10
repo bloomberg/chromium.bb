@@ -6,10 +6,11 @@
 """Utilities for determining (and overriding) the types of files
 """
 
+import os
+
 import artools
 import driver_log
 import elftools
-import ldtools
 
 LLVM_BITCODE_MAGIC = 'BC\xc0\xde'
 LLVM_WRAPPER_MAGIC = '\xde\xc0\x17\x0b'
@@ -108,6 +109,157 @@ def IsNativeArchive(filename):
   return IsArchive(filename) and not IsBitcodeArchive(filename)
 
 
+@SimpleCache
+def IsELF(filename):
+  return elftools.IsELF(filename)
+
+@SimpleCache
+def GetELFType(filename):
+  """ ELF type as determined by ELF metadata """
+  assert(elftools.IsELF(filename))
+  elfheader = elftools.GetELFHeader(filename)
+  elf_type_map = {
+    'EXEC': 'nexe',
+    'REL' : 'o',
+    'DYN' : 'so'
+  }
+  return elf_type_map[elfheader.type]
+
+
+# Parses a linker script to determine additional ld arguments specified.
+# Returns a list of linker arguments.
+#
+# For example, if the linker script contains
+#
+#     GROUP ( libc.so.6 libc_nonshared.a  AS_NEEDED ( ld-linux.so.2 ) )
+#
+# Then this function will return:
+#
+#     ['--start-group', '-l:libc.so.6', '-l:libc_nonshared.a',
+#      '--as-needed', '-l:ld-linux.so.2', '--no-as-needed', '--end-group']
+#
+# Returns None on any parse error.
+def ParseLinkerScript(filename):
+  fp = driver_log.DriverOpen(filename, 'r')
+
+  ret = []
+  stack = []
+  expect = ''  # Expected next token
+  while True:
+    token = GetNextToken(fp)
+    if token is None:
+      # Tokenization error
+      return None
+
+    if not token:
+      # EOF
+      break
+
+    if expect:
+      if token == expect:
+        expect = ''
+        continue
+      else:
+        return None
+
+    if not stack:
+      if token == 'INPUT':
+        expect = '('
+        stack.append(token)
+      elif token == 'GROUP':
+        expect = '('
+        ret.append('--start-group')
+        stack.append(token)
+      elif token == 'OUTPUT_FORMAT':
+        expect = '('
+        stack.append(token)
+      elif token == 'EXTERN':
+        expect = '('
+        stack.append(token)
+      elif token == ';':
+        pass
+      else:
+        return None
+    else:
+      if token == ')':
+        section = stack.pop()
+        if section == 'AS_NEEDED':
+          ret.append('--no-as-needed')
+        elif section == 'GROUP':
+          ret.append('--end-group')
+      elif token == 'AS_NEEDED':
+        expect = '('
+        ret.append('--as-needed')
+        stack.append('AS_NEEDED')
+      elif stack[-1] == 'OUTPUT_FORMAT':
+        # Ignore stuff inside OUTPUT_FORMAT
+        pass
+      elif stack[-1] == 'EXTERN':
+        ret.append('--undefined=' + token)
+      else:
+        ret.append('-l:' + token)
+
+  fp.close()
+  return ret
+
+
+# Get the next token from the linker script
+# Returns: ''   for EOF.
+#          None on error.
+def GetNextToken(fp):
+  token = ''
+  while True:
+    ch = fp.read(1)
+
+    if not ch:
+      break
+
+    # Whitespace terminates a token
+    # (but ignore whitespace before the token)
+    if ch in (' ', '\t', '\n'):
+      if token:
+        break
+      else:
+        continue
+
+    # ( and ) are tokens themselves (or terminate existing tokens)
+    if ch in ('(',')'):
+      if token:
+        fp.seek(-1, os.SEEK_CUR)
+        break
+      else:
+        token = ch
+        break
+
+    token += ch
+    if token.endswith('/*'):
+      if not ReadPastComment(fp, '*/'):
+        return None
+      token = token[:-2]
+
+  return token
+
+def ReadPastComment(fp, terminator):
+  s = ''
+  while True:
+    ch = fp.read(1)
+    if not ch:
+      return False
+    s += ch
+    if s.endswith(terminator):
+      break
+
+  return True
+
+def IsLinkerScript(filename):
+  _, ext = os.path.splitext(filename)
+  return (len(ext) > 0 and ext[1:] in ('o', 'so', 'a', 'po', 'pa', 'x')
+          and not IsELF(filename)
+          and not IsArchive(filename)
+          and not IsLLVMBitcode(filename)
+          and ParseLinkerScript(filename) is not None)
+
+
 # If FORCED_FILE_TYPE is set, FileType() will return FORCED_FILE_TYPE for all
 # future input files. This is useful for the "as" incarnation, which
 # needs to accept files of any extension and treat them as ".s" (or ".ll")
@@ -193,7 +345,7 @@ def FileType(filename):
   if IsPNaClBitcode(filename):
     return 'pexe'
 
-  if ldtools.IsLinkerScript(filename):
+  if IsLinkerScript(filename):
     return 'ldscript'
 
   # Use the file extension if it is recognized
@@ -201,22 +353,6 @@ def FileType(filename):
     return ExtensionMap[ext]
 
   driver_log.Log.Fatal('%s: Unrecognized file type', filename)
-
-@SimpleCache
-def IsELF(filename):
-  return elftools.IsELF(filename)
-
-@SimpleCache
-def GetELFType(filename):
-  """ ELF type as determined by ELF metadata """
-  assert(elftools.IsELF(filename))
-  elfheader = elftools.GetELFHeader(filename)
-  elf_type_map = {
-    'EXEC': 'nexe',
-    'REL' : 'o',
-    'DYN' : 'so'
-  }
-  return elf_type_map[elfheader.type]
 
 # Map from GCC's -x file types and this driver's file types.
 FILE_TYPE_MAP = {
