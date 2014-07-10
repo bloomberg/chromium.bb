@@ -84,7 +84,6 @@ void TextIteratorTest::SetUp()
 
 Vector<String> TextIteratorTest::iterate(TextIteratorBehavior iteratorBehavior)
 {
-    document().view()->updateLayoutAndStyleIfNeededRecursive(); // Force renderers to be created; TextIterator needs them.
     RefPtrWillBeRawPtr<Range> range = getBodyRange();
     TextIterator iterator(range.get(), iteratorBehavior);
     return iterateWithIterator(iterator);
@@ -92,7 +91,6 @@ Vector<String> TextIteratorTest::iterate(TextIteratorBehavior iteratorBehavior)
 
 Vector<String> TextIteratorTest::iteratePartial(const Position& start, const Position& end, TextIteratorBehavior iteratorBehavior)
 {
-    document().view()->updateLayoutAndStyleIfNeededRecursive();
     TextIterator iterator(start, end, iteratorBehavior);
     return iterateWithIterator(iterator);
 }

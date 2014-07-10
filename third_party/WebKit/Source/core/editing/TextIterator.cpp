@@ -35,6 +35,7 @@
 #include "core/editing/VisiblePosition.h"
 #include "core/editing/VisibleUnits.h"
 #include "core/editing/htmlediting.h"
+#include "core/frame/FrameView.h"
 #include "core/html/HTMLElement.h"
 #include "core/html/HTMLTextFormControlElement.h"
 #include "core/rendering/InlineTextBox.h"
@@ -341,6 +342,8 @@ void TextIterator::initialize(const Position& start, const Position& end)
     if (!m_node)
         return;
 
+    m_node->document().updateLayoutIgnorePendingStylesheets();
+
     setUpFullyClippedStack(m_fullyClippedStack, m_node);
     m_offset = m_node == m_startContainer ? m_startOffset : 0;
     m_iterationProgress = HandledNone;
@@ -369,6 +372,8 @@ void TextIterator::advance()
 {
     if (m_shouldStop)
         return;
+
+    ASSERT(!m_node || !m_node->document().needsRenderTreeUpdate());
 
     // reset the run information
     m_positionNode = nullptr;
@@ -2167,9 +2172,6 @@ static const TextIteratorBehaviorFlags iteratorFlagsForFindPlainText = TextItera
 
 PassRefPtrWillBeRawPtr<Range> findPlainText(const Range* range, const String& target, FindOptions options)
 {
-    // CharacterIterator requires renderers to be up-to-date
-    range->ownerDocument().updateLayout();
-
     // First, find the text.
     size_t matchStart;
     size_t matchLength;
@@ -2196,7 +2198,6 @@ void findPlainText(const Position& inputStart, const Position& inputEnd, const S
     if (!inputStart.inDocument())
         return;
     ASSERT(inputStart.document() == inputEnd.document());
-    inputStart.document()->updateLayout();
 
     // FIXME: Reduce the code duplication with above (but how?).
     size_t matchStart;

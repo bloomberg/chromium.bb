@@ -455,6 +455,7 @@ public:
 
     void setupFontBuilder(RenderStyle* documentStyle);
 
+    bool needsRenderTreeUpdate() const;
     void updateRenderTreeIfNeeded() { updateRenderTree(NoChange); }
     void updateRenderTreeForNodeIfNeeded(Node*);
     void updateLayout();
@@ -1080,7 +1081,6 @@ private:
     void scheduleRenderTreeUpdate();
 
     bool needsFullRenderTreeUpdate() const;
-    bool needsRenderTreeUpdate() const;
 
     void inheritHtmlAndBodyElementStyles(StyleRecalcChange);
 

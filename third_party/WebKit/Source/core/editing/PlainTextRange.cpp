@@ -114,7 +114,6 @@ PassRefPtrWillBeRawPtr<Range> PlainTextRange::createRangeFor(const ContainerNode
             // is often at the wrong position for emitted '\n's or if the
             // renderer of the current node is a replaced element.
             if (len == 1 && (it.characterAt(0) == '\n' || it.isInsideReplacedElement())) {
-                scope.document().updateLayoutIgnorePendingStylesheets();
                 it.advance();
                 if (!it.atEnd()) {
                     RefPtrWillBeRawPtr<Range> range = it.range();
