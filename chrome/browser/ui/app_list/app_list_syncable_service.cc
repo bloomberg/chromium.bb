@@ -555,6 +555,7 @@ syncer::SyncMergeResult AppListSyncableService::MergeDataAndStartSyncing(
       ++updated_items;
     if (specifics.item_type() != sync_pb::AppListSpecifics::TYPE_FOLDER &&
         !IsUnRemovableDefaultApp(item_id) &&
+        !AppIsOem(item_id) &&
         !AppIsDefault(extension_system_->extension_service(), item_id)) {
       VLOG(2) << "Syncing non-default item: " << item_id;
       first_app_list_sync_ = false;
