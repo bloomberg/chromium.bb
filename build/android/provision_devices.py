@@ -126,11 +126,14 @@ def WipeDeviceData(device):
     path_list = constants.ADB_KEYS_FILE.split('/')
     dir_path = '/'.join(path_list[:len(path_list)-1])
     device.RunShellCommand('mkdir -p %s' % dir_path, as_root=True)
+    device.RunShellCommand('restorecon %s' % dir_path, as_root=True)
     device.RunShellCommand('echo %s > %s' %
-                           (adb_keys[0], constants.ADB_KEYS_FILE))
+                           (adb_keys[0], constants.ADB_KEYS_FILE), as_root=True)
     for adb_key in adb_keys[1:]:
       device.RunShellCommand(
-        'echo %s >> %s' % (adb_key, constants.ADB_KEYS_FILE))
+        'echo %s >> %s' % (adb_key, constants.ADB_KEYS_FILE), as_root=True)
+    device.RunShellCommand('restorecon %s' % constants.ADB_KEYS_FILE,
+                           as_root=True)
 
 
 def ProvisionDevices(options):
