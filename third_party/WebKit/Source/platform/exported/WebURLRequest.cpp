@@ -350,9 +350,9 @@ WebURLRequest::RequestContext WebURLRequest::requestContextFromTargetType(WebURL
 {
     switch (targetType) {
     case TargetIsMainFrame:
-        return RequestContextDocument;
+        return RequestContextHyperlink; // FIXME: Fetch defines the target separately from the cause. Need to work that out here.
     case TargetIsSubframe:
-        return RequestContextChildDocument;
+        return RequestContextIframe;
     case TargetIsSubresource:
         return RequestContextSubresource;
     case TargetIsStyleSheet:
@@ -377,9 +377,9 @@ WebURLRequest::RequestContext WebURLRequest::requestContextFromTargetType(WebURL
     case TargetIsFavicon:
         return RequestContextFavicon;
     case TargetIsXHR:
-        return RequestContextConnect;
+        return RequestContextXMLHttpRequest;
     case TargetIsTextTrack:
-        return RequestContextTextTrack;
+        return RequestContextTrack;
     case TargetIsPing:
         return RequestContextPing;
     case TargetIsServiceWorker:
@@ -388,61 +388,98 @@ WebURLRequest::RequestContext WebURLRequest::requestContextFromTargetType(WebURL
         return RequestContextUnspecified;
     }
     ASSERT_NOT_REACHED();
-    return RequestContextSubresource;
+    return RequestContextUnspecified;
 }
 
 WebURLRequest::TargetType WebURLRequest::targetTypeFromRequestContext(WebURLRequest::RequestContext requestContext)
 {
     switch (requestContext) {
-    case RequestContextUnspecified:
-        return TargetIsUnspecified;
-    case RequestContextAudio:
-        return TargetIsMedia;
-    case RequestContextChildDocument:
-        return TargetIsSubframe;
-    case RequestContextConnect:
-        return TargetIsXHR;
-    case RequestContextDocument:
-        return TargetIsMainFrame;
-    case RequestContextDownload:
-        return TargetIsSubresource;
+    // Favicon
     case RequestContextFavicon:
         return TargetIsFavicon;
+
+    // Font
     case RequestContextFont:
         return TargetIsFontResource;
-    case RequestContextForm:
-        return TargetIsMainFrame;
+
+    // Image
     case RequestContextImage:
         return TargetIsImage;
-    case RequestContextManifest:
-        return TargetIsSubresource;
+
+    // Main Frame
+    //
+    // FIXME: This conflates the initator with the target. It shouldn't.
+    case RequestContextForm:
+    case RequestContextHyperlink:
+    case RequestContextLocation:
+        return TargetIsMainFrame;
+
+    // Media
+    case RequestContextAudio:
+    case RequestContextVideo:
+        return TargetIsMedia;
+
+    // Object
+    case RequestContextEmbed:
     case RequestContextObject:
         return TargetIsObject;
-    case RequestContextObjectRequest:
-        return TargetIsSubresource;
+
+    // Ping
+    case RequestContextBeacon:
+    case RequestContextCSPReport:
     case RequestContextPing:
         return TargetIsPing;
+
+    // Prefetch
     case RequestContextPrefetch:
         return TargetIsPrefetch;
+
+    // Script
     case RequestContextScript:
         return TargetIsScript;
+
+    // Style
+    case RequestContextXSLT:
+    case RequestContextStyle:
+        return TargetIsStyleSheet;
+
+    // Subframe
+    case RequestContextFrame:
+    case RequestContextIframe:
+        return TargetIsSubframe;
+
+    // Subresource
+    case RequestContextDownload:
+    case RequestContextManifest:
+    case RequestContextSubresource:
+    case RequestContextPlugin:
+        return TargetIsSubresource;
+
+    // TextTrack
+    case RequestContextTrack:
+        return TargetIsTextTrack;
+
+    // Workers
     case RequestContextServiceWorker:
         return TargetIsServiceWorker;
     case RequestContextSharedWorker:
         return TargetIsSharedWorker;
-    case RequestContextStyle:
-        return TargetIsStyleSheet;
-    case RequestContextSubresource:
-        return TargetIsSubresource;
-    case RequestContextTextTrack:
-        return TargetIsTextTrack;
-    case RequestContextVideo:
-        return TargetIsMedia;
     case RequestContextWorker:
         return TargetIsWorker;
+
+    // Unspecified
+    case RequestContextInternal:
+    case RequestContextUnspecified:
+        return TargetIsUnspecified;
+
+    // XHR
+    case RequestContextEventSource:
+    case RequestContextFetch:
+    case RequestContextXMLHttpRequest:
+        return TargetIsXHR;
     }
     ASSERT_NOT_REACHED();
-    return TargetIsSubresource;
+    return TargetIsUnspecified;
 }
 
 // FIXME: Drop these two methods once embedders are updated to use RequestContexts.

@@ -91,28 +91,37 @@ public:
     // FIXME: Drop the TargetType enum once embedders are updated upstream.
     enum RequestContext {
         RequestContextUnspecified = 0,
+        RequestContextInternal, // FIXME: This isn't part of Fetch. It should be.
         RequestContextAudio,
-        RequestContextChildDocument,
-        RequestContextConnect,
-        RequestContextDocument,
+        RequestContextBeacon,
+        RequestContextCSPReport,
         RequestContextDownload,
+        RequestContextEmbed,
+        RequestContextEventSource,
         RequestContextFavicon,
+        RequestContextFetch,
         RequestContextFont,
         RequestContextForm,
+        RequestContextFrame,
+        RequestContextHyperlink,
+        RequestContextIframe,
         RequestContextImage,
+        RequestContextLocation,
         RequestContextManifest,
         RequestContextObject,
-        RequestContextObjectRequest,
         RequestContextPing,
+        RequestContextPlugin,
         RequestContextPrefetch,
         RequestContextScript,
         RequestContextServiceWorker,
         RequestContextSharedWorker,
-        RequestContextStyle,
         RequestContextSubresource,
-        RequestContextTextTrack,
+        RequestContextStyle,
+        RequestContextTrack,
         RequestContextVideo,
-        RequestContextWorker
+        RequestContextWorker,
+        RequestContextXMLHttpRequest,
+        RequestContextXSLT
     };
 
     class ExtraData {

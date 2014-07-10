@@ -194,8 +194,9 @@ static WebURLRequest::RequestContext requestContextFromType(const ResourceFetche
     switch (type) {
     case Resource::MainResource:
         if (fetcher->frame()->tree().parent())
-            return WebURLRequest::RequestContextChildDocument;
-        return WebURLRequest::RequestContextDocument;
+            return WebURLRequest::RequestContextIframe;
+        // FIXME: Change this to a context frame type (once we introduce them): http://fetch.spec.whatwg.org/#concept-request-context-frame-type
+        return WebURLRequest::RequestContextHyperlink;
     case Resource::XSLStyleSheet:
         ASSERT(RuntimeEnabledFeatures::xsltEnabled());
     case Resource::CSSStyleSheet:
@@ -215,7 +216,7 @@ static WebURLRequest::RequestContext requestContextFromType(const ResourceFetche
     case Resource::LinkSubresource:
         return WebURLRequest::RequestContextSubresource;
     case Resource::TextTrack:
-        return WebURLRequest::RequestContextTextTrack;
+        return WebURLRequest::RequestContextTrack;
     case Resource::SVGDocument:
         return WebURLRequest::RequestContextImage;
     case Resource::Media: // TODO: Split this.
