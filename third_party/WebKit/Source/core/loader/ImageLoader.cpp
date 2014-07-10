@@ -72,7 +72,7 @@ static ImageLoader::BypassMainWorldBehavior shouldBypassMainWorldCSP(ImageLoader
 
 class ImageLoader::Task : public blink::WebThread::Task {
 public:
-    static PassOwnPtrWillBeRawPtr<Task> create(ImageLoader* loader)
+    static PassOwnPtr<Task> create(ImageLoader* loader)
     {
         return adoptPtr(new Task(loader));
     }
