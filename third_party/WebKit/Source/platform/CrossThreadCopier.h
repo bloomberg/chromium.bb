@@ -37,6 +37,7 @@
 #include "wtf/Forward.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/PassRefPtr.h"
+#include "wtf/RawPtr.h"
 #include "wtf/RefPtr.h"
 #include "wtf/ThreadSafeRefCounted.h"
 #include "wtf/TypeTraits.h"
@@ -151,11 +152,38 @@ namespace WebCore {
         }
     };
 
+    template<typename T> struct CrossThreadCopierBase<false, false, true, RawPtr<T> > {
+        typedef RawPtr<T> Type;
+        static Type copy(const Type& ptr)
+        {
+            return ptr;
+        }
+    };
+
+    template<typename T> struct CrossThreadCopierBase<false, false, true, Member<T> > {
+        typedef RawPtr<T> Type;
+        static Type copy(const Member<T>& ptr)
+        {
+            return ptr;
+        }
+    };
+
+    template<typename T> struct CrossThreadCopierBase<false, false, true, WeakMember<T> > {
+        typedef RawPtr<T> Type;
+        static Type copy(const WeakMember<T>& ptr)
+        {
+            return ptr;
+        }
+    };
+
     template<typename T> struct CrossThreadCopier : public CrossThreadCopierBase<WTF::IsConvertibleToInteger<T>::value,
         WTF::IsSubclassOfTemplate<typename WTF::RemoveTemplate<T, RefPtr>::Type, ThreadSafeRefCounted>::value
             || WTF::IsSubclassOfTemplate<typename WTF::RemovePointer<T>::Type, ThreadSafeRefCounted>::value
             || WTF::IsSubclassOfTemplate<typename WTF::RemoveTemplate<T, PassRefPtr>::Type, ThreadSafeRefCounted>::value,
-        WTF::IsSubclassOfTemplate<typename WTF::RemovePointer<T>::Type, GarbageCollected>::value,
+        WTF::IsSubclassOfTemplate<typename WTF::RemovePointer<T>::Type, GarbageCollected>::value
+            || WTF::IsSubclassOfTemplate<typename WTF::RemoveTemplate<T, RawPtr>::Type, GarbageCollected>::value
+            || WTF::IsSubclassOfTemplate<typename WTF::RemoveTemplate<T, Member>::Type, GarbageCollected>::value
+            || WTF::IsSubclassOfTemplate<typename WTF::RemoveTemplate<T, WeakMember>::Type, GarbageCollected>::value,
         T> {
     };
 
