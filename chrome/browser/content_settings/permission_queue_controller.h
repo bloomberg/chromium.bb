@@ -50,6 +50,11 @@ class PermissionQueueController : public content::NotificationObserver {
                        bool update_content_setting,
                        bool allowed);
 
+  // Performs the update to content settings for a particular request frame
+  // context.
+  void UpdateContentSetting(
+      const GURL& requesting_frame, const GURL& embedder, bool allowed);
+
  protected:
   // content::NotificationObserver:
   virtual void Observe(int type,
@@ -77,9 +82,6 @@ class PermissionQueueController : public content::NotificationObserver {
 
   void RegisterForInfoBarNotifications(InfoBarService* infobar_service);
   void UnregisterForInfoBarNotifications(InfoBarService* infobar_service);
-
-  void UpdateContentSetting(
-      const GURL& requesting_frame, const GURL& embedder, bool allowed);
 
   content::NotificationRegistrar registrar_;
 

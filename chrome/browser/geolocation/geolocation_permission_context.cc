@@ -33,6 +33,7 @@ class GeolocationPermissionRequest : public PermissionBubbleRequest {
   GeolocationPermissionRequest(GeolocationPermissionContext* context,
                                const PermissionRequestID& id,
                                const GURL& requesting_frame,
+                               const GURL& embedder,
                                bool user_gesture,
                                base::Callback<void(bool)> callback,
                                const std::string& display_languages);
@@ -53,6 +54,7 @@ class GeolocationPermissionRequest : public PermissionBubbleRequest {
   GeolocationPermissionContext* context_;
   PermissionRequestID id_;
   GURL requesting_frame_;
+  GURL embedder_;
   bool user_gesture_;
   base::Callback<void(bool)> callback_;
   std::string display_languages_;
@@ -62,12 +64,14 @@ GeolocationPermissionRequest::GeolocationPermissionRequest(
     GeolocationPermissionContext* context,
     const PermissionRequestID& id,
     const GURL& requesting_frame,
+    const GURL& embedder,
     bool user_gesture,
     base::Callback<void(bool)> callback,
     const std::string& display_languages)
     : context_(context),
       id_(id),
       requesting_frame_(requesting_frame),
+      embedder_(embedder),
       user_gesture_(user_gesture),
       callback_(callback),
       display_languages_(display_languages) {}
@@ -100,10 +104,14 @@ GURL GeolocationPermissionRequest::GetRequestingHostname() const {
 }
 
 void GeolocationPermissionRequest::PermissionGranted() {
+  context_->QueueController()->UpdateContentSetting(
+      requesting_frame_, embedder_, true);
   context_->NotifyPermissionSet(id_, requesting_frame_, callback_, true);
 }
 
 void GeolocationPermissionRequest::PermissionDenied() {
+  context_->QueueController()->UpdateContentSetting(
+      requesting_frame_, embedder_, false);
   context_->NotifyPermissionSet(id_, requesting_frame_, callback_, false);
 }
 
@@ -218,7 +226,7 @@ void GeolocationPermissionContext::DecidePermission(
         if (mgr) {
           scoped_ptr<GeolocationPermissionRequest> request_ptr(
               new GeolocationPermissionRequest(
-                  this, id, requesting_frame, user_gesture, callback,
+                  this, id, requesting_frame, embedder, user_gesture, callback,
                   profile_->GetPrefs()->GetString(prefs::kAcceptLanguages)));
           GeolocationPermissionRequest* request = request_ptr.get();
           pending_requests_.add(id.ToString(), request_ptr.Pass());
