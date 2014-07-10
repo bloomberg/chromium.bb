@@ -7,6 +7,8 @@ from measurements import smooth_gesture_util
 from telemetry.timeline.model import TimelineModel
 from telemetry.page import page_measurement
 from telemetry.page.actions import action_runner
+from telemetry.value import list_of_scalar_values
+from telemetry.value import scalar
 from telemetry.web_perf import timeline_interaction_record as tir_module
 from telemetry.web_perf.metrics import smoothness
 
@@ -95,7 +97,12 @@ class SmoothnessController(object):
       for r in tab.browser.platform.GetRawDisplayFrameRateMeasurements():
         if r.value is None:
           raise MissingDisplayFrameRateError(r.name)
-        results.Add(r.name, r.unit, r.value)
+        if isinstance(r.value, list):
+          results.AddValue(list_of_scalar_values.ListOfScalarValues(
+              results.current_page, r.name, r.unit, r.value))
+        else:
+          results.AddValue(scalar.ScalarValue(
+              results.current_page, r.name, r.unit, r.value))
 
   def CleanUp(self, tab):
     if tab.browser.platform.IsRawDisplayFrameRateSupported():
