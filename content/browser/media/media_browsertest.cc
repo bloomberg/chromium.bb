@@ -224,9 +224,7 @@ IN_PROC_BROWSER_TEST_F(MediaTest, MAYBE(Yuv420pVp8)) {
   RunColorFormatTest("yuv420p.webm", "ENDED");
 }
 
-// TODO(johannkoenig): Reenable after landing libvpx roll
-// http://www.crbug.com/392309
-IN_PROC_BROWSER_TEST_F(MediaTest, DISABLED_Yuv444pVp9) {
+IN_PROC_BROWSER_TEST_F(MediaTest, MAYBE(Yuv444pVp9)) {
   RunColorFormatTest("yuv444p.webm", "ENDED");
 }
 

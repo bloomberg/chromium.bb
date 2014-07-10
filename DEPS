@@ -42,7 +42,7 @@ vars = {
   "google_toolbox_for_mac_revision": "662",
   "libaddressinput_revision": "300",
   "libphonenumber_revision": "621",
-  "libvpx_revision": "281854",
+  "libvpx_revision": "280676",
   "lss_revision": "26",
   "sfntly_revision": "239",
   "lighttpd_revision": "33737",
