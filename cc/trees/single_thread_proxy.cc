@@ -345,7 +345,7 @@ void SingleThreadProxy::CompositeImmediately(base::TimeTicks frame_begin_time) {
   layer_tree_host_->DidBeginMainFrame();
 
   LayerTreeHostImpl::FrameData frame;
-  if (DoComposite(frame_begin_time, &frame)) {
+  if (DoComposite(&frame)) {
     {
       DebugScopedSetMainThreadBlocked main_thread_blocked(this);
       DebugScopedSetImplThread impl(this);
@@ -406,7 +406,6 @@ void SingleThreadProxy::UpdateBackgroundAnimateTicking() {
 }
 
 bool SingleThreadProxy::DoComposite(
-    base::TimeTicks frame_begin_time,
     LayerTreeHostImpl::FrameData* frame) {
   TRACE_EVENT0("cc", "SingleThreadProxy::DoComposite");
   DCHECK(!layer_tree_host_->output_surface_lost());
@@ -431,7 +430,7 @@ bool SingleThreadProxy::DoComposite(
 
     if (!layer_tree_host_impl_->IsContextLost()) {
       layer_tree_host_impl_->PrepareToDraw(frame);
-      layer_tree_host_impl_->DrawLayers(frame, frame_begin_time);
+      layer_tree_host_impl_->DrawLayers(frame);
       layer_tree_host_impl_->DidDrawAllLayers(*frame);
     }
     lost_output_surface = layer_tree_host_impl_->IsContextLost();

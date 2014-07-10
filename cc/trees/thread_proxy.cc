@@ -1082,8 +1082,7 @@ DrawResult ThreadProxy::DrawSwapInternal(bool forced_draw) {
   }
 
   if (draw_frame) {
-    impl().layer_tree_host_impl->DrawLayers(
-        &frame, impl().scheduler->LastBeginImplFrameTime());
+    impl().layer_tree_host_impl->DrawLayers(&frame);
     result = DRAW_SUCCESS;
     impl().animations_frozen_until_next_draw = false;
   } else if (result == DRAW_ABORTED_CHECKERBOARD_ANIMATIONS &&

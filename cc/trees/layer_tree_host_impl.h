@@ -196,7 +196,7 @@ class CC_EXPORT LayerTreeHostImpl
   // DidDrawAllLayers must also be called, regardless of whether DrawLayers is
   // called between the two.
   virtual DrawResult PrepareToDraw(FrameData* frame);
-  virtual void DrawLayers(FrameData* frame, base::TimeTicks frame_begin_time);
+  virtual void DrawLayers(FrameData* frame);
   // Must be called if and only if PrepareToDraw was called.
   void DidDrawAllLayers(const FrameData& frame);
 
