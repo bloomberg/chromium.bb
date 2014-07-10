@@ -12,14 +12,14 @@ found in the LICENSE file.
       last: 0,
 
       firstChanged: function() {
-        this.update_();
+        this._update();
       },
 
       lastChanged: function() {
-        this.update_();
+        this._update();
       },
 
-      update_: function() {
+      _update: function() {
         this.data = model.commitDataListForRevisionRange(this.first, this.last);
       },
     });
