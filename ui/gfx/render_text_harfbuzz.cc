@@ -16,11 +16,8 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkTypeface.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/font_render_params.h"
 #include "ui/gfx/utf16_indexing.h"
-
-#if defined(OS_WIN)
-#include "ui/gfx/font_smoothing_win.h"
-#endif
 
 namespace gfx {
 
@@ -777,27 +774,20 @@ void RenderTextHarfBuzz::EnsureLayout() {
 
 void RenderTextHarfBuzz::DrawVisualText(Canvas* canvas) {
   DCHECK(!needs_layout_);
-
-  int current_x = 0;
-
   internal::SkiaTextRenderer renderer(canvas);
   ApplyFadeEffects(&renderer);
   ApplyTextShadows(&renderer);
 
-#if defined(OS_WIN)
-  bool smoothing_enabled;
-  bool cleartype_enabled;
-  GetCachedFontSmoothingSettings(&smoothing_enabled, &cleartype_enabled);
-  // Note that |cleartype_enabled| corresponds to Skia's |enable_lcd_text|.
-  renderer.SetFontSmoothingSettings(
-      smoothing_enabled, cleartype_enabled && !background_is_transparent(),
-      smoothing_enabled /* subpixel_positioning */);
+#if defined(OS_WIN) || defined(OS_LINUX)
+  // TODO(derat): Use font-specific params: http://crbug.com/125235
+  renderer.SetFontRenderParams(GetDefaultFontRenderParams(),
+                               background_is_transparent());
 #endif
 
   ApplyCompositionAndSelectionStyles();
 
+  int current_x = 0;
   const Vector2d line_offset = GetLineOffset(0);
-
   for (size_t i = 0; i < runs_.size(); ++i) {
     const internal::TextRunHarfBuzz& run = *runs_[visual_to_logical_[i]];
     renderer.SetTypeface(run.skia_face.get());

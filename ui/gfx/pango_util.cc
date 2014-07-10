@@ -16,7 +16,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font_list.h"
-#include "ui/gfx/font_render_params_linux.h"
+#include "ui/gfx/font_render_params.h"
 #include "ui/gfx/text_utils.h"
 
 namespace gfx {

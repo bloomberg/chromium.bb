@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/gfx/font_render_params_linux.h"
+#include "ui/gfx/font_render_params.h"
 
 #include "base/command_line.h"
 #include "base/logging.h"
@@ -10,7 +10,7 @@
 
 #include <fontconfig/fontconfig.h>
 
-#if defined(OS_LINUX) && defined(USE_AURA) && !defined(OS_CHROMEOS)
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
 #include "ui/gfx/linux_font_delegate.h"
 #endif
 
@@ -62,7 +62,7 @@ void LoadDefaults(FontRenderParams* params, bool renderer) {
       params->subpixel_rendering = FontRenderParams::SUBPIXEL_RENDERING_NONE;
   }
 
-#if defined(OS_LINUX) && defined(USE_AURA) && !defined(OS_CHROMEOS)
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
   const LinuxFontDelegate* delegate = LinuxFontDelegate::instance();
   if (delegate) {
     params->antialiasing = delegate->UseAntialiasing();

@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "ui/gfx/font_render_params_linux.h"
+#include "ui/gfx/font_render_params.h"
 #include "ui/gfx/gfx_export.h"
 
 namespace gfx {

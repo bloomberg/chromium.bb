@@ -11,7 +11,7 @@
 #include "third_party/skia/include/core/SkColor.h"
 
 #if defined(OS_LINUX) || defined(OS_ANDROID)
-#include "ui/gfx/font_render_params_linux.h"
+#include "ui/gfx/font_render_params.h"
 #endif
 
 #if defined(TOOLKIT_VIEWS)

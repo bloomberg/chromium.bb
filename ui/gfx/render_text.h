@@ -21,6 +21,7 @@
 #include "third_party/skia/include/core/SkRect.h"
 #include "ui/gfx/break_list.h"
 #include "ui/gfx/font_list.h"
+#include "ui/gfx/font_render_params.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/range/range.h"
 #include "ui/gfx/rect.h"
@@ -52,9 +53,8 @@ class SkiaTextRenderer {
   ~SkiaTextRenderer();
 
   void SetDrawLooper(SkDrawLooper* draw_looper);
-  void SetFontSmoothingSettings(bool antialiasing,
-                                bool subpixel_rendering,
-                                bool subpixel_positioning);
+  void SetFontRenderParams(const FontRenderParams& params,
+                           bool background_is_transparent);
   void SetFontHinting(SkPaint::Hinting hinting);
   void SetTypeface(SkTypeface* typeface);
   void SetTextSize(SkScalar size);

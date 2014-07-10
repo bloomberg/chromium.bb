@@ -14,7 +14,7 @@
 #include "third_party/skia/include/core/SkTypeface.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font.h"
-#include "ui/gfx/font_render_params_linux.h"
+#include "ui/gfx/font_render_params.h"
 #include "ui/gfx/pango_util.h"
 #include "ui/gfx/utf16_indexing.h"
 
@@ -382,13 +382,7 @@ void RenderTextPango::DrawVisualText(Canvas* canvas) {
 
   // TODO(derat): Use font-specific params: http://crbug.com/125235
   const FontRenderParams& render_params = GetDefaultFontRenderParams();
-  const bool use_subpixel_rendering =
-      render_params.subpixel_rendering !=
-          FontRenderParams::SUBPIXEL_RENDERING_NONE;
-  renderer.SetFontSmoothingSettings(
-      render_params.antialiasing,
-      use_subpixel_rendering && !background_is_transparent(),
-      render_params.subpixel_positioning);
+  renderer.SetFontRenderParams(render_params, background_is_transparent());
 
   SkPaint::Hinting skia_hinting = SkPaint::kNormal_Hinting;
   switch (render_params.hinting) {

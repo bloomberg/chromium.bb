@@ -16,7 +16,7 @@
 #include "third_party/icu/source/common/unicode/uchar.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font_fallback_win.h"
-#include "ui/gfx/font_smoothing_win.h"
+#include "ui/gfx/font_render_params.h"
 #include "ui/gfx/platform_font_win.h"
 #include "ui/gfx/utf16_indexing.h"
 
@@ -809,13 +809,8 @@ void RenderTextWin::DrawVisualText(Canvas* canvas) {
   ApplyFadeEffects(&renderer);
   ApplyTextShadows(&renderer);
 
-  bool smoothing_enabled;
-  bool cleartype_enabled;
-  GetCachedFontSmoothingSettings(&smoothing_enabled, &cleartype_enabled);
-  // Note that |cleartype_enabled| corresponds to Skia's |enable_lcd_text|.
-  renderer.SetFontSmoothingSettings(
-      smoothing_enabled, cleartype_enabled && !background_is_transparent(),
-      smoothing_enabled /* subpixel_positioning */);
+  renderer.SetFontRenderParams(GetDefaultFontRenderParams(),
+                               background_is_transparent());
 
   ApplyCompositionAndSelectionStyles();
 

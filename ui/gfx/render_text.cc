@@ -199,12 +199,12 @@ void SkiaTextRenderer::SetDrawLooper(SkDrawLooper* draw_looper) {
   paint_.setLooper(draw_looper);
 }
 
-void SkiaTextRenderer::SetFontSmoothingSettings(bool antialiasing,
-                                                bool subpixel_rendering,
-                                                bool subpixel_positioning) {
-  paint_.setAntiAlias(antialiasing);
-  paint_.setLCDRenderText(subpixel_rendering);
-  paint_.setSubpixelText(subpixel_positioning);
+void SkiaTextRenderer::SetFontRenderParams(const FontRenderParams& params,
+                                           bool background_is_transparent) {
+  paint_.setAntiAlias(params.antialiasing);
+  paint_.setLCDRenderText(!background_is_transparent &&
+      params.subpixel_rendering != FontRenderParams::SUBPIXEL_RENDERING_NONE);
+  paint_.setSubpixelText(params.subpixel_positioning);
 }
 
 void SkiaTextRenderer::SetFontHinting(SkPaint::Hinting hinting) {
