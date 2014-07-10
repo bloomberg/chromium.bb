@@ -434,11 +434,6 @@ ManagePasswordsBubbleView* ManagePasswordsBubbleView::manage_passwords_bubble_ =
     NULL;
 
 // static
-const ManagePasswordsBubbleView* ManagePasswordsBubbleView::Bubble() {
-  return ManagePasswordsBubbleView::manage_passwords_bubble_;
-}
-
-// static
 void ManagePasswordsBubbleView::ShowBubble(content::WebContents* web_contents,
                                            DisplayReason reason) {
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
@@ -499,8 +494,7 @@ ManagePasswordsBubbleView::ManagePasswordsBubbleView(
       never_save_passwords_(false) {
   // Compensate for built-in vertical padding in the anchor view's image.
   set_anchor_view_insets(gfx::Insets(2, 0, 2, 0));
-  // Don't focus by default.
-  set_use_focusless(true);
+  set_notify_enter_exit_on_child(true);
   if (anchor_view)
     anchor_view->SetActive(true);
 }
