@@ -1480,7 +1480,11 @@ bool ChromeContentRendererClient::IsPluginAllowedToUseCompositorAPI(
   if (CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnablePepperTesting))
     return true;
-  return IsExtensionOrSharedModuleWhitelisted(url, allowed_compositor_origins_);
+  if (IsExtensionOrSharedModuleWhitelisted(url, allowed_compositor_origins_))
+    return true;
+
+  chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
+  return channel <= chrome::VersionInfo::CHANNEL_DEV;
 #else
   return false;
 #endif
@@ -1492,8 +1496,12 @@ bool ChromeContentRendererClient::IsPluginAllowedToUseVideoDecodeAPI(
   if (CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnablePepperTesting))
     return true;
-  return IsExtensionOrSharedModuleWhitelisted(url,
-                                              allowed_video_decode_origins_);
+
+  if (IsExtensionOrSharedModuleWhitelisted(url, allowed_video_decode_origins_))
+    return true;
+
+  chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
+  return channel <= chrome::VersionInfo::CHANNEL_DEV;
 #else
   return false;
 #endif
