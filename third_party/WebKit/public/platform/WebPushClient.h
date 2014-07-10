@@ -11,6 +11,7 @@
 
 namespace blink {
 
+class WebServiceWorkerProvider;
 struct WebPushRegistration;
 
 typedef WebCallbacks<WebPushRegistration, WebPushError> WebPushRegistrationCallbacks;
@@ -18,7 +19,10 @@ typedef WebCallbacks<WebPushRegistration, WebPushError> WebPushRegistrationCallb
 class WebPushClient {
 public:
     virtual ~WebPushClient() { }
-    virtual void registerPushMessaging(const WebString& senderId, WebPushRegistrationCallbacks*) = 0;
+
+    // Ownership of the WebPushRegistrationCallbacks is transferred to the
+    // client. Ownership of the WebServiceWorkerProvider is not transferred.
+    virtual void registerPushMessaging(const WebString& senderId, WebPushRegistrationCallbacks*, WebServiceWorkerProvider*) { }
 };
 
 } // namespace blink

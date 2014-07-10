@@ -1,0 +1,11 @@
+main frame - has 1 onunload handler(s)
+Accessing navigator.push on a closed window.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS error.message is "Document is detached from window."
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

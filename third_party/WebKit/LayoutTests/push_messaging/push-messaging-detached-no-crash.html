@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="../resources/js-test.js"></script>
+</head>
+<body>
+<script>
+description("Accessing navigator.push on a closed window.");
+
+var jsTestIsAsync = true;
+
+var win;
+var nav;
+
+function processMessage(event) {
+    if (event.data == 'opened') {
+        nav = win.navigator;
+        win.close();
+        win = null;
+    } else if (event.data == 'closed') {
+        nav.push.register('senderId').then(function successCallback() {
+            testFailed('Success callback invoked unexpectedly.');
+            finishJSTest();
+        }, function(e) {
+            error = e;
+            shouldBeEqualToString('error.message', 'Document is detached from window.');
+            finishJSTest();
+        });
+    }
+}
+
+if (window.testRunner) {
+    testRunner.dumpAsText();
+    testRunner.setCanOpenWindows();
+}
+win = window.open('resources/push-messaging-detached-no-crash-new-window.html');
+window.addEventListener("message", processMessage, false);
+</script>
+</body>
+</html>

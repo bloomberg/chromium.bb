@@ -70,6 +70,7 @@ public:
     PassRefPtrWillBeRawPtr<ServiceWorker> installing() { return m_installing.get(); }
     PassRefPtrWillBeRawPtr<ServiceWorker> waiting() { return m_waiting.get(); }
     ScriptPromise ready(ScriptState*);
+    blink::WebServiceWorkerProvider* provider() { return m_provider; }
 
     ScriptPromise registerServiceWorker(ScriptState*, const String& pattern, const Dictionary&);
     ScriptPromise unregisterServiceWorker(ScriptState*, const String& scope = String());
