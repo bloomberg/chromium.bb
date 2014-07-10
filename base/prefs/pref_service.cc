@@ -432,6 +432,7 @@ base::Value* PrefService::GetMutableUserPref(const char* path,
 }
 
 void PrefService::ReportUserPrefChanged(const std::string& key) {
+  DCHECK(CalledOnValidThread());
   user_pref_store_->ReportValueChanged(key);
 }
 

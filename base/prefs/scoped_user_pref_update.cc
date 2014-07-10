@@ -14,13 +14,16 @@ ScopedUserPrefUpdateBase::ScopedUserPrefUpdateBase(PrefService* service,
                                                    const char* path)
     : service_(service),
       path_(path),
-      value_(NULL) {}
+      value_(NULL) {
+  DCHECK(service_->CalledOnValidThread());
+}
 
 ScopedUserPrefUpdateBase::~ScopedUserPrefUpdateBase() {
   Notify();
 }
 
 base::Value* ScopedUserPrefUpdateBase::GetValueOfType(base::Value::Type type) {
+  DCHECK(CalledOnValidThread());
   if (!value_)
     value_ = service_->GetMutableUserPref(path_.c_str(), type);
   return value_;
