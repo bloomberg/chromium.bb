@@ -20,27 +20,32 @@ PositionOptions::PositionOptions(const Dictionary& options)
     , m_maximumAge(0)
     , m_timeout(std::numeric_limits<unsigned>::max())
 {
-    if (options.hasProperty("enableHighAccuracy"))
-        options.get("enableHighAccuracy", m_highAccuracy);
+    if (options.hasProperty("enableHighAccuracy")) {
+        bool highAccuracy;
+        if (options.get("enableHighAccuracy", highAccuracy))
+            m_highAccuracy = highAccuracy;
+    }
     if (options.hasProperty("maximumAge")) {
         double maximumAge;
-        options.get("maximumAge", maximumAge);
-        if (maximumAge < 0)
-            m_maximumAge = 0;
-        else if (maximumAge > std::numeric_limits<unsigned>::max())
-            m_maximumAge = std::numeric_limits<unsigned>::max();
-        else
-            m_maximumAge = maximumAge;
+        if (options.get("maximumAge", maximumAge)) {
+            if (maximumAge < 0)
+                m_maximumAge = 0;
+            else if (maximumAge > std::numeric_limits<unsigned>::max())
+                m_maximumAge = std::numeric_limits<unsigned>::max();
+            else
+                m_maximumAge = maximumAge;
+        }
     }
     if (options.hasProperty("timeout")) {
         double timeout;
-        options.get("timeout", timeout);
-        if (timeout < 0)
-            m_timeout = 0;
-        else if (timeout > std::numeric_limits<unsigned>::max())
-            m_timeout = std::numeric_limits<unsigned>::max();
-        else
-            m_timeout = timeout;
+        if (options.get("timeout", timeout)) {
+            if (timeout < 0)
+                m_timeout = 0;
+            else if (timeout > std::numeric_limits<unsigned>::max())
+                m_timeout = std::numeric_limits<unsigned>::max();
+            else
+                m_timeout = timeout;
+        }
     }
 }
 
