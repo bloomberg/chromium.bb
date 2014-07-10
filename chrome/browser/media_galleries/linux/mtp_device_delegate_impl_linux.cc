@@ -24,20 +24,25 @@ const char kRootPath[] = "/";
 // Returns the device relative file path given |file_path|.
 // E.g.: If the |file_path| is "/usb:2,2:12345/DCIM" and |registered_dev_path|
 // is "/usb:2,2:12345", this function returns the device relative path which is
-// "/DCIM".
+// "DCIM".
+// In the special case when |registered_dev_path| and |file_path| are the same,
+// return |kRootPath|.
 std::string GetDeviceRelativePath(const base::FilePath& registered_dev_path,
                                   const base::FilePath& file_path) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   DCHECK(!registered_dev_path.empty());
   DCHECK(!file_path.empty());
-  if (registered_dev_path == file_path)
-    return kRootPath;
-
-  base::FilePath relative_path;
-  if (!registered_dev_path.AppendRelativePath(file_path, &relative_path))
-    return std::string();
-  DCHECK(!relative_path.empty());
-  return relative_path.value();
+  std::string result;
+  if (registered_dev_path == file_path) {
+    result = kRootPath;
+  } else {
+    base::FilePath relative_path;
+    if (registered_dev_path.AppendRelativePath(file_path, &relative_path)) {
+      DCHECK(!relative_path.empty());
+      result = relative_path.value();
+    }
+  }
+  return result;
 }
 
 // Returns the MTPDeviceTaskHelper object associated with the MTP device

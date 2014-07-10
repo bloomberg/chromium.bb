@@ -25,7 +25,7 @@ class MTPDeviceObjectEnumerator {
 
   // If the current file entry is valid, returns true and fills in |entry_id|
   // with the entry identifier else returns false and |entry_id| is not set.
-  bool GetEntryId(uint32_t* entry_id) const;
+  bool GetEntryId(uint32* entry_id) const;
 
  private:
   // Returns true if the enumerator has more entries to traverse, false

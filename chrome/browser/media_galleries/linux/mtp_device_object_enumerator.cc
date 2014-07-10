@@ -45,7 +45,7 @@ base::Time MTPDeviceObjectEnumerator::LastModifiedTime() {
   return base::Time::FromTimeT(file_entries_[index_].modification_time());
 }
 
-bool MTPDeviceObjectEnumerator::GetEntryId(uint32_t* entry_id) const {
+bool MTPDeviceObjectEnumerator::GetEntryId(uint32* entry_id) const {
   DCHECK(entry_id);
   if (!IsIndexReadyAndInRange())
     return false;
