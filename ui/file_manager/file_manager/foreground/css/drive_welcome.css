@@ -96,6 +96,7 @@
 .drive-welcome.header .drive-welcome-icon {
   background-position: center 18px;
   background-size: 51px 44px;
+  flex: none;
   width: 120px;
 }
 
@@ -109,10 +110,16 @@
   font-size: 140%;
   margin-bottom: 4px;
   margin-top: 14px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .drive-welcome.header .drive-welcome-text {
   margin-bottom: 6px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .drive-welcome.header .drive-welcome-dismiss {
