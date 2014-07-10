@@ -48,7 +48,7 @@ function showImages(callback)
 
     function imageLoaded()
     {
-        requestAnimationFrame(function() { testRunner.displayAsyncThen(addImages); } );
+        testRunner.displayAsyncThen(addImages);
     }
 }
 

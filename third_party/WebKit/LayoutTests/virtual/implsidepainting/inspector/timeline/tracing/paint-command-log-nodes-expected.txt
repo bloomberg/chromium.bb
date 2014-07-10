@@ -1,0 +1,13 @@
+Tests snapshot command log for trace-based Timeline paint event
+
+
+Paint command log:
+    div#a drawRect
+    div#b drawRect
+    img#c drawRect
+    img#c drawBitmapRectToRect
+    rect#e drawRect
+Paint command log:
+    html drawRect
+    p drawPosTextH
+
