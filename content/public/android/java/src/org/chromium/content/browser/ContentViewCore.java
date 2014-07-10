@@ -615,13 +615,11 @@ public class ContentViewCore
             }
         };
 
-        long windowNativePointer = windowAndroid != null ? windowAndroid.getNativePointer() : 0;
-
-        long viewAndroidNativePointer = 0;
-        if (windowNativePointer != 0) {
-            mViewAndroid = new ViewAndroid(windowAndroid, getViewAndroidDelegate());
-            viewAndroidNativePointer = mViewAndroid.getNativePointer();
-        }
+        long windowNativePointer = windowAndroid.getNativePointer();
+        assert windowNativePointer != 0;
+        mViewAndroid = new ViewAndroid(windowAndroid, getViewAndroidDelegate());
+        long viewAndroidNativePointer = mViewAndroid.getNativePointer();
+        assert viewAndroidNativePointer != 0;
 
         mZoomControlsDelegate = new ZoomControlsDelegate() {
             @Override

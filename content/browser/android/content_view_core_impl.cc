@@ -226,6 +226,8 @@ ContentViewCoreImpl::ContentViewCoreImpl(
       accessibility_enabled_(false) {
   CHECK(web_contents) <<
       "A ContentViewCoreImpl should be created with a valid WebContents.";
+  DCHECK(view_android_);
+  DCHECK(window_android_);
 
   root_layer_->SetBackgroundColor(GetBackgroundColor(env, obj));
   gfx::Size physical_size(
@@ -393,10 +395,8 @@ void ContentViewCoreImpl::UpdateFrameInfo(
   if (obj.is_null())
     return;
 
-  if (window_android_) {
-    window_android_->set_content_offset(
-        gfx::ScaleVector2d(content_offset, dpi_scale_));
-  }
+  window_android_->set_content_offset(
+      gfx::ScaleVector2d(content_offset, dpi_scale_));
 
   Java_ContentViewCore_updateFrameInfo(
       env, obj.obj(),
@@ -796,14 +796,10 @@ void ContentViewCoreImpl::LoadUrl(
 }
 
 ui::ViewAndroid* ContentViewCoreImpl::GetViewAndroid() const {
-  // view_android_ should never be null for Chrome.
-  DCHECK(view_android_);
   return view_android_;
 }
 
 ui::WindowAndroid* ContentViewCoreImpl::GetWindowAndroid() const {
-  // This should never be NULL for Chrome, but will be NULL for WebView.
-  DCHECK(window_android_);
   return window_android_;
 }
 
