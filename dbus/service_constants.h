@@ -800,6 +800,7 @@ const char kUninitializedTechnologiesProperty[] = "UninitializedTechnologies";
 // Service property names.
 const char kActivateOverNonCellularNetworkProperty[] =
     "Cellular.ActivateOverNonCellularNetwork";
+const char kActivationTypeProperty[] = "ActivationType";
 const char kDiagnosticsDisconnectsProperty[] = "Diagnostics.Disconnects";
 const char kDiagnosticsMisconnectsProperty[] = "Diagnostics.Misconnects";
 const char kEapRemoteCertificationProperty[] = "EAP.RemoteCertification";
@@ -893,6 +894,12 @@ const char kTDLSUnknownState[] = "Unknown";
 const char kCarrierGenericUMTS[] = "Generic UMTS";
 const char kCarrierSprint[] = "Sprint";
 const char kCarrierVerizon[] = "Verizon Wireless";
+
+// Cellular activation types.
+const char kActivationTypeNonCellular[] = "NonCellular";  // For future use
+const char kActivationTypeOMADM[] = "OMADM";  // For future use
+const char kActivationTypeOTA[] = "OTA";
+const char kActivationTypeOTASP[] = "OTASP";
 
 // Geolocation property field names.
 // Reference:
