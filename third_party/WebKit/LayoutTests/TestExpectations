@@ -763,6 +763,8 @@ crbug.com/311469 [ Mac ] svg/zoom/page/zoom-zoom-coords.xhtml [ Failure Pass ]
 
 crbug.com/312606 [ Mac ] fast/text/international/text-combine-image-test.html [ Failure Pass ]
 
+crbug.com/392531 inspector/sources/debugger/async-callstack-in-console.html [ Failure Pass ]
+
 crbug.com/312613 fast/canvas/canvas-blending-pattern-over-gradient.html [ Pass Timeout ]
 
 crbug.com/313217 fast/dom/node-iterator-document-moved-crash.html [ Crash Pass ]
