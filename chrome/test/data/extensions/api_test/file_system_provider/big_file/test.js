@@ -104,10 +104,9 @@ function onReadFileRequested(options, onSuccess, onError) {
 
   if (filePath == '/' + TESTING_6GB_FILE.name) {
     if (options.offset < TESTING_TEXT_OFFSET ||
-        options.offset + options.length >
-            TESTING_TEXT_OFFSET + TESTING_TEXT.length) {
+        options.offset >= TESTING_TEXT_OFFSET + TESTING_TEXT.length) {
       console.error('Reading from a wrong location in the file!');
-      onError('INVALID_FAILED');  // enum ProviderError.
+      onError('FAILED');  // enum ProviderError.
       return;
     }
 

@@ -7,13 +7,10 @@
 
 #include "base/basictypes.h"
 #include "base/files/file_path.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "webkit/browser/blob/file_stream_reader.h"
 #include "webkit/browser/fileapi/file_system_url.h"
-
-namespace fileapi {
-class AsyncFileUtil;
-}  // namespace fileapi
 
 namespace chromeos {
 namespace file_system_provider {

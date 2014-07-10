@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/file_system_provider/fileapi/backend_delegate.h"
 
 #include "base/memory/scoped_ptr.h"
+#include "chrome/browser/chromeos/file_system_provider/fileapi/buffering_file_stream_reader.h"
 #include "chrome/browser/chromeos/file_system_provider/fileapi/file_stream_reader.h"
 #include "chrome/browser/chromeos/file_system_provider/fileapi/provider_async_file_util.h"
 #include "content/public/browser/browser_thread.h"
@@ -16,6 +17,13 @@ using content::BrowserThread;
 
 namespace chromeos {
 namespace file_system_provider {
+namespace {
+
+// Size of the stream reader internal buffer. At most this number of bytes will
+// be read ahead of the requested data.
+const int kReaderBufferSize = 512 * 1024;  // 512KB.
+
+}  // namespace
 
 BackendDelegate::BackendDelegate()
     : async_file_util_(new internal::ProviderAsyncFileUtil) {}
@@ -39,7 +47,10 @@ BackendDelegate::CreateFileStreamReader(
   DCHECK_EQ(fileapi::kFileSystemTypeProvided, url.type());
 
   return scoped_ptr<webkit_blob::FileStreamReader>(
-      new FileStreamReader(context, url, offset, expected_modification_time));
+      new BufferingFileStreamReader(
+          scoped_ptr<webkit_blob::FileStreamReader>(new FileStreamReader(
+              context, url, offset, expected_modification_time)),
+          kReaderBufferSize));
 }
 
 scoped_ptr<fileapi::FileStreamWriter> BackendDelegate::CreateFileStreamWriter(
