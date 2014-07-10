@@ -18,7 +18,6 @@ function Viewport() {
 
   this.generation_ = 0;
 
-  this.scaleControl_ = null;
   this.repaintCallbacks_ = [];
   this.update();
 }
@@ -28,19 +27,11 @@ function Viewport() {
  */
 
 /**
- * @param {Object} scaleControl The UI object responsible for scaling.
- */
-Viewport.prototype.setScaleControl = function(scaleControl) {
-  this.scaleControl_ = scaleControl;
-};
-
-/**
  * @param {number} width Image width.
  * @param {number} height Image height.
  */
 Viewport.prototype.setImageSize = function(width, height) {
   this.imageBounds_ = new Rect(width, height);
-  if (this.scaleControl_) this.scaleControl_.displayImageSize(width, height);
   this.invalidateCaches();
 };
 
@@ -50,8 +41,6 @@ Viewport.prototype.setImageSize = function(width, height) {
  */
 Viewport.prototype.setScreenSize = function(width, height) {
   this.screenBounds_ = new Rect(width, height);
-  if (this.scaleControl_)
-    this.scaleControl_.setMinScale(this.getFittingScale());
   this.invalidateCaches();
 };
 
@@ -90,7 +79,6 @@ Viewport.prototype.getScale = function() { return this.scale_; };
 Viewport.prototype.setScale = function(scale, notify) {
   if (this.scale_ == scale) return;
   this.scale_ = scale;
-  if (notify && this.scaleControl_) this.scaleControl_.displayScale(scale);
   this.invalidateCaches();
 };
 
@@ -110,7 +98,6 @@ Viewport.prototype.getFittingScale = function() {
  */
 Viewport.prototype.fitImage = function() {
   var scale = this.getFittingScale();
-  if (this.scaleControl_) this.scaleControl_.setMinScale(scale);
   this.setScale(scale, true);
 };
 
