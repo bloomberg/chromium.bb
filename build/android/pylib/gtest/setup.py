@@ -39,6 +39,7 @@ _ISOLATE_FILE_PATHS = {
     'media_perftests': 'media/media_perftests.isolate',
     'media_unittests': 'media/media_unittests.isolate',
     'net_unittests': 'net/net_unittests.isolate',
+    'sql_unittests': 'sql/sql_unittests.isolate',
     'ui_unittests': 'ui/ui_unittests.isolate',
     'unit_tests': 'chrome/unit_tests.isolate',
     'webkit_unit_tests':

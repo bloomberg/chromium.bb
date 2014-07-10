@@ -56,6 +56,11 @@ test("sql_unittests") {
     "recovery_unittest.cc",
     "sqlite_features_unittest.cc",
     "statement_unittest.cc",
+    "test/paths.cc",
+    "test/paths.h",
+    "test/run_all_unittests.cc",
+    "test/sql_test_suite.cc",
+    "test/sql_test_suite.h",
     "transaction_unittest.cc",
   ]
 
@@ -67,7 +72,7 @@ test("sql_unittests") {
     ":sql",
     ":test_support",
     "//base/allocator",
-    "//base/test:run_all_unittests",
+    "//base/test:test_support",
     "//testing/gtest",
     "//third_party/sqlite",
   ]

@@ -80,7 +80,6 @@
       'dependencies': [
         'sql',
         'test_support_sql',
-        '../base/base.gyp:run_all_unittests',
         '../base/base.gyp:test_support_base',
         '../testing/gtest.gyp:gtest',
         '../third_party/sqlite/sqlite.gyp:sqlite',
@@ -91,6 +90,11 @@
         'recovery_unittest.cc',
         'sqlite_features_unittest.cc',
         'statement_unittest.cc',
+        'test/paths.cc',
+        'test/paths.h',
+        'test/run_all_unittests.cc',
+        'test/sql_test_suite.cc',
+        'test/sql_test_suite.h',
         'transaction_unittest.cc',
       ],
       'include_dirs': [
@@ -129,6 +133,24 @@
             'test_suite_name': 'sql_unittests',
           },
           'includes': [ '../build/apk_test.gypi' ],
+        },
+      ],
+    }],
+    ['test_isolation_mode != "noop"', {
+      'targets': [
+        {
+          'target_name': 'sql_unittests_run',
+          'type': 'none',
+          'dependencies': [
+            'sql_unittests',
+          ],
+          'includes': [
+            '../build/isolate.gypi',
+            'sql_unittests.isolate',
+          ],
+          'sources': [
+            'sql_unittests.isolate',
+          ],
         },
       ],
     }],

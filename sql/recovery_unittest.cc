@@ -5,13 +5,16 @@
 #include <string>
 
 #include "base/bind.h"
+#include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "sql/connection.h"
 #include "sql/meta_table.h"
 #include "sql/recovery.h"
 #include "sql/statement.h"
+#include "sql/test/paths.h"
 #include "sql/test/scoped_error_ignorer.h"
 #include "sql/test/test_helpers.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -682,6 +685,35 @@ TEST_F(SQLRecoveryTest, AutoRecoverTableExtendColumns) {
   ASSERT_TRUE(Reopen());
   ASSERT_EQ(orig_schema, GetSchema(&db()));
   ASSERT_EQ(orig_data, ExecuteWithResults(&db(), kXSql, "|", "\n"));
+}
+
+// Recover a golden file where an interior page has been manually modified so
+// that the number of cells is greater than will fit on a single page.  This
+// case happened in <http://crbug.com/387868>.
+TEST_F(SQLRecoveryTest, Bug387868) {
+  base::FilePath golden_path;
+  ASSERT_TRUE(PathService::Get(sql::test::DIR_TEST_DATA, &golden_path));
+  golden_path = golden_path.AppendASCII("recovery_387868");
+  db().Close();
+  ASSERT_TRUE(base::CopyFile(golden_path, db_path()));
+  ASSERT_TRUE(Reopen());
+
+  {
+    scoped_ptr<sql::Recovery> recovery = sql::Recovery::Begin(&db(), db_path());
+    ASSERT_TRUE(recovery.get());
+
+    // Create the new version of the table.
+    const char kCreateSql[] =
+        "CREATE TABLE x (id INTEGER PRIMARY KEY, t0 TEXT)";
+    ASSERT_TRUE(recovery->db()->Execute(kCreateSql));
+
+    size_t rows = 0;
+    EXPECT_TRUE(recovery->AutoRecoverTable("x", 0, &rows));
+    EXPECT_EQ(43u, rows);
+
+    // Successfully recovered.
+    EXPECT_TRUE(sql::Recovery::Recovered(recovery.Pass()));
+  }
 }
 #endif  // !defined(USE_SYSTEM_SQLITE)
 
