@@ -116,16 +116,21 @@ float ClusterTiles(const std::vector<gfx::Rect>& invalid_tiles,
   vertical_density = PerformClustering(invalid_tiles_vertical,
                                        &vertical_clustering);
 
+  // If vertical density is optimal, then we can return early.
+  if (vertical_density == 1.f) {
+    *record_rects = vertical_clustering;
+    return vertical_density;
+  }
+
   // Now try again with a horizontal sort, see which one is best
-  // TODO(humper): Heuristics for skipping this step?
   std::vector<gfx::Rect> invalid_tiles_horizontal = invalid_tiles;
-  std::sort(invalid_tiles_vertical.begin(),
-            invalid_tiles_vertical.end(),
+  std::sort(invalid_tiles_horizontal.begin(),
+            invalid_tiles_horizontal.end(),
             rect_sort_x);
 
   float horizontal_density;
   std::vector<gfx::Rect> horizontal_clustering;
-  horizontal_density = PerformClustering(invalid_tiles_vertical,
+  horizontal_density = PerformClustering(invalid_tiles_horizontal,
                                          &horizontal_clustering);
 
   if (vertical_density < horizontal_density) {
