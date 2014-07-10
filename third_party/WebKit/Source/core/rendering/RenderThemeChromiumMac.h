@@ -77,6 +77,7 @@ public:
     virtual bool paintCapsLockIndicator(RenderObject*, const PaintInfo&, const IntRect&) OVERRIDE;
 
     virtual bool popsMenuByArrowKeys() const OVERRIDE { return true; }
+    virtual bool popsMenuBySpaceKey() const OVERRIDE FINAL { return true; }
 
     virtual IntSize meterSizeForBounds(const RenderMeter*, const IntRect&) const OVERRIDE;
     virtual bool paintMeter(RenderObject*, const PaintInfo&, const IntRect&) OVERRIDE;

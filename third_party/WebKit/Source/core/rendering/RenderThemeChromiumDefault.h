@@ -79,7 +79,9 @@ public:
     virtual void adjustInnerSpinButtonStyle(RenderStyle*, Element*) const OVERRIDE;
     virtual bool paintInnerSpinButton(RenderObject*, const PaintInfo&, const IntRect&) OVERRIDE;
 
-    virtual bool popsMenuBySpaceOrReturn() const OVERRIDE FINAL { return true; }
+    virtual bool popsMenuBySpaceKey() const OVERRIDE FINAL { return true; }
+    virtual bool popsMenuByReturnKey() const OVERRIDE FINAL { return true; }
+    virtual bool popsMenuByAltDownUpOrF4Key() const OVERRIDE { return true; }
 
     virtual bool paintProgressBar(RenderObject*, const PaintInfo&, const IntRect&) OVERRIDE;
 

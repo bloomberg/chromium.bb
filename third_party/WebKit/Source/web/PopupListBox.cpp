@@ -243,6 +243,11 @@ bool PopupListBox::handleKeyEvent(const PlatformKeyboardEvent& event)
         break;
     }
 
+    if (event.altKey() && (event.keyIdentifier() == "Down" || event.keyIdentifier() == "Up")) {
+        hidePopup();
+        return true;
+    }
+
     if (m_originalIndex != m_selectedIndex) {
         // Keyboard events should update the selection immediately (but we don't
         // want to fire the onchange event until the popup is closed, to match

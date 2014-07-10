@@ -2401,7 +2401,6 @@
             'html/HTMLScriptElement.h',
             'html/HTMLSelectElement.cpp',
             'html/HTMLSelectElement.h',
-            'html/HTMLSelectElementWin.cpp',
             'html/HTMLShadowElement.cpp',
             'html/HTMLShadowElement.h',
             'html/HTMLSourceElement.cpp',

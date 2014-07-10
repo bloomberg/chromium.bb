@@ -1114,47 +1114,62 @@ void HTMLSelectElement::resetImpl()
     setNeedsValidityCheck();
 }
 
-#if !OS(WIN)
-bool HTMLSelectElement::platformHandleKeydownEvent(KeyboardEvent* event)
+void HTMLSelectElement::handlePopupOpenKeyboardEvent(Event* event)
 {
-    if (!RenderTheme::theme().popsMenuByArrowKeys())
+    focus();
+    // Calling focus() may cause us to lose our renderer. Return true so
+    // that our caller doesn't process the event further, but don't set
+    // the event as handled.
+    if (!renderer() || !renderer()->isMenuList() || isDisabledFormControl())
+        return;
+    // Save the selection so it can be compared to the new selection
+    // when dispatching change events during selectOption, which
+    // gets called from RenderMenuList::valueChanged, which gets called
+    // after the user makes a selection from the menu.
+    saveLastSelection();
+    if (RenderMenuList* menuList = toRenderMenuList(renderer()))
+        menuList->showPopup();
+    int index = selectedIndex();
+    ASSERT(index >= 0);
+    ASSERT_WITH_SECURITY_IMPLICATION(index < static_cast<int>(listItems().size()));
+    setSelectedIndex(index);
+    event->setDefaultHandled();
+    return;
+}
+
+bool HTMLSelectElement::shouldOpenPopupForKeyDownEvent(KeyboardEvent* keyEvent)
+{
+    const String& keyIdentifier = keyEvent->keyIdentifier();
+    RenderTheme& renderTheme = RenderTheme::theme();
+
+    if (isSpatialNavigationEnabled(document().frame()))
         return false;
 
-    if (!isSpatialNavigationEnabled(document().frame())) {
-        if (event->keyIdentifier() == "Down" || event->keyIdentifier() == "Up") {
-            focus();
-            // Calling focus() may cause us to lose our renderer. Return true so
-            // that our caller doesn't process the event further, but don't set
-            // the event as handled.
-            if (!renderer() || !renderer()->isMenuList() || isDisabledFormControl())
-                return true;
-
-            // Save the selection so it can be compared to the new selection
-            // when dispatching change events during selectOption, which
-            // gets called from RenderMenuList::valueChanged, which gets called
-            // after the user makes a selection from the menu.
-            saveLastSelection();
-            if (RenderMenuList* menuList = toRenderMenuList(renderer()))
-                menuList->showPopup();
-            event->setDefaultHandled();
-        }
-        return true;
-    }
-
-    return false;
+    return ((renderTheme.popsMenuByArrowKeys() &&  (keyIdentifier == "Down" || keyIdentifier == "Up"))
+        || (renderTheme.popsMenuByAltDownUpOrF4Key() && (keyIdentifier == "Down" || keyIdentifier == "Up") && (keyEvent->altKey() || keyEvent->altGraphKey()))
+        || (renderTheme.popsMenuByAltDownUpOrF4Key() && (!keyEvent->altKey() && !keyEvent->ctrlKey() && keyIdentifier == "F4")));
 }
-#endif
+
+bool HTMLSelectElement::shouldOpenPopupForKeyPressEvent(KeyboardEvent *event)
+{
+    RenderTheme& renderTheme = RenderTheme::theme();
+    int keyCode = event->keyCode();
+
+    return ((renderTheme.popsMenuBySpaceKey() && event->keyCode() == ' ')
+        || (renderTheme.popsMenuByReturnKey() && keyCode == '\r'));
+}
 
 void HTMLSelectElement::menuListDefaultEventHandler(Event* event)
 {
-    RenderTheme& renderTheme = RenderTheme::theme();
-
     if (event->type() == EventTypeNames::keydown) {
         if (!renderer() || !event->isKeyboardEvent())
             return;
 
-        if (platformHandleKeydownEvent(toKeyboardEvent(event)))
+        KeyboardEvent* keyEvent = toKeyboardEvent(event);
+        if (shouldOpenPopupForKeyDownEvent(keyEvent)) {
+            handlePopupOpenKeyboardEvent(event);
             return;
+        }
 
         // When using spatial navigation, we want to be able to navigate away
         // from the select element when the user hits any of the arrow keys,
@@ -1164,7 +1179,11 @@ void HTMLSelectElement::menuListDefaultEventHandler(Event* event)
                 return;
         }
 
-        const String& keyIdentifier = toKeyboardEvent(event)->keyIdentifier();
+        // The key handling below shouldn't be used for non spatial navigation mode Mac
+        if (RenderTheme::theme().popsMenuByArrowKeys() && !isSpatialNavigationEnabled(document().frame()))
+            return;
+
+        const String& keyIdentifier = keyEvent->keyIdentifier();
         bool handled = true;
         const WillBeHeapVector<RawPtrWillBeMember<HTMLElement> >& listItems = this->listItems();
         int listIndex = optionToListIndex(selectedIndex());
@@ -1191,15 +1210,11 @@ void HTMLSelectElement::menuListDefaultEventHandler(Event* event)
             event->setDefaultHandled();
     }
 
-    // Use key press event here since sending simulated mouse events
-    // on key down blocks the proper sending of the key press event.
     if (event->type() == EventTypeNames::keypress) {
         if (!renderer() || !event->isKeyboardEvent())
             return;
 
         int keyCode = toKeyboardEvent(event)->keyCode();
-        bool handled = false;
-
         if (keyCode == ' ' && isSpatialNavigationEnabled(document().frame())) {
             // Use space to toggle arrow key handling for selection change or spatial navigation.
             m_activeSelectionState = !m_activeSelectionState;
@@ -1207,51 +1222,18 @@ void HTMLSelectElement::menuListDefaultEventHandler(Event* event)
             return;
         }
 
-        if (renderTheme.popsMenuBySpaceOrReturn()) {
-            if (keyCode == ' ' || keyCode == '\r') {
-                focus();
-
-                // Calling focus() may remove the renderer or change the
-                // renderer type.
-                if (!renderer() || !renderer()->isMenuList() || isDisabledFormControl())
-                    return;
-
-                // Save the selection so it can be compared to the new selection
-                // when dispatching change events during selectOption, which
-                // gets called from RenderMenuList::valueChanged, which gets called
-                // after the user makes a selection from the menu.
-                saveLastSelection();
-                if (RenderMenuList* menuList = toRenderMenuList(renderer()))
-                    menuList->showPopup();
-                handled = true;
-            }
-        } else if (renderTheme.popsMenuByArrowKeys()) {
-            if (keyCode == ' ') {
-                focus();
-
-                // Calling focus() may remove the renderer or change the
-                // renderer type.
-                if (!renderer() || !renderer()->isMenuList() || isDisabledFormControl())
-                    return;
-
-                // Save the selection so it can be compared to the new selection
-                // when dispatching change events during selectOption, which
-                // gets called from RenderMenuList::valueChanged, which gets called
-                // after the user makes a selection from the menu.
-                saveLastSelection();
-                if (RenderMenuList* menuList = toRenderMenuList(renderer()))
-                    menuList->showPopup();
-                handled = true;
-            } else if (keyCode == '\r') {
-                if (form())
-                    form()->submitImplicitly(event, false);
-                dispatchInputAndChangeEventForMenuList();
-                handled = true;
-            }
+        KeyboardEvent* keyEvent = toKeyboardEvent(event);
+        if (shouldOpenPopupForKeyPressEvent(keyEvent)) {
+            handlePopupOpenKeyboardEvent(event);
+            return;
         }
 
-        if (handled)
+        if (!RenderTheme::theme().popsMenuByReturnKey() && keyCode == '\r') {
+            if (form())
+                form()->submitImplicitly(event, false);
+            dispatchInputAndChangeEventForMenuList();
             event->setDefaultHandled();
+        }
     }
 
     if (event->type() == EventTypeNames::mousedown && event->isMouseEvent() && toMouseEvent(event)->button() == LeftButton) {

@@ -174,7 +174,9 @@ private:
     int lastSelectedListIndex() const;
     void updateSelectedState(int listIndex, bool multi, bool shift);
     void menuListDefaultEventHandler(Event*);
-    bool platformHandleKeydownEvent(KeyboardEvent*);
+    void handlePopupOpenKeyboardEvent(Event*);
+    bool shouldOpenPopupForKeyDownEvent(KeyboardEvent*);
+    bool shouldOpenPopupForKeyPressEvent(KeyboardEvent*);
     void listBoxDefaultEventHandler(Event*);
     void setOptionsChangedOnRenderer();
     size_t searchOptionsForValue(const String&, size_t listIndexStart, size_t listIndexEnd) const;
