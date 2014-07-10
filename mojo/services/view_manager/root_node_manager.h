@@ -190,6 +190,9 @@ class MOJO_VIEW_MANAGER_EXPORT RootNodeManager
   virtual void OnNodeHierarchyChanged(const Node* node,
                                       const Node* new_parent,
                                       const Node* old_parent) OVERRIDE;
+  virtual void OnNodeBoundsChanged(const Node* node,
+                                   const gfx::Rect& old_bounds,
+                                   const gfx::Rect& new_bounds) OVERRIDE;
   virtual void OnNodeViewReplaced(const Node* node,
                                   const View* new_view,
                                   const View* old_view) OVERRIDE;

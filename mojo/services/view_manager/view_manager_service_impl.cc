@@ -750,8 +750,6 @@ void ViewManagerServiceImpl::SetNodeBounds(
       RootNodeManager::CHANGE_TYPE_DONT_ADVANCE_SERVER_CHANGE_ID, false);
   gfx::Rect old_bounds = node->window()->bounds();
   node->window()->SetBounds(bounds.To<gfx::Rect>());
-  root_node_manager_->ProcessNodeBoundsChanged(
-      node, old_bounds, bounds.To<gfx::Rect>());
   callback.Run(true);
 }
 
@@ -808,6 +806,12 @@ void ViewManagerServiceImpl::OnNodeHierarchyChanged(const Node* node,
                                                     const Node* new_parent,
                                                     const Node* old_parent) {
   root_node_manager_->ProcessNodeHierarchyChanged(node, new_parent, old_parent);
+}
+
+void ViewManagerServiceImpl::OnNodeBoundsChanged(const Node* node,
+                                                 const gfx::Rect& old_bounds,
+                                                 const gfx::Rect& new_bounds) {
+  root_node_manager_->ProcessNodeBoundsChanged(node, old_bounds, new_bounds);
 }
 
 void ViewManagerServiceImpl::OnNodeViewReplaced(const Node* node,

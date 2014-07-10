@@ -146,6 +146,7 @@ gfx::Size Node::GetMaximumSize() const {
 
 void Node::OnBoundsChanged(const gfx::Rect& old_bounds,
                            const gfx::Rect& new_bounds) {
+  delegate_->OnNodeBoundsChanged(this, old_bounds, new_bounds);
 }
 
 gfx::NativeCursor Node::GetCursor(const gfx::Point& point) {

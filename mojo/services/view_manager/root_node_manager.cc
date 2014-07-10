@@ -266,6 +266,12 @@ void RootNodeManager::OnNodeHierarchyChanged(const Node* node,
     ProcessNodeHierarchyChanged(node, new_parent, old_parent);
 }
 
+void RootNodeManager::OnNodeBoundsChanged(const Node* node,
+                                          const gfx::Rect& old_bounds,
+                                          const gfx::Rect& new_bounds) {
+  ProcessNodeBoundsChanged(node, old_bounds, new_bounds);
+}
+
 void RootNodeManager::OnNodeViewReplaced(const Node* node,
                                          const View* new_view,
                                          const View* old_view) {
