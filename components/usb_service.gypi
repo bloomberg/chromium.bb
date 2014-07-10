@@ -43,7 +43,12 @@
         'dependencies': [
           '../build/linux/system.gyp:udev',
         ],
-      }]
+      }],
+      ['chromeos==1', {
+        'dependencies': [
+          '../chromeos/chromeos.gyp:chromeos',
+        ],
+      }],
     ]
   }],
 }

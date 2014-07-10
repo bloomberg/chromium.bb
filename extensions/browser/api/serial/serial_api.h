@@ -1,23 +1,22 @@
-// Copyright 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_API_SERIAL_SERIAL_API_H_
-#define CHROME_BROWSER_EXTENSIONS_API_SERIAL_SERIAL_API_H_
+#ifndef EXTENSIONS_BROWSER_API_SERIAL_SERIAL_API_H_
+#define EXTENSIONS_BROWSER_API_SERIAL_SERIAL_API_H_
 
 #include <string>
 
-#include "base/memory/ref_counted.h"
-#include "chrome/common/extensions/api/serial.h"
 #include "device/serial/serial.mojom.h"
 #include "extensions/browser/api/api_resource_manager.h"
 #include "extensions/browser/api/async_api_function.h"
+#include "extensions/common/api/serial.h"
 
 namespace extensions {
 
 class SerialConnection;
 
-namespace api {
+namespace core_api {
 
 class SerialEventDispatcher;
 
@@ -240,7 +239,7 @@ class SerialSetControlSignalsFunction : public SerialAsyncApiFunction {
   scoped_ptr<serial::SetControlSignals::Params> params_;
 };
 
-}  // namespace api
+}  // namespace core_api
 
 }  // namespace extensions
 
@@ -248,12 +247,12 @@ namespace mojo {
 
 template <>
 class TypeConverter<device::serial::DeviceInfoPtr,
-                    linked_ptr<extensions::api::serial::DeviceInfo> > {
+                    linked_ptr<extensions::core_api::serial::DeviceInfo> > {
  public:
-  static linked_ptr<extensions::api::serial::DeviceInfo> ConvertTo(
+  static linked_ptr<extensions::core_api::serial::DeviceInfo> ConvertTo(
       const device::serial::DeviceInfoPtr& input);
 };
 
 }  // namespace mojo
 
-#endif  // CHROME_BROWSER_EXTENSIONS_API_SERIAL_SERIAL_API_H_
+#endif  // EXTENSIONS_BROWSER_API_SERIAL_SERIAL_API_H_

@@ -1,27 +1,18 @@
-// Copyright 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <deque>
 #include <string>
-#include <vector>
 
-#include "base/memory/scoped_ptr.h"
-#include "chrome/browser/extensions/api/serial/serial_api.h"
-#include "chrome/browser/extensions/api/serial/serial_connection.h"
 #include "chrome/browser/extensions/extension_apitest.h"
-#include "chrome/browser/extensions/extension_function_test_utils.h"
-#include "chrome/browser/extensions/extension_test_message_listener.h"
-#include "chrome/browser/ui/browser.h"
-#include "chrome/common/extensions/api/serial.h"
-#include "content/public/browser/browser_thread.h"
+#include "extensions/browser/api/serial/serial_api.h"
+#include "extensions/browser/api/serial/serial_connection.h"
 #include "extensions/browser/extension_function.h"
+#include "extensions/common/api/serial.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 using testing::_;
 using testing::Return;
-
-using content::BrowserThread;
 
 namespace {
 
@@ -48,6 +39,7 @@ class FakeSerialGetDevicesFunction : public AsyncExtensionFunction {
     SendResponse(true);
     return true;
   }
+
  protected:
   virtual ~FakeSerialGetDevicesFunction() {}
 };
@@ -126,7 +118,7 @@ class FakeEchoSerialIoHandler : public device::SerialIoHandler {
   DISALLOW_COPY_AND_ASSIGN(FakeEchoSerialIoHandler);
 };
 
-class FakeSerialConnectFunction : public api::SerialConnectFunction {
+class FakeSerialConnectFunction : public core_api::SerialConnectFunction {
  protected:
   virtual SerialConnection* CreateSerialConnection(
       const std::string& port,

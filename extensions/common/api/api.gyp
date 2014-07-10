@@ -28,6 +28,7 @@
               'extensions_manifest_types.json',
               'power.idl',
               'runtime.json',
+              'serial.idl',
               'socket.idl',
               'sockets_tcp.idl',
               'sockets_tcp_server.idl',
@@ -49,6 +50,7 @@
         'impl_dir': 'extensions/browser/api',
       },
       'dependencies': [
+        '<(DEPTH)/device/serial/serial.gyp:device_serial',
         '<(DEPTH)/skia/skia.gyp:skia',
       ],
     },

@@ -1,25 +1,23 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/api/serial/serial_event_dispatcher.h"
+#include "extensions/browser/api/serial/serial_event_dispatcher.h"
 
-#include "chrome/browser/browser_process.h"
-#include "chrome/browser/extensions/api/serial/serial_connection.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/profiles/profile_manager.h"
+#include "extensions/browser/api/serial/serial_connection.h"
 #include "extensions/browser/event_router.h"
+#include "extensions/browser/extensions_browser_client.h"
 
 namespace extensions {
 
-namespace api {
+namespace core_api {
 
 namespace {
 
 bool ShouldPauseOnReceiveError(serial::ReceiveError error) {
   return error == serial::RECEIVE_ERROR_DEVICE_LOST ||
-      error == serial::RECEIVE_ERROR_SYSTEM_ERROR ||
-      error == serial::RECEIVE_ERROR_DISCONNECTED;
+         error == serial::RECEIVE_ERROR_SYSTEM_ERROR ||
+         error == serial::RECEIVE_ERROR_DISCONNECTED;
 }
 
 }  // namespace
@@ -40,19 +38,21 @@ SerialEventDispatcher* SerialEventDispatcher::Get(
 }
 
 SerialEventDispatcher::SerialEventDispatcher(content::BrowserContext* context)
-    : thread_id_(SerialConnection::kThreadId),
-      profile_(Profile::FromBrowserContext(context)) {
+    : thread_id_(SerialConnection::kThreadId), context_(context) {
   ApiResourceManager<SerialConnection>* manager =
-      ApiResourceManager<SerialConnection>::Get(profile_);
+      ApiResourceManager<SerialConnection>::Get(context_);
   DCHECK(manager) << "No serial connection manager.";
   connections_ = manager->data_;
 }
 
-SerialEventDispatcher::~SerialEventDispatcher() {}
+SerialEventDispatcher::~SerialEventDispatcher() {
+}
 
-SerialEventDispatcher::ReceiveParams::ReceiveParams() {}
+SerialEventDispatcher::ReceiveParams::ReceiveParams() {
+}
 
-SerialEventDispatcher::ReceiveParams::~ReceiveParams() {}
+SerialEventDispatcher::ReceiveParams::~ReceiveParams() {
+}
 
 void SerialEventDispatcher::PollConnection(const std::string& extension_id,
                                            int connection_id) {
@@ -60,7 +60,7 @@ void SerialEventDispatcher::PollConnection(const std::string& extension_id,
 
   ReceiveParams params;
   params.thread_id = thread_id_;
-  params.profile_id = profile_;
+  params.browser_context_id = context_;
   params.extension_id = extension_id;
   params.connections = connections_;
   params.connection_id = connection_id;
@@ -120,9 +120,8 @@ void SerialEventDispatcher::ReceiveCallback(const ReceiveParams& params,
   }
 
   // Queue up the next read operation.
-  BrowserThread::PostTask(params.thread_id,
-                          FROM_HERE,
-                          base::Bind(&StartReceive, params));
+  BrowserThread::PostTask(
+      params.thread_id, FROM_HERE, base::Bind(&StartReceive, params));
 }
 
 // static
@@ -130,29 +129,30 @@ void SerialEventDispatcher::PostEvent(const ReceiveParams& params,
                                       scoped_ptr<extensions::Event> event) {
   DCHECK_CURRENTLY_ON(params.thread_id);
 
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(&DispatchEvent,
-                 params.profile_id,
-                 params.extension_id,
-                 base::Passed(event.Pass())));
+  BrowserThread::PostTask(BrowserThread::UI,
+                          FROM_HERE,
+                          base::Bind(&DispatchEvent,
+                                     params.browser_context_id,
+                                     params.extension_id,
+                                     base::Passed(event.Pass())));
 }
 
 // static
-void SerialEventDispatcher::DispatchEvent(void* profile_id,
+void SerialEventDispatcher::DispatchEvent(void* browser_context_id,
                                           const std::string& extension_id,
                                           scoped_ptr<extensions::Event> event) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  Profile* profile = reinterpret_cast<Profile*>(profile_id);
-  if (!g_browser_process->profile_manager()->IsValidProfile(profile))
+  content::BrowserContext* context =
+      reinterpret_cast<content::BrowserContext*>(browser_context_id);
+  if (!extensions::ExtensionsBrowserClient::Get()->IsValidContext(context))
     return;
 
-  EventRouter* router = EventRouter::Get(profile);
+  EventRouter* router = EventRouter::Get(context);
   if (router)
     router->DispatchEventToExtension(extension_id, event.Pass());
 }
 
-}  // namespace api
+}  // namespace core_api
 
 }  // namespace extensions

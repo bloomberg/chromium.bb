@@ -1,23 +1,27 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_API_SERIAL_SERIAL_EVENT_DISPATCHER_H_
-#define CHROME_BROWSER_EXTENSIONS_API_SERIAL_SERIAL_EVENT_DISPATCHER_H_
+#ifndef EXTENSIONS_BROWSER_API_SERIAL_SERIAL_EVENT_DISPATCHER_H_
+#define EXTENSIONS_BROWSER_API_SERIAL_SERIAL_EVENT_DISPATCHER_H_
 
-#include "chrome/common/extensions/api/serial.h"
+#include <string>
+
 #include "extensions/browser/api/api_resource_manager.h"
+#include "extensions/common/api/serial.h"
 
-class Profile;
+namespace content {
+class BrowserContext;
+}
 
 namespace extensions {
 
 struct Event;
 class SerialConnection;
 
-namespace api {
+namespace core_api {
 
-// Per-profile dispatcher for events on serial connections.
+// Per-browser-context dispatcher for events on serial connections.
 class SerialEventDispatcher : public BrowserContextKeyedAPI {
  public:
   explicit SerialEventDispatcher(content::BrowserContext* context);
@@ -46,7 +50,7 @@ class SerialEventDispatcher : public BrowserContextKeyedAPI {
     ~ReceiveParams();
 
     content::BrowserThread::ID thread_id;
-    void* profile_id;
+    void* browser_context_id;
     std::string extension_id;
     scoped_refptr<ConnectionData> connections;
     int connection_id;
@@ -61,17 +65,17 @@ class SerialEventDispatcher : public BrowserContextKeyedAPI {
   static void PostEvent(const ReceiveParams& params,
                         scoped_ptr<extensions::Event> event);
 
-  static void DispatchEvent(void* profile_id,
+  static void DispatchEvent(void* browser_context_id,
                             const std::string& extension_id,
                             scoped_ptr<extensions::Event> event);
 
   content::BrowserThread::ID thread_id_;
-  Profile* const profile_;
+  content::BrowserContext* const context_;
   scoped_refptr<ConnectionData> connections_;
 };
 
-}  // namespace api
+}  // namespace core_api
 
 }  // namespace extensions
 
-#endif  // CHROME_BROWSER_EXTENSIONS_API_SERIAL_SERIAL_EVENT_DISPATCHER_H_
+#endif  // EXTENSIONS_BROWSER_API_SERIAL_SERIAL_EVENT_DISPATCHER_H_

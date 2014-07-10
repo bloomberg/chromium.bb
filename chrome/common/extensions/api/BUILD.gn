@@ -43,7 +43,6 @@ generated_extensions_api("api") {
     # include generated headers from these targets.
     # TODO(brettw) this should be made unnecessary if possible.
     "//components/metrics/proto",
-    "//device/serial",
 
     "//content/public/browser",
     "//skia",

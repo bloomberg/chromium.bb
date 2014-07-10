@@ -27,10 +27,10 @@ namespace extensions {
 namespace api {
 class BluetoothSocketApiFunction;
 class BluetoothSocketEventDispatcher;
-class SerialEventDispatcher;
 }
 
 namespace core_api {
+class SerialEventDispatcher;
 class TCPServerSocketEventDispatcher;
 class TCPSocketEventDispatcher;
 class UDPSocketEventDispatcher;
@@ -157,7 +157,7 @@ class ApiResourceManager : public BrowserContextKeyedAPI,
   friend class BluetoothAPI;
   friend class api::BluetoothSocketApiFunction;
   friend class api::BluetoothSocketEventDispatcher;
-  friend class api::SerialEventDispatcher;
+  friend class core_api::SerialEventDispatcher;
   friend class core_api::TCPServerSocketEventDispatcher;
   friend class core_api::TCPSocketEventDispatcher;
   friend class core_api::UDPSocketEventDispatcher;

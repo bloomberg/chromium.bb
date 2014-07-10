@@ -1,25 +1,24 @@
-// Copyright 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/api/serial/serial_api.h"
+#include "extensions/browser/api/serial/serial_api.h"
 
 #include <algorithm>
+#include <vector>
 
 #include "base/values.h"
-#include "chrome/browser/extensions/api/serial/serial_connection.h"
-#include "chrome/browser/extensions/api/serial/serial_event_dispatcher.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/common/extensions/api/serial.h"
 #include "content/public/browser/browser_thread.h"
 #include "device/serial/serial_device_enumerator.h"
-#include "extensions/browser/extension_system.h"
+#include "extensions/browser/api/serial/serial_connection.h"
+#include "extensions/browser/api/serial/serial_event_dispatcher.h"
+#include "extensions/common/api/serial.h"
 
 using content::BrowserThread;
 
 namespace extensions {
 
-namespace api {
+namespace core_api {
 
 namespace {
 
@@ -50,11 +49,11 @@ void SetDefaultScopedPtrValue(scoped_ptr<T>& ptr, const T& value) {
 
 }  // namespace
 
-SerialAsyncApiFunction::SerialAsyncApiFunction()
-    : manager_(NULL) {
+SerialAsyncApiFunction::SerialAsyncApiFunction() : manager_(NULL) {
 }
 
-SerialAsyncApiFunction::~SerialAsyncApiFunction() {}
+SerialAsyncApiFunction::~SerialAsyncApiFunction() {
+}
 
 bool SerialAsyncApiFunction::PrePrepare() {
   manager_ = ApiResourceManager<SerialConnection>::Get(browser_context());
@@ -75,7 +74,8 @@ void SerialAsyncApiFunction::RemoveSerialConnection(int api_resource_id) {
   manager_->Remove(extension_->id(), api_resource_id);
 }
 
-SerialGetDevicesFunction::SerialGetDevicesFunction() {}
+SerialGetDevicesFunction::SerialGetDevicesFunction() {
+}
 
 bool SerialGetDevicesFunction::Prepare() {
   set_work_thread_id(BrowserThread::FILE);
@@ -92,9 +92,11 @@ void SerialGetDevicesFunction::Work() {
       devices.To<std::vector<linked_ptr<serial::DeviceInfo> > >());
 }
 
-SerialConnectFunction::SerialConnectFunction() {}
+SerialConnectFunction::SerialConnectFunction() {
+}
 
-SerialConnectFunction::~SerialConnectFunction() {}
+SerialConnectFunction::~SerialConnectFunction() {
+}
 
 bool SerialConnectFunction::Prepare() {
   params_ = serial::Connect::Params::Create(*args_);
@@ -144,9 +146,10 @@ void SerialConnectFunction::OnConnected(bool success) {
     connection_ = NULL;
   }
 
-  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                          base::Bind(&SerialConnectFunction::FinishConnect,
-                                     this));
+  BrowserThread::PostTask(
+      BrowserThread::IO,
+      FROM_HERE,
+      base::Bind(&SerialConnectFunction::FinishConnect, this));
 }
 
 void SerialConnectFunction::FinishConnect() {
@@ -169,13 +172,16 @@ void SerialConnectFunction::FinishConnect() {
 }
 
 SerialConnection* SerialConnectFunction::CreateSerialConnection(
-    const std::string& port, const std::string& extension_id) const {
+    const std::string& port,
+    const std::string& extension_id) const {
   return new SerialConnection(port, extension_id);
 }
 
-SerialUpdateFunction::SerialUpdateFunction() {}
+SerialUpdateFunction::SerialUpdateFunction() {
+}
 
-SerialUpdateFunction::~SerialUpdateFunction() {}
+SerialUpdateFunction::~SerialUpdateFunction() {
+}
 
 bool SerialUpdateFunction::Prepare() {
   params_ = serial::Update::Params::Create(*args_);
@@ -194,9 +200,11 @@ void SerialUpdateFunction::Work() {
   results_ = serial::Update::Results::Create(success);
 }
 
-SerialDisconnectFunction::SerialDisconnectFunction() {}
+SerialDisconnectFunction::SerialDisconnectFunction() {
+}
 
-SerialDisconnectFunction::~SerialDisconnectFunction() {}
+SerialDisconnectFunction::~SerialDisconnectFunction() {
+}
 
 bool SerialDisconnectFunction::Prepare() {
   params_ = serial::Disconnect::Params::Create(*args_);
@@ -215,9 +223,11 @@ void SerialDisconnectFunction::Work() {
   results_ = serial::Disconnect::Results::Create(true);
 }
 
-SerialSendFunction::SerialSendFunction() {}
+SerialSendFunction::SerialSendFunction() {
+}
 
-SerialSendFunction::~SerialSendFunction() {}
+SerialSendFunction::~SerialSendFunction() {
+}
 
 bool SerialSendFunction::Prepare() {
   params_ = serial::Send::Params::Create(*args_);
@@ -234,9 +244,9 @@ void SerialSendFunction::AsyncWorkStart() {
     return;
   }
 
-  if (!connection->Send(params_->data,
-                        base::Bind(&SerialSendFunction::OnSendComplete,
-                                   this))) {
+  if (!connection->Send(
+          params_->data,
+          base::Bind(&SerialSendFunction::OnSendComplete, this))) {
     OnSendComplete(0, serial::SEND_ERROR_PENDING);
   }
 }
@@ -250,9 +260,11 @@ void SerialSendFunction::OnSendComplete(int bytes_sent,
   AsyncWorkCompleted();
 }
 
-SerialFlushFunction::SerialFlushFunction() {}
+SerialFlushFunction::SerialFlushFunction() {
+}
 
-SerialFlushFunction::~SerialFlushFunction() {}
+SerialFlushFunction::~SerialFlushFunction() {
+}
 
 bool SerialFlushFunction::Prepare() {
   params_ = serial::Flush::Params::Create(*args_);
@@ -271,9 +283,11 @@ void SerialFlushFunction::Work() {
   results_ = serial::Flush::Results::Create(success);
 }
 
-SerialSetPausedFunction::SerialSetPausedFunction() {}
+SerialSetPausedFunction::SerialSetPausedFunction() {
+}
 
-SerialSetPausedFunction::~SerialSetPausedFunction() {}
+SerialSetPausedFunction::~SerialSetPausedFunction() {
+}
 
 bool SerialSetPausedFunction::Prepare() {
   params_ = serial::SetPaused::Params::Create(*args_);
@@ -302,9 +316,11 @@ void SerialSetPausedFunction::Work() {
   results_ = serial::SetPaused::Results::Create();
 }
 
-SerialGetInfoFunction::SerialGetInfoFunction() {}
+SerialGetInfoFunction::SerialGetInfoFunction() {
+}
 
-SerialGetInfoFunction::~SerialGetInfoFunction() {}
+SerialGetInfoFunction::~SerialGetInfoFunction() {
+}
 
 bool SerialGetInfoFunction::Prepare() {
   params_ = serial::GetInfo::Params::Create(*args_);
@@ -326,9 +342,11 @@ void SerialGetInfoFunction::Work() {
   results_ = serial::GetInfo::Results::Create(info);
 }
 
-SerialGetConnectionsFunction::SerialGetConnectionsFunction() {}
+SerialGetConnectionsFunction::SerialGetConnectionsFunction() {
+}
 
-SerialGetConnectionsFunction::~SerialGetConnectionsFunction() {}
+SerialGetConnectionsFunction::~SerialGetConnectionsFunction() {
+}
 
 bool SerialGetConnectionsFunction::Prepare() {
   return true;
@@ -336,13 +354,14 @@ bool SerialGetConnectionsFunction::Prepare() {
 
 void SerialGetConnectionsFunction::Work() {
   std::vector<linked_ptr<serial::ConnectionInfo> > infos;
-  const base::hash_set<int>* connection_ids = manager_->GetResourceIds(
-      extension_->id());
+  const base::hash_set<int>* connection_ids =
+      manager_->GetResourceIds(extension_->id());
   if (connection_ids) {
     for (base::hash_set<int>::const_iterator it = connection_ids->begin();
-         it != connection_ids->end(); ++it) {
+         it != connection_ids->end();
+         ++it) {
       int connection_id = *it;
-      SerialConnection *connection = GetSerialConnection(connection_id);
+      SerialConnection* connection = GetSerialConnection(connection_id);
       if (connection) {
         linked_ptr<serial::ConnectionInfo> info(new serial::ConnectionInfo());
         info->connection_id = connection_id;
@@ -354,9 +373,11 @@ void SerialGetConnectionsFunction::Work() {
   results_ = serial::GetConnections::Results::Create(infos);
 }
 
-SerialGetControlSignalsFunction::SerialGetControlSignalsFunction() {}
+SerialGetControlSignalsFunction::SerialGetControlSignalsFunction() {
+}
 
-SerialGetControlSignalsFunction::~SerialGetControlSignalsFunction() {}
+SerialGetControlSignalsFunction::~SerialGetControlSignalsFunction() {
+}
 
 bool SerialGetControlSignalsFunction::Prepare() {
   params_ = serial::GetControlSignals::Params::Create(*args_);
@@ -381,9 +402,11 @@ void SerialGetControlSignalsFunction::Work() {
   results_ = serial::GetControlSignals::Results::Create(signals);
 }
 
-SerialSetControlSignalsFunction::SerialSetControlSignalsFunction() {}
+SerialSetControlSignalsFunction::SerialSetControlSignalsFunction() {
+}
 
-SerialSetControlSignalsFunction::~SerialSetControlSignalsFunction() {}
+SerialSetControlSignalsFunction::~SerialSetControlSignalsFunction() {
+}
 
 bool SerialSetControlSignalsFunction::Prepare() {
   params_ = serial::SetControlSignals::Params::Create(*args_);
@@ -403,19 +426,19 @@ void SerialSetControlSignalsFunction::Work() {
   results_ = serial::SetControlSignals::Results::Create(success);
 }
 
-}  // namespace api
+}  // namespace core_api
 
 }  // namespace extensions
 
 namespace mojo {
 
 // static
-linked_ptr<extensions::api::serial::DeviceInfo>
+linked_ptr<extensions::core_api::serial::DeviceInfo>
 TypeConverter<device::serial::DeviceInfoPtr,
-              linked_ptr<extensions::api::serial::DeviceInfo> >::
+              linked_ptr<extensions::core_api::serial::DeviceInfo> >::
     ConvertTo(const device::serial::DeviceInfoPtr& device) {
-  linked_ptr<extensions::api::serial::DeviceInfo> info(
-      new extensions::api::serial::DeviceInfo);
+  linked_ptr<extensions::core_api::serial::DeviceInfo> info(
+      new extensions::core_api::serial::DeviceInfo);
   info->path = device->path;
   if (device->has_vendor_id)
     info->vendor_id.reset(new int(static_cast<int>(device->vendor_id)));

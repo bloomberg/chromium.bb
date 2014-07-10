@@ -87,6 +87,8 @@
         '<(DEPTH)/extensions/extensions.gyp:extensions_common',
         '<(DEPTH)/extensions/extensions.gyp:extensions_renderer',
         '<(DEPTH)/extensions/extensions_resources.gyp:extensions_resources',
+        '<(DEPTH)/mojo/mojo.gyp:mojo_environment_chromium',
+        '<(DEPTH)/mojo/mojo.gyp:mojo_system_impl',
         '<(DEPTH)/skia/skia.gyp:skia',
         '<(DEPTH)/third_party/WebKit/public/blink.gyp:blink',
         '<(DEPTH)/ui/wm/wm.gyp:wm',

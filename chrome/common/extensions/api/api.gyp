@@ -89,7 +89,6 @@
       'push_messaging.idl',
       'reading_list_private.json',
       'screenlock_private.idl',
-      'serial.idl',
       'sessions.json',
       'signed_in_devices.idl',
       'streams_private.idl',
@@ -212,7 +211,6 @@
         # include generated headers from these targets.
         # TODO(brettw) this should be made unnecessary if possible.
         '<(DEPTH)/components/components.gyp:component_metrics_proto',
-        '<(DEPTH)/device/serial/serial.gyp:device_serial',
 
         '<(DEPTH)/content/content.gyp:content_browser',
         '<(DEPTH)/skia/skia.gyp:skia',

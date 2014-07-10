@@ -6,6 +6,7 @@
 
 #include "extensions/browser/api/api_resource_manager.h"
 #include "extensions/browser/api/runtime/runtime_api.h"
+#include "extensions/browser/api/serial/serial_connection.h"
 #include "extensions/browser/api/socket/socket.h"
 #include "extensions/browser/api/socket/tcp_socket.h"
 #include "extensions/browser/api/socket/udp_socket.h"
@@ -23,6 +24,7 @@ void EnsureBrowserContextKeyedServiceFactoriesBuilt() {
       extensions::ResumableTCPServerSocket>::GetFactoryInstance();
   ApiResourceManager<extensions::ResumableTCPSocket>::GetFactoryInstance();
   ApiResourceManager<extensions::ResumableUDPSocket>::GetFactoryInstance();
+  ApiResourceManager<extensions::SerialConnection>::GetFactoryInstance();
   ApiResourceManager<extensions::Socket>::GetFactoryInstance();
   core_api::TCPServerSocketEventDispatcher::GetFactoryInstance();
   core_api::TCPSocketEventDispatcher::GetFactoryInstance();

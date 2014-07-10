@@ -1,23 +1,20 @@
-// Copyright 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_API_SERIAL_SERIAL_CONNECTION_H_
-#define CHROME_BROWSER_EXTENSIONS_API_SERIAL_SERIAL_CONNECTION_H_
+#ifndef EXTENSIONS_BROWSER_API_SERIAL_SERIAL_CONNECTION_H_
+#define EXTENSIONS_BROWSER_API_SERIAL_SERIAL_CONNECTION_H_
 
-#include <set>
 #include <string>
 
 #include "base/callback.h"
-#include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "base/message_loop/message_loop.h"
 #include "base/time/time.h"
-#include "chrome/common/extensions/api/serial.h"
 #include "content/public/browser/browser_thread.h"
 #include "device/serial/serial_io_handler.h"
 #include "extensions/browser/api/api_resource.h"
 #include "extensions/browser/api/api_resource_manager.h"
+#include "extensions/common/api/serial.h"
 
 using content::BrowserThread;
 
@@ -36,13 +33,14 @@ class SerialConnection : public ApiResource,
   // does not necessarily imply an empty |data| string, since a receive may
   // complete partially before being interrupted by an error condition.
   typedef base::Callback<
-      void(const std::string& data, api::serial::ReceiveError error)>
+      void(const std::string& data, core_api::serial::ReceiveError error)>
       ReceiveCompleteCallback;
 
   // This is the callback type expected by Send. Note that an error result
   // does not necessarily imply 0 bytes sent, since a send may complete
   // partially before being interrupted by an error condition.
-  typedef base::Callback<void(int bytes_sent, api::serial::SendError error)>
+  typedef base::Callback<
+      void(int bytes_sent, core_api::serial::SendError error)>
       SendCompleteCallback;
 
   SerialConnection(const std::string& port,
@@ -91,24 +89,24 @@ class SerialConnection : public ApiResource,
   // Configures some subset of port options for this connection.
   // Omitted options are unchanged. Returns |true| iff the configuration
   // changes were successful.
-  bool Configure(const api::serial::ConnectionOptions& options);
+  bool Configure(const core_api::serial::ConnectionOptions& options);
 
   // Connection configuration query. Fills values in an existing
   // ConnectionInfo. Returns |true| iff the connection's information
   // was successfully retrieved.
-  bool GetInfo(api::serial::ConnectionInfo* info) const;
+  bool GetInfo(core_api::serial::ConnectionInfo* info) const;
 
   // Reads current control signals (DCD, CTS, etc.) into an existing
   // DeviceControlSignals structure. Returns |true| iff the signals were
   // successfully read.
   bool GetControlSignals(
-      api::serial::DeviceControlSignals* control_signals) const;
+      core_api::serial::DeviceControlSignals* control_signals) const;
 
   // Sets one or more control signals (DTR and/or RTS). Returns |true| iff
   // the signals were successfully set. Unininitialized flags in the
   // HostControlSignals structure are left unchanged.
   bool SetControlSignals(
-      const api::serial::HostControlSignals& control_signals);
+      const core_api::serial::HostControlSignals& control_signals);
 
   // Overrides |io_handler_| for testing.
   void SetIoHandlerForTest(scoped_refptr<device::SerialIoHandler> handler);
@@ -197,20 +195,20 @@ namespace mojo {
 
 template <>
 class TypeConverter<device::serial::HostControlSignalsPtr,
-                    extensions::api::serial::HostControlSignals> {
+                    extensions::core_api::serial::HostControlSignals> {
  public:
   static device::serial::HostControlSignalsPtr ConvertFrom(
-      const extensions::api::serial::HostControlSignals& input);
+      const extensions::core_api::serial::HostControlSignals& input);
 };
 
 template <>
 class TypeConverter<device::serial::ConnectionOptionsPtr,
-                    extensions::api::serial::ConnectionOptions> {
+                    extensions::core_api::serial::ConnectionOptions> {
  public:
   static device::serial::ConnectionOptionsPtr ConvertFrom(
-      const extensions::api::serial::ConnectionOptions& input);
+      const extensions::core_api::serial::ConnectionOptions& input);
 };
 
 }  // namespace mojo
 
-#endif  // CHROME_BROWSER_EXTENSIONS_API_SERIAL_SERIAL_CONNECTION_H_
+#endif  // EXTENSIONS_BROWSER_API_SERIAL_SERIAL_CONNECTION_H_
