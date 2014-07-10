@@ -154,7 +154,6 @@ void PictureLayerImpl::AppendQuads(
 
   SharedQuadState* shared_quad_state =
       render_pass->CreateAndAppendSharedQuadState();
-  PopulateSharedQuadState(shared_quad_state);
   shared_quad_state->SetAll(scaled_draw_transform,
                             scaled_content_bounds,
                             scaled_visible_content_rect,
@@ -163,8 +162,6 @@ void PictureLayerImpl::AppendQuads(
                             draw_properties().opacity,
                             blend_mode(),
                             sorting_context_id_);
-
-  gfx::Rect rect = scaled_visible_content_rect;
 
   if (current_draw_mode_ == DRAW_MODE_RESOURCELESS_SOFTWARE) {
     AppendDebugBorderQuad(
@@ -175,16 +172,16 @@ void PictureLayerImpl::AppendQuads(
         DebugColors::DirectPictureBorderColor(),
         DebugColors::DirectPictureBorderWidth(layer_tree_impl()));
 
-    gfx::Rect geometry_rect = rect;
+    gfx::Rect geometry_rect = scaled_visible_content_rect;
     gfx::Rect opaque_rect = contents_opaque() ? geometry_rect : gfx::Rect();
     gfx::Rect visible_geometry_rect = occlusion_tracker.UnoccludedContentRect(
         geometry_rect, scaled_draw_transform);
     if (visible_geometry_rect.IsEmpty())
       return;
 
-    gfx::Size texture_size = rect.size();
+    gfx::Size texture_size = scaled_visible_content_rect.size();
     gfx::RectF texture_rect = gfx::RectF(texture_size);
-    gfx::Rect quad_content_rect = rect;
+    gfx::Rect quad_content_rect = scaled_visible_content_rect;
 
     PictureDrawQuad* quad =
         render_pass->CreateAndAppendDrawQuad<PictureDrawQuad>();
@@ -207,7 +204,10 @@ void PictureLayerImpl::AppendQuads(
 
   if (ShowDebugBorders()) {
     for (PictureLayerTilingSet::CoverageIterator iter(
-             tilings_.get(), max_contents_scale, rect, ideal_contents_scale_);
+             tilings_.get(),
+             max_contents_scale,
+             scaled_visible_content_rect,
+             ideal_contents_scale_);
          iter;
          ++iter) {
       SkColor color;
@@ -257,8 +257,10 @@ void PictureLayerImpl::AppendQuads(
 
   size_t missing_tile_count = 0u;
   size_t on_demand_missing_tile_count = 0u;
-  for (PictureLayerTilingSet::CoverageIterator iter(
-           tilings_.get(), max_contents_scale, rect, ideal_contents_scale_);
+  for (PictureLayerTilingSet::CoverageIterator iter(tilings_.get(),
+                                                    max_contents_scale,
+                                                    scaled_visible_content_rect,
+                                                    ideal_contents_scale_);
        iter;
        ++iter) {
     gfx::Rect geometry_rect = iter.geometry_rect();
