@@ -21,6 +21,7 @@
 #ifndef PrintContext_h
 #define PrintContext_h
 
+#include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
 #include "wtf/HashMap.h"
 #include "wtf/Vector.h"
@@ -36,7 +37,7 @@ class GraphicsContext;
 class IntRect;
 class Node;
 
-class PrintContext {
+class PrintContext : public NoBaseWillBeGarbageCollectedFinalized<PrintContext> {
 public:
     explicit PrintContext(LocalFrame*);
     ~PrintContext();
@@ -78,6 +79,8 @@ public:
     // (pageSizeInPixels.height() + 1) * number-of-pages - 1
     static void spoolAllPagesWithBoundaries(LocalFrame*, GraphicsContext&, const FloatSize& pageSizeInPixels);
 
+    virtual void trace(Visitor*);
+
 protected:
     void outputLinkedDestinations(GraphicsContext&, Node*, const IntRect& pageRect);
 
@@ -91,7 +94,7 @@ private:
     // Used to prevent misuses of begin() and end() (e.g., call end without begin).
     bool m_isPrinting;
 
-    HashMap<String, Element*> m_linkedDestinations;
+    WillBeHeapHashMap<String, RawPtrWillBeMember<Element> > m_linkedDestinations;
     bool m_linkedDestinationsValid;
 };
 

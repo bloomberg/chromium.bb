@@ -399,7 +399,7 @@ private:
 // Simple class to override some of PrintContext behavior. This is used when
 // the frame hosts a plugin that supports custom printing. In this case, we
 // want to delegate all printing related calls to the plugin.
-class ChromePluginPrintContext : public ChromePrintContext {
+class ChromePluginPrintContext FINAL : public ChromePrintContext {
 public:
     ChromePluginPrintContext(LocalFrame* frame, WebPluginContainerImpl* plugin, const WebPrintParams& printParams)
         : ChromePrintContext(frame), m_plugin(plugin), m_pageCount(0), m_printParams(printParams)
@@ -1260,9 +1260,9 @@ int WebLocalFrameImpl::printBegin(const WebPrintParams& printParams, const WebNo
     }
 
     if (pluginContainer && pluginContainer->supportsPaginatedPrint())
-        m_printContext = adoptPtr(new ChromePluginPrintContext(frame(), pluginContainer, printParams));
+        m_printContext = adoptPtrWillBeNoop(new ChromePluginPrintContext(frame(), pluginContainer, printParams));
     else
-        m_printContext = adoptPtr(new ChromePrintContext(frame()));
+        m_printContext = adoptPtrWillBeNoop(new ChromePrintContext(frame()));
 
     FloatRect rect(0, 0, static_cast<float>(printParams.printContentArea.width), static_cast<float>(printParams.printContentArea.height));
     m_printContext->begin(rect.width(), rect.height());

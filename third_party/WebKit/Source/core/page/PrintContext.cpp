@@ -263,8 +263,8 @@ void PrintContext::outputLinkedDestinations(GraphicsContext& graphicsContext, No
         m_linkedDestinationsValid = true;
     }
 
-    HashMap<String, Element*>::const_iterator end = m_linkedDestinations.end();
-    for (HashMap<String, Element*>::const_iterator it = m_linkedDestinations.begin(); it != end; ++it) {
+    WillBeHeapHashMap<String, RawPtrWillBeMember<Element> >::const_iterator end = m_linkedDestinations.end();
+    for (WillBeHeapHashMap<String, RawPtrWillBeMember<Element> >::const_iterator it = m_linkedDestinations.begin(); it != end; ++it) {
         RenderObject* renderer = it->value->renderer();
         if (renderer) {
             IntRect boundingBox = renderer->absoluteBoundingBoxRect();
@@ -377,6 +377,11 @@ void PrintContext::spoolAllPagesWithBoundaries(LocalFrame* frame, GraphicsContex
     }
 
     graphicsContext.restore();
+}
+
+void PrintContext::trace(Visitor* visitor)
+{
+    visitor->trace(m_linkedDestinations);
 }
 
 }
