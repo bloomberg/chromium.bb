@@ -6,6 +6,8 @@ import json
 import logging
 
 from metrics import Metric
+from telemetry.value import scalar
+
 
 _COUNTER_NAMES = [
     'V8.OsMemoryAllocated',
@@ -213,4 +215,6 @@ class V8ObjectStatsMetric(Metric):
     assert self._results != None, 'Must call Stop() first'
     for counter_name in self._results:
       display_name = counter_name.replace('.', '_')
-      results.Add(display_name, 'kb', self._results[counter_name] / 1024.0)
+      results.AddValue(scalar.ScalarValue(
+          results.current_page, display_name, 'kb',
+          self._results[counter_name] / 1024.0))
