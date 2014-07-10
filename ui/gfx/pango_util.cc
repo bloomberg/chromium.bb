@@ -230,17 +230,15 @@ void SetUpPangoLayout(
   pango_layout_set_font_description(layout, desc.get());
 }
 
-size_t GetPangoFontSizeInPixels(PangoFontDescription* pango_font) {
-  size_t size_in_pixels = pango_font_description_get_size(pango_font);
-  if (pango_font_description_get_size_is_absolute(pango_font)) {
-    // If the size is absolute, then it's in Pango units rather than points.
-    // There are PANGO_SCALE Pango units in a device unit (pixel).
-    size_in_pixels /= PANGO_SCALE;
-  } else {
-    // Otherwise, we need to convert from points.
-    size_in_pixels = size_in_pixels * GetPixelsInPoint() / PANGO_SCALE;
-  }
-  return size_in_pixels;
+int GetPangoFontSizeInPixels(PangoFontDescription* pango_font) {
+  // If the size is absolute, then it's in Pango units rather than points. There
+  // are PANGO_SCALE Pango units in a device unit (pixel).
+  if (pango_font_description_get_size_is_absolute(pango_font))
+    return pango_font_description_get_size(pango_font) / PANGO_SCALE;
+
+  // Otherwise, we need to convert from points.
+  return static_cast<int>(GetPixelsInPoint() *
+      pango_font_description_get_size(pango_font) / PANGO_SCALE + 0.5);
 }
 
 PangoFontMetrics* GetPangoFontMetrics(PangoFontDescription* desc) {

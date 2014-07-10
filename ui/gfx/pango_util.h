@@ -52,7 +52,7 @@ void SetUpPangoLayout(
     int flags);
 
 // Returns the size in pixels for the specified |pango_font|.
-size_t GetPangoFontSizeInPixels(PangoFontDescription* pango_font);
+int GetPangoFontSizeInPixels(PangoFontDescription* pango_font);
 
 // Retrieves the Pango metrics for a Pango font description. Caches the metrics
 // and never frees them. The metrics objects are relatively small and very
