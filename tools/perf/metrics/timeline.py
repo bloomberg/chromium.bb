@@ -4,6 +4,7 @@
 import collections
 
 from telemetry.web_perf.metrics import timeline_based_metric
+from telemetry.value import scalar
 
 
 class LoadTimesTimelineMetric(timeline_based_metric.TimelineBasedMetric):
@@ -44,9 +45,12 @@ class LoadTimesTimelineMetric(timeline_based_metric.TimelineBasedMetric):
         sanitized_event_name = event_name.replace('.', '_')
 
         full_name = thread_name + '|' + sanitized_event_name
-        results.Add(full_name, 'ms', total)
-        results.Add(full_name + '_max', 'ms', biggest_jank)
-        results.Add(full_name + '_avg', 'ms', total / len(times))
+        results.AddValue(scalar.ScalarValue(
+            results.current_page, full_name, 'ms', total))
+        results.AddValue(scalar.ScalarValue(
+            results.current_page, full_name + '_max', 'ms', biggest_jank))
+        results.AddValue(scalar.ScalarValue(
+            results.current_page, full_name + '_avg', 'ms', total / len(times)))
 
     for counter_name, counter in renderer_process.counters.iteritems():
       total = sum(counter.totals)
@@ -54,9 +58,11 @@ class LoadTimesTimelineMetric(timeline_based_metric.TimelineBasedMetric):
       # Results objects cannot contain the '.' character, so remove that here.
       sanitized_counter_name = counter_name.replace('.', '_')
 
-      results.Add(sanitized_counter_name, 'count', total)
-      results.Add(sanitized_counter_name + '_avg', 'count',
-                  total / float(len(counter.totals)))
+      results.AddValue(scalar.ScalarValue(
+          results.current_page, sanitized_counter_name, 'count', total))
+      results.AddValue(scalar.ScalarValue(
+          results.current_page, sanitized_counter_name + '_avg', 'count',
+          total / float(len(counter.totals))))
 
 # We want to generate a consistant picture of our thread usage, despite
 # having several process configurations (in-proc-gpu/single-proc).
@@ -178,7 +184,9 @@ class ResultsForThread(object):
 
   def AddResults(self, num_frames, results):
     cpu_per_frame = (float(self.cpu_time) / num_frames) if num_frames else 0
-    results.Add(ThreadCpuTimeResultName(self.name), 'ms', cpu_per_frame)
+    results.AddValue(scalar.ScalarValue(
+        results.current_page, ThreadCpuTimeResultName(self.name),
+        'ms', cpu_per_frame))
 
   def AddDetailedResults(self, num_frames, results):
     slices_by_category = collections.defaultdict(list)
@@ -189,15 +197,17 @@ class ResultsForThread(object):
       self_time = sum([x.self_time for x in slices_in_category])
       all_self_times.append(self_time)
       self_time_result = (float(self_time) / num_frames) if num_frames else 0
-      results.Add(ThreadDetailResultName(self.name, category),
-                  'ms', self_time_result)
+      results.AddValue(scalar.ScalarValue(
+          results.current_page, ThreadDetailResultName(self.name, category),
+          'ms', self_time_result))
     all_measured_time = sum(all_self_times)
     all_action_time = \
         sum([record_range.bounds for record_range in self.record_ranges])
     idle_time = max(0, all_action_time - all_measured_time)
     idle_time_result = (float(idle_time) / num_frames) if num_frames else 0
-    results.Add(ThreadDetailResultName(self.name, "idle"),
-                'ms', idle_time_result)
+    results.AddValue(scalar.ScalarValue(
+        results.current_page, ThreadDetailResultName(self.name, "idle"),
+        'ms', idle_time_result))
 
 
 class ThreadTimesTimelineMetric(timeline_based_metric.TimelineBasedMetric):
