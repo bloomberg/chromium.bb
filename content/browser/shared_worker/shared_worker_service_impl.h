@@ -77,7 +77,7 @@ class CONTENT_EXPORT SharedWorkerServiceImpl
                      SharedWorkerMessageFilter* filter);
   void AllowFileSystem(int worker_route_id,
                        const GURL& url,
-                       bool* result,
+                       IPC::Message* reply_msg,
                        SharedWorkerMessageFilter* filter);
   void AllowIndexedDB(int worker_route_id,
                       const GURL& url,

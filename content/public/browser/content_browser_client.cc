@@ -149,11 +149,12 @@ bool ContentBrowserClient::AllowWorkerDatabase(
   return true;
 }
 
-bool ContentBrowserClient::AllowWorkerFileSystem(
+void ContentBrowserClient::AllowWorkerFileSystem(
     const GURL& url,
     ResourceContext* context,
-    const std::vector<std::pair<int, int> >& render_frames) {
-  return true;
+    const std::vector<std::pair<int, int> >& render_frames,
+    base::Callback<void(bool)> callback) {
+  callback.Run(true);
 }
 
 bool ContentBrowserClient::AllowWorkerIndexedDB(

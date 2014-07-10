@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/sequenced_task_runner_helpers.h"
 #include "content/public/browser/browser_message_filter.h"
 #include "third_party/WebKit/public/web/WebCache.h"
@@ -88,15 +89,27 @@ class ChromeRenderMessageFilter : public content::BrowserMessageFilter {
                                       int request_id,
                                       const GURL& origin_url,
                                       const GURL& top_origin_url);
+  void OnRequestFileSystemAccessSyncResponse(IPC::Message* reply_msg,
+                                             bool allowed);
+  void OnRequestFileSystemAccessAsyncResponse(int render_frame_id,
+                                              int request_id,
+                                              bool allowed);
+  void OnRequestFileSystemAccess(int render_frame_id,
+                                 const GURL& origin_url,
+                                 const GURL& top_origin_url,
+                                 base::Callback<void(bool)> callback);
 #if defined(ENABLE_EXTENSIONS)
-  static void FileSystemAccessedAsyncOnUIThread(
-      int render_process_id,
-      int render_frame_id,
-      int request_id,
-      const GURL& url,
-      bool blocked_by_policy);
+  static void FileSystemAccessedOnUIThread(int render_process_id,
+                                           int render_frame_id,
+                                           const GURL& url,
+                                           bool allowed,
+                                           base::Callback<void(bool)> callback);
+  static void FileSystemAccessedResponse(int render_process_id,
+                                         int render_frame_id,
+                                         const GURL& url,
+                                         base::Callback<void(bool)> callback,
+                                         bool allowed);
 #endif
-
   void OnAllowIndexedDB(int render_frame_id,
                         const GURL& origin_url,
                         const GURL& top_origin_url,

@@ -12,6 +12,7 @@
 #include "base/basictypes.h"
 #include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "content/browser/worker_host/worker_document_set.h"
 #include "content/browser/worker_host/worker_storage_partition.h"
 #include "content/common/content_export.h"
@@ -224,9 +225,11 @@ class WorkerProcessHost : public BrowserChildProcessHostDelegate,
                        const base::string16& display_name,
                        unsigned long estimated_size,
                        bool* result);
-  void OnRequestFileSystemAccessSync(int worker_route_id,
-                                     const GURL& url,
-                                     bool* result);
+  void OnRequestFileSystemAccess(int worker_route_id,
+                                 const GURL& url,
+                                 IPC::Message* reply_msg);
+  void OnRequestFileSystemAccessResponse(scoped_ptr<IPC::Message> reply_msg,
+                                         bool allowed);
   void OnAllowIndexedDB(int worker_route_id,
                         const GURL& url,
                         const base::string16& name,
@@ -270,6 +273,8 @@ class WorkerProcessHost : public BrowserChildProcessHostDelegate,
   bool process_launched_;
 
   scoped_refptr<SocketStreamDispatcherHost> socket_stream_dispatcher_host_;
+
+  base::WeakPtrFactory<WorkerProcessHost>  weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(WorkerProcessHost);
 };

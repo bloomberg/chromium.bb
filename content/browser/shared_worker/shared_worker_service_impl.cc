@@ -394,10 +394,14 @@ void SharedWorkerServiceImpl::AllowDatabase(
 void SharedWorkerServiceImpl::AllowFileSystem(
     int worker_route_id,
     const GURL& url,
-    bool* result,
+    IPC::Message* reply_msg,
     SharedWorkerMessageFilter* filter) {
-  if (SharedWorkerHost* host = FindSharedWorkerHost(filter, worker_route_id))
-    host->AllowFileSystem(url, result);
+  if (SharedWorkerHost* host = FindSharedWorkerHost(filter, worker_route_id)) {
+    host->AllowFileSystem(url, make_scoped_ptr(reply_msg));
+  } else {
+    filter->Send(reply_msg);
+    return;
+  }
 }
 
 void SharedWorkerServiceImpl::AllowIndexedDB(

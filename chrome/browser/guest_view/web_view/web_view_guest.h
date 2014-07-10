@@ -200,6 +200,14 @@ class WebViewGuest : public GuestView<WebViewGuest>,
                                     const base::Callback<void(bool)>& callback);
   void CancelGeolocationPermissionRequest(int bridge_id);
 
+  // Called when file system access is requested by the guest content using the
+  // HTML5 file system API in main thread, or a worker thread.
+  // The request is plumbed through the <webview> permission request API. The
+  // request will be:
+  // - Allowed if the embedder explicitly allowed it.
+  // - Denied if the embedder explicitly denied.
+  // - Determined by the guest's content settings if the embedder does not
+  // perform an explicit action.
   void RequestFileSystemPermission(const GURL& url,
                                    bool allowed_by_default,
                                    const base::Callback<void(bool)>& callback);

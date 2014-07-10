@@ -57,9 +57,9 @@ class CONTENT_EXPORT SharedWorkerMessageFilter : public BrowserMessageFilter {
                        const base::string16& display_name,
                        unsigned long estimated_size,
                        bool* result);
-  void OnRequestFileSystemAccessSync(int worker_route_id,
-                                     const GURL& url,
-                                     bool* result);
+  void OnRequestFileSystemAccess(int worker_route_id,
+                                 const GURL& url,
+                                 IPC::Message* reply_msg);
   void OnAllowIndexedDB(int worker_route_id,
                         const GURL& url,
                         const base::string16& name,

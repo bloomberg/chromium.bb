@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "content/browser/shared_worker/shared_worker_message_filter.h"
@@ -64,7 +65,7 @@ class SharedWorkerHost {
                      const base::string16& display_name,
                      unsigned long estimated_size,
                      bool* result);
-  void AllowFileSystem(const GURL& url, bool* result);
+  void AllowFileSystem(const GURL& url, scoped_ptr<IPC::Message> reply_msg);
   void AllowIndexedDB(const GURL& url,
                       const base::string16& name,
                       bool* result);
@@ -118,9 +119,11 @@ class SharedWorkerHost {
   void SetMessagePortID(SharedWorkerMessageFilter* filter,
                         int route_id,
                         int message_port_id);
-
+  void AllowFileSystemResponse(scoped_ptr<IPC::Message> reply_msg,
+                               bool allowed);
   scoped_ptr<SharedWorkerInstance> instance_;
   scoped_refptr<WorkerDocumentSet> worker_document_set_;
+  base::WeakPtrFactory<SharedWorkerHost> weak_factory_;
   FilterList filters_;
   SharedWorkerMessageFilter* container_render_filter_;
   int worker_process_id_;

@@ -1965,6 +1965,68 @@ IN_PROC_BROWSER_TEST_F(WebViewTest,
       "testDefaultAllow", "web_view/filesystem/worker", NEEDS_TEST_SERVER);
 }
 
+// In following FilesystemAPIRequestFromSharedWorkerOfSingleWebViewGuest* tests,
+// embedder contains a single webview guest. The guest creates a shared worker
+// to request filesystem access from worker thread.
+// FileSystemAPIRequestFromSharedWorkerOfSingleWebViewGuest* test 1 of 3
+IN_PROC_BROWSER_TEST_F(
+    WebViewTest,
+    FileSystemAPIRequestFromSharedWorkerOfSingleWebViewGuestAllow) {
+  TestHelper("testAllow",
+             "web_view/filesystem/shared_worker/single",
+             NEEDS_TEST_SERVER);
+}
+
+// FileSystemAPIRequestFromSharedWorkerOfSingleWebViewGuest* test 2 of 3.
+IN_PROC_BROWSER_TEST_F(
+    WebViewTest,
+    FileSystemAPIRequestFromSharedWorkerOfSingleWebViewGuestDeny) {
+  TestHelper("testDeny",
+             "web_view/filesystem/shared_worker/single",
+             NEEDS_TEST_SERVER);
+}
+
+// FileSystemAPIRequestFromSharedWorkerOfSingleWebViewGuest* test 3 of 3.
+IN_PROC_BROWSER_TEST_F(
+    WebViewTest,
+    FileSystemAPIRequestFromSharedWorkerOfSingleWebViewGuestDefaultAllow) {
+  TestHelper(
+      "testDefaultAllow",
+      "web_view/filesystem/shared_worker/single",
+      NEEDS_TEST_SERVER);
+}
+
+// In following FilesystemAPIRequestFromSharedWorkerOfMultiWebViewGuests* tests,
+// embedder contains mutiple webview guests. Each guest creates a shared worker
+// to request filesystem access from worker thread.
+// FileSystemAPIRequestFromSharedWorkerOfMultiWebViewGuests* test 1 of 3
+IN_PROC_BROWSER_TEST_F(
+    WebViewTest,
+    FileSystemAPIRequestFromSharedWorkerOfMultiWebViewGuestsAllow) {
+  TestHelper("testAllow",
+             "web_view/filesystem/shared_worker/multiple",
+             NEEDS_TEST_SERVER);
+}
+
+// FileSystemAPIRequestFromSharedWorkerOfMultiWebViewGuests* test 2 of 3.
+IN_PROC_BROWSER_TEST_F(
+    WebViewTest,
+    FileSystemAPIRequestFromSharedWorkerOfMultiWebViewGuestsDeny) {
+  TestHelper("testDeny",
+             "web_view/filesystem/shared_worker/multiple",
+             NEEDS_TEST_SERVER);
+}
+
+// FileSystemAPIRequestFromSharedWorkerOfMultiWebViewGuests* test 3 of 3.
+IN_PROC_BROWSER_TEST_F(
+    WebViewTest,
+    FileSystemAPIRequestFromSharedWorkerOfMultiWebViewGuestsDefaultAllow) {
+  TestHelper(
+      "testDefaultAllow",
+      "web_view/filesystem/shared_worker/multiple",
+      NEEDS_TEST_SERVER);
+}
+
 IN_PROC_BROWSER_TEST_F(WebViewTest, ClearData) {
 #if defined(OS_WIN)
   // Flaky on XP bot http://crbug.com/282674

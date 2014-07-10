@@ -141,7 +141,8 @@ WorkerProcessHost::WorkerProcessHost(
     const WorkerStoragePartition& partition)
     : resource_context_(resource_context),
       partition_(partition),
-      process_launched_(false) {
+      process_launched_(false),
+      weak_factory_(this) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK(resource_context_);
   process_.reset(
@@ -385,8 +386,9 @@ bool WorkerProcessHost::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(WorkerHostMsg_WorkerConnected,
                         OnWorkerConnected)
     IPC_MESSAGE_HANDLER(WorkerProcessHostMsg_AllowDatabase, OnAllowDatabase)
-    IPC_MESSAGE_HANDLER(WorkerProcessHostMsg_RequestFileSystemAccessSync,
-                        OnRequestFileSystemAccessSync)
+    IPC_MESSAGE_HANDLER_DELAY_REPLY(
+        WorkerProcessHostMsg_RequestFileSystemAccessSync,
+        OnRequestFileSystemAccess)
     IPC_MESSAGE_HANDLER(WorkerProcessHostMsg_AllowIndexedDB, OnAllowIndexedDB)
     IPC_MESSAGE_HANDLER(WorkerProcessHostMsg_ForceKillWorker,
                         OnForceKillWorkerProcess)
@@ -472,11 +474,25 @@ void WorkerProcessHost::OnAllowDatabase(int worker_route_id,
       GetRenderFrameIDsForWorker(worker_route_id));
 }
 
-void WorkerProcessHost::OnRequestFileSystemAccessSync(int worker_route_id,
-                                                      const GURL& url,
-                                                      bool* result) {
-  *result = GetContentClient()->browser()->AllowWorkerFileSystem(
-      url, resource_context_, GetRenderFrameIDsForWorker(worker_route_id));
+void WorkerProcessHost::OnRequestFileSystemAccess(int worker_route_id,
+                                                  const GURL& url,
+                                                  IPC::Message* reply_msg) {
+  GetContentClient()->browser()->AllowWorkerFileSystem(
+      url,
+      resource_context_,
+      GetRenderFrameIDsForWorker(worker_route_id),
+      base::Bind(&WorkerProcessHost::OnRequestFileSystemAccessResponse,
+                 weak_factory_.GetWeakPtr(),
+                 base::Passed(scoped_ptr<IPC::Message>(reply_msg))));
+}
+
+void WorkerProcessHost::OnRequestFileSystemAccessResponse(
+    scoped_ptr<IPC::Message> reply_msg,
+    bool allowed) {
+  WorkerProcessHostMsg_RequestFileSystemAccessSync::WriteReplyParams(
+      reply_msg.get(),
+      allowed);
+  Send(reply_msg.release());
 }
 
 void WorkerProcessHost::OnAllowIndexedDB(int worker_route_id,

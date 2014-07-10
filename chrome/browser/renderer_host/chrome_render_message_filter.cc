@@ -200,39 +200,24 @@ void ChromeRenderMessageFilter::OnRequestFileSystemAccessSync(
     const GURL& origin_url,
     const GURL& top_origin_url,
     IPC::Message* reply_msg) {
-  bool allowed =
-      cookie_settings_->IsSettingCookieAllowed(origin_url, top_origin_url);
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  base::Callback<void(bool)> callback =
+      base::Bind(&ChromeRenderMessageFilter::
+                 OnRequestFileSystemAccessSyncResponse,
+                 make_scoped_refptr(this),
+                 reply_msg);
+  OnRequestFileSystemAccess(render_frame_id,
+                            origin_url,
+                            top_origin_url,
+                            callback);
+}
 
-#if defined(ENABLE_EXTENSIONS)
-  bool is_web_view_guest =
-      WebViewRendererState::GetInstance()->IsGuest(render_process_id_);
-  if (is_web_view_guest) {
-    // Record access to file system for potential display in UI.
-    BrowserThread::PostTask(
-        BrowserThread::UI,
-        FROM_HERE,
-        base::Bind(&ChromeRenderMessageFilter::
-                   FileSystemAccessedSyncOnUIThread,
-                   render_process_id_,
-                   render_frame_id,
-                   origin_url,
-                   !allowed,
-                   reply_msg));
-    return;
-  }
-#endif
+void ChromeRenderMessageFilter::OnRequestFileSystemAccessSyncResponse(
+    IPC::Message* reply_msg,
+    bool allowed) {
   ChromeViewHostMsg_RequestFileSystemAccessSync::WriteReplyParams(reply_msg,
                                                                   allowed);
   Send(reply_msg);
-  // Record access to file system for potential display in UI.
-  BrowserThread::PostTask(
-      BrowserThread::UI,
-      FROM_HERE,
-      base::Bind(&TabSpecificContentSettings::FileSystemAccessed,
-                 render_process_id_,
-                 render_frame_id,
-                 origin_url,
-                 !allowed));
 }
 
 #if defined(ENABLE_EXTENSIONS)
@@ -259,6 +244,32 @@ void ChromeRenderMessageFilter::OnRequestFileSystemAccessAsync(
     const GURL& origin_url,
     const GURL& top_origin_url) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  base::Callback<void(bool)> callback =
+      base::Bind(&ChromeRenderMessageFilter::
+                 OnRequestFileSystemAccessAsyncResponse,
+                 make_scoped_refptr(this),
+                 render_frame_id,
+                 request_id);
+  OnRequestFileSystemAccess(render_frame_id,
+                            origin_url,
+                            top_origin_url,
+                            callback);
+}
+
+void ChromeRenderMessageFilter::OnRequestFileSystemAccessAsyncResponse(
+    int render_frame_id,
+    int request_id,
+    bool allowed) {
+  Send(new ChromeViewMsg_RequestFileSystemAccessAsyncResponse(
+      render_frame_id, request_id, allowed));
+}
+
+void ChromeRenderMessageFilter::OnRequestFileSystemAccess(
+    int render_frame_id,
+    const GURL& origin_url,
+    const GURL& top_origin_url,
+    base::Callback<void(bool)> callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   bool allowed =
       cookie_settings_->IsSettingCookieAllowed(origin_url, top_origin_url);
@@ -271,45 +282,56 @@ void ChromeRenderMessageFilter::OnRequestFileSystemAccessAsync(
     BrowserThread::PostTask(
         BrowserThread::UI,
         FROM_HERE,
-        base::Bind(&ChromeRenderMessageFilter::
-                   FileSystemAccessedAsyncOnUIThread,
+        base::Bind(&ChromeRenderMessageFilter::FileSystemAccessedOnUIThread,
                    render_process_id_,
                    render_frame_id,
-                   request_id,
                    origin_url,
-                   !allowed));
+                   allowed,
+                   callback));
     return;
   }
 #endif
-  Send(new ChromeViewMsg_RequestFileSystemAccessAsyncResponse(render_frame_id,
-                                                              request_id,
-                                                              allowed));
+  callback.Run(allowed);
   // Record access to file system for potential display in UI.
   BrowserThread::PostTask(
       BrowserThread::UI,
       FROM_HERE,
       base::Bind(&TabSpecificContentSettings::FileSystemAccessed,
-                render_process_id_,
-                render_frame_id,
-                origin_url,
-                !allowed));
+                 render_process_id_,
+                 render_frame_id,
+                 origin_url,
+                 !allowed));
 }
 
 #if defined(ENABLE_EXTENSIONS)
-void ChromeRenderMessageFilter::FileSystemAccessedAsyncOnUIThread(
+void ChromeRenderMessageFilter::FileSystemAccessedOnUIThread(
     int render_process_id,
     int render_frame_id,
-    int request_id,
     const GURL& url,
-    bool blocked_by_policy) {
+    bool allowed,
+    base::Callback<void(bool)> callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   WebViewPermissionHelper* web_view_permission_helper =
       WebViewPermissionHelper::FromFrameID(render_process_id, render_frame_id);
-  web_view_permission_helper->FileSystemAccessedAsync(render_process_id,
-                                                      render_frame_id,
-                                                      request_id,
-                                                      url,
-                                                      blocked_by_policy);
+  web_view_permission_helper->RequestFileSystemPermission(
+      url,
+      allowed,
+      base::Bind(&ChromeRenderMessageFilter::FileSystemAccessedResponse,
+                 render_process_id,
+                 render_frame_id,
+                 url,
+                 callback));
+}
+
+void ChromeRenderMessageFilter::FileSystemAccessedResponse(
+    int render_process_id,
+    int render_frame_id,
+    const GURL& url,
+    base::Callback<void(bool)> callback,
+    bool allowed) {
+  TabSpecificContentSettings::FileSystemAccessed(
+      render_process_id, render_frame_id, url, !allowed);
+  callback.Run(allowed);
 }
 #endif
 

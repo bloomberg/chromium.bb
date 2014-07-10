@@ -317,10 +317,11 @@ class CONTENT_EXPORT ContentBrowserClient {
   // Allow the embedder to control if access to file system by a shared worker
   // is allowed.
   // This is called on the IO thread.
-  virtual bool AllowWorkerFileSystem(
+  virtual void AllowWorkerFileSystem(
       const GURL& url,
       ResourceContext* context,
-      const std::vector<std::pair<int, int> >& render_frames);
+      const std::vector<std::pair<int, int> >& render_frames,
+      base::Callback<void(bool)> callback);
 
   // Allow the embedder to control if access to IndexedDB by a shared worker
   // is allowed.

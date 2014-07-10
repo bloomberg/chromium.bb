@@ -148,10 +148,11 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       unsigned long estimated_size,
       content::ResourceContext* context,
       const std::vector<std::pair<int, int> >& render_frames) OVERRIDE;
-  virtual bool AllowWorkerFileSystem(
+  virtual void AllowWorkerFileSystem(
       const GURL& url,
       content::ResourceContext* context,
-      const std::vector<std::pair<int, int> >& render_frames) OVERRIDE;
+      const std::vector<std::pair<int, int> >& render_frames,
+      base::Callback<void(bool)> callback) OVERRIDE;
   virtual bool AllowWorkerIndexedDB(
       const GURL& url,
       const base::string16& name,
@@ -302,6 +303,27 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       VersionInfo::Channel channel);
 #endif
 
+  void FileSystemAccessed(
+    const GURL& url,
+    const std::vector<std::pair<int, int> >& render_frames,
+    base::Callback<void(bool)> callback,
+    bool allow);
+
+#if defined(ENABLE_EXTENSIONS)
+void GuestPermissionRequestHelper(
+    const GURL& url,
+    const std::vector<std::pair<int, int> >& render_frames,
+    base::Callback<void(bool)> callback,
+    bool allow);
+
+static void RequestFileSystemPermissionOnUIThread(
+    int render_process_id,
+    int render_frame_id,
+    const GURL& url,
+    bool allowed_by_default,
+    const base::Callback<void(bool)>& callback);
+#endif
+
 #if defined(ENABLE_PLUGINS)
   // Set of origins that can use TCP/UDP private APIs from NaCl.
   std::set<std::string> allowed_socket_origins_;
@@ -321,6 +343,8 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   // It is initialized on the UI thread when the ResoureDispatcherHost is
   // created. It is used only the IO thread.
   prerender::PrerenderTracker* prerender_tracker_;
+
+   base::WeakPtrFactory<ChromeContentBrowserClient> weak_factory_;
 
   friend class DisableWebRtcEncryptionFlagTest;
 

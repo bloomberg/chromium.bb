@@ -79,10 +79,11 @@ class AwContentBrowserClient : public content::ContentBrowserClient {
       unsigned long estimated_size,
       content::ResourceContext* context,
       const std::vector<std::pair<int, int> >& render_frames) OVERRIDE;
-  virtual bool AllowWorkerFileSystem(
+  virtual void AllowWorkerFileSystem(
       const GURL& url,
       content::ResourceContext* context,
-      const std::vector<std::pair<int, int> >& render_frames) OVERRIDE;
+      const std::vector<std::pair<int, int> >& render_frames,
+      base::Callback<void(bool)> callback) OVERRIDE;
   virtual bool AllowWorkerIndexedDB(
       const GURL& url,
       const base::string16& name,
