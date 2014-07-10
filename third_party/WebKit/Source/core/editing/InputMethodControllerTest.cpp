@@ -5,6 +5,8 @@
 #include "config.h"
 #include "core/editing/InputMethodController.h"
 
+#include "core/dom/Element.h"
+#include "core/dom/Range.h"
 #include "core/frame/LocalFrame.h"
 #include "core/html/HTMLDocument.h"
 #include "core/html/HTMLInputElement.h"
@@ -21,6 +23,7 @@ protected:
     InputMethodController& controller() { return frame().inputMethodController(); }
     HTMLDocument& document() const { return *m_document; }
     LocalFrame& frame() const { return m_dummyPageHolder->frame(); }
+    Element* insertHTMLElement(const char* elementCode, const char* elementId);
 
 private:
     virtual void SetUp() OVERRIDE;
@@ -36,12 +39,20 @@ void InputMethodControllerTest::SetUp()
     ASSERT(m_document);
 }
 
+Element* InputMethodControllerTest::insertHTMLElement(
+    const char* elementCode, const char* elementId)
+{
+    document().write(elementCode);
+    document().updateLayout();
+    Element* element = document().getElementById(elementId);
+    element->focus();
+    return element;
+}
+
 TEST_F(InputMethodControllerTest, BackspaceFromEndOfInput)
 {
-    document().write("<input id='sample'>");
-    HTMLInputElement* input = toHTMLInputElement(document().getElementById("sample"));
-    document().updateLayout();
-    input->focus();
+    HTMLInputElement* input = toHTMLInputElement(
+        insertHTMLElement("<input id='sample'>", "sample"));
 
     input->setValue("fooX");
     controller().setEditableSelectionOffsets(PlainTextRange(4, 4));
@@ -66,6 +77,44 @@ TEST_F(InputMethodControllerTest, BackspaceFromEndOfInput)
     EXPECT_STREQ("foo\xE0\xB8\x81\xE0\xB9\x89", input->value().utf8().data());
     controller().extendSelectionAndDelete(1, 0);
     EXPECT_STREQ("foo", input->value().utf8().data());
+}
+
+TEST_F(InputMethodControllerTest, SetCompositionFromExistingText)
+{
+    Element* div = insertHTMLElement(
+        "<div id='sample' contenteditable='true'>hello world</div>", "sample");
+
+    Vector<CompositionUnderline> underlines;
+    underlines.append(CompositionUnderline(0, 5, Color(255, 0, 0), false, 0));
+    controller().setCompositionFromExistingText(underlines, 0, 5);
+
+    RefPtrWillBeRawPtr<Range> range = controller().compositionRange();
+    EXPECT_EQ(0, range->startOffset());
+    EXPECT_EQ(5, range->endOffset());
+
+    PlainTextRange plainTextRange(PlainTextRange::create(*div, *range.get()));
+    EXPECT_EQ(0u, plainTextRange.start());
+    EXPECT_EQ(5u, plainTextRange.end());
+}
+
+TEST_F(InputMethodControllerTest, SetCompositionFromExistingTextWithCollapsedWhiteSpace)
+{
+    // Creates a div with one leading new line char. The new line char is hidden
+    // from the user and IME, but is visible to InputMethodController.
+    Element* div = insertHTMLElement(
+        "<div id='sample' contenteditable='true'>\nhello world</div>", "sample");
+
+    Vector<CompositionUnderline> underlines;
+    underlines.append(CompositionUnderline(0, 5, Color(255, 0, 0), false, 0));
+    controller().setCompositionFromExistingText(underlines, 0, 5);
+
+    RefPtrWillBeRawPtr<Range> range = controller().compositionRange();
+    EXPECT_EQ(1, range->startOffset());
+    EXPECT_EQ(6, range->endOffset());
+
+    PlainTextRange plainTextRange(PlainTextRange::create(*div, *range.get()));
+    EXPECT_EQ(0u, plainTextRange.start());
+    EXPECT_EQ(5u, plainTextRange.end());
 }
 
 } // namespace
