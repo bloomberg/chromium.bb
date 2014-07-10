@@ -79,6 +79,8 @@ public:
 
     MediaControlElementType displayType() { return m_displayType; }
 
+    virtual void trace(Visitor*);
+
 protected:
     MediaControlElement(MediaControls&, MediaControlElementType, HTMLElement*);
 
@@ -90,13 +92,15 @@ protected:
 private:
     MediaControls& m_mediaControls;
     MediaControlElementType m_displayType;
-    HTMLElement* m_element;
+    RawPtrWillBeMember<HTMLElement> m_element;
 };
 
 // ----------------------------
 
 class MediaControlDivElement : public HTMLDivElement, public MediaControlElement {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(MediaControlDivElement);
+public:
+    virtual void trace(Visitor*) OVERRIDE;
 
 protected:
     virtual bool isMediaControlElement() const OVERRIDE FINAL { return true; }
@@ -107,6 +111,8 @@ protected:
 
 class MediaControlInputElement : public HTMLInputElement, public MediaControlElement {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(MediaControlInputElement);
+public:
+    virtual void trace(Visitor*) OVERRIDE;
 
 protected:
     virtual bool isMediaControlElement() const OVERRIDE FINAL { return true; }

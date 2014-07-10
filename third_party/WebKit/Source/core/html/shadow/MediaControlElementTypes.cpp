@@ -99,12 +99,23 @@ void MediaControlElement::setDisplayType(MediaControlElementType displayType)
         object->paintInvalidationForWholeRenderer();
 }
 
+void MediaControlElement::trace(Visitor* visitor)
+{
+    visitor->trace(m_element);
+}
+
 // ----------------------------
 
 MediaControlDivElement::MediaControlDivElement(MediaControls& mediaControls, MediaControlElementType displayType)
     : HTMLDivElement(mediaControls.document())
     , MediaControlElement(mediaControls, displayType, this)
 {
+}
+
+void MediaControlDivElement::trace(Visitor* visitor)
+{
+    MediaControlElement::trace(visitor);
+    HTMLDivElement::trace(visitor);
 }
 
 // ----------------------------
@@ -118,6 +129,12 @@ MediaControlInputElement::MediaControlInputElement(MediaControls& mediaControls,
 bool MediaControlInputElement::isMouseFocusable() const
 {
     return false;
+}
+
+void MediaControlInputElement::trace(Visitor* visitor)
+{
+    MediaControlElement::trace(visitor);
+    HTMLInputElement::trace(visitor);
 }
 
 // ----------------------------
