@@ -861,6 +861,8 @@
       'browser/password_manager/password_store_x.h',
       'browser/password_manager/save_password_infobar_delegate.cc',
       'browser/password_manager/save_password_infobar_delegate.h',
+      'browser/password_manager/sync_metrics.cc',
+      'browser/password_manager/sync_metrics.h',
       'browser/performance_monitor/constants.cc',
       'browser/performance_monitor/constants.h',
       'browser/performance_monitor/database.cc',

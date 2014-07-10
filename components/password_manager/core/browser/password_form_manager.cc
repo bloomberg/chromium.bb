@@ -7,8 +7,10 @@
 #include <algorithm>
 
 #include "base/metrics/histogram.h"
+#include "base/metrics/user_metrics.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
+#include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/core/browser/validation.h"
@@ -539,6 +541,13 @@ void PasswordFormManager::UpdateLogin() {
 
   // Update metadata.
   ++pending_credentials_.times_used;
+
+  if (client_->IsPasswordSyncAccountCredential(
+          base::UTF16ToUTF8(pending_credentials_.username_value),
+          pending_credentials_.signon_realm)) {
+    base::RecordAction(
+        base::UserMetricsAction("PasswordManager_SyncCredentialUsed"));
+  }
 
   // Check to see if this form is a candidate for password generation.
   CheckForAccountCreationForm(pending_credentials_, observed_form_);

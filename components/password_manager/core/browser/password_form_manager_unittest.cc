@@ -352,7 +352,7 @@ TEST_F(PasswordFormManagerTest, TestAlternateUsername) {
   // Need a MessageLoop for callbacks.
   base::MessageLoop message_loop;
   scoped_refptr<TestPasswordStore> password_store = new TestPasswordStore;
-  CHECK(password_store->Init(syncer::SyncableService::StartSyncFlare()));
+  CHECK(password_store->Init(syncer::SyncableService::StartSyncFlare(), ""));
 
   TestPasswordManagerClient client_with_store(password_store.get());
   TestPasswordManager password_manager(&client_with_store);

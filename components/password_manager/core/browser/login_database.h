@@ -31,7 +31,7 @@ class LoginDatabase {
   bool Init(const base::FilePath& db_path);
 
   // Reports usage metrics to UMA.
-  void ReportMetrics();
+  void ReportMetrics(const std::string& sync_username);
 
   // Adds |form| to the list of remembered password forms. Returns the list of
   // changes applied ({}, {ADD}, {REMOVE, ADD}). If it returns {REMOVE, ADD}

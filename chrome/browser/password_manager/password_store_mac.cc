@@ -866,7 +866,8 @@ PasswordStoreMac::PasswordStoreMac(
 PasswordStoreMac::~PasswordStoreMac() {}
 
 bool PasswordStoreMac::Init(
-    const syncer::SyncableService::StartSyncFlare& flare) {
+    const syncer::SyncableService::StartSyncFlare& flare,
+    const std::string& sync_username) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   thread_.reset(new base::Thread("Chrome_PasswordStore_Thread"));
 
@@ -874,7 +875,7 @@ bool PasswordStoreMac::Init(
     thread_.reset(NULL);
     return false;
   }
-  return password_manager::PasswordStore::Init(flare);
+  return password_manager::PasswordStore::Init(flare, sync_username);
 }
 
 void PasswordStoreMac::Shutdown() {
@@ -892,8 +893,8 @@ PasswordStoreMac::GetBackgroundTaskRunner() {
   return (thread_.get()) ? thread_->message_loop_proxy() : NULL;
 }
 
-void PasswordStoreMac::ReportMetricsImpl() {
-  login_metadata_db_->ReportMetrics();
+void PasswordStoreMac::ReportMetricsImpl(const std::string& sync_username) {
+  login_metadata_db_->ReportMetrics(sync_username);
 }
 
 PasswordStoreChangeList PasswordStoreMac::AddLoginImpl(

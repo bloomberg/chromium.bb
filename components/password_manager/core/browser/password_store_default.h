@@ -27,7 +27,7 @@ class PasswordStoreDefault : public PasswordStore {
   virtual ~PasswordStoreDefault();
 
   // Implements PasswordStore interface.
-  virtual void ReportMetricsImpl() OVERRIDE;
+  virtual void ReportMetricsImpl(const std::string& sync_username) OVERRIDE;
   virtual PasswordStoreChangeList AddLoginImpl(
       const autofill::PasswordForm& form) OVERRIDE;
   virtual PasswordStoreChangeList UpdateLoginImpl(

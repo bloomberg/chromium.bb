@@ -58,7 +58,7 @@ class TestPasswordStore : public PasswordStore {
   virtual void WrapModificationTask(ModificationTask task) OVERRIDE;
 
   // Unused portions of PasswordStore interface
-  virtual void ReportMetricsImpl() OVERRIDE {}
+  virtual void ReportMetricsImpl(const std::string& sync_username) OVERRIDE {}
   virtual PasswordStoreChangeList RemoveLoginsCreatedBetweenImpl(
       base::Time begin,
       base::Time end) OVERRIDE;

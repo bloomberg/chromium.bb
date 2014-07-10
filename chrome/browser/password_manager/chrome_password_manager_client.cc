@@ -11,6 +11,7 @@
 #include "chrome/browser/password_manager/password_manager_util.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/password_manager/save_password_infobar_delegate.h"
+#include "chrome/browser/password_manager/sync_metrics.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
@@ -99,6 +100,12 @@ bool ChromePasswordManagerClient::IsPasswordManagerEnabledForCurrentPage()
   // is because users need to remember their password if they are syncing as
   // this is effectively their master password.
   return entry->GetURL().host() != chrome::kChromeUIChromeSigninHost;
+}
+
+bool ChromePasswordManagerClient::IsPasswordSyncAccountCredential(
+    const std::string& username, const std::string& origin) const {
+  return password_manager_sync_metrics::IsPasswordSyncAccountCredential(
+      profile_, username, origin);
 }
 
 void ChromePasswordManagerClient::PromptUserToSavePassword(

@@ -80,8 +80,8 @@ class PasswordManagerTest : public testing::Test {
                                            true);
 
     store_ = new MockPasswordStore;
-    EXPECT_CALL(*store_, ReportMetrics()).Times(AnyNumber());
-    CHECK(store_->Init(syncer::SyncableService::StartSyncFlare()));
+    EXPECT_CALL(*store_, ReportMetrics(_)).Times(AnyNumber());
+    CHECK(store_->Init(syncer::SyncableService::StartSyncFlare(), ""));
 
     EXPECT_CALL(client_, IsPasswordManagerEnabledForCurrentPage())
         .WillRepeatedly(Return(true));

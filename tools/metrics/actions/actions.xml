@@ -9560,6 +9560,24 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="PasswordManager_SyncCredentialShown">
+  <owner>gcasto@chromium.org</owner>
+  <owner>vabr@chromium.org</owner>
+  <description>
+    Counts the number of times a user views the saved credentials for their sync
+    account.
+  </description>
+</action>
+
+<action name="PasswordManager_SyncCredentialUsed">
+  <owner>gcasto@chromium.org</owner>
+  <owner>vabr@chromium.org</owner>
+  <description>
+    Counts the number of times a user submits an autofilled credential which
+    matches their sync account.
+  </description>
+</action>
+
 <action name="Paste">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>

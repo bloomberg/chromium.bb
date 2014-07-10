@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/environment.h"
 #include "base/prefs/pref_service.h"
+#include "chrome/browser/password_manager/sync_metrics.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/sync/glue/sync_start_util.h"
 #include "chrome/browser/webdata/web_data_service_factory.h"
@@ -226,8 +227,11 @@ KeyedService* PasswordStoreFactory::BuildServiceInstanceFor(
 #else
   NOTIMPLEMENTED();
 #endif
+  std::string sync_username =
+      password_manager_sync_metrics::GetPasswordSyncUsername(profile);
   if (!ps || !ps->Init(
-          sync_start_util::GetFlareForSyncableService(profile->GetPath()))) {
+          sync_start_util::GetFlareForSyncableService(profile->GetPath()),
+          sync_username)) {
     NOTREACHED() << "Could not initialize password manager.";
     return NULL;
   }

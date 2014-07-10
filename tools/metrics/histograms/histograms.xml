@@ -19336,6 +19336,16 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="PasswordManager.SyncingAccountState"
+    enum="PasswordManagerSyncingAccountState">
+  <owner>gcasto@chromium.org</owner>
+  <owner>vabr@chromium.org</owner>
+  <summary>
+    Information about the user's current sync status crossed with whether their
+    synced password is saved.
+  </summary>
+</histogram>
+
 <histogram name="PasswordManager.TimesGeneratedPasswordUsed">
   <owner>dubroy@chromium.org</owner>
   <owner>vabr@chromium.org</owner>
@@ -43826,6 +43836,18 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="0" label="Matching disabled"/>
   <int value="1" label="No match"/>
   <int value="2" label="Match"/>
+</enum>
+
+<enum name="PasswordManagerSyncingAccountState" type="int">
+  <summary>
+    The value is a combination of the current sync state and if the user has
+    their sync password saved.
+  </summary>
+  <int value="0" label="Not Syncing/Sync password not saved"/>
+  <int value="1"
+      label="Not Syncing/Sync pasword saved. This value should not happen."/>
+  <int value="2" label="Syncing/Sync password not saved"/>
+  <int value="3" label="Syncing/Sync password saved"/>
 </enum>
 
 <enum name="PasswordManagerUIDismissalReason" type="int">
