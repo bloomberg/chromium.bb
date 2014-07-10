@@ -1297,25 +1297,6 @@ void FrameView::viewportConstrainedVisibleContentSizeChanged(bool widthChanged, 
     }
 }
 
-bool FrameView::shouldPlaceVerticalScrollbarOnLeft() const
-{
-    // FIXME: Mainframe scrollbar placement should respect the embedding application RTL UI policy.
-    // See crbug.com/249860.
-    if (m_frame->isMainFrame())
-        return false;
-
-    Document* document = m_frame->document();
-    if (!document)
-        return false;
-
-    // <body> inherits 'direction' from <html>, so it can safaly be used
-    // to dictate the frame vertical scrollbar placement.
-    if (!document->body() || !document->body()->renderer())
-        return false;
-
-    return document->body()->renderer()->style()->shouldPlaceBlockDirectionScrollbarOnLogicalLeft();
-}
-
 IntSize FrameView::scrollOffsetForFixedPosition() const
 {
     return toIntSize(clampScrollPosition(scrollPosition()));
