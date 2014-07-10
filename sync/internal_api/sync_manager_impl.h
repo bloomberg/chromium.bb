@@ -12,6 +12,7 @@
 #include "sync/base/sync_export.h"
 #include "sync/engine/all_status.h"
 #include "sync/engine/net/server_connection_manager.h"
+#include "sync/engine/nudge_handler.h"
 #include "sync/engine/sync_engine_event_listener.h"
 #include "sync/internal_api/change_reorder_buffer.h"
 #include "sync/internal_api/debug_info_event_listener.h"
@@ -51,15 +52,16 @@ class SyncSessionContext;
 //
 // Unless stated otherwise, all methods of SyncManager should be called on the
 // same thread.
-class SYNC_EXPORT_PRIVATE SyncManagerImpl :
-    public SyncManager,
-    public net::NetworkChangeNotifier::IPAddressObserver,
-    public net::NetworkChangeNotifier::ConnectionTypeObserver,
-    public JsBackend,
-    public SyncEngineEventListener,
-    public ServerConnectionEventListener,
-    public syncable::DirectoryChangeDelegate,
-    public SyncEncryptionHandler::Observer {
+class SYNC_EXPORT_PRIVATE SyncManagerImpl
+    : public SyncManager,
+      public net::NetworkChangeNotifier::IPAddressObserver,
+      public net::NetworkChangeNotifier::ConnectionTypeObserver,
+      public JsBackend,
+      public SyncEngineEventListener,
+      public ServerConnectionEventListener,
+      public syncable::DirectoryChangeDelegate,
+      public SyncEncryptionHandler::Observer,
+      public NudgeHandler {
  public:
   // Create an uninitialized SyncManager.  Callers must Init() before using.
   explicit SyncManagerImpl(const std::string& name);
@@ -193,6 +195,11 @@ class SYNC_EXPORT_PRIVATE SyncManagerImpl :
   // Called when the connection type of the system has changed.
   virtual void OnConnectionTypeChanged(
       net::NetworkChangeNotifier::ConnectionType) OVERRIDE;
+
+  // NudgeHandler implementation.
+  virtual void NudgeForInitialDownload(syncer::ModelType type) OVERRIDE;
+  virtual void NudgeForCommit(syncer::ModelType type) OVERRIDE;
+  virtual void NudgeForRefresh(syncer::ModelType type) OVERRIDE;
 
   const SyncScheduler* scheduler() const;
 

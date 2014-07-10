@@ -12,6 +12,7 @@
 #include "sync/engine/commit_contributor.h"
 #include "sync/engine/model_type_sync_worker.h"
 #include "sync/engine/non_blocking_sync_common.h"
+#include "sync/engine/nudge_handler.h"
 #include "sync/engine/update_handler.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/protocol/sync.pb.h"
@@ -52,6 +53,7 @@ class SYNC_EXPORT ModelTypeSyncWorkerImpl : public UpdateHandler,
  public:
   ModelTypeSyncWorkerImpl(ModelType type,
                           const DataTypeState& initial_state,
+                          NudgeHandler* nudge_handler,
                           scoped_ptr<ModelTypeSyncProxy> type_sync_proxy);
   virtual ~ModelTypeSyncWorkerImpl();
 
@@ -108,6 +110,9 @@ class SYNC_EXPORT ModelTypeSyncWorkerImpl : public UpdateHandler,
   // Pointer to the ModelTypeSyncProxy associated with this worker.
   // This is NULL when no proxy is connected..
   scoped_ptr<ModelTypeSyncProxy> type_sync_proxy_;
+
+  // Interface used to access and send nudges to the sync scheduler.  Not owned.
+  NudgeHandler* nudge_handler_;
 
   // A map of per-entity information known to this object.
   //

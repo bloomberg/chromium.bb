@@ -47,6 +47,7 @@
 #include "sync/syncable/syncable_write_transaction.h"
 #include "sync/test/engine/fake_model_worker.h"
 #include "sync/test/engine/mock_connection_manager.h"
+#include "sync/test/engine/mock_nudge_handler.h"
 #include "sync/test/engine/test_directory_setter_upper.h"
 #include "sync/test/engine/test_id_factory.h"
 #include "sync/test/engine/test_syncable_utils.h"
@@ -294,7 +295,8 @@ class SyncerTest : public testing::Test,
     ModelSafeRoutingInfo routing_info;
     GetModelSafeRoutingInfo(&routing_info);
 
-    model_type_registry_.reset(new ModelTypeRegistry(workers_, directory()));
+    model_type_registry_.reset(
+        new ModelTypeRegistry(workers_, directory(), &mock_nudge_handler_));
     model_type_registry_->RegisterDirectoryTypeDebugInfoObserver(
         &debug_info_cache_);
 
@@ -584,6 +586,7 @@ class SyncerTest : public testing::Test,
 
   scoped_ptr<SyncSession> session_;
   TypeDebugInfoCache debug_info_cache_;
+  MockNudgeHandler mock_nudge_handler_;
   scoped_ptr<ModelTypeRegistry> model_type_registry_;
   scoped_ptr<SyncSessionContext> context_;
   bool saw_syncer_event_;

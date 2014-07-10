@@ -12,6 +12,7 @@
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "sync/base/sync_export.h"
+#include "sync/engine/nudge_handler.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/internal_api/public/engine/model_safe_worker.h"
 #include "sync/internal_api/public/sessions/type_debug_info_observer.h"
@@ -40,14 +41,10 @@ typedef std::map<ModelType, DirectoryTypeDebugInfoEmitter*>
 // Keeps track of the sets of active update handlers and commit contributors.
 class SYNC_EXPORT_PRIVATE ModelTypeRegistry : public SyncContext {
  public:
-  // This alternative constructor does not support any directory types.
-  // It is used only in tests.
-  ModelTypeRegistry();
-
   // Constructs a ModelTypeRegistry that supports directory types.
-  ModelTypeRegistry(
-      const std::vector<scoped_refptr<ModelSafeWorker> >& workers,
-      syncable::Directory* directory);
+  ModelTypeRegistry(const std::vector<scoped_refptr<ModelSafeWorker> >& workers,
+                    syncable::Directory* directory,
+                    NudgeHandler* nudge_handler);
   virtual ~ModelTypeRegistry();
 
   // Sets the set of enabled types.
@@ -114,6 +111,9 @@ class SYNC_EXPORT_PRIVATE ModelTypeRegistry : public SyncContext {
 
   // The directory.  Not owned.
   syncable::Directory* directory_;
+
+  // The NudgeHandler.  Not owned.
+  NudgeHandler* nudge_handler_;
 
   // The set of enabled directory types.
   ModelTypeSet enabled_directory_types_;

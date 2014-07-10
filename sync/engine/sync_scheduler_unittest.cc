@@ -19,6 +19,7 @@
 #include "sync/test/callback_counter.h"
 #include "sync/test/engine/fake_model_worker.h"
 #include "sync/test/engine/mock_connection_manager.h"
+#include "sync/test/engine/mock_nudge_handler.h"
 #include "sync/test/engine/test_directory_setter_upper.h"
 #include "sync/test/mock_invalidation.h"
 #include "sync/util/extensions_activity.h"
@@ -131,7 +132,8 @@ class SyncSchedulerTest : public testing::Test {
                                                 &cancelation_signal_));
     connection_->SetServerReachable();
 
-    model_type_registry_.reset(new ModelTypeRegistry(workers_, directory()));
+    model_type_registry_.reset(
+        new ModelTypeRegistry(workers_, directory(), &mock_nudge_handler_));
 
     context_.reset(new SyncSessionContext(
             connection_.get(), directory(),
@@ -240,6 +242,7 @@ class SyncSchedulerTest : public testing::Test {
   scoped_ptr<ModelTypeRegistry> model_type_registry_;
   scoped_ptr<SyncSessionContext> context_;
   scoped_ptr<SyncSchedulerImpl> scheduler_;
+  MockNudgeHandler mock_nudge_handler_;
   MockSyncer* syncer_;
   MockDelayProvider* delay_;
   std::vector<scoped_refptr<ModelSafeWorker> > workers_;

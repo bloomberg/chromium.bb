@@ -20,12 +20,18 @@ namespace syncer {
 ModelTypeSyncWorkerImpl::ModelTypeSyncWorkerImpl(
     ModelType type,
     const DataTypeState& initial_state,
+    NudgeHandler* nudge_handler,
     scoped_ptr<ModelTypeSyncProxy> type_sync_proxy)
     : type_(type),
       data_type_state_(initial_state),
       type_sync_proxy_(type_sync_proxy.Pass()),
+      nudge_handler_(nudge_handler),
       entities_deleter_(&entities_),
       weak_ptr_factory_(this) {
+  // Request an initial sync if it hasn't been completed yet.
+  if (!data_type_state_.initial_sync_done) {
+    nudge_handler_->NudgeForInitialDownload(type_);
+  }
 }
 
 ModelTypeSyncWorkerImpl::~ModelTypeSyncWorkerImpl() {
@@ -217,7 +223,8 @@ void ModelTypeSyncWorkerImpl::StorePendingCommit(
                           request.specifics);
   }
 
-  // TODO: Nudge SyncScheduler.
+  if (CanCommitItems())
+    nudge_handler_->NudgeForCommit(type_);
 }
 
 void ModelTypeSyncWorkerImpl::OnCommitResponse(

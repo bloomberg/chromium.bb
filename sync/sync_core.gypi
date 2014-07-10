@@ -82,6 +82,8 @@
     'engine/non_blocking_type_commit_contribution.h',
     'engine/nudge_source.cc',
     'engine/nudge_source.h',
+    'engine/nudge_handler.cc',
+    'engine/nudge_handler.h',
     'engine/process_updates_util.cc',
     'engine/process_updates_util.h',
     'engine/sync_cycle_event.cc',

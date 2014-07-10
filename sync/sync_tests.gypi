@@ -46,6 +46,8 @@
         'test/engine/mock_model_type_sync_proxy.h',
         'test/engine/mock_model_type_sync_worker.cc',
         'test/engine/mock_model_type_sync_worker.h',
+        'test/engine/mock_nudge_handler.cc',
+        'test/engine/mock_nudge_handler.h',
         'test/engine/mock_update_handler.cc',
         'test/engine/mock_update_handler.h',
         'test/engine/single_type_mock_server.cc',

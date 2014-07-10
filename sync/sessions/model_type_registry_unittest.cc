@@ -11,6 +11,7 @@
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/sessions/model_type_registry.h"
 #include "sync/test/engine/fake_model_worker.h"
+#include "sync/test/engine/mock_nudge_handler.h"
 #include "sync/test/engine/test_directory_setter_upper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -40,6 +41,7 @@ class ModelTypeRegistryTest : public ::testing::Test {
   TestDirectorySetterUpper dir_maker_;
   std::vector<scoped_refptr<ModelSafeWorker> > workers_;
   scoped_ptr<ModelTypeRegistry> registry_;
+  MockNudgeHandler mock_nudge_handler_;
 };
 
 ModelTypeRegistryTest::ModelTypeRegistryTest() {}
@@ -56,7 +58,8 @@ void ModelTypeRegistryTest::SetUp() {
   workers_.push_back(ui_worker);
   workers_.push_back(db_worker);
 
-  registry_.reset(new ModelTypeRegistry(workers_, directory()));
+  registry_.reset(
+      new ModelTypeRegistry(workers_, directory(), &mock_nudge_handler_));
 }
 
 void ModelTypeRegistryTest::TearDown() {

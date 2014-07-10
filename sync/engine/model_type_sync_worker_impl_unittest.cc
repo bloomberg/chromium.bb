@@ -12,6 +12,7 @@
 #include "sync/sessions/status_controller.h"
 #include "sync/syncable/syncable_util.h"
 #include "sync/test/engine/mock_model_type_sync_proxy.h"
+#include "sync/test/engine/mock_nudge_handler.h"
 #include "sync/test/engine/single_type_mock_server.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
@@ -132,6 +133,12 @@ class ModelTypeSyncWorkerImplTest : public ::testing::Test {
   CommitResponseData GetCommitResponseOnModelThread(
       const std::string& tag) const;
 
+  // Returns the number of commit nudges sent to the mock nudge handler.
+  int GetNumCommitNudges() const;
+
+  // Returns the number of initial sync nudges sent to the mock nudge handler.
+  int GetNumInitialDownloadNudges() const;
+
   // Helpers for building various messages and structures.
   static std::string GenerateTagHash(const std::string& tag);
   static sync_pb::EntitySpecifics GenerateSpecifics(const std::string& tag,
@@ -149,6 +156,10 @@ class ModelTypeSyncWorkerImplTest : public ::testing::Test {
   // a single UpdateHandler and CommitContributor pair.  In this test
   // harness, the |worker_| is both of them.
   SingleTypeMockServer mock_server_;
+
+  // A mock to track the number of times the ModelTypeSyncWorker requests to
+  // sync.
+  MockNudgeHandler mock_nudge_handler_;
 };
 
 ModelTypeSyncWorkerImplTest::ModelTypeSyncWorkerImplTest()
@@ -178,6 +189,8 @@ void ModelTypeSyncWorkerImplTest::NormalInitialize() {
   initial_state.initial_sync_done = true;
 
   InitializeWithState(initial_state);
+
+  mock_nudge_handler_.ClearCounters();
 }
 
 void ModelTypeSyncWorkerImplTest::InitializeWithState(
@@ -188,7 +201,8 @@ void ModelTypeSyncWorkerImplTest::InitializeWithState(
   mock_type_sync_proxy_ = new MockModelTypeSyncProxy();
   scoped_ptr<ModelTypeSyncProxy> proxy(mock_type_sync_proxy_);
 
-  worker_.reset(new ModelTypeSyncWorkerImpl(kModelType, state, proxy.Pass()));
+  worker_.reset(new ModelTypeSyncWorkerImpl(
+      kModelType, state, &mock_nudge_handler_, proxy.Pass()));
 }
 
 void ModelTypeSyncWorkerImplTest::CommitRequest(const std::string& name,
@@ -379,6 +393,14 @@ CommitResponseData ModelTypeSyncWorkerImplTest::GetCommitResponseOnModelThread(
   return mock_type_sync_proxy_->GetCommitResponse(tag_hash);
 }
 
+int ModelTypeSyncWorkerImplTest::GetNumCommitNudges() const {
+  return mock_nudge_handler_.GetNumCommitNudges();
+}
+
+int ModelTypeSyncWorkerImplTest::GetNumInitialDownloadNudges() const {
+  return mock_nudge_handler_.GetNumInitialDownloadNudges();
+}
+
 std::string ModelTypeSyncWorkerImplTest::GenerateTagHash(
     const std::string& tag) {
   const std::string& client_tag_hash =
@@ -411,6 +433,8 @@ TEST_F(ModelTypeSyncWorkerImplTest, SimpleCommit) {
   EXPECT_EQ(0U, GetNumModelThreadCommitResponses());
 
   CommitRequest("tag1", "value1");
+
+  EXPECT_EQ(1, GetNumCommitNudges());
 
   ASSERT_TRUE(WillCommit());
   DoSuccessfulCommit();
@@ -454,6 +478,7 @@ TEST_F(ModelTypeSyncWorkerImplTest, SimpleDelete) {
   // We can't delete an entity that was never committed.
   // Step 1 is to create and commit a new entity.
   CommitRequest("tag1", "value1");
+  EXPECT_EQ(1, GetNumCommitNudges());
   ASSERT_TRUE(WillCommit());
   DoSuccessfulCommit();
 
@@ -502,16 +527,19 @@ TEST_F(ModelTypeSyncWorkerImplTest, NoDeleteUncommitted) {
   // Request the commit of a new, never-before-seen item.
   CommitRequest("tag1", "value1");
   EXPECT_TRUE(WillCommit());
+  EXPECT_EQ(1, GetNumCommitNudges());
 
   // Request a deletion of that item before we've had a chance to commit it.
   DeleteRequest("tag1");
   EXPECT_FALSE(WillCommit());
+  EXPECT_EQ(2, GetNumCommitNudges());
 }
 
 // Verifies the sending of an "initial sync done" signal.
 TEST_F(ModelTypeSyncWorkerImplTest, SendInitialSyncDone) {
   FirstInitialize();  // Initialize with no saved sync state.
   EXPECT_EQ(0U, GetNumModelThreadUpdateResponses());
+  EXPECT_EQ(1, GetNumInitialDownloadNudges());
 
   // Receive an update response that contains only the type root node.
   TriggerTypeRootUpdateFromServer();
@@ -538,6 +566,7 @@ TEST_F(ModelTypeSyncWorkerImplTest, TwoNewItemsCommittedSeparately) {
 
   // Commit the first of two entities.
   CommitRequest("tag1", "value1");
+  EXPECT_EQ(1, GetNumCommitNudges());
   ASSERT_TRUE(WillCommit());
   DoSuccessfulCommit();
   ASSERT_EQ(1U, GetNumCommitMessagesOnServer());
@@ -548,6 +577,7 @@ TEST_F(ModelTypeSyncWorkerImplTest, TwoNewItemsCommittedSeparately) {
 
   // Commit the second of two entities.
   CommitRequest("tag2", "value2");
+  EXPECT_EQ(2, GetNumCommitNudges());
   ASSERT_TRUE(WillCommit());
   DoSuccessfulCommit();
   ASSERT_EQ(2U, GetNumCommitMessagesOnServer());

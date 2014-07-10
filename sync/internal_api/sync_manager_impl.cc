@@ -396,7 +396,7 @@ void SyncManagerImpl::Init(
   DVLOG(1) << "Setting invalidator client ID: " << invalidator_client_id;
   allstatus_.SetInvalidatorClientId(invalidator_client_id);
 
-  model_type_registry_.reset(new ModelTypeRegistry(workers, directory()));
+  model_type_registry_.reset(new ModelTypeRegistry(workers, directory(), this));
 
   // Bind the SyncContext WeakPtr to this thread.  This helps us crash earlier
   // if the pointer is misused in debug mode.
@@ -898,6 +898,22 @@ void SyncManagerImpl::RequestNudgeForDataTypes(
   scheduler_->ScheduleLocalNudge(nudge_delay,
                                  types,
                                  nudge_location);
+}
+
+void SyncManagerImpl::NudgeForInitialDownload(syncer::ModelType type) {
+  // TODO(rlarocque): Initial downloads should have a separate nudge type.
+  DCHECK(thread_checker_.CalledOnValidThread());
+  RefreshTypes(ModelTypeSet(type));
+}
+
+void SyncManagerImpl::NudgeForCommit(syncer::ModelType type) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  RequestNudgeForDataTypes(FROM_HERE, ModelTypeSet(type));
+}
+
+void SyncManagerImpl::NudgeForRefresh(syncer::ModelType type) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  RefreshTypes(ModelTypeSet(type));
 }
 
 void SyncManagerImpl::OnSyncCycleEvent(const SyncCycleEvent& event) {

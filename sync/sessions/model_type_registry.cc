@@ -102,14 +102,13 @@ void ModelTypeSyncWorkerWrapper::EnqueueForCommit(
 
 }  // namespace
 
-ModelTypeRegistry::ModelTypeRegistry()
-    : directory_(NULL), weak_ptr_factory_(this) {
-}
-
 ModelTypeRegistry::ModelTypeRegistry(
     const std::vector<scoped_refptr<ModelSafeWorker> >& workers,
-    syncable::Directory* directory)
-    : directory_(directory), weak_ptr_factory_(this) {
+    syncable::Directory* directory,
+    NudgeHandler* nudge_handler)
+    : directory_(directory),
+      nudge_handler_(nudge_handler),
+      weak_ptr_factory_(this) {
   for (size_t i = 0u; i < workers.size(); ++i) {
     workers_map_.insert(
         std::make_pair(workers[i]->GetModelSafeGroup(), workers[i]));
@@ -193,8 +192,8 @@ void ModelTypeRegistry::ConnectSyncTypeToWorker(
   // Initialize Worker -> Proxy communication channel.
   scoped_ptr<ModelTypeSyncProxy> proxy(
       new ModelTypeSyncProxyWrapper(proxy_impl, type_task_runner));
-  scoped_ptr<ModelTypeSyncWorkerImpl> worker(
-      new ModelTypeSyncWorkerImpl(type, data_type_state, proxy.Pass()));
+  scoped_ptr<ModelTypeSyncWorkerImpl> worker(new ModelTypeSyncWorkerImpl(
+      type, data_type_state, nudge_handler_, proxy.Pass()));
 
   // Initialize Proxy -> Worker communication channel.
   scoped_ptr<ModelTypeSyncWorker> wrapped_worker(
