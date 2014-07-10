@@ -16,10 +16,6 @@
 
 using blink::WebString;
 
-namespace {
-const char kAbortErrorReason[] = "Registration failed.";
-}
-
 namespace content {
 
 PushMessagingDispatcher::PushMessagingDispatcher(RenderFrame* render_frame)
@@ -42,9 +38,10 @@ void PushMessagingDispatcher::registerPushMessaging(
     const WebString& sender_id,
     blink::WebPushRegistrationCallbacks* callbacks) {
   DCHECK(callbacks);
-  scoped_ptr<blink::WebPushError> error(
-      new blink::WebPushError(blink::WebPushError::ErrorTypeAbort,
-                              WebString::fromUTF8(kAbortErrorReason)));
+  scoped_ptr<blink::WebPushError> error(new blink::WebPushError(
+      blink::WebPushError::ErrorTypeAbort,
+      WebString::fromUTF8(PushMessagingStatusToString(
+          PUSH_MESSAGING_STATUS_REGISTRATION_FAILED_NO_SERVICE_WORKER))));
   callbacks->onError(error.release());
   delete callbacks;
 }
@@ -81,15 +78,15 @@ void PushMessagingDispatcher::OnRegisterSuccess(
   registration_callbacks_.Remove(callbacks_id);
 }
 
-void PushMessagingDispatcher::OnRegisterError(int32 callbacks_id) {
+void PushMessagingDispatcher::OnRegisterError(int32 callbacks_id,
+                                              PushMessagingStatus status) {
   blink::WebPushRegistrationCallbacks* callbacks =
       registration_callbacks_.Lookup(callbacks_id);
   CHECK(callbacks);
 
-  scoped_ptr<blink::WebPushError> error(
-      new blink::WebPushError(
-          blink::WebPushError::ErrorTypeAbort,
-          WebString::fromUTF8(kAbortErrorReason)));
+  scoped_ptr<blink::WebPushError> error(new blink::WebPushError(
+      blink::WebPushError::ErrorTypeAbort,
+      WebString::fromUTF8(PushMessagingStatusToString(status))));
   callbacks->onError(error.release());
   registration_callbacks_.Remove(callbacks_id);
 }

@@ -10,6 +10,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "content/public/browser/browser_message_filter.h"
+#include "content/public/common/push_messaging_status.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -46,7 +47,7 @@ class PushMessagingMessageFilter : public BrowserMessageFilter {
                    int callbacks_id,
                    const GURL& push_endpoint,
                    const std::string& push_registration_id,
-                   bool success);
+                   PushMessagingStatus status);
 
   PushMessagingService* service();
 

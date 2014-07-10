@@ -9,6 +9,7 @@
 
 #include "base/callback.h"
 #include "content/common/content_export.h"
+#include "content/public/common/push_messaging_status.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -19,7 +20,7 @@ class CONTENT_EXPORT PushMessagingService {
  public:
   typedef base::Callback<void(const GURL& /* endpoint */,
                               const std::string& /* registration_id */,
-                              bool /* success */)>
+                              PushMessagingStatus /* status */)>
       RegisterCallback;
 
   virtual ~PushMessagingService() {}

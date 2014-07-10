@@ -142,7 +142,11 @@ void PushMessagingServiceImpl::Register(
 
   if (profile_->GetPrefs()->GetInteger(
           prefs::kPushMessagingRegistrationCount) >= kMaxRegistrations) {
-    DidRegister(app_id, callback, std::string(), GCMClient::UNKNOWN_ERROR);
+    RegisterEnd(
+        app_id,
+        callback,
+        std::string(),
+        content::PUSH_MESSAGING_STATUS_REGISTRATION_FAILED_LIMIT_REACHED);
     return;
   }
 
@@ -177,7 +181,11 @@ void PushMessagingServiceImpl::Register(
       gcm::PushMessagingPermissionContextFactory::GetForProfile(profile_);
 
   if (permission_context == NULL) {
-    DidRegister(app_id, callback, std::string(), GCMClient::UNKNOWN_ERROR);
+    RegisterEnd(
+        app_id,
+        callback,
+        std::string(),
+        content::PUSH_MESSAGING_STATUS_REGISTRATION_FAILED_PERMISSION_DENIED);
     return;
   }
 
@@ -193,15 +201,14 @@ void PushMessagingServiceImpl::Register(
                  callback));
 }
 
-void PushMessagingServiceImpl::DidRegister(
+void PushMessagingServiceImpl::RegisterEnd(
     const std::string& app_id,
     const content::PushMessagingService::RegisterCallback& callback,
     const std::string& registration_id,
-    GCMClient::Result result) {
+    content::PushMessagingStatus status) {
   GURL endpoint = GURL("https://android.googleapis.com/gcm/send");
-  bool success = (result == GCMClient::SUCCESS);
-  callback.Run(endpoint, registration_id, success);
-  if (success) {
+  callback.Run(endpoint, registration_id, status);
+  if (status == content::PUSH_MESSAGING_STATUS_OK) {
     // TODO(johnme): Make sure the pref doesn't get out of sync after crashes.
     int registration_count = profile_->GetPrefs()->GetInteger(
         prefs::kPushMessagingRegistrationCount);
@@ -210,15 +217,29 @@ void PushMessagingServiceImpl::DidRegister(
   }
 }
 
+void PushMessagingServiceImpl::DidRegister(
+    const std::string& app_id,
+    const content::PushMessagingService::RegisterCallback& callback,
+    const std::string& registration_id,
+    GCMClient::Result result) {
+  content::PushMessagingStatus status =
+      result == GCMClient::SUCCESS
+          ? content::PUSH_MESSAGING_STATUS_OK
+          : content::PUSH_MESSAGING_STATUS_REGISTRATION_FAILED_SERVICE_ERROR;
+  RegisterEnd(app_id, callback, registration_id, status);
+}
+
 void PushMessagingServiceImpl::DidRequestPermission(
     const std::string& sender_id,
     const std::string& app_id,
     const content::PushMessagingService::RegisterCallback& register_callback,
     bool allow) {
   if (!allow) {
-    // TODO(miguelg) extend the error enum to allow for pemission failure.
-    DidRegister(app_id, register_callback, std::string(),
-                GCMClient::UNKNOWN_ERROR);
+    RegisterEnd(
+        app_id,
+        register_callback,
+        std::string(),
+        content::PUSH_MESSAGING_STATUS_REGISTRATION_FAILED_PERMISSION_DENIED);
     return;
   }
 

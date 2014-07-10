@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/id_map.h"
+#include "content/public/common/push_messaging_status.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "third_party/WebKit/public/platform/WebPushClient.h"
 
@@ -48,7 +49,7 @@ class PushMessagingDispatcher : public RenderFrameObserver,
                          const GURL& endpoint,
                          const std::string& registration_id);
 
-  void OnRegisterError(int32 callbacks_id);
+  void OnRegisterError(int32 callbacks_id, PushMessagingStatus status);
 
   IDMap<blink::WebPushRegistrationCallbacks, IDMapOwnPointer>
       registration_callbacks_;

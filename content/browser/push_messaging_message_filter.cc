@@ -50,7 +50,10 @@ void PushMessagingMessageFilter::OnRegister(int render_frame_id,
       service_worker_context_->context()->GetProviderHost(
           render_process_id_, service_worker_provider_id);
   if (!service_worker_host || !service_worker_host->active_version()) {
-    Send(new PushMessagingMsg_RegisterError(render_frame_id, callbacks_id));
+    Send(new PushMessagingMsg_RegisterError(
+        render_frame_id,
+        callbacks_id,
+        PUSH_MESSAGING_STATUS_REGISTRATION_FAILED_NO_SERVICE_WORKER));
     return;
   }
   BrowserThread::PostTask(
@@ -75,7 +78,10 @@ void PushMessagingMessageFilter::DoRegister(
     int64 service_worker_registration_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (!service()) {
-    Send(new PushMessagingMsg_RegisterError(render_frame_id, callbacks_id));
+    Send(new PushMessagingMsg_RegisterError(
+        render_frame_id,
+        callbacks_id,
+        PUSH_MESSAGING_STATUS_REGISTRATION_FAILED_SERVICE_NOT_AVAILABLE));
     return;
   }
   // TODO(mvanouwerkerk): Is this the app_id format we want to use?
@@ -97,13 +103,14 @@ void PushMessagingMessageFilter::DidRegister(
     int callbacks_id,
     const GURL& push_endpoint,
     const std::string& push_registration_id,
-    bool success) {
+    PushMessagingStatus status) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (success) {
+  if (status == PUSH_MESSAGING_STATUS_OK) {
     Send(new PushMessagingMsg_RegisterSuccess(
         render_frame_id, callbacks_id, push_endpoint, push_registration_id));
   } else {
-    Send(new PushMessagingMsg_RegisterError(render_frame_id, callbacks_id));
+    Send(new PushMessagingMsg_RegisterError(
+        render_frame_id, callbacks_id, status));
   }
 }
 
