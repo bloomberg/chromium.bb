@@ -89,6 +89,7 @@ class IndexedDBDispatcher;
 class InputEventFilter;
 class InputHandlerManager;
 class MediaStreamCenter;
+class MemoryObserver;
 class PeerConnectionDependencyFactory;
 class MidiMessageFilter;
 class NetInfoDispatcher;
@@ -566,6 +567,8 @@ class CONTENT_EXPORT RenderThreadImpl : public RenderThread,
   // multiple threads. Current allocation mechanism for IOSurface
   // backed GpuMemoryBuffers prevent this. crbug.com/325045
   base::ThreadChecker allocate_gpu_memory_buffer_thread_checker_;
+
+  scoped_ptr<MemoryObserver> memory_observer_;
 
   // Compositor settings
   bool is_gpu_rasterization_enabled_;
