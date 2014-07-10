@@ -1128,7 +1128,7 @@ class TestFindSuspects(MoxBase):
     self.overlay_patch = self.GetPatches(project=overlay)
     chromite = 'chromiumos/chromite'
     self.chromite_patch = self.GetPatches(project=chromite)
-    self.power_manager = 'chromiumos/platform/power_manager'
+    self.power_manager = 'chromiumos/platform2/power_manager'
     self.power_manager_pkg = 'chromeos-base/power_manager'
     self.power_manager_patch = self.GetPatches(project=self.power_manager)
     self.kernel = 'chromiumos/third_party/kernel'
