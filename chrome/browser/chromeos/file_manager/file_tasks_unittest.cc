@@ -22,6 +22,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension_builder.h"
 #include "google_apis/drive/drive_api_parser.h"
@@ -379,6 +380,7 @@ TEST_F(FileManagerFileTasksComplexTest, FindFileHandlerTasks) {
   // % ruby -le 'print (0...32).to_a.map{(?a + rand(16)).chr}.join'
   const char kFooId[] = "hhgbjpmdppecanaaogonaigmmifgpaph";
   const char kBarId[] = "odlhccgofgkadkkhcmhgnhgahonahoca";
+  const char kEphemeralId[] = "opoomfdlbjcbjinalcjdjfoiikdeaoel";
 
   // Foo.app can handle "text/plain" and "text/html".
   extensions::ExtensionBuilder foo_app;
@@ -428,6 +430,38 @@ TEST_F(FileManagerFileTasksComplexTest, FindFileHandlerTasks) {
                                      .Append("text/plain")))));
   bar_app.SetID(kBarId);
   extension_service_->AddExtension(bar_app.Build().get());
+
+  // Ephemeral.app is an ephemeral app that can handle "text/plain".
+  // It should not ever be found as ephemeral apps cannot be file handlers.
+  extensions::ExtensionBuilder ephemeral_app;
+  ephemeral_app.SetManifest(
+      extensions::DictionaryBuilder()
+          .Set("name", "Ephemeral")
+          .Set("version", "1.0.0")
+          .Set("manifest_version", 2)
+          .Set("app",
+               extensions::DictionaryBuilder().Set(
+                   "background",
+                   extensions::DictionaryBuilder().Set(
+                       "scripts",
+                       extensions::ListBuilder().Append("background.js"))))
+          .Set("file_handlers",
+               extensions::DictionaryBuilder().Set(
+                   "text",
+                   extensions::DictionaryBuilder().Set("title", "Text").Set(
+                       "types",
+                       extensions::ListBuilder().Append("text/plain")))));
+  ephemeral_app.SetID(kEphemeralId);
+  scoped_refptr<extensions::Extension> built_ephemeral_app(
+      ephemeral_app.Build());
+  extension_service_->AddExtension(built_ephemeral_app.get());
+  extensions::ExtensionPrefs* extension_prefs =
+      extensions::ExtensionPrefs::Get(&test_profile_);
+  extension_prefs->OnExtensionInstalled(built_ephemeral_app.get(),
+                                        extensions::Extension::ENABLED,
+                                        syncer::StringOrdinal(),
+                                        extensions::kInstallFlagIsEphemeral,
+                                        std::string());
 
   // Find apps for a "text/plain" file. Foo.app and Bar.app should be found.
   PathAndMimeTypeSet path_mime_set;
@@ -483,6 +517,7 @@ TEST_F(FileManagerFileTasksComplexTest, FindFileBrowserHandlerTasks) {
   // Copied from FindFileHandlerTasks test above.
   const char kFooId[] = "hhgbjpmdppecanaaogonaigmmifgpaph";
   const char kBarId[] = "odlhccgofgkadkkhcmhgnhgahonahoca";
+  const char kEphemeralId[] = "opoomfdlbjcbjinalcjdjfoiikdeaoel";
 
   // Foo.app can handle ".txt" and ".html".
   // This one is an extension, and has "file_browser_handlers"
@@ -519,6 +554,35 @@ TEST_F(FileManagerFileTasksComplexTest, FindFileBrowserHandlerTasks) {
                                         .Append("filesystem:*.txt")))));
   bar_app.SetID(kBarId);
   extension_service_->AddExtension(bar_app.Build().get());
+
+  // Ephemeral.app is an ephemeral app that can handle ".txt".
+  // It should not ever be found as ephemeral apps cannot be file browser
+  // handlers.
+  extensions::ExtensionBuilder ephemeral_app;
+  ephemeral_app.SetManifest(
+      extensions::DictionaryBuilder()
+          .Set("name", "Ephemeral")
+          .Set("version", "1.0.0")
+          .Set("manifest_version", 2)
+          .Set("file_browser_handlers",
+               extensions::ListBuilder().Append(
+                   extensions::DictionaryBuilder()
+                       .Set("id", "open")
+                       .Set("default_title", "open")
+                       .Set("file_filters",
+                            extensions::ListBuilder().Append(
+                                "filesystem:*.txt")))));
+  ephemeral_app.SetID(kEphemeralId);
+  scoped_refptr<extensions::Extension> built_ephemeral_app(
+      ephemeral_app.Build());
+  extension_service_->AddExtension(built_ephemeral_app.get());
+  extensions::ExtensionPrefs* extension_prefs =
+      extensions::ExtensionPrefs::Get(&test_profile_);
+  extension_prefs->OnExtensionInstalled(built_ephemeral_app.get(),
+                                        extensions::Extension::ENABLED,
+                                        syncer::StringOrdinal(),
+                                        extensions::kInstallFlagIsEphemeral,
+                                        std::string());
 
   // Find apps for a ".txt" file. Foo.app and Bar.app should be found.
   std::vector<GURL> file_urls;

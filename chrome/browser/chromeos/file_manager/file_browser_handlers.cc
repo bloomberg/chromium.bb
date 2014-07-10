@@ -28,6 +28,7 @@
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_host.h"
 #include "extensions/browser/extension_system.h"
+#include "extensions/browser/extension_util.h"
 #include "extensions/browser/lazy_background_task_queue.h"
 #include "extensions/common/extension_set.h"
 #include "extensions/common/manifest_handlers/background_info.h"
@@ -114,6 +115,8 @@ FileBrowserHandlerList FindFileBrowserHandlersForURL(
     const Extension* extension = iter->get();
     if (profile->IsOffTheRecord() &&
         !extensions::util::IsIncognitoEnabled(extension->id(), profile))
+      continue;
+    if (extensions::util::IsEphemeralApp(extension->id(), profile))
       continue;
 
     FileBrowserHandler::List* handler_list =

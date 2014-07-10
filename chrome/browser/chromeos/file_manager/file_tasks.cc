@@ -29,6 +29,7 @@
 #include "extensions/browser/extension_host.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
+#include "extensions/browser/extension_util.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension_set.h"
 #include "google_apis/drive/gdata_wapi_parser.h"
@@ -382,6 +383,10 @@ void FindFileHandlerTasks(
 
     // We don't support using hosted apps to open files.
     if (!extension->is_platform_app())
+      continue;
+
+    // Ephemeral apps cannot be file handlers.
+    if (extensions::util::IsEphemeralApp(extension->id(), profile))
       continue;
 
     if (profile->IsOffTheRecord() &&
