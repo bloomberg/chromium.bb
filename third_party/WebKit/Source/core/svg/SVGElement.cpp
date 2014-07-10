@@ -244,36 +244,6 @@ AffineTransform SVGElement::localCoordinateSpaceTransform(CTMScope) const
     return AffineTransform();
 }
 
-const AtomicString& SVGElement::xmlbase() const
-{
-    return fastGetAttribute(XMLNames::baseAttr);
-}
-
-void SVGElement::setXMLbase(const AtomicString& value)
-{
-    setAttribute(XMLNames::baseAttr, value);
-}
-
-const AtomicString& SVGElement::xmllang() const
-{
-    return fastGetAttribute(XMLNames::langAttr);
-}
-
-void SVGElement::setXMLlang(const AtomicString& value)
-{
-    setAttribute(XMLNames::langAttr, value);
-}
-
-const AtomicString& SVGElement::xmlspace() const
-{
-    return fastGetAttribute(XMLNames::spaceAttr);
-}
-
-void SVGElement::setXMLspace(const AtomicString& value)
-{
-    setAttribute(XMLNames::spaceAttr, value);
-}
-
 Node::InsertionNotificationRequest SVGElement::insertedInto(ContainerNode* rootParent)
 {
     Element::insertedInto(rootParent);

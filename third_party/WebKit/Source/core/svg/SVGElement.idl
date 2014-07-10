@@ -23,12 +23,12 @@
 [
     Custom=Wrap,
 ] interface SVGElement : Element {
-    attribute DOMString xmlbase;
+    [Reflect] attribute DOMString xmlbase;
     readonly attribute SVGSVGElement? ownerSVGElement;
     readonly attribute SVGElement? viewportElement;
 
-    attribute DOMString xmllang;
-    attribute DOMString xmlspace;
+    [Reflect] attribute DOMString xmllang;
+    [Reflect] attribute DOMString xmlspace;
 
     [MeasureAs=SVGClassName] readonly attribute SVGAnimatedString className;
 

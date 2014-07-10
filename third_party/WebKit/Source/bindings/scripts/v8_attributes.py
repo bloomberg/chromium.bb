@@ -410,7 +410,16 @@ def setter_base_name(interface, attribute, arguments):
 
 def scoped_content_attribute_name(interface, attribute):
     content_attribute_name = attribute.extended_attributes['Reflect'] or attribute.name.lower()
-    namespace = 'SVGNames' if interface.name.startswith('SVG') else 'HTMLNames'
+    if interface.name.startswith('SVG'):
+        # SVG's xmlbase/xmlspace/xmllang need special behavior, i.e.
+        # it is in XMLNames namespace and the generated attribute has no xml prefix.
+        if attribute.name.startswith('xml'):
+            namespace = 'XMLNames'
+            content_attribute_name = content_attribute_name[3:]
+        else:
+            namespace = 'SVGNames'
+    else:
+        namespace = 'HTMLNames'
     includes.add('core/%s.h' % namespace)
     return '%s::%sAttr' % (namespace, content_attribute_name)
 

@@ -74,15 +74,6 @@ public:
     bool instanceUpdatesBlocked() const;
     void setInstanceUpdatesBlocked(bool);
 
-    const AtomicString& xmlbase() const;
-    void setXMLbase(const AtomicString&);
-
-    const AtomicString& xmllang() const;
-    void setXMLlang(const AtomicString&);
-
-    const AtomicString& xmlspace() const;
-    void setXMLspace(const AtomicString&);
-
     SVGSVGElement* ownerSVGElement() const;
     SVGElement* viewportElement() const;
 
