@@ -406,7 +406,6 @@ void BluetoothTaskManagerWin::GetKnownDevices() {
         DeviceState* device_state = new DeviceState();
         device_state->name = device_info->friendly_name;
         device_state->address = BluetoothAddressToString(device_info->address);
-        device_state->connected = device_info->connected;
         device_list->push_back(device_state);
       }
     }

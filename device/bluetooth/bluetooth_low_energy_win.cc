@@ -4,10 +4,6 @@
 
 #include "device/bluetooth/bluetooth_low_energy_win.h"
 
-#include <cfg.h>
-#define INITGUID  // For DEVPKEY_Xxxx guid/pid pairs
-#include <devpkey.h>
-
 #include "base/logging.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/win/windows_version.h"
@@ -15,7 +11,6 @@
 namespace {
 
 using device::win::DeviceRegistryPropertyValue;
-using device::win::DevicePropertyValue;
 
 const char kPlatformNotSupported[] =
     "Bluetooth Low energy is only supported on Windows 8 and later.";
@@ -130,47 +125,6 @@ bool CheckExpectedLength(size_t actual_length,
   return true;
 }
 
-bool CollectBluetoothLowEnergyDeviceProperty(
-    const ScopedDeviceInfoSetHandle& device_info_handle,
-    PSP_DEVINFO_DATA device_info_data,
-    const DEVPROPKEY& key,
-    scoped_ptr<DevicePropertyValue>* value,
-    std::string* error) {
-  DWORD required_length;
-  DEVPROPTYPE prop_type;
-  BOOL success = SetupDiGetDeviceProperty(device_info_handle,
-                                          device_info_data,
-                                          &key,
-                                          &prop_type,
-                                          NULL,
-                                          0,
-                                          &required_length,
-                                          0);
-  if (!CheckInsufficientBuffer(!!success, kDeviceInfoError, error))
-    return false;
-
-  scoped_ptr<uint8_t[]> prop_value(new uint8_t[required_length]);
-  DWORD actual_length = required_length;
-  success = SetupDiGetDeviceProperty(device_info_handle,
-                                     device_info_data,
-                                     &key,
-                                     &prop_type,
-                                     prop_value.get(),
-                                     actual_length,
-                                     &required_length,
-                                     0);
-  if (!CheckSuccess(!!success, kDeviceInfoError, error))
-    return false;
-  if (!CheckExpectedLength(
-          actual_length, required_length, kDeviceInfoError, error)) {
-    return false;
-  }
-
-  (*value) = scoped_ptr<DevicePropertyValue>(
-      new DevicePropertyValue(prop_type, prop_value.Pass(), actual_length));
-  return true;
-}
-
 bool CollectBluetoothLowEnergyDeviceRegistryProperty(
     const ScopedDeviceInfoSetHandle& device_info_handle,
     PSP_DEVINFO_DATA device_info_data,
@@ -188,7 +142,7 @@ bool CollectBluetoothLowEnergyDeviceRegistryProperty(
   if (!CheckInsufficientBuffer(!!success, kDeviceInfoError, error))
     return false;
 
-  scoped_ptr<uint8_t[]> property_value(new uint8_t[required_length]);
+  scoped_ptr<UINT8[]> property_value(new UINT8[required_length]);
   ULONG actual_length = required_length;
   DWORD property_type;
   success = SetupDiGetDeviceRegistryProperty(device_info_handle,
@@ -201,9 +155,8 @@ bool CollectBluetoothLowEnergyDeviceRegistryProperty(
   if (!CheckSuccess(!!success, kDeviceInfoError, error))
     return false;
   if (!CheckExpectedLength(
-          actual_length, required_length, kDeviceInfoError, error)) {
+          actual_length, required_length, kDeviceInfoError, error))
     return false;
-  }
 
   (*value) = DeviceRegistryPropertyValue::Create(
                  property_type, property_value.Pass(), actual_length).Pass();
@@ -302,29 +255,6 @@ bool CollectBluetoothLowEnergyDeviceAddress(
       device_info->id, &device_info->address, error);
 }
 
-bool CollectBluetoothLowEnergyDeviceStatus(
-    const ScopedDeviceInfoSetHandle& device_info_handle,
-    PSP_DEVINFO_DATA device_info_data,
-    scoped_ptr<device::win::BluetoothLowEnergyDeviceInfo>& device_info,
-    std::string* error) {
-  scoped_ptr<DevicePropertyValue> value;
-  if (!CollectBluetoothLowEnergyDeviceProperty(device_info_handle,
-                                               device_info_data,
-                                               DEVPKEY_Device_DevNodeStatus,
-                                               &value,
-                                               error)) {
-    return false;
-  }
-
-  if (value->property_type() != DEVPROP_TYPE_UINT32) {
-    *error = kDeviceInfoError;
-    return false;
-  }
-
-  device_info->connected = !(value->AsUint32() & DN_DEVICE_DISCONNECTED);
-  return true;
-}
-
 bool CollectBluetoothLowEnergyDeviceInfo(
     const ScopedDeviceInfoSetHandle& device_info_handle,
     PSP_DEVICE_INTERFACE_DATA device_interface_data,
@@ -341,7 +271,7 @@ bool CollectBluetoothLowEnergyDeviceInfo(
   if (!CheckInsufficientBuffer(!!success, kDeviceInfoError, error))
     return false;
 
-  scoped_ptr<uint8_t[]> interface_data(new uint8_t[required_length]);
+  scoped_ptr<UINT8[]> interface_data(new UINT8[required_length]);
   ZeroMemory(interface_data.get(), required_length);
 
   PSP_DEVICE_INTERFACE_DETAIL_DATA device_interface_detail_data =
@@ -362,9 +292,8 @@ bool CollectBluetoothLowEnergyDeviceInfo(
   if (!CheckSuccess(!!success, kDeviceInfoError, error))
     return false;
   if (!CheckExpectedLength(
-          actual_length, required_length, kDeviceInfoError, error)) {
+          actual_length, required_length, kDeviceInfoError, error))
     return false;
-  }
 
   scoped_ptr<device::win::BluetoothLowEnergyDeviceInfo> result(
       new device::win::BluetoothLowEnergyDeviceInfo());
@@ -382,10 +311,6 @@ bool CollectBluetoothLowEnergyDeviceInfo(
           device_info_handle, &device_info_data, result, error)) {
     return false;
   }
-  if (!CollectBluetoothLowEnergyDeviceStatus(
-          device_info_handle, &device_info_data, result, error)) {
-    return false;
-  }
   (*device_info) = result.Pass();
   return true;
 }
@@ -397,7 +322,7 @@ DeviceInfoResult EnumerateSingleBluetoothLowEnergyDevice(
     DWORD device_index,
     scoped_ptr<device::win::BluetoothLowEnergyDeviceInfo>* device_info,
     std::string* error) {
-  // Enumerate device of BLUETOOTHLE_DEVICE interface class
+  // Enumerate device of LE_DEVICE interface class
   GUID BluetoothInterfaceGUID = GUID_BLUETOOTHLE_DEVICE_INTERFACE;
   SP_DEVICE_INTERFACE_DATA device_interface_data = {0};
   device_interface_data.cbSize = sizeof(SP_DEVICE_INTERFACE_DATA);
@@ -416,9 +341,8 @@ DeviceInfoResult EnumerateSingleBluetoothLowEnergyDevice(
   }
 
   if (!CollectBluetoothLowEnergyDeviceInfo(
-          device_info_handle, &device_interface_data, device_info, error)) {
+          device_info_handle, &device_interface_data, device_info, error))
     return kError;
-  }
 
   return kOk;
 }
@@ -502,28 +426,6 @@ DWORD DeviceRegistryPropertyValue::AsDWORD() const {
   CHECK_EQ(property_type_, static_cast<DWORD>(REG_DWORD));
   DWORD* value = reinterpret_cast<DWORD*>(value_.get());
   return *value;
-}
-
-DevicePropertyValue::DevicePropertyValue(DEVPROPTYPE property_type,
-                                         scoped_ptr<uint8_t[]> value,
-                                         size_t value_size)
-    : property_type_(property_type),
-      value_(value.Pass()),
-      value_size_(value_size) {
-}
-
-uint32_t DevicePropertyValue::AsUint32() const {
-  CHECK_EQ(property_type_, static_cast<DEVPROPTYPE>(DEVPROP_TYPE_UINT32));
-  CHECK_EQ(value_size_, sizeof(uint32_t));
-  return *reinterpret_cast<uint32_t*>(value_.get());
-}
-
-BluetoothLowEnergyDeviceInfo::BluetoothLowEnergyDeviceInfo()
-    : connected(false) {
-  address.ullLong = BLUETOOTH_NULL_ADDRESS;
-}
-
-BluetoothLowEnergyDeviceInfo::~BluetoothLowEnergyDeviceInfo() {
 }
 
 bool IsBluetoothLowEnergySupported() {
