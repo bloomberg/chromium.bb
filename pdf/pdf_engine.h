@@ -305,10 +305,16 @@ class PDFEngineExports {
                                      int page_number,
                                      const RenderingSettings& settings,
                                      void* bitmap_buffer) = 0;
+
   virtual bool GetPDFDocInfo(const void* pdf_buffer,
                              int buffer_size,
                              int* page_count,
                              double* max_page_width) = 0;
+
+  // See the definition of GetPDFPageSizeByIndex in pdf.cc for details.
+  virtual bool GetPDFPageSizeByIndex(const void* pdf_buffer,
+                                     int pdf_buffer_size, int page_number,
+                                     double* width, double* height) = 0;
 };
 
 }  // namespace chrome_pdf

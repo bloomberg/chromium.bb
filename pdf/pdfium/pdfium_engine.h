@@ -614,6 +614,11 @@ class PDFiumEngineExports : public PDFEngineExports {
                              int buffer_size,
                              int* page_count,
                              double* max_page_width);
+
+  // See the definition of GetPDFPageSizeByIndex in pdf.cc for details.
+  virtual bool GetPDFPageSizeByIndex(const void* pdf_buffer,
+                                     int pdf_buffer_size, int page_number,
+                                     double* width, double* height);
 };
 
 }  // namespace chrome_pdf
