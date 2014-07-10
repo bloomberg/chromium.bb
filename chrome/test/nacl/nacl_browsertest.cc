@@ -144,8 +144,14 @@ IN_PROC_BROWSER_TEST_F(NaClBrowserTestGLibc,
 IN_PROC_BROWSER_TEST_F(NaClBrowserTestNewlib, IrtManifestFile) {
   RunNaClIntegrationTest(FILE_PATH_LITERAL("irt_manifest_file_test.html"));
 }
+// crbug.com/392768
+#if defined(OS_LINUX)
+#  define MAYBE_IrtManifestFile DISABLED_IrtManifestFile
+#else
+#  define MAYBE_IrtManifestFile MAYBE_PNACL_NONSFI(IrtManifestFile)
+#endif
 IN_PROC_BROWSER_TEST_F(NaClBrowserTestPnaclNonSfi,
-                       MAYBE_PNACL_NONSFI(IrtManifestFile)) {
+                       MAYBE_IrtManifestFile) {
   RunNaClIntegrationTest(FILE_PATH_LITERAL("irt_manifest_file_test.html"));
 }
 
