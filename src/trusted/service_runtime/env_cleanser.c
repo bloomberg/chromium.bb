@@ -50,7 +50,6 @@ char const *const kNaClEnvWhitelist[] = {
   "NACLVERBOSITY",
   "NACL_PLUGIN_DEBUG",      /* src/trusted/plugin/srpc/utility.cc */
   "NACL_SRPC_DEBUG",        /* src/shared/srpc/utility.c */
-  "NACL_SRPC_STANDALONE",   /* src/shared/srpc/nacl_srpc.c */
   NULL,
 };
 

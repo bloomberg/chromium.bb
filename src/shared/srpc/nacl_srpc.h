@@ -593,12 +593,6 @@ extern void NaClSrpcRpcWait(NaClSrpcChannel* channel,
                             NaClSrpcRpc* rpc);
 
 /**
- *  @serverSrpc  Returns whether the srpc server is being run "standalone";
- *  that is, not as a subprocess of sel_universal, the browser plugin, etc.
- */
-int NaClSrpcIsStandalone(void);
-
-/**
  * Runs a text-based interpreter given a list of SRPC methods.  This
  * calls NaClSrpcCommandLoop().
  * @return Returns zero on success, non-zero otherwise.

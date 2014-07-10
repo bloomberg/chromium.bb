@@ -231,14 +231,3 @@ void NaClSrpcDtor(NaClSrpcChannel* channel) {
 void NaClSrpcArgCtor(NaClSrpcArg* arg) {
   memset(arg, 0, sizeof *arg);
 }
-
-/*
- * A standalone SRPC server is not a subprocess of the browser or
- * sel_universal.  As this is a mode used for testing, the parent environment
- * must set the following variable to indicate that fact.
- */
-const char kSrpcStandalone[] = "NACL_SRPC_STANDALONE";
-
-int NaClSrpcIsStandalone(void) {
-  return (NULL != getenv(kSrpcStandalone));
-}
