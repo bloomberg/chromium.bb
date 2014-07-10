@@ -1283,6 +1283,7 @@ _PEPPER_INTERFACES = [
 # extension_flag: Function is an extension and should be enabled only when
 #               the corresponding feature info flag is enabled. Implies
 #               'extension': True.
+# not_shared:   For GENn types, True if objects can't be shared between contexts
 
 _FUNCTION_INFO = {
   'ActiveTexture': {
@@ -2353,6 +2354,7 @@ _FUNCTION_INFO = {
     'resource_types': 'Queries',
     'unit_test': False,
     'pepper_interface': 'Query',
+    'not_shared': 'True',
   },
   'DeleteQueriesEXT': {
     'type': 'DELn',
@@ -4048,9 +4050,20 @@ class GENnHandler(TypeHandler):
     self.WriteClientGLCallLog(func, file)
     for arg in func.GetOriginalArgs():
       arg.WriteClientSideValidationCode(file, func)
-    code = """  GPU_CLIENT_SINGLE_THREAD_CHECK();
-  GetIdHandler(id_namespaces::k%(resource_types)s)->
-      MakeIds(this, 0, %(args)s);
+    not_shared = func.GetInfo('not_shared')
+    if not_shared:
+      alloc_code = (
+"""  IdAllocatorInterface* id_allocator = GetIdAllocator(id_namespaces::k%s);
+  for (GLsizei ii = 0; ii < n; ++ii)
+    %s[ii] = id_allocator->AllocateID();""" %
+  (func.GetInfo('resource_types'), func.GetOriginalArgs()[1].name))
+    else:
+      alloc_code = ("""  GetIdHandler(id_namespaces::k%(resource_types)s)->
+      MakeIds(this, 0, %(args)s);""" % args)
+    args['alloc_code'] = alloc_code
+
+    code = """ GPU_CLIENT_SINGLE_THREAD_CHECK();
+%(alloc_code)s
   %(name)sHelper(%(args)s);
   helper_->%(name)sImmediate(%(args)s);
   if (share_group_->bind_generates_resource())

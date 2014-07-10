@@ -7,20 +7,22 @@
 
 #include <GLES2/gl2.h>
 
+#include <list>
 #include <map>
 #include <queue>
 #include <set>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "gles2_impl_export.h"
 #include "gpu/command_buffer/client/buffer_tracker.h"
 #include "gpu/command_buffer/client/client_context_state.h"
 #include "gpu/command_buffer/client/context_support.h"
 #include "gpu/command_buffer/client/gles2_cmd_helper.h"
+#include "gpu/command_buffer/client/gles2_impl_export.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/client/gpu_memory_buffer_tracker.h"
 #include "gpu/command_buffer/client/mapped_memory.h"
@@ -31,6 +33,7 @@
 #include "gpu/command_buffer/common/capabilities.h"
 #include "gpu/command_buffer/common/debug_marker_manager.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
+#include "gpu/command_buffer/common/id_allocator.h"
 
 #if !defined(NDEBUG) && !defined(__native_client__) && !defined(GLES2_CONFORMANCE_TESTS)  // NOLINT
   #if defined(GLES2_INLINE_OPTIMIZATION)
@@ -153,7 +156,7 @@ class GLES2_IMPL_EXPORT GLES2Implementation
     };
     IntState int_state;
 
-    typedef std::pair<GLenum,GLenum> ShaderPrecisionKey;
+    typedef std::pair<GLenum, GLenum> ShaderPrecisionKey;
     typedef std::map<ShaderPrecisionKey,
                      cmds::GetShaderPrecisionFormat::Result>
         ShaderPrecisionMap;
@@ -382,7 +385,7 @@ class GLES2_IMPL_EXPORT GLES2Implementation
   // Checks for single threaded access.
   class SingleThreadChecker {
    public:
-    SingleThreadChecker(GLES2Implementation* gles2_implementation);
+    explicit SingleThreadChecker(GLES2Implementation* gles2_implementation);
     ~SingleThreadChecker();
 
    private:
@@ -531,8 +534,6 @@ class GLES2_IMPL_EXPORT GLES2Implementation
   void DeleteTexturesStub(GLsizei n, const GLuint* textures);
   void DeleteProgramStub(GLsizei n, const GLuint* programs);
   void DeleteShaderStub(GLsizei n, const GLuint* shaders);
-  // TODO(gman): Remove this as queries are not shared.
-  void DeleteQueriesStub(GLsizei n, const GLuint* queries);
   void DeleteVertexArraysOESStub(GLsizei n, const GLuint* arrays);
 
   void BufferDataHelper(
@@ -592,6 +593,10 @@ class GLES2_IMPL_EXPORT GLES2Implementation
   bool SetCapabilityState(GLenum cap, bool enabled);
 
   IdHandlerInterface* GetIdHandler(int id_namespace) const;
+  // IdAllocators for objects that can't be shared among contexts.
+  // For now, used only for Queries. TODO(hj.r.chung) Should be added for
+  // Framebuffer and Vertex array objects.
+  IdAllocatorInterface* GetIdAllocator(int id_namespace) const;
 
   void FinishHelper();
 
@@ -764,6 +769,7 @@ class GLES2_IMPL_EXPORT GLES2Implementation
   scoped_ptr<QueryTracker> query_tracker_;
   typedef std::map<GLuint, QueryTracker::Query*> QueryMap;
   QueryMap current_queries_;
+  scoped_ptr<IdAllocatorInterface> query_id_allocator_;
 
   scoped_ptr<BufferTracker> buffer_tracker_;
 
