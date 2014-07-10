@@ -17,6 +17,7 @@
 #include "ui/gfx/skia_util.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/view.h"
+#include "ui/views/view_targeter.h"
 #include "ui/views/widget/widget.h"
 
 namespace {
@@ -126,8 +127,15 @@ class TabStripTest : public views::ViewsTestBase {
   // Returns the rectangular hit test region of |tab| in |tab|'s local
   // coordinate space.
   gfx::Rect GetTabHitTestMask(Tab* tab) {
+    views::ViewTargeter* targeter = tab->targeter();
+    DCHECK(targeter);
+    views::MaskedTargeterDelegate* delegate =
+        static_cast<views::MaskedTargeterDelegate*>(tab);
+
     gfx::Path mask;
-    tab->GetHitTestMaskDeprecated(views::View::HIT_TEST_SOURCE_TOUCH, &mask);
+    bool valid_mask = delegate->GetHitTestMask(&mask);
+    DCHECK(valid_mask);
+
     return gfx::ToEnclosingRect((gfx::SkRectToRectF(mask.getBounds())));
   }
 
