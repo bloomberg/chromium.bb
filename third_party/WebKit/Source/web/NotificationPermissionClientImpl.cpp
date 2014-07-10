@@ -26,7 +26,9 @@ public:
     {
     }
 
-    virtual void permissionRequestComplete(blink::WebNotificationPresenter::Permission permission) OVERRIDE
+    virtual ~WebNotificationPermissionCallbackImpl() { }
+
+    virtual void permissionRequestComplete(WebNotificationPermission permission) OVERRIDE
     {
         m_callback->handleEvent(Notification::permissionString(static_cast<NotificationClient::Permission>(permission)));
     }
@@ -39,8 +41,6 @@ public:
     }
 
 private:
-    virtual ~WebNotificationPermissionCallbackImpl() { }
-
     ExecutionContext* m_executionContext;
     OwnPtr<NotificationPermissionCallback> m_callback;
 };
