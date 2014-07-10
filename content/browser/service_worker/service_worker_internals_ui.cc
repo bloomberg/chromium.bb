@@ -500,6 +500,7 @@ void ServiceWorkerInternalsUI::AddContextFromStoragePartition(
     context->AddObserver(new_observer.get());
     observers_.set(reinterpret_cast<uintptr_t>(partition), new_observer.Pass());
   }
+
   BrowserThread::PostTask(
       BrowserThread::IO,
       FROM_HERE,
@@ -510,7 +511,9 @@ void ServiceWorkerInternalsUI::AddContextFromStoragePartition(
                             base::Bind(OnAllRegistrations,
                                        AsWeakPtr(),
                                        partition_id,
-                                       partition->GetPath()))));
+                                       context->is_incognito()
+                                           ? base::FilePath()
+                                           : partition->GetPath()))));
 }
 
 void ServiceWorkerInternalsUI::RemoveObserverFromStoragePartition(

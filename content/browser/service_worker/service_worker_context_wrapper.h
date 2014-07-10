@@ -72,6 +72,8 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
   void AddObserver(ServiceWorkerContextObserver* observer);
   void RemoveObserver(ServiceWorkerContextObserver* observer);
 
+  bool is_incognito() const { return is_incognito_; }
+
  private:
   friend class base::RefCountedThreadSafe<ServiceWorkerContextWrapper>;
   friend class EmbeddedWorkerTestHelper;
@@ -91,6 +93,9 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
   const scoped_ptr<ServiceWorkerProcessManager> process_manager_;
   // Cleared in Shutdown():
   scoped_ptr<ServiceWorkerContextCore> context_core_;
+
+  // Initialized in Init(); true of the user data directory is empty.
+  bool is_incognito_;
 };
 
 }  // namespace content

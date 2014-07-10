@@ -19,7 +19,8 @@ ServiceWorkerContextWrapper::ServiceWorkerContextWrapper(
     BrowserContext* browser_context)
     : observer_list_(
           new ObserverListThreadSafe<ServiceWorkerContextObserver>()),
-      process_manager_(new ServiceWorkerProcessManager(browser_context)) {
+      process_manager_(new ServiceWorkerProcessManager(browser_context)),
+      is_incognito_(false) {
 }
 
 ServiceWorkerContextWrapper::~ServiceWorkerContextWrapper() {
@@ -28,6 +29,7 @@ ServiceWorkerContextWrapper::~ServiceWorkerContextWrapper() {
 void ServiceWorkerContextWrapper::Init(
     const base::FilePath& user_data_directory,
     quota::QuotaManagerProxy* quota_manager_proxy) {
+  is_incognito_ = user_data_directory.empty();
   scoped_refptr<base::SequencedTaskRunner> database_task_runner =
       BrowserThread::GetBlockingPool()->
           GetSequencedTaskRunnerWithShutdownBehavior(

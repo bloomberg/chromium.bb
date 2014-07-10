@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html i18n-values="dir:textdirection;">
 <head>
   <meta charset="utf-8">
@@ -97,8 +97,13 @@
         jsvalues="$partition_id:$this.partition_id;.partition_id:$this.partition_id"
         jsdisplay="$this.stored_registrations.length + $this.unregistered_registrations.length + $this.unregistered_versions.length > 0">
       <div class="serviceworker-summary">
-        <span>Registrations in: </span>
-        <span jscontent="$this.partition_path"></span>
+        <span jsdisplay="$this.partition_path">
+          <span>Registrations in: </span>
+          <span jscontent="$this.partition_path"></span>
+        </span>
+        <span jsdisplay="!$this.partition_path">
+          <span>Registrations: Incognito </span>
+        </span>
         <span jscontent="'(' + $this.stored_registrations.length + ')'"></span>
       </div>
       <div class="serviceworker-item" jsselect="$this.stored_registrations">

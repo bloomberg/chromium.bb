@@ -13,8 +13,13 @@
         <div id="indexeddb-list-template"
              jsvalues="$partition_path:$this.partition_path">
             <div class="indexeddb-summary">
-                <span>Instances in: </span>
-                <span jscontent="$this.partition_path"></span>
+                <span jsdisplay="$this.partition_path">
+                    <span>Instances in: </span>
+                    <span jscontent="$this.partition_path"></span>
+                </span>
+                <span jsdisplay="!$this.partition_path">
+                    <span>Instances: Incognito </span>
+                </span>
                 <span jscontent="'(' + $this.idbs.length + ')'"></span>
             </div>
             <div class="indexeddb-item" jsselect="$this.idbs">
@@ -181,4 +186,3 @@
     <script src="chrome://resources/js/i18n_template2.js"></script>
 </body>
 </html>
-

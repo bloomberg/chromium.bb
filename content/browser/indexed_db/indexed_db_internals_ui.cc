@@ -87,15 +87,19 @@ void IndexedDBInternalsUI::GetAllOriginsOnIndexedDBThread(
     const base::FilePath& context_path) {
   DCHECK(context->TaskRunner()->RunsTasksOnCurrentThread());
 
-  scoped_ptr<base::ListValue> info_list(static_cast<IndexedDBContextImpl*>(
-      context.get())->GetAllOriginsDetails());
+  IndexedDBContextImpl* context_impl =
+      static_cast<IndexedDBContextImpl*>(context.get());
 
-  BrowserThread::PostTask(BrowserThread::UI,
-                          FROM_HERE,
-                          base::Bind(&IndexedDBInternalsUI::OnOriginsReady,
-                                     base::Unretained(this),
-                                     base::Passed(&info_list),
-                                     context_path));
+  scoped_ptr<base::ListValue> info_list(context_impl->GetAllOriginsDetails());
+  bool is_incognito = context_impl->is_incognito();
+
+  BrowserThread::PostTask(
+      BrowserThread::UI,
+      FROM_HERE,
+      base::Bind(&IndexedDBInternalsUI::OnOriginsReady,
+                 base::Unretained(this),
+                 base::Passed(&info_list),
+                 is_incognito ? base::FilePath() : context_path));
 }
 
 void IndexedDBInternalsUI::OnOriginsReady(scoped_ptr<base::ListValue> origins,

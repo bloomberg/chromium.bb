@@ -103,6 +103,8 @@ class CONTENT_EXPORT IndexedDBContextImpl
     data_path_ = data_path;
   }
 
+  bool is_incognito() const { return data_path_.empty(); }
+
  protected:
   virtual ~IndexedDBContextImpl();
 
