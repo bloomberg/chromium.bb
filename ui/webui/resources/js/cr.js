@@ -327,12 +327,6 @@ this.cr = (function() {
     cr.isLinux = /Linux/.test(navigator.userAgent);
 
     /**
-     * Whether this uses GTK or not.
-     */
-    cr.isGTK = typeof chrome.getVariableValue == 'function' &&
-        /GTK/.test(chrome.getVariableValue('toolkit'));
-
-    /**
      * Whether this uses the views toolkit or not.
      */
     cr.isViews = typeof chrome.getVariableValue == 'function' &&
