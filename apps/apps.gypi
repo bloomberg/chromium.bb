@@ -47,6 +47,8 @@
         'apps_client.h',
         'browser_context_keyed_service_factories.cc',
         'browser_context_keyed_service_factories.h',
+        'custom_launcher_page_contents.cc',
+        'custom_launcher_page_contents.h',
         'launcher.cc',
         'launcher.h',
         'metrics_names.h',

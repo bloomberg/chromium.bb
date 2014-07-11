@@ -23,6 +23,10 @@
 class AppListControllerDelegate;
 class Profile;
 
+namespace apps {
+class CustomLauncherPageContents;
+}
+
 namespace app_list {
 class SearchController;
 class SpeechUIModel;
@@ -30,10 +34,6 @@ class SpeechUIModel;
 
 namespace base {
 class FilePath;
-}
-
-namespace content {
-class WebContents;
 }
 
 namespace gfx {
@@ -154,8 +154,8 @@ class AppListViewDelegate : public app_list::AppListViewDelegate,
   // this instance can be removed as an observer on its destruction.
   ScopedObserver<SigninManagerBase, AppListViewDelegate> scoped_observer_;
 
-  // Contents of the additional custom launcher page. May be NULL.
-  scoped_ptr<content::WebContents> custom_page_web_contents_;
+  // Window contents of the additional custom launcher page. May be NULL.
+  scoped_ptr<apps::CustomLauncherPageContents> custom_page_contents_;
 
   DISALLOW_COPY_AND_ASSIGN(AppListViewDelegate);
 };
