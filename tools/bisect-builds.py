@@ -199,14 +199,6 @@ class PathContext(object):
       next-marker is not None, then the listing is a partial listing and another
       fetch should be performed with next-marker being the marker= GET
       parameter."""
-      def _GetDepotName():
-        if self.base_url == CHROMIUM_BASE_URL:
-          return 'chromium'
-        elif self.base_url == WEBKIT_BASE_URL:
-          return 'blink'
-        else:
-          return 'chromium'
-
       handle = urllib.urlopen(url)
       document = ElementTree.parse(handle)
 
@@ -238,7 +230,7 @@ class PathContext(object):
         try:
           if not revnum.isdigit():
             git_hash = revnum
-            revnum = self.GetSVNRevisionFromGitHash(git_hash, _GetDepotName())
+            revnum = self.GetSVNRevisionFromGitHash(git_hash)
             githash_svn_dict[revnum] = git_hash
           if revnum is not None:
             revnum = int(revnum)
