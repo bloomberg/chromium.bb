@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_LIBADDRESSINPUT_CHROMIUM_CHROME_ADDRESS_VALIDATOR_H_
-#define THIRD_PARTY_LIBADDRESSINPUT_CHROMIUM_CHROME_ADDRESS_VALIDATOR_H_
+#ifndef THIRD_PARTY_LIBADDRESSINPUT_CHROMIUM_PRELOAD_ADDRESS_VALIDATOR_H_
+#define THIRD_PARTY_LIBADDRESSINPUT_CHROMIUM_PRELOAD_ADDRESS_VALIDATOR_H_
 
 #include <cstddef>
 #include <string>
@@ -14,49 +14,28 @@
 #include "third_party/libaddressinput/src/cpp/include/libaddressinput/address_field.h"
 #include "third_party/libaddressinput/src/cpp/include/libaddressinput/address_validator.h"
 #include "third_party/libaddressinput/src/cpp/include/libaddressinput/callback.h"
-#include "third_party/libaddressinput/src/cpp/include/libaddressinput/preload_supplier.h"
 
 namespace i18n {
 namespace addressinput {
-class AddressNormalizer;
+
 class Downloader;
+class PreloadSupplier;
 class Storage;
+class Synonyms;
 struct AddressData;
-}
-}
+
+}  // namespace addressinput
+}  // namespace i18n
 
 namespace autofill {
 
-class InputSuggester;
+class Suggestions;
 
-// The object to be notified when loading of address validation rules is
-// finished.
-class LoadRulesListener {
+// Interface to the libaddressinput AddressValidator for Chromium Autofill.
+class PreloadAddressValidator {
  public:
-  virtual ~LoadRulesListener() {}
+  typedef ::i18n::addressinput::Callback<std::string, int> Callback;
 
-  // Called when the validation rules for the |country_code| have been loaded.
-  // The validation rules include the generic rules for the |country_code| and
-  // specific rules for the country's administrative areas, localities, and
-  // dependent localities. If a country has language-specific validation rules,
-  // then these are also loaded.
-  //
-  // The |success| parameter is true when the rules were loaded successfully.
-  virtual void OnAddressValidationRulesLoaded(const std::string& country_code,
-                                              bool success) = 0;
-};
-
-// Interface to the libaddressinput AddressValidator for Chromium Autofill. The
-// class is named AddressValidator to simplify switching between libaddressinput
-// and this version.
-//
-// It's not possible to name this file address_validator.h because some
-// compilers do not handle multiple files with the same name (although in
-// different directories) gracefully. This class is a shim between upstream
-// libaddressinput API and the API that Chrome expects, hence the file name
-// chrome_address_validator.h.
-class AddressValidator {
- public:
   // The status of address validation.
   enum Status {
     // Address validation completed successfully. Check |problems| to see if any
@@ -72,15 +51,15 @@ class AddressValidator {
   };
 
   // Takes ownership of |downloader| and |storage|.
-  AddressValidator(const std::string& validation_data_url,
-                   scoped_ptr< ::i18n::addressinput::Downloader> downloader,
-                   scoped_ptr< ::i18n::addressinput::Storage> storage,
-                   LoadRulesListener* load_rules_listener);
+  PreloadAddressValidator(
+      const std::string& validation_data_url,
+      scoped_ptr< ::i18n::addressinput::Downloader> downloader,
+      scoped_ptr< ::i18n::addressinput::Storage> storage);
 
-  virtual ~AddressValidator();
+  virtual ~PreloadAddressValidator();
 
   // Loads the generic validation rules for |region_code| and specific rules
-  // for the region's administrative areas, localities, and dependent
+  // for the regions's administrative areas, localities, and dependent
   // localities. A typical data size is 10KB. The largest is 250KB. If a region
   // has language-specific validation rules, then these are also loaded.
   //
@@ -88,8 +67,9 @@ class AddressValidator {
   // https://i18napis.appspot.com/ssl-aggregate-address/data/US
   //
   // If the rules are already in progress of being loaded, it does nothing.
-  // Invokes |load_rules_listener| when the loading has finished.
-  virtual void LoadRules(const std::string& region_code);
+  // Calls |loaded| when the loading has finished.
+  virtual void LoadRules(const std::string& region_code,
+                         const Callback& loaded);
 
   // Validates the |address| and populates |problems| with the validation
   // problems, filtered according to the |filter| parameter.
@@ -97,7 +77,7 @@ class AddressValidator {
   // If the |filter| is empty, then all discovered validation problems are
   // returned. If the |filter| contains problem elements, then only the problems
   // in the |filter| may be returned.
-  virtual Status ValidateAddress(
+  virtual Status Validate(
       const ::i18n::addressinput::AddressData& address,
       const ::i18n::addressinput::FieldProblemMap* filter,
       ::i18n::addressinput::FieldProblemMap* problems) const;
@@ -139,48 +119,23 @@ class AddressValidator {
       ::i18n::addressinput::AddressData* address) const;
 
  private:
-  friend class MockAddressValidator;
-
-  // Constructor used only for MockAddressValidator.
-  AddressValidator();
-
-  // Verifies that |validator_| succeeded. Invoked by |validated_| callback.
   void Validated(bool success,
                  const ::i18n::addressinput::AddressData&,
                  const ::i18n::addressinput::FieldProblemMap&);
 
-  // Invokes the |load_rules_listener_|, if it's not NULL. Called by
-  // |rules_loaded_| callback.
-  void RulesLoaded(bool success, const std::string& country_code, int);
-
-  // Loads and stores aggregate rules at COUNTRY level.
   const scoped_ptr< ::i18n::addressinput::PreloadSupplier> supplier_;
-
-  // Suggests addresses based on user input.
-  const scoped_ptr<InputSuggester> input_suggester_;
-
-  // Normalizes addresses into a canonical form.
-  const scoped_ptr< ::i18n::addressinput::AddressNormalizer> normalizer_;
-
-  // Validates addresses.
+  const scoped_ptr<Suggestions> suggestions_;
+  const scoped_ptr< ::i18n::addressinput::Synonyms> synonyms_;
   const scoped_ptr<const ::i18n::addressinput::AddressValidator> validator_;
-
-  // The callback that |validator_| invokes when it finished validating an
-  // address.
   const scoped_ptr<const ::i18n::addressinput::AddressValidator::Callback>
       validated_;
 
-  // The callback that |supplier_| invokes when it finished loading rules.
-  const scoped_ptr<const ::i18n::addressinput::PreloadSupplier::Callback>
-      rules_loaded_;
+  friend class MockAddressValidator;
+  PreloadAddressValidator();
 
-  // Not owned delegate to invoke when |suppler_| finished loading rules. Can be
-  // NULL.
-  LoadRulesListener* const load_rules_listener_;
-
-  DISALLOW_COPY_AND_ASSIGN(AddressValidator);
+  DISALLOW_COPY_AND_ASSIGN(PreloadAddressValidator);
 };
 
 }  // namespace autofill
 
-#endif  // THIRD_PARTY_LIBADDRESSINPUT_CHROMIUM_CHROME_ADDRESS_VALIDATOR_H_
+#endif  // THIRD_PARTY_LIBADDRESSINPUT_CHROMIUM_PRELOAD_ADDRESS_VALIDATOR_H_

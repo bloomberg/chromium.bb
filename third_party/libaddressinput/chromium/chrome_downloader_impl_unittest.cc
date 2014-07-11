@@ -35,31 +35,27 @@ class ChromeDownloaderImplTest : public testing::Test {
     scoped_refptr<net::TestURLRequestContextGetter> getter(
         new net::TestURLRequestContextGetter(
             base::MessageLoopProxy::current()));
-    ChromeDownloaderImpl impl(getter.get());
-    scoped_ptr< ::i18n::addressinput::Downloader::Callback> callback(
-        ::i18n::addressinput::BuildCallback(
-             this, &ChromeDownloaderImplTest::OnDownloaded));
-    impl.Download(url_.spec(), *callback);
+    ChromeDownloaderImpl impl(getter);
+    impl.Download(url_.spec(), BuildCallback());
     base::MessageLoop::current()->RunUntilIdle();
   }
 
   void set_url(const GURL& url) { url_ = url; }
-  bool success() const { return success_; }
-  bool has_data() const { return !!data_; }
-
-  const std::string& data() const {
-    DCHECK(data_);
-    return *data_;
-  }
+  const std::string& data() { return *data_; }
+  bool success() { return success_; }
 
  private:
+  scoped_ptr<ChromeDownloaderImpl::Callback> BuildCallback() {
+    return ::i18n::addressinput::BuildScopedPtrCallback(
+        this, &ChromeDownloaderImplTest::OnDownloaded);
+  }
+
   // Callback for when download is finished.
   void OnDownloaded(bool success,
                     const std::string& url,
-                    std::string* data) {
-    ASSERT_FALSE(success && data == NULL);
+                    scoped_ptr<std::string> data) {
     success_ = success;
-    data_.reset(data);
+    data_ = data.Pass();
   }
 
   base::MessageLoop loop_;
@@ -85,7 +81,7 @@ TEST_F(ChromeDownloaderImplTest, Failure) {
   SetFakeResponse(kFakePayload, net::HTTP_INTERNAL_SERVER_ERROR);
   Download();
   EXPECT_FALSE(success());
-  EXPECT_TRUE(!has_data() || data().empty());
+  EXPECT_EQ(std::string(), data());
 }
 
 TEST_F(ChromeDownloaderImplTest, RejectsInsecureScheme) {
@@ -94,7 +90,7 @@ TEST_F(ChromeDownloaderImplTest, RejectsInsecureScheme) {
   SetFakeResponse(kFakePayload, net::HTTP_OK);
   Download();
   EXPECT_FALSE(success());
-  EXPECT_TRUE(!has_data() || data().empty());
+  EXPECT_EQ(std::string(), data());
 }
 
 }  // namespace autofill

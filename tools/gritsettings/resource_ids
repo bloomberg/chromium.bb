@@ -198,6 +198,9 @@
   "chrome/browser/resources/sync_file_system_internals_resources.grd": {
     "includes": [29000],
   },
+  "third_party/libaddressinput/chromium/cpp/res/libaddressinput_strings.grd": {
+    "messages": [29050],
+  },
   "chrome/app/address_input_strings.grd": {
     "messages": [29100],
   },

@@ -111,8 +111,13 @@ def calc_inputs(locale):
 
   if ENABLE_AUTOFILL_DIALOG and OS != 'ios' and OS != 'android':
     #e.g. '<(SHARED_INTERMEDIATE_DIR)/third_party/libaddressinput/
-    # address_input_strings_da.pak',
+    # libaddressinput_strings_da.pak',
     inputs.append(os.path.join(SHARE_INT_DIR, 'third_party', 'libaddressinput',
+                               'libaddressinput_strings_%s.pak' % locale))
+
+    #e.g. '<(SHARED_INTERMEDIATE_DIR)/grit/libaddressinput/
+    # address_input_strings_da.pak',
+    inputs.append(os.path.join(SHARE_INT_DIR, 'grit', 'libaddressinput',
                                'address_input_strings_%s.pak' % locale))
 
   #e.g. '<(grit_out_dir)/google_chrome_strings_da.pak'

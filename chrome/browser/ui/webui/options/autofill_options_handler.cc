@@ -28,10 +28,9 @@
 #include "content/public/browser/web_ui.h"
 #include "grit/components_strings.h"
 #include "grit/generated_resources.h"
-#include "third_party/libaddressinput/messages.h"
-#include "third_party/libaddressinput/src/cpp/include/libaddressinput/address_ui.h"
-#include "third_party/libaddressinput/src/cpp/include/libaddressinput/address_ui_component.h"
-#include "third_party/libaddressinput/src/cpp/include/libaddressinput/localization.h"
+#include "grit/libaddressinput_strings.h"
+#include "third_party/libaddressinput/chromium/cpp/include/libaddressinput/address_ui.h"
+#include "third_party/libaddressinput/chromium/cpp/include/libaddressinput/address_ui_component.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/webui/web_ui_util.h"
 
@@ -70,24 +69,13 @@ void GetAddressComponents(const std::string& country_code,
                           std::string* components_language_code) {
   DCHECK(address_components);
 
-  i18n::addressinput::Localization localization;
-  localization.SetGetter(l10n_util::GetStringUTF8);
-  std::string not_used;
   std::vector<AddressUiComponent> components =
       i18n::addressinput::BuildComponents(
-          country_code,
-          localization,
-          ui_language_code,
-          components_language_code == NULL ?
-              &not_used : components_language_code);
+          country_code, ui_language_code, components_language_code);
   if (components.empty()) {
     static const char kDefaultCountryCode[] = "US";
     components = i18n::addressinput::BuildComponents(
-        kDefaultCountryCode,
-        localization,
-        ui_language_code,
-        components_language_code == NULL ?
-            &not_used : components_language_code);
+        kDefaultCountryCode, ui_language_code, components_language_code);
   }
   DCHECK(!components.empty());
 
@@ -103,7 +91,8 @@ void GetAddressComponents(const std::string& country_code,
     }
 
     scoped_ptr<base::DictionaryValue> component(new base::DictionaryValue);
-    component->SetString("name", components[i].name);
+    component->SetString(
+        "name", l10n_util::GetStringUTF16(components[i].name_id));
 
     switch (components[i].field) {
       case i18n::addressinput::COUNTRY:
@@ -387,7 +376,7 @@ void AutofillOptionsHandler::SetAddressOverlayStrings(
   localized_strings->SetString("autofillEditAddressTitle",
       l10n_util::GetStringUTF16(IDS_AUTOFILL_EDIT_ADDRESS_CAPTION));
   localized_strings->SetString("autofillCountryLabel",
-      l10n_util::GetStringUTF16(IDS_LIBADDRESSINPUT_COUNTRY_OR_REGION_LABEL));
+      l10n_util::GetStringUTF16(IDS_LIBADDRESSINPUT_I18N_COUNTRY_LABEL));
   localized_strings->SetString("autofillPhoneLabel",
       l10n_util::GetStringUTF16(IDS_AUTOFILL_FIELD_LABEL_PHONE));
   localized_strings->SetString("autofillEmailLabel",
