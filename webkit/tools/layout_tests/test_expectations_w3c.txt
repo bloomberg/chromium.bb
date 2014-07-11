@@ -7,6 +7,8 @@
 # Expectations to delete on the next W3C roll.
 #
 
+crbug.com/330083 w3c/web-platform-tests/shadow-dom/shadow-trees/distributed-pseudo-element/test-001.html [ Failure ]
+crbug.com/330083 w3c/web-platform-tests/shadow-dom/shadow-trees/distributed-pseudo-element/test-002.html [ Failure ]
 
 #
 # Expectations to upstream into blink after the next W3C roll has rolled into Blink.
