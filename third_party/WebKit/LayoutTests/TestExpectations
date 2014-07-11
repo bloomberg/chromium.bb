@@ -609,6 +609,7 @@ crbug.com/337736 [ Linux Win ] fast/forms/time-multiple-fields/time-multiple-fie
 crbug.com/337736 [ Linux Win ] fast/forms/time-multiple-fields/time-multiple-fields-state-change-on-focus-or-blur.html [ Failure Pass ]
 crbug.com/337736 [ Linux Win ] fast/forms/time-multiple-fields/time-multiple-fields-wheel-event.html [ Failure Pass ]
 crbug.com/337736 [ Linux Win ] fast/forms/time-multiple-fields/time-multiple-fields-tabindex.html [ Failure Pass ]
+crbug.com/393098 [ Win7 ] fast/forms/week-multiple-fields/week-multiple-fields-mouse-events.html [ Failure Pass ]
 crbug.com/337774 [ Debug ] svg/animations/use-while-animating-crash.html [ Crash Pass ]
 crbug.com/309369 perf/accessibility-title-ui-element.html [ Pass Timeout ]
 crbug.com/310292 [ Mac ] http/tests/security/video-poster-cross-origin-crash.html [ Failure Pass ]
@@ -741,6 +742,12 @@ crbug.com/340150 [ Mac Debug ] plugins/plugin-document-back-forward.html [ Pass 
 crbug.com/339259 fast/flexbox/box-orient-button.html [ Pass Failure ]
 crbug.com/339394 [ Win Debug ] virtual/threaded/animations/animation-matrix-negative-scale-unmatrix.html [ Pass Failure ]
 crbug.com/339597 http/tests/navigation/back-to-redirect-with-frame.php [ Pass Timeout ]
+
+crbug.com/378716 editing/pasteboard/drag-files-to-editable-element.html [ Pass Timeout ]
+crbug.com/393094 [ Win7 ] editing/selection/move-by-line-006.html [ Pass Failure ]
+crbug.com/393095 [ Win7 ] fast/events/touch/compositor-touch-hit-rects-iframes.html [ Pass Failure ]
+crbug.com/393095 [ Win7 ] fast/events/touch/compositor-touch-hit-rects.html [ Pass Failure ]
+crbug.com/393096 [ Win7 ] fast/flexbox/overhanging-floats-removed.html [ Failure Pass ]
 
 # Tests of functionality not implemented in the new WebSocket
 # implementation. These tests will be removed when the old implementation is
