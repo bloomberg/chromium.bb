@@ -18,10 +18,8 @@ function createSampleDOM()
     return div;
 }
 
-test(function ()
+function check_iterator(iterator, root)
 {
-    var root = createSampleDOM();
-    var iterator = document.createNodeIterator(root);
     assert_equals(iterator.toString(), '[object NodeIterator]');
     assert_equals(iterator.root, root);
     assert_equals(iterator.referenceNode, root);
@@ -36,7 +34,21 @@ test(function ()
     assert_idl_attribute(iterator, 'nextNode');
     assert_idl_attribute(iterator, 'previousNode');
     assert_idl_attribute(iterator, 'detach');
-}, 'Construct a NodeIterator by document.createNodeIterator().');
+}
+
+test(function ()
+{
+    var root = createSampleDOM();
+    var iterator = document.createNodeIterator(root);
+    check_iterator(iterator, root);
+}, 'Construct a NodeIterator by document.createNodeIterator(root).');
+
+test(function ()
+{
+    var root = createSampleDOM();
+    var iterator = document.createNodeIterator(root, undefined, undefined);
+    check_iterator(iterator, root);
+}, 'Construct a NodeIterator by document.createNodeIterator(root, undefined, undefined).');
 
 test(function ()
 {

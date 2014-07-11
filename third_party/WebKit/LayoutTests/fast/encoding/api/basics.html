@@ -24,6 +24,7 @@ test(function() {
     assert_equals((new TextDecoder).encoding, 'utf-8', 'default encoding is utf-8');
 
     assert_array_equals(new TextEncoder().encode(), [], 'input default should be empty string')
+    assert_array_equals(new TextEncoder().encode(undefined), [], 'input default should be empty string')
 
     function testEncodeDecodeSample(encoding, string, bytes) {
         var encoded = new TextEncoder(encoding).encode(string);

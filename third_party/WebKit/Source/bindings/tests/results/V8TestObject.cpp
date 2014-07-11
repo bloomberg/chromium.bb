@@ -7340,7 +7340,7 @@ static void voidMethodDefaultByteStringArgMethod(const v8::FunctionCallbackInfo<
     {
         v8::TryCatch block;
         V8RethrowTryCatchScope rethrow(block);
-        if (info.Length() > 0) {
+        if (!info[0]->IsUndefined()) {
             TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(defaultByteStringArg, toByteString(info[0], exceptionState), exceptionState);
         } else {
             defaultByteStringArg = String("foo");
@@ -7361,7 +7361,7 @@ static void voidMethodDefaultStringArgMethod(const v8::FunctionCallbackInfo<v8::
     TestObject* impl = V8TestObject::toNative(info.Holder());
     V8StringResource<> defaultStringArg;
     {
-        if (info.Length() > 0) {
+        if (!info[0]->IsUndefined()) {
             TOSTRING_VOID_INTERNAL(defaultStringArg, info[0]);
         } else {
             defaultStringArg = String("foo");
@@ -7387,17 +7387,17 @@ static void voidMethodDefaultIntegerArgsMethod(const v8::FunctionCallbackInfo<v8
     {
         v8::TryCatch block;
         V8RethrowTryCatchScope rethrow(block);
-        if (info.Length() > 0) {
+        if (!info[0]->IsUndefined()) {
             TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(defaultLongArg, toInt32(info[0], exceptionState), exceptionState);
         } else {
             defaultLongArg = 10;
         }
-        if (info.Length() > 1) {
+        if (!info[1]->IsUndefined()) {
             TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(defaultLongLongArg, toInt64(info[1], exceptionState), exceptionState);
         } else {
             defaultLongLongArg = -10;
         }
-        if (info.Length() > 2) {
+        if (!info[2]->IsUndefined()) {
             TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(defaultUnsignedArg, toUInt32(info[2], exceptionState), exceptionState);
         } else {
             defaultUnsignedArg = 4294967295u;
@@ -7420,7 +7420,7 @@ static void voidMethodDefaultDoubleArgMethod(const v8::FunctionCallbackInfo<v8::
     {
         v8::TryCatch block;
         V8RethrowTryCatchScope rethrow(block);
-        if (info.Length() > 0) {
+        if (!info[0]->IsUndefined()) {
             TONATIVE_VOID_INTERNAL(defaultDoubleArg, static_cast<double>(info[0]->NumberValue()));
         } else {
             defaultDoubleArg = 0.5;
@@ -7443,7 +7443,7 @@ static void voidMethodDefaultTrueBooleanArgMethod(const v8::FunctionCallbackInfo
     {
         v8::TryCatch block;
         V8RethrowTryCatchScope rethrow(block);
-        if (info.Length() > 0) {
+        if (!info[0]->IsUndefined()) {
             TONATIVE_VOID_INTERNAL(defaultBooleanArg, info[0]->BooleanValue());
         } else {
             defaultBooleanArg = true;
@@ -7466,7 +7466,7 @@ static void voidMethodDefaultFalseBooleanArgMethod(const v8::FunctionCallbackInf
     {
         v8::TryCatch block;
         V8RethrowTryCatchScope rethrow(block);
-        if (info.Length() > 0) {
+        if (!info[0]->IsUndefined()) {
             TONATIVE_VOID_INTERNAL(defaultBooleanArg, info[0]->BooleanValue());
         } else {
             defaultBooleanArg = false;
@@ -7489,7 +7489,7 @@ static void voidMethodDefaultNullableByteStringArgMethod(const v8::FunctionCallb
     {
         v8::TryCatch block;
         V8RethrowTryCatchScope rethrow(block);
-        if (info.Length() > 0) {
+        if (!info[0]->IsUndefined()) {
             TONATIVE_VOID_INTERNAL(defaultStringArg, toByteString(info[0]));
         } else {
             defaultStringArg = nullptr;
@@ -7510,7 +7510,7 @@ static void voidMethodDefaultNullableStringArgMethod(const v8::FunctionCallbackI
     TestObject* impl = V8TestObject::toNative(info.Holder());
     V8StringResource<TreatNullAsNullString> defaultStringArg;
     {
-        if (info.Length() > 0) {
+        if (!info[0]->IsUndefined()) {
             TOSTRING_VOID_INTERNAL(defaultStringArg, info[0]);
         } else {
             defaultStringArg = nullptr;
@@ -7533,7 +7533,7 @@ static void voidMethodDefaultNullableTestInterfaceArgMethod(const v8::FunctionCa
     {
         v8::TryCatch block;
         V8RethrowTryCatchScope rethrow(block);
-        if (info.Length() > 0) {
+        if (!info[0]->IsUndefined()) {
             TONATIVE_VOID_INTERNAL(defaultTestInterfaceArg, V8TestInterface::toNativeWithTypeCheck(info.GetIsolate(), info[0]));
         } else {
             defaultTestInterfaceArg = nullptr;
@@ -8090,7 +8090,7 @@ static void overloadedMethodG2Method(const v8::FunctionCallbackInfo<v8::Value>& 
     {
         v8::TryCatch block;
         V8RethrowTryCatchScope rethrow(block);
-        if (info.Length() > 0) {
+        if (!info[0]->IsUndefined()) {
             TONATIVE_VOID_INTERNAL(testInterfaceEmptyOrNullArg, V8TestInterfaceEmpty::toNativeWithTypeCheck(info.GetIsolate(), info[0]));
         } else {
             testInterfaceEmptyOrNullArg = nullptr;

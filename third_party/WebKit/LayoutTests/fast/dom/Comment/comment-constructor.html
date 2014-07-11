@@ -7,6 +7,8 @@ description('This tests that Comment is constructable.');
 
 shouldBe('new Comment("one").data', '"one"');
 shouldBe('new Comment().data', '""');
+shouldBe('new Comment(undefined).data', '""');
+shouldBe('new Comment(null).data', '"null"');
 shouldBe('new Comment("two").ownerDocument', 'document');
 
 shouldBe('typeof new Comment', '"object"');

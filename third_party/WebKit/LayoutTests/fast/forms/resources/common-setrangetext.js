@@ -90,6 +90,13 @@ function runTestsShouldPass(tagName, attributes)
 
     evalAndLog("element.value = '0123456789'");
     evalAndLog("element.setSelectionRange(6, 9)");
+    evalAndLog("element.setRangeText('AB', 1, 1, undefined)"); // Undefined selectMode also default to preserve.
+    shouldBeEqualToString("element.value", "0AB123456789");
+    shouldBe("element.selectionStart", "8");
+    shouldBe("element.selectionEnd", "11");
+
+    evalAndLog("element.value = '0123456789'");
+    evalAndLog("element.setSelectionRange(6, 9)");
     evalAndLog("element.setRangeText('A', 1, 3, 'preserve')");
     shouldBeEqualToString("element.value", "0A3456789");
     shouldBe("element.selectionStart", "5");

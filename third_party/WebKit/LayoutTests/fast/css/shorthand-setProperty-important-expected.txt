@@ -11,6 +11,10 @@ PASS e.style.getPropertyValue('border-bottom-style') is 'solid'
 PASS e.style.getPropertyPriority('border-bottom-style') is 'important'
 PASS e.style.getPropertyValue('border-bottom-style') is null
 PASS e.style.getPropertyPriority('border-bottom-style') is ''
+PASS e.style.getPropertyValue('border-bottom-style') is null
+PASS e.style.getPropertyPriority('border-bottom-style') is ''
+PASS e.style.getPropertyValue('border-bottom-style') is 'solid'
+PASS e.style.getPropertyPriority('border-bottom-style') is ''
 PASS successfullyParsed is true
 
 TEST COMPLETE

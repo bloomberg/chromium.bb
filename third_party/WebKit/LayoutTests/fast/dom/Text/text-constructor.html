@@ -7,6 +7,8 @@ description('This tests that Text is constructable.');
 
 shouldBe('new Text("one").data', '"one"');
 shouldBe('new Text().data', '""');
+shouldBe('new Text(undefined).data', '""');
+shouldBe('new Text(null).data', '"null"');
 shouldBe('new Text("two").ownerDocument', 'document');
 
 shouldBe('typeof new Text', '"object"');
