@@ -176,7 +176,7 @@ bool ContainerNode::checkAcceptChildGuaranteedNodeTypes(const Node& newChild, Ex
     return true;
 }
 
-void ContainerNode::insertBefore(PassRefPtrWillBeRawPtr<Node> newChild, Node* refChild, ExceptionState& exceptionState)
+PassRefPtrWillBeRawPtr<Node> ContainerNode::insertBefore(PassRefPtrWillBeRawPtr<Node> newChild, Node* refChild, ExceptionState& exceptionState)
 {
 #if !ENABLE(OILPAN)
     // Check that this node is not "floating".
@@ -188,36 +188,42 @@ void ContainerNode::insertBefore(PassRefPtrWillBeRawPtr<Node> newChild, Node* re
 
     // insertBefore(node, 0) is equivalent to appendChild(node)
     if (!refChild) {
-        appendChild(newChild, exceptionState);
-        return;
+        return appendChild(newChild, exceptionState);
     }
 
     // Make sure adding the new child is OK.
-    if (!checkAcceptChild(newChild.get(), 0, exceptionState))
-        return;
+    if (!checkAcceptChild(newChild.get(), 0, exceptionState)) {
+        if (exceptionState.hadException())
+            return nullptr;
+        return newChild;
+    }
     ASSERT(newChild);
 
     // NotFoundError: Raised if refChild is not a child of this node
     if (refChild->parentNode() != this) {
         exceptionState.throwDOMException(NotFoundError, "The node before which the new node is to be inserted is not a child of this node.");
-        return;
+        return nullptr;
     }
 
-    if (refChild->previousSibling() == newChild || refChild == newChild) // nothing to do
-        return;
+    // nothing to do
+    if (refChild->previousSibling() == newChild || refChild == newChild)
+        return newChild;
 
     RefPtrWillBeRawPtr<Node> next = refChild;
 
     NodeVector targets;
     collectChildrenAndRemoveFromOldParent(*newChild, targets, exceptionState);
     if (exceptionState.hadException())
-        return;
+        return nullptr;
     if (targets.isEmpty())
-        return;
+        return newChild;
 
     // We need this extra check because collectChildrenAndRemoveFromOldParent() can fire mutation events.
-    if (!checkAcceptChildGuaranteedNodeTypes(*newChild, exceptionState))
-        return;
+    if (!checkAcceptChildGuaranteedNodeTypes(*newChild, exceptionState)) {
+        if (exceptionState.hadException())
+            return nullptr;
+        return newChild;
+    }
 
     InspectorInstrumentation::willInsertDOMNode(this);
 
@@ -243,6 +249,8 @@ void ContainerNode::insertBefore(PassRefPtrWillBeRawPtr<Node> newChild, Node* re
     }
 
     dispatchSubtreeModifiedEvent();
+
+    return newChild;
 }
 
 void ContainerNode::insertBeforeCommon(Node& nextChild, Node& newChild)
@@ -657,7 +665,7 @@ void ContainerNode::removeChildren()
     dispatchSubtreeModifiedEvent();
 }
 
-void ContainerNode::appendChild(PassRefPtrWillBeRawPtr<Node> newChild, ExceptionState& exceptionState)
+PassRefPtrWillBeRawPtr<Node> ContainerNode::appendChild(PassRefPtrWillBeRawPtr<Node> newChild, ExceptionState& exceptionState)
 {
     RefPtrWillBeRawPtr<ContainerNode> protect(this);
 
@@ -668,24 +676,30 @@ void ContainerNode::appendChild(PassRefPtrWillBeRawPtr<Node> newChild, Exception
 #endif
 
     // Make sure adding the new child is ok
-    if (!checkAcceptChild(newChild.get(), 0, exceptionState))
-        return;
+    if (!checkAcceptChild(newChild.get(), 0, exceptionState)) {
+        if (exceptionState.hadException())
+            return nullptr;
+        return newChild;
+    }
     ASSERT(newChild);
 
     if (newChild == m_lastChild) // nothing to do
-        return;
+        return newChild;
 
     NodeVector targets;
     collectChildrenAndRemoveFromOldParent(*newChild, targets, exceptionState);
     if (exceptionState.hadException())
-        return;
+        return nullptr;
 
     if (targets.isEmpty())
-        return;
+        return newChild;
 
     // We need this extra check because collectChildrenAndRemoveFromOldParent() can fire mutation events.
-    if (!checkAcceptChildGuaranteedNodeTypes(*newChild, exceptionState))
-        return;
+    if (!checkAcceptChildGuaranteedNodeTypes(*newChild, exceptionState)) {
+        if (exceptionState.hadException())
+            return nullptr;
+        return newChild;
+    }
 
     InspectorInstrumentation::willInsertDOMNode(this);
 
@@ -713,6 +727,7 @@ void ContainerNode::appendChild(PassRefPtrWillBeRawPtr<Node> newChild, Exception
     }
 
     dispatchSubtreeModifiedEvent();
+    return newChild;
 }
 
 void ContainerNode::parserAppendChild(PassRefPtrWillBeRawPtr<Node> newChild)

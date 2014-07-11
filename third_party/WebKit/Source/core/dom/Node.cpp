@@ -470,12 +470,13 @@ Node* Node::pseudoAwareLastChild() const
     return lastChild();
 }
 
-void Node::insertBefore(PassRefPtrWillBeRawPtr<Node> newChild, Node* refChild, ExceptionState& exceptionState)
+PassRefPtrWillBeRawPtr<Node> Node::insertBefore(PassRefPtrWillBeRawPtr<Node> newChild, Node* refChild, ExceptionState& exceptionState)
 {
     if (isContainerNode())
-        toContainerNode(this)->insertBefore(newChild, refChild, exceptionState);
-    else
-        exceptionState.throwDOMException(HierarchyRequestError, "This node type does not support this method.");
+        return toContainerNode(this)->insertBefore(newChild, refChild, exceptionState);
+
+    exceptionState.throwDOMException(HierarchyRequestError, "This node type does not support this method.");
+    return nullptr;
 }
 
 void Node::replaceChild(PassRefPtrWillBeRawPtr<Node> newChild, Node* oldChild, ExceptionState& exceptionState)
@@ -494,12 +495,13 @@ void Node::removeChild(Node* oldChild, ExceptionState& exceptionState)
         exceptionState.throwDOMException(NotFoundError, "This node type does not support this method.");
 }
 
-void Node::appendChild(PassRefPtrWillBeRawPtr<Node> newChild, ExceptionState& exceptionState)
+PassRefPtrWillBeRawPtr<Node> Node::appendChild(PassRefPtrWillBeRawPtr<Node> newChild, ExceptionState& exceptionState)
 {
     if (isContainerNode())
-        toContainerNode(this)->appendChild(newChild, exceptionState);
-    else
-        exceptionState.throwDOMException(HierarchyRequestError, "This node type does not support this method.");
+        return toContainerNode(this)->appendChild(newChild, exceptionState);
+
+    exceptionState.throwDOMException(HierarchyRequestError, "This node type does not support this method.");
+    return nullptr;
 }
 
 void Node::remove(ExceptionState& exceptionState)

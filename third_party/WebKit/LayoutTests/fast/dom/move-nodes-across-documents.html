@@ -106,7 +106,7 @@ function run()
         } finally {
           // Clear the event handler to avoid affecting the following tests.
         }
-    });
+    }, "TypeError");
     
     runTest(function() {
         iframeDoc.body.appendChild(document.createElement('div'));

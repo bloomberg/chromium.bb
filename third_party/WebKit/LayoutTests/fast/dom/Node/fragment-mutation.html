@@ -36,13 +36,13 @@ function produceNodeNameString(nodes)
     return result;
 }
 
-function expectException(code)
+function expectException(error)
 {
     return function(stash, exception) {
         if (!exception)
             return "FAIL, expected exception with code " + code + ". The resulting fragment was: \"" + produceNodeNameString(stash) + "\".";
 
-        if (code == exception.code)
+        if (exception instanceof error)
             return "PASS";
         return "FAIL, expected exception code: " + code + ", was: " + exception + ".";
     }
@@ -122,7 +122,7 @@ function runTest(methodName, method)
     testFragment(method, "Continually re-appending removed element to the fragment should eventually throw NOT_FOUND_ERR", function(evt, frag, stash)
     {
         stash.insertBefore(frag.lastChild, stash.firstChild);
-    }, expectException(8), true);
+    }, expectException(TypeError), true);
     printLog(methodName);
 }
 function runTests()
