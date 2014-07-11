@@ -138,11 +138,6 @@ void OffTheRecordProfileImpl::Init() {
 
   InitHostZoomMap();
 
-  // Make the chrome//extension-icon/ resource available.
-  extensions::ExtensionIconSource* icon_source =
-      new extensions::ExtensionIconSource(profile_);
-  content::URLDataSource::Add(this, icon_source);
-
 #if defined(ENABLE_PLUGINS)
   ChromePluginServiceFilter::GetInstance()->RegisterResourceContext(
       PluginPrefs::GetForProfile(this).get(),
@@ -150,6 +145,11 @@ void OffTheRecordProfileImpl::Init() {
 #endif
 
 #if defined(ENABLE_EXTENSIONS)
+  // Make the chrome//extension-icon/ resource available.
+  extensions::ExtensionIconSource* icon_source =
+      new extensions::ExtensionIconSource(profile_);
+  content::URLDataSource::Add(this, icon_source);
+
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::Bind(&NotifyOTRProfileCreatedOnIOThread, profile_, this));

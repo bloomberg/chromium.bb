@@ -33,7 +33,6 @@
 #include "chrome/browser/browsing_data/browsing_data_remover.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/download/download_prefs.h"
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/net/chrome_net_log.h"
 #include "chrome/browser/net/chrome_network_delegate.h"
@@ -41,7 +40,6 @@
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/webui/extensions/extension_basic_info.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/logging_chrome.h"
@@ -56,9 +54,6 @@
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "content/public/browser/web_ui_message_handler.h"
-#include "extensions/browser/extension_registry.h"
-#include "extensions/browser/extension_system.h"
-#include "extensions/common/extension_set.h"
 #include "grit/generated_resources.h"
 #include "grit/net_internals_resources.h"
 #include "net/base/net_errors.h"
@@ -90,8 +85,17 @@
 #include "chromeos/network/onc/onc_certificate_importer_impl.h"
 #include "chromeos/network/onc/onc_utils.h"
 #endif
+
 #if defined(OS_WIN)
 #include "chrome/browser/net/service_providers_win.h"
+#endif
+
+#if defined(ENABLE_EXTENSIONS)
+#include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/ui/webui/extensions/extension_basic_info.h"
+#include "extensions/browser/extension_registry.h"
+#include "extensions/browser/extension_system.h"
+#include "extensions/common/extension_set.h"
 #endif
 
 using base::StringValue;
@@ -783,6 +787,7 @@ void NetInternalsMessageHandler::OnGetExtensionInfo(
     const base::ListValue* list) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   base::ListValue* extension_list = new base::ListValue();
+#if defined(ENABLE_EXTENSIONS)
   Profile* profile = Profile::FromWebUI(web_ui());
   extensions::ExtensionSystem* extension_system =
       extensions::ExtensionSystem::Get(profile);
@@ -801,6 +806,7 @@ void NetInternalsMessageHandler::OnGetExtensionInfo(
       }
     }
   }
+#endif
   SendJavascriptCommand("receivedExtensionInfo", extension_list);
 }
 
