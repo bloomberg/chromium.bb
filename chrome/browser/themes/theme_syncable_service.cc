@@ -24,15 +24,6 @@ bool IsTheme(const extensions::Extension* extension) {
   return extension->is_theme();
 }
 
-// TODO(akalin): Remove this.
-bool IsSystemThemeDistinctFromDefaultTheme() {
-#if defined(TOOLKIT_GTK)
-  return true;
-#else
-  return false;
-#endif
-}
-
 }  // namespace
 
 const char ThemeSyncableService::kCurrentThemeClientTag[] = "current_theme";
@@ -193,8 +184,10 @@ void ThemeSyncableService::MaybeSetTheme(
   const sync_pb::ThemeSpecifics& sync_theme = sync_data.GetSpecifics().theme();
   use_system_theme_by_default_ = sync_theme.use_system_theme_by_default();
   DVLOG(1) << "Set current theme from specifics: " << sync_data.ToString();
-  if (!AreThemeSpecificsEqual(current_specs, sync_theme,
-                              IsSystemThemeDistinctFromDefaultTheme())) {
+  if (!AreThemeSpecificsEqual(
+          current_specs,
+          sync_theme,
+          theme_service_->IsSystemThemeDistinctFromDefaultTheme())) {
     SetCurrentThemeFromThemeSpecifics(sync_theme);
   } else {
     DVLOG(1) << "Skip setting theme because specs are equal";
@@ -266,7 +259,7 @@ bool ThemeSyncableService::GetThemeSpecificsFromCurrentTheme(
   }
   bool use_custom_theme = (current_theme != NULL);
   theme_specifics->set_use_custom_theme(use_custom_theme);
-  if (IsSystemThemeDistinctFromDefaultTheme()) {
+  if (theme_service_->IsSystemThemeDistinctFromDefaultTheme()) {
     // On platform where system theme is different from default theme, set
     // use_system_theme_by_default to true if system theme is used, false
     // if default system theme is used. Otherwise restore it to value in sync.

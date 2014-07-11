@@ -82,6 +82,10 @@ void ThemeServiceAuraX11::UseSystemTheme() {
   SetCustomDefaultTheme(new SystemThemeX11(profile()->GetPrefs()));
 }
 
+bool ThemeServiceAuraX11::IsSystemThemeDistinctFromDefaultTheme() const {
+  return true;
+}
+
 bool ThemeServiceAuraX11::UsingDefaultTheme() const {
   return ThemeService::UsingDefaultTheme() && !UsingSystemTheme();
 }

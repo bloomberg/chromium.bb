@@ -119,6 +119,10 @@ gfx::Image ThemeService::GetImageNamed(int id) const {
   return image;
 }
 
+bool ThemeService::IsSystemThemeDistinctFromDefaultTheme() const {
+  return false;
+}
+
 bool ThemeService::UsingSystemTheme() const {
   return UsingDefaultTheme();
 }

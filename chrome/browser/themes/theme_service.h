@@ -110,6 +110,10 @@ class ThemeService : public base::NonThreadSafe,
   // theme is the default theme.
   virtual void UseSystemTheme();
 
+  // Returns true if the default theme and system theme are not the same on
+  // this platform.
+  virtual bool IsSystemThemeDistinctFromDefaultTheme() const;
+
   // Whether we're using the chrome default theme. Virtual so linux can check
   // if we're using the GTK theme.
   virtual bool UsingDefaultTheme() const;

@@ -17,6 +17,7 @@ class ThemeServiceAuraX11 : public ThemeService {
   // Overridden from ThemeService:
   virtual bool ShouldInitWithSystemTheme() const OVERRIDE;
   virtual void UseSystemTheme() OVERRIDE;
+  virtual bool IsSystemThemeDistinctFromDefaultTheme() const OVERRIDE;
   virtual bool UsingDefaultTheme() const OVERRIDE;
   virtual bool UsingSystemTheme() const OVERRIDE;
 
