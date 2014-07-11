@@ -162,7 +162,7 @@ bool ShellMainDelegate::BasicStartupComplete(int* exit_code) {
     command_line.AppendSwitch(switches::kEnableInbandTextTracks);
     command_line.AppendSwitch(switches::kMuteAudio);
 
-#if defined(USE_AURA) || defined(OS_ANDROID) || defined(OS_MACOSX)
+#if defined(USE_AURA) || defined(OS_ANDROID)
     // TODO: crbug.com/311404 Make layout tests work w/ delegated renderer.
     command_line.AppendSwitch(switches::kDisableDelegatedRenderer);
     command_line.AppendSwitch(cc::switches::kCompositeToMailbox);
