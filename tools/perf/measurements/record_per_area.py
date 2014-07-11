@@ -6,6 +6,8 @@ import time
 
 from measurements import smoothness
 from telemetry.page import page_measurement
+from telemetry.value import scalar
+
 
 class RecordPerArea(page_measurement.PageMeasurement):
   def __init__(self):
@@ -57,5 +59,6 @@ class RecordPerArea(page_measurement.PageMeasurement):
       area = width * height
       time_ms = data['time_ms']
 
-      results.Add('area_%07d_%dx%d' % (area, width, height), 'ms', time_ms)
-
+      results.AddValue(scalar.ScalarValue(
+          results.current_page, 'area_%07d_%dx%d' % (area, width, height),
+          'ms', time_ms))
