@@ -50,6 +50,7 @@
         '../ui/base/clipboard/clipboard_unittest.cc',
         '../ui/views/controls/webview/webview_interactive_uitest.cc',
         '../ui/views/corewm/desktop_capture_controller_unittest.cc',
+        '../ui/views/widget/desktop_aura/x11_topmost_window_finder_interactive_uitest.cc',
         '../ui/views/widget/widget_interactive_uitest.cc',
         'browser/apps/app_browsertest_util.cc',
         'browser/apps/app_browsertest_util.h',
@@ -296,6 +297,8 @@
             'test/data/chromeos/service_login.html',
           ],
           'sources!': [
+            '../ui/views/widget/desktop_aura/x11_topmost_window_finder_interactive_uitest.cc', 
+
             # chromeos does not use cross-platform panels
             'browser/notifications/notification_browsertest.cc',
             'browser/ui/panels/detached_panel_browsertest.cc',

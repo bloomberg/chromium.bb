@@ -15,14 +15,18 @@
 #undef None
 
 #include "base/memory/scoped_ptr.h"
+#include "base/path_service.h"
 #include "third_party/skia/include/core/SkRect.h"
 #include "third_party/skia/include/core/SkRegion.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
+#include "ui/base/resource/resource_bundle.h"
+#include "ui/base/ui_base_paths.h"
 #include "ui/events/platform/x11/x11_event_source.h"
 #include "ui/gfx/path.h"
 #include "ui/gfx/path_x11.h"
 #include "ui/gfx/x/x11_atom_cache.h"
+#include "ui/gl/gl_surface.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/test/x11_property_change_waiter.h"
 #include "ui/views/widget/desktop_aura/desktop_native_widget_aura.h"
@@ -192,6 +196,14 @@ class X11TopmostWindowFinderTest : public ViewsTestBase {
                                            ignore);
   }
 
+  static void SetUpTestCase() {
+    gfx::GLSurface::InitializeOneOffForTests();
+    ui::RegisterPathProvider();
+    base::FilePath ui_test_pak_path;
+    ASSERT_TRUE(PathService::Get(ui::UI_TEST_PAK, &ui_test_pak_path));
+    ui::ResourceBundle::InitSharedInstanceWithPakPath(ui_test_pak_path);
+  }
+
   // ViewsTestBase:
   virtual void SetUp() OVERRIDE {
     ViewsTestBase::SetUp();
@@ -214,8 +226,7 @@ class X11TopmostWindowFinderTest : public ViewsTestBase {
   DISALLOW_COPY_AND_ASSIGN(X11TopmostWindowFinderTest);
 };
 
-// Flaky on Linux.  http://crbug.com/388241
-TEST_F(X11TopmostWindowFinderTest, DISABLED_Basic) {
+TEST_F(X11TopmostWindowFinderTest, Basic) {
   // Avoid positioning test windows at 0x0 because window managers often have a
   // panel/launcher along one of the screen edges and do not allow windows to
   // position themselves to overlap the panel/launcher.
@@ -269,8 +280,7 @@ TEST_F(X11TopmostWindowFinderTest, DISABLED_Basic) {
 }
 
 // Test that the minimized state is properly handled.
-// Flaky on Linux.  http://crbug.com/388241
-TEST_F(X11TopmostWindowFinderTest, DISABLED_Minimized) {
+TEST_F(X11TopmostWindowFinderTest, Minimized) {
   scoped_ptr<Widget> widget1(
       CreateAndShowWidget(gfx::Rect(100, 100, 100, 100)));
   aura::Window* window1 = widget1->GetNativeWindow();
@@ -306,8 +316,7 @@ TEST_F(X11TopmostWindowFinderTest, DISABLED_Minimized) {
 }
 
 // Test that non-rectangular windows are properly handled.
-// Flaky on Linux.  http://crbug.com/388241
-TEST_F(X11TopmostWindowFinderTest, DISABLED_NonRectangular) {
+TEST_F(X11TopmostWindowFinderTest, NonRectangular) {
   if (!ui::IsShapeExtensionAvailable())
     return;
 
@@ -349,8 +358,7 @@ TEST_F(X11TopmostWindowFinderTest, DISABLED_NonRectangular) {
 
 // Test that the TopmostWindowFinder finds windows which belong to menus
 // (which may or may not belong to Chrome).
-// Flaky on Linux.  http://crbug.com/388241
-TEST_F(X11TopmostWindowFinderTest, DISABLED_Menu) {
+TEST_F(X11TopmostWindowFinderTest, Menu) {
   XID xid = CreateAndShowXWindow(gfx::Rect(100, 100, 100, 100));
 
   XID root = DefaultRootWindow(xdisplay());

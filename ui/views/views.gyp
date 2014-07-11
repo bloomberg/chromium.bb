@@ -739,7 +739,6 @@
         'widget/desktop_aura/desktop_screen_x11_unittest.cc',
         'widget/desktop_aura/desktop_screen_position_client_unittest.cc',
         'widget/desktop_aura/desktop_window_tree_host_x11_unittest.cc',
-        'widget/desktop_aura/x11_topmost_window_finder_unittest.cc',
         'widget/native_widget_aura_unittest.cc',
         'widget/native_widget_unittest.cc',
         'widget/root_view_unittest.cc',
