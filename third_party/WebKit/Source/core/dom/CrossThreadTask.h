@@ -57,8 +57,21 @@ template<typename T> struct CrossThreadTaskTraits<PassOwnPtr<T> > {
     typedef PassOwnPtr<T> ParamType;
 };
 
-// FIXME: Oilpan: Using a RawPtr is not safe.
-// We need to move ExecutionContextTask to the heap and make this a Member.
+// FIXME: Oilpan: Using a RawPtr is not safe, because the RawPtr does not keep
+// the pointee alive while the ExecutionContextTask holds the RawPtr.
+//
+// - Ideally, we want to move the ExecutionContextTask to Oilpan's heap and use a Member.
+// However we cannot do that easily because the ExecutionContextTask outlives the thread
+// that created the ExecutionContextTask. Oilpan does not support objects that
+// outlives the thread that created the objects.
+
+// - It's not either easy to keep the ExecutionContextTask off-heap
+// and use a Persistent handle. This is because the Persistent handle can cause a cycle.
+// It's possible that the ExecutionContextTask holds a Persistent handle to the object
+// that owns the ExecutionContextTask.
+//
+// Given the above, we cannot avoid using a RawPtr at the moment.
+// It's a responsibility of the caller sites to manage the lifetime of the pointee.
 template<typename T> struct CrossThreadTaskTraits<RawPtr<T> > {
     typedef RawPtr<T> ParamType;
 };
