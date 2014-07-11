@@ -2582,6 +2582,7 @@
             'browser/sync/sync_ui_util_unittest.cc',
 
             'browser/browser_commands_unittest.cc',
+            'browser/devtools/devtools_contents_resizing_strategy_unittest.cc',
             'browser/download/download_shelf_unittest.cc',
             'browser/extensions/extension_message_bubble_controller_unittest.cc',
             'browser/extensions/extension_test_message_listener_unittest.cc',
