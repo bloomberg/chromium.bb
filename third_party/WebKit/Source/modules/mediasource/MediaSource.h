@@ -50,14 +50,12 @@ namespace WebCore {
 class ExceptionState;
 class GenericEventQueue;
 
-// FIXME: Oilpan: Change this to RefCountedGarbageCollectedWillBeGarbageCollectedFinalized
-// if MediaSource stops using ActiveDOMObject::setPendingActivity.
 class MediaSource FINAL
-    : public RefCountedGarbageCollected<MediaSource>
+    : public RefCountedGarbageCollectedWillBeGarbageCollectedFinalized<MediaSource>
     , public HTMLMediaSource
     , public ActiveDOMObject
     , public EventTargetWithInlineData {
-    DEFINE_EVENT_TARGET_REFCOUNTING(RefCountedGarbageCollected<MediaSource>);
+    DEFINE_EVENT_TARGET_REFCOUNTING_WILL_BE_REMOVED(RefCountedGarbageCollected<MediaSource>);
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(MediaSource);
 public:
     static const AtomicString& openKeyword();
@@ -78,7 +76,7 @@ public:
     void endOfStream(ExceptionState&);
     static bool isTypeSupported(const String& type);
 
-        // HTMLMediaSource
+    // HTMLMediaSource
     virtual bool attachToElement(HTMLMediaElement*) OVERRIDE;
     virtual void setWebMediaSourceAndOpen(PassOwnPtr<blink::WebMediaSource>) OVERRIDE;
     virtual void close() OVERRIDE;
@@ -135,6 +133,8 @@ private:
 
     Member<SourceBufferList> m_sourceBuffers;
     Member<SourceBufferList> m_activeSourceBuffers;
+
+    bool m_isAddedToRegistry;
 };
 
 } // namespace WebCore

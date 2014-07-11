@@ -7,6 +7,8 @@
         <video autoplay controls="controls" id='vid'></video>
         <p>Tests that sourceopen event fires even if garbage collection happens between setting video.src &amp; the sourceopen event.</p>
         <script type="text/javascript">
+            var sourceOpened = false;
+
             function createMediaSourceURL()
             {
                 var mediaSource = new MediaSource();
@@ -24,7 +26,6 @@
             function start()
             {
                 var video = document.getElementById('vid');
-                var sourceOpened = false;
                 var onStalled = function (e)
                 {
                     if (sourceOpened)

@@ -89,7 +89,7 @@ const AtomicString& MediaSource::endedKeyword()
 
 MediaSource* MediaSource::create(ExecutionContext* context)
 {
-    MediaSource* mediaSource(adoptRefCountedGarbageCollected(new MediaSource(context)));
+    MediaSource* mediaSource(adoptRefCountedGarbageCollectedWillBeNoop(new MediaSource(context)));
     mediaSource->suspendIfNeeded();
     return mediaSource;
 }
@@ -101,6 +101,7 @@ MediaSource::MediaSource(ExecutionContext* context)
     , m_attachedElement(nullptr)
     , m_sourceBuffers(SourceBufferList::create(executionContext(), m_asyncEventQueue.get()))
     , m_activeSourceBuffers(SourceBufferList::create(executionContext(), m_asyncEventQueue.get()))
+    , m_isAddedToRegistry(false)
 {
     WTF_LOG(Media, "MediaSource::MediaSource %p", this);
     ScriptWrappable::init(this);
@@ -295,12 +296,14 @@ void MediaSource::setWebMediaSourceAndOpen(PassOwnPtr<WebMediaSource> webMediaSo
 
 void MediaSource::addedToRegistry()
 {
-    setPendingActivity(this);
+    ASSERT(!m_isAddedToRegistry);
+    m_isAddedToRegistry = true;
 }
 
 void MediaSource::removedFromRegistry()
 {
-    unsetPendingActivity(this);
+    ASSERT(m_isAddedToRegistry);
+    m_isAddedToRegistry = false;
 }
 
 double MediaSource::duration() const
@@ -508,7 +511,7 @@ bool MediaSource::hasPendingActivity() const
 {
     return m_attachedElement || m_webMediaSource
         || m_asyncEventQueue->hasPendingEvents()
-        || ActiveDOMObject::hasPendingActivity();
+        || m_isAddedToRegistry;
 }
 
 void MediaSource::stop()
