@@ -39,13 +39,13 @@ DocumentMarkerDetails::~DocumentMarkerDetails()
 
 class DocumentMarkerDescription FINAL : public DocumentMarkerDetails {
 public:
-    static PassRefPtr<DocumentMarkerDescription> create(const String&);
+    static PassRefPtrWillBeRawPtr<DocumentMarkerDescription> create(const String&);
 
     const String& description() const { return m_description; }
     virtual bool isDescription() const OVERRIDE { return true; }
 
 private:
-    DocumentMarkerDescription(const String& description)
+    explicit DocumentMarkerDescription(const String& description)
         : m_description(description)
     {
     }
@@ -53,9 +53,9 @@ private:
     String m_description;
 };
 
-PassRefPtr<DocumentMarkerDescription> DocumentMarkerDescription::create(const String& description)
+PassRefPtrWillBeRawPtr<DocumentMarkerDescription> DocumentMarkerDescription::create(const String& description)
 {
-    return adoptRef(new DocumentMarkerDescription(description));
+    return adoptRefWillBeNoop(new DocumentMarkerDescription(description));
 }
 
 inline DocumentMarkerDescription* toDocumentMarkerDescription(DocumentMarkerDetails* details)
@@ -68,7 +68,7 @@ inline DocumentMarkerDescription* toDocumentMarkerDescription(DocumentMarkerDeta
 
 class DocumentMarkerTextMatch FINAL : public DocumentMarkerDetails {
 public:
-    static PassRefPtr<DocumentMarkerTextMatch> instanceFor(bool);
+    static PassRefPtrWillBeRawPtr<DocumentMarkerTextMatch> instanceFor(bool);
 
     bool activeMatch() const { return m_match; }
     virtual bool isTextMatch() const OVERRIDE { return true; }
@@ -82,10 +82,10 @@ private:
     bool m_match;
 };
 
-PassRefPtr<DocumentMarkerTextMatch> DocumentMarkerTextMatch::instanceFor(bool match)
+PassRefPtrWillBeRawPtr<DocumentMarkerTextMatch> DocumentMarkerTextMatch::instanceFor(bool match)
 {
-    DEFINE_STATIC_REF(DocumentMarkerTextMatch, trueInstance, (adoptRef(new DocumentMarkerTextMatch(true))));
-    DEFINE_STATIC_REF(DocumentMarkerTextMatch, falseInstance, (adoptRef(new DocumentMarkerTextMatch(false))));
+    DEFINE_STATIC_REF_WILL_BE_PERSISTENT(DocumentMarkerTextMatch, trueInstance, (adoptRefWillBeNoop(new DocumentMarkerTextMatch(true))));
+    DEFINE_STATIC_REF_WILL_BE_PERSISTENT(DocumentMarkerTextMatch, falseInstance, (adoptRefWillBeNoop(new DocumentMarkerTextMatch(false))));
     return match ? trueInstance : falseInstance;
 }
 
@@ -140,7 +140,7 @@ DocumentMarker::DocumentMarker(unsigned startOffset, unsigned endOffset, bool ac
 {
 }
 
-DocumentMarker::DocumentMarker(MarkerType type, unsigned startOffset, unsigned endOffset, PassRefPtr<DocumentMarkerDetails> details)
+DocumentMarker::DocumentMarker(MarkerType type, unsigned startOffset, unsigned endOffset, PassRefPtrWillBeRawPtr<DocumentMarkerDetails> details)
     : m_type(type)
     , m_startOffset(startOffset)
     , m_endOffset(endOffset)
@@ -172,6 +172,11 @@ bool DocumentMarker::activeMatch() const
     if (DocumentMarkerTextMatch* details = toDocumentMarkerTextMatch(m_details.get()))
         return details->activeMatch();
     return false;
+}
+
+void DocumentMarker::trace(Visitor* visitor)
+{
+    visitor->trace(m_details);
 }
 
 } // namespace WebCore

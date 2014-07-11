@@ -23,6 +23,7 @@
 #ifndef DocumentMarker_h
 #define DocumentMarker_h
 
+#include "platform/heap/Handle.h"
 #include "wtf/VectorTraits.h"
 #include "wtf/text/WTFString.h"
 
@@ -35,6 +36,7 @@ class DocumentMarkerDetails;
 // It also optionally includes a flag specifying whether the match is active, which is ignored
 // for all types other than type TextMatch.
 class DocumentMarker {
+    ALLOW_ONLY_INLINE_ALLOCATION();
 public:
     enum MarkerTypeIndex {
         SpellingMarkerIndex = 0,
@@ -96,7 +98,7 @@ public:
     DocumentMarker(MarkerType, unsigned startOffset, unsigned endOffset, const String& description);
     DocumentMarker(MarkerType, unsigned startOffset, unsigned endOffset, const String& description, uint32_t hash);
     DocumentMarker(unsigned startOffset, unsigned endOffset, bool activeMatch);
-    DocumentMarker(MarkerType, unsigned startOffset, unsigned endOffset, PassRefPtr<DocumentMarkerDetails>);
+    DocumentMarker(MarkerType, unsigned startOffset, unsigned endOffset, PassRefPtrWillBeRawPtr<DocumentMarkerDetails>);
 
     MarkerType type() const { return m_type; }
     unsigned startOffset() const { return m_startOffset; }
@@ -126,26 +128,32 @@ public:
         return !(*this == o);
     }
 
+    void trace(Visitor*);
+
 private:
     MarkerType m_type;
     unsigned m_startOffset;
     unsigned m_endOffset;
-    RefPtr<DocumentMarkerDetails> m_details;
+    RefPtrWillBeMember<DocumentMarkerDetails> m_details;
     uint32_t m_hash;
 };
+
+typedef WillBeHeapVector<RawPtrWillBeMember<DocumentMarker> > DocumentMarkerVector;
 
 inline DocumentMarkerDetails* DocumentMarker::details() const
 {
     return m_details.get();
 }
 
-class DocumentMarkerDetails : public RefCounted<DocumentMarkerDetails>
+class DocumentMarkerDetails : public RefCountedWillBeGarbageCollectedFinalized<DocumentMarkerDetails>
 {
 public:
     DocumentMarkerDetails() { }
     virtual ~DocumentMarkerDetails();
     virtual bool isDescription() const { return false; }
     virtual bool isTextMatch() const { return false; }
+
+    virtual void trace(Visitor*) { }
 };
 
 } // namespace WebCore

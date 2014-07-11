@@ -74,9 +74,9 @@ public:
     void setMarkersActive(Node*, unsigned startOffset, unsigned endOffset, bool);
 
     DocumentMarker* markerContainingPoint(const LayoutPoint&, DocumentMarker::MarkerType);
-    WillBeHeapVector<DocumentMarker*> markersFor(Node*, DocumentMarker::MarkerTypes = DocumentMarker::AllMarkers());
-    WillBeHeapVector<DocumentMarker*> markersInRange(Range*, DocumentMarker::MarkerTypes);
-    WillBeHeapVector<DocumentMarker*> markers();
+    DocumentMarkerVector markersFor(Node*, DocumentMarker::MarkerTypes = DocumentMarker::AllMarkers());
+    DocumentMarkerVector markersInRange(Range*, DocumentMarker::MarkerTypes);
+    DocumentMarkerVector markers();
     Vector<IntRect> renderedRectsForMarkers(DocumentMarker::MarkerType);
 
     void trace(Visitor*);

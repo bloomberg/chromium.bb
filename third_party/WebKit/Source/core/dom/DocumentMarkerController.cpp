@@ -121,7 +121,7 @@ void DocumentMarkerController::addTextMatchMarker(const Range* range, bool activ
             // the whole purpose of tickmarks on the scrollbar is to show where
             // matches off-screen are (that haven't been painted yet).
             Node* node = textPiece->startContainer();
-            WillBeHeapVector<DocumentMarker*> markers = markersFor(node);
+            DocumentMarkerVector markers = markersFor(node);
             toRenderedDocumentMarker(markers[markers.size() - 1])->setRenderedRect(range->boundingBox());
         }
     }
@@ -382,9 +382,9 @@ DocumentMarker* DocumentMarkerController::markerContainingPoint(const LayoutPoin
     return 0;
 }
 
-WillBeHeapVector<DocumentMarker*> DocumentMarkerController::markersFor(Node* node, DocumentMarker::MarkerTypes markerTypes)
+DocumentMarkerVector DocumentMarkerController::markersFor(Node* node, DocumentMarker::MarkerTypes markerTypes)
 {
-    WillBeHeapVector<DocumentMarker*> result;
+    DocumentMarkerVector result;
 
     MarkerLists* markers = m_markers.get(node);
     if (!markers)
@@ -403,9 +403,9 @@ WillBeHeapVector<DocumentMarker*> DocumentMarkerController::markersFor(Node* nod
     return result;
 }
 
-WillBeHeapVector<DocumentMarker*> DocumentMarkerController::markers()
+DocumentMarkerVector DocumentMarkerController::markers()
 {
-    WillBeHeapVector<DocumentMarker*> result;
+    DocumentMarkerVector result;
     for (MarkerMap::iterator i = m_markers.begin(); i != m_markers.end(); ++i) {
         MarkerLists* markers = i->value.get();
         for (size_t markerListIndex = 0; markerListIndex < DocumentMarker::MarkerTypeIndexesCount; ++markerListIndex) {
@@ -418,12 +418,12 @@ WillBeHeapVector<DocumentMarker*> DocumentMarkerController::markers()
     return result;
 }
 
-WillBeHeapVector<DocumentMarker*> DocumentMarkerController::markersInRange(Range* range, DocumentMarker::MarkerTypes markerTypes)
+DocumentMarkerVector DocumentMarkerController::markersInRange(Range* range, DocumentMarker::MarkerTypes markerTypes)
 {
     if (!possiblyHasMarkers(markerTypes))
-        return WillBeHeapVector<DocumentMarker*>();
+        return DocumentMarkerVector();
 
-    WillBeHeapVector<DocumentMarker*> foundMarkers;
+    DocumentMarkerVector foundMarkers;
 
     Node* startContainer = range->startContainer();
     ASSERT(startContainer);
@@ -432,9 +432,9 @@ WillBeHeapVector<DocumentMarker*> DocumentMarkerController::markersInRange(Range
 
     Node* pastLastNode = range->pastLastNode();
     for (Node* node = range->firstNode(); node != pastLastNode; node = NodeTraversal::next(*node)) {
-        WillBeHeapVector<DocumentMarker*> markers = markersFor(node);
-        WillBeHeapVector<DocumentMarker*>::const_iterator end = markers.end();
-        for (WillBeHeapVector<DocumentMarker*>::const_iterator it = markers.begin(); it != end; ++it) {
+        DocumentMarkerVector markers = markersFor(node);
+        DocumentMarkerVector::const_iterator end = markers.end();
+        for (DocumentMarkerVector::const_iterator it = markers.begin(); it != end; ++it) {
             DocumentMarker* marker = *it;
             if (!markerTypes.contains(marker->type()))
                 continue;
@@ -687,9 +687,9 @@ bool DocumentMarkerController::hasMarkers(Range* range, DocumentMarker::MarkerTy
 
     Node* pastLastNode = range->pastLastNode();
     for (Node* node = range->firstNode(); node != pastLastNode; node = NodeTraversal::next(*node)) {
-        WillBeHeapVector<DocumentMarker*> markers = markersFor(node);
-        WillBeHeapVector<DocumentMarker*>::const_iterator end = markers.end();
-        for (WillBeHeapVector<DocumentMarker*>::const_iterator it = markers.begin(); it != end; ++it) {
+        DocumentMarkerVector markers = markersFor(node);
+        DocumentMarkerVector::const_iterator end = markers.end();
+        for (DocumentMarkerVector::const_iterator it = markers.begin(); it != end; ++it) {
             DocumentMarker* marker = *it;
             if (!markerTypes.contains(marker->type()))
                 continue;

@@ -1278,8 +1278,8 @@ void InlineTextBox::paintDocumentMarkers(GraphicsContext* pt, const FloatPoint& 
     if (!renderer().node())
         return;
 
-    WillBeHeapVector<DocumentMarker*> markers = renderer().document().markers().markersFor(renderer().node());
-    WillBeHeapVector<DocumentMarker*>::const_iterator markerIt = markers.begin();
+    DocumentMarkerVector markers = renderer().document().markers().markersFor(renderer().node());
+    DocumentMarkerVector::const_iterator markerIt = markers.begin();
 
     // Give any document markers that touch this run a chance to draw before the text has been drawn.
     // Note end() points at the last char, not one past it like endOffset and ranges do.

@@ -751,7 +751,7 @@ void SpellChecker::replaceMisspelledRange(const String& text)
     RefPtrWillBeRawPtr<Range> caretRange = m_frame.selection().toNormalizedRange();
     if (!caretRange)
         return;
-    WillBeHeapVector<DocumentMarker*> markers = m_frame.document()->markers().markersInRange(caretRange.get(), DocumentMarker::MisspellingMarkers());
+    DocumentMarkerVector markers = m_frame.document()->markers().markersInRange(caretRange.get(), DocumentMarker::MisspellingMarkers());
     if (markers.size() < 1 || markers[0]->startOffset() >= markers[0]->endOffset())
         return;
     RefPtrWillBeRawPtr<Range> markerRange = Range::create(caretRange->ownerDocument(), caretRange->startContainer(), markers[0]->startOffset(), caretRange->endContainer(), markers[0]->endOffset());
@@ -878,7 +878,7 @@ bool SpellChecker::selectionStartHasMarkerFor(DocumentMarker::MarkerType markerT
 
     unsigned startOffset = static_cast<unsigned>(from);
     unsigned endOffset = static_cast<unsigned>(from + length);
-    WillBeHeapVector<DocumentMarker*> markers = m_frame.document()->markers().markersFor(node);
+    DocumentMarkerVector markers = m_frame.document()->markers().markersFor(node);
     for (size_t i = 0; i < markers.size(); ++i) {
         DocumentMarker* marker = markers[i];
         if (marker->startOffset() <= startOffset && endOffset <= marker->endOffset() && marker->type() == markerType)
