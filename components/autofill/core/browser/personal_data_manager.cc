@@ -24,6 +24,9 @@
 #include "components/autofill/core/browser/phone_number_i18n.h"
 #include "components/autofill/core/browser/validation.h"
 #include "components/autofill/core/common/autofill_pref_names.h"
+#include "third_party/libaddressinput/chromium/cpp/src/region_data_constants.h"
+
+using ::i18n::addressinput::RegionDataConstants;
 
 namespace autofill {
 namespace {
@@ -566,7 +569,18 @@ void PersonalDataManager::GetProfileSuggestions(
     std::vector<base::string16> multi_values;
     profile->GetMultiInfo(type, app_locale_, &multi_values);
 
+    // Names need to be in vertically compact form - i.e. a single line. Join
+    // multi-line addresses into a single line, using a separator.
+    // The separator is locale-specific.
+    base::string16 compact_separator =
+        base::UTF8ToUTF16(RegionDataConstants::GetLanguageCompactLineSeparator(
+            profile->language_code()));
     for (size_t i = 0; i < multi_values.size(); ++i) {
+      // Create vertically compact form.
+      base::ReplaceChars(multi_values[i],
+                         base::ASCIIToUTF16("\n"),
+                         compact_separator,
+                         &multi_values[i]);
       if (!field_is_autofilled) {
         // Suggest data that starts with what the user has typed.
         if (!multi_values[i].empty() &&
