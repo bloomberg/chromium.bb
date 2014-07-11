@@ -143,7 +143,7 @@ void WebGLContextAttributes::setFailIfMajorPerformanceCaveat(bool failIfMajorPer
 }
 
 blink::WebGraphicsContext3D::Attributes WebGLContextAttributes::attributes(
-    const blink::WebString& topDocumentURL, Settings* settings) const
+    const blink::WebString& topDocumentURL, Settings* settings, unsigned webGLVersion) const
 {
     blink::WebGraphicsContext3D::Attributes attrs;
 
@@ -163,6 +163,9 @@ blink::WebGraphicsContext3D::Attributes WebGLContextAttributes::attributes(
     attrs.preferDiscreteGPU = true;
 
     attrs.topDocumentURL = topDocumentURL;
+
+    attrs.webGL = true;
+    attrs.webGLVersion = webGLVersion;
 
     return attrs;
 }

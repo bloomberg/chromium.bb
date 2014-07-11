@@ -93,6 +93,8 @@ public:
             , preferDiscreteGPU(false)
             , noAutomaticFlushes(false)
             , failIfMajorPerformanceCaveat(false)
+            , webGL(false)
+            , webGLVersion(0)
         {
         }
 
@@ -107,6 +109,8 @@ public:
         bool preferDiscreteGPU;
         bool noAutomaticFlushes;
         bool failIfMajorPerformanceCaveat;
+        bool webGL;
+        unsigned webGLVersion;
         // FIXME: ideally this would be a WebURL, but it is currently not
         // possible to pass a WebURL by value across the WebKit API boundary.
         // See https://bugs.webkit.org/show_bug.cgi?id=103793#c13 .
