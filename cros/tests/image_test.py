@@ -200,6 +200,13 @@ class LinkageTest(NonForgivingImageTestCase):
 
     ldpaths = lddtree.LoadLdpaths(ROOT_A)
     for to_test in itertools.chain(binaries, libraries):
+      # to_test could be a symlink, we need to resolve it relative to ROOT_A.
+      while os.path.islink(to_test):
+        link = os.readlink(to_test)
+        if link.startswith('/'):
+          to_test = os.path.join(ROOT_A, link[1:])
+        else:
+          to_test = os.path.join(os.path.dirname(to_test), link)
       try:
         lddtree.ParseELF(to_test, ROOT_A, ldpaths)
       except lddtree.exceptions.ELFError:
