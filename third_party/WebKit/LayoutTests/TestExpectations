@@ -748,6 +748,8 @@ crbug.com/393095 [ Win7 ] fast/events/touch/compositor-touch-hit-rects-iframes.h
 crbug.com/393095 [ Win7 ] fast/events/touch/compositor-touch-hit-rects.html [ Pass Failure ]
 crbug.com/393096 [ Win7 ] fast/flexbox/overhanging-floats-removed.html [ Failure Pass ]
 
+crbug.com/311448 [ XP ] editing/selection/move-left-right.html [ NeedsRebaseline ]
+
 # Tests of functionality not implemented in the new WebSocket
 # implementation. These tests will be removed when the old implementation is
 # removed.
