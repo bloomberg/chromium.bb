@@ -79,7 +79,6 @@ public:
 
     void pushReader(FileReader* reader)
     {
-        reader->setPendingActivity(reader);
         if (m_pendingReaders.isEmpty()
             && m_runningReaders.size() < m_maxRunningReaders) {
             reader->executePendingRead();
@@ -110,7 +109,6 @@ public:
 
     void finishReader(FileReader* reader, FinishReaderType nextStep)
     {
-        reader->unsetPendingActivity(reader);
         if (nextStep == RunPendingReaders)
             executeReaders();
     }
@@ -161,9 +159,14 @@ const AtomicString& FileReader::interfaceName() const
 
 void FileReader::stop()
 {
-    if (m_loadingState == LoadingStateLoading || m_loadingState == LoadingStatePending)
+    if (hasPendingActivity())
         throttlingController()->finishReader(this, throttlingController()->removeReader(this));
     terminate();
+}
+
+bool FileReader::hasPendingActivity() const
+{
+    return m_loadingState == LoadingStateLoading || m_loadingState == LoadingStatePending;
 }
 
 void FileReader::readAsArrayBuffer(Blob* blob, ExceptionState& exceptionState)
