@@ -133,20 +133,22 @@ TEST_F(AudioRendererMixerManagerTest, CreateInput) {
 
   // Create two mixer inputs and ensure this doesn't instantiate any mixers yet.
   EXPECT_EQ(mixer_count(), 0);
+  media::FakeAudioRenderCallback callback(0);
   scoped_refptr<media::AudioRendererMixerInput> input(
       manager_->CreateInput(kRenderViewId, kRenderFrameId));
+  input->Initialize(params, &callback);
   EXPECT_EQ(mixer_count(), 0);
+  media::FakeAudioRenderCallback another_callback(1);
   scoped_refptr<media::AudioRendererMixerInput> another_input(
       manager_->CreateInput(kAnotherRenderViewId, kAnotherRenderFrameId));
+  another_input->Initialize(params, &another_callback);
   EXPECT_EQ(mixer_count(), 0);
 
   // Implicitly test that AudioRendererMixerInput was provided with the expected
   // callbacks needed to acquire an AudioRendererMixer and remove it.
-  media::FakeAudioRenderCallback callback(0);
-  input->Initialize(params, &callback);
+  input->Start();
   EXPECT_EQ(mixer_count(), 1);
-  media::FakeAudioRenderCallback another_callback(1);
-  another_input->Initialize(params, &another_callback);
+  another_input->Start();
   EXPECT_EQ(mixer_count(), 2);
 
   // Destroying the inputs should destroy the mixers.

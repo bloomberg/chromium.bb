@@ -396,8 +396,10 @@ TEST_P(AudioRendererMixerBehavioralTest, OnRenderError) {
 TEST_P(AudioRendererMixerBehavioralTest, OnRenderErrorPausedInput) {
   InitializeInputs(kMixerInputs);
 
-  for (size_t i = 0; i < mixer_inputs_.size(); ++i)
+  for (size_t i = 0; i < mixer_inputs_.size(); ++i) {
+    mixer_inputs_[i]->Start();
     EXPECT_CALL(*fake_callbacks_[i], OnRenderError()).Times(1);
+  }
 
   // Fire the error before attaching any inputs.  Ensure an error is recieved
   // even if the input is not connected.

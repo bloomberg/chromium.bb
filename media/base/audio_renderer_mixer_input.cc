@@ -24,7 +24,6 @@ AudioRendererMixerInput::AudioRendererMixerInput(
 }
 
 AudioRendererMixerInput::~AudioRendererMixerInput() {
-  DCHECK(!callback_);
   DCHECK(!playing_);
   DCHECK(!mixer_);
 }
@@ -38,16 +37,16 @@ void AudioRendererMixerInput::Initialize(
   params_ = params;
   callback_ = callback;
   initialized_ = true;
-  mixer_ = get_mixer_cb_.Run(params_);
-
-  // Note: OnRenderError() may be called immediately after this call completes,
-  // so ensure |callback_| has been set first.
-  mixer_->AddErrorCallback(error_cb_);
 }
 
 void AudioRendererMixerInput::Start() {
   DCHECK(initialized_);
   DCHECK(!playing_);
+  DCHECK(!mixer_);
+  mixer_ = get_mixer_cb_.Run(params_);
+
+  // Note: OnRenderError() may be called immediately after this call returns.
+  mixer_->AddErrorCallback(error_cb_);
 }
 
 void AudioRendererMixerInput::Stop() {
@@ -58,17 +57,19 @@ void AudioRendererMixerInput::Stop() {
     playing_ = false;
   }
 
-  // Once Stop() is called the input can no longer be used.
-  if (callback_) {
+  if (mixer_) {
+    // TODO(dalecurtis): This is required so that |callback_| isn't called after
+    // Stop() by an error event since it may outlive this ref-counted object. We
+    // should instead have sane ownership semantics: http://crbug.com/151051
     mixer_->RemoveErrorCallback(error_cb_);
     remove_mixer_cb_.Run(params_);
     mixer_ = NULL;
-    callback_ = NULL;
   }
 }
 
 void AudioRendererMixerInput::Play() {
   DCHECK(initialized_);
+  DCHECK(mixer_);
 
   if (playing_)
     return;
@@ -79,6 +80,7 @@ void AudioRendererMixerInput::Play() {
 
 void AudioRendererMixerInput::Pause() {
   DCHECK(initialized_);
+  DCHECK(mixer_);
 
   if (!playing_)
     return;

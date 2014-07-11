@@ -28,7 +28,6 @@ class AudioRendererMixerInputTest : public testing::Test {
     CreateMixerInput();
     fake_callback_.reset(new FakeAudioRenderCallback(0));
     mixer_input_->Initialize(audio_parameters_, fake_callback_.get());
-    EXPECT_CALL(*this, RemoveMixer(testing::_));
     audio_bus_ = AudioBus::Create(audio_parameters_);
   }
 
@@ -49,6 +48,7 @@ class AudioRendererMixerInputTest : public testing::Test {
       mixer_.reset(new AudioRendererMixer(
           audio_parameters_, audio_parameters_, sink));
     }
+    EXPECT_CALL(*this, RemoveMixer(testing::_));
     return mixer_.get();
   }
 
@@ -106,6 +106,14 @@ TEST_F(AudioRendererMixerInputTest, StopBeforeInitializeOrStart) {
 
   // Verify Stop() works without Initialize() or Start().
   CreateMixerInput();
+  mixer_input_->Stop();
+}
+
+// Test that Start() can be called after Stop().
+// TODO(dalecurtis): We shouldn't allow this.  See http://crbug.com/151051
+TEST_F(AudioRendererMixerInputTest, StartAfterStop) {
+  mixer_input_->Stop();
+  mixer_input_->Start();
   mixer_input_->Stop();
 }
 
