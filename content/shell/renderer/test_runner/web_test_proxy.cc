@@ -319,6 +319,9 @@ WebTestProxyBase::WebTestProxyBase()
 
 WebTestProxyBase::~WebTestProxyBase() {
   test_interfaces_->windowClosed(this);
+  // Tests must wait for readback requests to finish before notifying that
+  // they are done.
+  CHECK_EQ(0u, composite_and_readback_callbacks_.size());
 }
 
 void WebTestProxyBase::SetInterfaces(WebTestInterfaces* interfaces) {
