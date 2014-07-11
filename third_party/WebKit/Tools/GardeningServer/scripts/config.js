@@ -47,6 +47,7 @@ config = {
 //            'WebKit Linux ASAN': {version: 'lucid', is64bit: true},
         'WebKit Linux 32': {version: 'lucid'},
         'WebKit Linux (dbg)': {version: 'lucid', is64bit: true, debug: true},
+        'WebKit Linux Leak': {version: 'leak', is64bit: true},
         'WebKit Mac10.6': {version: 'snowleopard'},
         'WebKit Mac10.6 (dbg)': {version: 'snowleopard', debug: true},
         'WebKit Mac10.7': {version: 'lion'},
