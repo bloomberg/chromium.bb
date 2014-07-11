@@ -93,6 +93,7 @@ class HomeCardImpl : public HomeCard, public AcceleratorHandler {
   void InstallAccelerators();
 
   // Overridden from HomeCard:
+  virtual void SetState(State state) OVERRIDE;
   virtual void RegisterSearchProvider(
       app_list::SearchProvider* search_provider) OVERRIDE;
   virtual void UpdateVirtualKeyboardBounds(
@@ -103,14 +104,16 @@ class HomeCardImpl : public HomeCard, public AcceleratorHandler {
   virtual bool OnAcceleratorFired(int command_id,
                                   const ui::Accelerator& accelerator) OVERRIDE {
     DCHECK_EQ(COMMAND_SHOW_HOME_CARD, command_id);
-    if (home_card_widget_->IsVisible())
-      home_card_widget_->Hide();
+    if (state_ == HIDDEN)
+      SetState(VISIBLE_CENTERED);
     else
-      home_card_widget_->Show();
+      SetState(HIDDEN);
     return true;
   }
 
   scoped_ptr<AppModelBuilder> model_builder_;
+
+  HomeCard::State state_;
 
   views::Widget* home_card_widget_;
   AppListViewDelegate* view_delegate_;
@@ -125,6 +128,7 @@ class HomeCardImpl : public HomeCard, public AcceleratorHandler {
 
 HomeCardImpl::HomeCardImpl(AppModelBuilder* model_builder)
     : model_builder_(model_builder),
+      state_(HIDDEN),
       home_card_widget_(NULL),
       layout_manager_(NULL) {
   DCHECK(!instance);
@@ -136,6 +140,14 @@ HomeCardImpl::~HomeCardImpl() {
   home_card_widget_->CloseNow();
   view_delegate_ = NULL;
   instance = NULL;
+}
+
+void HomeCardImpl::SetState(HomeCard::State state) {
+  if (state == HIDDEN)
+    home_card_widget_->Hide();
+  else
+    home_card_widget_->Show();
+  state_ = state;
 }
 
 void HomeCardImpl::RegisterSearchProvider(
@@ -170,6 +182,8 @@ void HomeCardImpl::Init() {
       views::BubbleBorder::FLOAT,
       true /* border_accepts_events */);
   home_card_widget_ = view->GetWidget();
+  // TODO: the initial value might not be visible.
+  state_ = VISIBLE_CENTERED;
   view->ShowWhenReady();
 }
 
