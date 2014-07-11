@@ -345,20 +345,19 @@
       ],
       'actions': [
         {
-          'action_name': 'Build Remoting Webapp ut.html',
+          'action_name': 'Build Remoting Webapp unittest.html',
           'inputs': [
             'webapp/build-html.py',
             '<(remoting_webapp_unittest_template_main)',
             '<@(remoting_webapp_main_html_js_files)',
-            '<@(remoting_webapp_unittest_exclude_files)',
             '<@(remoting_webapp_unittest_cases)'
           ],
           'outputs': [
-            '<(PRODUCT_DIR)/unittest.html',
+            '<(output_dir)/unittest.html',
           ],
           'action': [
             'python', 'webapp/build-html.py',
-            '<(output_dir)/unittest.html',
+            '<@(_outputs)',
             '<(remoting_webapp_unittest_template_main)',
             # GYP automatically removes subsequent duplicated command line
             # arguments.  Therefore, the excludejs flag must be set before the
