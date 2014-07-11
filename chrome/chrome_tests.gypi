@@ -565,7 +565,7 @@
           'inputs': [
             'test/chromedriver/cpp_source.py',
             'test/chromedriver/embed_mobile_devices_in_cpp.py',
-            '../third_party/WebKit/Source/devtools/front_end/sdk/OverridesSupport.js',
+            '../third_party/WebKit/Source/devtools/front_end/toolbox/OverridesUI.js',
           ],
           'outputs': [
             '<(SHARED_INTERMEDIATE_DIR)/chrome/test/chromedriver/chrome/mobile_device_list.cc',
@@ -575,7 +575,7 @@
                       'test/chromedriver/embed_mobile_devices_in_cpp.py',
                       '--directory',
                       '<(SHARED_INTERMEDIATE_DIR)/chrome/test/chromedriver/chrome',
-                      '../third_party/WebKit/Source/devtools/front_end/sdk/OverridesSupport.js',
+                      '../third_party/WebKit/Source/devtools/front_end/toolbox/OverridesUI.js',
           ],
           'message': 'Generating sources for embedding mobile devices in chromedriver',
         },
