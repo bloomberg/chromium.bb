@@ -48,7 +48,6 @@
                 '<(DEPTH)/net/net.gyp:net_resources',
                 '<(DEPTH)/ui/resources/ui_resources.gyp:ui_resources',
                 '<(DEPTH)/webkit/webkit_resources.gyp:webkit_resources',
-                '<(DEPTH)/webkit/webkit_resources.gyp:webkit_strings',
             ],
             'actions': [{
                 'action_name': 'repack_webkit_unit_tests_resources',
@@ -58,7 +57,6 @@
                         '<(SHARED_INTERMEDIATE_DIR)/net/net_resources.pak',
                         '<(SHARED_INTERMEDIATE_DIR)/ui/<(ui_resources_gen_subdir)/ui_resources_100_percent.pak',
                         '<(SHARED_INTERMEDIATE_DIR)/webkit/blink_resources.pak',
-                        '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_strings_en-US.pak',
                         '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_resources_100_percent.pak',
                 ]},
                 'inputs': [
