@@ -322,6 +322,11 @@ bool CollectBluetoothLowEnergyDeviceStatus(
   }
 
   device_info->connected = !(value->AsUint32() & DN_DEVICE_DISCONNECTED);
+  // Windows 8 exposes BLE devices only if they are visible and paired. This
+  // might change in the future if Windows offers a public API for discovering
+  // and pairing BLE devices.
+  device_info->visible = true;
+  device_info->authenticated = true;
   return true;
 }
 
@@ -519,7 +524,7 @@ uint32_t DevicePropertyValue::AsUint32() const {
 }
 
 BluetoothLowEnergyDeviceInfo::BluetoothLowEnergyDeviceInfo()
-    : connected(false) {
+    : visible(false), authenticated(false), connected(false) {
   address.ullLong = BLUETOOTH_NULL_ADDRESS;
 }
 
