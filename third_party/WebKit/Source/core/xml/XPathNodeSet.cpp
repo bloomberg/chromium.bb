@@ -181,7 +181,7 @@ void NodeSet::sort() const
             parentsVector.append(n);
             containsAttributeNodes = true;
         }
-        while ((n = n->parentNode()))
+        for (n = n->parentNode(); n; n = n->parentNode())
             parentsVector.append(n);
     }
     sortBlock(0, nodeCount, parentMatrix, containsAttributeNodes);

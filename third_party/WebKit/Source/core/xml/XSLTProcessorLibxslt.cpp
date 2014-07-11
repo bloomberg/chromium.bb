@@ -333,7 +333,8 @@ bool XSLTProcessor::transformToString(Node* sourceNode, String& mimeType, String
         if (shouldFreeSourceDoc)
             xmlFreeDoc(sourceDoc);
 
-        if ((success = saveResultToString(resultDoc, sheet, resultString))) {
+        success = saveResultToString(resultDoc, sheet, resultString);
+        if (success) {
             mimeType = resultMIMEType(resultDoc, sheet);
             resultEncoding = (char*)resultDoc->encoding;
         }

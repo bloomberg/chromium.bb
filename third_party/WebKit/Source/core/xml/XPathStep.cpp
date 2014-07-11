@@ -331,8 +331,7 @@ void Step::nodesInAxis(EvaluationContext& evaluationContext, Node* context, Node
 
     case FollowingAxis:
         if (context->isAttributeNode()) {
-            Node* p = toAttr(context)->ownerElement();
-            while ((p = NodeTraversal::next(*p))) {
+            for (Node* p = NodeTraversal::next(*toAttr(context)->ownerElement()); p; p = NodeTraversal::next(*p)) {
                 if (nodeMatches(evaluationContext, p, FollowingAxis, nodeTest()))
                     nodes.append(p);
             }
