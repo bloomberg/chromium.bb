@@ -376,16 +376,14 @@ Element* HTMLCollection::traverseForwardToOffset(unsigned offset, Element& curre
         return traverseMatchingElementsForwardToOffset(toClassCollection(*this), offset, currentElement, currentOffset);
     default:
         if (overridesItemAfter()) {
-            Element* next = &currentElement;
-            while ((next = virtualItemAfter(next))) {
+            for (Element* next = virtualItemAfter(&currentElement); next; next = virtualItemAfter(next)) {
                 if (++currentOffset == offset)
                     return next;
             }
             return 0;
         }
         if (shouldOnlyIncludeDirectChildren()) {
-            Element* next = &currentElement;
-            while ((next = nextMatchingChildElement(*this, *next))) {
+            for (Element* next = nextMatchingChildElement(*this, currentElement); next; next = nextMatchingChildElement(*this, *next)) {
                 if (++currentOffset == offset)
                     return next;
             }
@@ -400,8 +398,7 @@ Element* HTMLCollection::traverseBackwardToOffset(unsigned offset, Element& curr
     ASSERT(currentOffset > offset);
     ASSERT(canTraverseBackward());
     if (shouldOnlyIncludeDirectChildren()) {
-        Element* previous = &currentElement;
-        while ((previous = previousMatchingChildElement(*this, *previous))) {
+        for (Element* previous = previousMatchingChildElement(*this, currentElement); previous; previous = previousMatchingChildElement(*this, *previous)) {
             if (--currentOffset == offset)
                 return previous;
         }

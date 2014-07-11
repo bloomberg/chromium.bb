@@ -1472,7 +1472,7 @@ void CanvasRenderingContext2D::drawImageInternal(CanvasImageSource* imageSource,
     CompositeOperator op, blink::WebBlendMode blendMode)
 {
     RefPtr<Image> image;
-    SourceImageStatus sourceImageStatus;
+    SourceImageStatus sourceImageStatus = InvalidSourceImageStatus;
     if (!imageSource->isVideoElement()) {
         SourceImageMode mode = canvas() == imageSource ? CopySourceImageIfVolatile : DontCopySourceImage; // Thunking for ==
         image = imageSource->getSourceImageForCanvas(mode, &sourceImageStatus);

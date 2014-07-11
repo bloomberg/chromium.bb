@@ -35,6 +35,15 @@
 
 namespace WebCore {
 
+namespace {
+
+HTMLElement* nextElement(const HTMLElement& element, bool forward)
+{
+    return forward ? Traversal<HTMLElement>::next(element) : Traversal<HTMLElement>::previous(element);
+}
+
+} // namespace
+
 using namespace HTMLNames;
 
 PassRefPtrWillBeRawPtr<InputType> RadioInputType::create(HTMLInputElement& element)
@@ -84,8 +93,7 @@ void RadioInputType::handleKeydownEvent(KeyboardEvent* event)
 
     // We can only stay within the form's children if the form hasn't been demoted to a leaf because
     // of malformed HTML.
-    HTMLElement* htmlElement = &element();
-    while ((htmlElement = (forward ? Traversal<HTMLElement>::next(*htmlElement) : Traversal<HTMLElement>::previous(*htmlElement)))) {
+    for (HTMLElement* htmlElement = nextElement(element(), forward); htmlElement; htmlElement = nextElement(*htmlElement, forward)) {
         // Once we encounter a form element, we know we're through.
         if (isHTMLFormElement(*htmlElement))
             break;

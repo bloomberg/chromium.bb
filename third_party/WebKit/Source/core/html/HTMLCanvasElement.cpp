@@ -173,28 +173,20 @@ CanvasRenderingContext* HTMLCanvasElement::getContext(const String& type, Canvas
     }
 
     // Accept the the provisional "experimental-webgl" or official "webgl" context ID.
-    ContextType contextType;
-    bool is3dContext = true;
-    if (type == "experimental-webgl")
-        contextType = ContextExperimentalWebgl;
-    else if (type == "webgl")
-        contextType = ContextWebgl;
-    else
-        is3dContext = false;
-
-    if (is3dContext) {
-        if (m_context && !m_context->is3d()) {
-            dispatchEvent(WebGLContextEvent::create(EventTypeNames::webglcontextcreationerror, false, true, "Canvas has an existing, non-WebGL context"));
-            return 0;
-        }
+    if (type == "webgl" || type == "experimental-webgl") {
+        ContextType contextType = (type == "webgl") ? ContextWebgl : ContextExperimentalWebgl;
         if (!m_context) {
             blink::Platform::current()->histogramEnumeration("Canvas.ContextType", contextType, ContextTypeCount);
             m_context = WebGLRenderingContext::create(this, static_cast<WebGLContextAttributes*>(attrs));
             setNeedsCompositingUpdate();
             updateExternallyAllocatedMemory();
+        } else if (!m_context->is3d()) {
+            dispatchEvent(WebGLContextEvent::create(EventTypeNames::webglcontextcreationerror, false, true, "Canvas has an existing, non-WebGL context"));
+            return 0;
         }
         return m_context.get();
     }
+
     return 0;
 }
 
