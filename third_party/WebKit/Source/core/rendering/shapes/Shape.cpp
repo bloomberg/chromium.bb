@@ -175,10 +175,20 @@ PassOwnPtr<Shape> Shape::createShape(const BasicShape* basicShape, const LayoutS
     return shape.release();
 }
 
+PassOwnPtr<Shape> Shape::createEmptyRasterShape(WritingMode writingMode, float margin)
+{
+    OwnPtr<RasterShapeIntervals> intervals = adoptPtr(new RasterShapeIntervals(0, 0));
+    OwnPtr<RasterShape> rasterShape = adoptPtr(new RasterShape(intervals.release(), IntSize()));
+    rasterShape->m_writingMode = writingMode;
+    rasterShape->m_margin = margin;
+    return rasterShape.release();
+}
+
 PassOwnPtr<Shape> Shape::createRasterShape(Image* image, float threshold, const LayoutRect& imageR, const LayoutRect& marginR, WritingMode writingMode, float margin)
 {
     IntRect imageRect = pixelSnappedIntRect(imageR);
     IntRect marginRect = pixelSnappedIntRect(marginR);
+
     OwnPtr<RasterShapeIntervals> intervals = adoptPtr(new RasterShapeIntervals(marginRect.height(), -marginRect.y()));
     OwnPtr<ImageBuffer> imageBuffer = ImageBuffer::create(imageRect.size());
 

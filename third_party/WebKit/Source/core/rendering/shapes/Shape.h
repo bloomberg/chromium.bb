@@ -68,6 +68,7 @@ public:
     };
     static PassOwnPtr<Shape> createShape(const BasicShape*, const LayoutSize& logicalBoxSize, WritingMode, float margin);
     static PassOwnPtr<Shape> createRasterShape(Image*, float threshold, const LayoutRect& imageRect, const LayoutRect& marginRect, WritingMode, float margin);
+    static PassOwnPtr<Shape> createEmptyRasterShape(WritingMode, float margin);
     static PassOwnPtr<Shape> createLayoutBoxShape(const RoundedRect&, WritingMode, float margin);
 
     virtual ~Shape() { }

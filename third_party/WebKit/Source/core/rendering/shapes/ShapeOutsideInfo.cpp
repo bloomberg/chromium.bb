@@ -35,6 +35,7 @@
 #include "core/rendering/RenderBox.h"
 #include "core/rendering/RenderImage.h"
 #include "platform/LengthFunctions.h"
+#include "public/platform/Platform.h"
 
 namespace WebCore {
 
@@ -104,6 +105,16 @@ static LayoutRect getShapeImageMarginRect(const RenderBox& renderBox, const Layo
     return LayoutRect(marginBoxOrigin, referenceBoxLogicalSize + marginBoxSizeDelta);
 }
 
+static bool isValidRasterShapeRect(const LayoutRect& rect)
+{
+    static double maxImageSizeBytes = 0;
+    if (!maxImageSizeBytes) {
+        size_t size32MaxBytes =  0xFFFFFFFF / 4; // Some platforms don't limit maxDecodedImageBytes.
+        maxImageSizeBytes = std::min(size32MaxBytes, blink::Platform::current()->maxDecodedImageBytes());
+    }
+    return (rect.width().toFloat() * rect.height().toFloat() * 4.0) < maxImageSizeBytes;
+}
+
 PassOwnPtr<Shape> ShapeOutsideInfo::createShapeForImage(StyleImage* styleImage, float shapeImageThreshold, WritingMode writingMode, float margin) const
 {
     const IntSize& imageSize = m_renderer.calculateImageIntrinsicDimensions(styleImage, roundedIntSize(m_referenceBoxLogicalSize), RenderImage::ScaleByEffectiveZoom);
@@ -113,6 +124,11 @@ PassOwnPtr<Shape> ShapeOutsideInfo::createShapeForImage(StyleImage* styleImage, 
     const LayoutRect& imageRect = (m_renderer.isRenderImage())
         ? toRenderImage(&m_renderer)->replacedContentRect()
         : LayoutRect(LayoutPoint(), imageSize);
+
+    if (!isValidRasterShapeRect(marginRect) || !isValidRasterShapeRect(imageRect)) {
+        m_renderer.document().addConsoleMessage(RenderingMessageSource, ErrorMessageLevel, "The shape-outside image is too large.");
+        return Shape::createEmptyRasterShape(writingMode, margin);
+    }
 
     ASSERT(!styleImage->isPendingImage());
     RefPtr<Image> image = styleImage->image(const_cast<RenderBox*>(&m_renderer), imageSize);
