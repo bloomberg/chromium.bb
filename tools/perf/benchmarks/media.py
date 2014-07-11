@@ -44,6 +44,7 @@ class MediaNetworkSimulation(benchmark.Benchmark):
 
 
 @benchmark.Enabled('android')
+@benchmark.Disabled('l')
 class MediaAndroid(benchmark.Benchmark):
   """Obtains media metrics for key user scenarios on Android."""
   test = media.Media
