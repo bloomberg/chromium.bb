@@ -193,19 +193,11 @@ TEST_F(CloudPolicyRefreshSchedulerTest, Unregistered) {
   EXPECT_TRUE(task_runner_->GetPendingTasks().empty());
 }
 
-TEST_F(CloudPolicyRefreshSchedulerTest, RefreshSoonRateLimit) {
+TEST_F(CloudPolicyRefreshSchedulerTest, RefreshSoon) {
   scoped_ptr<CloudPolicyRefreshScheduler> scheduler(CreateRefreshScheduler());
-  // Max out the request rate.
-  for (int i = 0; i < 5; ++i) {
-    EXPECT_CALL(client_, FetchPolicy()).Times(1);
-    scheduler->RefreshSoon();
-    task_runner_->RunUntilIdle();
-    Mock::VerifyAndClearExpectations(&client_);
-  }
-  // The next refresh is throttled.
-  EXPECT_CALL(client_, FetchPolicy()).Times(0);
+  EXPECT_CALL(client_, FetchPolicy()).Times(1);
   scheduler->RefreshSoon();
-  task_runner_->RunPendingTasks();
+  task_runner_->RunUntilIdle();
   Mock::VerifyAndClearExpectations(&client_);
 }
 

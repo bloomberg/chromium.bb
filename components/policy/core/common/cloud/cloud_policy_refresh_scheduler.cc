@@ -11,18 +11,9 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
 #include "base/sequenced_task_runner.h"
-#include "base/time/default_tick_clock.h"
-#include "base/time/tick_clock.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 
 namespace policy {
-
-namespace {
-
-// The maximum rate at which to refresh policies.
-const size_t kMaxRefreshesPerHour = 5;
-
-}  // namespace
 
 #if defined(OS_ANDROID) || defined(OS_IOS)
 
@@ -73,12 +64,6 @@ CloudPolicyRefreshScheduler::CloudPolicyRefreshScheduler(
       task_runner_(task_runner),
       error_retry_delay_ms_(kInitialErrorRetryDelayMs),
       refresh_delay_ms_(kDefaultRefreshDelayMs),
-      rate_limiter_(kMaxRefreshesPerHour,
-                    base::TimeDelta::FromHours(1),
-                    base::Bind(&CloudPolicyRefreshScheduler::RefreshNow,
-                               base::Unretained(this)),
-                    task_runner_,
-                    scoped_ptr<base::TickClock>(new base::DefaultTickClock())),
       invalidations_available_(false),
       creation_time_(base::Time::NowFromSystemTime()) {
   client_->AddObserver(this);
@@ -102,7 +87,7 @@ void CloudPolicyRefreshScheduler::SetRefreshDelay(int64 refresh_delay) {
 }
 
 void CloudPolicyRefreshScheduler::RefreshSoon() {
-  rate_limiter_.PostRequest();
+  RefreshNow();
 }
 
 void CloudPolicyRefreshScheduler::SetInvalidationServiceAvailability(

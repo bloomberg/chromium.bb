@@ -11,7 +11,6 @@
 #include "base/time/time.h"
 #include "components/policy/core/common/cloud/cloud_policy_client.h"
 #include "components/policy/core/common/cloud/cloud_policy_store.h"
-#include "components/policy/core/common/cloud/rate_limiter.h"
 #include "components/policy/policy_export.h"
 #include "net/base/network_change_notifier.h"
 
@@ -52,8 +51,7 @@ class POLICY_EXPORT CloudPolicyRefreshScheduler
   // Sets the refresh delay to |refresh_delay| (subject to min/max clamping).
   void SetRefreshDelay(int64 refresh_delay);
 
-  // Requests a policy refresh to be performed soon. This may apply throttling,
-  // and the request may not be immediately sent.
+  // Requests a policy refresh to be performed soon.
   void RefreshSoon();
 
   // The refresh scheduler starts by assuming that invalidations are not
@@ -120,9 +118,6 @@ class POLICY_EXPORT CloudPolicyRefreshScheduler
 
   // The refresh delay.
   int64 refresh_delay_ms_;
-
-  // Used to limit the rate at which refreshes are scheduled.
-  RateLimiter rate_limiter_;
 
   // Whether the invalidations service is available and receiving notifications
   // of policy updates.

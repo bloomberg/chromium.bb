@@ -47,8 +47,6 @@ source_set("common") {
       "cloud/policy_header_io_helper.h",
       "cloud/policy_header_service.cc",
       "cloud/policy_header_service.h",
-      "cloud/rate_limiter.cc",
-      "cloud/rate_limiter.h",
       "cloud/resource_cache.cc",
       "cloud/resource_cache.h",
       "cloud/system_policy_request_context.cc",

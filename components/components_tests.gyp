@@ -621,7 +621,6 @@
                 'policy/core/common/cloud/external_policy_data_updater_unittest.cc',
                 'policy/core/common/cloud/policy_header_io_helper_unittest.cc',
                 'policy/core/common/cloud/policy_header_service_unittest.cc',
-                'policy/core/common/cloud/rate_limiter_unittest.cc',
                 'policy/core/common/cloud/resource_cache_unittest.cc',
                 'policy/core/common/cloud/user_cloud_policy_manager_unittest.cc',
                 'policy/core/common/cloud/user_cloud_policy_store_unittest.cc',
