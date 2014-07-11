@@ -208,13 +208,6 @@ STDMETHODIMP CommandExecuteImpl::SetDirectory(LPCWSTR directory) {
   return S_OK;
 }
 
-void CommandExecuteImpl::SetHighDPIRegistryKey(bool enable) {
-  uint32 key_value = enable ? 1 : 2;
-  base::win::RegKey high_dpi_key(HKEY_CURRENT_USER);
-  high_dpi_key.CreateKey(gfx::win::kRegistryProfilePath, KEY_SET_VALUE);
-  high_dpi_key.WriteValue(gfx::win::kHighDPISupportW, key_value);
-}
-
 STDMETHODIMP CommandExecuteImpl::GetValue(enum AHE_TYPE* pahe) {
   if (!GetLaunchScheme(&display_name_, &launch_scheme_)) {
     AtlTrace("Failed to get scheme, E_FAIL\n");
@@ -231,7 +224,6 @@ STDMETHODIMP CommandExecuteImpl::GetValue(enum AHE_TYPE* pahe) {
   // the browser process as well, it will appear laggy while they connect to
   // each other, so we pre-launch the browser process now.
   if (*pahe == AHE_IMMERSIVE && verb_ != win8::kMetroViewerConnectVerb) {
-    SetHighDPIRegistryKey(true);
     LaunchChromeBrowserProcess();
   }
   return S_OK;
@@ -397,8 +389,6 @@ HRESULT CommandExecuteImpl::LaunchDesktopChrome() {
     default:
       break;
   }
-
-  SetHighDPIRegistryKey(false);
 
   CommandLine chrome(
       delegate_execute::MakeChromeCommandLine(chrome_exe_, parameters_,
