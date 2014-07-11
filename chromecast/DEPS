@@ -1,0 +1,8 @@
+# Do not add any includes under chrome/ anywhere in chromecast.
+
+include_rules = [
+  "+content/public/common",
+  "+crypto",
+  "+net",
+  "+ui",
+]
