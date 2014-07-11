@@ -116,6 +116,7 @@ ResourceRequest createAccessControlPreflightRequest(const ResourceRequest& reque
     preflightRequest.setHTTPMethod("OPTIONS");
     preflightRequest.setHTTPHeaderField("Access-Control-Request-Method", request.httpMethod());
     preflightRequest.setPriority(request.priority());
+    preflightRequest.setRequestContext(request.requestContext());
 
     const HTTPHeaderMap& requestHeaderFields = request.httpHeaderFields();
 

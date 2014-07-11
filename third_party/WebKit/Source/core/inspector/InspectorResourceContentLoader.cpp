@@ -19,6 +19,7 @@
 #include "core/inspector/InspectorCSSAgent.h"
 #include "core/inspector/InspectorPageAgent.h"
 #include "core/page/Page.h"
+#include "public/platform/WebURLRequest.h"
 
 namespace WebCore {
 
@@ -102,6 +103,7 @@ void InspectorResourceContentLoader::start()
             resourceRequest = document->url();
             resourceRequest.setCachePolicy(ReturnCacheDataDontLoad);
         }
+        resourceRequest.setRequestContext(blink::WebURLRequest::RequestContextInternal);
 
         if (!resourceRequest.url().string().isEmpty()) {
             urlsToFetch.add(resourceRequest.url().string());
@@ -127,6 +129,7 @@ void InspectorResourceContentLoader::start()
                 continue;
             urlsToFetch.add(url);
             FetchRequest request(ResourceRequest(url), FetchInitiatorTypeNames::internal);
+            request.mutableResourceRequest().setRequestContext(blink::WebURLRequest::RequestContextInternal);
             ResourcePtr<Resource> resource = document->fetcher()->fetchCSSStyleSheet(request);
             if (!resource)
                 continue;

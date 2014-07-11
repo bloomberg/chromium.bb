@@ -370,6 +370,7 @@ ResourcePtr<Resource> ResourceFetcher::fetchLinkResource(Resource::Type type, Fe
 
 ResourcePtr<RawResource> ResourceFetcher::fetchRawResource(FetchRequest& request)
 {
+    ASSERT(request.resourceRequest().requestContext() != WebURLRequest::RequestContextUnspecified);
     return toRawResource(requestResource(Resource::Raw, request));
 }
 

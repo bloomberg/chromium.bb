@@ -43,6 +43,7 @@
 #include "platform/blob/BlobURL.h"
 #include "platform/network/ResourceRequest.h"
 #include "platform/network/ResourceResponse.h"
+#include "public/platform/WebURLRequest.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
@@ -98,6 +99,10 @@ void FileReaderLoader::startInternal(ExecutionContext& executionContext, const S
 
     // Construct and load the request.
     ResourceRequest request(m_urlForReading);
+
+    // FIXME: Should this really be 'internal'? Do we know anything about the actual request that generated this fetch?
+    request.setRequestContext(blink::WebURLRequest::RequestContextInternal);
+
     request.setHTTPMethod("GET");
     if (m_hasRange)
         request.setHTTPHeaderField("Range", AtomicString(String::format("bytes=%d-%d", m_rangeStart, m_rangeEnd)));

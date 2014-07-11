@@ -64,6 +64,7 @@
 #include "platform/network/WebSocketHandshakeRequest.h"
 #include "platform/network/WebSocketHandshakeResponse.h"
 #include "platform/weborigin/KURL.h"
+#include "public/platform/WebURLRequest.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/RefPtr.h"
 
@@ -748,6 +749,7 @@ void InspectorResourceAgent::loadResourceForFrontend(ErrorString* errorString, c
 
     ResourceRequest request(url);
     request.setHTTPMethod("GET");
+    request.setRequestContext(blink::WebURLRequest::RequestContextInternal);
     request.setCachePolicy(ReloadIgnoringCacheData);
     if (requestHeaders) {
         for (JSONObject::iterator it = (*requestHeaders)->begin(); it != (*requestHeaders)->end(); ++it) {

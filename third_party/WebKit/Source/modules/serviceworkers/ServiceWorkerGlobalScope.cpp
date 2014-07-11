@@ -48,6 +48,7 @@
 #include "platform/network/ResourceRequest.h"
 #include "platform/weborigin/KURL.h"
 #include "public/platform/WebURL.h"
+#include "public/platform/WebURLRequest.h"
 #include "wtf/CurrentTime.h"
 
 namespace WebCore {
@@ -89,6 +90,7 @@ String ServiceWorkerGlobalScope::scope(ExecutionContext* context)
 ScriptPromise ServiceWorkerGlobalScope::fetch(ScriptState* scriptState, Request* request)
 {
     OwnPtr<ResourceRequest> resourceRequest(request->createResourceRequest());
+    resourceRequest->setRequestContext(blink::WebURLRequest::RequestContextFetch);
     return m_fetchManager->fetch(scriptState, resourceRequest.release());
 }
 
@@ -98,6 +100,7 @@ ScriptPromise ServiceWorkerGlobalScope::fetch(ScriptState* scriptState, const St
     if (!url.isValid())
         return ScriptPromise::reject(scriptState, V8ThrowException::createTypeError("Invalid URL", scriptState->isolate()));
     OwnPtr<ResourceRequest> resourceRequest = adoptPtr(new ResourceRequest(url));
+    resourceRequest->setRequestContext(blink::WebURLRequest::RequestContextFetch);
     resourceRequest->setHTTPMethod("GET");
     return m_fetchManager->fetch(scriptState, resourceRequest.release());
 }

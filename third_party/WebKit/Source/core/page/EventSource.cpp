@@ -51,6 +51,7 @@
 #include "platform/network/ResourceRequest.h"
 #include "platform/network/ResourceResponse.h"
 #include "platform/weborigin/SecurityOrigin.h"
+#include "public/platform/WebURLRequest.h"
 #include "wtf/text/StringBuilder.h"
 
 namespace WebCore {
@@ -130,6 +131,7 @@ void EventSource::connect()
     request.setHTTPMethod("GET");
     request.setHTTPHeaderField("Accept", "text/event-stream");
     request.setHTTPHeaderField("Cache-Control", "no-cache");
+    request.setRequestContext(blink::WebURLRequest::RequestContextEventSource);
     if (!m_lastEventId.isEmpty())
         request.setHTTPHeaderField("Last-Event-ID", m_lastEventId);
 

@@ -18,6 +18,7 @@
 #include "platform/network/ResourceRequest.h"
 #include "platform/weborigin/Referrer.h"
 #include "public/platform/WebServiceWorkerRequest.h"
+#include "public/platform/WebURLRequest.h"
 
 namespace WebCore {
 
@@ -256,6 +257,7 @@ String Request::credentials() const
 PassOwnPtr<ResourceRequest> Request::createResourceRequest() const
 {
     OwnPtr<ResourceRequest> request = adoptPtr(new ResourceRequest(url()));
+    request->setRequestContext(blink::WebURLRequest::RequestContextFetch);
     request->setHTTPMethod("GET");
     // FIXME: Fill more info.
     return request.release();
