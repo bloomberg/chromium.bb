@@ -23,10 +23,10 @@ PASS context.framebufferTexture2D(context.FRAMEBUFFER, context.COLOR_ATTACHMENT0
 PASS context.uniform2fv(argument, new Float32Array([0.0, 0.0])) threw exception TypeError: Failed to execute 'uniform2fv' on 'WebGLRenderingContext': The 1st argument provided is either null, or an invalid WebGLUniformLocation object..
 PASS context.uniform2iv(argument, new Int32Array([0, 0])) threw exception TypeError: Failed to execute 'uniform2iv' on 'WebGLRenderingContext': The 1st argument provided is either null, or an invalid WebGLUniformLocation object..
 PASS context.uniformMatrix2fv(argument, false, new Float32Array([0.0, 0.0, 0.0, 0.0])) threw exception TypeError: Failed to execute 'uniformMatrix2fv' on 'WebGLRenderingContext': The 1st argument provided is either null, or an invalid WebGLUniformLocation object..
-PASS context.getProgramParameter(argument, 0) threw exception TypeError: Failed to execute 'getProgramParameter' on 'WebGLRenderingContext': The 1st argument provided is either null, or an invalid WebGLProgram object..
-PASS context.getShaderParameter(argument, 0) threw exception TypeError: Failed to execute 'getShaderParameter' on 'WebGLRenderingContext': The 1st argument provided is either null, or an invalid WebGLShader object..
-PASS context.getUniform(argument, loc) threw exception TypeError: Failed to execute 'getUniform' on 'WebGLRenderingContext': The 1st argument provided is either null, or an invalid WebGLProgram object..
-PASS context.getUniform(program, argument) threw exception TypeError: Failed to execute 'getUniform' on 'WebGLRenderingContext': The 2nd argument provided is either null, or an invalid WebGLUniformLocation object..
+PASS context.getProgramParameter(argument, 0) threw exception TypeError: Failed to execute 'getProgramParameter' on 'WebGLRenderingContext': parameter 1 is not of type 'WebGLProgram'..
+PASS context.getShaderParameter(argument, 0) threw exception TypeError: Failed to execute 'getShaderParameter' on 'WebGLRenderingContext': parameter 1 is not of type 'WebGLShader'..
+PASS context.getUniform(argument, loc) threw exception TypeError: Failed to execute 'getUniform' on 'WebGLRenderingContext': parameter 1 is not of type 'WebGLProgram'..
+PASS context.getUniform(program, argument) threw exception TypeError: Failed to execute 'getUniform' on 'WebGLRenderingContext': parameter 2 is not of type 'WebGLUniformLocation'..
 PASS context.getUniformLocation(argument, 'u_modelViewProjMatrix') threw exception TypeError: Failed to execute 'getUniformLocation' on 'WebGLRenderingContext': parameter 1 is not of type 'WebGLProgram'..
 PASS context.getProgramInfoLog(argument) threw exception TypeError: Failed to execute 'getProgramInfoLog' on 'WebGLRenderingContext': parameter 1 is not of type 'WebGLProgram'..
 PASS context.getShaderInfoLog(argument) threw exception TypeError: Failed to execute 'getShaderInfoLog' on 'WebGLRenderingContext': parameter 1 is not of type 'WebGLShader'..
@@ -49,10 +49,10 @@ PASS context.framebufferTexture2D(context.FRAMEBUFFER, context.COLOR_ATTACHMENT0
 PASS context.uniform2fv(argument, new Float32Array([0.0, 0.0])) threw exception TypeError: Failed to execute 'uniform2fv' on 'WebGLRenderingContext': The 1st argument provided is either null, or an invalid WebGLUniformLocation object..
 PASS context.uniform2iv(argument, new Int32Array([0, 0])) threw exception TypeError: Failed to execute 'uniform2iv' on 'WebGLRenderingContext': The 1st argument provided is either null, or an invalid WebGLUniformLocation object..
 PASS context.uniformMatrix2fv(argument, false, new Float32Array([0.0, 0.0, 0.0, 0.0])) threw exception TypeError: Failed to execute 'uniformMatrix2fv' on 'WebGLRenderingContext': The 1st argument provided is either null, or an invalid WebGLUniformLocation object..
-PASS context.getProgramParameter(argument, 0) threw exception TypeError: Failed to execute 'getProgramParameter' on 'WebGLRenderingContext': The 1st argument provided is either null, or an invalid WebGLProgram object..
-PASS context.getShaderParameter(argument, 0) threw exception TypeError: Failed to execute 'getShaderParameter' on 'WebGLRenderingContext': The 1st argument provided is either null, or an invalid WebGLShader object..
-PASS context.getUniform(argument, loc) threw exception TypeError: Failed to execute 'getUniform' on 'WebGLRenderingContext': The 1st argument provided is either null, or an invalid WebGLProgram object..
-PASS context.getUniform(program, argument) threw exception TypeError: Failed to execute 'getUniform' on 'WebGLRenderingContext': The 2nd argument provided is either null, or an invalid WebGLUniformLocation object..
+PASS context.getProgramParameter(argument, 0) threw exception TypeError: Failed to execute 'getProgramParameter' on 'WebGLRenderingContext': parameter 1 is not of type 'WebGLProgram'..
+PASS context.getShaderParameter(argument, 0) threw exception TypeError: Failed to execute 'getShaderParameter' on 'WebGLRenderingContext': parameter 1 is not of type 'WebGLShader'..
+PASS context.getUniform(argument, loc) threw exception TypeError: Failed to execute 'getUniform' on 'WebGLRenderingContext': parameter 1 is not of type 'WebGLProgram'..
+PASS context.getUniform(program, argument) threw exception TypeError: Failed to execute 'getUniform' on 'WebGLRenderingContext': parameter 2 is not of type 'WebGLUniformLocation'..
 PASS context.getUniformLocation(argument, 'u_modelViewProjMatrix') threw exception TypeError: Failed to execute 'getUniformLocation' on 'WebGLRenderingContext': parameter 1 is not of type 'WebGLProgram'..
 PASS context.getProgramInfoLog(argument) threw exception TypeError: Failed to execute 'getProgramInfoLog' on 'WebGLRenderingContext': parameter 1 is not of type 'WebGLProgram'..
 PASS context.getShaderInfoLog(argument) threw exception TypeError: Failed to execute 'getShaderInfoLog' on 'WebGLRenderingContext': parameter 1 is not of type 'WebGLShader'..

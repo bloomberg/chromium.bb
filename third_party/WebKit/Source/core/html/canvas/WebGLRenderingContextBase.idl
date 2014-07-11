@@ -575,7 +575,7 @@ typedef unrestricted float GLclampf;
 
     [Custom] any getTexParameter(GLenum target, GLenum pname);
 
-    [Custom] any getUniform(WebGLProgram? program, WebGLUniformLocation location);
+    [Custom] any getUniform(WebGLProgram? program, WebGLUniformLocation? location);
 
     WebGLUniformLocation getUniformLocation(WebGLProgram? program, DOMString name);
 
