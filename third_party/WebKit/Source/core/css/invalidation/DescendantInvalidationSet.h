@@ -74,6 +74,10 @@ public:
 
     void trace(Visitor*);
 
+#ifndef NDEBUG
+    void show() const;
+#endif
+
 private:
     DescendantInvalidationSet();
 

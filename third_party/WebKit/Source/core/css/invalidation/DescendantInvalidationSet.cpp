@@ -193,4 +193,34 @@ void DescendantInvalidationSet::trace(Visitor* visitor)
 #endif
 }
 
+#ifndef NDEBUG
+void DescendantInvalidationSet::show() const
+{
+    fprintf(stderr, "DescendantInvalidationSet { ");
+    if (m_allDescendantsMightBeInvalid)
+        fprintf(stderr, "* ");
+    if (m_customPseudoInvalid)
+        fprintf(stderr, "::custom ");
+    if (m_treeBoundaryCrossing)
+        fprintf(stderr, "::shadow/deep/ ");
+    if (m_ids) {
+        for (WillBeHeapHashSet<AtomicString>::const_iterator it = m_ids->begin(); it != m_ids->end(); ++it)
+            fprintf(stderr, "#%s ", (*it).ascii().data());
+    }
+    if (m_classes) {
+        for (WillBeHeapHashSet<AtomicString>::const_iterator it = m_classes->begin(); it != m_classes->end(); ++it)
+            fprintf(stderr, ".%s ", (*it).ascii().data());
+    }
+    if (m_tagNames) {
+        for (WillBeHeapHashSet<AtomicString>::const_iterator it = m_tagNames->begin(); it != m_tagNames->end(); ++it)
+            fprintf(stderr, "<%s> ", (*it).ascii().data());
+    }
+    if (m_attributes) {
+        for (WillBeHeapHashSet<AtomicString>::const_iterator it = m_attributes->begin(); it != m_attributes->end(); ++it)
+            fprintf(stderr, "[%s] ", (*it).ascii().data());
+    }
+    fprintf(stderr, "}\n");
+}
+#endif // NDEBUG
+
 } // namespace WebCore
