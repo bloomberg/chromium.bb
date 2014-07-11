@@ -3072,8 +3072,21 @@ TEST_F(NavigationControllerTest, DontShowRendererURLInNewTabAfterCommit) {
 // regression for bug 1126349.
 TEST_F(NavigationControllerTest, IsInPageNavigation) {
   NavigationControllerImpl& controller = controller_impl();
-  // Navigate to URL with no refs.
   const GURL url("http://www.google.com/home.html");
+
+  // If the renderer claims it performed an in-page navigation from
+  // about:blank, trust the renderer.
+  // This can happen when an iframe is created and populated via
+  // document.write(), then tries to perform a fragment navigation.
+  // TODO(japhet): We should only trust the renderer if the about:blank
+  // was the first document in the given frame, but we don't have enough
+  // information to identify that case currently.
+  const GURL blank_url(url::kAboutBlankURL);
+  main_test_rfh()->SendNavigate(0, blank_url);
+  EXPECT_TRUE(controller.IsURLInPageNavigation(url, true,
+      main_test_rfh()));
+
+  // Navigate to URL with no refs.
   main_test_rfh()->SendNavigate(0, url);
 
   // Reloading the page is not an in-page navigation.
