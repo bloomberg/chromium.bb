@@ -124,7 +124,7 @@ PrivateKeyType GetPrivateKeyType(jobject private_key_ref) {
   return static_cast<PrivateKeyType>(type);
 }
 
-EVP_PKEY* GetOpenSSLSystemHandleForPrivateKey(jobject private_key_ref) {
+AndroidEVP_PKEY* GetOpenSSLSystemHandleForPrivateKey(jobject private_key_ref) {
   JNIEnv* env = AttachCurrentThread();
   // Note: the pointer is passed as a jint here because that's how it
   // is stored in the Java object. Java doesn't have a primitive type
@@ -138,7 +138,18 @@ EVP_PKEY* GetOpenSSLSystemHandleForPrivateKey(jobject private_key_ref) {
       env,
       GetKeyStore(private_key_ref).obj(),
       private_key_ref);
-  return reinterpret_cast<EVP_PKEY*>(pkey);
+  return reinterpret_cast<AndroidEVP_PKEY*>(pkey);
+}
+
+ScopedJavaLocalRef<jobject> GetOpenSSLEngineForPrivateKey(
+    jobject private_key_ref) {
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> engine =
+      Java_AndroidKeyStore_getOpenSSLEngineForPrivateKey(
+          env,
+          GetKeyStore(private_key_ref).obj(),
+          private_key_ref);
+  return engine;
 }
 
 void ReleaseKey(jobject private_key_ref) {

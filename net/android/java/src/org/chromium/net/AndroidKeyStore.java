@@ -138,6 +138,19 @@ public interface AndroidKeyStore {
     long getOpenSSLHandleForPrivateKey(AndroidPrivateKey key);
 
     /**
+     * Return the OpenSSLEngine object corresponding to a given PrivateKey
+     * object.
+     *
+     * This shall only be used for Android 4.1 to work around a platform bug.
+     * See https://crbug.com/381465.
+     *
+     * @param key The PrivateKey handle.
+     * @return The OpenSSLEngine object (or null if not available)
+     */
+    @CalledByNative
+    Object getOpenSSLEngineForPrivateKey(AndroidPrivateKey key);
+
+    /**
      * Called when the native OpenSSL engine no longer needs access to the underlying key.
      */
     @CalledByNative

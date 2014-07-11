@@ -161,6 +161,7 @@
       'android/keystore.h',
       'android/keystore_openssl.cc',
       'android/keystore_openssl.h',
+      'android/legacy_openssl.h',
       'android/net_jni_registrar.cc',
       'android/net_jni_registrar.h',
       'android/network_change_notifier_android.cc',

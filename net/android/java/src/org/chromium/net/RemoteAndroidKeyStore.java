@@ -116,6 +116,13 @@ public class RemoteAndroidKeyStore implements AndroidKeyStore {
         return 0;
     }
 
+    @Override
+    public Object getOpenSSLEngineForPrivateKey(AndroidPrivateKey privateKey) {
+        // This should not be called as it's only for older versions of Android.
+        assert false;
+        return null;
+    }
+
     public AndroidPrivateKey createKey(String alias) {
         try {
             int handle = mRemoteManager.getPrivateKeyHandle(alias);

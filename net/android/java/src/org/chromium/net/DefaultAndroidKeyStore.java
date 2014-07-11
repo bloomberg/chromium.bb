@@ -142,17 +142,16 @@ public class DefaultAndroidKeyStore implements AndroidKeyStore {
             return PrivateKeyType.INVALID;
     }
 
-    @Override
-    public long getOpenSSLHandleForPrivateKey(AndroidPrivateKey key) {
+    private Object getOpenSSLKeyForPrivateKey(AndroidPrivateKey key) {
         PrivateKey javaKey = ((DefaultAndroidPrivateKey) key).getJavaKey();
         // Sanity checks
         if (javaKey == null) {
             Log.e(TAG, "key == null");
-            return 0;
+            return null;
         }
         if (!(javaKey instanceof RSAPrivateKey)) {
             Log.e(TAG, "does not implement RSAPrivateKey");
-            return 0;
+            return null;
         }
         // First, check that this is a proper instance of OpenSSLRSAPrivateKey
         // or one of its sub-classes.
@@ -165,7 +164,7 @@ public class DefaultAndroidKeyStore implements AndroidKeyStore {
             // implementation of the java.security APIs, compared to vanilla
             // Android. Highly unlikely, but still possible.
             Log.e(TAG, "Cannot find system OpenSSLRSAPrivateKey class: " + e);
-            return 0;
+            return null;
         }
         if (!superClass.isInstance(javaKey)) {
             // This may happen if the PrivateKey was not created by the "AndroidOpenSSL"
@@ -173,14 +172,14 @@ public class DefaultAndroidKeyStore implements AndroidKeyStore {
             // to implement a different default provider. Also highly unlikely.
             Log.e(TAG, "Private key is not an OpenSSLRSAPrivateKey instance, its class name is:" +
                        javaKey.getClass().getCanonicalName());
-            return 0;
+            return null;
         }
 
         try {
-            // Use reflection to invoke the 'getOpenSSLKey()' method on
-            // the private key. This returns another Java object that wraps
-            // a native EVP_PKEY. Note that the method is final, so calling
-            // the superclass implementation is ok.
+            // Use reflection to invoke the 'getOpenSSLKey()' method on the
+            // private key. This returns another Java object that wraps a native
+            // EVP_PKEY and OpenSSLEngine. Note that the method is final in Android
+            // 4.1, so calling the superclass implementation is ok.
             Method getKey = superClass.getDeclaredMethod("getOpenSSLKey");
             getKey.setAccessible(true);
             Object opensslKey = null;
@@ -192,9 +191,22 @@ public class DefaultAndroidKeyStore implements AndroidKeyStore {
             if (opensslKey == null) {
                 // Bail when detecting OEM "enhancement".
                 Log.e(TAG, "getOpenSSLKey() returned null");
-                return 0;
+                return null;
             }
+            return opensslKey;
+        } catch (Exception e) {
+            Log.e(TAG, "Exception while trying to retrieve system EVP_PKEY handle: " + e);
+            return null;
+        }
+    }
 
+    @Override
+    public long getOpenSSLHandleForPrivateKey(AndroidPrivateKey key) {
+        Object opensslKey = getOpenSSLKeyForPrivateKey(key);
+        if (opensslKey == null)
+            return 0;
+
+        try {
             // Use reflection to invoke the 'getPkeyContext' method on the
             // result of the getOpenSSLKey(). This is an 32-bit integer
             // which is the address of an EVP_PKEY object. Note that this
@@ -226,6 +238,61 @@ public class DefaultAndroidKeyStore implements AndroidKeyStore {
         } catch (Exception e) {
             Log.e(TAG, "Exception while trying to retrieve system EVP_PKEY handle: " + e);
             return 0;
+        }
+    }
+
+    @Override
+    public Object getOpenSSLEngineForPrivateKey(AndroidPrivateKey key) {
+        // Find the system OpenSSLEngine class.
+        Class<?> engineClass;
+        try {
+            engineClass = Class.forName(
+                    "org.apache.harmony.xnet.provider.jsse.OpenSSLEngine");
+        } catch (Exception e) {
+            // This may happen if the target device has a completely different
+            // implementation of the java.security APIs, compared to vanilla
+            // Android. Highly unlikely, but still possible.
+            Log.e(TAG, "Cannot find system OpenSSLEngine class: " + e);
+            return null;
+        }
+
+        Object opensslKey = getOpenSSLKeyForPrivateKey(key);
+        if (opensslKey == null)
+            return null;
+
+        try {
+            // Use reflection to invoke the 'getEngine' method on the
+            // result of the getOpenSSLKey().
+            Method getEngine;
+            try {
+                getEngine = opensslKey.getClass().getDeclaredMethod("getEngine");
+            } catch (Exception e) {
+                // Bail here too, something really not working as expected.
+                Log.e(TAG, "No getEngine() method on OpenSSLKey member:" + e);
+                return null;
+            }
+            getEngine.setAccessible(true);
+            Object engine = null;
+            try {
+                engine = getEngine.invoke(opensslKey);
+            } finally {
+                getEngine.setAccessible(false);
+            }
+            if (engine == null) {
+                // The PrivateKey is probably rotten for some reason.
+                Log.e(TAG, "getEngine() returned null");
+            }
+            // Sanity-check the returned engine.
+            if (!engineClass.isInstance(engine)) {
+                Log.e(TAG, "Engine is not an OpenSSLEngine instance, its class name is:" +
+                        engine.getClass().getCanonicalName());
+                return null;
+            }
+            return engine;
+
+        } catch (Exception e) {
+            Log.e(TAG, "Exception while trying to retrieve OpenSSLEngine object: " + e);
+            return null;
         }
     }
 
