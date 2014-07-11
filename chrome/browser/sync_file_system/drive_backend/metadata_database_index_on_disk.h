@@ -50,8 +50,7 @@ class MetadataDatabaseIndexOnDisk : public MetadataDatabaseIndexInterface {
       const std::string& file_id) const OVERRIDE;
   virtual int64 GetAppRootTracker(const std::string& app_id) const OVERRIDE;
   virtual TrackerIDSet GetFileTrackerIDsByParentAndTitle(
-      int64 parent_tracker_id,
-      const std::string& title) const OVERRIDE;
+      int64 parent_tracker_id, const std::string& title) const OVERRIDE;
   virtual std::vector<int64> GetFileTrackerIDsByParent(
       int64 parent_tracker_id) const OVERRIDE;
   virtual std::string PickMultiTrackerFileID() const OVERRIDE;
@@ -69,6 +68,12 @@ class MetadataDatabaseIndexOnDisk : public MetadataDatabaseIndexInterface {
   virtual std::vector<std::string> GetAllMetadataIDs() const OVERRIDE;
 
  private:
+  enum NumEntries {
+    NONE,      // No entries are found.
+    SINGLE,    // One entry is found.
+    MULTIPLE,  // Two or more entires are found.
+  };
+
   // Maintain indexes from AppIDs to tracker IDs.
   void AddToAppIDIndex(const FileTracker& new_tracker,
                        leveldb::WriteBatch* batch);
@@ -78,7 +83,7 @@ class MetadataDatabaseIndexOnDisk : public MetadataDatabaseIndexInterface {
   void RemoveFromAppIDIndex(const FileTracker& tracker,
                             leveldb::WriteBatch* batch);
 
-  // Maintain indexes from remote file IDs to tracker IDs
+  // Maintain indexes from remote file IDs to tracker ID sets.
   void AddToFileIDIndexes(const FileTracker& new_tracker,
                           leveldb::WriteBatch* batch);
   void UpdateInFileIDIndexes(const FileTracker& old_tracker,
@@ -86,6 +91,15 @@ class MetadataDatabaseIndexOnDisk : public MetadataDatabaseIndexInterface {
                              leveldb::WriteBatch* batch);
   void RemoveFromFileIDIndexes(const FileTracker& tracker,
                                leveldb::WriteBatch* batch);
+
+  // Maintain indexes from path indexes to tracker ID sets
+  void AddToPathIndexes(const FileTracker& new_tracker,
+                        leveldb::WriteBatch* batch);
+  void UpdateInPathIndexes(const FileTracker& old_tracker,
+                           const FileTracker& new_tracker,
+                           leveldb::WriteBatch* batch);
+  void RemoveFromPathIndexes(const FileTracker& tracker,
+                             leveldb::WriteBatch* batch);
 
   // Maintain dirty tracker IDs.
   void AddToDirtyTrackerIndexes(const FileTracker& new_tracker,
@@ -139,6 +153,10 @@ class MetadataDatabaseIndexOnDisk : public MetadataDatabaseIndexInterface {
 
   // Checks if |db_| has an entry whose key is |key|.
   bool DBHasKey(const std::string& key);
+
+  // Returns the number of entries starting with |prefix| in NumEntries format.
+  // Entries for |ignored_id| are not counted in.
+  NumEntries CountWithPrefix(const std::string& prefix, int64 ignored_id);
 
   leveldb::DB* db_;  // Not owned.
 

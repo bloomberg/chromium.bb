@@ -26,6 +26,9 @@ extern const char kAppRootIDByAppIDKeyPrefix[];
 extern const char kActiveTrackerIDByFileIDKeyPrefix[];
 extern const char kTrackerIDByFileIDKeyPrefix[];
 extern const char kMultiTrackerByFileIDKeyPrefix[];
+extern const char kActiveTrackerIDByParentAndTitleKeyPrefix[];
+extern const char kTrackerIDByParentAndTitleKeyPrefix[];
+extern const char kMultiBackingParentAndTitleKeyPrefix[];
 extern const char kDirtyIDKeyPrefix[];
 extern const char kDemotedDirtyIDKeyPrefix[];
 

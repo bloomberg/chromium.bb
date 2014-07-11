@@ -293,6 +293,9 @@ TEST_F(MetadataDatabaseIndexOnDiskTest, TrackerIDSetByFileIDTest) {
   EXPECT_EQ(2U, tracker_ids.size());
   EXPECT_EQ(tracker_id, tracker_ids.active_tracker());
 
+  std::string multi_file_id = index()->PickMultiTrackerFileID();
+  EXPECT_EQ("file_id", multi_file_id);
+
   // Testing UpdateInFileIDIndexes
   batch.reset(new leveldb::WriteBatch);
   file_tracker =
@@ -305,6 +308,9 @@ TEST_F(MetadataDatabaseIndexOnDiskTest, TrackerIDSetByFileIDTest) {
   EXPECT_EQ(2U, tracker_ids.size());
   EXPECT_EQ(kInvalidTrackerID, tracker_ids.active_tracker());
 
+  multi_file_id = index()->PickMultiTrackerFileID();
+  EXPECT_EQ("file_id", multi_file_id);
+
   batch.reset(new leveldb::WriteBatch);
   file_tracker =
       test_util::CreateTracker(metadata, tracker_id, &app_root_tracker);
@@ -315,6 +321,9 @@ TEST_F(MetadataDatabaseIndexOnDiskTest, TrackerIDSetByFileIDTest) {
   EXPECT_EQ(2U, tracker_ids.size());
   EXPECT_EQ(tracker_id, tracker_ids.active_tracker());
 
+  multi_file_id = index()->PickMultiTrackerFileID();
+  EXPECT_EQ("file_id", multi_file_id);
+
   // Testing RemoveFromFileIDIndexes
   batch.reset(new leveldb::WriteBatch);
   index()->RemoveFileTracker(tracker_id, batch.get());
@@ -322,6 +331,90 @@ TEST_F(MetadataDatabaseIndexOnDiskTest, TrackerIDSetByFileIDTest) {
   tracker_ids = index()->GetFileTrackerIDsByFileID("file_id");
   EXPECT_EQ(1U, tracker_ids.size());
   EXPECT_EQ(kInvalidTrackerID, tracker_ids.active_tracker());
+
+  multi_file_id = index()->PickMultiTrackerFileID();
+  EXPECT_TRUE(multi_file_id.empty()) << multi_file_id;
+}
+
+TEST_F(MetadataDatabaseIndexOnDiskTest, TrackerIDSetByParentIDAndTitleTest) {
+  CreateTestDatabase(true);
+
+  FileTracker app_root_tracker;
+  EXPECT_TRUE(index()->GetFileTracker(kAppRootTrackerID, &app_root_tracker));
+  FileMetadata metadata;
+  EXPECT_TRUE(index()->GetFileMetadata("file_id", &metadata));
+
+  // Testing GetFileTrackerIDsByFileID
+  TrackerIDSet tracker_ids = index()->GetFileTrackerIDsByParentAndTitle(
+      kAppRootTrackerID, "file");
+  EXPECT_EQ(1U, tracker_ids.size());
+  EXPECT_EQ(kFileTrackerID, tracker_ids.active_tracker());
+
+  tracker_ids = index()->GetFileTrackerIDsByParentAndTitle(
+      kAppRootTrackerID, "file2");
+  EXPECT_EQ(0U, tracker_ids.size());
+
+  const int64 tracker_id = 72;
+  // Testing AddToFileIDIndexes
+  scoped_ptr<FileTracker> file_tracker =
+      test_util::CreateTracker(metadata, tracker_id, &app_root_tracker);
+
+  scoped_ptr<leveldb::WriteBatch> batch(new leveldb::WriteBatch);
+  index()->StoreFileTracker(file_tracker.Pass(), batch.get());
+  WriteToDB(batch.Pass());
+  tracker_ids = index()->GetFileTrackerIDsByParentAndTitle(
+      kAppRootTrackerID, "file");
+  EXPECT_EQ(2U, tracker_ids.size());
+  EXPECT_EQ(tracker_id, tracker_ids.active_tracker());
+
+  ParentIDAndTitle multi_backing = index()->PickMultiBackingFilePath();
+  EXPECT_EQ(kAppRootTrackerID, multi_backing.parent_id);
+  EXPECT_EQ("file", multi_backing.title);
+
+  // Testing UpdateInFileIDIndexes
+  batch.reset(new leveldb::WriteBatch);
+  file_tracker =
+      test_util::CreateTracker(metadata, tracker_id, &app_root_tracker);
+  file_tracker->set_active(false);
+
+  index()->StoreFileTracker(file_tracker.Pass(), batch.get());
+  WriteToDB(batch.Pass());
+  tracker_ids = index()->GetFileTrackerIDsByParentAndTitle(
+      kAppRootTrackerID, "file");
+  EXPECT_EQ(2U, tracker_ids.size());
+  EXPECT_EQ(kInvalidTrackerID, tracker_ids.active_tracker());
+
+  multi_backing = index()->PickMultiBackingFilePath();
+  EXPECT_EQ(kAppRootTrackerID, multi_backing.parent_id);
+  EXPECT_EQ("file", multi_backing.title);
+
+  batch.reset(new leveldb::WriteBatch);
+  file_tracker =
+      test_util::CreateTracker(metadata, tracker_id, &app_root_tracker);
+
+  index()->StoreFileTracker(file_tracker.Pass(), batch.get());
+  WriteToDB(batch.Pass());
+  tracker_ids = index()->GetFileTrackerIDsByParentAndTitle(
+      kAppRootTrackerID, "file");
+  EXPECT_EQ(2U, tracker_ids.size());
+  EXPECT_EQ(tracker_id, tracker_ids.active_tracker());
+
+  multi_backing = index()->PickMultiBackingFilePath();
+  EXPECT_EQ(kAppRootTrackerID, multi_backing.parent_id);
+  EXPECT_EQ("file", multi_backing.title);
+
+  // Testing RemoveFromFileIDIndexes
+  batch.reset(new leveldb::WriteBatch);
+  index()->RemoveFileTracker(tracker_id, batch.get());
+  WriteToDB(batch.Pass());
+  tracker_ids = index()->GetFileTrackerIDsByParentAndTitle(
+      kAppRootTrackerID, "file");
+  EXPECT_EQ(1U, tracker_ids.size());
+  EXPECT_EQ(kInvalidTrackerID, tracker_ids.active_tracker());
+
+  multi_backing = index()->PickMultiBackingFilePath();
+  EXPECT_EQ(kInvalidTrackerID, multi_backing.parent_id);
+  EXPECT_TRUE(multi_backing.title.empty()) << multi_backing.title;
 }
 
 TEST_F(MetadataDatabaseIndexOnDiskTest, DirtyTrackersTest) {
