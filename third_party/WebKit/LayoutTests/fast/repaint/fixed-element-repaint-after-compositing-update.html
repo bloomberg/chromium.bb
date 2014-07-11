@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+#fixedTransformed {
+    position: fixed;
+    transform: translateZ(0)
+}
+#fixedOverlapping {
+    position: fixed;
+    z-index: 0;
+    width: 100%;
+    height: 100%;
+}
+#moveMe {
+    position: fixed;
+    z-index: 1;
+    background: green;
+    width: 100px;
+    height: 100px;
+}
+</style>
+<script src="resources/text-based-repaint.js"></script>
+<script>
+if (window.testRunner) {
+    testRunner.dumpAsText();
+    testRunner.waitUntilDone();
+}
+
+function center(){
+    if (window.internals)
+        internals.startTrackingRepaints(document);
+
+    var mP = document.getElementById("moveMe");
+    mP.style.top = "150px";
+    mP.style.left = "150px";
+
+    if (!window.testRunner || !window.internals)
+        return;
+
+    var layerTree = internals.layerTreeAsText(document, internals.LAYER_TREE_INCLUDES_REPAINT_RECTS);
+    document.getElementById("console").textContent = layerTree;
+    window.internals.stopTrackingRepaints(document);
+    testRunner.notifyDone();
+}
+
+var frameWaitCount = 2;
+function throttle(){
+    if (frameWaitCount-- == 0) {
+        center();
+        return;
+    }
+
+    requestAnimationFrame(center);
+}
+
+window.addEventListener("load", throttle);
+</script>
+</head>
+
+<body>
+    <p>This test checks that we correctly invalidate a shifted fixed positioned element overlapping another fixed positioned element.</p>
+    <p>For this test, there should be only one green square below.</p>
+    <div id="fixedTransformed"></div>
+    <div id="fixedOverlapping"></div>
+    <div id="moveMe"></div>
+    <pre id="console"></pre>
+</body>
