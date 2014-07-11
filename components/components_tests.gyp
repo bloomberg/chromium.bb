@@ -156,6 +156,12 @@
             'rappor/log_uploader_unittest.cc',
             'rappor/rappor_metric_unittest.cc',
             'rappor/rappor_service_unittest.cc',
+            'search_engines/default_search_manager_unittest.cc',
+            'search_engines/default_search_policy_handler_unittest.cc',
+            'search_engines/search_host_to_urls_map_unittest.cc',
+            'search_engines/template_url_prepopulate_data_unittest.cc',
+            'search_engines/template_url_service_util_unittest.cc',
+            'search_engines/template_url_unittest.cc',
             'search_provider_logos/logo_cache_unittest.cc',
             'search_provider_logos/logo_tracker_unittest.cc',
             'sessions/serialized_navigation_entry_unittest.cc',
@@ -337,6 +343,9 @@
             # Dependencies of rappor
             'components.gyp:rappor',
 
+            # Dependencies of search_engines
+            'components.gyp:search_engines',
+
             # Dependencies of search_provider_logos
             'components.gyp:search_provider_logos',
 
@@ -440,6 +449,7 @@
                 ['include', '^network_time/'],
                 ['include', '^password_manager/'],
                 ['include', '^precache/core/'],
+                ['include', '^search_engines/'],
                 ['include', '^search_provider_logos/'],
                 ['include', '^signin/'],
                 ['include', '^sync_driver/'],
@@ -632,6 +642,7 @@
                 'policy/core/common/schema_map_unittest.cc',
                 'policy/core/common/schema_registry_unittest.cc',
                 'policy/core/common/schema_unittest.cc',
+                'search_engines/default_search_policy_handler_unittest.cc',
               ],
               'conditions': [
                 ['OS=="android"', {

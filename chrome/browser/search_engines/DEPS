@@ -1,14 +1,4 @@
 include_rules = [
+  "-chrome/browser/autocomplete",
   "-extensions",
 ]
-
-specific_include_rules = {
-  "search_host_to_urls_map_unittest\.": [
-    "-chrome",
-    "-content",
-  ],
-  "template_url_unittest\.": [
-    "-chrome",
-    "-content",
-  ],
-}
