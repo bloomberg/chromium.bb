@@ -2193,32 +2193,33 @@ name=bug_drm_1586_a
 
 UNINITIALIZED READ
 name=bug_drm_1586_b
-*!WebCore::RenderStyle::NonInheritedFlags::*
-
-UNINITIALIZED READ
-name=bug_drm_1586_c
 *!WebCore::ContainerNode::setHovered
 
 UNINITIALIZED READ
-name=bug_drm_1586_d
+name=bug_drm_1586_c
 *!WebCore::AXRenderObject::isVisited
 
 UNINITIALIZED READ
-name=bug_drm_1586_e
+name=bug_drm_1586_d
 *!WebCore::StyleBuilder::applyProperty
 
 UNINITIALIZED READ
-name=bug_drm_1586_f
+name=bug_drm_1586_e
 *!WebCore::RenderStyle::stylePropagationDiff
 
 UNINITIALIZED READ
-name=bug_drm_1586_g
+name=bug_drm_1586_f
 *!WebCore::ContainerNode::setActive
 
 UNINITIALIZED READ
-name=bug_drm_1586_h
+name=bug_drm_1586_g
 *!WebCore::MatchedPropertiesCache::isCacheable
 
 UNINITIALIZED READ
-name=bug_drm_1586_i
+name=bug_drm_1586_h
 *!WebCore::TouchAdjustment::nodeRespondsToTapGesture
+
+UNINITIALIZED READ
+name=bug_392585
+system call NtCreateFile parameter #9
+*!testing::internal::HandleExceptionsInMethodIfSupported<>
