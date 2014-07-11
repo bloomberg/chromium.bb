@@ -16,7 +16,7 @@ ScriptPromiseResolver::ScriptPromiseResolver(ScriptState* scriptState)
     , m_mode(Default)
     , m_timer(this, &ScriptPromiseResolver::onTimerFired)
     , m_resolver(scriptState)
-#if ASSERTION_ENABLED
+#if ASSERT_ENABLED
     , m_isPromiseCalled(false)
 #endif
 {

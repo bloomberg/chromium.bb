@@ -160,6 +160,7 @@
             'npruntime_priv.h',
         ],
         'bindings_core_v8_unittest_files': [
+            'ScriptPromiseResolverTest.cpp',
             'ScriptPromiseTest.cpp',
             'ScriptPromisePropertyTest.cpp',
         ],

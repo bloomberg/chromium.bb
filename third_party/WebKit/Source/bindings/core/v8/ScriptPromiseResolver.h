@@ -60,6 +60,9 @@ public:
         resolveOrReject(value, Rejecting);
     }
 
+    void resolve() { resolve(V8UndefinedType()); }
+    void reject() { reject(V8UndefinedType()); }
+
     ScriptState* scriptState() { return m_scriptState.get(); }
 
     // Note that an empty ScriptPromise will be returned after resolve or
