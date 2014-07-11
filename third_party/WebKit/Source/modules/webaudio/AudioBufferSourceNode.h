@@ -130,12 +130,9 @@ private:
     // It incorporates the base pitch rate, any sample-rate conversion factor from the buffer, and any doppler shift from an associated panner node.
     double totalPitchRate();
 
-    // We optionally keep track of a panner node which has a doppler shift that
-    // is incorporated into the pitch rate.
-    // This RefPtr is connection reference. We must call AudioNode::
-    // makeConnection() after ref(), and call AudioNode::breakConnection()
-    // before deref().
-    RefPtr<PannerNode> m_pannerNode;
+    // We optionally keep track of a panner node which has a doppler shift that is incorporated into
+    // the pitch rate. We manually manage ref-counting because we want to use RefTypeConnection.
+    PannerNode* m_pannerNode;
 
     // This synchronizes process() with setBuffer() which can cause dynamic channel count changes.
     mutable Mutex m_processLock;

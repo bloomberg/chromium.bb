@@ -62,6 +62,7 @@ AudioBufferSourceNode::AudioBufferSourceNode(AudioContext* context, float sample
     , m_isGrain(false)
     , m_grainOffset(0.0)
     , m_grainDuration(DefaultGrainDuration)
+    , m_pannerNode(0)
 {
     ScriptWrappable::init(this);
     setNodeType(NodeTypeAudioBufferSource);
@@ -449,20 +450,20 @@ bool AudioBufferSourceNode::propagatesSilence() const
 void AudioBufferSourceNode::setPannerNode(PannerNode* pannerNode)
 {
     if (m_pannerNode != pannerNode && !hasFinished()) {
-        RefPtr<PannerNode> oldPannerNode(m_pannerNode.release());
-        m_pannerNode = pannerNode;
         if (pannerNode)
-            pannerNode->makeConnection();
-        if (oldPannerNode)
-            oldPannerNode->breakConnection();
+            pannerNode->ref(AudioNode::RefTypeConnection);
+        if (m_pannerNode)
+            m_pannerNode->deref(AudioNode::RefTypeConnection);
+
+        m_pannerNode = pannerNode;
     }
 }
 
 void AudioBufferSourceNode::clearPannerNode()
 {
     if (m_pannerNode) {
-        m_pannerNode->breakConnection();
-        m_pannerNode.clear();
+        m_pannerNode->deref(AudioNode::RefTypeConnection);
+        m_pannerNode = 0;
     }
 }
 

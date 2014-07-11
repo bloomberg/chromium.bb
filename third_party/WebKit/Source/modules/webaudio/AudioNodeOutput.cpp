@@ -160,8 +160,6 @@ void AudioNodeOutput::addInput(AudioNodeInput* input)
         return;
 
     m_inputs.add(input);
-    m_inputNodes.add(input->node());
-    input->node()->makeConnection();
 }
 
 void AudioNodeOutput::removeInput(AudioNodeInput* input)
@@ -173,8 +171,6 @@ void AudioNodeOutput::removeInput(AudioNodeInput* input)
         return;
 
     m_inputs.remove(input);
-    input->node()->breakConnection();
-    m_inputNodes.remove(input->node());
 }
 
 void AudioNodeOutput::disconnectAllInputs()

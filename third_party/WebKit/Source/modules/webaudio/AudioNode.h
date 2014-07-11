@@ -93,21 +93,17 @@ public:
     String nodeTypeName() const;
     void setNodeType(NodeType);
 
-    // Can be called from main thread or context's audio thread.
-    void ref();
-    void deref();
+    // We handle our own ref-counting because of the threading issues and subtle nature of
+    // how AudioNodes can continue processing (playing one-shot sound) after there are no more
+    // JavaScript references to the object.
+    enum RefType { RefTypeNormal, RefTypeConnection };
 
-    // This object has been connected to another object. This might have
-    // existing connections from others.
-    // This function must be called after acquiring a connection reference.
-    void makeConnection();
-    // This object will be disconnected from another object. This might have
-    // remaining connections from others.
-    // This function must be called before releasing a connection reference.
-    void breakConnection();
+    // Can be called from main thread or context's audio thread.
+    void ref(RefType refType = RefTypeNormal);
+    void deref(RefType refType = RefTypeNormal);
 
     // Can be called from main thread or context's audio thread.  It must be called while the context's graph lock is held.
-    void finishDeref();
+    void finishDeref(RefType refType);
 
     // The AudioNodeInput(s) (if any) will already have their input data available when process() is called.
     // Subclasses will take this input data and put the results in the AudioBus(s) of its AudioNodeOutput(s) (if any).
@@ -229,7 +225,6 @@ private:
     // Ref-counting
     volatile int m_normalRefCount;
     volatile int m_connectionRefCount;
-    bool m_wasDisconnected;
 
     bool m_isMarkedForDeletion;
     bool m_isDisabled;

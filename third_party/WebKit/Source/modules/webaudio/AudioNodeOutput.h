@@ -136,11 +136,6 @@ private:
 
     HashSet<AudioNodeInput*> m_inputs;
     typedef HashSet<AudioNodeInput*>::iterator InputsIterator;
-    // The content of m_inputNodes must be synchronized with m_inputs.
-    // This RefPtr is connection reference. We must call AudioNode::
-    // makeConnection() after ref(), and call AudioNode::breakConnection()
-    // before deref().
-    HashSet<RefPtr<AudioNode> > m_inputNodes;
     bool m_isEnabled;
 
     // For the purposes of rendering, keeps track of the number of inputs and AudioParams we're connected to.

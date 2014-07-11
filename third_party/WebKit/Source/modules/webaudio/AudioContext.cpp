@@ -586,17 +586,18 @@ void AudioContext::refNode(AudioNode* node)
     ASSERT(isMainThread());
     AutoLocker locker(this);
 
+    node->ref(AudioNode::RefTypeConnection);
     m_referencedNodes.append(node);
-    node->makeConnection();
 }
 
 void AudioContext::derefNode(AudioNode* node)
 {
     ASSERT(isGraphOwner());
 
+    node->deref(AudioNode::RefTypeConnection);
+
     for (unsigned i = 0; i < m_referencedNodes.size(); ++i) {
-        if (node == m_referencedNodes[i].get()) {
-            node->breakConnection();
+        if (node == m_referencedNodes[i]) {
             m_referencedNodes.remove(i);
             break;
         }
@@ -607,7 +608,7 @@ void AudioContext::derefUnfinishedSourceNodes()
 {
     ASSERT(isMainThread());
     for (unsigned i = 0; i < m_referencedNodes.size(); ++i)
-        m_referencedNodes[i]->breakConnection();
+        m_referencedNodes[i]->deref(AudioNode::RefTypeConnection);
 
     m_referencedNodes.clear();
 }
@@ -741,7 +742,7 @@ void AudioContext::handleDeferredFinishDerefs()
     ASSERT(isAudioThread() && isGraphOwner());
     for (unsigned i = 0; i < m_deferredFinishDerefList.size(); ++i) {
         AudioNode* node = m_deferredFinishDerefList[i];
-        node->finishDeref();
+        node->finishDeref(AudioNode::RefTypeConnection);
     }
 
     m_deferredFinishDerefList.clear();
