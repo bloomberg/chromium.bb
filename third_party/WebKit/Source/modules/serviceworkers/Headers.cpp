@@ -49,7 +49,6 @@ PassRefPtr<Headers> Headers::create(const Dictionary& init, ExceptionState& exce
     return headers.release();
 }
 
-// Called when creating Request.
 PassRefPtr<Headers> Headers::create(FetchHeaderList* headerList)
 {
     return adoptRef(new Headers(headerList));
@@ -305,7 +304,6 @@ Headers::Headers()
     ScriptWrappable::init(this);
 }
 
-// Called when creating Request or Responce.
 Headers::Headers(FetchHeaderList* headerList)
     : m_headerList(headerList)
     , m_guard(NoneGuard)
