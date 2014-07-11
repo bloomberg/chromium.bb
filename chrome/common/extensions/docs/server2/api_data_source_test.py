@@ -323,8 +323,14 @@ class APIDataSourceWithNodeAvailabilityTest(unittest.TestCase):
   def testGetAPINodeAvailability(self):
     def assertEquals(node, actual):
       node_availabilities = {
+          'tabs.Tab': None,
+          'tabs.fakeTabsProperty1': None,
           'tabs.get': None,
-          'tabs.getCurrent': 19
+          'tabs.onUpdated': None,
+          'tabs.InjectDetails': 25,
+          'tabs.fakeTabsProperty2': 15,
+          'tabs.getCurrent': 19,
+          'tabs.onActivated': 27
       }
       self.assertEquals(node_availabilities[node], actual)
 
@@ -337,10 +343,31 @@ class APIDataSourceWithNodeAvailabilityTest(unittest.TestCase):
         None).ToDict()
 
     # Test nodes that have the same availability as their parent.
+
+    # Test type.
+    assertEquals('tabs.Tab', model_dict['types'][0]['availability'])
+    # Test property.
+    assertEquals('tabs.fakeTabsProperty1',
+                 model_dict['properties'][0]['availability'])
+    # Test function.
     assertEquals('tabs.get', model_dict['functions'][1]['availability'])
+    # Test event.
+    assertEquals('tabs.onUpdated', model_dict['events'][1]['availability'])
+
     # Test nodes with varying availabilities.
+
+    # Test type.
+    assertEquals('tabs.InjectDetails',
+                 model_dict['types'][1]['availability']['version'])
+    # Test property.
+    assertEquals('tabs.fakeTabsProperty2',
+                 model_dict['properties'][2]['availability']['version'])
+    # Test function.
     assertEquals('tabs.getCurrent',
                  model_dict['functions'][0]['availability']['version'])
+    # Test event.
+    assertEquals('tabs.onActivated',
+                 model_dict['events'][0]['availability']['version'])
 
 
 if __name__ == '__main__':
