@@ -4,6 +4,8 @@
 
 from metrics import memory
 from metrics import Metric
+from telemetry.value import scalar
+
 
 class SystemMemoryMetric(Metric):
   """SystemMemoryMetric gathers system memory statistic.
@@ -59,16 +61,16 @@ class SystemMemoryMetric(Metric):
         exclude_metrics=exclude_metrics)
 
     if 'SystemCommitCharge' not in exclude_metrics:
-      results.Add(trace_name or 'commit_charge', 'kb',
-                  memory_stats['SystemCommitCharge'],
-                  chart_name='commit_charge_delta',
-                  data_type='unimportant')
+      results.AddValue(scalar.ScalarValue(
+          results.current_page,
+          'commit_charge_delta.%s' % (trace_name or 'commit_charge'), 'kb',
+          memory_stats['SystemCommitCharge'], important=False))
 
     if 'ProcessCount' not in exclude_metrics:
-      results.Add(trace_name or 'processes', 'count',
-                  memory_stats['ProcessCount'],
-                  chart_name='processes_delta',
-                  data_type='unimportant')
+      results.AddValue(scalar.ScalarValue(
+          results.current_page,
+          'processes_delta.%s' % (trace_name or 'processes'), 'count',
+          memory_stats['ProcessCount'], important=False))
 
 
 def _SubtractMemoryStats(end_memory_stats, start_memory_stats):
