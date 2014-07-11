@@ -322,6 +322,7 @@ _COPY_PATHS_APP_SHELL = (
   Path('libffmpegsumo.so', exe=True, optional=True),
   Path('libosmesa.so', exe=True, optional=True),
   Path('libpdf.so', exe=True, optional=True),
+  Path('mojo_shell', exe=True, optional=True),
 )
 
 _COPY_PATHS_CHROME = (
@@ -378,6 +379,7 @@ _COPY_PATHS_CHROME = (
        strip=False,
        cond=C.StagingFlagSet(_CHROME_INTERNAL_FLAG)),
   Path('locales/'),
+  Path('mojo_shell', exe=True, optional=True),
   # Do not strip the nacl_helper_bootstrap binary because the binutils
   # objcopy/strip mangles the ELF program headers.
   Path('nacl_helper_bootstrap',
