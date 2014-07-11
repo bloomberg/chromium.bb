@@ -14,7 +14,9 @@ namespace WebCore {
 class JSONArray;
 class JSONObject;
 class JSONValue;
+class TracedArrayBase;
 template<class T> class TracedArray;
+template<class T> class TracedDictionary;
 
 class PLATFORM_EXPORT TracedValueBase {
     WTF_MAKE_NONCOPYABLE(TracedValueBase);
@@ -44,98 +46,179 @@ protected:
     Vector<RefPtr<JSONValue> > m_stack;
 };
 
-template <class OwnerType>
-class TracedDictionary : public TracedValueBase {
-    WTF_MAKE_NONCOPYABLE(TracedDictionary);
+class TracedDictionaryBase : public TracedValueBase {
+    WTF_MAKE_NONCOPYABLE(TracedDictionaryBase);
+private:
+    typedef TracedDictionaryBase SelfType;
 public:
-    OwnerType& endDictionary()
-    {
-        ASSERT(m_stack.size() == nestingLevel);
-        endCurrentDictionary();
-        return *reinterpret_cast<OwnerType*>(this);
-    }
-
-    TracedDictionary<TracedDictionary<OwnerType> >& beginDictionary(const char* name)
+    TracedDictionary<SelfType>& beginDictionary(const char* name)
     {
         beginDictionaryNamed(name);
-        return *reinterpret_cast<TracedDictionary<TracedDictionary<OwnerType> >* >(this);
+        return *reinterpret_cast<TracedDictionary<SelfType>*>(this);
     }
-    TracedArray<TracedDictionary<OwnerType> >& beginArray(const char* name)
+    TracedArray<SelfType>& beginArray(const char* name)
     {
         beginArrayNamed(name);
-        return *reinterpret_cast<TracedArray<TracedDictionary<OwnerType> >* >(this);
+        return *reinterpret_cast<TracedArray<SelfType>*>(this);
     }
-    TracedDictionary<OwnerType>& setInteger(const char* name, int value)
+    SelfType& setInteger(const char* name, int value)
     {
         TracedValueBase::setInteger(name, value);
         return *this;
     }
-    TracedDictionary<OwnerType>& setDouble(const char* name, double value)
+    SelfType& setDouble(const char* name, double value)
     {
         TracedValueBase::setDouble(name, value);
         return *this;
     }
-    TracedDictionary<OwnerType>& setBoolean(const char* name, bool value)
+    SelfType& setBoolean(const char* name, bool value)
     {
         TracedValueBase::setBoolean(name, value);
         return *this;
     }
-    TracedDictionary<OwnerType>& setString(const char* name, const String& value)
+    SelfType& setString(const char* name, const String& value)
     {
         TracedValueBase::setString(name, value);
         return *this;
     }
+private:
+    TracedDictionaryBase();
+    ~TracedDictionaryBase();
+};
 
-    static const size_t nestingLevel = OwnerType::nestingLevel + 1;
+template <class OwnerType>
+class TracedDictionary : public TracedDictionaryBase {
+    WTF_MAKE_NONCOPYABLE(TracedDictionary);
+private:
+    typedef TracedDictionary<OwnerType> SelfType;
+public:
+    OwnerType& endDictionary()
+    {
+        TracedValueBase::endCurrentDictionary();
+        return *reinterpret_cast<OwnerType*>(this);
+    }
+
+    TracedDictionary<SelfType>& beginDictionary(const char* name)
+    {
+        TracedDictionaryBase::beginDictionary(name);
+        return *reinterpret_cast<TracedDictionary<SelfType>*>(this);
+    }
+    TracedArray<SelfType>& beginArray(const char* name)
+    {
+        TracedDictionaryBase::beginArray(name);
+        return *reinterpret_cast<TracedArray<SelfType>*>(this);
+    }
+    SelfType& setInteger(const char* name, int value)
+    {
+        TracedDictionaryBase::setInteger(name, value);
+        return *this;
+    }
+    SelfType& setDouble(const char* name, double value)
+    {
+        TracedDictionaryBase::setDouble(name, value);
+        return *this;
+    }
+    SelfType& setBoolean(const char* name, bool value)
+    {
+        TracedDictionaryBase::setBoolean(name, value);
+        return *this;
+    }
+    SelfType& setString(const char* name, const String& value)
+    {
+        TracedDictionaryBase::setString(name, value);
+        return *this;
+    }
 
 private:
     TracedDictionary();
     ~TracedDictionary();
 };
 
-template <class OwnerType>
-class TracedArray : public TracedValueBase {
-    WTF_MAKE_NONCOPYABLE(TracedArray);
+class TracedArrayBase : public TracedValueBase {
+    WTF_MAKE_NONCOPYABLE(TracedArrayBase);
+private:
+    typedef TracedArrayBase SelfType;
 public:
-    TracedDictionary<TracedArray<OwnerType> >& beginDictionary()
+    TracedDictionary<SelfType>& beginDictionary()
     {
         pushDictionary();
-        return *reinterpret_cast<TracedDictionary<TracedArray<OwnerType> >* >(this);
+        return *reinterpret_cast<TracedDictionary<SelfType>*>(this);
     }
-    TracedDictionary<TracedArray<OwnerType> >& beginArray()
+    TracedArray<SelfType>& beginArray()
     {
         pushArray();
-        return *reinterpret_cast<TracedDictionary<TracedArray<OwnerType> >* >(this);
-    }
-    OwnerType& endArray()
-    {
-        ASSERT(m_stack.size() == nestingLevel);
-        endCurrentArray();
-        return *reinterpret_cast<OwnerType*>(this);
+        return *reinterpret_cast<TracedArray<SelfType>*>(this);
     }
 
-    TracedArray<OwnerType>& pushInteger(int value)
+    SelfType& pushInteger(int value)
     {
         TracedValueBase::pushInteger(value);
         return *this;
     }
-    TracedArray<OwnerType>& pushDouble(double value)
+    SelfType& pushDouble(double value)
     {
         TracedValueBase::pushDouble(value);
         return *this;
     }
-    TracedArray<OwnerType>& pushBoolean(bool value)
+    SelfType& pushBoolean(bool value)
     {
         TracedValueBase::pushBoolean(value);
         return *this;
     }
-    TracedArray<OwnerType>& pushString(const String& value)
+    SelfType& pushString(const String& value)
     {
         TracedValueBase::pushString(value);
         return *this;
     }
 
-    static const size_t nestingLevel = OwnerType::nestingLevel + 1;
+private:
+    TracedArrayBase();
+    ~TracedArrayBase();
+};
+
+template <class OwnerType>
+class TracedArray : public TracedArrayBase {
+    WTF_MAKE_NONCOPYABLE(TracedArray);
+private:
+    typedef TracedArray<OwnerType> SelfType;
+public:
+    OwnerType& endArray()
+    {
+        TracedValueBase::endCurrentArray();
+        return *reinterpret_cast<OwnerType*>(this);
+    }
+
+    TracedDictionary<SelfType >& beginDictionary()
+    {
+        TracedArrayBase::beginDictionary();
+        return *reinterpret_cast<TracedDictionary<SelfType>*>(this);
+    }
+    TracedArray<SelfType >& beginArray()
+    {
+        TracedArrayBase::beginArray();
+        return *reinterpret_cast<TracedArray<SelfType>*>(this);
+    }
+
+    SelfType& pushInteger(int value)
+    {
+        TracedArrayBase::pushInteger(value);
+        return *this;
+    }
+    SelfType& pushDouble(double value)
+    {
+        TracedArrayBase::pushDouble(value);
+        return *this;
+    }
+    SelfType& pushBoolean(bool value)
+    {
+        TracedArrayBase::pushBoolean(value);
+        return *this;
+    }
+    SelfType& pushString(const String& value)
+    {
+        TracedArrayBase::pushString(value);
+        return *this;
+    }
 
 private:
     TracedArray();
@@ -144,35 +227,37 @@ private:
 
 class PLATFORM_EXPORT TracedValue : public TracedValueBase {
     WTF_MAKE_NONCOPYABLE(TracedValue);
+private:
+    typedef TracedValue SelfType;
 public:
     TracedValue();
     ~TracedValue();
 
-    TracedDictionary<TracedValue>& beginDictionary(const char* name);
-    TracedArray<TracedValue>& beginArray(const char* name);
-    TracedValue& setInteger(const char* name, int value)
+    TracedDictionary<SelfType>& beginDictionary(const char* name);
+    TracedArray<SelfType>& beginArray(const char* name);
+
+    SelfType& setInteger(const char* name, int value)
     {
         TracedValueBase::setInteger(name, value);
         return *this;
     }
-    TracedValue& setDouble(const char* name, double value)
+    SelfType& setDouble(const char* name, double value)
     {
         TracedValueBase::setDouble(name, value);
         return *this;
     }
-    TracedValue& setBoolean(const char* name, bool value)
+    SelfType& setBoolean(const char* name, bool value)
     {
         TracedValueBase::setBoolean(name, value);
         return *this;
     }
-    TracedValue& setString(const char* name, const String& value)
+    SelfType& setString(const char* name, const String& value)
     {
         TracedValueBase::setString(name, value);
         return *this;
     }
-    PassRefPtr<TraceEvent::ConvertableToTraceFormat> finish();
 
-    static const size_t nestingLevel = 1;
+    PassRefPtr<TraceEvent::ConvertableToTraceFormat> finish();
 };
 
 } // namespace WebCore
