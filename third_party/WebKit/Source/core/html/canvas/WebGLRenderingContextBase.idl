@@ -545,7 +545,7 @@ typedef unrestricted float GLclampf;
     WebGLActiveInfo getActiveAttrib(WebGLProgram? program, GLuint index);
     WebGLActiveInfo getActiveUniform(WebGLProgram? program, GLuint index);
 
-    [Custom] void getAttachedShaders(WebGLProgram? program);
+    sequence<WebGLShader>? getAttachedShaders(WebGLProgram? program);
 
     GLint getAttribLocation(WebGLProgram? program, DOMString name);
 

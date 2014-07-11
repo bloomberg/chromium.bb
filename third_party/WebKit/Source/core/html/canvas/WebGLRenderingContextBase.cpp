@@ -2027,12 +2027,12 @@ PassRefPtr<WebGLActiveInfo> WebGLRenderingContextBase::getActiveUniform(WebGLPro
     return WebGLActiveInfo::create(info.name, info.type, info.size);
 }
 
-bool WebGLRenderingContextBase::getAttachedShaders(WebGLProgram* program, Vector<RefPtr<WebGLShader> >& shaderObjects)
+Nullable<Vector<RefPtr<WebGLShader> > > WebGLRenderingContextBase::getAttachedShaders(WebGLProgram* program)
 {
-    shaderObjects.clear();
     if (isContextLost() || !validateWebGLObject("getAttachedShaders", program))
-        return false;
+        return Nullable<Vector<RefPtr<WebGLShader> > >();
 
+    Vector<RefPtr<WebGLShader> > shaderObjects;
     const GLenum shaderType[] = {
         GL_VERTEX_SHADER,
         GL_FRAGMENT_SHADER
@@ -2042,7 +2042,7 @@ bool WebGLRenderingContextBase::getAttachedShaders(WebGLProgram* program, Vector
         if (shader)
             shaderObjects.append(shader);
     }
-    return true;
+    return shaderObjects;
 }
 
 GLint WebGLRenderingContextBase::getAttribLocation(WebGLProgram* program, const String& name)

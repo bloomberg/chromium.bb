@@ -325,39 +325,6 @@ static WebGLUniformLocation* toWebGLUniformLocation(v8::Handle<v8::Value> value,
     return V8WebGLUniformLocation::toNativeWithTypeCheck(isolate, value);
 }
 
-enum WhichProgramCall {
-    kProgramParameter, kUniform
-};
-
-void V8WebGLRenderingContext::getAttachedShadersMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "getAttachedShaders", "WebGLRenderingContext", info.Holder(), info.GetIsolate());
-    if (info.Length() < 1) {
-        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
-        exceptionState.throwIfNeeded();
-        return;
-    }
-
-    const int programArgumentIndex = 0;
-    WebGLRenderingContext* context = V8WebGLRenderingContext::toNative(info.Holder());
-    if (info.Length() > 0 && !isUndefinedOrNull(info[programArgumentIndex]) && !V8WebGLProgram::hasInstance(info[programArgumentIndex], info.GetIsolate())) {
-        exceptionState.throwTypeError(ExceptionMessages::argumentNullOrIncorrectType(programArgumentIndex + 1, "WebGLProgram"));
-        exceptionState.throwIfNeeded();
-        return;
-    }
-    WebGLProgram* program = V8WebGLProgram::toNativeWithTypeCheck(info.GetIsolate(), info[programArgumentIndex]);
-    Vector<RefPtr<WebGLShader> > shaders;
-    bool succeed = context->getAttachedShaders(program, shaders);
-    if (!succeed) {
-        v8SetReturnValueNull(info);
-        return;
-    }
-    v8::Local<v8::Array> array = v8::Array::New(info.GetIsolate(), shaders.size());
-    for (size_t ii = 0; ii < shaders.size(); ++ii)
-        array->Set(v8::Integer::New(info.GetIsolate(), ii), toV8(shaders[ii].get(), info.Holder(), info.GetIsolate()));
-    v8SetReturnValue(info, array);
-}
-
 void V8WebGLRenderingContext::getBufferParameterMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "getBufferParameter", "WebGLRenderingContext", info.Holder(), info.GetIsolate());

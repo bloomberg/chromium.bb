@@ -186,7 +186,7 @@ public:
 
     PassRefPtr<WebGLActiveInfo> getActiveAttrib(WebGLProgram*, GLuint index);
     PassRefPtr<WebGLActiveInfo> getActiveUniform(WebGLProgram*, GLuint index);
-    bool getAttachedShaders(WebGLProgram*, Vector<RefPtr<WebGLShader> >&);
+    Nullable<Vector<RefPtr<WebGLShader> > > getAttachedShaders(WebGLProgram*);
     GLint getAttribLocation(WebGLProgram*, const String& name);
     WebGLGetInfo getBufferParameter(GLenum target, GLenum pname);
     PassRefPtr<WebGLContextAttributes> getContextAttributes();
