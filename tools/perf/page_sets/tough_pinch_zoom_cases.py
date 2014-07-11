@@ -105,7 +105,7 @@ class GooglePlusPage(ToughPinchZoomCasesPage):
   def RunSmoothness(self, action_runner):
     interaction = action_runner.BeginGestureInteraction(
         'PinchAction', is_smooth=True)
-    action_runner.PinchElement(selector='#110031535020051778989-tab-bar')
+    action_runner.PinchElement(selector='[id="110031535020051778989-tab-bar"]')
     interaction.End()
 
 
