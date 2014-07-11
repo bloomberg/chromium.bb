@@ -58,6 +58,9 @@ MockDiskMountManager::MockDiskMountManager() {
   ON_CALL(*this, FindDiskBySourcePath(_))
       .WillByDefault(Invoke(
           this, &MockDiskMountManager::FindDiskBySourcePathInternal));
+  ON_CALL(*this, EnsureMountInfoRefreshed(_))
+      .WillByDefault(Invoke(
+          this, &MockDiskMountManager::EnsureMountInfoRefreshedInternal));
 }
 
 MockDiskMountManager::~MockDiskMountManager() {
@@ -162,7 +165,7 @@ void MockDiskMountManager::SetupDefaultReplies() {
       .WillRepeatedly(ReturnRef(mount_points_));
   EXPECT_CALL(*this, FindDiskBySourcePath(_))
       .Times(AnyNumber());
-  EXPECT_CALL(*this, RequestMountInfoRefresh())
+  EXPECT_CALL(*this, EnsureMountInfoRefreshed(_))
       .Times(AnyNumber());
   EXPECT_CALL(*this, MountPath(_, _, _, _))
       .Times(AnyNumber());
@@ -232,6 +235,11 @@ MockDiskMountManager::FindDiskBySourcePathInternal(
     const std::string& source_path) const {
   DiskMap::const_iterator disk_it = disks_.find(source_path);
   return disk_it == disks_.end() ? NULL : disk_it->second;
+}
+
+void MockDiskMountManager::EnsureMountInfoRefreshedInternal(
+    const EnsureMountInfoRefreshedCallback& callback) {
+  callback.Run(true);
 }
 
 void MockDiskMountManager::NotifyDiskChanged(

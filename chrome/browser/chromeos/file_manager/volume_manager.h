@@ -206,6 +206,7 @@ class VolumeManager : public KeyedService,
   SnapshotManager* snapshot_manager() { return snapshot_manager_.get(); }
 
  private:
+  void OnDiskMountManagerRefreshed(bool success);
   void OnStorageMonitorInitialized();
   void OnPrivetVolumesAvailable(
       const local_discovery::PrivetVolumeLister::VolumeList& volumes);

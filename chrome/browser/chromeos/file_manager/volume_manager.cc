@@ -310,6 +310,9 @@ void VolumeManager::Initialize() {
 
   // Subscribe to DiskMountManager.
   disk_mount_manager_->AddObserver(this);
+  disk_mount_manager_->EnsureMountInfoRefreshed(
+      base::Bind(&VolumeManager::OnDiskMountManagerRefreshed,
+                 weak_ptr_factory_.GetWeakPtr()));
 
   // Subscribe to FileSystemProviderService and register currently mounted
   // volumes for the profile.
@@ -325,54 +328,6 @@ void VolumeManager::Initialize() {
       DoMountEvent(chromeos::MOUNT_ERROR_NONE, volume_info, kNotRemounting);
     }
   }
-
-  std::vector<VolumeInfo> archives;
-
-  const chromeos::disks::DiskMountManager::MountPointMap& mount_points =
-      disk_mount_manager_->mount_points();
-  for (chromeos::disks::DiskMountManager::MountPointMap::const_iterator it =
-           mount_points.begin();
-       it != mount_points.end();
-       ++it) {
-    if (it->second.mount_type == chromeos::MOUNT_TYPE_ARCHIVE) {
-      // Archives are mounted after other type of volumes. See below.
-      archives.push_back(CreateVolumeInfoFromMountPointInfo(it->second, NULL));
-      continue;
-    }
-    DoMountEvent(
-        chromeos::MOUNT_ERROR_NONE,
-        CreateVolumeInfoFromMountPointInfo(
-            it->second,
-            disk_mount_manager_->FindDiskBySourcePath(it->second.source_path)),
-            kNotRemounting);
-  }
-
-  // We mount archives only if they are opened from currently mounted volumes.
-  // To check the condition correctly in DoMountEvent, we care the order.
-  std::vector<bool> done(archives.size(), false);
-  for (size_t i = 0; i < archives.size(); ++i) {
-    if (!done[i]) {
-      std::vector<VolumeInfo> chain;
-      done[i] = true;
-      chain.push_back(archives[i]);
-
-      // If archives[i]'s source_path is in another archive, mount it first.
-      for (size_t parent = 0; parent < archives.size(); ++parent) {
-        if (!done[parent] &&
-            archives[parent].mount_path.IsParent(chain.back().source_path)) {
-          done[parent] = true;
-          chain.push_back(archives[parent]);
-          parent = 0;  // Search archives[parent]'s parent from the beginning.
-        }
-      }
-
-      // Mount from the tail of chain.
-      for (size_t i = chain.size(); i > 0; --i)
-        DoMountEvent(chromeos::MOUNT_ERROR_NONE, chain[i - 1], kNotRemounting);
-    }
-  }
-
-  disk_mount_manager_->RequestMountInfoRefresh();
 
   // Subscribe to Profile Preference change.
   pref_change_registrar_.Init(profile_->GetPrefs());
@@ -784,6 +739,60 @@ void VolumeManager::OnRemovableStorageDetached(
               fsid));
       return;
     }
+  }
+}
+
+void VolumeManager::OnDiskMountManagerRefreshed(bool success) {
+  if (!success) {
+    LOG(ERROR) << "Failed to refresh disk mount manager";
+    return;
+  }
+
+  std::vector<VolumeInfo> archives;
+
+  const chromeos::disks::DiskMountManager::MountPointMap& mount_points =
+      disk_mount_manager_->mount_points();
+  for (chromeos::disks::DiskMountManager::MountPointMap::const_iterator it =
+           mount_points.begin();
+       it != mount_points.end();
+       ++it) {
+    if (it->second.mount_type == chromeos::MOUNT_TYPE_ARCHIVE) {
+      // Archives are mounted after other types of volume. See below.
+      archives.push_back(CreateVolumeInfoFromMountPointInfo(it->second, NULL));
+      continue;
+    }
+    DoMountEvent(
+        chromeos::MOUNT_ERROR_NONE,
+        CreateVolumeInfoFromMountPointInfo(
+            it->second,
+            disk_mount_manager_->FindDiskBySourcePath(it->second.source_path)),
+            kNotRemounting);
+  }
+
+  // We mount archives only if they are opened from currently mounted volumes.
+  // To check the condition correctly in DoMountEvent, we care about the order.
+  std::vector<bool> done(archives.size(), false);
+  for (size_t i = 0; i < archives.size(); ++i) {
+    if (done[i])
+      continue;
+
+    std::vector<VolumeInfo> chain;
+    done[i] = true;
+    chain.push_back(archives[i]);
+
+    // If archives[i]'s source_path is in another archive, mount it first.
+    for (size_t parent = i + 1; parent < archives.size(); ++parent) {
+      if (!done[parent] &&
+          archives[parent].mount_path.IsParent(chain.back().source_path)) {
+        done[parent] = true;
+        chain.push_back(archives[parent]);
+        parent = i + 1;  // Search archives[parent]'s parent from the beginning.
+      }
+    }
+
+    // Mount from the tail of chain.
+    for (size_t i = chain.size(); i > 0; --i)
+      DoMountEvent(chromeos::MOUNT_ERROR_NONE, chain[i - 1], kNotRemounting);
   }
 }
 

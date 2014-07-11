@@ -26,7 +26,9 @@ DiskMountManager* g_disk_mount_manager = NULL;
 // The DiskMountManager implementation.
 class DiskMountManagerImpl : public DiskMountManager {
  public:
-  DiskMountManagerImpl() : weak_ptr_factory_(this) {
+  DiskMountManagerImpl() :
+    already_refreshed_(false),
+    weak_ptr_factory_(this) {
     DBusThreadManager* dbus_thread_manager = DBusThreadManager::Get();
     DCHECK(dbus_thread_manager);
     cros_disks_client_ = dbus_thread_manager->GetCrosDisksClient();
@@ -155,7 +157,7 @@ class DiskMountManagerImpl : public DiskMountManager {
     }
 
     // We will send the same callback data object to all Unmount calls and use
-    // it to syncronize callbacks.
+    // it to synchronize callbacks.
     // Note: this implementation has a potential memory leak issue. For
     // example if this instance is destructed before all the callbacks for
     // Unmount are invoked, the memory pointed by |cb_data| will be leaked.
@@ -189,11 +191,22 @@ class DiskMountManagerImpl : public DiskMountManager {
   }
 
   // DiskMountManager override.
-  virtual void RequestMountInfoRefresh() OVERRIDE {
-    cros_disks_client_->EnumerateAutoMountableDevices(
-        base::Bind(&DiskMountManagerImpl::OnRequestMountInfo,
-                   weak_ptr_factory_.GetWeakPtr()),
-        base::Bind(&base::DoNothing));
+  virtual void EnsureMountInfoRefreshed(
+      const EnsureMountInfoRefreshedCallback& callback) OVERRIDE {
+    if (already_refreshed_) {
+      callback.Run(true);
+      return;
+    }
+
+    refresh_callbacks_.push_back(callback);
+    if (refresh_callbacks_.size() == 1) {
+      // If there's no in-flight refreshing task, start it.
+      cros_disks_client_->EnumerateAutoMountableDevices(
+          base::Bind(&DiskMountManagerImpl::RefreshAfterEnumerateDevices,
+                     weak_ptr_factory_.GetWeakPtr()),
+          base::Bind(&DiskMountManagerImpl::RefreshCompleted,
+                     weak_ptr_factory_.GetWeakPtr(), false));
+    }
   }
 
   // DiskMountManager override.
@@ -414,7 +427,7 @@ class DiskMountManagerImpl : public DiskMountManager {
     NotifyFormatStatusUpdate(FORMAT_COMPLETED, error_code, device_path);
   }
 
-  // Callbcak for GetDeviceProperties.
+  // Callback for GetDeviceProperties.
   void OnGetDeviceProperties(const DiskInfo& disk_info) {
     // TODO(zelidrag): Find a better way to filter these out before we
     // fetch the properties:
@@ -454,32 +467,64 @@ class DiskMountManagerImpl : public DiskMountManager {
     NotifyDiskStatusUpdate(is_new ? DISK_ADDED : DISK_CHANGED, disk);
   }
 
-  // Callbcak for RequestMountInfo.
-  void OnRequestMountInfo(const std::vector<std::string>& devices) {
-    std::set<std::string> current_device_set;
-    if (!devices.empty()) {
-      // Initiate properties fetch for all removable disks,
-      for (size_t i = 0; i < devices.size(); i++) {
-        current_device_set.insert(devices[i]);
-        // Initiate disk property retrieval for each relevant device path.
-        cros_disks_client_->GetDeviceProperties(
-            devices[i],
-            base::Bind(&DiskMountManagerImpl::OnGetDeviceProperties,
-                       weak_ptr_factory_.GetWeakPtr()),
-            base::Bind(&base::DoNothing));
-      }
-    }
-    // Search and remove disks that are no longer present.
+  // Part of EnsureMountInfoRefreshed(). Called after the list of devices are
+  // enumerated.
+  void RefreshAfterEnumerateDevices(const std::vector<std::string>& devices) {
+    std::set<std::string> current_device_set(devices.begin(), devices.end());
     for (DiskMap::iterator iter = disks_.begin(); iter != disks_.end(); ) {
       if (current_device_set.find(iter->first) == current_device_set.end()) {
-        Disk* disk = iter->second;
-        NotifyDiskStatusUpdate(DISK_REMOVED, disk);
         delete iter->second;
         disks_.erase(iter++);
       } else {
         ++iter;
       }
     }
+    RefreshDeviceAtIndex(devices, 0);
+  }
+
+  // Part of EnsureMountInfoRefreshed(). Called for each device to refresh info.
+  void RefreshDeviceAtIndex(const std::vector<std::string>& devices,
+                            size_t index) {
+    if (index == devices.size()) {
+      // All devices info retrieved. Proceed to enumerate mount point info.
+      cros_disks_client_->EnumerateMountEntries(
+          base::Bind(&DiskMountManagerImpl::RefreshAfterEnumerateMountEntries,
+                     weak_ptr_factory_.GetWeakPtr()),
+          base::Bind(&DiskMountManagerImpl::RefreshCompleted,
+                     weak_ptr_factory_.GetWeakPtr(), false));
+      return;
+    }
+
+    cros_disks_client_->GetDeviceProperties(
+        devices[index],
+        base::Bind(&DiskMountManagerImpl::RefreshAfterGetDeviceProperties,
+                   weak_ptr_factory_.GetWeakPtr(), devices, index + 1),
+        base::Bind(&DiskMountManagerImpl::RefreshCompleted,
+                   weak_ptr_factory_.GetWeakPtr(), false));
+  }
+
+  // Part of EnsureMountInfoRefreshed().
+  void RefreshAfterGetDeviceProperties(const std::vector<std::string>& devices,
+                                       size_t next_index,
+                                       const DiskInfo& disk_info) {
+    OnGetDeviceProperties(disk_info);
+    RefreshDeviceAtIndex(devices, next_index);
+  }
+
+  // Part of EnsureMountInfoRefreshed(). Called after mount entries are listed.
+  void RefreshAfterEnumerateMountEntries(
+      const std::vector<MountEntry>& entries) {
+    for (size_t i = 0; i < entries.size(); ++i)
+      OnMountCompleted(entries[i]);
+    RefreshCompleted(true);
+  }
+
+  // Part of EnsureMountInfoRefreshed(). Called when the refreshing is done.
+  void RefreshCompleted(bool success) {
+    already_refreshed_ = true;
+    for (size_t i = 0; i < refresh_callbacks_.size(); ++i)
+      refresh_callbacks_[i].Run(success);
+    refresh_callbacks_.clear();
   }
 
   // Callback to handle mount event signals.
@@ -579,6 +624,9 @@ class DiskMountManagerImpl : public DiskMountManager {
 
   typedef std::set<std::string> SystemPathPrefixSet;
   SystemPathPrefixSet system_path_prefixes_;
+
+  bool already_refreshed_;
+  std::vector<EnsureMountInfoRefreshedCallback> refresh_callbacks_;
 
   base::WeakPtrFactory<DiskMountManagerImpl> weak_ptr_factory_;
 

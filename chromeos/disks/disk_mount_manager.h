@@ -198,6 +198,9 @@ class CHROMEOS_EXPORT DiskMountManager {
   // A callback type for UnmountPath method.
   typedef base::Callback<void(MountError error_code)> UnmountPathCallback;
 
+  // A callback type for EnsureMountInfoRefreshed method.
+  typedef base::Callback<void(bool success)> EnsureMountInfoRefreshedCallback;
+
   // Implement this interface to be notified about disk/mount related events.
   class Observer {
    public:
@@ -236,8 +239,11 @@ class CHROMEOS_EXPORT DiskMountManager {
   // Gets the list of mount points.
   virtual const MountPointMap& mount_points() const = 0;
 
-  // Requests refreshing all the information about mounted disks.
-  virtual void RequestMountInfoRefresh() = 0;
+  // Refreshes all the information about mounting if it is not yet done and
+  // invokes |callback| when finished. If the information is already refreshed
+  // It just runs |callback| immediately.
+  virtual void EnsureMountInfoRefreshed(
+      const EnsureMountInfoRefreshedCallback& callback) = 0;
 
   // Mounts a device.
   // Note that the mount operation may fail. To find out the result, one should

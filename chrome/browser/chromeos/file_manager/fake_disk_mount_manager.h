@@ -55,7 +55,8 @@ class FakeDiskMountManager : public chromeos::disks::DiskMountManager {
   virtual const Disk* FindDiskBySourcePath(
       const std::string& source_path) const OVERRIDE;
   virtual const MountPointMap& mount_points() const OVERRIDE;
-  virtual void RequestMountInfoRefresh() OVERRIDE;
+  virtual void EnsureMountInfoRefreshed(
+      const EnsureMountInfoRefreshedCallback& callback) OVERRIDE;
   virtual void MountPath(const std::string& source_path,
                          const std::string& source_format,
                          const std::string& mount_label,

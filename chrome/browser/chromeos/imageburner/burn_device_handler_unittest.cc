@@ -80,7 +80,8 @@ class FakeDiskMountManager : public disks::DiskMountManager {
     // Note: mount_points_ will always be empty, now.
     return mount_points_;
   }
-  virtual void RequestMountInfoRefresh() OVERRIDE {}
+  virtual void EnsureMountInfoRefreshed(
+      const EnsureMountInfoRefreshedCallback& callback) OVERRIDE {}
   virtual void MountPath(const std::string& source_path,
                          const std::string& source_format,
                          const std::string& mount_label,

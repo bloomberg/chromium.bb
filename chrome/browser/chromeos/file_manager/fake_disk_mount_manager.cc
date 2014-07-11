@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/file_manager/fake_disk_mount_manager.h"
 
+#include "base/callback.h"
 #include "base/stl_util.h"
 
 namespace file_manager {
@@ -62,7 +63,9 @@ FakeDiskMountManager::mount_points() const {
   return mount_points_;
 }
 
-void FakeDiskMountManager::RequestMountInfoRefresh() {
+void FakeDiskMountManager::EnsureMountInfoRefreshed(
+    const EnsureMountInfoRefreshedCallback& callback) {
+  callback.Run(true);
 }
 
 void FakeDiskMountManager::MountPath(const std::string& source_path,
