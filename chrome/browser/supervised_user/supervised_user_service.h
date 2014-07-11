@@ -20,8 +20,11 @@
 #include "chrome/browser/ui/browser_list_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "content/public/browser/web_contents.h"
+
+#if defined(ENABLE_EXTENSIONS)
 #include "extensions/browser/extension_registry_observer.h"
 #include "extensions/browser/management_policy.h"
+#endif
 
 class Browser;
 class GoogleServiceAuthError;
@@ -44,9 +47,11 @@ class PrefRegistrySyncable;
 // (e.g. the installed content packs, the default URL filtering behavior, or
 // manual whitelist/blacklist overrides).
 class SupervisedUserService : public KeyedService,
+#if defined(ENABLE_EXTENSIONS)
                               public extensions::ManagementPolicy::Provider,
-                              public ProfileSyncServiceObserver,
                               public extensions::ExtensionRegistryObserver,
+#endif
+                              public ProfileSyncServiceObserver,
                               public chrome::BrowserListObserver {
  public:
   typedef std::vector<base::string16> CategoryList;
@@ -149,15 +154,13 @@ class SupervisedUserService : public KeyedService,
   void AddNavigationBlockedCallback(const NavigationBlockedCallback& callback);
   void DidBlockNavigation(content::WebContents* web_contents);
 
+#if defined(ENABLE_EXTENSIONS)
   // extensions::ManagementPolicy::Provider implementation:
   virtual std::string GetDebugPolicyProviderName() const OVERRIDE;
   virtual bool UserMayLoad(const extensions::Extension* extension,
                            base::string16* error) const OVERRIDE;
   virtual bool UserMayModifySettings(const extensions::Extension* extension,
                                      base::string16* error) const OVERRIDE;
-
-  // ProfileSyncServiceObserver implementation:
-  virtual void OnStateChanged() OVERRIDE;
 
   // extensions::ExtensionRegistryObserver implementation.
   virtual void OnExtensionLoaded(
@@ -167,6 +170,10 @@ class SupervisedUserService : public KeyedService,
       content::BrowserContext* browser_context,
       const extensions::Extension* extension,
       extensions::UnloadedExtensionInfo::Reason reason) OVERRIDE;
+#endif
+
+  // ProfileSyncServiceObserver implementation:
+  virtual void OnStateChanged() OVERRIDE;
 
   // chrome::BrowserListObserver implementation:
   virtual void OnBrowserSetLastActive(Browser* browser) OVERRIDE;
@@ -226,6 +233,7 @@ class SupervisedUserService : public KeyedService,
 
   bool ProfileIsSupervised() const;
 
+#if defined(ENABLE_EXTENSIONS)
   // Internal implementation for ExtensionManagementPolicy::Delegate methods.
   // If |error| is not NULL, it will be filled with an error message if the
   // requested extension action (install, modify status, etc.) is not permitted.
@@ -235,6 +243,10 @@ class SupervisedUserService : public KeyedService,
   // Returns a list of all installed and enabled site lists in the current
   // supervised profile.
   ScopedVector<SupervisedUserSiteList> GetActiveSiteLists();
+
+  // Extensions helper to SetActive().
+  void SetExtensionsActive();
+#endif
 
   SupervisedUserSettingsService* GetSettingsService();
 
@@ -259,9 +271,11 @@ class SupervisedUserService : public KeyedService,
 
   Delegate* delegate_;
 
+#if defined(ENABLE_EXTENSIONS)
   ScopedObserver<extensions::ExtensionRegistry,
                  extensions::ExtensionRegistryObserver>
       extension_registry_observer_;
+#endif
 
   PrefChangeRegistrar pref_change_registrar_;
 
