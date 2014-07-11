@@ -13,42 +13,13 @@
 #include "crypto/nss_util.h"
 #include "crypto/scoped_nss_types.h"
 #include "net/base/net_errors.h"
-#include "net/cert/nss_cert_database.h"
 #include "net/cert/x509_certificate.h"
 #include "net/cert/x509_util_nss.h"
 
 namespace net {
 
-// Helper that observes events from the NSSCertDatabase and forwards them to
-// the given CertDatabase.
-class CertDatabase::Notifier : public NSSCertDatabase::Observer {
- public:
-  explicit Notifier(CertDatabase* cert_db) : cert_db_(cert_db) {}
-
-  virtual ~Notifier() {}
-
-  // NSSCertDatabase::Observer implementation:
-  virtual void OnCertAdded(const X509Certificate* cert) OVERRIDE {
-    cert_db_->NotifyObserversOfCertAdded(cert);
-  }
-
-  virtual void OnCertRemoved(const X509Certificate* cert) OVERRIDE {
-    cert_db_->NotifyObserversOfCertRemoved(cert);
-  }
-
-  virtual void OnCACertChanged(const X509Certificate* cert) OVERRIDE {
-    cert_db_->NotifyObserversOfCACertChanged(cert);
-  }
-
- private:
-  CertDatabase* cert_db_;
-
-  DISALLOW_COPY_AND_ASSIGN(Notifier);
-};
-
 CertDatabase::CertDatabase()
-    : observer_list_(new ObserverListThreadSafe<Observer>),
-      notifier_(new Notifier(this)) {
+    : observer_list_(new ObserverListThreadSafe<Observer>) {
   crypto::EnsureNSSInit();
 }
 
@@ -102,10 +73,6 @@ int CertDatabase::AddUserCert(X509Certificate* cert_obj) {
 
   NotifyObserversOfCertAdded(cert_obj);
   return OK;
-}
-
-void CertDatabase::ObserveNSSCertDatabase(NSSCertDatabase* source) {
-  source->AddObserver(this->notifier_.get());
 }
 
 }  // namespace net

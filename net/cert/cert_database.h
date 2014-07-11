@@ -16,8 +16,6 @@ template <class ObserverType> class ObserverListThreadSafe;
 
 namespace net {
 
-class NSSCertDatabase;
-
 // This class provides cross-platform functions to verify and add user
 // certificates, and to observe changes to the underlying certificate stores.
 
@@ -28,15 +26,17 @@ class NSSCertDatabase;
 class NET_EXPORT CertDatabase {
  public:
   // A CertDatabase::Observer will be notified on certificate database changes.
-  // The change could be either a new user certificate is added or trust on
-  // a certificate is changed.  Observers can register themselves
-  // via CertDatabase::AddObserver, and can un-register with
+  // The change could be either a user certificate is added/removed or trust on
+  // a certificate is changed. Observers can be registered via
+  // CertDatabase::AddObserver, and can un-register with
   // CertDatabase::RemoveObserver.
   class NET_EXPORT Observer {
    public:
     virtual ~Observer() {}
 
-    // Will be called when a new certificate is added.
+    // Will be called when a new certificate is added. If the imported cert can
+    // be determined, |cert| will be non-NULL, but if not, or if multiple
+    // certificates were imported, |cert| may be NULL.
     virtual void OnCertAdded(const X509Certificate* cert) {}
 
     // Will be called when a certificate is removed.
@@ -93,11 +93,12 @@ class NET_EXPORT CertDatabase {
   void OnAndroidKeyChainChanged();
 #endif
 
-#if defined(USE_NSS)
-  // Observe events from the |source| and forward them to observers of this
-  // CertDatabase.
-  void ObserveNSSCertDatabase(NSSCertDatabase* source);
-#endif
+  // Synthetically injects notifications to all observers. In general, this
+  // should only be called by the creator of the CertDatabase. Used to inject
+  // notifcations from other DB interfaces.
+  void NotifyObserversOfCertAdded(const X509Certificate* cert);
+  void NotifyObserversOfCertRemoved(const X509Certificate* cert);
+  void NotifyObserversOfCACertChanged(const X509Certificate* cert);
 
  private:
   friend struct DefaultSingletonTraits<CertDatabase>;
@@ -105,14 +106,9 @@ class NET_EXPORT CertDatabase {
   CertDatabase();
   ~CertDatabase();
 
-  // Broadcasts notifications to all registered observers.
-  void NotifyObserversOfCertAdded(const X509Certificate* cert);
-  void NotifyObserversOfCertRemoved(const X509Certificate* cert);
-  void NotifyObserversOfCACertChanged(const X509Certificate* cert);
-
   const scoped_refptr<ObserverListThreadSafe<Observer> > observer_list_;
 
-#if defined(USE_NSS) || (defined(OS_MACOSX) && !defined(OS_IOS))
+#if defined(OS_MACOSX) && !defined(OS_IOS)
   class Notifier;
   friend class Notifier;
   scoped_ptr<Notifier> notifier_;

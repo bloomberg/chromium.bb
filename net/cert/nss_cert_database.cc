@@ -42,6 +42,34 @@ namespace net {
 
 namespace {
 
+// Helper that observes events from the NSSCertDatabase and forwards them to
+// the given CertDatabase.
+class CertNotificationForwarder : public NSSCertDatabase::Observer {
+ public:
+  explicit CertNotificationForwarder(CertDatabase* cert_db)
+      : cert_db_(cert_db) {}
+
+  virtual ~CertNotificationForwarder() {}
+
+  // NSSCertDatabase::Observer implementation:
+  virtual void OnCertAdded(const X509Certificate* cert) OVERRIDE {
+    cert_db_->NotifyObserversOfCertAdded(cert);
+  }
+
+  virtual void OnCertRemoved(const X509Certificate* cert) OVERRIDE {
+    cert_db_->NotifyObserversOfCertRemoved(cert);
+  }
+
+  virtual void OnCACertChanged(const X509Certificate* cert) OVERRIDE {
+    cert_db_->NotifyObserversOfCACertChanged(cert);
+  }
+
+ private:
+  CertDatabase* cert_db_;
+
+  DISALLOW_COPY_AND_ASSIGN(CertNotificationForwarder);
+};
+
 base::LazyInstance<NSSCertDatabase>::Leaky
     g_nss_cert_database = LAZY_INSTANCE_INITIALIZER;
 
@@ -69,7 +97,9 @@ NSSCertDatabase::NSSCertDatabase()
     : observer_list_(new ObserverListThreadSafe<Observer>),
       weak_factory_(this) {
   // This also makes sure that NSS has been initialized.
-  CertDatabase::GetInstance()->ObserveNSSCertDatabase(this);
+  CertDatabase* cert_db = CertDatabase::GetInstance();
+  cert_notification_forwarder_.reset(new CertNotificationForwarder(cert_db));
+  AddObserver(cert_notification_forwarder_.get());
 
   psm::EnsurePKCS12Init();
 }
