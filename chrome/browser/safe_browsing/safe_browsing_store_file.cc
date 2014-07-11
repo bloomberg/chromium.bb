@@ -1182,7 +1182,13 @@ bool SafeBrowsingStoreFile::FinishUpdate(
 }
 
 bool SafeBrowsingStoreFile::CancelUpdate() {
-  return Close();
+  bool ret = Close();
+
+  // Delete stale staging file.
+  const base::FilePath new_filename = TemporaryFileForFilename(filename_);
+  base::DeleteFile(new_filename, false);
+
+  return ret;
 }
 
 void SafeBrowsingStoreFile::SetAddChunk(int32 chunk_id) {
