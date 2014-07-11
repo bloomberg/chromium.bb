@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright (c) 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -47,11 +47,11 @@ class NET_EXPORT_PRIVATE DiskBasedCertCache {
   void Set(const X509Certificate::OSCertHandle cert_handle,
            const SetCallback& cb);
 
-  // Returns the number of in-memory MRU cache hits that have occured
+  // Returns the number of in-memory MRU cache hits that have occurred
   // on Set and Get operations. Intended for test purposes only.
   size_t mem_cache_hits_for_testing() const { return mem_cache_hits_; }
 
-  // Returns the number of in-memory MRU cache misses that have occured
+  // Returns the number of in-memory MRU cache misses that have occurred
   // on Set and Get operations. Intended for test purposes only.
   size_t mem_cache_misses_for_testing() const { return mem_cache_misses_; }
 

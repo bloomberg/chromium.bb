@@ -3631,6 +3631,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="DiskBasedCertCache.CertIoCacheResult" enum="CacheResult">
+  <owner>brandonsalmon@chromium.org</owner>
+  <summary>
+    Records the outcome of requests to retrieve certificates from the disk
+    cache.
+  </summary>
+</histogram>
+
 <histogram name="DiskBasedCertCache.CertIoReadSuccessLeaf"
     enum="BooleanSuccess">
   <owner>brandonsalmon@chromium.org</owner>
@@ -35748,6 +35756,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="1" label="QUIC_STREAM_FACTORY"/>
   <int value="2" label="HTTP_STREAM_FACTORY_IMPL_JOB_ALT"/>
   <int value="3" label="HTTP_STREAM_FACTORY_IMPL_JOB_MAIN"/>
+</enum>
+
+<enum name="CacheResult" type="int">
+  <int value="0" label="MEMORY_CACHE_HIT"/>
+  <int value="1" label="DISK_CACHE_HIT"/>
+  <int value="2" label="DISK_CACHE_ENTRY_CORRUPT"/>
+  <int value="3" label="DISK_CACHE_ERROR"/>
+  <int value="4" label="CACHE_MISS"/>
 </enum>
 
 <enum name="CanvasContextType" type="int">

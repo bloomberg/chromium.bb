@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright (c) 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/memory/ref_counted.h"
+#include "base/metrics/histogram.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "net/base/io_buffer.h"
@@ -24,12 +25,27 @@ const size_t kMemoryCacheMaxSize = 30;
 
 // Used to obtain a unique cache key for a certificate in the form of
 // "cert:<hash>".
-std::string GetCacheKeyToCert(const X509Certificate::OSCertHandle cert_handle) {
+std::string GetCacheKeyForCert(
+    const X509Certificate::OSCertHandle cert_handle) {
   SHA1HashValue fingerprint =
       X509Certificate::CalculateFingerprint(cert_handle);
 
   return "cert:" +
          base::HexEncode(fingerprint.data, arraysize(fingerprint.data));
+}
+
+enum CacheResult {
+  MEMORY_CACHE_HIT = 0,
+  DISK_CACHE_HIT,
+  DISK_CACHE_ENTRY_CORRUPT,
+  DISK_CACHE_ERROR,
+  CACHE_MISS,
+  CACHE_RESULT_MAX
+};
+
+void RecordCacheResult(CacheResult result) {
+  UMA_HISTOGRAM_ENUMERATION(
+      "DiskBasedCertCache.CertIoCacheResult", result, CACHE_RESULT_MAX);
 }
 
 }  // namespace
@@ -123,7 +139,8 @@ DiskBasedCertCache::WriteWorker::WriteWorker(
 }
 
 DiskBasedCertCache::WriteWorker::~WriteWorker() {
-  X509Certificate::FreeOSCertHandle(cert_handle_);
+  if (cert_handle_)
+    X509Certificate::FreeOSCertHandle(cert_handle_);
   if (entry_)
     entry_->Close();
 }
@@ -428,8 +445,12 @@ int DiskBasedCertCache::ReadWorker::DoOpen() {
 }
 
 int DiskBasedCertCache::ReadWorker::DoOpenComplete(int rv) {
-  if (rv < 0)
+  if (rv < 0) {
+    // Errors other than ERR_CACHE_MISS are not recorded as either a hit
+    // or a miss.
+    RecordCacheResult(rv == ERR_CACHE_MISS ? CACHE_MISS : DISK_CACHE_ERROR);
     return rv;
+  }
 
   state_ = STATE_READ;
   return OK;
@@ -444,14 +465,20 @@ int DiskBasedCertCache::ReadWorker::DoRead() {
 }
 
 int DiskBasedCertCache::ReadWorker::DoReadComplete(int rv) {
-  if (rv < io_buf_len_)
+  // The cache should return the entire buffer length. If it does not,
+  // it is probably indicative of an issue other than corruption.
+  if (rv < io_buf_len_) {
+    RecordCacheResult(DISK_CACHE_ERROR);
     return ERR_FAILED;
-
+  }
   cert_handle_ = X509Certificate::CreateOSCertHandleFromBytes(buffer_->data(),
                                                               io_buf_len_);
-  if (!cert_handle_)
+  if (!cert_handle_) {
+    RecordCacheResult(DISK_CACHE_ENTRY_CORRUPT);
     return ERR_FAILED;
+  }
 
+  RecordCacheResult(DISK_CACHE_HIT);
   return OK;
 }
 
@@ -506,6 +533,7 @@ void DiskBasedCertCache::Get(const std::string& key, const GetCallback& cb) {
   // list in the MRU cache.
   MRUCertCache::iterator mru_it = mru_cert_cache_.Get(key);
   if (mru_it != mru_cert_cache_.end()) {
+    RecordCacheResult(MEMORY_CACHE_HIT);
     ++mem_cache_hits_;
     cb.Run(mru_it->second);
     return;
@@ -533,7 +561,7 @@ void DiskBasedCertCache::Set(const X509Certificate::OSCertHandle cert_handle,
                              const SetCallback& cb) {
   DCHECK(!cb.is_null());
   DCHECK(cert_handle);
-  std::string key = GetCacheKeyToCert(cert_handle);
+  std::string key = GetCacheKeyForCert(cert_handle);
 
   WriteWorkerMap::iterator it = write_worker_map_.find(key);
 
