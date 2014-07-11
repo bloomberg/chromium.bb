@@ -7,6 +7,7 @@
 
 #include "bindings/core/v8/Dictionary.h"
 #include "core/fileapi/Blob.h"
+#include "modules/serviceworkers/FetchBodyStream.h"
 #include "modules/serviceworkers/ResponseInit.h"
 
 namespace WebCore {
@@ -137,6 +138,13 @@ PassRefPtrWillBeRawPtr<Headers> Response::headers() const
 {
     // "The headers attribute's getter must return the associated Headers object."
     return m_headers;
+}
+
+PassRefPtr<FetchBodyStream> Response::body(ExecutionContext* context)
+{
+    if (!m_fetchBodyStream)
+        m_fetchBodyStream = FetchBodyStream::create(context, m_response->blobDataHandle());
+    return m_fetchBodyStream;
 }
 
 void Response::populateWebServiceWorkerResponse(blink::WebServiceWorkerResponse& response)

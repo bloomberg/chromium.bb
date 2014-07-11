@@ -1,0 +1,20 @@
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// http://fetch.spec.whatwg.org/#fetchbodystream
+[
+    RuntimeEnabled=ServiceWorker,
+    Exposed=ServiceWorker,
+    NoInterfaceObject,
+    ActiveDOMObject
+] interface FetchBodyStream {
+    [CallWith=ScriptState] Promise asArrayBuffer();
+    [CallWith=ScriptState] Promise asBlob();
+    [CallWith=ScriptState] Promise asJSON();
+    [CallWith=ScriptState] Promise asText();
+
+    // Still to be implemented.
+    // [CallWith=ScriptState] Promise asFormData();
+};
+

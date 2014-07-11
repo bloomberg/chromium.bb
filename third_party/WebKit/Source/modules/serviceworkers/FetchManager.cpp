@@ -76,7 +76,7 @@ void FetchManager::Loader::didFinishLoading(unsigned long, double)
     String filePath = m_response.downloadedFilePath();
     if (!filePath.isEmpty() && m_downloadedBlobLength) {
         blobData->appendFile(filePath);
-        // FIXME: Set the ContentType correctly.
+        blobData->setContentType(m_response.mimeType());
     }
     ResponseInit responseInit;
     // FIXME: We may have to filter the status when we support CORS.

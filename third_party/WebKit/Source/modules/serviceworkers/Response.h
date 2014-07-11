@@ -7,6 +7,7 @@
 
 #include "bindings/core/v8/Dictionary.h"
 #include "bindings/core/v8/ScriptWrappable.h"
+#include "modules/serviceworkers/FetchBodyStream.h"
 #include "modules/serviceworkers/FetchResponseData.h"
 #include "modules/serviceworkers/Headers.h"
 #include "platform/blob/BlobData.h"
@@ -37,6 +38,8 @@ public:
     String statusText() const;
     PassRefPtrWillBeRawPtr<Headers> headers() const;
 
+    PassRefPtr<FetchBodyStream> body(ExecutionContext*);
+
     void populateWebServiceWorkerResponse(blink::WebServiceWorkerResponse&);
 
     void trace(Visitor*);
@@ -47,7 +50,8 @@ private:
 
     RefPtrWillBeMember<FetchResponseData> m_response;
     RefPtrWillBeMember<Headers> m_headers;
-    // FIXME: Support FetchBodyStream.
+    // FIXME: Make this RefPtrWillBeMember.
+    RefPtr<FetchBodyStream> m_fetchBodyStream;
 };
 
 } // namespace WebCore
