@@ -430,8 +430,7 @@ crbug.com/290411 [ Mac ] virtual/antialiasedtext/fast/text/sub-pixel/text-scalin
 crbug.com/334269 [ Mac ] fast/text/international/bdo-bidi-width.html [ ImageOnlyFailure ]
 crbug.com/334269 [ Mac ] fast/text/font-variant-ligatures.html [ ImageOnlyFailure ]
 
-# Failing on Mac since r168339
-crbug.com/348911 [ Mac ] fast/text/international/rtl-space-in-ltr-element.html [ ImageOnlyFailure ]
+crbug.com/393157 [ Mac ] virtual/threaded/printing/print-document-without-documentElement-crash.html [ Pass Crash ]
 
 # Switching to content shell failures
 crbug.com/231866 [ Lion ] fast/backgrounds/animated-gif-as-background.html [ Pass ImageOnlyFailure ]
