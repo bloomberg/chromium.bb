@@ -192,7 +192,7 @@ Is Native Client open? Is it a standard?
 ----------------------------------------
 
 Native Client is completely open: the executable format is open and the
-`source code is open <nacl_project_>`_. Right
+`source code is open <https://code.google.com/p/nativeclient/>`_. Right
 now the Native Client project is in its early stages, so it's premature
 to consider Native Client for standardization.
 

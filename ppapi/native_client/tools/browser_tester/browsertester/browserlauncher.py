@@ -78,9 +78,7 @@ def MakeEnv(options):
   # Enable PPAPI Dev interfaces for testing.
   env['NACL_ENABLE_PPAPI_DEV'] = str(options.enable_ppapi_dev)
   if options.debug:
-    env['PPAPI_BROWSER_DEBUG'] = '1'
     env['NACL_PLUGIN_DEBUG'] = '1'
-    env['NACL_PPAPI_PROXY_DEBUG'] = '1'
     # env['NACL_SRPC_DEBUG'] = '1'
   return env
 

@@ -52,10 +52,7 @@ increase the amount of Native Client's diagnostic output by setting the
 following `environment variables
 <http://en.wikipedia.org/wiki/Environment_variable>`_:
 
-* NACL_DEBUG_ENABLE=1
-* PPAPI_BROWSER_DEBUG=1
 * NACL_PLUGIN_DEBUG=1
-* NACL_PPAPI_PROXY_DEBUG=1
 * NACL_SRPC_DEBUG=[1-255] (use a higher number for more verbose debug output)
 * NACLVERBOSITY=[1-255]
 
