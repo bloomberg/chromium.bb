@@ -8,9 +8,8 @@
 #include "base/message_loop/message_loop.h"
 #include "base/timer/timer.h"
 
-StatusChangeChecker::StatusChangeChecker()
-  : timed_out_(false),
-    wait_started_(false) {}
+StatusChangeChecker::StatusChangeChecker() : timed_out_(false) {
+}
 
 StatusChangeChecker::~StatusChangeChecker() {}
 
@@ -23,9 +22,6 @@ base::TimeDelta StatusChangeChecker::GetTimeoutDuration() {
 }
 
 void StatusChangeChecker::StartBlockingWait() {
-  DCHECK(!wait_started_) << "This class is intended for one use only.";
-  wait_started_ = true;
-
   base::OneShotTimer<StatusChangeChecker> timer;
   timer.Start(FROM_HERE,
               GetTimeoutDuration(),

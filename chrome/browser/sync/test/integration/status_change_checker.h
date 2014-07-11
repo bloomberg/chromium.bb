@@ -58,7 +58,6 @@ class StatusChangeChecker {
   void OnTimeout();
 
   bool timed_out_;
-  bool wait_started_;
 };
 
 #endif  // CHROME_BROWSER_SYNC_TEST_INTEGRATION_STATUS_CHANGE_CHECKER_H_
