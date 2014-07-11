@@ -122,7 +122,9 @@ bool AddDeviceInfo(HANDLE interface_enumerator,
   STORAGE_DEVICE_DESCRIPTOR* device_descriptor =
       reinterpret_cast<STORAGE_DEVICE_DESCRIPTOR*>(output_buf.get());
 
-  if (!device_descriptor->RemovableMedia) {
+  if (!device_descriptor->RemovableMedia &&
+      !(device_descriptor->BusType == BusTypeUsb)) {
+    // Reject non-removable and non-USB devices.
     // Return true to indicate success but not add anything to the device list.
     return true;
   }

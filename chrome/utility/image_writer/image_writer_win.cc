@@ -52,7 +52,8 @@ bool ImageWriter::IsValidDevice() {
   STORAGE_DEVICE_DESCRIPTOR* device_descriptor =
       reinterpret_cast<STORAGE_DEVICE_DESCRIPTOR*>(output_buf.get());
 
-  return device_descriptor->RemovableMedia == TRUE;
+  return device_descriptor->RemovableMedia == TRUE ||
+         device_descriptor->BusType == BusTypeUsb;
 }
 
 bool ImageWriter::OpenDevice() {
