@@ -46,6 +46,9 @@ public:
     virtual void sendMessageToInspectorFrontend(const WebString&) { }
     virtual void sendDebuggerOutput(const WebString&) { }
 
+    // Returns process id.
+    virtual long processId() { return -1; }
+
     // Returns unique identifier of the entity within process.
     virtual int debuggerId() { return -1; }
 
