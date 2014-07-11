@@ -10,6 +10,7 @@
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/metrics/field_trial.h"
+#include "base/metrics/histogram.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -65,6 +66,22 @@ const SkColor kTextColor = SkColorSetRGB(102, 102, 102);
 const char kEnableBubbleUIFinchName[] = "EnableSessionCrashedBubbleUI";
 const char kEnableBubbleUIGroupEnabled[] = "Enabled";
 
+enum SessionCrashedBubbleHistogramValue {
+  SESSION_CRASHED_BUBBLE_SHOWN,
+  SESSION_CRASHED_BUBBLE_ERROR,
+  SESSION_CRASHED_BUBBLE_RESTORED,
+  SESSION_CRASHED_BUBBLE_ALREADY_UMA_OPTIN,
+  SESSION_CRASHED_BUBBLE_UMA_OPTIN,
+  SESSION_CRASHED_BUBBLE_HELP,
+  SESSION_CRASHED_BUBBLE_IGNORED,
+  SESSION_CRASHED_BUBBLE_MAX,
+};
+
+void RecordBubbleHistogramValue(SessionCrashedBubbleHistogramValue value) {
+  UMA_HISTOGRAM_ENUMERATION(
+      "SessionCrashed.Bubble", value, SESSION_CRASHED_BUBBLE_MAX);
+}
+
 // Whether or not the bubble UI should be used.
 bool IsBubbleUIEnabled() {
   const base::CommandLine& command_line = *CommandLine::ForCurrentProcess();
@@ -118,8 +135,8 @@ void SessionCrashedBubbleView::Show(Browser* browser) {
 
 // Stats collection only applies to Google Chrome builds.
 #if defined(GOOGLE_CHROME_BUILD)
-  // Schedule a task to run ShouldOfferMetricsReporting() on FILE thread, since
-  // GoogleUpdateSettings::GetCollectStatsConsent() does IO. Then, call
+  // Schedule a task to run GoogleUpdateSettings::GetCollectStatsConsent() on
+  // FILE thread, since it does IO. Then, call
   // SessionCrashedBubbleView::ShowForReal with the result.
   content::BrowserThread::PostTaskAndReplyWithResult(
       content::BrowserThread::FILE,
@@ -142,28 +159,36 @@ void SessionCrashedBubbleView::ShowForReal(
   bool offer_uma_optin = false;
 
 #if defined(GOOGLE_CHROME_BUILD)
-  if (!uma_opted_in_already)
+  if (uma_opted_in_already) {
+    RecordBubbleHistogramValue(SESSION_CRASHED_BUBBLE_ALREADY_UMA_OPTIN);
+  } else {
     offer_uma_optin = g_browser_process->local_state()->FindPreference(
         prefs::kMetricsReportingEnabled)->IsUserModifiable();
+  }
 #endif  // defined(GOOGLE_CHROME_BUILD)
 
   Browser* browser = browser_observer->browser();
 
-  if (!browser)
+  if (!browser) {
+    RecordBubbleHistogramValue(SESSION_CRASHED_BUBBLE_ERROR);
     return;
+  }
 
   views::View* anchor_view =
       BrowserView::GetBrowserViewForBrowser(browser)->toolbar()->app_menu();
   content::WebContents* web_contents =
       browser->tab_strip_model()->GetActiveWebContents();
 
-  if (!web_contents)
+  if (!web_contents) {
+    RecordBubbleHistogramValue(SESSION_CRASHED_BUBBLE_ERROR);
     return;
+  }
 
   SessionCrashedBubbleView* crash_bubble =
       new SessionCrashedBubbleView(anchor_view, browser, web_contents,
                                    offer_uma_optin);
   views::BubbleDelegateView::CreateBubble(crash_bubble)->Show();
+  RecordBubbleHistogramValue(SESSION_CRASHED_BUBBLE_SHOWN);
 }
 
 SessionCrashedBubbleView::SessionCrashedBubbleView(
@@ -178,7 +203,8 @@ SessionCrashedBubbleView::SessionCrashedBubbleView(
       restore_button_(NULL),
       uma_option_(NULL),
       offer_uma_optin_(offer_uma_optin),
-      started_navigation_(false) {
+      started_navigation_(false),
+      restored_(false) {
   set_close_on_deactivate(false);
   registrar_.Add(
       this,
@@ -206,6 +232,12 @@ bool SessionCrashedBubbleView::ShouldShowWindowTitle() const {
 
 bool SessionCrashedBubbleView::ShouldShowCloseButton() const {
   return true;
+}
+
+void SessionCrashedBubbleView::OnWidgetDestroying(views::Widget* widget) {
+  if (!restored_)
+    RecordBubbleHistogramValue(SESSION_CRASHED_BUBBLE_IGNORED);
+  BubbleDelegateView::OnWidgetDestroying(widget);
 }
 
 void SessionCrashedBubbleView::Init() {
@@ -337,6 +369,7 @@ void SessionCrashedBubbleView::StyledLabelLinkClicked(const gfx::Range& range,
       NEW_FOREGROUND_TAB,
       content::PAGE_TRANSITION_LINK,
       false));
+  RecordBubbleHistogramValue(SESSION_CRASHED_BUBBLE_HELP);
 }
 
 void SessionCrashedBubbleView::DidStartNavigationToPendingEntry(
@@ -376,6 +409,8 @@ void SessionCrashedBubbleView::TabDetachedAt(content::WebContents* contents,
 
 void SessionCrashedBubbleView::RestorePreviousSession(views::Button* sender) {
   SessionRestore::RestoreSessionAfterCrash(browser_);
+  RecordBubbleHistogramValue(SESSION_CRASHED_BUBBLE_RESTORED);
+  restored_ = true;
 
   // Record user's choice for opting in to UMA.
   // There's no opting-out choice in the crash restore bubble.
@@ -385,6 +420,7 @@ void SessionCrashedBubbleView::RestorePreviousSession(views::Button* sender) {
     OptionsUtil::ResolveMetricsReportingEnabled(true);
     g_browser_process->local_state()->SetBoolean(
         prefs::kMetricsReportingEnabled, true);
+    RecordBubbleHistogramValue(SESSION_CRASHED_BUBBLE_UMA_OPTIN);
   }
   CloseBubble();
 }

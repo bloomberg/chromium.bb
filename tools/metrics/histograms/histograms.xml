@@ -26903,6 +26903,11 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="SessionCrashed.Bubble" enum="SessionCrashedBubbleUserAction">
+  <owner>yiyaoliu@chromium.org</owner>
+  <summary>How did the user interact with the SessionCrashed Bubble?</summary>
+</histogram>
+
 <histogram name="Settings.DefaultSearchProvider" enum="OmniboxSearchEngine">
   <obsolete>
     Deprecated in Chrome 30.  Use Search.DefaultSearchProviderType instead.
@@ -45847,6 +45852,16 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="0" label="OK"/>
   <int value="1" label="Write headers error"/>
   <int value="2" label="Write data error"/>
+</enum>
+
+<enum name="SessionCrashedBubbleUserAction" type="int">
+  <int value="0" label="The bubble was shown"/>
+  <int value="1" label="There was an error when showing the bubble."/>
+  <int value="2" label="The Restore button was clicked"/>
+  <int value="3" label="User was already opted in to UMA"/>
+  <int value="4" label="User chose to opt in to UMA"/>
+  <int value="5" label="User clicked on the help button"/>
+  <int value="6" label="User ignored or closed the bubble"/>
 </enum>
 
 <enum name="SessionStartupPref" type="int">
