@@ -3939,8 +3939,6 @@ void RenderViewImpl::zoomLimitsChanged(double minimum_level,
 void RenderViewImpl::zoomLevelChanged() {
   double zoom_level = webview()->zoomLevel();
 
-  FOR_EACH_OBSERVER(RenderViewObserver, observers_, ZoomLevelChanged());
-
   // Do not send empty URLs to the browser when we are just setting the default
   // zoom level (from RendererPreferences) before the first navigation.
   if (!webview()->mainFrame()->document().url().isEmpty()) {

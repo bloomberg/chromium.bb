@@ -217,13 +217,6 @@ void AutofillAgent::WillSubmitForm(WebLocalFrame* frame,
   }
 }
 
-void AutofillAgent::ZoomLevelChanged() {
-  // Any time the zoom level changes, the page's content moves, so any Autofill
-  // popups should be hidden. This is only needed for the new Autofill UI
-  // because WebKit already knows to hide the old UI when this occurs.
-  HidePopup();
-}
-
 void AutofillAgent::FocusedNodeChanged(const WebNode& node) {
   if (password_generation_agent_ &&
       password_generation_agent_->FocusedNodeHasChanged(node)) {
