@@ -1834,12 +1834,12 @@ void RenderBlockFlow::styleDidChange(StyleDifference diff, const RenderStyle* ol
 void RenderBlockFlow::updateStaticInlinePositionForChild(RenderBox* child, LayoutUnit logicalTop)
 {
     if (child->style()->isOriginalDisplayInlineType())
-        setStaticInlinePositionForChild(child, logicalTop, startAlignedOffsetForLine(logicalTop, false));
+        setStaticInlinePositionForChild(child, startAlignedOffsetForLine(logicalTop, false));
     else
-        setStaticInlinePositionForChild(child, logicalTop, startOffsetForContent());
+        setStaticInlinePositionForChild(child, startOffsetForContent());
 }
 
-void RenderBlockFlow::setStaticInlinePositionForChild(RenderBox* child, LayoutUnit blockOffset, LayoutUnit inlinePosition)
+void RenderBlockFlow::setStaticInlinePositionForChild(RenderBox* child, LayoutUnit inlinePosition)
 {
     child->layer()->setStaticInlinePosition(inlinePosition);
 }

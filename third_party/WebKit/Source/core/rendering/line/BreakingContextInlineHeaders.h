@@ -336,7 +336,7 @@ inline void BreakingContext::handleOutOfFlowPositioned(Vector<RenderBox*>& posit
     RenderBox* box = toRenderBox(m_current.object());
     bool isInlineType = box->style()->isOriginalDisplayInlineType();
     if (!isInlineType) {
-        m_block->setStaticInlinePositionForChild(box, m_block->logicalHeight(), m_block->startOffsetForContent());
+        m_block->setStaticInlinePositionForChild(box, m_block->startOffsetForContent());
     } else {
         // If our original display was an INLINE type, then we can go ahead
         // and determine our static y position now.

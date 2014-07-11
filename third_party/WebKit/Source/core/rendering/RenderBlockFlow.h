@@ -150,7 +150,7 @@ public:
 
     LayoutUnit startAlignedOffsetForLine(LayoutUnit position, bool shouldIndentText);
 
-    void setStaticInlinePositionForChild(RenderBox*, LayoutUnit blockOffset, LayoutUnit inlinePosition);
+    void setStaticInlinePositionForChild(RenderBox*, LayoutUnit inlinePosition);
     void updateStaticInlinePositionForChild(RenderBox*, LayoutUnit logicalTop);
 
     static bool shouldSkipCreatingRunsForObject(RenderObject* obj)
