@@ -184,6 +184,13 @@ function test()
             var searchConfig = new WebInspector.SearchConfig(query, true, false);
             runSearchAndDumpResults(searchConfig, next);
         },
+
+        function testSeveralQueriesFileNotCSS(next)
+        {
+            var query = "searchTest" + "Unique" + " -file:css " + " space" + " String";
+            var searchConfig = new WebInspector.SearchConfig(query, true, false);
+            runSearchAndDumpResults(searchConfig, next);
+        },
     ]);
 }
 
