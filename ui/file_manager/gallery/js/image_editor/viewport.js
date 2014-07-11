@@ -9,9 +9,26 @@
  * @constructor
  */
 function Viewport() {
+  /**
+   * Size of the full resolution image.
+   * @type {Rect}
+   * @private
+   */
   this.imageBounds_ = new Rect();
+
+  /**
+   * Size of the application window.
+   * @type {Rect}
+   * @private
+   */
   this.screenBounds_ = new Rect();
 
+  /**
+   * Scale from the full resolution image to the screen displayed image. This is
+   * not zoom operated by users.
+   * @type {number}
+   * @private
+   */
   this.scale_ = 1;
   this.offsetX_ = 0;
   this.offsetY_ = 0;
@@ -21,10 +38,6 @@ function Viewport() {
   this.repaintCallbacks_ = [];
   this.update();
 }
-
-/*
- * Viewport modification.
- */
 
 /**
  * @param {number} width Image width.
@@ -86,11 +99,24 @@ Viewport.prototype.setScale = function(scale, notify) {
  * @return {number} Best scale to fit the current image into the current screen.
  */
 Viewport.prototype.getFittingScale = function() {
-  var scaleX = this.screenBounds_.width / this.imageBounds_.width;
-  var scaleY = this.screenBounds_.height / this.imageBounds_.height;
-  // Scales > (1 / this.getDevicePixelRatio()) do not look good. Also they are
+  return this.getFittingScaleForImageSize_(
+      this.imageBounds_.width, this.imageBounds_.height);
+};
+
+/**
+ * Obtains the scale for the specified image size.
+ *
+ * @param {number} width Width of the full resolution image.
+ * @param {number} height Height of the full resolution image.
+ * @return {number} The ratio of the fullresotion image size and the calculated
+ * displayed image size.
+ */
+Viewport.prototype.getFittingScaleForImageSize_ = function(width, height) {
+  var scaleX = this.screenBounds_.width / width;
+  var scaleY = this.screenBounds_.height / height;
+  // Scales > (1 / devicePixelRatio) do not look good. Also they are
   // not really useful as we do not have any pixel-level operations.
-  return Math.min(1 / Viewport.getDevicePixelRatio(), scaleX, scaleY);
+  return Math.min(1 / window.devicePixelRatio, scaleX, scaleY);
 };
 
 /**
@@ -282,11 +308,6 @@ Viewport.prototype.imageToScreenRect = function(rect) {
 };
 
 /**
- * @return {number} The number of physical pixels in one CSS pixel.
- */
-Viewport.getDevicePixelRatio = function() { return window.devicePixelRatio; };
-
-/**
  * Convert a rectangle from screen coordinates to 'device' coordinates.
  *
  * This conversion enlarges the original rectangle devicePixelRatio times
@@ -296,7 +317,7 @@ Viewport.getDevicePixelRatio = function() { return window.devicePixelRatio; };
  * @return {Rect} Rectangle in device coordinates.
  */
 Viewport.prototype.screenToDeviceRect = function(rect) {
-  var ratio = Viewport.getDevicePixelRatio();
+  var ratio = window.devicePixelRatio;
   var screenCenterX = Math.round(
       this.screenBounds_.left + this.screenBounds_.width / 2);
   var screenCenterY = Math.round(
@@ -416,4 +437,96 @@ Viewport.prototype.repaint = function() {
   this.update();
   for (var i = 0; i != this.repaintCallbacks_.length; i++)
     this.repaintCallbacks_[i]();
+};
+
+/**
+ * Obtains CSS transformation for the screen image.
+ * @return {string} Transformation description.
+ */
+Viewport.prototype.getTransformation = function() {
+  return 'scale(' + (1 / window.devicePixelRatio) + ')';
+};
+
+/**
+ * Obtains shift CSS transformation for the screen image.
+ * @param {number} dx Amount of shift.
+ * @return {string} Transformation description.
+ */
+Viewport.prototype.getShiftTransformation = function(dx) {
+  return 'translateX(' + dx + 'px) ' + this.getTransformation();
+};
+
+/**
+ * Obtains CSS transformation that makes the rotated image fit the original
+ * image. The new rotated image that the transformation is applied to looks the
+ * same with original image.
+ *
+ * @param {boolean} orientation Orientation of the rotation from the original
+ *     image to the rotated image. True is for clockwise and false is for
+ *     counterclockwise.
+ * @return {string} Transformation description.
+ */
+Viewport.prototype.getInverseTransformForRotatedImage = function(orientation) {
+  var previousImageWidth = this.imageBounds_.height;
+  var previousImageHeight = this.imageBounds_.width;
+  var oldScale = this.getFittingScaleForImageSize_(
+      previousImageWidth, previousImageHeight);
+  var scaleRatio = oldScale / this.getScale();
+  var degree = orientation ? '-90deg' : '90deg';
+  return [
+    'scale(' + scaleRatio + ')',
+    'rotate(' + degree + ')',
+    this.getTransformation()
+  ].join(' ');
+};
+
+/**
+ * Obtains CSS transformation that makes the cropped image fit the original
+ * image. The new cropped image that the transformaton is applied to fits to the
+ * the cropped rectangle in the original image.
+ *
+ * @param {number} imageWidth Width of the original image.
+ * @param {number} imageHeight Height of the origianl image.
+ * @param {Rect} imageCropRect Crop rectangle in the image's coordinate system.
+ * @return {string} Transformation description.
+ */
+Viewport.prototype.getInverseTransformForCroppedImage =
+    function(imageWidth, imageHeight, imageCropRect) {
+  var wholeScale = this.getFittingScaleForImageSize_(
+      imageWidth, imageHeight);
+  var croppedScale = this.getFittingScaleForImageSize_(
+      imageCropRect.width, imageCropRect.height);
+  var dx =
+      (imageCropRect.left + imageCropRect.width / 2 - imageWidth / 2) *
+      wholeScale;
+  var dy =
+      (imageCropRect.top + imageCropRect.height / 2 - imageHeight / 2) *
+      wholeScale;
+  return [
+    'translate(' + dx + 'px,' + dy + 'px)',
+    'scale(' + wholeScale / croppedScale + ')',
+    this.getTransformation()
+  ].join(' ');
+};
+
+/**
+ * Obtains CSS transformaton that makes the image fit to the screen rectangle.
+ *
+ * @param {Rect} screenRect Screen rectangle.
+ * @return {string} Transformation description.
+ */
+Viewport.prototype.getScreenRectTransformForImage = function(screenRect) {
+  var screenImageWidth = this.imageBounds_.width * this.getScale();
+  var screenImageHeight = this.imageBounds_.height * this.getScale();
+  var scaleX = screenRect.width / screenImageWidth;
+  var scaleY = screenRect.height / screenImageHeight;
+  var screenWidth = this.screenBounds_.width;
+  var screenHeight = this.screenBounds_.height;
+  var dx = screenRect.left + screenRect.width / 2 - screenWidth / 2;
+  var dy = screenRect.top + screenRect.height / 2 - screenHeight / 2;
+  return [
+    'translate(' + dx + 'px,' + dy + 'px)',
+    'scale(' + scaleX + ',' + scaleY + ')',
+    this.getTransformation()
+  ].join(' ');
 };

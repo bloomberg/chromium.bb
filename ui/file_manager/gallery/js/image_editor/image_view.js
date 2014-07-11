@@ -626,9 +626,8 @@ ImageView.prototype.setTransform = function(element, opt_effect, opt_duration) {
  * @return {ImageView.Effect.Zoom} Zoom effect object.
  */
 ImageView.prototype.createZoomEffect = function(screenRect) {
-  return new ImageView.Effect.Zoom(
-      this.viewport_.screenToDeviceRect(screenRect),
-      null /* use viewport */,
+  return new ImageView.Effect.ZoomToScreen(
+      screenRect,
       ImageView.MODE_TRANSITION_DURATION);
 };
 
@@ -644,21 +643,17 @@ ImageView.prototype.createZoomEffect = function(screenRect) {
  */
 ImageView.prototype.replaceAndAnimate = function(
     canvas, imageCropRect, rotate90) {
-  var oldScale = this.viewport_.getScale();
-  var deviceCropRect = imageCropRect && this.viewport_.screenToDeviceRect(
-        this.viewport_.imageToScreenRect(imageCropRect));
-
+  var oldImageBounds = {
+    width: this.viewport_.getImageBounds().width,
+    height: this.viewport_.getImageBounds().height
+  };
   var oldScreenImage = this.screenImage_;
   this.replaceContent_(canvas);
   var newScreenImage = this.screenImage_;
-
-  // Display the new canvas, initially transformed.
-  var deviceFullRect = this.viewport_.getDeviceClipped();
-
   var effect = rotate90 ?
-      new ImageView.Effect.Rotate(
-          oldScale / this.viewport_.getScale(), -rotate90) :
-      new ImageView.Effect.Zoom(deviceCropRect, deviceFullRect);
+      new ImageView.Effect.Rotate(rotate90 > 0) :
+      new ImageView.Effect.Zoom(
+          oldImageBounds.width, oldImageBounds.height, imageCropRect);
 
   this.setTransform(newScreenImage, effect, 0 /* instant */);
 
@@ -683,26 +678,20 @@ ImageView.prototype.replaceAndAnimate = function(
  * @return {number} Animation duration.
  */
 ImageView.prototype.animateAndReplace = function(canvas, imageCropRect) {
-  var deviceFullRect = this.viewport_.getDeviceClipped();
-  var oldScale = this.viewport_.getScale();
-
   var oldScreenImage = this.screenImage_;
   this.replaceContent_(canvas);
   var newScreenImage = this.screenImage_;
-
-  var deviceCropRect = this.viewport_.screenToDeviceRect(
-        this.viewport_.imageToScreenRect(imageCropRect));
-
   var setFade = ImageUtil.setAttribute.bind(null, newScreenImage, 'fade');
   setFade(true);
   oldScreenImage.parentNode.insertBefore(newScreenImage, oldScreenImage);
+  var effect = new ImageView.Effect.Zoom(
+      this.viewport_.getImageBounds().width,
+      this.viewport_.getImageBounds().height,
+      imageCropRect);
 
-  var effect = new ImageView.Effect.Zoom(deviceCropRect, deviceFullRect);
   // Animate to the transformed state.
   this.setTransform(oldScreenImage, effect);
-
   setTimeout(setFade.bind(null, false), 0);
-
   setTimeout(function() {
     if (oldScreenImage.parentNode)
       oldScreenImage.parentNode.removeChild(oldScreenImage);
@@ -710,7 +699,6 @@ ImageView.prototype.animateAndReplace = function(canvas, imageCropRect) {
 
   return effect.getSafeInterval();
 };
-
 
 /**
  * Generic cache with a limited capacity and LRU eviction.
@@ -852,15 +840,13 @@ ImageView.Effect.prototype.getSafeInterval = function() {
 ImageView.Effect.prototype.getTiming = function() { return this.timing_; };
 
 /**
- * @param {HTMLCanvasElement} element Element.
- * @return {number} Preferred pixel ration to use with this element.
- * @private
+ * Obtains the CSS transformation string of the effect.
+ * @param {DOMCanvas} element Canvas element to be applied the transforamtion.
+ * @param {Viewport} viewport Current viewport.
+ * @return CSS transformation description.
  */
-ImageView.Effect.getPixelRatio_ = function(element) {
-  if (element.constructor.name === 'HTMLCanvasElement')
-    return Viewport.getDevicePixelRatio();
-  else
-    return 1;
+ImageView.Effect.prototype.transform = function(element, viewport) {
+  throw new Error('Not implemented.');
 };
 
 /**
@@ -868,6 +854,7 @@ ImageView.Effect.getPixelRatio_ = function(element) {
  * for devicePixelRatio.
  *
  * @constructor
+ * @extends {ImageView.Effect}
  */
 ImageView.Effect.None = function() {
   ImageView.Effect.call(this, 0);
@@ -880,11 +867,11 @@ ImageView.Effect.None.prototype = { __proto__: ImageView.Effect.prototype };
 
 /**
  * @param {HTMLCanvasElement} element Element.
+ * @param {Viewport} viewport Current viewport.
  * @return {string} Transform string.
  */
-ImageView.Effect.None.prototype.transform = function(element) {
-  var ratio = ImageView.Effect.getPixelRatio_(element);
-  return 'scale(' + (1 / ratio) + ')';
+ImageView.Effect.None.prototype.transform = function(element, viewport) {
+  return viewport.getTransformation();
 };
 
 /**
@@ -893,6 +880,7 @@ ImageView.Effect.None.prototype.transform = function(element) {
  * @param {number} direction -1 for left, 1 for right.
  * @param {boolean=} opt_slow True if slow (as in slideshow).
  * @constructor
+ * @extends {ImageView.Effect}
  */
 ImageView.Effect.Slide = function Slide(direction, opt_slow) {
   ImageView.Effect.call(this,
@@ -903,25 +891,21 @@ ImageView.Effect.Slide = function Slide(direction, opt_slow) {
   if (this.direction_ < 0) this.shift_ = -this.shift_;
 };
 
-/**
- * Inherits from ImageView.Effect.
- */
 ImageView.Effect.Slide.prototype = { __proto__: ImageView.Effect.prototype };
 
 /**
- * @return {ImageView.Effect.Slide} Reverse Slide effect.
+ * Reverses the slide effect.
+ * @return {ImageView.Effect.Slide} Reversed effect.
  */
 ImageView.Effect.Slide.prototype.getReverse = function() {
   return new ImageView.Effect.Slide(-this.direction_, this.slow_);
 };
 
 /**
- * @param {HTMLCanvasElement} element Element.
- * @return {string} Transform string.
+ * @override
  */
-ImageView.Effect.Slide.prototype.transform = function(element) {
-  var ratio = ImageView.Effect.getPixelRatio_(element);
-  return 'scale(' + (1 / ratio) + ') translate(' + this.shift_ + 'px, 0px)';
+ImageView.Effect.Slide.prototype.transform = function(element, viewport) {
+  return viewport.getShiftTransformation(this.shift_);
 };
 
 /**
@@ -930,72 +914,75 @@ ImageView.Effect.Slide.prototype.transform = function(element) {
  * Animates the original rectangle to the target rectangle. Both parameters
  * should be given in device coordinates (accounting for devicePixelRatio).
  *
- * @param {Rect} deviceTargetRect Target rectangle.
- * @param {Rect=} opt_deviceOriginalRect Original rectangle. If omitted,
- *     the full viewport will be used at the time of |transform| call.
- * @param {number=} opt_duration Duration in ms.
+ * @param {number} previousImageWidth Width of the full resolution image.
+ * @param {number} previousImageHeight Hieght of the full resolution image.
+ * @param {Rect} imageCropRect Crop rectangle in the full resolution image.
+ * @param {number=} opt_duration Duration of the effect.
  * @constructor
+ * @extends {ImageView.Effect}
  */
 ImageView.Effect.Zoom = function(
-    deviceTargetRect, opt_deviceOriginalRect, opt_duration) {
+    previousImageWidth, previousImageHeight, imageCropRect, opt_duration) {
   ImageView.Effect.call(this,
       opt_duration || ImageView.Effect.DEFAULT_DURATION);
-  this.target_ = deviceTargetRect;
-  this.original_ = opt_deviceOriginalRect;
+  this.previousImageWidth_ = previousImageWidth;
+  this.previousImageHeight_ = previousImageHeight;
+  this.imageCropRect_ = imageCropRect;
 };
 
-/**
- * Inherits from ImageView.Effect.
- */
 ImageView.Effect.Zoom.prototype = { __proto__: ImageView.Effect.prototype };
 
 /**
- * @param {HTMLCanvasElement} element Element.
- * @param {Viewport} viewport Viewport.
- * @return {string} Transform string.
+ * @override
  */
 ImageView.Effect.Zoom.prototype.transform = function(element, viewport) {
-  if (!this.original_)
-    this.original_ = viewport.getDeviceClipped();
-
-  var ratio = ImageView.Effect.getPixelRatio_(element);
-
-  var dx = (this.target_.left + this.target_.width / 2) -
-           (this.original_.left + this.original_.width / 2);
-  var dy = (this.target_.top + this.target_.height / 2) -
-           (this.original_.top + this.original_.height / 2);
-
-  var scaleX = this.target_.width / this.original_.width;
-  var scaleY = this.target_.height / this.original_.height;
-
-  return 'translate(' + (dx / ratio) + 'px,' + (dy / ratio) + 'px) ' +
-    'scaleX(' + (scaleX / ratio) + ') scaleY(' + (scaleY / ratio) + ')';
+  return viewport.getInverseTransformForCroppedImage(
+      this.previousImageWidth_, this.previousImageHeight_, this.imageCropRect_);
 };
 
 /**
- * Rotate effect.
+ * Effect to zoom to a screen rectangle.
  *
- * @param {number} scale Scale.
- * @param {number} rotate90 Rotation in 90 degrees increments.
+ * @param {Rect} screenRect Rectangle in the application window's coordinate.
+ * @param {number=} opt_duration Duration of effect.
  * @constructor
+ * @extends {ImageView.Effect}
  */
-ImageView.Effect.Rotate = function(scale, rotate90) {
-  ImageView.Effect.call(this, ImageView.Effect.DEFAULT_DURATION);
-  this.scale_ = scale;
-  this.rotate90_ = rotate90;
+ImageView.Effect.ZoomToScreen = function(screenRect, opt_duration) {
+  ImageView.Effect.call(this, opt_duration);
+  this.screenRect_ = screenRect;
+};
+
+ImageView.Effect.ZoomToScreen.prototype = {
+  __proto__: ImageView.Effect.prototype
 };
 
 /**
- * Inherits from ImageView.Effect.
+ * @override
  */
+ImageView.Effect.ZoomToScreen.prototype.transform = function(
+    element, viewport) {
+  return viewport.getScreenRectTransformForImage(this.screenRect_);
+};
+
+/**
+ * Rotation effect.
+ *
+ * @param {boolean} orientation Orientation of rotation. True is for clockwise
+ *     and false is for counterclockwise.
+ * @constructor
+ * @extends {ImageView.Effect}
+ */
+ImageView.Effect.Rotate = function(orientation) {
+  ImageView.Effect.call(this, ImageView.Effect.DEFAULT_DURATION);
+  this.orientation_ = orientation;
+};
+
 ImageView.Effect.Rotate.prototype = { __proto__: ImageView.Effect.prototype };
 
 /**
- * @param {HTMLCanvasElement} element Element.
- * @return {string} Transform string.
+ * @override
  */
-ImageView.Effect.Rotate.prototype.transform = function(element) {
-  var ratio = ImageView.Effect.getPixelRatio_(element);
-  return 'rotate(' + (this.rotate90_ * 90) + 'deg) ' +
-         'scale(' + (this.scale_ / ratio) + ')';
+ImageView.Effect.Rotate.prototype.transform = function(element, viewport) {
+  return viewport.getInverseTransformForRotatedImage(this.orientation_);
 };
