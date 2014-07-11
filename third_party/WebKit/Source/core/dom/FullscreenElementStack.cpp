@@ -46,15 +46,12 @@ using namespace HTMLNames;
 
 static bool fullscreenIsAllowedForAllOwners(const Document& document)
 {
-    const HTMLFrameOwnerElement* owner = document.ownerElement();
-    if (!owner)
-        return true;
-    do {
+    for (const HTMLFrameOwnerElement* owner = document.ownerElement(); owner; owner = owner->document().ownerElement()) {
         if (!isHTMLIFrameElement(owner))
             return false;
         if (!owner->hasAttribute(allowfullscreenAttr))
             return false;
-    } while ((owner = owner->document().ownerElement()));
+    }
     return true;
 }
 

@@ -53,7 +53,7 @@ using namespace HTMLNames;
 
 static Node* nextRenderedEditable(Node* node)
 {
-    while ((node = node->nextLeafNode())) {
+    for (node = node->nextLeafNode(); node; node = node->nextLeafNode()) {
         RenderObject* renderer = node->renderer();
         if (!renderer)
             continue;
@@ -67,7 +67,7 @@ static Node* nextRenderedEditable(Node* node)
 
 static Node* previousRenderedEditable(Node* node)
 {
-    while ((node = node->previousLeafNode())) {
+    for (node = node->previousLeafNode(); node; node = node->previousLeafNode()) {
         RenderObject* renderer = node->renderer();
         if (!renderer)
             continue;
@@ -1015,8 +1015,7 @@ static bool isNonTextLeafChild(RenderObject* object)
 static InlineTextBox* searchAheadForBetterMatch(RenderObject* renderer)
 {
     RenderBlock* container = renderer->containingBlock();
-    RenderObject* next = renderer;
-    while ((next = next->nextInPreOrder(container))) {
+    for (RenderObject* next = renderer->nextInPreOrder(container); next; next = next->nextInPreOrder(container)) {
         if (next->isRenderBlock())
             return 0;
         if (next->isBR())

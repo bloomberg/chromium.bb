@@ -102,7 +102,7 @@ private:
 };
 
 #if SECURITY_ASSERT_ENABLED
-template<typename NodeType> inline void adopted(TreeShared<NodeType>* object)
+template<typename NodeType> void adopted(TreeShared<NodeType>* object)
 {
     if (!object)
         return;

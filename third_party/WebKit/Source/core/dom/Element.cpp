@@ -2707,8 +2707,7 @@ static Element* parentCrossingFrameBoundaries(Element* element)
 
 void Element::setContainsFullScreenElementOnAncestorsCrossingFrameBoundaries(bool flag)
 {
-    Element* element = this;
-    while ((element = parentCrossingFrameBoundaries(element)))
+    for (Element* element = parentCrossingFrameBoundaries(this); element; element = parentCrossingFrameBoundaries(element))
         element->setContainsFullScreenElement(flag);
 }
 

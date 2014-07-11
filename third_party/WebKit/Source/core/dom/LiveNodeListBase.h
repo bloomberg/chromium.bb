@@ -173,8 +173,7 @@ template <class NodeListType>
 Element* LiveNodeListBase::traverseMatchingElementsForwardToOffset(const NodeListType& nodeList, unsigned offset, Element& currentElement, unsigned& currentOffset)
 {
     ASSERT(currentOffset < offset);
-    Element* next = &currentElement;
-    while ((next = nextMatchingElement(nodeList, *next))) {
+    for (Element* next = nextMatchingElement(nodeList, currentElement); next; next = nextMatchingElement(nodeList, *next)) {
         if (++currentOffset == offset)
             return next;
     }
@@ -185,8 +184,7 @@ template <class NodeListType>
 Element* LiveNodeListBase::traverseMatchingElementsBackwardToOffset(const NodeListType& nodeList, unsigned offset, Element& currentElement, unsigned& currentOffset)
 {
     ASSERT(currentOffset > offset);
-    Element* previous = &currentElement;
-    while ((previous = previousMatchingElement(nodeList, *previous))) {
+    for (Element* previous = previousMatchingElement(nodeList, currentElement); previous; previous = previousMatchingElement(nodeList, *previous)) {
         if (--currentOffset == offset)
             return previous;
     }

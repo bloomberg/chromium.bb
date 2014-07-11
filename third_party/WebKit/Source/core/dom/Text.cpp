@@ -134,8 +134,7 @@ PassRefPtrWillBeRawPtr<Text> Text::splitText(unsigned offset, ExceptionState& ex
 
 static const Text* earliestLogicallyAdjacentTextNode(const Text* t)
 {
-    const Node* n = t;
-    while ((n = n->previousSibling())) {
+    for (const Node* n = t->previousSibling(); n; n = n->previousSibling()) {
         Node::NodeType type = n->nodeType();
         if (type == Node::TEXT_NODE || type == Node::CDATA_SECTION_NODE) {
             t = toText(n);
@@ -149,8 +148,7 @@ static const Text* earliestLogicallyAdjacentTextNode(const Text* t)
 
 static const Text* latestLogicallyAdjacentTextNode(const Text* t)
 {
-    const Node* n = t;
-    while ((n = n->nextSibling())) {
+    for (const Node* n = t->nextSibling(); n; n = n->nextSibling()) {
         Node::NodeType type = n->nodeType();
         if (type == Node::TEXT_NODE || type == Node::CDATA_SECTION_NODE) {
             t = toText(n);
