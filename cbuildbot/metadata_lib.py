@@ -116,6 +116,19 @@ class CBuildbotMetadata(object):
     if metadata_dict:
       self.UpdateWithDict(metadata_dict)
 
+  @staticmethod
+  def FromJSONString(json_string):
+    """Construct a CBuildbotMetadata from a json representation.
+
+    Args:
+      json_string: A string json representation of a CBuildbotMetadata
+                   dictionary.
+
+    Returns:
+      A CbuildbotMetadata instance.
+    """
+    return CBuildbotMetadata(json.loads(json_string))
+
   def UpdateWithDict(self, metadata_dict):
     """Update metadata dictionary with values supplied in |metadata_dict|
 
