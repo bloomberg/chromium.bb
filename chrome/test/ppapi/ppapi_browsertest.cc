@@ -449,7 +449,7 @@ TEST_PPAPI_NACL(HostResolverPrivate_ResolveIPv4)
 // TODO(yhirano): I remove this subtest from RUN_URLLOADER_SUBTESTS_3
 // in order to change the behavior in Blink.
 // Restore the subtest once it is landed.
-//      LIST_TEST(URLLoader_UntrustedHttpRequests)      \
+//      LIST_TEST(URLLoader_UntrustedHttpRequests)
 
 // Note: we do not support Trusted APIs in NaCl, so these will be skipped.
 #define RUN_URLLOADER_TRUSTED_SUBTESTS \
