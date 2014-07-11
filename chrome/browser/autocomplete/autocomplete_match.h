@@ -168,17 +168,40 @@ struct AutocompleteMatch {
   // like entity, personalized, profile or postfix.
   static bool IsSpecializedSearchType(Type type);
 
-  // Copies the destination_url with "www." stripped off to
-  // |stripped_destination_url| and also converts https protocol to
-  // http.  These two conversions are merely to allow comparisons to
-  // remove likely duplicates; these URLs are not used as actual
-  // destination URLs.  This method is invoked internally by the
-  // AutocompleteResult and does not normally need to be invoked.
-  // If |template_url_service| is not NULL, it is used to get a template URL
-  // corresponding to this match.  The template is used to strip off query args
-  // other than the search terms themselves that would otherwise prevent from
+  // A static version GetTemplateURL() that takes the match's keyword and
+  // match's hostname as parameters.  In short, returns the TemplateURL
+  // associated with |keyword| if it exists; otherwise returns the TemplateURL
+  // associated with |host| if it exists.
+  static TemplateURL* GetTemplateURLWithKeyword(
+      TemplateURLService* template_url_service,
+      const base::string16& keyword,
+      const std::string& host);
+
+  // Returns |url| altered by stripping off "www.", converting https protocol
+  // to http, and stripping excess query parameters.  These conversions are
+  // merely to allow comparisons to remove likely duplicates; these URLs are
+  // not used as actual destination URLs.  If |template_url_service| is not
+  // NULL, it is used to get a template URL corresponding to this match.  If
+  // the match's keyword is known, it can be passed in.  Otherwise, it can be
+  // left empty and the template URL (if any) is determined from the
+  // destination's hostname.  The template URL is used to strip off query args
+  // other than the search terms themselves that would otherwise prevent doing
   // proper deduping.
+  static GURL GURLToStrippedGURL(const GURL& url,
+                                 TemplateURLService* template_url_service,
+                                 const base::string16& keyword);
+
+  // Computes the stripped destination URL (via GURLToStrippedGURL()) and
+  // stores the result in |stripped_destination_url|.
   void ComputeStrippedDestinationURL(TemplateURLService* template_url_service);
+
+  // Sets |allowed_to_be_default_match| to true if this match is effectively
+  // the URL-what-you-typed match (i.e., would be dupped against the UWYT
+  // match when AutocompleteResult merges matches).  |canonical_input_url| is
+  // the AutocompleteInput interpreted as a URL (i.e.,
+  // AutocompleteInput::canonicalized_url()).
+  void EnsureUWYTIsAllowedToBeDefault(const GURL& canonical_input_url,
+                                      TemplateURLService* template_url_service);
 
   // Gets data relevant to whether there should be any special keyword-related
   // UI shown for this match.  If this match represents a selected keyword, i.e.

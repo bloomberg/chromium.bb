@@ -17,6 +17,8 @@
 #include "components/autocomplete/autocomplete_input.h"
 #include "components/metrics/proto/omnibox_event.pb.h"
 #include "components/metrics/proto/omnibox_input_type.pb.h"
+#include "content/public/common/url_constants.h"
+#include "url/url_constants.h"
 
 using metrics::OmniboxEventProto;
 
@@ -263,6 +265,17 @@ void AutocompleteResult::SortAndCull(
       } else {
         DCHECK_NE(metrics::OmniboxInputType::FORCED_QUERY, input.type())
             << debug_info;
+        // If the user explicitly typed a scheme, the default match should
+        // have the same scheme.
+        if ((input.type() == metrics::OmniboxInputType::URL) &&
+            input.parts().scheme.is_nonempty()) {
+          const std::string& in_scheme = base::UTF16ToUTF8(input.scheme());
+          const std::string& dest_scheme =
+              default_match_->destination_url.scheme();
+          DCHECK((in_scheme == dest_scheme) ||
+                 ((in_scheme == url::kAboutScheme) &&
+                  (dest_scheme == content::kChromeUIScheme))) << debug_info;
+        }
       }
     }
   }

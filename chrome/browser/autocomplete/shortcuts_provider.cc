@@ -142,15 +142,13 @@ void ShortcutsProvider::GetMatches(const AutocompleteInput& input) {
   base::string16 term_string(base::i18n::ToLower(input.text()));
   DCHECK(!term_string.empty());
 
-  const GURL& input_as_gurl =
-      url_fixer::FixupURL(base::UTF16ToUTF8(input.text()), std::string());
-  const base::string16 fixed_up_input(FixupUserInput(input).second);
-
   int max_relevance;
   if (!OmniboxFieldTrial::ShortcutsScoringMaxRelevance(
       input.current_page_classification(), &max_relevance))
     max_relevance = kShortcutsProviderDefaultMaxRelevance;
-
+  TemplateURLService* template_url_service =
+      TemplateURLServiceFactory::GetForProfile(profile_);
+  const base::string16 fixed_up_input(FixupUserInput(input).second);
   for (ShortcutsBackend::ShortcutMap::const_iterator it =
            FindFirstMatch(term_string, backend.get());
        it != backend->shortcuts_map().end() &&
@@ -159,9 +157,8 @@ void ShortcutsProvider::GetMatches(const AutocompleteInput& input) {
     int relevance = CalculateScore(term_string, it->second, max_relevance);
     if (relevance) {
       matches_.push_back(ShortcutToACMatch(it->second, relevance, input,
-                                           fixed_up_input, input_as_gurl));
-      matches_.back().ComputeStrippedDestinationURL(
-          TemplateURLServiceFactory::GetForProfile(profile_));
+                                           fixed_up_input));
+      matches_.back().ComputeStrippedDestinationURL(template_url_service);
     }
   }
   // Remove duplicates.  Duplicates don't need to be preserved in the matches
@@ -192,8 +189,7 @@ AutocompleteMatch ShortcutsProvider::ShortcutToACMatch(
     const history::ShortcutsDatabase::Shortcut& shortcut,
     int relevance,
     const AutocompleteInput& input,
-    const base::string16& fixed_up_input_text,
-    const GURL& input_as_gurl) {
+    const base::string16& fixed_up_input_text) {
   DCHECK(!input.text().empty());
   AutocompleteMatch match;
   match.provider = this;
@@ -244,16 +240,11 @@ AutocompleteMatch ShortcutsProvider::ShortcutToACMatch(
       match.allowed_to_be_default_match =
           !HistoryProvider::PreventInlineAutocomplete(input) ||
           match.inline_autocompletion.empty();
-    } else {
-      // Also allow a user's input to be marked as default if it would be fixed
-      // up to the same thing as the fill_into_edit.  This handles cases like
-      // the user input containing a trailing slash absent in fill_into_edit.
-      match.allowed_to_be_default_match =
-          (input_as_gurl ==
-           url_fixer::FixupURL(base::UTF16ToUTF8(match.fill_into_edit),
-                               std::string()));
     }
   }
+  match.EnsureUWYTIsAllowedToBeDefault(
+      input.canonicalized_url(),
+      TemplateURLServiceFactory::GetForProfile(profile_));
 
   // Try to mark pieces of the contents and description as matches if they
   // appear in |input.text()|.

@@ -135,10 +135,6 @@ class BaseSearchProvider : public AutocompleteProvider,
 
     const std::string& deletion_url() const { return deletion_url_; }
 
-    // Returns if this result is inlineable against the current input |input|.
-    // Non-inlineable results are stale.
-    virtual bool IsInlineable(const base::string16& input) const = 0;
-
     // Returns the default relevance value for this result (which may
     // be left over from a previous omnibox input) given the current
     // input and whether the current input caused a keyword provider
@@ -213,7 +209,6 @@ class BaseSearchProvider : public AutocompleteProvider,
                                const base::string16& input_text);
 
     // Result:
-    virtual bool IsInlineable(const base::string16& input) const OVERRIDE;
     virtual int CalculateRelevance(
         const AutocompleteInput& input,
         bool keyword_provider_requested) const OVERRIDE;
@@ -274,7 +269,6 @@ class BaseSearchProvider : public AutocompleteProvider,
                                            const std::string& languages);
 
     // Result:
-    virtual bool IsInlineable(const base::string16& input) const OVERRIDE;
     virtual int CalculateRelevance(
         const AutocompleteInput& input,
         bool keyword_provider_requested) const OVERRIDE;

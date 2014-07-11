@@ -1129,10 +1129,12 @@ AutocompleteMatch SearchProvider::NavigationToMatch(
   // that we're not preventing, make sure we didn't trim any whitespace.
   // We don't want to claim http://foo.com/bar is inlineable against the
   // input "foo.com/b ".
-  match.allowed_to_be_default_match = navigation.IsInlineable(input) &&
+  match.allowed_to_be_default_match = (prefix != NULL) &&
       (providers_.GetKeywordProviderURL() == NULL) &&
       (match.inline_autocompletion.empty() ||
       (!input_.prevent_inline_autocomplete() && !trimmed_whitespace));
+  match.EnsureUWYTIsAllowedToBeDefault(
+      input_.canonicalized_url(), providers_.template_url_service());
 
   match.contents = navigation.match_contents();
   match.contents_class = navigation.match_contents_class();

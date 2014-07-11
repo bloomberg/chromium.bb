@@ -2206,18 +2206,6 @@ TEST_F(SearchProviderTest, NavigationInline) {
     { "http://www.abc.com/a", "http://www.abc.com",
                               "http://www.abc.com",  std::string(), false,
                                                                     false },
-    { "http://www.abc.com",   "https://www.abc.com",
-                              "https://www.abc.com", std::string(), false,
-                                                                    false },
-    { "http://abc.com",       "ftp://abc.com",
-                              "ftp://abc.com",       std::string(), false,
-                                                                    false },
-    { "https://www.abc.com",  "http://www.abc.com",
-                                     "www.abc.com",  std::string(), false,
-                                                                    false },
-    { "ftp://abc.com",        "http://abc.com",
-                                     "abc.com",      std::string(), false,
-                                                                    false },
 
     // Do not inline matches with invalid input prefixes; trim http as needed.
     { "ttp",              "http://www.abc.com",
@@ -2261,6 +2249,13 @@ TEST_F(SearchProviderTest, NavigationInline) {
                               "www.abc.com",      std::string(), true,  true },
     { "abc.com ",      "http://www.abc.com/bar",
                               "www.abc.com/bar",  "/bar",        false, false },
+
+    // A suggestion that's equivalent to what the input gets fixed up to
+    // should be inlined.
+    { "abc.com:",      "http://abc.com/",
+                              "abc.com",      "", true, true },
+    { "abc.com:",      "http://www.abc.com",
+                              "www.abc.com",  "", true, true },
 
     // Inline matches when the input is a leading substring of the scheme.
     { "h",             "http://www.abc.com",

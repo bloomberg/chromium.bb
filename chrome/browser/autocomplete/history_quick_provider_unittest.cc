@@ -158,6 +158,15 @@ class HistoryQuickProviderTest : public testing::Test,
                base::string16 expected_fill_into_edit,
                base::string16 autocompletion);
 
+  // As above, simply with a cursor position specified.
+  void RunTestWithCursor(const base::string16 text,
+                         const size_t cursor_position,
+                         bool prevent_inline_autocomplete,
+                         std::vector<std::string> expected_urls,
+                         bool can_inline_top_result,
+                         base::string16 expected_fill_into_edit,
+                         base::string16 autocompletion);
+
   history::HistoryBackend* history_backend() {
     return history_service_->history_backend_;
   }
@@ -261,16 +270,29 @@ void HistoryQuickProviderTest::SetShouldContain::operator()(
       << "Results did not contain '" << expected << "' but should have.";
 }
 
+void HistoryQuickProviderTest::RunTest(
+    const base::string16 text,
+    bool prevent_inline_autocomplete,
+    std::vector<std::string> expected_urls,
+    bool can_inline_top_result,
+    base::string16 expected_fill_into_edit,
+    base::string16 expected_autocompletion) {
+  RunTestWithCursor(text, base::string16::npos, prevent_inline_autocomplete,
+                    expected_urls, can_inline_top_result,
+                    expected_fill_into_edit, expected_autocompletion);
+}
 
-void HistoryQuickProviderTest::RunTest(const base::string16 text,
-                                       bool prevent_inline_autocomplete,
-                                       std::vector<std::string> expected_urls,
-                                       bool can_inline_top_result,
-                                       base::string16 expected_fill_into_edit,
-                                       base::string16 expected_autocompletion) {
+void HistoryQuickProviderTest::RunTestWithCursor(
+    const base::string16 text,
+    const size_t cursor_position,
+    bool prevent_inline_autocomplete,
+    std::vector<std::string> expected_urls,
+    bool can_inline_top_result,
+    base::string16 expected_fill_into_edit,
+    base::string16 expected_autocompletion) {
   SCOPED_TRACE(text);  // Minimal hint to query being run.
   base::MessageLoop::current()->RunUntilIdle();
-  AutocompleteInput input(text, base::string16::npos, base::string16(),
+  AutocompleteInput input(text, cursor_position, base::string16(),
                           GURL(), metrics::OmniboxEventProto::INVALID_SPEC,
                           prevent_inline_autocomplete, false, true, true,
                           ChromeAutocompleteSchemeClassifier(profile_.get()));
@@ -326,6 +348,24 @@ TEST_F(HistoryQuickProviderTest, SimpleSingleMatch) {
   RunTest(ASCIIToUTF16("slashdot"), false, expected_urls, true,
           ASCIIToUTF16("slashdot.org/favorite_page.html"),
                   ASCIIToUTF16(".org/favorite_page.html"));
+}
+
+TEST_F(HistoryQuickProviderTest, SingleMatchWithCursor) {
+  std::vector<std::string> expected_urls;
+  expected_urls.push_back("http://slashdot.org/favorite_page.html");
+  // With cursor after "slash", we should retrieve the desired result but it
+  // should not be allowed to be the default match.
+  RunTestWithCursor(ASCIIToUTF16("slashfavorite_page.html"), 5, false,
+                    expected_urls, false,
+                    ASCIIToUTF16("slashdot.org/favorite_page.html"),
+                    base::string16());
+  // If the cursor is in the middle of a valid URL suggestion, it should be
+  // allowed to be the default match.  The inline completion will be empty
+  // though as no completion is necessary.
+  RunTestWithCursor(ASCIIToUTF16("slashdot.org/favorite_page.html"), 5, false,
+                    expected_urls, true,
+                    ASCIIToUTF16("slashdot.org/favorite_page.html"),
+                    base::string16());
 }
 
 TEST_F(HistoryQuickProviderTest, WordBoundariesWithPunctuationMatch) {

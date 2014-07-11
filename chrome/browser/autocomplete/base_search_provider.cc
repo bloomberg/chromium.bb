@@ -339,11 +339,6 @@ void BaseSearchProvider::SuggestResult::ClassifyMatchContents(
   }
 }
 
-bool BaseSearchProvider::SuggestResult::IsInlineable(
-    const base::string16& input) const {
-  return StartsWith(suggestion_, input, false);
-}
-
 int BaseSearchProvider::SuggestResult::CalculateRelevance(
     const AutocompleteInput& input,
     bool keyword_provider_requested) const {
@@ -418,12 +413,6 @@ void BaseSearchProvider::NavigationResult::CalculateAndClassifyMatchContents(
         input_text.length(), match_contents_.length(),
         ACMatchClassification::URL, &match_contents_class_);
   }
-}
-
-bool BaseSearchProvider::NavigationResult::IsInlineable(
-    const base::string16& input) const {
-  return
-      URLPrefix::BestURLPrefix(base::UTF8ToUTF16(url_.spec()), input) != NULL;
 }
 
 int BaseSearchProvider::NavigationResult::CalculateRelevance(
