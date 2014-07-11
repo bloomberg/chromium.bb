@@ -47,9 +47,12 @@ static_library("core") {
     "//components/dom_distiller/core/proto",
     "//components/resources",
     "//components/strings",
+    "//net",
     "//skia",
     "//sync",
     "//third_party/dom_distiller_js/package/proto",
+    "//ui/base",
+    "//url",
     #'components.gyp:leveldb_proto',  TODO(GYP)
   ]
 
@@ -74,6 +77,7 @@ static_library("test_support") {
     #'components.gyp:leveldb_proto_test_support',  TODO(GYP)
     "//sync",
     "//testing/gmock",
+    "//testing/gtest",
   ]
 }
 
