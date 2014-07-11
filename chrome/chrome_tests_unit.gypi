@@ -850,6 +850,7 @@
         'browser/content_settings/host_content_settings_map_unittest.cc',
         'browser/content_settings/mock_settings_observer.cc',
         'browser/content_settings/mock_settings_observer.h',
+        'browser/content_settings/permission_context_base_unittest.cc',
         'browser/content_settings/permission_queue_controller_unittest.cc',
         'browser/content_settings/tab_specific_content_settings_unittest.cc',
         'browser/custom_handlers/protocol_handler_registry_unittest.cc',
