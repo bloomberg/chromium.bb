@@ -57,8 +57,7 @@ base::FilePath GetInstalledPath(const base::char16* app) {
       filepath = base::FilePath(path);
     }
   }
-
-  return filepath;
+  return filepath.Append(app);
 }
 
 bool IsPdfMimeType(const content::WebPluginMimeType& plugin_mime_type) {
