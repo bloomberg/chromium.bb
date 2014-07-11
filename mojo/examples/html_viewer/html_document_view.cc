@@ -104,15 +104,13 @@ void HTMLDocumentView::AttachToNode(view_manager::Node* node) {
   web_view_->resize(gfx::Size(node->bounds().size()));
 }
 
-void HTMLDocumentView::Load(URLResponsePtr response,
-                            ScopedDataPipeConsumerHandle response_body_stream) {
+void HTMLDocumentView::Load(URLResponsePtr response) {
   DCHECK(web_view_);
 
   GURL url(response->url);
 
   WebURLRequestExtraData* extra_data = new WebURLRequestExtraData;
   extra_data->synthetic_response = response.Pass();
-  extra_data->synthetic_response_body_stream = response_body_stream.Pass();
 
   blink::WebURLRequest web_request;
   web_request.initialize();

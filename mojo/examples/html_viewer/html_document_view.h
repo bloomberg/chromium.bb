@@ -36,8 +36,7 @@ class HTMLDocumentView : public blink::WebViewClient,
 
   void AttachToNode(view_manager::Node* node);
 
-  void Load(URLResponsePtr response,
-            ScopedDataPipeConsumerHandle response_body_stream);
+  void Load(URLResponsePtr response);
 
  private:
   // WebViewClient methods:

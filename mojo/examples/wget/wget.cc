@@ -6,68 +6,29 @@
 
 #include "mojo/public/cpp/application/application_delegate.h"
 #include "mojo/public/cpp/application/application_impl.h"
+#include "mojo/public/cpp/utility/run_loop.h"
 #include "mojo/services/public/interfaces/network/network_service.mojom.h"
 #include "mojo/services/public/interfaces/network/url_loader.mojom.h"
 
 namespace mojo {
 namespace examples {
+namespace {
 
-class WGetApp : public ApplicationDelegate, public URLLoaderClient {
+class ResponsePrinter {
  public:
-  virtual void Initialize(ApplicationImpl* app) MOJO_OVERRIDE {
-    app->ConnectToService("mojo:mojo_network_service", &network_service_);
-    Start();
+  void Run(URLResponsePtr response) const {
+    if (response->error) {
+      printf("Got error: %d (%s)\n",
+          response->error->code, response->error->description.get().c_str());
+    } else {
+      PrintResponse(response);
+      PrintResponseBody(response->body.Pass());
+    }
+
+    RunLoop::current()->Quit();  // All done!
   }
 
- private:
-  virtual void OnReceivedRedirect(URLResponsePtr response,
-                                  const String& new_url,
-                                  const String& new_method) MOJO_OVERRIDE {
-    PrintResponse(response);
-  }
-
-  virtual void OnReceivedResponse(URLResponsePtr response) MOJO_OVERRIDE {
-    PrintResponse(response);
-    PrintResponseBody();
-    Start();
-  }
-
-  virtual void OnReceivedError(NetworkErrorPtr error) MOJO_OVERRIDE {
-    printf("Got error: %d (%s)\n",
-        error->code, error->description.get().c_str());
-  }
-
-  virtual void OnReceivedEndOfResponseBody() MOJO_OVERRIDE {
-    // Ignored.
-  }
-
-  void Start() {
-    std::string url = PromptForURL();
-    printf("Loading: %s\n", url.c_str());
-
-    network_service_->CreateURLLoader(Get(&url_loader_));
-    url_loader_.set_client(this);
-
-    URLRequestPtr request(URLRequest::New());
-    request->url = url;
-    request->method = "GET";
-    request->auto_follow_redirects = true;
-
-    DataPipe data_pipe;
-    response_body_stream_ = data_pipe.consumer_handle.Pass();
-
-    url_loader_->Start(request.Pass(), data_pipe.producer_handle.Pass());
-  }
-
-  std::string PromptForURL() {
-    printf("Enter URL> ");
-    char buf[1024];
-    if (scanf("%1023s", buf) != 1)
-      buf[0] = '\0';
-    return buf;
-  }
-
-  void PrintResponse(const URLResponsePtr& response) {
+  void PrintResponse(const URLResponsePtr& response) const {
     printf(">>> Headers <<< \n");
     printf("  %s\n", response->status_line.get().c_str());
     if (response->headers) {
@@ -76,20 +37,17 @@ class WGetApp : public ApplicationDelegate, public URLLoaderClient {
     }
   }
 
-  void PrintResponseBody() {
+  void PrintResponseBody(ScopedDataPipeConsumerHandle body) const {
     // Read response body in blocking fashion.
     printf(">>> Body <<<\n");
 
     for (;;) {
       char buf[512];
       uint32_t num_bytes = sizeof(buf);
-      MojoResult result = ReadDataRaw(
-          response_body_stream_.get(),
-          buf,
-          &num_bytes,
-          MOJO_READ_DATA_FLAG_NONE);
+      MojoResult result = ReadDataRaw(body.get(), buf, &num_bytes,
+                                      MOJO_READ_DATA_FLAG_NONE);
       if (result == MOJO_RESULT_SHOULD_WAIT) {
-        Wait(response_body_stream_.get(),
+        Wait(body.get(),
              MOJO_HANDLE_SIGNAL_READABLE,
              MOJO_DEADLINE_INDEFINITE);
       } else if (result == MOJO_RESULT_OK) {
@@ -104,10 +62,42 @@ class WGetApp : public ApplicationDelegate, public URLLoaderClient {
 
     printf("\n>>> EOF <<<\n");
   }
+};
+
+}  // namespace
+
+class WGetApp : public ApplicationDelegate {
+ public:
+  virtual void Initialize(ApplicationImpl* app) MOJO_OVERRIDE {
+    app->ConnectToService("mojo:mojo_network_service", &network_service_);
+    Start();
+  }
+
+ private:
+  void Start() {
+    std::string url = PromptForURL();
+    printf("Loading: %s\n", url.c_str());
+
+    network_service_->CreateURLLoader(Get(&url_loader_));
+
+    URLRequestPtr request(URLRequest::New());
+    request->url = url;
+    request->method = "GET";
+    request->auto_follow_redirects = true;
+
+    url_loader_->Start(request.Pass(), ResponsePrinter());
+  }
+
+  std::string PromptForURL() {
+    printf("Enter URL> ");
+    char buf[1024];
+    if (scanf("%1023s", buf) != 1)
+      buf[0] = '\0';
+    return buf;
+  }
 
   NetworkServicePtr network_service_;
   URLLoaderPtr url_loader_;
-  ScopedDataPipeConsumerHandle response_body_stream_;
 };
 
 }  // namespace examples

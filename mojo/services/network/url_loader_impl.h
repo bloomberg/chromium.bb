@@ -33,8 +33,11 @@ class URLLoaderImpl : public InterfaceImpl<URLLoader>,
   // URLLoader methods:
   virtual void Start(
       URLRequestPtr request,
-      ScopedDataPipeProducerHandle response_body_stream) OVERRIDE;
-  virtual void FollowRedirect() OVERRIDE;
+      const Callback<void(URLResponsePtr)>& callback) OVERRIDE;
+  virtual void FollowRedirect(
+      const Callback<void(URLResponsePtr)>& callback) OVERRIDE;
+  virtual void QueryStatus(
+      const Callback<void(URLLoaderStatusPtr)>& callback) OVERRIDE;
 
   // net::URLRequest::Delegate methods:
   virtual void OnReceivedRedirect(net::URLRequest* url_request,
@@ -44,7 +47,10 @@ class URLLoaderImpl : public InterfaceImpl<URLLoader>,
   virtual void OnReadCompleted(net::URLRequest* url_request, int bytes_read)
       OVERRIDE;
 
-  void SendError(int error);
+  void SendError(
+      int error,
+      const Callback<void(URLResponsePtr)>& callback);
+  void SendResponse(URLResponsePtr response);
   void OnResponseBodyStreamReady(MojoResult result);
   void WaitToReadMore();
   void ReadMore();
@@ -52,9 +58,11 @@ class URLLoaderImpl : public InterfaceImpl<URLLoader>,
 
   NetworkContext* context_;
   scoped_ptr<net::URLRequest> url_request_;
+  Callback<void(URLResponsePtr)> callback_;
   ScopedDataPipeProducerHandle response_body_stream_;
   scoped_refptr<PendingWriteToDataPipe> pending_write_;
   common::HandleWatcher handle_watcher_;
+  uint32 response_body_buffer_size_;
   bool auto_follow_redirects_;
 
   base::WeakPtrFactory<URLLoaderImpl> weak_ptr_factory_;

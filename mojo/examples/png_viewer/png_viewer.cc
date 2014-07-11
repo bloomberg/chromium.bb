@@ -63,12 +63,12 @@ class NavigatorImpl : public InterfaceImpl<navigation::Navigator> {
     uint32_t num_bytes = bytes_remaining;
     while (bytes_remaining > 0) {
       MojoResult result = ReadDataRaw(
-          response_details->response_body_stream.get(),
+          response_details->response->body.get(),
           buf,
           &num_bytes,
           MOJO_READ_DATA_FLAG_NONE);
       if (result == MOJO_RESULT_SHOULD_WAIT) {
-        Wait(response_details->response_body_stream.get(),
+        Wait(response_details->response->body.get(),
              MOJO_HANDLE_SIGNAL_READABLE,
              MOJO_DEADLINE_INDEFINITE);
       } else if (result == MOJO_RESULT_OK) {

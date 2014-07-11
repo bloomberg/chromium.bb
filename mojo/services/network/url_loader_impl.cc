@@ -46,6 +46,13 @@ URLResponsePtr MakeURLResponse(const net::URLRequest* url_request) {
   return response.Pass();
 }
 
+NetworkErrorPtr MakeNetworkError(int error_code) {
+  NetworkErrorPtr error = NetworkError::New();
+  error->code = error_code;
+  error->description = net::ErrorToString(error_code);
+  return error.Pass();
+}
+
 }  // namespace
 
 // Keeps track of a pending two-phase write on a DataPipeProducerHandle.
@@ -103,6 +110,7 @@ class URLLoaderImpl::DependentIOBuffer : public net::WrappedIOBuffer {
 
 URLLoaderImpl::URLLoaderImpl(NetworkContext* context)
     : context_(context),
+      response_body_buffer_size_(0),
       auto_follow_redirects_(true),
       weak_ptr_factory_(this) {
 }
@@ -115,25 +123,19 @@ void URLLoaderImpl::OnConnectionError() {
 }
 
 void URLLoaderImpl::Start(URLRequestPtr request,
-                          ScopedDataPipeProducerHandle response_body_stream) {
-  // Do not allow starting another request.
+                          const Callback<void(URLResponsePtr)>& callback) {
   if (url_request_) {
-    SendError(net::ERR_UNEXPECTED);
-    url_request_.reset();
-    response_body_stream_.reset();
+    SendError(net::ERR_UNEXPECTED, callback);
     return;
   }
 
   if (!request) {
-    SendError(net::ERR_INVALID_ARGUMENT);
+    SendError(net::ERR_INVALID_ARGUMENT, callback);
     return;
   }
 
-  response_body_stream_ = response_body_stream.Pass();
-
-  GURL url(request->url);
   url_request_.reset(
-      new net::URLRequest(url,
+      new net::URLRequest(GURL(request->url),
                           net::DEFAULT_PRIORITY,
                           this,
                           context_->url_request_context()));
@@ -148,18 +150,42 @@ void URLLoaderImpl::Start(URLRequestPtr request,
     url_request_->SetLoadFlags(net::LOAD_BYPASS_CACHE);
   // TODO(darin): Handle request body.
 
+  callback_ = callback;
+  response_body_buffer_size_ = request->response_body_buffer_size;
   auto_follow_redirects_ = request->auto_follow_redirects;
 
   url_request_->Start();
 }
 
-void URLLoaderImpl::FollowRedirect() {
+void URLLoaderImpl::FollowRedirect(
+    const Callback<void(URLResponsePtr)>& callback) {
+  if (!url_request_) {
+    SendError(net::ERR_UNEXPECTED, callback);
+    return;
+  }
+
   if (auto_follow_redirects_) {
     DLOG(ERROR) << "Spurious call to FollowRedirect";
-  } else {
-    if (url_request_)
-      url_request_->FollowDeferredRedirect();
+    SendError(net::ERR_UNEXPECTED, callback);
+    return;
   }
+
+  // TODO(darin): Verify that it makes sense to call FollowDeferredRedirect.
+  url_request_->FollowDeferredRedirect();
+}
+
+void URLLoaderImpl::QueryStatus(
+    const Callback<void(URLLoaderStatusPtr)>& callback) {
+  URLLoaderStatusPtr status(URLLoaderStatus::New());
+  if (url_request_) {
+    status->is_loading = url_request_->is_pending();
+    if (!url_request_->status().is_success())
+      status->error = MakeNetworkError(url_request_->status().error());
+  } else {
+    status->is_loading = false;
+  }
+  // TODO(darin): Populate more status fields.
+  callback.Run(status.Pass());
 }
 
 void URLLoaderImpl::OnReceivedRedirect(net::URLRequest* url_request,
@@ -168,27 +194,41 @@ void URLLoaderImpl::OnReceivedRedirect(net::URLRequest* url_request,
   DCHECK(url_request == url_request_.get());
   DCHECK(url_request->status().is_success());
 
+  if (auto_follow_redirects_)
+    return;
+
+  // Send the redirect response to the client, allowing them to inspect it and
+  // optionally follow the redirect.
+  *defer_redirect = true;
+
   URLResponsePtr response = MakeURLResponse(url_request);
-  std::string redirect_method =
+  response->redirect_method =
       net::URLRequest::ComputeMethodForRedirect(url_request->method(),
                                                 response->status_code);
-  client()->OnReceivedRedirect(
-      response.Pass(), new_url.spec(), redirect_method);
+  response->redirect_url = new_url.spec();
 
-  *defer_redirect = !auto_follow_redirects_;
+  SendResponse(response.Pass());
 }
 
 void URLLoaderImpl::OnResponseStarted(net::URLRequest* url_request) {
   DCHECK(url_request == url_request_.get());
 
   if (!url_request->status().is_success()) {
-    SendError(url_request->status().error());
+    SendError(url_request->status().error(), callback_);
+    callback_ = Callback<void(URLResponsePtr)>();
     return;
   }
 
   // TODO(darin): Add support for optional MIME sniffing.
 
-  client()->OnReceivedResponse(MakeURLResponse(url_request));
+  DataPipe data_pipe;
+  // TODO(darin): Honor given buffer size.
+
+  URLResponsePtr response = MakeURLResponse(url_request);
+  response->body = data_pipe.consumer_handle.Pass();
+  response_body_stream_ = data_pipe.producer_handle.Pass();
+
+  SendResponse(response.Pass());
 
   // Start reading...
   ReadMore();
@@ -196,19 +236,29 @@ void URLLoaderImpl::OnResponseStarted(net::URLRequest* url_request) {
 
 void URLLoaderImpl::OnReadCompleted(net::URLRequest* url_request,
                                     int bytes_read) {
+  DCHECK(url_request == url_request_.get());
+
   if (url_request->status().is_success()) {
     DidRead(static_cast<uint32_t>(bytes_read), false);
   } else {
     pending_write_ = NULL;  // This closes the data pipe.
-    // TODO(darin): Perhaps we should communicate this error to our client.
   }
 }
 
-void URLLoaderImpl::SendError(int error_code) {
-  NetworkErrorPtr error(NetworkError::New());
-  error->code = error_code;
-  error->description = net::ErrorToString(error_code);
-  client()->OnReceivedError(error.Pass());
+void URLLoaderImpl::SendError(
+    int error_code,
+    const Callback<void(URLResponsePtr)>& callback) {
+  URLResponsePtr response(URLResponse::New());
+  if (url_request_)
+    response->url = url_request_->url().spec();
+  response->error = MakeNetworkError(error_code);
+  callback.Run(response.Pass());
+}
+
+void URLLoaderImpl::SendResponse(URLResponsePtr response) {
+  Callback<void(URLResponsePtr)> callback;
+  std::swap(callback_, callback);
+  callback.Run(response.Pass());
 }
 
 void URLLoaderImpl::OnResponseBodyStreamReady(MojoResult result) {
@@ -260,12 +310,6 @@ void URLLoaderImpl::ReadMore() {
   } else {
     pending_write_->Complete(0);
     pending_write_ = NULL;  // This closes the data pipe.
-    if (bytes_read == 0) {
-      client()->OnReceivedEndOfResponseBody();
-    } else {
-      DCHECK(!url_request_->status().is_success());
-      SendError(url_request_->status().error());
-    }
   }
 }
 

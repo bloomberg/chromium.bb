@@ -47,7 +47,6 @@ WebURLLoaderImpl::WebURLLoaderImpl(NetworkService* network_service)
     : client_(NULL),
       weak_factory_(this) {
   network_service->CreateURLLoader(Get(&url_loader_));
-  url_loader_.set_client(this);
 }
 
 WebURLLoaderImpl::~WebURLLoaderImpl() {
@@ -64,25 +63,25 @@ void WebURLLoaderImpl::loadSynchronously(
 void WebURLLoaderImpl::loadAsynchronously(const blink::WebURLRequest& request,
                                           blink::WebURLLoaderClient* client) {
   client_ = client;
+  url_ = request.url();
 
   URLRequestPtr url_request(URLRequest::New());
-  url_request->url = request.url().spec();
+  url_request->url = url_.spec();
   url_request->auto_follow_redirects = false;
   // TODO(darin): Copy other fields.
 
   if (request.extraData()) {
     WebURLRequestExtraData* extra_data =
         static_cast<WebURLRequestExtraData*>(request.extraData());
-    response_body_stream_ = extra_data->synthetic_response_body_stream.Pass();
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::Bind(&WebURLLoaderImpl::OnReceivedResponse,
                    weak_factory_.GetWeakPtr(),
                    base::Passed(&extra_data->synthetic_response)));
   } else {
-    DataPipe pipe;
-    url_loader_->Start(url_request.Pass(), pipe.producer_handle.Pass());
-    response_body_stream_ = pipe.consumer_handle.Pass();
+    url_loader_->Start(url_request.Pass(),
+                       base::Bind(&WebURLLoaderImpl::OnReceivedResponse,
+                                  weak_factory_.GetWeakPtr()));
   }
 }
 
@@ -90,53 +89,63 @@ void WebURLLoaderImpl::cancel() {
   url_loader_.reset();
   response_body_stream_.reset();
 
-  NetworkErrorPtr network_error(NetworkError::New());
-  network_error->code = net::ERR_ABORTED;
+  URLResponsePtr failed_response(URLResponse::New());
+  failed_response->url = url_.spec();
+  failed_response->error = NetworkError::New();
+  failed_response->error->code = net::ERR_ABORTED;
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::Bind(&WebURLLoaderImpl::OnReceivedError,
+      base::Bind(&WebURLLoaderImpl::OnReceivedResponse,
                  weak_factory_.GetWeakPtr(),
-                 base::Passed(&network_error)));
+                 base::Passed(&failed_response)));
 }
 
 void WebURLLoaderImpl::setDefersLoading(bool defers_loading) {
   NOTIMPLEMENTED();
 }
 
-void WebURLLoaderImpl::OnReceivedRedirect(URLResponsePtr url_response,
-                                          const String& new_url,
-                                          const String& new_method) {
-  blink::WebURLRequest new_request;
-  new_request.initialize();
-  new_request.setURL(GURL(new_url));
-
-  client_->willSendRequest(this, new_request, ToWebURLResponse(url_response));
-  // TODO(darin): Check if new_request was rejected.
-
-  url_loader_->FollowRedirect();
-}
-
 void WebURLLoaderImpl::OnReceivedResponse(URLResponsePtr url_response) {
-  client_->didReceiveResponse(this, ToWebURLResponse(url_response));
+  url_ = GURL(url_response->url);
 
-  // Start streaming data
-  ReadMore();
+  if (url_response->error) {
+    OnReceivedError(url_response.Pass());
+  } else if (url_response->redirect_url) {
+    OnReceivedRedirect(url_response.Pass());
+  } else {
+    client_->didReceiveResponse(this, ToWebURLResponse(url_response));
+
+    // Start streaming data
+    response_body_stream_ = url_response->body.Pass();
+    ReadMore();
+  }
 }
 
-void WebURLLoaderImpl::OnReceivedError(NetworkErrorPtr error) {
+void WebURLLoaderImpl::OnReceivedError(URLResponsePtr url_response) {
   blink::WebURLError web_error;
   web_error.domain = blink::WebString::fromUTF8(net::kErrorDomain);
-  web_error.reason = error->code;
-  web_error.unreachableURL = GURL();  // TODO(darin): Record this.
+  web_error.reason = url_response->error->code;
+  web_error.unreachableURL = GURL(url_response->url);
   web_error.staleCopyInCache = false;
-  web_error.isCancellation = error->code == net::ERR_ABORTED ? true : false;
+  web_error.isCancellation =
+      url_response->error->code == net::ERR_ABORTED ? true : false;
 
   client_->didFail(this, web_error);
 }
 
-void WebURLLoaderImpl::OnReceivedEndOfResponseBody() {
-  // This is the signal that the response body was not truncated.
+void WebURLLoaderImpl::OnReceivedRedirect(URLResponsePtr url_response) {
+  blink::WebURLRequest new_request;
+  new_request.initialize();
+  new_request.setURL(GURL(url_response->redirect_url));
+  new_request.setHTTPMethod(
+      blink::WebString::fromUTF8(url_response->redirect_method));
+
+  client_->willSendRequest(this, new_request, ToWebURLResponse(url_response));
+  // TODO(darin): Check if new_request was rejected.
+
+  url_loader_->FollowRedirect(
+      base::Bind(&WebURLLoaderImpl::OnReceivedResponse,
+                 weak_factory_.GetWeakPtr()));
 }
 
 void WebURLLoaderImpl::ReadMore() {

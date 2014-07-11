@@ -74,9 +74,12 @@ void InProcessDynamicServiceRunner::Run() {
         break;
       }
     } else {
+      // In the component build, Mojo Apps link against mojo_system_impl.
+#if !defined(COMPONENT_BUILD)
       // Strictly speaking this is not required, but it's very unusual to have
       // an app that doesn't require the basic system library.
       LOG(WARNING) << "MojoSetSystemThunks not found in app library";
+#endif
     }
 
     typedef MojoResult (*MojoMainFunction)(MojoHandle);

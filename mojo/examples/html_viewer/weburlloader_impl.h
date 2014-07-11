@@ -23,11 +23,9 @@ class WebURLRequestExtraData : public blink::WebURLRequest::ExtraData {
   virtual ~WebURLRequestExtraData();
 
   URLResponsePtr synthetic_response;
-  ScopedDataPipeConsumerHandle synthetic_response_body_stream;
 };
 
-class WebURLLoaderImpl : public blink::WebURLLoader,
-                         public URLLoaderClient {
+class WebURLLoaderImpl : public blink::WebURLLoader {
  public:
   explicit WebURLLoaderImpl(NetworkService* network_service);
 
@@ -43,19 +41,15 @@ class WebURLLoaderImpl : public blink::WebURLLoader,
   virtual void cancel() OVERRIDE;
   virtual void setDefersLoading(bool defers_loading) OVERRIDE;
 
-  // URLLoaderClient methods:
-  virtual void OnReceivedRedirect(URLResponsePtr response,
-                                  const String& new_url,
-                                  const String& new_method) OVERRIDE;
-  virtual void OnReceivedResponse(URLResponsePtr response) OVERRIDE;
-  virtual void OnReceivedError(NetworkErrorPtr error) OVERRIDE;
-  virtual void OnReceivedEndOfResponseBody() OVERRIDE;
-
+  void OnReceivedResponse(URLResponsePtr response);
+  void OnReceivedError(URLResponsePtr response);
+  void OnReceivedRedirect(URLResponsePtr response);
   void ReadMore();
   void WaitToReadMore();
   void OnResponseBodyStreamReady(MojoResult result);
 
   blink::WebURLLoaderClient* client_;
+  GURL url_;
   URLLoaderPtr url_loader_;
   ScopedDataPipeConsumerHandle response_body_stream_;
   common::HandleWatcher handle_watcher_;

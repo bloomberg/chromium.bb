@@ -2,9 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string_tokenizer.h"
+#include "base/strings/string_util.h"
 #include "mojo/public/cpp/application/application_connection.h"
 #include "mojo/public/cpp/application/application_delegate.h"
 #include "mojo/public/cpp/application/application_impl.h"
@@ -42,7 +44,7 @@ class LauncherConnection : public InterfaceImpl<Launcher> {
   DISALLOW_COPY_AND_ASSIGN(LauncherConnection);
 };
 
-class LaunchInstance : public URLLoaderClient {
+class LaunchInstance {
  public:
   LaunchInstance(LauncherApp* app,
                  const LaunchCallback& callback,
@@ -50,24 +52,14 @@ class LaunchInstance : public URLLoaderClient {
   virtual ~LaunchInstance() {}
 
  private:
-  // Overridden from URLLoaderClient:
-  virtual void OnReceivedRedirect(URLResponsePtr response,
-                                  const String& new_url,
-                                  const String& new_method) OVERRIDE {
-  }
-  virtual void OnReceivedResponse(URLResponsePtr response) OVERRIDE;
-  virtual void OnReceivedError(NetworkErrorPtr error) OVERRIDE {
-    ScheduleDestroy();
-  }
-  virtual void OnReceivedEndOfResponseBody() OVERRIDE {
-    ScheduleDestroy();
-  }
+  void OnReceivedResponse(URLResponsePtr response);
 
   std::string GetContentType(const Array<String>& headers) {
     for (size_t i = 0; i < headers.size(); ++i) {
       base::StringTokenizer t(headers[i], ": ;=");
       while (t.GetNext()) {
-        if (!t.token_is_delim() && t.token() == "Content-Type") {
+        if (!t.token_is_delim() &&
+            LowerCaseEqualsASCII(t.token(), "content-type")) {
           while (t.GetNext()) {
             if (!t.token_is_delim())
               return t.token();
@@ -154,31 +146,33 @@ LaunchInstance::LaunchInstance(LauncherApp* app,
     : app_(app),
       destroy_scheduled_(false),
       callback_(callback) {
-  url_loader_ = app_->CreateURLLoader();
-  url_loader_.set_client(this);
-
   URLRequestPtr request(URLRequest::New());
   request->url = url;
   request->method = "GET";
   request->auto_follow_redirects = true;
 
-  DataPipe data_pipe;
-  response_body_stream_ = data_pipe.consumer_handle.Pass();
-
-  url_loader_->Start(request.Pass(), data_pipe.producer_handle.Pass());
+  url_loader_ = app_->CreateURLLoader();
+  url_loader_->Start(request.Pass(),
+                     base::Bind(&LaunchInstance::OnReceivedResponse,
+                                base::Unretained(this)));
 }
 
 void LaunchInstance::OnReceivedResponse(URLResponsePtr response) {
-  std::string content_type = GetContentType(response->headers);
-  std::string handler_url = app_->GetHandlerForContentType(content_type);
-  if (!handler_url.empty()) {
-    navigation::ResponseDetailsPtr nav_response(
-        navigation::ResponseDetails::New());
-    nav_response->response = response.Pass();
-    nav_response->response_body_stream = response_body_stream_.Pass();
-    String response_url = nav_response->response->url;
-    callback_.Run(handler_url, response_url, nav_response.Pass());
+  if (!response->error) {
+    std::string content_type = GetContentType(response->headers);
+    std::string handler_url = app_->GetHandlerForContentType(content_type);
+    if (handler_url.empty()) {
+      DLOG(WARNING) << "No handler for content type: " << content_type;
+    } else {
+      navigation::ResponseDetailsPtr nav_response(
+          navigation::ResponseDetails::New());
+      nav_response->loader_handle = url_loader_.PassMessagePipe();
+      nav_response->response = response.Pass();
+      String response_url = nav_response->response->url;
+      callback_.Run(handler_url, response_url, nav_response.Pass());
+    }
   }
+  ScheduleDestroy();
 }
 
 }  // namespace launcher
