@@ -8,16 +8,20 @@ import sys
 import subprocess
 
 
-def RunCmdAndCheck(cmd, err_string, output_api, cwd=None):
+def RunCmdAndCheck(cmd, err_string, output_api, cwd=None, warning=False):
   results = []
   p = subprocess.Popen(cmd, cwd=cwd,
                        stdout=subprocess.PIPE,
                        stderr=subprocess.PIPE)
   (p_stdout, p_stderr) = p.communicate()
   if p.returncode:
-    results.append(
-        output_api.PresubmitError(err_string,
-                                  long_text=p_stderr))
+    if warning:
+      results.append(output_api.PresubmitPromptWarning(
+        '%s\n\n%s' % (err_string, p_stderr)))
+    else:
+      results.append(
+          output_api.PresubmitError(err_string,
+                                    long_text=p_stderr))
   return results
 
 
@@ -141,8 +145,11 @@ def CheckUpdatedNaClSDK(input_api, output_api):
                                  'verify_ppapi.py')
   cmd = [sys.executable, verify_ppapi_py] + nacl_sdk_files
   return RunCmdAndCheck(cmd,
-                        'PPAPI Interface modified without updating NaCl SDK.',
-                        output_api)
+                        'PPAPI Interface modified without updating NaCl SDK.\n'
+                        '(note that some dev interfaces should not be added '
+                        'the NaCl SDK; when in doubt, ask a ppapi OWNER.)',
+                        output_api,
+                        warning=True)
 
 # Verify that changes to ppapi/thunk/interfaces_* files have a corresponding
 # change to tools/metrics/histograms/histograms.xml for UMA tracking.
