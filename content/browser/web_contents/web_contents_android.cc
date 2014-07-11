@@ -72,4 +72,9 @@ void WebContentsAndroid::Stop(JNIEnv* env, jobject obj) {
   web_contents_->Stop();
 }
 
+void WebContentsAndroid::InsertCSS(
+    JNIEnv* env, jobject jobj, jstring jcss) {
+  web_contents_->InsertCSS(base::android::ConvertJavaStringToUTF8(env, jcss));
+}
+
 }  // namespace content

@@ -27,4 +27,9 @@ public interface WebContents {
      * Stop any pending navigation.
      */
     void stop();
+
+    /**
+     * Inserts css into main frame's document.
+     */
+    void insertCSS(String css);
 }

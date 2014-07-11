@@ -40,6 +40,8 @@ class CONTENT_EXPORT WebContentsAndroid
                                                            jobject obj) const;
   void Stop(JNIEnv* env, jobject obj);
 
+  void InsertCSS(JNIEnv* env, jobject jobj, jstring jcss);
+
  private:
   WebContents* web_contents_;
   NavigationControllerAndroid navigation_controller_;
