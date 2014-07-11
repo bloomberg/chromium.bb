@@ -33,10 +33,16 @@ class ScreenAndroid : public Screen {
   virtual gfx::Display GetPrimaryDisplay() const OVERRIDE {
     gfx::DeviceDisplayInfo device_info;
     const float device_scale_factor = device_info.GetDIPScale();
+    // Note: GetPhysicalDisplayWidth/Height() does not subtract window
+    // decorations etc. Use it instead of GetDisplayWidth/Height() when
+    // available.
     const gfx::Rect bounds_in_pixels =
-        gfx::Rect(
-            device_info.GetDisplayWidth(),
-            device_info.GetDisplayHeight());
+        gfx::Rect(device_info.GetPhysicalDisplayWidth()
+                      ? device_info.GetPhysicalDisplayWidth()
+                      : device_info.GetDisplayWidth(),
+                  device_info.GetPhysicalDisplayHeight()
+                      ? device_info.GetPhysicalDisplayHeight()
+                      : device_info.GetDisplayHeight());
     const gfx::Rect bounds_in_dip =
         gfx::Rect(gfx::ToCeiledSize(gfx::ScaleSize(
             bounds_in_pixels.size(), 1.0f / device_scale_factor)));
