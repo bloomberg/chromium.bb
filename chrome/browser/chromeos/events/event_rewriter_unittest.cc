@@ -29,6 +29,7 @@
 #include "ui/aura/window_tree_host.h"
 #include "ui/events/event.h"
 #include "ui/events/event_rewriter.h"
+#include "ui/events/test/events_test_utils.h"
 #include "ui/events/test/test_event_processor.h"
 
 #if defined(USE_X11)
@@ -43,6 +44,7 @@ namespace {
 
 // The device id of the test touchpad device.
 const unsigned int kTouchPadDeviceId = 1;
+const int kKeyboardDeviceId = 2;
 
 std::string GetExpectedResultAsString(ui::KeyboardCode ui_keycode,
                                       int ui_flags,
@@ -91,52 +93,71 @@ struct KeyTestCase {
   } input, expected;
 };
 
+#if defined(USE_X11)
+// Check rewriting of an X11-based key event.
+void CheckX11KeyTestCase(const std::string& expected,
+                         chromeos::EventRewriter* rewriter,
+                         const KeyTestCase& test,
+                         XEvent* xevent) {
+  ui::KeyEvent xkey_event(xevent, false);
+  if (test.test & KeyTestCase::NUMPAD)
+    xkey_event.set_flags(xkey_event.flags() | ui::EF_NUMPAD_KEY);
+  // Verify that the X11-based key event is as expected.
+  EXPECT_EQ(GetExpectedResultAsString(
+                     test.input.key_code, test.input.flags, test.type),
+            GetKeyEventAsString(xkey_event));
+  // Rewrite the event and check the result.
+  scoped_ptr<ui::Event> new_event;
+  rewriter->RewriteEvent(xkey_event, &new_event);
+  ui::KeyEvent& rewritten_key_event =
+      new_event ? *static_cast<ui::KeyEvent*>(new_event.get()) : xkey_event;
+  EXPECT_EQ(expected, GetKeyEventAsString(rewritten_key_event));
+  if ((rewritten_key_event.key_code() != ui::VKEY_UNKNOWN) &&
+      (rewritten_key_event.native_event()->xkey.keycode != 0)) {
+    // Build a new ui::KeyEvent from the rewritten native component,
+    // and check that it also matches the rewritten event.
+    EXPECT_TRUE(rewritten_key_event.native_event());
+    ui::KeyEvent from_native_event(rewritten_key_event.native_event(), false);
+    EXPECT_EQ(expected, GetKeyEventAsString(from_native_event));
+  }
+}
+#endif
+
 // Tests a single stateless key rewrite operation.
 // |i| is a an identifying number to locate failing tests in the tables.
-void CheckKeyTestCase(size_t i,
-                      chromeos::EventRewriter* rewriter,
+void CheckKeyTestCase(chromeos::EventRewriter* rewriter,
                       const KeyTestCase& test) {
-  std::string id = base::StringPrintf("(%zu) ", i);
   std::string expected =
-      id + GetExpectedResultAsString(
+      GetExpectedResultAsString(
                test.expected.key_code, test.expected.flags, test.type);
 
   if (test.test & KeyTestCase::TEST_VKEY) {
     // Check rewriting of a non-native-based key event.
     EXPECT_EQ(
         expected,
-        id + GetRewrittenEventAsString(
+        GetRewrittenEventAsString(
                  rewriter, test.input.key_code, test.input.flags, test.type));
   }
 
 #if defined(USE_X11)
   if (test.test & KeyTestCase::TEST_X11) {
     ui::ScopedXI2Event xev;
+    // Test an XKeyEvent.
     xev.InitKeyEvent(test.type, test.input.key_code, test.input.flags);
     XEvent* xevent = xev;
-    if (xevent->xkey.keycode) {
-      ui::KeyEvent xkey_event(xevent, false);
-      if (test.test & KeyTestCase::NUMPAD)
-        xkey_event.set_flags(xkey_event.flags() | ui::EF_NUMPAD_KEY);
-      // Verify that the X11-based key event is as expected.
-      EXPECT_EQ(id + GetExpectedResultAsString(
-                         test.input.key_code, test.input.flags, test.type),
-                id + GetKeyEventAsString(xkey_event));
-      // Rewrite the event and check the result.
-      scoped_ptr<ui::Event> new_event;
-      rewriter->RewriteEvent(xkey_event, &new_event);
-      ui::KeyEvent& rewritten_key_event =
-          new_event ? *static_cast<ui::KeyEvent*>(new_event.get()) : xkey_event;
-      EXPECT_EQ(expected, id + GetKeyEventAsString(rewritten_key_event));
-      if ((rewritten_key_event.key_code() != ui::VKEY_UNKNOWN) &&
-          (rewritten_key_event.native_event()->xkey.keycode != 0)) {
-        // Build a new ui::KeyEvent from the rewritten native component,
-        // and check that it also matches the rewritten event.
-        ui::KeyEvent from_native_event(rewritten_key_event.native_event(),
-                                       false);
-        EXPECT_EQ(expected, id + GetKeyEventAsString(from_native_event));
-      }
-    }
+    DCHECK((xevent->type == KeyPress) || (xevent->type == KeyRelease));
+    if (xevent->xkey.keycode)
+      CheckX11KeyTestCase(expected, rewriter, test, xevent);
+    // Test an XI2 GenericEvent.
+    xev.InitGenericKeyEvent(
+        kKeyboardDeviceId, test.type, test.input.key_code, test.input.flags);
+    xevent = xev;
+    DCHECK(xevent->type == GenericEvent);
+    XIDeviceEvent* xievent = static_cast<XIDeviceEvent*>(xevent->xcookie.data);
+    DCHECK((xievent->evtype == XI_KeyPress) ||
+           (xievent->evtype == XI_KeyRelease));
+    if (xievent->detail)
+      CheckX11KeyTestCase(expected, rewriter, test, xevent);
   }
 #endif
 }
@@ -155,19 +176,17 @@ struct FunctionKeyTestCase {
 // Function key mapping differs from the other key mappings because the
 // EF_FUNCTION_KEY flag is set during ui::KeyEvent construction when passing in
 // a native X11 event and the flag is not set when using other constructors.
-void CheckFunctionKeyTestCase(size_t i,
-                              chromeos::EventRewriter* rewriter,
+void CheckFunctionKeyTestCase(chromeos::EventRewriter* rewriter,
                               const FunctionKeyTestCase& test) {
-  std::string id = base::StringPrintf("(%zu) ", i);
   std::string vkey_expected =
-      id + GetExpectedResultAsString(
+      GetExpectedResultAsString(
           test.vkey_expected.key_code,
           test.vkey_expected.flags,
           test.type);
   // Check rewriting of a non-native-based key event.
   EXPECT_EQ(
       vkey_expected,
-      id + GetRewrittenEventAsString(
+      GetRewrittenEventAsString(
                rewriter, test.input.key_code, test.input.flags, test.type));
 
 #if defined(USE_X11)
@@ -182,11 +201,11 @@ void CheckFunctionKeyTestCase(size_t i,
     ui::KeyEvent& rewritten_key_event =
         new_event ? *static_cast<ui::KeyEvent*>(new_event.get()) : xkey_event;
     std::string native_expected =
-        id + GetExpectedResultAsString(
+        GetExpectedResultAsString(
             test.native_expected.key_code,
             test.native_expected.flags,
             test.type);
-    EXPECT_EQ(native_expected, id + GetKeyEventAsString(rewritten_key_event));
+    EXPECT_EQ(native_expected, GetKeyEventAsString(rewritten_key_event));
   }
 #endif
 }
@@ -225,11 +244,13 @@ class EventRewriterTest : public ash::test::AshTestBase {
   void TestRewriteNumPadKeys();
   void TestRewriteNumPadKeysOnAppleKeyboard();
 
-  int RewriteMouseEvent(chromeos::EventRewriter* rewriter,
-                        const ui::MouseEvent& event) {
-    int flags = event.flags();
-    rewriter->RewriteLocatedEventForTesting(event, &flags);
-    return flags;
+  const ui::MouseEvent* RewriteMouseButtonEvent(
+      chromeos::EventRewriter* rewriter,
+      const ui::MouseEvent& event,
+      scoped_ptr<ui::Event>* new_event) {
+    rewriter->RewriteMouseButtonEventForTesting(event, new_event);
+    return *new_event ? static_cast<const ui::MouseEvent*>(new_event->get())
+                      : &event;
   }
 
   chromeos::MockUserManager* mock_user_manager_;  // Not owned.
@@ -241,8 +262,8 @@ TEST_F(EventRewriterTest, TestRewriteCommandToControl) {
   // First, test with a PC keyboard.
   TestingPrefServiceSyncable prefs;
   EventRewriter rewriter(NULL);
-  rewriter.DeviceAddedForTesting(0, "PC Keyboard");
-  rewriter.set_last_device_id_for_testing(0);
+  rewriter.KeyboardDeviceAddedForTesting(kKeyboardDeviceId, "PC Keyboard");
+  rewriter.set_last_keyboard_device_id_for_testing(kKeyboardDeviceId);
   rewriter.set_pref_service_for_testing(&prefs);
 
   KeyTestCase pc_keyboard_tests[] = {
@@ -273,12 +294,13 @@ TEST_F(EventRewriterTest, TestRewriteCommandToControl) {
   };
 
   for (size_t i = 0; i < arraysize(pc_keyboard_tests); ++i) {
-    CheckKeyTestCase(1000 + i, &rewriter, pc_keyboard_tests[i]);
+    SCOPED_TRACE(i);
+    CheckKeyTestCase(&rewriter, pc_keyboard_tests[i]);
   }
 
   // An Apple keyboard reusing the ID, zero.
-  rewriter.DeviceAddedForTesting(0, "Apple Keyboard");
-  rewriter.set_last_device_id_for_testing(0);
+  rewriter.KeyboardDeviceAddedForTesting(kKeyboardDeviceId, "Apple Keyboard");
+  rewriter.set_last_keyboard_device_id_for_testing(kKeyboardDeviceId);
 
   KeyTestCase apple_keyboard_tests[] = {
       // VKEY_A, Alt modifier.
@@ -308,7 +330,8 @@ TEST_F(EventRewriterTest, TestRewriteCommandToControl) {
   };
 
   for (size_t i = 0; i < arraysize(apple_keyboard_tests); ++i) {
-    CheckKeyTestCase(2000 + i, &rewriter, apple_keyboard_tests[i]);
+    SCOPED_TRACE(i);
+    CheckKeyTestCase(&rewriter, apple_keyboard_tests[i]);
   }
 }
 
@@ -323,8 +346,8 @@ TEST_F(EventRewriterTest, TestRewriteCommandToControlWithControlRemapped) {
 
   EventRewriter rewriter(NULL);
   rewriter.set_pref_service_for_testing(&prefs);
-  rewriter.DeviceAddedForTesting(0, "PC Keyboard");
-  rewriter.set_last_device_id_for_testing(0);
+  rewriter.KeyboardDeviceAddedForTesting(kKeyboardDeviceId, "PC Keyboard");
+  rewriter.set_last_keyboard_device_id_for_testing(kKeyboardDeviceId);
 
   KeyTestCase pc_keyboard_tests[] = {// Control should be remapped to Alt.
                                      {KeyTestCase::TEST_ALL, ui::ET_KEY_PRESSED,
@@ -333,12 +356,13 @@ TEST_F(EventRewriterTest, TestRewriteCommandToControlWithControlRemapped) {
   };
 
   for (size_t i = 0; i < arraysize(pc_keyboard_tests); ++i) {
-    CheckKeyTestCase(1000 + i, &rewriter, pc_keyboard_tests[i]);
+    SCOPED_TRACE(i);
+    CheckKeyTestCase(&rewriter, pc_keyboard_tests[i]);
   }
 
   // An Apple keyboard reusing the ID, zero.
-  rewriter.DeviceAddedForTesting(0, "Apple Keyboard");
-  rewriter.set_last_device_id_for_testing(0);
+  rewriter.KeyboardDeviceAddedForTesting(kKeyboardDeviceId, "Apple Keyboard");
+  rewriter.set_last_keyboard_device_id_for_testing(kKeyboardDeviceId);
 
   KeyTestCase apple_keyboard_tests[] = {
       // VKEY_LWIN (left Command key) with  Alt modifier. The remapped Command
@@ -355,13 +379,15 @@ TEST_F(EventRewriterTest, TestRewriteCommandToControlWithControlRemapped) {
   };
 
   for (size_t i = 0; i < arraysize(apple_keyboard_tests); ++i) {
-    CheckKeyTestCase(2000 + i, &rewriter, apple_keyboard_tests[i]);
+    SCOPED_TRACE(i);
+    CheckKeyTestCase(&rewriter, apple_keyboard_tests[i]);
   }
 }
 
 void EventRewriterTest::TestRewriteNumPadKeys() {
   TestingPrefServiceSyncable prefs;
   EventRewriter rewriter(NULL);
+  rewriter.set_last_keyboard_device_id_for_testing(kKeyboardDeviceId);
   rewriter.set_pref_service_for_testing(&prefs);
 
   KeyTestCase tests[] = {
@@ -482,7 +508,8 @@ void EventRewriterTest::TestRewriteNumPadKeys() {
   };
 
   for (size_t i = 0; i < arraysize(tests); ++i) {
-    CheckKeyTestCase(1000 + i, &rewriter, tests[i]);
+    SCOPED_TRACE(i);
+    CheckKeyTestCase(&rewriter, tests[i]);
   }
 }
 
@@ -504,8 +531,8 @@ TEST_F(EventRewriterTest, TestRewriteNumPadKeysWithDiamondKeyFlag) {
 void EventRewriterTest::TestRewriteNumPadKeysOnAppleKeyboard() {
   TestingPrefServiceSyncable prefs;
   EventRewriter rewriter(NULL);
-  rewriter.DeviceAddedForTesting(0, "Apple Keyboard");
-  rewriter.set_last_device_id_for_testing(0);
+  rewriter.KeyboardDeviceAddedForTesting(kKeyboardDeviceId, "Apple Keyboard");
+  rewriter.set_last_keyboard_device_id_for_testing(kKeyboardDeviceId);
   rewriter.set_pref_service_for_testing(&prefs);
 
   KeyTestCase tests[] = {
@@ -524,7 +551,8 @@ void EventRewriterTest::TestRewriteNumPadKeysOnAppleKeyboard() {
   };
 
   for (size_t i = 0; i < arraysize(tests); ++i) {
-    CheckKeyTestCase(1000 + i, &rewriter, tests[i]);
+    SCOPED_TRACE(i);
+    CheckKeyTestCase(&rewriter, tests[i]);
   }
 }
 
@@ -546,6 +574,7 @@ TEST_F(EventRewriterTest,
 TEST_F(EventRewriterTest, TestRewriteModifiersNoRemap) {
   TestingPrefServiceSyncable prefs;
   EventRewriter rewriter(NULL);
+  rewriter.KeyboardDeviceAddedForTesting(kKeyboardDeviceId, "PC Keyboard");
   rewriter.set_pref_service_for_testing(&prefs);
 
   KeyTestCase tests[] = {
@@ -582,13 +611,15 @@ TEST_F(EventRewriterTest, TestRewriteModifiersNoRemap) {
   };
 
   for (size_t i = 0; i < arraysize(tests); ++i) {
-    CheckKeyTestCase(1000 + i, &rewriter, tests[i]);
+    SCOPED_TRACE(i);
+    CheckKeyTestCase(&rewriter, tests[i]);
   }
 }
 
 TEST_F(EventRewriterTest, TestRewriteModifiersNoRemapMultipleKeys) {
   TestingPrefServiceSyncable prefs;
   EventRewriter rewriter(NULL);
+  rewriter.KeyboardDeviceAddedForTesting(kKeyboardDeviceId, "PC Keyboard");
   rewriter.set_pref_service_for_testing(&prefs);
 
   KeyTestCase tests[] = {
@@ -616,7 +647,8 @@ TEST_F(EventRewriterTest, TestRewriteModifiersNoRemapMultipleKeys) {
   };
 
   for (size_t i = 0; i < arraysize(tests); ++i) {
-    CheckKeyTestCase(1000 + i, &rewriter, tests[i]);
+    SCOPED_TRACE(i);
+    CheckKeyTestCase(&rewriter, tests[i]);
   }
 }
 
@@ -632,6 +664,7 @@ TEST_F(EventRewriterTest, TestRewriteModifiersDisableSome) {
   control.SetValue(chromeos::input_method::kVoidKey);
 
   EventRewriter rewriter(NULL);
+  rewriter.KeyboardDeviceAddedForTesting(kKeyboardDeviceId, "PC Keyboard");
   rewriter.set_pref_service_for_testing(&prefs);
 
   KeyTestCase disabled_modifier_tests[] = {
@@ -671,7 +704,8 @@ TEST_F(EventRewriterTest, TestRewriteModifiersDisableSome) {
   };
 
   for (size_t i = 0; i < arraysize(disabled_modifier_tests); ++i) {
-    CheckKeyTestCase(1000 + i, &rewriter, disabled_modifier_tests[i]);
+    SCOPED_TRACE(i);
+    CheckKeyTestCase(&rewriter, disabled_modifier_tests[i]);
   }
 
   // Remap Alt to Control.
@@ -694,7 +728,8 @@ TEST_F(EventRewriterTest, TestRewriteModifiersDisableSome) {
   };
 
   for (size_t i = 0; i < arraysize(tests); ++i) {
-    CheckKeyTestCase(2000 + i, &rewriter, tests[i]);
+    SCOPED_TRACE(i);
+    CheckKeyTestCase(&rewriter, tests[i]);
   }
 }
 
@@ -707,6 +742,7 @@ TEST_F(EventRewriterTest, TestRewriteModifiersRemapToControl) {
   search.SetValue(chromeos::input_method::kControlKey);
 
   EventRewriter rewriter(NULL);
+  rewriter.KeyboardDeviceAddedForTesting(kKeyboardDeviceId, "PC Keyboard");
   rewriter.set_pref_service_for_testing(&prefs);
 
   KeyTestCase s_tests[] = {
@@ -717,7 +753,8 @@ TEST_F(EventRewriterTest, TestRewriteModifiersRemapToControl) {
   };
 
   for (size_t i = 0; i < arraysize(s_tests); ++i) {
-    CheckKeyTestCase(1000 + i, &rewriter, s_tests[i]);
+    SCOPED_TRACE(i);
+    CheckKeyTestCase(&rewriter, s_tests[i]);
   }
 
   // Remap Alt to Control too.
@@ -758,7 +795,8 @@ TEST_F(EventRewriterTest, TestRewriteModifiersRemapToControl) {
   };
 
   for (size_t i = 0; i < arraysize(sa_tests); ++i) {
-    CheckKeyTestCase(2000 + i, &rewriter, sa_tests[i]);
+    SCOPED_TRACE(i);
+    CheckKeyTestCase(&rewriter, sa_tests[i]);
   }
 }
 
@@ -771,6 +809,7 @@ TEST_F(EventRewriterTest, TestRewriteModifiersRemapToEscape) {
   search.SetValue(chromeos::input_method::kEscapeKey);
 
   EventRewriter rewriter(NULL);
+  rewriter.KeyboardDeviceAddedForTesting(kKeyboardDeviceId, "PC Keyboard");
   rewriter.set_pref_service_for_testing(&prefs);
 
   KeyTestCase tests[] = {// Press Search. Confirm the event is now VKEY_ESCAPE.
@@ -780,7 +819,8 @@ TEST_F(EventRewriterTest, TestRewriteModifiersRemapToEscape) {
   };
 
   for (size_t i = 0; i < arraysize(tests); ++i) {
-    CheckKeyTestCase(1000 + i, &rewriter, tests[i]);
+    SCOPED_TRACE(i);
+    CheckKeyTestCase(&rewriter, tests[i]);
   }
 }
 
@@ -793,6 +833,7 @@ TEST_F(EventRewriterTest, TestRewriteModifiersRemapMany) {
   search.SetValue(chromeos::input_method::kAltKey);
 
   EventRewriter rewriter(NULL);
+  rewriter.KeyboardDeviceAddedForTesting(kKeyboardDeviceId, "PC Keyboard");
   rewriter.set_pref_service_for_testing(&prefs);
 
   KeyTestCase s2a_tests[] = {
@@ -803,7 +844,8 @@ TEST_F(EventRewriterTest, TestRewriteModifiersRemapMany) {
   };
 
   for (size_t i = 0; i < arraysize(s2a_tests); ++i) {
-    CheckKeyTestCase(1000 + i, &rewriter, s2a_tests[i]);
+    SCOPED_TRACE(i);
+    CheckKeyTestCase(&rewriter, s2a_tests[i]);
   }
 
   // Remap Alt to Control.
@@ -819,7 +861,8 @@ TEST_F(EventRewriterTest, TestRewriteModifiersRemapMany) {
   };
 
   for (size_t i = 0; i < arraysize(a2c_tests); ++i) {
-    CheckKeyTestCase(2000 + i, &rewriter, a2c_tests[i]);
+    SCOPED_TRACE(i);
+    CheckKeyTestCase(&rewriter, a2c_tests[i]);
   }
 
   // Remap Control to Search.
@@ -856,7 +899,8 @@ TEST_F(EventRewriterTest, TestRewriteModifiersRemapMany) {
   };
 
   for (size_t i = 0; i < arraysize(c2s_tests); ++i) {
-    CheckKeyTestCase(3000 + i, &rewriter, c2s_tests[i]);
+    SCOPED_TRACE(i);
+    CheckKeyTestCase(&rewriter, c2s_tests[i]);
   }
 }
 
@@ -870,6 +914,7 @@ TEST_F(EventRewriterTest, TestRewriteModifiersRemapToCapsLock) {
 
   chromeos::input_method::FakeImeKeyboard ime_keyboard;
   EventRewriter rewriter(NULL);
+  rewriter.KeyboardDeviceAddedForTesting(kKeyboardDeviceId, "PC Keyboard");
   rewriter.set_pref_service_for_testing(&prefs);
   rewriter.set_ime_keyboard_for_testing(&ime_keyboard);
   EXPECT_FALSE(ime_keyboard.caps_lock_is_enabled_);
@@ -940,6 +985,7 @@ TEST_F(EventRewriterTest, TestRewriteCapsLock) {
 
   chromeos::input_method::FakeImeKeyboard ime_keyboard;
   EventRewriter rewriter(NULL);
+  rewriter.KeyboardDeviceAddedForTesting(kKeyboardDeviceId, "PC Keyboard");
   rewriter.set_pref_service_for_testing(&prefs);
   rewriter.set_ime_keyboard_for_testing(&ime_keyboard);
   EXPECT_FALSE(ime_keyboard.caps_lock_is_enabled_);
@@ -959,6 +1005,7 @@ TEST_F(EventRewriterTest, TestRewriteDiamondKey) {
 
   chromeos::input_method::FakeImeKeyboard ime_keyboard;
   EventRewriter rewriter(NULL);
+  rewriter.KeyboardDeviceAddedForTesting(kKeyboardDeviceId, "PC Keyboard");
   rewriter.set_pref_service_for_testing(&prefs);
   rewriter.set_ime_keyboard_for_testing(&ime_keyboard);
 
@@ -979,9 +1026,11 @@ TEST_F(EventRewriterTest, TestRewriteDiamondKey) {
   };
 
   for (size_t i = 0; i < arraysize(tests); ++i) {
-    CheckKeyTestCase(1000 + i, &rewriter, tests[i]);
+    SCOPED_TRACE(i);
+    CheckKeyTestCase(&rewriter, tests[i]);
   }
 }
+
 TEST_F(EventRewriterTest, TestRewriteDiamondKeyWithFlag) {
   const CommandLine original_cl(*CommandLine::ForCurrentProcess());
   CommandLine::ForCurrentProcess()->AppendSwitchASCII(
@@ -992,6 +1041,7 @@ TEST_F(EventRewriterTest, TestRewriteDiamondKeyWithFlag) {
 
   chromeos::input_method::FakeImeKeyboard ime_keyboard;
   EventRewriter rewriter(NULL);
+  rewriter.KeyboardDeviceAddedForTesting(kKeyboardDeviceId, "PC Keyboard");
   rewriter.set_pref_service_for_testing(&prefs);
   rewriter.set_ime_keyboard_for_testing(&ime_keyboard);
 
@@ -1044,6 +1094,7 @@ TEST_F(EventRewriterTest, TestRewriteCapsLockToControl) {
   control.SetValue(chromeos::input_method::kControlKey);
 
   EventRewriter rewriter(NULL);
+  rewriter.KeyboardDeviceAddedForTesting(kKeyboardDeviceId, "PC Keyboard");
   rewriter.set_pref_service_for_testing(&prefs);
 
   KeyTestCase tests[] = {
@@ -1067,7 +1118,8 @@ TEST_F(EventRewriterTest, TestRewriteCapsLockToControl) {
   };
 
   for (size_t i = 0; i < arraysize(tests); ++i) {
-    CheckKeyTestCase(1000 + i, &rewriter, tests[i]);
+    SCOPED_TRACE(i);
+    CheckKeyTestCase(&rewriter, tests[i]);
   }
 }
 
@@ -1080,6 +1132,7 @@ TEST_F(EventRewriterTest, TestRewriteCapsLockMod3InUse) {
   control.SetValue(chromeos::input_method::kControlKey);
 
   EventRewriter rewriter(NULL);
+  rewriter.KeyboardDeviceAddedForTesting(kKeyboardDeviceId, "PC Keyboard");
   rewriter.set_pref_service_for_testing(&prefs);
   input_method_manager_mock_->set_mod3_used(true);
 
@@ -1097,8 +1150,8 @@ TEST_F(EventRewriterTest, TestRewriteExtendedKeys) {
   TestingPrefServiceSyncable prefs;
   chromeos::Preferences::RegisterProfilePrefs(prefs.registry());
   EventRewriter rewriter(NULL);
-  rewriter.DeviceAddedForTesting(0, "PC Keyboard");
-  rewriter.set_last_device_id_for_testing(0);
+  rewriter.KeyboardDeviceAddedForTesting(kKeyboardDeviceId, "PC Keyboard");
+  rewriter.set_last_keyboard_device_id_for_testing(kKeyboardDeviceId);
   rewriter.set_pref_service_for_testing(&prefs);
 
   KeyTestCase tests[] = {
@@ -1198,7 +1251,8 @@ TEST_F(EventRewriterTest, TestRewriteExtendedKeys) {
        {ui::VKEY_INSERT, ui::EF_CONTROL_DOWN}}};
 
   for (size_t i = 0; i < arraysize(tests); ++i) {
-    CheckKeyTestCase(1000 + i, &rewriter, tests[i]);
+    SCOPED_TRACE(i);
+    CheckKeyTestCase(&rewriter, tests[i]);
   }
 }
 
@@ -1206,6 +1260,7 @@ TEST_F(EventRewriterTest, TestRewriteFunctionKeys) {
   TestingPrefServiceSyncable prefs;
   chromeos::Preferences::RegisterProfilePrefs(prefs.registry());
   EventRewriter rewriter(NULL);
+  rewriter.KeyboardDeviceAddedForTesting(kKeyboardDeviceId, "PC Keyboard");
   rewriter.set_pref_service_for_testing(&prefs);
 
   FunctionKeyTestCase tests[] = {
@@ -1519,7 +1574,8 @@ TEST_F(EventRewriterTest, TestRewriteFunctionKeys) {
   };
 
   for (size_t i = 0; i < arraysize(tests); ++i) {
-    CheckFunctionKeyTestCase(1000 + i, &rewriter, tests[i]);
+    SCOPED_TRACE(i);
+    CheckFunctionKeyTestCase(&rewriter, tests[i]);
   }
 }
 
@@ -1534,6 +1590,7 @@ TEST_F(EventRewriterTest, TestRewriteExtendedKeysWithSearchRemapped) {
   search.SetValue(chromeos::input_method::kControlKey);
 
   EventRewriter rewriter(NULL);
+  rewriter.KeyboardDeviceAddedForTesting(kKeyboardDeviceId, "PC Keyboard");
   rewriter.set_pref_service_for_testing(&prefs);
 
   CommandLine::ForCurrentProcess()->AppendSwitchASCII(
@@ -1553,7 +1610,8 @@ TEST_F(EventRewriterTest, TestRewriteExtendedKeysWithSearchRemapped) {
   };
 
   for (size_t i = 0; i < arraysize(tests); ++i) {
-    CheckKeyTestCase(1000 + i, &rewriter, tests[i]);
+    SCOPED_TRACE(i);
+    CheckKeyTestCase(&rewriter, tests[i]);
   }
 
   *CommandLine::ForCurrentProcess() = original_cl;
@@ -1570,6 +1628,7 @@ TEST_F(EventRewriterTest, TestRewriteKeyEventSentByXSendEvent) {
   control.SetValue(chromeos::input_method::kAltKey);
 
   EventRewriter rewriter(NULL);
+  rewriter.KeyboardDeviceAddedForTesting(kKeyboardDeviceId, "PC Keyboard");
   rewriter.set_pref_service_for_testing(&prefs);
 
   // Send left control press.
@@ -1600,6 +1659,7 @@ TEST_F(EventRewriterTest, TestRewriteNonNativeEvent) {
   control.SetValue(chromeos::input_method::kAltKey);
 
   EventRewriter rewriter(NULL);
+  rewriter.KeyboardDeviceAddedForTesting(kKeyboardDeviceId, "PC Keyboard");
   rewriter.set_pref_service_for_testing(&prefs);
 
   const int kTouchId = 2;
@@ -1794,6 +1854,7 @@ TEST_F(EventRewriterTest, TestRewrittenModifierClick) {
   control.SetValue(chromeos::input_method::kAltKey);
 
   EventRewriter rewriter(NULL);
+  rewriter.KeyboardDeviceAddedForTesting(kKeyboardDeviceId, "PC Keyboard");
   rewriter.set_pref_service_for_testing(&prefs);
 
   // Check that Control + Left Button is converted (via Alt + Left Button)
@@ -1807,15 +1868,17 @@ TEST_F(EventRewriterTest, TestRewrittenModifierClick) {
   // Sanity check.
   EXPECT_EQ(ui::ET_MOUSE_PRESSED, press.type());
   EXPECT_EQ(ui::EF_LEFT_MOUSE_BUTTON | ui::EF_CONTROL_DOWN, press.flags());
-  int flags = RewriteMouseEvent(&rewriter, press);
-  EXPECT_TRUE(ui::EF_RIGHT_MOUSE_BUTTON & flags);
-  EXPECT_FALSE(ui::EF_CONTROL_DOWN & flags);
-  EXPECT_FALSE(ui::EF_ALT_DOWN & flags);
+  scoped_ptr<ui::Event> new_event;
+  const ui::MouseEvent* result =
+      RewriteMouseButtonEvent(&rewriter, press, &new_event);
+  EXPECT_TRUE(ui::EF_RIGHT_MOUSE_BUTTON & result->flags());
+  EXPECT_FALSE(ui::EF_LEFT_MOUSE_BUTTON & result->flags());
+  EXPECT_FALSE(ui::EF_CONTROL_DOWN & result->flags());
+  EXPECT_FALSE(ui::EF_ALT_DOWN & result->flags());
+  EXPECT_TRUE(ui::EF_RIGHT_MOUSE_BUTTON & result->flags());
 }
 
-
 TEST_F(EventRewriterTest, DontRewriteIfNotRewritten) {
-#if defined(USE_X11)
   // TODO(kpschoedel): pending changes for crbug.com/360377
   // to |chromeos::EventRewriter::RewriteLocatedEvent()
   std::vector<unsigned int> device_list;
@@ -1826,6 +1889,43 @@ TEST_F(EventRewriterTest, DontRewriteIfNotRewritten) {
   EventRewriter rewriter(NULL);
   rewriter.set_pref_service_for_testing(&prefs);
   const int kLeftAndAltFlag = ui::EF_LEFT_MOUSE_BUTTON | ui::EF_ALT_DOWN;
+
+  // Test Alt + Left click.
+  {
+    ui::MouseEvent press(ui::ET_MOUSE_PRESSED,
+                         gfx::Point(),
+                         gfx::Point(),
+                         kLeftAndAltFlag,
+                         ui::EF_LEFT_MOUSE_BUTTON);
+    ui::EventTestApi test_press(&press);
+    test_press.set_source_device_id(10);
+    // Sanity check.
+    EXPECT_EQ(ui::ET_MOUSE_PRESSED, press.type());
+    EXPECT_EQ(kLeftAndAltFlag, press.flags());
+    scoped_ptr<ui::Event> new_event;
+    const ui::MouseEvent* result =
+        RewriteMouseButtonEvent(&rewriter, press, &new_event);
+    EXPECT_TRUE(ui::EF_RIGHT_MOUSE_BUTTON & result->flags());
+    EXPECT_FALSE(kLeftAndAltFlag & result->flags());
+    EXPECT_EQ(ui::EF_RIGHT_MOUSE_BUTTON, result->changed_button_flags());
+  }
+  {
+    ui::MouseEvent release(ui::ET_MOUSE_RELEASED,
+                           gfx::Point(),
+                           gfx::Point(),
+                           kLeftAndAltFlag,
+                           ui::EF_LEFT_MOUSE_BUTTON);
+    ui::EventTestApi test_release(&release);
+    test_release.set_source_device_id(10);
+    scoped_ptr<ui::Event> new_event;
+    const ui::MouseEvent* result =
+        RewriteMouseButtonEvent(&rewriter, release, &new_event);
+    EXPECT_TRUE(ui::EF_RIGHT_MOUSE_BUTTON & result->flags());
+    EXPECT_FALSE(kLeftAndAltFlag & result->flags());
+    EXPECT_EQ(ui::EF_RIGHT_MOUSE_BUTTON, result->changed_button_flags());
+  }
+#if defined(USE_X11)
+  // Test Alt + Left click, using XI2 native events.
   {
     ui::ScopedXI2Event xev;
     xev.InitGenericButtonEvent(
@@ -1834,60 +1934,163 @@ TEST_F(EventRewriterTest, DontRewriteIfNotRewritten) {
     // Sanity check.
     EXPECT_EQ(ui::ET_MOUSE_PRESSED, press.type());
     EXPECT_EQ(kLeftAndAltFlag, press.flags());
-    int flags = RewriteMouseEvent(&rewriter, press);
-    EXPECT_TRUE(ui::EF_RIGHT_MOUSE_BUTTON & flags);
+    scoped_ptr<ui::Event> new_event;
+    const ui::MouseEvent* result =
+        RewriteMouseButtonEvent(&rewriter, press, &new_event);
+    EXPECT_TRUE(ui::EF_RIGHT_MOUSE_BUTTON & result->flags());
+    EXPECT_FALSE(kLeftAndAltFlag & result->flags());
+    EXPECT_EQ(ui::EF_RIGHT_MOUSE_BUTTON, result->changed_button_flags());
   }
   {
     ui::ScopedXI2Event xev;
     xev.InitGenericButtonEvent(
         10, ui::ET_MOUSE_RELEASED, gfx::Point(), kLeftAndAltFlag);
     ui::MouseEvent release(xev);
-    int flags = RewriteMouseEvent(&rewriter, release);
-    EXPECT_TRUE(ui::EF_RIGHT_MOUSE_BUTTON & flags);
+    scoped_ptr<ui::Event> new_event;
+    const ui::MouseEvent* result =
+        RewriteMouseButtonEvent(&rewriter, release, &new_event);
+    EXPECT_TRUE(ui::EF_RIGHT_MOUSE_BUTTON & result->flags());
+    EXPECT_FALSE(kLeftAndAltFlag & result->flags());
+    EXPECT_EQ(ui::EF_RIGHT_MOUSE_BUTTON, result->changed_button_flags());
   }
+#endif
 
   // No ALT in frst click.
+  {
+    ui::MouseEvent press(ui::ET_MOUSE_PRESSED,
+                         gfx::Point(),
+                         gfx::Point(),
+                         ui::EF_LEFT_MOUSE_BUTTON,
+                         ui::EF_LEFT_MOUSE_BUTTON);
+    ui::EventTestApi test_press(&press);
+    test_press.set_source_device_id(10);
+    scoped_ptr<ui::Event> new_event;
+    const ui::MouseEvent* result =
+        RewriteMouseButtonEvent(&rewriter, press, &new_event);
+    EXPECT_TRUE(ui::EF_LEFT_MOUSE_BUTTON & result->flags());
+    EXPECT_EQ(ui::EF_LEFT_MOUSE_BUTTON, result->changed_button_flags());
+  }
+  {
+    ui::MouseEvent release(ui::ET_MOUSE_RELEASED,
+                           gfx::Point(),
+                           gfx::Point(),
+                           kLeftAndAltFlag,
+                           ui::EF_LEFT_MOUSE_BUTTON);
+    ui::EventTestApi test_release(&release);
+    test_release.set_source_device_id(10);
+    scoped_ptr<ui::Event> new_event;
+    const ui::MouseEvent* result =
+        RewriteMouseButtonEvent(&rewriter, release, &new_event);
+    EXPECT_TRUE((ui::EF_LEFT_MOUSE_BUTTON | ui::EF_ALT_DOWN) & result->flags());
+    EXPECT_EQ(ui::EF_LEFT_MOUSE_BUTTON, result->changed_button_flags());
+  }
+#if defined(USE_X11)
+  // No ALT in frst click, using XI2 native events.
   {
     ui::ScopedXI2Event xev;
     xev.InitGenericButtonEvent(
         10, ui::ET_MOUSE_PRESSED, gfx::Point(), ui::EF_LEFT_MOUSE_BUTTON);
     ui::MouseEvent press(xev);
-    int flags = RewriteMouseEvent(&rewriter, press);
-    EXPECT_TRUE(ui::EF_LEFT_MOUSE_BUTTON & flags);
+    scoped_ptr<ui::Event> new_event;
+    const ui::MouseEvent* result =
+        RewriteMouseButtonEvent(&rewriter, press, &new_event);
+    EXPECT_TRUE(ui::EF_LEFT_MOUSE_BUTTON & result->flags());
+    EXPECT_EQ(ui::EF_LEFT_MOUSE_BUTTON, result->changed_button_flags());
   }
   {
     ui::ScopedXI2Event xev;
     xev.InitGenericButtonEvent(
         10, ui::ET_MOUSE_RELEASED, gfx::Point(), kLeftAndAltFlag);
     ui::MouseEvent release(xev);
-    int flags = RewriteMouseEvent(&rewriter, release);
-    EXPECT_TRUE((ui::EF_LEFT_MOUSE_BUTTON | ui::EF_ALT_DOWN) & flags);
+    scoped_ptr<ui::Event> new_event;
+    const ui::MouseEvent* result =
+        RewriteMouseButtonEvent(&rewriter, release, &new_event);
+    EXPECT_TRUE((ui::EF_LEFT_MOUSE_BUTTON | ui::EF_ALT_DOWN) & result->flags());
+    EXPECT_EQ(ui::EF_LEFT_MOUSE_BUTTON, result->changed_button_flags());
   }
+#endif
 
   // ALT on different device.
+  {
+    ui::MouseEvent press(ui::ET_MOUSE_PRESSED,
+                         gfx::Point(),
+                         gfx::Point(),
+                         kLeftAndAltFlag,
+                         ui::EF_LEFT_MOUSE_BUTTON);
+    ui::EventTestApi test_press(&press);
+    test_press.set_source_device_id(11);
+    scoped_ptr<ui::Event> new_event;
+    const ui::MouseEvent* result =
+        RewriteMouseButtonEvent(&rewriter, press, &new_event);
+    EXPECT_TRUE(ui::EF_RIGHT_MOUSE_BUTTON & result->flags());
+    EXPECT_FALSE(kLeftAndAltFlag & result->flags());
+    EXPECT_EQ(ui::EF_RIGHT_MOUSE_BUTTON, result->changed_button_flags());
+  }
+  {
+    ui::MouseEvent release(ui::ET_MOUSE_RELEASED,
+                           gfx::Point(),
+                           gfx::Point(),
+                           kLeftAndAltFlag,
+                           ui::EF_LEFT_MOUSE_BUTTON);
+    ui::EventTestApi test_release(&release);
+    test_release.set_source_device_id(10);
+    scoped_ptr<ui::Event> new_event;
+    const ui::MouseEvent* result =
+        RewriteMouseButtonEvent(&rewriter, release, &new_event);
+    EXPECT_TRUE((ui::EF_LEFT_MOUSE_BUTTON | ui::EF_ALT_DOWN) & result->flags());
+    EXPECT_EQ(ui::EF_LEFT_MOUSE_BUTTON, result->changed_button_flags());
+  }
+  {
+    ui::MouseEvent release(ui::ET_MOUSE_RELEASED,
+                           gfx::Point(),
+                           gfx::Point(),
+                           kLeftAndAltFlag,
+                           ui::EF_LEFT_MOUSE_BUTTON);
+    ui::EventTestApi test_release(&release);
+    test_release.set_source_device_id(11);
+    scoped_ptr<ui::Event> new_event;
+    const ui::MouseEvent* result =
+        RewriteMouseButtonEvent(&rewriter, release, &new_event);
+    EXPECT_TRUE(ui::EF_RIGHT_MOUSE_BUTTON & result->flags());
+    EXPECT_FALSE(kLeftAndAltFlag & result->flags());
+    EXPECT_EQ(ui::EF_RIGHT_MOUSE_BUTTON, result->changed_button_flags());
+  }
+#if defined(USE_X11)
+  // ALT on different device, using XI2 native events.
   {
     ui::ScopedXI2Event xev;
     xev.InitGenericButtonEvent(
         11, ui::ET_MOUSE_PRESSED, gfx::Point(), kLeftAndAltFlag);
     ui::MouseEvent press(xev);
-    int flags = RewriteMouseEvent(&rewriter, press);
-    EXPECT_TRUE(ui::EF_RIGHT_MOUSE_BUTTON & flags);
+    scoped_ptr<ui::Event> new_event;
+    const ui::MouseEvent* result =
+        RewriteMouseButtonEvent(&rewriter, press, &new_event);
+    EXPECT_TRUE(ui::EF_RIGHT_MOUSE_BUTTON & result->flags());
+    EXPECT_FALSE(kLeftAndAltFlag & result->flags());
+    EXPECT_EQ(ui::EF_RIGHT_MOUSE_BUTTON, result->changed_button_flags());
   }
   {
     ui::ScopedXI2Event xev;
     xev.InitGenericButtonEvent(
         10, ui::ET_MOUSE_RELEASED, gfx::Point(), kLeftAndAltFlag);
     ui::MouseEvent release(xev);
-    int flags = RewriteMouseEvent(&rewriter, release);
-    EXPECT_TRUE((ui::EF_LEFT_MOUSE_BUTTON | ui::EF_ALT_DOWN) & flags);
+    scoped_ptr<ui::Event> new_event;
+    const ui::MouseEvent* result =
+        RewriteMouseButtonEvent(&rewriter, release, &new_event);
+    EXPECT_TRUE((ui::EF_LEFT_MOUSE_BUTTON | ui::EF_ALT_DOWN) & result->flags());
+    EXPECT_EQ(ui::EF_LEFT_MOUSE_BUTTON, result->changed_button_flags());
   }
   {
     ui::ScopedXI2Event xev;
     xev.InitGenericButtonEvent(
         11, ui::ET_MOUSE_RELEASED, gfx::Point(), kLeftAndAltFlag);
     ui::MouseEvent release(xev);
-    int flags = RewriteMouseEvent(&rewriter, release);
-    EXPECT_TRUE(ui::EF_RIGHT_MOUSE_BUTTON & flags);
+    scoped_ptr<ui::Event> new_event;
+    const ui::MouseEvent* result =
+        RewriteMouseButtonEvent(&rewriter, release, &new_event);
+    EXPECT_TRUE(ui::EF_RIGHT_MOUSE_BUTTON & result->flags());
+    EXPECT_FALSE(kLeftAndAltFlag & result->flags());
+    EXPECT_EQ(ui::EF_RIGHT_MOUSE_BUTTON, result->changed_button_flags());
   }
 #endif
 }

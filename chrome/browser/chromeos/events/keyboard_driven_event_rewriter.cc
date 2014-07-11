@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/events/keyboard_driven_event_rewriter.h"
 
+#include "chrome/browser/chromeos/events/event_rewriter.h"
 #include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/chromeos/system/input_device_settings.h"
 #include "ui/events/event.h"
@@ -77,9 +78,11 @@ ui::EventRewriteStatus KeyboardDrivenEventRewriter::Rewrite(
     return ui::EVENT_REWRITE_CONTINUE;
   }
 
-  rewritten_event->reset(new ui::KeyEvent(key_event));
-  (*rewritten_event)->set_flags(
-      flags & ~(ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN | ui::EF_SHIFT_DOWN));
+  chromeos::EventRewriter::BuildRewrittenKeyEvent(
+      key_event,
+      key_event.key_code(),
+      flags & ~(ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN | ui::EF_SHIFT_DOWN),
+      rewritten_event);
   return ui::EVENT_REWRITE_REWRITTEN;
 }
 

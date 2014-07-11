@@ -45,6 +45,18 @@ int XKeyEventType(ui::EventType type) {
   }
 }
 
+// Converts EventType to XI2 event type.
+int XIKeyEventType(ui::EventType type) {
+  switch (type) {
+    case ui::ET_KEY_PRESSED:
+      return XI_KeyPress;
+    case ui::ET_KEY_RELEASED:
+      return XI_KeyRelease;
+    default:
+      return 0;
+  }
+}
+
 int XIButtonEventType(ui::EventType type) {
   switch (type) {
     case ui::ET_MOUSEWHEEL:
@@ -167,6 +179,21 @@ void ScopedXI2Event::InitKeyEvent(EventType type,
   event_->xkey.state = XEventState(flags);
   event_->xkey.keycode = XKeyEventKeyCode(key_code, flags, display);
   event_->xkey.same_screen = 1;
+}
+
+void ScopedXI2Event::InitGenericKeyEvent(int deviceid,
+                                         EventType type,
+                                         KeyboardCode key_code,
+                                         int flags) {
+  event_.reset(
+      CreateXInput2Event(deviceid, XIKeyEventType(type), 0, gfx::Point()));
+  XIDeviceEvent* xievent = static_cast<XIDeviceEvent*>(event_->xcookie.data);
+  CHECK_NE(0, xievent->evtype);
+  XDisplay* display = gfx::GetXDisplay();
+  event_->xgeneric.display = display;
+  xievent->display = display;
+  xievent->mods.effective = XEventState(flags);
+  xievent->detail = XKeyEventKeyCode(key_code, flags, display);
 }
 
 void ScopedXI2Event::InitGenericButtonEvent(int deviceid,

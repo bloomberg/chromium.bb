@@ -13,14 +13,14 @@ typedef union _XEvent XEvent;
 
 namespace ui {
 
-EVENTS_BASE_EXPORT KeyboardCode KeyboardCodeFromXKeyEvent(XEvent* xev);
+EVENTS_BASE_EXPORT KeyboardCode KeyboardCodeFromXKeyEvent(const XEvent* xev);
 
 EVENTS_BASE_EXPORT KeyboardCode KeyboardCodeFromXKeysym(unsigned int keysym);
 
-EVENTS_BASE_EXPORT const char* CodeFromXEvent(XEvent* xev);
+EVENTS_BASE_EXPORT const char* CodeFromXEvent(const XEvent* xev);
 
 // Returns a character on a standard US PC keyboard from an XEvent.
-EVENTS_BASE_EXPORT uint16 GetCharacterFromXEvent(XEvent* xev);
+EVENTS_BASE_EXPORT uint16 GetCharacterFromXEvent(const XEvent* xev);
 
 // Converts a KeyboardCode into an X KeySym.
 EVENTS_BASE_EXPORT int XKeysymForWindowsKeyCode(KeyboardCode keycode,
@@ -29,6 +29,10 @@ EVENTS_BASE_EXPORT int XKeysymForWindowsKeyCode(KeyboardCode keycode,
 // Converts an X keycode into ui::KeyboardCode.
 EVENTS_BASE_EXPORT KeyboardCode
     DefaultKeyboardCodeFromHardwareKeycode(unsigned int hardware_code);
+
+// Initializes a core XKeyEvent from an XI2 key event.
+EVENTS_BASE_EXPORT void InitXKeyEventFromXIDeviceEvent(const XEvent& src,
+                                                       XEvent* dst);
 
 }  // namespace ui
 

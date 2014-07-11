@@ -7,10 +7,11 @@
 #include <algorithm>
 
 #define XK_3270  // for XK_3270_BackTab
-#include <X11/keysym.h>
+#include <X11/XF86keysym.h>
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
-#include <X11/XF86keysym.h>
+#include <X11/extensions/XInput2.h>
+#include <X11/keysym.h>
 
 #include "base/basictypes.h"
 #include "base/logging.h"
@@ -460,7 +461,7 @@ KeyboardCode FindVK(const T_MAP& key, const T_MAP* map, size_t size) {
 }  // namespace
 
 // Get an ui::KeyboardCode from an X keyevent
-KeyboardCode KeyboardCodeFromXKeyEvent(XEvent* xev) {
+KeyboardCode KeyboardCodeFromXKeyEvent(const XEvent* xev) {
   // Gets correct VKEY code from XEvent is performed as the following steps:
   // 1. Gets the keysym without modifier states.
   // 2. For [a-z] & [0-9] cases, returns the VKEY code accordingly.
@@ -475,11 +476,19 @@ KeyboardCode KeyboardCodeFromXKeyEvent(XEvent* xev) {
   // 8. If not found, fallback to find with the hardware code in US layout.
 
   KeySym keysym = NoSymbol;
-  XKeyEvent xkey = xev->xkey;
-  xkey.state &= (~0xFF | Mod2Mask);  // Clears the xkey's state except numlock.
+  XEvent xkeyevent;
+  if (xev->type == GenericEvent) {
+    // Convert the XI2 key event into a core key event so that we can
+    // continue to use XLookupString() until crbug.com/367732 is complete.
+    InitXKeyEventFromXIDeviceEvent(*xev, &xkeyevent);
+  } else {
+    xkeyevent.xkey = xev->xkey;
+  }
+  XKeyEvent* xkey = &xkeyevent.xkey;
+  xkey->state &= (~0xFF | Mod2Mask);  // Clears the xkey's state except numlock.
   // XLookupKeysym does not take into consideration the state of the lock/shift
   // etc. keys. So it is necessary to use XLookupString instead.
-  XLookupString(&xkey, NULL, 0, &keysym, NULL);
+  XLookupString(xkey, NULL, 0, &keysym, NULL);
 
   // [a-z] cases.
   if (keysym >= XK_a && keysym <= XK_z)
@@ -499,24 +508,24 @@ KeyboardCode KeyboardCodeFromXKeyEvent(XEvent* xev) {
     if (keycode != VKEY_UNKNOWN)
       return keycode;
 
-    MAP1 key1 = {keysym & 0xFFFF, xkey.keycode, 0};
+    MAP1 key1 = {keysym & 0xFFFF, xkey->keycode, 0};
     keycode = FindVK(key1, map1, arraysize(map1));
     if (keycode != VKEY_UNKNOWN)
       return keycode;
 
     KeySym keysym_shift = NoSymbol;
-    xkey.state |= ShiftMask;
-    XLookupString(&xkey, NULL, 0, &keysym_shift, NULL);
-    MAP2 key2 = {keysym & 0xFFFF, xkey.keycode, keysym_shift & 0xFFFF, 0};
+    xkey->state |= ShiftMask;
+    XLookupString(xkey, NULL, 0, &keysym_shift, NULL);
+    MAP2 key2 = {keysym & 0xFFFF, xkey->keycode, keysym_shift & 0xFFFF, 0};
     keycode = FindVK(key2, map2, arraysize(map2));
     if (keycode != VKEY_UNKNOWN)
       return keycode;
 
     KeySym keysym_altgr = NoSymbol;
-    xkey.state &= ~ShiftMask;
-    xkey.state |= Mod1Mask;
-    XLookupString(&xkey, NULL, 0, &keysym_altgr, NULL);
-    MAP3 key3 = {keysym & 0xFFFF, xkey.keycode, keysym_shift & 0xFFFF,
+    xkey->state &= ~ShiftMask;
+    xkey->state |= Mod1Mask;
+    XLookupString(xkey, NULL, 0, &keysym_altgr, NULL);
+    MAP3 key3 = {keysym & 0xFFFF, xkey->keycode, keysym_shift & 0xFFFF,
                  keysym_altgr & 0xFFFF, 0};
     keycode = FindVK(key3, map3, arraysize(map3));
     if (keycode != VKEY_UNKNOWN)
@@ -525,7 +534,7 @@ KeyboardCode KeyboardCodeFromXKeyEvent(XEvent* xev) {
     // On Linux some keys has AltGr char but not on Windows.
     // So if cannot find VKEY with (ch0+sc+ch1+ch2) in map3, tries to fallback
     // to just find VKEY with (ch0+sc+ch1). This is the best we could do.
-    MAP3 key4 = {keysym & 0xFFFF, xkey.keycode, keysym_shift & 0xFFFF, 0xFFFF,
+    MAP3 key4 = {keysym & 0xFFFF, xkey->keycode, keysym_shift & 0xFFFF, 0xFFFF,
                  0};
     const MAP3* p =
         std::lower_bound(map3, map3 + arraysize(map3), key4, MAP3());
@@ -536,7 +545,7 @@ KeyboardCode KeyboardCodeFromXKeyEvent(XEvent* xev) {
 
   keycode = KeyboardCodeFromXKeysym(keysym);
   if (keycode == VKEY_UNKNOWN)
-    keycode = DefaultKeyboardCodeFromHardwareKeycode(xkey.keycode);
+    keycode = DefaultKeyboardCodeFromHardwareKeycode(xkey->keycode);
 
   return keycode;
 }
@@ -823,14 +832,27 @@ KeyboardCode KeyboardCodeFromXKeysym(unsigned int keysym) {
   return VKEY_UNKNOWN;
 }
 
-const char* CodeFromXEvent(XEvent* xev) {
-  return KeycodeConverter::GetInstance()->NativeKeycodeToCode(
-      xev->xkey.keycode);
+const char* CodeFromXEvent(const XEvent* xev) {
+  int keycode = (xev->type == GenericEvent)
+                    ? static_cast<XIDeviceEvent*>(xev->xcookie.data)->detail
+                    : xev->xkey.keycode;
+  return KeycodeConverter::GetInstance()->NativeKeycodeToCode(keycode);
 }
 
-uint16 GetCharacterFromXEvent(XEvent* xev) {
+uint16 GetCharacterFromXEvent(const XEvent* xev) {
+  XEvent xkeyevent;
+  const XKeyEvent* xkey = NULL;
   char buf[6];
-  int bytes_written = XLookupString(&xev->xkey, buf, 6, NULL, NULL);
+  if (xev->type == GenericEvent) {
+    // Convert the XI2 key event into a core key event so that we can
+    // continue to use XLookupString() until crbug.com/367732 is complete.
+    InitXKeyEventFromXIDeviceEvent(*xev, &xkeyevent);
+    xkey = &xkeyevent.xkey;
+  } else {
+    xkey = &xev->xkey;
+  }
+  int bytes_written =
+      XLookupString(const_cast<XKeyEvent*>(xkey), buf, 6, NULL, NULL);
   DCHECK_LE(bytes_written, 6);
 
   if (bytes_written <= 0)
@@ -1274,6 +1296,35 @@ int XKeysymForWindowsKeyCode(KeyboardCode keycode, bool shift) {
       LOG(WARNING) << "Unknown keycode:" << keycode;
       return 0;
     }
+}
+
+void InitXKeyEventFromXIDeviceEvent(const XEvent& src, XEvent* xkeyevent) {
+  DCHECK(src.type == GenericEvent);
+  XIDeviceEvent* xievent = static_cast<XIDeviceEvent*>(src.xcookie.data);
+  switch (xievent->evtype) {
+    case XI_KeyPress:
+      xkeyevent->type = KeyPress;
+      break;
+    case XI_KeyRelease:
+      xkeyevent->type = KeyRelease;
+      break;
+    default:
+      NOTREACHED();
+  }
+  xkeyevent->xkey.serial = xievent->serial;
+  xkeyevent->xkey.send_event = xievent->send_event;
+  xkeyevent->xkey.display = xievent->display;
+  xkeyevent->xkey.window = xievent->event;
+  xkeyevent->xkey.root = xievent->root;
+  xkeyevent->xkey.subwindow = xievent->child;
+  xkeyevent->xkey.time = xievent->time;
+  xkeyevent->xkey.x = xievent->event_x;
+  xkeyevent->xkey.y = xievent->event_y;
+  xkeyevent->xkey.x_root = xievent->root_x;
+  xkeyevent->xkey.y_root = xievent->root_y;
+  xkeyevent->xkey.state = xievent->mods.effective;
+  xkeyevent->xkey.keycode = xievent->detail;
+  xkeyevent->xkey.same_screen = 1;
 }
 
 }  // namespace ui

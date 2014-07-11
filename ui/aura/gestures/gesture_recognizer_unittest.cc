@@ -24,6 +24,7 @@
 #include "ui/events/gestures/gesture_recognizer_impl.h"
 #include "ui/events/gestures/gesture_sequence.h"
 #include "ui/events/gestures/gesture_types.h"
+#include "ui/events/test/events_test_utils.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/rect.h"
 
@@ -2289,12 +2290,14 @@ TEST_P(GestureRecognizerTest, GestureEventTouchLockIgnoresOtherScreens) {
 
   ui::TouchEvent press1(ui::ET_TOUCH_PRESSED, gfx::Point(5, 5),
                         kTouchId1, tes.Now());
-  press1.set_source_device_id(1);
+  ui::EventTestApi test_press1(&press1);
+  test_press1.set_source_device_id(1);
   DispatchEventUsingWindowDispatcher(&press1);
 
   ui::TouchEvent press2(ui::ET_TOUCH_PRESSED, gfx::Point(20, 20),
                         kTouchId2, tes.Now());
-  press2.set_source_device_id(2);
+  ui::EventTestApi test_press2(&press2);
+  test_press2.set_source_device_id(2);
   DispatchEventUsingWindowDispatcher(&press2);
 
   // The second press should not have been locked to the same target as the

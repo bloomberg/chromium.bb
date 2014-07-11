@@ -134,6 +134,11 @@ enum EventPhase {
   EP_POSTDISPATCH
 };
 
+// Device ID for Touch and Key Events.
+enum EventDeviceId {
+  ED_UNKNOWN_DEVICE = -1
+};
+
 }  // namespace ui
 
 #endif  // UI_EVENTS_EVENT_CONSTANTS_H_

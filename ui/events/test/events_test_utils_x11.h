@@ -42,6 +42,11 @@ class ScopedXI2Event {
                     KeyboardCode key_code,
                     int flags);
 
+  void InitGenericKeyEvent(int deviceid,
+                           EventType type,
+                           KeyboardCode key_code,
+                           int flags);
+
   void InitGenericButtonEvent(int deviceid,
                               EventType type,
                               const gfx::Point& location,

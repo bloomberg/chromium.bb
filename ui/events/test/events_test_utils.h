@@ -22,6 +22,10 @@ class EventTestApi {
     event_->time_stamp_ = time_stamp;
   }
 
+  void set_source_device_id(int source_device_id) {
+    event_->source_device_id_ = source_device_id;
+  }
+
  private:
   EventTestApi();
 
