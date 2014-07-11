@@ -12,8 +12,6 @@ import org.chromium.mojo.system.MojoResult;
 import java.nio.ByteBuffer;
 import java.util.List;
 
-import javax.annotation.Nullable;
-
 /**
  * A raw message to be sent/received from a {@link MessagePipeHandle}.
  */
@@ -44,9 +42,11 @@ public final class Message {
     /**
      * Read a message, and pass it to the given |MessageReceiver| if not null. If the
      * |MessageReceiver| is null, the message is lost.
+     *
+     * @param receiver The {@link MessageReceiver} that will receive the read {@link Message}. Can
+     *            be <code>null</code>, in which case the message is discarded.
      */
-    public static int readAndDispatchMessage(MessagePipeHandle handle,
-            @Nullable MessageReceiver receiver) {
+    public static int readAndDispatchMessage(MessagePipeHandle handle, MessageReceiver receiver) {
         // TODO(qsr) Allow usage of a pool of pre-allocated buffer for performance.
         ReadMessageResult result = handle.readMessage(null, 0, MessagePipeHandle.ReadFlags.NONE);
         if (result.getMojoResult() != MojoResult.RESOURCE_EXHAUSTED) {

@@ -424,13 +424,6 @@
             'java_in_dir': 'public/java',
           },
           'includes': [ '../build/java.gypi' ],
-          'conditions': [
-            ['android_webview_build==0', {
-              'dependencies': [
-                '../third_party/jsr-305/jsr-305.gyp:jsr_305_javalib',
-              ],
-            }]
-          ],
         },
         {
           'target_name': 'mojo_bindings_java',
