@@ -91,12 +91,11 @@ static void initializeHolderIfNeeded(ScriptState* scriptState, v8::Handle<v8::Ob
     v8::Handle<v8::Value> isInitialized = V8HiddenValue::getHiddenValue(isolate, holderObject, V8HiddenValue::privateScriptObjectIsInitialized(isolate));
     if (isInitialized.IsEmpty()) {
         v8::Handle<v8::Value> initializeFunction = classObject->Get(v8String(isolate, "constructor"));
-        if (!initializeFunction.IsEmpty()) {
-            RELEASE_ASSERT(initializeFunction->IsFunction());
+        if (!initializeFunction.IsEmpty() && initializeFunction->IsFunction()) {
             V8ScriptRunner::callFunction(v8::Handle<v8::Function>::Cast(initializeFunction), scriptState->executionContext(), holder, 0, 0, isolate);
-            isInitialized = v8Boolean(true, isolate);
-            V8HiddenValue::setHiddenValue(isolate, holderObject, V8HiddenValue::privateScriptObjectIsInitialized(isolate), isInitialized);
         }
+        isInitialized = v8Boolean(true, isolate);
+        V8HiddenValue::setHiddenValue(isolate, holderObject, V8HiddenValue::privateScriptObjectIsInitialized(isolate), isInitialized);
     }
 }
 
