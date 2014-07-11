@@ -477,6 +477,7 @@ public:
         DOMWindowOpenFeatures = 476,
         LegacyFullScreenErrorExemption = 477,
         MediaStreamTrackGetSources = 478,
+        AspectRatioFlexItem = 479,
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.
         // Also, run update_use_counter_feature_enum.py in chromium/src/tools/metrics/histograms/

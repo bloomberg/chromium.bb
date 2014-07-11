@@ -31,6 +31,7 @@
 #include "config.h"
 #include "core/rendering/RenderFlexibleBox.h"
 
+#include "core/frame/UseCounter.h"
 #include "core/rendering/FastTextAutosizer.h"
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderView.h"
@@ -611,6 +612,9 @@ bool RenderFlexibleBox::childPreferredMainAxisContentExtentRequiresLayout(Render
 LayoutUnit RenderFlexibleBox::preferredMainAxisContentExtentForChild(RenderBox* child, bool hasInfiniteLineLength, bool relayoutChildren)
 {
     child->clearOverrideSize();
+
+    if (child->style()->hasAspectRatio() || child->isImage() || child->isVideo() || child->isCanvas())
+        UseCounter::count(document(), UseCounter::AspectRatioFlexItem);
 
     Length flexBasis = flexBasisForChild(child);
     if (preferredMainAxisExtentDependsOnLayout(flexBasis, hasInfiniteLineLength)) {
