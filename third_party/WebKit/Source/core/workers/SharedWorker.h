@@ -50,10 +50,9 @@ public:
 
     virtual const AtomicString& interfaceName() const OVERRIDE;
 
-    // Prevents this SharedWorker + JS wrapper from being garbage collected.
-    void setPreventGC();
-    // Allows this SharedWorker + JS wrapper to be garbage collected.
-    void unsetPreventGC();
+    void setIsBeingConnected(bool b) { m_isBeingConnected = b; }
+
+    virtual bool hasPendingActivity() const OVERRIDE;
 
     virtual void trace(Visitor*) OVERRIDE;
 
@@ -61,6 +60,7 @@ private:
     explicit SharedWorker(ExecutionContext*);
 
     RefPtrWillBeMember<MessagePort> m_port;
+    bool m_isBeingConnected;
 };
 
 } // namespace WebCore

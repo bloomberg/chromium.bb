@@ -83,11 +83,12 @@ private:
 
 SharedWorkerConnector::~SharedWorkerConnector()
 {
-    m_worker->unsetPreventGC();
+    m_worker->setIsBeingConnected(false);
 }
+
 void SharedWorkerConnector::connect()
 {
-    m_worker->setPreventGC();
+    m_worker->setIsBeingConnected(true);
     m_webWorkerConnector->connect(m_channel.leakPtr(), this);
 }
 

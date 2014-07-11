@@ -50,6 +50,7 @@ namespace WebCore {
 
 inline SharedWorker::SharedWorker(ExecutionContext* context)
     : AbstractWorker(context)
+    , m_isBeingConnected(false)
 {
     ScriptWrappable::init(this);
 }
@@ -96,14 +97,9 @@ const AtomicString& SharedWorker::interfaceName() const
     return EventTargetNames::SharedWorker;
 }
 
-void SharedWorker::setPreventGC()
+bool SharedWorker::hasPendingActivity() const
 {
-    setPendingActivity(this);
-}
-
-void SharedWorker::unsetPreventGC()
-{
-    unsetPendingActivity(this);
+    return m_isBeingConnected;
 }
 
 void SharedWorker::trace(Visitor* visitor)
