@@ -1306,6 +1306,7 @@ crbug.com/392046 [ Win ] fast/text/whitespace/017.html [ Pass Failure ]
 crbug.com/392046 [ Win ] fast/text/whitespace/018.html [ Pass Failure ]
 crbug.com/392046 [ Win ] fast/ruby/select-ruby.html [ Pass Failure ]
 crbug.com/392046 [ Win ] scrollbars/rtl/overflow-scroll-rtl.html [ Pass ImageOnlyFailure ]
+crbug.com/392046 [ Win ] fast/parser/fonts.html [ Pass Failure ]
 
 crbug.com/391068 http/tests/websocket/workers/close-code-and-reason.html [ Timeout Pass ]
 
