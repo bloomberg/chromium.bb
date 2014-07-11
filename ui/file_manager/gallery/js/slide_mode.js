@@ -929,7 +929,7 @@ SlideMode.prototype.saveCurrentImage_ = function(callback) {
  */
 SlideMode.prototype.onContentChange_ = function(event) {
   var newEntry = event.item.getEntry();
-  if (util.isSameEntry(newEntry, event.oldEntry))
+  if (!util.isSameEntry(newEntry, event.oldEntry))
     this.imageView_.changeEntry(newEntry);
 };
 
