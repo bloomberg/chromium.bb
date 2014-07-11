@@ -601,8 +601,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest,
                     SERVICE_WORKER_ERROR_INSTALL_WORKER_FAILED);
 }
 
-IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest,
-                       DISABLED_FetchEvent_Response) {
+IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest, FetchEvent_Response) {
   ServiceWorkerFetchEventResult result;
   ServiceWorkerResponse response;
   scoped_ptr<webkit_blob::BlobDataHandle> blob_data_handle;
@@ -671,7 +670,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest, SyncEventHandled) {
   EXPECT_EQ(200, response.status_code);
 }
 
-IN_PROC_BROWSER_TEST_F(ServiceWorkerBrowserTest, DISABLED_Reload) {
+IN_PROC_BROWSER_TEST_F(ServiceWorkerBrowserTest, Reload) {
   const std::string kPageUrl = "/service_worker/reload.html";
   const std::string kWorkerUrl = "/service_worker/fetch_event_reload.js";
   {
