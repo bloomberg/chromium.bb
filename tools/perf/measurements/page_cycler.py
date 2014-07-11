@@ -26,6 +26,8 @@ from metrics import speedindex
 from metrics import v8_object_stats
 from telemetry.core import util
 from telemetry.page import page_measurement
+from telemetry.value import scalar
+
 
 class PageCycler(page_measurement.PageMeasurement):
   options = {'pageset_repeat': 10}
@@ -128,9 +130,9 @@ class PageCycler(page_measurement.PageMeasurement):
     chart_name_prefix = ('cold_' if self.IsRunCold(page.url) else
                          'warm_')
 
-    results.Add('page_load_time', 'ms',
-                int(float(tab.EvaluateJavaScript('__pc_load_time'))),
-                chart_name=chart_name_prefix+'times')
+    results.AddValue(scalar.ScalarValue(
+        results.current_page, '%stimes.page_load_time' % chart_name_prefix,
+        'ms', tab.EvaluateJavaScript('__pc_load_time')))
 
     self._has_loaded_page[page.url] += 1
 
