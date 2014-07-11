@@ -54,6 +54,9 @@ uint32_t DriSurface::GetHandle() const {
   return backbuffer()->handle();
 }
 
+void DriSurface::PreSwapBuffers() {
+}
+
 // This call is made after the hardware just started displaying our back buffer.
 // We need to update our pointer reference and synchronize the two buffers.
 void DriSurface::SwapBuffers() {

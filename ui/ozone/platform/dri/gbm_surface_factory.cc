@@ -15,6 +15,7 @@
 #include "ui/ozone/platform/dri/hardware_display_controller.h"
 #include "ui/ozone/platform/dri/scanout_surface.h"
 #include "ui/ozone/platform/dri/screen_manager.h"
+#include "ui/ozone/public/native_pixmap.h"
 #include "ui/ozone/public/surface_ozone_egl.h"
 
 namespace ui {
@@ -39,6 +40,8 @@ class GbmSurfaceAdapter : public ui::SurfaceOzoneEGL {
 
  private:
   base::WeakPtr<HardwareDisplayController> controller_;
+  NativePixmapList overlay_refs_;
+  std::vector<OzoneOverlayPlane> overlays_;
 
   DISALLOW_COPY_AND_ASSIGN(GbmSurfaceAdapter);
 };
@@ -65,24 +68,32 @@ bool GbmSurfaceAdapter::ResizeNativeWindow(const gfx::Size& viewport_size) {
 bool GbmSurfaceAdapter::OnSwapBuffers() {
   if (!controller_)
     return false;
-
-  static_cast<GbmSurface*>(controller_->surface())->LockCurrentDrawable();
-  if (controller_->SchedulePageFlip()) {
+  bool flip_succeeded =
+      controller_->SchedulePageFlip(overlays_, &overlay_refs_);
+  overlays_.clear();
+  if (flip_succeeded)
     controller_->WaitForPageFlipEvent();
-    return true;
-  }
-
-  return false;
+  return flip_succeeded;
 }
 
 bool GbmSurfaceAdapter::ScheduleOverlayPlane(
     int plane_z_order,
     gfx::OverlayTransform plane_transform,
-    scoped_refptr<ui::NativePixmap> buffer,
+    scoped_refptr<NativePixmap> buffer,
     const gfx::Rect& display_bounds,
     const gfx::RectF& crop_rect) {
-  NOTIMPLEMENTED();
-  return false;
+  GbmPixmap* pixmap = static_cast<GbmPixmap*>(buffer.get());
+  if (!pixmap) {
+    LOG(ERROR) << "ScheduleOverlayPlane passed NULL buffer";
+    return false;
+  }
+  overlays_.push_back(OzoneOverlayPlane(pixmap->buffer(),
+                                        plane_z_order,
+                                        plane_transform,
+                                        display_bounds,
+                                        crop_rect));
+  overlay_refs_.push_back(buffer);
+  return true;
 }
 
 scoped_ptr<gfx::VSyncProvider> GbmSurfaceAdapter::CreateVSyncProvider() {
@@ -91,9 +102,11 @@ scoped_ptr<gfx::VSyncProvider> GbmSurfaceAdapter::CreateVSyncProvider() {
 
 }  // namespace
 
-GbmSurfaceFactory::GbmSurfaceFactory()
+GbmSurfaceFactory::GbmSurfaceFactory(bool allow_surfaceless)
     : DriSurfaceFactory(NULL, NULL),
-      device_(NULL) {}
+      device_(NULL),
+      allow_surfaceless_(allow_surfaceless) {
+}
 
 GbmSurfaceFactory::~GbmSurfaceFactory() {}
 
@@ -176,11 +189,15 @@ scoped_ptr<ui::SurfaceOzoneEGL> GbmSurfaceFactory::CreateEGLSurfaceForWidget(
 scoped_refptr<ui::NativePixmap> GbmSurfaceFactory::CreateNativePixmap(
     gfx::Size size,
     BufferFormat format) {
-  scoped_refptr<GbmBuffer> buf = new GbmBuffer(device_, drm_, size);
-  if (!buf->InitializeBuffer(format, true)) {
+  scoped_refptr<GbmPixmap> buf = new GbmPixmap(device_, drm_, size);
+  if (!buf->buffer()->InitializeBuffer(format, true)) {
     return NULL;
   }
   return buf;
+}
+
+bool GbmSurfaceFactory::CanShowPrimaryPlaneAsOverlay() {
+  return allow_surfaceless_;
 }
 
 }  // namespace ui

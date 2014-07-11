@@ -52,8 +52,9 @@ class OZONE_BASE_EXPORT SurfaceOzoneEGL {
   // composition.
   // |buffer| to be presented by the overlay.
   // |display_bounds| specify where it is supposed to be on the screen.
-  // |crop_rect| specifies the region within the buffer to be placed inside
-  // |display_bounds|.
+  // |crop_rect| specifies the region within the buffer to be placed
+  // inside |display_bounds|. This is specified in texture coordinates, in the
+  // range of [0,1].
   virtual bool ScheduleOverlayPlane(int plane_z_order,
                                     gfx::OverlayTransform plane_transform,
                                     scoped_refptr<NativePixmap> buffer,

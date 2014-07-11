@@ -24,6 +24,7 @@ class MockDriWrapper : public ui::DriWrapper {
     return remove_framebuffer_call_count_;
   }
   int get_page_flip_call_count() const { return page_flip_call_count_; }
+  int get_overlay_flip_call_count() const { return overlay_flip_call_count_; }
   void fail_init() { fd_ = -1; }
   void set_set_crtc_expectation(bool state) { set_crtc_expectation_ = state; }
   void set_page_flip_expectation(bool state) { page_flip_expectation_ = state; }
@@ -49,6 +50,11 @@ class MockDriWrapper : public ui::DriWrapper {
   virtual bool PageFlip(uint32_t crtc_id,
                         uint32_t framebuffer,
                         void* data) OVERRIDE;
+  virtual bool PageFlipOverlay(uint32_t crtc_id,
+                               uint32_t framebuffer,
+                               const gfx::Rect& location,
+                               const gfx::RectF& source,
+                               int overlay_plane) OVERRIDE;
   virtual ScopedDrmPropertyPtr GetProperty(drmModeConnector* connector,
                                            const char* name) OVERRIDE;
   virtual bool SetProperty(uint32_t connector_id,
@@ -69,6 +75,7 @@ class MockDriWrapper : public ui::DriWrapper {
   int add_framebuffer_call_count_;
   int remove_framebuffer_call_count_;
   int page_flip_call_count_;
+  int overlay_flip_call_count_;
 
   bool set_crtc_expectation_;
   bool add_framebuffer_expectation_;

@@ -59,6 +59,9 @@ class ScanoutSurface {
   // Returns true if the initialization is successful, false otherwise.
   virtual bool Initialize() = 0;
 
+  // Prepare the surface to be displayed.
+  virtual void PreSwapBuffers() = 0;
+
   // Swaps the back buffer with the front buffer.
   virtual void SwapBuffers() = 0;
 

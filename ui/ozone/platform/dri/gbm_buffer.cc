@@ -79,11 +79,40 @@ bool GbmBuffer::InitializeBuffer(SurfaceFactoryOzone::BufferFormat format,
   return true;
 }
 
-void* GbmBuffer::GetEGLClientBuffer() {
-  return bo_;
+bool GbmBuffer::Initialize() {
+  return bo_ != NULL;
 }
 
-int GbmBuffer::GetDmaBufFd() {
+uint32_t GbmBuffer::GetFramebufferId() const {
+  return framebuffer_;
+}
+
+uint32_t GbmBuffer::GetHandle() const {
+  return handle_;
+}
+
+gfx::Size GbmBuffer::Size() const {
+  return size_;
+}
+
+void GbmBuffer::PreSwapBuffers() {
+}
+
+void GbmBuffer::SwapBuffers() {
+}
+
+GbmPixmap::GbmPixmap(gbm_device* device, DriWrapper* dri, const gfx::Size& size)
+    : buffer_(device, dri, size) {
+}
+
+GbmPixmap::~GbmPixmap() {
+}
+
+void* GbmPixmap::GetEGLClientBuffer() {
+  return buffer_.bo();
+}
+
+int GbmPixmap::GetDmaBufFd() {
   return -1;
 }
 

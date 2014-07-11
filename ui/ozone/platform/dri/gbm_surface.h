@@ -32,15 +32,8 @@ class GbmSurface : public ScanoutSurface {
   virtual uint32_t GetFramebufferId() const OVERRIDE;
   virtual uint32_t GetHandle() const OVERRIDE;
   virtual gfx::Size Size() const OVERRIDE;
+  virtual void PreSwapBuffers() OVERRIDE;
   virtual void SwapBuffers() OVERRIDE;
-
-  // Before scheduling the backbuffer to be scanned out we need to "lock" it.
-  // When we lock it, GBM will give a pointer to a buffer representing the
-  // backbuffer. It will also update its information on which buffers can not be
-  // used for drawing. The buffer will be released when the page flip event
-  // occurs (see SwapBuffers). This is called from GbmSurfaceFactory before
-  // scheduling a page flip.
-  void LockCurrentDrawable();
 
   gbm_surface* native_surface() { return native_surface_; };
 

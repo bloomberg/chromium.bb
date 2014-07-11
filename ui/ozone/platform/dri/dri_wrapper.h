@@ -8,6 +8,9 @@
 #include <stdint.h>
 
 #include "base/macros.h"
+#include "ui/gfx/overlay_transform.h"
+#include "ui/gfx/rect.h"
+#include "ui/gfx/rect_f.h"
 #include "ui/ozone/platform/dri/scoped_drm_types.h"
 
 typedef struct _drmEventContext drmEventContext;
@@ -66,6 +69,15 @@ class DriWrapper {
   // queued on |fd_|. |data| is a generic pointer to some information the user
   // will receive when processing the pageflip event.
   virtual bool PageFlip(uint32_t crtc_id, uint32_t framebuffer, void* data);
+
+  // Schedule an overlay to be show during the page flip for CRTC |crtc_id|.
+  // |source| location from |framebuffer| will be shown on overlay
+  // |overlay_plane|, in the bounds specified by |location| on the screen.
+  virtual bool PageFlipOverlay(uint32_t crtc_id,
+                               uint32_t framebuffer,
+                               const gfx::Rect& location,
+                               const gfx::RectF& source,
+                               int overlay_plane);
 
   // Returns the property with name |name| associated with |connector|. Returns
   // NULL if property not found. If the returned value is valid, it must be

@@ -21,7 +21,25 @@ class Point;
 
 namespace ui {
 
+class NativePixmap;
 class ScanoutSurface;
+
+typedef std::vector<scoped_refptr<NativePixmap> > NativePixmapList;
+
+struct OzoneOverlayPlane {
+  OzoneOverlayPlane(ScanoutSurface* scanout,
+                    int z_order,
+                    gfx::OverlayTransform plane_transform,
+                    const gfx::Rect& display_bounds,
+                    const gfx::RectF& crop_rect);
+
+  ScanoutSurface* scanout;
+  int z_order;
+  gfx::OverlayTransform plane_transform;
+  gfx::Rect display_bounds;
+  gfx::RectF crop_rect;
+  int overlay_plane;
+};
 
 // The HDCOz will handle modesettings and scannout operations for hardware
 // devices.
@@ -114,7 +132,8 @@ class HardwareDisplayController
   // called again before the page flip occurrs.
   //
   // Returns true if the page flip was successfully registered, false otherwise.
-  bool SchedulePageFlip();
+  bool SchedulePageFlip(const std::vector<OzoneOverlayPlane>& overlays,
+                        NativePixmapList* references);
 
   // TODO(dnicoara) This should be on the MessageLoop when Ozone can have
   // BeginFrame can be triggered explicitly by Ozone.
@@ -150,6 +169,11 @@ class HardwareDisplayController
   };
 
  private:
+  ScanoutSurface* GetPrimaryPlane(
+      const std::vector<OzoneOverlayPlane>& overlays);
+
+  NativePixmapList current_overlay_references_;
+
   // Object containing the connection to the graphics device and wraps the API
   // calls to control it.
   DriWrapper* drm_;

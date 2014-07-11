@@ -87,7 +87,7 @@ void DriSurfaceAdapter::PresentCanvas(const gfx::Rect& damage) {
     return;
 
   UpdateNativeSurface(damage);
-  controller_->SchedulePageFlip();
+  controller_->SchedulePageFlip(std::vector<OzoneOverlayPlane>(), NULL);
   controller_->WaitForPageFlipEvent();
 }
 

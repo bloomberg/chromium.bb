@@ -12,6 +12,12 @@
 #include "base/logging.h"
 
 namespace ui {
+namespace {
+uint32_t ToFixedPoint(double v) {
+  // This returns a number in a 16-bit.16-bit fixed point.
+  return v * 65536.0;
+}
+}  // namespace
 
 DriWrapper::DriWrapper(const char* device_path) {
   fd_ = open(device_path, O_RDWR | O_CLOEXEC);
@@ -84,6 +90,27 @@ bool DriWrapper::PageFlip(uint32_t crtc_id,
                           framebuffer,
                           DRM_MODE_PAGE_FLIP_EVENT,
                           data);
+}
+
+bool DriWrapper::PageFlipOverlay(uint32_t crtc_id,
+                                 uint32_t framebuffer,
+                                 const gfx::Rect& location,
+                                 const gfx::RectF& source,
+                                 int overlay_plane) {
+  CHECK(fd_ >= 0);
+  return !drmModeSetPlane(fd_,
+                          overlay_plane,
+                          crtc_id,
+                          framebuffer,
+                          0,
+                          location.x(),
+                          location.y(),
+                          location.width(),
+                          location.height(),
+                          ToFixedPoint(source.x()),
+                          ToFixedPoint(source.y()),
+                          ToFixedPoint(source.width()),
+                          ToFixedPoint(source.height()));
 }
 
 ScopedDrmFramebufferPtr DriWrapper::GetFramebuffer(uint32_t framebuffer) {

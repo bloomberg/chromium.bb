@@ -13,6 +13,7 @@
 #include "ui/events/ozone/evdev/event_factory_evdev.h"
 #include "ui/ozone/platform/dri/cursor_factory_evdev_dri.h"
 #include "ui/ozone/platform/dri/dri_wrapper.h"
+#include "ui/ozone/platform/dri/gbm_buffer.h"
 #include "ui/ozone/platform/dri/gbm_surface.h"
 #include "ui/ozone/platform/dri/gbm_surface_factory.h"
 #include "ui/ozone/platform/dri/gpu_platform_support_gbm.h"
@@ -56,7 +57,7 @@ class GbmSurfaceGenerator : public ScanoutSurfaceGenerator {
     return new GbmSurface(device_, dri_, size);
   }
 
- private:
+ protected:
   DriWrapper* dri_;  // Not owned.
 
   // HACK: gbm drivers have broken linkage
@@ -67,9 +68,24 @@ class GbmSurfaceGenerator : public ScanoutSurfaceGenerator {
   DISALLOW_COPY_AND_ASSIGN(GbmSurfaceGenerator);
 };
 
+class GbmEglImageSurfaceGenerator : public GbmSurfaceGenerator {
+ public:
+  GbmEglImageSurfaceGenerator(DriWrapper* dri) : GbmSurfaceGenerator(dri) {}
+  virtual ~GbmEglImageSurfaceGenerator() {}
+
+  virtual ScanoutSurface* Create(const gfx::Size& size) OVERRIDE {
+    scoped_ptr<GbmBuffer> buffer =
+        scoped_ptr<GbmBuffer>(new GbmBuffer(device_, dri_, size));
+    if (!buffer->InitializeBuffer(SurfaceFactoryOzone::RGBA_8888, true)) {
+      return NULL;
+    }
+    return buffer.release();
+  }
+};
+
 class OzonePlatformGbm : public OzonePlatform {
  public:
-  OzonePlatformGbm() {
+  OzonePlatformGbm(bool use_surfaceless) : use_surfaceless_(use_surfaceless) {
      base::AtExitManager::RegisterTask(
         base::Bind(&base::DeletePointer<OzonePlatformGbm>, this));
   }
@@ -107,7 +123,7 @@ class OzonePlatformGbm : public OzonePlatform {
     vt_manager_.reset(new VirtualTerminalManager());
     // Needed since the browser process creates the accelerated widgets and that
     // happens through SFO.
-    surface_factory_ozone_.reset(new GbmSurfaceFactory());
+    surface_factory_ozone_.reset(new GbmSurfaceFactory(use_surfaceless_));
 
     device_manager_ = CreateDeviceManager();
     gpu_platform_support_host_.reset(new GpuPlatformSupportHostGbm());
@@ -119,11 +135,14 @@ class OzonePlatformGbm : public OzonePlatform {
 
   virtual void InitializeGPU() OVERRIDE {
     dri_.reset(new DriWrapper(kDefaultGraphicsCardPath));
-    surface_generator_.reset(new GbmSurfaceGenerator(dri_.get()));
+    if (use_surfaceless_)
+      surface_generator_.reset(new GbmEglImageSurfaceGenerator(dri_.get()));
+    else
+      surface_generator_.reset(new GbmSurfaceGenerator(dri_.get()));
     screen_manager_.reset(new ScreenManager(dri_.get(),
                                             surface_generator_.get()));
     if (!surface_factory_ozone_)
-      surface_factory_ozone_.reset(new GbmSurfaceFactory());
+      surface_factory_ozone_.reset(new GbmSurfaceFactory(use_surfaceless_));
 
     surface_factory_ozone_->InitializeGpu(dri_.get(),
                                           surface_generator_->device(),
@@ -142,6 +161,7 @@ class OzonePlatformGbm : public OzonePlatform {
   }
 
  private:
+  bool use_surfaceless_;
   scoped_ptr<VirtualTerminalManager> vt_manager_;
   scoped_ptr<DriWrapper> dri_;
   scoped_ptr<GbmSurfaceGenerator> surface_generator_;
@@ -160,6 +180,11 @@ class OzonePlatformGbm : public OzonePlatform {
 
 }  // namespace
 
-OzonePlatform* CreateOzonePlatformGbm() { return new OzonePlatformGbm; }
+OzonePlatform* CreateOzonePlatformGbm() {
+  return new OzonePlatformGbm(false);
+}
+OzonePlatform* CreateOzonePlatformGbmEglImage() {
+  return new OzonePlatformGbm(true);
+}
 
 }  // namespace ui

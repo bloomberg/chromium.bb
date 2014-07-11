@@ -81,20 +81,13 @@ gfx::Size GbmSurface::Size() const {
   return size_;
 }
 
-void GbmSurface::SwapBuffers() {
-  // If there was a frontbuffer, is no longer active. Release it back to GBM.
-  if (buffers_[front_buffer_])
-    gbm_surface_release_buffer(native_surface_, buffers_[front_buffer_]);
-
-  // Update the index to the frontbuffer.
-  front_buffer_ ^= 1;
-  // We've just released it. Since GBM doesn't guarantee we'll get the same
-  // buffer back, we set it to NULL so we don't keep track of objects that may
-  // have been destroyed.
-  buffers_[front_buffer_ ^ 1] = NULL;
-}
-
-void GbmSurface::LockCurrentDrawable() {
+// Before scheduling the backbuffer to be scanned out we need to "lock" it.
+// When we lock it, GBM will give a pointer to a buffer representing the
+// backbuffer. It will also update its information on which buffers can not be
+// used for drawing. The buffer will be released when the page flip event
+// occurs (see SwapBuffers). This is called from HardwareDisplayController
+// before scheduling a page flip.
+void GbmSurface::PreSwapBuffers() {
   CHECK(native_surface_);
   // Lock the buffer we want to display.
   buffers_[front_buffer_ ^ 1] = gbm_surface_lock_front_buffer(native_surface_);
@@ -107,6 +100,19 @@ void GbmSurface::LockCurrentDrawable() {
     data = BufferData::CreateData(dri_, buffers_[front_buffer_ ^ 1]);
     DCHECK(data) << "Failed to associate the buffer with the controller";
   }
+}
+
+void GbmSurface::SwapBuffers() {
+  // If there was a frontbuffer, is no longer active. Release it back to GBM.
+  if (buffers_[front_buffer_])
+    gbm_surface_release_buffer(native_surface_, buffers_[front_buffer_]);
+
+  // Update the index to the frontbuffer.
+  front_buffer_ ^= 1;
+  // We've just released it. Since GBM doesn't guarantee we'll get the same
+  // buffer back, we set it to NULL so we don't keep track of objects that may
+  // have been destroyed.
+  buffers_[front_buffer_ ^ 1] = NULL;
 }
 
 }  // namespace ui

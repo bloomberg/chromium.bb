@@ -19,6 +19,7 @@
 #include "ui/ozone/platform/dri/dri_buffer.h"
 #include "ui/ozone/platform/dri/dri_wrapper.h"
 #include "ui/ozone/platform/dri/scanout_surface.h"
+#include "ui/ozone/public/native_pixmap.h"
 
 namespace ui {
 
@@ -45,6 +46,19 @@ void HandlePageFlipEvent(int fd,
 }
 
 }  // namespace
+
+OzoneOverlayPlane::OzoneOverlayPlane(ScanoutSurface* scanout,
+                                     int z_order,
+                                     gfx::OverlayTransform plane_transform,
+                                     const gfx::Rect& display_bounds,
+                                     const gfx::RectF& crop_rect)
+    : scanout(scanout),
+      z_order(z_order),
+      plane_transform(plane_transform),
+      display_bounds(display_bounds),
+      crop_rect(crop_rect),
+      overlay_plane(0) {
+}
 
 HardwareDisplayController::HardwareDisplayController(
     DriWrapper* drm,
@@ -112,13 +126,52 @@ void HardwareDisplayController::Disable() {
   is_disabled_ = true;
 }
 
-bool HardwareDisplayController::SchedulePageFlip() {
-  CHECK(surface_);
-  if (!is_disabled_ && !drm_->PageFlip(crtc_id_,
-                                       surface_->GetFramebufferId(),
-                                       this)) {
+ScanoutSurface* HardwareDisplayController::GetPrimaryPlane(
+    const std::vector<OzoneOverlayPlane>& overlays) {
+  ScanoutSurface* primary = surface_.get();
+  for (size_t i = 0; i < overlays.size(); i++) {
+    const OzoneOverlayPlane& plane = overlays[i];
+    if (plane.z_order == 0) {
+      return plane.scanout;
+    }
+  }
+
+  return primary;
+}
+
+bool HardwareDisplayController::SchedulePageFlip(
+    const std::vector<OzoneOverlayPlane>& overlays,
+    NativePixmapList* references) {
+  ScanoutSurface* primary = GetPrimaryPlane(overlays);
+  CHECK(primary);
+
+  primary->PreSwapBuffers();
+
+  if (!is_disabled_ &&
+      !drm_->PageFlip(crtc_id_, primary->GetFramebufferId(), this)) {
     LOG(ERROR) << "Cannot page flip: " << strerror(errno);
     return false;
+  }
+
+  current_overlay_references_.clear();
+  if (references)
+    current_overlay_references_.swap(*references);
+
+  for (size_t i = 0; i < overlays.size(); i++) {
+    const OzoneOverlayPlane& plane = overlays[i];
+    if (!plane.overlay_plane)
+      continue;
+    const gfx::Size& size = plane.scanout->Size();
+    gfx::RectF crop_rect = plane.crop_rect;
+    crop_rect.Scale(size.width(), size.height());
+    if (!drm_->PageFlipOverlay(crtc_id_,
+                               plane.scanout->GetFramebufferId(),
+                               plane.display_bounds,
+                               crop_rect,
+                               plane.overlay_plane)) {
+      LOG(ERROR) << "Cannot display on overlay: " << strerror(errno);
+      return false;
+    }
   }
 
   return true;

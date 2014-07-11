@@ -27,6 +27,7 @@ MockDriWrapper::MockDriWrapper(int fd)
       add_framebuffer_call_count_(0),
       remove_framebuffer_call_count_(0),
       page_flip_call_count_(0),
+      overlay_flip_call_count_(0),
       set_crtc_expectation_(true),
       add_framebuffer_expectation_(true),
       page_flip_expectation_(true) {
@@ -77,6 +78,15 @@ bool MockDriWrapper::PageFlip(uint32_t crtc_id,
   page_flip_call_count_++;
   static_cast<ui::HardwareDisplayController*>(data)->surface()->SwapBuffers();
   return page_flip_expectation_;
+}
+
+bool MockDriWrapper::PageFlipOverlay(uint32_t crtc_id,
+                                     uint32_t framebuffer,
+                                     const gfx::Rect& location,
+                                     const gfx::RectF& source,
+                                     int overlay_plane) {
+  overlay_flip_call_count_++;
+  return true;
 }
 
 ScopedDrmPropertyPtr MockDriWrapper::GetProperty(drmModeConnector* connector,

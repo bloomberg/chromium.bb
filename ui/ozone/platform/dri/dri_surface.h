@@ -32,6 +32,7 @@ class DriSurface : public ScanoutSurface {
   virtual bool Initialize() OVERRIDE;
   virtual uint32_t GetFramebufferId() const OVERRIDE;
   virtual uint32_t GetHandle() const OVERRIDE;
+  virtual void PreSwapBuffers() OVERRIDE;
   virtual void SwapBuffers() OVERRIDE;
   virtual gfx::Size Size() const OVERRIDE;
 
