@@ -2,9 +2,48 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <string>
+#include <utility>
+#include <vector>
+
 #include "base/basictypes.h"
 #include "net/cookies/cookie_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+namespace {
+
+struct RequestCookieParsingTest {
+  std::string str;
+  std::vector<std::pair<std::string, std::string> > parsed;
+};
+
+net::cookie_util::ParsedRequestCookies MakeParsedRequestCookies(
+    const std::vector<std::pair<std::string, std::string> >& data) {
+  net::cookie_util::ParsedRequestCookies parsed;
+  for (size_t i = 0; i < data.size(); i++) {
+    parsed.push_back(std::make_pair(base::StringPiece(data[i].first),
+                                    base::StringPiece(data[i].second)));
+  }
+  return parsed;
+}
+
+void CheckParse(
+    const std::string& str,
+    const std::vector<std::pair<std::string, std::string> >& parsed_expected) {
+  net::cookie_util::ParsedRequestCookies parsed;
+  net::cookie_util::ParseRequestCookieLine(str, &parsed);
+  EXPECT_EQ(MakeParsedRequestCookies(parsed_expected), parsed);
+}
+
+void CheckSerialize(
+    const std::vector<std::pair<std::string, std::string> >& parsed,
+    const std::string& str_expected) {
+  net::cookie_util::ParsedRequestCookies prc =
+      MakeParsedRequestCookies(parsed);
+  EXPECT_EQ(str_expected, net::cookie_util::SerializeRequestCookieLine(prc));
+}
+
+} // namespace
 
 TEST(CookieUtilTest, TestDomainIsHostOnly) {
   const struct {
@@ -107,5 +146,51 @@ TEST(CookieUtilTest, TestCookieDateParsing) {
     }
     EXPECT_TRUE(!parsed_time.is_null()) << tests[i].str;
     EXPECT_EQ(tests[i].epoch, parsed_time.ToTimeT()) << tests[i].str;
+  }
+}
+
+TEST(CookieUtilTest, TestRequestCookieParsing) {
+  std::vector<RequestCookieParsingTest> tests;
+
+  // Simple case.
+  tests.push_back(RequestCookieParsingTest());
+  tests.back().str = "key=value";
+  tests.back().parsed.push_back(std::make_pair(std::string("key"),
+                                               std::string("value")));
+  // Multiple key/value pairs.
+  tests.push_back(RequestCookieParsingTest());
+  tests.back().str = "key1=value1; key2=value2";
+  tests.back().parsed.push_back(std::make_pair(std::string("key1"),
+                                               std::string("value1")));
+  tests.back().parsed.push_back(std::make_pair(std::string("key2"),
+                                               std::string("value2")));
+  // Empty value.
+  tests.push_back(RequestCookieParsingTest());
+  tests.back().str = "key=; otherkey=1234";
+  tests.back().parsed.push_back(std::make_pair(std::string("key"),
+                                               std::string()));
+  tests.back().parsed.push_back(std::make_pair(std::string("otherkey"),
+                                               std::string("1234")));
+  // Special characters (including equals signs) in value.
+  tests.push_back(RequestCookieParsingTest());
+  tests.back().str = "key=; a2=s=(./&t=:&u=a#$; a3=+~";
+  tests.back().parsed.push_back(std::make_pair(std::string("key"),
+                                               std::string()));
+  tests.back().parsed.push_back(std::make_pair(std::string("a2"),
+                                               std::string("s=(./&t=:&u=a#$")));
+  tests.back().parsed.push_back(std::make_pair(std::string("a3"),
+                                               std::string("+~")));
+  // Quoted value.
+  tests.push_back(RequestCookieParsingTest());
+  tests.back().str = "key=\"abcdef\"; otherkey=1234";
+  tests.back().parsed.push_back(std::make_pair(std::string("key"),
+                                               std::string("\"abcdef\"")));
+  tests.back().parsed.push_back(std::make_pair(std::string("otherkey"),
+                                               std::string("1234")));
+
+  for (size_t i = 0; i < tests.size(); i++) {
+    SCOPED_TRACE(testing::Message() << "Test " << i);
+    CheckParse(tests[i].str, tests[i].parsed);
+    CheckSerialize(tests[i].parsed, tests[i].str);
   }
 }

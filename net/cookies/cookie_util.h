@@ -6,7 +6,10 @@
 #define NET_COOKIES_COOKIE_UTIL_H_
 
 #include <string>
+#include <utility>
+#include <vector>
 
+#include "base/strings/string_piece.h"
 #include "base/time/time.h"
 #include "net/base/net_export.h"
 
@@ -40,7 +43,25 @@ NET_EXPORT base::Time ParseCookieTime(const std::string& time_string);
 // Convenience for converting a cookie origin (domain and https pair) to a URL.
 NET_EXPORT GURL CookieOriginToURL(const std::string& domain, bool is_https);
 
-}  // namspace cookie_util
+// A ParsedRequestCookie consists of the key and value of the cookie.
+typedef std::pair<base::StringPiece, base::StringPiece> ParsedRequestCookie;
+typedef std::vector<ParsedRequestCookie> ParsedRequestCookies;
+
+// Assumes that |header_value| is the cookie header value of a HTTP Request
+// following the cookie-string schema of RFC 6265, section 4.2.1, and returns
+// cookie name/value pairs. If cookie values are presented in double quotes,
+// these will appear in |parsed_cookies| as well. Assumes that the cookie
+// header is written by Chromium and therefore well-formed.
+NET_EXPORT void ParseRequestCookieLine(const std::string& header_value,
+                                       ParsedRequestCookies* parsed_cookies);
+
+// Writes all cookies of |parsed_cookies| into a HTTP Request header value
+// that belongs to the "Cookie" header. The entries of |parsed_cookies| must
+// already be appropriately escaped.
+NET_EXPORT std::string SerializeRequestCookieLine(
+    const ParsedRequestCookies& parsed_cookies);
+
+}  // namespace cookie_util
 }  // namespace net
 
 #endif  // NET_COOKIES_COOKIE_UTIL_H_
