@@ -6,6 +6,7 @@
 
 #include "apps/ui/native_app_window.h"
 #include "ui/base/hit_test.h"
+#include "ui/gfx/win/dpi.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 
@@ -32,9 +33,11 @@ gfx::Insets GlassAppWindowFrameViewWin::GetGlassInsets() const {
   // for that.
   // Also make sure the insets don't go below 1, as bad things happen when they
   // do.
-  int caption_height = std::max(
-      0, GetSystemMetrics(SM_CYSMICON) + GetSystemMetrics(SM_CYSIZEFRAME) - 1);
-  int frame_size = std::max(1, GetSystemMetrics(SM_CXSIZEFRAME) - 1);
+  int caption_height = std::max(0,
+      gfx::win::GetSystemMetricsInDIP(SM_CYSMICON) +
+          gfx::win::GetSystemMetricsInDIP(SM_CYSIZEFRAME) - 1);
+  int frame_size =
+      std::max(1, gfx::win::GetSystemMetricsInDIP(SM_CXSIZEFRAME) - 1);
   return gfx::Insets(
       frame_size + caption_height, frame_size, frame_size, frame_size);
 }
@@ -73,7 +76,7 @@ int GlassAppWindowFrameViewWin::NonClientHitTest(const gfx::Point& point) {
                              : false;
   // Don't allow overlapping resize handles when the window is maximized or
   // fullscreen, as it can't be resized in those states.
-  int resize_border = GetSystemMetrics(SM_CXSIZEFRAME);
+  int resize_border = gfx::win::GetSystemMetricsInDIP(SM_CXSIZEFRAME);
   int frame_component =
       GetHTComponentForFrame(point,
                              resize_border,
