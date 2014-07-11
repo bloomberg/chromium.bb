@@ -200,7 +200,9 @@ if (build_ffmpegsumo) {
         # TODO(ihf): See the long comment in build_ffmpeg.sh
         # We want to be consistent with CrOS and have configured
         # ffmpeg for thumb. Protect yourself from -marm.
-        cflags -= [ "-marm" ]
+        if (is_chromeos) {
+          cflags = [ "-marm" ]
+        }
         cflags += [
           "-mthumb",
           "-march=armv7-a",
