@@ -75,7 +75,8 @@ bool FileSystemProviderUnmountFunction::RunSync() {
     return false;
 
   if (!service->UnmountFileSystem(extension_id(),
-                                  params->options.file_system_id)) {
+                                  params->options.file_system_id,
+                                  Service::UNMOUNT_REASON_USER)) {
     // TODO(mtomasz): Pass more detailed errors, rather than just a bool.
     base::ListValue* result = new base::ListValue();
     result->Append(CreateError(kSecurityErrorName, kUnmountFailedErrorMessage));
