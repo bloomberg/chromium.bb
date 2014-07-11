@@ -20,6 +20,8 @@
 
 namespace media {
 
+class PpbBufferAllocator;
+
 // cdm::Buffer implementation that provides access to memory owned by a
 // pp::Buffer_Dev.
 // This class holds a reference to the Buffer_Dev throughout its lifetime.
@@ -27,48 +29,37 @@ namespace media {
 // pp::Buffer_Dev and PPB_Buffer_Dev.
 class PpbBuffer : public cdm::Buffer {
  public:
-  static PpbBuffer* Create(const pp::Buffer_Dev& buffer, uint32_t buffer_id) {
-    PP_DCHECK(buffer.data());
-    PP_DCHECK(buffer.size());
-    PP_DCHECK(buffer_id);
-    return new PpbBuffer(buffer, buffer_id);
-  }
+  static PpbBuffer* Create(const pp::Buffer_Dev& buffer, uint32_t buffer_id,
+                           PpbBufferAllocator* allocator);
 
   // cdm::Buffer implementation.
-  virtual void Destroy() OVERRIDE { delete this; }
-
-  virtual uint32_t Capacity() const OVERRIDE { return buffer_.size(); }
-
-  virtual uint8_t* Data() OVERRIDE {
-    return static_cast<uint8_t*>(buffer_.data());
-  }
-
-  virtual void SetSize(uint32_t size) OVERRIDE {
-    PP_DCHECK(size <= Capacity());
-    if (size > Capacity()) {
-      size_ = 0;
-      return;
-    }
-
-    size_ = size;
-  }
-
+  virtual void Destroy() OVERRIDE;
+  virtual uint32_t Capacity() const OVERRIDE;
+  virtual uint8_t* Data() OVERRIDE;
+  virtual void SetSize(uint32_t size) OVERRIDE;
   virtual uint32_t Size() const OVERRIDE { return size_; }
 
-  pp::Buffer_Dev buffer_dev() const { return buffer_; }
+  // Takes the |buffer_| from this class and returns it.
+  // Note: The caller must ensure |allocator->Release()| is called later so that
+  // the buffer can be reused by the allocator.
+  // Since pp::Buffer_Dev is ref-counted, the caller now holds one reference to
+  // the buffer and this class holds no reference. Note that other references
+  // may still exist. For example, PpbBufferAllocator always holds a reference
+  // to all allocated buffers.
+  pp::Buffer_Dev TakeBuffer();
 
   uint32_t buffer_id() const { return buffer_id_; }
 
  private:
-  PpbBuffer(pp::Buffer_Dev buffer, uint32_t buffer_id)
-      : buffer_(buffer),
-        buffer_id_(buffer_id),
-        size_(0) {}
-  virtual ~PpbBuffer() {}
+  PpbBuffer(pp::Buffer_Dev buffer,
+            uint32_t buffer_id,
+            PpbBufferAllocator* allocator);
+  virtual ~PpbBuffer();
 
   pp::Buffer_Dev buffer_;
   uint32_t buffer_id_;
   uint32_t size_;
+  PpbBufferAllocator* allocator_;
 
   DISALLOW_COPY_AND_ASSIGN(PpbBuffer);
 };
