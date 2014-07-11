@@ -59,6 +59,8 @@ class AutofillAgent : public content::RenderViewObserver,
   // content::RenderViewObserver:
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
   virtual void DidFinishDocumentLoad(blink::WebLocalFrame* frame) OVERRIDE;
+  virtual void DidCommitProvisionalLoad(blink::WebLocalFrame* frame,
+                                        bool is_new_navigation) OVERRIDE;
   virtual void FrameDetached(blink::WebFrame* frame) OVERRIDE;
   virtual void FrameWillClose(blink::WebFrame* frame) OVERRIDE;
   virtual void WillSubmitForm(blink::WebLocalFrame* frame,

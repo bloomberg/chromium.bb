@@ -180,6 +180,11 @@ void AutofillAgent::DidFinishDocumentLoad(WebLocalFrame* frame) {
   ProcessForms(*frame);
 }
 
+void AutofillAgent::DidCommitProvisionalLoad(WebLocalFrame* frame,
+                                             bool is_new_navigation) {
+  form_cache_.ResetFrame(*frame);
+}
+
 void AutofillAgent::FrameDetached(WebFrame* frame) {
   form_cache_.ResetFrame(*frame);
 }
