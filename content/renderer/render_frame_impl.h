@@ -311,7 +311,7 @@ class CONTENT_EXPORT RenderFrameImpl
                                      const blink::WebHistoryItem& item,
                                      blink::WebHistoryCommitType commit_type);
   virtual void didUpdateCurrentHistoryItem(blink::WebLocalFrame* frame);
-  virtual void didChangeBrandColor();
+  virtual void didChangeThemeColor();
   virtual blink::WebNotificationPresenter* notificationPresenter();
   virtual void didChangeSelection(bool is_empty_selection);
   virtual blink::WebColorChooser* createColorChooser(

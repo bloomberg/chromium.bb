@@ -2171,12 +2171,12 @@ void RenderFrameImpl::didUpdateCurrentHistoryItem(blink::WebLocalFrame* frame) {
   render_view_->didUpdateCurrentHistoryItem(frame);
 }
 
-void RenderFrameImpl::didChangeBrandColor() {
+void RenderFrameImpl::didChangeThemeColor() {
   if (frame_->parent())
     return;
 
-  Send(new FrameHostMsg_DidChangeBrandColor(
-      routing_id_, frame_->document().brandColor()));
+  Send(new FrameHostMsg_DidChangeThemeColor(
+      routing_id_, frame_->document().themeColor()));
 }
 
 blink::WebNotificationPresenter* RenderFrameImpl::notificationPresenter() {

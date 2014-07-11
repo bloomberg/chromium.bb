@@ -603,9 +603,9 @@ IPC_MESSAGE_ROUTED3(FrameHostMsg_MediaPlayingNotification,
 IPC_MESSAGE_ROUTED1(FrameHostMsg_MediaPausedNotification,
                     int64 /* player_cookie, distinguishes instances */)
 
-// Notify browser the brand color has been changed.
-IPC_MESSAGE_ROUTED1(FrameHostMsg_DidChangeBrandColor,
-                    SkColor /* brand_color */)
+// Notify browser the theme color has been changed.
+IPC_MESSAGE_ROUTED1(FrameHostMsg_DidChangeThemeColor,
+                    SkColor /* theme_color */)
 
 // Response for FrameMsg_TextSurroundingSelectionRequest, |startOffset| and
 // |endOffset| are the offsets of the selection in the returned |content|.

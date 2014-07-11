@@ -506,8 +506,8 @@ bool WebContentsImpl::OnMessageReceived(RenderViewHost* render_view_host,
     IPC_MESSAGE_HANDLER(FrameHostMsg_PluginCrashed, OnPluginCrashed)
     IPC_MESSAGE_HANDLER(FrameHostMsg_DomOperationResponse,
                         OnDomOperationResponse)
-    IPC_MESSAGE_HANDLER(FrameHostMsg_DidChangeBrandColor,
-                        OnBrandColorChanged)
+    IPC_MESSAGE_HANDLER(FrameHostMsg_DidChangeThemeColor,
+                        OnThemeColorChanged)
     IPC_MESSAGE_HANDLER(FrameHostMsg_DidFinishDocumentLoad,
                         OnDocumentLoadedInFrame)
     IPC_MESSAGE_HANDLER(FrameHostMsg_DidFinishLoad, OnDidFinishLoad)
@@ -2509,9 +2509,9 @@ bool WebContentsImpl::CanOverscrollContent() const {
   return false;
 }
 
-void WebContentsImpl::OnBrandColorChanged(SkColor brand_color) {
+void WebContentsImpl::OnThemeColorChanged(SkColor theme_color) {
   FOR_EACH_OBSERVER(WebContentsObserver, observers_,
-                    DidChangeBrandColor(brand_color));
+                    DidChangeThemeColor(theme_color));
 }
 
 void WebContentsImpl::OnDidLoadResourceFromMemoryCache(

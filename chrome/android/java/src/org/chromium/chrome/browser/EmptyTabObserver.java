@@ -63,5 +63,5 @@ public class EmptyTabObserver implements TabObserver {
             boolean isIframeSrcdoc) { }
 
     @Override
-    public void onDidChangeBrandColor(int color) { }
+    public void onDidChangeThemeColor(int color) { }
 }

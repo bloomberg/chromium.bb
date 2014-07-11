@@ -277,12 +277,12 @@ void WebContentsObserverAndroid::DidDetachInterstitialPage() {
   Java_WebContentsObserverAndroid_didDetachInterstitialPage(env, obj.obj());
 }
 
-void WebContentsObserverAndroid::DidChangeBrandColor(SkColor color) {
+void WebContentsObserverAndroid::DidChangeThemeColor(SkColor color) {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj(weak_java_observer_.get(env));
   if (obj.is_null())
     return;
-  Java_WebContentsObserverAndroid_didChangeBrandColor(env, obj.obj(), color);
+  Java_WebContentsObserverAndroid_didChangeThemeColor(env, obj.obj(), color);
 }
 
 void WebContentsObserverAndroid::DidFailLoadInternal(

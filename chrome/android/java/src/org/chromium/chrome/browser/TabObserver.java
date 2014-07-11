@@ -144,8 +144,8 @@ public interface TabObserver {
             boolean isErrorPage, boolean isIframeSrcdoc);
 
     /**
-     * Called when the brand color is changed
+     * Called when the theme color is changed
      * @param color the new color in ARGB format.
      */
-    public void onDidChangeBrandColor(int color);
+    public void onDidChangeThemeColor(int color);
 }

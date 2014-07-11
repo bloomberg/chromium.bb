@@ -322,8 +322,8 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener,
   virtual void AccessibilityEventReceived(
       const std::vector<AXEventNotificationDetails>& details) {}
 
-  // Invoked when brand color is changed to |brand_color|.
-  virtual void DidChangeBrandColor(SkColor brand_color) {}
+  // Invoked when theme color is changed to |theme_color|.
+  virtual void DidChangeThemeColor(SkColor theme_color) {}
 
   // Invoked if an IPC message is coming from a specific RenderFrameHost.
   virtual bool OnMessageReceived(const IPC::Message& message,

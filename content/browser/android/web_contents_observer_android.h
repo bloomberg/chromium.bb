@@ -68,7 +68,7 @@ class WebContentsObserverAndroid : public WebContentsObserver {
   virtual void WebContentsDestroyed() OVERRIDE;
   virtual void DidAttachInterstitialPage() OVERRIDE;
   virtual void DidDetachInterstitialPage() OVERRIDE;
-  virtual void DidChangeBrandColor(SkColor color) OVERRIDE;
+  virtual void DidChangeThemeColor(SkColor color) OVERRIDE;
 
   void DidFailLoadInternal(bool is_provisional_load,
                            bool is_main_frame,
