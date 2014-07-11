@@ -2577,10 +2577,6 @@ int RenderViewImpl::GetRoutingID() const {
   return routing_id_;
 }
 
-int RenderViewImpl::GetPageId() const {
-  return page_id_;
-}
-
 gfx::Size RenderViewImpl::GetSize() const {
   return size();
 }

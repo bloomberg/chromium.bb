@@ -59,14 +59,6 @@ class CONTENT_EXPORT RenderView : public IPC::Sender {
   // Get the routing ID of the view.
   virtual int GetRoutingID() const = 0;
 
-  // Page IDs allow the browser to identify pages in each renderer process for
-  // keeping back/forward history in sync.
-  // Note that this is NOT updated for every main frame navigation, only for
-  // "regular" navigations that go into session history. In particular, client
-  // redirects, like the page cycler uses (document.location.href="foo") do not
-  // count as regular navigations and do not increment the page id.
-  virtual int GetPageId() const = 0;
-
   // Returns the size of the view.
   virtual gfx::Size GetSize() const = 0;
 
