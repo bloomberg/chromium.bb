@@ -221,24 +221,17 @@ void _start(uintptr_t info[]) {
 
   /* This is local as a workaround to avoid having to apply
    * relocations to global variables. */
-  struct PP_StartFunctions start_funcs = {
-    MyPPP_InitializeModule,
-    MyPPP_ShutdownModule,
-    MyPPP_GetInterface,
-  };
-  /* Similarly, initialise some global variables, avoiding relocations. */
-  struct PPP_Instance_1_0 local_ppp_instance = {
-    DidCreate,
-    DidDestroy,
-    DidChangeView,
-    DidChangeFocus,
-    HandleDocumentLoad,
-  };
-  ppp_instance = local_ppp_instance;
-  struct PPP_Messaging_1_0 local_ppp_messaging = {
-    HandleMessage,
-  };
-  ppp_messaging = local_ppp_messaging;
+  struct PP_StartFunctions start_funcs;
+  start_funcs.PPP_InitializeModule = MyPPP_InitializeModule;
+  start_funcs.PPP_ShutdownModule = MyPPP_ShutdownModule;
+  start_funcs.PPP_GetInterface = MyPPP_GetInterface;
+  /* Similarly, initialize some global variables, avoiding relocations. */
+  ppp_instance.DidCreate = DidCreate;
+  ppp_instance.DidDestroy = DidDestroy;
+  ppp_instance.DidChangeView = DidChangeView;
+  ppp_instance.DidChangeFocus = DidChangeFocus;
+  ppp_instance.HandleDocumentLoad = HandleDocumentLoad;
+  ppp_messaging.HandleMessage = HandleMessage;
 
   ppapihook.ppapi_start(&start_funcs);
 
