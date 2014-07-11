@@ -11,6 +11,8 @@ from telemetry import benchmark
 from telemetry.core import util
 from telemetry.page import page_measurement
 from telemetry.page import page_set
+from telemetry.value import list_of_scalar_values
+from telemetry.value import scalar
 
 
 class _SpaceportMeasurement(page_measurement.PageMeasurement):
@@ -49,10 +51,13 @@ class _SpaceportMeasurement(page_measurement.PageMeasurement):
         'JSON.stringify(window.__results)'))
     for key in result_dict:
       chart, trace = key.split('.', 1)
-      results.Add(trace, 'objects (bigger is better)', float(result_dict[key]),
-                  chart_name=chart, data_type='unimportant')
-    results.Add('Score', 'objects (bigger is better)',
-                [float(x) for x in result_dict.values()])
+      results.AddValue(scalar.ScalarValue(
+          results.current_page, '%s.%s'% (chart, trace),
+          'objects (bigger is better)', float(result_dict[key]),
+          important=False))
+    results.AddValue(list_of_scalar_values.ListOfScalarValues(
+        results.current_page, 'Score', 'objects (bigger is better)',
+                [float(x) for x in result_dict.values()]))
 
 
 # crbug.com/166703: This test frequently times out on Windows.
