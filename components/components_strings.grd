@@ -168,7 +168,7 @@
   <release seq="1" allow_pseudo="false">
     <messages fallback_to_english="true">
       <part file="autofill_strings.grdp" />
-      <part file="bookmarks_strings.grdp" />
+      <part file="bookmark_bar_strings.grdp" />
       <part file="dom_distiller_strings.grdp" />
       <part file="google_strings.grdp" />
       <part file="policy_strings.grdp" />
