@@ -72,13 +72,15 @@ bool MatchesPNGFile(const SkBitmap& gen_bmp, base::FilePath ref_img_path,
   if (gen_bmp.width() == 0 || gen_bmp.height() == 0)
     return true;
 
-  std::string gen_bmp_data_url = GetPNGDataUrl(gen_bmp);
-  std::string ref_bmp_data_url = GetPNGDataUrl(ref_bmp);
-  LOG(ERROR) << "Pixels do not match!";
-  LOG(ERROR) << "Actual: " << gen_bmp_data_url;
-  LOG(ERROR) << "Expected: " << ref_bmp_data_url;
-
-  return comparator.Compare(gen_bmp, ref_bmp);
+  bool compare = comparator.Compare(gen_bmp, ref_bmp);
+  if (!compare) {
+    std::string gen_bmp_data_url = GetPNGDataUrl(gen_bmp);
+    std::string ref_bmp_data_url = GetPNGDataUrl(ref_bmp);
+    LOG(ERROR) << "Pixels do not match!";
+    LOG(ERROR) << "Actual: " << gen_bmp_data_url;
+    LOG(ERROR) << "Expected: " << ref_bmp_data_url;
+  }
+  return compare;
 }
 
 }  // namespace cc
