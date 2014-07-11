@@ -40,7 +40,6 @@
 
 namespace WebCore {
 
-class Dictionary;
 class ExceptionState;
 
 class TextEncoder FINAL : public GarbageCollectedFinalized<TextEncoder> {
@@ -50,7 +49,7 @@ public:
 
     // Implement the IDL
     String encoding() const;
-    PassRefPtr<Uint8Array> encode(const String&, const Dictionary&);
+    PassRefPtr<Uint8Array> encode(const String&);
 
     void trace(Visitor*) { }
 

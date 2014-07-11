@@ -37,5 +37,5 @@
     MeasureAs=TextEncoderConstructor
 ] interface TextEncoder {
     readonly attribute DOMString encoding;
-    [MeasureAs=TextEncoderEncode] Uint8Array encode(optional ScalarValueString input = "", optional Dictionary options);
+    [MeasureAs=TextEncoderEncode] Uint8Array encode(optional ScalarValueString input = "");
 };
