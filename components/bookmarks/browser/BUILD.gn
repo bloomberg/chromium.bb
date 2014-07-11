@@ -1,0 +1,61 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//build/config/ui.gni")
+
+source_set("browser") {
+  sources = [
+    "base_bookmark_model_observer.cc",
+    "base_bookmark_model_observer.h",
+    "bookmark_client.cc",
+    "bookmark_client.h",
+    "bookmark_codec.cc",
+    "bookmark_codec.h",
+    "bookmark_expanded_state_tracker.cc",
+    "bookmark_expanded_state_tracker.h",
+    "bookmark_index.cc",
+    "bookmark_index.h",
+    "bookmark_match.cc",
+    "bookmark_match.h",
+    "bookmark_model.cc",
+    "bookmark_model.h",
+    "bookmark_model_observer.h",
+    "bookmark_node.cc",
+    "bookmark_node.h",
+    "bookmark_node_data.cc",
+    "bookmark_node_data.h",
+    "bookmark_node_data_ios.cc",
+    "bookmark_node_data_mac.cc",
+    "bookmark_pasteboard_helper_mac.h",
+    "bookmark_pasteboard_helper_mac.mm",
+    "bookmark_storage.cc",
+    "bookmark_storage.h",
+    "bookmark_utils.cc",
+    "bookmark_utils.h",
+    "scoped_group_bookmark_actions.cc",
+    "scoped_group_bookmark_actions.h",
+  ]
+
+  deps = [
+    "//base",
+    "//net",
+    "//third_party/icu",
+    "//ui/base",
+    "//ui/gfx",
+    "//url",
+    "//components/bookmarks/common",
+    "//components/strings",
+    "//components/favicon_base",
+    "//components/keyed_service/core",
+    "//components/pref_registry",
+    "//components/query_parser",
+    "//components/startup_metric_utils",
+  ]
+
+  if (toolkit_views) {
+    sources += [
+      "bookmark_node_data_views.cc",
+    ]
+  }
+}
