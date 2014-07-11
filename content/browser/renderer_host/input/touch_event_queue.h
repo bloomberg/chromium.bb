@@ -245,6 +245,11 @@ class CONTENT_EXPORT TouchEventQueue {
   // mode.
   const TouchScrollingMode touch_scrolling_mode_;
 
+  // Whether or not a GestureScrollUpdate has been observed this touch
+  // sequence. When the first scroll update of the touch sequence is observed,
+  // we begin absorbing touch moves.
+  bool seen_scroll_update_this_sequence_;
+
   DISALLOW_COPY_AND_ASSIGN(TouchEventQueue);
 };
 

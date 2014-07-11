@@ -2098,7 +2098,8 @@ scoped_ptr<GestureEventConsumeDelegate> delegate(
 }
 
 TEST_P(GestureRecognizerTest, GestureEventPinchFromTap) {
-  // TODO(tdresser): enable this test with unified GR once two finger tap.
+  // Disabled under unified gesture recognizer due to behavior differences in
+  // scroll and bounding box behavior.
   if (UsingUnifiedGR())
     return;
 
@@ -3144,9 +3145,15 @@ TEST_P(GestureRecognizerTest, GestureEventScrollTouchMoveConsumed) {
   EXPECT_FALSE(delegate->tap_down());
   EXPECT_TRUE(delegate->tap_cancel());
   EXPECT_FALSE(delegate->begin());
-  EXPECT_FALSE(delegate->scroll_begin());
   EXPECT_FALSE(delegate->scroll_update());
   EXPECT_FALSE(delegate->scroll_end());
+
+  // With the unified gesture detector, consuming the first touch move event
+  // won't prevent all future scrolling.
+  if (UsingUnifiedGR())
+    EXPECT_TRUE(delegate->scroll_begin());
+  else
+    EXPECT_FALSE(delegate->scroll_begin());
 
   // Release the touch back at the start point. This should end without causing
   // a tap.
@@ -3161,7 +3168,11 @@ TEST_P(GestureRecognizerTest, GestureEventScrollTouchMoveConsumed) {
   EXPECT_TRUE(delegate->end());
   EXPECT_FALSE(delegate->scroll_begin());
   EXPECT_FALSE(delegate->scroll_update());
-  EXPECT_FALSE(delegate->scroll_end());
+
+  if (UsingUnifiedGR())
+    EXPECT_TRUE(delegate->scroll_end());
+  else
+    EXPECT_FALSE(delegate->scroll_end());
 }
 
 // Tests the behavior of 2F scroll when all the touch-move events are consumed.
@@ -3308,9 +3319,15 @@ TEST_P(GestureRecognizerTest, GestureEventScrollTouchMovePartialConsumed) {
   EXPECT_FALSE(delegate->tap_down());
   EXPECT_TRUE(delegate->tap_cancel());
   EXPECT_FALSE(delegate->begin());
-  EXPECT_FALSE(delegate->scroll_begin());
   EXPECT_FALSE(delegate->scroll_update());
   EXPECT_FALSE(delegate->scroll_end());
+
+  // With the unified gesture detector, consuming the first touch move event
+  // won't prevent all future scrolling.
+  if (UsingUnifiedGR())
+    EXPECT_TRUE(delegate->scroll_begin());
+  else
+    EXPECT_FALSE(delegate->scroll_begin());
 
   // Now, stop consuming touch-move events, and move the touch-point again.
   delegate->set_consume_touch_move(false);
@@ -3320,13 +3337,23 @@ TEST_P(GestureRecognizerTest, GestureEventScrollTouchMovePartialConsumed) {
   EXPECT_FALSE(delegate->tap_cancel());
   EXPECT_FALSE(delegate->begin());
   EXPECT_FALSE(delegate->scroll_begin());
-  EXPECT_FALSE(delegate->scroll_update());
   EXPECT_FALSE(delegate->scroll_end());
-  // No scroll has occurred, because an early touch move was consumed.
-  EXPECT_EQ(0, delegate->scroll_x());
-  EXPECT_EQ(0, delegate->scroll_y());
-  EXPECT_EQ(gfx::Point(0, 0).ToString(),
-            delegate->scroll_begin_position().ToString());
+
+  if (UsingUnifiedGR()) {
+    // Scroll not prevented by consumed first touch move.
+    EXPECT_TRUE(delegate->scroll_update());
+    EXPECT_EQ(29, delegate->scroll_x());
+    EXPECT_EQ(29, delegate->scroll_y());
+    EXPECT_EQ(gfx::Point(0, 0).ToString(),
+              delegate->scroll_begin_position().ToString());
+  } else {
+    EXPECT_FALSE(delegate->scroll_update());
+    // No scroll has occurred, because an early touch move was consumed.
+    EXPECT_EQ(0, delegate->scroll_x());
+    EXPECT_EQ(0, delegate->scroll_y());
+    EXPECT_EQ(gfx::Point(0, 0).ToString(),
+              delegate->scroll_begin_position().ToString());
+  }
 
   // Start consuming touch-move events again.
   delegate->set_consume_touch_move(true);
@@ -3366,8 +3393,12 @@ TEST_P(GestureRecognizerTest, GestureEventScrollTouchMovePartialConsumed) {
   EXPECT_TRUE(delegate->end());
   EXPECT_FALSE(delegate->scroll_begin());
   EXPECT_FALSE(delegate->scroll_update());
-  EXPECT_FALSE(delegate->scroll_end());
   EXPECT_FALSE(delegate->fling());
+
+  if (UsingUnifiedGR())
+    EXPECT_TRUE(delegate->scroll_end());
+  else
+    EXPECT_FALSE(delegate->scroll_end());
 }
 
 // Check that appropriate touch events generate double tap gesture events.
@@ -3705,14 +3736,15 @@ TEST_P(GestureRecognizerTest, GestureEventConsumedTouchMoveCanFireTapCancel) {
   delegate->set_consume_touch_move(true);
   delegate->Reset();
   // Move the touch-point enough so that it would normally be considered a
-  // scroll. But since the touch-moves will be consumed, the scroll should not
-  // start.
+  // scroll. But since the touch-moves will be consumed, no scrolling should
+  // occur.
+  // With the unified gesture detector, we will receive a scroll begin gesture,
+  // whereas with the aura gesture recognizer we won't.
   tes.SendScrollEvent(event_processor(), 130, 230, kTouchId, delegate.get());
   EXPECT_FALSE(delegate->tap());
   EXPECT_FALSE(delegate->tap_down());
   EXPECT_TRUE(delegate->tap_cancel());
   EXPECT_FALSE(delegate->begin());
-  EXPECT_FALSE(delegate->scroll_begin());
   EXPECT_FALSE(delegate->scroll_update());
   EXPECT_FALSE(delegate->scroll_end());
 }
@@ -3911,8 +3943,15 @@ TEST_P(GestureRecognizerTest, GestureEventConsumedTouchMoveScrollTest) {
   DispatchEventUsingWindowDispatcher(&move2);
   delegate->ReceivedAck();
 
-  EXPECT_FALSE(delegate->scroll_begin());
-  EXPECT_FALSE(delegate->scroll_update());
+  if (UsingUnifiedGR()) {
+    // With the unified gesture detector, consuming the first touch move event
+    // won't prevent all future scrolling.
+    EXPECT_TRUE(delegate->scroll_begin());
+    EXPECT_TRUE(delegate->scroll_update());
+  } else {
+    EXPECT_FALSE(delegate->scroll_begin());
+    EXPECT_FALSE(delegate->scroll_update());
+  }
 }
 
 // Test that consuming the first touch move event of a touch point doesn't

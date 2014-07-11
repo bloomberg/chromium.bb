@@ -78,7 +78,7 @@ DispositionHandlingInfo GetDispositionHandlingInfo(EventType type) {
     case ET_GESTURE_DOUBLE_TAP:
       return Info(RT_START | RT_CURRENT, ET_GESTURE_TAP_UNCONFIRMED);
     case ET_GESTURE_SCROLL_BEGIN:
-      return Info(RT_START | RT_CURRENT);
+      return Info(RT_START);
     case ET_GESTURE_SCROLL_UPDATE:
       return Info(RT_CURRENT, ET_GESTURE_SCROLL_BEGIN);
     case ET_GESTURE_SCROLL_END:
