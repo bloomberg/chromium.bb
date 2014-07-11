@@ -525,20 +525,26 @@ static bool {{method.name}}MethodImplementedInPrivateScript({{method.argument_de
     {# Empty array initializers are illegal, and don\'t compile in MSVC. #}
     v8::Handle<v8::Value> *argv = 0;
     {% endif %}
-    // FIXME: Support exceptions thrown from Blink-in-JS.
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "{{method.name}}", "{{cpp_class}}", scriptState->context()->Global(), scriptState->isolate());
     v8::TryCatch block;
+    V8RethrowTryCatchScope rethrow(block);
     {% if method.idl_type == 'void' %}
     PrivateScriptRunner::runDOMMethod(scriptState, "{{cpp_class}}", "{{method.name}}", holder, {{method.arguments | length}}, argv);
-    if (block.HasCaught())
+    if (block.HasCaught()) {
+        PrivateScriptRunner::throwDOMExceptionInPrivateScriptIfNeeded(scriptState->isolate(), exceptionState, block.Exception());
         return false;
+    }
     {% else %}
     v8::Handle<v8::Value> v8Value = PrivateScriptRunner::runDOMMethod(scriptState, "{{cpp_class}}", "{{method.name}}", holder, {{method.arguments | length}}, argv);
-    if (block.HasCaught())
+    if (block.HasCaught()) {
+        if (!PrivateScriptRunner::throwDOMExceptionInPrivateScriptIfNeeded(scriptState->isolate(), exceptionState, block.Exception())) {
+            // FIXME: We should support exceptions other than DOM exceptions.
+            RELEASE_ASSERT_NOT_REACHED();
+        }
         return false;
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "{{method.name}}", "{{cpp_class}}", scriptState->context()->Global(), scriptState->isolate());
+    }
     {{method.private_script_v8_value_to_local_cpp_value}};
-    if (block.HasCaught())
-        return false;
+    RELEASE_ASSERT(!exceptionState.hadException());
     *result = cppValue;
     {% endif %}
     return true;

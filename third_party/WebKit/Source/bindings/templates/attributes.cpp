@@ -354,15 +354,19 @@ static bool {{attribute.name}}AttributeGetterImplementedInPrivateScript(LocalFra
     ScriptState::Scope scope(scriptState);
     v8::Handle<v8::Value> holder = toV8(holderImpl, scriptState->context()->Global(), scriptState->isolate());
 
-    // FIXME: Support exceptions thrown from Blink-in-JS.
-    v8::TryCatch block;
-    v8::Handle<v8::Value> v8Value = PrivateScriptRunner::runDOMAttributeGetter(scriptState, "{{cpp_class}}", "{{attribute.name}}", holder);
-    if (block.HasCaught())
-        return false;
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "{{attribute.name}}", "{{cpp_class}}", scriptState->context()->Global(), scriptState->isolate());
-    {{attribute.private_script_v8_value_to_local_cpp_value}};
-    if (block.HasCaught())
+    v8::TryCatch block;
+    V8RethrowTryCatchScope rethrow(block);
+    v8::Handle<v8::Value> v8Value = PrivateScriptRunner::runDOMAttributeGetter(scriptState, "{{cpp_class}}", "{{attribute.name}}", holder);
+    if (block.HasCaught()) {
+        if (!PrivateScriptRunner::throwDOMExceptionInPrivateScriptIfNeeded(scriptState->isolate(), exceptionState, block.Exception())) {
+            // FIXME: We should support exceptions other than DOM exceptions.
+            RELEASE_ASSERT_NOT_REACHED();
+        }
         return false;
+    }
+    {{attribute.private_script_v8_value_to_local_cpp_value}};
+    RELEASE_ASSERT(!exceptionState.hadException());
     *result = cppValue;
     return true;
 }
@@ -384,11 +388,17 @@ static bool {{attribute.name}}AttributeSetterImplementedInPrivateScript(LocalFra
     ScriptState::Scope scope(scriptState);
     v8::Handle<v8::Value> holder = toV8(holderImpl, scriptState->context()->Global(), scriptState->isolate());
 
-    // FIXME: Support exceptions thrown from Blink-in-JS.
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "{{attribute.name}}", "{{cpp_class}}", scriptState->context()->Global(), scriptState->isolate());
     v8::TryCatch block;
+    V8RethrowTryCatchScope rethrow(block);
     PrivateScriptRunner::runDOMAttributeSetter(scriptState, "{{cpp_class}}", "{{attribute.name}}", holder, {{attribute.private_script_cpp_value_to_v8_value}});
-    if (block.HasCaught())
+    if (block.HasCaught()) {
+        if (!PrivateScriptRunner::throwDOMExceptionInPrivateScriptIfNeeded(scriptState->isolate(), exceptionState, block.Exception())) {
+            // FIXME: We should support exceptions other than DOM exceptions.
+            RELEASE_ASSERT_NOT_REACHED();
+        }
         return false;
+    }
     return true;
 }
 {% endmacro %}

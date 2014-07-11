@@ -110,5 +110,14 @@ installClass("PrivateScriptTest", function(global) {
         set: function(value) { this.m_nodeAttribute = value; }
     });
 
+    Object.defineProperty(InternalsPrototype, "nodeAttributeThrowsIndexSizeError", {
+        get: function() { throw new DOMExceptionInPrivateScript("IndexSizeError", "getter threw error"); },
+        set: function(value) { throw new DOMExceptionInPrivateScript("IndexSizeError", "setter threw error"); }
+    });
+
+    InternalsPrototype.voidMethodThrowsSyntaxError = function() {
+        throw new DOMExceptionInPrivateScript("SyntaxError", "method threw error");
+    }
+
     return InternalsPrototype;
 });

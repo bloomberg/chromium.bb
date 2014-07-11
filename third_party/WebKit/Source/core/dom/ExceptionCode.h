@@ -28,6 +28,7 @@ namespace WebCore {
     typedef int ExceptionCode;
 
 
+    // This list must be in sync with the |domExceptions| in PrivateScriptRunner.h.
     // Some of these are considered historical since they have been
     // changed or removed from the specifications.
     enum {

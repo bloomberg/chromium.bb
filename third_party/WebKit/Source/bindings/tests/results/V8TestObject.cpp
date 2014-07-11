@@ -4899,15 +4899,19 @@ static bool readonlyShortAttributeAttributeGetterImplementedInPrivateScript(Loca
     ScriptState::Scope scope(scriptState);
     v8::Handle<v8::Value> holder = toV8(holderImpl, scriptState->context()->Global(), scriptState->isolate());
 
-    // FIXME: Support exceptions thrown from Blink-in-JS.
-    v8::TryCatch block;
-    v8::Handle<v8::Value> v8Value = PrivateScriptRunner::runDOMAttributeGetter(scriptState, "TestObject", "readonlyShortAttribute", holder);
-    if (block.HasCaught())
-        return false;
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "readonlyShortAttribute", "TestObject", scriptState->context()->Global(), scriptState->isolate());
-    TONATIVE_DEFAULT_EXCEPTIONSTATE(int, cppValue, toInt16(v8Value, exceptionState), exceptionState, false);
-    if (block.HasCaught())
+    v8::TryCatch block;
+    V8RethrowTryCatchScope rethrow(block);
+    v8::Handle<v8::Value> v8Value = PrivateScriptRunner::runDOMAttributeGetter(scriptState, "TestObject", "readonlyShortAttribute", holder);
+    if (block.HasCaught()) {
+        if (!PrivateScriptRunner::throwDOMExceptionInPrivateScriptIfNeeded(scriptState->isolate(), exceptionState, block.Exception())) {
+            // FIXME: We should support exceptions other than DOM exceptions.
+            RELEASE_ASSERT_NOT_REACHED();
+        }
         return false;
+    }
+    TONATIVE_DEFAULT_EXCEPTIONSTATE(int, cppValue, toInt16(v8Value, exceptionState), exceptionState, false);
+    RELEASE_ASSERT(!exceptionState.hadException());
     *result = cppValue;
     return true;
 }
@@ -4943,15 +4947,19 @@ static bool shortAttributeAttributeGetterImplementedInPrivateScript(LocalFrame* 
     ScriptState::Scope scope(scriptState);
     v8::Handle<v8::Value> holder = toV8(holderImpl, scriptState->context()->Global(), scriptState->isolate());
 
-    // FIXME: Support exceptions thrown from Blink-in-JS.
-    v8::TryCatch block;
-    v8::Handle<v8::Value> v8Value = PrivateScriptRunner::runDOMAttributeGetter(scriptState, "TestObject", "shortAttribute", holder);
-    if (block.HasCaught())
-        return false;
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "shortAttribute", "TestObject", scriptState->context()->Global(), scriptState->isolate());
-    TONATIVE_DEFAULT_EXCEPTIONSTATE(int, cppValue, toInt16(v8Value, exceptionState), exceptionState, false);
-    if (block.HasCaught())
+    v8::TryCatch block;
+    V8RethrowTryCatchScope rethrow(block);
+    v8::Handle<v8::Value> v8Value = PrivateScriptRunner::runDOMAttributeGetter(scriptState, "TestObject", "shortAttribute", holder);
+    if (block.HasCaught()) {
+        if (!PrivateScriptRunner::throwDOMExceptionInPrivateScriptIfNeeded(scriptState->isolate(), exceptionState, block.Exception())) {
+            // FIXME: We should support exceptions other than DOM exceptions.
+            RELEASE_ASSERT_NOT_REACHED();
+        }
         return false;
+    }
+    TONATIVE_DEFAULT_EXCEPTIONSTATE(int, cppValue, toInt16(v8Value, exceptionState), exceptionState, false);
+    RELEASE_ASSERT(!exceptionState.hadException());
     *result = cppValue;
     return true;
 }
@@ -4970,11 +4978,17 @@ static bool shortAttributeAttributeSetterImplementedInPrivateScript(LocalFrame* 
     ScriptState::Scope scope(scriptState);
     v8::Handle<v8::Value> holder = toV8(holderImpl, scriptState->context()->Global(), scriptState->isolate());
 
-    // FIXME: Support exceptions thrown from Blink-in-JS.
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "shortAttribute", "TestObject", scriptState->context()->Global(), scriptState->isolate());
     v8::TryCatch block;
+    V8RethrowTryCatchScope rethrow(block);
     PrivateScriptRunner::runDOMAttributeSetter(scriptState, "TestObject", "shortAttribute", holder, v8::Integer::New(scriptState->isolate(), cppValue));
-    if (block.HasCaught())
+    if (block.HasCaught()) {
+        if (!PrivateScriptRunner::throwDOMExceptionInPrivateScriptIfNeeded(scriptState->isolate(), exceptionState, block.Exception())) {
+            // FIXME: We should support exceptions other than DOM exceptions.
+            RELEASE_ASSERT_NOT_REACHED();
+        }
         return false;
+    }
     return true;
 }
 
@@ -5025,15 +5039,19 @@ static bool stringAttributeAttributeGetterImplementedInPrivateScript(LocalFrame*
     ScriptState::Scope scope(scriptState);
     v8::Handle<v8::Value> holder = toV8(holderImpl, scriptState->context()->Global(), scriptState->isolate());
 
-    // FIXME: Support exceptions thrown from Blink-in-JS.
-    v8::TryCatch block;
-    v8::Handle<v8::Value> v8Value = PrivateScriptRunner::runDOMAttributeGetter(scriptState, "TestObject", "stringAttribute", holder);
-    if (block.HasCaught())
-        return false;
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "stringAttribute", "TestObject", scriptState->context()->Global(), scriptState->isolate());
-    TOSTRING_DEFAULT(V8StringResource<>, cppValue, v8Value, false);
-    if (block.HasCaught())
+    v8::TryCatch block;
+    V8RethrowTryCatchScope rethrow(block);
+    v8::Handle<v8::Value> v8Value = PrivateScriptRunner::runDOMAttributeGetter(scriptState, "TestObject", "stringAttribute", holder);
+    if (block.HasCaught()) {
+        if (!PrivateScriptRunner::throwDOMExceptionInPrivateScriptIfNeeded(scriptState->isolate(), exceptionState, block.Exception())) {
+            // FIXME: We should support exceptions other than DOM exceptions.
+            RELEASE_ASSERT_NOT_REACHED();
+        }
         return false;
+    }
+    TOSTRING_DEFAULT(V8StringResource<>, cppValue, v8Value, false);
+    RELEASE_ASSERT(!exceptionState.hadException());
     *result = cppValue;
     return true;
 }
@@ -5052,11 +5070,17 @@ static bool stringAttributeAttributeSetterImplementedInPrivateScript(LocalFrame*
     ScriptState::Scope scope(scriptState);
     v8::Handle<v8::Value> holder = toV8(holderImpl, scriptState->context()->Global(), scriptState->isolate());
 
-    // FIXME: Support exceptions thrown from Blink-in-JS.
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "stringAttribute", "TestObject", scriptState->context()->Global(), scriptState->isolate());
     v8::TryCatch block;
+    V8RethrowTryCatchScope rethrow(block);
     PrivateScriptRunner::runDOMAttributeSetter(scriptState, "TestObject", "stringAttribute", holder, v8String(scriptState->isolate(), cppValue));
-    if (block.HasCaught())
+    if (block.HasCaught()) {
+        if (!PrivateScriptRunner::throwDOMExceptionInPrivateScriptIfNeeded(scriptState->isolate(), exceptionState, block.Exception())) {
+            // FIXME: We should support exceptions other than DOM exceptions.
+            RELEASE_ASSERT_NOT_REACHED();
+        }
         return false;
+    }
     return true;
 }
 
@@ -5106,15 +5130,19 @@ static bool nodeAttributeAttributeGetterImplementedInPrivateScript(LocalFrame* f
     ScriptState::Scope scope(scriptState);
     v8::Handle<v8::Value> holder = toV8(holderImpl, scriptState->context()->Global(), scriptState->isolate());
 
-    // FIXME: Support exceptions thrown from Blink-in-JS.
-    v8::TryCatch block;
-    v8::Handle<v8::Value> v8Value = PrivateScriptRunner::runDOMAttributeGetter(scriptState, "TestObject", "nodeAttribute", holder);
-    if (block.HasCaught())
-        return false;
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "nodeAttribute", "TestObject", scriptState->context()->Global(), scriptState->isolate());
-    TONATIVE_DEFAULT(Node*, cppValue, V8Node::toNativeWithTypeCheck(scriptState->isolate(), v8Value), false);
-    if (block.HasCaught())
+    v8::TryCatch block;
+    V8RethrowTryCatchScope rethrow(block);
+    v8::Handle<v8::Value> v8Value = PrivateScriptRunner::runDOMAttributeGetter(scriptState, "TestObject", "nodeAttribute", holder);
+    if (block.HasCaught()) {
+        if (!PrivateScriptRunner::throwDOMExceptionInPrivateScriptIfNeeded(scriptState->isolate(), exceptionState, block.Exception())) {
+            // FIXME: We should support exceptions other than DOM exceptions.
+            RELEASE_ASSERT_NOT_REACHED();
+        }
         return false;
+    }
+    TONATIVE_DEFAULT(Node*, cppValue, V8Node::toNativeWithTypeCheck(scriptState->isolate(), v8Value), false);
+    RELEASE_ASSERT(!exceptionState.hadException());
     *result = cppValue;
     return true;
 }
@@ -5133,11 +5161,17 @@ static bool nodeAttributeAttributeSetterImplementedInPrivateScript(LocalFrame* f
     ScriptState::Scope scope(scriptState);
     v8::Handle<v8::Value> holder = toV8(holderImpl, scriptState->context()->Global(), scriptState->isolate());
 
-    // FIXME: Support exceptions thrown from Blink-in-JS.
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "nodeAttribute", "TestObject", scriptState->context()->Global(), scriptState->isolate());
     v8::TryCatch block;
+    V8RethrowTryCatchScope rethrow(block);
     PrivateScriptRunner::runDOMAttributeSetter(scriptState, "TestObject", "nodeAttribute", holder, toV8(cppValue, scriptState->context()->Global(), scriptState->isolate()));
-    if (block.HasCaught())
+    if (block.HasCaught()) {
+        if (!PrivateScriptRunner::throwDOMExceptionInPrivateScriptIfNeeded(scriptState->isolate(), exceptionState, block.Exception())) {
+            // FIXME: We should support exceptions other than DOM exceptions.
+            RELEASE_ASSERT_NOT_REACHED();
+        }
         return false;
+    }
     return true;
 }
 
@@ -10092,11 +10126,14 @@ static bool voidMethodImplementedInPrivateScriptMethodImplementedInPrivateScript
     v8::Handle<v8::Value> holder = toV8(holderImpl, scriptState->context()->Global(), scriptState->isolate());
 
     v8::Handle<v8::Value> *argv = 0;
-    // FIXME: Support exceptions thrown from Blink-in-JS.
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodImplementedInPrivateScript", "TestObject", scriptState->context()->Global(), scriptState->isolate());
     v8::TryCatch block;
+    V8RethrowTryCatchScope rethrow(block);
     PrivateScriptRunner::runDOMMethod(scriptState, "TestObject", "voidMethodImplementedInPrivateScript", holder, 0, argv);
-    if (block.HasCaught())
+    if (block.HasCaught()) {
+        PrivateScriptRunner::throwDOMExceptionInPrivateScriptIfNeeded(scriptState->isolate(), exceptionState, block.Exception());
         return false;
+    }
     return true;
 }
 
@@ -10128,15 +10165,19 @@ static bool shortMethodImplementedInPrivateScriptMethodImplementedInPrivateScrip
     v8::Handle<v8::Value> holder = toV8(holderImpl, scriptState->context()->Global(), scriptState->isolate());
 
     v8::Handle<v8::Value> *argv = 0;
-    // FIXME: Support exceptions thrown from Blink-in-JS.
-    v8::TryCatch block;
-    v8::Handle<v8::Value> v8Value = PrivateScriptRunner::runDOMMethod(scriptState, "TestObject", "shortMethodImplementedInPrivateScript", holder, 0, argv);
-    if (block.HasCaught())
-        return false;
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "shortMethodImplementedInPrivateScript", "TestObject", scriptState->context()->Global(), scriptState->isolate());
-    TONATIVE_DEFAULT_EXCEPTIONSTATE(int, cppValue, toInt16(v8Value, exceptionState), exceptionState, false);
-    if (block.HasCaught())
+    v8::TryCatch block;
+    V8RethrowTryCatchScope rethrow(block);
+    v8::Handle<v8::Value> v8Value = PrivateScriptRunner::runDOMMethod(scriptState, "TestObject", "shortMethodImplementedInPrivateScript", holder, 0, argv);
+    if (block.HasCaught()) {
+        if (!PrivateScriptRunner::throwDOMExceptionInPrivateScriptIfNeeded(scriptState->isolate(), exceptionState, block.Exception())) {
+            // FIXME: We should support exceptions other than DOM exceptions.
+            RELEASE_ASSERT_NOT_REACHED();
+        }
         return false;
+    }
+    TONATIVE_DEFAULT_EXCEPTIONSTATE(int, cppValue, toInt16(v8Value, exceptionState), exceptionState, false);
+    RELEASE_ASSERT(!exceptionState.hadException());
     *result = cppValue;
     return true;
 }
@@ -10173,15 +10214,19 @@ static bool shortMethodWithShortArgumentImplementedInPrivateScriptMethodImplemen
 
     v8::Handle<v8::Value> valueHandle = v8::Integer::New(scriptState->isolate(), value);
     v8::Handle<v8::Value> argv[] = { valueHandle };
-    // FIXME: Support exceptions thrown from Blink-in-JS.
-    v8::TryCatch block;
-    v8::Handle<v8::Value> v8Value = PrivateScriptRunner::runDOMMethod(scriptState, "TestObject", "shortMethodWithShortArgumentImplementedInPrivateScript", holder, 1, argv);
-    if (block.HasCaught())
-        return false;
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "shortMethodWithShortArgumentImplementedInPrivateScript", "TestObject", scriptState->context()->Global(), scriptState->isolate());
-    TONATIVE_DEFAULT_EXCEPTIONSTATE(int, cppValue, toInt16(v8Value, exceptionState), exceptionState, false);
-    if (block.HasCaught())
+    v8::TryCatch block;
+    V8RethrowTryCatchScope rethrow(block);
+    v8::Handle<v8::Value> v8Value = PrivateScriptRunner::runDOMMethod(scriptState, "TestObject", "shortMethodWithShortArgumentImplementedInPrivateScript", holder, 1, argv);
+    if (block.HasCaught()) {
+        if (!PrivateScriptRunner::throwDOMExceptionInPrivateScriptIfNeeded(scriptState->isolate(), exceptionState, block.Exception())) {
+            // FIXME: We should support exceptions other than DOM exceptions.
+            RELEASE_ASSERT_NOT_REACHED();
+        }
         return false;
+    }
+    TONATIVE_DEFAULT_EXCEPTIONSTATE(int, cppValue, toInt16(v8Value, exceptionState), exceptionState, false);
+    RELEASE_ASSERT(!exceptionState.hadException());
     *result = cppValue;
     return true;
 }
@@ -10229,15 +10274,19 @@ static bool stringMethodWithStringArgumentImplementedInPrivateScriptMethodImplem
 
     v8::Handle<v8::Value> valueHandle = v8String(scriptState->isolate(), value);
     v8::Handle<v8::Value> argv[] = { valueHandle };
-    // FIXME: Support exceptions thrown from Blink-in-JS.
-    v8::TryCatch block;
-    v8::Handle<v8::Value> v8Value = PrivateScriptRunner::runDOMMethod(scriptState, "TestObject", "stringMethodWithStringArgumentImplementedInPrivateScript", holder, 1, argv);
-    if (block.HasCaught())
-        return false;
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "stringMethodWithStringArgumentImplementedInPrivateScript", "TestObject", scriptState->context()->Global(), scriptState->isolate());
-    TOSTRING_DEFAULT(V8StringResource<>, cppValue, v8Value, false);
-    if (block.HasCaught())
+    v8::TryCatch block;
+    V8RethrowTryCatchScope rethrow(block);
+    v8::Handle<v8::Value> v8Value = PrivateScriptRunner::runDOMMethod(scriptState, "TestObject", "stringMethodWithStringArgumentImplementedInPrivateScript", holder, 1, argv);
+    if (block.HasCaught()) {
+        if (!PrivateScriptRunner::throwDOMExceptionInPrivateScriptIfNeeded(scriptState->isolate(), exceptionState, block.Exception())) {
+            // FIXME: We should support exceptions other than DOM exceptions.
+            RELEASE_ASSERT_NOT_REACHED();
+        }
         return false;
+    }
+    TOSTRING_DEFAULT(V8StringResource<>, cppValue, v8Value, false);
+    RELEASE_ASSERT(!exceptionState.hadException());
     *result = cppValue;
     return true;
 }
@@ -10282,15 +10331,19 @@ static bool nodeMethodWithNodeArgumentImplementedInPrivateScriptMethodImplemente
 
     v8::Handle<v8::Value> valueHandle = toV8(value, scriptState->context()->Global(), scriptState->isolate());
     v8::Handle<v8::Value> argv[] = { valueHandle };
-    // FIXME: Support exceptions thrown from Blink-in-JS.
-    v8::TryCatch block;
-    v8::Handle<v8::Value> v8Value = PrivateScriptRunner::runDOMMethod(scriptState, "TestObject", "nodeMethodWithNodeArgumentImplementedInPrivateScript", holder, 1, argv);
-    if (block.HasCaught())
-        return false;
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "nodeMethodWithNodeArgumentImplementedInPrivateScript", "TestObject", scriptState->context()->Global(), scriptState->isolate());
-    TONATIVE_DEFAULT(Node*, cppValue, V8Node::toNativeWithTypeCheck(scriptState->isolate(), v8Value), false);
-    if (block.HasCaught())
+    v8::TryCatch block;
+    V8RethrowTryCatchScope rethrow(block);
+    v8::Handle<v8::Value> v8Value = PrivateScriptRunner::runDOMMethod(scriptState, "TestObject", "nodeMethodWithNodeArgumentImplementedInPrivateScript", holder, 1, argv);
+    if (block.HasCaught()) {
+        if (!PrivateScriptRunner::throwDOMExceptionInPrivateScriptIfNeeded(scriptState->isolate(), exceptionState, block.Exception())) {
+            // FIXME: We should support exceptions other than DOM exceptions.
+            RELEASE_ASSERT_NOT_REACHED();
+        }
         return false;
+    }
+    TONATIVE_DEFAULT(Node*, cppValue, V8Node::toNativeWithTypeCheck(scriptState->isolate(), v8Value), false);
+    RELEASE_ASSERT(!exceptionState.hadException());
     *result = cppValue;
     return true;
 }
@@ -10341,15 +10394,19 @@ static bool nodeMethodWithVariousArgumentsImplementedInPrivateScriptMethodImplem
     v8::Handle<v8::Value> value2Handle = v8::Number::New(scriptState->isolate(), value2);
     v8::Handle<v8::Value> stringHandle = v8String(scriptState->isolate(), string);
     v8::Handle<v8::Value> argv[] = { documentHandle, nodeHandle, value1Handle, value2Handle, stringHandle };
-    // FIXME: Support exceptions thrown from Blink-in-JS.
-    v8::TryCatch block;
-    v8::Handle<v8::Value> v8Value = PrivateScriptRunner::runDOMMethod(scriptState, "TestObject", "nodeMethodWithVariousArgumentsImplementedInPrivateScript", holder, 5, argv);
-    if (block.HasCaught())
-        return false;
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "nodeMethodWithVariousArgumentsImplementedInPrivateScript", "TestObject", scriptState->context()->Global(), scriptState->isolate());
-    TONATIVE_DEFAULT(Node*, cppValue, V8Node::toNativeWithTypeCheck(scriptState->isolate(), v8Value), false);
-    if (block.HasCaught())
+    v8::TryCatch block;
+    V8RethrowTryCatchScope rethrow(block);
+    v8::Handle<v8::Value> v8Value = PrivateScriptRunner::runDOMMethod(scriptState, "TestObject", "nodeMethodWithVariousArgumentsImplementedInPrivateScript", holder, 5, argv);
+    if (block.HasCaught()) {
+        if (!PrivateScriptRunner::throwDOMExceptionInPrivateScriptIfNeeded(scriptState->isolate(), exceptionState, block.Exception())) {
+            // FIXME: We should support exceptions other than DOM exceptions.
+            RELEASE_ASSERT_NOT_REACHED();
+        }
         return false;
+    }
+    TONATIVE_DEFAULT(Node*, cppValue, V8Node::toNativeWithTypeCheck(scriptState->isolate(), v8Value), false);
+    RELEASE_ASSERT(!exceptionState.hadException());
     *result = cppValue;
     return true;
 }

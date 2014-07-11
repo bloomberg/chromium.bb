@@ -28,4 +28,6 @@
     [ImplementedInPrivateScript] attribute short shortAttribute;
     [ImplementedInPrivateScript] attribute DOMString stringAttribute;
     [ImplementedInPrivateScript] attribute Node nodeAttribute;
+    [ImplementedInPrivateScript] attribute Node nodeAttributeThrowsIndexSizeError;
+    [ImplementedInPrivateScript] void voidMethodThrowsSyntaxError();
 };
