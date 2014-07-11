@@ -55,7 +55,9 @@ class HTMLImportsController FINAL : public NoBaseWillBeGarbageCollectedFinalized
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(HTMLImportsController);
     WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
 public:
+    static const char* supplementName();
     static void provideTo(Document&);
+    static void removeFrom(Document&);
 
     explicit HTMLImportsController(Document&);
     virtual ~HTMLImportsController();
@@ -63,9 +65,6 @@ public:
     HTMLImportTreeRoot* root() const { return m_root.get(); }
 
     bool shouldBlockScriptExecution(const Document&) const;
-#if !ENABLE(OILPAN)
-    void wasDetachedFrom(const Document&);
-#endif
     HTMLImportChild* load(HTMLImport* parent, HTMLImportChildClient*, FetchRequest);
 
     Document* master() const;
@@ -81,9 +80,6 @@ public:
 
 private:
     HTMLImportChild* createChild(const KURL&, HTMLImportLoader*, HTMLImport* parent, HTMLImportChildClient*);
-#if !ENABLE(OILPAN)
-    void clear();
-#endif
 
     OwnPtrWillBeMember<HTMLImportTreeRoot> m_root;
     typedef WillBeHeapVector<OwnPtrWillBeMember<HTMLImportLoader> > LoaderList;

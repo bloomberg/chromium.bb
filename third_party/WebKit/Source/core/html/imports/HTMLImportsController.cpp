@@ -42,12 +42,23 @@
 
 namespace WebCore {
 
-void HTMLImportsController::provideTo(Document& master)
+const char* HTMLImportsController::supplementName()
 {
     DEFINE_STATIC_LOCAL(const char*, name, ("HTMLImportsController"));
+    return name;
+}
+
+void HTMLImportsController::provideTo(Document& master)
+{
     OwnPtrWillBeRawPtr<HTMLImportsController> controller = adoptPtrWillBeNoop(new HTMLImportsController(master));
     master.setImportsController(controller.get());
-    DocumentSupplement::provideTo(master, name, controller.release());
+    DocumentSupplement::provideTo(master, supplementName(), controller.release());
+}
+
+void HTMLImportsController::removeFrom(Document& master)
+{
+    static_cast<DocumentSupplementable&>(master).removeSupplement(supplementName());
+    master.setImportsController(nullptr);
 }
 
 HTMLImportsController::HTMLImportsController(Document& master)
@@ -59,24 +70,13 @@ HTMLImportsController::HTMLImportsController(Document& master)
 HTMLImportsController::~HTMLImportsController()
 {
 #if !ENABLE(OILPAN)
-    ASSERT(!m_root);
-#endif
-}
-
-#if !ENABLE(OILPAN)
-void HTMLImportsController::clear()
-{
-    Document* master = root()->document();
     m_root.clear();
 
     for (size_t i = 0; i < m_loaders.size(); ++i)
         m_loaders[i]->importDestroyed();
     m_loaders.clear();
-
-    if (master)
-        master->setImportsController(0);
-}
 #endif
+}
 
 static bool makesCycle(HTMLImport* parent, const KURL& url)
 {
@@ -143,15 +143,6 @@ bool HTMLImportsController::shouldBlockScriptExecution(const Document& document)
         return loader->shouldBlockScriptExecution();
     return root()->state().shouldBlockScriptExecution();
 }
-
-#if !ENABLE(OILPAN)
-void HTMLImportsController::wasDetachedFrom(const Document& document)
-{
-    ASSERT(document.importsController() == this);
-    if (master() == &document)
-        clear();
-}
-#endif
 
 HTMLImportLoader* HTMLImportsController::createLoader()
 {
