@@ -265,9 +265,9 @@ void WorkerRunLoop::runCleanupTasks()
 
 void WorkerRunLoop::terminate()
 {
+    InspectorInstrumentation::didKillAllExecutionContextTasks(m_context);
     m_messageQueue.kill();
     m_debuggerMessageQueue.kill();
-    InspectorInstrumentation::didKillAllExecutionContextTasks(m_context);
 }
 
 bool WorkerRunLoop::postTask(PassOwnPtr<ExecutionContextTask> task)
@@ -277,9 +277,9 @@ bool WorkerRunLoop::postTask(PassOwnPtr<ExecutionContextTask> task)
 
 void WorkerRunLoop::postTaskAndTerminate(PassOwnPtr<ExecutionContextTask> task)
 {
+    InspectorInstrumentation::didKillAllExecutionContextTasks(m_context);
     m_debuggerMessageQueue.kill();
     m_messageQueue.appendAndKill(WorkerRunLoopTask::create(*this, task, false));
-    InspectorInstrumentation::didKillAllExecutionContextTasks(m_context);
 }
 
 bool WorkerRunLoop::postDebuggerTask(PassOwnPtr<ExecutionContextTask> task)
