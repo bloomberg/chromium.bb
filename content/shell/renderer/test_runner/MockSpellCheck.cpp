@@ -9,7 +9,6 @@
 #include "third_party/WebKit/public/platform/WebCString.h"
 
 using namespace blink;
-using namespace std;
 
 namespace content {
 
@@ -56,10 +55,10 @@ bool MockSpellCheck::spellCheckWord(const WebString& text, int* misspelledOffset
         // (This is a simple version of our SpellCheckWordIterator class.)
         // If the given string doesn't include any ASCII characters, we can treat the
         // string as valid one.
-        base::string16::iterator firstChar = find_if(stringText.begin(), stringText.end(), isASCIIAlpha);
+        base::string16::iterator firstChar = std::find_if(stringText.begin(), stringText.end(), isASCIIAlpha);
         if (firstChar == stringText.end())
             return true;
-        int wordOffset = distance(stringText.begin(), firstChar);
+        int wordOffset = std::distance(stringText.begin(), firstChar);
         int maxWordLength = static_cast<int>(stringText.length()) - wordOffset;
         int wordLength;
         base::string16 word;
@@ -82,11 +81,11 @@ bool MockSpellCheck::spellCheckWord(const WebString& text, int* misspelledOffset
         if (*misspelledLength > 0)
             break;
 
-        base::string16::iterator lastChar = find_if(stringText.begin() + wordOffset, stringText.end(), isNotASCIIAlpha);
+        base::string16::iterator lastChar = std::find_if(stringText.begin() + wordOffset, stringText.end(), isNotASCIIAlpha);
         if (lastChar == stringText.end())
             wordLength = static_cast<int>(stringText.length()) - wordOffset;
         else
-            wordLength = distance(firstChar, lastChar);
+            wordLength = std::distance(firstChar, lastChar);
 
         DCHECK_LT(0, wordOffset + wordLength);
         stringText = stringText.substr(wordOffset + wordLength);
@@ -101,7 +100,7 @@ bool MockSpellCheck::hasInCache(const WebString& word)
     return word == WebString::fromUTF8("Spell wellcome. Is it broken?") || word == WebString::fromUTF8("Spell wellcome.\x007F");
 }
 
-bool MockSpellCheck::isMultiWordMisspelling(const WebString& text, vector<WebTextCheckingResult>* results)
+bool MockSpellCheck::isMultiWordMisspelling(const WebString& text, std::vector<WebTextCheckingResult>* results)
 {
     if (text == WebString::fromUTF8("Helllo wordl.")) {
         results->push_back(WebTextCheckingResult(WebTextDecorationTypeSpelling, 0, 6, WebString("Hello")));

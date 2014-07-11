@@ -24,7 +24,6 @@
 #include "third_party/WebKit/public/web/WebView.h"
 
 using namespace blink;
-using namespace std;
 
 namespace content {
 
@@ -112,30 +111,30 @@ void TestInterfaces::setTestIsRunning(bool running)
 
 void TestInterfaces::configureForTestWithURL(const WebURL& testURL, bool generatePixels)
 {
-    string spec = GURL(testURL).spec();
+    std::string spec = GURL(testURL).spec();
     m_testRunner->setShouldGeneratePixelResults(generatePixels);
-    if (spec.find("loading/") != string::npos)
+    if (spec.find("loading/") != std::string::npos)
         m_testRunner->setShouldDumpFrameLoadCallbacks(true);
-    if (spec.find("/dumpAsText/") != string::npos) {
+    if (spec.find("/dumpAsText/") != std::string::npos) {
         m_testRunner->setShouldDumpAsText(true);
         m_testRunner->setShouldGeneratePixelResults(false);
     }
-    if (spec.find("/inspector/") != string::npos
-        || spec.find("/inspector-enabled/") != string::npos)
+    if (spec.find("/inspector/") != std::string::npos
+        || spec.find("/inspector-enabled/") != std::string::npos)
         m_testRunner->clearDevToolsLocalStorage();
-    if (spec.find("/inspector/") != string::npos) {
+    if (spec.find("/inspector/") != std::string::npos) {
         // Subfolder name determines default panel to open.
-        string settings = "";
-        string test_path = spec.substr(spec.find("/inspector/") + 11);
+        std::string settings = "";
+        std::string test_path = spec.substr(spec.find("/inspector/") + 11);
         size_t slash_index = test_path.find("/");
-        if (slash_index != string::npos) {
+        if (slash_index != std::string::npos) {
             settings = base::StringPrintf(
                 "{\"lastActivePanel\":\"\\\"%s\\\"\"}",
                 test_path.substr(0, slash_index).c_str());
         }
-        m_testRunner->showDevTools(settings, string());
+        m_testRunner->showDevTools(settings, std::string());
     }
-    if (spec.find("/viewsource/") != string::npos) {
+    if (spec.find("/viewsource/") != std::string::npos) {
         m_testRunner->setShouldEnableViewSource(true);
         m_testRunner->setShouldGeneratePixelResults(false);
         m_testRunner->setShouldDumpAsMarkup(true);
@@ -149,7 +148,7 @@ void TestInterfaces::windowOpened(WebTestProxyBase* proxy)
 
 void TestInterfaces::windowClosed(WebTestProxyBase* proxy)
 {
-    vector<WebTestProxyBase*>::iterator pos = find(m_windowList.begin(), m_windowList.end(), proxy);
+    std::vector<WebTestProxyBase*>::iterator pos = std::find(m_windowList.begin(), m_windowList.end(), proxy);
     if (pos == m_windowList.end()) {
         NOTREACHED();
         return;
@@ -182,7 +181,7 @@ WebTestProxyBase* TestInterfaces::proxy()
     return m_proxy;
 }
 
-const vector<WebTestProxyBase*>& TestInterfaces::windowList()
+const std::vector<WebTestProxyBase*>& TestInterfaces::windowList()
 {
     return m_windowList;
 }

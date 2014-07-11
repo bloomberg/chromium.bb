@@ -25,7 +25,6 @@
 #include "third_party/WebKit/public/web/WebUserGestureIndicator.h"
 
 using namespace blink;
-using namespace std;
 
 namespace content {
 
@@ -478,14 +477,14 @@ void TestPlugin::destroyScene()
 
 bool TestPlugin::initProgram()
 {
-    const string vertexSource(
+    const std::string vertexSource(
         "attribute vec4 position;  \n"
         "void main() {             \n"
         "  gl_Position = position; \n"
         "}                         \n"
     );
 
-    const string fragmentSource(
+    const std::string fragmentSource(
         "precision mediump float; \n"
         "uniform vec4 color;      \n"
         "void main() {            \n"
@@ -540,7 +539,7 @@ void TestPlugin::drawPrimitive()
     m_context->drawArrays(GL_TRIANGLES, 0, 3);
 }
 
-unsigned TestPlugin::loadShader(unsigned type, const string& source)
+unsigned TestPlugin::loadShader(unsigned type, const std::string& source)
 {
     unsigned shader = m_context->createShader(type);
     if (shader) {
@@ -557,7 +556,7 @@ unsigned TestPlugin::loadShader(unsigned type, const string& source)
     return shader;
 }
 
-unsigned TestPlugin::loadProgram(const string& vertexSource, const string& fragmentSource)
+unsigned TestPlugin::loadProgram(const std::string& vertexSource, const std::string& fragmentSource)
 {
     unsigned vertexShader = loadShader(GL_VERTEX_SHADER, vertexSource);
     unsigned fragmentShader = loadShader(GL_FRAGMENT_SHADER, fragmentSource);

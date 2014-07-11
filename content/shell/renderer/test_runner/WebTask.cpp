@@ -7,8 +7,6 @@
 #include <algorithm>
 #include "third_party/WebKit/public/web/WebKit.h"
 
-using namespace std;
-
 namespace content {
 
 WebTask::WebTask(WebTaskList* list)
@@ -39,7 +37,7 @@ void WebTaskList::registerTask(WebTask* task)
 
 void WebTaskList::unregisterTask(WebTask* task)
 {
-    vector<WebTask*>::iterator iter = find(m_tasks.begin(), m_tasks.end(), task);
+    std::vector<WebTask*>::iterator iter = std::find(m_tasks.begin(), m_tasks.end(), task);
     if (iter != m_tasks.end())
         m_tasks.erase(iter);
 }

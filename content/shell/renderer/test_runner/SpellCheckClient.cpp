@@ -11,7 +11,6 @@
 #include "third_party/WebKit/public/web/WebTextCheckingResult.h"
 
 using namespace blink;
-using namespace std;
 
 namespace content {
 
@@ -57,7 +56,7 @@ void SpellCheckClient::spellCheck(const WebString& text, int& misspelledOffset, 
 
 void SpellCheckClient::checkTextOfParagraph(const WebString& text, WebTextCheckingTypeMask mask, WebVector<WebTextCheckingResult>* webResults)
 {
-    vector<WebTextCheckingResult> results;
+    std::vector<WebTextCheckingResult> results;
     if (mask & WebTextCheckingTypeSpelling) {
         size_t offset = 0;
         base::string16 data = text;
@@ -107,7 +106,7 @@ void SpellCheckClient::finishLastTextCheck()
 {
     if (!m_lastRequestedTextCheckingCompletion)
         return;
-    vector<WebTextCheckingResult> results;
+    std::vector<WebTextCheckingResult> results;
     int offset = 0;
     base::string16 text = m_lastRequestedTextCheckString;
     if (!m_spellcheck.isMultiWordMisspelling(WebString(text), &results)) {

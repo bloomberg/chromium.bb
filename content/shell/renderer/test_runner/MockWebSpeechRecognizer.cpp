@@ -10,7 +10,6 @@
 #include "third_party/WebKit/public/web/WebSpeechRecognizerClient.h"
 
 using namespace blink;
-using namespace std;
 
 namespace content {
 
