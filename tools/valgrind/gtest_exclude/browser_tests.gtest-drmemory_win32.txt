@@ -54,6 +54,7 @@ DoNot*
 Down*Ext*
 Down*UI*
 Do*adTest.*
+Do*tTest.*All
 Drive*
 # E*
 ECK*
