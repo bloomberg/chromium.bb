@@ -1574,6 +1574,8 @@ void RenderBox::invalidateTreeAfterLayout(const RenderLayerModelObject& paintInv
     if (view()->doingFullRepaint()) {
         LayoutState state(*this, isTableRow() ? LayoutSize() : locationOffset());
         RenderObject::invalidateTreeAfterLayout(newPaintInvalidationContainer);
+        // For the next invalidatePaintIfNeeded.
+        savePreviousBorderBoxSizeIfNeeded();
         return;
     }
 
@@ -1586,6 +1588,9 @@ void RenderBox::invalidateTreeAfterLayout(const RenderLayerModelObject& paintInv
 
     if (!invalidatePaintIfNeeded(&newPaintInvalidationContainer, oldPaintInvalidationRect, oldPositionFromPaintInvalidationContainer))
         invalidatePaintForOverflowIfNeeded();
+
+    // This is for the next invalidatePaintIfNeeded so must be after invalidatePaintIfNeeded.
+    savePreviousBorderBoxSizeIfNeeded();
 
     // Issue paint invalidations for any scrollbars if there is a scrollable area for this renderer.
     if (enclosingLayer()) {
@@ -4046,76 +4051,20 @@ InvalidationReason RenderBox::getPaintInvalidationReason(const RenderLayerModelO
     if (invalidationReason != InvalidationNone && invalidationReason != InvalidationIncremental)
         return invalidationReason;
 
-    // FIXME: The following checks should use old and new border box rects instead of old and new bounds.
+    if (!style()->hasBackground() && !style()->hasBoxDecorations())
+        return invalidationReason;
 
-    if (style()->hasBorderRadius()) {
-        // If a border-radius exists and width/height is smaller than
-        // radius width/height, we cannot use delta-paint-invalidation.
-        RoundedRect oldRoundedRect = style()->getRoundedBorderFor(oldBounds);
-        RoundedRect newRoundedRect = style()->getRoundedBorderFor(newBounds);
-        if (oldRoundedRect.radii() != newRoundedRect.radii())
-            return InvalidationBorderRadius;
+    LayoutSize oldBorderBoxSize;
+    if (m_rareData && m_rareData->m_previousBorderBoxSize.width() != -1) {
+        oldBorderBoxSize = m_rareData->m_previousBorderBoxSize;
+    } else {
+        // We didn't save the old border box size because it was the same as the size of oldBounds.
+        oldBorderBoxSize = oldBounds.size();
     }
 
-    if (oldBounds.width() != newBounds.width() && mustInvalidateBackgroundOrBorderPaintOnWidthChange())
-        return InvalidationBoundsChangeWithBackground;
-    if (oldBounds.height() != newBounds.height() && mustInvalidateBackgroundOrBorderPaintOnHeightChange())
-        return InvalidationBoundsChangeWithBackground;
-
-    return invalidationReason;
-}
-
-void RenderBox::incrementallyInvalidatePaint(const RenderLayerModelObject* paintInvalidationContainer, const LayoutRect& oldBounds, const LayoutRect& newBounds)
-{
-    RenderBoxModelObject::incrementallyInvalidatePaint(paintInvalidationContainer, oldBounds, newBounds);
-
-    if (!style()->hasBorder() && !style()->boxShadow() && !style()->hasBorderImageOutsets() && !style()->hasOutline())
-        return;
-
-    RenderStyle* outlineStyle = this->outlineStyle();
-    LayoutUnit outlineWidth = outlineStyle->outlineSize();
-    LayoutBoxExtent insetShadowExtent = style()->getBoxShadowInsetExtent();
-    LayoutUnit deltaWidth = absoluteValue(newBounds.width() - oldBounds.width());
-    if (deltaWidth) {
-        LayoutUnit shadowLeft;
-        LayoutUnit shadowRight;
-        style()->getBoxShadowHorizontalExtent(shadowLeft, shadowRight);
-        LayoutUnit boxWidth = width();
-        LayoutUnit minInsetRightShadowExtent = std::min<LayoutUnit>(-insetShadowExtent.right(), std::min<LayoutUnit>(newBounds.width(), oldBounds.width()));
-        LayoutUnit borderWidth = std::max<LayoutUnit>(borderRight(), std::max<LayoutUnit>(valueForLength(style()->borderTopRightRadius().width(), boxWidth), valueForLength(style()->borderBottomRightRadius().width(), boxWidth)));
-        LayoutUnit decorationsLeftWidth = std::max<LayoutUnit>(-outlineStyle->outlineOffset(), borderWidth + minInsetRightShadowExtent) + std::max<LayoutUnit>(outlineWidth, -shadowLeft);
-        LayoutUnit decorationsRightWidth = std::max<LayoutUnit>(-outlineStyle->outlineOffset(), borderWidth + minInsetRightShadowExtent) + std::max<LayoutUnit>(outlineWidth, shadowRight);
-        LayoutRect rightRect(newBounds.x() + std::min(newBounds.width(), oldBounds.width()) - decorationsLeftWidth,
-            newBounds.y(),
-            deltaWidth + decorationsLeftWidth + decorationsRightWidth,
-            std::max(newBounds.height(), oldBounds.height()));
-        LayoutUnit right = std::min<LayoutUnit>(newBounds.maxX(), oldBounds.maxX());
-        if (rightRect.x() < right) {
-            rightRect.setWidth(std::min(rightRect.width(), right - rightRect.x()));
-            invalidatePaintUsingContainer(paintInvalidationContainer, rightRect, InvalidationIncremental);
-        }
-    }
-
-    LayoutUnit deltaHeight = absoluteValue(newBounds.height() - oldBounds.height());
-    if (deltaHeight) {
-        LayoutUnit shadowTop;
-        LayoutUnit shadowBottom;
-        style()->getBoxShadowVerticalExtent(shadowTop, shadowBottom);
-        LayoutUnit boxHeight = height();
-        LayoutUnit minInsetBottomShadowExtent = std::min<LayoutUnit>(-insetShadowExtent.bottom(), std::min<LayoutUnit>(newBounds.height(), oldBounds.height()));
-        LayoutUnit borderHeight = std::max<LayoutUnit>(borderBottom(), std::max<LayoutUnit>(valueForLength(style()->borderBottomLeftRadius().height(), boxHeight), valueForLength(style()->borderBottomRightRadius().height(), boxHeight)));
-        LayoutUnit decorationsTopHeight = std::max<LayoutUnit>(-outlineStyle->outlineOffset(), borderHeight + minInsetBottomShadowExtent) + std::max<LayoutUnit>(outlineWidth, -shadowTop);
-        LayoutUnit decorationsBottomHeight = std::max<LayoutUnit>(-outlineStyle->outlineOffset(), borderHeight + minInsetBottomShadowExtent) + std::max<LayoutUnit>(outlineWidth, shadowBottom);
-        LayoutRect bottomRect(newBounds.x(),
-            std::min(newBounds.maxY(), oldBounds.maxY()) - decorationsTopHeight,
-            std::max(newBounds.width(), oldBounds.width()),
-            deltaHeight + decorationsTopHeight + decorationsBottomHeight);
-        LayoutUnit bottom = std::min(newBounds.maxY(), oldBounds.maxY());
-        if (bottomRect.y() < bottom) {
-            bottomRect.setHeight(std::min(bottomRect.height(), bottom - bottomRect.y()));
-            invalidatePaintUsingContainer(paintInvalidationContainer, bottomRect, InvalidationIncremental);
-        }
-    }
+    // FIXME: Since we have accurate old border box size, we could do more accurate
+    // incremental invalidation instead of full invalidation.
+    return oldBorderBoxSize == size() ? invalidationReason : InvalidationBorderBoxChange;
 }
 
 void RenderBox::markForPaginationRelayoutIfNeeded(SubtreeLayoutScope& layoutScope)
@@ -4272,7 +4221,7 @@ void RenderBox::clearLayoutOverflow()
         return;
 
     if (!hasVisualOverflow() && contentsVisualOverflowRect().isEmpty()) {
-        m_overflow.clear();
+        clearAllOverflows();
         return;
     }
 
@@ -4670,6 +4619,30 @@ LayoutUnit RenderBox::offsetFromLogicalTopOfFirstPage() const
 
     RenderBlock* containerBlock = containingBlock();
     return containerBlock->offsetFromLogicalTopOfFirstPage() + logicalTop();
+}
+
+void RenderBox::savePreviousBorderBoxSizeIfNeeded()
+{
+    // If m_rareData is already created, always save.
+    if (!m_rareData) {
+        LayoutSize paintInvalidationSize = previousPaintInvalidationRect().size();
+
+        // Don't save old border box size if the paint rect is empty because we'll
+        // full invalidate once the paint rect becomes non-empty.
+        if (paintInvalidationSize.isEmpty())
+            return;
+
+        // Don't save old border box size if we can use size of the old paint rect
+        // as the old border box size in the next invalidation.
+        if (paintInvalidationSize == size())
+            return;
+
+        // We need the old border box size only when the box has background or box decorations.
+        if (!style()->hasBackground() && !style()->hasBoxDecorations())
+            return;
+    }
+
+    ensureRareData().m_previousBorderBoxSize = size();
 }
 
 } // namespace WebCore

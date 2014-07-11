@@ -1574,10 +1574,8 @@ const char* RenderObject::invalidationReasonToString(InvalidationReason reason) 
         return "full";
     case InvalidationBorderFitLines:
         return "border fit lines";
-    case InvalidationBorderRadius:
-        return "border radius";
-    case InvalidationBoundsChangeWithBackground:
-        return "bounds change with background";
+    case InvalidationBorderBoxChange:
+        return "border box change";
     case InvalidationBoundsChange:
         return "bounds change";
     case InvalidationLocationChange:

@@ -53,6 +53,7 @@ public:
         : m_inlineBoxWrapper(0)
         , m_overrideLogicalContentHeight(-1)
         , m_overrideLogicalContentWidth(-1)
+        , m_previousBorderBoxSize(-1, -1)
     {
     }
 
@@ -61,6 +62,9 @@ public:
 
     LayoutUnit m_overrideLogicalContentHeight;
     LayoutUnit m_overrideLogicalContentWidth;
+
+    // Set by RenderBox::updatePreviousBorderBoxSizeIfNeeded().
+    LayoutSize m_previousBorderBoxSize;
 };
 
 
@@ -665,7 +669,6 @@ protected:
     virtual InvalidationReason getPaintInvalidationReason(const RenderLayerModelObject* paintInvalidationContainer,
         const LayoutRect& oldBounds, const LayoutPoint& oldPositionFromPaintInvalidationContainer,
         const LayoutRect& newBounds, const LayoutPoint& newPositionFromPaintInvalidationContainer) OVERRIDE;
-    virtual void incrementallyInvalidatePaint(const RenderLayerModelObject* paintInvalidationContainer, const LayoutRect& oldBounds, const LayoutRect& newBounds) OVERRIDE;
 
 private:
     void updateShapeOutsideInfoAfterStyleChange(const RenderStyle&, const RenderStyle* oldStyle);
@@ -711,6 +714,8 @@ private:
             m_rareData = adoptPtr(new RenderBoxRareData());
         return *m_rareData.get();
     }
+
+    void savePreviousBorderBoxSizeIfNeeded();
 
 private:
     // The width/height of the contents + borders + padding.  The x/y location is relative to our container (which is not always our parent).

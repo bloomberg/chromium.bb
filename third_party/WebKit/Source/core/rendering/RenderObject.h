@@ -114,8 +114,7 @@ enum InvalidationReason {
     InvalidationIncremental,
     InvalidationFull,
     InvalidationBorderFitLines,
-    InvalidationBorderRadius,
-    InvalidationBoundsChangeWithBackground,
+    InvalidationBorderBoxChange,
     InvalidationBoundsChange,
     InvalidationLocationChange,
     InvalidationScroll,
@@ -1090,7 +1089,7 @@ protected:
     virtual InvalidationReason getPaintInvalidationReason(const RenderLayerModelObject* paintInvalidationContainer,
         const LayoutRect& oldBounds, const LayoutPoint& oldPositionFromPaintInvalidationContainer,
         const LayoutRect& newBounds, const LayoutPoint& newPositionFromPaintInvalidationContainer);
-    virtual void incrementallyInvalidatePaint(const RenderLayerModelObject* paintInvalidationContainer, const LayoutRect& oldBounds, const LayoutRect& newBounds);
+    void incrementallyInvalidatePaint(const RenderLayerModelObject* paintInvalidationContainer, const LayoutRect& oldBounds, const LayoutRect& newBounds);
     void fullyInvalidatePaint(const RenderLayerModelObject* paintInvalidationContainer, InvalidationReason, const LayoutRect& oldBounds, const LayoutRect& newBounds);
 
 private:
