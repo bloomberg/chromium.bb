@@ -165,6 +165,18 @@ VideoPlayer.prototype.prepare = function(videos) {
     }.wrap(null));
   closeButton.addEventListener('mousedown', preventDefault);
 
+  var castButton = document.querySelector('.cast-button');
+  cr.ui.decorate(castButton, cr.ui.MenuButton);
+  castButton.addEventListener(
+    'click',
+    function(event) {
+      event.stopPropagation();
+    }.wrap(null));
+  castButton.addEventListener('mousedown', preventDefault);
+
+  var menu = document.querySelector('#cast-menu');
+  cr.ui.decorate(menu, cr.ui.Menu);
+
   this.controls_ = new FullWindowVideoControls(
       document.querySelector('#video-player'),
       document.querySelector('#video-container'),
@@ -343,6 +355,28 @@ VideoPlayer.prototype.advance_ = function(direction) {
 VideoPlayer.prototype.reloadCurrentVideo_ = function(opt_callback) {
   var currentVideo = this.videos_[this.currentPos_];
   this.loadVideo_(currentVideo.fileUrl, currentVideo.entry.name, opt_callback);
+};
+
+/**
+ * Set the list of casts.
+ * @param {Array.<Object>} casts List of casts.
+ */
+VideoPlayer.prototype.setCastList = function(casts) {
+  var button = document.querySelector('.cast-button');
+  var menu = document.querySelector('#cast-menu');
+  menu.innerHTML = '';
+
+  if (casts.length === 0) {
+    button.classList.add('hidden');
+    return;
+  }
+
+  for (var i = 0; i < casts.length; i++) {
+    var item = new cr.ui.MenuItem();
+    item.textContent = casts[i].name;
+    menu.appendChild(item);
+  }
+  button.classList.remove('hidden');
 };
 
 /**

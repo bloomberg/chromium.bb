@@ -13,12 +13,27 @@
 //<include src="../../../webui/resources/js/cr.js"/>
 //<include src="../../../webui/resources/js/load_time_data.js"/>
 
+//<include src="../../../webui/resources/js/event_tracker.js"/>
+
+//<include src="../../../webui/resources/js/cr/ui.js"/>
+//<include src="../../../webui/resources/js/cr/event_target.js"/>
+
+//<include src="../../../webui/resources/js/cr/ui/position_util.js"/>
+//<include src="../../../webui/resources/js/cr/ui/menu_item.js"/>
+//<include src="../../../webui/resources/js/cr/ui/menu.js"/>
+//<include src="../../../webui/resources/js/cr/ui/menu_button.js"/>
+//<include src="../../../webui/resources/js/cr/ui/context_menu_handler.js"/>
+
 (function() {
 'use strict';
 
 //<include src="../../file_manager/common/js/util.js"/>
 //<include src="../../file_manager/foreground/js/media/media_controls.js"/>
 //<include src="../../file_manager/foreground/js/media/mouse_inactivity_watcher.js"/>
+
+//<include src="cast/cast_extension_discoverer.js"/>
+//<include src="cast/load_cast_extension_api.js"/>
+//<include src="cast/caster.js"/>
 
 //<include src="video_player.js"/>
 

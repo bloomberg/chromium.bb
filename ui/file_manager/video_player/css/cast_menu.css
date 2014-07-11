@@ -1,0 +1,28 @@
+/* Copyright 2014 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file. */
+
+.cast-menu {
+  border: 1px solid #7f7f7f;
+  border-radius: 1px;
+  min-width: 120px;
+  padding: 0;
+  position: absolute;
+  z-index: 1000;
+}
+
+.cast-menu.hidden {
+  display: none;
+}
+
+.cast-menu > :not(hr) {
+  background-color: #fff;
+  font-size: 12px;
+  padding: 5px 10px; /* top&bottom, left&right */
+  text-overflow: ellipsis;
+}
+
+.cast-menu > :not(hr):hover {
+  background-color: #eee;
+}
+

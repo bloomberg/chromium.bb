@@ -69,6 +69,16 @@
   width: 32px;
 }
 
+#video-player > .header > button.cast-button {
+  background-image: -webkit-image-set(
+      url(../images/100/cast_off.png) 1x,
+      url(../images/200/cast_off.png) 2x);
+}
+
+#video-player > .header > button.cast-button.hidden {
+  display: none;
+}
+
 #video-player > .header > button.minimize-button {
   background-image: -webkit-image-set(
       url(chrome://resources/images/apps/topbar_button_minimize.png) 1x,
