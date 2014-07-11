@@ -14,6 +14,7 @@
 #include "cc/quads/debug_border_draw_quad.h"
 #include "cc/quads/io_surface_draw_quad.h"
 #include "cc/quads/picture_draw_quad.h"
+#include "cc/quads/render_pass.h"
 #include "cc/quads/render_pass_draw_quad.h"
 #include "cc/quads/solid_color_draw_quad.h"
 #include "cc/quads/stream_video_draw_quad.h"
@@ -60,7 +61,7 @@ TEST(DrawQuadTest, CopySharedQuadState) {
   EXPECT_EQ(blend_mode, copy->blend_mode);
 }
 
-scoped_ptr<SharedQuadState> CreateSharedQuadState() {
+SharedQuadState* CreateSharedQuadState(RenderPass* render_pass) {
   gfx::Transform quad_transform = gfx::Transform(1.0, 0.0, 0.5, 1.0, 0.5, 0.0);
   gfx::Size content_bounds(26, 28);
   gfx::Rect visible_content_rect(10, 12, 14, 16);
@@ -70,7 +71,7 @@ scoped_ptr<SharedQuadState> CreateSharedQuadState() {
   int sorting_context_id = 65536;
   SkXfermode::Mode blend_mode = SkXfermode::kSrcOver_Mode;
 
-  scoped_ptr<SharedQuadState> state(new SharedQuadState);
+  SharedQuadState* state = render_pass->CreateAndAppendSharedQuadState();
   state->SetAll(quad_transform,
                 content_bounds,
                 visible_content_rect,
@@ -79,7 +80,7 @@ scoped_ptr<SharedQuadState> CreateSharedQuadState() {
                 opacity,
                 blend_mode,
                 sorting_context_id);
-  return state.Pass();
+  return state;
 }
 
 void CompareDrawQuad(DrawQuad* quad,
@@ -93,10 +94,12 @@ void CompareDrawQuad(DrawQuad* quad,
   EXPECT_EQ(copy_shared_state, copy->shared_quad_state);
 }
 
-#define CREATE_SHARED_STATE()                                         \
-  scoped_ptr<SharedQuadState> shared_state(CreateSharedQuadState());  \
-  scoped_ptr<SharedQuadState> copy_shared_state(new SharedQuadState); \
-  copy_shared_state->CopyFrom(shared_state.get());
+#define CREATE_SHARED_STATE()                                              \
+  scoped_ptr<RenderPass> render_pass = RenderPass::Create();               \
+  SharedQuadState* shared_state(CreateSharedQuadState(render_pass.get())); \
+  SharedQuadState* copy_shared_state =                                     \
+      render_pass->CreateAndAppendSharedQuadState();                       \
+  copy_shared_state->CopyFrom(shared_state);
 
 #define QUAD_DATA \
     gfx::Rect quad_rect(30, 40, 50, 60); \
@@ -104,235 +107,298 @@ void CompareDrawQuad(DrawQuad* quad,
     gfx::Rect ALLOW_UNUSED quad_opaque_rect(60, 55, 10, 10); \
     bool ALLOW_UNUSED needs_blending = true;
 
-#define SETUP_AND_COPY_QUAD_NEW(Type, quad) \
-    scoped_ptr<DrawQuad> copy_new(quad_new->Copy(copy_shared_state.get())); \
-    CompareDrawQuad(quad_new.get(), copy_new.get(), copy_shared_state.get()); \
-    const Type* ALLOW_UNUSED copy_quad = Type::MaterialCast(copy_new.get());
+#define SETUP_AND_COPY_QUAD_NEW(Type, quad)                                \
+  DrawQuad* copy_new =                                                     \
+      render_pass->CopyFromAndAppendDrawQuad(quad_new, copy_shared_state); \
+  CompareDrawQuad(quad_new, copy_new, copy_shared_state);                  \
+  const Type* ALLOW_UNUSED copy_quad = Type::MaterialCast(copy_new);
 
-#define SETUP_AND_COPY_QUAD_ALL(Type, quad) \
-    scoped_ptr<DrawQuad> copy_all(quad_all->Copy(copy_shared_state.get())); \
-    CompareDrawQuad(quad_all.get(), copy_all.get(), copy_shared_state.get()); \
-    copy_quad = Type::MaterialCast(copy_all.get());
+#define SETUP_AND_COPY_QUAD_ALL(Type, quad)                                \
+  DrawQuad* copy_all =                                                     \
+      render_pass->CopyFromAndAppendDrawQuad(quad_all, copy_shared_state); \
+  CompareDrawQuad(quad_all, copy_all, copy_shared_state);                  \
+  copy_quad = Type::MaterialCast(copy_all);
 
-#define SETUP_AND_COPY_QUAD_NEW_1(Type, quad, a) \
-    scoped_ptr<DrawQuad> copy_new(quad_new->Copy(copy_shared_state.get(), a)); \
-    CompareDrawQuad(quad_new.get(), copy_new.get(), copy_shared_state.get()); \
-    const Type* ALLOW_UNUSED copy_quad = Type::MaterialCast(copy_new.get());
+#define SETUP_AND_COPY_QUAD_NEW_RP(Type, quad, a)                        \
+  DrawQuad* copy_new = render_pass->CopyFromAndAppendRenderPassDrawQuad( \
+      quad_new, copy_shared_state, a);                                   \
+  CompareDrawQuad(quad_new, copy_new, copy_shared_state);                \
+  const Type* ALLOW_UNUSED copy_quad = Type::MaterialCast(copy_new);
 
-#define SETUP_AND_COPY_QUAD_ALL_1(Type, quad, a) \
-    scoped_ptr<DrawQuad> copy_all(quad_all->Copy(copy_shared_state.get(), a)); \
-    CompareDrawQuad(quad_all.get(), copy_all.get(), copy_shared_state.get()); \
-    copy_quad = Type::MaterialCast(copy_all.get());
+#define SETUP_AND_COPY_QUAD_ALL_RP(Type, quad, a)                        \
+  DrawQuad* copy_all = render_pass->CopyFromAndAppendRenderPassDrawQuad( \
+      quad_all, copy_shared_state, a);                                   \
+  CompareDrawQuad(quad_all, copy_all, copy_shared_state);                \
+  copy_quad = Type::MaterialCast(copy_all);
 
-#define CREATE_QUAD_1_NEW(Type, a) \
-    scoped_ptr<Type> quad_new(Type::Create()); \
-    { \
-      QUAD_DATA \
-      quad_new->SetNew(shared_state.get(), quad_rect, a); \
-    } \
-    SETUP_AND_COPY_QUAD_NEW(Type, quad_new);
+#define CREATE_QUAD_1_NEW(Type, a)                               \
+  Type* quad_new = render_pass->CreateAndAppendDrawQuad<Type>(); \
+  { QUAD_DATA quad_new->SetNew(shared_state, quad_rect, a); }    \
+  SETUP_AND_COPY_QUAD_NEW(Type, quad_new);
 
-#define CREATE_QUAD_1_ALL(Type, a) \
-    scoped_ptr<Type> quad_all(Type::Create()); \
-    { \
-      QUAD_DATA \
-      quad_all->SetAll(shared_state.get(), quad_rect, quad_opaque_rect, \
-                       quad_visible_rect, needs_blending, a); \
-    } \
-    SETUP_AND_COPY_QUAD_ALL(Type, quad_all);
+#define CREATE_QUAD_1_ALL(Type, a)                               \
+  Type* quad_all = render_pass->CreateAndAppendDrawQuad<Type>(); \
+  {                                                              \
+    QUAD_DATA quad_all->SetAll(shared_state,                     \
+                               quad_rect,                        \
+                               quad_opaque_rect,                 \
+                               quad_visible_rect,                \
+                               needs_blending,                   \
+                               a);                               \
+  }                                                              \
+  SETUP_AND_COPY_QUAD_ALL(Type, quad_all);
 
-#define CREATE_QUAD_2_NEW(Type, a, b) \
-    scoped_ptr<Type> quad_new(Type::Create()); \
-    { \
-      QUAD_DATA \
-      quad_new->SetNew(shared_state.get(), quad_rect, a, b); \
-    } \
-    SETUP_AND_COPY_QUAD_NEW(Type, quad_new);
+#define CREATE_QUAD_2_NEW(Type, a, b)                            \
+  Type* quad_new = render_pass->CreateAndAppendDrawQuad<Type>(); \
+  { QUAD_DATA quad_new->SetNew(shared_state, quad_rect, a, b); } \
+  SETUP_AND_COPY_QUAD_NEW(Type, quad_new);
 
-#define CREATE_QUAD_2_ALL(Type, a, b) \
-    scoped_ptr<Type> quad_all(Type::Create()); \
-    { \
-      QUAD_DATA \
-      quad_all->SetAll(shared_state.get(), quad_rect, quad_opaque_rect, \
-                       quad_visible_rect, needs_blending, a, b); \
-    } \
-    SETUP_AND_COPY_QUAD_ALL(Type, quad_all);
+#define CREATE_QUAD_2_ALL(Type, a, b)                            \
+  Type* quad_all = render_pass->CreateAndAppendDrawQuad<Type>(); \
+  {                                                              \
+    QUAD_DATA quad_all->SetAll(shared_state,                     \
+                               quad_rect,                        \
+                               quad_opaque_rect,                 \
+                               quad_visible_rect,                \
+                               needs_blending,                   \
+                               a,                                \
+                               b);                               \
+  }                                                              \
+  SETUP_AND_COPY_QUAD_ALL(Type, quad_all);
 
-#define CREATE_QUAD_3_NEW(Type, a, b, c) \
-    scoped_ptr<Type> quad_new(Type::Create()); \
-    { \
-      QUAD_DATA \
-      quad_new->SetNew(shared_state.get(), quad_rect, a, b, c); \
-    } \
-    SETUP_AND_COPY_QUAD_NEW(Type, quad_new);
+#define CREATE_QUAD_3_NEW(Type, a, b, c)                            \
+  Type* quad_new = render_pass->CreateAndAppendDrawQuad<Type>();    \
+  { QUAD_DATA quad_new->SetNew(shared_state, quad_rect, a, b, c); } \
+  SETUP_AND_COPY_QUAD_NEW(Type, quad_new);
 
-#define CREATE_QUAD_3_ALL(Type, a, b, c) \
-    scoped_ptr<Type> quad_all(Type::Create()); \
-    { \
-      QUAD_DATA \
-      quad_all->SetAll(shared_state.get(), quad_rect, quad_opaque_rect, \
-                       quad_visible_rect, needs_blending, a, b, c); \
-    } \
-    SETUP_AND_COPY_QUAD_ALL(Type, quad_all);
+#define CREATE_QUAD_3_ALL(Type, a, b, c)                         \
+  Type* quad_all = render_pass->CreateAndAppendDrawQuad<Type>(); \
+  {                                                              \
+    QUAD_DATA quad_all->SetAll(shared_state,                     \
+                               quad_rect,                        \
+                               quad_opaque_rect,                 \
+                               quad_visible_rect,                \
+                               needs_blending,                   \
+                               a,                                \
+                               b,                                \
+                               c);                               \
+  }                                                              \
+  SETUP_AND_COPY_QUAD_ALL(Type, quad_all);
 
-#define CREATE_QUAD_4_NEW(Type, a, b, c, d) \
-    scoped_ptr<Type> quad_new(Type::Create()); \
-    { \
-      QUAD_DATA \
-      quad_new->SetNew(shared_state.get(), quad_rect, a, b, c, d); \
-    } \
-    SETUP_AND_COPY_QUAD_NEW(Type, quad_new);
+#define CREATE_QUAD_4_NEW(Type, a, b, c, d)                            \
+  Type* quad_new = render_pass->CreateAndAppendDrawQuad<Type>();       \
+  { QUAD_DATA quad_new->SetNew(shared_state, quad_rect, a, b, c, d); } \
+  SETUP_AND_COPY_QUAD_NEW(Type, quad_new);
 
-#define CREATE_QUAD_4_ALL(Type, a, b, c, d) \
-    scoped_ptr<Type> quad_all(Type::Create()); \
-    { \
-      QUAD_DATA \
-      quad_all->SetAll(shared_state.get(), quad_rect, quad_opaque_rect, \
-                       quad_visible_rect, needs_blending, a, b, c, d); \
-    } \
-    SETUP_AND_COPY_QUAD_ALL(Type, quad_all);
+#define CREATE_QUAD_4_ALL(Type, a, b, c, d)                      \
+  Type* quad_all = render_pass->CreateAndAppendDrawQuad<Type>(); \
+  {                                                              \
+    QUAD_DATA quad_all->SetAll(shared_state,                     \
+                               quad_rect,                        \
+                               quad_opaque_rect,                 \
+                               quad_visible_rect,                \
+                               needs_blending,                   \
+                               a,                                \
+                               b,                                \
+                               c,                                \
+                               d);                               \
+  }                                                              \
+  SETUP_AND_COPY_QUAD_ALL(Type, quad_all);
 
-#define CREATE_QUAD_5_NEW(Type, a, b, c, d, e) \
-    scoped_ptr<Type> quad_new(Type::Create()); \
-    { \
-      QUAD_DATA \
-      quad_new->SetNew(shared_state.get(), quad_rect, a, b, c, d, e); \
-    } \
-    SETUP_AND_COPY_QUAD_NEW(Type, quad_new);
+#define CREATE_QUAD_5_NEW(Type, a, b, c, d, e)                            \
+  Type* quad_new = render_pass->CreateAndAppendDrawQuad<Type>();          \
+  { QUAD_DATA quad_new->SetNew(shared_state, quad_rect, a, b, c, d, e); } \
+  SETUP_AND_COPY_QUAD_NEW(Type, quad_new);
 
-#define CREATE_QUAD_5_ALL(Type, a, b, c, d, e) \
-    scoped_ptr<Type> quad_all(Type::Create()); \
-    { \
-      QUAD_DATA \
-      quad_all->SetAll(shared_state.get(), quad_rect, quad_opaque_rect, \
-                       quad_visible_rect, needs_blending, a, b, c, d, e); \
-    } \
-    SETUP_AND_COPY_QUAD_ALL(Type, quad_all);
+#define CREATE_QUAD_5_ALL(Type, a, b, c, d, e)                   \
+  Type* quad_all = render_pass->CreateAndAppendDrawQuad<Type>(); \
+  {                                                              \
+    QUAD_DATA quad_all->SetAll(shared_state,                     \
+                               quad_rect,                        \
+                               quad_opaque_rect,                 \
+                               quad_visible_rect,                \
+                               needs_blending,                   \
+                               a,                                \
+                               b,                                \
+                               c,                                \
+                               d,                                \
+                               e);                               \
+  }                                                              \
+  SETUP_AND_COPY_QUAD_ALL(Type, quad_all);
 
-#define CREATE_QUAD_5_NEW_1(Type, a, b, c, d, e, copy_a) \
-    scoped_ptr<Type> quad_new(Type::Create()); \
-    { \
-      QUAD_DATA \
-      quad_new->SetNew(shared_state.get(), quad_rect, a, b, c, d, e); \
-    } \
-    SETUP_AND_COPY_QUAD_NEW_1(Type, quad_new, copy_a);
+#define CREATE_QUAD_5_NEW_RP(Type, a, b, c, d, e, copy_a)                 \
+  Type* quad_new = render_pass->CreateAndAppendDrawQuad<Type>();          \
+  { QUAD_DATA quad_new->SetNew(shared_state, quad_rect, a, b, c, d, e); } \
+  SETUP_AND_COPY_QUAD_NEW_RP(Type, quad_new, copy_a);
 
-#define CREATE_QUAD_5_ALL_1(Type, a, b, c, d, e, copy_a) \
-    scoped_ptr<Type> quad_all(Type::Create()); \
-    { \
-      QUAD_DATA \
-      quad_all->SetAll(shared_state.get(), quad_rect, quad_opaque_rect, \
-                       quad_visible_rect, needs_blending, a, b, c, d, e); \
-    } \
-    SETUP_AND_COPY_QUAD_ALL_1(Type, quad_all, copy_a);
+#define CREATE_QUAD_5_ALL_RP(Type, a, b, c, d, e, copy_a)        \
+  Type* quad_all = render_pass->CreateAndAppendDrawQuad<Type>(); \
+  {                                                              \
+    QUAD_DATA quad_all->SetAll(shared_state,                     \
+                               quad_rect,                        \
+                               quad_opaque_rect,                 \
+                               quad_visible_rect,                \
+                               needs_blending,                   \
+                               a,                                \
+                               b,                                \
+                               c,                                \
+                               d,                                \
+                               e);                               \
+  }                                                              \
+  SETUP_AND_COPY_QUAD_ALL_RP(Type, quad_all, copy_a);
 
-#define CREATE_QUAD_6_NEW(Type, a, b, c, d, e, f) \
-    scoped_ptr<Type> quad_new(Type::Create()); \
-    { \
-      QUAD_DATA \
-      quad_new->SetNew(shared_state.get(), quad_rect, a, b, c, d, e, f); \
-    } \
-    SETUP_AND_COPY_QUAD_NEW(Type, quad_new);
+#define CREATE_QUAD_6_NEW(Type, a, b, c, d, e, f)                            \
+  Type* quad_new = render_pass->CreateAndAppendDrawQuad<Type>();             \
+  { QUAD_DATA quad_new->SetNew(shared_state, quad_rect, a, b, c, d, e, f); } \
+  SETUP_AND_COPY_QUAD_NEW(Type, quad_new);
 
-#define CREATE_QUAD_6_ALL(Type, a, b, c, d, e, f) \
-    scoped_ptr<Type> quad_all(Type::Create()); \
-    { \
-      QUAD_DATA \
-      quad_all->SetAll(shared_state.get(), quad_rect, quad_opaque_rect, \
-                       quad_visible_rect, needs_blending, a, b, c, d, e, f); \
-    } \
-    SETUP_AND_COPY_QUAD_ALL(Type, quad_all);
+#define CREATE_QUAD_6_ALL(Type, a, b, c, d, e, f)                \
+  Type* quad_all = render_pass->CreateAndAppendDrawQuad<Type>(); \
+  {                                                              \
+    QUAD_DATA quad_all->SetAll(shared_state,                     \
+                               quad_rect,                        \
+                               quad_opaque_rect,                 \
+                               quad_visible_rect,                \
+                               needs_blending,                   \
+                               a,                                \
+                               b,                                \
+                               c,                                \
+                               d,                                \
+                               e,                                \
+                               f);                               \
+  }                                                              \
+  SETUP_AND_COPY_QUAD_ALL(Type, quad_all);
 
-#define CREATE_QUAD_7_NEW(Type, a, b, c, d, e, f, g) \
-    scoped_ptr<Type> quad_new(Type::Create()); \
-    { \
-      QUAD_DATA \
-      quad_new->SetNew(shared_state.get(), quad_rect, a, b, c, d, e, f, g); \
-    } \
-    SETUP_AND_COPY_QUAD_NEW(Type, quad_new);
+#define CREATE_QUAD_7_NEW(Type, a, b, c, d, e, f, g)                          \
+  Type* quad_new = render_pass->CreateAndAppendDrawQuad<Type>();              \
+  {                                                                           \
+    QUAD_DATA quad_new->SetNew(shared_state, quad_rect, a, b, c, d, e, f, g); \
+  }                                                                           \
+  SETUP_AND_COPY_QUAD_NEW(Type, quad_new);
 
-#define CREATE_QUAD_7_ALL(Type, a, b, c, d, e, f, g) \
-    scoped_ptr<Type> quad_all(Type::Create()); \
-    { \
-      QUAD_DATA \
-      quad_all->SetAll(shared_state.get(), quad_rect, quad_opaque_rect, \
-                       quad_visible_rect, needs_blending, \
-                       a, b, c, d, e, f, g); \
-    } \
-    SETUP_AND_COPY_QUAD_ALL(Type, quad_all);
+#define CREATE_QUAD_7_ALL(Type, a, b, c, d, e, f, g)             \
+  Type* quad_all = render_pass->CreateAndAppendDrawQuad<Type>(); \
+  {                                                              \
+    QUAD_DATA quad_all->SetAll(shared_state,                     \
+                               quad_rect,                        \
+                               quad_opaque_rect,                 \
+                               quad_visible_rect,                \
+                               needs_blending,                   \
+                               a,                                \
+                               b,                                \
+                               c,                                \
+                               d,                                \
+                               e,                                \
+                               f,                                \
+                               g);                               \
+  }                                                              \
+  SETUP_AND_COPY_QUAD_ALL(Type, quad_all);
 
-#define CREATE_QUAD_7_NEW_1(Type, a, b, c, d, e, f, g, copy_a) \
-    scoped_ptr<Type> quad_new(Type::Create()); \
-    { \
-      QUAD_DATA \
-      quad_new->SetNew(shared_state.get(), quad_rect, a, b, c, d, e, f, g); \
-    } \
-    SETUP_AND_COPY_QUAD_NEW_1(Type, quad_new, copy_a);
+#define CREATE_QUAD_7_NEW_RP(Type, a, b, c, d, e, f, g, copy_a)               \
+  Type* quad_new = render_pass->CreateAndAppendDrawQuad<Type>();              \
+  {                                                                           \
+    QUAD_DATA quad_new->SetNew(shared_state, quad_rect, a, b, c, d, e, f, g); \
+  }                                                                           \
+  SETUP_AND_COPY_QUAD_NEW_RP(Type, quad_new, copy_a);
 
-#define CREATE_QUAD_7_ALL_1(Type, a, b, c, d, e, f, g, copy_a) \
-    scoped_ptr<Type> quad_all(Type::Create()); \
-    { \
-      QUAD_DATA \
-      quad_all->SetAll(shared_state.get(), quad_rect, quad_opaque_rect, \
-                       quad_visible_rect, needs_blending, \
-                       a, b, c, d, e, f, g); \
-    } \
-    SETUP_AND_COPY_QUAD_ALL_1(Type, quad_all, copy_a);
+#define CREATE_QUAD_7_ALL_RP(Type, a, b, c, d, e, f, g, copy_a)  \
+  Type* quad_all = render_pass->CreateAndAppendDrawQuad<Type>(); \
+  {                                                              \
+    QUAD_DATA quad_all->SetAll(shared_state,                     \
+                               quad_rect,                        \
+                               quad_opaque_rect,                 \
+                               quad_visible_rect,                \
+                               needs_blending,                   \
+                               a,                                \
+                               b,                                \
+                               c,                                \
+                               d,                                \
+                               e,                                \
+                               f,                                \
+                               g);                               \
+  }                                                              \
+  SETUP_AND_COPY_QUAD_ALL_RP(Type, quad_all, copy_a);
 
-#define CREATE_QUAD_8_NEW(Type, a, b, c, d, e, f, g, h) \
-    scoped_ptr<Type> quad_new(Type::Create()); \
-    { \
-      QUAD_DATA \
-      quad_new->SetNew(shared_state.get(), quad_rect, a, b, c, d, e, f, g, h); \
-    } \
-    SETUP_AND_COPY_QUAD_NEW(Type, quad_new);
+#define CREATE_QUAD_8_NEW(Type, a, b, c, d, e, f, g, h)          \
+  Type* quad_new = render_pass->CreateAndAppendDrawQuad<Type>(); \
+  {                                                              \
+    QUAD_DATA quad_new->SetNew(                                  \
+        shared_state, quad_rect, a, b, c, d, e, f, g, h);        \
+  }                                                              \
+  SETUP_AND_COPY_QUAD_NEW(Type, quad_new);
 
-#define CREATE_QUAD_8_ALL(Type, a, b, c, d, e, f, g, h) \
-    scoped_ptr<Type> quad_all(Type::Create()); \
-    { \
-      QUAD_DATA \
-      quad_all->SetAll(shared_state.get(), quad_rect, quad_opaque_rect, \
-                       quad_visible_rect, needs_blending, \
-                       a, b, c, d, e, f, g, h); \
-    } \
-    SETUP_AND_COPY_QUAD_ALL(Type, quad_all);
+#define CREATE_QUAD_8_ALL(Type, a, b, c, d, e, f, g, h)          \
+  Type* quad_all = render_pass->CreateAndAppendDrawQuad<Type>(); \
+  {                                                              \
+    QUAD_DATA quad_all->SetAll(shared_state,                     \
+                               quad_rect,                        \
+                               quad_opaque_rect,                 \
+                               quad_visible_rect,                \
+                               needs_blending,                   \
+                               a,                                \
+                               b,                                \
+                               c,                                \
+                               d,                                \
+                               e,                                \
+                               f,                                \
+                               g,                                \
+                               h);                               \
+  }                                                              \
+  SETUP_AND_COPY_QUAD_ALL(Type, quad_all);
 
-#define CREATE_QUAD_8_NEW_1(Type, a, b, c, d, e, f, g, h, copy_a) \
-    scoped_ptr<Type> quad_new(Type::Create()); \
-    { \
-      QUAD_DATA \
-      quad_new->SetNew(shared_state.get(), quad_rect, a, b, c, d, e, f, g, h); \
-    } \
-    SETUP_AND_COPY_QUAD_NEW_1(Type, quad_new, copy_a);
+#define CREATE_QUAD_8_NEW_RP(Type, a, b, c, d, e, f, g, h, copy_a) \
+  Type* quad_new = render_pass->CreateAndAppendDrawQuad<Type>();   \
+  {                                                                \
+    QUAD_DATA quad_new->SetNew(                                    \
+        shared_state, quad_rect, a, b, c, d, e, f, g, h);          \
+  }                                                                \
+  SETUP_AND_COPY_QUAD_NEW_RP(Type, quad_new, copy_a);
 
-#define CREATE_QUAD_8_ALL_1(Type, a, b, c, d, e, f, g, h, copy_a) \
-    scoped_ptr<Type> quad_all(Type::Create()); \
-    { \
-      QUAD_DATA \
-      quad_all->SetAll(shared_state.get(), quad_rect, quad_opaque_rect, \
-                       quad_visible_rect, needs_blending, \
-                       a, b, c, d, e, f, g, h); \
-    } \
-    SETUP_AND_COPY_QUAD_ALL_1(Type, quad_all, copy_a);
+#define CREATE_QUAD_8_ALL_RP(Type, a, b, c, d, e, f, g, h, copy_a) \
+  Type* quad_all = render_pass->CreateAndAppendDrawQuad<Type>();   \
+  {                                                                \
+    QUAD_DATA quad_all->SetAll(shared_state,                       \
+                               quad_rect,                          \
+                               quad_opaque_rect,                   \
+                               quad_visible_rect,                  \
+                               needs_blending,                     \
+                               a,                                  \
+                               b,                                  \
+                               c,                                  \
+                               d,                                  \
+                               e,                                  \
+                               f,                                  \
+                               g,                                  \
+                               h);                                 \
+  }                                                                \
+  SETUP_AND_COPY_QUAD_ALL_RP(Type, quad_all, copy_a);
 
-#define CREATE_QUAD_9_NEW(Type, a, b, c, d, e, f, g, h, i) \
-    scoped_ptr<Type> quad_new(Type::Create()); \
-    { \
-      QUAD_DATA \
-      quad_new->SetNew(shared_state.get(), quad_rect, \
-                       a, b, c, d, e, f, g, h, i); \
-    } \
-    SETUP_AND_COPY_QUAD_NEW(Type, quad_new);
+#define CREATE_QUAD_9_NEW(Type, a, b, c, d, e, f, g, h, i)       \
+  Type* quad_new = render_pass->CreateAndAppendDrawQuad<Type>(); \
+  {                                                              \
+    QUAD_DATA quad_new->SetNew(                                  \
+        shared_state, quad_rect, a, b, c, d, e, f, g, h, i);     \
+  }                                                              \
+  SETUP_AND_COPY_QUAD_NEW(Type, quad_new);
 
 #define CREATE_QUAD_9_ALL(Type, a, b, c, d, e, f, g, h, i) \
-    scoped_ptr<Type> quad_all(Type::Create()); \
-    { \
-      QUAD_DATA \
-      quad_all->SetAll(shared_state.get(), quad_rect, quad_opaque_rect, \
-                       quad_visible_rect, needs_blending, \
-                       a, b, c, d, e, f, g, h, i); \
-    } \
-    SETUP_AND_COPY_QUAD_ALL(Type, quad_all);
+  {                                                        \
+    QUAD_DATA quad_all->SetAll(shared_state,               \
+                               quad_rect,                  \
+                               quad_opaque_rect,           \
+                               quad_visible_rect,          \
+                               needs_blending,             \
+                               a,                          \
+                               b,                          \
+                               c,                          \
+                               d,                          \
+                               e,                          \
+                               f,                          \
+                               g,                          \
+                               h,                          \
+                               i);                         \
+  }                                                        \
+  SETUP_AND_COPY_QUAD_ALL(Type, quad_all);
 
 TEST(DrawQuadTest, CopyCheckerboardDrawQuad) {
   gfx::Rect visible_rect(40, 50, 30, 20);
@@ -411,16 +477,16 @@ TEST(DrawQuadTest, CopyRenderPassDrawQuad) {
   RenderPass::Id copied_render_pass_id(235, 11);
   CREATE_SHARED_STATE();
 
-  CREATE_QUAD_8_NEW_1(RenderPassDrawQuad,
-                      visible_rect,
-                      render_pass_id,
-                      is_replica,
-                      mask_resource_id,
-                      contents_changed_since_last_frame,
-                      mask_u_v_rect,
-                      filters,
-                      background_filters,
-                      copied_render_pass_id);
+  CREATE_QUAD_8_NEW_RP(RenderPassDrawQuad,
+                       visible_rect,
+                       render_pass_id,
+                       is_replica,
+                       mask_resource_id,
+                       contents_changed_since_last_frame,
+                       mask_u_v_rect,
+                       filters,
+                       background_filters,
+                       copied_render_pass_id);
   EXPECT_EQ(DrawQuad::RENDER_PASS, copy_quad->material);
   EXPECT_RECT_EQ(visible_rect, copy_quad->visible_rect);
   EXPECT_EQ(copied_render_pass_id, copy_quad->render_pass_id);
@@ -432,15 +498,15 @@ TEST(DrawQuadTest, CopyRenderPassDrawQuad) {
   EXPECT_EQ(filters, copy_quad->filters);
   EXPECT_EQ(background_filters, copy_quad->background_filters);
 
-  CREATE_QUAD_7_ALL_1(RenderPassDrawQuad,
-                      render_pass_id,
-                      is_replica,
-                      mask_resource_id,
-                      contents_changed_since_last_frame,
-                      mask_u_v_rect,
-                      filters,
-                      background_filters,
-                      copied_render_pass_id);
+  CREATE_QUAD_7_ALL_RP(RenderPassDrawQuad,
+                       render_pass_id,
+                       is_replica,
+                       mask_resource_id,
+                       contents_changed_since_last_frame,
+                       mask_u_v_rect,
+                       filters,
+                       background_filters,
+                       copied_render_pass_id);
   EXPECT_EQ(DrawQuad::RENDER_PASS, copy_quad->material);
   EXPECT_EQ(copied_render_pass_id, copy_quad->render_pass_id);
   EXPECT_EQ(is_replica, copy_quad->is_replica);
@@ -709,7 +775,7 @@ TEST_F(DrawQuadIteratorTest, CheckerboardDrawQuad) {
 
   CREATE_SHARED_STATE();
   CREATE_QUAD_2_NEW(CheckerboardDrawQuad, visible_rect, color);
-  EXPECT_EQ(0, IterateAndCount(quad_new.get()));
+  EXPECT_EQ(0, IterateAndCount(quad_new));
 }
 
 TEST_F(DrawQuadIteratorTest, DebugBorderDrawQuad) {
@@ -719,7 +785,7 @@ TEST_F(DrawQuadIteratorTest, DebugBorderDrawQuad) {
 
   CREATE_SHARED_STATE();
   CREATE_QUAD_3_NEW(DebugBorderDrawQuad, visible_rect, color, width);
-  EXPECT_EQ(0, IterateAndCount(quad_new.get()));
+  EXPECT_EQ(0, IterateAndCount(quad_new));
 }
 
 TEST_F(DrawQuadIteratorTest, IOSurfaceDrawQuad) {
@@ -737,7 +803,7 @@ TEST_F(DrawQuadIteratorTest, IOSurfaceDrawQuad) {
                     resource_id,
                     orientation);
   EXPECT_EQ(resource_id, quad_new->io_surface_resource_id);
-  EXPECT_EQ(1, IterateAndCount(quad_new.get()));
+  EXPECT_EQ(1, IterateAndCount(quad_new));
   EXPECT_EQ(resource_id + 1, quad_new->io_surface_resource_id);
 }
 
@@ -757,21 +823,21 @@ TEST_F(DrawQuadIteratorTest, RenderPassDrawQuad) {
   RenderPass::Id copied_render_pass_id(235, 11);
 
   CREATE_SHARED_STATE();
-  CREATE_QUAD_8_NEW_1(RenderPassDrawQuad,
-                      visible_rect,
-                      render_pass_id,
-                      is_replica,
-                      mask_resource_id,
-                      contents_changed_since_last_frame,
-                      mask_u_v_rect,
-                      filters,
-                      background_filters,
-                      copied_render_pass_id);
+  CREATE_QUAD_8_NEW_RP(RenderPassDrawQuad,
+                       visible_rect,
+                       render_pass_id,
+                       is_replica,
+                       mask_resource_id,
+                       contents_changed_since_last_frame,
+                       mask_u_v_rect,
+                       filters,
+                       background_filters,
+                       copied_render_pass_id);
   EXPECT_EQ(mask_resource_id, quad_new->mask_resource_id);
-  EXPECT_EQ(1, IterateAndCount(quad_new.get()));
+  EXPECT_EQ(1, IterateAndCount(quad_new));
   EXPECT_EQ(mask_resource_id + 1, quad_new->mask_resource_id);
   quad_new->mask_resource_id = 0;
-  EXPECT_EQ(0, IterateAndCount(quad_new.get()));
+  EXPECT_EQ(0, IterateAndCount(quad_new));
   EXPECT_EQ(0u, quad_new->mask_resource_id);
 }
 
@@ -783,7 +849,7 @@ TEST_F(DrawQuadIteratorTest, SolidColorDrawQuad) {
   CREATE_SHARED_STATE();
   CREATE_QUAD_3_NEW(
       SolidColorDrawQuad, visible_rect, color, force_anti_aliasing_off);
-  EXPECT_EQ(0, IterateAndCount(quad_new.get()));
+  EXPECT_EQ(0, IterateAndCount(quad_new));
 }
 
 TEST_F(DrawQuadIteratorTest, StreamVideoDrawQuad) {
@@ -796,7 +862,7 @@ TEST_F(DrawQuadIteratorTest, StreamVideoDrawQuad) {
   CREATE_QUAD_4_NEW(
       StreamVideoDrawQuad, opaque_rect, visible_rect, resource_id, matrix);
   EXPECT_EQ(resource_id, quad_new->resource_id);
-  EXPECT_EQ(1, IterateAndCount(quad_new.get()));
+  EXPECT_EQ(1, IterateAndCount(quad_new));
   EXPECT_EQ(resource_id + 1, quad_new->resource_id);
 }
 
@@ -806,7 +872,7 @@ TEST_F(DrawQuadIteratorTest, SurfaceDrawQuad) {
 
   CREATE_SHARED_STATE();
   CREATE_QUAD_2_NEW(SurfaceDrawQuad, visible_rect, surface_id);
-  EXPECT_EQ(0, IterateAndCount(quad_new.get()));
+  EXPECT_EQ(0, IterateAndCount(quad_new));
 }
 
 TEST_F(DrawQuadIteratorTest, TextureDrawQuad) {
@@ -831,7 +897,7 @@ TEST_F(DrawQuadIteratorTest, TextureDrawQuad) {
                     vertex_opacity,
                     flipped);
   EXPECT_EQ(resource_id, quad_new->resource_id);
-  EXPECT_EQ(1, IterateAndCount(quad_new.get()));
+  EXPECT_EQ(1, IterateAndCount(quad_new));
   EXPECT_EQ(resource_id + 1, quad_new->resource_id);
 }
 
@@ -852,7 +918,7 @@ TEST_F(DrawQuadIteratorTest, TileDrawQuad) {
                     texture_size,
                     swizzle_contents);
   EXPECT_EQ(resource_id, quad_new->resource_id);
-  EXPECT_EQ(1, IterateAndCount(quad_new.get()));
+  EXPECT_EQ(1, IterateAndCount(quad_new));
   EXPECT_EQ(resource_id + 1, quad_new->resource_id);
 }
 
@@ -882,7 +948,7 @@ TEST_F(DrawQuadIteratorTest, YUVVideoDrawQuad) {
   EXPECT_EQ(v_plane_resource_id, quad_new->v_plane_resource_id);
   EXPECT_EQ(a_plane_resource_id, quad_new->a_plane_resource_id);
   EXPECT_EQ(color_space, quad_new->color_space);
-  EXPECT_EQ(4, IterateAndCount(quad_new.get()));
+  EXPECT_EQ(4, IterateAndCount(quad_new));
   EXPECT_EQ(y_plane_resource_id + 1, quad_new->y_plane_resource_id);
   EXPECT_EQ(u_plane_resource_id + 1, quad_new->u_plane_resource_id);
   EXPECT_EQ(v_plane_resource_id + 1, quad_new->v_plane_resource_id);
@@ -910,7 +976,7 @@ TEST_F(DrawQuadIteratorTest, DISABLED_PictureDrawQuad) {
                     content_rect,
                     contents_scale,
                     picture_pile);
-  EXPECT_EQ(0, IterateAndCount(quad_new.get()));
+  EXPECT_EQ(0, IterateAndCount(quad_new));
 }
 
 }  // namespace

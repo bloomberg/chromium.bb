@@ -24,16 +24,6 @@ scoped_ptr<RenderPassDrawQuad> RenderPassDrawQuad::Create() {
   return make_scoped_ptr(new RenderPassDrawQuad);
 }
 
-scoped_ptr<RenderPassDrawQuad> RenderPassDrawQuad::Copy(
-    const SharedQuadState* copied_shared_quad_state,
-    RenderPass::Id copied_render_pass_id) const {
-  scoped_ptr<RenderPassDrawQuad> copy_quad(
-      new RenderPassDrawQuad(*MaterialCast(this)));
-  copy_quad->shared_quad_state = copied_shared_quad_state;
-  copy_quad->render_pass_id = copied_render_pass_id;
-  return copy_quad.Pass();
-}
-
 void RenderPassDrawQuad::SetNew(
     const SharedQuadState* shared_quad_state,
     const gfx::Rect& rect,

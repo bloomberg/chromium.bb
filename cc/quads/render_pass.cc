@@ -107,12 +107,13 @@ void RenderPass::CopyAll(const ScopedPtrVector<RenderPass>& in,
       if (quad->material == DrawQuad::RENDER_PASS) {
         const RenderPassDrawQuad* pass_quad =
             RenderPassDrawQuad::MaterialCast(quad);
-        copy_pass->quad_list.push_back(
-            pass_quad->Copy(copy_pass->shared_quad_state_list[sqs_i],
-                            pass_quad->render_pass_id).PassAs<DrawQuad>());
+        copy_pass->CopyFromAndAppendRenderPassDrawQuad(
+            pass_quad,
+            copy_pass->shared_quad_state_list[sqs_i],
+            pass_quad->render_pass_id);
       } else {
-        copy_pass->quad_list.push_back(source->quad_list[i]->Copy(
-            copy_pass->shared_quad_state_list[sqs_i]));
+        copy_pass->CopyFromAndAppendDrawQuad(
+            quad, copy_pass->shared_quad_state_list[sqs_i]);
       }
     }
     out->push_back(copy_pass.Pass());

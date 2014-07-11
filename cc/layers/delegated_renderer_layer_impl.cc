@@ -442,9 +442,9 @@ void DelegatedRendererLayerImpl::AppendRenderPassQuads(
     if (quad_visible_rect.IsEmpty())
       continue;
 
-    scoped_ptr<DrawQuad> output_quad;
     if (delegated_quad->material != DrawQuad::RENDER_PASS) {
-      output_quad = delegated_quad->Copy(output_shared_quad_state);
+      DrawQuad* output_quad = render_pass->CopyFromAndAppendDrawQuad(
+          delegated_quad, output_shared_quad_state);
       output_quad->visible_rect = quad_visible_rect;
     } else {
       RenderPass::Id delegated_contributing_render_pass_id =
@@ -461,15 +461,14 @@ void DelegatedRendererLayerImpl::AppendRenderPassQuads(
         DCHECK(output_contributing_render_pass_id !=
                append_quads_data->render_pass_id);
 
-        output_quad = RenderPassDrawQuad::MaterialCast(delegated_quad)->Copy(
-            output_shared_quad_state,
-            output_contributing_render_pass_id).PassAs<DrawQuad>();
+        RenderPassDrawQuad* output_quad =
+            render_pass->CopyFromAndAppendRenderPassDrawQuad(
+                RenderPassDrawQuad::MaterialCast(delegated_quad),
+                output_shared_quad_state,
+                output_contributing_render_pass_id);
         output_quad->visible_rect = quad_visible_rect;
       }
     }
-
-    if (output_quad)
-      render_pass->quad_list.push_back(output_quad.Pass());
   }
 }
 

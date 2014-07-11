@@ -248,12 +248,13 @@ void SurfaceAggregator::CopyQuadsToPass(
         RenderPass::Id remapped_pass_id =
             RemapPassId(original_pass_id, surface_id);
 
-        dest_pass->quad_list.push_back(
-            pass_quad->Copy(dest_pass->shared_quad_state_list.back(),
-                            remapped_pass_id).PassAs<DrawQuad>());
+        dest_pass->CopyFromAndAppendRenderPassDrawQuad(
+            pass_quad,
+            dest_pass->shared_quad_state_list.back(),
+            remapped_pass_id);
       } else {
-        dest_pass->quad_list.push_back(
-            quad->Copy(dest_pass->shared_quad_state_list.back()));
+        dest_pass->CopyFromAndAppendDrawQuad(
+            quad, dest_pass->shared_quad_state_list.back());
       }
     }
   }
