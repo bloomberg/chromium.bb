@@ -36,6 +36,6 @@ class Metric(object):
 
     Metrics may implement AddResults to provide a common way to add results
     to the PageMeasurementResults in PageMeasurement.AddMeasurement --
-    results should be added with results.Add(trace_name, unit, value).
+    results should be added with results.AddValue(...).
     """
     raise NotImplementedError()
