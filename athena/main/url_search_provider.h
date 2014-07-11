@@ -5,7 +5,10 @@
 #ifndef ATHENA_MAIN_URL_SEARCH_PROVIDER_H_
 #define ATHENA_MAIN_URL_SEARCH_PROVIDER_H_
 
+#include "base/memory/scoped_ptr.h"
 #include "ui/app_list/search_provider.h"
+
+class TemplateURLService;
 
 namespace content {
 class BrowserContext;
@@ -25,6 +28,9 @@ class UrlSearchProvider : public app_list::SearchProvider {
 
  private:
   content::BrowserContext* browser_context_;
+
+  // TODO(mukai): This should be provided through BrowserContextKeyedService.
+  scoped_ptr<TemplateURLService> template_url_service_;
 
   DISALLOW_COPY_AND_ASSIGN(UrlSearchProvider);
 };
