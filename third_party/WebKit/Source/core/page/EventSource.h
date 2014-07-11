@@ -87,6 +87,8 @@ public:
     // asynchronous events from the loader won't be invoked.
     virtual void stop() OVERRIDE;
 
+    virtual bool hasPendingActivity() const OVERRIDE;
+
 private:
     EventSource(ExecutionContext*, const KURL&, const Dictionary&);
 

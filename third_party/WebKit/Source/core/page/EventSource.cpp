@@ -99,7 +99,6 @@ PassRefPtrWillBeRawPtr<EventSource> EventSource::create(ExecutionContext* contex
 
     RefPtrWillBeRawPtr<EventSource> source = adoptRefWillBeRefCountedGarbageCollected(new EventSource(context, fullURL, eventSourceInit));
 
-    source->setPendingActivity(source.get());
     source->scheduleInitialConnect();
     source->suspendIfNeeded();
 
@@ -163,8 +162,6 @@ void EventSource::networkRequestEnded()
 
     if (m_state != CLOSED)
         scheduleReconnect();
-    else
-        unsetPendingActivity(this);
 }
 
 void EventSource::scheduleReconnect()
@@ -204,7 +201,6 @@ void EventSource::close()
     // Stop trying to reconnect if EventSource was explicitly closed or if ActiveDOMObject::stop() was called.
     if (m_connectTimer.isActive()) {
         m_connectTimer.stop();
-        unsetPendingActivity(this);
     }
 
     if (m_requestInFlight)
@@ -322,7 +318,6 @@ void EventSource::abortConnectionAttempt()
         m_loader->cancel();
     } else {
         m_state = CLOSED;
-        unsetPendingActivity(this);
     }
 
     ASSERT(m_state == CLOSED);
@@ -426,6 +421,11 @@ void EventSource::parseEventStreamLine(unsigned bufPos, int fieldLength, int lin
 void EventSource::stop()
 {
     close();
+}
+
+bool EventSource::hasPendingActivity() const
+{
+    return m_state != CLOSED;
 }
 
 PassRefPtrWillBeRawPtr<MessageEvent> EventSource::createMessageEvent()
