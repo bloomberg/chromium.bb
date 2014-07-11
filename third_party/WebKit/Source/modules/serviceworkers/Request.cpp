@@ -24,7 +24,7 @@ namespace WebCore {
 
 namespace {
 
-PassRefPtr<Request> createRequestWithRequestData(PassRefPtr<FetchRequestData> request, const RequestInit& init, FetchRequestData::Mode mode, FetchRequestData::Credentials credentials, ExceptionState& exceptionState)
+PassRefPtrWillBeRawPtr<Request> createRequestWithRequestData(PassRefPtrWillBeRawPtr<FetchRequestData> request, const RequestInit& init, FetchRequestData::Mode mode, FetchRequestData::Credentials credentials, ExceptionState& exceptionState)
 {
     // "6. Let |mode| be |init|'s mode member if it is present, and
     // |fallbackMode| otherwise."
@@ -75,14 +75,14 @@ PassRefPtr<Request> createRequestWithRequestData(PassRefPtr<FetchRequestData> re
     }
     // "11. Let |r| be a new Request object associated with |request|, Headers
     // object, and FetchBodyStream object."
-    RefPtr<Request> r = Request::create(request);
+    RefPtrWillBeRawPtr<Request> r = Request::create(request);
 
     // "12. Let |headers| be a copy of |r|'s Headers object."
     // "13. If |init|'s headers member is present, set |headers| to |init|'s
     // headers member."
     // We don't create a copy of r's Headers object when init's headers member
     // is present.
-    RefPtr<Headers> headers;
+    RefPtrWillBeRawPtr<Headers> headers = nullptr;
     if (!init.headers && init.headersDictionary.isUndefinedOrNull()) {
         headers = r->headers()->createCopy();
     }
@@ -121,16 +121,18 @@ PassRefPtr<Request> createRequestWithRequestData(PassRefPtr<FetchRequestData> re
 
 } // namespace
 
-PassRefPtr<Request> Request::create(ExecutionContext* context, const String& input, ExceptionState& exceptionState)
+DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(Request);
+
+PassRefPtrWillBeRawPtr<Request> Request::create(ExecutionContext* context, const String& input, ExceptionState& exceptionState)
 {
     return create(context, input, Dictionary(), exceptionState);
 }
 
-PassRefPtr<Request> Request::create(ExecutionContext* context, const String& input, const Dictionary& init, ExceptionState& exceptionState)
+PassRefPtrWillBeRawPtr<Request> Request::create(ExecutionContext* context, const String& input, const Dictionary& init, ExceptionState& exceptionState)
 {
     // "1. Let |request| be |input|'s associated request, if |input| is a
     // Request object, and a new request otherwise."
-    RefPtr<FetchRequestData> request(FetchRequestData::create(context));
+    RefPtrWillBeRawPtr<FetchRequestData> request(FetchRequestData::create(context));
     // "2. Set |request| to a restricted copy of itself."
     request = request->createRestrictedCopy(context, SecurityOrigin::create(context->url()));
     // "5. If |input| is a string, run these substeps:"
@@ -150,17 +152,17 @@ PassRefPtr<Request> Request::create(ExecutionContext* context, const String& inp
 }
 
 
-PassRefPtr<Request> Request::create(ExecutionContext* context, Request* input, ExceptionState& exceptionState)
+PassRefPtrWillBeRawPtr<Request> Request::create(ExecutionContext* context, Request* input, ExceptionState& exceptionState)
 {
     return create(context, input, Dictionary(), exceptionState);
 }
 
-PassRefPtr<Request> Request::create(ExecutionContext* context, Request* input, const Dictionary& init, ExceptionState& exceptionState)
+PassRefPtrWillBeRawPtr<Request> Request::create(ExecutionContext* context, Request* input, const Dictionary& init, ExceptionState& exceptionState)
 {
     // "1. Let |request| be |input|'s associated request, if |input| is a
     // Request object, and a new request otherwise."
     // "2. Set |request| to a restricted copy of itself."
-    RefPtr<FetchRequestData> request(input->request()->createRestrictedCopy(context, SecurityOrigin::create(context->url())));
+    RefPtrWillBeRawPtr<FetchRequestData> request(input->request()->createRestrictedCopy(context, SecurityOrigin::create(context->url())));
     // "3. Let |fallbackMode| be null."
     // "4. Let |fallbackCredentials| be null."
     // Instead of using null as a special fallback value, just pass the current
@@ -170,12 +172,12 @@ PassRefPtr<Request> Request::create(ExecutionContext* context, Request* input, c
     return createRequestWithRequestData(request.release(), RequestInit(init), currentMode, currentCredentials, exceptionState);
 }
 
-PassRefPtr<Request> Request::create(PassRefPtr<FetchRequestData> request)
+PassRefPtrWillBeRawPtr<Request> Request::create(PassRefPtrWillBeRawPtr<FetchRequestData> request)
 {
-    return adoptRef(new Request(request));
+    return adoptRefWillBeNoop(new Request(request));
 }
 
-Request::Request(PassRefPtr<FetchRequestData> request)
+Request::Request(PassRefPtrWillBeRawPtr<FetchRequestData> request)
     : m_request(request)
     , m_headers(Headers::create(m_request->headerList()))
 {
@@ -183,9 +185,9 @@ Request::Request(PassRefPtr<FetchRequestData> request)
     ScriptWrappable::init(this);
 }
 
-PassRefPtr<Request> Request::create(const blink::WebServiceWorkerRequest& webRequest)
+PassRefPtrWillBeRawPtr<Request> Request::create(const blink::WebServiceWorkerRequest& webRequest)
 {
-    return adoptRef(new Request(webRequest));
+    return adoptRefWillBeNoop(new Request(webRequest));
 }
 
 Request::Request(const blink::WebServiceWorkerRequest& webRequest)
@@ -261,6 +263,12 @@ PassOwnPtr<ResourceRequest> Request::createResourceRequest() const
     request->setHTTPMethod("GET");
     // FIXME: Fill more info.
     return request.release();
+}
+
+void Request::trace(Visitor* visitor)
+{
+    visitor->trace(m_request);
+    visitor->trace(m_headers);
 }
 
 } // namespace WebCore

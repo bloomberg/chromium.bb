@@ -6,6 +6,7 @@
 #define ServiceWorkerClients_h
 
 #include "bindings/core/v8/ScriptWrappable.h"
+#include "platform/heap/Handle.h"
 #include "public/platform/WebServiceWorkerClientsInfo.h"
 #include "wtf/Forward.h"
 
@@ -16,13 +17,15 @@ class ExecutionContext;
 class ScriptState;
 class ScriptPromise;
 
-class ServiceWorkerClients FINAL : public RefCounted<ServiceWorkerClients>, public ScriptWrappable {
+class ServiceWorkerClients FINAL : public RefCountedWillBeGarbageCollected<ServiceWorkerClients>, public ScriptWrappable {
+    DECLARE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(ServiceWorkerClients);
 public:
-    static PassRefPtr<ServiceWorkerClients> create();
-    ~ServiceWorkerClients();
+    static PassRefPtrWillBeRawPtr<ServiceWorkerClients> create();
 
     // ServiceWorkerClients.idl
     ScriptPromise getServiced(ScriptState*);
+
+    void trace(Visitor*) { }
 
 private:
     ServiceWorkerClients();

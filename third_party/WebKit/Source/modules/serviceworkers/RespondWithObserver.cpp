@@ -88,7 +88,7 @@ void RespondWithObserver::respondWith(ScriptState* scriptState, const ScriptValu
         ThenFunction::create(this, ThenFunction::Rejected));
 }
 
-void RespondWithObserver::sendResponse(PassRefPtr<Response> response)
+void RespondWithObserver::sendResponse(PassRefPtrWillBeRawPtr<Response> response)
 {
     if (!executionContext())
         return;

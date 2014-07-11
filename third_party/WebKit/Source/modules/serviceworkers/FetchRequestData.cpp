@@ -15,9 +15,14 @@
 
 namespace WebCore {
 
-PassRefPtr<FetchRequestData> FetchRequestData::create(ExecutionContext* context)
+PassRefPtrWillBeRawPtr<FetchRequestData> FetchRequestData::create()
 {
-    RefPtr<FetchRequestData> request(adoptRef(new FetchRequestData()));
+    return adoptRefWillBeNoop(new FetchRequestData());
+}
+
+PassRefPtrWillBeRawPtr<FetchRequestData> FetchRequestData::create(ExecutionContext* context)
+{
+    RefPtrWillBeRawPtr<FetchRequestData> request = FetchRequestData::create();
     if (context->isDocument())
         request->m_referrer.setClient(WebCore::Referrer(context->url().strippedForUseAsReferrer(), toDocument(context)->referrerPolicy()));
     else
@@ -25,9 +30,9 @@ PassRefPtr<FetchRequestData> FetchRequestData::create(ExecutionContext* context)
     return request.release();
 }
 
-PassRefPtr<FetchRequestData> FetchRequestData::create(const blink::WebServiceWorkerRequest& webRequest)
+PassRefPtrWillBeRawPtr<FetchRequestData> FetchRequestData::create(const blink::WebServiceWorkerRequest& webRequest)
 {
-    RefPtr<FetchRequestData> request(adoptRef(new FetchRequestData()));
+    RefPtrWillBeRawPtr<FetchRequestData> request = FetchRequestData::create();
     request->m_url = webRequest.url();
     request->m_method = webRequest.method();
     for (HTTPHeaderMap::const_iterator it = webRequest.headers().begin(); it != webRequest.headers().end(); ++it)
@@ -36,7 +41,7 @@ PassRefPtr<FetchRequestData> FetchRequestData::create(const blink::WebServiceWor
     return request.release();
 }
 
-PassRefPtr<FetchRequestData> FetchRequestData::createRestrictedCopy(ExecutionContext* context, PassRefPtr<SecurityOrigin> origin) const
+PassRefPtrWillBeRawPtr<FetchRequestData> FetchRequestData::createRestrictedCopy(ExecutionContext* context, PassRefPtr<SecurityOrigin> origin) const
 {
     // "To make a restricted copy of a request |request|, run these steps:
     // 1. Let |r| be a new request whose url is |request|'s url, method is
@@ -45,7 +50,7 @@ PassRefPtr<FetchRequestData> FetchRequestData::createRestrictedCopy(ExecutionCon
     // global object, origin is entry settings object's origin, referrer is
     // |client|, context is |connect|, mode is |request|'s mode, and credentials
     //  mode is |request|'s credentials mode."
-    RefPtr<FetchRequestData> request = adoptRef(new FetchRequestData());
+    RefPtrWillBeRawPtr<FetchRequestData> request = FetchRequestData::create();
     request->m_url = m_url;
     request->m_method = m_method;
     request->m_headerList = m_headerList->createCopy();
@@ -76,6 +81,11 @@ FetchRequestData::FetchRequestData()
     , m_credentials(OmitCredentials)
     , m_responseTainting(BasicTainting)
 {
+}
+
+void FetchRequestData::trace(Visitor* visitor)
+{
+    visitor->trace(m_headerList);
 }
 
 } // namespace WebCore

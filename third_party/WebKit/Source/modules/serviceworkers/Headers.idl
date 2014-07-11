@@ -9,7 +9,8 @@
     Constructor(Dictionary input),
     RuntimeEnabled=ServiceWorker,
     Exposed=ServiceWorker,
-    RaisesException=Constructor
+    RaisesException=Constructor,
+    WillBeGarbageCollected,
 ] interface Headers {
     [RaisesException] void append(ByteString name, ByteString value);
     [ImplementedAs=remove, RaisesException] void delete(ByteString key);

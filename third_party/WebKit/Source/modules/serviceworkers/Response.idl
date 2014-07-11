@@ -12,7 +12,8 @@ enum ResponseType { "basic", "cors", "default", "error", "opaque" };
     Constructor(Blob body, optional Dictionary responseInitDict),
     RuntimeEnabled=ServiceWorker,
     Exposed=ServiceWorker,
-    RaisesException=Constructor
+    RaisesException=Constructor,
+    WillBeGarbageCollected,
 ] interface Response {
     // FIXME: Implement redirect().
     readonly attribute ResponseType type;

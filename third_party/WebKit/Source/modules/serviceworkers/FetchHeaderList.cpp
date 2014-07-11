@@ -12,14 +12,14 @@
 
 namespace WebCore {
 
-PassRefPtr<FetchHeaderList> FetchHeaderList::create()
+PassRefPtrWillBeRawPtr<FetchHeaderList> FetchHeaderList::create()
 {
-    return adoptRef(new FetchHeaderList());
+    return adoptRefWillBeNoop(new FetchHeaderList());
 }
 
-PassRefPtr<FetchHeaderList> FetchHeaderList::createCopy()
+PassRefPtrWillBeRawPtr<FetchHeaderList> FetchHeaderList::createCopy()
 {
-    RefPtr<FetchHeaderList> list(create());
+    RefPtrWillBeRawPtr<FetchHeaderList> list(create());
     for (size_t i = 0; i < m_headerList.size(); ++i)
         list->append(m_headerList[i]->first, m_headerList[i]->second);
     return list.release();

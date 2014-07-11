@@ -7,11 +7,14 @@
 
 #include "bindings/core/v8/Dictionary.h"
 #include "modules/serviceworkers/Headers.h"
+#include "platform/heap/Handle.h"
 #include "wtf/RefPtr.h"
 
 namespace WebCore {
 
-struct RequestInit {
+class RequestInit {
+    STACK_ALLOCATED();
+public:
     explicit RequestInit(const Dictionary& options)
     {
         DictionaryHelper::get(options, "method", method);
@@ -24,7 +27,7 @@ struct RequestInit {
     }
 
     String method;
-    RefPtr<Headers> headers;
+    RefPtrWillBeMember<Headers> headers;
     Dictionary headersDictionary;
     String mode;
     String credentials;

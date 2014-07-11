@@ -5,6 +5,7 @@
 #ifndef FetchResponseData_h
 #define FetchResponseData_h
 
+#include "platform/heap/Handle.h"
 #include "platform/weborigin/KURL.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
@@ -17,7 +18,7 @@ namespace WebCore {
 class BlobDataHandle;
 class FetchHeaderList;
 
-class FetchResponseData : public RefCounted<FetchResponseData> {
+class FetchResponseData FINAL : public RefCountedWillBeGarbageCollectedFinalized<FetchResponseData> {
     WTF_MAKE_NONCOPYABLE(FetchResponseData);
 public:
     // "A response has an associated type which is one of basic, CORS, default,
@@ -27,12 +28,12 @@ public:
     // end-user abort, fatal, and timeout."
     enum TerminationReason { EndUserAbortTermination, FatalTermination, TimeoutTermination };
 
-    static PassRefPtr<FetchResponseData> create();
-    static PassRefPtr<FetchResponseData> createNetworkErrorResponse();
+    static PassRefPtrWillBeRawPtr<FetchResponseData> create();
+    static PassRefPtrWillBeRawPtr<FetchResponseData> createNetworkErrorResponse();
 
-    PassRefPtr<FetchResponseData> createBasicFilteredResponse();
-    PassRefPtr<FetchResponseData> createCORSFilteredResponse();
-    PassRefPtr<FetchResponseData> createOpaqueFilteredResponse();
+    PassRefPtrWillBeRawPtr<FetchResponseData> createBasicFilteredResponse();
+    PassRefPtrWillBeRawPtr<FetchResponseData> createCORSFilteredResponse();
+    PassRefPtrWillBeRawPtr<FetchResponseData> createOpaqueFilteredResponse();
 
     Type type() const { return m_type; }
     const KURL& url() const { return m_url; }
@@ -48,6 +49,8 @@ public:
 
     void populateWebServiceWorkerResponse(blink::WebServiceWorkerResponse&);
 
+    void trace(Visitor*);
+
 private:
     FetchResponseData(Type, unsigned short, AtomicString);
 
@@ -56,9 +59,9 @@ private:
     KURL m_url;
     unsigned short m_status;
     AtomicString m_statusMessage;
-    RefPtr<FetchHeaderList> m_headerList;
+    RefPtrWillBeMember<FetchHeaderList> m_headerList;
     RefPtr<BlobDataHandle> m_blobDataHandle;
-    RefPtr<FetchResponseData> m_internalResponse;
+    RefPtrWillBeMember<FetchResponseData> m_internalResponse;
 };
 
 } // namespace WebCore

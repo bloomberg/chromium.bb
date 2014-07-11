@@ -105,7 +105,7 @@ ScriptPromise ServiceWorkerGlobalScope::fetch(ScriptState* scriptState, const St
     return m_fetchManager->fetch(scriptState, resourceRequest.release());
 }
 
-PassRefPtr<ServiceWorkerClients> ServiceWorkerGlobalScope::clients()
+PassRefPtrWillBeRawPtr<ServiceWorkerClients> ServiceWorkerGlobalScope::clients()
 {
     if (!m_clients)
         m_clients = ServiceWorkerClients::create();
@@ -119,6 +119,7 @@ const AtomicString& ServiceWorkerGlobalScope::interfaceName() const
 
 void ServiceWorkerGlobalScope::trace(Visitor* visitor)
 {
+    visitor->trace(m_clients);
     WorkerGlobalScope::trace(visitor);
 }
 

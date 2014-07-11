@@ -5,7 +5,8 @@
 // https://slightlyoff.github.io/ServiceWorker/spec/service_worker/index.html#client-interface
 [
     Exposed=ServiceWorker,
-    RuntimeEnabled=ServiceWorker
+    RuntimeEnabled=ServiceWorker,
+    WillBeGarbageCollected,
 ] interface Client {
     readonly attribute unsigned long id;
 

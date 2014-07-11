@@ -13,9 +13,9 @@
 
 namespace WebCore {
 
-PassRefPtr<Client> Client::create(unsigned id)
+PassRefPtrWillBeRawPtr<Client> Client::create(unsigned id)
 {
-    return adoptRef(new Client(id));
+    return adoptRefWillBeNoop(new Client(id));
 }
 
 Client::Client(unsigned id)
@@ -24,9 +24,7 @@ Client::Client(unsigned id)
     ScriptWrappable::init(this);
 }
 
-Client::~Client()
-{
-}
+DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(Client);
 
 void Client::postMessage(ExecutionContext* context, PassRefPtr<SerializedScriptValue> message, const MessagePortArray* ports, ExceptionState& exceptionState)
 {

@@ -10,6 +10,7 @@
 #include "modules/serviceworkers/FetchResponseData.h"
 #include "modules/serviceworkers/Headers.h"
 #include "platform/blob/BlobData.h"
+#include "platform/heap/Handle.h"
 #include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"
 #include "wtf/text/WTFString.h"
@@ -20,30 +21,32 @@ namespace WebCore {
 
 class Blob;
 class ExceptionState;
-struct ResponseInit;
+class ResponseInit;
 
-class Response FINAL : public RefCounted<Response>, public ScriptWrappable {
+class Response FINAL : public RefCountedWillBeGarbageCollectedFinalized<Response>, public ScriptWrappable {
+    DECLARE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(Response);
 public:
-    static PassRefPtr<Response> create(Blob*, const Dictionary&, ExceptionState&);
-    static PassRefPtr<Response> create(Blob*, const ResponseInit&, ExceptionState&);
+    static PassRefPtrWillBeRawPtr<Response> create(Blob*, const Dictionary&, ExceptionState&);
+    static PassRefPtrWillBeRawPtr<Response> create(Blob*, const ResponseInit&, ExceptionState&);
 
-    static PassRefPtr<Response> create(PassRefPtr<FetchResponseData>);
-    ~Response() { };
+    static PassRefPtrWillBeRawPtr<Response> create(PassRefPtrWillBeRawPtr<FetchResponseData>);
 
     String type() const;
     String url() const;
     unsigned short status() const;
     String statusText() const;
-    PassRefPtr<Headers> headers() const;
+    PassRefPtrWillBeRawPtr<Headers> headers() const;
 
     void populateWebServiceWorkerResponse(blink::WebServiceWorkerResponse&);
 
+    void trace(Visitor*);
+
 private:
     Response();
-    Response(PassRefPtr<FetchResponseData>);
+    explicit Response(PassRefPtrWillBeRawPtr<FetchResponseData>);
 
-    RefPtr<FetchResponseData> m_response;
-    RefPtr<Headers> m_headers;
+    RefPtrWillBeMember<FetchResponseData> m_response;
+    RefPtrWillBeMember<Headers> m_headers;
     // FIXME: Support FetchBodyStream.
 };
 

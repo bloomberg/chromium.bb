@@ -17,54 +17,52 @@
 
 namespace WebCore {
 
-PassRefPtr<Headers> Headers::create()
+PassRefPtrWillBeRawPtr<Headers> Headers::create()
 {
-    return adoptRef(new Headers);
+    return adoptRefWillBeNoop(new Headers);
 }
 
-PassRefPtr<Headers> Headers::create(ExceptionState&)
+PassRefPtrWillBeRawPtr<Headers> Headers::create(ExceptionState&)
 {
     return create();
 }
 
-PassRefPtr<Headers> Headers::create(const Headers* init, ExceptionState& exceptionState)
+PassRefPtrWillBeRawPtr<Headers> Headers::create(const Headers* init, ExceptionState& exceptionState)
 {
     // "The Headers(|init|) constructor, when invoked, must run these steps:"
     // "1. Let |headers| be a new Headers object."
-    RefPtr<Headers> headers = create();
+    RefPtrWillBeRawPtr<Headers> headers = create();
     // "2. If |init| is given, fill headers with |init|. Rethrow any exception."
     headers->fillWith(init, exceptionState);
     // "3. Return |headers|."
     return headers.release();
 }
 
-PassRefPtr<Headers> Headers::create(const Dictionary& init, ExceptionState& exceptionState)
+PassRefPtrWillBeRawPtr<Headers> Headers::create(const Dictionary& init, ExceptionState& exceptionState)
 {
     // "The Headers(|init|) constructor, when invoked, must run these steps:"
     // "1. Let |headers| be a new Headers object."
-    RefPtr<Headers> headers = create();
+    RefPtrWillBeRawPtr<Headers> headers = create();
     // "2. If |init| is given, fill headers with |init|. Rethrow any exception."
     headers->fillWith(init, exceptionState);
     // "3. Return |headers|."
     return headers.release();
 }
 
-PassRefPtr<Headers> Headers::create(FetchHeaderList* headerList)
+PassRefPtrWillBeRawPtr<Headers> Headers::create(FetchHeaderList* headerList)
 {
-    return adoptRef(new Headers(headerList));
+    return adoptRefWillBeNoop(new Headers(headerList));
 }
 
-PassRefPtr<Headers> Headers::createCopy() const
+PassRefPtrWillBeRawPtr<Headers> Headers::createCopy() const
 {
-    RefPtr<FetchHeaderList> headerList = m_headerList->createCopy();
-    RefPtr<Headers> headers = create(headerList.get());
+    RefPtrWillBeRawPtr<FetchHeaderList> headerList = m_headerList->createCopy();
+    RefPtrWillBeRawPtr<Headers> headers = create(headerList.get());
     headers->m_guard = m_guard;
     return headers.release();
 }
 
-Headers::~Headers()
-{
-}
+DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(Headers);
 
 unsigned long Headers::size() const
 {
@@ -322,6 +320,11 @@ void Headers::forEachInternal(PassOwnPtr<HeadersForEachCallback> callback, Scrip
         if (exceptionState.hadException())
             break;
     }
+}
+
+void Headers::trace(Visitor* visitor)
+{
+    visitor->trace(m_headerList);
 }
 
 } // namespace WebCore

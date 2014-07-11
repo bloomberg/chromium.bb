@@ -19,21 +19,20 @@ class HeadersForEachCallback;
 class ScriptValue;
 
 // http://fetch.spec.whatwg.org/#headers-class
-class Headers FINAL : public RefCounted<Headers>, public ScriptWrappable {
+class Headers FINAL : public RefCountedWillBeGarbageCollected<Headers>, public ScriptWrappable {
+    DECLARE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(Headers);
 public:
     enum Guard { ImmutableGuard, RequestGuard, RequestNoCORSGuard, ResponseGuard, NoneGuard };
 
-    static PassRefPtr<Headers> create();
-    static PassRefPtr<Headers> create(ExceptionState&);
-    static PassRefPtr<Headers> create(const Headers*, ExceptionState&);
-    static PassRefPtr<Headers> create(const Dictionary&, ExceptionState&);
+    static PassRefPtrWillBeRawPtr<Headers> create();
+    static PassRefPtrWillBeRawPtr<Headers> create(ExceptionState&);
+    static PassRefPtrWillBeRawPtr<Headers> create(const Headers*, ExceptionState&);
+    static PassRefPtrWillBeRawPtr<Headers> create(const Dictionary&, ExceptionState&);
 
     // Shares the FetchHeaderList. Called when creating a Request or Response.
-    static PassRefPtr<Headers> create(FetchHeaderList*);
+    static PassRefPtrWillBeRawPtr<Headers> create(FetchHeaderList*);
 
-    PassRefPtr<Headers> createCopy() const;
-
-    ~Headers();
+    PassRefPtrWillBeRawPtr<Headers> createCopy() const;
 
     // Headers.idl implementation.
     void append(const String& name, const String& value, ExceptionState&);
@@ -53,13 +52,15 @@ public:
     void fillWith(const Headers*, ExceptionState&);
     void fillWith(const Dictionary&, ExceptionState&);
 
+    void trace(Visitor*);
+
 private:
     Headers();
     // Shares the FetchHeaderList. Called when creating a Request or Response.
     explicit Headers(FetchHeaderList*);
     void forEachInternal(PassOwnPtr<HeadersForEachCallback>, ScriptValue*);
 
-    RefPtr<FetchHeaderList> m_headerList;
+    RefPtrWillBeMember<FetchHeaderList> m_headerList;
     Guard m_guard;
 };
 

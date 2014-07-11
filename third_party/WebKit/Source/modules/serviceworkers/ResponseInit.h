@@ -7,11 +7,14 @@
 
 #include "bindings/core/v8/Dictionary.h"
 #include "modules/serviceworkers/Headers.h"
+#include "platform/heap/Handle.h"
 #include "wtf/RefPtr.h"
 
 namespace WebCore {
 
-struct ResponseInit {
+class ResponseInit {
+    STACK_ALLOCATED();
+public:
     ResponseInit()
         : status(200)
         , statusText("OK")
@@ -32,7 +35,7 @@ struct ResponseInit {
 
     unsigned short status;
     String statusText;
-    RefPtr<Headers> headers;
+    RefPtrWillBeMember<Headers> headers;
     Dictionary headersDictionary;
 };
 

@@ -5,6 +5,7 @@
 #ifndef FetchRequestData_h
 #define FetchRequestData_h
 
+#include "platform/heap/Handle.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/Referrer.h"
 #include "wtf/PassOwnPtr.h"
@@ -26,7 +27,7 @@ class ResourceRequest;
 class SecurityOrigin;
 struct ThreadableLoaderOptions;
 
-class FetchRequestData : public RefCounted<FetchRequestData> {
+class FetchRequestData FINAL : public RefCountedWillBeGarbageCollectedFinalized<FetchRequestData> {
     WTF_MAKE_NONCOPYABLE(FetchRequestData);
 public:
     enum Mode { SameOriginMode, NoCORSMode, CORSMode, CORSWithForcedPreflight };
@@ -64,9 +65,9 @@ public:
         WebCore::Referrer m_referrer;
     };
 
-    static PassRefPtr<FetchRequestData> create(ExecutionContext*);
-    static PassRefPtr<FetchRequestData> create(const blink::WebServiceWorkerRequest&);
-    PassRefPtr<FetchRequestData> createRestrictedCopy(ExecutionContext*, PassRefPtr<SecurityOrigin>) const;
+    static PassRefPtrWillBeRawPtr<FetchRequestData> create(ExecutionContext*);
+    static PassRefPtrWillBeRawPtr<FetchRequestData> create(const blink::WebServiceWorkerRequest&);
+    PassRefPtrWillBeRawPtr<FetchRequestData> createRestrictedCopy(ExecutionContext*, PassRefPtr<SecurityOrigin>) const;
     ~FetchRequestData();
 
     void setMethod(AtomicString method) { m_method = method; }
@@ -85,12 +86,16 @@ public:
     Tainting tainting() const { return m_responseTainting; }
     FetchHeaderList* headerList() { return m_headerList.get(); }
 
+    void trace(Visitor*);
+
 private:
     FetchRequestData();
 
+    static PassRefPtrWillBeRawPtr<FetchRequestData> create();
+
     AtomicString m_method;
     KURL m_url;
-    RefPtr<FetchHeaderList> m_headerList;
+    RefPtrWillBeMember<FetchHeaderList> m_headerList;
     bool m_unsafeRequestFlag;
     // FIXME: Support body.
     // FIXME: Support m_skipServiceWorkerFlag;

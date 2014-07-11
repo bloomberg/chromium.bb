@@ -11,12 +11,14 @@
 
 namespace WebCore {
 
-PassRefPtr<Response> Response::create(Blob* body, const Dictionary& responseInit, ExceptionState& exceptionState)
+DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(Response);
+
+PassRefPtrWillBeRawPtr<Response> Response::create(Blob* body, const Dictionary& responseInit, ExceptionState& exceptionState)
 {
     return create(body, ResponseInit(responseInit), exceptionState);
 }
 
-PassRefPtr<Response> Response::create(Blob* body, const ResponseInit& responseInit, ExceptionState& exceptionState)
+PassRefPtrWillBeRawPtr<Response> Response::create(Blob* body, const ResponseInit& responseInit, ExceptionState& exceptionState)
 {
     // "1. If |init|'s status member is not in the range 200 to 599, throw a
     // RangeError."
@@ -30,7 +32,7 @@ PassRefPtr<Response> Response::create(Blob* body, const ResponseInit& responseIn
 
     // "3. Let |r| be a new Response object, associated with a new response,
     // Headers object, and FetchBodyStream object."
-    RefPtr<Response> r = adoptRef(new Response());
+    RefPtrWillBeRawPtr<Response> r = adoptRefWillBeNoop(new Response());
 
     // "4. Set |r|'s response's status to |init|'s status member."
     r->m_response->setStatus(responseInit.status);
@@ -83,9 +85,9 @@ PassRefPtr<Response> Response::create(Blob* body, const ResponseInit& responseIn
     return r.release();
 }
 
-PassRefPtr<Response> Response::create(PassRefPtr<FetchResponseData> response)
+PassRefPtrWillBeRawPtr<Response> Response::create(PassRefPtrWillBeRawPtr<FetchResponseData> response)
 {
-    return adoptRef(new Response(response));
+    return adoptRefWillBeNoop(new Response(response));
 }
 
 String Response::type() const
@@ -131,7 +133,7 @@ String Response::statusText() const
     return m_response->statusMessage();
 }
 
-PassRefPtr<Headers> Response::headers() const
+PassRefPtrWillBeRawPtr<Headers> Response::headers() const
 {
     // "The headers attribute's getter must return the associated Headers object."
     return m_headers;
@@ -150,12 +152,18 @@ Response::Response()
     ScriptWrappable::init(this);
 }
 
-Response::Response(PassRefPtr<FetchResponseData> response)
+Response::Response(PassRefPtrWillBeRawPtr<FetchResponseData> response)
     : m_response(response)
     , m_headers(Headers::create(m_response->headerList()))
 {
     m_headers->setGuard(Headers::ResponseGuard);
     ScriptWrappable::init(this);
+}
+
+void Response::trace(Visitor* visitor)
+{
+    visitor->trace(m_response);
+    visitor->trace(m_headers);
 }
 
 } // namespace WebCore
