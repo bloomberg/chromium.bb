@@ -2587,8 +2587,11 @@ bool ChromeContentBrowserClient::AllowPepperSocketAPI(
   Profile* profile = Profile::FromBrowserContext(browser_context);
   const extensions::ExtensionSet* extension_set = NULL;
   if (profile) {
-    extension_set = extensions::ExtensionSystem::Get(profile)->
-        extension_service()->extensions();
+    const ExtensionService* ext_service =
+        extensions::ExtensionSystem::Get(profile)->extension_service();
+    if (ext_service) {
+      extension_set = ext_service->extensions();
+    }
   }
 
   if (private_api) {
@@ -2807,8 +2810,11 @@ bool ChromeContentBrowserClient::IsPluginAllowedToCallRequestOSFileHandle(
   Profile* profile = Profile::FromBrowserContext(browser_context);
   const extensions::ExtensionSet* extension_set = NULL;
   if (profile) {
-    extension_set = extensions::ExtensionSystem::Get(profile)->
-        extension_service()->extensions();
+    const ExtensionService* ext_service =
+        extensions::ExtensionSystem::Get(profile)->extension_service();
+    if (ext_service) {
+      extension_set = ext_service->extensions();
+    }
   }
   return IsExtensionOrSharedModuleWhitelisted(url, extension_set,
                                               allowed_file_handle_origins_) ||
@@ -2832,8 +2838,11 @@ bool ChromeContentBrowserClient::IsPluginAllowedToUseDevChannelAPIs(
   Profile* profile = Profile::FromBrowserContext(browser_context);
   const extensions::ExtensionSet* extension_set = NULL;
   if (profile) {
-    extension_set = extensions::ExtensionSystem::Get(profile)->
-        extension_service()->extensions();
+    const ExtensionService* ext_service =
+        extensions::ExtensionSystem::Get(profile)->extension_service();
+    if (ext_service) {
+      extension_set = ext_service->extensions();
+    }
   }
 
   // Allow access for whitelisted applications.
