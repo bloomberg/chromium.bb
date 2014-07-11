@@ -478,8 +478,11 @@ void WebTestProxyBase::CapturePixelsForPrinting(
   bool is_opaque = false;
   skia::RefPtr<SkCanvas> canvas(skia::AdoptRef(skia::TryCreateBitmapCanvas(
       page_size_in_pixels.width, totalHeight, is_opaque)));
-  if (canvas)
-    web_frame->printPagesWithBoundaries(canvas.get(), page_size_in_pixels);
+  if (!canvas) {
+    callback.Run(SkBitmap());
+    return;
+  }
+  web_frame->printPagesWithBoundaries(canvas.get(), page_size_in_pixels);
   web_frame->printEnd();
 
   DrawSelectionRect(canvas.get());
