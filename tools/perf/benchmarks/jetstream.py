@@ -24,6 +24,7 @@ from telemetry import benchmark
 from telemetry.page import page_measurement
 from telemetry.page import page_set
 from telemetry.util import statistics
+from telemetry.value import list_of_scalar_values
 from telemetry.value import scalar
 
 
@@ -60,7 +61,7 @@ class _JetstreamMeasurement(page_measurement.PageMeasurement):
 
     all_scores = []
     for k, v in result.iteritems():
-      results.AddValue(scalar.ScalarValue(
+      results.AddValue(list_of_scalar_values.ListOfScalarValues(
           results.current_page, k.replace('.', '_'), 'score', v['result'],
           important=False))
       # Collect all test scores to compute geometric mean.
