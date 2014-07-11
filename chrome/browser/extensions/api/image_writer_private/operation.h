@@ -73,8 +73,10 @@ class Operation : public base::RefCountedThreadSafe<Operation> {
   image_writer_api::Stage GetStage();
 
 #if !defined(OS_CHROMEOS)
-  // Set an ImageWriterClient to use.  Should be called only when testing.
-  void SetUtilityClientForTesting(
+  // Set an ImageWriterClient to use.  Should be called only when testing.  This
+  // does not set up automatic shutdown of the client and it must be shutdown
+  // manually.
+  static void SetUtilityClientForTesting(
       scoped_refptr<ImageWriterUtilityClient> client);
 #endif
 

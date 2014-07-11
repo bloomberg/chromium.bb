@@ -27,10 +27,10 @@ TEST_F(ImageWriterFromFileTest, InvalidFile) {
   scoped_refptr<WriteFromFileOperation> op =
       new WriteFromFileOperation(manager_.AsWeakPtr(),
                                  kDummyExtensionId,
-                                 test_image_path_,
-                                 test_device_path_.AsUTF8Unsafe());
+                                 test_utils_.GetImagePath(),
+                                 test_utils_.GetDevicePath().AsUTF8Unsafe());
 
-  base::DeleteFile(test_image_path_, false);
+  base::DeleteFile(test_utils_.GetImagePath(), false);
 
   EXPECT_CALL(manager_, OnProgress(kDummyExtensionId, _, _)).Times(0);
   EXPECT_CALL(manager_, OnComplete(kDummyExtensionId)).Times(0);
@@ -50,13 +50,8 @@ TEST_F(ImageWriterFromFileTest, WriteFromFileEndToEnd) {
   scoped_refptr<WriteFromFileOperation> op =
       new WriteFromFileOperation(manager_.AsWeakPtr(),
                                  kDummyExtensionId,
-                                 test_image_path_,
-                                 test_device_path_.AsUTF8Unsafe());
-#if !defined(OS_CHROMEOS)
-  scoped_refptr<FakeImageWriterClient> client = FakeImageWriterClient::Create();
-  op->SetUtilityClientForTesting(client);
-#endif
-
+                                 test_utils_.GetImagePath(),
+                                 test_utils_.GetDevicePath().AsUTF8Unsafe());
   EXPECT_CALL(manager_,
               OnProgress(kDummyExtensionId, image_writer_api::STAGE_WRITE, _))
       .Times(AnyNumber());
@@ -90,15 +85,15 @@ TEST_F(ImageWriterFromFileTest, WriteFromFileEndToEnd) {
 
   base::RunLoop().RunUntilIdle();
 #if !defined(OS_CHROMEOS)
-  client->Progress(0);
-  client->Progress(50);
-  client->Progress(100);
-  client->Success();
+  test_utils_.GetUtilityClient()->Progress(0);
+  test_utils_.GetUtilityClient()->Progress(50);
+  test_utils_.GetUtilityClient()->Progress(100);
+  test_utils_.GetUtilityClient()->Success();
   base::RunLoop().RunUntilIdle();
-  client->Progress(0);
-  client->Progress(50);
-  client->Progress(100);
-  client->Success();
+  test_utils_.GetUtilityClient()->Progress(0);
+  test_utils_.GetUtilityClient()->Progress(50);
+  test_utils_.GetUtilityClient()->Progress(100);
+  test_utils_.GetUtilityClient()->Success();
   base::RunLoop().RunUntilIdle();
 #endif
 }

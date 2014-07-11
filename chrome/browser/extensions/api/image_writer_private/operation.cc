@@ -6,6 +6,7 @@
 
 #include "base/file_util.h"
 #include "base/files/file_enumerator.h"
+#include "base/lazy_instance.h"
 #include "base/threading/worker_pool.h"
 #include "chrome/browser/extensions/api/image_writer_private/error_messages.h"
 #include "chrome/browser/extensions/api/image_writer_private/operation_manager.h"
@@ -22,6 +23,11 @@ const int kMD5BufferSize = 1024;
 // unzipped image. Fortunately we mount part of the temporary partition under
 // /var/tmp.
 const char kChromeOSTempRoot[] = "/var/tmp";
+#endif
+
+#if !defined(OS_CHROMEOS)
+static base::LazyInstance<scoped_refptr<ImageWriterUtilityClient> >
+    g_utility_client = LAZY_INSTANCE_INITIALIZER;
 #endif
 
 Operation::Operation(base::WeakPtr<OperationManager> manager,
@@ -61,11 +67,10 @@ image_writer_api::Stage Operation::GetStage() {
 }
 
 #if !defined(OS_CHROMEOS)
+// static
 void Operation::SetUtilityClientForTesting(
     scoped_refptr<ImageWriterUtilityClient> client) {
-  image_writer_client_ = client;
-  AddCleanUpFunction(
-      base::Bind(&ImageWriterUtilityClient::Shutdown, image_writer_client_));
+  g_utility_client.Get() = client;
 }
 #endif
 
@@ -244,6 +249,10 @@ void Operation::CompleteAndContinue(const base::Closure& continuation) {
 #if !defined(OS_CHROMEOS)
 void Operation::StartUtilityClient() {
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
+  if (g_utility_client.Get()) {
+    image_writer_client_ = g_utility_client.Get();
+    return;
+  }
   if (!image_writer_client_) {
     image_writer_client_ = new ImageWriterUtilityClient();
     AddCleanUpFunction(base::Bind(&Operation::StopUtilityClient, this));
