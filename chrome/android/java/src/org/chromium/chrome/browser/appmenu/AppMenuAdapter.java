@@ -100,7 +100,7 @@ class AppMenuAdapter extends BaseAdapter {
                 StandardMenuItemViewHolder holder = null;
                 if (convertView == null) {
                     holder = new StandardMenuItemViewHolder();
-                    convertView = mInflater.inflate(R.layout.menu_item, null);
+                    convertView = mInflater.inflate(R.layout.menu_item, parent, false);
                     holder.text = (TextView) convertView.findViewById(R.id.menu_item_text);
                     holder.image = (AppMenuItemIcon) convertView.findViewById(R.id.menu_item_icon);
                     convertView.setTag(holder);
@@ -132,7 +132,7 @@ class AppMenuAdapter extends BaseAdapter {
                 ThreeButtonMenuItemViewHolder holder = null;
                 if (convertView == null) {
                     holder = new ThreeButtonMenuItemViewHolder();
-                    convertView = mInflater.inflate(R.layout.three_button_menu_item, null);
+                    convertView = mInflater.inflate(R.layout.three_button_menu_item, parent, false);
                     holder.buttonOne = (ImageButton) convertView.findViewById(R.id.button_one);
                     holder.buttonTwo = (ImageButton) convertView.findViewById(R.id.button_two);
                     holder.buttonThree = (ImageButton) convertView.findViewById(R.id.button_three);
@@ -151,7 +151,7 @@ class AppMenuAdapter extends BaseAdapter {
                 FourButtonMenuItemViewHolder holder = null;
                 if (convertView == null) {
                     holder = new FourButtonMenuItemViewHolder();
-                    convertView = mInflater.inflate(R.layout.four_button_menu_item, null);
+                    convertView = mInflater.inflate(R.layout.four_button_menu_item, parent, false);
                     holder.buttonOne = (ImageButton) convertView.findViewById(R.id.button_one);
                     holder.buttonTwo = (ImageButton) convertView.findViewById(R.id.button_two);
                     holder.buttonThree = (ImageButton) convertView.findViewById(R.id.button_three);
@@ -172,9 +172,8 @@ class AppMenuAdapter extends BaseAdapter {
                 TitleButtonMenuItemViewHolder holder = null;
                 if (convertView == null) {
                     holder = new TitleButtonMenuItemViewHolder();
-                    convertView = mInflater.inflate(R.layout.title_button_menu_item, null);
+                    convertView = mInflater.inflate(R.layout.title_button_menu_item, parent, false);
                     holder.title = (TextView) convertView.findViewById(R.id.title);
-                    holder.divider = convertView.findViewById(R.id.divider);
                     holder.button = (ImageButton) convertView.findViewById(R.id.button);
                     convertView.setTag(holder);
                 } else {
@@ -192,11 +191,9 @@ class AppMenuAdapter extends BaseAdapter {
                 });
                 if (item.getSubMenu().getItem(1).getIcon() != null) {
                     holder.button.setVisibility(View.VISIBLE);
-                    holder.divider.setVisibility(View.VISIBLE);
                     setupImageButton(holder.button, item.getSubMenu().getItem(1));
                 } else {
                     holder.button.setVisibility(View.GONE);
-                    holder.divider.setVisibility(View.GONE);
                 }
                 convertView.setFocusable(false);
                 convertView.setEnabled(false);
@@ -245,7 +242,6 @@ class AppMenuAdapter extends BaseAdapter {
 
     static class TitleButtonMenuItemViewHolder {
         public TextView title;
-        public View divider;
         public ImageButton button;
     }
 }

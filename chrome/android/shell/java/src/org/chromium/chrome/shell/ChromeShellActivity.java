@@ -391,7 +391,7 @@ public class ChromeShellActivity extends Activity implements AppMenuPropertiesDe
 
     @Override
     public int getMenuThemeResourceId() {
-        return android.R.style.Theme_Holo_Light;
+        return R.style.OverflowMenuTheme;
     }
 
     @VisibleForTesting

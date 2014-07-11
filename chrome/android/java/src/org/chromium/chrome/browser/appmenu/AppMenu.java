@@ -65,7 +65,7 @@ public class AppMenu implements OnItemClickListener, OnKeyListener {
         mHandler = handler;
 
         mItemDividerHeight = itemDividerHeight;
-        assert mItemDividerHeight > 0;
+        assert mItemDividerHeight >= 0;
 
         mAdditionalVerticalOffset = res.getDimensionPixelSize(R.dimen.menu_vertical_offset);
         mVerticalFadeDistance = res.getDimensionPixelSize(R.dimen.menu_vertical_fade_distance);
@@ -98,6 +98,10 @@ public class AppMenu implements OnItemClickListener, OnKeyListener {
             }
         });
         mPopup.setWidth(context.getResources().getDimensionPixelSize(R.dimen.menu_width));
+
+        // Need to explicitly set the background here.  Relying on it being set in the style caused
+        // an incorrectly drawn background.
+        mPopup.setBackgroundDrawable(context.getResources().getDrawable(R.drawable.menu_bg));
 
         mCurrentScreenRotation = screenRotation;
         mIsByHardwareButton = isByHardwareButton;

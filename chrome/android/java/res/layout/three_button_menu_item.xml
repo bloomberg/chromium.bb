@@ -6,42 +6,31 @@
 -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
+    android:layout_height="?android:attr/listPreferredItemHeightSmall"
     android:layout_gravity="top|start"
     android:orientation="horizontal">
 
     <ImageButton
         android:id="@+id/button_one"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="match_parent"
         android:layout_weight="1"
         android:background="?android:attr/listChoiceBackgroundIndicator"
         android:scaleType="center" />
-
-    <View
-        android:layout_width="1dp"
-        android:layout_height="?android:attr/listPreferredItemHeightSmall"
-        android:background="?android:attr/listDivider" />
 
     <ImageButton
         android:id="@+id/button_two"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="match_parent"
         android:layout_weight="1"
         android:background="?android:attr/listChoiceBackgroundIndicator"
         android:scaleType="center" />
-
-    <View
-        android:layout_width="1dp"
-        android:layout_height="?android:attr/listPreferredItemHeightSmall"
-        android:background="?android:attr/listDivider" />
 
     <ImageButton
         android:id="@+id/button_three"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="match_parent"
         android:layout_weight="1"
         android:background="?android:attr/listChoiceBackgroundIndicator"
         android:scaleType="center" />
-
 </LinearLayout>

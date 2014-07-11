@@ -76,20 +76,21 @@ public class AppMenuHandler {
         }
         mDelegate.prepareMenu(mMenu);
 
+        ContextThemeWrapper wrapper = new ContextThemeWrapper(mActivity,
+                mDelegate.getMenuThemeResourceId());
+
         if (mAppMenu == null) {
-            TypedArray a = mActivity.obtainStyledAttributes(new int[]
+            TypedArray a = wrapper.obtainStyledAttributes(new int[]
                     {android.R.attr.listPreferredItemHeightSmall, android.R.attr.listDivider});
             int itemRowHeight = a.getDimensionPixelSize(0, 0);
             Drawable itemDivider = a.getDrawable(1);
-            int itemDividerHeight = itemDivider.getIntrinsicHeight();
+            int itemDividerHeight = itemDivider != null ? itemDivider.getIntrinsicHeight() : 0;
             a.recycle();
             mAppMenu = new AppMenu(mMenu, itemRowHeight, itemDividerHeight, this,
                     mActivity.getResources());
             mAppMenuDragHelper = new AppMenuDragHelper(mActivity, mAppMenu, itemRowHeight);
         }
 
-        ContextThemeWrapper wrapper = new ContextThemeWrapper(mActivity,
-                mDelegate.getMenuThemeResourceId());
         // Get the height and width of the display.
         Rect appRect = new Rect();
         mActivity.getWindow().getDecorView().getWindowVisibleDisplayFrame(appRect);

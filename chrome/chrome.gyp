@@ -649,6 +649,7 @@
             '../content/content.gyp:content_java',
             '../printing/printing.gyp:printing_java',
             '../sync/sync.gyp:sync_java',
+            '../third_party/android_tools/android_tools.gyp:android_support_v7_appcompat_javalib',
             '../third_party/guava/guava.gyp:guava_javalib',
             '../ui/android/ui_android.gyp:ui_java',
           ],
