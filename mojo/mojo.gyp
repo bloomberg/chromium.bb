@@ -51,6 +51,7 @@
     'mojo_apps.gypi',
     'mojo_examples.gypi',
     'mojo_public.gypi',
+    'mojo_public_tests.gypi',
     'mojo_services.gypi',
   ],
   'targets': [
