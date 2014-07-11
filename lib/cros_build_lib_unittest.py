@@ -745,6 +745,11 @@ class HelperMethodSimpleTests(cros_test_lib.TestCase):
     self.assertEqual(cros_build_lib.UserDateTimeFormat(timeval=timeval),
                      expected)
 
+  def testParseUserDateTimeFormat(self):
+    stringtime = cros_build_lib.UserDateTimeFormat(100000.0)
+    self.assertEqual(cros_build_lib.ParseUserDateTimeFormat(stringtime),
+                     100000.0)
+
 
 class YNInteraction():
   """Class to hold a list of responses and expected reault of YN prompt."""

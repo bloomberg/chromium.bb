@@ -7,7 +7,7 @@
 import collections
 import contextlib
 from datetime import datetime
-from email.utils import formatdate
+import email.utils
 import errno
 import functools
 import logging
@@ -1464,8 +1464,23 @@ def UserDateTimeFormat(timeval=None):
   """
   if isinstance(timeval, datetime):
     timeval = time.mktime(timeval.timetuple())
-  return '%s (%s)' % (formatdate(timeval=timeval, localtime=True),
-                      time.tzname[0])
+  return '%s (%s)' % (email.utils.formatdate(timeval=timeval, localtime=True),
+                                             time.tzname[0])
+
+
+def ParseUserDateTimeFormat(time_string):
+  """Parse a time string into a floating point time value.
+
+  This function is essentially the inverse of UserDateTimeFormat.
+
+  Args:
+    time_string: A string datetime represetation in RFC 2822 format, such as
+                 'Wed, 20 Feb 2013 15:25:15 -0500 (EST)'.
+
+  Returns:
+    Floating point Unix timestamp (seconds since epoch).
+  """
+  return email.utils.mktime_tz(email.utils.parsedate_tz(time_string))
 
 
 def GetDefaultBoard():
