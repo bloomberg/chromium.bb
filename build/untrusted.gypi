@@ -1324,7 +1324,9 @@
                '--name', '>(out_pnacl_newlib)',
                '--objdir', '>(objdir_pnacl_newlib)',
                '--include-dirs=>(tc_include_dir_pnacl_newlib) ^(include_dirs) >(_include_dirs)',
-               '--compile_flags=^(compile_flags) >(_compile_flags) ^(pnacl_compile_flags) >(_pnacl_compile_flags)',
+               # TODO(dschuff): try removing gline-tables-only after 3.5 merge
+               # when debug metadata is less memory-intensive
+               '--compile_flags=^(compile_flags) >(_compile_flags) -gline-tables-only ^(pnacl_compile_flags) >(_pnacl_compile_flags)',
                '--gomadir', '<(gomadir)',
                '--defines=^(defines) >(_defines)',
                '--link_flags=-B<(SHARED_INTERMEDIATE_DIR)/tc_pnacl_newlib/lib ^(link_flags) >(_link_flags)',
@@ -1495,7 +1497,9 @@
                '--name', '>(out_pnacl_newlib)',
                '--objdir', '>(objdir_pnacl_newlib)',
                '--include-dirs=>(tc_include_dir_pnacl_newlib) ^(include_dirs) >(_include_dirs)',
-               '--compile_flags=^(compile_flags) >(_compile_flags) ^(pnacl_compile_flags) >(_pnacl_compile_flags)',
+               # TODO(dschuff): try removing gline-tables-only after 3.5 merge
+               # when debug metadata is less memory-intensive
+               '--compile_flags=^(compile_flags) >(_compile_flags) -gline-tables-only ^(pnacl_compile_flags) >(_pnacl_compile_flags)',
                '--gomadir', '<(gomadir)',
                '--defines=^(defines) >(_defines)',
                '--link_flags=-B>(tc_lib_dir_pnacl_newlib) ^(link_flags) >(_link_flags)',
