@@ -607,7 +607,7 @@ void NativeAppWindowCocoa::Hide() {
 }
 
 void NativeAppWindowCocoa::Close() {
-  [window() performClose:nil];
+  [window() close];
 }
 
 void NativeAppWindowCocoa::Activate() {
