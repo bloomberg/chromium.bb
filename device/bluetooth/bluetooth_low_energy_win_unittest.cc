@@ -71,4 +71,15 @@ TEST_F(BluetoothLowEnergyWinTest, DeviceRegistryPropertyValueAsDWORD) {
   EXPECT_EQ(test_value, value->AsDWORD());
 }
 
+TEST_F(BluetoothLowEnergyWinTest, DevicePropertyValueAsUint32) {
+  uint32_t test_value = 5u;
+  size_t buffer_size = sizeof(uint32_t);
+  scoped_ptr<uint8_t[]> buffer(new uint8_t[buffer_size]);
+  memcpy(buffer.get(), &test_value, buffer_size);
+  scoped_ptr<device::win::DevicePropertyValue> value(
+      new device::win::DevicePropertyValue(
+          DEVPROP_TYPE_UINT32, buffer.Pass(), buffer_size));
+  EXPECT_EQ(test_value, value->AsUint32());
+}
+
 }  // namespace device
