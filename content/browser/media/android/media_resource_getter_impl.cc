@@ -190,8 +190,9 @@ void CookieGetterTask::CheckPolicyForCookies(
       resource_context_, render_process_id_, render_frame_id_)) {
     net::CookieStore* cookie_store =
         context_getter_->GetURLRequestContext()->cookie_store();
-    cookie_store->GetCookiesWithOptionsAsync(
-        url, net::CookieOptions(), callback);
+    net::CookieOptions options;
+    options.set_include_httponly();
+    cookie_store->GetCookiesWithOptionsAsync(url, options, callback);
   } else {
     callback.Run(std::string());
   }
