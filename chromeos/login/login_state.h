@@ -15,7 +15,6 @@ namespace chromeos {
 class CHROMEOS_EXPORT LoginState {
  public:
   enum LoggedInState {
-    LOGGED_IN_OOBE,       // Out of box experience not completed
     LOGGED_IN_NONE,       // Not logged in
     LOGGED_IN_SAFE_MODE,  // Not logged in and login not allowed for non-owners
     LOGGED_IN_ACTIVE      // A user has logged in

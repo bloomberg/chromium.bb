@@ -135,7 +135,7 @@ bool LoginState::IsUserGaiaAuthenticated() const {
 
 // Private methods
 
-LoginState::LoginState() : logged_in_state_(LOGGED_IN_OOBE),
+LoginState::LoginState() : logged_in_state_(LOGGED_IN_NONE),
                            logged_in_user_type_(LOGGED_IN_USER_NONE),
                            always_logged_in_(AlwaysLoggedInByDefault()) {
 }

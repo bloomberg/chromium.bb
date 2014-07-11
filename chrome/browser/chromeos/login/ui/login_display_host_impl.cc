@@ -1182,16 +1182,6 @@ void ShowLoginWizard(const std::string& first_screen_name) {
 
   gfx::Rect screen_bounds(chromeos::CalculateScreenBounds(gfx::Size()));
 
-  // Check whether we need to execute OOBE process.
-  bool oobe_complete = chromeos::StartupUtils::IsOobeCompleted();
-  if (!oobe_complete) {
-    LoginState::Get()->SetLoggedInState(
-        LoginState::LOGGED_IN_OOBE, LoginState::LOGGED_IN_USER_NONE);
-  } else {
-    LoginState::Get()->SetLoggedInState(
-        LoginState::LOGGED_IN_NONE, LoginState::LOGGED_IN_USER_NONE);
-  }
-
   LoginDisplayHost* display_host = new LoginDisplayHostImpl(screen_bounds);
 
   bool show_app_launch_splash_screen = (first_screen_name ==
@@ -1204,6 +1194,8 @@ void ShowLoginWizard(const std::string& first_screen_name) {
     return;
   }
 
+  // Check whether we need to execute OOBE process.
+  bool oobe_complete = chromeos::StartupUtils::IsOobeCompleted();
   policy::BrowserPolicyConnectorChromeOS* connector =
       g_browser_process->platform_part()->browser_policy_connector_chromeos();
   bool enrollment_screen_wanted =

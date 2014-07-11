@@ -36,7 +36,7 @@ class LoginStateNotificationBlockerChromeOSTest
     chromeos::LoginState::Shutdown();
   }
 
-  // message_center::NotificationBlocker::Observer ovverrides:
+  // message_center::NotificationBlocker::Observer overrides:
   virtual void OnBlockingStateChanged(
       message_center::NotificationBlocker* blocker) OVERRIDE {
     state_changed_count_++;
@@ -70,7 +70,7 @@ TEST_F(LoginStateNotificationBlockerChromeOSTest, BaseTest) {
   chromeos::LoginState::Get()->SetLoggedInState(
       chromeos::LoginState::LOGGED_IN_NONE,
       chromeos::LoginState::LOGGED_IN_USER_NONE);
-  EXPECT_EQ(1, GetStateChangedCountAndReset());
+  EXPECT_EQ(0, GetStateChangedCountAndReset());
   EXPECT_FALSE(ShouldShowNotificationAsPopup(notifier_id));
 
   // Logged in as a normal user.
@@ -104,7 +104,7 @@ TEST_F(LoginStateNotificationBlockerChromeOSTest, AlwaysAllowedNotifier) {
   chromeos::LoginState::Get()->SetLoggedInState(
       chromeos::LoginState::LOGGED_IN_NONE,
       chromeos::LoginState::LOGGED_IN_USER_NONE);
-  EXPECT_EQ(1, GetStateChangedCountAndReset());
+  EXPECT_EQ(0, GetStateChangedCountAndReset());
   EXPECT_TRUE(ShouldShowNotificationAsPopup(notifier_id));
 
   // Logged in as a normal user.
