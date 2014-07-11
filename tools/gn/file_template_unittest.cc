@@ -14,7 +14,8 @@ TEST(FileTemplate, Static) {
 
   std::vector<std::string> templates;
   templates.push_back("something_static");
-  FileTemplate t(setup.settings(), templates);
+  FileTemplate t(setup.settings(), templates,
+                 FileTemplate::OUTPUT_ABSOLUTE, SourceDir("//"));
   EXPECT_FALSE(t.has_substitutions());
 
   std::vector<std::string> result;
@@ -29,7 +30,8 @@ TEST(FileTemplate, Typical) {
   std::vector<std::string> templates;
   templates.push_back("foo/{{source_name_part}}.cc");
   templates.push_back("foo/{{source_name_part}}.h");
-  FileTemplate t(setup.settings(), templates);
+  FileTemplate t(setup.settings(), templates,
+                 FileTemplate::OUTPUT_ABSOLUTE, SourceDir("//"));
   EXPECT_TRUE(t.has_substitutions());
 
   std::vector<std::string> result;
@@ -44,7 +46,9 @@ TEST(FileTemplate, Weird) {
 
   std::vector<std::string> templates;
   templates.push_back("{{{source}}{{source}}{{");
-  FileTemplate t(setup.settings(), templates);
+  FileTemplate t(setup.settings(), templates,
+                 FileTemplate::OUTPUT_RELATIVE,
+                 setup.settings()->build_settings()->build_dir());
   EXPECT_TRUE(t.has_substitutions());
 
   std::vector<std::string> result;
@@ -62,7 +66,9 @@ TEST(FileTemplate, NinjaExpansions) {
   templates.push_back("--out=foo bar\"{{source_name_part}}\".o");
   templates.push_back("");  // Test empty string.
 
-  FileTemplate t(setup.settings(), templates);
+  FileTemplate t(setup.settings(), templates,
+                 FileTemplate::OUTPUT_RELATIVE,
+                 setup.settings()->build_settings()->build_dir());
 
   std::ostringstream out;
   t.WriteWithNinjaExpansions(out);
@@ -95,13 +101,15 @@ TEST(FileTemplate, NinjaVariables) {
   templates.push_back("{{source_gen_dir}}");
   templates.push_back("{{source_out_dir}}");
 
-  FileTemplate t(setup.settings(), templates);
+  FileTemplate t(setup.settings(), templates,
+                 FileTemplate::OUTPUT_RELATIVE,
+                 setup.settings()->build_settings()->build_dir());
 
   std::ostringstream out;
   EscapeOptions options;
   options.mode = ESCAPE_NINJA_COMMAND;
-  t.WriteNinjaVariablesForSubstitution(out, setup.settings(),
-                                       SourceFile("//foo/bar.txt"), options);
+  t.WriteNinjaVariablesForSubstitution(out, SourceFile("//foo/bar.txt"),
+                                       options);
 
   // Just the variables used above should be written.
   EXPECT_EQ(
@@ -120,27 +128,56 @@ TEST(FileTemplate, NinjaVariables) {
 TEST(FileTemplate, Substitutions) {
   TestWithScope setup;
 
-  #define GetSubst(str, what) \
-      FileTemplate::GetSubstitution(setup.settings(), \
-                                    SourceFile(str), \
-                                    FileTemplate::Subrange::what)
+  // Call to get substitutions relative to the build dir.
+  #define GetRelSubst(str, what) \
+      FileTemplate::GetSubstitution( \
+          setup.settings(), \
+          SourceFile(str), \
+          FileTemplate::Subrange::what, \
+          FileTemplate::OUTPUT_RELATIVE, \
+          setup.settings()->build_settings()->build_dir())
+
+  // Call to get absolute directory substitutions.
+  #define GetAbsSubst(str, what) \
+      FileTemplate::GetSubstitution( \
+          setup.settings(), \
+          SourceFile(str), \
+          FileTemplate::Subrange::what, \
+          FileTemplate::OUTPUT_ABSOLUTE, \
+          SourceDir())
 
   // Try all possible templates with a normal looking string.
-  EXPECT_EQ("../../foo/bar/baz.txt", GetSubst("//foo/bar/baz.txt", SOURCE));
-  EXPECT_EQ("baz", GetSubst("//foo/bar/baz.txt", NAME_PART));
-  EXPECT_EQ("baz.txt", GetSubst("//foo/bar/baz.txt", FILE_PART));
-  EXPECT_EQ("../../foo/bar", GetSubst("//foo/bar/baz.txt", SOURCE_DIR));
-  EXPECT_EQ("foo/bar", GetSubst("//foo/bar/baz.txt", ROOT_RELATIVE_DIR));
-  EXPECT_EQ("gen/foo/bar", GetSubst("//foo/bar/baz.txt", SOURCE_GEN_DIR));
-  EXPECT_EQ("obj/foo/bar", GetSubst("//foo/bar/baz.txt", SOURCE_OUT_DIR));
+  EXPECT_EQ("../../foo/bar/baz.txt", GetRelSubst("//foo/bar/baz.txt", SOURCE));
+  EXPECT_EQ("//foo/bar/baz.txt", GetAbsSubst("//foo/bar/baz.txt", SOURCE));
+
+  EXPECT_EQ("baz", GetRelSubst("//foo/bar/baz.txt", NAME_PART));
+  EXPECT_EQ("baz", GetAbsSubst("//foo/bar/baz.txt", NAME_PART));
+
+  EXPECT_EQ("baz.txt", GetRelSubst("//foo/bar/baz.txt", FILE_PART));
+  EXPECT_EQ("baz.txt", GetAbsSubst("//foo/bar/baz.txt", FILE_PART));
+
+  EXPECT_EQ("../../foo/bar", GetRelSubst("//foo/bar/baz.txt", SOURCE_DIR));
+  EXPECT_EQ("//foo/bar", GetAbsSubst("//foo/bar/baz.txt", SOURCE_DIR));
+
+  EXPECT_EQ("foo/bar", GetRelSubst("//foo/bar/baz.txt", ROOT_RELATIVE_DIR));
+  EXPECT_EQ("foo/bar", GetAbsSubst("//foo/bar/baz.txt", ROOT_RELATIVE_DIR));
+
+  EXPECT_EQ("gen/foo/bar", GetRelSubst("//foo/bar/baz.txt", SOURCE_GEN_DIR));
+  EXPECT_EQ("//out/Debug/gen/foo/bar",
+            GetAbsSubst("//foo/bar/baz.txt", SOURCE_GEN_DIR));
+
+  EXPECT_EQ("obj/foo/bar", GetRelSubst("//foo/bar/baz.txt", SOURCE_OUT_DIR));
+  EXPECT_EQ("//out/Debug/obj/foo/bar",
+            GetAbsSubst("//foo/bar/baz.txt", SOURCE_OUT_DIR));
 
   // Operations on an absolute path.
-  EXPECT_EQ("/baz.txt", GetSubst("/baz.txt", SOURCE));
-  EXPECT_EQ("/.", GetSubst("/baz.txt", SOURCE_DIR));
-  EXPECT_EQ("gen", GetSubst("/baz.txt", SOURCE_GEN_DIR));
-  EXPECT_EQ("obj", GetSubst("/baz.txt", SOURCE_OUT_DIR));
+  EXPECT_EQ("/baz.txt", GetRelSubst("/baz.txt", SOURCE));
+  EXPECT_EQ("/.", GetRelSubst("/baz.txt", SOURCE_DIR));
+  EXPECT_EQ("gen", GetRelSubst("/baz.txt", SOURCE_GEN_DIR));
+  EXPECT_EQ("obj", GetRelSubst("/baz.txt", SOURCE_OUT_DIR));
 
-  EXPECT_EQ(".", GetSubst("//baz.txt", ROOT_RELATIVE_DIR));
+  EXPECT_EQ(".", GetRelSubst("//baz.txt", ROOT_RELATIVE_DIR));
 
-  #undef GetSubst
+  #undef GetAbsSubst
+  #undef GetRelSubst
 }

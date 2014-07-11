@@ -10,6 +10,7 @@
 #include "base/basictypes.h"
 #include "base/containers/stack_container.h"
 #include "tools/gn/err.h"
+#include "tools/gn/source_dir.h"
 #include "tools/gn/value.h"
 
 struct EscapeOptions;
@@ -30,6 +31,11 @@ extern const char kSourceExpansion_Help[];
 // substitutions.
 class FileTemplate {
  public:
+  enum OutputStyle {
+    OUTPUT_ABSOLUTE,  // Dirs will be absolute "//foo/bar".
+    OUTPUT_RELATIVE,  // Dirs will be relative to a given directory.
+  };
+
   struct Subrange {
     // See the help in the .cc file for what these mean.
     enum Type {
@@ -58,9 +64,19 @@ class FileTemplate {
 
   // Constructs a template from the given value. On error, the err will be
   // set. In this case you should not use this object.
-  FileTemplate(const Settings* settings, const Value& t, Err* err);
-  FileTemplate(const Settings* settings, const std::vector<std::string>& t);
-  FileTemplate(const Settings* settings, const std::vector<SourceFile>& t);
+  FileTemplate(const Settings* settings,
+               const Value& t,
+               OutputStyle output_style,
+               const SourceDir& relative_to,
+               Err* err);
+  FileTemplate(const Settings* settings,
+               const std::vector<std::string>& t,
+               OutputStyle output_style,
+               const SourceDir& relative_to);
+  FileTemplate(const Settings* settings,
+               const std::vector<SourceFile>& t,
+               OutputStyle output_style,
+               const SourceDir& relative_to);
 
   ~FileTemplate();
 
@@ -105,7 +121,6 @@ class FileTemplate {
   // (see GetWithNinjaExpansions).
   void WriteNinjaVariablesForSubstitution(
       std::ostream& out,
-      const Settings* settings,
       const SourceFile& source,
       const EscapeOptions& escape_options) const;
 
@@ -113,13 +128,18 @@ class FileTemplate {
   // substitute for the given type.
   static const char* GetNinjaVariableNameForType(Subrange::Type type);
 
-  // Extracts the given type of substitution from the given source. The source
-  // should be the file name relative to the output directory.
+  // Extracts the given type of substitution from the given source file.
+  // If output_style is RELATIVE, relative_to indicates the directory that the
+  // relative directories should be relative to, otherwise it is ignored.
   static std::string GetSubstitution(const Settings* settings,
                                      const SourceFile& source,
-                                     Subrange::Type type);
+                                     Subrange::Type type,
+                                     OutputStyle output_style,
+                                     const SourceDir& relative_to);
 
-  // Known template types, these include the "{{ }}"
+  // Known template types, these include the "{{ }}".
+  // IF YOU ADD NEW ONES: If the expansion expands to something inside the
+  // output directory, also update EnsureStringIsInOutputDir.
   static const char kSource[];
   static const char kSourceNamePart[];
   static const char kSourceFilePart[];
@@ -138,6 +158,8 @@ class FileTemplate {
   void ParseOneTemplateString(const std::string& str);
 
   const Settings* settings_;
+  OutputStyle output_style_;
+  SourceDir relative_to_;
 
   TemplateVector templates_;
 

@@ -248,6 +248,25 @@ void PrintFileList(const Target::FileList& files,
     OutputString(indent + sorted[i].value() + "\n");
 }
 
+// This sorts the list.
+void PrintStringList(const std::vector<std::string>& strings,
+                     const std::string& header,
+                     bool indent_extra,
+                     bool display_header) {
+  if (strings.empty())
+    return;
+
+  if (display_header)
+    OutputString("\n" + header + ":\n");
+
+  std::string indent = indent_extra ? "    " : "  ";
+
+  std::vector<std::string> sorted = strings;
+  std::sort(sorted.begin(), sorted.end());
+  for (size_t i = 0; i < sorted.size(); i++)
+    OutputString(indent + sorted[i] + "\n");
+}
+
 void PrintSources(const Target* target, bool display_header) {
   PrintFileList(target->sources(), "sources", false, display_header);
 }
@@ -259,16 +278,17 @@ void PrintInputs(const Target* target, bool display_header) {
 void PrintOutputs(const Target* target, bool display_header) {
   if (target->output_type() == Target::ACTION) {
     // Just display the outputs directly.
-    PrintFileList(target->action_values().outputs(), "outputs", false,
-                  display_header);
-  } else if (target->output_type() == Target::ACTION_FOREACH) {
+    PrintStringList(target->action_values().outputs(), "outputs", false,
+                    display_header);
+  } else if (target->output_type() == Target::ACTION_FOREACH ||
+             target->output_type() == Target::COPY_FILES) {
     // Display both the output pattern and resolved list.
     if (display_header)
       OutputString("\noutputs:\n");
 
     // Display the pattern.
     OutputString("  Output pattern:\n");
-    PrintFileList(target->action_values().outputs(), "", true, false);
+    PrintStringList(target->action_values().outputs(), "", true, false);
 
     // Now display what that resolves to given the sources.
     OutputString("\n  Resolved output file list:\n");
@@ -277,11 +297,7 @@ void PrintOutputs(const Target* target, bool display_header) {
     FileTemplate file_template = FileTemplate::GetForTargetOutputs(target);
     for (size_t i = 0; i < target->sources().size(); i++)
       file_template.Apply(target->sources()[i], &output_strings);
-
-    std::sort(output_strings.begin(), output_strings.end());
-    for (size_t i = 0; i < output_strings.size(); i++) {
-      OutputString("    " + output_strings[i] + "\n");
-    }
+    PrintStringList(output_strings, "", true, false);
   }
 }
 

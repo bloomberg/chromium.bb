@@ -16,14 +16,14 @@ TEST(NinjaActionTargetWriter, WriteOutputFilesForBuildLine) {
   Target target(setup.settings(), Label(SourceDir("//foo/"), "bar"));
 
   target.action_values().outputs().push_back(
-      SourceFile("//out/Debug/gen/a b{{source_name_part}}.h"));
+      "//out/Debug/gen/a b{{source_name_part}}.h");
   target.action_values().outputs().push_back(
-      SourceFile("//out/Debug/gen/{{source_name_part}}.cc"));
+      "//out/Debug/gen/{{source_name_part}}.cc");
 
   std::ostringstream out;
   NinjaActionTargetWriter writer(&target, setup.toolchain(), out);
 
-  FileTemplate output_template = writer.GetOutputTemplate();
+  FileTemplate output_template = FileTemplate::GetForTargetOutputs(&target);
 
   SourceFile source("//foo/bar.in");
   std::vector<OutputFile> output_files;
@@ -44,7 +44,9 @@ TEST(NinjaActionTargetWriter, WriteArgsSubstitutions) {
   args.push_back("-i");
   args.push_back("{{source}}");
   args.push_back("--out=foo bar{{source_name_part}}.o");
-  FileTemplate args_template(setup.settings(), args);
+  FileTemplate args_template(setup.settings(), args,
+                             FileTemplate::OUTPUT_RELATIVE,
+                             setup.settings()->build_settings()->build_dir());
 
   writer.WriteArgsSubstitutions(SourceFile("//foo/b ar.in"), args_template);
 #if defined(OS_WIN)
@@ -71,8 +73,7 @@ TEST(NinjaActionTargetWriter, ActionWithSources) {
   target.sources().push_back(SourceFile("//foo/source.txt"));
   target.inputs().push_back(SourceFile("//foo/included.txt"));
 
-  target.action_values().outputs().push_back(
-      SourceFile("//out/Debug/foo.out"));
+  target.action_values().outputs().push_back("//out/Debug/foo.out");
 
   // Posix.
   {
@@ -156,7 +157,7 @@ TEST(NinjaActionTargetWriter, ForEach) {
       "--out=foo bar{{source_name_part}}.o");
 
   target.action_values().outputs().push_back(
-      SourceFile("//out/Debug/{{source_name_part}}.out"));
+      "//out/Debug/{{source_name_part}}.out");
 
   target.inputs().push_back(SourceFile("//foo/included.txt"));
 
@@ -265,7 +266,7 @@ TEST(NinjaActionTargetWriter, ForEachWithDepfile) {
       "--out=foo bar{{source_name_part}}.o");
 
   target.action_values().outputs().push_back(
-      SourceFile("//out/Debug/{{source_name_part}}.out"));
+      "//out/Debug/{{source_name_part}}.out");
 
   target.inputs().push_back(SourceFile("//foo/included.txt"));
 

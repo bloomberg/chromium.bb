@@ -71,7 +71,8 @@ Value RunProcessFileTemplate(Scope* scope,
     return Value();
   }
 
-  FileTemplate file_template(scope->settings(), args[1], err);
+  FileTemplate file_template(scope->settings(), args[1],
+                             FileTemplate::OUTPUT_ABSOLUTE, SourceDir(), err);
   if (err->has_error())
     return Value();
 

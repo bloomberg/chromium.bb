@@ -104,11 +104,16 @@ base::StringPiece FindLastDirComponent(const SourceDir& dir);
 //
 // The originating value will be blamed in the error.
 //
+// Setting allow_templates indicates that the result will be put into a
+// FileTemplate and it will allow the strings to be prefixed with expansions
+// that would include the output path.
+//
 // If the file isn't in the dir, returns false and sets the error. Otherwise
 // returns true and leaves the error untouched.
 bool EnsureStringIsInOutputDir(const SourceDir& dir,
                                const std::string& str,
                                const Value& originating,
+                               bool allow_templates,
                                Err* err);
 
 // ----------------------------------------------------------------------------

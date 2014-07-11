@@ -22,7 +22,7 @@ TEST(NinjaCopyTargetWriter, Run) {
   target.sources().push_back(SourceFile("//foo/input2.txt"));
 
   target.action_values().outputs().push_back(
-      SourceFile("//out/Debug/{{source_name_part}}.out"));
+      "//out/Debug/{{source_name_part}}.out");
 
   std::ostringstream out;
   NinjaCopyTargetWriter writer(&target, setup.toolchain(), out);
@@ -56,8 +56,7 @@ TEST(NinjaCopyTargetWriter, ToolchainDeps) {
 
   target.sources().push_back(SourceFile("//foo/input1.txt"));
 
-  target.action_values().outputs().push_back(
-      SourceFile("//out/Debug/output.out"));
+  target.action_values().outputs().push_back("//out/Debug/output.out");
 
   std::ostringstream out;
   NinjaCopyTargetWriter writer(&target, setup.toolchain(), out);

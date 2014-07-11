@@ -11,6 +11,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "tools/gn/file_template.h"
 #include "tools/gn/location.h"
 #include "tools/gn/settings.h"
 #include "tools/gn/source_dir.h"
@@ -334,23 +335,28 @@ base::StringPiece FindLastDirComponent(const SourceDir& dir) {
 bool EnsureStringIsInOutputDir(const SourceDir& dir,
                                const std::string& str,
                                const Value& originating,
+                               bool allow_templates,
                                Err* err) {
-  // The last char of the dir will be a slash. We don't care if the input ends
-  // in a slash or not, so just compare up until there.
-  //
   // This check will be wrong for all proper prefixes "e.g. "/output" will
   // match "/out" but we don't really care since this is just a sanity check.
   const std::string& dir_str = dir.value();
-  if (str.compare(0, dir_str.length() - 1, dir_str, 0, dir_str.length() - 1)
-      != 0) {
-    *err = Err(originating, "File is not inside output directory.",
-        "The given file should be in the output directory. Normally you would "
-        "specify\n\"$target_out_dir/foo\" or "
-        "\"$target_gen_dir/foo\". I interpreted this as\n\""
-        + str + "\".");
-    return false;
+  if (str.compare(0, dir_str.length(), dir_str, 0, dir_str.length()) == 0)
+    return true;  // Output directory is hardcoded.
+
+  if (allow_templates) {
+    // Allow the string to begin with any source expansion inside the output
+    // directory.
+    if (StartsWithASCII(str, FileTemplate::kSourceGenDir, true) ||
+        StartsWithASCII(str, FileTemplate::kSourceOutDir, true))
+      return true;
   }
-  return true;
+
+  *err = Err(originating, "File is not inside output directory.",
+      "The given file should be in the output directory. Normally you would "
+      "specify\n\"$target_out_dir/foo\" or "
+      "\"$target_gen_dir/foo\". I interpreted this as\n\""
+      + str + "\".");
+  return false;
 }
 
 bool IsPathAbsolute(const base::StringPiece& path) {

@@ -168,15 +168,3 @@ std::string NinjaTargetWriter::WriteInputDepsStampAndGetDep(
   out_ << "\n";
   return " | " + stamp_file_string;
 }
-
-FileTemplate NinjaTargetWriter::GetOutputTemplate() const {
-  const Target::FileList& outputs = target_->action_values().outputs();
-  std::vector<std::string> output_template_args;
-  for (size_t i = 0; i < outputs.size(); i++) {
-    // All outputs should be in the output dir.
-    output_template_args.push_back(
-        RemovePrefix(outputs[i].value(),
-                     settings_->build_settings()->build_dir().value()));
-  }
-  return FileTemplate(target_->settings(), output_template_args);
-}

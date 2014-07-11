@@ -82,11 +82,26 @@ TEST_F(GetTargetOutputsTest, SourceSet) {
   AssertSingleStringEquals(result, "//out/Debug/obj/foo/bar.stamp");
 }
 
+TEST_F(GetTargetOutputsTest, Copy) {
+  Target* action = new Target(setup_.settings(), GetLabel("//foo/", "bar"));
+  action->set_output_type(Target::COPY_FILES);
+  action->sources().push_back(SourceFile("//file.txt"));
+  action->action_values().outputs().push_back(
+      "//out/Debug/{{source_file_part}}.one");
+
+  items_.push_back(new scoped_ptr<Item>(action));
+
+  Err err;
+  Value result = GetTargetOutputs("//foo:bar", &err);
+  ASSERT_FALSE(err.has_error());
+  AssertSingleStringEquals(result, "//out/Debug/file.txt.one");
+}
+
 TEST_F(GetTargetOutputsTest, Action) {
   Target* action = new Target(setup_.settings(), GetLabel("//foo/", "bar"));
   action->set_output_type(Target::ACTION);
-  action->action_values().outputs().push_back(SourceFile("//output1.txt"));
-  action->action_values().outputs().push_back(SourceFile("//output2.txt"));
+  action->action_values().outputs().push_back("//output1.txt");
+  action->action_values().outputs().push_back("//output2.txt");
 
   items_.push_back(new scoped_ptr<Item>(action));
 
@@ -101,9 +116,9 @@ TEST_F(GetTargetOutputsTest, ActionForeach) {
   action->set_output_type(Target::ACTION_FOREACH);
   action->sources().push_back(SourceFile("//file.txt"));
   action->action_values().outputs().push_back(
-      SourceFile("//out/Debug/{{source_file_part}}.one"));
+      "//out/Debug/{{source_file_part}}.one");
   action->action_values().outputs().push_back(
-      SourceFile("//out/Debug/{{source_file_part}}.two"));
+      "//out/Debug/{{source_file_part}}.two");
 
   items_.push_back(new scoped_ptr<Item>(action));
 

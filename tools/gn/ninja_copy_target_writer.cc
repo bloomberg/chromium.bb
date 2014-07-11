@@ -19,7 +19,7 @@ NinjaCopyTargetWriter::~NinjaCopyTargetWriter() {
 
 void NinjaCopyTargetWriter::Run() {
   CHECK(target_->action_values().outputs().size() == 1);
-  FileTemplate output_template(GetOutputTemplate());
+  FileTemplate output_template = FileTemplate::GetForTargetOutputs(target_);
 
   std::vector<OutputFile> output_files;
 
@@ -35,8 +35,12 @@ void NinjaCopyTargetWriter::Run() {
     std::vector<std::string> template_result;
     output_template.Apply(input_file, &template_result);
     CHECK(template_result.size() == 1);
-    OutputFile output_file(template_result[0]);
 
+    // All output files should be in the build directory, so we can rebase
+    // them just by trimming the prefix.
+    OutputFile output_file(
+        RemovePrefix(template_result[0],
+                     settings_->build_settings()->build_dir().value()));
     output_files.push_back(output_file);
 
     out_ << "build ";

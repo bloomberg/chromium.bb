@@ -23,8 +23,11 @@ NinjaActionTargetWriter::~NinjaActionTargetWriter() {
 }
 
 void NinjaActionTargetWriter::Run() {
-  FileTemplate args_template(target_->settings(),
-                             target_->action_values().args());
+  FileTemplate args_template(
+      target_->settings(),
+      target_->action_values().args(),
+      FileTemplate::OUTPUT_RELATIVE,
+      target_->settings()->build_settings()->build_dir());
   std::string custom_rule_name = WriteRuleDefinition(args_template);
 
   // Collect our deps to pass as "extra hard dependencies" for input deps. This
@@ -58,10 +61,11 @@ void NinjaActionTargetWriter::Run() {
     // Write a rule that invokes the script once with the outputs as outputs,
     // and the data as inputs.
     out_ << "build";
-    const Target::FileList& outputs = target_->action_values().outputs();
+    const std::vector<std::string>& outputs =
+        target_->action_values().outputs();
     for (size_t i = 0; i < outputs.size(); i++) {
       OutputFile output_path(
-          RemovePrefix(outputs[i].value(),
+          RemovePrefix(outputs[i],
                        settings_->build_settings()->build_dir().value()));
       output_files.push_back(output_path);
       out_ << " ";
@@ -141,7 +145,7 @@ void NinjaActionTargetWriter::WriteArgsSubstitutions(
   template_escape_options.mode = ESCAPE_NINJA_COMMAND;
 
   args_template.WriteNinjaVariablesForSubstitution(
-      out_, target_->settings(), source, template_escape_options);
+      out_, source, template_escape_options);
 }
 
 void NinjaActionTargetWriter::WriteSourceRules(
@@ -149,7 +153,7 @@ void NinjaActionTargetWriter::WriteSourceRules(
     const std::string& implicit_deps,
     const FileTemplate& args_template,
     std::vector<OutputFile>* output_files) {
-  FileTemplate output_template(GetOutputTemplate());
+  FileTemplate output_template = FileTemplate::GetForTargetOutputs(target_);
 
   const Target::FileList& sources = target_->sources();
   for (size_t i = 0; i < sources.size(); i++) {
@@ -208,7 +212,11 @@ void NinjaActionTargetWriter::WriteOutputFilesForBuildLine(
   std::vector<std::string> output_template_result;
   output_template.Apply(source, &output_template_result);
   for (size_t out_i = 0; out_i < output_template_result.size(); out_i++) {
-    OutputFile output_path(output_template_result[out_i]);
+    // All output files should be in the build directory, so we can rebase
+    // them just by trimming the prefix.
+    OutputFile output_path(
+        RemovePrefix(output_template_result[out_i],
+                     settings_->build_settings()->build_dir().value()));
     output_files->push_back(output_path);
     out_ << " ";
     path_output_.WriteFile(out_, output_path);
@@ -227,5 +235,6 @@ FileTemplate NinjaActionTargetWriter::GetDepfileTemplate() const {
       RemovePrefix(target_->action_values().depfile().value(),
                    settings_->build_settings()->build_dir().value());
   template_args.push_back(depfile_relative_to_build_dir);
-  return FileTemplate(settings_, template_args);
+  return FileTemplate(settings_, template_args, FileTemplate::OUTPUT_ABSOLUTE,
+                      SourceDir());
 }

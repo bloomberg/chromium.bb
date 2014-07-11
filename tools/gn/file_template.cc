@@ -44,10 +44,9 @@ const char kSourceExpansion_Help[] =
     "Placeholders\n"
     "\n"
     "  {{source}}\n"
-    "      The name of the source file relative to the root build output\n"
-    "      directory (which is the current directory when running compilers\n"
-    "      and scripts). This will generally be used for specifying inputs\n"
-    "      to a script in the \"args\" variable.\n"
+    "      The name of the source file including directory (*). This will\n"
+    "      generally be used for specifying inputs to a script in the\n"
+    "      \"args\" variable.\n"
     "        \"//foo/bar/baz.txt\" => \"../../foo/bar/baz.txt\"\n"
     "\n"
     "  {{source_file_part}}\n"
@@ -62,33 +61,47 @@ const char kSourceExpansion_Help[] =
     "        \"//foo/bar/baz.txt\" => \"baz\"\n"
     "\n"
     "  {{source_dir}}\n"
-    "      The directory containing the source file, relative to the build\n"
-    "      directory, with no trailing slash.\n"
+    "      The directory (*) containing the source file with no\n"
+    "      trailing slash.\n"
     "        \"//foo/bar/baz.txt\" => \"../../foo/bar\"\n"
     "\n"
     "  {{source_root_relative_dir}}\n"
     "      The path to the source file's directory relative to the source\n"
     "      root, with no leading \"//\" or trailing slashes. If the path is\n"
     "      system-absolute, (beginning in a single slash) this will just\n"
-    "      return the path with no trailing slash.\n"
+    "      return the path with no trailing slash. This value will always\n"
+    "      be the same, regardless of whether it appears in the \"outputs\"\n"
+    "      or \"args\" section.\n"
     "        \"//foo/bar/baz.txt\" => \"foo/bar\"\n"
     "\n"
     "  {{source_gen_dir}}\n"
-    "      The generated file directory corresponding to the source file's\n"
-    "      path, relative to the build directory. This will be different than\n"
-    "      the target's generated file directory if the source file is in a\n"
-    "      different directory than the build.gn file. If the input path is\n"
-    "      system absolute, this will return the root generated file\n"
-    "      directory."
+    "      The generated file directory (*) corresponding to the source\n"
+    "      file's path. This will be different than the target's generated\n"
+    "      file directory if the source file is in a different directory\n"
+    "      than the BUILD.gn file.\n"
     "        \"//foo/bar/baz.txt\" => \"gen/foo/bar\"\n"
     "\n"
     "  {{source_out_dir}}\n"
-    "      The object file directory corresponding to the source file's\n"
+    "      The object file directory (*) corresponding to the source file's\n"
     "      path, relative to the build directory. this us be different than\n"
     "      the target's out directory if the source file is in a different\n"
-    "      directory than the build.gn file. if the input path is system\n"
-    "      absolute, this will return the root generated file directory.\n"
+    "      directory than the build.gn file.\n"
     "        \"//foo/bar/baz.txt\" => \"obj/foo/bar\"\n"
+    "\n"
+    "(*) Note on directories\n"
+    "\n"
+    "  Paths containing directories (except the source_root_relative_dir)\n"
+    "  will be different depending on what context the expansion is evaluated\n"
+    "  in. Generally it should \"just work\" but it means you can't\n"
+    "  concatenate strings containing these values with reasonable results.\n"
+    "\n"
+    "  Details: source expansions can be used in the \"outputs\" variable,\n"
+    "  the \"args\" variable, and in calls to \"process_file_template\". The\n"
+    "  \"args\" are passed to a script which is run from the build directory,\n"
+    "  so these directories will relative to the build directory for the\n"
+    "  script to find. In the other cases, the directories will be source-\n"
+    "  absolute (begin with a \"//\") because the results of those expansions\n"
+    "  will be handled by GN internally.\n"
     "\n"
     "Examples\n"
     "\n"
@@ -103,8 +116,8 @@ const char kSourceExpansion_Help[] =
     "  Varying outputs:\n"
     "    action_foreach(\"varying_outputs\") {\n"
     "      sources = [ \"input1.idl\", \"input2.idl\" ]\n"
-    "      outputs = [ \"$target_out_dir/{{source_name_part}}.h\",\n"
-    "                  \"$target_out_dir/{{source_name_part}}.cc\" ]\n"
+    "      outputs = [ \"{{source_gen_dir}}/{{source_name_part}}.h\",\n"
+    "                  \"{{source_gen_dir}}/{{source_name_part}}.cc\" ]\n"
     "    }\n"
     "  Performing source expansion will result in the following output names:\n"
     "    //out/Debug/obj/mydirectory/input1.h\n"
@@ -112,16 +125,26 @@ const char kSourceExpansion_Help[] =
     "    //out/Debug/obj/mydirectory/input2.h\n"
     "    //out/Debug/obj/mydirectory/input2.cc\n";
 
-FileTemplate::FileTemplate(const Settings* settings, const Value& t, Err* err)
+FileTemplate::FileTemplate(const Settings* settings,
+                           const Value& t,
+                           OutputStyle output_style,
+                           const SourceDir& relative_to,
+                           Err* err)
     : settings_(settings),
+      output_style_(output_style),
+      relative_to_(relative_to),
       has_substitutions_(false) {
   std::fill(types_required_, &types_required_[Subrange::NUM_TYPES], false);
   ParseInput(t, err);
 }
 
 FileTemplate::FileTemplate(const Settings* settings,
-                           const std::vector<std::string>& t)
+                           const std::vector<std::string>& t,
+                           OutputStyle output_style,
+                           const SourceDir& relative_to)
     : settings_(settings),
+      output_style_(output_style),
+      relative_to_(relative_to),
       has_substitutions_(false) {
   std::fill(types_required_, &types_required_[Subrange::NUM_TYPES], false);
   for (size_t i = 0; i < t.size(); i++)
@@ -129,8 +152,12 @@ FileTemplate::FileTemplate(const Settings* settings,
 }
 
 FileTemplate::FileTemplate(const Settings* settings,
-                           const std::vector<SourceFile>& t)
+                           const std::vector<SourceFile>& t,
+                           OutputStyle output_style,
+                           const SourceDir& relative_to)
     : settings_(settings),
+      output_style_(output_style),
+      relative_to_(relative_to),
       has_substitutions_(false) {
   std::fill(types_required_, &types_required_[Subrange::NUM_TYPES], false);
   for (size_t i = 0; i < t.size(); i++)
@@ -142,11 +169,12 @@ FileTemplate::~FileTemplate() {
 
 // static
 FileTemplate FileTemplate::GetForTargetOutputs(const Target* target) {
-  const Target::FileList& outputs = target->action_values().outputs();
+  const std::vector<std::string>& outputs = target->action_values().outputs();
   std::vector<std::string> output_template_args;
   for (size_t i = 0; i < outputs.size(); i++)
-    output_template_args.push_back(outputs[i].value());
-  return FileTemplate(target->settings(), output_template_args);
+    output_template_args.push_back(outputs[i]);
+  return FileTemplate(target->settings(), output_template_args,
+                      OUTPUT_ABSOLUTE, SourceDir());
 }
 
 bool FileTemplate::IsTypeUsed(Subrange::Type type) const {
@@ -161,8 +189,9 @@ void FileTemplate::Apply(const SourceFile& source,
   std::string subst[Subrange::NUM_TYPES];
   for (int i = 1; i < Subrange::NUM_TYPES; i++) {
     if (types_required_[i]) {
-      subst[i] =
-          GetSubstitution(settings_, source, static_cast<Subrange::Type>(i));
+      subst[i] = GetSubstitution(settings_, source,
+                                 static_cast<Subrange::Type>(i),
+                                 output_style_, relative_to_);
     }
   }
 
@@ -227,15 +256,16 @@ void FileTemplate::WriteWithNinjaExpansions(std::ostream& out) const {
 
 void FileTemplate::WriteNinjaVariablesForSubstitution(
     std::ostream& out,
-    const Settings* settings,
     const SourceFile& source,
     const EscapeOptions& escape_options) const {
   for (int i = 1; i < Subrange::NUM_TYPES; i++) {
     if (types_required_[i]) {
       Subrange::Type type = static_cast<Subrange::Type>(i);
       out << "  " << GetNinjaVariableNameForType(type) << " = ";
-      EscapeStringToStream(out, GetSubstitution(settings, source, type),
-                           escape_options);
+      EscapeStringToStream(
+          out,
+          GetSubstitution(settings_, source, type, output_style_, relative_to_),
+          escape_options);
       out << std::endl;
     }
   }
@@ -268,13 +298,16 @@ const char* FileTemplate::GetNinjaVariableNameForType(Subrange::Type type) {
 // static
 std::string FileTemplate::GetSubstitution(const Settings* settings,
                                           const SourceFile& source,
-                                          Subrange::Type type) {
+                                          Subrange::Type type,
+                                          OutputStyle output_style,
+                                          const SourceDir& relative_to) {
+  std::string to_rebase;
   switch (type) {
     case Subrange::SOURCE:
       if (source.is_system_absolute())
         return source.value();
-      return RebaseSourceAbsolutePath(source.value(),
-                                      settings->build_settings()->build_dir());
+      to_rebase = source.value();
+      break;
 
     case Subrange::NAME_PART:
       return FindFilenameNoExtension(&source.value()).as_string();
@@ -285,9 +318,8 @@ std::string FileTemplate::GetSubstitution(const Settings* settings,
     case Subrange::SOURCE_DIR:
       if (source.is_system_absolute())
         return DirectoryWithNoLastSlash(source.GetDir());
-      return RebaseSourceAbsolutePath(
-          DirectoryWithNoLastSlash(source.GetDir()),
-          settings->build_settings()->build_dir());
+      to_rebase = DirectoryWithNoLastSlash(source.GetDir());
+      break;
 
     case Subrange::ROOT_RELATIVE_DIR:
       if (source.is_system_absolute())
@@ -296,21 +328,26 @@ std::string FileTemplate::GetSubstitution(const Settings* settings,
           DirectoryWithNoLastSlash(source.GetDir()), SourceDir("//"));
 
     case Subrange::SOURCE_GEN_DIR:
-      return RebaseSourceAbsolutePath(
-          DirectoryWithNoLastSlash(
-              GetGenDirForSourceDir(settings, source.GetDir())),
-          settings->build_settings()->build_dir());
+      to_rebase = DirectoryWithNoLastSlash(
+          GetGenDirForSourceDir(settings, source.GetDir()));
+      break;
 
     case Subrange::SOURCE_OUT_DIR:
-      return RebaseSourceAbsolutePath(
-          DirectoryWithNoLastSlash(
-              GetOutputDirForSourceDir(settings, source.GetDir())),
-          settings->build_settings()->build_dir());
+      to_rebase = DirectoryWithNoLastSlash(
+          GetOutputDirForSourceDir(settings, source.GetDir()));
+      break;
 
     default:
       NOTREACHED();
+      return std::string();
   }
-  return std::string();
+
+  // If we get here, the result is a path that should be made relative or
+  // absolute according to the output_style. Other cases (just file name or
+  // extension extraction) will have been handled via early return above.
+  if (output_style == OUTPUT_ABSOLUTE)
+    return to_rebase;
+  return RebaseSourceAbsolutePath(to_rebase, relative_to);
 }
 
 void FileTemplate::ParseInput(const Value& value, Err* err) {

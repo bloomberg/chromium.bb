@@ -19,19 +19,20 @@ void GetOutputsForTarget(const Settings* settings,
                          const Target* target,
                          std::vector<std::string>* ret) {
   switch (target->output_type()) {
-    case Target::ACTION:
-    case Target::COPY_FILES: {
-      // Actions and copy targets: return the outputs specified.
-      const std::vector<SourceFile>& outs = target->action_values().outputs();
+    case Target::ACTION: {
+      // Actions: return the outputs specified.
+      const std::vector<std::string>& outs = target->action_values().outputs();
       ret->reserve(outs.size());
       for (size_t i = 0; i < outs.size(); i++)
-        ret->push_back(outs[i].value());
+        ret->push_back(outs[i]);
       break;
     }
 
+    case Target::COPY_FILES:
     case Target::ACTION_FOREACH: {
-      // Action_foreach: return the result of the template in the outputs.
-      FileTemplate file_template(settings, target->action_values().outputs());
+      // Copy/action_foreach: return the result of the template in the outputs.
+      FileTemplate file_template(settings, target->action_values().outputs(),
+                                 FileTemplate::OUTPUT_ABSOLUTE, SourceDir());
       const std::vector<SourceFile>& sources = target->sources();
       for (size_t i = 0; i < sources.size(); i++)
         file_template.Apply(sources[i], ret);

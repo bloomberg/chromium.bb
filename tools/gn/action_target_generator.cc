@@ -17,10 +17,10 @@ namespace {
 
 // Returns true if the list of files looks like it might have a {{ }} pattern
 // in it. Used for error checking.
-bool FileListHasPattern(const Target::FileList& files) {
+bool StringListHasPattern(const std::vector<std::string>& files) {
   for (size_t i = 0; i < files.size(); i++) {
-    if (files[i].value().find("{{") != std::string::npos &&
-        files[i].value().find("}}") != std::string::npos)
+    if (files[i].find("{{") != std::string::npos &&
+        files[i].find("}}") != std::string::npos)
       return true;
   }
   return false;
@@ -108,10 +108,9 @@ void ActionTargetGenerator::FillScriptArgs() {
   if (!value)
     return;
 
-  std::vector<std::string> args;
-  if (!ExtractListOfStringValues(*value, &args, err_))
+  if (!ExtractListOfStringValues(*value, &target_->action_values().args(),
+                                 err_))
     return;
-  target_->action_values().swap_in_args(&args);
 }
 
 void ActionTargetGenerator::FillDepfile() {
@@ -124,7 +123,7 @@ void ActionTargetGenerator::FillDepfile() {
 }
 
 void ActionTargetGenerator::CheckOutputs() {
-  const Target::FileList& outputs = target_->action_values().outputs();
+  const std::vector<std::string>& outputs = target_->action_values().outputs();
   if (outputs.empty()) {
     *err_ = Err(function_call_, "Action has no outputs.",
         "If you have no outputs, the build system can not tell when your\n"
@@ -134,7 +133,7 @@ void ActionTargetGenerator::CheckOutputs() {
 
   if (output_type_ == Target::ACTION) {
     // Make sure the outputs for an action have no patterns in them.
-    if (FileListHasPattern(outputs)) {
+    if (StringListHasPattern(outputs)) {
       *err_ = Err(function_call_, "Action has patterns in the output.",
           "An action target should have the outputs completely specified. If\n"
           "you want to provide a mapping from source to output, use an\n"
@@ -143,7 +142,7 @@ void ActionTargetGenerator::CheckOutputs() {
     }
   } else if (output_type_ == Target::ACTION_FOREACH) {
     // A foreach target should always have a pattern in the outputs.
-    if (!FileListHasPattern(outputs)) {
+    if (!StringListHasPattern(outputs)) {
       *err_ = Err(function_call_,
           "action_foreach should have a pattern in the output.",
           "An action_foreach target should have a source expansion pattern in\n"

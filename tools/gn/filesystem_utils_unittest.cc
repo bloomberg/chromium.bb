@@ -90,6 +90,50 @@ TEST(FilesystemUtils, FindLastDirComponent) {
   EXPECT_EQ("bar", FindLastDirComponent(regular2));
 }
 
+TEST(FilesystemUtils, EnsureStringIsInOutputDir) {
+  SourceDir output_dir("//out/Debug/");
+
+  // Some outside.
+  Err err;
+  EXPECT_FALSE(EnsureStringIsInOutputDir(output_dir, "//foo", Value(), false,
+                                         &err));
+  EXPECT_TRUE(err.has_error());
+  err = Err();
+  EXPECT_FALSE(EnsureStringIsInOutputDir(output_dir, "//out/Debugit", Value(),
+                                         false, &err));
+  EXPECT_TRUE(err.has_error());
+
+  // Some inside.
+  err = Err();
+  EXPECT_TRUE(EnsureStringIsInOutputDir(output_dir, "//out/Debug/", Value(),
+                                        false, &err));
+  EXPECT_FALSE(err.has_error());
+  EXPECT_TRUE(EnsureStringIsInOutputDir(output_dir, "//out/Debug/foo", Value(),
+                                        false, &err));
+  EXPECT_FALSE(err.has_error());
+
+  // Pattern but no template expansions are allowed.
+  EXPECT_FALSE(EnsureStringIsInOutputDir(output_dir, "{{source_gen_dir}}",
+                                         Value(), false, &err));
+  EXPECT_TRUE(err.has_error());
+
+  // Pattern with template expansions allowed.
+  err = Err();
+  EXPECT_TRUE(EnsureStringIsInOutputDir(output_dir, "{{source_gen_dir}}",
+                                        Value(), true, &err));
+  EXPECT_FALSE(err.has_error());
+
+  // Template expansion that doesn't include the absolute directory.
+  EXPECT_FALSE(EnsureStringIsInOutputDir(output_dir, "{{source}}",
+                                         Value(), true, &err));
+  EXPECT_TRUE(err.has_error());
+  err = Err();
+  EXPECT_FALSE(EnsureStringIsInOutputDir(output_dir,
+                                        "{{source_root_relative_dir}}",
+                                        Value(), true, &err));
+  EXPECT_TRUE(err.has_error());
+}
+
 TEST(FilesystemUtils, IsPathAbsolute) {
   EXPECT_TRUE(IsPathAbsolute("/foo/bar"));
   EXPECT_TRUE(IsPathAbsolute("/"));

@@ -222,20 +222,20 @@ void TargetGenerator::FillOutputs() {
   if (!value)
     return;
 
-  Target::FileList outputs;
-  if (!ExtractListOfRelativeFiles(scope_->settings()->build_settings(), *value,
-                                  scope_->GetSourceDir(), &outputs, err_))
+  std::vector<std::string>& outputs = target_->action_values().outputs();
+  if (!ExtractListOfStringValues(*value, &outputs, err_))
     return;
 
   // Validate that outputs are in the output dir.
+  bool allow_templates = target_->output_type() == Target::ACTION_FOREACH ||
+                         target_->output_type() == Target::COPY_FILES;
   CHECK(outputs.size() == value->list_value().size());
   for (size_t i = 0; i < outputs.size(); i++) {
     if (!EnsureStringIsInOutputDir(
             GetBuildSettings()->build_dir(),
-            outputs[i].value(), value->list_value()[i], err_))
+            outputs[i], value->list_value()[i], allow_templates, err_))
       return;
   }
-  target_->action_values().outputs().swap(outputs);
 }
 
 void TargetGenerator::FillGenericConfigs(const char* var_name,
