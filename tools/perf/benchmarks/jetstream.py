@@ -60,8 +60,9 @@ class _JetstreamMeasurement(page_measurement.PageMeasurement):
 
     all_scores = []
     for k, v in result.iteritems():
-      results.Add(k.replace('.', '_'), 'score', v['result'],
-                  data_type='unimportant')
+      results.AddValue(scalar.ScalarValue(
+          results.current_page, k.replace('.', '_'), 'score', v['result'],
+          important=False))
       # Collect all test scores to compute geometric mean.
       all_scores.extend(v['result'])
     total = statistics.GeometricMean(all_scores)
