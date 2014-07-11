@@ -283,6 +283,12 @@ void CrashServerStart() {
   }
 
   std::wstring dump_path = L"C:\\Dumps\\";
+
+  if (_wmkdir(dump_path.c_str()) && (errno != EEXIST)) {
+    MessageBoxW(NULL, L"Unable to create dump directory", L"Dumper", MB_OK);
+    return;
+  }
+
   crash_server = new CrashGenerationServer(kPipeName,
                                            NULL,
                                            ShowClientConnected,
