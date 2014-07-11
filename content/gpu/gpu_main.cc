@@ -54,6 +54,7 @@
 
 #if defined(OS_MACOSX)
 #include "base/message_loop/message_pump_mac.h"
+#include "content/common/sandbox_mac.h"
 #endif
 
 #if defined(ADDRESS_SANITIZER)
@@ -320,6 +321,8 @@ int GpuMain(const MainFunctionParams& parameters) {
     }
 #elif defined(OS_WIN)
     gpu_info.sandboxed = StartSandboxWindows(parameters.sandbox_info);
+#elif defined(OS_MACOSX)
+    gpu_info.sandboxed = Sandbox::SandboxIsCurrentlyActive();
 #endif
   } else {
     dead_on_arrival = true;
