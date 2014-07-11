@@ -240,28 +240,28 @@ void WebEmbeddedWorkerImpl::resumeAfterDownload()
 void WebEmbeddedWorkerImpl::resumeWorkerContext()
 {
     if (m_workerThread)
-        m_workerThread->runLoop().postDebuggerTask(createCallbackTask(resumeWorkerContextTask, true));
+        m_workerThread->runLoop().postDebuggerTask(createCrossThreadTask(resumeWorkerContextTask, true));
 }
 
 void WebEmbeddedWorkerImpl::attachDevTools()
 {
     if (m_workerThread)
-        m_workerThread->runLoop().postDebuggerTask(createCallbackTask(connectToWorkerContextInspectorTask, true));
+        m_workerThread->runLoop().postDebuggerTask(createCrossThreadTask(connectToWorkerContextInspectorTask, true));
 }
 
 void WebEmbeddedWorkerImpl::reattachDevTools(const WebString& savedState)
 {
-    m_workerThread->runLoop().postDebuggerTask(createCallbackTask(reconnectToWorkerContextInspectorTask, String(savedState)));
+    m_workerThread->runLoop().postDebuggerTask(createCrossThreadTask(reconnectToWorkerContextInspectorTask, String(savedState)));
 }
 
 void WebEmbeddedWorkerImpl::detachDevTools()
 {
-    m_workerThread->runLoop().postDebuggerTask(createCallbackTask(disconnectFromWorkerContextInspectorTask, true));
+    m_workerThread->runLoop().postDebuggerTask(createCrossThreadTask(disconnectFromWorkerContextInspectorTask, true));
 }
 
 void WebEmbeddedWorkerImpl::dispatchDevToolsMessage(const WebString& message)
 {
-    m_workerThread->runLoop().postDebuggerTask(createCallbackTask(dispatchOnInspectorBackendTask, String(message)));
+    m_workerThread->runLoop().postDebuggerTask(createCrossThreadTask(dispatchOnInspectorBackendTask, String(message)));
     WorkerDebuggerAgent::interruptAndDispatchInspectorCommands(m_workerThread.get());
 }
 

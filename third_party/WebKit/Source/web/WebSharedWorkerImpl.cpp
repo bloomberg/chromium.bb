@@ -308,7 +308,7 @@ bool WebSharedWorkerImpl::postTaskToWorkerGlobalScope(PassOwnPtr<ExecutionContex
 void WebSharedWorkerImpl::connect(WebMessagePortChannel* webChannel)
 {
     workerThread()->runLoop().postTask(
-        createCallbackTask(&connectTask, adoptPtr(webChannel)));
+        createCrossThreadTask(&connectTask, adoptPtr(webChannel)));
 }
 
 void WebSharedWorkerImpl::connectTask(ExecutionContext* context, PassOwnPtr<WebMessagePortChannel> channel)
@@ -371,7 +371,7 @@ void WebSharedWorkerImpl::onScriptLoaderFinished()
     m_mainScriptLoader.clear();
 
     if (m_attachDevToolsOnStart)
-        workerThread()->runLoop().postDebuggerTask(createCallbackTask(connectToWorkerContextInspectorTask, true));
+        workerThread()->runLoop().postDebuggerTask(createCrossThreadTask(connectToWorkerContextInspectorTask, true));
 
     workerThread()->start();
     if (client())
@@ -402,13 +402,13 @@ void WebSharedWorkerImpl::resumeWorkerContext()
 {
     m_pauseWorkerContextOnStart = false;
     if (workerThread())
-        workerThread()->runLoop().postDebuggerTask(createCallbackTask(resumeWorkerContextTask, true));
+        workerThread()->runLoop().postDebuggerTask(createCrossThreadTask(resumeWorkerContextTask, true));
 }
 
 void WebSharedWorkerImpl::attachDevTools()
 {
     if (workerThread())
-        workerThread()->runLoop().postDebuggerTask(createCallbackTask(connectToWorkerContextInspectorTask, true));
+        workerThread()->runLoop().postDebuggerTask(createCrossThreadTask(connectToWorkerContextInspectorTask, true));
     else
         m_attachDevToolsOnStart = true;
 }
@@ -422,7 +422,7 @@ static void reconnectToWorkerContextInspectorTask(ExecutionContext* context, con
 
 void WebSharedWorkerImpl::reattachDevTools(const WebString& savedState)
 {
-    workerThread()->runLoop().postDebuggerTask(createCallbackTask(reconnectToWorkerContextInspectorTask, String(savedState)));
+    workerThread()->runLoop().postDebuggerTask(createCrossThreadTask(reconnectToWorkerContextInspectorTask, String(savedState)));
 }
 
 static void disconnectFromWorkerContextInspectorTask(ExecutionContext* context, bool)
@@ -433,7 +433,7 @@ static void disconnectFromWorkerContextInspectorTask(ExecutionContext* context, 
 void WebSharedWorkerImpl::detachDevTools()
 {
     m_attachDevToolsOnStart = false;
-    workerThread()->runLoop().postDebuggerTask(createCallbackTask(disconnectFromWorkerContextInspectorTask, true));
+    workerThread()->runLoop().postDebuggerTask(createCrossThreadTask(disconnectFromWorkerContextInspectorTask, true));
 }
 
 static void dispatchOnInspectorBackendTask(ExecutionContext* context, const String& message)
@@ -443,7 +443,7 @@ static void dispatchOnInspectorBackendTask(ExecutionContext* context, const Stri
 
 void WebSharedWorkerImpl::dispatchDevToolsMessage(const WebString& message)
 {
-    workerThread()->runLoop().postDebuggerTask(createCallbackTask(dispatchOnInspectorBackendTask, String(message)));
+    workerThread()->runLoop().postDebuggerTask(createCrossThreadTask(dispatchOnInspectorBackendTask, String(message)));
     WorkerDebuggerAgent::interruptAndDispatchInspectorCommands(workerThread());
 }
 

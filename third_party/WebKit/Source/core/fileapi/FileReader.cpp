@@ -274,7 +274,7 @@ void FileReader::abort()
 
     // Schedule to have the abort done later since abort() might be called from the event handler and we do not want the resource loading code to be in the stack.
     executionContext()->postTask(
-        createCallbackTask(&delayedAbort, AllowAccessLater(this)));
+        createCrossThreadTask(&delayedAbort, AllowAccessLater(this)));
 }
 
 void FileReader::doAbort()

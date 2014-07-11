@@ -115,7 +115,7 @@ WorkerThreadableLoader::MainThreadBridge::MainThreadBridge(
     ASSERT(m_workerClientWrapper.get());
     ASSERT(m_clientBridge.get());
     m_loaderProxy.postTaskToLoader(
-        createCallbackTask(&MainThreadBridge::mainThreadCreateLoader, AllowCrossThreadAccess(this), request, options, resourceLoaderOptions, outgoingReferrer));
+        createCrossThreadTask(&MainThreadBridge::mainThreadCreateLoader, AllowCrossThreadAccess(this), request, options, resourceLoaderOptions, outgoingReferrer));
 }
 
 WorkerThreadableLoader::MainThreadBridge::~MainThreadBridge()
@@ -151,7 +151,7 @@ void WorkerThreadableLoader::MainThreadBridge::destroy()
 
     // "delete this" and m_mainThreadLoader::deref() on the worker object's thread.
     m_loaderProxy.postTaskToLoader(
-        createCallbackTask(&MainThreadBridge::mainThreadDestroy, AllowCrossThreadAccess(this)));
+        createCrossThreadTask(&MainThreadBridge::mainThreadDestroy, AllowCrossThreadAccess(this)));
 }
 
 void WorkerThreadableLoader::MainThreadBridge::mainThreadCancel(ExecutionContext* context, MainThreadBridge* thisPtr)
@@ -168,7 +168,7 @@ void WorkerThreadableLoader::MainThreadBridge::mainThreadCancel(ExecutionContext
 void WorkerThreadableLoader::MainThreadBridge::cancel()
 {
     m_loaderProxy.postTaskToLoader(
-        createCallbackTask(&MainThreadBridge::mainThreadCancel, AllowCrossThreadAccess(this)));
+        createCrossThreadTask(&MainThreadBridge::mainThreadCancel, AllowCrossThreadAccess(this)));
     ThreadableLoaderClientWrapper* clientWrapper = m_workerClientWrapper.get();
     if (!clientWrapper->done()) {
         // If the client hasn't reached a termination state, then transition it by sending a cancellation error.

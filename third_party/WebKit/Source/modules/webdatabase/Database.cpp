@@ -151,7 +151,7 @@ void Database::runTransaction(PassOwnPtr<SQLTransactionCallback> callback, PassO
         ASSERT(callback == originalErrorCallback);
         if (callback) {
             OwnPtr<SQLErrorData> error = SQLErrorData::create(SQLError::UNKNOWN_ERR, "database has been closed");
-            executionContext()->postTask(createCallbackTask(&callTransactionErrorCallback, callback.release(), error.release()));
+            executionContext()->postTask(createCrossThreadTask(&callTransactionErrorCallback, callback.release(), error.release()));
         }
     }
 }

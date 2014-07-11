@@ -380,7 +380,7 @@ private:
 };
 
 template<typename P1, typename MP1>
-PassOwnPtr<ExecutionContextTask> createCallbackTask(
+PassOwnPtr<ExecutionContextTask> createCrossThreadTask(
     void (*method)(ExecutionContext*, MP1),
     const P1& parameter1)
 {
@@ -390,7 +390,7 @@ PassOwnPtr<ExecutionContextTask> createCallbackTask(
 }
 
 template<typename P1, typename MP1, typename P2, typename MP2>
-PassOwnPtr<ExecutionContextTask> createCallbackTask(
+PassOwnPtr<ExecutionContextTask> createCrossThreadTask(
     void (*method)(ExecutionContext*, MP1, MP2),
     const P1& parameter1, const P2& parameter2)
 {
@@ -400,7 +400,7 @@ PassOwnPtr<ExecutionContextTask> createCallbackTask(
 }
 
 template<typename P1, typename MP1, typename P2, typename MP2, typename P3, typename MP3>
-PassOwnPtr<ExecutionContextTask> createCallbackTask(
+PassOwnPtr<ExecutionContextTask> createCrossThreadTask(
     void (*method)(ExecutionContext*, MP1, MP2, MP3),
     const P1& parameter1, const P2& parameter2, const P3& parameter3)
 {
@@ -411,7 +411,7 @@ PassOwnPtr<ExecutionContextTask> createCallbackTask(
 }
 
 template<typename P1, typename MP1, typename P2, typename MP2, typename P3, typename MP3, typename P4, typename MP4>
-PassOwnPtr<ExecutionContextTask> createCallbackTask(
+PassOwnPtr<ExecutionContextTask> createCrossThreadTask(
     void (*method)(ExecutionContext*, MP1, MP2, MP3, MP4),
     const P1& parameter1, const P2& parameter2, const P3& parameter3, const P4& parameter4)
 {
@@ -423,7 +423,7 @@ PassOwnPtr<ExecutionContextTask> createCallbackTask(
 }
 
 template<typename P1, typename MP1, typename P2, typename MP2, typename P3, typename MP3, typename P4, typename MP4, typename P5, typename MP5>
-PassOwnPtr<ExecutionContextTask> createCallbackTask(
+PassOwnPtr<ExecutionContextTask> createCrossThreadTask(
     void (*method)(ExecutionContext*, MP1, MP2, MP3, MP4, MP5),
     const P1& parameter1, const P2& parameter2, const P3& parameter3, const P4& parameter4, const P5& parameter5)
 {
@@ -436,7 +436,7 @@ PassOwnPtr<ExecutionContextTask> createCallbackTask(
 }
 
 template<typename P1, typename MP1, typename P2, typename MP2, typename P3, typename MP3, typename P4, typename MP4, typename P5, typename MP5, typename P6, typename MP6>
-PassOwnPtr<ExecutionContextTask> createCallbackTask(
+PassOwnPtr<ExecutionContextTask> createCrossThreadTask(
     void (*method)(ExecutionContext*, MP1, MP2, MP3, MP4, MP5, MP6),
     const P1& parameter1, const P2& parameter2, const P3& parameter3, const P4& parameter4, const P5& parameter5, const P6& parameter6)
 {
@@ -449,7 +449,7 @@ PassOwnPtr<ExecutionContextTask> createCallbackTask(
 }
 
 template<typename P1, typename MP1, typename P2, typename MP2, typename P3, typename MP3, typename P4, typename MP4, typename P5, typename MP5, typename P6, typename MP6, typename P7, typename MP7>
-PassOwnPtr<ExecutionContextTask> createCallbackTask(
+PassOwnPtr<ExecutionContextTask> createCrossThreadTask(
     void (*method)(ExecutionContext*, MP1, MP2, MP3, MP4, MP5, MP6, MP7),
     const P1& parameter1, const P2& parameter2, const P3& parameter3, const P4& parameter4, const P5& parameter5, const P6& parameter6, const P7& parameter7)
 {
@@ -464,7 +464,7 @@ PassOwnPtr<ExecutionContextTask> createCallbackTask(
 }
 
 template<typename P1, typename MP1, typename P2, typename MP2, typename P3, typename MP3, typename P4, typename MP4, typename P5, typename MP5, typename P6, typename MP6, typename P7, typename MP7, typename P8, typename MP8>
-PassOwnPtr<ExecutionContextTask> createCallbackTask(
+PassOwnPtr<ExecutionContextTask> createCrossThreadTask(
     void (*method)(ExecutionContext*, MP1, MP2, MP3, MP4, MP5, MP6, MP7, MP8),
     const P1& parameter1, const P2& parameter2, const P3& parameter3, const P4& parameter4, const P5& parameter5, const P6& parameter6, const P7& parameter7, const P8& parameter8)
 {

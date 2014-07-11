@@ -132,7 +132,7 @@ void LocalFileSystem::fileSystemNotAllowedInternal(
     PassRefPtrWillBeRawPtr<ExecutionContext> context,
     PassRefPtr<CallbackWrapper> callbacks)
 {
-    context->postTask(createCallbackTask(&fileSystemNotAllowed, callbacks->release()));
+    context->postTask(createCrossThreadTask(&fileSystemNotAllowed, callbacks->release()));
 }
 
 void LocalFileSystem::fileSystemAllowedInternal(
