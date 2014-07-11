@@ -17,8 +17,6 @@ namespace {
 const char kPromoHTMLPath[] = "/promo.html";
 const char kPromoCSSPath[] = "/promo.css";
 const char kPromoJSPath[] = "/promo.js";
-const char kPromoOptInHTMLPath[] = "/optin.html";
-const char kPromoOptOutHTMLPath[] = "/optout.html";
 
 }  // namespace
 
@@ -39,12 +37,6 @@ void ContextualSearchPromoSource::StartDataRequest(
     SendResource(IDR_CONTEXTUAL_SEARCH_PROMO_CSS, callback);
   } else if (path == kPromoJSPath) {
     SendResource(IDR_CONTEXTUAL_SEARCH_PROMO_JS, callback);
-  } else if (path == kPromoOptInHTMLPath) {
-    std::string empty;
-    callback.Run(base::RefCountedString::TakeString(&empty));
-  } else if (path == kPromoOptOutHTMLPath) {
-    std::string empty;
-    callback.Run(base::RefCountedString::TakeString(&empty));
   } else {
     callback.Run(NULL);
   }
