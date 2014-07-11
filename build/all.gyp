@@ -754,7 +754,6 @@
             '../tools/android/android_tools.gyp:android_tools',
             '../tools/android/android_tools.gyp:memconsumer',
             '../tools/android/findbugs_plugin/findbugs_plugin.gyp:findbugs_plugin_test',
-            '../tools/android/heap_profiler/heap_profiler.gyp:heap_profiler_unittests_stripped',
             '../ui/events/events.gyp:events_unittests',
             '../ui/ui_unittests.gyp:ui_unittests',
             # Unit test bundles packaged as an apk.

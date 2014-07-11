@@ -23,7 +23,6 @@ STABLE_TEST_SUITES = [
     'events_unittests',
     'gl_tests',
     'gpu_unittests',
-    'heap_profiler_unittests',
     'ipc_tests',
     'media_unittests',
     'net_unittests',
