@@ -133,12 +133,7 @@ bool DeviceCloudPolicyInitializer::ShouldRecoverEnrollment() const {
   if (install_attributes_->IsEnterpriseDevice() &&
       chromeos::StartupUtils::IsEnrollmentRecoveryRequired()) {
     LOG(WARNING) << "Enrollment recovery required according to pref.";
-    std::string machine_id;
-    bool machine_id_success =
-        chromeos::system::StatisticsProvider::GetInstance()
-            ->GetMachineStatistic(chromeos::system::kHardwareClassKey,
-                                  &machine_id);
-    if (machine_id_success && machine_id != "")
+    if (!DeviceCloudPolicyManagerChromeOS::GetMachineID().empty())
       return true;
     LOG(WARNING) << "Postponing recovery because machine id is missing.";
   }
