@@ -52,7 +52,7 @@ class ExceptionState;
 // Instances of this class should be created and used only on the worker's context thread.
 class SQLTransactionBackendSync : public RefCountedWillBeGarbageCollectedFinalized<SQLTransactionBackendSync> {
 public:
-    ~SQLTransactionBackendSync();
+    virtual ~SQLTransactionBackendSync();
     void trace(Visitor*);
 
     PassRefPtrWillBeRawPtr<SQLResultSet> executeSQL(const String& sqlStatement, const Vector<SQLValue>& arguments, ExceptionState&);
