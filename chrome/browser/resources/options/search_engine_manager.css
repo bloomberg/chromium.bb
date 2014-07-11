@@ -7,8 +7,7 @@
 }
 
 .search-engine-list input {
-  -webkit-box-flex: 1;
-  display: -webkit-box;
+  width: 100%;
 }
 
 .search-engine-list > div {
@@ -69,6 +68,7 @@
 }
 
 .search-engine-list .url-column .list-inline-button {
+  -webkit-margin-start: 1ex;
   margin-top: 0;
   padding: 1px 6px 2px 6px;
 }
