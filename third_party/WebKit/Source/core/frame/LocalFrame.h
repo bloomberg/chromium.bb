@@ -129,8 +129,6 @@ namespace WebCore {
         void deviceOrPageScaleFactorChanged();
         double devicePixelRatio() const;
 
-        void sendOrientationChangeEvent();
-
         String documentTypeString() const;
 
         PassOwnPtr<DragImage> nodeImage(Node&);

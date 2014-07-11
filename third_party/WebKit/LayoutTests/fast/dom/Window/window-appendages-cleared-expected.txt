@@ -27,10 +27,8 @@ PASS screen.availTop == "LEFTOVER" is false
 PASS screen.availWidth == "LEFTOVER" is false
 PASS screen.colorDepth == "LEFTOVER" is false
 PASS screen.height == "LEFTOVER" is false
-PASS screen.lockOrientation == "LEFTOVER" is false
 PASS screen.orientation == "LEFTOVER" is false
 PASS screen.pixelDepth == "LEFTOVER" is false
-PASS screen.unlockOrientation == "LEFTOVER" is false
 PASS screen.width == "LEFTOVER" is false
 PASS scrollbars.visible == "LEFTOVER" is false
 PASS statusbar.visible == "LEFTOVER" is false

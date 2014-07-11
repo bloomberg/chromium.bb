@@ -2,13 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-enum OrientationType {
-    "portrait-primary",
-    "portrait-secondary",
-    "landscape-primary",
-    "landscape-secondary"
-};
-
 enum OrientationLockType {
     "any",
     "natural",
@@ -20,12 +13,22 @@ enum OrientationLockType {
     "landscape-secondary"
 };
 
+enum OrientationType {
+    "portrait-primary",
+    "portrait-secondary",
+    "landscape-primary",
+    "landscape-secondary"
+};
+
 [
+    GarbageCollected,
     RuntimeEnabled=ScreenOrientation
-] partial interface Screen {
-    readonly attribute OrientationType orientation;
+] interface ScreenOrientation : EventTarget {
+    readonly attribute unsigned short angle;
+    readonly attribute DOMString type;
 
-    [CallWith=ScriptState] Promise lockOrientation(OrientationLockType orientation);
+    [CallWith=ScriptState] Promise lock(OrientationLockType orientation);
+    void unlock();
 
-    void unlockOrientation();
+    attribute EventHandler onchange;
 };

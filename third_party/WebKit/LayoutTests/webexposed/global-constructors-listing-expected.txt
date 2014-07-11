@@ -408,6 +408,7 @@ SVGViewElement
 SVGViewSpec
 SVGZoomEvent
 Screen
+ScreenOrientation
 ScriptProcessorNode
 SecurityPolicyViolationEvent
 Selection
