@@ -150,7 +150,9 @@ class AthenaWebView : public views::WebView {
 
 WebActivity::WebActivity(content::BrowserContext* browser_context,
                          const GURL& url)
-    : browser_context_(browser_context), url_(url), web_view_(NULL) {
+    : browser_context_(browser_context),
+      url_(url),
+      web_view_(NULL) {
 }
 
 WebActivity::~WebActivity() {
@@ -165,13 +167,17 @@ void WebActivity::Init() {
   static_cast<AthenaWebView*>(web_view_)->InstallAccelerators();
 }
 
-SkColor WebActivity::GetRepresentativeColor() {
+SkColor WebActivity::GetRepresentativeColor() const {
   // TODO(sad): Compute the color from the favicon.
   return SK_ColorGRAY;
 }
 
-base::string16 WebActivity::GetTitle() {
+base::string16 WebActivity::GetTitle() const {
   return web_view_->GetWebContents()->GetTitle();
+}
+
+bool WebActivity::UsesFrame() const {
+  return true;
 }
 
 views::View* WebActivity::GetContentsView() {

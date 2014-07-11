@@ -27,17 +27,22 @@ ActivityViewModel* AppActivity::GetActivityViewModel() {
 void AppActivity::Init() {
 }
 
-SkColor AppActivity::GetRepresentativeColor() {
+SkColor AppActivity::GetRepresentativeColor() const {
   // TODO(sad): Compute the color from the favicon.
   return SK_ColorGRAY;
 }
 
-base::string16 AppActivity::GetTitle() {
+base::string16 AppActivity::GetTitle() const {
   return web_view_->GetWebContents()->GetTitle();
+}
+
+bool AppActivity::UsesFrame() const {
+  return false;
 }
 
 views::View* AppActivity::GetContentsView() {
   if (!web_view_) {
+    // TODO(oshima): use apps::NativeAppWindowViews
     content::WebContents* web_contents =
         app_window_->GetAssociatedWebContents();
     web_view_ = new views::WebView(web_contents->GetBrowserContext());

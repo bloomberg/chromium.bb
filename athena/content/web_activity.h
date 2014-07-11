@@ -16,6 +16,7 @@ class WebContents;
 
 namespace views {
 class WebView;
+class WidgetDelegate;
 }
 
 namespace athena {
@@ -33,8 +34,9 @@ class WebActivity : public Activity,
 
   // ActivityViewModel:
   virtual void Init() OVERRIDE;
-  virtual SkColor GetRepresentativeColor() OVERRIDE;
-  virtual base::string16 GetTitle() OVERRIDE;
+  virtual SkColor GetRepresentativeColor() const OVERRIDE;
+  virtual base::string16 GetTitle() const OVERRIDE;
+  virtual bool UsesFrame() const OVERRIDE;
   virtual views::View* GetContentsView() OVERRIDE;
 
   // content::WebContentsObserver:
@@ -45,7 +47,6 @@ class WebActivity : public Activity,
 
  private:
   content::BrowserContext* browser_context_;
-  content::WebContents* web_contents_;
   const GURL url_;
   views::WebView* web_view_;
 

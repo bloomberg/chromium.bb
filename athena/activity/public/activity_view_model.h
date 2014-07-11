@@ -24,10 +24,14 @@ class ATHENA_EXPORT ActivityViewModel {
   virtual void Init() = 0;
 
   // Returns a color most representative of this activity.
-  virtual SkColor GetRepresentativeColor() = 0;
+  virtual SkColor GetRepresentativeColor() const = 0;
 
   // Returns a title for the activity.
-  virtual base::string16 GetTitle() = 0;
+  virtual base::string16 GetTitle() const = 0;
+
+  // True if the activity wants to use Widget's frame, or false if the activity
+  // draws its own frame.
+  virtual bool UsesFrame() const = 0;
 
   // Returns the contents view.
   virtual views::View* GetContentsView() = 0;

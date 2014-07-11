@@ -29,12 +29,16 @@ athena::ActivityViewModel* SampleActivity::GetActivityViewModel() {
 void SampleActivity::Init() {
 }
 
-SkColor SampleActivity::GetRepresentativeColor() {
+SkColor SampleActivity::GetRepresentativeColor() const {
   return color_;
 }
 
-base::string16 SampleActivity::GetTitle() {
+base::string16 SampleActivity::GetTitle() const {
   return title_;
+}
+
+bool SampleActivity::UsesFrame() const {
+  return true;
 }
 
 views::View* SampleActivity::GetContentsView() {
