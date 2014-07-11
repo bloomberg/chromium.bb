@@ -20,7 +20,6 @@ struct Point {
 };
 
 interface ImportedInterface {
-  DoSomething();
 };
 
 }  // module imported
