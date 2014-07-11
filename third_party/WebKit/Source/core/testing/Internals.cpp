@@ -1498,8 +1498,12 @@ PassRefPtrWillBeRawPtr<StaticNodeList> Internals::nodesFromRect(Document* docume
     if (!topPadding && !rightPadding && !bottomPadding && !leftPadding) {
         HitTestResult result(point);
         renderView->hitTest(request, result);
-        if (result.innerNode())
-            matches.append(result.innerNode()->deprecatedShadowAncestorNode());
+
+        if (Node* innerNode = result.innerNode()) {
+            if (innerNode->isInShadowTree())
+                innerNode = innerNode->shadowHost();
+            matches.append(innerNode);
+        }
     } else {
         HitTestResult result(point, topPadding, rightPadding, bottomPadding, leftPadding);
         renderView->hitTest(request, result);

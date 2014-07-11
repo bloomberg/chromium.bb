@@ -1272,7 +1272,10 @@ AXObject* AXRenderObject::accessibilityHitTest(const IntPoint& point) const
     layer->hitTest(request, hitTestResult);
     if (!hitTestResult.innerNode())
         return 0;
-    Node* node = hitTestResult.innerNode()->deprecatedShadowAncestorNode();
+
+    Node* node = hitTestResult.innerNode();
+    if (node->isInShadowTree())
+        node = node->shadowHost();
 
     if (isHTMLAreaElement(node))
         return accessibilityImageMapHitTest(toHTMLAreaElement(node), point);

@@ -1147,14 +1147,6 @@ Element* Node::shadowHost() const
     return 0;
 }
 
-Node* Node::deprecatedShadowAncestorNode() const
-{
-    if (ShadowRoot* root = containingShadowRoot())
-        return root->host();
-
-    return const_cast<Node*>(this);
-}
-
 ShadowRoot* Node::containingShadowRoot() const
 {
     Node& root = treeScope().rootNode();

@@ -654,7 +654,10 @@ static void clearSelectionIfNeeded(LocalFrame* oldFocusedFrame, LocalFrame* newF
         return;
 
     Node* selectionStartNode = selection.selection().start().deprecatedNode();
-    if (selectionStartNode == newFocusedNode || selectionStartNode->isDescendantOf(newFocusedNode) || selectionStartNode->deprecatedShadowAncestorNode() == newFocusedNode)
+    if (selectionStartNode == newFocusedNode || selectionStartNode->isDescendantOf(newFocusedNode))
+        return;
+
+    if (selectionStartNode->isInShadowTree() && selectionStartNode->shadowHost() == newFocusedNode)
         return;
 
     if (Node* mousePressNode = newFocusedFrame->eventHandler().mousePressNode()) {
