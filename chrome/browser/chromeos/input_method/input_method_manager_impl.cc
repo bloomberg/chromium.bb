@@ -22,6 +22,7 @@
 #include "chrome/browser/chromeos/input_method/component_extension_ime_manager_impl.h"
 #include "chrome/browser/chromeos/input_method/input_method_engine.h"
 #include "chrome/browser/chromeos/language_preferences.h"
+#include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/ime/component_extension_ime_manager.h"
@@ -485,6 +486,11 @@ void InputMethodManagerImpl::AddInputMethodExtension(
   DCHECK(engine);
 
   profile_engine_map_[GetProfile()][id] = engine;
+
+  if (id == current_input_method_.id()) {
+    IMEBridge::Get()->SetCurrentEngineHandler(engine);
+    engine->Enable();
+  }
 
   if (extension_ime_util::IsComponentExtensionIME(id))
     return;
