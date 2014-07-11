@@ -107,6 +107,28 @@ void OnCreateDirectory(const fileapi::AsyncFileUtil::StatusCallback& callback,
       BrowserThread::IO, FROM_HERE, base::Bind(callback, result));
 }
 
+// Executes DeleteEntry on the UI thread.
+void DeleteEntryOnUIThread(
+    scoped_ptr<fileapi::FileSystemOperationContext> context,
+    const fileapi::FileSystemURL& url,
+    bool recursive,
+    const fileapi::AsyncFileUtil::StatusCallback& callback) {
+  util::FileSystemURLParser parser(url);
+  if (!parser.Parse()) {
+    callback.Run(base::File::FILE_ERROR_INVALID_OPERATION);
+    return;
+  }
+
+  parser.file_system()->DeleteEntry(parser.file_path(), recursive, callback);
+}
+
+// Routes the response of DeleteEntry back to the IO thread.
+void OnDeleteEntry(const fileapi::AsyncFileUtil::StatusCallback& callback,
+                   base::File::Error result) {
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE, base::Bind(callback, result));
+}
+
 }  // namespace
 
 ProviderAsyncFileUtil::ProviderAsyncFileUtil() {}
@@ -238,7 +260,13 @@ void ProviderAsyncFileUtil::DeleteFile(
     const fileapi::FileSystemURL& url,
     const StatusCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  callback.Run(base::File::FILE_ERROR_ACCESS_DENIED);
+  BrowserThread::PostTask(BrowserThread::UI,
+                          FROM_HERE,
+                          base::Bind(&DeleteEntryOnUIThread,
+                                     base::Passed(&context),
+                                     url,
+                                     false,  // recursive
+                                     base::Bind(&OnDeleteEntry, callback)));
 }
 
 void ProviderAsyncFileUtil::DeleteDirectory(
@@ -246,7 +274,13 @@ void ProviderAsyncFileUtil::DeleteDirectory(
     const fileapi::FileSystemURL& url,
     const StatusCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  callback.Run(base::File::FILE_ERROR_ACCESS_DENIED);
+  BrowserThread::PostTask(BrowserThread::UI,
+                          FROM_HERE,
+                          base::Bind(&DeleteEntryOnUIThread,
+                                     base::Passed(&context),
+                                     url,
+                                     false,  // recursive
+                                     base::Bind(&OnDeleteEntry, callback)));
 }
 
 void ProviderAsyncFileUtil::DeleteRecursively(
@@ -254,7 +288,13 @@ void ProviderAsyncFileUtil::DeleteRecursively(
     const fileapi::FileSystemURL& url,
     const StatusCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  callback.Run(base::File::FILE_ERROR_ACCESS_DENIED);
+  BrowserThread::PostTask(BrowserThread::UI,
+                          FROM_HERE,
+                          base::Bind(&DeleteEntryOnUIThread,
+                                     base::Passed(&context),
+                                     url,
+                                     true,  // recursive
+                                     base::Bind(&OnDeleteEntry, callback)));
 }
 
 void ProviderAsyncFileUtil::CreateSnapshotFile(

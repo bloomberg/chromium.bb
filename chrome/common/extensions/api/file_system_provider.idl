@@ -117,6 +117,14 @@ namespace fileSystemProvider {
     boolean recursive;
   };
 
+  // Options for the <code>onDeleteEntryRequested()</code> event.
+  dictionary DeleteEntryRequestedOptions {
+    DOMString fileSystemId;
+    long requestId;
+    DOMString entryPath;
+    boolean recursive;
+  };
+
   // Callback to receive the result of mount() function.
   callback MountCallback = void([nodoc, instanceOf=DOMError] object error);
 
@@ -227,11 +235,19 @@ namespace fileSystemProvider {
         ProviderErrorCallback errorCallback);
 
     // Raised when creating a directory is requested. If <code>exclusive</code>
-    // is set to true, then the operation should fail if the target directory
+    // is set to true, then the operation must fail if the target directory
     // already exists. If <code>recursive</code> is true, then all of the
-    // missing directories on the directory path should be created.
+    // missing directories on the directory path must be created.
     [maxListeners=1, nodoc] static void onCreateDirectoryRequested(
         CreateDirectoryRequestedOptions options,
+        ProviderSuccessCallback successCallback,
+        ProviderErrorCallback errorCallback);
+
+    // Raised when deleting an entry is requested. If <code>recursive</code> is
+    // true, and the entry is a directory, then all of the entries inside
+    // must be recursively deleted as well.
+    [maxListeners=1, nodoc] static void onDeleteEntryRequested(
+        DeleteEntryRequestedOptions options,
         ProviderSuccessCallback successCallback,
         ProviderErrorCallback errorCallback);
   };

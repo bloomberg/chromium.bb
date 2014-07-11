@@ -377,9 +377,10 @@ TEST_F(FileSystemProviderProviderAsyncFileUtilTest, DeleteFile) {
       CreateOperationContext(),
       file_url_,
       base::Bind(&EventLogger::OnStatus, logger.GetWeakPtr()));
+  base::RunLoop().RunUntilIdle();
 
   ASSERT_TRUE(logger.result());
-  EXPECT_EQ(base::File::FILE_ERROR_ACCESS_DENIED, *logger.result());
+  EXPECT_EQ(base::File::FILE_OK, *logger.result());
 }
 
 TEST_F(FileSystemProviderProviderAsyncFileUtilTest, DeleteDirectory) {
@@ -389,9 +390,10 @@ TEST_F(FileSystemProviderProviderAsyncFileUtilTest, DeleteDirectory) {
       CreateOperationContext(),
       directory_url_,
       base::Bind(&EventLogger::OnStatus, logger.GetWeakPtr()));
+  base::RunLoop().RunUntilIdle();
 
   ASSERT_TRUE(logger.result());
-  EXPECT_EQ(base::File::FILE_ERROR_ACCESS_DENIED, *logger.result());
+  EXPECT_EQ(base::File::FILE_OK, *logger.result());
 }
 
 TEST_F(FileSystemProviderProviderAsyncFileUtilTest, DeleteRecursively) {
@@ -401,9 +403,10 @@ TEST_F(FileSystemProviderProviderAsyncFileUtilTest, DeleteRecursively) {
       CreateOperationContext(),
       directory_url_,
       base::Bind(&EventLogger::OnStatus, logger.GetWeakPtr()));
+  base::RunLoop().RunUntilIdle();
 
   ASSERT_TRUE(logger.result());
-  EXPECT_EQ(base::File::FILE_ERROR_ACCESS_DENIED, *logger.result());
+  EXPECT_EQ(base::File::FILE_OK, *logger.result());
 }
 
 TEST_F(FileSystemProviderProviderAsyncFileUtilTest, CreateSnapshotFile) {

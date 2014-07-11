@@ -204,4 +204,8 @@ eventBindings.registerArgumentMassager(
     'fileSystemProvider.onCreateDirectoryRequested',
     massageArgumentsDefault);
 
+eventBindings.registerArgumentMassager(
+    'fileSystemProvider.onDeleteEntryRequested',
+    massageArgumentsDefault);
+
 exports.binding = binding.generate();

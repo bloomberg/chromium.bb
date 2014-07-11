@@ -109,6 +109,13 @@ class ProvidedFileSystemInterface {
       bool recursive,
       const fileapi::AsyncFileUtil::StatusCallback& callback) = 0;
 
+  // Requests deleting a directory. If |recursive| is passed and the entry is
+  // a directory, then all contents of it (recursively) will be deleted too.
+  virtual void DeleteEntry(
+      const base::FilePath& entry_path,
+      bool recursive,
+      const fileapi::AsyncFileUtil::StatusCallback& callback) = 0;
+
   // Returns a provided file system info for this file system.
   virtual const ProvidedFileSystemInfo& GetFileSystemInfo() const = 0;
 

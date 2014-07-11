@@ -80,4 +80,10 @@ IN_PROC_BROWSER_TEST_F(FileSystemProviderApiTest, CreateDirectory) {
       << message_;
 }
 
+IN_PROC_BROWSER_TEST_F(FileSystemProviderApiTest, DeleteEntry) {
+  ASSERT_TRUE(RunPlatformAppTestWithFlags("file_system_provider/delete_entry",
+                                          kFlagLoadAsComponent))
+      << message_;
+}
+
 }  // namespace extensions
