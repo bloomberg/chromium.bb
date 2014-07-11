@@ -42,10 +42,10 @@ class TestJar(object):
       raise Exception('%s not found, please build it' % jar_path)
 
     self._PROGUARD_PATH = os.path.join(constants.ANDROID_SDK_ROOT,
-                                       'tools/proguard/bin/proguard.sh')
+                                       'tools/proguard/lib/proguard.jar')
     if not os.path.exists(self._PROGUARD_PATH):
       self._PROGUARD_PATH = os.path.join(os.environ['ANDROID_BUILD_TOP'],
-                                         'external/proguard/bin/proguard.sh')
+                                         'external/proguard/lib/proguard.jar')
     self._jar_path = jar_path
     self._annotation_map = collections.defaultdict(list)
     self._pickled_proguard_name = self._jar_path + '-proguard.pickle'
@@ -71,7 +71,8 @@ class TestJar(object):
     return False
 
   def _GetProguardData(self):
-    proguard_output = cmd_helper.GetCmdOutput([self._PROGUARD_PATH,
+    proguard_output = cmd_helper.GetCmdOutput(['java', '-jar',
+                                               self._PROGUARD_PATH,
                                                '-injars', self._jar_path,
                                                '-dontshrink',
                                                '-dontoptimize',

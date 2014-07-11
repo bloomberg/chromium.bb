@@ -20,7 +20,8 @@ def DoProguard(options):
   # the output.
   if os.path.exists(options.output_path):
     os.remove(options.output_path)
-  proguard_cmd = [options.proguard_path,
+  proguard_cmd = ['java', '-jar',
+                  options.proguard_path,
                   '-injars', injars,
                   '-outjars', outjars,
                   '-libraryjars', libraryjars,
