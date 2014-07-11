@@ -55,6 +55,7 @@ group("all_components") {
     "//components/visitedlink/common",
     "//components/visitedlink/renderer",
     "//components/web_modal",
+    "//components/webdata/common",
   ]
 
   if (is_win || is_mac) {

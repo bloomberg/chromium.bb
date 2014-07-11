@@ -48,6 +48,7 @@ static_library("browser") {
     "//components/os_crypt",
     "//components/resources",
     "//components/strings",
+    "//components/webdata/common",
     "//content/public/browser",
     "//content/public/common",
     "//google_apis",
@@ -62,7 +63,6 @@ static_library("browser") {
     "//url",
     #"../third_party/libjingle/libjingle.gyp:libjingle",  TODO(GYP)
     #"user_prefs",  TODO(GYP)
-    #"webdata_common",  TODO(GYP)
   ]
 }
 

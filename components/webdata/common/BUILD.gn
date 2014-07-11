@@ -1,0 +1,36 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+component("common") {
+  output_name = "webdata_common"
+
+  sources = [
+    "web_database.cc",
+    "web_database.h",
+    "web_database_service.cc",
+    "web_database_service.h",
+    "web_database_table.cc",
+    "web_database_table.h",
+    "web_data_request_manager.cc",
+    "web_data_request_manager.h",
+    "web_data_results.h",
+    "web_data_service_backend.cc",
+    "web_data_service_backend.h",
+    "web_data_service_base.cc",
+    "web_data_service_base.h",
+    "web_data_service_consumer.h",
+    "webdata_constants.cc",
+    "webdata_constants.h",
+    "webdata_export.h",
+  ]
+
+  defines = [
+    "WEBDATA_IMPLEMENTATION",
+  ]
+
+  deps = [
+    "//base",
+    "//sql",
+  ]
+}

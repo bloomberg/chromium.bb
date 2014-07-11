@@ -140,6 +140,7 @@ static_library("browser") {
     "//components/os_crypt",
     "//components/resources",
     "//components/strings",
+    "//components/webdata/common",
     "//google_apis",
     "//skia",
     "//sql",
@@ -154,7 +155,6 @@ static_library("browser") {
     # TODO(GYP) also remove libjingle_stub_config below when this is added:
     #'../third_party/libjingle/libjingle.gyp:libjingle',  TODO(GYP)
     #'pref_registry',  TODO(GYP)
-    #'webdata_common',  TODO(GYP)
   ]
 
   configs += [ "//content:libjingle_stub_config" ]
