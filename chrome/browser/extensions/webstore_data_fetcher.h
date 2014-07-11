@@ -38,6 +38,10 @@ class WebstoreDataFetcher : public base::SupportsWeakPtr<WebstoreDataFetcher>,
 
   void Start();
 
+  void set_max_auto_retries(int max_retries) {
+    max_auto_retries_ = max_retries;
+  }
+
  private:
   void OnJsonParseSuccess(scoped_ptr<base::Value> parsed_json);
   void OnJsonParseFailure(const std::string& error);
@@ -52,6 +56,10 @@ class WebstoreDataFetcher : public base::SupportsWeakPtr<WebstoreDataFetcher>,
 
   // For fetching webstore JSON data.
   scoped_ptr<net::URLFetcher> webstore_data_url_fetcher_;
+
+  // Maximum auto retry times on server 5xx error or ERR_NETWORK_CHANGED.
+  // Default is 0 which means to use the URLFetcher default behavior.
+  int max_auto_retries_;
 
   DISALLOW_COPY_AND_ASSIGN(WebstoreDataFetcher);
 };

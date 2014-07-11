@@ -356,6 +356,13 @@ void KioskAppManager::UpdateAppDataFromProfile(
   app_data->LoadFromInstalledApp(profile, app);
 }
 
+void KioskAppManager::RetryFailedAppDataFetch() {
+  for (size_t i = 0; i < apps_.size(); ++i) {
+    if (apps_[i]->status() == KioskAppData::STATUS_ERROR)
+      apps_[i]->Load();
+  }
+}
+
 void KioskAppManager::AddObserver(KioskAppManagerObserver* observer) {
   observers_.AddObserver(observer);
 }
@@ -468,6 +475,8 @@ void KioskAppManager::UpdateAppData() {
   for (size_t i = 0; i < apps_.size(); ++i)
     prefs->Set(apps_[i]->app_id(), new base::DictionaryValue);
   external_cache_->UpdateExtensionsList(prefs.Pass());
+
+  RetryFailedAppDataFetch();
 
   FOR_EACH_OBSERVER(KioskAppManagerObserver, observers_,
                     OnKioskAppsSettingsChanged());

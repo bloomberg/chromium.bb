@@ -336,7 +336,7 @@ void KioskAppData::SetStatus(Status status) {
     case STATUS_ERROR:
       delegate_->OnKioskAppDataLoadFailure(app_id_);
       break;
-  };
+  }
 }
 
 net::URLRequestContextGetter* KioskAppData::GetRequestContextGetter() {
@@ -442,6 +442,7 @@ void KioskAppData::StartFetch() {
       GetRequestContextGetter(),
       GURL(),
       app_id_));
+  webstore_fetcher_->set_max_auto_retries(3);
   webstore_fetcher_->Start();
 }
 

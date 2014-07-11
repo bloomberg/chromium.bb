@@ -285,7 +285,7 @@ OobeUI::OobeUI(content::WebUI* web_ui, const GURL& url)
   }
 
   // Initialize KioskAppMenuHandler. Note that it is NOT a screen handler.
-  kiosk_app_menu_handler_ = new KioskAppMenuHandler;
+  kiosk_app_menu_handler_ = new KioskAppMenuHandler(network_state_informer_);
   web_ui->AddMessageHandler(kiosk_app_menu_handler_);
 
   base::DictionaryValue localized_strings;

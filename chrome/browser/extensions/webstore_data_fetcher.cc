@@ -29,7 +29,8 @@ WebstoreDataFetcher::WebstoreDataFetcher(
     : delegate_(delegate),
       request_context_(request_context),
       referrer_url_(referrer_url),
-      id_(webstore_item_id) {
+      id_(webstore_item_id),
+      max_auto_retries_(0) {
 }
 
 WebstoreDataFetcher::~WebstoreDataFetcher() {}
@@ -43,6 +44,11 @@ void WebstoreDataFetcher::Start() {
   webstore_data_url_fetcher_->SetReferrer(referrer_url_.spec());
   webstore_data_url_fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SAVE_COOKIES |
                                            net::LOAD_DISABLE_CACHE);
+  if (max_auto_retries_ > 0) {
+    webstore_data_url_fetcher_->SetMaxRetriesOn5xx(max_auto_retries_);
+    webstore_data_url_fetcher_->SetAutomaticallyRetryOnNetworkChanges(
+        max_auto_retries_);
+  }
   webstore_data_url_fetcher_->Start();
 }
 

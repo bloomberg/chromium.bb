@@ -150,6 +150,8 @@ class KioskAppManager : public KioskAppDataDelegate,
                                 Profile* profile,
                                 const extensions::Extension* app);
 
+  void RetryFailedAppDataFetch();
+
   void AddObserver(KioskAppManagerObserver* observer);
   void RemoveObserver(KioskAppManagerObserver* observer);
 

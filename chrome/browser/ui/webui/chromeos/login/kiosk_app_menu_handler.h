@@ -12,6 +12,7 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager_observer.h"
+#include "chrome/browser/ui/webui/chromeos/login/network_state_informer.h"
 #include "content/public/browser/web_ui_message_handler.h"
 
 namespace chromeos {
@@ -19,10 +20,13 @@ namespace chromeos {
 // KioskAppMenuHandler supplies kiosk apps data to apps menu on sign-in
 // screen when app mode is enabled and handles "launchKioskApp" request
 // from the apps menu.
-class KioskAppMenuHandler : public content::WebUIMessageHandler,
-                            public KioskAppManagerObserver {
+class KioskAppMenuHandler
+    : public content::WebUIMessageHandler,
+      public KioskAppManagerObserver,
+      public NetworkStateInformer::NetworkStateInformerObserver {
  public:
-  KioskAppMenuHandler();
+  explicit KioskAppMenuHandler(
+      const scoped_refptr<NetworkStateInformer>& network_state_informer);
   virtual ~KioskAppMenuHandler();
 
   void GetLocalizedStrings(base::DictionaryValue* localized_strings);
@@ -46,10 +50,15 @@ class KioskAppMenuHandler : public content::WebUIMessageHandler,
   virtual void OnKioskAppsSettingsChanged() OVERRIDE;
   virtual void OnKioskAppDataChanged(const std::string& app_id) OVERRIDE;
 
+  // NetworkStateInformer::NetworkStateInformerObserver overrides:
+  virtual void UpdateState(ErrorScreenActor::ErrorReason reason) OVERRIDE;
+
   base::WeakPtrFactory<KioskAppMenuHandler> weak_ptr_factory_;
 
   // True when WebUI is initialized. Otherwise don't allow calling JS functions.
   bool is_webui_initialized_;
+
+  scoped_refptr<NetworkStateInformer> network_state_informer_;
 
   DISALLOW_COPY_AND_ASSIGN(KioskAppMenuHandler);
 };
