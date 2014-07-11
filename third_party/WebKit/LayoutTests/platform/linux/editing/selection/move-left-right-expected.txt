@@ -361,100 +361,116 @@ WARNING: Moved in the wrong direction in step 5: from (733, 1075) to (767, 1015)
 WARNING: Moved in the wrong direction in step 11: from (733, 1075) to (767, 1015).
 Test 25, LTR:
   Moving right: "\n        abcdefABC"[9, 10, 11, 12, 13, 14, 15], "DEF\n    "[2, 1], <DIV>[2], "\n        abcdefABC"[18, 17, 16], "DEF\n    "[3]
-WARNING: Moved in the wrong direction in step 2: from (90, 1109) to (82, 1109).
+WARNING: Moved in the wrong direction in step 2: from (97, 1109) to (90, 1109).
+WARNING: Moved in the wrong direction in step 3: from (90, 1109) to (82, 1109).
 WARNING: Moved in the wrong direction in step 8: from (52, 1109) to (44, 1109).
   Moving left:  "DEF\n    "[3], "\n        abcdefABC"[16, 17, 18], <DIV>[2], "DEF\n    "[1, 2], "\n        abcdefABC"[15, 14, 13, 12, 11, 10, 9]
 WARNING: Moved in the wrong direction in step 6: from (44, 1109) to (52, 1109).
-WARNING: Moved in the wrong direction in step 12: from (82, 1109) to (90, 1109).
+WARNING: Moved in the wrong direction in step 11: from (82, 1109) to (90, 1109).
+WARNING: Moved in the wrong direction in step 12: from (90, 1109) to (97, 1109).
 Test 25, RTL:
   Moving left: "\n        abcdefABC"[9, 14, 13, 12, 11, 10, 15, 16, 17, 18], <DIV>[2], "DEF\n    "[1, 2, 3]
-WARNING: Moved in the wrong direction in step 4: from (672, 1109) to (676, 1109).
-WARNING: Moved in the wrong direction in step 5: from (676, 1109) to (684, 1109).
+WARNING: Moved in the wrong direction in step 3: from (672, 1109) to (676, 1109).
+WARNING: Moved in the wrong direction in step 4: from (676, 1109) to (684, 1109).
+WARNING: Moved in the wrong direction in step 5: from (684, 1109) to (691, 1109).
 WARNING: Moved in the wrong direction in step 12: from (734, 1109) to (742, 1109).
 WARNING: Moved in the wrong direction in step 13: from (742, 1109) to (749, 1109).
   Moving right:  "DEF\n    "[3, 2, 1], <DIV>[2], "\n        abcdefABC"[18, 17, 16, 15, 10, 11, 12, 13, 14, 9]
 WARNING: Moved in the wrong direction in step 1: from (749, 1109) to (742, 1109).
 WARNING: Moved in the wrong direction in step 2: from (742, 1109) to (734, 1109).
-WARNING: Moved in the wrong direction in step 9: from (684, 1109) to (676, 1109).
-WARNING: Moved in the wrong direction in step 10: from (676, 1109) to (672, 1109).
+WARNING: Moved in the wrong direction in step 9: from (691, 1109) to (684, 1109).
+WARNING: Moved in the wrong direction in step 10: from (684, 1109) to (676, 1109).
+WARNING: Moved in the wrong direction in step 11: from (676, 1109) to (672, 1109).
 Test 26, LTR:
   Moving right: "\n        ABCDEFabc"[9, 14, 13, 12, 11, 10, 15, 16, 17, 18], <DIV>[2], "def\n    "[1, 2, 3]
-WARNING: Moved in the wrong direction in step 4: from (133, 1144) to (129, 1144).
-WARNING: Moved in the wrong direction in step 5: from (129, 1144) to (122, 1144).
+WARNING: Moved in the wrong direction in step 3: from (133, 1144) to (129, 1144).
+WARNING: Moved in the wrong direction in step 4: from (129, 1144) to (122, 1144).
+WARNING: Moved in the wrong direction in step 5: from (122, 1144) to (113, 1144).
 WARNING: Moved in the wrong direction in step 12: from (68, 1144) to (61, 1144).
 WARNING: Moved in the wrong direction in step 13: from (61, 1144) to (56, 1144).
   Moving left:  "def\n    "[3, 2, 1], <DIV>[2], "\n        ABCDEFabc"[18, 17, 16, 15, 10, 11, 12, 13, 14, 9]
 WARNING: Moved in the wrong direction in step 1: from (56, 1144) to (61, 1144).
 WARNING: Moved in the wrong direction in step 2: from (61, 1144) to (68, 1144).
-WARNING: Moved in the wrong direction in step 9: from (122, 1144) to (129, 1144).
-WARNING: Moved in the wrong direction in step 10: from (129, 1144) to (133, 1144).
+WARNING: Moved in the wrong direction in step 9: from (113, 1144) to (122, 1144).
+WARNING: Moved in the wrong direction in step 10: from (122, 1144) to (129, 1144).
+WARNING: Moved in the wrong direction in step 11: from (129, 1144) to (133, 1144).
 Test 26, RTL:
   Moving left: "\n        ABCDEFabc"[9, 10, 11, 12, 13, 14, 15], "def\n    "[2, 1], <DIV>[2], "\n        ABCDEFabc"[18, 17, 16], "def\n    "[3]
-WARNING: Moved in the wrong direction in step 2: from (718, 1144) to (725, 1144).
+WARNING: Moved in the wrong direction in step 2: from (709, 1144) to (718, 1144).
+WARNING: Moved in the wrong direction in step 3: from (718, 1144) to (725, 1144).
 WARNING: Moved in the wrong direction in step 8: from (753, 1144) to (760, 1144).
   Moving right:  "def\n    "[3], "\n        ABCDEFabc"[16, 17, 18], <DIV>[2], "def\n    "[1, 2], "\n        ABCDEFabc"[15, 14, 13, 12, 11, 10, 9]
 WARNING: Moved in the wrong direction in step 6: from (760, 1144) to (753, 1144).
-WARNING: Moved in the wrong direction in step 12: from (725, 1144) to (718, 1144).
+WARNING: Moved in the wrong direction in step 11: from (725, 1144) to (718, 1144).
+WARNING: Moved in the wrong direction in step 12: from (718, 1144) to (709, 1144).
 Test 27, LTR:
   Moving right: "\n        abc"[9, 10, 11, 12], <DIV>[2], "DEFghi\n    "[2, 1], <DIV>[5, 4], "ABC"[3, 2, 1], "DEFghi\n    "[3, 4, 5, 6]
-WARNING: Moved in the wrong direction in step 4: from (300, 1179) to (52, 1179).
+WARNING: Moved in the wrong direction in step 2: from (224, 1179) to (216, 1179).
+WARNING: Moved in the wrong direction in step 4: from (283, 1179) to (52, 1179).
 WARNING: Moved in the wrong direction in step 6: from (52, 1179) to (44, 1179).
-WARNING: Moved in the wrong direction in step 9: from (275, 1179) to (59, 1179).
+WARNING: Moved in the wrong direction in step 8: from (275, 1179) to (211, 1179).
+WARNING: Moved in the wrong direction in step 9: from (211, 1179) to (59, 1179).
 WARNING: Moved in the wrong direction in step 10: from (59, 1179) to (52, 1179).
 WARNING: Moved in the wrong direction in step 11: from (52, 1179) to (44, 1179).
-WARNING: Moved in the wrong direction in step 14: from (275, 1179) to (268, 1179).
-WARNING: Moved in the wrong direction in step 15: from (268, 1179) to (263, 1179).
+WARNING: Moved in the wrong direction in step 15: from (275, 1179) to (268, 1179).
   Moving left:  "DEFghi\n    "[6, 5, 4, 3], "ABC"[1, 2, 3], <DIV>[4, 5], "DEFghi\n    "[1, 2], <DIV>[2], "\n        abc"[12, 11, 10, 9]
-WARNING: Moved in the wrong direction in step 1: from (263, 1179) to (268, 1179).
-WARNING: Moved in the wrong direction in step 2: from (268, 1179) to (275, 1179).
+WARNING: Moved in the wrong direction in step 1: from (268, 1179) to (275, 1179).
 WARNING: Moved in the wrong direction in step 5: from (44, 1179) to (52, 1179).
 WARNING: Moved in the wrong direction in step 6: from (52, 1179) to (59, 1179).
-WARNING: Moved in the wrong direction in step 7: from (59, 1179) to (275, 1179).
+WARNING: Moved in the wrong direction in step 7: from (59, 1179) to (211, 1179).
+WARNING: Moved in the wrong direction in step 8: from (211, 1179) to (275, 1179).
 WARNING: Moved in the wrong direction in step 10: from (44, 1179) to (52, 1179).
-WARNING: Moved in the wrong direction in step 12: from (52, 1179) to (300, 1179).
+WARNING: Moved in the wrong direction in step 12: from (52, 1179) to (283, 1179).
+WARNING: Moved in the wrong direction in step 14: from (216, 1179) to (224, 1179).
 Test 27, RTL:
   Moving left: "\n        abc"[9, 11, 10, 12], <DIV>[2], "ABC"[1, 2, 3], <DIV>[4, 5], "DEFghi\n    "[1, 2, 3, 5, 4, 6]
-WARNING: Moved in the wrong direction in step 4: from (505, 1179) to (761, 1179).
+WARNING: Moved in the wrong direction in step 2: from (526, 1179) to (534, 1179).
+WARNING: Moved in the wrong direction in step 4: from (522, 1179) to (761, 1179).
 WARNING: Moved in the wrong direction in step 6: from (753, 1179) to (761, 1179).
-WARNING: Moved in the wrong direction in step 10: from (578, 1179) to (753, 1179).
+WARNING: Moved in the wrong direction in step 10: from (585, 1179) to (753, 1179).
 WARNING: Moved in the wrong direction in step 11: from (753, 1179) to (761, 1179).
-WARNING: Moved in the wrong direction in step 14: from (578, 1179) to (585, 1179).
+WARNING: Moved in the wrong direction in step 14: from (585, 1179) to (593, 1179).
   Moving right:  "DEFghi\n    "[6, 4, 5, 3, 2, 1], <DIV>[5, 4], "ABC"[3, 2, 1], <DIV>[2], "\n        abc"[12, 10, 11, 9]
-WARNING: Moved in the wrong direction in step 2: from (585, 1179) to (578, 1179).
+WARNING: Moved in the wrong direction in step 2: from (593, 1179) to (585, 1179).
 WARNING: Moved in the wrong direction in step 5: from (761, 1179) to (753, 1179).
-WARNING: Moved in the wrong direction in step 6: from (753, 1179) to (578, 1179).
+WARNING: Moved in the wrong direction in step 6: from (753, 1179) to (585, 1179).
 WARNING: Moved in the wrong direction in step 10: from (761, 1179) to (753, 1179).
-WARNING: Moved in the wrong direction in step 12: from (761, 1179) to (505, 1179).
+WARNING: Moved in the wrong direction in step 12: from (761, 1179) to (522, 1179).
+WARNING: Moved in the wrong direction in step 14: from (534, 1179) to (526, 1179).
 Test 28, LTR:
   Moving right: "\n        ABC"[9, 11, 10, 12], <DIV>[2], "abc"[1, 2, 3], <DIV>[4, 5], "defDEF\n    "[1, 2, 3, 5, 4, 6]
-WARNING: Moved in the wrong direction in step 4: from (302, 1215) to (42, 1215).
+WARNING: Moved in the wrong direction in step 2: from (279, 1215) to (272, 1215).
+WARNING: Moved in the wrong direction in step 4: from (283, 1215) to (42, 1215).
 WARNING: Moved in the wrong direction in step 6: from (49, 1215) to (42, 1215).
-WARNING: Moved in the wrong direction in step 10: from (225, 1215) to (49, 1215).
+WARNING: Moved in the wrong direction in step 10: from (217, 1215) to (49, 1215).
 WARNING: Moved in the wrong direction in step 11: from (49, 1215) to (42, 1215).
-WARNING: Moved in the wrong direction in step 14: from (225, 1215) to (217, 1215).
+WARNING: Moved in the wrong direction in step 14: from (217, 1215) to (209, 1215).
   Moving left:  "defDEF\n    "[6, 4, 5, 3, 2, 1], <DIV>[5, 4], "abc"[3, 2, 1], <DIV>[2], "\n        ABC"[12, 10, 11, 9]
-WARNING: Moved in the wrong direction in step 2: from (217, 1215) to (225, 1215).
+WARNING: Moved in the wrong direction in step 2: from (209, 1215) to (217, 1215).
 WARNING: Moved in the wrong direction in step 5: from (42, 1215) to (49, 1215).
-WARNING: Moved in the wrong direction in step 6: from (49, 1215) to (225, 1215).
+WARNING: Moved in the wrong direction in step 6: from (49, 1215) to (217, 1215).
 WARNING: Moved in the wrong direction in step 10: from (42, 1215) to (49, 1215).
-WARNING: Moved in the wrong direction in step 12: from (42, 1215) to (302, 1215).
+WARNING: Moved in the wrong direction in step 12: from (42, 1215) to (283, 1215).
+WARNING: Moved in the wrong direction in step 14: from (272, 1215) to (279, 1215).
 Test 28, RTL:
   Moving left: "\n        ABC"[9, 10, 11, 12], <DIV>[2], "defDEF\n    "[2, 1], <DIV>[5, 4], "abc"[3, 2, 1], "defDEF\n    "[3, 4, 5, 6]
-WARNING: Moved in the wrong direction in step 4: from (503, 1215) to (753, 1215).
+WARNING: Moved in the wrong direction in step 2: from (584, 1215) to (591, 1215).
+WARNING: Moved in the wrong direction in step 4: from (522, 1215) to (753, 1215).
 WARNING: Moved in the wrong direction in step 6: from (753, 1215) to (760, 1215).
-WARNING: Moved in the wrong direction in step 9: from (529, 1215) to (748, 1215).
+WARNING: Moved in the wrong direction in step 8: from (529, 1215) to (595, 1215).
+WARNING: Moved in the wrong direction in step 9: from (595, 1215) to (748, 1215).
 WARNING: Moved in the wrong direction in step 10: from (748, 1215) to (753, 1215).
 WARNING: Moved in the wrong direction in step 11: from (753, 1215) to (760, 1215).
-WARNING: Moved in the wrong direction in step 14: from (529, 1215) to (537, 1215).
-WARNING: Moved in the wrong direction in step 15: from (537, 1215) to (544, 1215).
+WARNING: Moved in the wrong direction in step 15: from (529, 1215) to (537, 1215).
   Moving right:  "defDEF\n    "[6, 5, 4, 3], "abc"[1, 2, 3], <DIV>[4, 5], "defDEF\n    "[1, 2], <DIV>[2], "\n        ABC"[12, 11, 10, 9]
-WARNING: Moved in the wrong direction in step 1: from (544, 1215) to (537, 1215).
-WARNING: Moved in the wrong direction in step 2: from (537, 1215) to (529, 1215).
+WARNING: Moved in the wrong direction in step 1: from (537, 1215) to (529, 1215).
 WARNING: Moved in the wrong direction in step 5: from (760, 1215) to (753, 1215).
 WARNING: Moved in the wrong direction in step 6: from (753, 1215) to (748, 1215).
-WARNING: Moved in the wrong direction in step 7: from (748, 1215) to (529, 1215).
+WARNING: Moved in the wrong direction in step 7: from (748, 1215) to (595, 1215).
+WARNING: Moved in the wrong direction in step 8: from (595, 1215) to (529, 1215).
 WARNING: Moved in the wrong direction in step 10: from (760, 1215) to (753, 1215).
-WARNING: Moved in the wrong direction in step 12: from (753, 1215) to (503, 1215).
+WARNING: Moved in the wrong direction in step 12: from (753, 1215) to (522, 1215).
+WARNING: Moved in the wrong direction in step 14: from (591, 1215) to (584, 1215).
 Test 29, LTR:
   Moving right: "\n        abcABC"[9, 10, 11, 12], "DEF"[2, 1], "\n        abcABC"[15, 14, 13], "DEF"[3]
 WARNING: Moved in the wrong direction in step 5: from (52, 1251) to (44, 1251).

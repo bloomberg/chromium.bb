@@ -38,7 +38,7 @@ function surroundingText(html, offset, maxLength) {
 
     var coords = findOffsetCoordinates(node, offset);
     var text = window.internals.textSurroundingNode(node, coords.x, coords.y, maxLength);
-    return text.replace(/\s+/g, ' ').replace(/^\s*|\s*$/g, '');
+    return text.replace(/\s+|\ufffc/g, ' ').replace(/^\s*|\s*$/g, '');
 }
 
 function run() {

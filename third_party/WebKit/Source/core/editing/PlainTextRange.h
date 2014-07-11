@@ -51,14 +51,13 @@ public:
 
     PassRefPtrWillBeRawPtr<Range> createRange(const ContainerNode& scope) const;
     PassRefPtrWillBeRawPtr<Range> createRangeForSelection(const ContainerNode& scope) const;
-    PassRefPtrWillBeRawPtr<Range> createRangeForInputMethod(const ContainerNode& scope) const;
 
     static PlainTextRange create(const Node& scope, const Range&);
 
 private:
     PlainTextRange& operator=(const PlainTextRange&)  WTF_DELETED_FUNCTION;
 
-    enum GetRangeFor { ForGeneric, ForSelection, ForInputMethod };
+    enum GetRangeFor { ForGeneric, ForSelection };
     PassRefPtrWillBeRawPtr<Range> createRangeFor(const ContainerNode& scope, GetRangeFor) const;
 
     const size_t m_start;

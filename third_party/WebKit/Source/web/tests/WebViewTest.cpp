@@ -530,6 +530,17 @@ TEST_F(WebViewTest, InputMode)
     testInputMode(WebString("verbatim"), "input_mode_textarea_verbatim.html");
 }
 
+TEST_F(WebViewTest, TextInputInfoWithReplacedElements)
+{
+    std::string url = m_baseURL + "div_with_image.html";
+    URLTestHelpers::registerMockedURLLoad(toKURL(url), "div_with_image.html");
+    WebView* webView = m_webViewHelper.initializeAndLoad(url);
+    webView->setInitialFocus(false);
+    WebTextInputInfo info = webView->textInputInfo();
+
+    EXPECT_EQ("foo\xef\xbf\xbc", info.value.utf8());
+}
+
 TEST_F(WebViewTest, SetEditableSelectionOffsetsAndTextInputInfo)
 {
     URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(m_baseURL.c_str()), WebString::fromUTF8("input_field_populated.html"));

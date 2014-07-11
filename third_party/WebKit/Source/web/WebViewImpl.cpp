@@ -2150,7 +2150,9 @@ WebTextInputInfo WebViewImpl::textInputInfo()
     if (!focused->editor().canEdit())
         return info;
 
-    info.value = plainText(rangeOfContents(node).get());
+    // Emits an object replacement character for each replaced element so that
+    // it is exposed to IME and thus could be deleted by IME on android.
+    info.value = plainText(rangeOfContents(node).get(), TextIteratorEmitsObjectReplacementCharacter);
 
     if (info.value.isEmpty())
         return info;

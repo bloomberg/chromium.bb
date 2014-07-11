@@ -950,7 +950,7 @@ String Range::toHTML() const
 
 String Range::text() const
 {
-    return plainText(this);
+    return plainText(this, TextIteratorEmitsObjectReplacementCharacter);
 }
 
 PassRefPtrWillBeRawPtr<DocumentFragment> Range::createContextualFragment(const String& markup, ExceptionState& exceptionState)

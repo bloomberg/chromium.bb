@@ -110,7 +110,12 @@ public:
     PassRefPtrWillBeRawPtr<Range> range() const;
     Node* node() const;
 
-    static int rangeLength(const Range*, bool spacesForReplacedElements = false);
+    // Computes the length of the given range using a text iterator. The default
+    // iteration behavior is to always emit object replacement characters for
+    // replaced elements. When |forSelectionPreservation| is set to true, it
+    // also emits spaces for other non-text nodes using the
+    // |TextIteratorEmitsCharactersBetweenAllVisiblePosition| mode.
+    static int rangeLength(const Range*, bool forSelectionPreservation = false);
     static PassRefPtrWillBeRawPtr<Range> subrange(Range* entireRange, int characterOffset, int characterCount);
 
 private:
