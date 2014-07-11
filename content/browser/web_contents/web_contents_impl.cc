@@ -3394,6 +3394,9 @@ void WebContentsImpl::RenderViewTerminated(RenderViewHost* rvh,
   if (dialog_manager_)
     dialog_manager_->CancelActiveAndPendingDialogs(this);
 
+  if (delegate_)
+    delegate_->HideValidationMessage(this);
+
   SetIsLoading(rvh, false, true, NULL);
   NotifyDisconnected();
   SetIsCrashed(status, error_code);

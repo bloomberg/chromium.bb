@@ -314,6 +314,26 @@ class FakeFullscreenDelegate : public WebContentsDelegate {
   DISALLOW_COPY_AND_ASSIGN(FakeFullscreenDelegate);
 };
 
+class FakeValidationMessageDelegate : public WebContentsDelegate {
+ public:
+  FakeValidationMessageDelegate()
+      : hide_validation_message_was_called_(false) {}
+  virtual ~FakeValidationMessageDelegate() {}
+
+  virtual void HideValidationMessage(WebContents* web_contents) OVERRIDE {
+    hide_validation_message_was_called_ = true;
+  }
+
+  bool hide_validation_message_was_called() const {
+    return hide_validation_message_was_called_;
+  }
+
+ private:
+  bool hide_validation_message_was_called_;
+
+  DISALLOW_COPY_AND_ASSIGN(FakeValidationMessageDelegate);
+};
+
 }  // namespace
 
 // Test to make sure that title updates get stripped of whitespace.
@@ -1419,6 +1439,22 @@ TEST_F(WebContentsImplTest, HistoryNavigationExitsFullscreen) {
     EXPECT_FALSE(contents()->IsFullscreenForCurrentTab());
     EXPECT_FALSE(fake_delegate.IsFullscreenForTabOrPending(contents()));
   }
+
+  contents()->SetDelegate(NULL);
+}
+
+TEST_F(WebContentsImplTest, TerminateHidesValidationMessage) {
+  FakeValidationMessageDelegate fake_delegate;
+  contents()->SetDelegate(&fake_delegate);
+  EXPECT_FALSE(fake_delegate.hide_validation_message_was_called());
+
+  // Crash the renderer.
+  test_rvh()->OnMessageReceived(
+      ViewHostMsg_RenderProcessGone(
+          0, base::TERMINATION_STATUS_PROCESS_CRASHED, -1));
+
+  // Confirm HideValidationMessage was called.
+  EXPECT_TRUE(fake_delegate.hide_validation_message_was_called());
 
   contents()->SetDelegate(NULL);
 }
