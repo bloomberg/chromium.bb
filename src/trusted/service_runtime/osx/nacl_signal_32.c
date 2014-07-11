@@ -5,6 +5,7 @@
  */
 
 #include <signal.h>
+#include <string.h>
 #include <sys/ucontext.h>
 
 #include "native_client/src/trusted/service_runtime/nacl_signal.h"
@@ -73,6 +74,7 @@ void NaClSignalContextToMacThreadState(x86_thread_state_t *dest,
 void NaClSignalContextFromHandler(struct NaClSignalContext *sig_ctx,
                                   const void *raw_ctx) {
   ucontext_t *uctx = (ucontext_t *) raw_ctx;
+  memset(sig_ctx, 0, sizeof(*sig_ctx));
   SignalContextFromRegs(sig_ctx, &uctx->uc_mcontext->__ss);
 }
 

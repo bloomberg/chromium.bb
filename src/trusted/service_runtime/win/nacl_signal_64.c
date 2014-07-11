@@ -6,6 +6,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 
 #include "native_client/src/include/portability.h"
 #include "native_client/src/trusted/service_runtime/nacl_signal.h"
@@ -17,6 +18,8 @@
 void NaClSignalContextFromHandler(struct NaClSignalContext *sig_ctx,
                                   const void *raw_ctx) {
   const CONTEXT *win_ctx = raw_ctx;
+
+  memset(sig_ctx, 0, sizeof(*sig_ctx));
 
   sig_ctx->prog_ctr = win_ctx->Rip;
   sig_ctx->stack_ptr = win_ctx->Rsp;

@@ -1,10 +1,11 @@
 /*
  * Copyright 2010 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 #include <signal.h>
+#include <string.h>
 #include <sys/ucontext.h>
 
 #include "native_client/src/trusted/service_runtime/nacl_signal.h"
@@ -22,6 +23,8 @@ void NaClSignalContextFromHandler(struct NaClSignalContext *sig_ctx,
                                   const void *raw_ctx) {
   const ucontext_t *uctx = (const ucontext_t *) raw_ctx;
   const mcontext_t *mctx = &uctx->uc_mcontext;
+
+  memset(sig_ctx, 0, sizeof(*sig_ctx));
 
   sig_ctx->prog_ctr = mctx->gregs[REG_RIP];
   sig_ctx->stack_ptr = mctx->gregs[REG_RSP];

@@ -1,10 +1,11 @@
 /*
  * Copyright 2010 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 #include <signal.h>
+#include <string.h>
 #if !NACL_ANDROID
 #include <sys/ucontext.h>
 #endif
@@ -25,6 +26,8 @@ void NaClSignalContextFromHandler(struct NaClSignalContext *sig_ctx,
                                   const void *raw_ctx) {
   const ucontext_t *uctx = (const ucontext_t *) raw_ctx;
   const mcontext_t *mctx = &uctx->uc_mcontext;
+
+  memset(sig_ctx, 0, sizeof(*sig_ctx));
 
   sig_ctx->prog_ctr = mctx->gregs[REG_EIP];
   sig_ctx->stack_ptr = mctx->gregs[REG_ESP];

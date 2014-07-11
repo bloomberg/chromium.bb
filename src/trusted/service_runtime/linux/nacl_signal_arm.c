@@ -5,6 +5,7 @@
  */
 
 #include <signal.h>
+#include <string.h>
 #if !NACL_ANDROID
 #include <sys/ucontext.h>
 #endif
@@ -20,6 +21,8 @@ void NaClSignalContextFromHandler(struct NaClSignalContext *sig_ctx,
                                   const void *raw_ctx) {
   ucontext_t *uctx = (ucontext_t *) raw_ctx;
   struct sigcontext *mctx = &uctx->uc_mcontext;
+
+  memset(sig_ctx, 0, sizeof(*sig_ctx));
 
   sig_ctx->prog_ctr = mctx->arm_pc;
   sig_ctx->stack_ptr = mctx->arm_sp;
