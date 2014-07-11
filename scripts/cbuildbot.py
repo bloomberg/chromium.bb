@@ -1262,6 +1262,10 @@ def _CreateParser():
                           default=True,
                           help=('Override values from buildconfig and run no '
                                 'tests.'))
+  group.add_remote_option('--noimagetests', action='store_false',
+                          dest='image_test', default=True,
+                          help=('Override values from buildconfig and run no '
+                                'image tests.'))
   group.add_remote_option('--nouprev', action='store_false', dest='uprev',
                           default=True,
                           help=('Override values from buildconfig and never '

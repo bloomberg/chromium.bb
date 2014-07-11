@@ -18,7 +18,6 @@ from chromite.cbuildbot import cbuildbot_config as config
 from chromite.cbuildbot import failures_lib
 from chromite.cbuildbot import results_lib
 from chromite.cbuildbot import cbuildbot_run
-from chromite.cbuildbot import manifest_version
 from chromite.cbuildbot import portage_utilities
 from chromite.cbuildbot.stages import generic_stages
 from chromite.lib import cros_build_lib
@@ -34,20 +33,7 @@ from chromite.scripts import cbuildbot
 import mock
 
 
-DEFAULT_CHROME_BRANCH = '27'
 DEFAULT_BUILD_NUMBER = 1234321
-
-
-class BuilderRunMock(partial_mock.PartialMock):
-  """Partial mock for BuilderRun class."""
-
-  TARGET = 'chromite.cbuildbot.cbuildbot_run._BuilderRunBase'
-  ATTRS = ('GetVersionInfo', )
-  VERSION = '3333.1.0'
-
-  def GetVersionInfo(self, _build_root):
-    return manifest_version.VersionInfo(
-        version_string=self.VERSION, chrome_branch=DEFAULT_CHROME_BRANCH)
 
 
 # The inheritence order ensures the patchers are stopped before

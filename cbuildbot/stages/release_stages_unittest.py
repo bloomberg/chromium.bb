@@ -10,6 +10,7 @@ import sys
 import unittest
 
 sys.path.insert(0, os.path.abspath('%s/../../..' % os.path.dirname(__file__)))
+from chromite.cbuildbot.cbuildbot_unittest import BuilderRunMock
 from chromite.cbuildbot.stages import artifact_stages
 from chromite.cbuildbot.stages import generic_stages_unittest
 from chromite.cbuildbot.stages import release_stages
@@ -19,7 +20,6 @@ from chromite.lib import cros_test_lib
 from chromite.lib import timeout_util
 
 from chromite.cbuildbot.stages.generic_stages_unittest import patch
-from chromite.cbuildbot.stages.generic_stages_unittest import BuilderRunMock
 
 try:
   # pylint: disable=F0401

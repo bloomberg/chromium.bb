@@ -624,6 +624,10 @@ _settings = dict(
 # chrome.
   chrome_sdk_goma=False,
 
+# image_test -- Run image tests. This should only be set if 'base' is in
+# "images".
+  image_test=False,
+
 # =============================================================================
 )
 
@@ -924,6 +928,7 @@ full = _config(
   git_sync=True,
   trybot_list=True,
   description='Full Builds',
+  image_test=True,
 )
 
 # Full builders with prebuilts.
@@ -1017,6 +1022,7 @@ brillo_non_testable = brillo.derive(
 
   # Since it doesn't generate test images, payloads can't be tested.
   paygen_skip_testing=True,
+  image_test=True,
 )
 
 beaglebone = non_testable_builder.derive(brillo_non_testable,
@@ -2009,6 +2015,7 @@ _release = full.derive(official, internal,
   hwqual=True,
   description="Release Builds (canary) (internal)",
   chrome_sdk=True,
+  image_test=True,
 )
 
 _grouped_config = _config(
@@ -2461,6 +2468,7 @@ _firmware = _config(
   signer_tests=False,
   trybot_list=False,
   paygen=False,
+  image_test=False,
 )
 
 _firmware_release = _release.derive(_firmware,

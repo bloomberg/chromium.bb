@@ -12,6 +12,7 @@ sys.path.insert(0, os.path.abspath('%s/../../..' % os.path.dirname(__file__)))
 from chromite.cbuildbot import commands
 from chromite.cbuildbot import constants
 from chromite.cbuildbot import validation_pool
+from chromite.cbuildbot.cbuildbot_unittest import BuilderRunMock
 from chromite.cbuildbot.stages import sync_stages
 from chromite.cbuildbot.stages import sync_stages_unittest
 from chromite.cbuildbot.stages import report_stages
@@ -19,8 +20,6 @@ from chromite.cbuildbot.stages import generic_stages_unittest
 from chromite.lib import cros_test_lib
 from chromite.lib import alerts
 from chromite.lib import osutils
-
-from chromite.cbuildbot.stages.generic_stages_unittest import BuilderRunMock
 
 
 # TODO(build): Finish test wrapper (http://crosbug.com/37517).

@@ -4,6 +4,7 @@
 
 """Module containing the test stages."""
 
+import collections
 import logging
 import os
 
@@ -14,9 +15,12 @@ from chromite.cbuildbot import constants
 from chromite.cbuildbot import lab_status
 from chromite.cbuildbot import validation_pool
 from chromite.cbuildbot.stages import generic_stages
+from chromite.cros.tests import image_test
 from chromite.lib import cgroups
 from chromite.lib import cros_build_lib
 from chromite.lib import osutils
+from chromite.lib import perf_uploader
+from chromite.lib import retry_util
 from chromite.lib import timeout_util
 
 
@@ -342,19 +346,53 @@ class ImageTestStage(generic_stages.BoardSpecificBuilderStage,
                      generic_stages.ArchivingStageMixin):
   """Stage that launches tests on the produced disk image."""
 
-  # Give the tests 10 minutes to run. Image tests should be really quick.
-  IMAGE_TEST_TIMEOUT = 60 * 10
+  option_name = 'image_test'
+  config_name = 'image_test'
+
+  # Give the tests 20 minutes to run. Image tests should be really quick but
+  # the umount/rmdir bug (see osutils.UmountDir) may take a long time.
+  IMAGE_TEST_TIMEOUT = 60 * 20
 
   def __init__(self, *args, **kwargs):
     super(ImageTestStage, self).__init__(*args, **kwargs)
 
   def PerformStage(self):
     test_results_dir = commands.CreateTestRoot(self._build_root)
+    test_results_dir = os.path.join(test_results_dir, 'image_test_results')
+    osutils.SafeMakedirs(test_results_dir)
     with timeout_util.Timeout(self.IMAGE_TEST_TIMEOUT):
       commands.RunTestImage(
           self._build_root,
           self._current_board,
           self.GetImageDirSymlink(),
-          os.path.join(test_results_dir, 'image_test_results'),
+          test_results_dir,
       )
-    # TODO(namnguyen): send perf values to chromeperf.appspot.com (386198)
+    self.SendPerfValues(test_results_dir)
+
+  def SendPerfValues(self, test_results_dir):
+    """Gather all perf values in |test_results_dir| and send them to chromeperf.
+
+    The uploading will be retried 3 times for each file.
+
+    Args:
+      test_results_dir: A path to the directory with perf files.
+    """
+    # A dict of list of perf values, keyed by test name.
+    perf_entries = collections.defaultdict(list)
+    for root, _, filenames in os.walk(test_results_dir):
+      for relative_name in filenames:
+        if not image_test.IsPerfFile(relative_name):
+          continue
+        full_name = os.path.join(root, relative_name)
+        entries = perf_uploader.LoadPerfValues(full_name)
+        test_name = image_test.ImageTestCase.GetTestName(relative_name)
+        perf_entries[test_name].extend(entries)
+
+    platform_name = self._run.bot_id
+    cros_ver = self._run.GetVersionInfo(self._run.buildroot).VersionString()
+    chrome_ver = self._run.DetermineChromeVersion()
+    for test_name, perf_values in perf_entries.iteritems():
+      retry_util.RetryException(perf_uploader.PerfUploadingError, 3,
+                                perf_uploader.UploadPerfValues,
+                                perf_values, platform_name, cros_ver,
+                                chrome_ver, test_name)

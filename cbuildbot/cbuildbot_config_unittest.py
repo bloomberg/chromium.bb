@@ -176,6 +176,14 @@ class CBuildBotTest(cros_test_lib.MoxTestCase):
           test_type in constants.VALID_VM_TEST_TYPES,
           'Config %s: has unexpected vm test type value.' % build_name)
 
+  def testImageTestMustHaveBaseImage(self):
+    """Verify image_test build is only enabled with 'base' in images."""
+    for build_name, config in cbuildbot_config.config.iteritems():
+      if config.get('image_test', False):
+        self.assertTrue('base' in config['images'],
+                        'Build %s runs image_test but does not have base img' %
+                        build_name)
+
   def testBuildType(self):
     """Verifies that all configs use valid build types."""
     for build_name, config in cbuildbot_config.config.iteritems():
