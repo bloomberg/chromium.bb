@@ -74,6 +74,11 @@ class MockMediaPlayerManager : public MediaPlayerManager {
   virtual MediaPlayerAndroid* GetFullscreenPlayer() OVERRIDE { return NULL; }
   virtual MediaPlayerAndroid* GetPlayer(int player_id) OVERRIDE { return NULL; }
   virtual void RequestFullScreen(int player_id) OVERRIDE {}
+#if defined(VIDEO_HOLE)
+  virtual bool ShouldUseVideoOverlayForEmbeddedEncryptedVideo() OVERRIDE {
+    return false;
+  }
+#endif  // defined(VIDEO_HOLE)
 
   bool playback_completed() const {
     return playback_completed_;

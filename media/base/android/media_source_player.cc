@@ -123,7 +123,13 @@ void MediaSourcePlayer::Start() {
 
   playing_ = true;
 
-  if (IsProtectedSurfaceRequired())
+  bool request_fullscreen = IsProtectedSurfaceRequired();
+#if defined(VIDEO_HOLE)
+  // Skip to request fullscreen when hole-punching is used.
+  request_fullscreen = request_fullscreen &&
+      !manager()->ShouldUseVideoOverlayForEmbeddedEncryptedVideo();
+#endif  // defined(VIDEO_HOLE)
+  if (request_fullscreen)
     manager()->RequestFullScreen(player_id());
 
   StartInternal();

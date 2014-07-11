@@ -87,8 +87,9 @@ class CONTENT_EXPORT BrowserMediaPlayerManager
   virtual media::MediaPlayerAndroid* GetFullscreenPlayer() OVERRIDE;
   virtual media::MediaPlayerAndroid* GetPlayer(int player_id) OVERRIDE;
   virtual void RequestFullScreen(int player_id) OVERRIDE;
-
 #if defined(VIDEO_HOLE)
+  virtual bool ShouldUseVideoOverlayForEmbeddedEncryptedVideo() OVERRIDE;
+
   void AttachExternalVideoSurface(int player_id, jobject surface);
   void DetachExternalVideoSurface(int player_id);
   void OnFrameInfoUpdated();
