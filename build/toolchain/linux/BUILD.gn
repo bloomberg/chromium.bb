@@ -15,52 +15,69 @@ gcc_toolchain("arm") {
 
   toolchain_cpu_arch = "arm"
   toolchain_os = "linux"
+  is_clang = false
 }
 
-gcc_toolchain("x86") {
-  if (is_clang) {
-    if (use_clang_type_profiler) {
-      prefix = rebase_path("//third_party/llvm-allocated-type/Linux_ia32/bin",
-                           root_build_dir)
-    } else {
-      prefix = rebase_path("//third_party/llvm-build/Release+Asserts/bin",
-                           root_build_dir)
-    }
-    cc = "$prefix/clang"
-    cxx = "$prefix/clang++"
+gcc_toolchain("clang_x86") {
+  if (use_clang_type_profiler) {
+    prefix = rebase_path("//third_party/llvm-allocated-type/Linux_ia32/bin",
+                         root_build_dir)
   } else {
-    cc = "gcc"
-    cxx = "g++"
+    prefix = rebase_path("//third_party/llvm-build/Release+Asserts/bin",
+                         root_build_dir)
   }
+  cc = "$prefix/clang"
+  cxx = "$prefix/clang++"
 
   ar = "ar"
   ld = cxx
 
   toolchain_cpu_arch = "x86"
   toolchain_os = "linux"
+  is_clang = true
 }
 
-gcc_toolchain("x64") {
-  if (is_clang) {
-    if (use_clang_type_profiler) {
-      prefix = rebase_path("//third_party/llvm-allocated-type/Linux_x64/bin",
-                           root_build_dir)
-    } else {
-      prefix = rebase_path("//third_party/llvm-build/Release+Asserts/bin",
-                           root_build_dir)
-    }
-    cc = "$prefix/clang"
-    cxx = "$prefix/clang++"
+gcc_toolchain("x86") {
+  cc = "gcc"
+  cxx = "g++"
+
+  ar = "ar"
+  ld = cxx
+
+  toolchain_cpu_arch = "x86"
+  toolchain_os = "linux"
+  is_clang = false
+}
+
+gcc_toolchain("clang_x64") {
+  if (use_clang_type_profiler) {
+    prefix = rebase_path("//third_party/llvm-allocated-type/Linux_x64/bin",
+                         root_build_dir)
   } else {
-    cc = "gcc"
-    cxx = "g++"
+    prefix = rebase_path("//third_party/llvm-build/Release+Asserts/bin",
+                         root_build_dir)
   }
+  cc = "$prefix/clang"
+  cxx = "$prefix/clang++"
 
   ar = "ar"
   ld = cxx
 
   toolchain_cpu_arch = "x64"
   toolchain_os = "linux"
+  is_clang = true
+}
+
+gcc_toolchain("x64") {
+  cc = "gcc"
+  cxx = "g++"
+
+  ar = "ar"
+  ld = cxx
+
+  toolchain_cpu_arch = "x64"
+  toolchain_os = "linux"
+  is_clang = false
 }
 
 gcc_toolchain("mipsel") {
@@ -71,4 +88,5 @@ gcc_toolchain("mipsel") {
 
   toolchain_cpu_arch = "mipsel"
   toolchain_os = "linux"
+  is_clang = false
 }

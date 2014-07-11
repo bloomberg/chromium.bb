@@ -2,7 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# This template defines a GCC toolchain.
+# This template defines a toolchain for something that works like gcc
+# (including clang).
 #
 # It requires the following variables specifying the executables to run:
 #  - cc
@@ -23,6 +24,7 @@
 #      at the beginning and end for all targets in a toolchain.
 #  - deps
 #      Just fowarded to the toolchain definition.
+#  - is_clang
 template("gcc_toolchain") {
   toolchain(target_name) {
     assert(defined(invoker.cc), "gcc_toolchain() must specify a \"cc\" value")
@@ -108,6 +110,9 @@ template("gcc_toolchain") {
     toolchain_args() {
       cpu_arch = invoker.toolchain_cpu_arch
       os = invoker.toolchain_os
+      if (defined(invoker.is_clang)) {
+        is_clang = invoker.is_clang
+      }
     }
 
     if (defined(invoker.deps)) {

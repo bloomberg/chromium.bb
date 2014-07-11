@@ -31,7 +31,7 @@ declare_args() {
 
   # Set to true when compiling with the Clang compiler. Typically this is used
   # to configure warnings.
-  is_clang = false
+  is_clang = (os == "mac" || os == "ios")
 
   # Forces a 64-bit build on Windows. Does nothing on other platforms. Normally
   # we build 32-bit on Windows regardless of the current host OS bit depth.
@@ -101,9 +101,6 @@ if (os == "win") {
   is_nacl = false
   is_posix = true
   is_win = false
-  if (!is_clang) {
-    is_clang = true  # Always use clang on Mac.
-  }
 } else if (os == "android") {
   is_android = true
   is_chromeos = false
@@ -142,10 +139,6 @@ if (os == "win") {
   is_nacl = false
   is_posix = true
   is_win = false
-  if (!is_gyp_xcode_generator) {
-    # Always use clang on iOS when using ninja
-    is_clang = true
-  }
 } else if (os == "linux") {
   is_android = false
   is_chromeos = false
@@ -460,11 +453,22 @@ if (is_win) {
     set_default_toolchain("//build/toolchain/win:32")
   }
 } else if (is_android) {
-  host_toolchain = "//build/toolchain/linux:$build_cpu_arch"
+  # Use clang for the x86/64 Linux host builds.
+  # (Disabled until the Clang build works properly.)
+  #if (build_cpu_arch == "x86" || build_cpu_arch == "x64") {
+  #  host_toolchain = "//build/toolchain/linux:clang_$build_cpu_arch"
+  #} else {
+    host_toolchain = "//build/toolchain/linux:$build_cpu_arch"
+  #}
   set_default_toolchain("//build/toolchain/android:$cpu_arch")
 } else if (is_linux) {
-  host_toolchain = "//build/toolchain/linux:$build_cpu_arch"
-  set_default_toolchain("//build/toolchain/linux:$cpu_arch")
+  if (is_clang) {
+    host_toolchain = "//build/toolchain/linux:clang_$build_cpu_arch"
+    set_default_toolchain("//build/toolchain/linux:clang_$cpu_arch")
+  } else {
+    host_toolchain = "//build/toolchain/linux:$build_cpu_arch"
+    set_default_toolchain("//build/toolchain/linux:$cpu_arch")
+  }
 } else if (is_mac) {
   host_toolchain = "//build/toolchain/mac:clang"
   set_default_toolchain(host_toolchain)

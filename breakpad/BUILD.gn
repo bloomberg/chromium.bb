@@ -516,7 +516,7 @@ if (is_linux && current_toolchain == host_toolchain) {
 
     if (is_clang) {
       # See http://crbug.com/138571#c18
-      cflags += [ "-Wno-unused-value" ]
+      cflags = [ "-Wno-unused-value" ]
     }
 
 
