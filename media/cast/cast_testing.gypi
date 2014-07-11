@@ -240,6 +240,7 @@
       ],
       'dependencies': [
         'cast_base',
+        'cast_network_model_proto',
         'cast_sender',
         'cast_test_utility',
         'cast_transport',
@@ -253,6 +254,22 @@
       'sources': [
         '<(DEPTH)/media/cast/test/simulator.cc',
       ],
+    },
+    {
+      # GN version: //media/cast/test/proto
+      'target_name': 'cast_network_model_proto',
+      'type': 'static_library',
+      'include_dirs': [
+        '<(DEPTH)/',
+      ],
+      'sources': [
+        'test/proto/network_simulation_model.proto',
+      ],
+      'variables': {
+        'proto_in_dir': 'test/proto',
+        'proto_out_dir': 'media/cast/test/proto',
+      },
+      'includes': ['../../build/protoc.gypi'],
     },
     {
       'target_name': 'generate_barcode_video',

@@ -46,6 +46,7 @@
 #include "media/cast/test/fake_media_source.h"
 #include "media/cast/test/fake_single_thread_task_runner.h"
 #include "media/cast/test/loopback_transport.h"
+#include "media/cast/test/proto/network_simulation_model.pb.h"
 #include "media/cast/test/skewed_tick_clock.h"
 #include "media/cast/test/utility/audio_utility.h"
 #include "media/cast/test/utility/default_config.h"
@@ -57,14 +58,19 @@
 #include "media/cast/transport/cast_transport_sender.h"
 #include "media/cast/transport/cast_transport_sender_impl.h"
 
+using media::cast::proto::IPPModel;
+using media::cast::proto::NetworkSimulationModel;
+using media::cast::proto::NetworkSimulationModelType;
+
 namespace media {
 namespace cast {
 namespace {
-
 const int kTargetDelay = 300;
 const char kSourcePath[] = "source";
+const char kModelPath[] = "model";
 const char kOutputPath[] = "output";
 const char kSimulationId[] = "sim-id";
+const char kLibDir[] = "lib-dir";
 
 void UpdateCastTransportStatus(transport::CastTransportStatus status) {
   LOG(INFO) << "Cast transport status: " << status;
@@ -158,7 +164,8 @@ void AppendLog(EncodingEventSubscriber* subscriber,
 // |extra_data| is extra tagging information to write to log.
 void RunSimulation(const base::FilePath& source_path,
                    const base::FilePath& output_path,
-                   const std::string& extra_data) {
+                   const std::string& extra_data,
+                   const NetworkSimulationModel& model) {
   // Fake clock. Make sure start time is non zero.
   base::SimpleTestTickClock testing_clock;
   testing_clock.Advance(base::TimeDelta::FromSeconds(1));
@@ -243,27 +250,18 @@ void RunSimulation(const base::FilePath& source_path,
       CastSender::Create(sender_env, transport_sender.get()));
 
   // Build packet pipe.
-  // TODO(hclam): Allow user to input these parameters. Following
-  // parameters are taken from a session from real-world data. It is
-  // chosen here because it gives a difficult environment.
-  std::vector<double> average_rates;
-  average_rates.push_back(0.609);
-  average_rates.push_back(0.495);
-  average_rates.push_back(0.561);
-  average_rates.push_back(0.458);
-  average_rates.push_back(0.538);
-  average_rates.push_back(0.513);
-  average_rates.push_back(0.585);
-  average_rates.push_back(0.592);
-  average_rates.push_back(0.658);
-  average_rates.push_back(0.556);
-  average_rates.push_back(0.371);
-  average_rates.push_back(0.595);
-  average_rates.push_back(0.490);
-  average_rates.push_back(0.980);
-  average_rates.push_back(0.781);
-  average_rates.push_back(0.463);
-  test::InterruptedPoissonProcess ipp(average_rates, 0.3, 4.1, 0);
+  if (model.type() != media::cast::proto::INTERRUPTED_POISSON_PROCESS) {
+    LOG(ERROR) << "Unknown model type " << model.type() << ".";
+    return;
+  }
+
+  const IPPModel& ipp_model = model.ipp();
+
+  std::vector<double> average_rates(ipp_model.average_rate_size());
+  std::copy(ipp_model.average_rate().begin(), ipp_model.average_rate().end(),
+      average_rates.begin());
+  test::InterruptedPoissonProcess ipp(average_rates,
+      ipp_model.coef_burstiness(), ipp_model.coef_variance(), 0);
 
   // Connect sender to receiver. This initializes the pipe.
   receiver_to_sender.Initialize(
@@ -301,9 +299,9 @@ void RunSimulation(const base::FilePath& source_path,
   media_source.Start(cast_sender->audio_frame_input(),
                      cast_sender->video_frame_input());
 
-  // Run for 5 minutes.
+  // Run for 3 minutes.
   base::TimeDelta elapsed_time;
-  while (elapsed_time.InMinutes() < 5) {
+  while (elapsed_time.InMinutes() < 3) {
     // Each step is 100us.
     base::TimeDelta step = base::TimeDelta::FromMicroseconds(100);
     task_runner->Sleep(step);
@@ -326,6 +324,78 @@ void RunSimulation(const base::FilePath& source_path,
   AppendLog(&audio_event_subscriber, extra_data, output_path);
 }
 
+NetworkSimulationModel DefaultModel() {
+  NetworkSimulationModel model;
+  model.set_type(cast::proto::INTERRUPTED_POISSON_PROCESS);
+  IPPModel* ipp = model.mutable_ipp();
+  ipp->set_coef_burstiness(0.609);
+  ipp->set_coef_variance(4.1);
+
+  ipp->add_average_rate(0.609);
+  ipp->add_average_rate(0.495);
+  ipp->add_average_rate(0.561);
+  ipp->add_average_rate(0.458);
+  ipp->add_average_rate(0.538);
+  ipp->add_average_rate(0.513);
+  ipp->add_average_rate(0.585);
+  ipp->add_average_rate(0.592);
+  ipp->add_average_rate(0.658);
+  ipp->add_average_rate(0.556);
+  ipp->add_average_rate(0.371);
+  ipp->add_average_rate(0.595);
+  ipp->add_average_rate(0.490);
+  ipp->add_average_rate(0.980);
+  ipp->add_average_rate(0.781);
+  ipp->add_average_rate(0.463);
+
+  return model;
+}
+
+bool IsModelValid(const NetworkSimulationModel& model) {
+  if (!model.has_type())
+    return false;
+  NetworkSimulationModelType type = model.type();
+  if (type == media::cast::proto::INTERRUPTED_POISSON_PROCESS) {
+    if (!model.has_ipp())
+      return false;
+    const IPPModel& ipp = model.ipp();
+    if (ipp.coef_burstiness() <= 0.0 || ipp.coef_variance() <= 0.0)
+      return false;
+    if (ipp.average_rate_size() == 0)
+      return false;
+    for (int i = 0; i < ipp.average_rate_size(); i++) {
+      if (ipp.average_rate(i) <= 0.0)
+        return false;
+    }
+  }
+
+  return true;
+}
+
+NetworkSimulationModel LoadModel(const base::FilePath& model_path) {
+  if (model_path.empty()) {
+    LOG(ERROR) << "Model path not set.";
+    return DefaultModel();
+  }
+  std::string model_str;
+  if (!base::ReadFileToString(model_path, &model_str)) {
+    LOG(ERROR) << "Failed to read model file.";
+    return DefaultModel();
+  }
+
+  NetworkSimulationModel model;
+  if (!model.ParseFromString(model_str)) {
+    LOG(ERROR) << "Failed to parse model.";
+    return DefaultModel();
+  }
+  if (!IsModelValid(model)) {
+    LOG(ERROR) << "Invalid model.";
+    return DefaultModel();
+  }
+
+  return model;
+}
+
 }  // namespace
 }  // namespace cast
 }  // namespace media
@@ -335,14 +405,20 @@ int main(int argc, char** argv) {
   CommandLine::Init(argc, argv);
   InitLogging(logging::LoggingSettings());
 
-  base::FilePath media_path;
-  if (!PathService::Get(base::DIR_MODULE, &media_path)) {
-    LOG(ERROR) << "Failed to load FFmpeg.";
+  const CommandLine* cmd = CommandLine::ForCurrentProcess();
+  base::FilePath media_path = cmd->GetSwitchValuePath(media::cast::kLibDir);
+  if (media_path.empty()) {
+    if (!PathService::Get(base::DIR_MODULE, &media_path)) {
+      LOG(ERROR) << "Failed to load FFmpeg.";
+      return 1;
+    }
+  }
+
+  if (!media::InitializeMediaLibrary(media_path)) {
+    LOG(ERROR) << "Failed to initialize FFmpeg.";
     return 1;
   }
-  media::InitializeMediaLibrary(media_path);
 
-  const CommandLine* cmd = CommandLine::ForCurrentProcess();
   base::FilePath source_path = cmd->GetSwitchValuePath(
       media::cast::kSourcePath);
   base::FilePath output_path = cmd->GetSwitchValuePath(
@@ -353,6 +429,9 @@ int main(int argc, char** argv) {
   }
   std::string sim_id = cmd->GetSwitchValueASCII(media::cast::kSimulationId);
 
+  NetworkSimulationModel model = media::cast::LoadModel(
+      cmd->GetSwitchValuePath(media::cast::kModelPath));
+
   base::DictionaryValue values;
   values.SetBoolean("sim", true);
   values.SetString("sim-id", sim_id);
@@ -361,6 +440,6 @@ int main(int argc, char** argv) {
   base::JSONWriter::Write(&values, &extra_data);
 
   // Run.
-  media::cast::RunSimulation(source_path, output_path, extra_data);
+  media::cast::RunSimulation(source_path, output_path, extra_data, model);
   return 0;
 }
