@@ -4,13 +4,16 @@
 
 """Continuous Integration Database Library."""
 
+import datetime
 import glob
 import logging
 import os
 import re
 import sqlalchemy
 import sqlalchemy.exc
+import sqlalchemy.interfaces
 from sqlalchemy import MetaData
+import time
 
 from chromite.cbuildbot import constants
 
@@ -43,6 +46,15 @@ def minimum_schema(min_version):
       return f(self, *args)
     return wrapper
   return decorator
+
+
+class StrictModeListener(sqlalchemy.interfaces.PoolListener):
+  """This listener ensures that STRICT_ALL_TABLES for all connections."""
+  # pylint: disable-msg=W0613
+  def connect(self, dbapi_con, *args, **kwargs):
+    cur = dbapi_con.cursor()
+    cur.execute("SET SESSION sql_mode='STRICT_ALL_TABLES'")
+    cur.close()
 
 
 class SchemaVersionedMySQLConnection(object):
@@ -95,7 +107,8 @@ class SchemaVersionedMySQLConnection(object):
     # engine here because the real engine will be opened with a default
     # database name given by |db_name|.
     temp_engine = sqlalchemy.create_engine(connect_string,
-                                           connect_args=self._ssl_args)
+                                           connect_args=self._ssl_args,
+                                           listeners=[StrictModeListener()])
     databases = temp_engine.execute('SHOW DATABASES').fetchall()
     if (db_name,) not in databases:
       temp_engine.execute('CREATE DATABASE %s' % db_name)
@@ -302,7 +315,8 @@ class SchemaVersionedMySQLConnection(object):
       return self._engine
     else:
       e = sqlalchemy.create_engine(self._connect_string,
-                                   connect_args=self._ssl_args)
+                                   connect_args=self._ssl_args,
+                                   listeners=[StrictModeListener()])
       self._engine = e
       self._engine_pid = pid
       logging.debug('Created engine %s for pid %s', e, pid)
@@ -325,11 +339,169 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
     super(CIDBConnection, self).__init__('cidb', CIDB_MIGRATIONS_DIR,
                                          TEST_DB_CREDENTIALS_DIR)
 
-  @minimum_schema(1)
-  def TestMethodSchemaTooLow(self):
-    """This method is a temporary one to test the minimum_schema decorator."""
+  @minimum_schema(2)
+  def InsertBuild(self, builder_name, waterfall, build_number,
+                  build_type, build_config, bot_hostname,
+                  start_time=None,
+                  master_build_id=None):
+    """Insert a build row.
 
-  @minimum_schema(0)
-  def TestMethodSchemaOK(self):
-    """This method is a temporary one to test the minimum_schema decorator."""
+    Args:
+      builder_name: buildbot builder name.
+      waterfall: buildbot waterfall name.
+      build_number: buildbot build number.
+      build_type: One of 'paladin' or 'pre-cq'
+      build_config: cbuildbot config of build
+      bot_hostname: hostname of bot running the build
+      start_time: (Optional) Unix timestamp of build start time. If None,
+                  current time will be used.
+      master_build_id: (Optional) primary key of master build to this build.
+    """
+    start_time = start_time or time.mktime()
+    dt = datetime.datetime.fromtimestamp(start_time)
+
+    return self._Insert('buildTable', {'builder_name': builder_name,
+                                       'waterfall': waterfall,
+                                       'build_number': build_number,
+                                       'build_type' : build_type,
+                                       'build_config' : build_config,
+                                       'bot_hostname': bot_hostname,
+                                       'start_time' : dt,
+                                       'master_build_id' : master_build_id}
+                        )
+
+  @minimum_schema(3)
+  def InsertCLActions(self, build_id, cl_actions):
+    """Insert a list of |cl_actions|.
+
+    If |cl_actions| is empty, this function does nothing.
+
+    Args:
+      build_id: primary key of build that performed these actions.
+      cl_actions: A list of cl_action tuples.
+
+    Returns:
+      Number of actions inserted.
+    """
+    if not cl_actions:
+      return 0
+
+    values = []
+    # TODO(akeshet): Refactor to use either cl action tuples out of the
+    # metadata dict (as now) OR CLActionTuple objects.
+    for cl_action in cl_actions:
+      change_source = 'internal' if cl_action[0]['internal'] else 'external'
+      change_number = cl_action[0]['gerrit_number']
+      patch_number = cl_action[0]['patch_number']
+      action = cl_action[1]
+      timestamp = cl_action[2]
+      reason = cl_action[3]
+      values.append({
+          'build_id' : build_id,
+          'change_source' : change_source,
+          'change_number': change_number,
+          'patch_number' : patch_number,
+          'action' : action,
+          'timestamp' : datetime.datetime.fromtimestamp(timestamp),
+          'reason' : reason})
+
+    return self._InsertMany('clActionTable', values)
+
+  @minimum_schema(4)
+  def InsertBuildStage(self, build_id, stage_name, board, status,
+                       log_url, duration_seconds, summary):
+    """Insert a build stage into buildStageTable.
+
+    Args:
+      build_id: id of responsible build
+      stage_name: name of stage
+      board: board that stage ran for
+      status: 'pass' or 'fail'
+      log_url: URL of stage log
+      duration_seconds: run time of stage, in seconds
+      summary: summary message of stage
+
+    Returns:
+      Primary key of inserted stage.
+    """
+    return self._Insert('buildStageTable',
+                        {'build_id': build_id,
+                         'name': stage_name,
+                         'board': board,
+                         'status': status,
+                         'log_url': log_url,
+                         'duration_seconds': duration_seconds,
+                         'summary': summary})
+
+  @minimum_schema(4)
+  def InsertBuildStages(self, stages):
+    """For testing only. Insert multiple build stages into buildStageTable.
+
+    This method allows integration tests to more quickly populate build
+    stages into the database, from test data. Normal builder operations are
+    expected to insert build stage rows one at a time, using InsertBuildStage.
+
+    Args:
+      stages: A list of dictionaries, each dictionary containing keys
+              build_id, name, board, status, log_url, duration_seconds, and
+              summary.
+
+    Returns:
+      The number of build stage rows inserted.
+    """
+    if not stages:
+      return 0
+    return self._InsertMany('buildStageTable',
+                            stages)
+
+  @minimum_schema(2)
+  def UpdateMetadata(self, build_id, metadata):
+    """Update the given metadata row in database.
+
+    Args:
+      build_id: id of row to update.
+      metadata: CBuildbotMetadata instance to update with.
+
+    Returns:
+      The number of build rows that were updated (0 or 1).
+    """
+    d = metadata.GetDict()
+    versions = d.get('version') or {}
+    return self._Update('buildTable', build_id,
+                        {'chrome_version': versions.get('chrome'),
+                         'milestone_version': versions.get('milestone'),
+                         'platform_version': versions.get('platform'),
+                         'full_version': versions.get('full'),
+                         'sdk_version': d.get('sdk-versions'),
+                         'toolchain_url': d.get('toolchain-url'),
+                         'metadata_json': metadata.GetJSON()})
+
+  @minimum_schema(2)
+  def FinishBuild(self, build_id, finish_time=None, status=None,
+                  status_pickle=None):
+    """Update the given build row, marking it as finished.
+
+    This should be called once per build, as the last update to the build.
+    This will also mark the row's final=True.
+
+    Args:
+      build_id: id of row to update.
+      finish_time: Unix timestamp of build finish time. If None, current time
+                   will be used.
+      status: Final build status, one of
+              manifest_version.BuilderStatus.COMPLETED_STATUSES.
+      status_pickle: Pickled manifest_version.BuilderStatus.
+    """
+    self._ReflectToMetadata()
+    finish_time = finish_time or time.mktime()
+    dt = datetime.datetime.fromtimestamp(finish_time)
+
+    # TODO(akeshet) atomically update the final field of metadata to
+    # True
+    self._Update('buildTable', build_id, {'finish_time' : dt,
+                                          'status' : status,
+                                          'status_pickle' : status_pickle,
+                                          'final' : True})
+
+
 
