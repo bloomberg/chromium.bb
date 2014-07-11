@@ -22,7 +22,7 @@ HTMLImportTreeRoot::HTMLImportTreeRoot(Document* document)
     , m_document(document)
     , m_recalcTimer(this, &HTMLImportTreeRoot::recalcTimerFired)
 {
-    recalcTreeState(this); // This recomputes initial state.
+    scheduleRecalcState(); // This recomputes initial state.
 }
 
 HTMLImportTreeRoot::~HTMLImportTreeRoot()
