@@ -23,11 +23,20 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// http://www.w3.org/TR/IndexedDB/#idl-def-IDBCursor
+
+enum IDBCursorDirection {
+    "next",
+    "nextunique",
+    "prev",
+    "prevunique"
+};
+
 [
     GarbageCollected
 ] interface IDBCursor {
 
-    readonly attribute DOMString direction;
+    readonly attribute IDBCursorDirection direction;
     [CallWith=ScriptState, CachedAttribute=isKeyDirty] readonly attribute any key;
     [CallWith=ScriptState, CachedAttribute=isPrimaryKeyDirty] readonly attribute any primaryKey;
     [CallWith=ScriptState] readonly attribute any source;

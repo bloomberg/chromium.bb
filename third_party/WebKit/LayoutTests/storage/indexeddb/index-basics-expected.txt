@@ -70,7 +70,7 @@ PASS event.target.result is "key2"
 Verify that specifying an invalid direction raises an exception:
 Expecting TypeError exception from indexObject.openKeyCursor(0, 'invalid-direction')
 PASS Exception was thrown.
-PASS indexObject.openKeyCursor(0, 'invalid-direction') threw TypeError: Failed to execute 'openKeyCursor' on 'IDBIndex': The direction provided ('invalid-direction') is not one of 'next', 'nextunique', 'prev', or 'prevunique'.
+PASS indexObject.openKeyCursor(0, 'invalid-direction') threw TypeError: Failed to execute 'openKeyCursor' on 'IDBIndex': parameter 2 ('invalid-direction') is not a valid enum value.
 
 indexObject.openKeyCursor()
 PASS event.target.source is indexObject
@@ -95,7 +95,7 @@ PASS event.target.result is null
 Verify that specifying an invalid direction raises an exception:
 Expecting TypeError exception from indexObject.openCursor(0, 'invalid-direction')
 PASS Exception was thrown.
-PASS indexObject.openCursor(0, 'invalid-direction') threw TypeError: Failed to execute 'openCursor' on 'IDBIndex': The direction provided ('invalid-direction') is not one of 'next', 'nextunique', 'prev', or 'prevunique'.
+PASS indexObject.openCursor(0, 'invalid-direction') threw TypeError: Failed to execute 'openCursor' on 'IDBIndex': parameter 2 ('invalid-direction') is not a valid enum value.
 
 indexObject.openCursor()
 PASS event.target.source is indexObject

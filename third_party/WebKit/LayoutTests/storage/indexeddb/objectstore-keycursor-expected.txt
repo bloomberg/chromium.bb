@@ -13,7 +13,7 @@ objectStore = db.createObjectStore('someObjectStore')
 Verify that specifying an invalid direction raises an exception:
 Expecting TypeError exception from objectStore.openKeyCursor(0, 'invalid-direction')
 PASS Exception was thrown.
-PASS objectStore.openKeyCursor(0, 'invalid-direction') threw TypeError: Failed to execute 'openKeyCursor' on 'IDBObjectStore': The direction provided ('invalid-direction') is not one of 'next', 'nextunique', 'prev', or 'prevunique'.
+PASS objectStore.openKeyCursor(0, 'invalid-direction') threw TypeError: Failed to execute 'openKeyCursor' on 'IDBObjectStore': parameter 2 ('invalid-direction') is not a valid enum value.
 
 objectStore.add('', testData[nextToAdd])
 objectStore.add('', testData[nextToAdd])
