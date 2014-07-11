@@ -231,15 +231,12 @@ void Picture::CloneForDrawing(int num_threads) {
   raster_thread_checker_.DetachFromThread();
 
   if (num_threads > 1) {
-    scoped_ptr<SkPicture[]> clones(new SkPicture[num_threads - 1]);
-    picture_->clone(&clones[0], num_threads - 1);
-
     for (int i = 0; i < num_threads - 1; i++) {
-      scoped_refptr<Picture> clone = make_scoped_refptr(
-          new Picture(skia::AdoptRef(new SkPicture(clones[i])),
+      scoped_refptr<Picture> clone =
+          new Picture(skia::AdoptRef(picture_->clone()),
                       layer_rect_,
                       opaque_rect_,
-                      pixel_refs_));
+                      pixel_refs_);
       clones_.push_back(clone);
 
       clone->EmitTraceSnapshotAlias(this);
