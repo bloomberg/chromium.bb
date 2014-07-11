@@ -460,19 +460,18 @@ TEST_F(PasswordFormManagerTest, TestAlternateUsername) {
 
   TestPasswordManagerClient client_with_store(password_store.get());
   TestPasswordManager password_manager(&client_with_store);
-  scoped_ptr<PasswordFormManager> manager(
-      new PasswordFormManager(&password_manager,
+  PasswordFormManager manager(&password_manager,
                               &client_with_store,
                               client_with_store.GetDriver(),
                               *observed_form(),
-                              false));
+                              false);
   EXPECT_CALL(*client_with_store.GetMockDriver(),
               AllowPasswordGenerationForForm(_)).Times(1);
   EXPECT_CALL(*client_with_store.GetMockDriver(), IsOffTheRecord())
       .WillRepeatedly(Return(false));
 
   password_store->AddLogin(*saved_match());
-  manager->FetchMatchingLoginsFromPasswordStore(PasswordStore::ALLOW_PROMPT);
+  manager.FetchMatchingLoginsFromPasswordStore(PasswordStore::ALLOW_PROMPT);
   RunAllPendingTasks();
 
   // The saved match has the right username already.
@@ -480,11 +479,11 @@ TEST_F(PasswordFormManagerTest, TestAlternateUsername) {
   login.username_value = saved_match()->username_value;
   login.password_value = saved_match()->password_value;
   login.preferred = true;
-  manager->ProvisionallySave(
+  manager.ProvisionallySave(
       login, PasswordFormManager::ALLOW_OTHER_POSSIBLE_USERNAMES);
 
-  EXPECT_FALSE(manager->IsNewLogin());
-  manager->Save();
+  EXPECT_FALSE(manager.IsNewLogin());
+  manager.Save();
   RunAllPendingTasks();
 
   // Should be only one password stored, and should not have
@@ -499,25 +498,25 @@ TEST_F(PasswordFormManagerTest, TestAlternateUsername) {
                 .other_possible_usernames.size());
 
   // This time use an alternate username
-  manager.reset(new PasswordFormManager(&password_manager,
-                                        &client_with_store,
-                                        client_with_store.GetDriver(),
-                                        *observed_form(),
-                                        false));
+  PasswordFormManager manager_alt(&password_manager,
+                                  &client_with_store,
+                                  client_with_store.GetDriver(),
+                                  *observed_form(),
+                                  false);
   EXPECT_CALL(*client_with_store.GetMockDriver(),
               AllowPasswordGenerationForForm(_)).Times(1);
   password_store->Clear();
   password_store->AddLogin(*saved_match());
-  manager->FetchMatchingLoginsFromPasswordStore(PasswordStore::ALLOW_PROMPT);
+  manager_alt.FetchMatchingLoginsFromPasswordStore(PasswordStore::ALLOW_PROMPT);
   RunAllPendingTasks();
 
   base::string16 new_username = saved_match()->other_possible_usernames[0];
   login.username_value = new_username;
-  manager->ProvisionallySave(
+  manager_alt.ProvisionallySave(
       login, PasswordFormManager::ALLOW_OTHER_POSSIBLE_USERNAMES);
 
-  EXPECT_FALSE(manager->IsNewLogin());
-  manager->Save();
+  EXPECT_FALSE(manager_alt.IsNewLogin());
+  manager_alt.Save();
   RunAllPendingTasks();
 
   // |other_possible_usernames| should also be empty, but username_value should
@@ -625,93 +624,92 @@ TEST_F(PasswordFormManagerTest, TestSendNotBlacklistedMessage) {
   base::MessageLoop message_loop;
 
   TestPasswordManager password_manager(client());
-  scoped_ptr<PasswordFormManager> manager(
-      new PasswordFormManager(&password_manager,
-                              client(),
-                              client()->GetDriver(),
-                              *observed_form(),
-                              false));
+  PasswordFormManager manager_no_creds(&password_manager,
+                                       client(),
+                                       client()->GetDriver(),
+                                       *observed_form(),
+                                       false);
 
-  // First time sign up attempt; No login result is found from password store;
-  // We should send the not blacklisted message.
+  // First time sign-up attempt. Password store does not contain matching
+  // credentials. AllowPasswordGenerationForForm should be called to send the
+  // "not blacklisted" message.
   EXPECT_CALL(*(client()->GetMockDriver()), AllowPasswordGenerationForForm(_))
       .Times(1);
-  SimulateFetchMatchingLoginsFromPasswordStore(manager.get());
+  SimulateFetchMatchingLoginsFromPasswordStore(&manager_no_creds);
   std::vector<PasswordForm*> result;
-  SimulateResponseFromPasswordStore(manager.get(), result);
+  SimulateResponseFromPasswordStore(&manager_no_creds, result);
   Mock::VerifyAndClearExpectations(client()->GetMockDriver());
 
-  // Sign up attempt to previously visited sites; Login result is found from
-  // password store, and is not blacklisted; We should send the not blacklisted
-  // message.
-  manager.reset(new PasswordFormManager(&password_manager,
-                                        client(),
-                                        client()->GetDriver(),
-                                        *observed_form(),
-                                        false));
+  // Signing up on a previously visited site. Credentials are found in the
+  // password store, and are not blacklisted. AllowPasswordGenerationForForm
+  // should be called to send the "not blacklisted" message.
+  PasswordFormManager manager_creds(&password_manager,
+                                    client(),
+                                    client()->GetDriver(),
+                                    *observed_form(),
+                                    false);
   EXPECT_CALL(*(client()->GetMockDriver()), AllowPasswordGenerationForForm(_))
       .Times(1);
   EXPECT_CALL(*(client()->GetMockDriver()), IsOffTheRecord())
       .WillRepeatedly(Return(false));
-  SimulateFetchMatchingLoginsFromPasswordStore(manager.get());
+  SimulateFetchMatchingLoginsFromPasswordStore(&manager_creds);
   // We need add heap allocated objects to result.
   result.push_back(CreateSavedMatch(false));
-  SimulateResponseFromPasswordStore(manager.get(), result);
+  SimulateResponseFromPasswordStore(&manager_creds, result);
   Mock::VerifyAndClearExpectations(client()->GetMockDriver());
 
-  // Sign up attempt to previously visited sites; Login result is found from
-  // password store, but is blacklisted; We should not send the not blacklisted
-  // message.
-  manager.reset(new PasswordFormManager(&password_manager,
-                                        client(),
-                                        client()->GetDriver(),
-                                        *observed_form(),
-                                        false));
+  // Signing up on a previously visited site. Credentials are found in the
+  // password store, but they are blacklisted. AllowPasswordGenerationForForm
+  // should not be called and no "not blacklisted" message sent.
+  PasswordFormManager manager_blacklisted(&password_manager,
+                                          client(),
+                                          client()->GetDriver(),
+                                          *observed_form(),
+                                          false);
   EXPECT_CALL(*(client()->GetMockDriver()), AllowPasswordGenerationForForm(_))
       .Times(0);
-  SimulateFetchMatchingLoginsFromPasswordStore(manager.get());
+  SimulateFetchMatchingLoginsFromPasswordStore(&manager_blacklisted);
   result.clear();
   result.push_back(CreateSavedMatch(true));
-  SimulateResponseFromPasswordStore(manager.get(), result);
+  SimulateResponseFromPasswordStore(&manager_blacklisted, result);
   Mock::VerifyAndClearExpectations(client()->GetMockDriver());
 }
 
 TEST_F(PasswordFormManagerTest, TestForceInclusionOfGeneratedPasswords) {
   base::MessageLoop message_loop;
 
+  // Simulate having two matches for this origin, one of which was from a form
+  // with different HTML tags for elements. Because of scoring differences,
+  // only the first form will be sent to Autofill().
   TestPasswordManager password_manager(client());
-  scoped_ptr<PasswordFormManager> manager(
-      new PasswordFormManager(&password_manager,
-                              client(),
-                              client()->GetDriver(),
-                              *observed_form(),
-                              false));
+  PasswordFormManager manager_match(&password_manager,
+                                    client(),
+                                    client()->GetDriver(),
+                                    *observed_form(),
+                                    false);
   EXPECT_CALL(*(client()->GetMockDriver()), AllowPasswordGenerationForForm(_))
       .Times(1);
   EXPECT_CALL(*(client()->GetMockDriver()), IsOffTheRecord())
       .WillRepeatedly(Return(false));
 
-  // Simulate having two matches for this origin, one of which was from a form
-  // with different HTML tags for elements. Because of scoring differences,
-  // only the first form will be sent to Autofill().
   std::vector<PasswordForm*> results;
   results.push_back(CreateSavedMatch(false));
   results.push_back(CreateSavedMatch(false));
   results[1]->username_value = ASCIIToUTF16("other@gmail.com");
   results[1]->password_element = ASCIIToUTF16("signup_password");
   results[1]->username_element = ASCIIToUTF16("signup_username");
-  SimulateFetchMatchingLoginsFromPasswordStore(manager.get());
-  SimulateResponseFromPasswordStore(manager.get(), results);
+  SimulateFetchMatchingLoginsFromPasswordStore(&manager_match);
+  SimulateResponseFromPasswordStore(&manager_match, results);
   EXPECT_EQ(1u, password_manager.GetLatestBestMatches().size());
   results.clear();
 
   // Same thing, except this time the credentials that don't match quite as
   // well are generated. They should now be sent to Autofill().
-  manager.reset(new PasswordFormManager(&password_manager,
-                                        client(),
-                                        client()->GetDriver(),
-                                        *observed_form(),
-                                        false));
+  PasswordFormManager manager_no_match(&password_manager,
+                                       client(),
+                                       client()->GetDriver(),
+                                       *observed_form(),
+                                       false);
   EXPECT_CALL(*(client()->GetMockDriver()), AllowPasswordGenerationForForm(_))
       .Times(1);
 
@@ -721,8 +719,8 @@ TEST_F(PasswordFormManagerTest, TestForceInclusionOfGeneratedPasswords) {
   results[1]->password_element = ASCIIToUTF16("signup_password");
   results[1]->username_element = ASCIIToUTF16("signup_username");
   results[1]->type = PasswordForm::TYPE_GENERATED;
-  SimulateFetchMatchingLoginsFromPasswordStore(manager.get());
-  SimulateResponseFromPasswordStore(manager.get(), results);
+  SimulateFetchMatchingLoginsFromPasswordStore(&manager_no_match);
+  SimulateResponseFromPasswordStore(&manager_no_match, results);
   EXPECT_EQ(2u, password_manager.GetLatestBestMatches().size());
 }
 
