@@ -52,8 +52,9 @@ class _DomPerfMeasurement(page_measurement.PageMeasurement):
       for suite in data['BenchmarkSuites']:
         # Skip benchmarks that we didn't actually run this time around.
         if len(suite['Benchmarks']) or suite['score']:
-          results.Add(SCORE_TRACE_NAME, SCORE_UNIT,
-                      suite['score'], suite['name'], 'unimportant')
+          results.AddValue(scalar.ScalarValue(
+              results.current_page, '%s.%s' % (suite['name'], SCORE_TRACE_NAME),
+              SCORE_UNIT, suite['score'], important=False))
     finally:
       tab.EvaluateJavaScript('document.cookie = "__domperf_finished=0"')
 
