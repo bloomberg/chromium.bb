@@ -118,6 +118,7 @@ enum PrintSettingsBuckets {
   HEADERS_AND_FOOTERS,
   CSS_BACKGROUND,
   SELECTION_ONLY,
+  EXTERNAL_PDF_PREVIEW,
   PRINT_SETTINGS_BUCKET_BOUNDARY
 };
 
@@ -260,6 +261,12 @@ void ReportPrintSettingsStats(const base::DictionaryValue& settings) {
   if (settings.GetBoolean(printing::kSettingShouldPrintSelectionOnly,
                           &selection_only) && selection_only) {
     ReportPrintSettingHistogram(SELECTION_ONLY);
+  }
+
+  bool external_preview = false;
+  if (settings.GetBoolean(printing::kSettingOpenPDFInPreview,
+                          &external_preview) && external_preview) {
+    ReportPrintSettingHistogram(EXTERNAL_PDF_PREVIEW);
   }
 }
 
