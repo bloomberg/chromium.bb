@@ -246,6 +246,7 @@ public:
     virtual void performCustomContextMenuAction(unsigned action) OVERRIDE;
     virtual void showContextMenu() OVERRIDE;
     virtual void getSmartClipData(WebRect, WebString&, WebRect&) OVERRIDE;
+    virtual void extractSmartClipData(WebRect, WebString&, WebString&, WebRect&) OVERRIDE;
     virtual void hidePopups() OVERRIDE;
     virtual void addPageOverlay(WebPageOverlay*, int /* zOrder */) OVERRIDE;
     virtual void removePageOverlay(WebPageOverlay*) OVERRIDE;

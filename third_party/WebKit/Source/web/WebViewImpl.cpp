@@ -40,8 +40,10 @@
 #include "core/dom/Text.h"
 #include "core/editing/Editor.h"
 #include "core/editing/FrameSelection.h"
+#include "core/editing/HTMLInterchange.h"
 #include "core/editing/InputMethodController.h"
 #include "core/editing/TextIterator.h"
+#include "core/editing/markup.h"
 #include "core/events/KeyboardEvent.h"
 #include "core/events/WheelEvent.h"
 #include "core/frame/EventHandlerRegistry.h"
@@ -3535,6 +3537,33 @@ void WebViewImpl::getSmartClipData(WebRect rect, WebString& clipText, WebRect& c
     SmartClipData clipData = WebCore::SmartClip(frame).dataForRect(rect);
     clipText = clipData.clipData();
     clipRect = clipData.rect();
+}
+
+void WebViewImpl::extractSmartClipData(WebRect rect, WebString& clipText, WebString& clipHtml, WebRect& clipRect)
+{
+    LocalFrame* localFrame = toLocalFrame(focusedWebCoreFrame());
+    if (!localFrame)
+        return;
+    SmartClipData clipData = WebCore::SmartClip(localFrame).dataForRect(rect);
+    clipText = clipData.clipData();
+    clipRect = clipData.rect();
+
+    WebLocalFrameImpl* frame = mainFrameImpl();
+    if (!frame)
+        return;
+    WebPoint startPoint(rect.x, rect.y);
+    WebPoint endPoint(rect.x + rect.width, rect.y + rect.height);
+    VisiblePosition startVisiblePosition = frame->visiblePositionForWindowPoint(startPoint);
+    VisiblePosition endVisiblePosition = frame->visiblePositionForWindowPoint(endPoint);
+
+    Position startPosition = startVisiblePosition.deepEquivalent();
+    Position endPosition = endVisiblePosition.deepEquivalent();
+
+    RefPtr<Range> range = Range::create(*startPosition.document(), startPosition, endPosition);
+    if (!range)
+        return;
+
+    clipHtml = createMarkup(range.get(), 0, AnnotateForInterchange, false, ResolveNonLocalURLs);
 }
 
 void WebViewImpl::hidePopups()

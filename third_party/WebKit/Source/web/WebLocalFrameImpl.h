@@ -310,6 +310,9 @@ public:
     // Invalidates both content area and the scrollbar.
     void invalidateAll() const;
 
+    // Returns a hit-tested VisiblePosition for the given point
+    WebCore::VisiblePosition visiblePositionForWindowPoint(const WebPoint&);
+
 private:
     friend class FrameLoaderClientImpl;
 
@@ -319,9 +322,6 @@ private:
     void setWebCoreFrame(PassRefPtr<WebCore::LocalFrame>);
 
     void loadJavaScriptURL(const WebCore::KURL&);
-
-    // Returns a hit-tested VisiblePosition for the given point
-    WebCore::VisiblePosition visiblePositionForWindowPoint(const WebPoint&);
 
     WebPlugin* focusedPluginIfInputMethodSupported();
 
