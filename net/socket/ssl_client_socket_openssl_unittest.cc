@@ -58,7 +58,7 @@ const SSLConfig kDefaultSSLConfig;
 // Returns true on success, false on failure.
 bool LoadPrivateKeyOpenSSL(
     const base::FilePath& filepath,
-    OpenSSLClientKeyStore::ScopedEVP_PKEY* pkey) {
+    crypto::ScopedEVP_PKEY* pkey) {
   std::string data;
   if (!base::ReadFileToString(filepath, &data)) {
     LOG(ERROR) << "Could not read private key file: "
@@ -250,7 +250,7 @@ TEST_F(SSLClientSocketOpenSSLClientAuthTest, SendGoodCert) {
 
   // This is required to ensure that signing works with the client
   // certificate's private key.
-  OpenSSLClientKeyStore::ScopedEVP_PKEY client_private_key;
+  crypto::ScopedEVP_PKEY client_private_key;
   ASSERT_TRUE(LoadPrivateKeyOpenSSL(certs_dir.AppendASCII("client_1.key"),
                                     &client_private_key));
   EXPECT_TRUE(RecordPrivateKey(ssl_config, client_private_key.get()));

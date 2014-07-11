@@ -14,6 +14,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
+#include "crypto/scoped_openssl_types.h"
 #include "jni/AwContentsClientBridge_jni.h"
 #include "net/android/keystore_openssl.h"
 #include "net/cert/x509_certificate.h"
@@ -32,15 +33,13 @@ using content::BrowserThread;
 
 namespace android_webview {
 
-typedef net::OpenSSLClientKeyStore::ScopedEVP_PKEY ScopedEVP_PKEY;
-
 namespace {
 
 // Must be called on the I/O thread to record a client certificate
 // and its private key in the OpenSSLClientKeyStore.
 void RecordClientCertificateKey(
     const scoped_refptr<net::X509Certificate>& client_cert,
-    ScopedEVP_PKEY private_key) {
+    crypto::ScopedEVP_PKEY private_key) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   net::OpenSSLClientKeyStore::GetInstance()->RecordClientCertPrivateKey(
       client_cert.get(), private_key.get());
@@ -230,7 +229,7 @@ void AwContentsClientBridge::ProvideClientCertificateResponse(
   }
 
   // Create an EVP_PKEY wrapper for the private key JNI reference.
-  ScopedEVP_PKEY private_key(
+  crypto::ScopedEVP_PKEY private_key(
       net::android::GetOpenSSLPrivateKeyWrapper(private_key_ref));
   if (!private_key.get()) {
     LOG(ERROR) << "Could not create OpenSSL wrapper for private key";

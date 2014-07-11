@@ -13,6 +13,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
 #include "crypto/openssl_util.h"
+#include "crypto/scoped_openssl_types.h"
 #include "net/base/net_export.h"
 
 namespace net {
@@ -30,14 +31,6 @@ class NET_EXPORT OpenSSLClientKeyStore {
  public:
   // Platforms must define this factory function as appropriate.
   static OpenSSLClientKeyStore* GetInstance();
-
-  struct EVP_PKEY_Deleter {
-    inline void operator()(EVP_PKEY* ptr) const {
-      EVP_PKEY_free(ptr);
-    }
-  };
-
-  typedef scoped_ptr<EVP_PKEY, EVP_PKEY_Deleter> ScopedEVP_PKEY;
 
   // Record the association between a certificate and its
   // private key. This method should be called _before_
@@ -60,7 +53,7 @@ class NET_EXPORT OpenSSLClientKeyStore {
   // Returns true on success, false otherwise. This increments the reference
   // count of the private key on success.
   bool FetchClientCertPrivateKey(const X509Certificate* cert,
-                                 ScopedEVP_PKEY* private_key);
+                                 crypto::ScopedEVP_PKEY* private_key);
 
   // Flush all recorded keys.
   void Flush();

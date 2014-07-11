@@ -9,6 +9,7 @@ include_rules = [
 
   "+components/data_reduction_proxy",
   "+content/public/common",
+  "+crypto",
   "+gpu",
   "+jni",
   "+net",

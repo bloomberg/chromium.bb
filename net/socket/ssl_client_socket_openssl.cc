@@ -1354,7 +1354,7 @@ int SSLClientSocketOpenSSL::ClientCertRequestCallback(SSL* ssl,
     // the reference count of the EVP_PKEY. Ownership of this reference
     // is passed directly to OpenSSL, which will release the reference
     // using EVP_PKEY_free() when the SSL object is destroyed.
-    OpenSSLClientKeyStore::ScopedEVP_PKEY privkey;
+    crypto::ScopedEVP_PKEY privkey;
     if (OpenSSLClientKeyStore::GetInstance()->FetchClientCertPrivateKey(
             ssl_config_.client_cert.get(), &privkey)) {
       // TODO(joth): (copied from NSS) We should wait for server certificate

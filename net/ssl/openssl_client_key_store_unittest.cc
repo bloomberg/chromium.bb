@@ -5,6 +5,7 @@
 #include "net/ssl/openssl_client_key_store.h"
 
 #include "base/memory/ref_counted.h"
+#include "crypto/scoped_openssl_types.h"
 #include "net/base/test_data_directory.h"
 #include "net/test/cert_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -12,8 +13,6 @@
 namespace net {
 
 namespace {
-
-typedef OpenSSLClientKeyStore::ScopedEVP_PKEY ScopedEVP_PKEY;
 
 // Return the internal reference count of a given EVP_PKEY.
 int EVP_PKEY_get_refcount(EVP_PKEY* pkey) {
@@ -50,7 +49,7 @@ TEST_F(OpenSSLClientKeyStoreTest, Flush) {
       ImportCertFromFile(GetTestCertsDirectory(), "client_1.pem"));
   ASSERT_TRUE(cert_1.get());
 
-  ScopedEVP_PKEY priv_key(EVP_PKEY_new());
+  crypto::ScopedEVP_PKEY priv_key(EVP_PKEY_new());
   ASSERT_TRUE(priv_key.get());
 
   ASSERT_TRUE(store_->RecordClientCertPrivateKey(cert_1.get(),
@@ -60,7 +59,7 @@ TEST_F(OpenSSLClientKeyStoreTest, Flush) {
 
   // Retrieve the private key. This should fail because the store
   // was flushed.
-  ScopedEVP_PKEY pkey;
+  crypto::ScopedEVP_PKEY pkey;
   ASSERT_FALSE(store_->FetchClientCertPrivateKey(cert_1.get(), &pkey));
   ASSERT_FALSE(pkey.get());
 }
@@ -76,7 +75,7 @@ TEST_F(OpenSSLClientKeyStoreTest, FetchEmptyPrivateKey) {
 
   // Retrieve the private key now. This should fail because it was
   // never recorded in the store.
-  ScopedEVP_PKEY pkey;
+  crypto::ScopedEVP_PKEY pkey;
   ASSERT_FALSE(store_->FetchClientCertPrivateKey(cert_1.get(), &pkey));
   ASSERT_FALSE(pkey.get());
 }
@@ -94,7 +93,7 @@ TEST_F(OpenSSLClientKeyStoreTest, RecordAndFetchPrivateKey) {
       ImportCertFromFile(GetTestCertsDirectory(), "client_1.pem"));
   ASSERT_TRUE(cert_1.get());
 
-  ScopedEVP_PKEY priv_key(EVP_PKEY_new());
+  crypto::ScopedEVP_PKEY priv_key(EVP_PKEY_new());
   ASSERT_TRUE(priv_key.get());
   ASSERT_EQ(1, EVP_PKEY_get_refcount(priv_key.get()));
 
@@ -111,7 +110,7 @@ TEST_F(OpenSSLClientKeyStoreTest, RecordAndFetchPrivateKey) {
 
   // Retrieve the private key. This should increment the private key's
   // reference count.
-  ScopedEVP_PKEY pkey2;
+  crypto::ScopedEVP_PKEY pkey2;
   ASSERT_TRUE(store_->FetchClientCertPrivateKey(cert_1.get(), &pkey2));
   ASSERT_EQ(pkey2.get(), priv_key.get());
   ASSERT_EQ(3, EVP_PKEY_get_refcount(priv_key.get()));
@@ -132,11 +131,11 @@ TEST_F(OpenSSLClientKeyStoreTest, RecordAndFetchTwoPrivateKeys) {
       ImportCertFromFile(GetTestCertsDirectory(), "client_2.pem"));
   ASSERT_TRUE(cert_2.get());
 
-  ScopedEVP_PKEY priv_key1(EVP_PKEY_new());
+  crypto::ScopedEVP_PKEY priv_key1(EVP_PKEY_new());
   ASSERT_TRUE(priv_key1.get());
   ASSERT_EQ(1, EVP_PKEY_get_refcount(priv_key1.get()));
 
-  ScopedEVP_PKEY priv_key2(EVP_PKEY_new());
+  crypto::ScopedEVP_PKEY priv_key2(EVP_PKEY_new());
   ASSERT_TRUE(priv_key2.get());
   ASSERT_EQ(1, EVP_PKEY_get_refcount(priv_key2.get()));
 
@@ -153,10 +152,10 @@ TEST_F(OpenSSLClientKeyStoreTest, RecordAndFetchTwoPrivateKeys) {
 
   // Retrieve the private key now. This shall succeed and increment
   // the private key's reference count.
-  ScopedEVP_PKEY fetch_key1;
+  crypto::ScopedEVP_PKEY fetch_key1;
   ASSERT_TRUE(store_->FetchClientCertPrivateKey(cert_1.get(),
                                                 &fetch_key1));
-  ScopedEVP_PKEY fetch_key2;
+  crypto::ScopedEVP_PKEY fetch_key2;
   ASSERT_TRUE(store_->FetchClientCertPrivateKey(cert_2.get(),
                                                 &fetch_key2));
   EXPECT_TRUE(fetch_key1.get());

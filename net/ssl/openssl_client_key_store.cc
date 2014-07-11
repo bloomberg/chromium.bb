@@ -15,8 +15,6 @@ namespace net {
 
 namespace {
 
-typedef OpenSSLClientKeyStore::ScopedEVP_PKEY ScopedEVP_PKEY;
-
 // Increment the reference count of a given EVP_PKEY. This function
 // is similar to EVP_PKEY_dup which is not available from the OpenSSL
 // version used by Chromium at the moment. Its name is distinct to
@@ -31,14 +29,14 @@ EVP_PKEY* CopyEVP_PKEY(EVP_PKEY* key) {
 // Return the EVP_PKEY holding the public key of a given certificate.
 // |cert| is a certificate.
 // Returns a scoped EVP_PKEY for it.
-ScopedEVP_PKEY GetOpenSSLPublicKey(const X509Certificate* cert) {
+crypto::ScopedEVP_PKEY GetOpenSSLPublicKey(const X509Certificate* cert) {
   // X509_PUBKEY_get() increments the reference count of its result.
   // Unlike X509_get_X509_PUBKEY() which simply returns a direct pointer.
   EVP_PKEY* pkey =
       X509_PUBKEY_get(X509_get_X509_PUBKEY(cert->os_cert_handle()));
   if (!pkey)
     LOG(ERROR) << "Can't extract private key from certificate!";
-  return ScopedEVP_PKEY(pkey);
+  return crypto::ScopedEVP_PKEY(pkey);
 }
 
 }  // namespace
@@ -101,7 +99,7 @@ bool OpenSSLClientKeyStore::RecordClientCertPrivateKey(
     return false;
 
   // Get public key from certificate.
-  ScopedEVP_PKEY pub_key(GetOpenSSLPublicKey(client_cert));
+  crypto::ScopedEVP_PKEY pub_key(GetOpenSSLPublicKey(client_cert));
   if (!pub_key.get())
     return false;
 
@@ -111,11 +109,11 @@ bool OpenSSLClientKeyStore::RecordClientCertPrivateKey(
 
 bool OpenSSLClientKeyStore::FetchClientCertPrivateKey(
     const X509Certificate* client_cert,
-    ScopedEVP_PKEY* private_key) {
+    crypto::ScopedEVP_PKEY* private_key) {
   if (!client_cert)
     return false;
 
-  ScopedEVP_PKEY pub_key(GetOpenSSLPublicKey(client_cert));
+  crypto::ScopedEVP_PKEY pub_key(GetOpenSSLPublicKey(client_cert));
   if (!pub_key.get())
     return false;
 
