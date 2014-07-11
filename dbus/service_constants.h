@@ -1771,4 +1771,26 @@ const char kFeedbackServiceName[] = "org.chromium.feedback";
 const char kSendFeedback[] = "SendFeedback";
 }  // namespace feedback
 
+namespace easy_unlock {
+const char kEasyUnlockServicePath[] = "/org/chromium/EasyUnlock";
+const char kEasyUnlockServiceName[] = "org.chromium.EasyUnlock";
+const char kEasyUnlockServiceInterface[] = "org.chromium.EasyUnlock";
+
+// Values supplied as enrcryption type to CreateSecureMessage and
+// UnwrapSecureMessage.
+const char kEncryptionTypeNone[] = "NONE";
+const char kEncryptionTypeAES256CBC[] = "AES_256_CBC";
+
+// Values supplied as signature type to CreateSecureMessage and
+// UnwrapSecureMessage.
+const char kSignatureTypeECDSAP256SHA256[] = "ECDSA_P256_SHA256";
+const char kSignatureTypeHMACSHA256[] = "HMAC_SHA256";
+
+// Methods
+const char kPerformECDHKeyAgreementMethod[] = "PerformECDHKeyAgreement";
+const char kGenerateEcP256KeyPairMethod[] = "GenerateEcP256KeyPair";
+const char kCreateSecureMessageMethod[] = "CreateSecureMessage";
+const char kUnwrapSecureMessageMethod[] = "UnwrapSecureMessage";
+}  // namespace easy_unlock
+
 #endif  // DBUS_SERVICE_CONSTANTS_H_
