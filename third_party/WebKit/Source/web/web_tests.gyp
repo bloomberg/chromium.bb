@@ -30,7 +30,6 @@
 
 {
     'includes': [
-        '../../../../build/ui_resources_location.gypi',
         '../bindings/bindings.gypi',
         '../build/features.gypi',
         '../build/scripts/scripts.gypi',
@@ -55,7 +54,7 @@
                     'repack_path': '<(DEPTH)/tools/grit/grit/format/repack.py',
                     'pak_inputs': [
                         '<(SHARED_INTERMEDIATE_DIR)/net/net_resources.pak',
-                        '<(SHARED_INTERMEDIATE_DIR)/ui/<(ui_resources_gen_subdir)/ui_resources_100_percent.pak',
+                        '<(SHARED_INTERMEDIATE_DIR)/ui/resources/ui_resources_100_percent.pak',
                         '<(SHARED_INTERMEDIATE_DIR)/webkit/blink_resources.pak',
                         '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_resources_100_percent.pak',
                 ]},
