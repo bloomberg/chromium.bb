@@ -28,7 +28,7 @@
             ['OS == "linux" or OS == "android"', {
               'sources': [ '<@(boringssl_linux_x86_sources)' ],
             }],
-            ['OS != "mac" and OS != "linux"', {
+            ['OS != "mac" and OS != "linux" and OS != "android"', {
               'defines': [ 'OPENSSL_NO_ASM' ],
             }],
           ]
@@ -44,12 +44,12 @@
             ['OS == "win"', {
               'sources': [ '<@(boringssl_win_x86_64_sources)' ],
             }],
-            ['OS != "mac" and OS != "linux" and OS != "win"', {
+            ['OS != "mac" and OS != "linux" and OS != "win" and OS != "android"', {
               'defines': [ 'OPENSSL_NO_ASM' ],
             }],
           ]
         }],
-        ['target_arch != "arm" and target_arch != "x86" and target_arch != "x64"', {
+        ['target_arch != "arm" and target_arch != "ia32" and target_arch != "x64"', {
           'defines': [ 'OPENSSL_NO_ASM' ],
         }],
       ],

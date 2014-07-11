@@ -132,6 +132,20 @@ def PerlAsm(output_filename, input_filename, perlasm_style, extra_args):
     out_file.write(output)
 
 
+def ArchForAsmFilename(filename):
+  """Returns the architecture that a given asm file should be compiled for
+  based on substrings in the filename."""
+
+  if 'x86_64' in filename or 'avx2' in filename:
+    return 'x86_64'
+  elif ('x86' in filename and 'x86_64' not in filename) or '586' in filename:
+    return 'x86'
+  elif 'arm' in filename:
+    return 'arm'
+  else:
+    raise ValueError('Unknown arch for asm filename: ' + filename)
+
+
 def WriteAsmFiles(perlasms):
   """Generates asm files from perlasm directives for each supported OS x
   platform combination."""
@@ -150,15 +164,7 @@ def WriteAsmFiles(perlasms):
       output = os.path.join(outDir, output[4:])
       output = output.replace('${ASM_EXT}', asm_ext)
 
-      found = False
-      if arch == 'x86_64' and ('x86_64' in filename or 'avx2' in filename):
-        found = True
-      elif arch == 'x86' and 'x86' in filename and 'x86_64' not in filename:
-        found = True
-      elif arch == 'arm' and 'arm' in filename:
-        found = True
-
-      if found:
+      if arch == ArchForAsmFilename(filename):
         PerlAsm(output, perlasm['input'], perlasm_style, perlasm['extra_args'])
         asmfiles.setdefault(key, []).append(output)
 

@@ -1,4 +1,4 @@
-# Copyright 2014 The Chromium Authors. All rights reserved.
+# Copyright (c) 2014 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -325,11 +325,19 @@
       'src/crypto/poly1305/poly1305_arm_asm.S',
     ],
     'boringssl_linux_x86_sources': [
+      'linux-x86/crypto/aes/aes-586.S',
       'linux-x86/crypto/aes/aesni-x86.S',
       'linux-x86/crypto/aes/vpaes-x86.S',
+      'linux-x86/crypto/bn/bn-586.S',
+      'linux-x86/crypto/bn/co-586.S',
       'linux-x86/crypto/bn/x86-mont.S',
       'linux-x86/crypto/cpu-x86-asm.S',
+      'linux-x86/crypto/md5/md5-586.S',
       'linux-x86/crypto/modes/ghash-x86.S',
+      'linux-x86/crypto/rc4/rc4-586.S',
+      'linux-x86/crypto/sha/sha1-586.S',
+      'linux-x86/crypto/sha/sha256-586.S',
+      'linux-x86/crypto/sha/sha512-586.S',
     ],
     'boringssl_linux_x86_64_sources': [
       'linux-x86_64/crypto/aes/aes-x86_64.S',
@@ -352,11 +360,19 @@
       'linux-x86_64/crypto/sha/sha512-x86_64.S',
     ],
     'boringssl_mac_x86_sources': [
+      'mac-x86/crypto/aes/aes-586.S',
       'mac-x86/crypto/aes/aesni-x86.S',
       'mac-x86/crypto/aes/vpaes-x86.S',
+      'mac-x86/crypto/bn/bn-586.S',
+      'mac-x86/crypto/bn/co-586.S',
       'mac-x86/crypto/bn/x86-mont.S',
       'mac-x86/crypto/cpu-x86-asm.S',
+      'mac-x86/crypto/md5/md5-586.S',
       'mac-x86/crypto/modes/ghash-x86.S',
+      'mac-x86/crypto/rc4/rc4-586.S',
+      'mac-x86/crypto/sha/sha1-586.S',
+      'mac-x86/crypto/sha/sha256-586.S',
+      'mac-x86/crypto/sha/sha512-586.S',
     ],
     'boringssl_mac_x86_64_sources': [
       'mac-x86_64/crypto/aes/aes-x86_64.S',
