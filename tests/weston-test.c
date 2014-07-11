@@ -251,6 +251,11 @@ bind_test(struct wl_client *client, void *data, uint32_t version, uint32_t id)
 	struct wl_resource *resource;
 
 	resource = wl_resource_create(client, &wl_test_interface, 1, id);
+	if (!resource) {
+		wl_client_post_no_memory(client);
+		return;
+	}
+
 	wl_resource_set_implementation(resource,
 				       &test_implementation, test, NULL);
 
