@@ -63,9 +63,9 @@ class NATIVE_THEME_EXPORT NativeThemeAura : public FallbackTheme {
   // necessary. If no image is provided for the specified state the normal state
   // images are used.
   gfx::NineImagePainter* GetOrCreatePainter(
-      const int image_ids[kMaxState][9],
+      const int image_ids[kNumStates][9],
       State state,
-      scoped_ptr<gfx::NineImagePainter> painters[kMaxState]) const;
+      scoped_ptr<gfx::NineImagePainter> painters[kNumStates]) const;
 
   // Paints |painter| into the canvas using |rect|.
   void PaintPainter(gfx::NineImagePainter* painter,
@@ -75,10 +75,10 @@ class NATIVE_THEME_EXPORT NativeThemeAura : public FallbackTheme {
   mutable scoped_ptr<gfx::NineImagePainter> scrollbar_track_painter_;
 
   mutable scoped_ptr<gfx::NineImagePainter>
-      scrollbar_thumb_painters_[kMaxState];
+      scrollbar_thumb_painters_[kNumStates];
 
   mutable scoped_ptr<gfx::NineImagePainter>
-      scrollbar_arrow_button_painters_[kMaxState];
+      scrollbar_arrow_button_painters_[kNumStates];
 
  private:
   struct DualPainter {
@@ -88,9 +88,9 @@ class NATIVE_THEME_EXPORT NativeThemeAura : public FallbackTheme {
     // value associated with each state, so that a DualPainter for overlay
     // scrollbar thumb would only need state as input to paint correctly.
     DualPainter(scoped_ptr<gfx::NineImagePainter> fill_painter,
-                const uint8 fill_alphas[kMaxState],
+                const uint8 fill_alphas[kNumStates],
                 scoped_ptr<gfx::NineImagePainter> stroke_painter,
-                const uint8 stroke_alphas[kMaxState]);
+                const uint8 stroke_alphas[kNumStates]);
     ~DualPainter();
 
     scoped_ptr<gfx::NineImagePainter> fill_painter;
@@ -102,9 +102,9 @@ class NATIVE_THEME_EXPORT NativeThemeAura : public FallbackTheme {
   // Returns DualPainter from specific fill and stroke, creating if necessary.
   scoped_ptr<DualPainter> CreateDualPainter(
       const int fill_image_ids[9],
-      const uint8 fill_alphas[kMaxState],
+      const uint8 fill_alphas[kNumStates],
       const int stroke_image_ids[9],
-      const uint8 stroke_alphas[kMaxState]) const;
+      const uint8 stroke_alphas[kNumStates]) const;
 
   // Paints |dualPainter| into the canvas using |rect| and specific alpha.
   void PaintDualPainter(DualPainter* dual_painter,

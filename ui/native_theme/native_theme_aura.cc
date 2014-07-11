@@ -29,28 +29,28 @@ namespace ui {
 
 namespace {
 
-const int kScrollbarThumbImages[NativeTheme::kMaxState][9] = {
+const int kScrollbarThumbImages[NativeTheme::kNumStates][9] = {
   EMPTY_IMAGE_GRID,
   IMAGE_GRID(IDR_SCROLLBAR_THUMB_BASE_HOVER),
   IMAGE_GRID(IDR_SCROLLBAR_THUMB_BASE_NORMAL),
   IMAGE_GRID(IDR_SCROLLBAR_THUMB_BASE_PRESSED)
 };
 
-const int kScrollbarArrowButtonImages[NativeTheme::kMaxState][9] = {
+const int kScrollbarArrowButtonImages[NativeTheme::kNumStates][9] = {
   EMPTY_IMAGE_GRID,
   IMAGE_GRID(IDR_SCROLLBAR_ARROW_BUTTON_BASE_HOVER),
   IMAGE_GRID(IDR_SCROLLBAR_ARROW_BUTTON_BASE_NORMAL),
   IMAGE_GRID(IDR_SCROLLBAR_ARROW_BUTTON_BASE_PRESSED)
 };
 
-const uint8 kScrollbarOverlayThumbFillAlphas[NativeTheme::kMaxState] = {
+const uint8 kScrollbarOverlayThumbFillAlphas[NativeTheme::kNumStates] = {
   0,    // Does not matter, will not paint for disabled state.
   178,  // Hover state, opacity 70%, alpha would be 0.7 * 255.
   140,  // Normal state, opacity 55%, alpha would be 0.55 * 255.
   178   // Pressed state, opacity 70%, alpha would be 0.7 * 255.
 };
 
-const uint8 kScrollbarOverlayThumbStrokeAlphas[NativeTheme::kMaxState] = {
+const uint8 kScrollbarOverlayThumbStrokeAlphas[NativeTheme::kNumStates] = {
   0,   // Does not matter, will not paint for disabled state.
   51,  // Hover state, opacity 20%, alpha would be 0.2 * 255.
   38,  // Normal state, opacity 15%, alpha would be 0.15 * 255.
@@ -87,11 +87,10 @@ NativeThemeAura::NativeThemeAura() {
 #endif
 
   // Images and alphas declarations assume the following order.
-  COMPILE_ASSERT(kDisabled == 0, states_unexepctedly_changed);
-  COMPILE_ASSERT(kHovered == 1, states_unexepctedly_changed);
-  COMPILE_ASSERT(kNormal == 2, states_unexepctedly_changed);
-  COMPILE_ASSERT(kPressed == 3, states_unexepctedly_changed);
-  COMPILE_ASSERT(kMaxState == 4, states_unexepctedly_changed);
+  COMPILE_ASSERT(kDisabled == 0, states_unexpectedly_changed);
+  COMPILE_ASSERT(kHovered == 1, states_unexpectedly_changed);
+  COMPILE_ASSERT(kNormal == 2, states_unexpectedly_changed);
+  COMPILE_ASSERT(kPressed == 3, states_unexpectedly_changed);
 }
 
 NativeThemeAura::~NativeThemeAura() {
@@ -245,9 +244,9 @@ void NativeThemeAura::PaintScrollbarCorner(SkCanvas* canvas,
 }
 
 NineImagePainter* NativeThemeAura::GetOrCreatePainter(
-    const int images[kMaxState][9],
+    const int images[kNumStates][9],
     State state,
-    scoped_ptr<NineImagePainter> painters[kMaxState]) const {
+    scoped_ptr<NineImagePainter> painters[kNumStates]) const {
   if (painters[state])
     return painters[state].get();
   if (images[state][0] == 0) {
@@ -269,9 +268,9 @@ void NativeThemeAura::PaintPainter(NineImagePainter* painter,
 
 scoped_ptr<NativeThemeAura::DualPainter> NativeThemeAura::CreateDualPainter(
     const int fill_image_ids[9],
-    const uint8 fill_alphas[kMaxState],
+    const uint8 fill_alphas[kNumStates],
     const int stroke_image_ids[9],
-    const uint8 stroke_alphas[kMaxState]) const {
+    const uint8 stroke_alphas[kNumStates]) const {
   scoped_ptr<NativeThemeAura::DualPainter> dual_painter(
       new NativeThemeAura::DualPainter(CreateNineImagePainter(fill_image_ids),
                                        fill_alphas,
@@ -317,9 +316,9 @@ void NativeThemeAura::PaintDualPainterTransition(
 
 NativeThemeAura::DualPainter::DualPainter(
     scoped_ptr<NineImagePainter> fill_painter,
-    const uint8 fill_alphas[kMaxState],
+    const uint8 fill_alphas[kNumStates],
     scoped_ptr<NineImagePainter> stroke_painter,
-    const uint8 stroke_alphas[kMaxState])
+    const uint8 stroke_alphas[kNumStates])
     : fill_painter(fill_painter.Pass()),
       fill_alphas(fill_alphas),
       stroke_painter(stroke_painter.Pass()),

@@ -90,7 +90,7 @@ class NATIVE_THEME_EXPORT NativeTheme {
     kHovered  = 1,
     kNormal   = 2,
     kPressed  = 3,
-    kMaxState = 4,
+    kNumStates = kPressed + 1,
   };
 
   // Each structure below holds extra information needed when painting a given

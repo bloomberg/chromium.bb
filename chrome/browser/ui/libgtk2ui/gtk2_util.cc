@@ -132,11 +132,11 @@ void ClearAuraTransientParent(GtkWidget* dialog) {
 
 GtkStateType GetGtkState(ui::NativeTheme::State state) {
   switch (state) {
-    case ui::NativeTheme::kDisabled: return GTK_STATE_INSENSITIVE;
-    case ui::NativeTheme::kHovered:  return GTK_STATE_PRELIGHT;
-    case ui::NativeTheme::kNormal:   return GTK_STATE_NORMAL;
-    case ui::NativeTheme::kPressed:  return GTK_STATE_ACTIVE;
-    case ui::NativeTheme::kMaxState: NOTREACHED() << "Unknown state: " << state;
+    case ui::NativeTheme::kDisabled:  return GTK_STATE_INSENSITIVE;
+    case ui::NativeTheme::kHovered:   return GTK_STATE_PRELIGHT;
+    case ui::NativeTheme::kNormal:    return GTK_STATE_NORMAL;
+    case ui::NativeTheme::kPressed:   return GTK_STATE_ACTIVE;
+    case ui::NativeTheme::kNumStates: NOTREACHED();
   }
   return GTK_STATE_NORMAL;
 }
