@@ -70,9 +70,6 @@ PassRefPtrWillBeRawPtr<Worker> Worker::create(ExecutionContext* context, const S
     if (scriptURL.isEmpty())
         return nullptr;
 
-    // The worker context does not exist while loading, so we must ensure that the worker object is not collected, nor are its event listeners.
-    worker->setPendingActivity(worker.get());
-
     worker->m_scriptLoader = WorkerScriptLoader::create();
     worker->m_scriptLoader->loadAsynchronously(*context, scriptURL, DenyCrossOriginRequests, worker.get());
     worker->m_contextProxy = proxyProvider->createWorkerGlobalScopeProxy(worker.get());
@@ -116,7 +113,8 @@ void Worker::stop()
 
 bool Worker::hasPendingActivity() const
 {
-    return (m_contextProxy && m_contextProxy->hasPendingActivity()) || ActiveDOMObject::hasPendingActivity();
+    // The worker context does not exist while loading, so we must ensure that the worker object is not collected, nor are its event listeners.
+    return (m_contextProxy && m_contextProxy->hasPendingActivity()) || m_scriptLoader;
 }
 
 void Worker::didReceiveResponse(unsigned long identifier, const ResourceResponse&)
@@ -137,8 +135,6 @@ void Worker::notifyFinished()
         InspectorInstrumentation::scriptImported(executionContext(), m_scriptLoader->identifier(), m_scriptLoader->script());
     }
     m_scriptLoader = nullptr;
-
-    unsetPendingActivity(this);
 }
 
 void Worker::trace(Visitor* visitor)
