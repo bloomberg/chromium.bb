@@ -119,7 +119,7 @@
         '<@(chrome_utility_sources)',
       ],
       'conditions': [
-        ['use_openssl==1', {
+        ['OS!="win" and OS!="mac" and use_openssl==1', {
           'sources!': [
             'utility/importer/nss_decryptor.cc',
           ]
