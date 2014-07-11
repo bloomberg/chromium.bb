@@ -124,8 +124,7 @@ String CSSSelectorList::selectorsText() const
 template <typename Functor>
 static bool forEachTagSelector(Functor& functor, const CSSSelector& selector)
 {
-    const CSSSelector* current = &selector;
-    do {
+    for (const CSSSelector* current = &selector; current; current = current->tagHistory()) {
         if (functor(*current))
             return true;
         if (const CSSSelectorList* selectorList = current->selectorList()) {
@@ -134,7 +133,7 @@ static bool forEachTagSelector(Functor& functor, const CSSSelector& selector)
                     return true;
             }
         }
-    } while ((current = current->tagHistory()));
+    }
 
     return false;
 }

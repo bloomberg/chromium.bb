@@ -292,7 +292,8 @@ CSSPrimitiveValue::CSSPrimitiveValue(const String& str, UnitType type)
     : CSSValue(PrimitiveClass)
 {
     m_primitiveUnitType = type;
-    if ((m_value.string = str.impl()))
+    m_value.string = str.impl();
+    if (m_value.string)
         m_value.string->ref();
 }
 

@@ -2804,7 +2804,8 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseFillSize(CSSPropertyID 
     }
 
     RefPtrWillBeRawPtr<CSSPrimitiveValue> parsedValue2 = nullptr;
-    if ((value = m_valueList->next())) {
+    value = m_valueList->next();
+    if (value) {
         if (value->unit == CSSParserValue::Operator && value->iValue == ',')
             allowComma = false;
         else if (value->id != CSSValueAuto) {
@@ -2837,7 +2838,6 @@ bool CSSPropertyParser::parseFillProperty(CSSPropertyID propId, CSSPropertyID& p
 {
     RefPtrWillBeRawPtr<CSSValueList> values = nullptr;
     RefPtrWillBeRawPtr<CSSValueList> values2 = nullptr;
-    CSSParserValue* val;
     RefPtrWillBeRawPtr<CSSValue> value = nullptr;
     RefPtrWillBeRawPtr<CSSValue> value2 = nullptr;
 
@@ -2860,7 +2860,7 @@ bool CSSPropertyParser::parseFillProperty(CSSPropertyID propId, CSSPropertyID& p
         propId2 = CSSPropertyWebkitMaskRepeatY;
     }
 
-    while ((val = m_valueList->current())) {
+    for (CSSParserValue* val = m_valueList->current(); val; val = m_valueList->current()) {
         RefPtrWillBeRawPtr<CSSValue> currValue = nullptr;
         RefPtrWillBeRawPtr<CSSValue> currValue2 = nullptr;
 
@@ -4548,8 +4548,8 @@ bool CSSPropertyParser::parseFont(bool important)
     bool fontStyleParsed = false;
     bool fontVariantParsed = false;
     bool fontWeightParsed = false;
-    CSSParserValue* value;
-    while ((value = m_valueList->current())) {
+    CSSParserValue* value = m_valueList->current();
+    for (; value; value = m_valueList->next()) {
         if (!fontStyleParsed && isValidKeywordPropertyAndValue(CSSPropertyFontStyle, value->id, m_context)) {
             addProperty(CSSPropertyFontStyle, cssValuePool().createIdentifierValue(value->id), important);
             fontStyleParsed = true;
@@ -4561,7 +4561,6 @@ bool CSSPropertyParser::parseFont(bool important)
             fontWeightParsed = true;
         else
             break;
-        m_valueList->next();
     }
 
     if (!value)
@@ -4751,9 +4750,8 @@ bool CSSPropertyParser::parseFontVariant(bool important)
     RefPtrWillBeRawPtr<CSSValueList> values = nullptr;
     if (m_valueList->size() > 1)
         values = CSSValueList::createCommaSeparated();
-    CSSParserValue* val;
     bool expectComma = false;
-    while ((val = m_valueList->current())) {
+    for (CSSParserValue* val = m_valueList->current(); val; val = m_valueList->current()) {
         RefPtrWillBeRawPtr<CSSPrimitiveValue> parsedValue = nullptr;
         if (!expectComma) {
             expectComma = true;
@@ -5600,8 +5598,7 @@ public:
 PassRefPtrWillBeRawPtr<CSSValueList> CSSPropertyParser::parseShadow(CSSParserValueList* valueList, CSSPropertyID propId)
 {
     ShadowParseContext context(propId, this);
-    CSSParserValue* val;
-    while ((val = valueList->current())) {
+    for (CSSParserValue* val = valueList->current(); val; val = valueList->next()) {
         // Check for a comma break first.
         if (val->unit == CSSParserValue::Operator) {
             if (val->iValue != ',' || !context.allowBreak) {
@@ -5649,8 +5646,6 @@ PassRefPtrWillBeRawPtr<CSSValueList> CSSPropertyParser::parseShadow(CSSParserVal
 
             context.commitColor(parsedColor.release());
         }
-
-        valueList->next();
     }
 
     if (context.allowBreak) {
@@ -6107,14 +6102,13 @@ private:
 bool CSSPropertyParser::parseBorderImageSlice(CSSPropertyID propId, RefPtrWillBeRawPtr<CSSBorderImageSliceValue>& result)
 {
     BorderImageSliceParseContext context(this);
-    CSSParserValue* val;
-    while ((val = m_valueList->current())) {
+    for (CSSParserValue* val = m_valueList->current(); val; val = m_valueList->next()) {
         // FIXME calc() http://webkit.org/b/16662 : calc is parsed but values are not created yet.
         if (context.allowNumber() && !isCalculation(val) && validUnit(val, FInteger | FNonNeg | FPercent, HTMLStandardMode)) {
             context.commitNumber(val);
-        } else if (context.allowFill() && val->id == CSSValueFill)
+        } else if (context.allowFill() && val->id == CSSValueFill) {
             context.commitFill();
-        else if (!inShorthand()) {
+        } else if (!inShorthand()) {
             // If we're not parsing a shorthand then we are invalid.
             return false;
         } else {
@@ -6124,7 +6118,6 @@ bool CSSPropertyParser::parseBorderImageSlice(CSSPropertyID propId, RefPtrWillBe
             }
             break;
         }
-        m_valueList->next();
     }
 
     if (context.allowFinalCommit()) {
@@ -6221,8 +6214,7 @@ private:
 bool CSSPropertyParser::parseBorderImageQuad(Units validUnits, RefPtrWillBeRawPtr<CSSPrimitiveValue>& result)
 {
     BorderImageQuadParseContext context(this);
-    CSSParserValue* val;
-    while ((val = m_valueList->current())) {
+    for (CSSParserValue* val = m_valueList->current(); val; val = m_valueList->next()) {
         if (context.allowNumber() && (validUnit(val, validUnits, HTMLStandardMode) || val->id == CSSValueAuto)) {
             context.commitNumber(val);
         } else if (!inShorthand()) {
@@ -6233,7 +6225,6 @@ bool CSSPropertyParser::parseBorderImageQuad(Units validUnits, RefPtrWillBeRawPt
                 m_valueList->previous(); // The shorthand loop will advance back to this point.
             break;
         }
-        m_valueList->next();
     }
 
     if (context.allowFinalCommit()) {
@@ -6666,7 +6657,8 @@ bool CSSPropertyParser::parseDeprecatedLinearGradient(CSSParserValueList* valueL
             else
                 startY = location;
 
-            if ((a = args->next())) {
+            a = args->next();
+            if (a) {
                 if ((location = valueFromSideKeyword(a, isHorizontal))) {
                     if (isHorizontal) {
                         if (startX)
@@ -7249,17 +7241,14 @@ bool CSSPropertyParser::parseWillChange(bool important)
             return false;
     }
 
-    CSSParserValue* currentValue;
-    bool expectComma = false;
-
     // Every comma-separated list of CSS_IDENTs is a valid will-change value,
     // unless the list includes an explicitly disallowed CSS_IDENT.
-    while ((currentValue = m_valueList->current())) {
+    bool expectComma = false;
+    for (CSSParserValue* currentValue = m_valueList->current(); currentValue; currentValue = m_valueList->next()) {
         if (expectComma) {
             if (!isComma(currentValue))
                 return false;
             expectComma = false;
-            m_valueList->next();
             continue;
         }
 
@@ -7291,7 +7280,6 @@ bool CSSPropertyParser::parseWillChange(bool important)
             }
         }
         expectComma = true;
-        m_valueList->next();
     }
 
     addProperty(CSSPropertyWillChange, values.release(), important);
@@ -7476,7 +7464,8 @@ PassRefPtrWillBeRawPtr<CSSValueList> CSSPropertyParser::parseTransformOrigin()
         return nullptr;
     }
 
-    if ((value = m_valueList->next())) {
+    value = m_valueList->next();
+    if (value) {
         id = value->id;
         if (!xValue && (id == CSSValueLeft || id == CSSValueRight)) {
             xValue = cssValuePool().createIdentifierValue(id);
@@ -7496,12 +7485,14 @@ PassRefPtrWillBeRawPtr<CSSValueList> CSSPropertyParser::parseTransformOrigin()
         if (!yValue)
             yValue = cssValuePool().createIdentifierValue(CSSValueCenter);
 
-        if ((value = m_valueList->next())) {
+        value = m_valueList->next();
+        if (value) {
             if (!validUnit(value, FLength))
                 return nullptr;
             zValue = createPrimitiveNumericValue(value);
 
-            if ((value = m_valueList->next()))
+            value = m_valueList->next();
+            if (value)
                 return nullptr;
         }
     } else if (!xValue) {
@@ -8470,7 +8461,7 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parsePaintOrder() const
     // The default paint-order is: Fill, Stroke, Markers.
     bool seenFill = false, seenStroke = false, seenMarkers = false;
 
-    do {
+    for (; value; value = m_valueList->next()) {
         switch (value->id) {
         case CSSValueNormal:
             // normal inside [fill || stroke || markers] not valid
@@ -8498,7 +8489,7 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parsePaintOrder() const
         }
 
         parsedValues->append(CSSPrimitiveValue::createIdentifier(value->id));
-    } while ((value = m_valueList->next()));
+    }
 
     // fill out the rest of the paint order
     if (!seenFill)

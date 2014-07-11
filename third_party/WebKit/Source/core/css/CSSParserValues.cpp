@@ -229,11 +229,10 @@ void CSSParserSelector::prependTagSelector(const QualifiedName& tagQName, bool t
 
 bool CSSParserSelector::hasHostPseudoSelector() const
 {
-    CSSParserSelector* selector = const_cast<CSSParserSelector*>(this);
-    do {
+    for (CSSParserSelector* selector = const_cast<CSSParserSelector*>(this); selector; selector = selector->tagHistory()) {
         if (selector->pseudoType() == CSSSelector::PseudoHost || selector->pseudoType() == CSSSelector::PseudoHostContext)
             return true;
-    } while ((selector = selector->tagHistory()));
+    }
     return false;
 }
 
