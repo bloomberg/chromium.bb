@@ -14,7 +14,7 @@
 declare_args() {
   # Indicates if Ash is enabled. Ash is the Aura Shell which provides a
   # desktop-like environment for Aura. Requires use_aura = true
-  use_ash = is_win || is_chromeos
+  use_ash = is_win || is_linux
 
   # Indicates if Ozone is enabled. Ozone is a low-level library layer for Linux
   # that does not require X11.
@@ -25,7 +25,7 @@ declare_args() {
 
   # Indicates if Aura is enabled. Aura is a low-level windowing library, sort
   # of a replacement for GDI or GTK.
-  use_aura = is_linux || use_ozone || is_win || is_chromeos || use_ash
+  use_aura = is_win || is_linux
 
   # XInput2 multitouch support. Zero means disabled, nonzero indicates the
   # minimum XI2 version. For example, use_xi2_mt=2 means XI2.2 or above.

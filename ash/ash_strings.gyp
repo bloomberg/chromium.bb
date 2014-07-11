@@ -5,6 +5,7 @@
 {
   'targets': [
     {
+      # GN version: //ash/strings
       'target_name': 'ash_strings',
       'type': 'none',
       'variables': {

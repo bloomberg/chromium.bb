@@ -783,8 +783,6 @@
       'browser/ui/global_error/global_error_service_factory.h',
       'browser/ui/host_desktop.cc',
       'browser/ui/host_desktop.h',
-      'browser/ui/hung_plugin_tab_helper.cc',
-      'browser/ui/hung_plugin_tab_helper.h',
       'browser/ui/login/login_interstitial_delegate.cc',
       'browser/ui/login/login_interstitial_delegate.h',
       'browser/ui/login/login_prompt.cc',
@@ -1061,8 +1059,6 @@
       'browser/ui/webui/invalidations_message_handler.h',
       'browser/ui/webui/invalidations_ui.cc',
       'browser/ui/webui/invalidations_ui.h',
-      'browser/ui/webui/media/webrtc_logs_ui.cc',
-      'browser/ui/webui/media/webrtc_logs_ui.h',
       'browser/ui/webui/memory_internals/memory_internals_handler.cc',
       'browser/ui/webui/memory_internals/memory_internals_handler.h',
       'browser/ui/webui/memory_internals/memory_internals_proxy.cc',
@@ -1124,7 +1120,6 @@
       'browser/ui/zoom/zoom_event_manager.cc',
       'browser/ui/zoom/zoom_event_manager.h',
       'browser/ui/zoom/zoom_observer.h',
-      '<(SHARED_INTERMEDIATE_DIR)/chrome/browser/ui/webui/omnibox/omnibox.mojom.cc',
     ],
     # Note that we assume app list is enabled on all views builds, so the
     # views-specific app list files are in the views section.
@@ -2017,16 +2012,10 @@
       'browser/ui/views/find_bar_view.h',
       'browser/ui/views/first_run_bubble.cc',
       'browser/ui/views/first_run_bubble.h',
-      'browser/ui/views/frame/browser_frame_ash.cc',
-      'browser/ui/views/frame/browser_frame_ash.h',
       'browser/ui/views/frame/browser_frame.cc',
       'browser/ui/views/frame/browser_frame_common_win.cc',
       'browser/ui/views/frame/browser_frame_common_win.h',
       'browser/ui/views/frame/browser_frame.h',
-      'browser/ui/views/frame/browser_header_painter_ash.cc',
-      'browser/ui/views/frame/browser_header_painter_ash.h',
-      'browser/ui/views/frame/browser_non_client_frame_view_ash.cc',
-      'browser/ui/views/frame/browser_non_client_frame_view_ash.h',
       'browser/ui/views/frame/browser_non_client_frame_view.cc',
       'browser/ui/views/frame/browser_non_client_frame_view_factory_aura.cc',
       'browser/ui/views/frame/browser_non_client_frame_view.h',
@@ -2045,8 +2034,6 @@
       'browser/ui/views/frame/contents_layout_manager.h',
       'browser/ui/views/frame/contents_web_view.cc',
       'browser/ui/views/frame/contents_web_view.h',
-      'browser/ui/views/frame/immersive_mode_controller_ash.cc',
-      'browser/ui/views/frame/immersive_mode_controller_ash.h',
       'browser/ui/views/frame/immersive_mode_controller.cc',
       'browser/ui/views/frame/immersive_mode_controller_factory.cc',
       'browser/ui/views/frame/immersive_mode_controller.h',
@@ -2055,10 +2042,8 @@
       'browser/ui/views/frame/minimize_button_metrics_win.cc',
       'browser/ui/views/frame/minimize_button_metrics_win.h',
       'browser/ui/views/frame/native_browser_frame_factory.cc',
-      'browser/ui/views/frame/native_browser_frame_factory.cc',
+      'browser/ui/views/frame/native_browser_frame_factory.h',
       'browser/ui/views/frame/native_browser_frame_factory_chromeos.cc',
-      'browser/ui/views/frame/native_browser_frame_factory.h',
-      'browser/ui/views/frame/native_browser_frame_factory.h',
       'browser/ui/views/frame/native_browser_frame.h',
       'browser/ui/views/frame/opaque_browser_frame_view_layout.cc',
       'browser/ui/views/frame/opaque_browser_frame_view_layout_delegate.h',
@@ -2067,8 +2052,6 @@
       'browser/ui/views/frame/opaque_browser_frame_view_linux.h',
       'browser/ui/views/frame/opaque_browser_frame_view_platform_specific.cc',
       'browser/ui/views/frame/opaque_browser_frame_view_platform_specific.h',
-      'browser/ui/views/frame/scroll_end_effect_controller_ash.cc',
-      'browser/ui/views/frame/scroll_end_effect_controller_ash.h',
       'browser/ui/views/frame/scroll_end_effect_controller.h',
       'browser/ui/views/frame/system_menu_insertion_delegate_win.cc',
       'browser/ui/views/frame/system_menu_insertion_delegate_win.h',
@@ -2246,11 +2229,9 @@
       'browser/ui/views/tabs/tab_strip.cc',
       'browser/ui/views/tabs/tab_strip_controller.h',
       'browser/ui/views/tabs/tab_strip.h',
-      'browser/ui/views/tabs/window_finder_ash.cc',
       'browser/ui/views/tabs/window_finder_chromeos.cc',
       'browser/ui/views/tabs/window_finder.h',
       'browser/ui/views/tabs/window_finder_win.cc',
-      'browser/ui/views/task_manager_view.cc',
       'browser/ui/views/theme_image_mapper_chromeos.cc',
       'browser/ui/views/theme_image_mapper_desktop.cc',
       'browser/ui/views/theme_image_mapper.h',
@@ -2381,8 +2362,6 @@
       'browser/ui/ash/launcher/browser_status_monitor.h',
       'browser/ui/ash/launcher/chrome_launcher_app_menu_item.cc',
       'browser/ui/ash/launcher/chrome_launcher_app_menu_item.h',
-      'browser/ui/bookmarks/bookmark_tab_helper_delegate.cc',
-      'browser/ui/bookmarks/bookmark_tab_helper_delegate.h',
       'browser/ui/ash/launcher/chrome_launcher_app_menu_item_browser.cc',
       'browser/ui/ash/launcher/chrome_launcher_app_menu_item_browser.h',
       'browser/ui/ash/launcher/chrome_launcher_app_menu_item_tab.cc',
@@ -2448,6 +2427,20 @@
     # Used when ash is disabled.
     'chrome_browser_ui_non_ash_sources': [
       'browser/ui/views/touch_uma/touch_uma.cc',
+    ],
+    # Ash + Views.
+    'chrome_browser_ui_ash_views_sources': [
+      'browser/ui/views/frame/browser_frame_ash.cc',
+      'browser/ui/views/frame/browser_frame_ash.h',
+      'browser/ui/views/frame/browser_header_painter_ash.cc',
+      'browser/ui/views/frame/browser_header_painter_ash.h',
+      'browser/ui/views/frame/browser_non_client_frame_view_ash.cc',
+      'browser/ui/views/frame/browser_non_client_frame_view_ash.h',
+      'browser/ui/views/frame/immersive_mode_controller_ash.cc',
+      'browser/ui/views/frame/immersive_mode_controller_ash.h',
+      'browser/ui/views/frame/scroll_end_effect_controller_ash.cc',
+      'browser/ui/views/frame/scroll_end_effect_controller_ash.h',
+      'browser/ui/views/tabs/window_finder_ash.cc',
     ],
     # Used when Ash is enabled but not ChromeOS.
     'chrome_browser_ui_ash_non_chromeos': [
@@ -2595,7 +2588,10 @@
       ],
       'conditions': [
         ['OS != "ios"', {
-          'sources': [ '<@(chrome_browser_ui_non_ios_sources)' ],
+          'sources': [
+            '<@(chrome_browser_ui_non_ios_sources)',
+            '<(SHARED_INTERMEDIATE_DIR)/chrome/browser/ui/webui/omnibox/omnibox.mojom.cc',
+          ],
           'dependencies': [
             'browser_extensions',
             'browser/performance_monitor/performance_monitor.gyp:performance_monitor',
@@ -2715,6 +2711,9 @@
           'conditions': [
             ['chromeos == 0', {
               'sources': [ '<@(chrome_browser_ui_views_non_chromeos_sources)' ],
+            }],
+            ['use_ash == 1', {
+              'sources': [ '<@(chrome_browser_ui_ash_views_sources)' ],
             }],
           ],
         }],

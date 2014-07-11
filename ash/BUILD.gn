@@ -1,0 +1,12 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+# TODO(GYP) this is a placeholder so that targets that depend on ash can get
+# the resources generated.
+group("ash") {
+  deps = [
+    "//ash/resources",
+    "//ash/strings",
+  ]
+}

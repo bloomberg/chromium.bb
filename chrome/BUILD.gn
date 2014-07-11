@@ -31,6 +31,24 @@ group("extra_resources") {
     "//chrome/browser/resources:sync_internals_resources",
     "//chrome/browser/resources:translate_internals_resources",
   ]
+  if (!is_ios) {
+    deps += [
+      "//chrome/browser/resources:component_extension_resources",
+      "//chrome/browser/resources:options_resources",
+      "//chrome/browser/resources:quota_internals_resources",
+      "//chrome/browser/resources:sync_file_system_internals_resources",
+    ]
+  }
+
+  if (enable_chromevox_next) {
+    deps += [
+      #'browser/resources/chromeos/chromevox2/chromevox.gyp:chromevox2',  TODO(GYP)
+    ]
+  } else {
+    deps += [
+      #'browser/resources/chromeos/chromevox/chromevox.gyp:chromevox',  TODO(GYP)
+    ]
+  }
 }
 
 # GYP version: chrome/chrome_resources.gyp:chrome_strings

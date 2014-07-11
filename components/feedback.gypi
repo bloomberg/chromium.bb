@@ -45,6 +45,7 @@
     },
     {
       # Protobuf compiler / generate rule for feedback
+      # GN version: //components/feedback/proto
       'target_name': 'feedback_proto',
       'type': 'static_library',
       'sources': [

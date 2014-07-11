@@ -6,6 +6,6 @@
      # Two facilitate the two-sided patch, this variable indicates the
      # one currently in use.
      # TODO(brettw) remove this when the move is complete.
-     'ui_resources_gen_subdir': 'ui_resources',
+     'ui_resources_gen_subdir': 'resources',
   },
 }

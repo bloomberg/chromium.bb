@@ -1,0 +1,37 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+static_library("feedback") {
+  sources = [
+    "feedback_common.cc",
+    "feedback_common.h",
+    "feedback_data.cc",
+    "feedback_data.h",
+    "feedback_report.cc",
+    "feedback_report.h",
+    "feedback_switches.cc",
+    "feedback_switches.h",
+    "feedback_uploader.cc",
+    "feedback_uploader.h",
+    "feedback_uploader_chrome.cc",
+    "feedback_uploader_chrome.h",
+    "feedback_uploader_delegate.cc",
+    "feedback_uploader_delegate.h",
+    "feedback_uploader_factory.cc",
+    "feedback_uploader_factory.h",
+    "feedback_util.cc",
+    "feedback_util.h",
+    "tracing_manager.cc",
+    "tracing_manager.h",
+  ]
+
+  deps = [
+    "//base",
+    "//components/keyed_service/core:core",
+    "//components/feedback/proto",
+    "//content/public/common",
+    "//net",
+    "//third_party/zlib:zip",
+  ]
+}

@@ -13,7 +13,7 @@
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "grit/sync_file_system_internals_resources.h"
-#include "ui/ui_resources/grit/ui_resources.h"
+#include "ui/resources/grit/ui_resources.h"
 
 namespace {
 
