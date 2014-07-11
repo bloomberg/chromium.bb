@@ -439,19 +439,24 @@ void ScriptController::collectIsolatedContexts(Vector<std::pair<ScriptState*, Se
     }
 }
 
-bool ScriptController::setContextDebugId(int debugId)
+void ScriptController::setWorldDebugId(int worldId, int debuggerId)
 {
-    ASSERT(debugId > 0);
-    if (!m_windowShell->isContextInitialized())
-        return false;
+    ASSERT(debuggerId > 0);
+    bool isMainWorld = worldId == MainWorldId;
+    V8WindowShell* shell = 0;
+    if (isMainWorld) {
+        shell = m_windowShell.get();
+    } else {
+        IsolatedWorldMap::iterator iter = m_isolatedWorlds.find(worldId);
+        if (iter != m_isolatedWorlds.end())
+            shell = iter->value.get();
+    }
+    if (!shell || !shell->isContextInitialized())
+        return;
     v8::HandleScope scope(m_isolate);
-    v8::Local<v8::Context> context = m_windowShell->context();
-    return V8PerContextDebugData::setContextDebugData(context, "page", debugId);
-}
-
-int ScriptController::contextDebugId(v8::Handle<v8::Context> context)
-{
-    return V8PerContextDebugData::contextDebugId(context);
+    v8::Local<v8::Context> context = shell->context();
+    const char* worldName = isMainWorld ? "page" : "injected";
+    V8PerContextDebugData::setContextDebugData(context, worldName, debuggerId);
 }
 
 void ScriptController::updateDocument()

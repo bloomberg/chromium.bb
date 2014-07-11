@@ -291,12 +291,12 @@ void WebDevToolsAgentImpl::didComposite()
 
 void WebDevToolsAgentImpl::didCreateScriptContext(WebLocalFrameImpl* webframe, int worldId)
 {
+    if (WebCore::LocalFrame* frame = webframe->frame())
+        frame->script().setWorldDebugId(worldId, m_debuggerId);
     // Skip non main world contexts.
     if (worldId)
         return;
     m_webViewDidLayoutOnceAfterLoad = false;
-    if (WebCore::LocalFrame* frame = webframe->frame())
-        frame->script().setContextDebugId(m_debuggerId);
 }
 
 bool WebDevToolsAgentImpl::handleInputEvent(WebCore::Page* page, const WebInputEvent& inputEvent)

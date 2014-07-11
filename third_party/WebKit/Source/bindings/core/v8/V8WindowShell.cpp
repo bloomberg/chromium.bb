@@ -74,11 +74,6 @@ static void checkDocumentWrapper(v8::Handle<v8::Object> wrapper, Document* docum
     ASSERT(!document->isHTMLDocument() || (V8Document::toNative(v8::Handle<v8::Object>::Cast(wrapper->GetPrototype())) == document));
 }
 
-static void setInjectedScriptContextDebugId(v8::Handle<v8::Context> targetContext, int debugId)
-{
-    V8PerContextDebugData::setContextDebugData(targetContext, "injected", debugId);
-}
-
 PassOwnPtr<V8WindowShell> V8WindowShell::create(LocalFrame* frame, DOMWrapperWorld& world, v8::Isolate* isolate)
 {
     return adoptPtr(new V8WindowShell(frame, &world, isolate));
@@ -208,12 +203,6 @@ bool V8WindowShell::initialize()
             disposeContext(DoNotDetachGlobal);
             return false;
         }
-    }
-
-    if (!m_world->isMainWorld()) {
-        V8WindowShell* mainWindow = m_frame->script().existingWindowShell(DOMWrapperWorld::mainWorld());
-        if (mainWindow && !mainWindow->context().IsEmpty())
-            setInjectedScriptContextDebugId(context, m_frame->script().contextDebugId(mainWindow->context()));
     }
 
     if (!installDOMWindow()) {
