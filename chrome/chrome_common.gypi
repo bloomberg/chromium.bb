@@ -339,7 +339,8 @@
         }],
         ['OS=="win" or OS=="mac"', {
           'sources': [
-            'common/extensions/api/networking_private/networking_private_crypto.cc',
+            'common/extensions/api/networking_private/networking_private_crypto_nss.cc',
+            'common/extensions/api/networking_private/networking_private_crypto_openssl.cc',
             'common/extensions/api/networking_private/networking_private_crypto.h',
             'common/media_galleries/itunes_library.cc',
             'common/media_galleries/itunes_library.h',
@@ -511,6 +512,17 @@
         ['safe_browsing==2', {
           'defines': [ 'MOBILE_SAFE_BROWSING' ],
         }],
+        ['use_openssl==1', {
+           'sources!': [
+             'common/extensions/api/networking_private/networking_private_crypto_nss.cc',
+           ],
+         },
+         {  # else !use_openssl
+           'sources!': [
+             'common/extensions/api/networking_private/networking_private_crypto_openssl.cc',
+           ],
+         },
+        ],
       ],
       'target_conditions': [
         ['OS == "ios"', {
@@ -646,8 +658,6 @@
         }],
         ['use_openssl==1', {
             'sources!': [
-              # networking_private_crypto.cc uses NSS functions.
-              'common/extensions/api/networking_private/networking_private_crypto.cc',
               'common/net/x509_certificate_model_nss.cc',
             ],
           },
