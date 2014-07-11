@@ -444,10 +444,15 @@ void PnaclCoordinator::BitcodeStreamGotData(int32_t pp_error,
                  NACL_PRId32 ", data=%p)\n", pp_error, data ? &(*data)[0] : 0));
   DCHECK(translate_thread_.get());
 
-  translate_thread_->PutBytes(data, pp_error);
-  // If pp_error > 0, then it represents the number of bytes received.
-  if (data && pp_error > 0)
+  // When we have received data, pp_error is set to the number of bytes
+  // received.
+  if (pp_error > 0) {
+    CHECK(data);
+    translate_thread_->PutBytes(data, pp_error);
     pexe_size_ += pp_error;
+  } else {
+    translate_thread_->EndStream();
+  }
 }
 
 StreamCallback PnaclCoordinator::GetCallback() {

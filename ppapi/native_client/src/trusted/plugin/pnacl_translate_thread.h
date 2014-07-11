@@ -63,6 +63,10 @@ class PnaclTranslateThread {
   // Send bitcode bytes to the translator. Called from the main thread.
   void PutBytes(std::vector<char>* data, int count);
 
+  // Notify the translator that the end of the bitcode stream has been reached.
+  // Called from the main thread.
+  void EndStream();
+
   int64_t GetCompileTime() const { return compile_time_; }
 
  private:

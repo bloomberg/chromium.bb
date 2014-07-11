@@ -111,21 +111,11 @@ void PnaclTranslateThread::RunTranslate(
 }
 
 // Called from main thread to send bytes to the translator.
-void PnaclTranslateThread::PutBytes(std::vector<char>* bytes,
-                                             int count) {
+void PnaclTranslateThread::PutBytes(std::vector<char>* bytes, int count) {
   PLUGIN_PRINTF(("PutBytes (this=%p, bytes=%p, size=%" NACL_PRIuS
                  ", count=%d)\n",
                  this, bytes, bytes ? bytes->size() : 0, count));
   size_t buffer_size = 0;
-  // If we are done (error or not), Signal the translation thread to stop.
-  if (count <= PP_OK) {
-    NaClXMutexLock(&cond_mu_);
-    done_ = true;
-    NaClXCondVarSignal(&buffer_cond_);
-    NaClXMutexUnlock(&cond_mu_);
-    return;
-  }
-
   CHECK(bytes != NULL);
   // Ensure that the buffer we send to the translation thread is the right size
   // (count can be < the buffer size). This can be done without the lock.
@@ -142,6 +132,13 @@ void PnaclTranslateThread::PutBytes(std::vector<char>* bytes,
 
   // Ensure the buffer we send back to the coordinator is the expected size
   bytes->resize(buffer_size);
+}
+
+void PnaclTranslateThread::EndStream() {
+  NaClXMutexLock(&cond_mu_);
+  done_ = true;
+  NaClXCondVarSignal(&buffer_cond_);
+  NaClXMutexUnlock(&cond_mu_);
 }
 
 void WINAPI PnaclTranslateThread::DoTranslateThread(void* arg) {
