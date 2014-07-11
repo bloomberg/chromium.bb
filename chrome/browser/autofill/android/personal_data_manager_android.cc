@@ -77,51 +77,61 @@ void PopulateNativeProfileFromJava(
   profile->set_origin(
       ConvertJavaStringToUTF8(
           Java_AutofillProfile_getOrigin(env, jprofile)));
-  profile->SetRawInfo(
-      NAME_FULL,
+  profile->SetInfo(
+      AutofillType(NAME_FULL),
       ConvertJavaStringToUTF16(
-          Java_AutofillProfile_getFullName(env, jprofile)));
-  profile->SetRawInfo(
-      COMPANY_NAME,
+          Java_AutofillProfile_getFullName(env, jprofile)),
+      g_browser_process->GetApplicationLocale());
+  profile->SetInfo(
+      AutofillType(COMPANY_NAME),
       ConvertJavaStringToUTF16(
-          Java_AutofillProfile_getCompanyName(env, jprofile)));
-  profile->SetRawInfo(
-      ADDRESS_HOME_STREET_ADDRESS,
+          Java_AutofillProfile_getCompanyName(env, jprofile)),
+      g_browser_process->GetApplicationLocale());
+  profile->SetInfo(
+      AutofillType(ADDRESS_HOME_STREET_ADDRESS),
       ConvertJavaStringToUTF16(
-          Java_AutofillProfile_getStreetAddress(env, jprofile)));
-  profile->SetRawInfo(
-      ADDRESS_HOME_STATE,
+          Java_AutofillProfile_getStreetAddress(env, jprofile)),
+      g_browser_process->GetApplicationLocale());
+  profile->SetInfo(
+      AutofillType(ADDRESS_HOME_STATE),
       ConvertJavaStringToUTF16(
-          Java_AutofillProfile_getRegion(env, jprofile)));
-  profile->SetRawInfo(
-      ADDRESS_HOME_CITY,
+          Java_AutofillProfile_getRegion(env, jprofile)),
+      g_browser_process->GetApplicationLocale());
+  profile->SetInfo(
+      AutofillType(ADDRESS_HOME_CITY),
       ConvertJavaStringToUTF16(
-          Java_AutofillProfile_getLocality(env, jprofile)));
-  profile->SetRawInfo(
-      ADDRESS_HOME_DEPENDENT_LOCALITY,
+          Java_AutofillProfile_getLocality(env, jprofile)),
+      g_browser_process->GetApplicationLocale());
+  profile->SetInfo(
+      AutofillType(ADDRESS_HOME_DEPENDENT_LOCALITY),
       ConvertJavaStringToUTF16(
-          Java_AutofillProfile_getDependentLocality(env, jprofile)));
-  profile->SetRawInfo(
-      ADDRESS_HOME_ZIP,
+          Java_AutofillProfile_getDependentLocality(env, jprofile)),
+      g_browser_process->GetApplicationLocale());
+  profile->SetInfo(
+      AutofillType(ADDRESS_HOME_ZIP),
       ConvertJavaStringToUTF16(
-          Java_AutofillProfile_getPostalCode(env, jprofile)));
-  profile->SetRawInfo(
-      ADDRESS_HOME_SORTING_CODE,
+          Java_AutofillProfile_getPostalCode(env, jprofile)),
+      g_browser_process->GetApplicationLocale());
+  profile->SetInfo(
+      AutofillType(ADDRESS_HOME_SORTING_CODE),
       ConvertJavaStringToUTF16(
-          Java_AutofillProfile_getSortingCode(env, jprofile)));
+          Java_AutofillProfile_getSortingCode(env, jprofile)),
+      g_browser_process->GetApplicationLocale());
   profile->SetInfo(
       AutofillType(ADDRESS_HOME_COUNTRY),
       ConvertJavaStringToUTF16(
           Java_AutofillProfile_getCountry(env, jprofile)),
       g_browser_process->GetApplicationLocale());
-  profile->SetRawInfo(
-      PHONE_HOME_WHOLE_NUMBER,
+  profile->SetInfo(
+      AutofillType(PHONE_HOME_WHOLE_NUMBER),
       ConvertJavaStringToUTF16(
-          Java_AutofillProfile_getPhoneNumber(env, jprofile)));
-  profile->SetRawInfo(
-      EMAIL_ADDRESS,
+          Java_AutofillProfile_getPhoneNumber(env, jprofile)),
+      g_browser_process->GetApplicationLocale());
+  profile->SetInfo(
+      AutofillType(EMAIL_ADDRESS),
       ConvertJavaStringToUTF16(
-          Java_AutofillProfile_getEmailAddress(env, jprofile)));
+          Java_AutofillProfile_getEmailAddress(env, jprofile)),
+      g_browser_process->GetApplicationLocale());
   profile->set_language_code(
       ConvertJavaStringToUTF8(
           Java_AutofillProfile_getLanguageCode(env, jprofile)));

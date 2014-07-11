@@ -202,14 +202,9 @@ void FillFormGroupFromOutputs(const FieldValueMap& detail_outputs,
        iter != detail_outputs.end(); ++iter) {
     ServerFieldType type = iter->first;
     if (!iter->second.empty()) {
-      if (type == ADDRESS_HOME_COUNTRY || type == ADDRESS_BILLING_COUNTRY) {
-        form_group->SetInfo(AutofillType(type),
-                            iter->second,
-                            g_browser_process->GetApplicationLocale());
-      } else {
-        form_group->SetRawInfo(
-            AutofillType(type).GetStorableType(), iter->second);
-      }
+      form_group->SetInfo(AutofillType(type),
+                          iter->second,
+                          g_browser_process->GetApplicationLocale());
     }
   }
 }
@@ -231,24 +226,18 @@ void GetBillingInfoFromOutputs(const FieldValueMap& output,
     if (type == CREDIT_CARD_VERIFICATION_CODE) {
       if (cvc)
         cvc->assign(trimmed);
-    } else if (type == ADDRESS_HOME_COUNTRY ||
-               type == ADDRESS_BILLING_COUNTRY) {
-      if (profile) {
-        profile->SetInfo(AutofillType(type),
-                         trimmed,
-                         g_browser_process->GetApplicationLocale());
-      }
+    } else if (common::IsCreditCardType(type)) {
+      card->SetRawInfo(type, trimmed);
     } else {
       // Copy the credit card name to |profile| in addition to |card| as
       // wallet::Instrument requires a recipient name for its billing address.
       if (card && type == NAME_FULL)
         card->SetRawInfo(CREDIT_CARD_NAME, trimmed);
 
-      if (common::IsCreditCardType(type)) {
-        if (card)
-          card->SetRawInfo(type, trimmed);
-      } else if (profile) {
-        profile->SetRawInfo(AutofillType(type).GetStorableType(), trimmed);
+      if (profile) {
+        profile->SetInfo(AutofillType(AutofillType(type).GetStorableType()),
+                         trimmed,
+                         g_browser_process->GetApplicationLocale());
       }
     }
   }
@@ -3086,7 +3075,10 @@ void AutofillDialogControllerImpl::SuggestionsUpdated() {
 
       const std::vector<AutofillProfile*>& profiles = manager->GetProfiles();
       std::vector<base::string16> labels;
-      AutofillProfile::CreateDifferentiatingLabels(profiles, &labels);
+      AutofillProfile::CreateDifferentiatingLabels(
+          profiles,
+          g_browser_process->GetApplicationLocale(),
+          &labels);
       DCHECK_EQ(labels.size(), profiles.size());
       for (size_t i = 0; i < profiles.size(); ++i) {
         const AutofillProfile& profile = *profiles[i];

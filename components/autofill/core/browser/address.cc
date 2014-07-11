@@ -172,19 +172,9 @@ bool Address::SetInfo(const AutofillType& type,
     return !country_code_.empty();
   }
 
-  // If the address doesn't have any newlines, don't attempt to parse it into
-  // lines, since this is potentially a user-entered address in the user's own
-  // format, so the code would have to rely on iffy heuristics at best.
-  // Instead, just give up when importing addresses like this.
-  if (storable_type == ADDRESS_HOME_STREET_ADDRESS && !value.empty() &&
-      value.find(base::char16('\n')) == base::string16::npos) {
-    street_address_.clear();
-    return false;
-  }
-
   SetRawInfo(storable_type, value);
 
-  // Likewise, give up when importing addresses with any entirely blank lines.
+  // Give up when importing addresses with any entirely blank lines.
   // There's a good chance that this formatting is not intentional, but it's
   // also not obviously safe to just strip the newlines.
   if (storable_type == ADDRESS_HOME_STREET_ADDRESS &&

@@ -629,7 +629,7 @@ void PersonalDataManager::GetProfileSuggestions(
   if (!field_is_autofilled) {
     AutofillProfile::CreateInferredLabels(
         matched_profiles, &other_field_types,
-        type.GetStorableType(), 1, labels);
+        type.GetStorableType(), 1, app_locale_, labels);
   } else {
     // No sub-labels for previously filled fields.
     labels->resize(values->size());

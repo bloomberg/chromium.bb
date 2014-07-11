@@ -1386,9 +1386,12 @@ TEST_F(AutofillManagerTest, GetFieldSuggestionsForMultiValuedProfileUnfilled) {
                        "", "", "", "", "", "", "");
   profile->set_guid("00000000-0000-0000-0000-000000000101");
   std::vector<base::string16> multi_values(2);
-  multi_values[0] = ASCIIToUTF16("Elvis Presley");
-  multi_values[1] = ASCIIToUTF16("Elena Love");
-  profile->SetRawMultiInfo(NAME_FULL, multi_values);
+  multi_values[0] = ASCIIToUTF16("Elvis");
+  multi_values[1] = ASCIIToUTF16("Elena");
+  profile->SetRawMultiInfo(NAME_FIRST, multi_values);
+  multi_values[0] = ASCIIToUTF16("Presley");
+  multi_values[1] = ASCIIToUTF16("Love");
+  profile->SetRawMultiInfo(NAME_LAST, multi_values);
   personal_data_.ClearAutofillProfiles();
   autofill_manager_->AddProfile(profile);
 
@@ -1454,10 +1457,14 @@ TEST_F(AutofillManagerTest, GetFieldSuggestionsForMultiValuedProfileFilled) {
   AutofillProfile* profile = new AutofillProfile;
   profile->set_guid("00000000-0000-0000-0000-000000000102");
   std::vector<base::string16> multi_values(3);
-  multi_values[0] = ASCIIToUTF16("Travis Smith");
-  multi_values[1] = ASCIIToUTF16("Cynthia Love");
-  multi_values[2] = ASCIIToUTF16("Zac Mango");
-  profile->SetRawMultiInfo(NAME_FULL, multi_values);
+  multi_values[0] = ASCIIToUTF16("Travis");
+  multi_values[1] = ASCIIToUTF16("Cynthia");
+  multi_values[2] = ASCIIToUTF16("Zac");
+  profile->SetRawMultiInfo(NAME_FIRST, multi_values);
+  multi_values[0] = ASCIIToUTF16("Smith");
+  multi_values[1] = ASCIIToUTF16("Love");
+  multi_values[2] = ASCIIToUTF16("Mango");
+  profile->SetRawMultiInfo(NAME_LAST, multi_values);
   autofill_manager_->AddProfile(profile);
 
   // Get the first name field.  And start out with "Travis", hoping for all the
@@ -1495,11 +1502,10 @@ TEST_F(AutofillManagerTest, GetProfileSuggestionsFancyPhone) {
 
   AutofillProfile* profile = new AutofillProfile;
   profile->set_guid("00000000-0000-0000-0000-000000000103");
-  std::vector<base::string16> multi_values(1);
-  multi_values[0] = ASCIIToUTF16("Natty Bumppo");
-  profile->SetRawMultiInfo(NAME_FULL, multi_values);
-  multi_values[0] = ASCIIToUTF16("1800PRAIRIE");
-  profile->SetRawMultiInfo(PHONE_HOME_WHOLE_NUMBER, multi_values);
+  profile->SetInfo(AutofillType(NAME_FULL), ASCIIToUTF16("Natty Bumppo"),
+                   "en-US");
+  profile->SetRawInfo(PHONE_HOME_WHOLE_NUMBER,
+                      ASCIIToUTF16("1800PRAIRIE"));
   autofill_manager_->AddProfile(profile);
 
   const FormFieldData& field = form.fields[9];
@@ -2049,12 +2055,21 @@ TEST_F(AutofillManagerTest, FillAddressFormWithVariantType) {
   // Add a name variant to the Elvis profile.
   AutofillProfile* profile = autofill_manager_->GetProfileWithGUID(
       "00000000-0000-0000-0000-000000000001");
-  const base::string16 elvis_name = profile->GetRawInfo(NAME_FULL);
 
   std::vector<base::string16> name_variants;
-  name_variants.push_back(ASCIIToUTF16("Some Other Guy"));
-  name_variants.push_back(elvis_name);
-  profile->SetRawMultiInfo(NAME_FULL, name_variants);
+  name_variants.push_back(ASCIIToUTF16("Some"));
+  name_variants.push_back(profile->GetRawInfo(NAME_FIRST));
+  profile->SetRawMultiInfo(NAME_FIRST, name_variants);
+
+  name_variants.clear();
+  name_variants.push_back(ASCIIToUTF16("Other"));
+  name_variants.push_back(profile->GetRawInfo(NAME_MIDDLE));
+  profile->SetRawMultiInfo(NAME_MIDDLE, name_variants);
+
+  name_variants.clear();
+  name_variants.push_back(ASCIIToUTF16("Guy"));
+  name_variants.push_back(profile->GetRawInfo(NAME_LAST));
+  profile->SetRawMultiInfo(NAME_LAST, name_variants);
 
   GUIDPair guid(profile->guid(), 1);
   GUIDPair empty(std::string(), 0);

@@ -159,7 +159,7 @@ NameInfo& NameInfo::operator=(const NameInfo& info) {
   return *this;
 }
 
-bool NameInfo::EqualsIgnoreCase(const NameInfo& info) {
+bool NameInfo::ParsedNamesAreEqual(const NameInfo& info) {
   return (StringToLowerASCII(given_) == StringToLowerASCII(info.given_) &&
           StringToLowerASCII(middle_) == StringToLowerASCII(info.middle_) &&
           StringToLowerASCII(family_) == StringToLowerASCII(info.family_));
@@ -189,7 +189,7 @@ base::string16 NameInfo::GetRawInfo(ServerFieldType type) const {
       return MiddleInitial();
 
     case NAME_FULL:
-      return FullName();
+      return full_;
 
     default:
       return base::string16();
@@ -198,10 +198,6 @@ base::string16 NameInfo::GetRawInfo(ServerFieldType type) const {
 
 void NameInfo::SetRawInfo(ServerFieldType type, const base::string16& value) {
   DCHECK_EQ(NAME, AutofillType(type).group());
-
-  // Always clear out the full name if we're making a change.
-  if (value != GetRawInfo(type))
-    full_.clear();
 
   switch (type) {
     case NAME_FIRST:
@@ -218,14 +214,35 @@ void NameInfo::SetRawInfo(ServerFieldType type, const base::string16& value) {
       break;
 
     case NAME_FULL:
-      // TODO(estade): this should just set |full_|; only SetInfo should attempt
-      // to be smart. http://crbug.com/384640
-      SetFullName(value);
+      full_ = value;
       break;
 
     default:
       NOTREACHED();
   }
+}
+
+base::string16 NameInfo::GetInfo(const AutofillType& type,
+                                 const std::string& app_locale) const {
+  if (type.GetStorableType() == NAME_FULL)
+    return FullName();
+
+  return GetRawInfo(type.GetStorableType());
+}
+
+bool NameInfo::SetInfo(const AutofillType& type,
+                       const base::string16& value,
+                       const std::string& app_locale) {
+  // Always clear out the full name if we're making a change.
+  if (value != GetInfo(type, app_locale))
+    full_.clear();
+
+  if (type.GetStorableType() == NAME_FULL) {
+    SetFullName(value);
+    return true;
+  }
+
+  return FormGroup::SetInfo(type, value, app_locale);
 }
 
 base::string16 NameInfo::FullName() const {
@@ -256,14 +273,6 @@ base::string16 NameInfo::MiddleInitial() const {
 }
 
 void NameInfo::SetFullName(const base::string16& full) {
-  // Hack: don't do anything if this wouldn't change the full, concatenated
-  // name. Otherwise when unpickling data from the database, "First|Middle|"
-  // will get parsed as "First||Middle".
-  // TODO(estade): we should be able to remove this when fixing the TODO in
-  // SetRawInfo. http://crbug.com/384640
-  if (FullName() == full)
-    return;
-
   full_ = full;
 
   // If |full| is empty, leave the other name parts alone. This might occur

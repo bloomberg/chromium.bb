@@ -211,7 +211,7 @@ public class PersonalDataManagerTest extends ChromeShellTestBase {
         assertEquals("Orofara", storedProfile1.getDependentLocality());
         assertEquals("98709", storedProfile1.getPostalCode());
         assertEquals("CEDEX 98703", storedProfile1.getSortingCode());
-        assertEquals("50.71.53", storedProfile1.getPhoneNumber());
+        assertEquals("50 71 53", storedProfile1.getPhoneNumber());
         assertEquals("john@acme.inc", storedProfile1.getEmailAddress());
 
         profile.setStreetAddress(streetAddress2);

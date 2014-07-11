@@ -23,14 +23,19 @@ class NameInfo : public FormGroup {
 
   NameInfo& operator=(const NameInfo& info);
 
-  // Compares |NameInfo| objects for |first_|, |middle_| and |last_| names,
+  // Compares |NameInfo| objects for |given_|, |middle_| and |family_| names,
   // ignoring their case differences.
-  bool EqualsIgnoreCase(const NameInfo& info);
+  bool ParsedNamesAreEqual(const NameInfo& info);
 
   // FormGroup:
   virtual base::string16 GetRawInfo(ServerFieldType type) const OVERRIDE;
   virtual void SetRawInfo(ServerFieldType type,
                           const base::string16& value) OVERRIDE;
+  virtual base::string16 GetInfo(const AutofillType& type,
+                                 const std::string& app_locale) const OVERRIDE;
+  virtual bool SetInfo(const AutofillType& type,
+                       const base::string16& value,
+                       const std::string& app_locale) OVERRIDE;
 
  private:
   // FormGroup:

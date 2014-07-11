@@ -1496,7 +1496,9 @@ TEST_F(AutofillDialogControllerTest, NamePieces) {
 
   // Billing.
   AutofillProfile test_profile(test::GetVerifiedProfile());
-  test_profile.SetRawInfo(NAME_FULL, ASCIIToUTF16("Fabian Jackson von Nacho"));
+  test_profile.SetInfo(AutofillType(NAME_FULL),
+                       ASCIIToUTF16("Fabian Jackson von Nacho"),
+                       "en-US");
   controller()->GetTestingManager()->AddTestingProfile(&test_profile);
 
   // Credit card.
@@ -1505,7 +1507,9 @@ TEST_F(AutofillDialogControllerTest, NamePieces) {
 
   // Make shipping name different from billing.
   AutofillProfile test_profile2(test::GetVerifiedProfile2());
-  test_profile2.SetRawInfo(NAME_FULL, ASCIIToUTF16("Don Ford"));
+  test_profile2.SetInfo(AutofillType(NAME_FULL),
+                        ASCIIToUTF16("Don Ford"),
+                        "en-US");
   controller()->GetTestingManager()->AddTestingProfile(&test_profile2);
   ui::MenuModel* shipping_model =
       controller()->MenuModelForSection(SECTION_SHIPPING);
@@ -2400,7 +2404,7 @@ TEST_F(AutofillDialogControllerTest, DisabledAutofill) {
       NAME_BILLING_FULL,
       gfx::NativeView(),
       gfx::Rect(),
-      verified_profile.GetRawInfo(NAME_FULL).substr(0, 1),
+      verified_profile.GetInfo(AutofillType(NAME_FULL), "en-US").substr(0, 1),
       true));
   EXPECT_EQ(UNKNOWN_TYPE, controller()->popup_input_type());
 }
@@ -2930,7 +2934,7 @@ TEST_F(AutofillDialogControllerTest, SaveCreditCardIncludesName_NoBilling) {
 
   TestPersonalDataManager* test_pdm = controller()->GetTestingManager();
   const CreditCard& imported_card = test_pdm->imported_credit_card();
-  EXPECT_EQ(test_profile.GetRawInfo(NAME_FULL),
+  EXPECT_EQ(test_profile.GetInfo(AutofillType(NAME_FULL), "en-US"),
             imported_card.GetRawInfo(CREDIT_CARD_NAME));
 }
 
@@ -2951,7 +2955,7 @@ TEST_F(AutofillDialogControllerTest, SaveCreditCardIncludesName_WithBilling) {
   controller()->OnAccept();
 
   const CreditCard& imported_card = test_pdm->imported_credit_card();
-  EXPECT_EQ(test_profile.GetRawInfo(NAME_FULL),
+  EXPECT_EQ(test_profile.GetInfo(AutofillType(NAME_FULL), "en-US"),
             imported_card.GetRawInfo(CREDIT_CARD_NAME));
 
   controller()->ViewClosed();
@@ -3360,8 +3364,8 @@ TEST_F(AutofillDialogControllerTest, ValidButUnverifiedWhenRulesFail) {
   // Profiles saved while rules are unavailable shouldn't be verified.
   const AutofillProfile& imported_profile =
       controller()->GetTestingManager()->imported_profile();
-  ASSERT_EQ(imported_profile.GetRawInfo(NAME_FULL),
-            full_profile.GetRawInfo(NAME_FULL));
+  ASSERT_EQ(imported_profile.GetInfo(AutofillType(NAME_FULL), "en-US"),
+            full_profile.GetInfo(AutofillType(NAME_FULL), "en-US"));
   EXPECT_EQ(imported_profile.origin(), GURL(kSourceUrl).GetOrigin().spec());
   EXPECT_FALSE(imported_profile.IsVerified());
 }

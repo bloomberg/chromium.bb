@@ -407,7 +407,10 @@ void AutofillOptionsHandler::LoadAutofillData() {
   const std::vector<AutofillProfile*>& profiles =
       personal_data_->web_profiles();
   std::vector<base::string16> labels;
-  AutofillProfile::CreateDifferentiatingLabels(profiles, &labels);
+  AutofillProfile::CreateDifferentiatingLabels(
+      profiles,
+      g_browser_process->GetApplicationLocale(),
+      &labels);
   DCHECK_EQ(labels.size(), profiles.size());
 
   base::ListValue addresses;

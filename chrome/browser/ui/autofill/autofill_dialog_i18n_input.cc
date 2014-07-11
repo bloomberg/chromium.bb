@@ -100,8 +100,10 @@ bool AddressHasCompleteAndVerifiedData(const AutofillProfile& profile,
   };
 
   for (size_t i = 0; i < arraysize(more_required_fields); ++i) {
-    if (profile.GetRawInfo(more_required_fields[i]).empty())
+    if (profile.GetInfo(AutofillType(more_required_fields[i]),
+                        app_locale).empty()) {
       return false;
+    }
   }
 
   return true;

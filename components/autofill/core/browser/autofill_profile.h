@@ -123,6 +123,7 @@ class AutofillProfile : public AutofillDataModel {
   // 5. Company name.
   static void CreateDifferentiatingLabels(
       const std::vector<AutofillProfile*>& profiles,
+      const std::string& app_locale,
       std::vector<base::string16>* labels);
 
   // Creates inferred labels for |profiles|, according to the rules above and
@@ -137,6 +138,7 @@ class AutofillProfile : public AutofillDataModel {
       const std::vector<ServerFieldType>* suggested_fields,
       ServerFieldType excluded_field,
       size_t minimal_fields_shown,
+      const std::string& app_locale,
       std::vector<base::string16>* labels);
 
   const std::string& language_code() const { return language_code_; }
@@ -158,20 +160,13 @@ class AutofillProfile : public AutofillDataModel {
                         const std::string& app_locale,
                         std::vector<base::string16>* values) const;
 
-  // Checks if the |phone| is in the |existing_phones| using fuzzy matching:
-  // for example, "1-800-FLOWERS", "18003569377", "(800)356-9377" and "356-9377"
-  // are considered the same.
-  // Adds the |phone| to the |existing_phones| if not already there.
-  void AddPhoneIfUnique(const base::string16& phone,
-                        const std::string& app_locale,
-                        std::vector<base::string16>* existing_phones);
-
   // Builds inferred label from the first |num_fields_to_include| non-empty
   // fields in |label_fields|. Uses as many fields as possible if there are not
   // enough non-empty fields.
   base::string16 ConstructInferredLabel(
       const std::vector<ServerFieldType>& label_fields,
-      size_t num_fields_to_include) const;
+      size_t num_fields_to_include,
+      const std::string& app_locale) const;
 
   // Creates inferred labels for |profiles| at indices corresponding to
   // |indices|, and stores the results to the corresponding elements of
@@ -183,6 +178,7 @@ class AutofillProfile : public AutofillDataModel {
       const std::list<size_t>& indices,
       const std::vector<ServerFieldType>& fields,
       size_t num_fields_to_include,
+      const std::string& app_locale,
       std::vector<base::string16>* labels);
 
   // Utilities for listing and lookup of the data members that constitute
@@ -195,7 +191,8 @@ class AutofillProfile : public AutofillDataModel {
   // duplicates. If a name in |names| has the same full name representation
   // as a name in |name_|, keeps the variant that has more information (i.e.
   // is not reconstructible via a heuristic parse of the full name string).
-  void OverwriteOrAppendNames(const std::vector<NameInfo>& names);
+  void OverwriteOrAppendNames(const std::vector<NameInfo>& names,
+                              const std::string& app_locale);
 
   // Personal information for this profile.
   std::vector<NameInfo> name_;

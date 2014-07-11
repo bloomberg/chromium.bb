@@ -69,80 +69,110 @@ TEST(NameInfoTest, GetFullName) {
   name.SetRawInfo(NAME_FIRST, ASCIIToUTF16("First"));
   name.SetRawInfo(NAME_MIDDLE, base::string16());
   name.SetRawInfo(NAME_LAST, base::string16());
-  EXPECT_EQ(name.GetRawInfo(NAME_FIRST), ASCIIToUTF16("First"));
-  EXPECT_EQ(name.GetRawInfo(NAME_MIDDLE), base::string16());
-  EXPECT_EQ(name.GetRawInfo(NAME_LAST), base::string16());
-  EXPECT_EQ(name.GetRawInfo(NAME_FULL), ASCIIToUTF16("First"));
+  EXPECT_EQ(ASCIIToUTF16("First"), name.GetRawInfo(NAME_FIRST));
+  EXPECT_EQ(base::string16(), name.GetRawInfo(NAME_MIDDLE));
+  EXPECT_EQ(base::string16(), name.GetRawInfo(NAME_LAST));
+  EXPECT_EQ(base::string16(), name.GetRawInfo(NAME_FULL));
+  EXPECT_EQ(ASCIIToUTF16("First"),
+            name.GetInfo(AutofillType(NAME_FULL), "en-US"));
 
   name.SetRawInfo(NAME_FIRST, base::string16());
   name.SetRawInfo(NAME_MIDDLE, ASCIIToUTF16("Middle"));
   name.SetRawInfo(NAME_LAST, base::string16());
-  EXPECT_EQ(name.GetRawInfo(NAME_FIRST), base::string16());
-  EXPECT_EQ(name.GetRawInfo(NAME_MIDDLE), ASCIIToUTF16("Middle"));
-  EXPECT_EQ(name.GetRawInfo(NAME_LAST), base::string16());
-  EXPECT_EQ(name.GetRawInfo(NAME_FULL), ASCIIToUTF16("Middle"));
+  EXPECT_EQ(base::string16(), name.GetRawInfo(NAME_FIRST));
+  EXPECT_EQ(ASCIIToUTF16("Middle"), name.GetRawInfo(NAME_MIDDLE));
+  EXPECT_EQ(base::string16(), name.GetRawInfo(NAME_LAST));
+  EXPECT_EQ(base::string16(), name.GetRawInfo(NAME_FULL));
+  EXPECT_EQ(ASCIIToUTF16("Middle"),
+            name.GetInfo(AutofillType(NAME_FULL), "en-US"));
 
   name.SetRawInfo(NAME_FIRST, base::string16());
   name.SetRawInfo(NAME_MIDDLE, base::string16());
   name.SetRawInfo(NAME_LAST, ASCIIToUTF16("Last"));
-  EXPECT_EQ(name.GetRawInfo(NAME_FIRST), base::string16());
-  EXPECT_EQ(name.GetRawInfo(NAME_MIDDLE), base::string16());
-  EXPECT_EQ(name.GetRawInfo(NAME_LAST), ASCIIToUTF16("Last"));
-  EXPECT_EQ(name.GetRawInfo(NAME_FULL), ASCIIToUTF16("Last"));
+  EXPECT_EQ(base::string16(), name.GetRawInfo(NAME_FIRST));
+  EXPECT_EQ(base::string16(), name.GetRawInfo(NAME_MIDDLE));
+  EXPECT_EQ(ASCIIToUTF16("Last"), name.GetRawInfo(NAME_LAST));
+  EXPECT_EQ(base::string16(), name.GetRawInfo(NAME_FULL));
+  EXPECT_EQ(ASCIIToUTF16("Last"),
+            name.GetInfo(AutofillType(NAME_FULL), "en-US"));
 
   name.SetRawInfo(NAME_FIRST, ASCIIToUTF16("First"));
   name.SetRawInfo(NAME_MIDDLE, ASCIIToUTF16("Middle"));
   name.SetRawInfo(NAME_LAST, base::string16());
-  EXPECT_EQ(name.GetRawInfo(NAME_FIRST), ASCIIToUTF16("First"));
-  EXPECT_EQ(name.GetRawInfo(NAME_MIDDLE), ASCIIToUTF16("Middle"));
-  EXPECT_EQ(name.GetRawInfo(NAME_LAST), base::string16());
-  EXPECT_EQ(name.GetRawInfo(NAME_FULL), ASCIIToUTF16("First Middle"));
+  EXPECT_EQ(ASCIIToUTF16("First"), name.GetRawInfo(NAME_FIRST));
+  EXPECT_EQ(ASCIIToUTF16("Middle"), name.GetRawInfo(NAME_MIDDLE));
+  EXPECT_EQ(base::string16(), name.GetRawInfo(NAME_LAST));
+  EXPECT_EQ(base::string16(), name.GetRawInfo(NAME_FULL));
+  EXPECT_EQ(ASCIIToUTF16("First Middle"),
+            name.GetInfo(AutofillType(NAME_FULL), "en-US"));
 
   name.SetRawInfo(NAME_FIRST, ASCIIToUTF16("First"));
   name.SetRawInfo(NAME_MIDDLE, base::string16());
   name.SetRawInfo(NAME_LAST, ASCIIToUTF16("Last"));
-  EXPECT_EQ(name.GetRawInfo(NAME_FIRST), ASCIIToUTF16("First"));
-  EXPECT_EQ(name.GetRawInfo(NAME_MIDDLE), base::string16());
-  EXPECT_EQ(name.GetRawInfo(NAME_LAST), ASCIIToUTF16("Last"));
-  EXPECT_EQ(name.GetRawInfo(NAME_FULL), ASCIIToUTF16("First Last"));
+  EXPECT_EQ(ASCIIToUTF16("First"), name.GetRawInfo(NAME_FIRST));
+  EXPECT_EQ(base::string16(), name.GetRawInfo(NAME_MIDDLE));
+  EXPECT_EQ(ASCIIToUTF16("Last"), name.GetRawInfo(NAME_LAST));
+  EXPECT_EQ(base::string16(), name.GetRawInfo(NAME_FULL));
+  EXPECT_EQ(ASCIIToUTF16("First Last"),
+            name.GetInfo(AutofillType(NAME_FULL), "en-US"));
 
   name.SetRawInfo(NAME_FIRST, base::string16());
   name.SetRawInfo(NAME_MIDDLE, ASCIIToUTF16("Middle"));
   name.SetRawInfo(NAME_LAST, ASCIIToUTF16("Last"));
-  EXPECT_EQ(name.GetRawInfo(NAME_FIRST), base::string16());
-  EXPECT_EQ(name.GetRawInfo(NAME_MIDDLE), ASCIIToUTF16("Middle"));
-  EXPECT_EQ(name.GetRawInfo(NAME_LAST), ASCIIToUTF16("Last"));
-  EXPECT_EQ(name.GetRawInfo(NAME_FULL), ASCIIToUTF16("Middle Last"));
+  EXPECT_EQ(base::string16(), name.GetRawInfo(NAME_FIRST));
+  EXPECT_EQ(ASCIIToUTF16("Middle"), name.GetRawInfo(NAME_MIDDLE));
+  EXPECT_EQ(ASCIIToUTF16("Last"), name.GetRawInfo(NAME_LAST));
+  EXPECT_EQ(base::string16(), name.GetRawInfo(NAME_FULL));
+  EXPECT_EQ(ASCIIToUTF16("Middle Last"),
+            name.GetInfo(AutofillType(NAME_FULL), "en-US"));
 
   name.SetRawInfo(NAME_FIRST, ASCIIToUTF16("First"));
   name.SetRawInfo(NAME_MIDDLE, ASCIIToUTF16("Middle"));
   name.SetRawInfo(NAME_LAST, ASCIIToUTF16("Last"));
-  EXPECT_EQ(name.GetRawInfo(NAME_FIRST), ASCIIToUTF16("First"));
-  EXPECT_EQ(name.GetRawInfo(NAME_MIDDLE), ASCIIToUTF16("Middle"));
-  EXPECT_EQ(name.GetRawInfo(NAME_LAST), ASCIIToUTF16("Last"));
-  EXPECT_EQ(name.GetRawInfo(NAME_FULL), ASCIIToUTF16("First Middle Last"));
+  EXPECT_EQ(ASCIIToUTF16("First"), name.GetRawInfo(NAME_FIRST));
+  EXPECT_EQ(ASCIIToUTF16("Middle"), name.GetRawInfo(NAME_MIDDLE));
+  EXPECT_EQ(ASCIIToUTF16("Last"), name.GetRawInfo(NAME_LAST));
+  EXPECT_EQ(base::string16(), name.GetRawInfo(NAME_FULL));
+  EXPECT_EQ(ASCIIToUTF16("First Middle Last"),
+            name.GetInfo(AutofillType(NAME_FULL), "en-US"));
 
   name.SetRawInfo(NAME_FULL, ASCIIToUTF16("First Middle Last, MD"));
   EXPECT_EQ(name.GetRawInfo(NAME_FIRST), ASCIIToUTF16("First"));
   EXPECT_EQ(name.GetRawInfo(NAME_MIDDLE), ASCIIToUTF16("Middle"));
   EXPECT_EQ(name.GetRawInfo(NAME_LAST), ASCIIToUTF16("Last"));
   EXPECT_EQ(name.GetRawInfo(NAME_FULL), ASCIIToUTF16("First Middle Last, MD"));
+  EXPECT_EQ(ASCIIToUTF16("First Middle Last, MD"),
+            name.GetInfo(AutofillType(NAME_FULL), "en-US"));
 
-  name.SetRawInfo(NAME_FIRST, ASCIIToUTF16("First"));
+  // Setting a name to the value it already has: no change.
+  name.SetInfo(AutofillType(NAME_FIRST), ASCIIToUTF16("First"), "en-US");
   EXPECT_EQ(name.GetRawInfo(NAME_FIRST), ASCIIToUTF16("First"));
   EXPECT_EQ(name.GetRawInfo(NAME_MIDDLE), ASCIIToUTF16("Middle"));
   EXPECT_EQ(name.GetRawInfo(NAME_LAST), ASCIIToUTF16("Last"));
   EXPECT_EQ(name.GetRawInfo(NAME_FULL), ASCIIToUTF16("First Middle Last, MD"));
+  EXPECT_EQ(ASCIIToUTF16("First Middle Last, MD"),
+            name.GetInfo(AutofillType(NAME_FULL), "en-US"));
 
-  // Changing something (e.g., the first name) clears the stored full name.
+  // Setting raw info: no change. (Even though this leads to a slightly
+  // inconsitent state.)
   name.SetRawInfo(NAME_FIRST, ASCIIToUTF16("Second"));
   EXPECT_EQ(name.GetRawInfo(NAME_FIRST), ASCIIToUTF16("Second"));
   EXPECT_EQ(name.GetRawInfo(NAME_MIDDLE), ASCIIToUTF16("Middle"));
   EXPECT_EQ(name.GetRawInfo(NAME_LAST), ASCIIToUTF16("Last"));
-  EXPECT_EQ(name.GetRawInfo(NAME_FULL), ASCIIToUTF16("Second Middle Last"));
+  EXPECT_EQ(name.GetRawInfo(NAME_FULL), ASCIIToUTF16("First Middle Last, MD"));
+  EXPECT_EQ(ASCIIToUTF16("First Middle Last, MD"),
+            name.GetInfo(AutofillType(NAME_FULL), "en-US"));
+
+  // Changing something (e.g., the first name) clears the stored full name.
+  name.SetInfo(AutofillType(NAME_FIRST), ASCIIToUTF16("Third"), "en-US");
+  EXPECT_EQ(name.GetRawInfo(NAME_FIRST), ASCIIToUTF16("Third"));
+  EXPECT_EQ(name.GetRawInfo(NAME_MIDDLE), ASCIIToUTF16("Middle"));
+  EXPECT_EQ(name.GetRawInfo(NAME_LAST), ASCIIToUTF16("Last"));
+  EXPECT_EQ(ASCIIToUTF16("Third Middle Last"),
+            name.GetInfo(AutofillType(NAME_FULL), "en-US"));
 }
 
-TEST(NameInfoTest, EqualsIgnoreCase) {
+TEST(NameInfoTest, ParsedNamesAreEqual) {
   struct TestCase {
     std::string starting_names[3];
     std::string additional_names[3];
@@ -211,7 +241,7 @@ TEST(NameInfoTest, EqualsIgnoreCase) {
 
     // Verify the test expectations.
     EXPECT_EQ(test_cases[i].expected_result,
-              starting_profile.EqualsIgnoreCase(additional_profile));
+              starting_profile.ParsedNamesAreEqual(additional_profile));
   }
 }
 
