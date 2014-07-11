@@ -160,7 +160,6 @@ TEST_F(Mp2tStreamParserTest, UnalignedAppend17) {
   // Test small, non-segment-aligned appends.
   InitializeParser();
   ParseMpeg2TsFile("bear-1280x720.ts", 17);
-  EXPECT_EQ(video_frame_count_, 81);
   parser_->Flush();
   EXPECT_EQ(video_frame_count_, 82);
 }
@@ -169,7 +168,6 @@ TEST_F(Mp2tStreamParserTest, UnalignedAppend512) {
   // Test small, non-segment-aligned appends.
   InitializeParser();
   ParseMpeg2TsFile("bear-1280x720.ts", 512);
-  EXPECT_EQ(video_frame_count_, 81);
   parser_->Flush();
   EXPECT_EQ(video_frame_count_, 82);
 }
@@ -190,7 +188,8 @@ TEST_F(Mp2tStreamParserTest, TimestampWrapAround) {
   // in the Mpeg2 TS stream.
   InitializeParser();
   ParseMpeg2TsFile("bear-1280x720_ptswraparound.ts", 512);
-  EXPECT_EQ(video_frame_count_, 81);
+  parser_->Flush();
+  EXPECT_EQ(video_frame_count_, 82);
   EXPECT_GE(video_min_dts_, base::TimeDelta::FromSeconds(95443 - 10));
   EXPECT_LE(video_max_dts_, base::TimeDelta::FromSeconds(95443 + 10));
 }
