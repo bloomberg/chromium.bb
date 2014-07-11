@@ -23,7 +23,8 @@ function textWithSelection(text, selections)
     }
 
     var lines = text.split("\n");
-    for (var i = 0; i < selections.length; ++i) {
+    selections.sort(WebInspector.TextRange.comparator);
+    for (var i = selections.length - 1; i >= 0; --i) {
         var selection = selections[i];
         selection = selection.normalize();
         var endCursorChar = selection.isEmpty() ? "|" : "<";
