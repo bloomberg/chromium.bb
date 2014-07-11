@@ -55,6 +55,23 @@ def __ExtractBasePath(target):
     return ''
   return target[0:(last_index + 1)]
 
+def __ResolveParent(path, base_path_components):
+  """Resolves |path|, which starts with at least one '../'. Returns an empty
+  string if the path shouldn't be considered. See __AddSources() for a
+  description of |base_path_components|."""
+  depth = 0
+  while path.startswith('../'):
+    depth += 1
+    path = path[3:]
+  # Relative includes may go outside the source tree. For example, an action may
+  # have inputs in /usr/include, which are not in the source tree.
+  if depth > len(base_path_components):
+    return ''
+  if depth == len(base_path_components):
+    return path
+  return '/'.join(base_path_components[0:len(base_path_components) - depth]) + \
+      '/' + path
+
 def __AddSources(sources, base_path, base_path_components, result):
   """Extracts valid sources from |sources| and adds them to |result|. Each
   source file is relative to |base_path|, but may contain '..'. To make
@@ -69,12 +86,9 @@ def __AddSources(sources, base_path, base_path_components, result):
     # variable expansion may lead to //.
     source = source[0] + source[1:].replace('//', '/')
     if source.startswith('../'):
-      path_components = base_path_components[:]
-      # Resolve relative paths.
-      while source.startswith('../'):
-        path_components.pop(len(path_components) - 1)
-        source = source[3:]
-      result.append('/'.join(path_components) + source)
+      source = __ResolveParent(source, base_path_components)
+      if len(source):
+        result.append(source)
       continue
     result.append(base_path + source)
 

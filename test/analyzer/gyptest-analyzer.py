@@ -73,4 +73,8 @@ test.run_gyp('test.gyp', '-Gfile_path=test_file', stdout=found)
 __CreateTestFile(['parent_source.c'])
 test.run_gyp('test.gyp', '-Gfile_path=test_file', stdout=found)
 
+# Verifies relative paths are resolved correctly.
+__CreateTestFile(['subdir/subdir_source.h'])
+test.run_gyp('test.gyp', '-Gfile_path=test_file', stdout=found)
+
 test.pass_test()

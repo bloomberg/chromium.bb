@@ -13,6 +13,7 @@
       'type': 'executable',
       'dependencies': [
         'subdir/subdir.gyp:foo',
+        'subdir/subdir2/subdir2.gyp:subdir2',
       ],
       'sources': [
         'foo.c',
@@ -31,6 +32,8 @@
           'inputs': [
             '<(PRODUCT_DIR)/product_dir_input.c',
             'action_input.c',
+            '../bad_path1.h',
+            '../../bad_path2.h',
           ],
           'outputs': [
             'action_output.c',
