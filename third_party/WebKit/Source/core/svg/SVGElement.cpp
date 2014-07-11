@@ -579,26 +579,6 @@ bool SVGElement::inUseShadowTree() const
     return correspondingUseElement();
 }
 
-bool SVGElement::supportsSpatialNavigationFocus() const
-{
-    // This function checks whether the element satisfies the extended criteria
-    // for the element to be focusable, introduced by spatial navigation feature,
-    // i.e. checks if click or keyboard event handler is specified.
-    // This is the way to make it possible to navigate to (focus) elements
-    // which web designer meant for being active (made them respond to click events).
-
-    if (!document().settings() || !document().settings()->spatialNavigationEnabled())
-        return false;
-    return hasEventListeners(EventTypeNames::click)
-        || hasEventListeners(EventTypeNames::keydown)
-        || hasEventListeners(EventTypeNames::keypress)
-        || hasEventListeners(EventTypeNames::keyup)
-        || hasEventListeners(EventTypeNames::focus)
-        || hasEventListeners(EventTypeNames::blur)
-        || hasEventListeners(EventTypeNames::focusin)
-        || hasEventListeners(EventTypeNames::focusout);
-}
-
 void SVGElement::parseAttribute(const QualifiedName& name, const AtomicString& value)
 {
     if (name == HTMLNames::classAttr) {

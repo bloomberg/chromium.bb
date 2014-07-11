@@ -2179,10 +2179,17 @@ bool Element::supportsSpatialNavigationFocus() const
 
     if (!document().settings() || !document().settings()->spatialNavigationEnabled())
         return false;
-    return hasEventListeners(EventTypeNames::click)
+    if (hasEventListeners(EventTypeNames::click)
         || hasEventListeners(EventTypeNames::keydown)
         || hasEventListeners(EventTypeNames::keypress)
-        || hasEventListeners(EventTypeNames::keyup);
+        || hasEventListeners(EventTypeNames::keyup))
+        return true;
+    if (!isSVGElement())
+        return false;
+    return (hasEventListeners(EventTypeNames::focus)
+        || hasEventListeners(EventTypeNames::blur)
+        || hasEventListeners(EventTypeNames::focusin)
+        || hasEventListeners(EventTypeNames::focusout));
 }
 
 bool Element::isFocusable() const

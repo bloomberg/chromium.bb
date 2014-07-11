@@ -232,8 +232,6 @@ private:
 
     void buildPendingResourcesIfNeeded();
 
-    bool supportsSpatialNavigationFocus() const;
-
     WillBeHeapHashSet<RawPtrWillBeWeakMember<SVGElement> > m_elementsWithRelativeLengths;
 
     typedef HashMap<QualifiedName, RefPtr<SVGAnimatedPropertyBase> > AttributeToPropertyMap;

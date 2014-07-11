@@ -533,7 +533,7 @@ protected:
     virtual bool shouldRegisterAsNamedItem() const { return false; }
     virtual bool shouldRegisterAsExtraNamedItem() const { return false; }
 
-    virtual bool supportsSpatialNavigationFocus() const;
+    bool supportsSpatialNavigationFocus() const;
 
     void clearTabIndexExplicitlyIfNeeded();
     void setTabIndexExplicitly(short);
