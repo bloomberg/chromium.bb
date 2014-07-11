@@ -88,7 +88,10 @@ void AppListBackground::Paint(gfx::Canvas* canvas,
       const gfx::Rect contents_view_view_bounds =
           contents_view->ConvertRectToWidget(contents_view->GetLocalBounds());
       gfx::Rect separator_rect(contents_rect);
-      separator_rect.set_y(contents_view_view_bounds.bottom());
+      // Extra kContentsSwitcherSeparatorHeight pixels so the launcher page
+      // indicator overlays the separator rect.
+      separator_rect.set_y(contents_view_view_bounds.bottom() +
+                           kContentsSwitcherSeparatorHeight);
       separator_rect.set_height(kBottomSeparatorSize);
       canvas->FillRect(separator_rect, kBottomSeparatorColor);
       int contents_switcher_top = separator_rect.bottom();
