@@ -91,7 +91,9 @@ class Resolver(object):
       if self.pathobj.isdir(pathname):
         self.search_dirs.append(pathname)
       else:
-        sys.stderr.write('Not a directory: %s\n' % pathname)
+        # We can end up here when using the gyp generator analyzer. To avoid
+        # spamming only log if debug enabled.
+        DebugPrint('Not a directory: %s\n' % pathname)
         return False
     return True
 
