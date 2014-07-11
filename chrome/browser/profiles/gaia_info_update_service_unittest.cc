@@ -34,6 +34,7 @@ class ProfileDownloaderMock : public ProfileDownloader {
   }
 
   MOCK_CONST_METHOD0(GetProfileFullName, base::string16());
+  MOCK_CONST_METHOD0(GetProfileGivenName, base::string16());
   MOCK_CONST_METHOD0(GetProfilePicture, SkBitmap());
   MOCK_CONST_METHOD0(GetProfilePictureStatus,
                      ProfileDownloader::PictureStatus());
@@ -58,19 +59,66 @@ class GAIAInfoUpdateServiceTest : public ProfileInfoCacheTest {
   }
 
   Profile* profile() {
-    if (!profile_) {
-      profile_ = testing_profile_manager_.CreateTestingProfile("Person 1");
-      // The testing manager sets the profile name manually, which counts as
-      // a user-customized profile name. Reset this to match the default name
-      // we are actually using.
-      size_t index = GetCache()->GetIndexOfProfileWithPath(profile_->GetPath());
-      GetCache()->SetProfileIsUsingDefaultNameAtIndex(index, true);
-    }
+    if (!profile_)
+      profile_ = CreateProfile("Person 1");
     return profile_;
   }
 
   NiceMock<GAIAInfoUpdateServiceMock>* service() { return service_.get(); }
   NiceMock<ProfileDownloaderMock>* downloader() { return downloader_.get(); }
+
+  Profile* CreateProfile(const std::string& name) {
+    Profile* profile = testing_profile_manager_.CreateTestingProfile(name);
+    // The testing manager sets the profile name manually, which counts as
+    // a user-customized profile name. Reset this to match the default name
+    // we are actually using.
+    size_t index = GetCache()->GetIndexOfProfileWithPath(profile->GetPath());
+    GetCache()->SetProfileIsUsingDefaultNameAtIndex(index, true);
+    return profile;
+  }
+
+  static std::string GivenName(const std::string& id) {
+    return id + "first";
+  }
+  static std::string FullName(const std::string& id) {
+    return GivenName(id) + " " + id + "last";
+  }
+  static base::string16 GivenName16(const std::string& id) {
+    return base::UTF8ToUTF16(GivenName(id));
+  }
+  static base::string16 FullName16(const std::string& id) {
+    return base::UTF8ToUTF16(FullName(id));
+  }
+
+  void ProfileDownloadSuccess(
+      const base::string16& full_name,
+      const base::string16& given_name,
+      const gfx::Image& image,
+      const std::string& url) {
+    EXPECT_CALL(*downloader(), GetProfileFullName()).
+        WillOnce(Return(full_name));
+    EXPECT_CALL(*downloader(), GetProfileGivenName()).
+        WillOnce(Return(given_name));
+    const SkBitmap* bmp = image.ToSkBitmap();
+    EXPECT_CALL(*downloader(), GetProfilePicture()).WillOnce(Return(*bmp));
+    EXPECT_CALL(*downloader(), GetProfilePictureStatus()).
+        WillOnce(Return(ProfileDownloader::PICTURE_SUCCESS));
+    EXPECT_CALL(*downloader(), GetProfilePictureURL()).WillOnce(Return(url));
+
+    service()->OnProfileDownloadSuccess(downloader());
+  }
+
+  void RenameProfile(const base::string16& full_name,
+                     const base::string16& given_name) {
+    gfx::Image image = gfx::test::CreateImage();
+    std::string url("foo.com");
+    ProfileDownloadSuccess(full_name, given_name, image, url);
+
+    // Make sure the right profile was updated correctly.
+    size_t index = GetCache()->GetIndexOfProfileWithPath(profile()->GetPath());
+    EXPECT_EQ(full_name, GetCache()->GetGAIANameOfProfileAtIndex(index));
+    EXPECT_EQ(given_name, GetCache()->GetGAIAGivenNameOfProfileAtIndex(index));
+  }
 
  private:
   virtual void SetUp() OVERRIDE;
@@ -97,25 +145,19 @@ void GAIAInfoUpdateServiceTest::TearDown() {
 } // namespace
 
 TEST_F(GAIAInfoUpdateServiceTest, DownloadSuccess) {
-  base::string16 name = base::ASCIIToUTF16("Pat Smith");
-  EXPECT_CALL(*downloader(), GetProfileFullName()).WillOnce(Return(name));
-  gfx::Image image = gfx::test::CreateImage();
-  const SkBitmap* bmp = image.ToSkBitmap();
-  EXPECT_CALL(*downloader(), GetProfilePicture()).WillOnce(Return(*bmp));
-  EXPECT_CALL(*downloader(), GetProfilePictureStatus()).
-      WillOnce(Return(ProfileDownloader::PICTURE_SUCCESS));
-  std::string url("foo.com");
-  EXPECT_CALL(*downloader(), GetProfilePictureURL()).WillOnce(Return(url));
-
   // No URL should be cached yet.
   EXPECT_EQ(std::string(), service()->GetCachedPictureURL());
 
-  service()->OnProfileDownloadSuccess(downloader());
+  base::string16 name = base::ASCIIToUTF16("Pat Smith");
+  base::string16 given_name = base::ASCIIToUTF16("Pat");
+  gfx::Image image = gfx::test::CreateImage();
+  std::string url("foo.com");
+  ProfileDownloadSuccess(name, given_name, image, url);
 
-  // On success both the profile info and GAIA info should be updated.
+  // On success the GAIA info should be updated.
   size_t index = GetCache()->GetIndexOfProfileWithPath(profile()->GetPath());
-  EXPECT_EQ(name, GetCache()->GetNameOfProfileAtIndex(index));
   EXPECT_EQ(name, GetCache()->GetGAIANameOfProfileAtIndex(index));
+  EXPECT_EQ(given_name, GetCache()->GetGAIAGivenNameOfProfileAtIndex(index));
   EXPECT_TRUE(gfx::test::IsEqual(
       image, *GetCache()->GetGAIAPictureOfProfileAtIndex(index)));
   EXPECT_EQ(url, service()->GetCachedPictureURL());
@@ -129,15 +171,57 @@ TEST_F(GAIAInfoUpdateServiceTest, DownloadFailure) {
   EXPECT_EQ(std::string(), service()->GetCachedPictureURL());
 
   service()->OnProfileDownloadFailure(downloader(),
-                                    ProfileDownloaderDelegate::SERVICE_ERROR);
+                                      ProfileDownloaderDelegate::SERVICE_ERROR);
 
   // On failure nothing should be updated.
   EXPECT_EQ(old_name, GetCache()->GetNameOfProfileAtIndex(index));
   EXPECT_EQ(base::string16(), GetCache()->GetGAIANameOfProfileAtIndex(index));
+  EXPECT_EQ(base::string16(),
+            GetCache()->GetGAIAGivenNameOfProfileAtIndex(index));
   EXPECT_TRUE(gfx::test::IsEqual(
       old_image, GetCache()->GetAvatarIconOfProfileAtIndex(index)));
   EXPECT_EQ(NULL, GetCache()->GetGAIAPictureOfProfileAtIndex(index));
   EXPECT_EQ(std::string(), service()->GetCachedPictureURL());
+}
+
+TEST_F(GAIAInfoUpdateServiceTest, HandlesProfileReordering) {
+  size_t index = GetCache()->GetIndexOfProfileWithPath(profile()->GetPath());
+  GetCache()->SetNameOfProfileAtIndex(index, FullName16("B"));
+  GetCache()->SetProfileIsUsingDefaultNameAtIndex(index, true);
+
+  CreateProfile(FullName("A"));
+  CreateProfile(FullName("C"));
+  CreateProfile(FullName("E"));
+
+  size_t index_before =
+      GetCache()->GetIndexOfProfileWithPath(profile()->GetPath());
+
+  // Rename our profile.
+  RenameProfile(FullName16("D"), GivenName16("D"));
+  // Profiles should have been reordered in the cache.
+  EXPECT_NE(index_before,
+            GetCache()->GetIndexOfProfileWithPath(profile()->GetPath()));
+  // Rename the profile back to the original name, it should go back to its
+  // original position.
+  RenameProfile(FullName16("B"), GivenName16("B"));
+  EXPECT_EQ(index_before,
+            GetCache()->GetIndexOfProfileWithPath(profile()->GetPath()));
+
+  // Rename only the given name of our profile.
+  RenameProfile(FullName16("B"), GivenName16("D"));
+  // Rename the profile back to the original name, it should go back to its
+  // original position.
+  RenameProfile(FullName16("B"), GivenName16("B"));
+  EXPECT_EQ(index_before,
+            GetCache()->GetIndexOfProfileWithPath(profile()->GetPath()));
+
+  // Rename only the full name of our profile.
+  RenameProfile(FullName16("D"), GivenName16("B"));
+  // Rename the profile back to the original name, it should go back to its
+  // original position.
+  RenameProfile(FullName16("B"), GivenName16("B"));
+  EXPECT_EQ(index_before,
+            GetCache()->GetIndexOfProfileWithPath(profile()->GetPath()));
 }
 
 TEST_F(GAIAInfoUpdateServiceTest, ShouldUseGAIAProfileInfo) {
