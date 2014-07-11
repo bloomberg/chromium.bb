@@ -538,6 +538,8 @@ private:
     // If assertion does not hold we crash as we are potentially
     // in the dangling pointer situation.
     void cleanup();
+    void preCleanup();
+    void postCleanup();
 
     static WTF::ThreadSpecific<ThreadState*>* s_threadSpecific;
     static SafePointBarrier* s_safePointBarrier;

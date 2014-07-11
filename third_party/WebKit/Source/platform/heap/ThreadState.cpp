@@ -373,9 +373,6 @@ void ThreadState::cleanup()
     // pointers into the heap owned by this thread.
     m_isCleaningUp = true;
 
-    for (size_t i = 0; i < m_cleanupTasks.size(); i++)
-        m_cleanupTasks[i]->preCleanup();
-
     // After this GC we expect heap to be empty because
     // preCleanup tasks should have cleared all persistent
     // handles that were externally owned.
@@ -384,16 +381,25 @@ void ThreadState::cleanup()
     // Verify that all heaps are empty now.
     for (int i = 0; i < NumberOfHeaps; i++)
         m_heaps[i]->assertEmpty();
+}
 
+void ThreadState::preCleanup()
+{
+    for (size_t i = 0; i < m_cleanupTasks.size(); i++)
+        m_cleanupTasks[i]->preCleanup();
+}
+
+void ThreadState::postCleanup()
+{
     for (size_t i = 0; i < m_cleanupTasks.size(); i++)
         m_cleanupTasks[i]->postCleanup();
-
     m_cleanupTasks.clear();
 }
 
 void ThreadState::detach()
 {
     ThreadState* state = current();
+    state->preCleanup();
     state->cleanup();
 
     // Enter a safe point before trying to acquire threadAttachMutex
@@ -406,6 +412,7 @@ void ThreadState::detach()
     {
         MutexLocker locker(threadAttachMutex());
         state->leaveSafePoint();
+        state->postCleanup();
         ASSERT(attachedThreads().contains(state));
         attachedThreads().remove(state);
         delete state;
