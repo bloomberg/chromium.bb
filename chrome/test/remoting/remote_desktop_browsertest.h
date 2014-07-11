@@ -5,6 +5,7 @@
 #ifndef CHROME_TEST_REMOTING_REMOTE_DESKTOP_BROWSERTEST_H_
 #define CHROME_TEST_REMOTING_REMOTE_DESKTOP_BROWSERTEST_H_
 
+#include "base/debug/stack_trace.h"
 #include "chrome/browser/apps/app_browsertest_util.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -30,6 +31,13 @@ const char kHttpServer[] = "http-server";
 // ASSERT_TRUE can only be used in void returning functions. This version
 // should be used in non-void-returning functions.
 inline void _ASSERT_TRUE(bool condition) {
+  if (!condition) {
+    // ASSERT_TRUE only prints the first call frame in the error message.
+    // In our case, this is the _ASSERT_TRUE wrapper function, which is not
+    // useful.  To help with debugging, we will dump the full callstack.
+    LOG(ERROR) << "Assertion failed.";
+    LOG(ERROR) << base::debug::StackTrace().ToString();
+  }
   ASSERT_TRUE(condition);
   return;
 }
