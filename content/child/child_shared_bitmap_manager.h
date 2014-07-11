@@ -27,9 +27,6 @@ class ChildSharedBitmapManager : public cc::SharedBitmapManager {
       base::SharedMemory* mem) OVERRIDE;
 
  private:
-  void FreeSharedMemory(cc::SharedBitmap* bitmap);
-  void ReleaseSharedBitmap(cc::SharedBitmap*);
-
   scoped_refptr<ThreadSafeSender> sender_;
 
   DISALLOW_COPY_AND_ASSIGN(ChildSharedBitmapManager);
