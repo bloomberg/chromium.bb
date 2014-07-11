@@ -551,6 +551,12 @@ class WebContentsViewAura::WindowObserver
     if (window != view_->window_)
       return;
 
+    // Use the new parent's root window for calculating HiDPI subpixel offset.
+    RenderWidgetHostViewAura* rwhv = ToRenderWidgetHostViewAura(
+        view_->web_contents_->GetRenderWidgetHostView());
+    if (rwhv)
+      rwhv->SnapToPhysicalPixelBoundary();
+
     aura::Window* host_window =
         window->GetProperty(aura::client::kHostWindowKey);
     if (!host_window)
@@ -565,10 +571,8 @@ class WebContentsViewAura::WindowObserver
       for (size_t i = 0; i < children.size(); ++i)
         children[i]->RemoveObserver(this);
 
-      RenderWidgetHostViewAura* view = ToRenderWidgetHostViewAura(
-          view_->web_contents_->GetRenderWidgetHostView());
-      if (view)
-        view->UpdateConstrainedWindowRects(std::vector<gfx::Rect>());
+      if (rwhv)
+        rwhv->UpdateConstrainedWindowRects(std::vector<gfx::Rect>());
     }
 
     // When we get parented to the root window, the code below will watch the

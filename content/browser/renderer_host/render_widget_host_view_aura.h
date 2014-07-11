@@ -336,6 +336,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   // Sets whether the overscroll controller should be enabled for this page.
   void SetOverscrollControllerEnabled(bool enabled);
 
+  void SnapToPhysicalPixelBoundary();
+
   OverscrollController* overscroll_controller() const {
     return overscroll_controller_.get();
   }
@@ -376,8 +378,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   friend class WindowObserver;
 
   void UpdateCursorIfOverSelf();
-
-  void SnapToPhysicalPixelBoundary();
 
   // Set the bounds of the window and handle size changes.  Assumes the caller
   // has already adjusted the origin of |rect| to conform to whatever coordinate
