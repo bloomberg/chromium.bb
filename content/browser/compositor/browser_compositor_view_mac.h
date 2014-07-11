@@ -52,12 +52,6 @@ class BrowserCompositorViewMacClient {
 
   // Used to install the root ui::Layer into the ui::Compositor.
   virtual ui::Layer* BrowserCompositorRootLayer() = 0;
-
-  // If this returns true, then frames will be drawn immediately when they are
-  // received, instead of waiting for the CAOpenGLLayer's callback. This helps
-  // de-jank resize, because said callback can't come through while pumping for
-  // resized frames.
-  virtual bool BrowserCompositorShouldDrawImmediately() = 0;
 };
 
 // The class to hold a ui::Compositor-backed NSView. Because a ui::Compositor
@@ -72,14 +66,8 @@ class BrowserCompositorViewMac {
   explicit BrowserCompositorViewMac(BrowserCompositorViewMacClient* client);
   ~BrowserCompositorViewMac();
 
-  // The NSView set at the sub-view for this view.
-  NSView* GetView() const;
-
   // The ui::Compositor being used to render the NSView.
   ui::Compositor* GetCompositor() const;
-
-  // Check if a frame of the correct size is currently being displayed.
-  bool HasFrameWithSizeInDIP(const gfx::Size& desired_size_in_dip) const;
 
   // The client (used by the BrowserCompositorViewCocoa to access the client).
   BrowserCompositorViewMacClient* GetClient() const { return client_; }

@@ -1406,14 +1406,12 @@ bool RenderProcessHostImpl::OnMessageReceived(const IPC::Message& msg) {
       Send(reply);
     }
 
-#if defined(OS_MACOSX)
     // If this is a SwapBuffers, we need to ack it if we're not going to handle
     // it so that the GPU process doesn't get stuck in unscheduled state.
     IPC_BEGIN_MESSAGE_MAP(RenderProcessHostImpl, msg)
       IPC_MESSAGE_HANDLER(ViewHostMsg_CompositorSurfaceBuffersSwapped,
                           OnCompositorSurfaceBuffersSwappedNoHost)
     IPC_END_MESSAGE_MAP()
-#endif
     return true;
   }
   return listener->OnMessageReceived(msg);
@@ -2144,7 +2142,6 @@ void RenderProcessHostImpl::OnSavedPageAsMHTML(int job_id, int64 data_size) {
   MHTMLGenerationManager::GetInstance()->MHTMLGenerated(job_id, data_size);
 }
 
-#if defined(OS_MACOSX)
 void RenderProcessHostImpl::OnCompositorSurfaceBuffersSwappedNoHost(
       const ViewHostMsg_CompositorSurfaceBuffersSwapped_Params& params) {
   TRACE_EVENT0("renderer_host",
@@ -2152,19 +2149,12 @@ void RenderProcessHostImpl::OnCompositorSurfaceBuffersSwappedNoHost(
   if (!ui::LatencyInfo::Verify(params.latency_info,
                                "ViewHostMsg_CompositorSurfaceBuffersSwapped"))
     return;
-
-  if (params.use_native_widget) {
-    RenderWidgetHelper::OnNativeSurfaceBuffersSwappedOnUIThread(params);
-    return;
-  }
-
   AcceleratedSurfaceMsg_BufferPresented_Params ack_params;
   ack_params.sync_point = 0;
   RenderWidgetHostImpl::AcknowledgeBufferPresent(params.route_id,
                                                  params.gpu_process_host_id,
                                                  ack_params);
 }
-#endif
 
 void RenderProcessHostImpl::OnGpuSwitching() {
   // We are updating all widgets including swapped out ones.

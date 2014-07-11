@@ -1427,12 +1427,6 @@ void RenderWidgetHostImpl::OnCompositorSurfaceBuffersSwapped(
   if (!ui::LatencyInfo::Verify(params.latency_info,
                                "ViewHostMsg_CompositorSurfaceBuffersSwapped"))
     return;
-
-  if (params.use_native_widget) {
-    RenderWidgetHelper::OnNativeSurfaceBuffersSwappedOnUIThread(params);
-    return;
-  }
-
   if (!view_) {
     AcceleratedSurfaceMsg_BufferPresented_Params ack_params;
     ack_params.sync_point = 0;

@@ -8,61 +8,17 @@
 #include <IOSurface/IOSurfaceAPI.h>
 
 #include "base/bind.h"
-#include "base/lazy_instance.h"
-#include "base/synchronization/lock.h"
 #include "content/browser/compositor/browser_compositor_view_mac.h"
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/browser/gpu/gpu_surface_tracker.h"
 #include "content/common/gpu/gpu_messages.h"
 #include "content/common/gpu/surface_handle_types_mac.h"
-#include "content/common/view_messages.h"
 
-namespace content {
 namespace {
-typedef std::map<gfx::AcceleratedWidget,std::pair<int,int>> WidgetMap;
-base::LazyInstance<WidgetMap> g_widget_map;
-base::LazyInstance<base::Lock> g_lock;
-}  // namespace
 
-// static
-void RenderWidgetHelper::SetRenderWidgetIDForWidget(
-    gfx::AcceleratedWidget native_widget,
-    int render_process_id,
-    int render_widget_id) {
-  base::AutoLock lock(g_lock.Get());
-  g_widget_map.Get()[native_widget] = std::make_pair(
-      render_process_id, render_widget_id);
-}
-
-// static
-void RenderWidgetHelper::ResetRenderWidgetIDForWidget(
-    gfx::AcceleratedWidget native_widget) {
-  base::AutoLock lock(g_lock.Get());
-  g_widget_map.Get().erase(native_widget);
-}
-
-// static
-bool RenderWidgetHelper::GetRenderWidgetIDForWidget(
-    gfx::AcceleratedWidget native_widget,
-    int* render_process_id,
-    int* render_widget_id) {
-  base::AutoLock lock(g_lock.Get());
-
-  auto found = g_widget_map.Get().find(native_widget);
-  if (found != g_widget_map.Get().end()) {
-    *render_process_id = found->second.first;
-    *render_widget_id = found->second.second;
-    return true;
-  }
-
-  *render_process_id = 0;
-  *render_widget_id = 0;
-  return false;
-}
-
-// static
-void RenderWidgetHelper::OnNativeSurfaceBuffersSwappedOnUIThread(
-    const ViewHostMsg_CompositorSurfaceBuffersSwapped_Params& params) {
+void OnNativeSurfaceBuffersSwappedOnUIThread(
+    base::ScopedCFTypeRef<IOSurfaceRef> io_surface,
+    const GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params& params) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   gfx::AcceleratedWidget native_widget =
       content::GpuSurfaceTracker::Get()->AcquireNativeWidget(params.surface_id);
@@ -73,6 +29,38 @@ void RenderWidgetHelper::OnNativeSurfaceBuffersSwappedOnUIThread(
                               withLatencyInfo:params.latency_info
                                 withPixelSize:params.size
                               withScaleFactor:params.scale_factor];
+}
+
+}  // namespace
+
+namespace content {
+
+void RenderWidgetHelper::OnNativeSurfaceBuffersSwappedOnIOThread(
+    GpuProcessHost* gpu_process_host,
+    const GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params& params) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+
+  // Immediately acknowledge this frame on the IO thread instead of the UI
+  // thread. The UI thread will wait on the GPU process. If the UI thread
+  // were to be responsible for acking swaps, then there would be a cycle
+  // and a potential deadlock.
+  // TODO(ccameron): This immediate ack circumvents GPU back-pressure that
+  // is necessary to throttle renderers. Fix that.
+  AcceleratedSurfaceMsg_BufferPresented_Params ack_params;
+  ack_params.sync_point = 0;
+  ack_params.renderer_id = 0;
+  gpu_process_host->Send(new AcceleratedSurfaceMsg_BufferPresented(
+      params.route_id, ack_params));
+
+  // Open the IOSurface handle before returning, to ensure that it is not
+  // closed as soon as the frame is acknowledged.
+  base::ScopedCFTypeRef<IOSurfaceRef> io_surface(IOSurfaceLookup(
+          static_cast<uint32>(params.surface_handle)));
+
+  BrowserThread::PostTask(
+      BrowserThread::UI,
+      FROM_HERE,
+      base::Bind(&OnNativeSurfaceBuffersSwappedOnUIThread, io_surface, params));
 }
 
 }  // namespace content
