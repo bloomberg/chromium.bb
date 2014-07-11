@@ -804,6 +804,10 @@ crbug.com/353186 [ Win Debug ] http/tests/security/webgl-remote-read-remote-imag
 crbug.com/353208 fast/files/workers/worker-read-blob-async-crash.html [ Pass Crash Timeout ]
 crbug.com/353301 svg/custom/js-late-gradient-and-object-creation.svg [ Pass Failure ]
 
+# Three-sided patch in progress.
+Bug(falken) http/tests/serviceworker/registration-end-to-end.html [ Pass Failure ]
+Bug(falken) http/tests/serviceworker/service-worker-gc.html [ Pass Failure ]
+
 crbug.com/356991 [ Linux Debug ] fast/canvas/canvas-createImageBitmap-drawImage-video.html [ Crash Pass ]
 crbug.com/356996 [ Debug ] html5lib/generated/run-tests1-data.html [ Pass Timeout ]
 crbug.com/356996 [ Mac Release ] html5lib/generated/run-tests1-data.html [ Pass Timeout ]
