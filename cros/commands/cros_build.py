@@ -66,10 +66,18 @@ To just build a single package:
                       default=True, dest='deps', action='store_false')
     deps.add_argument('--rebuild-deps', default=False, action='store_true',
                       help='Automatically rebuild dependencies')
-    parser.add_argument('--jobs', help='Maximium job count to run in parallel '
-                                       '(Default: Use all available cores)',
-                        default=None, type=int)
     parser.add_argument('packages', help='Packages to build', nargs='+')
+
+    # Advanced options.
+    advanced = parser.add_argument_group('Advanced options')
+    advanced.add_argument('--nofast', help='Disable parallel emerge.',
+                          default=True, action='store_false', dest='fast')
+    advanced.add_argument('--jobs', default=None, type=int,
+                          help='Maximium job count to run in parallel '
+                               '(Default: Use all available cores)')
+    advanced.add_argument('--norebuild', default=True, dest='rebuild_deps',
+                          action='store_false',
+                          help='Don\'t automatically rebuild dependencies.')
 
   def _CheckDependencies(self):
     """Verify emerge dependencies.
@@ -95,9 +103,12 @@ To just build a single package:
     return list(workon.ListModifiedWorkonPackages(board, board is None))
 
   def _GetEmergeCommand(self, board):
-    cmd = [os.path.join(constants.CHROMITE_BIN_DIR, 'parallel_emerge')]
-    if board is not None:
-      cmd += ['--board=%s' % board]
+    if self.options.fast:
+      cmd = [os.path.join(constants.CHROMITE_BIN_DIR, 'parallel_emerge')]
+      if board is not None:
+        cmd += ['--board=%s' % board]
+    else:
+      cmd = ['emerge'] if board is None else ['emerge-%s' % board]
     return cmd
 
   def _Emerge(self, packages, board=None):
