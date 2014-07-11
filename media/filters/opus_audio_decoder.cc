@@ -173,7 +173,8 @@ struct OpusExtraData {
         channel_mapping(0),
         num_streams(0),
         num_coupled(0),
-        gain_db(0) {
+        gain_db(0),
+        stream_map() {
     memcpy(stream_map,
            kDefaultOpusChannelLayout,
            kMaxChannelsWithDefaultLayout);
