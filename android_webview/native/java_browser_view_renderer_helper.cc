@@ -6,6 +6,7 @@
 
 #include <android/bitmap.h>
 
+#include "android_webview/common/aw_switches.h"
 #include "android_webview/public/browser/draw_sw.h"
 #include "base/debug/trace_event.h"
 #include "jni/JavaBrowserViewRendererHelper_jni.h"
@@ -26,7 +27,7 @@ AwDrawSWFunctionTable* g_sw_draw_functions = NULL;
 class ScopedPixelAccess {
  public:
   ScopedPixelAccess(JNIEnv* env, jobject java_canvas) : pixels_(NULL) {
-    if (g_sw_draw_functions)
+    if (g_sw_draw_functions && !switches::ForceAuxiliaryBitmap())
       pixels_ = g_sw_draw_functions->access_pixels(env, java_canvas);
   }
 

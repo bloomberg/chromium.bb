@@ -6,6 +6,7 @@
 
 #include "android_webview/browser/browser_view_renderer_client.h"
 #include "android_webview/browser/shared_renderer_state.h"
+#include "android_webview/common/aw_switches.h"
 #include "android_webview/public/browser/draw_gl.h"
 #include "base/android/jni_android.h"
 #include "base/auto_reset.h"
@@ -224,8 +225,11 @@ bool BrowserViewRenderer::OnDraw(jobject java_canvas,
   if (clear_view_)
     return false;
 
-  if (is_hardware_canvas && attached_to_window_)
+  if (is_hardware_canvas && attached_to_window_ &&
+      !switches::ForceAuxiliaryBitmap()) {
     return OnDrawHardware(java_canvas);
+  }
+
   // Perform a software draw
   return DrawSWInternal(java_canvas, clip);
 }
