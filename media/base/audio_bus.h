@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/memory/aligned_memory.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "media/base/media_export.h"
 
@@ -110,12 +111,13 @@ class MEDIA_EXPORT AudioBus {
 
   virtual ~AudioBus();
 
- private:
+ protected:
   AudioBus(int channels, int frames);
   AudioBus(int channels, int frames, float* data);
   AudioBus(int frames, const std::vector<float*>& channel_data);
   explicit AudioBus(int channels);
 
+ private:
   // Helper method for building |channel_data_| from a block of memory.  |data|
   // must be at least BlockSize() bytes in size.
   void BuildChannelData(int channels, int aligned_frame, float* data);
@@ -130,6 +132,24 @@ class MEDIA_EXPORT AudioBus {
   bool can_set_channel_data_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioBus);
+};
+
+// RefCounted version of AudioBus. This is not meant for general use. Only use
+// this when your lifetime requirements make it impossible to use an
+// AudioBus scoped_ptr.
+class MEDIA_EXPORT AudioBusRefCounted
+    : public media::AudioBus,
+      public base::RefCountedThreadSafe<AudioBusRefCounted> {
+ public:
+  static scoped_refptr<AudioBusRefCounted> Create(int channels, int frames);
+
+ private:
+  friend class base::RefCountedThreadSafe<AudioBusRefCounted>;
+
+  AudioBusRefCounted(int channels, int frames);
+  virtual ~AudioBusRefCounted();
+
+  DISALLOW_COPY_AND_ASSIGN(AudioBusRefCounted);
 };
 
 }  // namespace media
