@@ -71,13 +71,12 @@ class ChromeRenderViewObserver : public content::RenderViewObserver {
   void OnSetClientSidePhishingDetection(bool enable_phishing_detection);
   void OnSetWindowFeatures(const blink::WebWindowFeatures& window_features);
 
-  void CapturePageInfoLater(int page_id,
-                            bool preliminary_capture,
+  void CapturePageInfoLater(bool preliminary_capture,
                             base::TimeDelta delay);
 
   // Captures the thumbnail and text contents for indexing for the given load
   // ID.  Kicks off analysis of the captured text.
-  void CapturePageInfo(int page_id, bool preliminary_capture);
+  void CapturePageInfo(bool preliminary_capture);
 
   // Retrieves the text from the given frame contents, the page text up to the
   // maximum amount kMaxIndexChars will be placed into the given buffer.
@@ -98,14 +97,6 @@ class ChromeRenderViewObserver : public content::RenderViewObserver {
   // Have the same lifetime as us.
   TranslateHelper* translate_helper_;
   safe_browsing::PhishingClassifierDelegate* phishing_classifier_;
-
-  // Page_id from the last page we indexed. This prevents us from indexing the
-  // same page twice in a row.
-  int32 last_indexed_page_id_;
-  // The toplevel URL that was last indexed.  This is used together with the
-  // page id to decide whether to reindex in certain cases like history
-  // replacement.
-  GURL last_indexed_url_;
 
   // A color page overlay when visually de-emaphasized.
   scoped_ptr<WebViewColorOverlay> dimmed_color_overlay_;
