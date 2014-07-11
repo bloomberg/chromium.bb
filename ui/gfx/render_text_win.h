@@ -100,7 +100,8 @@ class RenderTextWin : public RenderText {
   HRESULT ShapeTextRunWithFont(internal::TextRun* run, const Font& font);
 
   // Returns the number of characters in |run| that have missing glyphs.
-  int CountCharsWithMissingGlyphs(internal::TextRun* run) const;
+  int CountCharsWithMissingGlyphs(internal::TextRun* run,
+                                  HRESULT shaping_result) const;
 
   // Return the run index that contains the argument; or the length of the
   // |runs_| vector if argument exceeds the text length or width.

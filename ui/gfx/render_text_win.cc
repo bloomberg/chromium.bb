@@ -1056,68 +1056,66 @@ void RenderTextWin::LayoutTextRun(internal::TextRun* run) {
   const wchar_t* run_text = &(GetLayoutText()[run->range.start()]);
   Font original_font = run->font;
   LinkedFontsIterator fonts(original_font);
-  bool tried_cached_font = false;
-  bool tried_fallback = false;
+
+  run->logical_clusters.reset(new WORD[run_length]);
+
+  // Try to shape with the first font in the fallback list, which is
+  // |original_font|.
+  Font current_font;
+  fonts.NextFont(&current_font);
+  int missing_count = CountCharsWithMissingGlyphs(run,
+      ShapeTextRunWithFont(run, current_font));
+  if (missing_count == 0)
+    return;
+
   // Keep track of the font that is able to display the greatest number of
   // characters for which ScriptShape() returned S_OK. This font will be used
   // in the case where no font is able to display the entire run.
-  int best_partial_font_missing_char_count = INT_MAX;
-  Font best_partial_font = original_font;
-  Font current_font;
+  int best_partial_font_missing_char_count = missing_count;
+  Font best_partial_font = current_font;
 
-  run->logical_clusters.reset(new WORD[run_length]);
-  while (fonts.NextFont(&current_font)) {
-    HRESULT hr = ShapeTextRunWithFont(run, current_font);
-
-    bool glyphs_missing = false;
-    if (hr == USP_E_SCRIPT_NOT_IN_FONT) {
-      glyphs_missing = true;
-    } else if (hr == S_OK) {
-      // If |hr| is S_OK, there could still be missing glyphs in the output.
-      // http://msdn.microsoft.com/en-us/library/windows/desktop/dd368564.aspx
-      const int missing_count = CountCharsWithMissingGlyphs(run);
-      // Track the font that produced the least missing glyphs.
-      if (missing_count < best_partial_font_missing_char_count) {
-        best_partial_font_missing_char_count = missing_count;
-        best_partial_font = run->font;
-      }
-      glyphs_missing = (missing_count != 0);
-    } else {
-      NOTREACHED() << hr;
+  // Try to shape with the cached font from previous runs, if any.
+  std::map<std::string, Font>::const_iterator it =
+      successful_substitute_fonts_.find(original_font.GetFontName());
+  if (it != successful_substitute_fonts_.end()) {
+    current_font = it->second;
+    missing_count = CountCharsWithMissingGlyphs(run,
+        ShapeTextRunWithFont(run, current_font));
+    if (missing_count == 0)
+      return;
+    if (missing_count < best_partial_font_missing_char_count) {
+      best_partial_font_missing_char_count = missing_count;
+      best_partial_font = current_font;
     }
+  }
 
-    // Use the font if it had glyphs for all characters.
-    if (!glyphs_missing) {
-      // Save the successful fallback font that was chosen.
-      if (tried_fallback)
-        successful_substitute_fonts_[original_font.GetFontName()] = run->font;
+  // Try finding a fallback font using a meta file.
+  // TODO(msw|asvitkine): Support RenderText's font_list()?
+  if (ChooseFallbackFont(cached_hdc_, run->font, run_text, run_length,
+                         &current_font)) {
+    missing_count = CountCharsWithMissingGlyphs(run,
+        ShapeTextRunWithFont(run, current_font));
+    if (missing_count == 0) {
+      successful_substitute_fonts_[original_font.GetFontName()] = current_font;
       return;
     }
-
-    // First, try the cached font from previous runs, if any.
-    if (!tried_cached_font) {
-      tried_cached_font = true;
-
-      std::map<std::string, Font>::const_iterator it =
-          successful_substitute_fonts_.find(original_font.GetFontName());
-      if (it != successful_substitute_fonts_.end()) {
-        fonts.SetNextFont(it->second);
-        continue;
-      }
+    if (missing_count < best_partial_font_missing_char_count) {
+      best_partial_font_missing_char_count = missing_count;
+      best_partial_font = current_font;
     }
+  }
 
-    // If there are missing glyphs, first try finding a fallback font using a
-    // meta file, if it hasn't yet been attempted for this run.
-    // TODO(msw|asvitkine): Support RenderText's font_list()?
-    if (!tried_fallback) {
-      tried_fallback = true;
-
-      Font fallback_font;
-      if (ChooseFallbackFont(cached_hdc_, run->font, run_text, run_length,
-                             &fallback_font)) {
-        fonts.SetNextFont(fallback_font);
-        continue;
-      }
+  // Try the rest of fonts in the fallback list.
+  while (fonts.NextFont(&current_font)) {
+    missing_count = CountCharsWithMissingGlyphs(run,
+        ShapeTextRunWithFont(run, current_font));
+    if (missing_count == 0) {
+      successful_substitute_fonts_[original_font.GetFontName()] = current_font;
+      return;
+    }
+    if (missing_count < best_partial_font_missing_char_count) {
+      best_partial_font_missing_char_count = missing_count;
+      best_partial_font = current_font;
     }
   }
 
@@ -1208,7 +1206,15 @@ HRESULT RenderTextWin::ShapeTextRunWithFont(internal::TextRun* run,
   return hr;
 }
 
-int RenderTextWin::CountCharsWithMissingGlyphs(internal::TextRun* run) const {
+int RenderTextWin::CountCharsWithMissingGlyphs(internal::TextRun* run,
+                                               HRESULT shaping_result) const {
+  if (shaping_result != S_OK) {
+    DCHECK_EQ(shaping_result, USP_E_SCRIPT_NOT_IN_FONT);
+    return INT_MAX;
+  }
+
+  // If |hr| is S_OK, there could still be missing glyphs in the output.
+  // http://msdn.microsoft.com/en-us/library/windows/desktop/dd368564.aspx
   int chars_not_missing_glyphs = 0;
   SCRIPT_FONTPROPERTIES properties;
   memset(&properties, 0, sizeof(properties));
