@@ -155,6 +155,19 @@ skia::RefPtr<SkShader> CreateFadeShader(const Rect& text_rect,
                                      colors.size(), SkShader::kClamp_TileMode));
 }
 
+// Converts a FontRenderParams::Hinting value to the corresponding
+// SkPaint::Hinting value.
+SkPaint::Hinting FontRenderParamsHintingToSkPaintHinting(
+    FontRenderParams::Hinting params_hinting) {
+  switch (params_hinting) {
+    case FontRenderParams::HINTING_NONE:   return SkPaint::kNo_Hinting;
+    case FontRenderParams::HINTING_SLIGHT: return SkPaint::kSlight_Hinting;
+    case FontRenderParams::HINTING_MEDIUM: return SkPaint::kNormal_Hinting;
+    case FontRenderParams::HINTING_FULL:   return SkPaint::kFull_Hinting;
+  }
+  return SkPaint::kNo_Hinting;
+}
+
 }  // namespace
 
 namespace internal {
@@ -204,10 +217,8 @@ void SkiaTextRenderer::SetFontRenderParams(const FontRenderParams& params,
   paint_.setLCDRenderText(!background_is_transparent &&
       params.subpixel_rendering != FontRenderParams::SUBPIXEL_RENDERING_NONE);
   paint_.setSubpixelText(params.subpixel_positioning);
-}
-
-void SkiaTextRenderer::SetFontHinting(SkPaint::Hinting hinting) {
-  paint_.setHinting(hinting);
+  paint_.setAutohinted(params.autohinter);
+  paint_.setHinting(FontRenderParamsHintingToSkPaintHinting(params.hinting));
 }
 
 void SkiaTextRenderer::SetTypeface(SkTypeface* typeface) {

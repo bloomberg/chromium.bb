@@ -26,6 +26,9 @@ class CachedFontRenderParams : public gfx::SingletonHwnd::Observer {
     params_.reset(new FontRenderParams());
     params_->antialiasing = false;
     params_->subpixel_positioning = false;
+    params_->autohinter = false;
+    params_->use_bitmaps = false;
+    params_->hinting = FontRenderParams::HINTING_MEDIUM;
     params_->subpixel_rendering = FontRenderParams::SUBPIXEL_RENDERING_NONE;
 
     BOOL enabled = false;

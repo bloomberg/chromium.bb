@@ -167,6 +167,7 @@
         'font_render_params_android.cc',
         'font_render_params_linux.cc',
         'font_render_params_win.cc',
+        'font_render_params.cc',
         'font_render_params.h',
         'frame_time.h',
         'gfx_export.h',

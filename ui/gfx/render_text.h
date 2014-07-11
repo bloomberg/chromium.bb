@@ -54,7 +54,6 @@ class SkiaTextRenderer {
   void SetDrawLooper(SkDrawLooper* draw_looper);
   void SetFontRenderParams(const FontRenderParams& params,
                            bool background_is_transparent);
-  void SetFontHinting(SkPaint::Hinting hinting);
   void SetTypeface(SkTypeface* typeface);
   void SetTextSize(SkScalar size);
   void SetFontFamilyWithStyle(const std::string& family, int font_style);

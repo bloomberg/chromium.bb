@@ -390,25 +390,8 @@ void RenderTextPango::DrawVisualText(Canvas* canvas) {
   ApplyTextShadows(&renderer);
 
   // TODO(derat): Use font-specific params: http://crbug.com/125235
-  const FontRenderParams& render_params = GetDefaultFontRenderParams();
-  renderer.SetFontRenderParams(render_params, background_is_transparent());
-
-  SkPaint::Hinting skia_hinting = SkPaint::kNormal_Hinting;
-  switch (render_params.hinting) {
-    case FontRenderParams::HINTING_NONE:
-      skia_hinting = SkPaint::kNo_Hinting;
-      break;
-    case FontRenderParams::HINTING_SLIGHT:
-      skia_hinting = SkPaint::kSlight_Hinting;
-      break;
-    case FontRenderParams::HINTING_MEDIUM:
-      skia_hinting = SkPaint::kNormal_Hinting;
-      break;
-    case FontRenderParams::HINTING_FULL:
-      skia_hinting = SkPaint::kFull_Hinting;
-      break;
-  }
-  renderer.SetFontHinting(skia_hinting);
+  renderer.SetFontRenderParams(GetDefaultFontRenderParams(),
+                               background_is_transparent());
 
   // Temporarily apply composition underlines and selection colors.
   ApplyCompositionAndSelectionStyles();

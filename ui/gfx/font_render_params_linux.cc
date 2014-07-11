@@ -63,6 +63,9 @@ void LoadDefaults(FontRenderParams* params, bool renderer) {
   }
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+  // TODO(derat): Get the autohinter setting from FontConfig. Until then,
+  // maintain backward compatibility with what we were doing previously.
+  params->autohinter = renderer;
   const LinuxFontDelegate* delegate = LinuxFontDelegate::instance();
   if (delegate) {
     params->antialiasing = delegate->UseAntialiasing();

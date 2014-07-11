@@ -11,7 +11,8 @@ namespace gfx {
 
 // A collection of parameters describing how text should be rendered on Linux.
 struct GFX_EXPORT FontRenderParams {
-  // No constructor to avoid static initialization.
+  FontRenderParams();
+  ~FontRenderParams();
 
   // Level of hinting to be applied.
   enum Hinting {
