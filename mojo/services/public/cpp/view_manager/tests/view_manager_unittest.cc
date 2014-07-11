@@ -83,6 +83,7 @@ class ConnectServiceLoader : public ServiceLoader,
                            Node* root) OVERRIDE {
     callback_.Run(view_manager, root);
   }
+  virtual void OnViewManagerDisconnected(ViewManager* view_manager) OVERRIDE {}
 
   ScopedVector<ApplicationImpl> apps_;
   LoadedCallback callback_;

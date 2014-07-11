@@ -97,6 +97,7 @@ class RootObserver : public NodeObserver {
     DCHECK_EQ(node, root_);
     static_cast<ViewManagerClientImpl*>(
         NodePrivate(root_).view_manager())->RemoveRoot(root_);
+    node->RemoveObserver(this);
     delete this;
   }
 
@@ -535,6 +536,7 @@ ViewManagerClientImpl::ViewManagerClientImpl(ApplicationConnection* connection,
       dispatcher_(NULL) {}
 
 ViewManagerClientImpl::~ViewManagerClientImpl() {
+  delegate_->OnViewManagerDisconnected(this);
   while (!nodes_.empty()) {
     IdToNodeMap::iterator it = nodes_.begin();
     if (OwnsNode(it->second->id()))

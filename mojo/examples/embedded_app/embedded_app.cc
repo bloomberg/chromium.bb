@@ -5,6 +5,7 @@
 #include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/logging.h"
+#include "base/message_loop/message_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "mojo/public/cpp/application/application_connection.h"
 #include "mojo/public/cpp/application/application_delegate.h"
@@ -96,6 +97,9 @@ class EmbeddedApp : public ApplicationDelegate,
 
     roots_[root->id()] = root;
     ProcessPendingNodeColor(root->id());
+  }
+  virtual void OnViewManagerDisconnected(ViewManager* view_manager) OVERRIDE {
+    base::MessageLoop::current()->Quit();
   }
 
   // Overridden from ViewObserver:

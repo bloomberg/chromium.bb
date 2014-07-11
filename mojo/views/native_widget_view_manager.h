@@ -42,6 +42,12 @@ class NativeWidgetViewManager : public views::NativeWidgetAura,
   // WindowTreeHostMojoDelegate:
   virtual void CompositorContentsChanged(const SkBitmap& bitmap) OVERRIDE;
 
+  // view_manager::NodeObserver:
+  virtual void OnNodeDestroyed(view_manager::Node* node) OVERRIDE;
+  virtual void OnNodeActiveViewChanged(view_manager::Node* node,
+                                       view_manager::View* old_view,
+                                       view_manager::View* new_view) OVERRIDE;
+
   // view_manager::ViewObserver
   virtual void OnViewInputEvent(view_manager::View* view,
                                 const EventPtr& event) OVERRIDE;

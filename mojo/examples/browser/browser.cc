@@ -205,6 +205,12 @@ class Browser : public ApplicationDelegate,
     root_->SetFocus();
     CreateWidget(root_);
   }
+  virtual void OnViewManagerDisconnected(
+      view_manager::ViewManager* view_manager) OVERRIDE {
+    DCHECK_EQ(view_manager_, view_manager);
+    view_manager_ = NULL;
+    base::MessageLoop::current()->Quit();
+  }
 
   // views::TextfieldController:
   virtual bool HandleKeyEvent(views::Textfield* sender,
@@ -231,6 +237,10 @@ class Browser : public ApplicationDelegate,
       focus_client->FocusWindow(NULL);
     else if (gained_focus == root_)
       focus_client->FocusWindow(widget_->GetNativeView());
+  }
+  virtual void OnNodeDestroyed(view_manager::Node* node) OVERRIDE {
+    DCHECK_EQ(root_, node);
+    node->RemoveObserver(this);
   }
 
   scoped_ptr<ViewsInit> views_init_;

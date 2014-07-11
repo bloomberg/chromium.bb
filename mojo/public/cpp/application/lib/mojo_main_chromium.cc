@@ -11,7 +11,9 @@
 extern "C" APPLICATION_EXPORT MojoResult CDECL MojoMain(
     MojoHandle shell_handle) {
   base::CommandLine::Init(0, NULL);
+#if !defined(COMPONENT_BUILD)
   base::AtExitManager at_exit;
+#endif
   base::MessageLoop loop;
   scoped_ptr<mojo::ApplicationDelegate> delegate(
       mojo::ApplicationDelegate::Create());

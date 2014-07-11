@@ -93,6 +93,12 @@ class Keyboard : public ApplicationDelegate,
     root->SetActiveView(view_manager::View::Create(view_manager));
     CreateWidget(root);
   }
+  virtual void OnViewManagerDisconnected(
+      view_manager::ViewManager* view_manager) OVERRIDE {
+    DCHECK_EQ(view_manager_, view_manager);
+    view_manager_ = NULL;
+    base::MessageLoop::current()->Quit();
+  }
 
   // KeyboardDelegate:
   virtual void OnKeyPressed(int key_code, int event_flags) OVERRIDE {

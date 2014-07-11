@@ -194,26 +194,6 @@ class ScopedSetBoundsNotifier {
   DISALLOW_COPY_AND_ASSIGN(ScopedSetBoundsNotifier);
 };
 
-class ScopedDestructionNotifier {
- public:
-  explicit ScopedDestructionNotifier(Node* node)
-      : node_(node) {
-    FOR_EACH_OBSERVER(NodeObserver,
-                      *NodePrivate(node_).observers(),
-                      OnNodeDestroying(node_));
-  }
-  ~ScopedDestructionNotifier() {
-    FOR_EACH_OBSERVER(NodeObserver,
-                      *NodePrivate(node_).observers(),
-                      OnNodeDestroyed(node_));
-  }
-
- private:
-  Node* node_;
-
-  DISALLOW_COPY_AND_ASSIGN(ScopedDestructionNotifier);
-};
-
 // Some operations are only permitted in the connection that created the node.
 bool OwnsNode(ViewManager* manager, Node* node) {
   return !manager ||
@@ -359,13 +339,14 @@ Node::Node()
       active_view_(NULL) {}
 
 Node::~Node() {
-  ScopedDestructionNotifier notifier(this);
+  FOR_EACH_OBSERVER(NodeObserver, observers_, OnNodeDestroying(this));
   if (parent_)
     parent_->LocalRemoveChild(this);
   // TODO(beng): It'd be better to do this via a destruction observer in the
   //             ViewManagerClientImpl.
   if (manager_)
     static_cast<ViewManagerClientImpl*>(manager_)->RemoveNode(id_);
+  FOR_EACH_OBSERVER(NodeObserver, observers_, OnNodeDestroyed(this));
 }
 
 ////////////////////////////////////////////////////////////////////////////////

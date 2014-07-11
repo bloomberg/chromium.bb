@@ -13,28 +13,6 @@
 namespace mojo {
 namespace view_manager {
 
-namespace {
-class ScopedDestructionNotifier {
- public:
-  explicit ScopedDestructionNotifier(View* view)
-      : view_(view) {
-    FOR_EACH_OBSERVER(ViewObserver,
-                      *ViewPrivate(view_).observers(),
-                      OnViewDestroying(view_));
-  }
-  ~ScopedDestructionNotifier() {
-    FOR_EACH_OBSERVER(ViewObserver,
-                      *ViewPrivate(view_).observers(),
-                      OnViewDestroyed(view_));
-  }
-
- private:
-  View* view_;
-
-  DISALLOW_COPY_AND_ASSIGN(ScopedDestructionNotifier);
-};
-}  // namespace
-
 // static
 View* View::Create(ViewManager* manager) {
   View* view = new View(manager);
@@ -80,11 +58,13 @@ View::View()
       manager_(NULL) {}
 
 View::~View() {
-  ScopedDestructionNotifier notifier(this);
+  FOR_EACH_OBSERVER(ViewObserver, observers_, OnViewDestroying(this));
   // TODO(beng): It'd be better to do this via a destruction observer in the
   //             ViewManagerClientImpl.
   if (manager_)
     static_cast<ViewManagerClientImpl*>(manager_)->RemoveView(id_);
+
+  FOR_EACH_OBSERVER(ViewObserver, observers_, OnViewDestroyed(this));
 }
 
 void View::LocalDestroy() {

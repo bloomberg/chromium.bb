@@ -48,8 +48,10 @@ class SampleApp : public ApplicationDelegate, public NativeViewportClient {
   virtual void OnCreated() MOJO_OVERRIDE {
   }
 
-  virtual void OnDestroyed() MOJO_OVERRIDE {
+  virtual void OnDestroyed(
+      const mojo::Callback<void()>& callback) MOJO_OVERRIDE {
     RunLoop::current()->Quit();
+    callback.Run();
   }
 
   virtual void OnBoundsChanged(RectPtr bounds) MOJO_OVERRIDE {

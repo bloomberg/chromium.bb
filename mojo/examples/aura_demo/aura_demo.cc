@@ -152,6 +152,10 @@ class AuraDemo : public ApplicationDelegate,
 
     window_tree_host_->Show();
   }
+  virtual void OnViewManagerDisconnected(
+      view_manager::ViewManager* view_manager) OVERRIDE {
+    base::MessageLoop::current()->Quit();
+  }
 
   // WindowTreeHostMojoDelegate:
   virtual void CompositorContentsChanged(const SkBitmap& bitmap) OVERRIDE {

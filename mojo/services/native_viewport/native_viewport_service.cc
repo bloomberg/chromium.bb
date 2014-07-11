@@ -137,12 +137,15 @@ class NativeViewportImpl
   }
 
   virtual void OnDestroyed() OVERRIDE {
-    command_buffer_.reset();
-    client()->OnDestroyed();
-    base::MessageLoop::current()->Quit();
+    client()->OnDestroyed(base::Bind(&NativeViewportImpl::AckDestroyed,
+                                     base::Unretained(this)));
   }
 
  private:
+  void AckDestroyed() {
+    command_buffer_.reset();
+  }
+
   shell::Context* context_;
   gfx::AcceleratedWidget widget_;
   scoped_ptr<services::NativeViewport> native_viewport_;

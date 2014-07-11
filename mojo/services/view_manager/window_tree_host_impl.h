@@ -25,9 +25,11 @@ class WindowTreeHostImpl : public aura::WindowTreeHost,
                            public ui::EventSource,
                            public NativeViewportClient {
  public:
-  WindowTreeHostImpl(NativeViewportPtr viewport,
-                     const gfx::Rect& bounds,
-                     const base::Callback<void()>& compositor_created_callback);
+  WindowTreeHostImpl(
+      NativeViewportPtr viewport,
+      const gfx::Rect& bounds,
+      const Callback<void()>& compositor_created_callback,
+      const Callback<void()>& native_viewport_closed_callback);
   virtual ~WindowTreeHostImpl();
 
   gfx::Rect bounds() const { return bounds_; }
@@ -54,7 +56,7 @@ class WindowTreeHostImpl : public aura::WindowTreeHost,
 
   // Overridden from NativeViewportClient:
   virtual void OnCreated() OVERRIDE;
-  virtual void OnDestroyed() OVERRIDE;
+  virtual void OnDestroyed(const mojo::Callback<void()>& callback) OVERRIDE;
   virtual void OnBoundsChanged(RectPtr bounds) OVERRIDE;
   virtual void OnEvent(EventPtr event,
                        const mojo::Callback<void()>& callback) OVERRIDE;
@@ -62,7 +64,8 @@ class WindowTreeHostImpl : public aura::WindowTreeHost,
   static ContextFactoryImpl* context_factory_;
 
   NativeViewportPtr native_viewport_;
-  base::Callback<void()> compositor_created_callback_;
+  Callback<void()> compositor_created_callback_;
+  Callback<void()> native_viewport_closed_callback_;
 
   gfx::Rect bounds_;
 

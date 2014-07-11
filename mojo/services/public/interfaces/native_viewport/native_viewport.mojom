@@ -21,7 +21,7 @@ interface NativeViewport {
 interface NativeViewportClient {
   OnCreated();
   OnBoundsChanged(Rect bounds);
-  OnDestroyed();
+  OnDestroyed() => ();
   OnEvent(Event event) => ();
 };
 

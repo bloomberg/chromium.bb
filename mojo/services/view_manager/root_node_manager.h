@@ -82,7 +82,8 @@ class MOJO_VIEW_MANAGER_EXPORT RootNodeManager
   };
 
   RootNodeManager(ApplicationConnection* app_connection,
-                  RootViewManagerDelegate* view_manager_delegate);
+                  RootViewManagerDelegate* view_manager_delegate,
+                  const Callback<void()>& native_viewport_closed_callback);
   virtual ~RootNodeManager();
 
   // Returns the id for the next ViewManagerServiceImpl.

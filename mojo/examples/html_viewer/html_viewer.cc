@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/message_loop/message_loop.h"
 #include "mojo/examples/html_viewer/blink_platform_impl.h"
 #include "mojo/examples/html_viewer/html_document_view.h"
 #include "mojo/public/cpp/application/application_connection.h"
@@ -76,6 +77,10 @@ class HTMLViewer : public ApplicationDelegate,
             GetServiceProvider(), view_manager);
     document_view_->AttachToNode(root);
     MaybeLoad();
+  }
+  virtual void OnViewManagerDisconnected(
+      view_manager::ViewManager* view_manager) OVERRIDE {
+    base::MessageLoop::current()->Quit();
   }
 
   void MaybeLoad() {

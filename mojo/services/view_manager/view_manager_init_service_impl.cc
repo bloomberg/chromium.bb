@@ -4,6 +4,7 @@
 
 #include "mojo/services/view_manager/view_manager_init_service_impl.h"
 
+#include "base/bind.h"
 #include "mojo/public/interfaces/service_provider/service_provider.mojom.h"
 #include "mojo/services/view_manager/ids.h"
 #include "mojo/services/view_manager/view_manager_service_impl.h"
@@ -19,7 +20,11 @@ ViewManagerInitServiceImpl::ConnectParams::~ConnectParams() {}
 
 ViewManagerInitServiceImpl::ViewManagerInitServiceImpl(
     ApplicationConnection* connection)
-    : root_node_manager_(connection, this),
+    : root_node_manager_(
+          connection,
+          this,
+          base::Bind(&ViewManagerInitServiceImpl::OnNativeViewportDeleted,
+                     base::Unretained(this))),
       is_tree_host_ready_(false) {
 }
 
@@ -55,6 +60,13 @@ void ViewManagerInitServiceImpl::OnRootViewManagerWindowTreeHostCreated() {
   is_tree_host_ready_ = true;
   if (connect_params_.get())
     MaybeEmbedRoot(connect_params_->url, connect_params_->callback);
+}
+
+void ViewManagerInitServiceImpl::OnNativeViewportDeleted() {
+  // TODO(beng): Should not have to rely on implementation detail of
+  //             InterfaceImpl to close the connection. Instead should simply
+  //             be able to delete this object.
+  internal_state()->router()->CloseMessagePipe();
 }
 
 }  // namespace service

@@ -116,9 +116,11 @@ class WindowTreeClientImpl : public aura::client::WindowTreeClient {
   DISALLOW_COPY_AND_ASSIGN(WindowTreeClientImpl);
 };
 
-RootViewManager::RootViewManager(ApplicationConnection* app_connection,
-                                 RootNodeManager* root_node,
-                                 RootViewManagerDelegate* delegate)
+RootViewManager::RootViewManager(
+    ApplicationConnection* app_connection,
+    RootNodeManager* root_node,
+    RootViewManagerDelegate* delegate,
+    const Callback<void()>& native_viewport_closed_callback)
     : delegate_(delegate),
       root_node_manager_(root_node),
       in_setup_(false) {
@@ -131,7 +133,8 @@ RootViewManager::RootViewManager(ApplicationConnection* app_connection,
         viewport.Pass(),
         gfx::Rect(800, 600),
         base::Bind(&RootViewManager::OnCompositorCreated,
-                   base::Unretained(this))));
+                   base::Unretained(this)),
+        native_viewport_closed_callback));
 }
 
 RootViewManager::~RootViewManager() {

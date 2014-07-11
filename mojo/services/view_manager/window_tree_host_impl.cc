@@ -68,9 +68,11 @@ void RootLayoutManager::SetChildBounds(aura::Window* child,
 WindowTreeHostImpl::WindowTreeHostImpl(
     NativeViewportPtr viewport,
     const gfx::Rect& bounds,
-    const base::Callback<void()>& compositor_created_callback)
+    const Callback<void()>& compositor_created_callback,
+    const Callback<void()>& native_viewport_closed_callback)
     : native_viewport_(viewport.Pass()),
       compositor_created_callback_(compositor_created_callback),
+      native_viewport_closed_callback_(native_viewport_closed_callback),
       bounds_(bounds) {
   native_viewport_.set_client(this);
   native_viewport_->Create(Rect::From(bounds));
@@ -178,8 +180,11 @@ void WindowTreeHostImpl::OnBoundsChanged(RectPtr bounds) {
   OnHostResized(bounds_.size());
 }
 
-void WindowTreeHostImpl::OnDestroyed() {
-  base::MessageLoop::current()->Quit();
+void WindowTreeHostImpl::OnDestroyed(const mojo::Callback<void()>& callback) {
+  DestroyCompositor();
+  native_viewport_closed_callback_.Run();
+  // TODO(beng): quit the message loop once we are on our own thread.
+  callback.Run();
 }
 
 void WindowTreeHostImpl::OnEvent(EventPtr event,

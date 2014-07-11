@@ -13,7 +13,8 @@ class ViewManager;
 
 class ViewManagerDelegate {
  public:
-  virtual void OnRootAdded(ViewManager* view_manager, Node* root) {}
+  virtual void OnRootAdded(ViewManager* view_manager, Node* root) = 0;
+  virtual void OnViewManagerDisconnected(ViewManager* view_manager) = 0;
 
  protected:
   virtual ~ViewManagerDelegate() {}

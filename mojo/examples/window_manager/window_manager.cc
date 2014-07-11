@@ -18,7 +18,6 @@
 #include "mojo/services/public/cpp/view_manager/view_event_dispatcher.h"
 #include "mojo/services/public/cpp/view_manager/view_manager.h"
 #include "mojo/services/public/cpp/view_manager/view_manager_delegate.h"
-#include "mojo/services/public/cpp/view_manager/view_observer.h"
 #include "mojo/services/public/interfaces/input_events/input_events.mojom.h"
 #include "mojo/services/public/interfaces/launcher/launcher.mojom.h"
 #include "mojo/services/public/interfaces/navigation/navigation.mojom.h"
@@ -189,7 +188,6 @@ class RootLayoutManager : public NodeObserver {
 
 class WindowManager : public ApplicationDelegate,
                       public DebugPanel::Delegate,
-                      public ViewObserver,
                       public ViewManagerDelegate,
                       public ViewEventDispatcher {
  public:
@@ -280,22 +278,26 @@ class WindowManager : public ApplicationDelegate,
     view_manager_ = view_manager;
     view_manager_->SetEventDispatcher(this);
 
-    Node* node = Node::Create(view_manager);
+    Node* node = Node::Create(view_manager_);
     root->AddChild(node);
     node->SetBounds(gfx::Rect(root->bounds().size()));
     content_node_id_ = node->id();
 
     root_layout_manager_.reset(
-        new RootLayoutManager(view_manager, root, content_node_id_));
+        new RootLayoutManager(view_manager_, root, content_node_id_));
     root->AddObserver(root_layout_manager_.get());
 
-    View* view = View::Create(view_manager);
+    View* view = View::Create(view_manager_);
     node->SetActiveView(view);
     view->SetColor(SK_ColorBLUE);
-    view->AddObserver(this);
 
     CreateLauncherUI();
     CreateControlPanel(node);
+  }
+  virtual void OnViewManagerDisconnected(ViewManager* view_manager) OVERRIDE {
+    DCHECK_EQ(view_manager_, view_manager);
+    view_manager_ = NULL;
+    base::MessageLoop::current()->Quit();
   }
 
   // Overridden from ViewEventDispatcher:

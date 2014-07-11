@@ -91,6 +91,7 @@ NativeWidgetViewManager::NativeWidgetViewManager(
     views::internal::NativeWidgetDelegate* delegate, view_manager::Node* node)
     : NativeWidgetAura(delegate),
       node_(node) {
+  node_->AddObserver(this);
   node_->active_view()->AddObserver(this);
   window_tree_host_.reset(new WindowTreeHostMojo(node_, this));
   window_tree_host_->InitHost();
@@ -112,7 +113,9 @@ NativeWidgetViewManager::NativeWidgetViewManager(
 }
 
 NativeWidgetViewManager::~NativeWidgetViewManager() {
-  node_->active_view()->RemoveObserver(this);
+  if (node_->active_view())
+    node_->active_view()->RemoveObserver(this);
+  node_->RemoveObserver(this);
 }
 
 void NativeWidgetViewManager::InitNativeWidget(
@@ -127,6 +130,20 @@ void NativeWidgetViewManager::InitNativeWidget(
 void NativeWidgetViewManager::CompositorContentsChanged(
     const SkBitmap& bitmap) {
   node_->active_view()->SetContents(bitmap);
+}
+
+void NativeWidgetViewManager::OnNodeDestroyed(view_manager::Node* node) {
+  window_tree_host_.reset();
+}
+
+void NativeWidgetViewManager::OnNodeActiveViewChanged(
+    view_manager::Node* node,
+    view_manager::View* old_view,
+    view_manager::View* new_view) {
+  if (old_view)
+    old_view->RemoveObserver(this);
+  if (new_view)
+    new_view->AddObserver(this);
 }
 
 void NativeWidgetViewManager::OnViewInputEvent(view_manager::View* view,

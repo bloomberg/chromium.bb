@@ -62,7 +62,9 @@ class Delegate : public mojo::ApplicationDelegate {
 extern "C" APPLICATION_EXPORT MojoResult CDECL MojoMain(
     MojoHandle shell_handle) {
   base::CommandLine::Init(0, NULL);
+#if !defined(COMPONENT_BUILD)
   base::AtExitManager at_exit;
+#endif
 
   // The IO message loop allows us to use net::URLRequest on this thread.
   base::MessageLoopForIO loop;

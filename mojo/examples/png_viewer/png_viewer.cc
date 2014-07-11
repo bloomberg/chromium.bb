@@ -4,6 +4,7 @@
 
 #include <algorithm>
 
+#include "base/message_loop/message_loop.h"
 #include "base/strings/string_tokenizer.h"
 #include "mojo/examples/media_viewer/media_viewer.mojom.h"
 #include "mojo/public/cpp/application/application_connection.h"
@@ -165,6 +166,10 @@ class PNGViewer : public ApplicationDelegate,
     content_view_->SetColor(SK_ColorGRAY);
     if (!bitmap_.isNull())
       DrawBitmap();
+  }
+  virtual void OnViewManagerDisconnected(
+      view_manager::ViewManager* view_manager) OVERRIDE {
+    base::MessageLoop::current()->Quit();
   }
 
   void DrawBitmap() {

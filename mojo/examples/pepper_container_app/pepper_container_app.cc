@@ -55,7 +55,7 @@ class PepperContainerApp: public ApplicationDelegate,
       plugin_instance_.reset();
   }
 
-  virtual void OnDestroyed() OVERRIDE {
+  virtual void OnDestroyed(const mojo::Callback<void()>& callback) OVERRIDE {
     ppapi::ProxyAutoLock lock;
 
     if (plugin_instance_) {
@@ -64,6 +64,7 @@ class PepperContainerApp: public ApplicationDelegate,
     }
 
     base::MessageLoop::current()->Quit();
+    callback.Run();
   }
 
   virtual void OnBoundsChanged(RectPtr bounds) OVERRIDE {

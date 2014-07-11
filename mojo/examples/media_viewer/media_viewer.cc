@@ -297,6 +297,12 @@ class MediaViewer : public ApplicationDelegate,
                request->response_details.Pass());
     }
   }
+  virtual void OnViewManagerDisconnected(
+      view_manager::ViewManager* view_manager) OVERRIDE {
+    DCHECK_EQ(view_manager_, view_manager);
+    view_manager_ = NULL;
+    base::MessageLoop::current()->Quit();
+  }
 
   // Overridden from ControlPanel::Delegate:
   virtual void ButtonPressed(ControlPanel::ControlType type) OVERRIDE {

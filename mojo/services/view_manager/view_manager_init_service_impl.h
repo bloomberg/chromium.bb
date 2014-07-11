@@ -57,6 +57,8 @@ class MOJO_VIEW_MANAGER_EXPORT ViewManagerInitServiceImpl
   // RootViewManagerDelegate overrides:
   virtual void OnRootViewManagerWindowTreeHostCreated() OVERRIDE;
 
+  void OnNativeViewportDeleted();
+
   ServiceProvider* service_provider_;
 
   RootNodeManager root_node_manager_;

@@ -42,12 +42,17 @@ RootNodeManager::Context::~Context() {
   aura::Env::DeleteInstance();
 }
 
-RootNodeManager::RootNodeManager(ApplicationConnection* app_connection,
-                                 RootViewManagerDelegate* view_manager_delegate)
+RootNodeManager::RootNodeManager(
+    ApplicationConnection* app_connection,
+    RootViewManagerDelegate* view_manager_delegate,
+    const Callback<void()>& native_viewport_closed_callback)
     : app_connection_(app_connection),
       next_connection_id_(1),
       next_server_change_id_(1),
-      root_view_manager_(app_connection, this, view_manager_delegate),
+      root_view_manager_(app_connection,
+                         this,
+                         view_manager_delegate,
+                         native_viewport_closed_callback),
       root_(new Node(this, RootNodeId())),
       current_change_(NULL) {
 }
