@@ -141,7 +141,7 @@ void PasswordManager::ProvisionallySavePassword(const PasswordForm& form) {
   }
 
   // No password to save? Then don't.
-  if (form.password_value.empty()) {
+  if (form.password_value.empty() && form.new_password_value.empty()) {
     RecordFailure(EMPTY_PASSWORD, form.origin.host(), logger.get());
     return;
   }
