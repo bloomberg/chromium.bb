@@ -208,7 +208,7 @@ public:
 
 #if !ENABLE(OILPAN)
 protected:
-    ~ScriptWrappable()
+    virtual ~ScriptWrappable()
     {
         // We must not get deleted as long as we contain a wrapper. If this happens, we screwed up ref
         // counting somewhere. Crash here instead of crashing during a later gc cycle.
