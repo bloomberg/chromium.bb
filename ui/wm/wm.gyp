@@ -100,7 +100,6 @@
       'dependencies': [
         '../../skia/skia.gyp:skia',
         '../aura/aura.gyp:aura',
-        '../base/ui_base.gyp:ui_base',
         '../events/events.gyp:events',
         '../events/events.gyp:events_base',
       ],

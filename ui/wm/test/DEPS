@@ -1,6 +1,5 @@
 include_rules = [
   "+ui/aura",
-  "+ui/base/ime/text_input_focus_manager.h",
   "+ui/base/resource/resource_bundle.h",
   "+ui/base/ui_base_paths.h",
   "+ui/gl",

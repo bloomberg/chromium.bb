@@ -8,7 +8,6 @@
 #include "ui/aura/env.h"
 #include "ui/aura/test/test_focus_client.h"
 #include "ui/aura/window.h"
-#include "ui/base/ime/text_input_focus_manager.h"
 #include "ui/wm/core/compound_event_filter.h"
 #include "ui/wm/core/default_activation_client.h"
 #include "ui/wm/core/input_method_event_filter.h"
@@ -17,7 +16,6 @@ namespace wm {
 
 WMTestHelper::WMTestHelper(const gfx::Size& default_window_size,
                            ui::ContextFactory* context_factory) {
-  ui::TextInputFocusManager::GetInstance()->FocusTextInputClient(NULL);
   aura::Env::CreateInstance(true);
   aura::Env::GetInstance()->set_context_factory(context_factory);
   host_.reset(aura::WindowTreeHost::Create(gfx::Rect(default_window_size)));
@@ -43,7 +41,6 @@ WMTestHelper::WMTestHelper(const gfx::Size& default_window_size,
 
 WMTestHelper::~WMTestHelper() {
   root_window_event_filter_->RemoveHandler(input_method_filter_.get());
-  ui::TextInputFocusManager::GetInstance()->FocusTextInputClient(NULL);
 }
 
 aura::Window* WMTestHelper::GetDefaultParent(aura::Window* context,
