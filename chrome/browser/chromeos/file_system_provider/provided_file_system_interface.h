@@ -100,6 +100,15 @@ class ProvidedFileSystemInterface {
                         int length,
                         const ReadChunkReceivedCallback& callback) = 0;
 
+  // Requests creating a directory. If |recursive| is passed, then all non
+  // existing directories on the path will be created. If |exclusive| is true,
+  // then creating the directory will fail, if it already exists.
+  virtual void CreateDirectory(
+      const base::FilePath& directory_path,
+      bool exclusive,
+      bool recursive,
+      const fileapi::AsyncFileUtil::StatusCallback& callback) = 0;
+
   // Returns a provided file system info for this file system.
   virtual const ProvidedFileSystemInfo& GetFileSystemInfo() const = 0;
 

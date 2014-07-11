@@ -5,11 +5,6 @@
 'use strict';
 
 /**
- * @type {DOMFileSystem}
- */
-var fileSystem = null;
-
-/**
  * @type {string}
  * @const
  */

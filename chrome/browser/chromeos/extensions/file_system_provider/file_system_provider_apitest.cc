@@ -74,4 +74,10 @@ IN_PROC_BROWSER_TEST_F(FileSystemProviderApiTest, MimeType) {
       << message_;
 }
 
+IN_PROC_BROWSER_TEST_F(FileSystemProviderApiTest, CreateDirectory) {
+  ASSERT_TRUE(RunPlatformAppTestWithFlags(
+      "file_system_provider/create_directory", kFlagLoadAsComponent))
+      << message_;
+}
+
 }  // namespace extensions

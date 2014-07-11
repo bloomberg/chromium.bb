@@ -57,6 +57,11 @@ class ProvidedFileSystem : public ProvidedFileSystemInterface {
                         int64 offset,
                         int length,
                         const ReadChunkReceivedCallback& callback) OVERRIDE;
+  virtual void CreateDirectory(
+      const base::FilePath& directory_path,
+      bool exclusive,
+      bool recursive,
+      const fileapi::AsyncFileUtil::StatusCallback& callback) OVERRIDE;
   virtual const ProvidedFileSystemInfo& GetFileSystemInfo() const OVERRIDE;
   virtual RequestManager* GetRequestManager() OVERRIDE;
   virtual base::WeakPtr<ProvidedFileSystemInterface> GetWeakPtr() OVERRIDE;

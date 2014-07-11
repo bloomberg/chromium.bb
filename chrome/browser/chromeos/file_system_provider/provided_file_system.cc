@@ -8,6 +8,7 @@
 #include "base/files/file.h"
 #include "chrome/browser/chromeos/file_system_provider/notification_manager.h"
 #include "chrome/browser/chromeos/file_system_provider/operations/close_file.h"
+#include "chrome/browser/chromeos/file_system_provider/operations/create_directory.h"
 #include "chrome/browser/chromeos/file_system_provider/operations/get_metadata.h"
 #include "chrome/browser/chromeos/file_system_provider/operations/open_file.h"
 #include "chrome/browser/chromeos/file_system_provider/operations/read_directory.h"
@@ -126,6 +127,24 @@ void ProvidedFileSystem::CloseFile(
           scoped_ptr<RequestManager::HandlerInterface>(
               new operations::CloseFile(
                   event_router_, file_system_info_, file_handle, callback)))) {
+    callback.Run(base::File::FILE_ERROR_SECURITY);
+  }
+}
+
+void ProvidedFileSystem::CreateDirectory(
+    const base::FilePath& directory_path,
+    bool exclusive,
+    bool recursive,
+    const fileapi::AsyncFileUtil::StatusCallback& callback) {
+  if (!request_manager_.CreateRequest(
+          CREATE_DIRECTORY,
+          scoped_ptr<RequestManager::HandlerInterface>(
+              new operations::CreateDirectory(event_router_,
+                                              file_system_info_,
+                                              directory_path,
+                                              exclusive,
+                                              recursive,
+                                              callback)))) {
     callback.Run(base::File::FILE_ERROR_SECURITY);
   }
 }

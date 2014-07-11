@@ -5,11 +5,6 @@
 'use strict';
 
 /**
- * @type {DOMFileSystem}
- */
-var fileSystem = null;
-
-/**
  * Map of opened files, from a <code>openRequestId</code> to <code>filePath
  * </code>.
  * @type {Object.<number, string>}
