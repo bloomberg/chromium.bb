@@ -42,6 +42,12 @@ if ($_POST["submit"] == "finish") {
         echo "xhr.send(null);";
         echo "</script>";
     }
+    // Evict resources in memory cache before re-posting. Otherwise, it will
+    // always PASS.
+    echo "<script>";
+    echo "if (window.internals)";
+    echo "  window.internals.evictAllResources();";
+    echo "</script>";
     echo "<img src='resources/post-image-to-verify.php' onload=\"logAndFinish('PASS');\" onerror=\"logAndFinish('FAIL');\"></img>";
 } else {
     echo "<form action='post-with-cached-subresources.php' method='post'>";

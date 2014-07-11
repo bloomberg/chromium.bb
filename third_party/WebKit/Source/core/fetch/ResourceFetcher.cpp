@@ -833,8 +833,11 @@ ResourceRequestCachePolicy ResourceFetcher::resourceRequestCachePolicy(const Res
         // For POST requests, we mutate the main resource's cache policy to avoid form resubmission.
         // This policy should not be inherited by subresources.
         ResourceRequestCachePolicy mainResourceCachePolicy = m_documentLoader->request().cachePolicy();
-        if (mainResourceCachePolicy == ReturnCacheDataDontLoad)
-            return ReturnCacheDataElseLoad;
+        if (m_documentLoader->request().httpMethod() == "POST") {
+            if (mainResourceCachePolicy == ReturnCacheDataDontLoad)
+                return ReturnCacheDataElseLoad;
+            return UseProtocolCachePolicy;
+        }
         return mainResourceCachePolicy;
     }
     return UseProtocolCachePolicy;
