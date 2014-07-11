@@ -571,7 +571,7 @@ typedef unrestricted float GLclampf;
 
     DOMString?   getShaderSource(WebGLShader? shader);
 
-    [Custom] sequence<DOMString> getSupportedExtensions();
+    sequence<DOMString>? getSupportedExtensions();
 
     [Custom] any getTexParameter(GLenum target, GLenum pname);
 

@@ -470,21 +470,6 @@ void V8WebGLRenderingContext::getShaderParameterMethodCustom(const v8::FunctionC
     v8SetReturnValue(info, toV8Object(args, info.Holder(), info.GetIsolate()));
 }
 
-void V8WebGLRenderingContext::getSupportedExtensionsMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    WebGLRenderingContext* impl = V8WebGLRenderingContext::toNative(info.Holder());
-    if (impl->isContextLost()) {
-        v8SetReturnValueNull(info);
-        return;
-    }
-
-    Vector<String> value = impl->getSupportedExtensions();
-    v8::Local<v8::Array> array = v8::Array::New(info.GetIsolate(), value.size());
-    for (size_t ii = 0; ii < value.size(); ++ii)
-        array->Set(v8::Integer::New(info.GetIsolate(), ii), v8String(info.GetIsolate(), value[ii]));
-    v8SetReturnValue(info, array);
-}
-
 void V8WebGLRenderingContext::getTexParameterMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "getTexParameter", "WebGLRenderingContext", info.Holder(), info.GetIsolate());

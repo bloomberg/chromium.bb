@@ -2600,11 +2600,12 @@ String WebGLRenderingContextBase::getShaderSource(WebGLShader* shader)
     return ensureNotNull(shader->source());
 }
 
-Vector<String> WebGLRenderingContextBase::getSupportedExtensions()
+Nullable<Vector<String> > WebGLRenderingContextBase::getSupportedExtensions()
 {
-    Vector<String> result;
     if (isContextLost())
-        return result;
+        return Nullable<Vector<String> >();
+
+    Vector<String> result;
 
     for (size_t i = 0; i < m_extensions.size(); ++i) {
         ExtensionTracker* tracker = m_extensions[i];

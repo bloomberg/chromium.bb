@@ -26,6 +26,7 @@
 #ifndef WebGLRenderingContextBase_h
 #define WebGLRenderingContextBase_h
 
+#include "bindings/core/v8/Nullable.h"
 #include "core/dom/ActiveDOMObject.h"
 #include "core/html/canvas/CanvasRenderingContext.h"
 #include "core/html/canvas/WebGLExtensionName.h"
@@ -200,7 +201,7 @@ public:
     String getShaderInfoLog(WebGLShader*);
     PassRefPtr<WebGLShaderPrecisionFormat> getShaderPrecisionFormat(GLenum shaderType, GLenum precisionType);
     String getShaderSource(WebGLShader*);
-    Vector<String> getSupportedExtensions();
+    Nullable<Vector<String> > getSupportedExtensions();
     WebGLGetInfo getTexParameter(GLenum target, GLenum pname);
     WebGLGetInfo getUniform(WebGLProgram*, const WebGLUniformLocation*);
     PassRefPtr<WebGLUniformLocation> getUniformLocation(WebGLProgram*, const String&);
