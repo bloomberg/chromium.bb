@@ -2139,7 +2139,7 @@ Even if you have downloaded files from this website before, the website might ha
           Chrome will keep running while Chrome Apps are open.
         </message>
         <message name="IDS_QUIT_WITH_APPS_QUIT_LABEL" desc="Button text to quit all running Chrome apps.">
-          Quit all apps
+          Quit all Chrome Apps
         </message>
         <message name="IDS_QUIT_WITH_APPS_SUPPRESSION_LABEL" desc="Button text to prevent a notification from showing in future.">
           Don't show this again

@@ -586,7 +586,7 @@ Google Chrome is unable to recover your settings.
       <!-- Quit all apps confirmation dialog -->
       <if expr="is_macosx">
         <message name="IDS_QUIT_WITH_APPS_TITLE" desc="Title for a notification explaining that Chrome is running in the background.">
-          Google Chrome is running in the background.
+          Google Chrome is in background mode.
         </message>
       </if>
 
