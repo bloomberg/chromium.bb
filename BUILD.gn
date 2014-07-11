@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("ffmpeg_options.gni")
+import("ffmpeg_generated.gni")
 
 # Path to platform configuration files.
 platform_config_root =
@@ -19,7 +20,6 @@ sig_files = [ "chromium/ffmpegsumo.sigs" ]
 stubs_filename_root = "ffmpeg_stubs"
 
 if (cpu_arch != "arm" && os_config != "linux-noasm") {
-  import("ffmpeg_generated.gni")
   import("//third_party/yasm/yasm_assemble.gni")
   yasm_assemble("ffmpeg_yasm") {
     sources = ffmpeg_yasm_sources
