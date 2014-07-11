@@ -375,7 +375,7 @@ void ApplyStyleCommand::applyRelativeFontStyleChange(EditingStyle* style)
 
     // Store away font size before making any changes to the document.
     // This ensures that changes to one node won't effect another.
-    HashMap<Node*, float> startingFontSizes;
+    WillBeHeapHashMap<RawPtrWillBeMember<Node>, float> startingFontSizes;
     for (Node* node = startNode; node != beyondEnd; node = NodeTraversal::next(*node)) {
         ASSERT(node);
         startingFontSizes.set(node, computedFontSize(node));

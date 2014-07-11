@@ -253,7 +253,7 @@ const DestinationInsertionPoints* ElementShadow::destinationInsertionPointsFor(c
 void ElementShadow::distribute()
 {
     host()->setNeedsStyleRecalc(SubtreeStyleChange);
-    Vector<HTMLShadowElement*, 32> shadowInsertionPoints;
+    WillBeHeapVector<RawPtrWillBeMember<HTMLShadowElement>, 32> shadowInsertionPoints;
     DistributionPool pool(*host());
 
     for (ShadowRoot* root = youngestShadowRoot(); root; root = root->olderShadowRoot()) {

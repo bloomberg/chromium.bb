@@ -225,7 +225,7 @@ static void pushFullyClippedState(BitStack& stack, Node* node)
 static void setUpFullyClippedStack(BitStack& stack, Node* node)
 {
     // Put the nodes in a vector so we can iterate in reverse order.
-    Vector<Node*, 100> ancestry;
+    WillBeHeapVector<RawPtrWillBeMember<Node>, 100> ancestry;
     for (Node* parent = node->parentOrShadowHostNode(); parent; parent = parent->parentOrShadowHostNode())
         ancestry.append(parent);
 
