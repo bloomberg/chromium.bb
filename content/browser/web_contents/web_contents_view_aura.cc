@@ -362,6 +362,10 @@ void PrepareDragData(const DropData& drop_data,
   if (!drop_data.file_contents.empty())
     PrepareDragForFileContents(drop_data, provider);
 #endif
+  // Call SetString() before SetURL() when we actually have a custom string.
+  // SetURL() will itself do SetString() when a string hasn't been set yet,
+  // but we want to prefer drop_data.text.string() over the URL string if it
+  // exists.
   if (!drop_data.text.string().empty())
     provider->SetString(drop_data.text.string());
   if (drop_data.url.is_valid())

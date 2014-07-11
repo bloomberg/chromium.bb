@@ -127,6 +127,9 @@ bool OSExchangeDataProviderAuraX11::DidOriginateFromRenderer() const {
 }
 
 void OSExchangeDataProviderAuraX11::SetString(const base::string16& text_data) {
+  if (HasString())
+    return;
+
   std::string utf8 = base::UTF16ToUTF8(text_data);
   scoped_refptr<base::RefCountedMemory> mem(
       base::RefCountedString::TakeString(&utf8));

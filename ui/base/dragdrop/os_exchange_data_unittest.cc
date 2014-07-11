@@ -70,6 +70,28 @@ TEST_F(OSExchangeDataTest, TestURLExchangeFormats) {
   EXPECT_EQ(url_spec, base::UTF16ToUTF8(output_string));
 }
 
+// Test that setting the URL does not overwrite a previously set custom string.
+TEST_F(OSExchangeDataTest, URLAndString) {
+  OSExchangeData data;
+  base::string16 string = base::ASCIIToUTF16("I can has cheezburger?");
+  data.SetString(string);
+  std::string url_spec = "http://www.google.com/";
+  GURL url(url_spec);
+  base::string16 url_title = base::ASCIIToUTF16("www.google.com");
+  data.SetURL(url, url_title);
+
+  base::string16 output_string;
+  EXPECT_TRUE(data.GetString(&output_string));
+  EXPECT_EQ(string, output_string);
+
+  GURL output_url;
+  base::string16 output_title;
+  EXPECT_TRUE(data.GetURLAndTitle(
+      OSExchangeData::CONVERT_FILENAMES, &output_url, &output_title));
+  EXPECT_EQ(url_spec, output_url.spec());
+  EXPECT_EQ(url_title, output_title);
+}
+
 TEST_F(OSExchangeDataTest, TestPickledData) {
   const OSExchangeData::CustomFormat kTestFormat =
       ui::Clipboard::GetFormatType("application/vnd.chromium.test");

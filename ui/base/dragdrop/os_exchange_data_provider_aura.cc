@@ -44,6 +44,9 @@ bool OSExchangeDataProviderAura::DidOriginateFromRenderer() const {
 }
 
 void OSExchangeDataProviderAura::SetString(const base::string16& data) {
+  if (HasString())
+    return;
+
   string_ = data;
   formats_ |= OSExchangeData::STRING;
 }
