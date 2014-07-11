@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ml">
-<translation id="777702478322588152">പ്രിഫെക്ചര്‍</translation>
+<translation id="777702478322588152">പ്രിഫെക്‌ചർ</translation>
 <translation id="3098361409928899613">സ്‌ട്രീറ്റ് വിലാസം</translation>
 <translation id="2051050972662658124">കമ്പനി</translation>
 <translation id="8439516961404593852">പാരിഷ് അസാധുവാണ്</translation>
@@ -16,14 +16,14 @@
 <translation id="7126440494981488324">CEDEX</translation>
 <translation id="5388642860747844727">തപാൽ കോഡ് അസാധുവാണ്</translation>
 <translation id="4324055159384742341">പിൻ കോഡ്</translation>
-<translation id="3174168572213147020">ഐസ്‌ലാന്‍റ്</translation>
+<translation id="3174168572213147020">ഐലന്‍ഡ്</translation>
 <translation id="4633065712685282143">പ്രവിശ്യ അസാധുവാണ്</translation>
 <translation id="7139724024395191329">എമിറേറ്റ്</translation>
 <translation id="6911757819733577195">എമിറേറ്റ് അസാധുവാണ്</translation>
 <translation id="1109975963117329533">രാജ്യം അസാധുവാണ്</translation>
 <translation id="6970216967273061347">ജില്ല</translation>
-<translation id="6207937957461833379">രാജ്യം / പ്രദേശം</translation>
-<translation id="5089810972385038852">സംസ്ഥാനം</translation>
+<translation id="6207937957461833379">രാജ്യം/പ്രവിശ്യ</translation>
+<translation id="5089810972385038852">സ്റ്റേറ്റ്</translation>
 <translation id="8038820434766881602">ഏരിയ അസാധുവാണ്</translation>
 <translation id="3762468803736810423">ദ്വീപ് അസാധുവാണ്</translation>
 <translation id="389443962449018712">ഡു</translation>

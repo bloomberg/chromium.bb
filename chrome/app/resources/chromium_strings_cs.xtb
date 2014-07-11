@@ -56,6 +56,7 @@ Některé funkce možná nebudou k dispozici a změny nastavení se neuloží.</
 <translation id="4831257561365056138">Odinstalovat spouštěč aplikací Chromium</translation>
 <translation id="4222580632002216401">Nyní jste v prohlížeči Chromium přihlášeni. Synchronizace je ale deaktivována správcem.</translation>
 <translation id="4207043877577553402"><ph name="BEGIN_BOLD"/>Upozornění:<ph name="END_BOLD"/> Chromium nemůže rozšířením zabránit v zaznamenávání vaší historie prohlížení. Chcete-li toto rozšíření v anonymním režimu deaktivovat, zrušte výběr této možnosti.</translation>
+<translation id="4516868174453854611">Nyní, když jste přihlášeni, si můžete zpřístupnit karty, záložky a další obsah prohlížeče Chromium v notebooku, telefonu a tabletu. Navíc budete dostávat relevantnější návrhy a tipy týkající se služeb Google.</translation>
 <translation id="985602178874221306">Autoři prohlížeče Chromium</translation>
 <translation id="8628626585870903697">Chromium neobsahuje prohlížeč PDF, který je požadován ke správnému fungování Náhledu tisku.</translation>
 <translation id="7138853919861947730">Chromium vám může usnadnit prohlížení pomocí webových služeb.</translation>
@@ -109,7 +110,6 @@ Některé funkce možná nebudou k dispozici a změny nastavení se neuloží.</
 <translation id="3258596308407688501">Chromium nemůže číst ani zapisovat do svého datového adresáře:
 
 <ph name="USER_DATA_DIRECTORY"/></translation>
-<translation id="1869480248812203386">Automatickým hlášením podrobností o možných bezpečnostních incidentech do Googlu můžete pomoci zrychlit projekt Chromium a usnadnit jeho používání.</translation>
 <translation id="6970811910055250180">Aktualizace zařízení...</translation>
 <translation id="2485422356828889247">Odinstalovat</translation>
 <translation id="85843667276690461">Pomoc s používáním prohlížeče Chromium</translation>
@@ -118,6 +118,7 @@ Některé funkce možná nebudou k dispozici a změny nastavení se neuloží.</
 <translation id="8493179195440786826">Prohlížeč Chromium je zastaralý</translation>
 <translation id="911206726377975832">Vymazat také všechna data procházení?</translation>
 <translation id="95514773681268843">Doména <ph name="DOMAIN"/> vyžaduje, abyste si před použitím tohoto zařízení přečetli následující smluvní podmínky a odsouhlasili je. Tyto smluvní podmínky nerozšiřují, neupravují ani neomezují smluvní podmínky systému Chromium OS.</translation>
+<translation id="5603085937604338780">chromium</translation>
 <translation id="1699664235656412242">Zavřete všechna okna prohlížeče Chromium (včetně oken v režimu Windows 8) a zkuste to znovu.</translation>
 <translation id="6734080038664603509">Aktualizovat &amp;Chromium</translation>
 <translation id="8862326446509486874">Nemáte práva nutná k provádění instalací na úrovni systému. Zkuste spustit instalační program jako správce.</translation>
@@ -163,7 +164,7 @@ Některé funkce možná nebudou k dispozici a změny nastavení se neuloží.</
           <ph name="PROXIES_TITLE"/>
           &gt;
           Nastavení místní sítě (LAN)
-          a zrušte zaškrtnutí políčka Použít pro síť LAN server proxy.</translation>
+          a zrušte zaškrtnutí políčka Použít pro síť LAN proxy server.</translation>
 <translation id="8621669128220841554">Instalace se z neznámého důvodu nezdařila. Stáhněte prosím Chromium znovu.</translation>
 <translation id="6717134281241384636">Nelze použít váš profil, protože byl vytvořen v novější verzi prohlížeče Chromium.
 
@@ -226,7 +227,6 @@ Pokud se přesto přihlásíte, budou data prohlížeče Chromium (například z
 <translation id="9013262824292842194">Chromium vyžaduje operační systém Windows Vista nebo Windows XP SP2 nebo vyšší.</translation>
 <translation id="1967743265616885482">O modulu se stejným názvem je známo, že u něj dochází ke konfliktu s prohlížečem Chromium.</translation>
 <translation id="8704119203788522458">Toto je váš prohlížeč Chromium</translation>
-<translation id="8269379391216269538">Pomozte projekt Chromium vylepšit</translation>
 <translation id="4224199872375172890">Chromium je aktuální.</translation>
 <translation id="374481098568514319">V tomto počítači je již používána novější verze komponent aplikace Chromium. Použijte prosím novější instalátor.</translation>
 <translation id="6240281849816458190">Pokusili jste se přejít na server &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, ale server předložil certifikát, který ještě není platný. Nejsou k dispozici žádné informace, které by naznačovaly, zda je možné certifikátu důvěřovat. Aplikace Chromium nemůže spolehlivě zaručit, že komunikujete se serverem &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, a nikoli s útočníkem. Čas ve vašem počítači je aktuálně nastaven na <ph name="CURRENT_TIME"/>. Je to v pořádku? Pokud ne, měli byste chybu opravit a stránku načíst znovu.</translation>

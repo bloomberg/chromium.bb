@@ -275,7 +275,7 @@
 <translation id="5304943142864553931">Tab &quot;<ph name="TITLE"/>&quot;</translation>
 <translation id="6259464875943891919"><ph name="TYPE"/> beendet</translation>
 <translation id="1339428534620983148">Vorherige Tabellenspalte</translation>
-<translation id="6508059270146105198">Brailledisplay ans Seitenende verschieben</translation>
+<translation id="6508059270146105198">Braillezeile ans Seitenende verschieben</translation>
 <translation id="1727806147743597030">ftr</translation>
 <translation id="1483063550735695469">tr itm</translation>
 <translation id="2998131015536248178">Vorheriges Zeichen</translation>
@@ -403,7 +403,7 @@
 <translation id="9178973770513562274">Drücken Sie die Aufwärtspfeil- bzw. Abwärtspfeil-Taste, um den Inhalt zu durchsuchen, oder geben Sie eine Suchanfrage ein.</translation>
 <translation id="2593964970061769085">Diese Seite enthält <ph name="NUM"/> Benachrichtigungen.</translation>
 <translation id="712735679809149106">Wortecho</translation>
-<translation id="5041394372352067729">Brailledisplay an den Seitenanfang verschieben</translation>
+<translation id="5041394372352067729">Braillezeile an den Seitenanfang verschieben</translation>
 <translation id="5955304353782037793">app</translation>
 <translation id="404803211695627272"><ph name="V1"/>–<ph name="V2"/></translation>
 <translation id="7895896691902835279">Unbekannter Link</translation>

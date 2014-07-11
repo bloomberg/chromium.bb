@@ -6,9 +6,9 @@
 <translation id="2051050972662658124">Firma</translation>
 <translation id="8439516961404593852">Nieprawidłowa gmina</translation>
 <translation id="6327653052522436195">Miasto</translation>
-<translation id="6839929833149231406">Region</translation>
+<translation id="6839929833149231406">Dzielnica</translation>
 <translation id="8912409183643804845">Nieprawidłowy kod pocztowy</translation>
-<translation id="3885155851504623709">Parafia</translation>
+<translation id="3885155851504623709">Gmina</translation>
 <translation id="7087282848513945231">Hrabstwo</translation>
 <translation id="775297008183122718">Nieprawidłowy wpis</translation>
 <translation id="3115392440335510071">Nieprawidłowe miasto</translation>
@@ -21,7 +21,7 @@
 <translation id="7139724024395191329">Emirat</translation>
 <translation id="6911757819733577195">Nieprawidłowy emirat</translation>
 <translation id="1109975963117329533">Nieprawidłowe hrabstwo</translation>
-<translation id="6970216967273061347">Dystrykt</translation>
+<translation id="6970216967273061347">Okręg</translation>
 <translation id="6207937957461833379">Kraj/region</translation>
 <translation id="5089810972385038852">Stan</translation>
 <translation id="8038820434766881602">Nieprawidłowy region</translation>
@@ -33,7 +33,7 @@
 <translation id="2735748245117253315">Kod pocztowy</translation>
 <translation id="545491265027533869">Nieprawidłowa prowincja</translation>
 <translation id="6783392231122911543">Pole jest wymagane</translation>
-<translation id="5095208057601539847">Region</translation>
+<translation id="5095208057601539847">Prowincja</translation>
 <translation id="9006504626951158991">Osoba kontaktowa</translation>
 <translation id="2668249364995615760">Nieprawidłowa prefektura</translation>
 </translationbundle>

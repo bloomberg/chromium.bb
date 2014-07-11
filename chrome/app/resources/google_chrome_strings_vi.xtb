@@ -25,7 +25,6 @@
 <translation id="4891791193823137474">Để Google Chrome chạy trên nền</translation>
 <translation id="110877069173485804">Đây là Chrome của bạn</translation>
 <translation id="1376881911183620035">Cảm ơn bạn đã dùng thử Chrome mới. Chrome cần khởi động lại để đảm bảo rằng bạn đã lưu mọi công việc đang mở trước khi tiếp tục.</translation>
-<translation id="8406086379114794905">Giúp cải thiện Chrome tốt hơn</translation>
 <translation id="2896252579017640304">Chạy ứng dụng Chrome</translation>
 <translation id="2721687379934343312">Trên máy Mac, mật khẩu được lưu vào Keychain và có thể được truy cập hoặc đồng bộ hóa bởi những người dùng Chrome khác dùng chung tài khoản OS X này.</translation>
 <translation id="683440813066116847">Quy tắc kết nối để Google Chrome Canary cho phép lưu lượng truy cập mDNS.</translation>
@@ -126,7 +125,6 @@ Một số tính năng có thể không khả dụng. Vui lòng chỉ định th
 <translation id="911206726377975832">Bạn cũng muốn xóa dữ liệu duyệt web của mình?</translation>
 <translation id="2036562258783619899">Xem trước Chrome mới</translation>
 <translation id="5855036575689098185">Phần mềm đang chạy trên máy tính của bạn không tương thích với Google Chrome.</translation>
-<translation id="7164397146364144019">Bạn có thể giúp Chrome an toàn và dễ sử dụng hơn bằng cách tự động báo cáo với Google chi tiết về sự cố bảo mật có thể xảy ra.</translation>
 <translation id="8008534537613507642">Cài đặt lại Chrome</translation>
 <translation id="2044287590254833138">Thanh công cụ Google Chrome</translation>
 <translation id="8862326446509486874">Bạn không có quyền thích hợp để cài đặt cấp hệ thống. Thử chạy lại trình cài đặt với vai trò Quản trị viên.</translation>
@@ -135,6 +133,7 @@ Một số tính năng có thể không khả dụng. Vui lòng chỉ định th
 <translation id="7436949144778751379">Google Chrome yêu cầu Windows XP hoặc phiên bản mới hơn. Một số tính năng không thể hoạt động.</translation>
 <translation id="5877064549588274448">Kênh đã thay đổi. Hãy khởi động lại thiết bị để áp dụng thay đổi.</translation>
 <translation id="103396972844768118">Thông tin quan trọng liên quan đến dữ liệu Chrome của bạn</translation>
+<translation id="6145223986912084844">chrome</translation>
 <translation id="6757767188268205357">Đừng hỏi lại</translation>
 <translation id="2290095356545025170">Bạn có chắc chắn muốn gỡ cài đặt Google Chrome không?</translation>
 <translation id="7062966102157262887">Quá trình tải xuống hiện đang diễn ra. Bạn có muốn thoát Google Chrome và hủy tải xuống không?</translation>
@@ -187,6 +186,7 @@ Một số tính năng có thể không khả dụng. Vui lòng chỉ định th
 <translation id="3444832043240812445">Trang này chỉ hiển thị thông tin về các sự cố gần đây của bạn nếu bạn <ph name="BEGIN_LINK"/>bật báo cáo sự cố<ph name="END_LINK"/>.</translation>
 <translation id="8614913330719544658">Google Chrome không hồi đáp. Chạy lại ngay bây giờ?</translation>
 <translation id="2681064822612051220">Đã phát hiện cài đặt Google Chrome xung đột trên hệ thống. Vui lòng gỡ cài đặt và thử lại.</translation>
+<translation id="1175529839152551794">Bạn hiện đã đăng nhập, bạn có thể nhận tab, dấu trang và các nội dung khác của Chrome trên máy tính xách tay, điện thoại và máy tính bảng của bạn. Bạn cũng sẽ nhận được các tính năng và đề xuất có liên quan hơn cũng trên các dịch vụ của Google.</translation>
 <translation id="8209985377776300429">Bạn đang xem trước Chrome mới.</translation>
 <translation id="6126631249883707068">Bạn có muốn Google Chrome lưu mật khẩu không?</translation>
 <translation id="7773845170078702898">Bạn có muốn Google Chrome lưu mật khẩu của bạn cho trang web này không?</translation>

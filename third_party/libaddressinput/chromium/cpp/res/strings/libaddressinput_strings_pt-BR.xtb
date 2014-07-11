@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="pt-BR">
-<translation id="777702478322588152">Município</translation>
+<translation id="777702478322588152">Prefeitura</translation>
 <translation id="3098361409928899613">Endereço</translation>
 <translation id="2051050972662658124">Empresa</translation>
 <translation id="8439516961404593852">Paróquia inválida</translation>
@@ -22,7 +22,7 @@
 <translation id="6911757819733577195">Emirado inválido</translation>
 <translation id="1109975963117329533">Condado inválido</translation>
 <translation id="6970216967273061347">Distrito</translation>
-<translation id="6207937957461833379">País / Região</translation>
+<translation id="6207937957461833379">País/Região</translation>
 <translation id="5089810972385038852">Estado</translation>
 <translation id="8038820434766881602">Área inválida</translation>
 <translation id="3762468803736810423">Ilha inválida</translation>
