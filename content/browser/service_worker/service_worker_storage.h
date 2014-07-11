@@ -92,8 +92,8 @@ class CONTENT_EXPORT ServiceWorkerStorage
 
   // Commits |registration| with the installed but not activated |version|
   // to storage, overwritting any pre-existing registration data for the scope.
-  // A pre-existing version's script resources will remain available until
-  // it no longer controls a page, or a browser restart occurs.
+  // A pre-existing version's script resources remain available if that version
+  // is live. PurgeResources should be called when it's OK to delete them.
   void StoreRegistration(
       ServiceWorkerRegistration* registration,
       ServiceWorkerVersion* version,
@@ -104,9 +104,9 @@ class CONTENT_EXPORT ServiceWorkerStorage
       ServiceWorkerRegistration* registration,
       const StatusCallback& callback);
 
-  // Deletes the registration data for |registration_id|. The script resources
-  // for the registration's stored version will remain available until that
-  // version no longer controls a page, or a browser restart occurs.
+  // Deletes the registration data for |registration_id|. If the registration's
+  // version is live, its script resources will remain available.
+  // PurgeResources should be called when it's OK to delete them.
   void DeleteRegistration(int64 registration_id,
                           const GURL& origin,
                           const StatusCallback& callback);
@@ -143,8 +143,13 @@ class CONTENT_EXPORT ServiceWorkerStorage
   void Disable();
   bool IsDisabled() const;
 
+  // |resources| must already be on the purgeable list.
+  void PurgeResources(const ResourceList& resources);
+
  private:
   friend class ServiceWorkerResourceStorageTest;
+  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerResourceStorageTest,
+                           DeleteRegistration_NoLiveVersion);
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerResourceStorageTest,
                            DeleteRegistration_WaitingVersion);
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerResourceStorageTest,
@@ -253,11 +258,6 @@ class CONTENT_EXPORT ServiceWorkerStorage
   ServiceWorkerDiskCache* disk_cache();
   void OnDiskCacheInitialized(int rv);
 
-  // ServiceWorkerVersion::Listener override
-  virtual void OnNoControllees(ServiceWorkerVersion* version) OVERRIDE;
-
-  void SchedulePurgeResources(int64 version_id,
-                              const std::vector<int64>& resources);
   void StartPurgingResources(const std::vector<int64>& ids);
   void StartPurgingResources(const ResourceList& resources);
   void ContinuePurgingResources();
@@ -351,7 +351,6 @@ class CONTENT_EXPORT ServiceWorkerStorage
   std::deque<int64> purgeable_resource_ids_;
   bool is_purge_pending_;
   bool has_checked_for_stale_resources_;
-  std::map<int64, std::vector<int64> > deleted_version_resource_ids_;
 
   base::WeakPtrFactory<ServiceWorkerStorage> weak_factory_;
 

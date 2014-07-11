@@ -85,7 +85,8 @@ class ServiceWorkerRegisterJob
     ~Internal();
     scoped_refptr<ServiceWorkerRegistration> registration;
 
-    // Holds 'installing' or 'waiting' version depending on the phase.
+    // Holds the version created by this job. It can be the 'installing',
+    // 'waiting', or 'active' version depending on the phase.
     scoped_refptr<ServiceWorkerVersion> new_version;
   };
 

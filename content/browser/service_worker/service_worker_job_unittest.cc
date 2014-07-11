@@ -702,7 +702,7 @@ TEST_F(ServiceWorkerJobTest, AbortAll_RegUnreg) {
 
 // Tests that the waiting worker enters the 'redundant' state upon
 // unregistration.
-TEST_F(ServiceWorkerJobTest, UnregisterSetsRedundant) {
+TEST_F(ServiceWorkerJobTest, UnregisterWaitingSetsRedundant) {
   scoped_refptr<ServiceWorkerRegistration> registration;
   bool called = false;
   job_coordinator()->Register(
@@ -737,6 +737,75 @@ TEST_F(ServiceWorkerJobTest, UnregisterSetsRedundant) {
 
   EXPECT_EQ(ServiceWorkerVersion::RUNNING,
             version->running_status());
+  EXPECT_EQ(ServiceWorkerVersion::REDUNDANT, version->status());
+}
+
+// Tests that the active worker enters the 'redundant' state upon
+// unregistration.
+TEST_F(ServiceWorkerJobTest, UnregisterActiveSetsRedundant) {
+  scoped_refptr<ServiceWorkerRegistration> registration;
+  bool called = false;
+  job_coordinator()->Register(
+      GURL("http://www.example.com/*"),
+      GURL("http://www.example.com/service_worker.js"),
+      render_process_id_,
+      SaveRegistration(SERVICE_WORKER_OK, &called, &registration));
+  base::RunLoop().RunUntilIdle();
+  ASSERT_TRUE(called);
+  ASSERT_TRUE(registration);
+
+  scoped_refptr<ServiceWorkerVersion> version = registration->active_version();
+  EXPECT_EQ(ServiceWorkerVersion::RUNNING, version->running_status());
+  EXPECT_EQ(ServiceWorkerVersion::ACTIVATED, version->status());
+
+  called = false;
+  job_coordinator()->Unregister(GURL("http://www.example.com/*"),
+                                SaveUnregistration(SERVICE_WORKER_OK, &called));
+  base::RunLoop().RunUntilIdle();
+  ASSERT_TRUE(called);
+
+  EXPECT_EQ(ServiceWorkerVersion::RUNNING, version->running_status());
+  EXPECT_EQ(ServiceWorkerVersion::REDUNDANT, version->status());
+}
+
+// Tests that the active worker enters the 'redundant' state upon
+// unregistration.
+TEST_F(ServiceWorkerJobTest,
+       UnregisterActiveSetsRedundant_WaitForNoControllee) {
+  scoped_refptr<ServiceWorkerRegistration> registration;
+  bool called = false;
+  job_coordinator()->Register(
+      GURL("http://www.example.com/*"),
+      GURL("http://www.example.com/service_worker.js"),
+      render_process_id_,
+      SaveRegistration(SERVICE_WORKER_OK, &called, &registration));
+  base::RunLoop().RunUntilIdle();
+  ASSERT_TRUE(called);
+  ASSERT_TRUE(registration);
+
+  scoped_ptr<ServiceWorkerProviderHost> host(
+      new ServiceWorkerProviderHost(33 /* dummy render process id */,
+                                    1 /* dummy provider_id */,
+                                    context()->AsWeakPtr(),
+                                    NULL));
+  registration->active_version()->AddControllee(host.get());
+
+  scoped_refptr<ServiceWorkerVersion> version = registration->active_version();
+  EXPECT_EQ(ServiceWorkerVersion::RUNNING, version->running_status());
+  EXPECT_EQ(ServiceWorkerVersion::ACTIVATED, version->status());
+
+  called = false;
+  job_coordinator()->Unregister(GURL("http://www.example.com/*"),
+                                SaveUnregistration(SERVICE_WORKER_OK, &called));
+  base::RunLoop().RunUntilIdle();
+  ASSERT_TRUE(called);
+
+  EXPECT_EQ(ServiceWorkerVersion::RUNNING, version->running_status());
+  EXPECT_EQ(ServiceWorkerVersion::ACTIVATED, version->status());
+
+  registration->active_version()->RemoveControllee(host.get());
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(ServiceWorkerVersion::RUNNING, version->running_status());
   EXPECT_EQ(ServiceWorkerVersion::REDUNDANT, version->status());
 }
 

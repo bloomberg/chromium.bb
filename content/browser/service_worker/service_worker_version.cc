@@ -99,6 +99,7 @@ ServiceWorkerVersion::ServiceWorkerVersion(
       status_(NEW),
       context_(context),
       script_cache_map_(this, context),
+      is_doomed_(false),
       weak_factory_(this) {
   DCHECK(context_);
   DCHECK(registration);
@@ -386,10 +387,11 @@ void ServiceWorkerVersion::RemoveControllee(
   controllee_by_id_.Remove(found->second);
   controllee_map_.erase(found);
   RemoveProcessFromWorker(provider_host->process_id());
-  if (!HasControllee()) {
-    ScheduleStopWorker();
-    FOR_EACH_OBSERVER(Listener, listeners_, OnNoControllees(this));
-  }
+  if (HasControllee())
+    return;
+  ScheduleStopWorker();
+  if (is_doomed_)
+    DoomInternal();
 }
 
 void ServiceWorkerVersion::AddPotentialControllee(
@@ -408,6 +410,14 @@ void ServiceWorkerVersion::AddListener(Listener* listener) {
 
 void ServiceWorkerVersion::RemoveListener(Listener* listener) {
   listeners_.RemoveObserver(listener);
+}
+
+void ServiceWorkerVersion::Doom() {
+  if (is_doomed_)
+    return;
+  is_doomed_ = true;
+  if (!HasControllee())
+    DoomInternal();
 }
 
 void ServiceWorkerVersion::OnStarted() {
@@ -654,6 +664,15 @@ void ServiceWorkerVersion::ScheduleStopWorker() {
       base::Bind(&ServiceWorkerVersion::StopWorker,
                  weak_factory_.GetWeakPtr(),
                  base::Bind(&ServiceWorkerUtils::NoOpStatusCallback)));
+}
+
+void ServiceWorkerVersion::DoomInternal() {
+  SetStatus(REDUNDANT);
+  if (!context_)
+    return;
+  std::vector<ServiceWorkerDatabase::ResourceRecord> resources;
+  script_cache_map_.GetResources(&resources);
+  context_->storage()->PurgeResources(resources);
 }
 
 }  // namespace content

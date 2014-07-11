@@ -450,8 +450,6 @@ void ServiceWorkerStorage::NotifyDoneInstallingRegistration(
             &ServiceWorkerDatabase::PurgeUncommittedResourceIds),
             base::Unretained(database_.get()),
             ids));
-
-    StartPurgingResources(resources);
   }
 }
 
@@ -463,6 +461,12 @@ void ServiceWorkerStorage::Disable() {
 
 bool ServiceWorkerStorage::IsDisabled() const {
   return state_ == DISABLED;
+}
+
+void ServiceWorkerStorage::PurgeResources(const ResourceList& resources) {
+  if (!has_checked_for_stale_resources_)
+    DeleteStaleResources();
+  StartPurgingResources(resources);
 }
 
 ServiceWorkerStorage::ServiceWorkerStorage(
@@ -705,7 +709,8 @@ void ServiceWorkerStorage::DidStoreRegistration(
   registered_origins_.insert(origin);
   callback.Run(SERVICE_WORKER_OK);
 
-  SchedulePurgeResources(deleted_version_id, newly_purgeable_resources);
+  if (!context_ || !context_->GetLiveVersion(deleted_version_id))
+    StartPurgingResources(newly_purgeable_resources);
 }
 
 void ServiceWorkerStorage::DidUpdateToActiveState(
@@ -734,7 +739,8 @@ void ServiceWorkerStorage::DidDeleteRegistration(
     registered_origins_.erase(origin);
   callback.Run(SERVICE_WORKER_OK);
 
-  SchedulePurgeResources(version_id, newly_purgeable_resources);
+  if (!context_ || !context_->GetLiveVersion(version_id))
+    StartPurgingResources(newly_purgeable_resources);
 }
 
 scoped_refptr<ServiceWorkerRegistration>
@@ -842,32 +848,6 @@ void ServiceWorkerStorage::OnDiskCacheInitialized(int rv) {
     ScheduleDeleteAndStartOver();
   }
   ServiceWorkerMetrics::CountInitDiskCacheResult(rv == net::OK);
-}
-
-void ServiceWorkerStorage::OnNoControllees(ServiceWorkerVersion* version) {
-  std::map<int64, std::vector<int64> >::iterator it =
-      deleted_version_resource_ids_.find(version->version_id());
-  DCHECK(it != deleted_version_resource_ids_.end());
-  StartPurgingResources(it->second);
-  deleted_version_resource_ids_.erase(it);
-  version->RemoveListener(this);
-}
-
-void ServiceWorkerStorage::SchedulePurgeResources(
-    int64 version_id,
-    const std::vector<int64>& resources) {
-  DCHECK(deleted_version_resource_ids_.find(version_id) ==
-         deleted_version_resource_ids_.end());
-  if (resources.empty())
-    return;
-  scoped_refptr<ServiceWorkerVersion> version =
-      context_ ? context_->GetLiveVersion(version_id) : NULL;
-  if (version && version->HasControllee()) {
-    deleted_version_resource_ids_[version_id] = resources;
-    version->AddListener(this);
-  } else {
-    StartPurgingResources(resources);
-  }
 }
 
 void ServiceWorkerStorage::StartPurgingResources(

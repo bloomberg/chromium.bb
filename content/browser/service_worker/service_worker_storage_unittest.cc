@@ -577,6 +577,38 @@ class ServiceWorkerResourceStorageDiskTest
   base::ScopedTempDir user_data_directory_;
 };
 
+TEST_F(ServiceWorkerResourceStorageTest, DeleteRegistration_NoLiveVersion) {
+  bool was_called = false;
+  ServiceWorkerStatusCode result = SERVICE_WORKER_ERROR_FAILED;
+  std::set<int64> verify_ids;
+
+  registration_->SetWaitingVersion(NULL);
+  registration_ = NULL;
+
+  // Deleting the registration should result in the resources being added to the
+  // purgeable list and then doomed in the disk cache and removed from that
+  // list.
+  storage()->DeleteRegistration(
+      registration_id_,
+      scope_.GetOrigin(),
+      base::Bind(&VerifyPurgeableListStatusCallback,
+                 base::Unretained(storage()->database_.get()),
+                 &verify_ids,
+                 &was_called,
+                 &result));
+  base::RunLoop().RunUntilIdle();
+  ASSERT_TRUE(was_called);
+  EXPECT_EQ(SERVICE_WORKER_OK, result);
+  EXPECT_EQ(2u, verify_ids.size());
+  verify_ids.clear();
+  EXPECT_EQ(ServiceWorkerDatabase::STATUS_OK,
+            storage()->database_->GetPurgeableResourceIds(&verify_ids));
+  EXPECT_TRUE(verify_ids.empty());
+
+  EXPECT_FALSE(VerifyBasicResponse(storage(), resource_id1_, false));
+  EXPECT_FALSE(VerifyBasicResponse(storage(), resource_id2_, false));
+}
+
 TEST_F(ServiceWorkerResourceStorageTest, DeleteRegistration_WaitingVersion) {
   bool was_called = false;
   ServiceWorkerStatusCode result = SERVICE_WORKER_ERROR_FAILED;
@@ -595,6 +627,19 @@ TEST_F(ServiceWorkerResourceStorageTest, DeleteRegistration_WaitingVersion) {
                  &result));
   base::RunLoop().RunUntilIdle();
   ASSERT_TRUE(was_called);
+  EXPECT_EQ(SERVICE_WORKER_OK, result);
+  EXPECT_EQ(2u, verify_ids.size());
+  verify_ids.clear();
+  EXPECT_EQ(ServiceWorkerDatabase::STATUS_OK,
+            storage()->database_->GetPurgeableResourceIds(&verify_ids));
+  EXPECT_EQ(2u, verify_ids.size());
+
+  EXPECT_TRUE(VerifyBasicResponse(storage(), resource_id1_, false));
+  EXPECT_TRUE(VerifyBasicResponse(storage(), resource_id2_, false));
+
+  // Doom the version, now it happens.
+  registration_->waiting_version()->Doom();
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(SERVICE_WORKER_OK, result);
   EXPECT_EQ(2u, verify_ids.size());
   verify_ids.clear();
@@ -632,6 +677,7 @@ TEST_F(ServiceWorkerResourceStorageTest, DeleteRegistration_ActiveVersion) {
                  &verify_ids,
                  &was_called,
                  &result));
+  registration_->active_version()->Doom();
   base::RunLoop().RunUntilIdle();
   ASSERT_TRUE(was_called);
   EXPECT_EQ(SERVICE_WORKER_OK, result);
@@ -781,6 +827,7 @@ TEST_F(ServiceWorkerResourceStorageTest, UpdateRegistration) {
                  &verify_ids,
                  &was_called,
                  &result));
+  registration_->active_version()->Doom();
   base::RunLoop().RunUntilIdle();
   ASSERT_TRUE(was_called);
   EXPECT_EQ(SERVICE_WORKER_OK, result);

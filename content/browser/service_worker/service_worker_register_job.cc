@@ -390,9 +390,9 @@ void ServiceWorkerRegisterJob::CompleteInternal(
   if (status != SERVICE_WORKER_OK) {
     if (registration()) {
       if (new_version()) {
-        new_version()->SetStatus(ServiceWorkerVersion::REDUNDANT);
         DisassociateVersionFromDocuments(context_, new_version());
         registration()->UnsetVersion(new_version());
+        new_version()->Doom();
       }
       if (!registration()->active_version()) {
         context_->storage()->DeleteRegistration(

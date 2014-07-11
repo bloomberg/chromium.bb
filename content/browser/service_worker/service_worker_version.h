@@ -84,7 +84,6 @@ class CONTENT_EXPORT ServiceWorkerVersion
                                         const base::string16& message,
                                         int line_number,
                                         const GURL& source_url) {};
-    virtual void OnNoControllees(ServiceWorkerVersion* version) {};
   };
 
   ServiceWorkerVersion(
@@ -218,6 +217,11 @@ class CONTENT_EXPORT ServiceWorkerVersion
   ServiceWorkerScriptCacheMap* script_cache_map() { return &script_cache_map_; }
   EmbeddedWorkerInstance* embedded_worker() { return embedded_worker_.get(); }
 
+  // Dooms this version to have REDUNDANT status and its resources deleted.  If
+  // the version is controlling a page, these changes will happen when the
+  // version no longer controls any pages.
+  void Doom();
+
  private:
   typedef ServiceWorkerVersion self;
   typedef std::map<ServiceWorkerProviderHost*, int> ControlleeMap;
@@ -262,6 +266,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
                                const std::vector<int>& sent_message_port_ids);
 
   void ScheduleStopWorker();
+  void DoomInternal();
 
   const int64 version_id_;
   int64 registration_id_;
@@ -287,6 +292,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
   ServiceWorkerScriptCacheMap script_cache_map_;
   base::OneShotTimer<ServiceWorkerVersion> stop_worker_timer_;
   base::OneShotTimer<ServiceWorkerVersion> update_timer_;
+  bool is_doomed_;
 
   base::WeakPtrFactory<ServiceWorkerVersion> weak_factory_;
 

@@ -68,13 +68,11 @@ void ServiceWorkerUnregisterJob::OnRegistrationFound(
 
 void ServiceWorkerUnregisterJob::DeleteRegistration(
     const scoped_refptr<ServiceWorkerRegistration>& registration) {
-  // TODO(nhiroki): When we've implemented the installing version, terminate and
-  // set it to redundant here as per spec.
-
-  if (registration->waiting_version()) {
-    registration->waiting_version()->SetStatus(
-        ServiceWorkerVersion::REDUNDANT);
-  }
+  // TODO: Also doom installing version.
+  if (registration->waiting_version())
+    registration->waiting_version()->Doom();
+  if (registration->active_version())
+    registration->active_version()->Doom();
 
   context_->storage()->DeleteRegistration(
       registration->id(),

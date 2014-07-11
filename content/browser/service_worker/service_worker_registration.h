@@ -83,7 +83,6 @@ class CONTENT_EXPORT ServiceWorkerRegistration
   // listeners via OnVersionAttributesChanged.
   void UnsetVersion(ServiceWorkerVersion* version);
 
-
  private:
   ~ServiceWorkerRegistration();
   friend class base::RefCounted<ServiceWorkerRegistration>;

@@ -20,7 +20,7 @@ class ServiceWorkerContextCore;
 class ServiceWorkerVersion;
 
 // Class that maintains the mapping between urls and a resource id
-// for a particular versions implicit script resources.
+// for a particular version's implicit script resources.
 class ServiceWorkerScriptCacheMap {
  public:
   int64 Lookup(const GURL& url);
