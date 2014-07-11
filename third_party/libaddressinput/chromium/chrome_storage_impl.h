@@ -11,8 +11,7 @@
 #include "base/memory/scoped_vector.h"
 #include "base/prefs/pref_store.h"
 #include "base/scoped_observer.h"
-#include "third_party/libaddressinput/chromium/cpp/include/libaddressinput/storage.h"
-#include "third_party/libaddressinput/chromium/cpp/include/libaddressinput/util/scoped_ptr.h"
+#include "third_party/libaddressinput/src/cpp/include/libaddressinput/storage.h"
 
 class WriteablePrefStore;
 
@@ -28,9 +27,8 @@ class ChromeStorageImpl : public ::i18n::addressinput::Storage,
   virtual ~ChromeStorageImpl();
 
   // ::i18n::addressinput::Storage implementation.
-  virtual void Put(const std::string& key, scoped_ptr<std::string> data)
-      OVERRIDE;
-  virtual void Get(const std::string& key, scoped_ptr<Callback> data_ready)
+  virtual void Put(const std::string& key, std::string* data) OVERRIDE;
+  virtual void Get(const std::string& key, const Callback& data_ready)
       const OVERRIDE;
 
   // PrefStore::Observer implementation.
@@ -39,14 +37,14 @@ class ChromeStorageImpl : public ::i18n::addressinput::Storage,
 
  private:
   struct Request {
-    Request(const std::string& key, scoped_ptr<Callback> callback);
+    Request(const std::string& key, const Callback& callback);
 
     std::string key;
-    scoped_ptr<Callback> callback;
+    const Callback& callback;
   };
 
   // Non-const version of Get().
-  void DoGet(const std::string& key, scoped_ptr<Callback> data_ready);
+  void DoGet(const std::string& key, const Callback& data_ready);
 
   WriteablePrefStore* backing_store_;  // weak
 

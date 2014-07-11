@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/libaddressinput/chromium/addressinput_util.h"
+#include "third_party/libaddressinput/chromium/libaddressinput_util.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/libaddressinput/src/cpp/include/libaddressinput/address_data.h"
@@ -12,12 +12,12 @@ namespace addressinput {
 
 using ::i18n::addressinput::AddressData;
 
-TEST(AddressinputUtilTest, AddressRequiresRegionCode) {
+TEST(RequiredFieldsTest, AddressRequiresRegionCode) {
   AddressData address;
   EXPECT_FALSE(HasAllRequiredFields(address));
 }
 
-TEST(AddressinputUtilTest, UsRequiresState) {
+TEST(RequiredFieldsTest, UsRequiresState) {
   AddressData address;
   address.region_code = "US";
   address.postal_code = "90291";
@@ -27,7 +27,7 @@ TEST(AddressinputUtilTest, UsRequiresState) {
   EXPECT_FALSE(HasAllRequiredFields(address));
 }
 
-TEST(AddressinputUtilTest, CompleteAddressReturnsTrue) {
+TEST(RequiredFieldsTest, CompleteAddressReturnsTrue) {
   AddressData address;
   address.region_code = "US";
   address.postal_code = "90291";

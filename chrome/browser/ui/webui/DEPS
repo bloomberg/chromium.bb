@@ -13,7 +13,7 @@ include_rules = [
   "+device/nfc",
   "+third_party/angle",       # For ANGLE version.
   "+third_party/zlib/zlib.h", # For compression level constants.
-  "+third_party/libaddressinput/chromium/cpp/include", # For i18n address input.
+  "+third_party/libaddressinput", # For i18n address input.
 
   # DOM Distiller.
   "+components/dom_distiller/core",

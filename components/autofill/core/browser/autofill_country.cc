@@ -45,6 +45,9 @@ struct StaticCountryData {
 
 // Maps country codes to localized label string identifiers.
 const StaticCountryData kCountryData[] = {
+  { "AC", { IDS_AUTOFILL_FIELD_LABEL_POSTAL_CODE,
+            IDS_AUTOFILL_FIELD_LABEL_PROVINCE,
+            ADDRESS_REQUIRES_CITY } },
   { "AD", { IDS_AUTOFILL_FIELD_LABEL_POSTAL_CODE,
             IDS_AUTOFILL_FIELD_LABEL_PARISH,
             ADDRESS_REQUIRES_STATE } },
@@ -64,9 +67,6 @@ const StaticCountryData kCountryData[] = {
             IDS_AUTOFILL_FIELD_LABEL_PROVINCE,
             ADDRESS_REQUIREMENTS_UNKNOWN } },
   { "AM", { IDS_AUTOFILL_FIELD_LABEL_POSTAL_CODE,
-            IDS_AUTOFILL_FIELD_LABEL_PROVINCE,
-            ADDRESS_REQUIREMENTS_UNKNOWN } },
-  { "AN", { IDS_AUTOFILL_FIELD_LABEL_POSTAL_CODE,
             IDS_AUTOFILL_FIELD_LABEL_PROVINCE,
             ADDRESS_REQUIREMENTS_UNKNOWN } },
   { "AO", { IDS_AUTOFILL_FIELD_LABEL_POSTAL_CODE,
@@ -663,6 +663,9 @@ const StaticCountryData kCountryData[] = {
   { "SZ", { IDS_AUTOFILL_FIELD_LABEL_POSTAL_CODE,
             IDS_AUTOFILL_FIELD_LABEL_PROVINCE,
             ADDRESS_REQUIREMENTS_UNKNOWN } },
+  { "TA", { IDS_AUTOFILL_FIELD_LABEL_POSTAL_CODE,
+            IDS_AUTOFILL_FIELD_LABEL_PROVINCE,
+            ADDRESS_REQUIRES_CITY } },
   { "TC", { IDS_AUTOFILL_FIELD_LABEL_POSTAL_CODE,
             IDS_AUTOFILL_FIELD_LABEL_PROVINCE,
             ADDRESS_REQUIRES_CITY_ZIP } },
@@ -904,11 +907,14 @@ CountryNames::CountryNames() {
        it != CountryDataMap::End();
        ++it) {
     const std::string& country_code = it->first;
+    common_names_.insert(std::make_pair(country_code, country_code));
+
     std::string iso3_country_code =
         icu::Locale(NULL, country_code.c_str()).getISO3Country();
 
-    common_names_.insert(std::make_pair(country_code, country_code));
-    common_names_.insert(std::make_pair(iso3_country_code, country_code));
+    // ICU list of countries can be out-of-date with CLDR.
+    if (!iso3_country_code.empty())
+      common_names_.insert(std::make_pair(iso3_country_code, country_code));
   }
 
   // Add a few other common synonyms.

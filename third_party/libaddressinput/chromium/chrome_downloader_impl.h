@@ -10,7 +10,7 @@
 
 #include "base/memory/scoped_vector.h"
 #include "net/url_request/url_fetcher_delegate.h"
-#include "third_party/libaddressinput/chromium/cpp/include/libaddressinput/downloader.h"
+#include "third_party/libaddressinput/src/cpp/include/libaddressinput/downloader.h"
 
 namespace net {
 class URLFetcher;
@@ -29,7 +29,7 @@ class ChromeDownloaderImpl : public ::i18n::addressinput::Downloader,
 
   // ::i18n::addressinput::Downloader:
   virtual void Download(const std::string& url,
-                        scoped_ptr<Callback> downloaded) OVERRIDE;
+                        const Callback& downloaded) const OVERRIDE;
 
   // net::URLFetcherDelegate:
   virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
@@ -38,15 +38,18 @@ class ChromeDownloaderImpl : public ::i18n::addressinput::Downloader,
   struct Request {
     Request(const std::string& url,
             scoped_ptr<net::URLFetcher> fetcher,
-            scoped_ptr<Callback> callback);
+            const Callback& callback);
 
     std::string url;
     // The data that's received.
     std::string data;
     // The object that manages retrieving the data.
     scoped_ptr<net::URLFetcher> fetcher;
-    scoped_ptr<Callback> callback;
+    const Callback& callback;
   };
+
+  // Non-const version of Download().
+  void DoDownload(const std::string& url, const Callback& downloaded);
 
   net::URLRequestContextGetter* const getter_;  // weak
 

@@ -7,8 +7,8 @@
 
 #include "base/basictypes.h"
 #include "testing/gmock/include/gmock/gmock.h"
-#include "third_party/libaddressinput/chromium/cpp/include/libaddressinput/address_data.h"
-#include "third_party/libaddressinput/chromium/cpp/include/libaddressinput/address_validator.h"
+#include "third_party/libaddressinput/chromium/chrome_address_validator.h"
+#include "third_party/libaddressinput/src/cpp/include/libaddressinput/address_data.h"
 
 namespace autofill {
 
@@ -17,7 +17,7 @@ MATCHER_P(CountryCodeMatcher, country_code, "Checks an AddressData's country") {
   return arg.region_code == country_code;
 }
 
-class MockAddressValidator : public ::i18n::addressinput::AddressValidator {
+class MockAddressValidator : public AddressValidator {
  public:
   MockAddressValidator();
   virtual ~MockAddressValidator();
@@ -25,13 +25,13 @@ class MockAddressValidator : public ::i18n::addressinput::AddressValidator {
   MOCK_METHOD1(LoadRules, void(const std::string& country_code));
 
   MOCK_CONST_METHOD3(ValidateAddress,
-      ::i18n::addressinput::AddressValidator::Status(
+      AddressValidator::Status(
           const ::i18n::addressinput::AddressData& address,
-          const ::i18n::addressinput::AddressProblemFilter& filter,
-          ::i18n::addressinput::AddressProblems* problems));
+          const ::i18n::addressinput::FieldProblemMap* filter,
+          ::i18n::addressinput::FieldProblemMap* problems));
 
   MOCK_CONST_METHOD4(GetSuggestions,
-      ::i18n::addressinput::AddressValidator::Status(
+      AddressValidator::Status(
           const ::i18n::addressinput::AddressData& user_input,
           ::i18n::addressinput::AddressField focused_field,
           size_t suggestions_limit,
