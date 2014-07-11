@@ -86,8 +86,11 @@
       'filepath': 'public'
     },
     'serviceworkers' : {
-      'filepath':  'Source/modules/serviceworkers' \
-                   '|LayoutTests/http/tests/serviceworker'
+      'filepath': 'Source/modules/serviceworkers' \
+                  '|LayoutTests/http/tests/serviceworker'
+    },
+    'serviceworkers_tests' : {
+      'filepath': 'LayoutTests/http/tests/serviceworker'
     },
     'spellcheck' : {
       'filepath':  'Source/core/editing/Editor' \
@@ -381,6 +384,7 @@
                         'falken@chromium.org',
                         'michaeln@chromium.org',
                         'serviceworker-reviews@chromium.org' ],
+    'serviceworkers_tests': [ 'kenjibaheux+watch@chromium.org' ],
     'spellcheck' : [ 'groby+blinkspell@chromium.org' ],
     'device_orientation': [ 'timvolodine@chromium.org', 'mvanouwerkerk+watch@chromium.org', 'ch.dumez@samsung.com' ],
     'webp': [ 'urvang@google.com',
