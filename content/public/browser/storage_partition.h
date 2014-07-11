@@ -63,23 +63,23 @@ class CONTENT_EXPORT StoragePartition {
   virtual IndexedDBContext* GetIndexedDBContext() = 0;
   virtual ServiceWorkerContext* GetServiceWorkerContext() = 0;
 
-  static const uint32 REMOVE_DATA_MASK_APPCACHE;
-  static const uint32 REMOVE_DATA_MASK_COOKIES;
-  static const uint32 REMOVE_DATA_MASK_FILE_SYSTEMS;
-  static const uint32 REMOVE_DATA_MASK_INDEXEDDB;
-  static const uint32 REMOVE_DATA_MASK_LOCAL_STORAGE;
-  static const uint32 REMOVE_DATA_MASK_SHADER_CACHE;
-  static const uint32 REMOVE_DATA_MASK_WEBSQL;
-  static const uint32 REMOVE_DATA_MASK_WEBRTC_IDENTITY;
-  static const uint32 REMOVE_DATA_MASK_ALL;
+  static const uint32 REMOVE_DATA_MASK_APPCACHE        = 1 << 0;
+  static const uint32 REMOVE_DATA_MASK_COOKIES         = 1 << 1;
+  static const uint32 REMOVE_DATA_MASK_FILE_SYSTEMS    = 1 << 2;
+  static const uint32 REMOVE_DATA_MASK_INDEXEDDB       = 1 << 3;
+  static const uint32 REMOVE_DATA_MASK_LOCAL_STORAGE   = 1 << 4;
+  static const uint32 REMOVE_DATA_MASK_SHADER_CACHE    = 1 << 5;
+  static const uint32 REMOVE_DATA_MASK_WEBSQL          = 1 << 6;
+  static const uint32 REMOVE_DATA_MASK_WEBRTC_IDENTITY = 1 << 7;
+  static const uint32 REMOVE_DATA_MASK_ALL             = 0xFFFFFFFF;
 
   // Corresponds to quota::kStorageTypeTemporary.
-  static const uint32 QUOTA_MANAGED_STORAGE_MASK_TEMPORARY;
+  static const uint32 QUOTA_MANAGED_STORAGE_MASK_TEMPORARY  = 1 << 0;
   // Corresponds to quota::kStorageTypePersistent.
-  static const uint32 QUOTA_MANAGED_STORAGE_MASK_PERSISTENT;
+  static const uint32 QUOTA_MANAGED_STORAGE_MASK_PERSISTENT = 1 << 1;
   // Corresponds to quota::kStorageTypeSyncable.
-  static const uint32 QUOTA_MANAGED_STORAGE_MASK_SYNCABLE;
-  static const uint32 QUOTA_MANAGED_STORAGE_MASK_ALL;
+  static const uint32 QUOTA_MANAGED_STORAGE_MASK_SYNCABLE   = 1 << 2;
+  static const uint32 QUOTA_MANAGED_STORAGE_MASK_ALL        = 0xFFFFFFFF;
 
   // Starts an asynchronous task that does a best-effort clear the data
   // corresponding to the given |remove_mask| and |quota_storage_remove_mask|

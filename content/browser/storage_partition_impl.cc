@@ -192,19 +192,32 @@ void ClearSessionStorageOnUIThread(
 }  // namespace
 
 // static
-const uint32 StoragePartition::REMOVE_DATA_MASK_APPCACHE        = 1 << 0;
-const uint32 StoragePartition::REMOVE_DATA_MASK_COOKIES         = 1 << 1;
-const uint32 StoragePartition::REMOVE_DATA_MASK_FILE_SYSTEMS    = 1 << 2;
-const uint32 StoragePartition::REMOVE_DATA_MASK_INDEXEDDB       = 1 << 3;
-const uint32 StoragePartition::REMOVE_DATA_MASK_LOCAL_STORAGE   = 1 << 4;
-const uint32 StoragePartition::REMOVE_DATA_MASK_SHADER_CACHE    = 1 << 5;
-const uint32 StoragePartition::REMOVE_DATA_MASK_WEBSQL          = 1 << 6;
-const uint32 StoragePartition::REMOVE_DATA_MASK_WEBRTC_IDENTITY = 1 << 7;
-const uint32 StoragePartition::REMOVE_DATA_MASK_ALL         = 0xFFFFFFFF;
-const uint32 StoragePartition::QUOTA_MANAGED_STORAGE_MASK_TEMPORARY  = 1 << 0;
-const uint32 StoragePartition::QUOTA_MANAGED_STORAGE_MASK_PERSISTENT = 1 << 1;
-const uint32 StoragePartition::QUOTA_MANAGED_STORAGE_MASK_SYNCABLE   = 1 << 2;
-const uint32 StoragePartition::QUOTA_MANAGED_STORAGE_MASK_ALL    = 0xFFFFFFFF;
+STATIC_CONST_MEMBER_DEFINITION const uint32
+    StoragePartition::REMOVE_DATA_MASK_APPCACHE;
+STATIC_CONST_MEMBER_DEFINITION const uint32
+    StoragePartition::REMOVE_DATA_MASK_COOKIES;
+STATIC_CONST_MEMBER_DEFINITION const uint32
+    StoragePartition::REMOVE_DATA_MASK_FILE_SYSTEMS;
+STATIC_CONST_MEMBER_DEFINITION const uint32
+    StoragePartition::REMOVE_DATA_MASK_INDEXEDDB;
+STATIC_CONST_MEMBER_DEFINITION const uint32
+    StoragePartition::REMOVE_DATA_MASK_LOCAL_STORAGE;
+STATIC_CONST_MEMBER_DEFINITION const uint32
+    StoragePartition::REMOVE_DATA_MASK_SHADER_CACHE;
+STATIC_CONST_MEMBER_DEFINITION const uint32
+    StoragePartition::REMOVE_DATA_MASK_WEBSQL;
+STATIC_CONST_MEMBER_DEFINITION const uint32
+    StoragePartition::REMOVE_DATA_MASK_WEBRTC_IDENTITY;
+STATIC_CONST_MEMBER_DEFINITION const uint32
+    StoragePartition::REMOVE_DATA_MASK_ALL;
+STATIC_CONST_MEMBER_DEFINITION const uint32
+    StoragePartition::QUOTA_MANAGED_STORAGE_MASK_TEMPORARY;
+STATIC_CONST_MEMBER_DEFINITION const uint32
+    StoragePartition::QUOTA_MANAGED_STORAGE_MASK_PERSISTENT;
+STATIC_CONST_MEMBER_DEFINITION const uint32
+    StoragePartition::QUOTA_MANAGED_STORAGE_MASK_SYNCABLE;
+STATIC_CONST_MEMBER_DEFINITION const uint32
+    StoragePartition::QUOTA_MANAGED_STORAGE_MASK_ALL;
 
 // Static.
 int StoragePartitionImpl::GenerateQuotaClientMask(uint32 remove_mask) {
