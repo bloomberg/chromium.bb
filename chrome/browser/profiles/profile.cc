@@ -70,9 +70,9 @@ void Profile::RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
       true,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
 #if defined(OS_ANDROID)
-  registry->RegisterIntegerPref(
+  registry->RegisterStringPref(
       prefs::kContextualSearchEnabled,
-      0,
+      std::string(),
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
 #endif
   registry->RegisterBooleanPref(

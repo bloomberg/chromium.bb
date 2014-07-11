@@ -325,10 +325,10 @@ const char kIncognitoModeAvailability[] = "incognito.mode_availability";
 const char kSearchSuggestEnabled[] = "search.suggest_enabled";
 
 #if defined(OS_ANDROID)
-// Integer indicating the Contextual Search enabled state.
-// -1 - opt-out (disabled)
-//  0 - undecided
-//  1 - opt-in (enabled)
+// String indicating the Contextual Search enabled state.
+// "false" - opt-out (disabled)
+// "" (empty string) - undecided
+// "true" - opt-in (enabled)
 const char kContextualSearchEnabled[] = "search.contextual_search_enabled";
 #endif
 
