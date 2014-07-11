@@ -13,11 +13,13 @@
 <translation id="2801119484858626560">Chrome 원격 데스크톱의 호환되지 않는 버전이 감지되었습니다. 양쪽 컴퓨터의 Chrome과 Chrome 원격 데스크톱이 모두 최신 버전인지 확인한 뒤 다시 시도해 주세요.</translation>
 <translation id="6998989275928107238">호스트</translation>
 <translation id="406849768426631008">영상 채팅 중 다른 사용자를 도와주려면 <ph name="LINK_BEGIN"/>Google 행아웃의 원격 데스크톱<ph name="LINK_END"/>을 사용해보세요.</translation>
+<translation id="906458777597946297">창 최대화</translation>
 <translation id="5397086374758643919">Chrome 원격 데스크톱 호스트 제거 프로그램</translation>
 <translation id="3258789396564295715">Chrome 원격 데스크톱을 사용하여 컴퓨터에 안전하게 액세스할 수 있습니다.</translation>
 <translation id="5070121137485264635">원격 호스트는 타사 웹사이트에 대한 인증이 필요합니다. 계속하려면 이 주소에 액세스할 수 있도록 Chrome 원격 데스크톱에 추가 권한을 허용해야 합니다.</translation>
 <translation id="2124408767156847088">Android 기기에서 컴퓨터에 안전하게 액세스하세요.</translation>
 <translation id="3194245623920924351">Chrome 원격 데스크톱</translation>
+<translation id="3649256019230929621">창 최소화</translation>
 <translation id="4808503597364150972"><ph name="HOSTNAME"/>의 PIN을 입력하세요.</translation>
 <translation id="7672203038394118626">컴퓨터의 원격 연결이 사용중지되었습니다.</translation>
 <translation id="8244400547700556338">자세히 알아보기</translation>
@@ -28,9 +30,9 @@
 <translation id="7658239707568436148">취소</translation>
 <translation id="7782471917492991422">컴퓨터의 전원 관리 설정을 확인하고 유휴 상태일 때 절전 모드로 전환되도록 설정되지 않았는지 확인하세요.</translation>
 <translation id="7665369617277396874">계정 추가</translation>
-<translation id="5925497314631808737">• 전체 화면/몰입형 모드를 구현했습니다.
-• 작업 표시줄을 숨기는 데 사용되는 아이콘이 개선되었습니다.</translation>
+<translation id="4939475390270873744">• 시작 시 중단되는 문제 해결</translation>
 <translation id="2707879711568641861">Chrome 원격 데스크톱에 필요한 일부 구성 요소가 누락되었습니다. 최신 버전을 설치했는지 확인한 뒤 다시 시도해 주세요.</translation>
+<translation id="1779766957982586368">창 닫기</translation>
 <translation id="2499160551253595098">사용 통계 및 오류 보고서 수집을 허용하여 Chrome 원격 데스크톱 개선에 참여하겠습니다.</translation>
 <translation id="7868137160098754906">원격 컴퓨터의 PIN을 입력하세요.</translation>
 <translation id="677755392401385740">사용자(<ph name="HOST_USERNAME"/>)의 호스트가 시작되었습니다.</translation>
@@ -55,7 +57,6 @@
 <translation id="9188433529406846933">승인</translation>
 <translation id="228809120910082333">Chromoting을 통해 액세스할 수 있도록 계정 및 PIN을 확인하세요.</translation>
 <translation id="7605995381616883502">새로운 연결</translation>
-<translation id="5826423541626112308">Chrome 원격 데스크톱 호스트</translation>
 <translation id="2851674870054673688">액세스 코드를 입력하면 공유 세션이 시작됩니다.</translation>
 <translation id="5593560073513909978">서비스를 일시적으로 이용할 수 없습니다. 잠시 후 다시 시도해 주세요.</translation>
 <translation id="3908017899227008678">크기에 맞게 축소</translation>
@@ -65,7 +66,6 @@
 <translation id="1409991159633941777">Chrome 원격 데스크톱에 필요한 일부 구성 요소가 누락되었습니다. Chrome 최신 버전을 실행하고 있는지 확인한 뒤 다시 시도해 주세요.</translation>
 <translation id="174018511426417793">등록된 컴퓨터가 없습니다. 컴퓨터에 원격 연결을 사용하려면 Chrome 원격 데스크톱을 설치하고 '<ph name="BUTTON_NAME"/>' 버튼을 클릭하세요.</translation>
 <translation id="9126115402994542723">이 기기에서 이 호스트로 연결할 때 PIN을 다시 요청하지 않습니다.</translation>
-<translation id="253387295088602549">다른 사용자가 인터넷을 통해 안전하게 내 컴퓨터에 액세스할 수 있습니다.</translation>
 <translation id="1300633907480909701">Android 기기에서 컴퓨터에 안전하게 액세스하세요.
 
 • Chrome 웹 스토어의 Chrome 원격 데스크톱 앱(https://chrome.google.com/remotedesktop)을 사용하여 각 컴퓨터에서 원격 액세스를 설정합니다.
@@ -85,9 +85,9 @@
 <translation id="5285241842433869526">컴퓨터에 원격 액세스를 설정하는 방법을 알아보세요.</translation>
 <translation id="4430915108080446161">액세스 코드 생성 중...</translation>
 <translation id="2013996867038862849">페어링된 클라이언트가 모두 삭제되었습니다.</translation>
-<translation id="7081428606750359611">Chromoting 호스트</translation>
 <translation id="8228265668171617545">호환되지 않는 Chromoting이 감지되었습니다. 양쪽 컴퓨터의 Chrome 및 Chromoting이 모두 최신 버전인지 확인한 뒤 다시 시도해 주세요.</translation>
 <translation id="6985691951107243942"><ph name="HOSTNAME"/>와(과)의 원격 연결을 사용중지하시겠습니까? 생각이 바뀌면 해당 컴퓨터에서 연결을 다시 사용하도록 설정해야 합니다.</translation>
+<translation id="6944854424004126054">복원 창</translation>
 <translation id="1436054138039008644"><ph name="HOSTNAME"/>(최근 연결일: <ph name="DATE"/>)</translation>
 <translation id="9149992051684092333">데스크톱 공유를 시작하려면 내 데스크톱에 액세스하려는 사용자에게 아래 액세스 코드를 알려주세요.</translation>
 <translation id="409800995205263688">참고: 정책 설정에 따라 네트워크 내에 있는 컴퓨터 간의 연결만 허용됩니다.</translation>
@@ -215,5 +215,6 @@
 <translation id="1818475040640568770">등록된 컴퓨터가 없습니다.</translation>
 <translation id="4394049700291259645">사용 중지</translation>
 <translation id="4156740505453712750">액세스 제한을 통해 이 컴퓨터를 보호하려면 <ph name="BOLD_START"/>최소 6자리<ph name="BOLD_END"/>의 PIN을 선택하세요. 이 PIN은 다른 위치에서 연결할 때 필요합니다.</translation>
+<translation id="6398765197997659313">전체화면 닫기</translation>
 <translation id="3286521253923406898">Chromoting 호스트 컨트롤러</translation>
 </translationbundle>

@@ -2,16 +2,21 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="no">
 <translation id="8588878054171169263">Lagre bildet</translation>
+<translation id="7998918019931843664">Åpne lukkede faner på nytt</translation>
 <translation id="4996978546172906250">Del via</translation>
 <translation id="5578795271662203820">Søk etter dette bildet i <ph name="SEARCH_ENGINE"/></translation>
 <translation id="6831043979455480757">Oversett</translation>
 <translation id="7644305409888602715">Oversetter siden til <ph name="SOURCE_LANGUAGE"/> …</translation>
 <translation id="7015922086425404465">Få appen fra Google Play-butikken: <ph name="APP_ACTION"/></translation>
 <translation id="1491151370853475546">Last inn denne siden på nytt</translation>
+<translation id="5233638681132016545">Ny fane</translation>
 <translation id="641643625718530986">Skriv ut</translation>
+<translation id="5763382633136178763">Inkognitofaner</translation>
+<translation id="5210365745912300556">Lukk fanen</translation>
 <translation id="7658239707568436148">Avbryt</translation>
 <translation id="6458785801851713928">Synkronisering er ikke tilgjengelig for domenet ditt.</translation>
 <translation id="2731700343119398978">Vent litt …</translation>
+<translation id="6846298663435243399">Laster inn …</translation>
 <translation id="7378627244592794276">Nei takk</translation>
 <translation id="3358663646935160692">Denne kontoen administreres av <ph name="DOMAIN_NAME"/>.
 
@@ -20,6 +25,7 @@ Du logger på med en administrert konto, og gir administratoren kontroll over Ch
 <translation id="1623104350909869708">Hindre denne siden i å opprette flere dialogruter</translation>
 <translation id="1426410128494586442">Ja</translation>
 <translation id="8218346974737627104">Bekreft påloggingen</translation>
+<translation id="8853345339104747198"><ph name="TAB_TITLE"/> – fane</translation>
 <translation id="624558823898732418">Målspråk: <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="8872441722924401214">Velg autentiseringssertifikat</translation>
 <translation id="3896036286668839683">Sertifikatfremviser</translation>
@@ -41,6 +47,7 @@ Du logger på med en administrert konto, og gir administratoren kontroll over Ch
 <translation id="3063601790762993062">Lagre videoen</translation>
 <translation id="6042308850641462728">Mer</translation>
 <translation id="7267430310003164111">Forespørsel om nedlasting av en app fra Google Play-butikken. Appnavn: <ph name="APP_NAME"/>. Appens gjennomsnittlige vurdering: <ph name="APP_RATING"/>.</translation>
+<translation id="303955801043931176">Fanen er lukket</translation>
 <translation id="4148957013307229264">Installerer …</translation>
 <translation id="3992315671621218278">Lagre linken</translation>
 <translation id="8034522405403831421">Denne siden er på <ph name="SOURCE_LANGUAGE"/>. Vil du oversette den til <ph name="TARGET_LANGUAGE"/>?</translation>
@@ -66,9 +73,11 @@ Du logger på med en administrert konto, og gir administratoren kontroll over Ch
 <translation id="6333140779060797560">Del via <ph name="APPLICATION"/></translation>
 <translation id="6040143037577758943">Lukk</translation>
 <translation id="969096075394517431">Endre språk</translation>
+<translation id="5556459405103347317">Last inn på nytt</translation>
 <translation id="5032574515228824816">Ledetekst</translation>
 <translation id="4847896847259487518">Legg til bokmerke for siden</translation>
 <translation id="497421865427891073">Gå til neste</translation>
+<translation id="8310344678080805313">Standardfaner</translation>
 <translation id="6277522088822131679">Det oppsto et problem med å skrive ut siden. Prøv på nytt.</translation>
 <translation id="1742134235943978220">Oversatt til <ph name="TARGET_LANGUAGE"/>.</translation>
 <translation id="6965382102122355670">OK</translation>

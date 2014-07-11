@@ -1,19 +1,17 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ta">
-<translation id="8719282907381795632"><ph name="WEBSITE_1"/> இல் உங்கள் தரவை அணுகலாம்</translation>
 <translation id="7809034755304591547">நிர்வாகியால் <ph name="EXTENSION_NAME"/> (நீட்டிப்பு ஐடி &quot;<ph name="EXTENSION_ID"/>&quot;) தடுக்கப்படுகிறது.</translation>
 <translation id="2857834222104759979">அமைப்புக் கோப்பு  செல்லுபடியாகாதது.</translation>
+<translation id="8978038008714088448"><ph name="WEBSITE_1"/> இல் உள்ள உங்கள் தரவைப் படித்தல் மற்றும் திருத்துதல்</translation>
+<translation id="4205302772098850608"><ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/> மற்றும் <ph name="WEBSITE_3"/> இல் உள்ள உங்கள் தரவைப் படித்தல் மற்றும் திருத்துதல்</translation>
 <translation id="3828484226910527078">USB சாதனத்தை அணுகுதல்</translation>
 <translation id="6384275966486438344">உங்கள் தேடல் அமைப்புகளை இதற்கு மாற்றவும்: <ph name="SEARCH_HOST"/></translation>
 <translation id="5911798608827489036">அகப் பிணையம் அல்லது இணையத்தில் உள்ள எந்த கணினியுடனும் தரவைப் பரிமாறவும்</translation>
 <translation id="4719685943208231314"><ph name="VENDOR_NAME"/> இலிருந்து USB சாதனத்தை அணுகுதல்</translation>
 <translation id="657064425229075395">'<ph name="BACKGROUND_SCRIPT"/>' என்ற பின்புல ஸ்கிரிப்டை ஏற்ற முடியவில்லை.</translation>
-<translation id="3093853184108622112"><ph name="WEBSITE_1"/> மற்றும் <ph name="WEBSITE_2"/> இல் உங்கள் தரவை அணுகலாம்</translation>
 <translation id="8597109877291678953"><ph name="HOSTNAME"/> என்ற பெயருள்ள கணினியுடன் தரவைப் பரிமாறவும்</translation>
-<translation id="6914908792814954894"><ph name="NUMBER_OF_WEBSITES"/> இணையதளங்களில் உங்கள் தரவை அணுகலாம்</translation>
 <translation id="5456409301717116725">இந்த நீட்டிப்பு விசை கோப்பு '<ph name="KEY_PATH"/>' ஐக் கொண்டுள்ளது. நீங்கள் அதை செய்ய விரும்பாமல் இருக்கலாம்.</translation>
-<translation id="6968649314782363508"><ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/> மற்றும் <ph name="WEBSITE_3"/> இல் உங்கள் தரவை அணுகலாம்</translation>
 <translation id="2350172092385603347">மொழிப்பெயர்ப்பு பயன்படுத்தப்பட்டது, ஆனால் default_locale அமைப்பில் குறிப்பிடப்படவில்லை.  </translation>
 <translation id="8058376558882514200"><ph name="VENDOR_NAME"/> இலிருந்து USB சாதன <ph name="PRODUCT_NAME"/> ஐ அணுகுதல்</translation>
 <translation id="8774379383902544371">USB சாதனங்களை அணுகவும்</translation>
@@ -21,13 +19,15 @@
 <translation id="6344170822609224263">பிணைய இணைப்புகளின் பட்டியலை அணுகு</translation>
 <translation id="2518849872271000461">பின்வரும் பெயர்களிலுள்ள கணினிகளுடன் தரவைப் பரிமாறவும்: <ph name="HOSTNAMES"/></translation>
 <translation id="1389014510128217152">- <ph name="WEBSITE_1"/></translation>
-<translation id="5530391389158154052"><ph name="NUMBER_OF_WEBSITES"/> இணையதளங்களில் உங்கள் தரவை அணுகலாம்</translation>
 <translation id="961805664415579088"><ph name="DOMAIN"/> களத்திலுள்ள எந்த கணினியுடனும் தரவைப் பரிமாறவும்</translation>
 <translation id="4968399700653439437">பின்வரும் களங்களிலுள்ள எந்த கணினியுடனும் தரவைப் பரிமாறவும்: <ph name="DOMAINS"/></translation>
 <translation id="8662911384982557515">உங்கள் முகப்புப் பக்கத்தை இதற்கு மாற்றவும்: <ph name="HOME_PAGE"/></translation>
+<translation id="8114679593444120202"><ph name="NUMBER_OF_WEBSITES"/> இணையதளங்களில் உள்ள உங்கள் தரவைப் படித்தல் மற்றும் திருத்துதல்</translation>
 <translation id="8602184400052594090">அமைப்புக் கோப்பைக் காணவில்லை அல்லது படிக்கமுடியாததாக இருக்கிறது.</translation>
 <translation id="7893008570150657497">உங்கள் கணினியிலிருந்துப் புகைப்படங்கள், இசை, பிற மீடியாவை அணுகலாம்</translation>
 <translation id="7217838517480956708">இந்தக் கணினியின் நிர்வாகிக்கு, <ph name="EXTENSION_NAME"/> ஐ நிறுவ வேண்டும். இதை அகற்றவோ மாற்றவோ முடியாது.</translation>
 <translation id="7154130902455071009">உங்கள் தொடக்கப் பக்கத்தை இதற்கு மாற்றவும்: <ph name="START_PAGE"/></translation>
+<translation id="6094507746643187368"><ph name="WEBSITE_1"/> மற்றும் <ph name="WEBSITE_2"/> இல் உள்ள உங்கள் தரவைப் படித்தல் மற்றும் திருத்துதல்</translation>
 <translation id="1803557475693955505">'<ph name="BACKGROUND_PAGE"/>' என்ற பின்புலப் பக்கத்தை ஏற்ற முடியவில்லை.</translation>
+<translation id="8207052894957937969"><ph name="NUMBER_OF_WEBSITES"/> இணையதளங்களில் உள்ள உங்கள் தரவைப் படித்தல் மற்றும் திருத்துதல்</translation>
 </translationbundle>

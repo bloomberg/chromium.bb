@@ -1,19 +1,17 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="th">
-<translation id="8719282907381795632">เข้าถึงข้อมูลของคุณบน <ph name="WEBSITE_1"/></translation>
 <translation id="7809034755304591547"><ph name="EXTENSION_NAME"/> (ID ส่วนขยาย &quot;<ph name="EXTENSION_ID"/>&quot;) ถูกบล็อกโดยผู้ดูแลระบบ</translation>
 <translation id="2857834222104759979">ไฟล์มานิเฟสต์ไม่ถูกต้อง</translation>
+<translation id="8978038008714088448">อ่านและแก้ไขข้อมูลของคุณบน <ph name="WEBSITE_1"/></translation>
+<translation id="4205302772098850608">อ่านและแก้ไขข้อมูลของคุณบน <ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/> และ <ph name="WEBSITE_3"/></translation>
 <translation id="3828484226910527078">เข้าถึงอุปกรณ์ USB</translation>
 <translation id="6384275966486438344">เปลี่ยนการตั้งค่าการค้นหาของคุณเป็น: <ph name="SEARCH_HOST"/></translation>
 <translation id="5911798608827489036">แลกเปลี่ยนข้อมูลกับคอมพิวเตอร์ใดๆ ที่อยู่ในเครือข่ายในท้องถิ่นหรืออินเทอร์เน็ต</translation>
 <translation id="4719685943208231314">เข้าถึงอุปกรณ์ USB จาก <ph name="VENDOR_NAME"/></translation>
 <translation id="657064425229075395">ไม่สามารถโหลดสคริปต์พื้นหลัง &quot;<ph name="BACKGROUND_SCRIPT"/>&quot;</translation>
-<translation id="3093853184108622112">เข้าถึงข้อมูลของคุณบน <ph name="WEBSITE_1"/> และ <ph name="WEBSITE_2"/></translation>
 <translation id="8597109877291678953">แลกเปลี่ยนข้อมูลกับคอมพิวเตอร์ชื่อ <ph name="HOSTNAME"/></translation>
-<translation id="6914908792814954894">เข้าถึงข้อมูลของคุณใน <ph name="NUMBER_OF_WEBSITES"/> เว็บไซต์</translation>
 <translation id="5456409301717116725">ส่วนขยายนี้มีไฟล์คีย์ &quot;<ph name="KEY_PATH"/>&quot; คุณอาจจะไม่ต้องการดำเนินการนั้น</translation>
-<translation id="6968649314782363508">เข้าถึงข้อมูลของคุณบน <ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/> และ <ph name="WEBSITE_3"/></translation>
 <translation id="2350172092385603347">ใช้การแปลภาษาท้องถิ่นแล้ว แต่ไม่ได้ระบุ default_locale ในมานิเฟสต์</translation>
 <translation id="8058376558882514200">เข้าถึงอุปกรณ์ USB <ph name="PRODUCT_NAME"/> จาก <ph name="VENDOR_NAME"/></translation>
 <translation id="8774379383902544371">เข้าถึงอุปกรณ์ USB</translation>
@@ -21,13 +19,15 @@
 <translation id="6344170822609224263">เข้าถึงรายการเชื่อมต่อเครือข่าย</translation>
 <translation id="2518849872271000461">แลกเปลี่ยนข้อมูลกับคอมพิวเตอร์ชื่อ: <ph name="HOSTNAMES"/></translation>
 <translation id="1389014510128217152">- <ph name="WEBSITE_1"/></translation>
-<translation id="5530391389158154052">เข้าถึงข้อมูลของคุณใน <ph name="NUMBER_OF_WEBSITES"/> เว็บไซต์</translation>
 <translation id="961805664415579088">แลกเปลี่ยนข้อมูลกับคอมพิวเตอร์ใดๆ ในโดเมน <ph name="DOMAIN"/></translation>
 <translation id="4968399700653439437">แลกเปลี่ยนข้อมูลกับคอมพิวเตอร์ใดๆ ในโดเมน: <ph name="DOMAINS"/></translation>
 <translation id="8662911384982557515">เปลี่ยนหน้าแรกของคุณเป็น: <ph name="HOME_PAGE"/></translation>
+<translation id="8114679593444120202">อ่านและแก้ไขข้อมูลของคุณบนเว็บไซต์ <ph name="NUMBER_OF_WEBSITES"/> แห่ง</translation>
 <translation id="8602184400052594090">ไฟล์มานิเฟสต์หายไปหรืออ่านไม่ได้</translation>
 <translation id="7893008570150657497">เข้าถึงรูปภาพ เพลง และสื่ออื่นๆ จากคอมพิวเตอร์ของคุณ</translation>
 <translation id="7217838517480956708">ผู้ดูแลระบบของเครื่องนี้ต้องการให้มีการติดตั้ง <ph name="EXTENSION_NAME"/> โดยไม่สามารถนำออกหรือแก้ไขได้</translation>
 <translation id="7154130902455071009">เปลี่ยนหน้าเริ่มต้นของคุณเป็น: <ph name="START_PAGE"/></translation>
+<translation id="6094507746643187368">อ่านและแก้ไขข้อมูลของคุณบน <ph name="WEBSITE_1"/> และ <ph name="WEBSITE_2"/></translation>
 <translation id="1803557475693955505">ไม่สามารถโหลดหน้าพื้นหลัง &quot;<ph name="BACKGROUND_PAGE"/>&quot;</translation>
+<translation id="8207052894957937969">อ่านและแก้ไขข้อมูลของคุณบนเว็บไซต์ <ph name="NUMBER_OF_WEBSITES"/> แห่ง</translation>
 </translationbundle>

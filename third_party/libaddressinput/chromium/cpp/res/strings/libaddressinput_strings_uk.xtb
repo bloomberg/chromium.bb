@@ -6,10 +6,10 @@
 <translation id="2051050972662658124">Компанія</translation>
 <translation id="8439516961404593852">Недійсна община</translation>
 <translation id="6327653052522436195">Місто</translation>
-<translation id="6839929833149231406">Регіон або територія</translation>
+<translation id="6839929833149231406">Область</translation>
 <translation id="8912409183643804845">Недійсний поштовий індекс</translation>
 <translation id="3885155851504623709">Община</translation>
-<translation id="7087282848513945231">Округ або графство</translation>
+<translation id="7087282848513945231">Країна</translation>
 <translation id="775297008183122718">Недійсне введене значення</translation>
 <translation id="3115392440335510071">Недійсне місто</translation>
 <translation id="2096368010154057602">Департамент</translation>
@@ -21,7 +21,7 @@
 <translation id="7139724024395191329">Емірат</translation>
 <translation id="6911757819733577195">Недійсний емірат</translation>
 <translation id="1109975963117329533">Недійсне графство</translation>
-<translation id="6970216967273061347">Район або округ</translation>
+<translation id="6970216967273061347">Район</translation>
 <translation id="6207937957461833379">Країна або регіон</translation>
 <translation id="5089810972385038852">Штат</translation>
 <translation id="8038820434766881602">Недійсний район</translation>
@@ -33,7 +33,7 @@
 <translation id="2735748245117253315">Поштовий індекс</translation>
 <translation id="545491265027533869">Недійсне до</translation>
 <translation id="6783392231122911543">Обов’язкове поле</translation>
-<translation id="5095208057601539847">Провінція чи область</translation>
+<translation id="5095208057601539847">Провінція</translation>
 <translation id="9006504626951158991">Ім’я контакта</translation>
 <translation id="2668249364995615760">Недійсна префектура</translation>
 </translationbundle>

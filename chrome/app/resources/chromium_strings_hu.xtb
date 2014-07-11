@@ -54,7 +54,6 @@
 <translation id="4831257561365056138">Chromium alkalmazásindító eltávolítása</translation>
 <translation id="4222580632002216401">Bejelentkezett a Chromiumba! A szinkronizálást a rendszergazdája letiltotta.</translation>
 <translation id="4207043877577553402"><ph name="BEGIN_BOLD"/>Figyelmeztetés:<ph name="END_BOLD"/> A Chromium nem tudja megakadályozni, hogy a bővítmények rögzítsék a böngészési előzményeit. A bővítmény inkognitómódban való használatának letiltásához törölje e lehetőség bejelölését.</translation>
-<translation id="4516868174453854611">Most, hogy bejelentkezett, lapjait, könyvjelzőit és egyéb Chromiumos dolgait megtalálja laptopján, telefonján és táblagépén. Emellett a jövőben a Google-szolgáltatásokra vonatkozóan relevánsabb javaslatokat és funkciókat kap tőlünk.</translation>
 <translation id="985602178874221306">A Chromium szerzői</translation>
 <translation id="8628626585870903697">A Chromium nem tartalmazza a PDF Viewer alkalmazást, amely a Nyomtatási előnézet működéséhez szükséges.</translation>
 <translation id="7138853919861947730">A Chromium internetes szolgáltatások használatával javíthatja a böngészési élményt.</translation>
@@ -107,6 +106,7 @@
 <translation id="3258596308407688501">A Chromium nem tudja olvasni és írni az adatkönyvtárát:
 
 <ph name="USER_DATA_DIRECTORY"/></translation>
+<translation id="1869480248812203386">Az esetleges biztonsági események adatainak automatikus jelentésével segítséget nyújthat a Google-nak a Chromium használatának biztonságosabbá és egyszerűbbé tételéhez.</translation>
 <translation id="6970811910055250180">Az eszköz frissítése folyamatban van...</translation>
 <translation id="2485422356828889247">Eltávolítás</translation>
 <translation id="85843667276690461">Segítséget kaphat a Chromium használatával kapcsolatban</translation>
@@ -115,7 +115,6 @@
 <translation id="8493179195440786826">A Chromium elavult</translation>
 <translation id="911206726377975832">Törli a böngészési adatait is?</translation>
 <translation id="95514773681268843">A(z) <ph name="DOMAIN"/> megköveteli, hogy olvassa, majd fogadja el a következő Általános Szerződési Feltételeket, mielőtt használná ezt az eszközt. Ezek a feltételek nem bővítik, módosítják vagy korlátozzák a Chromium OS feltételeit.</translation>
-<translation id="5603085937604338780">chromium</translation>
 <translation id="1699664235656412242">Kérjük, zárja be az összes Chromium-ablakot (köztük a Windows 8-módban lévőket is), majd próbálja újra.</translation>
 <translation id="6734080038664603509">A &amp;Chromium frissítése</translation>
 <translation id="8862326446509486874">Nincsenek meg a megfelelő jogai a rendszerszintű telepítéshez. Indítsa újra a telepítőt rendszergazdaként.</translation>
@@ -220,6 +219,7 @@ Ha mindenképp bejelentkezik, akkor egyesíti a(z) <ph name="ACCOUNT_EMAIL_NEW"/
 <translation id="9013262824292842194">A Chromium futtatásához Windows Vista, illetve Windows XP SP2 vagy újabb verzió szükséges.</translation>
 <translation id="1967743265616885482">Egy ugyanilyen nevű modul ismereteink szerint ütközik a Chromiummal.</translation>
 <translation id="8704119203788522458">Ez az Ön Chromiumja</translation>
+<translation id="8269379391216269538">Segítsen a Chromium továbbfejlesztésében</translation>
 <translation id="4224199872375172890">A Chromium naprakész.</translation>
 <translation id="374481098568514319">Ez a számítógép már rendelkezik a Chromium komponensek egy újabb változatával. Kérjük, használjon újabb telepítőt.</translation>
 <translation id="6240281849816458190">Megpróbálta elérni a(z) &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; webhelyet, de a szerver által bemutatott tanúsítvány még nem érvényes. Nem áll rendelkezésre információ azzal kapcsolatban, hogy a tanúsítvány megbízható-e. A Chromium nem tudja garantálni, hogy a(z) &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; webhellyel kommunikál, nem pedig egy támadóval. Számítógépe órájának beállítása jelenleg <ph name="CURRENT_TIME"/> Ez megfelelőnek tűnik? Ha nem, állítsa át a rendszer óráját, és töltse be újra az oldalt.</translation>

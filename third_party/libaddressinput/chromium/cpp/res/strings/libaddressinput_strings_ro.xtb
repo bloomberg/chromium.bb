@@ -5,11 +5,11 @@
 <translation id="3098361409928899613">Adresa fizică</translation>
 <translation id="2051050972662658124">Companie</translation>
 <translation id="8439516961404593852">Cartier nevalid</translation>
-<translation id="6327653052522436195">Oraş</translation>
+<translation id="6327653052522436195">Oraș</translation>
 <translation id="6839929833149231406">Zonă</translation>
 <translation id="8912409183643804845">Cod ZIP nevalid</translation>
-<translation id="3885155851504623709">Parohie</translation>
-<translation id="7087282848513945231">Comitat</translation>
+<translation id="3885155851504623709">Cartier</translation>
+<translation id="7087282848513945231">Județ</translation>
 <translation id="775297008183122718">Intrare nevalidă</translation>
 <translation id="3115392440335510071">Oraş nevalid</translation>
 <translation id="2096368010154057602">Departament</translation>
@@ -22,7 +22,7 @@
 <translation id="6911757819733577195">Emirat nevalid</translation>
 <translation id="1109975963117329533">Regiune nevalidă</translation>
 <translation id="6970216967273061347">District</translation>
-<translation id="6207937957461833379">Țară/Regiune</translation>
+<translation id="6207937957461833379">Țara/Regiunea</translation>
 <translation id="5089810972385038852">Stat</translation>
 <translation id="8038820434766881602">Zonă nevalidă</translation>
 <translation id="3762468803736810423">Insulă nevalidă</translation>

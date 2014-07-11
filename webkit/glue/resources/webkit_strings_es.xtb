@@ -81,6 +81,7 @@
 <translation id="8750798805984357768">Selecciona una de estas opciones</translation>
 <translation id="7740050170769002709">Contenido HTML</translation>
 <translation id="6692633176391053278">secuenciador</translation>
+<translation id="4975562563186953947"><ph name="SELECTED_COUNT"/> seleccionados</translation>
 <translation id="8541249477527128034">control de medios</translation>
 <translation id="2226276347425096477">Reduce la longitud de este texto a <ph name="MAX_CHARACTERS"/> caracteres o menos (actualmente, el texto tiene <ph name="CURRENT_LENGTH"/> caracteres)</translation>
 <translation id="6101327004457443354">activar sonido de la pista de audio</translation>

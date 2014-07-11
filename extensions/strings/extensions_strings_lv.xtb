@@ -1,19 +1,17 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="lv">
-<translation id="8719282907381795632">Piekļūt jūsu datiem vietnē <ph name="WEBSITE_1"/></translation>
 <translation id="7809034755304591547">Administrators bloķēja paplašinājumu <ph name="EXTENSION_NAME"/> (paplašinājuma ID “<ph name="EXTENSION_ID"/>”).</translation>
 <translation id="2857834222104759979">Manifesta fails nav derīgs.</translation>
+<translation id="8978038008714088448">Lasīt un mainīt jūsu datus vietnē <ph name="WEBSITE_1"/></translation>
+<translation id="4205302772098850608">Lasīt un mainīt jūsu datus vietnēs <ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/> un <ph name="WEBSITE_3"/></translation>
 <translation id="3828484226910527078">Piekļūt USB ierīcei</translation>
 <translation id="6384275966486438344">Mainiet savus meklēšanas iestatījumus uz šiem: <ph name="SEARCH_HOST"/></translation>
 <translation id="5911798608827489036">Apmainīties datiem ar jebkuru datoru lokālajā tīklā vai internetā</translation>
 <translation id="4719685943208231314">Piekļūt USB ierīce, ko ražojis <ph name="VENDOR_NAME"/></translation>
 <translation id="657064425229075395">Nevarēja ielādēt fona skriptu <ph name="BACKGROUND_SCRIPT"/>.</translation>
-<translation id="3093853184108622112">Piekļūt jūsu datiem vietnēs <ph name="WEBSITE_1"/> un <ph name="WEBSITE_2"/></translation>
 <translation id="8597109877291678953">Apmainīties datiem ar datoru <ph name="HOSTNAME"/></translation>
-<translation id="6914908792814954894">Piekļūt jūsu datiem <ph name="NUMBER_OF_WEBSITES"/> vietnēs</translation>
 <translation id="5456409301717116725">Šis paplašinājums ietver atslēgas failu <ph name="KEY_PATH"/>. Iespējams, jūs to nevēlaties izmantot.</translation>
-<translation id="6968649314782363508">Piekļūt jūsu datiem vietnēs <ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/> un <ph name="WEBSITE_3"/></translation>
 <translation id="2350172092385603347">Lokalizācija ir lietota, tomēr manifestā nav norādīta default_locale.</translation>
 <translation id="8058376558882514200">Piekļūt USB ierīcei <ph name="PRODUCT_NAME"/>, ko ražojis <ph name="VENDOR_NAME"/></translation>
 <translation id="8774379383902544371">Piekļūt USB ierīcēm</translation>
@@ -21,13 +19,15 @@
 <translation id="6344170822609224263">Piekļūt tīkla savienojumu sarakstam</translation>
 <translation id="2518849872271000461">Apmainīties datiem ar šādiem datoriem: <ph name="HOSTNAMES"/></translation>
 <translation id="1389014510128217152">- <ph name="WEBSITE_1"/></translation>
-<translation id="5530391389158154052">Piekļuve jūsu datiem <ph name="NUMBER_OF_WEBSITES"/> vietnē(-ēs)</translation>
 <translation id="961805664415579088">Apmainīties datiem ar jebkuru datoru domēnā <ph name="DOMAIN"/></translation>
 <translation id="4968399700653439437">Apmainīties datiem ar jebkuru datoru šādos domēnos: <ph name="DOMAINS"/></translation>
 <translation id="8662911384982557515">Mainiet savu sākumlapu uz šo: <ph name="HOME_PAGE"/></translation>
+<translation id="8114679593444120202">Read and modify your data on <ph name="NUMBER_OF_WEBSITES"/> websites</translation>
 <translation id="8602184400052594090">Manifesta fails nav atrodams vai nolasāms.</translation>
 <translation id="7893008570150657497">Piekļūt fotoattēliem, mūzikai un citam multivides saturam no sava datora</translation>
 <translation id="7217838517480956708">Šīs ierīces administrators uzskata, ka paplašinājumam <ph name="EXTENSION_NAME"/> ir jābūt instalētam. To nevar noņemt vai pārveidot.</translation>
 <translation id="7154130902455071009">Mainiet savu sākumlapu uz šo: <ph name="START_PAGE"/></translation>
+<translation id="6094507746643187368">Lasīt un mainīt jūsu datus vietnēs <ph name="WEBSITE_1"/> un <ph name="WEBSITE_2"/></translation>
 <translation id="1803557475693955505">Nevarēja ielādēt fona lapu “<ph name="BACKGROUND_PAGE"/>”.</translation>
+<translation id="8207052894957937969">Lasīt un mainīt jūsu datus <ph name="NUMBER_OF_WEBSITES"/> vietnēs</translation>
 </translationbundle>

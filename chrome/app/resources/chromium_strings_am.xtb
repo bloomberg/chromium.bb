@@ -56,7 +56,6 @@
 <translation id="4831257561365056138">የChromium መተግበሪያ አስጀማሪን አራግፍ</translation>
 <translation id="4222580632002216401">አሁን ወደ Chromium ገብተዋል! ማመሳሰል በአስተዳዳሪዎ ተሰናክሏል።</translation>
 <translation id="4207043877577553402"><ph name="BEGIN_BOLD"/>ማስጠንቀቂያ፦<ph name="END_BOLD"/> Chromium ቅጥያዎች የአሰሳ ታሪክዎን እንዳይመዘግቡ መከልከል አይችልም። ይህን ቅጥያ ማንነትን በማያሳውቅ ሁነት ላይ ለማሰናከል ይህን አማራጭ አይምረጡ።</translation>
-<translation id="4516868174453854611">አሁን ስለገቡ ትሮችዎን፣ እልባቶችዎን እና ሌሎች የChromium ነገሮችዎን በእርስዎ ላፕቶፕ፣ ስልክ እና ጡባዊ ተኮ ላይ ያገኟቸዋል። በተጨማሪም ይበልጥ ጠቃሚ የሆኑ ጥቆማዎችን እና ባህሪያትን በGoogle አገልግሎቶች ላይ መቀበል ይችላሉ።</translation>
 <translation id="985602178874221306">የChromium ደራሲዎች</translation>
 <translation id="8628626585870903697">Chromium የህትመት ቅድመ እይታ እንዲሰራ የሚያስፈልገው የፒ ዲ ኤፍ ማያውን አያካትትም።</translation>
 <translation id="7138853919861947730">Chromium የማሰስ ተሞክሮዎን ለማሻሻል የድር አገልግሎቶችን ሊጠቀም ይችላል።</translation>
@@ -109,6 +108,7 @@
 <translation id="3258596308407688501">Chromium የውሂብ አቃፊው ላይ ማንበብ እና መጻፍ አይችልም፦
 
 <ph name="USER_DATA_DIRECTORY"/></translation>
+<translation id="1869480248812203386">የደህንነት ሊሆኑ የሚችሉ ክስተቶችን በራስ-ሰር ለGoogle ሪፖርት በማድረግ Chromium ይበልጥ ደህነንቱ የተጠበቀ እና ለመጠቀም ቀላል እንዲሆን ማድረግ ማገዝ ይችላሉ።</translation>
 <translation id="6970811910055250180">መሣሪያዎን በማዘመን ላይ...</translation>
 <translation id="2485422356828889247">አራግፍ</translation>
 <translation id="85843667276690461">Chromiumን መጠቀም ላይ እገዛ ያግኙ</translation>
@@ -117,7 +117,6 @@
 <translation id="8493179195440786826">Chromium ጊዜው አልፎበታል</translation>
 <translation id="911206726377975832">የአሰሳ ውሂብዎም ይሰረዝ?</translation>
 <translation id="95514773681268843"><ph name="DOMAIN"/> ይህን መሣሪያ ከመጠቀምዎ በፊት የሚከተለውን የአገልግሎት ውል እንዲያነቡት እና እንዲቀበሉት ይፈለጋል። ይህ ውል የChromium ስርዓተ ክወና ውሉን አያስፋፋውም፣ አይቀይረውም ወይም አይገድበውም።</translation>
-<translation id="5603085937604338780">chromium</translation>
 <translation id="1699664235656412242">እባክዎ ሁሉንም የChromium መስኮቶችን (በWindows 8 ሁነታ ላይ ያሉትንም ጨምሮ) ይዝጉና እንደገና ይሞክሩ።</translation>
 <translation id="6734080038664603509">&amp;Chromiumን አዘምን</translation>
 <translation id="8862326446509486874">ለስርዓተ-ደረጃ ጭነት ተገቢ መብቶች የሉዎትም። ጫኚውን እንደ አስተዳዳሪ በማሄድ እንደገና ይሞክሩ።</translation>
@@ -226,6 +225,7 @@
 <translation id="9013262824292842194">Chromium Windows Vista ወይም Windows XP ከSP2 ወይም ከዚያ በላይ ይፈልጋል።</translation>
 <translation id="1967743265616885482">ተመሳሳይ ስም ያለው ሞዱል ከChromium ጋር የሚጋጭ መሆኑ ይታወቃል።</translation>
 <translation id="8704119203788522458">ይሄ የእርስዎ Chromium ነው</translation>
+<translation id="8269379391216269538">Chromium ይበልጥ የተሻለ እንዲሆን ያግዙ</translation>
 <translation id="4224199872375172890">Chromium የተዘመነ ነው።</translation>
 <translation id="374481098568514319">ይህ ኮምፒውተር አስቀድሞ ይበልጥ ቅርብ የሆነ የChromium ምንዝሮች ስሪት አለው። እባክዎ ይበልጥ ቅርብ የሆነ ጫኚ ይጠቀሙ።</translation>
 <translation id="6240281849816458190">&lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;ን ለመድረስ ሞክረዋል፣ ግን አገልጋዩ ገና የሚሰራ ያልሆነ እውቅና ማረጋገጫ ነው ያሳየው። ያ እውቅና ማረጋገጫ ሊታመን የሚችል መሆኑን ወይም አለመሆኑን የሚያሳይ ምንም መረጃ የለም። Chromium ከአጥቂ ሳይሆን ከ&lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; ጋር እየተገናኙ መሆንዎን በአስተማማኝ ሁኔታ ማረጋገጥ አይችልም። የኮምፒውተርዎ ሰዓት በአሁኑ ጊዜ <ph name="CURRENT_TIME"/> ላይ ተዋቅሯል። ይሄ ልክ ይመስላል? ካልሆነ የስርዓትዎን ሰዓት አስተካክለው ከዚያ ይህን ገጽ ማደስ አለብዎት።</translation>

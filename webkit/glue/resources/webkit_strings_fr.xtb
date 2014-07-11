@@ -81,6 +81,7 @@
 <translation id="8750798805984357768">Veuillez sélectionner l'une de ces options.</translation>
 <translation id="7740050170769002709">Contenu HTML</translation>
 <translation id="6692633176391053278">curseur</translation>
+<translation id="4975562563186953947"><ph name="SELECTED_COUNT"/> élément(s) sélectionné(s)</translation>
 <translation id="8541249477527128034">commande multimédia</translation>
 <translation id="2226276347425096477">Veuillez réduire ce texte à <ph name="MAX_CHARACTERS"/> caractères maximum (il compte actuellement <ph name="CURRENT_LENGTH"/> caractères).</translation>
 <translation id="6101327004457443354">réactiver le son de la piste audio</translation>

@@ -1,19 +1,17 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="bg">
-<translation id="8719282907381795632">Достъп до данните ви в <ph name="WEBSITE_1"/></translation>
 <translation id="7809034755304591547">Разширението <ph name="EXTENSION_NAME"/> (идентификационен номер „<ph name="EXTENSION_ID"/>“) е блокирано от администратора.</translation>
 <translation id="2857834222104759979">Файлът на манифеста е невалиден.</translation>
+<translation id="8978038008714088448">Четене и промяна на данните ви в/ъв <ph name="WEBSITE_1"/></translation>
+<translation id="4205302772098850608">Четене и промяна на данните ви в/ъв <ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/> и <ph name="WEBSITE_3"/></translation>
 <translation id="3828484226910527078">Достъп до USB устройството</translation>
 <translation id="6384275966486438344">Променете настройките си за търсене на: <ph name="SEARCH_HOST"/></translation>
 <translation id="5911798608827489036">Обмен на данни с всеки компютър в локалната мрежа или интернет</translation>
 <translation id="4719685943208231314">Достъп до USB устройството от <ph name="VENDOR_NAME"/></translation>
 <translation id="657064425229075395">Не можа да се зареди фоновият скрипт „<ph name="BACKGROUND_SCRIPT"/>“.</translation>
-<translation id="3093853184108622112">Достъп до данните ви в <ph name="WEBSITE_1"/> и <ph name="WEBSITE_2"/></translation>
 <translation id="8597109877291678953">Обмен на данни с компютъра с име <ph name="HOSTNAME"/></translation>
-<translation id="6914908792814954894">Достъп до данните ви в <ph name="NUMBER_OF_WEBSITES"/> уебсайта</translation>
 <translation id="5456409301717116725">Разширението включва файла с ключ „<ph name="KEY_PATH"/>“. Вероятно не искате да направите това.</translation>
-<translation id="6968649314782363508">Достъп до данните ви в <ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/> и <ph name="WEBSITE_3"/></translation>
 <translation id="2350172092385603347">Беше използвана локализация, но променливата „default_locale“ не беше посочена в манифеста.</translation>
 <translation id="8058376558882514200">Достъп до USB устройството <ph name="PRODUCT_NAME"/> от <ph name="VENDOR_NAME"/></translation>
 <translation id="8774379383902544371">Достъп до USB устройства</translation>
@@ -21,13 +19,15 @@
 <translation id="6344170822609224263">Достъп до списъка с мрежови връзки</translation>
 <translation id="2518849872271000461">Обмен на данни с компютрите с име: <ph name="HOSTNAMES"/></translation>
 <translation id="1389014510128217152">– <ph name="WEBSITE_1"/></translation>
-<translation id="5530391389158154052">Достъп до данните ви на <ph name="NUMBER_OF_WEBSITES"/> уебсайта</translation>
 <translation id="961805664415579088">Обмен на данни с всеки компютър в домейна <ph name="DOMAIN"/></translation>
 <translation id="4968399700653439437">Обмен на данни с всеки компютър в домейните: <ph name="DOMAINS"/></translation>
 <translation id="8662911384982557515">Промяна на началната ви страница на <ph name="HOME_PAGE"/></translation>
+<translation id="8114679593444120202">Read and modify your data on <ph name="NUMBER_OF_WEBSITES"/> websites</translation>
 <translation id="8602184400052594090">Файлът на манифеста липсва или не може да бъде прочетен.</translation>
 <translation id="7893008570150657497">Да осъществява достъп до снимки, музика и друга медия от компютъра ви.</translation>
 <translation id="7217838517480956708">Администраторът на тази машина изисква разширението <ph name="EXTENSION_NAME"/> да е инсталирано. То не може да бъде премахнато или променено.</translation>
 <translation id="7154130902455071009">Промяна на началната ви страница на <ph name="START_PAGE"/></translation>
+<translation id="6094507746643187368">Четене и промяна на данните ви в/ъв <ph name="WEBSITE_1"/> и <ph name="WEBSITE_2"/></translation>
 <translation id="1803557475693955505">Не можа да се зареди фоновата страница „<ph name="BACKGROUND_PAGE"/>“.</translation>
+<translation id="8207052894957937969">Read and modify your data on <ph name="NUMBER_OF_WEBSITES"/> websites</translation>
 </translationbundle>

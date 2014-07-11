@@ -54,7 +54,6 @@
 <translation id="4831257561365056138">Chromium アプリ ランチャーをアンインストール</translation>
 <translation id="4222580632002216401">Chromium にログインしています。同期は管理者によって無効にされています。</translation>
 <translation id="4207043877577553402"><ph name="BEGIN_BOLD"/>警告:<ph name="END_BOLD"/> 拡張機能による閲覧履歴の記録を Chromium で停止することはできません。シークレット モードでこの拡張機能を無効にするには、このオプションの選択を解除してください。</translation>
-<translation id="4516868174453854611">ログインしました。ノートパソコン、スマートフォン、タブレットで同じタブ、ブックマーク、その他の Chromium 設定をご利用いただけます。また、Google のサービスをご利用になる際に、より関連性の高いヒントや機能が表示されるようになります。</translation>
 <translation id="985602178874221306">Chromium 開発者</translation>
 <translation id="8628626585870903697">印刷プレビューの表示に必要な PDF ビューアが Chromium にインストールされていません。</translation>
 <translation id="7138853919861947730">Chromium は、より快適なブラウジングを提供する目的でウェブ サービスを使用することがあります。</translation>
@@ -108,6 +107,7 @@
 <translation id="3258596308407688501">Chromium はこのデータ ディレクトリへの読み書きを実行できません:
 
 <ph name="USER_DATA_DIRECTORY"/></translation>
+<translation id="1869480248812203386">セキュリティに関する事象についての詳細を Google に自動送信して、Chromium の安全性と利便性の向上にご協力ください。</translation>
 <translation id="6970811910055250180">お使いの端末を更新しています...</translation>
 <translation id="2485422356828889247">アンインストール</translation>
 <translation id="85843667276690461">Chromium の使用に関するアドバイス</translation>
@@ -116,7 +116,6 @@
 <translation id="8493179195440786826">Chromium は古いバージョンです</translation>
 <translation id="911206726377975832">閲覧データも削除しますか？</translation>
 <translation id="95514773681268843"><ph name="DOMAIN"/> では、このデバイスを使用する前に下記の利用規約を確認しこれに同意していただく必要があります。これらの規約は Chromium OS 利用規約を拡張、変更、制限するものではありません。</translation>
-<translation id="5603085937604338780">chromium</translation>
 <translation id="1699664235656412242">Chromium のウィンドウ（Windows 8 モードのウィンドウを含む）をすべて閉じてからもう一度お試しください。</translation>
 <translation id="6734080038664603509">Chromium を更新(&amp;C)</translation>
 <translation id="8862326446509486874">権限が不十分なためシステムレベルのインストールができません。管理者権限でインストールしてください。</translation>
@@ -225,6 +224,7 @@
 <translation id="9013262824292842194">Chromium のご利用には Windows Vista または Windows XP SP2 以降が必要です。</translation>
 <translation id="1967743265616885482">同じ名前のモジュールは Chromium と競合することがわかっています。</translation>
 <translation id="8704119203788522458">自分好みに設定</translation>
+<translation id="8269379391216269538">Chromium の品質向上にご協力ください</translation>
 <translation id="4224199872375172890">Chromium は最新版です。</translation>
 <translation id="374481098568514319">新しいバージョンの Chromium コンポーネントが既にインストールされています。最新のインストーラを使用してください。</translation>
 <translation id="6240281849816458190">&lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; にアクセスしようとしましたが、サーバーから提示された証明書はまだ有効になっていません。この証明書が信頼できるかどうかについて確認できる情報はありません。Chromium では、悪意のあるユーザーでなく &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; と確かに通信していることを保証することはできません。お使いのパソコンの時刻は現在、<ph name="CURRENT_TIME"/> に設定されています。時刻が正しくない場合は、システムの時刻を修正してからこのページを更新してください。</translation>

@@ -54,7 +54,6 @@
 <translation id="4831257561365056138">Desinstalar Chromium App Launcher</translation>
 <translation id="4222580632002216401">Tem agora sessão iniciada no Chromium! A sincronização foi desativada pelo seu administrador.</translation>
 <translation id="4207043877577553402"><ph name="BEGIN_BOLD"/>Aviso:<ph name="END_BOLD"/> o Chromium não consegue impedir que as extensões gravem o seu histórico de navegação. Para desativar esta extensão no modo de navegação anónima, desmarque esta opção.</translation>
-<translation id="4516868174453854611">Agora que tem sessão iniciada, pode aceder aos seus separadores, marcadores e a outros itens do Chromium no computador portátil, no telemóvel e no tablet. Também receberá sugestões mais relevantes e funcionalidades sobre os serviços Google.</translation>
 <translation id="985602178874221306">Os Autores do Chromium</translation>
 <translation id="8628626585870903697">O Chromium não inclui o visualizador de PDF que é necessário para que a Pré-visualização da Impressão funcione.</translation>
 <translation id="7138853919861947730">O Chromium pode utilizar serviços Web para melhorar a sua experiência de navegação.</translation>
@@ -108,6 +107,7 @@
 <translation id="3258596308407688501">O Chromium não consegue ler e escrever no respetivo diretório de dados:
 
 <ph name="USER_DATA_DIRECTORY"/></translation>
+<translation id="1869480248812203386">Pode contribuir para tornar o Chromium mais seguro e fácil de utilizar ao comunicar automaticamente os detalhes de possíveis incidentes de segurança à Google.</translation>
 <translation id="6970811910055250180">A atualizar o dispositivo...</translation>
 <translation id="2485422356828889247">Desinstalar</translation>
 <translation id="85843667276690461">Obter ajuda para utilizar o Chromium</translation>
@@ -116,7 +116,6 @@
 <translation id="8493179195440786826">O Chromium Está Desatualizado</translation>
 <translation id="911206726377975832">Eliminar também os seus dados de navegação?</translation>
 <translation id="95514773681268843"><ph name="DOMAIN"/> obriga-o a ler e aceitar os seguintes Termos de Utilização antes de utilizar este dispositivo. Estes termos não ampliam, modificam nem limitam os Termos do SO Chromium.</translation>
-<translation id="5603085937604338780">chromium</translation>
 <translation id="1699664235656412242">Feche todas as janelas do Chromium (incluindo as que estiverem no modo Windows 8) e tente novamente.</translation>
 <translation id="6734080038664603509">Atualizar o &amp;Chromium</translation>
 <translation id="8862326446509486874">Não tem os direitos adequados para uma instalação ao nível do sistema. Tente executar o programa de instalação novamente como Administrador.</translation>
@@ -222,6 +221,7 @@ Se continuar com este início de sessão, as informações do Chromium, como mar
 <translation id="9013262824292842194">O Chromium requer o Windows Vista ou Windows XP com SP2 ou superior.</translation>
 <translation id="1967743265616885482">É conhecido um módulo com o mesmo nome que entra em conflito com o Chromium.</translation>
 <translation id="8704119203788522458">Este é o seu Chromium</translation>
+<translation id="8269379391216269538">Ajudar a melhorar o Chromium</translation>
 <translation id="4224199872375172890">O Chromium está atualizado.</translation>
 <translation id="374481098568514319">Este computador já tem uma versão mais recente dos componentes de Chromium. Utilize um instalador mais recente.</translation>
 <translation id="6240281849816458190">Tentou aceder a &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, mas o servidor apresentou um certificado que ainda não é válido. Não existem informações disponíveis que indiquem que o certificado é de confiança. O Chromium não pode garantir que está a comunicar com &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; e não com um utilizador mal intencionado. O relógio do computador está atualmente definido para <ph name="CURRENT_TIME"/>. Parece-lhe que está correto? Se não estiver, deve corrigir o relógio do sistema e atualizar esta página.</translation>

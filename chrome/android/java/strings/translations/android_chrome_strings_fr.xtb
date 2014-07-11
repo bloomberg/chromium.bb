@@ -2,16 +2,21 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="fr">
 <translation id="8588878054171169263">Enregistrer l'image</translation>
+<translation id="7998918019931843664">Rouvrir un onglet fermé</translation>
 <translation id="4996978546172906250">Partager via</translation>
 <translation id="5578795271662203820">Rechercher l'image sur <ph name="SEARCH_ENGINE"/></translation>
 <translation id="6831043979455480757">Traduire</translation>
 <translation id="7644305409888602715">Traduction de la page en <ph name="SOURCE_LANGUAGE"/> en cours…</translation>
 <translation id="7015922086425404465">Obtenir l'application sur le Google Play Store : <ph name="APP_ACTION"/></translation>
 <translation id="1491151370853475546">Actualiser cette page</translation>
+<translation id="5233638681132016545">Nouvel onglet</translation>
 <translation id="641643625718530986">Imprimer…</translation>
+<translation id="5763382633136178763">Onglets de navigation privée</translation>
+<translation id="5210365745912300556">Fermer l'onglet</translation>
 <translation id="7658239707568436148">Annuler</translation>
 <translation id="6458785801851713928">La synchronisation n'est pas disponible pour votre domaine.</translation>
 <translation id="2731700343119398978">Veuillez patienter…</translation>
+<translation id="6846298663435243399">Chargement en cours…</translation>
 <translation id="7378627244592794276">Non</translation>
 <translation id="3358663646935160692">Ce compte est géré par <ph name="DOMAIN_NAME"/>.
 
@@ -20,6 +25,7 @@ Vous vous connectez avec un compte géré, et vous donnez à l'administrateur le
 <translation id="1623104350909869708">Empêcher cette page de générer des boîtes de dialogue supplémentaires</translation>
 <translation id="1426410128494586442">Oui</translation>
 <translation id="8218346974737627104">Confirmer la connexion</translation>
+<translation id="8853345339104747198">&quot;<ph name="TAB_TITLE"/>&quot;, onglet</translation>
 <translation id="624558823898732418">Langue cible : <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="8872441722924401214">Sélectionnez un certificat pour l'authentification</translation>
 <translation id="3896036286668839683">Lecteur de certificats</translation>
@@ -41,6 +47,7 @@ Vous vous connectez avec un compte géré, et vous donnez à l'administrateur le
 <translation id="3063601790762993062">Enregistrer la vidéo</translation>
 <translation id="6042308850641462728">Plus</translation>
 <translation id="7267430310003164111">Invite pour obtenir l'application sur le Google Play Store. Nom de l'application : <ph name="APP_NAME"/>. Note moyenne de l'application : <ph name="APP_RATING"/>.</translation>
+<translation id="303955801043931176">Onglet fermé</translation>
 <translation id="4148957013307229264">Installation...</translation>
 <translation id="3992315671621218278">Enregistrer le lien</translation>
 <translation id="8034522405403831421">Cette page est rédigée en <ph name="SOURCE_LANGUAGE"/>. Voulez-vous la traduire en <ph name="TARGET_LANGUAGE"/> ?</translation>
@@ -66,9 +73,11 @@ Vous vous connectez avec un compte géré, et vous donnez à l'administrateur le
 <translation id="6333140779060797560">Partager via <ph name="APPLICATION"/></translation>
 <translation id="6040143037577758943">Fermer</translation>
 <translation id="969096075394517431">Modifier les langues</translation>
+<translation id="5556459405103347317">Actualiser</translation>
 <translation id="5032574515228824816">Invite</translation>
 <translation id="4847896847259487518">Ajouter la page aux favoris</translation>
 <translation id="497421865427891073">Avancer</translation>
+<translation id="8310344678080805313">Onglets standards</translation>
 <translation id="6277522088822131679">Un problème est survenu lors de l'impression de la page. Veuillez réessayer.</translation>
 <translation id="1742134235943978220">Traduction en <ph name="TARGET_LANGUAGE"/> terminée.</translation>
 <translation id="6965382102122355670">OK</translation>

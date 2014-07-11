@@ -1,19 +1,17 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="hr">
-<translation id="8719282907381795632">pristupiti vašim podacima na web-lokaciji <ph name="WEBSITE_1"/></translation>
 <translation id="7809034755304591547"><ph name="EXTENSION_NAME"/> (ID proširenja &quot;<ph name="EXTENSION_ID"/>&quot;) blokirao je administrator.</translation>
 <translation id="2857834222104759979">Datoteka manifesta nije važeća.</translation>
+<translation id="8978038008714088448">Čitanje i izmjena vaših podataka na web-lokaciji <ph name="WEBSITE_1"/></translation>
+<translation id="4205302772098850608">Čitanje i izmjena vaših podataka na web-lokacijama <ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/> i <ph name="WEBSITE_3"/></translation>
 <translation id="3828484226910527078">Pristupi USB uređaju</translation>
 <translation id="6384275966486438344">Promijenite postavke pretraživanja na: <ph name="SEARCH_HOST"/></translation>
 <translation id="5911798608827489036">Razmjena podataka s bilo kojim računalom na lokalnoj mreži ili internetu</translation>
 <translation id="4719685943208231314">Pristupi USB uređaju usluge <ph name="VENDOR_NAME"/></translation>
 <translation id="657064425229075395">Nije bilo moguće učitati pozadinsku skriptu &quot;<ph name="BACKGROUND_SCRIPT"/>&quot;.</translation>
-<translation id="3093853184108622112">pristupiti vašim podacima na web-lokacijama <ph name="WEBSITE_1"/> i <ph name="WEBSITE_2"/></translation>
 <translation id="8597109877291678953">Razmjena podataka s računalom pod nazivom <ph name="HOSTNAME"/></translation>
-<translation id="6914908792814954894">Pristupite svojim podacima na <ph name="NUMBER_OF_WEBSITES"/> web-lokacija</translation>
 <translation id="5456409301717116725">To proširenje uključuje ključnu datoteku &quot;<ph name="KEY_PATH"/>&quot;. Vjerojatno ne želite to učiniti.</translation>
-<translation id="6968649314782363508">pristupiti vašim podacima na web-lokacijama <ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/> i <ph name="WEBSITE_3"/></translation>
 <translation id="2350172092385603347">Lokalizacija je korištena, ali default_locale nije naveden u manifestu.</translation>
 <translation id="8058376558882514200">Pristupi USB uređaju <ph name="PRODUCT_NAME"/> usluge <ph name="VENDOR_NAME"/></translation>
 <translation id="8774379383902544371">Pristup USB uređajima</translation>
@@ -21,13 +19,15 @@
 <translation id="6344170822609224263">Pristupi popisu mrežnih veza</translation>
 <translation id="2518849872271000461">Razmjena podataka s računalima pod nazivima: <ph name="HOSTNAMES"/></translation>
 <translation id="1389014510128217152">– <ph name="WEBSITE_1"/></translation>
-<translation id="5530391389158154052">Pristupite svojim podacima na <ph name="NUMBER_OF_WEBSITES"/> web-lokacija</translation>
 <translation id="961805664415579088">Razmjena podataka s bilo kojim računalom u domeni <ph name="DOMAIN"/></translation>
 <translation id="4968399700653439437">Razmjena podataka s bilo kojim računalom u domenama: <ph name="DOMAINS"/></translation>
 <translation id="8662911384982557515">Promijenite svoju početnu stranicu u stranicu: <ph name="HOME_PAGE"/></translation>
+<translation id="8114679593444120202">Read and modify your data on <ph name="NUMBER_OF_WEBSITES"/> websites</translation>
 <translation id="8602184400052594090">Datoteka manifesta nedostaje ili nije čitljiva.</translation>
 <translation id="7893008570150657497">Pristupiti fotografijama, glazbi i drugim medijima s vašeg računala.</translation>
 <translation id="7217838517480956708">Administrator ovog računala zahtijeva instalaciju proširenja <ph name="EXTENSION_NAME"/>. Ona se ne može ukloniti ni izmijeniti.</translation>
 <translation id="7154130902455071009">Promijenite svoju početnu stranicu na: <ph name="START_PAGE"/></translation>
+<translation id="6094507746643187368">Čitanje i izmjena vaših podataka na web-lokacijama <ph name="WEBSITE_1"/> i <ph name="WEBSITE_2"/></translation>
 <translation id="1803557475693955505">Nije uspjelo učitavanje pozadinske stranice &quot;<ph name="BACKGROUND_PAGE"/>&quot;.</translation>
+<translation id="8207052894957937969">Read and modify your data on <ph name="NUMBER_OF_WEBSITES"/> websites</translation>
 </translationbundle>

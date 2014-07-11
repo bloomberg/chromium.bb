@@ -1,15 +1,15 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="gu">
-<translation id="777702478322588152">પ્રીફેચર</translation>
+<translation id="777702478322588152">પ્રીફેક્ચર</translation>
 <translation id="3098361409928899613">શેરીનું સરનામું</translation>
 <translation id="2051050972662658124">કંપની</translation>
 <translation id="8439516961404593852">અમાન્ય પરગણું</translation>
 <translation id="6327653052522436195">શહેર</translation>
-<translation id="6839929833149231406">વિસ્તાર</translation>
+<translation id="6839929833149231406">ક્ષેત્ર</translation>
 <translation id="8912409183643804845">અમાન્ય પિન કોડ</translation>
-<translation id="3885155851504623709">પૅરિશ</translation>
-<translation id="7087282848513945231">પરગણું</translation>
+<translation id="3885155851504623709">પેરિશ</translation>
+<translation id="7087282848513945231">વહીવટી વિભાગ</translation>
 <translation id="775297008183122718">અમાન્ય એન્ટ્રી</translation>
 <translation id="3115392440335510071">અમાન્ય શહેર</translation>
 <translation id="2096368010154057602">વિભાગ</translation>
@@ -18,11 +18,11 @@
 <translation id="4324055159384742341">પિન કોડ</translation>
 <translation id="3174168572213147020">આઇલેન્ડ</translation>
 <translation id="4633065712685282143">અમાન્ય પ્રાંત</translation>
-<translation id="7139724024395191329">એમિરાત</translation>
+<translation id="7139724024395191329">એમિરેટ</translation>
 <translation id="6911757819733577195">અમાન્ય અમિરાત</translation>
 <translation id="1109975963117329533">અમાન્ય કાઉન્ટી</translation>
-<translation id="6970216967273061347">જીલ્લો</translation>
-<translation id="6207937957461833379">દેશ/પ્રદેશ</translation>
+<translation id="6970216967273061347">જિલ્લો</translation>
+<translation id="6207937957461833379">દેશ / પ્રદેશ</translation>
 <translation id="5089810972385038852">રાજ્ય</translation>
 <translation id="8038820434766881602">અમાન્ય ક્ષેત્ર</translation>
 <translation id="3762468803736810423">અમાન્ય આઇલેન્ડ</translation>

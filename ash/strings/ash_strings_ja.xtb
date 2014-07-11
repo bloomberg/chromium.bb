@@ -49,7 +49,7 @@
 <translation id="3846575436967432996">利用可能なネットワーク情報がありません</translation>
 <translation id="4625920103690741805">回転しない（タップして変更）</translation>
 <translation id="3799026279081545374">充電器に問題がある可能性があります。お住まいの国に応じて、それぞれのサポート/交換対応窓口までお問い合わせください。米国にお住まいの場合は 866-628-1371 までお電話ください。英国にお住まいの場合は 0800-026-0613 までお電話ください。アイルランドにお住まいの場合は 1-800-832-664 までお電話ください。カナダにお住まいの場合は 866-628-1372 までお電話ください。オーストラリアにお住まいの場合は 1-800-067-460 までお電話ください。</translation>
-<translation id="3026237328237090306">モバイル データをセットアップ</translation>
+<translation id="3891340733213178823">ログアウトするには、Ctrl+Shift+Q を 2 回押します。</translation>
 <translation id="5871632337994001636">デバイスを管理...</translation>
 <translation id="785750925697875037">モバイル アカウントを表示</translation>
 <translation id="153454903766751181">セルラー モデムを初期化しています...</translation>
@@ -103,11 +103,13 @@
 <translation id="3105990244222795498"><ph name="DEVICE_NAME"/>（Bluetooth）</translation>
 <translation id="3967919079500697218">スクリーンショットを撮る機能は、管理者によって無効にされています。</translation>
 <translation id="372094107052732682">終了するには Ctrl+Shift+Q を 2 回押してください。</translation>
+<translation id="923686485342484400">ログアウトするには、Ctrl Shift Q を 2 回押します。</translation>
 <translation id="6803622936009808957">サポートされている解像度が見つからなかったため、ディスプレイをミラーリングできませんでした。代わりに拡張デスクトップ モードに切り替えました。</translation>
 <translation id="1480041086352807611">デモ モード</translation>
 <translation id="4066708417179825777"><ph name="PRIMARY_ACCOUNT"/>（メイン）</translation>
 <translation id="3626637461649818317">残り <ph name="PERCENTAGE"/>%</translation>
 <translation id="9089416786594320554">入力方法</translation>
+<translation id="2700058918926273959">セッション終了まであと <ph name="SESSION_TIME_REMAINING"/>です。終了するとログアウトします。</translation>
 <translation id="6247708409970142803"><ph name="PERCENTAGE"/>%</translation>
 <translation id="2670531586141364277">「<ph name="NAME"/>」を有効にするにはネットワークに接続する必要があります。</translation>
 <translation id="3963445509666917109">スピーカー（内蔵）</translation>
@@ -175,8 +177,8 @@
 <translation id="1602076796624386989">モバイル データを有効にする</translation>
 <translation id="68610848741840742">ChromeVox（音声フィードバック）</translation>
 <translation id="6981982820502123353">ユーザー補助機能</translation>
+<translation id="6585808820553845416">セッション終了まであと <ph name="SESSION_TIME_REMAINING"/>です。</translation>
 <translation id="4274292172790327596">不明なエラー</translation>
-<translation id="4032485810211612751"><ph name="HOURS"/>:<ph name="MINUTES"/>:<ph name="SECONDS"/></translation>
 <translation id="5977415296283489383">ヘッドホン</translation>
 <translation id="225680501294068881">デバイスをスキャンしています...</translation>
 <translation id="5597451508971090205"><ph name="DATE"/> (<ph name="SHORT_WEEKDAY"/>)</translation>
@@ -190,7 +192,6 @@
 <translation id="2999742336789313416"><ph name="DISPLAY_NAME"/> は <ph name="DOMAIN"/> が管理する公開セッションです</translation>
 <translation id="9044646465488564462">ネットワークに接続できませんでした: <ph name="DETAILS"/></translation>
 <translation id="7029814467594812963">セッションを終了</translation>
-<translation id="479989351350248267">検索</translation>
 <translation id="8454013096329229812">Wi-Fi が有効になりました。</translation>
 <translation id="4872237917498892622">Alt+ 検索/Shift</translation>
 <translation id="2429753432712299108">Bluetooth デバイス「<ph name="DEVICE_NAME"/>」がペア設定の権限をリクエストしています。許可するにあたっては、このデバイスで次のパスキーが表示されることを確認してください: <ph name="PASSKEY"/></translation>
@@ -226,10 +227,10 @@
 <translation id="6857811139397017780"><ph name="NETWORKSERVICE"/> を有効にする</translation>
 <translation id="5864471791310927901">DHCP を検索できませんでした</translation>
 <translation id="2819276065543622893">ログアウトします。</translation>
+<translation id="5507786745520522457">モバイル データを設定する</translation>
 <translation id="6165508094623778733">詳しく見る</translation>
 <translation id="9046895021617826162">接続に失敗しました</translation>
 <translation id="7168224885072002358"><ph name="TIMEOUT_SECONDS"/> 秒後に元の解像度に戻ります</translation>
-<translation id="973896785707726617">このセッションはあと <ph name="SESSION_TIME_REMAINING"/>で終了します。終了すると、自動的にログアウトします。</translation>
 <translation id="743058460480092004">カメラとマイクが使用中です。</translation>
 <translation id="8372369524088641025">WEP キーが正しくありません</translation>
 <translation id="6636709850131805001">不明な状態</translation>

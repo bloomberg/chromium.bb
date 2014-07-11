@@ -2,16 +2,21 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="bg">
 <translation id="8588878054171169263">Запазване на изображението</translation>
+<translation id="7998918019931843664">Повторно отваряне на затворения раздел</translation>
 <translation id="4996978546172906250">Споделяне чрез</translation>
 <translation id="5578795271662203820">Търсене на изображението със: <ph name="SEARCH_ENGINE"/></translation>
 <translation id="6831043979455480757">Превод</translation>
 <translation id="7644305409888602715">Страницата се превежда на <ph name="SOURCE_LANGUAGE"/>...</translation>
 <translation id="7015922086425404465">Изтеглете приложението от Google Play Магазин: <ph name="APP_ACTION"/></translation>
 <translation id="1491151370853475546">Презареждане на тази страница</translation>
+<translation id="5233638681132016545">Нов раздел</translation>
 <translation id="641643625718530986">Печат…</translation>
+<translation id="5763382633136178763">Раздели в режим „инкогнито“</translation>
+<translation id="5210365745912300556">Затваряне на раздела</translation>
 <translation id="7658239707568436148">Отказ</translation>
 <translation id="6458785801851713928">Синхронизирането не е налице за домейна ви.</translation>
 <translation id="2731700343119398978">Моля, изчакайте...</translation>
+<translation id="6846298663435243399">Зарежда се…</translation>
 <translation id="7378627244592794276">Не</translation>
 <translation id="3358663646935160692">Този профил се управлява от <ph name="DOMAIN_NAME"/>.
 
@@ -20,6 +25,7 @@
 <translation id="1623104350909869708">Да не се създават допълнителни диалогови прозорци от тази страница</translation>
 <translation id="1426410128494586442">Да</translation>
 <translation id="8218346974737627104">Потвърждаване на влизането в профила</translation>
+<translation id="8853345339104747198">„<ph name="TAB_TITLE"/>“ – раздел</translation>
 <translation id="624558823898732418">Език за превод: <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="8872441722924401214">Изберете сертификат за удостоверяване</translation>
 <translation id="3896036286668839683">Визуализатор на сертификатите</translation>
@@ -41,6 +47,7 @@
 <translation id="3063601790762993062">Запазване на видеоклипа</translation>
 <translation id="6042308850641462728">Още</translation>
 <translation id="7267430310003164111">Подкана за изтегляне на приложението от Google Play Магазин.  Име на приложението: <ph name="APP_NAME"/>.  Средна оценка на приложението: <ph name="APP_RATING"/>.</translation>
+<translation id="303955801043931176">Затворихте раздела</translation>
 <translation id="4148957013307229264">Инсталира се...</translation>
 <translation id="3992315671621218278">Запазване на връзката</translation>
 <translation id="8034522405403831421">Тази страница е на <ph name="SOURCE_LANGUAGE"/>. Да се преведе ли на <ph name="TARGET_LANGUAGE"/>?</translation>
@@ -66,9 +73,11 @@
 <translation id="6333140779060797560">Споделяне чрез <ph name="APPLICATION"/></translation>
 <translation id="6040143037577758943">Затваряне</translation>
 <translation id="969096075394517431">Промяна на езиците</translation>
+<translation id="5556459405103347317">Повторно зареждане</translation>
 <translation id="5032574515228824816">Подкана</translation>
 <translation id="4847896847259487518">Запазване на отметка към страницата</translation>
 <translation id="497421865427891073">Преминаване напред</translation>
+<translation id="8310344678080805313">Стандартни раздели</translation>
 <translation id="6277522088822131679">При отпечатването на страницата възникна проблем. Моля, опитайте отново.</translation>
 <translation id="1742134235943978220">Преведено на <ph name="TARGET_LANGUAGE"/>.</translation>
 <translation id="6965382102122355670">OK</translation>

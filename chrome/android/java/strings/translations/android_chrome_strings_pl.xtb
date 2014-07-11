@@ -2,16 +2,21 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="pl">
 <translation id="8588878054171169263">Zapisz grafikę</translation>
+<translation id="7998918019931843664">Otwórz ponownie zamkniętą kartę</translation>
 <translation id="4996978546172906250">Udostępnij przez</translation>
 <translation id="5578795271662203820">Szukaj tej grafiki w <ph name="SEARCH_ENGINE"/></translation>
 <translation id="6831043979455480757">Tłumacz</translation>
 <translation id="7644305409888602715">Tłumaczę stronę na <ph name="SOURCE_LANGUAGE"/>...</translation>
 <translation id="7015922086425404465">Pobierz aplikację ze Sklepu Google Play: <ph name="APP_ACTION"/></translation>
 <translation id="1491151370853475546">Załaduj tę stronę ponownie</translation>
+<translation id="5233638681132016545">Nowa karta</translation>
 <translation id="641643625718530986">Drukuj…</translation>
+<translation id="5763382633136178763">Karty incognito</translation>
+<translation id="5210365745912300556">Zamknij kartę</translation>
 <translation id="7658239707568436148">Anuluj</translation>
 <translation id="6458785801851713928">Synchronizacja nie jest dostępna w Twojej domenie.</translation>
 <translation id="2731700343119398978">Czekaj...</translation>
+<translation id="6846298663435243399">Wczytywanie…</translation>
 <translation id="7378627244592794276">Nie</translation>
 <translation id="3358663646935160692">Tym kontem zarządza <ph name="DOMAIN_NAME"/>.
 
@@ -20,6 +25,7 @@ Logujesz się na zarządzane konto i dajesz jego administratorowi kontrolę nad 
 <translation id="1623104350909869708">Zapobiegaj wyświetlaniu dodatkowych okien dialogowych na tej stronie</translation>
 <translation id="1426410128494586442">Tak</translation>
 <translation id="8218346974737627104">Potwierdź, że chcesz się zalogować</translation>
+<translation id="8853345339104747198">Karta <ph name="TAB_TITLE"/></translation>
 <translation id="624558823898732418">Język tłumaczenia: <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="8872441722924401214">Wybierz certyfikat do uwierzytelniania</translation>
 <translation id="3896036286668839683">Przeglądarka certyfikatów</translation>
@@ -41,6 +47,7 @@ Logujesz się na zarządzane konto i dajesz jego administratorowi kontrolę nad 
 <translation id="3063601790762993062">Zapisz film</translation>
 <translation id="6042308850641462728">Więcej</translation>
 <translation id="7267430310003164111">Monit o pobranie aplikacji ze Sklepu Google Play. Nazwa aplikacji: <ph name="APP_NAME"/>. Średnia ocena aplikacji: <ph name="APP_RATING"/>.</translation>
+<translation id="303955801043931176">Karta została zamknięta</translation>
 <translation id="4148957013307229264">Trwa instalowanie...</translation>
 <translation id="3992315671621218278">Zapisz link</translation>
 <translation id="8034522405403831421">Język tej strony to <ph name="SOURCE_LANGUAGE"/>. Przetłumaczyć ją na <ph name="TARGET_LANGUAGE"/>?</translation>
@@ -66,9 +73,11 @@ Logujesz się na zarządzane konto i dajesz jego administratorowi kontrolę nad 
 <translation id="6333140779060797560">Udostępnij przez: <ph name="APPLICATION"/></translation>
 <translation id="6040143037577758943">Zamknij</translation>
 <translation id="969096075394517431">Zmień języki</translation>
+<translation id="5556459405103347317">Odśwież</translation>
 <translation id="5032574515228824816">Monit</translation>
 <translation id="4847896847259487518">Dodaj stronę do zakładek</translation>
 <translation id="497421865427891073">Dalej</translation>
+<translation id="8310344678080805313">Karty standardowe</translation>
 <translation id="6277522088822131679">Podczas drukowania strony wystąpił problem. Spróbuj ponownie.</translation>
 <translation id="1742134235943978220">Przetłumaczone na <ph name="TARGET_LANGUAGE"/>.</translation>
 <translation id="6965382102122355670">OK</translation>

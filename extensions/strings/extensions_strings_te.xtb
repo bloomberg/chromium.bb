@@ -1,19 +1,17 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="te">
-<translation id="8719282907381795632"><ph name="WEBSITE_1"/>లో మీ డేటాను ప్రాప్యత చేయండి</translation>
 <translation id="7809034755304591547"><ph name="EXTENSION_NAME"/> (పొడిగింపు ID &quot;<ph name="EXTENSION_ID"/>&quot;)ని నిర్వాహకుడు బ్లాక్ చేసారు.</translation>
 <translation id="2857834222104759979">వివరాల ఫైల్ చెల్లనిది.</translation>
+<translation id="8978038008714088448"><ph name="WEBSITE_1"/>లో మీ డేటాను చదవండి మరియు సవరించండి</translation>
+<translation id="4205302772098850608"><ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/> మరియు <ph name="WEBSITE_3"/>లో మీ డేటాను చదవండి మరియు సవరించండి</translation>
 <translation id="3828484226910527078">USB పరికరాన్ని ప్రాప్యత చేయండి</translation>
 <translation id="6384275966486438344">మీ శోధన సెట్టింగ్‌లను దీనికి మార్చండి: <ph name="SEARCH_HOST"/></translation>
 <translation id="5911798608827489036">స్థానిక నెట్‌వర్క్ లేదా ఇంటర్నెట్‌లో ఏదైనా కంప్యూటర్‌తో డేటాను పరస్పరం మార్చుకోండి</translation>
 <translation id="4719685943208231314"><ph name="VENDOR_NAME"/> నుండి USB పరికరాన్ని ప్రాప్యత చేయండి</translation>
 <translation id="657064425229075395">నేపథ్య స్క్రిప్ట్ '<ph name="BACKGROUND_SCRIPT"/>'ను లోడ్ చేయడం సాధ్యం కాలేదు.</translation>
-<translation id="3093853184108622112"><ph name="WEBSITE_1"/>లో మరియు <ph name="WEBSITE_2"/>లో మీ డేటాను ప్రాప్యత చేయండి</translation>
 <translation id="8597109877291678953"><ph name="HOSTNAME"/> అనే పేరు గల కంప్యూటర్‌తో డేటాను పరస్పరం మార్చుకోండి</translation>
-<translation id="6914908792814954894"><ph name="NUMBER_OF_WEBSITES"/> వెబ్‌సైట్‌ల్లో మీ డేటాను ప్రాప్యత చేయండి</translation>
 <translation id="5456409301717116725">ఈ పొడిగింపు '<ph name="KEY_PATH"/>' కీ ఫైల్‌ను కలిగి ఉంది. బహుశా మీరు దాన్ని చేయకూడదు.</translation>
-<translation id="6968649314782363508"><ph name="WEBSITE_1"/>లో, <ph name="WEBSITE_2"/>లో మరియు <ph name="WEBSITE_3"/>లో మీ డేటాను ప్రాప్యత చేయండి</translation>
 <translation id="2350172092385603347">స్థానీకరణ ఉపయోగించబడింది, కానీ మానిఫెస్ట్ లో default_locale పేర్కొనబడలేదు.</translation>
 <translation id="8058376558882514200"><ph name="VENDOR_NAME"/> నుండి USB పరికరం <ph name="PRODUCT_NAME"/>ని ప్రాప్యత చేయండి</translation>
 <translation id="8774379383902544371">USB పరికరాలను ప్రాప్యత చేయండి</translation>
@@ -21,13 +19,15 @@
 <translation id="6344170822609224263">నెట్‌వర్క్ కనెక్షన్‌ల జాబితాను ప్రాప్యత చేయండి</translation>
 <translation id="2518849872271000461">ఈ పేరు గల కంప్యూటర్‌లతో డేటాను పరస్పరం మార్చుకోండి: <ph name="HOSTNAMES"/></translation>
 <translation id="1389014510128217152">- <ph name="WEBSITE_1"/></translation>
-<translation id="5530391389158154052"><ph name="NUMBER_OF_WEBSITES"/> వెబ్‌సైట్‌ల్లో మీ డేటాను ప్రాప్యత చేయండి</translation>
 <translation id="961805664415579088">డొమైన్ <ph name="DOMAIN"/>లో ఏదైనా కంప్యూటర్‌తో డేటాను పరస్పరం మార్చుకోండి</translation>
 <translation id="4968399700653439437">ఈ డొమైన్‌ల్లో ఏ కంప్యూటర్‌తో అయినా డేటాను పరస్పరం మార్చుకోండి: <ph name="DOMAINS"/></translation>
 <translation id="8662911384982557515">మీ హోమ్ పేజీని దీనికి మార్చండి: <ph name="HOME_PAGE"/></translation>
+<translation id="8114679593444120202"><ph name="NUMBER_OF_WEBSITES"/> వెబ్‌సైట్‌ల్లో మీ డేటాను చదవండి మరియు సవరించండి</translation>
 <translation id="8602184400052594090">మానిఫెస్ట్ ఫైల్ తప్పిపోయింది లేదా చదవలేనిది.</translation>
 <translation id="7893008570150657497">మీ కంప్యూటర్ నుండి ఫోటోలు, సంగీతం మరియు ఇతర మీడియాను ప్రాప్యత చేయండి</translation>
 <translation id="7217838517480956708">ఈ మెషీన్ యొక్క నిర్వాహకుడికి <ph name="EXTENSION_NAME"/> ఇన్‌స్టాల్ చేయబడి ఉండటం అవసరం. దీన్ని తీసివేయడం లేదా సవరించడం సాధ్యపడదు.</translation>
 <translation id="7154130902455071009">మీ ప్రారంభ పేజీని దీనికి మార్చండి: <ph name="START_PAGE"/></translation>
+<translation id="6094507746643187368"><ph name="WEBSITE_1"/> మరియు <ph name="WEBSITE_2"/>లో మీ డేటాను చదవండి మరియు సవరించండి</translation>
 <translation id="1803557475693955505">నేపథ్య పేజీ '<ph name="BACKGROUND_PAGE"/>' లోడ్ చేయబడలేదు.</translation>
+<translation id="8207052894957937969"><ph name="NUMBER_OF_WEBSITES"/> వెబ్‌సైట్‌ల్లో మీ డేటాను చదవండి మరియు సవరించండి</translation>
 </translationbundle>

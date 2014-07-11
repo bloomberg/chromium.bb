@@ -1,19 +1,17 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="fr">
-<translation id="8719282907381795632">Accéder à vos données sur <ph name="WEBSITE_1"/></translation>
 <translation id="7809034755304591547">L'administrateur a bloqué l'extension <ph name="EXTENSION_NAME"/> (ID : <ph name="EXTENSION_ID"/>).</translation>
 <translation id="2857834222104759979">Le fichier manifeste est incorrect.</translation>
+<translation id="8978038008714088448">Accéder à vos données sur <ph name="WEBSITE_1"/> et les modifier</translation>
+<translation id="4205302772098850608">Accéder à vos données sur <ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/> et <ph name="WEBSITE_3"/>, et les modifier</translation>
 <translation id="3828484226910527078">Accéder au périphérique USB</translation>
 <translation id="6384275966486438344">Modifier les paramètres de la recherche pour utiliser l'adresse <ph name="SEARCH_HOST"/>.</translation>
 <translation id="5911798608827489036">Échanger des données avec tout ordinateur sur le réseau local ou sur Internet</translation>
 <translation id="4719685943208231314">Accéder au périphérique USB depuis <ph name="VENDOR_NAME"/></translation>
 <translation id="657064425229075395">Impossible de charger le script d'arrière-plan &quot;<ph name="BACKGROUND_SCRIPT"/>&quot;.</translation>
-<translation id="3093853184108622112">Accéder à vos données sur <ph name="WEBSITE_1"/> et sur <ph name="WEBSITE_2"/></translation>
 <translation id="8597109877291678953">Échanger des données avec l'ordinateur portant le nom suivant : <ph name="HOSTNAME"/></translation>
-<translation id="6914908792814954894">Accéder aux données sur <ph name="NUMBER_OF_WEBSITES"/> sites Web</translation>
 <translation id="5456409301717116725">Cette extension comprend le fichier clé <ph name="KEY_PATH"/>. Vous ne voulez probablement pas poursuivre.</translation>
-<translation id="6968649314782363508">Accéder à vos données sur <ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/> et <ph name="WEBSITE_3"/></translation>
 <translation id="2350172092385603347">Localisation utilisée, mais les paramètres régionaux par défaut (default_locale) n'ont pas été indiqués dans le manifeste. </translation>
 <translation id="8058376558882514200">Accéder au périphérique USB <ph name="PRODUCT_NAME"/> depuis <ph name="VENDOR_NAME"/></translation>
 <translation id="8774379383902544371">Accéder aux périphériques USB</translation>
@@ -21,13 +19,15 @@
 <translation id="6344170822609224263">Accéder à la liste des connexions réseau</translation>
 <translation id="2518849872271000461">Échanger des données avec les ordinateurs portant les noms suivants : <ph name="HOSTNAMES"/></translation>
 <translation id="1389014510128217152">– <ph name="WEBSITE_1"/></translation>
-<translation id="5530391389158154052">Accéder aux données sur <ph name="NUMBER_OF_WEBSITES"/> sites Web</translation>
 <translation id="961805664415579088">Échanger des données avec les ordinateurs dans le domaine suivant : <ph name="DOMAIN"/></translation>
 <translation id="4968399700653439437">Échanger des données avec les ordinateurs dans les domaines suivants : <ph name="DOMAINS"/></translation>
 <translation id="8662911384982557515">Utiliser <ph name="HOME_PAGE"/> comme page d'accueil ?</translation>
+<translation id="8114679593444120202">Read and modify your data on <ph name="NUMBER_OF_WEBSITES"/> websites</translation>
 <translation id="8602184400052594090">Fichier manifeste absent ou illisible</translation>
 <translation id="7893008570150657497">accéder aux photos, titres et autres médias de votre ordinateur ;</translation>
 <translation id="7217838517480956708">L'administrateur de cet ordinateur exige que l'extension <ph name="EXTENSION_NAME"/> soit installée. Celle-ci ne peut pas être supprimée ni modifiée.</translation>
 <translation id="7154130902455071009">Utiliser l'adresse <ph name="START_PAGE"/> comme page de démarrage ?</translation>
+<translation id="6094507746643187368">Accéder à vos données sur <ph name="WEBSITE_1"/> et <ph name="WEBSITE_2"/>, et les modifier</translation>
 <translation id="1803557475693955505">Impossible de charger la page d'arrière-plan &quot;<ph name="BACKGROUND_PAGE"/>&quot;.</translation>
+<translation id="8207052894957937969">Read and modify your data on <ph name="NUMBER_OF_WEBSITES"/> websites</translation>
 </translationbundle>

@@ -49,7 +49,7 @@
 <translation id="3846575436967432996">네트워크 정보 없음</translation>
 <translation id="4625920103690741805">회전 잠금(변경하려면 여기를 탭)</translation>
 <translation id="3799026279081545374">충전기에 문제가 있을 수 있습니다. 미국에 거주하는 경우 866-628-1371에 전화하여 문의하고 교체받으세요. 영국에 거주하는 경우 0800-026-0613에 문의하세요. 아일랜드에 거주하는 경우 1-800-832-664에 문의하세요. 캐나다에 거주하는 경우 866-628-1372에 문의하세요. 오스트레일리아에 거주하는 경우 1-800-067-460에 문의하세요.</translation>
-<translation id="3026237328237090306">모바일 데이터 설정</translation>
+<translation id="3891340733213178823">로그아웃하려면 Ctrl+Shift+Q를 두 번 누릅니다.</translation>
 <translation id="5871632337994001636">기기 관리...</translation>
 <translation id="785750925697875037">모바일 계정 표시</translation>
 <translation id="153454903766751181">휴대전화 모뎀 초기화하는 중...</translation>
@@ -103,11 +103,13 @@
 <translation id="3105990244222795498"><ph name="DEVICE_NAME"/>(블루투스)</translation>
 <translation id="3967919079500697218">관리자가 스크린샷 캡쳐 기능을 사용 중지했습니다.</translation>
 <translation id="372094107052732682">종료하려면 Ctrl+Shift+Q를 두 번 누릅니다.</translation>
+<translation id="923686485342484400">로그아웃하려면 Ctrl+Shift+Q를 두 번 누릅니다.</translation>
 <translation id="6803622936009808957">지원되는 해상도가 없으므로 디스플레이를 그대로 반영할 수 없습니다. 대신 확장 데스크톱을 시작했습니다.</translation>
 <translation id="1480041086352807611">데모 모드</translation>
 <translation id="4066708417179825777"><ph name="PRIMARY_ACCOUNT"/>(기본)</translation>
 <translation id="3626637461649818317"><ph name="PERCENTAGE"/>% 남음</translation>
 <translation id="9089416786594320554">입력 방법</translation>
+<translation id="2700058918926273959">세션이 <ph name="SESSION_TIME_REMAINING"/> 후에 종료되어 로그아웃됩니다.</translation>
 <translation id="6247708409970142803"><ph name="PERCENTAGE"/>%</translation>
 <translation id="2670531586141364277">네트워크를 연결하려면 '<ph name="NAME"/>' 활성화가 필수입니다.</translation>
 <translation id="3963445509666917109">스피커(내부)</translation>
@@ -175,8 +177,8 @@
 <translation id="1602076796624386989">모바일 데이터 사용</translation>
 <translation id="68610848741840742">ChromeVox(음성 피드백)</translation>
 <translation id="6981982820502123353">접근성</translation>
+<translation id="6585808820553845416">세션이 <ph name="SESSION_TIME_REMAINING"/> 후에 종료됩니다.</translation>
 <translation id="4274292172790327596">인식할 수 없는 오류</translation>
-<translation id="4032485810211612751"><ph name="HOURS"/>:<ph name="MINUTES"/>:<ph name="SECONDS"/></translation>
 <translation id="5977415296283489383">헤드폰</translation>
 <translation id="225680501294068881">기기 검색 중...</translation>
 <translation id="5597451508971090205"><ph name="DATE"/> <ph name="SHORT_WEEKDAY"/></translation>
@@ -190,7 +192,6 @@
 <translation id="2999742336789313416"><ph name="DISPLAY_NAME"/>은(는) <ph name="DOMAIN"/>에서 관리하는 공개 세션입니다.</translation>
 <translation id="9044646465488564462">네트워크 연결 실패: <ph name="DETAILS"/></translation>
 <translation id="7029814467594812963">세션 종료</translation>
-<translation id="479989351350248267">검색</translation>
 <translation id="8454013096329229812">Wi-Fi가 켜져 있습니다.</translation>
 <translation id="4872237917498892622">Alt+검색 또는 Shift 키</translation>
 <translation id="2429753432712299108">블루투스 기기 '<ph name="DEVICE_NAME"/>'에서 페어링 허가를 요청합니다. 허가하기 전에 다음 패스키가 기기에 표시되는지 확인하세요. <ph name="PASSKEY"/></translation>
@@ -226,10 +227,10 @@
 <translation id="6857811139397017780"><ph name="NETWORKSERVICE"/> 활성화</translation>
 <translation id="5864471791310927901">DHCP 조회 실패</translation>
 <translation id="2819276065543622893">지금 로그아웃됩니다.</translation>
+<translation id="5507786745520522457">모바일 데이터 설정</translation>
 <translation id="6165508094623778733">자세히 알아보기</translation>
 <translation id="9046895021617826162">연결 실패</translation>
 <translation id="7168224885072002358"><ph name="TIMEOUT_SECONDS"/>초 후 기존 해상도로 돌아갑니다.</translation>
-<translation id="973896785707726617">이 세션은 <ph name="SESSION_TIME_REMAINING"/> 후에 종료되어 자동으로 로그아웃됩니다.</translation>
 <translation id="743058460480092004">카메라와 마이크가 사용 중입니다.</translation>
 <translation id="8372369524088641025">잘못된 WEP 키</translation>
 <translation id="6636709850131805001">인식할 수 없는 상태</translation>

@@ -25,6 +25,7 @@
 <translation id="4891791193823137474">Lad Google Chrome køre i baggrunden</translation>
 <translation id="110877069173485804">Dette er din Chrome-browser</translation>
 <translation id="1376881911183620035">Tak, fordi du prøvede det nye Chrome. Chrome er nødt til at genstarte for at sikre, at du har gemt alt igangværende arbejde, inden du fortsætter.</translation>
+<translation id="8406086379114794905">Hjælp med at forbedre Chrome</translation>
 <translation id="2896252579017640304">Åbn Chrome-apps</translation>
 <translation id="2721687379934343312">På Mac gemmes adgangskoder i din Keychain, og andre Chrome-brugere, der deler denne OS X-konto, kan få adgang til eller synkronisere adgangskoderne.</translation>
 <translation id="683440813066116847">Indgående regel for Google Chrome Canary om at tillade mDNS-trafik.</translation>
@@ -120,6 +121,7 @@ Hvis du logger ind alligevel, flettes Chrome-oplysninger, som f.eks. bogmærker,
 <translation id="911206726377975832">Slet også dine browserdata?</translation>
 <translation id="2036562258783619899">Se en smagsprøve af det nye Chrome</translation>
 <translation id="5855036575689098185">Du har software på din computer, som ikke er kompatibel med Google Chrome.</translation>
+<translation id="7164397146364144019">Du kan hjælpe med at gøre Chrome sikrere og nemmere at bruge ved automatisk at rapportere oplysninger om mulige sikkerhedsproblemer til Google.</translation>
 <translation id="8008534537613507642">Geninstaller Chrome</translation>
 <translation id="2044287590254833138">Google Chrome-værktøjslinje</translation>
 <translation id="8862326446509486874">Du har ikke de nødvendige rettigheder til en installation på systemniveau. Prøv at køre installationsprogrammet igen som administrator.</translation>
@@ -128,7 +130,6 @@ Hvis du logger ind alligevel, flettes Chrome-oplysninger, som f.eks. bogmærker,
 <translation id="7436949144778751379">Google Chrome kræver Windows XP eller nyere. Nogle funktioner virker måske ikke.</translation>
 <translation id="5877064549588274448">Kanalen er ændret. Genstart din enhed for at anvende ændringerne.</translation>
 <translation id="103396972844768118">Vigtige oplysninger om dine Chrome-data</translation>
-<translation id="6145223986912084844">chrome</translation>
 <translation id="6757767188268205357">Spørg mig ikke igen</translation>
 <translation id="2290095356545025170">Er du sikker på, at du vil afinstallere Google Chrome?</translation>
 <translation id="7062966102157262887">En download er i øjeblikket i gang. Vil du afslutte Google Chrome og annullere downloaden?</translation>
@@ -181,7 +182,6 @@ Hvis du logger ind alligevel, flettes Chrome-oplysninger, som f.eks. bogmærker,
 <translation id="3444832043240812445">Denne side viser kun oplysninger om dine seneste nedbrud, hvis du <ph name="BEGIN_LINK"/>aktiverer rapportering af nedbrud<ph name="END_LINK"/>.</translation>
 <translation id="8614913330719544658">Google Chrome svarer ikke. Vil du genstarte nu?</translation>
 <translation id="2681064822612051220">Der er registreret en modstridende installation af Google Chrome i dit system. Du skal afinstallere denne og prøve igen.</translation>
-<translation id="1175529839152551794">Nu, da du er logget ind, kan du få dine faner, bogmærker og andre Chrome-ting på både din bærbare computer, telefon og tablet. Du vil også modtage flere relevante forslag og funktioner på Google-tjenester.</translation>
 <translation id="8209985377776300429">Dette er en eksempelvisning af det nye Chrome.</translation>
 <translation id="6126631249883707068">Er du sikker på, at du vil have Google Chrome til at gemme din adgangskode?</translation>
 <translation id="7773845170078702898">Skal Google Chrome gemme din adgangskode til dette website?</translation>

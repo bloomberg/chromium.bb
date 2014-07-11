@@ -1,19 +1,17 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="pl">
-<translation id="8719282907381795632">Uzyskiwać dostęp do Twoich danych w witrynie <ph name="WEBSITE_1"/></translation>
 <translation id="7809034755304591547"><ph name="EXTENSION_NAME"/> (ID rozszerzenia „<ph name="EXTENSION_ID"/>”) jest zablokowane przez administratora.</translation>
 <translation id="2857834222104759979">Plik manifestu jest nieprawidłowy.</translation>
+<translation id="8978038008714088448">Przejrzyj i zmień swoje dane na <ph name="WEBSITE_1"/></translation>
+<translation id="4205302772098850608">Przejrzyj i zmień swoje dane na <ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/> i <ph name="WEBSITE_3"/></translation>
 <translation id="3828484226910527078">Dostęp do urządzenia USB</translation>
 <translation id="6384275966486438344">Zmień ustawienia wyszukiwania na: <ph name="SEARCH_HOST"/></translation>
 <translation id="5911798608827489036">Wymiana danych z dowolnym komputerem w sieci lokalnej lub internecie</translation>
 <translation id="4719685943208231314">Dostęp do urządzenia USB firmy <ph name="VENDOR_NAME"/></translation>
 <translation id="657064425229075395">Nie udało się wczytać skryptu działającego w tle „<ph name="BACKGROUND_SCRIPT"/>”.</translation>
-<translation id="3093853184108622112">Uzyskiwać dostęp do Twoich danych w witrynach <ph name="WEBSITE_1"/> i <ph name="WEBSITE_2"/></translation>
 <translation id="8597109877291678953">Wymiana danych z komputerem o nazwie <ph name="HOSTNAME"/></translation>
-<translation id="6914908792814954894">Korzystanie z Twoich danych w <ph name="NUMBER_OF_WEBSITES"/> witrynach</translation>
 <translation id="5456409301717116725">To rozszerzenie zawiera plik klucza „<ph name="KEY_PATH"/>”. Prawdopodobnie nie powinno tak być.</translation>
-<translation id="6968649314782363508">Uzyskiwać dostęp do Twoich danych w witrynach <ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/> i <ph name="WEBSITE_3"/></translation>
 <translation id="2350172092385603347">Lokalizacja została użyta, ale nie określono języka default_locale w pliku manifestu.</translation>
 <translation id="8058376558882514200">Dostęp do urządzenia USB <ph name="PRODUCT_NAME"/> firmy <ph name="VENDOR_NAME"/></translation>
 <translation id="8774379383902544371">Dostęp do urządzeń USB</translation>
@@ -21,13 +19,15 @@
 <translation id="6344170822609224263">Lista dostępu połączeń sieciowych</translation>
 <translation id="2518849872271000461">Wymiana danych z komputerami o nazwach: <ph name="HOSTNAMES"/></translation>
 <translation id="1389014510128217152">– <ph name="WEBSITE_1"/></translation>
-<translation id="5530391389158154052">Korzystanie z Twoich danych w <ph name="NUMBER_OF_WEBSITES"/> witrynach</translation>
 <translation id="961805664415579088">Wymiana danych z dowolnym komputerem w domenie <ph name="DOMAIN"/></translation>
 <translation id="4968399700653439437">Wymiana danych z dowolnym komputerem w domenach <ph name="DOMAINS"/></translation>
 <translation id="8662911384982557515">Zmień stronę główną na: <ph name="HOME_PAGE"/></translation>
+<translation id="8114679593444120202">Przejrzyj i zmień swoje dane na <ph name="NUMBER_OF_WEBSITES"/> stronach</translation>
 <translation id="8602184400052594090">Brak pliku manifestu lub nie można go odczytać.</translation>
 <translation id="7893008570150657497">Uzyskać dostęp do zdjęć, muzyki i innych multimediów na komptuerze</translation>
 <translation id="7217838517480956708">Administrator tego komputera wymaga zainstalowanego rozszerzenia <ph name="EXTENSION_NAME"/>. Nie można go usunąć ani modyfikować.</translation>
 <translation id="7154130902455071009">Zmień stronę startową na: <ph name="START_PAGE"/></translation>
+<translation id="6094507746643187368">Przejrzyj i zmień swoje dane na <ph name="WEBSITE_1"/> i <ph name="WEBSITE_2"/></translation>
 <translation id="1803557475693955505">Nie można wczytać strony w tle „<ph name="BACKGROUND_PAGE"/>”.</translation>
+<translation id="8207052894957937969">Przejrzyj i zmień swoje dane na <ph name="NUMBER_OF_WEBSITES"/> stronach</translation>
 </translationbundle>

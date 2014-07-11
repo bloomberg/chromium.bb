@@ -1,19 +1,17 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="bn">
-<translation id="8719282907381795632"><ph name="WEBSITE_1"/> এ আপনার ডেটা অ্যাক্সেস করুন</translation>
 <translation id="7809034755304591547"><ph name="EXTENSION_NAME"/> (এক্সটেশন ID &quot;<ph name="EXTENSION_ID"/>&quot;) টি প্রশাসকের দ্বারা অবরুদ্ধ করা আছে৷</translation>
 <translation id="2857834222104759979">তালিকা ফাইল অবৈধ৷</translation>
+<translation id="8978038008714088448"><ph name="WEBSITE_1"/> এ আপনার ডেটা পড়ুন ও এর সংশোধন করুন</translation>
+<translation id="4205302772098850608"><ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/>, ও <ph name="WEBSITE_3"/> এ আপনার ডেটা পড়ুন ও এর সংশোধন করুন</translation>
 <translation id="3828484226910527078">USB ডিভাইস অ্যাক্সেস করুন৷</translation>
 <translation id="6384275966486438344">আপনার অনুসন্ধানের সেটিংস এতে পরিবর্তন করুন: <ph name="SEARCH_HOST"/></translation>
 <translation id="5911798608827489036">স্থানীয় নেটওয়ার্ক বা ইন্টারনেটে যেকোনো কম্পিউটারের সাথে ডেটা বিনিময় করুন</translation>
 <translation id="4719685943208231314"><ph name="VENDOR_NAME"/> থেকে USB ডিভাইসটি অ্যাক্সেস করুন৷</translation>
 <translation id="657064425229075395">পশ্চাদপট লিপি '<ph name="BACKGROUND_SCRIPT"/>' লোড করা যায়নি৷</translation>
-<translation id="3093853184108622112"><ph name="WEBSITE_1"/> এবং <ph name="WEBSITE_2"/> এ আপনার ডেটা অ্যাক্সেস করুন</translation>
 <translation id="8597109877291678953"><ph name="HOSTNAME"/> নামের যেকোনো কম্পিউটারের সাথে ডেটা বিনিময় করুন</translation>
-<translation id="6914908792814954894"><ph name="NUMBER_OF_WEBSITES"/> ওয়েবসাইটগুলিতে আপনার ডেটা অ্যাক্সেস করে</translation>
 <translation id="5456409301717116725">এই এক্সটেনশানটি '<ph name="KEY_PATH"/>' মুখ্য ফাইলকে অন্তর্ভুক্ত করে৷ আপনি সম্ভবত এটি করতে চাইবেন না৷</translation>
-<translation id="6968649314782363508"><ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/>, এবং <ph name="WEBSITE_3"/> এ আপনার ডেটা অ্যাক্সেস করুন</translation>
 <translation id="2350172092385603347">স্থানীয়করণ ব্যবহৃত হয়েছে, কিন্তু default_locale তালিকাতে উল্লেখ ছিল না৷</translation>
 <translation id="8058376558882514200"><ph name="VENDOR_NAME"/> থেকে <ph name="PRODUCT_NAME"/> USB ডিভাইসটি অ্যাক্সেস করুন৷</translation>
 <translation id="8774379383902544371">USB ডিভাইসগুলির অ্যাক্সেস</translation>
@@ -21,13 +19,15 @@
 <translation id="6344170822609224263">নেটওয়ার্ক সংযোগের তালিকা অ্যাক্সেস করে</translation>
 <translation id="2518849872271000461">এই নামের যেকোনো কম্পিউটারের সাথে ডেটা বিনিময় করুন: <ph name="HOSTNAMES"/></translation>
 <translation id="1389014510128217152">- <ph name="WEBSITE_1"/></translation>
-<translation id="5530391389158154052"><ph name="NUMBER_OF_WEBSITES"/>টি ওয়েবসাইটে আপনার ডেটা অ্যাক্সেস করুন</translation>
 <translation id="961805664415579088"><ph name="DOMAIN"/> ডোমেনে যেকোনো কম্পিউটারের সাথে ডেটা বিনিময় করুন</translation>
 <translation id="4968399700653439437">এই ডোমেনগুলিতে যেকোনো কম্পিউটারের সাথে ডেটা বিনিময় করুন: <ph name="DOMAINS"/></translation>
 <translation id="8662911384982557515">আপনার হোম পৃষ্ঠাকে এতে পরিবর্তিত করুন: <ph name="HOME_PAGE"/></translation>
+<translation id="8114679593444120202"><ph name="NUMBER_OF_WEBSITES"/>টি ওয়েবসাইটে আপনার ডেটা পড়ুন ও এর সংশোধন করুন</translation>
 <translation id="8602184400052594090">তালিকা ফাইল পাওয়া যাচ্ছে না অথবা পঠনযোগ্য৷</translation>
 <translation id="7893008570150657497">আপনার কম্পিউটার থেকে ফটো, সঙ্গীত ও অন্য মিডিয়াতে অ্যাক্সেস করুন</translation>
 <translation id="7217838517480956708">এই মেশিনের প্রশাসকের <ph name="EXTENSION_NAME"/> ইনস্টল করার প্রয়োজন৷ এটি সরানো অথবা সংশোধন করা যাবে না৷</translation>
 <translation id="7154130902455071009">আপনার সূচনা পৃষ্ঠাকে এতে পরিবর্তন করুন: <ph name="START_PAGE"/></translation>
+<translation id="6094507746643187368"><ph name="WEBSITE_1"/> ও <ph name="WEBSITE_2"/> এ আপনার ডেটা পড়ুন ও এর সংশোধন করুন</translation>
 <translation id="1803557475693955505">পৃষ্ঠভূমি পৃষ্ঠা '<ph name="BACKGROUND_PAGE"/>' লোড করা যায়নি৷</translation>
+<translation id="8207052894957937969"><ph name="NUMBER_OF_WEBSITES"/>টি ওয়েবসাইটে আপনার ডেটা পড়ুন ও এর সংশোধন করুন</translation>
 </translationbundle>

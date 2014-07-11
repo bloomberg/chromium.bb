@@ -1,19 +1,17 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="es-419">
-<translation id="8719282907381795632">Acceder a tus datos en <ph name="WEBSITE_1"/></translation>
 <translation id="7809034755304591547">El administrador bloqueó la extensión <ph name="EXTENSION_NAME"/> (con ID &quot;<ph name="EXTENSION_ID"/>&quot;).</translation>
 <translation id="2857834222104759979">Archivo de manifiesto no válido.</translation>
+<translation id="8978038008714088448">Leer y modificar tus datos en <ph name="WEBSITE_1"/></translation>
+<translation id="4205302772098850608">Leer y modificar tus datos en <ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/> y <ph name="WEBSITE_3"/></translation>
 <translation id="3828484226910527078">Acceder al dispositivo USB</translation>
 <translation id="6384275966486438344">Cambiar la configuración de búsqueda por <ph name="SEARCH_HOST"/></translation>
 <translation id="5911798608827489036">Intercambiar datos con cualquier computadora en la red local o en internet</translation>
 <translation id="4719685943208231314">Acceder al dispositivo USB de <ph name="VENDOR_NAME"/></translation>
 <translation id="657064425229075395">No se pudo cargar la secuencia de comandos en segundo plano &quot;<ph name="BACKGROUND_SCRIPT"/>&quot;.</translation>
-<translation id="3093853184108622112">Acceder a tus datos en <ph name="WEBSITE_1"/> y en <ph name="WEBSITE_2"/></translation>
 <translation id="8597109877291678953">Intercambiar datos con la computadora llamada <ph name="HOSTNAME"/></translation>
-<translation id="6914908792814954894">Acceder a los datos en <ph name="NUMBER_OF_WEBSITES"/> sitios web</translation>
 <translation id="5456409301717116725">Esta extensión incluye el archivo de clave &quot;<ph name="KEY_PATH"/>&quot;. Probablemente no desees incluir ese archivo.</translation>
-<translation id="6968649314782363508">Acceder a tus datos en <ph name="WEBSITE_1"/> , <ph name="WEBSITE_2"/> y <ph name="WEBSITE_3"/></translation>
 <translation id="2350172092385603347">Se utiliza localización, pero default_locale no se especificó en el manifiesto.</translation>
 <translation id="8058376558882514200">Acceder al dispositivo USB <ph name="PRODUCT_NAME"/> de <ph name="VENDOR_NAME"/></translation>
 <translation id="8774379383902544371">Acceder a dispositivos USB</translation>
@@ -21,13 +19,15 @@
 <translation id="6344170822609224263">Acceder a la lista de conexiones de red</translation>
 <translation id="2518849872271000461">Intercambiar datos con las computadoras llamadas: <ph name="HOSTNAMES"/></translation>
 <translation id="1389014510128217152">- <ph name="WEBSITE_1"/></translation>
-<translation id="5530391389158154052">Acceder a los datos en <ph name="NUMBER_OF_WEBSITES"/> sitios web</translation>
 <translation id="961805664415579088">Intercambiar datos con cualquier computadora en el dominio <ph name="DOMAIN"/></translation>
 <translation id="4968399700653439437">Intercambiar datos con cualquier computadora en los dominios: <ph name="DOMAINS"/></translation>
 <translation id="8662911384982557515">Cambiar la página principal por <ph name="HOME_PAGE"/></translation>
+<translation id="8114679593444120202">Leer y modificar tus datos en <ph name="NUMBER_OF_WEBSITES"/> sitios web</translation>
 <translation id="8602184400052594090">El archivo de manifiesto falta o no se puede leer.</translation>
 <translation id="7893008570150657497">Acceder a fotos, música y otros medios desde tu computadora</translation>
 <translation id="7217838517480956708">El administrador de esta máquina requiere que instales <ph name="EXTENSION_NAME"/>. No se puede eliminar ni modificar.</translation>
 <translation id="7154130902455071009">Cambiar la página de inicio por <ph name="START_PAGE"/></translation>
+<translation id="6094507746643187368">Leer y modificar tus datos en <ph name="WEBSITE_1"/> y <ph name="WEBSITE_2"/></translation>
 <translation id="1803557475693955505">No se pudo cargar la página de fondo '<ph name="BACKGROUND_PAGE"/>'.</translation>
+<translation id="8207052894957937969">Leer y modificar tus datos en <ph name="NUMBER_OF_WEBSITES"/> sitios web</translation>
 </translationbundle>

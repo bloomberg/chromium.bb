@@ -56,7 +56,6 @@ Kai kurios funkcijos gali būti nepasiekiamos ir nuostatų pakeitimai nebus išs
 <translation id="4831257561365056138">Pašalinti „Chromium“ programų paleidimo priemonę</translation>
 <translation id="4222580632002216401">Dabar esate prisijungę prie „Chromium“. Administratorius neleidžia sinchronizuoti.</translation>
 <translation id="4207043877577553402"><ph name="BEGIN_BOLD"/>Įspėjimas:<ph name="END_BOLD"/> Chromium“ negali neleisti plėtiniams įrašyti jūsų naršymo istorijos. Jei norite neleisti šio plėtinio inkognito režimu, panaikinkite šios parinkties pasirinkimą.</translation>
-<translation id="4516868174453854611">Dabar esate prisijungę, todėl skirtukus, žymes ir kitus „Chromium“ duomenis galite naudoti skreitiniame kompiuteryje, telefone ir planšetiniame kompiuteryje. Be to, gausite labiau atitinkamus pasiūlymus ir „Google“ paslaugų funkcijas.</translation>
 <translation id="985602178874221306">„Chromium“ autoriai</translation>
 <translation id="8628626585870903697">„Chromium“ neįtraukta PDF žiūryklė, reikalinga, kad veiktų „Spaudinio peržiūra“.</translation>
 <translation id="7138853919861947730">„Chromium“ gali naudoti žiniatinklio paslaugas naršymo kokybei pagerinti.</translation>
@@ -110,6 +109,7 @@ Kai kurios funkcijos gali būti nepasiekiamos ir nuostatų pakeitimai nebus išs
 <translation id="3258596308407688501">„Chromium“ negali skaityti ir rašyti į duomenų katalogą:
 
 <ph name="USER_DATA_DIRECTORY"/></translation>
+<translation id="1869480248812203386">Galite padėti sustiprinti „Chromium“ saugą ir palengvinti jos naudojimą automatiškai „Google“ pateikdami išsamią informaciją apie galimas saugos problemas.</translation>
 <translation id="6970811910055250180">Įrenginys atnaujinamas...</translation>
 <translation id="2485422356828889247">Pašalinti</translation>
 <translation id="85843667276690461">Gauti su „Chromium“ naudojimu susijusios pagalbos</translation>
@@ -118,7 +118,6 @@ Kai kurios funkcijos gali būti nepasiekiamos ir nuostatų pakeitimai nebus išs
 <translation id="8493179195440786826">„Chromium“ versija yra pasenusi</translation>
 <translation id="911206726377975832">Ar ištrinti naršymo duomenis?</translation>
 <translation id="95514773681268843"><ph name="DOMAIN"/> reikia, kad prieš naudodami šį įrenginį perskaitytumėte toliau pateiktas paslaugų teikimo sąlygas. Šios sąlygos neišplečia, nepakeičia ir neapriboja „Chromium“ OS sąlygų.</translation>
-<translation id="5603085937604338780">chromium</translation>
 <translation id="1699664235656412242">Uždarykite visus „Chromium“ langus (įskaitant atidarytus veikiant „Windows 8“ režimui) ir bandykite dar kartą.</translation>
 <translation id="6734080038664603509">&amp;„Chromium“ naujinys</translation>
 <translation id="8862326446509486874">Neturite reikiamų teisių sistemai įdiegti. Pamėginkite įdiegimo priemonę dar kartą paleisti kaip administratorius.</translation>
@@ -227,6 +226,7 @@ Prisijungus bet kuriuo būdu, „Chromium“ informacija, pvz., žymės, istorij
 <translation id="9013262824292842194">„Chromium“ reikalinga „Windows Vista“ ar „Windows XP“ su SP2 ar naujesne versija.</translation>
 <translation id="1967743265616885482">Modulis tokiu pačiu pavadinimu žinomas kaip prieštaraujantis „Chromium“.</translation>
 <translation id="8704119203788522458">Tai jūsų „Chromium“</translation>
+<translation id="8269379391216269538">Padėkite tobulinti „Chromium“</translation>
 <translation id="4224199872375172890">„Chromium“ naujausios versijos.</translation>
 <translation id="374481098568514319">Šiame kompiuteryje jau yra naujesnės versijos „Chromium“ komponentų. Naudokite naujesnę diegimo programą.</translation>
 <translation id="6240281849816458190">Bandėte pasiekti &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, bet serveris pateikė sertifikatą, kuris dar negalioja. Nėra pasiekiamos informacijos, kur būtų nurodyta, ar tas sertifikatas patikimas. „Chromium“ negali patikimai garantuoti, kad susisiekiate su &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, o ne užgrobėju. Kompiuterio laikrodis šiuo metu nustatytas į <ph name="CURRENT_TIME"/>. Ar teisingai? Jei ne, turėtumėte ištaisyti klaidą ir atnaujinti šį puslapį.</translation>
