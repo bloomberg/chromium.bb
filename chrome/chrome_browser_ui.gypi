@@ -1440,8 +1440,6 @@
       'browser/ui/location_bar/location_bar_util.h',
       'browser/ui/location_bar/origin_chip_info.cc',
       'browser/ui/location_bar/origin_chip_info.h',
-      'browser/ui/ntp_background_util.cc',
-      'browser/ui/ntp_background_util.h',
       'browser/ui/omnibox/alternate_nav_infobar_delegate.cc',
       'browser/ui/omnibox/alternate_nav_infobar_delegate.h',
       'browser/ui/omnibox/omnibox_controller.cc',

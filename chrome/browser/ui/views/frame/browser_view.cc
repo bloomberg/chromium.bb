@@ -49,7 +49,6 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window_state.h"
-#include "chrome/browser/ui/ntp_background_util.h"
 #include "chrome/browser/ui/omnibox/omnibox_popup_model.h"
 #include "chrome/browser/ui/omnibox/omnibox_popup_view.h"
 #include "chrome/browser/ui/omnibox/omnibox_view.h"

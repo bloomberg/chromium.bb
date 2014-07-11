@@ -27,7 +27,7 @@ class ThemeService;
 // background image is joined.
 - (int)currentTabContentsHeight;
 
-// Current theme service, passed to the cross platform NtpBackgroundUtil class.
+// Current theme service.
 - (ThemeService*)themeService;
 
 @end
