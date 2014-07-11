@@ -253,7 +253,7 @@ void Headers::fillWith(const Dictionary& object, ExceptionState& exceptionState)
     // http://fetch.spec.whatwg.org/#headers-class
     // FIXME: Support sequence<sequence<ByteString>>.
     Vector<String> keyValuePair;
-    if (object.get(keys[0], keyValuePair)) {
+    if (DictionaryHelper::get(object, keys[0], keyValuePair)) {
         // "2. Otherwise, if |object| is a sequence, then for each |header| in
         //     |object|, run these substeps:
         //    1. If |header| does not contain exactly two items, throw a
@@ -263,7 +263,7 @@ void Headers::fillWith(const Dictionary& object, ExceptionState& exceptionState)
         for (size_t i = 0; i < keys.size(); ++i) {
             // We've already got the keyValuePair for key[0].
             if (i > 0) {
-                if (!object.get(keys[i], keyValuePair)) {
+                if (!DictionaryHelper::get(object, keys[i], keyValuePair)) {
                     exceptionState.throwTypeError("Invalid value");
                     return;
                 }
@@ -288,7 +288,7 @@ void Headers::fillWith(const Dictionary& object, ExceptionState& exceptionState)
     // FIXME: Support OpenEndedDictionary<ByteString>.
     for (size_t i = 0; i < keys.size(); ++i) {
         String value;
-        if (!object.get(keys[i], value)) {
+        if (!DictionaryHelper::get(object, keys[i], value)) {
             exceptionState.throwTypeError("Invalid value");
             return;
         }

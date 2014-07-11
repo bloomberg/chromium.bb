@@ -14,7 +14,7 @@ struct RegistrationOptionList  {
         : scope("/*")
     {
         // FIXME: Should be ScalarValueString. http://crbug.com/379009
-        options.get("scope", scope);
+        DictionaryHelper::get(options, "scope", scope);
     }
 
     String scope;

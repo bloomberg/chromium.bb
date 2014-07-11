@@ -14,13 +14,13 @@ namespace WebCore {
 struct RequestInit {
     explicit RequestInit(const Dictionary& options)
     {
-        options.get("method", method);
-        options.get("headers", headers);
+        DictionaryHelper::get(options, "method", method);
+        DictionaryHelper::get(options, "headers", headers);
         if (!headers) {
-            options.get("headers", headersDictionary);
+            DictionaryHelper::get(options, "headers", headersDictionary);
         }
-        options.get("mode", mode);
-        options.get("credentials", credentials);
+        DictionaryHelper::get(options, "mode", mode);
+        DictionaryHelper::get(options, "credentials", credentials);
     }
 
     String method;

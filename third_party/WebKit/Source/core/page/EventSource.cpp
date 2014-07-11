@@ -69,7 +69,7 @@ inline EventSource::EventSource(ExecutionContext* context, const KURL& url, cons
     , m_reconnectDelay(defaultReconnectDelay)
 {
     ScriptWrappable::init(this);
-    eventSourceInit.get("withCredentials", m_withCredentials);
+    DictionaryHelper::get(eventSourceInit, "withCredentials", m_withCredentials);
 }
 
 PassRefPtrWillBeRawPtr<EventSource> EventSource::create(ExecutionContext* context, const String& url, const Dictionary& eventSourceInit, ExceptionState& exceptionState)

@@ -103,40 +103,40 @@ Timing TimingInput::convert(const Dictionary& timingInputDictionary)
     // null, NaN, Infinity values better.
     // See: http://www.w3.org/TR/WebIDL/#es-double
     double startDelay = Timing::defaults().startDelay;
-    timingInputDictionary.get("delay", startDelay);
+    DictionaryHelper::get(timingInputDictionary, "delay", startDelay);
     setStartDelay(result, startDelay);
 
     double endDelay = Timing::defaults().endDelay;
-    timingInputDictionary.get("endDelay", endDelay);
+    DictionaryHelper::get(timingInputDictionary, "endDelay", endDelay);
     setEndDelay(result, endDelay);
 
     String fillMode;
-    timingInputDictionary.get("fill", fillMode);
+    DictionaryHelper::get(timingInputDictionary, "fill", fillMode);
     setFillMode(result, fillMode);
 
     double iterationStart = Timing::defaults().iterationStart;
-    timingInputDictionary.get("iterationStart", iterationStart);
+    DictionaryHelper::get(timingInputDictionary, "iterationStart", iterationStart);
     setIterationStart(result, iterationStart);
 
     double iterationCount = Timing::defaults().iterationCount;
-    timingInputDictionary.get("iterations", iterationCount);
+    DictionaryHelper::get(timingInputDictionary, "iterations", iterationCount);
     setIterationCount(result, iterationCount);
 
     double iterationDuration = 0;
-    if (timingInputDictionary.get("duration", iterationDuration)) {
+    if (DictionaryHelper::get(timingInputDictionary, "duration", iterationDuration)) {
         setIterationDuration(result, iterationDuration);
     }
 
     double playbackRate = Timing::defaults().playbackRate;
-    timingInputDictionary.get("playbackRate", playbackRate);
+    DictionaryHelper::get(timingInputDictionary, "playbackRate", playbackRate);
     setPlaybackRate(result, playbackRate);
 
     String direction;
-    timingInputDictionary.get("direction", direction);
+    DictionaryHelper::get(timingInputDictionary, "direction", direction);
     setPlaybackDirection(result, direction);
 
     String timingFunctionString;
-    timingInputDictionary.get("easing", timingFunctionString);
+    DictionaryHelper::get(timingInputDictionary, "easing", timingFunctionString);
     setTimingFunction(result, timingFunctionString);
 
     result.assertValid();

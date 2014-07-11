@@ -299,29 +299,29 @@ bool initializeTestInterfaceEventConstructor(TestInterfaceEventConstructorInit& 
     if (!initializeEvent(eventInit, options, exceptionState, info, forEventName.isEmpty() ? String("TestInterfaceEventConstructor") : forEventName))
         return false;
 
-    if (!options.convert(conversionContext.setConversionType("DOMString", false), "initializedByEventConstructorReadonlyStringAttribute", eventInit.initializedByEventConstructorReadonlyStringAttribute))
+    if (!DictionaryHelper::convert(options, conversionContext.setConversionType("DOMString", false), "initializedByEventConstructorReadonlyStringAttribute", eventInit.initializedByEventConstructorReadonlyStringAttribute))
         return false;
-    if (!options.convert(conversionContext.setConversionType("boolean", false), "initializedByEventConstructorReadonlyBooleanAttribute", eventInit.initializedByEventConstructorReadonlyBooleanAttribute))
+    if (!DictionaryHelper::convert(options, conversionContext.setConversionType("boolean", false), "initializedByEventConstructorReadonlyBooleanAttribute", eventInit.initializedByEventConstructorReadonlyBooleanAttribute))
         return false;
-    if (!options.convert(conversionContext.setConversionType("long", false), "initializedByEventConstructorReadonlyLongAttribute", eventInit.initializedByEventConstructorReadonlyLongAttribute))
+    if (!DictionaryHelper::convert(options, conversionContext.setConversionType("long", false), "initializedByEventConstructorReadonlyLongAttribute", eventInit.initializedByEventConstructorReadonlyLongAttribute))
         return false;
-    if (!options.convert(conversionContext.setConversionType("Uint8Array", false), "initializedByEventConstructorReadonlyUint8ArrayAttribute", eventInit.initializedByEventConstructorReadonlyUint8ArrayAttribute))
+    if (!DictionaryHelper::convert(options, conversionContext.setConversionType("Uint8Array", false), "initializedByEventConstructorReadonlyUint8ArrayAttribute", eventInit.initializedByEventConstructorReadonlyUint8ArrayAttribute))
         return false;
-    if (!options.convert(conversionContext.setConversionType("TestInterfaceEmpty", false), "initializedByEventConstructorReadonlyTestInterfaceEmptyAttribute", eventInit.initializedByEventConstructorReadonlyTestInterfaceEmptyAttribute))
+    if (!DictionaryHelper::convert(options, conversionContext.setConversionType("TestInterfaceEmpty", false), "initializedByEventConstructorReadonlyTestInterfaceEmptyAttribute", eventInit.initializedByEventConstructorReadonlyTestInterfaceEmptyAttribute))
         return false;
-    if (!options.convert(conversionContext.setConversionType("TestInterfaceEmpty[]", false), "initializedByEventConstructorReadonlyTestInterfaceEmptyArrayAttribute", eventInit.initializedByEventConstructorReadonlyTestInterfaceEmptyArrayAttribute))
+    if (!DictionaryHelper::convert(options, conversionContext.setConversionType("TestInterfaceEmpty[]", false), "initializedByEventConstructorReadonlyTestInterfaceEmptyArrayAttribute", eventInit.initializedByEventConstructorReadonlyTestInterfaceEmptyArrayAttribute))
         return false;
-    if (!options.convert(conversionContext.setConversionType("TestInterfaceEmpty", true), "initializedByEventConstructorReadonlyNullableTestInterfaceEmptyAttribute", eventInit.initializedByEventConstructorReadonlyNullableTestInterfaceEmptyAttribute))
+    if (!DictionaryHelper::convert(options, conversionContext.setConversionType("TestInterfaceEmpty", true), "initializedByEventConstructorReadonlyNullableTestInterfaceEmptyAttribute", eventInit.initializedByEventConstructorReadonlyNullableTestInterfaceEmptyAttribute))
         return false;
-    if (options.convert(conversionContext.setConversionType("DOMString", false), "deprecatedInitializedByEventConstructorReadonlyStringAttribute", eventInit.deprecatedInitializedByEventConstructorReadonlyStringAttribute)) {
+    if (DictionaryHelper::convert(options, conversionContext.setConversionType("DOMString", false), "deprecatedInitializedByEventConstructorReadonlyStringAttribute", eventInit.deprecatedInitializedByEventConstructorReadonlyStringAttribute)) {
         if (options.hasProperty("deprecatedInitializedByEventConstructorReadonlyStringAttribute"))
             UseCounter::countDeprecation(callingExecutionContext(info.GetIsolate()), UseCounter::initializedByEventConstructorReadonlyStringAttribute);
     } else {
         return false;
     }
-    if (!options.convert(conversionContext.setConversionType("DOMString", false), "implementedAsInitializedByEventConstructorReadonlyStringAttribute", eventInit.implementedAsName))
+    if (!DictionaryHelper::convert(options, conversionContext.setConversionType("DOMString", false), "implementedAsInitializedByEventConstructorReadonlyStringAttribute", eventInit.implementedAsName))
         return false;
-    if (options.convert(conversionContext.setConversionType("DOMString", false), "deprecatedImplementedAsInitializedByEventConstructorReadonlyStringAttribute", eventInit.deprecatedImplementedAsName)) {
+    if (DictionaryHelper::convert(options, conversionContext.setConversionType("DOMString", false), "deprecatedImplementedAsInitializedByEventConstructorReadonlyStringAttribute", eventInit.deprecatedImplementedAsName)) {
         if (options.hasProperty("deprecatedImplementedAsInitializedByEventConstructorReadonlyStringAttribute"))
             UseCounter::countDeprecation(callingExecutionContext(info.GetIsolate()), UseCounter::initializedByEventConstructorReadonlyStringAttribute);
     } else {

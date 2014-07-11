@@ -39,7 +39,7 @@ struct MIDIOptions  {
     explicit MIDIOptions(const Dictionary& options)
         : sysex(false)
     {
-        options.get("sysex", sysex);
+        DictionaryHelper::get(options, "sysex", sysex);
     }
 
     bool sysex;

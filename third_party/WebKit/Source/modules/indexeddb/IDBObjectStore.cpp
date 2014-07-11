@@ -386,10 +386,10 @@ private:
 IDBIndex* IDBObjectStore::createIndex(ScriptState* scriptState, const String& name, const IDBKeyPath& keyPath, const Dictionary& options, ExceptionState& exceptionState)
 {
     bool unique = false;
-    options.get("unique", unique);
+    DictionaryHelper::get(options, "unique", unique);
 
     bool multiEntry = false;
-    options.get("multiEntry", multiEntry);
+    DictionaryHelper::get(options, "multiEntry", multiEntry);
 
     return createIndex(scriptState, name, keyPath, unique, multiEntry, exceptionState);
 }

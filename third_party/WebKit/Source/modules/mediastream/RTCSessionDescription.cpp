@@ -50,14 +50,14 @@ static String constructIllegalTypeExceptionMessage(const String& type)
 RTCSessionDescription* RTCSessionDescription::create(const Dictionary& descriptionInitDict, ExceptionState& exceptionState)
 {
     String type;
-    bool ok = descriptionInitDict.get("type", type);
+    bool ok = DictionaryHelper::get(descriptionInitDict, "type", type);
     if (ok && !verifyType(type)) {
         exceptionState.throwDOMException(TypeMismatchError, constructIllegalTypeExceptionMessage(type));
         return nullptr;
     }
 
     String sdp;
-    descriptionInitDict.get("sdp", sdp);
+    DictionaryHelper::get(descriptionInitDict, "sdp", sdp);
 
     return new RTCSessionDescription(blink::WebRTCSessionDescription(type, sdp));
 }

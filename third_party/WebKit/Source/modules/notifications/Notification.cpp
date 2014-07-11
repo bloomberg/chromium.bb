@@ -48,15 +48,15 @@ Notification* Notification::create(ExecutionContext* context, const String& titl
     Notification* notification = adoptRefCountedGarbageCollectedWillBeNoop(new Notification(title, context, &client));
 
     String argument;
-    if (options.get("body", argument))
+    if (DictionaryHelper::get(options, "body", argument))
         notification->setBody(argument);
-    if (options.get("tag", argument))
+    if (DictionaryHelper::get(options, "tag", argument))
         notification->setTag(argument);
-    if (options.get("lang", argument))
+    if (DictionaryHelper::get(options, "lang", argument))
         notification->setLang(argument);
-    if (options.get("dir", argument))
+    if (DictionaryHelper::get(options, "dir", argument))
         notification->setDir(argument);
-    if (options.get("icon", argument)) {
+    if (DictionaryHelper::get(options, "icon", argument)) {
         KURL iconUrl = argument.isEmpty() ? KURL() : context->completeURL(argument);
         if (!iconUrl.isEmpty() && iconUrl.isValid())
             notification->setIconUrl(iconUrl);

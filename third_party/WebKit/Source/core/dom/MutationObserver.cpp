@@ -86,36 +86,36 @@ void MutationObserver::observe(Node* node, const Dictionary& optionsDictionary, 
     MutationObserverOptions options = 0;
 
     bool attributeOldValue = false;
-    bool attributeOldValuePresent = optionsDictionary.get("attributeOldValue", attributeOldValue);
+    bool attributeOldValuePresent = DictionaryHelper::get(optionsDictionary, "attributeOldValue", attributeOldValue);
     if (attributeOldValue)
         options |= AttributeOldValue;
 
     HashSet<AtomicString> attributeFilter;
-    bool attributeFilterPresent = optionsDictionary.get("attributeFilter", attributeFilter);
+    bool attributeFilterPresent = DictionaryHelper::get(optionsDictionary, "attributeFilter", attributeFilter);
     if (attributeFilterPresent)
         options |= AttributeFilter;
 
     bool attributes = false;
-    bool attributesPresent = optionsDictionary.get("attributes", attributes);
+    bool attributesPresent = DictionaryHelper::get(optionsDictionary, "attributes", attributes);
     if (attributes || (!attributesPresent && (attributeOldValuePresent || attributeFilterPresent)))
         options |= Attributes;
 
     bool characterDataOldValue = false;
-    bool characterDataOldValuePresent = optionsDictionary.get("characterDataOldValue", characterDataOldValue);
+    bool characterDataOldValuePresent = DictionaryHelper::get(optionsDictionary, "characterDataOldValue", characterDataOldValue);
     if (characterDataOldValue)
         options |= CharacterDataOldValue;
 
     bool characterData = false;
-    bool characterDataPresent = optionsDictionary.get("characterData", characterData);
+    bool characterDataPresent = DictionaryHelper::get(optionsDictionary, "characterData", characterData);
     if (characterData || (!characterDataPresent && characterDataOldValuePresent))
         options |= CharacterData;
 
     bool childListValue = false;
-    if (optionsDictionary.get("childList", childListValue) && childListValue)
+    if (DictionaryHelper::get(optionsDictionary, "childList", childListValue) && childListValue)
         options |= ChildList;
 
     bool subtreeValue = false;
-    if (optionsDictionary.get("subtree", subtreeValue) && subtreeValue)
+    if (DictionaryHelper::get(optionsDictionary, "subtree", subtreeValue) && subtreeValue)
         options |= Subtree;
 
     if (!(options & Attributes)) {

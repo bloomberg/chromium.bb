@@ -79,7 +79,7 @@ static bool parse(const Dictionary& constraintsDictionary, blink::WebVector<blin
     Vector<blink::WebMediaConstraint> optionalConstraintsVector;
     if (names.contains(optionalName)) {
         ArrayValue optionalConstraints;
-        bool ok = constraintsDictionary.get(optionalName, optionalConstraints);
+        bool ok = DictionaryHelper::get(constraintsDictionary, optionalName, optionalConstraints);
         if (!ok || optionalConstraints.isUndefinedOrNull())
             return false;
 
@@ -99,7 +99,7 @@ static bool parse(const Dictionary& constraintsDictionary, blink::WebVector<blin
                 return false;
             String key = localNames[0];
             String value;
-            ok = constraint.get(key, value);
+            ok = DictionaryHelper::get(constraint, key, value);
             if (!ok)
                 return false;
             optionalConstraintsVector.append(blink::WebMediaConstraint(key, value));

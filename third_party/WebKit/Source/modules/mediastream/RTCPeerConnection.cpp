@@ -88,7 +88,7 @@ PassRefPtr<RTCConfiguration> RTCPeerConnection::parseConfiguration(const Diction
         return nullptr;
 
     ArrayValue iceServers;
-    bool ok = configuration.get("iceServers", iceServers);
+    bool ok = DictionaryHelper::get(configuration, "iceServers", iceServers);
     if (!ok || iceServers.isUndefinedOrNull()) {
         exceptionState.throwTypeError("Malformed RTCConfiguration");
         return nullptr;
@@ -116,9 +116,9 @@ PassRefPtr<RTCConfiguration> RTCPeerConnection::parseConfiguration(const Diction
 
         Vector<String> urlStrings;
         if (names.contains("urls")) {
-            if (!iceServer.get("urls", urlStrings) || !urlStrings.size()) {
+            if (!DictionaryHelper::get(iceServer, "urls", urlStrings) || !urlStrings.size()) {
                 String urlString;
-                if (iceServer.get("urls", urlString)) {
+                if (DictionaryHelper::get(iceServer, "urls", urlString)) {
                     urlStrings.append(urlString);
                 } else {
                     exceptionState.throwTypeError("Malformed RTCIceServer");
@@ -127,7 +127,7 @@ PassRefPtr<RTCConfiguration> RTCPeerConnection::parseConfiguration(const Diction
             }
         } else if (names.contains("url")) {
             String urlString;
-            if (iceServer.get("url", urlString)) {
+            if (DictionaryHelper::get(iceServer, "url", urlString)) {
                 urlStrings.append(urlString);
             } else {
                 exceptionState.throwTypeError("Malformed RTCIceServer");
@@ -139,8 +139,8 @@ PassRefPtr<RTCConfiguration> RTCPeerConnection::parseConfiguration(const Diction
         }
 
         String username, credential;
-        iceServer.get("username", username);
-        iceServer.get("credential", credential);
+        DictionaryHelper::get(iceServer, "username", username);
+        DictionaryHelper::get(iceServer, "credential", credential);
 
         for (Vector<String>::iterator iter = urlStrings.begin(); iter != urlStrings.end(); ++iter) {
             KURL url(KURL(), *iter);
@@ -489,19 +489,19 @@ RTCDataChannel* RTCPeerConnection::createDataChannel(String label, const Diction
         return nullptr;
 
     blink::WebRTCDataChannelInit init;
-    options.get("ordered", init.ordered);
-    options.get("negotiated", init.negotiated);
+    DictionaryHelper::get(options, "ordered", init.ordered);
+    DictionaryHelper::get(options, "negotiated", init.negotiated);
 
     unsigned short value = 0;
-    if (options.get("id", value))
+    if (DictionaryHelper::get(options, "id", value))
         init.id = value;
-    if (options.get("maxRetransmits", value))
+    if (DictionaryHelper::get(options, "maxRetransmits", value))
         init.maxRetransmits = value;
-    if (options.get("maxRetransmitTime", value))
+    if (DictionaryHelper::get(options, "maxRetransmitTime", value))
         init.maxRetransmitTime = value;
 
     String protocolString;
-    options.get("protocol", protocolString);
+    DictionaryHelper::get(options, "protocol", protocolString);
     init.protocol = protocolString;
 
     RTCDataChannel* channel = RTCDataChannel::create(executionContext(), this, m_peerHandler.get(), label, init, exceptionState);

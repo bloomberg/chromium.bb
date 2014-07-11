@@ -27,6 +27,7 @@
 #include "config.h"
 #include "core/frame/LocalDOMWindow.h"
 
+#include "bindings/core/v8/Dictionary.h"
 #include "bindings/core/v8/ExceptionMessages.h"
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ExceptionStatePlaceholder.h"
@@ -1366,7 +1367,7 @@ double LocalDOMWindow::devicePixelRatio() const
 static bool scrollBehaviorFromScrollOptions(const Dictionary& scrollOptions, ScrollBehavior& scrollBehavior, ExceptionState& exceptionState)
 {
     String scrollBehaviorString;
-    if (!scrollOptions.get("behavior", scrollBehaviorString)) {
+    if (!DictionaryHelper::get(scrollOptions, "behavior", scrollBehaviorString)) {
         scrollBehavior = ScrollBehaviorAuto;
         return true;
     }

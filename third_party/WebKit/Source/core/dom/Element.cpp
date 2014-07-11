@@ -711,7 +711,7 @@ void Element::setScrollLeft(const Dictionary& scrollOptionsHorizontal, Exception
 {
     String scrollBehaviorString;
     ScrollBehavior scrollBehavior = ScrollBehaviorAuto;
-    if (scrollOptionsHorizontal.get("behavior", scrollBehaviorString)) {
+    if (DictionaryHelper::get(scrollOptionsHorizontal, "behavior", scrollBehaviorString)) {
         if (!ScrollableArea::scrollBehaviorFromString(scrollBehaviorString, scrollBehavior)) {
             exceptionState.throwTypeError("The ScrollBehavior provided is invalid.");
             return;
@@ -719,7 +719,7 @@ void Element::setScrollLeft(const Dictionary& scrollOptionsHorizontal, Exception
     }
 
     int position;
-    if (!scrollOptionsHorizontal.get("x", position)) {
+    if (!DictionaryHelper::get(scrollOptionsHorizontal, "x", position)) {
         exceptionState.throwTypeError("ScrollOptionsHorizontal must include an 'x' member.");
         return;
     }
@@ -757,7 +757,7 @@ void Element::setScrollTop(const Dictionary& scrollOptionsVertical, ExceptionSta
 {
     String scrollBehaviorString;
     ScrollBehavior scrollBehavior = ScrollBehaviorAuto;
-    if (scrollOptionsVertical.get("behavior", scrollBehaviorString)) {
+    if (DictionaryHelper::get(scrollOptionsVertical, "behavior", scrollBehaviorString)) {
         if (!ScrollableArea::scrollBehaviorFromString(scrollBehaviorString, scrollBehavior)) {
             exceptionState.throwTypeError("The ScrollBehavior provided is invalid.");
             return;
@@ -765,7 +765,7 @@ void Element::setScrollTop(const Dictionary& scrollOptionsVertical, ExceptionSta
     }
 
     int position;
-    if (!scrollOptionsVertical.get("y", position)) {
+    if (!DictionaryHelper::get(scrollOptionsVertical, "y", position)) {
         exceptionState.throwTypeError("ScrollOptionsVertical must include a 'y' member.");
         return;
     }

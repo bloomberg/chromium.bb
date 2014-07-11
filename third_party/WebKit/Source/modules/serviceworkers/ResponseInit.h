@@ -21,12 +21,12 @@ struct ResponseInit {
         : status(200)
         , statusText("OK")
     {
-        options.get("status", status);
+        DictionaryHelper::get(options, "status", status);
         // FIXME: Spec uses ByteString for statusText. http://crbug.com/347426
-        options.get("statusText", statusText);
-        options.get("headers", headers);
+        DictionaryHelper::get(options, "statusText", statusText);
+        DictionaryHelper::get(options, "headers", headers);
         if (!headers) {
-            options.get("headers", headersDictionary);
+            DictionaryHelper::get(options, "headers", headersDictionary);
         }
     }
 

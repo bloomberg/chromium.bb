@@ -203,12 +203,12 @@ IDBObjectStore* IDBDatabase::createObjectStore(const String& name, const Diction
     if (!options.isUndefinedOrNull()) {
         String keyPathString;
         Vector<String> keyPathArray;
-        if (options.get("keyPath", keyPathArray))
+        if (DictionaryHelper::get(options, "keyPath", keyPathArray))
             keyPath = IDBKeyPath(keyPathArray);
         else if (options.getWithUndefinedOrNullCheck("keyPath", keyPathString))
             keyPath = IDBKeyPath(keyPathString);
 
-        options.get("autoIncrement", autoIncrement);
+        DictionaryHelper::get(options, "autoIncrement", autoIncrement);
     }
 
     return createObjectStore(name, keyPath, autoIncrement, exceptionState);

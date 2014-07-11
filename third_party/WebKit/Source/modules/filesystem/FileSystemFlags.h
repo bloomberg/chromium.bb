@@ -40,8 +40,8 @@ struct FileSystemFlags  {
         : create(false)
         , exclusive(false)
     {
-        options.get("create", create);
-        options.get("exclusive", exclusive);
+        DictionaryHelper::get(options, "create", create);
+        DictionaryHelper::get(options, "exclusive", exclusive);
     }
 
     bool create;

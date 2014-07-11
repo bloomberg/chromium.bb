@@ -72,7 +72,7 @@ bool ParsedProperties::parseBlobPropertyBag(v8::Local<v8::Value> propertyBag, co
     TONATIVE_DEFAULT(Dictionary, dictionary, Dictionary(propertyBag, isolate), false);
 
     String endings;
-    TONATIVE_DEFAULT(bool, containsEndings, dictionary.get("endings", endings), false);
+    TONATIVE_DEFAULT(bool, containsEndings, DictionaryHelper::get(dictionary, "endings", endings), false);
     if (containsEndings) {
         if (endings != "transparent" && endings != "native") {
             exceptionState.throwTypeError("The 'endings' property must be either 'transparent' or 'native'.");
@@ -82,7 +82,7 @@ bool ParsedProperties::parseBlobPropertyBag(v8::Local<v8::Value> propertyBag, co
             m_normalizeLineEndingsToNative = true;
     }
 
-    TONATIVE_DEFAULT(bool, containsType, dictionary.get("type", m_contentType), false);
+    TONATIVE_DEFAULT(bool, containsType, DictionaryHelper::get(dictionary, "type", m_contentType), false);
     if (containsType) {
         if (!m_contentType.containsOnlyASCII()) {
             exceptionState.throwDOMException(SyntaxError, "The 'type' property must consist of ASCII characters.");
@@ -95,7 +95,7 @@ bool ParsedProperties::parseBlobPropertyBag(v8::Local<v8::Value> propertyBag, co
         return true;
 
     v8::Local<v8::Value> lastModified;
-    TONATIVE_DEFAULT(bool, containsLastModified, dictionary.get("lastModified", lastModified), false);
+    TONATIVE_DEFAULT(bool, containsLastModified, DictionaryHelper::get(dictionary, "lastModified", lastModified), false);
     if (containsLastModified) {
         TONATIVE_DEFAULT(long long, lastModifiedInt, toInt64(lastModified), false);
         setLastModified(static_cast<double>(lastModifiedInt) / msPerSecond);

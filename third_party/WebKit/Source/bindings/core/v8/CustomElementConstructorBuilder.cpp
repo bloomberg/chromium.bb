@@ -74,7 +74,7 @@ bool CustomElementConstructorBuilder::validateOptions(const AtomicString& type, 
     v8::TryCatch tryCatch;
 
     ScriptValue prototypeScriptValue;
-    if (m_options->get("prototype", prototypeScriptValue) && !prototypeScriptValue.isNull()) {
+    if (DictionaryHelper::get(*m_options, "prototype", prototypeScriptValue) && !prototypeScriptValue.isNull()) {
         ASSERT(!tryCatch.HasCaught());
         if (!prototypeScriptValue.isObject()) {
             CustomElementException::throwException(CustomElementException::PrototypeNotAnObject, type, exceptionState);
@@ -95,7 +95,7 @@ bool CustomElementConstructorBuilder::validateOptions(const AtomicString& type, 
     }
 
     AtomicString extends;
-    bool extendsProvidedAndNonNull = m_options->get("extends", extends);
+    bool extendsProvidedAndNonNull = DictionaryHelper::get(*m_options, "extends", extends);
 
     if (tryCatch.HasCaught()) {
         tryCatch.ReThrow();

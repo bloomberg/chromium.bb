@@ -76,7 +76,7 @@ String TextEncoder::encoding() const
 PassRefPtr<Uint8Array> TextEncoder::encode(const String& input, const Dictionary& options)
 {
     bool stream = false;
-    options.get("stream", stream);
+    DictionaryHelper::get(options, "stream", stream);
 
     // FIXME: Not flushing is not supported by TextCodec for encode; add it or
     // handle split surrogates here.

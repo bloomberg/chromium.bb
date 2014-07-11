@@ -50,10 +50,10 @@ TextDecoder* TextDecoder::create(const String& label, const Dictionary& options,
     }
 
     bool fatal = false;
-    options.get("fatal", fatal);
+    DictionaryHelper::get(options, "fatal", fatal);
 
     bool ignoreBOM = false;
-    options.get("ignoreBOM", ignoreBOM);
+    DictionaryHelper::get(options, "ignoreBOM", ignoreBOM);
 
     return new TextDecoder(encoding, fatal, ignoreBOM);
 }
@@ -85,7 +85,7 @@ String TextDecoder::encoding() const
 String TextDecoder::decode(ArrayBufferView* input, const Dictionary& options, ExceptionState& exceptionState)
 {
     bool stream = false;
-    options.get("stream", stream);
+    DictionaryHelper::get(options, "stream", stream);
 
     const char* start = input ? static_cast<const char*>(input->baseAddress()) : 0;
     size_t length = input ? input->byteLength() : 0;

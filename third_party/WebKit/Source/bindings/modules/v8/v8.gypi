@@ -9,6 +9,7 @@
     'variables': {
         'bindings_modules_v8_files': [
             '<@(bindings_modules_v8_custom_files)',
+            'DictionaryHelperForModules.cpp',
             'IDBBindingUtilities.cpp',
             'IDBBindingUtilities.h',
             'ModuleBindingsInitializer.cpp',

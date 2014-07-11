@@ -22,12 +22,12 @@ PositionOptions::PositionOptions(const Dictionary& options)
 {
     if (options.hasProperty("enableHighAccuracy")) {
         bool highAccuracy;
-        if (options.get("enableHighAccuracy", highAccuracy))
+        if (DictionaryHelper::get(options, "enableHighAccuracy", highAccuracy))
             m_highAccuracy = highAccuracy;
     }
     if (options.hasProperty("maximumAge")) {
         double maximumAge;
-        if (options.get("maximumAge", maximumAge)) {
+        if (DictionaryHelper::get(options, "maximumAge", maximumAge)) {
             if (maximumAge < 0)
                 m_maximumAge = 0;
             else if (maximumAge > std::numeric_limits<unsigned>::max())
@@ -38,7 +38,7 @@ PositionOptions::PositionOptions(const Dictionary& options)
     }
     if (options.hasProperty("timeout")) {
         double timeout;
-        if (options.get("timeout", timeout)) {
+        if (DictionaryHelper::get(options, "timeout", timeout)) {
             if (timeout < 0)
                 m_timeout = 0;
             else if (timeout > std::numeric_limits<unsigned>::max())

@@ -31,6 +31,8 @@
             'DOMWrapperWorld.h',
             'Dictionary.cpp',
             'Dictionary.h',
+            'DictionaryHelperForBindings.h',
+            'DictionaryHelperForCore.cpp',
             'ExceptionMessages.cpp',
             'ExceptionMessages.h',
             'ExceptionState.cpp',

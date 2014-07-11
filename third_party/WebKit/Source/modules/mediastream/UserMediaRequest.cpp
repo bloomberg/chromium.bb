@@ -57,7 +57,7 @@ static blink::WebMediaConstraints parseOptions(const Dictionary& options, const 
         constraints = MediaConstraintsImpl::create(constraintsDictionary, exceptionState);
     else {
         bool mediaRequested = false;
-        options.get(mediaType, mediaRequested);
+        DictionaryHelper::get(options, mediaType, mediaRequested);
         if (mediaRequested)
             constraints = MediaConstraintsImpl::create();
     }

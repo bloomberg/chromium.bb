@@ -61,7 +61,7 @@ PassRefPtrWillBeRawPtr<AnimationEffect> EffectInput::convert(Element* element, c
 
         bool frameHasOffset = false;
         double offset;
-        if (keyframeDictionaryVector[i].get("offset", offset)) {
+        if (DictionaryHelper::get(keyframeDictionaryVector[i], "offset", offset)) {
             // Keyframes with offsets outside the range [0.0, 1.0] are ignored.
             if (std::isnan(offset) || offset < 0 || offset > 1)
                 continue;
@@ -70,7 +70,7 @@ PassRefPtrWillBeRawPtr<AnimationEffect> EffectInput::convert(Element* element, c
             // The JS value null gets converted to 0 so we need to check whether the original value is null.
             if (offset == 0) {
                 ScriptValue scriptValue;
-                if (keyframeDictionaryVector[i].get("offset", scriptValue) && scriptValue.isNull())
+                if (DictionaryHelper::get(keyframeDictionaryVector[i], "offset", scriptValue) && scriptValue.isNull())
                     frameHasOffset = false;
             }
             if (frameHasOffset) {
@@ -85,12 +85,12 @@ PassRefPtrWillBeRawPtr<AnimationEffect> EffectInput::convert(Element* element, c
         keyframes.append(keyframe);
 
         String compositeString;
-        keyframeDictionaryVector[i].get("composite", compositeString);
+        DictionaryHelper::get(keyframeDictionaryVector[i], "composite", compositeString);
         if (compositeString == "add")
             keyframe->setComposite(AnimationEffect::CompositeAdd);
 
         String timingFunctionString;
-        if (keyframeDictionaryVector[i].get("easing", timingFunctionString)) {
+        if (DictionaryHelper::get(keyframeDictionaryVector[i], "easing", timingFunctionString)) {
             if (RefPtrWillBeRawPtr<CSSValue> timingFunctionValue = BisonCSSParser::parseAnimationTimingFunctionValue(timingFunctionString))
                 keyframe->setEasing(CSSToStyleMap::mapAnimationTimingFunction(timingFunctionValue.get(), true));
         }
@@ -103,7 +103,7 @@ PassRefPtrWillBeRawPtr<AnimationEffect> EffectInput::convert(Element* element, c
             if (id == CSSPropertyInvalid)
                 continue;
             String value;
-            keyframeDictionaryVector[i].get(property, value);
+            DictionaryHelper::get(keyframeDictionaryVector[i], property, value);
             keyframe->setPropertyValue(id, value, styleSheetContents);
         }
     }

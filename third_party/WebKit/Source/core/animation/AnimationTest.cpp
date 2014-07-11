@@ -75,11 +75,11 @@ TEST_F(AnimationAnimationV8Test, CanCreateAnAnimation)
     jsKeyframes.append(Dictionary(keyframe2, m_isolate));
 
     String value1;
-    ASSERT_TRUE(jsKeyframes[0].get("width", value1));
+    ASSERT_TRUE(DictionaryHelper::get(jsKeyframes[0], "width", value1));
     ASSERT_EQ("100px", value1);
 
     String value2;
-    ASSERT_TRUE(jsKeyframes[1].get("width", value2));
+    ASSERT_TRUE(DictionaryHelper::get(jsKeyframes[1], "width", value2));
     ASSERT_EQ("0px", value2);
 
     RefPtrWillBeRawPtr<Animation> animation = createAnimation(element.get(), jsKeyframes, 0, exceptionState);
