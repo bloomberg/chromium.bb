@@ -61,7 +61,7 @@ void CustomElementException::throwException(Reason reason, const AtomicString& t
         return;
 
     case ContextDestroyedRegisteringDefinition:
-        exceptionState.throwDOMException(NotSupportedError, preamble(type) + "The context is no longer valid.");
+        exceptionState.throwDOMException(InvalidStateError, preamble(type) + "The context is no longer valid.");
         return;
 
     case ExtendsIsInvalidName:
