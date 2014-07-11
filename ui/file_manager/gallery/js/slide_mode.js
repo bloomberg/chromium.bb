@@ -82,7 +82,7 @@ SlideMode.prototype.getTitle = function() { return 'GALLERY_SLIDE'; };
  * @private
  */
 SlideMode.prototype.initListeners_ = function() {
-  window.addEventListener('resize', this.onResize_.bind(this), false);
+  window.addEventListener('resize', this.onResize_.bind(this));
 };
 
 /**
@@ -868,7 +868,8 @@ SlideMode.prototype.onKeyDown = function(event) {
  */
 SlideMode.prototype.onResize_ = function() {
   this.viewport_.sizeByFrameAndFit(this.container_);
-  this.viewport_.repaint();
+  this.viewport_.update();
+  this.editor_.getBuffer().draw();
 };
 
 /**

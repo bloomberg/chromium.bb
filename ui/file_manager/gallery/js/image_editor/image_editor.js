@@ -29,21 +29,17 @@ function ImageEditor(
 
   ImageUtil.removeChildren(this.container_);
 
-  var document = this.container_.ownerDocument;
-
   this.viewport_ = viewport;
   this.viewport_.sizeByFrame(this.container_);
 
-  this.buffer_ = new ImageBuffer();
-  this.viewport_.addRepaintCallback(this.buffer_.draw.bind(this.buffer_));
-
   this.imageView_ = imageView;
   this.imageView_.addContentCallback(this.onContentUpdate_.bind(this));
+
+  this.buffer_ = new ImageBuffer();
   this.buffer_.addOverlay(this.imageView_);
 
   this.panControl_ = new ImageEditor.MouseControl(
       this.rootContainer_, this.container_, this.getBuffer());
-
   this.panControl_.setDoubleTapCallback(this.onDoubleTap_.bind(this));
 
   this.mainToolbar_ = new ImageEditor.Toolbar(

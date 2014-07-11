@@ -10,8 +10,11 @@
  * @param {HTMLElement} container The container element.
  * @param {Viewport} viewport The viewport.
  * @constructor
+ * @extends {ImageBuffer.Overlay}
  */
 function ImageView(container, viewport) {
+  ImageBuffer.Overlay.call(this);
+
   this.container_ = container;
   this.viewport_ = viewport;
   this.document_ = container.ownerDocument;
@@ -89,13 +92,12 @@ ImageView.LOAD_TYPE_TOTAL = 5;
 ImageView.prototype = {__proto__: ImageBuffer.Overlay.prototype};
 
 /**
- * Draws below overlays with the default zIndex.
- * @return {number} Z-index.
+ * @override
  */
 ImageView.prototype.getZIndex = function() { return -1; };
 
 /**
- * Draws the image on screen.
+ * @override
  */
 ImageView.prototype.draw = function() {
   if (!this.contentCanvas_)  // Do nothing if the image content is not set.
@@ -121,36 +123,6 @@ ImageView.prototype.draw = function() {
         this.contentCanvas_, this.viewport_.getImageClipped());
     ImageUtil.trace.reportTimer('paint');
   }
-};
-
-/**
- * @param {number} x X pointer position.
- * @param {number} y Y pointer position.
- * @param {boolean} mouseDown True if mouse is down.
- * @return {string} CSS cursor style.
- */
-ImageView.prototype.getCursorStyle = function(x, y, mouseDown) {
-  // Indicate that the image is draggable.
-  if (this.viewport_.isClipped() &&
-      this.viewport_.getScreenClipped().inside(x, y))
-    return 'move';
-
-  return null;
-};
-
-/**
- * @param {number} x X pointer position.
- * @param {number} y Y pointer position.
- * @return {function} The closure to call on drag.
- */
-ImageView.prototype.getDragHandler = function(x, y) {
-  var cursor = this.getCursorStyle(x, y);
-  if (cursor === 'move') {
-    // Return the handler that drags the entire image.
-    return this.viewport_.createOffsetSetter(x, y);
-  }
-
-  return null;
 };
 
 /**

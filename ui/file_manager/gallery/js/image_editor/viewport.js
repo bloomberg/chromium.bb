@@ -35,7 +35,6 @@ function Viewport() {
 
   this.generation_ = 0;
 
-  this.repaintCallbacks_ = [];
   this.update();
 }
 
@@ -155,41 +154,6 @@ Viewport.prototype.setOffset = function(x, y, ignoreClipping) {
 };
 
 /**
- * Return a closure that can be called to pan the image.
- * Useful for implementing non-trivial variants of panning (overview etc).
- * @param {number} originalX The x coordinate on the screen canvas that
- *                 corresponds to zero change to offsetX.
- * @param {number} originalY The y coordinate on the screen canvas that
- *                 corresponds to zero change to offsetY.
- * @param {function():number} scaleFunc returns the image to screen scale.
- * @param {function(number,number):boolean} hitFunc returns true if (x,y) is
- *                                                  in the valid region.
- * @return {function} The closure to pan the image.
- */
-Viewport.prototype.createOffsetSetter = function(
-    originalX, originalY, scaleFunc, hitFunc) {
-  var originalOffsetX = this.offsetX_;
-  var originalOffsetY = this.offsetY_;
-  if (!hitFunc) hitFunc = function() { return true; };
-  if (!scaleFunc) scaleFunc = this.getScale.bind(this);
-
-  var self = this;
-  return function(x, y) {
-    if (hitFunc(x, y)) {
-      var scale = scaleFunc();
-      self.setOffset(
-          originalOffsetX + (x - originalX) / scale,
-          originalOffsetY + (y - originalY) / scale);
-      self.repaint();
-    }
-  };
-};
-
-/*
- * Access to the current viewport state.
- */
-
-/**
  * @return {Rect} The image bounds in image coordinates.
  */
 Viewport.prototype.getImageBounds = function() { return this.imageBounds_; };
@@ -220,7 +184,7 @@ Viewport.prototype.getScreenClipped = function() {
 Viewport.prototype.getCacheGeneration = function() { return this.generation_; };
 
 /**
- * Called on event view port state change (even if repaint has not been called).
+ * Called on event view port state change.
  */
 Viewport.prototype.invalidateCaches = function() { this.generation_++; };
 
@@ -230,10 +194,6 @@ Viewport.prototype.invalidateCaches = function() { this.generation_++; };
 Viewport.prototype.getImageBoundsOnScreen = function() {
   return this.imageOnScreen_;
 };
-
-/*
- * Conversion between the screen and image coordinate spaces.
- */
 
 /**
  * @param {number} size Size in screen coordinates.
@@ -421,22 +381,6 @@ Viewport.prototype.update = function() {
     this.screenClipped_.top = this.imageOnScreen_.top;
     this.screenClipped_.height = this.imageOnScreen_.height;
   }
-};
-
-/**
- * @param {function} callback Repaint callback.
- */
-Viewport.prototype.addRepaintCallback = function(callback) {
-  this.repaintCallbacks_.push(callback);
-};
-
-/**
- * Repaint all clients.
- */
-Viewport.prototype.repaint = function() {
-  this.update();
-  for (var i = 0; i != this.repaintCallbacks_.length; i++)
-    this.repaintCallbacks_[i]();
 };
 
 /**

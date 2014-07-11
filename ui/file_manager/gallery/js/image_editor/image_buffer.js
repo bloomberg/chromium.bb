@@ -133,7 +133,7 @@ ImageBuffer.Overlay = function() {};
  * TODO(JSDOC).
  * @return {number}  // TODO(JSDOC).
  */
-ImageBuffer.Overlay.prototype.getZIndex = function() { return 0 };
+ImageBuffer.Overlay.prototype.getZIndex = function() { return 0; };
 
 /**
  * TODO(JSDOC).
