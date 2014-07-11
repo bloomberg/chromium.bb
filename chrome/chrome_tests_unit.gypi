@@ -2144,6 +2144,7 @@
             'browser/extensions/webstore_inline_installer_unittest.cc',
             'browser/extensions/webstore_installer_unittest.cc',
             'browser/guest_view/guest_view_manager_unittest.cc',
+            'browser/search/hotword_service_unittest.cc',
             'browser/web_applications/web_app_unittest.cc',
             'common/extensions/sync_type_unittest.cc',
             'common/extensions/permissions/permission_set_unittest.cc',

@@ -30,7 +30,6 @@
 #include "chrome/browser/prerender/prerender_manager_factory.h"
 #include "chrome/browser/printing/cloud_print/cloud_print_proxy_service_factory.h"
 #include "chrome/browser/profiles/gaia_info_update_service_factory.h"
-#include "chrome/browser/search/hotword_service_factory.h"
 #include "chrome/browser/search/instant_service_factory.h"
 #include "chrome/browser/search/suggestions/suggestions_service_factory.h"
 #include "chrome/browser/search_engines/template_url_fetcher_factory.h"
@@ -55,6 +54,7 @@
 #include "chrome/browser/apps/ephemeral_app_service_factory.h"
 #include "chrome/browser/apps/shortcut_manager_factory.h"
 #include "chrome/browser/extensions/browser_context_keyed_service_factories.h"
+#include "chrome/browser/search/hotword_service_factory.h"
 #include "extensions/browser/browser_context_keyed_service_factories.h"
 #endif
 
@@ -186,7 +186,9 @@ EnsureBrowserContextKeyedServiceFactoriesBuilt() {
   GlobalErrorServiceFactory::GetInstance();
   GoogleURLTrackerFactory::GetInstance();
   HistoryServiceFactory::GetInstance();
+#if defined(ENABLE_EXTENSIONS)
   HotwordServiceFactory::GetInstance();
+#endif
   invalidation::ProfileInvalidationProviderFactory::GetInstance();
   InstantServiceFactory::GetInstance();
 #if defined(ENABLE_SERVICE_DISCOVERY)

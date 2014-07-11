@@ -1114,8 +1114,6 @@
       'browser/ui/webui/version_handler.h',
       'browser/ui/webui/version_ui.cc',
       'browser/ui/webui/version_ui.h',
-      'browser/ui/webui/voicesearch_ui.cc',
-      'browser/ui/webui/voicesearch_ui.h',
       'browser/ui/webui/welcome_handler_android.cc',
       'browser/ui/webui/welcome_handler_android.h',
       'browser/ui/webui/welcome_ui_android.cc',
@@ -2527,6 +2525,8 @@
       'browser/ui/webui/extensions/extension_info_ui.h',
       'browser/ui/webui/extensions/pack_extension_handler.cc',
       'browser/ui/webui/extensions/pack_extension_handler.h',
+      'browser/ui/webui/voicesearch_ui.cc',
+      'browser/ui/webui/voicesearch_ui.h',
     ],
   },
   'targets': [
