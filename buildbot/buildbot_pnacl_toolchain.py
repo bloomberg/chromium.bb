@@ -131,7 +131,9 @@ with buildbot_lib.Step('Update cygwin/check bash', status, halt_on_fail=True):
 
 # toolchain_build outputs its own buildbot annotations, so don't use
 # buildbot_lib.Step to run it here.
-cmd = ToolchainBuildCmd(cygwin_python if host_os == 'win' else None,
+# Always run with the system python.
+# TODO(dschuff): remove support for cygwin python once the mingw build is rolled
+cmd = ToolchainBuildCmd(None,
                         host_os != 'win', # On Windows, we synced already
                         ['--packages-file', TEMP_PACKAGES_FILE])
 logging.info('Running: ' + ' '.join(cmd))

@@ -288,15 +288,16 @@ def HostLibs(host):
           'inputs' : { 'src' : os.path.join(NACL_DIR, '..', 'third_party',
                                             'dlfcn-win32') },
           'commands': [
-              command.CopyTree('%(src)s', '.'),
+              command.CopyTree('%(src)s', 'src'),
               command.Command(['i686-w64-mingw32-gcc',
-                               '-o', 'dlfcn.o', '-c', 'dlfcn.c',
+                               '-o', 'dlfcn.o', '-c',
+                               os.path.join('src', 'dlfcn.c'),
                                '-Wall', '-O3', '-fomit-frame-pointer']),
               command.Command([ar, 'cru',
                                'libdl.a', 'dlfcn.o']),
               command.Copy('libdl.a',
                            os.path.join('%(output)s', 'libdl.a')),
-              command.Copy('dlfcn.h',
+              command.Copy(os.path.join('src', 'dlfcn.h'),
                            os.path.join('%(output)s', 'dlfcn.h')),
           ],
       },
@@ -543,7 +544,7 @@ def GetUploadPackageTargets():
 
   # Host components
   host_packages = {}
-  for os_name, arch in (('cygwin', 'x86-32'),
+  for os_name, arch in (('win', 'x86-32'),
                         ('mac', 'x86-64'),
                         ('linux', 'x86-32'),
                         ('linux', 'x86-64')):
