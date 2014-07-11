@@ -9,6 +9,7 @@ import logging
 import os
 import re
 import sqlalchemy
+from sqlalchemy import MetaData
 
 from chromite.cbuildbot import constants
 
@@ -62,6 +63,14 @@ class SchemaVersionedMySQLConnection(object):
                           password.txt, host.txt, client-cert.pem,
                           client-key.pem, and server-ca.pem
     """
+    # None, or a sqlalchemy.MetaData instance
+    self._meta = None
+
+    # pid of process on which _engine was created
+    self._engine_pid = None
+
+    self._engine = None
+
     self.db_migrations_dir = db_migrations_dir
     self.db_credentials_dir = db_credentials_dir
     self.db_name = db_name
@@ -76,14 +85,16 @@ class SchemaVersionedMySQLConnection(object):
     cert = os.path.join(db_credentials_dir, 'client-cert.pem')
     key = os.path.join(db_credentials_dir, 'client-key.pem')
     ca = os.path.join(db_credentials_dir, 'server-ca.pem')
-    ssl_args = {'ssl': {'cert': cert, 'key': key, 'ca': ca}}
+    self._ssl_args = {'ssl': {'cert': cert, 'key': key, 'ca': ca}}
 
     connect_string = 'mysql://%s:%s@%s' % (user, password, host)
 
     # Create a temporary engine to connect to the mysql instance, and check if
-    # a database named |db_name| exists. If not, create one.
+    # a database named |db_name| exists. If not, create one. We use a temporary
+    # engine here because the real engine will be opened with a default
+    # database name given by |db_name|.
     temp_engine = sqlalchemy.create_engine(connect_string,
-                                           connect_args=ssl_args)
+                                           connect_args=self._ssl_args)
     databases = temp_engine.execute('SHOW DATABASES').fetchall()
     if (db_name,) not in databases:
       temp_engine.execute('CREATE DATABASE %s' % db_name)
@@ -94,10 +105,7 @@ class SchemaVersionedMySQLConnection(object):
     # Now create the persistent connection to the database named |db_name|.
     # If there is a schema version table, read the current schema version
     # from it. Otherwise, assume schema_version 0.
-    connect_string = '%s/%s' % (connect_string, db_name)
-
-    self.engine = sqlalchemy.create_engine(connect_string,
-                                           connect_args=ssl_args)
+    self._connect_string = '%s/%s' % (connect_string, db_name)
 
     self.schema_version = self.QuerySchemaVersion()
 
@@ -107,8 +115,9 @@ class SchemaVersionedMySQLConnection(object):
     Use with caution. All data in database will be deleted. Invalidates
     this database connection instance.
     """
-    self.engine.execute('DROP DATABASE %s' % self.db_name)
-    self.engine.dispose()
+    self._meta = None
+    self._GetEngine().execute('DROP DATABASE %s' % self.db_name)
+    self._InvalidateEngine()
 
   def QuerySchemaVersion(self):
     """Query the database for its current schema version number.
@@ -117,9 +126,9 @@ class SchemaVersionedMySQLConnection(object):
       The current schema version from the database's schema version table,
       as an integer, or 0 if the table is empty or nonexistent.
     """
-    tables = self.engine.execute('SHOW TABLES').fetchall()
+    tables = self._GetEngine().execute('SHOW TABLES').fetchall()
     if (self.SCHEMA_VERSION_TABLE_NAME,) in tables:
-      r = self.engine.execute('SELECT MAX(%s) from %s' %
+      r = self._GetEngine().execute('SELECT MAX(%s) from %s' %
           (self.SCHEMA_VERSION_COL, self.SCHEMA_VERSION_TABLE_NAME))
       return r.fetchone()[0] or 0
     else:
@@ -151,6 +160,9 @@ class SchemaVersionedMySQLConnection(object):
         break
 
       if number > self.schema_version:
+        # Invalidate self._meta, then run script and ensure that schema
+        # version was increased.
+        self._meta = None
         self.RunQueryScript(script)
         self.schema_version = self.QuerySchemaVersion()
         if self.schema_version != number:
@@ -164,7 +176,117 @@ class SchemaVersionedMySQLConnection(object):
       script = f.read()
     queries = [q.strip() for q in script.split(';') if q.strip()]
     for q in queries:
-      self.engine.execute(q)
+      self._GetEngine().execute(q)
+
+  def _ReflectToMetadata(self):
+    """Use sqlalchemy reflection to construct MetaData model of database.
+
+    If self._meta is already populated, this does nothing.
+    """
+    if self._meta is not None:
+      return
+    self._meta = MetaData()
+    self._meta.reflect(bind=self._GetEngine())
+
+  def _Insert(self, table, values):
+    """Create and execute an INSERT query.
+
+    Args:
+      table: Table name to insert to.
+      values: Dictionary of column values to insert. Or, list of
+              value dictionaries to insert multiple rows.
+
+    Returns:
+      Integer primary key of the last inserted row.
+    """
+    self._ReflectToMetadata()
+    ins = self._meta.tables[table].insert()
+    r = self._GetEngine().execute(ins, values)
+    return r.inserted_primary_key[0]
+
+  def _InsertMany(self, table, values):
+    """Create and execute an multi-row INSERT query.
+
+    Args:
+      table: Table name to insert to.
+      values: A list of value dictionaries to insert multiple rows.
+
+    Returns:
+      The number of inserted rows.
+    """
+    self._ReflectToMetadata()
+    ins = self._meta.tables[table].insert()
+    r = self._GetEngine().execute(ins, values)
+    return r.rowcount
+
+  def _GetPrimaryKey(self, table):
+    """Gets the primary key column of |table|.
+
+    This function requires that the given table have a 1-column promary key.
+
+    Args:
+      table: Name of table to primary key for.
+
+    Returns:
+      A sqlalchemy.sql.schema.Column representing the primary key column.
+
+    Raises:
+      DBException if the table does not have a single column primary key.
+   """
+    self._ReflectToMetadata()
+    t = self._meta.tables[table]
+    key_columns = t.primary_key.columns.values()
+    if len(key_columns) != 1:
+      raise DBException('Table %s does not have a 1-column primary '
+                        'key.' % table)
+    return key_columns[0]
+
+  def _Update(self, table, row_id, values):
+    """Create and execute an UPDATE query by primary key.
+
+    Args:
+      table: Table name to update.
+      row_id: Primary key value of row to update.
+      values: Dictionary of column values to update.
+
+    Returns:
+      The number of rows that were updated (0 or 1).
+    """
+    self._ReflectToMetadata()
+    primary_key = self._GetPrimaryKey(table)
+    upd = self._meta.tables[table].update().where(primary_key==row_id)
+    r = self._GetEngine().execute(upd, values)
+    return r.rowcount
+
+  def _GetEngine(self):
+    """Get the sqlalchemy engine for this process.
+
+    This method creates a new sqlalchemy engine if necessary, and
+    returns an engine that is unique to this process.
+
+    Returns:
+      An sqlalchemy.engine instance for this database.
+    """
+    pid = os.getpid()
+    if pid == self._engine_pid and self._engine:
+      return self._engine
+    else:
+      e = sqlalchemy.create_engine(self._connect_string,
+                                   connect_args=self._ssl_args)
+      self._engine = e
+      self._engine_pid = pid
+      logging.debug('Created engine %s for pid %s', e, pid)
+      return self._engine
+
+  def _InvalidateEngine(self):
+    """Dispose of an sqlalchemy engine."""
+    try:
+      pid = os.getpid()
+      if pid == self._engine_pid and self._engine:
+        self._engine.dispose()
+    finally:
+      self._engine = None
+      self._meta = None
 
 
 class CIDBConnection(SchemaVersionedMySQLConnection):
