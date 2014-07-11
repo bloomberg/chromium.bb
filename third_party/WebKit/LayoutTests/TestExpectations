@@ -885,11 +885,13 @@ crbug.com/362503 http/tests/xmlhttprequest/xmlhttprequest-responseXML-exception.
 crbug.com/364250 [ Debug ] virtual/threaded/animations/interpolation/webkit-transform-interpolation.html [ Pass Crash Timeout ]
 
 # Added in r171958 and timing out on some platforms ever since.
-crbug.com/392640 svg/as-object/sizing/svg-in-object-placeholder-height-auto.html [ Pass Failure ]
+crbug.com/392640 svg/as-object/sizing/svg-in-object-placeholder-height-auto.html [ Pass Failure Timeout ]
 crbug.com/392640 [ Win Mac ] svg/as-object/sizing/svg-in-object-placeholder-height-fixed.html [ Pass Timeout ]
 crbug.com/392640 [ Linux Release ] svg/as-object/sizing/svg-in-object-placeholder-height-fixed.html [ Pass Timeout ]
 crbug.com/392640 [ Linux Debug ] svg/as-object/sizing/svg-in-object-placeholder-height-fixed.html [ Pass Failure Timeout ]
 crbug.com/392640 svg/as-object/sizing/svg-in-object-placeholder-height-percentage.html [ Pass Timeout ]
+
+crbug.com/393087 [ Win ] svg/custom/resource-client-removal.svg [ Pass Failure ]
 
 crbug.com/368531 virtual/gpu/fast/canvas/canvas-path-addpath.html [ Failure Pass ]
 
@@ -1160,8 +1162,6 @@ crbug.com/376194 inspector/console/console-format-es6.html [ Skip ]
 crbug.com/376194 inspector/console/console-format-es6-symbols-error.html [ Skip ]
 crbug.com/376194 inspector/console/console-dir-es6.html [ Skip ]
 crbug.com/376194 inspector/runtime/runtime-es6-setSymbolPropertyValue.html [ Skip ]
-
-crbug.com/380649 [ Mac ] fast/dom/HTMLScriptElement/dont-load-unknown-type.html [ Failure ]
 
 # We only want to run one of the web-animations-api tests in stable mode.
 crbug.com/368946 virtual/stable/web-animations-api [ Skip ]
