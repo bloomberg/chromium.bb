@@ -7,13 +7,11 @@
 <translation id="5172758083709347301">Počítač</translation>
 <translation id="7180611975245234373">Obnovit</translation>
 <translation id="777702478322588152">Prefektura</translation>
-<translation id="7600965453749440009">Jazyk <ph name="LANGUAGE"/> nikdy nepřekládat</translation>
 <translation id="2262243747453050782">Chyba protokolu HTTP</translation>
 <translation id="1339601241726513588">Doména registrace:</translation>
 <translation id="7298195798382681320">Doporučeno</translation>
 <translation id="4058922952496707368">Klíč <ph name="SUBKEY"/>: <ph name="ERROR"/></translation>
 <translation id="5299298092464848405">Při analýze zásady došlo k chybě</translation>
-<translation id="6831043979455480757">Přeložit</translation>
 <translation id="1228893227497259893">Nesprávný identifikátor subjektu</translation>
 <translation id="6337534724793800597">Filtrovat zásady podle názvu</translation>
 <translation id="4372948949327679948">Očekávána hodnota <ph name="VALUE_TYPE"/>.</translation>
@@ -23,17 +21,11 @@
 <translation id="2958431318199492670">Konfigurace sítě nesplňuje standard ONC. Může se stát, že některé části konfigurace nebudou importovány.</translation>
 <translation id="933712198907837967">Diners Club</translation>
 <translation id="277499241957683684">Chybějící záznam zařízení</translation>
-<translation id="8553075262323480129">Překlad se nezdařil. Nepodařilo se rozpoznat jazyk stránky.</translation>
 <translation id="7935318582918952113">DOM Distiller</translation>
-<translation id="1103523840287552314">Vždy překládat jazyk <ph name="LANGUAGE"/></translation>
 <translation id="1227633850867390598">Skrýt hodnotu</translation>
 <translation id="6753269504797312559">Hodnota zásady</translation>
-<translation id="8834246243508017242">Povolit automatické vyplňování pomocí Kontaktů…</translation>
-<translation id="7275334191706090484">Spravované záložky</translation>
 <translation id="7400418766976504921">Adresa URL</translation>
-<translation id="7378627244592794276">Ne</translation>
 <translation id="2704283930420550640">Hodnota neodpovídá formátu.</translation>
-<translation id="8943805475239098364">Chcete namísto domény <ph name="CURRENT_GOOGLE_HOST"/> vyhledávat pomocí domény <ph name="NEW_GOOGLE_HOST"/>?</translation>
 <translation id="4850886885716139402">Zobrazit</translation>
 <translation id="8091372947890762290">Čeká se na aktivaci na serveru</translation>
 <translation id="719464814642662924">Visa</translation>
@@ -45,7 +37,6 @@
 <translation id="7441627299479586546">Chybný předmět zásady</translation>
 <translation id="3885155851504623709">Okrsek</translation>
 <translation id="6973656660372572881">Určeny jsou pevně dané servery proxy i adresa URL skriptu PAC.</translation>
-<translation id="7108649287766967076">Překlad do jazyka <ph name="TARGET_LANGUAGE"/> se nezdařil.</translation>
 <translation id="4103249731201008433">Sériové číslo zařízení je neplatné</translation>
 <translation id="3667681724235208644">Zobrazit originál</translation>
 <translation id="4079302484614802869">Proxy je nastaveno na používání adresy URL skriptu PAC, nikoliv pevně daných serverů proxy.</translation>
@@ -64,7 +55,6 @@
 <translation id="337363190475750230">Vyřazeno</translation>
 <translation id="2367567093518048410">Úroveň</translation>
 <translation id="7610193165460212391">Hodnota <ph name="VALUE"/> je mimo rozsah.</translation>
-<translation id="370665806235115550">Načítání...</translation>
 <translation id="2096368010154057602">Oddělení</translation>
 <translation id="4258748452823770588">Chybný podpis</translation>
 <translation id="3024663005179499861">Chybný typ zásady</translation>
@@ -77,26 +67,20 @@
 <translation id="883848425547221593">Jiné záložky</translation>
 <translation id="2181821976797666341">Zásady</translation>
 <translation id="3174168572213147020">Ostrov</translation>
-<translation id="9137013805542155359">Zobrazit originál</translation>
 <translation id="2213606439339815911">Načítání záznamů...</translation>
 <translation id="6263376278284652872">Záložky webu <ph name="DOMAIN"/></translation>
-<translation id="498957508165411911">Přeložit z jazyka <ph name="ORIGINAL_LANGUAGE"/> do jazyka <ph name="TARGET_LANGUAGE"/>?</translation>
-<translation id="7186367841673660872">Tato stránka byla přeložena z jazyka<ph name="ORIGINAL_LANGUAGE"/>do jazyka<ph name="LANGUAGE_LANGUAGE"/></translation>
 <translation id="7139724024395191329">Emirát</translation>
 <translation id="5145883236150621069">Odpověď zásady obsahuje kód chyby</translation>
-<translation id="7983301409776629893">Vždy překládat z jazyka <ph name="ORIGINAL_LANGUAGE"/> do jazyka <ph name="TARGET_LANGUAGE"/></translation>
 <translation id="6970216967273061347">Obvod</translation>
 <translation id="3010559122411665027">Položka seznamu „<ph name="ENTRY_INDEX"/>“: <ph name="ERROR"/></translation>
 <translation id="6445051938772793705">Země</translation>
-<translation id="5031870354684148875">O Překladači Google</translation>
-<translation id="6891596781022320156">Úroveň zásady není podporována.</translation>
 <translation id="2025186561304664664">Server proxy je nastaven na automatickou konfiguraci.</translation>
 <translation id="1853748787962613237">Zobrazení článku se nezdařilo.</translation>
 <translation id="5455374756549232013">Chybné časové razítko zásady</translation>
-<translation id="1962204205936693436">Záložky domény <ph name="DOMAIN"/></translation>
 <translation id="1973335181906896915">Chyba serializace</translation>
 <translation id="5989320800837274978">Nejsou určeny pevně dané servery proxy ani adresa URL skriptu PAC.</translation>
 <translation id="7805768142964895445">Stav</translation>
+<translation id="4002066346123236978">Název</translation>
 <translation id="536296301121032821">Ukládání nastavení zásady se nezdařilo</translation>
 <translation id="5439770059721715174">Chyba validace schématu v místě <ph name="ERROR_PATH"/>: <ph name="ERROR"/></translation>
 <translation id="8349305172487531364">Lišta záložek</translation>
@@ -105,27 +89,21 @@
 <translation id="647261751007945333">Zásady zařízení</translation>
 <translation id="678528074488531090">Chyba ověřování: <ph name="VALIDATION_ERROR"/>.</translation>
 <translation id="213826338245044447">Mobilní záložky</translation>
-<translation id="8571890674111243710">Překlad stránky do jazyka: <ph name="LANGUAGE"/>...</translation>
 <translation id="4117700440116928470">Rozsah zásady není podporován.</translation>
 <translation id="2114841414352855701">Zásada ignorována, protože bylo přepsána zásadou <ph name="POLICY_NAME"/>.</translation>
-<translation id="3228969707346345236">Překlad se nezdařil. Stránka je již v jazyce <ph name="LANGUAGE"/>.</translation>
 <translation id="8891727572606052622">Neplatný režim serveru proxy.</translation>
 <translation id="6008256403891681546">JCB</translation>
 <translation id="7752995774971033316">Nespravováno</translation>
 <translation id="3712624925041724820">Byly vyčerpány licence</translation>
 <translation id="4926049483395192435">Musí být uvedeno</translation>
 <translation id="7542995811387359312">Automatické vyplňování údajů platební karty je deaktivováno, protože tento formulář nepoužívá zabezpečené připojení.</translation>
-<translation id="5179510805599951267">Nejedná se o jazyk <ph name="ORIGINAL_LANGUAGE"/>? Nahlaste tuto chybu.</translation>
 <translation id="8088680233425245692">Zobrazení článku se nezdařilo.</translation>
-<translation id="8725066075913043281">Zkusit znovu</translation>
 <translation id="1821930232296380041">Neplatný požadavek nebo parametry požadavku</translation>
 <translation id="1640180200866533862">Zásady pro uživatele</translation>
-<translation id="375403751935624634">Z důvodu chyby serveru se překlad nezdařil.</translation>
 <translation id="5629630648637658800">Načítání nastavení zásady se nezdařilo</translation>
 <translation id="2354001756790975382">Ostatní záložky</translation>
 <translation id="3650584904733503804">Ověření proběhlo úspěšně</translation>
 <translation id="6915804003454593391">Uživatel:</translation>
-<translation id="8812832766208874265">Nadále používat doménu <ph name="CURRENT_GOOGLE_HOST"/></translation>
 <translation id="3377188786107721145">Chyba analýzy zásady</translation>
 <translation id="2270192940992995399">Článek nebyl nalezen.</translation>
 <translation id="4726672564094551039">Znovu načíst zásady</translation>
@@ -133,15 +111,12 @@
 <translation id="5190835502935405962">Lišta záložek</translation>
 <translation id="6965978654500191972">Zařízení</translation>
 <translation id="8249320324621329438">Naposledy načteno:</translation>
-<translation id="1285320974508926690">Tento web nikdy nepřekládat</translation>
 <translation id="6282194474023008486">PSČ</translation>
 <translation id="443673843213245140">Využití serveru proxy je zakázáno, je však určena explicitní konfigurace serveru proxy.</translation>
 <translation id="3623476034248543066">Zobrazit hodnotu</translation>
-<translation id="9020542370529661692">Stránka byla přeložena do jazyka <ph name="TARGET_LANGUAGE"/></translation>
 <translation id="5631439013527180824">Neplatný token správy zařízení</translation>
 <translation id="560412284261940334">Správa není podporována</translation>
 <translation id="3169472444629675720">Discover</translation>
-<translation id="4923417429809017348">Tato stránka byla přeložena z neznámého jazyka do jazyka <ph name="LANGUAGE_LANGUAGE"/></translation>
 <translation id="4813512666221746211">Chyba sítě</translation>
 <translation id="1875753206475436906">Typ heuristiky: <ph name="HEURISTIC_TYPE"/>
     Typ serveru: <ph name="SERVER_TYPE"/>
@@ -154,15 +129,12 @@
 <translation id="6644283850729428850">Tato zásada se již nepoužívá.</translation>
 <translation id="7988324688042446538">Záložky v PC</translation>
 <translation id="8488350697529856933">Platí pro</translation>
-<translation id="6165508094623778733">Další informace</translation>
 <translation id="5565735124758917034">Aktivní</translation>
-<translation id="7568593326407688803">Tato stránka je v jazyce<ph name="ORIGINAL_LANGUAGE"/>Chcete ji přeložit?</translation>
 <translation id="8876793034577346603">Analýza konfigurace sítě se nezdařila.</translation>
 <translation id="106701514854093668">Záložky v PC</translation>
 <translation id="6154808779448689242">Vrácený token zásad neodpovídá aktuálnímu tokenu</translation>
 <translation id="7961015016161918242">Nikdy</translation>
 <translation id="2835170189407361413">Vymazat formulář</translation>
-<translation id="6550675742724504774">Možnosti</translation>
 <translation id="8804164990146287819">Zásady ochrany soukromí</translation>
 <translation id="5337776961545044340">Tento typ karty v Peněžence Google pro tohoto obchodníka není podporován. Vyberte prosím jinou kartu.</translation>
 <translation id="7182878459783632708">Nebyly nastaveny žádné zásady</translation>
@@ -171,14 +143,12 @@
 <translation id="8713130696108419660">Nesprávný počáteční podpis</translation>
 <translation id="20817612488360358">Jako aktivní jsou nakonfigurována systémová nastavení serveru proxy, je však určena i explicitní konfigurace serveru proxy.</translation>
 <translation id="2639739919103226564">Stav:</translation>
-<translation id="1832546148887467272">Přepnout na doménu <ph name="NEW_GOOGLE_HOST"/></translation>
 <translation id="5095208057601539847">Provincie</translation>
 <translation id="1847321074516120686">Nastavení Automatického vyplňování v prohlížeči Chrome</translation>
 <translation id="1152021252151287493">Chybný ověřovací podpis.</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="2721148159707890343">Požadavek byl úspěšný</translation>
 <translation id="2455981314101692989">U tohoto formuláře je na dané webové stránce vypnuto automatické vyplňování.</translation>
-<translation id="8308427013383895095">Překlad se nezdařil kvůli problému s připojením k síti.</translation>
 <translation id="5720705177508910913">Aktuální uživatel</translation>
 <translation id="3380864720620200369">Číslo klienta:</translation>
 </translationbundle>

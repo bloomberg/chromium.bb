@@ -49,7 +49,7 @@ Premi Maiusc+Alt per cambiare metodo.</translation>
 <translation id="3846575436967432996">Nessuna informazione di rete disponibile</translation>
 <translation id="4625920103690741805">Rotazione bloccata (tocca qui per cambiare l'impostazione)</translation>
 <translation id="3799026279081545374">Probabilmente il tuo caricabatterie non è valido. Se risiedi negli Stati Uniti, chiama il numero 866-628-1371, per ricevere assistenza e un caricabatterie sostitutivo. Se risiedi nel Regno Unito, chiama il numero 0800-026-0613. Se risiedi in Irlanda, chiama il numero 1-800-832-664. Se risiedi in Canada, chiama il numero 866-628-1372. Se risiedi in Australia, chiama il numero 1-800-067-460.</translation>
-<translation id="3891340733213178823">Premi due volte Ctrl+Maiusc+Q per uscire.</translation>
+<translation id="3026237328237090306">Configura dati mobili</translation>
 <translation id="5871632337994001636">Gestisci dispositivi...</translation>
 <translation id="785750925697875037">Visualizza account per cellulari</translation>
 <translation id="153454903766751181">Inizializzazione del modem per cellulari...</translation>
@@ -103,13 +103,11 @@ Premi Maiusc+Alt per cambiare metodo.</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME"/> (Bluetooth)</translation>
 <translation id="3967919079500697218">La possibilità di effettuare screenshot è stata disabilitata dal tuo amministratore.</translation>
 <translation id="372094107052732682">Per uscire premi due volte Ctrl+Maiusc+Q.</translation>
-<translation id="923686485342484400">Premi due volte Control Maiusc Q per uscire.</translation>
 <translation id="6803622936009808957">Impossibile duplicare i display perché non sono state trovate risoluzioni supportate. È stato attivato il desktop esteso.</translation>
 <translation id="1480041086352807611">Modalità Demo</translation>
 <translation id="4066708417179825777"><ph name="PRIMARY_ACCOUNT"/> (principale)</translation>
 <translation id="3626637461649818317"><ph name="PERCENTAGE"/>% rimanente</translation>
 <translation id="9089416786594320554">Metodi di immissione</translation>
-<translation id="2700058918926273959">La sessione terminerà tra <ph name="SESSION_TIME_REMAINING"/>. Verrà eseguita la disconnessione.</translation>
 <translation id="6247708409970142803"><ph name="PERCENTAGE"/>%</translation>
 <translation id="2670531586141364277">L'attivazione di &quot;<ph name="NAME"/>&quot; richiede una connessione di rete.</translation>
 <translation id="3963445509666917109">Altoparlante (interno)</translation>
@@ -177,8 +175,8 @@ Premi Maiusc+Alt per cambiare metodo.</translation>
 <translation id="1602076796624386989">Attiva dati mobili</translation>
 <translation id="68610848741840742">ChromeVox (feedback vocale)</translation>
 <translation id="6981982820502123353">Accessibilità</translation>
-<translation id="6585808820553845416">La sessione terminerà tra <ph name="SESSION_TIME_REMAINING"/>.</translation>
 <translation id="4274292172790327596">Errore non riconosciuto</translation>
+<translation id="4032485810211612751"><ph name="HOURS"/>:<ph name="MINUTES"/>:<ph name="SECONDS"/></translation>
 <translation id="5977415296283489383">Cuffia</translation>
 <translation id="225680501294068881">Ricerca dispositivi in corso...</translation>
 <translation id="5597451508971090205"><ph name="SHORT_WEEKDAY"/>, <ph name="DATE"/></translation>
@@ -192,6 +190,7 @@ Messaggio del server: <ph name="SERVER_MSG"/></translation>
 <translation id="2999742336789313416"><ph name="DISPLAY_NAME"/> è una sessione pubblica gestita da <ph name="DOMAIN"/></translation>
 <translation id="9044646465488564462">Connessione alla rete non riuscita: <ph name="DETAILS"/></translation>
 <translation id="7029814467594812963">Esci da sessione</translation>
+<translation id="479989351350248267">ricerca</translation>
 <translation id="8454013096329229812">Wi-Fi attivo.</translation>
 <translation id="4872237917498892622">Alt+tasto per la ricerca o Maiusc</translation>
 <translation id="2429753432712299108">Il dispositivo Bluetooth &quot;<ph name="DEVICE_NAME"/>&quot; chiede l'autorizzazione per essere accoppiato. Prima di accettare, conferma che questa passkey viene visualizzata sul dispositivo: <ph name="PASSKEY"/></translation>
@@ -227,10 +226,10 @@ Premi il tasto per la ricerca o Maiusc per annullare.</translation>
 <translation id="6857811139397017780">Attiva <ph name="NETWORKSERVICE"/></translation>
 <translation id="5864471791310927901">Ricerca DHCP non riuscita</translation>
 <translation id="2819276065543622893">Verrai disconnesso ora.</translation>
-<translation id="5507786745520522457">Imposta dati mobili</translation>
 <translation id="6165508094623778733">Ulteriori informazioni</translation>
 <translation id="9046895021617826162">Connessione non riuscita</translation>
 <translation id="7168224885072002358">Ripristino della risoluzione precedente tra <ph name="TIMEOUT_SECONDS"/></translation>
+<translation id="973896785707726617">Questa sessione terminerà fra <ph name="SESSION_TIME_REMAINING"/>. Verrà eseguita automaticamente la disconnessione.</translation>
 <translation id="743058460480092004">Videocamera e microfono sono in uso.</translation>
 <translation id="8372369524088641025">Chiave WEP non valida</translation>
 <translation id="6636709850131805001">Stato non riconosciuto</translation>

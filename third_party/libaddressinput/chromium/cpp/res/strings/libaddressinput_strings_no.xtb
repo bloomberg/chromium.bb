@@ -8,11 +8,11 @@
 <translation id="6327653052522436195">By</translation>
 <translation id="6839929833149231406">Område</translation>
 <translation id="8912409183643804845">Ugyldig postnummer</translation>
-<translation id="3885155851504623709">Sogn</translation>
+<translation id="3885155851504623709">Kommune</translation>
 <translation id="7087282848513945231">Fylke</translation>
 <translation id="775297008183122718">Ugyldig oppføring</translation>
 <translation id="3115392440335510071">Ugyldig by</translation>
-<translation id="2096368010154057602">Departement</translation>
+<translation id="2096368010154057602">Avdeling</translation>
 <translation id="7126440494981488324">CEDEX</translation>
 <translation id="5388642860747844727">Ugyldig postnummer</translation>
 <translation id="4324055159384742341">Postnummer</translation>
@@ -21,9 +21,9 @@
 <translation id="7139724024395191329">Emirat</translation>
 <translation id="6911757819733577195">Ugyldig emirat</translation>
 <translation id="1109975963117329533">Ugyldig fylke</translation>
-<translation id="6970216967273061347">Distrikt</translation>
-<translation id="6207937957461833379">Land/region</translation>
-<translation id="5089810972385038852">Delstat</translation>
+<translation id="6970216967273061347">Område</translation>
+<translation id="6207937957461833379">Land / region</translation>
+<translation id="5089810972385038852">Fylke / delstat</translation>
 <translation id="8038820434766881602">Ugyldig område</translation>
 <translation id="3762468803736810423">Ugyldig øy</translation>
 <translation id="389443962449018712">Do</translation>
@@ -33,7 +33,7 @@
 <translation id="2735748245117253315">Postnummer</translation>
 <translation id="545491265027533869">Ugyldig do</translation>
 <translation id="6783392231122911543">Feltet er påkrevd</translation>
-<translation id="5095208057601539847">Fylke</translation>
+<translation id="5095208057601539847">Provins</translation>
 <translation id="9006504626951158991">Kontaktens navn</translation>
 <translation id="2668249364995615760">Ugyldig prefektur</translation>
 </translationbundle>

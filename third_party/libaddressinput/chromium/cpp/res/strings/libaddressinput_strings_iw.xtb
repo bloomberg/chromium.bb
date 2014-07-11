@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="iw">
-<translation id="777702478322588152">תחום שיפוט</translation>
+<translation id="777702478322588152">משטרת מחוז</translation>
 <translation id="3098361409928899613">רחוב</translation>
 <translation id="2051050972662658124">חברה</translation>
 <translation id="8439516961404593852">קהילה לא חוקית</translation>
@@ -9,7 +9,7 @@
 <translation id="6839929833149231406">אזור</translation>
 <translation id="8912409183643804845">מיקוד לא חוקי</translation>
 <translation id="3885155851504623709">קהילה</translation>
-<translation id="7087282848513945231">מחוז</translation>
+<translation id="7087282848513945231">מחוז (בבריטניה ובאירלנד)</translation>
 <translation id="775297008183122718">ערך לא חוקי</translation>
 <translation id="3115392440335510071">עיר לא חוקית</translation>
 <translation id="2096368010154057602">מחלקה</translation>
@@ -22,7 +22,7 @@
 <translation id="6911757819733577195">אמירות לא חוקית</translation>
 <translation id="1109975963117329533">מחוז לא תקף</translation>
 <translation id="6970216967273061347">מחוז</translation>
-<translation id="6207937957461833379">ארץ/אזור</translation>
+<translation id="6207937957461833379">מדינה/אזור</translation>
 <translation id="5089810972385038852">מדינה</translation>
 <translation id="8038820434766881602">אזור לא חוקי</translation>
 <translation id="3762468803736810423">אי לא חוקי</translation>
@@ -33,7 +33,7 @@
 <translation id="2735748245117253315">מיקוד</translation>
 <translation id="545491265027533869">דו לא חוקי</translation>
 <translation id="6783392231122911543">זהו שדה חובה</translation>
-<translation id="5095208057601539847">מחוז</translation>
+<translation id="5095208057601539847">פרובינציה</translation>
 <translation id="9006504626951158991">שם איש קשר</translation>
 <translation id="2668249364995615760">אזור לא חוקי</translation>
 </translationbundle>
