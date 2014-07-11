@@ -269,9 +269,20 @@ void BrowserPlugin::Attach(int guest_instance_id,
                            scoped_ptr<base::DictionaryValue> extra_params) {
   CHECK(guest_instance_id != browser_plugin::kInstanceIDNone);
 
-  // If this BrowserPlugin is already attached to a guest, then do nothing.
-  if (HasGuestInstanceID())
-    return;
+  // If this BrowserPlugin is already attached to a guest, then kill the guest.
+  if (HasGuestInstanceID()) {
+    if (guest_instance_id == guest_instance_id_)
+      return;
+    guest_crashed_ = false;
+    EnableCompositing(false);
+    if (compositing_helper_) {
+      compositing_helper_->OnContainerDestroy();
+      compositing_helper_ = NULL;
+    }
+    browser_plugin_manager()->RemoveBrowserPlugin(guest_instance_id_);
+    browser_plugin_manager()->Send(new BrowserPluginHostMsg_PluginDestroyed(
+        render_view_routing_id_, guest_instance_id_));
+  }
 
   // This API may be called directly without setting the src attribute.
   // In that case, we need to make sure we don't allocate another instance ID.

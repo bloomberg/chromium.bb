@@ -42,7 +42,27 @@ namespace app.runtime {
     boolean? isKioskSession;
   };
 
+  // This object specifies details and operations to perform on the embedding
+  // request. The app to be embedded can make a decision on whether or not to
+  // allow the embedding and what to embed based on the embedder making the
+  // request.
+  dictionary EmbedRequest {
+    DOMString embedderId;
+
+    // Allows <code>embedderId</code> to embed this app in an &lt;appview&gt;
+    // element. The <code>url</code> specifies the content to embed.
+    [nocompile] static void allow(DOMString url);
+
+    // Prevents <code> embedderId</code> from embedding this app in an
+    // &lt;appview&gt; element.
+    [nocompile] static void deny();
+  };
+
   interface Events {
+    // Fired when an embedding app requests to embed this app. This event is
+    // only available on dev channel with the flag --enable-app-view.
+    static void onEmbedRequested(EmbedRequest request);
+
     // Fired when an app is launched from the launcher.
     static void onLaunched(optional LaunchData launchData);
 

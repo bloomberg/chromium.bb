@@ -17,6 +17,20 @@ function AppViewInternal(appviewNode) {
   this.viewInstanceId = IdGenerator.GetNextId();
 }
 
+AppViewInternal.prototype.getErrorNode = function() {
+  if (!this.errorNode) {
+    this.errorNode = document.createElement('div');
+    this.errorNode.innerText = 'Unable to connect to app.';
+    this.errorNode.style.position = 'absolute';
+    this.errorNode.style.left = '0px';
+    this.errorNode.style.top = '0px';
+    this.errorNode.style.width = '100%';
+    this.errorNode.style.height = '100%';
+    this.appviewNode.shadowRoot.appendChild(this.errorNode);
+  }
+  return this.errorNode;
+};
+
 AppViewInternal.prototype.createBrowserPluginNode = function() {
   // We create BrowserPlugin as a custom element in order to observe changes
   // to attributes synchronously.
@@ -25,28 +39,39 @@ AppViewInternal.prototype.createBrowserPluginNode = function() {
   return browserPluginNode;
 };
 
-AppViewInternal.prototype.connect = function(src, callback) {
+AppViewInternal.prototype.connect = function(app, callback) {
   var params = {
+    'appId': app
   };
   var self = this;
   GuestViewInternal.createGuest(
     'appview',
     params,
     function(instanceId) {
-      self.attachWindow(instanceId, src);
+      if (!instanceId) {
+        self.browserPluginNode.style.visibility = 'hidden';
+        var errorMsg = 'Unable to connect to app "' + app + '".';
+        window.console.warn(errorMsg);
+        self.getErrorNode().innerText = errorMsg;
+        if (callback) {
+          callback(false);
+        }
+        return;
+      }
+      self.attachWindow(instanceId);
       if (callback) {
-        callback();
+        callback(true);
       }
     }
   );
 };
 
-AppViewInternal.prototype.attachWindow = function(instanceId, src) {
+AppViewInternal.prototype.attachWindow = function(instanceId) {
   this.instanceId = instanceId;
   var params = {
     'instanceId': this.viewInstanceId,
-    'src': src
   };
+  this.browserPluginNode.style.visibility = 'visible';
   return this.browserPluginNode['-internal-attach'](instanceId, params);
 };
 

@@ -37,6 +37,7 @@ bool GuestViewInternalCreateGuestFunction::RunAsync() {
     LOG(ERROR) << kPermissionRequiredError;
     error_ = kPermissionRequiredError;
     SendResponse(false);
+    return true;
   }
 
   GuestViewManager* guest_view_manager =
@@ -56,10 +57,12 @@ bool GuestViewInternalCreateGuestFunction::RunAsync() {
 
 void GuestViewInternalCreateGuestFunction::CreateGuestCallback(
     content::WebContents* guest_web_contents) {
-  if (!guest_web_contents)
-    return;
-  GuestViewBase* guest = GuestViewBase::FromWebContents(guest_web_contents);
-  SetResult(base::Value::CreateIntegerValue(guest->GetGuestInstanceID()));
+  int guest_instance_id = 0;
+  if (guest_web_contents) {
+    GuestViewBase* guest = GuestViewBase::FromWebContents(guest_web_contents);
+    guest_instance_id = guest->GetGuestInstanceID();
+  }
+  SetResult(base::Value::CreateIntegerValue(guest_instance_id));
   SendResponse(true);
 }
 

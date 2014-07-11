@@ -10,6 +10,8 @@
 #include "base/memory/ref_counted.h"
 #include "extensions/browser/api/storage/settings_namespace.h"
 
+class GURL;
+
 template <class T>
 class ObserverListThreadSafe;
 
@@ -46,6 +48,21 @@ class ExtensionsAPIClient {
       const scoped_refptr<SettingsStorageFactory>& factory,
       const scoped_refptr<ObserverListThreadSafe<SettingsObserver> >& observers,
       std::map<settings_namespace::Namespace, ValueStoreCache*>* caches);
+
+  // Attaches a frame |url| inside the <appview> specified by
+  // |guest_instance_id|. Returns true if the operation completes succcessfully.
+  virtual bool AppViewInternalAttachFrame(
+      content::BrowserContext* browser_context,
+      const GURL& url,
+      int guest_instance_id,
+      const std::string& guest_extension_id);
+
+  // Denies the embedding requested by the <appview> specified by
+  // |guest_instance_id|. Returns true if the operation completes successfully.
+  virtual bool AppViewInternalDenyRequest(
+      content::BrowserContext* browser_context,
+      int guest_instance_id,
+      const std::string& guest_extension_id);
 
   // NOTE: If this interface gains too many methods (perhaps more than 20) it
   // should be split into one interface per API.

@@ -58,7 +58,7 @@ content::WebContents* GuestViewManager::GetGuestByInstanceIDSafely(
                                             guest_instance_id)) {
     return NULL;
   }
-  return GetGuestByInstanceID(guest_instance_id, embedder_render_process_id);
+  return GetGuestByInstanceID(guest_instance_id);
 }
 
 int GuestViewManager::GetNextInstanceID() {
@@ -114,7 +114,7 @@ void GuestViewManager::MaybeGetGuestByInstanceIDOrKill(
     return;
   }
   content::WebContents* guest_web_contents =
-      GetGuestByInstanceID(guest_instance_id, embedder_render_process_id);
+      GetGuestByInstanceID(guest_instance_id);
   callback.Run(guest_web_contents);
 }
 
@@ -183,8 +183,7 @@ void GuestViewManager::RemoveGuest(int guest_instance_id) {
 }
 
 content::WebContents* GuestViewManager::GetGuestByInstanceID(
-    int guest_instance_id,
-    int embedder_render_process_id) {
+    int guest_instance_id) {
   GuestInstanceMap::const_iterator it =
       guest_web_contents_by_instance_id_.find(guest_instance_id);
   if (it == guest_web_contents_by_instance_id_.end())

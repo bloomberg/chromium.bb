@@ -38456,7 +38456,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="783" label="STREAMSPRIVATE_ABORT"/>
   <int value="784" label="MANAGEMENT_SETLAUNCHTYPE"/>
   <int value="785" label="MANAGEMENT_GENERATEAPPFORLINK"/>
-  <int value="786" label="GUESTVIEWINTERNAL_ALLOCATEINSTANCEID"/>
+  <int value="786" label="DELETED_GUESTVIEWINTERNAL_ALLOCATEINSTANCEID"/>
   <int value="787" label="DELETED_WEBVIEW_NAVIGATE"/>
   <int value="788" label="INPUTMETHODPRIVATE_GETCURRENTINPUTMETHOD"/>
   <int value="789" label="INPUTMETHODPRIVATE_SETCURRENTINPUTMETHOD"/>
@@ -38510,6 +38510,8 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="836" label="GCDPRIVATE_GETCOMMAND"/>
   <int value="837" label="GCDPRIVATE_CANCELCOMMAND"/>
   <int value="838" label="GCDPRIVATE_GETCOMMANDSLIST"/>
+  <int value="839" label="APPVIEWINTERNAL_ATTACHFRAME"/>
+  <int value="840" label="APPVIEWINTERNAL_DENYREQUEST"/>
 </enum>
 
 <enum name="ExtensionInstallCause" type="int">

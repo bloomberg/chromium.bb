@@ -1495,6 +1495,8 @@
       'browser/drive/drive_uploader.h',
       'browser/drive/event_logger.cc',
       'browser/drive/event_logger.h',
+      'browser/guest_view/app_view/app_view_constants.cc',
+      'browser/guest_view/app_view/app_view_constants.h',
       'browser/guest_view/app_view/app_view_guest.cc',
       'browser/guest_view/app_view/app_view_guest.h',
       'browser/guest_view/guest_view_constants.cc',

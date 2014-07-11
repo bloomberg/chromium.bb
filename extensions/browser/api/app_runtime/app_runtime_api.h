@@ -8,7 +8,13 @@
 #include <string>
 #include <vector>
 
+#include "base/memory/scoped_ptr.h"
+
 class GURL;
+
+namespace base {
+class DictionaryValue;
+}
 
 namespace content {
 class BrowserContext;
@@ -22,6 +28,12 @@ struct GrantedFileEntry;
 
 class AppRuntimeEventRouter {
  public:
+  // Dispatches the onEmbedRequested event to the given app.
+  static void DispatchOnEmbedRequestedEvent(
+      content::BrowserContext* context,
+      scoped_ptr<base::DictionaryValue> app_embedding_request_data,
+      const extensions::Extension* extension);
+
   // Dispatches the onLaunched event to the given app.
   static void DispatchOnLaunchedEvent(content::BrowserContext* context,
                                       const Extension* extension);

@@ -11,7 +11,6 @@
 #include "chrome/browser/guest_view/guest_view_constants.h"
 #include "chrome/browser/guest_view/guest_view_manager.h"
 #include "chrome/browser/guest_view/web_view/web_view_guest.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/content_settings.h"
 #include "content/public/browser/render_frame_host.h"
@@ -50,6 +49,7 @@ class GuestViewBase::EmbedderWebContentsObserver : public WebContentsObserver {
  public:
   explicit EmbedderWebContentsObserver(GuestViewBase* guest)
       : WebContentsObserver(guest->embedder_web_contents()),
+        destroyed_(false),
         guest_(guest) {
   }
 
@@ -58,13 +58,25 @@ class GuestViewBase::EmbedderWebContentsObserver : public WebContentsObserver {
 
   // WebContentsObserver implementation.
   virtual void WebContentsDestroyed() OVERRIDE {
+    Destroy();
+  }
+
+  virtual void RenderProcessGone(base::TerminationStatus status) OVERRIDE {
+    Destroy();
+  }
+
+ private:
+  bool destroyed_;
+  GuestViewBase* guest_;
+
+  void Destroy() {
+    if (destroyed_)
+      return;
+    destroyed_ = true;
     guest_->embedder_web_contents_ = NULL;
     guest_->EmbedderDestroyed();
     guest_->Destroy();
   }
-
- private:
-  GuestViewBase* guest_;
 
   DISALLOW_COPY_AND_ASSIGN(EmbedderWebContentsObserver);
 };
@@ -92,7 +104,7 @@ void GuestViewBase::Init(
   CreateWebContents(embedder_extension_id,
                     embedder_render_process_id,
                     create_params,
-                    base::Bind(&GuestViewBase::CompleteCreateWebContents,
+                    base::Bind(&GuestViewBase::CompleteInit,
                                AsWeakPtr(),
                                embedder_extension_id,
                                embedder_render_process_id,
@@ -214,6 +226,7 @@ void GuestViewBase::RenderProcessExited(content::RenderProcessHost* host,
 }
 
 void GuestViewBase::Destroy() {
+  DCHECK(guest_web_contents());
   content::RenderProcessHost* host =
       content::RenderProcessHost::FromID(embedder_render_process_id());
   if (host)
@@ -221,6 +234,12 @@ void GuestViewBase::Destroy() {
   WillDestroy();
   if (!destruction_callback_.is_null())
     destruction_callback_.Run();
+
+  webcontents_guestview_map.Get().erase(guest_web_contents());
+  GuestViewManager::FromBrowserContext(browser_context_)->
+      RemoveGuest(guest_instance_id_);
+  pending_events_.clear();
+
   delete guest_web_contents();
 }
 
@@ -292,14 +311,6 @@ bool GuestViewBase::PreHandleGestureEvent(content::WebContents* source,
 }
 
 GuestViewBase::~GuestViewBase() {
-  std::pair<int, int> key(embedder_render_process_id_, guest_instance_id_);
-
-  webcontents_guestview_map.Get().erase(guest_web_contents());
-
-  GuestViewManager::FromBrowserContext(browser_context_)->
-      RemoveGuest(guest_instance_id_);
-
-  pending_events_.clear();
 }
 
 void GuestViewBase::DispatchEventToEmbedder(Event* event) {
@@ -314,8 +325,6 @@ void GuestViewBase::DispatchEventToEmbedder(Event* event) {
     return;
   }
 
-  Profile* profile = Profile::FromBrowserContext(browser_context_);
-
   extensions::EventFilteringInfo info;
   info.SetInstanceID(view_instance_id_);
   scoped_ptr<base::ListValue> args(new base::ListValue());
@@ -323,7 +332,7 @@ void GuestViewBase::DispatchEventToEmbedder(Event* event) {
 
   extensions::EventRouter::DispatchEvent(
       embedder_web_contents_,
-      profile,
+      browser_context_,
       embedder_extension_id_,
       event->name(),
       args.Pass(),
@@ -341,12 +350,14 @@ void GuestViewBase::SendQueuedEvents() {
   }
 }
 
-void GuestViewBase::CompleteCreateWebContents(
-    const std::string& embedder_extension_id,
-    int embedder_render_process_id,
-    const WebContentsCreatedCallback& callback,
-    content::WebContents* guest_web_contents) {
+void GuestViewBase::CompleteInit(const std::string& embedder_extension_id,
+                                 int embedder_render_process_id,
+                                 const WebContentsCreatedCallback& callback,
+                                 content::WebContents* guest_web_contents) {
   if (!guest_web_contents) {
+    // The derived class did not create a WebContents so this class serves no
+    // purpose. Let's self-destruct.
+    delete this;
     callback.Run(NULL);
     return;
   }

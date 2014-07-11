@@ -897,6 +897,8 @@ enum HistogramValue {
   GCDPRIVATE_GETCOMMAND,
   GCDPRIVATE_CANCELCOMMAND,
   GCDPRIVATE_GETCOMMANDSLIST,
+  APPVIEWINTERNAL_ATTACHFRAME,
+  APPVIEWINTERNAL_DENYREQUEST,
   // Last entry: Add new entries above and ensure to update
   // tools/metrics/histograms/histograms/histograms.xml.
   ENUM_BOUNDARY

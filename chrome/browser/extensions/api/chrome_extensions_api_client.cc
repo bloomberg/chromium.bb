@@ -6,6 +6,7 @@
 
 #include "base/files/file_path.h"
 #include "chrome/browser/extensions/api/storage/sync_value_store_cache.h"
+#include "chrome/browser/guest_view/app_view/app_view_guest.h"
 #include "content/public/browser/browser_context.h"
 
 #if defined(ENABLE_CONFIGURATION_POLICY)
@@ -32,6 +33,27 @@ void ChromeExtensionsAPIClient::AddAdditionalValueStoreCaches(
   (*caches)[settings_namespace::MANAGED] =
       new ManagedValueStoreCache(context, factory, observers);
 #endif
+}
+
+bool ChromeExtensionsAPIClient::AppViewInternalAttachFrame(
+    content::BrowserContext* browser_context,
+    const GURL& url,
+    int guest_instance_id,
+    const std::string& guest_extension_id) {
+  return AppViewGuest::CompletePendingRequest(browser_context,
+                                              url,
+                                              guest_instance_id,
+                                              guest_extension_id);
+}
+
+bool ChromeExtensionsAPIClient::AppViewInternalDenyRequest(
+    content::BrowserContext* browser_context,
+    int guest_instance_id,
+    const std::string& guest_extension_id) {
+  return AppViewGuest::CompletePendingRequest(browser_context,
+                                              GURL(),
+                                              guest_instance_id,
+                                              guest_extension_id);
 }
 
 }  // namespace extensions

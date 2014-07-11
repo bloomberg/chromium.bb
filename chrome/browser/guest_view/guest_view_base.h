@@ -218,10 +218,10 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
 
   void SendQueuedEvents();
 
-  void CompleteCreateWebContents(const std::string& embedder_extension_id,
-                                 int embedder_render_process_id,
-                                 const WebContentsCreatedCallback& callback,
-                                 content::WebContents* guest_web_contents);
+  void CompleteInit(const std::string& embedder_extension_id,
+                    int embedder_render_process_id,
+                    const WebContentsCreatedCallback& callback,
+                    content::WebContents* guest_web_contents);
 
   // WebContentsObserver implementation.
   virtual void DidStopLoading(

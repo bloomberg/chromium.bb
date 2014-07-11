@@ -57,6 +57,11 @@
       "http://*/*", "https://*/*", "chrome-extension://*/*", "file://*/*"
     ]
   },
+  "appViewInternal": {
+    "internal": true,
+    "channel": "dev",
+    "contexts": ["blessed_extension", "unblessed_extension"]
+  },
   "app.window": {
     "channel": "stable",
     "contexts": ["blessed_extension"],

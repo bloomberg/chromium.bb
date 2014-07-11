@@ -24,6 +24,7 @@
           ['enable_extensions==1', {
             'schema_files': [
               'app_runtime.idl',
+              'app_view_internal.json',
               'dns.idl',
               'extensions_manifest_types.json',
               'power.idl',
