@@ -9,6 +9,7 @@ from metrics import power
 from telemetry import benchmark
 from telemetry.page import page_measurement
 from telemetry.page import page_set
+from telemetry.value import scalar
 
 
 class _DromaeoMeasurement(page_measurement.PageMeasurement):
@@ -71,11 +72,11 @@ class _DromaeoMeasurement(page_measurement.PageMeasurement):
 
     suffix = page.url[page.url.index('?') + 1 :]
     def AddResult(name, value):
-      data_type = 'unimportant'
+      important = False
       if name == suffix:
-        data_type = 'default'
-
-      results.Add(Escape(name), 'runs/s', value, data_type=data_type)
+        important = True
+      results.AddValue(scalar.ScalarValue(
+          results.current_page, Escape(name), 'runs/s', value, important))
 
     aggregated = {}
     for data in score:
