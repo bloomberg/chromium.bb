@@ -83,14 +83,14 @@ def run_serial(
       # Use an unique task name to ensure the task is executed.
       suffix = '/%d' % i if repeat > 1 else ''
       task_name = parallel_execution.unique_task_to_name(
-          name, {'hostname': bot}, isolated_hash, now) + suffix
+          name, {'id': bot}, isolated_hash, now) + suffix
       cmd = [
         sys.executable, 'swarming.py', 'run',
         '--swarming', swarming_server,
         '--isolate-server', isolate_server,
         '--priority', priority,
         '--deadline', deadline,
-        '--dimension', 'hostname', bot,
+        '--dimension', 'id', bot,
         '--task-name', task_name,
         isolated_hash,
       ]
@@ -109,9 +109,9 @@ def run_parallel(
     tasks.extend(
         (
           parallel_execution.unique_task_to_name(
-              name, {'hostname': bot}, isolated_hash, now) + suffix,
+              name, {'id': bot}, isolated_hash, now) + suffix,
           isolated_hash,
-          {'hostname': bot},
+          {'id': bot},
         ) for bot in bots)
   extra_args = ['--priority', priority, '--deadline', deadline]
   print('Using priority %s' % priority)
