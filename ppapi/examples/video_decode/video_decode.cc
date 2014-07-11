@@ -113,6 +113,7 @@ class MyInstance : public pp::Instance, public pp::Graphics3DClient {
   void CreateGLObjects();
   void Create2DProgramOnce();
   void CreateRectangleARBProgramOnce();
+  void CreateExternalOESProgramOnce();
   Shader CreateProgram(const char* vertex_shader, const char* fragment_shader);
   void CreateShader(GLuint program, GLenum type, const char* source, int size);
   void PaintNextPicture();
@@ -145,6 +146,8 @@ class MyInstance : public pp::Instance, public pp::Graphics3DClient {
   Shader shader_2d_;
   // Shader program to draw GL_TEXTURE_RECTANGLE_ARB target.
   Shader shader_rectangle_arb_;
+  // Shader program to draw GL_TEXTURE_EXTERNAL_OES target.
+  Shader shader_external_oes_;
 };
 
 class Decoder {
@@ -390,6 +393,8 @@ MyInstance::~MyInstance() {
     gles2_if_->DeleteProgram(graphics_3d, shader_2d_.program);
   if (shader_rectangle_arb_.program)
     gles2_if_->DeleteProgram(graphics_3d, shader_rectangle_arb_.program);
+  if (shader_external_oes_.program)
+    gles2_if_->DeleteProgram(graphics_3d, shader_external_oes_.program);
 
   for (DecoderList::iterator it = video_decoders_.begin();
        it != video_decoders_.end();
@@ -478,14 +483,19 @@ void MyInstance::PaintNextPicture() {
     gles2_if_->UseProgram(graphics_3d, shader_2d_.program);
     gles2_if_->Uniform2f(
         graphics_3d, shader_2d_.texcoord_scale_location, 1.0, 1.0);
-  } else {
-    assert(picture.texture_target == GL_TEXTURE_RECTANGLE_ARB);
+  } else if (picture.texture_target == GL_TEXTURE_RECTANGLE_ARB) {
     CreateRectangleARBProgramOnce();
     gles2_if_->UseProgram(graphics_3d, shader_rectangle_arb_.program);
     gles2_if_->Uniform2f(graphics_3d,
                          shader_rectangle_arb_.texcoord_scale_location,
                          picture.texture_size.width,
                          picture.texture_size.height);
+  } else {
+    assert(picture.texture_target == GL_TEXTURE_EXTERNAL_OES);
+    CreateExternalOESProgramOnce();
+    gles2_if_->UseProgram(graphics_3d, shader_external_oes_.program);
+    gles2_if_->Uniform2f(
+        graphics_3d, shader_external_oes_.texcoord_scale_location, 1.0, 1.0);
   }
 
   gles2_if_->Viewport(graphics_3d, x, y, half_width, half_height);
@@ -630,6 +640,23 @@ void MyInstance::CreateRectangleARBProgramOnce() {
       "}";
   shader_rectangle_arb_ =
       CreateProgram(kVertexShader, kFragmentShaderRectangle);
+  assertNoGLError();
+}
+
+void MyInstance::CreateExternalOESProgramOnce() {
+  if (shader_external_oes_.program)
+    return;
+  static const char kFragmentShaderExternal[] =
+      "#extension GL_OES_EGL_image_external : require\n"
+      "precision mediump float;            \n"
+      "varying vec2 v_texCoord;            \n"
+      "uniform samplerExternalOES s_texture; \n"
+      "void main()                         \n"
+      "{"
+      "    gl_FragColor = texture2D(s_texture, v_texCoord); \n"
+      "}";
+  shader_external_oes_ = CreateProgram(kVertexShader, kFragmentShaderExternal);
+  assertNoGLError();
 }
 
 Shader MyInstance::CreateProgram(const char* vertex_shader,

@@ -29,7 +29,6 @@
 #define USE_VP8_TESTDATA_INSTEAD_OF_H264
 #include "testdata.h"
 
-
 // Use assert as a poor-man's CHECK, even in non-debug mode.
 // Since <assert.h> redefines assert on every inclusion (it doesn't use
 // include-guards), make sure this is the last file #include'd in this file.
@@ -113,6 +112,7 @@ class MyInstance : public pp::Instance, public pp::Graphics3DClient {
   void CreateGLObjects();
   void Create2DProgramOnce();
   void CreateRectangleARBProgramOnce();
+  void CreateExternalOESProgramOnce();
   Shader CreateProgram(const char* vertex_shader, const char* fragment_shader);
   void CreateShader(GLuint program, GLenum type, const char* source, int size);
   void PaintNextPicture();
@@ -145,6 +145,8 @@ class MyInstance : public pp::Instance, public pp::Graphics3DClient {
   Shader shader_2d_;
   // Shader program to draw GL_TEXTURE_RECTANGLE_ARB target.
   Shader shader_rectangle_arb_;
+  // Shader program to draw GL_TEXTURE_EXTERNAL_OES target.
+  Shader shader_external_oes_;
 };
 
 class Decoder {
@@ -158,6 +160,10 @@ class Decoder {
 
   void Reset();
   void RecyclePicture(const PP_VideoPicture& picture);
+
+  PP_TimeTicks GetAverageLatency() {
+    return num_pictures_ ? total_latency_ / num_pictures_ : 0;
+  }
 
  private:
   void InitializeDone(int32_t result);
@@ -178,6 +184,12 @@ class Decoder {
   int next_picture_id_;
   bool flushing_;
   bool resetting_;
+
+  const PPB_Core* core_if_;
+  static const int kMaxDecodeDelay = 128;
+  PP_TimeTicks decode_time_[kMaxDecodeDelay];
+  PP_TimeTicks total_latency_;
+  int num_pictures_;
 };
 
 #if defined USE_VP8_TESTDATA_INSTEAD_OF_H264
@@ -227,7 +239,12 @@ Decoder::Decoder(MyInstance* instance,
       encoded_data_next_pos_to_decode_(0),
       next_picture_id_(0),
       flushing_(false),
-      resetting_(false) {
+      resetting_(false),
+      total_latency_(0.0),
+      num_pictures_(0) {
+  core_if_ = static_cast<const PPB_Core*>(
+      pp::Module::Get()->GetBrowserInterface(PPB_CORE_INTERFACE));
+
 #if defined USE_VP8_TESTDATA_INSTEAD_OF_H264
   const PP_VideoProfile kBitstreamProfile = PP_VIDEOPROFILE_VP8MAIN;
 #else
@@ -295,6 +312,7 @@ void Decoder::DecodeNextFrame() {
     // Decode the frame. On completion, DecodeDone will call DecodeNextFrame
     // to implement a decode loop.
     uint32_t size = static_cast<uint32_t>(end_pos - start_pos);
+    decode_time_[next_picture_id_ % kMaxDecodeDelay] = core_if_->GetTimeTicks();
     decoder_->Decode(next_picture_id_++,
                      size,
                      kData + start_pos,
@@ -318,6 +336,12 @@ void Decoder::PictureReady(int32_t result, PP_VideoPicture picture) {
   if (result == PP_ERROR_ABORTED)
     return;
   assert(result == PP_OK);
+
+  num_pictures_++;
+  PP_TimeTicks latency = core_if_->GetTimeTicks() -
+                         decode_time_[picture.decode_id % kMaxDecodeDelay];
+  total_latency_ += latency;
+
   decoder_->GetPicture(
       callback_factory_.NewCallbackWithOutput(&Decoder::PictureReady));
   instance_->PaintPicture(this, picture);
@@ -349,12 +373,13 @@ MyInstance::MyInstance(PP_Instance instance, pp::Module* module)
       swap_ticks_(0),
       callback_factory_(this),
       context_(NULL) {
-  assert((console_if_ = static_cast<const PPB_Console*>(
-              module->GetBrowserInterface(PPB_CONSOLE_INTERFACE))));
-  assert((core_if_ = static_cast<const PPB_Core*>(
-              module->GetBrowserInterface(PPB_CORE_INTERFACE))));
-  assert((gles2_if_ = static_cast<const PPB_OpenGLES2*>(
-              module->GetBrowserInterface(PPB_OPENGLES2_INTERFACE))));
+  console_if_ = static_cast<const PPB_Console*>(
+      pp::Module::Get()->GetBrowserInterface(PPB_CONSOLE_INTERFACE));
+  core_if_ = static_cast<const PPB_Core*>(
+      pp::Module::Get()->GetBrowserInterface(PPB_CORE_INTERFACE));
+  gles2_if_ = static_cast<const PPB_OpenGLES2*>(
+      pp::Module::Get()->GetBrowserInterface(PPB_OPENGLES2_INTERFACE));
+
   RequestInputEvents(PP_INPUTEVENT_CLASS_MOUSE);
 }
 
@@ -367,6 +392,8 @@ MyInstance::~MyInstance() {
     gles2_if_->DeleteProgram(graphics_3d, shader_2d_.program);
   if (shader_rectangle_arb_.program)
     gles2_if_->DeleteProgram(graphics_3d, shader_rectangle_arb_.program);
+  if (shader_external_oes_.program)
+    gles2_if_->DeleteProgram(graphics_3d, shader_external_oes_.program);
 
   for (DecoderList::iterator it = video_decoders_.begin();
        it != video_decoders_.end();
@@ -455,14 +482,19 @@ void MyInstance::PaintNextPicture() {
     gles2_if_->UseProgram(graphics_3d, shader_2d_.program);
     gles2_if_->Uniform2f(
         graphics_3d, shader_2d_.texcoord_scale_location, 1.0, 1.0);
-  } else {
-    assert(picture.texture_target == GL_TEXTURE_RECTANGLE_ARB);
+  } else if (picture.texture_target == GL_TEXTURE_RECTANGLE_ARB) {
     CreateRectangleARBProgramOnce();
     gles2_if_->UseProgram(graphics_3d, shader_rectangle_arb_.program);
     gles2_if_->Uniform2f(graphics_3d,
                          shader_rectangle_arb_.texcoord_scale_location,
                          picture.texture_size.width,
                          picture.texture_size.height);
+  } else {
+    assert(picture.texture_target == GL_TEXTURE_EXTERNAL_OES);
+    CreateExternalOESProgramOnce();
+    gles2_if_->UseProgram(graphics_3d, shader_external_oes_.program);
+    gles2_if_->Uniform2f(
+        graphics_3d, shader_external_oes_.texcoord_scale_location, 1.0, 1.0);
   }
 
   gles2_if_->Viewport(graphics_3d, x, y, half_width, half_height);
@@ -487,9 +519,18 @@ void MyInstance::PaintFinished(int32_t result) {
     double elapsed = core_if_->GetTimeTicks() - first_frame_delivered_ticks_;
     double fps = (elapsed > 0) ? num_frames_rendered_ / elapsed : 1000;
     double ms_per_swap = (swap_ticks_ * 1e3) / num_frames_rendered_;
+    double secs_average_latency = 0;
+    for (DecoderList::iterator it = video_decoders_.begin();
+         it != video_decoders_.end();
+         ++it)
+      secs_average_latency += (*it)->GetAverageLatency();
+    secs_average_latency /= video_decoders_.size();
+    double ms_average_latency = 1000 * secs_average_latency;
     LogError(this).s() << "Rendered frames: " << num_frames_rendered_
                        << ", fps: " << fps
-                       << ", with average ms/swap of: " << ms_per_swap;
+                       << ", with average ms/swap of: " << ms_per_swap
+                       << ", with average latency (ms) of: "
+                       << ms_average_latency;
   }
 
   // If the decoders were reset, this will be empty.
@@ -542,8 +583,8 @@ void MyInstance::CreateGLObjects() {
   // Assign vertex positions and texture coordinates to buffers for use in
   // shader program.
   static const float kVertices[] = {
-      -1, 1, -1, -1, 1, 1, 1, -1,  // Position coordinates.
-      0,  1, 0,  0,  1, 1, 1, 0,   // Texture coordinates.
+      -1, -1, -1, 1, 1, -1, 1, 1,  // Position coordinates.
+      0,  1,  0,  0, 1, 1,  1, 0,  // Texture coordinates.
   };
 
   GLuint buffer;
@@ -598,6 +639,23 @@ void MyInstance::CreateRectangleARBProgramOnce() {
       "}";
   shader_rectangle_arb_ =
       CreateProgram(kVertexShader, kFragmentShaderRectangle);
+  assertNoGLError();
+}
+
+void MyInstance::CreateExternalOESProgramOnce() {
+  if (shader_external_oes_.program)
+    return;
+  static const char kFragmentShaderExternal[] =
+      "#extension GL_OES_EGL_image_external : require\n"
+      "precision mediump float;            \n"
+      "varying vec2 v_texCoord;            \n"
+      "uniform samplerExternalOES s_texture; \n"
+      "void main()                         \n"
+      "{"
+      "    gl_FragColor = texture2D(s_texture, v_texCoord); \n"
+      "}";
+  shader_external_oes_ = CreateProgram(kVertexShader, kFragmentShaderExternal);
+  assertNoGLError();
 }
 
 Shader MyInstance::CreateProgram(const char* vertex_shader,

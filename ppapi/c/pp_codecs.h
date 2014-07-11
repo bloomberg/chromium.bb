@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From pp_codecs.idl modified Tue Jun 10 13:32:45 2014. */
+/* From pp_codecs.idl modified Mon Jun 30 14:36:36 2014. */
 
 #ifndef PPAPI_C_PP_CODECS_H_
 #define PPAPI_C_PP_CODECS_H_
@@ -64,8 +64,9 @@ struct PP_VideoPicture {
   uint32_t texture_id;
   /**
    * The GL texture target for the decoded picture. Possible values are:
-   *   GL_TEXTURE_2D                 (normalized texture coordinates)
-   *   GL_TEXTURE_RECTANGLE_ARB      (dimension dependent texture coordinates)
+   *   GL_TEXTURE_2D
+   *   GL_TEXTURE_RECTANGLE_ARB
+   *   GL_TEXTURE_EXTERNAL_OES
    *
    * The pixel format of the texture is GL_RGBA.
    */

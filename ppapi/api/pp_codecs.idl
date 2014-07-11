@@ -43,8 +43,9 @@ struct PP_VideoPicture {
 
   /**
    * The GL texture target for the decoded picture. Possible values are:
-   *   GL_TEXTURE_2D                 (normalized texture coordinates)
-   *   GL_TEXTURE_RECTANGLE_ARB      (dimension dependent texture coordinates)
+   *   GL_TEXTURE_2D
+   *   GL_TEXTURE_RECTANGLE_ARB
+   *   GL_TEXTURE_EXTERNAL_OES
    *
    * The pixel format of the texture is GL_RGBA.
    */
