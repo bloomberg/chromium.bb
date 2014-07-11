@@ -10,6 +10,7 @@
 #include <string.h>
 #include <time.h>
 
+#include "base/time/time.h"
 #include "gpu/command_buffer/common/cmd_buffer_common.h"
 #include "gpu/command_buffer/common/command_buffer.h"
 #include "gpu/command_buffer/common/constants.h"
@@ -20,7 +21,8 @@ namespace gpu {
 #if !defined(OS_ANDROID)
 #define CMD_HELPER_PERIODIC_FLUSH_CHECK
 const int kCommandsPerFlushCheck = 100;
-const float kPeriodicFlushDelay = 1.0f / (5.0f * 60.0f);
+const int kPeriodicFlushDelayInMicroseconds =
+    base::Time::kMicrosecondsPerSecond / (5 * 60);
 #endif
 
 const int kAutoFlushSmall = 16;  // 1/16 of the buffer
@@ -325,8 +327,7 @@ class GPU_EXPORT CommandBufferHelper {
   bool context_lost_;
   bool flush_automatically_;
 
-  // Using C runtime instead of base because this file cannot depend on base.
-  clock_t last_flush_time_;
+  base::TimeTicks last_flush_time_;
 
   // Incremented every time the helper flushes the command buffer.
   // Can be used to track when prior commands have been flushed.

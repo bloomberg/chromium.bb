@@ -7,6 +7,7 @@
 #include "gpu/command_buffer/client/cmd_buffer_helper.h"
 
 #include "base/logging.h"
+#include "base/time/time.h"
 #include "gpu/command_buffer/common/command_buffer.h"
 #include "gpu/command_buffer/common/trace_event.h"
 
@@ -28,7 +29,6 @@ CommandBufferHelper::CommandBufferHelper(CommandBuffer* command_buffer)
       usable_(true),
       context_lost_(false),
       flush_automatically_(true),
-      last_flush_time_(0),
       flush_generation_(0) {
 }
 
@@ -151,7 +151,7 @@ void CommandBufferHelper::Flush() {
     put_ = 0;
 
   if (usable() && last_put_sent_ != put_) {
-    last_flush_time_ = clock();
+    last_flush_time_ = base::TimeTicks::Now();
     last_put_sent_ = put_;
     command_buffer_->Flush(put_);
     ++flush_generation_;
@@ -161,9 +161,11 @@ void CommandBufferHelper::Flush() {
 
 #if defined(CMD_HELPER_PERIODIC_FLUSH_CHECK)
 void CommandBufferHelper::PeriodicFlushCheck() {
-  clock_t current_time = clock();
-  if (current_time - last_flush_time_ > kPeriodicFlushDelay * CLOCKS_PER_SEC)
+  base::TimeTicks current_time = base::TimeTicks::Now();
+  if (current_time - last_flush_time_ >
+      base::TimeDelta::FromMicroseconds(kPeriodicFlushDelayInMicroseconds)) {
     Flush();
+  }
 }
 #endif
 
