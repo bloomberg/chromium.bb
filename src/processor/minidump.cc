@@ -4803,6 +4803,72 @@ MinidumpMemoryInfoList* Minidump::GetMemoryInfoList() {
   return GetStream(&memory_info_list);
 }
 
+static const char* get_stream_name(uint32_t stream_type) {
+  switch (stream_type) {
+  case MD_UNUSED_STREAM:
+    return "MD_UNUSED_STREAM";
+  case MD_RESERVED_STREAM_0:
+    return "MD_RESERVED_STREAM_0";
+  case MD_RESERVED_STREAM_1:
+    return "MD_RESERVED_STREAM_1";
+  case MD_THREAD_LIST_STREAM:
+    return "MD_THREAD_LIST_STREAM";
+  case MD_MODULE_LIST_STREAM:
+    return "MD_MODULE_LIST_STREAM";
+  case MD_MEMORY_LIST_STREAM:
+    return "MD_MEMORY_LIST_STREAM";
+  case MD_EXCEPTION_STREAM:
+    return "MD_EXCEPTION_STREAM";
+  case MD_SYSTEM_INFO_STREAM:
+    return "MD_SYSTEM_INFO_STREAM";
+  case MD_THREAD_EX_LIST_STREAM:
+    return "MD_THREAD_EX_LIST_STREAM";
+  case MD_MEMORY_64_LIST_STREAM:
+    return "MD_MEMORY_64_LIST_STREAM";
+  case MD_COMMENT_STREAM_A:
+    return "MD_COMMENT_STREAM_A";
+  case MD_COMMENT_STREAM_W:
+    return "MD_COMMENT_STREAM_W";
+  case MD_HANDLE_DATA_STREAM:
+    return "MD_HANDLE_DATA_STREAM";
+  case MD_FUNCTION_TABLE_STREAM:
+    return "MD_FUNCTION_TABLE_STREAM";
+  case MD_UNLOADED_MODULE_LIST_STREAM:
+    return "MD_UNLOADED_MODULE_LIST_STREAM";
+  case MD_MISC_INFO_STREAM:
+    return "MD_MISC_INFO_STREAM";
+  case MD_MEMORY_INFO_LIST_STREAM:
+    return "MD_MEMORY_INFO_LIST_STREAM";
+  case MD_THREAD_INFO_LIST_STREAM:
+    return "MD_THREAD_INFO_LIST_STREAM";
+  case MD_HANDLE_OPERATION_LIST_STREAM:
+    return "MD_HANDLE_OPERATION_LIST_STREAM";
+  case MD_LAST_RESERVED_STREAM:
+    return "MD_LAST_RESERVED_STREAM";
+  case MD_BREAKPAD_INFO_STREAM:
+    return "MD_BREAKPAD_INFO_STREAM";
+  case MD_ASSERTION_INFO_STREAM:
+    return "MD_ASSERTION_INFO_STREAM";
+  case MD_LINUX_CPU_INFO:
+    return "MD_LINUX_CPU_INFO";
+  case MD_LINUX_PROC_STATUS:
+    return "MD_LINUX_PROC_STATUS";
+  case MD_LINUX_LSB_RELEASE:
+    return "MD_LINUX_LSB_RELEASE";
+  case MD_LINUX_CMD_LINE:
+    return "MD_LINUX_CMD_LINE";
+  case MD_LINUX_ENVIRON:
+    return "MD_LINUX_ENVIRON";
+  case MD_LINUX_AUXV:
+    return "MD_LINUX_AUXV";
+  case MD_LINUX_MAPS:
+    return "MD_LINUX_MAPS";
+  case MD_LINUX_DSO_DEBUG:
+    return "MD_LINUX_DSO_DEBUG";
+  default:
+    return "unknown";
+  }
+}
 
 void Minidump::Print() {
   if (!valid_) {
@@ -4829,7 +4895,8 @@ void Minidump::Print() {
 
     printf("mDirectory[%d]\n", stream_index);
     printf("MDRawDirectory\n");
-    printf("  stream_type        = %d\n",   directory_entry->stream_type);
+    printf("  stream_type        = 0x%x (%s)\n", directory_entry->stream_type,
+           get_stream_name(directory_entry->stream_type));
     printf("  location.data_size = %d\n",
            directory_entry->location.data_size);
     printf("  location.rva       = 0x%x\n", directory_entry->location.rva);
@@ -4842,7 +4909,9 @@ void Minidump::Print() {
        ++iterator) {
     uint32_t stream_type = iterator->first;
     MinidumpStreamInfo info = iterator->second;
-    printf("  stream type 0x%x at index %d\n", stream_type, info.stream_index);
+    printf("  stream type 0x%x (%s) at index %d\n", stream_type,
+           get_stream_name(stream_type),
+           info.stream_index);
   }
   printf("\n");
 }
