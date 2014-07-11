@@ -183,9 +183,12 @@ IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, CreateNewProfileAsynchronous) {
   FlushIoTaskRunnerAndSpinThreads();
 }
 
+
+// Flaky: http://crbug.com/393177
 // Test OnProfileCreate is called with is_new_profile set to false when
 // creating a profile asynchronously with an existing prefs file.
-IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, CreateOldProfileAsynchronous) {
+IN_PROC_BROWSER_TEST_F(ProfileBrowserTest,
+                       DISABLED_CreateOldProfileAsynchronous) {
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   CreatePrefsFileInDirectory(temp_dir.path());
@@ -209,8 +212,9 @@ IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, CreateOldProfileAsynchronous) {
   FlushIoTaskRunnerAndSpinThreads();
 }
 
+// Flaky: http://crbug.com/393177
 // Test that a README file is created for profiles that didn't have it.
-IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, ProfileReadmeCreated) {
+IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, DISABLED_ProfileReadmeCreated) {
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
 

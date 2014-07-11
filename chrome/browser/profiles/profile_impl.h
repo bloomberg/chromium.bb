@@ -149,7 +149,7 @@ class ProfileImpl : public Profile {
   friend class BetterSessionRestoreCrashTest;
   FRIEND_TEST_ALL_PREFIXES(StartupBrowserCreatorTest,
                            ProfilesLaunchedAfterCrash);
-  FRIEND_TEST_ALL_PREFIXES(ProfileBrowserTest, ProfileReadmeCreated);
+  FRIEND_TEST_ALL_PREFIXES(ProfileBrowserTest, DISABLED_ProfileReadmeCreated);
   FRIEND_TEST_ALL_PREFIXES(ProfileBrowserTest,
                            ProfileDeletedBeforeReadmeCreated);
 
