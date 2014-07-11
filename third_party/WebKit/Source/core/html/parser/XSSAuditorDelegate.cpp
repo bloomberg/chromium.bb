@@ -73,6 +73,11 @@ XSSAuditorDelegate::XSSAuditorDelegate(Document* document)
     ASSERT(m_document);
 }
 
+void XSSAuditorDelegate::trace(Visitor* visitor)
+{
+    visitor->trace(m_document);
+}
+
 PassRefPtr<FormData> XSSAuditorDelegate::generateViolationReport(const XSSInfo& xssInfo)
 {
     ASSERT(isMainThread());

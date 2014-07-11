@@ -26,6 +26,7 @@
 #ifndef XSSAuditorDelegate_h
 #define XSSAuditorDelegate_h
 
+#include "platform/heap/Handle.h"
 #include "platform/weborigin/KURL.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
@@ -63,10 +64,12 @@ private:
     { }
 };
 
-class XSSAuditorDelegate {
+class XSSAuditorDelegate FINAL {
+    DISALLOW_ALLOCATION();
     WTF_MAKE_NONCOPYABLE(XSSAuditorDelegate);
 public:
     explicit XSSAuditorDelegate(Document*);
+    void trace(Visitor*);
 
     void didBlockScript(const XSSInfo&);
     void setReportURL(const KURL& url) { m_reportURL = url; }
@@ -74,7 +77,7 @@ public:
 private:
     PassRefPtr<FormData> generateViolationReport(const XSSInfo&);
 
-    Document* m_document;
+    RawPtrWillBeMember<Document> m_document;
     bool m_didSendNotifications;
     KURL m_reportURL;
 };

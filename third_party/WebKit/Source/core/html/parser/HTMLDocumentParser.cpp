@@ -164,6 +164,7 @@ HTMLDocumentParser::~HTMLDocumentParser()
 void HTMLDocumentParser::trace(Visitor* visitor)
 {
     visitor->trace(m_treeBuilder);
+    visitor->trace(m_xssAuditorDelegate);
     visitor->trace(m_scriptRunner);
     ScriptableDocumentParser::trace(visitor);
     HTMLScriptRunnerHost::trace(visitor);
