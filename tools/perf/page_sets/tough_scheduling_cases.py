@@ -331,7 +331,6 @@ class EmptyTouchHandlerPage(ToughSchedulingCasesPage):
       self.synthetic_delays = {
         'blink.HandleInputEvent': {'target_duration': 0.2}
       }
-
     self.bounce = bounce
 
   def RunSmoothness(self, action_runner):
@@ -371,7 +370,8 @@ class ToughSchedulingCasesPageSet(page_set_module.PageSet):
   """ Tough scheduler latency test cases """
 
   def __init__(self):
-    super(ToughSchedulingCasesPageSet, self).__init__()
+    super(ToughSchedulingCasesPageSet, self).__init__(
+        archive_data_file='data/tough_scheduling_cases.json')
 
     # Why: Simple scrolling baseline
     self.AddPage(ToughSchedulingCasesPage(
@@ -465,3 +465,14 @@ class ToughSchedulingCasesPageSet(page_set_module.PageSet):
       page_set=self))
     # Why: For measuring the latency of scroll-synchronized effects.
     self.AddPage(SynchronizedScrollOffsetPage(page_set=self))
+
+    real_pages_url_list = [
+          'http://www.latimes.com',
+          ('http://io9.com/the-10-most-shocking-characters-that-george-r-r-' +
+           'martin-1579481155/+tinaamini'),
+          'http://ftw.usatoday.com/2014/05/spelling-bee-rules-shenanigans',
+          'http://m.espn.go.com/nhl/rankings'
+    ]
+
+    for url in real_pages_url_list:
+      self.AddPage(ToughSchedulingCasesPage(url, self))
