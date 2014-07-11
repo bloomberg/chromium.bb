@@ -145,7 +145,9 @@ void WebUIScreenLockerTester::EnterPassword(const std::string& password) {
   // Verify that "signin" button is hidden.
   scoped_ptr<base::Value> v = content::ExecuteScriptAndGetValue(
       RenderViewHost()->GetMainFrame(),
-      "$('pod-row').pods[0].signinButtonElement.hidden;");
+      "window.getComputedStyle("
+      "    $('pod-row').pods[0].querySelector('.signin-button-container'))"
+      "        .display == 'none'");
   ASSERT_TRUE(v->GetAsBoolean(&result));
   ASSERT_TRUE(result);
 

@@ -4,6 +4,7 @@
  */
 
 /* Overrides for the desktop user manager screen. */
+
 .oobe-display {
   background-color: #eee;
 }
@@ -17,10 +18,8 @@
 }
 
 .pod {
-  border-radius: 2px;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-  padding: 0;
-  width: 180px;
+  height: 226px;
 }
 
 .pod.faded {
@@ -29,81 +28,101 @@
 
 .pod.hovered:not(.focused) {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-  opacity: 0.9 !important;
+  opacity: 0.9;
 }
 
 .pod.focused {
+  box-shadow: 0 16px 21px rgba(0, 0, 0, 0.2);
+}
+
+.pod.focused.locked {
   box-shadow: 0 12px 21px rgba(0, 0, 0, 0.2);
+  height: 220px;
 }
 
-.pod .main-pane {
-  width: 180px;
-}
-
-.pod .user-image-container {
-  height: 180px;
-  width: 180px;
-}
-
-.pod .user-image {
+.user-image-pane {
   border-top-left-radius: 2px;
   border-top-right-radius: 2px;
   height: 180px;
-  opacity: 1;
+  left: 0;
+  top: 0;
   width: 180px;
+}
+
+html[dir=rtl] .user-image-pane {
+  right: 0;
+}
+
+.pod .user-image {
+  max-height: 180px;
+  max-width: 180px;
+  opacity: 1;
+}
+
+.pod.locked .locked-indicator {
+  background-image: -webkit-image-set(
+      url('chrome://theme/IDR_ICON_PROFILES_LOCKED') 1x,
+      url('chrome://theme/IDR_ICON_PROFILES_LOCKED@2x') 2x);
+  height: 31px;
+  left: 8px;
+  position: absolute;
+  top: 8px;
+  width: 31px;
+}
+
+html[dir=rtl] .pod.locked .locked-indicator {
+  left: auto;
+  right: 8px;
+}
+
+.pod.supervised-user .supervised-indicator {
+  background-image: -webkit-image-set(
+      url('chrome://theme/IDR_ICON_PROFILES_SUPERVISED') 1x,
+      url('chrome://theme/IDR_ICON_PROFILES_SUPERVISED@2x') 2x);
+  height: 31px;
+  left: 8px;
+  position: absolute;
+  top: 8px;
+  width: 31px;
+}
+
+html[dir=rtl] .pod.supervised-user .supervised-indicator {
+  left: auto;
+  right: 8px;
+}
+
+.main-pane {
+  left: 0;
+  top: 0;
+}
+
+html[dir=rtl] .main-pane {
+  right: 0;
+}
+
+.name-container,
+.pod.focused:not(.multiprofiles-policy-applied) .auth-container {
+  top: 180px;
+  width: 180px;
+}
+
+.pod.focused:not(.locked) .name-container {
+  display: block;
 }
 
 .pod .name {
   color: #363636;
   font-size: 15px;
-  line-height: 20px;
-  margin: 10px 0 10px;
+  margin-top: 11px;
 }
 
-/* For local/unlocked profiles, the name box becomes the focused element.
-However, don't display the blue focus outline around it. */
-.pod .name:focus {
-  outline: none;
+.pod.focused:not(.locked) .auth-container {
+  display: none;
 }
 
-/* For local/unlocked profiles, always display the name and not the
-sign-in button. */
-.pod.need-password.focused .name {
-  display: block;
-}
-
-.pod .locked-indicator {
-  background-image: -webkit-image-set(
-      url('chrome://theme/IDR_ICON_PROFILES_LOCKED') 1x,
-      url('chrome://theme/IDR_ICON_PROFILES_LOCKED@2x') 2x);
-  background-repeat: no-repeat;
-  height: 35px;
-  left: 8px;
-  position: absolute;
-  top: 8px;
-  width: 35px;
-  z-index: 1;
-}
-
-html[dir=rtl] .pod .locked-indicator {
-  right: 8px;
-}
-
-.pod .supervised-indicator {
-  background-image: -webkit-image-set(
-      url('chrome://theme/IDR_ICON_PROFILES_SUPERVISED') 1x,
-      url('chrome://theme/IDR_ICON_PROFILES_SUPERVISED@2x') 2x);
-  background-repeat: no-repeat;
-  height: 35px;
-  left: 8px;
-  position: absolute;
-  top: 8px;
-  width: 35px;
-  z-index: 1;
-}
-
-html[dir=rtl] .pod .supervised-indicator {
-  right: 8px;
+.pod.focused.locked .password-entry-container {
+  display: flex;
+  flex: auto;
 }
 
 .action-box-area {

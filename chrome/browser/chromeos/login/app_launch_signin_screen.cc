@@ -202,7 +202,7 @@ void AppLaunchSigninScreen::HandleGetUsers() {
     users_list.Append(user_dict);
   }
 
-  webui_handler_->LoadUsers(users_list, false, false);
+  webui_handler_->LoadUsers(users_list, false);
 }
 
 void AppLaunchSigninScreen::SetAuthType(

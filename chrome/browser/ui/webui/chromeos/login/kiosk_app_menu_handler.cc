@@ -31,10 +31,6 @@ const char kKioskSetAppsOldAPI[] = "login.AppsMenuButton.setApps";
 const char kKioskShowErrorNewAPI[] = "login.AccountPickerScreen.showAppError";
 const char kKioskShowErrorOldAPI[] = "login.AppsMenuButton.showError";
 
-// Default app icon size.
-const char kDefaultAppIconSizeString[] = "96px";
-const int kMaxAppIconSize = 160;
-
 }  // namespace
 
 KioskAppMenuHandler::KioskAppMenuHandler(
@@ -107,22 +103,8 @@ void KioskAppMenuHandler::SendKioskApps() {
 
     // TODO(xiyuan): Replace data url with a URLDataSource.
     std::string icon_url("chrome://theme/IDR_APP_DEFAULT_ICON");
-
-    if (!app_data.icon.isNull()) {
+    if (!app_data.icon.isNull())
       icon_url = webui::GetBitmapDataUrl(*app_data.icon.bitmap());
-      int width = app_data.icon.width();
-      int height = app_data.icon.height();
-
-      // If app icon size is larger than default 160x160 then don't provide
-      // size at all since it's already limited on the css side.
-      if (width <= kMaxAppIconSize && height <= kMaxAppIconSize) {
-        app_info->SetString("iconWidth", base::IntToString(width) + "px");
-        app_info->SetString("iconHeight", base::IntToString(height) + "px");
-      }
-    } else {
-      app_info->SetString("iconWidth", kDefaultAppIconSizeString);
-      app_info->SetString("iconHeight", kDefaultAppIconSizeString);
-    }
     app_info->SetString("iconUrl", icon_url);
 
     apps_list.Append(app_info.release());

@@ -40,7 +40,7 @@ class UserSelectionScreen : public wm::UserActivityObserver {
   void OnUserRemoved(const std::string& username);
 
   void OnPasswordClearTimerExpired();
-  void SendUserList(bool animated);
+  void SendUserList();
   void HandleGetUsers();
   void SetAuthType(const std::string& username,
                    ScreenlockBridge::LockHandler::AuthType auth_type);

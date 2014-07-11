@@ -4841,7 +4841,7 @@ Battery full
     This device is managed by <ph name="DOMAIN">$1<ex>acmecorp.com</ex></ph>.
   </message>
   <message name="IDS_LOGIN_PUBLIC_ACCOUNT_INFO_FORMAT" desc="Template for text shown in the public account user pod, informing the user that this is a public, managed account.">
-    This device is managed by <ph name="DOMAIN">$1<ex>yourdomain.com</ex></ph>.
+    Managed by <ph name="DOMAIN">$1<ex>yourdomain.com</ex></ph>
   </message>
   <message name="IDS_LOGIN_PUBLIC_ACCOUNT_SIGNOUT_REMINDER" desc="Text shown in the public account user pod, reminding the user to log out.">
     Your information will be removed when you sign out.

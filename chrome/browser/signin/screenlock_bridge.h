@@ -41,6 +41,7 @@ class ScreenlockBridge {
       ONLINE_SIGN_IN = 1,
       NUMERIC_PIN = 2,
       USER_CLICK = 3,
+      EXPAND_THEN_USER_CLICK = 4,
     };
 
     // Displays |message| in a banner on the lock screen.

@@ -91,7 +91,6 @@ class LoginDisplayWebUIHandler {
   virtual void ShowSigninScreenForCreds(const std::string& username,
                                         const std::string& password) = 0;
   virtual void LoadUsers(const base::ListValue& users_list,
-                         bool animated,
                          bool show_guest) = 0;
 
  protected:
@@ -291,7 +290,6 @@ class SigninScreenHandler
   virtual void ShowSigninScreenForCreds(const std::string& username,
                                         const std::string& password) OVERRIDE;
   virtual void LoadUsers(const base::ListValue& users_list,
-                         bool animated,
                          bool show_guest) OVERRIDE;
 
   // content::NotificationObserver implementation:

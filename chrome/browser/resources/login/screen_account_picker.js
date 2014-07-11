@@ -119,9 +119,6 @@ login.createScreen('AccountPickerScreen', 'account-picker', function() {
     onShow: function() {
       if (!this.firstShown_) return;
       this.firstShown_ = false;
-      // TODO(nkostylev): Enable animation back when session start jank
-      // is reduced. See http://crosbug.com/11116 http://crosbug.com/18307
-      // $('pod-row').startInitAnimation();
 
       // Ensure that login is actually visible.
       window.webkitRequestAnimationFrame(function() {
@@ -170,11 +167,10 @@ login.createScreen('AccountPickerScreen', 'account-picker', function() {
     /**
      * Loads given users in pod row.
      * @param {array} users Array of user.
-     * @param {boolean} animated Whether to use init animation.
      * @param {boolean} showGuest Whether to show guest session button.
      */
-    loadUsers: function(users, animated, showGuest) {
-      $('pod-row').loadPods(users, animated);
+    loadUsers: function(users, showGuest) {
+      $('pod-row').loadPods(users);
       $('login-header-bar').showGuestButton = showGuest;
 
       // The desktop User Manager can send the index of a pod that should be

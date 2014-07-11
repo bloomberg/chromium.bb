@@ -21,46 +21,36 @@ podrow.images-loading {
 
 .pod {
   -webkit-tap-highlight-color: transparent;
-  -webkit-transform: scale3d(0.9, 0.9, 0.9);
   background-color: white;
   border-radius: 2px;
   box-shadow: 0 4px 23px 5px rgba(0, 0, 0, 0.2),
               0 2px 6px rgba(0, 0, 0, 0.15),
               0 3px 0 rgba(0, 0, 0, 0.08);
   cursor: pointer;
-  display: flex;
-  flex-flow: row;
+  height: 213px;
   outline: none;
-  padding: 10px 10px 3px;
   position: absolute;
-  vertical-align: middle;
-  width: 160px;
+  transform: scale3d(0.9, 0.9, 0.9);
+  width: 180px;
   z-index: 0;
 }
 
-html[run=firstExecAfterBoot] .pod {
-  -webkit-transition: -webkit-transform 180ms ease,
-                      opacity 180ms ease;
-}
-
 .account-picker.flying-pods .pod {
-  -webkit-transition: all 180ms ease;
+  transition: all 180ms;
 }
 
-.pod .main-pane {
-  position: relative;
-  text-align: center;
-  width: 160px;
+.pod.faded {
+  opacity: .75;
 }
 
 podrow[ncolumns='6'] .pod {
-  -webkit-transform: scale3d(0.8, 0.8, 0.8);
+  transform: scale3d(0.8, 0.8, 0.8);
 }
 
 .pod.focused {
   /* Focused pod has the same size no matter how many pods. */
-  -webkit-transform: scale3d(1, 1, 1) !important;
   cursor: default;
+  transform: scale3d(1, 1, 1) !important;
   z-index: 1;
 }
 
@@ -68,22 +58,34 @@ podrow[ncolumns='6'] .pod {
   cursor: pointer;
 }
 
-.pod .user-image-container {
+.user-image-pane {
+  background-color: white;
+  height: 160px;
+  left: 10px;
+  position: absolute;
+  top: 10px;
+  width: 160px;
+  z-index: 3;
+}
+
+html[dir=rtl] .user-image-pane {
+  left: auto;
+  right: 10px;
+}
+
+.user-image-container {
   align-items: center;
   display: flex;
-  height: 160px;
+  height: 100%;
   justify-content: center;
-  width: 160px;
+  width: 100%;
 }
 
 .pod .user-image {
-  height: 160px;
+  flex: none;
+  max-height: 160px;
+  max-width: 160px;
   opacity: 0.7;
-  width: 160px;
-}
-
-.pod.faded {
-  opacity: .75;
 }
 
 .pod.focused .user-image {
@@ -94,161 +96,165 @@ podrow[ncolumns='6'] .pod {
   -webkit-filter: grayscale(100%);
 }
 
-.pod.init {
-  -webkit-transform: scale3d(2.4, 2.4, 2.4);
-  opacity: 0;
+.signed-in-indicator {
+  display: none;
 }
 
-.pod.left {
-  -webkit-transform: translateX(-25px);
-  opacity: 0;
+.pod.signed-in .signed-in-indicator {
+  background-color: rgba(0, 0, 0, 0.5);
+  color: white;
+  display: block;
+  font-size: small;
+  padding: 3px 0;
+  position: absolute;
+  text-align: center;
+  top: 0;
+  width: 100%;
 }
 
-.pod.right {
-  -webkit-transform: translateX(25px);
-  opacity: 0;
+.main-pane {
+  left: 10px;
+  position: absolute;
+  top: 10px;
+  z-index: 2;
 }
 
-.pod.zoom {
-  -webkit-transform: scale3d(2.2, 2.2, 2.2);
-  opacity: 0;
+html[dir=rtl] .main-pane {
+  left: auto;
+  right: 10px;
+}
+
+.name-container,
+.pod.focused:not(.multiprofiles-policy-applied) .auth-container {
+  background-color: white;
+  display: flex;
+  position: absolute;
+  top: 160px;
+  width: 160px;
+}
+
+.name-container {
+  transition: transform 180ms;
+}
+
+.pod.focused .name-container {
+  display: none;
+}
+
+.pod.focused.multiprofiles-policy-applied .name-container {
+  display: flex;
 }
 
 .name {
-  -webkit-transition: all 170ms ease;
   color: #565656;
-  /* Matching font-size 14px but since name is visible
-   when pod is not focused increase that a bit. */
+  /* This should be 15.6px - the equivalent of 14px at 90% scale. */
+  flex: auto;
   font-size: 16px;
-  height: 26px;
-  line-height: 26px;  /* This vertically centers text */
-  margin: 10px 0 4px;
+  margin-top: 12px;
+  outline: none;
+  overflow: hidden;
+  padding: 0 6px;
+  text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.learn-more-container,
+.auth-container,
+.password-entry-container,
+.signin-button-container {
+  display: none;
+}
+
+.pod[auth-type='offlinePassword'].focused .password-entry-container {
+  display: flex;
+  flex: auto;
+}
+
+.password-container {
+  flex: auto;
+}
+
+.pod input[type='password'] {
+  border: none;
+  padding: 4px 6px;
+  position: relative;
+  top: 6px;
+  width: 100%;
+}
+
+.capslock-hint-container {
+  display: none;
+}
+
+.capslock-on .capslock-hint-container {
+  display: block;
+  flex: none;
+}
+
+.capslock-hint {
+  -webkit-margin-end: 6px;
+  -webkit-margin-start: -2px;
+  position: relative;
+  top: 11px;
+}
+
+.password-label {
+  display: none;
+}
+
+.pod[auth-type='userClick'] .password-label {
+  display: block;
+  flex: auto;
+  margin-top: 11px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.name.init {
-  opacity: 0;
-}
-
-.pod.need-password.focused .name {
-  display: none;
-}
-
-.pod.need-password.multiprofiles-policy-applied .name {
-  display: block;
-}
-
-.password-area {
-  display: none;
-}
-
-.password-input-container {
-  -webkit-box-flex: 1;
-  /* This relative position is so the capslock hint is positioned correctly. */
-  position: relative;
-}
-
-.password-label {
-  -webkit-box-align: center;
-  border: none;
-  display: none;
-  font-size: 14px;
-  height: 40px;
-  text-overflow: ellipsis;
-}
-
-.pod[auth-type='userClick'] .password-label {
-  display: -webkit-box;
-}
-
 .custom-icon {
-  -webkit-box-align: center;
   background-position: center;
   background-repeat: no-repeat;
+  flex: none;
   height: 40px;
   width: 40px;
 }
 
-.pod input[type='password'] {
-  -webkit-transition: opacity linear 150ms;
-  background: white;
-  border: none;
-  border-radius: 0; /* override widgets.css rule */
-  box-sizing: border-box;
-  display: none;
-  height: 40px;
-  outline: none;
-  padding: 4px 6px;
-  width: 100%;
+.pod[auth-type='onlineSignIn'] .signin-button-container,
+.launch-app-button-container {
+  display: block;
+  flex: auto;
+  text-align: center;
 }
 
-.pod[auth-type='offlinePassword'] input[type='password'] {
-  display: inline-block;
-}
-
-.pod.need-password.focused .password-area {
-  display: -webkit-box;
-}
-
-.pod.need-password.multiprofiles-policy-applied .password-area {
-  display: none;
-}
-
-.pod .signin-button,
-.pod .launch-app-button {
-  box-sizing: border-box;
-  display: none;
-  height: 26px;
-  margin: 6px 0 !important;
+.signin-button,
+.launch-app-button {
+  display: inline;
+  margin-top: 6px !important;
   max-width: 100%;
-  min-width: 72px !important;
-  padding: 4px 8px;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.pod.focused .launch-app-button,
-.pod.focused[auth-type='onlineSignIn'] .signin-button {
-  display: inline-block;
-}
-
-.pod .capslock-hint {
-  bottom: 13px;
-  cursor: text;
+.action-box-area,
+.user-type-icon-area {
+  background-color: white;
+  border-radius: 2px;
   position: absolute;
-  right: 6px;
-  visibility: hidden;
-  z-index: 1;
-}
-
-html[dir=rtl] .pod .capslock-hint {
-  left: 10px;
-  right: auto;
-}
-
-.capslock-on .pod.focused input[type='password']:not([hidden]) ~ .capslock-hint {
-  visibility: visible;
-}
-
-.capslock-on .pod.focused .password {
-  padding: 4px 27px 4px 6px;
+  top: 0;
 }
 
 .action-box-area {
-  -webkit-transition: opacity 100ms ease-in-out;
-  background-color: white;
-  border-radius: 2px;
-  box-shadow: none;
-  height: 23px;
-  margin: 0;
   opacity: 0;
   outline: none;
-  padding: 0;
-  position: absolute;
   right: 0;
-  top: 0;
-  width: 23px;
-  z-index: 1;
+  transition: opacity 100ms;
+  z-index: 4;
+}
+
+html[dir=rtl] .action-box-area {
+  left: 0;
+  right: auto;
 }
 
 .action-box-area:focus,
@@ -258,28 +264,23 @@ html[dir=rtl] .pod .capslock-hint {
 }
 
 .action-box-button {
-  background-color: transparent;
   background-image: url('chrome://theme/IDR_OOBE_ACTION_BOX_BUTTON_NORMAL');
-  border: 0;
   height: 13px;
   margin: 5px;
-  padding: 0;
   width: 13px;
 }
 
+.action-box-button:hover {
+  background-image: url('chrome://theme/IDR_OOBE_ACTION_BOX_BUTTON_HOVER');
+}
+
+.action-box-area.active .action-box-button {
+  background-image: url('chrome://theme/IDR_OOBE_ACTION_BOX_BUTTON_PRESSED');
+}
+
 .user-type-icon-area {
-  background-color: white;
-  border-radius: 2px;
-  box-shadow: none;
-  height: 26px;
   left: 0;
-  margin: 0;
-  outline: none;
-  padding: 0;
-  position: absolute;
-  top: 0;
-  width: 26px;
-  z-index: 1;
+  z-index: 5;
 }
 
 html[dir=rtl] .user-type-icon-area {
@@ -288,11 +289,8 @@ html[dir=rtl] .user-type-icon-area {
 }
 
 .user-type-icon-image {
-  background-color: transparent;
-  border: 0 !important;
   height: 16px;
   margin: 5px;
-  padding: 0;
   width: 16px;
 }
 
@@ -308,132 +306,61 @@ html[dir=rtl] .user-type-icon-area {
   background-image: url('chrome://theme/IDR_KIOSK_APP_USER_POD_ICON');
 }
 
-.bubble-shown.user-type-bubble,
-.user-type-icon-area.policy:hover ~ .user-type-bubble {
-  opacity: 1;
-  visibility: visible;
-}
-
-.user-type-bubble {
-  -webkit-transition: all 100ms ease-in-out;
-  background-color: white;
-  border: 1px solid lightgray;
-  border-radius: 2px;
-  box-shadow: none;
-  font-size: 14px;
-  left: 5px;
-  margin: 0;
-  opacity: 0;
-  padding: 17px;
-  position: absolute;
-  top: 20px;
-  visibility: hidden;
-  width: 200px;
-  z-index: 1;
-}
-
-html[dir=rtl] .user-type-bubble {
-  left: auto;
-  right: 5px;
-}
-
-.user-type-bubble-header {
-  font-weight: bold;
-  margin-bottom: 14px;
-}
-
-.easy-unlock-button-content {
-  width: 145px;
-}
-
-html[dir=rtl] .action-box-area {
-  left: 0;
-  right: auto;
-}
-
-.action-box-button:hover {
-  background-image: url('chrome://theme/IDR_OOBE_ACTION_BOX_BUTTON_HOVER');
-}
-
-.action-box-area.active .action-box-button {
-  background-image: url('chrome://theme/IDR_OOBE_ACTION_BOX_BUTTON_PRESSED');
-}
-
 .action-box-menu {
-  -webkit-transition: opacity 100ms ease-in-out;
-  background-color: white;
-  border: 1px solid lightgray;
-  border-radius: 2px;
-  box-shadow: none;
   display: none;
-  font-size: 13px;
-  line-height: 19px;
-  margin: 0;
-  opacity: 0;
-  padding: 0;
-  position: absolute;
-  right: 5px;
-  top: 18px;
-  /* TODO(glotov): the menu should fade out with transition  */
-  visibility: hidden;
-  width: 220px;
-  z-index: 1;
-}
-
-html[dir=rtl] .action-box-menu {
-  left: 5px;
-  right: auto;
+  z-index: 6;
 }
 
 .action-box-area.active ~ .action-box-menu {
-  -webkit-box-orient: vertical;
-  display: -webkit-box;
-  opacity: 1;
-  visibility: visible;
+  background-color: white;
+  border: 1px solid lightgray;
+  border-radius: 2px;
+  display: flex;
+  flex-direction: column;
+  font-size: 13px;
+  position: absolute;
+  right: 5px;
+  top: 18px;
+  width: 220px;
+}
+
+html[dir=rtl] .action-box-area.active ~ .action-box-menu {
+  left: 5px;
+  right: auto;
 }
 
 .action-box-menu-title {
-  -webkit-box-orient: vertical;
-  -webkit-box-pack: center;
   color: #b4b4b4;
-  display: -webkit-box;
+  display: flex;
+  flex-direction: column;
   padding: 7px 20px;
 }
 
-.action-box-menu-title-name {
-  display: -webkit-box;
-  height: 23px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  width: 180px;
-}
-
+.action-box-menu-title-name,
 .action-box-menu-title-email {
-  display: block;
-  min-height: 23px;
+  flex: none;
+  height: 23px;
+  line-height: 19px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .action-box-menu-remove {
-  -webkit-box-align: center;
   border-top: 1px solid lightgray;
-  display: -webkit-box;
-  min-height: 29px;
-  padding: 7px 20px;
+  line-height: 19px;
+  min-height: 24px;
+  outline: none;
+  padding: 12px 20px 7px;
 }
 
 .action-box-menu-remove:hover,
 .action-box-menu-remove:focus {
   background-color: #f3f3f3;
-  outline: none;
 }
 
 .action-box-remove-user-warning {
   border-top: 1px solid lightgray;
-  color: #000;
   font-size: 12px;
   line-height: 18px;
   padding: 20px;
@@ -447,160 +374,134 @@ html[dir=rtl] .action-box-menu {
   width: 100%;
 }
 
-html[oobe=old] .pod.focused .action-box-area {
-  /* Track shifting of .user-image on pod focus. */
-  -webkit-transform: translateY(-1px);
-  -webkit-transition: -webkit-transform 140ms ease;
-  opacity: 1;
+.user-type-bubble {
+  background-color: white;
+  border: 1px solid lightgray;
+  border-radius: 2px;
+  left: 5px;
+  opacity: 0;
+  padding: 17px;
+  position: absolute;
+  top: 20px;
+  transition: all 100ms;
+  visibility: hidden;
+  width: 200px;
+  z-index: 7;
 }
 
-.signed-in-indicator {
-  -webkit-transition: all 140ms ease;
-  background: rgba(0, 0, 0, 0.5);
-  color: white;
-  font-size: small;
-  padding: 3px 0;
-  position: absolute;
-  /* Width of .user-image. */
-  width: 160px;
-  z-index: 1;
+html[dir=rtl] .user-type-bubble {
+  left: auto;
+  right: 5px;
+}
+
+.bubble-shown,
+.user-type-icon-area.policy:hover ~ .user-type-bubble {
+  opacity: 1;
+  visibility: visible;
+}
+
+.user-type-bubble-header {
+  font-weight: bold;
+  margin-bottom: 14px;
+}
+
+.easy-unlock-button-content {
+  width: 145px;
 }
 
 /**** Public account user pod rules *******************************************/
 
-.pod.public-account .name {
-  width: 140px;
+.pod.public-account.expanded {
+  width: 500px;
 }
 
-.pod.public-account .name,
-.side-pane-name {
-  -webkit-padding-end: 16px;
-  max-height: 42px;
-  outline: none;
-  overflow: hidden;
-  text-overflow: ellipsis;
+.pod.public-account.focused .name-container {
+  display: flex;
 }
 
-.learn-more,
-.side-pane-learn-more {
+.pod.public-account.expanded .name-container {
+  transform: translateY(-34px);
+}
+
+.pod.public-account .learn-more-container {
+  display: block;
+  flex: none;
+}
+
+.pod.public-account .learn-more {
   background-image: url('chrome://theme/IDR_CONTROLLED_SETTING_MANDATORY');
   height: 16px;
-  position: absolute;
+  position: relative;
+  top: 16px;
   width: 16px;
 }
 
-.learn-more:hover,
-.side-pane-learn-more:hover {
-  background-image: url('chrome://theme/IDR_CONTROLLED_SETTING_MANDATORY');
-}
-
-.learn-more {
-  right: 10px;
-  top: 189px;
-}
-
-html[dir=rtl] .learn-more {
-  left: 10px;
-  right: auto;
-}
-
-.side-pane-divider,
-.side-pane-container {
-  bottom: 5px;
-  top: 5px;
-  visibility: hidden;
-}
-
-.side-pane-divider {
-  -webkit-margin-start: 10px;
-  border-left: 1px solid lightgray;
-  left: 180px;
-  right: auto;
-  width: 1px;
-}
-
-html[dir=rtl] .side-pane-divider {
-  left: auto;
-  right: 180px;
-}
-
-.side-pane-container {
-  left: 185px;
-  overflow: hidden;
-  padding: 5px;
-  right: auto;
-}
-
-html[dir=rtl] .side-pane-container {
-  left: auto;
-  right: 185px;
-}
-
-.side-pane-contents {
-  -webkit-transform: translateX(-240px);
-  -webkit-transition: -webkit-transform 180ms ease;
-  height: 100%;
-  width: 225px;
-}
-
-html[dir=rtl] .side-pane-contents {
-  -webkit-transform: translateX(240px);
-}
-
-.pod.public-account.expanded .side-pane-contents {
-  -webkit-transform: translateX(0);
-}
-
-.side-pane-learn-more {
-  right: 0;
-  top: 2px;
-}
-
-html[dir=rtl] .side-pane-learn-more {
-  left: 2px;
-  right: auto;
-}
-
-.side-pane-container .info,
-.side-pane-container .reminder {
-  font-size: 12px;
-}
-
-.side-pane-container .info {
-  -webkit-margin-before: 25px;
-}
-
-.side-pane-container .reminder {
-  font-weight: bold;
-}
-
-.side-pane-container .enter-button {
-  bottom: 5px;
-  display: block;
-  float: right;
-}
-
-html[dir=rtl] .side-pane-container .enter-button {
-  left: 5px;
-  right: auto;
-}
-
-.pod.public-account.expanded {
-  padding: 10px;
-  width: 400px;
-}
-
-.pod.public-account:not(.expanded) {
-  max-height: 204px;
-}
-
-.pod.public-account.expanded .name,
-.pod.public-account.expanded .learn-more {
+.expanded-pane {
   display: none;
 }
 
-.pod.public-account.expanded .side-pane-divider,
-.pod.public-account.expanded .side-pane-container,
-.pod.public-account.animating .side-pane-container {
-  visibility: inherit;
+.pod.public-account.animating .expanded-pane,
+.pod.public-account.expanded .expanded-pane {
+  display: block;
+  margin: 10px;
+  overflow: hidden;
+  z-index: 1;
+}
+
+.expanded-pane-contents {
+  display: flex;
+  flex-direction: column;
+  float: right;
+  height: 193px;
+  width: 490px;
+}
+
+html[dir=rtl] .expanded-pane-contents {
+  float: left;
+}
+
+.expanded-pane-name {
+  -webkit-margin-start: 200px;
+  flex: none;
+  font-size: 19px;
+  margin-bottom: 11px;
+  margin-top: -2px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.reminder {
+  -webkit-margin-start: 200px;
+  flex: auto;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.bottom-container {
+  -webkit-margin-start: 10px;
+  display: flex;
+  flex: none;
+}
+
+.expanded-pane-learn-more-container,
+.enter-button {
+  flex: none;
+}
+
+.expanded-pane-learn-more {
+  background-image: url('chrome://theme/IDR_CONTROLLED_SETTING_MANDATORY');
+  height: 16px;
+  position: relative;
+  top: 6px;
+  width: 16px;
+}
+
+.info {
+  flex: auto;
+  font-size: 13px;
+  margin: 5px 10px 0 10px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }

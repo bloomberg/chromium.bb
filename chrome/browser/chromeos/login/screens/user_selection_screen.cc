@@ -223,7 +223,7 @@ const UserList UserSelectionScreen::PrepareUserListForSending(
   return users_to_send;
 }
 
-void UserSelectionScreen::SendUserList(bool animated) {
+void UserSelectionScreen::SendUserList() {
   base::ListValue users_list;
   const UserList& users = GetUsers();
 
@@ -250,12 +250,14 @@ void UserSelectionScreen::SendUserList(bool animated) {
        ++it) {
     const std::string& user_id = (*it)->email();
     bool is_owner = (user_id == owner);
-    bool is_public_account =
+    const bool is_public_account =
         ((*it)->GetType() == user_manager::USER_TYPE_PUBLIC_ACCOUNT);
-    ScreenlockBridge::LockHandler::AuthType initial_auth_type =
-      ShouldForceOnlineSignIn(*it)
-          ? ScreenlockBridge::LockHandler::ONLINE_SIGN_IN
-          : ScreenlockBridge::LockHandler::OFFLINE_PASSWORD;
+    const ScreenlockBridge::LockHandler::AuthType initial_auth_type =
+        is_public_account
+            ? ScreenlockBridge::LockHandler::EXPAND_THEN_USER_CLICK
+            : (ShouldForceOnlineSignIn(*it)
+                   ? ScreenlockBridge::LockHandler::ONLINE_SIGN_IN
+                   : ScreenlockBridge::LockHandler::OFFLINE_PASSWORD);
     user_auth_type_map_[user_id] = initial_auth_type;
 
     base::DictionaryValue* user_dict = new base::DictionaryValue();
@@ -272,11 +274,11 @@ void UserSelectionScreen::SendUserList(bool animated) {
     users_list.Append(user_dict);
   }
 
-  handler_->LoadUsers(users_list, animated, show_guest_);
+  handler_->LoadUsers(users_list, show_guest_);
 }
 
 void UserSelectionScreen::HandleGetUsers() {
-  SendUserList(false);
+  SendUserList();
 }
 
 void UserSelectionScreen::SetAuthType(

@@ -624,7 +624,7 @@ void UserManagerScreenHandler::SendUserList() {
   }
 
   web_ui()->CallJavascriptFunction("login.AccountPickerScreen.loadUsers",
-    users_list, base::FundamentalValue(false), base::FundamentalValue(true));
+    users_list, base::FundamentalValue(true));
 }
 
 void UserManagerScreenHandler::ReportAuthenticationResult(

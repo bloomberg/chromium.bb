@@ -1,28 +1,42 @@
-<div id="user-pod-template" class="pod need-password" hidden>
-  <div class="main-pane">
-    <div class="signed-in-indicator" i18n-content="signedIn" hidden></div>
+<div id="user-pod-template" class="pod" hidden>
+  <div class="user-image-pane">
     <div class="user-image-container">
-      <img class="user-image" alt="">
+      <img class="user-image" alt>
     </div>
-    <div class="name"></div>
-    <div class="password-area">
-      <div class="password-input-container">
-        <!-- Password Authentication -->
-        <input type="password" class="password"
-               i18n-values="placeholder:passwordHint">
-        <img class="capslock-hint"
-             src="chrome://theme/IDR_LOGIN_PASSWORD_CAPS_LOCK" alt="">
-
-        <!-- User Click Authentication -->
-        <div class="password-label"></div>
+    <div class="signed-in-indicator" i18n-content="signedIn"></div>
+    <div class="locked-indicator"></div>
+    <div class="supervised-indicator"></div>
+  </div>
+  <div class="main-pane">
+    <div class="name-container">
+      <div class="name"></div>
+      <div class="learn-more-container">
+        <div class="learn-more"></div>
       </div>
-      <div class="custom-icon" hidden></div>
     </div>
-    <button class="signin-button" i18n-content="signinButton"></button>
-    <button class="launch-app-button" i18n-content="launchAppButton" hidden>
-    </button>
-    <div class="locked-indicator" hidden></div>
-    <div class="supervised-indicator" hidden></div>
+    <div class="auth-container">
+      <!-- Password Authentication -->
+      <div class="password-entry-container">
+        <div class="password-container">
+          <input type="password" class="password"
+                 i18n-values="placeholder:passwordHint">
+        </div>
+        <div class="capslock-hint-container">
+          <img class="capslock-hint"
+               src="chrome://theme/IDR_LOGIN_PASSWORD_CAPS_LOCK" alt>
+        </div>
+      </div>
+      <!-- User Click Authentication -->
+      <div class="password-label"></div>
+      <div class="custom-icon" hidden></div>
+      <div class="signin-button-container">
+        <button class="signin-button" i18n-content="signinButton"></button>
+      </div>
+      <div class="launch-app-button-container" hidden>
+        <button class="launch-app-button" i18n-content="launchAppButton">
+        </button>
+      </div>
+    </div>
   </div>
   <div class="action-box-area">
     <div class="custom-appearance action-box-button"></div>
@@ -51,7 +65,7 @@
   <div class="user-type-bubble">
     <div class="user-type-bubble-header">
       <span class="mp-policy-title"
-          i18n-content="multiProfilesRestrictedPolicyTitle" hidden></span>
+          i18n-content="multiProfilesRestrictedPolicyTitle"></span>
     </div>
     <div class="user-type-bubble-body">
       <span class="mp-policy-not-allowed-msg"
@@ -68,20 +82,20 @@
      account user pod. Note that only the children of the template div are
      appended. -->
 <div id="public-account-user-pod-extras-template" hidden>
-  <div class="learn-more"></div>
-  <div class="side-pane-divider"></div>
-  <div class="side-pane-container">
-    <div class="side-pane-contents">
-      <div class="side-pane-name-plus-learn">
-        <div class="side-pane-name"></div>
-        <div class="side-pane-learn-more"></div>
+  <div class="expanded-pane">
+    <div class="expanded-pane-contents">
+      <div class="expanded-pane-name"></div>
+      <div class="reminder" i18n-content="publicAccountReminder"></div>
+      <div class="bottom-container">
+        <div class="expanded-pane-learn-more-container">
+          <div class="expanded-pane-learn-more"></div>
+        </div>
+        <div class="info"></div>
+        <button class="enter-button"
+                i18n-content="publicAccountEnter"
+                i18n-values="aria-label:publicAccountEnterAccessibleName">
+        </button>
       </div>
-      <p class="info"></p>
-      <p class="reminder" i18n-content="publicAccountReminder"></p>
-      <button class="enter-button"
-              i18n-content="publicAccountEnter"
-              i18n-values="aria-label:publicAccountEnterAccessibleName">
-      </button>
     </div>
   </div>
 </div>

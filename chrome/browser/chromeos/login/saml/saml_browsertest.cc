@@ -680,7 +680,8 @@ IN_PROC_BROWSER_TEST_F(SAMLPolicyTest, PRE_NoSAML) {
 IN_PROC_BROWSER_TEST_F(SAMLPolicyTest, NoSAML) {
   login_screen_load_observer_->Wait();
   // Verify that offline login is allowed.
-  JsExpect("document.querySelector('#pod-row .signin-button').hidden");
+  JsExpect("window.getComputedStyle(document.querySelector("
+           "    '#pod-row .signin-button-container')).display == 'none'");
 }
 
 IN_PROC_BROWSER_TEST_F(SAMLPolicyTest, PRE_SAMLNoLimit) {
@@ -708,7 +709,8 @@ IN_PROC_BROWSER_TEST_F(SAMLPolicyTest, PRE_SAMLNoLimit) {
 IN_PROC_BROWSER_TEST_F(SAMLPolicyTest, SAMLNoLimit) {
   login_screen_load_observer_->Wait();
   // Verify that offline login is allowed.
-  JsExpect("document.querySelector('#pod-row .signin-button').hidden");
+  JsExpect("window.getComputedStyle(document.querySelector("
+           "    '#pod-row .signin-button-container')).display == 'none'");
 }
 
 IN_PROC_BROWSER_TEST_F(SAMLPolicyTest, PRE_SAMLZeroLimit) {
@@ -736,7 +738,8 @@ IN_PROC_BROWSER_TEST_F(SAMLPolicyTest, PRE_SAMLZeroLimit) {
 IN_PROC_BROWSER_TEST_F(SAMLPolicyTest, SAMLZeroLimit) {
   login_screen_load_observer_->Wait();
   // Verify that offline login is not allowed.
-  JsExpect("!document.querySelector('#pod-row .signin-button').hidden");
+  JsExpect("window.getComputedStyle(document.querySelector("
+           "    '#pod-row .signin-button-container')).display != 'none'");
 }
 
 }  // namespace chromeos
