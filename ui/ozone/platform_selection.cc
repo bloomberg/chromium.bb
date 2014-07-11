@@ -6,8 +6,8 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
-#include "ui/ozone/ozone_switches.h"
 #include "ui/ozone/platform_list.h"
+#include "ui/ozone/public/ozone_switches.h"
 
 namespace ui {
 

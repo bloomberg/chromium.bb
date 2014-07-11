@@ -7,7 +7,7 @@
 #include "ui/display/chromeos/touchscreen_delegate_impl.h"
 #include "ui/display/types/chromeos/native_display_delegate.h"
 #include "ui/display/types/chromeos/touchscreen_device_manager.h"
-#include "ui/ozone/ozone_platform.h"
+#include "ui/ozone/public/ozone_platform.h"
 
 namespace ui {
 

@@ -21,8 +21,8 @@
 #include "content/public/browser/browser_thread.h"
 
 #if defined(USE_OZONE)
-#include "ui/ozone/ozone_platform.h"
 #include "ui/ozone/public/gpu_platform_support_host.h"
+#include "ui/ozone/public/ozone_platform.h"
 #endif
 
 namespace content {

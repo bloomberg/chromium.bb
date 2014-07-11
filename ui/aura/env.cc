@@ -12,7 +12,7 @@
 #include "ui/events/platform/platform_event_source.h"
 
 #if defined(USE_OZONE)
-#include "ui/ozone/ozone_platform.h"
+#include "ui/ozone/public/ozone_platform.h"
 #endif
 
 namespace aura {

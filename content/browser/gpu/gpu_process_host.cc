@@ -51,7 +51,7 @@
 #endif
 
 #if defined(USE_OZONE)
-#include "ui/ozone/ozone_switches.h"
+#include "ui/ozone/public/ozone_switches.h"
 #endif
 
 #if defined(USE_X11) && !defined(OS_CHROMEOS)

@@ -1,9 +1,9 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_OZONE_OZONE_PLATFORM_H_
-#define UI_OZONE_OZONE_PLATFORM_H_
+#ifndef UI_OZONE_PUBLIC_OZONE_PLATFORM_H_
+#define UI_OZONE_PUBLIC_OZONE_PLATFORM_H_
 
 #include "base/memory/scoped_ptr.h"
 #include "ui/ozone/ozone_export.h"
@@ -74,4 +74,4 @@ class OZONE_EXPORT OzonePlatform {
 
 }  // namespace ui
 
-#endif  // UI_OZONE_OZONE_PLATFORM_H_
+#endif  // UI_OZONE_PUBLIC_OZONE_PLATFORM_H_

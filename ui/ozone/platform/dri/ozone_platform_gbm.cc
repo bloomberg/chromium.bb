@@ -11,7 +11,6 @@
 #include "base/at_exit.h"
 #include "ui/events/ozone/device/device_manager.h"
 #include "ui/events/ozone/evdev/event_factory_evdev.h"
-#include "ui/ozone/ozone_platform.h"
 #include "ui/ozone/platform/dri/cursor_factory_evdev_dri.h"
 #include "ui/ozone/platform/dri/dri_wrapper.h"
 #include "ui/ozone/platform/dri/gbm_surface.h"
@@ -24,6 +23,7 @@
 #include "ui/ozone/public/cursor_factory_ozone.h"
 #include "ui/ozone/public/gpu_platform_support.h"
 #include "ui/ozone/public/gpu_platform_support_host.h"
+#include "ui/ozone/public/ozone_platform.h"
 
 #if defined(OS_CHROMEOS)
 #include "ui/ozone/common/chromeos/touchscreen_device_manager_ozone.h"

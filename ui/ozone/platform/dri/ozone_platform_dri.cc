@@ -8,7 +8,6 @@
 #include "ui/events/ozone/device/device_manager.h"
 #include "ui/events/ozone/evdev/cursor_delegate_evdev.h"
 #include "ui/events/ozone/evdev/event_factory_evdev.h"
-#include "ui/ozone/ozone_platform.h"
 #include "ui/ozone/platform/dri/cursor_factory_evdev_dri.h"
 #include "ui/ozone/platform/dri/dri_surface.h"
 #include "ui/ozone/platform/dri/dri_surface_factory.h"
@@ -16,6 +15,7 @@
 #include "ui/ozone/platform/dri/scanout_surface.h"
 #include "ui/ozone/platform/dri/screen_manager.h"
 #include "ui/ozone/platform/dri/virtual_terminal_manager.h"
+#include "ui/ozone/public/ozone_platform.h"
 
 #if defined(OS_CHROMEOS)
 #include "ui/ozone/common/chromeos/touchscreen_device_manager_ozone.h"

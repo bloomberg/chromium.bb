@@ -4,11 +4,11 @@
 
 #include "ui/ozone/platform/caca/ozone_platform_caca.h"
 
-#include "ui/ozone/ozone_platform.h"
 #include "ui/ozone/platform/caca/caca_connection.h"
 #include "ui/ozone/platform/caca/caca_event_factory.h"
 #include "ui/ozone/platform/caca/caca_surface_factory.h"
 #include "ui/ozone/public/cursor_factory_ozone.h"
+#include "ui/ozone/public/ozone_platform.h"
 
 #if defined(OS_CHROMEOS)
 #include "ui/ozone/common/chromeos/native_display_delegate_ozone.h"

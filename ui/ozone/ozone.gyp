@@ -100,10 +100,10 @@
         'common/gpu/ozone_gpu_message_params.cc',
         'common/gpu/ozone_gpu_message_params.h',
         'common/gpu/ozone_gpu_messages.h',
-        'ozone_platform.cc',
-        'ozone_platform.h',
-        'ozone_switches.cc',
-        'ozone_switches.h',
+        'public/ozone_platform.cc',
+        'public/ozone_platform.h',
+        'public/ozone_switches.cc',
+        'public/ozone_switches.h',
         'platform_selection.cc',
         'platform_selection.h',
         '<@(external_ozone_platform_files)',
@@ -153,7 +153,7 @@
             '--output_cc=<(constructor_list_cc_file)',
             '--namespace=ui',
             '--typename=OzonePlatform',
-            '--include="ui/ozone/ozone_platform.h"'
+            '--include="ui/ozone/public/ozone_platform.h"'
           ],
         },
       ],

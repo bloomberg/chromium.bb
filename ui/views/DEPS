@@ -13,7 +13,7 @@ include_rules = [
   "+ui/gfx",
   "+ui/gl/gl_surface.h",  # To initialize GL for tests.
   "+ui/native_theme",
-  "+ui/ozone",
+  "+ui/ozone/public",
   "+ui/wm/core",
   "+ui/wm/public",
 
