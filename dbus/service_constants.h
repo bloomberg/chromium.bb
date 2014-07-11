@@ -1480,11 +1480,14 @@ const char kFormatCompleted[] = "FormatCompleted";
 const char kMountCompleted[] = "MountCompleted";
 
 // Properties.
+// TODO(benchan): Rename 'DeviceIs*' property to 'DiskIs*' as the latter is more
+// accurate.
 const char kDeviceFile[] = "DeviceFile";
 const char kDeviceIsDrive[] = "DeviceIsDrive";
 const char kDeviceIsMediaAvailable[] = "DeviceIsMediaAvailable";
 const char kDeviceIsMounted[] = "DeviceIsMounted";
 const char kDeviceIsOnBootDevice[] = "DeviceIsOnBootDevice";
+const char kDeviceIsOnRemovableDevice[] = "DeviceIsOnRemovableDevice";
 const char kDeviceIsReadOnly[] = "DeviceIsReadOnly";
 const char kDeviceIsVirtual[] = "DeviceIsVirtual";
 const char kDeviceMediaType[] = "DeviceMediaType";
