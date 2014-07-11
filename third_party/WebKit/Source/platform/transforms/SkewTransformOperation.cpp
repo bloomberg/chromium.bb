@@ -28,7 +28,7 @@ namespace WebCore {
 
 PassRefPtr<TransformOperation> SkewTransformOperation::blend(const TransformOperation* from, double progress, bool blendToIdentity)
 {
-    if (from && !from->isSameType(*this))
+    if (from && !from->canBlendWith(*this))
         return this;
 
     if (blendToIdentity)
@@ -42,7 +42,9 @@ PassRefPtr<TransformOperation> SkewTransformOperation::blend(const TransformOper
 
 bool SkewTransformOperation::canBlendWith(const TransformOperation& other) const
 {
-    return isSameType(other);
+    return other.type() == Skew
+        || other.type() == SkewX
+        || other.type() == SkewY;
 }
 
 } // namespace WebCore

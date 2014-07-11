@@ -28,7 +28,7 @@ namespace WebCore {
 
 PassRefPtr<TransformOperation> ScaleTransformOperation::blend(const TransformOperation* from, double progress, bool blendToIdentity)
 {
-    if (from && !from->isSameType(*this))
+    if (from && !from->canBlendWith(*this))
         return this;
 
     if (blendToIdentity)

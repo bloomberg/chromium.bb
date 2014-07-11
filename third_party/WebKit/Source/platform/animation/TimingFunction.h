@@ -56,6 +56,10 @@ public:
     // accuracy and is not guaranteed.
     virtual double evaluate(double fraction, double accuracy) const = 0;
 
+    // This function returns the minimum and maximum values obtainable when
+    // calling evaluate();
+    virtual void range(double* minValue, double* maxValue) const = 0;
+
 protected:
     TimingFunction(Type type)
         : m_type(type)
@@ -80,6 +84,7 @@ public:
 
     virtual double evaluate(double fraction, double) const OVERRIDE;
 
+    virtual void range(double* minValue, double* maxValue) const OVERRIDE;
 private:
     LinearTimingFunction()
         : TimingFunction(LinearFunction)
@@ -136,6 +141,7 @@ public:
     virtual String toString() const OVERRIDE;
 
     virtual double evaluate(double fraction, double accuracy) const OVERRIDE;
+    virtual void range(double* minValue, double* maxValue) const OVERRIDE;
 
     double x1() const { return m_x1; }
     double y1() const { return m_y1; }
@@ -214,6 +220,7 @@ public:
 
     virtual double evaluate(double fraction, double) const OVERRIDE;
 
+    virtual void range(double* minValue, double* maxValue) const OVERRIDE;
     int numberOfSteps() const { return m_steps; }
     StepAtPosition stepAtPosition() const { return m_stepAtPosition; }
 

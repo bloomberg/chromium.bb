@@ -31,6 +31,7 @@
 #include "config.h"
 #include "core/animation/AnimationStack.h"
 
+#include "core/animation/CompositorAnimations.h"
 #include "core/animation/css/CSSAnimations.h"
 #include "core/animation/interpolation/StyleInterpolation.h"
 #include "wtf/BitArray.h"
@@ -147,6 +148,27 @@ void AnimationStack::simplifyEffects()
 void AnimationStack::trace(Visitor* visitor)
 {
     visitor->trace(m_effects);
+}
+
+bool AnimationStack::getAnimatedBoundingBox(FloatBox& box, CSSPropertyID property) const
+{
+    FloatBox originalBox(box);
+    for (size_t i = 0; i < m_effects.size(); ++i) {
+        if (m_effects[i]->animation() && m_effects[i]->animation()->affects(property)) {
+            Animation* anim = m_effects[i]->animation();
+            if (!anim)
+                continue;
+            const Timing& timing = anim->specifiedTiming();
+            double startRange = 0;
+            double endRange = 1;
+            timing.timingFunction->range(&startRange, &endRange);
+            FloatBox expandingBox(originalBox);
+            if (!CompositorAnimations::instance()->getAnimatedBoundingBox(expandingBox, *anim->effect(), startRange, endRange))
+                return false;
+            box.expandTo(expandingBox);
+        }
+    }
+    return true;
 }
 
 } // namespace WebCore

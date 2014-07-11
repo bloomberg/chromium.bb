@@ -222,6 +222,104 @@ TEST_F(TimingFunctionTest, LinearEvaluate)
     EXPECT_EQ(1.6, linearTiming->evaluate(1.6, 0));
 }
 
+TEST_F(TimingFunctionTest, LinearRange)
+{
+    double start = 0;
+    double end = 1;
+    RefPtr<TimingFunction> linearTiming = LinearTimingFunction::shared();
+    linearTiming->range(&start, &end);
+    EXPECT_NEAR(0, start, 0.01);
+    EXPECT_NEAR(1, end, 0.01);
+    start = -1;
+    end = 10;
+    linearTiming->range(&start, &end);
+    EXPECT_NEAR(-1, start, 0.01);
+    EXPECT_NEAR(10, end, 0.01);
+}
+
+TEST_F(TimingFunctionTest, StepRange)
+{
+    double start = 0;
+    double end = 1;
+    RefPtr<TimingFunction> steps = StepsTimingFunction::preset(StepsTimingFunction::Start);
+    steps->range(&start, &end);
+    EXPECT_NEAR(0, start, 0.01);
+    EXPECT_NEAR(1, end, 0.01);
+
+    start = -1;
+    end = 10;
+    steps->range(&start, &end);
+    EXPECT_NEAR(0, start, 0.01);
+    EXPECT_NEAR(1, end, 0.01);
+}
+
+TEST_F(TimingFunctionTest, CubicRange)
+{
+    double start = 0;
+    double end = 1;
+
+    RefPtr<TimingFunction> cubicEaseTiming = CubicBezierTimingFunction::preset(CubicBezierTimingFunction::Ease);
+    start = 0;
+    end = 1;
+    cubicEaseTiming->range(&start, &end);
+    EXPECT_NEAR(0, start, 0.01);
+    EXPECT_NEAR(1, end, 0.01);
+    start = -1;
+    end = 10;
+    cubicEaseTiming->range(&start, &end);
+    EXPECT_NEAR(-0.4, start, 0.01);
+    EXPECT_NEAR(1, end, 0.01);
+
+    RefPtr<TimingFunction> cubicEaseInTiming = CubicBezierTimingFunction::preset(CubicBezierTimingFunction::EaseIn);
+    start = 0;
+    end = 1;
+    cubicEaseInTiming->range(&start, &end);
+    EXPECT_NEAR(0, start, 0.01);
+    EXPECT_NEAR(1, end, 0.01);
+    start = -1;
+    end = 10;
+    cubicEaseInTiming->range(&start, &end);
+    EXPECT_NEAR(0.0, start, 0.01);
+    EXPECT_NEAR(16.51, end, 0.01);
+
+    RefPtr<TimingFunction> cubicEaseOutTiming = CubicBezierTimingFunction::preset(CubicBezierTimingFunction::EaseOut);
+    start = 0;
+    end = 1;
+    cubicEaseOutTiming->range(&start, &end);
+    EXPECT_NEAR(0, start, 0.01);
+    EXPECT_NEAR(1, end, 0.01);
+    start = -1;
+    end = 10;
+    cubicEaseOutTiming->range(&start, &end);
+    EXPECT_NEAR(-1.72, start, 0.01);
+    EXPECT_NEAR(1.0, end, 0.01);
+
+    RefPtr<TimingFunction> cubicEaseInOutTiming = CubicBezierTimingFunction::preset(CubicBezierTimingFunction::EaseInOut);
+    start = 0;
+    end = 1;
+    cubicEaseInOutTiming->range(&start, &end);
+    EXPECT_NEAR(0, start, 0.01);
+    EXPECT_NEAR(1, end, 0.01);
+    start = -1;
+    end = 10;
+    cubicEaseInOutTiming->range(&start, &end);
+    EXPECT_NEAR(0.0, start, 0.01);
+    EXPECT_NEAR(1.0, end, 0.01);
+
+    RefPtr<TimingFunction> cubicCustomTiming = CubicBezierTimingFunction::create(0.17, 0.67, 1.0, -1.73);
+    start = 0;
+    end = 1;
+    cubicCustomTiming->range(&start, &end);
+    EXPECT_NEAR(-0.33, start, 0.01);
+    EXPECT_NEAR(1.0, end, 0.01);
+
+    start = -1;
+    end = 10;
+    cubicCustomTiming->range(&start, &end);
+    EXPECT_NEAR(-3.94, start, 0.01);
+    EXPECT_NEAR(4.578, end, 0.01);
+}
+
 TEST_F(TimingFunctionTest, CubicEvaluate)
 {
     double tolerance = 0.01;

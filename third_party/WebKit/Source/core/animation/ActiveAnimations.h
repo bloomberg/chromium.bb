@@ -57,6 +57,7 @@ public:
     // Animations that are currently active for this element, their effects will be applied
     // during a style recalc. CSS Transitions are included in this stack.
     AnimationStack& defaultStack() { return m_defaultStack; }
+    const AnimationStack& defaultStack() const { return m_defaultStack; }
     // Tracks the state of active CSS Animations and Transitions. The individual animations
     // will also be part of the default stack, but the mapping betwen animation name and
     // player is kept here.

@@ -38,6 +38,7 @@
 #include "core/animation/animatable/AnimatableFilterOperations.h"
 #include "core/animation/animatable/AnimatableTransform.h"
 #include "core/animation/animatable/AnimatableValueTestHelper.h"
+#include "platform/geometry/FloatBox.h"
 #include "platform/geometry/IntSize.h"
 #include "platform/graphics/filters/FilterOperations.h"
 #include "platform/transforms/TransformOperations.h"
@@ -110,6 +111,10 @@ public:
     {
         return CompositorAnimationsImpl::getAnimationOnCompositor(timing, std::numeric_limits<double>::quiet_NaN(), effect, animations);
     }
+    bool getAnimationBounds(FloatBox& boundingBox, const AnimationEffect& effect, double minValue, double maxValue)
+    {
+        return CompositorAnimations::instance()->getAnimatedBoundingBox(boundingBox, effect, minValue, maxValue);
+    }
 
     bool duplicateSingleKeyframeAndTestIsCandidateOnResult(AnimatableValueKeyframe* frame)
     {
@@ -178,6 +183,17 @@ public:
             double offset = 1.0 / (values.size() - 1) * i;
             RefPtrWillBeRawPtr<AnimatableDouble> value = AnimatableDouble::create(values[i]);
             frames->append(createReplaceOpKeyframe(CSSPropertyOpacity, value.get(), offset).get());
+        }
+        return frames.release();
+    }
+
+    PassOwnPtrWillBeRawPtr<AnimatableValueKeyframeVector> createCompositableTransformKeyframeVector(const Vector<TransformOperations>& values)
+    {
+        OwnPtrWillBeRawPtr<AnimatableValueKeyframeVector> frames = adoptPtrWillBeNoop(new AnimatableValueKeyframeVector);
+        for (size_t i = 0; i < values.size(); ++i) {
+            double offset = 1.0f / (values.size() - 1) * i;
+            RefPtrWillBeRawPtr<AnimatableTransform> value = AnimatableTransform::create(values[i]);
+            frames->append(createReplaceOpKeyframe(CSSPropertyTransform, value.get(), offset).get());
         }
         return frames.release();
     }
@@ -269,6 +285,31 @@ TEST_F(AnimationCompositorAnimationsTest, isCandidateForAnimationOnCompositorKey
     framesMixedProperties.append(createDefaultKeyframe(CSSPropertyOpacity, AnimationEffect::CompositeReplace, 0.0).get());
     framesMixedProperties.append(createDefaultKeyframe(CSSPropertyColor, AnimationEffect::CompositeReplace, 1.0).get());
     EXPECT_FALSE(isCandidateForAnimationOnCompositor(m_timing, *AnimatableValueKeyframeEffectModel::create(framesMixedProperties).get()));
+}
+
+TEST_F(AnimationCompositorAnimationsTest, AnimatedBoundingBox)
+{
+    Vector<TransformOperations> transformVector;
+    transformVector.append(TransformOperations());
+    transformVector.last().operations().append(TranslateTransformOperation::create(Length(0, WebCore::Fixed), Length(0, WebCore::Fixed), 0.0, TransformOperation::Translate3D));
+    transformVector.append(TransformOperations());
+    transformVector.last().operations().append(TranslateTransformOperation::create(Length(200, WebCore::Fixed), Length(200, WebCore::Fixed), 0.0, TransformOperation::Translate3D));
+    OwnPtrWillBePersistent<AnimatableValueKeyframeVector> frames = createCompositableTransformKeyframeVector(transformVector);
+    FloatBox bounds;
+    EXPECT_TRUE(getAnimationBounds(bounds, *AnimatableValueKeyframeEffectModel::create(*frames).get(), 0, 1));
+    EXPECT_EQ(FloatBox(0.0f, 0.f, 0.0f, 200.0f, 200.0f, 0.0f), bounds);
+    bounds = FloatBox();
+    EXPECT_TRUE(getAnimationBounds(bounds, *AnimatableValueKeyframeEffectModel::create(*frames).get(), -1, 1));
+    EXPECT_EQ(FloatBox(-200.0f, -200.0, 0.0, 400.0f, 400.0f, 0.0f), bounds);
+    transformVector.append(TransformOperations());
+    transformVector.last().operations().append(TranslateTransformOperation::create(Length(-300, WebCore::Fixed), Length(-400, WebCore::Fixed), 1.0f, TransformOperation::Translate3D));
+    bounds = FloatBox();
+    frames = createCompositableTransformKeyframeVector(transformVector);
+    EXPECT_TRUE(getAnimationBounds(bounds, *AnimatableValueKeyframeEffectModel::create(*frames).get(), 0, 1));
+    EXPECT_EQ(FloatBox(-300.0f, -400.f, 0.0f, 500.0f, 600.0f, 1.0f), bounds);
+    bounds = FloatBox();
+    EXPECT_TRUE(getAnimationBounds(bounds, *AnimatableValueKeyframeEffectModel::create(*frames).get(), -1, 2));
+    EXPECT_EQ(FloatBox(-1300.0f, -1600.f, 0.0f, 1500.0f, 1800.0f, 3.0f), bounds);
 }
 
 TEST_F(AnimationCompositorAnimationsTest, ConvertTimingForCompositorStartDelay)

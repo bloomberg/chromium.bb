@@ -26,7 +26,7 @@ namespace WebCore {
 
 PassRefPtr<TransformOperation> TranslateTransformOperation::blend(const TransformOperation* from, double progress, bool blendToIdentity)
 {
-    if (from && !from->isSameType(*this))
+    if (from && !from->canBlendWith(*this))
         return this;
 
     const Length zeroLength(0, Fixed);
