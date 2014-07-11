@@ -295,7 +295,7 @@ bool SVGPathParser::parsePathDataFromSource(PathParsingMode pathParsingMode, boo
 
     // Skip any leading spaces.
     if (!m_source->moveToNextToken())
-        return false;
+        return true;
 
     SVGPathSegType command;
     m_source->parseSVGSegmentType(command);

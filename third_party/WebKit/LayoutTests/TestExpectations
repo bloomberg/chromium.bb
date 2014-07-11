@@ -1287,6 +1287,8 @@ crbug.com/392706 virtual/threaded/animations/play-state-initially-paused.html [ 
 # V8 3.28.19
 crbug.com/392762 fast/js/nested-object-gc.html [ Pass Crash ]
 
+crbug.com/264123 svg/W3C-SVG-1.1-SE/paths-dom-02-f.svg [ NeedsRebaseline ]
+
 # Linux switching to Clang (Chromium r282246).
 crbug.com/392764 [ Linux ] compositing/layer-creation/overlap-transformed-preserved-3d.html [ Failure ]
 crbug.com/392764 [ Linux ] virtual/softwarecompositing/layer-creation/overlap-transformed-preserved-3d.html [ Failure ]

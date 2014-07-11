@@ -98,7 +98,7 @@ static SVGPathBlender* globalSVGPathBlender()
 bool buildPathFromString(const String& d, Path& result)
 {
     if (d.isEmpty())
-        return false;
+        return true;
 
     SVGPathBuilder* builder = globalSVGPathBuilder(result);
 
@@ -113,7 +113,7 @@ bool buildPathFromByteStream(const SVGPathByteStream* stream, Path& result)
 {
     ASSERT(stream);
     if (stream->isEmpty())
-        return false;
+        return true;
 
     SVGPathBuilder* builder = globalSVGPathBuilder(result);
 
@@ -128,7 +128,7 @@ bool buildStringFromByteStream(const SVGPathByteStream* stream, String& result, 
 {
     ASSERT(stream);
     if (stream->isEmpty())
-        return false;
+        return true;
 
     SVGPathStringBuilder* builder = globalSVGPathStringBuilder();
 
@@ -145,7 +145,7 @@ bool buildSVGPathByteStreamFromString(const String& d, SVGPathByteStream* result
     ASSERT(result);
     result->clear();
     if (d.isEmpty())
-        return false;
+        return true;
 
     // The string length is typically a minor overestimate of eventual byte stream size, so it avoids us a lot of reallocs.
     result->reserveInitialCapacity(d.length());
@@ -167,7 +167,7 @@ bool addToSVGPathByteStream(SVGPathByteStream* fromStream, const SVGPathByteStre
     ASSERT(fromStream);
     ASSERT(byStream);
     if (fromStream->isEmpty() || byStream->isEmpty())
-        return false;
+        return true;
 
     SVGPathByteStreamBuilder* builder = globalSVGPathByteStreamBuilder(fromStream);
 
