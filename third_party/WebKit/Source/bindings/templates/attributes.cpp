@@ -45,7 +45,7 @@ const v8::PropertyCallbackInfo<v8::Value>& info
           attribute.is_getter_raises_exception %}
     ExceptionState exceptionState(ExceptionState::GetterContext, "{{attribute.name}}", "{{interface_name}}", holder, info.GetIsolate());
     {% endif %}
-    {% if attribute.is_nullable and not attribute.is_nullable_simple %}
+    {% if attribute.is_explicit_nullable %}
     bool isNull = false;
     {% endif %}
     {% if attribute.is_implemented_in_private_script %}
@@ -73,7 +73,7 @@ const v8::PropertyCallbackInfo<v8::Value>& info
                          attribute.cpp_value)
       | indent}}
     {% endif %}
-    {% if attribute.is_nullable and not attribute.is_nullable_simple %}
+    {% if attribute.is_explicit_nullable %}
     if (isNull) {
         v8SetReturnValueNull(info);
         return;

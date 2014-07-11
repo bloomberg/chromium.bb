@@ -723,7 +723,12 @@ def literal_cpp_value(idl_type, idl_literal):
 IdlType.literal_cpp_value = literal_cpp_value
 
 
-def is_nullable_simple(idl_type):
+################################################################################
+# Utility properties for nullable types
+################################################################################
+
+
+def is_implicit_nullable(idl_type):
     # Nullable type where the corresponding C++ type supports a null value.
     # - String types (String/AtomicString) represent null as a null string,
     #   i.e. one for which String::isNull() returns true.
@@ -733,5 +738,13 @@ def is_nullable_simple(idl_type):
         (idl_type.is_string_type or idl_type.is_wrapper_type) and
         not idl_type.native_array_element_type)
 
-IdlType.is_nullable_simple = property(is_nullable_simple)
-IdlUnionType.is_nullable_simple = False
+
+def is_explicit_nullable(idl_type):
+    # Nullable type that isn't implicit nullable (see above.) For such types,
+    # we use Nullable<T> or similar explicit ways to represent a null value.
+    return idl_type.is_nullable and not idl_type.is_implicit_nullable
+
+IdlType.is_implicit_nullable = property(is_implicit_nullable)
+IdlType.is_explicit_nullable = property(is_explicit_nullable)
+IdlUnionType.is_implicit_nullable = False
+IdlUnionType.is_explicit_nullable = property(is_explicit_nullable)

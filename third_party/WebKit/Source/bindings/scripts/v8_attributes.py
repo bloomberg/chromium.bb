@@ -114,7 +114,7 @@ def attribute_context(interface, attribute):
             'InitializedByEventConstructor' in extended_attributes,
         'is_keep_alive_for_gc': is_keep_alive_for_gc(interface, attribute),
         'is_nullable': idl_type.is_nullable,
-        'is_nullable_simple': idl_type.is_nullable_simple,
+        'is_explicit_nullable': idl_type.is_explicit_nullable,
         'is_partial_interface_member':
             'PartialInterfaceImplementedAs' in extended_attributes,
         'is_per_world_bindings': 'PerWorldBindings' in extended_attributes,
@@ -183,7 +183,7 @@ def getter_context(interface, attribute, context):
         # EventHandler has special handling
         if base_idl_type != 'EventHandler':
             release = idl_type.release
-    elif ((idl_type.is_nullable and not context['is_nullable_simple']) or
+    elif (idl_type.is_explicit_nullable or
         base_idl_type == 'EventHandler' or
         'CachedAttribute' in extended_attributes or
         'LogPreviousValue' in extended_attributes or
@@ -228,7 +228,7 @@ def getter_expression(interface, attribute, context):
     if ('PartialInterfaceImplementedAs' in attribute.extended_attributes and
         not attribute.is_static):
         arguments.append('*impl')
-    if attribute.idl_type.is_nullable and not context['is_nullable_simple']:
+    if attribute.idl_type.is_explicit_nullable:
         arguments.append('isNull')
     if context['is_getter_raises_exception']:
         arguments.append('exceptionState')

@@ -74,7 +74,7 @@ def use_local_result(method):
             'ImplementedInPrivateScript' in extended_attributes or
             'RaisesException' in extended_attributes or
             idl_type.is_union_type or
-            (idl_type.is_nullable and not idl_type.is_nullable_simple))
+            idl_type.is_explicit_nullable)
 
 
 def method_context(interface, method):
@@ -120,8 +120,6 @@ def method_context(interface, method):
     arguments_need_try_catch = any(argument_needs_try_catch(argument)
                                    for argument in arguments)
 
-    is_nullable = idl_type.is_nullable and not idl_type.is_nullable_simple
-
     return {
         'activity_logging_world_list': v8_utilities.activity_logging_world_list(method),  # [ActivityLogging]
         'arguments': [argument_context(interface, method, argument, index)
@@ -131,7 +129,7 @@ def method_context(interface, method):
         'arguments_need_try_catch': arguments_need_try_catch,
         'conditional_string': v8_utilities.conditional_string(method),
         'cpp_type': (v8_types.cpp_template_type('Nullable', idl_type.cpp_type)
-                     if is_nullable else idl_type.cpp_type),
+                     if idl_type.is_explicit_nullable else idl_type.cpp_type),
         'cpp_value': this_cpp_value,
         'custom_registration_extended_attributes':
             CUSTOM_REGISTRATION_EXTENDED_ATTRIBUTES.intersection(
@@ -158,8 +156,8 @@ def method_context(interface, method):
         'is_custom_element_callbacks': is_custom_element_callbacks,
         'is_do_not_check_security': 'DoNotCheckSecurity' in extended_attributes,
         'is_do_not_check_signature': 'DoNotCheckSignature' in extended_attributes,
+        'is_explicit_nullable': idl_type.is_explicit_nullable,
         'is_implemented_in_private_script': is_implemented_in_private_script,
-        'is_nullable': is_nullable,
         'is_partial_interface_member':
             'PartialInterfaceImplementedAs' in extended_attributes,
         'is_per_world_bindings': 'PerWorldBindings' in extended_attributes,
@@ -333,7 +331,7 @@ def v8_set_return_value(interface_name, method, cpp_value, for_main_world=False)
     release = False
     # [CallWith=ScriptState], [RaisesException]
     if use_local_result(method):
-        if idl_type.is_nullable and not idl_type.is_nullable_simple:
+        if idl_type.is_explicit_nullable:
             # result is of type Nullable<T>
             cpp_value = 'result.get()'
         else:
