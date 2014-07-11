@@ -2049,7 +2049,7 @@ bool EventHandler::handleGestureShowPress()
         return false;
     for (FrameView::ScrollableAreaSet::const_iterator it = areas->begin(); it != areas->end(); ++it) {
         ScrollableArea* sa = *it;
-        ScrollAnimator* animator = sa->scrollAnimator();
+        ScrollAnimator* animator = sa->existingScrollAnimator();
         if (animator)
             animator->cancelAnimations();
     }
