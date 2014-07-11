@@ -8,6 +8,7 @@
 #include "base/containers/hash_tables.h"
 #include "base/lazy_instance.h"
 #include "base/metrics/user_metrics_action.h"
+#include "base/time/time.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/frame_host/cross_process_frame_connector.h"
 #include "content/browser/frame_host/cross_site_transferring_request.h"
@@ -840,6 +841,7 @@ void RenderFrameHostImpl::NavigateToURL(const GURL& url) {
   params.url = url;
   params.transition = PAGE_TRANSITION_LINK;
   params.navigation_type = FrameMsg_Navigate_Type::NORMAL;
+  params.browser_navigation_start = base::TimeTicks::Now();
   Navigate(params);
 }
 

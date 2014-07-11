@@ -886,10 +886,12 @@ void RenderFrameImpl::OnNavigate(const FrameMsg_Navigate_Params& params) {
 
     frame->loadRequest(request);
 
-    // If this is a cross-process navigation, the browser process will send
-    // along the proper navigation start value.
-    if (!params.browser_navigation_start.is_null() &&
-        frame->provisionalDataSource()) {
+    // The browser provides the navigation_start time to bootstrap the
+    // Navigation Timing information for the browser-initiated navigations. In
+    // case of cross-process navigations, this carries over the time of
+    // finishing the onbeforeunload handler of the previous page.
+    DCHECK(!params.browser_navigation_start.is_null());
+    if (frame->provisionalDataSource()) {
       // browser_navigation_start is likely before this process existed, so we
       // can't use InterProcessTimeTicksConverter. Instead, the best we can do
       // is just ensure we don't report a bogus value in the future.

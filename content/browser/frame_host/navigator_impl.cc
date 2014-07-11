@@ -5,6 +5,7 @@
 #include "content/browser/frame_host/navigator_impl.h"
 
 #include "base/command_line.h"
+#include "base/time/time.h"
 #include "content/browser/frame_host/frame_tree.h"
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/frame_host/navigation_controller_impl.h"
@@ -64,6 +65,7 @@ FrameMsg_Navigate_Type::Value GetNavigationType(
 void MakeNavigateParams(const NavigationEntryImpl& entry,
                         const NavigationControllerImpl& controller,
                         NavigationController::ReloadType reload_type,
+                        base::TimeTicks navigation_start,
                         FrameMsg_Navigate_Params* params) {
   params->page_id = entry.GetPageID();
   params->should_clear_history_list = entry.should_clear_history_list();
@@ -91,6 +93,9 @@ void MakeNavigateParams(const NavigationEntryImpl& entry,
   params->page_state = entry.GetPageState();
   params->navigation_type =
       GetNavigationType(controller.GetBrowserContext(), entry, reload_type);
+  // This is used by the old performance infrastructure to set up DocumentState
+  // associated with the RenderView.
+  // TODO(ppi): make it go away.
   params->request_time = base::Time::Now();
   params->extra_headers = entry.extra_headers();
   params->transferred_request_child_id =
@@ -118,6 +123,7 @@ void MakeNavigateParams(const NavigationEntryImpl& entry,
 
   params->can_load_local_resources = entry.GetCanLoadLocalResources();
   params->frame_to_navigate = entry.GetFrameToNavigate();
+  params->browser_navigation_start = navigation_start;
 }
 
 RenderFrameHostManager* GetRenderManager(RenderFrameHostImpl* rfh) {
@@ -322,6 +328,12 @@ bool NavigatorImpl::NavigateToEntry(
     return false;
   }
 
+  // This will be used to set the Navigation Timing API navigationStart
+  // parameter for browser navigations in new tabs (intents, tabs opened through
+  // "Open link in new tab"). We need to keep it above RFHM::Navigate() call to
+  // capture the time needed for the RenderFrameHost initialization.
+  base::TimeTicks navigation_start = base::TimeTicks::Now();
+
   RenderFrameHostManager* manager =
       render_frame_host->frame_tree_node()->render_manager();
   RenderFrameHostImpl* dest_render_frame_host = manager->Navigate(entry);
@@ -349,12 +361,16 @@ bool NavigatorImpl::NavigateToEntry(
   if (delegate_)
     delegate_->AboutToNavigateRenderFrame(dest_render_frame_host);
 
-  // Used for page load time metrics.
+  // WebContents uses this to fill LoadNotificationDetails when the load
+  // completes, so that PerformanceMonitor that listens to the notification can
+  // record the load time. PerformanceMonitor is no longer maintained.
+  // TODO(ppi): make this go away.
   current_load_start_ = base::TimeTicks::Now();
 
   // Navigate in the desired RenderFrameHost.
   FrameMsg_Navigate_Params navigate_params;
-  MakeNavigateParams(entry, *controller_, reload_type, &navigate_params);
+  MakeNavigateParams(entry, *controller_, reload_type, navigation_start,
+      &navigate_params);
   dest_render_frame_host->Navigate(navigate_params);
 
   // Make sure no code called via RFH::Navigate clears the pending entry.

@@ -8,6 +8,7 @@
 #include "base/memory/shared_memory.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/time/time.h"
 #include "base/win/windows_version.h"
 #include "content/child/request_extra_data.h"
 #include "content/child/service_worker/service_worker_network_provider.h"
@@ -318,6 +319,7 @@ TEST_F(RenderViewImplTest, OnNavigationHttpPost) {
   nav_params.transition = PAGE_TRANSITION_TYPED;
   nav_params.page_id = -1;
   nav_params.is_post = true;
+  nav_params.browser_navigation_start = base::TimeTicks::FromInternalValue(1);
 
   // Set up post data.
   const unsigned char* raw_data = reinterpret_cast<const unsigned char*>(
@@ -523,6 +525,7 @@ TEST_F(RenderViewImplTest, SendSwapOutACK) {
   nav_params.current_history_list_offset = 0;
   nav_params.pending_history_list_offset = 1;
   nav_params.page_id = -1;
+  nav_params.browser_navigation_start = base::TimeTicks::FromInternalValue(1);
   frame()->OnNavigate(nav_params);
   ProcessPendingMessages();
   const IPC::Message* msg3 = render_thread_->sink().GetUniqueMessageMatching(
@@ -560,6 +563,7 @@ TEST_F(RenderViewImplTest, ReloadWhileSwappedOut) {
   params_A.pending_history_list_offset = 0;
   params_A.page_id = 1;
   params_A.page_state = state_A;
+  params_A.browser_navigation_start = base::TimeTicks::FromInternalValue(1);
   frame()->OnNavigate(params_A);
   ProcessPendingMessages();
 
@@ -585,6 +589,7 @@ TEST_F(RenderViewImplTest, ReloadWhileSwappedOut) {
   nav_params.pending_history_list_offset = 0;
   nav_params.page_id = 1;
   nav_params.page_state = state_A;
+  nav_params.browser_navigation_start = base::TimeTicks::FromInternalValue(1);
   frame()->OnNavigate(nav_params);
   ProcessPendingMessages();
 
@@ -663,6 +668,7 @@ TEST_F(RenderViewImplTest,  DISABLED_LastCommittedUpdateState) {
   params_C.pending_history_list_offset = 2;
   params_C.page_id = 3;
   params_C.page_state = state_C;
+  params_C.browser_navigation_start = base::TimeTicks::FromInternalValue(1);
   frame()->OnNavigate(params_C);
   ProcessPendingMessages();
   render_thread_->sink().ClearMessages();
@@ -680,6 +686,7 @@ TEST_F(RenderViewImplTest,  DISABLED_LastCommittedUpdateState) {
   params_B.pending_history_list_offset = 1;
   params_B.page_id = 2;
   params_B.page_state = state_B;
+  params_B.browser_navigation_start = base::TimeTicks::FromInternalValue(1);
   frame()->OnNavigate(params_B);
 
   // Back to page A (page_id 1) and commit.
@@ -691,6 +698,7 @@ TEST_F(RenderViewImplTest,  DISABLED_LastCommittedUpdateState) {
   params_B.pending_history_list_offset = 0;
   params.page_id = 1;
   params.page_state = state_A;
+  params.browser_navigation_start = base::TimeTicks::FromInternalValue(1);
   frame()->OnNavigate(params);
   ProcessPendingMessages();
 
@@ -745,6 +753,7 @@ TEST_F(RenderViewImplTest, StaleNavigationsIgnored) {
   params_A.pending_history_list_offset = 0;
   params_A.page_id = 1;
   params_A.page_state = state_A;
+  params_A.browser_navigation_start = base::TimeTicks::FromInternalValue(1);
   frame()->OnNavigate(params_A);
   ProcessPendingMessages();
 
@@ -763,6 +772,7 @@ TEST_F(RenderViewImplTest, StaleNavigationsIgnored) {
   params_B.pending_history_list_offset = 1;
   params_B.page_id = 2;
   params_B.page_state = state_A;  // Doesn't matter, just has to be present.
+  params_B.browser_navigation_start = base::TimeTicks::FromInternalValue(1);
   frame()->OnNavigate(params_B);
 
   // State should be unchanged.
@@ -830,6 +840,7 @@ TEST_F(RenderViewImplTest, DontIgnoreBackAfterNavEntryLimit) {
   params_B.pending_history_list_offset = 0;
   params_B.page_id = 2;
   params_B.page_state = state_B;
+  params_B.browser_navigation_start = base::TimeTicks::FromInternalValue(1);
   frame()->OnNavigate(params_B);
   ProcessPendingMessages();
 
@@ -1537,6 +1548,7 @@ TEST_F(RenderViewImplTest, DISABLED_DidFailProvisionalLoadWithErrorForError) {
   params.page_id = -1;
   params.navigation_type = FrameMsg_Navigate_Type::NORMAL;
   params.url = GURL("data:text/html,test data");
+  params.browser_navigation_start = base::TimeTicks::FromInternalValue(1);
   frame()->OnNavigate(params);
 
   // An error occurred.
@@ -1559,6 +1571,7 @@ TEST_F(RenderViewImplTest, DidFailProvisionalLoadWithErrorForCancellation) {
   params.page_id = -1;
   params.navigation_type = FrameMsg_Navigate_Type::NORMAL;
   params.url = GURL("data:text/html,test data");
+  params.browser_navigation_start = base::TimeTicks::FromInternalValue(1);
   frame()->OnNavigate(params);
 
   // A cancellation occurred.
@@ -1939,6 +1952,7 @@ TEST_F(RenderViewImplTest, ZoomLimit) {
   FrameMsg_Navigate_Params params;
   params.page_id = -1;
   params.navigation_type = FrameMsg_Navigate_Type::NORMAL;
+  params.browser_navigation_start = base::TimeTicks::FromInternalValue(1);
 
   // Verifies navigation to a URL with preset zoom level indeed sets the level.
   // Regression test for http://crbug.com/139559, where the level was not
@@ -2023,6 +2037,7 @@ TEST_F(RenderViewImplTest, NavigateFrame) {
   nav_params.pending_history_list_offset = 1;
   nav_params.page_id = -1;
   nav_params.frame_to_navigate = "frame";
+  nav_params.browser_navigation_start = base::TimeTicks::FromInternalValue(1);
   frame()->OnNavigate(nav_params);
   FrameLoadWaiter(
       RenderFrame::FromWebFrame(frame()->GetWebFrame()->firstChild())).Wait();
@@ -2142,6 +2157,7 @@ TEST_F(SuppressErrorPageTest, MAYBE_Suppresses) {
   params.page_id = -1;
   params.navigation_type = FrameMsg_Navigate_Type::NORMAL;
   params.url = GURL("data:text/html,test data");
+  params.browser_navigation_start = base::TimeTicks::FromInternalValue(1);
   frame()->OnNavigate(params);
 
   // An error occurred.
@@ -2171,6 +2187,7 @@ TEST_F(SuppressErrorPageTest, MAYBE_DoesNotSuppress) {
   params.page_id = -1;
   params.navigation_type = FrameMsg_Navigate_Type::NORMAL;
   params.url = GURL("data:text/html,test data");
+  params.browser_navigation_start = base::TimeTicks::FromInternalValue(1);
   frame()->OnNavigate(params);
 
   // An error occurred.
