@@ -49,36 +49,8 @@ std::string LoadManifestSuccess(TYPE_nacl_irt_query *query_func) {
   char buffer[4096];
   int len;
   while ((len = read(desc, buffer, sizeof buffer - 1)) > 0) {
-    // NB: fgets does not discard the newline nor any carriage return
-    // character before that.
-    //
-    // Note that CR LF is the default end-of-line style for Windows.
-    // Furthermore, when the test_file (input data, which happens to
-    // be the nmf file) is initially created in a change list, the
-    // patch is sent to our try bots as text.  This means that when
-    // the file arrives, it has CR LF endings instead of the original
-    // LF line endings.  Since the expected or golden data is
-    // (manually) encoded in the HTML file's JavaScript, there will be
-    // a mismatch.  After submission, the svn property svn:eol-style
-    // will be set to LF, so a clean check out should have LF and not
-    // CR LF endings, and the tests will pass without CR removal.
-    // However -- and there's always a however in long discourses --
-    // if the nmf file is edited, say, because the test is being
-    // modified, and the modification is being done on a Windows
-    // machine, then it is likely that the editor used by the
-    // programmer will convert the file to CR LF endings.  Which,
-    // unfortunatly, implies that the test will mysteriously fail
-    // again.
-    //
-    // To defend against such nonsense, we weaken the test slighty,
-    // and just strip the CR if it is present.
-    int len = strlen(buffer);
-    if (len >= 2 && buffer[len-1] == '\n' && buffer[len-2] == '\r') {
-      buffer[len-2] = '\n';
-      buffer[len-1] = '\0';
-    }
     // Null terminate.
-    buffer[len] = 0;
+    buffer[len] = '\0';
     str += buffer;
   }
 
