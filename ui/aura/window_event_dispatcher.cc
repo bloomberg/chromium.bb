@@ -694,6 +694,15 @@ ui::EventDispatchDetails WindowEventDispatcher::SynthesizeMouseMoveEvent() {
   if (!synthesize_mouse_move_)
     return details;
   synthesize_mouse_move_ = false;
+
+  // If one of the mouse buttons is currently down, then do not synthesize a
+  // mouse-move event. In such cases, aura could synthesize a DRAGGED event
+  // instead of a MOVED event, but in multi-display/multi-host scenarios, the
+  // DRAGGED event can be synthesized in the incorrect host. So avoid
+  // synthesizing any events at all.
+  if (Env::GetInstance()->mouse_button_flags())
+    return details;
+
   gfx::Point root_mouse_location = GetLastMouseLocationInRoot();
   if (!window()->bounds().Contains(root_mouse_location))
     return details;
