@@ -1,11 +1,6 @@
 include_rules = [
   "+chromeos/dbus",
-  "+chromeos/network",
-  "+grit/ui_chromeos_resources.h",
-  "+grit/ui_chromeos_strings.h",
-  "+third_party/cros_system_api",
   "+ui/aura",
-  "+ui/base",
   "+ui/events",
   "+ui/gfx",
   "+ui/gl",

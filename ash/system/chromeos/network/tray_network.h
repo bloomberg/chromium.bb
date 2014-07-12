@@ -7,6 +7,7 @@
 
 #include <set>
 
+#include "ash/system/chromeos/network/network_icon.h"
 #include "ash/system/chromeos/network/network_observer.h"
 #include "ash/system/chromeos/network/network_portal_detector_observer.h"
 #include "ash/system/chromeos/network/tray_network_state_observer.h"

@@ -11,6 +11,8 @@
 #include "ash/shell_delegate.h"
 #include "ash/shell_window_ids.h"
 #include "ash/system/chromeos/network/network_connect.h"
+#include "ash/system/chromeos/network/network_icon.h"
+#include "ash/system/chromeos/network/network_icon_animation.h"
 #include "ash/system/chromeos/network/tray_network_state_observer.h"
 #include "ash/system/tray/fixed_sized_scroll_view.h"
 #include "ash/system/tray/hover_highlight_view.h"
@@ -31,13 +33,10 @@
 #include "chromeos/network/network_state_handler.h"
 #include "grit/ash_resources.h"
 #include "grit/ash_strings.h"
-#include "grit/ui_chromeos_strings.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #include "ui/aura/window.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/chromeos/network/network_icon.h"
-#include "ui/chromeos/network/network_icon_animation.h"
 #include "ui/views/bubble/bubble_delegate.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
@@ -170,7 +169,7 @@ NetworkStateListDetailedView::NetworkStateListDetailedView(
 NetworkStateListDetailedView::~NetworkStateListDetailedView() {
   if (info_bubble_)
     info_bubble_->GetWidget()->CloseNow();
-  ui::network_icon::NetworkIconAnimation::GetInstance()->RemoveObserver(this);
+  network_icon::NetworkIconAnimation::GetInstance()->RemoveObserver(this);
 }
 
 void NetworkStateListDetailedView::ManagerChanged() {
@@ -486,10 +485,10 @@ void NetworkStateListDetailedView::UpdateNetworkList() {
         handler->GetNetworkState(info->service_path);
     if (!network)
       continue;
-    info->image = ui::network_icon::GetImageForNetwork(
-        network, ui::network_icon::ICON_TYPE_LIST);
-    info->label = ui::network_icon::GetLabelForNetwork(
-        network, ui::network_icon::ICON_TYPE_LIST);
+    info->image = network_icon::GetImageForNetwork(
+        network, network_icon::ICON_TYPE_LIST);
+    info->label = network_icon::GetLabelForNetwork(
+        network, network_icon::ICON_TYPE_LIST);
     info->highlight =
         network->IsConnectedState() || network->IsConnectingState();
     info->disable =
@@ -498,9 +497,9 @@ void NetworkStateListDetailedView::UpdateNetworkList() {
       animating = true;
   }
   if (animating)
-    ui::network_icon::NetworkIconAnimation::GetInstance()->AddObserver(this);
+    network_icon::NetworkIconAnimation::GetInstance()->AddObserver(this);
   else
-    ui::network_icon::NetworkIconAnimation::GetInstance()->RemoveObserver(this);
+    network_icon::NetworkIconAnimation::GetInstance()->RemoveObserver(this);
 
   // Get the updated list entries
   network_map_.clear();
@@ -612,7 +611,7 @@ bool NetworkStateListDetailedView::UpdateNetworkListEntries(
 
   if (list_type_ == LIST_TYPE_NETWORK) {
     // Cellular initializing
-    int status_message_id = ui::network_icon::GetCellularUninitializedMsg();
+    int status_message_id = network_icon::GetCellularUninitializedMsg();
     if (!status_message_id &&
         handler->IsTechnologyEnabled(NetworkTypePattern::Mobile()) &&
         !handler->FirstNetworkByType(NetworkTypePattern::Mobile())) {

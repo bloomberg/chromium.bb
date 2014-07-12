@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "ash/system/chromeos/network/network_connect.h"
+#include "ash/system/chromeos/network/network_icon.h"
 #include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -51,11 +52,9 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "grit/ash_resources.h"
-#include "grit/ui_chromeos_resources.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/webui/web_ui_util.h"
-#include "ui/chromeos/network/network_icon.h"
 #include "ui/gfx/image/image_skia.h"
 
 namespace chromeos {
@@ -228,8 +227,8 @@ base::DictionaryValue* BuildNetworkDictionary(
       profile_prefs, g_browser_process->local_state(), *network);
   network_info->SetBoolean(kNetworkInfoKeyPolicyManaged, has_policy);
 
-  std::string icon_url = ui::network_icon::GetImageUrlForNetwork(
-      network, ui::network_icon::ICON_TYPE_LIST, icon_scale_factor);
+  std::string icon_url = ash::network_icon::GetImageUrlForNetwork(
+      network, ash::network_icon::ICON_TYPE_LIST, icon_scale_factor);
 
   network_info->SetString(kNetworkInfoKeyIconURL, icon_url);
   network_info->SetString(kNetworkInfoKeyServicePath, network->path());

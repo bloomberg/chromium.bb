@@ -162,12 +162,6 @@
   "ash/ash_strings.grd": {
     "messages": [26000],
   },
-  "ui/chromeos/resources/ui_chromeos_resources.grd": {
-    "structures": [26200],
-  },
-  "ui/chromeos/ui_chromeos_strings.grd": {
-    "messages": [26300],
-  },
   "chrome/common/extensions_api_resources.grd": {
     "includes": [26400],
   },

@@ -29,9 +29,6 @@ INT_DIR = None
 # The target platform. If it is not defined, sys.platform will be used.
 OS = None
 
-# Note that OS is normally set to 'linux' when building for chromeos.
-CHROMEOS = False
-
 USE_ASH = False
 ENABLE_AUTOFILL_DIALOG = False
 
@@ -86,10 +83,6 @@ def calc_inputs(locale):
     #e.g. '<(SHARED_INTERMEDIATE_DIR)/ash/strings/ash_strings_da.pak',
     inputs.append(os.path.join(SHARE_INT_DIR, 'ash', 'strings',
                   'ash_strings_%s.pak' % locale))
-
-  if CHROMEOS:
-    inputs.append(os.path.join(SHARE_INT_DIR, 'ui', 'chromeos', 'strings',
-                  'ui_chromeos_strings_%s.pak' % locale))
 
   if OS != 'ios':
     #e.g. '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_strings_da.pak'
@@ -183,7 +176,6 @@ def DoMain(argv):
   global SHARE_INT_DIR
   global INT_DIR
   global OS
-  global CHROMEOS
   global USE_ASH
   global WHITELIST
   global ENABLE_AUTOFILL_DIALOG
@@ -209,8 +201,6 @@ def DoMain(argv):
                     help="The target OS. (e.g. mac, linux, win, etc.)")
   parser.add_option("--use-ash", action="store", dest="use_ash",
                     help="Whether to include ash strings")
-  parser.add_option("--chromeos", action="store_true",
-                    help="Whether building for Chrome OS", default = False)
   parser.add_option("--whitelist", action="store", help="Full path to the "
                     "whitelist used to filter output pak file resource IDs")
   parser.add_option("--enable-autofill-dialog", action="store",
@@ -229,7 +219,6 @@ def DoMain(argv):
   BRANDING = options.branding
   EXTRA_INPUT_FILES = options.extra_input
   OS = options.os
-  CHROMEOS = options.chromeos
   USE_ASH = options.use_ash == '1'
   WHITELIST = options.whitelist
   ENABLE_AUTOFILL_DIALOG = options.enable_autofill_dialog == '1'
