@@ -621,18 +621,16 @@ IN_PROC_BROWSER_TEST_F(AutofillTest, ProfileSavedWithValidCountryPhone) {
     FillFormAndSubmit("autofill_test_form.html", profiles[i]);
 
   ASSERT_EQ(2u, personal_data_manager()->GetProfiles().size());
-  ASSERT_EQ(ASCIIToUTF16("(408) 871-4567"),
+  ASSERT_EQ(ASCIIToUTF16("408-871-4567"),
             personal_data_manager()->GetProfiles()[0]->GetRawInfo(
                 PHONE_HOME_WHOLE_NUMBER));
-  ASSERT_EQ(ASCIIToUTF16("+49 40 808179000"),
+  ASSERT_EQ(ASCIIToUTF16("+49 40-80-81-79-000"),
             personal_data_manager()->GetProfiles()[1]->GetRawInfo(
                 PHONE_HOME_WHOLE_NUMBER));
 }
 
-// Test Autofill appends country codes to aggregated phone numbers.
-// The country code is added for the following case:
-//   The phone number contains the correct national number size and
-//   is a valid format.
+// Prepend country codes when formatting phone numbers, but only if the user
+// provided one in the first place.
 IN_PROC_BROWSER_TEST_F(AutofillTest, AppendCountryCodeForAggregatedPhones) {
   ASSERT_TRUE(test_server()->Start());
   FormMap data;
@@ -643,13 +641,22 @@ IN_PROC_BROWSER_TEST_F(AutofillTest, AppendCountryCodeForAggregatedPhones) {
   data["ADDRESS_HOME_STATE"] = "CA";
   data["ADDRESS_HOME_ZIP"] = "95110";
   data["ADDRESS_HOME_COUNTRY"] = "Germany";
-  data["PHONE_HOME_WHOLE_NUMBER"] = "(08) 450 777-777";
+  data["PHONE_HOME_WHOLE_NUMBER"] = "+4908450777777";
   FillFormAndSubmit("autofill_test_form.html", data);
 
-  ASSERT_EQ(1u, personal_data_manager()->GetProfiles().size());
-  base::string16 phone = personal_data_manager()->GetProfiles()[0]->GetRawInfo(
-      PHONE_HOME_WHOLE_NUMBER);
-  ASSERT_TRUE(StartsWith(phone, ASCIIToUTF16("+49"), true));
+  data["ADDRESS_HOME_LINE1"] = "4321 H St.";
+  data["PHONE_HOME_WHOLE_NUMBER"] = "08450777777";
+  FillFormAndSubmit("autofill_test_form.html", data);
+
+  ASSERT_EQ(2u, personal_data_manager()->GetProfiles().size());
+  EXPECT_EQ(ASCIIToUTF16("+49 8450 777777"),
+            personal_data_manager()->GetProfiles()[0]->GetRawInfo(
+                PHONE_HOME_WHOLE_NUMBER));
+
+  FillFormAndSubmit("autofill_test_form.html", data);
+  EXPECT_EQ(ASCIIToUTF16("08450 777777"),
+            personal_data_manager()->GetProfiles()[1]->GetRawInfo(
+                PHONE_HOME_WHOLE_NUMBER));
 }
 
 // Test CC info not offered to be saved when autocomplete=off for CC field.
