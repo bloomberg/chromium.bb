@@ -128,7 +128,10 @@ cr.define('print_preview', function() {
       numItems = Math.min(numItems, this.destinations_.length);
       var headerHeight =
           this.getChildElement('.destination-list > header').offsetHeight;
-      return headerHeight + numItems * DestinationList.HEIGHT_OF_ITEM_;
+      return headerHeight + (numItems > 0 ?
+          numItems * DestinationList.HEIGHT_OF_ITEM_ :
+          // To account for "No destinations found" message.
+          DestinationList.HEIGHT_OF_ITEM_);
     },
 
     /** @param {boolean} isVisible Whether the throbber is visible. */

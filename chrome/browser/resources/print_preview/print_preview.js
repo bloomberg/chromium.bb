@@ -194,6 +194,14 @@ cr.define('print_preview', function() {
     this.isInKioskAutoPrintMode_ = false;
 
     /**
+     * Whether Print Preview is in App Kiosk mode, basically, use only printers
+     * available for the device.
+     * @type {boolean}
+     * @private
+     */
+    this.isInAppKioskMode_ = false;
+
+    /**
      * State of the print preview UI.
      * @type {print_preview.PrintPreview.UiState_}
      * @private
@@ -530,6 +538,7 @@ cr.define('print_preview', function() {
 
       var settings = event.initialSettings;
       this.isInKioskAutoPrintMode_ = settings.isInKioskAutoPrintMode;
+      this.isInAppKioskMode_ = settings.isInAppKioskMode;
 
       // The following components must be initialized in this order.
       this.appState_.init(
@@ -544,12 +553,13 @@ cr.define('print_preview', function() {
           settings.decimalDelimeter,
           settings.unitType,
           settings.selectionOnly);
-      this.destinationStore_.init();
+      this.destinationStore_.init(settings.isInAppKioskMode);
       this.appState_.setInitialized();
 
       $('document-title').innerText = settings.documentTitle;
       setIsVisible($('system-dialog-link'),
                    !settings.hidePrintWithSystemDialogLink);
+      setIsVisible($('cloud-print-dialog-link'), !settings.isInAppKioskMode);
     },
 
     /**
@@ -563,7 +573,8 @@ cr.define('print_preview', function() {
       this.cloudPrintInterface_ = new cloudprint.CloudPrintInterface(
           event.baseCloudPrintUrl,
           this.nativeLayer_,
-          this.userInfo_);
+          this.userInfo_,
+          event.appKioskMode);
       this.tracker.add(
           this.cloudPrintInterface_,
           cloudprint.CloudPrintInterface.EventType.SUBMIT_DONE,
@@ -662,7 +673,9 @@ cr.define('print_preview', function() {
      */
     onCloudPrintError_: function(event) {
       if (event.status == 403) {
-        this.destinationSearch_.showCloudPrintPromo();
+        if (!this.isInAppKioskMode_) {
+          this.destinationSearch_.showCloudPrintPromo();
+        }
       } else if (event.status == 0) {
         return; // Ignore, the system does not have internet connectivity.
       } else {

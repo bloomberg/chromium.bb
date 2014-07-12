@@ -140,8 +140,9 @@ cr.define('print_preview', function() {
       }
 
       setIsVisible(
-          this.getChildElement('.throbber-container'), destination == null);
-      setIsVisible(destinationSettingsBoxEl, destination != null);
+          this.getChildElement('.throbber-container'),
+          this.destinationStore_.isAutoSelectDestinationInProgress);
+      setIsVisible(destinationSettingsBoxEl, !!destination);
     },
 
     onSelectedDestinationNameSet_: function() {

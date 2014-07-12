@@ -115,6 +115,7 @@ PrintPreviewWebUITest.prototype = {
 
     this.initialSettings_ = new print_preview.NativeInitialSettings(
       false /*isInKioskAutoPrintMode*/,
+      false /*isInAppKioskMode*/,
       false /*hidePrintWithSystemDialogLink*/,
       ',' /*thousandsDelimeter*/,
       '.' /*decimalDelimeter*/,
@@ -475,9 +476,8 @@ TEST_F('PrintPreviewWebUITest', 'CustomMarginsControlsCheck', function() {
 });
 
 // Page layout has zero margins. Hide header and footer option.
-TEST_F('PrintPreviewWebUITest',
-       'PageLayoutHasNoMarginsHideHeaderFooter',
-       function() {
+TEST_F('PrintPreviewWebUITest', 'PageLayoutHasNoMarginsHideHeaderFooter',
+    function() {
   var initialSettingsSetEvent =
       new Event(print_preview.NativeLayer.EventType.INITIAL_SETTINGS_SET);
   initialSettingsSetEvent.initialSettings = this.initialSettings_;
@@ -508,9 +508,8 @@ TEST_F('PrintPreviewWebUITest',
 });
 
 // Page layout has half-inch margins. Show header and footer option.
-TEST_F('PrintPreviewWebUITest',
-       'PageLayoutHasMarginsShowHeaderFooter',
-       function() {
+TEST_F('PrintPreviewWebUITest', 'PageLayoutHasMarginsShowHeaderFooter',
+    function() {
   var initialSettingsSetEvent =
       new Event(print_preview.NativeLayer.EventType.INITIAL_SETTINGS_SET);
   initialSettingsSetEvent.initialSettings = this.initialSettings_;
@@ -649,12 +648,12 @@ TEST_F('PrintPreviewWebUITest', 'TestColorSettingsColor', function() {
   this.setUpPreview();
 
   var capsSetEvent =
-    new Event(print_preview.NativeLayer.EventType.CAPABILITIES_SET);
+      new Event(print_preview.NativeLayer.EventType.CAPABILITIES_SET);
   capsSetEvent.settingsInfo = getCddTemplate("FooDevice");
   capsSetEvent.settingsInfo.capabilities.printer.color = {
-  "option": [
-    {"is_default": true, "type": "STANDARD_COLOR"}
-  ]
+    "option": [
+      {"is_default": true, "type": "STANDARD_COLOR"}
+    ]
   };
   this.nativeLayer_.dispatchEvent(capsSetEvent);
 
@@ -669,9 +668,9 @@ TEST_F('PrintPreviewWebUITest', 'TestColorSettingsCustomColor', function() {
      new Event(print_preview.NativeLayer.EventType.CAPABILITIES_SET);
   capsSetEvent.settingsInfo = getCddTemplate("FooDevice");
   capsSetEvent.settingsInfo.capabilities.printer.color = {
-   "option": [
-     {"is_default": true, "type": "CUSTOM_COLOR", "vendor_id": "42"}
-   ]
+    "option": [
+      {"is_default": true, "type": "CUSTOM_COLOR", "vendor_id": "42"}
+    ]
   };
   this.nativeLayer_.dispatchEvent(capsSetEvent);
 
@@ -709,10 +708,10 @@ TEST_F('PrintPreviewWebUITest',
      new Event(print_preview.NativeLayer.EventType.CAPABILITIES_SET);
   capsSetEvent.settingsInfo = getCddTemplate("FooDevice");
   capsSetEvent.settingsInfo.capabilities.printer.color = {
-   "option": [
-     {"is_default": true, "type": "STANDARD_MONOCHROME"},
-     {"type": "STANDARD_COLOR"}
-   ]
+    "option": [
+      {"is_default": true, "type": "STANDARD_MONOCHROME"},
+      {"type": "STANDARD_COLOR"}
+    ]
   };
   this.nativeLayer_.dispatchEvent(capsSetEvent);
 
@@ -727,13 +726,13 @@ TEST_F('PrintPreviewWebUITest',
   this.setUpPreview();
 
   var capsSetEvent =
-    new Event(print_preview.NativeLayer.EventType.CAPABILITIES_SET);
+      new Event(print_preview.NativeLayer.EventType.CAPABILITIES_SET);
   capsSetEvent.settingsInfo = getCddTemplate("FooDevice");
   capsSetEvent.settingsInfo.capabilities.printer.color = {
-  "option": [
-    {"type": "CUSTOM_MONOCHROME", "vendor_id": "42"},
-    {"is_default": true, "type": "CUSTOM_COLOR", "vendor_id": "43"}
-  ]
+    "option": [
+      {"type": "CUSTOM_MONOCHROME", "vendor_id": "42"},
+      {"is_default": true, "type": "CUSTOM_COLOR", "vendor_id": "43"}
+    ]
   };
   this.nativeLayer_.dispatchEvent(capsSetEvent);
 

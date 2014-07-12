@@ -27,6 +27,7 @@
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/values.h"
+#include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/printing/print_dialog_cloud.h"
@@ -182,6 +183,11 @@ const char kNumberFormat[] = "numberFormat";
 // Name of a dictionary field specifying whether to print automatically in
 // kiosk mode. See http://crbug.com/31395.
 const char kPrintAutomaticallyInKioskMode[] = "printAutomaticallyInKioskMode";
+// Dictionary field to indicate whether Chrome is running in forced app (app
+// kiosk) mode. It's not the same as desktop Chrome kiosk (the one above).
+const char kAppKioskMode[] = "appKioskMode";
+// Dictionary field to store Cloud Print base URL.
+const char kCloudPrintUrl[] = "cloudPrintUrl";
 #if defined(OS_WIN)
 const char kHidePrintWithSystemDialogLink[] = "hidePrintWithSystemDialogLink";
 #endif
@@ -1195,6 +1201,8 @@ void PrintPreviewHandler::SendInitialSettings(
   base::CommandLine* cmdline = base::CommandLine::ForCurrentProcess();
   initial_settings.SetBoolean(kPrintAutomaticallyInKioskMode,
                               cmdline->HasSwitch(switches::kKioskModePrinting));
+  initial_settings.SetBoolean(kAppKioskMode,
+                              chrome::IsRunningInForcedAppMode());
 #if defined(OS_WIN)
   // In Win8 metro, the system print dialog can only open on the desktop.  Doing
   // so will cause the browser to appear hung, so we don't show the link in
@@ -1251,9 +1259,11 @@ void PrintPreviewHandler::SendCloudPrintEnabled() {
       preview_web_contents()->GetBrowserContext());
   PrefService* prefs = profile->GetPrefs();
   if (prefs->GetBoolean(prefs::kCloudPrintSubmitEnabled)) {
-    GURL gcp_url(cloud_devices::GetCloudPrintURL());
-    base::StringValue gcp_url_value(gcp_url.spec());
-    web_ui()->CallJavascriptFunction("setUseCloudPrint", gcp_url_value);
+    base::DictionaryValue settings;
+    settings.SetString(kCloudPrintUrl,
+                       GURL(cloud_devices::GetCloudPrintURL()).spec());
+    settings.SetBoolean(kAppKioskMode, chrome::IsRunningInForcedAppMode());
+    web_ui()->CallJavascriptFunction("setUseCloudPrint", settings);
   }
 }
 

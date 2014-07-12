@@ -84,6 +84,14 @@ cr.define('print_preview', function() {
     this.tracker_ = new EventTracker();
 
     /**
+     * Whether PDF printer is enabled. It's disabled, for example, in App Kiosk
+     * mode.
+     * @type {boolean}
+     * @private
+     */
+    this.pdfPrinterEnabled_ = false;
+
+    /**
      * Used to fetch cloud-based print destinations.
      * @type {print_preview.CloudPrintInterface}
      * @private
@@ -246,6 +254,12 @@ cr.define('print_preview', function() {
       return this.selectedDestination_;
     },
 
+    /** @return {boolean} Whether destination selection is pending or not. */
+    get isAutoSelectDestinationInProgress() {
+      return this.selectedDestination_ == null &&
+          this.autoSelectTimeout_ != null;
+    },
+
     /**
      * @return {boolean} Whether a search for local destinations is in progress.
      */
@@ -267,13 +281,16 @@ cr.define('print_preview', function() {
      * destination. If any inserted destinations match this ID, that destination
      * will be automatically selected. This method must be called after the
      * print_preview.AppState has been initialized.
-     * @private
+     * @param {boolean} isInAppKioskMode Whether the print preview is in App
+     *     Kiosk mode.
      */
-    init: function() {
+    init: function(isInAppKioskMode) {
+      this.pdfPrinterEnabled_ = !isInAppKioskMode;
       this.isInAutoSelectMode_ = true;
+      this.createLocalPdfPrintDestination_();
       if (!this.appState_.selectedDestinationId ||
           !this.appState_.selectedDestinationOrigin) {
-        this.onAutoSelectFailed_();
+        this.selectDefaultDestination_();
       } else {
         var key = this.getDestinationKey_(
             this.appState_.selectedDestinationOrigin,
@@ -319,9 +336,8 @@ cr.define('print_preview', function() {
           cr.dispatchSimpleEvent(
             this,
             DestinationStore.EventType.CACHED_SELECTED_DESTINATION_INFO_READY);
-
         } else {
-          this.onAutoSelectFailed_();
+          this.selectDefaultDestination_();
         }
       }
     },
@@ -367,8 +383,12 @@ cr.define('print_preview', function() {
     /** @param {!print_preview.Destination} Destination to select. */
     selectDestination: function(destination) {
       this.isInAutoSelectMode_ = false;
-      this.cancelAutoSelectTimeout_();
-      if (destination == this.selectedDestination_) {
+      // When auto select expires, DESTINATION_SELECT event has to be dispatched
+      // anyway (see isAutoSelectDestinationInProgress() logic).
+      if (this.autoSelectTimeout_) {
+        clearTimeout(this.autoSelectTimeout_);
+        this.autoSelectTimeout_ = null;
+      } else if (destination == this.selectedDestination_) {
         return;
       }
       if (destination == null) {
@@ -434,12 +454,12 @@ cr.define('print_preview', function() {
      * @private
      */
     selectDefaultDestination_: function() {
-      var destination = this.destinationMap_[this.getDestinationKey_(
+      var saveToPdfKey = this.getDestinationKey_(
           print_preview.Destination.Origin.LOCAL,
           print_preview.Destination.GooglePromotedId.SAVE_AS_PDF,
-          '')] || null;
-      assert(destination != null, 'Save to PDF printer not found');
-      this.selectDestination(destination);
+          '');
+      this.selectDestination(
+          this.destinationMap_[saveToPdfKey] || this.destinations_[0] || null);
     },
 
     /** Initiates loading of local print destinations. */
@@ -658,13 +678,17 @@ cr.define('print_preview', function() {
      * @private
      */
     createLocalPdfPrintDestination_: function() {
-      return new print_preview.Destination(
-          print_preview.Destination.GooglePromotedId.SAVE_AS_PDF,
-          print_preview.Destination.Type.LOCAL,
-          print_preview.Destination.Origin.LOCAL,
-          localStrings.getString('printToPDF'),
-          false /*isRecent*/,
-          print_preview.Destination.ConnectionStatus.ONLINE);
+      // TODO(alekseys): Create PDF printer in the native code and send its
+      // capabilities back with other local printers.
+      if (this.pdfPrinterEnabled_) {
+        this.insertDestination_(new print_preview.Destination(
+            print_preview.Destination.GooglePromotedId.SAVE_AS_PDF,
+            print_preview.Destination.Type.LOCAL,
+            print_preview.Destination.Origin.LOCAL,
+            localStrings.getString('printToPDF'),
+            false /*isRecent*/,
+            print_preview.Destination.ConnectionStatus.ONLINE));
+      }
     },
 
     /**
@@ -677,32 +701,11 @@ cr.define('print_preview', function() {
       this.selectDestination(null);
       this.loadedCloudOrigins_ = {};
       this.hasLoadedAllLocalDestinations_ = false;
-      // TODO(alekseys): Create PDF printer in the native code and send its
-      // capabilities back with other local printers.
-      this.insertDestination_(this.createLocalPdfPrintDestination_());
-      this.resetAutoSelectTimeout_();
-    },
 
-    /**
-     * Resets destination auto selection timeout.
-     * @private
-     */
-    resetAutoSelectTimeout_: function() {
-      this.cancelAutoSelectTimeout_();
-      this.autoSelectTimeout_ =
-          setTimeout(this.onAutoSelectFailed_.bind(this),
-                     DestinationStore.AUTO_SELECT_TIMEOUT_);
-    },
-
-    /**
-     * Cancels destination auto selection timeout.
-     * @private
-     */
-    cancelAutoSelectTimeout_: function() {
-      if (this.autoSelectTimeout_ != null) {
-        clearTimeout(this.autoSelectTimeout_);
-        this.autoSelectTimeout_ = null;
-      }
+      clearTimeout(this.autoSelectTimeout_);
+      this.autoSelectTimeout_ = setTimeout(
+          this.selectDefaultDestination_.bind(this),
+          DestinationStore.AUTO_SELECT_TIMEOUT_);
     },
 
     /**
@@ -876,18 +879,10 @@ cr.define('print_preview', function() {
     onDestinationsReload_: function() {
       this.reset_();
       this.isInAutoSelectMode_ = true;
+      this.createLocalPdfPrintDestination_();
       this.startLoadLocalDestinations();
       this.startLoadCloudDestinations();
       this.startLoadPrivetDestinations();
-    },
-
-    /**
-     * Called when auto-selection fails. Selects the first destination in store.
-     * @private
-     */
-    onAutoSelectFailed_: function() {
-      this.cancelAutoSelectTimeout_();
-      this.selectDefaultDestination_();
     },
 
     // TODO(vitalybuka): Remove three next functions replacing Destination.id

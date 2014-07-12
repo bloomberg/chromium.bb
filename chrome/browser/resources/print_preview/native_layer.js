@@ -403,6 +403,7 @@ cr.define('print_preview', function() {
 
       var nativeInitialSettings = new print_preview.NativeInitialSettings(
           initialSettings['printAutomaticallyInKioskMode'] || false,
+          initialSettings['appKioskMode'] || false,
           initialSettings['hidePrintWithSystemDialogLink'] || false,
           numberFormatSymbols[0] || ',',
           numberFormatSymbols[1] || '.',
@@ -425,10 +426,11 @@ cr.define('print_preview', function() {
      * @param {string} cloudPrintURL The URL to use for cloud print servers.
      * @private
      */
-    onSetUseCloudPrint_: function(cloudPrintURL) {
+    onSetUseCloudPrint_: function(settings) {
       var cloudPrintEnableEvent = new Event(
           NativeLayer.EventType.CLOUD_PRINT_ENABLE);
-      cloudPrintEnableEvent.baseCloudPrintUrl = cloudPrintURL;
+      cloudPrintEnableEvent.baseCloudPrintUrl = settings['cloudPrintUrl'] || '';
+      cloudPrintEnableEvent.appKioskMode = settings['appKioskMode'] || false;
       this.dispatchEvent(cloudPrintEnableEvent);
     },
 
@@ -695,6 +697,8 @@ cr.define('print_preview', function() {
    * Initial settings retrieved from the native layer.
    * @param {boolean} isInKioskAutoPrintMode Whether the print preview should be
    *     in auto-print mode.
+   * @param {boolean} isInAppKioskMode Whether the print preview is in App Kiosk
+   *     mode.
    * @param {string} thousandsDelimeter Character delimeter of thousands digits.
    * @param {string} decimalDelimeter Character delimeter of the decimal point.
    * @param {!print_preview.MeasurementSystem.UnitType} unitType Unit type of
@@ -713,6 +717,7 @@ cr.define('print_preview', function() {
    */
   function NativeInitialSettings(
       isInKioskAutoPrintMode,
+      isInAppKioskMode,
       hidePrintWithSystemDialogLink,
       thousandsDelimeter,
       decimalDelimeter,
@@ -730,6 +735,13 @@ cr.define('print_preview', function() {
      * @private
      */
     this.isInKioskAutoPrintMode_ = isInKioskAutoPrintMode;
+
+    /**
+     * Whether the print preview should switch to App Kiosk mode.
+     * @type {boolean}
+     * @private
+     */
+    this.isInAppKioskMode_ = isInAppKioskMode;
 
     /**
      * Whether we should hide the link which shows the system print dialog.
@@ -808,6 +820,14 @@ cr.define('print_preview', function() {
      */
     get isInKioskAutoPrintMode() {
       return this.isInKioskAutoPrintMode_;
+    },
+
+    /**
+     * @return {boolean} Whether the print preview should switch to App Kiosk
+     *     mode.
+     */
+    get isInAppKioskMode() {
+      return this.isInAppKioskMode_;
     },
 
     /**

@@ -9,7 +9,7 @@
 
 #destination-settings .throbber {
   display: block;
-  margin-bottom: 14px;
+  margin-bottom: 4px;
   margin-top: 8px;
 }
 
@@ -17,7 +17,6 @@
   -webkit-box-align: center;
   display: -webkit-box;
   height: 28px;
-  margin-bottom: 10px;
 }
 
 .destination-settings-box.stale {
@@ -25,7 +24,7 @@
 }
 
 #destination-settings .destination-settings-change-button {
-  margin-bottom: 10px;
+  margin: 10px 0;
 }
 
 .destination-settings-icon {

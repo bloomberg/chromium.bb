@@ -13,10 +13,13 @@ cr.define('cloudprint', function() {
    * @param {!print_preview.NativeLayer} nativeLayer Native layer used to get
    *     Auth2 tokens.
    * @param {!print_preview.UserInfo} userInfo User information repository.
+   * @param {boolean} isInAppKioskMode Whether the print preview is in App
+   *     Kiosk mode.
    * @constructor
    * @extends {cr.EventTarget}
    */
-  function CloudPrintInterface(baseUrl, nativeLayer, userInfo) {
+  function CloudPrintInterface(
+      baseUrl, nativeLayer, userInfo, isInAppKioskMode) {
     /**
      * The base URL of the Google Cloud Print API.
      * @type {string}
@@ -37,6 +40,14 @@ cr.define('cloudprint', function() {
      * @private
      */
     this.userInfo_ = userInfo;
+
+    /**
+     * Whether Print Preview is in App Kiosk mode, basically, use only printers
+     * available for the device.
+     * @type {boolean}
+     * @private
+     */
+    this.isInAppKioskMode_ = isInAppKioskMode;
 
     /**
      * Currently logged in users (identified by email) mapped to the Google
@@ -179,6 +190,11 @@ cr.define('cloudprint', function() {
       var account = opt_account || '';
       var origins =
           opt_origin && [opt_origin] || CloudPrintInterface.CLOUD_ORIGINS_;
+      if (this.isInAppKioskMode_) {
+        origins = origins.filter(function(origin) {
+          return origin != print_preview.Destination.Origin.COOKIES;
+        });
+      }
       this.abortSearchRequests_(origins);
       this.search_(true, account, origins);
       this.search_(false, account, origins);
