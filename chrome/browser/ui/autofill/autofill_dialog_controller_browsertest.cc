@@ -81,7 +81,6 @@ namespace {
 
 using testing::Return;
 using testing::_;
-using ::i18n::addressinput::AddressValidator;
 
 void MockCallback(AutofillClient::RequestAutocompleteResult,
                   const base::string16& message,

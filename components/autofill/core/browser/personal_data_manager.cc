@@ -24,9 +24,7 @@
 #include "components/autofill/core/browser/phone_number_i18n.h"
 #include "components/autofill/core/browser/validation.h"
 #include "components/autofill/core/common/autofill_pref_names.h"
-#include "third_party/libaddressinput/chromium/cpp/src/region_data_constants.h"
-
-using ::i18n::addressinput::RegionDataConstants;
+#include "third_party/libaddressinput/src/cpp/include/libaddressinput/address_formatter.h"
 
 namespace autofill {
 namespace {
@@ -573,7 +571,7 @@ void PersonalDataManager::GetProfileSuggestions(
     // multi-line addresses into a single line, using a separator.
     // The separator is locale-specific.
     base::string16 compact_separator =
-        base::UTF8ToUTF16(RegionDataConstants::GetLanguageCompactLineSeparator(
+        base::UTF8ToUTF16(::i18n::addressinput::GetLineSeparatorForLanguage(
             profile->language_code()));
     for (size_t i = 0; i < multi_values.size(); ++i) {
       // Create vertically compact form.

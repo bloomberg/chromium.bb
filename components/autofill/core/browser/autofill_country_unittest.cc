@@ -89,4 +89,20 @@ TEST(AutofillCountryTest, GetCountryCode) {
   EXPECT_EQ("US", AutofillCountry::GetCountryCode(ASCIIToUTF16("USA"), "es"));
 }
 
+// Test mapping of empty country name to country code.
+TEST(AutofillCountryTest, EmptyCountryNameHasEmptyCountryCode) {
+  EXPECT_TRUE(AutofillCountry::GetCountryCode(base::string16(), "en").empty());
+}
+
+// Test mapping all country codes to country names.
+TEST(AutofillCountryTest, AllCountryCodesHaveCountryName) {
+  std::vector<std::string> country_codes;
+  AutofillCountry::GetAvailableCountries(&country_codes);
+  for (size_t i = 0; i < country_codes.size(); ++i) {
+    SCOPED_TRACE("Country code '" + country_codes[i] + "' should have a name.");
+    EXPECT_NE(ASCIIToUTF16(country_codes[i]),
+              AutofillCountry(country_codes[i], "en").name());
+  }
+}
+
 }  // namespace autofill

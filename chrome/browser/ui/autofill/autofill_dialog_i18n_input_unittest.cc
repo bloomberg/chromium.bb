@@ -6,7 +6,7 @@
 
 #include "components/autofill/core/browser/field_types.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/libaddressinput/chromium/cpp/include/libaddressinput/address_ui.h"
+#include "third_party/libaddressinput/src/cpp/include/libaddressinput/address_ui.h"
 
 namespace autofill {
 namespace i18ninput {

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/libaddressinput/chromium/addressinput_util.h"
+#include "third_party/libaddressinput/chromium/libaddressinput_util.h"
 
 #include <algorithm>
 
@@ -23,16 +23,15 @@ using ::i18n::addressinput::IsFieldRequired;
 
 using ::i18n::addressinput::MISSING_REQUIRED_FIELD;
 
-// Returns true if the |problem| should not be reported for the |field| because
-// the |filter| excludes it.
-bool FilterExcludes(const std::multimap<AddressField, AddressProblem>* filter,
-                    AddressField field,
-                    AddressProblem problem) {
-  return filter != NULL && !filter->empty() &&
+// Based on ::i18n::addressinput::ValidationTask::ShouldReport().
+bool ShouldReport(const std::multimap<AddressField, AddressProblem>* filter,
+                  AddressField field,
+                  AddressProblem problem) {
+  return filter == NULL || filter->empty() ||
          std::find(filter->begin(),
                    filter->end(),
                    std::multimap<AddressField, AddressProblem>::value_type(
-                       field, problem)) == filter->end();
+                       field, problem)) != filter->end();
 }
 
 }  // namespace
@@ -63,7 +62,7 @@ void ValidateRequiredFields(
     AddressField field = kFields[i];
     if (address_to_check.IsFieldEmpty(field) &&
         IsFieldRequired(field, address_to_check.region_code) &&
-        !FilterExcludes(filter, field, MISSING_REQUIRED_FIELD)) {
+        ShouldReport(filter, field, MISSING_REQUIRED_FIELD)) {
       problems->insert(std::make_pair(field, MISSING_REQUIRED_FIELD));
     }
   }
