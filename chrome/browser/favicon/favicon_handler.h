@@ -13,7 +13,6 @@
 #include "base/callback_forward.h"
 #include "base/memory/ref_counted.h"
 #include "base/task/cancelable_task_tracker.h"
-#include "chrome/browser/favicon/favicon_tab_helper.h"
 #include "components/favicon/core/favicon_url.h"
 #include "components/favicon_base/favicon_callback.h"
 #include "ui/gfx/favicon_size.h"

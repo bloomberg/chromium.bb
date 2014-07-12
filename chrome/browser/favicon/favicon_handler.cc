@@ -4,8 +4,6 @@
 
 #include "chrome/browser/favicon/favicon_handler.h"
 
-#include "build/build_config.h"
-
 #include <algorithm>
 #include <cmath>
 #include <vector>
@@ -13,13 +11,14 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/memory/ref_counted_memory.h"
+#include "build/build_config.h"
 #include "chrome/browser/favicon/favicon_service.h"
-#include "chrome/browser/favicon/favicon_service_factory.h"
+#include "components/favicon/core/browser/favicon_client.h"
+#include "components/favicon/core/favicon_driver.h"
 #include "components/favicon_base/favicon_util.h"
 #include "components/favicon_base/select_favicon_frames.h"
 #include "skia/ext/image_operations.h"
 #include "ui/gfx/codec/png_codec.h"
-#include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_util.h"
 
