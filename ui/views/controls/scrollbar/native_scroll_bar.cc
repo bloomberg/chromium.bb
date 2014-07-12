@@ -57,8 +57,7 @@ void NativeScrollBar::Layout() {
 
 void NativeScrollBar::ViewHierarchyChanged(
     const ViewHierarchyChangedDetails& details) {
-  Widget* widget;
-  if (details.is_add && !native_wrapper_ && (widget = GetWidget())) {
+  if (details.is_add && !native_wrapper_ && GetWidget()) {
     native_wrapper_ = NativeScrollBarWrapper::CreateWrapper(this);
     AddChildView(native_wrapper_->GetView());
   }

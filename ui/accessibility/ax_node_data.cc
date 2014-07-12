@@ -32,7 +32,7 @@ std::string IntVectorToString(const std::vector<int>& items) {
 AXNodeData::AXNodeData()
     : id(-1),
       role(AX_ROLE_UNKNOWN),
-      state(-1) {
+      state(0xFFFFFFFF) {
 }
 
 AXNodeData::~AXNodeData() {

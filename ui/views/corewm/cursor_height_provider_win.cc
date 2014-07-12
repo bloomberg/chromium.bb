@@ -91,7 +91,7 @@ int CalculateCursorHeight(HCURSOR cursor_handle) {
 
   // Rows are padded to full DWORDs. OR with this mask will set them to 1
   // to simplify matching with |transparent_mask|.
-  uint32_t last_byte_mask = ~0;
+  uint32_t last_byte_mask = 0xFFFFFFFF;
   const unsigned char bits_to_shift = sizeof(last_byte_mask) * 8 -
       (bitmap_info.bmiHeader.biWidth % kBitsPeruint32);
   if (bits_to_shift != kBitsPeruint32)

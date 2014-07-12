@@ -951,7 +951,7 @@ HRESULT NativeThemeWin::PaintMenuItemBackground(
     const MenuItemExtraParams& extra) const {
   HANDLE handle = GetThemeHandle(MENU);
   RECT rect_win = rect.ToRECT();
-  int state_id;
+  int state_id = MPI_NORMAL;
   switch (state) {
     case kDisabled:
       state_id = extra.is_selected ? MPI_DISABLEDHOT : MPI_DISABLED;
@@ -960,7 +960,6 @@ HRESULT NativeThemeWin::PaintMenuItemBackground(
       state_id = MPI_HOT;
       break;
     case kNormal:
-      state_id = MPI_NORMAL;
       break;
     case kPressed:
     case kNumStates:
@@ -981,7 +980,7 @@ HRESULT NativeThemeWin::PaintPushButton(HDC hdc,
                                         State state,
                                         const gfx::Rect& rect,
                                         const ButtonExtraParams& extra) const {
-  int state_id;
+  int state_id = extra.is_default ? PBS_DEFAULTED : PBS_NORMAL;
   switch (state) {
     case kDisabled:
       state_id = PBS_DISABLED;
@@ -990,7 +989,6 @@ HRESULT NativeThemeWin::PaintPushButton(HDC hdc,
       state_id = PBS_HOT;
       break;
     case kNormal:
-      state_id = extra.is_default ? PBS_DEFAULTED : PBS_NORMAL;
       break;
     case kPressed:
       state_id = PBS_PRESSED;
@@ -1009,7 +1007,7 @@ HRESULT NativeThemeWin::PaintRadioButton(HDC hdc,
                                          State state,
                                          const gfx::Rect& rect,
                                          const ButtonExtraParams& extra) const {
-  int state_id;
+  int state_id = extra.checked ? RBS_CHECKEDNORMAL : RBS_UNCHECKEDNORMAL;
   switch (state) {
     case kDisabled:
       state_id = extra.checked ? RBS_CHECKEDDISABLED : RBS_UNCHECKEDDISABLED;
@@ -1018,7 +1016,6 @@ HRESULT NativeThemeWin::PaintRadioButton(HDC hdc,
       state_id = extra.checked ? RBS_CHECKEDHOT : RBS_UNCHECKEDHOT;
       break;
     case kNormal:
-      state_id = extra.checked ? RBS_CHECKEDNORMAL : RBS_UNCHECKEDNORMAL;
       break;
     case kPressed:
       state_id = extra.checked ? RBS_CHECKEDPRESSED : RBS_UNCHECKEDPRESSED;
@@ -1037,7 +1034,9 @@ HRESULT NativeThemeWin::PaintCheckbox(HDC hdc,
                                       State state,
                                       const gfx::Rect& rect,
                                       const ButtonExtraParams& extra) const {
-  int state_id;
+  int state_id = extra.checked ?
+      CBS_CHECKEDNORMAL :
+      (extra.indeterminate ? CBS_MIXEDNORMAL : CBS_UNCHECKEDNORMAL);
   switch (state) {
     case kDisabled:
       state_id = extra.checked ?
@@ -1050,9 +1049,6 @@ HRESULT NativeThemeWin::PaintCheckbox(HDC hdc,
           (extra.indeterminate ? CBS_MIXEDHOT : CBS_UNCHECKEDHOT);
       break;
     case kNormal:
-      state_id = extra.checked ?
-          CBS_CHECKEDNORMAL :
-          (extra.indeterminate ? CBS_MIXEDNORMAL : CBS_UNCHECKEDNORMAL);
       break;
     case kPressed:
       state_id = extra.checked ?
@@ -1074,7 +1070,7 @@ HRESULT NativeThemeWin::PaintMenuList(HDC hdc,
                                       const MenuListExtraParams& extra) const {
   HANDLE handle = GetThemeHandle(MENULIST);
   RECT rect_win = rect.ToRECT();
-  int state_id;
+  int state_id = CBXS_NORMAL;
   switch (state) {
     case kDisabled:
       state_id = CBXS_DISABLED;
@@ -1083,7 +1079,6 @@ HRESULT NativeThemeWin::PaintMenuList(HDC hdc,
       state_id = CBXS_HOT;
       break;
     case kNormal:
-      state_id = CBXS_NORMAL;
       break;
     case kPressed:
       state_id = CBXS_PRESSED;
@@ -1151,7 +1146,6 @@ HRESULT NativeThemeWin::PaintScrollbarArrow(
   int classic_state = DFCS_SCROLLDOWN;
   switch (part) {
     case kScrollbarDownArrow:
-      classic_state = DFCS_SCROLLDOWN;
       break;
     case kScrollbarLeftArrow:
       classic_state = DFCS_SCROLLLEFT;
@@ -1195,18 +1189,17 @@ HRESULT NativeThemeWin::PaintScrollbarThumb(
   HANDLE handle = GetThemeHandle(SCROLLBAR);
   RECT rect_win = rect.ToRECT();
 
-  int part_id;
+  int part_id = SBP_THUMBBTNVERT;
   switch (part) {
-    case NativeTheme::kScrollbarHorizontalThumb:
+    case kScrollbarHorizontalThumb:
       part_id = SBP_THUMBBTNHORZ;
       break;
-    case NativeTheme::kScrollbarVerticalThumb:
-      part_id = SBP_THUMBBTNVERT;
+    case kScrollbarVerticalThumb:
       break;
-    case NativeTheme::kScrollbarHorizontalGripper:
+    case kScrollbarHorizontalGripper:
       part_id = SBP_GRIPPERHORZ;
       break;
-    case NativeTheme::kScrollbarVerticalGripper:
+    case kScrollbarVerticalGripper:
       part_id = SBP_GRIPPERVERT;
       break;
     default:
@@ -1214,7 +1207,7 @@ HRESULT NativeThemeWin::PaintScrollbarThumb(
       break;
   }
 
-  int state_id;
+  int state_id = SCRBS_NORMAL;
   switch (state) {
     case kDisabled:
       state_id = SCRBS_DISABLED;
@@ -1223,7 +1216,6 @@ HRESULT NativeThemeWin::PaintScrollbarThumb(
       state_id = extra.is_hovering ? SCRBS_HOVER : SCRBS_HOT;
       break;
     case kNormal:
-      state_id = SCRBS_NORMAL;
       break;
     case kPressed:
       state_id = SCRBS_PRESSED;
@@ -1253,20 +1245,13 @@ HRESULT NativeThemeWin::PaintScrollbarTrack(
   HANDLE handle = GetThemeHandle(SCROLLBAR);
   RECT rect_win = rect.ToRECT();
 
-  int part_id;
-  switch (part) {
-    case NativeTheme::kScrollbarHorizontalTrack:
-      part_id = extra.is_upper ? SBP_UPPERTRACKHORZ : SBP_LOWERTRACKHORZ;
-      break;
-    case NativeTheme::kScrollbarVerticalTrack:
-      part_id = extra.is_upper ? SBP_UPPERTRACKVERT : SBP_LOWERTRACKVERT;
-      break;
-    default:
-      NOTREACHED();
-      break;
-  }
+  const int part_id = extra.is_upper ?
+      ((part == kScrollbarHorizontalTrack) ?
+          SBP_UPPERTRACKHORZ : SBP_UPPERTRACKVERT) :
+      ((part == kScrollbarHorizontalTrack) ?
+          SBP_LOWERTRACKHORZ : SBP_LOWERTRACKVERT);
 
-  int state_id;
+  int state_id = SCRBS_NORMAL;
   switch (state) {
     case kDisabled:
       state_id = SCRBS_DISABLED;
@@ -1275,7 +1260,6 @@ HRESULT NativeThemeWin::PaintScrollbarTrack(
       state_id = SCRBS_HOVER;
       break;
     case kNormal:
-      state_id = SCRBS_NORMAL;
       break;
     case kPressed:
       state_id = SCRBS_PRESSED;
@@ -1313,7 +1297,7 @@ HRESULT NativeThemeWin::PaintSpinButton(
   HANDLE handle = GetThemeHandle(SPIN);
   RECT rect_win = rect.ToRECT();
   int part_id = extra.spin_up ? SPNP_UP : SPNP_DOWN;
-  int state_id;
+  int state_id = extra.spin_up ? UPS_NORMAL : DNS_NORMAL;
   switch (state) {
     case kDisabled:
       state_id = extra.spin_up ? UPS_DISABLED : DNS_DISABLED;
@@ -1322,7 +1306,6 @@ HRESULT NativeThemeWin::PaintSpinButton(
       state_id = extra.spin_up ? UPS_HOT : DNS_HOT;
       break;
     case kNormal:
-      state_id = extra.spin_up ? UPS_NORMAL : DNS_NORMAL;
       break;
     case kPressed:
       state_id = extra.spin_up ? UPS_PRESSED : DNS_PRESSED;
@@ -1349,7 +1332,7 @@ HRESULT NativeThemeWin::PaintTrackbar(
       ((part == kTrackbarTrack) ? TKP_TRACKVERT : TKP_THUMBVERT) :
       ((part == kTrackbarTrack) ? TKP_TRACK : TKP_THUMBBOTTOM);
 
-  int state_id = 0;
+  int state_id = TUS_NORMAL;
   switch (state) {
     case kDisabled:
       state_id = TUS_DISABLED;
@@ -1358,7 +1341,6 @@ HRESULT NativeThemeWin::PaintTrackbar(
       state_id = TUS_HOT;
       break;
     case kNormal:
-      state_id = TUS_NORMAL;
       break;
     case kPressed:
       state_id = TUS_PRESSED;
@@ -1579,8 +1561,6 @@ HRESULT NativeThemeWin::PaintTextField(
         state_id = ETS_READONLY;
       else if (extra.is_focused)
         state_id = ETS_FOCUSED;
-      else
-        state_id = ETS_NORMAL;
       break;
     case kPressed:
       state_id = ETS_SELECTED;
@@ -2004,8 +1984,8 @@ HRESULT NativeThemeWin::PaintFrameControl(HDC hdc,
   // dc's text color for the black bits in the mask, and the dest dc's
   // background color for the white bits in the mask. DrawFrameControl draws the
   // check in black, and the background in white.
-  int bg_color_key;
-  int text_color_key;
+  int bg_color_key = COLOR_MENU;
+  int text_color_key = COLOR_MENUTEXT;
   switch (control_state) {
     case kDisabled:
       bg_color_key = is_selected ? COLOR_HIGHLIGHT : COLOR_MENU;
@@ -2016,14 +1996,10 @@ HRESULT NativeThemeWin::PaintFrameControl(HDC hdc,
       text_color_key = COLOR_HIGHLIGHTTEXT;
       break;
     case kNormal:
-      bg_color_key = COLOR_MENU;
-      text_color_key = COLOR_MENUTEXT;
       break;
     case kPressed:
     case kNumStates:
       NOTREACHED();
-      bg_color_key = COLOR_MENU;
-      text_color_key = COLOR_MENUTEXT;
       break;
   }
   COLORREF old_bg_color = SetBkColor(hdc, GetSysColor(bg_color_key));

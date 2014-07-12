@@ -30,8 +30,8 @@ EventTarget* EventTargeter::FindTargetForLocatedEvent(EventTarget* root,
   scoped_ptr<EventTargetIterator> iter = root->GetChildIterator();
   if (iter) {
     EventTarget* target = root;
-    EventTarget* child = NULL;
-    while ((child = iter->GetNextTarget())) {
+    for (EventTarget* child = iter->GetNextTarget(); child;
+         child = iter->GetNextTarget()) {
       EventTargeter* targeter = child->GetEventTargeter();
       if (!targeter)
         targeter = this;

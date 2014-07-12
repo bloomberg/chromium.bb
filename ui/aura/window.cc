@@ -257,8 +257,8 @@ Window::~Window() {
   if (delegate_)
     delegate_->OnWindowDestroyed(this);
   ObserverListBase<WindowObserver>::Iterator iter(observers_);
-  WindowObserver* observer;
-  while ((observer = iter.GetNext())) {
+  for (WindowObserver* observer = iter.GetNext(); observer;
+       observer = iter.GetNext()) {
     RemoveObserver(observer);
     observer->OnWindowDestroyed(this);
   }

@@ -405,7 +405,7 @@ TextRunHarfBuzz::TextRunHarfBuzz()
       is_rtl(false),
       level(0),
       script(USCRIPT_INVALID_CODE),
-      glyph_count(-1),
+      glyph_count(static_cast<size_t>(-1)),
       font_size(0),
       font_style(0),
       strike(false),
