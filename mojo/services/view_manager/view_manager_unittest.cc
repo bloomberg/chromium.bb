@@ -93,10 +93,21 @@ class ViewManagerProxy : public TestChangeTracker::Delegate {
   // block until the result is received.
   bool CreateNode(Id node_id) {
     changes_.clear();
-    bool result = false;
-    view_manager_->CreateNode(node_id,
-                              base::Bind(&ViewManagerProxy::GotResult,
-                                         base::Unretained(this), &result));
+    ErrorCode result = ERROR_CODE_NONE;
+    view_manager_->CreateNode(
+        node_id,
+        base::Bind(&ViewManagerProxy::GotResultWithErrorCode,
+                   base::Unretained(this), &result));
+    RunMainLoop();
+    return result == ERROR_CODE_NONE;
+  }
+  ErrorCode CreateNodeWithErrorCode(Id node_id) {
+    changes_.clear();
+    ErrorCode result = ERROR_CODE_NONE;
+    view_manager_->CreateNode(
+        node_id,
+        base::Bind(&ViewManagerProxy::GotResultWithErrorCode,
+                   base::Unretained(this), &result));
     RunMainLoop();
     return result;
   }
@@ -237,6 +248,13 @@ class ViewManagerProxy : public TestChangeTracker::Delegate {
   // Callbacks from the various ViewManagerService functions.
   void GotResult(bool* result_cache, bool result) {
     *result_cache = result;
+    DCHECK(main_run_loop_);
+    main_run_loop_->Quit();
+  }
+
+  void GotResultWithErrorCode(ErrorCode* error_code_cache,
+                              ErrorCode error_code) {
+    *error_code_cache = error_code;
     DCHECK(main_run_loop_);
     main_run_loop_->Quit();
   }
@@ -541,11 +559,14 @@ TEST_F(ViewManagerTest, CreateNode) {
   EXPECT_TRUE(connection_->changes().empty());
 
   // Can't create a node with the same id.
-  ASSERT_FALSE(connection_->CreateNode(BuildNodeId(1, 1)));
+  ASSERT_EQ(ERROR_CODE_VALUE_IN_USE,
+            connection_->CreateNodeWithErrorCode(BuildNodeId(1, 1)));
   EXPECT_TRUE(connection_->changes().empty());
 
   // Can't create a node with a bogus connection id.
-  EXPECT_FALSE(connection_->CreateNode(BuildNodeId(2, 1)));
+  EXPECT_EQ(
+      ERROR_CODE_ILLEGAL_ARGUMENT,
+      connection_->CreateNodeWithErrorCode(BuildNodeId(2, 1)));
   EXPECT_TRUE(connection_->changes().empty());
 }
 

@@ -16,6 +16,13 @@ struct NodeData {
   // TODO(sky): add visible.
 };
 
+enum ErrorCode {
+  ERROR_CODE_NONE,
+  ERROR_CODE_VALUE_IN_USE,
+  ERROR_CODE_ILLEGAL_ARGUMENT,
+  ERROR_CODE_UNEXPECTED_CHANGE_ID,
+};
+
 // ViewManagerInitService is responsible for launching the client that controls
 // the root node. mojo::view_manager returns an instance of this. All other
 // connections are established by the client this creates.
@@ -39,7 +46,11 @@ interface ViewManagerService {
   // the id is unique to the connection (the id need not be globally unique).
   // Additionally the connection id (embedded in |node_id|) must match that of
   // the connection.
-  CreateNode(uint32 node_id) => (bool success);
+  // Errors:
+  //   ERROR_CODE_VALUE_IN_USE: a node already exists with the specified id.
+  //   ERROR_CODE_ILLEGAL_ARGUMENT: The connection part of |node_id| does not
+  //     match the connection id of the client.
+  CreateNode(uint32 node_id) => (ErrorCode error_code);
 
   // Deletes a node. This does not recurse. No hierarchy change notifications
   // are sent as a result of this. Only the connection that created the node can

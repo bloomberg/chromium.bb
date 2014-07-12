@@ -542,16 +542,18 @@ Array<NodeDataPtr> ViewManagerServiceImpl::NodesToNodeDatas(
 
 void ViewManagerServiceImpl::CreateNode(
     Id transport_node_id,
-    const Callback<void(bool)>& callback) {
+    const Callback<void(ErrorCode)>& callback) {
   const NodeId node_id(NodeIdFromTransportId(transport_node_id));
-  if (node_id.connection_id != id_ ||
-      node_map_.find(node_id.node_id) != node_map_.end()) {
-    callback.Run(false);
-    return;
+  ErrorCode error_code = ERROR_CODE_NONE;
+  if (node_id.connection_id != id_) {
+    error_code = ERROR_CODE_ILLEGAL_ARGUMENT;
+  } else if (node_map_.find(node_id.node_id) != node_map_.end()) {
+    error_code = ERROR_CODE_VALUE_IN_USE;
+  } else {
+    node_map_[node_id.node_id] = new Node(root_node_manager_, node_id);
+    known_nodes_.insert(transport_node_id);
   }
-  node_map_[node_id.node_id] = new Node(root_node_manager_, node_id);
-  known_nodes_.insert(transport_node_id);
-  callback.Run(true);
+  callback.Run(error_code);
 }
 
 void ViewManagerServiceImpl::DeleteNode(

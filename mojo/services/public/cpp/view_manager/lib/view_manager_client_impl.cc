@@ -137,8 +137,15 @@ class ViewManagerTransaction {
     return client_->next_server_change_id_++;
   }
 
+  // TODO(sky): nuke this and covert all to new one, then rename
+  // ActionCompletedCallbackWithErrorCode to ActionCompletedCallback.
   base::Callback<void(bool)> ActionCompletedCallback() {
     return base::Bind(&ViewManagerTransaction::OnActionCompleted,
+                      base::Unretained(this));
+  }
+
+  base::Callback<void(ErrorCode)> ActionCompletedCallbackWithErrorCode() {
+    return base::Bind(&ViewManagerTransaction::OnActionCompletedWithErrorCode,
                       base::Unretained(this));
   }
 
@@ -146,6 +153,11 @@ class ViewManagerTransaction {
   // General callback to be used for commits to the service.
   void OnActionCompleted(bool success) {
     DoActionCompleted(success);
+    client_->RemoveFromPendingQueue(this);
+  }
+
+  void OnActionCompletedWithErrorCode(ErrorCode error_code) {
+    DoActionCompleted(error_code == ERROR_CODE_NONE);
     client_->RemoveFromPendingQueue(this);
   }
 
@@ -209,7 +221,7 @@ class CreateNodeTransaction : public ViewManagerTransaction {
  private:
   // Overridden from ViewManagerTransaction:
   virtual void DoCommit() OVERRIDE {
-    service()->CreateNode(node_id_, ActionCompletedCallback());
+    service()->CreateNode(node_id_, ActionCompletedCallbackWithErrorCode());
   }
   virtual void DoActionCompleted(bool success) OVERRIDE {
     // TODO(beng): Failure means we tried to create with an extant id for this
