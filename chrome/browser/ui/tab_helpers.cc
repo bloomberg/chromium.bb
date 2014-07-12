@@ -30,15 +30,12 @@
 #include "components/dom_distiller/content/web_contents_main_frame_observer.h"
 #include "components/password_manager/core/browser/password_manager.h"
 #include "content/public/browser/web_contents.h"
-#include "extensions/browser/view_type_utils.h"
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/android/webapps/single_tab_mode_tab_helper.h"
 #include "chrome/browser/ui/android/context_menu_helper.h"
 #include "chrome/browser/ui/android/window_android_helper.h"
 #else
-#include "chrome/browser/extensions/api/web_navigation/web_navigation_api.h"
-#include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
 #include "chrome/browser/net/predictor_tab_helper.h"
 #include "chrome/browser/plugins/plugin_observer.h"
 #include "chrome/browser/safe_browsing/safe_browsing_tab_observer.h"
@@ -63,7 +60,10 @@
 #endif
 
 #if defined(ENABLE_EXTENSIONS)
+#include "chrome/browser/extensions/api/web_navigation/web_navigation_api.h"
+#include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
 #include "chrome/browser/extensions/tab_helper.h"
+#include "extensions/browser/view_type_utils.h"
 #endif
 
 #if defined(ENABLE_MANAGED_USERS)
@@ -104,8 +104,10 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
   web_contents->SetUserData(&kTabContentsAttachedTabHelpersUserDataKey,
                             new base::SupportsUserData::Data());
 
+#if defined(ENABLE_EXTENSIONS)
   // Set the view type.
   extensions::SetViewType(web_contents, extensions::VIEW_TYPE_TAB_CONTENTS);
+#endif
 
   // Create all the tab helpers.
 

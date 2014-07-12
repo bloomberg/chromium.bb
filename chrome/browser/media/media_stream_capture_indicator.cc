@@ -16,7 +16,6 @@
 #include "chrome/browser/status_icons/status_icon.h"
 #include "chrome/browser/status_icons/status_tray.h"
 #include "chrome/browser/tab_contents/tab_util.h"
-#include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
@@ -24,8 +23,6 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
-#include "extensions/browser/extension_registry.h"
-#include "extensions/common/extension.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -34,11 +31,18 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image_skia.h"
 
+#if defined(ENABLE_EXTENSIONS)
+#include "chrome/common/extensions/extension_constants.h"
+#include "extensions/browser/extension_registry.h"
+#include "extensions/common/extension.h"
+#endif
+
 using content::BrowserThread;
 using content::WebContents;
 
 namespace {
 
+#if defined(ENABLE_EXTENSIONS)
 const extensions::Extension* GetExtension(WebContents* web_contents) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -50,8 +54,6 @@ const extensions::Extension* GetExtension(WebContents* web_contents) {
   return registry->enabled_extensions().GetExtensionOrAppByURL(
       web_contents->GetURL());
 }
-
-#if !defined(OS_ANDROID)
 
 bool IsWhitelistedExtension(const extensions::Extension* extension) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -67,8 +69,7 @@ bool IsWhitelistedExtension(const extensions::Extension* extension) {
 
   return false;
 }
-
-#endif  // !defined(OS_ANDROID)
+#endif  // defined(ENABLE_EXTENSIONS)
 
 // Gets the security originator of the tab. It returns a string with no '/'
 // at the end to display in the UI.
@@ -96,9 +97,11 @@ base::string16 GetTitle(WebContents* web_contents) {
   if (!web_contents)
     return base::string16();
 
+#if defined(ENABLE_EXTENSIONS)
   const extensions::Extension* const extension = GetExtension(web_contents);
   if (extension)
     return base::UTF8ToUTF16(extension->name());
+#endif
 
   base::string16 tab_title = web_contents->GetTitle();
 
@@ -426,7 +429,7 @@ void MediaStreamCaptureIndicator::UpdateNotificationUserInterface() {
     // The audio/video icon is shown only for non-whitelisted extensions or on
     // Android. For regular tabs on desktop, we show an indicator in the tab
     // icon.
-#if !defined(OS_ANDROID)
+#if defined(ENABLE_EXTENSIONS)
     const extensions::Extension* extension = GetExtension(web_contents);
     if (!extension || IsWhitelistedExtension(extension))
       continue;

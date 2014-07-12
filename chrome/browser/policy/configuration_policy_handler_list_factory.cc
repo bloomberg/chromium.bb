@@ -29,15 +29,11 @@
 #include "policy/policy_constants.h"
 
 #if !defined(OS_IOS)
-#include "chrome/browser/extensions/api/messaging/native_messaging_policy_handler.h"
-#include "chrome/browser/extensions/policy_handlers.h"
 #include "chrome/browser/net/disk_cache_dir_policy_handler.h"
 #include "chrome/browser/policy/file_selection_dialogs_policy_handler.h"
 #include "chrome/browser/policy/javascript_policy_handler.h"
 #include "chrome/browser/sessions/restore_on_startup_policy_handler.h"
 #include "chrome/browser/sync/sync_policy_handler.h"
-#include "extensions/browser/pref_names.h"
-#include "extensions/common/manifest.h"
 #endif
 
 #if defined(OS_CHROMEOS)
@@ -54,6 +50,13 @@
 
 #if !defined(OS_MACOSX) && !defined(OS_IOS)
 #include "apps/pref_names.h"
+#endif
+
+#if defined(ENABLE_EXTENSIONS)
+#include "chrome/browser/extensions/api/messaging/native_messaging_policy_handler.h"
+#include "chrome/browser/extensions/policy_handlers.h"
+#include "extensions/browser/pref_names.h"
+#include "extensions/common/manifest.h"
 #endif
 
 namespace policy {
@@ -487,7 +490,7 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
 #endif  // !defined(OS_CHROMEOS) && !defined(OS_ANDROID) && !defined(OS_IOS)
 };
 
-#if !defined(OS_IOS)
+#if defined(ENABLE_EXTENSIONS)
 void GetExtensionAllowedTypesMap(
     ScopedVector<StringMappingListPolicyHandler::MappingEntry>* result) {
   // Mapping from extension type names to Manifest::Type.
@@ -510,7 +513,9 @@ void GetExtensionAllowedTypesMap(
       "platform_app", scoped_ptr<base::Value>(new base::FundamentalValue(
           extensions::Manifest::TYPE_PLATFORM_APP))));
 }
+#endif
 
+#if !defined(OS_IOS)
 void GetDeprecatedFeaturesMap(
     ScopedVector<StringMappingListPolicyHandler::MappingEntry>* result) {
   // Maps feature tags as specified in policy to the corresponding switch to
@@ -572,6 +577,14 @@ scoped_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
       new browser_sync::SyncPolicyHandler()));
 
   handlers->AddHandler(make_scoped_ptr<ConfigurationPolicyHandler>(
+      new StringMappingListPolicyHandler(
+          key::kEnableDeprecatedWebPlatformFeatures,
+          prefs::kEnableDeprecatedWebPlatformFeatures,
+          base::Bind(GetDeprecatedFeaturesMap))));
+#endif  // !defined(OS_IOS)
+
+#if defined(ENABLE_EXTENSIONS)
+  handlers->AddHandler(make_scoped_ptr<ConfigurationPolicyHandler>(
       new extensions::ExtensionListPolicyHandler(
           key::kExtensionInstallWhitelist,
           extensions::pref_names::kInstallAllowList,
@@ -592,12 +605,7 @@ scoped_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
           key::kExtensionAllowedTypes,
           extensions::pref_names::kAllowedTypes,
           base::Bind(GetExtensionAllowedTypesMap))));
-  handlers->AddHandler(make_scoped_ptr<ConfigurationPolicyHandler>(
-      new StringMappingListPolicyHandler(
-          key::kEnableDeprecatedWebPlatformFeatures,
-          prefs::kEnableDeprecatedWebPlatformFeatures,
-          base::Bind(GetDeprecatedFeaturesMap))));
-#endif  // !defined(OS_IOS)
+#endif
 
 #if !defined(OS_CHROMEOS) && !defined(OS_ANDROID) && !defined(OS_IOS)
   handlers->AddHandler(make_scoped_ptr<ConfigurationPolicyHandler>(

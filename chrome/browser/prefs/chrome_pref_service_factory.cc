@@ -43,7 +43,6 @@
 #include "components/sync_driver/pref_names.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
-#include "extensions/browser/pref_names.h"
 #include "grit/browser_resources.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -53,6 +52,10 @@
 #include "components/policy/core/browser/browser_policy_connector.h"
 #include "components/policy/core/browser/configuration_policy_pref_store.h"
 #include "components/policy/core/common/policy_types.h"
+#endif
+
+#if defined(ENABLE_EXTENSIONS)
+#include "extensions/browser/pref_names.h"
 #endif
 
 #if defined(ENABLE_MANAGED_USERS)
@@ -107,11 +110,13 @@ const PrefHashFilter::TrackedPreferenceMetadata kTrackedPrefs[] = {
     PrefHashFilter::ENFORCE_ON_LOAD,
     PrefHashFilter::TRACKING_STRATEGY_ATOMIC
   },
+#if defined(ENABLE_EXTENSIONS)
   {
     5, extensions::pref_names::kExtensions,
     PrefHashFilter::NO_ENFORCEMENT,
     PrefHashFilter::TRACKING_STRATEGY_SPLIT
   },
+#endif
   {
     6, prefs::kGoogleServicesLastUsername,
     PrefHashFilter::ENFORCE_ON_LOAD,
@@ -144,6 +149,7 @@ const PrefHashFilter::TrackedPreferenceMetadata kTrackedPrefs[] = {
     PrefHashFilter::TRACKING_STRATEGY_ATOMIC
   },
 #endif
+#if defined(ENABLE_EXTENSIONS)
   {
     // This pref has been deprecated, leave it here for now for it to be
     // properly mapped back to Preferences and cleaned up from there.
@@ -151,6 +157,7 @@ const PrefHashFilter::TrackedPreferenceMetadata kTrackedPrefs[] = {
     PrefHashFilter::NO_ENFORCEMENT,
     PrefHashFilter::TRACKING_STRATEGY_ATOMIC
   },
+#endif
   {
     13, prefs::kProfileResetPromptMemento,
     PrefHashFilter::ENFORCE_ON_LOAD,
@@ -292,11 +299,13 @@ GetTrackingConfiguration() {
       data.enforcement_level = PrefHashFilter::ENFORCE_ON_LOAD;
     }
 
+#if defined(ENABLE_EXTENSIONS)
     if (enforcement_group >= GROUP_ENFORCE_ALWAYS_WITH_EXTENSIONS_AND_DSE &&
         data.name == extensions::pref_names::kExtensions) {
       // Specifically enable extension settings enforcement.
       data.enforcement_level = PrefHashFilter::ENFORCE_ON_LOAD;
     }
+#endif
 
     result.push_back(data);
   }

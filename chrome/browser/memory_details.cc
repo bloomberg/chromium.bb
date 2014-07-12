@@ -10,7 +10,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/url_constants.h"
 #include "components/nacl/common/nacl_process_type.h"
@@ -24,17 +23,21 @@
 #include "content/public/browser/render_widget_host_iterator.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/bindings_policy.h"
-#include "extensions/browser/extension_system.h"
-#include "extensions/browser/process_manager.h"
-#include "extensions/browser/process_map.h"
-#include "extensions/browser/view_type_utils.h"
-#include "extensions/common/extension.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
 #include "content/public/browser/zygote_host_linux.h"
+#endif
+
+#if defined(ENABLE_EXTENSIONS)
+#include "chrome/browser/extensions/extension_service.h"
+#include "extensions/browser/extension_system.h"
+#include "extensions/browser/process_manager.h"
+#include "extensions/browser/process_map.h"
+#include "extensions/browser/view_type_utils.h"
+#include "extensions/common/extension.h"
 #endif
 
 using base::StringPrintf;
@@ -44,7 +47,9 @@ using content::NavigationEntry;
 using content::RenderViewHost;
 using content::RenderWidgetHost;
 using content::WebContents;
+#if defined(ENABLE_EXTENSIONS)
 using extensions::Extension;
+#endif
 
 // static
 std::string ProcessMemoryInformation::GetRendererTypeNameInEnglish(
@@ -268,15 +273,6 @@ void MemoryDetails::CollectChildInfoOnUIThread() {
           process.pid != base::GetProcId(render_process_host->GetHandle())) {
         continue;
       }
-      process.process_type = content::PROCESS_TYPE_RENDERER;
-      content::BrowserContext* context =
-          render_process_host->GetBrowserContext();
-      ExtensionService* extension_service =
-          extensions::ExtensionSystem::Get(context)->extension_service();
-      extensions::ProcessMap* extension_process_map = NULL;
-      // No extensions on Android. So extension_service can be NULL.
-      if (extension_service)
-        extension_process_map = extensions::ProcessMap::Get(context);
 
       // The RenderProcessHost may host multiple WebContentses.  Any
       // of them which contain diagnostics information make the whole
@@ -284,7 +280,20 @@ void MemoryDetails::CollectChildInfoOnUIThread() {
       if (!widget->IsRenderView())
         continue;
 
+      process.process_type = content::PROCESS_TYPE_RENDERER;
+      bool is_extension = false;
       RenderViewHost* host = RenderViewHost::From(widget);
+#if defined(ENABLE_EXTENSIONS)
+      content::BrowserContext* context =
+          render_process_host->GetBrowserContext();
+      ExtensionService* extension_service =
+          extensions::ExtensionSystem::Get(context)->extension_service();
+      extensions::ProcessMap* extension_process_map =
+          extensions::ProcessMap::Get(context);
+      is_extension = extension_process_map->Contains(
+          host->GetProcess()->GetID());
+#endif
+
       WebContents* contents = WebContents::FromRenderViewHost(host);
       GURL url;
       if (contents) {
@@ -293,11 +302,13 @@ void MemoryDetails::CollectChildInfoOnUIThread() {
             &chrome_browser->site_data[contents->GetBrowserContext()];
         SiteDetails::CollectSiteInfo(contents, site_data);
       }
+#if defined(ENABLE_EXTENSIONS)
       extensions::ViewType type = extensions::GetViewType(contents);
+#endif
       if (host->GetEnabledBindings() & content::BINDINGS_POLICY_WEB_UI) {
         process.renderer_type = ProcessMemoryInformation::RENDERER_CHROME;
-      } else if (extension_process_map &&
-                 extension_process_map->Contains(host->GetProcess()->GetID())) {
+      } else if (is_extension) {
+#if defined(ENABLE_EXTENSIONS)
         // For our purposes, don't count processes containing only hosted apps
         // as extension processes. See also: crbug.com/102533.
         std::set<std::string> extension_ids =
@@ -313,9 +324,10 @@ void MemoryDetails::CollectChildInfoOnUIThread() {
             break;
           }
         }
+#endif
       }
-      if (extension_process_map &&
-          extension_process_map->Contains(host->GetProcess()->GetID())) {
+#if defined(ENABLE_EXTENSIONS)
+      if (is_extension) {
         const Extension* extension =
             extension_service->extensions()->GetByID(url.host());
         if (extension) {
@@ -326,6 +338,7 @@ void MemoryDetails::CollectChildInfoOnUIThread() {
           continue;
         }
       }
+#endif
 
       if (!contents) {
         process.renderer_type =
@@ -333,12 +346,14 @@ void MemoryDetails::CollectChildInfoOnUIThread() {
         continue;
       }
 
+#if defined(ENABLE_EXTENSIONS)
       if (type == extensions::VIEW_TYPE_BACKGROUND_CONTENTS) {
         process.titles.push_back(base::UTF8ToUTF16(url.spec()));
         process.renderer_type =
             ProcessMemoryInformation::RENDERER_BACKGROUND_APP;
         continue;
       }
+#endif
 
       // Since we have a WebContents and and the renderer type hasn't been
       // set yet, it must be a normal tabbed renderer.
