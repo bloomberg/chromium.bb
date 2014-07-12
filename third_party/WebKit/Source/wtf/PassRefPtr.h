@@ -183,7 +183,7 @@ namespace WTF {
         return a.get() != b.get();
     }
 
-    template<typename T> inline PassRefPtr<T> adoptRef(T* p)
+    template<typename T> PassRefPtr<T> adoptRef(T* p)
     {
         adopted(p);
         return PassRefPtr<T>(p, PassRefPtr<T>::AdoptRef);

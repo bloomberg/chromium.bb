@@ -184,7 +184,7 @@ int DummyRefCounted::s_refInvokesCount = 0;
 
 TEST(HashSetTest, HashSetRefPtr)
 {
-    bool isDeleted;
+    bool isDeleted = false;
     RefPtr<DummyRefCounted> ptr = adoptRef(new DummyRefCounted(isDeleted));
     EXPECT_EQ(0, DummyRefCounted::s_refInvokesCount);
     HashSet<RefPtr<DummyRefCounted> > set;

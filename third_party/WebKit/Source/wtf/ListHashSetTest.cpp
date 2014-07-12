@@ -265,7 +265,7 @@ int DummyRefCounted::m_refInvokesCount = 0;
 template<typename Set>
 void withRefPtr()
 {
-    bool isDeleted;
+    bool isDeleted = false;
     DummyRefCounted::m_refInvokesCount = 0;
     RefPtr<DummyRefCounted> ptr = adoptRef(new DummyRefCounted(isDeleted));
     EXPECT_EQ(0, DummyRefCounted::m_refInvokesCount);

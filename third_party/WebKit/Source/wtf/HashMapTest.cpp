@@ -158,7 +158,7 @@ int DummyRefCounted::m_refInvokesCount = 0;
 
 TEST(HashMapTest, RefPtrAsKey)
 {
-    bool isDeleted;
+    bool isDeleted = false;
     RefPtr<DummyRefCounted> ptr = adoptRef(new DummyRefCounted(isDeleted));
     EXPECT_EQ(0, DummyRefCounted::m_refInvokesCount);
     HashMap<RefPtr<DummyRefCounted>, int> map;

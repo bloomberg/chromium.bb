@@ -1173,10 +1173,10 @@ TEST(PartitionAllocDeathTest, GuardPages)
 // functions working correctly.
 TEST(PartitionAllocTest, CLZWorks)
 {
-    EXPECT_EQ(32u, WTF::countLeadingZeros32(0));
-    EXPECT_EQ(31u, WTF::countLeadingZeros32(1));
-    EXPECT_EQ(1u, WTF::countLeadingZeros32(1 << 30));
-    EXPECT_EQ(0u, WTF::countLeadingZeros32(1 << 31));
+    EXPECT_EQ(32u, WTF::countLeadingZeros32(0u));
+    EXPECT_EQ(31u, WTF::countLeadingZeros32(1u));
+    EXPECT_EQ(1u, WTF::countLeadingZeros32(1u << 30));
+    EXPECT_EQ(0u, WTF::countLeadingZeros32(1u << 31));
 
 #if CPU(64BIT)
     EXPECT_EQ(64u, WTF::countLeadingZerosSizet(0ull));
@@ -1185,10 +1185,10 @@ TEST(PartitionAllocTest, CLZWorks)
     EXPECT_EQ(1u, WTF::countLeadingZerosSizet(1ull << 62));
     EXPECT_EQ(0u, WTF::countLeadingZerosSizet(1ull << 63));
 #else
-    EXPECT_EQ(32u, WTF::countLeadingZerosSizet(0));
-    EXPECT_EQ(31u, WTF::countLeadingZerosSizet(1));
-    EXPECT_EQ(1u, WTF::countLeadingZerosSizet(1 << 30));
-    EXPECT_EQ(0u, WTF::countLeadingZerosSizet(1 << 31));
+    EXPECT_EQ(32u, WTF::countLeadingZerosSizet(0u));
+    EXPECT_EQ(31u, WTF::countLeadingZerosSizet(1u));
+    EXPECT_EQ(1u, WTF::countLeadingZerosSizet(1u << 30));
+    EXPECT_EQ(0u, WTF::countLeadingZerosSizet(1u << 31));
 #endif
 }
 
