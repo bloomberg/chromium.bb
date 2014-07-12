@@ -7,5 +7,6 @@ include_rules = [
   "+extensions/browser",
   "+extensions/common",
   "+ui/app_list",
+  "+ui/gfx",
   "+ui/views",
 ]

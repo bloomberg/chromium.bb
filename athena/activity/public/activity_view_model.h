@@ -10,17 +10,22 @@
 
 typedef unsigned int SkColor;
 
+namespace gfx {
+class ImageSkia;
+}
+
 namespace views {
 class View;
 }
 
 namespace athena {
 
+// The view model for the representation of the activity.
 class ATHENA_EXPORT ActivityViewModel {
  public:
   virtual ~ActivityViewModel() {}
 
-  // Called after the view model is attaced to the widget/window tree.
+  // Called after the view model is attached to the widget/window tree.
   virtual void Init() = 0;
 
   // Returns a color most representative of this activity.
@@ -33,8 +38,22 @@ class ATHENA_EXPORT ActivityViewModel {
   // draws its own frame.
   virtual bool UsesFrame() const = 0;
 
-  // Returns the contents view.
+  // Returns the contents view which might be NULL if the activity is not
+  // loaded. Note that the caller should not hold on to the view since it can
+  // be deleted by the resource manager.
   virtual views::View* GetContentsView() = 0;
+
+  // This gets called before the Activity gets (partially) thrown out of memory
+  // to create a preview image of the activity. Note that even if this function
+  // gets called, |GetOverviewModeImage()| could still return an empty image.
+  virtual void CreateOverviewModeImage() = 0;
+
+  // Returns an image which can be used to represent the activity in e.g. the
+  // overview mode. The returned image can have no size if either a view exists
+  // or the activity has not yet been loaded. In that case
+  // GetRepresentativeColor() should be used to clear the preview area.
+  // Note: We intentionally do not use a layer / view for this.
+  virtual gfx::ImageSkia GetOverviewModeImage() = 0;
 };
 
 }  // namespace athena
