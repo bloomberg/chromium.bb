@@ -207,6 +207,14 @@ void PasswordManager::ProvisionallySavePassword(const PasswordForm& form) {
     return;
   }
 
+  // Don't save credentials for the syncing account. See crbug.com/365832 for
+  // background.
+  if (client_->IsPasswordSyncAccountCredential(
+          base::UTF16ToUTF8(form.username_value), form.signon_realm)) {
+    RecordFailure(SYNC_CREDENTIAL, form.origin.host(), logger.get());
+    return;
+  }
+
   // Always save generated passwords, as the user expresses explicit intent for
   // Chrome to manage such passwords. For other passwords, respect the
   // autocomplete attribute if autocomplete='off' is not ignored.
@@ -275,6 +283,9 @@ void PasswordManager::RecordFailure(ProvisionalSaveFailure failure,
         break;
       case AUTOCOMPLETE_OFF:
         logger->LogMessage(Logger::STRING_AUTOCOMPLETE_OFF);
+        break;
+      case SYNC_CREDENTIAL:
+        logger->LogMessage(Logger::STRING_SYNC_CREDENTIAL);
         break;
       case MAX_FAILURE_VALUE:
         NOTREACHED();

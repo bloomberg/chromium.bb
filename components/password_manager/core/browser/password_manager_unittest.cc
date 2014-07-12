@@ -43,6 +43,8 @@ namespace {
 class MockPasswordManagerClient : public StubPasswordManagerClient {
  public:
   MOCK_CONST_METHOD0(IsPasswordManagerEnabledForCurrentPage, bool());
+  MOCK_CONST_METHOD2(IsPasswordSyncAccountCredential,
+                     bool(const std::string&, const std::string&));
   MOCK_METHOD1(PromptUserToSavePassword, void(PasswordFormManager*));
   MOCK_METHOD0(GetPasswordStore, PasswordStore*());
   MOCK_METHOD0(GetPrefs, PrefService*());
@@ -85,6 +87,8 @@ class PasswordManagerTest : public testing::Test {
 
     EXPECT_CALL(client_, IsPasswordManagerEnabledForCurrentPage())
         .WillRepeatedly(Return(true));
+    EXPECT_CALL(client_, IsPasswordSyncAccountCredential(_, _))
+        .WillRepeatedly(Return(false));
     EXPECT_CALL(client_, GetPasswordStore()).WillRepeatedly(Return(store_));
     EXPECT_CALL(client_, GetPrefs()).WillRepeatedly(Return(&prefs_));
     EXPECT_CALL(client_, GetDriver()).WillRepeatedly(Return(&driver_));
@@ -704,6 +708,33 @@ TEST_F(PasswordManagerTest, AutofillingDisabledIfManagerDisabled) {
   // matching saved credentials for the forms.
   EXPECT_CALL(*store_.get(), GetLogins(_, _, _)).Times(Exactly(0));
   manager()->OnPasswordFormsParsed(forms);
+}
+
+TEST_F(PasswordManagerTest, SyncCredentialsNotSaved) {
+  EXPECT_CALL(client_, IsPasswordSyncAccountCredential(_, _))
+      .WillRepeatedly(Return(true));
+
+  // Simulate loading a simple form with no existing stored password.
+  std::vector<PasswordForm*> result;  // Empty password store.
+  EXPECT_CALL(driver_, FillPasswordForm(_)).Times(Exactly(0));
+  EXPECT_CALL(*store_.get(), GetLogins(_, _, _))
+      .WillOnce(DoAll(WithArg<2>(InvokeConsumer(result)), Return()));
+  std::vector<PasswordForm> observed;
+  PasswordForm form(MakeSimpleForm());
+  form.password_autocomplete_set = false;
+  observed.push_back(form);
+  manager()->OnPasswordFormsParsed(observed);  // The initial load.
+  manager()->OnPasswordFormsRendered(observed, true);  // The initial layout.
+
+  // User should not be prompted and password should not be saved.
+  EXPECT_CALL(client_, PromptUserToSavePassword(_)).Times(Exactly(0));
+  EXPECT_CALL(*store_.get(), AddLogin(FormMatches(form))).Times(Exactly(0));
+
+  // Submit form and finish navigation.
+  manager()->ProvisionallySavePassword(form);
+  observed.clear();
+  manager()->OnPasswordFormsParsed(observed);
+  manager()->OnPasswordFormsRendered(observed, true);
 }
 
 }  // namespace password_manager
