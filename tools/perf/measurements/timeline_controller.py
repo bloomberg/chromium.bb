@@ -56,7 +56,7 @@ class TimelineController(object):
       if not tir_module.IsTimelineInteractionRecord(event.name):
         continue
       r = tir_module.TimelineInteractionRecord.FromAsyncEvent(event)
-      if r.logical_name == RUN_SMOOTH_ACTIONS:
+      if r.label == RUN_SMOOTH_ACTIONS:
         assert run_smooth_actions_record is None, (
           'TimelineController cannot issue more than 1 %s record' %
           RUN_SMOOTH_ACTIONS)

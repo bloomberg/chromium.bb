@@ -63,7 +63,7 @@ class SmoothnessController(object):
       if not tir_module.IsTimelineInteractionRecord(event.name):
         continue
       r = tir_module.TimelineInteractionRecord.FromAsyncEvent(event)
-      if r.logical_name == RUN_SMOOTH_ACTIONS:
+      if r.label == RUN_SMOOTH_ACTIONS:
         assert run_smooth_actions_record is None, (
           'SmoothnessController cannot issue more than 1 %s record' %
           RUN_SMOOTH_ACTIONS)
@@ -88,7 +88,7 @@ class SmoothnessController(object):
         smooth_records = [run_smooth_actions_record]
 
     # Create an interaction_record for this legacy measurement. Since we don't
-    # wrap the results that is sent to smoothnes metric, the logical_name will
+    # wrap the results that is sent to smoothnes metric, the label will
     # not be used.
     smoothness_metric = smoothness.SmoothnessMetric()
     smoothness_metric.AddResults(
