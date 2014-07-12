@@ -24,6 +24,15 @@ void DrmEncoderDeleter::operator()(drmModeEncoder* encoder) const {
   drmModeFreeEncoder(encoder);
 }
 
+void DrmObjectPropertiesDeleter::operator()(
+    drmModeObjectProperties* properties) const {
+  drmModeFreeObjectProperties(properties);
+}
+
+void DrmPlaneDeleter::operator()(drmModePlane* plane) const {
+  drmModeFreePlane(plane);
+}
+
 void DrmPropertyDeleter::operator()(drmModePropertyRes* property) const {
   drmModeFreeProperty(property);
 }

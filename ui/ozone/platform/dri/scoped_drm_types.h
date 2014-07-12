@@ -11,6 +11,8 @@ typedef struct _drmModeConnector drmModeConnector;
 typedef struct _drmModeCrtc drmModeCrtc;
 typedef struct _drmModeEncoder drmModeEncoder;
 typedef struct _drmModeFB drmModeFB;
+typedef struct _drmModeObjectProperties drmModeObjectProperties;
+typedef struct _drmModePlane drmModePlane;
 typedef struct _drmModeProperty drmModePropertyRes;
 typedef struct _drmModePropertyBlob drmModePropertyBlobRes;
 typedef struct _drmModeRes drmModeRes;
@@ -29,6 +31,12 @@ struct DrmCrtcDeleter {
 struct DrmEncoderDeleter {
   void operator()(drmModeEncoder* encoder) const;
 };
+struct DrmObjectPropertiesDeleter {
+  void operator()(drmModeObjectProperties* properties) const;
+};
+struct DrmPlaneDeleter {
+  void operator()(drmModePlane* plane) const;
+};
 struct DrmPropertyDeleter {
   void operator()(drmModePropertyRes* property) const;
 };
@@ -43,6 +51,9 @@ typedef scoped_ptr<drmModeRes, DrmResourcesDeleter> ScopedDrmResourcesPtr;
 typedef scoped_ptr<drmModeConnector, DrmConnectorDeleter> ScopedDrmConnectorPtr;
 typedef scoped_ptr<drmModeCrtc, DrmCrtcDeleter> ScopedDrmCrtcPtr;
 typedef scoped_ptr<drmModeEncoder, DrmEncoderDeleter> ScopedDrmEncoderPtr;
+typedef scoped_ptr<drmModeObjectProperties, DrmObjectPropertiesDeleter>
+    ScopedDrmObjectPropertyPtr;
+typedef scoped_ptr<drmModePlane, DrmPlaneDeleter> ScopedDrmPlanePtr;
 typedef scoped_ptr<drmModePropertyRes, DrmPropertyDeleter> ScopedDrmPropertyPtr;
 typedef scoped_ptr<drmModePropertyBlobRes, DrmPropertyBlobDeleter>
 ScopedDrmPropertyBlobPtr;

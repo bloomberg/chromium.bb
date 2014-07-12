@@ -13,6 +13,7 @@
     'internal_ozone_platforms': [
       'dri',
     ],
+    'use_drm_atomic_flip%': 0,
   },
   'targets': [
     {
@@ -68,6 +69,14 @@
         'virtual_terminal_manager.cc',
         'virtual_terminal_manager.h',
       ],
+      'conditions': [
+        ['use_drm_atomic_flip==1', {
+          'sources': [
+            'hardware_display_plane.cc',
+	    'hardware_display_plane.h',
+          ],
+        }],
+      ],      
     },
     {
       'target_name': 'ozone_platform_dri_unittests',
