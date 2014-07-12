@@ -18,9 +18,9 @@
 
 namespace WebCore {
 
-PassRefPtr<FetchBodyStream> FetchBodyStream::create(ExecutionContext* context, PassRefPtr<BlobDataHandle> blobDataHandle)
+PassRefPtrWillBeRawPtr<FetchBodyStream> FetchBodyStream::create(ExecutionContext* context, PassRefPtr<BlobDataHandle> blobDataHandle)
 {
-    RefPtr<FetchBodyStream> fetchBodyStream(adoptRef(new FetchBodyStream(context, blobDataHandle)));
+    RefPtrWillBeRawPtr<FetchBodyStream> fetchBodyStream(adoptRefWillBeRefCountedGarbageCollected(new FetchBodyStream(context, blobDataHandle)));
     fetchBodyStream->suspendIfNeeded();
     return fetchBodyStream.release();
 }

@@ -12,6 +12,7 @@
 #include "core/fileapi/FileReaderLoader.h"
 #include "core/fileapi/FileReaderLoaderClient.h"
 #include "platform/blob/BlobData.h"
+#include "platform/heap/Handle.h"
 #include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"
 
@@ -19,9 +20,12 @@ namespace WebCore {
 
 class ScriptState;
 
-class FetchBodyStream
-    : public ScriptWrappable
-    , public RefCounted<FetchBodyStream>
+// FIXME: Oilpan: when the implementation stops using
+// ActiveDOMObject::(un)setPendingActivity, derive from
+// RefCountedWillBeGarbageCollectedFinalized instead.
+class FetchBodyStream FINAL
+    : public RefCountedWillBeRefCountedGarbageCollected<FetchBodyStream>
+    , public ScriptWrappable
     , public ActiveDOMObject
     , public FileReaderLoaderClient {
 public:
@@ -33,7 +37,7 @@ public:
         ResponseAsText
     };
 
-    static PassRefPtr<FetchBodyStream> create(ExecutionContext*, PassRefPtr<BlobDataHandle>);
+    static PassRefPtrWillBeRawPtr<FetchBodyStream> create(ExecutionContext*, PassRefPtr<BlobDataHandle>);
     ~FetchBodyStream() { }
 
     ScriptPromise asArrayBuffer(ScriptState*);
@@ -44,6 +48,8 @@ public:
 
     // ActiveDOMObject override.
     virtual void stop() OVERRIDE;
+
+    void trace(Visitor*) { }
 
 private:
     FetchBodyStream(ExecutionContext*, PassRefPtr<BlobDataHandle>);

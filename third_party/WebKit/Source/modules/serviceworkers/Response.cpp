@@ -140,7 +140,7 @@ PassRefPtrWillBeRawPtr<Headers> Response::headers() const
     return m_headers;
 }
 
-PassRefPtr<FetchBodyStream> Response::body(ExecutionContext* context)
+PassRefPtrWillBeRawPtr<FetchBodyStream> Response::body(ExecutionContext* context)
 {
     if (!m_fetchBodyStream)
         m_fetchBodyStream = FetchBodyStream::create(context, m_response->blobDataHandle());
@@ -172,6 +172,7 @@ void Response::trace(Visitor* visitor)
 {
     visitor->trace(m_response);
     visitor->trace(m_headers);
+    visitor->trace(m_fetchBodyStream);
 }
 
 } // namespace WebCore

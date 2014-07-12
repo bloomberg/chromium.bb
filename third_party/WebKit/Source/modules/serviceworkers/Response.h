@@ -38,7 +38,7 @@ public:
     String statusText() const;
     PassRefPtrWillBeRawPtr<Headers> headers() const;
 
-    PassRefPtr<FetchBodyStream> body(ExecutionContext*);
+    PassRefPtrWillBeRawPtr<FetchBodyStream> body(ExecutionContext*);
 
     void populateWebServiceWorkerResponse(blink::WebServiceWorkerResponse&);
 
@@ -50,8 +50,7 @@ private:
 
     RefPtrWillBeMember<FetchResponseData> m_response;
     RefPtrWillBeMember<Headers> m_headers;
-    // FIXME: Make this RefPtrWillBeMember.
-    RefPtr<FetchBodyStream> m_fetchBodyStream;
+    RefPtrWillBeMember<FetchBodyStream> m_fetchBodyStream;
 };
 
 } // namespace WebCore
