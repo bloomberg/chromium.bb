@@ -58,7 +58,7 @@ void AutofillCCInfoBarDelegate::InfoBarDismissed() {
 }
 
 int AutofillCCInfoBarDelegate::GetIconID() const {
-  return IDR_INFOBAR_AUTOFILL;
+  return IDR_INFOBAR_AUTOFILL_CC;
 }
 
 infobars::InfoBarDelegate::Type AutofillCCInfoBarDelegate::GetInfoBarType()
