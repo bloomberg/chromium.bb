@@ -431,6 +431,15 @@ IDBKeyRange* scriptValueToIDBKeyRange(v8::Isolate* isolate, const ScriptValue& s
     return V8IDBKeyRange::toNativeWithTypeCheck(isolate, value);
 }
 
+ScriptValue deserializeScriptValue(ScriptState* scriptState, SerializedScriptValue* serializedValue, const Vector<blink::WebBlobInfo>* blobInfo)
+{
+    v8::Isolate* isolate = scriptState->isolate();
+    v8::HandleScope handleScope(isolate);
+    if (serializedValue)
+        return ScriptValue(scriptState, serializedValue->deserialize(isolate, 0, blobInfo));
+    return ScriptValue(scriptState, v8::Null(isolate));
+}
+
 #ifndef NDEBUG
 void assertPrimaryKeyValidOrInjectable(ScriptState* scriptState, PassRefPtr<SharedBuffer> buffer, const Vector<blink::WebBlobInfo>* blobInfo, IDBKey* key, const IDBKeyPath& keyPath)
 {

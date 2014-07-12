@@ -139,16 +139,6 @@ IDBRequest* IDBCursor::update(ScriptState* scriptState, ScriptValue& value, Exce
     }
 
     IDBObjectStore* objectStore = effectiveObjectStore();
-    const IDBKeyPath& keyPath = objectStore->metadata().keyPath;
-    const bool usesInLineKeys = !keyPath.isNull();
-    if (usesInLineKeys) {
-        IDBKey* keyPathKey = createIDBKeyFromScriptValueAndKeyPath(scriptState->isolate(), value, keyPath);
-        if (!keyPathKey || !keyPathKey->isEqual(m_primaryKey.get())) {
-            exceptionState.throwDOMException(DataError, "The effective object store of this cursor uses in-line keys and evaluating the key path of the value parameter results in a different value than the cursor's effective key.");
-            return 0;
-        }
-    }
-
     return objectStore->put(scriptState, blink::WebIDBPutModeCursorUpdate, IDBAny::create(this), value, m_primaryKey, exceptionState);
 }
 
