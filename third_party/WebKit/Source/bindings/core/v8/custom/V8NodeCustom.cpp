@@ -58,37 +58,6 @@ namespace WebCore {
 
 // These functions are custom to prevent a wrapper lookup of the return value which is always
 // part of the arguments.
-void V8Node::replaceChildMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    v8::Handle<v8::Object> holder = info.Holder();
-    Node* impl = V8Node::toNative(holder);
-
-    CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
-
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "replaceChild", "Node", info.Holder(), info.GetIsolate());
-    Node* newChild = V8Node::toNativeWithTypeCheck(info.GetIsolate(), info[0]);
-    Node* oldChild = V8Node::toNativeWithTypeCheck(info.GetIsolate(), info[1]);
-    impl->replaceChild(newChild, oldChild, exceptionState);
-    if (exceptionState.throwIfNeeded())
-        return;
-    v8SetReturnValue(info, info[1]);
-}
-
-void V8Node::removeChildMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    v8::Handle<v8::Object> holder = info.Holder();
-    Node* impl = V8Node::toNative(holder);
-
-    CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
-
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "removeChild", "Node", info.Holder(), info.GetIsolate());
-    Node* oldChild = V8Node::toNativeWithTypeCheck(info.GetIsolate(), info[0]);
-    impl->removeChild(oldChild, exceptionState);
-    if (exceptionState.throwIfNeeded())
-        return;
-    v8SetReturnValue(info, info[0]);
-}
-
 v8::Handle<v8::Object> wrap(Node* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
     ASSERT(impl);

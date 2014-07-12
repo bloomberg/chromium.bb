@@ -318,7 +318,7 @@ void ContainerNode::parserInsertBefore(PassRefPtrWillBeRawPtr<Node> newChild, No
     notifyNodeInserted(*newChild);
 }
 
-void ContainerNode::replaceChild(PassRefPtrWillBeRawPtr<Node> newChild, Node* oldChild, ExceptionState& exceptionState)
+PassRefPtrWillBeRawPtr<Node> ContainerNode::replaceChild(PassRefPtrWillBeRawPtr<Node> newChild, PassRefPtrWillBeRawPtr<Node> oldChild, ExceptionState& exceptionState)
 {
 #if !ENABLE(OILPAN)
     // Check that this node is not "floating".
@@ -329,49 +329,58 @@ void ContainerNode::replaceChild(PassRefPtrWillBeRawPtr<Node> newChild, Node* ol
     RefPtrWillBeRawPtr<Node> protect(this);
 
     if (oldChild == newChild) // nothing to do
-        return;
+        return oldChild;
 
     if (!oldChild) {
         exceptionState.throwDOMException(NotFoundError, "The node to be replaced is null.");
-        return;
+        return nullptr;
     }
 
+    RefPtrWillBeRawPtr<Node> child = oldChild;
+
     // Make sure replacing the old child with the new is ok
-    if (!checkAcceptChild(newChild.get(), oldChild, exceptionState))
-        return;
+    if (!checkAcceptChild(newChild.get(), child.get(), exceptionState)) {
+        if (exceptionState.hadException())
+            return nullptr;
+        return child;
+    }
 
     // NotFoundError: Raised if oldChild is not a child of this node.
-    if (oldChild->parentNode() != this) {
+    if (child->parentNode() != this) {
         exceptionState.throwDOMException(NotFoundError, "The node to be replaced is not a child of this node.");
-        return;
+        return nullptr;
     }
 
     ChildListMutationScope mutation(*this);
 
-    RefPtrWillBeRawPtr<Node> next = oldChild->nextSibling();
+    RefPtrWillBeRawPtr<Node> next = child->nextSibling();
 
     // Remove the node we're replacing
-    RefPtrWillBeRawPtr<Node> protectRemovedChild = oldChild;
-    ASSERT_UNUSED(protectRemovedChild, protectRemovedChild);
-    removeChild(oldChild, exceptionState);
+    removeChild(child, exceptionState);
     if (exceptionState.hadException())
-        return;
+        return nullptr;
 
     if (next && (next->previousSibling() == newChild || next == newChild)) // nothing to do
-        return;
+        return child;
 
     // Does this one more time because removeChild() fires a MutationEvent.
-    if (!checkAcceptChild(newChild.get(), oldChild, exceptionState))
-        return;
+    if (!checkAcceptChild(newChild.get(), child.get(), exceptionState)) {
+        if (exceptionState.hadException())
+            return nullptr;
+        return child;
+    }
 
     NodeVector targets;
     collectChildrenAndRemoveFromOldParent(*newChild, targets, exceptionState);
     if (exceptionState.hadException())
-        return;
+        return nullptr;
 
     // Does this yet another check because collectChildrenAndRemoveFromOldParent() fires a MutationEvent.
-    if (!checkAcceptChild(newChild.get(), oldChild, exceptionState))
-        return;
+    if (!checkAcceptChild(newChild.get(), child.get(), exceptionState)) {
+        if (exceptionState.hadException())
+            return nullptr;
+        return child;
+    }
 
     InspectorInstrumentation::willInsertDOMNode(this);
 
@@ -404,6 +413,7 @@ void ContainerNode::replaceChild(PassRefPtrWillBeRawPtr<Node> newChild, Node* ol
     }
 
     dispatchSubtreeModifiedEvent();
+    return child;
 }
 
 void ContainerNode::willRemoveChild(Node& child)
@@ -511,7 +521,7 @@ void ContainerNode::trace(Visitor* visitor)
     Node::trace(visitor);
 }
 
-void ContainerNode::removeChild(Node* oldChild, ExceptionState& exceptionState)
+PassRefPtrWillBeRawPtr<Node> ContainerNode::removeChild(PassRefPtrWillBeRawPtr<Node> oldChild, ExceptionState& exceptionState)
 {
 #if !ENABLE(OILPAN)
     // Check that this node is not "floating".
@@ -527,7 +537,7 @@ void ContainerNode::removeChild(Node* oldChild, ExceptionState& exceptionState)
     // ASSERT(!oldChild->isPseudoElement())
     if (!oldChild || oldChild->parentNode() != this || oldChild->isPseudoElement()) {
         exceptionState.throwDOMException(NotFoundError, "The node to be removed is not a child of this node.");
-        return;
+        return nullptr;
     }
 
     RefPtrWillBeRawPtr<Node> child = oldChild;
@@ -541,7 +551,7 @@ void ContainerNode::removeChild(Node* oldChild, ExceptionState& exceptionState)
     // child into a different parent.
     if (child->parentNode() != this) {
         exceptionState.throwDOMException(NotFoundError, "The node to be removed is no longer a child of this node. Perhaps it was moved in a 'blur' event handler?");
-        return;
+        return nullptr;
     }
 
     willRemoveChild(*child);
@@ -549,7 +559,7 @@ void ContainerNode::removeChild(Node* oldChild, ExceptionState& exceptionState)
     // Mutation events might have moved this child into a different parent.
     if (child->parentNode() != this) {
         exceptionState.throwDOMException(NotFoundError, "The node to be removed is no longer a child of this node. Perhaps it was moved in response to a mutation?");
-        return;
+        return nullptr;
     }
 
     {
@@ -563,6 +573,7 @@ void ContainerNode::removeChild(Node* oldChild, ExceptionState& exceptionState)
         notifyNodeRemoved(*child);
     }
     dispatchSubtreeModifiedEvent();
+    return child;
 }
 
 void ContainerNode::removeBetween(Node* previousChild, Node* nextChild, Node& oldChild)
