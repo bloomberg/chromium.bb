@@ -71,6 +71,8 @@
 #include "chrome/browser/search_engines/search_provider_install_state_message_filter.h"
 #include "chrome/browser/signin/principals_message_filter.h"
 #include "chrome/browser/speech/chrome_speech_recognition_manager_delegate.h"
+#include "chrome/browser/speech/extension_api/tts_engine_extension_api.h"
+#include "chrome/browser/speech/tts_controller.h"
 #include "chrome/browser/speech/tts_message_filter.h"
 #include "chrome/browser/ssl/ssl_add_certificate.h"
 #include "chrome/browser/ssl/ssl_blocking_page.h"
@@ -662,6 +664,11 @@ ChromeContentBrowserClient::ChromeContentBrowserClient()
 
   permissions_policy_delegate_.reset(
       new extensions::BrowserPermissionsPolicyDelegate());
+
+#if !defined(OS_ANDROID)
+  TtsExtensionEngine* tts_extension_engine = TtsExtensionEngine::GetInstance();
+  TtsController::GetInstance()->SetTtsEngineDelegate(tts_extension_engine);
+#endif
 }
 
 ChromeContentBrowserClient::~ChromeContentBrowserClient() {
