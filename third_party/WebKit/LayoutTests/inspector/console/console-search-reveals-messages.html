@@ -32,7 +32,6 @@ function test()
         function scrollConsoleToTop(next)
         {
             viewport.forceScrollItemToBeFirst(0);
-            viewport.refresh();
             dumpTop();
             next();
         },
