@@ -44,14 +44,20 @@ class PicturePileTest : public testing::Test {
         min_scale_(0.125),
         frame_number_(0),
         contents_opaque_(false) {
-    pile_->SetTilingRect(gfx::Rect(pile_->tiling().max_texture_size()));
     pile_->SetTileGridSize(gfx::Size(1000, 1000));
     pile_->SetMinContentsScale(min_scale_);
+    SetTilingRect(gfx::Rect(pile_->tiling().max_texture_size()));
+  }
+
+  void SetTilingRect(const gfx::Rect& tiling_rect) {
+    Region invalidation;
+    UpdateAndExpandInvalidation(&invalidation, tiling_rect, tiling_rect);
   }
 
   gfx::Rect tiling_rect() const { return pile_->tiling_rect(); }
 
   bool UpdateAndExpandInvalidation(Region* invalidation,
+                                   const gfx::Rect& layer_bounds_rect,
                                    const gfx::Rect& visible_layer_rect) {
     frame_number_++;
     return pile_->UpdateAndExpandInvalidation(&client_,
@@ -59,6 +65,7 @@ class PicturePileTest : public testing::Test {
                                               background_color_,
                                               contents_opaque_,
                                               false,
+                                              layer_bounds_rect,
                                               visible_layer_rect,
                                               frame_number_,
                                               Picture::RECORD_NORMALLY,
@@ -67,7 +74,8 @@ class PicturePileTest : public testing::Test {
 
   bool UpdateWholePile() {
     Region invalidation = tiling_rect();
-    bool result = UpdateAndExpandInvalidation(&invalidation, tiling_rect());
+    bool result = UpdateAndExpandInvalidation(
+        &invalidation, tiling_rect(), tiling_rect());
     EXPECT_EQ(tiling_rect().ToString(), invalidation.ToString());
     return result;
   }
@@ -82,11 +90,9 @@ class PicturePileTest : public testing::Test {
 };
 
 TEST_F(PicturePileTest, SmallInvalidateInflated) {
-  UpdateWholePile();
-
   // Invalidate something inside a tile.
   Region invalidate_rect(gfx::Rect(50, 50, 1, 1));
-  UpdateAndExpandInvalidation(&invalidate_rect, tiling_rect());
+  UpdateAndExpandInvalidation(&invalidate_rect, tiling_rect(), tiling_rect());
   EXPECT_EQ(gfx::Rect(50, 50, 1, 1).ToString(), invalidate_rect.ToString());
 
   EXPECT_EQ(1, pile_->tiling().num_tiles_x());
@@ -106,11 +112,9 @@ TEST_F(PicturePileTest, SmallInvalidateInflated) {
 }
 
 TEST_F(PicturePileTest, LargeInvalidateInflated) {
-  UpdateWholePile();
-
   // Invalidate something inside a tile.
   Region invalidate_rect(gfx::Rect(50, 50, 100, 100));
-  UpdateAndExpandInvalidation(&invalidate_rect, tiling_rect());
+  UpdateAndExpandInvalidation(&invalidate_rect, tiling_rect(), tiling_rect());
   EXPECT_EQ(gfx::Rect(50, 50, 100, 100).ToString(), invalidate_rect.ToString());
 
   EXPECT_EQ(1, pile_->tiling().num_tiles_x());
@@ -132,7 +136,8 @@ TEST_F(PicturePileTest, LargeInvalidateInflated) {
 TEST_F(PicturePileTest, InvalidateOnTileBoundaryInflated) {
   gfx::Rect new_tiling_rect =
       gfx::ToEnclosedRect(gfx::ScaleRect(pile_->tiling_rect(), 2.f));
-  pile_->SetTilingRect(new_tiling_rect);
+  // This creates initial pictures.
+  SetTilingRect(new_tiling_rect);
 
   // Due to border pixels, we should have 3 tiles.
   EXPECT_EQ(3, pile_->tiling().num_tiles_x());
@@ -142,11 +147,7 @@ TEST_F(PicturePileTest, InvalidateOnTileBoundaryInflated) {
   EXPECT_EQ(7, pile_->buffer_pixels());
   EXPECT_EQ(7, pile_->tiling().border_texels());
 
-  // Update the whole layer to create initial pictures.
-  UpdateWholePile();
-
-  // Invalidate everything again to have a non zero invalidation
-  // frequency.
+  // Invalidate everything to have a non zero invalidation frequency.
   UpdateWholePile();
 
   // Invalidate something just over a tile boundary by a single pixel.
@@ -157,7 +158,7 @@ TEST_F(PicturePileTest, InvalidateOnTileBoundaryInflated) {
                 50,
                 50));
   Region expected_invalidation = invalidate_rect;
-  UpdateAndExpandInvalidation(&invalidate_rect, tiling_rect());
+  UpdateAndExpandInvalidation(&invalidate_rect, tiling_rect(), tiling_rect());
   EXPECT_EQ(expected_invalidation.ToString(), invalidate_rect.ToString());
 
   for (int i = 0; i < pile_->tiling().num_tiles_x(); ++i) {
@@ -185,7 +186,7 @@ TEST_F(PicturePileTest, InvalidateOnTileBoundaryInflated) {
 TEST_F(PicturePileTest, StopRecordingOffscreenInvalidations) {
   gfx::Rect new_tiling_rect =
       gfx::ToEnclosedRect(gfx::ScaleRect(pile_->tiling_rect(), 4.f));
-  pile_->SetTilingRect(new_tiling_rect);
+  SetTilingRect(new_tiling_rect);
 
   gfx::Rect viewport(
       tiling_rect().x(), tiling_rect().y(), tiling_rect().width(), 1);
@@ -209,7 +210,7 @@ TEST_F(PicturePileTest, StopRecordingOffscreenInvalidations) {
 
   // Update once more with a small viewport.
   Region invalidation = tiling_rect();
-  UpdateAndExpandInvalidation(&invalidation, viewport);
+  UpdateAndExpandInvalidation(&invalidation, tiling_rect(), viewport);
   EXPECT_EQ(tiling_rect().ToString(), invalidation.ToString());
 
   for (int i = 0; i < pile_->tiling().num_tiles_x(); ++i) {
@@ -236,14 +237,15 @@ TEST_F(PicturePileTest, StopRecordingOffscreenInvalidations) {
                 pile_->tiling().TileBounds(3, 4).y() + 10,
                 1,
                 1);
-  UpdateAndExpandInvalidation(&small_invalidation, viewport);
+  UpdateAndExpandInvalidation(&small_invalidation, tiling_rect(), viewport);
   EXPECT_TRUE(small_invalidation.Contains(gfx::UnionRects(
       pile_->tiling().TileBounds(2, 4), pile_->tiling().TileBounds(3, 4))))
       << small_invalidation.ToString();
 
   // Now update with no invalidation and full viewport
   Region empty_invalidation;
-  UpdateAndExpandInvalidation(&empty_invalidation, tiling_rect());
+  UpdateAndExpandInvalidation(
+      &empty_invalidation, tiling_rect(), tiling_rect());
   EXPECT_EQ(Region().ToString(), empty_invalidation.ToString());
 
   for (int i = 0; i < pile_->tiling().num_tiles_x(); ++i) {
@@ -263,8 +265,6 @@ TEST_F(PicturePileTest, StopRecordingOffscreenInvalidations) {
 }
 
 TEST_F(PicturePileTest, ClearingInvalidatesRecordedRect) {
-  UpdateWholePile();
-
   gfx::Rect rect(0, 0, 5, 5);
   EXPECT_TRUE(pile_->CanRasterLayerRect(rect));
   EXPECT_TRUE(pile_->CanRasterSlowTileCheck(rect));
@@ -284,7 +284,7 @@ TEST_F(PicturePileTest, FrequentInvalidationCanRaster) {
   // overlaps on borders (edge case).
   gfx::Rect new_tiling_rect =
       gfx::ToEnclosedRect(gfx::ScaleRect(pile_->tiling_rect(), 4.f));
-  pile_->SetTilingRect(new_tiling_rect);
+  SetTilingRect(new_tiling_rect);
 
   gfx::Rect tile01_borders = pile_->tiling().TileBoundsWithBorder(0, 1);
   gfx::Rect tile02_borders = pile_->tiling().TileBoundsWithBorder(0, 2);
@@ -312,7 +312,7 @@ TEST_F(PicturePileTest, FrequentInvalidationCanRaster) {
   // Update once more with a small viewport.
   gfx::Rect viewport(0, 0, tiling_rect().width(), 1);
   Region invalidation(tiling_rect());
-  UpdateAndExpandInvalidation(&invalidation, viewport);
+  UpdateAndExpandInvalidation(&invalidation, tiling_rect(), viewport);
   EXPECT_EQ(tiling_rect().ToString(), invalidation.ToString());
 
   // Sanity check some pictures exist and others don't.
@@ -333,24 +333,24 @@ TEST_F(PicturePileTest, NoInvalidationValidViewport) {
   // This test validates that the recorded_viewport cache of full tiles
   // is still valid for some use cases.  If it's not, it's a performance
   // issue because CanRaster checks will go down the slow path.
-  UpdateWholePile();
   EXPECT_TRUE(!pile_->recorded_viewport().IsEmpty());
 
   // No invalidation, same viewport.
   Region invalidation;
-  UpdateAndExpandInvalidation(&invalidation, tiling_rect());
+  UpdateAndExpandInvalidation(&invalidation, tiling_rect(), tiling_rect());
   EXPECT_TRUE(!pile_->recorded_viewport().IsEmpty());
   EXPECT_EQ(Region().ToString(), invalidation.ToString());
 
   // Partial invalidation, same viewport.
   invalidation = gfx::Rect(0, 0, 1, 1);
-  UpdateAndExpandInvalidation(&invalidation, tiling_rect());
+  UpdateAndExpandInvalidation(&invalidation, tiling_rect(), tiling_rect());
   EXPECT_TRUE(!pile_->recorded_viewport().IsEmpty());
   EXPECT_EQ(gfx::Rect(0, 0, 1, 1).ToString(), invalidation.ToString());
 
   // No invalidation, changing viewport.
   invalidation = Region();
-  UpdateAndExpandInvalidation(&invalidation, gfx::Rect(5, 5, 5, 5));
+  UpdateAndExpandInvalidation(
+      &invalidation, tiling_rect(), gfx::Rect(5, 5, 5, 5));
   EXPECT_TRUE(!pile_->recorded_viewport().IsEmpty());
   EXPECT_EQ(Region().ToString(), invalidation.ToString());
 }
@@ -359,11 +359,13 @@ TEST_F(PicturePileTest, InvalidationOutsideRecordingRect) {
   gfx::Rect huge_layer_rect(10000000, 20000000);
   gfx::Rect viewport(300000, 400000, 5000, 6000);
 
-  pile_->SetTilingRect(huge_layer_rect);
+  // Resize the pile and set up the interest rect.
+  Region invalidation;
+  UpdateAndExpandInvalidation(&invalidation, huge_layer_rect, viewport);
 
   // Invalidation inside the recording rect does not need to be expanded.
-  Region invalidation = viewport;
-  UpdateAndExpandInvalidation(&invalidation, viewport);
+  invalidation = viewport;
+  UpdateAndExpandInvalidation(&invalidation, huge_layer_rect, viewport);
   EXPECT_EQ(viewport.ToString(), invalidation.ToString());
 
   // Invalidation outside the recording rect should expand to the tiles it
@@ -373,7 +375,7 @@ TEST_F(PicturePileTest, InvalidationOutsideRecordingRect) {
   gfx::Rect invalidation_outside(
       recorded_over_tiles.right(), recorded_over_tiles.y(), 30, 30);
   invalidation = invalidation_outside;
-  UpdateAndExpandInvalidation(&invalidation, viewport);
+  UpdateAndExpandInvalidation(&invalidation, huge_layer_rect, viewport);
   gfx::Rect expanded_recorded_viewport =
       pile_->tiling().ExpandRectToTileBounds(pile_->recorded_viewport());
   Region expected_invalidation =
@@ -381,16 +383,20 @@ TEST_F(PicturePileTest, InvalidationOutsideRecordingRect) {
   EXPECT_EQ(expected_invalidation.ToString(), invalidation.ToString());
 }
 
-TEST_F(PicturePileTest, ResizePile) {
-  gfx::Size tile_size(100, 100);
-  gfx::Rect base_tiling_rect(5 * 100, 5 * 100);
-  gfx::Rect grow_down_tiling_rect(5 * 100, 7 * 100);
-  gfx::Rect grow_right_tiling_rect(7 * 100, 5 * 100);
-  gfx::Rect grow_both_tiling_rect(7 * 100, 7 * 100);
+TEST_F(PicturePileTest, ResizePileOutsideInterestRect) {
+  // This size chosen to be larger than the interest rect size, which is
+  // at least kPixelDistanceToRecord * 2 in each dimension.
+  int tile_size = 100000;
+  gfx::Rect base_tiling_rect(5 * tile_size, 5 * tile_size);
+  gfx::Rect grow_down_tiling_rect(5 * tile_size, 7 * tile_size);
+  gfx::Rect grow_right_tiling_rect(7 * tile_size, 5 * tile_size);
+  gfx::Rect grow_both_tiling_rect(7 * tile_size, 7 * tile_size);
 
-  pile_->tiling().SetMaxTextureSize(tile_size);
-  pile_->SetTilingRect(base_tiling_rect);
-  UpdateWholePile();
+  Region invalidation;
+  Region expected_invalidation;
+
+  pile_->tiling().SetMaxTextureSize(gfx::Size(tile_size, tile_size));
+  SetTilingRect(base_tiling_rect);
 
   // We should have a recording for every tile.
   EXPECT_EQ(6, pile_->tiling().num_tiles_x());
@@ -404,8 +410,8 @@ TEST_F(PicturePileTest, ResizePile) {
     }
   }
 
-  UpdateWholePile();
-  pile_->SetTilingRect(grow_down_tiling_rect);
+  UpdateAndExpandInvalidation(
+      &invalidation, grow_down_tiling_rect, gfx::Rect(1, 1));
 
   // We should have lost the recordings in the bottom row.
   EXPECT_EQ(6, pile_->tiling().num_tiles_x());
@@ -419,8 +425,14 @@ TEST_F(PicturePileTest, ResizePile) {
     }
   }
 
+  // We invalidated the old bottom row.
+  expected_invalidation = gfx::UnionRects(pile_->tiling().TileBounds(0, 5),
+                                          pile_->tiling().TileBounds(5, 5));
+  EXPECT_EQ(expected_invalidation.ToString(), invalidation.ToString());
+  invalidation.Clear();
+
   UpdateWholePile();
-  pile_->SetTilingRect(base_tiling_rect);
+  UpdateAndExpandInvalidation(&invalidation, base_tiling_rect, gfx::Rect(1, 1));
 
   // We should have lost the recordings that are now outside the tiling only.
   EXPECT_EQ(6, pile_->tiling().num_tiles_x());
@@ -434,8 +446,14 @@ TEST_F(PicturePileTest, ResizePile) {
     }
   }
 
+  // No invalidation when shrinking.
+  expected_invalidation.Clear();
+  EXPECT_EQ(expected_invalidation.ToString(), invalidation.ToString());
+  invalidation.Clear();
+
   UpdateWholePile();
-  pile_->SetTilingRect(grow_right_tiling_rect);
+  UpdateAndExpandInvalidation(
+      &invalidation, grow_right_tiling_rect, gfx::Rect(1, 1));
 
   // We should have lost the recordings in the right column.
   EXPECT_EQ(8, pile_->tiling().num_tiles_x());
@@ -449,8 +467,14 @@ TEST_F(PicturePileTest, ResizePile) {
     }
   }
 
+  // We invalidated the old right column.
+  expected_invalidation = gfx::UnionRects(pile_->tiling().TileBounds(5, 0),
+                                          pile_->tiling().TileBounds(5, 5));
+  EXPECT_EQ(expected_invalidation.ToString(), invalidation.ToString());
+  invalidation.Clear();
+
   UpdateWholePile();
-  pile_->SetTilingRect(base_tiling_rect);
+  UpdateAndExpandInvalidation(&invalidation, base_tiling_rect, gfx::Rect(1, 1));
 
   // We should have lost the recordings that are now outside the tiling only.
   EXPECT_EQ(6, pile_->tiling().num_tiles_x());
@@ -464,8 +488,14 @@ TEST_F(PicturePileTest, ResizePile) {
     }
   }
 
+  // No invalidation when shrinking.
+  expected_invalidation.Clear();
+  EXPECT_EQ(expected_invalidation.ToString(), invalidation.ToString());
+  invalidation.Clear();
+
   UpdateWholePile();
-  pile_->SetTilingRect(grow_both_tiling_rect);
+  UpdateAndExpandInvalidation(
+      &invalidation, grow_both_tiling_rect, gfx::Rect(1, 1));
 
   // We should have lost the recordings in the right column and bottom row.
   EXPECT_EQ(8, pile_->tiling().num_tiles_x());
@@ -479,8 +509,16 @@ TEST_F(PicturePileTest, ResizePile) {
     }
   }
 
+  // We invalidated the old right column and the old bottom row.
+  expected_invalidation = gfx::UnionRects(pile_->tiling().TileBounds(5, 0),
+                                          pile_->tiling().TileBounds(5, 5));
+  expected_invalidation.Union(gfx::UnionRects(
+      pile_->tiling().TileBounds(0, 5), pile_->tiling().TileBounds(5, 5)));
+  EXPECT_EQ(expected_invalidation.ToString(), invalidation.ToString());
+  invalidation.Clear();
+
   UpdateWholePile();
-  pile_->SetTilingRect(base_tiling_rect);
+  UpdateAndExpandInvalidation(&invalidation, base_tiling_rect, gfx::Rect());
 
   // We should have lost the recordings that are now outside the tiling only.
   EXPECT_EQ(6, pile_->tiling().num_tiles_x());
@@ -493,18 +531,27 @@ TEST_F(PicturePileTest, ResizePile) {
       EXPECT_EQ(i < 6 && j < 6, it != map.end() && it->second.GetPicture());
     }
   }
+
+  // No invalidation when shrinking.
+  expected_invalidation.Clear();
+  EXPECT_EQ(expected_invalidation.ToString(), invalidation.ToString());
+  invalidation.Clear();
 }
 
-TEST_F(PicturePileTest, SmallResizePile) {
-  gfx::Size tile_size(100, 100);
-  gfx::Rect base_tiling_rect(5 * 100, 5 * 100);
-  gfx::Rect grow_down_tiling_rect(5 * 100, 5 * 100 + 5);
-  gfx::Rect grow_right_tiling_rect(5 * 100 + 5, 5 * 100);
-  gfx::Rect grow_both_tiling_rect(5 * 100 + 5, 5 * 100 + 5);
+TEST_F(PicturePileTest, SmallResizePileOutsideInterestRect) {
+  // This size chosen to be larger than the interest rect size, which is
+  // at least kPixelDistanceToRecord * 2 in each dimension.
+  int tile_size = 100000;
+  gfx::Rect base_tiling_rect(5 * tile_size, 5 * tile_size);
+  gfx::Rect grow_down_tiling_rect(5 * tile_size, 5 * tile_size + 5);
+  gfx::Rect grow_right_tiling_rect(5 * tile_size + 5, 5 * tile_size);
+  gfx::Rect grow_both_tiling_rect(5 * tile_size + 5, 5 * tile_size + 5);
 
-  pile_->tiling().SetMaxTextureSize(tile_size);
-  pile_->SetTilingRect(base_tiling_rect);
-  UpdateWholePile();
+  Region invalidation;
+  Region expected_invalidation;
+
+  pile_->tiling().SetMaxTextureSize(gfx::Size(tile_size, tile_size));
+  SetTilingRect(base_tiling_rect);
 
   // We should have a recording for every tile.
   EXPECT_EQ(6, pile_->tiling().num_tiles_x());
@@ -518,8 +565,8 @@ TEST_F(PicturePileTest, SmallResizePile) {
     }
   }
 
-  UpdateWholePile();
-  pile_->SetTilingRect(grow_down_tiling_rect);
+  UpdateAndExpandInvalidation(
+      &invalidation, grow_down_tiling_rect, gfx::Rect(1, 1));
 
   // We should have lost the recordings in the bottom row.
   EXPECT_EQ(6, pile_->tiling().num_tiles_x());
@@ -533,8 +580,14 @@ TEST_F(PicturePileTest, SmallResizePile) {
     }
   }
 
+  // We invalidated the bottom row.
+  expected_invalidation = gfx::UnionRects(pile_->tiling().TileBounds(0, 5),
+                                          pile_->tiling().TileBounds(5, 5));
+  EXPECT_EQ(expected_invalidation.ToString(), invalidation.ToString());
+  invalidation.Clear();
+
   UpdateWholePile();
-  pile_->SetTilingRect(base_tiling_rect);
+  UpdateAndExpandInvalidation(&invalidation, base_tiling_rect, gfx::Rect(1, 1));
 
   // We should have lost nothing.
   EXPECT_EQ(6, pile_->tiling().num_tiles_x());
@@ -548,8 +601,14 @@ TEST_F(PicturePileTest, SmallResizePile) {
     }
   }
 
+  // We invalidated nothing.
+  expected_invalidation.Clear();
+  EXPECT_EQ(expected_invalidation.ToString(), invalidation.ToString());
+  invalidation.Clear();
+
   UpdateWholePile();
-  pile_->SetTilingRect(grow_right_tiling_rect);
+  UpdateAndExpandInvalidation(
+      &invalidation, grow_right_tiling_rect, gfx::Rect(1, 1));
 
   // We should have lost the recordings in the right column.
   EXPECT_EQ(6, pile_->tiling().num_tiles_x());
@@ -563,8 +622,14 @@ TEST_F(PicturePileTest, SmallResizePile) {
     }
   }
 
+  // We invalidated the right column.
+  expected_invalidation = gfx::UnionRects(pile_->tiling().TileBounds(5, 0),
+                                          pile_->tiling().TileBounds(5, 5));
+  EXPECT_EQ(expected_invalidation.ToString(), invalidation.ToString());
+  invalidation.Clear();
+
   UpdateWholePile();
-  pile_->SetTilingRect(base_tiling_rect);
+  UpdateAndExpandInvalidation(&invalidation, base_tiling_rect, gfx::Rect(1, 1));
 
   // We should have lost nothing.
   EXPECT_EQ(6, pile_->tiling().num_tiles_x());
@@ -578,8 +643,14 @@ TEST_F(PicturePileTest, SmallResizePile) {
     }
   }
 
+  // We invalidated nothing.
+  expected_invalidation.Clear();
+  EXPECT_EQ(expected_invalidation.ToString(), invalidation.ToString());
+  invalidation.Clear();
+
   UpdateWholePile();
-  pile_->SetTilingRect(grow_both_tiling_rect);
+  UpdateAndExpandInvalidation(
+      &invalidation, grow_both_tiling_rect, gfx::Rect(1, 1));
 
   // We should have lost the recordings in the right column and bottom row.
   EXPECT_EQ(6, pile_->tiling().num_tiles_x());
@@ -593,8 +664,16 @@ TEST_F(PicturePileTest, SmallResizePile) {
     }
   }
 
+  // We invalidated the right column and the bottom row.
+  expected_invalidation = gfx::UnionRects(pile_->tiling().TileBounds(5, 0),
+                                          pile_->tiling().TileBounds(5, 5));
+  expected_invalidation.Union(gfx::UnionRects(
+      pile_->tiling().TileBounds(0, 5), pile_->tiling().TileBounds(5, 5)));
+  EXPECT_EQ(expected_invalidation.ToString(), invalidation.ToString());
+  invalidation.Clear();
+
   UpdateWholePile();
-  pile_->SetTilingRect(base_tiling_rect);
+  UpdateAndExpandInvalidation(&invalidation, base_tiling_rect, gfx::Rect(1, 1));
 
   // We should have lost nothing.
   EXPECT_EQ(6, pile_->tiling().num_tiles_x());
@@ -607,6 +686,320 @@ TEST_F(PicturePileTest, SmallResizePile) {
       EXPECT_TRUE(it != map.end() && it->second.GetPicture());
     }
   }
+
+  // We invalidated nothing.
+  expected_invalidation.Clear();
+  EXPECT_EQ(expected_invalidation.ToString(), invalidation.ToString());
+  invalidation.Clear();
+}
+
+TEST_F(PicturePileTest, ResizePileInsideInterestRect) {
+  // This size chosen to be small enough that all the rects below fit inside the
+  // the interest rect, so they are smaller than kPixelDistanceToRecord in each
+  // dimension.
+  int tile_size = 100;
+  gfx::Rect base_tiling_rect(5 * tile_size, 5 * tile_size);
+  gfx::Rect grow_down_tiling_rect(5 * tile_size, 7 * tile_size);
+  gfx::Rect grow_right_tiling_rect(7 * tile_size, 5 * tile_size);
+  gfx::Rect grow_both_tiling_rect(7 * tile_size, 7 * tile_size);
+
+  Region invalidation;
+  Region expected_invalidation;
+
+  pile_->tiling().SetMaxTextureSize(gfx::Size(tile_size, tile_size));
+  SetTilingRect(base_tiling_rect);
+
+  // We should have a recording for every tile.
+  EXPECT_EQ(6, pile_->tiling().num_tiles_x());
+  EXPECT_EQ(6, pile_->tiling().num_tiles_y());
+  for (int i = 0; i < pile_->tiling().num_tiles_x(); ++i) {
+    for (int j = 0; j < pile_->tiling().num_tiles_y(); ++j) {
+      TestPicturePile::PictureMapKey key(i, j);
+      TestPicturePile::PictureMap& map = pile_->picture_map();
+      TestPicturePile::PictureMap::iterator it = map.find(key);
+      EXPECT_TRUE(it != map.end() && it->second.GetPicture());
+    }
+  }
+
+  UpdateAndExpandInvalidation(
+      &invalidation, grow_down_tiling_rect, gfx::Rect(1, 1));
+
+  // We should have a recording for every tile.
+  EXPECT_EQ(6, pile_->tiling().num_tiles_x());
+  EXPECT_EQ(8, pile_->tiling().num_tiles_y());
+  for (int i = 0; i < pile_->tiling().num_tiles_x(); ++i) {
+    for (int j = 0; j < pile_->tiling().num_tiles_y(); ++j) {
+      TestPicturePile::PictureMapKey key(i, j);
+      TestPicturePile::PictureMap& map = pile_->picture_map();
+      TestPicturePile::PictureMap::iterator it = map.find(key);
+      EXPECT_TRUE(it != map.end() && it->second.GetPicture());
+    }
+  }
+
+  // We invalidated the newly exposed pixels on the bottom row of tiles.
+  expected_invalidation = gfx::UnionRects(pile_->tiling().TileBounds(0, 5),
+                                          pile_->tiling().TileBounds(5, 5));
+  expected_invalidation.Subtract(base_tiling_rect);
+  EXPECT_EQ(expected_invalidation.ToString(), invalidation.ToString());
+  invalidation.Clear();
+
+  UpdateWholePile();
+  UpdateAndExpandInvalidation(&invalidation, base_tiling_rect, gfx::Rect(1, 1));
+
+  // We should have a recording for every tile.
+  EXPECT_EQ(6, pile_->tiling().num_tiles_x());
+  EXPECT_EQ(6, pile_->tiling().num_tiles_y());
+  for (int i = 0; i < pile_->tiling().num_tiles_x(); ++i) {
+    for (int j = 0; j < pile_->tiling().num_tiles_y(); ++j) {
+      TestPicturePile::PictureMapKey key(i, j);
+      TestPicturePile::PictureMap& map = pile_->picture_map();
+      TestPicturePile::PictureMap::iterator it = map.find(key);
+      EXPECT_TRUE(it != map.end() && it->second.GetPicture());
+    }
+  }
+
+  // No invalidation when shrinking.
+  EXPECT_EQ(Region().ToString(), invalidation.ToString());
+  invalidation.Clear();
+
+  UpdateWholePile();
+  UpdateAndExpandInvalidation(
+      &invalidation, grow_right_tiling_rect, gfx::Rect(1, 1));
+
+  // We should have a recording for every tile.
+  EXPECT_EQ(8, pile_->tiling().num_tiles_x());
+  EXPECT_EQ(6, pile_->tiling().num_tiles_y());
+  for (int i = 0; i < pile_->tiling().num_tiles_x(); ++i) {
+    for (int j = 0; j < pile_->tiling().num_tiles_y(); ++j) {
+      TestPicturePile::PictureMapKey key(i, j);
+      TestPicturePile::PictureMap& map = pile_->picture_map();
+      TestPicturePile::PictureMap::iterator it = map.find(key);
+      EXPECT_TRUE(it != map.end() && it->second.GetPicture());
+    }
+  }
+
+  // We invalidated the newly exposed pixels on the right column of tiles.
+  expected_invalidation = gfx::UnionRects(pile_->tiling().TileBounds(5, 0),
+                                          pile_->tiling().TileBounds(5, 5));
+  expected_invalidation.Subtract(base_tiling_rect);
+  EXPECT_EQ(expected_invalidation.ToString(), invalidation.ToString());
+  invalidation.Clear();
+
+  UpdateWholePile();
+  UpdateAndExpandInvalidation(&invalidation, base_tiling_rect, gfx::Rect(1, 1));
+
+  // We should have lost the recordings that are now outside the tiling only.
+  EXPECT_EQ(6, pile_->tiling().num_tiles_x());
+  EXPECT_EQ(6, pile_->tiling().num_tiles_y());
+  for (int i = 0; i < pile_->tiling().num_tiles_x(); ++i) {
+    for (int j = 0; j < pile_->tiling().num_tiles_y(); ++j) {
+      TestPicturePile::PictureMapKey key(i, j);
+      TestPicturePile::PictureMap& map = pile_->picture_map();
+      TestPicturePile::PictureMap::iterator it = map.find(key);
+      EXPECT_TRUE(it != map.end() && it->second.GetPicture());
+    }
+  }
+
+  // No invalidation when shrinking.
+  EXPECT_EQ(Region().ToString(), invalidation.ToString());
+  invalidation.Clear();
+
+  UpdateWholePile();
+  UpdateAndExpandInvalidation(
+      &invalidation, grow_both_tiling_rect, gfx::Rect(1, 1));
+
+  // We should have a recording for every tile.
+  EXPECT_EQ(8, pile_->tiling().num_tiles_x());
+  EXPECT_EQ(8, pile_->tiling().num_tiles_y());
+  for (int i = 0; i < pile_->tiling().num_tiles_x(); ++i) {
+    for (int j = 0; j < pile_->tiling().num_tiles_y(); ++j) {
+      TestPicturePile::PictureMapKey key(i, j);
+      TestPicturePile::PictureMap& map = pile_->picture_map();
+      TestPicturePile::PictureMap::iterator it = map.find(key);
+      EXPECT_TRUE(it != map.end() && it->second.GetPicture());
+    }
+  }
+
+  // We invalidated the newly exposed pixels on the bottom row and right column
+  // of tiles.
+  expected_invalidation =
+      UnionRegions(gfx::UnionRects(pile_->tiling().TileBounds(5, 0),
+                                   pile_->tiling().TileBounds(5, 5)),
+                   gfx::UnionRects(pile_->tiling().TileBounds(0, 5),
+                                   pile_->tiling().TileBounds(5, 5)));
+  expected_invalidation.Subtract(base_tiling_rect);
+  EXPECT_EQ(expected_invalidation.ToString(), invalidation.ToString());
+  invalidation.Clear();
+
+  UpdateWholePile();
+  UpdateAndExpandInvalidation(&invalidation, base_tiling_rect, gfx::Rect());
+
+  // We should have lost the recordings that are now outside the tiling only.
+  EXPECT_EQ(6, pile_->tiling().num_tiles_x());
+  EXPECT_EQ(6, pile_->tiling().num_tiles_y());
+  for (int i = 0; i < pile_->tiling().num_tiles_x(); ++i) {
+    for (int j = 0; j < pile_->tiling().num_tiles_y(); ++j) {
+      TestPicturePile::PictureMapKey key(i, j);
+      TestPicturePile::PictureMap& map = pile_->picture_map();
+      TestPicturePile::PictureMap::iterator it = map.find(key);
+      EXPECT_TRUE(it != map.end() && it->second.GetPicture());
+    }
+  }
+
+  // No invalidation when shrinking.
+  EXPECT_EQ(Region().ToString(), invalidation.ToString());
+  invalidation.Clear();
+}
+
+TEST_F(PicturePileTest, SmallResizePileInsideInterestRect) {
+  // This size chosen to be small enough that all the rects below fit inside the
+  // the interest rect, so they are smaller than kPixelDistanceToRecord in each
+  // dimension.
+  int tile_size = 100;
+  gfx::Rect base_tiling_rect(5 * tile_size, 5 * tile_size);
+  gfx::Rect grow_down_tiling_rect(5 * tile_size, 5 * tile_size + 5);
+  gfx::Rect grow_right_tiling_rect(5 * tile_size + 5, 5 * tile_size);
+  gfx::Rect grow_both_tiling_rect(5 * tile_size + 5, 5 * tile_size + 5);
+
+  Region invalidation;
+  Region expected_invalidation;
+
+  pile_->tiling().SetMaxTextureSize(gfx::Size(tile_size, tile_size));
+  SetTilingRect(base_tiling_rect);
+
+  // We should have a recording for every tile.
+  EXPECT_EQ(6, pile_->tiling().num_tiles_x());
+  EXPECT_EQ(6, pile_->tiling().num_tiles_y());
+  for (int i = 0; i < pile_->tiling().num_tiles_x(); ++i) {
+    for (int j = 0; j < pile_->tiling().num_tiles_y(); ++j) {
+      TestPicturePile::PictureMapKey key(i, j);
+      TestPicturePile::PictureMap& map = pile_->picture_map();
+      TestPicturePile::PictureMap::iterator it = map.find(key);
+      EXPECT_TRUE(it != map.end() && it->second.GetPicture());
+    }
+  }
+
+  UpdateAndExpandInvalidation(
+      &invalidation, grow_down_tiling_rect, gfx::Rect(1, 1));
+
+  // We should have a recording for every tile.
+  EXPECT_EQ(6, pile_->tiling().num_tiles_x());
+  EXPECT_EQ(6, pile_->tiling().num_tiles_y());
+  for (int i = 0; i < pile_->tiling().num_tiles_x(); ++i) {
+    for (int j = 0; j < pile_->tiling().num_tiles_y(); ++j) {
+      TestPicturePile::PictureMapKey key(i, j);
+      TestPicturePile::PictureMap& map = pile_->picture_map();
+      TestPicturePile::PictureMap::iterator it = map.find(key);
+      EXPECT_TRUE(it != map.end() && it->second.GetPicture());
+    }
+  }
+
+  // We invalidated the newly exposed pixels.
+  expected_invalidation =
+      SubtractRegions(grow_down_tiling_rect, base_tiling_rect);
+  EXPECT_EQ(expected_invalidation.ToString(), invalidation.ToString());
+  invalidation.Clear();
+
+  UpdateWholePile();
+  UpdateAndExpandInvalidation(&invalidation, base_tiling_rect, gfx::Rect(1, 1));
+
+  // We should have a recording for every tile.
+  EXPECT_EQ(6, pile_->tiling().num_tiles_x());
+  EXPECT_EQ(6, pile_->tiling().num_tiles_y());
+  for (int i = 0; i < pile_->tiling().num_tiles_x(); ++i) {
+    for (int j = 0; j < pile_->tiling().num_tiles_y(); ++j) {
+      TestPicturePile::PictureMapKey key(i, j);
+      TestPicturePile::PictureMap& map = pile_->picture_map();
+      TestPicturePile::PictureMap::iterator it = map.find(key);
+      EXPECT_TRUE(it != map.end() && it->second.GetPicture());
+    }
+  }
+
+  // No invalidation when shrinking.
+  EXPECT_EQ(Region().ToString(), invalidation.ToString());
+  invalidation.Clear();
+
+  UpdateWholePile();
+  UpdateAndExpandInvalidation(
+      &invalidation, grow_right_tiling_rect, gfx::Rect(1, 1));
+
+  // We should have a recording for every tile.
+  EXPECT_EQ(6, pile_->tiling().num_tiles_x());
+  EXPECT_EQ(6, pile_->tiling().num_tiles_y());
+  for (int i = 0; i < pile_->tiling().num_tiles_x(); ++i) {
+    for (int j = 0; j < pile_->tiling().num_tiles_y(); ++j) {
+      TestPicturePile::PictureMapKey key(i, j);
+      TestPicturePile::PictureMap& map = pile_->picture_map();
+      TestPicturePile::PictureMap::iterator it = map.find(key);
+      EXPECT_TRUE(it != map.end() && it->second.GetPicture());
+    }
+  }
+
+  // We invalidated the newly exposed pixels.
+  expected_invalidation =
+      SubtractRegions(grow_right_tiling_rect, base_tiling_rect);
+  EXPECT_EQ(expected_invalidation.ToString(), invalidation.ToString());
+  invalidation.Clear();
+
+  UpdateWholePile();
+  UpdateAndExpandInvalidation(&invalidation, base_tiling_rect, gfx::Rect(1, 1));
+
+  // We should have lost the recordings that are now outside the tiling only.
+  EXPECT_EQ(6, pile_->tiling().num_tiles_x());
+  EXPECT_EQ(6, pile_->tiling().num_tiles_y());
+  for (int i = 0; i < pile_->tiling().num_tiles_x(); ++i) {
+    for (int j = 0; j < pile_->tiling().num_tiles_y(); ++j) {
+      TestPicturePile::PictureMapKey key(i, j);
+      TestPicturePile::PictureMap& map = pile_->picture_map();
+      TestPicturePile::PictureMap::iterator it = map.find(key);
+      EXPECT_TRUE(it != map.end() && it->second.GetPicture());
+    }
+  }
+
+  // No invalidation when shrinking.
+  EXPECT_EQ(Region().ToString(), invalidation.ToString());
+  invalidation.Clear();
+
+  UpdateWholePile();
+  UpdateAndExpandInvalidation(
+      &invalidation, grow_both_tiling_rect, gfx::Rect(1, 1));
+
+  // We should have a recording for every tile.
+  EXPECT_EQ(6, pile_->tiling().num_tiles_x());
+  EXPECT_EQ(6, pile_->tiling().num_tiles_y());
+  for (int i = 0; i < pile_->tiling().num_tiles_x(); ++i) {
+    for (int j = 0; j < pile_->tiling().num_tiles_y(); ++j) {
+      TestPicturePile::PictureMapKey key(i, j);
+      TestPicturePile::PictureMap& map = pile_->picture_map();
+      TestPicturePile::PictureMap::iterator it = map.find(key);
+      EXPECT_TRUE(it != map.end() && it->second.GetPicture());
+    }
+  }
+
+  // We invalidated the newly exposed pixels.
+  expected_invalidation =
+      SubtractRegions(grow_both_tiling_rect, base_tiling_rect);
+  EXPECT_EQ(expected_invalidation.ToString(), invalidation.ToString());
+  invalidation.Clear();
+
+  UpdateWholePile();
+  UpdateAndExpandInvalidation(&invalidation, base_tiling_rect, gfx::Rect());
+
+  // We should have lost the recordings that are now outside the tiling only.
+  EXPECT_EQ(6, pile_->tiling().num_tiles_x());
+  EXPECT_EQ(6, pile_->tiling().num_tiles_y());
+  for (int i = 0; i < pile_->tiling().num_tiles_x(); ++i) {
+    for (int j = 0; j < pile_->tiling().num_tiles_y(); ++j) {
+      TestPicturePile::PictureMapKey key(i, j);
+      TestPicturePile::PictureMap& map = pile_->picture_map();
+      TestPicturePile::PictureMap::iterator it = map.find(key);
+      EXPECT_TRUE(it != map.end() && it->second.GetPicture());
+    }
+  }
+
+  // No invalidation when shrinking.
+  EXPECT_EQ(Region().ToString(), invalidation.ToString());
+  invalidation.Clear();
 }
 
 }  // namespace

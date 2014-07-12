@@ -190,7 +190,8 @@ class PictureLayerTilingIteratorTest : public testing::Test {
 };
 
 TEST_F(PictureLayerTilingIteratorTest, ResizeDeletesTiles) {
-  // Verifies that a resize deletes tiles that used to be on the edge.
+  // Verifies that a resize with invalidation for newly exposed pixels will
+  // deletes tiles that intersect that invalidation.
   gfx::Size tile_size(100, 100);
   gfx::Size original_layer_size(10, 10);
   Initialize(tile_size, 1.f, original_layer_size);
@@ -202,8 +203,35 @@ TEST_F(PictureLayerTilingIteratorTest, ResizeDeletesTiles) {
   // Stop creating tiles so that any invalidations are left as holes.
   client_.set_allow_create_tile(false);
 
-  tiling_->SetLayerBounds(gfx::Size(200, 200));
+  Region invalidation =
+      SubtractRegions(gfx::Rect(tile_size), gfx::Rect(original_layer_size));
+  tiling_->UpdateTilesToCurrentPile(invalidation, gfx::Size(200, 200));
   EXPECT_FALSE(tiling_->TileAt(0, 0));
+}
+
+TEST_F(PictureLayerTilingIteratorTest, ResizeOverBorderPixelsDeletesTiles) {
+  // Verifies that a resize with invalidation for newly exposed pixels will
+  // deletes tiles that intersect that invalidation.
+  gfx::Size tile_size(100, 100);
+  gfx::Size original_layer_size(99, 99);
+  Initialize(tile_size, 1.f, original_layer_size);
+  SetLiveRectAndVerifyTiles(gfx::Rect(original_layer_size));
+
+  // Tiling only has one tile, since its total size is less than one.
+  EXPECT_TRUE(tiling_->TileAt(0, 0));
+
+  // Stop creating tiles so that any invalidations are left as holes.
+  client_.set_allow_create_tile(false);
+
+  Region invalidation =
+      SubtractRegions(gfx::Rect(tile_size), gfx::Rect(original_layer_size));
+  tiling_->UpdateTilesToCurrentPile(invalidation, gfx::Size(200, 200));
+  EXPECT_FALSE(tiling_->TileAt(0, 0));
+
+  // The original tile was the same size after resize, but it would include new
+  // border pixels.
+  EXPECT_EQ(gfx::Rect(original_layer_size),
+            tiling_->TilingDataForTesting().TileBounds(0, 0));
 }
 
 TEST_F(PictureLayerTilingIteratorTest, LiveTilesExactlyCoverLiveTileRect) {

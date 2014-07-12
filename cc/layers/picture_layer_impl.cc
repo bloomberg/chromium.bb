@@ -108,10 +108,6 @@ void PictureLayerImpl::PushPropertiesTo(LayerImpl* base_layer) {
   // Tilings would be expensive to push, so we swap.
   layer_impl->tilings_.swap(tilings_);
 
-  // Ensure that we don't have any tiles that are out of date.
-  if (tilings_)
-    tilings_->RemoveTilesInRegion(invalidation_);
-
   layer_impl->tilings_->SetClient(layer_impl);
   if (tilings_)
     tilings_->SetClient(this);
@@ -676,15 +672,20 @@ void PictureLayerImpl::SyncFromActiveLayer(const PictureLayerImpl* other) {
   raster_contents_scale_ = other->raster_contents_scale_;
   low_res_raster_contents_scale_ = other->low_res_raster_contents_scale_;
 
-  // Union in the other newly exposed regions as invalid.
-  Region difference_region = Region(gfx::Rect(bounds()));
-  difference_region.Subtract(gfx::Rect(other->bounds()));
-  invalidation_.Union(difference_region);
+  // The tilings on this layer were swapped here from the active layer on
+  // activation, so they have not seen the invalidation that was given to
+  // the active layer. So union that invalidation in here, but don't save
+  // it and pass it back to the active layer again.
+  Region invalidation_from_pending_and_active =
+      UnionRegions(invalidation_, other->invalidation_);
 
   bool synced_high_res_tiling = false;
   if (CanHaveTilings()) {
-    synced_high_res_tiling = tilings_->SyncTilings(
-        *other->tilings_, bounds(), invalidation_, MinimumContentsScale());
+    synced_high_res_tiling =
+        tilings_->SyncTilings(*other->tilings_,
+                              bounds(),
+                              invalidation_from_pending_and_active,
+                              MinimumContentsScale());
   } else {
     RemoveAllTilings();
   }

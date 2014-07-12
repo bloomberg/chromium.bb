@@ -69,12 +69,8 @@ bool PictureLayerTilingSet::SyncTilings(const PictureLayerTilingSet& other,
     if (PictureLayerTiling* this_tiling = TilingAtScale(contents_scale)) {
       this_tiling->set_resolution(other.tilings_[i]->resolution());
 
-      // These two calls must come before updating the pile, because they may
-      // destroy tiles that the new pile cannot raster.
-      this_tiling->SetLayerBounds(new_layer_bounds);
-      this_tiling->Invalidate(layer_invalidation);
-
-      this_tiling->UpdateTilesToCurrentPile();
+      this_tiling->UpdateTilesToCurrentPile(layer_invalidation,
+                                            new_layer_bounds);
       this_tiling->CreateMissingTilesInLiveTilesRect();
       if (this_tiling->resolution() == HIGH_RESOLUTION)
         have_high_res_tiling = true;
@@ -96,11 +92,6 @@ bool PictureLayerTilingSet::SyncTilings(const PictureLayerTilingSet& other,
 
   layer_bounds_ = new_layer_bounds;
   return have_high_res_tiling;
-}
-
-void PictureLayerTilingSet::RemoveTilesInRegion(const Region& region) {
-  for (size_t i = 0; i < tilings_.size(); ++i)
-    tilings_[i]->RemoveTilesInRegion(region);
 }
 
 PictureLayerTiling* PictureLayerTilingSet::AddTiling(float contents_scale) {

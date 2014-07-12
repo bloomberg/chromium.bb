@@ -92,50 +92,6 @@ PicturePileBase::PicturePileBase(const PicturePileBase* other,
 PicturePileBase::~PicturePileBase() {
 }
 
-void PicturePileBase::SetTilingRect(const gfx::Rect& new_tiling_rect) {
-  if (tiling_rect() == new_tiling_rect)
-    return;
-
-  gfx::Rect old_tiling_rect = tiling_rect();
-  tiling_.SetTilingRect(new_tiling_rect);
-
-  has_any_recordings_ = false;
-
-  // Don't waste time in Resize figuring out what these hints should be.
-  recorded_viewport_ = gfx::Rect();
-
-  if (new_tiling_rect.origin() != old_tiling_rect.origin()) {
-    picture_map_.clear();
-    return;
-  }
-
-  // Find all tiles that contain any pixels outside the new rect.
-  std::vector<PictureMapKey> to_erase;
-  int min_toss_x = tiling_.num_tiles_x();
-  if (new_tiling_rect.right() > old_tiling_rect.right()) {
-    min_toss_x =
-        tiling_.FirstBorderTileXIndexFromSrcCoord(old_tiling_rect.right());
-  }
-  int min_toss_y = tiling_.num_tiles_y();
-  if (new_tiling_rect.bottom() > old_tiling_rect.bottom()) {
-    min_toss_y =
-        tiling_.FirstBorderTileYIndexFromSrcCoord(old_tiling_rect.bottom());
-  }
-  for (PictureMap::const_iterator it = picture_map_.begin();
-       it != picture_map_.end();
-       ++it) {
-    const PictureMapKey& key = it->first;
-    if (key.first < min_toss_x && key.second < min_toss_y) {
-      has_any_recordings_ |= !!it->second.GetPicture();
-      continue;
-    }
-    to_erase.push_back(key);
-  }
-
-  for (size_t i = 0; i < to_erase.size(); ++i)
-    picture_map_.erase(to_erase[i]);
-}
-
 void PicturePileBase::SetMinContentsScale(float min_contents_scale) {
   DCHECK(min_contents_scale);
   if (min_contents_scale_ == min_contents_scale)

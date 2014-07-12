@@ -230,7 +230,10 @@ class PictureLayerTilingSetSyncTest : public testing::Test {
       ASSERT_TRUE(!!tile);
       EXPECT_EQ(tile->picture_pile(), pile);
       EXPECT_TRUE(tile->content_rect().Intersects(tiling->live_tiles_rect()))
-          << "All tiles must be inside the live tiles rect.";
+          << "All tiles must be inside the live tiles rect."
+          << " Tile rect: " << tile->content_rect().ToString()
+          << " Live rect: " << tiling->live_tiles_rect().ToString()
+          << " Scale: " << tiling->contents_scale();
     }
 
     for (PictureLayerTiling::CoverageIterator iter(

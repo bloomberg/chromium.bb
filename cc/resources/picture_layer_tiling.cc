@@ -138,50 +138,47 @@ void PictureLayerTiling::CreateMissingTilesInLiveTilesRect() {
   }
 }
 
-void PictureLayerTiling::SetLayerBounds(const gfx::Size& layer_bounds) {
-  if (layer_bounds_ == layer_bounds)
-    return;
-
-  DCHECK(!layer_bounds.IsEmpty());
+void PictureLayerTiling::UpdateTilesToCurrentPile(
+    const Region& layer_invalidation,
+    const gfx::Size& new_layer_bounds) {
+  DCHECK(!new_layer_bounds.IsEmpty());
 
   gfx::Size old_layer_bounds = layer_bounds_;
-  layer_bounds_ = layer_bounds;
+  layer_bounds_ = new_layer_bounds;
+
   gfx::Size content_bounds =
       gfx::ToCeiledSize(gfx::ScaleSize(layer_bounds_, contents_scale_));
+  gfx::Size tile_size = tiling_data_.max_texture_size();
 
-  gfx::Size tile_size = client_->CalculateTileSize(content_bounds);
-  if (tile_size != tiling_data_.max_texture_size()) {
+  if (layer_bounds_ != old_layer_bounds) {
+    // Drop tiles outside the new layer bounds if the layer shrank.
+    SetLiveTilesRect(
+        gfx::IntersectRects(live_tiles_rect_, gfx::Rect(content_bounds)));
     tiling_data_.SetTilingRect(gfx::Rect(content_bounds));
-    tiling_data_.SetMaxTextureSize(tile_size);
-    Reset();
-    return;
+    tile_size = client_->CalculateTileSize(content_bounds);
   }
 
-  // Any tiles outside our new bounds are invalid and should be dropped.
-  gfx::Rect bounded_live_tiles_rect(live_tiles_rect_);
-  bounded_live_tiles_rect.Intersect(gfx::Rect(content_bounds));
-  SetLiveTilesRect(bounded_live_tiles_rect);
-  tiling_data_.SetTilingRect(gfx::Rect(content_bounds));
+  if (tile_size != tiling_data_.max_texture_size()) {
+    tiling_data_.SetMaxTextureSize(tile_size);
+    // When the tile size changes, the TilingData positions no longer work
+    // as valid keys to the TileMap, so just drop all tiles.
+    Reset();
+  } else {
+    Invalidate(layer_invalidation);
+  }
 
-  // Create tiles for newly exposed areas.
-  Region layer_region((gfx::Rect(layer_bounds_)));
-  layer_region.Subtract(gfx::Rect(old_layer_bounds));
-  Invalidate(layer_region);
-}
-
-void PictureLayerTiling::RemoveTilesInRegion(const Region& layer_region) {
-  DoInvalidate(layer_region, false /* recreate_tiles */);
+  PicturePileImpl* pile = client_->GetPile();
+  for (TileMap::const_iterator it = tiles_.begin(); it != tiles_.end(); ++it)
+    it->second->set_picture_pile(pile);
 }
 
 void PictureLayerTiling::Invalidate(const Region& layer_region) {
-  DoInvalidate(layer_region, true /* recreate_tiles */);
-}
-
-void PictureLayerTiling::DoInvalidate(const Region& layer_region,
-                                      bool recreate_tiles) {
   std::vector<TileMapKey> new_tile_keys;
-  gfx::Rect expanded_live_tiles_rect(
-      tiling_data_.ExpandRectToTileBoundsWithBorders(live_tiles_rect_));
+  // TODO(danakj): What we really want is to ignore border pixels that intersect
+  // the rect when choosing which tiles it covers, then expand to those tiles
+  // plus their border pixels.
+  gfx::Rect expanded_live_tiles_rect =
+      tiling_data_.ExpandRectToTileBounds(live_tiles_rect_);
   for (Region::Iterator iter(layer_region); iter.has_rect(); iter.next()) {
     gfx::Rect layer_rect = iter.rect();
     gfx::Rect content_rect =
@@ -201,15 +198,17 @@ void PictureLayerTiling::DoInvalidate(const Region& layer_region,
       if (find == tiles_.end())
         continue;
       tiles_.erase(find);
-      if (recreate_tiles)
-        new_tile_keys.push_back(key);
+      new_tile_keys.push_back(key);
     }
   }
 
-  if (recreate_tiles) {
-    const PictureLayerTiling* twin_tiling = client_->GetTwinTiling(this);
-    for (size_t i = 0; i < new_tile_keys.size(); ++i)
+  if (!new_tile_keys.empty()) {
+    for (size_t i = 0; i < new_tile_keys.size(); ++i) {
+      // Don't try to share a tile with the twin layer, it's been invalidated so
+      // we have to make our own tile here.
+      PictureLayerTiling* twin_tiling = NULL;
       CreateTile(new_tile_keys[i].first, new_tile_keys[i].second, twin_tiling);
+    }
   }
 }
 
@@ -619,13 +618,6 @@ void PictureLayerTiling::DidBecomeActive() {
     // corresponding PictureLayerImpl and any in flight raster jobs go out of
     // scope.
     it->second->set_picture_pile(active_pile);
-  }
-}
-
-void PictureLayerTiling::UpdateTilesToCurrentPile() {
-  PicturePileImpl* pile = client_->GetPile();
-  for (TileMap::const_iterator it = tiles_.begin(); it != tiles_.end(); ++it) {
-    it->second->set_picture_pile(pile);
   }
 }
 

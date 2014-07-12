@@ -39,7 +39,8 @@ class PictureLayerTilingPerfTest : public testing::Test {
   void RunInvalidateTest(const std::string& test_name, const Region& region) {
     timer_.Reset();
     do {
-      picture_layer_tiling_->Invalidate(region);
+      picture_layer_tiling_->UpdateTilesToCurrentPile(
+          region, picture_layer_tiling_->TilingRect().size());
       timer_.NextLap();
     } while (!timer_.HasTimeLimitExpired());
 

@@ -28,10 +28,13 @@ class CC_EXPORT PicturePile : public PicturePileBase {
       SkColor background_color,
       bool contents_opaque,
       bool contents_fill_bounds_completely,
+      const gfx::Rect& layer_bounds_rect,
       const gfx::Rect& visible_layer_rect,
       int frame_number,
       Picture::RecordingMode recording_mode,
       RenderingStatsInstrumentation* stats_instrumentation);
+
+  void SetEmptyBounds();
 
   void set_slow_down_raster_scale_factor(int factor) {
     slow_down_raster_scale_factor_for_debug_ = factor;

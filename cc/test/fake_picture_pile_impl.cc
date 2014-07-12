@@ -63,7 +63,6 @@ FakePicturePileImpl::CreateInfiniteFilledPile() {
   scoped_refptr<FakePicturePileImpl> pile(new FakePicturePileImpl());
   gfx::Size size(std::numeric_limits<int>::max(),
                  std::numeric_limits<int>::max());
-  pile->SetTilingRect(gfx::Rect(size));
   pile->tiling().SetTilingRect(gfx::Rect(size));
   pile->tiling().SetMaxTextureSize(size);
   pile->SetTileGridSize(size);

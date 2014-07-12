@@ -127,9 +127,8 @@ class CC_EXPORT PictureLayerTiling {
       const gfx::Size& layer_bounds,
       PictureLayerTilingClient* client);
   gfx::Size layer_bounds() const { return layer_bounds_; }
-  void SetLayerBounds(const gfx::Size& layer_bounds);
-  void Invalidate(const Region& layer_region);
-  void RemoveTilesInRegion(const Region& layer_region);
+  void UpdateTilesToCurrentPile(const Region& layer_invalidation,
+                                const gfx::Size& new_layer_bounds);
   void CreateMissingTilesInLiveTilesRect();
 
   void SetClient(PictureLayerTilingClient* client);
@@ -149,6 +148,8 @@ class CC_EXPORT PictureLayerTiling {
   void CreateAllTilesForTesting() {
     SetLiveTilesRect(tiling_data_.tiling_rect());
   }
+
+  const TilingData& TilingDataForTesting() const { return tiling_data_; }
 
   std::vector<Tile*> AllTilesForTesting() const {
     std::vector<Tile*> all_tiles;
@@ -230,8 +231,6 @@ class CC_EXPORT PictureLayerTiling {
   // while DidBecomeActive promotes pending priority on a similar set of tiles.
   void DidBecomeRecycled();
 
-  void UpdateTilesToCurrentPile();
-
   bool NeedsUpdateForFrameAtTime(double frame_time_in_seconds) {
     return frame_time_in_seconds != last_impl_frame_time_in_seconds_;
   }
@@ -282,7 +281,7 @@ class CC_EXPORT PictureLayerTiling {
       const;
 
   void UpdateEvictionCacheIfNeeded(TreePriority tree_priority);
-  void DoInvalidate(const Region& layer_region, bool recreate_tiles);
+  void Invalidate(const Region& layer_region);
 
   // Given properties.
   float contents_scale_;

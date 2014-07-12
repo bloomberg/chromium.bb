@@ -109,7 +109,9 @@ class CC_EXPORT Tile : public RefCountedManaged<Tile> {
   int source_frame_number() const { return source_frame_number_; }
 
   void set_picture_pile(scoped_refptr<PicturePileImpl> pile) {
-    DCHECK(pile->CanRaster(contents_scale_, content_rect_));
+    DCHECK(pile->CanRaster(contents_scale_, content_rect_))
+        << gfx::ScaleToEnclosingRect(content_rect_, 1.f / contents_scale_)
+               .ToString();
     picture_pile_ = pile;
   }
 
