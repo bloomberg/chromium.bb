@@ -116,6 +116,12 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
   // to destruction.
   virtual void WillDestroy() {}
 
+  // This method is to be implemented by the derived class. It determines
+  // whether the guest view type of the derived class can be used by the
+  // provided embedder extension ID.
+  virtual bool CanEmbedderUseGuestView(
+      const std::string& embedder_extension_id) = 0;
+
   // This method is to be implemented by the derived class. Given a set of
   // initialization parameters, a concrete subclass of GuestViewBase can
   // create a specialized WebContents that it returns back to GuestViewBase.

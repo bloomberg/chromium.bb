@@ -83,6 +83,8 @@ class WebViewGuest : public GuestView<WebViewGuest>,
   void SetZoom(double zoom_factor);
 
   // GuestViewBase implementation.
+  virtual bool CanEmbedderUseGuestView(
+      const std::string& embedder_extension_id) OVERRIDE;
   virtual void CreateWebContents(
       const std::string& embedder_extension_id,
       int embedder_render_process_id,

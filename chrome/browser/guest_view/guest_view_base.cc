@@ -101,6 +101,11 @@ void GuestViewBase::Init(
     return;
   initialized_ = true;
 
+  if (!CanEmbedderUseGuestView(embedder_extension_id)) {
+    callback.Run(NULL);
+    return;
+  }
+
   CreateWebContents(embedder_extension_id,
                     embedder_render_process_id,
                     create_params,

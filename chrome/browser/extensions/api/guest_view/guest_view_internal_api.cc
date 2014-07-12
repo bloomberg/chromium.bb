@@ -12,12 +12,6 @@
 #include "content/public/browser/render_view_host.h"
 #include "extensions/common/permissions/permissions_data.h"
 
-namespace {
-const char* kPermissionRequiredError =
-    "\"webview\" or \"appview\" permission is required for allocating "
-    "instance ID.";
-}  // namespace
-
 namespace extensions {
 
 GuestViewInternalCreateGuestFunction::
@@ -30,15 +24,6 @@ bool GuestViewInternalCreateGuestFunction::RunAsync() {
 
   base::DictionaryValue* create_params;
   EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(1, &create_params));
-
-  const PermissionsData* permissions_data = GetExtension()->permissions_data();
-  if (!permissions_data->HasAPIPermission(APIPermission::kWebView) &&
-      !permissions_data->HasAPIPermission(APIPermission::kAppView)) {
-    LOG(ERROR) << kPermissionRequiredError;
-    error_ = kPermissionRequiredError;
-    SendResponse(false);
-    return true;
-  }
 
   GuestViewManager* guest_view_manager =
       GuestViewManager::FromBrowserContext(browser_context());

@@ -11,6 +11,7 @@
 #include "chrome/browser/extensions/api/web_request/web_request_api.h"
 #include "chrome/browser/extensions/api/web_view/web_view_internal_api.h"
 #include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/menu_manager.h"
 #include "chrome/browser/extensions/script_executor.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
@@ -48,7 +49,9 @@
 #include "content/public/common/result_codes.h"
 #include "content/public/common/stop_find_action.h"
 #include "content/public/common/url_constants.h"
+#include "extensions/browser/extension_system.h"
 #include "extensions/common/constants.h"
+#include "extensions/common/permissions/permissions_data.h"
 #include "ipc/ipc_message_macros.h"
 #include "net/base/escape.h"
 #include "net/base/net_errors.h"
@@ -228,6 +231,19 @@ scoped_ptr<base::ListValue> WebViewGuest::MenuModelToValue(
   return items.Pass();
 }
 
+bool WebViewGuest::CanEmbedderUseGuestView(
+    const std::string& embedder_extension_id) {
+  Profile* profile = Profile::FromBrowserContext(browser_context());
+  ExtensionService* service =
+      extensions::ExtensionSystem::Get(profile)->extension_service();
+  const extensions::Extension* embedder_extension =
+      service->GetExtensionById(embedder_extension_id, false);
+  const extensions::PermissionsData* permissions_data =
+      embedder_extension->permissions_data();
+  return permissions_data->HasAPIPermission(
+      extensions::APIPermission::kWebView);
+}
+
 void WebViewGuest::CreateWebContents(
     const std::string& embedder_extension_id,
     int embedder_render_process_id,
@@ -249,6 +265,7 @@ void WebViewGuest::CreateWebContents(
     base::KillProcess(
         embedder_render_process_host->GetHandle(),
         content::RESULT_CODE_KILLED_BAD_MESSAGE, false);
+    callback.Run(NULL);
     return;
   }
   std::string url_encoded_partition = net::EscapeQueryParamValue(

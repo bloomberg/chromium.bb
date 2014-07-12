@@ -21,6 +21,7 @@
 #include "extensions/browser/view_type_utils.h"
 #include "extensions/common/api/app_runtime.h"
 #include "extensions/common/extension_messages.h"
+#include "extensions/common/permissions/permissions_data.h"
 #include "ipc/ipc_message_macros.h"
 
 namespace app_runtime = extensions::core_api::app_runtime;
@@ -122,6 +123,19 @@ bool AppViewGuest::HandleContextMenu(const content::ContextMenuParams& params) {
       menu_delegate->BuildMenu(guest_web_contents(), params);
   menu_delegate->ShowMenu(menu.Pass());
   return true;
+}
+
+bool AppViewGuest::CanEmbedderUseGuestView(
+    const std::string& embedder_extension_id) {
+  Profile* profile = Profile::FromBrowserContext(browser_context());
+  ExtensionService* service =
+      extensions::ExtensionSystem::Get(profile)->extension_service();
+  const extensions::Extension* embedder_extension =
+      service->GetExtensionById(embedder_extension_id, false);
+  const extensions::PermissionsData* permissions_data =
+      embedder_extension->permissions_data();
+  return permissions_data->HasAPIPermission(
+      extensions::APIPermission::kAppView);
 }
 
 void AppViewGuest::CreateWebContents(
