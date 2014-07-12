@@ -82,7 +82,6 @@ class WebMediaPlayerAndroid : public blink::WebMediaPlayer,
 
   // blink::WebMediaPlayer implementation.
   virtual void enterFullscreen();
-  virtual void exitFullscreen();
   virtual bool canEnterFullscreen() const;
 
   // Resource loading.

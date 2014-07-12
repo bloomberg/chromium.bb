@@ -1539,10 +1539,6 @@ void WebMediaPlayerAndroid::enterFullscreen() {
   }
 }
 
-void WebMediaPlayerAndroid::exitFullscreen() {
-  player_manager_->ExitFullscreen(player_id_);
-}
-
 bool WebMediaPlayerAndroid::canEnterFullscreen() const {
   return player_manager_->CanEnterFullscreen(frame_);
 }
