@@ -52,6 +52,8 @@ const int kNoPendingReadResult = 1;
 // the server supports NPN, choosing "http/1.1" is the best answer.
 const char kDefaultSupportedNPNProtocol[] = "http/1.1";
 
+typedef crypto::ScopedOpenSSL<X509, X509_free>::Type ScopedX509;
+
 #if OPENSSL_VERSION_NUMBER < 0x1000103fL
 // This method doesn't seem to have made it into the OpenSSL headers.
 unsigned long SSL_CIPHER_get_id(const SSL_CIPHER* cipher) { return cipher->id; }
@@ -97,8 +99,21 @@ std::string GetSocketSessionCacheKey(const SSLClientSocketOpenSSL& socket) {
   return result;
 }
 
-static void FreeX509Stack(STACK_OF(X509) * ptr) {
+void FreeX509Stack(STACK_OF(X509) * ptr) {
   sk_X509_pop_free(ptr, X509_free);
+}
+
+ScopedX509 OSCertHandleToOpenSSL(
+    X509Certificate::OSCertHandle os_handle) {
+#if defined(USE_OPENSSL_CERTS)
+  return ScopedX509(X509Certificate::DupOSCertHandle(os_handle));
+#else  // !defined(USE_OPENSSL_CERTS)
+  std::string der_encoded;
+  if (!X509Certificate::GetDEREncoded(os_handle, &der_encoded))
+    return ScopedX509();
+  const uint8_t* bytes = reinterpret_cast<const uint8_t*>(der_encoded.data());
+  return ScopedX509(d2i_X509(NULL, &bytes, der_encoded.size()));
+#endif  // defined(USE_OPENSSL_CERTS)
 }
 
 }  // namespace
@@ -1349,31 +1364,40 @@ int SSLClientSocketOpenSSL::ClientCertRequestCallback(SSL* ssl,
 
   // Second pass: a client certificate should have been selected.
   if (ssl_config_.client_cert.get()) {
+    // TODO(davidben): Configure OpenSSL to also send the intermediates.
+    ScopedX509 leaf_x509 =
+        OSCertHandleToOpenSSL(ssl_config_.client_cert->os_cert_handle());
+    if (!leaf_x509) {
+      LOG(WARNING) << "Failed to import certificate";
+      OpenSSLPutNetError(FROM_HERE, ERR_SSL_CLIENT_AUTH_CERT_BAD_FORMAT);
+      return -1;
+    }
+
+    crypto::ScopedEVP_PKEY privkey;
 #if defined(USE_OPENSSL_CERTS)
     // A note about ownership: FetchClientCertPrivateKey() increments
     // the reference count of the EVP_PKEY. Ownership of this reference
     // is passed directly to OpenSSL, which will release the reference
     // using EVP_PKEY_free() when the SSL object is destroyed.
-    crypto::ScopedEVP_PKEY privkey;
-    if (OpenSSLClientKeyStore::GetInstance()->FetchClientCertPrivateKey(
+    if (!OpenSSLClientKeyStore::GetInstance()->FetchClientCertPrivateKey(
             ssl_config_.client_cert.get(), &privkey)) {
-      // TODO(joth): (copied from NSS) We should wait for server certificate
-      // verification before sending our credentials. See http://crbug.com/13934
-      *x509 = X509Certificate::DupOSCertHandle(
-          ssl_config_.client_cert->os_cert_handle());
-      *pkey = privkey.release();
-      return 1;
+      // Could not find the private key. Fail the handshake and surface an
+      // appropriate error to the caller.
+      LOG(WARNING) << "Client cert found without private key";
+      OpenSSLPutNetError(FROM_HERE, ERR_SSL_CLIENT_AUTH_CERT_NO_PRIVATE_KEY);
+      return -1;
     }
-
-    // Could not find the private key. Fail the handshake and surface an
-    // appropriate error to the caller.
-    LOG(WARNING) << "Client cert found without private key";
-    OpenSSLPutNetError(FROM_HERE, ERR_SSL_CLIENT_AUTH_CERT_NO_PRIVATE_KEY);
-    return -1;
 #else  // !defined(USE_OPENSSL_CERTS)
-    // OS handling of client certificates is not yet implemented.
+    // OS handling of private keys is not yet implemented.
     NOTIMPLEMENTED();
+    return 0;
 #endif  // defined(USE_OPENSSL_CERTS)
+
+    // TODO(joth): (copied from NSS) We should wait for server certificate
+    // verification before sending our credentials. See http://crbug.com/13934
+    *x509 = leaf_x509.release();
+    *pkey = privkey.release();
+    return 1;
   }
 
   // Send no client certificate.

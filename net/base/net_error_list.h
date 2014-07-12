@@ -332,6 +332,10 @@ NET_ERROR(SOCKET_RECEIVE_BUFFER_SIZE_UNCHANGEABLE, -162)
 // return code from setsockopt.
 NET_ERROR(SOCKET_SEND_BUFFER_SIZE_UNCHANGEABLE, -163)
 
+// Failed to import a client certificate from the platform store into the SSL
+// library.
+NET_ERROR(SSL_CLIENT_AUTH_CERT_BAD_FORMAT, -164)
+
 // Certificate error codes
 //
 // The values of certificate error codes must be consecutive.

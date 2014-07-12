@@ -42528,6 +42528,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="161" label="SOCKET_SET_SEND_BUFFER_SIZE_ERROR"/>
   <int value="162" label="SOCKET_RECEIVE_BUFFER_SIZE_UNCHANGEABLE"/>
   <int value="163" label="SOCKET_SEND_BUFFER_SIZE_UNCHANGEABLE"/>
+  <int value="164" label="SSL_CLIENT_AUTH_CERT_BAD_FORMAT"/>
   <int value="200" label="CERT_COMMON_NAME_INVALID"/>
   <int value="201" label="CERT_DATE_INVALID"/>
   <int value="202" label="CERT_AUTHORITY_INVALID"/>
@@ -42602,6 +42603,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="406" label="CACHE_RACE"/>
   <int value="407" label="CACHE_CHECKSUM_READ_FAILURE"/>
   <int value="408" label="CACHE_CHECKSUM_MISMATCH"/>
+  <int value="409" label="CACHE_LOCK_TIMEOUT"/>
   <int value="501" label="INSECURE_RESPONSE"/>
   <int value="502" label="NO_PRIVATE_KEY_FOR_CERT"/>
   <int value="503" label="ADD_USER_CERT_FAILED"/>
