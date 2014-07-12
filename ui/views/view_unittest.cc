@@ -785,50 +785,6 @@ TEST_F(ViewTest, RemoveNotification) {
 }
 
 namespace {
-class HitTestView : public View {
- public:
-  explicit HitTestView(bool has_hittest_mask)
-      : has_hittest_mask_(has_hittest_mask) {
-  }
-  virtual ~HitTestView() {}
-
- protected:
-  // Overridden from View:
-  virtual bool HasHitTestMask() const OVERRIDE {
-    return has_hittest_mask_;
-  }
-  virtual void GetHitTestMaskDeprecated(HitTestSource source,
-                                        gfx::Path* mask) const OVERRIDE {
-    DCHECK(has_hittest_mask_);
-    DCHECK(mask);
-
-    SkScalar w = SkIntToScalar(width());
-    SkScalar h = SkIntToScalar(height());
-
-    // Create a triangular mask within the bounds of this View.
-    mask->moveTo(w / 2, 0);
-    mask->lineTo(w, h);
-    mask->lineTo(0, h);
-    mask->close();
-  }
-
- private:
-  bool has_hittest_mask_;
-
-  DISALLOW_COPY_AND_ASSIGN(HitTestView);
-};
-
-gfx::Point ConvertPointToView(View* view, const gfx::Point& p) {
-  gfx::Point tmp(p);
-  View::ConvertPointToTarget(view->GetWidget()->GetRootView(), view, &tmp);
-  return tmp;
-}
-
-gfx::Rect ConvertRectToView(View* view, const gfx::Rect& r) {
-  gfx::Rect tmp(r);
-  tmp.set_origin(ConvertPointToView(view, r.origin()));
-  return tmp;
-}
 
 void RotateCounterclockwise(gfx::Transform* transform) {
   transform->matrix().set3x3(0, -1, 0,
@@ -843,72 +799,6 @@ void RotateClockwise(gfx::Transform* transform) {
 }
 
 }  // namespace
-
-TEST_F(ViewTest, HitTestMasks) {
-  Widget* widget = new Widget;
-  Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
-  widget->Init(params);
-  View* root_view = widget->GetRootView();
-  root_view->SetBoundsRect(gfx::Rect(0, 0, 500, 500));
-
-  gfx::Rect v1_bounds = gfx::Rect(0, 0, 100, 100);
-  HitTestView* v1 = new HitTestView(false);
-  v1->SetBoundsRect(v1_bounds);
-  root_view->AddChildView(v1);
-
-  gfx::Rect v2_bounds = gfx::Rect(105, 0, 100, 100);
-  HitTestView* v2 = new HitTestView(true);
-  v2->SetBoundsRect(v2_bounds);
-  root_view->AddChildView(v2);
-
-  gfx::Point v1_centerpoint = v1_bounds.CenterPoint();
-  gfx::Point v2_centerpoint = v2_bounds.CenterPoint();
-  gfx::Point v1_origin = v1_bounds.origin();
-  gfx::Point v2_origin = v2_bounds.origin();
-
-  gfx::Rect r1(10, 10, 110, 15);
-  gfx::Rect r2(106, 1, 98, 98);
-  gfx::Rect r3(0, 0, 300, 300);
-  gfx::Rect r4(115, 342, 200, 10);
-
-  // Test HitTestPoint
-  EXPECT_TRUE(v1->HitTestPoint(ConvertPointToView(v1, v1_centerpoint)));
-  EXPECT_TRUE(v2->HitTestPoint(ConvertPointToView(v2, v2_centerpoint)));
-
-  EXPECT_TRUE(v1->HitTestPoint(ConvertPointToView(v1, v1_origin)));
-  EXPECT_FALSE(v2->HitTestPoint(ConvertPointToView(v2, v2_origin)));
-
-  // Test HitTestRect
-  EXPECT_TRUE(v1->HitTestRect(ConvertRectToView(v1, r1)));
-  EXPECT_FALSE(v2->HitTestRect(ConvertRectToView(v2, r1)));
-
-  EXPECT_FALSE(v1->HitTestRect(ConvertRectToView(v1, r2)));
-  EXPECT_TRUE(v2->HitTestRect(ConvertRectToView(v2, r2)));
-
-  EXPECT_TRUE(v1->HitTestRect(ConvertRectToView(v1, r3)));
-  EXPECT_TRUE(v2->HitTestRect(ConvertRectToView(v2, r3)));
-
-  EXPECT_FALSE(v1->HitTestRect(ConvertRectToView(v1, r4)));
-  EXPECT_FALSE(v2->HitTestRect(ConvertRectToView(v2, r4)));
-
-  // Test GetEventHandlerForPoint
-  EXPECT_EQ(v1, root_view->GetEventHandlerForPoint(v1_centerpoint));
-  EXPECT_EQ(v2, root_view->GetEventHandlerForPoint(v2_centerpoint));
-
-  EXPECT_EQ(v1, root_view->GetEventHandlerForPoint(v1_origin));
-  EXPECT_EQ(root_view, root_view->GetEventHandlerForPoint(v2_origin));
-
-  // Test GetTooltipHandlerForPoint
-  EXPECT_EQ(v1, root_view->GetTooltipHandlerForPoint(v1_centerpoint));
-  EXPECT_EQ(v2, root_view->GetTooltipHandlerForPoint(v2_centerpoint));
-
-  EXPECT_EQ(v1, root_view->GetTooltipHandlerForPoint(v1_origin));
-  EXPECT_EQ(root_view, root_view->GetTooltipHandlerForPoint(v2_origin));
-
-  EXPECT_FALSE(v1->GetTooltipHandlerForPoint(v2_origin));
-
-  widget->CloseNow();
-}
 
 // Tests the correctness of the rect-based targeting algorithm implemented in
 // View::GetEventHandlerForRect(). See http://goo.gl/3Jp2BD for a description
