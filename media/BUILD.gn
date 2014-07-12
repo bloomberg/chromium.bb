@@ -31,7 +31,7 @@ if (is_android) {
 # Original conditional: (OS=="linux" or OS=="freebsd" or OS=="solaris") and embedded!=1
 use_alsa = false
 use_pulseaudio = false
-if (is_posix && !is_android) {
+if (is_posix) {
   use_alsa = true
   if (!use_cras) {
     use_pulseaudio = true
@@ -595,6 +595,8 @@ component("media") {
       "base/android/media_player_manager.h",
       "base/android/media_resource_getter.cc",
       "base/android/media_resource_getter.h",
+      "base/media.cc",
+      "base/media.h",
       "base/media_stub.cc",
       "midi/midi_manager_android.cc",
       "midi/usb_midi_device_android.cc",
@@ -620,7 +622,7 @@ component("media") {
 
   if (is_chromeos) {
     # A simple WebM encoder for animated avatars on ChromeOS.
-    sources += [
+    sources += [ 
       "formats/webm/chromeos/ebml_writer.cc",
       "formats/webm/chromeos/ebml_writer.h",
       "formats/webm/chromeos/webm_encoder.cc",
@@ -1286,50 +1288,48 @@ component("shared_memory_support") {
   deps = [ "//base" ]
 }
 
-if (media_use_ffmpeg) {
-  test("ffmpeg_unittests") {
-    sources = [ "ffmpeg/ffmpeg_unittest.cc" ]
+test("ffmpeg_unittests") {
+  sources = [ "ffmpeg/ffmpeg_unittest.cc" ]
 
-    deps = [
-       ":media",
-       ":media_test_support",
-       "//base",
-       "//base:i18n",
-       "//base/test:test_support",
-       "//testing/gtest",
-       "//third_party/ffmpeg",
-       "//ui/gfx:gfx_test_support",
-    ]
-  }
+  deps = [
+     ":media",
+     ":media_test_support",
+     "//base",
+     "//base:i18n",
+     "//base/test:test_support",
+     "//testing/gtest",
+     "//third_party/ffmpeg",
+     "//ui/gfx:gfx_test_support",
+  ]
+}
 
-  test("ffmpeg_regression_tests") {
-    sources = [
-      "base/run_all_unittests.cc",
-      "ffmpeg/ffmpeg_regression_tests.cc",
-      "filters/pipeline_integration_test_base.cc",
-    ]
-    configs += [ ":media_config" ]
-    deps = [
-      ":media",
-      ":media_test_support",
-      "//base/test:test_support",
-      "//testing/gmock",
-      "//testing/gtest",
-      "//third_party/ffmpeg",
-      "//ui/gfx/geometry",
-      "//ui/gfx:gfx_test_support",
-    ]
-  # TODO(ajwong): This was in the original gyp, but it seems silly.
-  #        ['os_posix==1 and OS!="mac"', {
-  #          'conditions': [
-  #            ['use_allocator!="none"', {
-  #              'dependencies': [
-  #                '../base/allocator/allocator.gyp:allocator',
-  #              ],
-  #            }],
-  #          ],
-  #        }],
-  }
+test("ffmpeg_regression_tests") {
+  sources = [
+    "base/run_all_unittests.cc",
+    "ffmpeg/ffmpeg_regression_tests.cc",
+    "filters/pipeline_integration_test_base.cc",
+  ]
+  configs += [ ":media_config" ]
+  deps = [
+    ":media",
+    ":media_test_support",
+    "//base/test:test_support",
+    "//testing/gmock",
+    "//testing/gtest",
+    "//third_party/ffmpeg",
+    "//ui/gfx/geometry",
+    "//ui/gfx:gfx_test_support",
+  ]
+# TODO(ajwong): This was in the original gyp, but it seems silly.
+#        ['os_posix==1 and OS!="mac"', {
+#          'conditions': [
+#            ['use_allocator!="none"', {
+#              'dependencies': [
+#                '../base/allocator/allocator.gyp:allocator',
+#              ],
+#            }],
+#          ],
+#        }],
 }
 
 if (use_x11) {
