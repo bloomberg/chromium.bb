@@ -295,7 +295,14 @@ class BASE_EXPORT MessageLoop : public MessagePump::Delegate {
   const std::string& thread_name() const { return thread_name_; }
 
   // Gets the message loop proxy associated with this message loop.
+  //
+  // NOTE: Deprecated; prefer task_runner() and the TaskRunner interfaces
   scoped_refptr<MessageLoopProxy> message_loop_proxy() {
+    return message_loop_proxy_;
+  }
+
+  // Gets the TaskRunner associated with this message loop.
+  scoped_refptr<SingleThreadTaskRunner> task_runner() {
     return message_loop_proxy_;
   }
 

@@ -138,13 +138,25 @@ class BASE_EXPORT Thread : PlatformThread::Delegate {
   //
   MessageLoop* message_loop() const { return message_loop_; }
 
-  // Returns a MessageLoopProxy for this thread.  Use the MessageLoopProxy's
-  // PostTask methods to execute code on the thread.  This only returns
-  // non-NULL after a successful call to Start. After Stop has been called,
-  // this will return NULL. Callers can hold on to this even after the thread
-  // is gone.
+  // Returns a MessageLoopProxy for this thread. Use the MessageLoopProxy's
+  // PostTask methods to execute code on the thread. Returns NULL if the thread
+  // is not running (e.g. before Start or after Stop have been called). Callers
+  // can hold on to this even after the thread is gone; in this situation,
+  // attempts to PostTask() will fail.
+  //
+  // Note: This method is deprecated. Callers should call task_runner() instead
+  // and use the TaskRunner interfaces for safely interfacing with the Thread.
   scoped_refptr<MessageLoopProxy> message_loop_proxy() const {
     return message_loop_ ? message_loop_->message_loop_proxy() : NULL;
+  }
+
+  // Returns a TaskRunner for this thread. Use the TaskRunner's PostTask
+  // methods to execute code on the thread. Returns NULL if the thread is not
+  // running (e.g. before Start or after Stop have been called). Callers can
+  // hold on to this even after the thread is gone; in this situation, attempts
+  // to PostTask() will fail.
+  scoped_refptr<SingleThreadTaskRunner> task_runner() const {
+    return message_loop_proxy();
   }
 
   // Returns the name of this thread (for display in debugger too).
