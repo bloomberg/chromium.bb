@@ -1,0 +1,86 @@
+<!--
+Copyright 2014 The Chromium Authors. All rights reserved.
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+-->
+
+<link rel="import" href="ct-results-detail.html">
+
+<script>
+(function () {
+
+module("ct-results-detail");
+
+asyncTest("image+text", 4, function() {
+  var simulator = new NetworkSimulator();
+  var probedUrls = [];
+
+  simulator.probe = function(url)
+  {
+    probedUrls.push(url);
+    if (base.endsWith(url, '.txt') || base.endsWith(url, '.png'))
+        return Promise.resolve();
+    else
+        return Promise.reject();
+  };
+
+  simulator.runTest(function() {
+    var comparisonResult = document.createElement('ct-results-detail');
+    comparisonResult.test = 'dummy/test.html';
+    comparisonResult.builder = 'dummy builder';
+    comparisonResult.result = 'IMAGE+TEXT';
+
+    comparisonResult.async(function() {
+      deepEqual(probedUrls, [
+          'https://storage.googleapis.com/chromium-layout-test-archives/dummy_builder/results/layout-test-results/dummy/test-expected.png',
+          'https://storage.googleapis.com/chromium-layout-test-archives/dummy_builder/results/layout-test-results/dummy/test-actual.png',
+          'https://storage.googleapis.com/chromium-layout-test-archives/dummy_builder/results/layout-test-results/dummy/test-diff.png',
+          'https://storage.googleapis.com/chromium-layout-test-archives/dummy_builder/results/layout-test-results/dummy/test-actual.txt',
+          'https://storage.googleapis.com/chromium-layout-test-archives/dummy_builder/results/layout-test-results/dummy/test-expected.txt',
+          'https://storage.googleapis.com/chromium-layout-test-archives/dummy_builder/results/layout-test-results/dummy/test-diff.txt',
+      ]);
+
+      var comparisons = comparisonResult.shadowRoot.querySelectorAll('ct-results-comparison');
+      equal(comparisons.length, 2);
+      equal(comparisonResult.shadowRoot.querySelectorAll('ct-test-output').length, 0);
+
+      start();
+    });
+  });
+});
+
+asyncTest("crash", 4, function() {
+  var simulator = new NetworkSimulator();
+  var probedUrls = [];
+
+  simulator.probe = function(url)
+  {
+    probedUrls.push(url);
+    if (base.endsWith(url, '.txt'))
+        return Promise.resolve();
+    else
+        return Promise.reject();
+  };
+
+  simulator.runTest(function() {
+    var crashResult = document.createElement('ct-results-detail');
+    crashResult.test = 'dummy/test.html';
+    crashResult.builder = 'dummy builder';
+    crashResult.result = 'CRASH';
+
+    crashResult.async(function() {
+      deepEqual(probedUrls, [
+          'https://storage.googleapis.com/chromium-layout-test-archives/dummy_builder/results/layout-test-results/dummy/test-crash-log.txt',
+      ]);
+
+      var crashOutputs = crashResult.shadowRoot.querySelectorAll('ct-test-output');
+      equal(crashOutputs.length, 1);
+      equal(crashResult.shadowRoot.querySelectorAll('ct-results-comparison').length, 0);
+
+      start();
+    });
+  });
+});
+
+})()
+</script>

@@ -237,15 +237,18 @@ results.unexpectedFailuresByTest = function(resultsByBuilder)
     return resultsByTest(resultsByBuilder, results.unexpectedFailures);
 };
 
-results.failureInfoForTestAndBuilder = function(resultsByTest, testName, builderName)
+results.failureInfo = function(testName, builderName, result)
 {
-    var failureInfoForTest = {
+    return {
         'testName': testName,
         'builderName': builderName,
-        'failureTypeList': failureTypeList(resultsByTest[testName][builderName].actual),
+        'failureTypeList': failureTypeList(result),
     };
+}
 
-    return failureInfoForTest;
+results.failureInfoForTestAndBuilder = function(resultsByTest, testName, builderName)
+{
+    return results.failureInfo(testName, builderName, resultsByTest[testName][builderName].actual)
 };
 
 results.collectUnexpectedResults = function(dictionaryOfResultNodes)

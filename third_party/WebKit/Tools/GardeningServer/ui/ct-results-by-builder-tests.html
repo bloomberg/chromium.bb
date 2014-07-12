@@ -20,7 +20,7 @@ var kExampleFailure = {
             "time": 5.9
         },
         "WebKit Mac10.6 (dbg)": {
-            "actual": "TEXT",
+            "actual": "IMAGE",
             "time": 6.5,
             "bugs": ["webkit.org/b/90488"],
             "is_unexpected": true,
@@ -34,7 +34,7 @@ var kExampleFailure = {
 
 module("ct-results-by-builder");
 
-asyncTest("basic", 9, function() {
+asyncTest("basic", 11, function() {
   var results = document.createElement('ct-results-by-builder');
 
   results.failure = kExampleFailure;
@@ -49,6 +49,7 @@ asyncTest("basic", 9, function() {
     equal(detail.length, 1);
     equal(detail[0].test, 'inspector/console/console-viewport-selection.html');
     equal(detail[0].builder, 'WebKit Linux (dbg)');
+    equal(detail[0].result, 'TEXT');
 
     results.shadowRoot.querySelector('paper-tabs').selected = 1;
 
@@ -57,6 +58,7 @@ asyncTest("basic", 9, function() {
       equal(detail.length, 1);
       equal(detail[0].test, 'inspector/console/console-viewport-selection.html');
       equal(detail[0].builder, 'WebKit Mac10.6 (dbg)');
+      equal(detail[0].result, 'IMAGE');
 
       start();
     });

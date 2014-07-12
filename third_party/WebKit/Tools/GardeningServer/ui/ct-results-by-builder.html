@@ -21,7 +21,8 @@ found in the LICENSE file.
         <paper-tab>{{builder|displayName}}</paper-tab>
       </template>
     </paper-tabs>
-    <ct-results-detail test="{{failure.testName}}" builder="{{builders[selected]}}"></ct-results-detail>
+    <ct-results-detail test="{{failure.testName}}" builder="{{builders[selected]}}"
+        result="{{failure.resultNodesByBuilder[builders[selected]].actual}}"></ct-results-detail>
   </template>
   <script>
     Polymer({

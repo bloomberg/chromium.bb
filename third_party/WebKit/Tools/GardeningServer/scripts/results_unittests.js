@@ -179,6 +179,15 @@ test("unexpectedFailuresByTest", 1, function() {
     });
 });
 
+test("failureInfo", 1, function() {
+    var failureInfo = results.failureInfo("userscripts/another-test.html", "Mock Builder", "FAIL PASS");
+    deepEqual(failureInfo, {
+        "testName": "userscripts/another-test.html",
+        "builderName": "Mock Builder",
+        "failureTypeList": ["FAIL", "PASS"],
+    });
+});
+
 test("failureInfoForTestAndBuilder", 1, function() {
     var unexpectedFailuresByTest = results.unexpectedFailuresByTest({
         "Mock Builder": unittest.kExampleResultsJSON

@@ -6,14 +6,72 @@ found in the LICENSE file.
 
 <link rel="import" href="ct-results-comparison.html">
 
-<polymer-element name="ct-results-detail" attributes="test builder" noscript>
+<polymer-element name="ct-results-detail" attributes="test builder result">
   <template>
     <style>
       :host {
         display: block;
       }
     </style>
-    Test: {{test}}<br>
-    Builder: {{builder}}
+    <template if="{{!_urlGroups.length}}">
+      No results to display.
+    </template>
+    <template repeat="{{urlGroup in _urlGroups}}">
+      <template if="{{urlGroup.urls[_kUnknownKind]}}">
+        <ct-test-output type="{{urlGroup.type}}" url="{{urlGroup.urls[_kUnknownKind]}}"></ct-test-output>
+      </template>
+      <template if="{{!urlGroup.urls[_kUnknownKind]}}">
+        <ct-results-comparison type="{{urlGroup.type}}" expectedUrl="{{urlGroup.urls[_kExpectedKind]}}"
+            actualUrl="{{urlGroup.urls[_kActualKind]}}" diffUrl="{{urlGroup.urls[_kDiffKind]}}"></ct-results-comparison>
+      </template>
+    </template>
   </template>
+  <script>
+    Polymer({
+      test: '',
+      // FIXME: Initializing builder gives a JS error. Presumably because
+      // ct-results-by-builder sets builder="{{builders[selected]}}". But,
+      // it seems wrong that the way the parent uses this element constrains
+      // what the element can do. Polymer bug?
+      // builder: '',
+      // FIXME: Initializing result gives a JS error like above.
+      // result: '',
+
+      _urlGroups: [],
+      _kExpectedKind: results.kExpectedKind,
+      _kActualKind: results.kActualKind,
+      _kDiffKind: results.kDiffKind,
+      _kUnknownKind: results.kUnknownKind,
+
+      observe: {
+        result: '_update',
+        test: '_update',
+        builder: '_update',
+      },
+
+      _update: function() {
+        if (!this.test || !this.builder || !this.result)
+          return;
+
+        var failureInfo = results.failureInfo(this.test, this.builder, this.result);
+        results.fetchResultsURLs(failureInfo).then(function(resultsUrls) {
+          var resultsUrlsByTypeAndKind = {};
+          resultsUrls.forEach(function(url) {
+              var resultType = results.resultType(url);
+              if (!resultsUrlsByTypeAndKind[resultType])
+                  resultsUrlsByTypeAndKind[resultType] = {};
+              resultsUrlsByTypeAndKind[resultType][results.resultKind(url)] = url;
+          });
+
+          this._urlGroups = [];
+          Object.keys(resultsUrlsByTypeAndKind, function(resultType, resultsUrlsByKind) {
+            this._urlGroups.push({
+              type: resultType,
+              urls: resultsUrlsByKind,
+            });
+          }.bind(this));
+        }.bind(this));
+      },
+    });
+  </script>
 </polymer-element>
