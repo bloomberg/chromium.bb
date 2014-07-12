@@ -158,7 +158,7 @@ class WinPort(base.Port):
         # We should add the variable to an explicit whitelist in base.Port.
         # FIXME: This is a temporary hack to get the cr-win bot online until
         # someone from the cr-win port can take a look.
-        use_apache = self.get_option('use_apache')
+        use_apache = self.uses_apache()
         apache_envvars = ['SYSTEMDRIVE', 'SYSTEMROOT', 'TEMP', 'TMP']
         for key, value in os.environ.items():
             if key not in env and (not use_apache or key in apache_envvars):
@@ -202,7 +202,7 @@ class WinPort(base.Port):
     def uses_apache(self):
         val = self.get_option('use_apache')
         if val is None:
-            val = bool(self.version() != 'xp')
+            return True
         return val
 
     def path_to_apache(self):
