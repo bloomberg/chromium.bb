@@ -406,6 +406,9 @@ RenderFrameImpl::RenderFrameImpl(RenderViewImpl* render_view, int routing_id)
 #if defined(ENABLE_BROWSER_CDMS)
       cdm_manager_(NULL),
 #endif
+#if defined(VIDEO_HOLE)
+      contains_media_player_(false),
+#endif
       geolocation_dispatcher_(NULL),
       push_messaging_dispatcher_(NULL),
       screen_orientation_dispatcher_(NULL),
@@ -431,8 +434,8 @@ RenderFrameImpl::~RenderFrameImpl() {
   FOR_EACH_OBSERVER(RenderFrameObserver, observers_, RenderFrameGone());
   FOR_EACH_OBSERVER(RenderFrameObserver, observers_, OnDestruct());
 
-#if defined(OS_ANDROID) && defined(VIDEO_HOLE)
-  if (media_player_manager_)
+#if defined(VIDEO_HOLE)
+  if (contains_media_player_)
     render_view_->UnregisterVideoHoleFrame(this);
 #endif
 
@@ -1374,6 +1377,13 @@ blink::WebMediaPlayer* RenderFrameImpl::createMediaPlayer(
     blink::WebLocalFrame* frame,
     const blink::WebURL& url,
     blink::WebMediaPlayerClient* client) {
+#if defined(VIDEO_HOLE)
+  if (!contains_media_player_) {
+    render_view_->RegisterVideoHoleFrame(this);
+    contains_media_player_ = true;
+  }
+#endif  // defined(VIDEO_HOLE)
+
   blink::WebMediaStream web_stream(
       blink::WebMediaStreamRegistry::lookupMediaStreamDescriptor(url));
   if (!web_stream.isNull())
@@ -3560,12 +3570,8 @@ WebMediaPlayer* RenderFrameImpl::CreateAndroidWebMediaPlayer(
 }
 
 RendererMediaPlayerManager* RenderFrameImpl::GetMediaPlayerManager() {
-  if (!media_player_manager_) {
+  if (!media_player_manager_)
     media_player_manager_ = new RendererMediaPlayerManager(this);
-#if defined(VIDEO_HOLE)
-    render_view_->RegisterVideoHoleFrame(this);
-#endif  // defined(VIDEO_HOLE)
-  }
   return media_player_manager_;
 }
 

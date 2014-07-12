@@ -638,6 +638,12 @@ class CONTENT_EXPORT RenderFrameImpl
   RendererCdmManager* cdm_manager_;
 #endif
 
+#if defined(VIDEO_HOLE)
+  // Whether or not this RenderFrameImpl contains a media player. Used to
+  // register as an observer for video-hole-specific events.
+  bool contains_media_player_;
+#endif
+
   // The geolocation dispatcher attached to this frame, lazily initialized.
   GeolocationDispatcher* geolocation_dispatcher_;
 
