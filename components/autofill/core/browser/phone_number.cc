@@ -134,16 +134,9 @@ bool PhoneNumber::SetInfo(const AutofillType& type,
   if (number_.empty())
     return true;
 
-  // Store a formatted (i.e., pretty printed) version of the number if either
-  // the number doesn't contain formatting marks.
+  // Store a formatted (i.e., pretty printed) version of the number.
   UpdateCacheIfNeeded(app_locale);
-  if (base::ContainsOnlyChars(number_, base::ASCIIToUTF16("+0123456789"))) {
-    number_ = cached_parsed_phone_.GetFormattedNumber();
-  } else if (i18n::NormalizePhoneNumber(
-                 number_, GetRegion(*profile_, app_locale)).empty()) {
-    // The number doesn't make sense for this region; clear it.
-    number_.clear();
-  }
+  number_ = cached_parsed_phone_.GetFormattedNumber();
   return !number_.empty();
 }
 

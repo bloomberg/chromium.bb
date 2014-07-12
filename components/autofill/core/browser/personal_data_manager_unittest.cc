@@ -2339,19 +2339,9 @@ TEST_F(PersonalDataManagerTest, CaseInsensitiveMultiValueAggregation) {
   base::MessageLoop::current()->Run();
 
   AutofillProfile expected(base::GenerateGUID(), "https://www.example.com");
-  test::SetProfileInfo(&expected,
-                       "George",
-                       NULL,
-                       "Washington",
-                       "theprez@gmail.com",
-                       NULL,
-                       "21 Laussat St",
-                       NULL,
-                       "San Francisco",
-                       "California",
-                       "94102",
-                       NULL,
-                       "817-555-6789");
+  test::SetProfileInfo(&expected, "George", NULL,
+      "Washington", "theprez@gmail.com", NULL, "21 Laussat St", NULL,
+      "San Francisco", "California", "94102", NULL, "(817) 555-6789");
   const std::vector<AutofillProfile*>& results1 = personal_data_->GetProfiles();
   ASSERT_EQ(1U, results1.size());
   EXPECT_EQ(0, expected.Compare(*results1[0]));
@@ -2396,7 +2386,7 @@ TEST_F(PersonalDataManagerTest, CaseInsensitiveMultiValueAggregation) {
   // Modify expected to include multi-valued fields.
   std::vector<base::string16> values;
   expected.GetRawMultiInfo(PHONE_HOME_WHOLE_NUMBER, &values);
-  values.push_back(ASCIIToUTF16("214-555-1234"));
+  values.push_back(ASCIIToUTF16("(214) 555-1234"));
   expected.SetRawMultiInfo(PHONE_HOME_WHOLE_NUMBER, values);
 
   ASSERT_EQ(1U, results2.size());

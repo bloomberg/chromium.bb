@@ -104,21 +104,11 @@ TEST(PhoneNumberTest, SetInfo) {
                             ASCIIToUTF16("8887776666"), "US"));
   EXPECT_EQ(ASCIIToUTF16("(888) 777-6666"),
             phone.GetRawInfo(PHONE_HOME_WHOLE_NUMBER));
-  EXPECT_TRUE(phone.SetInfo(AutofillType(PHONE_HOME_WHOLE_NUMBER),
-                            ASCIIToUTF16("+18887776666"),
-                            "US"));
-  EXPECT_EQ(ASCIIToUTF16("+1 888-777-6666"),
-            phone.GetRawInfo(PHONE_HOME_WHOLE_NUMBER));
 
-  // Differently formatted numbers should be left alone.
+  // Differently formatted numbers should be re-formatted.
   EXPECT_TRUE(phone.SetInfo(AutofillType(PHONE_HOME_WHOLE_NUMBER),
                             ASCIIToUTF16("800-432-8765"), "US"));
-  EXPECT_EQ(ASCIIToUTF16("800-432-8765"),
-            phone.GetRawInfo(PHONE_HOME_WHOLE_NUMBER));
-
-  // SetRawInfo should not try to format.
-  phone.SetRawInfo(PHONE_HOME_WHOLE_NUMBER, ASCIIToUTF16("8004328765"));
-  EXPECT_EQ(ASCIIToUTF16("8004328765"),
+  EXPECT_EQ(ASCIIToUTF16("(800) 432-8765"),
             phone.GetRawInfo(PHONE_HOME_WHOLE_NUMBER));
 
   // Invalid numbers should not be stored.  In the US, phone numbers cannot

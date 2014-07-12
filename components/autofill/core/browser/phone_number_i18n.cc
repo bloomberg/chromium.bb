@@ -100,9 +100,8 @@ bool ParsePhoneNumber(const base::string16& value,
 
   // The |default_region| should already be sanitized.
   DCHECK_EQ(2U, default_region.size());
-  if (phone_util->ParseAndKeepRawInput(
-          number_text, default_region, i18n_number) !=
-      PhoneNumberUtil::NO_PARSING_ERROR) {
+  if (phone_util->Parse(number_text, default_region, i18n_number) !=
+          PhoneNumberUtil::NO_PARSING_ERROR) {
     return false;
   }
 
@@ -132,13 +131,21 @@ bool ParsePhoneNumber(const base::string16& value,
   }
   *number = base::UTF8ToUTF16(subscriber_number);
   *city_code = base::UTF8ToUTF16(area_code);
+  *country_code = base::string16();
+
+  phone_util->NormalizeDigitsOnly(&number_text);
+  base::string16 normalized_number(base::UTF8ToUTF16(number_text));
 
   // Check if parsed number has a country code that was not inferred from the
   // region.
-  if (i18n_number->has_country_code() &&
-      i18n_number->country_code_source() != PhoneNumber::FROM_DEFAULT_COUNTRY) {
+  if (i18n_number->has_country_code()) {
     *country_code = base::UTF8ToUTF16(
         base::StringPrintf("%d", i18n_number->country_code()));
+    if (normalized_number.length() <= national_significant_number.length() &&
+        !StartsWith(normalized_number, *country_code,
+                    true /* case_sensitive */)) {
+      country_code->clear();
+    }
   }
 
   // The region might be different from what we started with.
