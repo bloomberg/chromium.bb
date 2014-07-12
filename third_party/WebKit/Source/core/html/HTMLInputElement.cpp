@@ -50,7 +50,6 @@
 #include "core/events/ScopedEventQueue.h"
 #include "core/events/TouchEvent.h"
 #include "core/fileapi/FileList.h"
-#include "core/frame/EventHandlerRegistry.h"
 #include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
@@ -176,8 +175,8 @@ HTMLInputElement::~HTMLInputElement()
     // We should unregister it to avoid accessing a deleted object.
     if (isRadioButton())
         document().formController().radioButtonGroupScope().removeButton(this);
-    if (m_hasTouchEventHandler && document().frameHost())
-        document().frameHost()->eventHandlerRegistry().didRemoveEventHandler(*this, EventHandlerRegistry::TouchEvent);
+    if (m_hasTouchEventHandler)
+        document().didRemoveTouchEventHandler(this);
 #endif
 }
 
@@ -428,14 +427,10 @@ void HTMLInputElement::updateType()
 
     bool hasTouchEventHandler = m_inputTypeView->hasTouchEventHandler();
     if (hasTouchEventHandler != m_hasTouchEventHandler) {
-        // If the Document is being or has been stopped, don't register any handlers.
-        if (document().frameHost() && document().lifecycle().state() < DocumentLifecycle::Stopping) {
-            EventHandlerRegistry& registry = document().frameHost()->eventHandlerRegistry();
-            if (hasTouchEventHandler)
-                registry.didAddEventHandler(*this, EventHandlerRegistry::TouchEvent);
-            else
-                registry.didRemoveEventHandler(*this, EventHandlerRegistry::TouchEvent);
-        }
+        if (hasTouchEventHandler)
+            document().didAddTouchEventHandler(this);
+        else
+            document().didRemoveTouchEventHandler(this);
         m_hasTouchEventHandler = hasTouchEventHandler;
     }
 
@@ -1461,6 +1456,11 @@ void HTMLInputElement::didMoveToNewDocument(Document& oldDocument)
 
     if (isRadioButton())
         oldDocument.formController().radioButtonGroupScope().removeButton(this);
+    if (m_hasTouchEventHandler)
+        oldDocument.didRemoveTouchEventHandler(this);
+
+    if (m_hasTouchEventHandler)
+        document().didAddTouchEventHandler(this);
 
     HTMLTextFormControlElement::didMoveToNewDocument(oldDocument);
 }

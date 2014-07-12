@@ -414,6 +414,11 @@ PassRefPtrWillBeRawPtr<Document> LocalDOMWindow::installNewDocument(const String
     }
 
     m_frame->selection().updateSecureKeyboardEntryIfActive();
+
+    if (m_frame->isMainFrame()) {
+        if (m_document->hasTouchEventHandlers())
+            m_frame->host()->chrome().client().needTouchEvents(true);
+    }
     return m_document;
 }
 
@@ -1536,7 +1541,9 @@ bool LocalDOMWindow::addEventListener(const AtomicString& eventType, PassRefPtr<
 
     if (Document* document = this->document()) {
         document->addListenerTypeIfNeeded(eventType);
-        if (eventType == EventTypeNames::storage)
+        if (isTouchEventType(eventType))
+            document->didAddTouchEventHandler(document);
+        else if (eventType == EventTypeNames::storage)
             didAddStorageEventListener(this);
     }
 
@@ -1568,6 +1575,11 @@ bool LocalDOMWindow::removeEventListener(const AtomicString& eventType, EventLis
 
     if (m_frame && m_frame->host())
         m_frame->host()->eventHandlerRegistry().didRemoveEventHandler(*this, eventType);
+
+    if (Document* document = this->document()) {
+        if (isTouchEventType(eventType))
+            document->didRemoveTouchEventHandler(document);
+    }
 
     lifecycleNotifier().notifyRemoveEventListener(this, eventType);
 
@@ -1637,6 +1649,9 @@ void LocalDOMWindow::removeAllEventListenersInternal(BroadcastListenerRemoval mo
     if (mode == DoBroadcastListenerRemoval) {
         if (m_frame && m_frame->host())
             m_frame->host()->eventHandlerRegistry().didRemoveAllEventHandlers(*this);
+
+        if (Document* document = this->document())
+            document->didClearTouchEventHandlers(document);
     }
 
     removeAllUnloadEventListeners(this);

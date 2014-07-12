@@ -758,11 +758,12 @@ Region ScrollingCoordinator::computeShouldHandleScrollGestureOnMainThreadRegion(
 static void accumulateDocumentTouchEventTargetRects(LayerHitTestRects& rects, const Document* document)
 {
     ASSERT(document);
-    const EventTargetSet* targets = document->frameHost()->eventHandlerRegistry().eventHandlerTargets(EventHandlerRegistry::TouchEvent);
-    if (!targets)
+    if (!document->touchEventTargets())
         return;
 
-    // If there's a handler on the window, document, html or body element (fairly common in practice),
+    const TouchEventTargetSet* targets = document->touchEventTargets();
+
+    // If there's a handler on the document, html or body element (fairly common in practice),
     // then we can quickly mark the entire document and skip looking at any other handlers.
     // Note that technically a handler on the body doesn't cover the whole document, but it's
     // reasonable to be conservative and report the whole document anyway.
@@ -771,10 +772,9 @@ static void accumulateDocumentTouchEventTargetRects(LayerHitTestRects& rects, co
     // root cc::layer with the video layer so doing this optimization causes the compositor to think
     // that there are no handlers, therefore skip it.
     if (!document->renderView()->compositor()->inOverlayFullscreenVideo()) {
-        for (EventTargetSet::const_iterator iter = targets->begin(); iter != targets->end(); ++iter) {
-            EventTarget* target = iter->key;
-            Node* node = target->toNode();
-            if (target->toDOMWindow() || node == document || node == document->documentElement() || node == document->body()) {
+        for (TouchEventTargetSet::const_iterator iter = targets->begin(); iter != targets->end(); ++iter) {
+            Node* target = iter->key;
+            if (target == document || target == document->documentElement() || target == document->body()) {
                 if (RenderView* rendererView = document->renderView()) {
                     rendererView->computeLayerHitTestRects(rects);
                 }
@@ -783,19 +783,18 @@ static void accumulateDocumentTouchEventTargetRects(LayerHitTestRects& rects, co
         }
     }
 
-    for (EventTargetSet::const_iterator iter = targets->begin(); iter != targets->end(); ++iter) {
-        EventTarget* target = iter->key;
-        Node* node = target->toNode();
-        if (!node || !node->inDocument())
+    for (TouchEventTargetSet::const_iterator iter = targets->begin(); iter != targets->end(); ++iter) {
+        const Node* target = iter->key;
+        if (!target->inDocument())
             continue;
 
-        if (node->isDocumentNode() && node != document) {
-            accumulateDocumentTouchEventTargetRects(rects, toDocument(node));
-        } else if (RenderObject* renderer = node->renderer()) {
+        if (target->isDocumentNode() && target != document) {
+            accumulateDocumentTouchEventTargetRects(rects, toDocument(target));
+        } else if (RenderObject* renderer = target->renderer()) {
             // If the set also contains one of our ancestor nodes then processing
             // this node would be redundant.
             bool hasTouchEventTargetAncestor = false;
-            for (Node* ancestor = node->parentNode(); ancestor && !hasTouchEventTargetAncestor; ancestor = ancestor->parentNode()) {
+            for (Node* ancestor = target->parentNode(); ancestor && !hasTouchEventTargetAncestor; ancestor = ancestor->parentNode()) {
                 if (targets->contains(ancestor))
                     hasTouchEventTargetAncestor = true;
             }

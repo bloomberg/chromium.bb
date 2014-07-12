@@ -329,6 +329,7 @@ void Node::willBeDeletedFromDocument()
 
     if (hasEventTargetData()) {
         clearEventTargetData();
+        document.didClearTouchEventHandlers(this);
         if (document.frameHost())
             document.frameHost()->eventHandlerRegistry().didRemoveAllEventHandlers(*this);
     }
@@ -1942,12 +1943,19 @@ void Node::didMoveToNewDocument(Document& oldDocument)
 
     oldDocument.markers().removeMarkers(this);
     oldDocument.updateRangesAfterNodeMovedToAnotherDocument(*this);
-    if (oldDocument.frameHost() && !document().frameHost())
-        oldDocument.frameHost()->eventHandlerRegistry().didMoveOutOfFrameHost(*this);
-    else if (document().frameHost() && !oldDocument.frameHost())
-        document().frameHost()->eventHandlerRegistry().didMoveIntoFrameHost(*this);
-    else if (oldDocument.frameHost() != document().frameHost())
-        EventHandlerRegistry::didMoveBetweenFrameHosts(*this, oldDocument.frameHost(), document().frameHost());
+
+    if (const TouchEventTargetSet* touchHandlers = oldDocument.touchEventTargets()) {
+        while (touchHandlers->contains(this)) {
+            oldDocument.didRemoveTouchEventHandler(this);
+            document().didAddTouchEventHandler(this);
+        }
+    }
+    if (oldDocument.frameHost() != document().frameHost()) {
+        if (oldDocument.frameHost())
+            oldDocument.frameHost()->eventHandlerRegistry().didMoveOutOfFrameHost(*this);
+        if (document().frameHost())
+            document().frameHost()->eventHandlerRegistry().didMoveIntoFrameHost(*this);
+    }
 
     if (WillBeHeapVector<OwnPtrWillBeMember<MutationObserverRegistration> >* registry = mutationObserverRegistry()) {
         for (size_t i = 0; i < registry->size(); ++i) {
@@ -1969,6 +1977,8 @@ static inline bool tryAddEventListener(Node* targetNode, const AtomicString& eve
 
     Document& document = targetNode->document();
     document.addListenerTypeIfNeeded(eventType);
+    if (isTouchEventType(eventType))
+        document.didAddTouchEventHandler(targetNode);
     if (document.frameHost())
         document.frameHost()->eventHandlerRegistry().didAddEventHandler(*targetNode, eventType);
 
@@ -1988,6 +1998,8 @@ static inline bool tryRemoveEventListener(Node* targetNode, const AtomicString& 
     // FIXME: Notify Document that the listener has vanished. We need to keep track of a number of
     // listeners for each type, not just a bool - see https://bugs.webkit.org/show_bug.cgi?id=33861
     Document& document = targetNode->document();
+    if (isTouchEventType(eventType))
+        document.didRemoveTouchEventHandler(targetNode);
     if (document.frameHost())
         document.frameHost()->eventHandlerRegistry().didRemoveEventHandler(*targetNode, eventType);
 
@@ -2004,6 +2016,7 @@ void Node::removeAllEventListeners()
     if (hasEventListeners() && document().frameHost())
         document().frameHost()->eventHandlerRegistry().didRemoveAllEventHandlers(*this);
     EventTarget::removeAllEventListeners();
+    document().didClearTouchEventHandlers(this);
 }
 
 void Node::removeAllEventListenersRecursively()

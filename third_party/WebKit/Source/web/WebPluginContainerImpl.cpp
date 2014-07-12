@@ -40,7 +40,6 @@
 #include "core/events/MouseEvent.h"
 #include "core/events/TouchEvent.h"
 #include "core/events/WheelEvent.h"
-#include "core/frame/EventHandlerRegistry.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/html/HTMLFormElement.h"
@@ -515,13 +514,10 @@ void WebPluginContainerImpl::requestTouchEventType(TouchEventRequestType request
     if (m_touchEventRequestType == requestType)
         return;
 
-    if (m_element->document().frameHost()) {
-        EventHandlerRegistry& registry = m_element->document().frameHost()->eventHandlerRegistry();
-        if (requestType != TouchEventRequestTypeNone && m_touchEventRequestType == TouchEventRequestTypeNone)
-            registry.didAddEventHandler(*m_element, EventHandlerRegistry::TouchEvent);
-        else if (requestType == TouchEventRequestTypeNone && m_touchEventRequestType != TouchEventRequestTypeNone)
-            registry.didRemoveEventHandler(*m_element, EventHandlerRegistry::TouchEvent);
-    }
+    if (requestType != TouchEventRequestTypeNone && m_touchEventRequestType == TouchEventRequestTypeNone)
+        m_element->document().didAddTouchEventHandler(m_element);
+    else if (requestType == TouchEventRequestTypeNone && m_touchEventRequestType != TouchEventRequestTypeNone)
+        m_element->document().didRemoveTouchEventHandler(m_element);
     m_touchEventRequestType = requestType;
 }
 
@@ -684,8 +680,8 @@ WebPluginContainerImpl::~WebPluginContainerImpl()
     //
     m_element = 0;
 #else
-    if (m_touchEventRequestType != TouchEventRequestTypeNone && m_element->document().frameHost())
-        m_element->document().frameHost()->eventHandlerRegistry().didRemoveEventHandler(*m_element, EventHandlerRegistry::TouchEvent);
+    if (m_touchEventRequestType != TouchEventRequestTypeNone)
+        m_element->document().didRemoveTouchEventHandler(m_element);
 #endif
 
     for (size_t i = 0; i < m_pluginLoadObservers.size(); ++i)
@@ -698,8 +694,8 @@ WebPluginContainerImpl::~WebPluginContainerImpl()
 #if ENABLE(OILPAN)
 void WebPluginContainerImpl::detach()
 {
-    if (m_touchEventRequestType != TouchEventRequestTypeNone && m_element->document().frameHost())
-        m_element->document().frameHost()->eventHandlerRegistry().didRemoveEventHandler(*m_element, EventHandlerRegistry::TouchEvent);
+    if (m_touchEventRequestType != TouchEventRequestTypeNone)
+        m_element->document().didRemoveTouchEventHandler(m_element);
 
     setWebLayer(0);
 }
