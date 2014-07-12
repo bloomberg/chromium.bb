@@ -388,7 +388,7 @@ bool NavigatorImpl::NavigateToEntry(
 
   // Notify observers about navigation.
   if (delegate_) {
-    delegate_->DidStartNavigationToPendingEntry(render_frame_host,
+    delegate_->DidStartNavigationToPendingEntry(dest_render_frame_host,
                                                 entry.GetURL(),
                                                 reload_type);
   }
