@@ -11,6 +11,7 @@ function populateConsoleWithMessages(count)
 
 function test()
 {
+    InspectorTest.fixConsoleViewportDimensions(600, 200);
     var consoleView = WebInspector.ConsolePanel._view();
     var viewport = consoleView._viewport;
     const minimumViewportMessagesCount = 10;

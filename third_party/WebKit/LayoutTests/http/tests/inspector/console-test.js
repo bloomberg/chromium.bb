@@ -20,8 +20,14 @@ InspectorTest.prepareConsoleMessageText = function(messageElement)
 
 InspectorTest.disableConsoleViewport = function()
 {
+    InspectorTest.fixConsoleViewportDimensions(600, 2000);
+}
+
+InspectorTest.fixConsoleViewportDimensions = function(width, height)
+{
     var viewport = WebInspector.ConsolePanel._view()._viewport;
-    viewport.element.style.height = "2000px";
+    viewport.element.style.width = width + "px";
+    viewport.element.style.height = height + "px";
     viewport.element.style.position = "absolute";
     viewport.invalidate();
 }
