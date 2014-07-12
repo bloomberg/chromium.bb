@@ -126,8 +126,6 @@ class ChromotingHost : public base::NonThreadSafe,
   virtual void OnSessionClientCapabilities(ClientSession* client) OVERRIDE;
   virtual void OnSessionAuthenticationFailed(ClientSession* client) OVERRIDE;
   virtual void OnSessionClosed(ClientSession* session) OVERRIDE;
-  virtual void OnSessionSequenceNumber(ClientSession* session,
-                                       int64 sequence_number) OVERRIDE;
   virtual void OnSessionRouteChange(
       ClientSession* session,
       const std::string& channel_name,

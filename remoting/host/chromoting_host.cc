@@ -263,11 +263,6 @@ void ChromotingHost::OnSessionClosed(ClientSession* client) {
   delete client;
 }
 
-void ChromotingHost::OnSessionSequenceNumber(ClientSession* session,
-                                             int64 sequence_number) {
-  DCHECK(CalledOnValidThread());
-}
-
 void ChromotingHost::OnSessionRouteChange(
     ClientSession* session,
     const std::string& channel_name,

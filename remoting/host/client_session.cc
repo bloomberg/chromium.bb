@@ -424,8 +424,6 @@ void ClientSession::OnSequenceNumberUpdated(
 
   if (video_scheduler_.get())
     video_scheduler_->UpdateSequenceNumber(sequence_number);
-
-  event_handler_->OnSessionSequenceNumber(this, sequence_number);
 }
 
 void ClientSession::OnRouteChange(

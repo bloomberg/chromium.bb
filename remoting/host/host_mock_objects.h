@@ -74,8 +74,6 @@ class MockClientSessionEventHandler : public ClientSession::EventHandler {
   MOCK_METHOD1(OnSessionClientCapabilities, void(ClientSession* client));
   MOCK_METHOD1(OnSessionAuthenticationFailed, void(ClientSession* client));
   MOCK_METHOD1(OnSessionClosed, void(ClientSession* client));
-  MOCK_METHOD2(OnSessionSequenceNumber, void(ClientSession* client,
-                                             int64 sequence_number));
   MOCK_METHOD3(OnSessionRouteChange, void(
       ClientSession* client,
       const std::string& channel_name,

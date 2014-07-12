@@ -78,11 +78,6 @@ class ClientSession
     // Called after connection has failed or after the client closed it.
     virtual void OnSessionClosed(ClientSession* client) = 0;
 
-    // Called to notify of each message's sequence number. The
-    // callback must not tear down this object.
-    virtual void OnSessionSequenceNumber(ClientSession* client,
-                                         int64 sequence_number) = 0;
-
     // Called on notification of a route change event, when a channel is
     // connected.
     virtual void OnSessionRouteChange(
