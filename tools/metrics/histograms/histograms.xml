@@ -43920,11 +43920,11 @@ Therefore, the affected-histogram name has to have at least one dot in it.
     The value is a combination of the current sync state and if the user has
     their sync password saved.
   </summary>
-  <int value="0" label="Not Syncing/Sync password not saved"/>
-  <int value="1"
+  <int value="0" label="Syncing/Sync password not saved"/>
+  <int value="1" label="Syncing/Sync password saved"/>
+  <int value="2" label="Not Syncing/Sync password not saved"/>
+  <int value="3"
       label="Not Syncing/Sync pasword saved. This value should not happen."/>
-  <int value="2" label="Syncing/Sync password not saved"/>
-  <int value="3" label="Syncing/Sync password saved"/>
 </enum>
 
 <enum name="PasswordManagerUIDismissalReason" type="int">
