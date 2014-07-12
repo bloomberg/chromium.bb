@@ -1349,7 +1349,6 @@
         'media',
         'shared_memory_support',
         '../base/base.gyp:base',
-        '../net/net.gyp:net_test_support',
         '../skia/skia.gyp:skia',
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',

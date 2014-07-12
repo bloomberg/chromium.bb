@@ -115,14 +115,12 @@ class EncryptedMediaTestBase : public MediaBrowserTest {
   }
 #endif  // defined(WIDEVINE_CDM_AVAILABLE)
 
-  void RunEncryptedMediaTestPage(
-      const std::string& html_page,
-      const std::string& key_system,
-      const media::QueryParams& query_params,
-      const std::string& expected_title) {
-    media::QueryParams new_query_params = query_params;
-    StartLicenseServerIfNeeded(key_system, &new_query_params);
-    RunMediaTestPage(html_page, new_query_params, expected_title, true);
+  void RunEncryptedMediaTestPage(const std::string& html_page,
+                                 const std::string& key_system,
+                                 std::vector<StringPair>* query_params,
+                                 const std::string& expected_title) {
+    StartLicenseServerIfNeeded(key_system, query_params);
+    RunMediaTestPage(html_page, query_params, expected_title, true);
   }
 
   // Tests |html_page| using |media_file| (with |media_type|) and |key_system|.
@@ -146,7 +144,7 @@ class EncryptedMediaTestBase : public MediaBrowserTest {
       VLOG(0) << "Skipping test - MSE not supported.";
       return;
     }
-    media::QueryParams query_params;
+    std::vector<StringPair> query_params;
     query_params.push_back(std::make_pair("mediaFile", media_file));
     query_params.push_back(std::make_pair("mediaType", media_type));
     query_params.push_back(std::make_pair("keySystem", key_system));
@@ -158,7 +156,7 @@ class EncryptedMediaTestBase : public MediaBrowserTest {
       query_params.push_back(std::make_pair("forceInvalidResponse", "1"));
     if (!session_to_load.empty())
       query_params.push_back(std::make_pair("sessionToLoad", session_to_load));
-    RunEncryptedMediaTestPage(html_page, key_system, query_params,
+    RunEncryptedMediaTestPage(html_page, key_system, &query_params,
                               expected_title);
   }
 
@@ -190,17 +188,16 @@ class EncryptedMediaTestBase : public MediaBrowserTest {
     EXPECT_TRUE(receivedKeyMessage);
   }
 
-  // Starts a license server if available for the |key_system| and adds a
-  // 'licenseServerURL' query parameter to |query_params|.
+
   void StartLicenseServerIfNeeded(const std::string& key_system,
-                                  media::QueryParams* query_params) {
+                                  std::vector<StringPair>* query_params) {
     scoped_ptr<TestLicenseServerConfig> config = GetServerConfig(key_system);
     if (!config)
       return;
     license_server_.reset(new TestLicenseServer(config.Pass()));
     EXPECT_TRUE(license_server_->Start());
-    query_params->push_back(
-        std::make_pair("licenseServerURL", license_server_->GetServerURL()));
+    query_params->push_back(std::make_pair("licenseServerURL",
+        license_server_->GetServerURL()));
   }
 
   bool IsPlayBackPossible(const std::string& key_system) {
@@ -315,7 +312,7 @@ class ECKEncryptedMediaTest : public EncryptedMediaTestBase {
     // Since we do not test playback, arbitrarily choose a test file and source
     // type.
     RunEncryptedMediaTest(kDefaultEmePlayer,
-                          "bear-a_enc-a.webm",
+                          "bear-a-enc_a.webm",
                           kWebMAudioOnly,
                           key_system,
                           SRC,
@@ -382,7 +379,7 @@ class EncryptedMediaTest
 
   void RunInvalidResponseTest() {
     RunEncryptedMediaTest(kDefaultEmePlayer,
-                          "bear-320x240-av_enc-av.webm",
+                          "bear-320x240-av-enc_av.webm",
                           kWebMAudioVideo,
                           CurrentKeySystem(),
                           CurrentSourceType(),
@@ -394,7 +391,7 @@ class EncryptedMediaTest
 
   void TestFrameSizeChange() {
     RunEncryptedMediaTest("encrypted_frame_size_change.html",
-                          "frame_size_change-av_enc-v.webm",
+                          "frame_size_change-av-enc-v.webm",
                           kWebMAudioVideo,
                           CurrentKeySystem(),
                           CurrentSourceType(),
@@ -406,14 +403,14 @@ class EncryptedMediaTest
 
   void TestConfigChange() {
     DCHECK(IsMSESupported());
-    media::QueryParams query_params;
+    std::vector<StringPair> query_params;
     query_params.push_back(std::make_pair("keySystem", CurrentKeySystem()));
     query_params.push_back(std::make_pair("runEncrypted", "1"));
     if (CurrentEmeVersion() == PREFIXED)
       query_params.push_back(std::make_pair("usePrefixedEME", "1"));
     RunEncryptedMediaTestPage("mse_config_change.html",
                               CurrentKeySystem(),
-                              query_params,
+                              &query_params,
                               kEnded);
   }
 
@@ -491,7 +488,7 @@ INSTANTIATE_TEST_CASE_P(MSE_ExternalClearKeyDecryptOnly,
                         Combine(Values(kExternalClearKeyDecryptOnlyKeySystem),
                                 Values(MSE),
                                 Values(UNPREFIXED)));
-#endif  // defined(ENABLE_PEPPER_CDMS)
+#endif // defined(ENABLE_PEPPER_CDMS)
 
 #if defined(WIDEVINE_CDM_AVAILABLE)
 // This test doesn't fully test playback with Widevine. So we only run Widevine
@@ -514,27 +511,27 @@ INSTANTIATE_TEST_CASE_P(MSE_Widevine,
 #endif  // defined(WIDEVINE_CDM_AVAILABLE)
 
 IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_AudioOnly_WebM) {
-  TestSimplePlayback("bear-a_enc-a.webm", kWebMAudioOnly);
+  TestSimplePlayback("bear-a-enc_a.webm", kWebMAudioOnly);
 }
 
 IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_AudioClearVideo_WebM) {
-  TestSimplePlayback("bear-320x240-av_enc-a.webm", kWebMAudioVideo);
+  TestSimplePlayback("bear-320x240-av-enc_a.webm", kWebMAudioVideo);
 }
 
 IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_VideoAudio_WebM) {
-  TestSimplePlayback("bear-320x240-av_enc-av.webm", kWebMAudioVideo);
+  TestSimplePlayback("bear-320x240-av-enc_av.webm", kWebMAudioVideo);
 }
 
 IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_VideoOnly_WebM) {
-  TestSimplePlayback("bear-320x240-v_enc-v.webm", kWebMVideoOnly);
+  TestSimplePlayback("bear-320x240-v-enc_v.webm", kWebMVideoOnly);
 }
 
 IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_VideoClearAudio_WebM) {
-  TestSimplePlayback("bear-320x240-av_enc-v.webm", kWebMAudioVideo);
+  TestSimplePlayback("bear-320x240-av-enc_v.webm", kWebMAudioVideo);
 }
 
 IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_VP9Video_WebM) {
-  TestSimplePlayback("bear-320x240-v-vp9_enc-v.webm", kWebMVP9VideoOnly);
+  TestSimplePlayback("bear-320x240-v-vp9-enc_v.webm", kWebMVP9VideoOnly);
 }
 
 IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, InvalidResponseKeyError) {
@@ -590,7 +587,7 @@ IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_AudioOnly_MP4) {
 // The parent key system cannot be used in generateKeyRequest.
 IN_PROC_BROWSER_TEST_F(WVEncryptedMediaTest, ParentThrowsException_Prefixed) {
   RunEncryptedMediaTest(kDefaultEmePlayer,
-                        "bear-a_enc-a.webm",
+                        "bear-a-enc_a.webm",
                         kWebMAudioOnly,
                         "com.widevine",
                         MSE,
@@ -604,7 +601,7 @@ IN_PROC_BROWSER_TEST_F(WVEncryptedMediaTest, ParentThrowsException_Prefixed) {
 // The parent key system cannot be used when creating MediaKeys.
 IN_PROC_BROWSER_TEST_F(WVEncryptedMediaTest, ParentThrowsException) {
   RunEncryptedMediaTest(kDefaultEmePlayer,
-                        "bear-a_enc-a.webm",
+                        "bear-a-enc_a.webm",
                         kWebMAudioOnly,
                         "com.widevine",
                         MSE,
@@ -643,7 +640,7 @@ IN_PROC_BROWSER_TEST_F(ECKEncryptedMediaTest, FileIOTest) {
 
 IN_PROC_BROWSER_TEST_F(ECKEncryptedMediaTest, LoadLoadableSession) {
   RunEncryptedMediaTest(kDefaultEmePlayer,
-                        "bear-320x240-v_enc-v.webm",
+                        "bear-320x240-v-enc_v.webm",
                         kWebMVideoOnly,
                         kExternalClearKeyKeySystem,
                         SRC,
@@ -656,7 +653,7 @@ IN_PROC_BROWSER_TEST_F(ECKEncryptedMediaTest, LoadLoadableSession) {
 IN_PROC_BROWSER_TEST_F(ECKEncryptedMediaTest, LoadUnknownSession) {
   // TODO(xhwang): Add a specific error for this failure, e.g. kSessionNotFound.
   RunEncryptedMediaTest(kDefaultEmePlayer,
-                        "bear-320x240-v_enc-v.webm",
+                        "bear-320x240-v-enc_v.webm",
                         kWebMVideoOnly,
                         kExternalClearKeyKeySystem,
                         SRC,

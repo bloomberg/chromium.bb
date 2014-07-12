@@ -32,18 +32,17 @@ static bool IsMSESupported() {
 
 class MediaSourceTest : public content::MediaBrowserTest {
  public:
-  void TestSimplePlayback(const std::string& media_file,
-                          const std::string& media_type,
-                          const std::string& expectation) {
+  void TestSimplePlayback(const char* media_file, const char* media_type,
+                          const char* expectation) {
     if (!IsMSESupported()) {
       VLOG(0) << "Skipping test - MSE not supported.";
       return;
     }
 
-    media::QueryParams query_params;
-    query_params.push_back(std::make_pair("mediaFile", media_file));
-    query_params.push_back(std::make_pair("mediaType", media_type));
-    RunMediaTestPage("media_source_player.html", query_params, expectation,
+    std::vector<StringPair> query_params;
+    query_params.push_back(std::make_pair("mediafile", media_file));
+    query_params.push_back(std::make_pair("mediatype", media_type));
+    RunMediaTestPage("media_source_player.html", &query_params, expectation,
                      true);
   }
 
@@ -85,10 +84,7 @@ IN_PROC_BROWSER_TEST_F(MediaSourceTest, ConfigChangeVideo) {
     VLOG(0) << "Skipping test - MSE not supported.";
     return;
   }
-  RunMediaTestPage("mse_config_change.html",
-                   media::QueryParams(),
-                   kEnded,
-                   true);
+  RunMediaTestPage("mse_config_change.html", NULL, kEnded, true);
 }
 
 }  // namespace content

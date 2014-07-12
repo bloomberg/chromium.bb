@@ -4,20 +4,19 @@
   </head>
   <body onload="runTest();">
     <video controls></video>
-    <script src='eme_player_js/app_loader.js' type='text/javascript'></script>
+    <script src="media_utils.js" type="text/javascript"></script>
+    <script src="media_source_utils.js" type="text/javascript"></script>
+    <script src="encrypted_media_utils.js" type="text/javascript"></script>
     <script type="text/javascript">
-      var testConfig = new TestConfig();
-      testConfig.loadQueryParams();
-      var runEncrypted = testConfig.runEncrypted == 1;
-
+      var runEncrypted = QueryString.runencrypted == 1;
       var video = document.querySelector('video');
       var mediaType = 'video/webm; codecs="vorbis, vp8"';
 
       var MEDIA_1 = 'bear-320x240.webm';
       var MEDIA_2 = 'bear-640x360.webm';
       if (runEncrypted) {
-        MEDIA_1 = 'bear-320x240-av_enc-av.webm';
-        MEDIA_2 = 'bear-640x360-av_enc-av.webm';
+        MEDIA_1 = 'bear-320x240-av-enc_av.webm';
+        MEDIA_2 = 'bear-640x360-av-enc_av.webm';
       }
 
       var MEDIA_1_WIDTH = 320;
@@ -47,7 +46,7 @@
             mediaSource.endOfStream();
             if (!mediaSource.duration ||
                 Math.abs(mediaSource.duration - TOTAL_DURATION) > DELTA) {
-              Utils.failTest('Unexpected mediaSource.duration = ' +
+              failTest('Unexpected mediaSource.duration = ' +
                        mediaSource.duration + ', expected duration = ' +
                        TOTAL_DURATION);
               return;
@@ -79,14 +78,14 @@
           // Video duration is a float value so we check it within a range.
           if (!video.duration ||
               Math.abs(video.duration - TOTAL_DURATION) > DELTA) {
-            Utils.failTest('Unexpected video.duration = ' + video.duration +
+            failTest('Unexpected video.duration = ' + video.duration +
                      ', expected duration = ' + TOTAL_DURATION);
             return;
           }
 
           video.removeEventListener('timeupdate', onTimeUpdate);
-          video.removeEventListener('ended', Utils.failTest);
-          Utils.installTitleEventHandler(video, 'ended');
+          video.removeEventListener('ended', failTest);
+          installTitleEventHandler(video, 'ended');
           // Seek to save test execution time and to test seek on second buffer.
           video.currentTime = APPEND_TIME + MEDIA_2_LENGTH * 0.9;
         }
@@ -97,14 +96,14 @@
           if (video.videoWidth != MEDIA_1_WIDTH ||
               video.videoHeight != MEDIA_1_HEIGHT) {
             logVideoDimensions();
-            Utils.failTest('Unexpected dimensions for first video segment.');
+            failTest('Unexpected dimensions for first video segment.');
             return;
           }
         } else if (video.currentTime >= APPEND_TIME + DELTA) {
           if (video.videoWidth != MEDIA_2_WIDTH ||
               video.videoHeight != MEDIA_2_HEIGHT) {
             logVideoDimensions();
-            Utils.failTest('Unexpected dimensions for second video segment.');
+            failTest('Unexpected dimensions for second video segment.');
             return;
           }
         }
@@ -117,17 +116,16 @@
       }
 
       function runTest() {
-        testConfig.mediaFile = MEDIA_1;
-        testConfig.mediaType = mediaType;
         video.addEventListener('timeupdate', onTimeUpdate);
-        video.addEventListener('ended', Utils.failTest);
+        video.addEventListener('ended', failTest);
         if (runEncrypted) {
-          var emePlayer = PlayerUtils.createPlayer(video, testConfig);
-          emePlayer.registerEventListeners();
+          loadEncryptedMedia(video, MEDIA_1, keySystem, KEY, true,
+                             appendNextSource);
+        } else {
+          var mediaSource = loadMediaSource(MEDIA_1, mediaType,
+                                            appendNextSource);
+          video.src = window.URL.createObjectURL(mediaSource);
         }
-        var mediaSource = MediaSourceUtils.loadMediaSource(
-            MEDIA_1, mediaType, appendNextSource);
-        video.src = window.URL.createObjectURL(mediaSource);
       }
       </script>
   </body>
