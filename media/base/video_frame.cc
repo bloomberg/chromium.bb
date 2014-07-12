@@ -618,10 +618,13 @@ void VideoFrame::AllocateYUV() {
   // overreads by one line in some cases, see libavcodec/utils.c:
   // avcodec_align_dimensions2() and libavcodec/x86/h264_chromamc.asm:
   // put_h264_chroma_mc4_ssse3().
+  const size_t data_size =
+      y_bytes + (uv_bytes * 2 + uv_stride) + a_bytes + kFrameSizePadding;
   uint8* data = reinterpret_cast<uint8*>(
-      base::AlignedAlloc(
-          y_bytes + (uv_bytes * 2 + uv_stride) + a_bytes + kFrameSizePadding,
-          kFrameAddressAlignment));
+      base::AlignedAlloc(data_size, kFrameAddressAlignment));
+  // FFmpeg expects the initialize allocation to be zero-initialized.  Failure
+  // to do so can lead to unitialized value usage.  See http://crbug.com/390941
+  memset(data, 0, data_size);
   no_longer_needed_cb_ = base::Bind(&ReleaseData, data);
   COMPILE_ASSERT(0 == VideoFrame::kYPlane, y_plane_data_must_be_index_0);
   data_[VideoFrame::kYPlane] = data;

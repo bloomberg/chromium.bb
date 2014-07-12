@@ -308,4 +308,17 @@ TEST(VideoFrame, TextureNoLongerNeededCallbackAfterTakingAndReleasingMailbox) {
   EXPECT_EQ(release_sync_points, called_sync_points);
 }
 
+TEST(VideoFrame, ZeroInitialized) {
+  const int kWidth = 64;
+  const int kHeight = 48;
+  const base::TimeDelta kTimestamp = base::TimeDelta::FromMicroseconds(1337);
+
+  gfx::Size size(kWidth, kHeight);
+  scoped_refptr<media::VideoFrame> frame = VideoFrame::CreateFrame(
+      media::VideoFrame::YV12, size, gfx::Rect(size), size, kTimestamp);
+
+  for (size_t i = 0; i < VideoFrame::NumPlanes(frame->format()); ++i)
+    EXPECT_EQ(0, frame->data(i)[0]);
+}
+
 }  // namespace media
