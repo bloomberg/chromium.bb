@@ -144,10 +144,6 @@ void WindowTreeHostImpl::PostNativeEvent(
   NOTIMPLEMENTED();
 }
 
-void WindowTreeHostImpl::OnDeviceScaleFactorChanged(float device_scale_factor) {
-  NOTIMPLEMENTED();
-}
-
 void WindowTreeHostImpl::SetCursorNative(gfx::NativeCursor cursor) {
   NOTIMPLEMENTED();
 }

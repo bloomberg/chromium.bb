@@ -505,10 +505,6 @@ void DesktopWindowTreeHostWin::PostNativeEvent(
     const base::NativeEvent& native_event) {
 }
 
-void DesktopWindowTreeHostWin::OnDeviceScaleFactorChanged(
-    float device_scale_factor) {
-}
-
 void DesktopWindowTreeHostWin::SetCursorNative(gfx::NativeCursor cursor) {
   ui::CursorLoaderWin cursor_loader;
   cursor_loader.SetPlatformCursor(&cursor);

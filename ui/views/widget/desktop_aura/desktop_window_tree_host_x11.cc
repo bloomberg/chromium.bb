@@ -968,10 +968,6 @@ void DesktopWindowTreeHostX11::PostNativeEvent(
   XSendEvent(xdisplay_, xwindow_, False, 0, &xevent);
 }
 
-void DesktopWindowTreeHostX11::OnDeviceScaleFactorChanged(
-    float device_scale_factor) {
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // DesktopWindowTreeHostX11, ui::EventSource implementation:
 

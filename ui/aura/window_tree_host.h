@@ -142,9 +142,6 @@ class AURA_EXPORT WindowTreeHost {
   // Posts |native_event| to the platform's event queue.
   virtual void PostNativeEvent(const base::NativeEvent& native_event) = 0;
 
-  // Called when the device scale factor of the root window has chagned.
-  virtual void OnDeviceScaleFactorChanged(float device_scale_factor) = 0;
-
  protected:
   friend class TestScreen;  // TODO(beng): see if we can remove/consolidate.
 

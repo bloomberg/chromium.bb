@@ -81,11 +81,6 @@ void WindowTreeHostOzone::PostNativeEvent(
   NOTIMPLEMENTED();
 }
 
-void WindowTreeHostOzone::OnDeviceScaleFactorChanged(
-    float device_scale_factor) {
-  NOTIMPLEMENTED();
-}
-
 void WindowTreeHostOzone::SetCursorNative(gfx::NativeCursor cursor) {
   ui::CursorFactoryOzone::GetInstance()->SetCursor(GetAcceleratedWidget(),
                                                    cursor.platform());

@@ -149,11 +149,6 @@ void WindowTreeHostWin::PostNativeEvent(const base::NativeEvent& native_event) {
       hwnd(), native_event.message, native_event.wParam, native_event.lParam);
 }
 
-void WindowTreeHostWin::OnDeviceScaleFactorChanged(
-    float device_scale_factor) {
-  NOTIMPLEMENTED();
-}
-
 ui::EventProcessor* WindowTreeHostWin::GetEventProcessor() {
   return dispatcher();
 }

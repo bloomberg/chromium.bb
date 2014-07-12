@@ -275,11 +275,6 @@ void RemoteWindowTreeHostWin::PostNativeEvent(
     const base::NativeEvent& native_event) {
 }
 
-void RemoteWindowTreeHostWin::OnDeviceScaleFactorChanged(
-    float device_scale_factor) {
-  NOTIMPLEMENTED();
-}
-
 ui::EventProcessor* RemoteWindowTreeHostWin::GetEventProcessor() {
   return dispatcher();
 }
