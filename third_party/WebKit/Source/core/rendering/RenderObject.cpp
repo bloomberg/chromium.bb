@@ -362,8 +362,8 @@ RenderObject* RenderObject::nextInPreOrder() const
 
 RenderObject* RenderObject::nextInPreOrderAfterChildren() const
 {
-    RenderObject* o;
-    if (!(o = nextSibling())) {
+    RenderObject* o = nextSibling();
+    if (!o) {
         o = parent();
         while (o && !o->nextSibling())
             o = o->parent();
@@ -388,8 +388,8 @@ RenderObject* RenderObject::nextInPreOrderAfterChildren(const RenderObject* stay
         return 0;
 
     const RenderObject* current = this;
-    RenderObject* next;
-    while (!(next = current->nextSibling())) {
+    RenderObject* next = current->nextSibling();
+    for (; !next; next = current->nextSibling()) {
         current = current->parent();
         if (!current || current == stayWithin)
             return 0;
@@ -2384,8 +2384,8 @@ void RenderObject::getTransformFromContainer(const RenderObject* containerObject
 {
     transform.makeIdentity();
     transform.translate(offsetInContainer.width().toFloat(), offsetInContainer.height().toFloat());
-    RenderLayer* layer;
-    if (hasLayer() && (layer = toRenderLayerModelObject(this)->layer()) && layer->transform())
+    RenderLayer* layer = hasLayer() ? toRenderLayerModelObject(this)->layer() : 0;
+    if (layer && layer->transform())
         transform.multiply(layer->currentTransform());
 
     if (containerObject && containerObject->hasLayer() && containerObject->style()->hasPerspective()) {
@@ -3289,15 +3289,13 @@ PositionWithAffinity RenderObject::createPositionWithAffinity(int offset, EAffin
     RenderObject* child = this;
     while (RenderObject* parent = child->parent()) {
         // Find non-anonymous content after.
-        RenderObject* renderer = child;
-        while ((renderer = renderer->nextInPreOrder(parent))) {
+        for (RenderObject* renderer = child->nextInPreOrder(parent); renderer; renderer = renderer->nextInPreOrder(parent)) {
             if (Node* node = renderer->nonPseudoNode())
                 return PositionWithAffinity(firstPositionInOrBeforeNode(node), DOWNSTREAM);
         }
 
         // Find non-anonymous content before.
-        renderer = child;
-        while ((renderer = renderer->previousInPreOrder())) {
+        for (RenderObject* renderer = child->previousInPreOrder(); renderer; renderer = renderer->previousInPreOrder()) {
             if (renderer == parent)
                 break;
             if (Node* node = renderer->nonPseudoNode())

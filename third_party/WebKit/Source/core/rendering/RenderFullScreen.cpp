@@ -155,8 +155,7 @@ void RenderFullScreen::unwrapRenderer()
     DeprecatedDisableModifyRenderTreeStructureAsserts disabler;
 
     if (parent()) {
-        RenderObject* child;
-        while ((child = firstChild())) {
+        for (RenderObject* child = firstChild(); child; child = firstChild()) {
             // We have to clear the override size, because as a flexbox, we
             // may have set one on the child, and we don't want to leave that
             // lying around on the child.

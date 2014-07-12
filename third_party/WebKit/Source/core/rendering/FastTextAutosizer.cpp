@@ -121,7 +121,7 @@ static const RenderObject* parentElementRenderer(const RenderObject* renderer)
     if (!node)
         return 0;
 
-    while ((node = node->parentNode())) {
+    for (node = node->parentNode(); node; node = node->parentNode()) {
         if (node->isElementNode())
             return node->renderer();
     }
@@ -831,7 +831,7 @@ float FastTextAutosizer::widthFromBlock(const RenderBlock* block)
 
     // Tables may be inflated before computing their preferred widths. Try several methods to
     // obtain a width, and fall back on a containing block's width.
-    do {
+    for (; block; block = block->containingBlock()) {
         float width;
         Length specifiedWidth = block->isTableCell()
             ? toRenderTableCell(block)->styleOrColLogicalWidth() : block->style()->logicalWidth();
@@ -847,7 +847,7 @@ float FastTextAutosizer::widthFromBlock(const RenderBlock* block)
         }
         if ((width = block->contentLogicalWidth().toFloat()) > 0)
             return width;
-    } while ((block = block->containingBlock()));
+    }
     return 0;
 }
 

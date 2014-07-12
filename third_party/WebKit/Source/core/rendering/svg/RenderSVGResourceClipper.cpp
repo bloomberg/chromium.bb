@@ -185,18 +185,16 @@ bool RenderSVGResourceClipper::applyClippingToContext(RenderObject* target, cons
 
         // clipPath can also be clipped by another clipPath.
         SVGResources* resources = SVGResourcesCache::cachedResourcesForRenderObject(this);
-        RenderSVGResourceClipper* clipPathClipper = 0;
+        RenderSVGResourceClipper* clipPathClipper = resources ? resources->clipper() : 0;
         ClipperContext clipPathClipperContext;
-        if (resources && (clipPathClipper = resources->clipper())) {
-            if (!clipPathClipper->applyClippingToContext(this, targetBoundingBox, repaintRect, context, clipPathClipperContext)) {
-                // FIXME: Awkward state micro-management. Ideally, GraphicsContextStateSaver should
-                //   a) pop saveLayers also
-                //   b) pop multiple states if needed (similarly to SkCanvas::restoreToCount())
-                // Then we should be able to replace this mess with a single, top-level GCSS.
-                maskContentSaver.restore();
-                context->restoreLayer();
-                return false;
-            }
+        if (clipPathClipper && !clipPathClipper->applyClippingToContext(this, targetBoundingBox, repaintRect, context, clipPathClipperContext)) {
+            // FIXME: Awkward state micro-management. Ideally, GraphicsContextStateSaver should
+            //   a) pop saveLayers also
+            //   b) pop multiple states if needed (similarly to SkCanvas::restoreToCount())
+            // Then we should be able to replace this mess with a single, top-level GCSS.
+            maskContentSaver.restore();
+            context->restoreLayer();
+            return false;
         }
 
         drawClipMaskContent(context, targetBoundingBox);

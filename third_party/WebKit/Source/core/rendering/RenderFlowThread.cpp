@@ -187,9 +187,10 @@ LayoutPoint RenderFlowThread::adjustedPositionRelativeToOffsetParent(const Rende
     if (startColumnSet) {
         // Take into account the offset coordinates of the columnSet.
         RenderObject* currObject = startColumnSet;
-        RenderObject* currOffsetParentRenderer;
-        Element* currOffsetParentElement;
-        while ((currOffsetParentElement = currObject->offsetParent()) && (currOffsetParentRenderer = currOffsetParentElement->renderer())) {
+        for (Element* currOffsetParentElement = currObject->offsetParent(); currOffsetParentElement; currOffsetParentElement = currObject->offsetParent()) {
+            RenderObject* currOffsetParentRenderer = currOffsetParentElement->renderer();
+            if (!currOffsetParentRenderer)
+                break;
             if (currObject->isBoxModelObject())
                 referencePoint.move(toRenderBoxModelObject(currObject)->offsetLeft(), toRenderBoxModelObject(currObject)->offsetTop());
 

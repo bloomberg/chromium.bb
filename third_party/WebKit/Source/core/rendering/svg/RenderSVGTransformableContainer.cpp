@@ -40,7 +40,7 @@ RenderSVGTransformableContainer::RenderSVGTransformableContainer(SVGGraphicsElem
 static bool hasValidPredecessor(const Node* node)
 {
     ASSERT(node);
-    while ((node = node->previousSibling())) {
+    for (node = node->previousSibling(); node; node = node->previousSibling()) {
         if (node->isSVGElement() && toSVGElement(node)->isValid())
             return true;
     }
