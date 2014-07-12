@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/containers/hash_tables.h"
 #include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
@@ -245,6 +246,15 @@ class UI_BASE_EXPORT ResourceBundle {
   // loaded. Pass an empty path to undo.
   void OverrideLocalePakForTest(const base::FilePath& pak_path);
 
+  // Overrides a localized string resource with the given string. If no delegate
+  // is present, the |string| will be returned when getting the localized string
+  // |message_id|. If |ReloadLocaleResources| is called, all overrides are
+  // cleared. This is intended to be used in conjunction with field trials and
+  // the variations service to experiment with different UI strings. This method
+  // is not thread safe!
+  void OverrideLocaleStringResource(int message_id,
+                                    const base::string16& string);
+
   // Returns the full pathname of the locale file to load.  May return an empty
   // string if no locale data files are found and |test_file_exists| is true.
   // Used on Android to load the local file in the browser process and pass it
@@ -270,6 +280,8 @@ class UI_BASE_EXPORT ResourceBundle {
 
   class ResourceBundleImageSource;
   friend class ResourceBundleImageSource;
+
+  typedef base::hash_map<int, base::string16> IdToStringMap;
 
   // Ctor/dtor are private, since we're a singleton.
   explicit ResourceBundle(Delegate* delegate);
@@ -394,6 +406,8 @@ class UI_BASE_EXPORT ResourceBundle {
   scoped_ptr<gfx::FontList> web_font_list_;
 
   base::FilePath overridden_pak_path_;
+
+  IdToStringMap overridden_locale_strings_;
 
   DISALLOW_COPY_AND_ASSIGN(ResourceBundle);
 };

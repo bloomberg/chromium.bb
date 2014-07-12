@@ -324,6 +324,12 @@ void ResourceBundle::OverrideLocalePakForTest(const base::FilePath& pak_path) {
   overridden_pak_path_ = pak_path;
 }
 
+void ResourceBundle::OverrideLocaleStringResource(
+    int message_id,
+    const base::string16& string) {
+  overridden_locale_strings_[message_id] = string;
+}
+
 const base::FilePath& ResourceBundle::GetOverriddenPakPath() {
   return overridden_pak_path_;
 }
@@ -331,6 +337,10 @@ const base::FilePath& ResourceBundle::GetOverriddenPakPath() {
 std::string ResourceBundle::ReloadLocaleResources(
     const std::string& pref_locale) {
   base::AutoLock lock_scope(*locale_resources_data_lock_);
+
+  // Remove all overriden strings, as they will not be valid for the new locale.
+  overridden_locale_strings_.clear();
+
   UnloadLocaleResources();
   return LoadLocaleResources(pref_locale);
 }
@@ -455,6 +465,11 @@ base::string16 ResourceBundle::GetLocalizedString(int message_id) {
   // Ensure that ReloadLocaleResources() doesn't drop the resources while
   // we're using them.
   base::AutoLock lock_scope(*locale_resources_data_lock_);
+
+  IdToStringMap::const_iterator it =
+      overridden_locale_strings_.find(message_id);
+  if (it != overridden_locale_strings_.end())
+    return it->second;
 
   // If for some reason we were unable to load the resources , return an empty
   // string (better than crashing).

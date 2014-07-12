@@ -310,6 +310,37 @@ TEST_F(ResourceBundleTest, DelegateGetLocalizedString) {
   EXPECT_EQ(data, result);
 }
 
+TEST_F(ResourceBundleTest, OverrideStringResource) {
+  ResourceBundle* resource_bundle = CreateResourceBundle(NULL);
+
+  base::string16 data = base::ASCIIToUTF16("My test data");
+  int resource_id = 5;
+
+  base::string16 result = resource_bundle->GetLocalizedString(resource_id);
+  EXPECT_EQ(base::string16(), result);
+
+  resource_bundle->OverrideLocaleStringResource(resource_id, data);
+
+  result = resource_bundle->GetLocalizedString(resource_id);
+  EXPECT_EQ(data, result);
+}
+
+TEST_F(ResourceBundleTest, DelegateGetLocalizedStringWithOverride) {
+  MockResourceBundleDelegate delegate;
+  ResourceBundle* resource_bundle = CreateResourceBundle(&delegate);
+
+  base::string16 delegate_data = base::ASCIIToUTF16("My delegate data");
+  int resource_id = 5;
+
+  EXPECT_CALL(delegate, GetLocalizedStringMock(resource_id)).Times(1).WillOnce(
+      Return(delegate_data));
+
+  base::string16 override_data = base::ASCIIToUTF16("My override data");
+
+  base::string16 result = resource_bundle->GetLocalizedString(resource_id);
+  EXPECT_EQ(delegate_data, result);
+}
+
 #if defined(USE_OZONE) && !defined(USE_PANGO)
 #define MAYBE_DelegateGetFontList DISABLED_DelegateGetFontList
 #else
@@ -361,8 +392,7 @@ class ResourceBundleImageTest : public ResourceBundleTest {
     // Write an empty data pak for locale data.
     const base::FilePath& locale_path = dir_path().Append(
         FILE_PATH_LITERAL("locale.pak"));
-    EXPECT_EQ(base::WriteFile(locale_path, kEmptyPakContents,
-                                   kEmptyPakSize),
+    EXPECT_EQ(base::WriteFile(locale_path, kEmptyPakContents, kEmptyPakSize),
               static_cast<int>(kEmptyPakSize));
 
     ui::ResourceBundle* resource_bundle = CreateResourceBundle(NULL);
