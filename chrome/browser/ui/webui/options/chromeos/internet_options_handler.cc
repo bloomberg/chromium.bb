@@ -16,7 +16,6 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
-#include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
@@ -44,7 +43,6 @@
 #include "chromeos/network/network_profile_handler.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
-#include "chromeos/network/network_ui_data.h"
 #include "chromeos/network/network_util.h"
 #include "chromeos/network/onc/onc_signature.h"
 #include "chromeos/network/onc/onc_translator.h"
@@ -103,8 +101,6 @@ const char kUpdateConnectionDataFunction[] =
     "options.internet.DetailsInternetPage.updateConnectionData";
 const char kUpdateCarrierFunction[] =
     "options.internet.DetailsInternetPage.updateCarrier";
-const char kUpdateLoggedInUserTypeFunction[] =
-    "options.network.NetworkList.updateLoggedInUserType";
 const char kUpdateSecurityTabFunction[] =
     "options.internet.DetailsInternetPage.updateSecurityTab";
 
@@ -185,14 +181,6 @@ const char kTagWimaxAvailable[] = "wimaxAvailable";
 const char kTagWimaxEnabled[] = "wimaxEnabled";
 const char kTagWiredList[] = "wiredList";
 const char kTagWirelessList[] = "wirelessList";
-const char kTagLoggedInUserNone[] = "none";
-const char kTagLoggedInUserRegular[] = "regular";
-const char kTagLoggedInUserOwner[] = "owner";
-const char kTagLoggedInUserGuest[] = "guest";
-const char kTagLoggedInUserRetailMode[] = "retail-mode";
-const char kTagLoggedInUserPublicAccount[] = "public-account";
-const char kTagLoggedInUserLocallyManaged[] = "locally-managed";
-const char kTagLoggedInUserKioskApp[] = "kiosk-app";
 
 const int kPreferredPriority = 1;
 
@@ -223,29 +211,6 @@ void SetNetworkProperty(const std::string& service_path,
       service_path, properties,
       base::Bind(&base::DoNothing),
       base::Bind(&ShillError, "SetNetworkProperty"));
-}
-
-std::string LoggedInUserTypeToJSString(LoginState::LoggedInUserType type) {
-  switch (type) {
-    case LoginState::LOGGED_IN_USER_NONE:
-      return kTagLoggedInUserNone;
-    case LoginState::LOGGED_IN_USER_REGULAR:
-      return kTagLoggedInUserRegular;
-    case LoginState::LOGGED_IN_USER_OWNER:
-      return kTagLoggedInUserOwner;
-    case LoginState::LOGGED_IN_USER_GUEST:
-      return kTagLoggedInUserGuest;
-    case LoginState::LOGGED_IN_USER_RETAIL_MODE:
-      return kTagLoggedInUserRetailMode;
-    case LoginState::LOGGED_IN_USER_PUBLIC_ACCOUNT:
-      return kTagLoggedInUserPublicAccount;
-    case LoginState::LOGGED_IN_USER_LOCALLY_MANAGED:
-      return kTagLoggedInUserLocallyManaged;
-    case LoginState::LOGGED_IN_USER_KIOSK_APP:
-      return kTagLoggedInUserKioskApp;
-  }
-  NOTREACHED();
-  return std::string();
 }
 
 // Builds a dictionary with network information and an icon used for the
@@ -541,8 +506,11 @@ void PopulateCellularDetails(const NetworkState* cellular,
           cellular->device_path());
   if (device) {
     const base::DictionaryValue& device_properties = device->properties();
-    const NetworkPropertyUIData cellular_property_ui_data(
-        cellular->ui_data().onc_source());
+    ::onc::ONCSource onc_source;
+    NetworkHandler::Get()->managed_network_configuration_handler()->
+        FindPolicyByGUID(LoginState::Get()->primary_user_hash(),
+                         cellular->guid(), &onc_source);
+    const NetworkPropertyUIData cellular_property_ui_data(onc_source);
     SetValueDictionary(dictionary,
                        kTagSimCardLockEnabled,
                        new base::FundamentalValue(device->sim_lock_enabled()),
@@ -577,20 +545,17 @@ void PopulateCellularDetails(const NetworkState* cellular,
                        kTagProviderApnList,
                        apn_list_value,
                        cellular_property_ui_data);
-    if (CommandLine::ForCurrentProcess()->HasSwitch(
-            chromeos::switches::kEnableCarrierSwitching)) {
-      const base::ListValue* supported_carriers;
-      if (device_properties.GetListWithoutPathExpansion(
-              shill::kSupportedCarriersProperty, &supported_carriers)) {
-        dictionary->Set(kTagCarriers, supported_carriers->DeepCopy());
-        dictionary->SetInteger(
-            kTagCurrentCarrierIndex,
-            FindCurrentCarrierIndex(supported_carriers, device));
-      } else {
-        // In case of any error, set the current carrier tag to -1 indicating
-        // to the JS code to fallback to a single carrier.
-        dictionary->SetInteger(kTagCurrentCarrierIndex, -1);
-      }
+    const base::ListValue* supported_carriers;
+    if (device_properties.GetListWithoutPathExpansion(
+            shill::kSupportedCarriersProperty, &supported_carriers)) {
+      dictionary->Set(kTagCarriers, supported_carriers->DeepCopy());
+      dictionary->SetInteger(
+          kTagCurrentCarrierIndex,
+          FindCurrentCarrierIndex(supported_carriers, device));
+    } else {
+      // In case of any error, set the current carrier tag to -1 indicating
+      // to the JS code to fallback to a single carrier.
+      dictionary->SetInteger(kTagCurrentCarrierIndex, -1);
     }
   }
 
@@ -747,7 +712,6 @@ InternetOptionsHandler::InternetOptionsHandler()
   registrar_.Add(this, chrome::NOTIFICATION_ENTER_PIN_ENDED,
                  content::NotificationService::AllSources());
   NetworkHandler::Get()->network_state_handler()->AddObserver(this, FROM_HERE);
-  LoginState::Get()->AddObserver(this);
 }
 
 InternetOptionsHandler::~InternetOptionsHandler() {
@@ -755,8 +719,6 @@ InternetOptionsHandler::~InternetOptionsHandler() {
     NetworkHandler::Get()->network_state_handler()->RemoveObserver(
         this, FROM_HERE);
   }
-  if (LoginState::Get()->IsInitialized())
-    LoginState::Get()->RemoveObserver(this);
 }
 
 void InternetOptionsHandler::GetLocalizedValues(
@@ -764,9 +726,14 @@ void InternetOptionsHandler::GetLocalizedValues(
   DCHECK(localized_strings);
   internet_options_strings::RegisterLocalizedStrings(localized_strings);
 
+  // TODO(stevenjb): Find a better way to populate initial data before
+  // InitializePage() gets called.
   std::string owner;
   chromeos::CrosSettings::Get()->GetString(chromeos::kDeviceOwner, &owner);
   localized_strings->SetString("ownerUserId", base::UTF8ToUTF16(owner));
+  bool logged_in_as_owner = LoginState::Get()->GetLoggedInUserType() ==
+                            LoginState::LOGGED_IN_USER_OWNER;
+  localized_strings->SetBoolean("loggedInAsOwner", logged_in_as_owner);
 
   base::DictionaryValue* network_dictionary = new base::DictionaryValue;
   FillNetworkInfo(network_dictionary);
@@ -785,7 +752,6 @@ void InternetOptionsHandler::InitializePage() {
                                    dictionary);
   NetworkHandler::Get()->network_state_handler()->RequestScan();
   RefreshNetworkData();
-  UpdateLoggedInUserType();
 }
 
 void InternetOptionsHandler::RegisterMessages() {
@@ -1122,18 +1088,6 @@ void InternetOptionsHandler::NetworkPropertiesUpdated(
     return;
   RefreshNetworkData();
   UpdateConnectionData(network->path());
-}
-
-void InternetOptionsHandler::LoggedInStateChanged() {
-  UpdateLoggedInUserType();
-}
-
-void InternetOptionsHandler::UpdateLoggedInUserType() {
-  if (!web_ui())
-    return;
-  base::StringValue login_type(
-      LoggedInUserTypeToJSString(LoginState::Get()->GetLoggedInUserType()));
-  web_ui()->CallJavascriptFunction(kUpdateLoggedInUserTypeFunction, login_type);
 }
 
 void InternetOptionsHandler::Observe(

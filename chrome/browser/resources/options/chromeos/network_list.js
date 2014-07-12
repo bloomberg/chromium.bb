@@ -92,16 +92,6 @@ cr.define('options.network', function() {
   var defaultIcons_ = {};
 
   /**
-   * Contains the current logged in user type, which is one of 'none',
-   * 'regular', 'owner', 'guest', 'retail-mode', 'public-account',
-   * 'locally-managed', and 'kiosk-app', or empty string if the data has not
-   * been set.
-   * @type {string}
-   * @private
-   */
-  var loggedInUserType_ = '';
-
-  /**
    * Returns the display name for 'network'.
    * @param {Object} data The network data dictionary.
    */
@@ -465,7 +455,7 @@ cr.define('options.network', function() {
 
         var label = enableDataRoaming_ ? 'disableDataRoaming' :
             'enableDataRoaming';
-        var disabled = loggedInUserType_ != 'owner';
+        var disabled = !loadTimeData.getValue('loggedInAsOwner');
         var entry = {label: loadTimeData.getString(label),
                      data: {}};
         if (disabled) {
@@ -939,14 +929,6 @@ cr.define('options.network', function() {
    */
   NetworkList.setDefaultNetworkIcons = function(data) {
     defaultIcons_ = Object.create(data);
-  };
-
-  /**
-   * Sets the current logged in user type.
-   * @param {string} userType Current logged in user type.
-   */
-  NetworkList.updateLoggedInUserType = function(userType) {
-    loggedInUserType_ = String(userType);
   };
 
   /**

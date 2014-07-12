@@ -10,7 +10,6 @@
 #include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/webui/options/options_ui.h"
-#include "chromeos/login/login_state.h"
 #include "chromeos/network/network_state_handler_observer.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -40,7 +39,6 @@ namespace options {
 class InternetOptionsHandler
     : public ::options::OptionsPageUIHandler,
       public chromeos::NetworkStateHandlerObserver,
-      public chromeos::LoginState::Observer,
       public content::NotificationObserver {
  public:
   InternetOptionsHandler();
@@ -96,9 +94,6 @@ class InternetOptionsHandler
       const chromeos::NetworkState* network) OVERRIDE;
   virtual void NetworkPropertiesUpdated(
       const chromeos::NetworkState* network) OVERRIDE;
-
-  // chromeos::LoginState::Observer
-  virtual void LoggedInStateChanged() OVERRIDE;
 
   // Updates the logged in user type.
   void UpdateLoggedInUserType();

@@ -93,6 +93,7 @@ CHROMEOS_EXPORT bool ParseCellularScanResults(
 
 // Retrieves the ONC state dictionary for |network| using GetStateProperties.
 // This includes properties from the corresponding NetworkState if it exists.
+// Assumed to be called from the primary user profile.
 CHROMEOS_EXPORT scoped_ptr<base::DictionaryValue> TranslateNetworkStateToONC(
     const NetworkState* network);
 

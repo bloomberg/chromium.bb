@@ -102,15 +102,6 @@ bool NetworkState::PropertyChanged(const std::string& key,
     return GetStringValue(key, value, &security_);
   } else if (key == shill::kEapMethodProperty) {
     return GetStringValue(key, value, &eap_method_);
-  } else if (key == shill::kUIDataProperty) {
-    scoped_ptr<NetworkUIData> new_ui_data =
-        shill_property_util::GetUIDataFromValue(value);
-    if (!new_ui_data) {
-      NET_LOG_ERROR("Failed to parse " + key, path());
-      return false;
-    }
-    ui_data_ = *new_ui_data;
-    return true;
   } else if (key == shill::kNetworkTechnologyProperty) {
     return GetStringValue(key, value, &network_technology_);
   } else if (key == shill::kDeviceProperty) {

@@ -10,7 +10,6 @@
 
 #include "base/values.h"
 #include "chromeos/network/managed_state.h"
-#include "chromeos/network/network_ui_data.h"
 #include "components/onc/onc_constants.h"
 #include "url/gurl.h"
 
@@ -63,7 +62,6 @@ class CHROMEOS_EXPORT NetworkState : public ManagedState {
   // Returns |connection_state_| if visible, kStateDisconnect otherwise.
   std::string connection_state() const;
 
-  const NetworkUIData& ui_data() const { return ui_data_; }
   const base::DictionaryValue& proxy_config() const { return proxy_config_; }
 
   // IPConfig Properties. These require an extra call to ShillIPConfigClient,
@@ -155,10 +153,6 @@ class CHROMEOS_EXPORT NetworkState : public ManagedState {
   // Last non empty Service.Error property. Cleared by NetworkConnectionHandler
   // when a connection attempt is initiated.
   std::string last_error_;
-
-  // This is convenient to keep cached for now, but shouldn't be necessary;
-  // avoid using it if possible.
-  NetworkUIData ui_data_;
 
   // IPConfig properties.
   // Note: These do not correspond to actual Shill.Service properties

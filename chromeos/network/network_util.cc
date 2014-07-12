@@ -175,9 +175,6 @@ scoped_ptr<base::ListValue> TranslateNetworkListToONC(
       onc_dictionary->SetBoolean("visible", (*it)->visible());
       onc_dictionary->SetString("profile_path", (*it)->profile_path());
       onc_dictionary->SetString("service_path", (*it)->path());
-      std::string onc_source = (*it)->ui_data().GetONCSourceAsString();
-      if (!onc_source.empty())
-        onc_dictionary->SetString("onc_source", onc_source);
     }
 
     network_properties_list->Append(onc_dictionary.release());
