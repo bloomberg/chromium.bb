@@ -318,7 +318,7 @@ scoped_ptr<base::Value> RegistryDict::ConvertToJSON(
         if (converted)
           result->SetWithoutPathExpansion(entry->first, converted.release());
       }
-      return result.Pass();
+      return result.PassAs<base::Value>();
     }
     case base::Value::TYPE_LIST: {
       scoped_ptr<base::ListValue> result(new base::ListValue());
@@ -341,7 +341,7 @@ scoped_ptr<base::Value> RegistryDict::ConvertToJSON(
         }
         break;
       }
-      return result.Pass();
+      return result.PassAs<base::Value>();
     }
     default:
       LOG(WARNING) << "Can't convert registry key to schema type " << type;
