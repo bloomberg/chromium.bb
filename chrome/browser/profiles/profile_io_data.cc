@@ -288,20 +288,21 @@ void StartTPMSlotInitializationOnIOThread(const std::string& username,
 
 void StartNSSInitOnIOThread(const std::string& username,
                             const std::string& username_hash,
-                            const base::FilePath& path,
-                            bool is_primary_user) {
+                            const base::FilePath& path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DVLOG(1) << "Starting NSS init for " << username
-           << "  hash:" << username_hash
-           << "  is_primary_user:" << is_primary_user;
+           << "  hash:" << username_hash;
 
-  if (!crypto::InitializeNSSForChromeOSUser(
-           username, username_hash, is_primary_user, path)) {
-    // If the user already exists in nss_util's map, it is already initialized
-    // or in the process of being initialized. In either case, there's no need
-    // to do anything.
+  // Make sure NSS is initialized for the user.
+  crypto::InitializeNSSForChromeOSUser(username, username_hash, path);
+
+  // Check if it's OK to initialize TPM for the user before continuing. This
+  // may not be the case if the TPM slot initialization was previously
+  // requested for the same user.
+  if (!crypto::ShouldInitializeTPMForChromeOSUser(username_hash))
     return;
-  }
+
+  crypto::WillInitializeTPMForChromeOSUser(username_hash);
 
   if (crypto::IsTPMTokenEnabledForNSS()) {
     if (crypto::IsTPMTokenReady(base::Bind(
@@ -360,20 +361,22 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
   if (user_manager) {
     chromeos::User* user =
         chromeos::ProfileHelper::Get()->GetUserByProfile(profile);
-    if (user) {
+    // No need to initialize NSS for users with empty username hash:
+    // Getters for a user's NSS slots always return NULL slot if the user's
+    // username hash is empty, even when the NSS is not initialized for the
+    // user.
+    if (user && !user->username_hash().empty()) {
       params->username_hash = user->username_hash();
-      bool is_primary_user = (user_manager->GetPrimaryUser() == user);
       BrowserThread::PostTask(BrowserThread::IO,
                               FROM_HERE,
                               base::Bind(&StartNSSInitOnIOThread,
                                          user->email(),
                                          user->username_hash(),
-                                         profile->GetPath(),
-                                         is_primary_user));
+                                         profile->GetPath()));
     }
   }
   if (params->username_hash.empty())
-    LOG(WARNING) << "no username_hash";
+    LOG(WARNING) << "No username_hash; skipped NSS initialization.";
 #endif
 
   params->profile = profile;

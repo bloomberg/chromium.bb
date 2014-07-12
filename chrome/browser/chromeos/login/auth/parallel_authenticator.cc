@@ -508,14 +508,16 @@ bool ParallelAuthenticator::VerifyOwner() {
   const std::string& user_id = current_state_->user_context.GetUserID();
   OwnerSettingsServiceFactory::GetInstance()->SetUsername(user_id);
 
-  // This should trigger certificate loading, which is needed in order to
-  // correctly determine if the current user is the owner.
+  // |IsOwnerForSafeModeAsync| expects logged in state to be
+  // LOGGED_IN_SAFE_MODE.
   if (LoginState::IsInitialized()) {
     LoginState::Get()->SetLoggedInState(LoginState::LOGGED_IN_SAFE_MODE,
                                         LoginState::LOGGED_IN_USER_NONE);
   }
 
-  OwnerSettingsService::IsPrivateKeyExistAsync(
+  OwnerSettingsService::IsOwnerForSafeModeAsync(
+      user_id,
+      current_state_->user_context.GetUserIDHash(),
       base::Bind(&ParallelAuthenticator::OnOwnershipChecked, this));
   return false;
 }

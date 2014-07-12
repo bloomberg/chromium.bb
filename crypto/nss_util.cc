@@ -81,6 +81,7 @@ std::string GetNSSErrorMessage() {
 }
 
 #if defined(USE_NSS)
+#if !defined(OS_CHROMEOS)
 base::FilePath GetDefaultConfigDirectory() {
   base::FilePath dir;
   PathService::Get(base::DIR_HOME, &dir);
@@ -96,6 +97,7 @@ base::FilePath GetDefaultConfigDirectory() {
   DVLOG(2) << "DefaultConfigDirectory: " << dir.value();
   return dir;
 }
+#endif  // !defined(IS_CHROMEOS)
 
 // On non-Chrome OS platforms, return the default config directory. On Chrome OS
 // test images, return a read-only directory with fake root CA certs (which are
@@ -216,11 +218,11 @@ void CrashOnNSSInitFailure() {
 #if defined(OS_CHROMEOS)
 class ChromeOSUserData {
  public:
-  ChromeOSUserData(ScopedPK11Slot public_slot, bool is_primary_user)
+  explicit ChromeOSUserData(ScopedPK11Slot public_slot)
       : public_slot_(public_slot.Pass()),
-        is_primary_user_(is_primary_user) {}
+        private_slot_initialization_started_(false) {}
   ~ChromeOSUserData() {
-    if (public_slot_ && !is_primary_user_) {
+    if (public_slot_) {
       SECStatus status = SECMOD_CloseUserDB(public_slot_.get());
       if (status != SECSuccess)
         PLOG(ERROR) << "SECMOD_CloseUserDB failed: " << PORT_GetError();
@@ -254,10 +256,19 @@ class ChromeOSUserData {
     }
   }
 
+  bool private_slot_initialization_started() const {
+      return private_slot_initialization_started_;
+  }
+
+  void set_private_slot_initialization_started() {
+      private_slot_initialization_started_ = true;
+  }
+
  private:
   ScopedPK11Slot public_slot_;
   ScopedPK11Slot private_slot_;
-  bool is_primary_user_;
+
+  bool private_slot_initialization_started_;
 
   typedef std::vector<base::Callback<void(ScopedPK11Slot)> >
       SlotReadyCallbackList;
@@ -275,24 +286,6 @@ class NSSInitSingleton {
     SECMODModule* chaps_module;
     PK11SlotInfo* tpm_slot;
   };
-
-  void OpenPersistentNSSDB() {
-    DCHECK(thread_checker_.CalledOnValidThread());
-
-    if (!chromeos_user_logged_in_) {
-      // GetDefaultConfigDirectory causes us to do blocking IO on UI thread.
-      // Temporarily allow it until we fix http://crbug.com/70119
-      base::ThreadRestrictions::ScopedAllowIO allow_io;
-      chromeos_user_logged_in_ = true;
-
-      // This creates another DB slot in NSS that is read/write, unlike
-      // the fake root CA cert DB and the "default" crypto key
-      // provider, which are still read-only (because we initialized
-      // NSS before we had a cryptohome mounted).
-      software_slot_ = OpenUserDB(GetDefaultConfigDirectory(),
-                                  kNSSDatabaseName);
-    }
-  }
 
   PK11SlotInfo* OpenPersistentNSSDBForPath(const base::FilePath& path) {
     DCHECK(thread_checker_.CalledOnValidThread());
@@ -459,7 +452,6 @@ class NSSInitSingleton {
   bool InitializeNSSForChromeOSUser(
       const std::string& email,
       const std::string& username_hash,
-      bool is_primary_user,
       const base::FilePath& path) {
     DCHECK(thread_checker_.CalledOnValidThread());
     if (chromeos_user_map_.find(username_hash) != chromeos_user_map_.end()) {
@@ -467,23 +459,42 @@ class NSSInitSingleton {
       DVLOG(2) << username_hash << " already initialized.";
       return false;
     }
-    ScopedPK11Slot public_slot;
-    if (is_primary_user) {
-      DVLOG(2) << "Primary user, using GetPublicNSSKeySlot()";
-      public_slot.reset(GetPublicNSSKeySlot());
-    } else {
-      DVLOG(2) << "Opening NSS DB " << path.value();
-      public_slot.reset(OpenPersistentNSSDBForPath(path));
-    }
+
+    // If test slot is set, slot getter methods will short circuit
+    // checking |chromeos_user_map_|, so there is nothing left to be
+    // initialized.
+    if (test_slot_)
+      return false;
+
+    DVLOG(2) << "Opening NSS DB " << path.value();
+    ScopedPK11Slot public_slot(OpenPersistentNSSDBForPath(path));
     chromeos_user_map_[username_hash] =
-        new ChromeOSUserData(public_slot.Pass(), is_primary_user);
+        new ChromeOSUserData(public_slot.Pass());
     return true;
+  }
+
+  bool ShouldInitializeTPMForChromeOSUser(const std::string& username_hash) {
+    DCHECK(thread_checker_.CalledOnValidThread());
+    DCHECK(chromeos_user_map_.find(username_hash) != chromeos_user_map_.end());
+
+    return !chromeos_user_map_[username_hash]
+                ->private_slot_initialization_started();
+  }
+
+  void WillInitializeTPMForChromeOSUser(const std::string& username_hash) {
+    DCHECK(thread_checker_.CalledOnValidThread());
+    DCHECK(chromeos_user_map_.find(username_hash) != chromeos_user_map_.end());
+
+    chromeos_user_map_[username_hash]
+        ->set_private_slot_initialization_started();
   }
 
   void InitializeTPMForChromeOSUser(const std::string& username_hash,
                                     CK_SLOT_ID slot_id) {
     DCHECK(thread_checker_.CalledOnValidThread());
     DCHECK(chromeos_user_map_.find(username_hash) != chromeos_user_map_.end());
+    DCHECK(chromeos_user_map_[username_hash]->
+               private_slot_initialization_started());
 
     if (!chaps_module_)
       return;
@@ -519,6 +530,9 @@ class NSSInitSingleton {
     DCHECK(thread_checker_.CalledOnValidThread());
     VLOG(1) << "using software private slot for " << username_hash;
     DCHECK(chromeos_user_map_.find(username_hash) != chromeos_user_map_.end());
+    DCHECK(chromeos_user_map_[username_hash]->
+               private_slot_initialization_started());
+
     chromeos_user_map_[username_hash]->SetPrivateSlot(
         chromeos_user_map_[username_hash]->GetPublicSlot());
   }
@@ -619,8 +633,6 @@ class NSSInitSingleton {
 
     if (test_slot_)
       return PK11_ReferenceSlot(test_slot_);
-    if (software_slot_)
-      return PK11_ReferenceSlot(software_slot_);
     return PK11_GetInternalKeySlot();
   }
 
@@ -645,10 +657,6 @@ class NSSInitSingleton {
       }
     }
 #endif
-    // If we weren't supposed to enable the TPM for NSS, then return
-    // the software slot.
-    if (software_slot_)
-      return PK11_ReferenceSlot(software_slot_);
     return PK11_GetInternalKeySlot();
   }
 
@@ -671,11 +679,9 @@ class NSSInitSingleton {
       : tpm_token_enabled_for_nss_(false),
         initializing_tpm_token_(false),
         chaps_module_(NULL),
-        software_slot_(NULL),
         test_slot_(NULL),
         tpm_slot_(NULL),
-        root_(NULL),
-        chromeos_user_logged_in_(false) {
+        root_(NULL) {
     base::TimeTicks start_time = base::TimeTicks::Now();
 
     // It's safe to construct on any thread, since LazyInstance will prevent any
@@ -795,11 +801,6 @@ class NSSInitSingleton {
       PK11_FreeSlot(tpm_slot_);
       tpm_slot_ = NULL;
     }
-    if (software_slot_) {
-      SECMOD_CloseUserDB(software_slot_);
-      PK11_FreeSlot(software_slot_);
-      software_slot_ = NULL;
-    }
     CloseTestNSSDB();
     if (root_) {
       SECMOD_UnloadUserModule(root_);
@@ -902,11 +903,9 @@ class NSSInitSingleton {
   typedef std::vector<base::Closure> TPMReadyCallbackList;
   TPMReadyCallbackList tpm_ready_callback_list_;
   SECMODModule* chaps_module_;
-  PK11SlotInfo* software_slot_;
   PK11SlotInfo* test_slot_;
   PK11SlotInfo* tpm_slot_;
   SECMODModule* root_;
-  bool chromeos_user_logged_in_;
 #if defined(OS_CHROMEOS)
   typedef std::map<std::string, ChromeOSUserData*> ChromeOSUserMap;
   ChromeOSUserMap chromeos_user_map_;
@@ -1070,10 +1069,6 @@ AutoSECMODListReadLock::~AutoSECMODListReadLock() {
 #endif  // defined(USE_NSS)
 
 #if defined(OS_CHROMEOS)
-void OpenPersistentNSSDB() {
-  g_nss_singleton.Get().OpenPersistentNSSDB();
-}
-
 void EnableTPMTokenForNSS() {
   g_nss_singleton.Get().EnableTPMTokenForNSS();
 }
@@ -1099,7 +1094,6 @@ ScopedTestNSSChromeOSUser::ScopedTestNSSChromeOSUser(
   constructed_successfully_ =
       InitializeNSSForChromeOSUser(username_hash,
                                    username_hash,
-                                   false /* is_primary_user */,
                                    temp_dir_.path());
 }
 
@@ -1109,17 +1103,30 @@ ScopedTestNSSChromeOSUser::~ScopedTestNSSChromeOSUser() {
 }
 
 void ScopedTestNSSChromeOSUser::FinishInit() {
+  DCHECK(constructed_successfully_);
+  if (!ShouldInitializeTPMForChromeOSUser(username_hash_))
+    return;
+  WillInitializeTPMForChromeOSUser(username_hash_);
   InitializePrivateSoftwareSlotForChromeOSUser(username_hash_);
 }
 
 bool InitializeNSSForChromeOSUser(
     const std::string& email,
     const std::string& username_hash,
-    bool is_primary_user,
     const base::FilePath& path) {
   return g_nss_singleton.Get().InitializeNSSForChromeOSUser(
-      email, username_hash, is_primary_user, path);
+      email, username_hash, path);
 }
+
+bool ShouldInitializeTPMForChromeOSUser(const std::string& username_hash) {
+  return g_nss_singleton.Get().ShouldInitializeTPMForChromeOSUser(
+      username_hash);
+}
+
+void WillInitializeTPMForChromeOSUser(const std::string& username_hash) {
+  g_nss_singleton.Get().WillInitializeTPMForChromeOSUser(username_hash);
+}
+
 void InitializeTPMForChromeOSUser(
     const std::string& username_hash,
     CK_SLOT_ID slot_id) {

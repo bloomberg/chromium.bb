@@ -52,9 +52,11 @@ class OwnerSettingsService : public DeviceSettingsService::PrivateKeyDelegate,
   // TPMTokenLoader::Observer:
   virtual void OnTPMTokenReady() OVERRIDE;
 
-  // Checks whether NSS slots with private key are mounted or
-  // not. Responds via |callback|.
-  static void IsPrivateKeyExistAsync(const IsOwnerCallback& callback);
+  // Checks if the user is the device owner, without the user profile having to
+  // been initialized. Should be used only if login state is in safe mode.
+  static void IsOwnerForSafeModeAsync(const std::string& user_id,
+                                      const std::string& user_hash,
+                                      const IsOwnerCallback& callback);
 
   static void SetOwnerKeyUtilForTesting(
       const scoped_refptr<OwnerKeyUtil>& owner_key_util);

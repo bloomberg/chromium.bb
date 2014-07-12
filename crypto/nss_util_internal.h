@@ -51,8 +51,20 @@ class CRYPTO_EXPORT AutoSECMODListReadLock {
 CRYPTO_EXPORT bool InitializeNSSForChromeOSUser(
     const std::string& email,
     const std::string& username_hash,
-    bool is_primary_user,
-    const base::FilePath& path) WARN_UNUSED_RESULT;
+    const base::FilePath& path);
+
+// Returns whether TPM for ChromeOS user still needs initialization. If
+// true is returned, the caller can proceed to initialize TPM slot for the
+// user, but should call |WillInitializeTPMForChromeOSUser| first.
+// |InitializeNSSForChromeOSUser| must have been called first.
+CRYPTO_EXPORT bool ShouldInitializeTPMForChromeOSUser(
+    const std::string& username_hash) WARN_UNUSED_RESULT;
+
+// Makes |ShouldInitializeTPMForChromeOSUser| start returning false.
+// Should be called before starting TPM initialization for the user.
+// Assumes |InitializeNSSForChromeOSUser| had already been called.
+CRYPTO_EXPORT void WillInitializeTPMForChromeOSUser(
+    const std::string& username_hash);
 
 // Use TPM slot |slot_id| for user.  InitializeNSSForChromeOSUser must have been
 // called first.

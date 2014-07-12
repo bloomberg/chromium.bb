@@ -18,12 +18,6 @@ class RSAPrivateKeyNSSTest : public testing::Test {
   RSAPrivateKeyNSSTest() {}
   virtual ~RSAPrivateKeyNSSTest() {}
 
-  virtual void SetUp() {
-#if defined(OS_CHROMEOS)
-    OpenPersistentNSSDB();
-#endif
-  }
-
  private:
   ScopedTestNSSDB test_nssdb_;
 

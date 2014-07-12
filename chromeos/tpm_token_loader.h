@@ -81,7 +81,7 @@ class CHROMEOS_EXPORT TPMTokenLoader : public LoginState::Observer {
 
   // This is the cyclic chain of callbacks to initialize the TPM token.
   void ContinueTokenInitialization();
-  void OnPersistentNSSDBOpened();
+  void OnTPMTokenEnabledForNSS();
   void OnTpmIsEnabled(DBusMethodCallStatus call_status,
                       bool tpm_is_enabled);
   void OnPkcs11IsTpmTokenReady(DBusMethodCallStatus call_status,
@@ -111,7 +111,7 @@ class CHROMEOS_EXPORT TPMTokenLoader : public LoginState::Observer {
   enum TPMTokenState {
     TPM_STATE_UNKNOWN,
     TPM_INITIALIZATION_STARTED,
-    TPM_DB_OPENED,
+    TPM_TOKEN_ENABLED_FOR_NSS,
     TPM_DISABLED,
     TPM_ENABLED,
     TPM_TOKEN_READY,

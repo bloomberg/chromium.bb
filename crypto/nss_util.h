@@ -95,11 +95,6 @@ CRYPTO_EXPORT void LoadNSSLibraries();
 bool CheckNSSVersion(const char* version);
 
 #if defined(OS_CHROMEOS)
-// Open the r/w nssdb that's stored inside the user's encrypted home
-// directory.  This is the default slot returned by
-// GetPublicNSSKeySlot().
-CRYPTO_EXPORT void OpenPersistentNSSDB();
-
 // Indicates that NSS should load the Chaps library so that we
 // can access the TPM through NSS.  Once this is called,
 // GetPrivateNSSKeySlot() will return the TPM slot if one was found.

@@ -24,8 +24,11 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/device_settings_test_helper.h"
+#include "chrome/browser/chromeos/settings/mock_owner_key_util.h"
 #include "chrome/browser/chromeos/settings/stub_cros_settings_provider.h"
+#include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chrome/test/base/testing_profile_manager.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/cryptohome/mock_async_method_caller.h"
 #include "chromeos/cryptohome/system_salt_getter.h"
@@ -34,6 +37,7 @@
 #include "chromeos/login/auth/key.h"
 #include "chromeos/login/auth/user_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "crypto/nss_util.h"
 #include "google_apis/gaia/mock_url_fetcher_factory.h"
 #include "net/base/net_errors.h"
 #include "net/url_request/url_request_status.h"
@@ -54,8 +58,10 @@ class ParallelAuthenticatorTest : public testing::Test {
       : user_context_("me@nowhere.org"),
         user_manager_(new FakeUserManager()),
         user_manager_enabler_(user_manager_),
-        mock_caller_(NULL) {
+        mock_caller_(NULL),
+        owner_key_util_(new MockOwnerKeyUtil) {
     user_context_.SetKey(Key("fakepass"));
+    user_context_.SetUserIDHash("me_nowhere_com_hash");
     const User* user = user_manager_->AddUser(user_context_.GetUserID());
     profile_.set_profile_name(user_context_.GetUserID());
 
@@ -67,9 +73,7 @@ class ParallelAuthenticatorTest : public testing::Test {
                                    FakeCryptohomeClient::GetStubSystemSalt()));
   }
 
-  virtual ~ParallelAuthenticatorTest() {
-    DCHECK(!mock_caller_);
-  }
+  virtual ~ParallelAuthenticatorTest() {}
 
   virtual void SetUp() {
     CommandLine::ForCurrentProcess()->AppendSwitch(switches::kLoginManager);
@@ -85,12 +89,15 @@ class ParallelAuthenticatorTest : public testing::Test {
 
     SystemSaltGetter::Initialize();
 
+    OwnerSettingsService::SetOwnerKeyUtilForTesting(owner_key_util_);
+
     auth_ = new ParallelAuthenticator(&consumer_);
     state_.reset(new TestAttemptState(user_context_, false));
   }
 
   // Tears down the test fixture.
   virtual void TearDown() {
+    OwnerSettingsService::SetOwnerKeyUtilForTesting(NULL);
     SystemSaltGetter::Shutdown();
     DBusThreadManager::Shutdown();
 
@@ -193,15 +200,20 @@ class ParallelAuthenticatorTest : public testing::Test {
   ScopedTestCrosSettings test_cros_settings_;
 
   TestingProfile profile_;
+  scoped_ptr<TestingProfileManager> profile_manager_;
   FakeUserManager* user_manager_;
   ScopedUserManagerEnabler user_manager_enabler_;
 
   cryptohome::MockAsyncMethodCaller* mock_caller_;
 
+  crypto::ScopedTestNSSDB test_nssdb_;
+
   MockConsumer consumer_;
   scoped_refptr<ParallelAuthenticator> auth_;
   scoped_ptr<TestAttemptState> state_;
   FakeCryptohomeClient* fake_cryptohome_client_;
+
+  scoped_refptr<MockOwnerKeyUtil> owner_key_util_;
 };
 
 TEST_F(ParallelAuthenticatorTest, OnLoginSuccess) {
@@ -276,6 +288,10 @@ TEST_F(ParallelAuthenticatorTest, ResolveOwnerNeededMount) {
 }
 
 TEST_F(ParallelAuthenticatorTest, ResolveOwnerNeededFailedMount) {
+  profile_manager_.reset(
+            new TestingProfileManager(TestingBrowserProcess::GetGlobal()));
+  ASSERT_TRUE(profile_manager_->SetUp());
+
   FailOnLoginSuccess();  // Set failing on success as the default...
   LoginFailure failure = LoginFailure(LoginFailure::OWNER_REQUIRED);
   ExpectLoginFailure(failure);
@@ -305,20 +321,18 @@ TEST_F(ParallelAuthenticatorTest, ResolveOwnerNeededFailedMount) {
             SetAndResolveState(auth_.get(), state_.release()));
   EXPECT_TRUE(LoginState::Get()->IsInSafeMode());
 
-  // Simulate TPM token ready event.
-  OwnerSettingsService* service =
-      OwnerSettingsServiceFactory::GetForProfile(&profile_);
-  ASSERT_TRUE(service);
-  service->OnTPMTokenReady();
-
   // Flush all the pending operations. The operations should induce an owner
   // verification.
   device_settings_test_helper_.Flush();
-  // Test that the mount has succeeded.
+
   state_.reset(new TestAttemptState(user_context_, false));
   state_->PresetCryptohomeStatus(true, cryptohome::MOUNT_ERROR_NONE);
+
+  // The owner key util should not have found the owner key, so login should
+  // not be allowed.
   EXPECT_EQ(ParallelAuthenticator::OWNER_REQUIRED,
             SetAndResolveState(auth_.get(), state_.release()));
+  EXPECT_TRUE(LoginState::Get()->IsInSafeMode());
 
   // Unset global objects used by this test.
   LoginState::Shutdown();

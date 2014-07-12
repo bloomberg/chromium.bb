@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/users/user.h"
 #include "chrome/browser/chromeos/login/users/user_manager.h"
@@ -102,7 +103,7 @@ void LoadPrivateKey(
   }
 }
 
-bool IsPrivateKeyExistAsyncHelper(
+bool DoesPrivateKeyExistAsyncHelper(
     const scoped_refptr<OwnerKeyUtil>& owner_key_util) {
   std::vector<uint8> public_key;
   if (!owner_key_util->ImportPublicKey(&public_key))
@@ -111,6 +112,26 @@ bool IsPrivateKeyExistAsyncHelper(
       crypto::RSAPrivateKey::FindFromPublicKeyInfo(public_key));
   bool is_owner = key.get() != NULL;
   return is_owner;
+}
+
+// Checks whether NSS slots with private key are mounted or
+// not. Responds via |callback|.
+void DoesPrivateKeyExistAsync(
+    const OwnerSettingsService::IsOwnerCallback& callback) {
+  scoped_refptr<OwnerKeyUtil> owner_key_util;
+  if (g_owner_key_util_for_testing)
+    owner_key_util = *g_owner_key_util_for_testing;
+  else
+    owner_key_util = OwnerKeyUtil::Create();
+  scoped_refptr<base::TaskRunner> task_runner =
+      content::BrowserThread::GetBlockingPool()
+          ->GetTaskRunnerWithShutdownBehavior(
+              base::SequencedWorkerPool::SKIP_ON_SHUTDOWN);
+  base::PostTaskAndReplyWithResult(
+      task_runner.get(),
+      FROM_HERE,
+      base::Bind(&DoesPrivateKeyExistAsyncHelper, owner_key_util),
+      callback);
 }
 
 }  // namespace
@@ -197,22 +218,22 @@ void OwnerSettingsService::OnTPMTokenReady() {
 }
 
 // static
-void OwnerSettingsService::IsPrivateKeyExistAsync(
+void OwnerSettingsService::IsOwnerForSafeModeAsync(
+    const std::string& user_id,
+    const std::string& user_hash,
     const IsOwnerCallback& callback) {
-  scoped_refptr<OwnerKeyUtil> owner_key_util;
-  if (g_owner_key_util_for_testing)
-    owner_key_util = *g_owner_key_util_for_testing;
-  else
-    owner_key_util = OwnerKeyUtil::Create();
-  scoped_refptr<base::TaskRunner> task_runner =
-      content::BrowserThread::GetBlockingPool()
-          ->GetTaskRunnerWithShutdownBehavior(
-              base::SequencedWorkerPool::SKIP_ON_SHUTDOWN);
-  base::PostTaskAndReplyWithResult(
-      task_runner.get(),
+  CHECK(chromeos::LoginState::Get()->IsInSafeMode());
+
+  // Make sure NSS is initialized and NSS DB is loaded for the user before
+  // searching for the owner key.
+  BrowserThread::PostTaskAndReply(
+      BrowserThread::IO,
       FROM_HERE,
-      base::Bind(&IsPrivateKeyExistAsyncHelper, owner_key_util),
-      callback);
+      base::Bind(base::IgnoreResult(&crypto::InitializeNSSForChromeOSUser),
+                 user_id,
+                 user_hash,
+                 ProfileHelper::GetProfilePathByUserIdHash(user_hash)),
+      base::Bind(&DoesPrivateKeyExistAsync, callback));
 }
 
 // static

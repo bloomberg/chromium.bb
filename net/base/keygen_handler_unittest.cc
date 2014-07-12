@@ -30,11 +30,10 @@ class KeygenHandlerTest : public ::testing::Test {
   KeygenHandlerTest() {}
   virtual ~KeygenHandlerTest() {}
 
-  virtual void SetUp() {
+ private:
 #if defined(OS_CHROMEOS) && defined(USE_NSS)
-    crypto::OpenPersistentNSSDB();
+  crypto::ScopedTestNSSDB test_nss_db_;
 #endif
-  }
 };
 
 // Assert that |result| is a valid output for KeygenHandler given challenge

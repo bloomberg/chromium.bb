@@ -38,16 +38,6 @@ base::TimeDelta GetNextRequestDelayMs(base::TimeDelta last_delay) {
   return next_delay;
 }
 
-void CallOpenPersistentNSSDB() {
-  // Called from crypto_task_runner_.
-  VLOG(1) << "CallOpenPersistentNSSDB";
-
-  // Ensure we've opened the user's key/certificate database.
-  if (base::SysInfo::IsRunningOnChromeOS())
-    crypto::OpenPersistentNSSDB();
-  crypto::EnableTPMTokenForNSS();
-}
-
 void PostResultToTaskRunner(scoped_refptr<base::SequencedTaskRunner> runner,
                             const base::Callback<void(bool)>& callback,
                             bool success) {
@@ -140,8 +130,7 @@ void TPMTokenLoader::MaybeStartTokenInitialization() {
   if (!LoginState::IsInitialized())
     return;
 
-  bool start_initialization = LoginState::Get()->IsUserLoggedIn() ||
-      LoginState::Get()->IsInSafeMode();
+  bool start_initialization = LoginState::Get()->IsUserLoggedIn();
 
   VLOG(1) << "StartTokenInitialization: " << start_initialization;
   if (!start_initialization)
@@ -167,8 +156,8 @@ void TPMTokenLoader::ContinueTokenInitialization() {
     case TPM_STATE_UNKNOWN: {
       crypto_task_runner_->PostTaskAndReply(
           FROM_HERE,
-          base::Bind(&CallOpenPersistentNSSDB),
-          base::Bind(&TPMTokenLoader::OnPersistentNSSDBOpened,
+          base::Bind(&crypto::EnableTPMTokenForNSS),
+          base::Bind(&TPMTokenLoader::OnTPMTokenEnabledForNSS,
                      weak_factory_.GetWeakPtr()));
       tpm_token_state_ = TPM_INITIALIZATION_STARTED;
       return;
@@ -177,7 +166,7 @@ void TPMTokenLoader::ContinueTokenInitialization() {
       NOTREACHED();
       return;
     }
-    case TPM_DB_OPENED: {
+    case TPM_TOKEN_ENABLED_FOR_NSS: {
       DBusThreadManager::Get()->GetCryptohomeClient()->TpmIsEnabled(
           base::Bind(&TPMTokenLoader::OnTpmIsEnabled,
                      weak_factory_.GetWeakPtr()));
@@ -232,9 +221,9 @@ void TPMTokenLoader::RetryTokenInitializationLater() {
   tpm_request_delay_ = GetNextRequestDelayMs(tpm_request_delay_);
 }
 
-void TPMTokenLoader::OnPersistentNSSDBOpened() {
-  VLOG(1) << "PersistentNSSDBOpened";
-  tpm_token_state_ = TPM_DB_OPENED;
+void TPMTokenLoader::OnTPMTokenEnabledForNSS() {
+  VLOG(1) << "TPMTokenEnabledForNSS";
+  tpm_token_state_ = TPM_TOKEN_ENABLED_FOR_NSS;
   ContinueTokenInitialization();
 }
 
