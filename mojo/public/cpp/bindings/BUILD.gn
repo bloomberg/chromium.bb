@@ -34,6 +34,8 @@ source_set("bindings") {
     "lib/message_builder.cc",
     "lib/message_builder.h",
     "lib/message_filter.cc",
+    "lib/message_header_validator.cc",
+    "lib/message_header_validator.h",
     "lib/message_internal.h",
     "lib/message_queue.cc",
     "lib/message_queue.h",

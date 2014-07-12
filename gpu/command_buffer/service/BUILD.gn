@@ -113,6 +113,8 @@ source_set("service") {
     "vertex_attrib_manager.cc",
   ]
 
+  defines = [ "GPU_IMPLEMENTATION" ]
+
   configs += [
     "//third_party/khronos:khronos_headers",
   ]

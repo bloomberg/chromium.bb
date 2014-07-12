@@ -17,6 +17,8 @@ source_set("client") {
     "transfer_buffer.h",
   ]
 
+  defines = [ "GPU_IMPLEMENTATION" ]
+
   if (is_win) {
     # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
     cflags = [ "/wd4267" ]  # size_t to int truncation.
@@ -35,6 +37,8 @@ source_set("gles2_cmd_helper") {
     "gles2_cmd_helper.h",
     "gles2_cmd_helper_autogen.h",
   ]
+
+  defines = [ "GLES2_IMPL_IMPLEMENTATION" ]
 
   if (is_win) {
     # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.

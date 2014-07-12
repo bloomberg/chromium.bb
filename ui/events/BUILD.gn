@@ -74,6 +74,7 @@ component("events") {
     ":dom4_keycode_converter",
     ":events_base",
     ":gesture_detection",
+    "//base/third_party/dynamic_annotations",
     "//skia",
     "//ui/gfx",
     "//ui/gfx/geometry",

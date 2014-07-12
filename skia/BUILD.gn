@@ -310,6 +310,13 @@ component("skia") {
   sources += gypi_skia_pdf.sources
   sources += gypi_values.skia_library_sources
 
+  if (cpu_arch == "arm") {
+    sources += [
+      "//third_party/skia/src/core/SkUtilsArm.cpp",
+      "//third_party/skia/src/core/SkUtilsArm.h",
+    ]
+  }
+
   # GPU
   if (skia_support_gpu) {
     sources += gypi_skia_gpu.skgpu_sources
@@ -451,6 +458,11 @@ component("skia") {
     sources -= [
       "//third_party/skia/src/fonts/SkFontMgr_fontconfig.cpp",
       "//third_party/skia/src/ports/SkFontConfigInterface_direct.cpp",
+    ]
+  }
+
+  if (!is_linux && !is_android) {
+    sources -= [
       "//third_party/skia/src/ports/SkFontHost_fontconfig.cpp",
       "//third_party/skia/src/ports/SkFontHost_FreeType_common.cpp",
       "//third_party/skia/src/ports/SkFontHost_FreeType.cpp",
@@ -509,9 +521,15 @@ component("skia") {
   }
 
   if (is_android) {
+    set_sources_assignment_filter([])
+    sources += [
+      "ext/platform_device_linux.cc",
+    ]
+    set_sources_assignment_filter(sources_assignment_filter)
     deps += [
       "//third_party/expat",
       "//third_party/freetype",
+      "//third_party/android_tools:cpu_features",
     ]
   }
 

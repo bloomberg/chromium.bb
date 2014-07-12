@@ -21,9 +21,6 @@ source_set("common") {
     "gles2_cmd_format_autogen.h",
     "gles2_cmd_ids.h",
     "gles2_cmd_ids_autogen.h",
-    "gles2_cmd_utils.cc",
-    "gles2_cmd_utils.h",
-    "gles2_utils_export.h",
     "id_allocator.cc",
     "id_allocator.h",
     "mailbox.cc",
@@ -34,9 +31,26 @@ source_set("common") {
     "time.h",
   ]
 
-  all_dependent_configs = [ "//third_party/khronos:khronos_headers" ]
+  defines = [ "GPU_IMPLEMENTATION" ]
+
+  deps = [
+    ":gles2_utils",
+    "//base",
+  ]
+}
+
+component("gles2_utils") {
+  sources = [
+    "gles2_cmd_utils.cc",
+    "gles2_cmd_utils.h",
+    "gles2_utils_export.h",
+  ]
+
+  defines = [ "GLES2_UTILS_IMPLEMENTATION" ]
 
   deps = [
     "//base",
   ]
+
+  all_dependent_configs = [ "//third_party/khronos:khronos_headers" ]
 }

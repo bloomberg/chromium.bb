@@ -68,6 +68,7 @@ test("accessibility_unittests") {
 
 generated_extensions_api("ax_gen") {
   sources = [ "ax_enums.idl" ]
+  deps = [ "//base/third_party/dynamic_annotations" ]
   root_namespace = ""
   impl_dir = "."
   bundle = true

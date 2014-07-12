@@ -38,6 +38,8 @@ source_set("config") {
     "software_rendering_list_json.cc",
   ]
 
+  defines = [ "GPU_IMPLEMENTATION" ]
+
   deps = [
     "//base",
     "//third_party/re2",
