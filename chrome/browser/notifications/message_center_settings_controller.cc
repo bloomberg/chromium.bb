@@ -271,15 +271,11 @@ void MessageCenterSettingsController::GetNotifierList(
         name,
         notification_service->IsNotifierEnabled(notifier_id)));
     patterns_[name] = iter->primary_pattern;
-    FaviconService::FaviconForPageURLParams favicon_params(
-        url,
-        favicon_base::FAVICON | favicon_base::TOUCH_ICON,
-        message_center::kSettingsIconSize);
     // Note that favicon service obtains the favicon from history. This means
     // that it will fail to obtain the image if there are no history data for
     // that URL.
     favicon_service->GetFaviconImageForPageURL(
-        favicon_params,
+        url,
         base::Bind(&MessageCenterSettingsController::OnFaviconLoaded,
                    base::Unretained(this),
                    url),

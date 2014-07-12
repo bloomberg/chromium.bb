@@ -21,7 +21,6 @@ const int kNotificationIconSize = 80;
 const int kNotificationImageBorderSize = 10;
 const int kNotificationPreferredImageWidth = 360;
 const int kNotificationPreferredImageHeight = 240;
-const int kSettingsIconSize = 16;
 const int kSmallImageSize = 16;
 const int kSmallImagePadding = 4;
 

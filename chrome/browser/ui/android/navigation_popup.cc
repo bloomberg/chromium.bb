@@ -19,7 +19,6 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/android/java_bitmap.h"
-#include "ui/gfx/favicon_size.h"
 #include "ui/gfx/image/image.h"
 #include "url/gurl.h"
 
@@ -49,8 +48,7 @@ void NavigationPopup::FetchFaviconForUrl(JNIEnv* env,
   // TODO(tedchoc): Request higher favicons based on screen density instead of
   //                hardcoding kFaviconSize.
   favicon_service->GetFaviconImageForPageURL(
-      FaviconService::FaviconForPageURLParams(
-          url, favicon_base::FAVICON, gfx::kFaviconSize),
+      url,
       base::Bind(&NavigationPopup::OnFaviconDataAvailable,
                  base::Unretained(this),
                  url),

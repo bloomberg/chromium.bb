@@ -29,7 +29,6 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/window_open_disposition.h"
-#include "ui/gfx/favicon_size.h"
 #include "ui/gfx/text_elider.h"
 
 using base::UserMetricsAction;
@@ -255,8 +254,7 @@ void BackForwardMenuModel::FetchFavicon(NavigationEntry* entry) {
     return;
 
   favicon_service->GetFaviconImageForPageURL(
-      FaviconService::FaviconForPageURLParams(
-          entry->GetURL(), favicon_base::FAVICON, gfx::kFaviconSize),
+      entry->GetURL(),
       base::Bind(&BackForwardMenuModel::OnFavIconDataAvailable,
                  base::Unretained(this),
                  entry->GetUniqueID()),

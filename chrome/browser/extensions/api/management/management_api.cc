@@ -53,7 +53,6 @@
 #include "extensions/common/permissions/permission_set.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "extensions/common/url_pattern.h"
-#include "ui/gfx/favicon_size.h"
 
 using base::IntToString;
 using content::BrowserThread;
@@ -915,8 +914,7 @@ bool ManagementGenerateAppForLinkFunction::RunAsync() {
   launch_url_ = launch_url;
 
   favicon_service->GetFaviconImageForPageURL(
-      FaviconService::FaviconForPageURLParams(
-          launch_url, favicon_base::FAVICON, gfx::kFaviconSize),
+      launch_url,
       base::Bind(&ManagementGenerateAppForLinkFunction::OnFaviconForApp, this),
       &cancelable_task_tracker_);
 

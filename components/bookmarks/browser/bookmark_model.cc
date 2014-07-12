@@ -959,16 +959,16 @@ void BookmarkModel::LoadFavicon(
 
   DCHECK(node->url().is_valid());
   node->set_favicon_state(BookmarkNode::LOADING_FAVICON);
-  base::CancelableTaskTracker::TaskId taskId = client_->GetFaviconImageForURL(
-      node->url(),
-      icon_type,
-      icon_type == favicon_base::FAVICON ? gfx::kFaviconSize : 0,
-      base::Bind(
-          &BookmarkModel::OnFaviconDataAvailable,
-          base::Unretained(this),
-          node,
-          icon_type),
-      &cancelable_task_tracker_);
+  base::CancelableTaskTracker::TaskId taskId =
+      client_->GetFaviconImageForPageURL(
+          node->url(),
+          icon_type,
+          base::Bind(
+              &BookmarkModel::OnFaviconDataAvailable,
+              base::Unretained(this),
+              node,
+              icon_type),
+          &cancelable_task_tracker_);
   if (taskId != base::CancelableTaskTracker::kBadTaskId)
     node->set_favicon_load_task_id(taskId);
 }

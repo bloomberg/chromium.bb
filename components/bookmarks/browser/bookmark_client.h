@@ -13,6 +13,7 @@
 #include "base/task/cancelable_task_tracker.h"
 #include "components/bookmarks/browser/bookmark_storage.h"
 #include "components/favicon_base/favicon_callback.h"
+#include "components/favicon_base/favicon_types.h"
 #include "components/keyed_service/core/keyed_service.h"
 
 class BookmarkNode;
@@ -39,19 +40,21 @@ class BookmarkClient : public KeyedService {
   // Returns true if the embedder favors touch icons over favicons.
   virtual bool PreferTouchIcon();
 
-  // Requests the favicon of any of |icon_types| whose pixel sizes most
-  // closely match |desired_size_in_dip| (if value is 0, the largest favicon
-  // is returned) and desired scale factor for |page_url|. |callback| is run
-  // when the bits have been fetched. |icon_types| can be any combination of
-  // IconType value, but only one icon will be returned.
-  virtual base::CancelableTaskTracker::TaskId GetFaviconImageForURL(
+  // Requests a favicon from the history cache for the web page at |page_url|.
+  // |callback| is run when the favicon has been fetched. If |type| is:
+  // - favicon_base::FAVICON, the returned gfx::Image is a multi-resolution
+  //   image of gfx::kFaviconSize DIP width and height. The data from the
+  //   history cache is resized if need be.
+  // - not favicon_base::FAVICON, the returned gfx::Image is a single-resolution
+  //   image with the largest bitmap in the history cache for |page_url| and
+  //   |type|.
+  virtual base::CancelableTaskTracker::TaskId GetFaviconImageForPageURL(
       const GURL& page_url,
-      int icon_types,
-      int desired_size_in_dip,
+      favicon_base::IconType type,
       const favicon_base::FaviconImageCallback& callback,
       base::CancelableTaskTracker* tracker);
 
-  // Returns true if the embedder supports typed count for URL.
+    // Returns true if the embedder supports typed count for URL.
   virtual bool SupportsTypedCountForNodes();
 
   // Retrieves the number of time each BookmarkNode URL has been typed in

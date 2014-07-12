@@ -39,16 +39,21 @@ namespace {
 
 void OnLocalFaviconAvailable(
     ScopedJavaGlobalRef<jobject>* j_favicon_image_callback,
-    const favicon_base::FaviconImageResult& favicon_image_result) {
+    const favicon_base::FaviconRawBitmapResult& result) {
   JNIEnv* env = AttachCurrentThread();
 
   // Convert favicon_image_result to java objects.
   ScopedJavaLocalRef<jstring> j_icon_url =
-      ConvertUTF8ToJavaString(env, favicon_image_result.icon_url.spec());
-  SkBitmap favicon_bitmap = favicon_image_result.image.AsBitmap();
+      ConvertUTF8ToJavaString(env, result.icon_url.spec());
   ScopedJavaLocalRef<jobject> j_favicon_bitmap;
-  if (!favicon_bitmap.isNull())
-    j_favicon_bitmap = gfx::ConvertToJavaBitmap(&favicon_bitmap);
+  if (result.is_valid()) {
+    SkBitmap favicon_bitmap;
+    gfx::PNGCodec::Decode(result.bitmap_data->front(),
+                          result.bitmap_data->size(),
+                          &favicon_bitmap);
+    if (!favicon_bitmap.isNull())
+      j_favicon_bitmap = gfx::ConvertToJavaBitmap(&favicon_bitmap);
+  }
 
   // Call java side OnLocalFaviconAvailable method.
   Java_FaviconImageCallback_onFaviconAvailable(env,
@@ -103,7 +108,7 @@ jboolean FaviconHelper::GetLocalFaviconImageForURL(
     jobject j_profile,
     jstring j_page_url,
     jint j_icon_types,
-    jint j_desired_size_in_dip,
+    jint j_desired_size_in_pixel,
     jobject j_favicon_image_callback) {
   Profile* profile = ProfileAndroid::FromProfileAndroid(j_profile);
   DCHECK(profile);
@@ -116,20 +121,18 @@ jboolean FaviconHelper::GetLocalFaviconImageForURL(
   if (!favicon_service)
     return false;
 
-  FaviconService::FaviconForPageURLParams params(
-      GURL(ConvertJavaStringToUTF16(env, j_page_url)),
-      static_cast<int>(j_icon_types),
-      static_cast<int>(j_desired_size_in_dip));
-
   ScopedJavaGlobalRef<jobject>* j_scoped_favicon_callback =
       new ScopedJavaGlobalRef<jobject>();
   j_scoped_favicon_callback->Reset(env, j_favicon_image_callback);
 
-  favicon_base::FaviconImageCallback callback_runner = base::Bind(
+  favicon_base::FaviconRawBitmapCallback callback_runner = base::Bind(
       &OnLocalFaviconAvailable, base::Owned(j_scoped_favicon_callback));
 
-  favicon_service->GetFaviconImageForPageURL(
-      params, callback_runner,
+  favicon_service->GetRawFaviconForPageURL(
+      GURL(ConvertJavaStringToUTF16(env, j_page_url)),
+      static_cast<int>(j_icon_types),
+      static_cast<int>(j_desired_size_in_pixel),
+      callback_runner,
       cancelable_task_tracker_.get());
 
   return true;

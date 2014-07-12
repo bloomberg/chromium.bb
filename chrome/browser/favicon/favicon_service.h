@@ -22,7 +22,8 @@ struct ImportedFaviconUsage;
 class Profile;
 
 // The favicon service provides methods to access favicons. It calls the history
-// backend behind the scenes.
+// backend behind the scenes. The callbacks are run asynchronously, even in the
+// case of an error.
 class FaviconService : public KeyedService {
  public:
   // TODO(jif): Remove usage of Profile. http://crbug.com/378208.
@@ -31,56 +32,36 @@ class FaviconService : public KeyedService {
 
   virtual ~FaviconService();
 
-  // Auxiliary argument structure for requesting favicons for URLs.
-  struct FaviconForPageURLParams {
-    FaviconForPageURLParams(const GURL& page_url,
-                            int icon_types,
-                            int desired_size_in_dip)
-        : page_url(page_url),
-          icon_types(icon_types),
-          desired_size_in_dip(desired_size_in_dip) {}
-
-    GURL page_url;
-    int icon_types;
-    int desired_size_in_dip;
-  };
-
   // We usually pass parameters with pointer to avoid copy. This function is a
   // helper to run FaviconResultsCallback with pointer parameters.
   static void FaviconResultsCallbackRunner(
       const favicon_base::FaviconResultsCallback& callback,
       const std::vector<favicon_base::FaviconRawBitmapResult>* results);
 
-  // The first argument of |callback| is a |const FaviconImageResult&|. Of which
-  // |FaviconImageResult::image| is constructed from the bitmaps for the
-  // passed in URL and icon types which most wich closely match the passed in
-  // |desired_size_in_dip| at the resource scale factors supported by the
-  // current platform (eg MacOS) in addition to 1x.
-  // |FaviconImageResult::icon_url| is the favicon that the favicon bitmaps in
-  // |image| originate from.
-  // TODO(pkotwicz): Enable constructing |image| from bitmaps from several
-  // icon URLs.
+  //////////////////////////////////////////////////////////////////////////////
+  // Methods to request favicon bitmaps from the history backend for |icon_url|.
+  // |icon_url| is the URL of the icon itself.
+  // (e.g. <http://www.google.com/favicon.ico>)
 
-  // Requests the favicon at |icon_url| of |icon_type| whose size most closely
-  // matches |desired_size_in_dip|. If |desired_size_in_dip| is 0, the largest
-  // favicon bitmap at |icon_url| is returned. |consumer| is notified when the
-  // bits have been fetched. |icon_url| is the URL of the icon itself, e.g.
-  // <http://www.google.com/favicon.ico>.
-  // Each of the three methods below differs in the format of the callback and
-  // the requested scales. All of the resource scale factors supported by the
-  // current platform (eg MacOS) are requested for GetFaviconImage().
+  // Requests the favicon at |icon_url| of type favicon_base::FAVICON and of
+  // size gfx::kFaviconSize. The returned gfx::Image is populated with
+  // representations for all of the scale factors supported by the platform
+  // (e.g. MacOS). If data is unavailable for some or all of the scale factors,
+  // the bitmaps with the best matching sizes are resized.
   base::CancelableTaskTracker::TaskId GetFaviconImage(
       const GURL& icon_url,
-      favicon_base::IconType icon_type,
-      int desired_size_in_dip,
       const favicon_base::FaviconImageCallback& callback,
       base::CancelableTaskTracker* tracker);
 
+  // Requests the favicon at |icon_url| of |icon_type| of size
+  // |desired_size_in_pixel|. If there is no favicon of size
+  // |desired_size_in_pixel|, the favicon bitmap which best matches
+  // |desired_size_in_pixel| is resized. If |desired_size_in_pixel| is 0,
+  // the largest favicon bitmap is returned.
   base::CancelableTaskTracker::TaskId GetRawFavicon(
       const GURL& icon_url,
       favicon_base::IconType icon_type,
-      int desired_size_in_dip,
-      float desired_favicon_scale,
+      int desired_size_in_pixel,
       const favicon_base::FaviconRawBitmapCallback& callback,
       base::CancelableTaskTracker* tracker);
 
@@ -94,6 +75,53 @@ class FaviconService : public KeyedService {
   base::CancelableTaskTracker::TaskId GetFavicon(
       const GURL& icon_url,
       favicon_base::IconType icon_type,
+      int desired_size_in_dip,
+      const favicon_base::FaviconResultsCallback& callback,
+      base::CancelableTaskTracker* tracker);
+
+  //////////////////////////////////////////////////////////////////////////////
+  // Methods to request favicon bitmaps from the history backend for |page_url|.
+  // |page_url| is the web page the favicon is associated with.
+  // (e.g. <http://www.google.com>)
+
+  // Requests the favicon for the page at |page_url| of type
+  // favicon_base::FAVICON and of size gfx::kFaviconSize. The returned
+  // gfx::Image is populated with representations for all of the scale factors
+  // supported by the platform (e.g. MacOS). If data is unavailable for some or
+  // all of the scale factors, the bitmaps with the best matching sizes are
+  // resized.
+  base::CancelableTaskTracker::TaskId GetFaviconImageForPageURL(
+      const GURL& page_url,
+      const favicon_base::FaviconImageCallback& callback,
+      base::CancelableTaskTracker* tracker);
+
+  // Requests the favicon for the page at |page_url| with one of |icon_types|
+  // and with |desired_size_in_pixel|. |icon_types| can be any combination of
+  // IconTypes. If favicon bitmaps for several IconTypes are available, the
+  // favicon bitmap is chosen in the priority of TOUCH_PRECOMPOSED_ICON,
+  // TOUCH_ICON and FAVICON. If there is no favicon bitmap of size
+  // |desired_size_in_pixel|, the favicon bitmap which best matches
+  // |desired_size_in_pixel| is resized. If |desired_size_in_pixel| is 0,
+  // the largest favicon bitmap is returned. Results with a higher priority
+  // IconType are preferred over an exact match of the favicon bitmap size.
+  base::CancelableTaskTracker::TaskId GetRawFaviconForPageURL(
+      const GURL& page_url,
+      int icon_types,
+      int desired_size_in_pixel,
+      const favicon_base::FaviconRawBitmapCallback& callback,
+      base::CancelableTaskTracker* tracker);
+
+  // See HistoryService::GetLargestFaviconForPageURL().
+  base::CancelableTaskTracker::TaskId GetLargestRawFaviconForPageURL(
+      const GURL& page_url,
+      const std::vector<int>& icon_types,
+      int minimum_size_in_pixels,
+      const favicon_base::FaviconRawBitmapCallback& callback,
+      base::CancelableTaskTracker* tracker);
+
+  base::CancelableTaskTracker::TaskId GetFaviconForPageURL(
+      const GURL& page_url,
+      int icon_types,
       int desired_size_in_dip,
       const favicon_base::FaviconResultsCallback& callback,
       base::CancelableTaskTracker* tracker);
@@ -123,41 +151,6 @@ class FaviconService : public KeyedService {
       const std::vector<GURL>& icon_urls,
       int icon_types,
       int desired_size_in_dip,
-      const favicon_base::FaviconResultsCallback& callback,
-      base::CancelableTaskTracker* tracker);
-
-  // Requests the favicons of any of |icon_types| whose pixel sizes most
-  // closely match |desired_size_in_dip| and desired scale for a web
-  // page URL. If |desired_size_in_dip| is 0, the largest favicon for the web
-  // page URL is returned. |callback| is run when the bits have been fetched.
-  // |icon_types| can be any combination of IconType value, but only one icon
-  // will be returned in the priority of TOUCH_PRECOMPOSED_ICON, TOUCH_ICON and
-  // FAVICON. Each of the three methods below differs in the format of the
-  // callback and the requested scales. All of the resource scale factors
-  // supported by the current platform (eg MacOS) are requested for
-  // GetFaviconImageForPageURL().
-  // Note. |callback| is always run asynchronously.
-  base::CancelableTaskTracker::TaskId GetFaviconImageForPageURL(
-      const FaviconForPageURLParams& params,
-      const favicon_base::FaviconImageCallback& callback,
-      base::CancelableTaskTracker* tracker);
-
-  base::CancelableTaskTracker::TaskId GetRawFaviconForPageURL(
-      const FaviconForPageURLParams& params,
-      float desired_favicon_scale,
-      const favicon_base::FaviconRawBitmapCallback& callback,
-      base::CancelableTaskTracker* tracker);
-
-  // See HistoryService::GetLargestFaviconForPageURL().
-  base::CancelableTaskTracker::TaskId GetLargestRawFaviconForPageURL(
-      const GURL& page_url,
-      const std::vector<int>& icon_types,
-      int minimum_size_in_pixels,
-      const favicon_base::FaviconRawBitmapCallback& callback,
-      base::CancelableTaskTracker* tracker);
-
-  base::CancelableTaskTracker::TaskId GetFaviconForPageURL(
-      const FaviconForPageURLParams& params,
       const favicon_base::FaviconResultsCallback& callback,
       base::CancelableTaskTracker* tracker);
 
@@ -227,7 +220,8 @@ class FaviconService : public KeyedService {
   // Helper function for GetFaviconImageForPageURL(), GetRawFaviconForPageURL()
   // and GetFaviconForPageURL().
   base::CancelableTaskTracker::TaskId GetFaviconForPageURLImpl(
-      const FaviconForPageURLParams& params,
+      const GURL& page_url,
+      int icon_types,
       const std::vector<int>& desired_sizes_in_pixel,
       const favicon_base::FaviconResultsCallback& callback,
       base::CancelableTaskTracker* tracker);

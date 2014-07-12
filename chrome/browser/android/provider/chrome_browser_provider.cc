@@ -4,6 +4,7 @@
 
 #include "chrome/browser/android/provider/chrome_browser_provider.h"
 
+#include <cmath>
 #include <list>
 #include <utility>
 
@@ -683,14 +684,13 @@ class BookmarkIconFetchTask : public FaviconServiceTask {
   favicon_base::FaviconRawBitmapResult Run(const GURL& url) {
     float max_scale = ui::GetScaleForScaleFactor(
         ResourceBundle::GetSharedInstance().GetMaxScaleFactor());
+    int desired_size_in_pixel = std::ceil(gfx::kFaviconSize * max_scale);
     RunAsyncRequestOnUIThreadBlocking(
         base::Bind(&FaviconService::GetRawFaviconForPageURL,
                    base::Unretained(service()),
-                   FaviconService::FaviconForPageURLParams(
-                       url,
-                       favicon_base::FAVICON | favicon_base::TOUCH_ICON,
-                       gfx::kFaviconSize),
-                   max_scale,
+                   url,
+                   favicon_base::FAVICON | favicon_base::TOUCH_ICON,
+                   desired_size_in_pixel,
                    base::Bind(&BookmarkIconFetchTask::OnFaviconRetrieved,
                               base::Unretained(this)),
                    cancelable_tracker()));

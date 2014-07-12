@@ -34,7 +34,6 @@
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/gfx/favicon_size.h"
 
 #if defined(USE_ASH)
 #include "ash/accelerators/accelerator_table.h"
@@ -614,8 +613,7 @@ void RecentTabsSubMenuModel::AddTabFavicon(int command_id, const GURL& url) {
     return;
 
   favicon_service->GetFaviconImageForPageURL(
-      FaviconService::FaviconForPageURLParams(
-          url, favicon_base::FAVICON, gfx::kFaviconSize),
+      url,
       base::Bind(&RecentTabsSubMenuModel::OnFaviconDataAvailable,
                  weak_ptr_factory_.GetWeakPtr(),
                  command_id),

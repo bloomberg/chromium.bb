@@ -508,8 +508,9 @@ void FaviconHandler::GetFaviconForURLFromFaviconService(
     const favicon_base::FaviconResultsCallback& callback,
     base::CancelableTaskTracker* tracker) {
   client_->GetFaviconService()->GetFaviconForPageURL(
-      FaviconService::FaviconForPageURLParams(
-          page_url, icon_types, preferred_icon_size()),
+      page_url,
+      icon_types,
+      preferred_icon_size(),
       callback,
       tracker);
 }

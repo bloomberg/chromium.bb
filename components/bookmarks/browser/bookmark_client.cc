@@ -12,10 +12,9 @@ bool BookmarkClient::PreferTouchIcon() {
   return false;
 }
 
-base::CancelableTaskTracker::TaskId BookmarkClient::GetFaviconImageForURL(
+base::CancelableTaskTracker::TaskId BookmarkClient::GetFaviconImageForPageURL(
     const GURL& page_url,
-    int icon_types,
-    int desired_size_in_dip,
+    favicon_base::IconType type,
     const favicon_base::FaviconImageCallback& callback,
     base::CancelableTaskTracker* tracker) {
   return base::CancelableTaskTracker::kBadTaskId;

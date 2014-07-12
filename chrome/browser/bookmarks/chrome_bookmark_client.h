@@ -42,10 +42,9 @@ class ChromeBookmarkClient : public bookmarks::BookmarkClient,
 
   // bookmarks::BookmarkClient:
   virtual bool PreferTouchIcon() OVERRIDE;
-  virtual base::CancelableTaskTracker::TaskId GetFaviconImageForURL(
+  virtual base::CancelableTaskTracker::TaskId GetFaviconImageForPageURL(
       const GURL& page_url,
-      int icon_types,
-      int desired_size_in_dip,
+      favicon_base::IconType type,
       const favicon_base::FaviconImageCallback& callback,
       base::CancelableTaskTracker* tracker) OVERRIDE;
   virtual bool SupportsTypedCountForNodes() OVERRIDE;

@@ -38,6 +38,20 @@ void NotifyHistoryOfRemovedURLs(Profile* profile,
     history_service->URLsNoLongerBookmarked(removed_urls);
 }
 
+void RunCallbackWithImage(
+    const favicon_base::FaviconImageCallback& callback,
+    const favicon_base::FaviconRawBitmapResult& bitmap_result) {
+  favicon_base::FaviconImageResult result;
+  if (bitmap_result.is_valid()) {
+    result.image = gfx::Image::CreateFrom1xPNGBytes(
+        bitmap_result.bitmap_data->front(), bitmap_result.bitmap_data->size());
+    result.icon_url = bitmap_result.icon_url;
+    callback.Run(result);
+    return;
+  }
+  callback.Run(result);
+}
+
 }  // namespace
 
 ChromeBookmarkClient::ChromeBookmarkClient(Profile* profile)
@@ -97,21 +111,27 @@ bool ChromeBookmarkClient::PreferTouchIcon() {
 #endif
 }
 
-base::CancelableTaskTracker::TaskId ChromeBookmarkClient::GetFaviconImageForURL(
+base::CancelableTaskTracker::TaskId
+ChromeBookmarkClient::GetFaviconImageForPageURL(
     const GURL& page_url,
-    int icon_types,
-    int desired_size_in_dip,
+    favicon_base::IconType type,
     const favicon_base::FaviconImageCallback& callback,
     base::CancelableTaskTracker* tracker) {
   FaviconService* favicon_service =
       FaviconServiceFactory::GetForProfile(profile_, Profile::EXPLICIT_ACCESS);
   if (!favicon_service)
     return base::CancelableTaskTracker::kBadTaskId;
-  return favicon_service->GetFaviconImageForPageURL(
-      FaviconService::FaviconForPageURLParams(
-          page_url, icon_types, desired_size_in_dip),
-      callback,
-      tracker);
+  if (type == favicon_base::FAVICON) {
+    return favicon_service->GetFaviconImageForPageURL(
+        page_url, callback, tracker);
+  } else {
+    return favicon_service->GetRawFaviconForPageURL(
+        page_url,
+        type,
+        0,
+        base::Bind(&RunCallbackWithImage, callback),
+        tracker);
+  }
 }
 
 bool ChromeBookmarkClient::SupportsTypedCountForNodes() {

@@ -443,8 +443,9 @@ void FaviconCache::OnPageFaviconUpdated(const GURL& page_url) {
   // See crbug.com/181068.
   base::CancelableTaskTracker::TaskId id =
       favicon_service->GetFaviconForPageURL(
-          FaviconService::FaviconForPageURLParams(
-              page_url, SupportedFaviconTypes(), kMaxFaviconResolution),
+          page_url,
+          SupportedFaviconTypes(),
+          kMaxFaviconResolution,
           base::Bind(&FaviconCache::OnFaviconDataAvailable,
                      weak_ptr_factory_.GetWeakPtr(),
                      page_url),

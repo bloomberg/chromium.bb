@@ -60,7 +60,6 @@
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/webui/web_ui_util.h"
-#include "ui/gfx/favicon_size.h"
 #include "url/gurl.h"
 
 using content::WebContents;
@@ -701,8 +700,7 @@ void AppLauncherHandler::HandleGenerateAppForLink(const base::ListValue* args) {
   install_info->page_ordinal = page_ordinal;
 
   favicon_service->GetFaviconImageForPageURL(
-      FaviconService::FaviconForPageURLParams(
-          launch_url, favicon_base::FAVICON, gfx::kFaviconSize),
+      launch_url,
       base::Bind(&AppLauncherHandler::OnFaviconForApp,
                  base::Unretained(this),
                  base::Passed(&install_info)),

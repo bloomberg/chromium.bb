@@ -16,7 +16,6 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/table_model_observer.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/gfx/favicon_size.h"
 #include "ui/gfx/image/image_skia.h"
 
 // Group IDs used by TemplateURLTableModel.
@@ -90,8 +89,6 @@ class TemplateURLTableModel::ModelEntry {
     load_state_ = LOADING;
     model_->favicon_service_->GetFaviconImage(
         favicon_url,
-        favicon_base::FAVICON,
-        gfx::kFaviconSize,
         base::Bind(&ModelEntry::OnFaviconDataAvailable, base::Unretained(this)),
         &tracker_);
   }

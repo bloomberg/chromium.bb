@@ -20,7 +20,7 @@ class FaviconHelper {
                                       jobject j_profile,
                                       jstring j_page_url,
                                       jint j_icon_types,
-                                      jint j_desired_size_in_dip,
+                                      jint j_desired_size_in_pixel,
                                       jobject j_favicon_image_callback);
   void GetLargestRawFaviconForUrl(JNIEnv* env,
                                   jobject obj,
