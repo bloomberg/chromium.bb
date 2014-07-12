@@ -334,15 +334,10 @@ void ClientCertResolver::ResolveNetworks(
     // In any case, don't check this network again in NetworkListChanged.
     resolved_networks_.insert(network->path());
 
-    // If this network is not managed, it cannot have a ClientCertPattern.
-    if (network->guid().empty())
+    // If this network is not configured, it cannot have a ClientCertPattern.
+    if (network->profile_path().empty())
       continue;
 
-    if (network->profile_path().empty()) {
-      LOG(ERROR) << "Network " << network->path()
-                 << " has a GUID but not profile path";
-      continue;
-    }
     const base::DictionaryValue* policy =
         managed_network_config_handler_->FindPolicyByGuidAndProfile(
             network->guid(), network->profile_path());
