@@ -419,7 +419,7 @@ TEST_F(ProfileSyncServiceTest, DisableAndEnableSyncTemporarily) {
 
 // Certain ProfileSyncService tests don't apply to Chrome OS, for example
 // things that deal with concepts like "signing out" and policy.
-#if defined(OS_WIN) || defined(OS_MACOSX) || (defined(OS_LINUX) && !defined(OS_CHROMEOS))
+#if defined(ENABLE_PRE_SYNC_BACKUP)
 TEST_F(ProfileSyncServiceTest, EnableSyncAndSignOutDesktop) {
   CreateService(browser_sync::AUTO_START);
   ExpectDataTypeManagerCreation(2);
