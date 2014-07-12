@@ -148,12 +148,12 @@ class NET_EXPORT TCPSocketLibevent {
   void LogConnectBegin(const AddressList& addresses) const;
   void LogConnectEnd(int net_error) const;
 
-  void ReadCompleted(IOBuffer* buf,
+  void ReadCompleted(const scoped_refptr<IOBuffer>& buf,
                      const CompletionCallback& callback,
                      int rv);
   int HandleReadCompleted(IOBuffer* buf, int rv);
 
-  void WriteCompleted(IOBuffer* buf,
+  void WriteCompleted(const scoped_refptr<IOBuffer>& buf,
                       const CompletionCallback& callback,
                       int rv) const;
   int HandleWriteCompleted(IOBuffer* buf, int rv) const;

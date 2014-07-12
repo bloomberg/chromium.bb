@@ -211,7 +211,10 @@ int TCPSocketLibevent::Read(IOBuffer* buf,
   int rv = socket_->Read(
       buf, buf_len,
       base::Bind(&TCPSocketLibevent::ReadCompleted,
-                 base::Unretained(this), base::Unretained(buf), callback));
+                 // Grab a reference to |buf| so that ReadCompleted() can still
+                 // use it when Read() completes, as otherwise, this transfers
+                 // ownership of buf to socket.
+                 base::Unretained(this), make_scoped_refptr(buf), callback));
   if (rv >= 0)
     RecordFastOpenStatus();
   if (rv != ERR_IO_PENDING)
@@ -227,7 +230,10 @@ int TCPSocketLibevent::Write(IOBuffer* buf,
 
   CompletionCallback write_callback =
       base::Bind(&TCPSocketLibevent::WriteCompleted,
-                 base::Unretained(this), base::Unretained(buf), callback);
+                 // Grab a reference to |buf| so that WriteCompleted() can still
+                 // use it when Write() completes, as otherwise, this transfers
+                 // ownership of buf to socket.
+                 base::Unretained(this), make_scoped_refptr(buf), callback);
   int rv;
   if (use_tcp_fastopen_ && !tcp_fastopen_connected_) {
     rv = TcpFastOpenWrite(buf, buf_len, write_callback);
@@ -485,7 +491,7 @@ void TCPSocketLibevent::LogConnectEnd(int net_error) const {
                                                       storage.addr_len));
 }
 
-void TCPSocketLibevent::ReadCompleted(IOBuffer* buf,
+void TCPSocketLibevent::ReadCompleted(const scoped_refptr<IOBuffer>& buf,
                                       const CompletionCallback& callback,
                                       int rv) {
   DCHECK_NE(ERR_IO_PENDING, rv);
@@ -510,7 +516,7 @@ int TCPSocketLibevent::HandleReadCompleted(IOBuffer* buf, int rv) {
   return rv;
 }
 
-void TCPSocketLibevent::WriteCompleted(IOBuffer* buf,
+void TCPSocketLibevent::WriteCompleted(const scoped_refptr<IOBuffer>& buf,
                                        const CompletionCallback& callback,
                                        int rv) const {
   DCHECK_NE(ERR_IO_PENDING, rv);
