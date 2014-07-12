@@ -11,8 +11,6 @@
 
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/weak_ptr.h"
-#include "remoting/client/client_config.h"
 #include "remoting/client/chromoting_stats.h"
 #include "remoting/protocol/client_stub.h"
 #include "remoting/protocol/clipboard_stub.h"
@@ -43,9 +41,7 @@ class ChromotingClient : public protocol::ConnectionToHost::HostEventCallback,
                          public protocol::ClientStub {
  public:
   // |audio_player| may be null, in which case audio will not be requested.
-  ChromotingClient(const ClientConfig& config,
-                   ClientContext* client_context,
-                   protocol::ConnectionToHost* connection,
+  ChromotingClient(ClientContext* client_context,
                    ClientUserInterface* user_interface,
                    VideoRenderer* video_renderer,
                    scoped_ptr<AudioPlayer> audio_player);
@@ -55,7 +51,20 @@ class ChromotingClient : public protocol::ConnectionToHost::HostEventCallback,
   // Start the client. Must be called on the main thread. |signal_strategy|
   // must outlive the client.
   void Start(SignalStrategy* signal_strategy,
-             scoped_ptr<protocol::TransportFactory> transport_factory);
+             scoped_ptr<protocol::Authenticator> authenticator,
+             scoped_ptr<protocol::TransportFactory> transport_factory,
+             const std::string& host_jid,
+             const std::string& capabilities);
+
+  protocol::ConnectionToHost::State connection_state() const {
+    return connection_.state();
+  }
+
+  protocol::ClipboardStub* clipboard_forwarder() {
+    return connection_.clipboard_forwarder();
+  }
+  protocol::HostStub* host_stub() { return connection_.host_stub(); }
+  protocol::InputStub* input_stub() { return connection_.input_stub(); }
 
   // ClientStub implementation.
   virtual void SetCapabilities(
@@ -89,16 +98,15 @@ class ChromotingClient : public protocol::ConnectionToHost::HostEventCallback,
   void OnChannelsConnected();
 
   // The following are not owned by this class.
-  ClientConfig config_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
-  protocol::ConnectionToHost* connection_;
   ClientUserInterface* user_interface_;
   VideoRenderer* video_renderer_;
 
+  protocol::ConnectionToHost connection_;
+
   scoped_ptr<AudioDecodeScheduler> audio_decode_scheduler_;
 
-  // If non-NULL, this is called when the client is done.
-  base::Closure client_done_;
+  std::string local_capabilities_;
 
   // The set of all capabilities supported by the host.
   std::string host_capabilities_;
@@ -108,10 +116,6 @@ class ChromotingClient : public protocol::ConnectionToHost::HostEventCallback,
 
   // Record the statistics of the connection.
   ChromotingStats stats_;
-
-  // WeakPtr used to avoid tasks accessing the client after it is deleted.
-  base::WeakPtr<ChromotingClient> weak_ptr_;
-  base::WeakPtrFactory<ChromotingClient> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromotingClient);
 };

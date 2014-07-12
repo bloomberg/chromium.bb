@@ -53,11 +53,6 @@ class ClientUserInterface {
 
   // Get the view's CursorShapeStub implementation.
   virtual protocol::CursorShapeStub* GetCursorShapeStub() = 0;
-
-  // Get the view's TokenFetcher implementation.
-  // The TokenFetcher implementation may require interactive authentication.
-  virtual scoped_ptr<protocol::ThirdPartyClientAuthenticator::TokenFetcher>
-  GetTokenFetcher(const std::string& host_public_key) = 0;
 };
 
 }  // namespace remoting

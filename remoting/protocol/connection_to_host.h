@@ -80,7 +80,7 @@ class ConnectionToHost : public SignalStrategy::Listener,
                                 const protocol::TransportRoute& route) = 0;
   };
 
-  ConnectionToHost(bool allow_nat_traversal);
+  ConnectionToHost();
   virtual ~ConnectionToHost();
 
   // Set the stubs which will handle messages from the host.
@@ -104,7 +104,6 @@ class ConnectionToHost : public SignalStrategy::Listener,
                        scoped_ptr<TransportFactory> transport_factory,
                        scoped_ptr<Authenticator> authenticator,
                        const std::string& host_jid,
-                       const std::string& host_public_key,
                        HostEventCallback* event_callback);
 
   // Returns the session configuration that was negotiated with the host.
@@ -150,8 +149,6 @@ class ConnectionToHost : public SignalStrategy::Listener,
   void CloseChannels();
 
   void SetState(State state, ErrorCode error);
-
-  bool allow_nat_traversal_;
 
   std::string host_jid_;
   std::string host_public_key_;

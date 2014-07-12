@@ -25,19 +25,14 @@ namespace remoting {
 using protocol::AuthenticationMethod;
 
 ChromotingClient::ChromotingClient(
-    const ClientConfig& config,
     ClientContext* client_context,
-    protocol::ConnectionToHost* connection,
     ClientUserInterface* user_interface,
     VideoRenderer* video_renderer,
     scoped_ptr<AudioPlayer> audio_player)
-    : config_(config),
-      task_runner_(client_context->main_task_runner()),
-      connection_(connection),
+    : task_runner_(client_context->main_task_runner()),
       user_interface_(user_interface),
       video_renderer_(video_renderer),
-      host_capabilities_received_(false),
-      weak_factory_(this) {
+      host_capabilities_received_(false) {
   if (audio_player) {
     audio_decode_scheduler_.reset(new AudioDecodeScheduler(
         client_context->main_task_runner(),
@@ -51,32 +46,21 @@ ChromotingClient::~ChromotingClient() {
 
 void ChromotingClient::Start(
     SignalStrategy* signal_strategy,
-    scoped_ptr<protocol::TransportFactory> transport_factory) {
+    scoped_ptr<protocol::Authenticator> authenticator,
+    scoped_ptr<protocol::TransportFactory> transport_factory,
+    const std::string& host_jid,
+    const std::string& capabilities) {
   DCHECK(task_runner_->BelongsToCurrentThread());
 
-  scoped_ptr<protocol::Authenticator> authenticator(
-      new protocol::NegotiatingClientAuthenticator(
-          config_.client_pairing_id,
-          config_.client_paired_secret,
-          config_.authentication_tag,
-          config_.fetch_secret_callback,
-          user_interface_->GetTokenFetcher(config_.host_public_key),
-          config_.authentication_methods));
+  local_capabilities_ = capabilities;
 
-  // Create a WeakPtr to ourself for to use for all posted tasks.
-  weak_ptr_ = weak_factory_.GetWeakPtr();
+  connection_.set_client_stub(this);
+  connection_.set_clipboard_stub(this);
+  connection_.set_video_stub(video_renderer_);
+  connection_.set_audio_stub(audio_decode_scheduler_.get());
 
-  connection_->set_client_stub(this);
-  connection_->set_clipboard_stub(this);
-  connection_->set_video_stub(video_renderer_);
-  connection_->set_audio_stub(audio_decode_scheduler_.get());
-
-  connection_->Connect(signal_strategy,
-                       transport_factory.Pass(),
-                       authenticator.Pass(),
-                       config_.host_jid,
-                       config_.host_public_key,
-                       this);
+  connection_.Connect(signal_strategy, transport_factory.Pass(),
+                       authenticator.Pass(), host_jid, this);
 }
 
 void ChromotingClient::SetCapabilities(
@@ -98,7 +82,7 @@ void ChromotingClient::SetCapabilities(
   // Calculate the set of capabilities enabled by both client and host and pass
   // it to the webapp.
   user_interface_->SetCapabilities(
-      IntersectCapabilities(config_.capabilities, host_capabilities_));
+      IntersectCapabilities(local_capabilities_, host_capabilities_));
 }
 
 void ChromotingClient::SetPairingResponse(
@@ -159,13 +143,13 @@ void ChromotingClient::OnAuthenticated() {
   DCHECK(task_runner_->BelongsToCurrentThread());
 
   // Initialize the decoder.
-  video_renderer_->Initialize(connection_->config());
-  if (connection_->config().is_audio_enabled())
-    audio_decode_scheduler_->Initialize(connection_->config());
+  video_renderer_->Initialize(connection_.config());
+  if (connection_.config().is_audio_enabled())
+    audio_decode_scheduler_->Initialize(connection_.config());
 
   // Do not negotiate capabilities with the host if the host does not support
   // them.
-  if (!connection_->config().SupportsCapabilities()) {
+  if (!connection_.config().SupportsCapabilities()) {
     VLOG(1) << "The host does not support any capabilities.";
 
     host_capabilities_received_ = true;
@@ -177,12 +161,12 @@ void ChromotingClient::OnChannelsConnected() {
   DCHECK(task_runner_->BelongsToCurrentThread());
 
   // Negotiate capabilities with the host.
-  if (connection_->config().SupportsCapabilities()) {
-    VLOG(1) << "Client capabilities: " << config_.capabilities;
+  if (connection_.config().SupportsCapabilities()) {
+    VLOG(1) << "Client capabilities: " << local_capabilities_;
 
     protocol::Capabilities capabilities;
-    capabilities.set_capabilities(config_.capabilities);
-    connection_->host_stub()->SetCapabilities(capabilities);
+    capabilities.set_capabilities(local_capabilities_);
+    connection_.host_stub()->SetCapabilities(capabilities);
   }
 }
 

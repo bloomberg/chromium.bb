@@ -14,7 +14,6 @@
 #include "net/url_request/url_request_context_getter.h"
 #include "remoting/base/auto_thread.h"
 #include "remoting/client/chromoting_client.h"
-#include "remoting/client/client_config.h"
 #include "remoting/client/client_context.h"
 #include "remoting/client/client_user_interface.h"
 #include "remoting/client/frame_consumer_proxy.h"
@@ -25,7 +24,6 @@
 #include "remoting/jingle_glue/network_settings.h"
 #include "remoting/jingle_glue/xmpp_signal_strategy.h"
 #include "remoting/protocol/clipboard_stub.h"
-#include "remoting/protocol/connection_to_host.h"
 #include "remoting/protocol/cursor_shape_stub.h"
 
 namespace remoting {
@@ -94,8 +92,6 @@ class ClientInstance : public ClientUserInterface,
       OVERRIDE;
   virtual protocol::ClipboardStub* GetClipboardStub() OVERRIDE;
   virtual protocol::CursorShapeStub* GetCursorShapeStub() OVERRIDE;
-  virtual scoped_ptr<protocol::ThirdPartyClientAuthenticator::TokenFetcher>
-      GetTokenFetcher(const std::string& host_public_key) OVERRIDE;
 
   // CursorShapeStub implementation.
   virtual void InjectClipboardEvent(const protocol::ClipboardEvent& event)
@@ -119,15 +115,15 @@ class ClientInstance : public ClientUserInterface,
 
   // ID of the host we are connecting to.
   std::string host_id_;
+  std::string host_jid_;
 
   // This group of variables is to be used on the display thread.
   scoped_ptr<SoftwareVideoRenderer> video_renderer_;
   scoped_ptr<FrameConsumerBridge> view_;
 
   // This group of variables is to be used on the network thread.
-  ClientConfig client_config_;
   scoped_ptr<ClientContext> client_context_;
-  scoped_ptr<protocol::ConnectionToHost> connection_;
+  scoped_ptr<protocol::Authenticator> authenticator_;
   scoped_ptr<ChromotingClient> client_;
   XmppSignalStrategy::XmppServerConfig xmpp_config_;
   scoped_ptr<XmppSignalStrategy> signaling_;  // Must outlive client_

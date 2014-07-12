@@ -286,11 +286,19 @@ public class JniInterface {
 
     /** Saves newly-received pairing credentials to permanent storage. Called on the UI thread. */
     @CalledByNative
-    private static void commitPairingCredentials(String host, byte[] id, byte[] secret) {
-        sContext.getPreferences(Activity.MODE_PRIVATE).edit().
-                putString(host + "_id", new String(id)).
-                putString(host + "_secret", new String(secret)).
-                apply();
+    private static void commitPairingCredentials(String host, String id, String secret) {
+        // Empty |id| indicates that pairing needs to be removed.
+        if (id.isEmpty()) {
+            sContext.getPreferences(Activity.MODE_PRIVATE).edit().
+                    remove(host + "_id").
+                    remove(host + "_secret").
+                    apply();
+        } else {
+            sContext.getPreferences(Activity.MODE_PRIVATE).edit().
+                    putString(host + "_id", id).
+                    putString(host + "_secret", secret).
+                    apply();
+        }
     }
 
     /**

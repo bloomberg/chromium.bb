@@ -15,6 +15,7 @@
 #include "remoting/jingle_glue/chromium_port_allocator.h"
 #include "remoting/protocol/host_stub.h"
 #include "remoting/protocol/libjingle_transport_factory.h"
+#include "remoting/protocol/negotiating_client_authenticator.h"
 
 namespace {
 const char* const kXmppServer = "talk.google.com";
@@ -34,8 +35,10 @@ ClientInstance::ClientInstance(const base::WeakPtr<ClientProxy>& proxy,
                                const std::string& host_pubkey,
                                const std::string& pairing_id,
                                const std::string& pairing_secret)
-    : proxyToClient_(proxy), host_id_(host_id), create_pairing_(false) {
-
+    : proxyToClient_(proxy),
+      host_id_(host_id),
+      host_jid_(host_jid),
+      create_pairing_(false) {
   if (!base::MessageLoop::current()) {
     VLOG(1) << "Starting main message loop";
     ui_loop_ = new base::MessageLoopForUI();
@@ -71,28 +74,30 @@ ClientInstance::ClientInstance(const base::WeakPtr<ClientProxy>& proxy,
   xmpp_config_.auth_token = auth_token;
   xmpp_config_.auth_service = "oauth2";
 
-  // Initialize ClientConfig.
-  client_config_.host_jid = host_jid;
-  client_config_.host_public_key = host_pubkey;
-  client_config_.authentication_tag = host_id_;
-  client_config_.client_pairing_id = pairing_id;
-  client_config_.client_paired_secret = pairing_secret;
-  client_config_.authentication_methods.push_back(
-      protocol::AuthenticationMethod::FromString("spake2_pair"));
-  client_config_.authentication_methods.push_back(
-      protocol::AuthenticationMethod::FromString("spake2_hmac"));
-  client_config_.authentication_methods.push_back(
-      protocol::AuthenticationMethod::FromString("spake2_plain"));
+  // Initialize |authenticator_|.
+  scoped_ptr<protocol::ThirdPartyClientAuthenticator::TokenFetcher>
+      token_fetcher(new TokenFetcherProxy(
+          base::Bind(&ChromotingJniInstance::FetchThirdPartyToken,
+                     weak_factory_.GetWeakPtr()),
+          host_pubkey));
+
+  std::vector<protocol::AuthenticationMethod> auth_methods;
+  auth_methods.push_back(protocol::AuthenticationMethod::Spake2Pair());
+  auth_methods.push_back(protocol::AuthenticationMethod::Spake2(
+      protocol::AuthenticationMethod::HMAC_SHA256));
+  auth_methods.push_back(protocol::AuthenticationMethod::Spake2(
+      protocol::AuthenticationMethod::NONE));
+
+  authenticator_.reset(new protocol::NegotiatingClientAuthenticator(
+      pairing_id, pairing_secret, host_id_,
+      base::Bind(&ClientInstance::FetchSecret, this),
+      token_fetcher.Pass(), auth_methods));
 }
 
 ClientInstance::~ClientInstance() {}
 
 void ClientInstance::Start() {
   DCHECK(ui_task_runner_->BelongsToCurrentThread());
-
-  // Creates a reference to |this|, so don't want to bind during constructor
-  client_config_.fetch_secret_callback =
-      base::Bind(&ClientInstance::FetchSecret, this);
 
   view_.reset(new FrameConsumerBridge(
       base::Bind(&ClientProxy::RedrawCanvas, proxyToClient_)));
@@ -119,7 +124,6 @@ void ClientInstance::Start() {
 void ClientInstance::Cleanup() {
   DCHECK(ui_task_runner_->BelongsToCurrentThread());
 
-  client_config_.fetch_secret_callback.Reset();  // Release ref to this
   // |view_| must be destroyed on the UI thread before the producer is gone.
   view_.reset();
 
@@ -149,14 +153,9 @@ void ClientInstance::FetchSecret(
   pin_callback_ = callback;
 
   if (proxyToClient_) {
-    if (!client_config_.client_pairing_id.empty()) {
-      // We attempted to connect using an existing pairing that was rejected.
-      // Unless we forget about the stale credentials, we'll continue trying
-      // them.
-      VLOG(1) << "Deleting rejected pairing credentials";
+    // Delete pairing credentials if they exist.
+    proxyToClient_->CommitPairingCredentials(host_id_, "", "");
 
-      proxyToClient_->CommitPairingCredentials(host_id_, "", "");
-    }
     proxyToClient_->DisplayAuthenticationPrompt(pairable);
   }
 }
@@ -229,7 +228,7 @@ void ClientInstance::PerformMouseAction(
   if (mButton != protocol::MouseEvent::BUTTON_UNDEFINED)
     action.set_button_down(button_down);
 
-  connection_->input_stub()->InjectMouseEvent(action);
+  client_->input_stub()->InjectMouseEvent(action);
 }
 
 void ClientInstance::PerformKeyboardAction(int key_code, bool key_down) {
@@ -244,7 +243,7 @@ void ClientInstance::PerformKeyboardAction(int key_code, bool key_down) {
   protocol::KeyEvent action;
   action.set_usb_keycode(key_code);
   action.set_pressed(key_down);
-  connection_->input_stub()->InjectKeyEvent(action);
+  client_->input_stub()->InjectKeyEvent(action);
 }
 
 void ClientInstance::OnConnectionState(protocol::ConnectionToHost::State state,
@@ -261,7 +260,7 @@ void ClientInstance::OnConnectionState(protocol::ConnectionToHost::State state,
   //    VLOG(1) << "Attempting to pair with host";
   //    protocol::PairingRequest request;
   //    request.set_client_name("iOS");
-  //    connection_->host_stub()->RequestPairing(request);
+  //    client_->host_stub()->RequestPairing(request);
   //  }
 
   if (proxyToClient_)
@@ -279,10 +278,6 @@ void ClientInstance::OnRouteChanged(const std::string& channel_name,
 }
 
 void ClientInstance::SetCapabilities(const std::string& capabilities) {
-  DCHECK(video_renderer_);
-  DCHECK(connection_);
-  DCHECK(connection_->state() == protocol::ConnectionToHost::CONNECTED);
-  video_renderer_->Initialize(connection_->config());
 }
 
 void ClientInstance::SetPairingResponse(
@@ -311,12 +306,6 @@ protocol::ClipboardStub* ClientInstance::GetClipboardStub() { return this; }
 
 // Returning interface of protocol::CursorShapeStub
 protocol::CursorShapeStub* ClientInstance::GetCursorShapeStub() { return this; }
-
-scoped_ptr<protocol::ThirdPartyClientAuthenticator::TokenFetcher>
-ClientInstance::GetTokenFetcher(const std::string& host_public_key) {
-  // Returns null when third-party authentication is unsupported.
-  return scoped_ptr<protocol::ThirdPartyClientAuthenticator::TokenFetcher>();
-}
 
 void ClientInstance::InjectClipboardEvent(
     const protocol::ClipboardEvent& event) {
@@ -347,11 +336,7 @@ void ClientInstance::ConnectToHostOnNetworkThread(
 
   view_->Initialize(video_renderer_.get());
 
-  connection_.reset(new protocol::ConnectionToHost(true));
-
-  client_.reset(new ChromotingClient(client_config_,
-                                     client_context_.get(),
-                                     connection_.get(),
+  client_.reset(new ChromotingClient(client_context_.get(),
                                      this,
                                      video_renderer_.get(),
                                      scoped_ptr<AudioPlayer>()));
@@ -372,7 +357,8 @@ void ClientInstance::ConnectToHostOnNetworkThread(
           port_allocator.PassAs<cricket::HttpPortAllocatorBase>(),
           network_settings));
 
-  client_->Start(signaling_.get(), transport_factory.Pass());
+  client_->Start(signaling_.get(), authenticator_.Pass(),
+                 transport_factory.Pass(), host_jid_, std::string());
 
   if (!done.is_null())
     done.Run();
@@ -385,7 +371,6 @@ void ClientInstance::DisconnectFromHostOnNetworkThread(
   host_id_.clear();
 
   // |client_| must be torn down before |signaling_|.
-  connection_.reset();
   client_.reset();
   signaling_.reset();
   video_renderer_.reset();

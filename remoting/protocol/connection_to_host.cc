@@ -26,10 +26,8 @@
 namespace remoting {
 namespace protocol {
 
-ConnectionToHost::ConnectionToHost(
-    bool allow_nat_traversal)
-    : allow_nat_traversal_(allow_nat_traversal),
-      event_callback_(NULL),
+ConnectionToHost::ConnectionToHost()
+    : event_callback_(NULL),
       client_stub_(NULL),
       clipboard_stub_(NULL),
       audio_stub_(NULL),
@@ -55,7 +53,6 @@ void ConnectionToHost::Connect(SignalStrategy* signal_strategy,
                                scoped_ptr<TransportFactory> transport_factory,
                                scoped_ptr<Authenticator> authenticator,
                                const std::string& host_jid,
-                               const std::string& host_public_key,
                                HostEventCallback* event_callback) {
   DCHECK(client_stub_);
   DCHECK(clipboard_stub_);
@@ -68,7 +65,6 @@ void ConnectionToHost::Connect(SignalStrategy* signal_strategy,
   // Save jid of the host. The actual connection is created later after
   // |signal_strategy_| is connected.
   host_jid_ = host_jid;
-  host_public_key_ = host_public_key;
 
   signal_strategy_->AddListener(this);
   signal_strategy_->Connect();

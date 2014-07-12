@@ -38,7 +38,6 @@
 #include "remoting/base/constants.h"
 #include "remoting/base/util.h"
 #include "remoting/client/chromoting_client.h"
-#include "remoting/client/client_config.h"
 #include "remoting/client/frame_consumer_proxy.h"
 #include "remoting/client/plugin/delegating_signal_strategy.h"
 #include "remoting/client/plugin/media_source_video_renderer.h"
@@ -163,6 +162,26 @@ bool IsVisibleRow(const uint32_t* begin, const uint32_t* end) {
   return std::find_if(begin, end, &IsVisiblePixel) != end;
 }
 
+bool ParseAuthMethods(
+    const std::string& auth_methods_str,
+    std::vector<protocol::AuthenticationMethod>* auth_methods) {
+  std::vector<std::string> parts;
+  base::SplitString(auth_methods_str, ',', &parts);
+  for (std::vector<std::string>::iterator it = parts.begin();
+       it != parts.end(); ++it) {
+    protocol::AuthenticationMethod authentication_method =
+        protocol::AuthenticationMethod::FromString(*it);
+    if (authentication_method.is_valid())
+      auth_methods->push_back(authentication_method);
+  }
+  if (auth_methods->empty()) {
+    LOG(ERROR) << "No valid authentication methods specified.";
+    return false;
+  }
+
+  return true;
+}
+
 // This flag blocks LOGs to the UI if we're already in the middle of logging
 // to the UI. This prevents a potential infinite loop if we encounter an error
 // while sending the log message to the UI.
@@ -187,25 +206,6 @@ const char ChromotingInstance::kApiFeatures[] =
 
 const char ChromotingInstance::kRequestedCapabilities[] = "";
 const char ChromotingInstance::kSupportedCapabilities[] = "desktopShape";
-
-bool ChromotingInstance::ParseAuthMethods(const std::string& auth_methods_str,
-                                          ClientConfig* config) {
-  std::vector<std::string> auth_methods;
-  base::SplitString(auth_methods_str, ',', &auth_methods);
-  for (std::vector<std::string>::iterator it = auth_methods.begin();
-       it != auth_methods.end(); ++it) {
-    protocol::AuthenticationMethod authentication_method =
-        protocol::AuthenticationMethod::FromString(*it);
-    if (authentication_method.is_valid())
-      config->authentication_methods.push_back(authentication_method);
-  }
-  if (config->authentication_methods.empty()) {
-    LOG(ERROR) << "No valid authentication methods specified.";
-    return false;
-  }
-
-  return true;
-}
 
 ChromotingInstance::ChromotingInstance(PP_Instance pp_instance)
     : pp::Instance(pp_instance),
@@ -537,15 +537,6 @@ protocol::CursorShapeStub* ChromotingInstance::GetCursorShapeStub() {
   return this;
 }
 
-scoped_ptr<protocol::ThirdPartyClientAuthenticator::TokenFetcher>
-ChromotingInstance::GetTokenFetcher(const std::string& host_public_key) {
-  return scoped_ptr<protocol::ThirdPartyClientAuthenticator::TokenFetcher>(
-      new TokenFetcherProxy(
-          base::Bind(&ChromotingInstance::FetchThirdPartyToken,
-                     weak_factory_.GetWeakPtr()),
-          host_public_key));
-}
-
 void ChromotingInstance::InjectClipboardEvent(
     const protocol::ClipboardEvent& event) {
   scoped_ptr<base::DictionaryValue> data(new base::DictionaryValue());
@@ -646,41 +637,52 @@ void ChromotingInstance::OnFirstFrameReceived() {
 }
 
 void ChromotingInstance::HandleConnect(const base::DictionaryValue& data) {
-  ClientConfig config;
   std::string local_jid;
-  std::string auth_methods;
-  if (!data.GetString("hostJid", &config.host_jid) ||
-      !data.GetString("hostPublicKey", &config.host_public_key) ||
+  std::string host_jid;
+  std::string host_public_key;
+  std::string auth_methods_str;
+  std::string authentication_tag;
+  std::vector<protocol::AuthenticationMethod> auth_methods;
+  if (!data.GetString("hostJid", &host_jid) ||
+      !data.GetString("hostPublicKey", &host_public_key) ||
       !data.GetString("localJid", &local_jid) ||
-      !data.GetString("authenticationMethods", &auth_methods) ||
-      !ParseAuthMethods(auth_methods, &config) ||
-      !data.GetString("authenticationTag", &config.authentication_tag)) {
+      !data.GetString("authenticationMethods", &auth_methods_str) ||
+      !ParseAuthMethods(auth_methods_str, &auth_methods) ||
+      !data.GetString("authenticationTag", &authentication_tag)) {
     LOG(ERROR) << "Invalid connect() data.";
     return;
   }
-  data.GetString("clientPairingId", &config.client_pairing_id);
-  data.GetString("clientPairedSecret", &config.client_paired_secret);
+
+  std::string client_pairing_id;
+  data.GetString("clientPairingId", &client_pairing_id);
+  std::string client_paired_secret;
+  data.GetString("clientPairedSecret", &client_paired_secret);
+
+  protocol::FetchSecretCallback fetch_secret_callback;
   if (use_async_pin_dialog_) {
-    config.fetch_secret_callback =
-        base::Bind(&ChromotingInstance::FetchSecretFromDialog,
-                   weak_factory_.GetWeakPtr());
+    fetch_secret_callback = base::Bind(
+        &ChromotingInstance::FetchSecretFromDialog, weak_factory_.GetWeakPtr());
   } else {
     std::string shared_secret;
     if (!data.GetString("sharedSecret", &shared_secret)) {
       LOG(ERROR) << "sharedSecret not specified in connect().";
       return;
     }
-    config.fetch_secret_callback =
+    fetch_secret_callback =
         base::Bind(&ChromotingInstance::FetchSecretFromString, shared_secret);
   }
 
   // Read the list of capabilities, if any.
+  std::string capabilities;
   if (data.HasKey("capabilities")) {
-    if (!data.GetString("capabilities", &config.capabilities)) {
+    if (!data.GetString("capabilities", &capabilities)) {
       LOG(ERROR) << "Invalid connect() data.";
       return;
     }
   }
+
+  VLOG(0) << "Connecting to " << host_jid
+          << ". Local jid: " << local_jid << ".";
 
 #if defined(OS_NACL)
   std::string key_filter;
@@ -706,13 +708,6 @@ void ChromotingInstance::HandleConnect(const base::DictionaryValue& data) {
 #endif
   input_handler_.set_input_stub(normalizing_input_filter_.get());
 
-  ConnectWithConfig(config, local_jid);
-}
-
-void ChromotingInstance::ConnectWithConfig(const ClientConfig& config,
-                                           const std::string& local_jid) {
-  DCHECK(plugin_task_runner_->BelongsToCurrentThread());
-
   if (use_media_source_rendering_) {
     video_renderer_.reset(new MediaSourceVideoRenderer(this));
   } else {
@@ -736,36 +731,44 @@ void ChromotingInstance::ConnectWithConfig(const ClientConfig& config,
     video_renderer_.reset(renderer);
   }
 
-  host_connection_.reset(new protocol::ConnectionToHost(true));
   scoped_ptr<AudioPlayer> audio_player(new PepperAudioPlayer(this));
-  client_.reset(new ChromotingClient(config, &context_, host_connection_.get(),
-                                     this, video_renderer_.get(),
+  client_.reset(new ChromotingClient(&context_, this, video_renderer_.get(),
                                      audio_player.Pass()));
 
   // Connect the input pipeline to the protocol stub & initialize components.
-  mouse_input_filter_.set_input_stub(host_connection_->input_stub());
+  mouse_input_filter_.set_input_stub(client_->input_stub());
   if (!plugin_view_.is_null()) {
     mouse_input_filter_.set_input_size(webrtc::DesktopSize(
         plugin_view_.GetRect().width(), plugin_view_.GetRect().height()));
   }
-
-  VLOG(0) << "Connecting to " << config.host_jid
-          << ". Local jid: " << local_jid << ".";
 
   // Setup the signal strategy.
   signal_strategy_.reset(new DelegatingSignalStrategy(
       local_jid, base::Bind(&ChromotingInstance::SendOutgoingIq,
                             weak_factory_.GetWeakPtr())));
 
-  scoped_ptr<cricket::HttpPortAllocatorBase> port_allocator(
-      PepperPortAllocator::Create(this));
+  // Create TransportFactory.
   scoped_ptr<protocol::TransportFactory> transport_factory(
       new protocol::LibjingleTransportFactory(
-          signal_strategy_.get(), port_allocator.Pass(),
+          signal_strategy_.get(),
+          PepperPortAllocator::Create(this)
+              .PassAs<cricket::HttpPortAllocatorBase>(),
           NetworkSettings(NetworkSettings::NAT_TRAVERSAL_FULL)));
 
+  // Create Authenticator.
+  scoped_ptr<protocol::ThirdPartyClientAuthenticator::TokenFetcher>
+      token_fetcher(new TokenFetcherProxy(
+          base::Bind(&ChromotingInstance::FetchThirdPartyToken,
+                     weak_factory_.GetWeakPtr()),
+          host_public_key));
+  scoped_ptr<protocol::Authenticator> authenticator(
+      new protocol::NegotiatingClientAuthenticator(
+          client_pairing_id, client_paired_secret, authentication_tag,
+          fetch_secret_callback, token_fetcher.Pass(), auth_methods));
+
   // Kick off the connection.
-  client_->Start(signal_strategy_.get(), transport_factory.Pass());
+  client_->Start(signal_strategy_.get(), authenticator.Pass(),
+                 transport_factory.Pass(), host_jid, capabilities);
 
   // Start timer that periodically sends perf stats.
   plugin_task_runner_->PostDelayedTask(
@@ -783,11 +786,9 @@ void ChromotingInstance::HandleDisconnect(const base::DictionaryValue& data) {
 
   VLOG(0) << "Disconnecting from host.";
 
-  client_.reset();
-
   // Disconnect the input pipeline and teardown the connection.
   mouse_input_filter_.set_input_stub(NULL);
-  host_connection_.reset();
+  client_.reset();
 }
 
 void ChromotingInstance::HandleOnIncomingIq(const base::DictionaryValue& data) {
@@ -867,7 +868,7 @@ void ChromotingInstance::HandleSendClipboardItem(
   protocol::ClipboardEvent event;
   event.set_mime_type(mime_type);
   event.set_data(item);
-  host_connection_->clipboard_forwarder()->InjectClipboardEvent(event);
+  client_->clipboard_forwarder()->InjectClipboardEvent(event);
 }
 
 void ChromotingInstance::HandleNotifyClientResolution(
@@ -900,7 +901,7 @@ void ChromotingInstance::HandleNotifyClientResolution(
   client_resolution.set_dips_width((width * kDefaultDPI) / x_dpi);
   client_resolution.set_dips_height((height * kDefaultDPI) / y_dpi);
 
-  host_connection_->host_stub()->NotifyClientResolution(client_resolution);
+  client_->host_stub()->NotifyClientResolution(client_resolution);
 }
 
 void ChromotingInstance::HandlePauseVideo(const base::DictionaryValue& data) {
@@ -928,7 +929,7 @@ void ChromotingInstance::HandleVideoControl(const base::DictionaryValue& data) {
   if (!IsConnected()) {
     return;
   }
-  host_connection_->host_stub()->ControlVideo(video_control);
+  client_->host_stub()->ControlVideo(video_control);
 }
 
 void ChromotingInstance::HandlePauseAudio(const base::DictionaryValue& data) {
@@ -942,7 +943,7 @@ void ChromotingInstance::HandlePauseAudio(const base::DictionaryValue& data) {
   }
   protocol::AudioControl audio_control;
   audio_control.set_enable(!pause);
-  host_connection_->host_stub()->ControlAudio(audio_control);
+  client_->host_stub()->ControlAudio(audio_control);
 }
 void ChromotingInstance::HandleOnPinFetched(const base::DictionaryValue& data) {
   std::string pin;
@@ -987,7 +988,7 @@ void ChromotingInstance::HandleRequestPairing(
   }
   protocol::PairingRequest pairing_request;
   pairing_request.set_client_name(client_name);
-  host_connection_->host_stub()->RequestPairing(pairing_request);
+  client_->host_stub()->RequestPairing(pairing_request);
 }
 
 void ChromotingInstance::HandleExtensionMessage(
@@ -1005,7 +1006,7 @@ void ChromotingInstance::HandleExtensionMessage(
   protocol::ExtensionMessage message;
   message.set_type(type);
   message.set_data(message_data);
-  host_connection_->host_stub()->DeliverClientMessage(message);
+  client_->host_stub()->DeliverClientMessage(message);
 }
 
 void ChromotingInstance::HandleAllowMouseLockMessage() {
@@ -1204,8 +1205,8 @@ bool ChromotingInstance::IsCallerAppOrExtension() {
 }
 
 bool ChromotingInstance::IsConnected() {
-  return host_connection_.get() &&
-    (host_connection_->state() == protocol::ConnectionToHost::CONNECTED);
+  return client_ &&
+         (client_->connection_state() == protocol::ConnectionToHost::CONNECTED);
 }
 
 void ChromotingInstance::OnMediaSourceSize(const webrtc::DesktopSize& size,

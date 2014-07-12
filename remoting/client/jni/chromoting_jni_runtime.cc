@@ -258,10 +258,8 @@ void ChromotingJniRuntime::CommitPairingCredentials(const std::string& host,
 
   JNIEnv* env = base::android::AttachCurrentThread();
   ScopedJavaLocalRef<jstring> j_host = ConvertUTF8ToJavaString(env, host);
-  ScopedJavaLocalRef<jbyteArray> j_id = ToJavaByteArray(
-      env, reinterpret_cast<const uint8*>(id.data()), id.size());
-  ScopedJavaLocalRef<jbyteArray> j_secret = ToJavaByteArray(
-      env, reinterpret_cast<const uint8*>(secret.data()), secret.size());
+  ScopedJavaLocalRef<jstring> j_id = ConvertUTF8ToJavaString(env, id);
+  ScopedJavaLocalRef<jstring> j_secret = ConvertUTF8ToJavaString(env,secret);
 
   Java_JniInterface_commitPairingCredentials(
       env, j_host.obj(), j_id.obj(), j_secret.obj());

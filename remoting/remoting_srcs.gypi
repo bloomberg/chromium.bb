@@ -207,8 +207,6 @@
       'client/chromoting_client.h',
       'client/chromoting_stats.cc',
       'client/chromoting_stats.h',
-      'client/client_config.cc',
-      'client/client_config.h',
       'client/client_context.cc',
       'client/client_context.h',
       'client/client_status_logger.cc',
