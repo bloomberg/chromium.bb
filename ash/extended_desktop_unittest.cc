@@ -117,6 +117,29 @@ class EventLocationRecordingEventHandler : public ui::EventHandler {
   DISALLOW_COPY_AND_ASSIGN(EventLocationRecordingEventHandler);
 };
 
+class EventLocationHandler : public ui::EventHandler {
+ public:
+  EventLocationHandler() {}
+  virtual ~EventLocationHandler() {}
+
+  const gfx::Point& press_location() const { return press_location_; }
+  const gfx::Point& release_location() const { return release_location_; }
+
+ private:
+  // ui::EventHandler:
+  virtual void OnMouseEvent(ui::MouseEvent* event) OVERRIDE {
+    if (event->type() == ui::ET_MOUSE_PRESSED)
+      press_location_ = event->location();
+    else if (event->type() == ui::ET_MOUSE_RELEASED)
+      release_location_ = event->location();
+  }
+
+  gfx::Point press_location_;
+  gfx::Point release_location_;
+
+  DISALLOW_COPY_AND_ASSIGN(EventLocationHandler);
+};
+
 }  // namespace
 
 class ExtendedDesktopTest : public test::AshTestBase {
@@ -413,6 +436,115 @@ TEST_F(ExtendedDesktopTest, Capture) {
   // Make sure the mouse_moved_handler_ is properly reset.
   EXPECT_EQ("0 0 0", r1_d2.GetMouseMotionCountsAndReset());
   EXPECT_EQ("0 0", r1_d2.GetMouseButtonCountsAndReset());
+}
+
+TEST_F(ExtendedDesktopTest, CaptureEventLocation) {
+  if (!SupportsMultipleDisplays())
+    return;
+
+  UpdateDisplay("1000x600,600x400");
+  aura::Window::Windows root_windows = Shell::GetAllRootWindows();
+
+  aura::test::EventCountDelegate r1_d1;
+  aura::test::EventCountDelegate r1_d2;
+  aura::test::EventCountDelegate r2_d1;
+
+  scoped_ptr<aura::Window> r1_w1(aura::test::CreateTestWindowWithDelegate(
+      &r1_d1, 0, gfx::Rect(10, 10, 100, 100), root_windows[0]));
+  scoped_ptr<aura::Window> r1_w2(aura::test::CreateTestWindowWithDelegate(
+      &r1_d2, 0, gfx::Rect(10, 100, 100, 100), root_windows[0]));
+  scoped_ptr<aura::Window> r2_w1(aura::test::CreateTestWindowWithDelegate(
+      &r2_d1, 0, gfx::Rect(10, 10, 100, 100), root_windows[1]));
+
+  r1_w1->SetCapture();
+
+  aura::test::EventGenerator& generator = GetEventGenerator();
+  generator.MoveMouseToCenterOf(r2_w1.get());
+  EXPECT_EQ(gfx::Point(1060, 60).ToString(),
+            generator.current_location().ToString());
+
+  EventLocationHandler location_handler;
+  r1_w1->AddPreTargetHandler(&location_handler);
+  generator.ClickLeftButton();
+  r1_w1->RemovePreTargetHandler(&location_handler);
+  EXPECT_EQ(gfx::Point(1050, 50).ToString(),
+            location_handler.press_location().ToString());
+  EXPECT_EQ(gfx::Point(1050, 50).ToString(),
+            location_handler.release_location().ToString());
+}
+
+TEST_F(ExtendedDesktopTest, CaptureEventLocationHighDPI) {
+  if (!SupportsMultipleDisplays())
+    return;
+
+  UpdateDisplay("1000x600*2,600x400");
+  aura::Window::Windows root_windows = Shell::GetAllRootWindows();
+
+  aura::test::EventCountDelegate r1_d1;
+  aura::test::EventCountDelegate r1_d2;
+  aura::test::EventCountDelegate r2_d1;
+
+  scoped_ptr<aura::Window> r1_w1(aura::test::CreateTestWindowWithDelegate(
+      &r1_d1, 0, gfx::Rect(10, 10, 100, 100), root_windows[0]));
+  scoped_ptr<aura::Window> r1_w2(aura::test::CreateTestWindowWithDelegate(
+      &r1_d2, 0, gfx::Rect(10, 100, 100, 100), root_windows[0]));
+  scoped_ptr<aura::Window> r2_w1(aura::test::CreateTestWindowWithDelegate(
+      &r2_d1, 0, gfx::Rect(10, 10, 100, 100), root_windows[1]));
+
+  r1_w1->SetCapture();
+
+  aura::test::EventGenerator& generator = GetEventGenerator();
+  generator.MoveMouseToCenterOf(r2_w1.get());
+  EXPECT_EQ(gfx::Point(560, 60).ToString(),
+            generator.current_location().ToString());
+
+  EventLocationHandler location_handler;
+  r1_w1->AddPreTargetHandler(&location_handler);
+  generator.ClickLeftButton();
+  r1_w1->RemovePreTargetHandler(&location_handler);
+  EXPECT_EQ(gfx::Point(550, 50).ToString(),
+            location_handler.press_location().ToString());
+  EXPECT_EQ(gfx::Point(550, 50).ToString(),
+            location_handler.release_location().ToString());
+}
+
+TEST_F(ExtendedDesktopTest, CaptureEventLocationHighDPI_2) {
+  if (!SupportsMultipleDisplays())
+    return;
+
+  UpdateDisplay("1000x600,600x400*2");
+  aura::Window::Windows root_windows = Shell::GetAllRootWindows();
+
+  aura::test::EventCountDelegate r1_d1;
+  aura::test::EventCountDelegate r1_d2;
+  aura::test::EventCountDelegate r2_d1;
+
+  scoped_ptr<aura::Window> r1_w1(aura::test::CreateTestWindowWithDelegate(
+      &r1_d1, 0, gfx::Rect(10, 10, 100, 100), root_windows[0]));
+  scoped_ptr<aura::Window> r1_w2(aura::test::CreateTestWindowWithDelegate(
+      &r1_d2, 0, gfx::Rect(10, 100, 100, 100), root_windows[0]));
+  scoped_ptr<aura::Window> r2_w1(aura::test::CreateTestWindowWithDelegate(
+      &r2_d1, 0, gfx::Rect(10, 10, 100, 100), root_windows[1]));
+
+  r1_w1->SetCapture();
+
+  aura::test::EventGenerator& generator = GetEventGenerator();
+  generator.MoveMouseToCenterOf(r2_w1.get());
+  EXPECT_EQ(gfx::Point(1060, 60).ToString(),
+            generator.current_location().ToString());
+
+  EventLocationHandler location_handler;
+  r1_w1->AddPreTargetHandler(&location_handler);
+  generator.ClickLeftButton();
+  r1_w1->RemovePreTargetHandler(&location_handler);
+  // Event-generator dispatches the event in the primary root-window's coord
+  // space. Since the location is (1060, 60), it goes to the secondary
+  // root-window as (30, 30) since the secondary root-window has a device scale
+  // factor of 2.
+  EXPECT_EQ(gfx::Point(1020, 20).ToString(),
+            location_handler.press_location().ToString());
+  EXPECT_EQ(gfx::Point(1020, 20).ToString(),
+            location_handler.release_location().ToString());
 }
 
 TEST_F(ExtendedDesktopTest, MoveWindow) {

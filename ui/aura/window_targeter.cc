@@ -15,6 +15,15 @@
 
 namespace aura {
 
+namespace {
+
+bool IsLocatedEvent(const ui::Event& event) {
+  return event.IsMouseEvent() || event.IsTouchEvent() ||
+         event.IsScrollEvent() || event.IsGestureEvent();
+}
+
+}  // namespace
+
 WindowTargeter::WindowTargeter() {}
 WindowTargeter::~WindowTargeter() {}
 
@@ -24,16 +33,25 @@ ui::EventTarget* WindowTargeter::FindTargetForEvent(ui::EventTarget* root,
   Window* target = event->IsKeyEvent() ?
       FindTargetForKeyEvent(window, *static_cast<ui::KeyEvent*>(event)) :
       static_cast<Window*>(EventTargeter::FindTargetForEvent(root, event));
-  if (target && !window->parent()) {
-    // |window| is the root window.
-    if (!window->Contains(target)) {
-      // |target| is not a descendent of |window|. So do not allow dispatching
-      // from here. Instead, dispatch the event through the
-      // WindowEventDispatcher that owns |target|.
-      ui::EventDispatchDetails details ALLOW_UNUSED =
-          target->GetHost()->event_processor()->OnEventFromSource(event);
-      target = NULL;
+  if (target && !window->parent() && !window->Contains(target)) {
+    // |window| is the root window, but |target| is not a descendent of
+    // |window|. So do not allow dispatching from here. Instead, dispatch the
+    // event through the WindowEventDispatcher that owns |target|.
+    aura::Window* new_root = target->GetRootWindow();
+    if (IsLocatedEvent(*event)) {
+      // The event has been transformed to be in |target|'s coordinate system.
+      // But dispatching the event through the EventProcessor requires the event
+      // to be in the host's coordinate system. So, convert the event to be in
+      // the root's coordinate space, and then to the host's coordinate space by
+      // applying the host's transform.
+      ui::LocatedEvent* located_event = static_cast<ui::LocatedEvent*>(event);
+      located_event->ConvertLocationToTarget(target, new_root);
+      located_event->UpdateForRootTransform(
+          new_root->GetHost()->GetRootTransform());
     }
+    ui::EventDispatchDetails details ALLOW_UNUSED =
+        new_root->GetHost()->event_processor()->OnEventFromSource(event);
+    target = NULL;
   }
   return target;
 }

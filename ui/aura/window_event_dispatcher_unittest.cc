@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/run_loop.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/aura/client/capture_client.h"
 #include "ui/aura/client/event_client.h"
 #include "ui/aura/client/focus_client.h"
 #include "ui/aura/env.h"
@@ -2201,6 +2202,45 @@ TEST_F(WindowEventDispatcherTest,
   host()->OnCursorVisibilityChanged(false);
   second_host->OnCursorVisibilityChanged(false);
   EXPECT_EQ("0 0 1", delegate.GetMouseMotionCountsAndReset());
+}
+
+TEST_F(WindowEventDispatcherTest,
+       RedirectedEventToDifferentDispatcherLocation) {
+  scoped_ptr<WindowTreeHost> second_host(
+      WindowTreeHost::Create(gfx::Rect(20, 30, 100, 50)));
+  second_host->InitHost();
+  client::SetCaptureClient(second_host->window(),
+                           client::GetCaptureClient(root_window()));
+
+  test::EventCountDelegate delegate;
+  scoped_ptr<Window> window_first(CreateTestWindowWithDelegate(&delegate, 123,
+      gfx::Rect(20, 10, 10, 20), root_window()));
+  window_first->Show();
+
+  scoped_ptr<Window> window_second(CreateTestWindowWithDelegate(&delegate, 12,
+      gfx::Rect(10, 10, 20, 30), second_host->window()));
+  window_second->Show();
+
+  window_second->SetCapture();
+  EXPECT_EQ(window_second.get(),
+            client::GetCaptureWindow(root_window()));
+
+  // Send an event to the first host. Make sure it goes to |window_second| in
+  // |second_host| instead (since it has capture).
+  EventFilterRecorder recorder_first;
+  window_first->AddPreTargetHandler(&recorder_first);
+  EventFilterRecorder recorder_second;
+  window_second->AddPreTargetHandler(&recorder_second);
+  const gfx::Point event_location(25, 15);
+  ui::MouseEvent mouse(ui::ET_MOUSE_PRESSED, event_location,
+                       event_location, ui::EF_LEFT_MOUSE_BUTTON,
+                       ui::EF_LEFT_MOUSE_BUTTON);
+  DispatchEventUsingWindowDispatcher(&mouse);
+  EXPECT_TRUE(recorder_first.events().empty());
+  ASSERT_EQ(1u, recorder_second.events().size());
+  EXPECT_EQ(ui::ET_MOUSE_PRESSED, recorder_second.events()[0]);
+  EXPECT_EQ(event_location.ToString(),
+            recorder_second.mouse_locations()[0].ToString());
 }
 
 }  // namespace aura
