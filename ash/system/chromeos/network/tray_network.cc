@@ -7,7 +7,6 @@
 #include "ash/ash_switches.h"
 #include "ash/metrics/user_metrics_recorder.h"
 #include "ash/shell.h"
-#include "ash/system/chromeos/network/network_icon_animation.h"
 #include "ash/system/chromeos/network/network_state_list_detailed_view.h"
 #include "ash/system/chromeos/network/tray_network_state_observer.h"
 #include "ash/system/tray/system_tray.h"
@@ -23,10 +22,12 @@
 #include "chromeos/network/network_state_handler.h"
 #include "grit/ash_resources.h"
 #include "grit/ash_strings.h"
+#include "grit/ui_chromeos_strings.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #include "ui/accessibility/ax_view_state.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/chromeos/network/network_icon_animation.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/link.h"
 #include "ui/views/controls/link_listener.h"
@@ -42,7 +43,7 @@ namespace ash {
 namespace tray {
 
 class NetworkTrayView : public TrayItemView,
-                        public network_icon::AnimationObserver {
+                        public ui::network_icon::AnimationObserver {
  public:
   explicit NetworkTrayView(TrayNetwork* network_tray)
       : TrayItemView(network_tray),
@@ -57,7 +58,7 @@ class NetworkTrayView : public TrayItemView,
   }
 
   virtual ~NetworkTrayView() {
-    network_icon::NetworkIconAnimation::GetInstance()->RemoveObserver(this);
+    ui::network_icon::NetworkIconAnimation::GetInstance()->RemoveObserver(this);
   }
 
   virtual const char* GetClassName() const OVERRIDE {
@@ -70,14 +71,15 @@ class NetworkTrayView : public TrayItemView,
     gfx::ImageSkia image;
     base::string16 name;
     bool animating = false;
-    network_icon::GetDefaultNetworkImageAndLabel(
-        network_icon::ICON_TYPE_TRAY, &image, &name, &animating);
+    ui::network_icon::GetDefaultNetworkImageAndLabel(
+        ui::network_icon::ICON_TYPE_TRAY, &image, &name, &animating);
     bool show_in_tray = !image.isNull();
     UpdateIcon(show_in_tray, image);
     if (animating)
-      network_icon::NetworkIconAnimation::GetInstance()->AddObserver(this);
+      ui::network_icon::NetworkIconAnimation::GetInstance()->AddObserver(this);
     else
-      network_icon::NetworkIconAnimation::GetInstance()->RemoveObserver(this);
+      ui::network_icon::NetworkIconAnimation::GetInstance()->RemoveObserver(
+          this);
     // Update accessibility.
     const NetworkState* connected_network =
         handler->ConnectedNetworkByType(NetworkTypePattern::NonVirtual());
@@ -103,7 +105,7 @@ class NetworkTrayView : public TrayItemView,
     state->role = ui::AX_ROLE_BUTTON;
   }
 
-  // network_icon::AnimationObserver
+  // ui::network_icon::AnimationObserver
   virtual void NetworkIconChanged() OVERRIDE {
     UpdateNetworkStateHandlerIcon();
   }
@@ -138,7 +140,7 @@ class NetworkTrayView : public TrayItemView,
 };
 
 class NetworkDefaultView : public TrayItemMore,
-                           public network_icon::AnimationObserver {
+                           public ui::network_icon::AnimationObserver {
  public:
   NetworkDefaultView(TrayNetwork* network_tray, bool show_more)
       : TrayItemMore(network_tray, show_more),
@@ -147,25 +149,26 @@ class NetworkDefaultView : public TrayItemMore,
   }
 
   virtual ~NetworkDefaultView() {
-    network_icon::NetworkIconAnimation::GetInstance()->RemoveObserver(this);
+    ui::network_icon::NetworkIconAnimation::GetInstance()->RemoveObserver(this);
   }
 
   void Update() {
     gfx::ImageSkia image;
     base::string16 label;
     bool animating = false;
-    network_icon::GetDefaultNetworkImageAndLabel(
-        network_icon::ICON_TYPE_DEFAULT_VIEW, &image, &label, &animating);
+    ui::network_icon::GetDefaultNetworkImageAndLabel(
+        ui::network_icon::ICON_TYPE_DEFAULT_VIEW, &image, &label, &animating);
     if (animating)
-      network_icon::NetworkIconAnimation::GetInstance()->AddObserver(this);
+      ui::network_icon::NetworkIconAnimation::GetInstance()->AddObserver(this);
     else
-      network_icon::NetworkIconAnimation::GetInstance()->RemoveObserver(this);
+      ui::network_icon::NetworkIconAnimation::GetInstance()->RemoveObserver(
+          this);
     SetImage(&image);
     SetLabel(label);
     SetAccessibleName(label);
   }
 
-  // network_icon::AnimationObserver
+  // ui::network_icon::AnimationObserver
   virtual void NetworkIconChanged() OVERRIDE {
     Update();
   }

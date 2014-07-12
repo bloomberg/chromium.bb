@@ -6,7 +6,6 @@
 
 #include "ash/metrics/user_metrics_recorder.h"
 #include "ash/shell.h"
-#include "ash/system/chromeos/network/network_icon_animation.h"
 #include "ash/system/chromeos/network/network_state_list_detailed_view.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/system_tray_delegate.h"
@@ -19,6 +18,7 @@
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/chromeos/network/network_icon_animation.h"
 
 using chromeos::NetworkHandler;
 using chromeos::NetworkState;
@@ -29,7 +29,7 @@ namespace ash {
 namespace tray {
 
 class VpnDefaultView : public TrayItemMore,
-                       public network_icon::AnimationObserver {
+                       public ui::network_icon::AnimationObserver {
  public:
   VpnDefaultView(SystemTrayItem* owner, bool show_more)
       : TrayItemMore(owner, show_more) {
@@ -37,7 +37,7 @@ class VpnDefaultView : public TrayItemMore,
   }
 
   virtual ~VpnDefaultView() {
-    network_icon::NetworkIconAnimation::GetInstance()->RemoveObserver(this);
+    ui::network_icon::NetworkIconAnimation::GetInstance()->RemoveObserver(this);
   }
 
   static bool ShouldShow() {
@@ -55,15 +55,16 @@ class VpnDefaultView : public TrayItemMore,
     bool animating = false;
     GetNetworkStateHandlerImageAndLabel(&image, &label, &animating);
     if (animating)
-      network_icon::NetworkIconAnimation::GetInstance()->AddObserver(this);
+      ui::network_icon::NetworkIconAnimation::GetInstance()->AddObserver(this);
     else
-      network_icon::NetworkIconAnimation::GetInstance()->RemoveObserver(this);
+      ui::network_icon::NetworkIconAnimation::GetInstance()->RemoveObserver(
+          this);
     SetImage(&image);
     SetLabel(label);
     SetAccessibleName(label);
   }
 
-  // network_icon::AnimationObserver
+  // ui::network_icon::AnimationObserver
   virtual void NetworkIconChanged() OVERRIDE {
     Update();
   }
@@ -77,8 +78,8 @@ class VpnDefaultView : public TrayItemMore,
     const NetworkState* vpn =
         handler->FirstNetworkByType(NetworkTypePattern::VPN());
     if (!vpn || (vpn->connection_state() == shill::kStateIdle)) {
-      *image = network_icon::GetImageForDisconnectedNetwork(
-          network_icon::ICON_TYPE_DEFAULT_VIEW, shill::kTypeVPN);
+      *image = ui::network_icon::GetImageForDisconnectedNetwork(
+          ui::network_icon::ICON_TYPE_DEFAULT_VIEW, shill::kTypeVPN);
       if (label) {
         *label = l10n_util::GetStringUTF16(
             IDS_ASH_STATUS_TRAY_VPN_DISCONNECTED);
@@ -87,11 +88,11 @@ class VpnDefaultView : public TrayItemMore,
       return;
     }
     *animating = vpn->IsConnectingState();
-    *image = network_icon::GetImageForNetwork(
-        vpn, network_icon::ICON_TYPE_DEFAULT_VIEW);
+    *image = ui::network_icon::GetImageForNetwork(
+        vpn, ui::network_icon::ICON_TYPE_DEFAULT_VIEW);
     if (label) {
-      *label = network_icon::GetLabelForNetwork(
-          vpn, network_icon::ICON_TYPE_DEFAULT_VIEW);
+      *label = ui::network_icon::GetLabelForNetwork(
+          vpn, ui::network_icon::ICON_TYPE_DEFAULT_VIEW);
     }
   }
 

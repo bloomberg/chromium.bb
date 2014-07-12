@@ -7,11 +7,11 @@
 #include <set>
 #include <string>
 
-#include "ash/system/chromeos/network/network_icon.h"
 #include "base/location.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
+#include "ui/chromeos/network/network_icon.h"
 
 using chromeos::NetworkHandler;
 
@@ -34,7 +34,7 @@ TrayNetworkStateObserver::~TrayNetworkStateObserver() {
 
 void TrayNetworkStateObserver::NetworkListChanged() {
   delegate_->NetworkStateChanged(true);
-  network_icon::PurgeNetworkIconCache();
+  ui::network_icon::PurgeNetworkIconCache();
 }
 
 void TrayNetworkStateObserver::DeviceListChanged() {
