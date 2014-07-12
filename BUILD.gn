@@ -38,6 +38,7 @@ group("root") {
     "//gpu",
     "//google_apis",
     "//ipc",
+    "//media",
     "//mojo",
     "//mojo/common",
     "//mojo/environment:chromium",
