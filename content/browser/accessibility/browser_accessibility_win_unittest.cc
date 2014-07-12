@@ -744,8 +744,10 @@ TEST(BrowserAccessibilityManagerWinTest, TestAccessibleHWND) {
   ASSERT_NE(0, GetClassName(new_parent_hwnd, hwnd_class_name, 256));
   ASSERT_STREQ(L"Chrome_RenderWidgetHostHWND", hwnd_class_name);
 
-  // Destroy the hwnd explicitly; that should trigger clearing parent_hwnd().
-  DestroyWindow(new_parent_hwnd);
+  // Destroy the TestLegacyRenderWidgetHostHWND instance. That should in turn
+  // destroy the hwnd, which should clear the parent_hwnd().
+  accessibility_test.reset(NULL);
+  ASSERT_EQ(FALSE, ::IsWindow(new_parent_hwnd));
   ASSERT_EQ(NULL, manager->parent_hwnd());
 
   // Now create it again.

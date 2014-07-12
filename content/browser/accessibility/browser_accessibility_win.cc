@@ -21,6 +21,7 @@
 #include "ui/accessibility/ax_text_utils.h"
 #include "ui/base/win/accessibility_ids_win.h"
 #include "ui/base/win/accessibility_misc_utils.h"
+#include "ui/base/win/atl_module.h"
 
 namespace content {
 
@@ -179,6 +180,7 @@ STDMETHODIMP BrowserAccessibilityRelation::get_targets(long max_targets,
 
 // static
 BrowserAccessibility* BrowserAccessibility::Create() {
+  ui::win::CreateATLModuleIfNeeded();
   CComObject<BrowserAccessibilityWin>* instance;
   HRESULT hr = CComObject<BrowserAccessibilityWin>::CreateInstance(&instance);
   DCHECK(SUCCEEDED(hr));
