@@ -76,7 +76,7 @@ PassRefPtr<SimpleFontData> FontCache::fallbackOnStandardFontStyle(
     FontPlatformData* substitutePlatformData = getFontPlatformData(substituteDescription, creationParams);
     if (substitutePlatformData && substitutePlatformData->fontContainsCharacter(character)) {
         FontPlatformData platformData = FontPlatformData(*substitutePlatformData);
-        platformData.setSyntheticBold(fontDescription.weight() >= FontWeightBold);
+        platformData.setSyntheticBold(fontDescription.weight() >= FontWeight600);
         platformData.setSyntheticItalic(fontDescription.style() == FontStyleItalic);
         return fontDataFromFontPlatformData(&platformData, DoNotRetain);
     }
@@ -89,7 +89,7 @@ PassRefPtr<SimpleFontData> FontCache::fallbackFontForCharacter(const FontDescrip
 {
     // First try the specified font with standard style & weight.
     if (fontDescription.style() == FontStyleItalic
-        || fontDescription.weight() >= FontWeightBold) {
+        || fontDescription.weight() >= FontWeight600) {
         RefPtr<SimpleFontData> fontData = fallbackOnStandardFontStyle(
             fontDescription, c);
         if (fontData)
@@ -182,7 +182,7 @@ PassRefPtr<SkTypeface> FontCache::createTypeface(const FontDescription& fontDesc
     }
 
     int style = SkTypeface::kNormal;
-    if (fontDescription.weight() >= FontWeightBold)
+    if (fontDescription.weight() >= FontWeight600)
         style |= SkTypeface::kBold;
     if (fontDescription.style())
         style |= SkTypeface::kItalic;
@@ -213,7 +213,7 @@ FontPlatformData* FontCache::createFontPlatformData(const FontDescription& fontD
     FontPlatformData* result = new FontPlatformData(tf,
         name.data(),
         fontSize,
-        (fontDescription.weight() >= FontWeightBold && !tf->isBold()) || fontDescription.isSyntheticBold(),
+        (fontDescription.weight() >= FontWeight600 && !tf->isBold()) || fontDescription.isSyntheticBold(),
         (fontDescription.style() && !tf->isItalic()) || fontDescription.isSyntheticItalic(),
         fontDescription.orientation(),
         fontDescription.useSubpixelPositioning());

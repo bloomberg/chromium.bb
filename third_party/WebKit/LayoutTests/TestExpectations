@@ -1324,3 +1324,9 @@ crbug.com/392764 [ Linux ] compositing/layer-creation/overlap-transformed-preser
 crbug.com/392764 [ Linux ] virtual/softwarecompositing/layer-creation/overlap-transformed-preserved-3d.html [ Failure ]
 # Linux32 only. There seems to be no way to selectively specify Linux32, so marking as flaky (it actually isn't).
 crbug.com/392764 [ Linux ] webaudio/distance-linear.html [ Pass Failure ]
+
+crbug.com/335050 svg/W3C-SVG-1.1/text-fonts-02-t.svg [ NeedsRebaseline ]
+crbug.com/335050 svg/text/text-fonts-02-t.svg [ NeedsRebaseline ]
+crbug.com/335050 tables/mozilla_expected_failures/bugs/bug14007-2.html [ NeedsRebaseline ]
+crbug.com/335050 fast/text/font-weight-600.html [ NeedsRebaseline ]
+crbug.com/335050 virtual/antialiasedtext/fast/text/font-weight-600.html [ NeedsRebaseline ]
