@@ -4,6 +4,12 @@
 
 #include "net/tools/balsa/balsa_frame.h"
 
+// Visual C++ defines _M_IX86_FP as 2 if the /arch:SSE2 compiler option is
+// specified.
+#if !defined(__SSE2__) && _M_IX86_FP == 2
+#define __SSE2__ 1
+#endif
+
 #include <assert.h>
 #if __SSE2__
 #include <emmintrin.h>
@@ -26,7 +32,16 @@
 #include "net/tools/balsa/string_piece_utils.h"
 
 #if defined(COMPILER_MSVC)
+#include <intrin.h>
 #include <string.h>
+
+#pragma intrinsic(_BitScanForward)
+
+static int ffs(int i) {
+  unsigned long index;
+  return _BitScanForward(&index, i) ? index + 1 : 0;
+}
+
 #define strncasecmp _strnicmp
 #else
 #include <strings.h>
@@ -503,8 +518,7 @@ inline void BalsaFrame::FindColonsAndParseIntoKeyValue() {
   // The last line is always just a newline (and is uninteresting).
   const Lines::size_type lines_size_m1 = lines_.size() - 1;
 #if __SSE2__
-  const __v16qi colons = { ':', ':', ':', ':', ':', ':', ':', ':',
-                           ':', ':', ':', ':', ':', ':', ':', ':'};
+  const __m128i colons = _mm_set1_epi8(':');
   const char* header_lines_end_m16 = headers_->OriginalHeaderStreamEnd() - 16;
 #endif  // __SSE2__
   const char* current = stream_begin + lines_[1].first;
@@ -575,8 +589,7 @@ inline void BalsaFrame::FindColonsAndParseIntoKeyValue() {
     while (current < header_lines_end_m16) {
       __m128i header_bytes =
         _mm_loadu_si128(reinterpret_cast<const __m128i *>(current));
-      __m128i colon_cmp =
-        _mm_cmpeq_epi8(header_bytes, reinterpret_cast<__m128i>(colons));
+      __m128i colon_cmp = _mm_cmpeq_epi8(header_bytes, colons);
       int colon_msk = _mm_movemask_epi8(colon_cmp);
       if (colon_msk == 0) {
         current += 16;
@@ -982,8 +995,7 @@ size_t BalsaFrame::ProcessHeaders(const char* message_start,
 #if __SSE2__
       {
         const char* const message_end_m16 = message_end - 16;
-        __v16qi newlines = { '\n', '\n', '\n', '\n', '\n', '\n', '\n', '\n',
-                             '\n', '\n', '\n', '\n', '\n', '\n', '\n', '\n' };
+        __m128i newlines = _mm_set1_epi8('\n');
         while (message_current < message_end_m16) {
           // What this does (using compiler intrinsics):
           //
@@ -999,8 +1011,7 @@ size_t BalsaFrame::ProcessHeaders(const char* message_start,
           __m128i msg_bytes =
             _mm_loadu_si128(const_cast<__m128i *>(
                     reinterpret_cast<const __m128i *>(message_current)));
-          __m128i newline_cmp =
-            _mm_cmpeq_epi8(msg_bytes, reinterpret_cast<__m128i>(newlines));
+          __m128i newline_cmp = _mm_cmpeq_epi8(msg_bytes, newlines);
           int newline_msk = _mm_movemask_epi8(newline_cmp);
           if (newline_msk == 0) {
             message_current += 16;
