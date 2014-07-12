@@ -656,6 +656,8 @@
       'browser/lifetime/application_lifetime_win.cc',
       'browser/mac/dock.h',
       'browser/mac/dock.mm',
+      'browser/mac/bluetooth_utility.h',
+      'browser/mac/bluetooth_utility.mm',
       'browser/mac/install_from_dmg.h',
       'browser/mac/install_from_dmg.mm',
       'browser/mac/keystone_glue.h',

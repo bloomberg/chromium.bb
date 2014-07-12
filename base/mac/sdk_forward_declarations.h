@@ -160,6 +160,10 @@ enum CWChannelBand {
 - (BluetoothHCIPowerState)powerState;
 @end
 
+enum {
+  kBluetoothFeatureLESupportedController = (1 << 6L),
+};
+
 @protocol IOBluetoothDeviceInquiryDelegate
 - (void)deviceInquiryStarted:(IOBluetoothDeviceInquiry*)sender;
 - (void)deviceInquiryDeviceFound:(IOBluetoothDeviceInquiry*)sender

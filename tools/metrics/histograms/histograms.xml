@@ -18976,6 +18976,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>The number of clicks on the origin chip.</summary>
 </histogram>
 
+<histogram name="OSX.BluetoothAvailability" enum="BluetoothAvailability">
+  <owner>erikchen@chromium.org</owner>
+  <summary>
+    The availability and capabilities of the Bluetooth driver on OSX devices.
+    This metric is logged on startup.
+  </summary>
+</histogram>
+
 <histogram name="OSX.CatSixtyFour" enum="CatSixtyFour">
   <owner>mark@chromium.org</owner>
   <summary>The cat's flavor and how many bits there are in it.</summary>
@@ -35538,6 +35546,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="3" label="Blacklist thunk setup failed."/>
   <int value="4" label="Blacklist interception failed."/>
   <int value="5" label="Blacklist disabled."/>
+</enum>
+
+<enum name="BluetoothAvailability" type="int">
+  <int value="0" label="Unexpected error"/>
+  <int value="1" label="Not available"/>
+  <int value="2" label="Available without LE"/>
+  <int value="3" label="Available with LE"/>
+  <int value="4" label="Available unknown LE"/>
 </enum>
 
 <enum name="BluetoothPairingMethod" type="int">

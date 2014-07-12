@@ -18,6 +18,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_browser_main.h"
 #include "chrome/browser/chrome_browser_metrics_service_observer.h"
+#include "chrome/browser/mac/bluetooth_utility.h"
 #include "chrome/browser/pref_service_flags_storage.h"
 #include "chrome/browser/shell_integration.h"
 #include "content/public/browser/browser_thread.h"
@@ -94,6 +95,14 @@ void RecordStartupMetricsOnBlockingPool() {
 #if defined(OS_WIN)
   GoogleUpdateSettings::RecordChromeUpdatePolicyHistograms();
 #endif  // defined(OS_WIN)
+
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+  bluetooth_utility::BluetoothAvailability availability =
+      bluetooth_utility::GetBluetoothAvailability();
+  UMA_HISTOGRAM_ENUMERATION("OSX.BluetoothAvailability",
+                            availability,
+                            bluetooth_utility::BLUETOOTH_AVAILABILITY_COUNT);
+#endif  // defined(OS_MACOSX) && !defined(OS_IOS)
 }
 
 void RecordLinuxGlibcVersion() {
