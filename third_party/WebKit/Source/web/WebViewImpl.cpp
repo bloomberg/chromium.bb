@@ -3559,7 +3559,7 @@ void WebViewImpl::extractSmartClipData(WebRect rect, WebString& clipText, WebStr
     Position startPosition = startVisiblePosition.deepEquivalent();
     Position endPosition = endVisiblePosition.deepEquivalent();
 
-    RefPtr<Range> range = Range::create(*startPosition.document(), startPosition, endPosition);
+    RefPtrWillBeRawPtr<Range> range = Range::create(*startPosition.document(), startPosition, endPosition);
     if (!range)
         return;
 
