@@ -61,10 +61,10 @@ class AutofillCountry {
   static const std::string GetCountryCode(const base::string16& country,
                                           const std::string& locale);
 
-  const std::string country_code() const { return country_code_; }
-  const base::string16 name() const { return name_; }
-  const base::string16 postal_code_label() const { return postal_code_label_; }
-  const base::string16 state_label() const { return state_label_; }
+  const std::string& country_code() const { return country_code_; }
+  const base::string16& name() const { return name_; }
+  const base::string16& postal_code_label() const { return postal_code_label_; }
+  const base::string16& state_label() const { return state_label_; }
 
   // City is expected in a complete address for this country.
   bool requires_city() const {
