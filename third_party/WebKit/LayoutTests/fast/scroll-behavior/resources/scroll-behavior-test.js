@@ -34,8 +34,8 @@ ScrollBehaviorTest.prototype.scrollListener = function(testCase) {
     }
 
     // Wait for an intermediate frame, then instant-scroll to the end state.
-    if ((this.scrollElement.scrollLeft != testCase.startX || this.scrollElement.scrollTop != this.scrollElement.startY) &&
-        (this.scrollElement.scrollLeft != testCase.endX || this.scrollElement.scrollTop != this.scrollElement.endY)) {
+    if ((this.scrollElement.scrollLeft != testCase.startX || this.scrollElement.scrollTop != testCase.startY) &&
+        (this.scrollElement.scrollLeft != testCase.endX || this.scrollElement.scrollTop != testCase.endY)) {
         this.scrollElement.scrollLeft = {x: testCase.endX, behavior: "instant"};
         this.scrollElement.scrollTop = {y: testCase.endY, behavior: "instant"};
         this.testCaseComplete();
@@ -68,8 +68,15 @@ ScrollBehaviorTest.prototype.startNextTestCase = function() {
         this.asyncTest.step(function() {
             assert_equals(scrollElement.scrollLeft + ", " + scrollElement.scrollTop, testCase.startX + ", " + testCase.startY);
         });
-        testCase.scrollListener = this.scrollListener.bind(this, testCase);
-        this.scrollEventTarget.addEventListener("scroll", testCase.scrollListener);
+        if (scrollElement.scrollLeft == testCase.endX && scrollElement.scrollTop == testCase.endY) {
+            // We've instant-scrolled. This means we've already failed the assert above, and will never
+            // reach an intermediate frame. End the test case now to avoid hanging while waiting for an
+            // intermediate frame.
+            this.testCaseComplete();
+        } else {
+            testCase.scrollListener = this.scrollListener.bind(this, testCase);
+            this.scrollEventTarget.addEventListener("scroll", testCase.scrollListener);
+        }
     } else {
         this.asyncTest.step(function() {
             assert_equals(scrollElement.scrollLeft + ", " + scrollElement.scrollTop, testCase.endX + ", " + testCase.endY);
