@@ -111,6 +111,9 @@ private:
     LayoutUnit columnPositionAlignedWithGridContainerEnd(const RenderBox*) const;
     LayoutUnit centeredColumnPositionForChild(const RenderBox*) const;
     LayoutUnit columnPositionForChild(const RenderBox*) const;
+    LayoutUnit startOfRowForChild(const RenderBox* child) const;
+    LayoutUnit endOfRowForChild(const RenderBox* child) const;
+    LayoutUnit centeredRowPositionForChild(const RenderBox*) const;
     LayoutUnit rowPositionForChild(const RenderBox*) const;
     LayoutPoint findChildLogicalPosition(const RenderBox*) const;
     GridCoordinate cachedGridCoordinate(const RenderBox*) const;
