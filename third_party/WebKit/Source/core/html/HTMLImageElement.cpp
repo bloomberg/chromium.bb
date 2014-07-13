@@ -444,6 +444,7 @@ void HTMLImageElement::setWidth(int value)
 
 int HTMLImageElement::x() const
 {
+    document().updateLayoutIgnorePendingStylesheets();
     RenderObject* r = renderer();
     if (!r)
         return 0;
@@ -455,6 +456,7 @@ int HTMLImageElement::x() const
 
 int HTMLImageElement::y() const
 {
+    document().updateLayoutIgnorePendingStylesheets();
     RenderObject* r = renderer();
     if (!r)
         return 0;
