@@ -21,17 +21,19 @@ import os
 from telemetry import benchmark
 from telemetry.page import page_measurement
 from telemetry.page import page_set
+from telemetry.value import list_of_scalar_values
 
 
 class SpeedometerMeasurement(page_measurement.PageMeasurement):
 
-  def MeasurePage(self, _, tab, results):
+  def MeasurePage(self, page, tab, results):
     tab.WaitForDocumentReadyStateToBeComplete()
     tab.ExecuteJavaScript('benchmarkClient.iterationCount = 10; startTest();')
     tab.WaitForJavaScriptExpression(
         'benchmarkClient._finishedTestCount == benchmarkClient.testsCount', 600)
-    results.Add(
-        'Total', 'ms', tab.EvaluateJavaScript('benchmarkClient._timeValues'))
+    results.AddValue(list_of_scalar_values.ListOfScalarValues(
+        page, 'Total', 'ms',
+        tab.EvaluateJavaScript('benchmarkClient._timeValues')))
 
 
 @benchmark.Disabled('android')  # Times out
