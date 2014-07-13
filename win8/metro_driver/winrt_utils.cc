@@ -51,7 +51,7 @@ HRESULT Create ## Name ## Property(Type value, \
       RuntimeClass_Windows_Foundation_PropertyValue, \
       property_value_statics.GetAddressOf()); \
   CheckHR(hr, "Can't create IPropertyValueStatics"); \
-  hr = property_value_statics->Create ## Name ## ( \
+  hr = property_value_statics->Create ## Name ( \
       value, \
       reinterpret_cast<IInspectable**>(prop)); \
   CheckHR(hr, "Failed to create Property"); \
@@ -60,10 +60,10 @@ HRESULT Create ## Name ## Property(Type value, \
 
 #define COMPARE_ATOMIC_PROPERTY_VALUES(Name, Type) \
   Type lhs_value; \
-  hr = lhs->Get ## Name ##(&lhs_value); \
+  hr = lhs->Get ## Name (&lhs_value); \
   CheckHR(hr, "Can't get value for lhs"); \
   Type rhs_value; \
-  hr = rhs->Get ## Name ##(&rhs_value); \
+  hr = rhs->Get ## Name (&rhs_value); \
   CheckHR(hr, "Can't get value for rhs"); \
   if (lhs_value < rhs_value) \
     *result = -1; \
