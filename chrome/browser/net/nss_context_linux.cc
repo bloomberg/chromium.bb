@@ -11,14 +11,14 @@
 crypto::ScopedPK11Slot GetPublicNSSKeySlotForResourceContext(
     content::ResourceContext* context) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
-  return crypto::ScopedPK11Slot(crypto::GetPublicNSSKeySlot());
+  return crypto::ScopedPK11Slot(crypto::GetPersistentNSSKeySlot());
 }
 
 crypto::ScopedPK11Slot GetPrivateNSSKeySlotForResourceContext(
     content::ResourceContext* context,
     const base::Callback<void(crypto::ScopedPK11Slot)>& callback) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
-  return crypto::ScopedPK11Slot(crypto::GetPrivateNSSKeySlot());
+  return crypto::ScopedPK11Slot(crypto::GetPersistentNSSKeySlot());
 }
 
 net::NSSCertDatabase* GetNSSCertDatabaseForResourceContext(

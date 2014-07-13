@@ -316,8 +316,9 @@ class NSSInitSingleton {
     return tpm_token_enabled_for_nss_;
   }
 
-  void InitializeTPMToken(int token_slot_id,
-                          const base::Callback<void(bool)>& callback) {
+  void InitializeTPMTokenAndSystemSlot(
+      int system_slot_id,
+      const base::Callback<void(bool)>& callback) {
     DCHECK(thread_checker_.CalledOnValidThread());
     // Should not be called while there is already an initialization in
     // progress.
@@ -345,9 +346,9 @@ class NSSInitSingleton {
     if (base::WorkerPool::PostTaskAndReply(
             FROM_HERE,
             base::Bind(&NSSInitSingleton::InitializeTPMTokenOnWorkerThread,
-                       token_slot_id,
+                       system_slot_id,
                        tpm_args_ptr),
-            base::Bind(&NSSInitSingleton::OnInitializedTPMToken,
+            base::Bind(&NSSInitSingleton::OnInitializedTPMTokenAndSystemSlot,
                        base::Unretained(this),  // NSSInitSingleton is leaky
                        callback,
                        base::Passed(&tpm_args)),
@@ -382,8 +383,9 @@ class NSSInitSingleton {
     }
   }
 
-  void OnInitializedTPMToken(const base::Callback<void(bool)>& callback,
-                             scoped_ptr<TPMModuleAndSlot> tpm_args) {
+  void OnInitializedTPMTokenAndSystemSlot(
+      const base::Callback<void(bool)>& callback,
+      scoped_ptr<TPMModuleAndSlot> tpm_args) {
     DCHECK(thread_checker_.CalledOnValidThread());
     DVLOG(2) << "Loaded chaps: " << !!tpm_args->chaps_module
              << ", got tpm slot: " << !!tpm_args->tpm_slot;
@@ -624,7 +626,7 @@ class NSSInitSingleton {
     ignore_result(g_test_nss_db_dir.Get().Delete());
   }
 
-  PK11SlotInfo* GetPublicNSSKeySlot() {
+  PK11SlotInfo* GetPersistentNSSKeySlot() {
     // TODO(mattm): Change to DCHECK when callers have been fixed.
     if (!thread_checker_.CalledOnValidThread()) {
       DVLOG(1) << "Called on wrong thread.\n"
@@ -635,30 +637,25 @@ class NSSInitSingleton {
       return PK11_ReferenceSlot(test_slot_);
     return PK11_GetInternalKeySlot();
   }
-
-  PK11SlotInfo* GetPrivateNSSKeySlot() {
-    // TODO(mattm): Change to DCHECK when callers have been fixed.
-    if (!thread_checker_.CalledOnValidThread()) {
-      DVLOG(1) << "Called on wrong thread.\n"
-               << base::debug::StackTrace().ToString();
-    }
-
-    if (test_slot_)
-      return PK11_ReferenceSlot(test_slot_);
 
 #if defined(OS_CHROMEOS)
-    if (tpm_token_enabled_for_nss_) {
-      if (IsTPMTokenReady(base::Closure())) {
-        return PK11_ReferenceSlot(tpm_slot_);
-      } else {
-        // If we were supposed to get the hardware token, but were
-        // unable to, return NULL rather than fall back to sofware.
-        return NULL;
-      }
-    }
-#endif
-    return PK11_GetInternalKeySlot();
+  PK11SlotInfo* GetSystemNSSKeySlot() {
+    DCHECK(thread_checker_.CalledOnValidThread());
+
+    if (test_slot_)
+      return PK11_ReferenceSlot(test_slot_);
+
+    // TODO(mattm): chromeos::TPMTokenloader always calls
+    // InitializeTPMTokenAndSystemSlot with slot 0.  If the system slot is
+    // disabled, tpm_slot_ will be the first user's slot instead. Can that be
+    // detected and return NULL instead?
+    if (tpm_token_enabled_for_nss_ && IsTPMTokenReady(base::Closure()))
+      return PK11_ReferenceSlot(tpm_slot_);
+    // If we were supposed to get the hardware token, but were
+    // unable to, return NULL rather than fall back to sofware.
+    return NULL;
   }
+#endif
 
 #if defined(USE_NSS)
   base::Lock* write_lock() {
@@ -1069,6 +1066,10 @@ AutoSECMODListReadLock::~AutoSECMODListReadLock() {
 #endif  // defined(USE_NSS)
 
 #if defined(OS_CHROMEOS)
+PK11SlotInfo* GetSystemNSSKeySlot() {
+  return g_nss_singleton.Get().GetSystemNSSKeySlot();
+}
+
 void EnableTPMTokenForNSS() {
   g_nss_singleton.Get().EnableTPMTokenForNSS();
 }
@@ -1081,9 +1082,11 @@ bool IsTPMTokenReady(const base::Closure& callback) {
   return g_nss_singleton.Get().IsTPMTokenReady(callback);
 }
 
-void InitializeTPMToken(int token_slot_id,
-                        const base::Callback<void(bool)>& callback) {
-  g_nss_singleton.Get().InitializeTPMToken(token_slot_id, callback);
+void InitializeTPMTokenAndSystemSlot(
+    int token_slot_id,
+    const base::Callback<void(bool)>& callback) {
+  g_nss_singleton.Get().InitializeTPMTokenAndSystemSlot(token_slot_id,
+                                                        callback);
 }
 
 ScopedTestNSSChromeOSUser::ScopedTestNSSChromeOSUser(
@@ -1157,12 +1160,8 @@ PRTime BaseTimeToPRTime(base::Time time) {
   return time.ToInternalValue() - base::Time::UnixEpoch().ToInternalValue();
 }
 
-PK11SlotInfo* GetPublicNSSKeySlot() {
-  return g_nss_singleton.Get().GetPublicNSSKeySlot();
-}
-
-PK11SlotInfo* GetPrivateNSSKeySlot() {
-  return g_nss_singleton.Get().GetPrivateNSSKeySlot();
+PK11SlotInfo* GetPersistentNSSKeySlot() {
+  return g_nss_singleton.Get().GetPersistentNSSKeySlot();
 }
 
 }  // namespace crypto

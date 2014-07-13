@@ -16,27 +16,6 @@
 
 namespace net {
 
-class ClientCertStoreChromeOSTestDelegate {
- public:
-  ClientCertStoreChromeOSTestDelegate()
-      : store_("usernamehash",
-               ClientCertStoreChromeOS::PasswordDelegateFactory()) {
-    store_.InitForTesting(
-        crypto::ScopedPK11Slot(crypto::GetPublicNSSKeySlot()),
-        crypto::ScopedPK11Slot(crypto::GetPrivateNSSKeySlot()));
-  }
-
-  bool SelectClientCerts(const CertificateList& input_certs,
-                         const SSLCertRequestInfo& cert_request_info,
-                         CertificateList* selected_certs) {
-    return store_.SelectClientCertsForTesting(
-        input_certs, cert_request_info, selected_certs);
-  }
-
- private:
-  ClientCertStoreChromeOS store_;
-};
-
 class ClientCertStoreChromeOSTest : public ::testing::Test {
  public:
   scoped_refptr<X509Certificate> ImportCertForUser(

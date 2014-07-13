@@ -140,11 +140,11 @@ void NSSCertDatabase::ListCertsInSlot(const ListCertsCallback& callback,
 }
 
 crypto::ScopedPK11Slot NSSCertDatabase::GetPublicSlot() const {
-  return crypto::ScopedPK11Slot(crypto::GetPublicNSSKeySlot());
+  return crypto::ScopedPK11Slot(crypto::GetPersistentNSSKeySlot());
 }
 
 crypto::ScopedPK11Slot NSSCertDatabase::GetPrivateSlot() const {
-  return crypto::ScopedPK11Slot(crypto::GetPrivateNSSKeySlot());
+  return crypto::ScopedPK11Slot(crypto::GetPersistentNSSKeySlot());
 }
 
 CryptoModule* NSSCertDatabase::GetPublicModule() const {

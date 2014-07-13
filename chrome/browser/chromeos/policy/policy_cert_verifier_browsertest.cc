@@ -46,7 +46,7 @@ class PolicyCertVerifierTest : public testing::Test {
     cert_verifier_.reset(new PolicyCertVerifier(base::Bind(
         &PolicyCertVerifierTest::OnTrustAnchorUsed, base::Unretained(this))));
     cert_verifier_->InitializeOnIOThread(new chromeos::CertVerifyProcChromeOS(
-        crypto::ScopedPK11Slot(crypto::GetPublicNSSKeySlot())));
+        crypto::ScopedPK11Slot(crypto::GetPersistentNSSKeySlot())));
 
     test_ca_cert_ = LoadCertificate("root_ca_cert.pem", net::CA_CERT);
     ASSERT_TRUE(test_ca_cert_);

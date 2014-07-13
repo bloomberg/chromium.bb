@@ -446,7 +446,7 @@ int SSLServerSocketNSS::InitializeSSLOptions() {
   }
 
   SECKEYPrivateKeyStr* private_key = NULL;
-  PK11SlotInfo* slot = crypto::GetPrivateNSSKeySlot();
+  PK11SlotInfo* slot = PK11_GetInternalSlot();
   if (!slot) {
     CERT_DestroyCertificate(cert);
     return ERR_UNEXPECTED;

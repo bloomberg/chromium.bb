@@ -95,9 +95,9 @@ CRYPTO_EXPORT void LoadNSSLibraries();
 bool CheckNSSVersion(const char* version);
 
 #if defined(OS_CHROMEOS)
-// Indicates that NSS should load the Chaps library so that we
-// can access the TPM through NSS.  Once this is called,
-// GetPrivateNSSKeySlot() will return the TPM slot if one was found.
+// Indicates that NSS should use the Chaps library so that we
+// can access the TPM through NSS.  InitializeTPMTokenAndSystemSlot and
+// InitializeTPMForChromeOSUser must still be called to load the slots.
 CRYPTO_EXPORT void EnableTPMTokenForNSS();
 
 // Returns true if EnableTPMTokenForNSS has been called.
@@ -113,13 +113,13 @@ CRYPTO_EXPORT bool IsTPMTokenEnabledForNSS();
 CRYPTO_EXPORT bool IsTPMTokenReady(const base::Closure& callback)
     WARN_UNUSED_RESULT;
 
-// Initialize the TPM token. The |callback| will run on the same thread with
-// true if the token and slot were successfully loaded or were already
-// initialized. |callback| will be passed false if loading failed.
-// Once called, InitializeTPMToken must not be called again until the |callback|
-// has been run.
-CRYPTO_EXPORT void InitializeTPMToken(
-    int token_slot_id,
+// Initialize the TPM token and system slot. The |callback| will run on the same
+// thread with true if the token and slot were successfully loaded or were
+// already initialized. |callback| will be passed false if loading failed.  Once
+// called, InitializeTPMTokenAndSystemSlot must not be called again until the
+// |callback| has been run.
+CRYPTO_EXPORT void InitializeTPMTokenAndSystemSlot(
+    int system_slot_id,
     const base::Callback<void(bool)>& callback);
 
 // Exposed for unittests only.

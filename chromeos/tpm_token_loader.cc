@@ -195,7 +195,7 @@ void TPMTokenLoader::ContinueTokenInitialization() {
       crypto_task_runner_->PostTask(
           FROM_HERE,
           base::Bind(
-              &crypto::InitializeTPMToken,
+              &crypto::InitializeTPMTokenAndSystemSlot,
               tpm_token_slot_id_,
               base::Bind(&PostResultToTaskRunner,
                          base::MessageLoopProxy::current(),

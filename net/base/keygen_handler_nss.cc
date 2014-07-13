@@ -24,7 +24,7 @@ std::string KeygenHandler::GenKeyAndSignChallenge() {
   if (crypto_module_delegate_)
     slot = crypto_module_delegate_->RequestSlot().Pass();
   else
-    slot.reset(crypto::GetPrivateNSSKeySlot());
+    slot.reset(crypto::GetPersistentNSSKeySlot());
   if (!slot.get()) {
     LOG(ERROR) << "Couldn't get private key slot from NSS!";
     return std::string();
