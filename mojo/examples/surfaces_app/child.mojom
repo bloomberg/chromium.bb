@@ -1,0 +1,12 @@
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+import "mojo/services/public/interfaces/geometry/geometry.mojom"
+import "mojo/services/public/interfaces/surfaces/quads.mojom"
+import "mojo/services/public/interfaces/surfaces/surface_id.mojom"
+
+interface Child {
+  ProduceFrame(mojo.surfaces.Color color, mojo.Size size) =>
+      (mojo.surfaces.SurfaceId id);
+};

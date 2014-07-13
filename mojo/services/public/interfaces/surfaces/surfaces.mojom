@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 import "mojo/services/public/interfaces/geometry/geometry.mojom"
+import "mojo/services/gles2/command_buffer.mojom"
 import "mojo/services/public/interfaces/surfaces/quads.mojom"
 import "mojo/services/public/interfaces/surfaces/surface_id.mojom"
 
@@ -50,14 +51,19 @@ struct Frame {
 };
 
 interface SurfaceClient {
+  SetIdNamespace(uint32 id);
   ReturnResources(ReturnedResource[] resources);
 };
 
 [Client=SurfaceClient]
 interface Surface {
-  CreateSurface(mojo.Size size) => (SurfaceId id);
+  CreateSurface(SurfaceId id, mojo.Size size);
   SubmitFrame(SurfaceId id, Frame frame);
   DestroySurface(SurfaceId id);
+
+  CreateGLES2BoundSurface(mojo.CommandBuffer gles2_client,
+                          SurfaceId id,
+                          mojo.Size size);
 };
 
 }

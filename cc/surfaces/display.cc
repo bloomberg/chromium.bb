@@ -93,6 +93,10 @@ bool Display::Draw() {
   TRACE_EVENT0("cc", "Display::Draw");
   DelegatedFrameData* frame_data = frame->delegated_frame_data.get();
 
+  // Only reshape when we know we are going to draw. Otherwise, the reshape
+  // can leave the window at the wrong size if we never draw and the proper
+  // viewport size is never set.
+  output_surface_->Reshape(current_surface_size_, 1.f);
   float device_scale_factor = 1.0f;
   gfx::Rect device_viewport_rect = gfx::Rect(current_surface_size_);
   gfx::Rect device_clip_rect = device_viewport_rect;

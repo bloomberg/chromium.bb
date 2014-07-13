@@ -1,0 +1,6 @@
+include_rules = [
+  "+cc",
+  "+mojo/cc",
+  "+mojo/services/gles2",
+  "+mojo/services/public",
+]
