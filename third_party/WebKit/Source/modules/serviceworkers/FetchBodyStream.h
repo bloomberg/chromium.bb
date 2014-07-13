@@ -20,11 +20,8 @@ namespace WebCore {
 
 class ScriptState;
 
-// FIXME: Oilpan: when the implementation stops using
-// ActiveDOMObject::(un)setPendingActivity, derive from
-// RefCountedWillBeGarbageCollectedFinalized instead.
 class FetchBodyStream FINAL
-    : public RefCountedWillBeRefCountedGarbageCollected<FetchBodyStream>
+    : public RefCountedWillBeGarbageCollectedFinalized<FetchBodyStream>
     , public ScriptWrappable
     , public ActiveDOMObject
     , public FileReaderLoaderClient {
@@ -48,6 +45,7 @@ public:
 
     // ActiveDOMObject override.
     virtual void stop() OVERRIDE;
+    virtual bool hasPendingActivity() const OVERRIDE;
 
     void trace(Visitor*) { }
 

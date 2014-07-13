@@ -20,7 +20,7 @@ namespace WebCore {
 
 PassRefPtrWillBeRawPtr<FetchBodyStream> FetchBodyStream::create(ExecutionContext* context, PassRefPtr<BlobDataHandle> blobDataHandle)
 {
-    RefPtrWillBeRawPtr<FetchBodyStream> fetchBodyStream(adoptRefWillBeRefCountedGarbageCollected(new FetchBodyStream(context, blobDataHandle)));
+    RefPtrWillBeRawPtr<FetchBodyStream> fetchBodyStream(adoptRefWillBeNoop(new FetchBodyStream(context, blobDataHandle)));
     fetchBodyStream->suspendIfNeeded();
     return fetchBodyStream.release();
 }
@@ -58,7 +58,6 @@ ScriptPromise FetchBodyStream::readAsync(ScriptState* scriptState, ResponseType 
         ASSERT_NOT_REACHED();
     }
 
-    setPendingActivity(this);
     m_loader = adoptPtr(new FileReaderLoader(readType, this));
     m_loader->start(scriptState->executionContext(), m_blobDataHandle);
 
@@ -95,6 +94,11 @@ void FetchBodyStream::stop()
     // Canceling the load will call didFail which will remove the resolver.
     if (m_resolver)
         m_loader->cancel();
+}
+
+bool FetchBodyStream::hasPendingActivity() const
+{
+    return m_resolver;
 }
 
 FetchBodyStream::FetchBodyStream(ExecutionContext* context, PassRefPtr<BlobDataHandle> blobDataHandle)
@@ -149,8 +153,6 @@ void FetchBodyStream::didFinishLoading()
         ASSERT_NOT_REACHED();
     }
     m_resolver.clear();
-    unsetPendingActivity(this);
-    return;
 }
 
 void FetchBodyStream::didFail(FileError::ErrorCode code)
@@ -158,7 +160,6 @@ void FetchBodyStream::didFail(FileError::ErrorCode code)
     ASSERT(m_resolver);
     m_resolver->resolve("");
     m_resolver.clear();
-    unsetPendingActivity(this);
 }
 
 } // namespace WebCore
