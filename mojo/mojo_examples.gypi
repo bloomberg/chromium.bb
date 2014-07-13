@@ -310,6 +310,8 @@
       ],
       'dependencies': [
         'mojo_cpp_bindings',
+        'mojo_geometry_bindings',
+        'mojo_surfaces_bindings',
       ],
     },
     {
