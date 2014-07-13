@@ -408,14 +408,6 @@ COMPILE_ASSERT_MATCHING_ENUM(WebNode::DocumentNode, Node::DOCUMENT_NODE);
 COMPILE_ASSERT_MATCHING_ENUM(WebNode::DocumentTypeNode, Node::DOCUMENT_TYPE_NODE);
 COMPILE_ASSERT_MATCHING_ENUM(WebNode::DocumentFragmentNode, Node::DOCUMENT_FRAGMENT_NODE);
 
-COMPILE_ASSERT_MATCHING_ENUM(WebMediaPlayer::NetworkStateEmpty, MediaPlayer::Empty);
-COMPILE_ASSERT_MATCHING_ENUM(WebMediaPlayer::NetworkStateIdle, MediaPlayer::Idle);
-COMPILE_ASSERT_MATCHING_ENUM(WebMediaPlayer::NetworkStateLoading, MediaPlayer::Loading);
-COMPILE_ASSERT_MATCHING_ENUM(WebMediaPlayer::NetworkStateLoaded, MediaPlayer::Loaded);
-COMPILE_ASSERT_MATCHING_ENUM(WebMediaPlayer::NetworkStateFormatError, MediaPlayer::FormatError);
-COMPILE_ASSERT_MATCHING_ENUM(WebMediaPlayer::NetworkStateNetworkError, MediaPlayer::NetworkError);
-COMPILE_ASSERT_MATCHING_ENUM(WebMediaPlayer::NetworkStateDecodeError, MediaPlayer::DecodeError);
-
 COMPILE_ASSERT_MATCHING_ENUM(WebMediaPlayer::ReadyStateHaveNothing, HTMLMediaElement::HAVE_NOTHING);
 COMPILE_ASSERT_MATCHING_ENUM(WebMediaPlayer::ReadyStateHaveMetadata, HTMLMediaElement::HAVE_METADATA);
 COMPILE_ASSERT_MATCHING_ENUM(WebMediaPlayer::ReadyStateHaveCurrentData, HTMLMediaElement::HAVE_CURRENT_DATA);

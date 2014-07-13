@@ -103,7 +103,6 @@ public:
     virtual void seek(double time) OVERRIDE;
     virtual bool seeking() const OVERRIDE;
     virtual void setPoster(const WebCore::KURL&) OVERRIDE;
-    virtual WebCore::MediaPlayer::NetworkState networkState() const OVERRIDE;
     virtual void paint(WebCore::GraphicsContext*, const WebCore::IntRect&) OVERRIDE;
     virtual bool copyVideoTextureToPlatformTexture(WebGraphicsContext3D*, Platform3DObject texture, GLint level, GLenum type, GLenum internalFormat, bool premultiplyAlpha, bool flipY) OVERRIDE;
     virtual void setPreload(WebCore::MediaPlayer::Preload) OVERRIDE;

@@ -350,7 +350,7 @@ private:
     virtual void updateDisplayState() { }
 
     void setReadyState(ReadyState);
-    void setNetworkState(MediaPlayer::NetworkState);
+    void setNetworkState(blink::WebMediaPlayer::NetworkState);
 
     virtual void mediaPlayerNetworkStateChanged() OVERRIDE FINAL;
     virtual void mediaPlayerReadyStateChanged() OVERRIDE FINAL;
@@ -401,7 +401,7 @@ private:
 
     KURL selectNextSourceChild(ContentType*, String* keySystem, InvalidURLAction);
 
-    void mediaLoadingFailed(MediaPlayer::NetworkState);
+    void mediaLoadingFailed(blink::WebMediaPlayer::NetworkState);
 
     // deferred loading (preload=none)
     bool loadIsDeferred() const;

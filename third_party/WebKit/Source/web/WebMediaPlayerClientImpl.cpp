@@ -258,13 +258,6 @@ void WebMediaPlayerClientImpl::setPoster(const KURL& poster)
         m_webMediaPlayer->setPoster(WebURL(poster));
 }
 
-MediaPlayer::NetworkState WebMediaPlayerClientImpl::networkState() const
-{
-    if (m_webMediaPlayer)
-        return static_cast<MediaPlayer::NetworkState>(m_webMediaPlayer->networkState());
-    return MediaPlayer::Empty;
-}
-
 void WebMediaPlayerClientImpl::paint(GraphicsContext* context, const IntRect& rect)
 {
     // Normally GraphicsContext operations do nothing when painting is disabled.

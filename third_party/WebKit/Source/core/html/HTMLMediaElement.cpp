@@ -869,13 +869,13 @@ void HTMLMediaElement::selectMediaResource()
         // If the src attribute's value is the empty string ... jump down to the failed step below
         KURL mediaURL = getNonEmptyURLAttribute(srcAttr);
         if (mediaURL.isEmpty()) {
-            mediaLoadingFailed(MediaPlayer::FormatError);
+            mediaLoadingFailed(WebMediaPlayer::NetworkStateFormatError);
             WTF_LOG(Media, "HTMLMediaElement::selectMediaResource, empty 'src'");
             return;
         }
 
         if (!isSafeToLoadURL(mediaURL, Complain)) {
-            mediaLoadingFailed(MediaPlayer::FormatError);
+            mediaLoadingFailed(WebMediaPlayer::NetworkStateFormatError);
             return;
         }
 
@@ -917,7 +917,7 @@ void HTMLMediaElement::loadResource(const KURL& url, ContentType& contentType, c
 
     LocalFrame* frame = document().frame();
     if (!frame) {
-        mediaLoadingFailed(MediaPlayer::FormatError);
+        mediaLoadingFailed(WebMediaPlayer::NetworkStateFormatError);
         return;
     }
 
@@ -973,7 +973,7 @@ void HTMLMediaElement::loadResource(const KURL& url, ContentType& contentType, c
             startPlayerLoad();
         }
     } else {
-        mediaLoadingFailed(MediaPlayer::FormatError);
+        mediaLoadingFailed(WebMediaPlayer::NetworkStateFormatError);
     }
 
     // If there is no poster to display, allow the media engine to render video frames as soon as
@@ -1626,10 +1626,10 @@ void HTMLMediaElement::cancelPendingEventsAndCallbacks()
 
 void HTMLMediaElement::mediaPlayerNetworkStateChanged()
 {
-    setNetworkState(m_player->networkState());
+    setNetworkState(webMediaPlayer()->networkState());
 }
 
-void HTMLMediaElement::mediaLoadingFailed(MediaPlayer::NetworkState error)
+void HTMLMediaElement::mediaLoadingFailed(WebMediaPlayer::NetworkState error)
 {
     stopPeriodicTimers();
 
@@ -1660,11 +1660,13 @@ void HTMLMediaElement::mediaLoadingFailed(MediaPlayer::NetworkState error)
         return;
     }
 
-    if (error == MediaPlayer::NetworkError && m_readyState >= HAVE_METADATA)
+    if (error == WebMediaPlayer::NetworkStateNetworkError && m_readyState >= HAVE_METADATA)
         mediaEngineError(MediaError::create(MediaError::MEDIA_ERR_NETWORK));
-    else if (error == MediaPlayer::DecodeError)
+    else if (error == WebMediaPlayer::NetworkStateDecodeError)
         mediaEngineError(MediaError::create(MediaError::MEDIA_ERR_DECODE));
-    else if ((error == MediaPlayer::FormatError || error == MediaPlayer::NetworkError) && m_loadState == LoadingFromSrcAttr)
+    else if ((error == WebMediaPlayer::NetworkStateFormatError
+        || error == WebMediaPlayer::NetworkStateNetworkError)
+        && m_loadState == LoadingFromSrcAttr)
         noneSupported();
 
     updateDisplayState();
@@ -1672,22 +1674,24 @@ void HTMLMediaElement::mediaLoadingFailed(MediaPlayer::NetworkState error)
         mediaControls()->reset();
 }
 
-void HTMLMediaElement::setNetworkState(MediaPlayer::NetworkState state)
+void HTMLMediaElement::setNetworkState(WebMediaPlayer::NetworkState state)
 {
     WTF_LOG(Media, "HTMLMediaElement::setNetworkState(%d) - current state is %d", static_cast<int>(state), static_cast<int>(m_networkState));
 
-    if (state == MediaPlayer::Empty) {
+    if (state == WebMediaPlayer::NetworkStateEmpty) {
         // Just update the cached state and leave, we can't do anything.
         m_networkState = NETWORK_EMPTY;
         return;
     }
 
-    if (state == MediaPlayer::FormatError || state == MediaPlayer::NetworkError || state == MediaPlayer::DecodeError) {
+    if (state == WebMediaPlayer::NetworkStateFormatError
+        || state == WebMediaPlayer::NetworkStateNetworkError
+        || state == WebMediaPlayer::NetworkStateDecodeError) {
         mediaLoadingFailed(state);
         return;
     }
 
-    if (state == MediaPlayer::Idle) {
+    if (state == WebMediaPlayer::NetworkStateIdle) {
         if (m_networkState > NETWORK_IDLE) {
             changeNetworkStateFromLoadingToIdle();
             setShouldDelayLoadEvent(false);
@@ -1696,13 +1700,13 @@ void HTMLMediaElement::setNetworkState(MediaPlayer::NetworkState state)
         }
     }
 
-    if (state == MediaPlayer::Loading) {
+    if (state == WebMediaPlayer::NetworkStateLoading) {
         if (m_networkState < NETWORK_LOADING || m_networkState == NETWORK_NO_SOURCE)
             startProgressEventTimer();
         m_networkState = NETWORK_LOADING;
     }
 
-    if (state == MediaPlayer::Loaded) {
+    if (state == WebMediaPlayer::NetworkStateLoaded) {
         if (m_networkState != NETWORK_IDLE)
             changeNetworkStateFromLoadingToIdle();
         m_completelyLoaded = true;
