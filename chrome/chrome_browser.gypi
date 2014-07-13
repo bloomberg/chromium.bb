@@ -1250,6 +1250,8 @@
       'browser/ssl/ssl_client_certificate_selector.h',
       'browser/ssl/ssl_error_info.cc',
       'browser/ssl/ssl_error_info.h',
+      'browser/ssl/ssl_error_classification.cc',
+      'browser/ssl/ssl_error_classification.h',
       'browser/status_icons/status_icon.cc',
       'browser/status_icons/status_icon.h',
       'browser/status_icons/status_icon_menu_model.cc',

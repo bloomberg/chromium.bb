@@ -20,6 +20,7 @@
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_preferences_util.h"
+#include "chrome/browser/ssl/ssl_error_classification.h"
 #include "chrome/browser/ssl/ssl_error_info.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/browser/cert_store.h"
@@ -215,45 +216,6 @@ void RecordSSLBlockingPageDetailedStats(
   }
 }
 
-// Events for UMA. Do not reorder or change!
-enum SSLInterstitialCause {
-  CLOCK_PAST,
-  CLOCK_FUTURE,
-  UNUSED_INTERSTITIAL_CAUSE_ENTRY,
-};
-
-void RecordSSLInterstitialCause(bool overridable, SSLInterstitialCause event) {
-  if (overridable) {
-    UMA_HISTOGRAM_ENUMERATION("interstitial.ssl.cause.overridable",
-                              event,
-                              UNUSED_INTERSTITIAL_CAUSE_ENTRY);
-  } else {
-    UMA_HISTOGRAM_ENUMERATION("interstitial.ssl.cause.nonoverridable",
-                              event,
-                              UNUSED_INTERSTITIAL_CAUSE_ENTRY);
-  }
-}
-
-// The cause of most clock errors (CMOS battery causing clock reset) will
-// fall backwards, not forwards. IsErrorProbablyCausedByClock therefore only
-// returns true for clocks set early, and histograms clocks set far into the
-// future to see if there are more future-clocks than expected.
-bool IsErrorProbablyCausedByClock(bool overridable, int cert_info) {
-  if (SSLErrorInfo::NetErrorToErrorType(cert_info) !=
-      SSLErrorInfo::CERT_DATE_INVALID) {
-    return false;
-  }
-  const base::Time current_time = base::Time::NowFromSystemTime();
-  const base::Time build_time = base::GetBuildTime();
-  if (current_time < build_time - base::TimeDelta::FromDays(2)) {
-    RecordSSLInterstitialCause(overridable, CLOCK_PAST);
-    return true;
-  }
-  if (current_time > build_time + base::TimeDelta::FromDays(365))
-    RecordSSLInterstitialCause(overridable, CLOCK_FUTURE);
-  return false;
-}
-
 }  // namespace
 
 // Note that we always create a navigation entry with SSL errors.
@@ -299,6 +261,11 @@ SSLBlockingPage::SSLBlockingPage(
                      base::Unretained(this)),
           &request_tracker_);
     }
+  }
+  if (SSLErrorInfo::NetErrorToErrorType(cert_error_) ==
+      SSLErrorInfo::CERT_DATE_INVALID) {
+    SSLErrorClassification::RecordUMAStatistics(overridable_ &&
+                                                !strict_enforcement_);
   }
 
 #if defined(ENABLE_CAPTIVE_PORTAL_DETECTION)
@@ -524,8 +491,10 @@ std::string SSLBlockingPage::GetHTMLContentsV2() {
       "tabTitle", l10n_util::GetStringUTF16(IDS_SSL_V2_TITLE));
   load_time_data.SetString(
       "heading", l10n_util::GetStringUTF16(IDS_SSL_V2_HEADING));
-  if (IsErrorProbablyCausedByClock(
-          overridable_ && !strict_enforcement_, cert_error_)) {
+  if ((SSLErrorClassification::IsUserClockInThePast(
+      base::Time::NowFromSystemTime()))
+      && (SSLErrorInfo::NetErrorToErrorType(cert_error_) ==
+          SSLErrorInfo::CERT_DATE_INVALID)) {
     load_time_data.SetString("primaryParagraph",
                              l10n_util::GetStringFUTF16(
                                  IDS_SSL_CLOCK_ERROR,
