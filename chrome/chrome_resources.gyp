@@ -453,6 +453,12 @@
              '<(DEPTH)/ash/ash_strings.gyp:ash_strings',
           ],
         }],
+        ['chromeos==1', {
+          'dependencies': [
+            '<(DEPTH)/ui/chromeos/ui_chromeos.gyp:ui_chromeos_resources',
+            '<(DEPTH)/ui/chromeos/ui_chromeos.gyp:ui_chromeos_strings',
+          ],
+        }],
         ['enable_autofill_dialog==1 and OS!="android"', {
           'dependencies': [
             '<(DEPTH)/third_party/libaddressinput/libaddressinput.gyp:libaddressinput_strings',

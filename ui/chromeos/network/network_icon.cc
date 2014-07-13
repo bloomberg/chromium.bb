@@ -2,22 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/system/chromeos/network/network_icon.h"
+#include "ui/chromeos/network/network_icon.h"
 
-#include "ash/system/chromeos/network/network_icon_animation.h"
-#include "ash/system/chromeos/network/network_icon_animation_observer.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chromeos/network/device_state.h"
 #include "chromeos/network/network_connection_handler.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/portal_detector/network_portal_detector.h"
-#include "grit/ash_resources.h"
-#include "grit/ash_strings.h"
+#include "grit/ui_chromeos_resources.h"
+#include "grit/ui_chromeos_strings.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/webui/web_ui_util.h"
+#include "ui/chromeos/network/network_icon_animation.h"
+#include "ui/chromeos/network/network_icon_animation_observer.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/image/image_skia_source.h"
@@ -32,7 +32,7 @@ using chromeos::NetworkState;
 using chromeos::NetworkStateHandler;
 using chromeos::NetworkTypePattern;
 
-namespace ash {
+namespace ui {
 namespace network_icon {
 
 namespace {
@@ -959,4 +959,4 @@ void PurgeNetworkIconCache() {
 }
 
 }  // namespace network_icon
-}  // namespace ash
+}  // namespace ui

@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/system/chromeos/network/network_icon_animation.h"
+#include "ui/chromeos/network/network_icon_animation.h"
 
-#include "ash/system/chromeos/network/network_icon_animation_observer.h"
+#include "ui/chromeos/network/network_icon_animation_observer.h"
 
 namespace {
 const int kThrobDurationMs = 750;  // Animation cycle length.
 }
 
-namespace ash {
+namespace ui {
 namespace network_icon {
 
 NetworkIconAnimation::NetworkIconAnimation()
@@ -58,4 +58,4 @@ NetworkIconAnimation* NetworkIconAnimation::GetInstance() {
 }
 
 }  // namespace network_icon
-}  // namespace ash
+}  // namespace ui

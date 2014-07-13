@@ -2680,6 +2680,8 @@
           'sources': [ '<@(chrome_browser_ui_chromeos_sources)' ],
           'dependencies': [
             'browser_chromeos',
+            '../ui/chromeos/ui_chromeos.gyp:ui_chromeos',
+            '../ui/chromeos/ui_chromeos.gyp:ui_chromeos_resources',
           ],
         }, {
           'sources': [ '<@(chrome_browser_ui_non_chromeos_sources)' ],

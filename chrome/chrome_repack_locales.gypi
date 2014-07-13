@@ -14,11 +14,16 @@
       }, {  # else: branding!="Chrome"
         'branding_flag': ['-b', 'chromium',],
       }],
+      ['chromeos==1', {
+        'chromeos_flag': ['--chromeos=1'],
+      }, {
+        'chromeos_flag': ['--chromeos=0'],
+      }],
     ],
   },
   'inputs': [
     '<(repack_locales_path)',
-    '<!@pymod_do_main(repack_locales -i -p <(OS) <(branding_flag) -g <(grit_out_dir) -s <(SHARED_INTERMEDIATE_DIR) -x <(SHARED_INTERMEDIATE_DIR) --use-ash <(use_ash) --enable-autofill-dialog <(enable_autofill_dialog) <(pak_locales))'
+    '<!@pymod_do_main(repack_locales -i -p <(OS) <(branding_flag) -g <(grit_out_dir) -s <(SHARED_INTERMEDIATE_DIR) -x <(SHARED_INTERMEDIATE_DIR) --use-ash <(use_ash) <(chromeos_flag) --enable-autofill-dialog <(enable_autofill_dialog) <(pak_locales))'
   ],
   'outputs': [
     '<!@pymod_do_main(repack_locales -o -p <(OS) -g <(grit_out_dir) -s <(SHARED_INTERMEDIATE_DIR) -x <(SHARED_INTERMEDIATE_DIR) <(pak_locales))'
@@ -32,6 +37,7 @@
     '-s', '<(SHARED_INTERMEDIATE_DIR)',
     '-x', '<(SHARED_INTERMEDIATE_DIR)/.',
     '--use-ash=<(use_ash)',
+    '<@(chromeos_flag)',
     '--enable-autofill-dialog=<(enable_autofill_dialog)',
     '<@(repack_options)',
     '<@(pak_locales)',

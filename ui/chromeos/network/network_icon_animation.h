@@ -2,24 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_SYSTEM_CHROMEOS_NETWORK_NETWORK_ICON_ANIMATION_H_
-#define ASH_SYSTEM_CHROMEOS_NETWORK_NETWORK_ICON_ANIMATION_H_
+#ifndef UI_CHROMEOS_NETWORK_NETWORK_ICON_ANIMATION_H_
+#define UI_CHROMEOS_NETWORK_NETWORK_ICON_ANIMATION_H_
 
 #include <set>
 #include <string>
 
-#include "ash/ash_export.h"
 #include "base/observer_list.h"
+#include "ui/chromeos/ui_chromeos_export.h"
 #include "ui/gfx/animation/animation_delegate.h"
 #include "ui/gfx/animation/throb_animation.h"
 
-namespace ash {
+namespace ui {
 namespace network_icon {
 
 class AnimationObserver;
 
 // Single instance class to handle icon animations and keep them in sync.
-class ASH_EXPORT NetworkIconAnimation : public gfx::AnimationDelegate {
+class UI_CHROMEOS_EXPORT NetworkIconAnimation : public gfx::AnimationDelegate {
  public:
   NetworkIconAnimation();
   virtual ~NetworkIconAnimation();
@@ -43,6 +43,6 @@ class ASH_EXPORT NetworkIconAnimation : public gfx::AnimationDelegate {
 };
 
 }  // namespace network_icon
-}  // namespace ash
+}  // namespace ui
 
-#endif  // ASH_SYSTEM_CHROMEOS_NETWORK_NETWORK_ICON_ANIMATION_H_
+#endif  // UI_CHROMEOS_NETWORK_NETWORK_ICON_ANIMATION_H_

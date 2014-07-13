@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_SYSTEM_CHROMEOS_NETWORK_NETWORK_ICON_ANIMATION_OBSERVER_H_
-#define ASH_SYSTEM_CHROMEOS_NETWORK_NETWORK_ICON_ANIMATION_OBSERVER_H_
+#ifndef UI_CHROMEOS_NETWORK_NETWORK_ICON_ANIMATION_OBSERVER_H_
+#define UI_CHROMEOS_NETWORK_NETWORK_ICON_ANIMATION_OBSERVER_H_
 
-#include "ash/ash_export.h"
+#include "ui/chromeos/ui_chromeos_export.h"
 
-namespace ash {
+namespace ui {
 namespace network_icon {
 
 // Observer interface class for animating network icons.
-class ASH_EXPORT AnimationObserver {
+class UI_CHROMEOS_EXPORT AnimationObserver {
  public:
   // Called when the image has changed due to animation. The callback should
   // trigger a call to GetImageForNetwork() to retrieve the image.
@@ -22,6 +22,6 @@ class ASH_EXPORT AnimationObserver {
 };
 
 }  // namespace network_icon
-}  // namespace ash
+}  // namespace ui
 
-#endif  // ASH_SYSTEM_CHROMEOS_NETWORK_NETWORK_ICON_ANIMATION_OBSERVER_H_
+#endif  // UI_CHROMEOS_NETWORK_NETWORK_ICON_ANIMATION_OBSERVER_H_

@@ -10,12 +10,12 @@
 #include <vector>
 
 #include "ash/system/chromeos/network/network_detailed_view.h"
-#include "ash/system/chromeos/network/network_icon.h"
-#include "ash/system/chromeos/network/network_icon_animation_observer.h"
 #include "ash/system/tray/view_click_listener.h"
 #include "ash/system/user/login_status.h"
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
+#include "ui/chromeos/network/network_icon.h"
+#include "ui/chromeos/network/network_icon_animation_observer.h"
 #include "ui/views/controls/button/button.h"
 
 namespace chromeos {
@@ -39,7 +39,7 @@ class NetworkStateListDetailedView
     : public NetworkDetailedView,
       public views::ButtonListener,
       public ViewClickListener,
-      public network_icon::AnimationObserver,
+      public ui::network_icon::AnimationObserver,
       public base::SupportsWeakPtr<NetworkStateListDetailedView> {
  public:
   enum ListType {
@@ -60,7 +60,7 @@ class NetworkStateListDetailedView
   virtual void NetworkServiceChanged(
       const chromeos::NetworkState* network) OVERRIDE;
 
-  // network_icon::AnimationObserver overrides
+  // ui::network_icon::AnimationObserver overrides
   virtual void NetworkIconChanged() OVERRIDE;
 
  protected:

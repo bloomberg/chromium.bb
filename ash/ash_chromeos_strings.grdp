@@ -25,9 +25,6 @@
   <message name="IDS_ASH_STATUS_TRAY_VPN" desc="The label used in the VPN detailed view header.">
     Private Network
   </message>
-  <message name="IDS_ASH_STATUS_TRAY_ETHERNET" desc="The ethernet network device.">
-    Ethernet
-  </message>
   <message name="IDS_ASH_STATUS_TRAY_WIFI" desc="The wifi network device.">
     Wi-Fi
   </message>
@@ -46,29 +43,8 @@
   <message name="IDS_ASH_STATUS_TRAY_NO_CELLULAR_NETWORKS" desc="The message to display in the network list when no cellular networks are available.">
     No cellular network available
   </message>
-  <message name="IDS_ASH_STATUS_TRAY_NETWORK_NOT_CONNECTED" desc="Description in status area or network dropdown when no network is connected.">
-    No network
-  </message>
   <message name="IDS_ASH_STATUS_TRAY_VPN_DISCONNECTED" desc="The label used in system tray bubble to display vpn is disconnected.">
     VPN disconnected
-  </message>
-  <message name="IDS_ASH_STATUS_TRAY_NETWORK_CONNECTED" desc="Message for the network tray tooltip and default menu text when connected to a network.">
-    Connected to <ph name="NAME">$1<ex>GoogleGuest</ex></ph>
-  </message>
-  <message name="IDS_ASH_STATUS_TRAY_NETWORK_CONNECTING" desc="Message for the network tray tooltip and default menu text when connecting to a network.">
-    Connecting to <ph name="NAME">$1<ex>GoogleGuest</ex></ph>
-  </message>
-  <message name="IDS_ASH_STATUS_TRAY_NETWORK_ACTIVATING" desc="Message for the network tray tooltip and default menu text when activating a network.">
-    Activating <ph name="NAME">$1<ex>YBH Cellular</ex></ph>
-  </message>
-  <message name="IDS_ASH_STATUS_TRAY_NETWORK_LIST_CONNECTING" desc="Message for the network list when connecting to a network.">
-    <ph name="NAME">$1<ex>GoogleGuest</ex></ph>: Connecting...
-  </message>
-  <message name="IDS_ASH_STATUS_TRAY_NETWORK_LIST_ACTIVATING" desc="Message for the network list when activating a network.">
-    <ph name="NAME">$1<ex>YBH Cellular</ex></ph>: Activating...
-  </message>
-  <message name="IDS_ASH_STATUS_TRAY_NETWORK_LIST_ACTIVATE" desc="Message for the network list to activate the network.">
-    Activate <ph name="NETWORKSERVICE">$1<ex>YBH Cellular</ex></ph>
   </message>
   <message name="IDS_ASH_STATUS_TRAY_NETWORK_SETTINGS" desc="The label used in the settings entry in the network dialog.">
     Settings...
@@ -117,12 +93,6 @@
   </message>
   <message name="IDS_ASH_STATUS_TRAY_WIFI_SCANNING_MESSAGE" desc="Scanning for wifi networks">
     Searching for Wi-Fi networks...
-  </message>
-  <message name="IDS_ASH_STATUS_TRAY_INITIALIZING_CELLULAR" desc="Message for the status area when initializing the cellular device.">
-    Initializing cellular modem...
-  </message>
-  <message name="IDS_ASH_STATUS_TRAY_CELLULAR_SCANNING" desc="Message when scanning for cellular networks">
-    Searching for cellular networks...
   </message>
   <message name="IDS_ASH_STATUS_TRAY_BLUETOOTH_DISCOVERABLE" desc="Notification shown when a Bluetooth adapter is discoverable.">
     Your computer is discoverable to nearby Bluetooth devices and will appear as "<ph name="NAME">$1<ex>Chromebook</ex></ph>" with address <ph name="ADDRESS">$2<ex>01:23:45:67:89:0A</ex></ph>
