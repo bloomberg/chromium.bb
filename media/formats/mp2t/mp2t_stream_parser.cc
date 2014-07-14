@@ -414,13 +414,20 @@ void Mp2tStreamParser::OnVideoConfigChanged(
   DCHECK_EQ(pes_pid, selected_video_pid_);
   DCHECK(video_decoder_config.IsValidConfig());
 
-  // Create a new entry in |buffer_queue_chain_| with the updated configs.
-  BufferQueueWithConfig buffer_queue_with_config(
-      false,
-      buffer_queue_chain_.empty()
-      ? AudioDecoderConfig() : buffer_queue_chain_.back().audio_config,
-      video_decoder_config);
-  buffer_queue_chain_.push_back(buffer_queue_with_config);
+  if (!buffer_queue_chain_.empty() &&
+      !buffer_queue_chain_.back().video_config.IsValidConfig()) {
+    // No video has been received so far, can reuse the existing video queue.
+    DCHECK(buffer_queue_chain_.back().video_queue.empty());
+    buffer_queue_chain_.back().video_config = video_decoder_config;
+  } else {
+    // Create a new entry in |buffer_queue_chain_| with the updated configs.
+    BufferQueueWithConfig buffer_queue_with_config(
+        false,
+        buffer_queue_chain_.empty()
+        ? AudioDecoderConfig() : buffer_queue_chain_.back().audio_config,
+        video_decoder_config);
+    buffer_queue_chain_.push_back(buffer_queue_with_config);
+  }
 
   // Replace any non valid config with the 1st valid entry.
   // This might happen if there was no available config before.
@@ -439,13 +446,20 @@ void Mp2tStreamParser::OnAudioConfigChanged(
   DCHECK_EQ(pes_pid, selected_audio_pid_);
   DCHECK(audio_decoder_config.IsValidConfig());
 
-  // Create a new entry in |buffer_queue_chain_| with the updated configs.
-  BufferQueueWithConfig buffer_queue_with_config(
-      false,
-      audio_decoder_config,
-      buffer_queue_chain_.empty()
-      ? VideoDecoderConfig() : buffer_queue_chain_.back().video_config);
-  buffer_queue_chain_.push_back(buffer_queue_with_config);
+  if (!buffer_queue_chain_.empty() &&
+      !buffer_queue_chain_.back().audio_config.IsValidConfig()) {
+    // No audio has been received so far, can reuse the existing audio queue.
+    DCHECK(buffer_queue_chain_.back().audio_queue.empty());
+    buffer_queue_chain_.back().audio_config = audio_decoder_config;
+  } else {
+    // Create a new entry in |buffer_queue_chain_| with the updated configs.
+    BufferQueueWithConfig buffer_queue_with_config(
+        false,
+        audio_decoder_config,
+        buffer_queue_chain_.empty()
+        ? VideoDecoderConfig() : buffer_queue_chain_.back().video_config);
+    buffer_queue_chain_.push_back(buffer_queue_with_config);
+  }
 
   // Replace any non valid config with the 1st valid entry.
   // This might happen if there was no available config before.

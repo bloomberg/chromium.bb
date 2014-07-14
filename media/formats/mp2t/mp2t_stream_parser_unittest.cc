@@ -22,11 +22,38 @@
 namespace media {
 namespace mp2t {
 
+namespace {
+
+bool IsMonotonic(const StreamParser::BufferQueue& buffers) {
+  if (buffers.empty())
+    return true;
+
+  StreamParser::BufferQueue::const_iterator it1 = buffers.begin();
+  StreamParser::BufferQueue::const_iterator it2 = ++it1;
+  for ( ; it2 != buffers.end(); ++it1, ++it2) {
+    if ((*it2)->GetDecodeTimestamp() < (*it1)->GetDecodeTimestamp())
+      return false;
+  }
+  return true;
+}
+
+bool IsAlmostEqual(base::TimeDelta t0, base::TimeDelta t1) {
+  base::TimeDelta kMaxDeviation = base::TimeDelta::FromMilliseconds(5);
+  base::TimeDelta diff = t1 - t0;
+  return (diff >= -kMaxDeviation && diff <= kMaxDeviation);
+}
+
+}  // namespace
+
 class Mp2tStreamParserTest : public testing::Test {
  public:
   Mp2tStreamParserTest()
-      : audio_frame_count_(0),
+      : segment_count_(0),
+        config_count_(0),
+        audio_frame_count_(0),
         video_frame_count_(0),
+        audio_min_dts_(kNoTimestamp()),
+        audio_max_dts_(kNoTimestamp()),
         video_min_dts_(kNoTimestamp()),
         video_max_dts_(kNoTimestamp()) {
     bool has_sbr = false;
@@ -35,10 +62,25 @@ class Mp2tStreamParserTest : public testing::Test {
 
  protected:
   scoped_ptr<Mp2tStreamParser> parser_;
+  int segment_count_;
+  int config_count_;
   int audio_frame_count_;
   int video_frame_count_;
+  base::TimeDelta audio_min_dts_;
+  base::TimeDelta audio_max_dts_;
   base::TimeDelta video_min_dts_;
   base::TimeDelta video_max_dts_;
+
+  void ResetStats() {
+    segment_count_ = 0;
+    config_count_ = 0;
+    audio_frame_count_ = 0;
+    video_frame_count_ = 0;
+    audio_min_dts_ = kNoTimestamp();
+    audio_max_dts_ = kNoTimestamp();
+    video_min_dts_ = kNoTimestamp();
+    video_max_dts_ = kNoTimestamp();
+  }
 
   bool AppendData(const uint8* data, size_t length) {
     return parser_->Parse(data, length);
@@ -70,6 +112,7 @@ class Mp2tStreamParserTest : public testing::Test {
     DVLOG(1) << "OnNewConfig: audio=" << ac.IsValidConfig()
              << ", video=" << vc.IsValidConfig();
     // Test streams have both audio and video, verify the configs are valid.
+    config_count_++;
     EXPECT_TRUE(ac.IsValidConfig());
     EXPECT_TRUE(vc.IsValidConfig());
     return true;
@@ -90,43 +133,57 @@ class Mp2tStreamParserTest : public testing::Test {
   bool OnNewBuffers(const StreamParser::BufferQueue& audio_buffers,
                     const StreamParser::BufferQueue& video_buffers,
                     const StreamParser::TextBufferQueueMap& text_map) {
+    EXPECT_GT(config_count_, 0);
     DumpBuffers("audio_buffers", audio_buffers);
     DumpBuffers("video_buffers", video_buffers);
-    audio_frame_count_ += audio_buffers.size();
-    video_frame_count_ += video_buffers.size();
 
     // TODO(wolenetz/acolwell): Add text track support to more MSE parsers. See
     // http://crbug.com/336926.
     if (!text_map.empty())
       return false;
 
-    if (video_min_dts_ == kNoTimestamp() && !video_buffers.empty())
-      video_min_dts_ = video_buffers.front()->GetDecodeTimestamp();
+    // Verify monotonicity.
+    if (!IsMonotonic(video_buffers))
+      return false;
+    if (!IsMonotonic(audio_buffers))
+      return false;
+
     if (!video_buffers.empty()) {
-      video_max_dts_ = video_buffers.back()->GetDecodeTimestamp();
-      // Verify monotonicity.
-      StreamParser::BufferQueue::const_iterator it1 = video_buffers.begin();
-      StreamParser::BufferQueue::const_iterator it2 = ++it1;
-      for ( ; it2 != video_buffers.end(); ++it1, ++it2) {
-        if ((*it2)->GetDecodeTimestamp() < (*it1)->GetDecodeTimestamp())
-          return false;
-      }
+      base::TimeDelta first_dts = video_buffers.front()->GetDecodeTimestamp();
+      base::TimeDelta last_dts = video_buffers.back()->GetDecodeTimestamp();
+      if (video_max_dts_ != kNoTimestamp() && first_dts < video_max_dts_)
+        return false;
+      if (video_min_dts_ == kNoTimestamp())
+        video_min_dts_ = first_dts;
+      video_max_dts_ = last_dts;
+    }
+    if (!audio_buffers.empty()) {
+      base::TimeDelta first_dts = audio_buffers.front()->GetDecodeTimestamp();
+      base::TimeDelta last_dts = audio_buffers.back()->GetDecodeTimestamp();
+      if (audio_max_dts_ != kNoTimestamp() && first_dts < audio_max_dts_)
+        return false;
+      if (audio_min_dts_ == kNoTimestamp())
+        audio_min_dts_ = first_dts;
+      audio_max_dts_ = last_dts;
     }
 
+    audio_frame_count_ += audio_buffers.size();
+    video_frame_count_ += video_buffers.size();
     return true;
   }
 
   void OnKeyNeeded(const std::string& type,
                    const std::vector<uint8>& init_data) {
-    DVLOG(1) << "OnKeyNeeded: " << init_data.size();
+    NOTREACHED() << "OnKeyNeeded not expected in the Mpeg2 TS parser";
   }
 
   void OnNewSegment() {
     DVLOG(1) << "OnNewSegment";
+    segment_count_++;
   }
 
   void OnEndOfSegment() {
-    DVLOG(1) << "OnEndOfSegment()";
+    NOTREACHED() << "OnEndOfSegment not expected in the Mpeg2 TS parser";
   }
 
   void InitializeParser() {
@@ -162,6 +219,9 @@ TEST_F(Mp2tStreamParserTest, UnalignedAppend17) {
   ParseMpeg2TsFile("bear-1280x720.ts", 17);
   parser_->Flush();
   EXPECT_EQ(video_frame_count_, 82);
+  // This stream has no mid-stream configuration change.
+  EXPECT_EQ(config_count_, 1);
+  EXPECT_EQ(segment_count_, 1);
 }
 
 TEST_F(Mp2tStreamParserTest, UnalignedAppend512) {
@@ -170,15 +230,25 @@ TEST_F(Mp2tStreamParserTest, UnalignedAppend512) {
   ParseMpeg2TsFile("bear-1280x720.ts", 512);
   parser_->Flush();
   EXPECT_EQ(video_frame_count_, 82);
+  // This stream has no mid-stream configuration change.
+  EXPECT_EQ(config_count_, 1);
+  EXPECT_EQ(segment_count_, 1);
 }
 
 TEST_F(Mp2tStreamParserTest, AppendAfterFlush512) {
   InitializeParser();
   ParseMpeg2TsFile("bear-1280x720.ts", 512);
   parser_->Flush();
+  EXPECT_EQ(video_frame_count_, 82);
+  EXPECT_EQ(config_count_, 1);
+  EXPECT_EQ(segment_count_, 1);
 
+  ResetStats();
   ParseMpeg2TsFile("bear-1280x720.ts", 512);
   parser_->Flush();
+  EXPECT_EQ(video_frame_count_, 82);
+  EXPECT_EQ(config_count_, 1);
+  EXPECT_EQ(segment_count_, 1);
 }
 
 TEST_F(Mp2tStreamParserTest, TimestampWrapAround) {
@@ -190,8 +260,27 @@ TEST_F(Mp2tStreamParserTest, TimestampWrapAround) {
   ParseMpeg2TsFile("bear-1280x720_ptswraparound.ts", 512);
   parser_->Flush();
   EXPECT_EQ(video_frame_count_, 82);
-  EXPECT_GE(video_min_dts_, base::TimeDelta::FromSeconds(95443 - 10));
-  EXPECT_LE(video_max_dts_, base::TimeDelta::FromSeconds(95443 + 10));
+
+  EXPECT_TRUE(IsAlmostEqual(video_min_dts_,
+                            base::TimeDelta::FromSecondsD(95443.376)));
+  EXPECT_TRUE(IsAlmostEqual(video_max_dts_,
+                            base::TimeDelta::FromSecondsD(95446.079)));
+
+  // Note: for audio, AdtsStreamParser considers only the PTS (which is then
+  // used as the DTS).
+  // TODO(damienv): most of the time, audio streams just have PTS. Here, only
+  // the first PES packet has a DTS, all the other PES packets have PTS only.
+  // Reconsider the expected value for |audio_min_dts_| if DTS are used as part
+  // of the ADTS stream parser.
+  //
+  // Note: the last pts for audio is 95445.931 but this PES packet includes
+  // 9 ADTS frames with 1 AAC frame in each ADTS frame.
+  // So the PTS of the last AAC frame is:
+  // 95445.931 + 8 * (1024 / 44100) = 95446.117
+  EXPECT_TRUE(IsAlmostEqual(audio_min_dts_,
+                            base::TimeDelta::FromSecondsD(95443.400)));
+  EXPECT_TRUE(IsAlmostEqual(audio_max_dts_,
+                            base::TimeDelta::FromSecondsD(95446.117)));
 }
 
 }  // namespace mp2t
