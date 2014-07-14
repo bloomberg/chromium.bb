@@ -81,7 +81,7 @@ function sendEvents(targetX, targetY, documents)
     eventSender.gestureShowPress(targetX, targetY, 30, 30);
     logCounts('GestureShowPress', documents);
 
-    eventSender.gestureTap(targetX, targetY);
+    eventSender.gestureTap(targetX, targetY, 1, 30, 30);
     logCounts('GestureTap', documents);
 
     eventSender.gestureTapDown(targetX, targetY, 30, 30);
