@@ -46,12 +46,12 @@
       "backtrace_function": ".*WebCore::StyleElement::createSheet.*"
     },
     {
-      "name": "CachedResource",
-      "backtrace_function": ".*WebCore::CachedResource::(data|load) .*"
+      "name": "Resource",
+      "backtrace_function": ".*WebCore::ResourceFetcher::requestResource .*"
     },
     {
-      "name": "ScriptElement-execute",
-      "backtrace_function": ".*WebCore::ScriptElement::execute.*"
+      "name": "ScriptLoader-execute",
+      "backtrace_function": ".*WebCore::ScriptLoader::execute.*"
     },
     {
       "name": "Events",
@@ -62,8 +62,8 @@
       "backtrace_function": ".*WebCore::Document::write.*"
     },
     {
-      "name": "Node-createRenderer",
-      "backtrace_function": ".*WebCore::Node::createRendererIfNeeded.*"
+      "name": "Element-createRenderer",
+      "backtrace_function": ".*WebCore::[a-zA-Z0-9_]*Element::createRenderer .*"
     },
     {
       "name": "ImageFrameGenerator",
@@ -75,7 +75,7 @@
     },
     {
       "name": "setInnerHTML",
-      "backtrace_function": ".*WebCore::HTMLElement::setInnerHTML.*"
+      "backtrace_function": ".*WebCore::Element::setInnerHTML.*"
     },
     {
       "name": "Others-create",

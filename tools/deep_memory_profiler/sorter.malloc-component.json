@@ -17,11 +17,11 @@
       "tc-webcore-element-wrapper",
       "tc-webcore-stylepropertyset",
       "tc-webcore-style-createsheet",
-      "tc-webcore-cachedresource",
+      "tc-webcore-resource",
       "tc-webcore-script-execute",
       "tc-webcore-events-related",
       "tc-webcore-document-write",
-      "tc-webcore-node-create-renderer",
+      "tc-webcore-element-create-renderer",
       "tc-webcore-render-catch-all",
       "tc-webcore-setInnerHTML-except-node",
       "tc-wtf-StringImpl-user-catch-all",
@@ -125,16 +125,12 @@
       "backtrace_function": ".*WebCore::StyleElement::createSheet.*"
     },
     {
-      "name": "tc-webcore-cachedresource",
-      "backtrace_function": ".*WebCore::CachedResource::data .*"
-    },
-    {
-      "name": "tc-webcore-cachedresource",
-      "backtrace_function": ".*WebCore::CachedResource::load .*"
+      "name": "tc-webcore-resource",
+      "backtrace_function": ".*WebCore::ResourceFetcher::requestResource .*"
     },
     {
       "name": "tc-webcore-script-execute",
-      "backtrace_function": ".*WebCore::ScriptElement::execute.*"
+      "backtrace_function": ".*WebCore::ScriptLoader::execute.*"
     },
     {
       "name": "tc-webcore-events-related",
@@ -161,8 +157,9 @@
       "backtrace_function": ".*WebCore::Document::write.*"
     },
     {
-      "name": "tc-webcore-node-create-renderer",
-      "backtrace_function": ".*WebCore::Node::createRendererIfNeeded.*"
+      "name": "tc-webcore-element-create-renderer",
+      "stacktrace": ".*WebCore::[a-zA-Z0-9_]*Element::createRenderer .*",
+      "allocator": "malloc"
     },
     {
       "name": "tc-webcore-render-catch-all",
@@ -198,7 +195,7 @@
     },
     {
       "name": "tc-webcore-setInnerHTML-except-node",
-      "backtrace_function": ".*WebCore::HTMLElement::setInnerHTML.*"
+      "backtrace_function": ".*WebCore::Element::setInnerHTML.*"
     },
     {
       "name": "tc-wtf-StringImpl-user-catch-all",

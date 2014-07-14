@@ -57,11 +57,11 @@
     "tc-webcore-element-wrapper",
     "tc-webcore-stylepropertyset",
     "tc-webcore-style-createsheet",
-    "tc-webcore-cachedresource",
+    "tc-webcore-resource",
     "tc-webcore-script-execute",
     "tc-webcore-events-related",
     "tc-webcore-document-write",
-    "tc-webcore-node-create-renderer",
+    "tc-webcore-element-create-renderer",
     "tc-webcore-render-catch-all",
     "tc-webcore-setInnerHTML-except-node",
     "tc-wtf-StringImpl-user-catch-all",
@@ -424,18 +424,13 @@
       "allocator": "malloc"
     },
     {
-      "name": "tc-webcore-cachedresource",
-      "stacktrace": ".*WebCore::CachedResource::data .*",
-      "allocator": "malloc"
-    },
-    {
-      "name": "tc-webcore-cachedresource",
-      "stacktrace": ".*WebCore::CachedResource::load .*",
+      "name": "tc-webcore-resource",
+      "stacktrace": ".*WebCore::ResourceFetcher::requestResource .*",
       "allocator": "malloc"
     },
     {
       "name": "tc-webcore-script-execute",
-      "stacktrace": ".*WebCore::ScriptElement::execute.*",
+      "stacktrace": ".*WebCore::ScriptLoader::execute.*",
       "allocator": "malloc"
     },
     {
@@ -469,8 +464,8 @@
       "allocator": "malloc"
     },
     {
-      "name": "tc-webcore-node-create-renderer",
-      "stacktrace": ".*WebCore::Node::createRendererIfNeeded.*",
+      "name": "tc-webcore-element-create-renderer",
+      "stacktrace": ".*WebCore::[a-zA-Z0-9_]*Element::createRenderer .*",
       "allocator": "malloc"
     },
     {
@@ -515,7 +510,7 @@
     },
     {
       "name": "tc-webcore-setInnerHTML-except-node",
-      "stacktrace": ".*WebCore::HTMLElement::setInnerHTML.*",
+      "stacktrace": ".*WebCore::Element::setInnerHTML.*",
       "allocator": "malloc"
     },
     {
