@@ -1222,10 +1222,10 @@ bool EventHandler::handleMousePressEvent(const PlatformMouseEvent& mouseEvent)
     }
     m_mouseDownWasInSubframe = false;
 
-    HitTestRequest::HitTestRequestType hitType = HitTestRequest::Active;
-    if (mouseEvent.fromTouch())
-        hitType |= HitTestRequest::ReadOnly;
-    HitTestRequest request(hitType);
+    // Mouse events simulated from touch should not hit-test again.
+    ASSERT(!mouseEvent.fromTouch());
+
+    HitTestRequest request(HitTestRequest::Active);
     // Save the document point we generate in case the window coordinate is invalidated by what happens
     // when we dispatch the event.
     LayoutPoint documentPoint = documentPointForWindowPoint(m_frame, mouseEvent.position());
@@ -1282,7 +1282,7 @@ bool EventHandler::handleMousePressEvent(const PlatformMouseEvent& mouseEvent)
     m_frame->selection().setCaretBlinkingSuspended(true);
 
     bool swallowEvent = !dispatchMouseEvent(EventTypeNames::mousedown, mev.targetNode(), m_clickCount, mouseEvent, true);
-    swallowEvent = swallowEvent || !handleMouseFocus(mouseEvent);
+    swallowEvent = swallowEvent || handleMouseFocus(mouseEvent);
     m_capturesDragging = !swallowEvent || mev.scrollbar();
 
     // If the hit testing originally determined the event was in a scrollbar, refetch the MouseEventWithHitTestResults
@@ -1404,10 +1404,10 @@ bool EventHandler::handleMouseMoveOrLeaveEvent(const PlatformMouseEvent& mouseEv
         return true;
     }
 
-    HitTestRequest::HitTestRequestType hitType = HitTestRequest::Move;
-    if (mouseEvent.fromTouch())
-        hitType |= HitTestRequest::ReadOnly;
+    // Mouse events simulated from touch should not hit-test again.
+    ASSERT(!mouseEvent.fromTouch());
 
+    HitTestRequest::HitTestRequestType hitType = HitTestRequest::Move;
     if (m_mousePressed)
         hitType |= HitTestRequest::Active;
     else if (onlyUpdateScrollbars) {
@@ -1535,9 +1535,10 @@ bool EventHandler::handleMouseReleaseEvent(const PlatformMouseEvent& mouseEvent)
         return !dispatchMouseEvent(EventTypeNames::mouseup, m_lastNodeUnderMouse.get(), m_clickCount, mouseEvent, setUnder);
     }
 
+    // Mouse events simulated from touch should not hit-test again.
+    ASSERT(!mouseEvent.fromTouch());
+
     HitTestRequest::HitTestRequestType hitType = HitTestRequest::Release;
-    if (mouseEvent.fromTouch())
-        hitType |= HitTestRequest::ReadOnly;
     HitTestRequest request(hitType);
     MouseEventWithHitTestResults mev = prepareMouseEvent(request, mouseEvent);
     LocalFrame* subframe = m_capturingMouseEventsNode.get() ? subframeForTargetNode(m_capturingMouseEventsNode.get()) : subframeForHitTestResult(mev);
@@ -1867,13 +1868,13 @@ bool EventHandler::dispatchMouseEvent(const AtomicString& eventType, Node* targe
     return !m_nodeUnderMouse || m_nodeUnderMouse->dispatchMouseEvent(mouseEvent, eventType, clickCount);
 }
 
-// The return value means 'continue default handling.'
+// The return value means 'swallow event' (was handled), as for other handle* functions.
 bool EventHandler::handleMouseFocus(const PlatformMouseEvent& mouseEvent)
 {
     // If clicking on a frame scrollbar, do not mess up with content focus.
     if (FrameView* view = m_frame->view()) {
         if (view->scrollbarAtPoint(mouseEvent.position()))
-            return true;
+            return false;
     }
 
     // The layout needs to be up to date to determine if an element is focusable.
@@ -1884,7 +1885,7 @@ bool EventHandler::handleMouseFocus(const PlatformMouseEvent& mouseEvent)
         element = m_nodeUnderMouse->isElementNode() ? toElement(m_nodeUnderMouse) : m_nodeUnderMouse->parentOrShadowHostElement();
     for (; element; element = element->parentOrShadowHostElement()) {
         if (element->isFocusable() && element->focused())
-            return true;
+            return false;
         if (element->isMouseFocusable())
             break;
     }
@@ -1899,12 +1900,12 @@ bool EventHandler::handleMouseFocus(const PlatformMouseEvent& mouseEvent)
         && m_frame->selection().isRange()
         && m_frame->selection().toNormalizedRange()->compareNode(element, IGNORE_EXCEPTION) == Range::NODE_INSIDE
         && element->isDescendantOf(m_frame->document()->focusedElement()))
-        return true;
+        return false;
 
     // Only change the focus when clicking scrollbars if it can transfered to a
     // mouse focusable node.
     if (!element && isInsideScrollbar(mouseEvent.position()))
-        return false;
+        return true;
 
     if (Page* page = m_frame->page()) {
         // If focus shift is blocked, we eat the event. Note we should never
@@ -1912,18 +1913,18 @@ bool EventHandler::handleMouseFocus(const PlatformMouseEvent& mouseEvent)
         // default behavior).
         if (element) {
             if (!page->focusController().setFocusedElement(element, m_frame, FocusTypeMouse))
-                return false;
+                return true;
         } else {
             // We call setFocusedElement even with !element in order to blur
             // current focus element when a link is clicked; this is expected by
             // some sites that rely on onChange handlers running from form
             // fields before the button click is processed.
             if (!page->focusController().setFocusedElement(0, m_frame))
-                return false;
+                return true;
         }
     }
 
-    return true;
+    return false;
 }
 
 bool EventHandler::isInsideScrollbar(const IntPoint& windowPoint) const
@@ -2206,7 +2207,7 @@ bool EventHandler::handleGestureTap(const GestureEventWithHitTestResults& target
 {
     const PlatformGestureEvent& gestureEvent = targetedEvent.event();
 
-    // FIXME: Refactor this code to not hit test multiple times. We use the adjusted position to ensure that the correct node is targeted by the later redundant hit tests.
+    UserGestureIndicator gestureIndicator(DefinitelyProcessingUserGesture);
 
     unsigned modifierFlags = 0;
     if (gestureEvent.altKey())
@@ -2219,25 +2220,33 @@ bool EventHandler::handleGestureTap(const GestureEventWithHitTestResults& target
         modifierFlags |= PlatformEvent::ShiftKey;
     PlatformEvent::Modifiers modifiers = static_cast<PlatformEvent::Modifiers>(modifierFlags);
 
+    // We use the adjusted position so the application isn't surprised to see a event with
+    // co-ordinates outside the target's bounds.
     IntPoint adjustedPoint = gestureEvent.position();
 
     PlatformMouseEvent fakeMouseMove(adjustedPoint, gestureEvent.globalPosition(),
         NoButton, PlatformEvent::MouseMoved, /* clickCount */ 0,
         modifiers, PlatformMouseEvent::FromTouch, gestureEvent.timestamp());
-    handleMouseMoveEvent(fakeMouseMove);
+    dispatchMouseEvent(EventTypeNames::mousemove, targetedEvent.targetNode(), 0, fakeMouseMove, true);
 
-    bool defaultPrevented = false;
     PlatformMouseEvent fakeMouseDown(adjustedPoint, gestureEvent.globalPosition(),
         LeftButton, PlatformEvent::MousePressed, gestureEvent.tapCount(),
         modifiers, PlatformMouseEvent::FromTouch,  gestureEvent.timestamp());
-    defaultPrevented |= handleMousePressEvent(fakeMouseDown);
+    bool swallowMouseDownEvent = !dispatchMouseEvent(EventTypeNames::mousedown, targetedEvent.targetNode(), gestureEvent.tapCount(), fakeMouseDown, true);
+    if (!swallowMouseDownEvent)
+        swallowMouseDownEvent = handleMouseFocus(fakeMouseDown);
+    if (!swallowMouseDownEvent)
+        swallowMouseDownEvent = handleMousePressEvent(MouseEventWithHitTestResults(fakeMouseDown, targetedEvent.hitTestResult()));
 
     PlatformMouseEvent fakeMouseUp(adjustedPoint, gestureEvent.globalPosition(),
         LeftButton, PlatformEvent::MouseReleased, gestureEvent.tapCount(),
         modifiers, PlatformMouseEvent::FromTouch,  gestureEvent.timestamp());
-    defaultPrevented |= handleMouseReleaseEvent(fakeMouseUp);
+    bool swallowMouseUpEvent = !dispatchMouseEvent(EventTypeNames::mouseup, targetedEvent.targetNode(), gestureEvent.tapCount(), fakeMouseUp, false);
+    bool swallowClickEvent = !dispatchMouseEvent(EventTypeNames::click, targetedEvent.targetNode(), gestureEvent.tapCount(), fakeMouseUp, true);
+    if (!swallowMouseUpEvent)
+        swallowMouseUpEvent = handleMouseReleaseEvent(MouseEventWithHitTestResults(fakeMouseUp, targetedEvent.hitTestResult()));
 
-    return defaultPrevented;
+    return swallowMouseDownEvent | swallowMouseUpEvent | swallowClickEvent;
 }
 
 bool EventHandler::handleGestureLongPress(const GestureEventWithHitTestResults& targetedEvent)
