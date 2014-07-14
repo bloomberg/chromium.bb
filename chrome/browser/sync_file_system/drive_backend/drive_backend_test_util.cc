@@ -12,7 +12,6 @@
 #include "chrome/browser/sync_file_system/drive_backend/metadata_database.h"
 #include "chrome/browser/sync_file_system/drive_backend/metadata_database.pb.h"
 #include "google_apis/drive/drive_api_parser.h"
-#include "google_apis/drive/drive_entry_kinds.h"
 #include "google_apis/drive/gdata_wapi_parser.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

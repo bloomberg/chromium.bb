@@ -29,6 +29,7 @@
 #include "chrome/browser/chromeos/drive/write_on_cache_file.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/profiles/profile_util.h"
+#include "chrome/browser/drive/drive_api_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_constants.h"
@@ -37,7 +38,6 @@
 #include "chrome/common/url_constants.h"
 #include "chromeos/chromeos_constants.h"
 #include "content/public/browser/browser_thread.h"
-#include "google_apis/drive/gdata_wapi_parser.h"
 #include "net/base/escape.h"
 #include "webkit/browser/fileapi/file_system_url.h"
 
@@ -345,9 +345,8 @@ bool CreateGDocFile(const base::FilePath& file_path,
 }
 
 bool HasGDocFileExtension(const base::FilePath& file_path) {
-  return google_apis::ResourceEntry::ClassifyEntryKindByFileExtension(
-      file_path) &
-      google_apis::ResourceEntry::KIND_OF_HOSTED_DOCUMENT;
+  std::string extension = base::FilePath(file_path.Extension()).AsUTF8Unsafe();
+  return IsHostedDocumentByExtension(extension);
 }
 
 GURL ReadUrlFromGDocFile(const base::FilePath& file_path) {

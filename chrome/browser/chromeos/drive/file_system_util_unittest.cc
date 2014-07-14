@@ -284,13 +284,6 @@ TEST(FileSystemUtilTest, GDocFile) {
   EXPECT_EQ(url, ReadUrlFromGDocFile(file));
   EXPECT_EQ(resource_id, ReadResourceIdFromGDocFile(file));
 
-  // Read and write glink.
-  file = temp_dir.path().AppendASCII("test.glink");
-  EXPECT_TRUE(CreateGDocFile(file, url, resource_id));
-  EXPECT_TRUE(HasGDocFileExtension(file));
-  EXPECT_EQ(url, ReadUrlFromGDocFile(file));
-  EXPECT_EQ(resource_id, ReadResourceIdFromGDocFile(file));
-
   // Non GDoc file.
   file = temp_dir.path().AppendASCII("test.txt");
   std::string data = "Hello world!";

@@ -13,8 +13,8 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
+#include "chrome/browser/drive/drive_api_util.h"
 #include "content/public/browser/browser_thread.h"
-#include "google_apis/drive/gdata_wapi_parser.h"
 #include "net/base/escape.h"
 
 using content::BrowserThread;
@@ -166,16 +166,12 @@ bool IsEligibleEntry(const ResourceEntry& entry, int options) {
     if (entry.file_specific_info().is_hosted_document()) {
       // Not all hosted documents are cached by Drive offline app.
       // http://support.google.com/drive/bin/answer.py?hl=en&answer=1628467
-      switch (google_apis::ResourceEntry::GetEntryKindFromExtension(
-          entry.file_specific_info().document_extension())) {
-        case google_apis::ENTRY_KIND_DOCUMENT:
-        case google_apis::ENTRY_KIND_SPREADSHEET:
-        case google_apis::ENTRY_KIND_PRESENTATION:
-        case google_apis::ENTRY_KIND_DRAWING:
-          return true;
-        default:
-          return false;
-      }
+      std::string mime_type = drive::util::GetHostedDocumentMimeType(
+          entry.file_specific_info().document_extension());
+      return mime_type == drive::util::kGoogleDocumentMimeType ||
+             mime_type == drive::util::kGoogleSpreadsheetMimeType ||
+             mime_type == drive::util::kGooglePresentationMimeType ||
+             mime_type == drive::util::kGoogleDrawingMimeType;
     } else {
       return entry.file_specific_info().cache_state().is_present();
     }

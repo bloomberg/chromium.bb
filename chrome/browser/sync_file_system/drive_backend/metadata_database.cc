@@ -31,7 +31,6 @@
 #include "chrome/browser/sync_file_system/logger.h"
 #include "chrome/browser/sync_file_system/syncable_file_system_util.h"
 #include "google_apis/drive/drive_api_parser.h"
-#include "google_apis/drive/drive_entry_kinds.h"
 #include "third_party/leveldatabase/src/include/leveldb/db.h"
 #include "third_party/leveldatabase/src/include/leveldb/env.h"
 #include "third_party/leveldatabase/src/include/leveldb/status.h"
@@ -93,13 +92,12 @@ void PopulateFileDetailsByFileResource(
   }
   details->set_title(file_resource.title());
 
-  google_apis::DriveEntryKind kind = drive::util::GetKind(file_resource);
-  if (kind == google_apis::ENTRY_KIND_FILE)
-    details->set_file_kind(FILE_KIND_FILE);
-  else if (kind == google_apis::ENTRY_KIND_FOLDER)
+  if (file_resource.IsDirectory())
     details->set_file_kind(FILE_KIND_FOLDER);
-  else
+  else if (drive::util::IsHostedDocument(file_resource.mime_type()))
     details->set_file_kind(FILE_KIND_UNSUPPORTED);
+  else
+    details->set_file_kind(FILE_KIND_FILE);
 
   details->set_md5(file_resource.md5_checksum());
   details->set_etag(file_resource.etag());

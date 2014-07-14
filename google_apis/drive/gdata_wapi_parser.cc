@@ -72,30 +72,6 @@ const char kUpdatedField[] = "updated.$t";
 const char kOpenWithPrefix[] = "http://schemas.google.com/docs/2007#open-with-";
 const size_t kOpenWithPrefixSize = arraysize(kOpenWithPrefix) - 1;
 
-struct EntryKindMap {
-  DriveEntryKind kind;
-  const char* entry;
-  const char* extension;
-};
-
-const EntryKindMap kEntryKindMap[] = {
-    { ENTRY_KIND_UNKNOWN,      "unknown",      NULL},
-    { ENTRY_KIND_ITEM,         "item",         NULL},
-    { ENTRY_KIND_DOCUMENT,     "document",     ".gdoc"},
-    { ENTRY_KIND_SPREADSHEET,  "spreadsheet",  ".gsheet"},
-    { ENTRY_KIND_PRESENTATION, "presentation", ".gslides" },
-    { ENTRY_KIND_DRAWING,      "drawing",      ".gdraw"},
-    { ENTRY_KIND_TABLE,        "table",        ".gtable"},
-    { ENTRY_KIND_FORM,         "form",         ".gform"},
-    { ENTRY_KIND_EXTERNAL_APP, "externalapp",  ".glink"},
-    { ENTRY_KIND_SITE,         "site",         NULL},
-    { ENTRY_KIND_FOLDER,       "folder",       NULL},
-    { ENTRY_KIND_FILE,         "file",         NULL},
-    { ENTRY_KIND_PDF,          "pdf",          NULL},
-};
-COMPILE_ASSERT(arraysize(kEntryKindMap) == ENTRY_KIND_MAX_VALUE,
-               EntryKindMap_and_DriveEntryKind_are_not_in_sync);
-
 struct LinkTypeMap {
   Link::LinkType type;
   const char* rel;
@@ -439,42 +415,7 @@ void ResourceEntry::RegisterJSONConverter(
 }
 
 // static
-std::string ResourceEntry::GetHostedDocumentExtension(DriveEntryKind kind) {
-  for (size_t i = 0; i < arraysize(kEntryKindMap); i++) {
-    if (kEntryKindMap[i].kind == kind) {
-      if (kEntryKindMap[i].extension)
-        return std::string(kEntryKindMap[i].extension);
-      else
-        return std::string();
-    }
-  }
-  return std::string();
-}
-
-// static
-DriveEntryKind ResourceEntry::GetEntryKindFromExtension(
-    const std::string& extension) {
-  for (size_t i = 0; i < arraysize(kEntryKindMap); ++i) {
-    const char* document_extension = kEntryKindMap[i].extension;
-    if (document_extension && extension == document_extension)
-      return kEntryKindMap[i].kind;
-  }
-  return ENTRY_KIND_UNKNOWN;
-}
-
-// static
-int ResourceEntry::ClassifyEntryKindByFileExtension(
-    const base::FilePath& file_path) {
-#if defined(OS_WIN)
-  std::string file_extension = base::WideToUTF8(file_path.Extension());
-#else
-  std::string file_extension = file_path.Extension();
-#endif
-  return ClassifyEntryKind(GetEntryKindFromExtension(file_extension));
-}
-
-// static
-DriveEntryKind ResourceEntry::GetEntryKindFromTerm(
+ResourceEntry::ResourceEntryKind ResourceEntry::GetEntryKindFromTerm(
     const std::string& term) {
   if (!StartsWithASCII(term, kTermPrefix, false)) {
     DVLOG(1) << "Unexpected term prefix term " << term;
@@ -482,58 +423,13 @@ DriveEntryKind ResourceEntry::GetEntryKindFromTerm(
   }
 
   std::string type = term.substr(strlen(kTermPrefix));
-  for (size_t i = 0; i < arraysize(kEntryKindMap); i++) {
-    if (type == kEntryKindMap[i].entry)
-      return kEntryKindMap[i].kind;
-  }
+  if (type == "folder")
+    return ENTRY_KIND_FOLDER;
+  if (type == "file" || type == "pdf")
+    return ENTRY_KIND_FILE;
+
   DVLOG(1) << "Unknown entry type for term " << term << ", type " << type;
   return ENTRY_KIND_UNKNOWN;
-}
-
-// static
-int ResourceEntry::ClassifyEntryKind(DriveEntryKind kind) {
-  int classes = 0;
-
-  // All DriveEntryKind members are listed here, so the compiler catches if a
-  // newly added member is missing here.
-  switch (kind) {
-    case ENTRY_KIND_UNKNOWN:
-    // Special entries.
-    case ENTRY_KIND_ITEM:
-    case ENTRY_KIND_SITE:
-      break;
-
-    // Hosted Google document.
-    case ENTRY_KIND_DOCUMENT:
-    case ENTRY_KIND_SPREADSHEET:
-    case ENTRY_KIND_PRESENTATION:
-    case ENTRY_KIND_DRAWING:
-    case ENTRY_KIND_TABLE:
-    case ENTRY_KIND_FORM:
-      classes = KIND_OF_GOOGLE_DOCUMENT | KIND_OF_HOSTED_DOCUMENT;
-      break;
-
-    // Hosted external application document.
-    case ENTRY_KIND_EXTERNAL_APP:
-      classes = KIND_OF_EXTERNAL_DOCUMENT | KIND_OF_HOSTED_DOCUMENT;
-      break;
-
-    // Folders, collections.
-    case ENTRY_KIND_FOLDER:
-      classes = KIND_OF_FOLDER;
-      break;
-
-    // Regular files.
-    case ENTRY_KIND_FILE:
-    case ENTRY_KIND_PDF:
-      classes = KIND_OF_FILE;
-      break;
-
-    case ENTRY_KIND_MAX_VALUE:
-      NOTREACHED();
-  }
-
-  return classes;
 }
 
 void ResourceEntry::FillRemainingFields() {

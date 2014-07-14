@@ -12,7 +12,6 @@
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/drive/drive_api_util.h"
 #include "google_apis/drive/drive_api_parser.h"
-#include "google_apis/drive/gdata_wapi_parser.h"
 
 namespace drive {
 
@@ -77,30 +76,22 @@ bool ConvertFileResourceToResourceEntry(
       input.last_viewed_by_me_date().ToInternalValue());
   file_info->set_creation_time(input.created_date().ToInternalValue());
 
-  // TODO(hashimoto): Get rid of WAPI stuff. crbug.com/357038
-  const google_apis::DriveEntryKind entry_kind = util::GetKind(input);
-  const int entry_kind_class =
-      google_apis::ResourceEntry::ClassifyEntryKind(entry_kind);
-  const bool is_file = entry_kind_class &
-      google_apis::ResourceEntry::KIND_OF_FILE;
-  const bool is_hosted_document = entry_kind_class &
-      google_apis::ResourceEntry::KIND_OF_HOSTED_DOCUMENT;
-  const bool is_folder = entry_kind_class &
-      google_apis::ResourceEntry::KIND_OF_FOLDER;
-
-  if (is_file || is_hosted_document) {
+  if (input.IsDirectory()) {
+    file_info->set_is_directory(true);
+  } else {
     FileSpecificInfo* file_specific_info =
         converted.mutable_file_specific_info();
-    if (is_file) {
+    if (!drive::util::IsHostedDocument(input.mime_type())) {
       file_info->set_size(input.file_size());
       file_specific_info->set_md5(input.md5_checksum());
-    } else if (is_hosted_document) {
+      file_specific_info->set_is_hosted_document(false);
+    } else {
       // Attach .g<something> extension to hosted documents so we can special
       // case their handling in UI.
       // TODO(satorux): Figure out better way how to pass input info like kind
       // to UI through the File API stack.
       const std::string document_extension =
-          google_apis::ResourceEntry::GetHostedDocumentExtension(entry_kind);
+          drive::util::GetHostedDocumentExtension(input.mime_type());
       file_specific_info->set_document_extension(document_extension);
       converted.set_base_name(
           util::NormalizeFileName(converted.title() + document_extension));
@@ -108,10 +99,10 @@ bool ConvertFileResourceToResourceEntry(
       // We don't know the size of hosted docs and it does not matter since
       // it has no effect on the quota.
       file_info->set_size(0);
+      file_specific_info->set_is_hosted_document(true);
     }
     file_info->set_is_directory(false);
     file_specific_info->set_content_mime_type(input.mime_type());
-    file_specific_info->set_is_hosted_document(is_hosted_document);
 
     if (!input.alternate_link().is_empty())
       file_specific_info->set_alternate_url(input.alternate_link().spec());
@@ -127,12 +118,6 @@ bool ConvertFileResourceToResourceEntry(
     const int64 image_rotation = input.image_media_metadata().rotation();
     if (image_rotation != -1)
       file_specific_info->set_image_rotation(image_rotation);
-  } else if (is_folder) {
-    file_info->set_is_directory(true);
-  } else {
-    // The entry is something that doesn't map into files (i.e. sites).
-    // We don't handle these kind of entries hence return false.
-    return false;
   }
 
   out_entry->Swap(&converted);

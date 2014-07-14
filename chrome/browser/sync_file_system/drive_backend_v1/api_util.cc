@@ -349,7 +349,7 @@ void APIUtil::DidGetDirectory(const std::string& parent_resource_id,
   DVLOG(2) << "Found Drive directory.";
 
   // TODO(tzik): Handle error.
-  DCHECK_EQ(google_apis::ENTRY_KIND_FOLDER, entry->kind());
+  DCHECK_EQ(google_apis::ResourceEntry::ENTRY_KIND_FOLDER, entry->kind());
   DCHECK_EQ(directory_name, entry->title());
 
   if (entry->title() == GetSyncRootDirectoryName())

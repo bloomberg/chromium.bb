@@ -14,7 +14,6 @@
 #include "base/memory/scoped_vector.h"
 #include "base/strings/string_piece.h"
 #include "base/time/time.h"
-#include "google_apis/drive/drive_entry_kinds.h"
 #include "url/gurl.h"
 
 namespace base {
@@ -312,6 +311,11 @@ class CommonMetadata {
 // refers to a file and a directory.
 class ResourceEntry : public CommonMetadata {
  public:
+  enum ResourceEntryKind {
+    ENTRY_KIND_UNKNOWN,
+    ENTRY_KIND_FOLDER,
+    ENTRY_KIND_FILE
+  };
   ResourceEntry();
   virtual ~ResourceEntry();
 
@@ -360,7 +364,7 @@ class ResourceEntry : public CommonMetadata {
   // The URL is currently not used.
   const std::string& id() const { return id_; }
 
-  DriveEntryKind kind() const { return kind_; }
+  ResourceEntryKind kind() const { return kind_; }
   const std::string& title() const { return title_; }
   base::Time published_time() const { return published_time_; }
   base::Time last_viewed_time() const { return last_viewed_time_; }
@@ -418,65 +422,20 @@ class ResourceEntry : public CommonMetadata {
   // unknown entry kind.
   std::string GetEntryKindText() const;
 
-  // Returns preferred file extension for hosted documents. If entry is not
-  // a hosted document, this call returns an empty string.
-  static std::string GetHostedDocumentExtension(DriveEntryKind kind);
-
-  // True if resource entry is remotely hosted.
-  bool is_hosted_document() const {
-    return (ClassifyEntryKind(kind_) & KIND_OF_HOSTED_DOCUMENT) > 0;
-  }
-  // True if resource entry hosted by Google Documents.
-  bool is_google_document() const {
-    return (ClassifyEntryKind(kind_) & KIND_OF_GOOGLE_DOCUMENT) > 0;
-  }
-  // True if resource entry is hosted by an external application.
-  bool is_external_document() const {
-    return (ClassifyEntryKind(kind_) & KIND_OF_EXTERNAL_DOCUMENT) > 0;
-  }
   // True if resource entry is a folder (collection).
   bool is_folder() const {
-    return (ClassifyEntryKind(kind_) & KIND_OF_FOLDER) > 0;
+    return kind_ == ENTRY_KIND_FOLDER;
   }
   // True if resource entry is regular file.
   bool is_file() const {
-    return (ClassifyEntryKind(kind_) & KIND_OF_FILE) > 0;
+    return kind_ == ENTRY_KIND_FILE;
   }
-  // True if resource entry can't be mapped to the file system.
-  bool is_special() const {
-    return !is_file() && !is_folder() && !is_hosted_document();
-  }
-
-  // The following constructs are exposed for unit tests.
-
-  // Classes of EntryKind. Used for ClassifyEntryKind().
-  enum EntryKindClass {
-    KIND_OF_NONE = 0,
-    KIND_OF_HOSTED_DOCUMENT = 1,
-    KIND_OF_GOOGLE_DOCUMENT = 1 << 1,
-    KIND_OF_EXTERNAL_DOCUMENT = 1 << 2,
-    KIND_OF_FOLDER = 1 << 3,
-    KIND_OF_FILE = 1 << 4,
-  };
-
-  // Returns the kind enum corresponding to the extension in form ".xxx".
-  static DriveEntryKind GetEntryKindFromExtension(const std::string& extension);
-
-  // Classifies the EntryKind. The returned value is a bitmask of
-  // EntryKindClass. For example, DOCUMENT is classified as
-  // KIND_OF_HOSTED_DOCUMENT and KIND_OF_GOOGLE_DOCUMENT, hence the returned
-  // value is KIND_OF_HOSTED_DOCUMENT | KIND_OF_GOOGLE_DOCUMENT.
-  static int ClassifyEntryKind(DriveEntryKind kind);
-
-  // Classifies the EntryKind by the file extension of specific path. The
-  // returned value is a bitmask of EntryKindClass. See also ClassifyEntryKind.
-  static int ClassifyEntryKindByFileExtension(const base::FilePath& file);
 
   void set_resource_id(const std::string& resource_id) {
     resource_id_ = resource_id;
   }
   void set_id(const std::string& id) { id_ = id; }
-  void set_kind(DriveEntryKind kind) { kind_ = kind; }
+  void set_kind(ResourceEntryKind kind) { kind_ = kind; }
   void set_title(const std::string& title) { title_ = title; }
   void set_published_time(const base::Time& published_time) {
     published_time_ = published_time;
@@ -521,14 +480,12 @@ class ResourceEntry : public CommonMetadata {
   friend class ResourceList;
   friend class ResumeUploadRequest;
 
-  // Converts categories.term into DriveEntryKind enum.
-  static DriveEntryKind GetEntryKindFromTerm(const std::string& term);
-  // Converts |kind| into its text identifier equivalent.
-  static const char* GetEntryKindDescription(DriveEntryKind kind);
+  // Converts categories.term into ResourceEntryKind enum.
+  static ResourceEntryKind GetEntryKindFromTerm(const std::string& term);
 
   std::string resource_id_;
   std::string id_;
-  DriveEntryKind kind_;
+  ResourceEntryKind kind_;
   std::string title_;
   base::Time published_time_;
   // Last viewed value may be unreliable. See: crbug.com/152628.

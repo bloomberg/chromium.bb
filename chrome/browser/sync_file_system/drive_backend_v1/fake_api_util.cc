@@ -10,7 +10,6 @@
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
-#include "google_apis/drive/drive_entry_kinds.h"
 #include "webkit/common/blob/scoped_file.h"
 
 namespace sync_file_system {
@@ -253,13 +252,13 @@ scoped_ptr<google_apis::ResourceEntry> FakeAPIUtil::CreateResourceEntry(
 
   switch (resource.type) {
     case SYNC_FILE_TYPE_FILE:
-      entry->set_kind(google_apis::ENTRY_KIND_FILE);
+      entry->set_kind(google_apis::ResourceEntry::ENTRY_KIND_FILE);
       break;
     case SYNC_FILE_TYPE_DIRECTORY:
-      entry->set_kind(google_apis::ENTRY_KIND_FOLDER);
+      entry->set_kind(google_apis::ResourceEntry::ENTRY_KIND_FOLDER);
       break;
     case SYNC_FILE_TYPE_UNKNOWN:
-      entry->set_kind(google_apis::ENTRY_KIND_UNKNOWN);
+      entry->set_kind(google_apis::ResourceEntry::ENTRY_KIND_UNKNOWN);
       break;
   }
 

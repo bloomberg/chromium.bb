@@ -25,27 +25,22 @@ namespace drive {
 namespace util {
 namespace {
 
-std::string GetMimeTypeFromEntryKind(google_apis::DriveEntryKind kind) {
-  switch (kind) {
-    case google_apis::ENTRY_KIND_DOCUMENT:
-      return kGoogleDocumentMimeType;
-    case google_apis::ENTRY_KIND_SPREADSHEET:
-      return kGoogleSpreadsheetMimeType;
-    case google_apis::ENTRY_KIND_PRESENTATION:
-      return kGooglePresentationMimeType;
-    case google_apis::ENTRY_KIND_DRAWING:
-      return kGoogleDrawingMimeType;
-    case google_apis::ENTRY_KIND_TABLE:
-      return kGoogleTableMimeType;
-    case google_apis::ENTRY_KIND_FORM:
-      return kGoogleFormMimeType;
-    default:
-      return std::string();
-  }
-}
-
 // Returns the argument string.
 std::string Identity(const std::string& resource_id) { return resource_id; }
+
+struct HostedDocumentKind {
+  const char* mime_type;
+  const char* extension;
+};
+
+const HostedDocumentKind kHostedDocumentKinds[] = {
+    {kGoogleDocumentMimeType,     ".gdoc"},
+    {kGoogleSpreadsheetMimeType,  ".gsheet"},
+    {kGooglePresentationMimeType, ".gslides"},
+    {kGoogleDrawingMimeType,      ".gdraw"},
+    {kGoogleTableMimeType,        ".gtable"},
+    {kGoogleFormMimeType,         ".gform"}
+};
 
 }  // namespace
 
@@ -173,97 +168,6 @@ void ParseShareUrlAndRun(const google_apis::GetShareUrlCallback& callback,
   callback.Run(error, share_link ? share_link->href() : GURL());
 }
 
-scoped_ptr<google_apis::FileResource> ConvertResourceEntryToFileResource(
-    const google_apis::ResourceEntry& entry) {
-  scoped_ptr<google_apis::FileResource> file(new google_apis::FileResource);
-
-  file->set_file_id(entry.resource_id());
-  file->set_title(entry.title());
-  file->set_created_date(entry.published_time());
-
-  if (std::find(entry.labels().begin(), entry.labels().end(),
-                "shared-with-me") != entry.labels().end()) {
-    // Set current time to mark the file is shared_with_me, since ResourceEntry
-    // doesn't have |shared_with_me_date| equivalent.
-    file->set_shared_with_me_date(base::Time::Now());
-  }
-
-  file->set_shared(std::find(entry.labels().begin(), entry.labels().end(),
-                             "shared") != entry.labels().end());
-
-  if (entry.is_folder()) {
-    file->set_mime_type(kDriveFolderMimeType);
-  } else {
-    std::string mime_type = GetMimeTypeFromEntryKind(entry.kind());
-    if (mime_type.empty())
-      mime_type = entry.content_mime_type();
-    file->set_mime_type(mime_type);
-  }
-
-  file->set_md5_checksum(entry.file_md5());
-  file->set_file_size(entry.file_size());
-
-  file->mutable_labels()->set_trashed(entry.deleted());
-  file->set_etag(entry.etag());
-
-  google_apis::ImageMediaMetadata* image_media_metadata =
-    file->mutable_image_media_metadata();
-  image_media_metadata->set_width(entry.image_width());
-  image_media_metadata->set_height(entry.image_height());
-  image_media_metadata->set_rotation(entry.image_rotation());
-
-  std::vector<google_apis::ParentReference>* parents = file->mutable_parents();
-  for (size_t i = 0; i < entry.links().size(); ++i) {
-    using google_apis::Link;
-    const Link& link = *entry.links()[i];
-    switch (link.type()) {
-      case Link::LINK_PARENT: {
-        google_apis::ParentReference parent;
-        parent.set_parent_link(link.href());
-
-        std::string file_id =
-            drive::util::ExtractResourceIdFromUrl(link.href());
-        parent.set_file_id(file_id);
-        parents->push_back(parent);
-        break;
-      }
-      case Link::LINK_ALTERNATE:
-        file->set_alternate_link(link.href());
-        break;
-      default:
-        break;
-    }
-  }
-
-  file->set_modified_date(entry.updated_time());
-  file->set_last_viewed_by_me_date(entry.last_viewed_time());
-
-  return file.Pass();
-}
-
-google_apis::DriveEntryKind GetKind(
-    const google_apis::FileResource& file_resource) {
-  if (file_resource.IsDirectory())
-    return google_apis::ENTRY_KIND_FOLDER;
-
-  const std::string& mime_type = file_resource.mime_type();
-  if (mime_type == kGoogleDocumentMimeType)
-    return google_apis::ENTRY_KIND_DOCUMENT;
-  if (mime_type == kGoogleSpreadsheetMimeType)
-    return google_apis::ENTRY_KIND_SPREADSHEET;
-  if (mime_type == kGooglePresentationMimeType)
-    return google_apis::ENTRY_KIND_PRESENTATION;
-  if (mime_type == kGoogleDrawingMimeType)
-    return google_apis::ENTRY_KIND_DRAWING;
-  if (mime_type == kGoogleTableMimeType)
-    return google_apis::ENTRY_KIND_TABLE;
-  if (mime_type == kGoogleFormMimeType)
-    return google_apis::ENTRY_KIND_FORM;
-  if (mime_type == "application/pdf")
-    return google_apis::ENTRY_KIND_PDF;
-  return google_apis::ENTRY_KIND_FILE;
-}
-
 scoped_ptr<google_apis::ResourceEntry>
 ConvertFileResourceToResourceEntry(
     const google_apis::FileResource& file_resource) {
@@ -272,7 +176,12 @@ ConvertFileResourceToResourceEntry(
   // ResourceEntry
   entry->set_resource_id(file_resource.file_id());
   entry->set_id(file_resource.file_id());
-  entry->set_kind(GetKind(file_resource));
+  if (file_resource.IsDirectory())
+    entry->set_kind(google_apis::ResourceEntry::ENTRY_KIND_FOLDER);
+  else if (IsHostedDocument(file_resource.mime_type()))
+    entry->set_kind(google_apis::ResourceEntry::ENTRY_KIND_UNKNOWN);
+  else
+    entry->set_kind(google_apis::ResourceEntry::ENTRY_KIND_FILE);
   entry->set_title(file_resource.title());
   entry->set_published_time(file_resource.created_date());
 
@@ -434,6 +343,38 @@ std::string GetMd5Digest(const base::FilePath& file_path) {
 }
 
 const char kWapiRootDirectoryResourceId[] = "folder:root";
+
+std::string GetHostedDocumentExtension(const std::string& mime_type) {
+  for (size_t i = 0; i < arraysize(kHostedDocumentKinds); ++i) {
+    if (mime_type == kHostedDocumentKinds[i].mime_type)
+      return kHostedDocumentKinds[i].extension;
+  }
+  return std::string();
+}
+
+std::string GetHostedDocumentMimeType(const std::string& extension) {
+  for (size_t i = 0; i < arraysize(kHostedDocumentKinds); ++i) {
+    if (extension == kHostedDocumentKinds[i].extension)
+      return kHostedDocumentKinds[i].mime_type;
+  }
+  return std::string();
+}
+
+bool IsHostedDocument(const std::string& mime_type) {
+  for (size_t i = 0; i < arraysize(kHostedDocumentKinds); ++i) {
+    if (mime_type == kHostedDocumentKinds[i].mime_type)
+      return true;
+  }
+  return false;
+}
+
+bool IsHostedDocumentByExtension(const std::string& extension) {
+  for (size_t i = 0; i < arraysize(kHostedDocumentKinds); ++i) {
+    if (extension == kHostedDocumentKinds[i].extension)
+      return true;
+  }
+  return false;
+}
 
 }  // namespace util
 }  // namespace drive

@@ -153,51 +153,6 @@ TEST(FileSystemUtilTest, ConvertFileResourceToResourceEntryImageMediaMetadata) {
   }
 }
 
-TEST(FileSystemUtilTest, ConvertResourceEntryToFileResourceImageMediaMetadata) {
-  google_apis::ResourceEntry resource_entry_all_fields;
-  google_apis::ResourceEntry resource_entry_zero_fields;
-  google_apis::ResourceEntry resource_entry_no_fields;
-  // Set up FileResource instances;
-  {
-    resource_entry_all_fields.set_image_width(640);
-    resource_entry_all_fields.set_image_height(480);
-    resource_entry_all_fields.set_image_rotation(90);
-
-    resource_entry_zero_fields.set_image_width(0);
-    resource_entry_zero_fields.set_image_height(0);
-    resource_entry_zero_fields.set_image_rotation(0);
-  }
-
-  // Verify the converted values.
-  {
-    scoped_ptr<google_apis::FileResource> file_resource(
-        ConvertResourceEntryToFileResource(resource_entry_all_fields));
-    const google_apis::ImageMediaMetadata& image_media_metadata =
-      file_resource->image_media_metadata();
-    EXPECT_EQ(640, image_media_metadata.width());
-    EXPECT_EQ(480, image_media_metadata.height());
-    EXPECT_EQ(90, image_media_metadata.rotation());
-  }
-  {
-    scoped_ptr<google_apis::FileResource> file_resource(
-        ConvertResourceEntryToFileResource(resource_entry_zero_fields));
-    const google_apis::ImageMediaMetadata& image_media_metadata =
-      file_resource->image_media_metadata();
-    EXPECT_EQ(0, image_media_metadata.width());
-    EXPECT_EQ(0, image_media_metadata.height());
-    EXPECT_EQ(0, image_media_metadata.rotation());
-  }
-  {
-    scoped_ptr<google_apis::FileResource> file_resource(
-        ConvertResourceEntryToFileResource(resource_entry_no_fields));
-    const google_apis::ImageMediaMetadata& image_media_metadata =
-      file_resource->image_media_metadata();
-    EXPECT_EQ(-1, image_media_metadata.width());
-    EXPECT_EQ(-1, image_media_metadata.height());
-    EXPECT_EQ(-1, image_media_metadata.rotation());
-  }
-}
-
 TEST(DriveAPIUtilTest, GetMd5Digest) {
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
