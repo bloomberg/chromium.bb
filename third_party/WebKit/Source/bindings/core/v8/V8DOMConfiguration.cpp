@@ -76,9 +76,12 @@ void V8DOMConfiguration::installConstants(v8::Handle<v8::FunctionTemplate> funct
         case ConstantTypeShort:
         case ConstantTypeLong:
         case ConstantTypeUnsignedShort:
-        case ConstantTypeUnsignedLong:
             functionDescriptor->Set(constantName, v8::Integer::New(isolate, constant->ivalue), static_cast<v8::PropertyAttribute>(v8::ReadOnly | v8::DontDelete));
             prototype->Set(constantName, v8::Integer::New(isolate, constant->ivalue), static_cast<v8::PropertyAttribute>(v8::ReadOnly | v8::DontDelete));
+            break;
+        case ConstantTypeUnsignedLong:
+            functionDescriptor->Set(constantName, v8::Integer::NewFromUnsigned(isolate, constant->ivalue), static_cast<v8::PropertyAttribute>(v8::ReadOnly | v8::DontDelete));
+            prototype->Set(constantName, v8::Integer::NewFromUnsigned(isolate, constant->ivalue), static_cast<v8::PropertyAttribute>(v8::ReadOnly | v8::DontDelete));
             break;
         case ConstantTypeFloat:
         case ConstantTypeDouble:
