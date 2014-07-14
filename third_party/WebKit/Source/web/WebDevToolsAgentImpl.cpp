@@ -216,6 +216,10 @@ WebDevToolsAgentImpl::WebDevToolsAgentImpl(
     , m_pageScaleLimitsOverriden(false)
     , m_touchEventEmulationEnabled(false)
 {
+    long processId = client->processId();
+    ASSERT(processId > 0);
+    inspectorController()->setProcessId(processId);
+
     ASSERT(m_debuggerId > 0);
     ClientMessageLoopAdapter::ensureClientMessageLoopCreated(m_client);
 }
@@ -676,7 +680,6 @@ void WebDevToolsAgentImpl::updateInspectorStateCookie(const String& state)
 
 void WebDevToolsAgentImpl::setProcessId(long processId)
 {
-    inspectorController()->setProcessId(processId);
 }
 
 void WebDevToolsAgentImpl::setLayerTreeId(int layerTreeId)
