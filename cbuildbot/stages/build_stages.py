@@ -7,6 +7,7 @@
 import functools
 import glob
 import os
+import shutil
 
 from chromite.cbuildbot import commands
 from chromite.cbuildbot import constants
@@ -67,6 +68,15 @@ class CleanUpStage(generic_stages.BuilderStage):
     for out_dir in glob.glob(os.path.join(chrome_src, 'out_*')):
       osutils.RmDir(out_dir)
 
+  def _DeleteAutotestSitePackages(self):
+    """Clears any previously downloaded site-packages."""
+    site_packages_dir = os.path.join(self._build_root, 'src', 'third_party',
+                                     'autotest', 'files', 'site-packages')
+    # Note that these shouldn't be recreated but might be around from stale
+    # builders.
+    if os.path.exists(site_packages_dir):
+      shutil.rmtree(site_packages_dir)
+
   @failures_lib.SetFailureType(failures_lib.InfrastructureFailure)
   def PerformStage(self):
     if (not (self._run.options.buildbot or self._run.options.remote_trybot)
@@ -103,7 +113,8 @@ class CleanUpStage(generic_stages.BuilderStage):
                                  self._build_root),
                functools.partial(commands.WipeOldOutput, self._build_root),
                self._DeleteArchivedTrybotImages,
-               self._DeleteArchivedPerfResults]
+               self._DeleteArchivedPerfResults,
+               self._DeleteAutotestSitePackages]
       if self._run.options.chrome_root:
         tasks.append(self._DeleteChromeBuildOutput)
       if self._run.config.chroot_replace and self._run.options.build:
