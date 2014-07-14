@@ -37,4 +37,15 @@ void ModuleProxy::registerToV8ForEventTarget(v8::Handle<v8::Value> (*toV8ForEven
     m_toV8ForEventTarget = toV8ForEventTarget;
 }
 
+void ModuleProxy::didLeaveScriptContextForRecursionScope(ExecutionContext& executionContext)
+{
+    RELEASE_ASSERT(m_didLeaveScriptContextForRecursionScope);
+    (*m_didLeaveScriptContextForRecursionScope)(executionContext);
+}
+
+void ModuleProxy::registerDidLeaveScriptContextForRecursionScope(void (*didLeaveScriptContext)(ExecutionContext&))
+{
+    m_didLeaveScriptContextForRecursionScope = didLeaveScriptContext;
+}
+
 } // WebCore

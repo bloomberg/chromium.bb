@@ -12,6 +12,7 @@
 #include "modules/EventModulesInterfaces.h"
 #include "modules/EventTargetModulesHeaders.h"
 #include "modules/EventTargetModulesInterfaces.h"
+#include "modules/indexeddb/IDBPendingTransactionMonitor.h"
 
 namespace WebCore {
 
@@ -46,10 +47,18 @@ static v8::Handle<v8::Value> toV8ForModuleEventTarget(EventTarget* impl, v8::Han
 
 #undef TRY_TO_TOV8_WITH_INTERFACE
 
+static void didLeaveScriptContextForModule(ExecutionContext& executionContext)
+{
+    // Indexed DB requires that transactions are created with an internal |active| flag
+    // set to true, but the flag becomes false when control returns to the event loop.
+    IDBPendingTransactionMonitor::from(executionContext).deactivateNewTransactions();
+}
+
 void ModuleBindingsInitializer::init()
 {
     ModuleProxy::moduleProxy().registerWrapForEvent(wrapForModuleEvent);
     ModuleProxy::moduleProxy().registerToV8ForEventTarget(toV8ForModuleEventTarget);
+    ModuleProxy::moduleProxy().registerDidLeaveScriptContextForRecursionScope(didLeaveScriptContextForModule);
 }
 
 } // namespace WebCore

@@ -31,18 +31,15 @@
 #include "config.h"
 #include "bindings/core/v8/V8RecursionScope.h"
 
+#include "bindings/core/v8/ModuleProxy.h"
 #include "core/dom/Microtask.h"
-#include "modules/indexeddb/IDBPendingTransactionMonitor.h"
 
 namespace WebCore {
 
 void V8RecursionScope::didLeaveScriptContext()
 {
     Microtask::performCheckpoint();
-
-    // Indexed DB requires that transactions are created with an internal |active| flag
-    // set to true, but the flag becomes false when control returns to the event loop.
-    IDBPendingTransactionMonitor::from(m_executionContext).deactivateNewTransactions();
+    ModuleProxy::moduleProxy().didLeaveScriptContextForRecursionScope(m_executionContext);
 }
 
 } // namespace WebCore
