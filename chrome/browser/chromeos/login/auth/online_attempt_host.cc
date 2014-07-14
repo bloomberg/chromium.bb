@@ -47,7 +47,7 @@ void OnlineAttemptHost::Reset() {
 void OnlineAttemptHost::Resolve() {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   if (state_->online_complete()) {
-    bool success = state_->online_outcome().reason() == LoginFailure::NONE;
+    bool success = state_->online_outcome().reason() == AuthFailure::NONE;
     content::BrowserThread::PostTask(
         content::BrowserThread::UI,
         FROM_HERE,

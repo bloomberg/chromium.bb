@@ -49,7 +49,7 @@ namespace chromeos {
 
 LoginPerformer::LoginPerformer(Delegate* delegate)
     : online_attempt_host_(this),
-      last_login_failure_(LoginFailure::LoginFailureNone()),
+      last_login_failure_(AuthFailure::AuthFailureNone()),
       delegate_(delegate),
       password_changed_(false),
       password_changed_callback_count_(0),
@@ -66,19 +66,20 @@ LoginPerformer::~LoginPerformer() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// LoginPerformer, LoginStatusConsumer implementation:
+// LoginPerformer, AuthStatusConsumer implementation:
 
-void LoginPerformer::OnLoginFailure(const LoginFailure& failure) {
+void LoginPerformer::OnAuthFailure(const AuthFailure& failure) {
   content::RecordAction(UserMetricsAction("Login_Failure"));
-  UMA_HISTOGRAM_ENUMERATION("Login.FailureReason", failure.reason(),
-                            LoginFailure::NUM_FAILURE_REASONS);
+  UMA_HISTOGRAM_ENUMERATION("Login.FailureReason",
+                            failure.reason(),
+                            AuthFailure::NUM_FAILURE_REASONS);
 
   DVLOG(1) << "failure.reason " << failure.reason();
   DVLOG(1) << "failure.error.state " << failure.error().state();
 
   last_login_failure_ = failure;
   if (delegate_) {
-    delegate_->OnLoginFailure(failure);
+    delegate_->OnAuthFailure(failure);
     return;
   } else {
     // COULD_NOT_MOUNT_CRYPTOHOME, COULD_NOT_MOUNT_TMPFS:
@@ -87,29 +88,28 @@ void LoginPerformer::OnLoginFailure(const LoginFailure& failure) {
   }
 }
 
-void LoginPerformer::OnRetailModeLoginSuccess(
-    const UserContext& user_context) {
+void LoginPerformer::OnRetailModeAuthSuccess(const UserContext& user_context) {
   content::RecordAction(
       UserMetricsAction("Login_DemoUserLoginSuccess"));
-  LoginStatusConsumer::OnRetailModeLoginSuccess(user_context);
+  AuthStatusConsumer::OnRetailModeAuthSuccess(user_context);
 }
 
-void LoginPerformer::OnLoginSuccess(const UserContext& user_context) {
+void LoginPerformer::OnAuthSuccess(const UserContext& user_context) {
   content::RecordAction(UserMetricsAction("Login_Success"));
   VLOG(1) << "LoginSuccess hash: " << user_context.GetUserIDHash();
   DCHECK(delegate_);
-  // After delegate_->OnLoginSuccess(...) is called, delegate_ releases
+  // After delegate_->OnAuthSuccess(...) is called, delegate_ releases
   // LoginPerformer ownership. LP now manages it's lifetime on its own.
   base::MessageLoop::current()->DeleteSoon(FROM_HERE, this);
-  delegate_->OnLoginSuccess(user_context);
+  delegate_->OnAuthSuccess(user_context);
 }
 
-void LoginPerformer::OnOffTheRecordLoginSuccess() {
+void LoginPerformer::OnOffTheRecordAuthSuccess() {
   content::RecordAction(
       UserMetricsAction("Login_GuestLoginSuccess"));
 
   if (delegate_)
-    delegate_->OnOffTheRecordLoginSuccess();
+    delegate_->OnOffTheRecordAuthSuccess();
   else
     NOTREACHED();
 }
@@ -127,7 +127,7 @@ void LoginPerformer::OnPasswordChangeDetected() {
 void LoginPerformer::OnChecked(const std::string& username, bool success) {
   if (!delegate_) {
     // Delegate is reset in case of successful offline login.
-    // See ExistingUserConstoller::OnLoginSuccess().
+    // See ExistingUserConstoller::OnAuthSuccess().
     // Case when user has changed password and enters old password
     // does not block user from sign in yet.
     return;

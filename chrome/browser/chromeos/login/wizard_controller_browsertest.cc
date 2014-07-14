@@ -20,7 +20,6 @@
 #include "chrome/browser/chromeos/base/locale_util.h"
 #include "chrome/browser/chromeos/geolocation/simple_geolocation_provider.h"
 #include "chrome/browser/chromeos/login/auth/mock_authenticator.h"
-#include "chrome/browser/chromeos/login/auth/mock_login_status_consumer.h"
 #include "chrome/browser/chromeos/login/enrollment/enrollment_screen.h"
 #include "chrome/browser/chromeos/login/enrollment/mock_auto_enrollment_check_screen.h"
 #include "chrome/browser/chromeos/login/enrollment/mock_enrollment_screen.h"
@@ -57,6 +56,7 @@
 #include "chromeos/dbus/fake_dbus_thread_manager.h"
 #include "chromeos/dbus/fake_session_manager_client.h"
 #include "chromeos/login/auth/key.h"
+#include "chromeos/login/auth/mock_auth_status_consumer.h"
 #include "chromeos/login/auth/user_context.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
@@ -666,7 +666,7 @@ IN_PROC_BROWSER_TEST_F(WizardControllerFlowTest,
   user_context.SetKey(Key(kPassword));
   user_context.SetUserIDHash(user_context.GetUserID());
   LoginUtils::Set(new TestLoginUtils(user_context));
-  MockConsumer mock_consumer;
+  MockAuthStatusConsumer mock_consumer;
 
   // Must have a pending signin to resume after auto-enrollment:
   LoginDisplayHostImpl::default_host()->StartSignInScreen(LoginScreenContext());
@@ -684,7 +684,7 @@ IN_PROC_BROWSER_TEST_F(WizardControllerFlowTest,
       WizardController::default_controller()->GetEnrollmentScreen();
   EXPECT_EQ(screen, WizardController::default_controller()->current_screen());
   // This is the main expectation: after auto-enrollment, login is resumed.
-  EXPECT_CALL(mock_consumer, OnLoginSuccess(_)).Times(1);
+  EXPECT_CALL(mock_consumer, OnAuthSuccess(_)).Times(1);
   OnExit(ScreenObserver::ENTERPRISE_AUTO_MAGIC_ENROLLMENT_COMPLETED);
   // Prevent browser launch when the profile is prepared:
   browser_shutdown::SetTryingToQuit(true);

@@ -31,7 +31,7 @@ void TestLoginUtils::DelegateDeleted(Delegate* delegate) {
 }
 
 scoped_refptr<Authenticator> TestLoginUtils::CreateAuthenticator(
-    LoginStatusConsumer* consumer) {
+    AuthStatusConsumer* consumer) {
   return new MockAuthenticator(consumer, expected_user_context_);
 }
 

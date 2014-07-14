@@ -59,9 +59,9 @@ class ErrorScreen : public WizardScreen,
   virtual void OnLaunchOobeGuestSession() OVERRIDE;
 
   // LoginPerformer::Delegate implementation:
-  virtual void OnLoginFailure(const LoginFailure& error) OVERRIDE;
-  virtual void OnLoginSuccess(const UserContext& user_context) OVERRIDE;
-  virtual void OnOffTheRecordLoginSuccess() OVERRIDE;
+  virtual void OnAuthFailure(const AuthFailure& error) OVERRIDE;
+  virtual void OnAuthSuccess(const UserContext& user_context) OVERRIDE;
+  virtual void OnOffTheRecordAuthSuccess() OVERRIDE;
   virtual void OnPasswordChangeDetected() OVERRIDE;
   virtual void WhiteListCheckFailed(const std::string& email) OVERRIDE;
   virtual void PolicyLoadFailed() OVERRIDE;

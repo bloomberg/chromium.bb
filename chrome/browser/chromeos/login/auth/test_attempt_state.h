@@ -7,7 +7,7 @@
 
 #include "base/compiler_specific.h"
 #include "chrome/browser/chromeos/login/auth/auth_attempt_state.h"
-#include "chrome/browser/chromeos/login/auth/login_status_consumer.h"
+#include "chromeos/login/auth/auth_status_consumer.h"
 #include "google_apis/gaia/gaia_auth_consumer.h"
 
 namespace chromeos {
@@ -21,8 +21,7 @@ class TestAttemptState : public AuthAttemptState {
   virtual ~TestAttemptState();
 
   // Act as though an online login attempt completed already.
-  void PresetOnlineLoginStatus(
-      const LoginFailure& outcome);
+  void PresetOnlineLoginStatus(const AuthFailure& outcome);
 
   // The next attempt will not allow HOSTED accounts to log in.
   void DisableHosted();
@@ -33,7 +32,7 @@ class TestAttemptState : public AuthAttemptState {
 
   // To allow state to be queried on the main thread during tests.
   virtual bool online_complete() OVERRIDE;
-  virtual const LoginFailure& online_outcome() OVERRIDE;
+  virtual const AuthFailure& online_outcome() OVERRIDE;
   virtual bool is_first_time_user() OVERRIDE;
   virtual GaiaAuthFetcher::HostedAccountsSetting hosted_policy() OVERRIDE;
   virtual bool cryptohome_complete() OVERRIDE;

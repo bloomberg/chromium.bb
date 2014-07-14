@@ -30,7 +30,7 @@ class UserContext;
 // 3) Old master key is deleted.
 class ManagerPasswordService
     : public KeyedService,
-      public chromeos::ExtendedAuthenticator::AuthStatusConsumer {
+      public chromeos::ExtendedAuthenticator::NewAuthStatusConsumer {
  public:
   ManagerPasswordService();
   virtual ~ManagerPasswordService();

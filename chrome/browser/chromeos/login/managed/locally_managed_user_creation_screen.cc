@@ -12,7 +12,6 @@
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
 #include "chrome/browser/chromeos/login/managed/managed_user_creation_controller.h"
 #include "chrome/browser/chromeos/login/managed/managed_user_creation_controller_new.h"
-#include "chrome/browser/chromeos/login/managed/managed_user_creation_controller_old.h"
 #include "chrome/browser/chromeos/login/managed/supervised_user_authentication.h"
 #include "chrome/browser/chromeos/login/screens/error_screen.h"
 #include "chrome/browser/chromeos/login/screens/screen_observer.h"
@@ -195,15 +194,8 @@ void LocallyManagedUserCreationScreen::AuthenticateManager(
     const std::string& manager_password) {
   // Make sure no two controllers exist at the same time.
   controller_.reset();
-  SupervisedUserAuthentication* authentication =
-      UserManager::Get()->GetSupervisedUserManager()->GetAuthentication();
 
-  if (authentication->GetStableSchema() ==
-      SupervisedUserAuthentication::SCHEMA_PLAIN) {
-    controller_.reset(new ManagedUserCreationControllerOld(this, manager_id));
-  } else {
-    controller_.reset(new ManagedUserCreationControllerNew(this, manager_id));
-  }
+  controller_.reset(new ManagedUserCreationControllerNew(this, manager_id));
 
   UserContext user_context(manager_id);
   user_context.SetKey(Key(manager_password));

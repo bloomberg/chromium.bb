@@ -23,8 +23,8 @@ AuthAttemptState::AuthAttemptState(const UserContext& user_context,
       user_type(user_type),
       unlock(unlock),
       online_complete_(online_complete),
-      online_outcome_(online_complete ? LoginFailure::UNLOCK_FAILED
-                                      : LoginFailure::NONE),
+      online_outcome_(online_complete ? AuthFailure::UNLOCK_FAILED
+                                      : AuthFailure::NONE),
       hosted_policy_(GaiaAuthFetcher::HostedAccountsAllowed),
       is_first_time_user_(user_is_new),
       cryptohome_complete_(false),
@@ -36,8 +36,7 @@ AuthAttemptState::AuthAttemptState(const UserContext& user_context,
 
 AuthAttemptState::~AuthAttemptState() {}
 
-void AuthAttemptState::RecordOnlineLoginStatus(
-    const LoginFailure& outcome) {
+void AuthAttemptState::RecordOnlineLoginStatus(const AuthFailure& outcome) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   online_complete_ = true;
   online_outcome_ = outcome;
@@ -90,7 +89,7 @@ bool AuthAttemptState::online_complete() {
   return online_complete_;
 }
 
-const LoginFailure& AuthAttemptState::online_outcome() {
+const AuthFailure& AuthAttemptState::online_outcome() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   return online_outcome_;
 }

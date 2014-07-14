@@ -104,10 +104,10 @@ class ExistingUserController : public LoginDisplay::Delegate,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
-  // Set a delegate that we will pass LoginStatusConsumer events to.
+  // Set a delegate that we will pass AuthStatusConsumer events to.
   // Used for testing.
-  void set_login_status_consumer(LoginStatusConsumer* consumer) {
-    login_status_consumer_ = consumer;
+  void set_login_status_consumer(AuthStatusConsumer* consumer) {
+    auth_status_consumer_ = consumer;
   }
 
   // Returns the LoginDisplay created and owned by this controller.
@@ -142,9 +142,9 @@ class ExistingUserController : public LoginDisplay::Delegate,
   void OnPublicSessionAutoLoginTimerFire();
 
   // LoginPerformer::Delegate implementation:
-  virtual void OnLoginFailure(const LoginFailure& error) OVERRIDE;
-  virtual void OnLoginSuccess(const UserContext& user_context) OVERRIDE;
-  virtual void OnOffTheRecordLoginSuccess() OVERRIDE;
+  virtual void OnAuthFailure(const AuthFailure& error) OVERRIDE;
+  virtual void OnAuthSuccess(const UserContext& user_context) OVERRIDE;
+  virtual void OnOffTheRecordAuthSuccess() OVERRIDE;
   virtual void OnPasswordChangeDetected() OVERRIDE;
   virtual void WhiteListCheckFailed(const std::string& email) OVERRIDE;
   virtual void PolicyLoadFailed() OVERRIDE;
@@ -240,9 +240,9 @@ class ExistingUserController : public LoginDisplay::Delegate,
   // |this| is used if |login_performer_delegate_| is NULL.
   scoped_ptr<LoginPerformer::Delegate> login_performer_delegate_;
 
-  // Delegate to forward all login status events to.
-  // Tests can use this to receive login status events.
-  LoginStatusConsumer* login_status_consumer_;
+  // Delegate to forward all authentication status events to.
+  // Tests can use this to receive authentication status events.
+  AuthStatusConsumer* auth_status_consumer_;
 
   // Username of the last login attempt.
   std::string last_login_attempt_username_;

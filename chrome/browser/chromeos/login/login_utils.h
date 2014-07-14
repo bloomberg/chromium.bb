@@ -21,7 +21,7 @@ namespace chromeos {
 
 class Authenticator;
 class LoginDisplayHost;
-class LoginStatusConsumer;
+class AuthStatusConsumer;
 class UserContext;
 
 class LoginUtils {
@@ -88,7 +88,7 @@ class LoginUtils {
   // OAuth tokens.
   // TODO(nkostylev): Cleanup after WebUI login migration is complete.
   virtual scoped_refptr<Authenticator> CreateAuthenticator(
-      LoginStatusConsumer* consumer) = 0;
+      AuthStatusConsumer* consumer) = 0;
 
   // Initiates process restart if needed.
   // |early_restart| is true if this restart attempt happens before user profile

@@ -6,16 +6,15 @@
 
 namespace chromeos {
 
-class LoginStatusConsumer;
+class AuthStatusConsumer;
 
-Authenticator::Authenticator(LoginStatusConsumer* consumer)
-    : consumer_(consumer),
-      authentication_profile_(NULL) {
+Authenticator::Authenticator(AuthStatusConsumer* consumer)
+    : consumer_(consumer), authentication_profile_(NULL) {
 }
 
 Authenticator::~Authenticator() {}
 
-void Authenticator::SetConsumer(LoginStatusConsumer* consumer) {
+void Authenticator::SetConsumer(AuthStatusConsumer* consumer) {
   consumer_ = consumer;
 }
 

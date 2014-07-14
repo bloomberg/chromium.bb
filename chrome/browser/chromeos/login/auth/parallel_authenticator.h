@@ -19,12 +19,12 @@
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
 #include "google_apis/gaia/gaia_auth_consumer.h"
 
-class LoginFailure;
+class AuthFailure;
 class Profile;
 
 namespace chromeos {
 
-class LoginStatusConsumer;
+class AuthStatusConsumer;
 
 // Authenticates a Chromium OS user against cryptohome.
 // Relies on the fact that online authentications has been already performed
@@ -36,7 +36,7 @@ class LoginStatusConsumer;
 // and then call Resolve().  Resolve() will attempt to
 // determine which AuthState we're in, based on the info at hand.
 // It then triggers further action based on the calculated AuthState; this
-// further action might include calling back the passed-in LoginStatusConsumer
+// further action might include calling back the passed-in AuthStatusConsumer
 // to signal that login succeeded or failed, waiting for more outstanding
 // operations to complete, or triggering some more Cryptohome method calls.
 //
@@ -89,7 +89,7 @@ class ParallelAuthenticator : public Authenticator,
                                       // cryptohome after a login failure.
   };
 
-  explicit ParallelAuthenticator(LoginStatusConsumer* consumer);
+  explicit ParallelAuthenticator(AuthStatusConsumer* consumer);
 
   // Authenticator overrides.
   virtual void CompleteLogin(Profile* profile,
@@ -97,9 +97,9 @@ class ParallelAuthenticator : public Authenticator,
 
   // Given |user_context|, this method attempts to authenticate to your
   // Chrome OS device. As soon as we have successfully mounted the encrypted
-  // home directory for the user, we will call consumer_->OnLoginSuccess()
+  // home directory for the user, we will call consumer_->OnAuthSuccess()
   // with the username.
-  // Upon failure to login consumer_->OnLoginFailure() is called
+  // Upon failure to login consumer_->OnAuthFailure() is called
   // with an error message.
   //
   // Uses |profile| when doing URL fetches.
@@ -108,7 +108,7 @@ class ParallelAuthenticator : public Authenticator,
 
   // Given |user_context|, this method attempts to authenticate to the cached
   // user_context. This will never contact the server even if it's online.
-  // The auth result is sent to LoginStatusConsumer in a same way as
+  // The auth result is sent to AuthStatusConsumer in a same way as
   // AuthenticateToLogin does.
   virtual void AuthenticateToUnlock(const UserContext& user_context) OVERRIDE;
 
@@ -141,9 +141,9 @@ class ParallelAuthenticator : public Authenticator,
 
   // These methods must be called on the UI thread, as they make DBus calls
   // and also call back to the login UI.
-  virtual void OnRetailModeLoginSuccess() OVERRIDE;
-  virtual void OnLoginSuccess() OVERRIDE;
-  virtual void OnLoginFailure(const LoginFailure& error) OVERRIDE;
+  virtual void OnRetailModeAuthSuccess() OVERRIDE;
+  virtual void OnAuthSuccess() OVERRIDE;
+  virtual void OnAuthFailure(const AuthFailure& error) OVERRIDE;
   virtual void RecoverEncryptedData(
       const std::string& old_password) OVERRIDE;
   virtual void ResyncEncryptedData() OVERRIDE;
@@ -157,7 +157,7 @@ class ParallelAuthenticator : public Authenticator,
   // Must be called on the UI thread.
   virtual void Resolve() OVERRIDE;
 
-  void OnOffTheRecordLoginSuccess();
+  void OnOffTheRecordAuthSuccess();
   void OnPasswordChangeDetected();
 
  protected:
@@ -240,8 +240,8 @@ class ParallelAuthenticator : public Authenticator,
   bool remove_user_data_on_failure_;
 
   // When |remove_user_data_on_failure_| is set, we delay calling
-  // consumer_->OnLoginFailure() until we removed the user cryptohome.
-  const LoginFailure* delayed_login_failure_;
+  // consumer_->OnAuthFailure() until we removed the user cryptohome.
+  const AuthFailure* delayed_login_failure_;
 
   DISALLOW_COPY_AND_ASSIGN(ParallelAuthenticator);
 };

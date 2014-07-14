@@ -98,7 +98,7 @@ void FakeLoginUtils::CompleteOffTheRecordLogin(const GURL& start_url) {
 }
 
 scoped_refptr<Authenticator> FakeLoginUtils::CreateAuthenticator(
-    LoginStatusConsumer* consumer) {
+    AuthStatusConsumer* consumer) {
   authenticator_ = new MockAuthenticator(consumer, expected_user_context_);
   return authenticator_;
 }

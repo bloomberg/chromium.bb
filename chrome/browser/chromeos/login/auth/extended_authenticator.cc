@@ -8,13 +8,13 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/chromeos/boot_times_loader.h"
-#include "chrome/browser/chromeos/login/auth/login_status_consumer.h"
 #include "chromeos/cryptohome/async_method_caller.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/cryptohome/homedir_methods.h"
 #include "chromeos/cryptohome/system_salt_getter.h"
 #include "chromeos/dbus/cryptohome_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/login/auth/auth_status_consumer.h"
 #include "chromeos/login/auth/key.h"
 #include "chromeos/login/auth/user_context.h"
 #include "content/public/browser/browser_thread.h"
@@ -44,19 +44,19 @@ void RecordEndMarker(const std::string& marker) {
 
 }  // namespace
 
-ExtendedAuthenticator::ExtendedAuthenticator(AuthStatusConsumer* consumer)
+ExtendedAuthenticator::ExtendedAuthenticator(NewAuthStatusConsumer* consumer)
     : salt_obtained_(false), consumer_(consumer), old_consumer_(NULL) {
   SystemSaltGetter::Get()->GetSystemSalt(
       base::Bind(&ExtendedAuthenticator::OnSaltObtained, this));
 }
 
-ExtendedAuthenticator::ExtendedAuthenticator(LoginStatusConsumer* consumer)
+ExtendedAuthenticator::ExtendedAuthenticator(AuthStatusConsumer* consumer)
     : salt_obtained_(false), consumer_(NULL), old_consumer_(consumer) {
   SystemSaltGetter::Get()->GetSystemSalt(
       base::Bind(&ExtendedAuthenticator::OnSaltObtained, this));
 }
 
-void ExtendedAuthenticator::SetConsumer(LoginStatusConsumer* consumer) {
+void ExtendedAuthenticator::SetConsumer(AuthStatusConsumer* consumer) {
   old_consumer_ = consumer;
 }
 
@@ -323,7 +323,7 @@ void ExtendedAuthenticator::OnMountComplete(
     if (!success_callback.is_null())
       success_callback.Run(mount_hash);
     if (old_consumer_)
-      old_consumer_->OnLoginSuccess(copy);
+      old_consumer_->OnAuthSuccess(copy);
     return;
   }
   AuthState state = FAILED_MOUNT;
@@ -338,8 +338,8 @@ void ExtendedAuthenticator::OnMountComplete(
   if (consumer_)
     consumer_->OnAuthenticationFailure(state);
   if (old_consumer_) {
-    LoginFailure failure(LoginFailure::COULD_NOT_MOUNT_CRYPTOHOME);
-    old_consumer_->OnLoginFailure(failure);
+    AuthFailure failure(AuthFailure::COULD_NOT_MOUNT_CRYPTOHOME);
+    old_consumer_->OnAuthFailure(failure);
   }
 }
 
@@ -356,7 +356,7 @@ void ExtendedAuthenticator::OnOperationComplete(
     if (!success_callback.is_null())
       success_callback.Run();
     if (old_consumer_)
-      old_consumer_->OnLoginSuccess(user_context);
+      old_consumer_->OnAuthSuccess(user_context);
     return;
   }
 
@@ -375,8 +375,8 @@ void ExtendedAuthenticator::OnOperationComplete(
     consumer_->OnAuthenticationFailure(state);
 
   if (old_consumer_) {
-    LoginFailure failure(LoginFailure::UNLOCK_FAILED);
-    old_consumer_->OnLoginFailure(failure);
+    AuthFailure failure(AuthFailure::UNLOCK_FAILED);
+    old_consumer_->OnAuthFailure(failure);
   }
 }
 

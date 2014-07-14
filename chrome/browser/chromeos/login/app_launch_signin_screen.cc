@@ -173,7 +173,7 @@ void AppLaunchSigninScreen::Signout() {
   NOTREACHED();
 }
 
-void AppLaunchSigninScreen::OnLoginFailure(const LoginFailure& error) {
+void AppLaunchSigninScreen::OnAuthFailure(const AuthFailure& error) {
   LOG(ERROR) << "Unlock failure: " << error.reason();
   webui_handler_->ClearAndEnablePassword();
   webui_handler_->ShowError(
@@ -183,7 +183,7 @@ void AppLaunchSigninScreen::OnLoginFailure(const LoginFailure& error) {
      HelpAppLauncher::HELP_CANT_ACCESS_ACCOUNT_OFFLINE);
 }
 
-void AppLaunchSigninScreen::OnLoginSuccess(const UserContext& user_context) {
+void AppLaunchSigninScreen::OnAuthSuccess(const UserContext& user_context) {
   delegate_->OnOwnerSigninSuccess();
 }
 

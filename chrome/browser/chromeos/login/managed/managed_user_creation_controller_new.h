@@ -35,7 +35,7 @@ class UserContext;
 // 8. End manager session.
 class ManagedUserCreationControllerNew
     : public ManagedUserCreationController,
-      public ExtendedAuthenticator::AuthStatusConsumer {
+      public ExtendedAuthenticator::NewAuthStatusConsumer {
  public:
   // All UI initialization is deferred till Init() call.
   // |Consumer| is not owned by controller, and it is expected that it wouldn't

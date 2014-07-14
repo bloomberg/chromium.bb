@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/login/auth/login_status_consumer.h"
+#include "chromeos/login/auth/auth_status_consumer.h"
 
 namespace chromeos {
 
-void LoginStatusConsumer::OnRetailModeLoginSuccess(
+void AuthStatusConsumer::OnRetailModeAuthSuccess(
     const UserContext& user_context) {
-  OnLoginSuccess(user_context);
+  OnAuthSuccess(user_context);
 }
 
-void LoginStatusConsumer::OnPasswordChangeDetected() {
+void AuthStatusConsumer::OnPasswordChangeDetected() {
   NOTREACHED();
 }
 

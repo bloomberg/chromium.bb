@@ -46,8 +46,7 @@ bool SupervisedUserLoginFlow::ShouldSkipPostLoginScreens() {
   return true;
 }
 
-bool SupervisedUserLoginFlow::HandleLoginFailure(
-    const LoginFailure& failure) {
+bool SupervisedUserLoginFlow::HandleLoginFailure(const AuthFailure& failure) {
   return false;
 }
 

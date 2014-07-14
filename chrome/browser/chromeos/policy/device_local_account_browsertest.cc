@@ -35,7 +35,6 @@
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/chromeos/login/auth/mock_login_status_consumer.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
 #include "chrome/browser/chromeos/login/screens/wizard_screen.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
@@ -80,6 +79,7 @@
 #include "chromeos/chromeos_paths.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/fake_session_manager_client.h"
+#include "chromeos/login/auth/mock_auth_status_consumer.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/core/common/cloud/cloud_policy_core.h"
 #include "components/policy/core/common/cloud/cloud_policy_store.h"
@@ -1274,10 +1274,9 @@ IN_PROC_BROWSER_TEST_P(TermsOfServiceTest, TermsOfServiceScreen) {
   // Set up an observer that will quit the message loop when login has succeeded
   // and the first wizard screen, if any, is being shown.
   base::RunLoop login_wait_run_loop;
-  chromeos::MockConsumer login_status_consumer;
-  EXPECT_CALL(login_status_consumer, OnLoginSuccess(_))
-      .Times(1)
-      .WillOnce(InvokeWithoutArgs(&login_wait_run_loop, &base::RunLoop::Quit));
+  chromeos::MockAuthStatusConsumer login_status_consumer;
+  EXPECT_CALL(login_status_consumer, OnAuthSuccess(_)).Times(1).WillOnce(
+      InvokeWithoutArgs(&login_wait_run_loop, &base::RunLoop::Quit));
 
   // Spin the loop until the observer fires. Then, unregister the observer.
   controller->set_login_status_consumer(&login_status_consumer);

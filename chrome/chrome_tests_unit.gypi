@@ -81,8 +81,6 @@
         'browser/chromeos/login/fake_login_utils.h',
         'browser/chromeos/login/auth/mock_authenticator.cc',
         'browser/chromeos/login/auth/mock_authenticator.h',
-        'browser/chromeos/login/auth/mock_login_status_consumer.cc',
-        'browser/chromeos/login/auth/mock_login_status_consumer.h',
         'browser/chromeos/login/auth/mock_url_fetchers.cc',
         'browser/chromeos/login/auth/mock_url_fetchers.h',
         'browser/chromeos/login/mock_login_utils.cc',

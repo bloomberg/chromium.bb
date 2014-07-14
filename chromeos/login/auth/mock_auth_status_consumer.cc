@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/login/auth/mock_login_status_consumer.h"
+#include "chromeos/login/auth/mock_auth_status_consumer.h"
 
 #include "base/message_loop/message_loop.h"
 #include "google_apis/gaia/gaia_auth_consumer.h"
@@ -10,62 +10,66 @@
 
 namespace chromeos {
 
-MockConsumer::MockConsumer() {}
+MockAuthStatusConsumer::MockAuthStatusConsumer() {
+}
 
-MockConsumer::~MockConsumer() {}
+MockAuthStatusConsumer::~MockAuthStatusConsumer() {
+}
 
 // static
-void MockConsumer::OnRetailModeSuccessQuit(const UserContext& user_context) {
+void MockAuthStatusConsumer::OnRetailModeSuccessQuit(
+    const UserContext& user_context) {
   base::MessageLoop::current()->Quit();
 }
 
 // static
-void MockConsumer::OnRetailModeSuccessQuitAndFail(
+void MockAuthStatusConsumer::OnRetailModeSuccessQuitAndFail(
     const UserContext& user_context) {
   ADD_FAILURE() << "Retail mode login should have failed!";
   base::MessageLoop::current()->Quit();
 }
 
 // static
-void MockConsumer::OnGuestSuccessQuit() {
+void MockAuthStatusConsumer::OnGuestSuccessQuit() {
   base::MessageLoop::current()->Quit();
 }
 
 // static
-void MockConsumer::OnGuestSuccessQuitAndFail() {
+void MockAuthStatusConsumer::OnGuestSuccessQuitAndFail() {
   ADD_FAILURE() << "Guest login should have failed!";
   base::MessageLoop::current()->Quit();
 }
 
 // static
-void MockConsumer::OnSuccessQuit(const UserContext& user_context) {
+void MockAuthStatusConsumer::OnSuccessQuit(const UserContext& user_context) {
   base::MessageLoop::current()->Quit();
 }
 
 // static
-void MockConsumer::OnSuccessQuitAndFail(const UserContext& user_context) {
+void MockAuthStatusConsumer::OnSuccessQuitAndFail(
+    const UserContext& user_context) {
   ADD_FAILURE() << "Login should NOT have succeeded!";
   base::MessageLoop::current()->Quit();
 }
 
 // static
-void MockConsumer::OnFailQuit(const LoginFailure& error) {
+void MockAuthStatusConsumer::OnFailQuit(const AuthFailure& error) {
   base::MessageLoop::current()->Quit();
 }
 
 // static
-void MockConsumer::OnFailQuitAndFail(const LoginFailure& error) {
+void MockAuthStatusConsumer::OnFailQuitAndFail(const AuthFailure& error) {
   ADD_FAILURE() << "Login should not have failed!";
   base::MessageLoop::current()->Quit();
 }
 
 // static
-void MockConsumer::OnMigrateQuit() {
+void MockAuthStatusConsumer::OnMigrateQuit() {
   base::MessageLoop::current()->Quit();
 }
 
 // static
-void MockConsumer::OnMigrateQuitAndFail() {
+void MockAuthStatusConsumer::OnMigrateQuitAndFail() {
   ADD_FAILURE() << "Should not have detected a PW change!";
   base::MessageLoop::current()->Quit();
 }

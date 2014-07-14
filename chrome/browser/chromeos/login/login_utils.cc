@@ -166,7 +166,7 @@ class LoginUtilsImpl : public LoginUtils,
   virtual void DelegateDeleted(LoginUtils::Delegate* delegate) OVERRIDE;
   virtual void CompleteOffTheRecordLogin(const GURL& start_url) OVERRIDE;
   virtual scoped_refptr<Authenticator> CreateAuthenticator(
-      LoginStatusConsumer* consumer) OVERRIDE;
+      AuthStatusConsumer* consumer) OVERRIDE;
   virtual bool RestartToApplyPerSessionFlagsIfNeed(Profile* profile,
                                                    bool early_restart) OVERRIDE;
 
@@ -384,7 +384,7 @@ void LoginUtilsImpl::CompleteOffTheRecordLogin(const GURL& start_url) {
 }
 
 scoped_refptr<Authenticator> LoginUtilsImpl::CreateAuthenticator(
-    LoginStatusConsumer* consumer) {
+    AuthStatusConsumer* consumer) {
   // Screen locker needs new Authenticator instance each time.
   if (ScreenLocker::default_screen_locker()) {
     if (authenticator_.get())

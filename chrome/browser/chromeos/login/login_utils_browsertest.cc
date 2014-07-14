@@ -21,7 +21,6 @@
 #include "chrome/browser/chromeos/input_method/input_method_configuration.h"
 #include "chrome/browser/chromeos/input_method/mock_input_method_manager.h"
 #include "chrome/browser/chromeos/login/auth/authenticator.h"
-#include "chrome/browser/chromeos/login/auth/login_status_consumer.h"
 #include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/enterprise_install_attributes.h"
@@ -49,6 +48,7 @@
 #include "chromeos/dbus/fake_dbus_thread_manager.h"
 #include "chromeos/disks/disk_mount_manager.h"
 #include "chromeos/disks/mock_disk_mount_manager.h"
+#include "chromeos/login/auth/auth_status_consumer.h"
 #include "chromeos/login/auth/key.h"
 #include "chromeos/login/auth/user_context.h"
 #include "chromeos/login/login_state.h"
@@ -143,7 +143,7 @@ void CopyLockResult(base::RunLoop* loop,
 
 class LoginUtilsTest : public testing::Test,
                        public LoginUtils::Delegate,
-                       public LoginStatusConsumer {
+                       public AuthStatusConsumer {
  public:
   // Initialization here is important. The UI thread gets the test's
   // message loop, as does the file thread (which never actually gets
@@ -370,12 +370,12 @@ class LoginUtilsTest : public testing::Test,
   }
 #endif
 
-  virtual void OnLoginFailure(const LoginFailure& error) OVERRIDE {
-    FAIL() << "OnLoginFailure not expected";
+  virtual void OnAuthFailure(const AuthFailure& error) OVERRIDE {
+    FAIL() << "OnAuthFailure not expected";
   }
 
-  virtual void OnLoginSuccess(const UserContext& user_context) OVERRIDE {
-    FAIL() << "OnLoginSuccess not expected";
+  virtual void OnAuthSuccess(const UserContext& user_context) OVERRIDE {
+    FAIL() << "OnAuthSuccess not expected";
   }
 
   void EnrollDevice(const std::string& username) {

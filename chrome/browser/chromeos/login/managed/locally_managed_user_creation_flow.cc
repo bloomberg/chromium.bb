@@ -70,10 +70,9 @@ void LocallyManagedUserCreationFlow::HandleOAuthTokenStatusChange(
   }
 }
 
-
 bool LocallyManagedUserCreationFlow::HandleLoginFailure(
-    const LoginFailure& failure) {
-  if (failure.reason() == LoginFailure::COULD_NOT_MOUNT_CRYPTOHOME)
+    const AuthFailure& failure) {
+  if (failure.reason() == AuthFailure::COULD_NOT_MOUNT_CRYPTOHOME)
     GetScreen(host())->OnManagerLoginFailure();
   else
     GetScreen(host())->ShowManagerInconsistentStateErrorScreen();

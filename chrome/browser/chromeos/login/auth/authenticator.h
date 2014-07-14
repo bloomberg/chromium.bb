@@ -9,7 +9,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
-#include "chrome/browser/chromeos/login/auth/login_status_consumer.h"
+#include "chromeos/login/auth/auth_status_consumer.h"
 #include "google_apis/gaia/gaia_auth_consumer.h"
 
 class Profile;
@@ -20,12 +20,12 @@ class UserContext;
 
 // An interface for objects that will authenticate a Chromium OS user.
 // Callbacks will be called on the UI thread:
-// 1. On successful authentication, will call consumer_->OnLoginSuccess().
-// 2. On failure, will call consumer_->OnLoginFailure().
+// 1. On successful authentication, will call consumer_->OnAuthSuccess().
+// 2. On failure, will call consumer_->OnAuthFailure().
 // 3. On password change, will call consumer_->OnPasswordChangeDetected().
 class Authenticator : public base::RefCountedThreadSafe<Authenticator> {
  public:
-  explicit Authenticator(LoginStatusConsumer* consumer);
+  explicit Authenticator(AuthStatusConsumer* consumer);
 
   // Given externally authenticated username and password (part of
   // |user_context|), this method attempts to complete authentication process.
@@ -64,13 +64,13 @@ class Authenticator : public base::RefCountedThreadSafe<Authenticator> {
                                    bool use_guest_mount) = 0;
 
   // Completes retail mode login.
-  virtual void OnRetailModeLoginSuccess() = 0;
+  virtual void OnRetailModeAuthSuccess() = 0;
 
   // Notifies caller that login was successful. Must be called on the UI thread.
-  virtual void OnLoginSuccess() = 0;
+  virtual void OnAuthSuccess() = 0;
 
   // Must be called on the UI thread.
-  virtual void OnLoginFailure(const LoginFailure& error) = 0;
+  virtual void OnAuthFailure(const AuthFailure& error) = 0;
 
   // Call these methods on the UI thread.
   // If a password logs the user in online, but cannot be used to
@@ -91,12 +91,12 @@ class Authenticator : public base::RefCountedThreadSafe<Authenticator> {
   Profile* authentication_profile() { return authentication_profile_; }
 
   // Sets consumer explicitly.
-  void SetConsumer(LoginStatusConsumer* consumer);
+  void SetConsumer(AuthStatusConsumer* consumer);
 
  protected:
   virtual ~Authenticator();
 
-  LoginStatusConsumer* consumer_;
+  AuthStatusConsumer* consumer_;
   Profile* authentication_profile_;
 
  private:

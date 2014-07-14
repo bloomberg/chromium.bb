@@ -12,7 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/chromeos/login/auth/login_status_consumer.h"
+#include "chromeos/login/auth/auth_status_consumer.h"
 #include "google_apis/gaia/gaia_auth_consumer.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 
@@ -55,7 +55,7 @@ class OnlineAttempt
   void TryClientLogin();
   void CancelClientLogin();
 
-  void TriggerResolve(const LoginFailure& outcome);
+  void TriggerResolve(const AuthFailure& outcome);
 
   bool HasPendingFetch();
   void CancelRequest();

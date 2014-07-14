@@ -49,8 +49,8 @@ class KioskProfileLoader : public LoginPerformer::Delegate,
   void ReportLaunchResult(KioskAppLaunchError::Error error);
 
   // LoginPerformer::Delegate overrides
-  virtual void OnLoginSuccess(const UserContext& user_context) OVERRIDE;
-  virtual void OnLoginFailure(const LoginFailure& error) OVERRIDE;
+  virtual void OnAuthSuccess(const UserContext& user_context) OVERRIDE;
+  virtual void OnAuthFailure(const AuthFailure& error) OVERRIDE;
   virtual void WhiteListCheckFailed(const std::string& email) OVERRIDE;
   virtual void PolicyLoadFailed() OVERRIDE;
   virtual void OnOnlineChecked(

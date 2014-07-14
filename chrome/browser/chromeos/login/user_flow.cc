@@ -40,7 +40,7 @@ bool DefaultUserFlow::ShouldSkipPostLoginScreens() {
   return false;
 }
 
-bool DefaultUserFlow::HandleLoginFailure(const LoginFailure& failure) {
+bool DefaultUserFlow::HandleLoginFailure(const AuthFailure& failure) {
   return false;
 }
 

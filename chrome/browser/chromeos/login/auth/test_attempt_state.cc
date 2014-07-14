@@ -20,8 +20,7 @@ TestAttemptState::TestAttemptState(const UserContext& credentials,
 
 TestAttemptState::~TestAttemptState() {}
 
-void TestAttemptState::PresetOnlineLoginStatus(
-    const LoginFailure& outcome) {
+void TestAttemptState::PresetOnlineLoginStatus(const AuthFailure& outcome) {
   online_complete_ = true;
   online_outcome_ = outcome;
 }
@@ -42,7 +41,7 @@ bool TestAttemptState::online_complete() {
   return online_complete_;
 }
 
-const LoginFailure& TestAttemptState::online_outcome() {
+const AuthFailure& TestAttemptState::online_outcome() {
   return online_outcome_;
 }
 

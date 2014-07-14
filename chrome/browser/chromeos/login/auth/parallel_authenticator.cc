@@ -11,7 +11,6 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/boot_times_loader.h"
 #include "chrome/browser/chromeos/login/auth/authentication_notification_details.h"
-#include "chrome/browser/chromeos/login/auth/login_status_consumer.h"
 #include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/chromeos/ownership/owner_settings_service.h"
 #include "chrome/browser/chromeos/ownership/owner_settings_service_factory.h"
@@ -21,6 +20,7 @@
 #include "chromeos/cryptohome/system_salt_getter.h"
 #include "chromeos/dbus/cryptohome_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/login/auth/auth_status_consumer.h"
 #include "chromeos/login/auth/key.h"
 #include "chromeos/login/auth/user_context.h"
 #include "chromeos/login/login_state.h"
@@ -224,7 +224,7 @@ void CheckKey(AuthAttemptState* attempt,
 
 }  // namespace
 
-ParallelAuthenticator::ParallelAuthenticator(LoginStatusConsumer* consumer)
+ParallelAuthenticator::ParallelAuthenticator(AuthStatusConsumer* consumer)
     : Authenticator(consumer),
       migrate_attempted_(false),
       remove_attempted_(false),
@@ -390,7 +390,7 @@ void ParallelAuthenticator::LoginAsKioskAccount(
   }
 }
 
-void ParallelAuthenticator::OnRetailModeLoginSuccess() {
+void ParallelAuthenticator::OnRetailModeAuthSuccess() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   VLOG(1) << "Retail mode login success";
   // Send notification of success
@@ -400,10 +400,10 @@ void ParallelAuthenticator::OnRetailModeLoginSuccess() {
       content::NotificationService::AllSources(),
       content::Details<AuthenticationNotificationDetails>(&details));
   if (consumer_)
-    consumer_->OnRetailModeLoginSuccess(current_state_->user_context);
+    consumer_->OnRetailModeAuthSuccess(current_state_->user_context);
 }
 
-void ParallelAuthenticator::OnLoginSuccess() {
+void ParallelAuthenticator::OnAuthSuccess() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   VLOG(1) << "Login success";
   // Send notification of success
@@ -417,10 +417,10 @@ void ParallelAuthenticator::OnLoginSuccess() {
     already_reported_success_ = true;
   }
   if (consumer_)
-    consumer_->OnLoginSuccess(current_state_->user_context);
+    consumer_->OnAuthSuccess(current_state_->user_context);
 }
 
-void ParallelAuthenticator::OnOffTheRecordLoginSuccess() {
+void ParallelAuthenticator::OnOffTheRecordAuthSuccess() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   // Send notification of success
   AuthenticationNotificationDetails details(true);
@@ -429,7 +429,7 @@ void ParallelAuthenticator::OnOffTheRecordLoginSuccess() {
       content::NotificationService::AllSources(),
       content::Details<AuthenticationNotificationDetails>(&details));
   if (consumer_)
-    consumer_->OnOffTheRecordLoginSuccess();
+    consumer_->OnOffTheRecordAuthSuccess();
 }
 
 void ParallelAuthenticator::OnPasswordChangeDetected() {
@@ -438,10 +438,10 @@ void ParallelAuthenticator::OnPasswordChangeDetected() {
     consumer_->OnPasswordChangeDetected();
 }
 
-void ParallelAuthenticator::OnLoginFailure(const LoginFailure& error) {
+void ParallelAuthenticator::OnAuthFailure(const AuthFailure& error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  // OnLoginFailure will be called again with the same |error|
+  // OnAuthFailure will be called again with the same |error|
   // after the cryptohome has been removed.
   if (remove_user_data_on_failure_) {
     delayed_login_failure_ = &error;
@@ -457,7 +457,7 @@ void ParallelAuthenticator::OnLoginFailure(const LoginFailure& error) {
       content::Details<AuthenticationNotificationDetails>(&details));
   LOG(WARNING) << "Login failed: " << error.GetErrorString();
   if (consumer_)
-    consumer_->OnLoginFailure(error);
+    consumer_->OnAuthFailure(error);
 }
 
 void ParallelAuthenticator::RecoverEncryptedData(
@@ -546,49 +546,59 @@ void ParallelAuthenticator::Resolve() {
       // the user in because their data is horked.  So, override with
       // the appropriate failure.
       BrowserThread::PostTask(
-          BrowserThread::UI, FROM_HERE,
-          base::Bind(&ParallelAuthenticator::OnLoginFailure, this,
-                     LoginFailure(LoginFailure::COULD_NOT_MOUNT_CRYPTOHOME)));
+          BrowserThread::UI,
+          FROM_HERE,
+          base::Bind(&ParallelAuthenticator::OnAuthFailure,
+                     this,
+                     AuthFailure(AuthFailure::COULD_NOT_MOUNT_CRYPTOHOME)));
       break;
     case FAILED_REMOVE:
       // In this case, we tried to remove the user's old cryptohome at her
       // request, and the remove failed.
       remove_user_data_on_failure_ = false;
       BrowserThread::PostTask(
-          BrowserThread::UI, FROM_HERE,
-          base::Bind(&ParallelAuthenticator::OnLoginFailure, this,
-                     LoginFailure(LoginFailure::DATA_REMOVAL_FAILED)));
+          BrowserThread::UI,
+          FROM_HERE,
+          base::Bind(&ParallelAuthenticator::OnAuthFailure,
+                     this,
+                     AuthFailure(AuthFailure::DATA_REMOVAL_FAILED)));
       break;
     case FAILED_TMPFS:
       // In this case, we tried to mount a tmpfs for guest and failed.
       BrowserThread::PostTask(
-          BrowserThread::UI, FROM_HERE,
-          base::Bind(&ParallelAuthenticator::OnLoginFailure, this,
-                     LoginFailure(LoginFailure::COULD_NOT_MOUNT_TMPFS)));
+          BrowserThread::UI,
+          FROM_HERE,
+          base::Bind(&ParallelAuthenticator::OnAuthFailure,
+                     this,
+                     AuthFailure(AuthFailure::COULD_NOT_MOUNT_TMPFS)));
       break;
     case FAILED_TPM:
       // In this case, we tried to create/mount cryptohome and failed
       // because of the critical TPM error.
       // Chrome will notify user and request reboot.
-      BrowserThread::PostTask(
-          BrowserThread::UI, FROM_HERE,
-          base::Bind(&ParallelAuthenticator::OnLoginFailure, this,
-                     LoginFailure(LoginFailure::TPM_ERROR)));
+      BrowserThread::PostTask(BrowserThread::UI,
+                              FROM_HERE,
+                              base::Bind(&ParallelAuthenticator::OnAuthFailure,
+                                         this,
+                                         AuthFailure(AuthFailure::TPM_ERROR)));
       break;
     case FAILED_USERNAME_HASH:
       // In this case, we failed the GetSanitizedUsername request to
       // cryptohomed. This can happen for any login attempt.
       BrowserThread::PostTask(
-          BrowserThread::UI, FROM_HERE,
-          base::Bind(&ParallelAuthenticator::OnLoginFailure, this,
-                     LoginFailure(LoginFailure::USERNAME_HASH_FAILED)));
+          BrowserThread::UI,
+          FROM_HERE,
+          base::Bind(&ParallelAuthenticator::OnAuthFailure,
+                     this,
+                     AuthFailure(AuthFailure::USERNAME_HASH_FAILED)));
       break;
     case REMOVED_DATA_AFTER_FAILURE:
       remove_user_data_on_failure_ = false;
-      BrowserThread::PostTask(
-          BrowserThread::UI, FROM_HERE,
-          base::Bind(&ParallelAuthenticator::OnLoginFailure, this,
-                     *delayed_login_failure_));
+      BrowserThread::PostTask(BrowserThread::UI,
+                              FROM_HERE,
+                              base::Bind(&ParallelAuthenticator::OnAuthFailure,
+                                         this,
+                                         *delayed_login_failure_));
       break;
     case CREATE_NEW:
       mount_flags |= cryptohome::CREATE_IF_MISSING;
@@ -619,42 +629,46 @@ void ParallelAuthenticator::Resolve() {
     case ONLINE_LOGIN:
       VLOG(2) << "Online login";
       BrowserThread::PostTask(
-          BrowserThread::UI, FROM_HERE,
-          base::Bind(&ParallelAuthenticator::OnLoginSuccess, this));
+          BrowserThread::UI,
+          FROM_HERE,
+          base::Bind(&ParallelAuthenticator::OnAuthSuccess, this));
       break;
     case DEMO_LOGIN:
       VLOG(2) << "Retail mode login";
       current_state_->user_context.SetIsUsingOAuth(false);
       BrowserThread::PostTask(
-          BrowserThread::UI, FROM_HERE,
-          base::Bind(&ParallelAuthenticator::OnRetailModeLoginSuccess, this));
+          BrowserThread::UI,
+          FROM_HERE,
+          base::Bind(&ParallelAuthenticator::OnRetailModeAuthSuccess, this));
       break;
     case GUEST_LOGIN:
       BrowserThread::PostTask(
-          BrowserThread::UI, FROM_HERE,
-          base::Bind(&ParallelAuthenticator::OnOffTheRecordLoginSuccess, this));
+          BrowserThread::UI,
+          FROM_HERE,
+          base::Bind(&ParallelAuthenticator::OnOffTheRecordAuthSuccess, this));
       break;
     case KIOSK_ACCOUNT_LOGIN:
     case PUBLIC_ACCOUNT_LOGIN:
       current_state_->user_context.SetIsUsingOAuth(false);
       BrowserThread::PostTask(
-          BrowserThread::UI, FROM_HERE,
-          base::Bind(&ParallelAuthenticator::OnLoginSuccess, this));
+          BrowserThread::UI,
+          FROM_HERE,
+          base::Bind(&ParallelAuthenticator::OnAuthSuccess, this));
       break;
     case LOCALLY_MANAGED_USER_LOGIN:
       current_state_->user_context.SetIsUsingOAuth(false);
       BrowserThread::PostTask(
-          BrowserThread::UI, FROM_HERE,
-          base::Bind(&ParallelAuthenticator::OnLoginSuccess, this));
+          BrowserThread::UI,
+          FROM_HERE,
+          base::Bind(&ParallelAuthenticator::OnAuthSuccess, this));
       break;
     case LOGIN_FAILED:
       current_state_->ResetCryptohomeStatus();
       BrowserThread::PostTask(BrowserThread::UI,
                               FROM_HERE,
-                              base::Bind(
-                                  &ParallelAuthenticator::OnLoginFailure,
-                                  this,
-                                  current_state_->online_outcome()));
+                              base::Bind(&ParallelAuthenticator::OnAuthFailure,
+                                         this,
+                                         current_state_->online_outcome()));
       break;
     case OWNER_REQUIRED: {
       current_state_->ResetCryptohomeStatus();
@@ -664,12 +678,12 @@ void ParallelAuthenticator::Resolve() {
         // Maybe we should reboot immediately here?
         LOG(ERROR) << "Couldn't unmount users home!";
       }
-      BrowserThread::PostTask(BrowserThread::UI,
-                              FROM_HERE,
-                              base::Bind(
-                                  &ParallelAuthenticator::OnLoginFailure,
-                                  this,
-                                  LoginFailure(LoginFailure::OWNER_REQUIRED)));
+      BrowserThread::PostTask(
+          BrowserThread::UI,
+          FROM_HERE,
+          base::Bind(&ParallelAuthenticator::OnAuthFailure,
+                     this,
+                     AuthFailure(AuthFailure::OWNER_REQUIRED)));
       break;
     }
     default:
@@ -713,7 +727,7 @@ ParallelAuthenticator::AuthState ParallelAuthenticator::ResolveState() {
     return state;
 
   if (current_state_->online_complete()) {
-    if (current_state_->online_outcome().reason() == LoginFailure::NONE) {
+    if (current_state_->online_outcome().reason() == AuthFailure::NONE) {
       // Online attempt succeeded as well, so combine the results.
       return ResolveOnlineSuccessState(state);
     }
@@ -813,7 +827,7 @@ ParallelAuthenticator::ResolveOnlineSuccessState(
 
 void ParallelAuthenticator::ResolveLoginCompletionStatus() {
   // Shortcut online state resolution process.
-  current_state_->RecordOnlineLoginStatus(LoginFailure::LoginFailureNone());
+  current_state_->RecordOnlineLoginStatus(AuthFailure::AuthFailureNone());
   Resolve();
 }
 

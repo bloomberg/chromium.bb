@@ -22,7 +22,7 @@ class Profile;
 
 namespace chromeos {
 
-class LoginStatusConsumer;
+class AuthStatusConsumer;
 class UserContext;
 
 class MockLoginUtils : public LoginUtils {
@@ -37,7 +37,7 @@ class MockLoginUtils : public LoginUtils {
   MOCK_METHOD1(DelegateDeleted, void(LoginUtils::Delegate*));
   MOCK_METHOD1(CompleteOffTheRecordLogin, void(const GURL&));
   MOCK_METHOD1(CreateAuthenticator,
-               scoped_refptr<Authenticator>(LoginStatusConsumer*));
+               scoped_refptr<Authenticator>(AuthStatusConsumer*));
   MOCK_METHOD1(StartTokenServices, void(Profile*));
   MOCK_METHOD2(TransferDefaultCookiesAndServerBoundCerts,
                void(Profile*, Profile*));

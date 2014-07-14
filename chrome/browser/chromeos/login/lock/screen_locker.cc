@@ -133,7 +133,7 @@ ScreenLocker::ScreenLocker(const UserList& users)
     : users_(users),
       locked_(false),
       start_time_(base::Time::Now()),
-      login_status_consumer_(NULL),
+      auth_status_consumer_(NULL),
       incorrect_passwords_count_(0),
       weak_factory_(this) {
   DCHECK(!screen_locker_);
@@ -168,7 +168,7 @@ void ScreenLocker::Init() {
       screenlock_icon_source);
 }
 
-void ScreenLocker::OnLoginFailure(const LoginFailure& error) {
+void ScreenLocker::OnAuthFailure(const AuthFailure& error) {
   content::RecordAction(UserMetricsAction("ScreenLocker_OnLoginFailure"));
   if (authentication_start_time_.is_null()) {
     LOG(ERROR) << "Start time is not set at authentication failure";
@@ -187,11 +187,11 @@ void ScreenLocker::OnLoginFailure(const LoginFailure& error) {
                                   IDS_LOGIN_ERROR_AUTHENTICATING,
                               HelpAppLauncher::HELP_CANT_ACCESS_ACCOUNT);
 
-  if (login_status_consumer_)
-    login_status_consumer_->OnLoginFailure(error);
+  if (auth_status_consumer_)
+    auth_status_consumer_->OnAuthFailure(error);
 }
 
-void ScreenLocker::OnLoginSuccess(const UserContext& user_context) {
+void ScreenLocker::OnAuthSuccess(const UserContext& user_context) {
   incorrect_passwords_count_ = 0;
   if (authentication_start_time_.is_null()) {
     if (!user_context.GetUserID().empty())
@@ -231,9 +231,8 @@ void ScreenLocker::UnlockOnLoginSuccess() {
     return;
   }
 
-  if (login_status_consumer_) {
-    login_status_consumer_->OnLoginSuccess(
-        authentication_capture_->user_context);
+  if (auth_status_consumer_) {
+    auth_status_consumer_->OnAuthSuccess(authentication_capture_->user_context);
   }
   authentication_capture_.reset();
   weak_factory_.InvalidateWeakPtrs();
@@ -317,8 +316,8 @@ void ScreenLocker::ShowErrorMessage(int error_msg_id,
 }
 
 void ScreenLocker::SetLoginStatusConsumer(
-    chromeos::LoginStatusConsumer* consumer) {
-  login_status_consumer_ = consumer;
+    chromeos::AuthStatusConsumer* consumer) {
+  auth_status_consumer_ = consumer;
 }
 
 // static

@@ -13,11 +13,11 @@
 #include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner_helpers.h"
 #include "base/time/time.h"
-#include "chrome/browser/chromeos/login/auth/login_status_consumer.h"
 #include "chrome/browser/chromeos/login/help_app_launcher.h"
 #include "chrome/browser/chromeos/login/lock/screen_locker_delegate.h"
 #include "chrome/browser/chromeos/login/ui/login_display.h"
 #include "chrome/browser/chromeos/login/users/user.h"
+#include "chromeos/login/auth/auth_status_consumer.h"
 #include "chromeos/login/auth/user_context.h"
 #include "ui/base/accelerators/accelerator.h"
 
@@ -33,7 +33,7 @@ namespace chromeos {
 
 class Authenticator;
 class ExtendedAuthenticator;
-class LoginFailure;
+class AuthFailure;
 class ScreenlockIconProvider;
 
 namespace test {
@@ -45,7 +45,7 @@ class WebUIScreenLockerTester;
 // ScreenLocker creates a ScreenLockerDelegate which will display the lock UI.
 // As well, it takes care of authenticating the user and managing a global
 // instance of itself which will be deleted when the system is unlocked.
-class ScreenLocker : public LoginStatusConsumer {
+class ScreenLocker : public AuthStatusConsumer {
  public:
   explicit ScreenLocker(const UserList& users);
 
@@ -59,9 +59,9 @@ class ScreenLocker : public LoginStatusConsumer {
   // Initialize and show the screen locker.
   void Init();
 
-  // LoginStatusConsumer:
-  virtual void OnLoginFailure(const chromeos::LoginFailure& error) OVERRIDE;
-  virtual void OnLoginSuccess(const UserContext& user_context) OVERRIDE;
+  // AuthStatusConsumer:
+  virtual void OnAuthFailure(const chromeos::AuthFailure& error) OVERRIDE;
+  virtual void OnAuthSuccess(const UserContext& user_context) OVERRIDE;
 
   // Does actual unlocking once authentication is successful and all blocking
   // animations are done.
@@ -92,9 +92,9 @@ class ScreenLocker : public LoginStatusConsumer {
   // Returns the users to authenticate.
   const UserList& users() const { return users_; }
 
-  // Allow a LoginStatusConsumer to listen for
+  // Allow a AuthStatusConsumer to listen for
   // the same login events that ScreenLocker does.
-  void SetLoginStatusConsumer(chromeos::LoginStatusConsumer* consumer);
+  void SetLoginStatusConsumer(chromeos::AuthStatusConsumer* consumer);
 
   // Returns WebUI associated with screen locker implementation or NULL if
   // there isn't one.
@@ -174,7 +174,7 @@ class ScreenLocker : public LoginStatusConsumer {
 
   // Delegate to forward all login status events to.
   // Tests can use this to receive login status events.
-  LoginStatusConsumer* login_status_consumer_;
+  AuthStatusConsumer* auth_status_consumer_;
 
   // Number of bad login attempts in a row.
   int incorrect_passwords_count_;

@@ -17,7 +17,7 @@
 
 namespace chromeos {
 
-class LoginStatusConsumer;
+class AuthStatusConsumer;
 class UserContext;
 
 // Interaction with cryptohomed: mount home dirs, create new home dirs, update
@@ -39,18 +39,18 @@ class ExtendedAuthenticator
   typedef base::Callback<void(const std::string& result)> ResultCallback;
   typedef base::Callback<void(const UserContext& context)> ContextCallback;
 
-  class AuthStatusConsumer {
+  class NewAuthStatusConsumer {
    public:
-    virtual ~AuthStatusConsumer() {}
+    virtual ~NewAuthStatusConsumer() {}
     // The current login attempt has ended in failure, with error.
     virtual void OnAuthenticationFailure(AuthState state) = 0;
   };
 
+  explicit ExtendedAuthenticator(NewAuthStatusConsumer* consumer);
   explicit ExtendedAuthenticator(AuthStatusConsumer* consumer);
-  explicit ExtendedAuthenticator(LoginStatusConsumer* consumer);
 
   // Updates consumer of the class.
-  void SetConsumer(LoginStatusConsumer* consumer);
+  void SetConsumer(AuthStatusConsumer* consumer);
 
   // This call will attempt to mount the home dir for the user, key (and key
   // label) in |context|. If the key is of type KEY_TYPE_PASSWORD_PLAIN, it will
@@ -150,8 +150,8 @@ class ExtendedAuthenticator
   std::string system_salt_;
   std::vector<base::Closure> system_salt_callbacks_;
 
-  AuthStatusConsumer* consumer_;
-  LoginStatusConsumer* old_consumer_;
+  NewAuthStatusConsumer* consumer_;
+  AuthStatusConsumer* old_consumer_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtendedAuthenticator);
 };
