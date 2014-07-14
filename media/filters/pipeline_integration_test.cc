@@ -1513,4 +1513,32 @@ TEST_F(PipelineIntegrationTest, BasicPlayback_OddVideoSize) {
   ASSERT_TRUE(WaitUntilOnEnded());
 }
 
+// Verify that OPUS audio in a webm which reports a 44.1kHz sample rate plays
+// correctly at 48kHz
+TEST_F(PipelineIntegrationTest, BasicPlayback_Opus441kHz) {
+  ASSERT_TRUE(Start(GetTestDataFilePath("sfx-opus-441.webm"), PIPELINE_OK));
+  Play();
+  ASSERT_TRUE(WaitUntilOnEnded());
+  EXPECT_EQ(48000,
+            demuxer_->GetStream(DemuxerStream::AUDIO)
+                ->audio_decoder_config()
+                .samples_per_second());
+}
+
+// Same as above but using MediaSource.
+TEST_F(PipelineIntegrationTest, BasicPlayback_MediaSource_Opus441kHz) {
+  MockMediaSource source(
+      "sfx-opus-441.webm", kOpusAudioOnlyWebM, kAppendWholeFile);
+  StartPipelineWithMediaSource(&source);
+  source.EndOfStream();
+  Play();
+  ASSERT_TRUE(WaitUntilOnEnded());
+  source.Abort();
+  Stop();
+  EXPECT_EQ(48000,
+            demuxer_->GetStream(DemuxerStream::AUDIO)
+                ->audio_decoder_config()
+                .samples_per_second());
+}
+
 }  // namespace media

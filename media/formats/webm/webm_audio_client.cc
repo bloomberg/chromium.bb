@@ -58,6 +58,11 @@ bool WebMAudioClient::InitializeConfig(
   if (output_samples_per_second_ > 0)
     samples_per_second = output_samples_per_second_;
 
+  // Always use 48kHz for OPUS.  See the "Input Sample Rate" section of the
+  // spec: http://tools.ietf.org/html/draft-terriberry-oggopus-01#page-11
+  if (audio_codec == kCodecOpus)
+    samples_per_second = 48000;
+
   const uint8* extra_data = NULL;
   size_t extra_data_size = 0;
   if (codec_private.size() > 0) {
