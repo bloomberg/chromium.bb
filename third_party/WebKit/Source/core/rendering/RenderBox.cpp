@@ -1582,7 +1582,7 @@ void RenderBox::invalidateTreeAfterLayout(const RenderLayerModelObject& paintInv
         || (shouldDoFullPaintInvalidationIfSelfPaintingLayer()
             && hasLayer()
             && layer()->isSelfPaintingLayer())) {
-        setShouldDoFullPaintInvalidationAfterLayout(true);
+        setShouldDoFullPaintInvalidationAfterLayout(true, MarkOnlyThis);
     }
 
     if (!invalidatePaintIfNeeded(&newPaintInvalidationContainer, oldPaintInvalidationRect, oldPositionFromPaintInvalidationContainer))
