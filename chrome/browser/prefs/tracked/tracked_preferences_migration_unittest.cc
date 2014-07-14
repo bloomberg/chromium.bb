@@ -128,7 +128,7 @@ class TrackedPreferencesMigrationTest : public testing::Test {
         scoped_ptr<PrefHashStore>(
             new PrefHashStoreImpl(kSeed, kDeviceId, true)),
         scoped_ptr<HashStoreContents>(
-            new PrefServiceHashStoreContents("hash-store-id", &local_state_)),
+            new PrefServiceHashStoreContents(kHashStoreId, &local_state_)),
 
         &mock_unprotected_pref_filter_,
         &mock_protected_pref_filter_);
@@ -144,10 +144,29 @@ class TrackedPreferencesMigrationTest : public testing::Test {
 
  protected:
   // Sets |key| to |value| in the test store identified by |store_id| before
-  // migration begins.
+  // migration begins. Also sets the corresponding hash in the same store.
   void PresetStoreValue(MockPrefStoreID store_id,
                         const std::string& key,
                         const std::string value) {
+    PresetStoreValueOnly(store_id, key, value);
+    PresetStoreValueHash(store_id, key, value);
+  }
+
+  // Sets |key| to |value| in the test store identified by |store_id| before
+  // migration begins. Stores the value hash in Local State as in M36 and
+  // earlier.
+  void PresetLegacyStoreValue(MockPrefStoreID store_id,
+                              const std::string& key,
+                              const std::string value) {
+    PresetStoreValueOnly(store_id, key, value);
+    PresetLegacyValueHash(key, value);
+  }
+
+  // Stores a hash for |key| and |value| in the hash store identified by
+  // |store_id| before migration begins.
+  void PresetStoreValueHash(MockPrefStoreID store_id,
+                            const std::string& key,
+                            const std::string value) {
     base::DictionaryValue* store = NULL;
     scoped_ptr<PrefHashStore> pref_hash_store;
     switch (store_id) {
@@ -162,12 +181,25 @@ class TrackedPreferencesMigrationTest : public testing::Test {
     }
     DCHECK(store);
 
-    store->SetString(key, value);
     base::StringValue string_value(value);
     pref_hash_store->BeginTransaction(
         scoped_ptr<HashStoreContents>(
             new DictionaryHashStoreContents(store)))->StoreHash(
                 key, &string_value);
+  }
+
+  // Stores a hash for |key| and |value| in the legacy hash store in
+  // local_state.
+  void PresetLegacyValueHash(const std::string& key,
+                             const std::string value) {
+    scoped_ptr<PrefHashStore> pref_hash_store(
+        new PrefHashStoreImpl(kSeed, kDeviceId, true));
+
+    base::StringValue string_value(value);
+    PrefHashStoreImpl(kSeed, kDeviceId, true)
+        .BeginTransaction(scoped_ptr<HashStoreContents>(
+            new PrefServiceHashStoreContents(kHashStoreId, &local_state_)))
+        ->StoreHash(key, &string_value);
   }
 
   // Returns true if the store opposite to |store_id| is observed for its next
@@ -223,8 +255,21 @@ class TrackedPreferencesMigrationTest : public testing::Test {
         break;
     }
     DCHECK(store);
-    return DictionaryHashStoreContents(store).GetContents()->GetString(
-        expected_pref_in_hash_store, static_cast<std::string*>(NULL));
+    const base::DictionaryValue* hash_store_contents =
+        DictionaryHashStoreContents(store).GetContents();
+    return hash_store_contents &&
+           hash_store_contents->GetString(expected_pref_in_hash_store,
+                                          static_cast<std::string*>(NULL));
+  }
+
+  // Determines whether |expected_pref_in_hash_store| has a hash in the Local
+  // State hash store.
+  bool ContainsLegacyHash(std::string expected_pref_in_hash_store) {
+    const base::DictionaryValue* hash_store_contents =
+        PrefServiceHashStoreContents(kHashStoreId, &local_state_).GetContents();
+    return hash_store_contents &&
+           hash_store_contents->GetString(expected_pref_in_hash_store,
+                                          static_cast<std::string*>(NULL));
   }
 
   // Both stores need to hand their prefs over in order for migration to kick
@@ -341,6 +386,26 @@ class TrackedPreferencesMigrationTest : public testing::Test {
     }
   }
 
+  // Sets |key| to |value| in the test store identified by |store_id| before
+  // migration begins. Does not store a preference hash.
+  void PresetStoreValueOnly(MockPrefStoreID store_id,
+                            const std::string& key,
+                            const std::string value) {
+    base::DictionaryValue* store = NULL;
+    switch (store_id) {
+      case MOCK_UNPROTECTED_PREF_STORE:
+        store = unprotected_prefs_.get();
+        break;
+      case MOCK_PROTECTED_PREF_STORE:
+        store = protected_prefs_.get();
+        break;
+    }
+    DCHECK(store);
+
+    store->SetString(key, value);
+  }
+
+  static const char kHashStoreId[];
   static const char kSeed[];
   static const char kDeviceId[];
 
@@ -360,7 +425,12 @@ class TrackedPreferencesMigrationTest : public testing::Test {
   bool protected_store_migration_complete_;
 
   TestingPrefServiceSimple local_state_;
+
+  DISALLOW_COPY_AND_ASSIGN(TrackedPreferencesMigrationTest);
 };
+
+// static
+const char TrackedPreferencesMigrationTest::kHashStoreId[] = "hash-store-id";
 
 // static
 const char TrackedPreferencesMigrationTest::kSeed[] = "seed";
@@ -419,6 +489,208 @@ TEST_F(TrackedPreferencesMigrationTest, NoMigrationRequired) {
 
   EXPECT_TRUE(ContainsHash(MOCK_PROTECTED_PREF_STORE, kProtectedPref));
   EXPECT_FALSE(ContainsHash(MOCK_PROTECTED_PREF_STORE, kUnprotectedPref));
+}
+
+TEST_F(TrackedPreferencesMigrationTest, LegacyHashMigrationOnly) {
+  PresetLegacyStoreValue(
+      MOCK_UNPROTECTED_PREF_STORE, kUnprotectedPref, kUnprotectedPrefValue);
+  PresetLegacyStoreValue(
+      MOCK_PROTECTED_PREF_STORE, kProtectedPref, kProtectedPrefValue);
+
+  EXPECT_FALSE(ContainsHash(MOCK_UNPROTECTED_PREF_STORE, kUnprotectedPref));
+  EXPECT_FALSE(ContainsHash(MOCK_UNPROTECTED_PREF_STORE, kProtectedPref));
+
+  EXPECT_FALSE(ContainsHash(MOCK_PROTECTED_PREF_STORE, kProtectedPref));
+  EXPECT_FALSE(ContainsHash(MOCK_PROTECTED_PREF_STORE, kUnprotectedPref));
+
+  EXPECT_TRUE(ContainsLegacyHash(kProtectedPref));
+  EXPECT_TRUE(ContainsLegacyHash(kUnprotectedPref));
+
+  // Hand unprotected prefs to the migrator which should wait for the protected
+  // prefs.
+  HandPrefsToMigrator(MOCK_UNPROTECTED_PREF_STORE);
+  EXPECT_FALSE(HasPrefs(MOCK_UNPROTECTED_PREF_STORE));
+  EXPECT_TRUE(HasPrefs(MOCK_PROTECTED_PREF_STORE));
+  EXPECT_FALSE(MigrationCompleted());
+
+  // Hand protected prefs to the migrator which should proceed with the
+  // migration synchronously.
+  HandPrefsToMigrator(MOCK_PROTECTED_PREF_STORE);
+  EXPECT_TRUE(MigrationCompleted());
+
+  // Prefs should have been handed back over.
+  EXPECT_TRUE(HasPrefs(MOCK_UNPROTECTED_PREF_STORE));
+  EXPECT_TRUE(HasPrefs(MOCK_PROTECTED_PREF_STORE));
+
+  // There is no pending cleanup task for the modern hash stores.
+  EXPECT_FALSE(
+      WasOnSuccessfulWriteCallbackRegistered(MOCK_UNPROTECTED_PREF_STORE));
+  EXPECT_FALSE(
+      WasOnSuccessfulWriteCallbackRegistered(MOCK_PROTECTED_PREF_STORE));
+
+  // Both stores were modified as hashes were moved from Local State.
+  EXPECT_TRUE(StoreModifiedByMigration(MOCK_UNPROTECTED_PREF_STORE));
+  EXPECT_TRUE(StoreModifiedByMigration(MOCK_PROTECTED_PREF_STORE));
+
+  std::vector<std::pair<std::string, std::string> > expected_unprotected_values;
+  expected_unprotected_values.push_back(
+      std::make_pair(kUnprotectedPref, kUnprotectedPrefValue));
+  VerifyValuesStored(MOCK_UNPROTECTED_PREF_STORE, expected_unprotected_values);
+
+  std::vector<std::pair<std::string, std::string> > expected_protected_values;
+  expected_protected_values.push_back(
+      std::make_pair(kProtectedPref, kProtectedPrefValue));
+  VerifyValuesStored(MOCK_PROTECTED_PREF_STORE, expected_protected_values);
+
+  EXPECT_TRUE(ContainsHash(MOCK_UNPROTECTED_PREF_STORE, kUnprotectedPref));
+  EXPECT_FALSE(ContainsHash(MOCK_UNPROTECTED_PREF_STORE, kProtectedPref));
+
+  EXPECT_TRUE(ContainsHash(MOCK_PROTECTED_PREF_STORE, kProtectedPref));
+  EXPECT_FALSE(ContainsHash(MOCK_PROTECTED_PREF_STORE, kUnprotectedPref));
+
+  // The Local State hash store will not be reset until the next run.
+  EXPECT_TRUE(ContainsLegacyHash(kProtectedPref));
+  EXPECT_TRUE(ContainsLegacyHash(kUnprotectedPref));
+
+  Reset();
+
+  HandPrefsToMigrator(MOCK_UNPROTECTED_PREF_STORE);
+  HandPrefsToMigrator(MOCK_PROTECTED_PREF_STORE);
+  EXPECT_TRUE(MigrationCompleted());
+
+  // Neither store was modified.
+  EXPECT_FALSE(StoreModifiedByMigration(MOCK_UNPROTECTED_PREF_STORE));
+  EXPECT_FALSE(StoreModifiedByMigration(MOCK_PROTECTED_PREF_STORE));
+
+  EXPECT_TRUE(ContainsHash(MOCK_UNPROTECTED_PREF_STORE, kUnprotectedPref));
+  EXPECT_FALSE(ContainsHash(MOCK_UNPROTECTED_PREF_STORE, kProtectedPref));
+
+  EXPECT_TRUE(ContainsHash(MOCK_PROTECTED_PREF_STORE, kProtectedPref));
+  EXPECT_FALSE(ContainsHash(MOCK_PROTECTED_PREF_STORE, kUnprotectedPref));
+
+  EXPECT_FALSE(ContainsLegacyHash(kProtectedPref));
+  EXPECT_FALSE(ContainsLegacyHash(kUnprotectedPref));
+}
+
+TEST_F(TrackedPreferencesMigrationTest, FullMigrationWithLegacyHashStore) {
+  // Store some values with matching MACs in Local State.
+  PresetLegacyStoreValue(
+      MOCK_UNPROTECTED_PREF_STORE, kUnprotectedPref, kUnprotectedPrefValue);
+  PresetLegacyStoreValue(MOCK_UNPROTECTED_PREF_STORE,
+                         kPreviouslyUnprotectedPref,
+                         kPreviouslyUnprotectedPrefValue);
+  PresetLegacyStoreValue(
+      MOCK_PROTECTED_PREF_STORE, kProtectedPref, kProtectedPrefValue);
+  PresetLegacyStoreValue(MOCK_PROTECTED_PREF_STORE,
+                         kPreviouslyProtectedPref,
+                         kPreviouslyProtectedPrefValue);
+
+  // Verify that there are no MACs in Preferences or Secure Preferences.
+  EXPECT_FALSE(ContainsHash(MOCK_UNPROTECTED_PREF_STORE, kUnprotectedPref));
+  EXPECT_FALSE(
+      ContainsHash(MOCK_UNPROTECTED_PREF_STORE, kPreviouslyUnprotectedPref));
+  EXPECT_FALSE(ContainsHash(MOCK_UNPROTECTED_PREF_STORE, kProtectedPref));
+  EXPECT_FALSE(
+      ContainsHash(MOCK_UNPROTECTED_PREF_STORE, kPreviouslyProtectedPref));
+
+  EXPECT_FALSE(ContainsHash(MOCK_PROTECTED_PREF_STORE, kUnprotectedPref));
+  EXPECT_FALSE(
+      ContainsHash(MOCK_PROTECTED_PREF_STORE, kPreviouslyUnprotectedPref));
+  EXPECT_FALSE(ContainsHash(MOCK_PROTECTED_PREF_STORE, kProtectedPref));
+  EXPECT_FALSE(
+      ContainsHash(MOCK_PROTECTED_PREF_STORE, kPreviouslyProtectedPref));
+
+  // Verify that there are MACs in Local State.
+  EXPECT_TRUE(ContainsLegacyHash(kUnprotectedPref));
+  EXPECT_TRUE(ContainsLegacyHash(kPreviouslyUnprotectedPref));
+  EXPECT_TRUE(ContainsLegacyHash(kProtectedPref));
+  EXPECT_TRUE(ContainsLegacyHash(kPreviouslyProtectedPref));
+
+  // Perform a first-pass migration.
+  HandPrefsToMigrator(MOCK_UNPROTECTED_PREF_STORE);
+  HandPrefsToMigrator(MOCK_PROTECTED_PREF_STORE);
+  EXPECT_TRUE(MigrationCompleted());
+
+  // All values should have been moved to their preferred locations, including
+  // MACs.
+  std::vector<std::pair<std::string, std::string> > expected_unprotected_values;
+  expected_unprotected_values.push_back(
+      std::make_pair(kUnprotectedPref, kUnprotectedPrefValue));
+  expected_unprotected_values.push_back(
+      std::make_pair(kPreviouslyProtectedPref, kPreviouslyProtectedPrefValue));
+  std::vector<std::pair<std::string, std::string> > expected_protected_values;
+  expected_protected_values.push_back(
+      std::make_pair(kProtectedPref, kProtectedPrefValue));
+  expected_protected_values.push_back(std::make_pair(
+      kPreviouslyUnprotectedPref, kPreviouslyUnprotectedPrefValue));
+
+  VerifyValuesStored(MOCK_UNPROTECTED_PREF_STORE, expected_unprotected_values);
+  VerifyValuesStored(MOCK_PROTECTED_PREF_STORE, expected_protected_values);
+
+  EXPECT_TRUE(ContainsHash(MOCK_UNPROTECTED_PREF_STORE, kUnprotectedPref));
+  EXPECT_TRUE(
+      ContainsHash(MOCK_UNPROTECTED_PREF_STORE, kPreviouslyProtectedPref));
+  EXPECT_TRUE(
+      ContainsHash(MOCK_PROTECTED_PREF_STORE, kPreviouslyUnprotectedPref));
+  EXPECT_TRUE(ContainsHash(MOCK_PROTECTED_PREF_STORE, kProtectedPref));
+
+  EXPECT_FALSE(ContainsHash(MOCK_UNPROTECTED_PREF_STORE, kProtectedPref));
+  EXPECT_FALSE(ContainsHash(MOCK_PROTECTED_PREF_STORE, kUnprotectedPref));
+
+  EXPECT_FALSE(
+      ContainsHash(MOCK_UNPROTECTED_PREF_STORE, kPreviouslyUnprotectedPref));
+  EXPECT_FALSE(
+      ContainsHash(MOCK_PROTECTED_PREF_STORE, kPreviouslyProtectedPref));
+
+  // Removing the values from their previous locations is deferred until the new
+  // locations are persisted.
+  EXPECT_TRUE(ContainsLegacyHash(kUnprotectedPref));
+  EXPECT_TRUE(ContainsLegacyHash(kPreviouslyUnprotectedPref));
+  EXPECT_TRUE(ContainsLegacyHash(kProtectedPref));
+  EXPECT_TRUE(ContainsLegacyHash(kPreviouslyProtectedPref));
+
+  EXPECT_TRUE(
+      WasOnSuccessfulWriteCallbackRegistered(MOCK_UNPROTECTED_PREF_STORE));
+  EXPECT_TRUE(
+      WasOnSuccessfulWriteCallbackRegistered(MOCK_PROTECTED_PREF_STORE));
+
+  SimulateSuccessfulWrite(MOCK_UNPROTECTED_PREF_STORE);
+  SimulateSuccessfulWrite(MOCK_PROTECTED_PREF_STORE);
+
+  Reset();
+
+  HandPrefsToMigrator(MOCK_UNPROTECTED_PREF_STORE);
+  HandPrefsToMigrator(MOCK_PROTECTED_PREF_STORE);
+  EXPECT_TRUE(MigrationCompleted());
+
+  // In this run the MACs should have been removed from their previous
+  // locations. There is no more pending action.
+  EXPECT_FALSE(
+      WasOnSuccessfulWriteCallbackRegistered(MOCK_UNPROTECTED_PREF_STORE));
+  EXPECT_FALSE(
+      WasOnSuccessfulWriteCallbackRegistered(MOCK_PROTECTED_PREF_STORE));
+
+  EXPECT_TRUE(ContainsHash(MOCK_UNPROTECTED_PREF_STORE, kUnprotectedPref));
+  EXPECT_FALSE(
+      ContainsHash(MOCK_UNPROTECTED_PREF_STORE, kPreviouslyUnprotectedPref));
+  EXPECT_FALSE(ContainsHash(MOCK_UNPROTECTED_PREF_STORE, kProtectedPref));
+  EXPECT_TRUE(
+      ContainsHash(MOCK_UNPROTECTED_PREF_STORE, kPreviouslyProtectedPref));
+
+  EXPECT_FALSE(ContainsHash(MOCK_PROTECTED_PREF_STORE, kUnprotectedPref));
+  EXPECT_TRUE(
+      ContainsHash(MOCK_PROTECTED_PREF_STORE, kPreviouslyUnprotectedPref));
+  EXPECT_TRUE(ContainsHash(MOCK_PROTECTED_PREF_STORE, kProtectedPref));
+  EXPECT_FALSE(
+      ContainsHash(MOCK_PROTECTED_PREF_STORE, kPreviouslyProtectedPref));
+
+  EXPECT_FALSE(ContainsLegacyHash(kUnprotectedPref));
+  EXPECT_FALSE(ContainsLegacyHash(kPreviouslyUnprotectedPref));
+  EXPECT_FALSE(ContainsLegacyHash(kProtectedPref));
+  EXPECT_FALSE(ContainsLegacyHash(kPreviouslyProtectedPref));
+
+  VerifyValuesStored(MOCK_UNPROTECTED_PREF_STORE, expected_unprotected_values);
+  VerifyValuesStored(MOCK_PROTECTED_PREF_STORE, expected_protected_values);
 }
 
 TEST_F(TrackedPreferencesMigrationTest, FullMigration) {
