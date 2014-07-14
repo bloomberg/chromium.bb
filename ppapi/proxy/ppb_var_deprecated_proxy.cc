@@ -354,8 +354,7 @@ bool PPB_Var_Deprecated_Proxy::OnMessageReceived(const IPC::Message& msg) {
   return handled;
 }
 
-void PPB_Var_Deprecated_Proxy::OnMsgAddRefObject(int64 object_id,
-                                                 int* /* unused */) {
+void PPB_Var_Deprecated_Proxy::OnMsgAddRefObject(int64 object_id) {
   PP_Var var = { PP_VARTYPE_OBJECT };
   var.value.as_id = object_id;
   ppb_var_impl_->AddRef(var);

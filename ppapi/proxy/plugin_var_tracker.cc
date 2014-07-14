@@ -456,10 +456,9 @@ PP_Var PluginVarTracker::GetOrCreateObjectVarID(ProxyObjectVar* object) {
 
 void PluginVarTracker::SendAddRefObjectMsg(
     const ProxyObjectVar& proxy_object) {
-  int unused;
   if (proxy_object.dispatcher()) {
     proxy_object.dispatcher()->Send(new PpapiHostMsg_PPBVar_AddRefObject(
-        API_ID_PPB_VAR_DEPRECATED, proxy_object.host_var_id(), &unused));
+        API_ID_PPB_VAR_DEPRECATED, proxy_object.host_var_id()));
   }
 }
 
