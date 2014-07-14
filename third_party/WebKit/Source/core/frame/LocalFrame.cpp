@@ -343,15 +343,15 @@ void LocalFrame::createView(const IntSize& viewportSize, const Color& background
     ASSERT(this);
     ASSERT(page());
 
-    bool isMainFrame = this->isMainFrame();
+    bool isLocalRoot = this->isLocalRoot();
 
-    if (isMainFrame && view())
+    if (isLocalRoot && view())
         view()->setParentVisible(false);
 
     setView(nullptr);
 
     RefPtr<FrameView> frameView;
-    if (isMainFrame) {
+    if (isLocalRoot) {
         frameView = FrameView::create(this, viewportSize);
 
         // The layout size is set by WebViewImpl to support @viewport
@@ -365,7 +365,7 @@ void LocalFrame::createView(const IntSize& viewportSize, const Color& background
 
     frameView->updateBackgroundRecursively(backgroundColor, transparent);
 
-    if (isMainFrame)
+    if (isLocalRoot)
         frameView->setParentVisible(true);
 
     // FIXME: Not clear what the right thing for OOPI is here.

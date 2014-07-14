@@ -74,6 +74,7 @@ public:
     FrameHost* host() const; // Null when the frame is detached.
 
     bool isMainFrame() const;
+    bool isLocalRoot() const;
 
     virtual void disconnectOwnerElement();
 

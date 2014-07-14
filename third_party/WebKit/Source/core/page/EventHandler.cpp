@@ -838,8 +838,8 @@ HitTestResult EventHandler::hitTestResultAtPoint(const LayoutPoint& point, HitTe
 
     // We always send hitTestResultAtPoint to the main frame if we have one,
     // otherwise we might hit areas that are obscured by higher frames.
-    if (Page* page = m_frame->page()) {
-        LocalFrame* mainFrame = page->mainFrame()->isLocalFrame() ? page->deprecatedLocalMainFrame() : 0;
+    if (m_frame->page()) {
+        LocalFrame* mainFrame = m_frame->localFrameRoot();
         if (mainFrame && m_frame != mainFrame) {
             FrameView* frameView = m_frame->view();
             FrameView* mainView = mainFrame->view();

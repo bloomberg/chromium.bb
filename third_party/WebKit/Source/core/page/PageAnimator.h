@@ -7,6 +7,7 @@
 
 namespace WebCore {
 
+class LocalFrame;
 class Page;
 
 class PageAnimator {
@@ -18,7 +19,7 @@ public:
 
     void setAnimationFramePending() { m_animationFramePending = true; }
     bool isServicingAnimations() const { return m_servicingAnimations; }
-    void updateLayoutAndStyleForPainting();
+    void updateLayoutAndStyleForPainting(LocalFrame* rootFrame);
 
 private:
     Page* m_page;

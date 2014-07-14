@@ -73,7 +73,7 @@ public:
         Translucent,
     };
     static void animate(WebCore::Page*, double monotonicFrameBeginTime);
-    static void layout(WebCore::Page*);
+    static void layout(WebCore::Page*, WebCore::LocalFrame* rootFrame = 0);
     static void paint(WebCore::Page*, PageOverlayList*, WebCanvas*, const WebRect&, CanvasBackground);
     static bool handleInputEvent(WebCore::Page*, PageWidgetEventHandler&, const WebInputEvent&);
 

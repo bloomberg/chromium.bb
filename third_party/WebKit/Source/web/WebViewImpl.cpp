@@ -1591,12 +1591,52 @@ void WebViewImpl::resizePinchViewport(const WebSize& newSize)
     page()->frameHost().pinchViewport().setSize(newSize);
 }
 
+WebLocalFrameImpl* WebViewImpl::localFrameRootTemporary()
+{
+    // FIXME: This is a temporary method that finds the first localFrame in a traversal.
+    // This is equivalent to mainFrame() if the mainFrame is in-process. We need to create
+    // separate WebWidgets to be created by RenderWidgets, which are associated with *all*
+    // local frame roots, not just the first one in the tree. Until then, this limits us
+    // to having only one functioning connected LocalFrame subtree per process.
+    for (WebCore::Frame* frame = page()->mainFrame(); frame; frame = frame->tree().traverseNext()) {
+        if (frame->isLocalRoot())
+            return WebLocalFrameImpl::fromFrame(toLocalFrame(frame));
+    }
+    return 0;
+}
+
+void WebViewImpl::performResize()
+{
+    m_pageScaleConstraintsSet.didChangeViewSize(m_size);
+
+    updatePageDefinedViewportConstraints(localFrameRootTemporary()->frame()->document()->viewportDescription());
+    updateMainFrameLayoutSize();
+
+    // If the virtual viewport pinch mode is enabled, the main frame will be resized
+    // after layout so it can be sized to the contentsSize.
+    if (!pinchVirtualViewportEnabled() && localFrameRootTemporary()->frameView())
+        localFrameRootTemporary()->frameView()->resize(m_size);
+
+    if (pinchVirtualViewportEnabled())
+        page()->frameHost().pinchViewport().setSize(m_size);
+
+    // When device emulation is enabled, device size values may change - they are
+    // usually set equal to the view size. These values are not considered viewport-dependent
+    // (see MediaQueryExp::isViewportDependent), since they are only viewport-dependent in emulation mode,
+    // and thus will not be invalidated in |FrameView::performPreLayoutTasks|.
+    // Therefore we should force explicit media queries invalidation here.
+    if (page()->inspectorController().deviceEmulationEnabled()) {
+        if (Document* document = localFrameRootTemporary()->frame()->document())
+            document->mediaQueryAffectingValueChanged();
+    }
+}
+
 void WebViewImpl::resize(const WebSize& newSize)
 {
     if (m_shouldAutoResize || m_size == newSize)
         return;
 
-    FrameView* view = mainFrameImpl()->frameView();
+    FrameView* view = localFrameRootTemporary()->frameView();
     if (!view)
         return;
 
@@ -1615,32 +1655,14 @@ void WebViewImpl::resize(const WebSize& newSize)
                                  FloatSize(viewportAnchorXCoord, viewportAnchorYCoord));
     }
 
+    // FIXME: FastTextAutosizer does not yet support out-of-process frames.
+    if (mainFrameImpl()->frame()->isLocalFrame())
     {
         // Avoids unnecessary invalidations while various bits of state in FastTextAutosizer are updated.
         FastTextAutosizer::DeferUpdatePageInfo deferUpdatePageInfo(page());
-
-        m_pageScaleConstraintsSet.didChangeViewSize(m_size);
-
-        updatePageDefinedViewportConstraints(mainFrameImpl()->frame()->document()->viewportDescription());
-        updateMainFrameLayoutSize();
-
-        // If the virtual viewport pinch mode is enabled, the main frame will be resized
-        // after layout so it can be sized to the contentsSize.
-        if (!pinchVirtualViewportEnabled() && mainFrameImpl()->frameView())
-            mainFrameImpl()->frameView()->resize(m_size);
-
-        if (pinchVirtualViewportEnabled())
-            page()->frameHost().pinchViewport().setSize(m_size);
-
-        // When device emulation is enabled, device size values may change - they are
-        // usually set equal to the view size. These values are not considered viewport-dependent
-        // (see MediaQueryExp::isViewportDependent), since they are only viewport-dependent in emulation mode,
-        // and thus will not be invalidated in |FrameView::performPreLayoutTasks|.
-        // Therefore we should force explicit media queries invalidation here.
-        if (page()->inspectorController().deviceEmulationEnabled()) {
-            if (Document* document = mainFrameImpl()->frame()->document())
-                document->mediaQueryAffectingValueChanged();
-        }
+        performResize();
+    } else {
+        performResize();
     }
 
     if (settings()->viewportEnabled() && !m_fixedLayoutSizeLock) {
@@ -1737,7 +1759,10 @@ void WebViewImpl::animate(double monotonicFrameBeginTime)
 void WebViewImpl::layout()
 {
     TRACE_EVENT0("blink", "WebViewImpl::layout");
-    PageWidgetDelegate::layout(m_page.get());
+    if (!localFrameRootTemporary())
+        return;
+
+    PageWidgetDelegate::layout(m_page.get(), localFrameRootTemporary()->frame());
     updateLayerTreeBackgroundColor();
 
     for (size_t i = 0; i < m_linkHighlights.size(); ++i)

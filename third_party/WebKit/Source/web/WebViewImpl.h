@@ -315,6 +315,10 @@ public:
     // the page is shutting down, but will be valid at all other times.
     WebLocalFrameImpl* mainFrameImpl();
 
+    // FIXME: Temporary method to accommodate out-of-process frame ancestors;
+    // will be removed when there can be multiple WebWidgets for a single page.
+    WebLocalFrameImpl* localFrameRootTemporary();
+
     // Event related methods:
     void mouseContextMenu(const WebMouseEvent&);
     void mouseDoubleClick(const WebMouseEvent&);
@@ -499,6 +503,8 @@ private:
     void resetSavedScrollAndScaleState();
 
     void updateMainFrameScrollPosition(const WebCore::IntPoint& scrollPosition, bool programmaticScroll);
+
+    void performResize();
 
     friend class WebView;  // So WebView::Create can call our constructor
     friend class WTF::RefCounted<WebViewImpl>;

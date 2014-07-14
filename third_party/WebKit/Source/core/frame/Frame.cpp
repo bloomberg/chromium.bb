@@ -199,6 +199,17 @@ bool Frame::isMainFrame() const
     return page && this == page->mainFrame();
 }
 
+bool Frame::isLocalRoot() const
+{
+    if (isRemoteFrame())
+        return false;
+
+    if (!tree().parent())
+        return true;
+
+    return tree().parent()->isRemoteFrame();
+}
+
 void Frame::disconnectOwnerElement()
 {
     if (m_owner) {

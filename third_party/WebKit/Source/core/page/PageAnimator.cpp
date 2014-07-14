@@ -56,12 +56,9 @@ void PageAnimator::scheduleVisualUpdate()
     m_page->chrome().scheduleAnimation();
 }
 
-void PageAnimator::updateLayoutAndStyleForPainting()
+void PageAnimator::updateLayoutAndStyleForPainting(LocalFrame* rootFrame)
 {
-    if (!m_page->mainFrame()->isLocalFrame())
-        return;
-
-    RefPtr<FrameView> view = m_page->deprecatedLocalMainFrame()->view();
+    RefPtr<FrameView> view = rootFrame->view();
 
     TemporaryChange<bool> servicing(m_updatingLayoutAndStyleForPainting, true);
 

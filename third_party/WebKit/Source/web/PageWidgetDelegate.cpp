@@ -69,11 +69,18 @@ void PageWidgetDelegate::animate(Page* page, double monotonicFrameBeginTime)
     page->animator().serviceScriptedAnimations(monotonicFrameBeginTime);
 }
 
-void PageWidgetDelegate::layout(Page* page)
+void PageWidgetDelegate::layout(Page* page, LocalFrame* rootFrame)
 {
-    if (!page || !page->mainFrame())
+    if (!page)
         return;
-    page->animator().updateLayoutAndStyleForPainting();
+
+    if (!rootFrame) {
+        if (!page->mainFrame() || !page->mainFrame()->isLocalFrame())
+            return;
+        rootFrame = toLocalFrame(page->mainFrame());
+    }
+
+    page->animator().updateLayoutAndStyleForPainting(rootFrame);
 }
 
 void PageWidgetDelegate::paint(Page* page, PageOverlayList* overlays, WebCanvas* canvas, const WebRect& rect, CanvasBackground background)

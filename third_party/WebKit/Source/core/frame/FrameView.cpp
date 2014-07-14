@@ -1161,7 +1161,7 @@ bool FrameView::useSlowRepaints(bool considerOverlap) const
 
     // The chromium compositor does not support scrolling a non-composited frame within a composited page through
     // the fast scrolling path, so force slow scrolling in that case.
-    if (m_frame->owner() && !hasCompositedContent() && m_frame->page() && m_frame->page()->mainFrame()->isLocalFrame() && m_frame->page()->deprecatedLocalMainFrame()->view()->hasCompositedContent())
+    if (m_frame->owner() && !hasCompositedContent() && m_frame->page() && m_frame->localFrameRoot()->view()->hasCompositedContent())
         return true;
 
     if (m_isOverlapped && considerOverlap)
@@ -2815,7 +2815,7 @@ void FrameView::updateLayoutAndStyleForPainting()
 
         view->compositor()->updateIfNeededRecursive();
 
-        if (view->compositor()->inCompositingMode() && m_frame->isMainFrame())
+        if (view->compositor()->inCompositingMode() && m_frame->isLocalRoot())
             m_frame->page()->scrollingCoordinator()->updateAfterCompositingChangeIfNeeded();
 
         updateCompositedSelectionBoundsIfNeeded();
