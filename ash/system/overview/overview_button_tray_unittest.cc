@@ -78,8 +78,8 @@ TEST_F(OverviewButtonTrayTest, PerformAction) {
   // Overview Mode only works when there is a window
   scoped_ptr<aura::Window> window(
       CreateTestWindowInShellWithBounds(gfx::Rect(5, 5, 20, 20)));
-  ui::GestureEvent tap(ui::ET_GESTURE_TAP, 0, 0, 0, base::TimeDelta(),
-      ui::GestureEventDetails(ui::ET_GESTURE_TAP, 0.0f, 0.0f), 0);
+  ui::GestureEvent tap(0, 0, 0, base::TimeDelta(),
+      ui::GestureEventDetails(ui::ET_GESTURE_TAP, 0.0f, 0.0f));
   GetTray()->PerformAction(tap);
   EXPECT_TRUE(Shell::GetInstance()->window_selector_controller()->
       IsSelecting());

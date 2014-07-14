@@ -739,32 +739,20 @@ void ScrollEvent::Scale(const float factor) {
 ////////////////////////////////////////////////////////////////////////////////
 // GestureEvent
 
-GestureEvent::GestureEvent(EventType type,
-                           float x,
+GestureEvent::GestureEvent(float x,
                            float y,
                            int flags,
                            base::TimeDelta time_stamp,
-                           const GestureEventDetails& details,
-                           unsigned int touch_ids_bitfield)
-    : LocatedEvent(type,
+                           const GestureEventDetails& details)
+    : LocatedEvent(details.type(),
                    gfx::PointF(x, y),
                    gfx::PointF(x, y),
                    time_stamp,
                    flags | EF_FROM_TOUCH),
-      details_(details),
-      touch_ids_bitfield_(touch_ids_bitfield) {
+      details_(details) {
 }
 
 GestureEvent::~GestureEvent() {
-}
-
-int GestureEvent::GetLowestTouchId() const {
-  if (touch_ids_bitfield_ == 0)
-    return -1;
-  int i = -1;
-  // Find the index of the least significant 1 bit
-  while (!(1 << ++i & touch_ids_bitfield_));
-  return i;
 }
 
 }  // namespace ui

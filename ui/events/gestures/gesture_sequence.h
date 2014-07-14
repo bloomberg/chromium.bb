@@ -106,7 +106,7 @@ class EVENTS_EXPORT GestureSequence {
                                    const gfx::PointF& location,
                                    int flags,
                                    base::Time timestamp,
-                                   unsigned int touch_id_bitmask);
+                                   int oldest_touch_id);
 
   // Functions to be called to add GestureEvents, after successful recognition.
 

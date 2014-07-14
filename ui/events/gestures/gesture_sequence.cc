@@ -418,15 +418,6 @@ float BoundingBoxDiagonal(const gfx::RectF& rect) {
   return sqrt(width + height);
 }
 
-unsigned int ComputeTouchBitmask(const GesturePoint* points) {
-  unsigned int touch_bitmask = 0;
-  for (int i = 0; i < GestureSequence::kMaxGesturePoints; ++i) {
-    if (points[i].in_use())
-      touch_bitmask |= 1 << points[i].touch_id();
-  }
-  return touch_bitmask;
-}
-
 const float kFlingCurveNormalization = 1.0f / 1875.f;
 
 float CalibrateFlingVelocity(float velocity) {
@@ -880,15 +871,15 @@ GestureEvent* GestureSequence::CreateGestureEvent(
     const gfx::PointF& location,
     int flags,
     base::Time timestamp,
-    unsigned int touch_id_bitmask) {
+    int oldest_touch_id) {
   GestureEventDetails gesture_details(details);
   gesture_details.set_touch_points(point_count_);
   gesture_details.set_bounding_box(bounding_box_);
+  gesture_details.set_oldest_touch_id(oldest_touch_id);
   base::TimeDelta time_stamp =
       base::TimeDelta::FromMicroseconds(timestamp.ToDoubleT() * 1000000);
-  return new GestureEvent(gesture_details.type(), location.x(), location.y(),
-                          flags, time_stamp, gesture_details,
-                          touch_id_bitmask);
+  return new GestureEvent(location.x(), location.y(),
+                          flags, time_stamp, gesture_details);
 }
 
 void GestureSequence::AppendTapDownGestureEvent(const GesturePoint& point,
@@ -898,7 +889,7 @@ void GestureSequence::AppendTapDownGestureEvent(const GesturePoint& point,
       point.first_touch_position(),
       flags_,
       base::Time::FromDoubleT(point.last_touch_time()),
-      1 << point.touch_id()));
+      point.touch_id()));
 }
 
 void GestureSequence::PrependTapCancelGestureEvent(const GesturePoint& point,
@@ -908,7 +899,7 @@ void GestureSequence::PrependTapCancelGestureEvent(const GesturePoint& point,
     point.first_touch_position(),
     flags_,
     base::Time::FromDoubleT(point.last_touch_time()),
-    1 << point.touch_id()));
+    point.touch_id()));
 }
 
 void GestureSequence::AppendBeginGestureEvent(const GesturePoint& point,
@@ -918,7 +909,7 @@ void GestureSequence::AppendBeginGestureEvent(const GesturePoint& point,
       point.first_touch_position(),
       flags_,
       base::Time::FromDoubleT(point.last_touch_time()),
-      1 << point.touch_id()));
+      point.touch_id()));
 }
 
 void GestureSequence::AppendEndGestureEvent(const GesturePoint& point,
@@ -928,7 +919,7 @@ void GestureSequence::AppendEndGestureEvent(const GesturePoint& point,
       point.last_touch_position(),
       flags_,
       base::Time::FromDoubleT(point.last_touch_time()),
-      1 << point.touch_id()));
+      point.touch_id()));
 }
 
 void GestureSequence::AppendClickGestureEvent(const GesturePoint& point,
@@ -941,7 +932,7 @@ void GestureSequence::AppendClickGestureEvent(const GesturePoint& point,
       center,
       flags_,
       base::Time::FromDoubleT(point.last_touch_time()),
-      1 << point.touch_id()));
+      point.touch_id()));
 }
 
 void GestureSequence::AppendScrollGestureBegin(const GesturePoint& point,
@@ -953,7 +944,7 @@ void GestureSequence::AppendScrollGestureBegin(const GesturePoint& point,
       location,
       flags_,
       base::Time::FromDoubleT(point.last_touch_time()),
-      1 << point.touch_id()));
+      point.touch_id()));
 }
 
 void GestureSequence::AppendScrollGestureEnd(const GesturePoint& point,
@@ -980,14 +971,14 @@ void GestureSequence::AppendScrollGestureEnd(const GesturePoint& point,
         location,
         flags_,
         base::Time::FromDoubleT(point.last_touch_time()),
-        1 << point.touch_id()));
+        point.touch_id()));
   } else {
     gestures->push_back(CreateGestureEvent(
         GestureEventDetails(ui::ET_GESTURE_SCROLL_END, 0, 0),
         location,
         flags_,
         base::Time::FromDoubleT(point.last_touch_time()),
-        1 << point.touch_id()));
+        point.touch_id()));
   }
 }
 
@@ -1042,7 +1033,7 @@ void GestureSequence::AppendScrollGestureUpdate(GesturePoint& point,
       location,
       flags_,
       base::Time::FromDoubleT(point.last_touch_time()),
-      ComputeTouchBitmask(points_)));
+      point.touch_id()));
 }
 
 void GestureSequence::AppendPinchGestureBegin(const GesturePoint& p1,
@@ -1054,7 +1045,7 @@ void GestureSequence::AppendPinchGestureBegin(const GesturePoint& p1,
       center,
       flags_,
       base::Time::FromDoubleT(p1.last_touch_time()),
-      1 << p1.touch_id() | 1 << p2.touch_id()));
+      p1.touch_id()));
 }
 
 void GestureSequence::AppendPinchGestureEnd(const GesturePoint& p1,
@@ -1067,7 +1058,7 @@ void GestureSequence::AppendPinchGestureEnd(const GesturePoint& p1,
       center,
       flags_,
       base::Time::FromDoubleT(p1.last_touch_time()),
-      1 << p1.touch_id() | 1 << p2.touch_id()));
+      p1.touch_id()));
 }
 
 void GestureSequence::AppendPinchGestureUpdate(const GesturePoint& point,
@@ -1080,7 +1071,7 @@ void GestureSequence::AppendPinchGestureUpdate(const GesturePoint& point,
       bounding_box_.CenterPoint(),
       flags_,
       base::Time::FromDoubleT(point.last_touch_time()),
-      ComputeTouchBitmask(points_)));
+      point.touch_id()));
 }
 
 void GestureSequence::AppendSwipeGesture(const GesturePoint& point,
@@ -1092,7 +1083,7 @@ void GestureSequence::AppendSwipeGesture(const GesturePoint& point,
       bounding_box_.CenterPoint(),
       flags_,
       base::Time::FromDoubleT(point.last_touch_time()),
-      ComputeTouchBitmask(points_)));
+      point.touch_id()));
 }
 
 void GestureSequence::AppendTwoFingerTapGestureEvent(Gestures* gestures) {
@@ -1105,7 +1096,7 @@ void GestureSequence::AppendTwoFingerTapGestureEvent(Gestures* gestures) {
       point->enclosing_rectangle().CenterPoint(),
       flags_,
       base::Time::FromDoubleT(point->last_touch_time()),
-      1 << point->touch_id()));
+      point->touch_id()));
 }
 
 bool GestureSequence::Click(const TouchEvent& event,
@@ -1246,7 +1237,7 @@ void GestureSequence::AppendLongPressGestureEvent() {
       point->first_touch_position(),
       flags_,
       base::Time::FromDoubleT(point->last_touch_time()),
-      1 << point->touch_id()));
+      point->touch_id()));
   delegate_->DispatchPostponedGestureEvent(gesture.get());
 }
 
@@ -1257,7 +1248,7 @@ void GestureSequence::AppendShowPressGestureEvent() {
       point->first_touch_position(),
       flags_,
       base::Time::FromDoubleT(point->last_touch_time()),
-      1 << point->touch_id()));
+      point->touch_id()));
   delegate_->DispatchPostponedGestureEvent(gesture.get());
 }
 
@@ -1268,7 +1259,7 @@ void GestureSequence::AppendLongTapGestureEvent(const GesturePoint& point,
       point.enclosing_rectangle().CenterPoint(),
       flags_,
       base::Time::FromDoubleT(point.last_touch_time()),
-      1 << point.touch_id()));
+      point.touch_id()));
 }
 
 bool GestureSequence::ScrollEnd(const TouchEvent& event,

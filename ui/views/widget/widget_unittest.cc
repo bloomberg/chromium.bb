@@ -1290,20 +1290,26 @@ TEST_F(WidgetTest, GestureScrollEventDispatching) {
   widget->GetRootView()->AddChildView(scroll_view);
 
   {
-    ui::GestureEvent begin(ui::ET_GESTURE_SCROLL_BEGIN,
-        5, 5, 0, base::TimeDelta(),
-        ui::GestureEventDetails(ui::ET_GESTURE_SCROLL_BEGIN, 0, 0),
-        1);
+    ui::GestureEvent begin(
+        5,
+        5,
+        0,
+        base::TimeDelta(),
+        ui::GestureEventDetails(ui::ET_GESTURE_SCROLL_BEGIN, 0, 0));
     widget->OnGestureEvent(&begin);
-    ui::GestureEvent update(ui::ET_GESTURE_SCROLL_UPDATE,
-        25, 15, 0, base::TimeDelta(),
-        ui::GestureEventDetails(ui::ET_GESTURE_SCROLL_UPDATE, 20, 10),
-        1);
+    ui::GestureEvent update(
+        25,
+        15,
+        0,
+        base::TimeDelta(),
+        ui::GestureEventDetails(ui::ET_GESTURE_SCROLL_UPDATE, 20, 10));
     widget->OnGestureEvent(&update);
-    ui::GestureEvent end(ui::ET_GESTURE_SCROLL_END,
-        25, 15, 0, base::TimeDelta(),
-        ui::GestureEventDetails(ui::ET_GESTURE_SCROLL_END, 0, 0),
-        1);
+    ui::GestureEvent end(
+        25,
+        15,
+        0,
+        base::TimeDelta(),
+        ui::GestureEventDetails(ui::ET_GESTURE_SCROLL_END, 0, 0));
     widget->OnGestureEvent(&end);
 
     EXPECT_EQ(1, noscroll_view->GetEventCount(ui::ET_GESTURE_SCROLL_BEGIN));
@@ -1312,20 +1318,26 @@ TEST_F(WidgetTest, GestureScrollEventDispatching) {
   }
 
   {
-    ui::GestureEvent begin(ui::ET_GESTURE_SCROLL_BEGIN,
-        65, 5, 0, base::TimeDelta(),
-        ui::GestureEventDetails(ui::ET_GESTURE_SCROLL_BEGIN, 0, 0),
-        1);
+    ui::GestureEvent begin(
+        65,
+        5,
+        0,
+        base::TimeDelta(),
+        ui::GestureEventDetails(ui::ET_GESTURE_SCROLL_BEGIN, 0, 0));
     widget->OnGestureEvent(&begin);
-    ui::GestureEvent update(ui::ET_GESTURE_SCROLL_UPDATE,
-        85, 15, 0, base::TimeDelta(),
-        ui::GestureEventDetails(ui::ET_GESTURE_SCROLL_UPDATE, 20, 10),
-        1);
+    ui::GestureEvent update(
+        85,
+        15,
+        0,
+        base::TimeDelta(),
+        ui::GestureEventDetails(ui::ET_GESTURE_SCROLL_UPDATE, 20, 10));
     widget->OnGestureEvent(&update);
-    ui::GestureEvent end(ui::ET_GESTURE_SCROLL_END,
-        85, 15, 0, base::TimeDelta(),
-        ui::GestureEventDetails(ui::ET_GESTURE_SCROLL_END, 0, 0),
-        1);
+    ui::GestureEvent end(
+        85,
+        15,
+        0,
+        base::TimeDelta(),
+        ui::GestureEventDetails(ui::ET_GESTURE_SCROLL_END, 0, 0));
     widget->OnGestureEvent(&end);
 
     EXPECT_EQ(1, scroll_view->GetEventCount(ui::ET_GESTURE_SCROLL_BEGIN));
@@ -1356,12 +1368,16 @@ TEST_F(WidgetTest, EventHandlersOnRootView) {
   widget->SetBounds(gfx::Rect(0, 0, 100, 100));
   widget->Show();
 
-  ui::GestureEvent begin(ui::ET_GESTURE_BEGIN,
-      5, 5, 0, ui::EventTimeForNow(),
-      ui::GestureEventDetails(ui::ET_GESTURE_BEGIN, 0, 0), 1);
-  ui::GestureEvent end(ui::ET_GESTURE_END,
-      5, 5, 0, ui::EventTimeForNow(),
-      ui::GestureEventDetails(ui::ET_GESTURE_END, 0, 0), 1);
+  ui::GestureEvent begin(5,
+                         5,
+                         0,
+                         ui::EventTimeForNow(),
+                         ui::GestureEventDetails(ui::ET_GESTURE_BEGIN, 0, 0));
+  ui::GestureEvent end(5,
+                       5,
+                       0,
+                       ui::EventTimeForNow(),
+                       ui::GestureEventDetails(ui::ET_GESTURE_END, 0, 0));
   widget->OnGestureEvent(&begin);
   EXPECT_EQ(1, h1.GetEventCount(ui::ET_GESTURE_BEGIN));
   EXPECT_EQ(1, view->GetEventCount(ui::ET_GESTURE_BEGIN));
@@ -1884,13 +1900,11 @@ TEST_F(WidgetTest, MAYBE_DisableTestRootViewHandlersWhenHidden) {
   widget->Show();
   EXPECT_EQ(NULL, GetGestureHandler(root_view));
   ui::GestureEvent tap_down(
-      ui::ET_GESTURE_TAP_DOWN,
       15,
       15,
       0,
       base::TimeDelta(),
-      ui::GestureEventDetails(ui::ET_GESTURE_TAP_DOWN, 0, 0),
-      1);
+      ui::GestureEventDetails(ui::ET_GESTURE_TAP_DOWN, 0, 0));
   widget->OnGestureEvent(&tap_down);
   EXPECT_EQ(view, GetGestureHandler(root_view));
   widget->Hide();
@@ -1918,8 +1932,11 @@ TEST_F(WidgetTest, GestureHandlerNotSetOnGestureEnd) {
 
   widget->Show();
   EXPECT_EQ(NULL, GetGestureHandler(root_view));
-  ui::GestureEvent end(ui::ET_GESTURE_END, 15, 15, 0, base::TimeDelta(),
-                       ui::GestureEventDetails(ui::ET_GESTURE_END, 0, 0), 1);
+  ui::GestureEvent end(15,
+                       15,
+                       0,
+                       base::TimeDelta(),
+                       ui::GestureEventDetails(ui::ET_GESTURE_END, 0, 0));
   widget->OnGestureEvent(&end);
   EXPECT_EQ(NULL, GetGestureHandler(root_view));
 
@@ -2400,6 +2417,20 @@ class FullscreenAwareFrame : public views::NonClientFrameView {
   bool fullscreen_layout_called_;
 
   DISALLOW_COPY_AND_ASSIGN(FullscreenAwareFrame);
+};
+
+// Convenience to make constructing a GestureEvent simpler.
+class GestureEventForTest : public ui::GestureEvent {
+ public:
+  GestureEventForTest(ui::EventType type, int x, int y)
+      : GestureEvent(x,
+                     y,
+                     0,
+                     base::TimeDelta(),
+                     ui::GestureEventDetails(type, 0.0f, 0.0f)) {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(GestureEventForTest);
 };
 
 }  // namespace

@@ -161,14 +161,17 @@ class SystemGestureEventFilterTest : public AshTestBase {
 };
 
 ui::GestureEvent* CreateGesture(ui::EventType type,
-                                    int x,
-                                    int y,
-                                    float delta_x,
-                                    float delta_y,
-                                    int touch_id) {
-  return new ui::GestureEvent(type, x, y, 0,
+                                int x,
+                                int y,
+                                float delta_x,
+                                float delta_y,
+                                int touch_id) {
+  ui::GestureEventDetails details =
+      ui::GestureEventDetails(type, delta_x, delta_y);
+  details.set_oldest_touch_id(touch_id);
+  return new ui::GestureEvent(x, y, 0,
       base::TimeDelta::FromMilliseconds(base::Time::Now().ToDoubleT() * 1000),
-      ui::GestureEventDetails(type, delta_x, delta_y), 1 << touch_id);
+      ui::GestureEventDetails(type, delta_x, delta_y));
 }
 
 TEST_F(SystemGestureEventFilterTest, LongPressAffordanceStateOnCaptureLoss) {

@@ -1303,13 +1303,11 @@ TEST_F(WindowEventDispatcherTest, RepostTapdownGestureTest) {
 
   ui::GestureEventDetails details(ui::ET_GESTURE_TAP_DOWN, 0.0f, 0.0f);
   gfx::Point point(10, 10);
-  ui::GestureEvent event(ui::ET_GESTURE_TAP_DOWN,
-                         point.x(),
+  ui::GestureEvent event(point.x(),
                          point.y(),
                          0,
                          ui::EventTimeForNow(),
-                         details,
-                         0);
+                         details);
   host()->dispatcher()->RepostEvent(event);
   RunAllPendingInMessageLoop();
   // TODO(rbyers): Currently disabled - crbug.com/170987

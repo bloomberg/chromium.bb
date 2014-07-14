@@ -61,6 +61,7 @@ void GestureProviderAura::OnTouchEventAck(bool event_consumed) {
 void GestureProviderAura::OnGestureEvent(
     const GestureEventData& gesture) {
   GestureEventDetails details = gesture.details;
+  details.set_oldest_touch_id(gesture.motion_event_id);
 
   if (gesture.type() == ET_GESTURE_TAP) {
     int tap_count = 1;
@@ -77,18 +78,11 @@ void GestureProviderAura::OnGestureEvent(
   }
 
   scoped_ptr<ui::GestureEvent> event(
-      new ui::GestureEvent(gesture.type(),
-                           gesture.x,
+      new ui::GestureEvent(gesture.x,
                            gesture.y,
                            last_touch_event_flags_,
                            gesture.time - base::TimeTicks(),
-                           details,
-                           // ui::GestureEvent stores a bitfield indicating the
-                           // ids of active touch points. This is currently only
-                           // used when one finger is down, and will eventually
-                           // be cleaned up. See crbug.com/366707.
-                           1 << gesture.motion_event_id));
-
+                           details));
 
   ui::LatencyInfo* gesture_latency = event->latency();
 

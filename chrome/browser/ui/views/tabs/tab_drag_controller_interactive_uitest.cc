@@ -328,16 +328,22 @@ IN_PROC_BROWSER_TEST_F(TabDragControllerTest, GestureEndShouldEndDragTest) {
   Tab* tab1 = tab_strip->tab_at(1);
   gfx::Point tab_1_center(tab1->width() / 2, tab1->height() / 2);
 
-  ui::GestureEvent gesture_begin(ui::ET_GESTURE_BEGIN, tab_1_center.x(),
-      tab_1_center.x(), 0, base::TimeDelta(),
-      ui::GestureEventDetails(ui::ET_GESTURE_BEGIN, 0.0f, 0.0f), 0);
+  ui::GestureEvent gesture_begin(
+      tab_1_center.x(),
+      tab_1_center.x(),
+      0,
+      base::TimeDelta(),
+      ui::GestureEventDetails(ui::ET_GESTURE_BEGIN, 0.0f, 0.0f));
   tab_strip->MaybeStartDrag(tab1, gesture_begin,
     tab_strip->GetSelectionModel());
   EXPECT_TRUE(TabDragController::IsActive());
 
-  ui::GestureEvent gesture_end(ui::ET_GESTURE_END, tab_1_center.x(),
-      tab_1_center.x(), 0, base::TimeDelta(),
-      ui::GestureEventDetails(ui::ET_GESTURE_END, 0.0f, 0.0f), 0);
+  ui::GestureEvent gesture_end(
+      tab_1_center.x(),
+      tab_1_center.x(),
+      0,
+      base::TimeDelta(),
+      ui::GestureEventDetails(ui::ET_GESTURE_END, 0.0f, 0.0f));
   tab_strip->OnGestureEvent(&gesture_end);
   EXPECT_FALSE(TabDragController::IsActive());
   EXPECT_FALSE(tab_strip->IsDragSessionActive());

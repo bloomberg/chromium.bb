@@ -88,7 +88,7 @@ GestureConsumer* GestureRecognizerImpl::GetTouchLockedTarget(
 GestureConsumer* GestureRecognizerImpl::GetTargetForGestureEvent(
     const GestureEvent& event) {
   GestureConsumer* target = NULL;
-  int touch_id = event.GetLowestTouchId();
+  int touch_id = event.details().oldest_touch_id();
   target = touch_id_target_for_gestures_[touch_id];
   return target;
 }

@@ -659,13 +659,11 @@ class EVENTS_EXPORT ScrollEvent : public MouseEvent {
 
 class EVENTS_EXPORT GestureEvent : public LocatedEvent {
  public:
-  GestureEvent(EventType type,
-               float x,
+  GestureEvent(float x,
                float y,
                int flags,
                base::TimeDelta time_stamp,
-               const GestureEventDetails& details,
-               unsigned int touch_ids_bitfield);
+               const GestureEventDetails& details);
 
   // Create a new GestureEvent which is identical to the provided model.
   // If source / target windows are provided, the model location will be
@@ -673,26 +671,15 @@ class EVENTS_EXPORT GestureEvent : public LocatedEvent {
   template <typename T>
   GestureEvent(const GestureEvent& model, T* source, T* target)
       : LocatedEvent(model, source, target),
-        details_(model.details_),
-        touch_ids_bitfield_(model.touch_ids_bitfield_) {
+        details_(model.details_) {
   }
 
   virtual ~GestureEvent();
 
   const GestureEventDetails& details() const { return details_; }
 
-  // Returns the lowest touch-id of any of the touches which make up this
-  // gesture. If there are no touches associated with this gesture, returns -1.
-  int GetLowestTouchId() const;
-
  private:
   GestureEventDetails details_;
-
-  // The set of indices of ones in the binary representation of
-  // touch_ids_bitfield_ is the set of touch_ids associate with this gesture.
-  // This value is stored as a bitfield because the number of touch ids varies,
-  // but we currently don't need more than 32 touches at a time.
-  const unsigned int touch_ids_bitfield_;
 };
 
 }  // namespace ui

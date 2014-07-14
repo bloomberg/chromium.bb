@@ -202,14 +202,12 @@ IN_PROC_BROWSER_TEST_F(TouchEditableImplAuraTest,
   EXPECT_EQ(GetRenderWidgetHostViewAura(touch_editable), rwhva);
 
   // Long press to select word.
-  ui::GestureEvent long_press(ui::ET_GESTURE_LONG_PRESS,
-                              10,
-                              10,
-                              0,
-                              ui::EventTimeForNow(),
-                              ui::GestureEventDetails(
-                                  ui::ET_GESTURE_LONG_PRESS, 0, 0),
-                              1);
+  ui::GestureEvent long_press(
+      10,
+      10,
+      0,
+      ui::EventTimeForNow(),
+      ui::GestureEventDetails(ui::ET_GESTURE_LONG_PRESS, 0, 0));
   touch_editable->Reset();
   rwhva->OnGestureEvent(&long_press);
   touch_editable->WaitForSelectionChangeCallback();
@@ -224,26 +222,22 @@ IN_PROC_BROWSER_TEST_F(TouchEditableImplAuraTest,
   EXPECT_STREQ("Some", selection.c_str());
 
   // Start scrolling. Handles should get hidden.
-  ui::GestureEvent scroll_begin(ui::ET_GESTURE_SCROLL_BEGIN,
-                                10,
-                                10,
-                                0,
-                                ui::EventTimeForNow(),
-                                ui::GestureEventDetails(
-                                    ui::ET_GESTURE_SCROLL_BEGIN, 0, 0),
-                                1);
+  ui::GestureEvent scroll_begin(
+      10,
+      10,
+      0,
+      ui::EventTimeForNow(),
+      ui::GestureEventDetails(ui::ET_GESTURE_SCROLL_BEGIN, 0, 0));
   rwhva->OnGestureEvent(&scroll_begin);
   EXPECT_FALSE(GetTouchSelectionController(touch_editable));
 
   // Handles should come back after scroll ends.
-  ui::GestureEvent scroll_end(ui::ET_GESTURE_SCROLL_END,
-                              10,
-                              10,
-                              0,
-                              ui::EventTimeForNow(),
-                              ui::GestureEventDetails(
-                                  ui::ET_GESTURE_SCROLL_END, 0, 0),
-                              1);
+  ui::GestureEvent scroll_end(
+      10,
+      10,
+      0,
+      ui::EventTimeForNow(),
+      ui::GestureEventDetails(ui::ET_GESTURE_SCROLL_END, 0, 0));
   rwhva->OnGestureEvent(&scroll_end);
   EXPECT_TRUE(GetTouchSelectionController(touch_editable));
 }
@@ -263,14 +257,12 @@ IN_PROC_BROWSER_TEST_F(TouchEditableImplAuraTest,
   EXPECT_EQ(GetRenderWidgetHostViewAura(touch_editable), rwhva);
 
   // Long press to select word.
-  ui::GestureEvent long_press(ui::ET_GESTURE_LONG_PRESS,
-                              10,
-                              10,
-                              0,
-                              ui::EventTimeForNow(),
-                              ui::GestureEventDetails(
-                                  ui::ET_GESTURE_LONG_PRESS, 0, 0),
-                              1);
+  ui::GestureEvent long_press(
+      10,
+      10,
+      0,
+      ui::EventTimeForNow(),
+      ui::GestureEventDetails(ui::ET_GESTURE_LONG_PRESS, 0, 0));
   touch_editable->Reset();
   rwhva->OnGestureEvent(&long_press);
   touch_editable->WaitForSelectionChangeCallback();
@@ -300,13 +292,12 @@ IN_PROC_BROWSER_TEST_F(TouchEditableImplAuraTest,
   EXPECT_EQ(GetRenderWidgetHostViewAura(touch_editable), rwhva);
 
   // Double-tap to select word.
-  ui::GestureEvent double_tap(ui::ET_GESTURE_TAP,
-                              10,
-                              10,
-                              0,
-                              ui::EventTimeForNow(),
-                              ui::GestureEventDetails(ui::ET_GESTURE_TAP, 2, 0),
-                              1);
+  ui::GestureEvent double_tap(
+      10,
+      10,
+      0,
+      ui::EventTimeForNow(),
+      ui::GestureEventDetails(ui::ET_GESTURE_TAP, 2, 0));
   touch_editable->Reset();
   rwhva->OnGestureEvent(&double_tap);
   touch_editable->WaitForSelectionChangeCallback();

@@ -6,13 +6,14 @@
 
 namespace ui {
 
-GestureEventDetails::GestureEventDetails() : type_(ET_UNKNOWN) {}
+GestureEventDetails::GestureEventDetails()
+    : type_(ET_UNKNOWN), touch_points_(0), oldest_touch_id_(-1) {
+}
 
 GestureEventDetails::GestureEventDetails(ui::EventType type,
                                          float delta_x,
                                          float delta_y)
-    : type_(type),
-      touch_points_(1) {
+    : type_(type), touch_points_(1), oldest_touch_id_(0) {
   DCHECK_GE(type, ET_GESTURE_TYPE_START);
   DCHECK_LE(type, ET_GESTURE_TYPE_END);
   switch (type_) {

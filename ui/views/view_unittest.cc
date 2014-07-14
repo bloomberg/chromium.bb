@@ -180,8 +180,8 @@ void ScrambleTree(views::View* view) {
 class GestureEventForTest : public ui::GestureEvent {
  public:
   GestureEventForTest(ui::EventType type, int x, int y, int flags)
-      : GestureEvent(type, x, y, flags, base::TimeDelta(),
-                     ui::GestureEventDetails(type, 0.0f, 0.0f), 0) {
+      : GestureEvent(x, y, flags, base::TimeDelta(),
+                     ui::GestureEventDetails(type, 0.0f, 0.0f)) {
   }
 
  private:

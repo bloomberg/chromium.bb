@@ -99,11 +99,16 @@ class TestTextfield : public views::Textfield {
 // Convenience to make constructing a GestureEvent simpler.
 class GestureEventForTest : public ui::GestureEvent {
  public:
-  GestureEventForTest(ui::EventType type, int x, int y, float delta_x,
+  GestureEventForTest(ui::EventType type,
+                      int x,
+                      int y,
+                      float delta_x,
                       float delta_y)
-      : GestureEvent(type, x, y, 0, base::TimeDelta(),
-                     ui::GestureEventDetails(type, delta_x, delta_y), 0) {
-  }
+      : GestureEvent(x,
+                     y,
+                     0,
+                     base::TimeDelta(),
+                     ui::GestureEventDetails(type, delta_x, delta_y)) {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(GestureEventForTest);

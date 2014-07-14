@@ -297,12 +297,16 @@ TEST_F(WidgetTestInteractive, ResetCaptureOnGestureEnd) {
   toplevel->Show();
 
   // Start a gesture on |gesture|.
-  ui::GestureEvent begin(ui::ET_GESTURE_BEGIN,
-      15, 15, 0, base::TimeDelta(),
-      ui::GestureEventDetails(ui::ET_GESTURE_BEGIN, 0, 0), 1);
-  ui::GestureEvent end(ui::ET_GESTURE_END,
-      15, 15, 0, base::TimeDelta(),
-      ui::GestureEventDetails(ui::ET_GESTURE_END, 0, 0), 1);
+  ui::GestureEvent begin(15,
+                         15,
+                         0,
+                         base::TimeDelta(),
+                         ui::GestureEventDetails(ui::ET_GESTURE_BEGIN, 0, 0));
+  ui::GestureEvent end(15,
+                       15,
+                       0,
+                       base::TimeDelta(),
+                       ui::GestureEventDetails(ui::ET_GESTURE_END, 0, 0));
   toplevel->OnGestureEvent(&begin);
 
   // Now try to click on |mouse|. Since |gesture| will have capture, |mouse|
