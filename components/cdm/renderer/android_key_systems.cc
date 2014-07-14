@@ -25,7 +25,7 @@ static SupportedKeySystemResponse QueryKeySystemSupport(
   SupportedKeySystemResponse response;
 
   request.key_system = key_system;
-  request.codecs = content::EME_CODEC_WEBM_ALL | content::EME_CODEC_MP4_ALL;
+  request.codecs = content::EME_CODEC_ALL;
   content::RenderThread::Get()->Send(
       new ChromeViewHostMsg_QueryKeySystemSupport(request, &response));
   DCHECK(!(response.compositing_codecs & ~content::EME_CODEC_ALL))
