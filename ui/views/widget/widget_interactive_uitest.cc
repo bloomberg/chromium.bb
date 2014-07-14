@@ -930,6 +930,54 @@ TEST_F(WidgetCaptureTest, MouseExitOnCaptureGrab) {
 }
 #endif
 
+namespace {
+
+// Widget observer which grabs capture when the widget is activated.
+class CaptureOnActivationObserver : public WidgetObserver {
+ public:
+  CaptureOnActivationObserver() {
+  }
+  virtual ~CaptureOnActivationObserver() {
+  }
+
+  // WidgetObserver:
+  virtual void OnWidgetActivationChanged(Widget* widget, bool active) OVERRIDE {
+    if (active)
+      widget->SetCapture(NULL);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(CaptureOnActivationObserver);
+};
+
+}  // namespace
+
+// Test that setting capture on widget activation of a non-toplevel widget
+// (e.g. a bubble on Linux) succeeds.
+TEST_F(WidgetCaptureTest, SetCaptureToNonToplevel) {
+  Widget toplevel;
+  Widget::InitParams toplevel_params =
+      CreateParams(Widget::InitParams::TYPE_WINDOW_FRAMELESS);
+  toplevel_params.native_widget = CreateNativeWidget(true, &toplevel);
+  toplevel_params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  toplevel.Init(toplevel_params);
+  toplevel.Show();
+
+  Widget* child = new Widget;
+  Widget::InitParams child_params =
+      CreateParams(Widget::InitParams::TYPE_WINDOW_FRAMELESS);
+  child_params.parent = toplevel.GetNativeView();
+  child_params.context = toplevel.GetNativeView();
+  child->Init(child_params);
+
+  CaptureOnActivationObserver observer;
+  child->AddObserver(&observer);
+  child->Show();
+
+  EXPECT_TRUE(child->HasCapture());
+}
+
+
 #if defined(OS_WIN)
 namespace {
 

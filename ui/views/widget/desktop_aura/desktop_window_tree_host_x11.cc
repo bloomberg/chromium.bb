@@ -203,6 +203,8 @@ void DesktopWindowTreeHostX11::HandleNativeWidgetActivationChanged(
     OnHostActivated();
     open_windows().remove(xwindow_);
     open_windows().insert(open_windows().begin(), xwindow_);
+  } else {
+    ReleaseCapture();
   }
 
   desktop_native_widget_aura_->HandleActivationChanged(active);
@@ -311,7 +313,7 @@ void DesktopWindowTreeHostX11::CloseNow() {
   if (xwindow_ == None)
     return;
 
-  x11_capture_.reset();
+  ReleaseCapture();
   native_widget_delegate_->OnNativeWidgetDestroying();
 
   // If we have children, close them. Use a copy for iteration because they'll
@@ -508,7 +510,7 @@ void DesktopWindowTreeHostX11::Deactivate() {
   if (!IsActive())
     return;
 
-  x11_capture_.reset();
+  ReleaseCapture();
   X11DesktopHandler::get()->DeactivateWindow(xwindow_);
 }
 
@@ -530,7 +532,7 @@ void DesktopWindowTreeHostX11::Maximize() {
 }
 
 void DesktopWindowTreeHostX11::Minimize() {
-  x11_capture_.reset();
+  ReleaseCapture();
   XIconifyWindow(xdisplay_, xwindow_, 0);
 }
 
@@ -819,10 +821,8 @@ void DesktopWindowTreeHostX11::OnNativeWidgetFocus() {
 }
 
 void DesktopWindowTreeHostX11::OnNativeWidgetBlur() {
-  if (xwindow_) {
-    x11_capture_.reset();
+  if (xwindow_)
     native_widget_delegate_->AsWidget()->GetInputMethod()->OnBlur();
-  }
 }
 
 bool DesktopWindowTreeHostX11::IsAnimatingClosed() const {
