@@ -1144,11 +1144,6 @@ bool NativeWidgetPrivate::IsMouseButtonDown() {
 }
 
 // static
-bool NativeWidgetPrivate::IsTouchDown() {
-  return aura::Env::GetInstance()->is_touch_down();
-}
-
-// static
 gfx::FontList NativeWidgetPrivate::GetWindowTitleFontList() {
 #if defined(OS_WIN)
   NONCLIENTMETRICS ncm;

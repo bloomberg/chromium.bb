@@ -1472,6 +1472,53 @@ TEST_F(WidgetTest, SynthesizeMouseMoveEvent) {
   EXPECT_EQ(1, v2->GetEventCount(ui::ET_MOUSE_ENTERED));
 }
 
+namespace {
+
+// ui::EventHandler which handles all mouse press events.
+class MousePressEventConsumer : public ui::EventHandler {
+ public:
+  explicit MousePressEventConsumer() {
+  }
+
+  virtual ~MousePressEventConsumer() {
+  }
+
+ private:
+  // ui::EventHandler:
+  virtual void OnMouseEvent(ui::MouseEvent* event) OVERRIDE {
+    if (event->type() == ui::ET_MOUSE_PRESSED)
+      event->SetHandled();
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(MousePressEventConsumer);
+};
+
+}  // namespace
+
+// Test that mouse presses and mouse releases are dispatched normally when a
+// touch is down.
+TEST_F(WidgetTest, MouseEventDispatchWhileTouchIsDown) {
+  Widget* widget = CreateTopLevelNativeWidget();
+  widget->Show();
+  widget->SetSize(gfx::Size(300, 300));
+
+  EventCountView* event_count_view = new EventCountView();
+  event_count_view->SetBounds(0, 0, 300, 300);
+  widget->GetRootView()->AddChildView(event_count_view);
+
+  MousePressEventConsumer consumer;
+  event_count_view->AddPostTargetHandler(&consumer);
+
+  aura::test::EventGenerator generator(GetContext(), widget->GetNativeWindow());
+  generator.PressTouch();
+  generator.ClickLeftButton();
+
+  EXPECT_EQ(1, event_count_view->GetEventCount(ui::ET_MOUSE_PRESSED));
+  EXPECT_EQ(1, event_count_view->GetEventCount(ui::ET_MOUSE_RELEASED));
+
+  widget->CloseNow();
+}
+
 // Used by SingleWindowClosing to count number of times WindowClosing() has
 // been invoked.
 class ClosingDelegate : public WidgetDelegate {

@@ -594,12 +594,6 @@ bool NativeWidgetPrivate::IsMouseButtonDown() {
 }
 
 // static
-bool NativeWidgetPrivate::IsTouchDown() {
-  NOTIMPLEMENTED();
-  return false;
-}
-
-// static
 gfx::FontList NativeWidgetPrivate::GetWindowTitleFontList() {
   NOTIMPLEMENTED();
   return gfx::FontList();

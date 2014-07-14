@@ -169,7 +169,7 @@ Widget::Widget()
       native_widget_initialized_(false),
       native_widget_destroyed_(false),
       is_mouse_button_pressed_(false),
-      is_touch_down_(false),
+      ignore_capture_loss_(false),
       last_mouse_event_was_move_(false),
       auto_release_capture_(true),
       root_layers_dirty_(false),
@@ -940,8 +940,6 @@ NativeWidget* Widget::native_widget() {
 void Widget::SetCapture(View* view) {
   if (internal::NativeWidgetPrivate::IsMouseButtonDown())
     is_mouse_button_pressed_ = true;
-  if (internal::NativeWidgetPrivate::IsTouchDown())
-    is_touch_down_ = true;
   root_view_->SetMouseHandler(view);
   if (!native_widget_->HasCapture())
     native_widget_->SetCapture();
@@ -1209,8 +1207,10 @@ void Widget::OnMouseEvent(ui::MouseEvent* event) {
       last_mouse_event_was_move_ = false;
       is_mouse_button_pressed_ = false;
       // Release capture first, to avoid confusion if OnMouseReleased blocks.
-      if (auto_release_capture_ && native_widget_->HasCapture())
+      if (auto_release_capture_ && native_widget_->HasCapture()) {
+        base::AutoReset<bool> resetter(&ignore_capture_loss_, true);
         native_widget_->ReleaseCapture();
+      }
       if (root_view)
         root_view->OnMouseReleased(*event);
       if ((event->flags() & ui::EF_IS_NON_CLIENT) == 0)
@@ -1250,12 +1250,12 @@ void Widget::OnMouseEvent(ui::MouseEvent* event) {
 }
 
 void Widget::OnMouseCaptureLost() {
-  if (is_mouse_button_pressed_ || is_touch_down_) {
-    View* root_view = GetRootView();
-    if (root_view)
-      root_view->OnMouseCaptureLost();
-  }
-  is_touch_down_ = false;
+  if (ignore_capture_loss_)
+    return;
+
+  View* root_view = GetRootView();
+  if (root_view)
+    root_view->OnMouseCaptureLost();
   is_mouse_button_pressed_ = false;
 }
 
@@ -1271,22 +1271,9 @@ void Widget::OnScrollEvent(ui::ScrollEvent* event) {
 }
 
 void Widget::OnGestureEvent(ui::GestureEvent* event) {
-  switch (event->type()) {
-    case ui::ET_GESTURE_TAP_DOWN:
-      is_touch_down_ = true;
-      // We explicitly don't capture here. Not capturing enables multiple
-      // widgets to get tap events at the same time. Views (such as tab
-      // dragging) may explicitly capture.
-      break;
-
-    case ui::ET_GESTURE_END:
-      if (event->details().touch_points() == 1)
-        is_touch_down_ = false;
-      break;
-
-    default:
-      break;
-  }
+  // We explicitly do not capture here. Not capturing enables multiple widgets
+  // to get tap events at the same time. Views (such as tab dragging) may
+  // explicitly capture.
   SendEventToProcessor(event);
 }
 

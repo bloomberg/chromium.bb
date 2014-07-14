@@ -903,8 +903,8 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   // If true, the mouse is currently down.
   bool is_mouse_button_pressed_;
 
-  // If true, a touch device is currently down.
-  bool is_touch_down_;
+  // True if capture losses should be ignored.
+  bool ignore_capture_loss_;
 
   // TODO(beng): Remove NativeWidgetGtk's dependence on these:
   // The following are used to detect duplicate mouse move events and not

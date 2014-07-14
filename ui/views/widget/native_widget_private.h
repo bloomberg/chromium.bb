@@ -71,9 +71,6 @@ class VIEWS_EXPORT NativeWidgetPrivate : public NativeWidget {
   // Returns true if any mouse button is currently down.
   static bool IsMouseButtonDown();
 
-  // Returns true if any touch device is currently down.
-  static bool IsTouchDown();
-
   static gfx::FontList GetWindowTitleFontList();
 
   // Initializes the NativeWidget.
