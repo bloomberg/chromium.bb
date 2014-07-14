@@ -2916,8 +2916,15 @@ class OcclusionTrackingPictureLayerImplTest : public PictureLayerImplTest {
       : PictureLayerImplTest(OcclusionTrackingSettings()) {}
 };
 
+#if defined(OS_WIN)
+#define MAYBE_OccludedTilesSkippedDuringRasterization \
+  DISABLED_OccludedTilesSkippedDuringRasterization
+#else
+#define MAYBE_OccludedTilesSkippedDuringRasterization \
+  OccludedTilesSkippedDuringRasterization
+#endif
 TEST_F(OcclusionTrackingPictureLayerImplTest,
-       OccludedTilesSkippedDuringRasterization) {
+       MAYBE_OccludedTilesSkippedDuringRasterization) {
   gfx::Size tile_size(102, 102);
   gfx::Size layer_bounds(1000, 1000);
   gfx::Size viewport_size(500, 500);
@@ -3000,6 +3007,12 @@ TEST_F(OcclusionTrackingPictureLayerImplTest,
   EXPECT_EQ(unoccluded_tile_count, 0);
 }
 
+#if defined(OS_WIN)
+#define MAYBE_OccludedTilesNotMarkedAsRequired \
+  DISABLED_OccludedTilesNotMarkedAsRequired
+#else
+#define MAYBE_OccludedTilesNotMarkedAsRequired OccludedTilesNotMarkedAsRequired
+#endif
 TEST_F(OcclusionTrackingPictureLayerImplTest,
        OccludedTilesNotMarkedAsRequired) {
   gfx::Size tile_size(102, 102);
