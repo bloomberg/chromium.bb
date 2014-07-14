@@ -118,7 +118,8 @@ RenderLayer::RenderLayer(RenderLayerModelObject* renderer, LayerType type)
     , m_has3DTransformedDescendant(false)
     , m_containsDirtyOverlayScrollbars(false)
     , m_hasFilterInfo(false)
-    , m_needsCompositingInputsUpdate(true)
+    , m_needsAncestorDependentCompositingInputsUpdate(true)
+    , m_needsDescendantDependentCompositingInputsUpdate(true)
     , m_childNeedsCompositingInputsUpdate(true)
     , m_hasCompositingDescendant(false)
     , m_hasNonCompositedChild(false)
@@ -336,7 +337,7 @@ bool RenderLayer::scrollsWithRespectTo(const RenderLayer* other) const
 {
     if (scrollsWithViewport() != other->scrollsWithViewport())
         return true;
-    return compositingInputs().ancestorScrollingLayer != other->compositingInputs().ancestorScrollingLayer;
+    return ancestorScrollingLayer() != other->ancestorScrollingLayer();
 }
 
 void RenderLayer::updateLayerPositionsAfterOverflowScroll()
@@ -963,7 +964,7 @@ RenderLayer* RenderLayer::enclosingTransformedAncestor() const
 
 LayoutPoint RenderLayer::computeOffsetFromTransformedAncestor() const
 {
-    const CompositingInputs& properties = compositingInputs();
+    const AncestorDependentCompositingInputs& properties = ancestorDependentCompositingInputs();
 
     TransformState transformState(TransformState::ApplyTransformDirection, FloatPoint());
     // FIXME: add a test that checks flipped writing mode and ApplyContainerFlip are correct.
@@ -1049,7 +1050,8 @@ RenderLayer* RenderLayer::enclosingFilterLayer(IncludeSelfOrNot includeSelf) con
 
 void RenderLayer::setNeedsCompositingInputsUpdate()
 {
-    m_needsCompositingInputsUpdate = true;
+    m_needsAncestorDependentCompositingInputsUpdate = true;
+    m_needsDescendantDependentCompositingInputsUpdate = true;
 
     for (RenderLayer* current = this; current && !current->m_childNeedsCompositingInputsUpdate; current = current->parent())
         current->m_childNeedsCompositingInputsUpdate = true;
@@ -1057,16 +1059,24 @@ void RenderLayer::setNeedsCompositingInputsUpdate()
     compositor()->setNeedsCompositingUpdate(CompositingUpdateAfterCompositingInputChange);
 }
 
-void RenderLayer::updateCompositingInputs(const CompositingInputs& compositingInputs)
+void RenderLayer::updateAncestorDependentCompositingInputs(const AncestorDependentCompositingInputs& compositingInputs)
 {
-    m_compositingInputs = compositingInputs;
-    m_needsCompositingInputsUpdate = false;
+    m_ancestorDependentCompositingInputs = compositingInputs;
+    m_needsAncestorDependentCompositingInputsUpdate = false;
 }
 
-void RenderLayer::clearChildNeedsCompositingInputsUpdate()
+void RenderLayer::updateDescendantDependentCompositingInputs(const DescendantDependentCompositingInputs& compositingInputs)
 {
-    ASSERT(!m_needsCompositingInputsUpdate);
+    m_descendantDependentCompositingInputs = compositingInputs;
+    m_needsDescendantDependentCompositingInputsUpdate = false;
+}
+
+void RenderLayer::didUpdateCompositingInputs()
+{
+    ASSERT(!needsCompositingInputsUpdate());
     m_childNeedsCompositingInputsUpdate = false;
+    if (m_scrollableArea)
+        m_scrollableArea->updateNeedsCompositedScrolling();
 }
 
 void RenderLayer::setCompositingReasons(CompositingReasons reasons, CompositingReasons mask)

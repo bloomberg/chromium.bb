@@ -172,7 +172,8 @@ public:
     // Rectangle encompassing the scroll corner and resizer rect.
     IntRect scrollCornerAndResizerRect() const;
 
-    bool needsCompositedScrolling() const;
+    void updateNeedsCompositedScrolling();
+    bool needsCompositedScrolling() const { return m_needsCompositedScrolling; }
 
     // These are used during compositing updates to determine if the overflow
     // controls need to be repositioned in the GraphicsLayer tree.
@@ -230,6 +231,10 @@ private:
 
     RenderLayer* m_nextTopmostScrollChild;
     RenderLayer* m_topmostScrollChild;
+
+    // FIXME: once cc can handle composited scrolling with clip paths, we will
+    // no longer need this bit.
+    unsigned m_needsCompositedScrolling : 1;
 
     // The width/height of our scrolled area.
     LayoutRect m_overflowRect;

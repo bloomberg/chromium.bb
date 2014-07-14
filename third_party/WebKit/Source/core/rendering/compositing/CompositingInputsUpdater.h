@@ -30,9 +30,11 @@ private:
 
     struct AncestorInfo {
         AncestorInfo()
-            : enclosingCompositedLayer(0)
+            : ancestorStackingContext(0)
+            , enclosingCompositedLayer(0)
             , lastScrollingAncestor(0)
             , hasAncestorWithClipOrOverflowClip(false)
+            , hasAncestorWithClipPath(false)
         {
         }
 
@@ -45,6 +47,7 @@ private:
         // containing block chain.
         RenderLayer* lastScrollingAncestor;
         bool hasAncestorWithClipOrOverflowClip;
+        bool hasAncestorWithClipPath;
     };
 
     void updateRecursive(RenderLayer*, UpdateType, AncestorInfo);

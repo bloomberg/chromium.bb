@@ -8,6 +8,7 @@
 #include "core/rendering/RenderBlock.h"
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/compositing/CompositedLayerMapping.h"
+#include "core/rendering/compositing/RenderLayerCompositor.h"
 #include "platform/TraceEvent.h"
 
 namespace WebCore {
@@ -64,6 +65,20 @@ static const RenderLayer* findParentLayerOnContainingBlockChain(const RenderObje
     return 0;
 }
 
+static bool hasClippedStackingAncestor(const RenderLayer* layer, const RenderLayer* clippingLayer)
+{
+    if (layer == clippingLayer)
+        return false;
+    const RenderObject* clippingRenderer = clippingLayer->renderer();
+    for (const RenderLayer* current = layer->compositingContainer(); current && current != clippingLayer; current = current->compositingContainer()) {
+        if (const RenderObject* container = current->clippingContainer()) {
+            if (clippingRenderer != container && !clippingRenderer->isDescendantOf(container))
+                return true;
+        }
+    }
+    return false;
+}
+
 void CompositingInputsUpdater::updateRecursive(RenderLayer* layer, UpdateType updateType, AncestorInfo info)
 {
     if (!layer->childNeedsCompositingInputsUpdate() && updateType != ForceUpdate)
@@ -81,7 +96,7 @@ void CompositingInputsUpdater::updateRecursive(RenderLayer* layer, UpdateType up
     }
 
     if (updateType == ForceUpdate) {
-        RenderLayer::CompositingInputs properties;
+        RenderLayer::AncestorDependentCompositingInputs properties;
 
         if (!layer->isRootLayer()) {
             properties.clippedAbsoluteBoundingBox = enclosingIntRect(m_geometryMap.absoluteRect(layer->boundingBoxForCompositingOverlapTest()));
@@ -95,35 +110,30 @@ void CompositingInputsUpdater::updateRecursive(RenderLayer* layer, UpdateType up
             properties.clippedAbsoluteBoundingBox.intersect(clipRect);
 
             const RenderLayer* parent = layer->parent();
-            properties.opacityAncestor = parent->isTransparent() ? parent : parent->compositingInputs().opacityAncestor;
-            properties.transformAncestor = parent->transform() ? parent : parent->compositingInputs().transformAncestor;
-            properties.filterAncestor = parent->hasFilter() ? parent : parent->compositingInputs().filterAncestor;
+            properties.opacityAncestor = parent->isTransparent() ? parent : parent->opacityAncestor();
+            properties.transformAncestor = parent->transform() ? parent : parent->transformAncestor();
+            properties.filterAncestor = parent->hasFilter() ? parent : parent->filterAncestor();
 
             if (info.hasAncestorWithClipOrOverflowClip) {
                 const RenderLayer* parentLayerOnClippingContainerChain = findParentLayerOnClippingContainerChain(layer);
                 const bool parentHasClipOrOverflowClip = parentLayerOnClippingContainerChain->renderer()->hasClipOrOverflowClip();
-                properties.clippingContainer = parentHasClipOrOverflowClip ? parentLayerOnClippingContainerChain->renderer() : parentLayerOnClippingContainerChain->compositingInputs().clippingContainer;
+                properties.clippingContainer = parentHasClipOrOverflowClip ? parentLayerOnClippingContainerChain->renderer() : parentLayerOnClippingContainerChain->clippingContainer();
             }
 
             if (info.lastScrollingAncestor) {
                 const RenderObject* containingBlock = layer->renderer()->containingBlock();
                 const RenderLayer* parentLayerOnContainingBlockChain = findParentLayerOnContainingBlockChain(containingBlock);
 
-                properties.ancestorScrollingLayer = parentLayerOnContainingBlockChain->compositingInputs().ancestorScrollingLayer;
+                properties.ancestorScrollingLayer = parentLayerOnContainingBlockChain->ancestorScrollingLayer();
                 if (parentLayerOnContainingBlockChain->scrollsOverflow())
                     properties.ancestorScrollingLayer = parentLayerOnContainingBlockChain;
 
                 if (layer->renderer()->isOutOfFlowPositioned() && !layer->subtreeIsInvisible()) {
-                    // FIXME: Why do we care about the lastScrollingAncestor in tree order? We're
-                    // trying to tell CC that this layer isn't clipped by its apparent scrolling
-                    // ancestor, but we present the tree to CC in stacking order rather than tree
-                    // order. That would seem to imply that we'd be interested in the lastScrollingAncestor
-                    // in stacking order.
-                    const RenderObject* scroller = info.lastScrollingAncestor->renderer();
-                    // FIXME: Why do we only walk up one step in the containing block chain?
-                    // If there's a scroller between my containing block parent and my containing
-                    // block grandparent, doesn't that make me an unclipped descendant?
-                    properties.isUnclippedDescendant = scroller != containingBlock && scroller->isDescendantOf(containingBlock);
+                    const RenderObject* lastScroller = info.lastScrollingAncestor->renderer();
+                    const RenderLayer* clippingLayer = properties.clippingContainer ? properties.clippingContainer->enclosingLayer() : layer->compositor()->rootRenderLayer();
+                    properties.isUnclippedDescendant = lastScroller != containingBlock && lastScroller->isDescendantOf(containingBlock);
+                    if (hasClippedStackingAncestor(layer, clippingLayer))
+                        properties.clipParent = clippingLayer;
                 }
 
                 if (!layer->stackingNode()->isNormalFlowOnly()
@@ -133,7 +143,8 @@ void CompositingInputsUpdater::updateRecursive(RenderLayer* layer, UpdateType up
             }
         }
 
-        layer->updateCompositingInputs(properties);
+        properties.hasAncestorWithClipPath = info.hasAncestorWithClipPath;
+        layer->updateAncestorDependentCompositingInputs(properties);
     }
 
     if (layer->stackingNode()->isStackingContext())
@@ -145,12 +156,20 @@ void CompositingInputsUpdater::updateRecursive(RenderLayer* layer, UpdateType up
     if (layer->renderer()->hasClipOrOverflowClip())
         info.hasAncestorWithClipOrOverflowClip = true;
 
-    for (RenderLayer* child = layer->firstChild(); child; child = child->nextSibling())
+    if (layer->renderer()->hasClipPath())
+        info.hasAncestorWithClipPath = true;
+
+    RenderLayer::DescendantDependentCompositingInputs descendantProperties;
+    for (RenderLayer* child = layer->firstChild(); child; child = child->nextSibling()) {
         updateRecursive(child, updateType, info);
+        descendantProperties.hasDescendantWithClipPath |= child->hasDescendantWithClipPath() || child->renderer()->hasClipPath();
+    }
 
     m_geometryMap.popMappingsToAncestor(layer->parent());
 
-    layer->clearChildNeedsCompositingInputsUpdate();
+    layer->updateDescendantDependentCompositingInputs(descendantProperties);
+
+    layer->didUpdateCompositingInputs();
 }
 
 #if ASSERT_ENABLED

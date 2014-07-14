@@ -83,6 +83,7 @@ RenderLayerScrollableArea::RenderLayerScrollableArea(RenderLayer& layer)
     , m_inOverflowRelayout(false)
     , m_nextTopmostScrollChild(0)
     , m_topmostScrollChild(0)
+    , m_needsCompositedScrolling(false)
     , m_scrollCorner(0)
     , m_resizer(0)
 {
@@ -1413,8 +1414,6 @@ void RenderLayerScrollableArea::updateScrollableAreaSet(bool hasOverflow)
     if (HTMLFrameOwnerElement* owner = frame->deprecatedLocalOwner())
         isVisibleToHitTest &= owner->renderer() && owner->renderer()->visibleToHitTesting();
 
-    bool didNeedCompositedScrolling = needsCompositedScrolling();
-
     bool didScrollOverflow = m_scrollsOverflow;
 
     m_scrollsOverflow = hasOverflow && isVisibleToHitTest;
@@ -1425,9 +1424,6 @@ void RenderLayerScrollableArea::updateScrollableAreaSet(bool hasOverflow)
         frameView->addScrollableArea(this);
     else
         frameView->removeScrollableArea(this);
-
-    if (didNeedCompositedScrolling != needsCompositedScrolling())
-        layer()->didUpdateNeedsCompositedScrolling();
 }
 
 void RenderLayerScrollableArea::updateCompositingLayersAfterScroll()
@@ -1456,9 +1452,21 @@ bool RenderLayerScrollableArea::usesCompositedScrolling() const
     return layer()->hasCompositedLayerMapping() && layer()->compositedLayerMapping()->scrollingLayer();
 }
 
-bool RenderLayerScrollableArea::needsCompositedScrolling() const
+static bool layerNeedsCompositedScrolling(const RenderLayer* layer)
 {
-    return scrollsOverflow() && box().view()->compositor()->acceleratedCompositingForOverflowScrollEnabled();
+    return layer->scrollsOverflow()
+        && layer->compositor()->acceleratedCompositingForOverflowScrollEnabled()
+        && !layer->hasDescendantWithClipPath()
+        && !layer->hasAncestorWithClipPath();
+}
+
+void RenderLayerScrollableArea::updateNeedsCompositedScrolling()
+{
+    const bool needsCompositedScrolling = layerNeedsCompositedScrolling(layer());
+    if (static_cast<bool>(m_needsCompositedScrolling) != needsCompositedScrolling) {
+        m_needsCompositedScrolling = needsCompositedScrolling;
+        layer()->didUpdateNeedsCompositedScrolling();
+    }
 }
 
 void RenderLayerScrollableArea::setTopmostScrollChild(RenderLayer* scrollChild)

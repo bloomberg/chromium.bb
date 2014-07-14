@@ -253,7 +253,7 @@ void CompositingRequirementsUpdater::updateRecursive(RenderLayer* ancestorLayer,
             unclippedDescendants.append(layer);
     }
 
-    const IntRect& absBounds = layer->compositingInputs().clippedAbsoluteBoundingBox;
+    const IntRect& absBounds = layer->clippedAbsoluteBoundingBox();
     absoluteDecendantBoundingBox = absBounds;
 
     if (currentRecursionData.m_testingOverlap && !requiresCompositingOrSquashing(directReasons))
@@ -313,7 +313,7 @@ void CompositingRequirementsUpdater::updateRecursive(RenderLayer* ancestorLayer,
                     //        re-compute the absBounds for the child so that we can add the
                     //        negative z-index child's bounds to the new overlap context.
                     overlapMap.beginNewOverlapTestingContext();
-                    overlapMap.add(curNode->layer(), curNode->layer()->compositingInputs().clippedAbsoluteBoundingBox);
+                    overlapMap.add(curNode->layer(), curNode->layer()->clippedAbsoluteBoundingBox());
                     overlapMap.finishCurrentOverlapTestingContext();
                 }
             }

@@ -72,7 +72,7 @@ void CompositingLayerAssigner::SquashingState::updateSquashingStateForNewMapping
 
 bool CompositingLayerAssigner::squashingWouldExceedSparsityTolerance(const RenderLayer* candidate, const CompositingLayerAssigner::SquashingState& squashingState)
 {
-    IntRect bounds = candidate->compositingInputs().clippedAbsoluteBoundingBox;
+    IntRect bounds = candidate->clippedAbsoluteBoundingBox();
     IntRect newBoundingRect = squashingState.boundingRect;
     newBoundingRect.unite(bounds);
     const uint64_t newBoundingRectArea = newBoundingRect.size().area();
@@ -146,10 +146,8 @@ CompositingReasons CompositingLayerAssigner::getReasonsPreventingSquashing(const
     ASSERT(squashingState.hasMostRecentMapping);
     const RenderLayer& squashingLayer = squashingState.mostRecentMapping->owningLayer();
 
-    if (layer->compositingInputs().clippingContainer != squashingLayer.compositingInputs().clippingContainer) {
-        if (!squashingLayer.compositedLayerMapping()->containingSquashedLayer(layer->compositingInputs().clippingContainer))
-            return CompositingReasonSquashingClippingContainerMismatch;
-    }
+    if (layer->clippingContainer() != squashingLayer.clippingContainer() && !squashingLayer.compositedLayerMapping()->containingSquashedLayer(layer->clippingContainer()))
+        return CompositingReasonSquashingClippingContainerMismatch;
 
     // Composited descendants need to be clipped by a child containment graphics layer, which would not be available if the layer is
     // squashed (and therefore has no CLM nor a child containment graphics layer).
@@ -159,8 +157,8 @@ CompositingReasons CompositingLayerAssigner::getReasonsPreventingSquashing(const
     if (layer->scrollsWithRespectTo(&squashingLayer))
         return CompositingReasonScrollsWithRespectToSquashingLayer;
 
-    const RenderLayer::CompositingInputs& compositingInputs = layer->compositingInputs();
-    const RenderLayer::CompositingInputs& squashingLayerCompositingInputs = squashingLayer.compositingInputs();
+    const RenderLayer::AncestorDependentCompositingInputs& compositingInputs = layer->ancestorDependentCompositingInputs();
+    const RenderLayer::AncestorDependentCompositingInputs& squashingLayerCompositingInputs = squashingLayer.ancestorDependentCompositingInputs();
 
     if (compositingInputs.opacityAncestor != squashingLayerCompositingInputs.opacityAncestor)
         return CompositingReasonSquashingOpacityAncestorMismatch;
@@ -257,7 +255,7 @@ void CompositingLayerAssigner::assignLayersToBackingsInternal(RenderLayer* layer
         const bool layerIsSquashed = compositedLayerUpdate == PutInSquashingLayer || (compositedLayerUpdate == NoCompositingStateChange && layer->groupedMapping());
         if (layerIsSquashed) {
             squashingState.nextSquashedLayerIndex++;
-            IntRect layerBounds = layer->compositingInputs().clippedAbsoluteBoundingBox;
+            IntRect layerBounds = layer->clippedAbsoluteBoundingBox();
             squashingState.totalAreaOfSquashedRects += layerBounds.size().area();
             squashingState.boundingRect.unite(layerBounds);
         }

@@ -336,7 +336,7 @@ bool CompositedLayerMapping::owningLayerClippedByLayerNotAboveCompositedAncestor
     if (!compositingAncestor)
         return false;
 
-    const RenderObject* clippingContainer = m_owningLayer.compositingInputs().clippingContainer;
+    const RenderObject* clippingContainer = m_owningLayer.clippingContainer();
     if (!clippingContainer)
         return false;
 
@@ -381,7 +381,7 @@ bool CompositedLayerMapping::updateGraphicsLayerConfiguration()
     if (scrollParent) {
         // If our containing block is our ancestor scrolling layer, then we'll already be clipped
         // to it via our scroll parent and we don't need an ancestor clipping layer.
-        if (m_owningLayer.renderer()->containingBlock()->enclosingLayer() == m_owningLayer.compositingInputs().ancestorScrollingLayer)
+        if (m_owningLayer.renderer()->containingBlock()->enclosingLayer() == m_owningLayer.ancestorScrollingLayer())
             needsAncestorClip = false;
     }
 
@@ -1495,14 +1495,12 @@ void CompositedLayerMapping::updateScrollParent(RenderLayer* scrollParent)
 
 void CompositedLayerMapping::updateClipParent()
 {
-    RenderLayer* clipParent = 0;
-    if (m_owningLayer.compositingReasons() & CompositingReasonOutOfFlowClipping && !owningLayerClippedByLayerNotAboveCompositedAncestor()) {
-        // Go to the containing block and then find the next compositing layer, including the containing block itsef. We don't just call
-        // enclosingCompositingLayer(ExcludeSelf) because containingBlock has special magic to jump up the hierarchy for fixed position elements
-        // (e.g. the containing block of a fixed position element is usually the document; see RenderObject::canContainFixedPositionObjects).
-        if (RenderObject* containingBlock = m_owningLayer.renderer()->containingBlock())
-            clipParent = containingBlock->enclosingLayer()->enclosingLayerWithCompositedLayerMapping(IncludeSelf);
-    }
+    if (owningLayerClippedByLayerNotAboveCompositedAncestor())
+        return;
+
+    RenderLayer* clipParent = m_owningLayer.clipParent();
+    if (clipParent)
+        clipParent = clipParent->enclosingLayerWithCompositedLayerMapping(IncludeSelf);
 
     if (ScrollingCoordinator* scrollingCoordinator = scrollingCoordinatorFromLayer(m_owningLayer))
         scrollingCoordinator->updateClipParentForGraphicsLayer(m_graphicsLayer.get(), clipParent);
@@ -1952,8 +1950,8 @@ const GraphicsLayerPaintInfo* CompositedLayerMapping::containingSquashedLayer(co
 
 IntRect CompositedLayerMapping::localClipRectForSquashedLayer(const RenderLayer& referenceLayer, const GraphicsLayerPaintInfo& paintInfo, const Vector<GraphicsLayerPaintInfo>& layers)
 {
-    const RenderObject* clippingContainer = paintInfo.renderLayer->compositingInputs().clippingContainer;
-    if (clippingContainer == referenceLayer.compositingInputs().clippingContainer)
+    const RenderObject* clippingContainer = paintInfo.renderLayer->clippingContainer();
+    if (clippingContainer == referenceLayer.clippingContainer())
         return PaintInfo::infiniteRect();
 
     ASSERT(clippingContainer);
