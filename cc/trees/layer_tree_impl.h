@@ -205,6 +205,8 @@ class CC_EXPORT LayerTreeImpl {
   void RegisterLayer(LayerImpl* layer);
   void UnregisterLayer(LayerImpl* layer);
 
+  size_t NumLayers();
+
   AnimationRegistrar* animationRegistrar() const;
 
   void PushPersistedState(LayerTreeImpl* pending_tree);

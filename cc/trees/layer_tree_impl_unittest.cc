@@ -2319,5 +2319,20 @@ TEST_F(LayerTreeImplTest, SelectionBoundsForScaledLayers) {
   EXPECT_TRUE(right_output.visible);
 }
 
+TEST_F(LayerTreeImplTest, NumLayersTestOne) {
+  EXPECT_EQ(0u, host_impl().active_tree()->NumLayers());
+  scoped_ptr<LayerImpl> root = LayerImpl::Create(host_impl().active_tree(), 1);
+  EXPECT_EQ(1u, host_impl().active_tree()->NumLayers());
+}
+
+TEST_F(LayerTreeImplTest, NumLayersSmallTree) {
+  EXPECT_EQ(0u, host_impl().active_tree()->NumLayers());
+  scoped_ptr<LayerImpl> root = LayerImpl::Create(host_impl().active_tree(), 1);
+  root->AddChild(LayerImpl::Create(host_impl().active_tree(), 2));
+  root->AddChild(LayerImpl::Create(host_impl().active_tree(), 3));
+  root->child_at(1)->AddChild(LayerImpl::Create(host_impl().active_tree(), 4));
+  EXPECT_EQ(4u, host_impl().active_tree()->NumLayers());
+}
+
 }  // namespace
 }  // namespace cc

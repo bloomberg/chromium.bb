@@ -561,6 +561,10 @@ void LayerTreeImpl::UnregisterLayer(LayerImpl* layer) {
   layer_id_map_.erase(layer->id());
 }
 
+size_t LayerTreeImpl::NumLayers() {
+  return layer_id_map_.size();
+}
+
 void LayerTreeImpl::PushPersistedState(LayerTreeImpl* pending_tree) {
   pending_tree->SetCurrentlyScrollingLayer(
       LayerTreeHostCommon::FindLayerInSubtree(pending_tree->root_layer(),

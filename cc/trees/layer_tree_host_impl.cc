@@ -1102,6 +1102,9 @@ DrawResult LayerTreeHostImpl::PrepareToDraw(FrameData* frame) {
   }
   need_to_update_visible_tiles_before_draw_ = true;
 
+  UMA_HISTOGRAM_CUSTOM_COUNTS(
+      "Compositing.NumActiveLayers", active_tree_->NumLayers(), 1, 400, 20);
+
   bool ok = active_tree_->UpdateDrawProperties();
   DCHECK(ok) << "UpdateDrawProperties failed during draw";
 

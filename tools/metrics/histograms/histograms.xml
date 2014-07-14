@@ -2743,6 +2743,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Compositing.NumActiveLayers">
+  <owner>dneto@chromium.org</owner>
+  <summary>
+    The number of layers in the active tree for each compositor frame. This is
+    logged once per frame, before the frame is drawn.
+  </summary>
+</histogram>
+
 <histogram name="ConnectivityDiagnostics.ChromeOsSignalStrength"
     units="percent">
   <owner>ebeach@google.com</owner>
