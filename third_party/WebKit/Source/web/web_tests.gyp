@@ -41,49 +41,12 @@
     ],
     'targets': [
         {
-            'target_name': 'webkit_unit_tests_resources',
-            'type': 'none',
-            'dependencies': [
-                '<(DEPTH)/net/net.gyp:net_resources',
-                '<(DEPTH)/ui/resources/ui_resources.gyp:ui_resources',
-                '<(DEPTH)/webkit/webkit_resources.gyp:webkit_resources',
-            ],
-            'actions': [{
-                'action_name': 'repack_webkit_unit_tests_resources',
-                'variables': {
-                    'repack_path': '<(DEPTH)/tools/grit/grit/format/repack.py',
-                    'pak_inputs': [
-                        '<(SHARED_INTERMEDIATE_DIR)/net/net_resources.pak',
-                        '<(SHARED_INTERMEDIATE_DIR)/ui/resources/ui_resources_100_percent.pak',
-                        '<(SHARED_INTERMEDIATE_DIR)/webkit/blink_resources.pak',
-                        '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_resources_100_percent.pak',
-                ]},
-                'inputs': [
-                    '<(repack_path)',
-                    '<@(pak_inputs)',
-                ],
-                'outputs': [
-                    '<(PRODUCT_DIR)/webkit_unit_tests_resources.pak',
-                ],
-                'action': ['python', '<(repack_path)', '<@(_outputs)', '<@(pak_inputs)'],
-            }],
-            'conditions': [
-                ['OS=="mac"', {
-                    'all_dependent_settings': {
-                        'mac_bundle_resources': [
-                            '<(PRODUCT_DIR)/webkit_unit_tests_resources.pak',
-                        ],
-                    },
-                }],
-            ]
-        },
-        {
             'target_name': 'webkit_unit_tests',
             'type': 'executable',
             'variables': { 'enable_wexit_time_destructors': 1, },
             'dependencies': [
-                '../config.gyp:unittest_config',
                 '../../public/blink.gyp:blink',
+                '../config.gyp:unittest_config',
                 '../wtf/wtf_tests.gyp:wtf_unittest_helpers',
                 'web.gyp:blink_web_test_support',
                 '<(DEPTH)/base/base.gyp:base',
@@ -96,7 +59,6 @@
                 '<(DEPTH)/url/url.gyp:url_lib',
                 '<(DEPTH)/v8/tools/gyp/v8.gyp:v8',
                 '<(DEPTH)/content/content_shell_and_tests.gyp:test_support_content',
-                'webkit_unit_tests_resources',
             ],
             'sources': [
                 '../web/tests/RunAllTests.cpp',
