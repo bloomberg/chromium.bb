@@ -237,16 +237,16 @@ Visit http://www.chromium.org/developers/core-principles for Chrome's policy
 on perf regressions.
 Contact chrome-perf-dashboard-team with any questions or suggestions about
 bisecting.
-                    .------.
-      .---.         \       \==)
-      |PERF\         \       \\
-      |     ---------'-------'-----------.
-      . 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 `-.
-      \______________.-------._______________)
-                    /       /
-                   /       /
-                  /       /==)
-                 ._______."""
+.                   .------.
+.     .---.         \       \==)
+.     |PERF\         \       \\
+.     |     ---------'-------'-----------.
+.     . 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 `-.
+.     \______________.-------._______________)
+.                   /       /
+.                  /       /
+.                 /       /==)
+.                ._______."""
 
 
 def _AddAdditionalDepotInfo(depot_info):
