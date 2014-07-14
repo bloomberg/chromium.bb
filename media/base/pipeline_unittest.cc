@@ -210,7 +210,6 @@ class PipelineTest : public ::testing::Test {
       }
 
       if (video_stream_) {
-        EXPECT_CALL(*video_renderer_, SetPlaybackRate(0.0f));
         EXPECT_CALL(*video_renderer_, StartPlayingFrom(base::TimeDelta()))
             .WillOnce(SetBufferingState(&video_buffering_state_cb_,
                                         BUFFERING_HAVE_ENOUGH));
@@ -287,7 +286,6 @@ class PipelineTest : public ::testing::Test {
       EXPECT_CALL(*video_renderer_, StartPlayingFrom(seek_time))
           .WillOnce(SetBufferingState(&video_buffering_state_cb_,
                                       BUFFERING_HAVE_ENOUGH));
-      EXPECT_CALL(*video_renderer_, SetPlaybackRate(_));
     }
 
     // We expect a successful seek callback followed by a buffering update.
@@ -635,7 +633,6 @@ TEST_F(PipelineTest, AudioStreamShorterThanVideo) {
   EXPECT_EQ(0, pipeline_->GetMediaTime().ToInternalValue());
 
   float playback_rate = 1.0f;
-  EXPECT_CALL(*video_renderer_, SetPlaybackRate(playback_rate));
   EXPECT_CALL(*audio_renderer_, SetPlaybackRate(playback_rate));
   pipeline_->SetPlaybackRate(playback_rate);
   message_loop_.RunUntilIdle();
@@ -1004,7 +1001,6 @@ class PipelineTeardownTest : public PipelineTest {
                                     BUFFERING_HAVE_ENOUGH));
 
     EXPECT_CALL(*audio_renderer_, SetPlaybackRate(0.0f));
-    EXPECT_CALL(*video_renderer_, SetPlaybackRate(0.0f));
     EXPECT_CALL(*audio_renderer_, SetVolume(1.0f));
     EXPECT_CALL(*audio_renderer_, StartRendering());
 

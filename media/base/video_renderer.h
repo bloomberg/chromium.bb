@@ -75,9 +75,6 @@ class MEDIA_EXPORT VideoRenderer {
   // when complete.
   virtual void Stop(const base::Closure& callback) = 0;
 
-  // Updates the current playback rate.
-  virtual void SetPlaybackRate(float playback_rate) = 0;
-
  private:
   DISALLOW_COPY_AND_ASSIGN(VideoRenderer);
 };
