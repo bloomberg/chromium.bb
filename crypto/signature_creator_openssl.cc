@@ -12,6 +12,7 @@
 #include "base/stl_util.h"
 #include "crypto/openssl_util.h"
 #include "crypto/rsa_private_key.h"
+#include "crypto/scoped_openssl_types.h"
 
 namespace crypto {
 
@@ -30,14 +31,14 @@ bool SignatureCreator::Sign(RSAPrivateKey* key,
                             const uint8* data,
                             int data_len,
                             std::vector<uint8>* signature) {
-  RSA* rsa_key = EVP_PKEY_get1_RSA(key->key());
+  ScopedRSA rsa_key(EVP_PKEY_get1_RSA(key->key()));
   if (!rsa_key)
     return false;
-  signature->resize(RSA_size(rsa_key));
+  signature->resize(RSA_size(rsa_key.get()));
 
   unsigned int len = 0;
   bool success = RSA_sign(NID_sha1, data, data_len, vector_as_array(signature),
-                          &len, rsa_key);
+                          &len, rsa_key.get());
   if (!success) {
     signature->clear();
     return false;
