@@ -146,7 +146,7 @@ public:
     // since it's not clear that they alter the style bits of siblings and children.
     void checkForChildrenAdjacentRuleChanges();
     enum SiblingCheckType { FinishedParsingChildren, SiblingRemoved, Other };
-    void checkForSiblingStyleChanges(SiblingCheckType, Node* beforeChange, Node* afterChange);
+    void checkForSiblingStyleChanges(SiblingCheckType, Node* nodeBeforeChange, Node* nodeAfterChange);
 
     bool childrenSupportStyleSharing() const { return !hasRestyleFlags(); }
 

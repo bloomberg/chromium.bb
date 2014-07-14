@@ -1242,7 +1242,7 @@ void ContainerNode::checkForChildrenAdjacentRuleChanges()
     }
 }
 
-void ContainerNode::checkForSiblingStyleChanges(SiblingCheckType changeType, Node* beforeChange, Node* afterChange)
+void ContainerNode::checkForSiblingStyleChanges(SiblingCheckType changeType, Node* nodeBeforeChange, Node* nodeAfterChange)
 {
     if (!inActiveDocument() || document().hasPendingForcedStyleRecalc() || styleChangeType() >= SubtreeStyleChange)
         return;
@@ -1258,8 +1258,8 @@ void ContainerNode::checkForSiblingStyleChanges(SiblingCheckType changeType, Nod
     // |afterChange| is 0 in the parser callback case, so we won't do any work for the forward case if we don't have to.
     // For performance reasons we just mark the parent node as changed, since we don't want to make childrenChanged O(n^2) by crawling all our kids
     // here. recalcStyle will then force a walk of the children when it sees that this has happened.
-    if (((childrenAffectedByForwardPositionalRules() || childrenAffectedByIndirectAdjacentRules()) && afterChange)
-        || (childrenAffectedByBackwardPositionalRules() && beforeChange)) {
+    if (((childrenAffectedByForwardPositionalRules() || childrenAffectedByIndirectAdjacentRules()) && nodeAfterChange)
+        || (childrenAffectedByBackwardPositionalRules() && nodeBeforeChange)) {
         setNeedsStyleRecalc(SubtreeStyleChange);
         return;
     }
@@ -1267,49 +1267,51 @@ void ContainerNode::checkForSiblingStyleChanges(SiblingCheckType changeType, Nod
     // :first-child. In the parser callback case, we don't have to check anything, since we were right the first time.
     // In the DOM case, we only need to do something if |afterChange| is not 0.
     // |afterChange| is 0 in the parser case, so it works out that we'll skip this block.
-    if (childrenAffectedByFirstChildRules() && afterChange) {
-        // Find our new first child.
-        Element* newFirstChild = ElementTraversal::firstWithin(*this);
-        RenderStyle* newFirstChildStyle = newFirstChild ? newFirstChild->renderStyle() : 0;
+    if (childrenAffectedByFirstChildRules() && nodeAfterChange) {
+        ASSERT(changeType != FinishedParsingChildren);
+        // Find our new first child element.
+        Element* firstChildElement = ElementTraversal::firstChild(*this);
+        RenderStyle* firstChildElementStyle = firstChildElement ? firstChildElement->renderStyle() : 0;
 
-        // Find the first element node following |afterChange|
-        Node* firstElementAfterInsertion = afterChange->isElementNode() ? afterChange : ElementTraversal::nextSibling(*afterChange);
-        RenderStyle* firstElementAfterInsertionStyle = firstElementAfterInsertion ? firstElementAfterInsertion->renderStyle() : 0;
+        // Find the first element after the change.
+        Element* elementAfterChange = nodeAfterChange->isElementNode() ? toElement(nodeAfterChange) : ElementTraversal::nextSibling(*nodeAfterChange);
+        RenderStyle* elementAfterChangeStyle = elementAfterChange ? elementAfterChange->renderStyle() : 0;
 
-        // This is the insert/append case.
-        if (newFirstChild != firstElementAfterInsertion && firstElementAfterInsertionStyle && firstElementAfterInsertionStyle->firstChildState())
-            firstElementAfterInsertion->setNeedsStyleRecalc(SubtreeStyleChange);
+        // This is the element insertion as first child element case.
+        if (firstChildElement != elementAfterChange && elementAfterChangeStyle && elementAfterChangeStyle->firstChildState())
+            elementAfterChange->setNeedsStyleRecalc(SubtreeStyleChange);
 
-        // We also have to handle node removal.
-        if (changeType == SiblingRemoved && newFirstChild == firstElementAfterInsertion && newFirstChild && (!newFirstChildStyle || !newFirstChildStyle->firstChildState()))
-            newFirstChild->setNeedsStyleRecalc(SubtreeStyleChange);
+        // This is the first child element removal case.
+        if (changeType == SiblingRemoved && firstChildElement == elementAfterChange && firstChildElement && (!firstChildElementStyle || !firstChildElementStyle->firstChildState()))
+            firstChildElement->setNeedsStyleRecalc(SubtreeStyleChange);
     }
 
     // :last-child. In the parser callback case, we don't have to check anything, since we were right the first time.
     // In the DOM case, we only need to do something if |afterChange| is not 0.
-    if (childrenAffectedByLastChildRules() && beforeChange) {
-        // Find our new last child.
-        Node* newLastChild = ElementTraversal::lastChild(*this);
-        RenderStyle* newLastChildStyle = newLastChild ? newLastChild->renderStyle() : 0;
+    if (childrenAffectedByLastChildRules() && nodeBeforeChange) {
+        // Find our new last child element.
+        Element* lastChildElement = ElementTraversal::lastChild(*this);
+        RenderStyle* lastChildElementStyle = lastChildElement ? lastChildElement->renderStyle() : 0;
 
-        // Find the last element node going backwards from |beforeChange|
-        Node* lastElementBeforeInsertion = beforeChange->isElementNode() ? beforeChange : ElementTraversal::previousSibling(*beforeChange);
-        RenderStyle* lastElementBeforeInsertionStyle = lastElementBeforeInsertion ? lastElementBeforeInsertion->renderStyle() : 0;
+        // Find the last element before the change.
+        Element* elementBeforeChange = nodeBeforeChange->isElementNode() ? toElement(nodeBeforeChange) : ElementTraversal::previousSibling(*nodeBeforeChange);
+        RenderStyle* elementBeforeChangeStyle = elementBeforeChange ? elementBeforeChange->renderStyle() : 0;
 
-        if (newLastChild != lastElementBeforeInsertion && lastElementBeforeInsertionStyle && lastElementBeforeInsertionStyle->lastChildState())
-            lastElementBeforeInsertion->setNeedsStyleRecalc(SubtreeStyleChange);
+        // This is the element insertion as last child element case.
+        if (lastChildElement != elementBeforeChange && elementBeforeChangeStyle && elementBeforeChangeStyle->lastChildState())
+            elementBeforeChange->setNeedsStyleRecalc(SubtreeStyleChange);
 
-        // We also have to handle node removal. The parser callback case is similar to node removal as well in that we need to change the last child
+        // This is the last child element removal case. The parser callback case is similar to node removal as well in that we need to change the last child
         // to match now.
-        if ((changeType == SiblingRemoved || changeType == FinishedParsingChildren) && newLastChild == lastElementBeforeInsertion && newLastChild && (!newLastChildStyle || !newLastChildStyle->lastChildState()))
-            newLastChild->setNeedsStyleRecalc(SubtreeStyleChange);
+        if ((changeType == SiblingRemoved || changeType == FinishedParsingChildren) && lastChildElement == elementBeforeChange && lastChildElement && (!lastChildElementStyle || !lastChildElementStyle->lastChildState()))
+            lastChildElement->setNeedsStyleRecalc(SubtreeStyleChange);
     }
 
-    // The + selector. We need to invalidate the first element following the insertion point. It is the only possible element
+    // The + selector. We need to invalidate the first element following the change. It is the only possible element
     // that could be affected by this DOM change.
-    if (childrenAffectedByDirectAdjacentRules() && afterChange) {
-        if (Node* firstElementAfterInsertion = afterChange->isElementNode() ? afterChange : ElementTraversal::nextSibling(*afterChange))
-            firstElementAfterInsertion->setNeedsStyleRecalc(SubtreeStyleChange);
+    if (childrenAffectedByDirectAdjacentRules() && nodeAfterChange) {
+        if (Element* elementAfterChange = nodeAfterChange->isElementNode() ? toElement(nodeAfterChange) : ElementTraversal::nextSibling(*nodeAfterChange))
+            elementAfterChange->setNeedsStyleRecalc(SubtreeStyleChange);
     }
 }
 
