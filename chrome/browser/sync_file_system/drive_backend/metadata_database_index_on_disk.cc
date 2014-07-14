@@ -46,7 +46,7 @@
 //   value: <int64 'app_root_tracker_id'>
 //
 //   # Index from file ID to the active tracker ID
-//   key: "ACTIVE_BY_FILE: " + <string 'file_id'>
+//   key: "ACTIVE_FILE: " + <string 'file_id'>
 //   value: <int64 'active_tracker_id'>
 //
 //   # Index from file ID to a tracker ID
