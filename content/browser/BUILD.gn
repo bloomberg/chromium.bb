@@ -324,6 +324,7 @@ source_set("browser") {
 
   if (is_chromeos) {
     sources -= [
+      "battery_status/battery_status_manager_default.cc",
       "geolocation/wifi_data_provider_linux.cc",
       "power_save_blocker_ozone.cc",
       "power_save_blocker_x11.cc",

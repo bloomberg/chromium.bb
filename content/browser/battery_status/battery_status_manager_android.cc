@@ -2,9 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/battery_status/battery_status_manager.h"
+#include "content/browser/battery_status/battery_status_manager_android.h"
 
 #include "base/android/jni_android.h"
+#include "base/android/scoped_java_ref.h"
 #include "base/metrics/histogram.h"
 #include "jni/BatteryStatusManager_jni.h"
 
@@ -12,7 +13,7 @@ using base::android::AttachCurrentThread;
 
 namespace content {
 
-BatteryStatusManager::BatteryStatusManager(
+BatteryStatusManagerAndroid::BatteryStatusManagerAndroid(
     const BatteryStatusService::BatteryUpdateCallback& callback)
     : callback_(callback) {
   j_manager_.Reset(
@@ -20,19 +21,20 @@ BatteryStatusManager::BatteryStatusManager(
           AttachCurrentThread(), base::android::GetApplicationContext()));
 }
 
-BatteryStatusManager::BatteryStatusManager() {
+BatteryStatusManagerAndroid::~BatteryStatusManagerAndroid() {
 }
 
-BatteryStatusManager::~BatteryStatusManager() {
-}
-
-bool BatteryStatusManager::Register(JNIEnv* env) {
+// static
+bool BatteryStatusManagerAndroid::Register(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }
 
-void BatteryStatusManager::GotBatteryStatus(JNIEnv*, jobject,
-    jboolean charging, jdouble charging_time, jdouble discharging_time,
-    jdouble level) {
+void BatteryStatusManagerAndroid::GotBatteryStatus(JNIEnv*,
+                                                   jobject,
+                                                   jboolean charging,
+                                                   jdouble charging_time,
+                                                   jdouble discharging_time,
+                                                   jdouble level) {
   blink::WebBatteryStatus status;
   status.charging = charging;
   status.chargingTime = charging_time;
@@ -41,16 +43,23 @@ void BatteryStatusManager::GotBatteryStatus(JNIEnv*, jobject,
   callback_.Run(status);
 }
 
-bool BatteryStatusManager::StartListeningBatteryChange() {
+bool BatteryStatusManagerAndroid::StartListeningBatteryChange() {
   bool result = Java_BatteryStatusManager_start(AttachCurrentThread(),
       j_manager_.obj(), reinterpret_cast<intptr_t>(this));
   UMA_HISTOGRAM_BOOLEAN("BatteryStatus.StartAndroid", result);
   return result;
 }
 
-void BatteryStatusManager::StopListeningBatteryChange() {
+void BatteryStatusManagerAndroid::StopListeningBatteryChange() {
   Java_BatteryStatusManager_stop(
       AttachCurrentThread(), j_manager_.obj());
+}
+
+// static
+scoped_ptr<BatteryStatusManager> BatteryStatusManager::Create(
+    const BatteryStatusService::BatteryUpdateCallback& callback) {
+  return scoped_ptr<BatteryStatusManager>(
+      new BatteryStatusManagerAndroid(callback));
 }
 
 }  // namespace content

@@ -17,10 +17,7 @@ class FakeBatteryManager : public BatteryStatusManager {
  public:
   explicit FakeBatteryManager(
       const BatteryStatusService::BatteryUpdateCallback& callback)
-      : start_invoked_count_(0),
-        stop_invoked_count_(0) {
-    callback_ = callback;
-  }
+      : callback_(callback), start_invoked_count_(0), stop_invoked_count_(0) {}
   virtual ~FakeBatteryManager() { }
 
   // Methods from Battery Status Manager
@@ -41,6 +38,7 @@ class FakeBatteryManager : public BatteryStatusManager {
   int stop_invoked_count() const { return stop_invoked_count_; }
 
  private:
+  BatteryStatusService::BatteryUpdateCallback callback_;
   int start_invoked_count_;
   int stop_invoked_count_;
 

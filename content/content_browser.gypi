@@ -362,6 +362,8 @@
       'browser/appcache/view_appcache_internals_job.h',
 
       'browser/battery_status/battery_status_manager_android.cc',
+      'browser/battery_status/battery_status_manager_android.h',
+      'browser/battery_status/battery_status_manager_chromeos.cc',
       'browser/battery_status/battery_status_manager_default.cc',
       'browser/battery_status/battery_status_manager.h',
       'browser/battery_status/battery_status_message_filter.cc',
@@ -1766,6 +1768,7 @@
         '../chromeos/chromeos.gyp:power_manager_proto',
       ],
       'sources!': [
+        'browser/battery_status/battery_status_manager_default.cc',
         'browser/geolocation/wifi_data_provider_linux.cc',
         'browser/power_save_blocker_ozone.cc',
         'browser/power_save_blocker_x11.cc',

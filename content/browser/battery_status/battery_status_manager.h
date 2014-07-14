@@ -5,12 +5,8 @@
 #ifndef CHROME_BROWSER_BATTERY_STATUS_BATTERY_STATUS_MANAGER_H_
 #define CHROME_BROWSER_BATTERY_STATUS_BATTERY_STATUS_MANAGER_H_
 
+#include "base/memory/scoped_ptr.h"
 #include "build/build_config.h"
-
-#if defined(OS_ANDROID)
-#include "base/android/scoped_java_ref.h"
-#endif
-
 #include "content/browser/battery_status/battery_status_service.h"
 
 namespace content {
@@ -18,38 +14,21 @@ namespace content {
 // Platform specific manager class for fetching battery status data.
 class CONTENT_EXPORT BatteryStatusManager {
  public:
-  explicit BatteryStatusManager(
+  // Creates a BatteryStatusManager object. |callback| should be called when the
+  // battery status changes.
+  static scoped_ptr<BatteryStatusManager> Create(
       const BatteryStatusService::BatteryUpdateCallback& callback);
-  virtual ~BatteryStatusManager();
+
+  virtual ~BatteryStatusManager() {}
 
   // Start listening for battery status changes. New updates are signalled
   // by invoking the callback provided at construction time.
-  virtual bool StartListeningBatteryChange();
+  // Note that this is called in the IO thread.
+  virtual bool StartListeningBatteryChange() = 0;
 
   // Stop listening for battery status changes.
-  virtual void StopListeningBatteryChange();
-
-#if defined(OS_ANDROID)
-  // Must be called at startup.
-  static bool Register(JNIEnv* env);
-
-  // Called from Java via JNI.
-  void GotBatteryStatus(JNIEnv*, jobject, jboolean charging,
-                        jdouble charging_time, jdouble discharging_time,
-                        jdouble level);
-#endif
-
- protected:
-  BatteryStatusManager();
-  BatteryStatusService::BatteryUpdateCallback callback_;
-
- private:
-#if defined(OS_ANDROID)
-  // Java provider of battery status info.
-  base::android::ScopedJavaGlobalRef<jobject> j_manager_;
-#endif
-
-  DISALLOW_COPY_AND_ASSIGN(BatteryStatusManager);
+  // Note that this is called in the IO thread.
+  virtual void StopListeningBatteryChange() = 0;
 };
 
 }  // namespace content

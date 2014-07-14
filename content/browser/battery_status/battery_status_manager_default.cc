@@ -8,24 +8,33 @@
 
 namespace content {
 
-BatteryStatusManager::BatteryStatusManager(
-    const BatteryStatusService::BatteryUpdateCallback& callback)
-    : callback_(callback) {
-}
+namespace {
 
-BatteryStatusManager::BatteryStatusManager() {
-}
+class BatteryStatusManagerDefault : public BatteryStatusManager {
+ public:
+  explicit BatteryStatusManagerDefault(
+      const BatteryStatusService::BatteryUpdateCallback& callback) {}
+  virtual ~BatteryStatusManagerDefault() {}
 
-BatteryStatusManager::~BatteryStatusManager() {
-}
+ private:
+  // BatteryStatusManager:
+  virtual bool StartListeningBatteryChange() OVERRIDE {
+    NOTIMPLEMENTED();
+    return false;
+  }
 
-bool BatteryStatusManager::StartListeningBatteryChange() {
-  NOTIMPLEMENTED();
-  return false;
-}
+  virtual void StopListeningBatteryChange() OVERRIDE { NOTIMPLEMENTED(); }
 
-void BatteryStatusManager::StopListeningBatteryChange() {
-  NOTIMPLEMENTED();
+  DISALLOW_COPY_AND_ASSIGN(BatteryStatusManagerDefault);
+};
+
+}  // namespace
+
+// static
+scoped_ptr<BatteryStatusManager> BatteryStatusManager::Create(
+    const BatteryStatusService::BatteryUpdateCallback& callback) {
+  return scoped_ptr<BatteryStatusManager>(
+      new BatteryStatusManagerDefault(callback));
 }
 
 }  // namespace content

@@ -22,10 +22,7 @@ class FakeBatteryManager : public BatteryStatusManager {
  public:
   explicit FakeBatteryManager(
       const BatteryStatusService::BatteryUpdateCallback& callback)
-      : battery_status_available_(true),
-        started_(false) {
-    callback_ = callback;
-  }
+      : callback_(callback), battery_status_available_(true), started_(false) {}
   virtual ~FakeBatteryManager() { }
 
   // Methods from BatteryStatusManager.
@@ -55,6 +52,7 @@ class FakeBatteryManager : public BatteryStatusManager {
   }
 
  private:
+  BatteryStatusService::BatteryUpdateCallback callback_;
   bool battery_status_available_;
   bool started_;
   blink::WebBatteryStatus status_;

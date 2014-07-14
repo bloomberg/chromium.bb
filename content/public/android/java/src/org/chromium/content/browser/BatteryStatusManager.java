@@ -140,6 +140,6 @@ class BatteryStatusManager {
      * Native JNI call
      * see content/browser/battery_status/battery_status_manager.cc
      */
-    private native void nativeGotBatteryStatus(long nativeBatteryStatusManager,
+    private native void nativeGotBatteryStatus(long nativeBatteryStatusManagerAndroid,
             boolean charging, double chargingTime, double dischargingTime, double level);
 }

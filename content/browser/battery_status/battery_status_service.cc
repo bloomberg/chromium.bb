@@ -34,7 +34,7 @@ BatteryStatusService::AddCallback(const BatteryUpdateCallback& callback) {
   DCHECK(!is_shutdown_);
 
   if (!battery_fetcher_)
-    battery_fetcher_.reset(new BatteryStatusManager(update_callback_));
+    battery_fetcher_ = BatteryStatusManager::Create(update_callback_);
 
   if (callback_list_.empty()) {
     bool success = battery_fetcher_->StartListeningBatteryChange();
