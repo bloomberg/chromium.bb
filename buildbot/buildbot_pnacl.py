@@ -85,6 +85,7 @@ def BuildScriptX86(status, context):
                 'hello_world',
                 'irt_futex',
                 'malloc_realloc_calloc_free',
+                'stack_alignment',
                 'syscall',
                 'thread']]
       # Extra non-IRT-using test to run for x86-32
@@ -99,6 +100,7 @@ def BuildScriptX86(status, context):
                     'run_printf_test',
                     'run_pwrite_test',
                     'run_socket_test',
+                    'run_stack_alignment_test',
                     'run_syscall_test',
                     'run_thread_test'])
       SCons(context, parallel=True, mode=irt_mode,

@@ -38,6 +38,7 @@ readonly SCONS_NONSFI_NEWLIB_TESTS="\
     run_float_test_irt \
     run_hello_world_test_irt \
     run_malloc_realloc_calloc_free_test_irt \
+    run_stack_alignment_test_irt \
     run_syscall_test_irt"
 # This uses the host-libc-based nonsfi_loader, for which only a subset of
 # the tests works so far.
@@ -74,6 +75,7 @@ readonly SCONS_NONSFI_TC="\
     run_printf_test \
     run_pwrite_test \
     run_socket_test \
+    run_stack_alignment_test \
     run_syscall_test"
 
 # subset of tests used on toolchain builders

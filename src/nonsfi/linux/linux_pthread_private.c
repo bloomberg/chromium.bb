@@ -64,8 +64,7 @@ static int nacl_irt_thread_create(void (*start_func)(void), void *stack,
                         * pop the stack to get start_func and call it.
                         */
                        "mov $0, %%ebp\n"
-                       "pop %%eax\n"
-                       "call *%%eax\n"
+                       "call *(%%esp)\n"
                        /* start_func never finishes. */
                        "hlt\n"
                        "0:\n"
