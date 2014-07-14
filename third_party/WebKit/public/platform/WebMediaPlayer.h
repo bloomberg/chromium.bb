@@ -161,7 +161,6 @@ public:
 
     // Instruct WebMediaPlayer to enter/exit fullscreen.
     virtual void enterFullscreen() { }
-    virtual void exitFullscreen() { }
     // Returns true if the player can enter fullscreen.
     virtual bool canEnterFullscreen() const { return false; }
 
