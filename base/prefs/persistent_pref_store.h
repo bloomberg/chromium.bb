@@ -46,12 +46,6 @@ class BASE_PREFS_EXPORT PersistentPrefStore : public WriteablePrefStore {
     virtual void OnError(PrefReadError error) = 0;
   };
 
-  // Same as SetValue, but doesn't generate notifications. This is used by
-  // PrefService::GetMutableUserPref() in order to put empty entries
-  // into the user pref store. Using SetValue is not an option since existing
-  // tests rely on the number of notifications generated.
-  virtual void SetValueSilently(const std::string& key, base::Value* value) = 0;
-
   // Whether the store is in a pseudo-read-only mode where changes are not
   // actually persisted to disk.  This happens in some cases when there are
   // read errors during startup.

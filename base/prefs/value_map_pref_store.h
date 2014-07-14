@@ -33,6 +33,8 @@ class BASE_PREFS_EXPORT ValueMapPrefStore : public WriteablePrefStore {
   virtual bool GetMutableValue(const std::string& key,
                                base::Value** value) OVERRIDE;
   virtual void ReportValueChanged(const std::string& key) OVERRIDE;
+  virtual void SetValueSilently(const std::string& key,
+                                base::Value* value) OVERRIDE;
 
  protected:
   virtual ~ValueMapPrefStore();

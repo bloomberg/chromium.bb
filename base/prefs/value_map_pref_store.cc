@@ -47,6 +47,11 @@ void ValueMapPrefStore::ReportValueChanged(const std::string& key) {
   FOR_EACH_OBSERVER(Observer, observers_, OnPrefValueChanged(key));
 }
 
+void ValueMapPrefStore::SetValueSilently(const std::string& key,
+                                         base::Value* value) {
+  prefs_.SetValue(key, value);
+}
+
 ValueMapPrefStore::~ValueMapPrefStore() {}
 
 void ValueMapPrefStore::NotifyInitializationCompleted() {
