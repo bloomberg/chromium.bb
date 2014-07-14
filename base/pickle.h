@@ -36,6 +36,7 @@ class BASE_EXPORT PickleIterator {
   bool ReadInt64(int64* result) WARN_UNUSED_RESULT;
   bool ReadUInt64(uint64* result) WARN_UNUSED_RESULT;
   bool ReadFloat(float* result) WARN_UNUSED_RESULT;
+  bool ReadDouble(double* result) WARN_UNUSED_RESULT;
   bool ReadString(std::string* result) WARN_UNUSED_RESULT;
   bool ReadWString(std::wstring* result) WARN_UNUSED_RESULT;
   bool ReadString16(base::string16* result) WARN_UNUSED_RESULT;
@@ -175,6 +176,10 @@ class BASE_EXPORT Pickle {
                  float* result) const WARN_UNUSED_RESULT {
     return iter->ReadFloat(result);
   }
+  bool ReadDouble(PickleIterator* iter,
+                  double* result) const WARN_UNUSED_RESULT {
+    return iter->ReadDouble(result);
+  }
   bool ReadString(PickleIterator* iter,
                   std::string* result) const WARN_UNUSED_RESULT {
     return iter->ReadString(result);
@@ -244,6 +249,9 @@ class BASE_EXPORT Pickle {
     return WritePOD(value);
   }
   bool WriteFloat(float value) {
+    return WritePOD(value);
+  }
+  bool WriteDouble(double value) {
     return WritePOD(value);
   }
   bool WriteString(const std::string& value);

@@ -24,6 +24,7 @@ const bool testbool1 = false;
 const bool testbool2 = true;
 const uint16 testuint16 = 32123;
 const float testfloat = 3.1415926935f;
+const double testdouble = 2.71828182845904523;
 
 // checks that the result
 void VerifyResult(const Pickle& pickle) {
@@ -55,6 +56,10 @@ void VerifyResult(const Pickle& pickle) {
   EXPECT_TRUE(pickle.ReadFloat(&iter, &outfloat));
   EXPECT_EQ(testfloat, outfloat);
 
+  double outdouble;
+  EXPECT_TRUE(pickle.ReadDouble(&iter, &outdouble));
+  EXPECT_EQ(testdouble, outdouble);
+
   const char* outdata;
   int outdatalen;
   EXPECT_TRUE(pickle.ReadData(&iter, &outdata, &outdatalen));
@@ -77,6 +82,7 @@ TEST(PickleTest, EncodeDecode) {
   EXPECT_TRUE(pickle.WriteBool(testbool2));
   EXPECT_TRUE(pickle.WriteUInt16(testuint16));
   EXPECT_TRUE(pickle.WriteFloat(testfloat));
+  EXPECT_TRUE(pickle.WriteDouble(testdouble));
   EXPECT_TRUE(pickle.WriteData(testdata, testdatalen));
   VerifyResult(pickle);
 
