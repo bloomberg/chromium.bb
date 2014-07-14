@@ -1,0 +1,62 @@
+<html>
+<head>
+<script src="../../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../../http/tests/inspector/debugger-test.js"></script>
+<script src="../../../http/tests/inspector/workspace-test.js"></script>
+<script>
+function test()
+{
+    InspectorTest.createWorkspace(true);
+
+    var uiSourceCodes = [];
+    function addUISourceCode(url)
+    {
+        var contentProvider = new WebInspector.StaticContentProvider(WebInspector.resourceTypes.Script, "");
+        var uiSourceCode = InspectorTest.testNetworkWorkspaceBinding.addFileForURL(url, contentProvider, false);
+        uiSourceCodes.push(uiSourceCode);
+    }
+
+    var files = [
+        "foo.css",
+        "foo.js",
+        "foo.js.map",
+        "foo.ts",
+
+        "bar.css",
+        "bar.js",
+        "bar.js.map",
+        "bar.ts",
+
+        "baz.css",
+        "baz2",
+
+        "foo/foo.css",
+        "foo/foo.js",
+        "foo/foo.js.map",
+        "foo/foo.ts",
+        "foo/foo",
+
+        "bar/foo.css",
+        "bar/foo.js",
+        "bar/foo.js.map",
+        "bar/foo.ts",
+        "bar/foo" ];
+
+    for (var i = 0; i < files.length; ++i)
+        addUISourceCode("http://example.com/" + files[i]);
+
+    InspectorTest.addResult("Dumping next file for each file:");
+    for (var i = 0; i < uiSourceCodes.length; ++i) {
+        var uiSourceCode = uiSourceCodes[i];
+        var nextUISourceCode = WebInspector.SourcesView.SwitchFileActionDelegate._nextFile(uiSourceCode);
+        var nextURI = nextUISourceCode ? nextUISourceCode.uri() : "<none>";
+        InspectorTest.addResult("Next file for " + uiSourceCode.uri() + " is " + nextURI + ".");
+    }
+    InspectorTest.completeTest();
+}
+</script>
+</head>
+<body onload="runTest()">
+<p>Tests how switch to next file with the same name and different extension feature works.</p>
+</body>
+</html>
