@@ -1,13 +1,14 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_TEST_CHROMEDRIVER_CHROME_PERFORMANCE_LOGGER_H_
-#define CHROME_TEST_CHROMEDRIVER_CHROME_PERFORMANCE_LOGGER_H_
+#ifndef CHROME_TEST_CHROMEDRIVER_PERFORMANCE_LOGGER_H_
+#define CHROME_TEST_CHROMEDRIVER_PERFORMANCE_LOGGER_H_
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "chrome/test/chromedriver/chrome/devtools_event_listener.h"
+#include "chrome/test/chromedriver/command_listener.h"
 
 class Log;
 
@@ -18,7 +19,7 @@ class Log;
 //    "webview": <originating WebView ID>,
 //    "message": { "method": "...", "params": { ... }}  // DevTools message.
 // }
-class PerformanceLogger : public DevToolsEventListener {
+class PerformanceLogger : public DevToolsEventListener, public CommandListener {
  public:
   // Creates a PerformanceLogger that creates entries in the given Log object.
   // The log is owned elsewhere and must not be null.
@@ -31,10 +32,12 @@ class PerformanceLogger : public DevToolsEventListener {
                          const std::string& method,
                          const base::DictionaryValue& params) OVERRIDE;
 
+  virtual Status BeforeCommand(const std::string& command_name) OVERRIDE;
+
  private:
   Log* log_;  // The log where to create entries.
 
   DISALLOW_COPY_AND_ASSIGN(PerformanceLogger);
 };
 
-#endif  // CHROME_TEST_CHROMEDRIVER_CHROME_PERFORMANCE_LOGGER_H_
+#endif  // CHROME_TEST_CHROMEDRIVER_PERFORMANCE_LOGGER_H_

@@ -151,6 +151,10 @@ void ExecuteSessionCommandOnSessionThread(
     VLOG(0) << "COMMAND " << command_name << " "
             << FormatValueForDisplay(*params);
   }
+
+  // Notify |session|'s |CommandListener|s of the command.
+  NotifySessionListenersBeforeCommand(session, command_name);
+
   scoped_ptr<base::Value> value;
   Status status = command.Run(session, *params, &value);
 

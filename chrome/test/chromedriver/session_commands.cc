@@ -28,6 +28,7 @@
 #include "chrome/test/chromedriver/chrome/version.h"
 #include "chrome/test/chromedriver/chrome/web_view.h"
 #include "chrome/test/chromedriver/chrome_launcher.h"
+#include "chrome/test/chromedriver/command_listener.h"
 #include "chrome/test/chromedriver/logging.h"
 #include "chrome/test/chromedriver/net/url_request_context_getter.h"
 #include "chrome/test/chromedriver/session.h"
@@ -124,12 +125,17 @@ Status InitSessionHelper(
 
   // Create Log's and DevToolsEventListener's for ones that are DevTools-based.
   // Session will own the Log's, Chrome will own the listeners.
+  // Also create |CommandListener|s for the appropriate logs.
   ScopedVector<DevToolsEventListener> devtools_event_listeners;
+  ScopedVector<CommandListener> command_listeners;
   status = CreateLogs(capabilities,
                       &session->devtools_logs,
-                      &devtools_event_listeners);
+                      &devtools_event_listeners, &command_listeners);
   if (status.IsError())
     return status;
+
+  // |session| will own the |CommandListener|s.
+  session->command_listeners.swap(command_listeners);
 
   status = LaunchChrome(bound_params.context_getter.get(),
                         bound_params.socket_factory,
