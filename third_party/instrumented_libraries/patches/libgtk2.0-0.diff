@@ -35,7 +35,7 @@ diff -rupN ./gtk/Makefile.am ../gtk+2.0-2.24.10-patched/gtk/Makefile.am
 +# just-built one cannot be used because it doesn't have the right RPATH set.
  gtk_update_icon_cache_program =							\
 -	   ./gtk-update-icon-cache
-+	   gtk-update-icon-cache
++	   /usr/bin/gtk-update-icon-cache
  endif
  
  gtkbuiltincache.h: @REBUILD@ stamp-icons

@@ -8,7 +8,7 @@ diff -rupN ./gdk-pixbuf/Makefile.am ../gdk-pixbuf-2.26.1-patched/gdk-pixbuf/Make
 -	  $(top_builddir)/gdk-pixbuf/gdk-pixbuf-query-loaders $$LOADERS > ./loaders.cache ;\
 +    # Use the system-installed gdk-pixbuf-query-loaders. The just-built one \
 +    # won't work. \
-+	  gdk-pixbuf-query-loaders $$LOADERS > ./loaders.cache ;\
++	  /usr/bin/gdk-pixbuf-query-loaders $$LOADERS > ./loaders.cache ;\
  	else \
            echo "No dynamic modules found; will use only static modules for uninstalled example programs."; \
  	  touch loaders.cache; \
