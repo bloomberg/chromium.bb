@@ -829,7 +829,8 @@ def _DoSyncCmd(arguments):
         package_target,
         package_name,
         package_desc,
-        revision_num=revision_num)
+        revision_num=revision_num,
+        include_logs=arguments.sync__include_logs)
 
   CleanTempFiles(arguments.tar_dir)
 
