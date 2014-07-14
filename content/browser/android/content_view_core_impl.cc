@@ -272,6 +272,15 @@ void ContentViewCoreImpl::OnJavaContentViewCoreDestroyed(JNIEnv* env,
                                                          jobject obj) {
   DCHECK(env->IsSameObject(java_ref_.get(env).obj(), obj));
   java_ref_.reset();
+  // Java peer has gone, ContentViewCore is not functional and waits to
+  // be destroyed with WebContents.
+  // We need to reset WebContentsViewAndroid's reference, otherwise, there
+  // could have call in when swapping the WebContents,
+  // see http://crbug.com/383939 .
+  DCHECK(web_contents_);
+  static_cast<WebContentsViewAndroid*>(
+      static_cast<WebContentsImpl*>(web_contents_)->GetView())->
+          SetContentViewCore(NULL);
 }
 
 void ContentViewCoreImpl::InitWebContents() {
