@@ -550,7 +550,12 @@ public class InfoBarLayout extends ViewGroup implements View.OnClickListener {
      */
     @Override
     public void onClick(View view) {
-        mInfoBarView.setControlsEnabled(false);
+        // Disable the infobar controls unless the user clicked the tertiary button, which by
+        // convention is the "learn more" link.
+        if (view.getId() != R.id.button_tertiary) {
+            mInfoBarView.setControlsEnabled(false);
+        }
+
         if (view.getId() == R.id.infobar_close_button) {
             mInfoBarView.onCloseButtonClicked();
         } else if (view.getId() == R.id.button_primary) {
