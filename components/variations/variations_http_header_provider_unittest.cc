@@ -11,7 +11,7 @@
 #include "base/metrics/field_trial.h"
 #include "base/run_loop.h"
 #include "components/variations/entropy_provider.h"
-#include "components/variations/proto/chrome_experiments.pb.h"
+#include "components/variations/proto/client_variations.pb.h"
 #include "components/variations/variations_associated_data.h"
 #include "net/http/http_request_headers.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -32,8 +32,9 @@ bool ExtractVariationIds(const std::string& variations,
                          std::set<VariationID>* variation_ids,
                          std::set<VariationID>* trigger_ids) {
   std::string serialized_proto;
-  if (!base::Base64Decode(variations, &serialized_proto)) return false;
-  metrics::ChromeVariations proto;
+  if (!base::Base64Decode(variations, &serialized_proto))
+    return false;
+  ClientVariations proto;
   if (!proto.ParseFromString(serialized_proto)) return false;
   for (int i = 0; i < proto.variation_id_size(); ++i)
     variation_ids->insert(proto.variation_id(i));

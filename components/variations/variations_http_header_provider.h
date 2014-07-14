@@ -28,7 +28,7 @@ template <typename T> struct DefaultSingletonTraits;
 
 namespace variations {
 
-// A helper class for maintaining Chrome experiments and metrics state
+// A helper class for maintaining client experiments and metrics state
 // transmitted in custom HTTP request headers.
 // This class is a thread-safe singleton.
 class VariationsHttpHeaderProvider : base::FieldTrialList::Observer {

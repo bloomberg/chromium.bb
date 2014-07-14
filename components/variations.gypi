@@ -33,7 +33,7 @@
         'variations/pref_names.h',
         'variations/processed_study.cc',
         'variations/processed_study.h',
-        'variations/proto/chrome_experiments.proto',
+        'variations/proto/client_variations.proto',
         'variations/proto/permuted_entropy_cache.proto',
         'variations/proto/study.proto',
         'variations/proto/variations_seed.proto',

@@ -6,7 +6,7 @@ import("//third_party/protobuf/proto_library.gni")
 
 proto_library("proto") {
   sources = [
-    "chrome_experiments.proto",
+    "client_variations.proto",
     "permuted_entropy_cache.proto",
     "study.proto",
     "variations_seed.proto",

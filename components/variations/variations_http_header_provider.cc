@@ -13,7 +13,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "components/google/core/browser/google_util.h"
-#include "components/variations/proto/chrome_experiments.pb.h"
+#include "components/variations/proto/client_variations.pb.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/http/http_request_headers.h"
 #include "url/gurl.h"
@@ -53,7 +53,7 @@ void VariationsHttpHeaderProvider::AppendHeaders(
     bool incognito,
     bool uma_enabled,
     net::HttpRequestHeaders* headers) {
-  // Note the criteria for attaching Chrome experiment headers:
+  // Note the criteria for attaching client experiment headers:
   // 1. We only transmit to Google owned domains which can evaluate experiments.
   //    1a. These include hosts which have a standard postfix such as:
   //         *.doubleclick.net or *.googlesyndication.com or
@@ -211,7 +211,7 @@ void VariationsHttpHeaderProvider::UpdateVariationIDsHeaderValue() {
        it != variation_ids_set_.end(); ++it) {
     all_variation_ids_set.insert(*it);
   }
-  metrics::ChromeVariations proto;
+  ClientVariations proto;
   for (std::set<VariationID>::const_iterator it = all_variation_ids_set.begin();
        it != all_variation_ids_set.end(); ++it) {
     proto.add_variation_id(*it);
