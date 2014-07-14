@@ -72,7 +72,7 @@ void WorkerScriptDebugServer::addListener(ScriptDebugListener* listener)
     ASSERT(!value->IsUndefined() && value->IsArray());
     v8::Handle<v8::Array> scriptsArray = v8::Handle<v8::Array>::Cast(value);
     for (unsigned i = 0; i < scriptsArray->Length(); ++i)
-        dispatchDidParseSource(listener, v8::Handle<v8::Object>::Cast(scriptsArray->Get(v8::Integer::New(m_isolate, i))));
+        dispatchDidParseSource(listener, v8::Handle<v8::Object>::Cast(scriptsArray->Get(v8::Integer::New(m_isolate, i))), CompileSuccess);
 }
 
 void WorkerScriptDebugServer::removeListener(ScriptDebugListener* listener)

@@ -1199,7 +1199,7 @@ String InspectorDebuggerAgent::sourceMapURLForScript(const Script& script)
 
 // JavaScriptDebugListener functions
 
-void InspectorDebuggerAgent::didParseSource(const String& scriptId, const Script& script)
+void InspectorDebuggerAgent::didParseSource(const String& scriptId, const Script& script, CompileResult compileResult)
 {
     // Don't send script content to the front end until it's really needed.
     const bool* isContentScript = script.isContentScript ? &script.isContentScript : 0;
@@ -1214,11 +1214,15 @@ void InspectorDebuggerAgent::didParseSource(const String& scriptId, const Script
     bool hasSourceURL = !sourceURL.isEmpty();
     String scriptURL = hasSourceURL ? sourceURL : script.url;
     bool* hasSourceURLParam = hasSourceURL ? &hasSourceURL : 0;
-    m_frontend->scriptParsed(scriptId, scriptURL, script.startLine, script.startColumn, script.endLine, script.endColumn, isContentScript, sourceMapURLParam, hasSourceURLParam);
+    bool hasSyntaxError = compileResult != CompileSuccess;
+    if (!hasSyntaxError)
+        m_frontend->scriptParsed(scriptId, scriptURL, script.startLine, script.startColumn, script.endLine, script.endColumn, isContentScript, sourceMapURLParam, hasSourceURLParam);
+    else
+        m_frontend->scriptFailedToParse(scriptId, scriptURL, script.startLine, script.startColumn, script.endLine, script.endColumn, isContentScript, sourceMapURLParam, hasSourceURLParam);
 
     m_scripts.set(scriptId, script);
 
-    if (scriptURL.isEmpty())
+    if (scriptURL.isEmpty() || hasSyntaxError)
         return;
 
     RefPtr<JSONObject> breakpointsCookie = m_state->getObject(DebuggerAgentState::javaScriptBreakpoints);
@@ -1242,11 +1246,6 @@ void InspectorDebuggerAgent::didParseSource(const String& scriptId, const Script
         if (location)
             m_frontend->breakpointResolved(it->key, location);
     }
-}
-
-void InspectorDebuggerAgent::failedToParseSource(const String& url, const String& data, int firstLine, int errorLine, const String& errorMessage)
-{
-    m_frontend->scriptFailedToParse(url, data, firstLine, errorLine, errorMessage);
 }
 
 ScriptDebugListener::SkipPauseRequest InspectorDebuggerAgent::didPause(ScriptState* scriptState, const ScriptValue& callFrames, const ScriptValue& exception, const Vector<String>& hitBreakpoints)

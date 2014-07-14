@@ -127,7 +127,7 @@ protected:
     static void v8DebugEventCallback(const v8::Debug::EventDetails& eventDetails);
     void handleV8DebugEvent(const v8::Debug::EventDetails& eventDetails);
 
-    void dispatchDidParseSource(ScriptDebugListener* listener, v8::Handle<v8::Object> sourceObject);
+    void dispatchDidParseSource(ScriptDebugListener*, v8::Handle<v8::Object> sourceObject, CompileResult);
 
     void ensureDebuggerScriptCompiled();
     void discardDebuggerScript();

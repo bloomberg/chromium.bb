@@ -41,6 +41,8 @@ namespace WebCore {
 class ExecutionContext;
 class ScriptValue;
 
+enum CompileResult { CompileSuccess, CompileError };
+
 class ScriptDebugListener {
 public:
     class Script {
@@ -73,8 +75,7 @@ public:
 
     virtual ~ScriptDebugListener() { }
 
-    virtual void didParseSource(const String& scriptId, const Script&) = 0;
-    virtual void failedToParseSource(const String& url, const String& data, int firstLine, int errorLine, const String& errorMessage) = 0;
+    virtual void didParseSource(const String& scriptId, const Script&, CompileResult) = 0;
     virtual SkipPauseRequest didPause(ScriptState*, const ScriptValue& callFrames, const ScriptValue& exception, const Vector<String>& hitBreakpoints) = 0;
     virtual void didContinue() = 0;
     virtual void didReceiveV8AsyncTaskEvent(ExecutionContext*, const String& eventType, const String& eventName, int id) = 0;

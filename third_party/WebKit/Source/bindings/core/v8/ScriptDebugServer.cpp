@@ -470,7 +470,7 @@ void ScriptDebugServer::handleV8DebugEvent(const v8::Debug::EventDetails& eventD
         return;
     }
 
-    if (event != v8::AsyncTaskEvent && event != v8::Break && event != v8::Exception && event != v8::AfterCompile && event != v8::BeforeCompile)
+    if (event != v8::AsyncTaskEvent && event != v8::Break && event != v8::Exception && event != v8::AfterCompile && event != v8::BeforeCompile && event != v8::CompileError)
         return;
 
     v8::Handle<v8::Context> eventContext = eventDetails.GetEventContext();
@@ -482,14 +482,14 @@ void ScriptDebugServer::handleV8DebugEvent(const v8::Debug::EventDetails& eventD
         v8::Handle<v8::Object> debuggerScript = m_debuggerScript.newLocal(m_isolate);
         if (event == v8::BeforeCompile) {
             preprocessBeforeCompile(eventDetails);
-        } else if (event == v8::AfterCompile) {
+        } else if (event == v8::AfterCompile || event == v8::CompileError) {
             v8::Context::Scope contextScope(v8::Debug::GetDebugContext());
             v8::Handle<v8::Function> getAfterCompileScript = v8::Local<v8::Function>::Cast(debuggerScript->Get(v8AtomicString(m_isolate, "getAfterCompileScript")));
             v8::Handle<v8::Value> argv[] = { eventDetails.GetEventData() };
             v8::Handle<v8::Value> value = V8ScriptRunner::callInternalFunction(getAfterCompileScript, debuggerScript, WTF_ARRAY_LENGTH(argv), argv, m_isolate);
             ASSERT(value->IsObject());
             v8::Handle<v8::Object> object = v8::Handle<v8::Object>::Cast(value);
-            dispatchDidParseSource(listener, object);
+            dispatchDidParseSource(listener, object, event != v8::AfterCompile ? CompileError : CompileSuccess);
         } else if (event == v8::Exception) {
             v8::Local<v8::StackTrace> stackTrace = v8::StackTrace::CurrentStackTrace(m_isolate, 1);
             // Stack trace is empty in case of syntax error. Silently continue execution in such cases.
@@ -529,7 +529,7 @@ void ScriptDebugServer::handleV8AsyncTaskEvent(ScriptDebugListener* listener, Sc
     m_executionState.Clear();
 }
 
-void ScriptDebugServer::dispatchDidParseSource(ScriptDebugListener* listener, v8::Handle<v8::Object> object)
+void ScriptDebugServer::dispatchDidParseSource(ScriptDebugListener* listener, v8::Handle<v8::Object> object, CompileResult compileResult)
 {
     v8::Handle<v8::Value> id = object->Get(v8AtomicString(m_isolate, "id"));
     ASSERT(!id.IsEmpty() && id->IsInt32());
@@ -545,7 +545,7 @@ void ScriptDebugServer::dispatchDidParseSource(ScriptDebugListener* listener, v8
     script.endColumn = object->Get(v8AtomicString(m_isolate, "endColumn"))->ToInteger()->Value();
     script.isContentScript = object->Get(v8AtomicString(m_isolate, "isContentScript"))->ToBoolean()->Value();
 
-    listener->didParseSource(sourceID, script);
+    listener->didParseSource(sourceID, script, compileResult);
 }
 
 void ScriptDebugServer::ensureDebuggerScriptCompiled()
