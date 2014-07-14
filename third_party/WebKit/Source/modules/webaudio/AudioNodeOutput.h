@@ -134,8 +134,11 @@ private:
     // If m_isInPlace is true, use m_inPlaceBus as the valid AudioBus; If false, use the default m_internalBus.
     bool m_isInPlace;
 
-    HashSet<AudioNodeInput*> m_inputs;
-    typedef HashSet<AudioNodeInput*>::iterator InputsIterator;
+    // This RefPtr<AudioNode> is connection reference. We must call AudioNode::
+    // makeConnection() after ref(), and call AudioNode::breakConnection()
+    // before deref().
+    HashMap<AudioNodeInput*, RefPtr<AudioNode> > m_inputs;
+    typedef HashMap<AudioNodeInput*, RefPtr<AudioNode> >::iterator InputsIterator;
     bool m_isEnabled;
 
     // For the purposes of rendering, keeps track of the number of inputs and AudioParams we're connected to.

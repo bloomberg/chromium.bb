@@ -267,10 +267,12 @@ private:
     // Only accessed in the audio thread.
     Vector<AudioNode*> m_finishedNodes;
 
-    // We don't use RefPtr<AudioNode> here because AudioNode has a more complex ref() / deref() implementation
-    // with an optional argument for refType.  We need to use the special refType: RefTypeConnection
-    // Either accessed when the graph lock is held, or on the main thread when the audio thread has finished.
-    Vector<AudioNode*> m_referencedNodes;
+    // List of source nodes. This is either accessed when the graph lock is
+    // held, or on the main thread when the audio thread has finished.
+    // This RefPtr is connection reference. We must call AudioNode::
+    // makeConnection() after ref(), and call AudioNode::breakConnection()
+    // before deref().
+    Vector<RefPtr<AudioNode> > m_referencedNodes;
 
     // Accumulate nodes which need to be deleted here.
     // This is copied to m_nodesToDelete at the end of a render cycle in handlePostRenderTasks(), where we're assured of a stable graph

@@ -101,11 +101,8 @@ void AudioNodeOutput::propagateChannelCount()
 
     if (isChannelCountKnown()) {
         // Announce to any nodes we're connected to that we changed our channel count for its input.
-        for (InputsIterator i = m_inputs.begin(); i != m_inputs.end(); ++i) {
-            AudioNodeInput* input = *i;
-            AudioNode* connectionNode = input->node();
-            connectionNode->checkNumberOfChannelsForInput(input);
-        }
+        for (InputsIterator i = m_inputs.begin(); i != m_inputs.end(); ++i)
+            i->value->checkNumberOfChannelsForInput(i->key);
     }
 }
 
@@ -159,7 +156,8 @@ void AudioNodeOutput::addInput(AudioNodeInput* input)
     if (!input)
         return;
 
-    m_inputs.add(input);
+    m_inputs.add(input, input->node());
+    input->node()->makeConnection();
 }
 
 void AudioNodeOutput::removeInput(AudioNodeInput* input)
@@ -170,6 +168,7 @@ void AudioNodeOutput::removeInput(AudioNodeInput* input)
     if (!input)
         return;
 
+    input->node()->breakConnection();
     m_inputs.remove(input);
 }
 
@@ -178,10 +177,8 @@ void AudioNodeOutput::disconnectAllInputs()
     ASSERT(context()->isGraphOwner());
 
     // AudioNodeInput::disconnect() changes m_inputs by calling removeInput().
-    while (!m_inputs.isEmpty()) {
-        AudioNodeInput* input = *m_inputs.begin();
-        input->disconnect(this);
-    }
+    while (!m_inputs.isEmpty())
+        m_inputs.begin()->key->disconnect(this);
 }
 
 void AudioNodeOutput::addParam(AudioParam* param)
@@ -228,10 +225,8 @@ void AudioNodeOutput::disable()
     ASSERT(context()->isGraphOwner());
 
     if (m_isEnabled) {
-        for (InputsIterator i = m_inputs.begin(); i != m_inputs.end(); ++i) {
-            AudioNodeInput* input = *i;
-            input->disable(this);
-        }
+        for (InputsIterator i = m_inputs.begin(); i != m_inputs.end(); ++i)
+            i->key->disable(this);
         m_isEnabled = false;
     }
 }
@@ -241,10 +236,8 @@ void AudioNodeOutput::enable()
     ASSERT(context()->isGraphOwner());
 
     if (!m_isEnabled) {
-        for (InputsIterator i = m_inputs.begin(); i != m_inputs.end(); ++i) {
-            AudioNodeInput* input = *i;
-            input->enable(this);
-        }
+        for (InputsIterator i = m_inputs.begin(); i != m_inputs.end(); ++i)
+            i->key->enable(this);
         m_isEnabled = true;
     }
 }

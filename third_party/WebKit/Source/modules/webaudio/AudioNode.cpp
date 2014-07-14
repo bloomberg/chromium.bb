@@ -55,6 +55,7 @@ AudioNode::AudioNode(AudioContext* context, float sampleRate)
     , m_lastNonSilentTime(-1)
     , m_normalRefCount(1) // start out with normal refCount == 1 (like WTF::RefCounted class)
     , m_connectionRefCount(0)
+    , m_wasDisconnected(false)
     , m_isMarkedForDeletion(false)
     , m_isDisabled(false)
     , m_channelCount(2)
@@ -469,34 +470,28 @@ void AudioNode::disableOutputsIfNecessary()
     }
 }
 
-void AudioNode::ref(RefType refType)
+void AudioNode::ref()
 {
 #if ENABLE(OILPAN)
     ASSERT(m_keepAlive);
 #endif
-    switch (refType) {
-    case RefTypeNormal:
-        atomicIncrement(&m_normalRefCount);
-        break;
-    case RefTypeConnection:
-        atomicIncrement(&m_connectionRefCount);
-        break;
-    default:
-        ASSERT_NOT_REACHED();
-    }
+    atomicIncrement(&m_normalRefCount);
 
 #if DEBUG_AUDIONODE_REFERENCES
-    fprintf(stderr, "%p: %d: AudioNode::ref(%d) %d %d\n", this, nodeType(), refType, m_normalRefCount, m_connectionRefCount);
+    fprintf(stderr, "%p: %d: AudioNode::ref() %d %d\n", this, nodeType(), m_normalRefCount, m_connectionRefCount);
 #endif
-
-    // See the disabling code in finishDeref() below. This handles the case where a node
-    // is being re-connected after being used at least once and disconnected.
-    // In this case, we need to re-enable.
-    if (refType == RefTypeConnection)
-        enableOutputsIfNecessary();
 }
 
-void AudioNode::deref(RefType refType)
+void AudioNode::makeConnection()
+{
+    atomicIncrement(&m_connectionRefCount);
+    // See the disabling code in finishDeref() below. This handles the case
+    // where a node is being re-connected after being used at least once and
+    // disconnected. In this case, we need to re-enable.
+    enableOutputsIfNecessary();
+}
+
+void AudioNode::deref()
 {
     // The actually work for deref happens completely within the audio context's graph lock.
     // In the case of the audio thread, we must use a tryLock to avoid glitches.
@@ -513,14 +508,13 @@ void AudioNode::deref(RefType refType)
 
     if (hasLock) {
         // This is where the real deref work happens.
-        finishDeref(refType);
+        finishDeref();
 
         if (mustReleaseLock)
             context()->unlock();
     } else {
         // We were unable to get the lock, so put this in a list to finish up later.
         ASSERT(context()->isAudioThread());
-        ASSERT(refType == RefTypeConnection);
         context()->addDeferredFinishDeref(this);
     }
 
@@ -531,40 +525,39 @@ void AudioNode::deref(RefType refType)
         context()->deleteMarkedNodes();
 }
 
-void AudioNode::finishDeref(RefType refType)
+void AudioNode::breakConnection()
+{
+    ASSERT(m_normalRefCount > 0);
+    atomicDecrement(&m_connectionRefCount);
+    m_wasDisconnected = true;
+}
+
+void AudioNode::finishDeref()
 {
     ASSERT(context()->isGraphOwner());
 
-    switch (refType) {
-    case RefTypeNormal:
-        ASSERT(m_normalRefCount > 0);
-        atomicDecrement(&m_normalRefCount);
-        break;
-    case RefTypeConnection:
-        ASSERT(m_connectionRefCount > 0);
-        atomicDecrement(&m_connectionRefCount);
-        break;
-    default:
-        ASSERT_NOT_REACHED();
-    }
+    ASSERT(m_normalRefCount > 0);
+    atomicDecrement(&m_normalRefCount);
 
 #if DEBUG_AUDIONODE_REFERENCES
-    fprintf(stderr, "%p: %d: AudioNode::deref(%d) %d %d\n", this, nodeType(), refType, m_normalRefCount, m_connectionRefCount);
+    fprintf(stderr, "%p: %d: AudioNode::deref() %d %d\n", this, nodeType(), m_normalRefCount, m_connectionRefCount);
 #endif
 
-    if (!m_connectionRefCount) {
-        if (!m_normalRefCount) {
-            if (!m_isMarkedForDeletion) {
-                // All references are gone - we need to go away.
-                for (unsigned i = 0; i < m_outputs.size(); ++i)
-                    output(i)->disconnectAll(); // This will deref() nodes we're connected to.
-
-                // Mark for deletion at end of each render quantum or when context shuts down.
-                context()->markForDeletion(this);
-                m_isMarkedForDeletion = true;
-            }
-        } else if (refType == RefTypeConnection)
+    if (m_wasDisconnected) {
+        if (m_connectionRefCount == 0 && m_normalRefCount > 0)
             disableOutputsIfNecessary();
+        m_wasDisconnected = false;
+    }
+
+    if (!m_normalRefCount && !m_isMarkedForDeletion) {
+        // All references are gone - we need to go away.
+        for (unsigned i = 0; i < m_outputs.size(); ++i)
+            output(i)->disconnectAll(); // This will deref() nodes we're connected to.
+
+        // Mark for deletion at end of each render quantum or when context shuts
+        // down.
+        context()->markForDeletion(this);
+        m_isMarkedForDeletion = true;
     }
 }
 
