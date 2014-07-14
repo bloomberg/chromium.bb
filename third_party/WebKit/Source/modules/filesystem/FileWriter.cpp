@@ -87,6 +87,11 @@ void FileWriter::stop()
     m_readyState = DONE;
 }
 
+bool FileWriter::hasPendingActivity() const
+{
+    return m_operationInProgress != OperationNone || m_queuedOperation != OperationNone || m_readyState == WRITING;
+}
+
 void FileWriter::write(Blob* data, ExceptionState& exceptionState)
 {
     ASSERT(writer());
@@ -204,7 +209,6 @@ void FileWriter::didWrite(long long bytes, bool complete)
     if (complete) {
       if (numAborts == m_numAborts)
           signalCompletion(FileError::OK);
-      unsetPendingActivity(this);
     }
 }
 
@@ -221,7 +225,6 @@ void FileWriter::didTruncate()
         setPosition(length());
     m_operationInProgress = OperationNone;
     signalCompletion(FileError::OK);
-    unsetPendingActivity(this);
 }
 
 void FileWriter::didFail(blink::WebFileError code)
@@ -237,7 +240,6 @@ void FileWriter::didFail(blink::WebFileError code)
     m_blobBeingWritten.clear();
     m_operationInProgress = OperationNone;
     signalCompletion(static_cast<FileError::ErrorCode>(code));
-    unsetPendingActivity(this);
 }
 
 void FileWriter::completeAbort()
@@ -247,7 +249,6 @@ void FileWriter::completeAbort()
     Operation operation = m_queuedOperation;
     m_queuedOperation = OperationNone;
     doOperation(operation);
-    unsetPendingActivity(this);
 }
 
 void FileWriter::doOperation(Operation operation)
@@ -258,14 +259,12 @@ void FileWriter::doOperation(Operation operation)
         ASSERT(m_truncateLength == -1);
         ASSERT(m_blobBeingWritten.get());
         ASSERT(m_readyState == WRITING);
-        setPendingActivity(this);
         writer()->write(position(), m_blobBeingWritten->uuid());
         break;
     case OperationTruncate:
         ASSERT(m_operationInProgress == OperationNone);
         ASSERT(m_truncateLength >= 0);
         ASSERT(m_readyState == WRITING);
-        setPendingActivity(this);
         writer()->truncate(m_truncateLength);
         break;
     case OperationNone:
