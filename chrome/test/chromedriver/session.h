@@ -16,7 +16,6 @@
 #include "chrome/test/chromedriver/basic_types.h"
 #include "chrome/test/chromedriver/chrome/device_metrics.h"
 #include "chrome/test/chromedriver/chrome/geoposition.h"
-#include "chrome/test/chromedriver/command_listener.h"
 
 namespace base {
 class DictionaryValue;
@@ -78,11 +77,6 @@ struct Session {
   base::ScopedTempDir temp_dir;
   scoped_ptr<base::DictionaryValue> capabilities;
   bool auto_reporting_enabled;
-  // |command_listeners| should be declared after |chrome|. When the |Session|
-  // is destroyed, |command_listeners| should be freed first, since some
-  // |CommandListener|s might be |CommandListenerProxy|s that forward to
-  // |DevToolsEventListener|s owned by |chrome|.
-  ScopedVector<CommandListener> command_listeners;
 };
 
 Session* GetThreadLocalSession();

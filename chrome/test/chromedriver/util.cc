@@ -9,7 +9,6 @@
 #include "base/files/file_enumerator.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/format_macros.h"
-#include "base/memory/scoped_vector.h"
 #include "base/rand_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
@@ -19,9 +18,7 @@
 #include "chrome/test/chromedriver/chrome/status.h"
 #include "chrome/test/chromedriver/chrome/ui_events.h"
 #include "chrome/test/chromedriver/chrome/web_view.h"
-#include "chrome/test/chromedriver/command_listener.h"
 #include "chrome/test/chromedriver/key_converter.h"
-#include "chrome/test/chromedriver/session.h"
 #include "third_party/zlib/google/zip.h"
 
 std::string GenerateId() {
@@ -403,16 +400,4 @@ Status UnzipSoleFile(const base::FilePath& unzip_dir,
 
   *file = first_file;
   return Status(kOk);
-}
-
-void NotifySessionListenersBeforeCommand(Session* session,
-                                         const std::string& command_name) {
-  for (ScopedVector<CommandListener>::const_iterator it =
-       session->command_listeners.begin();
-       it != session->command_listeners.end();
-       ++it) {
-    Status status = (*it)->BeforeCommand(command_name);
-    if (status.IsError())
-      LOG(ERROR) << "Error when notifying listener of command";
-  }
 }

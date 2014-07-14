@@ -7,7 +7,6 @@
 #include "chrome/test/chromedriver/chrome/devtools_event_listener.h"
 #include "chrome/test/chromedriver/chrome/log.h"
 #include "chrome/test/chromedriver/chrome/status.h"
-#include "chrome/test/chromedriver/command_listener.h"
 #include "chrome/test/chromedriver/logging.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -102,15 +101,12 @@ TEST(Logging, CreatePerformanceLog) {
   capabilities.logging_prefs["performance"] = Log::kInfo;
   capabilities.logging_prefs["browser"] = Log::kInfo;
 
-  ScopedVector<DevToolsEventListener> devtools_listeners;
+  ScopedVector<DevToolsEventListener> listeners;
   ScopedVector<WebDriverLog> logs;
-  ScopedVector<CommandListener> command_listeners;
-  Status status = CreateLogs(capabilities, &logs, &devtools_listeners,
-                             &command_listeners);
+  Status status = CreateLogs(capabilities, &logs, &listeners);
   ASSERT_TRUE(status.IsOk());
   ASSERT_EQ(2u, logs.size());
-  ASSERT_EQ(2u, devtools_listeners.size());
-  ASSERT_EQ(1u, command_listeners.size());
+  ASSERT_EQ(2u, listeners.size());
   ASSERT_EQ("performance", logs[0]->type());
   ASSERT_EQ("browser", logs[1]->type());
 }
@@ -119,30 +115,24 @@ TEST(Logging, IgnoreUnknownLogType) {
   Capabilities capabilities;
   capabilities.logging_prefs["gaga"] = Log::kInfo;
 
-  ScopedVector<DevToolsEventListener> devtools_listeners;
+  ScopedVector<DevToolsEventListener> listeners;
   ScopedVector<WebDriverLog> logs;
-  ScopedVector<CommandListener> command_listeners;
-  Status status = CreateLogs(capabilities, &logs, &devtools_listeners,
-                             &command_listeners);
+  Status status = CreateLogs(capabilities, &logs, &listeners);
   EXPECT_TRUE(status.IsOk());
   ASSERT_EQ(1u, logs.size());
-  ASSERT_EQ(1u, devtools_listeners.size());
-  ASSERT_EQ(0u, command_listeners.size());
+  ASSERT_EQ(1u, listeners.size());
   ASSERT_EQ("browser", logs[0]->type());
 }
 
 TEST(Logging, DefaultLogs) {
   Capabilities capabilities;
 
-  ScopedVector<DevToolsEventListener> devtools_listeners;
+  ScopedVector<DevToolsEventListener> listeners;
   ScopedVector<WebDriverLog> logs;
-  ScopedVector<CommandListener> command_listeners;
-  Status status = CreateLogs(capabilities, &logs, &devtools_listeners,
-                             &command_listeners);
+  Status status = CreateLogs(capabilities, &logs, &listeners);
   EXPECT_TRUE(status.IsOk());
   ASSERT_EQ(1u, logs.size());
-  ASSERT_EQ(1u, devtools_listeners.size());
-  ASSERT_EQ(0u, command_listeners.size());
+  ASSERT_EQ(1u, listeners.size());
   ASSERT_EQ("browser", logs[0]->type());
 }
 
