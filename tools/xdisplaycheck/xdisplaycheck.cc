@@ -84,14 +84,14 @@ int main(int argc, char* argv[]) {
                        &event, &err)) {
     fprintf(stderr,
         "Failed to get XInputExtension on %s.\n", XDisplayName(NULL));
-    return -1;
+    return -2;
   }
 
   int major = 2, minor = 0;
   if (XIQueryVersion(scoped_display.display(), &major, &minor) == BadRequest) {
     fprintf(stderr,
         "Server does not have XInput2 on %s.\n", XDisplayName(NULL));
-    return -1;
+    return -3;
   }
 
   // Ask for the list of devices. This can cause some Xvfb to crash.
