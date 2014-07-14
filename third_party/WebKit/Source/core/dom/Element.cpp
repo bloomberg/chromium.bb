@@ -431,7 +431,7 @@ const AtomicString& Element::getAttribute(const QualifiedName& name) const
     if (!elementData())
         return nullAtom;
     synchronizeAttribute(name);
-    if (const Attribute* attribute = findAttributeByName(name))
+    if (const Attribute* attribute = attributes().find(name))
         return attribute->value();
     return nullAtom;
 }
@@ -2631,7 +2631,7 @@ KURL Element::getURLAttribute(const QualifiedName& name) const
 {
 #if ASSERT_ENABLED
     if (elementData()) {
-        if (const Attribute* attribute = findAttributeByName(name))
+        if (const Attribute* attribute = attributes().find(name))
             ASSERT(isURLAttribute(*attribute));
     }
 #endif
@@ -2642,7 +2642,7 @@ KURL Element::getNonEmptyURLAttribute(const QualifiedName& name) const
 {
 #if ASSERT_ENABLED
     if (elementData()) {
-        if (const Attribute* attribute = findAttributeByName(name))
+        if (const Attribute* attribute = attributes().find(name))
             ASSERT(isURLAttribute(*attribute));
     }
 #endif
