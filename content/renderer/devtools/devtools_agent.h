@@ -50,6 +50,7 @@ class DevToolsAgent : public RenderViewObserver,
   // WebDevToolsAgentClient implementation
   virtual void sendMessageToInspectorFrontend(const blink::WebString& data);
 
+  virtual long processId() OVERRIDE;
   virtual int debuggerId() OVERRIDE;
   virtual void saveAgentRuntimeState(const blink::WebString& state) OVERRIDE;
   virtual blink::WebDevToolsAgentClient::WebKitClientMessageLoop*

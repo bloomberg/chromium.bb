@@ -121,6 +121,10 @@ void DevToolsAgent::sendMessageToInspectorFrontend(
                                                          message.utf8()));
 }
 
+long DevToolsAgent::processId() {
+  return base::Process::Current().pid();
+}
+
 int DevToolsAgent::debuggerId() {
   return routing_id();
 }
