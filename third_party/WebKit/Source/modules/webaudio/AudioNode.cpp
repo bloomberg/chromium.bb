@@ -145,7 +145,7 @@ void AudioNode::setNodeType(NodeType type)
 
 void AudioNode::addInput()
 {
-    m_inputs.append(AudioNodeInput::create(this));
+    m_inputs.append(AudioNodeInput::create(*this));
 }
 
 void AudioNode::addOutput(PassOwnPtr<AudioNodeOutput> output)
@@ -202,8 +202,7 @@ void AudioNode::connect(AudioNode* destination, unsigned outputIndex, unsigned i
     }
 
     AudioNodeInput* input = destination->input(inputIndex);
-    AudioNodeOutput* output = this->output(outputIndex);
-    input->connect(output);
+    input->connect(*output(outputIndex));
 
     // Let context know that a connection has been made.
     context()->incrementConnectionCount();

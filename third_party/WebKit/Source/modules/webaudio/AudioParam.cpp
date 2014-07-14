@@ -175,7 +175,7 @@ void AudioParam::connect(AudioNodeOutput* output)
     if (m_outputs.contains(output))
         return;
 
-    output->addParam(this);
+    output->addParam(*this);
     m_outputs.add(output);
     changedOutputs();
 }
@@ -191,7 +191,7 @@ void AudioParam::disconnect(AudioNodeOutput* output)
     if (m_outputs.contains(output)) {
         m_outputs.remove(output);
         changedOutputs();
-        output->removeParam(this);
+        output->removeParam(*this);
     }
 }
 

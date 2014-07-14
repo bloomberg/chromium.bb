@@ -92,10 +92,10 @@ private:
 
     // These are called from AudioNodeInput.
     // They must be called with the context's graph lock.
-    void addInput(AudioNodeInput*);
-    void removeInput(AudioNodeInput*);
-    void addParam(AudioParam*);
-    void removeParam(AudioParam*);
+    void addInput(AudioNodeInput&);
+    void removeInput(AudioNodeInput&);
+    void addParam(AudioParam&);
+    void removeParam(AudioParam&);
 
     // fanOutCount() is the number of AudioNodeInputs that we're connected to.
     // This method should not be called in audio thread rendering code, instead renderingFanOutCount() should be used.

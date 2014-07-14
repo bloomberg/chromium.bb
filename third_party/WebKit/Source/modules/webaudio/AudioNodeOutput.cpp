@@ -148,28 +148,18 @@ unsigned AudioNodeOutput::renderingFanOutCount() const
     return m_renderingFanOutCount;
 }
 
-void AudioNodeOutput::addInput(AudioNodeInput* input)
+void AudioNodeOutput::addInput(AudioNodeInput& input)
 {
     ASSERT(context()->isGraphOwner());
-
-    ASSERT(input);
-    if (!input)
-        return;
-
-    m_inputs.add(input, input->node());
-    input->node()->makeConnection();
+    m_inputs.add(&input, &input.node());
+    input.node().makeConnection();
 }
 
-void AudioNodeOutput::removeInput(AudioNodeInput* input)
+void AudioNodeOutput::removeInput(AudioNodeInput& input)
 {
     ASSERT(context()->isGraphOwner());
-
-    ASSERT(input);
-    if (!input)
-        return;
-
-    input->node()->breakConnection();
-    m_inputs.remove(input);
+    input.node().breakConnection();
+    m_inputs.remove(&input);
 }
 
 void AudioNodeOutput::disconnectAllInputs()
@@ -178,29 +168,19 @@ void AudioNodeOutput::disconnectAllInputs()
 
     // AudioNodeInput::disconnect() changes m_inputs by calling removeInput().
     while (!m_inputs.isEmpty())
-        m_inputs.begin()->key->disconnect(this);
+        m_inputs.begin()->key->disconnect(*this);
 }
 
-void AudioNodeOutput::addParam(AudioParam* param)
+void AudioNodeOutput::addParam(AudioParam& param)
 {
     ASSERT(context()->isGraphOwner());
-
-    ASSERT(param);
-    if (!param)
-        return;
-
-    m_params.add(param);
+    m_params.add(&param);
 }
 
-void AudioNodeOutput::removeParam(AudioParam* param)
+void AudioNodeOutput::removeParam(AudioParam& param)
 {
     ASSERT(context()->isGraphOwner());
-
-    ASSERT(param);
-    if (!param)
-        return;
-
-    m_params.remove(param);
+    m_params.remove(&param);
 }
 
 void AudioNodeOutput::disconnectAllParams()
@@ -226,7 +206,7 @@ void AudioNodeOutput::disable()
 
     if (m_isEnabled) {
         for (InputsIterator i = m_inputs.begin(); i != m_inputs.end(); ++i)
-            i->key->disable(this);
+            i->key->disable(*this);
         m_isEnabled = false;
     }
 }
@@ -237,7 +217,7 @@ void AudioNodeOutput::enable()
 
     if (!m_isEnabled) {
         for (InputsIterator i = m_inputs.begin(); i != m_inputs.end(); ++i)
-            i->key->enable(this);
+            i->key->enable(*this);
         m_isEnabled = true;
     }
 }
