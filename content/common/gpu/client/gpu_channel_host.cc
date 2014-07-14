@@ -142,20 +142,25 @@ CommandBufferProxyImpl* GpuChannelHost::CreateViewCommandBuffer(
   init_params.active_url = active_url;
   init_params.gpu_preference = gpu_preference;
   int32 route_id = GenerateRouteID();
-  if (!factory_->CreateViewCommandBuffer(surface_id, init_params, route_id)) {
+  CreateCommandBufferResult result = factory_->CreateViewCommandBuffer(
+      surface_id, init_params, route_id);
+  if (result != CREATE_COMMAND_BUFFER_SUCCEEDED) {
     LOG(ERROR) << "GpuChannelHost::CreateViewCommandBuffer failed.";
 
-    // The most likely reason CreateViewCommandBuffer will fail is
-    // that the GPU process crashed. In this case the GPU channel
-    // needs to be considered lost. The caller will then set up a new
-    // connection, and the GPU channel and any view command buffers
-    // will all be associated with the same GPU process.
-    DCHECK(MessageLoopProxy::current().get());
+    if (result == CREATE_COMMAND_BUFFER_FAILED_AND_CHANNEL_LOST) {
+      // The GPU channel needs to be considered lost. The caller will
+      // then set up a new connection, and the GPU channel and any
+      // view command buffers will all be associated with the same GPU
+      // process.
+      DCHECK(MessageLoopProxy::current().get());
 
-    scoped_refptr<base::MessageLoopProxy> io_loop = factory_->GetIOLoopProxy();
-    io_loop->PostTask(FROM_HERE,
-                      base::Bind(&GpuChannelHost::MessageFilter::OnChannelError,
-                                 channel_filter_.get()));
+      scoped_refptr<base::MessageLoopProxy> io_loop =
+          factory_->GetIOLoopProxy();
+      io_loop->PostTask(
+          FROM_HERE,
+          base::Bind(&GpuChannelHost::MessageFilter::OnChannelError,
+                     channel_filter_.get()));
+    }
 
     return NULL;
   }

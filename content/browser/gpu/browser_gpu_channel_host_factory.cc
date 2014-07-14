@@ -27,12 +27,13 @@ BrowserGpuChannelHostFactory* BrowserGpuChannelHostFactory::instance_ = NULL;
 
 struct BrowserGpuChannelHostFactory::CreateRequest {
   CreateRequest()
-      : event(true, false), gpu_host_id(0), route_id(MSG_ROUTING_NONE) {}
+      : event(true, false), gpu_host_id(0), route_id(MSG_ROUTING_NONE),
+        result(CREATE_COMMAND_BUFFER_FAILED) {}
   ~CreateRequest() {}
   base::WaitableEvent event;
   int gpu_host_id;
   int32 route_id;
-  bool succeeded;
+  CreateCommandBufferResult result;
 };
 
 class BrowserGpuChannelHostFactory::EstablishRequest
@@ -268,12 +269,12 @@ void BrowserGpuChannelHostFactory::CreateViewCommandBufferOnIO(
 
 // static
 void BrowserGpuChannelHostFactory::CommandBufferCreatedOnIO(
-    CreateRequest* request, bool succeeded) {
-  request->succeeded = succeeded;
+    CreateRequest* request, CreateCommandBufferResult result) {
+  request->result = result;
   request->event.Signal();
 }
 
-bool BrowserGpuChannelHostFactory::CreateViewCommandBuffer(
+CreateCommandBufferResult BrowserGpuChannelHostFactory::CreateViewCommandBuffer(
       int32 surface_id,
       const GPUCreateCommandBufferConfig& init_params,
       int32 route_id) {
@@ -293,7 +294,7 @@ bool BrowserGpuChannelHostFactory::CreateViewCommandBuffer(
                "BrowserGpuChannelHostFactory::CreateViewCommandBuffer");
   base::ThreadRestrictions::ScopedAllowWait allow_wait;
   request.event.Wait();
-  return request.succeeded;
+  return request.result;
 }
 
 void BrowserGpuChannelHostFactory::CreateImageOnIO(

@@ -178,15 +178,15 @@ void GpuChannelManager::OnCreateViewCommandBuffer(
     const GPUCreateCommandBufferConfig& init_params,
     int32 route_id) {
   DCHECK(surface_id);
-  bool succeeded = false;
+  CreateCommandBufferResult result = CREATE_COMMAND_BUFFER_FAILED;
 
   GpuChannelMap::const_iterator iter = gpu_channels_.find(client_id);
   if (iter != gpu_channels_.end()) {
-    succeeded = iter->second->CreateViewCommandBuffer(
+    result = iter->second->CreateViewCommandBuffer(
         window, surface_id, init_params, route_id);
   }
 
-  Send(new GpuHostMsg_CommandBufferCreated(succeeded));
+  Send(new GpuHostMsg_CommandBufferCreated(result));
 }
 
 void GpuChannelManager::CreateImage(

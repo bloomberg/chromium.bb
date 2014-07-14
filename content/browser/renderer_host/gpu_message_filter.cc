@@ -201,9 +201,9 @@ void GpuMessageFilter::EstablishChannelCallback(
 }
 
 void GpuMessageFilter::CreateCommandBufferCallback(
-    scoped_ptr<IPC::Message> reply, bool succeeded) {
+    scoped_ptr<IPC::Message> reply, CreateCommandBufferResult result) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  GpuHostMsg_CreateViewCommandBuffer::WriteReplyParams(reply.get(), succeeded);
+  GpuHostMsg_CreateViewCommandBuffer::WriteReplyParams(reply.get(), result);
   Send(reply.release());
 }
 

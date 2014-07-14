@@ -17,6 +17,7 @@
 #include "build/build_config.h"
 #include "content/common/gpu/gpu_command_buffer_stub.h"
 #include "content/common/gpu/gpu_memory_manager.h"
+#include "content/common/gpu/gpu_result_codes.h"
 #include "content/common/message_router.h"
 #include "ipc/ipc_sync_channel.h"
 #include "ui/gfx/native_widget_types.h"
@@ -108,7 +109,7 @@ class GpuChannel : public IPC::Listener, public IPC::Sender {
   // other channels.
   void StubSchedulingChanged(bool scheduled);
 
-  bool CreateViewCommandBuffer(
+  CreateCommandBufferResult CreateViewCommandBuffer(
       const gfx::GLSurfaceHandle& window,
       int32 surface_id,
       const GPUCreateCommandBufferConfig& init_params,

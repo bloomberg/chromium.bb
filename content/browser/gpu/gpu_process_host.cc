@@ -646,7 +646,9 @@ void GpuProcessHost::CreateViewCommandBuffer(
     surface_refs_.insert(std::make_pair(surface_id,
         GpuSurfaceTracker::GetInstance()->GetSurfaceRefForSurface(surface_id)));
   } else {
-    callback.Run(false);
+    // Could distinguish here between compositing_surface being NULL
+    // and Send failing, if desired.
+    callback.Run(CREATE_COMMAND_BUFFER_FAILED_AND_CHANNEL_LOST);
   }
 }
 
@@ -745,7 +747,7 @@ void GpuProcessHost::OnChannelEstablished(
                GpuDataManagerImpl::GetInstance()->GetGPUInfo());
 }
 
-void GpuProcessHost::OnCommandBufferCreated(bool succeeded) {
+void GpuProcessHost::OnCommandBufferCreated(CreateCommandBufferResult result) {
   TRACE_EVENT0("gpu", "GpuProcessHost::OnCommandBufferCreated");
 
   if (create_command_buffer_requests_.empty())
@@ -754,7 +756,7 @@ void GpuProcessHost::OnCommandBufferCreated(bool succeeded) {
   CreateCommandBufferCallback callback =
       create_command_buffer_requests_.front();
   create_command_buffer_requests_.pop();
-  callback.Run(succeeded);
+  callback.Run(result);
 }
 
 void GpuProcessHost::OnDestroyCommandBuffer(int32 surface_id) {
@@ -1061,7 +1063,7 @@ void GpuProcessHost::SendOutstandingReplies() {
     CreateCommandBufferCallback callback =
         create_command_buffer_requests_.front();
     create_command_buffer_requests_.pop();
-    callback.Run(false);
+    callback.Run(CREATE_COMMAND_BUFFER_FAILED_AND_CHANNEL_LOST);
   }
 }
 

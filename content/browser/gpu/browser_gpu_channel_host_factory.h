@@ -29,7 +29,7 @@ class CONTENT_EXPORT BrowserGpuChannelHostFactory
   virtual scoped_refptr<base::MessageLoopProxy> GetIOLoopProxy() OVERRIDE;
   virtual scoped_ptr<base::SharedMemory> AllocateSharedMemory(
       size_t size) OVERRIDE;
-  virtual bool CreateViewCommandBuffer(
+  virtual CreateCommandBufferResult CreateViewCommandBuffer(
       int32 surface_id,
       const GPUCreateCommandBufferConfig& init_params,
       int32 route_id) OVERRIDE;
@@ -85,7 +85,8 @@ class CONTENT_EXPORT BrowserGpuChannelHostFactory
       CreateRequest* request,
       int32 surface_id,
       const GPUCreateCommandBufferConfig& init_params);
-  static void CommandBufferCreatedOnIO(CreateRequest* request, bool succeeded);
+  static void CommandBufferCreatedOnIO(CreateRequest* request,
+                                       CreateCommandBufferResult result);
   void CreateImageOnIO(
       gfx::PluginWindowHandle window,
       int32 image_id,

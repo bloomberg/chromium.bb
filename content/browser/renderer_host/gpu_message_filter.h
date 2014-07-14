@@ -13,6 +13,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner_helpers.h"
 #include "content/common/gpu/gpu_process_launch_causes.h"
+#include "content/common/gpu/gpu_result_codes.h"
 #include "content/public/browser/browser_message_filter.h"
 #include "ui/gfx/native_widget_types.h"
 
@@ -66,7 +67,7 @@ class GpuMessageFilter : public BrowserMessageFilter {
                                 const IPC::ChannelHandle& channel,
                                 const gpu::GPUInfo& gpu_info);
   void CreateCommandBufferCallback(scoped_ptr<IPC::Message> reply,
-                                   bool succeeded);
+                                   CreateCommandBufferResult result);
 
   void BeginAllFrameSubscriptions();
   void EndAllFrameSubscriptions();

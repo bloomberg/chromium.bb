@@ -12,6 +12,7 @@
 #include "content/common/content_export.h"
 #include "content/common/gpu/gpu_memory_uma_stats.h"
 #include "content/common/gpu/gpu_process_launch_causes.h"
+#include "content/common/gpu/gpu_result_codes.h"
 #include "content/public/common/common_param_traits.h"
 #include "content/public/common/gpu_memory_stats.h"
 #include "gpu/command_buffer/common/capabilities.h"
@@ -43,6 +44,8 @@
 
 IPC_ENUM_TRAITS_MAX_VALUE(content::CauseForGpuLaunch,
                           content::CAUSE_FOR_GPU_LAUNCH_MAX_ENUM - 1)
+IPC_ENUM_TRAITS_MAX_VALUE(content::CreateCommandBufferResult,
+                          content::CREATE_COMMAND_BUFFER_RESULT_LAST);
 IPC_ENUM_TRAITS_MAX_VALUE(gfx::GpuPreference,
                           gfx::GpuPreferenceLast)
 IPC_ENUM_TRAITS_MAX_VALUE(gfx::SurfaceType,
@@ -335,7 +338,7 @@ IPC_SYNC_MESSAGE_CONTROL3_1(GpuHostMsg_CreateViewCommandBuffer,
                             int32, /* surface_id */
                             GPUCreateCommandBufferConfig, /* init_params */
                             int32, /* route_id */
-                            bool /* succeeded */)
+                            content::CreateCommandBufferResult /* result */)
 
 // Response from GPU to a GputMsg_Initialize message.
 IPC_MESSAGE_CONTROL2(GpuHostMsg_Initialized,
@@ -362,7 +365,7 @@ IPC_MESSAGE_CONTROL1(GpuMsg_LoadedShader,
 
 // Respond from GPU to a GpuMsg_CreateViewCommandBuffer message.
 IPC_MESSAGE_CONTROL1(GpuHostMsg_CommandBufferCreated,
-                     bool /* succeeded */)
+                     content::CreateCommandBufferResult /* result */)
 
 // Request from GPU to free the browser resources associated with the
 // command buffer.

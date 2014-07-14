@@ -19,6 +19,7 @@
 #include "content/common/content_export.h"
 #include "content/common/gpu/gpu_memory_uma_stats.h"
 #include "content/common/gpu/gpu_process_launch_causes.h"
+#include "content/common/gpu/gpu_result_codes.h"
 #include "content/public/browser/browser_child_process_host_delegate.h"
 #include "content/public/browser/gpu_data_manager.h"
 #include "gpu/command_buffer/common/constants.h"
@@ -63,7 +64,8 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
   typedef base::Callback<void(const IPC::ChannelHandle&, const gpu::GPUInfo&)>
       EstablishChannelCallback;
 
-  typedef base::Callback<void(bool)> CreateCommandBufferCallback;
+  typedef base::Callback<void(CreateCommandBufferResult)>
+      CreateCommandBufferCallback;
 
   typedef base::Callback<void(const gfx::Size)> CreateImageCallback;
 
@@ -172,7 +174,7 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
   // Message handlers.
   void OnInitialized(bool result, const gpu::GPUInfo& gpu_info);
   void OnChannelEstablished(const IPC::ChannelHandle& channel_handle);
-  void OnCommandBufferCreated(bool succeeded);
+  void OnCommandBufferCreated(CreateCommandBufferResult result);
   void OnDestroyCommandBuffer(int32 surface_id);
   void OnImageCreated(const gfx::Size size);
   void OnGpuMemoryBufferCreated(const gfx::GpuMemoryBufferHandle& handle);
