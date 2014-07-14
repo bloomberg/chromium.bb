@@ -80,9 +80,6 @@ private:
     virtual const AffineTransform& localToParentTransform() const OVERRIDE { return m_localTransform; }
     virtual RootInlineBox* createRootInlineBox() OVERRIDE;
 
-    virtual RenderBlock* firstLineBlock() const OVERRIDE;
-    virtual void updateFirstLetter() OVERRIDE;
-
     bool shouldHandleSubtreeMutations() const;
 
     bool m_needsReordering : 1;
