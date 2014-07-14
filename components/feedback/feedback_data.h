@@ -56,10 +56,8 @@ class FeedbackData : public FeedbackCommon {
 
   // Getters
   content::BrowserContext* context() const { return context_; }
-  const std::string attached_filename() const { return attached_filename_; }
-  const std::string attached_file_uuid() const { return attached_file_uuid_; }
-  const std::string screenshot_uuid() const { return screenshot_uuid_; }
-  int trace_id() const { return trace_id_; }
+  const std::string& attached_file_uuid() const { return attached_file_uuid_; }
+  const std::string& screenshot_uuid() const { return screenshot_uuid_; }
 
   // Setters
   void set_context(content::BrowserContext* context) { context_ = context; }
