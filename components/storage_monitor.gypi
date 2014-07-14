@@ -5,6 +5,7 @@
 {
   'targets': [
     {
+      # GN version: //components/storage_monitor
       'target_name': 'storage_monitor',
       'type': 'static_library',
       'include_dirs': [
@@ -88,6 +89,7 @@
       ],
     },
     {
+      # GN version: //components/storage_monitor:test_support
       'target_name': 'storage_monitor_test_support',
       'type': 'static_library',
       'include_dirs': [

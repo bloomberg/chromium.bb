@@ -101,4 +101,10 @@ group("all_components") {
       "//components/web_modal",  # Blocked on content.
     ]
   }
+
+  if (!is_ios && !is_android) {
+    deps += [
+      "//components/storage_monitor",
+    ]
+  }
 }

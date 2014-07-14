@@ -1,0 +1,116 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//build/config/features.gni")
+
+# GYP version: components/storage_monitor.gypi:storage_monitor
+static_library("storage_monitor") {
+  sources = [
+    "image_capture_device.h",
+    "image_capture_device.mm",
+    "image_capture_device_manager.h",
+    "image_capture_device_manager.mm",
+    "media_storage_util.cc",
+    "media_storage_util.h",
+    "media_transfer_protocol_device_observer_linux.cc",
+    "media_transfer_protocol_device_observer_linux.h",
+    "mtab_watcher_linux.cc",
+    "mtab_watcher_linux.h",
+    "portable_device_watcher_win.cc",
+    "portable_device_watcher_win.h",
+    "removable_device_constants.cc",
+    "removable_device_constants.h",
+    "removable_storage_observer.h",
+    "storage_info.cc",
+    "storage_info.h",
+    "storage_monitor.cc",
+    "storage_monitor.h",
+    "storage_monitor_chromeos.cc",
+    "storage_monitor_chromeos.h",
+    "storage_monitor_linux.cc",
+    "storage_monitor_linux.h",
+    "storage_monitor_mac.h",
+    "storage_monitor_mac.mm",
+    "storage_monitor_win.cc",
+    "storage_monitor_win.h",
+    "transient_device_ids.cc",
+    "transient_device_ids.h",
+    "udev_util_linux.cc",
+    "udev_util_linux.h",
+    "volume_mount_watcher_win.cc",
+    "volume_mount_watcher_win.h",
+  ]
+
+  deps = [
+    "//base",
+  ]
+
+  if (is_mac) {
+    libs += [
+      "DiskArbitration.framework",
+      "Foundation.framework",
+      "ImageCaptureCore.framework",
+    ]
+  }
+
+  if (is_linux) {
+    deps += [
+      "//device/media_transfer_protocol",
+      "//device/media_transfer_protocol:mtp_file_entry_proto",
+      "//device/media_transfer_protocol:mtp_storage_info_proto",
+    ]
+  }
+
+  if (use_udev) {
+    deps += [
+      "//device/udev_linux",
+    ]
+  } else {
+    sources -= [
+      "storage_monitor_linux.cc",
+      "storage_monitor_linux.h",
+      "udev_util_linux.cc",
+      "udev_util_linux.h",
+    ]
+  }
+
+  if (is_chromeos) {
+    sources -= [
+      "mtab_watcher_linux.cc",
+      "mtab_watcher_linux.h",
+      "storage_monitor_linux.cc",
+      "storage_monitor_linux.h",
+    ]
+  }
+}
+
+# GYP version: components/storage_monitor.gypi:storage_monitor_test_support
+static_library("test_support") {
+  sources = [
+    "mock_removable_storage_observer.cc",
+    "mock_removable_storage_observer.h",
+    "test_media_transfer_protocol_manager_linux.cc",
+    "test_media_transfer_protocol_manager_linux.h",
+    "test_portable_device_watcher_win.cc",
+    "test_portable_device_watcher_win.h",
+    "test_storage_monitor.cc",
+    "test_storage_monitor.h",
+    "test_storage_monitor_win.cc",
+    "test_storage_monitor_win.h",
+    "test_volume_mount_watcher_win.cc",
+    "test_volume_mount_watcher_win.h",
+  ]
+
+  deps = [
+    "//base",
+    ":storage_monitor",
+  ]
+
+  if (is_linux) {
+    deps += [
+      "//device/media_transfer_protocol",
+      "//device/media_transfer_protocol:mtp_file_entry_proto",
+    ]
+  }
+}
