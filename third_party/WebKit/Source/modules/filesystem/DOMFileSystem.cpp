@@ -31,7 +31,6 @@
 #include "config.h"
 #include "modules/filesystem/DOMFileSystem.h"
 
-#include "core/fileapi/File.h"
 #include "modules/filesystem/DOMFilePath.h"
 #include "modules/filesystem/DirectoryEntry.h"
 #include "modules/filesystem/ErrorCallback.h"
@@ -152,58 +151,6 @@ void DOMFileSystem::createWriter(const FileEntry* fileEntry, PassOwnPtr<FileWrit
     OwnPtr<AsyncFileSystemCallbacks> callbacks = FileWriterBaseCallbacks::create(fileWriter, conversionCallback.release(), errorCallback, m_context);
     fileSystem()->createFileWriter(createFileSystemURL(fileEntry), fileWriter, callbacks.release());
 }
-
-namespace {
-
-class SnapshotFileCallback : public FileSystemCallbacksBase {
-public:
-    static PassOwnPtr<AsyncFileSystemCallbacks> create(DOMFileSystem* filesystem, const String& name, const KURL& url, PassOwnPtr<FileCallback> successCallback, PassOwnPtr<ErrorCallback> errorCallback, ExecutionContext* context)
-    {
-        return adoptPtr(static_cast<AsyncFileSystemCallbacks*>(new SnapshotFileCallback(filesystem, name, url, successCallback, errorCallback, context)));
-    }
-
-    virtual void didCreateSnapshotFile(const FileMetadata& metadata, PassRefPtr<BlobDataHandle> snapshot)
-    {
-        if (!m_successCallback)
-            return;
-
-        // We can't directly use the snapshot blob data handle because the content type on it hasn't been set.
-        // The |snapshot| param is here to provide a a chain of custody thru thread bridging that is held onto until
-        // *after* we've coined a File with a new handle that has the correct type set on it. This allows the
-        // blob storage system to track when a temp file can and can't be safely deleted.
-
-        // For regular filesystem types (temporary or persistent), we should not cache file metadata as it could change File semantics.
-        // For other filesystem types (which could be platform-specific ones), there's a chance that the files are on remote filesystem. If the port has returned metadata just pass it to File constructor (so we may cache the metadata).
-        // FIXME: We should use the snapshot metadata for all files.
-        // https://www.w3.org/Bugs/Public/show_bug.cgi?id=17746
-        if (m_fileSystem->type() == FileSystemTypeTemporary || m_fileSystem->type() == FileSystemTypePersistent) {
-            m_successCallback->handleEvent(File::createWithName(metadata.platformPath, m_name).get());
-        } else if (!metadata.platformPath.isEmpty()) {
-            // If the platformPath in the returned metadata is given, we create a File object for the path.
-            m_successCallback->handleEvent(File::createForFileSystemFile(m_name, metadata).get());
-        } else {
-            // Otherwise create a File from the FileSystem URL.
-            m_successCallback->handleEvent(File::createForFileSystemFile(m_url, metadata).get());
-        }
-
-        m_successCallback.release();
-    }
-
-private:
-    SnapshotFileCallback(DOMFileSystem* filesystem, const String& name, const KURL& url, PassOwnPtr<FileCallback> successCallback, PassOwnPtr<ErrorCallback> errorCallback, ExecutionContext* context)
-        : FileSystemCallbacksBase(errorCallback, filesystem, context)
-        , m_name(name)
-        , m_url(url)
-        , m_successCallback(successCallback)
-    {
-    }
-
-    String m_name;
-    KURL m_url;
-    OwnPtr<FileCallback> m_successCallback;
-};
-
-} // namespace
 
 void DOMFileSystem::createFile(const FileEntry* fileEntry, PassOwnPtr<FileCallback> successCallback, PassOwnPtr<ErrorCallback> errorCallback)
 {

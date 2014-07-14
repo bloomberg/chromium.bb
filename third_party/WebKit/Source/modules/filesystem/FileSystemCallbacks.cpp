@@ -32,6 +32,7 @@
 #include "modules/filesystem/FileSystemCallbacks.h"
 
 #include "core/dom/ExecutionContext.h"
+#include "core/fileapi/File.h"
 #include "core/fileapi/FileError.h"
 #include "core/html/VoidCallback.h"
 #include "modules/filesystem/DOMFilePath.h"
@@ -42,6 +43,7 @@
 #include "modules/filesystem/Entry.h"
 #include "modules/filesystem/EntryCallback.h"
 #include "modules/filesystem/ErrorCallback.h"
+#include "modules/filesystem/FileCallback.h"
 #include "modules/filesystem/FileEntry.h"
 #include "modules/filesystem/FileSystemCallback.h"
 #include "modules/filesystem/FileWriterBase.h"
@@ -240,7 +242,7 @@ void MetadataCallbacks::didReadMetadata(const FileMetadata& metadata)
         handleEventOrScheduleCallback(m_successCallback.release(), Metadata::create(metadata));
 }
 
-// FileWriterBaseCallbacks ----------------------------------------------------------
+// FileWriterBaseCallbacks ----------------------------------------------------
 
 PassOwnPtr<AsyncFileSystemCallbacks> FileWriterBaseCallbacks::create(PassRefPtrWillBeRawPtr<FileWriterBase> fileWriter, PassOwnPtr<FileWriterBaseCallback> successCallback, PassOwnPtr<ErrorCallback> errorCallback, ExecutionContext* context)
 {
@@ -259,6 +261,46 @@ void FileWriterBaseCallbacks::didCreateFileWriter(PassOwnPtr<blink::WebFileWrite
     m_fileWriter->initialize(fileWriter, length);
     if (m_successCallback)
         handleEventOrScheduleCallback(m_successCallback.release(), m_fileWriter.release());
+}
+
+// SnapshotFileCallback -------------------------------------------------------
+
+PassOwnPtr<AsyncFileSystemCallbacks> SnapshotFileCallback::create(DOMFileSystemBase* filesystem, const String& name, const KURL& url, PassOwnPtr<FileCallback> successCallback, PassOwnPtr<ErrorCallback> errorCallback, ExecutionContext* context)
+{
+    return adoptPtr(new SnapshotFileCallback(filesystem, name, url, successCallback, errorCallback, context));
+}
+
+SnapshotFileCallback::SnapshotFileCallback(DOMFileSystemBase* filesystem, const String& name, const KURL& url, PassOwnPtr<FileCallback> successCallback, PassOwnPtr<ErrorCallback> errorCallback, ExecutionContext* context)
+    : FileSystemCallbacksBase(errorCallback, filesystem, context)
+    , m_name(name)
+    , m_url(url)
+    , m_successCallback(successCallback)
+{
+}
+
+void SnapshotFileCallback::didCreateSnapshotFile(const FileMetadata& metadata, PassRefPtr<BlobDataHandle> snapshot)
+{
+    if (!m_successCallback)
+        return;
+
+    // We can't directly use the snapshot blob data handle because the content type on it hasn't been set.
+    // The |snapshot| param is here to provide a a chain of custody thru thread bridging that is held onto until
+    // *after* we've coined a File with a new handle that has the correct type set on it. This allows the
+    // blob storage system to track when a temp file can and can't be safely deleted.
+
+    // For regular filesystem types (temporary or persistent), we should not cache file metadata as it could change File semantics.
+    // For other filesystem types (which could be platform-specific ones), there's a chance that the files are on remote filesystem. If the port has returned metadata just pass it to File constructor (so we may cache the metadata).
+    // FIXME: We should use the snapshot metadata for all files.
+    // https://www.w3.org/Bugs/Public/show_bug.cgi?id=17746
+    if (m_fileSystem->type() == FileSystemTypeTemporary || m_fileSystem->type() == FileSystemTypePersistent) {
+        handleEventOrScheduleCallback(m_successCallback.release(), File::createWithName(metadata.platformPath, m_name));
+    } else if (!metadata.platformPath.isEmpty()) {
+        // If the platformPath in the returned metadata is given, we create a File object for the path.
+        handleEventOrScheduleCallback(m_successCallback.release(), File::createForFileSystemFile(m_name, metadata));
+    } else {
+        // Otherwise create a File from the FileSystem URL.
+        handleEventOrScheduleCallback(m_successCallback.release(), File::createForFileSystemFile(m_url, metadata));
+    }
 }
 
 // VoidCallbacks --------------------------------------------------------------
