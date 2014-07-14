@@ -7,7 +7,8 @@
       "drawsContent": true,
       "repaintRects": [
         [0, 200, 200, 100],
-        [0, 50, 100, 25]
+        [0, 0, 100, 75],
+        [0, 0, 100, 50]
       ]
     }
   ]
@@ -34,7 +35,8 @@
       "contentsOpaque": true,
       "drawsContent": true,
       "repaintRects": [
-        [0, 63, 150, 12]
+        [0, 0, 150, 75],
+        [0, 0, 150, 63]
       ]
     }
   ]
