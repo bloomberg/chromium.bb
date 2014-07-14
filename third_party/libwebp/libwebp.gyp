@@ -3,6 +3,13 @@
 # found in the LICENSE file.
 
 {
+  'variables': {
+    'neon_sources': [
+      'dsp/dec_neon.c',
+      'dsp/enc_neon.c',
+      'dsp/upsampling_neon.c',
+    ]
+  },
   'targets': [
     {
       'target_name': 'libwebp_dec',
@@ -70,15 +77,23 @@
           'type': 'static_library',
           'include_dirs': ['.'],
           'sources': [
-            'dsp/dec_neon.c',
-            'dsp/enc_neon.c',
-            'dsp/upsampling_neon.c',
+            '<@(neon_sources)'
           ],
           # behavior similar to *.c.neon in an Android.mk
           'cflags!': [ '-mfpu=vfpv3-d16' ],
           'cflags': [ '-mfpu=neon' ],
-        },{  # "target_arch != "arm" or arm_version < 7"
-          'type': 'none',
+        },{
+          'conditions': [
+            ['target_arch == "arm64"', {
+              'type': 'static_library',
+              'include_dirs': ['.'],
+              'sources': [
+                '<@(neon_sources)'
+              ],
+            },{  # "target_arch != "arm|arm64" or arm_version < 7"
+              'type': 'none',
+            }],
+          ],
         }],
         ['order_profiling != 0', {
           'target_conditions' : [
