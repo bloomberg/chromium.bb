@@ -904,7 +904,7 @@ TEST_F(WindowSelectorTest, BasicArrowKeyNavigation) {
     ToggleOverview();
     for (size_t i = 0; i < test_windows + 1; i++) {
       SendKey(arrow_keys[key_index]);
-      // TODO(nsatragno): Add a more readable error message by constructing a
+      // TODO(flackr): Add a more readable error message by constructing a
       // string from the window IDs.
       EXPECT_EQ(GetSelectedWindow()->id(),
                 index_path_for_direction[key_index][i]);

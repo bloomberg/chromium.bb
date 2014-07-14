@@ -244,7 +244,7 @@ WindowSelector::~WindowSelector() {
   UMA_HISTOGRAM_MEDIUM_TIMES("Ash.WindowSelector.TimeInOverview",
                              base::Time::Now() - overview_start_time_);
 
-  // TODO(nsatragno): Change this to OnOverviewModeEnded and move it to when
+  // TODO(flackr): Change this to OnOverviewModeEnded and move it to when
   // everything is done.
   shell->OnOverviewModeEnding();
 
@@ -262,7 +262,7 @@ void WindowSelector::OnGridEmpty(WindowGrid* grid) {
       std::find(grid_list_.begin(), grid_list_.end(), grid);
   DCHECK(iter != grid_list_.end());
   grid_list_.erase(iter);
-  // TODO(nsatragno): Use the previous index for more than two displays.
+  // TODO(flackr): Use the previous index for more than two displays.
   selected_grid_index_ = 0;
   if (grid_list_.empty())
     CancelSelection();
@@ -318,7 +318,7 @@ void WindowSelector::OnDisplayAdded(const gfx::Display& display) {
 }
 
 void WindowSelector::OnDisplayRemoved(const gfx::Display& display) {
-  // TODO(nsatragno): Keep window selection active on remaining displays.
+  // TODO(flackr): Keep window selection active on remaining displays.
   CancelSelection();
 }
 
@@ -487,7 +487,7 @@ void WindowSelector::Move(Direction direction, bool animate) {
   for (size_t i = 0;
       i <= grid_list_.size() &&
       grid_list_[selected_grid_index_]->Move(direction, animate); i++) {
-    // TODO(nsatragno): If there are more than two monitors, move between grids
+    // TODO(flackr): If there are more than two monitors, move between grids
     // in the requested direction.
     selected_grid_index_ = (selected_grid_index_ + 1) % grid_list_.size();
   }

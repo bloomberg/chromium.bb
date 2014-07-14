@@ -59,7 +59,7 @@ bool WindowSelectorController::IsSelecting() {
   return window_selector_.get() != NULL;
 }
 
-// TODO(nsatragno): Make WindowSelectorController observe the activation of
+// TODO(flackr): Make WindowSelectorController observe the activation of
 // windows, so we can remove WindowSelectorDelegate.
 void WindowSelectorController::OnSelectionEnded() {
   window_selector_.reset();

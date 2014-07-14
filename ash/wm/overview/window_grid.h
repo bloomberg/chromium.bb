@@ -94,7 +94,7 @@ class ASH_EXPORT WindowGrid : public aura::WindowObserver {
 
   // aura::WindowObserver:
   virtual void OnWindowDestroying(aura::Window* window) OVERRIDE;
-  // TODO(nsatragno): Handle window bounds changed in WindowSelectorItem.
+  // TODO(flackr): Handle window bounds changed in WindowSelectorItem.
   virtual void OnWindowBoundsChanged(aura::Window* window,
                                      const gfx::Rect& old_bounds,
                                      const gfx::Rect& new_bounds) OVERRIDE;
