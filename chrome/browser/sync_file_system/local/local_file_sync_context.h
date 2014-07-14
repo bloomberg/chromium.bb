@@ -216,6 +216,7 @@ class LocalFileSyncContext
  private:
   typedef base::Callback<void(base::File::Error result)> StatusCallback;
   typedef std::deque<SyncStatusCallback> StatusCallbackQueue;
+  typedef std::deque<fileapi::FileSystemURL> FileSystemURLQueue;
   friend class base::RefCountedThreadSafe<LocalFileSyncContext>;
   friend class CannedSyncableFileSystem;
 
@@ -257,16 +258,15 @@ class LocalFileSyncContext
       SyncStatusCode status);
 
   // Helper routines for GetFileForLocalSync.
-  void GetNextURLsForSyncOnFileThread(
-      fileapi::FileSystemContext* file_system_context,
-      std::deque<fileapi::FileSystemURL>* urls);
+  scoped_ptr<FileSystemURLQueue> GetNextURLsForSyncOnFileThread(
+      fileapi::FileSystemContext* file_system_context);
   void TryPrepareForLocalSync(
       fileapi::FileSystemContext* file_system_context,
-      std::deque<fileapi::FileSystemURL>* urls,
-      const LocalFileSyncInfoCallback& callback);
+      const LocalFileSyncInfoCallback& callback,
+      scoped_ptr<FileSystemURLQueue> urls);
   void DidTryPrepareForLocalSync(
       fileapi::FileSystemContext* file_system_context,
-      std::deque<fileapi::FileSystemURL>* remaining_urls,
+      scoped_ptr<FileSystemURLQueue> remaining_urls,
       const LocalFileSyncInfoCallback& callback,
       SyncStatusCode status,
       const LocalFileSyncInfo& sync_file_info,

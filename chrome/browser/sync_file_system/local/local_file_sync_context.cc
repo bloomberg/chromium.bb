@@ -108,15 +108,13 @@ void LocalFileSyncContext::GetFileForLocalSync(
   DCHECK(file_system_context);
   DCHECK(ui_task_runner_->RunsTasksOnCurrentThread());
 
-  std::deque<FileSystemURL>* urls = new std::deque<FileSystemURL>;
-  file_system_context->default_file_task_runner()->PostTaskAndReply(
+  base::PostTaskAndReplyWithResult(
+      file_system_context->default_file_task_runner(),
       FROM_HERE,
       base::Bind(&LocalFileSyncContext::GetNextURLsForSyncOnFileThread,
-                 this, make_scoped_refptr(file_system_context),
-                 base::Unretained(urls)),
+                 this, make_scoped_refptr(file_system_context)),
       base::Bind(&LocalFileSyncContext::TryPrepareForLocalSync,
-                 this, make_scoped_refptr(file_system_context),
-                 base::Owned(urls), callback));
+                 this, make_scoped_refptr(file_system_context), callback));
 }
 
 void LocalFileSyncContext::ClearChangesForURL(
@@ -763,9 +761,9 @@ void LocalFileSyncContext::DidInitialize(
   pending_initialize_callbacks_.erase(file_system_context);
 }
 
-void LocalFileSyncContext::GetNextURLsForSyncOnFileThread(
-    FileSystemContext* file_system_context,
-    std::deque<FileSystemURL>* urls) {
+scoped_ptr<LocalFileSyncContext::FileSystemURLQueue>
+LocalFileSyncContext::GetNextURLsForSyncOnFileThread(
+    FileSystemContext* file_system_context) {
   DCHECK(file_system_context);
   DCHECK(file_system_context->default_file_task_runner()->
              RunsTasksOnCurrentThread());
@@ -773,14 +771,16 @@ void LocalFileSyncContext::GetNextURLsForSyncOnFileThread(
       SyncFileSystemBackend::GetBackend(file_system_context);
   DCHECK(backend);
   DCHECK(backend->change_tracker());
+  scoped_ptr<FileSystemURLQueue> urls(new FileSystemURLQueue);
   backend->change_tracker()->GetNextChangedURLs(
-      urls, kMaxURLsToFetchForLocalSync);
+      urls.get(), kMaxURLsToFetchForLocalSync);
+  return urls.Pass();
 }
 
 void LocalFileSyncContext::TryPrepareForLocalSync(
     FileSystemContext* file_system_context,
-    std::deque<FileSystemURL>* urls,
-    const LocalFileSyncInfoCallback& callback) {
+    const LocalFileSyncInfoCallback& callback,
+    scoped_ptr<FileSystemURLQueue> urls) {
   DCHECK(ui_task_runner_->RunsTasksOnCurrentThread());
   DCHECK(urls);
 
@@ -798,19 +798,17 @@ void LocalFileSyncContext::TryPrepareForLocalSync(
 
   const FileSystemURL url = urls->front();
   urls->pop_front();
-  std::deque<FileSystemURL>* remaining = new std::deque<FileSystemURL>;
-  remaining->swap(*urls);
 
   PrepareForSync(
       file_system_context, url, SYNC_SNAPSHOT,
       base::Bind(&LocalFileSyncContext::DidTryPrepareForLocalSync,
                  this, make_scoped_refptr(file_system_context),
-                 base::Owned(remaining), callback));
+                 base::Passed(&urls), callback));
 }
 
 void LocalFileSyncContext::DidTryPrepareForLocalSync(
     FileSystemContext* file_system_context,
-    std::deque<FileSystemURL>* remaining_urls,
+    scoped_ptr<FileSystemURLQueue> remaining_urls,
     const LocalFileSyncInfoCallback& callback,
     SyncStatusCode status,
     const LocalFileSyncInfo& sync_file_info,
@@ -821,7 +819,7 @@ void LocalFileSyncContext::DidTryPrepareForLocalSync(
     return;
   }
   // Recursively call TryPrepareForLocalSync with remaining_urls.
-  TryPrepareForLocalSync(file_system_context, remaining_urls, callback);
+  TryPrepareForLocalSync(file_system_context, callback, remaining_urls.Pass());
 }
 
 void LocalFileSyncContext::DidGetWritingStatusForSync(
