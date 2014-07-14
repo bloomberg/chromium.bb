@@ -281,8 +281,7 @@ class ExtensionGalleriesHost
   void GetMediaFileSystems(const MediaGalleryPrefIdSet& galleries,
                            const MediaGalleriesPrefInfoMap& galleries_info,
                            const MediaFileSystemsCallback& callback) {
-    // TODO(tommycli): Remove after fixing http://crbug.com/374330.
-    CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
     // Extract all the device ids so we can make sure they are attached.
     MediaStorageUtil::DeviceIdSet* device_ids =
@@ -290,12 +289,7 @@ class ExtensionGalleriesHost
     for (std::set<MediaGalleryPrefId>::const_iterator id = galleries.begin();
          id != galleries.end();
          ++id) {
-      MediaGalleriesPrefInfoMap::const_iterator info = galleries_info.find(*id);
-
-      // TODO(tommycli): Remove after fixing http://crbug.com/374330.
-      CHECK(info != galleries_info.end());
-
-      device_ids->insert(info->second.device_id);
+      device_ids->insert(galleries_info.find(*id)->second.device_id);
     }
     MediaStorageUtil::FilterAttachedDevices(device_ids, base::Bind(
         &ExtensionGalleriesHost::GetMediaFileSystemsForAttachedDevices, this,

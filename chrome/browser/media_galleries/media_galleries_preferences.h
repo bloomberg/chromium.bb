@@ -244,7 +244,7 @@ class MediaGalleriesPreferences
   bool NonAutoGalleryHasPermission(MediaGalleryPrefId id) const;
 
   MediaGalleryPrefIdSet GalleriesForExtension(
-      const extensions::Extension& extension) const;
+      const extensions::Extension& extension);
 
   // Returns true if the permission changed. Returns false if there was
   // no change.

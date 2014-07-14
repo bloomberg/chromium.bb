@@ -1022,7 +1022,7 @@ bool MediaGalleriesPreferences::NonAutoGalleryHasPermission(
 }
 
 MediaGalleryPrefIdSet MediaGalleriesPreferences::GalleriesForExtension(
-    const extensions::Extension& extension) const {
+    const extensions::Extension& extension) {
   DCHECK(IsInitialized());
   MediaGalleryPrefIdSet result;
 
@@ -1043,8 +1043,14 @@ MediaGalleryPrefIdSet MediaGalleriesPreferences::GalleriesForExtension(
     } else {
       MediaGalleriesPrefInfoMap::const_iterator gallery =
           known_galleries_.find(it->pref_id);
-      // TODO(tommycli): Change to DCHECK after fixing http://crbug.com/374330.
-      CHECK(gallery != known_galleries_.end());
+
+      // Handle a stored permission for an erased gallery. This should never
+      // happen but, has caused crashes in the wild. http://crbug.com/374330.
+      if (gallery == known_galleries_.end()) {
+        RemoveGalleryPermissionsFromPrefs(it->pref_id);
+        continue;
+      }
+
       if (!gallery->second.IsBlackListedType()) {
         result.insert(it->pref_id);
       } else {
