@@ -171,9 +171,7 @@ public:
     // Internal methods that assume the existence of attribute storage, one should use hasAttributes()
     // before calling them. This is not a trivial getter and its return value should be cached for
     // performance.
-    AttributeCollection attributes() const { return elementData()->attributes(); }
-    size_t attributeCount() const;
-    const Attribute& attributeAt(unsigned index) const;
+    AttributeCollection attributes() const;
     const Attribute* findAttributeByName(const QualifiedName&) const;
     size_t findAttributeIndexByName(const QualifiedName& name) const { return elementData()->attributes().findIndex(name); }
     size_t findAttributeIndexByName(const AtomicString& name, bool shouldIgnoreAttributeCase) const { return elementData()->attributes().findIndex(name, shouldIgnoreAttributeCase); }
@@ -714,6 +712,12 @@ inline const AtomicString& Element::fastGetAttribute(const QualifiedName& name) 
     return nullAtom;
 }
 
+inline AttributeCollection Element::attributes() const
+{
+    ASSERT(elementData());
+    return elementData()->attributes();
+}
+
 inline bool Element::hasAttributesWithoutUpdate() const
 {
     return elementData() && !elementData()->attributes().isEmpty();
@@ -763,18 +767,6 @@ inline const SpaceSplitString& Element::classNames() const
     ASSERT(hasClass());
     ASSERT(elementData());
     return elementData()->classNames();
-}
-
-inline size_t Element::attributeCount() const
-{
-    ASSERT(elementData());
-    return elementData()->attributes().size();
-}
-
-inline const Attribute& Element::attributeAt(unsigned index) const
-{
-    ASSERT(elementData());
-    return elementData()->attributes()[index];
 }
 
 inline const Attribute* Element::findAttributeByName(const QualifiedName& name) const

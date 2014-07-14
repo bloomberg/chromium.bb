@@ -933,8 +933,8 @@ bool EditingStyle::elementIsStyledSpanOrHTMLEquivalent(const HTMLElement* elemen
     }
 
     // font with color attribute, span with style attribute, etc...
-    ASSERT(matchedAttributes <= element->attributeCount());
-    return matchedAttributes >= element->attributeCount();
+    ASSERT(matchedAttributes <= element->attributes().size());
+    return matchedAttributes >= element->attributes().size();
 }
 
 void EditingStyle::prepareToApplyAt(const Position& position, ShouldPreserveWritingDirection shouldPreserveWritingDirection)

@@ -84,8 +84,8 @@ static bool hasNoAttributeOrOnlyStyleAttribute(const Element* element, ShouldSty
         || !element->inlineStyle() || element->inlineStyle()->isEmpty()))
         matchedAttributes++;
 
-    ASSERT(matchedAttributes <= element->attributeCount());
-    return matchedAttributes == element->attributeCount();
+    ASSERT(matchedAttributes <= element->attributes().size());
+    return matchedAttributes == element->attributes().size();
 }
 
 bool isStyleSpanOrSpanWithOnlyStyleAttribute(const Element* element)

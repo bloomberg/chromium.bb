@@ -938,7 +938,7 @@ ALWAYS_INLINE void Element::setAttributeInternal(size_t index, const QualifiedNa
         return;
     }
 
-    const Attribute& existingAttribute = attributeAt(index);
+    const Attribute& existingAttribute = attributes().at(index);
     QualifiedName existingAttributeName = existingAttribute.name();
 
     if (!inSynchronizationOfLazyAttribute)
@@ -1999,12 +1999,12 @@ void Element::setAttributeNS(const AtomicString& namespaceURI, const AtomicStrin
 
 void Element::removeAttributeInternal(size_t index, SynchronizationOfLazyAttribute inSynchronizationOfLazyAttribute)
 {
-    ASSERT_WITH_SECURITY_IMPLICATION(index < attributeCount());
-
     UniqueElementData& elementData = ensureUniqueElementData();
+    AttributeCollection attributes = elementData.attributes();
+    ASSERT_WITH_SECURITY_IMPLICATION(index < attributes.size());
 
-    QualifiedName name = elementData.attributeAt(index).name();
-    AtomicString valueBeingRemoved = elementData.attributeAt(index).value();
+    QualifiedName name = attributes[index].name();
+    AtomicString valueBeingRemoved = attributes[index].value();
 
     if (!inSynchronizationOfLazyAttribute) {
         if (!valueBeingRemoved.isNull())
@@ -2012,7 +2012,7 @@ void Element::removeAttributeInternal(size_t index, SynchronizationOfLazyAttribu
     }
 
     if (RefPtrWillBeRawPtr<Attr> attrNode = attrIfExists(name))
-        detachAttrNodeFromElementWithValue(attrNode.get(), elementData.attributeAt(index).value());
+        detachAttrNodeFromElementWithValue(attrNode.get(), attributes[index].value());
 
     elementData.removeAttributeAt(index);
 
@@ -2535,8 +2535,10 @@ void Element::normalizeAttributes()
         return;
     // attributeCount() cannot be cached before the loop because the attributes
     // list is altered while iterating.
-    for (unsigned i = 0; i < attributeCount(); ++i) {
-        if (RefPtrWillBeRawPtr<Attr> attr = attrIfExists(attributeAt(i).name()))
+    AttributeCollection attributes = this->attributes();
+    AttributeCollection::const_iterator end = attributes.end();
+    for (AttributeCollection::const_iterator it = attributes.begin(); it < end; ++it) {
+        if (RefPtrWillBeRawPtr<Attr> attr = attrIfExists(it->name()))
             attr->normalize();
     }
 }

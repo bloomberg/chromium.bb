@@ -99,16 +99,19 @@ PassRefPtrWillBeRawPtr<Node> NamedNodeMap::setNamedItemNS(Node* node, ExceptionS
 
 PassRefPtrWillBeRawPtr<Node> NamedNodeMap::item(unsigned index) const
 {
-    if (index >= length())
+    if (!m_element->hasAttributes())
         return nullptr;
-    return m_element->ensureAttr(m_element->attributeAt(index).name());
+    AttributeCollection attributes = m_element->attributes();
+    if (index >= attributes.size())
+        return nullptr;
+    return m_element->ensureAttr(attributes[index].name());
 }
 
 size_t NamedNodeMap::length() const
 {
     if (!m_element->hasAttributes())
         return 0;
-    return m_element->attributeCount();
+    return m_element->attributes().size();
 }
 
 void NamedNodeMap::trace(Visitor* visitor)

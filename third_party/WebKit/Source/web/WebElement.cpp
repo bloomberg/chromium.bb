@@ -105,7 +105,7 @@ unsigned WebElement::attributeCount() const
 {
     if (!constUnwrap<Element>()->hasAttributes())
         return 0;
-    return constUnwrap<Element>()->attributeCount();
+    return constUnwrap<Element>()->attributes().size();
 }
 
 WebNode WebElement::shadowRoot() const
@@ -120,14 +120,14 @@ WebString WebElement::attributeLocalName(unsigned index) const
 {
     if (index >= attributeCount())
         return WebString();
-    return constUnwrap<Element>()->attributeAt(index).localName();
+    return constUnwrap<Element>()->attributes().at(index).localName();
 }
 
 WebString WebElement::attributeValue(unsigned index) const
 {
     if (index >= attributeCount())
         return WebString();
-    return constUnwrap<Element>()->attributeAt(index).value();
+    return constUnwrap<Element>()->attributes().at(index).value();
 }
 
 WebString WebElement::innerText()

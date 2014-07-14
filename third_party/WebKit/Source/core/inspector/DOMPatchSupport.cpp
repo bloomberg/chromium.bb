@@ -188,8 +188,8 @@ bool DOMPatchSupport::innerPatchNode(Digest* oldDigest, Digest* newDigest, Excep
     if (oldDigest->m_attrsSHA1 != newDigest->m_attrsSHA1) {
         // FIXME: Create a function in Element for removing all properties. Take in account whether did/willModifyAttribute are important.
         if (oldElement->hasAttributesWithoutUpdate()) {
-            while (oldElement->attributeCount()) {
-                const Attribute& attribute = oldElement->attributeAt(0);
+            while (oldElement->attributes().size()) {
+                const Attribute& attribute = oldElement->attributes().at(0);
                 if (!m_domEditor->removeAttribute(oldElement, attribute.localName(), exceptionState))
                     return false;
             }
