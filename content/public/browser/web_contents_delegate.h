@@ -383,6 +383,14 @@ class CONTENT_EXPORT WebContentsDelegate {
                                        const GURL& url,
                                        bool user_gesture) {}
 
+  // Unregister the registered handler for URL requests with the given scheme.
+  // |user_gesture| is true if the registration is made in the context of a user
+  // gesture.
+  virtual void UnregisterProtocolHandler(WebContents* web_contents,
+                                         const std::string& protocol,
+                                         const GURL& url,
+                                         bool user_gesture) {}
+
   // Result of string search in the page. This includes the number of matches
   // found and the selection rect (in screen coordinates) for the string found.
   // If |final_update| is false, it indicates that more results follow.

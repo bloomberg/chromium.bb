@@ -534,6 +534,8 @@ bool WebContentsImpl::OnMessageReceived(RenderViewHost* render_view_host,
     IPC_MESSAGE_HANDLER(ViewHostMsg_EnumerateDirectory, OnEnumerateDirectory)
     IPC_MESSAGE_HANDLER(ViewHostMsg_RegisterProtocolHandler,
                         OnRegisterProtocolHandler)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_UnregisterProtocolHandler,
+                        OnUnregisterProtocolHandler)
     IPC_MESSAGE_HANDLER(ViewHostMsg_Find_Reply, OnFindReply)
     IPC_MESSAGE_HANDLER(ViewHostMsg_AppCacheAccessed, OnAppCacheAccessed)
     IPC_MESSAGE_HANDLER(ViewHostMsg_WebUISend, OnWebUISend)
@@ -2724,6 +2726,20 @@ void WebContentsImpl::OnRegisterProtocolHandler(const std::string& protocol,
     return;
 
   delegate_->RegisterProtocolHandler(this, protocol, url, user_gesture);
+}
+
+void WebContentsImpl::OnUnregisterProtocolHandler(const std::string& protocol,
+                                                  const GURL& url,
+                                                  bool user_gesture) {
+  if (!delegate_)
+    return;
+
+  ChildProcessSecurityPolicyImpl* policy =
+      ChildProcessSecurityPolicyImpl::GetInstance();
+  if (policy->IsPseudoScheme(protocol))
+    return;
+
+  delegate_->UnregisterProtocolHandler(this, protocol, url, user_gesture);
 }
 
 void WebContentsImpl::OnFindReply(int request_id,

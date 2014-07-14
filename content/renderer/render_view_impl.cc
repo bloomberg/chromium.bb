@@ -3975,6 +3975,20 @@ void RenderViewImpl::registerProtocolHandler(const WebString& scheme,
                                                user_gesture));
 }
 
+void RenderViewImpl::unregisterProtocolHandler(const WebString& scheme,
+                                               const WebURL& base_url,
+                                               const WebURL& url) {
+  bool user_gesture = WebUserGestureIndicator::isProcessingUserGesture();
+  GURL base(base_url);
+  GURL absolute_url = base.Resolve(base::UTF16ToUTF8(url.string()));
+  if (base.GetOrigin() != absolute_url.GetOrigin())
+    return;
+  Send(new ViewHostMsg_UnregisterProtocolHandler(routing_id_,
+                                                 base::UTF16ToUTF8(scheme),
+                                                 absolute_url,
+                                                 user_gesture));
+}
+
 blink::WebPageVisibilityState RenderViewImpl::visibilityState() const {
   blink::WebPageVisibilityState current_state = is_hidden() ?
       blink::WebPageVisibilityStateHidden :

@@ -726,6 +726,9 @@ class CONTENT_EXPORT WebContentsImpl
                                  const GURL& url,
                                  const base::string16& title,
                                  bool user_gesture);
+  void OnUnregisterProtocolHandler(const std::string& protocol,
+                                   const GURL& url,
+                                   bool user_gesture);
   void OnFindReply(int request_id,
                    int number_of_matches,
                    const gfx::Rect& selection_rect,

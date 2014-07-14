@@ -1493,6 +1493,12 @@ IPC_MESSAGE_ROUTED4(ViewHostMsg_RegisterProtocolHandler,
                     base::string16 /* title */,
                     bool /* user_gesture */)
 
+// Unregister the registered handler for URL requests with the given scheme.
+IPC_MESSAGE_ROUTED3(ViewHostMsg_UnregisterProtocolHandler,
+                    std::string /* scheme */,
+                    GURL /* url */,
+                    bool /* user_gesture */)
+
 // Stores new inspector setting in the profile.
 // TODO(jam): this should be in the chrome module
 IPC_MESSAGE_ROUTED2(ViewHostMsg_UpdateInspectorSetting,

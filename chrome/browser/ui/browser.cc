@@ -1663,6 +1663,25 @@ void Browser::RegisterProtocolHandler(WebContents* web_contents,
   }
 }
 
+void Browser::UnregisterProtocolHandler(WebContents* web_contents,
+                                        const std::string& protocol,
+                                        const GURL& url,
+                                        bool user_gesture) {
+  // user_gesture will be used in case we decide to have confirmation bubble
+  // for user while un-registering the handler.
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents->GetBrowserContext());
+  if (profile->IsOffTheRecord())
+    return;
+
+  ProtocolHandler handler =
+      ProtocolHandler::CreateProtocolHandler(protocol, url);
+
+  ProtocolHandlerRegistry* registry =
+      ProtocolHandlerRegistryFactory::GetForProfile(profile);
+  registry->RemoveHandler(handler);
+}
+
 void Browser::UpdatePreferredSize(WebContents* source,
                                   const gfx::Size& pref_size) {
   window_->UpdatePreferredSize(source, pref_size);

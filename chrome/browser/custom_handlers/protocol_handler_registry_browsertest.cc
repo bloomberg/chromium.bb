@@ -59,6 +59,15 @@ class RegisterProtocolHandlerBrowserTest : public InProcessBrowserTest {
     registry->is_loading_ = false;
     ASSERT_TRUE(registry->IsHandledProtocol(protocol));
   }
+  void RemoveProtocolHandler(const std::string& protocol,
+                             const GURL& url) {
+    ProtocolHandler handler = ProtocolHandler::CreateProtocolHandler(protocol,
+                                                                     url);
+    ProtocolHandlerRegistry* registry =
+        ProtocolHandlerRegistryFactory::GetForProfile(browser()->profile());
+    registry->RemoveHandler(handler);
+    ASSERT_FALSE(registry->IsHandledProtocol(protocol));
+  }
 };
 
 IN_PROC_BROWSER_TEST_F(RegisterProtocolHandlerBrowserTest,
@@ -75,6 +84,27 @@ IN_PROC_BROWSER_TEST_F(RegisterProtocolHandlerBrowserTest,
   ASSERT_EQ(1u, registry->GetHandlersFor(url.scheme()).size());
   menu.reset(CreateContextMenu(url));
   ASSERT_TRUE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPENLINKWITH));
+}
+
+IN_PROC_BROWSER_TEST_F(RegisterProtocolHandlerBrowserTest,
+    UnregisterProtocolHandler) {
+  scoped_ptr<TestRenderViewContextMenu> menu(
+      CreateContextMenu(GURL("http://www.google.com/")));
+  ASSERT_FALSE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPENLINKWITH));
+
+  AddProtocolHandler(std::string("web+search"),
+                     GURL("http://www.google.com/%s"));
+  GURL url("web+search:testing");
+  ProtocolHandlerRegistry* registry =
+      ProtocolHandlerRegistryFactory::GetForProfile(browser()->profile());
+  ASSERT_EQ(1u, registry->GetHandlersFor(url.scheme()).size());
+  menu.reset(CreateContextMenu(url));
+  ASSERT_TRUE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPENLINKWITH));
+  RemoveProtocolHandler(std::string("web+search"),
+                        GURL("http://www.google.com/%s"));
+  ASSERT_EQ(0u, registry->GetHandlersFor(url.scheme()).size());
+  menu.reset(CreateContextMenu(url));
+  ASSERT_FALSE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPENLINKWITH));
 }
 
 IN_PROC_BROWSER_TEST_F(RegisterProtocolHandlerBrowserTest, CustomHandler) {

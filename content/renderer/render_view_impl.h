@@ -451,6 +451,9 @@ class CONTENT_EXPORT RenderViewImpl
                                        const blink::WebURL& base_url,
                                        const blink::WebURL& url,
                                        const blink::WebString& title);
+  virtual void unregisterProtocolHandler(const blink::WebString& scheme,
+                                         const blink::WebURL& base_url,
+                                         const blink::WebURL& url);
   virtual blink::WebPageVisibilityState visibilityState() const;
   virtual blink::WebPushClient* webPushClient();
   virtual void draggableRegionsChanged();

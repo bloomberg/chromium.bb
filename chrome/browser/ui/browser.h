@@ -616,6 +616,10 @@ class Browser : public TabStripModelObserver,
                                        const std::string& protocol,
                                        const GURL& url,
                                        bool user_gesture) OVERRIDE;
+  virtual void UnregisterProtocolHandler(content::WebContents* web_contents,
+                                         const std::string& protocol,
+                                         const GURL& url,
+                                         bool user_gesture) OVERRIDE;
   virtual void UpdatePreferredSize(content::WebContents* source,
                                    const gfx::Size& pref_size) OVERRIDE;
   virtual void ResizeDueToAutoResize(content::WebContents* source,
