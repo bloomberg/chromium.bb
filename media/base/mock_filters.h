@@ -130,6 +130,7 @@ class MockVideoRenderer : public VideoRenderer {
   MOCK_METHOD1(Flush, void(const base::Closure& callback));
   MOCK_METHOD1(StartPlayingFrom, void(base::TimeDelta timestamp));
   MOCK_METHOD1(Stop, void(const base::Closure& callback));
+  MOCK_METHOD1(SetPlaybackRate, void(float playback_rate));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockVideoRenderer);

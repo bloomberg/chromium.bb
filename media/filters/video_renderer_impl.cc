@@ -34,6 +34,7 @@ VideoRendererImpl::VideoRendererImpl(
       thread_(),
       pending_read_(false),
       drop_frames_(drop_frames),
+      playback_rate_(0),
       buffering_state_(BUFFERING_HAVE_NOTHING),
       paint_cb_(paint_cb),
       last_timestamp_(kNoTimestamp()),
@@ -103,6 +104,12 @@ void VideoRendererImpl::Stop(const base::Closure& callback) {
   }
 
   video_frame_stream_.Stop(callback);
+}
+
+void VideoRendererImpl::SetPlaybackRate(float playback_rate) {
+  DCHECK(task_runner_->BelongsToCurrentThread());
+  base::AutoLock auto_lock(lock_);
+  playback_rate_ = playback_rate;
 }
 
 void VideoRendererImpl::StartPlayingFrom(base::TimeDelta timestamp) {
@@ -214,7 +221,8 @@ void VideoRendererImpl::ThreadMain() {
       return;
 
     // Remain idle as long as we're not playing.
-    if (state_ != kPlaying || buffering_state_ != BUFFERING_HAVE_ENOUGH) {
+    if (state_ != kPlaying || playback_rate_ == 0 ||
+        buffering_state_ != BUFFERING_HAVE_ENOUGH) {
       UpdateStatsAndWait_Locked(kIdleTimeDelta);
       continue;
     }
@@ -230,10 +238,16 @@ void VideoRendererImpl::ThreadMain() {
       continue;
     }
 
-    base::TimeDelta now = get_time_cb_.Run();
-    base::TimeDelta target_timestamp = ready_frames_.front()->timestamp();
-    base::TimeDelta earliest_paint_timestamp;
-    base::TimeDelta latest_paint_timestamp;
+    base::TimeDelta remaining_time =
+        CalculateSleepDuration(ready_frames_.front(), playback_rate_);
+
+    // Sleep up to a maximum of our idle time until we're within the time to
+    // render the next frame.
+    if (remaining_time.InMicroseconds() > 0) {
+      remaining_time = std::min(remaining_time, kIdleTimeDelta);
+      UpdateStatsAndWait_Locked(remaining_time);
+      continue;
+    }
 
     // Deadline is defined as the midpoint between this frame and the next
     // frame, using the delta between this frame and the previous frame as the
@@ -246,24 +260,15 @@ void VideoRendererImpl::ThreadMain() {
     //
     // TODO(scherkus): This can be vastly improved. Use a histogram to measure
     // the accuracy of our frame timing code. http://crbug.com/149829
-    if (last_timestamp_ == kNoTimestamp()) {
-      earliest_paint_timestamp = target_timestamp;
-      latest_paint_timestamp = base::TimeDelta::Max();
-    } else {
-      base::TimeDelta duration = target_timestamp - last_timestamp_;
-      earliest_paint_timestamp = target_timestamp - duration / 2;
-      latest_paint_timestamp = target_timestamp + duration / 2;
-    }
+    if (drop_frames_ && last_timestamp_ != kNoTimestamp()) {
+      base::TimeDelta now = get_time_cb_.Run();
+      base::TimeDelta deadline = ready_frames_.front()->timestamp() +
+          (ready_frames_.front()->timestamp() - last_timestamp_) / 2;
 
-    // Remain idle until we've reached our target paint window.
-    if (now < earliest_paint_timestamp) {
-      UpdateStatsAndWait_Locked(kIdleTimeDelta);
-      continue;
-    }
-
-    if (now > latest_paint_timestamp && drop_frames_) {
-      DropNextReadyFrame_Locked();
-      continue;
+      if (now > deadline) {
+        DropNextReadyFrame_Locked();
+        continue;
+      }
     }
 
     // Congratulations! You've made it past the video frame timing gauntlet.
@@ -470,6 +475,19 @@ void VideoRendererImpl::OnVideoFrameStreamResetDone() {
   state_ = kFlushed;
   last_timestamp_ = kNoTimestamp();
   base::ResetAndReturn(&flush_cb_).Run();
+}
+
+base::TimeDelta VideoRendererImpl::CalculateSleepDuration(
+    const scoped_refptr<VideoFrame>& next_frame,
+    float playback_rate) {
+  // Determine the current and next presentation timestamps.
+  base::TimeDelta now = get_time_cb_.Run();
+  base::TimeDelta next_pts = next_frame->timestamp();
+
+  // Scale our sleep based on the playback rate.
+  base::TimeDelta sleep = next_pts - now;
+  return base::TimeDelta::FromMicroseconds(
+      static_cast<int64>(sleep.InMicroseconds() / playback_rate));
 }
 
 void VideoRendererImpl::DoStopOrError_Locked() {

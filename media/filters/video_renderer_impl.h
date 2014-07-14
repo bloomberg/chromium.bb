@@ -69,6 +69,7 @@ class MEDIA_EXPORT VideoRendererImpl
   virtual void Flush(const base::Closure& callback) OVERRIDE;
   virtual void StartPlayingFrom(base::TimeDelta timestamp) OVERRIDE;
   virtual void Stop(const base::Closure& callback) OVERRIDE;
+  virtual void SetPlaybackRate(float playback_rate) OVERRIDE;
 
   // PlatformThread::Delegate implementation.
   virtual void ThreadMain() OVERRIDE;
@@ -93,6 +94,14 @@ class MEDIA_EXPORT VideoRendererImpl
 
   // Called when VideoFrameStream::Reset() completes.
   void OnVideoFrameStreamResetDone();
+
+  // Calculates the duration to sleep for based on |last_timestamp_|,
+  // the next frame timestamp (may be NULL), and the provided playback rate.
+  //
+  // We don't use |playback_rate_| to avoid locking.
+  base::TimeDelta CalculateSleepDuration(
+      const scoped_refptr<VideoFrame>& next_frame,
+      float playback_rate);
 
   // Helper function that flushes the buffers when a Stop() or error occurs.
   void DoStopOrError_Locked();
@@ -176,6 +185,8 @@ class MEDIA_EXPORT VideoRendererImpl
   bool pending_read_;
 
   bool drop_frames_;
+
+  float playback_rate_;
 
   BufferingState buffering_state_;
 

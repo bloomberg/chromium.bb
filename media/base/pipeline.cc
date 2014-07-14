@@ -649,6 +649,8 @@ void Pipeline::PlaybackRateChangedTask(float playback_rate) {
 
   if (audio_renderer_)
     audio_renderer_->SetPlaybackRate(playback_rate_);
+  if (video_renderer_)
+    video_renderer_->SetPlaybackRate(playback_rate_);
 }
 
 void Pipeline::VolumeChangedTask(float volume) {

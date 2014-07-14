@@ -27,6 +27,7 @@
 using ::testing::_;
 using ::testing::AnyNumber;
 using ::testing::AtLeast;
+using ::testing::InSequence;
 using ::testing::Invoke;
 using ::testing::NiceMock;
 using ::testing::NotNull;
@@ -93,6 +94,11 @@ class VideoRendererImplTest : public ::testing::Test {
 
     EXPECT_CALL(*decoder_, Reset(_))
         .WillRepeatedly(Invoke(this, &VideoRendererImplTest::FlushRequested));
+
+    InSequence s;
+
+    // Set playback rate before anything else happens.
+    renderer_->SetPlaybackRate(1.0f);
 
     // Initialize, we shouldn't have any reads.
     InitializeRenderer(PIPELINE_OK, low_delay);
@@ -543,6 +549,7 @@ TEST_F(VideoRendererImplTest, StopDuringOutstandingRead) {
 }
 
 TEST_F(VideoRendererImplTest, VideoDecoder_InitFailure) {
+  InSequence s;
   InitializeRenderer(DECODER_ERROR_NOT_SUPPORTED, false);
   Stop();
 }
