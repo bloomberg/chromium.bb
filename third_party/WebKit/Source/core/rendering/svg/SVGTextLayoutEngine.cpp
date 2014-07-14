@@ -112,7 +112,7 @@ void SVGTextLayoutEngine::updateRelativePositionAdjustmentsIfNeeded(float dx, fl
     m_dy = dy;
 }
 
-void SVGTextLayoutEngine::recordTextFragment(SVGInlineTextBox* textBox, Vector<SVGTextMetrics>& textMetricsValues)
+void SVGTextLayoutEngine::recordTextFragment(SVGInlineTextBox* textBox, const Vector<SVGTextMetrics>& textMetricsValues)
 {
     ASSERT(!m_currentTextFragment.length);
     ASSERT(m_visualMetricsListOffset > 0);
@@ -121,7 +121,7 @@ void SVGTextLayoutEngine::recordTextFragment(SVGInlineTextBox* textBox, Vector<S
     m_currentTextFragment.length = m_visualCharacterOffset - m_currentTextFragment.characterOffset;
 
     // Figure out fragment metrics.
-    SVGTextMetrics& lastCharacterMetrics = textMetricsValues.at(m_visualMetricsListOffset - 1);
+    const SVGTextMetrics& lastCharacterMetrics = textMetricsValues.at(m_visualMetricsListOffset - 1);
     m_currentTextFragment.width = lastCharacterMetrics.width();
     m_currentTextFragment.height = lastCharacterMetrics.height();
 
@@ -358,7 +358,7 @@ bool SVGTextLayoutEngine::currentLogicalCharacterAttributes(SVGTextLayoutAttribu
 
 bool SVGTextLayoutEngine::currentLogicalCharacterMetrics(SVGTextLayoutAttributes*& logicalAttributes, SVGTextMetrics& logicalMetrics)
 {
-    Vector<SVGTextMetrics>* textMetricsValues = &logicalAttributes->textMetricsValues();
+    const Vector<SVGTextMetrics>* textMetricsValues = &logicalAttributes->textMetricsValues();
     unsigned textMetricsSize = textMetricsValues->size();
     while (true) {
         if (m_logicalMetricsListOffset == textMetricsSize) {
@@ -386,7 +386,7 @@ bool SVGTextLayoutEngine::currentLogicalCharacterMetrics(SVGTextLayoutAttributes
     return true;
 }
 
-bool SVGTextLayoutEngine::currentVisualCharacterMetrics(SVGInlineTextBox* textBox, Vector<SVGTextMetrics>& visualMetricsValues, SVGTextMetrics& visualMetrics)
+bool SVGTextLayoutEngine::currentVisualCharacterMetrics(SVGInlineTextBox* textBox, const Vector<SVGTextMetrics>& visualMetricsValues, SVGTextMetrics& visualMetrics)
 {
     ASSERT(!visualMetricsValues.isEmpty());
     unsigned textMetricsSize = visualMetricsValues.size();
@@ -438,7 +438,7 @@ void SVGTextLayoutEngine::layoutTextOnLineOrPath(SVGInlineTextBox* textBox, Rend
     m_visualMetricsListOffset = 0;
     m_visualCharacterOffset = 0;
 
-    Vector<SVGTextMetrics>& visualMetricsValues = text->layoutAttributes()->textMetricsValues();
+    const Vector<SVGTextMetrics>& visualMetricsValues = text->layoutAttributes()->textMetricsValues();
     ASSERT(!visualMetricsValues.isEmpty());
 
     const Font& font = style->font();
