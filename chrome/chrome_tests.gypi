@@ -2844,6 +2844,13 @@
           'sources': [
             'browser_tests.isolate',
           ],
+          'conditions': [
+            ['use_x11==1', {
+              'dependencies': [
+                '../tools/xdisplaycheck/xdisplaycheck.gyp:xdisplaycheck',
+              ],
+            }],
+          ],
         },
         {
           'target_name': 'content_gl_tests_run',
