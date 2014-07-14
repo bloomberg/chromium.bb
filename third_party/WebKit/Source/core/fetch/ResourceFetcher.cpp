@@ -376,6 +376,7 @@ ResourcePtr<RawResource> ResourceFetcher::fetchRawResource(FetchRequest& request
 
 ResourcePtr<RawResource> ResourceFetcher::fetchMainResource(FetchRequest& request, const SubstituteData& substituteData)
 {
+    ASSERT(request.resourceRequest().frameType() != WebURLRequest::FrameTypeNone);
     if (substituteData.isValid())
         preCacheSubstituteDataForMainResource(request, substituteData);
     return toRawResource(requestResource(Resource::MainResource, request));

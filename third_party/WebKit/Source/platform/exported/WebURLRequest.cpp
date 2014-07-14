@@ -229,6 +229,11 @@ WebURLRequest::RequestContext WebURLRequest::requestContext() const
     return m_private->m_resourceRequest->requestContext();
 }
 
+WebURLRequest::FrameType WebURLRequest::frameType() const
+{
+    return m_private->m_resourceRequest->frameType();
+}
+
 WebReferrerPolicy WebURLRequest::referrerPolicy() const
 {
     return static_cast<WebReferrerPolicy>(m_private->m_resourceRequest->referrerPolicy());
@@ -252,6 +257,11 @@ void WebURLRequest::setHasUserGesture(bool hasUserGesture)
 void WebURLRequest::setRequestContext(RequestContext requestContext)
 {
     m_private->m_resourceRequest->setRequestContext(requestContext);
+}
+
+void WebURLRequest::setFrameType(FrameType frameType)
+{
+    m_private->m_resourceRequest->setFrameType(frameType);
 }
 
 int WebURLRequest::requestorID() const

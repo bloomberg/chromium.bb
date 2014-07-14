@@ -88,6 +88,8 @@ public:
         TargetIsUnspecified = 17,
     };
 
+    // Corresponds to Fetch's "context": http://fetch.spec.whatwg.org/#concept-request-context
+    //
     // FIXME: Drop the TargetType enum once embedders are updated upstream.
     enum RequestContext {
         RequestContextUnspecified = 0,
@@ -122,6 +124,14 @@ public:
         RequestContextWorker,
         RequestContextXMLHttpRequest,
         RequestContextXSLT
+    };
+
+    // Corresponds to Fetch's "context frame type": http://fetch.spec.whatwg.org/#concept-request-context-frame-type
+    enum FrameType {
+        FrameTypeAuxiliary,
+        FrameTypeNested,
+        FrameTypeNone,
+        FrameTypeTopLevel
     };
 
     class ExtraData {
@@ -196,6 +206,9 @@ public:
 
     BLINK_PLATFORM_EXPORT RequestContext requestContext() const;
     BLINK_PLATFORM_EXPORT void setRequestContext(RequestContext);
+
+    BLINK_PLATFORM_EXPORT FrameType frameType() const;
+    BLINK_PLATFORM_EXPORT void setFrameType(FrameType);
 
     BLINK_PLATFORM_EXPORT WebReferrerPolicy referrerPolicy() const;
 

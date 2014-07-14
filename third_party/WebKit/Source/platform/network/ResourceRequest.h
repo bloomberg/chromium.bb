@@ -184,6 +184,9 @@ public:
     blink::WebURLRequest::RequestContext requestContext() const { return m_requestContext; }
     void setRequestContext(blink::WebURLRequest::RequestContext context) { m_requestContext = context; }
 
+    blink::WebURLRequest::FrameType frameType() const { return m_frameType; }
+    void setFrameType(blink::WebURLRequest::FrameType frameType) { m_frameType = frameType; }
+
     bool cacheControlContainsNoCache() const;
     bool cacheControlContainsNoStore() const;
     bool hasCacheValidatorFields() const;
@@ -217,6 +220,7 @@ private:
     int m_appCacheHostID;
     RefPtr<ExtraData> m_extraData;
     blink::WebURLRequest::RequestContext m_requestContext;
+    blink::WebURLRequest::FrameType m_frameType;
     ReferrerPolicy m_referrerPolicy;
 
     mutable CacheControlHeader m_cacheControlHeaderCache;
@@ -252,6 +256,7 @@ public:
     int m_requestorProcessID;
     int m_appCacheHostID;
     blink::WebURLRequest::RequestContext m_requestContext;
+    blink::WebURLRequest::FrameType m_frameType;
     ReferrerPolicy m_referrerPolicy;
 };
 

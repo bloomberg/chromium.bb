@@ -89,6 +89,7 @@
 #include "platform/scroll/ScrollAnimator.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "platform/weborigin/SecurityPolicy.h"
+#include "public/platform/WebURLRequest.h"
 #include "wtf/TemporaryChange.h"
 #include "wtf/text/CString.h"
 #include "wtf/text/WTFString.h"
@@ -131,7 +132,10 @@ FrameLoader::~FrameLoader()
 
 void FrameLoader::init()
 {
-    m_provisionalDocumentLoader = client()->createDocumentLoader(m_frame, ResourceRequest(KURL(ParsedURLString, emptyString())), SubstituteData());
+    ResourceRequest initialRequest(KURL(ParsedURLString, emptyString()));
+    initialRequest.setRequestContext(blink::WebURLRequest::RequestContextInternal);
+    initialRequest.setFrameType(m_frame->isMainFrame() ? blink::WebURLRequest::FrameTypeTopLevel : blink::WebURLRequest::FrameTypeNested);
+    m_provisionalDocumentLoader = client()->createDocumentLoader(m_frame, initialRequest, SubstituteData());
     m_provisionalDocumentLoader->startLoadingMainResource();
     m_frame->document()->cancelParsing();
     m_stateMachine.advanceTo(FrameLoaderStateMachine::DisplayingInitialEmptyDocument);
@@ -673,7 +677,9 @@ FrameLoadType FrameLoader::determineFrameLoadType(const FrameLoadRequest& reques
 
 bool FrameLoader::prepareRequestForThisFrame(FrameLoadRequest& request)
 {
-    // If no origin Document* was specified, skip security checks and assume the caller has fully initialized the FrameLoadRequest.
+    request.resourceRequest().setFrameType(m_frame->isMainFrame() ? blink::WebURLRequest::FrameTypeTopLevel : blink::WebURLRequest::FrameTypeNested);
+
+    // If no origin Document* was specified, skip remaining security checks and assume the caller has fully initialized the FrameLoadRequest.
     if (!request.originDocument())
         return true;
 
@@ -793,6 +799,7 @@ void FrameLoader::reload(ReloadPolicy reloadPolicy, const KURL& overrideURL, con
 
     ResourceRequestCachePolicy cachePolicy = reloadPolicy == EndToEndReload ? ReloadBypassingCache : ReloadIgnoringCacheData;
     ResourceRequest request = requestFromHistoryItem(m_currentItem.get(), cachePolicy);
+    request.setFrameType(m_frame->isMainFrame() ? blink::WebURLRequest::FrameTypeTopLevel : blink::WebURLRequest::FrameTypeNested);
     if (!overrideURL.isEmpty()) {
         request.setURL(overrideURL);
         request.clearHTTPReferrer();
@@ -1412,7 +1419,10 @@ void FrameLoader::loadHistoryItem(HistoryItem* item, HistoryLoadType historyLoad
         restoreScrollPositionAndViewState();
         return;
     }
-    loadWithNavigationAction(NavigationAction(requestFromHistoryItem(item, cachePolicy), FrameLoadTypeBackForward), FrameLoadTypeBackForward, nullptr, SubstituteData(), CheckContentSecurityPolicy);
+
+    ResourceRequest request = requestFromHistoryItem(item, cachePolicy);
+    request.setFrameType(m_frame->isMainFrame() ? blink::WebURLRequest::FrameTypeTopLevel : blink::WebURLRequest::FrameTypeNested);
+    loadWithNavigationAction(NavigationAction(request, FrameLoadTypeBackForward), FrameLoadTypeBackForward, nullptr, SubstituteData(), CheckContentSecurityPolicy);
 }
 
 void FrameLoader::dispatchDocumentElementAvailable()
