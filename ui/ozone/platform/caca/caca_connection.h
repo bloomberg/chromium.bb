@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "ui/gfx/geometry/size.h"
+#include "ui/ozone/platform/caca/scoped_caca_types.h"
 
 namespace ui {
 
@@ -21,16 +22,19 @@ class CacaConnection {
   CacaConnection();
   ~CacaConnection();
 
-  void Initialize();
+  bool Initialize();
 
   // This is the Caca canvas size.
   gfx::Size physical_size() const { return physical_size_; }
   gfx::Size bitmap_size() const { return bitmap_size_; }
-  caca_display_t* display() const { return display_; }
+  caca_display_t* display() const { return display_.get(); }
 
  private:
-  caca_canvas_t* canvas_;
-  caca_display_t* display_;
+  // Sync sizes with libcaca.
+  void UpdateDisplaySize();
+
+  ScopedCacaCanvas canvas_;
+  ScopedCacaDisplay display_;
 
   // Size of the console in characters. This can be changed by setting
   // CACA_GEOMETRY environment variable.

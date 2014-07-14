@@ -39,6 +39,8 @@
         'caca_surface_factory.h',
         'ozone_platform_caca.cc',
         'ozone_platform_caca.h',
+        'scoped_caca_types.cc',
+        'scoped_caca_types.h',
       ],
     },
   ],

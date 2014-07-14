@@ -8,33 +8,50 @@
 
 namespace ui {
 
-// TODO(dnicoara) As an optimization, |bitmap_size_| should be scaled based on
-// |physical_size_| and font size.
-CacaConnection::CacaConnection()
-    : canvas_(NULL),
-      display_(NULL),
-      physical_size_(160, 48),
-      bitmap_size_(800, 600) {}
+namespace {
 
-CacaConnection::~CacaConnection() {
-  if (display_) {
-    caca_free_display(display_);
-    caca_free_canvas(canvas_);
-  }
+// Size of initial cnavas (in characters).
+const int kDefaultCanvasWidth = 160;
+const int kDefaultCanvasHeight = 48;
+
+}  // namespace
+
+CacaConnection::CacaConnection() {
 }
 
-void CacaConnection::Initialize() {
+CacaConnection::~CacaConnection() {
+}
+
+bool CacaConnection::Initialize() {
   if (display_)
-    return;
+    return true;
 
-  canvas_ = caca_create_canvas(physical_size_.width(), physical_size_.height());
-  display_ = caca_create_display(canvas_);
+  canvas_.reset(caca_create_canvas(kDefaultCanvasWidth, kDefaultCanvasHeight));
+  if (!canvas_) {
+    PLOG(ERROR) << "failed to create libcaca canvas";
+    return false;
+  }
 
-  physical_size_.SetSize(caca_get_canvas_width(canvas_),
-                         caca_get_canvas_height(canvas_));
+  display_.reset(caca_create_display(canvas_.get()));
+  if (!display_) {
+    PLOG(ERROR) << "failed to initialize libcaca display";
+    return false;
+  }
 
-  caca_set_cursor(display_, 1);
-  caca_set_display_title(display_, "Ozone Content Shell");
+  caca_set_cursor(display_.get(), 1);
+  caca_set_display_title(display_.get(), "Ozone Content Shell");
+
+  UpdateDisplaySize();
+
+  return true;
+}
+
+void CacaConnection::UpdateDisplaySize() {
+  physical_size_.SetSize(caca_get_canvas_width(canvas_.get()),
+                         caca_get_canvas_height(canvas_.get()));
+
+  bitmap_size_.SetSize(caca_get_display_width(display_.get()),
+                       caca_get_display_height(display_.get()));
 }
 
 }  // namespace ui
