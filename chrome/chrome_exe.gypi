@@ -490,6 +490,7 @@
             'installer_util',
             'image_pre_reader',
             '../base/base.gyp:base',
+            '../crypto/crypto.gyp:crypto',
             '../breakpad/breakpad.gyp:breakpad_handler',
             '../breakpad/breakpad.gyp:breakpad_sender',
             '../chrome_elf/chrome_elf.gyp:chrome_elf',
@@ -515,7 +516,10 @@
                 'ole32.dll',
                 'oleaut32.dll',
               ],
-              'AdditionalDependencies': [ 'wintrust.lib' ],
+              'AdditionalDependencies': [
+                'wintrust.lib',
+                'crypt32.lib'
+              ],
               'conditions': [
                 ['asan==0', {
                   # Set /SUBSYSTEM:WINDOWS for chrome.exe itself, except for the
