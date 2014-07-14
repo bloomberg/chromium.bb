@@ -61,6 +61,13 @@ class SyncedDeviceTracker : public ChangeProcessor {
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
+  // Update |backup_timestamp| in local device info specifics to |backup_time|
+  // if different.
+  void UpdateLocalDeviceBackupTime(base::Time backup_time);
+
+  // Return time derived from |backup_timestamp| in local device info specifics.
+  base::Time GetLocalDeviceBackupTime() const;
+
  private:
   friend class SyncedDeviceTrackerTest;
 
@@ -72,8 +79,7 @@ class SyncedDeviceTracker : public ChangeProcessor {
 
   // Helper to write arbitrary device info. Useful for writing local device
   // info and also used by test cases to write arbitrary device infos.
-  void WriteDeviceInfo(const sync_pb::DeviceInfoSpecifics& specifics,
-                       const std::string& tag);
+  void WriteDeviceInfo(const DeviceInfo& info, const std::string& tag);
 
   syncer::UserShare* user_share_;
   const std::string cache_guid_;

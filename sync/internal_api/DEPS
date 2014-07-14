@@ -4,6 +4,7 @@ include_rules = [
   "+net/http",
   "+net/test",
   "+net/url_request",
+  "+sql",
   "+sync/base",
   "+sync/engine",
   "+sync/js",

@@ -5,6 +5,7 @@
 #include "base/command_line.h"
 #include "base/message_loop/message_loop.h"
 #include "base/prefs/pref_service.h"
+#include "base/run_loop.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/test/integration/bookmarks_helper.h"
@@ -14,7 +15,9 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "components/bookmarks/browser/bookmark_model.h"
+#include "sync/internal_api/public/util/sync_db_util.h"
 #include "sync/test/fake_server/fake_server_verifier.h"
+#include "sync/util/time.h"
 
 using bookmarks_helper::AddFolder;
 using bookmarks_helper::AddURL;
@@ -45,7 +48,26 @@ class SingleClientBackupRollbackTest : public SyncTest {
           switches::kSyncEnableRollback);
   }
 
+  base::Time GetBackupDbLastModified() {
+    base::RunLoop run_loop;
+
+    base::Time backup_time;
+    syncer::CheckSyncDbLastModifiedTime(
+        GetProfile(0)->GetPath().Append(FILE_PATH_LITERAL("Sync Data Backup")),
+        base::MessageLoopProxy::current(),
+        base::Bind(&SingleClientBackupRollbackTest::CheckDbCallback,
+                   base::Unretained(this), &backup_time));
+    base::MessageLoopProxy::current()->PostTask(
+        FROM_HERE, run_loop.QuitClosure());
+    run_loop.Run();
+    return backup_time;
+  }
+
  private:
+  void CheckDbCallback(base::Time* time_out, base::Time time_in) {
+    *time_out = syncer::ProtoTimeToTime(syncer::TimeToProtoTime(time_in));
+  }
+
   DISALLOW_COPY_AND_ASSIGN(SingleClientBackupRollbackTest);
 };
 
@@ -188,15 +210,20 @@ IN_PROC_BROWSER_TEST_F(SingleClientBackupRollbackTest,
 
   // Setup sync, wait for its completion, and make sure changes were synced.
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-  ASSERT_TRUE(AwaitCommitActivityCompletion(GetSyncService((0))));
+  ASSERT_TRUE(AwaitCommitActivityCompletion(GetSyncService(0)));
   ASSERT_TRUE(ModelMatchesVerifier(0));
 
   // Made bookmark changes while sync is on.
   Move(0, tier1_a->GetChild(0), tier1_b, 1);
   Remove(0, tier1_b, 0);
   ASSERT_TRUE(AddFolder(0, tier1_b, 1, "tier2_c"));
-  ASSERT_TRUE(AwaitCommitActivityCompletion(GetSyncService((0))));
+  ASSERT_TRUE(AwaitCommitActivityCompletion(GetSyncService(0)));
   ASSERT_TRUE(ModelMatchesVerifier(0));
+
+  // Verify backup time is set on device info.
+  base::Time backup_time = GetBackupDbLastModified();
+  ASSERT_FALSE(backup_time.is_null());
+  ASSERT_EQ(backup_time, GetSyncService(0)->GetDeviceBackupTimeForTesting());
 
   // Let server to return rollback command on next sync request.
   GetFakeServer()->TriggerError(sync_pb::SyncEnums::USER_ROLLBACK);

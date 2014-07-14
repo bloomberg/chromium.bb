@@ -10,8 +10,10 @@
 
 #include "base/base64.h"
 #include "base/basictypes.h"
+#include "base/i18n/time_formatting.h"
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/time/time.h"
 #include "base/values.h"
 #include "sync/internal_api/public/base/unique_position.h"
 #include "sync/protocol/app_list_specifics.pb.h"
@@ -41,6 +43,7 @@
 #include "sync/protocol/theme_specifics.pb.h"
 #include "sync/protocol/typed_url_specifics.pb.h"
 #include "sync/protocol/unique_position.pb.h"
+#include "sync/util/time.h"
 
 namespace syncer {
 
@@ -82,6 +85,11 @@ base::ListValue* MakeRepeatedValue(const F& fields, V* (*converter_fn)(T)) {
   return list;
 }
 
+base::StringValue* MakeTimestampValue(int64 tm) {
+  return new base::StringValue(
+      base::TimeFormatShortDateAndTime(syncer::ProtoTimeToTime(tm)));
+}
+
 }  // namespace
 
 // Helper macros to reduce the amount of boilerplate.
@@ -102,6 +110,7 @@ base::ListValue* MakeRepeatedValue(const F& fields, V* (*converter_fn)(T)) {
 #define SET_INT64(field) SET(field, MakeInt64Value)
 #define SET_INT64_REP(field) SET_REP(field, MakeInt64Value)
 #define SET_STR(field) SET(field, new base::StringValue)
+#define SET_TIME_STR(field) SET(field, MakeTimestampValue)
 #define SET_STR_REP(field) \
   value->Set(#field, \
              MakeRepeatedValue<const std::string&, \
@@ -489,6 +498,7 @@ base::DictionaryValue* DeviceInfoSpecificsToValue(
   SET_ENUM(device_type, GetDeviceTypeString);
   SET_STR(sync_user_agent);
   SET_STR(chrome_version);
+  SET_TIME_STR(backup_timestamp);
   return value;
 }
 

@@ -20,20 +20,6 @@
 
 namespace browser_sync {
 
-namespace {
-
-void ConvertDeviceInfoSpecifics(
-    const DeviceInfo& device_info,
-    sync_pb::DeviceInfoSpecifics* specifics) {
-  specifics->set_cache_guid(device_info.guid());
-  specifics->set_client_name(device_info.client_name());
-  specifics->set_chrome_version(device_info.chrome_version());
-  specifics->set_sync_user_agent(device_info.sync_user_agent());
-  specifics->set_device_type(device_info.device_type());
-}
-
-}  // namespace
-
 class SyncedDeviceTrackerTest : public ::testing::Test {
  protected:
   SyncedDeviceTrackerTest() : transaction_count_baseline_(0) { }
@@ -69,9 +55,7 @@ class SyncedDeviceTrackerTest : public ::testing::Test {
   }
 
   void WriteDeviceInfo(const DeviceInfo& device_info) {
-    sync_pb::DeviceInfoSpecifics specifics;
-    ConvertDeviceInfoSpecifics(device_info, &specifics);
-    synced_device_tracker_->WriteDeviceInfo(specifics, device_info.guid());
+    synced_device_tracker_->WriteDeviceInfo(device_info, device_info.guid());
   }
 
   void ResetObservedChangesCounter() {
@@ -206,6 +190,35 @@ TEST_F(SyncedDeviceTrackerTest, GetAllDeviceInfo) {
   EXPECT_EQ(device_info.size(), 2U);
   EXPECT_TRUE(device_info[0]->Equals(device_info1));
   EXPECT_TRUE(device_info[1]->Equals(device_info2));
+}
+
+TEST_F(SyncedDeviceTrackerTest, DeviceBackupTime) {
+  DeviceInfo device_info(
+      user_share()->directory->cache_guid(),
+      "John’s Device", "XYZ v1", "XYZ SyncAgent v1",
+      sync_pb::SyncEnums_DeviceType_TYPE_LINUX);
+  const base::Time test_backup_time =
+      base::Time::UnixEpoch() + base::TimeDelta::FromDays(10000);
+
+  WriteLocalDeviceInfo(device_info);
+  synced_device_tracker_->UpdateLocalDeviceBackupTime(test_backup_time);
+
+  // Verify read of device info and backup time.
+  EXPECT_EQ(test_backup_time,
+            synced_device_tracker_->GetLocalDeviceBackupTime());
+  scoped_ptr<DeviceInfo> device_info_out(
+      synced_device_tracker_->ReadLocalDeviceInfo());
+  ASSERT_TRUE(device_info_out);
+  EXPECT_TRUE(device_info.Equals(*device_info_out.get()));
+
+  // Verify backup time is not lost after updating device info.
+  DeviceInfo device_info2(
+      user_share()->directory->cache_guid(),
+      "def Device", "XYZ v2", "XYZ SyncAgent v2",
+      sync_pb::SyncEnums_DeviceType_TYPE_LINUX);
+  WriteLocalDeviceInfo(device_info2);
+  EXPECT_EQ(test_backup_time,
+            synced_device_tracker_->GetLocalDeviceBackupTime());
 }
 
 }  // namespace

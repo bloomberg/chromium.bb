@@ -782,6 +782,8 @@ class ProfileSyncService : public ProfileSyncServiceBase,
 
   void StartStopBackupForTesting();
 
+  base::Time GetDeviceBackupTimeForTesting() const;
+
  protected:
   // Helper to configure the priority data types.
   void ConfigurePriorityDataTypes();
@@ -957,6 +959,12 @@ class ProfileSyncService : public ProfileSyncServiceBase,
   // Clear browsing data since first sync during rollback.
   void ClearBrowsingDataSinceFirstSync();
 
+  // Post background task to check sync backup DB state if needed.
+  void CheckSyncBackupIfNeeded();
+
+  // Callback to receive backup DB check result.
+  void CheckSyncBackupCallback(base::Time backup_time);
+
  // Factory used to create various dependent objects.
   scoped_ptr<ProfileSyncComponentsFactory> factory_;
 
@@ -1123,6 +1131,10 @@ class ProfileSyncService : public ProfileSyncServiceBase,
   base::TimeDelta backup_start_delay_;
 
   base::Callback<void(Profile*, base::Time, base::Time)> clear_browsing_data_;
+
+  // Last time when pre-sync data was saved. NULL pointer means backup data
+  // state is unknown. If time value is null, backup data doesn't exist.
+  scoped_ptr<base::Time> last_backup_time_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileSyncService);
 };
