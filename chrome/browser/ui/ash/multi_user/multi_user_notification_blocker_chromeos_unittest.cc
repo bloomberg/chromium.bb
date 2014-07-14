@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "ash/session/session_state_delegate.h"
-#include "ash/session/user_info.h"
 #include "ash/shell.h"
 #include "ash/system/system_notifier.h"
 #include "ash/test/ash_test_base.h"
@@ -13,6 +12,7 @@
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_chromeos.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile_manager.h"
+#include "components/user_manager/user_info.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/notification.h"
 

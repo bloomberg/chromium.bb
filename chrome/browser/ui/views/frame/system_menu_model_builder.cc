@@ -17,11 +17,11 @@
 
 #if defined(OS_CHROMEOS)
 #include "ash/session/session_state_delegate.h"
-#include "ash/session/user_info.h"
 #include "ash/shell.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "components/user_manager/user_info.h"
 #include "ui/base/l10n/l10n_util.h"
 #endif
 
@@ -152,7 +152,7 @@ void SystemMenuModelBuilder::AppendTeleportMenu(ui::SimpleMenuModel* model) {
   model->AddSeparator(ui::NORMAL_SEPARATOR);
   DCHECK(logged_in_users <= 3);
   for (int user_index = 1; user_index < logged_in_users; ++user_index) {
-    const ash::UserInfo* user_info = delegate->GetUserInfo(user_index);
+    const user_manager::UserInfo* user_info = delegate->GetUserInfo(user_index);
     model->AddItem(
         user_index == 1 ? IDC_VISIT_DESKTOP_OF_LRU_USER_2
                         : IDC_VISIT_DESKTOP_OF_LRU_USER_3,

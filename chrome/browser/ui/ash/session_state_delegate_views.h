@@ -35,9 +35,9 @@ class SessionStateDelegate : public ash::SessionStateDelegate {
   virtual void UnlockScreen() OVERRIDE;
   virtual bool IsUserSessionBlocked() const OVERRIDE;
   virtual SessionState GetSessionState() const OVERRIDE;
-  virtual const ash::UserInfo* GetUserInfo(
+  virtual const user_manager::UserInfo* GetUserInfo(
       ash::MultiProfileIndex index) const OVERRIDE;
-  virtual const ash::UserInfo* GetUserInfo(
+  virtual const user_manager::UserInfo* GetUserInfo(
       content::BrowserContext* context) const OVERRIDE;
   virtual bool ShouldShowAvatar(aura::Window* window) const OVERRIDE;
   virtual void SwitchActiveUser(const std::string& user_id) OVERRIDE;

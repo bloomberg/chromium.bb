@@ -8,10 +8,10 @@
 #include <string>
 #include <vector>
 
-#include "ash/session/user_info.h"
 #include "base/basictypes.h"
 #include "base/strings/string16.h"
 #include "components/user_manager/user_image/user_image.h"
+#include "components/user_manager/user_info.h"
 #include "components/user_manager/user_type.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/image/image_skia.h"
@@ -26,7 +26,7 @@ extern const int kDefaultImagesCount;
 // returned by |displayed_email()|.
 // Displayed emails are for use in UI only, anywhere else users must be referred
 // to by |email()|.
-class User : public ash::UserInfo {
+class User : public user_manager::UserInfo {
  public:
   // User OAuth token status according to the last check.
   // Please note that enum values 1 and 2 were used for OAuth1 status and are
@@ -63,7 +63,7 @@ class User : public ash::UserInfo {
   // The displayed user name.
   base::string16 display_name() const { return display_name_; }
 
-  // ash::UserInfo
+  // user_manager::UserInfo
   virtual std::string GetEmail() const OVERRIDE;
   virtual base::string16 GetDisplayName() const OVERRIDE;
   virtual base::string16 GetGivenName() const OVERRIDE;

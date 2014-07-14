@@ -16,6 +16,7 @@
         '../base/base.gyp:base_i18n',
         '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
         '../cc/cc.gyp:cc',
+        '../components/components.gyp:user_manager',
         '../content/content.gyp:content_browser',
         '../media/media.gyp:media',
         '../net/net.gyp:net',
@@ -229,7 +230,6 @@
         'session/session_state_delegate.h',
         'session/session_state_observer.cc',
         'session/session_state_observer.h',
-        'session/user_info.h',
         'shelf/app_list_button.cc',
         'shelf/app_list_button.h',
         'shelf/app_list_shelf_item_delegate.cc',
@@ -879,6 +879,7 @@
         '../base/base.gyp:base',
         '../base/base.gyp:test_support_base',
         '../chrome/chrome_resources.gyp:packed_resources',
+        '../components/components.gyp:user_manager',
         '../content/content.gyp:content_browser',
         '../content/content_shell_and_tests.gyp:test_support_content',
         '../skia/skia.gyp:skia',
@@ -1178,6 +1179,7 @@
       'type': 'executable',
       'dependencies': [
         'ash_shell_lib',
+        '../components/components.gyp:user_manager',
       ],
       'sources': [
         'shell/shell_main.cc',
@@ -1195,7 +1197,7 @@
         }],
         ['chromeos==1', {
           'dependencies': [
-	    '../device/bluetooth/bluetooth.gyp:device_bluetooth',
+            '../device/bluetooth/bluetooth.gyp:device_bluetooth',
           ],
         }],
       ],
@@ -1205,6 +1207,7 @@
       'type': 'executable',
       'dependencies': [
         '../base/base.gyp:test_support_base',
+        '../components/components.gyp:user_manager',
         '../content/content_shell_and_tests.gyp:test_support_content',
         '../skia/skia.gyp:skia',
         '../testing/gtest.gyp:gtest',

@@ -2,24 +2,25 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_SESSION_USER_INFO_H_
-#define ASH_SESSION_USER_INFO_H_
+#ifndef COMPONENTS_USER_MANAGER_USER_INFO_H_
+#define COMPONENTS_USER_MANAGER_USER_INFO_H_
 
 #include <string>
 
-#include "ash/ash_export.h"
 #include "base/strings/string16.h"
+#include "components/user_manager/user_manager_export.h"
 
 namespace gfx {
 class ImageSkia;
 }
 
-namespace ash {
+namespace user_manager {
 
 // A class that represents user related info.
-class ASH_EXPORT UserInfo {
+class USER_MANAGER_EXPORT UserInfo {
  public:
-  virtual ~UserInfo() {}
+  UserInfo();
+  virtual ~UserInfo();
 
   // Gets the display name for the user.
   virtual base::string16 GetDisplayName() const = 0;
@@ -40,6 +41,6 @@ class ASH_EXPORT UserInfo {
   virtual const gfx::ImageSkia& GetImage() const = 0;
 };
 
-}  // namespace ash
+}  // namespace user_manager
 
-#endif  // ASH_SESSION_USER_INFO_H_
+#endif  // COMPONENTS_USER_MANAGER_USER_INFO_H_

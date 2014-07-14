@@ -133,13 +133,13 @@ SessionStateDelegateChromeos::GetSessionState() const {
   return session_state_;
 }
 
-const ash::UserInfo* SessionStateDelegateChromeos::GetUserInfo(
+const user_manager::UserInfo* SessionStateDelegateChromeos::GetUserInfo(
     ash::MultiProfileIndex index) const {
   DCHECK_LT(index, NumberOfLoggedInUsers());
   return chromeos::UserManager::Get()->GetLRULoggedInUsers()[index];
 }
 
-const ash::UserInfo* SessionStateDelegateChromeos::GetUserInfo(
+const user_manager::UserInfo* SessionStateDelegateChromeos::GetUserInfo(
     content::BrowserContext* context) const {
   DCHECK(context);
   return chromeos::ProfileHelper::Get()->GetUserByProfile(

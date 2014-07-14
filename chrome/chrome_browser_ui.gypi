@@ -2680,6 +2680,7 @@
           'sources': [ '<@(chrome_browser_ui_chromeos_sources)' ],
           'dependencies': [
             'browser_chromeos',
+            '../components/components.gyp:user_manager',
             '../ui/chromeos/ui_chromeos.gyp:ui_chromeos',
             '../ui/chromeos/ui_chromeos.gyp:ui_chromeos_resources',
           ],
@@ -2697,6 +2698,7 @@
             '../ash/ash.gyp:ash',
             '../ash/ash.gyp:ash_with_content',
             '../ash/ash_strings.gyp:ash_strings',
+            '../components/components.gyp:user_manager',
           ],
           'conditions': [
             ['chromeos == 0', {

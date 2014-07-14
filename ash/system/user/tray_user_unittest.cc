@@ -5,7 +5,6 @@
 #include <vector>
 
 #include "ash/root_window_controller.h"
-#include "ash/session/user_info.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
@@ -16,6 +15,7 @@
 #include "ash/test/ash_test_base.h"
 #include "ash/test/test_session_state_delegate.h"
 #include "ash/test/test_shell_delegate.h"
+#include "components/user_manager/user_info.h"
 #include "ui/aura/test/event_generator.h"
 #include "ui/gfx/animation/animation_container_element.h"
 #include "ui/views/view.h"
@@ -237,8 +237,8 @@ TEST_F(TrayUserTest, MutiUserModeButtonClicks) {
 
   // Switch to a new user - which has a capitalized name.
   ClickUserItem(&generator, 1);
-  const UserInfo* active_user = delegate()->GetActiveUserInfo();
-  const UserInfo* second_user = delegate()->GetUserInfo(1);
+  const user_manager::UserInfo* active_user = delegate()->GetActiveUserInfo();
+  const user_manager::UserInfo* second_user = delegate()->GetUserInfo(1);
   EXPECT_EQ(active_user->GetUserID(), second_user->GetUserID());
   // Since the name is capitalized, the email should be different then the
   // user_id.

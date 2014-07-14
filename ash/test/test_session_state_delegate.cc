@@ -7,12 +7,12 @@
 #include <algorithm>
 #include <string>
 
-#include "ash/session/user_info.h"
 #include "ash/shell.h"
 #include "ash/system/user/login_status.h"
 #include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
+#include "components/user_manager/user_info.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace ash {
@@ -29,7 +29,7 @@ std::string GetUserIDFromEmail(const std::string& email) {
 
 }  // namespace
 
-class MockUserInfo : public UserInfo {
+class MockUserInfo : public user_manager::UserInfo {
  public:
   explicit MockUserInfo(const std::string& id) : email_(id) {}
   virtual ~MockUserInfo() {}
@@ -89,7 +89,8 @@ void TestSessionStateDelegate::AddUser(const std::string user_id) {
   user_list_.push_back(new MockUserInfo(user_id));
 }
 
-const UserInfo* TestSessionStateDelegate::GetActiveUserInfo() const {
+const user_manager::UserInfo* TestSessionStateDelegate::GetActiveUserInfo()
+    const {
   return user_list_[active_user_index_];
 }
 
@@ -192,13 +193,13 @@ void TestSessionStateDelegate::SetUserImage(
   user_list_[active_user_index_]->SetUserImage(user_image);
 }
 
-const UserInfo* TestSessionStateDelegate::GetUserInfo(
+const user_manager::UserInfo* TestSessionStateDelegate::GetUserInfo(
     MultiProfileIndex index) const {
   int max = static_cast<int>(user_list_.size());
   return user_list_[index < max ? index : max - 1];
 }
 
-const UserInfo* TestSessionStateDelegate::GetUserInfo(
+const user_manager::UserInfo* TestSessionStateDelegate::GetUserInfo(
     content::BrowserContext* context) const {
   return user_list_[active_user_index_];
 }

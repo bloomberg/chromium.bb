@@ -5,8 +5,8 @@
 #include "ash/frame/frame_util.h"
 
 #include "ash/session/session_state_delegate.h"
-#include "ash/session/user_info.h"
 #include "ash/shell.h"
+#include "components/user_manager/user_info.h"
 #include "grit/ash_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image_skia.h"

@@ -24,7 +24,7 @@ class TestSessionStateDelegate : public SessionStateDelegate {
 
   void set_logged_in_users(int users) { logged_in_users_ = users; }
   void AddUser(const std::string user_id);
-  const UserInfo* GetActiveUserInfo() const;
+  const user_manager::UserInfo* GetActiveUserInfo() const;
 
   // SessionStateDelegate:
   virtual content::BrowserContext* GetBrowserContextByIndex(
@@ -41,9 +41,9 @@ class TestSessionStateDelegate : public SessionStateDelegate {
   virtual void UnlockScreen() OVERRIDE;
   virtual bool IsUserSessionBlocked() const OVERRIDE;
   virtual SessionState GetSessionState() const OVERRIDE;
-  virtual const UserInfo* GetUserInfo(
+  virtual const user_manager::UserInfo* GetUserInfo(
       ash::MultiProfileIndex index) const OVERRIDE;
-  virtual const UserInfo* GetUserInfo(
+  virtual const user_manager::UserInfo* GetUserInfo(
       content::BrowserContext* context) const OVERRIDE;
   virtual bool ShouldShowAvatar(aura::Window* window) const OVERRIDE;
   virtual void SwitchActiveUser(const std::string& user_id) OVERRIDE;

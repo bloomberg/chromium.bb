@@ -82,7 +82,7 @@
         'wifi.gypi',
       ],
     }],
-    ['chromeos==1', {
+    ['use_ash==1', {
       'includes': [
         'user_manager.gypi',
       ],

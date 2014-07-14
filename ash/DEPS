@@ -2,6 +2,7 @@ include_rules = [
   "+device/bluetooth",
   "+cc/debug",
   "+chromeos",
+  "+components/user_manager",
   "+gpu/config",
   "+grit/ash_resources.h",
   "+grit/ash_strings.h",

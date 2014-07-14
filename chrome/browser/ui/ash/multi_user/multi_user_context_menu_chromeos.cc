@@ -87,7 +87,8 @@ scoped_ptr<ui::MenuModel> CreateMultiUserContextMenu(aura::Window* window) {
         new chromeos::MultiUserContextMenuChromeos(window);
     model.reset(menu);
     for (int user_index = 1; user_index < logged_in_users; ++user_index) {
-      const ash::UserInfo* user_info = delegate->GetUserInfo(user_index);
+      const user_manager::UserInfo* user_info =
+          delegate->GetUserInfo(user_index);
       menu->AddItem(user_index == 1 ? IDC_VISIT_DESKTOP_OF_LRU_USER_2
                                     : IDC_VISIT_DESKTOP_OF_LRU_USER_3,
                     l10n_util::GetStringFUTF16(

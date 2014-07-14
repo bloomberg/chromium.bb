@@ -11,7 +11,6 @@
 #include "ash/media_delegate.h"
 #include "ash/new_window_delegate.h"
 #include "ash/session/session_state_delegate.h"
-#include "ash/session/user_info.h"
 #include "ash/shell/context_menu.h"
 #include "ash/shell/example_factory.h"
 #include "ash/shell/keyboard_controller_proxy_stub.h"
@@ -22,6 +21,7 @@
 #include "ash/wm/window_state.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "components/user_manager/user_info_impl.h"
 #include "ui/aura/window.h"
 #include "ui/wm/core/input_method_event_filter.h"
 
@@ -71,36 +71,10 @@ class MediaDelegateImpl : public MediaDelegate {
   DISALLOW_COPY_AND_ASSIGN(MediaDelegateImpl);
 };
 
-class UserInfoImpl : public UserInfo {
- public:
-  UserInfoImpl() {}
-  virtual ~UserInfoImpl() {}
-
-  // UserInfo:
-  virtual base::string16 GetDisplayName() const OVERRIDE {
-    return base::UTF8ToUTF16("stub-user");
-  }
-  virtual base::string16 GetGivenName() const OVERRIDE {
-    return base::UTF8ToUTF16("Stub");
-  }
-  virtual std::string GetEmail() const OVERRIDE {
-    return "stub-user@domain.com";
-  }
-  virtual std::string GetUserID() const OVERRIDE { return GetEmail(); }
-  virtual const gfx::ImageSkia& GetImage() const OVERRIDE {
-    return user_image_;
-  }
-
- private:
-  gfx::ImageSkia user_image_;
-
-  DISALLOW_COPY_AND_ASSIGN(UserInfoImpl);
-};
-
 class SessionStateDelegateImpl : public SessionStateDelegate {
  public:
   SessionStateDelegateImpl()
-      : screen_locked_(false), user_info_(new UserInfoImpl()) {}
+      : screen_locked_(false), user_info_(new user_manager::UserInfoImpl()) {}
 
   virtual ~SessionStateDelegateImpl() {}
 
@@ -141,10 +115,11 @@ class SessionStateDelegateImpl : public SessionStateDelegate {
     return IsActiveUserSessionStarted() ? SESSION_STATE_ACTIVE
                                         : SESSION_STATE_LOGIN_PRIMARY;
   }
-  virtual const UserInfo* GetUserInfo(MultiProfileIndex index) const OVERRIDE {
+  virtual const user_manager::UserInfo* GetUserInfo(
+      MultiProfileIndex index) const OVERRIDE {
     return user_info_.get();
   }
-  virtual const UserInfo* GetUserInfo(
+  virtual const user_manager::UserInfo* GetUserInfo(
       content::BrowserContext* context) const OVERRIDE {
     return user_info_.get();
   }
@@ -162,7 +137,7 @@ class SessionStateDelegateImpl : public SessionStateDelegate {
   bool screen_locked_;
 
   // A pseudo user info.
-  scoped_ptr<UserInfo> user_info_;
+  scoped_ptr<user_manager::UserInfo> user_info_;
 
   DISALLOW_COPY_AND_ASSIGN(SessionStateDelegateImpl);
 };
