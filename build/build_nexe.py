@@ -66,7 +66,8 @@ def OpenFile(path, mode='r'):
 
 def RemoveQuotes(opt):
   if opt and opt[0] == '"':
-    return opt[1:-1]
+    assert opt[-1] == '"', opt
+    return opt[1:-1].replace('\\"', '"')
   return opt
 
 
@@ -74,9 +75,9 @@ def ArgToList(opt):
   outlist = []
   if opt is None:
     return outlist
-  optlist = RemoveQuotes(opt).split(' ')
+  optlist = opt.split(' ')
   for optitem in optlist:
-    optitem = RemoveQuotes(optitem).replace('\\"', '"')
+    optitem = RemoveQuotes(optitem)
     if optitem:
       outlist.append(optitem)
   return outlist
