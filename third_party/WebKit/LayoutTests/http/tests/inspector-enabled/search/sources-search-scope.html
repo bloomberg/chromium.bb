@@ -161,6 +161,22 @@ function test()
                 var searchConfig = new WebInspector.SearchConfig(query, true, false);
                 runSearchAndDumpResults(searchConfig, next);
             },
+
+            function testFileQueryWithProjectName(next)
+            {
+                InspectorTest.addResult("Running a file query with existing project name first:");
+                var query = "searchTest" + "Unique" + " file:127.0.0.1";
+                var searchConfig = new WebInspector.SearchConfig(query, true, false);
+                runSearchAndDumpResults(searchConfig, step2);
+
+                function step2()
+                {
+                    InspectorTest.addResult("Running a file query with non-existing project name now:");
+                    query = "searchTest" + "Unique" + " file:128.0.0.1";
+                    searchConfig = new WebInspector.SearchConfig(query, true, false);
+                    runSearchAndDumpResults(searchConfig, next);
+                }
+            },
         ]);
     }
 }

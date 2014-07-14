@@ -101,3 +101,24 @@ Search result #2: uiSourceCode.uri = filesystem:/var/www/search.js
   search match #5: lineNumber = 11, lineContent = '    // SEARCHTestUniqueString();'
   search match #6: lineNumber = 14, lineContent = '// searchTestUnique space String'
 
+Running: testFileQueryWithProjectName
+Running a file query with existing project name first:
+Search result #1: uiSourceCode.uri = filesystem:/var/www/search.css
+  search match #1: lineNumber = 0, lineContent = 'div.searchTestUniqueString {'
+  search match #2: lineNumber = 4, lineContent = 'div.searchTestUniqueString:hover {'
+  search match #3: lineNumber = 5, lineContent = '    /* another searchTestUniqueString occurence */'
+  search match #4: lineNumber = 9, lineContent = '/* searchTestUnique space String */'
+Search result #2: uiSourceCode.uri = filesystem:/var/www/search.html
+  search match #1: lineNumber = 5, lineContent = '<div>searchTestUniqueString</div>'
+  search match #2: lineNumber = 7, lineContent = '<!-- searchTestUniqueString -->'
+  search match #3: lineNumber = 9, lineContent = '<div id="searchTestUniqueString">div text</div>'
+  search match #4: lineNumber = 13, lineContent = '<!-- searchTestUnique space String -->'
+Search result #3: uiSourceCode.uri = filesystem:/var/www/search.js
+  search match #1: lineNumber = 0, lineContent = 'function searchTestUniqueString()'
+  search match #2: lineNumber = 3, lineContent = '    // searchTestUniqueString two occurences on the same line searchTestUniqueString'
+  search match #3: lineNumber = 4, lineContent = '    // searchTestUniqueString on the next line.'
+  search match #4: lineNumber = 10, lineContent = '    searchTestUniqueString();'
+  search match #5: lineNumber = 11, lineContent = '    // SEARCHTestUniqueString();'
+  search match #6: lineNumber = 14, lineContent = '// searchTestUnique space String'
+Running a file query with non-existing project name now:
+
