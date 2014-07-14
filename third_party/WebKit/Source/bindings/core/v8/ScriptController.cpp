@@ -583,11 +583,12 @@ v8::Local<v8::Value> ScriptController::evaluateScriptInMainWorld(const ScriptSou
     const String* savedSourceURL = m_sourceURL;
     m_sourceURL = &sourceURL;
 
-    ScriptState* scriptState = ScriptState::forMainWorld(m_frame);
-    if (scriptState->contextIsEmpty())
+    v8::EscapableHandleScope handleScope(m_isolate);
+    v8::Handle<v8::Context> context = toV8Context(m_frame, DOMWrapperWorld::mainWorld());
+    if (context.IsEmpty())
         return v8::Local<v8::Value>();
 
-    v8::EscapableHandleScope handleScope(scriptState->isolate());
+    ScriptState* scriptState = ScriptState::from(context);
     ScriptState::Scope scope(scriptState);
 
     RefPtr<LocalFrame> protect(m_frame);
