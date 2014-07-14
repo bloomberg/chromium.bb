@@ -4,6 +4,8 @@
 
 #include "ui/gfx/font_render_params.h"
 
+#include "base/logging.h"
+
 namespace gfx {
 
 namespace {
@@ -31,6 +33,16 @@ const FontRenderParams& GetDefaultFontRenderParams() {
     LoadDefaults(&default_params);
   loaded_defaults = true;
   return default_params;
+}
+
+FontRenderParams GetCustomFontRenderParams(
+    bool for_web_contents,
+    const std::vector<std::string>* family_list,
+    const int* pixel_size,
+    const int* point_size,
+    std::string* family_out) {
+  NOTIMPLEMENTED();
+  return GetDefaultFontRenderParams();
 }
 
 const FontRenderParams& GetDefaultWebKitFontRenderParams() {

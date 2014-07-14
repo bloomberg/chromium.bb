@@ -74,6 +74,10 @@ int Font::GetFontSize() const {
   return platform_font_->GetFontSize();
 }
 
+const FontRenderParams& Font::GetFontRenderParams() const {
+  return platform_font_->GetFontRenderParams();
+}
+
 NativeFont Font::GetNativeFont() const {
   return platform_font_->GetNativeFont();
 }

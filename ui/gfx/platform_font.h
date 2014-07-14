@@ -15,6 +15,7 @@
 namespace gfx {
 
 class Font;
+struct FontRenderParams;
 
 class GFX_EXPORT PlatformFont : public base::RefCounted<PlatformFont> {
  public:
@@ -61,6 +62,9 @@ class GFX_EXPORT PlatformFont : public base::RefCounted<PlatformFont> {
 
   // Returns the font size in pixels.
   virtual int GetFontSize() const = 0;
+
+  // Returns an object describing how the font should be rendered.
+  virtual const FontRenderParams& GetFontRenderParams() const = 0;
 
   // Returns the native font handle.
   virtual NativeFont GetNativeFont() const = 0;

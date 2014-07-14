@@ -5,6 +5,9 @@
 #ifndef UI_GFX_FONT_RENDER_PARAMS_H_
 #define UI_GFX_FONT_RENDER_PARAMS_H_
 
+#include <string>
+#include <vector>
+
 #include "ui/gfx/gfx_export.h"
 
 namespace gfx {
@@ -58,13 +61,20 @@ struct GFX_EXPORT FontRenderParams {
 GFX_EXPORT const FontRenderParams& GetDefaultFontRenderParams();
 
 // Returns the system's default parameters for WebKit font rendering.
+// TODO(derat): Rename to GetDefaultFontRenderParamsForWebContents().
 GFX_EXPORT const FontRenderParams& GetDefaultWebKitFontRenderParams();
 
-// Returns the system's default parameters for WebKit subpixel positioning.
-// Subpixel positioning is special since neither GTK nor FontConfig currently
-// track it as a preference.
-// See https://bugs.freedesktop.org/show_bug.cgi?id=50736
-GFX_EXPORT bool GetDefaultWebkitSubpixelPositioning();
+// Returns the appropriate parameters for rendering the font described by the
+// passed-in-arguments, any of which may be NULL. If |family_out| is non-NULL,
+// it will be updated to contain the recommended font family from |family_list|.
+// TODO(derat): Also accept the font style, so that its bold and italic states
+// can be passed to Fontconfig in the Linux implementation.
+GFX_EXPORT FontRenderParams GetCustomFontRenderParams(
+    bool for_web_contents,
+    const std::vector<std::string>* family_list,
+    const int* pixel_size,
+    const int* point_size,
+    std::string* family_out);
 
 }  // namespace gfx
 

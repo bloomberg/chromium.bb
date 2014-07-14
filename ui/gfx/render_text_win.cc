@@ -809,8 +809,9 @@ void RenderTextWin::DrawVisualText(Canvas* canvas) {
   ApplyFadeEffects(&renderer);
   ApplyTextShadows(&renderer);
 
-  renderer.SetFontRenderParams(GetDefaultFontRenderParams(),
-                               background_is_transparent());
+  renderer.SetFontRenderParams(
+      font_list().GetPrimaryFont().GetFontRenderParams(),
+      background_is_transparent());
 
   ApplyCompositionAndSelectionStyles();
 

@@ -12,6 +12,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font.h"
+#include "ui/gfx/font_render_params.h"
 
 namespace gfx {
 
@@ -123,6 +124,12 @@ std::string PlatformFontMac::GetActualFontNameForTesting() const {
 
 int PlatformFontMac::GetFontSize() const {
   return font_size_;
+}
+
+const FontRenderParams& PlatformFontMac::GetFontRenderParams() const {
+  NOTIMPLEMENTED();
+  static FontRenderParams params;
+  return params;
 }
 
 NativeFont PlatformFontMac::GetNativeFont() const {

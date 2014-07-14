@@ -14,8 +14,10 @@
 #include "third_party/skia/include/core/SkTypeface.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font.h"
+#include "ui/gfx/font_list.h"
 #include "ui/gfx/font_render_params.h"
 #include "ui/gfx/pango_util.h"
+#include "ui/gfx/platform_font_pango.h"
 #include "ui/gfx/utf16_indexing.h"
 
 namespace gfx {
@@ -388,10 +390,9 @@ void RenderTextPango::DrawVisualText(Canvas* canvas) {
   internal::SkiaTextRenderer renderer(canvas);
   ApplyFadeEffects(&renderer);
   ApplyTextShadows(&renderer);
-
-  // TODO(derat): Use font-specific params: http://crbug.com/125235
-  renderer.SetFontRenderParams(GetDefaultFontRenderParams(),
-                               background_is_transparent());
+  renderer.SetFontRenderParams(
+      font_list().GetPrimaryFont().GetFontRenderParams(),
+      background_is_transparent());
 
   // Temporarily apply composition underlines and selection colors.
   ApplyCompositionAndSelectionStyles();
@@ -406,7 +407,6 @@ void RenderTextPango::DrawVisualText(Canvas* canvas) {
 
     ScopedPangoFontDescription desc(
         pango_font_describe(run->item->analysis.font));
-
     const std::string family_name =
         pango_font_description_get_family(desc.get());
     renderer.SetTextSize(GetPangoFontSizeInPixels(desc.get()));

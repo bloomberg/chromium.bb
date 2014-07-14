@@ -17,6 +17,7 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/font_render_params.h"
+#include "ui/gfx/platform_font_pango.h"
 #include "ui/gfx/text_utils.h"
 
 namespace gfx {
@@ -32,17 +33,10 @@ PangoContext* GetPangoContext() {
   return pango_font_map_create_context(font_map);
 }
 
-// Returns a static cairo_font_options_t. If needed, allocates and updates it.
-// TODO(derat): Return font-specific options: http://crbug.com/125235
-cairo_font_options_t* GetCairoFontOptions() {
-  // Font settings that we initialize once and then use when drawing text.
-  static cairo_font_options_t* cairo_font_options = NULL;
-  if (cairo_font_options)
-    return cairo_font_options;
+// Creates a new cairo_font_options_t based on |params|.
+cairo_font_options_t* CreateCairoFontOptions(const FontRenderParams& params) {
+  cairo_font_options_t* cairo_font_options = cairo_font_options_create();
 
-  cairo_font_options = cairo_font_options_create();
-
-  const FontRenderParams& params = GetDefaultFontRenderParams();
   FontRenderParams::SubpixelRendering subpixel = params.subpixel_rendering;
   if (!params.antialiasing) {
     cairo_font_options_set_antialias(cairo_font_options, CAIRO_ANTIALIAS_NONE);
@@ -133,29 +127,21 @@ void SetUpPangoLayout(
     const FontList& font_list,
     base::i18n::TextDirection text_direction,
     int flags) {
-  // TODO(derat): Use rendering parameters from |font_list| instead of defaults.
-  cairo_font_options_t* cairo_font_options = GetCairoFontOptions();
+  cairo_font_options_t* cairo_font_options = CreateCairoFontOptions(
+      font_list.GetPrimaryFont().GetFontRenderParams());
 
-  // If we got an explicit request to turn off subpixel rendering, disable it on
-  // a copy of the static font options object.
-  bool copied_cairo_font_options = false;
+  // If we got an explicit request to turn off subpixel rendering, disable it.
   if ((flags & Canvas::NO_SUBPIXEL_RENDERING) &&
       (cairo_font_options_get_antialias(cairo_font_options) ==
-       CAIRO_ANTIALIAS_SUBPIXEL)) {
-    cairo_font_options = cairo_font_options_copy(cairo_font_options);
-    copied_cairo_font_options = true;
+       CAIRO_ANTIALIAS_SUBPIXEL))
     cairo_font_options_set_antialias(cairo_font_options, CAIRO_ANTIALIAS_GRAY);
-  }
 
   // This needs to be done early on; it has no effect when called just before
   // pango_cairo_show_layout().
   pango_cairo_context_set_font_options(
       pango_layout_get_context(layout), cairo_font_options);
-
-  if (copied_cairo_font_options) {
-    cairo_font_options_destroy(cairo_font_options);
-    cairo_font_options = NULL;
-  }
+  cairo_font_options_destroy(cairo_font_options);
+  cairo_font_options = NULL;
 
   // Set Pango's base text direction explicitly from |text_direction|.
   pango_layout_set_auto_dir(layout, FALSE);

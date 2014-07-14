@@ -20,6 +20,7 @@
 #include "base/win/win_util.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font.h"
+#include "ui/gfx/font_render_params.h"
 #include "ui/gfx/win/scoped_set_map_mode.h"
 
 namespace {
@@ -189,6 +190,10 @@ std::string PlatformFontWin::GetLocalizedFontName() const {
 
 int PlatformFontWin::GetFontSize() const {
   return font_ref_->font_size();
+}
+
+const FontRenderParams& PlatformFontWin::GetFontRenderParams() const {
+  return GetDefaultFontRenderParams();
 }
 
 NativeFont PlatformFontWin::GetNativeFont() const {

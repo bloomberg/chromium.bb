@@ -778,9 +778,9 @@ void RenderTextHarfBuzz::DrawVisualText(Canvas* canvas) {
   ApplyTextShadows(&renderer);
 
 #if defined(OS_WIN) || defined(OS_LINUX)
-  // TODO(derat): Use font-specific params: http://crbug.com/125235
-  renderer.SetFontRenderParams(GetDefaultFontRenderParams(),
-                               background_is_transparent());
+  renderer.SetFontRenderParams(
+      font_list().GetPrimaryFont().GetFontRenderParams(),
+      background_is_transparent());
 #endif
 
   ApplyCompositionAndSelectionStyles();

@@ -14,6 +14,7 @@
 
 namespace gfx {
 
+struct FontRenderParams;
 class PlatformFont;
 
 // Font provides a wrapper around an underlying font. Copy and assignment
@@ -92,6 +93,9 @@ class GFX_EXPORT Font {
 
   // Returns the font size in pixels.
   int GetFontSize() const;
+
+  // Returns an object describing how the font should be rendered.
+  const FontRenderParams& GetFontRenderParams() const;
 
   // Returns the native font handle.
   // Lifetime lore:

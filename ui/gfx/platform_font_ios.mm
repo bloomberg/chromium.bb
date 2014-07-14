@@ -10,6 +10,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/gfx/font.h"
+#include "ui/gfx/font_render_params.h"
 
 namespace gfx {
 
@@ -73,6 +74,12 @@ std::string PlatformFontIOS::GetActualFontNameForTesting() const {
 
 int PlatformFontIOS::GetFontSize() const {
   return font_size_;
+}
+
+const FontRenderParams& PlatformFontIOS::GetFontRenderParams() const {
+  NOTIMPLEMENTED();
+  static FontRenderParams params;
+  return params;
 }
 
 NativeFont PlatformFontIOS::GetNativeFont() const {

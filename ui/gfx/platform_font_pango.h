@@ -11,6 +11,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "skia/ext/refptr.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
+#include "ui/gfx/font_render_params.h"
 #include "ui/gfx/platform_font.h"
 
 class SkTypeface;
@@ -22,7 +23,7 @@ class GFX_EXPORT PlatformFontPango : public PlatformFont {
  public:
   PlatformFontPango();
   explicit PlatformFontPango(NativeFont native_font);
-  PlatformFontPango(const std::string& font_name, int font_size);
+  PlatformFontPango(const std::string& font_name, int font_size_pixels);
 
   // Converts |gfx_font| to a new pango font. Free the returned font with
   // pango_font_description_free().
@@ -55,6 +56,7 @@ class GFX_EXPORT PlatformFontPango : public PlatformFont {
   virtual std::string GetFontName() const OVERRIDE;
   virtual std::string GetActualFontNameForTesting() const OVERRIDE;
   virtual int GetFontSize() const OVERRIDE;
+  virtual const FontRenderParams& GetFontRenderParams() const OVERRIDE;
   virtual NativeFont GetNativeFont() const OVERRIDE;
 
  private:
@@ -62,8 +64,9 @@ class GFX_EXPORT PlatformFontPango : public PlatformFont {
   // from DeriveFont.
   PlatformFontPango(const skia::RefPtr<SkTypeface>& typeface,
                     const std::string& name,
-                    int size,
-                    int style);
+                    int size_pixels,
+                    int style,
+                    const FontRenderParams& params);
   virtual ~PlatformFontPango();
 
   // Initializes this object based on the passed-in details. If |typeface| is
@@ -71,8 +74,9 @@ class GFX_EXPORT PlatformFontPango : public PlatformFont {
   void InitFromDetails(
       const skia::RefPtr<SkTypeface>& typeface,
       const std::string& font_family,
-      int font_size,
-      int style);
+      int font_size_pixels,
+      int style,
+      const FontRenderParams& params);
 
   // Initializes this object as a copy of another PlatformFontPango.
   void InitFromPlatformFont(const PlatformFontPango* other);
@@ -91,11 +95,14 @@ class GFX_EXPORT PlatformFontPango : public PlatformFont {
 
   skia::RefPtr<SkTypeface> typeface_;
 
-  // Additional information about the face
+  // Additional information about the face.
   // Skia actually expects a family name and not a font name.
   std::string font_family_;
   int font_size_pixels_;
   int style_;
+
+  // Information describing how the font should be rendered.
+  FontRenderParams font_render_params_;
 
   // Cached metrics, generated at construction.
   int ascent_pixels_;

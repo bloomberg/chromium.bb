@@ -42,7 +42,7 @@ SandboxIPCHandler::SandboxIPCHandler(int lifeline_fd, int browser_socket)
   // FontConfig doesn't provide a standard property to control subpixel
   // positioning, so we pass the current setting through to WebKit.
   WebFontInfo::setSubpixelPositioning(
-      gfx::GetDefaultWebkitSubpixelPositioning());
+      gfx::GetDefaultWebKitFontRenderParams().subpixel_positioning);
 }
 
 void SandboxIPCHandler::Run() {
