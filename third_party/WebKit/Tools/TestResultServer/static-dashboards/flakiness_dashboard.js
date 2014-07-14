@@ -1159,7 +1159,6 @@ function hideLoadingUI()
 
 function generatePageForIndividualTests(tests)
 {
-    console.log('Number of tests: ' + tests.length);
     if (g_history.dashboardSpecificState.showChrome)
         appendHTML(htmlForNavBar());
     performChunkedAction(function(test) {
