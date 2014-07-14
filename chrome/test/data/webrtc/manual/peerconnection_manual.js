@@ -1062,11 +1062,12 @@ function registerLocalStorage_(element_id) {
           'Element \"' + element.tagName + '\" is not an input element. ');
   }
 
-  if (localStorage.getItem(element.id) == 'undefined') {
+  if (localStorage.getItem(element.id) == null) {
     storeLocalStorageField_(element);
   } else {
     getLocalStorageField_(element);
   }
+
   // Registers the appropriate events for input elements.
   if (element.type == 'checkbox') {
     element.onclick = function() { storeLocalStorageField_(this); };
