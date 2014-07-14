@@ -116,6 +116,11 @@ class WebGLConformanceExpectations(test_expectations.TestExpectations):
         ['lion', 'intel'], bug=323736)
     self.Skip('conformance/ogles/GL/tan/tan_001_to_006.html',
         ['lion', 'intel'], bug=323736)
+    # Two flaky tests.
+    self.Fail('conformance/ogles/GL/functions/functions_049_to_056.html',
+        ['lion', 'intel'], bug=393331)
+    self.Fail('conformance/extensions/webgl-compressed-texture-size-limit.html',
+        ['lion', 'intel'], bug=393331)
 
     # Linux NVIDIA failures
     self.Fail('conformance/glsl/constructors/glsl-construct-bvec2.html',
