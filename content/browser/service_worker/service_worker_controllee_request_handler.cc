@@ -46,9 +46,17 @@ ServiceWorkerControlleeRequestHandler::
 net::URLRequestJob* ServiceWorkerControlleeRequestHandler::MaybeCreateJob(
     net::URLRequest* request,
     net::NetworkDelegate* network_delegate) {
-  if (!context_ || !provider_host_ ||
-      request->load_flags() & net::LOAD_BYPASS_CACHE) {
+  if (!context_ || !provider_host_) {
     // We can't do anything other than to fall back to network.
+    job_ = NULL;
+    return NULL;
+  }
+
+  if (request->load_flags() & net::LOAD_BYPASS_CACHE) {
+    if (is_main_resource_load_) {
+      provider_host_->SetDocumentUrl(
+          net::SimplifyUrlForRequest(request->url()));
+    }
     job_ = NULL;
     return NULL;
   }
