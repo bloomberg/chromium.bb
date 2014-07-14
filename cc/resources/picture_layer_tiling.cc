@@ -174,11 +174,9 @@ void PictureLayerTiling::UpdateTilesToCurrentPile(
 
 void PictureLayerTiling::Invalidate(const Region& layer_region) {
   std::vector<TileMapKey> new_tile_keys;
-  // TODO(danakj): What we really want is to ignore border pixels that intersect
-  // the rect when choosing which tiles it covers, then expand to those tiles
-  // plus their border pixels.
   gfx::Rect expanded_live_tiles_rect =
-      tiling_data_.ExpandRectToTileBounds(live_tiles_rect_);
+      tiling_data_.ExpandRectIgnoringBordersToTileBoundsWithBorders(
+          live_tiles_rect_);
   for (Region::Iterator iter(layer_region); iter.has_rect(); iter.next()) {
     gfx::Rect layer_rect = iter.rect();
     gfx::Rect content_rect =

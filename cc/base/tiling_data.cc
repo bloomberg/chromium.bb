@@ -138,14 +138,14 @@ int TilingData::LastBorderTileYIndexFromSrcCoord(int src_position) const {
   return std::min(std::max(y, 0), num_tiles_y_ - 1);
 }
 
-gfx::Rect TilingData::ExpandRectToTileBoundsWithBorders(
+gfx::Rect TilingData::ExpandRectIgnoringBordersToTileBoundsWithBorders(
     const gfx::Rect& rect) const {
   if (!rect.Intersects(tiling_rect_) || has_empty_bounds())
     return gfx::Rect();
-  int index_x = FirstBorderTileXIndexFromSrcCoord(rect.x());
-  int index_y = FirstBorderTileYIndexFromSrcCoord(rect.y());
-  int index_right = LastBorderTileXIndexFromSrcCoord(rect.right() - 1);
-  int index_bottom = LastBorderTileYIndexFromSrcCoord(rect.bottom() - 1);
+  int index_x = TileXIndexFromSrcCoord(rect.x());
+  int index_y = TileYIndexFromSrcCoord(rect.y());
+  int index_right = TileXIndexFromSrcCoord(rect.right() - 1);
+  int index_bottom = TileYIndexFromSrcCoord(rect.bottom() - 1);
 
   gfx::Rect rect_top_left(TileBoundsWithBorder(index_x, index_y));
   gfx::Rect rect_bottom_right(TileBoundsWithBorder(index_right, index_bottom));
