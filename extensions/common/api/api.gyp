@@ -5,6 +5,7 @@
 {
   'targets': [
     {
+      # GN version: //extensions/common/api
       'target_name': 'extensions_api',
       'type': 'static_library',
       'sources': [
@@ -22,6 +23,7 @@
         ],
         'conditions': [
           ['enable_extensions==1', {
+            # Note: file list duplicated in GN build.
             'schema_files': [
               'app_runtime.idl',
               'app_view_internal.json',

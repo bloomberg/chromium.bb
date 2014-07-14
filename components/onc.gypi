@@ -5,6 +5,7 @@
 {
   'targets': [
     {
+      # GN version: //components/onc
       'target_name': 'onc_component',
       'type': '<(component)',
       'dependencies': [
