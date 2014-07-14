@@ -204,7 +204,15 @@ CanonHostInfo::Family DoIPv4AddressToNumber(const CHAR* spec,
   }
 
   // Next, consume the last component to fill in the remaining bytes.
+  // Work around a gcc 4.9 bug. crbug.com/392872
+#if defined(__GNUC__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Warray-bounds"
+#endif
   uint32 last_value = component_values[existing_components - 1];
+#if defined(__GNUC__)
+#pragma GCC diagnostic pop
+#endif
   for (int i = 3; i >= existing_components - 1; i--) {
     address[i] = static_cast<unsigned char>(last_value);
     last_value >>= 8;
