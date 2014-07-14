@@ -1832,6 +1832,11 @@ surface_resize(struct shell_surface *shsurf,
 	surface_subsurfaces_boundingbox(shsurf->surface, NULL, NULL,
 	                                &resize->width, &resize->height);
 
+	resize->width -= shsurf->margin.left;
+	resize->width -= shsurf->margin.right;
+	resize->height -= shsurf->margin.top;
+	resize->height -= shsurf->margin.bottom;
+
 	shsurf->resize_edges = edges;
 	shell_surface_state_changed(shsurf);
 	shell_grab_start(&resize->base, &resize_grab_interface, shsurf,
