@@ -140,7 +140,6 @@ crbug.com/380472 fast/repaint/window-resize-percent-html.html [ NeedsRebaseline 
 crbug.com/380472 fast/repaint/window-resize-percent-width-height.html [ NeedsRebaseline ]
 crbug.com/380472 fast/repaint/window-resize-viewport-percent.html [ NeedsRebaseline ]
 crbug.com/380472 svg/custom/object-sizing-no-width-height-change-content-box-size.xhtml [ NeedsRebaseline ]
-crbug.com/380472 virtual/softwarecompositing/repaint/resize-repaint.html [ NeedsRebaseline ]
 
 crbug.com/330083 w3c/web-platform-tests/shadow-dom/elements-and-dom-objects/extensions-to-element-interface/methods/elements-001.html [ Failure ]
 crbug.com/330083 w3c/web-platform-tests/shadow-dom/elements-and-dom-objects/extensions-to-element-interface/methods/non-element-nodes-001.html [ Failure ]
