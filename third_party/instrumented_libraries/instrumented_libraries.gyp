@@ -48,15 +48,16 @@
     ],
     'patch': '',
     'run_before_build': '',
+    'asan_blacklist': '',
+    'msan_blacklist': '',
+    'tsan_blacklist': '',
 
     'conditions': [
       ['asan==1', {
-        'sanitizer_blacklist': '',
         'package_cflags': ['-fsanitize=address'],
         'package_ldflags': ['-fsanitize=address'],
       }],
       ['msan==1', {
-        'sanitizer_blacklist': '<(msan_blacklist)',
         'package_cflags': [
           '-fsanitize=memory',
           '-fsanitize-memory-track-origins=<(msan_track_origins)'
@@ -64,7 +65,6 @@
         'package_ldflags': ['-fsanitize=memory'],
       }],
       ['tsan==1', {
-        'sanitizer_blacklist': '<(tsan_blacklist)',
         'package_cflags': ['-fsanitize=thread'],
         'package_ldflags': ['-fsanitize=thread'],
       }],
@@ -241,6 +241,7 @@
         '--disable-gtk-doc-html',
         '--disable-gtk-doc-pdf',
       ],
+      'asan_blacklist': 'blacklists/asan/libglib2.0-0.txt',
       'includes': ['standard_instrumented_package_target.gypi'],
     },
     {
@@ -289,6 +290,7 @@
       'package_name': 'libx11-6',
       'dependencies=': [],
       'extra_configure_flags': ['--disable-specs'],
+      'msan_blacklist': 'blacklists/msan/libx11-6.txt',
       'includes': ['standard_instrumented_package_target.gypi'],
     },
     {

@@ -229,7 +229,7 @@ def build_environment(parsed_arguments, product_directory, install_prefix):
   cflags = unescape_flags(parsed_arguments.cflags)
   if parsed_arguments.sanitizer_blacklist:
     cflags += ' -fsanitize-blacklist=%s/%s' % (
-        product_directory,
+        get_script_absolute_path(),
         parsed_arguments.sanitizer_blacklist)
   environment['CFLAGS'] = cflags
   environment['CXXFLAGS'] = cflags
