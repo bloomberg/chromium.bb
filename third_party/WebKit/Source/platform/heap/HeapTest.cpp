@@ -1697,8 +1697,8 @@ TEST(HeapTest, TypedHeapSanity)
     // We use TraceCounter for allocating an object on the general heap.
     Persistent<TraceCounter> generalHeapObject = TraceCounter::create();
     Persistent<TestTypedHeapClass> typedHeapObject = TestTypedHeapClass::create();
-    EXPECT_NE(pageHeaderAddress(reinterpret_cast<Address>(generalHeapObject.get())),
-        pageHeaderAddress(reinterpret_cast<Address>(typedHeapObject.get())));
+    EXPECT_NE(pageHeaderFromObject(generalHeapObject.get()),
+        pageHeaderFromObject(typedHeapObject.get()));
 }
 
 TEST(HeapTest, NoAllocation)
@@ -3429,6 +3429,7 @@ TEST(HeapTest, PersistentHeapCollectionTypes)
     typedef PersistentHeapListHashSet<Member<IntWrapper> > PListSet;
     typedef PersistentHeapLinkedHashSet<Member<IntWrapper> > PLinkedSet;
     typedef PersistentHeapHashMap<Member<IntWrapper>, Member<IntWrapper> > PMap;
+    typedef PersistentHeapHashMap<WeakMember<IntWrapper>, Member<IntWrapper> > WeakPMap;
     typedef PersistentHeapDeque<Member<IntWrapper> > PDeque;
 
     clearOutOldGarbage(&initialHeapSize);
@@ -3439,6 +3440,7 @@ TEST(HeapTest, PersistentHeapCollectionTypes)
         PListSet pListSet;
         PLinkedSet pLinkedSet;
         PMap pMap;
+        WeakPMap wpMap;
 
         IntWrapper* one(IntWrapper::create(1));
         IntWrapper* two(IntWrapper::create(2));
@@ -3449,6 +3451,8 @@ TEST(HeapTest, PersistentHeapCollectionTypes)
         IntWrapper* seven(IntWrapper::create(7));
         IntWrapper* eight(IntWrapper::create(8));
         IntWrapper* nine(IntWrapper::create(9));
+        Persistent<IntWrapper> ten(IntWrapper::create(10));
+        IntWrapper* eleven(IntWrapper::create(11));
 
         pVec.append(one);
         pVec.append(two);
@@ -3466,6 +3470,7 @@ TEST(HeapTest, PersistentHeapCollectionTypes)
         pListSet.add(eight);
         pLinkedSet.add(nine);
         pMap.add(five, six);
+        wpMap.add(ten, eleven);
 
         // Collect |vec| and |one|.
         vec = 0;
@@ -3494,11 +3499,17 @@ TEST(HeapTest, PersistentHeapCollectionTypes)
 
         EXPECT_EQ(1u, pMap.size());
         EXPECT_EQ(six, pMap.get(five));
+
+        EXPECT_EQ(1u, wpMap.size());
+        EXPECT_EQ(eleven, wpMap.get(ten));
+        ten.clear();
+        Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
+        EXPECT_EQ(0u, wpMap.size());
     }
 
     // Collect previous roots.
     Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
-    EXPECT_EQ(9, IntWrapper::s_destructorCalls);
+    EXPECT_EQ(11, IntWrapper::s_destructorCalls);
 }
 
 TEST(HeapTest, CollectionNesting)
@@ -4583,5 +4594,275 @@ TEST(HeapTest, IndirectStrongToWeak)
     EXPECT_EQ(0u, map->size());
 }
 
+static Mutex& mainThreadMutex()
+{
+    AtomicallyInitializedStatic(Mutex&, mainMutex = *new Mutex);
+    return mainMutex;
+}
+
+static ThreadCondition& mainThreadCondition()
+{
+    AtomicallyInitializedStatic(ThreadCondition&, mainCondition = *new ThreadCondition);
+    return mainCondition;
+}
+
+static void parkMainThread()
+{
+    mainThreadCondition().wait(mainThreadMutex());
+}
+
+static void wakeMainThread()
+{
+    MutexLocker locker(mainThreadMutex());
+    mainThreadCondition().signal();
+}
+
+static Mutex& workerThreadMutex()
+{
+    AtomicallyInitializedStatic(Mutex&, workerMutex = *new Mutex);
+    return workerMutex;
+}
+
+static ThreadCondition& workerThreadCondition()
+{
+    AtomicallyInitializedStatic(ThreadCondition&, workerCondition = *new ThreadCondition);
+    return workerCondition;
+}
+
+static void parkWorkerThread()
+{
+    workerThreadCondition().wait(workerThreadMutex());
+}
+
+static void wakeWorkerThread()
+{
+    MutexLocker locker(workerThreadMutex());
+    workerThreadCondition().signal();
+}
+
+class CrossThreadObject : public GarbageCollectedFinalized<CrossThreadObject> {
+public:
+    static CrossThreadObject* create(IntWrapper* workerObjectPointer)
+    {
+        return new CrossThreadObject(workerObjectPointer);
+    }
+
+    virtual ~CrossThreadObject()
+    {
+        ++s_destructorCalls;
+    }
+
+    static int s_destructorCalls;
+    void trace(Visitor* visitor) { visitor->trace(m_workerObject); }
+
+private:
+    CrossThreadObject(IntWrapper* workerObjectPointer) : m_workerObject(workerObjectPointer) { }
+
+private:
+    Member<IntWrapper> m_workerObject;
+};
+
+int CrossThreadObject::s_destructorCalls = 0;
+
+class CrossThreadPointerTester {
+public:
+    static void test()
+    {
+        CrossThreadObject::s_destructorCalls = 0;
+        IntWrapper::s_destructorCalls = 0;
+
+        MutexLocker locker(mainThreadMutex());
+        createThread(&workerThreadMain, 0, "Worker Thread");
+
+        parkMainThread();
+
+        uintptr_t stackPtrValue = 0;
+        {
+            // Create an object with a pointer to the other heap's IntWrapper.
+            Persistent<CrossThreadObject> cto = CrossThreadObject::create(const_cast<IntWrapper*>(s_workerObjectPointer));
+            s_workerObjectPointer = 0;
+
+            Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
+
+            // Nothing should have been collected/destructed.
+            EXPECT_EQ(0, CrossThreadObject::s_destructorCalls);
+            EXPECT_EQ(0, IntWrapper::s_destructorCalls);
+
+            // Put cto into a stack value. This is used to check that a conservative
+            // GC succeeds even though we are tracing the other thread heap after
+            // shutting it down.
+            stackPtrValue = reinterpret_cast<uintptr_t>(cto.get());
+        }
+        RELEASE_ASSERT(stackPtrValue);
+
+        // At this point it is "programatically" okay to shut down the worker thread
+        // since the cto object should be dead. However out stackPtrValue will cause a
+        // trace of the object when doing a conservative GC.
+        // The worker thread's thread local GC's should just add the worker thread's
+        // pages to the heap after finalizing IntWrapper.
+        wakeWorkerThread();
+
+        // Wait for the worker to shutdown.
+        parkMainThread();
+
+        // After the worker thread has detached it should have finalized the
+        // IntWrapper object on its heaps. Since there has been no global GC
+        // the cto object should not have been finalized.
+        EXPECT_EQ(0, CrossThreadObject::s_destructorCalls);
+        EXPECT_EQ(1, IntWrapper::s_destructorCalls);
+
+        // Now do a conservative GC. The stackPtrValue should keep cto alive
+        // and will also cause the orphaned page of the other thread to be
+        // traced. At this point cto should still not be finalized.
+        Heap::collectGarbage(ThreadState::HeapPointersOnStack);
+        EXPECT_EQ(0, CrossThreadObject::s_destructorCalls);
+        EXPECT_EQ(1, IntWrapper::s_destructorCalls);
+
+        // Do a GC with no pointers on the stack to see the cto being collected.
+        Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
+        EXPECT_EQ(1, CrossThreadObject::s_destructorCalls);
+        EXPECT_EQ(1, IntWrapper::s_destructorCalls);
+    }
+
+private:
+    static void workerThreadMain(void* data)
+    {
+        MutexLocker locker(workerThreadMutex());
+        ThreadState::attach();
+
+        {
+            // Create a worker object that is only kept alive by a cross thread
+            // pointer (from CrossThreadObject).
+            IntWrapper* workerObject = IntWrapper::create(42);
+            s_workerObjectPointer = workerObject;
+        }
+
+        // Wake up the main thread which is waiting for the worker to do its
+        // allocation and passing the pointer.
+        wakeMainThread();
+
+        // Wait for main thread to signal the worker to shutdown.
+        {
+            ThreadState::SafePointScope scope(ThreadState::NoHeapPointersOnStack);
+            parkWorkerThread();
+        }
+
+        ThreadState::detach();
+
+        // Tell the main thread the worker has done its shutdown.
+        wakeMainThread();
+    }
+
+    static volatile IntWrapper* s_workerObjectPointer;
+};
+
+volatile IntWrapper* CrossThreadPointerTester::s_workerObjectPointer = 0;
+
+TEST(HeapTest, CrossThreadPointerToOrphanedPage)
+{
+    CrossThreadPointerTester::test();
+}
+
+class DeadBitTester {
+public:
+    static void test()
+    {
+        IntWrapper::s_destructorCalls = 0;
+
+        MutexLocker locker(mainThreadMutex());
+        createThread(&workerThreadMain, 0, "Worker Thread");
+
+        // Wait for the worker thread to have done its initialization,
+        // IE. the worker allocates an object and then throw aways any
+        // pointers to it.
+        parkMainThread();
+
+        // Now do a GC. This will not find the worker threads object since it
+        // is not referred from any of the threads. Even a conservative
+        // GC will not find it.
+        // Also at this point the worker is waiting for the main thread
+        // to be parked and will not do any sweep of its heap.
+        Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
+
+        // Since the worker thread is not sweeping the worker object should
+        // not have been finalized.
+        EXPECT_EQ(0, IntWrapper::s_destructorCalls);
+
+        // Put the worker thread's object address on the stack and do a
+        // conservative GC. This should find the worker object, but since
+        // it was dead in the previous GC it should not be traced in this
+        // GC.
+        uintptr_t stackPtrValue = s_workerObjectPointer;
+        s_workerObjectPointer = 0;
+        ASSERT_UNUSED(stackPtrValue, stackPtrValue);
+        Heap::collectGarbage(ThreadState::HeapPointersOnStack);
+
+        // Since the worker thread is not sweeping the worker object should
+        // not have been finalized.
+        EXPECT_EQ(0, IntWrapper::s_destructorCalls);
+
+        // Wake up the worker thread so it can continue with its sweeping.
+        // This should finalized the worker object which we test below.
+        // The worker thread will go back to sleep once sweeping to ensure
+        // we don't have thread local GCs until after validating the destructor
+        // was called.
+        wakeWorkerThread();
+
+        // Wait for the worker thread to sweep its heaps before checking.
+        parkMainThread();
+        EXPECT_EQ(1, IntWrapper::s_destructorCalls);
+
+        // Wake up the worker to allow it thread to continue with thread
+        // shutdown.
+        wakeWorkerThread();
+    }
+
+private:
+
+    static void workerThreadMain(void* data)
+    {
+        MutexLocker locker(workerThreadMutex());
+
+        ThreadState::attach();
+
+        {
+            // Create a worker object that is not kept alive except the
+            // main thread will keep it as an integer value on its stack.
+            IntWrapper* workerObject = IntWrapper::create(42);
+            s_workerObjectPointer = reinterpret_cast<uintptr_t>(workerObject);
+        }
+
+        // Signal the main thread that the worker is done with its allocation.
+        wakeMainThread();
+
+        {
+            // Wait for the main thread to do two GCs without sweeping this thread
+            // heap. The worker waits within a safepoint, but there is no sweeping
+            // until leaving the safepoint scope.
+            ThreadState::SafePointScope scope(ThreadState::NoHeapPointersOnStack);
+            parkWorkerThread();
+        }
+
+        // Wake up the main thread when done sweeping.
+        wakeMainThread();
+
+        // Wait with detach until the main thread says so. This is not strictly
+        // necessary, but it means the worker thread will not do its thread local
+        // GCs just yet, making it easier to reason about that no new GC has occurred
+        // and the above sweep was the one finalizing the worker object.
+        parkWorkerThread();
+
+        ThreadState::detach();
+    }
+
+    static volatile uintptr_t s_workerObjectPointer;
+};
+
+volatile uintptr_t DeadBitTester::s_workerObjectPointer = 0;
+
+TEST(HeapTest, ObjectDeadBit)
+{
+    DeadBitTester::test();
+}
 
 } // WebCore namespace
