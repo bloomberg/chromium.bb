@@ -16,21 +16,7 @@ component("common") {
 
   deps = [
     "//base",
-    "//base:i18n",
-    "//base/third_party/dynamic_annotations",
-    "//net",
-    "//skia",
-    "//third_party/icu",
-    "//third_party/WebKit/public:blink_headers",
-    "//ui/base",
-    "//ui/gfx",
-    "//ui/gfx/geometry",
-    "//ui/resources",
     "//url",
-    "//webkit:resources",
-  ]
-  forward_dependent_configs_from = [
-    "//third_party/WebKit/public:blink_headers",
   ]
 }
 
