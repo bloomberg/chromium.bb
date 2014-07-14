@@ -12,10 +12,11 @@
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
 #include "ui/views/controls/button/checkbox.h"
-#include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/link.h"
+#include "ui/views/controls/scroll_view.h"
 #include "ui/views/controls/textfield/textfield.h"
+#include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/layout/layout_constants.h"
 #include "ui/views/widget/widget.h"
@@ -76,7 +77,6 @@ MessageBoxView::InitParams::~InitParams() {
 
 MessageBoxView::MessageBoxView(const InitParams& params)
     : prompt_field_(NULL),
-      icon_(NULL),
       checkbox_(NULL),
       link_(NULL),
       message_width_(params.message_width) {
@@ -91,14 +91,6 @@ base::string16 MessageBoxView::GetInputText() {
 
 bool MessageBoxView::IsCheckBoxSelected() {
   return checkbox_ ? checkbox_->checked() : false;
-}
-
-void MessageBoxView::SetIcon(const gfx::ImageSkia& icon) {
-  if (!icon_)
-    icon_ = new ImageView();
-  icon_->SetImage(icon);
-  icon_->SetBounds(0, 0, icon.width(), icon.height());
-  ResetLayoutManager();
 }
 
 void MessageBoxView::SetCheckBoxLabel(const base::string16& label) {
@@ -209,20 +201,9 @@ void MessageBoxView::ResetLayoutManager() {
   GridLayout* layout = GridLayout::CreatePanel(this);
   SetLayoutManager(layout);
 
-  gfx::Size icon_size;
-  if (icon_)
-    icon_size = icon_->GetPreferredSize();
-
   // Add the column set for the message displayed at the top of the dialog box.
-  // And an icon, if one has been set.
   const int message_column_view_set_id = 0;
   ColumnSet* column_set = layout->AddColumnSet(message_column_view_set_id);
-  if (icon_) {
-    column_set->AddColumn(GridLayout::LEADING, GridLayout::LEADING, 0,
-                          GridLayout::FIXED, icon_size.width(),
-                          icon_size.height());
-    column_set->AddPaddingColumn(0, kUnrelatedControlHorizontalSpacing);
-  }
   column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, 1,
                         GridLayout::FIXED, message_width_, 0);
 
@@ -230,24 +211,21 @@ void MessageBoxView::ResetLayoutManager() {
   const int extra_column_view_set_id = 1;
   if (prompt_field_ || checkbox_ || link_) {
     column_set = layout->AddColumnSet(extra_column_view_set_id);
-    if (icon_) {
-      column_set->AddPaddingColumn(
-          0, icon_size.width() + kUnrelatedControlHorizontalSpacing);
-    }
     column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, 1,
                           GridLayout::USE_PREF, 0, 0);
   }
 
-  for (size_t i = 0; i < message_labels_.size(); ++i) {
-    layout->StartRow(i, message_column_view_set_id);
-    if (icon_) {
-      if (i == 0)
-        layout->AddView(icon_);
-      else
-        layout->SkipColumns(1);
-    }
-    layout->AddView(message_labels_[i]);
-  }
+  const int kMaxScrollViewHeight = 600;
+  views::View* message_contents = new views::View();
+  message_contents->SetLayoutManager(
+      new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 0));
+  for (size_t i = 0; i < message_labels_.size(); ++i)
+    message_contents->AddChildView(message_labels_[i]);
+  ScrollView* scroll_view = new views::ScrollView();
+  scroll_view->ClipHeightTo(0, kMaxScrollViewHeight);
+  scroll_view->SetContents(message_contents);
+  layout->StartRow(0, message_column_view_set_id);
+  layout->AddView(scroll_view);
 
   if (prompt_field_) {
     layout->AddPaddingRow(0, inter_row_vertical_spacing_);
