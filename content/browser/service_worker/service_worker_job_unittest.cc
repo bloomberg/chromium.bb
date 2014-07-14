@@ -735,8 +735,9 @@ TEST_F(ServiceWorkerJobTest, UnregisterWaitingSetsRedundant) {
   base::RunLoop().RunUntilIdle();
   ASSERT_TRUE(called);
 
-  EXPECT_EQ(ServiceWorkerVersion::RUNNING,
-            version->running_status());
+  // The version should be stopped since there is no controllee after
+  // unregistration.
+  EXPECT_EQ(ServiceWorkerVersion::STOPPED, version->running_status());
   EXPECT_EQ(ServiceWorkerVersion::REDUNDANT, version->status());
 }
 
@@ -764,7 +765,9 @@ TEST_F(ServiceWorkerJobTest, UnregisterActiveSetsRedundant) {
   base::RunLoop().RunUntilIdle();
   ASSERT_TRUE(called);
 
-  EXPECT_EQ(ServiceWorkerVersion::RUNNING, version->running_status());
+  // The version should be stopped since there is no controllee after
+  // unregistration.
+  EXPECT_EQ(ServiceWorkerVersion::STOPPED, version->running_status());
   EXPECT_EQ(ServiceWorkerVersion::REDUNDANT, version->status());
 }
 
@@ -800,12 +803,15 @@ TEST_F(ServiceWorkerJobTest,
   base::RunLoop().RunUntilIdle();
   ASSERT_TRUE(called);
 
+  // The version should be running since there is still a controllee.
   EXPECT_EQ(ServiceWorkerVersion::RUNNING, version->running_status());
   EXPECT_EQ(ServiceWorkerVersion::ACTIVATED, version->status());
 
   registration->active_version()->RemoveControllee(host.get());
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(ServiceWorkerVersion::RUNNING, version->running_status());
+
+  // The version should be stopped since there is no controllee.
+  EXPECT_EQ(ServiceWorkerVersion::STOPPED, version->running_status());
   EXPECT_EQ(ServiceWorkerVersion::REDUNDANT, version->status());
 }
 

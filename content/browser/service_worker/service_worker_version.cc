@@ -389,9 +389,11 @@ void ServiceWorkerVersion::RemoveControllee(
   RemoveProcessFromWorker(provider_host->process_id());
   if (HasControllee())
     return;
-  ScheduleStopWorker();
-  if (is_doomed_)
+  if (is_doomed_) {
     DoomInternal();
+    return;
+  }
+  ScheduleStopWorker();
 }
 
 void ServiceWorkerVersion::AddPotentialControllee(
@@ -667,7 +669,9 @@ void ServiceWorkerVersion::ScheduleStopWorker() {
 }
 
 void ServiceWorkerVersion::DoomInternal() {
+  DCHECK(!HasControllee());
   SetStatus(REDUNDANT);
+  StopWorker(base::Bind(&ServiceWorkerUtils::NoOpStatusCallback));
   if (!context_)
     return;
   std::vector<ServiceWorkerDatabase::ResourceRecord> resources;
