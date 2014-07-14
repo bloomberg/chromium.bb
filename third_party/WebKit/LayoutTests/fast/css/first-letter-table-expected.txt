@@ -1,4 +1,5 @@
-This test is verifying that adding content that uses first letter into a table will work correctly (i.e. not crash).
+This test is successfully if it does not crash.
+This test is verifying that adding content that uses first letter into a table will work correctly.
 a
 Test
 my text content
