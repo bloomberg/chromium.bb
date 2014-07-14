@@ -334,6 +334,7 @@ SlideMode.prototype.leave = function(zoomToRect, callback) {
       callback();
     }.bind(this);
 
+  this.viewport_.setZoomIndex(0);
   if (this.getItemCount_() === 0) {
     this.showErrorBanner_(false);
     commitDone();
@@ -856,7 +857,19 @@ SlideMode.prototype.onKeyDown = function(event) {
       this.advanceWithKeyboard(keyID);
       break;
 
-    default: return false;
+    case 'Ctrl-U+00BB':  // Ctrl+'=' zoom in.
+      if (!this.isEditing()) {
+        this.viewport_.setZoomIndex(this.viewport_.getZoomIndex() + 1);
+        this.imageView_.draw();
+      }
+      break;
+
+    case 'Ctrl-U+00BD':  // Ctrl+'-' zoom out.
+      if (!this.isEditing()) {
+        this.viewport_.setZoomIndex(this.viewport_.getZoomIndex() - 1);
+        this.imageView_.draw();
+      }
+      break;
   }
 
   return true;
@@ -1023,6 +1036,10 @@ SlideMode.prototype.isSlideshowOn_ = function() {
  * @param {Event=} opt_event Event.
  */
 SlideMode.prototype.startSlideshow = function(opt_interval, opt_event) {
+  // Reset zoom.
+  this.viewport_.setZoomIndex(0);
+  this.imageView_.draw();
+
   // Set the attribute early to prevent the toolbar from flashing when
   // the slideshow is being started from the mosaic view.
   this.container_.setAttribute('slideshow', 'playing');
@@ -1174,6 +1191,9 @@ SlideMode.prototype.toggleEditor = function(opt_event) {
   ImageUtil.setAttribute(this.container_, 'editing', !this.isEditing());
 
   if (this.isEditing()) { // isEditing has just been flipped to a new value.
+    // Reset zoom.
+    this.viewport_.setZoomIndex(0);
+    this.imageView_.draw();
     if (this.context_.readonlyDirName) {
       this.editor_.getPrompt().showAt(
           'top', 'GALLERY_READONLY_WARNING', 0, this.context_.readonlyDirName);

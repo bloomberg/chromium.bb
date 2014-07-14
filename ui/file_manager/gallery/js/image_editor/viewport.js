@@ -30,6 +30,21 @@ function Viewport() {
    * @private
    */
   this.scale_ = 1;
+
+  /**
+   * Index of zoom ratio. 0 is "zoom ratio = 1".
+   * @type {number}
+   * @private
+   */
+  this.zoomIndex_ = 0;
+
+  /**
+   * Zoom ratio specified by user operations.
+   * @type {number}
+   * @private
+   */
+  this.zoom_ = 1;
+
   this.offsetX_ = 0;
   this.offsetY_ = 0;
 
@@ -37,6 +52,22 @@ function Viewport() {
 
   this.update();
 }
+
+/**
+ * Zoom ratios.
+ *
+ * @type {Object.<string, number>}
+ * @const
+ */
+Viewport.ZOOM_RATIOS = Object.freeze({
+  '3': 3,
+  '2': 2,
+  '1': 1.5,
+  '0': 1,
+  '-1': 0.75,
+  '-2': 0.5,
+  '-3': 0.25
+});
 
 /**
  * @param {number} width Image width.
@@ -54,6 +85,28 @@ Viewport.prototype.setImageSize = function(width, height) {
 Viewport.prototype.setScreenSize = function(width, height) {
   this.screenBounds_ = new Rect(width, height);
   this.invalidateCaches();
+};
+
+/**
+ * Sets the new zoom ratio.
+ * @param {number} zoomIndex New zoom index.
+ */
+Viewport.prototype.setZoomIndex = function(zoomIndex) {
+  // Ignore the invalid zoomIndex.
+  if (!Viewport.ZOOM_RATIOS[zoomIndex.toString()])
+    return;
+
+  this.zoomIndex_ = zoomIndex;
+  this.zoom_ = Viewport.ZOOM_RATIOS[zoomIndex];
+  this.invalidateCaches();
+};
+
+/**
+ * Returns the current zoom index.
+ * @return {number} Zoon index.
+ */
+Viewport.prototype.getZoomIndex = function() {
+  return this.zoomIndex_;
 };
 
 /**
@@ -388,7 +441,7 @@ Viewport.prototype.update = function() {
  * @return {string} Transformation description.
  */
 Viewport.prototype.getTransformation = function() {
-  return 'scale(' + (1 / window.devicePixelRatio) + ')';
+  return 'scale(' + (1 / window.devicePixelRatio * this.zoom_) + ')';
 };
 
 /**
