@@ -328,7 +328,9 @@ skia::RefPtr<SkPicture> BrowserViewRenderer::CapturePicture(int width,
 
   // Return empty Picture objects for empty SkPictures.
   if (width <= 0 || height <= 0) {
-    return skia::AdoptRef(new SkPicture);
+    SkPictureRecorder emptyRecorder;
+    emptyRecorder.beginRecording(0, 0);
+    return skia::AdoptRef(emptyRecorder.endRecording());
   }
 
   // Reset scroll back to the origin, will go back to the old
