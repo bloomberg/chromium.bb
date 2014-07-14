@@ -806,18 +806,18 @@ static bool extractRangeComponent(ErrorString* errorString, const RefPtr<JSONObj
 
 static bool jsonRangeToSourceRange(ErrorString* errorString, InspectorStyleSheetBase* inspectorStyleSheet, const RefPtr<JSONObject>& range, SourceRange* sourceRange)
 {
-    unsigned startLineNumber;
-    unsigned startColumn;
-    unsigned endLineNumber;
-    unsigned endColumn;
+    unsigned startLineNumber = 0;
+    unsigned startColumn = 0;
+    unsigned endLineNumber = 0;
+    unsigned endColumn = 0;
     if (!extractRangeComponent(errorString, range, "startLine", startLineNumber)
         || !extractRangeComponent(errorString, range, "startColumn", startColumn)
         || !extractRangeComponent(errorString, range, "endLine", endLineNumber)
         || !extractRangeComponent(errorString, range, "endColumn", endColumn))
         return false;
 
-    unsigned startOffset;
-    unsigned endOffset;
+    unsigned startOffset = 0;
+    unsigned endOffset = 0;
     bool success = inspectorStyleSheet->lineNumberAndColumnToOffset(startLineNumber, startColumn, &startOffset)
         && inspectorStyleSheet->lineNumberAndColumnToOffset(endLineNumber, endColumn, &endOffset);
     if (!success) {

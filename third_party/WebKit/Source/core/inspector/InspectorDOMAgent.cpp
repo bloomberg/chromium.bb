@@ -795,8 +795,7 @@ void InspectorDOMAgent::setNodeName(ErrorString* errorString, int nodeId, const 
     newElem->cloneAttributesFromElement(*toElement(oldNode));
 
     // Copy over the original node's children.
-    Node* child;
-    while ((child = oldNode->firstChild())) {
+    for (Node* child = oldNode->firstChild(); child; child = oldNode->firstChild()) {
         if (!m_domEditor->insertBefore(newElem.get(), child, 0, errorString))
             return;
     }
@@ -975,7 +974,7 @@ void InspectorDOMAgent::performSearch(ErrorString*, const String& whitespaceTrim
             continue;
 
         // Manual plain text search.
-        while ((node = NodeTraversal::next(*node, document->documentElement()))) {
+        for (node = NodeTraversal::next(*node, document->documentElement()); node; node = NodeTraversal::next(*node, document->documentElement())) {
             switch (node->nodeType()) {
             case Node::TEXT_NODE:
             case Node::COMMENT_NODE:

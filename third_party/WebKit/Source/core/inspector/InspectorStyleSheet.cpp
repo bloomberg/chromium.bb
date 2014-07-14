@@ -766,8 +766,8 @@ NewLineAndWhitespace& InspectorStyle::newLineAndWhitespaceDelimiters() const
 
     RefPtrWillBeRawPtr<CSSRuleSourceData> sourceData = extractSourceData();
     WillBeHeapVector<CSSPropertySourceData>* sourcePropertyData = sourceData ? &(sourceData->styleSourceData->propertyData) : 0;
-    int propertyCount;
-    if (!sourcePropertyData || !(propertyCount = sourcePropertyData->size())) {
+    int propertyCount = sourcePropertyData ? sourcePropertyData->size() : 0;
+    if (!propertyCount) {
         m_format.first = "\n";
         m_format.second = defaultPrefix;
         return m_format; // Do not remember the default formatting and attempt to acquire it later.
