@@ -497,24 +497,29 @@ Position CompositeEditCommand::replaceSelectedTextInNode(const String& text)
     return Position(textNode.release(), start.offsetInContainerNode() + text.length());
 }
 
-static void copyMarkers(const DocumentMarkerVector& markerPointers, DocumentMarkerVector& markers)
+static void copyMarkerTypesAndDescriptions(const DocumentMarkerVector& markerPointers, Vector<DocumentMarker::MarkerType>& types, Vector<String>& descriptions)
 {
     size_t arraySize = markerPointers.size();
-    markers.reserveCapacity(arraySize);
-    for (size_t i = 0; i < arraySize; ++i)
-        markers.append(markerPointers[i]);
+    types.reserveCapacity(arraySize);
+    descriptions.reserveCapacity(arraySize);
+    for (size_t i = 0; i < arraySize; ++i) {
+        types.append(markerPointers[i]->type());
+        descriptions.append(markerPointers[i]->description());
+    }
 }
 
 void CompositeEditCommand::replaceTextInNodePreservingMarkers(PassRefPtrWillBeRawPtr<Text> prpNode, unsigned offset, unsigned count, const String& replacementText)
 {
     RefPtrWillBeRawPtr<Text> node(prpNode);
     DocumentMarkerController& markerController = document().markers();
-    DocumentMarkerVector markers;
-    copyMarkers(markerController.markersInRange(Range::create(document(), node.get(), offset, node.get(), offset + count).get(), DocumentMarker::AllMarkers()), markers);
+    Vector<DocumentMarker::MarkerType> types;
+    Vector<String> descriptions;
+    copyMarkerTypesAndDescriptions(markerController.markersInRange(Range::create(document(), node.get(), offset, node.get(), offset + count).get(), DocumentMarker::AllMarkers()), types, descriptions);
     replaceTextInNode(node, offset, count, replacementText);
     RefPtrWillBeRawPtr<Range> newRange = Range::create(document(), node.get(), offset, node.get(), offset + replacementText.length());
-    for (size_t i = 0; i < markers.size(); ++i)
-        markerController.addMarker(newRange.get(), markers[i]->type(), markers[i]->description());
+    ASSERT(types.size() == descriptions.size());
+    for (size_t i = 0; i < types.size(); ++i)
+        markerController.addMarker(newRange.get(), types[i], descriptions[i]);
 }
 
 Position CompositeEditCommand::positionOutsideTabSpan(const Position& pos)
