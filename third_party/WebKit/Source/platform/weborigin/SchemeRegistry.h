@@ -78,6 +78,9 @@ public:
     static void registerURLSchemeAsCORSEnabled(const String& scheme);
     static bool shouldTreatURLSchemeAsCORSEnabled(const String& scheme);
 
+    // Serialize the registered schemes in a comma-separated list.
+    static String listOfCORSEnabledURLSchemes();
+
     // Allow resources from some schemes to load on a page, regardless of its
     // Content Security Policy.
     static void registerURLSchemeAsBypassingContentSecurityPolicy(const String& scheme);

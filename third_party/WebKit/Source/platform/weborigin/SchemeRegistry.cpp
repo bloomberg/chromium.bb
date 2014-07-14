@@ -28,6 +28,7 @@
 #include "platform/weborigin/SchemeRegistry.h"
 
 #include "wtf/MainThread.h"
+#include "wtf/text/StringBuilder.h"
 
 namespace WebCore {
 
@@ -254,6 +255,23 @@ bool SchemeRegistry::shouldTreatURLSchemeAsCORSEnabled(const String& scheme)
     if (scheme.isEmpty())
         return false;
     return CORSEnabledSchemes().contains(scheme);
+}
+
+String SchemeRegistry::listOfCORSEnabledURLSchemes()
+{
+    StringBuilder builder;
+    const URLSchemesMap& corsEnabledSchemes = CORSEnabledSchemes();
+
+    bool addSeparator = false;
+    for (URLSchemesMap::const_iterator it = corsEnabledSchemes.begin(); it != corsEnabledSchemes.end(); ++it) {
+        if (addSeparator)
+            builder.append(", ");
+        else
+            addSeparator = true;
+
+        builder.append(*it);
+    }
+    return builder.toString();
 }
 
 void SchemeRegistry::registerURLSchemeAsBypassingContentSecurityPolicy(const String& scheme)
