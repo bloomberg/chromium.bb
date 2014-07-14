@@ -60,7 +60,7 @@ class SecureHashAlgorithm {
   };
 
   uint32 cursor;
-  uint32 l;
+  uint64 l;
 };
 
 static inline uint32 f(uint32 t, uint32 B, uint32 C, uint32 D) {
@@ -92,10 +92,7 @@ static inline uint32 K(uint32 t) {
 }
 
 static inline void swapends(uint32* t) {
-  *t = ((*t & 0xff000000) >> 24) |
-       ((*t & 0xff0000) >> 8) |
-       ((*t & 0xff00) << 8) |
-       ((*t & 0xff) << 24);
+  *t = (*t >> 24) | ((*t >> 8) & 0xff00) | ((*t & 0xff00) << 8) | (*t << 24);
 }
 
 const int SecureHashAlgorithm::kDigestSizeBytes = 20;
@@ -144,13 +141,17 @@ void SecureHashAlgorithm::Pad() {
     Process();
   }
 
-  while (cursor < 64-4)
+  while (cursor < 64-8)
     M[cursor++] = 0;
 
-  M[64-4] = (l & 0xff000000) >> 24;
-  M[64-3] = (l & 0xff0000) >> 16;
-  M[64-2] = (l & 0xff00) >> 8;
-  M[64-1] = (l & 0xff);
+  M[cursor++] = (l >> 56) & 0xff;
+  M[cursor++] = (l >> 48) & 0xff;
+  M[cursor++] = (l >> 40) & 0xff;
+  M[cursor++] = (l >> 32) & 0xff;
+  M[cursor++] = (l >> 24) & 0xff;
+  M[cursor++] = (l >> 16) & 0xff;
+  M[cursor++] = (l >> 8) & 0xff;
+  M[cursor++] = l & 0xff;
 }
 
 void SecureHashAlgorithm::Process() {
