@@ -137,8 +137,8 @@ std::string GetStringFromID(SavePasswordProgressLogger::StringID id) {
       return "Form manager found, exact match.";
     case SavePasswordProgressLogger::STRING_MATCH_WITHOUT_ACTION:
       return "Form manager found, match except for action.";
-    case SavePasswordProgressLogger::STRING_NO_FORM_MANAGER:
-      return "No form manager found.";
+    case SavePasswordProgressLogger::STRING_MATCHING_NOT_COMPLETE:
+      return "No form manager has completed matching.";
     case SavePasswordProgressLogger::STRING_FORM_BLACKLISTED:
       return "Form blacklisted.";
     case SavePasswordProgressLogger::STRING_INVALID_FORM:

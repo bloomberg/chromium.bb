@@ -1099,3 +1099,27 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest, NoLastLoadGoodLastLoad) {
   run_loop.RunUntilIdle();
   EXPECT_FALSE(password_store->IsEmpty());
 }
+
+// In some situations, multiple PasswordFormManager instances from
+// PasswordManager::pending_login_managers_ would match (via DoesManage) a form
+// to be provisionally saved. One of them might be a complete match, the other
+// all-but-action match. Normally, the former should be preferred, but if the
+// former has not finished matching, and the latter has, the latter should be
+// used (otherwise we'd give up even though we could have saved the password).
+IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
+                       PreferPasswordFormManagerWhichFinishedMatching) {
+  NavigateToFile("/password/create_form_copy_on_submit.html");
+
+  NavigationObserver observer(WebContents());
+  scoped_ptr<PromptObserver> prompt_observer(
+      PromptObserver::Create(WebContents()));
+  std::string submit =
+      "document.getElementById('username').value = 'overwrite_me';"
+      "document.getElementById('password').value = 'random';"
+      "document.getElementById('non-form-button').click();";
+  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), submit));
+  observer.Wait();
+
+  EXPECT_TRUE(prompt_observer->IsShowingPrompt());
+}
+

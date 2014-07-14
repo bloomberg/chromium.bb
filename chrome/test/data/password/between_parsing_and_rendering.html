@@ -23,47 +23,10 @@ some webkit-only rules for background properties.
 -->
 <html>
   <head>
+    <script src="form_utils.js"></script>
     <script>
-function createForm() {
-  var form = document.createElement('form');
-  form.setAttribute('action', 'done.html');
-
-  var username_label = document.createElement('label');
-  username_label.setAttribute('for', 'username');
-  username_label.innerText = 'Username: ';
-  var username = document.createElement('input');
-  username.type = 'text';
-  username.name = 'username';
-  username.id = 'username';
-
-  var password_label = document.createElement('label');
-  password_label.innerText = 'Password: ';
-  password_label.setAttribute('for', 'password');
-  var password = document.createElement('input');
-  password.type = 'password';
-  password.name = 'password';
-  password.id = 'password';
-
-  var submit = document.createElement('input');
-  submit.type = 'submit';
-  submit.id = 'submit-button';
-  submit.value = 'Submit';
-
-  form.appendChild(username_label);
-  form.appendChild(username);
-  form.appendChild(password_label);
-  form.appendChild(password);
-  form.appendChild(submit);
-
-  return form;
-}
-
-function addForm(form) {
-  document.getElementsByTagName('body')[0].appendChild(form);
-}
-
 function onLoadHandler() {
-  addForm(createForm());
+  document.body.appendChild(createSimplePasswordForm());
 }
     </script>
     <style>

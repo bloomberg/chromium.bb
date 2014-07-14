@@ -149,11 +149,22 @@ void PasswordManager::ProvisionallySavePassword(const PasswordForm& form) {
   scoped_ptr<PasswordFormManager> manager;
   ScopedVector<PasswordFormManager>::iterator matched_manager_it =
       pending_login_managers_.end();
+  // Below, "matching" is in DoesManage-sense and "not ready" in
+  // !HasCompletedMatching sense. We keep track of such PasswordFormManager
+  // instances for UMA.
+  bool has_found_matching_managers_which_were_not_ready = false;
   for (ScopedVector<PasswordFormManager>::iterator iter =
            pending_login_managers_.begin();
        iter != pending_login_managers_.end();
        ++iter) {
     PasswordFormManager::MatchResultMask result = (*iter)->DoesManage(form);
+
+    if (!(*iter)->HasCompletedMatching()) {
+      if (result != PasswordFormManager::RESULT_NO_MATCH)
+        has_found_matching_managers_which_were_not_ready = true;
+      continue;
+    }
+
     if (result == PasswordFormManager::RESULT_COMPLETE_MATCH) {
       // If we find a manager that exactly matches the submitted form including
       // the action URL, exit the loop.
@@ -180,17 +191,15 @@ void PasswordManager::ProvisionallySavePassword(const PasswordForm& form) {
     // |manager|.
     manager.reset(*matched_manager_it);
     pending_login_managers_.weak_erase(matched_manager_it);
+  } else if (has_found_matching_managers_which_were_not_ready) {
+    // We found some managers, but none finished matching yet. The user has
+    // tried to submit credentials before we had time to even find matching
+    // results for the given form and autofill. If this is the case, we just
+    // give up.
+    RecordFailure(MATCHING_NOT_COMPLETE, form.origin.host(), logger.get());
+    return;
   } else {
     RecordFailure(NO_MATCHING_FORM, form.origin.host(), logger.get());
-    return;
-  }
-
-  // If we found a manager but it didn't finish matching yet, the user has
-  // tried to submit credentials before we had time to even find matching
-  // results for the given form and autofill. If this is the case, we just
-  // give up.
-  if (!manager->HasCompletedMatching()) {
-    RecordFailure(MATCHING_NOT_COMPLETE, form.origin.host(), logger.get());
     return;
   }
 
@@ -270,7 +279,7 @@ void PasswordManager::RecordFailure(ProvisionalSaveFailure failure,
         logger->LogMessage(Logger::STRING_EMPTY_PASSWORD);
         break;
       case MATCHING_NOT_COMPLETE:
-        logger->LogMessage(Logger::STRING_NO_FORM_MANAGER);
+        logger->LogMessage(Logger::STRING_MATCHING_NOT_COMPLETE);
         break;
       case NO_MATCHING_FORM:
         logger->LogMessage(Logger::STRING_NO_MATCHING_FORM);
