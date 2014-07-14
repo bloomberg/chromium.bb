@@ -71,8 +71,8 @@ class NetworkStateNotifierTest : public AshTestBase {
         DBusThreadManager::Get()->GetShillServiceClient()->GetTestInterface();
     service_test->ClearServices();
     const bool add_to_visible = true;
-    // Create wifi and cellular networks and set to online.
-    service_test->AddService("wifi1", "wifi1",
+    // Create a wifi network and set to online.
+    service_test->AddService("/service/wifi1", "wifi1_guid", "wifi1",
                              shill::kTypeWifi, shill::kStateIdle,
                              add_to_visible);
     service_test->SetServiceProperty("wifi1",

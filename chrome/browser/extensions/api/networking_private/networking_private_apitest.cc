@@ -233,12 +233,9 @@ class ExtensionNetworkingPrivateApiTest
                   const std::string& name,
                   const std::string& type,
                   const std::string& state) {
-    const bool add_to_visible = true;
-    // Tests need a known GUID, so use 'service_path'.
-    service_test_->AddServiceWithIPConfig(
-        service_path, service_path + "_GUID" /* guid */, name,
-        type, state, "" /* ipconfig_path */,
-        add_to_visible);
+    service_test_->AddService(
+        service_path, service_path + "_guid", name,
+        type, state, true /* add_to_visible */);
   }
 
   virtual void SetUpOnMainThread() OVERRIDE {
@@ -323,9 +320,6 @@ class ExtensionNetworkingPrivateApiTest
                                       base::FundamentalValue(2400));
 
     AddService("stub_wifi2", "wifi2_PSK", shill::kTypeWifi, shill::kStateIdle);
-    service_test_->SetServiceProperty("stub_wifi2",
-                                      shill::kGuidProperty,
-                                      base::StringValue("stub_wifi2_GUID"));
     service_test_->SetServiceProperty("stub_wifi2",
                                       shill::kSecurityProperty,
                                       base::StringValue(shill::kSecurityPsk));
@@ -592,27 +586,27 @@ IN_PROC_BROWSER_TEST_F(ExtensionNetworkingPrivateApiTest,
 
   NetworkPortalDetector::CaptivePortalState state;
   state.status = NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_ONLINE;
-  detector()->SetDetectionResultsForTesting("stub_ethernet", state);
+  detector()->SetDetectionResultsForTesting("stub_ethernet_guid", state);
 
   state.status = NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_OFFLINE;
-  detector()->SetDetectionResultsForTesting("stub_wifi1", state);
+  detector()->SetDetectionResultsForTesting("stub_wifi1_guid", state);
 
   state.status = NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_PORTAL;
-  detector()->SetDetectionResultsForTesting("stub_wifi2", state);
+  detector()->SetDetectionResultsForTesting("stub_wifi2_guid", state);
 
   state.status =
       NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_PROXY_AUTH_REQUIRED;
-  detector()->SetDetectionResultsForTesting("stub_cellular1", state);
+  detector()->SetDetectionResultsForTesting("stub_cellular1_guid", state);
 
   EXPECT_TRUE(RunNetworkingSubtest("getCaptivePortalStatus")) << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionNetworkingPrivateApiTest,
                        CaptivePortalNotification) {
-  detector()->SetDefaultNetworkPathForTesting("wifi", "wifi_GUID");
+  detector()->SetDefaultNetworkForTesting("wifi_guid");
   NetworkPortalDetector::CaptivePortalState state;
   state.status = NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_ONLINE;
-  detector()->SetDetectionResultsForTesting("wifi", state);
+  detector()->SetDetectionResultsForTesting("wifi_guid", state);
 
   TestListener listener(
       "notifyPortalDetectorObservers",

@@ -305,11 +305,12 @@ ShillServiceClient::TestInterface* FakeShillServiceClient::GetTestInterface() {
 // ShillServiceClient::TestInterface overrides.
 
 void FakeShillServiceClient::AddService(const std::string& service_path,
+                                        const std::string& guid,
                                         const std::string& name,
                                         const std::string& type,
                                         const std::string& state,
                                         bool visible) {
-  AddServiceWithIPConfig(service_path, "" /* guid */, name,
+  AddServiceWithIPConfig(service_path, guid, name,
                          type, state, "" /* ipconfig_path */,
                          visible);
 }
@@ -602,6 +603,7 @@ void FakeShillServiceClient::ContinueConnect(
   if (ContainsKey(connect_behavior_, service_path)) {
     const base::Closure& custom_connect_behavior =
         connect_behavior_[service_path];
+    VLOG(1) << "Running custom connect behavior for " << service_path;
     custom_connect_behavior.Run();
     return;
   }
@@ -625,6 +627,7 @@ void FakeShillServiceClient::ContinueConnect(
             base::StringValue(shill::kErrorBadPassphrase)));
   } else {
     // Set Online.
+    VLOG(1) << "Setting state to Online " << service_path;
     SetServiceProperty(service_path,
                        shill::kStateProperty,
                        base::StringValue(shill::kStateOnline));

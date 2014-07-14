@@ -151,9 +151,8 @@ bool NetworkDropdown::ShouldOpenButtonOptions() const {
   return !oobe_;
 }
 
-void NetworkDropdown::OnConnectToNetworkRequested(
-    const std::string& service_path) {
-  actor_->OnConnectToNetworkRequested(service_path);
+void NetworkDropdown::OnConnectToNetworkRequested() {
+  actor_->OnConnectToNetworkRequested();
 }
 
 void NetworkDropdown::DefaultNetworkChanged(const NetworkState* network) {

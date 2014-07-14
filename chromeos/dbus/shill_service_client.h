@@ -45,6 +45,7 @@ class CHROMEOS_EXPORT ShillServiceClient : public DBusClient {
    public:
     // Adds a Service to the Manager and Service stubs.
     virtual void AddService(const std::string& service_path,
+                            const std::string& guid,
                             const std::string& name,
                             const std::string& type,
                             const std::string& state,

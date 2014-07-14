@@ -21,9 +21,8 @@ class NetworkPortalDetectorTestImpl : public NetworkPortalDetector {
   NetworkPortalDetectorTestImpl();
   virtual ~NetworkPortalDetectorTestImpl();
 
-  void SetDefaultNetworkPathForTesting(const std::string& service_path,
-                                       const std::string& guid);
-  void SetDetectionResultsForTesting(const std::string& service_path,
+  void SetDefaultNetworkForTesting(const std::string& guid);
+  void SetDetectionResultsForTesting(const std::string& guid,
                                      const CaptivePortalState& state);
   void NotifyObserversForTesting();
 

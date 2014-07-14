@@ -49,7 +49,7 @@ NetworkStateInformer::State GetStateForDefaultNetwork() {
 
   if (NetworkPortalDetector::Get()->IsEnabled()) {
     NetworkPortalDetector::CaptivePortalState state =
-        NetworkPortalDetector::Get()->GetCaptivePortalState(network->path());
+        NetworkPortalDetector::Get()->GetCaptivePortalState(network->guid());
     NetworkPortalDetector::CaptivePortalStatus status = state.status;
     if (status == NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_UNKNOWN &&
         NetworkState::StateIsConnecting(network->connection_state())) {

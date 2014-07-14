@@ -308,12 +308,10 @@ void NetworkMenuModel::ActivatedAt(int index) {
   } else if (flags & FLAG_TOGGLE_MOBILE) {
     ToggleTechnology(NetworkTypePattern::Mobile());
   } else if (flags & FLAG_ETHERNET) {
-    owner_->delegate()->OnConnectToNetworkRequested(
-        menu_items_[index].service_path);
+    owner_->delegate()->OnConnectToNetworkRequested();
   } else if (flags & (FLAG_WIFI | FLAG_WIMAX | FLAG_CELLULAR)) {
     ConnectToNetworkAt(index);
-    owner_->delegate()->OnConnectToNetworkRequested(
-        menu_items_[index].service_path);
+    owner_->delegate()->OnConnectToNetworkRequested();
   } else if (flags & FLAG_ADD_WIFI) {
     ShowOther(shill::kTypeWifi);
   } else if (flags & FLAG_ADD_CELLULAR) {

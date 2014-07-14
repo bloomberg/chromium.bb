@@ -104,13 +104,19 @@ class NetworkCertMigratorTest : public testing::Test {
     network_cert_migrator_->Init(network_state_handler_.get());
   }
 
+  void AddService(const std::string& network_id,
+                  const std::string& type,
+                  const std::string& state) {
+    service_test_->AddService(network_id /* service_path */,
+                              network_id /* guid */,
+                              network_id /* name */,
+                              type,
+                              state,
+                              true /* add_to_visible */);
+  }
+
   void SetupWifiWithNss() {
-    const bool add_to_visible = true;
-    service_test_->AddService(kWifiStub,
-                              kWifiStub,
-                              shill::kTypeWifi,
-                              shill::kStateOnline,
-                              add_to_visible);
+    AddService(kWifiStub, shill::kTypeWifi, shill::kStateOnline);
     service_test_->SetServiceProperty(kWifiStub,
                                       shill::kEapCaCertNssProperty,
                                       base::StringValue(kNSSNickname));
@@ -131,12 +137,7 @@ class NetworkCertMigratorTest : public testing::Test {
   }
 
   void SetupVpnWithNss(bool open_vpn) {
-    const bool add_to_visible = true;
-    service_test_->AddService(kVPNStub,
-                              kVPNStub,
-                              shill::kTypeVPN,
-                              shill::kStateIdle,
-                              add_to_visible);
+    AddService(kVPNStub, shill::kTypeVPN, shill::kStateIdle);
     base::DictionaryValue provider;
     const char* nss_property = open_vpn ? shill::kOpenVPNCaCertNSSProperty
                                         : shill::kL2tpIpsecCaCertNssProperty;

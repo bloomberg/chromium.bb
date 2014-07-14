@@ -39,7 +39,8 @@ const char* kUserActionMetric =
     NetworkPortalNotificationController::kUserActionMetric;
 
 const char kTestUser[] = "test-user@gmail.com";
-const char kWifi[] = "wifi";
+const char kWifiServicePath[] = "/service/wifi";
+const char kWifiGuid[] = "wifi";
 
 void ErrorCallbackFunction(const std::string& error_name,
                            const std::string& error_message) {
@@ -105,13 +106,14 @@ class NetworkPortalDetectorImplBrowserTest
     ShillServiceClient::TestInterface* service_test =
         DBusThreadManager::Get()->GetShillServiceClient()->GetTestInterface();
     service_test->ClearServices();
-    service_test->AddService(kWifi,
-                             kWifi,
+    service_test->AddService(kWifiServicePath,
+                             kWifiGuid,
+                             "wifi",
                              shill::kTypeEthernet,
                              shill::kStateIdle,
                              true /* add_to_visible */);
     DBusThreadManager::Get()->GetShillServiceClient()->SetProperty(
-        dbus::ObjectPath(kWifi),
+        dbus::ObjectPath(kWifiServicePath),
         shill::kStateProperty,
         base::StringValue(shill::kStatePortal),
         base::Bind(&base::DoNothing),
@@ -167,7 +169,7 @@ IN_PROC_BROWSER_TEST_F(NetworkPortalDetectorImplBrowserTest,
   content::RunAllPendingInMessageLoop();
 
   // User connects to wifi.
-  SetConnected(kWifi);
+  SetConnected(kWifiServicePath);
 
   ASSERT_EQ(PortalDetectorStrategy::STRATEGY_ID_SESSION, strategy()->Id());
 
@@ -179,8 +181,9 @@ IN_PROC_BROWSER_TEST_F(NetworkPortalDetectorImplBrowserTest,
   // Check that wifi is marked as behind the portal and that notification
   // is displayed.
   ASSERT_TRUE(message_center()->FindVisibleNotificationById(kNotificationId));
-  ASSERT_EQ(NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_PORTAL,
-            NetworkPortalDetector::Get()->GetCaptivePortalState(kWifi).status);
+  ASSERT_EQ(
+      NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_PORTAL,
+      NetworkPortalDetector::Get()->GetCaptivePortalState(kWifiGuid).status);
 
   // Wait until notification is displayed.
   observer.WaitAndReset();

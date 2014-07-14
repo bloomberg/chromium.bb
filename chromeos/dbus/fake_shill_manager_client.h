@@ -106,7 +106,7 @@ class CHROMEOS_EXPORT FakeShillManagerClient
       const std::string& service_path) OVERRIDE;
 
   // Constants used for testing.
-  static const char kFakeEthernetNetworkPath[];
+  static const char kFakeEthernetNetworkGuid[];
 
  private:
   void SetDefaultProperties();

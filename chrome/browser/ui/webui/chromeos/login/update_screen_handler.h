@@ -43,8 +43,7 @@ class UpdateScreenHandler : public UpdateScreenActor,
 
  private:
   // NetworkDropdownHandler::Observer implementation:
-  virtual void OnConnectToNetworkRequested(
-      const std::string& service_path) OVERRIDE;
+  virtual void OnConnectToNetworkRequested() OVERRIDE;
 
 #if !defined(OFFICIAL_BUILD)
   // Called when user presses Escape to cancel update.

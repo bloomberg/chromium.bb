@@ -454,8 +454,7 @@ void UpdateScreen::OnActorDestroyed(UpdateScreenActor* actor) {
     actor_ = NULL;
 }
 
-void UpdateScreen::OnConnectToNetworkRequested(
-    const std::string& service_path) {
+void UpdateScreen::OnConnectToNetworkRequested() {
   if (state_ == STATE_ERROR) {
     LOG(WARNING) << "Hiding error message since AP was reselected";
     StartUpdateCheck();

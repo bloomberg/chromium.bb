@@ -109,7 +109,7 @@ const char* kNetworkDisabled = "disabled";
 }  // namespace
 
 // static
-const char FakeShillManagerClient::kFakeEthernetNetworkPath[] = "/service/eth1";
+const char FakeShillManagerClient::kFakeEthernetNetworkGuid[] = "eth1_guid";
 
 FakeShillManagerClient::FakeShillManagerClient()
     : interactive_delay_(0),
@@ -267,7 +267,8 @@ void FakeShillManagerClient::ConfigureService(
                                            guid /* guid */,
                                            guid /* name */,
                                            type,
-                                           shill::kStateIdle, ipconfig_path,
+                                           shill::kStateIdle,
+                                           ipconfig_path,
                                            true /* visible */);
     existing_properties = service_client->GetServiceProperties(service_path);
   }
@@ -617,7 +618,10 @@ void FakeShillManagerClient::SetupDefaultEnvironment() {
     devices->SetDeviceProperty("/device/eth1",
                                shill::kIPConfigsProperty,
                                eth_ip_configs);
-    services->AddService(kFakeEthernetNetworkPath, "eth1",
+    const std::string kFakeEthernetNetworkPath = "/service/eth1";
+    services->AddService(kFakeEthernetNetworkPath,
+                         kFakeEthernetNetworkGuid,
+                         "eth1" /* name */,
                          shill::kTypeEthernet,
                          state,
                          add_to_visible);
@@ -646,7 +650,8 @@ void FakeShillManagerClient::SetupDefaultEnvironment() {
 
     const std::string kWifi1Path = "/service/wifi1";
     services->AddService(kWifi1Path,
-                         "wifi1",
+                         "wifi1_guid",
+                         "wifi1" /* name */,
                          shill::kTypeWifi,
                          state,
                          add_to_visible);
@@ -660,7 +665,8 @@ void FakeShillManagerClient::SetupDefaultEnvironment() {
 
     const std::string kWifi2Path = "/service/wifi2";
     services->AddService(kWifi2Path,
-                         "wifi2_PSK",
+                         "wifi2_PSK_guid",
+                         "wifi2_PSK" /* name */,
                          shill::kTypeWifi,
                          shill::kStateIdle,
                          add_to_visible);
@@ -676,7 +682,8 @@ void FakeShillManagerClient::SetupDefaultEnvironment() {
     if (portaled) {
       const std::string kPortaledWifiPath = "/service/portaled_wifi";
       services->AddService(kPortaledWifiPath,
-                           "Portaled Wifi",
+                           "portaled_wifi_guid",
+                           "Portaled Wifi" /* name */,
                            shill::kTypeWifi,
                            shill::kStatePortal,
                            add_to_visible);
@@ -701,7 +708,8 @@ void FakeShillManagerClient::SetupDefaultEnvironment() {
         "/device/wimax1", shill::kTypeWimax, "stub_wimax_device1");
 
     services->AddService("/service/wimax1",
-                         "wimax1",
+                         "wimax1_guid",
+                         "wimax1" /* name */,
                          shill::kTypeWimax,
                          state,
                          add_to_visible);
@@ -726,7 +734,8 @@ void FakeShillManagerClient::SetupDefaultEnvironment() {
                                base::StringValue(shill::kCarrierSprint));
 
     services->AddService("/service/cellular1",
-                         "cellular1",
+                         "cellular1_guid",
+                         "cellular1" /* name */,
                          shill::kTypeCellular,
                          state,
                          add_to_visible);
@@ -768,7 +777,8 @@ void FakeShillManagerClient::SetupDefaultEnvironment() {
     provider_properties.SetString(shill::kHostProperty, "vpn_host");
 
     services->AddService("/service/vpn1",
-                         "vpn1",
+                         "vpn1_guid",
+                         "vpn1" /* name */,
                          shill::kTypeVPN,
                          state,
                          add_to_visible);
@@ -777,7 +787,8 @@ void FakeShillManagerClient::SetupDefaultEnvironment() {
     profiles->AddService(shared_profile, "/service/vpn1");
 
     services->AddService("/service/vpn2",
-                         "vpn2",
+                         "vpn2_guid",
+                         "vpn2" /* name */,
                          shill::kTypeVPN,
                          shill::kStateIdle,
                          add_to_visible);

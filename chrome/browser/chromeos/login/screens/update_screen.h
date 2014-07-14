@@ -44,8 +44,7 @@ class UpdateScreen: public UpdateEngineClient::Observer,
   // UpdateScreenActor::Delegate implementation:
   virtual void CancelUpdate() OVERRIDE;
   virtual void OnActorDestroyed(UpdateScreenActor* actor) OVERRIDE;
-  virtual void OnConnectToNetworkRequested(
-      const std::string& service_path) OVERRIDE;
+  virtual void OnConnectToNetworkRequested() OVERRIDE;
 
   // Starts network check. Made virtual to simplify mocking.
   virtual void StartNetworkCheck();

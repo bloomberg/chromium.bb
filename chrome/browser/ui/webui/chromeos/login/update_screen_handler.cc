@@ -136,10 +136,9 @@ void UpdateScreenHandler::RegisterMessages() {
 #endif
 }
 
-void UpdateScreenHandler::OnConnectToNetworkRequested(
-    const std::string& service_path) {
+void UpdateScreenHandler::OnConnectToNetworkRequested() {
   if (screen_)
-    screen_->OnConnectToNetworkRequested(service_path);
+    screen_->OnConnectToNetworkRequested();
 }
 
 #if !defined(OFFICIAL_BUILD)

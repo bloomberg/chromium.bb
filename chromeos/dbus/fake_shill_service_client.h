@@ -77,6 +77,7 @@ class CHROMEOS_EXPORT FakeShillServiceClient
 
   // ShillServiceClient::TestInterface overrides.
   virtual void AddService(const std::string& service_path,
+                          const std::string& guid,
                           const std::string& name,
                           const std::string& type,
                           const std::string& state,

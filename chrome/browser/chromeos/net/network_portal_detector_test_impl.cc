@@ -15,35 +15,30 @@ NetworkPortalDetectorTestImpl::NetworkPortalDetectorTestImpl()
 NetworkPortalDetectorTestImpl::~NetworkPortalDetectorTestImpl() {
 }
 
-void NetworkPortalDetectorTestImpl::SetDefaultNetworkPathForTesting(
-    const std::string& service_path,
+void NetworkPortalDetectorTestImpl::SetDefaultNetworkForTesting(
     const std::string& guid) {
-  DVLOG(1) << "SetDefaultNetworkPathForTesting:"
-           << " service path: " << service_path
-           << " guid: " << guid;
-  if (service_path.empty()) {
+  DVLOG(1) << "SetDefaultNetworkForTesting: " << guid;
+  if (guid.empty()) {
     default_network_.reset();
   } else {
-    default_network_.reset(new NetworkState(service_path));
+    default_network_.reset(new NetworkState("/service/" + guid));
     default_network_->SetGuid(guid);
   }
 }
 
 void NetworkPortalDetectorTestImpl::SetDetectionResultsForTesting(
-    const std::string& service_path,
+    const std::string& guid,
     const CaptivePortalState& state) {
-  DVLOG(1) << "SetDetectionResultsForTesting: " << service_path << " = "
+  DVLOG(1) << "SetDetectionResultsForTesting: " << guid << " = "
            << NetworkPortalDetector::CaptivePortalStatusString(state.status);
-  if (!service_path.empty())
-    portal_state_map_[service_path] = state;
+  if (!guid.empty())
+    portal_state_map_[guid] = state;
 }
 
 void NetworkPortalDetectorTestImpl::NotifyObserversForTesting() {
   CaptivePortalState state;
-  if (default_network_ &&
-      portal_state_map_.count(default_network_->path())) {
-    state = portal_state_map_[default_network_->path()];
-  }
+  if (default_network_ && portal_state_map_.count(default_network_->guid()))
+    state = portal_state_map_[default_network_->guid()];
   FOR_EACH_OBSERVER(Observer, observers_,
                     OnPortalDetectionCompleted(default_network_.get(), state));
 }
@@ -57,14 +52,12 @@ void NetworkPortalDetectorTestImpl::AddAndFireObserver(Observer* observer) {
   AddObserver(observer);
   if (!observer)
     return;
-  if (!default_network_ ||
-      !portal_state_map_.count(default_network_->path())) {
+  if (!default_network_ || !portal_state_map_.count(default_network_->guid())) {
     observer->OnPortalDetectionCompleted(default_network_.get(),
                                          CaptivePortalState());
   } else {
     observer->OnPortalDetectionCompleted(
-        default_network_.get(),
-        portal_state_map_[default_network_->path()]);
+        default_network_.get(), portal_state_map_[default_network_->guid()]);
   }
 }
 
@@ -75,13 +68,13 @@ void NetworkPortalDetectorTestImpl::RemoveObserver(Observer* observer) {
 
 NetworkPortalDetector::CaptivePortalState
 NetworkPortalDetectorTestImpl::GetCaptivePortalState(
-    const std::string& service_path) {
-  CaptivePortalStateMap::iterator it = portal_state_map_.find(service_path);
+    const std::string& guid) {
+  CaptivePortalStateMap::iterator it = portal_state_map_.find(guid);
   if (it == portal_state_map_.end()) {
-    DVLOG(2) << "GetCaptivePortalState Not found: " << service_path;
+    DVLOG(2) << "GetCaptivePortalState Not found: " << guid;
     return CaptivePortalState();
   }
-  DVLOG(2) << "GetCaptivePortalState: " << service_path << " = "
+  DVLOG(2) << "GetCaptivePortalState: " << guid << " = "
            << CaptivePortalStatusString(it->second.status);
   return it->second;
 }

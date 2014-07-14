@@ -29,8 +29,7 @@ class NetworkDropdown : public NetworkMenu::Delegate,
   class Actor {
    public:
     virtual ~Actor() {}
-    virtual void OnConnectToNetworkRequested(
-        const std::string& service_path) = 0;
+    virtual void OnConnectToNetworkRequested() = 0;
   };
 
   NetworkDropdown(Actor* actor, content::WebUI* web_ui, bool oobe);
@@ -43,8 +42,7 @@ class NetworkDropdown : public NetworkMenu::Delegate,
   virtual gfx::NativeWindow GetNativeWindow() const OVERRIDE;
   virtual void OpenButtonOptions() OVERRIDE;
   virtual bool ShouldOpenButtonOptions() const OVERRIDE;
-  virtual void OnConnectToNetworkRequested(
-      const std::string& service_path) OVERRIDE;
+  virtual void OnConnectToNetworkRequested() OVERRIDE;
 
   // NetworkStateHandlerObserver
   virtual void DefaultNetworkChanged(const NetworkState* network) OVERRIDE;

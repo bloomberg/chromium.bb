@@ -51,6 +51,9 @@ namespace chromeos {
 namespace {
 
 const char kCurrentPage[] = "$('managed-user-creation').currentPage_";
+
+const char kStubEthernetGuid[] = "eth0";
+
 }
 
 ManagedUsersSyncTestAdapter::ManagedUsersSyncTestAdapter(Profile* profile)
@@ -195,11 +198,9 @@ void ManagedUserTestBase::SetUpInProcessBrowserTestFixture() {
   NetworkPortalDetector::CaptivePortalState online_state;
   online_state.status = NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_ONLINE;
   online_state.response_code = 204;
-  network_portal_detector_->SetDefaultNetworkPathForTesting(
-      kStubEthernetServicePath,
-      kStubEthernetServicePath /* guid */);
-  network_portal_detector_->SetDetectionResultsForTesting(
-      kStubEthernetServicePath, online_state);
+  network_portal_detector_->SetDefaultNetworkForTesting(kStubEthernetGuid);
+  network_portal_detector_->SetDetectionResultsForTesting(kStubEthernetGuid,
+                                                          online_state);
 }
 
 void ManagedUserTestBase::CleanUpOnMainThread() {

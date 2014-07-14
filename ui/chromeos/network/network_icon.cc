@@ -643,7 +643,7 @@ bool NetworkIconImpl::UpdatePortalState(const NetworkState* network) {
   bool behind_captive_portal = false;
   if (network) {
     NetworkPortalDetector::CaptivePortalState state =
-        NetworkPortalDetector::Get()->GetCaptivePortalState(network->path());
+        NetworkPortalDetector::Get()->GetCaptivePortalState(network->guid());
     behind_captive_portal =
         state.status == NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_PORTAL;
   }

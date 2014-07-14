@@ -432,11 +432,10 @@ class WizardControllerFlowTest : public WizardControllerTest {
     const NetworkState* default_network =
         NetworkHandler::Get()->network_state_handler()->DefaultNetwork();
 
-    network_portal_detector_->SetDefaultNetworkPathForTesting(
-        default_network->path(),
+    network_portal_detector_->SetDefaultNetworkForTesting(
         default_network->guid());
     network_portal_detector_->SetDetectionResultsForTesting(
-        default_network->path(),
+        default_network->guid(),
         online_state);
   }
 

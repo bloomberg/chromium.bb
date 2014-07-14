@@ -848,13 +848,11 @@ class ProxyPreferencesBrowserTest : public PreferencesBrowserTest {
 
     service_test->ClearServices();
     service_test->AddService("stub_ethernet",
+                             "stub_ethernet_guid",
                              "eth0",
                              shill::kTypeEthernet,
                              shill::kStateOnline,
                              true /* add_to_visible */ );
-    service_test->SetServiceProperty("stub_ethernet",
-                                     shill::kGuidProperty,
-                                     base::StringValue("stub_ethernet"));
     service_test->SetServiceProperty("stub_ethernet",
                                      shill::kProfileProperty,
                                      base::StringValue(kUserProfilePath));
@@ -864,7 +862,7 @@ class ProxyPreferencesBrowserTest : public PreferencesBrowserTest {
   void SetONCPolicy(const char* policy_name, policy::PolicyScope scope) {
     std::string onc_policy =
         "{ \"NetworkConfigurations\": ["
-        "    { \"GUID\": \"stub_ethernet\","
+        "    { \"GUID\": \"stub_ethernet_guid\","
         "      \"Type\": \"Ethernet\","
         "      \"Name\": \"My Ethernet\","
         "      \"Ethernet\": {"

@@ -249,13 +249,12 @@ class ProxyConfigServiceImplTest : public testing::Test {
     // Sends a notification about the added profile.
     profile_test->AddProfile(kUserProfilePath, "user_hash");
 
-    service_test->AddService("stub_wifi2", "wifi2_PSK",
+    service_test->AddService("/service/stub_wifi2",
+                             "stub_wifi2" /* guid */,
+                             "wifi2_PSK",
                              shill::kTypeWifi, shill::kStateOnline,
                              true /* visible */);
-    service_test->SetServiceProperty("stub_wifi2",
-                                     shill::kGuidProperty,
-                                     base::StringValue("stub_wifi2"));
-    profile_test->AddService(kUserProfilePath, "stub_wifi2");
+    profile_test->AddService(kUserProfilePath, "/service/stub_wifi2");
 
     loop_.RunUntilIdle();
   }

@@ -20,8 +20,6 @@
 
 namespace chromeos {
 
-const char kStubEthernetServicePath[] = "eth0";
-
 const char kTestManager[] = "test-manager@gmail.com";
 const char kTestOtherUser[] = "test-user@gmail.com";
 

@@ -216,7 +216,12 @@ class ShillPropertyHandlerTest : public testing::Test {
                   const std::string& state) {
     VLOG(2) << "AddService: " << type << ": " << id << ": " << state;
     ASSERT_TRUE(IsValidType(type));
-    service_test_->AddService(id, id, type, state, true /* visible */);
+    service_test_->AddService(id /* service_path */,
+                              id /* guid */,
+                              id /* name */,
+                              type,
+                              state,
+                              true /* visible */);
   }
 
   void AddServiceWithIPConfig(const std::string& type,
@@ -225,7 +230,7 @@ class ShillPropertyHandlerTest : public testing::Test {
                               const std::string& ipconfig_path) {
     ASSERT_TRUE(IsValidType(type));
     service_test_->AddServiceWithIPConfig(id, /* service_path */
-                                          "" /* guid */,
+                                          id /* guid */,
                                           id /* name */,
                                           type,
                                           state,
@@ -236,7 +241,12 @@ class ShillPropertyHandlerTest : public testing::Test {
   void AddServiceToProfile(const std::string& type,
                            const std::string& id,
                            bool visible) {
-    service_test_->AddService(id, id, type, shill::kStateIdle, visible);
+    service_test_->AddService(id /* service_path */,
+                              id /* guid */,
+                              id /* name */,
+                              type,
+                              shill::kStateIdle,
+                              visible);
     std::vector<std::string> profiles;
     profile_test_->GetProfilePaths(&profiles);
     ASSERT_TRUE(profiles.size() > 0);

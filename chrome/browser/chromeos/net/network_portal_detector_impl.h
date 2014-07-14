@@ -72,7 +72,7 @@ class NetworkPortalDetectorImpl
   virtual void AddAndFireObserver(Observer* observer) OVERRIDE;
   virtual void RemoveObserver(Observer* observer) OVERRIDE;
   virtual CaptivePortalState GetCaptivePortalState(
-      const std::string& service_path) OVERRIDE;
+      const std::string& guid) OVERRIDE;
   virtual bool IsEnabled() OVERRIDE;
   virtual void Enable(bool start_detection) OVERRIDE;
   virtual bool StartDetectionIfIdle() OVERRIDE;
@@ -207,9 +207,6 @@ class NetworkPortalDetectorImpl
 
   // Unique identifier of the default network.
   std::string default_network_id_;
-
-  // Service path of the default network.
-  std::string default_service_path_;
 
   // Connection state of the default network.
   std::string default_connection_state_;

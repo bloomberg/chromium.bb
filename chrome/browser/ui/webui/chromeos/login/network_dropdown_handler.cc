@@ -58,10 +58,8 @@ void NetworkDropdownHandler::RegisterMessages() {
               &NetworkDropdownHandler::HandleNetworkDropdownRefresh);
 }
 
-void NetworkDropdownHandler::OnConnectToNetworkRequested(
-    const std::string& service_path) {
-  FOR_EACH_OBSERVER(Observer, observers_,
-                    OnConnectToNetworkRequested(service_path));
+void NetworkDropdownHandler::OnConnectToNetworkRequested() {
+  FOR_EACH_OBSERVER(Observer, observers_, OnConnectToNetworkRequested());
 }
 
 void NetworkDropdownHandler::HandleNetworkItemChosen(double id) {

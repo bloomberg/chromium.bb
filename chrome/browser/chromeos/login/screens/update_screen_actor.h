@@ -22,11 +22,15 @@ class UpdateScreenActor {
   class Delegate {
    public:
     virtual ~Delegate() {}
+
     // Force cancel update.
     virtual void CancelUpdate() = 0;
+
+    // Called prior to destroying |actor|.
     virtual void OnActorDestroyed(UpdateScreenActor* actor) = 0;
-    virtual void OnConnectToNetworkRequested(
-        const std::string& service_path) = 0;
+
+    // Called any time a new network connect request occurs.
+    virtual void OnConnectToNetworkRequested() = 0;
   };
 
   virtual ~UpdateScreenActor() {}

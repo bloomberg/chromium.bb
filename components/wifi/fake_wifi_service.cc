@@ -16,7 +16,7 @@ FakeWiFiService::FakeWiFiService() {
   {
     NetworkProperties network_properties;
     network_properties.connection_state = onc::connection_state::kConnected;
-    network_properties.guid = "stub_wifi1_GUID";
+    network_properties.guid = "stub_wifi1_guid";
     network_properties.name = "wifi1";
     network_properties.type = onc::network_type::kWiFi;
     network_properties.frequency = 0;
@@ -42,7 +42,7 @@ FakeWiFiService::FakeWiFiService() {
   {
     NetworkProperties network_properties;
     network_properties.connection_state = onc::connection_state::kNotConnected;
-    network_properties.guid = "stub_wifi2_GUID";
+    network_properties.guid = "stub_wifi2_guid";
     network_properties.name = "wifi2_PSK";
     network_properties.type = onc::network_type::kWiFi;
     network_properties.frequency = 5000;

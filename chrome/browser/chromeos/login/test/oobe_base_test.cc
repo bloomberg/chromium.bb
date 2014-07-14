@@ -57,9 +57,8 @@ void OobeBaseTest::SetUpInProcessBrowserTestFixture() {
   host_resolver()->AddRule("*", "127.0.0.1");
   network_portal_detector_ = new NetworkPortalDetectorTestImpl();
   NetworkPortalDetector::InitializeForTesting(network_portal_detector_);
-  network_portal_detector_->SetDefaultNetworkPathForTesting(
-      FakeShillManagerClient::kFakeEthernetNetworkPath,
-      FakeShillManagerClient::kFakeEthernetNetworkPath /* guid */);
+  network_portal_detector_->SetDefaultNetworkForTesting(
+      FakeShillManagerClient::kFakeEthernetNetworkGuid);
 
   ExtensionApiTest::SetUpInProcessBrowserTestFixture();
 }
@@ -110,7 +109,8 @@ void OobeBaseTest::SimulateNetworkOffline() {
   NetworkPortalDetector::CaptivePortalState offline_state;
   offline_state.status = NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_OFFLINE;
   network_portal_detector_->SetDetectionResultsForTesting(
-      FakeShillManagerClient::kFakeEthernetNetworkPath, offline_state);
+      FakeShillManagerClient::kFakeEthernetNetworkGuid,
+      offline_state);
   network_portal_detector_->NotifyObserversForTesting();
 }
 
@@ -124,7 +124,8 @@ void OobeBaseTest::SimulateNetworkOnline() {
   online_state.status = NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_ONLINE;
   online_state.response_code = 204;
   network_portal_detector_->SetDetectionResultsForTesting(
-      FakeShillManagerClient::kFakeEthernetNetworkPath, online_state);
+      FakeShillManagerClient::kFakeEthernetNetworkGuid,
+      online_state);
   network_portal_detector_->NotifyObserversForTesting();
 }
 
@@ -137,7 +138,8 @@ void OobeBaseTest::SimulateNetworkPortal() {
   NetworkPortalDetector::CaptivePortalState portal_state;
   portal_state.status = NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_PORTAL;
   network_portal_detector_->SetDetectionResultsForTesting(
-      FakeShillManagerClient::kFakeEthernetNetworkPath, portal_state);
+      FakeShillManagerClient::kFakeEthernetNetworkGuid,
+      portal_state);
   network_portal_detector_->NotifyObserversForTesting();
 }
 

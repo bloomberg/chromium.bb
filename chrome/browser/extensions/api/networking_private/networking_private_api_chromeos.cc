@@ -721,9 +721,6 @@ bool NetworkingPrivateGetCaptivePortalStatusFunction::RunAsync() {
   scoped_ptr<api::GetCaptivePortalStatus::Params> params =
       api::GetCaptivePortalStatus::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params);
-  std::string service_path;
-  if (!GetServicePathFromGuid(params->network_guid, &service_path, &error_))
-    return false;
 
   NetworkPortalDetector* detector = NetworkPortalDetector::Get();
   if (!detector) {
@@ -732,7 +729,7 @@ bool NetworkingPrivateGetCaptivePortalStatusFunction::RunAsync() {
   }
 
   NetworkPortalDetector::CaptivePortalState state =
-      detector->GetCaptivePortalState(service_path);
+      detector->GetCaptivePortalState(params->network_guid);
 
   SetResult(new base::StringValue(
       NetworkPortalDetector::CaptivePortalStatusString(state.status)));

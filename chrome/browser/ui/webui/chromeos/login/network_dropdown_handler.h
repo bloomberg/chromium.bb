@@ -20,8 +20,7 @@ class NetworkDropdownHandler : public BaseScreenHandler,
   class Observer {
    public:
     virtual ~Observer() {}
-    virtual void OnConnectToNetworkRequested(
-        const std::string& service_path) = 0;
+    virtual void OnConnectToNetworkRequested() = 0;
   };
 
   NetworkDropdownHandler();
@@ -39,8 +38,7 @@ class NetworkDropdownHandler : public BaseScreenHandler,
 
  private:
   // NetworkDropdown::Actor implementation:
-  virtual void OnConnectToNetworkRequested(
-      const std::string& service_path) OVERRIDE;
+  virtual void OnConnectToNetworkRequested() OVERRIDE;
 
   // Handles choosing of the network menu item.
   void HandleNetworkItemChosen(double id);

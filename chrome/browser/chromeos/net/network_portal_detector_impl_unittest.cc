@@ -40,7 +40,7 @@ namespace chromeos {
 
 namespace {
 
-// Service paths for stub network devices.
+// Service path / guid for stub networks.
 const char kStubEthernet[] = "stub_ethernet";
 const char kStubWireless1[] = "stub_wifi1";
 const char kStubWireless2[] = "stub_wifi2";
@@ -101,9 +101,9 @@ class NetworkPortalDetectorImplTest
 
   void CheckPortalState(NetworkPortalDetector::CaptivePortalStatus status,
                         int response_code,
-                        const std::string& service_path) {
+                        const std::string& guid) {
     NetworkPortalDetector::CaptivePortalState state =
-        network_portal_detector()->GetCaptivePortalState(service_path);
+        network_portal_detector()->GetCaptivePortalState(guid);
     ASSERT_EQ(status, state.status);
     ASSERT_EQ(response_code, state.response_code);
   }
@@ -232,32 +232,25 @@ class NetworkPortalDetectorImplTest
   }
 
  private:
+  void AddService(const std::string& network_id,
+                  const std::string& type) {
+    DBusThreadManager::Get()->GetShillServiceClient()->GetTestInterface()->
+        AddService(network_id /* service_path */,
+                   network_id /* guid */,
+                   network_id /* name */,
+                   type,
+                   shill::kStateIdle,
+                   true /* add_to_visible */);
+  }
+
   void SetupDefaultShillState() {
     base::RunLoop().RunUntilIdle();
-    ShillServiceClient::TestInterface* service_test =
-        DBusThreadManager::Get()->GetShillServiceClient()->GetTestInterface();
-    service_test->ClearServices();
-    const bool add_to_visible = true;
-    service_test->AddService(kStubEthernet,
-                             kStubEthernet,
-                             shill::kTypeEthernet,
-                             shill::kStateIdle,
-                             add_to_visible);
-    service_test->AddService(kStubWireless1,
-                             kStubWireless1,
-                             shill::kTypeWifi,
-                             shill::kStateIdle,
-                             add_to_visible);
-    service_test->AddService(kStubWireless2,
-                             kStubWireless2,
-                             shill::kTypeWifi,
-                             shill::kStateIdle,
-                             add_to_visible);
-    service_test->AddService(kStubCellular,
-                             kStubCellular,
-                             shill::kTypeCellular,
-                             shill::kStateIdle,
-                             add_to_visible);
+    DBusThreadManager::Get()->GetShillServiceClient()->GetTestInterface()->
+        ClearServices();
+    AddService(kStubEthernet, shill::kTypeEthernet);
+    AddService(kStubWireless1, shill::kTypeWifi);
+    AddService(kStubWireless2, shill::kTypeWifi);
+    AddService(kStubCellular, shill::kTypeCellular);
   }
 
   void SetupNetworkHandler() {

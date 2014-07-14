@@ -67,8 +67,7 @@ class NetworkMenu {
     virtual gfx::NativeWindow GetNativeWindow() const = 0;
     virtual void OpenButtonOptions() = 0;
     virtual bool ShouldOpenButtonOptions() const = 0;
-    virtual void OnConnectToNetworkRequested(
-        const std::string& service_path) = 0;
+    virtual void OnConnectToNetworkRequested() = 0;
   };
 
   explicit NetworkMenu(Delegate* delegate);

@@ -252,7 +252,7 @@ void NetworkPortalDetectorImpl::AddAndFireObserver(Observer* observer) {
   CaptivePortalState portal_state;
   const NetworkState* network = DefaultNetwork();
   if (network)
-    portal_state = GetCaptivePortalState(network->path());
+    portal_state = GetCaptivePortalState(network->guid());
   observer->OnPortalDetectionCompleted(network, portal_state);
 }
 
@@ -275,18 +275,20 @@ void NetworkPortalDetectorImpl::Enable(bool start_detection) {
   const NetworkState* network = DefaultNetwork();
   if (!start_detection || !network)
     return;
-  portal_state_map_.erase(network->path());
+  VLOG(1) << "Starting detection for: "
+          << "name=" << network->name() << ", id=" << network->guid();
+  portal_state_map_.erase(network->guid());
   StartDetection();
 }
 
 NetworkPortalDetectorImpl::CaptivePortalState
-NetworkPortalDetectorImpl::GetCaptivePortalState(
-    const std::string& service_path) {
+NetworkPortalDetectorImpl::GetCaptivePortalState(const std::string& guid) {
   DCHECK(CalledOnValidThread());
-  CaptivePortalStateMap::const_iterator it =
-      portal_state_map_.find(service_path);
-  if (it == portal_state_map_.end())
+  CaptivePortalStateMap::const_iterator it = portal_state_map_.find(guid);
+  if (it == portal_state_map_.end()) {
+    VLOG(1) << "CaptivePortalState not found for: " << guid;
     return CaptivePortalState();
+  }
   return it->second;
 }
 
@@ -312,8 +314,8 @@ void NetworkPortalDetectorImpl::DefaultNetworkChanged(
   DCHECK(CalledOnValidThread());
 
   if (!default_network) {
+    VLOG(1) << "DefaultNetworkChanged: None.";
     default_network_name_.clear();
-    default_network_id_.clear();
 
     StopDetection();
 
@@ -324,14 +326,20 @@ void NetworkPortalDetectorImpl::DefaultNetworkChanged(
   }
 
   default_network_name_ = default_network->name();
-  default_network_id_ = default_network->guid();
 
-  bool network_changed = (default_service_path_ != default_network->path());
-  default_service_path_ = default_network->path();
+  bool network_changed = (default_network_id_ != default_network->guid());
+  default_network_id_ = default_network->guid();
 
   bool connection_state_changed =
       (default_connection_state_ != default_network->connection_state());
   default_connection_state_ = default_network->connection_state();
+
+  VLOG(1) << "DefaultNetworkChanged: "
+          << "name=" << default_network_name_ << ", "
+          << "id=" << default_network_id_ << ", "
+          << "state=" << default_connection_state_ << ", "
+          << "changed=" << network_changed << ", "
+          << "state_changed=" << connection_state_changed;
 
   if (network_changed || connection_state_changed)
     StopDetection();
@@ -341,7 +349,7 @@ void NetworkPortalDetectorImpl::DefaultNetworkChanged(
     // Initiate Captive Portal detection if network's captive
     // portal state is unknown (e.g. for freshly created networks),
     // offline or if network connection state was changed.
-    CaptivePortalState state = GetCaptivePortalState(default_network->path());
+    CaptivePortalState state = GetCaptivePortalState(default_network->guid());
     if (state.status == CAPTIVE_PORTAL_STATUS_UNKNOWN ||
         state.status == CAPTIVE_PORTAL_STATUS_OFFLINE ||
         (!network_changed && connection_state_changed)) {
@@ -533,7 +541,7 @@ void NetworkPortalDetectorImpl::OnDetectionCompleted(
   }
 
   CaptivePortalStateMap::const_iterator it =
-      portal_state_map_.find(network->path());
+      portal_state_map_.find(network->guid());
   if (it == portal_state_map_.end() || it->second.status != state.status ||
       it->second.response_code != state.response_code) {
     VLOG(1) << "Updating Chrome Captive Portal state: "
@@ -552,7 +560,7 @@ void NetworkPortalDetectorImpl::OnDetectionCompleted(
       RecordPortalToOnlineTransition(state.time - it->second.time);
     }
 
-    portal_state_map_[network->path()] = state;
+    portal_state_map_[network->guid()] = state;
   }
   NotifyDetectionCompleted(network, state);
 }

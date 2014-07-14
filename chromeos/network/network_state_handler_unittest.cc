@@ -176,10 +176,11 @@ class NetworkStateHandlerTest : public testing::Test {
 
  protected:
   void AddService(const std::string& service_path,
+                  const std::string& guid,
                   const std::string& name,
                   const std::string& type,
                   const std::string& state) {
-    service_test_->AddService(service_path, name, type, state,
+    service_test_->AddService(service_path, guid, name, type, state,
                               true /* add_to_visible */);
   }
 
@@ -209,18 +210,22 @@ class NetworkStateHandlerTest : public testing::Test {
     ASSERT_TRUE(service_test_);
     service_test_->ClearServices();
     AddService(kShillManagerClientStubDefaultService,
+               "eth1_guid",
                "eth1",
                shill::kTypeEthernet,
                shill::kStateOnline);
     AddService(kShillManagerClientStubDefaultWifi,
+               "wifi1_guid",
                "wifi1",
                shill::kTypeWifi,
                shill::kStateOnline);
     AddService(kShillManagerClientStubWifi2,
+               "wifi2_guid",
                "wifi2",
                shill::kTypeWifi,
                shill::kStateIdle);
     AddService(kShillManagerClientStubCellular,
+               "cellular1_guid",
                "cellular1",
                shill::kTypeCellular,
                shill::kStateIdle);
@@ -281,8 +286,11 @@ TEST_F(NetworkStateHandlerTest, GetNetworkList) {
   // Add a non-visible network to the profile.
   const std::string profile = "/profile/profile1";
   const std::string wifi_favorite_path = "/service/wifi_faviorite";
-  service_test_->AddService(wifi_favorite_path, "wifi_faviorite",
-                            shill::kTypeWifi, shill::kStateIdle,
+  service_test_->AddService(wifi_favorite_path,
+                            "wifi_faviorite_guid",
+                            "wifi_faviorite",
+                            shill::kTypeWifi,
+                            shill::kStateIdle,
                             false /* add_to_visible */);
   profile_test_->AddProfile(profile, "" /* userhash */);
   EXPECT_TRUE(profile_test_->AddService(profile, wifi_favorite_path));
@@ -362,8 +370,11 @@ TEST_F(NetworkStateHandlerTest, GetVisibleNetworks) {
   // Add a non-visible network to the profile.
   const std::string profile = "/profile/profile1";
   const std::string wifi_favorite_path = "/service/wifi_faviorite";
-  service_test_->AddService(wifi_favorite_path, "wifi_faviorite",
-                            shill::kTypeWifi, shill::kStateIdle,
+  service_test_->AddService(wifi_favorite_path,
+                            "wifi_faviorite_guid",
+                            "wifi_faviorite",
+                            shill::kTypeWifi,
+                            shill::kStateIdle,
                             false /* add_to_visible */);
   message_loop_.RunUntilIdle();
   EXPECT_EQ(kNumShillManagerClientStubImplServices + 1,
@@ -634,18 +645,13 @@ TEST_F(NetworkStateHandlerTest, RequestUpdate) {
 TEST_F(NetworkStateHandlerTest, NetworkGuidInProfile) {
   const std::string profile = "/profile/profile1";
   const std::string wifi_path = "/service/wifi_with_guid";
-  const std::string wifi_guid = "WIFI_GUID";
+  const std::string wifi_guid = "wifi_guid";
+  const std::string wifi_name = "WifiWithGuid";
   const bool is_service_configured = true;
 
   // Add a network to the default Profile with a specified GUID.
-  service_test_->AddServiceWithIPConfig(
-      wifi_path,
-      wifi_guid,
-      wifi_path  /* name */,
-      shill::kTypeWifi,
-      shill::kStateOnline,
-      "" /* ipconfig_path */,
-      true /* add_to_visible */);
+  AddService(wifi_path, wifi_guid, wifi_name,
+             shill::kTypeWifi, shill::kStateOnline);
   profile_test_->AddProfile(profile, "" /* userhash */);
   EXPECT_TRUE(profile_test_->AddService(profile, wifi_path));
   UpdateManagerProperties();
@@ -664,7 +670,8 @@ TEST_F(NetworkStateHandlerTest, NetworkGuidInProfile) {
 
   // Add the service (simulating a network coming back in range) and verify that
   // the NetworkState was created with the same GUID.
-  AddService(wifi_path, wifi_path, shill::kTypeWifi, shill::kStateOnline);
+  AddService(wifi_path, "" /* guid */, wifi_name,
+             shill::kTypeWifi, shill::kStateOnline);
   UpdateManagerProperties();
   network = network_state_handler_->GetNetworkStateFromServicePath(
       wifi_path, is_service_configured);
@@ -674,10 +681,12 @@ TEST_F(NetworkStateHandlerTest, NetworkGuidInProfile) {
 
 TEST_F(NetworkStateHandlerTest, NetworkGuidNotInProfile) {
   const std::string wifi_path = "/service/wifi_with_guid";
+  const std::string wifi_name = "WifiWithGuid";
   const bool is_service_configured = false;
 
-  // Add a network without adding it to a profile.
-  AddService(wifi_path, wifi_path, shill::kTypeWifi, shill::kStateOnline);
+  // Add a network without specifying a GUID or adding it to a profile.
+  AddService(wifi_path, "" /* guid */, wifi_name,
+             shill::kTypeWifi, shill::kStateOnline);
   UpdateManagerProperties();
 
   // Verify that a NetworkState exists with an assigned GUID.
@@ -695,7 +704,8 @@ TEST_F(NetworkStateHandlerTest, NetworkGuidNotInProfile) {
 
   // Add the service (simulating a network coming back in range) and verify that
   // the NetworkState was created with the same GUID.
-  AddService(wifi_path, wifi_path, shill::kTypeWifi, shill::kStateOnline);
+  AddService(wifi_path, "" /* guid */, wifi_name,
+             shill::kTypeWifi, shill::kStateOnline);
   UpdateManagerProperties();
   network = network_state_handler_->GetNetworkStateFromServicePath(
       wifi_path, is_service_configured);
