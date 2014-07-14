@@ -417,16 +417,16 @@ CommandHandler.COMMANDS_['format'] = {
   canExecute: function(event, fileManager) {
     var directoryModel = fileManager.directoryModel;
     var root = CommandUtil.getCommandEntry(event.target);
+    // |root| is null for unrecognized volumes. Regard such volumes as writable
+    // so that the format command is enabled.
+    var isReadOnly = root && fileManager.isOnReadonlyDirectory();
     // See the comment in execute() for why doing this.
     if (!root)
       root = directoryModel.getCurrentDirEntry();
     var location = root && fileManager.volumeManager.getLocationInfo(root);
     var removable = location && location.rootType ===
         VolumeManagerCommon.RootType.REMOVABLE;
-    // Don't check if the volume is read-only. Unformatted volume is considered
-    // read-only per VolumeInfo.isReadOnly, but can be formatted. An error will
-    // be raised if formatting failed anyway.
-    event.canExecute = removable;
+    event.canExecute = removable && !isReadOnly;
     event.command.setHidden(!removable);
   }
 };
