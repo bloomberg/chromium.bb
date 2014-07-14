@@ -1,59 +1,65 @@
 <!DOCTYPE html>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
+<script src="resources/test-helpers.js"></script>
 <script>
-(function() {
-    var t = async_test('Unregistering out of origin');
-    navigator.serviceWorker.unregister('http://example.com/*').then(
-        t.step_func(function() {
-            assert_unreached('unregistering out of origin should fail');
-        }),
-        t.step_func(function(reason) {
-            assert_equals(reason.name, 'SecurityError',
-                          'unregistering out of origins should fail');
-            t.done();
-        }));
-}());
+async_test(function(t) {
+  navigator.serviceWorker.unregister('http://example.com/*')
+    .then(function() {
+      assert_unreached('unregistering out of origin should fail');
+    }, function(reason) {
+      assert_equals(reason.name, 'SecurityError',
+                    'unregistering out of origin scope should fail');
+      t.done();
+    })
+    .catch(unreached_rejection(t));
+}, 'Unregistering out of origin');
 
-(function() {
-    var t = async_test('Unregistering with no existing registration');
-    navigator.serviceWorker.unregister('/nothing-here/*').then(
-        t.step_func(function(value) {
-            assert_equals(value, undefined,
-                          'unregistering with no existing registration ' +
-                          'should succeed with no value');
-            t.done();
-        }),
-        t.step_func(function(reason) {
-            assert_unreached('unregistering with no existing registration ' +
-                             'should not fail: ' + reason.name);
-        }));
-}());
+async_test(function(t) {
+  navigator.serviceWorker.unregister('/nothing-here/*')
+    .then(function(value) {
+      assert_equals(value, undefined,
+                    'unregistering with no existing registration should ' +
+                    'succeed with no value');
+      t.done();
+    })
+    .catch(unreached_rejection(t));
+}, 'Unregistering with no existing registration');
 
-(function() {
-    var scope = '/register-then-unregister/*';
+async_test(function(t) {
+  var scope = '/register-then-unregister/*';
+  navigator.serviceWorker.register(
+    'resources/empty-worker.js', {scope: scope})
+    .then(function(worker) {
+      return navigator.serviceWorker.unregister(scope);
+    })
+    .then(function(value) {
+      assert_equals(value, undefined,
+                    'successful unregistration should succeed with no value');
+      t.done();
+    })
+    .catch(unreached_rejection(t));
+}, 'Register then unregister');
 
-    var t = async_test('Register then unregister');
-    navigator.serviceWorker.register(
-        'resources/empty-worker.js',
-        { scope: scope }
-    ).then(
-        function(worker) {
-            return navigator.serviceWorker.unregister(scope);
-        },
-        t.step_func(function(reason) {
-            assert_unreached('registration should succeed.');
-        })
-    ).then(
-        function(value) {
-            assert_equals(value, undefined,
-                          'successful unregistration should succeed ' +
-                          'with no value');
-            t.done();
-        },
-        t.step_func(function(reason) {
-            assert_unreached('unregistration should succeed.');
-        })
-    );
-}());
+async_test(function(t) {
+  var state_promise;
+  service_worker_unregister_and_register(t, 'resources/empty-worker.js')
+    .then(function(sw) {
+      state_promise = wait_for_state(t, sw, 'redundant');
+      return navigator.serviceWorker.unregister();
+    })
+    .then(function(value) {
+      assert_equals(value, undefined,
+                    'unregister with default scope should succeed');
+      return state_promise;
+    })
+    .then(function(state) {
+      assert_equals(state, 'redundant',
+                    'service worker registered with default scope should be ' +
+                    'unregstered');
+      t.done();
+    })
+    .catch(unreached_rejection(t));
+}, 'Unregistering with default scope');
+
 </script>

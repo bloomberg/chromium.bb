@@ -73,7 +73,7 @@ public:
     blink::WebServiceWorkerProvider* provider() { return m_provider; }
 
     ScriptPromise registerServiceWorker(ScriptState*, const String& pattern, const Dictionary&);
-    ScriptPromise unregisterServiceWorker(ScriptState*, const String& scope = String());
+    ScriptPromise unregisterServiceWorker(ScriptState*, const String& scope);
 
     // WebServiceWorkerProviderClient overrides.
     virtual void setActive(blink::WebServiceWorker*) OVERRIDE;

@@ -64,3 +64,12 @@ function with_iframe(url, f) {
 function normalizeURL(url) {
   return new URL(url, document.location).toString().replace(/#.*$/, '');
 }
+
+function wait_for_state(test, worker, state) {
+    return new Promise(test.step_func(function(resolve, reject) {
+        worker.addEventListener('statechange', test.step_func(function() {
+            if (worker.state === state)
+                resolve(state);
+        }));
+    }));
+}
