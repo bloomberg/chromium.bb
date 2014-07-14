@@ -97,6 +97,9 @@ class LocalFileChangeTracker
   // called.
   void DemoteChangesForURL(const fileapi::FileSystemURL& url);
 
+  // Promotes demoted changes for |url| to the normal queue.
+  void PromoteDemotedChangesForURL(const fileapi::FileSystemURL& url);
+
   // Promotes all demoted changes to the normal queue. Returns true if it has
   // promoted any changes.
   bool PromoteDemotedChanges();

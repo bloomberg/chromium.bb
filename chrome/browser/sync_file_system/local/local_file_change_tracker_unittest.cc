@@ -119,6 +119,35 @@ class LocalFileChangeTrackerTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(LocalFileChangeTrackerTest);
 };
 
+TEST_F(LocalFileChangeTrackerTest, DemoteAndPromote) {
+  EXPECT_EQ(base::File::FILE_OK, file_system_.OpenFileSystem());
+
+  const char kPath[] = "foo/bar";
+  change_tracker()->OnCreateDirectory(URL(kPath));
+
+  FileSystemURLSet urls;
+  file_system_.GetChangedURLsInTracker(&urls);
+  ASSERT_EQ(1u, urls.size());
+  EXPECT_EQ(URL(kPath), *urls.begin());
+
+  change_tracker()->DemoteChangesForURL(URL(kPath));
+
+  file_system_.GetChangedURLsInTracker(&urls);
+  ASSERT_TRUE(urls.empty());
+
+  change_tracker()->PromoteDemotedChangesForURL(URL(kPath));
+
+  file_system_.GetChangedURLsInTracker(&urls);
+  ASSERT_EQ(1u, urls.size());
+  EXPECT_EQ(URL(kPath), *urls.begin());
+
+  change_tracker()->DemoteChangesForURL(URL(kPath));
+  change_tracker()->OnRemoveDirectory(URL(kPath));
+
+  file_system_.GetChangedURLsInTracker(&urls);
+  ASSERT_TRUE(urls.empty());
+}
+
 TEST_F(LocalFileChangeTrackerTest, GetChanges) {
   EXPECT_EQ(base::File::FILE_OK, file_system_.OpenFileSystem());
 

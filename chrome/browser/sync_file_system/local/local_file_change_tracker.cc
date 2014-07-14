@@ -131,8 +131,8 @@ void LocalFileChangeTracker::OnRemoveDirectory(const FileSystemURL& url) {
 
 void LocalFileChangeTracker::GetNextChangedURLs(
     std::deque<FileSystemURL>* urls, int max_urls) {
-  DCHECK(urls);
   DCHECK(file_task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(urls);
   urls->clear();
   // Mildly prioritizes the URLs that older changes and have not been updated
   // for a while.
@@ -173,12 +173,14 @@ void LocalFileChangeTracker::ClearChangesForURL(const FileSystemURL& url) {
 
 void LocalFileChangeTracker::CreateFreshMirrorForURL(
     const fileapi::FileSystemURL& url) {
+  DCHECK(file_task_runner_->RunsTasksOnCurrentThread());
   DCHECK(!ContainsKey(mirror_changes_, url));
   mirror_changes_[url] = ChangeInfo();
 }
 
 void LocalFileChangeTracker::RemoveMirrorAndCommitChangesForURL(
     const fileapi::FileSystemURL& url) {
+  DCHECK(file_task_runner_->RunsTasksOnCurrentThread());
   FileChangeMap::iterator found = mirror_changes_.find(url);
   if (found == mirror_changes_.end())
     return;
@@ -193,6 +195,7 @@ void LocalFileChangeTracker::RemoveMirrorAndCommitChangesForURL(
 
 void LocalFileChangeTracker::ResetToMirrorAndCommitChangesForURL(
     const fileapi::FileSystemURL& url) {
+  DCHECK(file_task_runner_->RunsTasksOnCurrentThread());
   FileChangeMap::iterator found = mirror_changes_.find(url);
   if (found == mirror_changes_.end() || found->second.change_list.empty()) {
     ClearChangesForURL(url);
@@ -206,6 +209,7 @@ void LocalFileChangeTracker::ResetToMirrorAndCommitChangesForURL(
 
 void LocalFileChangeTracker::DemoteChangesForURL(
     const fileapi::FileSystemURL& url) {
+  DCHECK(file_task_runner_->RunsTasksOnCurrentThread());
   FileChangeMap::iterator found = changes_.find(url);
   if (found == changes_.end())
     return;
@@ -223,26 +227,35 @@ void LocalFileChangeTracker::DemoteChangesForURL(
   }
 }
 
+void LocalFileChangeTracker::PromoteDemotedChangesForURL(
+    const fileapi::FileSystemURL& url) {
+  DCHECK(file_task_runner_->RunsTasksOnCurrentThread());
+
+  FileChangeMap::iterator iter = demoted_changes_.find(url);
+  if (iter == demoted_changes_.end())
+    return;
+
+  FileChangeList::List change_list = iter->second.change_list.list();
+  // Make sure that this URL is in no queues.
+  DCHECK(!ContainsKey(changes_, url));
+  DCHECK(!ContainsKey(mirror_changes_, url));
+
+  demoted_changes_.erase(iter);
+
+  while (!change_list.empty()) {
+    RecordChange(url, change_list.front());
+    change_list.pop_front();
+  }
+}
+
 bool LocalFileChangeTracker::PromoteDemotedChanges() {
+  DCHECK(file_task_runner_->RunsTasksOnCurrentThread());
   if (demoted_changes_.empty())
     return false;
-  for (FileChangeMap::iterator iter = demoted_changes_.begin();
-       iter != demoted_changes_.end();) {
-    fileapi::FileSystemURL url = iter->first;
-    FileChangeList::List change_list = iter->second.change_list.list();
-    demoted_changes_.erase(iter++);
-
-    // Make sure that this URL is in no queues.
-    DCHECK(!ContainsKey(changes_, url));
-    DCHECK(!ContainsKey(demoted_changes_, url));
-    DCHECK(!ContainsKey(mirror_changes_, url));
-
-    while (!change_list.empty()) {
-      RecordChange(url, change_list.front());
-      change_list.pop_front();
-    }
+  while (!demoted_changes_.empty()) {
+    fileapi::FileSystemURL url = demoted_changes_.begin()->first;
+    PromoteDemotedChangesForURL(url);
   }
-  demoted_changes_.clear();
   return true;
 }
 
@@ -296,6 +309,7 @@ void LocalFileChangeTracker::UpdateNumChanges() {
 }
 
 void LocalFileChangeTracker::GetAllChangedURLs(FileSystemURLSet* urls) {
+  DCHECK(file_task_runner_->RunsTasksOnCurrentThread());
   std::deque<FileSystemURL> url_deque;
   GetNextChangedURLs(&url_deque, 0);
   urls->clear();
@@ -303,6 +317,7 @@ void LocalFileChangeTracker::GetAllChangedURLs(FileSystemURLSet* urls) {
 }
 
 void LocalFileChangeTracker::DropAllChanges() {
+  DCHECK(file_task_runner_->RunsTasksOnCurrentThread());
   changes_.clear();
   change_seqs_.clear();
   mirror_changes_.clear();
@@ -319,6 +334,7 @@ SyncStatusCode LocalFileChangeTracker::MarkDirtyOnDatabase(
 
 SyncStatusCode LocalFileChangeTracker::ClearDirtyOnDatabase(
     const FileSystemURL& url) {
+  DCHECK(file_task_runner_->RunsTasksOnCurrentThread());
   std::string serialized_url;
   if (!SerializeSyncableFileSystemURL(url, &serialized_url))
     return SYNC_FILE_ERROR_INVALID_URL;
@@ -407,6 +423,7 @@ void LocalFileChangeTracker::RecordChange(
   UpdateNumChanges();
 }
 
+// static
 void LocalFileChangeTracker::RecordChangeToChangeMaps(
     const FileSystemURL& url,
     const FileChange& change,
