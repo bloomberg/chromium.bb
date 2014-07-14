@@ -87,11 +87,7 @@ InjectedScriptHostClass.prototype.getEventListeners = function(object) { }
 /**
  * @param {string} expression
  */
-InjectedScriptHostClass.prototype.eval = function(expression) { }
-/**
- * @param {string} expression
- */
-InjectedScriptHostClass.prototype.evaluateWithExceptionDetails = function(expression) { }
+InjectedScriptHostClass.prototype.evaluate = function(expression) { }
 /**
  * @param {*} fn
  */
@@ -147,10 +143,7 @@ function JavaScriptCallFrame()
 JavaScriptCallFrame.prototype.scopeType = function(index) { }
 
 JavaScriptCallFrame.prototype.restart = function() { }
-/**
- * @param {string} expression
- */
-JavaScriptCallFrame.prototype.evaluateWithExceptionDetails = function(expression) { }
+
 /**
  * @param {number} scopeNumber
  * @param {string} variableName
