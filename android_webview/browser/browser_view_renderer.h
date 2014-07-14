@@ -47,7 +47,7 @@ class BrowserViewRendererJavaHelper {
   virtual bool RenderViaAuxilaryBitmapIfNeeded(
       jobject java_canvas,
       const gfx::Vector2d& scroll_correction,
-      const gfx::Rect& clip,
+      const gfx::Rect& auxiliary_bitmap_size,
       RenderMethod render_source) = 0;
 
  protected:
@@ -79,8 +79,7 @@ class BrowserViewRenderer : public content::SynchronousCompositorClient,
   bool OnDraw(jobject java_canvas,
               bool is_hardware_canvas,
               const gfx::Vector2d& scroll,
-              const gfx::Rect& global_visible_rect,
-              const gfx::Rect& clip);
+              const gfx::Rect& global_visible_rect);
 
   // CapturePicture API methods.
   skia::RefPtr<SkPicture> CapturePicture(int width, int height);
@@ -146,7 +145,7 @@ class BrowserViewRenderer : public content::SynchronousCompositorClient,
   // invalidates appropriately. If |force_invalidate| is true, then send a view
   // invalidate regardless of compositor expectation.
   void EnsureContinuousInvalidation(bool force_invalidate);
-  bool DrawSWInternal(jobject java_canvas, const gfx::Rect& clip_bounds);
+  bool OnDrawSoftware(jobject java_canvas);
   bool CompositeSW(SkCanvas* canvas);
   void DidComposite();
   scoped_ptr<base::Value> RootLayerStateAsValue(

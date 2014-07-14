@@ -2177,9 +2177,6 @@ public class AwContents {
         private int mLayerType = View.LAYER_TYPE_NONE;
         private ComponentCallbacks2 mComponentCallbacks;
 
-        // Only valid within onDraw().
-        private final Rect mClipBoundsTemporary = new Rect();
-
         @Override
         public void onDraw(Canvas canvas) {
             if (mNativeAwContents == 0) {
@@ -2188,16 +2185,11 @@ public class AwContents {
             }
 
             mScrollOffsetManager.syncScrollOffsetFromOnDraw();
-            canvas.getClipBounds(mClipBoundsTemporary);
-
             Rect globalVisibleRect = getGlobalVisibleRect();
-
             if (!nativeOnDraw(mNativeAwContents, canvas, canvas.isHardwareAccelerated(),
                     mContainerView.getScrollX(), mContainerView.getScrollY(),
                     globalVisibleRect.left, globalVisibleRect.top,
-                    globalVisibleRect.right, globalVisibleRect.bottom,
-                    mClipBoundsTemporary.left, mClipBoundsTemporary.top,
-                    mClipBoundsTemporary.right, mClipBoundsTemporary.bottom)) {
+                    globalVisibleRect.right, globalVisibleRect.bottom)) {
                 // Can happen during initialization when compositor is not set
                 // up. Or when clearView
                 // is in effect. Just draw background color instead.
@@ -2436,8 +2428,7 @@ public class AwContents {
     private native void nativeAddVisitedLinks(long nativeAwContents, String[] visitedLinks);
     private native boolean nativeOnDraw(long nativeAwContents, Canvas canvas,
             boolean isHardwareAccelerated, int scrollX, int scrollY,
-            int visibleLeft, int visibleTop, int visibleRight, int visibleBottom,
-            int clipLeft, int clipTop, int clipRight, int clipBottom);
+            int visibleLeft, int visibleTop, int visibleRight, int visibleBottom);
     private native void nativeFindAllAsync(long nativeAwContents, String searchString);
     private native void nativeFindNext(long nativeAwContents, boolean forward);
     private native void nativeClearMatches(long nativeAwContents);

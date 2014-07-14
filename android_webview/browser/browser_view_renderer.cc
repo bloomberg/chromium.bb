@@ -217,8 +217,7 @@ size_t BrowserViewRenderer::GetNumTiles() const {
 bool BrowserViewRenderer::OnDraw(jobject java_canvas,
                                  bool is_hardware_canvas,
                                  const gfx::Vector2d& scroll,
-                                 const gfx::Rect& global_visible_rect,
-                                 const gfx::Rect& clip) {
+                                 const gfx::Rect& global_visible_rect) {
   last_on_draw_scroll_offset_ = scroll;
   last_on_draw_global_visible_rect_ = global_visible_rect;
 
@@ -231,7 +230,7 @@ bool BrowserViewRenderer::OnDraw(jobject java_canvas,
   }
 
   // Perform a software draw
-  return DrawSWInternal(java_canvas, clip);
+  return OnDrawSoftware(java_canvas);
 }
 
 bool BrowserViewRenderer::OnDrawHardware(jobject java_canvas) {
@@ -299,14 +298,7 @@ void BrowserViewRenderer::ReturnResourceFromParent() {
   }
 }
 
-bool BrowserViewRenderer::DrawSWInternal(jobject java_canvas,
-                                         const gfx::Rect& clip) {
-  if (clip.IsEmpty()) {
-    TRACE_EVENT_INSTANT0(
-        "android_webview", "EarlyOut_EmptyClip", TRACE_EVENT_SCOPE_THREAD);
-    return true;
-  }
-
+bool BrowserViewRenderer::OnDrawSoftware(jobject java_canvas) {
   if (!compositor_) {
     TRACE_EVENT_INSTANT0(
         "android_webview", "EarlyOut_NoCompositor", TRACE_EVENT_SCOPE_THREAD);
@@ -317,7 +309,7 @@ bool BrowserViewRenderer::DrawSWInternal(jobject java_canvas,
       ->RenderViaAuxilaryBitmapIfNeeded(
             java_canvas,
             last_on_draw_scroll_offset_,
-            clip,
+            gfx::Rect(width_, height_),
             base::Bind(&BrowserViewRenderer::CompositeSW,
                        base::Unretained(this)));
 }

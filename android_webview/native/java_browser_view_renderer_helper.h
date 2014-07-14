@@ -26,14 +26,14 @@ class JavaBrowserViewRendererHelper : public BrowserViewRendererJavaHelper {
   virtual bool RenderViaAuxilaryBitmapIfNeeded(
       jobject java_canvas,
       const gfx::Vector2d& scroll_correction,
-      const gfx::Rect& clip,
+      const gfx::Rect& auxiliary_bitmap_rect,
       RenderMethod render_source) OVERRIDE;
 
  private:
   bool RenderViaAuxilaryBitmap(JNIEnv* env,
                                jobject java_canvas,
                                const gfx::Vector2d& scroll_correction,
-                               const gfx::Rect& clip,
+                               const gfx::Rect& auxiliary_bitmap_rect,
                                const RenderMethod& render_source);
   bool RasterizeIntoBitmap(
       JNIEnv* env,
