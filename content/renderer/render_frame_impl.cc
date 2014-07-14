@@ -258,7 +258,6 @@ NOINLINE static void MaybeTriggerAsanError(const GURL& url) {
   const char kCorruptHeapBlock[] = "/corrupt-heap-block";
   const char kCorruptHeap[] = "/corrupt-heap";
 #endif
-  const int kArraySize = 5;
 
   if (!url.DomainIs(kCrashDomain, sizeof(kCrashDomain) - 1))
     return;
