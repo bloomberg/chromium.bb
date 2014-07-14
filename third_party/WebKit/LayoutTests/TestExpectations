@@ -52,8 +52,7 @@ crbug.com/240374 virtual/softwarecompositing/overlap-blending/reflection-opacity
 crbug.com/240374 compositing/overlap-blending/children-opacity-huge.html [ ImageOnlyFailure ]
 crbug.com/240374 compositing/overlap-blending/children-opacity-no-overlap.html [ ImageOnlyFailure ]
 
-# Temporarily disable because we need rebaseline the test for crbug.com/380472.
-# crbug.com/377013 [ Mac Debug ] fast/repaint/4776765.html [ Pass Failure ]
+crbug.com/377013 [ Mac Debug ] fast/repaint/4776765.html [ Pass Failure ]
 
 crbug.com/245611 [ Linux ] fast/hidpi/video-controls-in-hidpi.html [ ImageOnlyFailure Pass ]
 
