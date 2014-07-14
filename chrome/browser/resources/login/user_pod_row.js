@@ -1908,8 +1908,8 @@ cr.define('login', function() {
           pod.isActionBoxMenuHovered = false;
           pod.classList.remove('focused');
           // On Desktop, the faded style is not set correctly, so we should
-          // manually fade out non-focused pods.
-          if (pod.user.isDesktopUser)
+          // manually fade out non-focused pods if there is a focused pod.
+          if (pod.user.isDesktopUser && podToFocus)
             pod.classList.add('faded');
           else
             pod.classList.remove('faded');

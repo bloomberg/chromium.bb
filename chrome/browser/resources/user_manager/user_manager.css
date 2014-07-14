@@ -53,10 +53,19 @@ html[dir=rtl] .user-image-pane {
   right: 0;
 }
 
+.pod .name {
+  margin-top: 12px;
+}
+
 .pod .user-image {
   max-height: 180px;
   max-width: 180px;
   opacity: 1;
+}
+
+.pod input[type='password'] {
+  height: 45px;  /* 1px shorter as to not overlap the pod's rounded corners */
+  top: 1px;
 }
 
 .pod.locked .locked-indicator {
