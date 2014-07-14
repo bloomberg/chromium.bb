@@ -40,7 +40,7 @@ function test()
 
     function processPicture(picture)
     {
-        WebInspector.PaintProfilerSnapshot.load(picture, onSnapshotLoaded);
+        WebInspector.PaintProfilerSnapshot.load(InspectorTest.tracingTimelineModel.target(), picture, onSnapshotLoaded);
     }
 
     function onSnapshotLoaded(snapshot)
