@@ -105,6 +105,15 @@ FullWindowVideoControls.prototype.toggleFullScreen_ = function() {
 };
 
 /**
+ * Media completion handler.
+ */
+FullWindowVideoControls.prototype.onMediaComplete = function() {
+  VideoControls.prototype.onMediaComplete.apply(this, arguments);
+  if (!this.getMedia().loop)
+    player.advance_(1);
+};
+
+/**
  * @constructor
  */
 function VideoPlayer() {
