@@ -152,16 +152,19 @@ Tests that console viewport handles selection properly.
 
 
 Running: verifyViewportIsTallEnough
+Viewport contains 13 messages
 
 Running: testSelectionSingleLineText
 Selected text:<<<EOL
 ssage
 EOL
+last visible message index: 75
 
 Running: testReversedSelectionSingleLineText
 Selected text:<<<EOL
 ssage
 EOL
+last visible message index: 75
 
 Running: testSelectionMultiLineText
 Selected text:<<<EOL
@@ -169,6 +172,7 @@ age #73 console-viewport-selection.html:9
 Message #74 console-viewport-selection.html:9
 Message
 EOL
+last visible message index: 76
 
 Running: testSimpleVisibleSelection
 anchor = {item: 72, offset: 6}, head = {item: 77, offset: 6}
