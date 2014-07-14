@@ -62,10 +62,10 @@ installClass('HTMLMarqueeElement', function(global) {
                 return this.hasAttribute(attributeName);
             },
             set: function(value) {
-                if (value.valueOf() === false)
-                    this.removeAttribute(attributeName);
+                if (value)
+                    this.setAttribute(attributeName, '');
                 else
-                    this.setAttribute(attributeName, value ? '' : null);
+                    this.removeAttribute(attributeName);
             },
         });
     }

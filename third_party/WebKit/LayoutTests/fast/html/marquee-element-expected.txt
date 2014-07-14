@@ -43,6 +43,11 @@ PASS marquee.scrollDelay is 60
 PASS marquee.trueSpeed is true
 "trueSpeed" IDL attribute can be modified:
 PASS marquee.trueSpeed is false
+PASS marquee.hasAttribute("truespeed") is false
+"trueSpeed" IDL attribute can be modified:
+PASS marquee.hasAttribute("truespeed") is false
+"trueSpeed" IDL attribute can be modified:
+PASS marquee.hasAttribute("truespeed") is false
 "vspace" IDL attribute reflects content attribute:
 PASS marquee.vspace is 10
 "vspace" IDL attribute can be modified:
