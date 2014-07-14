@@ -2,7 +2,18 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# Generate C++ and JavaScript source files from mojom files.
+# Generate C++ and JavaScript source files from mojom files. The output files
+# will go under the generated file directory tree with the same path as each
+# input file.
+#
+# Parameters:
+#
+#   sources (required)
+#       List of source .mojom files to compile.
+#
+#   deps (optional)
+#   visibility (optional)
+#       Normal meaning.
 template("mojom") {
   assert(defined(invoker.sources),
          "\"sources\" must be defined for the $target_name template.")
@@ -51,12 +62,12 @@ template("mojom") {
     "$generator_root/pylib/mojom/parse/translate.py",
   ]
   generator_cpp_outputs = [
-    "$target_gen_dir/{{source_name_part}}.mojom.cc",
-    "$target_gen_dir/{{source_name_part}}.mojom.h",
-    "$target_gen_dir/{{source_name_part}}.mojom-internal.h",
+    "{{source_gen_dir}}/{{source_name_part}}.mojom.cc",
+    "{{source_gen_dir}}/{{source_name_part}}.mojom.h",
+    "{{source_gen_dir}}/{{source_name_part}}.mojom-internal.h",
   ]
   generator_js_outputs = [
-    "$target_gen_dir/{{source_name_part}}.mojom.js",
+    "{{source_gen_dir}}/{{source_name_part}}.mojom.js",
   ]
 
   target_visibility = ":$target_name"
@@ -73,7 +84,7 @@ template("mojom") {
       "--use_chromium_bundled_pylibs",
       "-d", rebase_path("//", root_build_dir),
       "-I", rebase_path("//", root_build_dir),
-      "-o", rebase_path(target_gen_dir, root_build_dir),
+      "-o", "{{source_gen_dir}}",
     ]
   }
 
