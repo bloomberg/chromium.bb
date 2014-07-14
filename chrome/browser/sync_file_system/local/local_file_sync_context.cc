@@ -56,6 +56,7 @@ LocalFileSyncContext::LocalFileSyncContext(
       shutdown_on_ui_(false),
       shutdown_on_io_(false),
       mock_notify_changes_duration_in_sec_(-1) {
+  DCHECK(base_path.IsAbsolute());
   DCHECK(ui_task_runner_->RunsTasksOnCurrentThread());
 }
 

@@ -45,8 +45,9 @@ class LocalFileChangeTrackerTest : public testing::Test {
   virtual void SetUp() OVERRIDE {
     file_system_.SetUp(CannedSyncableFileSystem::QUOTA_ENABLED);
 
+    ASSERT_TRUE(base_dir_.CreateUniqueTempDir());
     sync_context_ =
-        new LocalFileSyncContext(base::FilePath(),
+        new LocalFileSyncContext(base_dir_.path(),
                                  in_memory_env_.get(),
                                  base::ThreadTaskRunnerHandle::Get().get(),
                                  base::ThreadTaskRunnerHandle::Get().get());
@@ -110,6 +111,7 @@ class LocalFileChangeTrackerTest : public testing::Test {
   }
 
   base::MessageLoopForIO message_loop_;
+  base::ScopedTempDir base_dir_;
   scoped_ptr<leveldb::Env> in_memory_env_;
   CannedSyncableFileSystem file_system_;
 
