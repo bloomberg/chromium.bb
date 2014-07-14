@@ -15,6 +15,7 @@
 #import "ui/views/cocoa/bridged_content_view.h"
 #import "ui/views/cocoa/bridged_native_widget.h"
 #import "ui/views/cocoa/views_nswindow_delegate.h"
+#include "ui/views/window/native_frame_view.h"
 
 @interface NativeWidgetMacNSWindow : NSWindow
 @end
@@ -120,11 +121,11 @@ void NativeWidgetMac::InitNativeWidget(const Widget::InitParams& params) {
 }
 
 NonClientFrameView* NativeWidgetMac::CreateNonClientFrameView() {
-  return NULL;
+  return new NativeFrameView(GetWidget());
 }
 
 bool NativeWidgetMac::ShouldUseNativeFrame() const {
-  return false;
+  return true;
 }
 
 bool NativeWidgetMac::ShouldWindowContentsBeTransparent() const {
