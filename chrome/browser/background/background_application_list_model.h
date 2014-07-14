@@ -89,6 +89,11 @@ class BackgroundApplicationListModel : public content::NotificationObserver {
     return extensions_.size();
   }
 
+  // Returns true if all startup notifications have already been issued.
+  bool is_ready() const {
+    return ready_;
+  }
+
  private:
   // Contains data associated with a background application that is not
   // represented by the Extension class.
@@ -151,6 +156,7 @@ class BackgroundApplicationListModel : public content::NotificationObserver {
   ObserverList<Observer, true> observers_;
   Profile* profile_;
   content::NotificationRegistrar registrar_;
+  bool ready_;
 
   DISALLOW_COPY_AND_ASSIGN(BackgroundApplicationListModel);
 };

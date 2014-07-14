@@ -18,6 +18,7 @@
 #include "components/keyed_service/core/keyed_service.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "extensions/common/extension.h"
 
 class Browser;
 class PrefRegistrySimple;
@@ -28,10 +29,6 @@ class StatusTray;
 
 namespace base {
 class CommandLine;
-}
-
-namespace extensions {
-class Extension;
 }
 
 typedef std::vector<int> CommandIdExtensionVector;
@@ -86,6 +83,7 @@ class BackgroundModeManager
  private:
   friend class AppBackgroundPageApiTest;
   friend class BackgroundModeManagerTest;
+  friend class BackgroundModeManagerWithExtensionsTest;
   friend class TestBackgroundModeManager;
   FRIEND_TEST_ALL_PREFIXES(BackgroundModeManagerTest,
                            BackgroundAppLoadUnload);
@@ -107,10 +105,12 @@ class BackgroundModeManager
                            ProfileInfoCacheObserver);
   FRIEND_TEST_ALL_PREFIXES(BackgroundModeManagerTest,
                            DeleteBackgroundProfile);
-  FRIEND_TEST_ALL_PREFIXES(BackgroundModeManagerTest,
+  FRIEND_TEST_ALL_PREFIXES(BackgroundModeManagerWithExtensionsTest,
                            BackgroundMenuGeneration);
-  FRIEND_TEST_ALL_PREFIXES(BackgroundModeManagerTest,
+  FRIEND_TEST_ALL_PREFIXES(BackgroundModeManagerWithExtensionsTest,
                            BackgroundMenuGenerationMultipleProfile);
+  FRIEND_TEST_ALL_PREFIXES(BackgroundModeManagerWithExtensionsTest,
+                           BalloonDisplay);
   FRIEND_TEST_ALL_PREFIXES(BackgroundAppBrowserTest,
                            ReloadBackgroundApp);
 
@@ -154,6 +154,10 @@ class BackgroundModeManager
     static bool BackgroundModeDataCompare(const BackgroundModeData* bmd1,
                                           const BackgroundModeData* bmd2);
 
+    // Returns the set of new background apps (apps that have been loaded since
+    // the last call to GetNewBackgroundApps()).
+    std::set<const extensions::Extension*> GetNewBackgroundApps();
+
    private:
     // Name associated with this profile which is used to label its submenu.
     base::string16 name_;
@@ -166,6 +170,13 @@ class BackgroundModeManager
     // extension indices. A value of -1 indicates no extension is associated
     // with the index.
     CommandIdExtensionVector* command_id_extension_vector_;
+
+    // The list of notified extensions for this profile. We track this to ensure
+    // that we never notify the user about the same extension twice in a single
+    // browsing session - this is done because the extension subsystem is not
+    // good about tracking changes to the background permission around
+    // extension reloads, and will sometimes report spurious permission changes.
+    std::set<extensions::ExtensionId> current_extensions_;
   };
 
   // Ideally we would want our BackgroundModeData to be scoped_ptrs,

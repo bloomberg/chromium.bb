@@ -174,7 +174,8 @@ BackgroundApplicationListModel::~BackgroundApplicationListModel() {
 }
 
 BackgroundApplicationListModel::BackgroundApplicationListModel(Profile* profile)
-    : profile_(profile) {
+    : profile_(profile),
+      ready_(false) {
   DCHECK(profile_);
   registrar_.Add(this,
                  chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED,
@@ -193,8 +194,10 @@ BackgroundApplicationListModel::BackgroundApplicationListModel(Profile* profile)
                  content::Source<Profile>(profile));
   ExtensionService* service = extensions::ExtensionSystem::Get(profile)->
       extension_service();
-  if (service && service->is_ready())
+  if (service && service->is_ready()) {
     Update();
+    ready_ = true;
+  }
 }
 
 void BackgroundApplicationListModel::AddObserver(Observer* observer) {
@@ -346,6 +349,7 @@ void BackgroundApplicationListModel::Observe(
     const content::NotificationDetails& details) {
   if (type == chrome::NOTIFICATION_EXTENSIONS_READY) {
     Update();
+    ready_ = true;
     return;
   }
   ExtensionService* service = extensions::ExtensionSystem::Get(profile_)->

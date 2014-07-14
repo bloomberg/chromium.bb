@@ -70,6 +70,10 @@ class TestingProfileManager {
   // Deletes a TestingProfile from the profile subsystem.
   void DeleteTestingProfile(const std::string& profile_name);
 
+  // Deletes all TestingProfiles from the profile subsystem, including guest
+  // profiles.
+  void DeleteAllTestingProfiles();
+
   // Deletes a guest TestingProfile from the profile manager.
   void DeleteGuestProfile();
 
