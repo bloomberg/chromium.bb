@@ -680,7 +680,6 @@ bool PropertyExists(XID window, const std::string& property_name) {
 bool GetRawBytesOfProperty(XID window,
                            Atom property,
                            scoped_refptr<base::RefCountedMemory>* out_data,
-                           size_t* out_data_bytes,
                            size_t* out_data_items,
                            Atom* out_type) {
   // Retrieve the data from our window.
@@ -717,9 +716,6 @@ bool GetRawBytesOfProperty(XID window,
       NOTREACHED();
       break;
   }
-
-  if (out_data_bytes)
-    *out_data_bytes = bytes;
 
   if (out_data)
     *out_data = new XRefcountedMemory(property_data, bytes);

@@ -453,7 +453,6 @@ TargetList Clipboard::AuraX11Details::WaitAndGetTargetsList(
     SelectionRequestor* receiver = GetSelectionRequestorForClipboardType(type);
     if (receiver->PerformBlockingConvertSelection(atom_cache_.GetAtom(kTargets),
                                                   &data,
-                                                  NULL,
                                                   &out_data_items,
                                                   &out_type)) {
       // Some apps return an |out_type| of "TARGETS". (crbug.com/377893)
@@ -475,7 +474,6 @@ TargetList Clipboard::AuraX11Details::WaitAndGetTargetsList(
            it != types.end(); ++it) {
         ::Atom type = None;
         if (receiver->PerformBlockingConvertSelection(*it,
-                                                      NULL,
                                                       NULL,
                                                       NULL,
                                                       &type) &&

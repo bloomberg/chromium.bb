@@ -269,7 +269,7 @@ void DesktopDragDropClientAuraX11::X11DragContext::OnSelectionNotify(
   scoped_refptr<base::RefCountedMemory> data;
   ::Atom type = None;
   if (ui::GetRawBytesOfProperty(local_window_, event.property,
-                                &data, NULL, NULL, &type)) {
+                                &data, NULL, &type)) {
     fetched_targets_.Insert(event.target, data);
   }
 

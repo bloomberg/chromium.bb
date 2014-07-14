@@ -138,7 +138,6 @@ UI_BASE_EXPORT bool GetRawBytesOfProperty(
     XID window,
     Atom property,
     scoped_refptr<base::RefCountedMemory>* out_data,
-    size_t* out_data_bytes,
     size_t* out_data_items,
     Atom* out_type);
 

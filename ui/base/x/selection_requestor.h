@@ -40,13 +40,11 @@ class UI_BASE_EXPORT SelectionRequestor {
 
   // Does the work of requesting |target| from the selection we handle,
   // spinning up the nested message loop, and reading the resulting data
-  // back. |out_data| is allocated with the X allocator and must be freed with
-  // XFree(). |out_data_bytes| is the length in machine chars, while
-  // |out_data_items| is the length in |out_type| items.
+  // back. The result is stored in |out_data|.
+  // |out_data_items| is the length of |out_data| in |out_type| items.
   bool PerformBlockingConvertSelection(
       ::Atom target,
       scoped_refptr<base::RefCountedMemory>* out_data,
-      size_t* out_data_bytes,
       size_t* out_data_items,
       ::Atom* out_type);
 

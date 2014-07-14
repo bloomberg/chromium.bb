@@ -40,7 +40,6 @@ SelectionRequestor::~SelectionRequestor() {}
 bool SelectionRequestor::PerformBlockingConvertSelection(
     Atom target,
     scoped_refptr<base::RefCountedMemory>* out_data,
-    size_t* out_data_bytes,
     size_t* out_data_items,
     Atom* out_type) {
   // The name of the property that we are either:
@@ -65,8 +64,7 @@ bool SelectionRequestor::PerformBlockingConvertSelection(
   if (pending_request.returned_property == property) {
     success =  ui::GetRawBytesOfProperty(x_window_,
                                          pending_request.returned_property,
-                                         out_data, out_data_bytes,
-                                         out_data_items, out_type);
+                                         out_data, out_data_items, out_type);
   }
   if (pending_request.returned_property != None)
     XDeleteProperty(x_display_, x_window_, pending_request.returned_property);
@@ -77,7 +75,7 @@ void SelectionRequestor::PerformBlockingConvertSelectionWithParameter(
     Atom target,
     const std::vector< ::Atom>& parameter) {
   SetAtomArrayProperty(x_window_, kChromeSelection, "ATOM", parameter);
-  PerformBlockingConvertSelection(target, NULL, NULL, NULL, NULL);
+  PerformBlockingConvertSelection(target, NULL, NULL, NULL);
 }
 
 SelectionData SelectionRequestor::RequestAndWaitForTypes(
@@ -85,11 +83,9 @@ SelectionData SelectionRequestor::RequestAndWaitForTypes(
   for (std::vector< ::Atom>::const_iterator it = types.begin();
        it != types.end(); ++it) {
     scoped_refptr<base::RefCountedMemory> data;
-    size_t data_bytes = 0;
     ::Atom type = None;
     if (PerformBlockingConvertSelection(*it,
                                         &data,
-                                        &data_bytes,
                                         NULL,
                                         &type) &&
         type == *it) {
