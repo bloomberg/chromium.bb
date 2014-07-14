@@ -425,8 +425,8 @@ static v8::Handle<v8::Value> getNamedProperty(HTMLDocument* htmlDocument, const 
     if (items->hasExactlyOneItem()) {
         Element* element = items->item(0);
         ASSERT(element);
-        Frame* frame = 0;
-        if (isHTMLIFrameElement(*element) && (frame = toHTMLIFrameElement(*element).contentFrame()))
+        Frame* frame = isHTMLIFrameElement(*element) ? toHTMLIFrameElement(*element).contentFrame() : 0;
+        if (frame)
             return toV8(frame->domWindow(), creationContext, isolate);
         return toV8(element, creationContext, isolate);
     }

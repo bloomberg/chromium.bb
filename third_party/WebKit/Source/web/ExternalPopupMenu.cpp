@@ -156,7 +156,7 @@ void ExternalPopupMenu::didAcceptIndices(const WebVector<int>& indices)
     RefPtr<ExternalPopupMenu> protect(this);
 
     if (!indices.size())
-        m_popupMenuClient->valueChanged(-1, true);
+        m_popupMenuClient->valueChanged(static_cast<unsigned>(-1), true);
     else {
         for (size_t i = 0; i < indices.size(); ++i)
             m_popupMenuClient->listBoxSelectItem(indices[i], (i > 0), false, (i == indices.size() - 1));

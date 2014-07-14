@@ -74,7 +74,7 @@
 #include "wtf/text/WTFString.h"
 
 // FIXME: check the proper way to reference an undefined thread ID
-const int UndefinedThreadIdentifier = 0xffffffff;
+const WTF::ThreadIdentifier UndefinedThreadIdentifier = 0xffffffff;
 
 namespace WebCore {
 

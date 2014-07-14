@@ -67,7 +67,7 @@ TEST(OpenTypeVerticalDataTest, ValidateOffsetTest)
     ASSERT_TRUE(table);
 
     // Test overflow
-    EXPECT_FALSE(table->validateOffset<uint8_t>(*buffer, -1));
+    EXPECT_FALSE(table->validateOffset<uint8_t>(*buffer, 0xFFFF));
 
     // uint8_t is valid for all offsets
     for (uint16_t offset = 0; offset < sizeof(TestTable); offset++)

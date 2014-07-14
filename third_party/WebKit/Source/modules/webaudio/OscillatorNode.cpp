@@ -265,7 +265,7 @@ void OscillatorNode::process(size_t framesToProcess)
     float frequency = 0;
     float* higherWaveData = 0;
     float* lowerWaveData = 0;
-    float tableInterpolationFactor;
+    float tableInterpolationFactor = 0;
 
     if (!hasSampleAccurateValues) {
         frequency = m_frequency->smoothedValue();

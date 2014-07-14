@@ -308,7 +308,7 @@ void _NPN_DeallocateObject(NPObject* npObject)
         if (_NPN_IsAlive(npObject))
             _NPN_UnregisterObject(npObject);
 
-        npObject->referenceCount = -1;
+        npObject->referenceCount = 0xFFFFFFFF;
         if (npObject->_class->deallocate)
             npObject->_class->deallocate(npObject);
         else
