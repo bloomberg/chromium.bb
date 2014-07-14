@@ -29,50 +29,29 @@
  */
 
 #include "config.h"
-#include "core/dom/NodeRareData.h"
-#include "core/dom/Element.h"
-#include "core/dom/ElementRareData.h"
-#include "core/page/Page.h"
-#include "platform/heap/Handle.h"
+#include "core/dom/NodeListsNodeData.h"
 
 namespace WebCore {
 
-struct SameSizeAsNodeRareData {
-    void* m_pointer[2];
-    OwnPtrWillBeMember<NodeMutationObserverData> m_mutationObserverData;
-    unsigned m_bitfields;
-};
-
-COMPILE_ASSERT(sizeof(NodeRareData) == sizeof(SameSizeAsNodeRareData), NodeRareDataShouldStaySmall);
-
-void NodeRareData::traceAfterDispatch(Visitor* visitor)
+void NodeListsNodeData::invalidateCaches(const QualifiedName* attrName)
 {
-    visitor->trace(m_mutationObserverData);
-    // Do not keep empty NodeListsNodeData objects around.
-    if (m_nodeLists && m_nodeLists->isEmpty())
-        m_nodeLists.clear();
-    else
-        visitor->trace(m_nodeLists);
+    NodeListAtomicNameCacheMap::const_iterator atomicNameCacheEnd = m_atomicNameCaches.end();
+    for (NodeListAtomicNameCacheMap::const_iterator it = m_atomicNameCaches.begin(); it != atomicNameCacheEnd; ++it)
+        it->value->invalidateCacheForAttribute(attrName);
+
+    if (attrName)
+        return;
+
+    TagCollectionCacheNS::iterator tagCacheEnd = m_tagCollectionCacheNS.end();
+    for (TagCollectionCacheNS::iterator it = m_tagCollectionCacheNS.begin(); it != tagCacheEnd; ++it)
+        it->value->invalidateCache();
 }
 
-void NodeRareData::trace(Visitor* visitor)
+void NodeListsNodeData::trace(Visitor* visitor)
 {
-    if (m_isElementRareData)
-        static_cast<ElementRareData*>(this)->traceAfterDispatch(visitor);
-    else
-        traceAfterDispatch(visitor);
+    visitor->trace(m_childNodeList);
+    visitor->trace(m_atomicNameCaches);
+    visitor->trace(m_tagCollectionCacheNS);
 }
-
-void NodeRareData::finalizeGarbageCollectedObject()
-{
-    RELEASE_ASSERT(!renderer());
-    if (m_isElementRareData)
-        static_cast<ElementRareData*>(this)->~ElementRareData();
-    else
-        this->~NodeRareData();
-}
-
-// Ensure the 10 bits reserved for the m_connectedFrameCount cannot overflow
-COMPILE_ASSERT(Page::maxNumberOfFrames < (1 << NodeRareData::ConnectedFrameCountBits), Frame_limit_should_fit_in_rare_data_count);
 
 } // namespace WebCore

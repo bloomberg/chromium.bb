@@ -2037,6 +2037,8 @@
             'dom/NodeIterator.h',
             'dom/NodeIteratorBase.cpp',
             'dom/NodeIteratorBase.h',
+            'dom/NodeListsNodeData.cpp',
+            'dom/NodeListsNodeData.h',
             'dom/NodeRareData.cpp',
             'dom/NodeRareData.h',
             'dom/NodeRenderStyle.h',
