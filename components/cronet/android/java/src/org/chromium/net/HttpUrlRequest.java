@@ -71,6 +71,17 @@ public interface HttpUrlRequest {
                           long contentLength);
 
     /**
+     * Sets the HTTP method verb to use for this request. Currently can only be
+     * "POST" or "PUT".
+     *
+     * <p>The default when this method is not called is "GET" if the request has
+     * no body or "POST" if it does.
+     *
+     * @param method Either "POST" or "PUT".
+     */
+    void setHttpMethod(String method);
+
+    /**
      * Start executing the request.
      * <p>
      * If this is a streaming upload request using a ReadableByteChannel, the

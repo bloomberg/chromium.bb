@@ -206,7 +206,7 @@ public class CronetSampleActivity extends Activity {
         return null;
     }
 
-    private void applyCommandLineToRequest(UrlRequest request) {
+    private void applyCommandLineToHttpUrlRequest(HttpUrlRequest request) {
         String postData = getCommandLineArg(POST_DATA_KEY);
         if (postData != null) {
             InputStream dataStream = new ByteArrayInputStream(
@@ -214,6 +214,7 @@ public class CronetSampleActivity extends Activity {
             ReadableByteChannel dataChannel = Channels.newChannel(dataStream);
             request.setUploadChannel("text/plain", dataChannel,
                     postData.length());
+            request.setHttpMethod("POST");
         }
     }
 
@@ -224,10 +225,22 @@ public class CronetSampleActivity extends Activity {
 
         HashMap<String, String> headers = new HashMap<String, String>();
         HttpUrlRequestListener listener = new SampleHttpUrlRequestListener();
-
         HttpUrlRequest request = mRequestFactory.createRequest(
                 url, UrlRequestPriority.MEDIUM, headers, listener);
+        applyCommandLineToHttpUrlRequest(request);
         request.start();
+    }
+
+    private void applyCommandLineToUrlRequest(UrlRequest request) {
+        String postData = getCommandLineArg(POST_DATA_KEY);
+        if (postData != null) {
+            InputStream dataStream = new ByteArrayInputStream(
+                    postData.getBytes());
+            ReadableByteChannel dataChannel = Channels.newChannel(dataStream);
+            request.setUploadChannel("text/plain", dataChannel,
+                    postData.length());
+            request.setHttpMethod("POST");
+        }
     }
 
     public void startWithURL_UrlRequest(String url) {
@@ -239,7 +252,7 @@ public class CronetSampleActivity extends Activity {
         WritableByteChannel sink = Channels.newChannel(System.out);
         UrlRequest request = new SampleRequest(mRequestContext, url,
                 UrlRequestPriority.MEDIUM, headers, sink);
-        applyCommandLineToRequest(request);
+        applyCommandLineToUrlRequest(request);
         request.start();
     }
 
