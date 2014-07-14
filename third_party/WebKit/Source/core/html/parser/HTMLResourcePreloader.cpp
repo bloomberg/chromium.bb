@@ -61,6 +61,21 @@ FetchRequest PreloadRequest::resourceRequest(Document* document)
     return request;
 }
 
+inline HTMLResourcePreloader::HTMLResourcePreloader(Document& document)
+    : m_document(document)
+{
+}
+
+PassOwnPtrWillBeRawPtr<HTMLResourcePreloader> HTMLResourcePreloader::create(Document& document)
+{
+    return adoptPtrWillBeNoop(new HTMLResourcePreloader(document));
+}
+
+void HTMLResourcePreloader::trace(Visitor* visitor)
+{
+    visitor->trace(m_document);
+}
+
 void HTMLResourcePreloader::takeAndPreload(PreloadRequestStream& r)
 {
     PreloadRequestStream requests;

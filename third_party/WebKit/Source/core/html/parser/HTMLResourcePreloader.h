@@ -83,19 +83,19 @@ private:
 
 typedef Vector<OwnPtr<PreloadRequest> > PreloadRequestStream;
 
-class HTMLResourcePreloader {
-    WTF_MAKE_NONCOPYABLE(HTMLResourcePreloader); WTF_MAKE_FAST_ALLOCATED;
+class HTMLResourcePreloader FINAL : public NoBaseWillBeGarbageCollected<HTMLResourcePreloader> {
+    WTF_MAKE_NONCOPYABLE(HTMLResourcePreloader); WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
 public:
-    explicit HTMLResourcePreloader(Document* document)
-        : m_document(document)
-    {
-    }
+    static PassOwnPtrWillBeRawPtr<HTMLResourcePreloader> create(Document&);
+    void trace(Visitor*);
 
     void takeAndPreload(PreloadRequestStream&);
     void preload(PassOwnPtr<PreloadRequest>);
 
 private:
-    Document* m_document;
+    explicit HTMLResourcePreloader(Document&);
+
+    RawPtrWillBeMember<Document> m_document;
 };
 
 }
