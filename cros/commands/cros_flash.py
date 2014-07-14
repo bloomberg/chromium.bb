@@ -113,7 +113,7 @@ def TranslateImagePath(path, board, debug=False):
   logging.info('Starting local devserver to get image path...')
   try:
     ds.Start()
-    return ds.OpenURL(ds.GetDevServerURL(sub_dir=req), timeout=60 * 15)
+    return ds.OpenURL(ds.GetURL(sub_dir=req), timeout=60 * 15)
 
   except ds_wrapper.DevServerResponseError as e:
     logging.error('Unable to translate the image path: %s. Are you sure the '
@@ -283,7 +283,7 @@ class USBImager(object):
     logging.info('Starting a local devserver to stage image...')
     try:
       ds.Start()
-      url = ds.OpenURL(ds.GetDevServerURL(sub_dir=req), timeout=60 * 15)
+      url = ds.OpenURL(ds.GetURL(sub_dir=req), timeout=60 * 15)
 
     except ds_wrapper.DevServerResponseError:
       logging.warning('Could not download %s.', path)
@@ -546,10 +546,7 @@ class RemoteDeviceUpdater(object):
     logging.info('Updating rootfs partition')
     try:
       ds.Start()
-
-      omaha_url = ds.GetDevServerURL(ip=remote_access.LOCALHOST_IP,
-                                     port=ds.port,
-                                     sub_dir='update/pregenerated')
+      omaha_url = ds.GetURL(sub_dir='update/pregenerated')
       cmd = [self.UPDATE_ENGINE_BIN, '-check_for_update',
              '-omaha_url=%s' % omaha_url]
       device.RunCommand(cmd)
@@ -576,7 +573,7 @@ class RemoteDeviceUpdater(object):
       raise
     finally:
       ds.Stop()
-      device.CopyFromDevice(ds.log_filename,
+      device.CopyFromDevice(ds.log_file,
                             os.path.join(tempdir, 'target_devserver.log'),
                             error_code_ok=True)
       device.CopyFromDevice('/var/log/update_engine.log', tempdir,
@@ -640,7 +637,7 @@ class RemoteDeviceUpdater(object):
     logging.info('Starting local devserver to generate/serve payloads...')
     try:
       ds.Start()
-      url = ds.OpenURL(ds.GetDevServerURL(sub_dir=req), timeout=timeout)
+      url = ds.OpenURL(ds.GetURL(sub_dir=req), timeout=timeout)
       ds.DownloadFile(os.path.join(url, self.ROOTFS_FILENAME), payload_dir)
       ds.DownloadFile(os.path.join(url, self.STATEFUL_FILENAME), payload_dir)
     except ds_wrapper.DevServerException:
@@ -650,11 +647,11 @@ class RemoteDeviceUpdater(object):
       logging.debug(ds.TailLog() or 'No devserver log is available.')
     finally:
       ds.Stop()
-      if os.path.exists(ds.log_filename):
-        shutil.copyfile(ds.log_filename,
+      if os.path.exists(ds.log_file):
+        shutil.copyfile(ds.log_file,
                         os.path.join(payload_dir, 'local_devserver.log'))
       else:
-        logging.warning('Could not find %s', ds.log_filename)
+        logging.warning('Could not find %s', ds.log_file)
 
   def _CheckPayloads(self, payload_dir):
     """Checks that all update payloads exists in |payload_dir|."""

@@ -20,6 +20,9 @@ from chromite.lib import timeout_util
 from chromite.lib import remote_access
 
 
+DEFAULT_PORT = 8080
+
+
 def GenerateUpdateId(target, src, key, for_vm):
   """Returns a simple representation id of |target| and |src| paths.
 
@@ -84,7 +87,9 @@ class DevServerWrapper(multiprocessing.Process):
     """
     super(DevServerWrapper, self).__init__()
     self.devserver_bin = 'start_devserver'
-    self.port = 8080 if not port else port
+    # Set port if it is given. Otherwise, devserver will start at any
+    # available port.
+    self.port = None if not port else port
     self.src_image = src_image
     self.board = board
     self.tempdir = None
@@ -96,7 +101,8 @@ class DevServerWrapper(multiprocessing.Process):
           sudo_rm=True)
       self.log_dir = self.tempdir.tempdir
     self.static_dir = static_dir
-    self.log_filename = os.path.join(self.log_dir, 'dev_server.log')
+    self.log_file = os.path.join(self.log_dir, 'dev_server.log')
+    self.port_file = os.path.join(self.log_dir, 'dev_server.port')
     self._pid_file = self._GetPIDFilePath()
     self._pid = None
 
@@ -109,6 +115,10 @@ class DevServerWrapper(multiprocessing.Process):
     logging.info('Downloading %s to %s', url, dest)
     osutils.WriteFile(dest, DevServerWrapper.OpenURL(url), mode='wb')
 
+  def GetURL(self, sub_dir=None):
+    """Returns the URL of this devserver instance."""
+    return self.GetDevServerURL(port=self.port, sub_dir=sub_dir)
+
   @classmethod
   def GetDevServerURL(cls, ip=None, port=None, sub_dir=None):
     """Returns the dev server url.
@@ -120,7 +130,9 @@ class DevServerWrapper(multiprocessing.Process):
       sub_dir: The subdirectory of the devserver url.
     """
     ip = cros_build_lib.GetIPv4Address() if not ip else ip
-    port = 8080 if not port else port
+    # If port number is not given, assume 8080 for backward
+    # compatibility.
+    port = DEFAULT_PORT if not port else port
     url = 'http://%(ip)s:%(port)s' % {'ip': ip, 'port': str(port)}
     if sub_dir:
       url += '/' + sub_dir
@@ -172,6 +184,22 @@ class DevServerWrapper(multiprocessing.Process):
         cmd, enter_chroot=True, print_cmd=False, combine_stdout_stderr=True,
         redirect_stdout=True, redirect_stderr=True, cwd=constants.SOURCE_ROOT)
 
+  def _ReadPortNumber(self):
+    """Read port number from file."""
+    if not self.is_alive():
+      raise DevServerStartupError('Devserver terminated unexpectedly!')
+
+    try:
+      timeout_util.WaitForReturnTrue(os.path.exists,
+                                     func_args=[self.port_file],
+                                     timeout=self.DEV_SERVER_TIMEOUT,
+                                     period=5)
+    except timeout_util.TimeoutError:
+      self.terminate()
+      raise DevServerStartupError('Devserver portfile does not exist!')
+
+    self.port = int(osutils.ReadFile(self.port_file).strip())
+
   def IsReady(self):
     """Check if devserver is up and running."""
     if not self.is_alive():
@@ -197,10 +225,13 @@ class DevServerWrapper(multiprocessing.Process):
 
   def _WaitUntilStarted(self):
     """Wait until the devserver has started."""
+    if not self.port:
+      self._ReadPortNumber()
+
     try:
-      timeout_util.WaitForReturnValue([True], self.IsReady,
-                                      timeout=self.DEV_SERVER_TIMEOUT,
-                                      period=5)
+      timeout_util.WaitForReturnTrue(self.IsReady,
+                                     timeout=self.DEV_SERVER_TIMEOUT,
+                                     period=5)
     except timeout_util.TimeoutError:
       self.terminate()
       raise DevServerStartupError('Devserver did not start')
@@ -208,13 +239,17 @@ class DevServerWrapper(multiprocessing.Process):
   def run(self):
     """Kicks off devserver in a separate process and waits for it to finish."""
     # Truncate the log file if it already exists.
-    if os.path.exists(self.log_filename):
-      osutils.SafeUnlink(self.log_filename, sudo=True)
+    if os.path.exists(self.log_file):
+      osutils.SafeUnlink(self.log_file, sudo=True)
 
+    port = self.port if self.port else 0
     cmd = [self.devserver_bin,
-           '--port', str(self.port),
            '--pidfile', cros_build_lib.ToChrootPath(self._pid_file),
-           '--logfile', cros_build_lib.ToChrootPath(self.log_filename)]
+           '--logfile', cros_build_lib.ToChrootPath(self.log_file),
+           '--port=%d' % port]
+
+    if not self.port:
+      cmd.append('--portfile=%s' % cros_build_lib.ToChrootPath(self.port_file))
 
     if self.static_dir:
       cmd.append(
@@ -275,7 +310,7 @@ class DevServerWrapper(multiprocessing.Process):
 
   def TailLog(self, num_lines=50):
     """Returns the most recent |num_lines| lines of the devserver log file."""
-    fname = self.log_filename
+    fname = self.log_file
     if os.path.exists(fname):
       result = self._RunCommand(['tail', '-n', str(num_lines), fname],
                                 capture_output=True)
@@ -353,6 +388,27 @@ You can fix this with one of the following three options:
     kwargs.setdefault('debug_level', logging.DEBUG)
     return self.device.RunCommand(*args, **kwargs)
 
+  def _ReadPortNumber(self):
+    """Read port number from file."""
+    if not self.is_alive():
+      raise DevServerStartupError('Devserver terminated unexpectedly!')
+
+    def PortFileExists():
+      result = self._RunCommand(['test', '-f', self.port_file],
+                                error_code_ok=True)
+      return result.returncode == 0
+
+    try:
+      timeout_util.WaitForReturnTrue(PortFileExists,
+                                     timeout=self.DEV_SERVER_TIMEOUT,
+                                     period=5)
+    except timeout_util.TimeoutError:
+      self.terminate()
+      raise DevServerStartupError('Devserver portfile does not exist!')
+
+    self.port = int(self._RunCommand(
+        ['cat', self.port_file], capture_output=True).output.strip())
+
   def IsReady(self):
     """Returns True if devserver is ready to accept requests."""
     if not self.is_alive():
@@ -367,13 +423,16 @@ You can fix this with one of the following three options:
 
   def run(self):
     """Launches a devserver process on the device."""
-    self._RunCommand(['cat', '/dev/null', '>|', self.log_filename])
-    self._RunCommand(['pkill', os.path.basename(self.devserver_bin)],
-                     error_code_ok=True)
+    self._RunCommand(['cat', '/dev/null', '>|', self.log_file])
+
+    port = self.port if self.port else 0
     cmd = ['python', self.devserver_bin,
-           '--port=%s' % str(self.port),
-           '--logfile=%s' % self.log_filename,
-           '--pidfile', self._pid_file]
+           '--logfile=%s' % self.log_file,
+           '--pidfile', self._pid_file,
+           '--port=%d' % port,]
+
+    if not self.port:
+      cmd.append('--portfile=%s' % self.port_file)
 
     if self.static_dir:
       cmd.append('--static_dir=%s' % self.static_dir)
@@ -391,6 +450,11 @@ You can fix this with one of the following three options:
       logging.error(msg)
       if 'ImportError: No module named cherrypy' in result.output:
         logging.error(self.CHERRYPY_ERROR_MSG)
+
+  def GetURL(self, sub_dir=None):
+    """Returns the URL of this devserver instance."""
+    return self.GetDevServerURL(ip=self.hostname, port=self.port,
+                                sub_dir=sub_dir)
 
   @classmethod
   def WipePayloadCache(cls, devserver_bin='start_devserver', static_dir=None):
