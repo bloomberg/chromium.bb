@@ -76,6 +76,7 @@ class FileSystemProviderOperationsOpenFileTest : public testing::Test {
         ProvidedFileSystemInfo(kExtensionId,
                                kFileSystemId,
                                "" /* display_name */,
+                               false /* writable */,
                                base::FilePath() /* mount_path */);
   }
 

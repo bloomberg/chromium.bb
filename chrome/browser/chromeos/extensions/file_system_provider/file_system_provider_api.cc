@@ -52,7 +52,8 @@ bool FileSystemProviderMountFunction::RunSync() {
   // TODO(mtomasz): Pass more detailed errors, rather than just a bool.
   if (!service->MountFileSystem(extension_id(),
                                 params->options.file_system_id,
-                                params->options.display_name)) {
+                                params->options.display_name,
+                                params->options.writable)) {
     base::ListValue* result = new base::ListValue();
     result->Append(CreateError(kSecurityErrorName, kMountFailedErrorMessage));
     SetResult(result);

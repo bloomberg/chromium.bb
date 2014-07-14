@@ -40,6 +40,7 @@ class FileSystemProviderOperationsDeleteEntryTest : public testing::Test {
         ProvidedFileSystemInfo(kExtensionId,
                                kFileSystemId,
                                "" /* file_system_name */,
+                               false /* writable */,
                                base::FilePath() /* mount_path */);
   }
 

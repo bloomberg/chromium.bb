@@ -34,6 +34,7 @@ chrome.test.runTests([
           onTestSuccess();
         });
   },
+
   // Verifies that mounting fails, when an empty string is provided as an Id
   function emptyFileSystemId() {
     var onTestSuccess = chrome.test.callbackPass();
@@ -59,14 +60,45 @@ chrome.test.runTests([
         {fileSystemId: fileSystemId, displayName: 'caramel-candy.zip'},
         function() {
           chrome.fileBrowserPrivate.getVolumeMetadataList(function(volumeList) {
-            var found = false;
-            volumeList.forEach(function(volumeInfo) {
-              if (volumeInfo.extensionId == chrome.runtime.id &&
-                  volumeInfo.fileSystemId == fileSystemId) {
-                found = true;
+            var volumeInfo;
+            volumeList.forEach(function(inVolumeInfo) {
+              if (inVolumeInfo.extensionId == chrome.runtime.id &&
+                  inVolumeInfo.fileSystemId == fileSystemId) {
+                volumeInfo = inVolumeInfo;
               }
             });
-            chrome.test.assertTrue(found);
+            chrome.test.assertTrue(!!volumeInfo);
+            chrome.test.assertTrue(volumeInfo.isReadOnly);
+            onTestSuccess();
+          });
+        },
+        function(error) {
+          chrome.test.fail();
+        });
+  },
+
+  // Checks whether mounting a file system in writable mode ends up on filling
+  // out the volume info properly.
+  function successfulWritableMount() {
+    var onTestSuccess = chrome.test.callbackPass();
+    var fileSystemId = 'caramel-fudges';
+    chrome.fileSystemProvider.mount(
+        {
+          fileSystemId: fileSystemId,
+          displayName: 'caramel-fudges.zip',
+          writable: true
+        },
+        function() {
+          chrome.fileBrowserPrivate.getVolumeMetadataList(function(volumeList) {
+            var volumeInfo;
+            volumeList.forEach(function(inVolumeInfo) {
+              if (inVolumeInfo.extensionId == chrome.runtime.id &&
+                  inVolumeInfo.fileSystemId == fileSystemId) {
+                volumeInfo = inVolumeInfo;
+              }
+            });
+            chrome.test.assertTrue(!!volumeInfo);
+            chrome.test.assertFalse(volumeInfo.isReadOnly);
             onTestSuccess();
           });
         },
@@ -81,7 +113,7 @@ chrome.test.runTests([
   // security error.
   function stressMountTest() {
     var onTestSuccess = chrome.test.callbackPass();
-    var ALREADY_MOUNTED_FILE_SYSTEMS = 2;  // By previous tests.
+    var ALREADY_MOUNTED_FILE_SYSTEMS = 3;  // By previous tests.
     var MAX_FILE_SYSTEMS = 16;
     var index = 0;
     var tryNextOne = function() {

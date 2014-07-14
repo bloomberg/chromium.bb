@@ -220,7 +220,7 @@ VolumeInfo CreateProvidedFileSystemVolumeInfo(
   volume_info.mount_path = file_system_info.mount_path();
   volume_info.mount_condition = chromeos::disks::MOUNT_CONDITION_NONE;
   volume_info.is_parent = true;
-  volume_info.is_read_only = true;
+  volume_info.is_read_only = !file_system_info.writable();
   volume_info.volume_id = GenerateVolumeId(volume_info);
   return volume_info;
 }
