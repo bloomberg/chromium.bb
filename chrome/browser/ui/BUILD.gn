@@ -82,7 +82,6 @@ static_library("ui") {
     sources += rebase_path(gypi_values.chrome_browser_ui_non_ios_sources,
                            ".", "//chrome")
     deps += [
-      "//chrome/browser/extensions",
       "//chrome/browser/performance_monitor",
       "//chrome/browser/ui/webui/omnibox:mojo_bindings",
       "//chrome/common/extensions/api:api",
@@ -102,6 +101,7 @@ static_library("ui") {
       "//webkit/browser:storage",
       "//webkit/common",
       "//webkit/common:storage",
+      #'browser_extensions',  TODO(GYP)
       #'debugger',  TODO(GYP)
       #'installer_util',  TODO(GYP)
       #'../device/bluetooth/bluetooth.gyp:device_bluetooth',  TODO(GYP)

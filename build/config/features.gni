@@ -156,6 +156,3 @@ enable_one_click_signin = is_win || is_mac || (is_linux && !is_chromeos)
 # Chrome OS: whether to also build the upcoming version of
 # ChromeVox, which can then be enabled via a command-line switch.
 enable_chromevox_next = false
-
-# Use brlapi from brltty for braille display support.
-use_brlapi = is_chromeos

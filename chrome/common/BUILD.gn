@@ -70,7 +70,6 @@ static_library("common") {
       "//components/autofill/content/common",
       "//components/autofill/core/common",
       "//components/translate/content/common",
-      "//extensions/common/api",
       "//ipc",
       "//third_party/adobe/flash:flapper_version_h",
       "//third_party/re2",
@@ -78,6 +77,7 @@ static_library("common") {
       #'<(DEPTH)/components/components.gyp:password_manager_core_common',  TODO(GYP)
       #'<(DEPTH)/components/components.gyp:signin_core_common',  TODO(GYP)
       #'<(DEPTH)/components/nacl.gyp:nacl_common',  TODO(GYP)
+      #'<(DEPTH)/extensions/common/api/api.gyp:extensions_api',  TODO(GYP)
       #'<(DEPTH)/extensions/extensions.gyp:extensions_common',  TODO(GYP)
     ]
   }

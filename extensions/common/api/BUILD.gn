@@ -4,15 +4,12 @@
 
 import("//extensions/generated_extensions_api.gni")
 
-# GN version: extensions/common/api/api.gyp:extensions_api
-generated_extensions_api("api") {
+generated_extensions_api("extensions_api") {
   sources = [
     "app_runtime.idl",
-    "app_view_internal.json",
     "dns.idl",
     "extensions_manifest_types.json",
     "power.idl",
-    "runtime.json",
     "serial.idl",
     "socket.idl",
     "sockets_tcp.idl",
@@ -20,7 +17,6 @@ generated_extensions_api("api") {
     "sockets_udp.idl",
     "storage.json",
     "test.json",
-    "usb.idl",
   ]
   root_namespace = "extensions::core_api"
   impl_dir = "//extensions/browser/api"
