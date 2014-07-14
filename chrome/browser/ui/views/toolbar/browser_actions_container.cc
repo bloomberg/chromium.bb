@@ -58,12 +58,6 @@ const int kItemSpacing = ToolbarView::kStandardSpacing;
 // Horizontal spacing before the chevron (if visible).
 const int kChevronSpacing = kItemSpacing - 2;
 
-// Padding to make sure the badge appears in the right location vertically when
-// in overflow mode (inside the Chrome menu).
-// TODO(devlin): Remove this hard coding and make sure the badge appears
-//               correctly.
-const int kPaddingForBadge = 9;
-
 // The maximum number of icons to show per row when in overflow mode (showing
 // icons in the application menu).
 // TODO(devlin): Compute the right number of icons to show, depending on the
@@ -359,10 +353,7 @@ void BrowserActionsContainer::Layout() {
       int x = (index * IconWidth(true)) -
           (row_index * IconWidth(true) * kIconsPerMenuRow);
       gfx::Rect rect_bounds(
-          x,
-          IconHeight() * row_index,
-          icon_width,
-          IconHeight() + kPaddingForBadge);
+          x, IconHeight() * row_index, icon_width, IconHeight());
       view->SetBoundsRect(rect_bounds);
       view->SetVisible(true);
     }
