@@ -914,6 +914,10 @@ crbug.com/359961 inspector/timeline/timeline-window-filter.html [ Pass Timeout ]
 
 crbug.com/361133 fast/frames/remove-frame-during-load-event.html [ Pass Crash ]
 
+crbug.com/393521 fast/workers/shared-worker-navigator.html  [ Pass Timeout ]
+crbug.com/393523 http/tests/misc/adopt-iframe-src-attr-after-remove.html  [ Pass Timeout ]
+crbug.com/393523 [ Mac Release ] http/tests/misc/submit-post-keygen.html [ Pass Timeout ]
+
 crbug.com/362047 [ Mac Linux ] mhtml/mhtml_in_iframe.html [ Crash Pass ]
 crbug.com/362073 [ Mac Debug ] fast/dom/shadow/input-color-in-content.html [ Crash Pass ]
 
@@ -1180,7 +1184,8 @@ crbug.com/371276 [ Linux ] virtual/deferred/inspector/timeline/timeline-window-f
 crbug.com/371276 [ Linux ] virtual/implsidepainting/inspector/timeline/timeline-window-filter.html [ Pass Timeout ]
 
 crbug.com/372917 http/tests/security/contentSecurityPolicy/connect-src-beacon-redirect-to-blocked.html [ Failure ]
-crbug.com/381373 [ Win ]  virtual/implsidepainting/inspector/timeline/tracing/decode-resize.html [ Pass Failure ]
+crbug.com/381373 [ Mac Win ] virtual/implsidepainting/inspector/timeline/tracing/decode-resize.html [ Pass Timeout Failure ]
+crbug.com/381373 [ Linux ] virtual/implsidepainting/inspector/timeline/tracing/decode-resize.html [ Pass Timeout ]
 
 crbug.com/361729 [ MountainLion ] printing/return-from-printing-mode.html [ ImageOnlyFailure ]
 
