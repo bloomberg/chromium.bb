@@ -2751,6 +2751,27 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Compositing.RenderPass.AppendQuadData.NumIncompleteTiles">
+  <owner>weiliangc@chromium.org.</owner>
+  <summary>
+    Keeps track of number of incomplete tiles in a drawn compositor frame while
+    scrolling. This is a rough measurement of ugliness during user interaction.
+    Incomplete tiles are non ideal scaled. A sample is recorded everytime a
+    frame is drawn while a scroll is in progress. Tracking bug 381695.
+  </summary>
+</histogram>
+
+<histogram name="Compositing.RenderPass.AppendQuadData.NumMissingTiles">
+  <owner>weiliangc@chromium.org.</owner>
+  <summary>
+    Keeps track of number of missing tiles in a drawn compositor frame while
+    scrolling. This is a rough measurement of ugliness during user interaction.
+    Incomplete tiles are checkerboard or solid color. A sample is recorded
+    everytime a frame is drawn while a scroll is in progress. Tracking bug
+    381695.
+  </summary>
+</histogram>
+
 <histogram name="ConnectivityDiagnostics.ChromeOsSignalStrength"
     units="percent">
   <owner>ebeach@google.com</owner>

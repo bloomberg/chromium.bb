@@ -1896,7 +1896,7 @@ class MissingTextureAnimatingLayer : public DidDrawCheckLayer {
                            AppendQuadsData* append_quads_data) OVERRIDE {
     LayerImpl::AppendQuads(render_pass, occlusion_tracker, append_quads_data);
     if (had_incomplete_tile_)
-      append_quads_data->had_incomplete_tile = true;
+      append_quads_data->num_incomplete_tiles++;
     if (tile_missing_)
       append_quads_data->num_missing_tiles++;
   }
@@ -2102,7 +2102,7 @@ TEST_F(LayerTreeHostImplTest,
 }
 
 TEST_F(LayerTreeHostImplTest,
-       PrepareToDrawSucceedsWhenHighResRequiredAndMissingTile) {
+       PrepareToDrawFailsWhenHighResRequiredAndMissingTile) {
   host_impl_->active_tree()->SetRootLayer(
       DidDrawCheckLayer::Create(host_impl_->active_tree(), 7));
   DidDrawCheckLayer* root =
@@ -2119,7 +2119,8 @@ TEST_F(LayerTreeHostImplTest,
                                            host_impl_->resource_provider()));
   host_impl_->active_tree()->SetRequiresHighResToDraw();
   LayerTreeHostImpl::FrameData frame;
-  EXPECT_EQ(DRAW_SUCCESS, host_impl_->PrepareToDraw(&frame));
+  EXPECT_EQ(DRAW_ABORTED_MISSING_HIGH_RES_CONTENT,
+            host_impl_->PrepareToDraw(&frame));
   host_impl_->DrawLayers(&frame);
   host_impl_->DidDrawAllLayers(frame);
 }

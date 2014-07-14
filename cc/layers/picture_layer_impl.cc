@@ -191,7 +191,6 @@ void PictureLayerImpl::AppendQuads(
                  quad_content_rect,
                  max_contents_scale,
                  pile_);
-    append_quads_data->num_missing_tiles++;
     return;
   }
 
@@ -278,7 +277,7 @@ void PictureLayerImpl::AppendQuads(
           opaque_rect.Intersect(geometry_rect);
 
           if (iter->contents_scale() != ideal_contents_scale_)
-            append_quads_data->had_incomplete_tile = true;
+            append_quads_data->num_incomplete_tiles++;
 
           TileDrawQuad* quad =
               render_pass->CreateAndAppendDrawQuad<TileDrawQuad>();
@@ -352,7 +351,6 @@ void PictureLayerImpl::AppendQuads(
       }
 
       append_quads_data->num_missing_tiles++;
-      append_quads_data->had_incomplete_tile = true;
       append_quads_data->approximated_visible_content_area +=
           visible_geometry_rect.width() * visible_geometry_rect.height();
       ++missing_tile_count;

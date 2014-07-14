@@ -800,6 +800,9 @@ DrawResult LayerTreeHostImpl::CalculateRenderPasses(
 
   const DrawMode draw_mode = GetDrawMode();
 
+  int num_missing_tiles = 0;
+  int num_incomplete_tiles = 0;
+
   LayerIteratorType end =
       LayerIteratorType::End(frame->render_surface_layer_list);
   for (LayerIteratorType it =
@@ -875,6 +878,9 @@ DrawResult LayerTreeHostImpl::CalculateRenderPasses(
     rendering_stats_instrumentation_->AddApproximatedVisibleContentArea(
         append_quads_data.approximated_visible_content_area);
 
+    num_missing_tiles += append_quads_data.num_missing_tiles;
+    num_incomplete_tiles += append_quads_data.num_incomplete_tiles;
+
     if (append_quads_data.num_missing_tiles) {
       bool layer_has_animating_transform =
           it->screen_space_transform_is_animating() ||
@@ -883,7 +889,8 @@ DrawResult LayerTreeHostImpl::CalculateRenderPasses(
         draw_result = DRAW_ABORTED_CHECKERBOARD_ANIMATIONS;
     }
 
-    if (append_quads_data.had_incomplete_tile) {
+    if (append_quads_data.num_incomplete_tiles ||
+        append_quads_data.num_missing_tiles) {
       frame->contains_incomplete_tile = true;
       if (active_tree()->RequiresHighResToDraw())
         draw_result = DRAW_ABORTED_MISSING_HIGH_RES_CONTENT;
@@ -933,6 +940,15 @@ DrawResult LayerTreeHostImpl::CalculateRenderPasses(
 
   // If we're making a frame to draw, it better have at least one render pass.
   DCHECK(!frame->render_passes.empty());
+
+  if (IsCurrentlyScrolling()) {
+    UMA_HISTOGRAM_COUNTS_100(
+        "Compositing.RenderPass.AppendQuadData.NumMissingTiles",
+        num_missing_tiles);
+    UMA_HISTOGRAM_COUNTS_100(
+        "Compositing.RenderPass.AppendQuadData.NumIncompleteTiles",
+        num_incomplete_tiles);
+  }
 
   // Should only have one render pass in resourceless software mode.
   DCHECK(draw_mode != DRAW_MODE_RESOURCELESS_SOFTWARE ||

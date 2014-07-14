@@ -12,21 +12,21 @@ namespace cc {
 
 struct AppendQuadsData {
   AppendQuadsData()
-      : had_incomplete_tile(false),
+      : num_incomplete_tiles(0),
         num_missing_tiles(0),
         visible_content_area(0),
         approximated_visible_content_area(0),
         render_pass_id(0, 0) {}
 
   explicit AppendQuadsData(RenderPass::Id render_pass_id)
-      : had_incomplete_tile(false),
+      : num_incomplete_tiles(0),
         num_missing_tiles(0),
         visible_content_area(0),
         approximated_visible_content_area(0),
         render_pass_id(render_pass_id) {}
 
   // Set by the layer appending quads.
-  bool had_incomplete_tile;
+  int64 num_incomplete_tiles;
   // Set by the layer appending quads.
   int64 num_missing_tiles;
   // Set by the layer appending quads.
