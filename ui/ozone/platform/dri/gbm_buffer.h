@@ -51,7 +51,6 @@ class GbmBuffer : public ScanoutSurface {
 class GbmPixmap : public NativePixmap {
  public:
   GbmPixmap(gbm_device* device, DriWrapper* dri, const gfx::Size& size);
-  virtual ~GbmPixmap();
 
   // NativePixmap:
   virtual void* GetEGLClientBuffer() OVERRIDE;
@@ -60,6 +59,8 @@ class GbmPixmap : public NativePixmap {
   GbmBuffer* buffer() { return &buffer_; }
 
  private:
+  virtual ~GbmPixmap();
+
   GbmBuffer buffer_;
 };
 
