@@ -78,23 +78,6 @@ static v8::Handle<v8::Object> classObjectOfPrivateScript(ScriptState* scriptStat
     return v8::Handle<v8::Object>::Cast(compiledClass);
 }
 
-// FIXME: Replace this method with a V8 API for getOwnPropertyDescriptor, once V8 is rolled.
-static v8::Handle<v8::Object> getOwnPropertyDescriptor(ScriptState* scriptState, v8::Handle<v8::Object> classObject, String name)
-{
-    ASSERT(!scriptState->contextIsEmpty());
-    v8::Handle<v8::Value> object = scriptState->context()->Global()->Get(v8String(scriptState->isolate(), "Object"));
-    RELEASE_ASSERT(!object.IsEmpty());
-    RELEASE_ASSERT(object->IsObject());
-    v8::Handle<v8::Value> getOwnPropertyDescriptorFunction = v8::Handle<v8::Object>::Cast(object)->Get(v8String(scriptState->isolate(), "getOwnPropertyDescriptor"));
-    RELEASE_ASSERT(!getOwnPropertyDescriptorFunction.IsEmpty());
-    RELEASE_ASSERT(getOwnPropertyDescriptorFunction->IsFunction());
-    v8::Handle<v8::Value> argv[] = { classObject, v8String(scriptState->isolate(), name) };
-    v8::Handle<v8::Value> descriptor = V8ScriptRunner::callInternalFunction(v8::Handle<v8::Function>::Cast(getOwnPropertyDescriptorFunction), object, WTF_ARRAY_LENGTH(argv), argv, scriptState->isolate());
-    RELEASE_ASSERT(!descriptor.IsEmpty());
-    RELEASE_ASSERT(descriptor->IsObject());
-    return v8::Handle<v8::Object>::Cast(descriptor);
-}
-
 static void initializeHolderIfNeeded(ScriptState* scriptState, v8::Handle<v8::Object> classObject, v8::Handle<v8::Value> holder)
 {
     RELEASE_ASSERT(!holder.IsEmpty());
@@ -138,8 +121,12 @@ v8::Handle<v8::Value> PrivateScriptRunner::installClass(LocalFrame* frame, Strin
 v8::Handle<v8::Value> PrivateScriptRunner::runDOMAttributeGetter(ScriptState* scriptState, String className, String attributeName, v8::Handle<v8::Value> holder)
 {
     v8::Handle<v8::Object> classObject = classObjectOfPrivateScript(scriptState, className);
-    v8::Handle<v8::Object> descriptor = getOwnPropertyDescriptor(scriptState, classObject, attributeName);
-    v8::Handle<v8::Value> getter = descriptor->Get(v8String(scriptState->isolate(), "get"));
+    v8::Handle<v8::Value> descriptor = classObject->GetOwnPropertyDescriptor(v8String(scriptState->isolate(), attributeName));
+    if (descriptor.IsEmpty() || !descriptor->IsObject()) {
+        FATAL("Private script error: Target DOM attribute getter was not found. (Class name = %s, Attribute name = %s)\n", className.utf8().data(), attributeName.utf8().data());
+        RELEASE_ASSERT_NOT_REACHED();
+    }
+    v8::Handle<v8::Value> getter = v8::Handle<v8::Object>::Cast(descriptor)->Get(v8String(scriptState->isolate(), "get"));
     if (getter.IsEmpty() || !getter->IsFunction()) {
         FATAL("Private script error: Target DOM attribute getter was not found. (Class name = %s, Attribute name = %s)\n", className.utf8().data(), attributeName.utf8().data());
         RELEASE_ASSERT_NOT_REACHED();
@@ -151,8 +138,12 @@ v8::Handle<v8::Value> PrivateScriptRunner::runDOMAttributeGetter(ScriptState* sc
 void PrivateScriptRunner::runDOMAttributeSetter(ScriptState* scriptState, String className, String attributeName, v8::Handle<v8::Value> holder, v8::Handle<v8::Value> v8Value)
 {
     v8::Handle<v8::Object> classObject = classObjectOfPrivateScript(scriptState, className);
-    v8::Handle<v8::Object> descriptor = getOwnPropertyDescriptor(scriptState, classObject, attributeName);
-    v8::Handle<v8::Value> setter = descriptor->Get(v8String(scriptState->isolate(), "set"));
+    v8::Handle<v8::Value> descriptor = classObject->GetOwnPropertyDescriptor(v8String(scriptState->isolate(), attributeName));
+    if (descriptor.IsEmpty() || !descriptor->IsObject()) {
+        FATAL("Private script error: Target DOM attribute setter was not found. (Class name = %s, Attribute name = %s)\n", className.utf8().data(), attributeName.utf8().data());
+        RELEASE_ASSERT_NOT_REACHED();
+    }
+    v8::Handle<v8::Value> setter = v8::Handle<v8::Object>::Cast(descriptor)->Get(v8String(scriptState->isolate(), "set"));
     if (setter.IsEmpty() || !setter->IsFunction()) {
         FATAL("Private script error: Target DOM attribute setter was not found. (Class name = %s, Attribute name = %s)\n", className.utf8().data(), attributeName.utf8().data());
         RELEASE_ASSERT_NOT_REACHED();
