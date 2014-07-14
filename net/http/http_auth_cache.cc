@@ -249,6 +249,10 @@ bool HttpAuthCache::Remove(const GURL& origin,
   return false;
 }
 
+void HttpAuthCache::Clear() {
+  entries_.clear();
+}
+
 bool HttpAuthCache::UpdateStaleChallenge(const GURL& origin,
                                          const std::string& realm,
                                          HttpAuth::Scheme scheme,

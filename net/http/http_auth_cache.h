@@ -163,6 +163,9 @@ class NET_EXPORT_PRIVATE HttpAuthCache {
               HttpAuth::Scheme scheme,
               const AuthCredentials& credentials);
 
+  // Clears the cache.
+  void Clear();
+
   // Updates a stale digest entry on server |origin| for realm |realm| and
   // scheme |scheme|. The cached auth challenge is replaced with
   // |auth_challenge| and the nonce count is reset.
