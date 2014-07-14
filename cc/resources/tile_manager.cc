@@ -875,6 +875,7 @@ void TileManager::AssignGpuMemoryToTiles(
                       "over",
                       bytes_that_exceeded_memory_budget);
   }
+  UMA_HISTOGRAM_BOOLEAN("TileManager.ExceededMemoryBudget", oomed_hard);
   memory_stats_from_last_assign_.total_budget_in_bytes =
       global_state_.hard_memory_limit_in_bytes;
   memory_stats_from_last_assign_.bytes_allocated =

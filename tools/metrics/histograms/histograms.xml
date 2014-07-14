@@ -32203,6 +32203,15 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="TileManager.ExceededMemoryBudget" enum="TileMemoryBudget">
+  <owner>reveman@chromium.org</owner>
+  <owner>vmpstr@chromium.org</owner>
+  <summary>
+    Measures whether the tile manager exceeded the hard GPU memory budget
+    (OOMed). Recorded each time the tile manager assigns GPU memory to tiles.
+  </summary>
+</histogram>
+
 <histogram name="TimeZone.TimeZoneRequest.Event" enum="TimeZoneRequestEvent">
   <summary>Events in TimeZoneRequest.</summary>
 </histogram>
@@ -47286,6 +47295,11 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="7" label="No syn data + ack (can't happen)"/>
   <int value="8" label="No syn data + nack"/>
   <int value="9" label="No syn data + probe failed"/>
+</enum>
+
+<enum name="TileMemoryBudget" type="int">
+  <int value="0" label="Within memory budget"/>
+  <int value="1" label="Exceeded memory budget"/>
 </enum>
 
 <enum name="TimeZoneRequestEvent" type="int">
