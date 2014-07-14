@@ -30,14 +30,14 @@ module('builders');
 
 test('loading steps', 4, function() {
     var tests = {}
-    var baseUrl = 'http://dummyurl';
+    var basePath = 'http://build.chromium.org/p/';
     var name = 'dummyname';
-    var master = new builders.BuilderMaster({name: name, url_name: name, tests: tests);
+    var master = new builders.BuilderMaster({name: name, url_name: name, tests: tests});
 
     var builder = 'dummybuilder';
     var buildNumber = 12345;
-    equal(master.logPath(builder, buildNumber), baseUrl + '/builders/' + builder + '/builds/' + buildNumber);
-    equal(master.builderJsonPath(), baseUrl + '/json/builders');
+    equal(master.logPath(builder, buildNumber), basePath + name + '/builders/' + builder + '/builds/' + buildNumber);
+    equal(master.builderJsonPath(), basePath + name + '/json/builders');
     equal(master.tests, tests);
     equal(master.name, name);
 });
@@ -93,8 +93,8 @@ test('builders.master', 2, function() {
     resetGlobals();
 
     builders.loadBuildersList('@ToT Chromium', 'unit_tests');
-    equal(builders.master('Linux Tests').basePath, 'dummyurl2');
+    equal(builders.master('Linux Tests').basePath, 'http://build.chromium.org/p/chromium.win');
 
     builders.loadBuildersList('@ToT Blink', 'unit_tests');
-    equal(builders.master('Linux Tests').basePath, 'dummyurl');
+    equal(builders.master('Linux Tests').basePath, 'http://build.chromium.org/p/chromium.webkit');
 });
