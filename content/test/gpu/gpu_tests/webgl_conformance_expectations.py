@@ -27,14 +27,10 @@ class WebGLConformanceExpectations(test_expectations.TestExpectations):
     # Fails on all platforms
     self.Fail('conformance/glsl/misc/shaders-with-mis-matching-uniforms.html',
         bug=351396)
-    self.Fail('conformance/renderbuffers/framebuffer-object-attachment.html',
-        ['win', 'linux', 'android', 'chromeos'], bug=391953)
 
     # Flaky on Win
     self.Fail('conformance/extensions/webgl-draw-buffers.html',
         ['win'], bug=369349)
-    self.Fail('conformance/context/context-lost-restored.html',
-        ['win'], bug=374378)
 
     # Win failures
     self.Fail('conformance/glsl/misc/struct-equals.html',
