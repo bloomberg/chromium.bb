@@ -67,7 +67,7 @@ class SyncProcessRunner {
   SyncProcessRunner(const std::string& name,
                     Client* client,
                     scoped_ptr<TimerHelper> timer_helper,
-                    int max_parallel_task);
+                    size_t max_parallel_task);
   virtual ~SyncProcessRunner();
 
   // Subclass must implement this.
@@ -75,7 +75,6 @@ class SyncProcessRunner {
 
   // Schedules a new sync.
   void Schedule();
-  void ScheduleIfNotRunning();
 
   int64 pending_changes() const { return pending_changes_; }
 
@@ -92,14 +91,26 @@ class SyncProcessRunner {
   void Run();
   void ScheduleInternal(int64 delay);
 
+  // Throttles new sync for |base_delay| milliseconds for an error case.
+  // If new sync is already throttled, back off the duration.
+  void ThrottleSync(int64 base_delay);
+
+  // Clears old throttling setting that is already over.
+  void ResetOldThrottling();
+  void ResetThrottling();
+
   std::string name_;
   Client* client_;
-  int max_parallel_task_;
-  int running_tasks_;
+  size_t max_parallel_task_;
+  size_t running_tasks_;
   scoped_ptr<TimerHelper> timer_helper_;
+  base::TimeTicks last_run_;
   base::TimeTicks last_scheduled_;
-  int64 current_delay_;
-  int64 last_delay_;
+  SyncServiceState service_state_;
+
+  base::TimeTicks throttle_from_;
+  base::TimeTicks throttle_until_;
+
   int64 pending_changes_;
   base::WeakPtrFactory<SyncProcessRunner> factory_;
 

@@ -161,8 +161,7 @@ class LocalSyncRunner : public SyncProcessRunner,
     OnChangesUpdated(pending_changes);
 
     // Kick other sync runners just in case they're not running.
-    GetSyncService()->RunForEachSyncRunners(
-        &SyncProcessRunner::ScheduleIfNotRunning);
+    GetSyncService()->RunForEachSyncRunners(&SyncProcessRunner::Schedule);
   }
 
  private:
@@ -211,8 +210,7 @@ class RemoteSyncRunner : public SyncProcessRunner,
     OnChangesUpdated(pending_changes);
 
     // Kick other sync runners just in case they're not running.
-    GetSyncService()->RunForEachSyncRunners(
-        &SyncProcessRunner::ScheduleIfNotRunning);
+    GetSyncService()->RunForEachSyncRunners(&SyncProcessRunner::Schedule);
   }
 
   virtual void OnRemoteServiceStateUpdated(
