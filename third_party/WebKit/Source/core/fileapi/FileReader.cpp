@@ -166,7 +166,7 @@ void FileReader::stop()
 
 bool FileReader::hasPendingActivity() const
 {
-    return m_loadingState == LoadingStateLoading || m_loadingState == LoadingStatePending;
+    return m_state == LOADING;
 }
 
 void FileReader::readAsArrayBuffer(Blob* blob, ExceptionState& exceptionState)
