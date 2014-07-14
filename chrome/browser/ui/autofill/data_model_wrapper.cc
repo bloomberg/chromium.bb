@@ -137,7 +137,7 @@ base::string16 AutofillProfileWrapper::GetInfoForDisplay(
     // If there is no user-defined formatting at all, add some standard
     // formatting.
     if (base::ContainsOnlyChars(phone_number,
-                                base::ASCIIToUTF16("0123456789"))) {
+                                base::ASCIIToUTF16("+0123456789"))) {
       std::string region = base::UTF16ToASCII(
           GetInfo(AutofillType(HTML_TYPE_COUNTRY_CODE, HTML_MODE_NONE)));
       i18n::PhoneObject phone(phone_number, region);
