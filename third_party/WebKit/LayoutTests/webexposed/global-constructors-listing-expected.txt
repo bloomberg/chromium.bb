@@ -57,6 +57,7 @@ CanvasRenderingContext2D
 ChannelMergerNode
 ChannelSplitterNode
 CharacterData
+CircularRegion
 ClientRect
 ClientRectList
 CloseEvent

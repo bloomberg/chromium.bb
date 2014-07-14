@@ -28,8 +28,11 @@
 #include "config.h"
 #include "modules/geolocation/Geolocation.h"
 
+#include "core/dom/DOMException.h"
 #include "core/dom/Document.h"
+#include "core/dom/ExceptionCode.h"
 #include "modules/geolocation/Coordinates.h"
+#include "modules/geolocation/GeofencingRegion.h"
 #include "modules/geolocation/GeolocationController.h"
 #include "modules/geolocation/GeolocationError.h"
 #include "modules/geolocation/GeolocationPosition.h"
@@ -679,6 +682,21 @@ void Geolocation::handlePendingPermissionNotifiers()
             notifier->setFatalError(PositionError::create(PositionError::PERMISSION_DENIED, permissionDeniedErrorMessage));
         }
     }
+}
+
+ScriptPromise Geolocation::registerRegion(ScriptState* scriptState, GeofencingRegion* region)
+{
+    return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(NotSupportedError));
+}
+
+ScriptPromise Geolocation::unregisterRegion(ScriptState* scriptState, const String& regionId)
+{
+    return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(NotSupportedError));
+}
+
+ScriptPromise Geolocation::getRegisteredRegions(ScriptState* scriptState) const
+{
+    return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(NotSupportedError));
 }
 
 } // namespace WebCore

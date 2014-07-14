@@ -27,6 +27,7 @@
 #ifndef Geolocation_h
 #define Geolocation_h
 
+#include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "core/dom/ActiveDOMObject.h"
 #include "modules/geolocation/Geoposition.h"
@@ -42,6 +43,7 @@ namespace WebCore {
 class Dictionary;
 class Document;
 class LocalFrame;
+class GeofencingRegion;
 class GeolocationController;
 class GeolocationError;
 class GeolocationPosition;
@@ -81,6 +83,10 @@ public:
 
     // Notifies this that an error has occurred, it must be handled immediately.
     void setError(GeolocationError*);
+
+    ScriptPromise registerRegion(ScriptState*, GeofencingRegion*);
+    ScriptPromise unregisterRegion(ScriptState*, const String& regionId);
+    ScriptPromise getRegisteredRegions(ScriptState*) const;
 
 private:
     // Returns the last known position, if any. May return null.

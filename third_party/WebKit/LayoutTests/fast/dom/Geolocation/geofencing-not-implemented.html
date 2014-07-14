@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="../../../resources/js-test.js"></script>
+</head>
+<body>
+<script>
+description("Tests that all geofencing methods always reject.");
+
+function shouldReject(promise)
+{
+    promise.then(
+        function() { testFailed("Promise unexpectedly resolved."); },
+        function() { testPassed("Promise rejected as expected."); });
+}
+
+shouldReject(navigator.geolocation.registerRegion(new CircularRegion({latitude: 37.421999, longitude: -122.084015})));
+shouldReject(navigator.geolocation.unregisterRegion(""));
+shouldReject(navigator.geolocation.getRegisteredRegions());
+</script>
+</body>
+</html>
