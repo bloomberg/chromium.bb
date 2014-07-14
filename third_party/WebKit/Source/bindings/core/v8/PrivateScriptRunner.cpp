@@ -37,9 +37,21 @@ static v8::Handle<v8::Value> compilePrivateScript(v8::Isolate* isolate, String c
         if (className == kPrivateScriptSources[index].name)
             break;
     }
-    RELEASE_ASSERT(index != WTF_ARRAY_LENGTH(kPrivateScriptSources));
+    if (index == WTF_ARRAY_LENGTH(kPrivateScriptSources)) {
+        FATAL("Private script error: Target source code was not found. (Class name = %s)\n", className.utf8().data());
+        RELEASE_ASSERT_NOT_REACHED();
+    }
+
+    v8::TryCatch block;
     String source(reinterpret_cast<const char*>(kPrivateScriptSources[index].source), kPrivateScriptSources[index].size);
-    return V8ScriptRunner::compileAndRunInternalScript(v8String(isolate, source), isolate);
+    v8::Handle<v8::Value> result = V8ScriptRunner::compileAndRunInternalScript(v8String(isolate, source), isolate);
+    if (block.HasCaught()) {
+        FATAL("Private script error: Compile failed. (Class name = %s)\n", className.utf8().data());
+        if (!block.Message().IsEmpty())
+            FATAL("%s\n", toCoreString(block.Message()->Get()).utf8().data());
+        RELEASE_ASSERT_NOT_REACHED();
+    }
+    return result;
 }
 
 static v8::Handle<v8::Object> classObjectOfPrivateScript(ScriptState* scriptState, String className)
@@ -94,7 +106,14 @@ static void initializeHolderIfNeeded(ScriptState* scriptState, v8::Handle<v8::Ob
         v8::TryCatch block;
         v8::Handle<v8::Value> initializeFunction = classObject->Get(v8String(isolate, "initialize"));
         if (!initializeFunction.IsEmpty() && initializeFunction->IsFunction()) {
+            v8::TryCatch block;
             V8ScriptRunner::callFunction(v8::Handle<v8::Function>::Cast(initializeFunction), scriptState->executionContext(), holder, 0, 0, isolate);
+            if (block.HasCaught()) {
+                FATAL("Private script error: Object constructor threw an exception.\n");
+                if (!block.Message().IsEmpty())
+                    FATAL("%s\n", toCoreString(block.Message()->Get()).utf8().data());
+                RELEASE_ASSERT_NOT_REACHED();
+            }
         }
         isInitialized = v8Boolean(true, isolate);
         V8HiddenValue::setHiddenValue(isolate, holderObject, V8HiddenValue::privateScriptObjectIsInitialized(isolate), isInitialized);
@@ -121,8 +140,10 @@ v8::Handle<v8::Value> PrivateScriptRunner::runDOMAttributeGetter(ScriptState* sc
     v8::Handle<v8::Object> classObject = classObjectOfPrivateScript(scriptState, className);
     v8::Handle<v8::Object> descriptor = getOwnPropertyDescriptor(scriptState, classObject, attributeName);
     v8::Handle<v8::Value> getter = descriptor->Get(v8String(scriptState->isolate(), "get"));
-    RELEASE_ASSERT(!getter.IsEmpty());
-    RELEASE_ASSERT(getter->IsFunction());
+    if (getter.IsEmpty() || !getter->IsFunction()) {
+        FATAL("Private script error: Target DOM attribute getter was not found. (Class name = %s, Attribute name = %s)\n", className.utf8().data(), attributeName.utf8().data());
+        RELEASE_ASSERT_NOT_REACHED();
+    }
     initializeHolderIfNeeded(scriptState, classObject, holder);
     return V8ScriptRunner::callFunction(v8::Handle<v8::Function>::Cast(getter), scriptState->executionContext(), holder, 0, 0, scriptState->isolate());
 }
@@ -132,8 +153,10 @@ void PrivateScriptRunner::runDOMAttributeSetter(ScriptState* scriptState, String
     v8::Handle<v8::Object> classObject = classObjectOfPrivateScript(scriptState, className);
     v8::Handle<v8::Object> descriptor = getOwnPropertyDescriptor(scriptState, classObject, attributeName);
     v8::Handle<v8::Value> setter = descriptor->Get(v8String(scriptState->isolate(), "set"));
-    RELEASE_ASSERT(!setter.IsEmpty());
-    RELEASE_ASSERT(setter->IsFunction());
+    if (setter.IsEmpty() || !setter->IsFunction()) {
+        FATAL("Private script error: Target DOM attribute setter was not found. (Class name = %s, Attribute name = %s)\n", className.utf8().data(), attributeName.utf8().data());
+        RELEASE_ASSERT_NOT_REACHED();
+    }
     initializeHolderIfNeeded(scriptState, classObject, holder);
     v8::Handle<v8::Value> argv[] = { v8Value };
     V8ScriptRunner::callFunction(v8::Handle<v8::Function>::Cast(setter), scriptState->executionContext(), holder, WTF_ARRAY_LENGTH(argv), argv, scriptState->isolate());
@@ -143,8 +166,10 @@ v8::Handle<v8::Value> PrivateScriptRunner::runDOMMethod(ScriptState* scriptState
 {
     v8::Handle<v8::Object> classObject = classObjectOfPrivateScript(scriptState, className);
     v8::Handle<v8::Value> method = classObject->Get(v8String(scriptState->isolate(), methodName));
-    RELEASE_ASSERT(!method.IsEmpty());
-    RELEASE_ASSERT(method->IsFunction());
+    if (method.IsEmpty() || !method->IsFunction()) {
+        FATAL("Private script error: Target DOM method was not found. (Class name = %s, Method name = %s)\n", className.utf8().data(), methodName.utf8().data());
+        RELEASE_ASSERT_NOT_REACHED();
+    }
     initializeHolderIfNeeded(scriptState, classObject, holder);
     return V8ScriptRunner::callFunction(v8::Handle<v8::Function>::Cast(method), scriptState->executionContext(), holder, argc, argv, scriptState->isolate());
 }
