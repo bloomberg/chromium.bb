@@ -1,0 +1,24 @@
+<html>
+<head>
+<script src="../../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../../http/tests/inspector/elements-test.js"></script>
+<script>
+
+function test()
+{
+    var colorAwareProperties = ["bAckground-ColoR", "COloR", "Border-coLoR", "border-right-color", "BOX-SHADOW"];
+    for (var i = 0; i < colorAwareProperties.length; ++i) {
+        var isColorAware = WebInspector.CSSMetadata.isColorAwareProperty(colorAwareProperties[i]);
+        InspectorTest.addResult(colorAwareProperties[i] + (isColorAware ? " is" : " is NOT") + " color aware");
+    }
+    InspectorTest.completeTest();
+}
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+Tests that color-related mix-cased CSS properties are actually color aware.
+</p>
+</body>
+</html>

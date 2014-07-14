@@ -491,7 +491,6 @@ Bug(gardener) [ Release XP ] inspector/console/console-timeline.html [ Pass Time
 crbug.com/390204 [ Release Linux ] inspector/console/console-viewport-selection.html [ Failure Pass ]
 Bug(gardener) [ Release Linux ] inspector/editor/text-editor-word-jumps.html [ Pass Timeout ]
 Bug(gardener) [ Release Win7 ] inspector/elements/iframe-load-event.html [ Failure Pass ]
-Bug(gardener) [ Release Linux ] inspector/elements/styles/inherited-mixed-case-properties.html [ Failure Pass ]
 Bug(gardener) [ Release Mavericks ] inspector/elements/styles/multiple-imports-edit-crash.html [ Failure Pass ]
 Bug(gardener) [ Release Linux ] inspector/elements/styles/parse-declaration-unterminated-comment.html [ Pass Timeout ]
 Bug(gardener) [ Release Linux ] inspector/elements/styles/styles-computed-trace.html [ Failure Pass ]
