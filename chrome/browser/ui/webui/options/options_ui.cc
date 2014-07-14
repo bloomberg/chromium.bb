@@ -39,14 +39,14 @@
 #include "chrome/browser/ui/webui/options/language_dictionary_overlay_handler.h"
 #include "chrome/browser/ui/webui/options/language_options_handler.h"
 #include "chrome/browser/ui/webui/options/manage_profile_handler.h"
-#include "chrome/browser/ui/webui/options/managed_user_create_confirm_handler.h"
-#include "chrome/browser/ui/webui/options/managed_user_import_handler.h"
-#include "chrome/browser/ui/webui/options/managed_user_learn_more_handler.h"
 #include "chrome/browser/ui/webui/options/media_devices_selection_handler.h"
 #include "chrome/browser/ui/webui/options/password_manager_handler.h"
 #include "chrome/browser/ui/webui/options/reset_profile_settings_handler.h"
 #include "chrome/browser/ui/webui/options/search_engine_manager_handler.h"
 #include "chrome/browser/ui/webui/options/startup_pages_handler.h"
+#include "chrome/browser/ui/webui/options/supervised_user_create_confirm_handler.h"
+#include "chrome/browser/ui/webui/options/supervised_user_import_handler.h"
+#include "chrome/browser/ui/webui/options/supervised_user_learn_more_handler.h"
 #include "chrome/browser/ui/webui/sync_setup_handler.h"
 #include "chrome/browser/ui/webui/theme_source.h"
 #include "chrome/common/url_constants.h"
@@ -284,15 +284,16 @@ OptionsUI::OptionsUI(content::WebUI* web_ui)
   AddOptionsPageUIHandler(localized_strings,
                           new LanguageDictionaryOverlayHandler());
   AddOptionsPageUIHandler(localized_strings, new ManageProfileHandler());
-  AddOptionsPageUIHandler(localized_strings,
-                          new ManagedUserCreateConfirmHandler());
-  AddOptionsPageUIHandler(localized_strings, new ManagedUserImportHandler());
-  AddOptionsPageUIHandler(localized_strings, new ManagedUserLearnMoreHandler());
   AddOptionsPageUIHandler(localized_strings, new PasswordManagerHandler());
   AddOptionsPageUIHandler(localized_strings, new ResetProfileSettingsHandler());
   AddOptionsPageUIHandler(localized_strings, new SearchEngineManagerHandler());
   AddOptionsPageUIHandler(localized_strings, new ImportDataHandler());
   AddOptionsPageUIHandler(localized_strings, new StartupPagesHandler());
+  AddOptionsPageUIHandler(localized_strings,
+                          new SupervisedUserCreateConfirmHandler());
+  AddOptionsPageUIHandler(localized_strings, new SupervisedUserImportHandler());
+  AddOptionsPageUIHandler(localized_strings,
+                          new SupervisedUserLearnMoreHandler());
   AddOptionsPageUIHandler(localized_strings, new SyncSetupHandler(
       g_browser_process->profile_manager()));
 #if defined(OS_CHROMEOS)

@@ -330,7 +330,7 @@ TEST_F(SupervisedUserServiceExtensionTest, InstallContentPacks) {
   base::FilePath test_data_dir;
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir));
   base::FilePath extension_path =
-      test_data_dir.AppendASCII("extensions/managed_mode/content_pack");
+      test_data_dir.AppendASCII("extensions/supervised_user/content_pack");
   content::WindowedNotificationObserver extension_load_observer(
       chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED,
       content::Source<Profile>(profile_.get()));
@@ -361,7 +361,7 @@ TEST_F(SupervisedUserServiceExtensionTest, InstallContentPacks) {
   // Load a second content pack.
   installer = extensions::UnpackedInstaller::Create(service_);
   extension_path =
-      test_data_dir.AppendASCII("extensions/managed_mode/content_pack_2");
+      test_data_dir.AppendASCII("extensions/supervised_user/content_pack_2");
   installer->Load(extension_path);
   observer.Wait();
 

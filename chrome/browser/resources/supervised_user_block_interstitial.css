@@ -1,4 +1,4 @@
-/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
+/* Copyright 2014 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 body {
@@ -45,8 +45,10 @@ a {
    * the resource manually. */
   -webkit-user-select: none;
   content: -webkit-image-set(
-      url('../../app/theme/default_100_percent/common/error_managed_mode_blocked_page.png') 1x,
-      url('../../app/theme/default_200_percent/common/error_managed_mode_blocked_page.png') 2x);
+      url('../../app/theme/default_100_percent/common/'
+              'error_managed_mode_blocked_page.png') 1x,
+      url('../../app/theme/default_200_percent/common/'
+              'error_managed_mode_blocked_page.png') 2x);
   margin-bottom: 10px;
   margin-top: 10px;
 }

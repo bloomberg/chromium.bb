@@ -1,9 +1,9 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_WEBUI_OPTIONS_MANAGED_USER_CREATE_CONFIRM_HANDLER_H_
-#define CHROME_BROWSER_UI_WEBUI_OPTIONS_MANAGED_USER_CREATE_CONFIRM_HANDLER_H_
+#ifndef CHROME_BROWSER_UI_WEBUI_OPTIONS_SUPERVISED_USER_CREATE_CONFIRM_HANDLER_H_
+#define CHROME_BROWSER_UI_WEBUI_OPTIONS_SUPERVISED_USER_CREATE_CONFIRM_HANDLER_H_
 
 #include "chrome/browser/ui/webui/options/options_ui.h"
 
@@ -13,12 +13,12 @@ class DictionaryValue;
 
 namespace options {
 
-// Handler for the confirmation dialog after successful creation of a managed
+// Handler for the confirmation dialog after successful creation of a supervised
 // user.
-class ManagedUserCreateConfirmHandler : public OptionsPageUIHandler {
+class SupervisedUserCreateConfirmHandler : public OptionsPageUIHandler {
  public:
-  ManagedUserCreateConfirmHandler();
-  virtual ~ManagedUserCreateConfirmHandler();
+  SupervisedUserCreateConfirmHandler();
+  virtual ~SupervisedUserCreateConfirmHandler();
 
   // OptionsPageUIHandler implementation.
   virtual void GetLocalizedValues(
@@ -33,9 +33,9 @@ class ManagedUserCreateConfirmHandler : public OptionsPageUIHandler {
   // |args| is of the form [ {string} profileFilePath ]
   void SwitchToProfile(const base::ListValue* args);
 
-  DISALLOW_COPY_AND_ASSIGN(ManagedUserCreateConfirmHandler);
+  DISALLOW_COPY_AND_ASSIGN(SupervisedUserCreateConfirmHandler);
 };
 
 }  // namespace options
 
-#endif  // CHROME_BROWSER_UI_WEBUI_OPTIONS_MANAGED_USER_CREATE_CONFIRM_HANDLER_H_
+#endif  // CHROME_BROWSER_UI_WEBUI_OPTIONS_SUPERVISED_USER_CREATE_CONFIRM_HANDLER_H_

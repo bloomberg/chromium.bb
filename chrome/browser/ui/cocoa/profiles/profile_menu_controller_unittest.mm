@@ -244,9 +244,9 @@ TEST_F(ProfileMenuControllerTest, DeleteActiveProfile) {
   base::ThreadRestrictions::SetIOAllowed(io_was_allowed);
 }
 
-TEST_F(ProfileMenuControllerTest, ManagedProfile) {
+TEST_F(ProfileMenuControllerTest, SupervisedProfile) {
   TestingProfileManager* manager = testing_profile_manager();
-  TestingProfile* managed_profile =
+  TestingProfile* supervised_profile =
       manager->CreateTestingProfile("test1",
                                     scoped_ptr<PrefServiceSyncable>(),
                                     base::ASCIIToUTF16("Supervised User"),
@@ -269,12 +269,12 @@ TEST_F(ProfileMenuControllerTest, ManagedProfile) {
   ASSERT_EQ(@selector(newProfile:), [item action]);
   EXPECT_TRUE([controller() validateMenuItem:item]);
 
-  // Open a new browser for the managed user and switch to it.
-  Browser::CreateParams managed_profile_params(
-      managed_profile, chrome::HOST_DESKTOP_TYPE_NATIVE);
-  scoped_ptr<Browser> managed_browser(
-      chrome::CreateBrowserWithTestWindowForParams(&managed_profile_params));
-  BrowserList::SetLastActive(managed_browser.get());
+  // Open a new browser for the supervised user and switch to it.
+  Browser::CreateParams supervised_profile_params(
+      supervised_profile, chrome::HOST_DESKTOP_TYPE_NATIVE);
+  scoped_ptr<Browser> supervised_browser(
+      chrome::CreateBrowserWithTestWindowForParams(&supervised_profile_params));
+  BrowserList::SetLastActive(supervised_browser.get());
 
   item = [menu itemAtIndex:0];
   ASSERT_EQ(@selector(switchToProfileFromMenu:), [item action]);

@@ -93,7 +93,7 @@ void PopulateUsers(const ProfileInfoCache& profile_info,
   users->clear();
   const size_t count = profile_info.GetNumberOfProfiles();
   for (size_t i = 0; i < count; ++i) {
-    // Don't display managed users.
+    // Don't display supervised users.
     if (profile_info.ProfileIsSupervisedAtIndex(i))
       continue;
 

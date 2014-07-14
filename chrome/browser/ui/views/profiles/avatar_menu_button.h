@@ -29,8 +29,8 @@ class AvatarMenuButton : public views::MenuButton,
   // Internal class name.
   static const char kViewClassName[];
 
-  // Creates a new button. If |disabled| is true and we're not in managed mode,
-  // clicking on the button will cause the profile menu to be displayed.
+  // Creates a new button. Unless |disabled| is true, clicking on the button
+  // will cause the profile menu to be displayed.
   AvatarMenuButton(Browser* browser, bool disabled);
 
   virtual ~AvatarMenuButton();

@@ -400,10 +400,6 @@
     'linux_seccomp_bpf': {
       'filepath': 'content/common/sandbox.*linux.cc',
     },
-    'managed_users': {
-      'filepath': 'chrome/browser/.*managed_mode'\
-                  '|chrome/browser/.*managed_user',
-    },
     'media': {
       'filepath': 'media/|third_party/(ffmpeg|openmax)/|webmediaplayer|'\
         'audio_message_filter|video_layer|media_internals',
@@ -575,6 +571,11 @@
     },
     'streams': {
       'filepath': 'content/browser/streams/',
+    },
+    'supervised_users': {
+      'filepath': 'chrome/browser/.*managed_mode'\
+                  '|chrome/browser/.*managed_user'\
+                  '|chrome/browser/.*supervised_user',
     },
     'sync': {
       'filepath': 'chrome/browser/sync/|sync/|components/sync_driver/',
@@ -856,7 +857,7 @@
     'linux_fonts': ['derat+watch@chromium.org'],
     'linux_sandboxing': ['agl@chromium.org', 'jln+watch@chromium.org'],
     'linux_seccomp_bpf': ['jln+watch@chromium.org'],
-    'managed_users': ['pam+watch@chromium.org'],
+    'supervised_users': ['pam+watch@chromium.org'],
     'media': ['feature-media-reviews@chromium.org'],
     'media_galleries': ['gbillock@chromium.org', 'thestig@chromium.org',
                         'tommycli@chromium.org', 'vandebo@chromium.org'],

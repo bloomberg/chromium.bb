@@ -19,11 +19,12 @@ class Browser;
 // will open the profile menu; in Incognito, clicking will do nothing.
 @interface AvatarIconController : AvatarBaseController {
  @private
-  // The managed user avatar label button. Only used for managed user profiles.
+  // The supervised user avatar label button. Only used for supervised user
+  // profiles.
   base::scoped_nsobject<AvatarLabelButton> labelButton_;
 }
 
-// The managed user avatar label button view.
+// The supervised user avatar label button view.
 @property(readonly, nonatomic) NSButton* labelButtonView;
 
 // Designated initializer.

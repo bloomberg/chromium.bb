@@ -378,7 +378,7 @@
         <include name="IDR_USER_MANAGER_JS" file="resources\user_manager\user_manager.js" flattenhtml="true" type="BINDATA" />
         <include name="IDR_USER_MANAGER_HTML" file="resources\user_manager\user_manager.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
       </if>
-      <include name="IDR_SUPERVISED_USER_BLOCK_INTERSTITIAL_HTML" file="resources\managed_mode_block_interstitial.html" flattenhtml="true" type="BINDATA" />
+      <include name="IDR_SUPERVISED_USER_BLOCK_INTERSTITIAL_HTML" file="resources\supervised_user_block_interstitial.html" flattenhtml="true" type="BINDATA" />
       <include name="IDR_PROFILE_SIGNIN_CONFIRMATION_HTML" file="resources\profile_signin_confirmation.html" type="BINDATA" />
       <include name="IDR_PROFILE_SIGNIN_CONFIRMATION_JS" file="resources\profile_signin_confirmation.js" type="BINDATA" />
       <include name="IDR_PROFILE_SIGNIN_CONFIRMATION_CSS" file="resources\profile_signin_confirmation.css" type="BINDATA" />

@@ -94,7 +94,7 @@ class CreateProfileHandler: public OptionsPageUIHandler {
   // with the management server.
   void RegisterSupervisedUser(bool create_shortcut,
                               chrome::HostDesktopType desktop_type,
-                              const std::string& managed_user_id,
+                              const std::string& supervised_user_id,
                               Profile* new_profile);
 
   // Called back with the result of the supervised user registration.

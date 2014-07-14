@@ -72,7 +72,7 @@ class BrowserNonClientFrameView : public views::NonClientFrameView {
   // icon.  May be NULL for some frame styles.
   AvatarMenuButton* avatar_button_;
 
-  // Avatar label that is used for a managed user.
+  // Avatar label that is used for a supervised user.
   AvatarLabel* avatar_label_;
 
   // Menu button that displays the name of the active or guest profile.

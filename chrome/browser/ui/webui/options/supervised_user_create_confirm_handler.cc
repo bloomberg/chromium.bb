@@ -1,8 +1,8 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/webui/options/managed_user_create_confirm_handler.h"
+#include "chrome/browser/ui/webui/options/supervised_user_create_confirm_handler.h"
 
 #include "base/bind.h"
 #include "base/files/file_path.h"
@@ -24,13 +24,13 @@
 
 namespace options {
 
-ManagedUserCreateConfirmHandler::ManagedUserCreateConfirmHandler() {
+SupervisedUserCreateConfirmHandler::SupervisedUserCreateConfirmHandler() {
 }
 
-ManagedUserCreateConfirmHandler::~ManagedUserCreateConfirmHandler() {
+SupervisedUserCreateConfirmHandler::~SupervisedUserCreateConfirmHandler() {
 }
 
-void ManagedUserCreateConfirmHandler::GetLocalizedValues(
+void SupervisedUserCreateConfirmHandler::GetLocalizedValues(
     base::DictionaryValue* localized_strings) {
   DCHECK(localized_strings);
 
@@ -53,13 +53,13 @@ void ManagedUserCreateConfirmHandler::GetLocalizedValues(
   RegisterStrings(localized_strings, resources, arraysize(resources));
 }
 
-void ManagedUserCreateConfirmHandler::RegisterMessages() {
+void SupervisedUserCreateConfirmHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback("switchToProfile",
-      base::Bind(&ManagedUserCreateConfirmHandler::SwitchToProfile,
+      base::Bind(&SupervisedUserCreateConfirmHandler::SwitchToProfile,
                  base::Unretained(this)));
 }
 
-void ManagedUserCreateConfirmHandler::SwitchToProfile(
+void SupervisedUserCreateConfirmHandler::SwitchToProfile(
       const base::ListValue* args) {
   DCHECK(args);
   const base::Value* file_path_value;

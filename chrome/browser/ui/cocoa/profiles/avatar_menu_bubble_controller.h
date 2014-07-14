@@ -25,7 +25,7 @@ class Browser;
   // Array of the below view controllers.
   base::scoped_nsobject<NSMutableArray> items_;
 
-  // Is set to true if the managed user has clicked on Switch Users.
+  // Is set to true if the supervised user has clicked on Switch Users.
   BOOL expanded_;
 }
 
@@ -43,7 +43,7 @@ class Browser;
 // Edits a given profile. |sender| is an AvatarMenuItemController.
 - (IBAction)editProfile:(id)sender;
 
-// Switches from the managed user avatar menu to the normal avatar menu which
+// Switches from the supervised user avatar menu to the normal avatar menu which
 // allows to switch profiles.
 - (IBAction)switchProfile:(id)sender;
 

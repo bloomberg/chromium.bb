@@ -1,8 +1,8 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/webui/options/managed_user_import_handler.h"
+#include "chrome/browser/ui/webui/options/supervised_user_import_handler.h"
 
 #include <set>
 
@@ -47,11 +47,11 @@ scoped_ptr<base::ListValue> GetAvatarIcons() {
 
 namespace options {
 
-ManagedUserImportHandler::ManagedUserImportHandler()
+SupervisedUserImportHandler::SupervisedUserImportHandler()
     : observer_(this),
       weak_ptr_factory_(this) {}
 
-ManagedUserImportHandler::~ManagedUserImportHandler() {
+SupervisedUserImportHandler::~SupervisedUserImportHandler() {
   Profile* profile = Profile::FromWebUI(web_ui());
   if (!profile->IsSupervised()) {
     SupervisedUserSyncService* service =
@@ -62,7 +62,7 @@ ManagedUserImportHandler::~ManagedUserImportHandler() {
   }
 }
 
-void ManagedUserImportHandler::GetLocalizedValues(
+void SupervisedUserImportHandler::GetLocalizedValues(
     base::DictionaryValue* localized_strings) {
   DCHECK(localized_strings);
 
@@ -86,7 +86,7 @@ void ManagedUserImportHandler::GetLocalizedValues(
   localized_strings->Set("avatarIcons", GetAvatarIcons().release());
 }
 
-void ManagedUserImportHandler::InitializeHandler() {
+void SupervisedUserImportHandler::InitializeHandler() {
   Profile* profile = Profile::FromWebUI(web_ui());
   if (!profile->IsSupervised()) {
     SupervisedUserSyncService* sync_service =
@@ -99,7 +99,7 @@ void ManagedUserImportHandler::InitializeHandler() {
           SupervisedUserSharedSettingsServiceFactory::GetForBrowserContext(
               profile);
       subscription_ = settings_service->Subscribe(
-          base::Bind(&ManagedUserImportHandler::OnSharedSettingChanged,
+          base::Bind(&SupervisedUserImportHandler::OnSharedSettingChanged,
                      weak_ptr_factory_.GetWeakPtr()));
     } else {
       DCHECK(!SupervisedUserSharedSettingsServiceFactory::GetForBrowserContext(
@@ -109,41 +109,42 @@ void ManagedUserImportHandler::InitializeHandler() {
   }
 }
 
-void ManagedUserImportHandler::RegisterMessages() {
+void SupervisedUserImportHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback("requestManagedUserImportUpdate",
-      base::Bind(&ManagedUserImportHandler::RequestManagedUserImportUpdate,
+      base::Bind(&SupervisedUserImportHandler::
+                      RequestSupervisedUserImportUpdate,
                  base::Unretained(this)));
 }
 
-void ManagedUserImportHandler::OnSupervisedUsersChanged() {
-  FetchManagedUsers();
+void SupervisedUserImportHandler::OnSupervisedUsersChanged() {
+  FetchSupervisedUsers();
 }
 
-void ManagedUserImportHandler::FetchManagedUsers() {
+void SupervisedUserImportHandler::FetchSupervisedUsers() {
   web_ui()->CallJavascriptFunction("options.ManagedUserListData.resetPromise");
-  RequestManagedUserImportUpdate(NULL);
+  RequestSupervisedUserImportUpdate(NULL);
 }
 
-void ManagedUserImportHandler::RequestManagedUserImportUpdate(
+void SupervisedUserImportHandler::RequestSupervisedUserImportUpdate(
     const base::ListValue* /* args */) {
   if (Profile::FromWebUI(web_ui())->IsSupervised())
     return;
 
   if (!IsAccountConnected() || HasAuthError()) {
-    ClearManagedUsersAndShowError();
+    ClearSupervisedUsersAndShowError();
   } else {
     SupervisedUserSyncService* supervised_user_sync_service =
         SupervisedUserSyncServiceFactory::GetForProfile(
             Profile::FromWebUI(web_ui()));
     if (supervised_user_sync_service) {
       supervised_user_sync_service->GetSupervisedUsersAsync(
-          base::Bind(&ManagedUserImportHandler::SendExistingManagedUsers,
+          base::Bind(&SupervisedUserImportHandler::SendExistingSupervisedUsers,
                      weak_ptr_factory_.GetWeakPtr()));
     }
   }
 }
 
-void ManagedUserImportHandler::SendExistingManagedUsers(
+void SupervisedUserImportHandler::SendExistingSupervisedUsers(
     const base::DictionaryValue* dict) {
   DCHECK(dict);
   const ProfileInfoCache& cache =
@@ -208,18 +209,18 @@ void ManagedUserImportHandler::SendExistingManagedUsers(
       supervised_users);
 }
 
-void ManagedUserImportHandler::ClearManagedUsersAndShowError() {
+void SupervisedUserImportHandler::ClearSupervisedUsersAndShowError() {
   web_ui()->CallJavascriptFunction("options.ManagedUserListData.onSigninError");
 }
 
-bool ManagedUserImportHandler::IsAccountConnected() const {
+bool SupervisedUserImportHandler::IsAccountConnected() const {
   Profile* profile = Profile::FromWebUI(web_ui());
   SigninManagerBase* signin_manager =
       SigninManagerFactory::GetForProfile(profile);
   return signin_manager && !signin_manager->GetAuthenticatedUsername().empty();
 }
 
-bool ManagedUserImportHandler::HasAuthError() const {
+bool SupervisedUserImportHandler::HasAuthError() const {
   Profile* profile = Profile::FromWebUI(web_ui());
   ProfileOAuth2TokenService* token_service =
       ProfileOAuth2TokenServiceFactory::GetForProfile(profile);
@@ -237,15 +238,15 @@ bool ManagedUserImportHandler::HasAuthError() const {
       state == GoogleServiceAuthError::ACCOUNT_DISABLED;
 }
 
-void ManagedUserImportHandler::OnSharedSettingChanged(
+void SupervisedUserImportHandler::OnSharedSettingChanged(
     const std::string& supervised_user_id,
     const std::string& key) {
   if (key == supervised_users::kChromeAvatarIndex)
-    FetchManagedUsers();
+    FetchSupervisedUsers();
 }
 
-void ManagedUserImportHandler::OnErrorChanged() {
-  FetchManagedUsers();
+void SupervisedUserImportHandler::OnErrorChanged() {
+  FetchSupervisedUsers();
 }
 
 }  // namespace options
