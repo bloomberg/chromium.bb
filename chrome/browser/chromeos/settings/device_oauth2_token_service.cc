@@ -235,13 +235,15 @@ void DeviceOAuth2TokenService::DidGetSystemSalt(
   // Otherwise, load the refresh token from |local_state_|.
   std::string encrypted_refresh_token =
       local_state_->GetString(prefs::kDeviceRobotAnyApiRefreshToken);
-  CryptohomeTokenEncryptor encryptor(system_salt_);
-  refresh_token_ = encryptor.DecryptWithSystemSalt(encrypted_refresh_token);
-  if (!encrypted_refresh_token.empty() && refresh_token_.empty()) {
-    LOG(ERROR) << "Failed to decrypt refresh token.";
-    state_ = STATE_NO_TOKEN;
-    FireRefreshTokensLoaded();
-    return;
+  if (!encrypted_refresh_token.empty()) {
+    CryptohomeTokenEncryptor encryptor(system_salt_);
+    refresh_token_ = encryptor.DecryptWithSystemSalt(encrypted_refresh_token);
+    if (refresh_token_.empty()) {
+      LOG(ERROR) << "Failed to decrypt refresh token.";
+      state_ = STATE_NO_TOKEN;
+      FireRefreshTokensLoaded();
+      return;
+    }
   }
 
   state_ = STATE_VALIDATION_PENDING;
