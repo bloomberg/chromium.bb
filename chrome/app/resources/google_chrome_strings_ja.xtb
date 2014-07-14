@@ -25,6 +25,7 @@
 <translation id="4891791193823137474">Google Chrome のバックグラウンドでの実行を許可する</translation>
 <translation id="110877069173485804">自分好みに設定</translation>
 <translation id="1376881911183620035">新しい Chrome をお試しいただきありがとうございます。Chrome では再起動が必要です。続ける前に、未保存のデータがないか確認してください。</translation>
+<translation id="8406086379114794905">Chrome の品質向上にご協力ください</translation>
 <translation id="2896252579017640304">Chrome アプリを起動</translation>
 <translation id="2721687379934343312">Mac では、パスワードはキーチェーンに保存され、この Mac OS X アカウントを共有する別の Chrome ユーザーがアクセスしたり同期したりできます。</translation>
 <translation id="683440813066116847">mDNS トラフィックを許可する Google Chrome Canary のインバウンド ルールです。</translation>
@@ -120,6 +121,7 @@
 <translation id="911206726377975832">閲覧データも削除しますか？</translation>
 <translation id="2036562258783619899">新しい Chrome の概要を見る</translation>
 <translation id="5855036575689098185">お使いのパソコンで実行されているソフトウェアは Google Chrome に対応していません。</translation>
+<translation id="7164397146364144019">セキュリティに関する事象についての詳細を Google に自動送信して、Chrome の安全性と利便性の向上にご協力ください。</translation>
 <translation id="8008534537613507642">Chrome を再インストール</translation>
 <translation id="2044287590254833138">Google Chrome ツールバー</translation>
 <translation id="8862326446509486874">権限が不十分なためシステムレベルのインストールができません。管理者権限でインストールしてください。</translation>
@@ -128,7 +130,6 @@
 <translation id="7436949144778751379">Google Chrome では Windows XP 以降が必要です。機能の一部が動作しない可能性があります。</translation>
 <translation id="5877064549588274448">チャンネルが変更されました。変更を適用するには、デバイスを再起動してください。</translation>
 <translation id="103396972844768118">Chrome データに関する重要な情報</translation>
-<translation id="6145223986912084844">chrome</translation>
 <translation id="6757767188268205357">今後は表示しない</translation>
 <translation id="2290095356545025170">Google Chrome をアンインストールしてもよろしいですか？</translation>
 <translation id="7062966102157262887">現在ダウンロードを実行中です。ダウンロードがキャンセルされますが、Google Chrome を終了してもよろしいですか？</translation>
@@ -181,7 +182,6 @@
 <translation id="3444832043240812445"><ph name="BEGIN_LINK"/>障害レポートを有効<ph name="END_LINK"/>にした場合にのみ、このページに最近の障害情報が表示されます。</translation>
 <translation id="8614913330719544658">Google Chrome が応答しません。今すぐ再起動しますか？</translation>
 <translation id="2681064822612051220">システム上に競合している Google Chrome が見つかりました。これをアンインストールしてからもう一度お試しください。</translation>
-<translation id="1175529839152551794">ログインしました。ノートパソコン、スマートフォン、タブレットで同じタブ、ブックマーク、その他の Chrome 設定をご利用いただけます。また、Google のサービスをご利用になる際に、より関連性の高いヒントや機能が表示されるようになります。</translation>
 <translation id="8209985377776300429">新しい Chrome のプレビュー中です。</translation>
 <translation id="6126631249883707068">Google Chrome でパスワードを保存しますか？</translation>
 <translation id="7773845170078702898">Google Chrome でこのサイトのパスワードを保存しますか？</translation>

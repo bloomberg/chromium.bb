@@ -54,7 +54,6 @@
 <translation id="4831257561365056138">Afinstaller Chromium-appliste</translation>
 <translation id="4222580632002216401">Du er nu logget ind på Chromium. Synkronisering er deaktiveret af din administrator.</translation>
 <translation id="4207043877577553402"><ph name="BEGIN_BOLD"/>Advarsel!<ph name="END_BOLD"/> Chromium kan ikke forhindre udvidelser i at registrere din browserhistorik. Fjern markeringen for at deaktivere denne udvidelse i inkognitotilstand.</translation>
-<translation id="4516868174453854611">Nu, hvor du er logget ind, kan du få dine faner, bogmærker og andre Chromium-ting på din bærbare computer, telefon og tablet. Du vil også modtage flere relevante forslag og funktioner på Google-tjenester.</translation>
 <translation id="985602178874221306">Forfatterne til Chromium</translation>
 <translation id="8628626585870903697">Chromium inkluderer ikke PDF-fremviseren, som er påkrævet, for at Vis udskrift kan fungere.</translation>
 <translation id="7138853919861947730">Chromium kan bruge webtjenester til at forbedre din søgeoplevelse.</translation>
@@ -108,6 +107,7 @@
 <translation id="3258596308407688501">Chromium kan ikke læse og skrive til sin datamappe:
 
 <ph name="USER_DATA_DIRECTORY"/></translation>
+<translation id="1869480248812203386">Du kan hjælpe med at gøre Chromium sikrere og nemmere at bruge ved automatisk at rapportere oplysninger om mulige sikkerhedshændelser til Google.</translation>
 <translation id="6970811910055250180">Opdaterer din enhed...</translation>
 <translation id="2485422356828889247">Afinstaller</translation>
 <translation id="85843667276690461">Få hjælp til at bruge Chromium</translation>
@@ -116,7 +116,6 @@
 <translation id="8493179195440786826">Chromium er forældet</translation>
 <translation id="911206726377975832">Slet også dine browserdata?</translation>
 <translation id="95514773681268843"><ph name="DOMAIN"/> kræver, at du læser og accepterer følgende servicevilkår, inden du bruger denne enhed. Disse vilkår udvider, ændrer eller begrænser på ingen måde vilkårene for Chromium OS.</translation>
-<translation id="5603085937604338780">chromium</translation>
 <translation id="1699664235656412242">Luk alle Chromium-vinduer (herunder dem i Windows 8-tilstand), og prøv igen.</translation>
 <translation id="6734080038664603509">Opdater &amp;Chromium</translation>
 <translation id="8862326446509486874">Du har ikke de nødvendige rettigheder til en installation på systemniveau. Prøv at køre installationsprogrammet igen som administrator.</translation>
@@ -225,6 +224,7 @@ Hvis du logger ind alligevel, flettes Chromium-oplysninger, som f.eks. bogmærke
 <translation id="9013262824292842194">Chromium kræver Windows Vista eller Windows XP med SP2 eller højere.</translation>
 <translation id="1967743265616885482">Et modul med samme navn er i strid med Chromium.</translation>
 <translation id="8704119203788522458">Dette er din Chromium-browser</translation>
+<translation id="8269379391216269538">Hjælp med at gøre Chromium bedre</translation>
 <translation id="4224199872375172890">Chromium er opdateret.</translation>
 <translation id="374481098568514319">Denne computer har allerede en nyere version af Chromium-komponenterne. Brug et nyere installationsprogram.</translation>
 <translation id="6240281849816458190">Du forsøgte at gå til &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, men serveren viste et certifikat, der endnu ikke er gyldigt. Der er ingen tilgængelige oplysninger, der indikerer, om certifikatet stammer fra en kilde, der er tillid til. Chromium kan ikke med sikkerhed garantere, at du kommunikerer med &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; og ikke en angriber. Uret på din computer viser i øjeblikket <ph name="CURRENT_TIME"/>. Ser det rigtigt ud? Hvis ikke, skal du rette systemuret og derefter opdatere siden.</translation>

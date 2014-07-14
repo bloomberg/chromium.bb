@@ -2,16 +2,21 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="en-GB">
 <translation id="8588878054171169263">Save image</translation>
+<translation id="7998918019931843664">Re-open closed tab</translation>
 <translation id="4996978546172906250">Share via</translation>
 <translation id="5578795271662203820">Search <ph name="SEARCH_ENGINE"/> for this image</translation>
 <translation id="6831043979455480757">Translate</translation>
 <translation id="7644305409888602715">Translating page to <ph name="SOURCE_LANGUAGE"/>...</translation>
 <translation id="7015922086425404465">Get app from the Google Play Store: <ph name="APP_ACTION"/></translation>
 <translation id="1491151370853475546">Reload this Page</translation>
+<translation id="5233638681132016545">New tab</translation>
 <translation id="641643625718530986">Print…</translation>
+<translation id="5763382633136178763">Incognito tabs</translation>
+<translation id="5210365745912300556">Close tab</translation>
 <translation id="7658239707568436148">Cancel</translation>
 <translation id="6458785801851713928">Sync is not available for your domain.</translation>
 <translation id="2731700343119398978">Please wait...</translation>
+<translation id="6846298663435243399">Loading…</translation>
 <translation id="7378627244592794276">Nope</translation>
 <translation id="3358663646935160692">This account is managed by <ph name="DOMAIN_NAME"/>.
 
@@ -20,6 +25,7 @@ You are signing in with a managed account and giving its administrator control o
 <translation id="1623104350909869708">Prevent this page from creating additional dialogues</translation>
 <translation id="1426410128494586442">Yes</translation>
 <translation id="8218346974737627104">Confirm sign-in</translation>
+<translation id="8853345339104747198"><ph name="TAB_TITLE"/>, tab</translation>
 <translation id="624558823898732418">Translation Language: <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="8872441722924401214">Choose certificate for authentication</translation>
 <translation id="3896036286668839683">Certificate Viewer</translation>
@@ -41,6 +47,7 @@ You are signing in with a managed account and giving its administrator control o
 <translation id="3063601790762993062">Save video</translation>
 <translation id="6042308850641462728">More</translation>
 <translation id="7267430310003164111">Prompt to get app from the Google Play Store.  App name: <ph name="APP_NAME"/>.  App average rating: <ph name="APP_RATING"/>.</translation>
+<translation id="303955801043931176">Tab closed</translation>
 <translation id="4148957013307229264">Installing...</translation>
 <translation id="3992315671621218278">Save link</translation>
 <translation id="8034522405403831421">This page is in <ph name="SOURCE_LANGUAGE"/>. Translate it to <ph name="TARGET_LANGUAGE"/>?</translation>
@@ -66,9 +73,11 @@ You are signing in with a managed account and giving its administrator control o
 <translation id="6333140779060797560">Share via <ph name="APPLICATION"/></translation>
 <translation id="6040143037577758943">Close</translation>
 <translation id="969096075394517431">Change languages</translation>
+<translation id="5556459405103347317">Reload</translation>
 <translation id="5032574515228824816">Prompt</translation>
 <translation id="4847896847259487518">Bookmark page</translation>
 <translation id="497421865427891073">go forward</translation>
+<translation id="8310344678080805313">Standard tabs</translation>
 <translation id="6277522088822131679">There was a problem printing the page. Please try again.</translation>
 <translation id="1742134235943978220">Translated to <ph name="TARGET_LANGUAGE"/>.</translation>
 <translation id="6965382102122355670">OK</translation>

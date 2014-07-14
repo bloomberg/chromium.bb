@@ -29,6 +29,7 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="4891791193823137474">Let Google Chrome run in the background</translation>
 <translation id="110877069173485804">This is your Chrome</translation>
 <translation id="1376881911183620035">Thanks for trying out the new Chrome. Chrome needs to restart so make sure that you've saved any open work before continuing.</translation>
+<translation id="8406086379114794905">Help make Chrome better</translation>
 <translation id="2896252579017640304">Launch Chrome apps</translation>
 <translation id="2721687379934343312">On Mac, passwords are saved to your Keychain and may be accessed or synced by other Chrome users sharing this OS X account.</translation>
 <translation id="683440813066116847">Inbound rule for Google Chrome Canary to allow mDNS traffic.</translation>
@@ -128,6 +129,7 @@ Signing in anyway will merge Chrome information like bookmarks, history and othe
 <translation id="911206726377975832">Also delete your browsing data?</translation>
 <translation id="2036562258783619899">Preview the new Chrome</translation>
 <translation id="5855036575689098185">Software running on your computer is incompatible with Google Chrome.</translation>
+<translation id="7164397146364144019">You can help make Chrome safer and easier to use by automatically reporting details of possible security incidents to Google.</translation>
 <translation id="8008534537613507642">Reinstall Chrome</translation>
 <translation id="2044287590254833138">Google Chrome Toolbar</translation>
 <translation id="8862326446509486874">You do not have appropriate rights for system-level installation. Try running the installer again as Administrator.</translation>
@@ -136,7 +138,6 @@ Signing in anyway will merge Chrome information like bookmarks, history and othe
 <translation id="7436949144778751379">Google Chrome requires Windows XP or later. Some features may not work.</translation>
 <translation id="5877064549588274448">Channel changed. Restart your device to apply changes.</translation>
 <translation id="103396972844768118">Important information regarding your Chrome data</translation>
-<translation id="6145223986912084844">chrome</translation>
 <translation id="6757767188268205357">Don't bother me</translation>
 <translation id="2290095356545025170">Are you sure you want to uninstall Google Chrome?</translation>
 <translation id="7062966102157262887">A download is currently in progress. Do you want to exit Google Chrome and cancel the download?</translation>
@@ -189,7 +190,6 @@ Signing in anyway will merge Chrome information like bookmarks, history and othe
 <translation id="3444832043240812445">This page only shows information on your recent crashes if you <ph name="BEGIN_LINK"/>enable crash reporting<ph name="END_LINK"/>.</translation>
 <translation id="8614913330719544658">Google Chrome is unresponsive. Relaunch now?</translation>
 <translation id="2681064822612051220">A conflicting installation of Google Chrome was found on the system. Please uninstall it and try again.</translation>
-<translation id="1175529839152551794">Now that you're signed in, you can get your tabs, bookmarks and other Chrome stuff across your laptop, phone and tablet. You will also receive more relevant suggestions and features on Google services.</translation>
 <translation id="8209985377776300429">You're previewing the new Chrome.</translation>
 <translation id="6126631249883707068">Do you want Google Chrome to save your password?</translation>
 <translation id="7773845170078702898">Do you want Google Chrome to save your password for this site?</translation>

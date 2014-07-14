@@ -1,19 +1,17 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="uk">
-<translation id="8719282907381795632">Отримувати доступ до ваших даних на веб-сайті <ph name="WEBSITE_1"/></translation>
 <translation id="7809034755304591547"><ph name="EXTENSION_NAME"/> (ідентифікатор розширення &quot;<ph name="EXTENSION_ID"/>&quot;) заблоковано адміністратором.</translation>
 <translation id="2857834222104759979">Файл маніфесту недійсний.</translation>
+<translation id="8978038008714088448">Читати та змінювати свої дані на веб-сайті <ph name="WEBSITE_1"/></translation>
+<translation id="4205302772098850608">Читати та змінювати свої дані на веб-сайтах <ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/> і <ph name="WEBSITE_3"/></translation>
 <translation id="3828484226910527078">Доступ до пристрою USB</translation>
 <translation id="6384275966486438344">Використовувати пошукову систему <ph name="SEARCH_HOST"/></translation>
 <translation id="5911798608827489036">Обмінюватися даними з будь-яким комп’ютером у локальній мережі чи Інтернеті</translation>
 <translation id="4719685943208231314">Доступ до пристрою USB від <ph name="VENDOR_NAME"/></translation>
 <translation id="657064425229075395">Не вдалося завантажити фоновий сценарій &quot;<ph name="BACKGROUND_SCRIPT"/>&quot;.</translation>
-<translation id="3093853184108622112">Отримувати доступ до ваших даних на веб-сайтах <ph name="WEBSITE_1"/> і <ph name="WEBSITE_2"/></translation>
 <translation id="8597109877291678953">Обмінюватися даними з комп’ютером <ph name="HOSTNAME"/></translation>
-<translation id="6914908792814954894">Отримувати доступ до ваших даних на стількох веб-сайтах: <ph name="NUMBER_OF_WEBSITES"/></translation>
 <translation id="5456409301717116725">Це розширення включає файл ключа &quot;<ph name="KEY_PATH"/>&quot;. Можливо, ви не хочете цього робити.</translation>
-<translation id="6968649314782363508">Отримувати доступ до ваших даних на веб-сайтах <ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/> і <ph name="WEBSITE_3"/></translation>
 <translation id="2350172092385603347">Використано локалізацію, але параметр мови за умовчанням (default_locale) не визначено в маніфесті.</translation>
 <translation id="8058376558882514200">Доступ до пристрою USB <ph name="PRODUCT_NAME"/> від <ph name="VENDOR_NAME"/></translation>
 <translation id="8774379383902544371">Отримувати доступ до пристроїв USB</translation>
@@ -21,13 +19,15 @@
 <translation id="6344170822609224263">Отримувати доступ до списку мережевих з’єднань</translation>
 <translation id="2518849872271000461">Обмінюватися даними з комп’ютерами <ph name="HOSTNAMES"/></translation>
 <translation id="1389014510128217152">– <ph name="WEBSITE_1"/></translation>
-<translation id="5530391389158154052">Отримувати доступ до ваших даних на стількох веб-сайтах: <ph name="NUMBER_OF_WEBSITES"/></translation>
 <translation id="961805664415579088">Обмінюватися даними з будь-яким комп’ютером у домені <ph name="DOMAIN"/></translation>
 <translation id="4968399700653439437">Обмінюватися даними з будь-яким комп’ютером у доменах <ph name="DOMAINS"/></translation>
 <translation id="8662911384982557515">Зробити <ph name="HOME_PAGE"/> домашньою сторінкою</translation>
+<translation id="8114679593444120202">Читати та змінювати свої дані на стількох веб-сайтах: <ph name="NUMBER_OF_WEBSITES"/></translation>
 <translation id="8602184400052594090">Файл маніфесту відсутній або його не можна розпізнати.</translation>
 <translation id="7893008570150657497">Отримувати доступ до фотографій, музики й інших медіа-файлів із вашого комп’ютера</translation>
 <translation id="7217838517480956708">Адміністратор цього комп’ютера потребує встановленого розширення <ph name="EXTENSION_NAME"/>. Його не можна видаляти чи змінювати.</translation>
 <translation id="7154130902455071009">Зробити <ph name="START_PAGE"/> домашньою сторінкою</translation>
+<translation id="6094507746643187368">Читати та змінювати свої дані на веб-сайтах <ph name="WEBSITE_1"/> і <ph name="WEBSITE_2"/></translation>
 <translation id="1803557475693955505">Не вдалося завантажити фонову сторінку &quot;<ph name="BACKGROUND_PAGE"/>&quot;.</translation>
+<translation id="8207052894957937969">Читати та змінювати свої дані на стількох веб-сайтах: <ph name="NUMBER_OF_WEBSITES"/></translation>
 </translationbundle>

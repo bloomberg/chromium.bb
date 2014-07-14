@@ -183,6 +183,21 @@ Denne regelen brukes internt av Chrome.</translation>
           Den anbefalte metoden for låsing av inaktive skjermer er å aktivere skjermlåsing for suspendering, og konfigurere <ph name="PRODUCT_OS_NAME"/> til å suspendere etter inaktivitesforsinkelsen. Denne innstillingen burde bare brukes når skjermlåsing skal skje mye raskere enn ved suspendering, eller når suspendering er midlertidig stoppet eller deaktivert.
 
           Verdien for innstillingen må angis i millisekunder. Verdien er låst til å være lavere enn inaktivitetsforsinkelsen.</translation>
+<translation id="979541737284082440">(Dette dokumentet kan inneholde innstillinger som er ment for nyere
+      <ph name="PRODUCT_NAME"/>-versjoner, og de kan endres uten forvarsel. Listen over støttede innstillinger er
+      den samme for Chromium og Google Chrome.)
+
+      Du trenger ikke å endre disse innstillingene manuelt! Du kan laste ned maler som er enkle å bruke, fra
+      <ph name="POLICY_TEMPLATE_DOWNLOAD_URL"/>.
+
+      Disse innstillingene er bare ment for å konfigurere forekomster av Chrome internt i organisasjonen. Bruk av disse innstillingene utenfor organisasjonen (for eksempel i et offentlig distribuert program) regnes som skadelig programvare og kommer trolig til å bli merket som skadelig programvare av Google og antivirusleverandører.
+
+      Merk: Fra og med <ph name="PRODUCT_NAME"/>
+      28 lastes innstillingene inn direkte fra Group Policy API-en i
+      Windows. Innstillinger som legges til manuelt i registeret, blir ignorert. Se
+      http://crbug.com/259236 for detaljer.
+
+      Fra og med <ph name="PRODUCT_NAME"/> 35 leses innstillingene inn direkte fra registeret hvis arbeidsstasjonen slås sammen til et Active Directory-domene; ellers leses innstillingene fra GPO.</translation>
 <translation id="4157003184375321727">Rapportering av operativsystem og maskinvareversjon</translation>
 <translation id="5255162913209987122">Kan anbefales</translation>
 <translation id="1861037019115362154">Angir en liste over programtillegg deaktivert på <ph name="PRODUCT_NAME"/>, og forhindrer brukere fra å endre denne innstillingen.
@@ -316,20 +331,6 @@ Denne regelen brukes internt av Chrome.</translation>
 <translation id="382476126209906314">Konfigurer TalkGadget-prefikset for verter med ekstern adgang</translation>
 <translation id="6561396069801924653">Vis tilgjengelighetsalternativer i systemmenyen</translation>
 <translation id="8104962233214241919">Automatisk valg av klientsertifikater for disse nettstedene</translation>
-<translation id="7983624541020350102">(Dette dokumentet kan inneholde innstillinger som er beregnet på nyere
-      <ph name="PRODUCT_NAME"/>-versjoner, og disse kan
-      endres uten varsel. Listen over støttede innstillinger er den
-      samme for Chromium og Google Chrome.)
-
-      Du trenger ikke å endre disse innstillingene manuelt. Du kan laste ned maler som er enkle å bruke fra
-      <ph name="POLICY_TEMPLATE_DOWNLOAD_URL"/>.
-
-      Disse innstillingene skal bare brukes for å konfigurere Chrome-økter internt i organisasjonen din. Hvis du bruker disse innstillingene utenfor organisasjonen din (f.eks. i et program som er offentlig tilgjengelig), anses dette som skadelig programvare av Google og anti-virusleverandører.
-
-      Merk: Fra og med <ph name="PRODUCT_NAME"/>
-      28 lastes innstillingene inn direkte fra Group Policy API-et i
-      Windows. Innstillingene som legges til manuelt i registeret, blir ignorert. Du finner mer informasjon på
-      http://crbug.com/259236.</translation>
 <translation id="2906874737073861391">Liste over AppPack-utvidelser</translation>
 <translation id="4386578721025870401">Begrens hvor lenge en bruker som er autentisert via SAML kan logge på uten nett.
 
@@ -433,6 +434,7 @@ Hvis du aktiverer denne innstillingen, sendes anonym rapportering av bruk og pro
 
       Hvis denne retningslinjen ikke angis, aktiveres den, men brukeren kan endre på dette.</translation>
 <translation id="6943577887654905793">Innstillingsnavn for Mac/Linux:</translation>
+<translation id="8176035528522326671">Tillat at bedriftsbrukeren bare er primær flerprofilbruker (standardatferd for bedriftsadministrerte brukere)</translation>
 <translation id="6925212669267783763">Konfigurerer katalogen <ph name="PRODUCT_FRAME_NAME"/> bruker til lagring av brukerdata. 
 
        Hvis du angir denne retningslinjen, bruker <ph name="PRODUCT_FRAME_NAME"/> den oppgitte katalogen.
@@ -441,6 +443,7 @@ Hvis du aktiverer denne innstillingen, sendes anonym rapportering av bruk og pro
 
      Hvis denne innstillingen ikke angis, brukes standard profilkatalog.</translation>
 <translation id="8906768759089290519">Aktiver gjestemodus</translation>
+<translation id="348495353354674884">Aktiver virtuelt tastatur</translation>
 <translation id="2168397434410358693">Inaktivitetsforsinkelse når enheten kjører på vekselstrøm</translation>
 <translation id="838870586332499308">Aktiver datastreifing</translation>
 <translation id="2292084646366244343"><ph name="PRODUCT_NAME"/> kan bruke en Google-nett-tjeneste for å få bukt med stavefeil. Hvis denne innstillingen er aktivert, så blir denne tjenesten alltid brukt. Hvis innstillinger er deaktivert, forblir tjenesten ubrukt.
@@ -456,6 +459,13 @@ Hvis du aktiverer denne innstillingen, sendes anonym rapportering av bruk og pro
 
           Skaleringsfaktoren må være på minst 100 %. Det er ikke tillatt med verdier som gjør inaktivitetsforsinkelsen i presentasjonsmodus kortere enn den er ved vanlig bruk.</translation>
 <translation id="254524874071906077">Angi Chrome som standardnettleser</translation>
+<translation id="8112122435099806139">Angir klokkeformatet som brukes på enheten.
+
+      Denne innstillingen konfigurerer klokkeformatet som brukes på påloggingskjermen og som standard for brukerøkter. Brukerne kan fremdeles overstyre klokkeformatet for kontoene sine.
+
+      Hvis innstillingen er «true», bruker enheten 24-timers klokkeformat. Hvis innstillingen er «false», bruker enheten 12-timers klokkeformat.
+
+      Hvis innstillingen ikke er angitt, bruker enheten 24-timers klokkeformat som standard.</translation>
 <translation id="8764119899999036911">Angir om generert Kerberos-SPN er basert på det kanoniske DNS-navnet eller på det angitte originalnavnet. Hvis du aktiverer denne innstillingen, droppes CNAME-oppslag, og tjenernavnet brukes som angitt. Hvis du deaktiverer denne innstillingen eller ikke angir den, bestemmes tjenerens kanoniske navn ved hjelp av CNAME-oppslag.</translation>
 <translation id="5056708224511062314">Skjermforstørrelse deaktivert</translation>
 <translation id="4377599627073874279">La alle nettsteder vise alle bilder</translation>
@@ -467,8 +477,15 @@ Hvis du aktiverer denne innstillingen, sendes anonym rapportering av bruk og pro
 
           Hvis handlingen er suspender, kan <ph name="PRODUCT_OS_NAME"/> konfigureres til å enten låse eller ikke låse skjermen før suspenderingen.</translation>
 <translation id="3915395663995367577">Nettadresse til en .pac-fil for mellomtjener</translation>
-<translation id="2144674628322086778">Tillat bedriftsbrukeren å være både primær og sekundær (standard atferd)</translation>
 <translation id="1022361784792428773">Utvidelses-ID-er brukeren skal hindres i å installere (eller * for alle)</translation>
+<translation id="6064943054844745819">Angir en liste over utdaterte funksjoner på nettplattformen som må aktiveres på nytt.
+
+      Med denne innstillingen kan administratorer aktivere utdaterte funksjoner på nettplattformen på nytt for en begrenset periode. Funksjonene identifiseres av streng-tagger, og funksjonene som korresponderer til taggene i den angitte listen for denne innstillingen, aktiveres på nytt.
+
+      Disse taggene er definert for øyeblikket:
+      - ShowModalDialog_EffectiveUntil20150430
+
+      Hvis denne innstillingen ikke angis eller listen er tom, forblir alle de utdaterte funksjonene til nettplattformen deaktivert.</translation>
 <translation id="3805659594028420438">Aktiver TLS-domenebetingede sertifikatutvidelser (foreldet)</translation>
 <translation id="5499375345075963939">Denne retningslinjen er aktiv bare i detaljistmodus.
 
@@ -514,7 +531,6 @@ Hvis du aktiverer denne innstillingen, sendes anonym rapportering av bruk og pro
           Hvis denne innstillingen er aktivert, deaktiveres vertenes fysiske enheter for inn- og utdata mens en fjerntilkobling er aktiv.
 
           Hvis denne innstillingen er deaktivert eller ikke angitt, kan både lokale og eksterne brukere samhandle med verten når den deles.</translation>
-<translation id="4894257424747841850">Rapportliste over enhetsbrukere som har logget på i det siste. Hvis retningslinjen ikke er angitt, eller satt til «false», blir ikke brukerne rapportert.</translation>
 <translation id="2488010520405124654">Aktiver melding om nettverkskonfigurasjon når du er uten nett.
 
       Hvis denne innstillingen ikke er angitt, eller er angitt som True, og en enhetslokal konto er konfigurert for auto-pålogging uten forsinkelser, og enheten ikke har tilgang til Internett, viser <ph name="PRODUCT_OS_NAME"/> en melding om nettverkskonfigurasjon.
@@ -526,6 +542,9 @@ Hvis du aktiverer denne innstillingen, sendes anonym rapportering av bruk og pro
           Denne innstillingen er valgfri. Hvis den ikke er angitt, blir forespørsler om søkeforslag sendt via GET-metoden.
 
           Denne innstillingen brukes bare hvis «DefaultSearchProviderEnabled»-innstillingen er aktivert.</translation>
+<translation id="8140204717286305802">Rapportér en liste over nettverksgrensesnitt med typene og maskinvareadressene til tjeneren.
+
+      Hvis innstillingen angis som «false», rapporteres ikke grensesnittlisten.</translation>
 <translation id="4962195944157514011">Angir nettadressen til søkemotoren som brukes til et standard søk. Nettadressen skal inneholde strengen <ph name="SEARCH_TERM_MARKER"/>, som erstattes når søket utføres av termene brukeren søker etter.
 
           Dette alternativet må angis når retningslinjen DefaultSearchProviderEnabled er aktivert, og respekteres bare hvis dette er tilfellet.</translation>
@@ -644,7 +663,6 @@ Hvis du aktiverer denne innstillingen, sendes anonym rapportering av bruk og pro
 <translation id="7717938661004793600">Konfigurer tilgjengelighetfunksjonene for <ph name="PRODUCT_OS_NAME"/>.</translation>
 <translation id="5182055907976889880">Konfigurer Google Disk i <ph name="PRODUCT_OS_NAME"/>.</translation>
 <translation id="8704831857353097849">Liste over deaktiverte programtillegg</translation>
-<translation id="8391419598427733574">Operativsystem for rapportering og fastvareversjon for registrerte enheter. Hvis denne innstillingen er aktivert, rapporterer registrerte enheter om eget operativsystem og fastvareversjon med jevne mellomrom. Hvis denne innstillingen ikke er angitt eller deaktivert, blir ikke versjonsinformasjon rapportert.</translation>
 <translation id="467449052039111439">Åpne en liste over nettadresser</translation>
 <translation id="1988371335297483117">Nyttelaster med automatisk oppdatering på <ph name="PRODUCT_OS_NAME"/>, kan lastes ned via HTTP i stedet for HTTPS. Dette tillater åpen HTTP-bufring av HTTP-nedlastinger.
 
@@ -690,8 +708,10 @@ Hvis denne retningslinjen ikke angis, svartelistes ingen nettadresser i nettlese
 <translation id="8244525275280476362">Maksimal innlastingsforsinkelse etter ugyldiggjøring av en innstilling</translation>
 <translation id="8587229956764455752">Tillat oppretting av nye brukerkontoer</translation>
 <translation id="7417972229667085380">Prosentandelen for skalering av inaktivitetsforsinkelsen i presentasjonsmodus (avviklet)</translation>
+<translation id="6211428344788340116">Rapportér aktivitetstider for enhet.
+
+      Hvis denne innstillingen ikke angis eller angis som «true», rapporterer registrerte enheter om hvilke tidsperioder en bruker er aktiv på enheten. Hvis innstillingen angis som «false», blir ikke aktivitetstider registrert eller rapportert.</translation>
 <translation id="3964909636571393861">Gir tilgang til en liste over nettadresser</translation>
-<translation id="3450318623141983471">Rapportér tilstanden til enhetens utviklerbryter ved oppstart. Hvis retningslinjene ikke er angitt eller deaktivert, rapporteres ikke tilstanden til utviklerbryteren.</translation>
 <translation id="1811270320106005269">Aktiver lås når <ph name="PRODUCT_OS_NAME"/>-enheter blir inaktive eller suspenderte.
 
       Hvis du aktiverer denne innstillingen, må brukere angi passord for å aktivere enheten om den er i hvilemodus.
@@ -751,7 +771,6 @@ Hvis denne retningslinjen ikke angis, svartelistes ingen nettadresser i nettlese
           Når dette ikke er angitt, vises ingen advarsel.
 
           Innstillingsverdien skal angis i millisekunder. Verdiene må være mindre enn eller lik med inaktivitetsperioden.</translation>
-<translation id="1098794473340446990">Rapportér aktivitetstider for enhet. Hvis denne innstillingen er aktivert, rapporterer registrerte enheter om hvilke tidsperioder en bruker er aktiv på enheten. Hvis denne innstillingen ikke er angitt eller deaktivert, blir ikke aktivitetstider registrert eller rapportert.</translation>
 <translation id="1327466551276625742">Aktiver melding om nettverkskonfigurasjon når du er uten nett.</translation>
 <translation id="7937766917976512374">Tillat eller blokkér videoopptak</translation>
 <translation id="427632463972968153">Angir parameterene som brukes når du utfører et bildesøk med POST. De består av kommainndelte navn og verdi-par. Hvis en verdi er et malparameter, som {imageThumbnail} i eksempelet ovenfor, blir den erstattet med virkelige miniatyrbildedata.
@@ -799,6 +818,11 @@ Hvis denne retningslinjen ikke angis, svartelistes ingen nettadresser i nettlese
       &quot;1412.24.34&quot;: Oppdater bare til denne spesifikke versjonen.</translation>
 <translation id="8102913158860568230">Standard innstilling for direkteavspilling av medieinnhold</translation>
 <translation id="6641981670621198190">Deaktiver støtte for programmeringsgrensesnitt for 3D-grafikk</translation>
+<translation id="5196805177499964601">Blokkering av utviklermodus.
+
+      Hvis denne innstillingen er angitt som True, hindrer <ph name="PRODUCT_OS_NAME"/> enheten fra å starte opp i utviklermodus. Systemet nekter å starte opp og viser en feilmelding når utviklermodus er aktivert.
+
+      Hvis innstillingen ikke er angitt, eller angitt som False, forblir utviklermodusen tilgjengelig for enheten.</translation>
 <translation id="1265053460044691532">Begrens hvor lenge en bruker som er autentisert via SAML kan logge på uten nett</translation>
 <translation id="5703863730741917647">Angi handlingen som skal utføres når inaktivitetsforsinkelsen blir overgått.
 
@@ -810,6 +834,7 @@ Hvis denne retningslinjen ikke angis, svartelistes ingen nettadresser i nettlese
 <translation id="5997543603646547632">Bruk 24-timersklokken som standard</translation>
 <translation id="7003746348783715221">Valg for <ph name="PRODUCT_NAME"/></translation>
 <translation id="4723829699367336876">Aktiver kryssing av brannmur fra ekstern tilgangsklient</translation>
+<translation id="2744751866269053547">Registrer protokollbehandlere</translation>
 <translation id="6367755442345892511">Om lanseringskanalen skal kunne konfigureres av brukeren</translation>
 <translation id="3868347814555911633">Denne retningslinjen er aktiv bare i detaljistmodus.
 
@@ -826,6 +851,7 @@ Hvis denne retningslinjen ikke angis, svartelistes ingen nettadresser i nettlese
 
       Denne innstillingen påvirker alle typer videoinndata, og ikke bare det innebygde kameraet.</translation>
 <translation id="7063895219334505671">Tillat forgrunnsvindu på disse nettstedene</translation>
+<translation id="3756011779061588474">Blokkering av utviklermodus</translation>
 <translation id="4052765007567912447">Kontrollerer om brukeren kan vise passord i klartekst i passordbehandlingen. Hvis du deaktiverer denne innstillingen, tillater ikke passordbehandlingen at lagrede passord vises i klartekst i vinduet til passordbehandlingen. Hvis du aktiverer eller ikke angir denne retningslinjen, kan brukerne se passordene i klartekst i passordbehandlingen.</translation>
 <translation id="5936622343001856595">Tvinger søkene i Google Nettsøk til å gjennomføres med Sikkert Søk aktivert, og hindrer brukere fra å endre denne innstillingen.
 
@@ -862,6 +888,7 @@ Hvis denne retningslinjen ikke angis, svartelistes ingen nettadresser i nettlese
           Hvis denne innstillingen er konfigurert som «False», forhindrer ikke videoaktivitet at brukeren blir ansett som inaktiv.</translation>
 <translation id="3965339130942650562">Tidsavbrudd før inaktiv brukeravlogging utføres</translation>
 <translation id="5814301096961727113">Angi standard tilstand for muntlig tilbakemelding på påloggingssiden</translation>
+<translation id="1950814444940346204">Aktiver utdaterte funksjoner på nettplattformen</translation>
 <translation id="9084985621503260744">Angi om videoaktivitet skal påvirke strømbehandling</translation>
 <translation id="7091198954851103976">Kjører alltid programtillegg som krever godkjenning</translation>
 <translation id="1708496595873025510">Angi begrensning for henting av startverdien for variasjonene</translation>
@@ -890,7 +917,6 @@ Hvis denne retningslinjen ikke angis, svartelistes ingen nettadresser i nettlese
           Denne regelen er bare for intern bruk i Chrome.</translation>
 <translation id="5586942249556966598">Ikke gjør noe</translation>
 <translation id="131353325527891113">Vis brukernavn på påloggingssiden</translation>
-<translation id="4057110413331612451">Tillat bedriftsbrukeren å bare være primær flerprofilbruker</translation>
 <translation id="5365946944967967336">Vis startsideknappen på verktøylinjen</translation>
 <translation id="3709266154059827597">Konfigurer installasjonssperrelisten for utvidelser</translation>
 <translation id="1933378685401357864">Bakgrunnsbilde</translation>
@@ -1265,6 +1291,9 @@ skjermtastaturet når som helst og statusen den har på påloggingsskjermen er v
           Denne retningslinjen er valgfri. Hvis den ikke angis, aktiverer ingen søkeord søkeleverandøren.
 
           Denne retningslinjen tas bare i betraktning hvis retningslinjen DefaultSearchProviderEnabled er aktivert.</translation>
+<translation id="1152117524387175066">Rapportér tilstanden til enhetens utviklerbryter ved oppstart.
+
+      Hvis innstillingen angis som «true», rapporteres ikke tilstanden til utviklerbryteren.</translation>
 <translation id="5774856474228476867">Nettadresse for søk for standard søkeleverandør</translation>
 <translation id="4650759511838826572">Deaktiver protokollsystemer for nettadresse</translation>
 <translation id="7831595031698917016">Angir maksverdien for forsinkelse mellom mottak av en opphevet innstilling og henting av den nye innstillingen fra tjenesten for enhetsadministrasjon i milisekunder.
@@ -1313,13 +1342,6 @@ skjermtastaturet når som helst og statusen den har på påloggingsskjermen er v
 <translation id="602728333950205286">Umiddelbar nettadresse for standard søkeleverandør</translation>
 <translation id="3030000825273123558">Aktiver rapportering av beregninger</translation>
 <translation id="8465065632133292531">Parametere for Instant-nettadresser som bruker POST</translation>
-<translation id="6659688282368245087">Spesifiserer klokkeformatet som skal brukes for enheten.
-
-      Denne innstillingen konfigurerer klokkeformatet som skal brukes på påloggingssiden og som standard i brukerøkter. Brukere kan fortsatt overkjøre klokkeformatet for kontoene sine.
-
-      Hvis innstillingen ikke angis til «true», bruker enheten et 24-timers klokkeformat. Hvis enheten angis til «false», bruker enheten et 12-timers format.
-
-      Hvis innstillingen ikke angis, bruker enheten et 24-timers format som standard.</translation>
 <translation id="6559057113164934677">Forby nettsteder fra å bruke kameraet og mikrofonen min</translation>
 <translation id="7273823081800296768">Hvis denne innstillingen er aktivert eller ikke konfigurert, kan brukere velge å knytte sammen klienter og verter ved tilkobling, og dermed sørge for at PIN-koden ikke må angis hver gang.
 
@@ -1404,6 +1426,9 @@ skjermtastaturet når som helst og statusen den har på påloggingsskjermen er v
 
       Hvis denne innstillingen deaktiveres eller ikke angis, er det mulig å tillate nettsider bruk av programmeringsgrensesnittet WebGL, og programtillegg bruk av programmeringsgrensesnittet Pepper 3D. Standardinnstillingene til nettleseren kan likevel kreve at kommandolinjeargumenter skal bestås for at disse programmeringsgrensesnittene skal brukes.</translation>
 <translation id="2077273864382355561">Forsinkelse for avslått skjerm når enheten kjører på batteristrøm</translation>
+<translation id="9112897538922695510">Med denne innstillingen kan du registrere en liste over protokollbehandlere. Dette er bare en anbefalt innstilling. Egenskapen |protocol| bør settes til det aktuelle skjemaet, for eksempel «mailto», og egenskapen |url| bør settes til nettadressemønsteret for appen som behandler skjemaet. Mønsteret kan inkludere en «%s» som, hvis den brukes, erstattes av nettadressen som behandles.
+
+          Protokollbehandlere som registreres via denne innstillingen, slås sammen med de som er registrert av brukeren, og begge er tilgjengelige for bruk. Brukeren kan overstyre protokollbehandlerne som innstillingen har installert, ved å installere en ny standardbehandler, men kan ikke fjerne en protokollbehandler som er registrert via en innstilling.</translation>
 <translation id="3417418267404583991">Hvis denne retningslinjen er angitt som Sann eller ikke er konfigurert, aktiverer <ph name="PRODUCT_OS_NAME"/> gjestepålogging. Gjestepålogginger er anonyme brukerøkter og krever ikke passord.
 
       Hvis denne retningslinjen er angitt som Usann, tillater ikke <ph name="PRODUCT_OS_NAME"/> at gjesteøkter startes.</translation>
@@ -1418,6 +1443,9 @@ skjermtastaturet når som helst og statusen den har på påloggingsskjermen er v
           En svartelisteverdi på «*» betyr at alle innebygde meldingsverter er svartelistet, med mindre de er eksplistitt oppført på godkjenningslisten.
 
           Hvis denne innstillingen ikke angis, laster <ph name="PRODUCT_NAME"/> inn alle installerte innebygde verter.</translation>
+<translation id="749556411189861380">Operativsystem for rapportering og fastvareversjon for registrerte enheter.
+
+      Hvis denne innstillingen ikke angis eller angis som «true», rapporterer registrerte enheter om eget operativsystem og fastvareversjon med jevne mellomrom. Hvis innstillingen angis som «false», blir ikke versjonsinformasjon rapportert.</translation>
 <translation id="7258823566580374486">Aktiver begrensning (curtaining) av verter for fjerntilgang</translation>
 <translation id="5560039246134246593">Legg til et parameter for hentingen av startverdien for variasjoner i <ph name="PRODUCT_NAME"/>.
 
@@ -1442,6 +1470,11 @@ skjermtastaturet når som helst og statusen den har på påloggingsskjermen er v
 <translation id="8908294717014659003">Lar deg angi om nettsteder skal gis tillatelse til å bruke digitaliseringsenhetene dine. Bruk av digitaliseringsenheter kan tillates som standard, eller angis slik at brukeren blir spurt om tillatelse hver gang et nettsted ønsker å bruke slike enheter.
 
           Hvis denne retningslinjen ikke er angitt, brukes PromptOnAccess, og brukeren kan ikke endre denne innstillingen.</translation>
+<translation id="4429220551923452215">Aktiverer eller deaktiverer snarveien til appene i bokmerkefeltet.
+
+      Hvis denne innstillingen ikke angis, kan brukeren velge å vise eller skjule snarveien til appene fra hurtigmenyen i bokmerkefeltet.
+
+      Hvis denne innstillingen konfigureres, kan ikke brukeren endre den, og snarveien til appene vises enten alltid eller aldri.</translation>
 <translation id="2299220924812062390">Angi en liste over aktiverte programtillegg</translation>
 <translation id="4325690621216251241">Legg til en avloggingsknapp for systemstatusfeltet</translation>
 <translation id="924557436754151212">Importér lagrede passord fra standard nettleser ved første kjøring</translation>
@@ -1449,6 +1482,7 @@ skjermtastaturet når som helst og statusen den har på påloggingsskjermen er v
 <translation id="7227967227357489766">Definerer listen over brukere som kan logge seg på enheten. Oppføringer har formatet <ph name="USER_WHITELIST_ENTRY_FORMAT"/>, som for eksempel <ph name="USER_WHITELIST_ENTRY_EXAMPLE"/>. Hvis du vil tillate vilkårlige brukere på domenet, må oppføringer bruke formatet <ph name="USER_WHITELIST_ENTRY_WILDCARD"/>.
 
       Hvis denne retningslinjen ikke er konfigurert, fins det ingen begrensninger for hvilke brukere som kan logge seg på. Vær oppmerksom på at oppretting av nye brukere fortsatt krever at <ph name="DEVICEALLOWNEWUSERS_POLICY_NAME"/>-retningslinjen er konfigurert på korrekt måte.</translation>
+<translation id="2521581787935130926">Vis apper-snarveien i bokmerkefeltet</translation>
 <translation id="8135937294926049787">Angir hvor lenge brukeren må være inaktiv før skjermen låses når enheten kjører på batteristrøm.
 
           Når denne innstillingen er konfigurert til en verdi som er større en null, angir den hvor lenge brukeren må være inaktiv før <ph name="PRODUCT_OS_NAME"/> slår av skjermen.
@@ -1491,6 +1525,15 @@ skjermtastaturet når som helst og statusen den har på påloggingsskjermen er v
 <translation id="1062011392452772310">Slå på ekstern attestasjon for enheten</translation>
 <translation id="7774768074957326919">Bruk systeminnstillingene for mellomtjener</translation>
 <translation id="3891357445869647828">Aktiver JavaScript</translation>
+<translation id="2274864612594831715">Denne innstillingen konfigurerer aktiveringen av det virtuelle tastaturet som en inndataenhet på Chrome OS. Brukerne kan ikke overstyre denne innstillingen.
+
+      Hvis denne innstillingen er «true», aktiveres det virtuelle skjermtastaturet alltid.
+
+      Hvis den er «false», deaktiveres alltid det virtuelle skjermtastaturet.
+
+      Hvis du angir denne innstillingen, kan ikke brukerne endre eller overstyre den. Brukerne kan imidlertid aktivere og deaktivere et eventuelt skjermtastatur som er levert via tilgjengelighetsfunksjonene og har forrang over det virtuelle tastaturet som kontrolleres av denne innstillingen. Se innstillingen |VirtualKeyboardEnabled| for å kontrollere skjermtastaturet som leveres av tilgjengelighetsfunksjonene.
+
+      Hvis denne innstillingen ikke angis, blir skjermtastaturet i utgangspunktet deaktivert, men det kan aktiveres av brukeren når som helst. Heuristiske regler kan også brukes til å bestemme når tastaturet skal vises.</translation>
 <translation id="6774533686631353488">Tillat bruk av integrerte meldingsverter på brukernivå (installert uten administratorrettigheter).</translation>
 <translation id="868187325500643455">Tillat alle nettsteder å kjøre programtillegg</translation>
 <translation id="7421483919690710988">Angi størrelse på mediediskbuffer i byte</translation>
@@ -1541,6 +1584,7 @@ skjermtastaturet når som helst og statusen den har på påloggingsskjermen er v
 <translation id="3808945828600697669">Angi en liste over deaktiverte programtillegg</translation>
 <translation id="4525521128313814366">Gjør at du kan angi en liste over nettadressemønstre som spesifiserer nettsteder som ikke får vise bilder. Hvis denne retningslinjen ikke angis, brukes den globale standardverdien for alle nettsteder, enten fra retningslinjen DefaultImagesSetting, eller fra brukerens egne retningslinjer hvis den nevnte retningslinjen ikke er angitt.</translation>
 <translation id="8499172469244085141">Standardinnstillinger (kan overstyres av brukere)</translation>
+<translation id="4816674326202173458">Tillat at bedriftsbrukeren er både primær- og sekundærbruker (standardatferd for ikke-administrerte brukere)</translation>
 <translation id="8693243869659262736">Bruk innebygd DNS-klient</translation>
 <translation id="3072847235228302527">Angi bruksvilkårene for en konto på enheten</translation>
 <translation id="5523812257194833591">Automatisk pålogging til offentlig økt etter en gitt tid.
@@ -1615,9 +1659,6 @@ skjermtastaturet når som helst og statusen den har på påloggingsskjermen er v
 <translation id="5388730678841939057">Velger strategien som brukes for å frigjøre diskplass ved automatisk opprydding (foreldet)</translation>
 <translation id="7848840259379156480">Lar deg konfigurere standard HTML-gjengivelse når <ph name="PRODUCT_FRAME_NAME"/> er installert. Standardinnstillingen er å tillate vertsnettleseren å foreta gjengivelsen. Du kan eventuelt overstyre dette og la <ph name="PRODUCT_FRAME_NAME"/> gjengi HTML-sider som standard.</translation>
 <translation id="186719019195685253">Handling som skal utføres når inaktivitetsforsinkelsen overgås og maskinen kjører på vekselstrøm</translation>
-<translation id="7890264460280019664">Rapportér en liste over nettverksgrensesnitt med typene og maskinvareadressene til tjeneren.
-
-      Hvis innstillingen ikke er angitt, eller angitt som «false», rapporteres ikke grensesnittlisten.</translation>
 <translation id="197143349065136573">Slår på den tidligere nettbaserte påloggingen.
 
       Denne innstillingen er nyttig for bedriftskunder som bruker SSO-løsninger som ennå ikke er kompatible med den nye, innebygde påloggingsflyten.
@@ -1718,6 +1759,9 @@ skjermtastaturet når som helst og statusen den har på påloggingsskjermen er v
       Denne innnstillingen må konfigureres med en nettadresse der <ph name="PRODUCT_OS_NAME"/> kan laste ned vilkårene. Vilkårene må være i ren tekst, levert som MIME-typen tekst/ren. Det er ikke tillatt med koding.</translation>
 <translation id="2623014935069176671">Vent på første brukeraktivitet</translation>
 <translation id="2660846099862559570">Aldri bruk mellomtjener</translation>
+<translation id="637934607141010488">Rapportliste over enhetsbrukere som har logget på i det siste.
+
+      Hvis innstillingen angis som «false», blir ikke brukerne rapportert.</translation>
 <translation id="1956493342242507974">Konfigurer strømstrømstyring på påloggingssiden i <ph name="PRODUCT_OS_NAME"/>.
 
       Med denne planen kan du konfigurere hvordan <ph name="PRODUCT_OS_NAME"/> skal oppføre seg når det ikke har vært noen brukeraktivitet på en stund mens påloggingsskjermen vises. Planen styrer flere innstillinger. For verdiområder og semantikk for enkeltinnstillinger kan du se tilsvarende planer som kontrollerer strømstyring innad i økten. De eneste avvikene fra disse planene er:

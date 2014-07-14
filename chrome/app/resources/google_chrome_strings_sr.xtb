@@ -29,6 +29,7 @@ Google Chrome не може да врати подешавања.</translation>
 <translation id="4891791193823137474">Нека Google Chrome ради у позадини</translation>
 <translation id="110877069173485804">Ово је ваш Chrome</translation>
 <translation id="1376881911183620035">Хвала вам што сте испробали нови Chrome. Треба поново да покренете Chrome да бисте се уверили да сте сачували све на чему тренутно радите пре него што наставите.</translation>
+<translation id="8406086379114794905">Помозите нам да побољшамо Chrome</translation>
 <translation id="2896252579017640304">Покрените Chrome апликације</translation>
 <translation id="2721687379934343312">На Mac-у, лозинке сe чувају у Keychain и други корисници Chrome-а који деле овај ОС X налог могу да им приступе или да их синхронизују.</translation>
 <translation id="683440813066116847">Правило за долазни саобраћај за Google Chrome Canary да бисте омогућили mDNS саобраћај.</translation>
@@ -128,6 +129,7 @@ Google Chrome не може да врати подешавања.</translation>
 <translation id="911206726377975832">Желите ли да избришете и податке прегледања?</translation>
 <translation id="2036562258783619899">Прегледајте нови Chrome</translation>
 <translation id="5855036575689098185">Софтвер покренут на рачунару није компатибилан са Google Chrome-ом.</translation>
+<translation id="7164397146364144019">Можете да помогнете да Chrome буде безбеднији и једноставнији за коришћење ако аутоматски пријављујете Google-у детаље могућих безбедносних инцидената.</translation>
 <translation id="8008534537613507642">Поново инсталирај Chrome</translation>
 <translation id="2044287590254833138">Google Chrome Toolbar</translation>
 <translation id="8862326446509486874">Немате одговарајућа права за инсталацију на нивоу система. Покушајте поново да покренете програм за инсталацију, овога пута као администратор.</translation>
@@ -136,7 +138,6 @@ Google Chrome не може да врати подешавања.</translation>
 <translation id="7436949144778751379">Google Chrome захтева Windows XP или новију верзију. Неке функције можда неће радити.</translation>
 <translation id="5877064549588274448">Канал је промењен. Покрените поново уређај да бисте применили промене.</translation>
 <translation id="103396972844768118">Важне информације у вези са Chrome подацима</translation>
-<translation id="6145223986912084844">chrome</translation>
 <translation id="6757767188268205357">Не досађуј</translation>
 <translation id="2290095356545025170">Да ли заиста желите да деинсталирате Google Chrome?</translation>
 <translation id="7062966102157262887">Преузимање је у току. Да ли желите да изађете из Google Chrome-а и откажете преузимање?</translation>
@@ -187,7 +188,6 @@ Google Chrome не може да врати подешавања.</translation>
 <translation id="3444832043240812445">Ова страница приказује информације о недавним отказивањима само уколико <ph name="BEGIN_LINK"/>омогућите извештавање о отказивањима<ph name="END_LINK"/>.</translation>
 <translation id="8614913330719544658">Google Chrome не реагује. Желите ли да га одмах поново покренете?</translation>
 <translation id="2681064822612051220">У систему је пронађена некомпатибилна инсталација Google Chrome прегледача. Деинсталирајте је и покушајте поново.</translation>
-<translation id="1175529839152551794">Пошто сте се пријавили, сада можете да приступите картицама, обележивачима и другом Chrome садржају са лаптопа, телефона и таблета. Такође ћете добијати релевантније предлоге и функције на Google услугама.</translation>
 <translation id="8209985377776300429">Прегледате нови Chrome.</translation>
 <translation id="6126631249883707068">Желите ли да Google Chrome сачува лозинку?</translation>
 <translation id="7773845170078702898">Да ли желите да Google Chrome сачува лозинку за овај сајт?</translation>

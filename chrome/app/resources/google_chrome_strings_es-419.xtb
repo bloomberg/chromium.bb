@@ -25,6 +25,7 @@
 <translation id="4891791193823137474">Permitir que Google Chrome se ejecute en segundo plano</translation>
 <translation id="110877069173485804">Este es tu navegador Chrome</translation>
 <translation id="1376881911183620035">Gracias por probar el nuevo Chrome. Es necesario reiniciar Chrome; asegúrate de haber guardado tu trabajo antes de continuar.</translation>
+<translation id="8406086379114794905">Ayudar a mejorar Chrome</translation>
 <translation id="2896252579017640304">Iniciar aplicaciones de Chrome</translation>
 <translation id="2721687379934343312">En dispositivos Mac, las contraseñas se guardan en la aplicación Keychain. Los usuarios de Chrome con los que compartes esta cuenta del sistema operativo X pueden acceder a las contraseñas o sincronizarlas.</translation>
 <translation id="683440813066116847">Regla de entrada para que Google Chrome Canary permita el tráfico mDNS.</translation>
@@ -120,6 +121,7 @@ Si accedes de todos modos, se fusionará la información de Google Chrome, como 
 <translation id="911206726377975832">¿También eliminar datos de navegación?</translation>
 <translation id="2036562258783619899">Vista previa del nuevo Chrome</translation>
 <translation id="5855036575689098185">El software que se ejecuta en tu computadora no es compatible con Google Chrome.</translation>
+<translation id="7164397146364144019">Puedes ayudar a que Chrome sea más seguro y fácil de usar si informas automáticamente detalles de posibles incidentes de seguridad en Google.</translation>
 <translation id="8008534537613507642">Reinstalar Chrome</translation>
 <translation id="2044287590254833138">Barra de herramientas de Google Chrome</translation>
 <translation id="8862326446509486874">No tienes los derechos que se requieren para realizar la instalación al nivel del sistema. Intenta ejecutar el instalador nuevamente como Administrador.</translation>
@@ -128,7 +130,6 @@ Si accedes de todos modos, se fusionará la información de Google Chrome, como 
 <translation id="7436949144778751379">Google Chrome requiere Windows XP o versiones posteriores. Es posible que no funcionen algunas características.</translation>
 <translation id="5877064549588274448">Se cambió el canal. Reinicia el dispositivo para aplicar los cambios.</translation>
 <translation id="103396972844768118">Información importante sobre tus datos de Google Chrome</translation>
-<translation id="6145223986912084844">chrome</translation>
 <translation id="6757767188268205357">No preguntar de nuevo</translation>
 <translation id="2290095356545025170">¿Estás seguro de que deseas desinstalar Google Chrome?</translation>
 <translation id="7062966102157262887">Hay una descarga en curso. ¿Quieres salir de Google Chrome y cancelarla?</translation>
@@ -181,7 +182,6 @@ Si accedes de todos modos, se fusionará la información de Google Chrome, como 
 <translation id="3444832043240812445">Esta página sólo muestra información sobre fallas recientes si se <ph name="BEGIN_LINK"/>activan los informes sobre fallas<ph name="END_LINK"/>.</translation>
 <translation id="8614913330719544658">Google Chrome no responde. ¿Quieres reiniciarlo ahora?</translation>
 <translation id="2681064822612051220">Se encontró una instalación conflictiva de Google Chrome en el sistema. Desinstálala e intenta nuevamente.</translation>
-<translation id="1175529839152551794">Al acceder, ya puedes ver las pestañas, los marcadores y otros elementos de Chrome en tu computadora portátil, teléfono o tablet. También recibirás más sugerencias y funciones pertinentes en relación con los servicios de Google.</translation>
 <translation id="8209985377776300429">Esta es una vista previa del nuevo Chrome.</translation>
 <translation id="6126631249883707068">¿Deseas que Google Chrome guarde tu contraseña?</translation>
 <translation id="7773845170078702898">¿Quieres que Google Chrome guarde tu contraseña para este sitio?</translation>

@@ -81,6 +81,7 @@
 <translation id="8750798805984357768">Please select one of these options.</translation>
 <translation id="7740050170769002709">HTML content</translation>
 <translation id="6692633176391053278">stepper</translation>
+<translation id="4975562563186953947"><ph name="SELECTED_COUNT"/> selected</translation>
 <translation id="8541249477527128034">media control</translation>
 <translation id="2226276347425096477">Please shorten this text to <ph name="MAX_CHARACTERS"/> characters or less (you are currently using <ph name="CURRENT_LENGTH"/> characters).</translation>
 <translation id="6101327004457443354">un-mute audio track</translation>

@@ -70,7 +70,7 @@
 <translation id="739024184232394898">Khác...</translation>
 <translation id="383465348367842624">Phần đứng trước '<ph name="ATSIGN"/>' không được chứa biểu tượng '<ph name="INVALIDCHARACTER"/>'.</translation>
 <translation id="5468998798572797635">thoát khỏi chế độ toàn màn hình</translation>
-<translation id="5919473608089529604">Không thể tải trình cắm.</translation>
+<translation id="5919473608089529604">Không thể tải plugin.</translation>
 <translation id="5546461542133609677">bật tiếng</translation>
 <translation id="6663448176199120256">Tìm kiếm Gần đây</translation>
 <translation id="1020833440720551630">tắt tiếng bản âm thanh</translation>
@@ -81,6 +81,7 @@
 <translation id="8750798805984357768">Vui lòng chọn một trong các tùy chọn sau.</translation>
 <translation id="7740050170769002709">Nội dung HTML</translation>
 <translation id="6692633176391053278">điều khiển tăng/giảm</translation>
+<translation id="4975562563186953947">Đã chọn <ph name="SELECTED_COUNT"/></translation>
 <translation id="8541249477527128034">kiểm soát phương tiện</translation>
 <translation id="2226276347425096477">Hãy cắt ngắn văn bản này thành <ph name="MAX_CHARACTERS"/> ký tự hoặc ít hơn (bạn hiện đang sử dụng <ph name="CURRENT_LENGTH"/> ký tự).</translation>
 <translation id="6101327004457443354">bật tiếng bản âm thanh</translation>

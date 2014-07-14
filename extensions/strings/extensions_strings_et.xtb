@@ -1,19 +1,17 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="et">
-<translation id="8719282907381795632">Juurdepääs teie andmetele saidil <ph name="WEBSITE_1"/></translation>
 <translation id="7809034755304591547">Administraator blokeeris laienduse <ph name="EXTENSION_NAME"/> (laienduse ID „<ph name="EXTENSION_ID"/>”).</translation>
 <translation id="2857834222104759979">Manifestifail on kehtetu.</translation>
+<translation id="8978038008714088448">Vaadake ja muutke oma andmeid veebisaidil <ph name="WEBSITE_1"/></translation>
+<translation id="4205302772098850608">Vaadake ja muutke oma andmeid veebisaitidel <ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/> ja <ph name="WEBSITE_3"/></translation>
 <translation id="3828484226910527078">Juurdepääs USB-seadmele</translation>
 <translation id="6384275966486438344">Muutke oma otsinguseadeid: <ph name="SEARCH_HOST"/></translation>
 <translation id="5911798608827489036">Vaheta andmeid mis tahes arvutiga kohalikus võrgus või Internetis</translation>
 <translation id="4719685943208231314">Juurdepääs tootja <ph name="VENDOR_NAME"/> USB-seadmele</translation>
 <translation id="657064425229075395">Taustaskripti „<ph name="BACKGROUND_SCRIPT"/>” ei õnnestunud laadida.</translation>
-<translation id="3093853184108622112">Juurdepääs teie andmetele saidil <ph name="WEBSITE_1"/> ja <ph name="WEBSITE_2"/></translation>
 <translation id="8597109877291678953">Vaheta andmeid arvutiga <ph name="HOSTNAME"/></translation>
-<translation id="6914908792814954894">Juurdepääs oma andmetele <ph name="NUMBER_OF_WEBSITES"/> veebisaidil</translation>
 <translation id="5456409301717116725">Laiendus hõlmab võtmefaili „<ph name="KEY_PATH"/>”. See toiming ei ole soovitatav.</translation>
-<translation id="6968649314782363508">Juurdepääs teie andmetele saitidel <ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/> ja <ph name="WEBSITE_3"/></translation>
 <translation id="2350172092385603347">Lokaliseerimist kasutatakse, kuid parameetrit default_locale ei olnud manifestis määratud.</translation>
 <translation id="8058376558882514200">Juurdepääs tootja <ph name="VENDOR_NAME"/> USB-seadmele <ph name="PRODUCT_NAME"/></translation>
 <translation id="8774379383902544371">Juurdepääs USB-seadmetele</translation>
@@ -21,13 +19,15 @@
 <translation id="6344170822609224263">Juurdepääs võrguühenduste loendile</translation>
 <translation id="2518849872271000461">Vaheta andmeid nende arvutitega: <ph name="HOSTNAMES"/></translation>
 <translation id="1389014510128217152">- <ph name="WEBSITE_1"/></translation>
-<translation id="5530391389158154052">Juurdepääs oma andmetele <ph name="NUMBER_OF_WEBSITES"/> veebisaidil</translation>
 <translation id="961805664415579088">Vaheta andmeid mis tahes arvutiga domeenis <ph name="DOMAIN"/></translation>
 <translation id="4968399700653439437">Vaheta andmeid mis tahes arvutiga nendes domeenides: <ph name="DOMAINS"/></translation>
 <translation id="8662911384982557515">Määrake avaleheks <ph name="HOME_PAGE"/></translation>
+<translation id="8114679593444120202">Vaadake ja muutke oma andmeid <ph name="NUMBER_OF_WEBSITES"/> veebisaidil</translation>
 <translation id="8602184400052594090">Manifestifail on kadunud või ei ole seda võimalik lugeda.</translation>
 <translation id="7893008570150657497">Pääseda juurde fotodele, muusikale ja muule meediale teie arvutist</translation>
 <translation id="7217838517480956708">Seadme administraator nõuab, et <ph name="EXTENSION_NAME"/> oleks installitud. Seda ei saa eemaldada ega muuta.</translation>
 <translation id="7154130902455071009">Määrake avaleheks <ph name="START_PAGE"/></translation>
+<translation id="6094507746643187368">Vaadake ja muutke oma andmeid veebisaitidel <ph name="WEBSITE_1"/> ja <ph name="WEBSITE_2"/></translation>
 <translation id="1803557475693955505">Tagaplaanilehte <ph name="BACKGROUND_PAGE"/> ei õnnestunud laadida.</translation>
+<translation id="8207052894957937969">Vaadake ja muutke oma andmeid <ph name="NUMBER_OF_WEBSITES"/> veebisaidil</translation>
 </translationbundle>

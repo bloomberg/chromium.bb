@@ -2,16 +2,21 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="el">
 <translation id="8588878054171169263">Αποθήκευση εικόνας</translation>
+<translation id="7998918019931843664">Εκ νέου άνοιγμα κλειστής καρτέλας</translation>
 <translation id="4996978546172906250">Κοινή χρήση μέσω</translation>
 <translation id="5578795271662203820">Αναζήτηση <ph name="SEARCH_ENGINE"/> για την εικόνα</translation>
 <translation id="6831043979455480757">Μετάφραση</translation>
 <translation id="7644305409888602715">Μετάφραση σελίδας στα <ph name="SOURCE_LANGUAGE"/>…</translation>
 <translation id="7015922086425404465">Λήψη εφαρμογής από το Google Play Store: <ph name="APP_ACTION"/></translation>
 <translation id="1491151370853475546">Εκ νέου φόρτωση αυτής της σελίδας</translation>
+<translation id="5233638681132016545">Νέα καρτέλα</translation>
 <translation id="641643625718530986">Εκτύπωση…</translation>
+<translation id="5763382633136178763">Καρτέλες ανώνυμης περιήγησης</translation>
+<translation id="5210365745912300556">Κλείσιμο καρτέλας</translation>
 <translation id="7658239707568436148">Ακύρωση</translation>
 <translation id="6458785801851713928">Η υπηρεσία συγχρονισμού δεν είναι διαθέσιμη για τον τομέα σας.</translation>
 <translation id="2731700343119398978">Περιμένετε…</translation>
+<translation id="6846298663435243399">Φόρτωση…</translation>
 <translation id="7378627244592794276">Όχι</translation>
 <translation id="3358663646935160692">Αυτός ο λογαριασμός τελεί υπό διαχείριση του <ph name="DOMAIN_NAME"/>.
  
@@ -20,6 +25,7 @@
 <translation id="1623104350909869708">Αποτροπή δημιουργίας πρόσθετων παραθύρων διαλόγου από αυτήν τη σελίδα</translation>
 <translation id="1426410128494586442">Ναι</translation>
 <translation id="8218346974737627104">Επιβεβαίωση σύνδεσης</translation>
+<translation id="8853345339104747198">Καρτέλα <ph name="TAB_TITLE"/></translation>
 <translation id="624558823898732418">Γλώσσα μετάφρασης: <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="8872441722924401214">Επιλέξτε πιστοποιητικό για επαλήθευση</translation>
 <translation id="3896036286668839683">Πρόγραμμα προβ. πιστοποιητικού</translation>
@@ -41,6 +47,7 @@
 <translation id="3063601790762993062">Αποθήκευση βίντεο</translation>
 <translation id="6042308850641462728">Περισσότερα</translation>
 <translation id="7267430310003164111">Ερώτηση για λήψη εφαρμογής από το Google Play Store.  Όνομα εφαρμογής: <ph name="APP_NAME"/>.  Μέση βαθμολογία εφαρμογής: <ph name="APP_RATING"/>.</translation>
+<translation id="303955801043931176">Η καρτέλα έκλεισε</translation>
 <translation id="4148957013307229264">Γίνεται εγκατάσταση...</translation>
 <translation id="3992315671621218278">Αποθήκευση συνδέσμου</translation>
 <translation id="8034522405403831421">Αυτή η σελίδα είναι στα <ph name="SOURCE_LANGUAGE"/>. Μετάφρασή της στα <ph name="TARGET_LANGUAGE"/>;</translation>
@@ -66,9 +73,11 @@
 <translation id="6333140779060797560">Κοινή χρήση μέσω <ph name="APPLICATION"/></translation>
 <translation id="6040143037577758943">Κλείσιμο</translation>
 <translation id="969096075394517431">Αλλαγή γλωσσών</translation>
+<translation id="5556459405103347317">Επαναφόρτωση</translation>
 <translation id="5032574515228824816">Προτροπή</translation>
 <translation id="4847896847259487518">Σελίδα σελιδοδείκτη</translation>
 <translation id="497421865427891073">Μετάβαση προς τα εμπρός</translation>
+<translation id="8310344678080805313">Τυπικές καρτέλες</translation>
 <translation id="6277522088822131679">Παρουσιάστηκε ένα πρόβλημα κατά την εκτύπωση της σελίδας. Δοκιμάστε ξανά.</translation>
 <translation id="1742134235943978220">Έγινε μετάφραση σε <ph name="TARGET_LANGUAGE"/>.</translation>
 <translation id="6965382102122355670">OK</translation>

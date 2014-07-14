@@ -1,19 +1,17 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ml">
-<translation id="8719282907381795632"><ph name="WEBSITE_1"/> എന്നതിലെ നിങ്ങളുടെ ഡാറ്റ ആക്‌സസ്സുചെയ്യുക</translation>
 <translation id="7809034755304591547"><ph name="EXTENSION_NAME"/> (വിപുലീകരണ ID &quot;<ph name="EXTENSION_ID"/>&quot;) അഡ്‌മിനിസ്‌ട്രേറ്റർ തടഞ്ഞു.</translation>
 <translation id="2857834222104759979">മാനിഫെസ്റ്റ് ഫയല്‍ അസാധുവാണ്.</translation>
+<translation id="8978038008714088448"><ph name="WEBSITE_1"/> എന്നതിൽ നിങ്ങളുടെ ഡാറ്റ വായിക്കുക, പരിഷ്‌ക്കരിക്കുക</translation>
+<translation id="4205302772098850608"><ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/>, <ph name="WEBSITE_3"/> എന്നിവയിൽ നിങ്ങളുടെ ഡാറ്റ വായിക്കുക, പരിഷ്‌ക്കരിക്കുക</translation>
 <translation id="3828484226910527078">USB ഉപകരണം ആക്‌സസ്സുചെയ്യുക</translation>
 <translation id="6384275966486438344">നിങ്ങളുടെ തിരയൽ ക്രമീകരണങ്ങൾ മാറ്റുക: <ph name="SEARCH_HOST"/></translation>
 <translation id="5911798608827489036">ഏതു കമ്പ്യൂട്ടർ ഉപയോഗിച്ചും പ്രാദേശിക നെറ്റ്‌വർക്കിലോ ഇന്റർനെറ്റിലോ ഡാറ്റ എക്‌സ്‌ചേഞ്ച് ചെയ്യുക</translation>
 <translation id="4719685943208231314"><ph name="VENDOR_NAME"/> എന്നതിൽ നിന്ന് USB ഉപകരണം ആക്‌സസ്സുചെയ്യുക</translation>
 <translation id="657064425229075395">പശ്ചാത്തല സ്‌ക്രിപ്റ്റ് '<ph name="BACKGROUND_SCRIPT"/>' ലോഡുചെയ്യാൻ കഴിഞ്ഞില്ല.</translation>
-<translation id="3093853184108622112"><ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/> എന്നിവയിലെ നിങ്ങളുടെ ഡാറ്റ ആക്‌സസ്സുചെയ്യുക</translation>
 <translation id="8597109877291678953"><ph name="HOSTNAME"/> എന്ന പേരിലുള്ള കമ്പ്യൂട്ടർ ഉപയോഗിച്ച് ഡാറ്റ എക്‌സ്‌ചേഞ്ചുചെയ്യുക</translation>
-<translation id="6914908792814954894">നിങ്ങളുടെ ഡാറ്റ <ph name="NUMBER_OF_WEBSITES"/> വെബ്‌സൈറ്റുകളിൽ ആക്‌സസ്സുചെയ്യുക</translation>
 <translation id="5456409301717116725">ഈ വിപുലീകരണത്തിൽ '<ph name="KEY_PATH"/>' എന്ന കീ ഫയൽ ഉൾപ്പെടുന്നു. മിക്കവാറും നിങ്ങൾ ഇത് ചെയ്യാൻ താൽപ്പര്യപ്പെട്ടേക്കില്ല.</translation>
-<translation id="6968649314782363508"><ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/>, <ph name="WEBSITE_3"/> എന്നിവയിലെ നിങ്ങളുടെ ഡാറ്റ ആക്‌സസ്സുചെയ്യുക</translation>
 <translation id="2350172092385603347">ലോക്കലൈസേഷന്‍ ഉപയോഗിച്ചു, എന്നാല്‍ default_locale മാനിഫെസ്റ്റില്‍ വ്യക്തമാക്കിയില്ല.</translation>
 <translation id="8058376558882514200"><ph name="VENDOR_NAME"/> എന്നതിൽ നിന്ന് USB ഉപകരണം <ph name="PRODUCT_NAME"/> ആക്‌സസ്സുചെയ്യുക</translation>
 <translation id="8774379383902544371">USB ഉപകരണങ്ങൾ ആക്‌സസ്സുചെയ്യുക</translation>
@@ -21,13 +19,15 @@
 <translation id="6344170822609224263">നെറ്റ്‌വർക്ക് കണക്ഷനുകളുടെ ലിസ്റ്റ് ആക്‌സസ്സുചെയ്യുക</translation>
 <translation id="2518849872271000461">ഇനിപ്പറയുന്ന പേരിലുള്ള കമ്പ്യൂട്ടറുകൾ ഉപയോഗിച്ച് ഡാറ്റ എക്‌സ്‌ചേഞ്ചുചെയ്യുക: <ph name="HOSTNAMES"/></translation>
 <translation id="1389014510128217152">- <ph name="WEBSITE_1"/></translation>
-<translation id="5530391389158154052">നിങ്ങളുടെ ഡാറ്റ <ph name="NUMBER_OF_WEBSITES"/> വെബ്‌സൈറ്റുകളിൽ ആക്‌സസ്സുചെയ്യുക</translation>
 <translation id="961805664415579088"><ph name="DOMAIN"/> എന്ന ഡൊമെയ്‌നിലുള്ള ഏത് കമ്പ്യൂട്ടർ ഉപയോഗിച്ചും ഡാറ്റ എക്‌സ്‌ചേഞ്ച് ചെയ്യുക</translation>
 <translation id="4968399700653439437">ഈ ഡൊമെയ്‌നുകളിലുള്ള ഏത് കമ്പ്യൂട്ടർ ഉപയോഗിച്ചും ഡാറ്റ എക്‌സ്‌ചേഞ്ച് ചെയ്യുക: <ph name="DOMAINS"/></translation>
 <translation id="8662911384982557515">നിങ്ങളുടെ ഹോം പേജ് ഇതായി മാറ്റുക: <ph name="HOME_PAGE"/></translation>
+<translation id="8114679593444120202"><ph name="NUMBER_OF_WEBSITES"/> വെബ്‌സൈറ്റുകളിൽ നിങ്ങളുടെ ഡാറ്റ വായിക്കുക, പരിഷ്‌ക്കരിക്കുക</translation>
 <translation id="8602184400052594090">മാനിഫെസ്റ്റ് ഫയല്‍ നഷ്ടപ്പെട്ടിരിക്കുന്നു അല്ലെങ്കില്‍ റീഡ് ചെയ്യാന്‍ കഴിയുന്നില്ല.</translation>
 <translation id="7893008570150657497">നിങ്ങളുടെ കമ്പ്യൂട്ടറിൽ നിന്നും ഫോട്ടോകൾ, സംഗീതം, മറ്റ് മീഡിയകൾ എന്നിവ ആക്‌സസ്സ് ചെയ്യുക</translation>
 <translation id="7217838517480956708">ഈ മെഷീനിന്റെ അഡ്‌മിനിസ്‌ട്രേറ്റർ ഇൻസ്റ്റാളുചെയ്യുന്നതിനായി <ph name="EXTENSION_NAME"/> ആവശ്യപ്പെടുന്നു. ഇത് നീക്കംചെയ്യാനോ പരിഷ്‌ക്കരിക്കാനോ കഴിയില്ല.</translation>
 <translation id="7154130902455071009">നിങ്ങളുടെ ആരംഭ പേജ് ഇതായി മാറ്റുക: <ph name="START_PAGE"/></translation>
+<translation id="6094507746643187368"><ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/> എന്നിവയിൽ നിങ്ങളുടെ ഡാറ്റ വായിക്കുക, പരിഷ്‌ക്കരിക്കുക</translation>
 <translation id="1803557475693955505">പശ്ചാത്തല പേജ് '<ph name="BACKGROUND_PAGE"/>' ലോഡുചെയ്യാന്‍ കഴിഞ്ഞില്ല.</translation>
+<translation id="8207052894957937969"><ph name="NUMBER_OF_WEBSITES"/> വെബ്‌സൈറ്റുകളിൽ നിങ്ങളുടെ ഡാറ്റ വായിക്കുക, പരിഷ്‌ക്കരിക്കുക</translation>
 </translationbundle>

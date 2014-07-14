@@ -1,19 +1,17 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ko">
-<translation id="8719282907381795632"><ph name="WEBSITE_1"/>의 데이터에 액세스</translation>
 <translation id="7809034755304591547"><ph name="EXTENSION_NAME"/>(확장 프로그램 ID '<ph name="EXTENSION_ID"/>')은(는) 관리자에 의해 차단되었습니다.</translation>
 <translation id="2857834222104759979">매니페스트 파일이 잘못되었습니다.</translation>
+<translation id="8978038008714088448"><ph name="WEBSITE_1"/>의 데이터를 읽고 수정</translation>
+<translation id="4205302772098850608"><ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/>, <ph name="WEBSITE_3"/>의 데이터를 읽고 수정</translation>
 <translation id="3828484226910527078">USB 기기에 액세스</translation>
 <translation id="6384275966486438344">다음으로 검색 설정 변경: <ph name="SEARCH_HOST"/></translation>
 <translation id="5911798608827489036">로컬 네트워크 또는 인터넷의 모든 컴퓨터와 데이터 교환</translation>
 <translation id="4719685943208231314"><ph name="VENDOR_NAME"/>의 USB 기기에 액세스</translation>
 <translation id="657064425229075395">백그라운드 스크립트('<ph name="BACKGROUND_SCRIPT"/>')를 로드하지 못했습니다.</translation>
-<translation id="3093853184108622112"><ph name="WEBSITE_1"/> 및 <ph name="WEBSITE_2"/>의 데이터에 액세스</translation>
 <translation id="8597109877291678953">이름이 <ph name="HOSTNAME"/>인 컴퓨터와 데이터 교환</translation>
-<translation id="6914908792814954894"><ph name="NUMBER_OF_WEBSITES"/>개 웹사이트에 있는 데이터에 액세스</translation>
 <translation id="5456409301717116725">이 확장 프로그램은 키 파일 '<ph name="KEY_PATH"/>'을(를) 포함합니다. 사용하지 않는 것이 좋습니다.</translation>
-<translation id="6968649314782363508"><ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/> 및 <ph name="WEBSITE_3"/>의 데이터에 액세스</translation>
 <translation id="2350172092385603347">번역한 언어를 이용하였지만 매니페스트에 기본 언어(default_locale)를 지정하지 않았습니다.</translation>
 <translation id="8058376558882514200"><ph name="VENDOR_NAME"/>의 USB 기기 <ph name="PRODUCT_NAME"/>에 액세스</translation>
 <translation id="8774379383902544371">USB 기기 액세스</translation>
@@ -21,13 +19,15 @@
 <translation id="6344170822609224263">네트워크 연결 목록에 액세스</translation>
 <translation id="2518849872271000461">이름이 <ph name="HOSTNAMES"/>인 컴퓨터와 데이터 교환</translation>
 <translation id="1389014510128217152">- <ph name="WEBSITE_1"/></translation>
-<translation id="5530391389158154052"><ph name="NUMBER_OF_WEBSITES"/>개 웹사이트의 데이터에 액세스</translation>
 <translation id="961805664415579088">도메인 <ph name="DOMAIN"/>에 있는 모든 컴퓨터와 데이터 교환</translation>
 <translation id="4968399700653439437">도메인 <ph name="DOMAINS"/>에 있는 모든 컴퓨터와 데이터 교환</translation>
 <translation id="8662911384982557515">다음으로 홈페이지 변경: <ph name="HOME_PAGE"/></translation>
+<translation id="8114679593444120202">웹사이트 <ph name="NUMBER_OF_WEBSITES"/>개의 데이터를 읽고 수정</translation>
 <translation id="8602184400052594090">매니페스트 파일이 없거나 읽을 수 없습니다.</translation>
 <translation id="7893008570150657497">컴퓨터에서 사진, 음악, 기타 미디어에 액세스</translation>
 <translation id="7217838517480956708">이 기기를 설치할 때 관리자가 <ph name="EXTENSION_NAME"/>을(를) 요구합니다. 삭제 또는 수정할 수 없습니다.</translation>
 <translation id="7154130902455071009">다음으로 시작 페이지 변경: <ph name="START_PAGE"/></translation>
+<translation id="6094507746643187368"><ph name="WEBSITE_1"/> 및 <ph name="WEBSITE_2"/>의 데이터를 읽고 수정</translation>
 <translation id="1803557475693955505">배경 페이지('<ph name="BACKGROUND_PAGE"/>')를 로드하지 못했습니다.</translation>
+<translation id="8207052894957937969">웹사이트 <ph name="NUMBER_OF_WEBSITES"/>개의 데이터를 읽고 수정</translation>
 </translationbundle>

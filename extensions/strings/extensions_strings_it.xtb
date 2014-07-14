@@ -1,19 +1,17 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="it">
-<translation id="8719282907381795632">Accesso ai dati dell'utente su <ph name="WEBSITE_1"/></translation>
 <translation id="7809034755304591547">L'estensione <ph name="EXTENSION_NAME"/> (ID &quot;<ph name="EXTENSION_ID"/>&quot;) è stata bloccata dall'amministratore.</translation>
 <translation id="2857834222104759979">File manifest non valido.</translation>
+<translation id="8978038008714088448">Lettura e modifica dei dati su <ph name="WEBSITE_1"/></translation>
+<translation id="4205302772098850608">Lettura e modifica dei dati su <ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/> e <ph name="WEBSITE_3"/></translation>
 <translation id="3828484226910527078">Accesso al dispositivo USB</translation>
 <translation id="6384275966486438344">Modifica delle impostazioni di ricerca per: <ph name="SEARCH_HOST"/></translation>
 <translation id="5911798608827489036">Scambio di dati con qualsiasi computer sulla rete locale o su Internet</translation>
 <translation id="4719685943208231314">Accesso al dispositivo USB di <ph name="VENDOR_NAME"/></translation>
 <translation id="657064425229075395">Impossibile caricare lo script in background &quot;<ph name="BACKGROUND_SCRIPT"/>&quot;.</translation>
-<translation id="3093853184108622112">Accesso ai dati dell'utente su <ph name="WEBSITE_1"/> e <ph name="WEBSITE_2"/></translation>
 <translation id="8597109877291678953">Scambio di dati con il computer denominato <ph name="HOSTNAME"/></translation>
-<translation id="6914908792814954894">Accesso ai tuoi dati su <ph name="NUMBER_OF_WEBSITES"/> siti web</translation>
 <translation id="5456409301717116725">Questa estensione include il file di chiave &quot;<ph name="KEY_PATH"/>&quot;. Probabilmente preferiresti che non l'includesse.</translation>
-<translation id="6968649314782363508">Accesso ai dati dell'utente su <ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/> e <ph name="WEBSITE_3"/></translation>
 <translation id="2350172092385603347">Localizzazione utilizzata, ma default_locale non era specificato nel file manifest.</translation>
 <translation id="8058376558882514200">Accesso al dispositivo USB <ph name="PRODUCT_NAME"/> di <ph name="VENDOR_NAME"/></translation>
 <translation id="8774379383902544371">Accesso a dispositivi USB</translation>
@@ -21,13 +19,15 @@
 <translation id="6344170822609224263">Accesso all'elenco di connessioni di rete</translation>
 <translation id="2518849872271000461">Scambio di dati con i computer denominati: <ph name="HOSTNAMES"/></translation>
 <translation id="1389014510128217152">- <ph name="WEBSITE_1"/></translation>
-<translation id="5530391389158154052">Accedere ai tuoi dati su <ph name="NUMBER_OF_WEBSITES"/> siti web</translation>
 <translation id="961805664415579088">Scambio di dati con qualsiasi computer nel dominio <ph name="DOMAIN"/></translation>
 <translation id="4968399700653439437">Scambio di dati con qualsiasi computer nei domini: <ph name="DOMAINS"/></translation>
 <translation id="8662911384982557515">Cambio della pagina iniziale con: <ph name="HOME_PAGE"/></translation>
+<translation id="8114679593444120202">Lettura e modifica dei dati su <ph name="NUMBER_OF_WEBSITES"/> siti web</translation>
 <translation id="8602184400052594090">File manifest mancante o illeggibile.</translation>
 <translation id="7893008570150657497">Accesso a foto, musica e altri contenuti multimediali dal computer</translation>
 <translation id="7217838517480956708">L'amministratore di questo computer richiede che l'estensione <ph name="EXTENSION_NAME"/> sia installata. Non è possibile rimuovere o modificare l'estensione.</translation>
 <translation id="7154130902455071009">Cambio della pagina iniziale con: <ph name="START_PAGE"/></translation>
+<translation id="6094507746643187368">Lettura e modifica dei dati su <ph name="WEBSITE_1"/> e <ph name="WEBSITE_2"/></translation>
 <translation id="1803557475693955505">Impossibile caricare la pagina di sfondo &quot;<ph name="BACKGROUND_PAGE"/>&quot;.</translation>
+<translation id="8207052894957937969">Lettura e modifica dei dati su <ph name="NUMBER_OF_WEBSITES"/> siti web</translation>
 </translationbundle>

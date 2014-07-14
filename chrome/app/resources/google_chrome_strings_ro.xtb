@@ -25,6 +25,7 @@
 <translation id="4891791193823137474">Permiteți Google Chrome să ruleze în fundal</translation>
 <translation id="110877069173485804">Acesta este browserul dvs. Chrome</translation>
 <translation id="1376881911183620035">Vă mulțumim că ați încercat noul Chrome. Chrome trebuie să repornească. Asigurați-vă că ați salvat toate documentele deschise înainte de a continua.</translation>
+<translation id="8406086379114794905">Contribuiți la îmbunătățirea Chrome</translation>
 <translation id="2896252579017640304">Lansați aplicații Chrome</translation>
 <translation id="2721687379934343312">Pe Mac, parolele sunt salvate în aplicația dvs. Keychain și pot fi accesate sau sincronizate de alți utilizatori Chrome care utilizează același cont de OS X.</translation>
 <translation id="683440813066116847">Regula de intrare pentru Google Chrome Canary pentru a permite traficul mDNS.</translation>
@@ -120,6 +121,7 @@ Dacă totuși vă conectați, informațiile Chrome cum ar fi marcajele, istoricu
 <translation id="911206726377975832">Ștergeți și datele de navigare?</translation>
 <translation id="2036562258783619899">Previzualizați noua versiune Chrome</translation>
 <translation id="5855036575689098185">Software-ul care rulează pe computer este incompatibil cu Google Chrome.</translation>
+<translation id="7164397146364144019">Puteți contribui la un produs Chrome mai sigur și mai ușor de folosit raportând automat la Google detaliile eventualelor incidente privind securitatea.</translation>
 <translation id="8008534537613507642">Reinstalați Chrome</translation>
 <translation id="2044287590254833138">Bara de instrumente Google Chrome</translation>
 <translation id="8862326446509486874">Nu aveți drepturile adecvate pentru instalarea la nivel de sistem. Încercați să rulați din nou programul de instalare ca Administrator.</translation>
@@ -128,7 +130,6 @@ Dacă totuși vă conectați, informațiile Chrome cum ar fi marcajele, istoricu
 <translation id="7436949144778751379">Google Chrome necesită Windows XP sau o versiune ulterioară. Este posibil ca unele funcții să nu fie disponibile.</translation>
 <translation id="5877064549588274448">Canalul a fost schimbat. Reporniți dispozitivul pentru a aplica modificările.</translation>
 <translation id="103396972844768118">Informații importante cu privire la datele dvs. Chrome</translation>
-<translation id="6145223986912084844">chrome</translation>
 <translation id="6757767188268205357">Doresc să nu mai fiu deranjat</translation>
 <translation id="2290095356545025170">Sunteți sigur că doriți să dezinstalați Google Chrome?</translation>
 <translation id="7062966102157262887">O descărcare este în desfășurare. Doriți să ieșiți din Google Chrome și să anulați descărcarea?</translation>
@@ -181,7 +182,6 @@ Dacă totuși vă conectați, informațiile Chrome cum ar fi marcajele, istoricu
 <translation id="3444832043240812445">Această pagină afișează informații cu privire la recentele opriri cu eroare numai dacă <ph name="BEGIN_LINK"/>activați raportarea opririlor cu eroare<ph name="END_LINK"/>.</translation>
 <translation id="8614913330719544658">Google Chrome nu mai răspunde. Îl reporniți acum?</translation>
 <translation id="2681064822612051220">A fost găsită o instalare conflictuală a Google Chrome în sistem. Dezinstalaţi-o şi încercaţi din nou.</translation>
-<translation id="1175529839152551794">Acum că v-ați conectat, vă puteți accesa filele, marcajele și alte lucruri din Chrome pe laptop, telefon și tabletă. În plus, veți primi sugestii mai relevante și funcții în serviciile Google.</translation>
 <translation id="8209985377776300429">Previzualizați noul Chrome.</translation>
 <translation id="6126631249883707068">Doriți ca Google Chrome să vă salveze parola?</translation>
 <translation id="7773845170078702898">Doriți ca Google Chrome să salveze parola pentru acest site?</translation>

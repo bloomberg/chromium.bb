@@ -200,6 +200,22 @@
           The recommended way to lock the screen on idle is to enable screen locking on suspend and have <ph name="PRODUCT_OS_NAME"/> suspend after the idle delay. This policy should only be used when screen locking should occur a significant amount of time sooner than suspend or when suspend on idle is not desired at all.
 
           The policy value should be specified in milliseconds. Values are clamped to be less than the idle delay.</translation>
+<translation id="979541737284082440">(This document may include policies that are targeted for later
+      <ph name="PRODUCT_NAME"/> versions; those are
+      subject to change without notice. The list of supported policies is the
+      same for Chromium and Google Chrome.)
+
+      You don't need to change these settings by hand! You can download easy-to-use templates from
+      <ph name="POLICY_TEMPLATE_DOWNLOAD_URL"/>.
+
+      These policies are strictly intended to be used to configure instances of Chrome internal to your organisation. Use of these policies outside your organisation (for example, in a publicly distributed programme) is considered malware and will likely be labelled as malware by Google and anti-virus vendors.
+
+      Note: Starting with <ph name="PRODUCT_NAME"/>
+      28, policies are loaded directly from the Group Policy API on
+      Windows. Policies manually written to the registry will be ignored. See
+      http://crbug.com/259236 for details.
+
+      Starting with <ph name="PRODUCT_NAME"/> 35, policies are read directly from the registry if the workstation is joined to an Active Directory domain; otherwise the policies are read from GPO.</translation>
 <translation id="4157003184375321727">Report OS and firmware version</translation>
 <translation id="5255162913209987122">Can be Recommended</translation>
 <translation id="1861037019115362154">Specifies a list of plugins that are disabled in <ph name="PRODUCT_NAME"/> and prevents users from changing this setting.
@@ -340,20 +356,6 @@
 <translation id="382476126209906314">Configure the TalkGadget prefix for remote access hosts</translation>
 <translation id="6561396069801924653">Show accessibility options in system tray menu</translation>
 <translation id="8104962233214241919">Automatically select client certificates for these sites</translation>
-<translation id="7983624541020350102">(This document may include policies that are targeted for later
-      <ph name="PRODUCT_NAME"/> versions; those are
-      subject to change without notice. The list of supported policies is the
-      same for Chromium and Google Chrome.)
-
-      You don't need to change these settings by hand!  You can download easy-to-use templates from
-      <ph name="POLICY_TEMPLATE_DOWNLOAD_URL"/>.
-
-      These policies are strictly intended to be used to configure instances of Chrome internal to your organisation. Use of these policies outside of your organisation (for example, in a publicly distributed programme) is considered malware and will likely be labelled as malware by Google and anti-virus vendors.
-
-      Note: Starting with <ph name="PRODUCT_NAME"/>
-      28, policies are loaded directly from the Group Policy API on
-      Windows. Policies manually written to the registry will be ignored. See
-      http://crbug.com/259236 for details.</translation>
 <translation id="2906874737073861391">List of AppPack extensions</translation>
 <translation id="4386578721025870401">Limit the time for which a user-authenticated via SAML can log in offline.
 
@@ -460,6 +462,7 @@
 
       If this policy is left not set, this will be enabled but the user will be able to change it.</translation>
 <translation id="6943577887654905793">Mac/Linux preference name:</translation>
+<translation id="8176035528522326671">Allow enterprise user to be primary multi-profile user only (Default behaviour for enterprise-managed users)</translation>
 <translation id="6925212669267783763">Configures the directory that <ph name="PRODUCT_FRAME_NAME"/> will use for storing user data.
 
       If you set this policy, <ph name="PRODUCT_FRAME_NAME"/> will use the provided directory.
@@ -468,6 +471,7 @@
 
       If this setting is left not set the default profile directory will be used.</translation>
 <translation id="8906768759089290519">Enable guest mode</translation>
+<translation id="348495353354674884">Enable virtual keyboard</translation>
 <translation id="2168397434410358693">Idle delay when running on AC power</translation>
 <translation id="838870586332499308">Enable data roaming</translation>
 <translation id="2292084646366244343"><ph name="PRODUCT_NAME"/> can use a Google web service to help resolve spelling errors. If this setting is enabled, then this service is always used. If this setting is disabled, then this service is never used.
@@ -483,6 +487,13 @@
 
           The scale factor must be 100% or more. Values that would make the screen dim delay in presentation mode shorter than the regular screen dim delay are not allowed.</translation>
 <translation id="254524874071906077">Set Chrome as Default Browser</translation>
+<translation id="8112122435099806139">Specifies the clock format be used for the device.
+
+      This policy configures the clock format to use on the log-in screen and as a default for user sessions. Users can still override the clock format for their account.
+
+      If the policy is set to true, the device will use a 24-hour clock format. If the policy is set to false, the device will use a 12-hour clock format.
+
+      If this policy is not set, the device will default to a 24-hour clock format.</translation>
 <translation id="8764119899999036911">Specifies whether the generated Kerberos SPN is based on the canonical DNS name or the original name entered.
 
           If you enable this setting, CNAME lookup will be skipped and the server name will be used as entered.
@@ -498,8 +509,15 @@
 
           If the action is suspend, <ph name="PRODUCT_OS_NAME"/> can separately be configured to either lock or not lock the screen before suspending.</translation>
 <translation id="3915395663995367577">URL to a proxy .pac file</translation>
-<translation id="2144674628322086778">Allow enterprise user to be both primary and secondary  (Default behaviour)</translation>
 <translation id="1022361784792428773">Extension IDs the user should be prevented from installing (or * for all)</translation>
+<translation id="6064943054844745819">Specify a list of deprecated web platform features to re-enable.
+
+      This policy gives administrators the ability to re-enable deprecated web platform features for a limited time. Features are identified by a string tag and the features corresponding to the tags included in the list specified by this policy will be re-enabled.
+
+      The following tags are currently defined:
+      - ShowModalDialog_EffectiveUntil20150430
+
+      If this policy is left not set or the list is empty, all deprecated web platform features will remain disabled.</translation>
 <translation id="3805659594028420438">Enable TLS domain-bound certificates extension (deprecated)</translation>
 <translation id="5499375345075963939">This policy is active in retail mode only.
 
@@ -551,9 +569,6 @@
           If this setting is enabled, then hosts' physical input and output devices are disabled while a remote connection is in progress.
 
           If this setting is disabled or not set, then both local and remote users can interact with the host when it is being shared.</translation>
-<translation id="4894257424747841850">Report list of device users that have recently logged in.
-
-      If the policy is not set, or set to false, the users will not be reported.</translation>
 <translation id="2488010520405124654">Enable network configuration prompt when offline.
 
       If this policy is unset or set to True and a device-local account is configured for zero-delay auto-login and the device does not have access to the Internet, <ph name="PRODUCT_OS_NAME"/> will show a network configuration prompt.
@@ -565,6 +580,9 @@
           This policy is optional. If not set, suggest search request will be sent using the GET method.
 
           This policy is only respected if the 'DefaultSearchProviderEnabled' policy is enabled.</translation>
+<translation id="8140204717286305802">Report list of network interfaces with their types and hardware addresses to the server.
+
+      If the policy is set to false, the interface list will not be reported.</translation>
 <translation id="4962195944157514011">Specifies the URL of the search engine used when doing a default search. The URL should contain the string '<ph name="SEARCH_TERM_MARKER"/>', which will be replaced at query time by the terms the user is searching for.
 
           This option must be set when the 'DefaultSearchProviderEnabled' policy is enabled and will only be respected if this is the case.</translation>
@@ -684,9 +702,6 @@
 <translation id="7717938661004793600">Configure <ph name="PRODUCT_OS_NAME"/> accessibility features.</translation>
 <translation id="5182055907976889880">Configure Google Drive in <ph name="PRODUCT_OS_NAME"/>.</translation>
 <translation id="8704831857353097849">List of disabled plug-ins</translation>
-<translation id="8391419598427733574">Report OS and firmware version of enrolled devices.
-
-      If this setting is set to True, enrolled devices will report the OS and firmware version periodically. If this setting is not set or set to False, version info will not be reported.</translation>
 <translation id="467449052039111439">Open a list of URLs</translation>
 <translation id="1988371335297483117">Auto-update payloads on <ph name="PRODUCT_OS_NAME"/> can be downloaded via HTTP instead of HTTPS. This allows transparent HTTP caching of HTTP downloads.
 
@@ -736,10 +751,10 @@
 <translation id="8244525275280476362">Maximum fetch delay after a policy invalidation</translation>
 <translation id="8587229956764455752">Allow creation of new user accounts</translation>
 <translation id="7417972229667085380">Percentage by which to scale the idle delay in presentation mode (deprecated)</translation>
-<translation id="3964909636571393861">Allows access to a list of URLs</translation>
-<translation id="3450318623141983471">Report the state of the device's dev switch at boot.
+<translation id="6211428344788340116">Report device activity times.
 
-      If the policy is not set, or set to false, the state of the dev switch will not be reported.</translation>
+      If this setting is not set or set to True, enrolled devices will report time periods when a user is active on the device. If this setting is set to False, device activity times will not be recorded or reported.</translation>
+<translation id="3964909636571393861">Allows access to a list of URLs</translation>
 <translation id="1811270320106005269">Enable lock when <ph name="PRODUCT_OS_NAME"/> devices become idle or suspended.
 
       If you enable this setting, users will be asked for a password to unlock the device from sleep.
@@ -803,9 +818,6 @@
           When this policy is unset, no warning dialogue is shown.
 
           The policy value should be specified in milliseconds. Values are clamped to be less than or equal the idle delay.</translation>
-<translation id="1098794473340446990">Report device activity times.
-
-      If this setting is set to True, enrolled devices will report time periods when a user is active on the device. If this setting is not set or set to False, device activity times will not be recorded or reported.</translation>
 <translation id="1327466551276625742">Enable network configuration prompt when offline</translation>
 <translation id="7937766917976512374">Allow or deny video capture</translation>
 <translation id="427632463972968153">Specifies the parameters used when doing image search with POST. It consists of comma-separated name/value pairs. If a value is a template parameter, like {imageThumbnail} in above example, it will be replaced with real image thumbnail data.
@@ -854,6 +866,11 @@
       &quot;1412.24.34&quot;: update to this specific version only</translation>
 <translation id="8102913158860568230">Default mediastream setting</translation>
 <translation id="6641981670621198190">Disable support for 3D graphics APIs</translation>
+<translation id="5196805177499964601">Block developer mode.
+
+      If this policy is set to True, <ph name="PRODUCT_OS_NAME"/> will prevent the device from booting into developer mode. The system will refuse to boot and show an error screen when the developer switch is turned on.
+
+      If this policy is unset or set to False, developer mode will remain available for the device.</translation>
 <translation id="1265053460044691532">Limit the time for which a user authenticated via SAML can log in offline</translation>
 <translation id="5703863730741917647">Specify the action to take when the idle delay is reached.
 
@@ -865,6 +882,7 @@
 <translation id="5997543603646547632">Use 24 hour clock by default</translation>
 <translation id="7003746348783715221"><ph name="PRODUCT_NAME"/> preferences</translation>
 <translation id="4723829699367336876">Enable firewall traversal from remote access client</translation>
+<translation id="2744751866269053547">Register protocol handlers</translation>
 <translation id="6367755442345892511">Whether the release channel should be configurable by the user</translation>
 <translation id="3868347814555911633">This policy is active in retail mode only.
 
@@ -883,6 +901,7 @@
 
       This policy affects all types of video inputs and not only the built-in camera.</translation>
 <translation id="7063895219334505671">Allow pop-ups on these sites</translation>
+<translation id="3756011779061588474">Block developer mode</translation>
 <translation id="4052765007567912447">Controls whether the user may show passwords in clear text in the password manager.
 
           If you disable this setting, the password manager does not allow showing stored passwords in clear text in the password manager window.
@@ -924,6 +943,7 @@
           If this policy is set to False, video activity does not prevent the user from being considered idle.</translation>
 <translation id="3965339130942650562">Timeout until idle user log-out is executed</translation>
 <translation id="5814301096961727113">Set the default state of spoken feedback on the login screen</translation>
+<translation id="1950814444940346204">Enable deprecated web platform features</translation>
 <translation id="9084985621503260744">Specify whether video activity affects power management</translation>
 <translation id="7091198954851103976">Always runs plug-ins that require authorisation</translation>
 <translation id="1708496595873025510">Set the restriction on the fetching of the Variations seed</translation>
@@ -957,7 +977,6 @@
           This policy is for internal use by Chrome itself.</translation>
 <translation id="5586942249556966598">Do nothing</translation>
 <translation id="131353325527891113">Show usernames on login screen</translation>
-<translation id="4057110413331612451">Allow enterprise user to be primary multiprofile user only</translation>
 <translation id="5365946944967967336">Show Home button on the toolbar</translation>
 <translation id="3709266154059827597">Configure extension installation blacklist</translation>
 <translation id="1933378685401357864">Wallpaper image</translation>
@@ -1348,6 +1367,9 @@ If this setting is not set, <ph name="PRODUCT_NAME"/> will allow the user to con
           This policy is optional. If not set, no keyword will activate the search provider.
 
           This policy is only considered if the 'DefaultSearchProviderEnabled' policy is enabled.</translation>
+<translation id="1152117524387175066">Report the state of the device's dev switch at boot.
+
+      If the policy is set to false, the state of the dev switch will not be reported.</translation>
 <translation id="5774856474228476867">Default search provider search URL</translation>
 <translation id="4650759511838826572">Disable URL protocol schemes</translation>
 <translation id="7831595031698917016">Specifies the maximum delay in milliseconds between receiving a policy invalidation and fetching the new policy from the device management service.
@@ -1396,13 +1418,6 @@ If this setting is not set, <ph name="PRODUCT_NAME"/> will allow the user to con
 <translation id="602728333950205286">Default search provider instant URL</translation>
 <translation id="3030000825273123558">Enable metrics reporting</translation>
 <translation id="8465065632133292531">Parameters for instant URL which uses POST</translation>
-<translation id="6659688282368245087">Specifies the clock format to be used for the device.
-
-      This policy configures the clock format to use on the login screen and as a default for user sessions. Users can still override the clock format for their account.
-
-      If the policy is not set to true, the device will use a 24 hour clock format. If the policy is set to false, the device will use 12 hour clock format.
-
-      If this policy is not set, the device will default to a 24 hour clock format.</translation>
 <translation id="6559057113164934677">Do not allow any site to access the camera and microphone</translation>
 <translation id="7273823081800296768">If this setting is enabled or not configured, then users can opt to pair clients and hosts at connection time, eliminating the need to enter a PIN every time.
 
@@ -1487,6 +1502,9 @@ If this setting is not set, <ph name="PRODUCT_NAME"/> will allow the user to con
 
       Disabling this setting or leaving it unset potentially allows web pages to use the WebGL API and plug-ins to use the Pepper 3D API. The default settings of the browser may still require command line arguments to be passed in order to use these APIs.</translation>
 <translation id="2077273864382355561">Screen off delay when running on battery power</translation>
+<translation id="9112897538922695510">Allows you to register a list of protocol handlers. This can only be a recommended policy. The property |protocol| should be set to the scheme such as 'mailto' and the property |url| should be set to the URL pattern of the application that handles the scheme. The pattern can include a '%s', which if present will be replaced by the handled URL.
+
+          The protocol handlers registered by policy are merged with the ones registered by the user and both are available for use. The user can override the protocol handlers installed by policy by installing a new default handler, but cannot remove a protocol handler registered by policy.</translation>
 <translation id="3417418267404583991">If this policy is set to true or not configured, <ph name="PRODUCT_OS_NAME"/> will enable guest logins. Guest logins are anonymous user sessions and do not require a password.
 
       If this policy is set to false, <ph name="PRODUCT_OS_NAME"/> will not allow guest sessions to be started.</translation>
@@ -1503,6 +1521,9 @@ If this setting is not set, <ph name="PRODUCT_NAME"/> will allow the user to con
           A blacklist value of '*' means that all native messaging hosts are blacklisted unless they are explicitly listed in the whitelist.
 
           If this policy is left not set <ph name="PRODUCT_NAME"/> will load all installed native messaging hosts.</translation>
+<translation id="749556411189861380">Report OS and firmware version of enrolled devices.
+
+      If this setting is not set or set to True, enrolled devices will report the OS and firmware version periodically. If this setting is set to False, version info will not be reported.</translation>
 <translation id="7258823566580374486">Enable curtaining of remote access hosts</translation>
 <translation id="5560039246134246593">Add a parameter to the fetching of the Variations seed in <ph name="PRODUCT_NAME"/>.
 
@@ -1527,6 +1548,11 @@ If this setting is not set, <ph name="PRODUCT_NAME"/> will allow the user to con
 <translation id="8908294717014659003">Allows you to set whether websites are allowed to get access to media capture devices. Access to media capture devices can be allowed by default, or the user can be asked every time a website wants to get access to media capture devices.
 
           If this policy is left not set, 'PromptOnAccess' will be used and the user will be able to change it.</translation>
+<translation id="4429220551923452215">Enables or disables the apps shortcut in the bookmark bar.
+
+      If this policy is not set then the user can choose to show or hide the apps shortcut from the bookmark bar context menu.
+
+      If this policy is configured then the user can't change it, and the apps shortcut is always shown or never shown.</translation>
 <translation id="2299220924812062390">Specify a list of enabled plug-ins</translation>
 <translation id="4325690621216251241">Add a logout button to the system tray</translation>
 <translation id="924557436754151212">Import saved passwords from default browser on first run</translation>
@@ -1534,6 +1560,7 @@ If this setting is not set, <ph name="PRODUCT_NAME"/> will allow the user to con
 <translation id="7227967227357489766">Defines the list of users that are allowed to login to the device. Entries are of the form <ph name="USER_WHITELIST_ENTRY_FORMAT"/>, such as <ph name="USER_WHITELIST_ENTRY_EXAMPLE"/>. To allow arbitrary users on a domain, use entries of the form <ph name="USER_WHITELIST_ENTRY_WILDCARD"/>.
 
       If this policy is not configured, there are no restrictions on which users are allowed to sign in. Note that creating new users still requires the <ph name="DEVICEALLOWNEWUSERS_POLICY_NAME"/> policy to be configured appropriately.</translation>
+<translation id="2521581787935130926">Show the apps shortcut in the bookmark bar</translation>
 <translation id="8135937294926049787">Specifies the length of time without user input after which the screen is turned off when running on AC power.
 
           When this policy is set to a value greater than zero, it specifies the length of time that the user must remain idle before <ph name="PRODUCT_OS_NAME"/> turns off the screen.
@@ -1578,6 +1605,15 @@ If this setting is not set, <ph name="PRODUCT_NAME"/> will allow the user to con
 <translation id="1062011392452772310">Enable remote attestation for the device</translation>
 <translation id="7774768074957326919">Use system proxy settings</translation>
 <translation id="3891357445869647828">Enable JavaScript</translation>
+<translation id="2274864612594831715">This policy configures enabling the virtual keyboard as an input device on ChromeOS. Users cannot override this policy.
+
+      If the policy is set to true, the on-screen virtual keyboard will always be enabled.
+
+      If set to false, the on-screen virtual keyboard will always be disabled.
+
+      If you set this policy, users cannot change or override it. However, users will still be able to enable/disable an accessibility on-screen keyboard which takes precedence over the virtual keyboard controlled by this policy. See the |VirtualKeyboardEnabled| policy for controlling the accessibility on-screen keyboard.
+
+      If this policy is left unset, the on-screen keyboard is disabled initially but can be enabled by the user anytime. Heuristic rules may also be used to decide when to display the keyboard.</translation>
 <translation id="6774533686631353488">Allow user-level Native Messaging hosts (installed without admin permissions).</translation>
 <translation id="868187325500643455">Allow all sites to automatically run plug-ins</translation>
 <translation id="7421483919690710988">Set media disk cache size in bytes</translation>
@@ -1634,6 +1670,7 @@ If this setting is not set, <ph name="PRODUCT_NAME"/> will allow the user to con
 
           If this policy is left unset, the global default value will be used for all sites either from the 'DefaultImagesSetting' policy, if it is set, or the user's personal configuration otherwise.</translation>
 <translation id="8499172469244085141">Default Settings (users can override)</translation>
+<translation id="4816674326202173458">Allow enterprise user to be both primary and secondary  (Default behaviour for non-managed users)</translation>
 <translation id="8693243869659262736">Use built-in DNS client</translation>
 <translation id="3072847235228302527">Set the Terms of Service for a device-local account</translation>
 <translation id="5523812257194833591">A public session to auto-login after a delay.
@@ -1714,9 +1751,6 @@ If this setting is not set, <ph name="PRODUCT_NAME"/> will allow the user to con
       The default setting is to allow the host browser do the rendering, but you
       can optionally override this and have <ph name="PRODUCT_FRAME_NAME"/> render HTML pages by default.</translation>
 <translation id="186719019195685253">Action to take when the idle delay is reached while running on AC power</translation>
-<translation id="7890264460280019664">Report list of network interfaces with their types and hardware addresses to the server.
-
-      If the policy is not set, or set to false, the interface list will not be reported.</translation>
 <translation id="197143349065136573">Enables the old web-based signin flow.
 
       This setting is useful for enterprise customers who are using SSO solutions that are not compatible with the new inline signin flow yet.
@@ -1825,6 +1859,9 @@ If this setting is not set, <ph name="PRODUCT_NAME"/> will allow the user to con
       The policy should be set to a URL from which <ph name="PRODUCT_OS_NAME"/> can download the Terms of Service. The Terms of Service must be plain text, served as MIME type text/plain. No markup is allowed.</translation>
 <translation id="2623014935069176671">Wait for initial user activity</translation>
 <translation id="2660846099862559570">Never use a proxy</translation>
+<translation id="637934607141010488">Report list of device users that have recently logged in.
+
+      If the policy is set to false, the users will not be reported.</translation>
 <translation id="1956493342242507974">Configure power management on the log-in screen in <ph name="PRODUCT_OS_NAME"/>.
 
       This policy lets you configure how <ph name="PRODUCT_OS_NAME"/> behaves when there is no user activity for some amount of time while the log-in screen is being shown. The policy controls multiple settings. For their individual semantics and value ranges, see the corresponding policies that control power management within a session. The only deviations from these policies are:

@@ -25,6 +25,7 @@
 <translation id="4891791193823137474">让 Google Chrome 浏览器在后台运行</translation>
 <translation id="110877069173485804">这是您的专属Chrome</translation>
 <translation id="1376881911183620035">感谢您试用新版Chrome。Chrome需要重新启动。继续之前，请务必先保存所有未保存的工作。</translation>
+<translation id="8406086379114794905">帮助我们改进Chrome</translation>
 <translation id="2896252579017640304">启动 Chrome 应用</translation>
 <translation id="2721687379934343312">在苹果机上，密码会保存到您的钥匙串中，可供共用此 OS X 帐户的其他 Chrome 浏览器用户使用或同步。</translation>
 <translation id="683440813066116847">Google Chrome Canary版的入站规则，允许mDNS流量。</translation>
@@ -114,6 +115,7 @@
 <translation id="911206726377975832">同时删除您的浏览数据吗？</translation>
 <translation id="2036562258783619899">预览一下新版Chrome吧</translation>
 <translation id="5855036575689098185">您计算机上运行的软件与 Google Chrome 不兼容。</translation>
+<translation id="7164397146364144019">您可以选择自动向Google报告可能出现的安全事件详情，以帮助我们提高Chrome的安全性和易用性。</translation>
 <translation id="8008534537613507642">重新安装Chrome</translation>
 <translation id="2044287590254833138">Google Chrome 浏览器工具栏</translation>
 <translation id="8862326446509486874">您的权限不足，无法进行系统级安装。请尝试以管理员身份再次运行安装程序。</translation>
@@ -122,7 +124,6 @@
 <translation id="7436949144778751379">您需要在 Windows XP 或更高版本的操作系统中运行 Google Chrome 浏览器，否则可能无法正常使用某些功能。</translation>
 <translation id="5877064549588274448">版本已更改。请重新启动设备来应用这些变更。</translation>
 <translation id="103396972844768118">与您的 Chrome 数据相关的重要信息</translation>
-<translation id="6145223986912084844">Chrome</translation>
 <translation id="6757767188268205357">谢绝打扰</translation>
 <translation id="2290095356545025170">确定要卸载 Google Chrome 浏览器吗？</translation>
 <translation id="7062966102157262887">正在进行一项下载。您希望退出 Google Chrome 浏览器并取消该下载吗？</translation>
@@ -166,7 +167,6 @@
 <translation id="3444832043240812445">如果<ph name="BEGIN_LINK"/>启用崩溃报告<ph name="END_LINK"/>，则该网页将只显示您最近的崩溃信息。</translation>
 <translation id="8614913330719544658">Google Chrome 未响应。是否立即重新启动？</translation>
 <translation id="2681064822612051220">在系统中安装“Google 酷容浏览器”时发现已存在其他版本，请先卸载然后重试。</translation>
-<translation id="1175529839152551794">您已登录，现在您除了可以获取您的笔记本电脑、手机和平板电脑上的标签页、书签和其他 Chrome 内容外，还将获得 Google 服务方面的更多相关建议和功能。</translation>
 <translation id="8209985377776300429">您正在预览新版Chrome。</translation>
 <translation id="6126631249883707068">想让 Google Chrome 浏览器保存您的密码吗？</translation>
 <translation id="7773845170078702898">您希望 Google Chrome 浏览器保存您在此网站上使用的密码吗？</translation>

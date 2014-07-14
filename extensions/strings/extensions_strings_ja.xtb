@@ -1,19 +1,17 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ja">
-<translation id="8719282907381795632"><ph name="WEBSITE_1"/> のデータにアクセスする</translation>
 <translation id="7809034755304591547"><ph name="EXTENSION_NAME"/>（拡張機能 ID「<ph name="EXTENSION_ID"/>」）は管理者によってブロックされています。</translation>
 <translation id="2857834222104759979">マニフェスト ファイルが無効です。</translation>
+<translation id="8978038008714088448"><ph name="WEBSITE_1"/> 上にある自分のデータの読み取りと変更</translation>
+<translation id="4205302772098850608"><ph name="WEBSITE_1"/>、<ph name="WEBSITE_2"/>、<ph name="WEBSITE_3"/> 上にある自分のデータの読み取りと変更</translation>
 <translation id="3828484226910527078">USB デバイスへのアクセス</translation>
 <translation id="6384275966486438344">検索設定を次に変更します: <ph name="SEARCH_HOST"/></translation>
 <translation id="5911798608827489036">ローカル ネットワークまたはインターネット上のパソコンとのデータ交換</translation>
 <translation id="4719685943208231314"><ph name="VENDOR_NAME"/> の USB デバイスへのアクセス</translation>
 <translation id="657064425229075395">バックグラウンド スクリプト「<ph name="BACKGROUND_SCRIPT"/>」を読み込めませんでした。</translation>
-<translation id="3093853184108622112"><ph name="WEBSITE_1"/> と <ph name="WEBSITE_2"/> のデータにアクセスする</translation>
 <translation id="8597109877291678953">パソコン <ph name="HOSTNAME"/> とのデータ交換</translation>
-<translation id="6914908792814954894"><ph name="NUMBER_OF_WEBSITES"/> 個のウェブサイトのデータにアクセスする</translation>
 <translation id="5456409301717116725">この拡張機能には、鍵ファイル「<ph name="KEY_PATH"/>」が含まれていますが、おそらくその必要性はありません。</translation>
-<translation id="6968649314782363508"><ph name="WEBSITE_1"/>、<ph name="WEBSITE_2"/>、<ph name="WEBSITE_3"/> のデータにアクセスする</translation>
 <translation id="2350172092385603347">言語/地域機能は使用されていますが、マニフェストに default_locale が指定されていません。</translation>
 <translation id="8058376558882514200"><ph name="VENDOR_NAME"/> の USB デバイス <ph name="PRODUCT_NAME"/> へのアクセス</translation>
 <translation id="8774379383902544371">USB デバイスへのアクセス</translation>
@@ -21,13 +19,15 @@
 <translation id="6344170822609224263">ネットワーク接続のリストにアクセスする</translation>
 <translation id="2518849872271000461">次のパソコンとのデータ交換: <ph name="HOSTNAMES"/></translation>
 <translation id="1389014510128217152">- <ph name="WEBSITE_1"/></translation>
-<translation id="5530391389158154052"><ph name="NUMBER_OF_WEBSITES"/> 件のウェブサイトのデータへのアクセス</translation>
 <translation id="961805664415579088">ドメイン <ph name="DOMAIN"/> 内のパソコンとのデータ交換</translation>
 <translation id="4968399700653439437">次のドメイン内のパソコンとのデータ交換: <ph name="DOMAINS"/></translation>
 <translation id="8662911384982557515">ホームページを次に変更: <ph name="HOME_PAGE"/></translation>
+<translation id="8114679593444120202"><ph name="NUMBER_OF_WEBSITES"/> 件のウェブサイト上にある自分のデータの読み取りと変更</translation>
 <translation id="8602184400052594090">マニフェスト ファイルが見つからないか読み取れません。</translation>
 <translation id="7893008570150657497">パソコンから画像、音楽、その他のメディアにアクセスする</translation>
 <translation id="7217838517480956708">このパソコンの管理者にとって <ph name="EXTENSION_NAME"/> がインストールされている必要があります。削除や修正はできません。</translation>
 <translation id="7154130902455071009">スタート ページを次に変更します: <ph name="START_PAGE"/></translation>
+<translation id="6094507746643187368"><ph name="WEBSITE_1"/>、<ph name="WEBSITE_2"/> 上にある自分のデータの読み取りと変更</translation>
 <translation id="1803557475693955505">背景ページ「<ph name="BACKGROUND_PAGE"/>」を読み込むことができませんでした。</translation>
+<translation id="8207052894957937969"><ph name="NUMBER_OF_WEBSITES"/> 件のウェブサイト上にある自分のデータの読み取りと変更</translation>
 </translationbundle>

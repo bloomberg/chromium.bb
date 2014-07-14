@@ -25,6 +25,7 @@
 <translation id="4891791193823137474">Neka Google Chrome radi u pozadini</translation>
 <translation id="110877069173485804">Ovo je vaš Chrome</translation>
 <translation id="1376881911183620035">Hvala vam što isprobavate novi Chrome. Chrome se mora ponovo pokrenuti, pa spremite sav nespremljeni rad kako biste nastavili.</translation>
+<translation id="8406086379114794905">Pomozite nam da poboljšamo Chrome</translation>
 <translation id="2896252579017640304">Pokreni aplikacije sustava Chrome</translation>
 <translation id="2721687379934343312">Na Mac računalima, zaporke se spremaju u vaš Keychain, a drugi korisnici preglednika Chrome koji dijele ovaj OS X račun mogu im pristupiti ili ih sinkronizirati.</translation>
 <translation id="683440813066116847">Ulazno pravilo kako bi Google Chrome Canary dopustio mDNS promet.</translation>
@@ -120,6 +121,7 @@ Ako se ipak prijavite, podaci sustava Chrome kao što su oznake, povijest i osta
 <translation id="911206726377975832">Izbrisati i podatke o pregledavanju?</translation>
 <translation id="2036562258783619899">Pregledajte novi Chrome</translation>
 <translation id="5855036575689098185">Softver koji se izvodi na vašem računalu nije kompatibilan s Google Chromeom.</translation>
+<translation id="7164397146364144019">Možete pomoći da Chrome bude sigurniji i jednostavniji za upotrebu tako što ćete omogućiti da se Googleu automatski prijavljuju pojedinosti o mogućim sigurnosnim incidentima.</translation>
 <translation id="8008534537613507642">Ponovo instaliraj Chrome</translation>
 <translation id="2044287590254833138">Alatna traka programa Google Chrome:</translation>
 <translation id="8862326446509486874">Nemate odgovarajuća prava za instaliranje na razini sustava. Pokušajte ponovno pokrenuti program za instalaciju kao administrator.</translation>
@@ -128,7 +130,6 @@ Ako se ipak prijavite, podaci sustava Chrome kao što su oznake, povijest i osta
 <translation id="7436949144778751379">Google Chrome zahtijeva Windows XP ili noviji. Neke značajke možda neće raditi.</translation>
 <translation id="5877064549588274448">Kanal je promijenjen. Ponovo pokrenite uređaj za primjenu promjena.</translation>
 <translation id="103396972844768118">Važne informacije o vašim podacima u sustavu Chrome</translation>
-<translation id="6145223986912084844">chrome</translation>
 <translation id="6757767188268205357">Ne ometaj me</translation>
 <translation id="2290095356545025170">Jeste li sigurni da želite deinstalirati Google Chrome?</translation>
 <translation id="7062966102157262887">Preuzimanje je u tijeku. Želite li napustiti Google Chrome i otkazati to preuzimanje?</translation>
@@ -180,7 +181,6 @@ Ako se ipak prijavite, podaci sustava Chrome kao što su oznake, povijest i osta
 <translation id="3444832043240812445">Ova stranica prikazuje samo informacije o vašim nedavnim padovima ako <ph name="BEGIN_LINK"/>omogućite izvješćivanja o padu<ph name="END_LINK"/>.</translation>
 <translation id="8614913330719544658">Google Chrome ne reagira. Ponovo pokrenuti sada?</translation>
 <translation id="2681064822612051220">Na sustavu je pronađena konfliktna instalacija aplikacije Google Chrome. Deinstalirajte je i pokušajte ponovo.</translation>
-<translation id="1175529839152551794">Sada kad ste prijavljeni, možete imati svoje kartice, oznake i druge sadržaje u Chromeu na svojem prijenosnom računalu, telefonu i tabletu. Također ćete dobivati relevantnije prijedloge i značajke na Googleovim uslugama.</translation>
 <translation id="8209985377776300429">Pregledavate novi Chrome.</translation>
 <translation id="6126631249883707068">Želite li da vam Google Chrome spremi zaporku?</translation>
 <translation id="7773845170078702898">Želite li da Google Chrome spremi vašu zaporku za ovu web-lokaciju?</translation>

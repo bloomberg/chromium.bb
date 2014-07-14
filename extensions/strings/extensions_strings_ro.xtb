@@ -1,19 +1,17 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ro">
-<translation id="8719282907381795632">Accesează datele dvs. de pe <ph name="WEBSITE_1"/></translation>
 <translation id="7809034755304591547"><ph name="EXTENSION_NAME"/> (cu codul de extensie „<ph name="EXTENSION_ID"/>”) este blocată de administrator.</translation>
 <translation id="2857834222104759979">Fișierul manifest nu este valid.</translation>
+<translation id="8978038008714088448">Citește și modifică datele dvs. de pe <ph name="WEBSITE_1"/></translation>
+<translation id="4205302772098850608">Citește și modifică datele dvs. de pe <ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/> și <ph name="WEBSITE_3"/></translation>
 <translation id="3828484226910527078">Accesați dispozitivul USB</translation>
 <translation id="6384275966486438344">Schimbați setările de căutare la: <ph name="SEARCH_HOST"/></translation>
 <translation id="5911798608827489036">Faceți schimb de date cu orice computer din rețeaua locală sau de pe internet</translation>
 <translation id="4719685943208231314">Accesați dispozitivul USB de la <ph name="VENDOR_NAME"/></translation>
 <translation id="657064425229075395">Scriptul de fundal „<ph name="BACKGROUND_SCRIPT"/>” nu a putut fi încărcat.</translation>
-<translation id="3093853184108622112">Accesează datele dvs. de pe <ph name="WEBSITE_1"/> și de pe <ph name="WEBSITE_2"/></translation>
 <translation id="8597109877291678953">Faceți schimb de date cu computerul cu numele <ph name="HOSTNAME"/></translation>
-<translation id="6914908792814954894">Accesează datele dvs. de pe <ph name="NUMBER_OF_WEBSITES"/> (de) site-uri web</translation>
 <translation id="5456409301717116725">Această extensie include fișierul cheie „<ph name="KEY_PATH"/>”. Probabil că nu doriți să faceți asta.</translation>
-<translation id="6968649314782363508">Accesează datele dvs. de pe <ph name="WEBSITE_1"/>, de pe <ph name="WEBSITE_2"/> și de pe <ph name="WEBSITE_3"/></translation>
 <translation id="2350172092385603347">A fost utilizată localizarea, dar nu s-a specificat default_locale în manifest.</translation>
 <translation id="8058376558882514200">Accesați dispozitivul USB <ph name="PRODUCT_NAME"/> de la <ph name="VENDOR_NAME"/></translation>
 <translation id="8774379383902544371">Accesați gadgeturi USB</translation>
@@ -21,13 +19,15 @@
 <translation id="6344170822609224263">Accesează lista conexiunilor de rețea</translation>
 <translation id="2518849872271000461">Faceți schimb de date cu computerele cu numele: <ph name="HOSTNAMES"/></translation>
 <translation id="1389014510128217152">– <ph name="WEBSITE_1"/></translation>
-<translation id="5530391389158154052">Accesează datele dvs. de pe <ph name="NUMBER_OF_WEBSITES"/> (de) site-uri</translation>
 <translation id="961805664415579088">Faceți schimb de date cu orice computer de pe domeniul <ph name="DOMAIN"/></translation>
 <translation id="4968399700653439437">Faceți schimb de date cu orice computer de pe domeniile: <ph name="DOMAINS"/></translation>
 <translation id="8662911384982557515">Schimbă pagina de pornire la: <ph name="HOME_PAGE"/></translation>
+<translation id="8114679593444120202">Citește și modifică datele dvs. de pe <ph name="NUMBER_OF_WEBSITES"/> de site-uri</translation>
 <translation id="8602184400052594090">Fișierul manifest lipsește sau nu poate fi citit.</translation>
 <translation id="7893008570150657497">să acceseze fotografii, muzică și alte tipuri de conținut media de pe computer;</translation>
 <translation id="7217838517480956708">Administratorul acestui dispozitiv solicită instalarea extensiei <ph name="EXTENSION_NAME"/>. Aceasta nu poate fi eliminată sau modificată.</translation>
 <translation id="7154130902455071009">Schimbați pagina de start la: <ph name="START_PAGE"/></translation>
+<translation id="6094507746643187368">Citește și modifică datele dvs. de pe <ph name="WEBSITE_1"/> și <ph name="WEBSITE_2"/></translation>
 <translation id="1803557475693955505">Nu se poate încărca pagina de fundal „<ph name="BACKGROUND_PAGE"/>”.</translation>
+<translation id="8207052894957937969">Citește și modifică datele dvs. de pe <ph name="NUMBER_OF_WEBSITES"/> site-uri</translation>
 </translationbundle>

@@ -25,6 +25,7 @@
 <translation id="4891791193823137474">Executar o Google Chrome em segundo plano</translation>
 <translation id="110877069173485804">Este é seu Chrome</translation>
 <translation id="1376881911183620035">Obrigado por experimentar o novo Google Chrome. É necessário reiniciar o Chrome para ter certeza de que você salvou os trabalhos abertos antes de continuar.</translation>
+<translation id="8406086379114794905">Ajudar a melhorar o Google Chrome</translation>
 <translation id="2896252579017640304">Iniciar aplicativos do Google Chrome</translation>
 <translation id="2721687379934343312">No Mac, as senhas são salvas em seu Keychain e podem ser acessadas ou sincronizadas por outros usuários do Google Chrome ao compartilhar esta conta SO X.</translation>
 <translation id="683440813066116847">Regra interna do Google Chrome Canary para permitir tráfego mDNS.</translation>
@@ -121,6 +122,7 @@ Se você decidir fazer login assim mesmo, as informações do Google Chrome, com
 <translation id="911206726377975832">Excluir também dados de navegação?</translation>
 <translation id="2036562258783619899">Visualizar o novo Google Chrome</translation>
 <translation id="5855036575689098185">O software que está sendo executado em seu computador não é compatível com o Google Chrome.</translation>
+<translation id="7164397146364144019">Você pode ajudar a tornar o Google Chrome mais seguro e mais fácil de usar, informando automaticamente ao Google detalhes sobre possíveis incidentes de segurança.</translation>
 <translation id="8008534537613507642">Reinstalar o Google Chrome</translation>
 <translation id="2044287590254833138">Barra de ferramentas do Google Chrome</translation>
 <translation id="8862326446509486874">Você não tem os direitos adequados para instalação no nível do sistema. Tente executar o instalador novamente como administrador.</translation>
@@ -129,7 +131,6 @@ Se você decidir fazer login assim mesmo, as informações do Google Chrome, com
 <translation id="7436949144778751379">O Google Chrome requer Windows XP ou superior. Alguns recursos talvez não funcionem.</translation>
 <translation id="5877064549588274448">Canal alterado. Reinicie o dispositivo para aplicar as alterações.</translation>
 <translation id="103396972844768118">Informação importante sobre seus dados do Google Chrome</translation>
-<translation id="6145223986912084844">chrome</translation>
 <translation id="6757767188268205357">Não estou a fim</translation>
 <translation id="2290095356545025170">Tem certeza de que deseja desinstalar o Google Chrome?</translation>
 <translation id="7062966102157262887">Há um download em andamento. Deseja sair do Google Chrome e cancelar o download?</translation>
@@ -182,7 +183,6 @@ Se você decidir fazer login assim mesmo, as informações do Google Chrome, com
 <translation id="3444832043240812445">Esta página mostra apenas informações sobre suas falhas recentes se você <ph name="BEGIN_LINK"/>ativar relatórios de erros<ph name="END_LINK"/>.</translation>
 <translation id="8614913330719544658">O Google Chrome não responde. Reiniciar agora?</translation>
 <translation id="2681064822612051220">Foi encontrada uma instalação conflituosa do Google Chrome no sistema. Desinstale-o e tente novamente.</translation>
-<translation id="1175529839152551794">Agora que você está conectado, pode ver suas guias, favoritos e outras coisas do Google Chrome no seu laptop, telefone ou tablet. Você também receberá sugestões e recursos mais relevantes nos serviços do Google.</translation>
 <translation id="8209985377776300429">Você está visualizando o novo Google Chrome.</translation>
 <translation id="6126631249883707068">Deseja que o Google Chrome salve a sua senha?</translation>
 <translation id="7773845170078702898">Deseja que o Google Chrome salve sua senha para este site?</translation>

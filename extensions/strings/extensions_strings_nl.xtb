@@ -1,19 +1,17 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="nl">
-<translation id="8719282907381795632">Je gegevens op <ph name="WEBSITE_1"/> openen</translation>
 <translation id="7809034755304591547"><ph name="EXTENSION_NAME"/> (extensie-ID '<ph name="EXTENSION_ID"/>') wordt geblokkeerd door de beheerder.</translation>
 <translation id="2857834222104759979">Manifestbestand is ongeldig.</translation>
+<translation id="8978038008714088448">Je gegevens lezen en aanpassen op <ph name="WEBSITE_1"/></translation>
+<translation id="4205302772098850608">Je gegevens lezen en aanpassen op <ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/> en <ph name="WEBSITE_3"/></translation>
 <translation id="3828484226910527078">Het USB-apparaat openen</translation>
 <translation id="6384275966486438344">Je zoekinstellingen wijzigen in: <ph name="SEARCH_HOST"/></translation>
 <translation id="5911798608827489036">Gegevens uitwisselen met elke computer op het lokale netwerk of internet</translation>
 <translation id="4719685943208231314">Het USB-apparaat van <ph name="VENDOR_NAME"/> openen</translation>
 <translation id="657064425229075395">Kan achtergrondscript '<ph name="BACKGROUND_SCRIPT"/>' niet laden.</translation>
-<translation id="3093853184108622112">Je gegevens op <ph name="WEBSITE_1"/> en <ph name="WEBSITE_2"/> openen</translation>
 <translation id="8597109877291678953">Gegevens uitwisselen met de computer met de naam <ph name="HOSTNAME"/></translation>
-<translation id="6914908792814954894">Je gegevens openen op <ph name="NUMBER_OF_WEBSITES"/> websites</translation>
 <translation id="5456409301717116725">Deze extensie bevat het sleutelbestand '<ph name="KEY_PATH"/>'. Dit is waarschijnlijk niet je bedoeling.</translation>
-<translation id="6968649314782363508">Je gegevens op <ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/> en <ph name="WEBSITE_3"/> openen</translation>
 <translation id="2350172092385603347">Lokalisatie gebruikt, maar er is geen 'default_locale' opgegeven in het manifest.</translation>
 <translation id="8058376558882514200">Het USB-apparaat <ph name="PRODUCT_NAME"/> van <ph name="VENDOR_NAME"/> openen</translation>
 <translation id="8774379383902544371">Toegang krijgen tot USB-apparaten</translation>
@@ -21,13 +19,15 @@
 <translation id="6344170822609224263">Toegang tot lijst met netwerkverbindingen</translation>
 <translation id="2518849872271000461">Gegevens uitwisselen met de computers met de volgende namen: <ph name="HOSTNAMES"/></translation>
 <translation id="1389014510128217152">- <ph name="WEBSITE_1"/></translation>
-<translation id="5530391389158154052">Je gegevens openen op <ph name="NUMBER_OF_WEBSITES"/> websites</translation>
 <translation id="961805664415579088">Gegevens uitwisselen met elke computer in het domein <ph name="DOMAIN"/></translation>
 <translation id="4968399700653439437">Gegevens uitwisselen met elke computer in de volgende domeinen: <ph name="DOMAINS"/></translation>
 <translation id="8662911384982557515">Je startpagina wijzigen in: <ph name="HOME_PAGE"/></translation>
+<translation id="8114679593444120202">Je gegevens lezen en aanpassen op <ph name="NUMBER_OF_WEBSITES"/> websites</translation>
 <translation id="8602184400052594090">Manifestbestand ontbreekt of is onleesbaar.</translation>
 <translation id="7893008570150657497">Foto's, muziek en andere media van je computer openen</translation>
 <translation id="7217838517480956708">De beheerder van dit apparaat vereist dat <ph name="EXTENSION_NAME"/> is geïnstalleerd. Het kan niet worden verwijderd of gewijzigd.</translation>
 <translation id="7154130902455071009">Je startpagina wijzigen in: <ph name="START_PAGE"/></translation>
+<translation id="6094507746643187368">Je gegevens lezen en aanpassen op <ph name="WEBSITE_1"/> en <ph name="WEBSITE_2"/></translation>
 <translation id="1803557475693955505">Kan achtergrondpagina '<ph name="BACKGROUND_PAGE"/>' niet laden.</translation>
+<translation id="8207052894957937969">Je gegevens lezen en aanpassen op <ph name="NUMBER_OF_WEBSITES"/> websites</translation>
 </translationbundle>

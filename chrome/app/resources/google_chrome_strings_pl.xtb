@@ -25,6 +25,7 @@
 <translation id="4891791193823137474">Zezwalaj przeglądarce Google Chrome na działanie w tle</translation>
 <translation id="110877069173485804">Oto Twój Chrome</translation>
 <translation id="1376881911183620035">Dziękujemy za wypróbowanie nowego Chrome. Zanim przejdziesz dalej, Chrome musi uruchomić się ponownie, by wszystkie otwarte dokumenty zostały zapisane.</translation>
+<translation id="8406086379114794905">Pomóż ulepszać Chrome</translation>
 <translation id="2896252579017640304">Uruchom aplikacje Chrome</translation>
 <translation id="2721687379934343312">Na komputerach z systemem Mac hasła są zapisane w pęku kluczy. Inni użytkownicy Chrome udostępniający to konto systemu OS X mogą uzyskiwać do nich dostęp i je synchronizować.</translation>
 <translation id="683440813066116847">Reguła dla ruchu przychodzącego w Google Chrome Canary zezwalająca na ruch mDNS.</translation>
@@ -121,6 +122,7 @@ Jeśli jednak zalogujesz się teraz, informacje Chrome, takie jak zakładki, his
 <translation id="911206726377975832">Czy usunąć także dane przeglądania?</translation>
 <translation id="2036562258783619899">Zobacz nową funkcję Chrome</translation>
 <translation id="5855036575689098185">Oprogramowanie, które działa na Twoim komputerze jest niezgodne z Google Chrome.</translation>
+<translation id="7164397146364144019">Możesz pomóc zwiększyć bezpieczeństwo i komfort korzystania z Chrome, automatycznie przesyłając do Google szczegółowe informacje o możliwych zagrożeniach.</translation>
 <translation id="8008534537613507642">Ponownie zainstaluj Chrome</translation>
 <translation id="2044287590254833138">Pasek narzędzi Google Chrome</translation>
 <translation id="8862326446509486874">Nie masz odpowiednich uprawnień do przeprowadzenia instalacji na poziomie systemowym. Uruchom ponownie program instalacyjny jako administrator.</translation>
@@ -129,7 +131,6 @@ Jeśli jednak zalogujesz się teraz, informacje Chrome, takie jak zakładki, his
 <translation id="7436949144778751379">Przeglądarka Google Chrome wymaga systemu Windows XP lub nowszego. Niektóre funkcje mogą nie działać.</translation>
 <translation id="5877064549588274448">Kanał został zmieniony. Aby zastosować zmiany, uruchom ponownie urządzenie.</translation>
 <translation id="103396972844768118">Ważna informacja dotycząca Twoich danych Chrome</translation>
-<translation id="6145223986912084844">chrome</translation>
 <translation id="6757767188268205357">Nie proponuj więcej</translation>
 <translation id="2290095356545025170">Czy na pewno chcesz odinstalować przeglądarkę Google Chrome?</translation>
 <translation id="7062966102157262887">Trwa pobieranie pliku. Czy chcesz wyjść z Google Chrome i anulować pobieranie?</translation>
@@ -182,7 +183,6 @@ Jeśli jednak zalogujesz się teraz, informacje Chrome, takie jak zakładki, his
 <translation id="3444832043240812445">Ta strona zawiera informacje o ostatnich awariach tylko w przypadku <ph name="BEGIN_LINK"/>włączenia funkcji zgłaszania awarii<ph name="END_LINK"/>.</translation>
 <translation id="8614913330719544658">Przeglądarka Google Chrome nie odpowiada. Uruchomić ją teraz ponownie?</translation>
 <translation id="2681064822612051220">W systemie znaleziono zainstalowaną przeglądarkę Google Chrome, która powoduje konflikt. Odinstaluj ją i spróbuj ponownie.</translation>
-<translation id="1175529839152551794">Teraz, po zalogowaniu, masz dostęp do kart, zakładek i innych funkcji Chrome na laptopie, telefonie i tablecie. Korzystaj także z bardziej trafnych sugestii i lepiej dopasowanych funkcji w usługach Google.</translation>
 <translation id="8209985377776300429">Korzystasz z wersji testowej nowego Chrome.</translation>
 <translation id="6126631249883707068">Czy chcesz, aby przeglądarka Google Chrome zapisała hasło?</translation>
 <translation id="7773845170078702898">Czy Google Chrome ma zapisać hasło do tej strony?</translation>

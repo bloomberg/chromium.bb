@@ -29,6 +29,7 @@ Kai kurios funkcijos gali būti nepasiekiamos ir nuostatų pakeitimai nebus išs
 <translation id="4891791193823137474">Paleisti „Google Chrome“ fone</translation>
 <translation id="110877069173485804">Tai jūsų „Chrome“</translation>
 <translation id="1376881911183620035">Dėkojame, kad išbandėte naująją „Chrome“. „Chrome“ reikia paleisti iš naujo, todėl prieš tęsdami įsitikinkite, kad išsaugojote visus atidarytus darbus.</translation>
+<translation id="8406086379114794905">Padėkite tobulinti „Chrome“</translation>
 <translation id="2896252579017640304">Paleisti „Chrome“ programas</translation>
 <translation id="2721687379934343312">„Mac“ kompiuteriuose slaptažodžiai saugomi programoje „Keychain“ ir gali būti pasiekiami arba sinchronizuojami kitų „Chrome“ naudotojų, bendrai naudojančių šią „OS X“ paskyrą.</translation>
 <translation id="683440813066116847">„Canary“ versijos „Google Chrome“ skirta taisyklė, pagal kurią leidžiamas gaunamas mDNS srautas.</translation>
@@ -129,6 +130,7 @@ Prisijungus bet kuriuo būdu, „Chrome“ informacija, pvz., žymės, istorija 
 <translation id="911206726377975832">Ar ištrinti naršymo duomenis?</translation>
 <translation id="2036562258783619899">Naujos „Chrome“ peržiūra</translation>
 <translation id="5855036575689098185">Jūsų kompiuteryje veikianti programinė įranga nesuderinama su „Google Chrome“.</translation>
+<translation id="7164397146364144019">Galite padėti sustiprinti „Chrome“ saugą ir palengvinti jos naudojimą automatiškai „Google“ pateikdami išsamią informaciją apie galimas saugos problemas.</translation>
 <translation id="8008534537613507642">Iš naujo įdiegti „Chrome“</translation>
 <translation id="2044287590254833138">„Google Chrome“ įrankių juosta</translation>
 <translation id="8862326446509486874">Neturite reikiamų teisių sistemai įdiegti. Pamėginkite įdiegimo priemonę dar kartą paleisti kaip administratorius.</translation>
@@ -137,7 +139,6 @@ Prisijungus bet kuriuo būdu, „Chrome“ informacija, pvz., žymės, istorija 
 <translation id="7436949144778751379">„Google Chrome“ reikia „Windows XP“ ar naujesnės versijos. Gali neveikti kai kurios funkcijos.</translation>
 <translation id="5877064549588274448">Kanalas pakeistas. Kad pritaikytumėte pakeitimus, iš naujo paleiskite įrenginį.</translation>
 <translation id="103396972844768118">Svarbi informacija apie jūsų „Chrome“ duomenis</translation>
-<translation id="6145223986912084844">chrome</translation>
 <translation id="6757767188268205357">Netrukdykite</translation>
 <translation id="2290095356545025170">Ar tikrai norite pašalinti „Google Chrome“?</translation>
 <translation id="7062966102157262887">Šiuo metu vykdomas atsisiuntimas. Ar norite išeiti iš „Google Chrome“ ir atšaukti atsisiuntimą?</translation>
@@ -191,7 +192,6 @@ Prisijungus bet kuriuo būdu, „Chrome“ informacija, pvz., žymės, istorija 
 <translation id="3444832043240812445">Šiame puslapyje rodoma informacija apie paskutines strigtis, jei <ph name="BEGIN_LINK"/>įgalinote strigčių ataskaitų teikimą<ph name="END_LINK"/>.</translation>
 <translation id="8614913330719544658">„Google Chrome“ neatsako. Paleisti iš naujo dabar?</translation>
 <translation id="2681064822612051220">Sistemoje nustatyta prieštaringa „Google Chrome“ įdiegtis. Pašalinkite ir bandykite dar kartą.</translation>
-<translation id="1175529839152551794">Dabar esate prisijungę, todėl skirtukus, žymes ir kitus „Chrome“ duomenis galite naudoti skreitiniame kompiuteryje, telefone ir planšetiniame kompiuteryje. Be to, gausite labiau atitinkamus pasiūlymus ir „Google“ paslaugų funkcijas.</translation>
 <translation id="8209985377776300429">Peržiūrite naująją „Chrome“.</translation>
 <translation id="6126631249883707068">Ar norite, kad „Google Chrome“ išsaugotų slaptažodį?</translation>
 <translation id="7773845170078702898">Ar norite, kad „Google Chrome“ išsaugotų šios svetainės slaptažodį?</translation>

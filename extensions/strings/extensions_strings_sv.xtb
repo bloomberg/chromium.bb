@@ -1,19 +1,17 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="sv">
-<translation id="8719282907381795632">Få åtkomst till dina data på <ph name="WEBSITE_1"/></translation>
 <translation id="7809034755304591547"><ph name="EXTENSION_NAME"/> (tilläggs-ID <ph name="EXTENSION_ID"/>) har blockerats av administratören.</translation>
 <translation id="2857834222104759979">Manifestfilen är ogiltig.</translation>
+<translation id="8978038008714088448">Läsa och ändra din data på <ph name="WEBSITE_1"/></translation>
+<translation id="4205302772098850608">Läsa och ändra din data på <ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/> och <ph name="WEBSITE_3"/></translation>
 <translation id="3828484226910527078">Tillgång till USB-enheten</translation>
 <translation id="6384275966486438344">Ändra sökinställningarna till: <ph name="SEARCH_HOST"/></translation>
 <translation id="5911798608827489036">Utväxla data med en dator i det lokala nätverket eller via internet</translation>
 <translation id="4719685943208231314">Tillgång till USB-enheten från <ph name="VENDOR_NAME"/></translation>
 <translation id="657064425229075395">Det gick inte att läsa in bakgrundsskriptet <ph name="BACKGROUND_SCRIPT"/>.</translation>
-<translation id="3093853184108622112">Få åtkomst till dina data på <ph name="WEBSITE_1"/> och <ph name="WEBSITE_2"/></translation>
 <translation id="8597109877291678953">Utväxla data med datorn <ph name="HOSTNAME"/></translation>
-<translation id="6914908792814954894">Få åtkomst till din data på <ph name="NUMBER_OF_WEBSITES"/> webbplatser</translation>
 <translation id="5456409301717116725">Detta tillägg omfattar nyckelfilen <ph name="KEY_PATH"/>. Du vill antagligen inte göra detta.</translation>
-<translation id="6968649314782363508">Få åtkomst till dina data på <ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/> och <ph name="WEBSITE_3"/></translation>
 <translation id="2350172092385603347">Lokalisering används, men default_locale specificeras inte i manifestet.</translation>
 <translation id="8058376558882514200">Tillgång till USB-enheten <ph name="PRODUCT_NAME"/> från <ph name="VENDOR_NAME"/></translation>
 <translation id="8774379383902544371">Åtkomst till USB-enheter</translation>
@@ -21,13 +19,15 @@
 <translation id="6344170822609224263">Få åtkomst till en lista med nätverksanslutningar</translation>
 <translation id="2518849872271000461">Utväxla data med datorerna: <ph name="HOSTNAMES"/></translation>
 <translation id="1389014510128217152">– <ph name="WEBSITE_1"/></translation>
-<translation id="5530391389158154052">Få åtkomst till din data på <ph name="NUMBER_OF_WEBSITES"/> webbplatser</translation>
 <translation id="961805664415579088">Utväxla data med datorer i domänen <ph name="DOMAIN"/></translation>
 <translation id="4968399700653439437">Utväxla data med datorer i domänerna: <ph name="DOMAINS"/></translation>
 <translation id="8662911384982557515">Ändra startsida till: <ph name="HOME_PAGE"/></translation>
+<translation id="8114679593444120202">Läsa och ändra din data på <ph name="NUMBER_OF_WEBSITES"/> webbplatser</translation>
 <translation id="8602184400052594090">Manifestfilen saknas eller är oläslig.</translation>
 <translation id="7893008570150657497">Få åtkomst till foton, musik och andra medier från datorn</translation>
 <translation id="7217838517480956708">Administratören av den här enheten kräver att <ph name="EXTENSION_NAME"/> ska installeras. Det kan inte tas bort eller ändras.</translation>
 <translation id="7154130902455071009">Ändra startsida till: <ph name="START_PAGE"/></translation>
+<translation id="6094507746643187368">Läsa och ändra din data på <ph name="WEBSITE_1"/> och <ph name="WEBSITE_2"/></translation>
 <translation id="1803557475693955505">Det gick inte att läsa in bakgrundssidan <ph name="BACKGROUND_PAGE"/>.</translation>
+<translation id="8207052894957937969">Läsa och ändra din data på <ph name="NUMBER_OF_WEBSITES"/> webbplatser</translation>
 </translationbundle>

@@ -2,22 +2,28 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="fa">
 <translation id="8588878054171169263">ذخیره تصویر</translation>
+<translation id="7998918019931843664">بازکردن مجدد برگه‌های بسته شده</translation>
 <translation id="4996978546172906250">اشتراک‌گذاری از طریق</translation>
 <translation id="5578795271662203820">جستجوی <ph name="SEARCH_ENGINE"/> برای این تصویر</translation>
 <translation id="6831043979455480757">ترجمه</translation>
 <translation id="7644305409888602715">در حال ترجمه صفحه به <ph name="SOURCE_LANGUAGE"/>…</translation>
 <translation id="7015922086425404465">‏دریافت برنامه از فروشگاه Google Play:‏ <ph name="APP_ACTION"/></translation>
 <translation id="1491151370853475546">بارگیری مجدد این صفحه</translation>
+<translation id="5233638681132016545">برگهٔ جدید</translation>
 <translation id="641643625718530986">چاپ...</translation>
+<translation id="5763382633136178763">برگه‌های ناشناس</translation>
+<translation id="5210365745912300556">بستن برگه</translation>
 <translation id="7658239707568436148">لغو</translation>
 <translation id="6458785801851713928">همگام‌سازی برای دامنه شما در دسترس نیست.</translation>
 <translation id="2731700343119398978">لطفاً صبر کنید...</translation>
+<translation id="6846298663435243399">در حال بارگیری…</translation>
 <translation id="7378627244592794276">نه</translation>
 <translation id="3358663646935160692">‏این حساب توسط <ph name="DOMAIN_NAME"/> مدیریت می‌شود. شما با یک حساب مدیریت شده وارد سیستم شده‌اید و به سرپرست این حساب اجازه کنترل نمایه Chrome خود را می‌دهید. اطلاعات Chrome شما به صورت دائم با این حساب مرتبط می‌شود. با قطع ارتباط از این حساب، کلیه اطلاعات Chrome شما در دستگاه حذف می‌شود.</translation>
 <translation id="1966710179511230534">لطفاً جزئیات ورود به سیستمتان را به‌روز کنید.</translation>
 <translation id="1623104350909869708">جلوگیری از ایجاد پنجره‌های اضافی توسط این صفحه</translation>
 <translation id="1426410128494586442">بله</translation>
 <translation id="8218346974737627104">تأیید ورود به سیستم</translation>
+<translation id="8853345339104747198"><ph name="TAB_TITLE"/>، برگه</translation>
 <translation id="624558823898732418">زبان ترجمه: <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="8872441722924401214">انتخاب گواهی برای احراز هویت</translation>
 <translation id="3896036286668839683">نظاره‌گر گواهی</translation>
@@ -39,6 +45,7 @@
 <translation id="3063601790762993062">ذخیره ویدیو</translation>
 <translation id="6042308850641462728">بیشتر</translation>
 <translation id="7267430310003164111">‏سؤال برای دریافت برنامه از فروشگاه Google Play. نام برنامه: <ph name="APP_NAME"/>. رتبه متوسط برنامه: <ph name="APP_RATING"/>.</translation>
+<translation id="303955801043931176">برگه بسته شد</translation>
 <translation id="4148957013307229264">در حال نصب...</translation>
 <translation id="3992315671621218278">ذخیره پیوند</translation>
 <translation id="8034522405403831421">این صفحه به زبان <ph name="SOURCE_LANGUAGE"/> است. مایلید آن را به <ph name="TARGET_LANGUAGE"/> ترجمه کنید؟</translation>
@@ -64,9 +71,11 @@
 <translation id="6333140779060797560">اشتراک‌گذاری از طریق <ph name="APPLICATION"/></translation>
 <translation id="6040143037577758943">بستن</translation>
 <translation id="969096075394517431">تغییر زبان‌ها</translation>
+<translation id="5556459405103347317">تازه سازی</translation>
 <translation id="5032574515228824816">فرمان</translation>
 <translation id="4847896847259487518">نشانک‌گذاری صفحه</translation>
 <translation id="497421865427891073">جلو رفتن</translation>
+<translation id="8310344678080805313">برگه‌های استاندارد</translation>
 <translation id="6277522088822131679">در چاپ صفحه مشکلی پیش آمد. لطفاً دوباره امتحان کنید.</translation>
 <translation id="1742134235943978220">به <ph name="TARGET_LANGUAGE"/> ترجمه شد.</translation>
 <translation id="6965382102122355670">تأیید</translation>

@@ -2,16 +2,21 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="sl">
 <translation id="8588878054171169263">Shrani sliko</translation>
+<translation id="7998918019931843664">Vnovično odpiranje zaprtega zavihka</translation>
 <translation id="4996978546172906250">Skupna raba prek</translation>
 <translation id="5578795271662203820">Uporabi <ph name="SEARCH_ENGINE"/> za to sliko</translation>
 <translation id="6831043979455480757">Prevedi</translation>
 <translation id="7644305409888602715">Prevajanje strani v jezik <ph name="SOURCE_LANGUAGE"/> ...</translation>
 <translation id="7015922086425404465">Prenos aplikacije iz Trgovine Google Play: <ph name="APP_ACTION"/></translation>
 <translation id="1491151370853475546">Znova naloži stran</translation>
+<translation id="5233638681132016545">Nov zavihek</translation>
 <translation id="641643625718530986">Tiskanje …</translation>
+<translation id="5763382633136178763">Zavihki brez beleženja zgodovine</translation>
+<translation id="5210365745912300556">Zapri zavihek</translation>
 <translation id="7658239707568436148">Prekliči</translation>
 <translation id="6458785801851713928">Sinhronizacija ni na voljo za vašo domeno.</translation>
 <translation id="2731700343119398978">Počakajte ...</translation>
+<translation id="6846298663435243399">Nalaganje ...</translation>
 <translation id="7378627244592794276">Ne</translation>
 <translation id="3358663646935160692">Ta račun upravlja domena <ph name="DOMAIN_NAME"/>.
 
@@ -20,6 +25,7 @@ Prijavljate se z upravljanim računom in s tem njegovemu skrbniku omogočate nad
 <translation id="1623104350909869708">Tej strani prepreči, da bi ustvarila dodatna pogovorna okna</translation>
 <translation id="1426410128494586442">Da</translation>
 <translation id="8218346974737627104">Potrditev prijave</translation>
+<translation id="8853345339104747198"><ph name="TAB_TITLE"/>, zavihek</translation>
 <translation id="624558823898732418">Jezik prevoda: <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="8872441722924401214">Izberite potrdilo za preverjanje pristnosti</translation>
 <translation id="3896036286668839683">Pregledovalnik potrdil</translation>
@@ -41,6 +47,7 @@ Prijavljate se z upravljanim računom in s tem njegovemu skrbniku omogočate nad
 <translation id="3063601790762993062">Shrani videoposnetek</translation>
 <translation id="6042308850641462728">Več</translation>
 <translation id="7267430310003164111">Poziv za prenos aplikacije iz Trgovine Google Play. Ime aplikacije: <ph name="APP_NAME"/>. Povprečna ocena aplikacije: <ph name="APP_RATING"/>.</translation>
+<translation id="303955801043931176">Zavihek je zaprt</translation>
 <translation id="4148957013307229264">Nameščanje ...</translation>
 <translation id="3992315671621218278">Shrani povezavo</translation>
 <translation id="8034522405403831421">Ta stran je v jeziku <ph name="SOURCE_LANGUAGE"/>. Jo želite prevesti v jezik <ph name="TARGET_LANGUAGE"/>?</translation>
@@ -66,9 +73,11 @@ Prijavljate se z upravljanim računom in s tem njegovemu skrbniku omogočate nad
 <translation id="6333140779060797560">Skupna raba prek: <ph name="APPLICATION"/></translation>
 <translation id="6040143037577758943">Zapri</translation>
 <translation id="969096075394517431">Spreminjanje jezikov</translation>
+<translation id="5556459405103347317">Ponovno naloži</translation>
 <translation id="5032574515228824816">Poziv</translation>
 <translation id="4847896847259487518">Dodajanje strani med zaznamke</translation>
 <translation id="497421865427891073">Pojdi naprej</translation>
+<translation id="8310344678080805313">Standardni zavihki</translation>
 <translation id="6277522088822131679">Pri tiskanju strani je prišlo do težave. Poskusite znova.</translation>
 <translation id="1742134235943978220">Prevedeno v ta jezik: <ph name="TARGET_LANGUAGE"/>.</translation>
 <translation id="6965382102122355670">V redu</translation>

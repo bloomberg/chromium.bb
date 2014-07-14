@@ -1,19 +1,17 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="sw">
-<translation id="8719282907381795632">Fikia data yako kwenye <ph name="WEBSITE_1"/></translation>
 <translation id="7809034755304591547"><ph name="EXTENSION_NAME"/> (Kitambulisho ya kiendelezi &quot;<ph name="EXTENSION_ID"/>&quot;) kimezuiwa na msimamizi.</translation>
 <translation id="2857834222104759979">Faili ya ratiba sio halali.</translation>
+<translation id="8978038008714088448">Soma na uirekebishe data yako kwenye <ph name="WEBSITE_1"/></translation>
+<translation id="4205302772098850608">Soma na uirekebishe data yako kwenye <ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/>, na <ph name="WEBSITE_3"/></translation>
 <translation id="3828484226910527078">Fikia kifaa cha USB.</translation>
 <translation id="6384275966486438344">Badilisha mipangilio yako ya kutafuta iwe: <ph name="SEARCH_HOST"/></translation>
 <translation id="5911798608827489036">Badilisha data kwa kompyuta yoyote kwenye mtandao au intaneti ya karibu</translation>
 <translation id="4719685943208231314">Fikia kifaa cha USB kutoka kwa <ph name="VENDOR_NAME"/></translation>
 <translation id="657064425229075395">Haikuweza kupakia hati ya mandharinyuma '<ph name="BACKGROUND_SCRIPT"/>'.</translation>
-<translation id="3093853184108622112">Fikia data yako kwenye <ph name="WEBSITE_1"/> na <ph name="WEBSITE_2"/></translation>
 <translation id="8597109877291678953">Badilisha data kwa kompyuta iitwayo <ph name="HOSTNAME"/></translation>
-<translation id="6914908792814954894">Fikia data yako kwenye tovuti <ph name="NUMBER_OF_WEBSITES"/></translation>
 <translation id="5456409301717116725">Kiendelezi hiki kinajumuisha faili muhimu '<ph name="KEY_PATH"/>'. Huenda hutaki kufanya hivyo.</translation>
-<translation id="6968649314782363508">Fikia data yako kwenye <ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/>, na <ph name="WEBSITE_3"/></translation>
 <translation id="2350172092385603347">Usanidi wa eneo umetumiwa, lakini eneo_chaguo-msingi halikubainishwa katika ratiba</translation>
 <translation id="8058376558882514200">Fikia kifaa cha USB <ph name="PRODUCT_NAME"/> kutoka kwa <ph name="VENDOR_NAME"/></translation>
 <translation id="8774379383902544371">Fikia vifaa vya USB</translation>
@@ -21,13 +19,15 @@
 <translation id="6344170822609224263">Pata orodha ya miunganisho ya mtandao</translation>
 <translation id="2518849872271000461">Badilisha data kwa kompyuta ziitwazo: <ph name="HOSTNAMES"/></translation>
 <translation id="1389014510128217152">- <ph name="WEBSITE_1"/></translation>
-<translation id="5530391389158154052">Fikia data yako kwenye tovuti <ph name="NUMBER_OF_WEBSITES"/></translation>
 <translation id="961805664415579088">Badilisha data kwa kompyuta yoyote kwenye kikoa <ph name="DOMAIN"/></translation>
 <translation id="4968399700653439437">Badilisha data kwa kompyuta yoyote kwenye vikoa: <ph name="DOMAINS"/></translation>
 <translation id="8662911384982557515">Badilisha ukurasa wako wa mwanzo uwe: <ph name="HOME_PAGE"/></translation>
+<translation id="8114679593444120202">Soma na uirekebishe data yako kwenye tovuti <ph name="NUMBER_OF_WEBSITES"/></translation>
 <translation id="8602184400052594090">Faili ya ratiba haipatikani au haisomeki.</translation>
 <translation id="7893008570150657497">Fikia picha, muziki, na midia nyingine kwenye kompyuta yako</translation>
 <translation id="7217838517480956708">Msimamizi wa mashine haya anahitaji <ph name="EXTENSION_NAME"/> kisakinishwe. Hakiwezi kuondolewa au kurekebishwa.</translation>
 <translation id="7154130902455071009">Badilisha ukurasa wako uwe: <ph name="START_PAGE"/></translation>
+<translation id="6094507746643187368">Soma na uirekebishe data yako kwenye <ph name="WEBSITE_1"/> na <ph name="WEBSITE_2"/></translation>
 <translation id="1803557475693955505">Ukurasa wa mandhari '<ph name="BACKGROUND_PAGE"/>' haukuweza kupakiwa.</translation>
+<translation id="8207052894957937969">Soma na uirekebishe data yako kwenye tovuti <ph name="NUMBER_OF_WEBSITES"/></translation>
 </translationbundle>

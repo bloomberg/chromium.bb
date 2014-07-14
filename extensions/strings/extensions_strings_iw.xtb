@@ -1,19 +1,17 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="iw">
-<translation id="8719282907381795632">להיכנס לנתונים שלך ב-‏<ph name="WEBSITE_1"/></translation>
 <translation id="7809034755304591547"><ph name="EXTENSION_NAME"/> (זיהוי תוסף '<ph name="EXTENSION_ID"/>') נחסם על ידי מנהל המערכת.</translation>
 <translation id="2857834222104759979">קובץ המניספט לא חוקי.</translation>
+<translation id="8978038008714088448">קריאה ושינוי של הנתונים שלך ב-<ph name="WEBSITE_1"/></translation>
+<translation id="4205302772098850608">קריאה ושינוי של הנתונים שלך ב-<ph name="WEBSITE_1"/>‏, <ph name="WEBSITE_2"/> ו-<ph name="WEBSITE_3"/></translation>
 <translation id="3828484226910527078">‏גישה להתקן USB</translation>
 <translation id="6384275966486438344">שנה את הגדרות החיפוש שלך ל: <ph name="SEARCH_HOST"/></translation>
 <translation id="5911798608827489036">החלפת נתונים עם כל מחשב ברשת המקומית או באינטרנט</translation>
 <translation id="4719685943208231314">‏גישה להתקן USB מ-<ph name="VENDOR_NAME"/></translation>
 <translation id="657064425229075395">לא ניתן להעלות את סקריפט הרקע '<ph name="BACKGROUND_SCRIPT"/>'.</translation>
-<translation id="3093853184108622112">להיכנס לנתונים שלך ב-‏<ph name="WEBSITE_1"/> וב-‏<ph name="WEBSITE_2"/></translation>
 <translation id="8597109877291678953">החלפת נתונים עם המחשב ששמו <ph name="HOSTNAME"/></translation>
-<translation id="6914908792814954894">גישה לנתונים שלך ב-<ph name="NUMBER_OF_WEBSITES"/> אתרים</translation>
 <translation id="5456409301717116725">תוסף זה כולל את קובץ המפתח &quot;<ph name="KEY_PATH"/>&quot;. מומלץ לא לעשות זאת.</translation>
-<translation id="6968649314782363508">להיכנס לנתונים שלך ב-<ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/>, וב-<ph name="WEBSITE_3"/></translation>
 <translation id="2350172092385603347">‏נעשה שימוש בהתאמה למקום, אך default_locale לא צוין במניפסט.</translation>
 <translation id="8058376558882514200">‏גישה להתקן USB <ph name="PRODUCT_NAME"/> מ-<ph name="VENDOR_NAME"/></translation>
 <translation id="8774379383902544371">‏גישה למכשירי USB</translation>
@@ -21,13 +19,15 @@
 <translation id="6344170822609224263">גישה לרשימת החיבורים לרשת</translation>
 <translation id="2518849872271000461">החלפת נתונים עם המחשבים ששמותיהם: <ph name="HOSTNAMES"/></translation>
 <translation id="1389014510128217152">-‏ <ph name="WEBSITE_1"/></translation>
-<translation id="5530391389158154052">גישה לנתונים שלך ב-<ph name="NUMBER_OF_WEBSITES"/> אתרים</translation>
 <translation id="961805664415579088">החלפת נתונים עם כל מחשב בדומיין <ph name="DOMAIN"/></translation>
 <translation id="4968399700653439437">החלפת נתונים עם כל מחשב בדומיינים: <ph name="DOMAINS"/></translation>
 <translation id="8662911384982557515">שינוי של דף הבית ל: <ph name="HOME_PAGE"/></translation>
+<translation id="8114679593444120202">קריאה ושינוי של הנתונים שלך ב-<ph name="NUMBER_OF_WEBSITES"/> אתרים</translation>
 <translation id="8602184400052594090">קובץ המניפסט חסר או בלתי קריא.</translation>
 <translation id="7893008570150657497">לגשת לתמונות, מוסיקה ומדיה נוספת מהמחשב שלך</translation>
 <translation id="7217838517480956708">מנהל המערכת של מחשב זה דורש התקנת <ph name="EXTENSION_NAME"/>. לא ניתן להסיר או לשנות אותו.</translation>
 <translation id="7154130902455071009">שנה את דף הפתיחה ל: <ph name="START_PAGE"/></translation>
+<translation id="6094507746643187368">קריאה ושינוי של הנתונים שלך ב-<ph name="WEBSITE_1"/> ו-<ph name="WEBSITE_2"/></translation>
 <translation id="1803557475693955505">לא היתה אפשרות לטעון את דף הרקע '<ph name="BACKGROUND_PAGE"/>'.</translation>
+<translation id="8207052894957937969">קריאה ושינוי של הנתונים שלך ב-<ph name="NUMBER_OF_WEBSITES"/> אתרים</translation>
 </translationbundle>

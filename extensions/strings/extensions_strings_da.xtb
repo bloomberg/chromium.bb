@@ -1,19 +1,17 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="da">
-<translation id="8719282907381795632">Få adgang til dine data på <ph name="WEBSITE_1"/></translation>
 <translation id="7809034755304591547"><ph name="EXTENSION_NAME"/> (udvidelses-id &quot;<ph name="EXTENSION_ID"/>&quot;) er blokeret af administratoren.</translation>
 <translation id="2857834222104759979">Manifestfilen er ugyldig.</translation>
+<translation id="8978038008714088448">Læse og redigere dine data på <ph name="WEBSITE_1"/></translation>
+<translation id="4205302772098850608">Læse og redigere dine data på <ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/> og <ph name="WEBSITE_3"/></translation>
 <translation id="3828484226910527078">Få adgang til USB-enheden</translation>
 <translation id="6384275966486438344">Skift dine søgeindstillinger til: <ph name="SEARCH_HOST"/></translation>
 <translation id="5911798608827489036">Udveksl data med en computer på det lokale netværk eller internettet</translation>
 <translation id="4719685943208231314">Få adgang til USB-enheden fra <ph name="VENDOR_NAME"/></translation>
 <translation id="657064425229075395">Baggrundsscriptet  &quot;<ph name="BACKGROUND_SCRIPT"/>&quot; kunne ikke indlæses.</translation>
-<translation id="3093853184108622112">Få adgang til dine data på <ph name="WEBSITE_1"/> og <ph name="WEBSITE_2"/></translation>
 <translation id="8597109877291678953">Udveksl data med den computer, der er navngivet <ph name="HOSTNAME"/></translation>
-<translation id="6914908792814954894">Få adgang til dine data på <ph name="NUMBER_OF_WEBSITES"/> websites</translation>
 <translation id="5456409301717116725">Denne udvidelse inkluderer nøglefilen &quot;<ph name="KEY_PATH"/>&quot;. Det ønsker du sandsynligvis ikke at gøre.</translation>
-<translation id="6968649314782363508">Få adgang til dine data på <ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/> og <ph name="WEBSITE_3"/></translation>
 <translation id="2350172092385603347">Lokalisering anvendt, men default_locale blev ikke angivet i manifestet.</translation>
 <translation id="8058376558882514200">Få adgang til USB-enheden <ph name="PRODUCT_NAME"/> fra <ph name="VENDOR_NAME"/></translation>
 <translation id="8774379383902544371">Få adgang til USB-enheder</translation>
@@ -21,13 +19,15 @@
 <translation id="6344170822609224263">Få adgang til listen over netværksforbindelser</translation>
 <translation id="2518849872271000461">Udveksl data med computerne, der er navngivet: <ph name="HOSTNAMES"/></translation>
 <translation id="1389014510128217152">– <ph name="WEBSITE_1"/></translation>
-<translation id="5530391389158154052">Få adgang til dine data på <ph name="NUMBER_OF_WEBSITES"/> websites</translation>
 <translation id="961805664415579088">Udveksl data med en computer på domænet <ph name="DOMAIN"/></translation>
 <translation id="4968399700653439437">Udveksl data med en computer på domænerne: <ph name="DOMAINS"/></translation>
 <translation id="8662911384982557515">Skift din startside til: <ph name="HOME_PAGE"/></translation>
+<translation id="8114679593444120202">Læse og redigere dine data på <ph name="NUMBER_OF_WEBSITES"/> websites</translation>
 <translation id="8602184400052594090">Manifestfil mangler eller er ulæselig.</translation>
 <translation id="7893008570150657497">få adgang til billeder, musik og andre medier fra din computer</translation>
 <translation id="7217838517480956708">Administratoren af denne computer kræver, at <ph name="EXTENSION_NAME"/> skal installeres. Den kan ikke fjernes eller ændres.</translation>
 <translation id="7154130902455071009">Skift din startside til: <ph name="START_PAGE"/></translation>
+<translation id="6094507746643187368">Læse og redigere dine data på <ph name="WEBSITE_1"/> og <ph name="WEBSITE_2"/></translation>
 <translation id="1803557475693955505">Baggrundssiden '<ph name="BACKGROUND_PAGE"/>' kunne ikke indlæses.</translation>
+<translation id="8207052894957937969">Læse og redigere dine data på <ph name="NUMBER_OF_WEBSITES"/> websites</translation>
 </translationbundle>

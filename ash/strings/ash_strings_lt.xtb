@@ -49,7 +49,7 @@
 <translation id="3846575436967432996">Nėra tinklo informacijos</translation>
 <translation id="4625920103690741805">Kaitaliojimas užrakintas (palieskite čia, kad pakeistumėte)</translation>
 <translation id="3799026279081545374">Turbūt jūsų kroviklis yra netinkamas. Jei gyvenate JAV, skambinkite numeriu 866-628-1371, kad gautumėte pagalbos ir būtų pakeistas kroviklis. Jei gyvenate JK, skambinkite numeriu 0800-026-0613. Jei gyvenate Airijoje, skambinkite numeriu 1-800-832-664. Jei gyvenate Kanadoje, skambinkite numeriu 866-628-1372. Jei gyvenate Australijoje, skambinkite numeriu 1-800-067-460.</translation>
-<translation id="3026237328237090306">Nustatyti duomenis mobiliesiems</translation>
+<translation id="3891340733213178823">Jei norite atsijungti, du kartus paspauskite „Ctrl“ + „Shift“ + Q.</translation>
 <translation id="5871632337994001636">Valdyti įrenginius...</translation>
 <translation id="785750925697875037">Žiūrėti paskyrą mobiliesiems</translation>
 <translation id="153454903766751181">Inicijuojamas korinio ryšio modemas...</translation>
@@ -103,11 +103,13 @@
 <translation id="3105990244222795498"><ph name="DEVICE_NAME"/> („Bluetooth“)</translation>
 <translation id="3967919079500697218">Jūsų administratorius išjungė ekrano kopijų kūrimo funkciją.</translation>
 <translation id="372094107052732682">Jei norite išeiti, du kartus paspauskite „Ctrl“ + „Shift“ + Q.</translation>
+<translation id="923686485342484400">Jei norite atsijungti, du kartus paspauskite „Control“ + „Shift“ + Q.</translation>
 <translation id="6803622936009808957">Nepavyko dubliuoti vaizdų, nes nepavyko rasti palaikomų skyrų. Vietoje to įjungtas išplėstinio darbalaukio režimas.</translation>
 <translation id="1480041086352807611">Demonstracinės versijos režimas</translation>
 <translation id="4066708417179825777"><ph name="PRIMARY_ACCOUNT"/> (pagrindinė)</translation>
 <translation id="3626637461649818317">Liko <ph name="PERCENTAGE"/> proc.</translation>
 <translation id="9089416786594320554">Įvesties metodai</translation>
+<translation id="2700058918926273959">Sesija baigsis po <ph name="SESSION_TIME_REMAINING"/>. Būsite atjungti.</translation>
 <translation id="6247708409970142803"><ph name="PERCENTAGE"/> %</translation>
 <translation id="2670531586141364277">Norint suaktyvinti „<ph name="NAME"/>“ būtinas tinklo ryšys.</translation>
 <translation id="3963445509666917109">Garsiakalbis (vidinis)</translation>
@@ -175,8 +177,8 @@
 <translation id="1602076796624386989">Įgalinti duomenis mobiliesiems</translation>
 <translation id="68610848741840742">„ChromeVox“ (žodiniai atsiliepimai)</translation>
 <translation id="6981982820502123353">Pritaikymas neįgaliesiems</translation>
+<translation id="6585808820553845416">Sesija baigsis po <ph name="SESSION_TIME_REMAINING"/>.</translation>
 <translation id="4274292172790327596">Neatpažįstama klaida</translation>
-<translation id="4032485810211612751"><ph name="HOURS"/>:<ph name="MINUTES"/>:<ph name="SECONDS"/></translation>
 <translation id="5977415296283489383">Ausinės</translation>
 <translation id="225680501294068881">Ieškoma įrenginių...</translation>
 <translation id="5597451508971090205"><ph name="DATE"/>, <ph name="SHORT_WEEKDAY"/></translation>
@@ -190,7 +192,6 @@ Serverio pranešimas: <ph name="SERVER_MSG"/></translation>
 <translation id="2999742336789313416"><ph name="DISPLAY_NAME"/> yra vieša sesija, valdoma <ph name="DOMAIN"/></translation>
 <translation id="9044646465488564462">Nepavyko prisijungti prie tinklo: <ph name="DETAILS"/></translation>
 <translation id="7029814467594812963">Išeiti iš sesijos</translation>
-<translation id="479989351350248267">ieškoti</translation>
 <translation id="8454013096329229812">„Wi-Fi“ ryšys įjungtas.</translation>
 <translation id="4872237917498892622">„Alt“ + paieškos arba antrojo lygio klavišas</translation>
 <translation id="2429753432712299108">„Bluetooth“ įrenginys „<ph name="DEVICE_NAME"/>“ prašo leidimo susieti. Prieš sutikdami, patvirtinkite, kad šiame įrenginyje rodomas šis slaptasis raktas: <ph name="PASSKEY"/></translation>
@@ -226,10 +227,10 @@ Jei norite atšaukti, paspauskite paieškos arba antrojo lygio klavišą.</trans
 <translation id="6857811139397017780">Suaktyvinti „<ph name="NETWORKSERVICE"/>“</translation>
 <translation id="5864471791310927901">DHCP paieška nepavyko</translation>
 <translation id="2819276065543622893">Būsite atjungti.</translation>
+<translation id="5507786745520522457">Nustatyti mobiliojo ryšio duomenis</translation>
 <translation id="6165508094623778733">Sužinokite daugiau</translation>
 <translation id="9046895021617826162">Nepavyko prisijungti</translation>
 <translation id="7168224885072002358">Po <ph name="TIMEOUT_SECONDS"/> bus grąžinta sena skyra</translation>
-<translation id="973896785707726617">Ši sesija baigsis po <ph name="SESSION_TIME_REMAINING"/>. Būsite automatiškai atjungti.</translation>
 <translation id="743058460480092004">Kamera ir mikrofonas naudojami.</translation>
 <translation id="8372369524088641025">Netinkamas WEP raktas</translation>
 <translation id="6636709850131805001">Neatpažinta būsena</translation>
@@ -248,7 +249,6 @@ Jei norite atšaukti, paspauskite „Alt“ + paieškos klavišas arba „Alt“
 <translation id="520760366042891468">Jūsų ekrano valdymas bendrinamas per „Hangout“.</translation>
 <translation id="8000066093800657092">Tinklo nėra</translation>
 <translation id="4015692727874266537">Prisijungti prie kitos paskyros...</translation>
-<translation id="1044925987639358253">Mikrofonas naudojamas.</translation>
 <translation id="6911468394164995108">Prisijungti prie kito...</translation>
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME"/>: <ph name="ANNOTATION"/></translation>
 <translation id="2563856802393254086">Sveikiname! Jūsų „<ph name="NAME"/>“ duomenų paslauga buvo suaktyvinta ir yra paruošta naudoti.</translation>

@@ -13,11 +13,13 @@ Host</translation>
 <translation id="2801119484858626560">An incompatible version of Chrome Remote Desktop was detected. Please make sure that you have the latest version of Chrome and Chrome Remote Desktop on both computers and try again.</translation>
 <translation id="6998989275928107238">To</translation>
 <translation id="406849768426631008">Want to help someone while having a video chat with them too? Try <ph name="LINK_BEGIN"/> Remote Desktop in Google Hangouts<ph name="LINK_END"/>.</translation>
+<translation id="906458777597946297">Maximise window</translation>
 <translation id="5397086374758643919">Chrome Remote Desktop Host Uninstaller</translation>
 <translation id="3258789396564295715">You may securely access this computer using Chrome Remote Desktop.</translation>
 <translation id="5070121137485264635">The remote host requires you to authenticate to a third-party website. To continue, you must grant Chrome Remote Desktop additional permissions to access this address:</translation>
 <translation id="2124408767156847088">Securely access your computers from your Android device.</translation>
 <translation id="3194245623920924351">Chrome Remote Desktop</translation>
+<translation id="3649256019230929621">Minimise window</translation>
 <translation id="4808503597364150972">Please enter your PIN for <ph name="HOSTNAME"/>.</translation>
 <translation id="7672203038394118626">Remote connections for this computer have been disabled.</translation>
 <translation id="8244400547700556338">Learn how.</translation>
@@ -28,9 +30,9 @@ Host</translation>
 <translation id="7658239707568436148">Cancel</translation>
 <translation id="7782471917492991422">Please check your computer's power management settings and ensure that it is not configured to sleep when idle.</translation>
 <translation id="7665369617277396874">Add account</translation>
-<translation id="5925497314631808737">• Implemented full-screen / immersive mode.
-• Improved icon for hiding the action bar.</translation>
+<translation id="4939475390270873744">• Fixed a crash on start-up.</translation>
 <translation id="2707879711568641861">Some components required for Chrome Remote Desktop are missing. Please make sure you have installed the latest version and try again.</translation>
+<translation id="1779766957982586368">Close window</translation>
 <translation id="2499160551253595098">Help us to improve Chrome Remote Desktop by allowing us to collect usage statistics and crash reports.</translation>
 <translation id="7868137160098754906">Please enter your PIN for the remote computer.</translation>
 <translation id="677755392401385740">Host started for user: <ph name="HOST_USERNAME"/>.</translation>
@@ -55,7 +57,6 @@ Host</translation>
 <translation id="9188433529406846933">Authorise</translation>
 <translation id="228809120910082333">Please confirm your account and PIN below to allow access by Chromoting.</translation>
 <translation id="7605995381616883502">New connection</translation>
-<translation id="5826423541626112308">Chrome Remote Desktop Host</translation>
 <translation id="2851674870054673688">Once they have entered the code your sharing session will begin.</translation>
 <translation id="5593560073513909978">The service is temporarily unavailable. Please try again later.</translation>
 <translation id="3908017899227008678">Shrink to fit</translation>
@@ -65,7 +66,6 @@ Host</translation>
 <translation id="1409991159633941777">Some components required for Chrome Remote Desktop are missing. Please make sure you're running the latest version of Chrome and try again.</translation>
 <translation id="174018511426417793">You have no computers registered. To enable remote connections to a computer, install Chrome Remote Desktop there and click “<ph name="BUTTON_NAME"/>”.</translation>
 <translation id="9126115402994542723">Don't ask for a PIN again when connecting to this host from this device.</translation>
-<translation id="253387295088602549">Allow another user to access your computer securely over the Internet.</translation>
 <translation id="1300633907480909701">Securely access your computers from your Android device.
 
 • On each of your computers, set up remote access using the Chrome Remote Desktop app from Chrome Web Store: https://chrome.google.com/remotedesktop
@@ -85,9 +85,9 @@ For information about privacy, please see the Google Privacy Policy (http://goo.
 <translation id="5285241842433869526">Learn how to set up a computer for remote access.</translation>
 <translation id="4430915108080446161">Generating access code…</translation>
 <translation id="2013996867038862849">All paired clients have been deleted.</translation>
-<translation id="7081428606750359611">Chromoting Host</translation>
 <translation id="8228265668171617545">An incompatible version of Chromoting was detected. Please make sure that you have the latest version of Chrome and Chromoting on both computers and try again.</translation>
 <translation id="6985691951107243942">Are you sure you want to disable remote connections to <ph name="HOSTNAME"/>? If you change your mind, you'll need to visit that computer to re-enable connections.</translation>
+<translation id="6944854424004126054">Restore window</translation>
 <translation id="1436054138039008644"><ph name="HOSTNAME"/> (last online <ph name="DATE"/>)</translation>
 <translation id="9149992051684092333">To begin sharing your desktop, give the access code below to the person who will be assisting you.</translation>
 <translation id="409800995205263688">NOTE: Policy settings permit connections only between computers within your network.</translation>
@@ -215,5 +215,6 @@ Desktop Host</translation>
 <translation id="1818475040640568770">You have no computers registered.</translation>
 <translation id="4394049700291259645">Disable</translation>
 <translation id="4156740505453712750">To protect access to this computer, please choose a PIN of <ph name="BOLD_START"/>at least six digits<ph name="BOLD_END"/>. This PIN will be required when connecting from another location.</translation>
+<translation id="6398765197997659313">Exit full screen</translation>
 <translation id="3286521253923406898">Chromoting Host Controller</translation>
 </translationbundle>

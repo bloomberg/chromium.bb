@@ -176,6 +176,22 @@ El valor de la política s'ha d'especificar en mil·lisegons. Els valors s'estab
           La recomanació per bloquejar la pantalla en cas d'inactivitat és activar el bloqueig de pantalla en cas de suspensió i deixar que <ph name="PRODUCT_OS_NAME"/> se suspengui després del retard d'inactivitat. Aquesta política només s'ha d'utilitzar quan el bloqueig de pantalla de GUI es produeix força abans que la suspensió o quan no es vol definir la suspensió en cas d'inactivitat.
 
           El valor de la política s'ha d'indicar en mil·lisegons i es limita perquè sigui inferior al retard d'inactivitat.</translation>
+<translation id="979541737284082440">(En aquest document es poden incloure polítiques orientades a versions
+      posteriors de <ph name="PRODUCT_NAME"/>, que estan
+      subjectes a canvis sense avís previ. La llista de polítiques compatibles és
+      la mateixa per a Chromium i per a Google Chrome.)
+
+      No cal que canvieu aquesta configuració manualment. Podeu baixar plantilles senzilles a
+      <ph name="POLICY_TEMPLATE_DOWNLOAD_URL"/>.
+
+      Aquestes polítiques estan estrictament destinades a utilitzar-se per configurar còpies virtuals de Chrome internes de la vostra organització. Utilitzar aquestes polítiques fora de l'organització (per exemple, en un programa que es distribueixi públicament) es considera programari maliciós i és probable que Google i els proveïdors d'antivirus ho marquin com a tal.
+
+      Nota: a partir de <ph name="PRODUCT_NAME"/>
+      28, les polítiques es carreguen directament des de l'API de la política de grups
+      a Windows. Les polítiques escrites manualment al registre s'ignoraran.
+      Consulteu la pàgina http://crbug.com/259236 per obtenir-ne més detalls.
+
+      A partir de <ph name="PRODUCT_NAME"/> 35, les polítiques es llegeixen directament des del registre si el lloc de treball està unit a un domini d'Active Directory. En cas contrari, les polítiques es llegeixen des de la documentació de les polítiques generades (GPO).</translation>
 <translation id="4157003184375321727">Informació del SO i de la versió de microprogramari</translation>
 <translation id="5255162913209987122">Es pot recomanar</translation>
 <translation id="1861037019115362154">Especifica una llista de connectors que estan desactivats a <ph name="PRODUCT_NAME"/> i impedeix que els usuaris puguin canviar aquesta configuració.
@@ -283,13 +299,6 @@ El valor de la política s'ha d'especificar en mil·lisegons. Els valors s'estab
 <translation id="382476126209906314">Configuració del prefix TalkGadget per als amfitrions d'accés remot</translation>
 <translation id="6561396069801924653">Mostra les opcions d'accessibilitat al menú de la safata del sistema</translation>
 <translation id="8104962233214241919">Selecciona automàticament certificats de client per a aquest llocs</translation>
-<translation id="7983624541020350102">(En aquest document es poden incloure polítiques orientades a versions posteriors de <ph name="PRODUCT_NAME"/>, que estan subjectes a canvis sense avís previ. La llista de polítiques compatibles és la mateixa per a Chromium i per a Google Chrome.)
-
-      No cal que canvieu aquesta configuració manualment. Podeu baixar plantilles senzilles de <ph name="POLICY_TEMPLATE_DOWNLOAD_URL"/>.
-
-      Aquestes polítiques estan estrictament destinades a utilitzar-se per configurar còpies virtuals de Chrome internes de la vostra organització. Utilitzar aquestes polítiques fora de l'organització (per exemple, en un programa de codi obert) es considera programari maliciós i és probable que Google i els proveïdors d'antivirus ho marquin com a tal.
-
-      Nota: a partir de <ph name="PRODUCT_NAME"/> 28, les polítiques es carreguen directament de l'API de la política de grup a Windows. Les polítiques escrites manualment al registre s'ignoraran. Consulteu la pàgina http://crbug.com/259236 per obtenir-ne més detalls.</translation>
 <translation id="2906874737073861391">Llista d'extensions d'AppPack</translation>
 <translation id="4386578721025870401">Limiteu el temps durant el qual un usuari autenticat amb SAML pot iniciar la sessió fora de línia.
 
@@ -383,6 +392,7 @@ Si no es configura aquest paràmetre, no s'aplicarà cap restricció als tipus d
 
       Si no es defineix aquesta política, aquest paràmetre s'activarà, però l'usuari podrà canviar-lo.</translation>
 <translation id="6943577887654905793">Nom de la preferència de Mac/Linux:</translation>
+<translation id="8176035528522326671">Permet que un usuari empresarial només sigui un usuari multiperfil principal (comportament predeterminat per a usuaris gestionats per l'empresa)</translation>
 <translation id="6925212669267783763">Configura el directori que <ph name="PRODUCT_FRAME_NAME"/> utilitzarà per emmagatzemar les dades de l'usuari.
 
       Si configureu aquesta política, <ph name="PRODUCT_FRAME_NAME"/> farà servir el directori proporcionat.
@@ -391,6 +401,7 @@ Si no es configura aquest paràmetre, no s'aplicarà cap restricció als tipus d
 
       Si no es configura aquesta opció, s'utilitzarà el directori de perfil predeterminat.</translation>
 <translation id="8906768759089290519">Activa el mode de convidat</translation>
+<translation id="348495353354674884">Activa el teclat virtual</translation>
 <translation id="2168397434410358693">Retard d'inactivitat quan s'utilitza alimentació</translation>
 <translation id="838870586332499308">Activa la itinerància de dades</translation>
 <translation id="2292084646366244343"><ph name="PRODUCT_NAME"/> pot utilitzar un servei web de Google per corregir errors ortogràfics. Si activeu aquest paràmetre, sempre s'utilitzarà aquest servei. Si el desactiveu, el servei no s'utilitzarà mai.
@@ -406,6 +417,13 @@ Si no es configura aquest paràmetre, no s'aplicarà cap restricció als tipus d
 
           El factor d'ajust ha de ser de 100% o més. No es permeten valors que puguin reduir el temps d'espera d'inactivitat de la pantalla en mode de presentació més enllà del seu valor habitual.</translation>
 <translation id="254524874071906077">Estableix Chrome com a navegador predeterminat</translation>
+<translation id="8112122435099806139">Especifica el format de rellotge que s'ha de fer servir per al dispositiu.
+
+      Amb aquesta política es configura el format de rellotge que s'ha de fer servir a la pantalla d'inici de sessió, que també es defineix com a valor predeterminat de les sessions de l'usuari. De totes maneres, els usuaris encara poden substituir el format de rellotge del seu compte.
+
+      Si la política es defineix com a certa, el dispositiu farà servir un format de rellotge de 24 hores. Si es defineix com a falsa, el dispositiu farà servir un format de rellotge de 12 hores.
+
+      Si aquesta política no es defineix, el dispositiu farà servir de manera predeterminada un format de rellotge de 24 hores.</translation>
 <translation id="8764119899999036911">Especifica si l'SPN de Kerberos que es genera es basa en el nom del DNS canònic o en el nom original introduït. Si activeu aquest paràmetre, s'ometrà la cerca de CNAME i el nom del servidor s'utilitzarà tal com s'ha introduït. Si desactiveu aquest paràmetre o el deixeu sense definir, el nom canònic del servidor es determinarà a través de la cerca de CNAME.</translation>
 <translation id="5056708224511062314">Lupa desactivada</translation>
 <translation id="4377599627073874279">Permet que tots els llocs mostrin totes les imatges</translation>
@@ -417,8 +435,15 @@ Si no es configura aquest paràmetre, no s'aplicarà cap restricció als tipus d
 
           Si se suspèn l'acció, <ph name="PRODUCT_OS_NAME"/> es pot configurar per separat per bloquejar la pantalla abans de la suspensió o per deixar-la desbloquejada.</translation>
 <translation id="3915395663995367577">URL d'un fitxer .pac d'un servidor intermediari</translation>
-<translation id="2144674628322086778">Permet que l'usuari empresarial sigui tant principal com secundari (opció predeterminada)</translation>
 <translation id="1022361784792428773">ID de les extensions que l'usuari no pot instal·lar (o bé * per a totes)</translation>
+<translation id="6064943054844745819">Especifica una llista de funcions de la plataforma web obsoletes que s'han de tornar a activar.
+
+      Amb aquesta política, els administradors poden tornar a activar les funcions de la plataforma web obsoletes durant un temps limitat. Una etiqueta de cadena identifica les funcions, i les que corresponguin a les etiquetes incloses a la llista especificada en aquesta política es tornaran a activar.
+
+      Actualment, les etiquetes següents estan definides:
+      - ShowModalDialog_EffectiveUntil20150430
+
+      Si aquesta política no es defineix o la llista està buida, totes les funcions de la plataforma web obsoletes continuaran desactivades.</translation>
 <translation id="3805659594028420438">Activa l'extensió de certificats lligats al domini TLS (obsolet)</translation>
 <translation id="5499375345075963939">Aquesta política només està activa en mode de venda.
 
@@ -459,9 +484,6 @@ Si no es configura aquest paràmetre, no s'aplicarà cap restricció als tipus d
           Si aquest paràmetre està activat, els dispositius físics d'entrada i de sortida de l'amfitrió es desactiven mentre hi hagi una connexió remota en curs.
 
           Si aquest paràmetre està desactivat o no està definit, tant els usuaris remots com els locals poden interactuar amb l'amfitrió mentre sigui compartit.</translation>
-<translation id="4894257424747841850">Mostra una llista dels usuaris que han iniciat la sessió recentment des d'un dispositiu.
-
-      Si la política no s'estableix o si s'estableix com a False, no es proporcionarà informació sobre els usuaris.</translation>
 <translation id="2488010520405124654">Activeu la sol·licitud de configuració de la xarxa quan estigueu fora de línia.
 
       Si aquesta política no es defineix o si es defineix com a True, en cas que un compte de dispositiu local s'hagi configurat per iniciar la sessió automàticament sense retard i el dispositiu no tingui accés a Internet, <ph name="PRODUCT_OS_NAME"/> mostrarà una sol·licitud de configuració de la xarxa.
@@ -473,6 +495,9 @@ Si no es configura aquest paràmetre, no s'aplicarà cap restricció als tipus d
           Aquesta política és opcional. Si no es defineix, la sol·licitud de cerca suggerida s'enviarà mitjançant el mètode GET.
 
           Aquesta política només es respecta si la política &quot;DefaultSearchProviderEnabled&quot; està activada.</translation>
+<translation id="8140204717286305802">Informa al servidor de la llista d'interfícies de xarxa amb els seus tipus i adreces de maquinari.
+
+      Si la política s'estableix com a falsa, no s'informarà de la llista de la interfície.</translation>
 <translation id="4962195944157514011">Especifica l'URL del motor de cerca utilitzat en fer una cerca predeterminada. L'URL ha de contenir la cadena &quot;<ph name="SEARCH_TERM_MARKER"/>&quot;, que se substituirà en el moment de fer la consulta pels termes que l'usuari estigui cercant. Aquesta opció s'ha d'establir quan s'activa el paràmetre &quot;DefaultSearchProviderEnabled&quot; i només es respectarà si aquest és el cas.</translation>
 <translation id="6009903244351574348">Permeteu que <ph name="PRODUCT_FRAME_NAME"/> gestioni els tipus de contingut de la llista. Si no es defineix aquesta política, el processador predeterminat s'utilitzarà per a tots els llocs tal com s'especifica a la política &quot;ChromeFrameRendererSettings&quot;.</translation>
 <translation id="3381968327636295719">Fes servir el navegador amfitrió de manera predeterminada</translation>
@@ -564,9 +589,6 @@ Si no es configura aquest paràmetre, no s'aplicarà cap restricció als tipus d
 <translation id="7717938661004793600">Permet configurar les funcions d'accessibilitat de <ph name="PRODUCT_OS_NAME"/>.</translation>
 <translation id="5182055907976889880">Configura Google Drive a <ph name="PRODUCT_OS_NAME"/>.</translation>
 <translation id="8704831857353097849">Llista de connectors desactivats</translation>
-<translation id="8391419598427733574">Informa del SO i de la versió de microprogramari dels dispositius inscrits.
-
-      Si establiu aquest paràmetre com a Cert, els dispositius inscrits informaran de la versió de SO i de microprogramari de manera periòdica. Si no l'establiu o si l'establiu com a Fals, no s'enviarà informació sobre la versió.</translation>
 <translation id="467449052039111439">Obre una llista d'URL</translation>
 <translation id="1988371335297483117">Les càrregues útils d'actualització automàtica de <ph name="PRODUCT_OS_NAME"/> es poden baixar mitjançant HTTP en lloc de HTTPS. Això permet l'emmagatzematge en memòria cau transparent de HTTP de les baixades de HTTP.
 
@@ -604,10 +626,10 @@ Cada entrada de la llista especifica un identificador, que s'utilitza internamen
 <translation id="8244525275280476362">Retard màxim en l'obtenció després de la invalidació d'una política</translation>
 <translation id="8587229956764455752">Permet la creació de comptes d'usuari</translation>
 <translation id="7417972229667085380">Percentatge que permet ajustar el retard d'inactivitat en mode de presentació (desactivat)</translation>
-<translation id="3964909636571393861">Permet l'accés a una llista d'URL</translation>
-<translation id="3450318623141983471">Informa de l'estat del botó per a desenvolupadors en iniciar.
+<translation id="6211428344788340116">Informa dels períodes de temps d'activitat del dispositiu.
 
-      Si no definiu aquesta política o bé si la definiu com a falsa, no s'informarà de l'estat del botó per a desenvolupadors.</translation>
+      Si aquesta opció de configuració no es defineix o es defineix com a certa, els dispositius inscrits informaran dels períodes de temps quan hi hagi un usuari actiu al dispositiu. Si es defineix com a falsa, els períodes de temps d'activitat del dispositiu no s'enregistraran ni se n'informarà.</translation>
+<translation id="3964909636571393861">Permet l'accés a una llista d'URL</translation>
 <translation id="1811270320106005269">Activeu el bloqueig quan els dispositius del producte <ph name="PRODUCT_OS_NAME"/> estiguin inactius o suspesos.
 
       Si activeu aquest paràmetre, es demanarà als usuaris una contrasenya per desbloquejar el dispositiu que estigui suspès.
@@ -667,9 +689,6 @@ Cada entrada de la llista especifica un identificador, que s'utilitza internamen
           Si aquesta política no es defineix, no es mostra cap quadre de diàleg d'advertiment.
 
           El valor de la política s'ha d'especificar en mil·lisegons. Els valors es restringeixen perquè siguin menors que o iguals al retard d'inactivitat.</translation>
-<translation id="1098794473340446990">Informa del temps d'activitat dels dispositius.
-
-      Si establiu aquest paràmetre com a Cert, els dispositius inscrits informaran dels períodes de temps en què un usuari està actiu al dispositiu. Si no l'establiu o si l'establiu com a Fals, no s'enregistraran els temps d'activitat dels dispositius ni se n'informarà.</translation>
 <translation id="1327466551276625742">Activeu la sol·licitud de configuració de la xarxa quan estigueu fora de línia.</translation>
 <translation id="7937766917976512374">Permet o bloqueja la captura de vídeo</translation>
 <translation id="427632463972968153">Especifica els paràmetres utilitzats en cercar imatges amb POST. Consisteix en parelles de nom/valor separades per comes. Si un valor és un paràmetre de plantilla, com ara {imageThumbnail} a l'exemple anterior, se substituirà per dades de la miniatura de la imatge real.
@@ -717,6 +736,11 @@ Cada entrada de la llista especifica un identificador, que s'utilitza internamen
       &quot;1412.24.34&quot;: només s'actualitza a aquesta versió específica</translation>
 <translation id="8102913158860568230">Configuració predeterminada de l'activitat multimèdia</translation>
 <translation id="6641981670621198190">Desactiva la compatibilitat amb API de gràfics en 3D</translation>
+<translation id="5196805177499964601">Bloquejar el mode de desenvolupador:
+
+      Si aquesta política s'estableix com a verdadera, <ph name="PRODUCT_OS_NAME"/> impedirà que el dispositiu s'iniciï en mode de desenvolupador. El sistema no s'iniciarà i mostrarà una pantalla d'error quan l'opció de desenvolupador estigui activada.
+
+      Si aquesta política no es defineix o s'estableix com a falsa, el mode de desenvolupador continuarà disponible al dispositiu.</translation>
 <translation id="1265053460044691532">Limiteu el temps durant el qual un usuari autenticat mitjançant SAML pot iniciar la sessió fora de línia.</translation>
 <translation id="5703863730741917647">Especifica l'acció que s'ha d'emprendre quan s'està inactiu.
 
@@ -728,6 +752,7 @@ Cada entrada de la llista especifica un identificador, que s'utilitza internamen
 <translation id="5997543603646547632">Ús del rellotge de 24 hores de manera predeterminada</translation>
 <translation id="7003746348783715221">Preferències de <ph name="PRODUCT_NAME"/></translation>
 <translation id="4723829699367336876">Activa que es pugui travessar el tallafoc des d'un client d'accés remot</translation>
+<translation id="2744751866269053547">Registra els gestors del protocol</translation>
 <translation id="6367755442345892511">Si l'usuari pot configurar el canal de llançament</translation>
 <translation id="3868347814555911633">Aquesta política només està activa en mode de venda.
 
@@ -743,6 +768,7 @@ Cada entrada de la llista especifica un identificador, que s'utilitza internamen
 
       Aquesta política afecta tots els tipus d'entrada de vídeo i no només els de la càmera integrada.</translation>
 <translation id="7063895219334505671">Permet les finestres emergents en aquests llocs</translation>
+<translation id="3756011779061588474">Bloquejar el mode de desenvolupador</translation>
 <translation id="4052765007567912447">Controla si l'usuari pot mostrar les contrasenyes en text no xifrat en el gestor de contrasenyes. Si desactiveu aquest paràmetre, el gestor de contrasenyes no permetrà mostrar les contrasenyes emmagatzemades en text no xifrat a la finestra del gestor de contrasenyes. Si activeu aquesta política o si no la definiu, els usuaris podran veure les seves contrasenyes en text no xifrat al gestor de contrasenyes.</translation>
 <translation id="5936622343001856595">Força que les consultes de Cerca web de Google es facin amb l'opció SafeSearch activada i impedeix que els usuaris canviïn aquest paràmetre.
 
@@ -776,6 +802,7 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
           Si aquesta política es defineix amb el valor &quot;False&quot;, l'activitat de vídeo no impedeix que l'usuari es consideri inactiu.</translation>
 <translation id="3965339130942650562">Temps d'espera fins que s'executi el tancament de sessió de l'usuari inactiu</translation>
 <translation id="5814301096961727113">Estableix l'estat predeterminat dels comentaris per veu a la pantalla d'inici de sessió</translation>
+<translation id="1950814444940346204">Activa les funcions de la plataforma web obsoletes</translation>
 <translation id="9084985621503260744">Especifica si l'activitat de vídeo afecta la gestió d'alimentació</translation>
 <translation id="7091198954851103976">Executa sempre els connectors que requereixen autorització</translation>
 <translation id="1708496595873025510">Defineix la restricció de l'obtenció del valor seed de les variacions</translation>
@@ -793,7 +820,6 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
           Aquesta política és d'ús intern a Chrome.</translation>
 <translation id="5586942249556966598">No facis res</translation>
 <translation id="131353325527891113">Mostra els noms d'usuari a la pantalla d'inici de sessió</translation>
-<translation id="4057110413331612451">Permet que l'usuari empresarial sigui només un usuari principal als perfils múltiples</translation>
 <translation id="5365946944967967336">Mostra el botó Pàgina d'inici a la barra d'eines</translation>
 <translation id="3709266154059827597">Configura la llista negra d'instal·lació d'extensions</translation>
 <translation id="1933378685401357864">Imatge de fons de pantalla</translation>
@@ -1114,6 +1140,9 @@ Si aquesta opció està desactivada o no especificada, no apareix cap botó gran
 <translation id="2006530844219044261">Gestió de l'alimentació</translation>
 <translation id="1221359380862872747">Carrega URL especificats a l'inici de sessió de demostració</translation>
 <translation id="8711086062295757690">Especifica la paraula clau, que és la drecera utilitzada a la barra d'adreces per activar la cerca d'aquest proveïdor. Aquesta política és opcional. Si no es defineix, no hi haurà cap paraula clau que activi el proveïdor de cerca. Aquesta política només es té en compte si la política &quot;DefaultSearchProviderEnabled&quot; està activada.</translation>
+<translation id="1152117524387175066">Informa de l'estat del botó per a desenvolupadors en iniciar.
+
+      Si la política s'estableix com a falsa, no s'informarà de l'estat del botó per a desenvolupadors.</translation>
 <translation id="5774856474228476867">URL de cerca del proveïdor de cerques predeterminat</translation>
 <translation id="4650759511838826572">Desactiva els esquemes del protocol URL</translation>
 <translation id="7831595031698917016">Especifica el retard màxim en mil·lisegons entre la recepció de la invalidació d'una política i l'obtenció de la política nova del servei de gestió del dispositiu.
@@ -1162,13 +1191,6 @@ Si aquesta opció està desactivada o no especificada, no apareix cap botó gran
 <translation id="602728333950205286">URL instantani del proveïdor de cerca predeterminat</translation>
 <translation id="3030000825273123558">Activa la creació d'informes de mètriques</translation>
 <translation id="8465065632133292531">Paràmetres per a l'URL instantani que utilitza POST</translation>
-<translation id="6659688282368245087">Permet especificar el format del rellotge que es farà servir al dispositiu.
-
-      Aquesta política configura el format del rellotge que es farà servir a la pantalla d'inici de sessió i com a valor predeterminat a les sessions dels usuaris. Els usuaris poden anul·lar el format del rellotge dels seus comptes.
-
-      Si la política es configura com a True, s'utilitzarà el format del rellotge de 24 hores al dispositiu. Si, en canvi, es configura com a False, es farà servir el format del rellotge de 12 hores.
-
-      Si la política no es configura, es farà servir el format del rellotge de 24 hores de manera predeterminada al dispositiu.</translation>
 <translation id="6559057113164934677">No permetis que cap lloc accedeixi a la càmera ni al micròfon</translation>
 <translation id="7273823081800296768">Si aquesta configuració està activada o no configurada, els usuaris podran optar per emparellar clients i amfitrions en el temps de connexió, amb la qual cosa ja no s'haurà d'introduir el PIN cada vegada.
 
@@ -1233,6 +1255,9 @@ Si aquesta opció està desactivada o no especificada, no apareix cap botó gran
 <translation id="3809527282695568696">Si se selecciona &quot;Obrir una llista d'URL&quot; com a acció d'inici, això us permetrà especificar la llista d'URL que s'obren. Si no es defineix, no s'obrirà cap URL a l'inici. Aquesta política només funciona si la política &quot;RestoreOnStartup&quot; es defineix com a &quot;RestoreOnStartupIsURLs&quot;.</translation>
 <translation id="649418342108050703">Desactiva la compatibilitat amb les API de gràfics en 3D. Si activeu aquest paràmetre, s'evitarà que les pàgines web accedeixin a la unitat de processament de gràfics (GPU). De manera específica, les pàgines web no podran accedir a l'API WebGL i els connectors no podran fer servir l'API Pepper 3D. Si desactiveu aquest paràmetre o el deixeu sense definir, es permetrà potencialment que les pàgines web facin servir l'API WebGL i que els connectors facin servir l'API Pepper 3D. És possible que la configuració predeterminada del navegador requereixi que es permetin els arguments de la línia d'ordres per poder fer servir les API.</translation>
 <translation id="2077273864382355561">Retard de la desactivació de pantalla quan s'utilitza bateria</translation>
+<translation id="9112897538922695510">Us permet registrar una llista de gestors de protocol. Això només pot ser una política recomanada. El |protocol| de la propietat s'ha de definir a l'esquema, com ara &quot;mailto&quot; i l'|url| de la propietat s'ha de definir al patró d'URL de l'aplicació que gestiona l'esquema. El patró pot incloure &quot;%s&quot; i, en cas que s'hi inclogui, se substituirà per l'URL gestionat.
+
+          Els gestors de protocol registrats amb la política es combinen amb els que ha registrat l'usuari i tots dos es poden fer servir. L'usuari pot substituir els gestors de protocol que s'han instal·lat amb la política si instal·la un nou gestor de protocol predeterminat, però no pot suprimir un gestor de protocol que s'hagi registrat amb la política.</translation>
 <translation id="3417418267404583991">Si aquesta política es defineix a «true» (cert) o no es configura, <ph name="PRODUCT_OS_NAME"/> permetrà els inicis de sessió de convidat. Aquests inicis de sessió són sessions d'usuari anònimes i no cal introduir cap contrasenya.
 
       Si aquesta política es defineix a «false» (fals), <ph name="PRODUCT_OS_NAME"/> no permetrà que s'iniciïn les sessions de convidat.</translation>
@@ -1247,6 +1272,9 @@ Si aquesta opció està desactivada o no especificada, no apareix cap botó gran
           Un valor de llista negra de &quot;*&quot; significa que tots els amfitrions de missatgeria s'inclouran a la llista negra llevat que s'indiquin explícitament a la llista blanca.
 
           Si aquesta política no es defineix, <ph name="PRODUCT_NAME"/> carregarà tots els amfitrions de missatgeria nativa instal·lats.</translation>
+<translation id="749556411189861380">Informa de la versió del SO i del microprogramari dels dispositius inscrits.
+
+      Si aquest opció de configuració no s'estableix o s'estableix com a certa, els dispositius inscrits informaran de la versió de SO i de microprogramari de manera periòdica. Si s'estableix com a falsa, no s'enviarà informació sobre la versió.</translation>
 <translation id="7258823566580374486">Activa l'ocultació d'amfitrions d'accés remot</translation>
 <translation id="5560039246134246593">Afegeix un paràmetre a l'obtenció del valor seed de les variacions a <ph name="PRODUCT_NAME"/>.
 
@@ -1271,6 +1299,11 @@ Si aquesta opció està desactivada o no especificada, no apareix cap botó gran
 <translation id="8908294717014659003">Us permet decidir si els llocs web poden accedir als vostres dispositius de captura multimèdia. Es pot proporcionar accés als dispositius de captura multimèdia de manera predeterminada o demanar permís a l'usuari cada vegada que un lloc web vol accedir als dispositius de captura multimèdia.
 
           Si no definiu aquesta política, s'utilitzarà &quot;PromptOnAccess&quot; i l'usuari podrà canviar-la.</translation>
+<translation id="4429220551923452215">Activa o desactiva la drecera de les aplicacions a la barra d'adreces d'interès.
+
+      Si aquesta política no es defineix, l'usuari pot mostrar la drecera de les aplicacions al menú contextual de la barra d'adreces d'interès o amagar-la.
+
+      Si aquesta política es configura, l'usuari no la pot canviar, i la drecera de les aplicacions es mostrarà sempre o bé no es mostrarà mai.</translation>
 <translation id="2299220924812062390">Especifica una llista de connectors activats</translation>
 <translation id="4325690621216251241">Afegeix un botó de tancament de sessió a la safata del sistema</translation>
 <translation id="924557436754151212">Importació de les contrasenyes desades des del navegador predeterminat en la primera execució</translation>
@@ -1278,6 +1311,7 @@ Si aquesta opció està desactivada o no especificada, no apareix cap botó gran
 <translation id="7227967227357489766">Defineix la llista d'usuaris que poden iniciar la sessió al dispositiu. El text introduït té el format <ph name="USER_WHITELIST_ENTRY_FORMAT"/>, com ara <ph name="USER_WHITELIST_ENTRY_EXAMPLE"/>. Perquè els usuaris arbitraris puguin accedir a un domini, utilitzeu text que tingui el format <ph name="USER_WHITELIST_ENTRY_WILDCARD"/>.
 
       Si no es configura aquesta política, no hi ha cap restricció sobre on poden iniciar la sessió els usuaris. Tingueu en compte que per crear usuaris nous, la política <ph name="DEVICEALLOWNEWUSERS_POLICY_NAME"/> també ha d'estar configurada adequadament.</translation>
+<translation id="2521581787935130926">Mostrar la drecera de les aplicacions a la barra d'adreces d'interès</translation>
 <translation id="8135937294926049787">Indica el temps sense activitat per part de l'usuari després del qual la pantalla es desactiva quan el dispositiu funciona amb alimentació.
 
           Quan aquesta política es defineix en un valor superior a zero, indica el temps que l'usuari ha de romandre inactiu abans <ph name="PRODUCT_OS_NAME"/> no desactivi la pantalla.
@@ -1312,6 +1346,15 @@ Si aquesta opció està desactivada o no especificada, no apareix cap botó gran
 <translation id="1062011392452772310">Activa el testimoni remot per al dispositiu.</translation>
 <translation id="7774768074957326919">Utilitza la configuració del servidor intermediari del sistema</translation>
 <translation id="3891357445869647828">Activa JavaScript</translation>
+<translation id="2274864612594831715">Amb aquesta política es configura el teclat virtual per activar-lo com a dispositiu d'introducció de text a Chrome OS. Els usuaris no poden substituir aquesta política.
+
+      Si la política es defineix com a certa, el teclat virtual en pantalla sempre estarà activat.
+
+      Si es defineix com a falsa, el teclat virtual en pantalla sempre estarà desactivat.
+
+      Si definiu aquesta política, els usuaris no la podran modificar ni substituir. De totes maneres, els usuaris encara podran activar o desactivar un teclat d'accessibilitat en pantalla, que té prioritat sobre el teclat virtual que es controla amb aquesta política. Consulteu la política |VirtualKeyboardEnabled| per controlar el teclat d'accessibilitat en pantalla.
+
+      Si aquesta política no es defineix, el teclat en pantalla està desactivat inicialment però l'usuari el pot activar en qualsevol moment. També es poden fer servir regles heurístiques per decidir quan s'ha de mostrar el teclat.</translation>
 <translation id="6774533686631353488">Permetre amfitrions de missatgeria nadius per a l'usuari (instal·lació sense permisos d'administrador)</translation>
 <translation id="868187325500643455">Permet que tots els llocs executin connectors automàticament</translation>
 <translation id="7421483919690710988">Defineix la mida de la memòria cau del disc multimèdia en bytes</translation>
@@ -1356,6 +1399,7 @@ Si aquesta opció està desactivada o no especificada, no apareix cap botó gran
 <translation id="3808945828600697669">Especifica una llista de connectors desactivats</translation>
 <translation id="4525521128313814366">Us permet definir una llista de patrons d'URL que especifiquen els llocs en què no està permès mostrar imatges. Si no es defineix aquesta política, s'utilitzarà el valor global predeterminat per a tots els llocs tant de la política &quot;DefaultImagesSetting&quot;, si es defineix, com d'un altre tipus de configuració personal de l'usuari.</translation>
 <translation id="8499172469244085141">Configuració predeterminada (els usuaris la poden sobreescriure)</translation>
+<translation id="4816674326202173458">Permet que un usuari empresarial sigui principal i secundari (comportament predeterminat per a usuaris no gestionats)</translation>
 <translation id="8693243869659262736">Utilitza el client DNS integrat</translation>
 <translation id="3072847235228302527">Defineix els Termes i condicions d'un compte local del dispositiu</translation>
 <translation id="5523812257194833591">Sessió pública per iniciar la sessió automàticament després d'un retard.
@@ -1429,9 +1473,6 @@ Si aquesta opció està desactivada o no especificada, no apareix cap botó gran
 <translation id="5388730678841939057">Selecciona l'estratègia utilitzada per alliberar espai del disc durant la neteja automàtica (obsolet)</translation>
 <translation id="7848840259379156480">Us permet configurar el renderitzador HTML predeterminat quan <ph name="PRODUCT_FRAME_NAME"/> estigui instal·lat. De manera predeterminada, la configuració permet que el navegador amfitrió dugui a terme la renderització, però podeu substituir aquesta configuració de manera opcional i fer que <ph name="PRODUCT_FRAME_NAME"/> renderitzi les pàgines HTML de manera predeterminada.</translation>
 <translation id="186719019195685253">Acció que s'ha d'emprendre quan s'està inactiu mentre s'està connectat al CA</translation>
-<translation id="7890264460280019664">Informa al servidor de la llista d'interfícies de xarxa amb els seus tipus i adreces de maquinari.
-
-      Si la política no es defineix o s'estableix com a &quot;false&quot;, no s'informarà de la llista de la interfície.</translation>
 <translation id="197143349065136573">Activa el flux d'inici de sessió basat en web antic.
 
       Aquesta configuració és útil per als clients d'empresa que utilitzin solucions de SSO que encara no són compatibles amb el nou flux d'inici de sessió inserit.
@@ -1498,6 +1539,9 @@ Si aquesta opció està desactivada o no especificada, no apareix cap botó gran
       La política s'ha de definir en un URL del qual <ph name="PRODUCT_OS_NAME"/> pugui baixar els Termes i condicions, que han de trobar-se com a text sense format proporcionat com a text/sense format de tipus MIME. No es permet el marcatge.</translation>
 <translation id="2623014935069176671">Espereu que hi hagi una activitat inicial de l'usuari.</translation>
 <translation id="2660846099862559570">No facis servir mai un servidor intermediari</translation>
+<translation id="637934607141010488">Mostra una llista dels usuaris que han iniciat la sessió recentment al dispositiu.
+
+      Si la política s'estableix com a falsa, no es proporcionarà informació sobre els usuaris.</translation>
 <translation id="1956493342242507974">Configuració de la gestió d'energia a la pantalla d'inici de <ph name="PRODUCT_OS_NAME"/>
 
       Aquesta política us permet configurar de quina manera es comporta <ph name="PRODUCT_OS_NAME"/> quan no hi ha activitat de l'usuari durant un temps determinat quan es mostra la pantalla d'inici. La política controla diversos paràmetres. Per conèixer la semàntica i els intervals de valors, consulteu les polítiques corresponents que controlen la gestió d'energia d'una sessió. Les úniques desviacions d'aquestes polítiques són les següents:

@@ -1,19 +1,17 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="zh-CN">
-<translation id="8719282907381795632">访问您在 <ph name="WEBSITE_1"/> 上的数据</translation>
 <translation id="7809034755304591547"><ph name="EXTENSION_NAME"/>（扩展程序 ID为“<ph name="EXTENSION_ID"/>”）已被管理员阻止。</translation>
 <translation id="2857834222104759979">清单文件无效。</translation>
+<translation id="8978038008714088448">读取和修改您在<ph name="WEBSITE_1"/>上的数据</translation>
+<translation id="4205302772098850608">读取和修改您在<ph name="WEBSITE_1"/>、<ph name="WEBSITE_2"/>和<ph name="WEBSITE_3"/>上的数据</translation>
 <translation id="3828484226910527078">访问USB设备</translation>
 <translation id="6384275966486438344">将您的搜索设置更改为：<ph name="SEARCH_HOST"/></translation>
 <translation id="5911798608827489036">与本地网络或互联网上的任何计算机交换数据</translation>
 <translation id="4719685943208231314">访问由<ph name="VENDOR_NAME"/>生产的USB设备</translation>
 <translation id="657064425229075395">无法加载背景脚本“<ph name="BACKGROUND_SCRIPT"/>”。</translation>
-<translation id="3093853184108622112">访问您在 <ph name="WEBSITE_1"/> 和 <ph name="WEBSITE_2"/> 上的数据</translation>
 <translation id="8597109877291678953">与名为 <ph name="HOSTNAME"/> 的计算机交换数据</translation>
-<translation id="6914908792814954894">访问您在<ph name="NUMBER_OF_WEBSITES"/>个网站上的数据</translation>
 <translation id="5456409301717116725">此扩展程序包含密钥文件“<ph name="KEY_PATH"/>”，您最好不要执行此操作。</translation>
-<translation id="6968649314782363508">访问您在 <ph name="WEBSITE_1"/>、<ph name="WEBSITE_2"/> 和 <ph name="WEBSITE_3"/> 上的数据</translation>
 <translation id="2350172092385603347">已使用本地化功能，但未在清单中指定 default_locale。</translation>
 <translation id="8058376558882514200">访问由<ph name="VENDOR_NAME"/>生产的USB设备“<ph name="PRODUCT_NAME"/>”</translation>
 <translation id="8774379383902544371">访问 USB 设备</translation>
@@ -21,13 +19,15 @@
 <translation id="6344170822609224263">网络连接的访问权限列表</translation>
 <translation id="2518849872271000461">与下列名称的计算机交换数据：<ph name="HOSTNAMES"/></translation>
 <translation id="1389014510128217152">- <ph name="WEBSITE_1"/></translation>
-<translation id="5530391389158154052">访问您在<ph name="NUMBER_OF_WEBSITES"/>个网站上的数据</translation>
 <translation id="961805664415579088">与域 <ph name="DOMAIN"/> 中的任何计算机交换数据</translation>
 <translation id="4968399700653439437">与下列域中的任何计算机交换数据：<ph name="DOMAINS"/></translation>
 <translation id="8662911384982557515">将您的主页更改为：<ph name="HOME_PAGE"/></translation>
+<translation id="8114679593444120202">读取和修改您在<ph name="NUMBER_OF_WEBSITES"/>个网站上的数据</translation>
 <translation id="8602184400052594090">清单文件缺失或不可读。</translation>
 <translation id="7893008570150657497">通过计算机访问照片、音乐和其他媒体</translation>
 <translation id="7217838517480956708">此计算机的管理员要求安装 <ph name="EXTENSION_NAME"/>。该扩展程序无法删除或修改。</translation>
 <translation id="7154130902455071009">将您的初始页更改为：<ph name="START_PAGE"/></translation>
+<translation id="6094507746643187368">读取和修改您在<ph name="WEBSITE_1"/>和<ph name="WEBSITE_2"/>上的数据</translation>
 <translation id="1803557475693955505">无法加载背景页“<ph name="BACKGROUND_PAGE"/>”。</translation>
+<translation id="8207052894957937969">读取和修改您在<ph name="NUMBER_OF_WEBSITES"/>个网站上的数据</translation>
 </translationbundle>

@@ -1,19 +1,17 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="am">
-<translation id="8719282907381795632"><ph name="WEBSITE_1"/> ላይ ያለ ውሂብዎን ይደርስበታል</translation>
 <translation id="7809034755304591547"><ph name="EXTENSION_NAME"/> (የቅጥያ መታወቂያ «<ph name="EXTENSION_ID"/>») በአስተዳዳሪው ታግዷል።</translation>
 <translation id="2857834222104759979">ገላጭ ፋይሉ ልክ አይደለም።</translation>
+<translation id="8978038008714088448">ውሂብዎን በ<ph name="WEBSITE_1"/> ላይ ያንብቡት እና ይቀይሩት</translation>
+<translation id="4205302772098850608">ውሂብዎን በ<ph name="WEBSITE_1"/>፣ <ph name="WEBSITE_2"/> እና <ph name="WEBSITE_3"/> ላይ ያንብቡት እና ይቀይሩት</translation>
 <translation id="3828484226910527078">የUSB መሣሪያውን መድረስ</translation>
 <translation id="6384275966486438344">የፍለጋ ቅንብሮችዎን ወደሚከተለው ይለውጡ፦ <ph name="SEARCH_HOST"/></translation>
 <translation id="5911798608827489036">በአካባቢያዊው አውታረ መረብ ወይም በይነመረቡ ላይ ካለ ማንኛውም ኮምፒውተር ጋር ውሂብ ይለዋወጡ</translation>
 <translation id="4719685943208231314">የUSB መሣሪያውን ከ<ph name="VENDOR_NAME"/> መድረስ</translation>
 <translation id="657064425229075395">የጀርባ ስክሪፕት «<ph name="BACKGROUND_SCRIPT"/>» መጫን አልተቻለም።</translation>
-<translation id="3093853184108622112">በ<ph name="WEBSITE_1"/> እና <ph name="WEBSITE_2"/> ላይ ያለ ውሂብዎን ይደርስበታል</translation>
 <translation id="8597109877291678953"><ph name="HOSTNAME"/> ከሚባል ኮምፒውተር ጋር ውሂብ ይለዋወጡ</translation>
-<translation id="6914908792814954894">በ<ph name="NUMBER_OF_WEBSITES"/> ድር ጣቢያዎች ላይ ያለው የእርስዎን ውሂብ ይድረሱበት</translation>
 <translation id="5456409301717116725">ይህ ቅጥያ የቁልፍ ፋይል «<ph name="KEY_PATH"/>»ን ያካትታል። ይህንን ማድረግ ላይፈልጉ ይችላሉ።</translation>
-<translation id="6968649314782363508">በ<ph name="WEBSITE_1"/>፣ <ph name="WEBSITE_2"/> እና <ph name="WEBSITE_3"/> ላይ ያለ ውሂብዎን ይደርስበታል</translation>
 <translation id="2350172092385603347">አካባቢያዊነት ተጠቅሟል ነገር ግን በማኒፌስት ወስጥ default_locale አልተገለጸም።</translation>
 <translation id="8058376558882514200">የUSB መሣሪያውን <ph name="PRODUCT_NAME"/> ከ<ph name="VENDOR_NAME"/> መድረስ</translation>
 <translation id="8774379383902544371">የUSB መሳሪዎች ድረስባቸው</translation>
@@ -21,13 +19,15 @@
 <translation id="6344170822609224263">የአውታረ መረብ ግንኙነቶች ዝርዝር ይደርሳል</translation>
 <translation id="2518849872271000461">እንዲህ ከሚባል ኮምፒውተር ጋር ውሂብ ይለዋወጡ፦ <ph name="HOSTNAMES"/></translation>
 <translation id="1389014510128217152">- <ph name="WEBSITE_1"/></translation>
-<translation id="5530391389158154052">በ<ph name="NUMBER_OF_WEBSITES"/> ድር ጣቢያዎች ላይ ያለው የእርስዎን ውሂብ ይድረሱበት</translation>
 <translation id="961805664415579088">በ<ph name="DOMAIN"/> ጎራ ውስጥ ካለ ማንኛውም ኮምፒውተር ላይ ውሂብ ይለዋወጡ</translation>
 <translation id="4968399700653439437">በእነዚህ ጎራዎች ውስጥ ካለ ማንኛውም ኮምፒውተር ላይ ውሂብ ይለዋወጡ፦ <ph name="DOMAINS"/></translation>
 <translation id="8662911384982557515">መነሻ ገጽዎን ወደዚህ ይቀይሩት፦ <ph name="HOME_PAGE"/></translation>
+<translation id="8114679593444120202">ውሂብዎን በ<ph name="NUMBER_OF_WEBSITES"/> ድር ጣቢያዎች ላይ ያንብቡት እና ይቀይሩት</translation>
 <translation id="8602184400052594090">ገላጭ ፋይሉ ጠፍቷል ወይም ተነባቢ አይደለም።</translation>
 <translation id="7893008570150657497">የኮምፒውተርዎን ፎቶዎች፣ ሙዚቃ እና ሌላ ማህደረ  መረጃ  ይደርሳል</translation>
 <translation id="7217838517480956708">የዚህ ማሽን አስተዳዳሪ <ph name="EXTENSION_NAME"/> እንዲጫን ይፈልጋል። ሊወገድ ወይም ሊቀየር አይችልም።</translation>
 <translation id="7154130902455071009">የመጀመሪያ ገጽዎን ወደሚከተለው ይቀይሩ፦ <ph name="START_PAGE"/></translation>
+<translation id="6094507746643187368">ውሂብዎን በ<ph name="WEBSITE_1"/> እና <ph name="WEBSITE_2"/> ላይ ያንብቡት እና ይቀይሩት</translation>
 <translation id="1803557475693955505">የጀርባ ገጽ «<ph name="BACKGROUND_PAGE"/>»ን መጫን አልተቻለም።</translation>
+<translation id="8207052894957937969">ውሂብዎን በ<ph name="NUMBER_OF_WEBSITES"/> ድር ጣቢያዎች ላይ ያንብቡት እና ይቀይሩት</translation>
 </translationbundle>

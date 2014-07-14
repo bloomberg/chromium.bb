@@ -1,19 +1,17 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="fa">
-<translation id="8719282907381795632">دسترسی به داده‌های شما در <ph name="WEBSITE_1"/></translation>
 <translation id="7809034755304591547"><ph name="EXTENSION_NAME"/> (شناسه فایل افزودنی &quot;<ph name="EXTENSION_ID"/>&quot;) توسط سرپرست مسدود شده است.</translation>
 <translation id="2857834222104759979">فایل اظهارنامه نامعتبر است.</translation>
+<translation id="8978038008714088448">خواندن و تغییر اطلاعات شما در <ph name="WEBSITE_1"/></translation>
+<translation id="4205302772098850608">خواندن و تغییر اطلاعات شما در <ph name="WEBSITE_1"/>، ‏<ph name="WEBSITE_2"/> و <ph name="WEBSITE_3"/></translation>
 <translation id="3828484226910527078">‏دسترسی به دستگاه USB</translation>
 <translation id="6384275966486438344">تغییر تنظیمات جستجویتان به: <ph name="SEARCH_HOST"/></translation>
 <translation id="5911798608827489036">تبادل اطلاعات با هر رایانه‌ای بر روی شبکه محلی یا اینترنت</translation>
 <translation id="4719685943208231314">‏دسترسی به دستگاه USB از <ph name="VENDOR_NAME"/></translation>
 <translation id="657064425229075395">بارگیری اسکریپت پس‌زمینه &quot;<ph name="BACKGROUND_SCRIPT"/>&quot; ممکن نیست.</translation>
-<translation id="3093853184108622112">دسترسی به داده‌های شما در <ph name="WEBSITE_1"/> و <ph name="WEBSITE_2"/></translation>
 <translation id="8597109877291678953">تبادل اطلاعات با رایانه‌ای به نام <ph name="HOSTNAME"/></translation>
-<translation id="6914908792814954894">دسترسی به داده‌هایتان در وب‌سایت‌های <ph name="NUMBER_OF_WEBSITES"/></translation>
 <translation id="5456409301717116725">این برنامهٔ افزودنی شامل فایل کلید «<ph name="KEY_PATH"/>» است. احتمالاً نمی‌خواهید این کار را انجام دهید.</translation>
-<translation id="6968649314782363508">دسترسی به داده‌های شما در <ph name="WEBSITE_1"/>، <ph name="WEBSITE_2"/> و <ph name="WEBSITE_3"/></translation>
 <translation id="2350172092385603347">‏بومی سازی استفاده شده است، اما default_locale در اظهارنامه مشخص نشده است.</translation>
 <translation id="8058376558882514200">‏دسترسی به دستگاه USB <ph name="PRODUCT_NAME"/> از <ph name="VENDOR_NAME"/></translation>
 <translation id="8774379383902544371">‏دسترسی به دستگاه‌های USB</translation>
@@ -21,13 +19,15 @@
 <translation id="6344170822609224263">فهرست دسترسی از اتصالات شبکه</translation>
 <translation id="2518849872271000461">تبادل اطلاعات با رایانه‌هایی با نام‌های: <ph name="HOSTNAMES"/></translation>
 <translation id="1389014510128217152">- <ph name="WEBSITE_1"/></translation>
-<translation id="5530391389158154052">دسترسی به داده‌هایتان در وب‌سایت‌های <ph name="NUMBER_OF_WEBSITES"/></translation>
 <translation id="961805664415579088">تبادل اطلاعات با هر رایانه‌ای در دامنه <ph name="DOMAIN"/></translation>
 <translation id="4968399700653439437">تبادل اطلاعات با هر رایانه‌ای در دامنه‌های: <ph name="DOMAINS"/></translation>
 <translation id="8662911384982557515">تغییر صفحه اصلی شما به: <ph name="HOME_PAGE"/></translation>
+<translation id="8114679593444120202">خواندن و تغییر اطلاعات شما در <ph name="NUMBER_OF_WEBSITES"/> وب‌سایت</translation>
 <translation id="8602184400052594090">فایل اظهارنامه وجود ندارد یا قابل خواندن نیست.</translation>
 <translation id="7893008570150657497">دسترسی به عکس‌ها، موسیقی، و دیگر رسانه‌ها از رایانه شما</translation>
 <translation id="7217838517480956708">سرپرست این دستگاه نصب <ph name="EXTENSION_NAME"/> را لازم کرده است. آن را نمی‌توان تغییر داد یا حذف کرد.</translation>
 <translation id="7154130902455071009">تغییر صفحه شروعتان به: <ph name="START_PAGE"/></translation>
+<translation id="6094507746643187368">خواندن و تغییر اطلاعات شما در <ph name="WEBSITE_1"/> و <ph name="WEBSITE_2"/></translation>
 <translation id="1803557475693955505">بارگیری صفحه پس‌زمینه &quot;<ph name="BACKGROUND_PAGE"/>&quot; ممکن نیست.</translation>
+<translation id="8207052894957937969">خواندن و تغییر اطلاعات شما در <ph name="NUMBER_OF_WEBSITES"/> وب‌سایت</translation>
 </translationbundle>

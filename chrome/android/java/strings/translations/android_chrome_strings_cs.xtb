@@ -2,16 +2,21 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="cs">
 <translation id="8588878054171169263">Uložit obrázek</translation>
+<translation id="7998918019931843664">Znovu otevřít zavřenou kartu</translation>
 <translation id="4996978546172906250">Sdílet prostřednictvím</translation>
 <translation id="5578795271662203820">Hledat obrázek pomocí <ph name="SEARCH_ENGINE"/></translation>
 <translation id="6831043979455480757">Přeložit</translation>
 <translation id="7644305409888602715">Překlad stránky do jazyka: <ph name="SOURCE_LANGUAGE"/>...</translation>
 <translation id="7015922086425404465">Nainstalovat aplikaci z Obchodu Google Play: <ph name="APP_ACTION"/></translation>
 <translation id="1491151370853475546">Načíst tuto stránku znovu</translation>
+<translation id="5233638681132016545">Nová karta</translation>
 <translation id="641643625718530986">Tisk…</translation>
+<translation id="5763382633136178763">Anonymní karty</translation>
+<translation id="5210365745912300556">Zavřít kartu</translation>
 <translation id="7658239707568436148">Zrušit</translation>
 <translation id="6458785801851713928">Synchronizace není pro vaši doménu k dispozici.</translation>
 <translation id="2731700343119398978">Počkejte prosím...</translation>
+<translation id="6846298663435243399">Načítání…</translation>
 <translation id="7378627244592794276">Ne</translation>
 <translation id="3358663646935160692">Tento účet spravuje <ph name="DOMAIN_NAME"/>.
 
@@ -20,6 +25,7 @@ Přihlašujete se pomocí spravovaného účtu a poskytujete jeho správci kontr
 <translation id="1623104350909869708">Bránit této stránce ve vytváření dalších dialogových oken</translation>
 <translation id="1426410128494586442">Ano</translation>
 <translation id="8218346974737627104">Potvrzení přihlášení</translation>
+<translation id="8853345339104747198"><ph name="TAB_TITLE"/>, karta</translation>
 <translation id="624558823898732418">Překlad do jazyka: <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="8872441722924401214">Zvolte ceritifikát pro ověření</translation>
 <translation id="3896036286668839683">Prohlížeč certifikátů</translation>
@@ -41,6 +47,7 @@ Přihlašujete se pomocí spravovaného účtu a poskytujete jeho správci kontr
 <translation id="3063601790762993062">Uložit video</translation>
 <translation id="6042308850641462728">Více</translation>
 <translation id="7267430310003164111">Výzva k instalaci aplikace z Obchodu Google Play. Název aplikace: <ph name="APP_NAME"/>. Průměrné hodnocení aplikace: <ph name="APP_RATING"/>.</translation>
+<translation id="303955801043931176">Karta zavřena</translation>
 <translation id="4148957013307229264">Instalace...</translation>
 <translation id="3992315671621218278">Uložit odkaz</translation>
 <translation id="8034522405403831421">Stránka je v jazyce <ph name="SOURCE_LANGUAGE"/>. Chcete ji přeložit do jazyka <ph name="TARGET_LANGUAGE"/>?</translation>
@@ -66,9 +73,11 @@ Přihlašujete se pomocí spravovaného účtu a poskytujete jeho správci kontr
 <translation id="6333140779060797560">Sdílet prostřednictvím aplikace <ph name="APPLICATION"/></translation>
 <translation id="6040143037577758943">Zavřít</translation>
 <translation id="969096075394517431">Změnit jazyky</translation>
+<translation id="5556459405103347317">Načíst znovu</translation>
 <translation id="5032574515228824816">Výzva</translation>
 <translation id="4847896847259487518">Přidat stránku do záložek</translation>
 <translation id="497421865427891073">Vpřed</translation>
+<translation id="8310344678080805313">Standardní karty</translation>
 <translation id="6277522088822131679">Při tištění stránky došlo k problému. Zkuste to prosím znovu.</translation>
 <translation id="1742134235943978220">Přeloženo do jazyka <ph name="TARGET_LANGUAGE"/>.</translation>
 <translation id="6965382102122355670">OK</translation>

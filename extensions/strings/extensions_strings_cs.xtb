@@ -1,19 +1,17 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="cs">
-<translation id="8719282907381795632">Získat přístup k vašim datům na webu <ph name="WEBSITE_1"/></translation>
 <translation id="7809034755304591547">Rozšíření <ph name="EXTENSION_NAME"/> (ID rozšíření <ph name="EXTENSION_ID"/>) je blokováno administrátorem.</translation>
 <translation id="2857834222104759979">Soubor manifestu je neplatný.</translation>
+<translation id="8978038008714088448">Číst a upravovat data na webu <ph name="WEBSITE_1"/></translation>
+<translation id="4205302772098850608">Číst a upravovat data na webech <ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/> a <ph name="WEBSITE_3"/></translation>
 <translation id="3828484226910527078">Přístup k zařízení USB</translation>
 <translation id="6384275966486438344">Změňte nastavení vyhledávání na: <ph name="SEARCH_HOST"/></translation>
 <translation id="5911798608827489036">Výměna dat s libovolným počítačem v lokální síti nebo internetu</translation>
 <translation id="4719685943208231314">Přístup k zařízení USB od dodavatele <ph name="VENDOR_NAME"/></translation>
 <translation id="657064425229075395">Nelze načíst skript pozadí <ph name="BACKGROUND_SCRIPT"/>.</translation>
-<translation id="3093853184108622112">Získat přístup k vašim datům na webech <ph name="WEBSITE_1"/> a <ph name="WEBSITE_2"/></translation>
 <translation id="8597109877291678953">Výměna dat s počítačem <ph name="HOSTNAME"/></translation>
-<translation id="6914908792814954894">Přístup k vašim datům na <ph name="NUMBER_OF_WEBSITES"/> webech</translation>
 <translation id="5456409301717116725">Rozšíření obsahuje soubor klíče <ph name="KEY_PATH"/>. Tuto akci pravděpodobně provést nechcete.</translation>
-<translation id="6968649314782363508">Získat přístup k vašim datům na webu <ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/> a <ph name="WEBSITE_3"/></translation>
 <translation id="2350172092385603347">Byla použita lokalizace, ale v manifestu nebyl zadán parametr default_locale.</translation>
 <translation id="8058376558882514200">Přístup k zařízení USB <ph name="PRODUCT_NAME"/> od dodavatele <ph name="VENDOR_NAME"/></translation>
 <translation id="8774379383902544371">Přístup k zařízením USB</translation>
@@ -21,13 +19,15 @@
 <translation id="6344170822609224263">Zobrazení seznamu síťových připojení</translation>
 <translation id="2518849872271000461">Výměna dat s následujícími počítači: <ph name="HOSTNAMES"/></translation>
 <translation id="1389014510128217152">– <ph name="WEBSITE_1"/></translation>
-<translation id="5530391389158154052">Access your data on <ph name="NUMBER_OF_WEBSITES"/> websites</translation>
 <translation id="961805664415579088">Výměna dat s libovolným počítačem v doméně <ph name="DOMAIN"/></translation>
 <translation id="4968399700653439437">Výměna dat s libovolným počítačem v následujících doménách: <ph name="DOMAINS"/></translation>
 <translation id="8662911384982557515">Změnit domovskou stránku na: <ph name="HOME_PAGE"/></translation>
+<translation id="8114679593444120202">Read and modify your data on <ph name="NUMBER_OF_WEBSITES"/> websites</translation>
 <translation id="8602184400052594090">Chybí soubor manifestu nebo jej nelze číst.</translation>
 <translation id="7893008570150657497">Přistupovat k fotografiím, hudbě a dalším médiím z vašeho počítače</translation>
 <translation id="7217838517480956708">Správce tohoto počítače vyžaduje instalaci rozšíření <ph name="EXTENSION_NAME"/>. Nelze je odebrat ani upravit.</translation>
 <translation id="7154130902455071009">Změnit úvodní stránku na: <ph name="START_PAGE"/></translation>
+<translation id="6094507746643187368">Číst a upravovat data na webech <ph name="WEBSITE_1"/> a <ph name="WEBSITE_2"/></translation>
 <translation id="1803557475693955505">Nelze načíst stránku pozadí „<ph name="BACKGROUND_PAGE"/>“.</translation>
+<translation id="8207052894957937969">Read and modify your data on <ph name="NUMBER_OF_WEBSITES"/> websites</translation>
 </translationbundle>

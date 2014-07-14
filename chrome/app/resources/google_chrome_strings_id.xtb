@@ -25,6 +25,7 @@
 <translation id="4891791193823137474">Jalankan Google Chrome di latar belakang</translation>
 <translation id="110877069173485804">Ini Chrome Anda</translation>
 <translation id="1376881911183620035">Terima kasih telah mencoba Chrome baru. Chrome perlu dimulai ulang untuk memastikan bahwa Anda telah menyimpan pekerjaan apa pun yang sedang dikerjakan sebelum melanjutkan.</translation>
+<translation id="8406086379114794905">Bantu kami membuat Chrome jadi lebih baik</translation>
 <translation id="2896252579017640304">Luncurkan aplikasi Chrome</translation>
 <translation id="2721687379934343312">Di Mac, sandi disimpan pada Keychain Anda dan dapat diakses atau disinkronkan oleh pengguna Chrome lain yang berbagi akun OS X ini.</translation>
 <translation id="683440813066116847">Inbound rule untuk Google Chrome Canary guna mengizinkan lalu lintas mDNS.</translation>
@@ -80,7 +81,7 @@
 <translation id="4331809312908958774">Chrome OS</translation>
 <translation id="8823341990149967727">Chrome Terlalu Lawas</translation>
 <translation id="473775607612524610">Mutakhirkan</translation>
-<translation id="1195935957447623558">Google Chrome tidak dinonaktifkan dengan benar. Untuk membuka kembali halaman yang pernah dibuka, klik Kembalikan.</translation>
+<translation id="1195935957447623558">Google Chrome tidak dinonaktifkan dengan benar. Untuk membuka kembali laman yang pernah dibuka, klik Pulihkan.</translation>
 <translation id="2576431527583832481">Chrome jadi semakin baik! Versi baru telah tersedia.</translation>
 <translation id="4633000520311261472">Agar Chrome lebih aman, kami menonaktifkan beberapa ekstensi yang tidak tercantum pada <ph name="IDS_EXTENSION_WEB_STORE_TITLE"/> dan mungkin telah ditambahkan tanpa sepengetahuan Anda.</translation>
 <translation id="3656661827369545115">Meluncurkan Chromium secara otomatis saat komputer Anda dimulai</translation>
@@ -120,6 +121,7 @@ Tetap masuk akan menggabungkan informasi Chrome seperti bookmark, riwayat, dan s
 <translation id="911206726377975832">Hapus juga data rambanan Anda?</translation>
 <translation id="2036562258783619899">Pratinjau Chrome baru</translation>
 <translation id="5855036575689098185">Perangkat lunak yang berjalan di komputer Anda tidak kompatibel dengan Google Chrome.</translation>
+<translation id="7164397146364144019">Anda dapat membantu membuat Chrome lebih aman dan lebih mudah digunakan dengan melaporkan detail secara otomatis tentang kemungkinan insiden keamanan ke Google.</translation>
 <translation id="8008534537613507642">Pasang Ulang Chrome</translation>
 <translation id="2044287590254833138">Google Chrome Toolbar</translation>
 <translation id="8862326446509486874">Anda tidak memiliki hak yang diperlukan untuk pemasangan tingkat sistem. Coba jalankan lagi pemasang saat masuk sebagai Administrator.</translation>
@@ -128,7 +130,6 @@ Tetap masuk akan menggabungkan informasi Chrome seperti bookmark, riwayat, dan s
 <translation id="7436949144778751379">Google Chrome memerlukan Windows XP atau yang lebih baru. Sebagian fitur mungkin tidak berfungsi.</translation>
 <translation id="5877064549588274448">Saluran diubah. Mulai ulang perangkat Anda untuk menerapkan perubahan.</translation>
 <translation id="103396972844768118">Informasi penting terkait data Chrome Anda</translation>
-<translation id="6145223986912084844">chrome</translation>
 <translation id="6757767188268205357">Jangan ganggu saya</translation>
 <translation id="2290095356545025170">Apakah Anda yakin ingin mencopot penginstalan Google Chrome?</translation>
 <translation id="7062966102157262887">Unduhan saat ini sedang berlangsung. Anda ingin keluar dari Google Chrome dan membatalkan unduhan?</translation>
@@ -181,7 +182,6 @@ Tetap masuk akan menggabungkan informasi Chrome seperti bookmark, riwayat, dan s
 <translation id="3444832043240812445">Laman ini hanya menunjukkan informasi tentang kondisi ngadat terkini jika Anda <ph name="BEGIN_LINK"/>mengaktifkan pelaporan kondisi ngadat<ph name="END_LINK"/>.</translation>
 <translation id="8614913330719544658">Google Chrome tidak merespons. Luncurkan ulang sekarang?</translation>
 <translation id="2681064822612051220">Terjadi konflik pemasangan Google Chrome pada sistem. Hapus pemasangan dan coba lagi.</translation>
-<translation id="1175529839152551794">Setelah masuk, Anda bisa mendapatkan tab, bookmark dan barang-barang Chrome lainnya di seluruh laptop, ponsel, dan tablet Anda. Anda juga akan menerima saran dan fitur yang lebih relevan di layanan Google.</translation>
 <translation id="8209985377776300429">Anda sedang mempratinjau Chrome baru.</translation>
 <translation id="6126631249883707068">Ingin Google Chrome menyimpan sandi Anda?</translation>
 <translation id="7773845170078702898">Ingin Google Chrome menyimpan sandi Anda untuk situs ini?</translation>

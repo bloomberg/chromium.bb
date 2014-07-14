@@ -56,7 +56,6 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="4831257561365056138">Uninstall Chromium App Launcher</translation>
 <translation id="4222580632002216401">You're now signed in to Chromium! Sync is disabled by your administrator.</translation>
 <translation id="4207043877577553402"><ph name="BEGIN_BOLD"/>Warning:<ph name="END_BOLD"/> Chromium cannot prevent extensions from recording your browsing history. To disable this extension in incognito mode, unselect this option.</translation>
-<translation id="4516868174453854611">Now that you're signed in, you can get your tabs, bookmarks and other Chromium stuff across your laptop, phone and tablet. You will also receive more relevant suggestions and features on Google services.</translation>
 <translation id="985602178874221306">The Chromium Authors</translation>
 <translation id="8628626585870903697">Chromium does not include the PDF viewer which is required for Print Preview to function.</translation>
 <translation id="7138853919861947730">Chromium may use web services to improve your browsing experience.</translation>
@@ -110,6 +109,7 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="3258596308407688501">Chromium cannot read and write to its data directory:
 
 <ph name="USER_DATA_DIRECTORY"/></translation>
+<translation id="1869480248812203386">You can help make Chromium safer and easier to use by automatically reporting details of possible security incidents to Google.</translation>
 <translation id="6970811910055250180">Updating your device...</translation>
 <translation id="2485422356828889247">Uninstall</translation>
 <translation id="85843667276690461">Get help with using Chromium</translation>
@@ -118,7 +118,6 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="8493179195440786826">Chromium is Out of Date</translation>
 <translation id="911206726377975832">Also delete your browsing data?</translation>
 <translation id="95514773681268843"><ph name="DOMAIN"/> requires that you read and accept the following Terms of Service before using this device. These terms do not expand, modify or limit the Chromium OS Terms.</translation>
-<translation id="5603085937604338780">chromium</translation>
 <translation id="1699664235656412242">Please close all Chromium windows (including those in Windows 8 mode) and try again.</translation>
 <translation id="6734080038664603509">Update &amp;Chromium</translation>
 <translation id="8862326446509486874">You do not have appropriate rights for system-level installation. Try running the installer again as Administrator.</translation>
@@ -227,6 +226,7 @@ Signing in anyway will merge Chromium information like bookmarks, history, and o
 <translation id="9013262824292842194">Chromium requires Windows Vista or Windows XP with SP2 or higher.</translation>
 <translation id="1967743265616885482">A module with the same name has been known to conflict with Google Chrome.</translation>
 <translation id="8704119203788522458">This is your Chromium</translation>
+<translation id="8269379391216269538">Help make Chromium better</translation>
 <translation id="4224199872375172890">Chromium is up to date.</translation>
 <translation id="374481098568514319">This computer already has a more recent version of the Chromium components. Please use a more recent installer.</translation>
 <translation id="6240281849816458190">You attempted to reach &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, but the server presented a certificate that is not yet valid. No information is available to indicate whether that certificate can be trusted. Chromium cannot reliably guarantee that you are communicating with &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; and not an attacker. Your computer's clock is currently set to <ph name="CURRENT_TIME"/>. Does that look right? If not, you should correct your system's clock and then refresh this page.</translation>

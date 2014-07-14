@@ -54,7 +54,6 @@
 <translation id="4831257561365056138">‏הסר את ההתקנה של Chromium App Launcher</translation>
 <translation id="4222580632002216401">‏אתה מחובר כעת ל-Chromium! הסנכרון הושבת על ידי מנהל המערכת שלך.</translation>
 <translation id="4207043877577553402">‏<ph name="BEGIN_BOLD"/>אזהרה:<ph name="END_BOLD"/> Chromium‏ לא יכול למנוע מתוספים לתעד את היסטוריית הגלישה שלך. כדי להשבית תוסף זה במצב גלישה בסתר, בטל את הבחירה באפשרות זו.</translation>
-<translation id="4516868174453854611">‏כעת, לאחר שהתחברת, תוכל לקבל את הכרטיסיות, הסימניות ופריטי Chromium נוספים במחשב הנייד, בטלפון ובטאבלט. תקבל גם הצעות ותכונות רלוונטיות יותר בשירותי Google.</translation>
 <translation id="985602178874221306">‏מחברי Chromium</translation>
 <translation id="8628626585870903697">‏Chromium אינו כולל מציג PDF, הנדרש להפעלת תצוגה מקדימה של הדפסה.</translation>
 <translation id="7138853919861947730">‏Chromium עשוי להשתמש בשירותי אינטרנט כדי לשפר את חווית הגלישה שלך.</translation>
@@ -106,6 +105,7 @@
 <translation id="7066436765290594559">‏מערכת ההפעלה של Chromium לא הצליחה לסנכרן את הנתונים שלך. עדכן את משפט הסיסמה לסנכרון.</translation>
 <translation id="7747138024166251722">המתקין לא הצליח ליצור ספריה זמנית. בדוק את המקום הפנוי בדיסק ואת האישור להתקנת תוכנה.</translation>
 <translation id="3258596308407688501">‏Chromium אינו יכול לקרוא ולכתוב בספריית הנתונים שלו: <ph name="USER_DATA_DIRECTORY"/></translation>
+<translation id="1869480248812203386">‏אתה יכול לעזור לשפר את הבטיחות של Chromium ולהקל את השימוש בו על ידי דיווח ל-Google על פרטים של בעיות אבטחה אפשריות.</translation>
 <translation id="6970811910055250180">מעדכן את המכשיר שלך...</translation>
 <translation id="2485422356828889247">הסר התקנה</translation>
 <translation id="85843667276690461">‏עזרה באמצעות Chromium</translation>
@@ -114,7 +114,6 @@
 <translation id="8493179195440786826">‏Chromium אינו מעודכן</translation>
 <translation id="911206726377975832">למחוק גם את נתוני הגלישה שלך?</translation>
 <translation id="95514773681268843">‏<ph name="DOMAIN"/> דורש שתקרא ותקבל את התנאים וההגבלות הבאים לפני שתשתמש במכשיר הזה. תנאים אלה אינם מרחיבים, משנים או מגבילים את התנאים של מערכת ההפעלה של Chromium.</translation>
-<translation id="5603085937604338780">chromium</translation>
 <translation id="1699664235656412242">‏סגור את כל החלונות של Chromium (כולל חלונות במצב Windows 8) ונסה שוב.</translation>
 <translation id="6734080038664603509">‏עדכן &amp;את Chromium‏</translation>
 <translation id="8862326446509486874">אין לך זכויות שמתאימות להתקנה ברמת המערכת. נסה להפעיל שוב את המתקין כמנהל מערכת.</translation>
@@ -222,6 +221,7 @@
 <translation id="9013262824292842194">‏להפעלת Chromium יש להשתמש במערכת ההפעלה Windows Vista או Windows XP עם SP2 ואילך.</translation>
 <translation id="1967743265616885482">‏מודול בעל אותו שם מתנגש עם Chromium.</translation>
 <translation id="8704119203788522458">‏זהו ה-Chromium שלך</translation>
+<translation id="8269379391216269538">‏עזור לנו לשפר את Chromium</translation>
 <translation id="4224199872375172890">‏Chromium‏ מעודכן.</translation>
 <translation id="374481098568514319">‏במחשב זה כבר קיימת גרסה מתקדמת יותר של רכיבי Chromium. השתמש במתקין עדכני יותר.</translation>
 <translation id="6240281849816458190">‏ניסית להגיע אל &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, אך השרת הציג אישור שעדיין אינו תקף. אין מידע זמין שיכול לציין אם ניתן לבטוח באישור. Chromium אינו יכול להבטיח באופן מהימן שאתה מתקשר עם &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; ולא עם תוקף. השעון של המחשב מוגדר כעת ל-<ph name="CURRENT_TIME"/>. האם זה נכון? אם לא, עליך לתקן את שעון המערכת ולרענן את דף.</translation>

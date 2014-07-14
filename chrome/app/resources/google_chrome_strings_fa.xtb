@@ -25,6 +25,7 @@
 <translation id="4891791193823137474">‏اجازه به Google Chrome برای اجرا در پس‌زمینه</translation>
 <translation id="110877069173485804">‏این Chrome شماست</translation>
 <translation id="1376881911183620035">‏از اینکه Chrome جدید را امتحان کردید سپاسگزاریم. برای اطمینان از ذخیره کارهای باز، قبل از ادامه باید Chrome دوباره راه‌اندازی دوباره شود.</translation>
+<translation id="8406086379114794905">‏به بهبود Chrome کمک کنید</translation>
 <translation id="2896252579017640304">‏راه‌اندازی برنامه‌های Chrome</translation>
 <translation id="2721687379934343312">‏در Mac، گذرواژه‌ها در Keychain شما ذخیره می‌شوند و توسط سایر کاربران Chrome که این حساب OS X را به اشتراک می‌گذارند، قابل دسترسی و همگام‌سازی است.</translation>
 <translation id="683440813066116847">‏قانون ترافیک ورودی برای Google Chrome Canary به منظور اجازه به ترافیک mDNS .</translation>
@@ -121,6 +122,7 @@
 <translation id="911206726377975832">داده‌های مرور شما نیز حذف شود؟</translation>
 <translation id="2036562258783619899">‏پیش‌نمایش Chrome جدید</translation>
 <translation id="5855036575689098185">‏نرم‌افزار در حال اجرا در رایانه شما با Google Chrome سازگار نیست.</translation>
+<translation id="7164397146364144019">‏می‌توانید با گزارش خودکار جزئیات حوادث امنیتی احتمالی به Google به ایمن‌تر شدن Chrome و استفاده آسان‌تر از آن کمک کنید.</translation>
 <translation id="8008534537613507642">‏نصب مجدد Chrome</translation>
 <translation id="2044287590254833138">‏نوارابزار Google Chrome</translation>
 <translation id="8862326446509486874">شما حقوق لازم برای نصب در سطح سیستم را ندارید. دوباره به‌عنوان سرپرست نصب کننده را اجرا کنید.</translation>
@@ -129,7 +131,6 @@
 <translation id="7436949144778751379">‏Google Chrome به Windows XP یا نسخه بالاتر آن نیاز دارد. برخی از ویژگی‌ها ممکن است کار نکند.</translation>
 <translation id="5877064549588274448">کانال تغییر کرد. برای اعمال تغییرات دستگاه خود را مجدداً راه‌اندازی کنید.</translation>
 <translation id="103396972844768118">‏اطلاعات مهم درباره داده‌های Chrome شما</translation>
-<translation id="6145223986912084844">chrome</translation>
 <translation id="6757767188268205357">مرا اذیت نکن</translation>
 <translation id="2290095356545025170">‏آیا می‌خواهید Google Chrome را غیر فعال کنید؟</translation>
 <translation id="7062966102157262887">‏دانلودی اکنون در حال انجام است. آیا می‌خواهید از Google Chrome خارج شوید و دانلود را لغو کنید؟</translation>
@@ -182,7 +183,6 @@
 <translation id="3444832043240812445">در صورتی که <ph name="BEGIN_LINK"/>ارسال گزارش خرابی را فعال کنید<ph name="END_LINK"/>، این صفحه فقط اطلاعاتی را در مورد مشکلات اخیر شما نشان می‌دهد.</translation>
 <translation id="8614913330719544658">‏Google Chrome پاسخ نمی‌دهد. مجدداً راه‌اندازی شود؟</translation>
 <translation id="2681064822612051220">‏یک مورد نصب مغایر با Google Chrome در سیستم یافت شد. لطفاً آنرا حذف نصب کنید و دوباره امتحان کنید.</translation>
-<translation id="1175529839152551794">‏اکنون که وارد سیستم شده‌اید، می‌توانید سایر اطلاعات Chrome، برگه‌ها و نشانک‌هایتان را در رایانه کیفی، تلفن و رایانه لوحی‌تان داشته باشید. همچنین ویژگی‌ها و پیشنهادات مرتبط‌‌تری را در خدمات Google دریافت خواهید کرد.</translation>
 <translation id="8209985377776300429">‏در حال تماشای پیش‌نمایش Chrome جدید هستید.</translation>
 <translation id="6126631249883707068">‏آیا می‌خواهید Google Chrome رمز ورود شما را ذخیره کند؟</translation>
 <translation id="7773845170078702898">‏آیا می‌خواهید Google Chrome گذرواژه شما برای این سایت را ذخیره کند؟</translation>

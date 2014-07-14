@@ -49,7 +49,7 @@ Vaihda syöttötapaa painamalla Shift + Alt.</translation>
 <translation id="3846575436967432996">Verkon tietoja ei saatavilla</translation>
 <translation id="4625920103690741805">Kiertäminen lukittu (muuta napauttamalla tätä)</translation>
 <translation id="3799026279081545374">Laturisi voi olla virheellinen. Jos asut Yhdysvalloissa, saat ohjeita ja voit tilata uuden laturin soittamalla numeroon 866 628 1371. Jos asut Isossa-Britanniassa, soita numeroon 0800 026 0613. Jos asut Irlannissa, soita numeroon 1 800 832 664. Jos asut Kanadassa, soita numeroon 866 628 1372. Jos asut Australiassa, soita numeroon 1 800 067 460.</translation>
-<translation id="3026237328237090306">Määritä mobiilitiedonsiirron asetukset</translation>
+<translation id="3891340733213178823">Kirjaudu ulos painamalla Ctrl+Shift+Q kahdesti.</translation>
 <translation id="5871632337994001636">Hallinnoi laitteita…</translation>
 <translation id="785750925697875037">Näytä mobiilitili</translation>
 <translation id="153454903766751181">Alustetaan matkapuhelinmodeemia…</translation>
@@ -103,11 +103,13 @@ Vaihda syöttötapaa painamalla Shift + Alt.</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME"/> (Bluetooth)</translation>
 <translation id="3967919079500697218">Järjestelmänvalvoja on poistanut käytöstä mahdollisuuden ottaa kuvakaappauksia.</translation>
 <translation id="372094107052732682">Lopeta painamalla kahdesti Ctrl+Shift+Q.</translation>
+<translation id="923686485342484400">Kirjaudu ulos painamalla Control Shift Q kahdesti.</translation>
 <translation id="6803622936009808957">Näyttöjen peilaaminen ei onnistunut, sillä tuettua resoluutiota ei löytynyt. Sen sijaan valittiin työpöydän laajennus.</translation>
 <translation id="1480041086352807611">Esittelytila</translation>
 <translation id="4066708417179825777"><ph name="PRIMARY_ACCOUNT"/> (ensisijainen)</translation>
 <translation id="3626637461649818317"><ph name="PERCENTAGE"/> % jäljellä</translation>
 <translation id="9089416786594320554">Syöttötavat</translation>
+<translation id="2700058918926273959">Istunnon loppumiseen on <ph name="SESSION_TIME_REMAINING"/>. Sinut kirjataan ulos.</translation>
 <translation id="6247708409970142803"><ph name="PERCENTAGE"/> %</translation>
 <translation id="2670531586141364277">Verkon <ph name="NAME"/> aktivointi vaatii verkkoyhteyden.</translation>
 <translation id="3963445509666917109">Kaiutin (sisäinen)</translation>
@@ -175,8 +177,8 @@ Vaihda syöttötapaa painamalla Shift + Alt.</translation>
 <translation id="1602076796624386989">Ota mobiilitiedonsiirto käyttöön</translation>
 <translation id="68610848741840742">ChromeVox (äänipalaute)</translation>
 <translation id="6981982820502123353">Esteettömyys</translation>
+<translation id="6585808820553845416">Istunnon loppumiseen on <ph name="SESSION_TIME_REMAINING"/>.</translation>
 <translation id="4274292172790327596">Tunnistamaton virhe</translation>
-<translation id="4032485810211612751"><ph name="HOURS"/>.<ph name="MINUTES"/>.<ph name="SECONDS"/></translation>
 <translation id="5977415296283489383">Kuulokkeet</translation>
 <translation id="225680501294068881">Etsitään laitteita...</translation>
 <translation id="5597451508971090205"><ph name="SHORT_WEEKDAY"/>, <ph name="DATE"/></translation>
@@ -190,7 +192,6 @@ Palvelimen viesti: <ph name="SERVER_MSG"/></translation>
 <translation id="2999742336789313416"><ph name="DISPLAY_NAME"/> on julkinen käyttökerta, jota hallinnoi <ph name="DOMAIN"/></translation>
 <translation id="9044646465488564462">Yhteyden muodostaminen verkkoon epäonnistui: <ph name="DETAILS"/></translation>
 <translation id="7029814467594812963">Sulje käyttökerta</translation>
-<translation id="479989351350248267">haku</translation>
 <translation id="8454013096329229812">Wi-Fi on käytössä.</translation>
 <translation id="4872237917498892622">Alt + haku tai Shift</translation>
 <translation id="2429753432712299108">Bluetooth-laite <ph name="DEVICE_NAME"/> pyytää lupaa laiteparin muodostamiseen. Ennen kuin hyväksyt pyynnön, varmista, että laitteella näkyy tämä avain: <ph name="PASSKEY"/></translation>
@@ -225,10 +226,10 @@ Palvelimen viesti: <ph name="SERVER_MSG"/></translation>
 <translation id="6857811139397017780">Aktivoi <ph name="NETWORKSERVICE"/></translation>
 <translation id="5864471791310927901">DHCP-haku epäonnistui</translation>
 <translation id="2819276065543622893">Sinut kirjataan ulos nyt.</translation>
+<translation id="5507786745520522457">Ota mobiiliverkon data käyttöön</translation>
 <translation id="6165508094623778733">Lisätietoja</translation>
 <translation id="9046895021617826162">Yhdistäminen epäonnistui</translation>
 <translation id="7168224885072002358">Palautetaan vanha tarkkuus, aikaa palautukseen <ph name="TIMEOUT_SECONDS"/></translation>
-<translation id="973896785707726617">Istunnon loppumiseen on <ph name="SESSION_TIME_REMAINING"/>. Sinut kirjataan automaattisesti ulos.</translation>
 <translation id="743058460480092004">Kamera ja mikrofoni ovat käytössä.</translation>
 <translation id="8372369524088641025">Väärä WEP-avain</translation>
 <translation id="6636709850131805001">Tunnistamaton tila</translation>
@@ -245,7 +246,6 @@ Palvelimen viesti: <ph name="SERVER_MSG"/></translation>
 <translation id="520760366042891468">Näytön hallinnan jakaminen Hangout-keskustelujen kautta.</translation>
 <translation id="8000066093800657092">Ei verkkoa</translation>
 <translation id="4015692727874266537">Kirjaudu sisään toiseen tiliin…</translation>
-<translation id="1044925987639358253">Mikrofoni on käytössä.</translation>
 <translation id="6911468394164995108">Liity muuhun verkkoon...</translation>
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME"/>: <ph name="ANNOTATION"/></translation>
 <translation id="2563856802393254086">Onnittelut! Tiedonsiirtopalvelusi <ph name="NAME"/> on aktivoitu ja käyttövalmis.</translation>

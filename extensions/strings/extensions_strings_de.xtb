@@ -1,19 +1,17 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="de">
-<translation id="8719282907381795632">Auf Ihre Daten auf <ph name="WEBSITE_1"/> zugreifen</translation>
 <translation id="7809034755304591547"><ph name="EXTENSION_NAME"/> (Erweiterungs-ID &quot;<ph name="EXTENSION_ID"/>&quot;) wurde vom Administrator blockiert.</translation>
 <translation id="2857834222104759979">Manifest-Datei ist ungültig.</translation>
+<translation id="8978038008714088448">Eigene Daten auf <ph name="WEBSITE_1"/> lesen und ändern</translation>
+<translation id="4205302772098850608">Eigene Daten auf <ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/> und <ph name="WEBSITE_3"/> lesen und ändern</translation>
 <translation id="3828484226910527078">Auf USB-Gerät zugreifen</translation>
 <translation id="6384275966486438344">Sucheinstellungen in <ph name="SEARCH_HOST"/> ändern</translation>
 <translation id="5911798608827489036">Daten mit einem beliebigen Computer im lokalen Netz oder Internet austauschen</translation>
 <translation id="4719685943208231314">Auf USB-Gerät von <ph name="VENDOR_NAME"/> zugreifen</translation>
 <translation id="657064425229075395">Hintergrundskript &quot;<ph name="BACKGROUND_SCRIPT"/>&quot; konnte nicht geladen werden.</translation>
-<translation id="3093853184108622112">Auf Ihre Daten auf <ph name="WEBSITE_1"/> und <ph name="WEBSITE_2"/> zugreifen</translation>
 <translation id="8597109877291678953">Daten mit dem Computer mit dem Namen <ph name="HOSTNAME"/> austauschen</translation>
-<translation id="6914908792814954894">Auf <ph name="NUMBER_OF_WEBSITES"/> Websites auf Ihre Daten zugreifen</translation>
 <translation id="5456409301717116725">Die Erweiterung enthält die Schlüsseldatei &quot;<ph name="KEY_PATH"/>&quot;. Möchten Sie den Vorgang wirklich fortsetzen?</translation>
-<translation id="6968649314782363508">Auf Ihre Daten auf <ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/> und <ph name="WEBSITE_3"/> zugreifen</translation>
 <translation id="2350172092385603347">Lokalisierung wurde verwendet, in der Manifest-Datei war jedoch kein Wert für &quot;default_locale&quot; angegeben.</translation>
 <translation id="8058376558882514200">Auf USB-Gerät <ph name="PRODUCT_NAME"/> von <ph name="VENDOR_NAME"/> zugreifen</translation>
 <translation id="8774379383902544371">Auf USB-Geräte zugreifen</translation>
@@ -21,13 +19,15 @@
 <translation id="6344170822609224263">Auf Liste der Netzwerkverbindungen zugreifen</translation>
 <translation id="2518849872271000461">Daten mit den Computern mit folgenden Namen austauschen: <ph name="HOSTNAMES"/></translation>
 <translation id="1389014510128217152">– <ph name="WEBSITE_1"/></translation>
-<translation id="5530391389158154052">Auf <ph name="NUMBER_OF_WEBSITES"/> Websites auf Ihre Daten zugreifen</translation>
 <translation id="961805664415579088">Daten mit einem beliebigen Computer in der Domain <ph name="DOMAIN"/> austauschen</translation>
 <translation id="4968399700653439437">Daten mit einem beliebigen Computer in den Domains <ph name="DOMAINS"/> austauschen</translation>
 <translation id="8662911384982557515">Startseite zu <ph name="HOME_PAGE"/> ändern</translation>
+<translation id="8114679593444120202">Eigene Daten auf <ph name="NUMBER_OF_WEBSITES"/> Websites lesen und ändern</translation>
 <translation id="8602184400052594090">Manifest-Datei fehlt oder ist nicht lesbar.</translation>
 <translation id="7893008570150657497">Auf Fotos, Musik und andere Medien auf Ihrem Computer zugreifen</translation>
 <translation id="7217838517480956708">Der Administrator dieses Computers schreibt die Installation von <ph name="EXTENSION_NAME"/> vor. Die Erweiterung kann nicht entfernt oder geändert werden.</translation>
 <translation id="7154130902455071009">Startseite in <ph name="START_PAGE"/> ändern</translation>
+<translation id="6094507746643187368">Eigene Daten auf <ph name="WEBSITE_1"/> und <ph name="WEBSITE_2"/> lesen und ändern</translation>
 <translation id="1803557475693955505">Hintergrundseite &quot;<ph name="BACKGROUND_PAGE"/>&quot; konnte nicht geladen werden.</translation>
+<translation id="8207052894957937969">Eigene Daten auf <ph name="NUMBER_OF_WEBSITES"/> Websites lesen und ändern</translation>
 </translationbundle>

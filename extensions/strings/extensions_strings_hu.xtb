@@ -1,19 +1,17 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="hu">
-<translation id="8719282907381795632">Hozzáférés az Ön adataihoz a következő webhelyen: <ph name="WEBSITE_1"/></translation>
 <translation id="7809034755304591547">A(z) <ph name="EXTENSION_NAME"/> bővítményt (bővítményazonosító: „<ph name="EXTENSION_ID"/>”) blokkolta a rendszergazda.</translation>
 <translation id="2857834222104759979">A jegyzékfájl érvénytelen.</translation>
+<translation id="8978038008714088448">Az Ön adatainak olvasása és módosítása itt: <ph name="WEBSITE_1"/></translation>
+<translation id="4205302772098850608">Az Ön adatainak olvasása és módosítása itt: <ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/> és <ph name="WEBSITE_3"/></translation>
 <translation id="3828484226910527078">Hozzáférés az USB-eszközhöz</translation>
 <translation id="6384275966486438344">A keresési beállítások módosítása a következőre: <ph name="SEARCH_HOST"/></translation>
 <translation id="5911798608827489036">Adatok cseréje bármilyen számítógéppel a helyi hálózaton vagy az interneten</translation>
 <translation id="4719685943208231314">Hozzáférés <ph name="VENDOR_NAME"/> gyártó USB-eszközéhez</translation>
 <translation id="657064425229075395">Nem sikerült betölteni a következő háttérszkriptet: &quot;<ph name="BACKGROUND_SCRIPT"/>&quot;.</translation>
-<translation id="3093853184108622112">Hozzáférés az Ön adataihoz a(z) <ph name="WEBSITE_1"/> és <ph name="WEBSITE_2"/> webhelyeken</translation>
 <translation id="8597109877291678953">Adatok cseréje a(z) <ph name="HOSTNAME"/> nevű számítógéppel</translation>
-<translation id="6914908792814954894">Hozzáférés az adatokhoz <ph name="NUMBER_OF_WEBSITES"/> webhelyen</translation>
 <translation id="5456409301717116725">Ez a bővítmény a(z) &quot;<ph name="KEY_PATH"/>&quot; kulcsfájlt tartalmazza. Ezt Ön valószínűleg nem szeretné.</translation>
-<translation id="6968649314782363508">Hozzáférés az Ön adataihoz a(z) <ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/> és <ph name="WEBSITE_3"/> webhelyeken</translation>
 <translation id="2350172092385603347">Fordítás használatban, de a default_locale (alapértelmezett nyelv- és országkód) nincs megadva a jegyzékfájlban.</translation>
 <translation id="8058376558882514200">Hozzáférés <ph name="VENDOR_NAME"/> gyártó <ph name="PRODUCT_NAME"/> USB-eszközéhez</translation>
 <translation id="8774379383902544371">USB-eszközök elérése</translation>
@@ -21,13 +19,15 @@
 <translation id="6344170822609224263">A hálózati kapcsolatok hozzáférési listája</translation>
 <translation id="2518849872271000461">Adatok cseréje a következő nevű számítógépekkel: <ph name="HOSTNAMES"/></translation>
 <translation id="1389014510128217152">– <ph name="WEBSITE_1"/></translation>
-<translation id="5530391389158154052">Hozzáférés az adatokhoz <ph name="NUMBER_OF_WEBSITES"/> webhelyen</translation>
 <translation id="961805664415579088">Adatok cseréje bármilyen számítógéppel a következő domainben: <ph name="DOMAIN"/></translation>
 <translation id="4968399700653439437">Adatok cseréje bármilyen számítógéppel a következő domainekben: <ph name="DOMAINS"/></translation>
 <translation id="8662911384982557515">Kezdőlap módosítása a következőre: <ph name="HOME_PAGE"/></translation>
+<translation id="8114679593444120202">Az Ön adatainak olvasása és módosítása <ph name="NUMBER_OF_WEBSITES"/> webhelyen</translation>
 <translation id="8602184400052594090">A jegyzékfájl hiányzik vagy nem olvasható.</translation>
 <translation id="7893008570150657497">Fényképek, zene és egyéb multimédiás anyagok elérése a számítógépről</translation>
 <translation id="7217838517480956708">Az eszköz rendszergazdája megköveteli, hogy a(z) <ph name="EXTENSION_NAME"/> telepítve legyen. A bővítményt nem lehet eltávolítani vagy módosítani.</translation>
 <translation id="7154130902455071009">Kezdőoldal módosítása a következőre: <ph name="START_PAGE"/></translation>
+<translation id="6094507746643187368">Az Ön adatainak olvasása és módosítása itt: <ph name="WEBSITE_1"/> és <ph name="WEBSITE_2"/></translation>
 <translation id="1803557475693955505">Nem lehet betölteni a(z) '<ph name="BACKGROUND_PAGE"/>' háttéroldalt.</translation>
+<translation id="8207052894957937969">Az Ön adatainak olvasása és módosítása <ph name="NUMBER_OF_WEBSITES"/> webhelyen</translation>
 </translationbundle>

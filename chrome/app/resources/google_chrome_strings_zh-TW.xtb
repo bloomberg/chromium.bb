@@ -27,6 +27,7 @@ Google Chrome 無法復原您的設定。</translation>
 <translation id="4891791193823137474">讓 Google Chrome 在背景執行</translation>
 <translation id="110877069173485804">這是您專屬的 Chrome</translation>
 <translation id="1376881911183620035">感謝您試用新版 Chrome。Chrome 必須重新啟動，請先確認您已儲存所有開啟的工作再繼續。</translation>
+<translation id="8406086379114794905">協助改善 Chrome 的服務品質</translation>
 <translation id="2896252579017640304">啟動 Chrome 應用程式</translation>
 <translation id="2721687379934343312">在 Mac 上，密碼會儲存到您的「鑰匙圈」資料庫中，因此其他共用這個 OS X 帳戶的 Chrome 使用者都能存取或同步處理這些密碼。</translation>
 <translation id="683440813066116847">允許 mDNS 流量的 Google Chrome Canary 輸入規則。</translation>
@@ -122,6 +123,7 @@ Google Chrome 無法復原您的設定。</translation>
 <translation id="911206726377975832">您要一併刪除瀏覽資料嗎？</translation>
 <translation id="2036562258783619899">試用最新 Chrome</translation>
 <translation id="5855036575689098185">您電腦上執行的軟體與 Google Chrome 不相容。</translation>
+<translation id="7164397146364144019">您可以自動將疑似安全性事件的詳細資料傳送給 Google，協助我們讓 Chrome 變得更安全、更好用。</translation>
 <translation id="8008534537613507642">重新安裝 Chrome</translation>
 <translation id="2044287590254833138">Google Chrome 工具列</translation>
 <translation id="8862326446509486874">您沒有在系統層級進行安裝的權限，請以管理員的身分執行安裝檔。</translation>
@@ -130,7 +132,6 @@ Google Chrome 無法復原您的設定。</translation>
 <translation id="7436949144778751379">Google Chrome 需要 Windows XP 或更新版本的作業系統。某些功能可能無法執行。</translation>
 <translation id="5877064549588274448">版本已變更。請重新啟動裝置以套用變更。</translation>
 <translation id="103396972844768118">Chrome 資料的相關重要資訊</translation>
-<translation id="6145223986912084844">chrome</translation>
 <translation id="6757767188268205357">不要再問我</translation>
 <translation id="2290095356545025170">您是否確定要解除安裝 Google Chrome？</translation>
 <translation id="7062966102157262887">目前正在進行下載，您要結束 Google Chrome 並取消下載嗎？</translation>
@@ -183,7 +184,6 @@ Google Chrome 無法復原您的設定。</translation>
 <translation id="3444832043240812445">如果您<ph name="BEGIN_LINK"/>啟用當機報告功能<ph name="END_LINK"/>，這個頁面僅會顯示最近的當機資訊。</translation>
 <translation id="8614913330719544658">Google Chrome 沒有回應，要立即重新啟動嗎？</translation>
 <translation id="2681064822612051220">系統在安裝 Google Chrome 時發生衝突問題，請先解除安裝，然後再試一次。</translation>
-<translation id="1175529839152551794">您已成功登入 Chrome，現在可以使用您在筆電、手機和平板電腦中的分頁、書籤和其他 Chrome 設定。此外，您將收到更多 Google 服務的相關建議和功能。</translation>
 <translation id="8209985377776300429">您正在預覽新版 Chrome。</translation>
 <translation id="6126631249883707068">您希望 Google Chrome 儲存密碼嗎？</translation>
 <translation id="7773845170078702898">您要讓 Google Chrome 儲存您在這個網站的密碼嗎？</translation>

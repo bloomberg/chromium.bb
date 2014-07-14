@@ -2,16 +2,21 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="lv">
 <translation id="8588878054171169263">Saglabāt attēlu</translation>
+<translation id="7998918019931843664">Vēlreiz atvērt aizvērto cilni</translation>
 <translation id="4996978546172906250">Kopīgošanas veids:</translation>
 <translation id="5578795271662203820">Meklēt šo attēlu ar <ph name="SEARCH_ENGINE"/></translation>
 <translation id="6831043979455480757">Tulkot</translation>
 <translation id="7644305409888602715">Notiek lapas tulkošana <ph name="SOURCE_LANGUAGE"/> valodā...</translation>
 <translation id="7015922086425404465">Iegūstiet lietotni Google Play veikalā: <ph name="APP_ACTION"/></translation>
 <translation id="1491151370853475546">Atkārtoti ielādēt šo lapu</translation>
+<translation id="5233638681132016545">Jauna cilne</translation>
 <translation id="641643625718530986">Drukāt...</translation>
+<translation id="5763382633136178763">Inkognito režīma cilnes</translation>
+<translation id="5210365745912300556">Aizvērt cilni</translation>
 <translation id="7658239707568436148">Atcelt</translation>
 <translation id="6458785801851713928">Jūsu domēnam nav pieejama sinhronizācija.</translation>
 <translation id="2731700343119398978">Lūdzu, uzgaidiet...</translation>
+<translation id="6846298663435243399">Notiek ielāde…</translation>
 <translation id="7378627244592794276">Nē</translation>
 <translation id="3358663646935160692">Šis konts tiek pārvaldīts domēnā <ph name="DOMAIN_NAME"/>.
 
@@ -20,6 +25,7 @@ Jūs pierakstāties, izmantojot pārvaldītu kontu, un ļaujat šī konta admini
 <translation id="1623104350909869708">Neļaut šai lapai veidot papildu dialoglodziņus</translation>
 <translation id="1426410128494586442">Jā</translation>
 <translation id="8218346974737627104">Pierakstīšanās apstiprinājums</translation>
+<translation id="8853345339104747198">Cilne <ph name="TAB_TITLE"/></translation>
 <translation id="624558823898732418">Tulkojuma valoda: <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="8872441722924401214">Autentifikācijas sertifikāta izvēlēšanās</translation>
 <translation id="3896036286668839683">Sertifikāta skatītājs</translation>
@@ -41,6 +47,7 @@ Jūs pierakstāties, izmantojot pārvaldītu kontu, un ļaujat šī konta admini
 <translation id="3063601790762993062">Saglabāt videoklipu</translation>
 <translation id="6042308850641462728">Vairāk</translation>
 <translation id="7267430310003164111">Aicinājums iegūt lietotni Google Play veikalā. Lietotnes nosaukums: <ph name="APP_NAME"/>. Lietotnes vidējais vērtējums: <ph name="APP_RATING"/>.</translation>
+<translation id="303955801043931176">Cilne ir slēgta</translation>
 <translation id="4148957013307229264">Notiek instalēšana...</translation>
 <translation id="3992315671621218278">Saglabāt saiti</translation>
 <translation id="8034522405403831421">Šī lapas saturs ir šādā valodā: <ph name="SOURCE_LANGUAGE"/>. Vai tulkot šādā valodā: <ph name="TARGET_LANGUAGE"/>?</translation>
@@ -66,9 +73,11 @@ Jūs pierakstāties, izmantojot pārvaldītu kontu, un ļaujat šī konta admini
 <translation id="6333140779060797560">Kopīgot, izmantojot <ph name="APPLICATION"/></translation>
 <translation id="6040143037577758943">Aizvērt</translation>
 <translation id="969096075394517431">Mainīt valodas</translation>
+<translation id="5556459405103347317">Pārlādēt</translation>
 <translation id="5032574515228824816">Uzvedne</translation>
 <translation id="4847896847259487518">Saglabāt lapu kā grāmatzīmi</translation>
 <translation id="497421865427891073">Doties uz priekšu</translation>
+<translation id="8310344678080805313">Standarta cilnes</translation>
 <translation id="6277522088822131679">Drukājot lapu, radās problēma. Lūdzu, mēģiniet vēlreiz.</translation>
 <translation id="1742134235943978220">Tulkots šādā valodā: <ph name="TARGET_LANGUAGE"/>.</translation>
 <translation id="6965382102122355670">Labi</translation>

@@ -13,11 +13,13 @@ Chromoting</translation>
 <translation id="2801119484858626560">Se detectó una versión incompatible del Escritorio remoto de Chrome. Asegúrate de que se hayan instalado la última versión de Chrome y del Escritorio remoto de Chrome en ambas computadoras y vuelve a intentarlo.</translation>
 <translation id="6998989275928107238">Para</translation>
 <translation id="406849768426631008">¿Quieres ayudar a otra persona al mismo tiempo que mantienes con ella un videochat? Prueba el <ph name="LINK_BEGIN"/>Escritorio remoto en Google Hangouts<ph name="LINK_END"/>.</translation>
+<translation id="906458777597946297">Maximizar ventana</translation>
 <translation id="5397086374758643919">Desinstalador del host del Escritorio remoto de Chrome</translation>
 <translation id="3258789396564295715">Puedes acceder a esta computadora sin correr riesgos a través del Escritorio remoto de Chrome.</translation>
 <translation id="5070121137485264635">El host remoto requiere la autenticación de un sitio web de terceros. Para continuar, debes otorgar permisos adicionales al Escritorio remoto de Chrome para acceder a la siguiente dirección:</translation>
 <translation id="2124408767156847088">Acceder de forma segura a tus computadoras desde el dispositivo Android</translation>
 <translation id="3194245623920924351">Escritorio remoto de Chrome</translation>
+<translation id="3649256019230929621">Minimizar ventana</translation>
 <translation id="4808503597364150972">Ingresa tu PIN de <ph name="HOSTNAME"/>.</translation>
 <translation id="7672203038394118626">Se inhabilitaron las conexiones remotas con esta computadora.</translation>
 <translation id="8244400547700556338">Más información</translation>
@@ -28,9 +30,9 @@ Chromoting</translation>
 <translation id="7658239707568436148">Cancelar</translation>
 <translation id="7782471917492991422">Configura la administración de energía de tu computadora y asegúrate de que no se habilite el modo de hibernación cuando esté inactiva.</translation>
 <translation id="7665369617277396874">Agregar cuenta</translation>
-<translation id="5925497314631808737">• Se implementaron el modo de pantalla completa y el modo envolvente.
-• Se mejoró el ícono para ocultar la barra de acciones.</translation>
+<translation id="4939475390270873744">• Se corrigió un fallo en el inicio.</translation>
 <translation id="2707879711568641861">Faltan algunos de los componentes necesarios para Escritorio remoto de Chrome. Asegúrate de haber instalado la última versión y vuelve a intentarlo.</translation>
+<translation id="1779766957982586368">Cerrar ventana</translation>
 <translation id="2499160551253595098">Ayúdanos a mejorar la aplicación Escritorio remoto de Chrome permitiéndonos recopilar estadísticas de uso e informes sobre fallos.</translation>
 <translation id="7868137160098754906">Ingresa tu PIN para la computadora remota.</translation>
 <translation id="677755392401385740">Host iniciado para usuario: <ph name="HOST_USERNAME"/></translation>
@@ -55,7 +57,6 @@ Chromoting</translation>
 <translation id="9188433529406846933">Autorizar</translation>
 <translation id="228809120910082333">Confirma la cuenta y el PIN a continuación para permitir el acceso de Chromoting.</translation>
 <translation id="7605995381616883502">Nueva conexión</translation>
-<translation id="5826423541626112308">Host del Escritorio remoto de Chrome</translation>
 <translation id="2851674870054673688">Una vez que se haya ingresado el código, se iniciará la sesión compartida.</translation>
 <translation id="5593560073513909978">El servicio no está disponible temporalmente. Vuelve a intentarlo más tarde.</translation>
 <translation id="3908017899227008678">Ajustar tamaño a ventana de navegador</translation>
@@ -65,7 +66,6 @@ Chromoting</translation>
 <translation id="1409991159633941777">Faltan algunos de los componentes necesarios para el Escritorio remoto de Chrome. Asegúrate de estar usando la última versión de Chrome y vuelve a intentarlo.</translation>
 <translation id="174018511426417793">No tienes ninguna computadora registrada. Para habilitar conexiones remotas con una computadora, instala allí Escritorio remoto de Chrome y haz clic en &quot;<ph name="BUTTON_NAME"/>&quot;.</translation>
 <translation id="9126115402994542723">No volver a pedir un PIN al conectarse a este host desde este dispositivo</translation>
-<translation id="253387295088602549">Permite que otro usuario acceda a tu computadora a través de Internet sin correr riesgos.</translation>
 <translation id="1300633907480909701">Accede de forma segura a tus computadoras desde el dispositivo Android.
 
 • En todas las computadoras, configura el acceso remoto mediante la aplicación Escritorio remoto de Chrome de Chrome Web Store: https://chrome.google.com/remotedesktop.
@@ -85,9 +85,9 @@ Para obtener más información sobre la privacidad, consulta la política de pri
 <translation id="5285241842433869526">Más información sobre cómo configurar una computadora para el acceso remoto</translation>
 <translation id="4430915108080446161">Generando el código de acceso...</translation>
 <translation id="2013996867038862849">Se eliminaron todos los clientes sincronizados.</translation>
-<translation id="7081428606750359611">Host de Chromoting</translation>
 <translation id="8228265668171617545">Se detectó una versión incompatible de Chromoting. Asegúrate de que tienes instalada la última versión de Chrome y de Chromoting en ambas computadoras y vuelve a intentarlo.</translation>
 <translation id="6985691951107243942">¿Realmente deseas inhabilitar las conexiones remotas con <ph name="HOSTNAME"/>? Si te arrepientes, tendrás que ir a esa computadora para volver a habilitar las conexiones.</translation>
+<translation id="6944854424004126054">Restaurar ventana</translation>
 <translation id="1436054138039008644"><ph name="HOSTNAME"/> (en línea por última vez: <ph name="DATE"/>)</translation>
 <translation id="9149992051684092333">Para comenzar a compartir tu escritorio, proporciona el código de acceso que aparece a continuación a la persona que te asistirá.</translation>
 <translation id="409800995205263688">NOTA: La configuración de la política solo permite conexiones entre computadoras que estén dentro de tu red.</translation>
@@ -215,5 +215,6 @@ remoto de Chrome</translation>
 <translation id="1818475040640568770">No hay computadoras registradas.</translation>
 <translation id="4394049700291259645">Inhabilitar</translation>
 <translation id="4156740505453712750">Debes elegir un PIN de <ph name="BOLD_START"/>al menos seis dígitos<ph name="BOLD_END"/> para proteger el acceso a esta computadora. Se solicitará ese PIN cada vez que se establezca una conexión con esa computadora desde otra ubicación.</translation>
+<translation id="6398765197997659313">Salir de pantalla completa</translation>
 <translation id="3286521253923406898">Controlador del host de Chromoting</translation>
 </translationbundle>

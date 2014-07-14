@@ -25,6 +25,7 @@
 <translation id="4891791193823137474">La Google Chrome kjøre i bakgrunnen</translation>
 <translation id="110877069173485804">Dette er din Chrome</translation>
 <translation id="1376881911183620035">Takk for at du tester nye Chrome. Chrome må starte på nytt for å sikre at du har lagret alt åpent arbeid før du fortsetter.</translation>
+<translation id="8406086379114794905">Bidra til å gjøre Chrome bedre</translation>
 <translation id="2896252579017640304">Start Chrome-apper</translation>
 <translation id="2721687379934343312">På Mac blir passord lagret i nøkkelringen. Andre Chrome-brukere som deler denne OS X-kontoen, har adgang til og kan synkronisere med disse passordene.</translation>
 <translation id="683440813066116847">Regel om innkommende trafikk for Google Chrome Canary for å tillate mDNS-trafikk.</translation>
@@ -120,6 +121,7 @@ Hvis du logger deg på allikevel, blir Chrome-informasjon som bokmerker, loggen 
 <translation id="911206726377975832">Vil du slette all nettleserdata også?</translation>
 <translation id="2036562258783619899">Ta en titt på hva som er nytt i Chrome</translation>
 <translation id="5855036575689098185">Programvaren som kjører på datamaskinen din er ikke kompatibel med Google Chrome.</translation>
+<translation id="7164397146364144019">Du kan bidra til å gjøre Chrome tryggere og enklere å bruke, ved å rapportere detaljer om mulige sikkerhetsbrudd til Google automatisk.</translation>
 <translation id="8008534537613507642">Installer Chrome på nytt</translation>
 <translation id="2044287590254833138">Google Chrome-verktøyraden</translation>
 <translation id="8862326446509486874">Du har ikke de nødvendige rettighetene for å installere på systemnivå. Prøv å kjøre installasjonsprogrammet som administrator.</translation>
@@ -128,7 +130,6 @@ Hvis du logger deg på allikevel, blir Chrome-informasjon som bokmerker, loggen 
 <translation id="7436949144778751379">Google Chrome krever Windows XP eller nyere. Enkelte funksjoner vil kanskje ikke fungere.</translation>
 <translation id="5877064549588274448">Kanalen ble endret. Start enheten på nytt for å aktivere endringene.</translation>
 <translation id="103396972844768118">Viktig informasjon om Chrome-dataene dine</translation>
-<translation id="6145223986912084844">chrome</translation>
 <translation id="6757767188268205357">Ikke spør meg igjen</translation>
 <translation id="2290095356545025170">Er du sikker på at du vil avinstallere Google Chrome?</translation>
 <translation id="7062966102157262887">Du har en aktiv nedlasting. Vil du avslutte Google Chrome og avbryte nedlastingen?</translation>
@@ -179,7 +180,6 @@ Hvis du logger deg på allikevel, blir Chrome-informasjon som bokmerker, loggen 
 <translation id="3444832043240812445">Denne siden viser kun informasjon om nylige programstopp hvis du <ph name="BEGIN_LINK"/>aktiverer rapportering av programstopp<ph name="END_LINK"/>.</translation>
 <translation id="8614913330719544658">Google Chrome svarer ikke. Vil du starte på nytt nå?</translation>
 <translation id="2681064822612051220">En motstridende installasjon av Google Chrome ble oppdaget i systemet. Avinstaller denne og prøv igjen.</translation>
-<translation id="1175529839152551794">Nå som du er logget på, kan du bruke fanene og bokmerkene dine, samt andre Chrome-ting, på telefonen, nettbrettet og den bærbare datamaskinen din. Du mottar også mer relevante forslag og funksjoner på Google-tjenester.</translation>
 <translation id="8209985377776300429">Du forhåndsviser den nye Chrome-utgaven.</translation>
 <translation id="6126631249883707068">Vil du at Google Chrome skal lagre passordet?</translation>
 <translation id="7773845170078702898">Vil du at Google Chrome skal lagre passordet du bruker på dette nettstedet?</translation>

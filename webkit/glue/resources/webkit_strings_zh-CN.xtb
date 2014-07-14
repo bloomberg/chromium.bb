@@ -81,6 +81,7 @@
 <translation id="8750798805984357768">请从这些选项中选择一个。</translation>
 <translation id="7740050170769002709">HTML 内容</translation>
 <translation id="6692633176391053278">步进器</translation>
+<translation id="4975562563186953947">选择了<ph name="SELECTED_COUNT"/>项</translation>
 <translation id="8541249477527128034">媒体控件</translation>
 <translation id="2226276347425096477">请将该文本减少为 <ph name="MAX_CHARACTERS"/> 个字符或更少（您当前使用了 <ph name="CURRENT_LENGTH"/> 个字符）。</translation>
 <translation id="6101327004457443354">取消对音轨静音</translation>

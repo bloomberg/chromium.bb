@@ -47,7 +47,6 @@
 <translation id="4831257561365056138">卸载 Chromium 应用启动器</translation>
 <translation id="4222580632002216401">您现在已登录 Chromium！不过，管理员已停用同步功能。</translation>
 <translation id="4207043877577553402"><ph name="BEGIN_BOLD"/>警告<ph name="END_BOLD"/>：Chromium 无法阻止扩展程序记录您的浏览记录。要在隐身模式下停用此扩展程序，请取消选中此选项。</translation>
-<translation id="4516868174453854611">您已登录，现在您除了可以获取您的笔记本电脑、手机和平板电脑上的标签页、书签和其他 Chromium 内容外，还将获得 Google 服务方面的更多相关建议和功能。</translation>
 <translation id="985602178874221306">The Chromium Authors</translation>
 <translation id="8628626585870903697">Chromium 未包含运行打印预览所需的 PDF 查看器。</translation>
 <translation id="7138853919861947730">Chromium 可能会使用网络服务改善您的浏览体验。</translation>
@@ -94,6 +93,7 @@
 <translation id="3258596308407688501">Chromium 无法读写其数据目录：
 
 <ph name="USER_DATA_DIRECTORY"/></translation>
+<translation id="1869480248812203386">您可以选择自动向Google报告可能出现的安全事件详情，以帮助我们提高Chromium的安全性和易用性。</translation>
 <translation id="6970811910055250180">正在更新设备...</translation>
 <translation id="2485422356828889247">卸载</translation>
 <translation id="85843667276690461">获取 Chromium 使用帮助</translation>
@@ -102,7 +102,6 @@
 <translation id="8493179195440786826">Chromium版本太旧</translation>
 <translation id="911206726377975832">同时删除您的浏览数据吗？</translation>
 <translation id="95514773681268843"><ph name="DOMAIN"/> 要求您必须先阅读并接受以下服务条款，才能使用此设备。这些条款不会扩大、修改或限制 Chromium 操作系统条款。</translation>
-<translation id="5603085937604338780">Chromium</translation>
 <translation id="1699664235656412242">请关闭所有 Chromium 窗口（包括 Windows 8 模式下的窗口），然后重试。</translation>
 <translation id="6734080038664603509">更新 Chromium(&amp;C)</translation>
 <translation id="8862326446509486874">您的权限不足，无法进行系统级安装。请尝试以管理员身份再次运行安装程序。</translation>
@@ -199,6 +198,7 @@
 <translation id="9013262824292842194">Chromium 要求操作系统为 Windows Vista，或者 Windows XP SP2 或更高版本。</translation>
 <translation id="1967743265616885482">已发现一个同名的模块与 Chromium 存在冲突。</translation>
 <translation id="8704119203788522458">这是您的专属Chromium</translation>
+<translation id="8269379391216269538">帮助我们改进Chromium</translation>
 <translation id="4224199872375172890">Chromium 已是最新版本。</translation>
 <translation id="374481098568514319">该计算机已经安装了更高版本的 Chromium 组件。请使用更高版本的安装程序。</translation>
 <translation id="6240281849816458190">您尝试访问 &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;，但服务器出示的证书尚未生效。没有任何信息可表明该证书是否可信。Chromium 无法准确保证与您通信的是 &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; 而不是攻击者。您计算机时钟的当前时间为 <ph name="CURRENT_TIME"/>。该时间是否准确？如果不准确，您可以更正系统上的时钟并刷新此网页。</translation>

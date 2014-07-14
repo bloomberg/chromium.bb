@@ -2,16 +2,21 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="ko">
 <translation id="8588878054171169263">이미지 저장</translation>
+<translation id="7998918019931843664">닫은 탭 다시 열기</translation>
 <translation id="4996978546172906250">공유 방법</translation>
 <translation id="5578795271662203820"><ph name="SEARCH_ENGINE"/>에서 이 이미지 검색</translation>
 <translation id="6831043979455480757">번역</translation>
 <translation id="7644305409888602715">페이지를 <ph name="SOURCE_LANGUAGE"/>로 번역 중...</translation>
 <translation id="7015922086425404465">Google Play 스토어에서 다음 앱 다운로드: <ph name="APP_ACTION"/></translation>
 <translation id="1491151370853475546">페이지 새로고침</translation>
+<translation id="5233638681132016545">새 탭</translation>
 <translation id="641643625718530986">인쇄…</translation>
+<translation id="5763382633136178763">시크릿 탭</translation>
+<translation id="5210365745912300556">탭 닫기</translation>
 <translation id="7658239707568436148">취소</translation>
 <translation id="6458785801851713928">도메인에 대해 동기화를 사용할 수 없습니다.</translation>
 <translation id="2731700343119398978">잠시 기다려 주세요...</translation>
+<translation id="6846298663435243399">로드 중...</translation>
 <translation id="7378627244592794276">번역 안함</translation>
 <translation id="3358663646935160692"><ph name="DOMAIN_NAME"/>에서 관리하는 계정입니다.
 
@@ -20,6 +25,7 @@
 <translation id="1623104350909869708">이 페이지가 추가적인 대화를 생성하지 않도록 차단</translation>
 <translation id="1426410128494586442">예</translation>
 <translation id="8218346974737627104">로그인 확인</translation>
+<translation id="8853345339104747198"><ph name="TAB_TITLE"/>, 탭</translation>
 <translation id="624558823898732418">번역 언어: <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="8872441722924401214">인증에 사용할 인증서 선택</translation>
 <translation id="3896036286668839683">인증서 뷰어</translation>
@@ -41,6 +47,7 @@
 <translation id="3063601790762993062">동영상 저장</translation>
 <translation id="6042308850641462728">더보기</translation>
 <translation id="7267430310003164111">Google Play 스토어에서 앱을 다운로드할지 묻습니다. 앱 이름: <ph name="APP_NAME"/>, 앱 평점: <ph name="APP_RATING"/></translation>
+<translation id="303955801043931176">탭 닫음</translation>
 <translation id="4148957013307229264">설치 중...</translation>
 <translation id="3992315671621218278">링크 저장</translation>
 <translation id="8034522405403831421">이 페이지는 <ph name="SOURCE_LANGUAGE"/>로 되어 있습니다. <ph name="TARGET_LANGUAGE"/>로 번역하시겠습니까?</translation>
@@ -66,9 +73,11 @@
 <translation id="6333140779060797560">공유 방법: <ph name="APPLICATION"/></translation>
 <translation id="6040143037577758943">닫기</translation>
 <translation id="969096075394517431">언어 변경</translation>
+<translation id="5556459405103347317">새로고침</translation>
 <translation id="5032574515228824816">프롬프트</translation>
 <translation id="4847896847259487518">북마크 페이지</translation>
 <translation id="497421865427891073">앞으로 이동</translation>
+<translation id="8310344678080805313">일반 탭</translation>
 <translation id="6277522088822131679">페이지를 인쇄하는 중에 문제가 발생했습니다. 다시 시도해 주세요.</translation>
 <translation id="1742134235943978220"><ph name="TARGET_LANGUAGE"/>로 번역했습니다.</translation>
 <translation id="6965382102122355670">확인</translation>

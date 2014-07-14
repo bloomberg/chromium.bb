@@ -56,7 +56,6 @@ Baadhi ya vipengele huenda visipatikane na mabadiliko katika mapendeleo hayatahi
 <translation id="4831257561365056138">Sakinusha Kizinduzi cha Programu ya Chromium</translation>
 <translation id="4222580632002216401">Sasa umeingia kwenye Chromium! Usawazishaji umezimwa na msimamizi wako.</translation>
 <translation id="4207043877577553402"><ph name="BEGIN_BOLD"/>Ilani:<ph name="END_BOLD"/> Chromium haiwezi kuzuia viendelezi kurekodi historia yako ya kuvinjari. Ili kuzima kiendelezi hiki katika hali fiche, ondoa tiki kwenye chaguo hili.</translation>
-<translation id="4516868174453854611">Kwa kuwa sasa umeingia katika akaunti, unaweza kupata vichupo vyako, alamisho na vitu vingine vya Chromium vilivyo katika kompyuta yako ndogo, simu na kompyuta kibao. Pia utapokea mapendekezo na vipengele vinavyofaa zaidi kuhusu huduma za Google.</translation>
 <translation id="985602178874221306">Waandishi wa Chromium</translation>
 <translation id="8628626585870903697">Chromium haijumuishi kitazamaji cha PDF kinachohitajika ili Uhakiki wa Uchapishaji ufanye kazi.</translation>
 <translation id="7138853919861947730">Huenda Chromium ikatumia huduma za wavuti kuboresha utumizi wako wa kuvinjari.</translation>
@@ -109,6 +108,7 @@ Baadhi ya vipengele huenda visipatikane na mabadiliko katika mapendeleo hayatahi
 <translation id="3258596308407688501">Chromium haiwezi kusoma na kuandika kwenye saraka yake ya data:
 
 <ph name="USER_DATA_DIRECTORY"/></translation>
+<translation id="1869480248812203386">Unaweza kusaidia kuifanya Chromium salama na rahisi zaidi kutumia kwa kuripoti maelezo ya uwezekano wa matukio yasiyo salama kwa Google kiotomatiki.</translation>
 <translation id="6970811910055250180">Inasasisha kifaa chako...</translation>
 <translation id="2485422356828889247">Ondoa</translation>
 <translation id="85843667276690461">Pata msaada kwa kutumia Chromium</translation>
@@ -117,7 +117,6 @@ Baadhi ya vipengele huenda visipatikane na mabadiliko katika mapendeleo hayatahi
 <translation id="8493179195440786826">Chromium Imepitwa na Wakati</translation>
 <translation id="911206726377975832">Futa historia yako ya kuvinjari pia?</translation>
 <translation id="95514773681268843"><ph name="DOMAIN"/> huhitaji usome na ukubali Sheria na Masharti yafuatayo kabla ya kutumia kifaa hiki. Masharti haya hayapanui, kurekebisha au kupunguza Masharti ya Chromium OS.</translation>
-<translation id="5603085937604338780">chromium</translation>
 <translation id="1699664235656412242">Tafadhali funga madirisha yote ya Chromium (pamoja na yaliyo kwenye modi ya Window 8) na ujaribu tena.</translation>
 <translation id="6734080038664603509">Sasisha &amp;Chromium</translation>
 <translation id="8862326446509486874">Huna haki zifaazo ili kufanya usakinishaji wa kiwango cha mfumo. Jaribu kutumia kisakinishi kama msimamiaji kompyuta.</translation>
@@ -224,6 +223,7 @@ Kuingia bila kujali kutaunganisha maelezo ya Chromium kama vile alamisho, histor
 <translation id="9013262824292842194">Chromium inahitaji Windows Vista au Windows XP iliyo na SP2 au zaidi.</translation>
 <translation id="1967743265616885482">Kijenzi kilicho na jina sawa kimejulikana kuwa na ukinzani na Chromium.</translation>
 <translation id="8704119203788522458">Hii ni Chromium yako</translation>
+<translation id="8269379391216269538">Saidia ili kuiboresha Chromium</translation>
 <translation id="4224199872375172890">Chromium imesasishwa.</translation>
 <translation id="374481098568514319">Kompyuta hii tayari ina toleo jipya la hivi karibuni zaidi la vijenzi vya Chromium. Tafadhali tumia kisakinishi cha hivi karibuni zaidi.</translation>
 <translation id="6240281849816458190">Ulijaribu kufikia &lt;strong&gt; <ph name="DOMAIN"/> &lt;/ strong&gt;, lakini seva iliwasilisha cheti ambacho bado si halali. Hakuna maelezo ya kuashiria ikiwa cheti hicho kinaweza kuaminika. Chromium haiwezi kutoa hakikisho kwamba unawasiliana na &lt;strong&gt; <ph name="DOMAIN2"/> &lt;/ strong&gt; wala sio mshambulizi. Saa ya kompyuta yako ya kwa sasa imewekwa <ph name="CURRENT_TIME"/> . Je, hilo ni sahihi? Ikiwa sivyo, unapaswa kusahihisha mfumo wako wa saa na kisha uonyeshe upya ukurasa huu.</translation>

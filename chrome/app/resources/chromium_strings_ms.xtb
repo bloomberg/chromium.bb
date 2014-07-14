@@ -54,7 +54,6 @@
 <translation id="4831257561365056138">Nyahpasang Pelancar Apl Chromium</translation>
 <translation id="4222580632002216401">Anda kini sedang log masuk ke Chromium! Penyegerakan dilumpuhkan oleh pentadbir anda.</translation>
 <translation id="4207043877577553402"><ph name="BEGIN_BOLD"/>Amaran:<ph name="END_BOLD"/> Chromium tidak dapat menghalang sambungan daripada merakamkan sejarah penyemakan imbas anda. Untuk melumpuhkan sambungan ini dalam mod inkognito, nyahpilih pilihan ini.</translation>
-<translation id="4516868174453854611">Memandangkan anda kini telah log masuk, anda boleh mendapatkan tab, penanda halaman dan barangan Chromium anda yang lain merentas komputer riba, telefon dan tablet anda. Anda turut akan menerima cadangan dan ciri yang lebih berkaitan tentang perkhidmatan Google.</translation>
 <translation id="985602178874221306">Pengarang Chromium</translation>
 <translation id="8628626585870903697">Chromium tidak menyertakan pemapar PDF yang diperlukan oleh Pratonton Cetakan untuk berfungsi.</translation>
 <translation id="7138853919861947730">Chromium boleh menggunakan perkhidmatan web untuk meningkatkan pengalaman penyemakan imbas anda.</translation>
@@ -107,6 +106,7 @@
 <translation id="3258596308407688501">Chromium tidak dapat membaca atau menulis pada direktori datanya:
 
 <ph name="USER_DATA_DIRECTORY"/></translation>
+<translation id="1869480248812203386">Anda boleh membantu menjadikan Chromium lebih selamat dan lebih mudah untuk digunakan dengan melaporkan butiran kemungkinan insiden keselamatan secara automatik kepada Google.</translation>
 <translation id="6970811910055250180">Mengemas kini peranti anda...</translation>
 <translation id="2485422356828889247">Nyahpasang</translation>
 <translation id="85843667276690461">Dapatkan bantuan untuk menggunakan Chromium</translation>
@@ -115,7 +115,6 @@
 <translation id="8493179195440786826">Chromium sudah usang</translation>
 <translation id="911206726377975832">Padamkan juga data menyemak imbas anda?</translation>
 <translation id="95514773681268843"><ph name="DOMAIN"/> menghendaki anda membaca dan menerima Syarat Perkhidmatan berikut sebelum menggunakan peranti ini. Syarat ini tidak meluaskan, mengubah suai atau mengehadkan Syarat OS Chromium.</translation>
-<translation id="5603085937604338780">chromium</translation>
 <translation id="1699664235656412242">Sila tutup semua tetingkap Chromium (termasuk yang di dalam mod Windows 8) dan cuba lagi.</translation>
 <translation id="6734080038664603509">Kemas kini &amp;Chromium</translation>
 <translation id="8862326446509486874">Anda tidak mempunyai hak wajar untuk pemasangan peringkat sistem. Cuba jalankan pemasang semula sebagai Pentadbir.</translation>
@@ -224,6 +223,7 @@ Meneruskan juga log masuk akan menggabungkan maklumat Chromium seperti penanda h
 <translation id="9013262824292842194">Chromium memerlukan Windows Vista atau Windows XP dengan SP2 atau lebih tinggi.</translation>
 <translation id="1967743265616885482">Modul dengan nama yang sama telah diketahui bercanggah dengan Chromium.</translation>
 <translation id="8704119203788522458">Ini Chromium anda</translation>
+<translation id="8269379391216269538">Bantu menjadikan Chromium lebih baik</translation>
 <translation id="4224199872375172890">Chromium telah dikemas kini</translation>
 <translation id="374481098568514319">Komputer ini sudah mempunyai versi komponen Chromium yang lebih baharu. Sila gunakan pemasang yang lebih baharu.</translation>
 <translation id="6240281849816458190">Anda cuba mencapai &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, tetapi pelayan menyampaikan sijil yang belum lagi sah. Tiada maklumat tersedia yang menunjukkan sama ada sijil tersebut boleh dipercayai. Chromium tidak dapat menjamin bahawa anda berkomunikasi dengan &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; dan bukan penyerang. Jam komputer anda pada masa ini ditetapkan kepada <ph name="CURRENT_TIME"/>. Adakah itu betul? Jika tidak, anda harus membetulkan jam sistem anda dan kemudian, muatkan semula halaman ini.</translation>

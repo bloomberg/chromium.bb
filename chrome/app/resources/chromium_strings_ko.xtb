@@ -55,7 +55,6 @@
 <translation id="4831257561365056138">Chromium 앱 실행기 제거</translation>
 <translation id="4222580632002216401">Chromium에 로그인했습니다! 관리자가 동기화를 사용 중지했습니다.</translation>
 <translation id="4207043877577553402"><ph name="BEGIN_BOLD"/>경고:<ph name="END_BOLD"/> Chromium은 확장 프로그램이 인터넷 사용기록을 저장하지 못하도록 할 수 없습니다. 시크릿 모드에서 이 확장 프로그램을 사용 중지하려면 옵션을 선택 취소하세요.</translation>
-<translation id="4516868174453854611">이제 로그인했으므로 노트북, 휴대전화 및 태블릿에서 탭과 북마크, 기타 Chromium 콘텐츠를 사용할 수 있습니다. 또한 Google 서비스에서 더 관련성 높은 추천검색어와 기능이 제공됩니다.</translation>
 <translation id="985602178874221306">The Chromium Authors</translation>
 <translation id="8628626585870903697">Chromium은 인쇄 미리보기에 필요한 PDF 뷰어가 포함되어 있지 않습니다.</translation>
 <translation id="7138853919861947730">Chromium은 사용자의 탐색 환경을 개선하기 위해 웹 서비스를 사용할 수 있습니다.</translation>
@@ -108,6 +107,7 @@
 <translation id="3258596308407688501">Chromium에서 데이터 디렉토리를 읽고 쓸 수 없습니다.
 
 <ph name="USER_DATA_DIRECTORY"/></translation>
+<translation id="1869480248812203386">Google에 발생할 수 있는 보안 문제의 세부정보를 자동으로 보고하도록 설정하면 Chromium을 더 안전하고 편리하게 사용할 수 있습니다.</translation>
 <translation id="6970811910055250180">기기를 업데이트하는 중...</translation>
 <translation id="2485422356828889247">제거</translation>
 <translation id="85843667276690461">Chromium 사용에 대한 도움말</translation>
@@ -116,7 +116,6 @@
 <translation id="8493179195440786826">Chromium이 이전 버전임</translation>
 <translation id="911206726377975832">인터넷 사용정보도 삭제하시겠습니까?</translation>
 <translation id="95514773681268843">이 기기를 사용하기 전에 <ph name="DOMAIN"/>에서 다음 서비스 약관을 읽고 동의해야 합니다. 이 약관은 Chromium OS 약관을 확장, 수정 또는 제한하지 않습니다.</translation>
-<translation id="5603085937604338780">chromium</translation>
 <translation id="1699664235656412242">Chromium 창(Windows 8 모드의 창 포함)을 모두 닫고 다시 시도해 보세요.</translation>
 <translation id="6734080038664603509">Chromium 업데이트</translation>
 <translation id="8862326446509486874">시스템 수준의 설치 권한이 없습니다. 관리자 권한으로 설치 프로그램을 다시 실행해 보세요.</translation>
@@ -223,6 +222,7 @@
 <translation id="9013262824292842194">Chromium은 Windows Vista 또는 Windows XP 서비스 팩 2 이상이 설치된 컴퓨터에서 사용하실 수 있습니다.</translation>
 <translation id="1967743265616885482">같은 이름의 모듈이 Chromium과 충돌하는 것으로 알려져 있습니다.</translation>
 <translation id="8704119203788522458">나만의 Chromium</translation>
+<translation id="8269379391216269538">Chromium 개선에 참여</translation>
 <translation id="4224199872375172890">Chromium이 최신 버전입니다.</translation>
 <translation id="374481098568514319">컴퓨터에 이미 최신 버전의 Chromium 구성 요소가 있습니다. 좀더 최신 버전의 설치 프로그램을 사용하세요.</translation>
 <translation id="6240281849816458190">&lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;에 접속하려고 했지만 서버가 유효하지 않은 인증서를 제공했습니다. 인증서가 신뢰할 수 있는지 여부를 알 수 있는 정보가 없습니다. Chromium은 사용자가 &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;와(과) 통신하고 있으며 침입자가 아니라는 것을 확인할 수 없습니다. 컴퓨터 시계가 현재 <ph name="CURRENT_TIME"/>(으)로 설정되어 있습니다. 시간이 정확하지 않으면 시스템 시계를 수정한 뒤 이 페이지를 새로고침하세요.</translation>
