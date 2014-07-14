@@ -584,19 +584,19 @@ static PassRefPtrWillBeRawPtr<CSSValue> valueForReflection(const StyleReflection
     return CSSReflectValue::create(direction.release(), offset.release(), valueForNinePieceImage(reflection->mask(), style));
 }
 
-static PassRefPtrWillBeRawPtr<CSSValueList> createPositionListForLayer(CSSPropertyID propertyID, const FillLayer* layer, const RenderStyle& style)
+static PassRefPtrWillBeRawPtr<CSSValueList> createPositionListForLayer(CSSPropertyID propertyID, const FillLayer& layer, const RenderStyle& style)
 {
     RefPtrWillBeRawPtr<CSSValueList> positionList = CSSValueList::createSpaceSeparated();
-    if (layer->isBackgroundXOriginSet()) {
+    if (layer.isBackgroundXOriginSet()) {
         ASSERT_UNUSED(propertyID, propertyID == CSSPropertyBackgroundPosition || propertyID == CSSPropertyWebkitMaskPosition);
-        positionList->append(cssValuePool().createValue(layer->backgroundXOrigin()));
+        positionList->append(cssValuePool().createValue(layer.backgroundXOrigin()));
     }
-    positionList->append(zoomAdjustedPixelValueForLength(layer->xPosition(), style));
-    if (layer->isBackgroundYOriginSet()) {
+    positionList->append(zoomAdjustedPixelValueForLength(layer.xPosition(), style));
+    if (layer.isBackgroundYOriginSet()) {
         ASSERT(propertyID == CSSPropertyBackgroundPosition || propertyID == CSSPropertyWebkitMaskPosition);
-        positionList->append(cssValuePool().createValue(layer->backgroundYOrigin()));
+        positionList->append(cssValuePool().createValue(layer.backgroundYOrigin()));
     }
-    positionList->append(zoomAdjustedPixelValueForLength(layer->yPosition(), style));
+    positionList->append(zoomAdjustedPixelValueForLength(layer.yPosition(), style));
     return positionList.release();
 }
 
@@ -1617,19 +1617,17 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValu
             return m_allowVisitedStyle ? cssValuePool().createColorValue(style->visitedDependentColor(CSSPropertyBackgroundColor).rgb()) : currentColorOrValidColor(*style, style->backgroundColor());
         case CSSPropertyBackgroundImage:
         case CSSPropertyWebkitMaskImage: {
-            const FillLayer* layers = propertyID == CSSPropertyWebkitMaskImage ? style->maskLayers() : style->backgroundLayers();
-            if (!layers)
-                return cssValuePool().createIdentifierValue(CSSValueNone);
+            const FillLayer& layers = propertyID == CSSPropertyWebkitMaskImage ? style->maskLayers() : style->backgroundLayers();
 
-            if (!layers->next()) {
-                if (layers->image())
-                    return layers->image()->cssValue();
+            if (!layers.next()) {
+                if (layers.image())
+                    return layers.image()->cssValue();
 
                 return cssValuePool().createIdentifierValue(CSSValueNone);
             }
 
             RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createCommaSeparated();
-            for (const FillLayer* currLayer = layers; currLayer; currLayer = currLayer->next()) {
+            for (const FillLayer* currLayer = &layers; currLayer; currLayer = currLayer->next()) {
                 if (currLayer->image())
                     list->append(currLayer->image()->cssValue());
                 else
@@ -1640,62 +1638,59 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValu
         case CSSPropertyBackgroundSize:
         case CSSPropertyWebkitBackgroundSize:
         case CSSPropertyWebkitMaskSize: {
-            const FillLayer* layers = propertyID == CSSPropertyWebkitMaskSize ? style->maskLayers() : style->backgroundLayers();
-            if (!layers->next())
-                return valueForFillSize(layers->size(), *style);
+            const FillLayer& layers = propertyID == CSSPropertyWebkitMaskSize ? style->maskLayers() : style->backgroundLayers();
+            if (!layers.next())
+                return valueForFillSize(layers.size(), *style);
 
             RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createCommaSeparated();
-            for (const FillLayer* currLayer = layers; currLayer; currLayer = currLayer->next())
+            for (const FillLayer* currLayer = &layers; currLayer; currLayer = currLayer->next())
                 list->append(valueForFillSize(currLayer->size(), *style));
 
             return list.release();
         }
         case CSSPropertyBackgroundRepeat:
         case CSSPropertyWebkitMaskRepeat: {
-            const FillLayer* layers = propertyID == CSSPropertyWebkitMaskRepeat ? style->maskLayers() : style->backgroundLayers();
-            if (!layers->next())
-                return valueForFillRepeat(layers->repeatX(), layers->repeatY());
+            const FillLayer& layers = propertyID == CSSPropertyWebkitMaskRepeat ? style->maskLayers() : style->backgroundLayers();
+            if (!layers.next())
+                return valueForFillRepeat(layers.repeatX(), layers.repeatY());
 
             RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createCommaSeparated();
-            for (const FillLayer* currLayer = layers; currLayer; currLayer = currLayer->next())
+            for (const FillLayer* currLayer = &layers; currLayer; currLayer = currLayer->next())
                 list->append(valueForFillRepeat(currLayer->repeatX(), currLayer->repeatY()));
 
             return list.release();
         }
         case CSSPropertyMaskSourceType: {
-            const FillLayer* layers = style->maskLayers();
+            const FillLayer& layers = style->maskLayers();
 
-            if (!layers)
-                return cssValuePool().createIdentifierValue(CSSValueNone);
-
-            if (!layers->next())
-                return valueForFillSourceType(layers->maskSourceType());
+            if (!layers.next())
+                return valueForFillSourceType(layers.maskSourceType());
 
             RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createCommaSeparated();
-            for (const FillLayer* currLayer = layers; currLayer; currLayer = currLayer->next())
+            for (const FillLayer* currLayer = &layers; currLayer; currLayer = currLayer->next())
                 list->append(valueForFillSourceType(currLayer->maskSourceType()));
 
             return list.release();
         }
         case CSSPropertyWebkitBackgroundComposite:
         case CSSPropertyWebkitMaskComposite: {
-            const FillLayer* layers = propertyID == CSSPropertyWebkitMaskComposite ? style->maskLayers() : style->backgroundLayers();
-            if (!layers->next())
-                return cssValuePool().createValue(layers->composite());
+            const FillLayer& layers = propertyID == CSSPropertyWebkitMaskComposite ? style->maskLayers() : style->backgroundLayers();
+            if (!layers.next())
+                return cssValuePool().createValue(layers.composite());
 
             RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createCommaSeparated();
-            for (const FillLayer* currLayer = layers; currLayer; currLayer = currLayer->next())
+            for (const FillLayer* currLayer = &layers; currLayer; currLayer = currLayer->next())
                 list->append(cssValuePool().createValue(currLayer->composite()));
 
             return list.release();
         }
         case CSSPropertyBackgroundAttachment: {
-            const FillLayer* layers = style->backgroundLayers();
-            if (!layers->next())
-                return cssValuePool().createValue(layers->attachment());
+            const FillLayer& layers = style->backgroundLayers();
+            if (!layers.next())
+                return cssValuePool().createValue(layers.attachment());
 
             RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createCommaSeparated();
-            for (const FillLayer* currLayer = layers; currLayer; currLayer = currLayer->next())
+            for (const FillLayer* currLayer = &layers; currLayer; currLayer = currLayer->next())
                 list->append(cssValuePool().createValue(currLayer->attachment()));
 
             return list.release();
@@ -1706,15 +1701,15 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValu
         case CSSPropertyWebkitBackgroundOrigin:
         case CSSPropertyWebkitMaskClip:
         case CSSPropertyWebkitMaskOrigin: {
-            const FillLayer* layers = (propertyID == CSSPropertyWebkitMaskClip || propertyID == CSSPropertyWebkitMaskOrigin) ? style->maskLayers() : style->backgroundLayers();
+            const FillLayer& layers = (propertyID == CSSPropertyWebkitMaskClip || propertyID == CSSPropertyWebkitMaskOrigin) ? style->maskLayers() : style->backgroundLayers();
             bool isClip = propertyID == CSSPropertyBackgroundClip || propertyID == CSSPropertyWebkitBackgroundClip || propertyID == CSSPropertyWebkitMaskClip;
-            if (!layers->next()) {
-                EFillBox box = isClip ? layers->clip() : layers->origin();
+            if (!layers.next()) {
+                EFillBox box = isClip ? layers.clip() : layers.origin();
                 return cssValuePool().createValue(box);
             }
 
             RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createCommaSeparated();
-            for (const FillLayer* currLayer = layers; currLayer; currLayer = currLayer->next()) {
+            for (const FillLayer* currLayer = &layers; currLayer; currLayer = currLayer->next()) {
                 EFillBox box = isClip ? currLayer->clip() : currLayer->origin();
                 list->append(cssValuePool().createValue(box));
             }
@@ -1723,35 +1718,35 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValu
         }
         case CSSPropertyBackgroundPosition:
         case CSSPropertyWebkitMaskPosition: {
-            const FillLayer* layers = propertyID == CSSPropertyWebkitMaskPosition ? style->maskLayers() : style->backgroundLayers();
-            if (!layers->next())
+            const FillLayer& layers = propertyID == CSSPropertyWebkitMaskPosition ? style->maskLayers() : style->backgroundLayers();
+            if (!layers.next())
                 return createPositionListForLayer(propertyID, layers, *style);
 
             RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createCommaSeparated();
-            for (const FillLayer* currLayer = layers; currLayer; currLayer = currLayer->next())
-                list->append(createPositionListForLayer(propertyID, currLayer, *style));
+            for (const FillLayer* currLayer = &layers; currLayer; currLayer = currLayer->next())
+                list->append(createPositionListForLayer(propertyID, *currLayer, *style));
             return list.release();
         }
         case CSSPropertyBackgroundPositionX:
         case CSSPropertyWebkitMaskPositionX: {
-            const FillLayer* layers = propertyID == CSSPropertyWebkitMaskPositionX ? style->maskLayers() : style->backgroundLayers();
-            if (!layers->next())
-                return zoomAdjustedPixelValueForLength(layers->xPosition(), *style);
+            const FillLayer& layers = propertyID == CSSPropertyWebkitMaskPositionX ? style->maskLayers() : style->backgroundLayers();
+            if (!layers.next())
+                return zoomAdjustedPixelValueForLength(layers.xPosition(), *style);
 
             RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createCommaSeparated();
-            for (const FillLayer* currLayer = layers; currLayer; currLayer = currLayer->next())
+            for (const FillLayer* currLayer = &layers; currLayer; currLayer = currLayer->next())
                 list->append(zoomAdjustedPixelValueForLength(currLayer->xPosition(), *style));
 
             return list.release();
         }
         case CSSPropertyBackgroundPositionY:
         case CSSPropertyWebkitMaskPositionY: {
-            const FillLayer* layers = propertyID == CSSPropertyWebkitMaskPositionY ? style->maskLayers() : style->backgroundLayers();
-            if (!layers->next())
-                return zoomAdjustedPixelValueForLength(layers->yPosition(), *style);
+            const FillLayer& layers = propertyID == CSSPropertyWebkitMaskPositionY ? style->maskLayers() : style->backgroundLayers();
+            if (!layers.next())
+                return zoomAdjustedPixelValueForLength(layers.yPosition(), *style);
 
             RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createCommaSeparated();
-            for (const FillLayer* currLayer = layers; currLayer; currLayer = currLayer->next())
+            for (const FillLayer* currLayer = &layers; currLayer; currLayer = currLayer->next())
                 list->append(zoomAdjustedPixelValueForLength(currLayer->yPosition(), *style));
 
             return list.release();
@@ -2742,12 +2737,12 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValu
             return cssValuePool().createValue(style->blendMode());
 
         case CSSPropertyBackgroundBlendMode: {
-            const FillLayer* layers = style->backgroundLayers();
-            if (!layers->next())
-                return cssValuePool().createValue(layers->blendMode());
+            const FillLayer& layers = style->backgroundLayers();
+            if (!layers.next())
+                return cssValuePool().createValue(layers.blendMode());
 
             RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createCommaSeparated();
-            for (const FillLayer* currLayer = layers; currLayer; currLayer = currLayer->next())
+            for (const FillLayer* currLayer = &layers; currLayer; currLayer = currLayer->next())
                 list->append(cssValuePool().createValue(currLayer->blendMode()));
 
             return list.release();

@@ -651,8 +651,8 @@ public:
     const Length& backgroundYPosition() const { return m_background->background().yPosition(); }
     EFillSizeType backgroundSizeType() const { return m_background->background().sizeType(); }
     const LengthSize& backgroundSizeLength() const { return m_background->background().sizeLength(); }
-    FillLayer* accessBackgroundLayers() { return &(m_background.access()->m_background); }
-    const FillLayer* backgroundLayers() const { return &(m_background->background()); }
+    FillLayer& accessBackgroundLayers() { return m_background.access()->m_background; }
+    const FillLayer& backgroundLayers() const { return m_background->background(); }
 
     StyleImage* maskImage() const { return rareNonInheritedData->m_mask.image(); }
     EFillRepeat maskRepeatX() const { return static_cast<EFillRepeat>(rareNonInheritedData->m_mask.repeatX()); }
@@ -664,8 +664,8 @@ public:
     const Length& maskYPosition() const { return rareNonInheritedData->m_mask.yPosition(); }
     EFillSizeType maskSizeType() const { return rareNonInheritedData->m_mask.sizeType(); }
     const LengthSize& maskSizeLength() const { return rareNonInheritedData->m_mask.sizeLength(); }
-    FillLayer* accessMaskLayers() { return &(rareNonInheritedData.access()->m_mask); }
-    const FillLayer* maskLayers() const { return &(rareNonInheritedData->m_mask); }
+    FillLayer& accessMaskLayers() { return rareNonInheritedData.access()->m_mask; }
+    const FillLayer& maskLayers() const { return rareNonInheritedData->m_mask; }
 
     const NinePieceImage& maskBoxImage() const { return rareNonInheritedData->m_maskBoxImage; }
     StyleImage* maskBoxImageSource() const { return rareNonInheritedData->m_maskBoxImage.image(); }
@@ -1143,17 +1143,17 @@ public:
 
     void adjustBackgroundLayers()
     {
-        if (backgroundLayers()->next()) {
-            accessBackgroundLayers()->cullEmptyLayers();
-            accessBackgroundLayers()->fillUnsetProperties();
+        if (backgroundLayers().next()) {
+            accessBackgroundLayers().cullEmptyLayers();
+            accessBackgroundLayers().fillUnsetProperties();
         }
     }
 
     void adjustMaskLayers()
     {
-        if (maskLayers()->next()) {
-            accessMaskLayers()->cullEmptyLayers();
-            accessMaskLayers()->fillUnsetProperties();
+        if (maskLayers().next()) {
+            accessMaskLayers().cullEmptyLayers();
+            accessMaskLayers().fillUnsetProperties();
         }
     }
 

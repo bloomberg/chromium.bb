@@ -1103,7 +1103,7 @@ void RenderBox::paintRootBoxFillLayers(const PaintInfo& paintInfo)
 
     RenderObject* rootBackgroundRenderer = rendererForRootBackground();
 
-    const FillLayer* bgLayer = rootBackgroundRenderer->style()->backgroundLayers();
+    const FillLayer& bgLayer = rootBackgroundRenderer->style()->backgroundLayers();
     Color bgColor = rootBackgroundRenderer->resolveColor(CSSPropertyBackgroundColor);
 
     paintFillLayers(paintInfo, bgColor, bgLayer, view()->backgroundRect(this), BackgroundBleedNone, CompositeSourceOver, rootBackgroundRenderer);
@@ -1216,7 +1216,7 @@ bool RenderBox::getBackgroundPaintedExtent(LayoutRect& paintedExtent) const
         return true;
     }
 
-    if (!style()->backgroundLayers()->image() || style()->backgroundLayers()->next()) {
+    if (!style()->backgroundLayers().image() || style()->backgroundLayers().next()) {
         paintedExtent =  backgroundRect;
         return true;
     }
@@ -1250,7 +1250,7 @@ bool RenderBox::backgroundIsKnownToBeOpaqueInRect(const LayoutRect& localRect) c
     if (style()->hasBorderRadius())
         return false;
     // FIXME: The background color clip is defined by the last layer.
-    if (style()->backgroundLayers()->next())
+    if (style()->backgroundLayers().next())
         return false;
     LayoutRect backgroundRect;
     switch (style()->backgroundClip()) {
@@ -1344,19 +1344,19 @@ bool RenderBox::computeBackgroundIsKnownToBeObscured()
 
 bool RenderBox::backgroundHasOpaqueTopLayer() const
 {
-    const FillLayer* fillLayer = style()->backgroundLayers();
-    if (!fillLayer || fillLayer->clip() != BorderFillBox)
+    const FillLayer& fillLayer = style()->backgroundLayers();
+    if (fillLayer.clip() != BorderFillBox)
         return false;
 
     // Clipped with local scrolling
-    if (hasOverflowClip() && fillLayer->attachment() == LocalBackgroundAttachment)
+    if (hasOverflowClip() && fillLayer.attachment() == LocalBackgroundAttachment)
         return false;
 
-    if (fillLayer->hasOpaqueImage(this) && fillLayer->hasRepeatXY() && fillLayer->image()->canRender(*this, style()->effectiveZoom()))
+    if (fillLayer.hasOpaqueImage(this) && fillLayer.hasRepeatXY() && fillLayer.image()->canRender(*this, style()->effectiveZoom()))
         return true;
 
     // If there is only one layer and no image, check whether the background color is opaque
-    if (!fillLayer->next() && !fillLayer->hasImage()) {
+    if (!fillLayer.next() && !fillLayer.hasImage()) {
         Color bgColor = resolveColor(CSSPropertyBackgroundColor);
         if (bgColor.alpha() == 255)
             return true;
@@ -1403,14 +1403,13 @@ void RenderBox::paintMaskImages(const PaintInfo& paintInfo, const LayoutRect& pa
     if (!compositedMask || flattenCompositingLayers) {
         pushTransparencyLayer = true;
         StyleImage* maskBoxImage = style()->maskBoxImage().image();
-        const FillLayer* maskLayers = style()->maskLayers();
+        const FillLayer& maskLayers = style()->maskLayers();
 
         // Don't render a masked element until all the mask images have loaded, to prevent a flash of unmasked content.
         if (maskBoxImage)
             allMaskImagesLoaded &= maskBoxImage->isLoaded();
 
-        if (maskLayers)
-            allMaskImagesLoaded &= maskLayers->imagesAreLoaded();
+        allMaskImagesLoaded &= maskLayers.imagesAreLoaded();
 
         paintInfo.context->setCompositeOperation(CompositeDestinationIn);
         paintInfo.context->beginTransparencyLayer(1);
@@ -1426,11 +1425,11 @@ void RenderBox::paintMaskImages(const PaintInfo& paintInfo, const LayoutRect& pa
         paintInfo.context->endLayer();
 }
 
-void RenderBox::paintFillLayers(const PaintInfo& paintInfo, const Color& c, const FillLayer* fillLayer, const LayoutRect& rect,
+void RenderBox::paintFillLayers(const PaintInfo& paintInfo, const Color& c, const FillLayer& fillLayer, const LayoutRect& rect,
     BackgroundBleedAvoidance bleedAvoidance, CompositeOperator op, RenderObject* backgroundObject)
 {
     Vector<const FillLayer*, 8> layers;
-    const FillLayer* curLayer = fillLayer;
+    const FillLayer* curLayer = &fillLayer;
     bool shouldDrawBackgroundInSeparateBuffer = false;
     while (curLayer) {
         layers.append(curLayer);
@@ -1446,7 +1445,7 @@ void RenderBox::paintFillLayers(const PaintInfo& paintInfo, const Color& c, cons
             shouldDrawBackgroundInSeparateBuffer = true;
 
         // The clipOccludesNextLayers condition must be evaluated first to avoid short-circuiting.
-        if (curLayer->clipOccludesNextLayers(curLayer == fillLayer) && curLayer->hasOpaqueImage(this) && curLayer->image()->canRender(*this, style()->effectiveZoom()) && curLayer->hasRepeatXY() && curLayer->blendMode() == blink::WebBlendModeNormal && !boxShadowShouldBeAppliedToBackground(bleedAvoidance))
+        if (curLayer->clipOccludesNextLayers(curLayer == &fillLayer) && curLayer->hasOpaqueImage(this) && curLayer->image()->canRender(*this, style()->effectiveZoom()) && curLayer->hasRepeatXY() && curLayer->blendMode() == blink::WebBlendModeNormal && !boxShadowShouldBeAppliedToBackground(bleedAvoidance))
             break;
         curLayer = curLayer->next();
     }
@@ -1459,13 +1458,13 @@ void RenderBox::paintFillLayers(const PaintInfo& paintInfo, const Color& c, cons
 
     Vector<const FillLayer*>::const_reverse_iterator topLayer = layers.rend();
     for (Vector<const FillLayer*>::const_reverse_iterator it = layers.rbegin(); it != topLayer; ++it)
-        paintFillLayer(paintInfo, c, *it, rect, bleedAvoidance, op, backgroundObject);
+        paintFillLayer(paintInfo, c, **it, rect, bleedAvoidance, op, backgroundObject);
 
     if (shouldDrawBackgroundInSeparateBuffer)
         context->endLayer();
 }
 
-void RenderBox::paintFillLayer(const PaintInfo& paintInfo, const Color& c, const FillLayer* fillLayer, const LayoutRect& rect,
+void RenderBox::paintFillLayer(const PaintInfo& paintInfo, const Color& c, const FillLayer& fillLayer, const LayoutRect& rect,
     BackgroundBleedAvoidance bleedAvoidance, CompositeOperator op, RenderObject* backgroundObject)
 {
     paintFillLayerExtended(paintInfo, c, fillLayer, rect, bleedAvoidance, 0, LayoutSize(), op, backgroundObject);
@@ -1495,12 +1494,12 @@ void RenderBox::imageChanged(WrappedImagePtr image, const IntRect*)
         repaintLayerRectsForImage(image, style()->maskLayers(), false);
 }
 
-bool RenderBox::repaintLayerRectsForImage(WrappedImagePtr image, const FillLayer* layers, bool drawingBackground)
+bool RenderBox::repaintLayerRectsForImage(WrappedImagePtr image, const FillLayer& layers, bool drawingBackground)
 {
     LayoutRect rendererRect;
     RenderBox* layerRenderer = 0;
 
-    for (const FillLayer* curLayer = layers; curLayer; curLayer = curLayer->next()) {
+    for (const FillLayer* curLayer = &layers; curLayer; curLayer = curLayer->next()) {
         if (curLayer->image() && image == curLayer->image()->data() && curLayer->image()->canRender(*this, style()->effectiveZoom())) {
             // Now that we know this image is being used, compute the renderer and the rect if we haven't already.
             if (!layerRenderer) {
@@ -1529,7 +1528,7 @@ bool RenderBox::repaintLayerRectsForImage(WrappedImagePtr image, const FillLayer
             }
 
             BackgroundImageGeometry geometry;
-            layerRenderer->calculateBackgroundImageGeometry(0, curLayer, rendererRect, geometry);
+            layerRenderer->calculateBackgroundImageGeometry(0, *curLayer, rendererRect, geometry);
             if (geometry.hasNonLocalGeometry()) {
                 // Rather than incur the costs of computing the paintContainer for renderers with fixed backgrounds
                 // in order to get the right destRect, just repaint the entire renderer.

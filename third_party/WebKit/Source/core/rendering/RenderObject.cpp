@@ -904,14 +904,14 @@ bool RenderObject::mustInvalidateFillLayersPaintOnHeightChange(const FillLayer& 
 
 bool RenderObject::mustInvalidateBackgroundOrBorderPaintOnWidthChange() const
 {
-    if (hasMask() && mustInvalidateFillLayersPaintOnWidthChange(*style()->maskLayers()))
+    if (hasMask() && mustInvalidateFillLayersPaintOnWidthChange(style()->maskLayers()))
         return true;
 
     // If we don't have a background/border/mask, then nothing to do.
     if (!hasBoxDecorationBackground())
         return false;
 
-    if (mustInvalidateFillLayersPaintOnWidthChange(*style()->backgroundLayers()))
+    if (mustInvalidateFillLayersPaintOnWidthChange(style()->backgroundLayers()))
         return true;
 
     // Our fill layers are ok. Let's check border.
@@ -923,14 +923,14 @@ bool RenderObject::mustInvalidateBackgroundOrBorderPaintOnWidthChange() const
 
 bool RenderObject::mustInvalidateBackgroundOrBorderPaintOnHeightChange() const
 {
-    if (hasMask() && mustInvalidateFillLayersPaintOnHeightChange(*style()->maskLayers()))
+    if (hasMask() && mustInvalidateFillLayersPaintOnHeightChange(style()->maskLayers()))
         return true;
 
     // If we don't have a background/border/mask, then nothing to do.
     if (!hasBoxDecorationBackground())
         return false;
 
-    if (mustInvalidateFillLayersPaintOnHeightChange(*style()->backgroundLayers()))
+    if (mustInvalidateFillLayersPaintOnHeightChange(style()->backgroundLayers()))
         return true;
 
     // Our fill layers are ok.  Let's check border.
@@ -2019,13 +2019,13 @@ void RenderObject::setStyle(PassRefPtr<RenderStyle> style)
     RefPtr<RenderStyle> oldStyle = m_style.release();
     setStyleInternal(style);
 
-    updateFillImages(oldStyle ? oldStyle->backgroundLayers() : 0, m_style ? m_style->backgroundLayers() : 0);
-    updateFillImages(oldStyle ? oldStyle->maskLayers() : 0, m_style ? m_style->maskLayers() : 0);
+    updateFillImages(oldStyle ? &oldStyle->backgroundLayers() : 0, m_style->backgroundLayers());
+    updateFillImages(oldStyle ? &oldStyle->maskLayers() : 0, m_style->maskLayers());
 
-    updateImage(oldStyle ? oldStyle->borderImage().image() : 0, m_style ? m_style->borderImage().image() : 0);
-    updateImage(oldStyle ? oldStyle->maskBoxImage().image() : 0, m_style ? m_style->maskBoxImage().image() : 0);
+    updateImage(oldStyle ? oldStyle->borderImage().image() : 0, m_style->borderImage().image());
+    updateImage(oldStyle ? oldStyle->maskBoxImage().image() : 0, m_style->maskBoxImage().image());
 
-    updateShapeImage(oldStyle ? oldStyle->shapeOutside() : 0, m_style ? m_style->shapeOutside() : 0);
+    updateShapeImage(oldStyle ? oldStyle->shapeOutside() : 0, m_style->shapeOutside());
 
     bool doesNotNeedLayout = !m_parent || isText();
 
@@ -2253,14 +2253,14 @@ void RenderObject::propagateStyleToAnonymousChildren(bool blockChildrenOnly)
     }
 }
 
-void RenderObject::updateFillImages(const FillLayer* oldLayers, const FillLayer* newLayers)
+void RenderObject::updateFillImages(const FillLayer* oldLayers, const FillLayer& newLayers)
 {
     // Optimize the common case
-    if (oldLayers && !oldLayers->next() && newLayers && !newLayers->next() && (oldLayers->image() == newLayers->image()))
+    if (oldLayers && !oldLayers->next() && !newLayers.next() && (oldLayers->image() == newLayers.image()))
         return;
 
     // Go through the new layers and addClients first, to avoid removing all clients of an image.
-    for (const FillLayer* currNew = newLayers; currNew; currNew = currNew->next()) {
+    for (const FillLayer* currNew = &newLayers; currNew; currNew = currNew->next()) {
         if (currNew->image())
             currNew->image()->addClient(this);
     }
@@ -2817,12 +2817,12 @@ void RenderObject::postDestroy()
 {
     // It seems ugly that this is not in willBeDestroyed().
     if (m_style) {
-        for (const FillLayer* bgLayer = m_style->backgroundLayers(); bgLayer; bgLayer = bgLayer->next()) {
+        for (const FillLayer* bgLayer = &m_style->backgroundLayers(); bgLayer; bgLayer = bgLayer->next()) {
             if (StyleImage* backgroundImage = bgLayer->image())
                 backgroundImage->removeClient(this);
         }
 
-        for (const FillLayer* maskLayer = m_style->maskLayers(); maskLayer; maskLayer = maskLayer->next()) {
+        for (const FillLayer* maskLayer = &m_style->maskLayers(); maskLayer; maskLayer = maskLayer->next()) {
             if (StyleImage* maskImage = maskLayer->image())
                 maskImage->removeClient(this);
         }

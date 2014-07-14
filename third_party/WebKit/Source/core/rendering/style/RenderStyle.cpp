@@ -1012,14 +1012,14 @@ RoundedRect RenderStyle::getRoundedInnerBorderFor(const LayoutRect& borderRect,
     return roundedRect;
 }
 
-static bool allLayersAreFixed(const FillLayer* layer)
+static bool allLayersAreFixed(const FillLayer& layer)
 {
-    bool allFixed = true;
+    for (const FillLayer* currLayer = &layer; currLayer; currLayer = currLayer->next()) {
+        if (!currLayer->image() || currLayer->attachment() != FixedBackgroundAttachment)
+            return false;
+    }
 
-    for (const FillLayer* currLayer = layer; currLayer; currLayer = currLayer->next())
-        allFixed &= (currLayer->image() && currLayer->attachment() == FixedBackgroundAttachment);
-
-    return layer && allFixed;
+    return true;
 }
 
 bool RenderStyle::hasEntirelyFixedBackground() const

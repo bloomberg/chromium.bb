@@ -192,11 +192,10 @@ static void appendImageIfNotNull(Vector<ImageResource*>& imageResources, const S
     }
 }
 
-static void appendLayers(Vector<ImageResource*>& images, const FillLayer* styleLayer)
+static void appendLayers(Vector<ImageResource*>& images, const FillLayer& styleLayer)
 {
-    for (const FillLayer* layer = styleLayer; layer; layer = layer->next()) {
+    for (const FillLayer* layer = &styleLayer; layer; layer = layer->next())
         appendImageIfNotNull(images, layer->image());
-    }
 }
 
 static void appendImagesFromStyle(Vector<ImageResource*>& images, RenderStyle& blockStyle)

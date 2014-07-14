@@ -15,12 +15,10 @@ namespace WebCore {
 namespace {
 
 template <CSSPropertyID property>
-bool fillLayersEqual(const FillLayer* aLayer, const FillLayer* bLayer)
+bool fillLayersEqual(const FillLayer& aLayers, const FillLayer& bLayers)
 {
-    if (aLayer == bLayer)
-        return true;
-    if (!aLayer || !bLayer)
-        return false;
+    const FillLayer* aLayer = &aLayers;
+    const FillLayer* bLayer = &bLayers;
     while (aLayer && bLayer) {
         switch (property) {
         case CSSPropertyBackgroundPositionX:

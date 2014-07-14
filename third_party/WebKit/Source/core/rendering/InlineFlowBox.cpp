@@ -1155,11 +1155,10 @@ void InlineFlowBox::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset, 
     }
 }
 
-void InlineFlowBox::paintFillLayers(const PaintInfo& paintInfo, const Color& c, const FillLayer* fillLayer, const LayoutRect& rect, CompositeOperator op)
+void InlineFlowBox::paintFillLayers(const PaintInfo& paintInfo, const Color& c, const FillLayer& fillLayer, const LayoutRect& rect, CompositeOperator op)
 {
-    if (!fillLayer)
-        return;
-    paintFillLayers(paintInfo, c, fillLayer->next(), rect, op);
+    if (fillLayer.next())
+        paintFillLayers(paintInfo, c, *fillLayer.next(), rect, op);
     paintFillLayer(paintInfo, c, fillLayer, rect, op);
 }
 
@@ -1172,9 +1171,9 @@ bool InlineFlowBox::boxShadowCanBeAppliedToBackground(const FillLayer& lastBackg
     return (!hasFillImage && !renderer().style()->hasBorderRadius()) || (!prevLineBox() && !nextLineBox()) || !parent();
 }
 
-void InlineFlowBox::paintFillLayer(const PaintInfo& paintInfo, const Color& c, const FillLayer* fillLayer, const LayoutRect& rect, CompositeOperator op)
+void InlineFlowBox::paintFillLayer(const PaintInfo& paintInfo, const Color& c, const FillLayer& fillLayer, const LayoutRect& rect, CompositeOperator op)
 {
-    StyleImage* img = fillLayer->image();
+    StyleImage* img = fillLayer.image();
     bool hasFillImage = img && img->canRender(renderer(), renderer().style()->effectiveZoom());
     if ((!hasFillImage && !renderer().style()->hasBorderRadius()) || (!prevLineBox() && !nextLineBox()) || !parent()) {
         boxModelObject()->paintFillLayerExtended(paintInfo, c, fillLayer, rect, BackgroundBleedNone, this, rect.size(), op);
@@ -1375,7 +1374,7 @@ void InlineFlowBox::paintMask(PaintInfo& paintInfo, const LayoutPoint& paintOffs
     bool flattenCompositingLayers = renderer().view()->frameView() && renderer().view()->frameView()->paintBehavior() & PaintBehaviorFlattenCompositingLayers;
     CompositeOperator compositeOp = CompositeSourceOver;
     if (!compositedMask || flattenCompositingLayers) {
-        if ((maskBoxImage && renderer().style()->maskLayers()->hasImage()) || renderer().style()->maskLayers()->next())
+        if ((maskBoxImage && renderer().style()->maskLayers().hasImage()) || renderer().style()->maskLayers().next())
             pushTransparencyLayer = true;
 
         compositeOp = CompositeDestinationIn;

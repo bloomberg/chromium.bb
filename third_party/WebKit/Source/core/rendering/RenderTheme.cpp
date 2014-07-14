@@ -557,7 +557,7 @@ static bool isBackgroundOrBorderStyled(const RenderStyle& style, const CachedUAS
 {
     // Code below excludes the background-repeat from comparison by resetting it
     FillLayer backgroundCopy = uaStyle.backgroundLayers;
-    FillLayer backgroundLayersCopy = *style.backgroundLayers();
+    FillLayer backgroundLayersCopy = style.backgroundLayers();
     backgroundCopy.setRepeatX(NoRepeatFill);
     backgroundCopy.setRepeatY(NoRepeatFill);
     backgroundLayersCopy.setRepeatX(NoRepeatFill);

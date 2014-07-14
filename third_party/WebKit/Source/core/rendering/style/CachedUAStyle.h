@@ -45,13 +45,11 @@ public:
 private:
     explicit CachedUAStyle(const RenderStyle* style)
         : hasAppearance(true)
-        , backgroundLayers(BackgroundFillLayer)
-        , backgroundColor(StyleColor::currentColor())
+        , border(style->border())
+        , backgroundLayers(style->backgroundLayers())
+        , backgroundColor(style->backgroundColor())
     {
         ASSERT(style->hasAppearance());
-        border = style->border();
-        backgroundLayers = *style->backgroundLayers();
-        backgroundColor = style->backgroundColor();
     }
 };
 

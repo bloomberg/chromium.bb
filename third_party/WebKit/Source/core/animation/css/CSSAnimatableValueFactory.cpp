@@ -184,11 +184,10 @@ inline static PassRefPtrWillBeRawPtr<AnimatableValue> createFromBackgroundPositi
 }
 
 template<CSSPropertyID property>
-inline static PassRefPtrWillBeRawPtr<AnimatableValue> createFromFillLayers(const FillLayer* fillLayer, const RenderStyle& style)
+inline static PassRefPtrWillBeRawPtr<AnimatableValue> createFromFillLayers(const FillLayer& fillLayers, const RenderStyle& style)
 {
-    ASSERT(fillLayer);
     WillBeHeapVector<RefPtrWillBeMember<AnimatableValue> > values;
-    while (fillLayer) {
+    for (const FillLayer* fillLayer = &fillLayers; fillLayer; fillLayer = fillLayer->next()) {
         if (property == CSSPropertyBackgroundImage || property == CSSPropertyWebkitMaskImage) {
             if (!fillLayer->isImageSet())
                 break;
@@ -208,7 +207,6 @@ inline static PassRefPtrWillBeRawPtr<AnimatableValue> createFromFillLayers(const
         } else {
             ASSERT_NOT_REACHED();
         }
-        fillLayer = fillLayer->next();
     }
     return AnimatableRepeatable::create(values);
 }
