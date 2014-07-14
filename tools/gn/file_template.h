@@ -129,8 +129,9 @@ class FileTemplate {
   static const char* GetNinjaVariableNameForType(Subrange::Type type);
 
   // Extracts the given type of substitution from the given source file.
-  // If output_style is RELATIVE, relative_to indicates the directory that the
-  // relative directories should be relative to, otherwise it is ignored.
+  // If output_style is OUTPUT_RELATIVE, relative_to indicates the directory
+  // that the relative directories should be relative to, otherwise it is
+  // ignored.
   static std::string GetSubstitution(const Settings* settings,
                                      const SourceFile& source,
                                      Subrange::Type type,

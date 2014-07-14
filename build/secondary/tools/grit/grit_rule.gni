@@ -187,9 +187,12 @@ template("grit") {
     grit_flags,
     "list lines")
 
-  # The inputs are relative to the current (build) directory, rebase to
-  # the current one.
-  grit_outputs = rebase_path(grit_outputs_build_rel, ".", root_build_dir)
+  # The names returned by grit are relative to the current (build) directory,
+  # but references to files in this template are expected to be relative to the
+  # invoking BUILD.gn file's directory. Make it absolute so there's no
+  # ambiguity.
+  grit_outputs = get_path_info(
+      rebase_path(grit_outputs_build_rel, ".", root_build_dir), "abspath")
 
   # The config and the action below get this visibility son only the generated
   # source set can depend on them. The variable "target_name" will get

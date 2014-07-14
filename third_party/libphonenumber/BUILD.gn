@@ -9,14 +9,13 @@ proto_library("proto") {
     "src/resources/phonemetadata.proto",
     "src/resources/phonenumber.proto",
   ]
-  proto_in_dir = "src/resources"
   proto_out_dir = "third_party/libphonenumber/phonenumbers"
 }
 
 config("libphonenumber_config") {
   include_dirs = [
     "src",
-    "$root_gen_dir/protoc_out/third_party/libphonenumber",
+    "$root_gen_dir/third_party/libphonenumber",
   ]
   defines = [ "I18N_PHONENUMBERS_USE_ICU_REGEXP=1" ]
   if (!is_android) {

@@ -163,10 +163,10 @@ void TargetGenerator::FillPublic() {
 void TargetGenerator::FillInputs() {
   const Value* value = scope_->GetValue(variables::kInputs, true);
   if (!value) {
-    // Older versions used "inputs". Allow use of this variable until
+    // Older versions used "source_prereqs". Allow use of this variable until
     // all callers are updated.
     // TODO(brettw) remove this eventually.
-    value = scope_->GetValue("inputs", true);
+    value = scope_->GetValue("source_prereqs", true);
 
     if (!value)
       return;

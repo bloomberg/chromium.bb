@@ -70,7 +70,6 @@ proto_library("risk_proto") {
   sources = [
     "risk/proto/fingerprint.proto",
   ]
-  proto_in_dir = "risk/proto"
   proto_out_dir = "components/autofill/content/browser/risk/proto"
 }
 

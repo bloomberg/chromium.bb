@@ -340,7 +340,7 @@ bool EnsureStringIsInOutputDir(const SourceDir& dir,
   // This check will be wrong for all proper prefixes "e.g. "/output" will
   // match "/out" but we don't really care since this is just a sanity check.
   const std::string& dir_str = dir.value();
-  if (str.compare(0, dir_str.length(), dir_str, 0, dir_str.length()) == 0)
+  if (str.compare(0, dir_str.length(), dir_str) == 0)
     return true;  // Output directory is hardcoded.
 
   if (allow_templates) {

@@ -6,16 +6,15 @@
 #
 # Protobuf parameters:
 #
-#   proto_in_dir (optional)
-#       The path to the directory containing the .proto files. If left out, it
-#       defaults to '.'.
-#
 #   proto_out_dir (optional)
-#       Specifies the path suffix that output files are generated under.
-#       Targets that gyp-depend on my_proto_lib will be able to include the
+#       Specifies the path suffix that output files are generated under. This
+#       path will be appended to the root_gen_dir.
+#
+#       Targets that depend on the proto target will be able to include the
 #       resulting proto headers with an include like:
 #         #include "dir/for/my_proto_lib/foo.pb.h"
-#       If undefined, this defaults to matching the input directory.
+#       If undefined, this defaults to matching the input directory for each
+#       .proto file (you should almost always use the default mode).
 #
 #   cc_generator_options (optional)
 #       List of extra flags passed to the protocol compiler.  If you need to
@@ -62,22 +61,25 @@ template("proto_library") {
 
     sources = invoker.sources
 
-    # TODO(brettw) it would be better if this used the target gen dir.
+    # Compute the output directory, both relative to the source root (for
+    # declaring "outputs") and relative to the build dir (for passing to the
+    # script).
     if (defined(invoker.proto_out_dir)) {
-      proto_out_dir = invoker.proto_out_dir
+      # Put the results in the specified dir in the gen tree.
+      out_dir = "$root_gen_dir/" + invoker.proto_out_dir
+      rel_out_dir = rebase_path(out_dir, root_build_dir)
     } else {
-      # This computes the relative path inside the target_gen_dir that
-      # we'd put the files in, which maps to the current directory path.
-      # We'll insert "protoc_out" at the beginning for compatibility with GYP.
-      proto_out_dir = rebase_path(target_gen_dir, root_gen_dir)
+      # Use the gen directory corresponding to the source file. This expansion
+      # will be done differently in the outputs and the args, so we don't need
+      # to worry about rebasing as above.
+      out_dir = "{{source_gen_dir}}"
+      rel_out_dir = "{{source_gen_dir}}"
     }
-    cc_dir = "$root_gen_dir/protoc_out/$proto_out_dir"
-    py_dir = "$root_gen_dir/pyproto/$proto_out_dir"
 
     outputs = [
-      "$py_dir/{{source_name_part}}_pb2.py",
-      "$cc_dir/{{source_name_part}}.pb.cc",
-      "$cc_dir/{{source_name_part}}.pb.h",
+      "$out_dir/{{source_name_part}}_pb2.py",
+      "$out_dir/{{source_name_part}}.pb.cc",
+      "$out_dir/{{source_name_part}}.pb.h",
     ]
 
     args = []
@@ -86,19 +88,8 @@ template("proto_library") {
     }
 
     args += [
-      "--protobuf",
-      rebase_path("$cc_dir/{{source_name_part}}.pb.h", root_build_dir),
-    ]
-
-    if (defined(invoker.proto_in_dir)) {
-      proto_in_dir = invoker.proto_in_dir
-    } else {
-      # Extract the current source dir.
-      proto_in_dir = get_label_info(":$target_name", "dir")
-    }
-    args += [
-      "--proto-in-dir",
-      rebase_path(proto_in_dir, root_build_dir),
+      "--protobuf", "$rel_out_dir/{{source_name_part}}.pb.h",
+      "--proto-in-dir", "{{source_dir}}",
       "--proto-in-file", "{{source_file_part}}",
       # TODO(brettw) support system protobuf compiler.
       "--use-system-protobuf=0",
@@ -109,7 +100,7 @@ template("proto_library") {
       "--", 
       # Prepend with "./" so this will never pick up the system one (normally
       # when not cross-compiling, protoc's output directory will be the same
-      # as the build dir, so the relative location will be empty.
+      # as the build dir, so the relative location will be empty).
       "./" + rebase_path(get_label_info(protoc_label, "root_out_dir") +
              "/protoc", root_build_dir),
     ]
@@ -123,8 +114,9 @@ template("proto_library") {
       cc_generator_options = ""
     }
     args += [
-      "--cpp_out", cc_generator_options + rebase_path(cc_dir, root_build_dir),
-      "--python_out", rebase_path(py_dir, root_build_dir),
+      # cc_generator_options is supposed to end in a colon if it's nonempty.
+      "--cpp_out", "$cc_generator_options$rel_out_dir",
+      "--python_out", rel_out_dir,
     ]
 
     deps = [ protoc_label ]

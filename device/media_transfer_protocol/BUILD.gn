@@ -7,14 +7,12 @@ import("//third_party/protobuf/proto_library.gni")
 # GYP version: device/media_transfer_protocol/media_transfer_protocol.gyp:mtp_file_entry_proto
 proto_library("mtp_file_entry_proto") {
   sources = [ "//third_party/cros_system_api/dbus/mtp_file_entry.proto" ]
-  proto_in_dir = "//third_party/cros_system_api/dbus"
   proto_out_dir = "device/media_transfer_protocol"
 }
 
 # GYP version: device/media_transfer_protocol/media_transfer_protocol.gyp:mtp_storage_info_proto
 proto_library("mtp_storage_info_proto") {
   sources = [ "//third_party/cros_system_api/dbus/mtp_storage_info.proto" ]
-  proto_in_dir = "//third_party/cros_system_api/dbus"
   proto_out_dir = "device/media_transfer_protocol"
 }
 
