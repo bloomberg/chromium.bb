@@ -120,6 +120,16 @@ class StreamDelegateWithBody : public StreamDelegateBase {
   scoped_refptr<StringIOBuffer> buf_;
 };
 
+// Test delegate that closes stream in OnResponseHeadersUpdated().
+class StreamDelegateCloseOnHeaders : public StreamDelegateBase {
+ public:
+  StreamDelegateCloseOnHeaders(const base::WeakPtr<SpdyStream>& stream);
+  virtual ~StreamDelegateCloseOnHeaders();
+
+  virtual SpdyResponseHeadersStatus OnResponseHeadersUpdated(
+      const SpdyHeaderBlock& response_headers) OVERRIDE;
+};
+
 } // namespace test
 
 } // namespace net

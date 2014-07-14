@@ -141,6 +141,21 @@ void StreamDelegateWithBody::OnRequestHeadersSent() {
   stream()->SendData(buf_.get(), buf_->size(), NO_MORE_DATA_TO_SEND);
 }
 
+StreamDelegateCloseOnHeaders::StreamDelegateCloseOnHeaders(
+    const base::WeakPtr<SpdyStream>& stream)
+    : StreamDelegateBase(stream) {
+}
+
+StreamDelegateCloseOnHeaders::~StreamDelegateCloseOnHeaders() {
+}
+
+SpdyResponseHeadersStatus
+StreamDelegateCloseOnHeaders::OnResponseHeadersUpdated(
+    const SpdyHeaderBlock& response_headers) {
+  stream()->Cancel();
+  return RESPONSE_HEADERS_ARE_COMPLETE;
+}
+
 } // namespace test
 
 } // namespace net

@@ -427,9 +427,14 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   // available for testing and diagnostics.
   size_t num_active_streams() const { return active_streams_.size(); }
   size_t num_unclaimed_pushed_streams() const {
-      return unclaimed_pushed_streams_.size();
+    return unclaimed_pushed_streams_.size();
   }
   size_t num_created_streams() const { return created_streams_.size(); }
+
+  size_t num_pushed_streams() const { return num_pushed_streams_; }
+  size_t num_active_pushed_streams() const {
+    return num_active_pushed_streams_;
+  }
 
   size_t pending_create_stream_queue_size(RequestPriority priority) const {
     DCHECK_GE(priority, MINIMUM_PRIORITY);
@@ -526,6 +531,11 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   FRIEND_TEST_ALL_PREFIXES(SpdySessionTest, StreamIdSpaceExhausted);
   FRIEND_TEST_ALL_PREFIXES(SpdySessionTest, UnstallRacesWithStreamCreation);
   FRIEND_TEST_ALL_PREFIXES(SpdySessionTest, GoAwayOnSessionFlowControlError);
+  FRIEND_TEST_ALL_PREFIXES(SpdySessionTest,
+                           RejectPushedStreamExceedingConcurrencyLimit);
+  FRIEND_TEST_ALL_PREFIXES(SpdySessionTest, IgnoreReservedRemoteStreamsCount);
+  FRIEND_TEST_ALL_PREFIXES(SpdySessionTest,
+                           CancelReservedStreamOnHeadersReceived);
 
   typedef std::deque<base::WeakPtr<SpdyStreamRequest> >
       PendingStreamRequestQueue;
@@ -919,6 +929,10 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
     hung_interval_ = duration;
   }
 
+  void set_max_concurrent_pushed_streams(size_t value) {
+    max_concurrent_pushed_streams_ = value;
+  }
+
   int64 pings_in_flight() const { return pings_in_flight_; }
 
   uint32 next_ping_id() const { return next_ping_id_; }
@@ -984,6 +998,16 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   // |created_streams_| owns all its SpdyStream objects.
   CreatedStreamSet created_streams_;
 
+  // Number of pushed streams. All active streams are stored in
+  // |active_streams_|, but it's better to know the number of push streams
+  // without traversing the whole collection.
+  size_t num_pushed_streams_;
+
+  // Number of active pushed streams in |active_streams_|, i.e. not in reserved
+  // remote state. Streams in reserved state are not counted towards any
+  // concurrency limits.
+  size_t num_active_pushed_streams_;
+
   // The write queue.
   SpdyWriteQueue write_queue_;
 
@@ -1022,6 +1046,7 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   // Limits
   size_t max_concurrent_streams_;  // 0 if no limit
   size_t max_concurrent_streams_limit_;
+  size_t max_concurrent_pushed_streams_;
 
   // Some statistics counters for the session.
   int streams_initiated_count_;
