@@ -50,8 +50,12 @@
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
+#include "core/html/HTMLDocument.h"
 #include "core/html/HTMLFormElement.h"
+#include "core/loader/DocumentThreadableLoader.h"
+#include "core/loader/DocumentThreadableLoaderClient.h"
 #include "core/loader/FrameLoadRequest.h"
+#include "core/loader/ThreadableLoader.h"
 #include "core/page/EventHandler.h"
 #include "core/page/Page.h"
 #include "core/rendering/HitTestResult.h"
@@ -64,6 +68,7 @@
 #include "platform/geometry/FloatRect.h"
 #include "platform/network/ResourceError.h"
 #include "platform/scroll/ScrollbarTheme.h"
+#include "platform/weborigin/SchemeRegistry.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebFloatRect.h"
 #include "public/platform/WebSelectionBound.h"
@@ -5862,6 +5867,51 @@ TEST_F(WebFrameSwapTest, SwapLastChild)
     // TestWebFrameClient.
     reset();
     remoteFrame->close();
+}
+
+class MockDocumentThreadableLoaderClient : public WebCore::DocumentThreadableLoaderClient {
+public:
+    MockDocumentThreadableLoaderClient() : m_failed(false) { }
+    virtual void didFail(const WebCore::ResourceError&) OVERRIDE { m_failed = true;}
+
+    void reset() { m_failed = false; }
+    bool failed() { return m_failed; }
+
+    bool m_failed;
+};
+
+// FIXME: This would be better as a unittest on DocumentThreadableLoader but it
+// requires spin-up of a frame. It may be possible to remove that requirement
+// and convert it to a unittest.
+TEST_F(WebFrameTest, LoaderOriginAccess)
+{
+    FrameTestHelpers::WebViewHelper webViewHelper;
+    webViewHelper.initializeAndLoad("about:blank");
+
+    WebCore::SchemeRegistry::registerURLSchemeAsDisplayIsolated("chrome");
+
+    // Cross-origin request.
+    WebCore::KURL resourceUrl(WebCore::ParsedURLString, "chrome://test.pdf");
+    registerMockedChromeURLLoad("test.pdf");
+
+    RefPtr<WebCore::LocalFrame> frame = toLocalFrame(webViewHelper.webViewImpl()->page()->mainFrame());
+
+    MockDocumentThreadableLoaderClient client;
+    WebCore::ThreadableLoaderOptions options;
+
+    // First try to load the request with regular access. Should fail.
+    options.crossOriginRequestPolicy = WebCore::UseAccessControl;
+    WebCore::ResourceLoaderOptions resourceLoaderOptions;
+    WebCore::DocumentThreadableLoader::loadResourceSynchronously(
+        *frame->document(), WebCore::ResourceRequest(resourceUrl), client, options, resourceLoaderOptions);
+    EXPECT_TRUE(client.failed());
+
+    client.reset();
+    // Try to load the request with cross origin access. Should succeed.
+    options.crossOriginRequestPolicy = WebCore::AllowCrossOriginRequests;
+    WebCore::DocumentThreadableLoader::loadResourceSynchronously(
+        *frame->document(), WebCore::ResourceRequest(resourceUrl), client, options, resourceLoaderOptions);
+    EXPECT_FALSE(client.failed());
 }
 
 } // namespace

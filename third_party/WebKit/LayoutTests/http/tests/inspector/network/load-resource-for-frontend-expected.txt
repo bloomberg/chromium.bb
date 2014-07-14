@@ -1,4 +1,3 @@
-CONSOLE ERROR: Not allowed to load local resource: index.html
 CONSOLE WARNING: Setting 'XMLHttpRequest.withCredentials' for synchronous requests is deprecated.
 CONSOLE MESSAGE: line 6: XHR loaded: 1
 
@@ -34,9 +33,9 @@ Dumping request: http://localhost:8080/inspector/network/resources/resource.php?
 
 Running: testResourceFromFileScheme
 Loading resource from file:///var/www/index.html
-Failed: Couldn't create a loader
-Dumping request: http://localhost:8080/inspector/network/resources/resource.php?cached=1
-  statusCode: 304
+Failed: Loading resource for inspector failed
+Dumping request: file:///var/www/index.html
+  statusCode: 0
 
 Running: testResourceWithCookie
 Loading resource from http://127.0.0.1:8000/inspector/network/resources/print-cookie.php

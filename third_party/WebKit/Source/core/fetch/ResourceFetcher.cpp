@@ -486,7 +486,7 @@ bool ResourceFetcher::canRequest(Resource::Type type, const KURL& url, const Res
     if (!securityOrigin && document())
         securityOrigin = document()->securityOrigin();
 
-    if (securityOrigin && !securityOrigin->canDisplay(url)) {
+    if (originRestriction != FetchRequest::NoOriginRestriction && securityOrigin && !securityOrigin->canDisplay(url)) {
         if (!forPreload)
             context().reportLocalLoadFailed(url);
         WTF_LOG(ResourceLoading, "ResourceFetcher::requestResource URL was not allowed by SecurityOrigin::canDisplay");

@@ -426,6 +426,8 @@ void DocumentThreadableLoader::loadRequest(const ResourceRequest& request, Resou
             m_timeoutTimer.startOneShot(m_options.timeoutMilliseconds / 1000.0, FROM_HERE);
 
         FetchRequest newRequest(request, m_options.initiator, resourceLoaderOptions);
+        if (m_options.crossOriginRequestPolicy == AllowCrossOriginRequests)
+            newRequest.setOriginRestriction(FetchRequest::NoOriginRestriction);
         ASSERT(!resource());
         if (request.requestContext() == blink::WebURLRequest::RequestContextVideo || request.requestContext() == blink::WebURLRequest::RequestContextAudio)
             setResource(m_document.fetcher()->fetchMedia(newRequest));
@@ -439,6 +441,8 @@ void DocumentThreadableLoader::loadRequest(const ResourceRequest& request, Resou
     }
 
     FetchRequest fetchRequest(request, m_options.initiator, resourceLoaderOptions);
+    if (m_options.crossOriginRequestPolicy == AllowCrossOriginRequests)
+        fetchRequest.setOriginRestriction(FetchRequest::NoOriginRestriction);
     ResourcePtr<Resource> resource = m_document.fetcher()->fetchSynchronously(fetchRequest);
     ResourceResponse response = resource ? resource->response() : ResourceResponse();
     unsigned long identifier = resource ? resource->identifier() : std::numeric_limits<unsigned long>::max();
