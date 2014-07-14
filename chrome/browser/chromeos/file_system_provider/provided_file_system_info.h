@@ -19,6 +19,7 @@ class ProvidedFileSystemInfo {
   ProvidedFileSystemInfo(const std::string& extension_id,
                          const std::string& file_system_id,
                          const std::string& display_name,
+                         const bool writable,
                          const base::FilePath& mount_path);
 
   ~ProvidedFileSystemInfo();
@@ -26,6 +27,7 @@ class ProvidedFileSystemInfo {
   const std::string& extension_id() const { return extension_id_; }
   const std::string& file_system_id() const { return file_system_id_; }
   const std::string& display_name() const { return display_name_; }
+  bool writable() const { return writable_; }
   const base::FilePath& mount_path() const { return mount_path_; }
 
  private:
@@ -37,6 +39,9 @@ class ProvidedFileSystemInfo {
 
   // Name of the file system, can be rendered in the UI.
   std::string display_name_;
+
+  // Whether the file system is writable or just read-only.
+  bool writable_;
 
   // Mount path of the underlying file system.
   base::FilePath mount_path_;

@@ -39,6 +39,7 @@ namespace file_system_provider {
 // Key names for preferences.
 extern const char kPrefKeyFileSystemId[];
 extern const char kPrefKeyDisplayName[];
+extern const char kPrefKeyWritable[];
 
 class ProvidedFileSystemFactoryInterface;
 class ProvidedFileSystemInfo;
@@ -71,11 +72,14 @@ class Service : public KeyedService,
   void SetFileSystemFactoryForTesting(
       const FileSystemFactoryCallback& factory_callback);
 
-  // Mounts a file system provided by an extension with the |extension_id|.
-  // For success, returns true, otherwise false.
+  // Mounts a file system provided by an extension with the |extension_id|. If
+  // |writable| is set to true, then the file system is mounted in a R/W mode.
+  // Otherwise, only read-only operations are supported. For success, returns
+  // true, otherwise false.
   bool MountFileSystem(const std::string& extension_id,
                        const std::string& file_system_id,
-                       const std::string& display_name);
+                       const std::string& display_name,
+                       bool writable);
 
   // Unmounts a file system with the specified |file_system_id| for the
   // |extension_id|. For success returns true, otherwise false.
