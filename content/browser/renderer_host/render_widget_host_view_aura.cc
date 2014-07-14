@@ -233,12 +233,15 @@ void UpdateWebTouchEventAfterDispatch(blink::WebTouchEvent* event,
   if (point->state != blink::WebTouchPoint::StateReleased &&
       point->state != blink::WebTouchPoint::StateCancelled)
     return;
-  --event->touchesLength;
-  for (unsigned i = point - event->touches;
-       i < event->touchesLength;
-       ++i) {
+
+  const unsigned new_length = event->touchesLength - 1;
+  // Work around a gcc 4.9 bug. crbug.com/392872
+  if (new_length >= event->touchesLengthCap)
+    return;
+
+  for (unsigned i = point - event->touches; i < new_length; ++i)
     event->touches[i] = event->touches[i + 1];
-  }
+  event->touchesLength = new_length;
 }
 
 bool CanRendererHandleEvent(const ui::MouseEvent* event) {
