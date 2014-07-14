@@ -1,0 +1,34 @@
+This test checks that we correctly invalidate a shifted fixed positioned element overlapping another fixed positioned element.
+
+For this test, there should be only one green square below.
+
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "children": [
+        {
+          "children": [
+            {
+              "position": [8, 102]
+            },
+            {
+              "position": [8, 102],
+              "bounds": [800, 600],
+              "drawsContent": true,
+              "repaintRects": [
+                [142, 48, 100, 100],
+                [142, 48, 100, 100],
+                [0, 0, 100, 100]
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+
