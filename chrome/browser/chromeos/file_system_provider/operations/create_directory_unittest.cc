@@ -40,7 +40,6 @@ class FileSystemProviderOperationsCreateDirectoryTest : public testing::Test {
         ProvidedFileSystemInfo(kExtensionId,
                                kFileSystemId,
                                "" /* file_system_name */,
-                               true /* writable */,
                                base::FilePath() /* mount_path */);
   }
 

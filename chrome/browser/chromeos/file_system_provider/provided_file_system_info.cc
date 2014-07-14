@@ -13,12 +13,10 @@ ProvidedFileSystemInfo::ProvidedFileSystemInfo(
     const std::string& extension_id,
     const std::string& file_system_id,
     const std::string& display_name,
-    bool writable,
     const base::FilePath& mount_path)
     : extension_id_(extension_id),
       file_system_id_(file_system_id),
       display_name_(display_name),
-      writable_(writable),
       mount_path_(mount_path) {
 }
 

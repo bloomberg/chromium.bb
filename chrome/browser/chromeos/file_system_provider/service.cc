@@ -39,7 +39,6 @@ ProvidedFileSystemInterface* CreateProvidedFileSystem(
 
 const char kPrefKeyFileSystemId[] = "file-system-id";
 const char kPrefKeyDisplayName[] = "display-name";
-const char kPrefKeyWritable[] = "writable";
 
 void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterDictionaryPref(
@@ -102,8 +101,7 @@ void Service::SetFileSystemFactoryForTesting(
 
 bool Service::MountFileSystem(const std::string& extension_id,
                               const std::string& file_system_id,
-                              const std::string& display_name,
-                              bool writable) {
+                              const std::string& display_name) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   // If already exists a file system provided by the same extension with this
@@ -151,12 +149,11 @@ bool Service::MountFileSystem(const std::string& extension_id,
   // Store the file system descriptor. Use the mount point name as the file
   // system provider file system id.
   // Examples:
-  //   file_system_id = hello_world
-  //   mount_point_name =  b33f1337-hello_world-5aa5
-  //   writable = false
-  //   mount_path = /provided/b33f1337-hello_world-5aa5
+  //   file_system_id = 41
+  //   mount_point_name =  b33f1337-41-5aa5
+  //   mount_path = /provided/b33f1337-41-5aa5
   ProvidedFileSystemInfo file_system_info(
-      extension_id, file_system_id, display_name, writable, mount_path);
+      extension_id, file_system_id, display_name, mount_path);
 
   ProvidedFileSystemInterface* file_system =
       file_system_factory_.Run(profile_, file_system_info);
@@ -334,8 +331,6 @@ void Service::RememberFileSystem(
                                              file_system_info.file_system_id());
   file_system->SetStringWithoutPathExpansion(kPrefKeyDisplayName,
                                              file_system_info.display_name());
-  file_system->SetBooleanWithoutPathExpansion(kPrefKeyWritable,
-                                              file_system_info.writable());
 
   PrefService* const pref_service = profile_->GetPrefs();
   DCHECK(pref_service);
@@ -402,23 +397,21 @@ void Service::RestoreFileSystems(const std::string& extension_id) {
 
     std::string file_system_id;
     std::string display_name;
-    bool writable;
+    if (file_system_value->GetAsDictionary(&file_system)) {
+      file_system->GetStringWithoutPathExpansion(kPrefKeyFileSystemId,
+                                                 &file_system_id);
+      file_system->GetStringWithoutPathExpansion(kPrefKeyDisplayName,
+                                                 &display_name);
+    }
 
-    if (!file_system_value->GetAsDictionary(&file_system) ||
-        !file_system->GetStringWithoutPathExpansion(kPrefKeyFileSystemId,
-                                                    &file_system_id) ||
-        !file_system->GetStringWithoutPathExpansion(kPrefKeyDisplayName,
-                                                    &display_name) ||
-        !file_system->GetBooleanWithoutPathExpansion(kPrefKeyWritable,
-                                                     &writable) ||
-        file_system_id.empty() || display_name.empty()) {
+    if (file_system_id.empty() || display_name.empty()) {
       LOG(ERROR)
           << "Malformed provided file system information in preferences.";
       continue;
     }
 
     const bool result =
-        MountFileSystem(extension_id, file_system_id, display_name, writable);
+        MountFileSystem(extension_id, file_system_id, display_name);
     if (!result) {
       LOG(ERROR) << "Failed to restore a provided file system from "
                  << "preferences: " << extension_id << ", " << file_system_id
