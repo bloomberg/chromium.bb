@@ -112,7 +112,6 @@ void SingleDesktopTestObserver::OnBrowserAdded(Browser* browser) {
 InProcessBrowserTest::InProcessBrowserTest()
     : browser_(NULL),
       exit_when_last_browser_closes_(true),
-      open_about_blank_on_browser_launch_(true),
       multi_desktop_test_(false)
 #if defined(OS_MACOSX)
       , autorelease_pool_(NULL)
@@ -249,7 +248,7 @@ void InProcessBrowserTest::PrepareTestCommandLine(CommandLine* command_line) {
   if (exit_when_last_browser_closes_)
     command_line->AppendSwitch(switches::kDisableZeroBrowsersOpenForTests);
 
-  if (open_about_blank_on_browser_launch_ && command_line->GetArgs().empty())
+  if (command_line->GetArgs().empty())
     command_line->AppendArg(url::kAboutBlankURL);
 }
 

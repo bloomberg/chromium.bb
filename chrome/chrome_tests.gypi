@@ -1025,7 +1025,6 @@
         'browser/chromeos/policy/policy_cert_verifier_browsertest.cc',
         'browser/chromeos/policy/power_policy_browsertest.cc',
         'browser/chromeos/policy/user_cloud_external_data_manager_browsertest.cc',
-        'browser/chromeos/policy/user_cloud_policy_manager_chromeos_browsertest.cc',
         'browser/chromeos/policy/variations_service_policy_browsertest.cc',
         'browser/chromeos/power/peripheral_battery_observer_browsertest.cc',
         'browser/chromeos/preferences_browsertest.cc',
