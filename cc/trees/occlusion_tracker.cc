@@ -567,6 +567,9 @@ gfx::Rect OcclusionTracker<LayerType>::UnoccludedContentRect(
   unoccluded_region_in_target_surface.Subtract(
       stack_.back().occlusion_from_outside_target);
 
+  if (unoccluded_region_in_target_surface.IsEmpty())
+    return gfx::Rect();
+
   gfx::Rect unoccluded_rect_in_target_surface =
       unoccluded_region_in_target_surface.bounds();
   gfx::Rect unoccluded_rect = MathUtil::ProjectEnclosingClippedRect(
@@ -608,6 +611,9 @@ gfx::Rect OcclusionTracker<LayerType>::UnoccludedContributingSurfaceContentRect(
       second_last.occlusion_from_inside_target);
   unoccluded_region_in_target_surface.Subtract(
       second_last.occlusion_from_outside_target);
+
+  if (unoccluded_region_in_target_surface.IsEmpty())
+    return gfx::Rect();
 
   gfx::Rect unoccluded_rect_in_target_surface =
       unoccluded_region_in_target_surface.bounds();
