@@ -55,6 +55,7 @@ protected:
 
 private:
     bool canUseSheet(bool enforceMIMEType, bool* hasValidMIMEType) const;
+    virtual void dispose() OVERRIDE;
     virtual void checkNotify() OVERRIDE;
 
     String m_decodedSheetText;

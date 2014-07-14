@@ -84,6 +84,7 @@ public:
 
     Resource(const ResourceRequest&, Type);
     virtual ~Resource();
+    virtual void dispose();
 
     virtual void load(ResourceFetcher*, const ResourceLoaderOptions&);
 

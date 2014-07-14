@@ -49,8 +49,15 @@ CSSStyleSheetResource::CSSStyleSheetResource(const ResourceRequest& resourceRequ
 
 CSSStyleSheetResource::~CSSStyleSheetResource()
 {
+    // Make sure dispose() was cllaed before destruction.
+    ASSERT(!m_parsedStyleSheetCache);
+}
+
+void CSSStyleSheetResource::dispose()
+{
     if (m_parsedStyleSheetCache)
         m_parsedStyleSheetCache->removedFromMemoryCache();
+    m_parsedStyleSheetCache.clear();
 }
 
 void CSSStyleSheetResource::didAddClient(ResourceClient* c)

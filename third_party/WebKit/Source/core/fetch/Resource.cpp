@@ -150,6 +150,10 @@ Resource::~Resource()
 #endif
 }
 
+void Resource::dispose()
+{
+}
+
 void Resource::failBeforeStarting()
 {
     WTF_LOG(ResourceLoading, "Cannot start loading '%s'", url().string().latin1().data());
@@ -551,6 +555,7 @@ bool Resource::deleteIfPossible()
 {
     if (canDelete() && !memoryCache()->contains(this)) {
         InspectorInstrumentation::willDestroyResource(this);
+        dispose();
         delete this;
         return true;
     }
