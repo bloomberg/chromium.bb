@@ -35,11 +35,11 @@
 
 namespace WebCore {
 
-void V8JavaScriptCallFrame::evaluateWithExceptionDetailsMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
+void V8JavaScriptCallFrame::evaluateMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     JavaScriptCallFrame* impl = V8JavaScriptCallFrame::toNative(info.Holder());
     String expression = toCoreStringWithUndefinedOrNullCheck(info[0]);
-    v8SetReturnValue(info, impl->evaluateWithExceptionDetails(expression));
+    v8SetReturnValue(info, impl->evaluate(expression));
 }
 
 void V8JavaScriptCallFrame::restartMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)

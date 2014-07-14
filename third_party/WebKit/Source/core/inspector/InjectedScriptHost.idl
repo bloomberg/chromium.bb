@@ -43,8 +43,7 @@
     [Custom] any functionDetails(any obj);
     [Custom] any[] getInternalProperties(any obj);
     [Custom] EventListener[] getEventListeners(EventTarget target);
-    [Custom] any eval(DOMString text);
-    [Custom] any evaluateWithExceptionDetails(DOMString text);
+    [Custom] any evaluate(DOMString text);
     [Custom] void debugFunction(any fn);
     [Custom] void undebugFunction(any fn);
     [Custom] void monitorFunction(any fn);
