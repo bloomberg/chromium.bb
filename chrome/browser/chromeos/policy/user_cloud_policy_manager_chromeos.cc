@@ -91,7 +91,7 @@ UserCloudPolicyManagerChromeOS::UserCloudPolicyManagerChromeOS(
       wait_for_policy_fetch_(wait_for_policy_fetch),
       policy_fetch_timeout_(false, false) {
   time_init_started_ = base::Time::Now();
-  if (wait_for_policy_fetch_) {
+  if (wait_for_policy_fetch_ && !initial_policy_fetch_timeout.is_max()) {
     policy_fetch_timeout_.Start(
         FROM_HERE,
         initial_policy_fetch_timeout,
