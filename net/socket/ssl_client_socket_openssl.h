@@ -147,9 +147,23 @@ class SSLClientSocketOpenSSL : public SSLClientSocket {
   int SelectNextProtoCallback(unsigned char** out, unsigned char* outlen,
                               const unsigned char* in, unsigned int inlen);
 
+  // Called during an operation on |transport_bio_|'s peer. Checks saved
+  // transport error state and, if appropriate, returns an error through
+  // OpenSSL's error system.
+  long MaybeReplayTransportError(BIO *bio,
+                                 int cmd,
+                                 const char *argp, int argi, long argl,
+                                 long retvalue);
+
+  // Callback from the SSL layer when an operation is performed on
+  // |transport_bio_|'s peer.
+  static long BIOCallback(BIO *bio,
+                          int cmd,
+                          const char *argp, int argi, long argl,
+                          long retvalue);
+
   bool transport_send_busy_;
   bool transport_recv_busy_;
-  bool transport_recv_eof_;
 
   scoped_refptr<DrainableIOBuffer> send_buffer_;
   scoped_refptr<IOBuffer> recv_buffer_;
@@ -175,6 +189,11 @@ class SSLClientSocketOpenSSL : public SSLClientSocket {
   // indicates there is no pending result, otherwise 0 indicates EOF and < 0
   // indicates an error.
   int pending_read_error_;
+
+  // Used by TransportReadComplete() to signify an error reading from the
+  // transport socket. A value of OK indicates the socket is still
+  // readable. EOFs are mapped to ERR_CONNECTION_CLOSED.
+  int transport_read_error_;
 
   // Used by TransportWriteComplete() and TransportReadComplete() to signify an
   // error writing to the transport socket. A value of OK indicates no error.

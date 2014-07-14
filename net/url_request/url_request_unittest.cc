@@ -7122,8 +7122,8 @@ TEST_F(HTTPSFallbackTest, SSLv3FallbackClosed) {
 }
 
 // This test is disabled on Android because the remote test server doesn't cause
-// a TCP reset. It also does not pass on OpenSSL. https://crbug.com/372849
-#if !defined(OS_ANDROID) && !defined(USE_OPENSSL)
+// a TCP reset.
+#if !defined(OS_ANDROID)
 // Tests that a reset connection does not fallback down to SSL3.
 TEST_F(HTTPSFallbackTest, SSLv3NoFallbackReset) {
   SpawnedTestServer::SSLOptions ssl_options(
@@ -7136,7 +7136,7 @@ TEST_F(HTTPSFallbackTest, SSLv3NoFallbackReset) {
   ASSERT_NO_FATAL_FAILURE(DoFallbackTest(ssl_options));
   ExpectFailure(ERR_CONNECTION_RESET);
 }
-#endif  // !OS_ANDROID && !USE_OPENSSL
+#endif  // !OS_ANDROID
 
 class HTTPSSessionTest : public testing::Test {
  public:

@@ -346,9 +346,9 @@ SSLClientSocketOpenSSL::SSLClientSocketOpenSSL(
     const SSLClientSocketContext& context)
     : transport_send_busy_(false),
       transport_recv_busy_(false),
-      transport_recv_eof_(false),
       weak_factory_(this),
       pending_read_error_(kNoPendingReadResult),
+      transport_read_error_(OK),
       transport_write_error_(OK),
       server_cert_chain_(new PeerCertificateChain(NULL)),
       completed_handshake_(false),
@@ -462,7 +462,6 @@ void SSLClientSocketOpenSSL::Disconnect() {
   transport_send_busy_ = false;
   send_buffer_ = NULL;
   transport_recv_busy_ = false;
-  transport_recv_eof_ = false;
   recv_buffer_ = NULL;
 
   user_connect_callback_.Reset();
@@ -474,6 +473,7 @@ void SSLClientSocketOpenSSL::Disconnect() {
   user_write_buf_len_    = 0;
 
   pending_read_error_ = kNoPendingReadResult;
+  transport_read_error_ = OK;
   transport_write_error_ = OK;
 
   server_cert_verify_result_.Reset();
@@ -676,6 +676,10 @@ int SSLClientSocketOpenSSL::Init() {
   DCHECK(ssl_bio);
   DCHECK(transport_bio_);
 
+  // Install a callback on OpenSSL's end to plumb transport errors through.
+  BIO_set_callback(ssl_bio, &SSLClientSocketOpenSSL::BIOCallback);
+  BIO_set_callback_arg(ssl_bio, reinterpret_cast<char*>(this));
+
   SSL_set_bio(ssl_, ssl_bio, ssl_bio);
 
   // OpenSSL defaults some options to on, others to off. To avoid ambiguity,
@@ -794,7 +798,7 @@ bool SSLClientSocketOpenSSL::DoTransportIO() {
     if (rv != ERR_IO_PENDING && rv != 0)
       network_moved = true;
   } while (rv > 0);
-  if (!transport_recv_eof_ && BufferRecv() != ERR_IO_PENDING)
+  if (transport_read_error_ == OK && BufferRecv() != ERR_IO_PENDING)
     network_moved = true;
   return network_moved;
 }
@@ -1278,20 +1282,9 @@ void SSLClientSocketOpenSSL::BufferRecvComplete(int result) {
 void SSLClientSocketOpenSSL::TransportWriteComplete(int result) {
   DCHECK(ERR_IO_PENDING != result);
   if (result < 0) {
-    // Got a socket write error; close the BIO to indicate this upward.
-    //
-    // TODO(davidben): The value of |result| gets lost. Feed the error back into
-    // the BIO so it gets (re-)detected in OnSendComplete. Perhaps with
-    // BIO_set_callback.
-    DVLOG(1) << "TransportWriteComplete error " << result;
-    (void)BIO_shutdown_wr(SSL_get_wbio(ssl_));
-
-    // Match the fix for http://crbug.com/249848 in NSS by erroring future reads
-    // from the socket after a write error.
-    //
-    // TODO(davidben): Avoid having read and write ends interact this way.
+    // Record the error. Save it to be reported in a future read or write on
+    // transport_bio_'s peer.
     transport_write_error_ = result;
-    (void)BIO_shutdown_wr(transport_bio_);
     send_buffer_ = NULL;
   } else {
     DCHECK(send_buffer_.get());
@@ -1304,19 +1297,15 @@ void SSLClientSocketOpenSSL::TransportWriteComplete(int result) {
 
 int SSLClientSocketOpenSSL::TransportReadComplete(int result) {
   DCHECK(ERR_IO_PENDING != result);
-  if (result <= 0) {
+  // If an EOF, canonicalize to ERR_CONNECTION_CLOSED here so MapOpenSSLError
+  // does not report success.
+  if (result == 0)
+    result = ERR_CONNECTION_CLOSED;
+  if (result < 0) {
     DVLOG(1) << "TransportReadComplete result " << result;
-    // Received 0 (end of file) or an error. Either way, bubble it up to the
-    // SSL layer via the BIO. TODO(joth): consider stashing the error code, to
-    // relay up to the SSL socket client (i.e. via DoReadCallback).
-    if (result == 0)
-      transport_recv_eof_ = true;
-    (void)BIO_shutdown_wr(transport_bio_);
-  } else if (transport_write_error_ < 0) {
-    // Mirror transport write errors as read failures; transport_bio_ has been
-    // shut down by TransportWriteComplete, so the BIO_write will fail, failing
-    // the CHECK. http://crbug.com/335557.
-    result = transport_write_error_;
+    // Received an error. Save it to be reported in a future read on
+    // transport_bio_'s peer.
+    transport_read_error_ = result;
   } else {
     DCHECK(recv_buffer_.get());
     int ret = BIO_write(transport_bio_, recv_buffer_->data(), result);
@@ -1472,6 +1461,51 @@ int SSLClientSocketOpenSSL::SelectNextProtoCallback(unsigned char** out,
   server_protos_.assign(reinterpret_cast<const char*>(in), inlen);
   DVLOG(2) << "next protocol: '" << npn_proto_ << "' status: " << npn_status_;
   return SSL_TLSEXT_ERR_OK;
+}
+
+long SSLClientSocketOpenSSL::MaybeReplayTransportError(
+    BIO *bio,
+    int cmd,
+    const char *argp, int argi, long argl,
+    long retvalue) {
+  if (cmd == (BIO_CB_READ|BIO_CB_RETURN) && retvalue <= 0) {
+    // If there is no more data in the buffer, report any pending errors that
+    // were observed. Note that both the readbuf and the writebuf are checked
+    // for errors, since the application may have encountered a socket error
+    // while writing that would otherwise not be reported until the application
+    // attempted to write again - which it may never do. See
+    // https://crbug.com/249848.
+    if (transport_read_error_ != OK) {
+      OpenSSLPutNetError(FROM_HERE, transport_read_error_);
+      return -1;
+    }
+    if (transport_write_error_ != OK) {
+      OpenSSLPutNetError(FROM_HERE, transport_write_error_);
+      return -1;
+    }
+  } else if (cmd == BIO_CB_WRITE) {
+    // Because of the write buffer, this reports a failure from the previous
+    // write payload. If the current payload fails to write, the error will be
+    // reported in a future write or read to |bio|.
+    if (transport_write_error_ != OK) {
+      OpenSSLPutNetError(FROM_HERE, transport_write_error_);
+      return -1;
+    }
+  }
+  return retvalue;
+}
+
+// static
+long SSLClientSocketOpenSSL::BIOCallback(
+    BIO *bio,
+    int cmd,
+    const char *argp, int argi, long argl,
+    long retvalue) {
+  SSLClientSocketOpenSSL* socket = reinterpret_cast<SSLClientSocketOpenSSL*>(
+      BIO_get_callback_arg(bio));
+  CHECK(socket);
+  return socket->MaybeReplayTransportError(
+      bio, cmd, argp, argi, argl, retvalue);
 }
 
 scoped_refptr<X509Certificate>
