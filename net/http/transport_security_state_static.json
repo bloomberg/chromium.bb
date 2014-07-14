@@ -815,6 +815,8 @@
     { "name": "dropbox.com", "mode": "force-https", "pins": "dropbox" },
     { "name": "www.dropbox.com", "include_subdomains": true, "mode": "force-https", "pins": "dropbox" },
     { "name": "code-poets.co.uk", "include_subdomains": true, "mode": "force-https" },
+    { "name": "jackyyf.com", "mode": "force-https" },
+    { "name": "flynn.io", "include_subdomains": true, "mode": "force-https" },
 
     // Entries that are only valid if the client supports SNI.
     { "name": "gmail.com", "mode": "force-https", "pins": "google", "snionly": true },
