@@ -160,15 +160,18 @@ struct ProcessManager::BackgroundPageData {
   bool keepalive_impulse;
   bool previous_keepalive_impulse;
 
-  // This is used with the ShouldSuspend message, to ensure that the extension
-  // remained idle between sending the message and receiving the ack.
-  int close_sequence_id;
-
   // True if the page responded to the ShouldSuspend message and is currently
   // dispatching the suspend event. During this time any events that arrive will
   // cancel the suspend process and an onSuspendCanceled event will be
   // dispatched to the page.
   bool is_closing;
+
+  // Stores the value of the incremented
+  // ProcessManager::last_background_close_sequence_id_ whenever the extension
+  // is active. A copy of the ID is also passed in the callbacks and IPC
+  // messages leading up to CloseLazyBackgroundPageNow. The process is aborted
+  // if the IDs ever differ due to new activity.
+  uint64 close_sequence_id;
 
   // Keeps track of when this page was last suspended. Used for perf metrics.
   linked_ptr<base::ElapsedTimer> since_suspended;
@@ -177,8 +180,8 @@ struct ProcessManager::BackgroundPageData {
       : lazy_keepalive_count(0),
         keepalive_impulse(false),
         previous_keepalive_impulse(false),
-        close_sequence_id(0),
-        is_closing(false) {}
+        is_closing(false),
+        close_sequence_id(0) {}
 };
 
 //
@@ -221,12 +224,12 @@ ProcessManager* ProcessManager::CreateIncognitoForTesting(
 
 ProcessManager::ProcessManager(BrowserContext* context,
                                BrowserContext* original_context)
-  : site_instance_(SiteInstance::Create(context)),
-    startup_background_hosts_created_(false),
-    devtools_callback_(base::Bind(
-        &ProcessManager::OnDevToolsStateChanged,
-        base::Unretained(this))),
-    weak_ptr_factory_(this) {
+    : site_instance_(SiteInstance::Create(context)),
+      startup_background_hosts_created_(false),
+      devtools_callback_(base::Bind(&ProcessManager::OnDevToolsStateChanged,
+                                    base::Unretained(this))),
+      last_background_close_sequence_id_(0),
+      weak_ptr_factory_(this) {
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSIONS_READY,
                  content::Source<BrowserContext>(original_context));
   registrar_.Add(this,
@@ -446,11 +449,14 @@ void ProcessManager::DecrementLazyKeepaliveCount(
   // sequence and cause the background page to linger. So check is_closing
   // before initiating another close sequence.
   if (--count == 0 && !background_page_data_[extension_id].is_closing) {
+    background_page_data_[extension_id].close_sequence_id =
+        ++last_background_close_sequence_id_;
     base::MessageLoop::current()->PostDelayedTask(
         FROM_HERE,
         base::Bind(&ProcessManager::OnLazyBackgroundPageIdle,
-                   weak_ptr_factory_.GetWeakPtr(), extension_id,
-                   ++background_page_data_[extension_id].close_sequence_id),
+                   weak_ptr_factory_.GetWeakPtr(),
+                   extension_id,
+                   last_background_close_sequence_id_),
         event_page_idle_time_);
   }
 }
@@ -527,7 +533,7 @@ void ProcessManager::OnKeepaliveImpulseCheck() {
 }
 
 void ProcessManager::OnLazyBackgroundPageIdle(const std::string& extension_id,
-                                              int sequence_id) {
+                                              uint64 sequence_id) {
   ExtensionHost* host = GetBackgroundHostForExtension(extension_id);
   if (host && !background_page_data_[extension_id].is_closing &&
       sequence_id == background_page_data_[extension_id].close_sequence_id) {
@@ -544,16 +550,16 @@ void ProcessManager::OnLazyBackgroundPageIdle(const std::string& extension_id,
 
 void ProcessManager::OnLazyBackgroundPageActive(
     const std::string& extension_id) {
-  ExtensionHost* host = GetBackgroundHostForExtension(extension_id);
-  if (host && !background_page_data_[extension_id].is_closing) {
+  if (!background_page_data_[extension_id].is_closing) {
     // Cancel the current close sequence by changing the close_sequence_id,
     // which causes us to ignore the next ShouldSuspendAck.
-    ++background_page_data_[extension_id].close_sequence_id;
+    background_page_data_[extension_id].close_sequence_id =
+        ++last_background_close_sequence_id_;
   }
 }
 
 void ProcessManager::OnShouldSuspendAck(const std::string& extension_id,
-                                        int sequence_id) {
+                                        uint64 sequence_id) {
   ExtensionHost* host = GetBackgroundHostForExtension(extension_id);
   if (host &&
       sequence_id == background_page_data_[extension_id].close_sequence_id) {
@@ -563,7 +569,7 @@ void ProcessManager::OnShouldSuspendAck(const std::string& extension_id,
 
 void ProcessManager::OnSuspendAck(const std::string& extension_id) {
   background_page_data_[extension_id].is_closing = true;
-  int sequence_id = background_page_data_[extension_id].close_sequence_id;
+  uint64 sequence_id = background_page_data_[extension_id].close_sequence_id;
   base::MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&ProcessManager::CloseLazyBackgroundPageNow,
@@ -572,7 +578,7 @@ void ProcessManager::OnSuspendAck(const std::string& extension_id) {
 }
 
 void ProcessManager::CloseLazyBackgroundPageNow(const std::string& extension_id,
-                                                int sequence_id) {
+                                                uint64 sequence_id) {
   ExtensionHost* host = GetBackgroundHostForExtension(extension_id);
   if (host &&
       sequence_id == background_page_data_[extension_id].close_sequence_id) {

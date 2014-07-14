@@ -173,7 +173,7 @@ class Dispatcher : public content::RenderProcessObserver,
       const ExtensionsClient::ScriptingWhitelist& extension_ids);
   void OnSetSystemFont(const std::string& font_family,
                        const std::string& font_size);
-  void OnShouldSuspend(const std::string& extension_id, int sequence_id);
+  void OnShouldSuspend(const std::string& extension_id, uint64 sequence_id);
   void OnSuspend(const std::string& extension_id);
   void OnTransferBlobs(const std::vector<std::string>& blob_uuids);
   void OnUnloaded(const std::string& id);

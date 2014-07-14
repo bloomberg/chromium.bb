@@ -108,7 +108,7 @@ class ProcessManager : public content::NotificationObserver {
 
   // Handles a response to the ShouldSuspend message, used for lazy background
   // pages.
-  void OnShouldSuspendAck(const std::string& extension_id, int sequence_id);
+  void OnShouldSuspendAck(const std::string& extension_id, uint64 sequence_id);
 
   // Same as above, for the Suspend message.
   void OnSuspendAck(const std::string& extension_id);
@@ -198,10 +198,10 @@ class ProcessManager : public content::NotificationObserver {
   // These are called when the extension transitions between idle and active.
   // They control the process of closing the background page when idle.
   void OnLazyBackgroundPageIdle(const std::string& extension_id,
-                                int sequence_id);
+                                uint64 sequence_id);
   void OnLazyBackgroundPageActive(const std::string& extension_id);
   void CloseLazyBackgroundPageNow(const std::string& extension_id,
-                                  int sequence_id);
+                                  uint64 sequence_id);
 
   // Potentially registers a RenderViewHost, if it is associated with an
   // extension. Does nothing if this is not an extension renderer.
@@ -246,6 +246,22 @@ class ProcessManager : public content::NotificationObserver {
 
   ObserverList<ProcessManagerObserver> observer_list_;
 
+  // ID Counter used to set ProcessManager::BackgroundPageData close_sequence_id
+  // members. These IDs are tracked per extension in background_page_data_ and
+  // are used to verify that nothing has interrupted the process of closing a
+  // lazy background process.
+  //
+  // Any interruption obtains a new ID by incrementing
+  // last_background_close_sequence_id_ and storing it in background_page_data_
+  // for a particular extension. Callbacks and round-trip IPC messages store the
+  // value of the extension's close_sequence_id at the beginning of the process.
+  // Thus comparisons can be done to halt when IDs no longer match.
+  //
+  // This counter provides unique IDs even when BackgroundPageData objects are
+  // reset.
+  uint64 last_background_close_sequence_id_;
+
+  // Must be last member, see doc on WeakPtrFactory.
   base::WeakPtrFactory<ProcessManager> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ProcessManager);

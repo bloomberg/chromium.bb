@@ -424,7 +424,7 @@ IPC_MESSAGE_CONTROL1(ExtensionMsg_UsingWebRequestAPI,
 // sequence_id so that we can tell which message it is responding to.
 IPC_MESSAGE_CONTROL2(ExtensionMsg_ShouldSuspend,
                      std::string /* extension_id */,
-                     int /* sequence_id */)
+                     uint64 /* sequence_id */)
 
 // If we complete a round of ShouldSuspend->ShouldSuspendAck messages without
 // the lazy background page becoming active again, we are ready to unload. This
@@ -628,7 +628,7 @@ IPC_MESSAGE_ROUTED1(ExtensionHostMsg_ResponseAck,
 // Response to ExtensionMsg_ShouldSuspend.
 IPC_MESSAGE_CONTROL2(ExtensionHostMsg_ShouldSuspendAck,
                      std::string /* extension_id */,
-                     int /* sequence_id */)
+                     uint64 /* sequence_id */)
 
 // Response to ExtensionMsg_Suspend, after we dispatch the suspend event.
 IPC_MESSAGE_CONTROL1(ExtensionHostMsg_SuspendAck,

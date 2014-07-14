@@ -678,7 +678,7 @@ void Dispatcher::OnSetSystemFont(const std::string& font_family,
 }
 
 void Dispatcher::OnShouldSuspend(const std::string& extension_id,
-                                 int sequence_id) {
+                                 uint64 sequence_id) {
   RenderThread::Get()->Send(
       new ExtensionHostMsg_ShouldSuspendAck(extension_id, sequence_id));
 }
