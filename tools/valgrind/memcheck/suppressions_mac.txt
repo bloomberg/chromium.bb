@@ -2491,24 +2491,3 @@
    fun:_ZN3gfx18RenderTextHarfBuzz12EnsureLayoutEv
    fun:_ZN3gfx41RenderTextTest_HarfBuzz_RunDirection_Test8TestBodyEv
 }
-{
-   bug_391556
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN7WebCore10PageMemory23setupPageMemoryInRegionEPNS_16PageMemoryRegionEmm
-   fun:_ZN7WebCore10ThreadHeapINS_25FinalizedHeapObjectHeaderEE12allocatePageEPKNS_6GCInfoE
-   fun:_ZN7WebCore10ThreadHeapINS_25FinalizedHeapObjectHeaderEE13addPageToHeapEPKNS_6GCInfoE
-   fun:_ZN7WebCore10ThreadHeapINS_25FinalizedHeapObjectHeaderEE23ensureCurrentAllocationEmPKNS_6GCInfoE
-   fun:_ZN7WebCore10ThreadHeapINS_25FinalizedHeapObjectHeaderEE17outOfLineAllocateEmPKNS_6GCInfoE
-   fun:_ZN7WebCore10ThreadHeapINS_25FinalizedHeapObjectHeaderEE8allocateEmPKNS_6GCInfoE
-   fun:_ZN7WebCore4Heap8allocateINS_6IDBKeyEEEPhm
-   fun:_ZN7WebCore16GarbageCollectedINS_6IDBKeyEEnwEm
-   fun:_ZN7WebCore6IDBKey12createNumberEd
-   fun:_ZN5blink9WebIDBKey12assignNumberEd
-   fun:_ZN5blink9WebIDBKey12createNumberEd
-   fun:_ZN7content16WebIDBKeyBuilder5BuildERKNS_12IndexedDBKeyE
-   fun:_ZN7content16WebIDBCursorImpl14CachedContinueEPN5blink15WebIDBCallbacksE
-   fun:_ZN7content16WebIDBCursorImpl16continueFunctionERKN5blink9WebIDBKeyES4_PNS1_15WebIDBCallbacksE
-   fun:_ZN7content16WebIDBCursorImpl16continueFunctionERKN5blink9WebIDBKeyEPNS1_15WebIDBCallbacksE
-   fun:_ZN7content38WebIDBCursorImplTest_PrefetchTest_Test8TestBodyEv
-}
