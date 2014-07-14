@@ -608,7 +608,10 @@ SlideMode.prototype.getNextSelectedIndex_ = function(direction) {
  * @param {string} keyID Key identifier.
  */
 SlideMode.prototype.advanceWithKeyboard = function(keyID) {
-  this.advanceManually(keyID === 'Up' || keyID === 'Left' ? -1 : 1);
+  var prev = (keyID === 'Up' ||
+              keyID === 'Left' ||
+              keyID === 'MediaPreviousTrack');
+  this.advanceManually(prev ? -1 : 1);
 };
 
 /**
@@ -807,10 +810,12 @@ SlideMode.prototype.onKeyDown = function(event) {
   if (this.isSlideshowOn_()) {
     switch (keyID) {
       case 'U+001B':  // Escape exits the slideshow.
+      case 'MediaStop':
         this.stopSlideshow_(event);
         break;
 
       case 'U+0020':  // Space pauses/resumes the slideshow.
+      case 'MediaPlayPause':
         this.toggleSlideshowPause_();
         break;
 
@@ -818,6 +823,8 @@ SlideMode.prototype.onKeyDown = function(event) {
       case 'Down':
       case 'Left':
       case 'Right':
+      case 'MediaNextTrack':
+      case 'MediaPreviousTrack':
         this.advanceWithKeyboard(keyID);
         break;
     }
@@ -854,6 +861,8 @@ SlideMode.prototype.onKeyDown = function(event) {
     case 'Down':
     case 'Left':
     case 'Right':
+    case 'MediaNextTrack':
+    case 'MediaPreviousTrack':
       this.advanceWithKeyboard(keyID);
       break;
 

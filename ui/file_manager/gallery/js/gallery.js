@@ -690,6 +690,7 @@ Gallery.prototype.onKeyDown_ = function(event) {
       break;
 
     case 'U+0056':  // 'v'
+    case 'MediaPlayPause':
       this.slideMode_.startSlideshow(SlideMode.SLIDESHOW_INTERVAL_FIRST, event);
       break;
 
