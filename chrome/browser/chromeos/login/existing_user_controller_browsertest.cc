@@ -673,8 +673,9 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerPublicSessionTest,
   // First run propagates public accounts and stores them in Local State.
 }
 
+// See http://crbug.com/393704; flaky.
 IN_PROC_BROWSER_TEST_F(ExistingUserControllerPublicSessionTest,
-                       TestLoadingPublicUsersFromLocalState) {
+                       DISABLED_TestLoadingPublicUsersFromLocalState) {
   // Second run loads list of public accounts from Local State.
 }
 
