@@ -18,9 +18,9 @@ layer at (0,0) size 800x600
       RenderSVGText {text} at (360,162) size 53x35 contains 1 chunk(s)
         RenderSVGInlineText {#text} at (0,0) size 53x35
           chunk 1 text run 1 at (360.00,190.00) startOffset 0 endOffset 3 width 52.68: "500"
-      RenderSVGText {text} at (360,197) size 54x35 contains 1 chunk(s)
-        RenderSVGInlineText {#text} at (0,0) size 54x35
-          chunk 1 text run 1 at (360.00,225.00) startOffset 0 endOffset 3 width 53.80: "600"
+      RenderSVGText {text} at (360,197) size 62x35 contains 1 chunk(s)
+        RenderSVGInlineText {#text} at (0,0) size 62x35
+          chunk 1 text run 1 at (360.00,225.00) startOffset 0 endOffset 3 width 61.51: "600"
       RenderSVGText {text} at (360,232) size 59x35 contains 1 chunk(s)
         RenderSVGInlineText {#text} at (0,0) size 59x35
           chunk 1 text run 1 at (360.00,260.00) startOffset 0 endOffset 3 width 58.70: "700"
