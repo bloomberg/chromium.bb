@@ -15,9 +15,6 @@ enum WebServiceWorkerState {
     WebServiceWorkerStateActivating,
     WebServiceWorkerStateActivated,
     WebServiceWorkerStateRedundant,
-    // FIXME remove below two states once the Chromium side change landed.
-    WebServiceWorkerStateActive = WebServiceWorkerStateActivated,
-    WebServiceWorkerStateDeactivated = WebServiceWorkerStateRedundant,
     WebServiceWorkerStateLast = WebServiceWorkerStateRedundant
 };
 
