@@ -29,7 +29,7 @@ from third_party.depot_tools import fix_encoding
 from utils import tools
 
 
-def get_bot_list(swarming_server, dimensions):
+def get_bot_list(swarming_server, dimensions, dead_only):
   """Returns a list of swarming bots."""
   cmd = [
     sys.executable, 'swarming.py', 'query',
@@ -38,6 +38,8 @@ def get_bot_list(swarming_server, dimensions):
   ]
   for k, v in dimensions.iteritems():
     cmd.extend(('--dimension', k, v))
+  if dead_only:
+    cmd.append('--dead-only')
   return subprocess.check_output(cmd, cwd=ROOT_DIR).splitlines()
 
 
@@ -139,11 +141,21 @@ def main():
     parser.error(
         'Must pass one python script to run. Use --help for more details')
 
+  if not options.priority:
+    parser.error(
+        'Please provide the --priority option. Either use a very low number\n'
+        'so the task completes as fast as possible, or an high number so the\n'
+        'task only runs when the bot is idle.')
+
   # 1. Query the bots list.
-  bots = get_bot_list(options.swarming, options.dimensions)
+  bots = get_bot_list(options.swarming, options.dimensions, False)
   print('Found %d bots to process' % len(bots))
   if not bots:
     return 1
+
+  dead_bots = get_bot_list(options.swarming, options.dimensions, True)
+  if dead_bots:
+    print('Warning: found %d dead bots' % len(dead_bots))
 
   # 2. Archive the script to run.
   isolated_hash = archive(options.isolate_server, args[0])

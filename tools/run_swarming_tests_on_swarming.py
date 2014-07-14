@@ -122,8 +122,11 @@ def run_swarming_tests_on_swarming(
     ) for name, platform, isolated_hash in exploded
   ]
 
-  extra_args = ['--priority', priority]
-  print('Using priority %s' % priority)
+  extra_args = []
+  if priority:
+    extra_args.extend(['--priority', priority])
+    print('Using priority %s' % priority)
+
   result = 0
   for failed_task in parallel_execution.run_swarming_tasks_parallel(
       swarming_server, isolate_server, extra_args, tasks):
@@ -190,7 +193,7 @@ def main():
   return run_swarming_tests_on_swarming(
       options.swarming,
       options.isolate_server,
-      str(options.priority),
+      options.priority,
       oses,
       tests,
       options.logs)

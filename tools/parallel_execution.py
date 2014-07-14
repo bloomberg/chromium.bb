@@ -167,7 +167,7 @@ class OptionParser(tools.OptionParserWithLogging):
         dest='dimensions', metavar='FOO bar',
         help='dimension to filter on')
     self.add_option(
-        '--priority', type='int', default=100,
+        '--priority', type='int',
         help='The lower value, the more important the task is. It may be '
             'important to specify a higher priority since the default value '
             'will make the task to be triggered only when the slaves are idle.')
