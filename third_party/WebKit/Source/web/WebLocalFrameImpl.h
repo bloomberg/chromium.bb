@@ -140,6 +140,7 @@ public:
     virtual void loadHTMLString(
         const WebData& html, const WebURL& baseURL, const WebURL& unreachableURL,
         bool replace) OVERRIDE;
+    virtual void sendPings(const WebNode& linkNode, const WebURL& destinationURL) OVERRIDE;
     virtual bool isLoading() const OVERRIDE;
     virtual void stopLoading() OVERRIDE;
     virtual WebDataSource* provisionalDataSource() const OVERRIDE;

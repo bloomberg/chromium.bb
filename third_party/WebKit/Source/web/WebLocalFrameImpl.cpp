@@ -101,6 +101,7 @@
 #include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/Settings.h"
+#include "core/html/HTMLAnchorElement.h"
 #include "core/html/HTMLCollection.h"
 #include "core/html/HTMLFormElement.h"
 #include "core/html/HTMLFrameElementBase.h"
@@ -877,6 +878,14 @@ void WebLocalFrameImpl::loadHTMLString(const WebData& data, const WebURL& baseUR
 {
     ASSERT(frame());
     loadData(data, WebString::fromUTF8("text/html"), WebString::fromUTF8("UTF-8"), baseURL, unreachableURL, replace);
+}
+
+void WebLocalFrameImpl::sendPings(const WebNode& linkNode, const WebURL& destinationURL)
+{
+    ASSERT(frame());
+    const WebCore::Node* node = linkNode.constUnwrap<Node>();
+    if (isHTMLAnchorElement(node))
+        toHTMLAnchorElement(node)->sendPings(destinationURL);
 }
 
 bool WebLocalFrameImpl::isLoading() const

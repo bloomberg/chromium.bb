@@ -298,7 +298,7 @@ bool HTMLAnchorElement::isLiveLink() const
     return isLink() && !hasEditableStyle();
 }
 
-void HTMLAnchorElement::sendPings(const KURL& destinationURL)
+void HTMLAnchorElement::sendPings(const KURL& destinationURL) const
 {
     const AtomicString& pingValue = getAttribute(pingAttr);
     if (pingValue.isNull() || !document().settings() || !document().settings()->hyperlinkAuditingEnabled())

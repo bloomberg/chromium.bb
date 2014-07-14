@@ -82,6 +82,8 @@ public:
     LinkHash visitedLinkHash() const;
     void invalidateCachedVisitedLinkHash() { m_cachedVisitedLinkHash = 0; }
 
+    void sendPings(const KURL& destinationURL) const;
+
 protected:
     HTMLAnchorElement(const QualifiedName&, Document&);
 
@@ -102,8 +104,6 @@ private:
     virtual bool draggable() const OVERRIDE FINAL;
     virtual bool isInteractiveContent() const OVERRIDE FINAL;
     virtual InsertionNotificationRequest insertedInto(ContainerNode*) OVERRIDE;
-
-    void sendPings(const KURL& destinationURL);
     void handleClick(Event*);
 
     uint32_t m_linkRelations;
