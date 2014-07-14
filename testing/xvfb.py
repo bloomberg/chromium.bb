@@ -55,26 +55,27 @@ def start_xvfb(xvfb_path, display):
         cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
   except OSError:
     print >> sys.stderr, 'Failed to run %s' % ' '.join(cmd)
-    return 0
-  return proc.pid
+    return
+  return proc
 
 
 def wait_for_xvfb(xdisplaycheck, env):
   """Waits for xvfb to be fully initialized by using xdisplaycheck."""
   try:
-    subprocess.check_call(
+    _logs = subprocess.check_output(
         [xdisplaycheck],
-        stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT,
         env=env)
   except OSError:
     print >> sys.stderr, 'Failed to load %s with cwd=%s' % (
         xdisplaycheck, os.getcwd())
     return False
-  except subprocess.CalledProcessError:
+  except subprocess.CalledProcessError as e:
     print >> sys.stderr, (
-        'Xvfb failed to load properly while trying to run %s' % xdisplaycheck)
+        'Xvfb failed to load properly (code %d) according to %s' %
+        (e.returncode, xdisplaycheck))
     return False
+
   return True
 
 
@@ -98,11 +99,22 @@ def run_executable(cmd, build_dir, env):
     if sys.platform == 'linux2':
       # Defaults to X display 9.
       display = ':9'
-      pid = start_xvfb(xvfb, display)
-      if not pid:
+      xvfb_proc = start_xvfb(xvfb, display)
+      if not xvfb_proc or not xvfb_proc.pid:
         return 1
       env['DISPLAY'] = display
       if not wait_for_xvfb(os.path.join(build_dir, 'xdisplaycheck'), env):
+        rc = xvfb_proc.poll()
+        if rc is None:
+          print 'Xvfb still running, stopping.'
+          xvfb_proc.terminate()
+        else:
+          print 'Xvfb exited, code %d' % rc
+
+        print 'Xvfb output:'
+        for l in xvfb_proc.communicate()[0].splitlines():
+          print '> %s' % l
+
         return 3
       # Inhibit recursion.
       env['_CHROMIUM_INSIDE_XVFB'] = '1'
