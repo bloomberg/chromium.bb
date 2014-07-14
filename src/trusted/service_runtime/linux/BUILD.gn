@@ -9,10 +9,12 @@ if (cpu_arch == "arm") {
 }
 
 
+bootstrap_hdr_path = "$root_out_dir/nacl_bootstrap_munge_phdr"
 bootstrap_lib_path = "$target_out_dir/libnacl_bootstrap_lib.a"
 bootstrap_raw_path = "$target_gen_dir/nacl_bootstrap_raw"
 bootstrap_exe_path = "$root_out_dir/nacl_helper_bootstrap"
 
+print(bootstrap_hdr_path)
 print(bootstrap_lib_path)
 
 linker_script_path = rebase_path("nacl_bootstrap.x")
@@ -38,6 +40,15 @@ if (is_android) {
   compiler = "g++"
 } else {
   compiler = "g++"
+}
+
+executable("nacl_bootstrap_munge_phdr") {
+  libs = [
+    "elf"
+  ]
+  sources = [
+    "nacl_bootstrap_munge_phdr.c"
+  ]
 }
 
 static_library("nacl_bootstrap_lib") {
@@ -140,10 +151,12 @@ action("nacl_bootstrap_raw") {
 action("nacl_helper_bootstrap") {
   datadeps = [
     ":nacl_bootstrap_raw",
+    ":nacl_bootstrap_munge_phdr"
   ]
 
   script = "nacl_bootstrap_munge_phdr.py"
   inputs = [
+    bootstrap_hdr_path,
     bootstrap_raw_path,
   ]
   outputs = [
