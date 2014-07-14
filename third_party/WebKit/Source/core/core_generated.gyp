@@ -150,6 +150,7 @@
            # crbug.com/341031
            'private_script_files': [
               '../bindings/core/v8/PrivateScriptRunner.js',
+              '../core/html/HTMLMarqueeElement.js',
            ],
            'inputs': [
               '../build/scripts/make_private_script_source.py',

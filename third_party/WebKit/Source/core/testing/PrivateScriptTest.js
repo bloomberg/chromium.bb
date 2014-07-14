@@ -7,7 +7,7 @@
 installClass("PrivateScriptTest", function(global) {
     var InternalsPrototype = Object.create(Element.prototype);
 
-    InternalsPrototype.constructor = function() {
+    InternalsPrototype.initialize = function() {
         this.m_shortAttribute = -1;
         this.m_stringAttribute = "xxx";
         this.m_nodeAttribute = null;

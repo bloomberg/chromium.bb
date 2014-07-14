@@ -539,7 +539,7 @@ def preprocess_idl_type_and_value(idl_type, cpp_value, extended_attributes):
         idl_type.base_type in ['unsigned long', 'unsigned short']):
         cpp_value = cpp_value.replace('getUnsignedIntegralAttribute',
                                       'getIntegralAttribute')
-        cpp_value = 'std::max(0, %s)' % cpp_value
+        cpp_value = 'std::max(0, static_cast<int>(%s))' % cpp_value
     return idl_type, cpp_value
 
 

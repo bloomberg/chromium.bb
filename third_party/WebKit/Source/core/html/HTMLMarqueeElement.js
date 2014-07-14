@@ -4,7 +4,7 @@
 
 'use strict';
 
-(function(global) {
+installClass('HTMLMarqueeElement', function(global) {
 
     var kDefaultScrollAmount = 6;
     var kDefaultScrollDelayMS = 85;
@@ -32,8 +32,7 @@
     var pixelLengthRegexp = /^\s*([\d.]+)\s*$/;
     var percentageLengthRegexp = /^\s*([\d.]+)\s*%\s*$/;
 
-    function convertHTMLLengthToCSSLength(value)
-    {
+    function convertHTMLLengthToCSSLength(value) {
         var pixelMatch = value.match(pixelLengthRegexp);
         if (pixelMatch)
             return pixelMatch[1] + 'px';
@@ -43,8 +42,8 @@
         return null;
     }
 
-    function reflectAttribute(prototype, attributeName, propertyName)
-    {
+    // FIXME: Consider moving these utility functions to PrivateScriptUtils.js.
+    function reflectAttribute(prototype, attributeName, propertyName) {
         Object.defineProperty(prototype, propertyName, {
             get: function() {
                 return this.getAttribute(attributeName) || '';
@@ -52,23 +51,26 @@
             set: function(value) {
                 this.setAttribute(attributeName, value);
             },
+            configurable: true,
+            enumerable: true,
         });
     }
 
-    function reflectBooleanAttribute(prototype, attributeName, propertyName)
-    {
+    function reflectBooleanAttribute(prototype, attributeName, propertyName) {
         Object.defineProperty(prototype, propertyName, {
             get: function() {
                 return this.hasAttribute(attributeName);
             },
             set: function(value) {
-                this.setAttribute(attributeName, value ? '' : null);
+                if (value.valueOf() === false)
+                    this.removeAttribute(attributeName);
+                else
+                    this.setAttribute(attributeName, value ? '' : null);
             },
         });
     }
 
-    function defineInlineEventHandler(prototype, eventName)
-    {
+    function defineInlineEventHandler(prototype, eventName) {
         var propertyName = 'on' + eventName;
         // FIXME: We should use symbols here instead.
         var functionPropertyName = propertyName + 'Function_';
@@ -397,8 +399,11 @@
         }
     };
 
-    global.document.registerElement('i-marquee', {
-        prototype: HTMLMarqueeElementPrototype,
-    });
+    // FIXME: We have to inject this HTMLMarqueeElement as a custom element in order to make
+    // createdCallback, attachedCallback, detachedCallback and attributeChangedCallback workable.
+    // global.document.registerElement('i-marquee', {
+    //    prototype: HTMLMarqueeElementPrototype,
+    // });
 
-})(this);
+    return HTMLMarqueeElementPrototype;
+});

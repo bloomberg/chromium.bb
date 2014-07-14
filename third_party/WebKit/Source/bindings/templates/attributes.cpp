@@ -8,8 +8,9 @@ const v8::FunctionCallbackInfo<v8::Value>& info
 const v8::PropertyCallbackInfo<v8::Value>& info
 {%- endif %})
 {
-    {% if attribute.is_reflect and not attribute.is_url and
-          attribute.idl_type == 'DOMString' and is_node %}
+    {% if attribute.is_reflect and not attribute.is_url
+          and attribute.idl_type == 'DOMString' and is_node
+          and not attribute.is_implemented_in_private_script %}
     {% set cpp_class, v8_class = 'Element', 'V8Element' %}
     {% endif %}
     {# holder #}
@@ -201,8 +202,8 @@ v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info
 v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info
 {%- endif %})
 {
-    {% if attribute.is_reflect and attribute.idl_type == 'DOMString' and
-          is_node %}
+    {% if attribute.is_reflect and attribute.idl_type == 'DOMString'
+          and is_node and not attribute.is_implemented_in_private_script %}
     {% set cpp_class, v8_class = 'Element', 'V8Element' %}
     {% endif %}
     {# Local variables #}

@@ -945,6 +945,7 @@ action("make_core_generated_private_script") {
 
   inputs = [
     "../bindings/core/v8/PrivateScriptRunner.js",
+    "../core/html/HTMLMarqueeElement.js",
   ]
   outputs = [
     "$blink_core_output_dir/PrivateScriptSources.h",

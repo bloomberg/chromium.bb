@@ -88,6 +88,7 @@ function installClass(className, implementation)
 
 init();
 
+// This line must be the last statement of this JS file.
 // A parenthesis is needed, because the caller of this script (PrivateScriptRunner.cpp)
 // is depending on the completion value of this script.
 (installedClasses);
