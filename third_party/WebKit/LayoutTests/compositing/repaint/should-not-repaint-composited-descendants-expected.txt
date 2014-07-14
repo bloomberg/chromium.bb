@@ -1,189 +1,37 @@
-position change with composited child
-
-position change with non-composited child
-
-z-index change with composited child
-
-z-index change with non-composited child
-
-opacity change with composited child
-
-opacity change with non-composited child
-
-transform change with composited child
-
-transform change with non-composited child
-
-filter change with composited child
-
-filter change with non-composited child
-
-clip change with composited child
-
-clip change with non-composited child
-
 {
-  "bounds": [785, 2172],
+  "bounds": [800, 600],
   "children": [
     {
-      "bounds": [785, 2172],
+      "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
       "children": [
         {
-          "position": [8, 80],
-          "bounds": [100, 100],
-          "children": [
-            {
-              "bounds": [100, 100],
-              "children": [
-                {
-                  "bounds": [152, 152],
-                  "contentsOpaque": true,
-                  "drawsContent": true,
-                  "backgroundColor": "#FFFF00"
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "position": [8, 260],
-          "bounds": [100, 100],
+          "position": [38, 38],
+          "bounds": [90, 90],
           "drawsContent": true,
+          "backfaceVisibility": "hidden",
+          "backgroundColor": "#008000",
           "repaintRects": [
-            [0, 0, 100, 100]
-          ]
-        },
-        {
-          "position": [8, 799],
-          "bounds": [100, 100],
-          "opacity": 0.5,
-          "children": [
-            {
-              "bounds": [100, 100],
-              "children": [
-                {
-                  "bounds": [152, 152],
-                  "contentsOpaque": true,
-                  "drawsContent": true,
-                  "backgroundColor": "#FFFF00"
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "position": [8, 979],
-          "bounds": [100, 100],
-          "opacity": 0.5,
-          "drawsContent": true
-        },
-        {
-          "position": [8, 1159],
-          "bounds": [100, 100],
-          "transform": [
-            [1, 0, 0, 0],
-            [0, 1, 0, 0],
-            [0, 0, 1, 0],
-            [0, 0, 20, 1]
+            [0, 0, 70, 70],
+            [0, 0, 10, 60],
+            [0, 0, 10, 60]
           ],
           "children": [
             {
-              "bounds": [100, 100],
+              "bounds": [90, 90],
               "children": [
                 {
-                  "bounds": [152, 152],
+                  "position": [-30, 20],
+                  "bounds": [50, 50],
                   "contentsOpaque": true,
                   "drawsContent": true,
-                  "backgroundColor": "#FFFF00"
+                  "backfaceVisibility": "hidden",
+                  "backgroundColor": "#008000"
                 }
               ]
             }
           ]
-        },
-        {
-          "position": [8, 1339],
-          "bounds": [100, 100],
-          "drawsContent": true,
-          "transform": [
-            [1, 0, 0, 0],
-            [0, 1, 0, 0],
-            [0, 0, 1, 0],
-            [0, 0, 20, 1]
-          ]
-        },
-        {
-          "position": [8, 1519],
-          "bounds": [100, 100],
-          "drawsContent": true,
-          "children": [
-            {
-              "bounds": [100, 100],
-              "children": [
-                {
-                  "bounds": [152, 152],
-                  "contentsOpaque": true,
-                  "drawsContent": true,
-                  "backgroundColor": "#FFFF00"
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "position": [8, 1699],
-          "bounds": [100, 100],
-          "drawsContent": true
-        },
-        {
-          "position": [8, 1879],
-          "bounds": [100, 100],
-          "children": [
-            {
-              "bounds": [100, 100],
-              "children": [
-                {
-                  "bounds": [152, 152],
-                  "contentsOpaque": true,
-                  "drawsContent": true,
-                  "backgroundColor": "#FFFF00"
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "position": [8, 2059],
-          "bounds": [100, 100],
-          "drawsContent": true,
-          "repaintRects": [
-            [0, 0, 100, 100],
-            [0, 0, 100, 100],
-            [0, 0, 100, 100]
-          ]
-        },
-        {
-          "position": [8, 440],
-          "bounds": [100, 100],
-          "children": [
-            {
-              "bounds": [100, 100],
-              "children": [
-                {
-                  "bounds": [152, 152],
-                  "contentsOpaque": true,
-                  "drawsContent": true,
-                  "backgroundColor": "#FFFF00"
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "position": [8, 620],
-          "bounds": [100, 100],
-          "drawsContent": true
         }
       ]
     }
