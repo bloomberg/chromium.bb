@@ -31,6 +31,17 @@ per-file *_message*.h=nasko@chromium.org
 per-file *_message*.h=palmer@chromium.org
 per-file *_message*.h=tsepez@chromium.org
 
+per-file *_messages.cc=set noparent
+per-file *_messages.cc=cevans@chromium.org
+per-file *_messages.cc=dcheng@chromium.org
+per-file *_messages.cc=inferno@chromium.org
+per-file *_messages.cc=jln@chromium.org
+per-file *_messages.cc=jschuh@chromium.org
+per-file *_messages.cc=kenrb@chromium.org
+per-file *_messages.cc=nasko@chromium.org
+per-file *_messages.cc=palmer@chromium.org
+per-file *_messages.cc=tsepez@chromium.org
+
 per-file *param_traits*.h=set noparent
 per-file *param_traits*.h=cevans@chromium.org
 per-file *param_traits*.h=dcheng@chromium.org
