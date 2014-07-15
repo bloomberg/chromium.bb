@@ -545,6 +545,8 @@ source_set("skia_opts") {
 
   if (cpu_arch == "x86" || cpu_arch == "x64") {
     sources = [
+      "//third_party/skia/src/opts/SkTextureCompression_opts_none.cpp",
+
       # SSE 2
       "//third_party/skia/src/opts/opts_check_x86.cpp",
       "//third_party/skia/src/opts/SkBitmapFilter_opts_SSE2.cpp",
@@ -592,17 +594,18 @@ source_set("skia_opts") {
     if (arm_version >= 7) {
       if (arm_use_neon || arm_optionally_use_neon) {
         sources += [
-          "//third_party/skia/src/opts/memset16_neon.S",
-          "//third_party/skia/src/opts/memset32_neon.S",
           "//third_party/skia/src/opts/SkBitmapProcState_arm_neon.cpp",
           "//third_party/skia/src/opts/SkBitmapProcState_matrixProcs_neon.cpp",
           "//third_party/skia/src/opts/SkBitmapProcState_matrix_clamp_neon.h",
           "//third_party/skia/src/opts/SkBitmapProcState_matrix_repeat_neon.h",
           "//third_party/skia/src/opts/SkBlitMask_opts_arm_neon.cpp",
           "//third_party/skia/src/opts/SkBlitRow_opts_arm_neon.cpp",
-          "//third_party/skia/src/opts/SkXfermode_opts_arm_neon.cpp",
           "//third_party/skia/src/opts/SkBlurImage_opts_neon.cpp",
           "//third_party/skia/src/opts/SkMorphology_opts_neon.cpp",
+          "//third_party/skia/src/opts/SkTextureCompression_opts_neon.cpp",
+          "//third_party/skia/src/opts/SkXfermode_opts_arm_neon.cpp",
+          "//third_party/skia/src/opts/memset16_neon.S",
+          "//third_party/skia/src/opts/memset32_neon.S",
         ]
 
         cflags += [
@@ -639,10 +642,11 @@ source_set("skia_opts") {
       sources += [
         "//third_party/skia/src/opts/SkBlitMask_opts_none.cpp",
         "//third_party/skia/src/opts/SkBlitRow_opts_none.cpp",
+        "//third_party/skia/src/opts/SkBlurImage_opts_none.cpp",
+        "//third_party/skia/src/opts/SkMorphology_opts_none.cpp",
+        "//third_party/skia/src/opts/SkTextureCompression_opts_none.cpp",
         "//third_party/skia/src/opts/SkUtils_opts_none.cpp",
         "//third_party/skia/src/opts/SkXfermode_opts_none.cpp",
-        "//third_party/skia/src/opts/SkMorphology_opts_none.cpp",
-        "//third_party/skia/src/opts/SkBlurImage_opts_none.cpp",
       ]
     } else {
       # arm version >= 6.
@@ -652,6 +656,7 @@ source_set("skia_opts") {
         "//third_party/skia/src/opts/SkBlitRow_opts_arm.h",
         "//third_party/skia/src/opts/SkBlurImage_opts_arm.cpp",
         "//third_party/skia/src/opts/SkMorphology_opts_arm.cpp",
+        "//third_party/skia/src/opts/SkTextureCompression_opts_arm.cpp",
         "//third_party/skia/src/opts/SkUtils_opts_arm.cpp",
         "//third_party/skia/src/opts/SkXfermode_opts_none.cpp",
       ]
@@ -663,10 +668,11 @@ source_set("skia_opts") {
       "//third_party/skia/src/opts/SkBitmapProcState_opts_none.cpp",
       "//third_party/skia/src/opts/SkBlitMask_opts_none.cpp",
       "//third_party/skia/src/opts/SkBlitRow_opts_none.cpp",
+      "//third_party/skia/src/opts/SkBlurImage_opts_none.cpp",
+      "//third_party/skia/src/opts/SkMorphology_opts_none.cpp",
+      "//third_party/skia/src/opts/SkTextureCompression_opts_none.cpp",
       "//third_party/skia/src/opts/SkUtils_opts_none.cpp",
       "//third_party/skia/src/opts/SkXfermode_opts_none.cpp",
-      "//third_party/skia/src/opts/SkMorphology_opts_none.cpp",
-      "//third_party/skia/src/opts/SkBlurImage_opts_none.cpp",
     ]
   } else {
     assert(false, "Need to port cpu specific stuff from skia_library_opts.gyp")
