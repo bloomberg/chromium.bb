@@ -59,7 +59,8 @@ IN_PROC_BROWSER_TEST_F(EnrollmentScreenTest, TestCancel) {
       WizardController::default_controller();
 }
 
-IN_PROC_BROWSER_TEST_F(EnrollmentScreenTest, TestSuccess) {
+// Flaky test: crbug.com/394069
+IN_PROC_BROWSER_TEST_F(EnrollmentScreenTest, DISABLED_TestSuccess) {
   ASSERT_TRUE(WizardController::default_controller() != NULL);
   EXPECT_FALSE(StartupUtils::IsOobeCompleted());
 
