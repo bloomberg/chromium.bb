@@ -103,19 +103,6 @@ static Mutex& threadAttachMutex()
     return mutex;
 }
 
-// The threadShutdownMutex is used to synchronize thread shutdown
-// since the thread local GC, as of now, cannot run in parallel
-// with other thread local GCs since it is using the global marking
-// stack. It can also not run in parallel with a global GC, but
-// that is honored by not entering a safepoint while doing the
-// thread local GC, meaning a request for a global GC would time
-// out.
-static Mutex& threadShutdownMutex()
-{
-    AtomicallyInitializedStatic(Mutex&, mutex = *new Mutex);
-    return mutex;
-}
-
 static double lockingTimeout()
 {
     // Wait time for parking all threads is at most 100 MS.
@@ -274,17 +261,6 @@ private:
     ThreadCondition m_resume;
 };
 
-
-BaseHeapPage::BaseHeapPage(PageMemory* storage, const GCInfo* gcInfo, ThreadState* state)
-    : m_storage(storage)
-    , m_gcInfo(gcInfo)
-    , m_threadState(state)
-    , m_terminating(false)
-    , m_tracedAfterOrphaned(false)
-{
-    ASSERT(isPageHeaderAddress(reinterpret_cast<Address>(this)));
-}
-
 ThreadState::ThreadState()
     : m_thread(currentThread())
     , m_persistents(adoptPtr(new PersistentAnchor()))
@@ -300,7 +276,7 @@ ThreadState::ThreadState()
     , m_noAllocationCount(0)
     , m_inGC(false)
     , m_heapContainsCache(adoptPtr(new HeapContainsCache()))
-    , m_isTerminating(false)
+    , m_isCleaningUp(false)
 #if defined(ADDRESS_SANITIZER)
     , m_asanFakeStack(__asan_get_current_fake_stack())
 #endif
@@ -312,9 +288,9 @@ ThreadState::ThreadState()
     m_statsAfterLastGC.clear();
     // First allocate the general heap, second iterate through to
     // allocate the type specific heaps
-    m_heaps[GeneralHeap] = new ThreadHeap<FinalizedHeapObjectHeader>(this, GeneralHeap);
+    m_heaps[GeneralHeap] = new ThreadHeap<FinalizedHeapObjectHeader>(this);
     for (int i = GeneralHeap + 1; i < NumberOfHeaps; i++)
-        m_heaps[i] = new ThreadHeap<HeapObjectHeader>(this, i);
+        m_heaps[i] = new ThreadHeap<HeapObjectHeader>(this);
 
     CallbackStack::init(&m_weakCallbackStack);
 }
@@ -358,16 +334,12 @@ void ThreadState::detachMainThread()
     // threadAttachMutex and waiting for other threads to pause or reach a
     // safepoint.
     ThreadState* state = mainThreadState();
+    if (!state->isAtSafePoint())
+        state->enterSafePointWithoutPointers();
 
     {
-        // We enter a safepoint while waiting for the thread shutdown mutex.
-        SafePointAwareMutexLocker locker(threadShutdownMutex(), NoHeapPointersOnStack);
-
-        // First add the main thread's heap pages to the orphaned pool.
-        state->cleanupPages();
-    }
-    {
-        SafePointAwareMutexLocker locker(threadAttachMutex(), NoHeapPointersOnStack);
+        MutexLocker locker(threadAttachMutex());
+        state->leaveSafePoint();
         ASSERT(attachedThreads().contains(state));
         attachedThreads().remove(state);
         state->~ThreadState();
@@ -395,71 +367,56 @@ void ThreadState::attach()
     attachedThreads().add(state);
 }
 
-void ThreadState::cleanupPages()
+void ThreadState::cleanup()
 {
-    for (int i = GeneralHeap; i < NumberOfHeaps; ++i)
-        m_heaps[i]->cleanupPages();
+    // From here on ignore all conservatively discovered
+    // pointers into the heap owned by this thread.
+    m_isCleaningUp = true;
+
+    // After this GC we expect heap to be empty because
+    // preCleanup tasks should have cleared all persistent
+    // handles that were externally owned.
+    Heap::collectAllGarbage();
+
+    // Verify that all heaps are empty now.
+    for (int i = 0; i < NumberOfHeaps; i++)
+        m_heaps[i]->assertEmpty();
 }
 
-void ThreadState::cleanup()
+void ThreadState::preCleanup()
 {
     for (size_t i = 0; i < m_cleanupTasks.size(); i++)
         m_cleanupTasks[i]->preCleanup();
+}
 
-    {
-        // We enter a safepoint while waiting for the thread shutdown mutex.
-        SafePointAwareMutexLocker locker(threadShutdownMutex(), NoHeapPointersOnStack);
-
-        // From here on ignore all conservatively discovered
-        // pointers into the heap owned by this thread.
-        m_isTerminating = true;
-
-        // Set the terminate flag on all heap pages of this thread. This is used to
-        // ensure we don't trace pages on other threads that are not part of the
-        // thread local GC.
-        setupHeapsForTermination();
-
-        // Do thread local GC's as long as the count of thread local Persistents
-        // changes and is above zero.
-        PersistentAnchor* anchor = static_cast<PersistentAnchor*>(m_persistents.get());
-        int oldCount = -1;
-        int currentCount = anchor->numberOfPersistents();
-        ASSERT(currentCount >= 0);
-        while (currentCount != oldCount) {
-            Heap::collectGarbageForTerminatingThread(this);
-            oldCount = currentCount;
-            currentCount = anchor->numberOfPersistents();
-        }
-        // We should not have any persistents left when getting to this point,
-        // if we have it is probably a bug so adding a debug ASSERT to catch this.
-        ASSERT(!currentCount);
-
-        // Add pages to the orphaned page pool to ensure any global GCs from this point
-        // on will not trace objects on this thread's heaps.
-        cleanupPages();
-    }
-
-    {
-        // Enter a safe point while trying to acquire threadAttachMutex
-        // to avoid dead lock if another thread is preparing for GC, has acquired
-        // threadAttachMutex and waiting for other threads to pause or reach a
-        // safepoint.
-        SafePointAwareMutexLocker locker(threadAttachMutex(), NoHeapPointersOnStack);
-        ASSERT(attachedThreads().contains(this));
-        attachedThreads().remove(this);
-    }
-
+void ThreadState::postCleanup()
+{
     for (size_t i = 0; i < m_cleanupTasks.size(); i++)
         m_cleanupTasks[i]->postCleanup();
     m_cleanupTasks.clear();
 }
 
-
 void ThreadState::detach()
 {
     ThreadState* state = current();
+    state->preCleanup();
     state->cleanup();
-    delete state;
+
+    // Enter a safe point before trying to acquire threadAttachMutex
+    // to avoid dead lock if another thread is preparing for GC, has acquired
+    // threadAttachMutex and waiting for other threads to pause or reach a
+    // safepoint.
+    if (!state->isAtSafePoint())
+        state->enterSafePointWithoutPointers();
+
+    {
+        MutexLocker locker(threadAttachMutex());
+        state->leaveSafePoint();
+        state->postCleanup();
+        ASSERT(attachedThreads().contains(state));
+        attachedThreads().remove(state);
+        delete state;
+    }
     shutdownHeapIfNecessary();
 }
 
@@ -476,16 +433,6 @@ void ThreadState::visitRoots(Visitor* visitor)
     AttachedThreadStateSet& threads = attachedThreads();
     for (AttachedThreadStateSet::iterator it = threads.begin(), end = threads.end(); it != end; ++it)
         (*it)->trace(visitor);
-}
-
-void ThreadState::visitLocalRoots(Visitor* visitor)
-{
-    // We assume that orphaned pages have no objects reachable from persistent
-    // handles on other threads or CrossThreadPersistents. The only cases where
-    // this could happen is if a global conservative GC finds a "pointer" on
-    // the stack or due to a programming error where an object has a dangling
-    // cross-thread pointer to an object on this heap.
-    m_persistents->trace(visitor);
 }
 
 NO_SANITIZE_ADDRESS
@@ -572,8 +519,8 @@ void ThreadState::trace(Visitor* visitor)
 
 bool ThreadState::checkAndMarkPointer(Visitor* visitor, Address address)
 {
-    // If thread is terminating ignore conservative pointers.
-    if (m_isTerminating)
+    // If thread is cleaning up ignore conservative pointers.
+    if (m_isCleaningUp)
         return false;
 
     // This checks for normal pages and for large objects which span the extent
@@ -610,7 +557,7 @@ void ThreadState::pushWeakObjectPointerCallback(void* object, WeakPointerCallbac
 
 bool ThreadState::popAndInvokeWeakPointerCallback(Visitor* visitor)
 {
-    return m_weakCallbackStack->popAndInvokeCallback<WeaknessProcessing>(&m_weakCallbackStack, visitor);
+    return m_weakCallbackStack->popAndInvokeCallback(&m_weakCallbackStack, visitor);
 }
 
 PersistentNode* ThreadState::globalRoots()
@@ -748,22 +695,13 @@ void ThreadState::prepareForGC()
     for (int i = 0; i < NumberOfHeaps; i++) {
         BaseHeap* heap = m_heaps[i];
         heap->makeConsistentForGC();
-        // If a new GC is requested before this thread got around to sweep, ie. due to the
-        // thread doing a long running operation, we clear the mark bits and mark any of
-        // the dead objects as dead. The latter is used to ensure the next GC marking does
-        // not trace already dead objects. If we trace a dead object we could end up tracing
-        // into garbage or the middle of another object via the newly conservatively found
-        // object.
+        // If there are parked threads with outstanding sweep requests, clear their mark bits.
+        // This happens if a thread did not have time to wake up and sweep,
+        // before the next GC arrived.
         if (sweepRequested())
-            heap->clearLiveAndMarkDead();
+            heap->clearMarks();
     }
     setSweepRequested();
-}
-
-void ThreadState::setupHeapsForTermination()
-{
-    for (int i = 0; i < NumberOfHeaps; i++)
-        m_heaps[i]->prepareHeapForTermination();
 }
 
 BaseHeapPage* ThreadState::heapPageFromAddress(Address address)

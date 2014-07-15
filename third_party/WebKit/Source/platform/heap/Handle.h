@@ -209,9 +209,6 @@ protected:
         , m_roots(RootsAccessor::roots())
 #endif
     {
-        // We don't support allocation of thread local Persistents while doing
-        // thread shutdown/cleanup.
-        ASSERT(!ThreadState::current()->isTerminating());
         typename RootsAccessor::Lock lock;
         ASSERT(otherref.m_roots == m_roots); // Handles must belong to the same list.
         PersistentBase* other = const_cast<PersistentBase*>(&otherref);
@@ -237,14 +234,6 @@ public:
     {
         for (PersistentNode* current = m_next; current != this; current = current->m_next)
             current->trace(visitor);
-    }
-
-    int numberOfPersistents()
-    {
-        int numberOfPersistents = 0;
-        for (PersistentNode* current = m_next; current != this; current = current->m_next)
-            ++numberOfPersistents;
-        return numberOfPersistents;
     }
 
     virtual ~PersistentAnchor()

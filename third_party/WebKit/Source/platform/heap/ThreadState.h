@@ -49,7 +49,6 @@ class FinalizedHeapObjectHeader;
 struct GCInfo;
 class HeapContainsCache;
 class HeapObjectHeader;
-class PageMemory;
 class PersistentNode;
 class Visitor;
 class SafePointBarrier;
@@ -240,7 +239,6 @@ public:
     static void init();
     static void shutdown();
     static void shutdownHeapIfNecessary();
-    bool isTerminating() { return m_isTerminating; }
 
     static void attachMainThread();
     static void detachMainThread();
@@ -509,9 +507,6 @@ public:
     HeapStats& stats() { return m_stats; }
     HeapStats& statsAfterLastGC() { return m_statsAfterLastGC; }
 
-    void setupHeapsForTermination();
-    void visitLocalRoots(Visitor*);
-
 private:
     explicit ThreadState();
     ~ThreadState();
@@ -543,7 +538,8 @@ private:
     // If assertion does not hold we crash as we are potentially
     // in the dangling pointer situation.
     void cleanup();
-    void cleanupPages();
+    void preCleanup();
+    void postCleanup();
 
     static WTF::ThreadSpecific<ThreadState*>* s_threadSpecific;
     static SafePointBarrier* s_safePointBarrier;
@@ -584,7 +580,7 @@ private:
     HeapStats m_statsAfterLastGC;
 
     Vector<OwnPtr<CleanupTask> > m_cleanupTasks;
-    bool m_isTerminating;
+    bool m_isCleaningUp;
 
     CallbackStack* m_weakCallbackStack;
 
@@ -618,9 +614,7 @@ public:
 class SafePointAwareMutexLocker {
     WTF_MAKE_NONCOPYABLE(SafePointAwareMutexLocker);
 public:
-    explicit SafePointAwareMutexLocker(Mutex& mutex, ThreadState::StackState stackState = ThreadState::HeapPointersOnStack)
-        : m_mutex(mutex)
-        , m_locked(false)
+    explicit SafePointAwareMutexLocker(Mutex& mutex) : m_mutex(mutex), m_locked(false)
     {
         ThreadState* state = ThreadState::current();
         do {
@@ -630,7 +624,7 @@ public:
             // If another thread tries to do a GC at that time it might time out
             // due to this thread not being at a safepoint and waiting on the lock.
             if (!state->isSweepInProgress() && !state->isAtSafePoint()) {
-                state->enterSafePoint(stackState, this);
+                state->enterSafePoint(ThreadState::HeapPointersOnStack, this);
                 leaveSafePoint = true;
             }
             m_mutex.lock();
@@ -663,57 +657,6 @@ private:
 
     Mutex& m_mutex;
     bool m_locked;
-};
-
-// Common header for heap pages. Needs to be defined before class Visitor.
-class BaseHeapPage {
-public:
-    BaseHeapPage(PageMemory*, const GCInfo*, ThreadState*);
-    virtual ~BaseHeapPage() { }
-
-    // Check if the given address points to an object in this
-    // heap page. If so, find the start of that object and mark it
-    // using the given Visitor. Otherwise do nothing. The pointer must
-    // be within the same aligned blinkPageSize as the this-pointer.
-    //
-    // This is used during conservative stack scanning to
-    // conservatively mark all objects that could be referenced from
-    // the stack.
-    virtual void checkAndMarkPointer(Visitor*, Address) = 0;
-    virtual bool contains(Address) = 0;
-
-#if ENABLE(GC_TRACING)
-    virtual const GCInfo* findGCInfo(Address) = 0;
-#endif
-
-    Address address() { return reinterpret_cast<Address>(this); }
-    PageMemory* storage() const { return m_storage; }
-    ThreadState* threadState() const { return m_threadState; }
-    const GCInfo* gcInfo() { return m_gcInfo; }
-    virtual bool isLargeObject() { return false; }
-    virtual void markOrphaned()
-    {
-        m_threadState = 0;
-        m_gcInfo = 0;
-        m_terminating = false;
-        m_tracedAfterOrphaned = false;
-    }
-    bool orphaned() { return !m_threadState; }
-    bool terminating() { return m_terminating; }
-    void setTerminating() { m_terminating = true; }
-    bool tracedAfterOrphaned() { return m_tracedAfterOrphaned; }
-    void setTracedAfterOrphaned() { m_tracedAfterOrphaned = true; }
-
-private:
-    PageMemory* m_storage;
-    const GCInfo* m_gcInfo;
-    ThreadState* m_threadState;
-    // Pointer sized integer to ensure proper alignment of the
-    // HeapPage header. We use some of the bits to determine
-    // whether the page is part of a terminting thread or
-    // if the page is traced after being terminated (orphaned).
-    uintptr_t m_terminating : 1;
-    uintptr_t m_tracedAfterOrphaned : 1;
 };
 
 }

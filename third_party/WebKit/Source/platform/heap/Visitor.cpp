@@ -43,18 +43,18 @@ void Visitor::checkGCInfo(const void* payload, const GCInfo* gcInfo)
 #if !defined(COMPONENT_BUILD)
     // On component builds we cannot compare the gcInfos as they are statically
     // defined in each of the components and hence will not match.
-    BaseHeapPage* page = pageHeaderFromObject(payload);
-    ASSERT(page->orphaned() || FinalizedHeapObjectHeader::fromPayload(payload)->gcInfo() == gcInfo);
+    ASSERT(FinalizedHeapObjectHeader::fromPayload(payload)->gcInfo() == gcInfo);
 #endif
 }
 
-#define DEFINE_VISITOR_CHECK_MARKER(Type)                                \
-    void Visitor::checkGCInfo(const Type* payload, const GCInfo* gcInfo) \
-    {                                                                    \
-        HeapObjectHeader::fromPayload(payload)->checkHeader();           \
-        Type* object = const_cast<Type*>(payload);                       \
-        BaseHeapPage* page = pageHeaderFromObject(object);               \
-        ASSERT(page->orphaned() || page->gcInfo() == gcInfo);            \
+#define DEFINE_VISITOR_CHECK_MARKER(Type)                                    \
+    void Visitor::checkGCInfo(const Type* payload, const GCInfo* gcInfo)     \
+    {                                                                        \
+        HeapObjectHeader::fromPayload(payload)->checkHeader();               \
+        Type* object = const_cast<Type*>(payload);                           \
+        Address addr = pageHeaderAddress(reinterpret_cast<Address>(object)); \
+        BaseHeapPage* page = reinterpret_cast<BaseHeapPage*>(addr);          \
+        ASSERT(page->gcInfo() == gcInfo);                                    \
     }
 
 FOR_EACH_TYPED_HEAP(DEFINE_VISITOR_CHECK_MARKER)
