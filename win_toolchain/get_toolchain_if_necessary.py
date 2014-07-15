@@ -224,7 +224,9 @@ def main():
   current_hash = CalculateHash(target_dir)
   if current_hash not in desired_hashes:
     should_use_gs = False
-    if HaveSrcInternalAccess() or LooksLikeGoogler():
+    if (HaveSrcInternalAccess() or 
+        LooksLikeGoogler() or 
+        CanAccessToolchainBucket()):
       should_use_gs = True
       if not CanAccessToolchainBucket():
         RequestGsAuthentication()
