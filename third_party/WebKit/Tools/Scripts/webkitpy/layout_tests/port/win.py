@@ -154,14 +154,11 @@ class WinPort(base.Port):
     def setup_environ_for_server(self, server_name=None):
         env = super(WinPort, self).setup_environ_for_server(server_name)
 
-        # FIXME: lighttpd depends on some environment variable we're not whitelisting.
-        # We should add the variable to an explicit whitelist in base.Port.
         # FIXME: This is a temporary hack to get the cr-win bot online until
         # someone from the cr-win port can take a look.
-        use_apache = self.uses_apache()
         apache_envvars = ['SYSTEMDRIVE', 'SYSTEMROOT', 'TEMP', 'TMP']
         for key, value in os.environ.items():
-            if key not in env and (not use_apache or key in apache_envvars):
+            if key not in env and key in apache_envvars:
                 env[key] = value
 
         # Put the cygwin directory first in the path to find cygwin1.dll.
@@ -210,18 +207,6 @@ class WinPort(base.Port):
 
     def path_to_apache_config_file(self):
         return self._filesystem.join(self.layout_tests_dir(), 'http', 'conf', 'win-httpd.conf')
-
-    def _lighttpd_path(self, *comps):
-        return self.path_from_chromium_base('third_party', 'lighttpd', 'win', *comps)
-
-    def path_to_lighttpd(self):
-        return self._lighttpd_path('LightTPD.exe')
-
-    def path_to_lighttpd_modules(self):
-        return self._lighttpd_path('lib')
-
-    def path_to_lighttpd_php(self):
-        return self._lighttpd_path('php5', 'php-cgi.exe')
 
     #
     # PROTECTED ROUTINES

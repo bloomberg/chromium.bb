@@ -528,15 +528,6 @@ class TestPort(Port):
     def release_http_lock(self):
         pass
 
-    def path_to_lighttpd(self):
-        return "/usr/sbin/lighttpd"
-
-    def path_to_lighttpd_modules(self):
-        return "/usr/lib/lighttpd"
-
-    def path_to_lighttpd_php(self):
-        return "/usr/bin/php-cgi"
-
     def path_to_apache(self):
         return "/usr/sbin/httpd"
 

@@ -63,7 +63,6 @@ from webkitpy.layout_tests.port import driver
 from webkitpy.layout_tests.port import server_process
 from webkitpy.layout_tests.port.factory import PortFactory
 from webkitpy.layout_tests.servers import apache_http
-from webkitpy.layout_tests.servers import lighttpd
 from webkitpy.layout_tests.servers import pywebsocket
 
 _log = logging.getLogger(__name__)
@@ -442,11 +441,7 @@ class Port(object):
         return 'wdiff is not installed; please install it to generate word-by-word diffs.'
 
     def check_httpd(self):
-        if self.uses_apache():
-            httpd_path = self.path_to_apache()
-        else:
-            httpd_path = self.path_to_lighttpd()
-
+        httpd_path = self.path_to_apache()
         try:
             server_name = self._filesystem.basename(httpd_path)
             env = self.setup_environ_for_server(server_name)
@@ -1107,11 +1102,9 @@ class Port(object):
         Ports can stub this out if they don't need a web server to be running."""
         assert not self._http_server, 'Already running an http server.'
 
-        if self.uses_apache():
-            server = apache_http.ApacheHTTP(self, self.results_directory(), additional_dirs=additional_dirs, number_of_servers=(number_of_drivers * 4))
-        else:
-            server = lighttpd.Lighttpd(self, self.results_directory())
-
+        server = apache_http.ApacheHTTP(self, self.results_directory(),
+                                        additional_dirs=additional_dirs,
+                                        number_of_servers=(number_of_drivers * 4))
         server.start()
         self._http_server = server
 
@@ -1127,7 +1120,7 @@ class Port(object):
 
     def http_server_supports_ipv6(self):
         # Apache < 2.4 on win32 does not support IPv6, nor does cygwin apache.
-        if self.host.platform.is_cygwin() or (self.uses_apache() and self.host.platform.is_win()):
+        if self.host.platform.is_cygwin() or self.host.platform.is_win():
             return False
         return True
 
@@ -1379,9 +1372,6 @@ class Port(object):
     def clobber_old_port_specific_results(self):
         pass
 
-    def uses_apache(self):
-        return True
-
     # FIXME: This does not belong on the port object.
     @memoized
     def path_to_apache(self):
@@ -1405,25 +1395,6 @@ class Port(object):
 
         config_file_name = self._apache_config_file_name_for_platform(sys.platform)
         return self._filesystem.join(self.layout_tests_dir(), 'http', 'conf', config_file_name)
-
-    def path_to_lighttpd(self):
-        """Returns the path to the LigHTTPd binary.
-
-        This is needed only by ports that use the http_server.py module."""
-        raise NotImplementedError('Port._path_to_lighttpd')
-
-    def path_to_lighttpd_modules(self):
-        """Returns the path to the LigHTTPd modules directory.
-
-        This is needed only by ports that use the http_server.py module."""
-        raise NotImplementedError('Port._path_to_lighttpd_modules')
-
-    def path_to_lighttpd_php(self):
-        """Returns the path to the LigHTTPd PHP executable.
-
-        This is needed only by ports that use the http_server.py module."""
-        raise NotImplementedError('Port._path_to_lighttpd_php')
-
 
     #
     # PROTECTED ROUTINES

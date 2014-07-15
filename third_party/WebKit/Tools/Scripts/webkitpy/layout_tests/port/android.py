@@ -646,15 +646,6 @@ class AndroidPort(base.Port):
     def _path_to_image_diff(self):
         return self._host_port._path_to_image_diff()
 
-    def path_to_lighttpd(self):
-        return self._host_port._path_to_lighttpd()
-
-    def path_to_lighttpd_modules(self):
-        return self._host_port._path_to_lighttpd_modules()
-
-    def path_to_lighttpd_php(self):
-        return self._host_port._path_to_lighttpd_php()
-
     def _path_to_wdiff(self):
         return self._host_port._path_to_wdiff()
 

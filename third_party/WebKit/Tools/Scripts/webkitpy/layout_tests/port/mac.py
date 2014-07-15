@@ -97,9 +97,6 @@ class MacPort(base.Port):
     # PROTECTED METHODS
     #
 
-    def _lighttpd_path(self, *comps):
-        return self.path_from_chromium_base('third_party', 'lighttpd', 'mac', *comps)
-
     def _wdiff_missing_message(self):
         return 'wdiff is not installed; please install from MacPorts or elsewhere'
 
@@ -108,15 +105,6 @@ class MacPort(base.Port):
 
     def path_to_apache_config_file(self):
         return self._filesystem.join(self.layout_tests_dir(), 'http', 'conf', 'apache2-httpd.conf')
-
-    def path_to_lighttpd(self):
-        return self._lighttpd_path('bin', 'lighttpd')
-
-    def path_to_lighttpd_modules(self):
-        return self._lighttpd_path('lib')
-
-    def path_to_lighttpd_php(self):
-        return self._lighttpd_path('bin', 'php-cgi')
 
     def _path_to_driver(self, configuration=None):
         # FIXME: make |configuration| happy with case-sensitive file systems.

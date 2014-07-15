@@ -151,16 +151,6 @@ class LinuxPort(base.Port):
             _log.error('')
         return result
 
-    def _check_lighttpd_install(self):
-        result = self._check_file_exists(
-            self._path_to_lighttpd(), "LigHTTPd executable")
-        result = self._check_file_exists(self._path_to_lighttpd_php(), "PHP CGI executable") and result
-        result = self._check_file_exists(self._path_to_lighttpd_modules(), "LigHTTPd modules") and result
-        if not result:
-            _log.error('    Please install using: "sudo apt-get install lighttpd php5-cgi"')
-            _log.error('')
-        return result
-
     def _wdiff_missing_message(self):
         return 'wdiff is not installed; please install using "sudo apt-get install wdiff"'
 
@@ -172,15 +162,6 @@ class LinuxPort(base.Port):
                 return path
         _log.error("Could not find apache. Not installed or unknown path.")
         return None
-
-    def path_to_lighttpd(self):
-        return "/usr/sbin/lighttpd"
-
-    def path_to_lighttpd_modules(self):
-        return "/usr/lib/lighttpd"
-
-    def path_to_lighttpd_php(self):
-        return "/usr/bin/php-cgi"
 
     def _path_to_driver(self, configuration=None):
         binary_name = self.driver_name()
