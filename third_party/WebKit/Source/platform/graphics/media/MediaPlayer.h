@@ -112,16 +112,6 @@ public:
 
     virtual void load(blink::WebMediaPlayer::LoadType, const String& url, blink::WebMediaPlayer::CORSMode) = 0;
 
-    virtual double duration() const = 0;
-
-    virtual double currentTime() const = 0;
-
-    virtual void seek(double) = 0;
-
-    virtual bool seeking() const = 0;
-
-    virtual void setPoster(const KURL&) = 0;
-
     virtual void paint(GraphicsContext*, const IntRect&) = 0;
     virtual bool copyVideoTextureToPlatformTexture(blink::WebGraphicsContext3D*, Platform3DObject, GC3Dint, GC3Denum, GC3Denum, bool, bool) = 0;
 

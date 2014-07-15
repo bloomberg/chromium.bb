@@ -225,38 +225,6 @@ void WebMediaPlayerClientImpl::load(WebMediaPlayer::LoadType loadType, const WTF
     m_webMediaPlayer->load(loadType, kurl, corsMode);
 }
 
-double WebMediaPlayerClientImpl::duration() const
-{
-    if (m_webMediaPlayer)
-        return m_webMediaPlayer->duration();
-    return 0.0;
-}
-
-double WebMediaPlayerClientImpl::currentTime() const
-{
-    if (m_webMediaPlayer)
-        return m_webMediaPlayer->currentTime();
-    return 0.0;
-}
-
-void WebMediaPlayerClientImpl::seek(double time)
-{
-    if (m_webMediaPlayer)
-        m_webMediaPlayer->seek(time);
-}
-
-bool WebMediaPlayerClientImpl::seeking() const
-{
-    if (m_webMediaPlayer)
-        return m_webMediaPlayer->seeking();
-    return false;
-}
-
-void WebMediaPlayerClientImpl::setPoster(const KURL& poster)
-{
-    if (m_webMediaPlayer)
-        m_webMediaPlayer->setPoster(WebURL(poster));
-}
 
 void WebMediaPlayerClientImpl::paint(GraphicsContext* context, const IntRect& rect)
 {
