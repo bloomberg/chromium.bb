@@ -632,8 +632,11 @@ template <typename Service>
 class AsyncServiceRequest : protected BlockingUIThreadAsyncRequest {
  public:
   AsyncServiceRequest(Service* service,
-                      CancelableRequestConsumer* cancelable_consumer)
-      : service_(service), cancelable_consumer_(cancelable_consumer) {}
+                      CancelableRequestConsumer* cancelable_consumer,
+                      base::CancelableTaskTracker* cancelable_tracker)
+      : service_(service),
+        cancelable_consumer_(cancelable_consumer),
+        cancelable_tracker_(cancelable_tracker) {}
 
   Service* service() const { return service_; }
 
@@ -641,9 +644,14 @@ class AsyncServiceRequest : protected BlockingUIThreadAsyncRequest {
     return cancelable_consumer_;
   }
 
+  base::CancelableTaskTracker* cancelable_tracker() const {
+    return cancelable_tracker_;
+  }
+
  private:
   Service* service_;
   CancelableRequestConsumer* cancelable_consumer_;
+  base::CancelableTaskTracker* cancelable_tracker_;
 
   DISALLOW_COPY_AND_ASSIGN(AsyncServiceRequest);
 };
@@ -655,18 +663,15 @@ class FaviconServiceTask : public AsyncServiceRequest<FaviconService> {
                      Profile* profile,
                      CancelableRequestConsumer* cancelable_consumer,
                      base::CancelableTaskTracker* cancelable_tracker)
-      : AsyncServiceRequest<FaviconService>(service, cancelable_consumer),
-        profile_(profile),
-        cancelable_tracker_(cancelable_tracker) {}
+      : AsyncServiceRequest<FaviconService>(service,
+                                            cancelable_consumer,
+                                            cancelable_tracker),
+        profile_(profile) {}
 
   Profile* profile() const { return profile_; }
-  base::CancelableTaskTracker* cancelable_tracker() const {
-    return cancelable_tracker_;
-  }
 
  private:
   Profile* profile_;
-  base::CancelableTaskTracker* cancelable_tracker_;
 
   DISALLOW_COPY_AND_ASSIGN(FaviconServiceTask);
 };
@@ -717,9 +722,12 @@ class HistoryProviderTask
     : public AsyncServiceRequest<AndroidHistoryProviderService> {
  public:
   HistoryProviderTask(AndroidHistoryProviderService* service,
-                      CancelableRequestConsumer* cancelable_consumer)
-      : AsyncServiceRequest<AndroidHistoryProviderService>
-            (service, cancelable_consumer) {}
+                      CancelableRequestConsumer* cancelable_consumer,
+                      base::CancelableTaskTracker* cancelable_tracker)
+      : AsyncServiceRequest<AndroidHistoryProviderService>(service,
+                                                           cancelable_consumer,
+                                                           cancelable_tracker) {
+  }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(HistoryProviderTask);
@@ -729,8 +737,9 @@ class HistoryProviderTask
 class AddBookmarkFromAPITask : public HistoryProviderTask {
  public:
   AddBookmarkFromAPITask(AndroidHistoryProviderService* service,
-                         CancelableRequestConsumer* cancelable_consumer)
-      : HistoryProviderTask(service, cancelable_consumer) {}
+                         CancelableRequestConsumer* cancelable_consumer,
+                         base::CancelableTaskTracker* cancelable_tracker)
+      : HistoryProviderTask(service, cancelable_consumer, cancelable_tracker) {}
 
   history::URLID Run(const history::HistoryAndBookmarkRow& row) {
     RunAsyncRequestOnUIThreadBlocking(
@@ -760,8 +769,9 @@ class AddBookmarkFromAPITask : public HistoryProviderTask {
 class QueryBookmarksFromAPITask : public HistoryProviderTask {
  public:
   QueryBookmarksFromAPITask(AndroidHistoryProviderService* service,
-                            CancelableRequestConsumer* cancelable_consumer)
-      : HistoryProviderTask(service, cancelable_consumer),
+                            CancelableRequestConsumer* cancelable_consumer,
+                            base::CancelableTaskTracker* cancelable_tracker)
+      : HistoryProviderTask(service, cancelable_consumer, cancelable_tracker),
         result_(NULL) {}
 
   history::AndroidStatement* Run(
@@ -795,8 +805,9 @@ class QueryBookmarksFromAPITask : public HistoryProviderTask {
 class UpdateBookmarksFromAPITask : public HistoryProviderTask {
  public:
   UpdateBookmarksFromAPITask(AndroidHistoryProviderService* service,
-                             CancelableRequestConsumer* cancelable_consumer)
-      : HistoryProviderTask(service, cancelable_consumer),
+                             CancelableRequestConsumer* cancelable_consumer,
+                             base::CancelableTaskTracker* cancelable_tracker)
+      : HistoryProviderTask(service, cancelable_consumer, cancelable_tracker),
         result_(0) {}
 
   int Run(const history::HistoryAndBookmarkRow& row,
@@ -828,8 +839,9 @@ class UpdateBookmarksFromAPITask : public HistoryProviderTask {
 class RemoveBookmarksFromAPITask : public HistoryProviderTask {
  public:
   RemoveBookmarksFromAPITask(AndroidHistoryProviderService* service,
-                             CancelableRequestConsumer* cancelable_consumer)
-      : HistoryProviderTask(service, cancelable_consumer),
+                             CancelableRequestConsumer* cancelable_consumer,
+                             base::CancelableTaskTracker* cancelable_tracker)
+      : HistoryProviderTask(service, cancelable_consumer, cancelable_tracker),
         result_(0) {}
 
   int Run(const std::string& selection,
@@ -860,8 +872,9 @@ class RemoveBookmarksFromAPITask : public HistoryProviderTask {
 class RemoveHistoryFromAPITask : public HistoryProviderTask {
  public:
   RemoveHistoryFromAPITask(AndroidHistoryProviderService* service,
-                           CancelableRequestConsumer* cancelable_consumer)
-      : HistoryProviderTask(service, cancelable_consumer),
+                           CancelableRequestConsumer* cancelable_consumer,
+                           base::CancelableTaskTracker* cancelable_tracker)
+      : HistoryProviderTask(service, cancelable_consumer, cancelable_tracker),
         result_(0) {}
 
   int Run(const std::string& selection,
@@ -893,8 +906,9 @@ class SearchTermTask : public HistoryProviderTask {
  protected:
   SearchTermTask(AndroidHistoryProviderService* service,
                  CancelableRequestConsumer* cancelable_consumer,
+                 base::CancelableTaskTracker* cancelable_tracker,
                  Profile* profile)
-      : HistoryProviderTask(service, cancelable_consumer),
+      : HistoryProviderTask(service, cancelable_consumer, cancelable_tracker),
         profile_(profile) {}
 
   // Fill SearchRow's keyword_id and url fields according the given
@@ -930,10 +944,14 @@ class SearchTermTask : public HistoryProviderTask {
 // Adds a search term from the API.
 class AddSearchTermFromAPITask : public SearchTermTask {
  public:
-    AddSearchTermFromAPITask(AndroidHistoryProviderService* service,
-                             CancelableRequestConsumer* cancelable_consumer,
-                             Profile* profile)
-        : SearchTermTask(service, cancelable_consumer, profile) {}
+  AddSearchTermFromAPITask(AndroidHistoryProviderService* service,
+                           CancelableRequestConsumer* cancelable_consumer,
+                           base::CancelableTaskTracker* cancelable_tracker,
+                           Profile* profile)
+      : SearchTermTask(service,
+                       cancelable_consumer,
+                       cancelable_tracker,
+                       profile) {}
 
   history::URLID Run(const history::SearchRow& row) {
     RunAsyncRequestOnUIThreadBlocking(
@@ -969,11 +987,15 @@ class AddSearchTermFromAPITask : public SearchTermTask {
 // Queries search terms from the API.
 class QuerySearchTermsFromAPITask : public SearchTermTask {
  public:
-    QuerySearchTermsFromAPITask(AndroidHistoryProviderService* service,
-                                CancelableRequestConsumer* cancelable_consumer,
-                                Profile* profile)
-        : SearchTermTask(service, cancelable_consumer, profile),
-          result_(NULL) {}
+  QuerySearchTermsFromAPITask(AndroidHistoryProviderService* service,
+                              CancelableRequestConsumer* cancelable_consumer,
+                              base::CancelableTaskTracker* cancelable_tracker,
+                              Profile* profile)
+      : SearchTermTask(service,
+                       cancelable_consumer,
+                       cancelable_tracker,
+                       profile),
+        result_(NULL) {}
 
   history::AndroidStatement* Run(
       const std::vector<history::SearchRow::ColumnID>& projections,
@@ -1007,11 +1029,15 @@ class QuerySearchTermsFromAPITask : public SearchTermTask {
 // Updates search terms from the API.
 class UpdateSearchTermsFromAPITask : public SearchTermTask {
  public:
-    UpdateSearchTermsFromAPITask(AndroidHistoryProviderService* service,
-                                 CancelableRequestConsumer* cancelable_consumer,
-                                 Profile* profile)
-        : SearchTermTask(service, cancelable_consumer, profile),
-          result_(0) {}
+  UpdateSearchTermsFromAPITask(AndroidHistoryProviderService* service,
+                               CancelableRequestConsumer* cancelable_consumer,
+                               base::CancelableTaskTracker* cancelable_tracker,
+                               Profile* profile)
+      : SearchTermTask(service,
+                       cancelable_consumer,
+                       cancelable_tracker,
+                       profile),
+        result_(0) {}
 
   int Run(const history::SearchRow& row,
           const std::string& selection,
@@ -1055,10 +1081,15 @@ class UpdateSearchTermsFromAPITask : public SearchTermTask {
 // Removes search terms from the API.
 class RemoveSearchTermsFromAPITask : public SearchTermTask {
  public:
-    RemoveSearchTermsFromAPITask(AndroidHistoryProviderService* service,
-                                 CancelableRequestConsumer* cancelable_consumer,
-                                 Profile* profile)
-        : SearchTermTask(service, cancelable_consumer, profile), result_() {}
+  RemoveSearchTermsFromAPITask(AndroidHistoryProviderService* service,
+                               CancelableRequestConsumer* cancelable_consumer,
+                               base::CancelableTaskTracker* cancelable_tracker,
+                               Profile* profile)
+      : SearchTermTask(service,
+                       cancelable_consumer,
+                       cancelable_tracker,
+                       profile),
+        result_() {}
 
   int Run(const std::string& selection,
           const std::vector<base::string16>& selection_args) {
@@ -1264,7 +1295,8 @@ jlong ChromeBrowserProvider::AddBookmarkFromAPI(JNIEnv* env,
     return kInvalidContentProviderId;
   }
 
-  AddBookmarkFromAPITask task(service_.get(), &android_history_consumer_);
+  AddBookmarkFromAPITask task(
+      service_.get(), &android_history_consumer_, &cancelable_task_tracker_);
   return task.Run(row);
 }
 
@@ -1310,7 +1342,8 @@ ScopedJavaLocalRef<jobject> ChromeBrowserProvider::QueryBookmarkFromAPI(
     sort_clause = ConvertJavaStringToUTF8(env, sort_order);
   }
 
-  QueryBookmarksFromAPITask task(service_.get(), &android_history_consumer_);
+  QueryBookmarksFromAPITask task(
+      service_.get(), &android_history_consumer_, &cancelable_task_tracker_);
   history::AndroidStatement* statement = task.Run(
       query_columns, where_clause, where_args, sort_clause);
   if (!statement)
@@ -1347,7 +1380,8 @@ jint ChromeBrowserProvider::UpdateBookmarkFromAPI(JNIEnv* env,
   if (selections)
     where_clause = ConvertJavaStringToUTF8(env, selections);
 
-  UpdateBookmarksFromAPITask task(service_.get(), &android_history_consumer_);
+  UpdateBookmarksFromAPITask task(
+      service_.get(), &android_history_consumer_, &cancelable_task_tracker_);
   return task.Run(row, where_clause, where_args);
 }
 
@@ -1362,7 +1396,8 @@ jint ChromeBrowserProvider::RemoveBookmarkFromAPI(JNIEnv* env,
   if (selections)
     where_clause = ConvertJavaStringToUTF8(env, selections);
 
-  RemoveBookmarksFromAPITask task(service_.get(), &android_history_consumer_);
+  RemoveBookmarksFromAPITask task(
+      service_.get(), &android_history_consumer_, &cancelable_task_tracker_);
   return task.Run(where_clause, where_args);
 }
 
@@ -1377,7 +1412,8 @@ jint ChromeBrowserProvider::RemoveHistoryFromAPI(JNIEnv* env,
   if (selections)
     where_clause = ConvertJavaStringToUTF8(env, selections);
 
-  RemoveHistoryFromAPITask task(service_.get(), &android_history_consumer_);
+  RemoveHistoryFromAPITask task(
+      service_.get(), &android_history_consumer_, &cancelable_task_tracker_);
   return task.Run(where_clause, where_args);
 }
 
@@ -1398,7 +1434,9 @@ jlong ChromeBrowserProvider::AddSearchTermFromAPI(JNIEnv* env,
     return kInvalidContentProviderId;
   }
 
-  AddSearchTermFromAPITask task(service_.get(), &android_history_consumer_,
+  AddSearchTermFromAPITask task(service_.get(),
+                                &android_history_consumer_,
+                                &cancelable_task_tracker_,
                                 profile_);
   return task.Run(row);
 }
@@ -1444,7 +1482,9 @@ ScopedJavaLocalRef<jobject> ChromeBrowserProvider::QuerySearchTermFromAPI(
     sort_clause = ConvertJavaStringToUTF8(env, sort_order);
   }
 
-  QuerySearchTermsFromAPITask task(service_.get(), &android_history_consumer_,
+  QuerySearchTermsFromAPITask task(service_.get(),
+                                   &android_history_consumer_,
+                                   &cancelable_task_tracker_,
                                    profile_);
   history::AndroidStatement* statement = task.Run(
       query_columns, where_clause, where_args, sort_clause);
@@ -1471,7 +1511,9 @@ jint ChromeBrowserProvider::UpdateSearchTermFromAPI(
   if (selections)
     where_clause = ConvertJavaStringToUTF8(env, selections);
 
-  UpdateSearchTermsFromAPITask task(service_.get(), &android_history_consumer_,
+  UpdateSearchTermsFromAPITask task(service_.get(),
+                                    &android_history_consumer_,
+                                    &cancelable_task_tracker_,
                                     profile_);
   return task.Run(row, where_clause, where_args);
 }
@@ -1485,7 +1527,9 @@ jint ChromeBrowserProvider::RemoveSearchTermFromAPI(
   if (selections)
     where_clause = ConvertJavaStringToUTF8(env, selections);
 
-  RemoveSearchTermsFromAPITask task(service_.get(), &android_history_consumer_,
+  RemoveSearchTermsFromAPITask task(service_.get(),
+                                    &android_history_consumer_,
+                                    &cancelable_task_tracker_,
                                     profile_);
   return task.Run(where_clause, where_args);
 }
