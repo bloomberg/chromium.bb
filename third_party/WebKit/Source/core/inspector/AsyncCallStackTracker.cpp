@@ -229,7 +229,7 @@ void AsyncCallStackTracker::willHandleEvent(EventTarget* eventTarget, Event* eve
     ASSERT(eventTarget->executionContext());
     ASSERT(isEnabled());
     if (XMLHttpRequest* xhr = toXmlHttpRequest(eventTarget)) {
-        willHandleXHREvent(xhr, eventTarget, event);
+        willHandleXHREvent(xhr, event);
     } else {
         ExecutionContext* context = eventTarget->executionContext();
         if (ExecutionContextData* data = m_executionContextDataMap.get(context))
@@ -249,20 +249,23 @@ void AsyncCallStackTracker::willLoadXHR(XMLHttpRequest* xhr, const ScriptValue& 
     data->m_xhrCallChains.set(xhr, createAsyncCallChain(xhrSendName, callFrames));
 }
 
-void AsyncCallStackTracker::willHandleXHREvent(XMLHttpRequest* xhr, EventTarget* eventTarget, Event* event)
+void AsyncCallStackTracker::didLoadXHR(XMLHttpRequest* xhr)
+{
+    ASSERT(xhr->executionContext());
+    ASSERT(isEnabled());
+    if (ExecutionContextData* data = m_executionContextDataMap.get(xhr->executionContext()))
+        data->m_xhrCallChains.remove(xhr);
+}
+
+void AsyncCallStackTracker::willHandleXHREvent(XMLHttpRequest* xhr, Event* event)
 {
     ExecutionContext* context = xhr->executionContext();
     ASSERT(context);
     ASSERT(isEnabled());
-    if (ExecutionContextData* data = m_executionContextDataMap.get(context)) {
-        bool isXHRDownload = (xhr == eventTarget);
-        if (isXHRDownload && event->type() == EventTypeNames::loadend)
-            setCurrentAsyncCallChain(context, data->m_xhrCallChains.take(xhr));
-        else
-            setCurrentAsyncCallChain(context, data->m_xhrCallChains.get(xhr));
-    } else {
+    if (ExecutionContextData* data = m_executionContextDataMap.get(context))
+        setCurrentAsyncCallChain(context, data->m_xhrCallChains.get(xhr));
+    else
         setCurrentAsyncCallChain(context, nullptr);
-    }
 }
 
 void AsyncCallStackTracker::didEnqueueMutationRecord(ExecutionContext* context, MutationObserver* observer, const ScriptValue& callFrames)

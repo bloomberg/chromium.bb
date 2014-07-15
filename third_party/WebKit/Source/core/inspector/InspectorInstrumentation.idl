@@ -253,6 +253,9 @@ class AsyncFileSystemCallbacks;
     [Timeline, Inline=FastReturn]
     void didDispatchXHRLoadEvent(const InspectorInstrumentationCookie&);
 
+    [Debugger, Inline=FastReturn]
+    void didDispatchXHRLoadendEvent(ExecutionContext*, XMLHttpRequest*);
+
     [Timeline, Inline=FastReturn]
     void willScrollLayer([Keep] RenderObject*);
 

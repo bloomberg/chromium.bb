@@ -794,6 +794,12 @@ void InspectorDebuggerAgent::willLoadXHR(XMLHttpRequest* xhr, ThreadableLoaderCl
         m_asyncCallStackTracker.willLoadXHR(xhr, scriptDebugServer().currentCallFramesForAsyncStack());
 }
 
+void InspectorDebuggerAgent::didDispatchXHRLoadendEvent(XMLHttpRequest* xhr)
+{
+    if (m_asyncCallStackTracker.isEnabled())
+        m_asyncCallStackTracker.didLoadXHR(xhr);
+}
+
 void InspectorDebuggerAgent::didEnqueueMutationRecord(ExecutionContext* context, MutationObserver* observer)
 {
     if (m_asyncCallStackTracker.isEnabled() && !m_asyncCallStackTracker.hasEnqueuedMutationRecord(context, observer))

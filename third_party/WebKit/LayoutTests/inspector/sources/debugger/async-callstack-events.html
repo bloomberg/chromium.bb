@@ -41,13 +41,20 @@ function onSelectionChange()
 
 function doTestHashChange()
 {
-    window.addEventListener("hashchange", onHashChange, false);
+    window.addEventListener("hashchange", onHashChange1, false);
+    window.addEventListener("hashchange", onHashChange2, true);
     location.hash = location.hash + "x";
 }
 
-function onHashChange()
+function onHashChange1()
 {
-    window.removeEventListener("hashchange", onHashChange, false);
+    window.removeEventListener("hashchange", onHashChange1, false);
+    debugger;
+}
+
+function onHashChange2()
+{
+    window.removeEventListener("hashchange", onHashChange2, true);
     debugger;
 }
 
@@ -66,7 +73,7 @@ function onVideoPlay()
 
 var test = function()
 {
-    var totalDebuggerStatements = 3;
+    var totalDebuggerStatements = 4;
     var maxAsyncCallStackDepth = 4;
     InspectorTest.runAsyncCallStacksTest(totalDebuggerStatements, maxAsyncCallStackDepth);
 }

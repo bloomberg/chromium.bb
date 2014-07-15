@@ -1026,6 +1026,9 @@ void XMLHttpRequest::dispatchProgressEvent(const AtomicString& type, long long r
     unsigned long long total = lengthComputable ? static_cast<unsigned long long>(expectedLength) : 0;
 
     m_progressEventThrottle.dispatchProgressEvent(type, lengthComputable, loaded, total);
+
+    if (type == EventTypeNames::loadend)
+        InspectorInstrumentation::didDispatchXHRLoadendEvent(executionContext(), this);
 }
 
 void XMLHttpRequest::dispatchProgressEventFromSnapshot(const AtomicString& type)

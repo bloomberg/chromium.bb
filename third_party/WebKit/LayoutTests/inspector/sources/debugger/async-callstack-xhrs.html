@@ -30,9 +30,14 @@ function sendXHR(async)
             debugger;
         }
     };
-    function downloadEnd()
+    function downloadEnd1()
     {
-        xhr.removeEventListener("loadend", downloadEnd, false);
+        xhr.removeEventListener("loadend", downloadEnd1, false);
+        debugger;
+    }
+    function downloadEnd2()
+    {
+        xhr.removeEventListener("loadend", downloadEnd2, true);
         debugger;
     }
     function uploadEnd()
@@ -50,7 +55,8 @@ function sendXHR(async)
         debugger;
         xhr.upload.removeEventListener("progress", uploadProgress, false);
     }
-    xhr.addEventListener("loadend", downloadEnd, false);
+    xhr.addEventListener("loadend", downloadEnd1, false);
+    xhr.addEventListener("loadend", downloadEnd2, true);
     if (async) {
         xhr.upload.addEventListener("loadend", uploadEnd, false);
         xhr.addEventListener("progress", downloadProgress, false);
@@ -62,7 +68,7 @@ function sendXHR(async)
 
 var test = function()
 {
-    var totalDebuggerStatements = 7;
+    var totalDebuggerStatements = 9;
     var maxAsyncCallStackDepth = 4;
     InspectorTest.runAsyncCallStacksTest(totalDebuggerStatements, maxAsyncCallStackDepth);
 }
