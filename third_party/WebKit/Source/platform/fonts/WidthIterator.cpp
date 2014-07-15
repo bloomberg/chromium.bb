@@ -253,15 +253,15 @@ unsigned WidthIterator::advance(int offset, GlyphBuffer* glyphBuffer)
     return advanceInternal(textIterator, glyphBuffer);
 }
 
-bool WidthIterator::advanceOneCharacter(float& width, GlyphBuffer& glyphBuffer)
+bool WidthIterator::advanceOneCharacter(float& width)
 {
-    unsigned oldSize = glyphBuffer.size();
-    advance(m_currentCharacter + 1, &glyphBuffer);
-    float w = 0;
-    for (unsigned i = oldSize; i < glyphBuffer.size(); ++i)
-        w += glyphBuffer.advanceAt(i).width();
-    width = w;
-    return glyphBuffer.size() > oldSize;
+    float initialWidth = m_runWidthSoFar;
+
+    if (!advance(m_currentCharacter + 1))
+        return false;
+
+    width = m_runWidthSoFar - initialWidth;
+    return true;
 }
 
 }

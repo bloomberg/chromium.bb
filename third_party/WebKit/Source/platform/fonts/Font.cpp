@@ -623,10 +623,7 @@ float Font::getGlyphsAndAdvancesForSimpleText(const TextRunPaintInfo& runInfo, G
     float initialAdvance;
 
     WidthIterator it(this, runInfo.run, 0, false, forTextEmphasis);
-    // FIXME: Using separate glyph buffers for the prefix and the suffix is incorrect when kerning or
-    // ligatures are enabled.
-    GlyphBuffer localGlyphBuffer;
-    it.advance(runInfo.from, &localGlyphBuffer);
+    it.advance(runInfo.from);
     float beforeWidth = it.m_runWidthSoFar;
     it.advance(runInfo.to, &glyphBuffer);
 
@@ -636,7 +633,7 @@ float Font::getGlyphsAndAdvancesForSimpleText(const TextRunPaintInfo& runInfo, G
     float afterWidth = it.m_runWidthSoFar;
 
     if (runInfo.run.rtl()) {
-        it.advance(runInfo.run.length(), &localGlyphBuffer);
+        it.advance(runInfo.run.length());
         initialAdvance = it.m_runWidthSoFar - afterWidth;
         glyphBuffer.reverse();
     } else {
@@ -758,8 +755,7 @@ void Font::drawEmphasisMarks(GraphicsContext* context, const TextRunPaintInfo& r
 float Font::floatWidthForSimpleText(const TextRun& run, HashSet<const SimpleFontData*>* fallbackFonts, IntRectExtent* glyphBounds) const
 {
     WidthIterator it(this, run, fallbackFonts, glyphBounds);
-    GlyphBuffer glyphBuffer;
-    it.advance(run.length(), (fontDescription().typesettingFeatures() & (Kerning | Ligatures)) ? &glyphBuffer : 0);
+    it.advance(run.length());
 
     if (glyphBounds) {
         glyphBounds->setTop(floorf(-it.minGlyphBoundingBoxY()));
@@ -781,15 +777,14 @@ FloatRect Font::pixelSnappedSelectionRect(float fromX, float toX, float y, float
 
 FloatRect Font::selectionRectForSimpleText(const TextRun& run, const FloatPoint& point, int h, int from, int to, bool accountForGlyphBounds) const
 {
-    GlyphBuffer glyphBuffer;
     WidthIterator it(this, run, 0, accountForGlyphBounds);
-    it.advance(from, &glyphBuffer);
+    it.advance(from);
     float fromX = it.m_runWidthSoFar;
-    it.advance(to, &glyphBuffer);
+    it.advance(to);
     float toX = it.m_runWidthSoFar;
 
     if (run.rtl()) {
-        it.advance(run.length(), &glyphBuffer);
+        it.advance(run.length());
         float totalWidth = it.m_runWidthSoFar;
         float beforeWidth = fromX;
         float afterWidth = toX;
@@ -807,14 +802,13 @@ int Font::offsetForPositionForSimpleText(const TextRun& run, float x, bool inclu
     float delta = x;
 
     WidthIterator it(this, run);
-    GlyphBuffer localGlyphBuffer;
     unsigned offset;
     if (run.rtl()) {
         delta -= floatWidthForSimpleText(run);
         while (1) {
             offset = it.m_currentCharacter;
             float w;
-            if (!it.advanceOneCharacter(w, localGlyphBuffer))
+            if (!it.advanceOneCharacter(w))
                 break;
             delta += w;
             if (includePartialGlyphs) {
@@ -829,7 +823,7 @@ int Font::offsetForPositionForSimpleText(const TextRun& run, float x, bool inclu
         while (1) {
             offset = it.m_currentCharacter;
             float w;
-            if (!it.advanceOneCharacter(w, localGlyphBuffer))
+            if (!it.advanceOneCharacter(w))
                 break;
             delta -= w;
             if (includePartialGlyphs) {
