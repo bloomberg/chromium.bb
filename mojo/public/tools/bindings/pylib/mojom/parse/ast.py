@@ -17,6 +17,9 @@ class NodeBase(object):
     self.filename = filename
     self.lineno = lineno
 
+  def __eq__(self, other):
+    return type(self) == type(other)
+
 
 # TODO(vtl): Some of this is complicated enough that it should be tested.
 class NodeListBase(NodeBase):
@@ -26,7 +29,7 @@ class NodeListBase(NodeBase):
 
   def __init__(self, item_or_items=None, **kwargs):
     assert issubclass(self._list_item_type, NodeBase)
-    NodeBase.__init__(self, **kwargs)
+    super(NodeListBase, self).__init__(**kwargs)
     if item_or_items is None:
       self.elements = []
     elif isinstance(item_or_items, list):
@@ -45,7 +48,7 @@ class NodeListBase(NodeBase):
     return self.elements.__iter__()
 
   def __eq__(self, other):
-    return type(self) == type(other) and \
+    return super(NodeListBase, self).__eq__(other) and \
            len(self.elements) == len(other.elements) and \
            all(self.elements[i] == other.elements[i] \
                    for i in xrange(len(self.elements)))
@@ -74,12 +77,12 @@ class Attribute(NodeBase):
 
   def __init__(self, key, value, **kwargs):
     assert isinstance(key, str)
-    NodeBase.__init__(self, **kwargs)
+    super(Attribute, self).__init__(**kwargs)
     self.key = key
     self.value = value
 
   def __eq__(self, other):
-    return type(self) == type(other) and \
+    return super(Attribute, self).__eq__(other) and \
            self.key == other.key and \
            self.value == other.value
 
@@ -98,12 +101,12 @@ class EnumValue(NodeBase):
     # The optional value is either an int (which is current a string) or a
     # "wrapped identifier".
     assert value is None or isinstance(value, str) or isinstance(value, tuple)
-    NodeBase.__init__(self, **kwargs)
+    super(EnumValue, self).__init__(**kwargs)
     self.name = name
     self.value = value
 
   def __eq__(self, other):
-    return type(self) == type(other) and \
+    return super(EnumValue, self).__eq__(other) and \
            self.name == other.name and \
            self.value == other.value
 
@@ -120,11 +123,11 @@ class Import(NodeBase):
 
   def __init__(self, import_filename, **kwargs):
     assert isinstance(import_filename, str)
-    NodeBase.__init__(self, **kwargs)
+    super(Import, self).__init__(**kwargs)
     self.import_filename = import_filename
 
   def __eq__(self, other):
-    return type(self) == type(other) and \
+    return super(Import, self).__eq__(other) and \
            self.import_filename == other.import_filename
 
 
@@ -141,12 +144,12 @@ class Module(NodeBase):
     # |name| is either none or a "wrapped identifier".
     assert name is None or isinstance(name, tuple)
     assert attribute_list is None or isinstance(attribute_list, AttributeList)
-    NodeBase.__init__(self, **kwargs)
+    super(Module, self).__init__(**kwargs)
     self.name = name
     self.attribute_list = attribute_list
 
   def __eq__(self, other):
-    return type(self) == type(other) and \
+    return super(Module, self).__eq__(other) and \
            self.name == other.name and \
            self.attribute_list == other.attribute_list
 
@@ -158,13 +161,13 @@ class Mojom(NodeBase):
     assert module is None or isinstance(module, Module)
     assert isinstance(import_list, ImportList)
     assert isinstance(definition_list, list)
-    NodeBase.__init__(self, **kwargs)
+    super(Mojom, self).__init__(**kwargs)
     self.module = module
     self.import_list = import_list
     self.definition_list = definition_list
 
   def __eq__(self, other):
-    return type(self) == type(other) and \
+    return super(Mojom, self).__eq__(other) and \
            self.module == other.module and \
            self.import_list == other.import_list and \
            self.definition_list == other.definition_list
@@ -179,11 +182,12 @@ class Ordinal(NodeBase):
 
   def __init__(self, value, **kwargs):
     assert value is None or isinstance(value, int)
-    NodeBase.__init__(self, **kwargs)
+    super(Ordinal, self).__init__(**kwargs)
     self.value = value
 
   def __eq__(self, other):
-    return type(self) == type(other) and self.value == other.value
+    return super(Ordinal, self).__eq__(other) and \
+           self.value == other.value
 
 
 class Parameter(NodeBase):
@@ -191,13 +195,13 @@ class Parameter(NodeBase):
 
   def __init__(self, typename, name, ordinal, **kwargs):
     assert isinstance(ordinal, Ordinal)
-    NodeBase.__init__(self, **kwargs)
+    super(Parameter, self).__init__(**kwargs)
     self.typename = typename
     self.name = name
     self.ordinal = ordinal
 
   def __eq__(self, other):
-    return type(self) == type(other) and \
+    return super(Parameter, self).__eq__(other) and \
            self.typename == other.typename and \
            self.name == other.name and \
            self.ordinal == other.ordinal
