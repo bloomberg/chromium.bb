@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Test multiple MediaKeys lifetimes</title>
+        <script src="encrypted-media-utils.js"></script>
+        <script src="../../resources/testharness.js"></script>
+        <script src="../../resources/testharnessreport.js"></script>
+    </head>
+    <body>
+        <div id="log"></div>
+        <script>
+            // Since MediaKeys are not ActiveDOMObjects, it is hard to
+            // determine when they are garbage collected. For the test below
+            // a MediaKeySession (which is an ActiveDOMObject) is added to each
+            // MediaKeys object so there is something to count.
+
+            // MediaKeySessions remain as long as:
+            //   JavaScript has a reference to it
+            //   OR (MediaKeys is around
+            //       AND the session has not received a close() event)
+            // In the tests below, we do not close any session nor keep a
+            // Javascript reference to any session, so MediaKeySessions remain
+            // as long as the associated MediaKeys object is around.
+
+            // For this test, create several MediaKeys (each with a
+            // MediaKeySession object so they can be counted) and verify
+            // lifetime.
+            async_test(function(test)
+            {
+                var mediaKeys;
+                var initDataType = getInitDataType();
+                var initData = getInitData(initDataType);
+
+                var startingActiveDOMObjectCount = window.internals.activeDOMObjectCount(document);
+
+                function numActiveDOMObjectsCreated()
+                {
+                    return window.internals.activeDOMObjectCount(document) - startingActiveDOMObjectCount;
+                }
+
+                // Create a MediaKeys object and an associated MediaKeySession
+                // object. |mediaKeys| is updated to refer to the new MediaKeys
+                // object. Returns a promise that resolves with the new
+                // MediaKeySession object.
+                function createMediaKeyWithMediaKeySession()
+                {
+                    return MediaKeys.create('org.w3.clearkey').then(function(result) {
+                        mediaKeys = result;
+                        return mediaKeys.createSession(initDataType, initData);
+                    });
+                }
+
+                // Create a few MediaKeys + MediaKeySession objects. Only keep
+                // a reference to the last one created.
+                createMediaKeyWithMediaKeySession().then(function(mediaKeySession) {
+                    // Should be 1 MediaKeySession + 1 PromiseResolver for the
+                    // MediaKeySession.
+                    assert_equals(numActiveDOMObjectsCreated(), 2);
+                    return createMediaKeyWithMediaKeySession();
+                }).then(function(mediaKeySession) {
+                    // Should be 2 MediaKeySessions + 1 PromiseResolver for the
+                    // latest MediaKeySession.
+                    assert_equals(numActiveDOMObjectsCreated(), 3);
+                    return createMediaKeyWithMediaKeySession();
+                }).then(function(mediaKeySession) {
+                    // Should be 3 MediaKeySessions + 1 PromiseResolver for the
+                    // latest MediaKeySession.
+                    assert_equals(numActiveDOMObjectsCreated(), 4);
+                    return createMediaKeyWithMediaKeySession();
+                }).then(function(mediaKeySession) {
+                    // Should be 4 MediaKeySessions + 1 PromiseResolver for the
+                    // latest MediaKeySession.
+                    assert_equals(numActiveDOMObjectsCreated(), 5);
+                    return createMediaKeyWithMediaKeySession();
+                }).then(function(mediaKeySession) {
+                    // Should be 5 MediaKeySessions + 1 PromiseResolver for the
+                    // latest MediaKeySession.
+                    assert_equals(numActiveDOMObjectsCreated(), 6);
+
+                    // |mediaKeys| refers to the most recently created MediaKeys
+                    // object.
+                    //
+                    // In order for the MediaKeySession objects to have no
+                    // outstanding activity so that they can be garbage
+                    // collected, it needs time to process any pending events.
+                    // As a "message" event is generated when a new session is
+                    // created, we need to allow the event to run (we're not
+                    // doing anything with the event in this test).
+                    return delayToAllowEventProcessingPromise();
+                }).then(function(result) {
+                    // Should be just 5 MediaKeySessions.
+                    assert_equals(numActiveDOMObjectsCreated(), 5);
+
+                    // As we only have a reference (|mediaKeys|) to the last
+                    // created MediaKeys object, the other 4 MediaKeys objects
+                    // are available to be garbage collected.
+                    //
+                    // Since MediaKeySessions remain alive as long as MediaKeys
+                    // is around, it is possible that gc() checks the
+                    // MediaKeySession object first, and doesn't collect it
+                    // since MediaKeys hasn't been collected yet. Thus run gc()
+                    // twice, to ensure that the unreferenced MediaKeySession
+                    // objects get collected.
+                    return createGCPromise();
+                }).then(function(result) {
+                    return createGCPromise();
+                }).then(function(result) {
+                    // Should be 1 MediaKeySession, the session for |mediaKeys|.
+                    assert_equals(numActiveDOMObjectsCreated(), 1);
+                    assert_equals(mediaKeys.keySystem, 'org.w3.clearkey');
+
+                    // Release the last MediaKeys object created.
+                    mediaKeys = null;
+
+                    // Run gc() again to reclaim the remaining MediaKeys object
+                    // and the last MediaKeySession. gc() run twice in case
+                    // MediaKeySession checked first and not collected in the
+                    // first pass.
+                    return createGCPromise();
+                }).then(function(result) {
+                    return createGCPromise();
+                }).then(function(result) {
+                    assert_equals(numActiveDOMObjectsCreated(), 0);
+                    test.done();
+                }).catch(function(error) {
+                    forceTestFailureFromPromise(test, error);
+                });
+            }, 'Multiple MediaKeys lifetime');
+        </script>
+    </body>
+</html>

@@ -2,120 +2,50 @@
 <html>
     <head>
         <title>Test MediaKeys lifetime</title>
+        <script src="encrypted-media-utils.js"></script>
         <script src="../../resources/testharness.js"></script>
         <script src="../../resources/testharnessreport.js"></script>
-        <script src="../../resources/gc.js"></script>
     </head>
     <body>
         <div id="log"></div>
         <script>
-            // Since MediaKeys are not ActiveDOMObjects, it is hard to
-            // determine when they are garbage collected. For some tests below
-            // a MediaKeySession (which is an ActiveDOMObject) is added so
-            // there is something to count.
-
-            // MediaKeySessions remain as long as:
-            //   JavaScript has a reference to it
-            //   OR (MediaKeys is around AND the session has not received a close() event)
-            // In the tests below, we do not close any session nor keep a
-            // Javascript reference to any session, so MediaKeySessions remain
-            // as long as the associated MediaKeys object is around.
-
-            // For this test, simply verify that creating and destroying
-            // MediaKeys doesn't crash.
-            test(function()
+            async_test(function(test)
             {
                 // Create a MediaKeys object and free immediately.
-                var mediaKeys = new MediaKeys("org.w3.clearkey");
-                mediaKeys = null;
-                gc();
+                MediaKeys.create('org.w3.clearkey').then(function(result) {
+                    // Do nothing with the created object
+                }).then(function(result) {
+                    // No way to verify that MediaKeys object is actually
+                    // collected, but make sure it doesn't crash.
+                    return createGCPromise();
+                }).then(function(result) {
+                    test.done();
+                }).catch(function(error) {
+                    forceTestFailureFromPromise(test, error);
+                });
+            }, 'Creating and destroying MediaKeys does not crash');
 
-                // Create a MediaKeys object and make sure gc doesn't free it
-                // as long as we have a reference.
-                mediaKeys = new MediaKeys("org.w3.clearkey");
-                gc();
-                assert_equals(mediaKeys.keySystem, 'org.w3.clearkey');
-                mediaKeys = null;
-                gc();
-
-            }, "MediaKeys lifetime");
-
-            // For this test, create a MediaKeySession (which is an
-            // ActiveDOMObject) and verify lifetime.
-            test(function()
+            async_test(function(test)
             {
                 var mediaKeys;
-                var initData = new Uint8Array([0, 1, 2, 3, 4, 5, 6, 7]);
-                var startingActiveDOMObjectCount = window.internals.activeDOMObjectCount(document);
+                MediaKeys.create('org.w3.clearkey').then(function(result) {
+                    mediaKeys = result;
+                    return createGCPromise();
+                }).then(function(result) {
+                    // Check that the object still exists.
+                    assert_equals(mediaKeys.keySystem, 'org.w3.clearkey');
+                    mediaKeys = null;
 
-                function numActiveDOMObjectsCreated()
-                {
-                    return window.internals.activeDOMObjectCount(document) - startingActiveDOMObjectCount;
-                }
-
-                // Create a MediaKeys object with a session.
-                mediaKeys = new MediaKeys("org.w3.clearkey");
-                mediaKeys.createSession("video/webm", initData);
-                assert_equals(numActiveDOMObjectsCreated(), 1);
-
-                // Run gc(), should not affect MediaKeys object nor the session
-                // since we still have a reference to it.
-                gc();
-                assert_equals(mediaKeys.keySystem, 'org.w3.clearkey');
-                assert_equals(numActiveDOMObjectsCreated(), 1);
-
-                // Drop reference to the MediaKeys object and run gc again.
-                // Object should be collected this time. Since
-                // MediaKeySessions remain alive as long as MediaKeys is around,
-                // it is possible that gc() checks the MediaKeySession object
-                // first, and doesn't collect it since MediaKeys hasn't been
-                // collected yet. Thus run gc() twice, to ensure that the
-                // unreferenced MediaKeySession object get collected.
-                mediaKeys = null;
-                gc();
-                gc();
-                assert_equals(numActiveDOMObjectsCreated(), 0);
-
-            }, "MediaKeys lifetime with session");
-
-            // For this test, create several MediaKeys (with MediaKeySessions so
-            // they can be counted) and verify lifetime.
-            test(function()
-            {
-                var mediaKeys;
-                var initData = new Uint8Array([0, 1, 2, 3, 4, 5, 6, 7]);
-                var startingActiveDOMObjectCount = window.internals.activeDOMObjectCount(document);
-
-                function numActiveDOMObjectsCreated()
-                {
-                    return window.internals.activeDOMObjectCount(document) - startingActiveDOMObjectCount;
-                }
-
-                // Create a few MediaKeys objects. Only keep a reference to the
-                // last one created.
-                for (var i = 0; i < 5; ++i) {
-                    mediaKeys = new MediaKeys("org.w3.clearkey");
-                    mediaKeys.createSession("video/webm", initData);
-                }
-                assert_equals(numActiveDOMObjectsCreated(), 5);
-
-                // All but the last one created should be garbage collected.
-                // Since MediaKeySessions remain alive as long as MediaKeys is
-                // around, it is possible that gc() checks the MediaKeySession
-                // object first, and doesn't collect it since MediaKeys hasn't
-                // been collected yet. Thus run gc() twice, to ensure that the
-                // unreferenced MediaKeySession objects get collected.
-                gc();
-                gc();
-                assert_equals(numActiveDOMObjectsCreated(), 1);
-                assert_equals(mediaKeys.keySystem, 'org.w3.clearkey');
-
-                // Release the last MediaKeys object created.
-                mediaKeys = null;
-                gc();
-                gc();
-                assert_equals(numActiveDOMObjectsCreated(), 0);
-            }, "Multiple MediaKeys lifetime");
+                    // Now that the reference is dropped, it should be
+                    // collected. No way to verify that it is actually
+                    // collected, but make sure it doesn't crash.
+                    return createGCPromise();
+                }).then(function(result) {
+                    test.done();
+                }).catch(function(error) {
+                    forceTestFailureFromPromise(test, error);
+                });
+            }, 'MediaKeys is not collected as long as we have a reference');
         </script>
     </body>
 </html>

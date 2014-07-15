@@ -3,7 +3,6 @@
     <head>
         <title>NeedKey</title>
         <script src="encrypted-media-utils.js"></script>
-        <script src="../w3c-media-utils.js"></script>
         <script src="../../resources/testharness.js"></script>
         <script src="../../resources/testharnessreport.js"></script>
     </head>
@@ -12,9 +11,6 @@
         <div id="log"></div>
         <p>Test that needkey event is fired on an encrypted media file.</p>
         <script>
-            // Timeout for all tests to run.
-            setup({ timeout: 60000 });
-
             var expectedInitData = stringToUint8Array('0123456789012345');
 
             // Will get 2 identical events, one for audio, one for video.
@@ -22,23 +18,23 @@
 
             async_test(function(test)
             {
-                var video = document.getElementById("testVideo");
+                var video = document.getElementById('testVideo');
 
                 var onNeedKey = function(event)
                 {
                     assert_equals(event.target, video);
                     assert_true(event instanceof window.MediaKeyNeededEvent);
-                    assert_equals(event.type, "needkey");
-                    assert_equals(event.contentType, "video/webm");
+                    assert_equals(event.type, 'needkey');
+                    assert_equals(event.contentType, 'video/webm');
                     assert_array_equals(event.initData, expectedInitData);
 
                     if (--expectedEvents == 0)
                         test.done();
                 };
 
-                waitForEventAndRunStep("needkey", video, onNeedKey, test);
-                video.src = "../content/test-encrypted.webm";
-            }, "Needkey fired on encrypted media file.", { timeout: 60000 });
+                waitForEventAndRunStep('needkey', video, onNeedKey, test);
+                video.src = '../content/test-encrypted.webm';
+            }, 'Needkey fired on encrypted media file.');
         </script>
     </body>
 </html>

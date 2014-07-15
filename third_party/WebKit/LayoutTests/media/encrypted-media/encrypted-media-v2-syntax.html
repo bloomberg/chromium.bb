@@ -9,106 +9,541 @@
     <body>
         <div id="log"></div>
         <script>
-            var typeError = new TypeError();
-            var mediaKeys = null;
-            var mediaKeySession = null;
-            var initData = stringToUint8Array('init data');
-
-            test(function()
+            // This function checks that calling |testCase.func| returns a
+            // rejected Promise with the error.name equal to
+            // |testCase.exception|.
+            function test_exception(testCase /*...*/)
             {
-                // Too few parameters.
-                assert_throws(typeError, function() { new MediaKeys(); });
-                // Invalid parameters.
-                assert_throws('INVALID_ACCESS_ERR', function() { new MediaKeys(''); });
-                // Invalid key systems.
-                assert_throws('NOT_SUPPORTED_ERR', function() { new MediaKeys(null); });
-                assert_throws('NOT_SUPPORTED_ERR', function() { new MediaKeys(undefined); });
-                assert_throws('NOT_SUPPORTED_ERR', function() { new MediaKeys('unsupported'); });
-                assert_throws('NOT_SUPPORTED_ERR', function() { new MediaKeys(1); });
-                assert_throws('NOT_SUPPORTED_ERR', function() { new MediaKeys(new Uint8Array(0)); });
-                // Non-ASCII names.
-                assert_throws('NOT_SUPPORTED_ERR', function() { new MediaKeys('org.w3\u263A.clearkey'); });
-            }, 'Test MediaKeys constructor exceptions.');
+                var func = testCase.func;
+                var exception = testCase.exception;
+                var args = Array.prototype.slice.call(arguments, 1);
 
-            test(function()
+                // Currently blink throws for TypeErrors rather than returning
+                // a rejected promise (http://crbug.com/359386).
+                // FIXME: Remove try/catch once they become failed promises.
+                try {
+                    return func.apply(null, args).then(
+                        function(result)
+                        {
+                            assert_unreached(format_value(func));
+                        },
+                        function(error)
+                        {
+                            assert_equals(error.name, exception, format_value(func));
+                            assert_not_equals(error.message, "", format_value(func));
+                        }
+                    );
+                } catch (e) {
+                    // Only allow 'TypeError' exceptions to be thrown.
+                    // Everything else should be a failed promise.
+                    assert_equals('TypeError', exception, format_value(func));
+                    assert_equals(e.name, exception, format_value(func));
+                }
+            }
+
+            var kCreateMediaKeysExceptionsTestCases = [
+                // Too few parameters.
+                {
+                    exception: 'TypeError',
+                    func: function() { return MediaKeys.create(); }
+                },
+                // Invalid parameters.
+                {
+                    exception: 'InvalidAccessError',
+                    func: function() { return MediaKeys.create(''); }
+                },
+                // Invalid key systems.
+                {
+                    exception: 'NotSupportedError',
+                    func: function() { return MediaKeys.create(null); }
+                },
+                {
+                    exception: 'NotSupportedError',
+                    func: function() { return MediaKeys.create(undefined); }
+                },
+                {
+                    exception: 'NotSupportedError',
+                    func: function() { return MediaKeys.create(1); }
+                },
+                {
+                    exception: 'NotSupportedError',
+                    func: function() { return MediaKeys.create(new Uint8Array(0)); }
+                },
+                {
+                    exception: 'NotSupportedError',
+                    func: function() { return MediaKeys.create('unsupported'); }
+                },
+                // Non-ASCII names.
+                {
+                    exception: 'NotSupportedError',
+                    func: function() { return MediaKeys.create('org.w3\u263A.clearkey'); }
+                }
+            ];
+
+            async_test(function(test)
+            {
+                // Since promises catch any exception and convert it into a
+                // rejected Promise, there is no current way to have the W3C
+                // test framework report a failed test. For now, simply force
+                // a timeout to indicate failure.
+                // FIXME: Once W3C test framework handles Promises, fix this.
+
+                var createPromises = kCreateMediaKeysExceptionsTestCases.map(function(testCase) {
+                    return test_exception(testCase);
+                });
+
+                Promise.all(createPromises).then(function(result) {
+                    test.done();
+                }).catch(function(error) {
+                    forceTestFailureFromPromise(test, error, 'create() tests failed');
+                });
+            }, 'Test MediaKeys create() exceptions.');
+
+            async_test(function(test)
             {
                 assert_equals(typeof window.MediaKeys, 'function');
-                assert_not_equals(new MediaKeys('org.w3.clearkey', 'extra'), null);
-                mediaKeys = new MediaKeys('org.w3.clearkey');
-                assert_not_equals(mediaKeys, null);
-                assert_equals(typeof mediaKeys, 'object');
-                assert_equals(mediaKeys.keySystem, 'org.w3.clearkey');
-                assert_equals(typeof mediaKeys.createSession, 'function');
-                assert_equals(typeof mediaKeys.addEventListener, 'undefined');
-            }, 'Test MediaKeys constructor.');
+                MediaKeys.create('org.w3.clearkey').then(function(mediaKeys) {
+                    assert_not_equals(mediaKeys, null);
 
-            test(function()
-            {
+                    // Test creation of a second MediaKeys.
+                    // The extra parameter is ignored.
+                    return MediaKeys.create('org.w3.clearkey', 'extra');
+                }).then(function(mediaKeys) {
+                    assert_not_equals(mediaKeys, null);
+                    assert_equals(typeof mediaKeys, 'object');
+                    assert_equals(mediaKeys.keySystem, 'org.w3.clearkey');
+                    assert_equals(typeof mediaKeys.createSession, 'function');
+                    assert_equals(typeof mediaKeys.addEventListener, 'undefined');
+                    test.done();
+                }).catch(function(error) {
+                    forceTestFailureFromPromise(test, error, 'create() tests failed');
+                });
+            }, 'Test MediaKeys create().');
+
+            var kCreateSessionExceptionsTestCases = [
+                // Tests in this set use a shortened parameter name due to
+                // format_value() only returning the first 60 characters as the
+                // result. With a longer name the first 60 characters is not
+                // enough to determine which test failed. Even with the
+                // shortened name, the error message for the last couple of
+                // tests is the same.
+
                 // Too few parameters.
-                assert_throws(typeError, function() { mediaKeys.createSession(); });
-                assert_throws(typeError, function() { mediaKeys.createSession(''); });
-                assert_throws(typeError, function() { mediaKeys.createSession(null); });
-                assert_throws(typeError, function() { mediaKeys.createSession(undefined); });
-                assert_throws(typeError, function() { mediaKeys.createSession('video/webm'); });
-                assert_throws(typeError, function() { mediaKeys.createSession(new Uint8Array(0)); });
-                assert_throws(typeError, function() { mediaKeys.createSession(initData); });
+                {
+                    exception: 'TypeError',
+                    func: function(mk) { return mk.createSession(); }
+                },
+                {
+                    exception: 'TypeError',
+                    func: function(mk) { return mk.createSession(''); }
+                },
+                {
+                    exception: 'TypeError',
+                    func: function(mk) { return mk.createSession(null); }
+                },
+                {
+                    exception: 'TypeError',
+                    func: function(mk) { return mk.createSession(undefined); }
+                },
+                {
+                    exception: 'TypeError',
+                    func: function(mk) { return mk.createSession(1); }
+                },
+                {
+                    exception: 'TypeError',
+                    func: function(mk) { return mk.createSession(new Uint8Array(0)); }
+                },
+                {
+                    exception: 'TypeError',
+                    func: function(mk, _, initData) { return mk.createSession(initData); }
+                },
                 // Invalid parameters.
-                assert_throws(typeError, function() { mediaKeys.createSession('video/webm', ''); });
-                assert_throws(typeError, function() { mediaKeys.createSession('video/webm', null); });
-                assert_throws(typeError, function() { mediaKeys.createSession('video/webm', undefined); });
-                assert_throws(typeError, function() { mediaKeys.createSession('video/webm', 1); });
-                assert_throws('InvalidAccessError', function() { mediaKeys.createSession('video/webm', new Uint8Array(0)); });
-                assert_throws('InvalidAccessError', function() { mediaKeys.createSession('', initData); });
+                {
+                    exception: 'InvalidAccessError',
+                    func: function(mk, _, initData) { return mk.createSession('', initData); }
+                },
                 // Not supported contentTypes.
-                assert_throws('NotSupportedError', function() { mediaKeys.createSession(null, initData); });
-                assert_throws('NotSupportedError', function() { mediaKeys.createSession(undefined, initData); });
-                assert_throws('NotSupportedError', function() { mediaKeys.createSession(new Uint8Array(0), initData); });
-                assert_throws('NotSupportedError', function() { mediaKeys.createSession(1, initData); });
-                assert_throws('NotSupportedError', function() { mediaKeys.createSession('unsupported', initData); });
-                assert_throws('NotSupportedError', function() { mediaKeys.createSession('video/foo', initData); });
-                assert_throws('NotSupportedError', function() { mediaKeys.createSession('text/webm', initData); });
+                {
+                    exception: 'NotSupportedError',
+                    func: function(mk, _, initData) { return mk.createSession(null, initData); }
+                },
+                {
+                    exception: 'NotSupportedError',
+                    func: function(mk, _, initData) { return mk.createSession(undefined, initData); }
+                },
+                {
+                    exception: 'NotSupportedError',
+                    func: function(mk, _, initData) { return mk.createSession(1, initData); }
+                },
+                {
+                    exception: 'NotSupportedError',
+                    func: function(mk, _, initData) { return mk.createSession(new Uint8Array(0), initData); }
+                },
+                {
+                    exception: 'NotSupportedError',
+                    func: function(mk, _, initData) { return mk.createSession('unsupported', initData); }
+                },
+                {
+                    exception: 'NotSupportedError',
+                    func: function(mk, _, initData) { return mk.createSession('video/foo', initData); }
+                },
+                {
+                    exception: 'NotSupportedError',
+                    func: function(mk, _, initData) { return mk.createSession('text/webm', initData); }
+                }
+                // FIXME: Enable when switching to initDataType from MIME type.
+                // http://crbug.com/385874.
+                // {
+                //     exception: 'NotSupportedError',
+                //     func: function(mk, _, initData) { return mk.createSession('video/webm', initData); }
+                // }
+            ];
+
+            var kTypeSpecificCreateSessionExceptionsTestCases = [
+                // Tests in this set use a shortened parameter name due to
+                // format_value() only returning the first 60 characters as the
+                // result. With a longer name the first 60 characters is not
+                // enough to determine which test failed. Even with the
+                // shortened name, the error message for the last couple of
+                // tests is the same.
+
+                // Too few parameters.
+                {
+                    exception: 'TypeError',
+                    func: function(mk, type) { return mk.createSession(type); }
+                },
+                // Invalid parameters.
+                {
+                    exception: 'TypeError',
+                    func: function(mk, type) { return mk.createSession(type, ''); }
+                },
+                {
+                    exception: 'TypeError',
+                    func: function(mk, type) { return mk.createSession(type, null); }
+                },
+                {
+                    exception: 'TypeError',
+                    func: function(mk, type) { return mk.createSession(type, undefined); }
+                },
+                {
+                    exception: 'TypeError',
+                    func: function(mk, type) { return mk.createSession(type, 1); }
+                },
+                {
+                    exception: 'InvalidAccessError',
+                    func: function(mk, type) { return mk.createSession(type, new Uint8Array(0)); }
+                },
+                // Invalid sessionTypes. Added index to each variable name as
+                // otherwise the first 60 characters of func: is the same.
+                {
+                    exception: 'TypeError',
+                    func: function(mk1, type, initData) { return mk1.createSession(type, initData, ''); }
+                },
+                {
+                    exception: 'TypeError',
+                    func: function(mk2, type, initData) { return mk2.createSession(type, initData, null); }
+                },
+                {
+                    exception: 'TypeError',
+                    func: function(mk3, type, initData) { return mk3.createSession(type, initData, 1); }
+                },
+                {
+                    exception: 'TypeError',
+                    func: function(mk4, type, initData) { return mk4.createSession(type, initData, new Uint8Array(0)); }
+                },
+                {
+                    exception: 'TypeError',
+                    func: function(mk5, type, initData) { return mk5.createSession(type, initData, 'unsupported'); }
+                },
+                {
+                    exception: 'TypeError',
+                    func: function(mk6, type, initData) { return mk6.createSession(type, initData, 'TEMPORARY'); }
+                }
+            ];
+
+            async_test(function(test)
+            {
+                MediaKeys.create('org.w3.clearkey').then(function(mediaKeys) {
+                    // FIXME: Remove "video/" from the calls to test_exception()
+                    // below when initDataType is properly supported.
+                    // http://crbug.com/385874.
+                    var initData = stringToUint8Array('init data');
+                    var sessionPromises = kCreateSessionExceptionsTestCases.map(function(testCase) {
+                        return test_exception(testCase, mediaKeys, '', initData);
+                    });
+
+                    // Test that WebM sessions generate the expected error, if
+                    // supported.
+                    if (MediaKeys.isTypeSupported('org.w3.clearkey', 'video/webm')) {
+                        var WebmSessionPromises = kTypeSpecificCreateSessionExceptionsTestCases.map(function(testCase) {
+                            return test_exception(testCase, mediaKeys, 'video/webm', getInitData('video/webm'));
+                        });
+                        sessionPromises = sessionPromises.concat(WebmSessionPromises);
+                    }
+
+                    // Repeat for MP4, if supported.
+                    if (MediaKeys.isTypeSupported('org.w3.clearkey', 'video/mp4')) {
+                        var mp4SessionPromises = kTypeSpecificCreateSessionExceptionsTestCases.map(function(testCase) {
+                            return test_exception(testCase, mediaKeys, 'video/mp4', getInitData('video/mp4'));
+                        });
+                        sessionPromises = sessionPromises.concat(mp4SessionPromises);
+                    }
+
+                    assert_not_equals(sessionPromises.length, 0);
+                    return Promise.all(sessionPromises);
+                }).then(function(result) {
+                    test.done();
+                }).catch(function(error) {
+                    forceTestFailureFromPromise(test, error, 'createSession() tests failed');
+                });
             }, 'Test MediaKeys createSession() exceptions.');
 
-            test(function()
+            // All calls to |func| in this group are supposed to succeed.
+            // However, the spec notes that some things are optional for
+            // Clear Key. In particular, support for persistent sessions
+            // is optional. Since some implementations won't support some
+            // features, a NotSupportedError is treated as a success
+            // if |isNotSupportedAllowed| is true.
+            var kCreateSessionTestCases = [
+                // Added index to each variable name as otherwise the first 60
+                // characters of |func| is the same.
+
+                // Use the default sessionType.
+                {
+                    func: function(mk1, type, initData) { return mk1.createSession(type, initData); },
+                    isNotSupportedAllowed: false
+                },
+                // Try variations of sessionType.
+                {
+                    func: function(mk2, type, initData) { return mk2.createSession(type, initData, 'temporary'); },
+                    isNotSupportedAllowed: false
+                },
+                {
+                    func: function(mk3, type, initData) { return mk3.createSession(type, initData, undefined); },
+                    isNotSupportedAllowed: false
+                },
+                {
+                    // Since this is optional, some Clear Key implementations
+                    // will succeed, others will return a "NotSupportedError".
+                    // Both are allowed results.
+                    func: function(mk4, type, initData) { return mk4.createSession(type, initData, 'persistent'); },
+                    isNotSupportedAllowed: true
+                },
+                // Try additional parameter, which should be ignored.
+                {
+                    func: function(mk5, type, initData) { return mk5.createSession(type, initData, 'temporary', 'extra'); },
+                    isNotSupportedAllowed: false
+                }
+            ];
+
+            // This function checks that calling |testCase.func| creates a
+            // MediaKeySession object with some default values. It also
+            // allows for an NotSupportedError to be generated and treated as a
+            // success, if allowed. See comment above kCreateSessionTestCases.
+            function test_createSession(testCase /*...*/)
             {
-                assert_not_equals(mediaKeys.createSession('video/webm', initData, 'extra'), null);
-                mediaKeySession = mediaKeys.createSession('video/webm', initData);
-                assert_not_equals(mediaKeySession, null);
-                assert_equals(typeof mediaKeySession, 'object');
-                assert_equals(typeof mediaKeySession.addEventListener, 'function');
-                assert_equals(typeof mediaKeySession.update, 'function');
-                assert_equals(mediaKeySession.error, null);
-                assert_equals(mediaKeySession.keySystem, 'org.w3.clearkey');
-                assert_equals(typeof mediaKeySession.sessionId, 'string');
-                assert_equals(typeof mediaKeySession.onopen, 'undefined');
-                assert_equals(typeof mediaKeySession.onmessage, 'undefined');
-                assert_equals(typeof mediaKeySession.onclose, 'undefined');
-                assert_equals(typeof mediaKeySession.onerror, 'undefined');
+                var func = testCase.func;
+                var isNotSupportedAllowed = testCase.isNotSupportedAllowed;
+                var args = Array.prototype.slice.call(arguments, 1);
+
+                return func.apply(null, args).then(
+                    function(mediaKeySession)
+                    {
+                        // FIXME: Update this set of tests when done
+                        // implementing the latest spec.
+                        assert_not_equals(mediaKeySession, null);
+                        assert_equals(typeof mediaKeySession, 'object');
+                        assert_equals(typeof mediaKeySession.addEventListener, 'function');
+                        assert_equals(typeof mediaKeySession.update, 'function');
+                        assert_equals(mediaKeySession.error, null);
+                        assert_true(mediaKeySession.sessionId && mediaKeySession.sessionId.length > 0);
+                        assert_equals(typeof mediaKeySession.sessionId, 'string');
+                        assert_equals(typeof mediaKeySession.onopen, 'undefined');
+                        assert_equals(typeof mediaKeySession.onmessage, 'undefined');
+                        assert_equals(typeof mediaKeySession.onclose, 'undefined');
+                        assert_equals(typeof mediaKeySession.onerror, 'undefined');
+                    },
+                    function(error)
+                    {
+                        assert_true(isNotSupportedAllowed, format_value(func));
+                        assert_equals(error.name, 'NotSupportedError', format_value(func));
+                        assert_not_equals(error.message, "", format_value(func));
+                    }
+                );
+            }
+
+            async_test(function(test)
+            {
+                MediaKeys.create('org.w3.clearkey').then(function(mediaKeys) {
+                    var sessionPromises = [];
+
+                    // Test that WebM sessions generate the expected error, if
+                    // supported.
+                    if (MediaKeys.isTypeSupported('org.w3.clearkey', 'video/webm')) {
+                        var WebmSessionPromises = kCreateSessionTestCases.map(function(testCase) {
+                            return test_createSession(testCase, mediaKeys, 'video/webm', getInitData('video/webm'));
+                        });
+                        sessionPromises = sessionPromises.concat(WebmSessionPromises);
+                    }
+
+                    // Repeat for MP4, if supported.
+                    if (MediaKeys.isTypeSupported('org.w3.clearkey', 'video/mp4')) {
+                        var mp4SessionPromises = kCreateSessionTestCases.map(function(testCase) {
+                            return test_createSession(testCase, mediaKeys, 'video/mp4', getInitData('video/mp4'));
+                        });
+                        sessionPromises = sessionPromises.concat(mp4SessionPromises);
+                    }
+
+                    assert_not_equals(sessionPromises.length, 0);
+                    return Promise.all(sessionPromises);
+                }).then(function(result) {
+                    test.done();
+                }).catch(function(error) {
+                    forceTestFailureFromPromise(test, error, 'createSession() tests failed');
+                });
             }, 'Test MediaKeys createSession().');
 
-            test(function()
-            {
+            var kUpdateSessionExceptionsTestCases = [
+                // Tests in this set use a shortened parameter name due to
+                // format_value() only returning the first 60 characters as the
+                // result. With a longer name (mediaKeySession) the first 60
+                // characters is not enough to determine which test failed.
+
                 // Too few parameters.
-                assert_throws(typeError, function() { mediaKeySession.update(); });
+                {
+                    exception: 'TypeError',
+                    func: function(s) { return s.update(); }
+                },
                 // Invalid parameters.
-                assert_throws(typeError, function() { mediaKeySession.update(''); });
-                assert_throws(typeError, function() { mediaKeySession.update(null); });
-                assert_throws(typeError, function() { mediaKeySession.update(undefined); });
-                assert_throws(typeError, function() { mediaKeySession.update(1); });
-                assert_throws('InvalidAccessError', function() { mediaKeySession.update(new Uint8Array(0)); });
+                {
+                    exception: 'TypeError',
+                    func: function(s) { return s.update(''); }
+                },
+                {
+                    exception: 'TypeError',
+                    func: function(s) { return s.update(null); }
+                },
+                {
+                    exception: 'TypeError',
+                    func: function(s) { return s.update(undefined); }
+                },
+                {
+                    exception: 'TypeError',
+                    func: function(s) { return s.update(1); }
+                },
+                {
+                    exception: 'InvalidAccessError',
+                    func: function(s) { return s.update(new Uint8Array(0)); }
+                }
+            ];
+
+            function create_update_exception_test(mediaKeys, type, initData)
+            {
+                var mediaKeySession;
+                var promise = mediaKeys.createSession(type, initData).then(function(mediaKeySession) {
+                    var updatePromises = kUpdateSessionExceptionsTestCases.map(function(testCase) {
+                        return test_exception(testCase, mediaKeySession);
+                    });
+                    return Promise.all(updatePromises);
+                });
+                return promise;
+            }
+
+            async_test(function(test)
+            {
+                MediaKeys.create('org.w3.clearkey').then(function(mediaKeys) {
+                    var promises = [];
+
+                    if (MediaKeys.isTypeSupported('org.w3.clearkey', 'video/webm')) {
+                        promises.push(create_update_exception_test(mediaKeys, 'video/webm', getInitData('video/webm')));
+                    }
+
+                    if (MediaKeys.isTypeSupported('org.w3.clearkey', 'video/mp4')) {
+                        promises.push(create_update_exception_test(mediaKeys, 'video/mp4', getInitData('video/mp4')));
+                    }
+
+                    assert_not_equals(promises.length, 0);
+                    return Promise.all(promises);
+                }).then(function(result) {
+                    test.done();
+                }).catch(function(error) {
+                    forceTestFailureFromPromise(test, error, 'update() tests failed');
+                });
             }, 'Test MediaKeySession update() exceptions.');
 
-            test(function()
+            function create_update_test(mediaKeys, type, initData)
             {
-                mediaKeySession.update(new Uint8Array(1), 'extra');
-                mediaKeySession.update(new Uint8Array(1));
+                var mediaKeySession;
+                var promise = mediaKeys.createSession(type, initData).then(function(result) {
+                    mediaKeySession = result;
+                    var validLicense = stringToUint8Array(createJWKSet(createJWK(stringToUint8Array('123'), stringToUint8Array('1234567890abcdef'))));
+                    return mediaKeySession.update(validLicense);
+                }).then(function(result) {
+                    // Call update() with a different license and an extra
+                    // parameter. The extra parameter is ignored.
+                    var validLicense = stringToUint8Array(createJWKSet(createJWK(stringToUint8Array('4567890'), stringToUint8Array('01234567890abcde'))));
+                    return mediaKeySession.update(validLicense, 'extra');
+                });
+                return promise;
+            }
+
+            async_test(function(test)
+            {
+                MediaKeys.create('org.w3.clearkey').then(function(mediaKeys) {
+                  var promises = [];
+
+                  if (MediaKeys.isTypeSupported('org.w3.clearkey', 'video/webm')) {
+                      promises.push(create_update_test(mediaKeys, 'video/webm', getInitData('video/webm')));
+                  }
+
+                  if (MediaKeys.isTypeSupported('org.w3.clearkey', 'video/mp4')) {
+                      promises.push(create_update_test(mediaKeys, 'video/mp4', getInitData('video/mp4')));
+                  }
+
+                  assert_not_equals(promises.length, 0);
+                  return Promise.all(promises);
+                }).then(function(result) {
+                    test.done();
+                }).catch(function(error) {
+                    forceTestFailureFromPromise(test, error, 'update() tests failed');
+                });
             }, 'Test MediaKeySession update().');
 
-            test(function()
+            function create_release_test(mediaKeys, type, initData)
             {
-                mediaKeySession.release();
-                // FIXME: This causes Chromium to crash. Uncomment this once Chromium is fixed.
-                // mediaKeySession.release('extra');
+                var mediaKeySession;
+                var promise = mediaKeys.createSession(type, initData).then(function(result) {
+                    mediaKeySession = result;
+                    return mediaKeySession.release();
+                // FIXME: Uncomment once the code supports multiple release() calls.
+//              }).then(function(result) {
+//                  // Call release() again with an extra parameter. The extra
+//                  // parameter is ignored.
+//                  return mediaKeySession.release('extra');
+                });
+                return promise;
+            }
+
+            async_test(function(test)
+            {
+                MediaKeys.create('org.w3.clearkey').then(function(mediaKeys) {
+                    var promises = [];
+
+                    if (MediaKeys.isTypeSupported('org.w3.clearkey', 'video/webm')) {
+                        promises.push(create_release_test(mediaKeys, 'video/webm', getInitData('video/webm')));
+                    }
+
+                    if (MediaKeys.isTypeSupported('org.w3.clearkey', 'video/mp4')) {
+                        promises.push(create_release_test(mediaKeys, 'video/mp4', getInitData('video/mp4')));
+                    }
+
+                    assert_not_equals(promises.length, 0);
+                    return Promise.all(promises);
+                }).then(function(result) {
+                    test.done();
+                }).catch(function(error) {
+                    forceTestFailureFromPromise(test, error, 'release() tests failed');
+                });
             }, 'Test MediaKeySession release().');
 
             // FIXME: Add syntax checks for MediaKeys.IsTypeSupported().

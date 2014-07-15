@@ -26,21 +26,34 @@
 #include "config.h"
 #include "modules/encryptedmedia/MediaKeys.h"
 
-#include "bindings/core/v8/ExceptionState.h"
-#include "core/dom/ContextLifecycleObserver.h"
+#include "bindings/core/v8/ScriptPromiseResolver.h"
+#include "bindings/core/v8/ScriptState.h"
+#include "core/dom/DOMException.h"
 #include "core/dom/Document.h"
+#include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
-#include "core/html/HTMLMediaElement.h"
 #include "modules/encryptedmedia/MediaKeyMessageEvent.h"
-#include "modules/encryptedmedia/MediaKeysClient.h"
+#include "modules/encryptedmedia/MediaKeySession.h"
 #include "modules/encryptedmedia/MediaKeysController.h"
 #include "platform/ContentType.h"
 #include "platform/Logging.h"
 #include "platform/MIMETypeRegistry.h"
+#include "platform/Timer.h"
 #include "platform/UUID.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebContentDecryptionModule.h"
-#include "wtf/HashSet.h"
+#include "wtf/RefPtr.h"
+#include "wtf/Uint8Array.h"
+
+#if ASSERT_ENABLED
+namespace {
+
+// The list of possible values for |sessionType| passed to createSession().
+const char* kTemporary = "temporary";
+const char* kPersistent = "persistent";
+
+} // namespace
+#endif
 
 namespace WebCore {
 
@@ -53,94 +66,179 @@ static bool isKeySystemSupportedWithContentType(const String& keySystem, const S
     return MIMETypeRegistry::isSupportedEncryptedMediaMIMEType(keySystem, type.type(), codecs);
 }
 
-MediaKeys* MediaKeys::create(ExecutionContext* context, const String& keySystem, ExceptionState& exceptionState)
+static bool isKeySystemSupportedWithInitDataType(const String& keySystem, const String& initDataType)
 {
-    // From <http://dvcs.w3.org/hg/html-media/raw-file/default/encrypted-media/encrypted-media.html#dom-media-keys-constructor>:
-    // The MediaKeys(keySystem) constructor must run the following steps:
+    // FIXME: initDataType != contentType. Implement this properly.
+    // http://crbug.com/385874.
+    return isKeySystemSupportedWithContentType(keySystem, initDataType);
+}
 
-    // 1. If keySystem is an empty string, throw an InvalidAccessError exception and abort these steps.
-    if (keySystem.isEmpty()) {
-        exceptionState.throwDOMException(InvalidAccessError, "The key system provided is invalid.");
-        return 0;
-    }
+static ScriptPromise createRejectedPromise(ScriptState* scriptState, ExceptionCode error, const String& errorMessage)
+{
+    return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(error, errorMessage));
+}
 
-    // 2. If keySystem is not one of the user agent's supported Key Systems, throw a NotSupportedError and abort these steps.
-    if (!isKeySystemSupportedWithContentType(keySystem, "")) {
-        exceptionState.throwDOMException(NotSupportedError, "The '" + keySystem + "' key system is not supported.");
-        return 0;
-    }
+// This class allows a MediaKeys object to be created asynchronously.
+class MediaKeysInitializer : public ScriptPromiseResolver {
+    WTF_MAKE_NONCOPYABLE(MediaKeysInitializer);
 
-    // 3. Let cdm be the content decryption module corresponding to keySystem.
-    // 4. Load cdm if necessary.
-    Document* document = toDocument(context);
+public:
+    static ScriptPromise create(ScriptState*, const String& keySystem);
+    virtual ~MediaKeysInitializer();
+
+private:
+    MediaKeysInitializer(ScriptState*, const String& keySystem);
+    void timerFired(Timer<MediaKeysInitializer>*);
+
+    const String m_keySystem;
+    Timer<MediaKeysInitializer> m_timer;
+};
+
+ScriptPromise MediaKeysInitializer::create(ScriptState* scriptState, const String& keySystem)
+{
+    RefPtr<MediaKeysInitializer> initializer = adoptRef(new MediaKeysInitializer(scriptState, keySystem));
+    initializer->suspendIfNeeded();
+    initializer->keepAliveWhilePending();
+    return initializer->promise();
+}
+
+MediaKeysInitializer::MediaKeysInitializer(ScriptState* scriptState, const String& keySystem)
+    : ScriptPromiseResolver(scriptState)
+    , m_keySystem(keySystem)
+    , m_timer(this, &MediaKeysInitializer::timerFired)
+{
+    WTF_LOG(Media, "MediaKeysInitializer::MediaKeysInitializer");
+    // Start the timer so that MediaKeys can be created asynchronously.
+    m_timer.startOneShot(0, FROM_HERE);
+}
+
+MediaKeysInitializer::~MediaKeysInitializer()
+{
+    WTF_LOG(Media, "MediaKeysInitializer::~MediaKeysInitializer");
+}
+
+void MediaKeysInitializer::timerFired(Timer<MediaKeysInitializer>*)
+{
+    WTF_LOG(Media, "MediaKeysInitializer::timerFired");
+
+    // NOTE: Continued from step 4. of MediaKeys::create().
+    // 4.1 Let cdm be the content decryption module corresponding to
+    //     keySystem.
+    // 4.2 Load and initialize the cdm if necessary.
+    Document* document = toDocument(executionContext());
     MediaKeysController* controller = MediaKeysController::from(document->page());
-    OwnPtr<blink::WebContentDecryptionModule> cdm = controller->createContentDecryptionModule(context, keySystem);
+    // FIXME: make createContentDecryptionModule() asynchronous.
+    OwnPtr<blink::WebContentDecryptionModule> cdm = controller->createContentDecryptionModule(executionContext(), m_keySystem);
+
+    // 4.3 If cdm fails to load or initialize, reject promise with a new
+    //     DOMException whose name is the appropriate error name and that
+    //     has an appropriate message.
     if (!cdm) {
-        exceptionState.throwDOMException(NotSupportedError, "A content decryption module could not be loaded for the '" + keySystem + "' key system.");
-        return 0;
+        String message("A content decryption module could not be loaded for the '" + m_keySystem + "' key system.");
+        reject(DOMException::create(UnknownError, message));
+        return;
     }
 
-    // 5. Create a new MediaKeys object.
-    // 5.1 Let the keySystem attribute be keySystem.
-    // 6. Return the new object to the caller.
-    return new MediaKeys(context, keySystem, cdm.release());
+    // 4.4 Let media keys be a new MediaKeys object.
+    MediaKeys* mediaKeys = new MediaKeys(executionContext(), m_keySystem, cdm.release());
+
+    // 4.5. Resolve promise with media keys.
+    resolve(mediaKeys);
+
+    // Note: As soon as the promise is resolved (or rejected), the
+    // ScriptPromiseResolver object (|this|) is freed. So access to
+    // any members will crash once the promise is fulfilled.
+}
+
+ScriptPromise MediaKeys::create(ScriptState* scriptState, const String& keySystem)
+{
+    WTF_LOG(Media, "MediaKeys::create(%s)", keySystem.ascii().data());
+
+    // From https://dvcs.w3.org/hg/html-media/raw-file/default/encrypted-media/encrypted-media.html#dom-create:
+    // The create(keySystem) method creates a new MediaKeys object for keySystem. It must run the following steps:
+
+    // 1. If keySystem is an empty string, return a promise rejected with a new
+    // DOMException whose name is "InvalidAccessError" and that has the message
+    // "The keySystem parameter is empty."
+    if (keySystem.isEmpty()) {
+        return createRejectedPromise(scriptState, InvalidAccessError, "The keySystem parameter is empty.");
+    }
+
+    // 2. If keySystem is not one of the Key Systems supported by the user
+    // agent, return a promise rejected with a new DOMException whose name is
+    // "NotSupportedError" and that has the message "The key system keySystem
+    // is not supported." String comparison is case-sensitive.
+    if (!isKeySystemSupportedWithContentType(keySystem, "")) {
+        // String message("The key system '" + keySystem + "' is not supported.");
+        return createRejectedPromise(scriptState, NotSupportedError, "The key system '" + keySystem + "' is not supported.");
+    }
+
+    // 3. Let promise be a new promise.
+    // 4. Asynchronously create and initialize the MediaKeys.
+    // 5. Return promise.
+    return MediaKeysInitializer::create(scriptState, keySystem);
 }
 
 MediaKeys::MediaKeys(ExecutionContext* context, const String& keySystem, PassOwnPtr<blink::WebContentDecryptionModule> cdm)
     : ContextLifecycleObserver(context)
     , m_keySystem(keySystem)
     , m_cdm(cdm)
-    , m_initializeNewSessionTimer(this, &MediaKeys::initializeNewSessionTimerFired)
 {
-    WTF_LOG(Media, "MediaKeys::MediaKeys");
+    WTF_LOG(Media, "MediaKeys(%p)::MediaKeys", this);
     ScriptWrappable::init(this);
+
+    // Step 4.4 of MediaKeys::create():
+    // 4.4.1 Set the keySystem attribute to keySystem.
+    ASSERT(!m_keySystem.isEmpty());
 }
 
 MediaKeys::~MediaKeys()
 {
+    WTF_LOG(Media, "MediaKeys(%p)::~MediaKeys", this);
 }
 
-MediaKeySession* MediaKeys::createSession(ExecutionContext* context, const String& contentType, Uint8Array* initData, ExceptionState& exceptionState)
+ScriptPromise MediaKeys::createSession(ScriptState* scriptState, const String& initDataType, Uint8Array* initData, const String& sessionType)
 {
-    WTF_LOG(Media, "MediaKeys::createSession");
+    WTF_LOG(Media, "MediaKeys(%p)::createSession(%s, %d)", this, initDataType.ascii().data(), initData->length());
 
     // From <http://dvcs.w3.org/hg/html-media/raw-file/default/encrypted-media/encrypted-media.html#dom-createsession>:
-    // The createSession(type, initData) method must run the following steps:
-    // Note: The contents of initData are container-specific Initialization Data.
+    // The createSession(initDataType, initData, sessionType) method creates a
+    // new MediaKeySession object for the initData. It must run the following steps:
 
-    if (contentType.isEmpty()) {
-        exceptionState.throwDOMException(InvalidAccessError, "The contentType provided ('" + contentType + "') is empty.");
-        return 0;
+    // 1. If initDataType is an empty string, return a promise rejected with a
+    //    new DOMException whose name is "InvalidAccessError".
+    if (initDataType.isEmpty()) {
+        return createRejectedPromise(scriptState, InvalidAccessError, "The initDataType parameter is empty.");
     }
 
+    // 2. If initData is an empty array, return a promise rejected with a new
+    //    DOMException whose name is"InvalidAccessError".
     if (!initData->length()) {
-        exceptionState.throwDOMException(InvalidAccessError, "The initData provided is empty.");
-        return 0;
+        return createRejectedPromise(scriptState, InvalidAccessError, "The initData parameter is empty.");
     }
 
-    // 1. If type contains a MIME type that is not supported or is not supported by the keySystem,
-    // throw a NOT_SUPPORTED_ERR exception and abort these steps.
-    if (!isKeySystemSupportedWithContentType(m_keySystem, contentType)) {
-        exceptionState.throwDOMException(NotSupportedError, "The type provided ('" + contentType + "') is unsupported.");
-        return 0;
+    // 3. If initDataType is not an initialization data type supported by the
+    //    content decryption module corresponding to the keySystem, return a
+    //    promise rejected with a new DOMException whose name is
+    //    "NotSupportedError". String comparison is case-sensitive.
+    if (!isKeySystemSupportedWithInitDataType(m_keySystem, initDataType)) {
+        return createRejectedPromise(scriptState, NotSupportedError, "The initialization data type '" + initDataType + "' is not supported by the key system.");
     }
 
-    // 2. Create a new MediaKeySession object.
-    MediaKeySession* session = MediaKeySession::create(context, m_cdm.get(), this);
-    // 2.1 Let the keySystem attribute be keySystem.
-    ASSERT(!session->keySystem().isEmpty());
-    // FIXME: 2.2 Let the state of the session be CREATED.
+    // 4. If sessionType is not supported by the content decryption module
+    //    corresponding to the keySystem, return a promise rejected with a new
+    //    DOMException whose name is "NotSupportedError".
+    //    Since this is typed by the IDL, we should not see any invalid values.
+    // FIXME: Check whether sessionType is actually supported by the CDM.
+    ASSERT(sessionType == kTemporary || sessionType == kPersistent);
 
-    // 3. Add the new object to an internal list of session objects (not needed).
+    // 5. Let init data be a copy of the contents of the initData parameter.
+    RefPtr<Uint8Array> initDataCopy = Uint8Array::create(initData->data(), initData->length());
 
-    // 4. Schedule a task to initialize the session, providing type, initData, and the new object.
-    m_pendingInitializeNewSessionData.append(InitializeNewSessionData(session, contentType, initData));
-
-    if (!m_initializeNewSessionTimer.isActive())
-        m_initializeNewSessionTimer.startOneShot(0, FROM_HERE);
-
-    // 5. Return the new object to the caller.
-    return session;
+    // 6. Let promise be a new promise.
+    // 7. Asynchronously create and initialize the session.
+    // 8. Return promise.
+    return MediaKeySession::create(scriptState, this, initDataType, initDataCopy.release(), sessionType);
 }
 
 bool MediaKeys::isTypeSupported(const String& keySystem, const String& contentType)
@@ -170,25 +268,8 @@ blink::WebContentDecryptionModule* MediaKeys::contentDecryptionModule()
     return m_cdm.get();
 }
 
-void MediaKeys::initializeNewSessionTimerFired(Timer<MediaKeys>*)
-{
-    ASSERT(m_pendingInitializeNewSessionData.size());
-
-    while (!m_pendingInitializeNewSessionData.isEmpty()) {
-        InitializeNewSessionData data = m_pendingInitializeNewSessionData.takeFirst();
-        // FIXME: Refer to the spec to see what needs to be done in blink.
-        data.session->initializeNewSession(data.contentType, *data.initData);
-    }
-}
-
 void MediaKeys::trace(Visitor* visitor)
 {
-    visitor->trace(m_pendingInitializeNewSessionData);
-}
-
-void MediaKeys::InitializeNewSessionData::trace(Visitor* visitor)
-{
-    visitor->trace(session);
 }
 
 void MediaKeys::contextDestroyed()

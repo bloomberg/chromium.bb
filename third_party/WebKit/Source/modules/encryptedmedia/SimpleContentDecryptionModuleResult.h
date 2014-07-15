@@ -1,0 +1,51 @@
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef SimpleContentDecryptionModuleResult_h
+#define SimpleContentDecryptionModuleResult_h
+
+#include "core/dom/ExceptionCode.h"
+#include "platform/ContentDecryptionModuleResult.h"
+#include "wtf/Forward.h"
+
+namespace blink {
+class WebString;
+}
+
+namespace WebCore {
+
+class ScriptPromise;
+class ScriptPromiseResolver;
+class ScriptState;
+
+ExceptionCode WebCdmExceptionToExceptionCode(blink::WebContentDecryptionModuleException);
+
+// This class wraps the promise resolver and is passed (indirectly) to Chromium
+// to fullfill the promise. This implementation of complete() will resolve the
+// promise with undefined, while completeWithError() reject the promise with an
+// exception. completeWithSession() is not expected to be called, and will
+// reject the promise.
+class SimpleContentDecryptionModuleResult : public ContentDecryptionModuleResult {
+public:
+    explicit SimpleContentDecryptionModuleResult(ScriptState*);
+    virtual ~SimpleContentDecryptionModuleResult();
+
+    // ContentDecryptionModuleResult implementation.
+    virtual void complete() OVERRIDE;
+    virtual void completeWithSession(blink::WebContentDecryptionModuleResult::SessionStatus) OVERRIDE;
+    virtual void completeWithError(blink::WebContentDecryptionModuleException, unsigned long systemCode, const blink::WebString&) OVERRIDE;
+
+    // It is only valid to call this before completion.
+    ScriptPromise promise();
+
+private:
+    // Reject the promise with a DOMException.
+    void completeWithDOMException(ExceptionCode, const String& errorMessage);
+
+    RefPtr<ScriptPromiseResolver> m_resolver;
+};
+
+} // namespace WebCore
+
+#endif // SimpleContentDecryptionModuleResult_h

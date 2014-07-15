@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title>Verify v2 events</title>
+        <title>Test asynchronous creation of MediaKeys and MediaKeySession while running garbage collection</title>
         <script src="encrypted-media-utils.js"></script>
         <script src="../../resources/testharness.js"></script>
         <script src="../../resources/testharnessreport.js"></script>
@@ -9,29 +9,22 @@
     <body>
         <div id="log"></div>
         <script>
-            // Currently Clear Key only generates aynchronous "message" events.
-            // It does not generate any "error" events.
-            // FIXME: Update this test to handle "keychange" events once
-            // implemented.
             async_test(function(test)
             {
-                var mediaKeySession;
-
-                function processMessage(event)
-                {
-                    test.done();
-                }
+                // Run garbage collection often.
+                setInterval(asyncGC, 0);
 
                 MediaKeys.create('org.w3.clearkey').then(function(mediaKeys) {
                     var initDataType = getInitDataType();
                     return mediaKeys.createSession(initDataType, getInitData(initDataType));
+                }).then(function(mediaKeySession) {
+                    return mediaKeySession.release();
                 }).then(function(result) {
-                    mediaKeySession = result;
-                    waitForEventAndRunStep('message', mediaKeySession, processMessage, test);
+                    test.done();
                 }).catch(function(error) {
                     forceTestFailureFromPromise(test, error);
                 });
-            }, 'Verify v2 events.');
+            }, 'Test asynchronous creation of MediaKeys and MediaKeySession while running garbage collection.');
         </script>
     </body>
 </html>

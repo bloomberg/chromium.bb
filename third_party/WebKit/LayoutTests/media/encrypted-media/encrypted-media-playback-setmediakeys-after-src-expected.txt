@@ -3,7 +3,6 @@ Test playback of encrypted media using Clear Key key system.
 EVENT(needkey)
 EVENT(needkey)
 EVENT(message)
-EVENT(ready)
 EVENT(playing)
 This is a testharness.js-based test.
 PASS Playback using Clear Key key system, calling setMediaKeys() after setting src attribute. 

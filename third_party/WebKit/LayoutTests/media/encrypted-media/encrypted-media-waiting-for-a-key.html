@@ -3,7 +3,6 @@
     <head>
         <title>Waiting for a key.</title>
         <script src="encrypted-media-utils.js"></script>
-        <script src="../w3c-media-utils.js"></script>
         <script src="../../resources/testharness.js"></script>
         <script src="../../resources/testharnessreport.js"></script>
     </head>
@@ -11,14 +10,11 @@
         <video id="testVideo"></video>
         <div id="log"></div>
         <script>
-            // Timeout for all tests to run.
-            setup({ timeout: 60000 });
-
             async_test(function(test)
             {
-                var video = document.getElementById("testVideo");
-                var mediaKeys = new MediaKeys("org.w3.clearkey");
+                var video = document.getElementById('testVideo');
                 var mediaKeySession = null;
+                var sessionCreated = false;
                 var sessionReadyReceived = false;
 
                 var keyId = null;
@@ -29,21 +25,27 @@
                 {
                     assert_equals(event.target, video);
                     assert_true(event instanceof window.MediaKeyNeededEvent);
-                    assert_equals(event.type, "needkey");
+                    assert_equals(event.type, 'needkey');
 
-                    // The same decryption key is shared by all streams so only create a shared session once.
-                    if (mediaKeySession != null)
+                    // The same decryption key is shared by all streams so only
+                    // create a shared session once.
+                    if (sessionCreated)
                         return;
+                    sessionCreated = true;
 
-                    mediaKeySession = mediaKeys.createSession(event.contentType, event.initData);
-                    waitForEventAndRunStep("message", mediaKeySession, onMessage, test);
+                    video.mediaKeys.createSession(event.contentType, event.initData).then(function(newSession) {
+                        mediaKeySession = newSession;
+                        waitForEventAndRunStep('message', mediaKeySession, onMessage, test);
+                    }).catch(function(error) {
+                        forceTestFailureFromPromise(test, error);
+                    });
                 }
 
                 function onMessage(event)
                 {
                     assert_true(event instanceof window.MediaKeyMessageEvent);
                     assert_equals(event.target, mediaKeySession);
-                    assert_equals(event.type, "message");
+                    assert_equals(event.type, 'message');
 
                     keyId = event.message;
                     setTimeout(verifyWaitingForKey, 250);
@@ -51,8 +53,10 @@
 
                 function verifyWaitingForKey()
                 {
-                    // Make sure the video is NOT paused and not progressing before the session is updated.
-                    // TODO(xhwang): Check "waiting" event after it's implemented. See http://crbug.com/337975
+                    // Make sure the video is NOT paused and not progressing
+                    // before the session is updated.
+                    // TODO(xhwang): Check "waiting" event after it's
+                    // implemented. See http://crbug.com/337975
                     assert_false(video.paused);
                     assert_equals(video.currentTime, 0);
 
@@ -63,22 +67,18 @@
                 {
                     assert_not_equals(keyId, null);
                     var jwkSet = stringToUint8Array(createJWKSet(createJWK(keyId, rawKey)));
-                    mediaKeySession.update(jwkSet);
-                    waitForEventAndRunStep("ready", mediaKeySession, onReady, test);
-                }
-
-                function onReady(event)
-                {
-                    assert_true(event instanceof window.Event);
-                    assert_equals(event.target, mediaKeySession);
-                    assert_equals(event.type, "ready");
-                    sessionReadyReceived = true;
+                    mediaKeySession.update(jwkSet).then(function(result) {
+                        sessionReadyReceived = true;
+                    }).catch(function(error) {
+                        forceTestFailureFromPromise(test, error);
+                    });
                 }
 
                 function onPlaying(event)
                 {
-                    // Not using waitForEventAndRunStep() to avoid too many EVENT(onTimeUpdate) logs.
-                    video.addEventListener("timeupdate", onTimeUpdate, true);
+                    // Not using waitForEventAndRunStep() to avoid too many
+                    // EVENT(onTimeUpdate) logs.
+                    video.addEventListener('timeupdate', onTimeUpdate, true);
                 }
 
                 function onTimeUpdate(event)
@@ -89,13 +89,17 @@
                     test.done();
                 }
 
-                waitForEventAndRunStep("needkey", video, onNeedKey, test);
-                waitForEventAndRunStep("playing", video, onPlaying, test);
+                MediaKeys.create('org.w3.clearkey').then(function(mediaKeys) {
+                    waitForEventAndRunStep('needkey', video, onNeedKey, test);
+                    waitForEventAndRunStep('playing', video, onPlaying, test);
 
-                video.src = "../content/test-encrypted.webm";
-                video.setMediaKeys(mediaKeys);
-                video.play();
-            }, "Waiting for a key.", { timeout: 60000 });
+                    video.setMediaKeys(mediaKeys);
+                    video.src = '../content/test-encrypted.webm';
+                    video.play();
+                }).catch(function(error) {
+                    forceTestFailureFromPromise(test, error);
+                });
+            }, 'Waiting for a key.');
         </script>
     </body>
 </html>

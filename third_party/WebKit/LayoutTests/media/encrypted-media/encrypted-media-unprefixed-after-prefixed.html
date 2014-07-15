@@ -2,7 +2,7 @@
 <html>
     <head>
         <title>Prefixed and unprefixed EME API</title>
-        <script src="../w3c-media-utils.js"></script>
+        <script src="encrypted-media-utils.js"></script>
         <script src="../../resources/testharness.js"></script>
         <script src="../../resources/testharnessreport.js"></script>
     </head>
@@ -13,23 +13,26 @@
         <script>
             async_test(function(test)
             {
-                var video = document.getElementById("testVideo");
+                var video = document.getElementById('testVideo');
                 assert_not_equals(video, null);
 
                 function loadStarted()
                 {
                     video.webkitGenerateKeyRequest('webkit-org.w3.clearkey');
-                    var mediaKeys = new MediaKeys("org.w3.clearkey");
-                    assert_not_equals(mediaKeys, null);
-                    assert_equals(mediaKeys.keySystem, 'org.w3.clearkey');
-                    assert_throws('InvalidStateError',
-                                   function () { video.setMediaKeys(mediaKeys); });
-                    test.done();
+                    MediaKeys.create('org.w3.clearkey').then(function(mediaKeys) {
+                        assert_not_equals(mediaKeys, null);
+                        assert_equals(mediaKeys.keySystem, 'org.w3.clearkey');
+                        assert_throws('InvalidStateError',
+                                       function () { video.setMediaKeys(mediaKeys); });
+                        test.done();
+                    }).catch(function(error) {
+                        forceTestFailureFromPromise(test, error);
+                    });
                 }
 
-                video.src = "../content/test.webm";
+                video.src = '../content/test.webm';
                 waitForEventAndRunStep('loadstart', video, loadStarted, test);
-            }, "Call unprefixed EME API after prefixed EME API.");
+            }, 'Call unprefixed EME API after prefixed EME API.');
         </script>
     </body>
 </html>

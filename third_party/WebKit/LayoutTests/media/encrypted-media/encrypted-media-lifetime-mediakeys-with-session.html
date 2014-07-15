@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Test MediaKeys lifetime when adding a session</title>
+        <script src="encrypted-media-utils.js"></script>
+        <script src="../../resources/testharness.js"></script>
+        <script src="../../resources/testharnessreport.js"></script>
+    </head>
+    <body>
+        <div id="log"></div>
+        <script>
+            // Since MediaKeys are not ActiveDOMObjects, it is hard to
+            // determine when they are garbage collected. For the test below
+            // a MediaKeySession (which is an ActiveDOMObject) is added so
+            // there is something to count.
+
+            // MediaKeySessions remain as long as:
+            //   JavaScript has a reference to it
+            //   OR (MediaKeys is around
+            //       AND the session has not received a close() event)
+            // In the tests below, we do not close any session nor keep a
+            // Javascript reference to any session, so MediaKeySessions remain
+            // as long as the associated MediaKeys object is around.
+
+            // For this test, create a MediaKeySession (which is an
+            // ActiveDOMObject) and verify lifetime.
+            async_test(function(test)
+            {
+                var mediaKeys;
+                var startingActiveDOMObjectCount = window.internals.activeDOMObjectCount(document);
+
+                function numActiveDOMObjectsCreated()
+                {
+                    return window.internals.activeDOMObjectCount(document) - startingActiveDOMObjectCount;
+                }
+
+                // Create a MediaKeys object with a session.
+                MediaKeys.create('org.w3.clearkey').then(function(result) {
+                    mediaKeys = result;
+
+                    // Verify MediaKeys are not an ActiveDOMObject. However, the
+                    // PromiseResolver objects used by MediaKeys/MediaKeySession
+                    // are ActiveDOMObjects, and they stay active until the end
+                    // of the promise.
+                    assert_equals(numActiveDOMObjectsCreated(), 1, 'MediaKeys.create()');
+
+                    var initDataType = getInitDataType();
+                    return mediaKeys.createSession(initDataType, getInitData(initDataType));
+                }).then(function(mediaKeySession) {
+                    // 1 MediaKeySession + 1 PromiseResolver.
+                    assert_equals(numActiveDOMObjectsCreated(), 2, 'MediaKeys.createSession()');
+
+                    // Run gc(), should not affect MediaKeys object nor the
+                    // session since we still have a reference to it.
+                    return createGCPromise();
+                }).then(function(result) {
+                    assert_equals(mediaKeys.keySystem, 'org.w3.clearkey');
+                    // Ensure that MediaKeySession (but not PromiseResolver) is
+                    // still around.
+                    assert_equals(numActiveDOMObjectsCreated(), 1, 'After gc()');
+
+                    // Drop reference to the MediaKeys object and run gc()
+                    // again. Object should be collected this time. Since
+                    // MediaKeySessions remain alive as long as MediaKeys is
+                    // around, it is possible that gc() checks the
+                    // MediaKeySession object first, and doesn't collect it
+                    // since MediaKeys hasn't been collected yet. Thus run gc()
+                    // twice, to ensure that the unreferenced MediaKeySession
+                    // object get collected.
+                    mediaKeys = null;
+                    return createGCPromise();
+                }).then(function(result) {
+                    return createGCPromise();
+                }).then(function(result) {
+                    assert_equals(numActiveDOMObjectsCreated(), 0);
+                    test.done();
+                }).catch(function(error) {
+                    forceTestFailureFromPromise(test, error);
+                });
+            }, 'MediaKeys lifetime with session');
+        </script>
+    </body>
+</html>

@@ -3,7 +3,6 @@
     <head>
         <title>Clear Key Playback with Multiple Sessions</title>
         <script src="encrypted-media-utils.js"></script>
-        <script src="../w3c-media-utils.js"></script>
         <script src="../../resources/testharness.js"></script>
         <script src="../../resources/testharnessreport.js"></script>
     </head>
@@ -12,38 +11,38 @@
         <div id="log"></div>
         <p>Test playback of encrypted media using Clear Key key system with multiple sessions.</p>
         <script>
-            setup({ timeout: 60000 });  // Timeout for all tests to run.
-
             async_test(function(test)
             {
-                var video = document.getElementById("testVideo");
-                var mediaKeys = new MediaKeys("org.w3.clearkey");
+                var video = document.getElementById('testVideo');
                 var audioMediaKeySession = null;
                 var videoMediaKeySession = null;
                 var audioKeyProvided = false;
                 var videoKeyProvided = false;
 
                 // The 2 streams use different key ids and different keys.
-                var audioKeyId = "1234567890123456";
+                var audioKeyId = '1234567890123456';
                 var audioKey = new Uint8Array([0x30, 0x30, 0x62, 0xF1, 0x68, 0x14, 0xD2, 0x7B,
                                                0x68, 0xEF, 0x12, 0x2A, 0xFC, 0xE4, 0xAE, 0x0A]);
-                var videoKeyId = "0123456789012345";
+                var videoKeyId = '0123456789012345';
                 var videoKey = new Uint8Array([0x7A, 0x7A, 0x62, 0xF1, 0x68, 0x14, 0xD2, 0x7B,
                                                0x68, 0xEF, 0x12, 0x2A, 0xFC, 0xE4, 0xAE, 0x0A]);
 
                 function onNeedKey(event)
                 {
                     var keyId = String.fromCharCode.apply(null, event.initData);
-                    var newSession = mediaKeys.createSession(event.contentType, event.initData);
-                    if (keyId == videoKeyId) {
-                        assert_equals(videoMediaKeySession, null);
-                        videoMediaKeySession = newSession;
-                    } else {
-                        assert_equals(keyId, audioKeyId);
-                        assert_equals(audioMediaKeySession, null);
-                        audioMediaKeySession = newSession;
-                    }
-                    waitForEventAndRunStep("message", newSession, onMessage, test);
+                    video.mediaKeys.createSession(event.contentType, event.initData).then(function(newSession) {
+                        if (keyId == videoKeyId) {
+                            assert_equals(videoMediaKeySession, null);
+                            videoMediaKeySession = newSession;
+                        } else {
+                            assert_equals(keyId, audioKeyId);
+                            assert_equals(audioMediaKeySession, null);
+                            audioMediaKeySession = newSession;
+                        }
+                        waitForEventAndRunStep('message', newSession, onMessage, test);
+                    }).catch(function(error) {
+                        forceTestFailureFromPromise(test, error);
+                    });
                 }
 
                 function onMessage(event)
@@ -52,14 +51,20 @@
                     if (event.target == videoMediaKeySession) {
                         assert_equals(String.fromCharCode.apply(null, keyId), videoKeyId);
                         var jwkSet = stringToUint8Array(createJWKSet(createJWK(keyId, videoKey)));
-                        videoMediaKeySession.update(jwkSet);
-                        videoKeyProvided = true;
+                        videoMediaKeySession.update(jwkSet).then(function(result) {
+                            videoKeyProvided = true;
+                        }).catch(function(error) {
+                            forceTestFailureFromPromise(test, error);
+                        });
                     } else {
                         assert_equals(event.target, audioMediaKeySession);
                         assert_equals(String.fromCharCode.apply(null, keyId), audioKeyId);
                         var jwkSet = stringToUint8Array(createJWKSet(createJWK(keyId, audioKey)));
-                        audioMediaKeySession.update(jwkSet);
-                        audioKeyProvided = true;
+                        audioMediaKeySession.update(jwkSet).then(function(result) {
+                            audioKeyProvided = true;
+                        }).catch(function(error) {
+                            forceTestFailureFromPromise(test, error);
+                        });
                     }
                 }
 
@@ -72,7 +77,7 @@
 
                     // Not using waitForEventAndRunStep() to avoid too many
                     // EVENT(onTimeUpdate) logs.
-                    video.addEventListener("timeupdate", onTimeUpdate, true);
+                    video.addEventListener('timeupdate', onTimeUpdate, true);
                 }
 
                 function onTimeUpdate(event)
@@ -83,14 +88,18 @@
                     test.done();
                 }
 
-                waitForEventAndRunStep("needkey", video, onNeedKey, test);
-                waitForEventAndRunStep("playing", video, onPlaying, test);
+                MediaKeys.create('org.w3.clearkey').then(function(mediaKeys) {
 
-                video.src = "../content/test-encrypted-different-av-keys.webm";
-                video.setMediaKeys(mediaKeys);
-                video.play();
-            }, "Playback using Clear Key key system with multiple sessions.",
-            { timeout: 60000 });
+                    waitForEventAndRunStep('needkey', video, onNeedKey, test);
+                    waitForEventAndRunStep('playing', video, onPlaying, test);
+
+                    video.setMediaKeys(mediaKeys);
+                    video.src = '../content/test-encrypted-different-av-keys.webm';
+                    video.play();
+                }).catch(function(error) {
+                    forceTestFailureFromPromise(test, error);
+                });
+            }, 'Playback using Clear Key key system with multiple sessions.');
         </script>
     </body>
 </html>

@@ -1,11 +1,10 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title>Test MediaKeySession lifetime</title>
-        <script src="../w3c-media-utils.js"></script>
+        <title>Test MediaKeySession lifetime without release()</title>
+        <script src="encrypted-media-utils.js"></script>
         <script src="../../resources/testharness.js"></script>
         <script src="../../resources/testharnessreport.js"></script>
-        <script src="../../resources/gc.js"></script>
     </head>
     <body>
         <div id="log"></div>
@@ -14,10 +13,17 @@
             // we can determine when they are garbage collected.
             // MediaKeySessions remain as long as:
             //   JavaScript has a reference to it
-            //   OR (MediaKeys is around AND the session has not received a close() event)
-            test(function()
+            //   OR (MediaKeys is around
+            //       AND the session has not received a close() event)
+
+            async_test(function(test)
             {
-                var initData = new Uint8Array([0, 1, 2, 3, 4, 5, 6, 7]);
+                var mediaKeys;
+                var mediaKeySession1;
+                var mediaKeySession2;
+                var mediaKeySession3;
+                var initDataType = getInitDataType();
+                var initData = getInitData(initDataType);
                 var startingActiveDOMObjectCount = window.internals.activeDOMObjectCount(document);
 
                 function numActiveDOMObjectsCreated()
@@ -25,51 +31,84 @@
                     return window.internals.activeDOMObjectCount(document) - startingActiveDOMObjectCount;
                 }
 
-                var mediaKeys = new MediaKeys("org.w3.clearkey");
-                assert_equals(mediaKeys.keySystem, 'org.w3.clearkey');
+                MediaKeys.create('org.w3.clearkey').then(function(result) {
+                    mediaKeys = result;
+                    assert_equals(mediaKeys.keySystem, 'org.w3.clearkey');
 
-                // Verify MediaKeys are not ActiveDOMObjects.
-                assert_equals(numActiveDOMObjectsCreated(), 0, "MediaKeys created an ActiveDOMObject");
+                    // Verify MediaKeys are not an ActiveDOMObject. However, the
+                    // PromiseResolver objects used by MediaKeys/MediaKeySession
+                    // are ActiveDOMObjects, and they stay active until the end
+                    // of the associated then/catch function.
+                    assert_equals(numActiveDOMObjectsCreated(), 1, 'MediaKeys.create()');
 
-                // Create 3 sessions.
-                var mediaKeySession1 = mediaKeys.createSession("video/webm", initData);
-                assert_equals(numActiveDOMObjectsCreated(), 1);
-                var mediaKeySession2 = mediaKeys.createSession("video/webm", initData);
-                assert_equals(numActiveDOMObjectsCreated(), 2);
-                var mediaKeySession3 = mediaKeys.createSession("video/webm", initData);
-                assert_equals(numActiveDOMObjectsCreated(), 3);
+                    // Create 3 sessions.
+                    return mediaKeys.createSession(initDataType, initData);
+                }).then(function(result) {
+                    mediaKeySession1 = result;
+                    assert_true(mediaKeySession1.sessionId && mediaKeySession1.sessionId.length > 0);
+                    // Should be 1 MediaKeySession + 1 PromiseResolver from
+                    // createSession().
+                    assert_equals(numActiveDOMObjectsCreated(), 2, 'mediaKeys.createSession(1)');
+                    return mediaKeys.createSession(initDataType, initData);
+                }).then(function(result) {
+                    mediaKeySession2 = result;
+                    assert_true(mediaKeySession2.sessionId && mediaKeySession2.sessionId.length > 0);
+                    // Should be 2 MediaKeySessions + 1 PromiseResolver from the
+                    // last createSession().
+                    assert_equals(numActiveDOMObjectsCreated(), 3, 'mediaKeys.createSession(2)');
+                    return mediaKeys.createSession(initDataType, initData);
+                }).then(function(result) {
+                    mediaKeySession3 = result;
+                    assert_true(mediaKeySession3.sessionId && mediaKeySession3.sessionId.length > 0);
+                    // Should be 3 MediaKeySessions + 1 PromiseResolver from the
+                    // last createSession().
+                    assert_equals(numActiveDOMObjectsCreated(), 4, 'mediaKeys.createSession(3)');
 
-                // Run gc(). All sessions should remain as we have a reference
-                // to each one.
-                gc();
-                assert_equals(numActiveDOMObjectsCreated(), 3);
+                    // Run gc(). All sessions should remain as we have a
+                    // reference to each one. However, running gc()
+                    // asynchronously should free up the last PromiseResolver.
+                    return createGCPromise();
+                }).then(function(result) {
+                    assert_equals(numActiveDOMObjectsCreated(), 3, 'After gc()');
 
-                // Now drop references to 2 of the sessions. Even though we
-                // don't have a reference, MediaKeys is still around (and the
-                // sessions aren't closed), so the objects won't be collected.
-                mediaKeySession2 = null;
-                mediaKeySession3 = null;
-                gc();
-                assert_equals(numActiveDOMObjectsCreated(), 3);
+                    // Now drop references to 2 of the sessions. Even though we
+                    // don't have a reference, MediaKeys is still around (and
+                    // the sessions aren't closed), so the objects won't be
+                    // collected.
+                    mediaKeySession1 = null;
+                    mediaKeySession2 = null;
+                    return createGCPromise();
+                }).then(function(result) {
+                    return createGCPromise();
+                }).then(function(result) {
+                    assert_equals(numActiveDOMObjectsCreated(), 3, 'After second gc()');
 
-                // Now drop the reference to MediaKeys. It and the 2
-                // unreferenced sessions should be collected. Since
-                // MediaKeySessions remain alive as long as MediaKeys is around,
-                // it is possible that gc() checks one or both MediaKeySession
-                // objects first, and doesn't collect them since MediaKeys
-                // hasn't been collected yet. Thus run gc() twice, to ensure
-                // that the unreferenced MediaKeySession objects get collected.
-                mediaKeys = null;
-                gc();
-                gc();
-                assert_equals(numActiveDOMObjectsCreated(), 1);
+                    // Now drop the reference to MediaKeys. It and the 2
+                    // unreferenced sessions should be collected. Since
+                    // MediaKeySessions remain alive as long as MediaKeys is
+                    // around, it is possible that gc() checks one or both
+                    // MediaKeySession objects first, and doesn't collect them
+                    // since MediaKeys hasn't been collected yet. Thus run gc()
+                    // twice, to ensure that the unreferenced MediaKeySession
+                    // objects get collected.
+                    mediaKeys = null;
+                    return createGCPromise();
+                }).then(function(result) {
+                    return createGCPromise();
+                }).then(function(result) {
+                    assert_equals(numActiveDOMObjectsCreated(), 1);
 
-                // Drop the reference to the first session. It should get
-                // collected now since MediaKeys is gone.
-                mediaKeySession1 = null;
-                gc();
-                assert_equals(numActiveDOMObjectsCreated(), 0);
-            }, "MediaKeySession lifetime without release()");
+                    // Drop the reference to the last session. It should get
+                    // collected now since MediaKeys is gone.
+                    mediaKeySession3 = null;
+                    return createGCPromise();
+                }).then(function(result) {
+                    assert_equals(numActiveDOMObjectsCreated(), 0);
+                    test.done();
+                }).catch(function(error) {
+                    forceTestFailureFromPromise(test, error);
+                });
+            }, 'MediaKeySession lifetime without release()');
         </script>
     </body>
 </html>

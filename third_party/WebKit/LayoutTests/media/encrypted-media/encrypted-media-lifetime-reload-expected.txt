@@ -3,7 +3,6 @@ Test reloading during encrypted media playback.
 EVENT(needkey)
 EVENT(needkey)
 EVENT(message)
-EVENT(ready)
 EVENT(playing)
 This is a testharness.js-based test.
 PASS Reloading during encrypted media playback. 

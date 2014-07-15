@@ -356,6 +356,8 @@
       'encryptedmedia/MediaKeysClient.h',
       'encryptedmedia/MediaKeysController.cpp',
       'encryptedmedia/MediaKeysController.h',
+      'encryptedmedia/SimpleContentDecryptionModuleResult.cpp',
+      'encryptedmedia/SimpleContentDecryptionModuleResult.h',
       'filesystem/DOMFilePath.cpp',
       'filesystem/DOMFilePath.h',
       'filesystem/DOMFileSystem.cpp',

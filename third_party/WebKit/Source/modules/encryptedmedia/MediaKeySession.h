@@ -31,19 +31,17 @@
 #include "platform/Timer.h"
 #include "platform/heap/Handle.h"
 #include "public/platform/WebContentDecryptionModuleSession.h"
-#include "wtf/Deque.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/RefCounted.h"
-#include "wtf/Uint8Array.h"
-#include "wtf/WeakPtr.h"
-#include "wtf/text/WTFString.h"
+#include "wtf/Forward.h"
 
 namespace blink {
 class WebContentDecryptionModule;
+class WebString;
 }
 
 namespace WebCore {
 
+class ScriptState;
+class ScriptPromise;
 class ExceptionState;
 class GenericEventQueue;
 class MediaKeyError;
@@ -68,7 +66,7 @@ class MediaKeySession FINAL
     DEFINE_EVENT_TARGET_REFCOUNTING_WILL_BE_REMOVED(RefCountedGarbageCollected<MediaKeySession>);
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(MediaKeySession);
 public:
-    static MediaKeySession* create(ExecutionContext*, blink::WebContentDecryptionModule*, MediaKeys*);
+    static ScriptPromise create(ScriptState*, MediaKeys*, const String& initDataType, PassRefPtr<Uint8Array> initData, const String& sessionType);
     virtual ~MediaKeySession();
 
     const String& keySystem() const { return m_keySystem; }
@@ -77,9 +75,8 @@ public:
     void setError(MediaKeyError*);
     MediaKeyError* error() { return m_error.get(); }
 
-    void initializeNewSession(const String& mimeType, const Uint8Array& initData);
-    void update(Uint8Array* response, ExceptionState&);
-    void release(ExceptionState&);
+    ScriptPromise update(ScriptState*, Uint8Array* response);
+    ScriptPromise release(ScriptState*);
 
     void enqueueEvent(PassRefPtrWillBeRawPtr<Event>);
 
@@ -94,25 +91,12 @@ public:
     virtual void trace(Visitor*) OVERRIDE;
 
 private:
-    // A struct holding the pending action.
-    struct PendingAction {
-        enum Type {
-            Update,
-            Release
-        };
-        const Type type;
-        const RefPtr<Uint8Array> data;
+    class PendingAction;
+    friend class MediaKeySessionInitializer;
 
-        static PassOwnPtr<PendingAction> CreatePendingUpdate(PassRefPtr<Uint8Array> data);
-        static PassOwnPtr<PendingAction> CreatePendingRelease();
-        ~PendingAction();
-
-    private:
-        PendingAction(Type, PassRefPtr<Uint8Array> data);
-    };
-
-    MediaKeySession(ExecutionContext*, blink::WebContentDecryptionModule*, MediaKeys*);
+    MediaKeySession(ExecutionContext*, MediaKeys*);
     void actionTimerFired(Timer<MediaKeySession>*);
+    void finishInitialization(PassOwnPtr<blink::WebContentDecryptionModuleSession>);
 
     // blink::WebContentDecryptionModuleSession::Client
     virtual void message(const unsigned char* message, size_t messageLength, const blink::WebURL& destinationURL) OVERRIDE;
@@ -132,7 +116,7 @@ private:
     // Is the CDM finished with this session?
     bool m_isClosed;
 
-    Deque<OwnPtr<PendingAction> > m_pendingActions;
+    HeapDeque<Member<PendingAction> > m_pendingActions;
     Timer<MediaKeySession> m_actionTimer;
 };
 

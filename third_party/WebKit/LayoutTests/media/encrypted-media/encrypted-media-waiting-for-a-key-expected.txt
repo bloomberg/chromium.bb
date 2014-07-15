@@ -1,7 +1,6 @@
 EVENT(needkey)
 EVENT(needkey)
 EVENT(message)
-EVENT(ready)
 EVENT(playing)
 This is a testharness.js-based test.
 PASS Waiting for a key. 

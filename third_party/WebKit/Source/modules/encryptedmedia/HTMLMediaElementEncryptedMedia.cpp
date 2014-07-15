@@ -14,6 +14,7 @@
 #include "modules/encryptedmedia/MediaKeys.h"
 #include "platform/Logging.h"
 #include "platform/RuntimeEnabledFeatures.h"
+#include "wtf/Uint8Array.h"
 
 namespace WebCore {
 

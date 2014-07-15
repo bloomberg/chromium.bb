@@ -1,7 +1,4 @@
 EVENT(message)
-EVENT(error)
-EVENT(ready)
-EVENT(close)
 This is a testharness.js-based test.
 PASS Verify v2 events. 
 Harness: the test ran to completion.
