@@ -5,7 +5,8 @@
 #include "mojo/public/cpp/bindings/lib/validation_errors.h"
 
 #include <assert.h>
-#include <stdio.h>
+
+#include "mojo/public/cpp/environment/logging.h"
 
 namespace mojo {
 namespace internal {
@@ -41,12 +42,10 @@ const char* ValidationErrorToString(ValidationError error) {
 }
 
 void ReportValidationError(ValidationError error) {
-  if (g_validation_error_observer) {
+  if (g_validation_error_observer)
     g_validation_error_observer->set_last_error(error);
-  } else {
-    // TODO(yzshen): Consider adding better logging support.
-    fprintf(stderr, "Invalid message: %s\n", ValidationErrorToString(error));
-  }
+  else
+    MOJO_LOG(ERROR) << "Invalid message: " << ValidationErrorToString(error);
 }
 
 ValidationErrorObserverForTesting::ValidationErrorObserverForTesting()

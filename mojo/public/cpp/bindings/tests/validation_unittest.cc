@@ -185,7 +185,16 @@ class DummyMessageReceiver : public MessageReceiver {
   }
 };
 
-class ValidationIntegrationTest : public testing::Test {
+class ValidationTest : public testing::Test {
+ public:
+  virtual ~ValidationTest() {
+  }
+
+ private:
+  Environment env_;
+};
+
+class ValidationIntegrationTest : public ValidationTest {
  public:
   ValidationIntegrationTest() : test_message_receiver_(NULL) {
   }
@@ -244,7 +253,6 @@ class ValidationIntegrationTest : public testing::Test {
     loop_.RunUntilIdle();
   }
 
-  Environment env_;
   RunLoop loop_;
   TestMessageReceiver* test_message_receiver_;
   ScopedMessagePipeHandle testee_endpoint_;
@@ -273,7 +281,7 @@ class IntegrationTestInterface1Impl
   }
 };
 
-TEST(ValidationTest, InputParser) {
+TEST_F(ValidationTest, InputParser) {
   {
     // The parser, as well as Append() defined above, assumes that this code is
     // running on a little-endian platform. Test whether that is true.
@@ -378,7 +386,7 @@ TEST(ValidationTest, InputParser) {
   }
 }
 
-TEST(ValidationTest, Conformance) {
+TEST_F(ValidationTest, Conformance) {
   DummyMessageReceiver dummy_receiver;
   mojo::internal::FilterChain validators(&dummy_receiver);
   validators.Append<mojo::internal::MessageHeaderValidator>();
