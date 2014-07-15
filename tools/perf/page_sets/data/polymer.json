@@ -4,6 +4,19 @@
         "polymer_002.wpr": [
             "http://localhost:8000/components/paper-calculator/demo.html", 
             "http://localhost:8000/components/paper-shadow/demo.html"
+        ], 
+        "polymer_004.wpr": [
+            "http://www.polymer-project.org/components/paper-calculator/demo.html", 
+            "http://www.polymer-project.org/components/paper-shadow/demo.html", 
+            "http://www.polymer-project.org/components/paper-elements/demo.html#paper-toggle-button", 
+            "http://www.polymer-project.org/components/paper-elements/demo.html#paper-button", 
+            "http://www.polymer-project.org/components/paper-elements/demo.html#paper-checkbox", 
+            "http://www.polymer-project.org/components/paper-elements/demo.html#paper-icon-button", 
+            "http://www.polymer-project.org/components/paper-elements/demo.html#paper-radio-button", 
+            "http://www.polymer-project.org/components/paper-elements/demo.html#paper-tabs", 
+            "http://www.polymer-project.org/components/paper-elements/demo.html#paper-fab", 
+            "http://www.polymer-project.org/components/paper-elements/demo.html#paper-shadow", 
+            "http://www.polymer-project.org/components/paper-elements/demo.html#core-scroll-header-panel"
         ]
     }
 }

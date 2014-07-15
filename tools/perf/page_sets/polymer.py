@@ -10,7 +10,6 @@ class PolymerPage(page_module.Page):
     super(PolymerPage, self).__init__(
       url=url,
       page_set=page_set)
-    self.archive_data_file = "data/polymer.json"
     self.script_to_evaluate_on_commit = '''
       document.addEventListener("polymer-ready", function() {
         window.__polymer_ready = true;
@@ -27,7 +26,8 @@ class PolymerCalculatorPage(PolymerPage):
 
   def __init__(self, page_set):
     super(PolymerCalculatorPage, self).__init__(
-      url='http://localhost:8000/components/paper-calculator/demo.html',
+      url=('http://www.polymer-project.org/components/paper-calculator/'
+          'demo.html'),
       page_set=page_set)
 
   def RunSmoothness(self, action_runner):
@@ -72,9 +72,8 @@ class PolymerShadowPage(PolymerPage):
 
   def __init__(self, page_set):
     super(PolymerShadowPage, self).__init__(
-      url='http://localhost:8000/components/paper-shadow/demo.html',
+      url='http://www.polymer-project.org/components/paper-shadow/demo.html',
       page_set=page_set)
-    self.archive_data_file = 'data/polymer.json'
 
   def RunSmoothness(self, action_runner):
     action_runner.ExecuteJavaScript(
@@ -90,13 +89,117 @@ class PolymerShadowPage(PolymerPage):
       action_runner.Wait(1)
 
 
+class PolymerSampler(PolymerPage):
+
+  def __init__(self, page_set, anchor, scrolling_page=False):
+    """Page exercising interactions with a single Paper Sampler subpage.
+
+    Args:
+      page_set: Page set to inforporate this page into.
+      anchor: string indicating which subpage to load (matches the element
+          type that page is displaying)
+      scrolling_page: Whether scrolling the content pane is relevant to this
+          content page or not.
+    """
+    super(PolymerSampler, self).__init__(
+      url=('http://www.polymer-project.org/components/paper-elements/demo.html#'
+          + anchor),
+      page_set=page_set)
+    self.scrolling_page = scrolling_page
+    self.iframe_js = 'document.querySelector("sampler-scaffold").$.frame'
+
+  def RunNavigateSteps(self, action_runner):
+    #FIXME(wiltzius) workaround for crbug.com/391672
+    action_runner.ExecuteJavaScript('window.location.href="about:blank";')
+    super(PolymerSampler, self).RunNavigateSteps(action_runner)
+    #FIXME(wiltzius) this should wait for iframe to load and all load
+    # animations to end
+    action_runner.Wait(5)
+
+  def RunSmoothness(self, action_runner):
+    #TODO(wiltzius) Add interactions for input elements and shadow pages
+    if self.scrolling_page:
+      # Only bother scrolling the page if its been marked as worthwhile
+      self.ScrollContentPane(action_runner)
+    self.TouchEverything(action_runner)
+
+  def ScrollContentPane(self, action_runner):
+    element_function = (self.iframe_js + '.contentDocument.querySelector('
+        '"core-scroll-header-panel").$.mainContainer')
+    interaction = action_runner.BeginInteraction('Scroll_Page', is_smooth=True)
+    action_runner.ScrollElement(use_touch=True,
+                                direction='down',
+                                distance='900',
+                                element_function=element_function)
+    interaction.End()
+    interaction = action_runner.BeginInteraction('Scroll_Page', is_smooth=True)
+    action_runner.ScrollElement(use_touch=True,
+                                direction='up',
+                                distance='900',
+                                element_function=element_function)
+    interaction.End()
+
+  def TouchEverything(self, action_runner):
+    tappable_types = ['paper-toggle-button', 'paper-button', 'paper-checkbox',
+        'paper-icon-button', 'paper-radio-button', 'paper-tab', 'paper-fab',
+        'x-shadow']
+    for tappable_type in tappable_types:
+      self.DoActionOnWidgetType(action_runner, tappable_type, self.TapWidget)
+    swipeable_types = ['paper-slider']
+    for swipeable_type in swipeable_types:
+      self.DoActionOnWidgetType(action_runner, swipeable_type, self.SwipeWidget)
+
+  def DoActionOnWidgetType(self, action_runner, widget_type, action_function):
+    # Find all widgets of this type, but skip any that are disabled or are
+    # currently active as they typically don't produce animation frames.
+    element_list_query = (self.iframe_js +
+        ('.contentDocument.querySelectorAll("body %s:not([disabled]):'
+         'not([active])")' % widget_type))
+    roles_count_query = element_list_query + '.length'
+    for i in range(action_runner.EvaluateJavaScript(roles_count_query)):
+      element_query = element_list_query + ("[%d]" % i)
+      if action_runner.EvaluateJavaScript(
+          element_query + '.offsetParent != null'):
+        # Only try to tap on visible elements (offsetParent != null)
+        action_runner.ExecuteJavaScript(element_query + '.scrollIntoView()')
+        action_runner.Wait(1) # wait for page to settle after scrolling
+        action_function(action_runner, element_query)
+
+  def TapWidget(self, action_runner, element_function):
+    interaction = action_runner.BeginInteraction(
+        'Tap_Widget', is_smooth=True)
+    action_runner.TapElement(element_function=element_function)
+    action_runner.Wait(1) # wait for e.g. animations on the widget
+    interaction.End()
+
+  def SwipeWidget(self, action_runner, element_function):
+    interaction = action_runner.BeginInteraction(
+        'Swipe_Widget', is_smooth=True)
+    action_runner.SwipeElement(element_function=element_function,
+                               left_start_ratio=0.75,
+                               speed_in_pixels_per_second=300)
+    interaction.End()
+
+
 class PolymerPageSet(page_set_module.PageSet):
 
   def __init__(self):
     super(PolymerPageSet, self).__init__(
       user_agent_type='mobile',
       archive_data_file='data/polymer.json',
-      bucket=page_set_module.INTERNAL_BUCKET)
+      bucket=page_set_module.PUBLIC_BUCKET)
 
     self.AddPage(PolymerCalculatorPage(self))
     self.AddPage(PolymerShadowPage(self))
+
+    # Polymer Sampler subpages that are interesting to tap / swipe elements on
+    TAPPABLE_PAGES = ['paper-toggle-button', 'paper-button', 'paper-checkbox',
+      'paper-icon-button', 'paper-radio-button', 'paper-tabs', 'paper-fab',
+      'paper-shadow']
+    for p in TAPPABLE_PAGES:
+      self.AddPage(PolymerSampler(self, p))
+
+    # Polymer Sampler subpages that are interesting to scroll
+    SCROLLABLE_PAGES = ['core-scroll-header-panel']
+    for p in SCROLLABLE_PAGES:
+      self.AddPage(PolymerSampler(self, p, scrolling_page=True))
