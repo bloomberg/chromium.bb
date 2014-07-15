@@ -1532,7 +1532,7 @@ TEST_F(PictureLayerImplTest, ShareTilesOnSync) {
   }
 }
 
-TEST_F(PictureLayerImplTest, RemoveInvalidActiveTreeTilesOnSync) {
+TEST_F(PictureLayerImplTest, ShareInvalidActiveTreeTilesOnSync) {
   SetupDefaultTrees(gfx::Size(1500, 1500));
   AddDefaultTilingsWithInvalidation(gfx::Rect(0, 0, 1, 1));
 
@@ -1545,7 +1545,8 @@ TEST_F(PictureLayerImplTest, RemoveInvalidActiveTreeTilesOnSync) {
   // Force the active tree to sync to the pending tree "post-commit".
   pending_layer_->DoPostCommitInitializationIfNeeded();
 
-  // Both invalidations should drop tiles from the pending tree.
+  // The active tree invalidation was handled by the active tiles, so they
+  // can be shared with the pending tree.
   EXPECT_EQ(3u, active_layer_->num_tilings());
   EXPECT_EQ(3u, pending_layer_->num_tilings());
   for (size_t i = 0; i < active_layer_->num_tilings(); ++i) {
@@ -1566,7 +1567,7 @@ TEST_F(PictureLayerImplTest, RemoveInvalidActiveTreeTilesOnSync) {
     EXPECT_TRUE(pending_tiling->TileAt(0, 1));
     EXPECT_TRUE(pending_tiling->TileAt(1, 1));
 
-    EXPECT_NE(active_tiling->TileAt(0, 0), pending_tiling->TileAt(0, 0));
+    EXPECT_EQ(active_tiling->TileAt(0, 0), pending_tiling->TileAt(0, 0));
     EXPECT_EQ(active_tiling->TileAt(1, 0), pending_tiling->TileAt(1, 0));
     EXPECT_EQ(active_tiling->TileAt(0, 1), pending_tiling->TileAt(0, 1));
     EXPECT_EQ(active_tiling->TileAt(1, 1), pending_tiling->TileAt(1, 1));
@@ -1589,7 +1590,8 @@ TEST_F(PictureLayerImplTest, RemoveInvalidPendingTreeTilesOnSync) {
   // Force the active tree to sync to the pending tree "post-commit".
   pending_layer_->DoPostCommitInitializationIfNeeded();
 
-  // Both invalidations should drop tiles from the pending tree.
+  // The pending tree invalidation means tiles can not be shared with the
+  // active tree.
   EXPECT_EQ(3u, active_layer_->num_tilings());
   EXPECT_EQ(3u, pending_layer_->num_tilings());
   for (size_t i = 0; i < active_layer_->num_tilings(); ++i) {

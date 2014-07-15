@@ -201,10 +201,13 @@ void PictureLayerTiling::Invalidate(const Region& layer_region) {
   }
 
   if (!new_tile_keys.empty()) {
+    const PictureLayerTiling* twin_tiling = client_->GetTwinTiling(this);
     for (size_t i = 0; i < new_tile_keys.size(); ++i) {
       // Don't try to share a tile with the twin layer, it's been invalidated so
       // we have to make our own tile here.
-      PictureLayerTiling* twin_tiling = NULL;
+      // TODO(danakj): Because we have two frames of invalidation during sync
+      // this isn't always true. When sync is gone we can do this again.
+      // PictureLayerTiling* twin_tiling = NULL;
       CreateTile(new_tile_keys[i].first, new_tile_keys[i].second, twin_tiling);
     }
   }
