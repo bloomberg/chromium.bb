@@ -24,9 +24,9 @@ class MockImageTransportFactoryObserver : public ImageTransportFactoryObserver {
   MOCK_METHOD0(OnLostResources, void());
 };
 
-// This crashes on Mac ASAN
-// http://crbug.com/335083
-#if defined(OS_MACOSX)
+// This crashes on Mac ASAN: http://crbug.com/335083
+// Flaky on ChromeOS: crbug.com/394083
+#if defined(OS_MACOSX) || defined(OS_CHROMEOS)
 #define MAYBE_TestLostContext DISABLED_TestLostContext
 #else
 #define MAYBE_TestLostContext TestLostContext
