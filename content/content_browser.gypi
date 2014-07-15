@@ -55,7 +55,7 @@
       'public/browser/android/synchronous_compositor.h',
       'public/browser/android/ui_resource_client_android.h',
       'public/browser/android/ui_resource_provider.h',
-      'public/browser/appcache/appcache_service.h',
+      'public/browser/appcache_service.h',
       'public/browser/ax_event_notification_details.cc',
       'public/browser/ax_event_notification_details.h',
       'public/browser/blob_handle.h',
