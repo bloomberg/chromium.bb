@@ -671,6 +671,13 @@ crbug.com/393706 [ Retina ] virtual/softwarecompositing/rubberbanding/transform-
 crbug.com/393706 [ Retina ] w3c/web-platform-tests/shadow-dom/shadow-trees/shadow-root-001.html [ ImageOnlyFailure Pass ]
 crbug.com/393706 [ Retina ] ietestcenter/css3/namespaces/declaring-001.xml [ ImageOnlyFailure Pass ]
 crbug.com/393706 [ Retina ] virtual/threaded/compositing/webgl/webgl-background-color.html [ ImageOnlyFailure Pass ]
+crbug.com/393706 [ Retina ] virtual/softwarecompositing/scaling/tiled-layer-recursion.html [ ImageOnlyFailure Pass ]
+crbug.com/393706 [ Retina ] compositing/scaling/tiled-layer-recursion.html [ ImageOnlyFailure Pass ]
+crbug.com/393706 [ Retina ] virtual/softwarecompositing/masks/direct-image-mask.html [ ImageOnlyFailure Pass ]
+crbug.com/393706 [ Retina ] virtual/stable/media/stable/video-object-fit-stable.html [ ImageOnlyFailure Pass ]
+crbug.com/393706 [ Retina ] virtual/softwarecompositing/backgrounds/fixed-background-on-descendant.html [ ImageOnlyFailure Pass ]
+crbug.com/393706 [ Retina ] w3c/web-platform-tests/shadow-dom/shadow-trees/nested-shadow-trees/nested_tree_reftest.html [ ImageOnlyFailure Pass ]
+crbug.com/393706 [ Retina ] virtual/deferred/fast/images/image-click-scale-restore-zoomed-image.html [ Failure Pass ]
 
 # 309184 and 303419 track Android-specific failures
 crbug.com/309184 crbug.com/303419 crbug.com/284782 http/tests/media/media-source/mediasource-duration.html [ Failure Pass ]
