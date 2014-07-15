@@ -42,7 +42,18 @@ installClass('HTMLMarqueeElement', function(global) {
         return null;
     }
 
-    // FIXME: Consider moving these utility functions to PrivateScriptUtils.js.
+    // FIXME: Consider moving these utility functions to PrivateScriptRunner.js.
+    var kInt32Max = Math.pow(2, 31);
+
+    function convertToLong(n) {
+        // Using parseInt() is wrong but this aligns with the existing behavior of StringImpl::toInt().
+        // FIXME: Implement a correct algorithm of the Web IDL value conversion.
+        var value = parseInt(n);
+        if (!isNaN(value) && -kInt32Max <= value && value < kInt32Max)
+            return value;
+        return NaN;
+    }
+
     function reflectAttribute(prototype, attributeName, propertyName) {
         Object.defineProperty(prototype, propertyName, {
             get: function() {
@@ -180,35 +191,45 @@ installClass('HTMLMarqueeElement', function(global) {
     Object.defineProperty(HTMLMarqueeElementPrototype, 'scrollAmount', {
         get: function() {
             var value = this.getAttribute('scrollamount');
-            return value === null ? kDefaultScrollAmount : parseInt(value);
+            var scrollAmount = convertToLong(value);
+            if (isNaN(scrollAmount) || scrollAmount < 0)
+                return kDefaultScrollAmount;
+            return scrollAmount;
         },
         set: function(value) {
-            this.setAttribute('scrollamount', +value);
+            if (value < 0)
+                throw new DOMExceptionInPrivateScript("IndexSizeError", "The provided value (" + value + ") is negative.");
+            this.setAttribute('scrollamount', value);
         },
     });
 
     Object.defineProperty(HTMLMarqueeElementPrototype, 'scrollDelay', {
         get: function() {
             var value = this.getAttribute('scrolldelay');
-            if (value === null)
-                return kDefaultScrollDelayMS;
-            var scrollDelay = parseInt(value);
-            if (scrollDelay < kMinimumScrollDelayMS && !this.trueSpeed)
+            var scrollDelay = convertToLong(value);
+            if (isNaN(scrollDelay) || scrollDelay < 0)
                 return kDefaultScrollDelayMS;
             return scrollDelay;
         },
         set: function(value) {
-            this.setAttribute('scrolldelay', +value);
+            if (value < 0)
+                throw new DOMExceptionInPrivateScript("IndexSizeError", "The provided value (" + value + ") is negative.");
+            this.setAttribute('scrolldelay', value);
         },
     });
 
     Object.defineProperty(HTMLMarqueeElementPrototype, 'loop', {
         get: function() {
             var value = this.getAttribute('loop');
-            return value === null ? kDefaultLoopLimit : parseInt(value);
+            var loop = convertToLong(value);
+            if (isNaN(loop) || loop <= 0)
+                return kDefaultLoopLimit;
+            return loop;
         },
         set: function(value) {
-            this.setAttribute('loop', +value);
+            if (value <= 0 && value != -1)
+                throw new DOMExceptionInPrivateScript("IndexSizeError", "The provided value (" + value + ") is neither positive nor -1.");
+            this.setAttribute('loop', value);
         },
     });
 

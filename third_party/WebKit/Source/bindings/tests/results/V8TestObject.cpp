@@ -4899,7 +4899,7 @@ static bool readonlyShortAttributeAttributeGetterImplementedInPrivateScript(Loca
     ScriptState::Scope scope(scriptState);
     v8::Handle<v8::Value> holder = toV8(holderImpl, scriptState->context()->Global(), scriptState->isolate());
 
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "readonlyShortAttribute", "TestObject", scriptState->context()->Global(), scriptState->isolate());
+    ExceptionState exceptionState(ExceptionState::GetterContext, "readonlyShortAttribute", "TestObject", scriptState->context()->Global(), scriptState->isolate());
     v8::TryCatch block;
     V8RethrowTryCatchScope rethrow(block);
     v8::Handle<v8::Value> v8Value = PrivateScriptRunner::runDOMAttributeGetter(scriptState, "TestObject", "readonlyShortAttribute", holder);
@@ -4947,7 +4947,7 @@ static bool shortAttributeAttributeGetterImplementedInPrivateScript(LocalFrame* 
     ScriptState::Scope scope(scriptState);
     v8::Handle<v8::Value> holder = toV8(holderImpl, scriptState->context()->Global(), scriptState->isolate());
 
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "shortAttribute", "TestObject", scriptState->context()->Global(), scriptState->isolate());
+    ExceptionState exceptionState(ExceptionState::GetterContext, "shortAttribute", "TestObject", scriptState->context()->Global(), scriptState->isolate());
     v8::TryCatch block;
     V8RethrowTryCatchScope rethrow(block);
     v8::Handle<v8::Value> v8Value = PrivateScriptRunner::runDOMAttributeGetter(scriptState, "TestObject", "shortAttribute", holder);
@@ -4978,7 +4978,7 @@ static bool shortAttributeAttributeSetterImplementedInPrivateScript(LocalFrame* 
     ScriptState::Scope scope(scriptState);
     v8::Handle<v8::Value> holder = toV8(holderImpl, scriptState->context()->Global(), scriptState->isolate());
 
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "shortAttribute", "TestObject", scriptState->context()->Global(), scriptState->isolate());
+    ExceptionState exceptionState(ExceptionState::SetterContext, "shortAttribute", "TestObject", scriptState->context()->Global(), scriptState->isolate());
     v8::TryCatch block;
     V8RethrowTryCatchScope rethrow(block);
     PrivateScriptRunner::runDOMAttributeSetter(scriptState, "TestObject", "shortAttribute", holder, v8::Integer::New(scriptState->isolate(), cppValue));
@@ -5039,7 +5039,7 @@ static bool stringAttributeAttributeGetterImplementedInPrivateScript(LocalFrame*
     ScriptState::Scope scope(scriptState);
     v8::Handle<v8::Value> holder = toV8(holderImpl, scriptState->context()->Global(), scriptState->isolate());
 
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "stringAttribute", "TestObject", scriptState->context()->Global(), scriptState->isolate());
+    ExceptionState exceptionState(ExceptionState::GetterContext, "stringAttribute", "TestObject", scriptState->context()->Global(), scriptState->isolate());
     v8::TryCatch block;
     V8RethrowTryCatchScope rethrow(block);
     v8::Handle<v8::Value> v8Value = PrivateScriptRunner::runDOMAttributeGetter(scriptState, "TestObject", "stringAttribute", holder);
@@ -5070,7 +5070,7 @@ static bool stringAttributeAttributeSetterImplementedInPrivateScript(LocalFrame*
     ScriptState::Scope scope(scriptState);
     v8::Handle<v8::Value> holder = toV8(holderImpl, scriptState->context()->Global(), scriptState->isolate());
 
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "stringAttribute", "TestObject", scriptState->context()->Global(), scriptState->isolate());
+    ExceptionState exceptionState(ExceptionState::SetterContext, "stringAttribute", "TestObject", scriptState->context()->Global(), scriptState->isolate());
     v8::TryCatch block;
     V8RethrowTryCatchScope rethrow(block);
     PrivateScriptRunner::runDOMAttributeSetter(scriptState, "TestObject", "stringAttribute", holder, v8String(scriptState->isolate(), cppValue));
@@ -5130,7 +5130,7 @@ static bool nodeAttributeAttributeGetterImplementedInPrivateScript(LocalFrame* f
     ScriptState::Scope scope(scriptState);
     v8::Handle<v8::Value> holder = toV8(holderImpl, scriptState->context()->Global(), scriptState->isolate());
 
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "nodeAttribute", "TestObject", scriptState->context()->Global(), scriptState->isolate());
+    ExceptionState exceptionState(ExceptionState::GetterContext, "nodeAttribute", "TestObject", scriptState->context()->Global(), scriptState->isolate());
     v8::TryCatch block;
     V8RethrowTryCatchScope rethrow(block);
     v8::Handle<v8::Value> v8Value = PrivateScriptRunner::runDOMAttributeGetter(scriptState, "TestObject", "nodeAttribute", holder);
@@ -5161,7 +5161,7 @@ static bool nodeAttributeAttributeSetterImplementedInPrivateScript(LocalFrame* f
     ScriptState::Scope scope(scriptState);
     v8::Handle<v8::Value> holder = toV8(holderImpl, scriptState->context()->Global(), scriptState->isolate());
 
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "nodeAttribute", "TestObject", scriptState->context()->Global(), scriptState->isolate());
+    ExceptionState exceptionState(ExceptionState::SetterContext, "nodeAttribute", "TestObject", scriptState->context()->Global(), scriptState->isolate());
     v8::TryCatch block;
     V8RethrowTryCatchScope rethrow(block);
     PrivateScriptRunner::runDOMAttributeSetter(scriptState, "TestObject", "nodeAttribute", holder, toV8(cppValue, scriptState->context()->Global(), scriptState->isolate()));

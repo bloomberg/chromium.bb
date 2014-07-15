@@ -43,15 +43,6 @@ public:
     void start();
     virtual void stop() OVERRIDE;
 
-    int scrollAmount() const;
-    void setScrollAmount(int, ExceptionState&);
-
-    int scrollDelay() const;
-    void setScrollDelay(int, ExceptionState&);
-
-    int loop() const;
-    void setLoop(int, ExceptionState&);
-
     void timerFired(Timer<HTMLMarqueeElement>*);
 
 private:

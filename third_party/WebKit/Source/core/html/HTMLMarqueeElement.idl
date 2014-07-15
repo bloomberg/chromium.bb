@@ -26,9 +26,9 @@ interface HTMLMarqueeElement : HTMLElement {
     [ImplementedInPrivateScript, Reflect] attribute DOMString direction;
     [ImplementedInPrivateScript, Reflect] attribute DOMString height;
     [ImplementedInPrivateScript, Reflect] attribute unsigned long hspace;
-    [RaisesException=Setter] attribute long loop;
-    [RaisesException=Setter] attribute long scrollAmount;
-    [RaisesException=Setter] attribute long scrollDelay;
+    [ImplementedInPrivateScript] attribute long loop;
+    [ImplementedInPrivateScript] attribute long scrollAmount;
+    [ImplementedInPrivateScript] attribute long scrollDelay;
     [ImplementedInPrivateScript, Reflect] attribute boolean trueSpeed;
     [ImplementedInPrivateScript, Reflect] attribute unsigned long vspace;
     [ImplementedInPrivateScript, Reflect] attribute DOMString width;
