@@ -69,7 +69,11 @@ asyncTest("basic", 7, function() {
     var row1 = grid.shadowRoot.querySelector('tbody td.CRASH').parentNode;
     equal(row1.children.length, 3);
     equal(row1.children[1].querySelectorAll('ct-builder').length, 1);
+    equal(row1.children[1].querySelectorAll('ct-builder')[0].builderName, 'WebKit Mac10.7');
+
     equal(row1.children[2].querySelectorAll('ct-builder').length, 2);
+    equal(row1.children[2].querySelectorAll('ct-builder')[0].builderName, 'WebKit Mac10.6 (dbg)');
+    equal(row1.children[2].querySelectorAll('ct-builder')[1].builderName, 'WebKit Win7 (dbg)');
 
     var row2 = grid.shadowRoot.querySelector('tbody td.TEXT').parentNode;
     equal(row2.children.length, 3);
