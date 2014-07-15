@@ -598,26 +598,12 @@ DriveIntegrationServiceFactory::ScopedFactoryForTest::~ScopedFactoryForTest() {
 // static
 DriveIntegrationService* DriveIntegrationServiceFactory::GetForProfile(
     Profile* profile) {
-  return GetForProfileRegardlessOfStates(profile);
-}
-
-// static
-DriveIntegrationService*
-DriveIntegrationServiceFactory::GetForProfileRegardlessOfStates(
-    Profile* profile) {
   return static_cast<DriveIntegrationService*>(
       GetInstance()->GetServiceForBrowserContext(profile, true));
 }
 
 // static
 DriveIntegrationService* DriveIntegrationServiceFactory::FindForProfile(
-    Profile* profile) {
-  return FindForProfileRegardlessOfStates(profile);
-}
-
-// static
-DriveIntegrationService*
-DriveIntegrationServiceFactory::FindForProfileRegardlessOfStates(
     Profile* profile) {
   return static_cast<DriveIntegrationService*>(
       GetInstance()->GetServiceForBrowserContext(profile, false));

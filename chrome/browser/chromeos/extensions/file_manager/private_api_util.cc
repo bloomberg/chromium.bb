@@ -327,8 +327,7 @@ void SetupProfileFileAccessPermissions(int render_view_process_id,
 
 drive::EventLogger* GetLogger(Profile* profile) {
   drive::DriveIntegrationService* service =
-      drive::DriveIntegrationServiceFactory::FindForProfileRegardlessOfStates(
-          profile);
+      drive::DriveIntegrationServiceFactory::FindForProfile(profile);
   return service ? service->event_logger() : NULL;
 }
 

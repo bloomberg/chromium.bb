@@ -41,15 +41,14 @@ bool VolumeManagerFactory::ServiceIsNULLWhileTesting() const {
 }
 
 KeyedService* VolumeManagerFactory::BuildServiceInstanceFor(
-    content::BrowserContext* profile) const {
+    content::BrowserContext* context) const {
+  Profile* const profile = Profile::FromBrowserContext(context);
   VolumeManager* instance = new VolumeManager(
-      Profile::FromBrowserContext(profile),
-      drive::DriveIntegrationServiceFactory::GetForProfileRegardlessOfStates(
-          Profile::FromBrowserContext(profile)),
+      profile,
+      drive::DriveIntegrationServiceFactory::GetForProfile(profile),
       chromeos::DBusThreadManager::Get()->GetPowerManagerClient(),
       chromeos::disks::DiskMountManager::GetInstance(),
-      chromeos::file_system_provider::ServiceFactory::Get(
-          Profile::FromBrowserContext(profile)));
+      chromeos::file_system_provider::ServiceFactory::Get(context));
   instance->Initialize();
   return instance;
 }

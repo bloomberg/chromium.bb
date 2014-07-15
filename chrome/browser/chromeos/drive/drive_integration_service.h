@@ -211,17 +211,9 @@ class DriveIntegrationServiceFactory
   // not yet created.
   static DriveIntegrationService* GetForProfile(Profile* profile);
 
-  // Same as GetForProfile. TODO(hidehiko): Remove this.
-  static DriveIntegrationService* GetForProfileRegardlessOfStates(
-      Profile* profile);
-
   // Returns the DriveIntegrationService that is already associated with
   // |profile|, if it is not yet created it will return NULL.
   static DriveIntegrationService* FindForProfile(Profile* profile);
-
-  // Same as FindForProfile. TODO(hidehiko): Remove this.
-  static DriveIntegrationService* FindForProfileRegardlessOfStates(
-      Profile* profile);
 
   // Returns the DriveIntegrationServiceFactory instance.
   static DriveIntegrationServiceFactory* GetInstance();

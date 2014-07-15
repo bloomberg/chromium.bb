@@ -370,8 +370,7 @@ void EventRouter::Shutdown() {
   }
 
   DriveIntegrationService* integration_service =
-      DriveIntegrationServiceFactory::FindForProfileRegardlessOfStates(
-          profile_);
+      DriveIntegrationServiceFactory::FindForProfile(profile_);
   if (integration_service) {
     integration_service->file_system()->RemoveObserver(this);
     integration_service->drive_service()->RemoveObserver(this);
@@ -411,8 +410,7 @@ void EventRouter::ObserveEvents() {
     volume_manager->AddObserver(this);
 
   DriveIntegrationService* integration_service =
-      DriveIntegrationServiceFactory::FindForProfileRegardlessOfStates(
-          profile_);
+      DriveIntegrationServiceFactory::FindForProfile(profile_);
   if (integration_service) {
     integration_service->drive_service()->AddObserver(this);
     integration_service->file_system()->AddObserver(this);
