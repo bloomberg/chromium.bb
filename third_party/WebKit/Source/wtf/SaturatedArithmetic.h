@@ -35,7 +35,7 @@
 #include <limits>
 #include <stdint.h>
 
-#if CPU(ARM) && COMPILER(GCC)
+#if CPU(ARM) && COMPILER(GCC) && __OPTIMIZE__
 
 // If we're building ARM on GCC we replace the C++ versions with some
 // native ARM assembly for speed.
