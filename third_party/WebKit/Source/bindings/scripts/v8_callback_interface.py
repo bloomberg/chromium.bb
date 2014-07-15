@@ -117,7 +117,7 @@ def arguments_context(arguments, call_with_this_handle):
         return {
             'handle': '%sHandle' % argument.name,
             'cpp_value_to_v8_value': argument.idl_type.cpp_value_to_v8_value(
-                argument.name, isolate='isolate',
+                argument.name, isolate='m_scriptState->isolate()',
                 creation_context='m_scriptState->context()->Global()'),
         }
 

@@ -247,9 +247,8 @@ static void toStringMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& in
 
 static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    v8::Isolate* isolate = info.GetIsolate();
     RefPtr<TestInterface2> impl = TestInterface2::create();
-    v8::Handle<v8::Object> wrapper = wrap(impl.get(), info.Holder(), isolate);
+    v8::Handle<v8::Object> wrapper = wrap(impl.get(), info.Holder(), info.GetIsolate());
     v8SetReturnValue(info, wrapper);
 }
 
@@ -407,15 +406,14 @@ static void namedPropertyDeleterCallback(v8::Local<v8::String> name, const v8::P
 static void namedPropertyEnumerator(const v8::PropertyCallbackInfo<v8::Array>& info)
 {
     TestInterface2* impl = V8TestInterface2::toNative(info.Holder());
-    v8::Isolate* isolate = info.GetIsolate();
     Vector<String> names;
-    ExceptionState exceptionState(ExceptionState::EnumerationContext, "TestInterface2", info.Holder(), isolate);
+    ExceptionState exceptionState(ExceptionState::EnumerationContext, "TestInterface2", info.Holder(), info.GetIsolate());
     impl->namedPropertyEnumerator(names, exceptionState);
     if (exceptionState.throwIfNeeded())
         return;
-    v8::Handle<v8::Array> v8names = v8::Array::New(isolate, names.size());
+    v8::Handle<v8::Array> v8names = v8::Array::New(info.GetIsolate(), names.size());
     for (size_t i = 0; i < names.size(); ++i)
-        v8names->Set(v8::Integer::New(isolate, i), v8String(isolate, names[i]));
+        v8names->Set(v8::Integer::New(info.GetIsolate(), i), v8String(info.GetIsolate(), names[i]));
     v8SetReturnValue(info, v8names);
 }
 

@@ -360,13 +360,12 @@ throwMinimumArityTypeErrorForMethod("{{method.name}}", "{{interface_name}}", {{n
 {% macro overload_resolution_method(overloads, world_suffix) %}
 static void {{overloads.name}}Method{{world_suffix}}(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    v8::Isolate* isolate = info.GetIsolate();
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "{{overloads.name}}", "{{interface_name}}", info.Holder(), isolate);
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "{{overloads.name}}", "{{interface_name}}", info.Holder(), info.GetIsolate());
     {% if overloads.measure_all_as %}
-    UseCounter::count(callingExecutionContext(isolate), UseCounter::{{overloads.measure_all_as}});
+    UseCounter::count(callingExecutionContext(info.GetIsolate()), UseCounter::{{overloads.measure_all_as}});
     {% endif %}
     {% if overloads.deprecate_all_as %}
-    UseCounter::countDeprecation(callingExecutionContext(isolate), UseCounter::{{overloads.deprecate_all_as}});
+    UseCounter::countDeprecation(callingExecutionContext(info.GetIsolate()), UseCounter::{{overloads.deprecate_all_as}});
     {% endif %}
     {# First resolve by length #}
     {# 2. Initialize argcount to be min(maxarg, n). #}
@@ -381,10 +380,10 @@ static void {{overloads.name}}Method{{world_suffix}}(const v8::FunctionCallbackI
                                   method.runtime_enabled_function) %}
         if ({{test}}) {
             {% if method.measure_as and not overloads.measure_all_as %}
-            UseCounter::count(callingExecutionContext(isolate), UseCounter::{{method.measure_as}});
+            UseCounter::count(callingExecutionContext(info.GetIsolate()), UseCounter::{{method.measure_as}});
             {% endif %}
             {% if method.deprecate_as and not overloads.deprecate_all_as %}
-            UseCounter::countDeprecation(callingExecutionContext(isolate), UseCounter::{{method.deprecate_as}});
+            UseCounter::countDeprecation(callingExecutionContext(info.GetIsolate()), UseCounter::{{method.deprecate_as}});
             {% endif %}
             {{method.name}}{{method.overload_index}}Method{{world_suffix}}(info);
             return;
@@ -459,14 +458,13 @@ static void {{method.name}}OriginSafeMethodGetter{{world_suffix}}(const v8::Prop
 {
     {% set signature = 'v8::Local<v8::Signature>()'
                        if method.is_do_not_check_signature else
-                       'v8::Signature::New(isolate, %s::domTemplate(isolate))' % v8_class %}
-    v8::Isolate* isolate = info.GetIsolate();
+                       'v8::Signature::New(info.GetIsolate(), %s::domTemplate(info.GetIsolate()))' % v8_class %}
     static int domTemplateKey; // This address is used for a key to look up the dom template.
-    V8PerIsolateData* data = V8PerIsolateData::from(isolate);
+    V8PerIsolateData* data = V8PerIsolateData::from(info.GetIsolate());
     {# FIXME: 1 case of [DoNotCheckSignature] in Window.idl may differ #}
     v8::Handle<v8::FunctionTemplate> privateTemplate = data->domTemplate(&domTemplateKey, {{cpp_class}}V8Internal::{{method.name}}MethodCallback{{world_suffix}}, v8Undefined(), {{signature}}, {{method.length}});
 
-    v8::Handle<v8::Object> holder = {{v8_class}}::findInstanceInPrototypeChain(info.This(), isolate);
+    v8::Handle<v8::Object> holder = {{v8_class}}::findInstanceInPrototypeChain(info.This(), info.GetIsolate());
     if (holder.IsEmpty()) {
         // This is only reachable via |object.__proto__.func|, in which case it
         // has already passed the same origin security check
@@ -474,7 +472,7 @@ static void {{method.name}}OriginSafeMethodGetter{{world_suffix}}(const v8::Prop
         return;
     }
     {{cpp_class}}* impl = {{v8_class}}::toNative(holder);
-    if (!BindingSecurity::shouldAllowAccessToFrame(isolate, impl->frame(), DoNotReportSecurityError)) {
+    if (!BindingSecurity::shouldAllowAccessToFrame(info.GetIsolate(), impl->frame(), DoNotReportSecurityError)) {
         static int sharedTemplateKey; // This address is used for a key to look up the dom template.
         v8::Handle<v8::FunctionTemplate> sharedTemplate = data->domTemplate(&sharedTemplateKey, {{cpp_class}}V8Internal::{{method.name}}MethodCallback{{world_suffix}}, v8Undefined(), {{signature}}, {{method.length}});
         v8SetReturnValue(info, sharedTemplate->GetFunction());
@@ -482,7 +480,7 @@ static void {{method.name}}OriginSafeMethodGetter{{world_suffix}}(const v8::Prop
     }
 
     {# The findInstanceInPrototypeChain() call above only returns a non-empty handle if info.This() is an Object. #}
-    v8::Local<v8::Value> hiddenValue = v8::Handle<v8::Object>::Cast(info.This())->GetHiddenValue(v8AtomicString(isolate, "{{method.name}}"));
+    v8::Local<v8::Value> hiddenValue = v8::Handle<v8::Object>::Cast(info.This())->GetHiddenValue(v8AtomicString(info.GetIsolate(), "{{method.name}}"));
     if (!hiddenValue.IsEmpty()) {
         v8SetReturnValue(info, hiddenValue);
         return;
@@ -559,21 +557,19 @@ static bool {{method.name}}MethodImplementedInPrivateScript({{method.argument_de
               'constructor%s' % (constructor.overload_index or '') %}
 static void {{name}}(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    v8::Isolate* isolate = info.GetIsolate();
-    {# FIXME: remove local variables 'isolate' here and other locations #}
     {% if constructor.is_named_constructor %}
     if (!info.IsConstructCall()) {
-        throwTypeError(ExceptionMessages::constructorNotCallableAsFunction("{{constructor.name}}"), isolate);
+        throwTypeError(ExceptionMessages::constructorNotCallableAsFunction("{{constructor.name}}"), info.GetIsolate());
         return;
     }
 
-    if (ConstructorMode::current(isolate) == ConstructorMode::WrapExistingObject) {
+    if (ConstructorMode::current(info.GetIsolate()) == ConstructorMode::WrapExistingObject) {
         v8SetReturnValue(info, info.Holder());
         return;
     }
     {% endif %}
     {% if constructor.has_exception_state %}
-    ExceptionState exceptionState(ExceptionState::ConstructionContext, "{{interface_name}}", info.Holder(), isolate);
+    ExceptionState exceptionState(ExceptionState::ConstructionContext, "{{interface_name}}", info.Holder(), info.GetIsolate());
     {% endif %}
     {# Overloaded constructors have length checked during overload resolution #}
     {% if constructor.number_of_required_arguments and not constructor.overload_index %}
@@ -594,13 +590,13 @@ static void {{name}}(const v8::FunctionCallbackInfo<v8::Value>& info)
 {##############################################################################}
 {% macro generate_constructor_wrapper(constructor) %}
 {% if has_custom_wrap %}
-v8::Handle<v8::Object> wrapper = wrap(impl.get(), info.Holder(), isolate);
+v8::Handle<v8::Object> wrapper = wrap(impl.get(), info.Holder(), info.GetIsolate());
 {% else %}
 {% set constructor_class = v8_class + ('Constructor'
                                        if constructor.is_named_constructor else
                                        '') %}
 v8::Handle<v8::Object> wrapper = info.Holder();
-V8DOMWrapper::associateObjectWithWrapper<{{v8_class}}>(impl.release(), &{{constructor_class}}::wrapperTypeInfo, wrapper, isolate, {{wrapper_configuration}});
+V8DOMWrapper::associateObjectWithWrapper<{{v8_class}}>(impl.release(), &{{constructor_class}}::wrapperTypeInfo, wrapper, info.GetIsolate(), {{wrapper_configuration}});
 {% endif %}
 v8SetReturnValue(info, wrapper);
 {% endmacro %}

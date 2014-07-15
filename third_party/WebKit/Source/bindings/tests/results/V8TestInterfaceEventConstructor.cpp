@@ -242,8 +242,7 @@ static void deprecatedImplementedAsInitializedByEventConstructorReadonlyStringAt
 
 static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    v8::Isolate* isolate = info.GetIsolate();
-    ExceptionState exceptionState(ExceptionState::ConstructionContext, "TestInterfaceEventConstructor", info.Holder(), isolate);
+    ExceptionState exceptionState(ExceptionState::ConstructionContext, "TestInterfaceEventConstructor", info.Holder(), info.GetIsolate());
     if (info.Length() < 1) {
         exceptionState.throwTypeError("An event name must be provided.");
         exceptionState.throwIfNeeded();
@@ -254,25 +253,25 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
     v8::Local<v8::Value> initializedByEventConstructorReadonlyAnyAttribute;
     TestInterfaceEventConstructorInit eventInit;
     if (info.Length() >= 2) {
-        TONATIVE_VOID(Dictionary, options, Dictionary(info[1], isolate));
+        TONATIVE_VOID(Dictionary, options, Dictionary(info[1], info.GetIsolate()));
         if (!initializeTestInterfaceEventConstructor(eventInit, options, exceptionState, info)) {
             exceptionState.throwIfNeeded();
             return;
         }
         options.get("initializedByEventConstructorReadonlyAnyAttribute", initializedByEventConstructorReadonlyAnyAttribute);
         if (!initializedByEventConstructorReadonlyAnyAttribute.IsEmpty())
-            V8HiddenValue::setHiddenValue(isolate, info.Holder(), v8AtomicString(isolate, "initializedByEventConstructorReadonlyAnyAttribute"), initializedByEventConstructorReadonlyAnyAttribute);
+            V8HiddenValue::setHiddenValue(info.GetIsolate(), info.Holder(), v8AtomicString(info.GetIsolate(), "initializedByEventConstructorReadonlyAnyAttribute"), initializedByEventConstructorReadonlyAnyAttribute);
     }
     RefPtrWillBeRawPtr<TestInterfaceEventConstructor> event = TestInterfaceEventConstructor::create(type, eventInit, exceptionState);
     if (exceptionState.throwIfNeeded())
         return;
-    if (DOMWrapperWorld::current(isolate).isIsolatedWorld()) {
+    if (DOMWrapperWorld::current(info.GetIsolate()).isIsolatedWorld()) {
         if (!initializedByEventConstructorReadonlyAnyAttribute.IsEmpty())
-            event->setSerializedInitializedByEventConstructorReadonlyAnyAttribute(SerializedScriptValue::createAndSwallowExceptions(initializedByEventConstructorReadonlyAnyAttribute, isolate));
+            event->setSerializedInitializedByEventConstructorReadonlyAnyAttribute(SerializedScriptValue::createAndSwallowExceptions(initializedByEventConstructorReadonlyAnyAttribute, info.GetIsolate()));
     }
 
     v8::Handle<v8::Object> wrapper = info.Holder();
-    V8DOMWrapper::associateObjectWithWrapper<V8TestInterfaceEventConstructor>(event.release(), &V8TestInterfaceEventConstructor::wrapperTypeInfo, wrapper, isolate, WrapperConfiguration::Independent);
+    V8DOMWrapper::associateObjectWithWrapper<V8TestInterfaceEventConstructor>(event.release(), &V8TestInterfaceEventConstructor::wrapperTypeInfo, wrapper, info.GetIsolate(), WrapperConfiguration::Independent);
     v8SetReturnValue(info, wrapper);
 }
 

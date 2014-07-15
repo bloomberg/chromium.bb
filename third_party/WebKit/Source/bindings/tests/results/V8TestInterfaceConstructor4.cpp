@@ -46,7 +46,6 @@ template <typename T> void V8_USE(T) { }
 
 static void constructor1(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    v8::Isolate* isolate = info.GetIsolate();
     TestInterfaceConstructor4* testInterface4Arg;
     {
         v8::TryCatch block;
@@ -55,14 +54,13 @@ static void constructor1(const v8::FunctionCallbackInfo<v8::Value>& info)
     }
     RefPtr<TestInterfaceConstructor4> impl = TestInterfaceConstructor4::create(testInterface4Arg);
     v8::Handle<v8::Object> wrapper = info.Holder();
-    V8DOMWrapper::associateObjectWithWrapper<V8TestInterfaceConstructor4>(impl.release(), &V8TestInterfaceConstructor4::wrapperTypeInfo, wrapper, isolate, WrapperConfiguration::Independent);
+    V8DOMWrapper::associateObjectWithWrapper<V8TestInterfaceConstructor4>(impl.release(), &V8TestInterfaceConstructor4::wrapperTypeInfo, wrapper, info.GetIsolate(), WrapperConfiguration::Independent);
     v8SetReturnValue(info, wrapper);
 }
 
 static void constructor2(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    v8::Isolate* isolate = info.GetIsolate();
-    ExceptionState exceptionState(ExceptionState::ConstructionContext, "TestInterfaceConstructor4", info.Holder(), isolate);
+    ExceptionState exceptionState(ExceptionState::ConstructionContext, "TestInterfaceConstructor4", info.Holder(), info.GetIsolate());
     V8StringResource<> scalarValueStringArg;
     {
         v8::TryCatch block;
@@ -71,17 +69,16 @@ static void constructor2(const v8::FunctionCallbackInfo<v8::Value>& info)
     }
     RefPtr<TestInterfaceConstructor4> impl = TestInterfaceConstructor4::create(scalarValueStringArg);
     v8::Handle<v8::Object> wrapper = info.Holder();
-    V8DOMWrapper::associateObjectWithWrapper<V8TestInterfaceConstructor4>(impl.release(), &V8TestInterfaceConstructor4::wrapperTypeInfo, wrapper, isolate, WrapperConfiguration::Independent);
+    V8DOMWrapper::associateObjectWithWrapper<V8TestInterfaceConstructor4>(impl.release(), &V8TestInterfaceConstructor4::wrapperTypeInfo, wrapper, info.GetIsolate(), WrapperConfiguration::Independent);
     v8SetReturnValue(info, wrapper);
 }
 
 static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    v8::Isolate* isolate = info.GetIsolate();
-    ExceptionState exceptionState(ExceptionState::ConstructionContext, "TestInterfaceConstructor4", info.Holder(), isolate);
+    ExceptionState exceptionState(ExceptionState::ConstructionContext, "TestInterfaceConstructor4", info.Holder(), info.GetIsolate());
     switch (std::min(1, info.Length())) {
     case 1:
-        if (V8TestInterfaceConstructor4::hasInstance(info[0], isolate)) {
+        if (V8TestInterfaceConstructor4::hasInstance(info[0], info.GetIsolate())) {
             TestInterfaceConstructor4V8Internal::constructor1(info);
             return;
         }
