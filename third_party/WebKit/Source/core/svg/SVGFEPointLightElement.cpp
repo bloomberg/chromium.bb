@@ -36,8 +36,7 @@ DEFINE_NODE_FACTORY(SVGFEPointLightElement)
 
 PassRefPtr<LightSource> SVGFEPointLightElement::lightSource(Filter* filter) const
 {
-    FloatPoint3D location(x()->currentValue()->value(), y()->currentValue()->value(), z()->currentValue()->value());
-    return PointLightSource::create(filter->resolve3dPoint(location));
+    return PointLightSource::create(filter->resolve3dPoint(position()));
 }
 
 }

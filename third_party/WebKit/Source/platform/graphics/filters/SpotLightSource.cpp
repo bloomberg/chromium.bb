@@ -97,51 +97,19 @@ void SpotLightSource::updatePaintingData(PaintingData& paintingData, int x, int 
     paintingData.colorVector.setZ(paintingData.privateColorVector.z() * lightStrength);
 }
 
-bool SpotLightSource::setX(float x)
+bool SpotLightSource::setPosition(const FloatPoint3D& position)
 {
-    if (m_position.x() == x)
+    if (m_position == position)
         return false;
-    m_position.setX(x);
+    m_position = position;
     return true;
 }
 
-bool SpotLightSource::setY(float y)
+bool SpotLightSource::setPointsAt(const FloatPoint3D& direction)
 {
-    if (m_position.y() == y)
+    if (m_direction == direction)
         return false;
-    m_position.setY(y);
-    return true;
-}
-
-bool SpotLightSource::setZ(float z)
-{
-    if (m_position.z() == z)
-        return false;
-    m_position.setZ(z);
-    return true;
-}
-
-bool SpotLightSource::setPointsAtX(float pointsAtX)
-{
-    if (m_direction.x() == pointsAtX)
-        return false;
-    m_direction.setX(pointsAtX);
-    return true;
-}
-
-bool SpotLightSource::setPointsAtY(float pointsAtY)
-{
-    if (m_direction.y() == pointsAtY)
-        return false;
-    m_direction.setY(pointsAtY);
-    return true;
-}
-
-bool SpotLightSource::setPointsAtZ(float pointsAtZ)
-{
-    if (m_direction.z() == pointsAtZ)
-        return false;
-    m_direction.setZ(pointsAtZ);
+    m_direction = direction;
     return true;
 }
 

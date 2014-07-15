@@ -47,27 +47,11 @@ void PointLightSource::updatePaintingData(PaintingData& paintingData, int x, int
     paintingData.lightVectorLength = paintingData.lightVector.length();
 }
 
-bool PointLightSource::setX(float x)
+bool PointLightSource::setPosition(const FloatPoint3D& position)
 {
-    if (m_position.x() == x)
+    if (m_position == position)
         return false;
-    m_position.setX(x);
-    return true;
-}
-
-bool PointLightSource::setY(float y)
-{
-    if (m_position.y() == y)
-        return false;
-    m_position.setY(y);
-    return true;
-}
-
-bool PointLightSource::setZ(float z)
-{
-    if (m_position.z() == z)
-        return false;
-    m_position.setZ(z);
+    m_position = position;
     return true;
 }
 

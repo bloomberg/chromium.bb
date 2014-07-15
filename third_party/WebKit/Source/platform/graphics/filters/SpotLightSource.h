@@ -47,12 +47,8 @@ public:
     float specularExponent() const { return m_specularExponent; }
     float limitingConeAngle() const { return m_limitingConeAngle; }
 
-    virtual bool setX(float) OVERRIDE;
-    virtual bool setY(float) OVERRIDE;
-    virtual bool setZ(float) OVERRIDE;
-    virtual bool setPointsAtX(float) OVERRIDE;
-    virtual bool setPointsAtY(float) OVERRIDE;
-    virtual bool setPointsAtZ(float) OVERRIDE;
+    virtual bool setPosition(const FloatPoint3D&) OVERRIDE;
+    virtual bool setPointsAt(const FloatPoint3D&) OVERRIDE;
 
     virtual bool setSpecularExponent(float) OVERRIDE;
     virtual bool setLimitingConeAngle(float) OVERRIDE;

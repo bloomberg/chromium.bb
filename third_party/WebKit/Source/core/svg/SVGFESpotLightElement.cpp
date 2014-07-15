@@ -36,10 +36,7 @@ DEFINE_NODE_FACTORY(SVGFESpotLightElement)
 
 PassRefPtr<LightSource> SVGFESpotLightElement::lightSource(Filter* filter) const
 {
-    FloatPoint3D pos(x()->currentValue()->value(), y()->currentValue()->value(), z()->currentValue()->value());
-    FloatPoint3D direction(pointsAtX()->currentValue()->value(), pointsAtY()->currentValue()->value(), pointsAtZ()->currentValue()->value());
-
-    return SpotLightSource::create(filter->resolve3dPoint(pos), filter->resolve3dPoint(direction), specularExponent()->currentValue()->value(), limitingConeAngle()->currentValue()->value());
+    return SpotLightSource::create(filter->resolve3dPoint(position()), filter->resolve3dPoint(pointsAt()), specularExponent()->currentValue()->value(), limitingConeAngle()->currentValue()->value());
 }
 
 }

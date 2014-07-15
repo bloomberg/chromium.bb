@@ -101,23 +101,16 @@ bool SVGFEDiffuseLightingElement::setFilterEffectAttribute(FilterEffect* effect,
     const SVGFELightElement* lightElement = SVGFELightElement::findLightElement(*this);
     ASSERT(lightSource);
     ASSERT(lightElement);
+    ASSERT(effect->filter());
 
     if (attrName == SVGNames::azimuthAttr)
         return lightSource->setAzimuth(lightElement->azimuth()->currentValue()->value());
     if (attrName == SVGNames::elevationAttr)
         return lightSource->setElevation(lightElement->elevation()->currentValue()->value());
-    if (attrName == SVGNames::xAttr)
-        return lightSource->setX(lightElement->x()->currentValue()->value());
-    if (attrName == SVGNames::yAttr)
-        return lightSource->setY(lightElement->y()->currentValue()->value());
-    if (attrName == SVGNames::zAttr)
-        return lightSource->setZ(lightElement->z()->currentValue()->value());
-    if (attrName == SVGNames::pointsAtXAttr)
-        return lightSource->setPointsAtX(lightElement->pointsAtX()->currentValue()->value());
-    if (attrName == SVGNames::pointsAtYAttr)
-        return lightSource->setPointsAtY(lightElement->pointsAtY()->currentValue()->value());
-    if (attrName == SVGNames::pointsAtZAttr)
-        return lightSource->setPointsAtZ(lightElement->pointsAtZ()->currentValue()->value());
+    if (attrName == SVGNames::xAttr || attrName == SVGNames::yAttr || attrName == SVGNames::zAttr)
+        return lightSource->setPosition(effect->filter()->resolve3dPoint(lightElement->position()));
+    if (attrName == SVGNames::pointsAtXAttr || attrName == SVGNames::pointsAtYAttr || attrName == SVGNames::pointsAtZAttr)
+        return lightSource->setPointsAt(effect->filter()->resolve3dPoint(lightElement->pointsAt()));
     if (attrName == SVGNames::specularExponentAttr)
         return lightSource->setSpecularExponent(lightElement->specularExponent()->currentValue()->value());
     if (attrName == SVGNames::limitingConeAngleAttr)

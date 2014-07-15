@@ -36,6 +36,9 @@ public:
     virtual PassRefPtr<LightSource> lightSource(Filter*) const = 0;
     static SVGFELightElement* findLightElement(const SVGElement&);
 
+    FloatPoint3D position() const;
+    FloatPoint3D pointsAt() const;
+
     SVGAnimatedNumber* azimuth() { return m_azimuth.get(); }
     const SVGAnimatedNumber* azimuth() const { return m_azimuth.get(); }
     SVGAnimatedNumber* elevation() { return m_elevation.get(); }

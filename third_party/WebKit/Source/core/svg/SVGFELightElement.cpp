@@ -62,6 +62,16 @@ SVGFELightElement* SVGFELightElement::findLightElement(const SVGElement& svgElem
     return Traversal<SVGFELightElement>::firstChild(svgElement);
 }
 
+FloatPoint3D SVGFELightElement::position() const
+{
+    return FloatPoint3D(x()->currentValue()->value(), y()->currentValue()->value(), z()->currentValue()->value());
+}
+
+FloatPoint3D SVGFELightElement::pointsAt() const
+{
+    return FloatPoint3D(pointsAtX()->currentValue()->value(), pointsAtY()->currentValue()->value(), pointsAtZ()->currentValue()->value());
+}
+
 bool SVGFELightElement::isSupportedAttribute(const QualifiedName& attrName)
 {
     DEFINE_STATIC_LOCAL(HashSet<QualifiedName>, supportedAttributes, ());
