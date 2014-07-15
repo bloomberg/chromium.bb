@@ -484,7 +484,9 @@ ProfileChooserView::ProfileChooserView(views::View* anchor_view,
       gaia_service_type_(service_type) {
   // Reset the default margins inherited from the BubbleDelegateView.
   set_margins(gfx::Insets());
-
+  set_background(views::Background::CreateSolidBackground(
+      GetNativeTheme()->GetSystemColor(
+          ui::NativeTheme::kColorId_DialogBackground)));
   ResetView();
 
   avatar_menu_.reset(new AvatarMenu(
@@ -613,10 +615,6 @@ void ProfileChooserView::ShowView(profiles::BubbleViewMode view_to_display,
       layout = CreateSingleColumnLayout(this, kFixedMenuWidth);
       sub_view = CreateProfileChooserView(avatar_menu, last_tutorial_mode);
   }
-  sub_view->set_background(views::Background::CreateSolidBackground(
-      GetNativeTheme()->GetSystemColor(
-          ui::NativeTheme::kColorId_DialogBackground)));
-
   layout->StartRow(1, 0);
   layout->AddView(sub_view);
   Layout();
