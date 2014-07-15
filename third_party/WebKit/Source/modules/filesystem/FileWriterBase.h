@@ -39,9 +39,7 @@ namespace blink { class WebFileWriter; }
 
 namespace WebCore {
 
-// FIXME: Oilpan: Change this to GarbageCollectedFinalized once FileWriter stops using
-// ActiveDOMObject::setPendingActivity.
-class FileWriterBase : public RefCountedGarbageCollected<FileWriterBase> {
+class FileWriterBase : public RefCountedGarbageCollectedWillBeGarbageCollectedFinalized<FileWriterBase> {
 public:
     virtual ~FileWriterBase();
     void initialize(PassOwnPtr<blink::WebFileWriter>, long long length);

@@ -47,7 +47,7 @@ class ExceptionState;
 class ExecutionContext;
 
 class FileWriter FINAL : public FileWriterBase, public ActiveDOMObject, public EventTargetWithInlineData, public blink::WebFileWriterClient {
-    DEFINE_EVENT_TARGET_REFCOUNTING(RefCountedGarbageCollected<FileWriterBase>);
+    DEFINE_EVENT_TARGET_REFCOUNTING_WILL_BE_REMOVED(RefCountedGarbageCollected<FileWriterBase>);
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(FileWriter);
 public:
     static FileWriter* create(ExecutionContext*);

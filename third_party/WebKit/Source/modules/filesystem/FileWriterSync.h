@@ -46,7 +46,7 @@ class FileWriterSync FINAL : public FileWriterBase, public ScriptWrappable, publ
 public:
     static FileWriterSync* create()
     {
-        return adoptRefCountedGarbageCollected(new FileWriterSync());
+        return adoptRefCountedGarbageCollectedWillBeNoop(new FileWriterSync());
     }
     virtual ~FileWriterSync();
 
