@@ -32,7 +32,7 @@ group("root") {
     "//components:all_components",
     "//content",
     "//crypto",
-    "//extensions/common/api:extensions_api",
+    "//extensions/common/api",
     "//device/usb",
     "//gin",
     "//gpu",
@@ -152,7 +152,7 @@ group("root") {
       "//chrome/service",  # Blocked on content.
       "//chrome/utility",  # Blocked on content.
       "//content",
-      "//extensions/common/api:extensions_api",
+      "//extensions/common/api",
       "//pdf",  # Not compiled on Android in GYP yet, either.
       "//ppapi:ppapi_c",
       "//sandbox",

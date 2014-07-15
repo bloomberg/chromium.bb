@@ -1,0 +1,225 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//build/config/crypto.gni")
+import("//build/config/features.gni")
+import("//build/config/ui.gni")
+
+gypi_values = exec_script(
+    "//build/gypi_to_gn.py",
+    [ rebase_path("../../chrome_browser_extensions.gypi") ],
+    "scope",
+    [ "../../chrome_browser_extensions.gypi" ])
+
+# GYP version: chrome/chrome_browser_extensions.gypi:browser_extensions
+static_library("extensions") {
+  sources = rebase_path(
+      gypi_values.chrome_browser_extensions_extensions_sources,
+      ".", "//chrome")
+
+  defines = []
+
+  # TODO(GYP) remove this when webrtc is ported.
+  configs += [ "//content:webrtc_stub_config" ]
+
+  # Since browser and browser_extensions actually depend on each other,
+  # we must omit the dependency from browser_extensions to browser.
+  # However, this means browser_extensions and browser should more or less
+  # have the same dependencies. Once browser_extensions is untangled from
+  # browser, then we can clean up these dependencies.
+  deps = [
+    "//chrome:extra_resources",
+    "//chrome:resources",
+    "//chrome:strings",
+    "//chrome/app/resources:platform_locale_settings",
+    "//chrome/browser/extensions/api/cast_channel:cast_channel_proto",
+    "//chrome/app/theme:theme_resources",
+    "//chrome/browser/history:in_memory_url_index_cache_proto",
+    "//chrome/browser/sync_file_system:sync_file_system_proto",
+    "//chrome/common",
+    "//chrome/common/extensions/api",
+    "//chrome/common/net",
+    "//chrome/common/safe_browsing:proto",
+    "//components/onc",
+    "//components/strings",
+    "//components/url_matcher",
+    "//content/public/browser",
+    "//content/public/common",
+    "//crypto",
+    "//extensions/common/api",
+    "//extensions/strings",
+    "//net",
+    "//skia",
+    "//sync",
+    "//third_party/cacheinvalidation",
+    "//third_party/icu",
+    "//third_party/leveldatabase",
+    "//third_party/re2",
+    "//ui/accessibility:ax_gen",
+    "//ui/base",
+    "//ui/gfx",
+    "//ui/gfx/geometry",
+    "//ui/resources",
+    "//ui/strings",
+    "//url",
+    "//webkit:resources",
+    "//webkit/browser:storage",
+    "//webkit/common:storage",
+    #"debugger",  TODO(GYP)
+    #"installer_util",  TODO(GYP)
+    #"../components/components.gyp:omaha_query_params",  TODO(GYP)
+    #"../device/hid/hid.gyp:device_hid",  TODO(GYP)
+    #"../extensions/extensions.gyp:extensions_browser",  TODO(GYP)
+    #"../third_party/webrtc/modules/modules.gyp:desktop_capture",  TODO(GYP)
+  ]
+
+  forward_dependent_configs_from = [
+    "//chrome/common/extensions/api",
+    "//content/public/browser",
+  ]
+
+  if (is_chromeos) {
+    sources += rebase_path(
+        gypi_values.chrome_browser_extensions_chromeos_sources,
+        ".", "//chrome")
+    configs += [ "//build/config/linux:dbus" ]
+    deps += [
+      "//third_party/libevent",
+      #'../chromeos/ime/input_method.gyp:gencode',  TODO(GYP)
+    ]
+  } else {
+    sources += [
+      "default_apps.cc",
+      "default_apps.h'"
+    ]
+  }
+
+  if (use_ash) {
+    sources += [
+      "api/tabs/ash_panel_contents.cc",
+      "api/tabs/ash_panel_contents.h",
+    ]
+  }
+
+  # TODO(thestig) This conditional should be removed when extensions are
+  # no longer enabled on mobile.
+  if (enable_extensions) {
+    sources += rebase_path(
+        gypi_values.chrome_browser_extensions_enabled_sources,
+        ".", "//chrome")
+    deps += [
+      #'../device/bluetooth/bluetooth.gyp:device_bluetooth',  TODO(GYP)
+    ]
+
+    if (is_chromeos) {
+      deps += [ "//third_party/protobuf:protobuf_lite" ]
+    } else {
+      sources += rebase_path(
+          gypi_values.chrome_browser_extensions_non_chromeos_sources,
+          ".", "//chrome")
+    }
+    if (!is_linux) {
+      sources += [
+        "api/audio/audio_service.cc",
+      ]
+    }
+    if (enable_configuration_policy) {
+      sources += rebase_path(
+          gypi_values.chrome_browser_extensions_policy_sources,
+          ".", "//chrome")
+    }
+
+    if (enable_webrtc) {
+      sources += [
+        "api/webrtc_logging_private/webrtc_logging_private_api.cc",
+      ]
+    } else {
+      sources += [
+        "api/webrtc_logging_private/webrtc_logging_private_api_stub.cc",
+      ]
+    }
+
+    if (use_brlapi) {
+      deps += [ "//build/config/linux:libbrlapi" ]
+      sources += rebase_path(gypi_values.chrome_browser_extensions_brlapi_sources,
+                             ".", "//chrome")
+    } else {
+      sources += [
+        "api/braille_display_private/braille_controller_stub.cc",
+      ]
+    }
+
+    if (use_aura) {
+      deps += [
+        "//ui/keyboard",
+        "//ui/keyboard:resources",
+      ]
+    }
+
+    if (is_linux) {
+      configs += [ "//build/config/linux:fontconfig" ]
+      deps += [ "//dbus" ]
+      if (use_x11) {
+        configs += [
+          "//build/config/linux:x11",
+        ]
+        deps += [
+          "//ui/events/platform",
+          "//ui/events/platform/x11",
+        ]
+      }
+    }
+
+    if (safe_browsing_mode == 1) {
+      defines += [ "FULL_SAFE_BROWSING" ]
+    }
+    if (safe_browsing_mode == 2) {
+      defines += [ "MOBILE_SAFE_BROWSING" ]
+    }
+
+    if (enable_configuration_policy) {
+      deps += [ "//components/policy" ]
+      sources += [
+        "policy_handlers.cc",
+        "policy_handlers.h",
+      ]
+    }
+
+    if (is_win || is_mac) {
+      deps += [ "//components/wifi" ]
+      sources += rebase_path(
+          gypi_values.chrome_browser_extensions_networking_private_sources,
+          ".", "//chrome")
+    }
+
+    if (is_win) {
+      deps += [
+        "//third_party/iaccessible2",
+        "//third_party/isimpledom",
+        #'launcher_support',  TODO(GYP)
+      ]
+    } else if (!is_chromeos) {
+      sources += [ "api/system_display/display_info_provider_aura.cc" ]
+    }
+
+    if (use_openssl) {
+      sources += [ "api/cast_channel/cast_auth_util_openssl.cc" ]
+    } else {
+      # cast_auth_util_nss.cc uses NSS functions.
+      sources += [ "api/cast_channel/cast_auth_util_nss.cc" ]
+    }
+
+    if (is_android) {
+      sources += rebase_path(
+          gypi_values.chrome_browser_extensions_android_sources,
+          ".", "//chrome")
+    }
+
+    if (enable_app_list) {
+      sources += rebase_path(
+          gypi_values.chrome_browser_extensions_app_list_sources,
+          ".", "//chrome")
+    }
+  }
+}

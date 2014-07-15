@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//build/config/linux/pkg_config.gni")
+import("//build/config/features.gni")
 import("//build/config/sysroot.gni")
 import("//build/config/ui.gni")
 import("//tools/generate_library_loader/generate_library_loader.gni")
@@ -114,6 +115,22 @@ config("libresolv") {
 pkg_config("gconf") {
   packages = [ "gconf-2.0" ]
   defines = [ "USE_GCONF" ]
+}
+
+# If brlapi isn't needed, don't require it to be installed.
+if (use_brlapi) {
+  config("brlapi_config") {
+    defines = [ "USE_BRLAPI" ]
+  }
+
+  # TODO(GYP) linux_link_brlapi support. Is this needed?
+  generate_library_loader("libbrlapi") {
+    name = "LibBrlapiLoader"
+    output_h = "libbrlapi.h"
+    output_cc = "libbrlapi_loader.cc"
+    header = "<brlapi.h>"
+    config = ":brlapi_config"
+  }
 }
 
 pkg_config("gio_config") {
