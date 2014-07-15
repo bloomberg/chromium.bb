@@ -45,7 +45,6 @@ class StylePropertyShorthandWriter(in_generator.Writer):
 
     defaults = {
         'longhands': '',
-        'runtimeEnabledShorthand': None,
     }
 
     def __init__(self, in_files):
@@ -69,9 +68,6 @@ class StylePropertyShorthandWriter(in_generator.Writer):
                 longhand = _create_css_property_name_enum_value(longhand)
                 property['camel_case_longhands'].append(longhand)
                 self._longhand_dictionary[longhand].append(property)
-            if property['runtimeEnabledShorthand'] is not None:
-                lowerFirstConditional = lower_first(property['runtimeEnabledShorthand'])
-                property['runtime_conditional_getter'] = '%sEnabled' % lowerFirstConditional
         self._properties = dict((property['property_id'], property) for property in self._properties)
 
     @template_expander.use_jinja('StylePropertyShorthand.cpp.tmpl')

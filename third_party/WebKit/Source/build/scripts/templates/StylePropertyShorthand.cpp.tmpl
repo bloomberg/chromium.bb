@@ -45,13 +45,11 @@ const StylePropertyShorthand& {{property.camel_case_name}}Shorthand()
 const StylePropertyShorthand& shorthandForProperty(CSSPropertyID propertyID)
 {
     DEFINE_STATIC_LOCAL(StylePropertyShorthand, emptyShorthand, ());
+    if (propertyID == CSSPropertyTextDecoration && !RuntimeEnabledFeatures::css3TextDecorationsEnabled())
+        return emptyShorthand;
     switch (propertyID) {
         {% for property_id, property in properties.items() if property.camel_case_name != "marker" %}
         case {{property_id}}:
-            {% if property.runtime_conditional_getter %}
-            if (!RuntimeEnabledFeatures::{{property.runtime_conditional_getter}}())
-                return emptyShorthand;
-            {% endif %}
             return {{property.camel_case_name}}Shorthand();
         {% endfor %}
     default: {

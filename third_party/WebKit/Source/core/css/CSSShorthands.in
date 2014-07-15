@@ -3,7 +3,7 @@
 // followed by the longhands associated to the shorthand.
 // Note: Mandatory blank line to skip parameter parsing phase
 
-animation longhands=animation-name;animation-duration;animation-timing-function;animation-delay;animation-iteration-count;animation-direction;animation-fill-mode;animation-play-state, runtimeEnabledShorthand=CSSAnimationUnprefixed
+animation longhands=animation-name;animation-duration;animation-timing-function;animation-delay;animation-iteration-count;animation-direction;animation-fill-mode;animation-play-state
 background longhands=background-image;background-position-x;background-position-y;background-size;background-repeat-x;background-repeat-y;background-attachment;background-origin;background-clip;background-color
 background-position longhands=background-position-x;background-position-y
 background-repeat longhands=background-repeat-x;background-repeat-y
@@ -32,7 +32,7 @@ marker longhands=marker-start;marker-mid;marker-end
 outline longhands=outline-color;outline-style;outline-width
 overflow longhands=overflow-x;overflow-y
 padding longhands=padding-top;padding-right;padding-bottom;padding-left
-text-decoration longhands=text-decoration-line;text-decoration-style;text-decoration-color, runtimeEnabledShorthand=CSS3TextDecorations
+text-decoration longhands=text-decoration-line;text-decoration-style;text-decoration-color
 transition longhands=transition-property;transition-duration;transition-timing-function;transition-delay
 -webkit-animation longhands=-webkit-animation-name;-webkit-animation-duration;-webkit-animation-timing-function;-webkit-animation-delay;-webkit-animation-iteration-count;-webkit-animation-direction;-webkit-animation-fill-mode;-webkit-animation-play-state
 -webkit-border-after longhands=-webkit-border-after-width;-webkit-border-after-style;-webkit-border-after-color
