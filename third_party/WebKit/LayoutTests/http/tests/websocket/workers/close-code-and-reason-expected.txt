@@ -1,73 +1,88 @@
-CONSOLE WARNING: line 31: WebSocket connection to 'ws://127.0.0.1:8880/echo' failed: WebSocket is closed before the connection is established.
-CONSOLE ERROR: line 73: WebSocket connection to 'ws://127.0.0.1:8880/close-code-and-reason' failed: Received a broken close frame containing an invalid size body.
-CONSOLE ERROR: line 73: WebSocket connection to 'ws://127.0.0.1:8880/close-code-and-reason' failed: Received a broken close frame containing a reserved status code.
-CONSOLE ERROR: line 73: WebSocket connection to 'ws://127.0.0.1:8880/close-code-and-reason' failed: Received a broken close frame containing a reserved status code.
-CONSOLE ERROR: line 73: WebSocket connection to 'ws://127.0.0.1:8880/close-code-and-reason' failed: Received a broken close frame containing a reserved status code.
+CONSOLE WARNING: line 28: WebSocket connection to 'ws://127.0.0.1:8880/echo' failed: WebSocket is closed before the connection is established.
+CONSOLE ERROR: line 72: WebSocket connection to 'ws://127.0.0.1:8880/close-code-and-reason' failed: Received a broken close frame containing an invalid size body.
+CONSOLE ERROR: line 72: WebSocket connection to 'ws://127.0.0.1:8880/close-code-and-reason' failed: Received a broken close frame containing a reserved status code.
+CONSOLE ERROR: line 72: WebSocket connection to 'ws://127.0.0.1:8880/close-code-and-reason' failed: Received a broken close frame containing a reserved status code.
+CONSOLE ERROR: line 72: WebSocket connection to 'ws://127.0.0.1:8880/close-code-and-reason' failed: Received a broken close frame containing a reserved status code.
 Test CloseEvent code and reason property in Worker.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-ws.onclose() was called.
-PASS PASS: worker: event.wasClean is false
-PASS PASS: worker: event.code is codeAbnormalClosure
-PASS PASS: worker: event.reason is emptyString
-WebSocketTest.onopen() was called with testId = 0.
-WebSocketTest.onclose() was called with testId = 0.
-PASS PASS: worker: event.wasClean is true
-PASS PASS: worker: event.code is 1005
-PASS PASS: worker: event.reason is 
-PASS PASS: worker: event.wasClean is true
-PASS PASS: worker: event.code is 1005
-PASS PASS: worker: event.reason is 
-WebSocketTest.onopen() was called with testId = 1.
-WebSocketTest.onclose() was called with testId = 1.
-PASS PASS: worker: event.wasClean is false
-PASS PASS: worker: event.code is 1006
-PASS PASS: worker: event.reason is 
-PASS PASS: worker: event.wasClean is false
-PASS PASS: worker: event.code is 1006
-PASS PASS: worker: event.reason is 
-WebSocketTest.onopen() was called with testId = 2.
-WebSocketTest.onclose() was called with testId = 2.
-PASS PASS: worker: event.wasClean is true
-PASS PASS: worker: event.code is 1000
-PASS PASS: worker: event.reason is ok
-PASS PASS: worker: event.wasClean is true
-PASS PASS: worker: event.code is 1000
-PASS PASS: worker: event.reason is ok
-WebSocketTest.onopen() was called with testId = 3.
-WebSocketTest.onclose() was called with testId = 3.
-PASS PASS: worker: event.wasClean is false
-PASS PASS: worker: event.code is 1006
-PASS PASS: worker: event.reason is 
-PASS PASS: worker: event.wasClean is false
-PASS PASS: worker: event.code is 1006
-PASS PASS: worker: event.reason is 
-WebSocketTest.onopen() was called with testId = 4.
-WebSocketTest.onclose() was called with testId = 4.
-PASS PASS: worker: event.wasClean is false
-PASS PASS: worker: event.code is 1006
-PASS PASS: worker: event.reason is 
-PASS PASS: worker: event.wasClean is false
-PASS PASS: worker: event.code is 1006
-PASS PASS: worker: event.reason is 
-WebSocketTest.onopen() was called with testId = 5.
-WebSocketTest.onclose() was called with testId = 5.
-PASS PASS: worker: event.wasClean is false
-PASS PASS: worker: event.code is 1006
-PASS PASS: worker: event.reason is 
-PASS PASS: worker: event.wasClean is false
-PASS PASS: worker: event.code is 1006
-PASS PASS: worker: event.reason is 
-WebSocketTest.onopen() was called with testId = 6.
-WebSocketTest.onclose() was called with testId = 6.
-PASS PASS: worker: event.wasClean is true
-PASS PASS: worker: event.code is 65535
-PASS PASS: worker: event.reason is good bye
-PASS PASS: worker: event.wasClean is true
-PASS PASS: worker: event.code is 65535
-PASS PASS: worker: event.reason is good bye
-DONE
+
+Starting worker: resources/close-code-and-reason.js
+[Worker] ws.onclose() was called.
+PASS [Worker] closeEvent.wasClean is false
+PASS [Worker] closeEvent.code is codeAbnormalClosure
+PASS [Worker] closeEvent.reason is emptyString
+[Worker] WebSocketTest.onopen() was called with testId = 0.
+[Worker] WebSocketTest.onclose() was called with testId = 0.
+PASS [Worker] typeof closeEvent.wasClean is 'boolean'
+PASS [Worker] closeEvent.wasClean is true
+PASS [Worker] closeEvent.code is 1005
+PASS [Worker] closeEvent.reason is ''
+PASS [Worker] typeof closeEvent.wasClean is 'boolean'
+PASS [Worker] closeEvent.wasClean is true
+PASS [Worker] closeEvent.code is 1005
+PASS [Worker] closeEvent.reason is ''
+[Worker] WebSocketTest.onopen() was called with testId = 1.
+[Worker] WebSocketTest.onclose() was called with testId = 1.
+PASS [Worker] typeof closeEvent.wasClean is 'boolean'
+PASS [Worker] closeEvent.wasClean is false
+PASS [Worker] closeEvent.code is 1006
+PASS [Worker] closeEvent.reason is ''
+PASS [Worker] typeof closeEvent.wasClean is 'boolean'
+PASS [Worker] closeEvent.wasClean is false
+PASS [Worker] closeEvent.code is 1006
+PASS [Worker] closeEvent.reason is ''
+[Worker] WebSocketTest.onopen() was called with testId = 2.
+[Worker] WebSocketTest.onclose() was called with testId = 2.
+PASS [Worker] typeof closeEvent.wasClean is 'boolean'
+PASS [Worker] closeEvent.wasClean is true
+PASS [Worker] closeEvent.code is 1000
+PASS [Worker] closeEvent.reason is 'ok'
+PASS [Worker] typeof closeEvent.wasClean is 'boolean'
+PASS [Worker] closeEvent.wasClean is true
+PASS [Worker] closeEvent.code is 1000
+PASS [Worker] closeEvent.reason is 'ok'
+[Worker] WebSocketTest.onopen() was called with testId = 3.
+[Worker] WebSocketTest.onclose() was called with testId = 3.
+PASS [Worker] typeof closeEvent.wasClean is 'boolean'
+PASS [Worker] closeEvent.wasClean is false
+PASS [Worker] closeEvent.code is 1006
+PASS [Worker] closeEvent.reason is ''
+PASS [Worker] typeof closeEvent.wasClean is 'boolean'
+PASS [Worker] closeEvent.wasClean is false
+PASS [Worker] closeEvent.code is 1006
+PASS [Worker] closeEvent.reason is ''
+[Worker] WebSocketTest.onopen() was called with testId = 4.
+[Worker] WebSocketTest.onclose() was called with testId = 4.
+PASS [Worker] typeof closeEvent.wasClean is 'boolean'
+PASS [Worker] closeEvent.wasClean is false
+PASS [Worker] closeEvent.code is 1006
+PASS [Worker] closeEvent.reason is ''
+PASS [Worker] typeof closeEvent.wasClean is 'boolean'
+PASS [Worker] closeEvent.wasClean is false
+PASS [Worker] closeEvent.code is 1006
+PASS [Worker] closeEvent.reason is ''
+[Worker] WebSocketTest.onopen() was called with testId = 5.
+[Worker] WebSocketTest.onclose() was called with testId = 5.
+PASS [Worker] typeof closeEvent.wasClean is 'boolean'
+PASS [Worker] closeEvent.wasClean is false
+PASS [Worker] closeEvent.code is 1006
+PASS [Worker] closeEvent.reason is ''
+PASS [Worker] typeof closeEvent.wasClean is 'boolean'
+PASS [Worker] closeEvent.wasClean is false
+PASS [Worker] closeEvent.code is 1006
+PASS [Worker] closeEvent.reason is ''
+[Worker] WebSocketTest.onopen() was called with testId = 6.
+[Worker] WebSocketTest.onclose() was called with testId = 6.
+PASS [Worker] typeof closeEvent.wasClean is 'boolean'
+PASS [Worker] closeEvent.wasClean is true
+PASS [Worker] closeEvent.code is 65535
+PASS [Worker] closeEvent.reason is 'good bye'
+PASS [Worker] typeof closeEvent.wasClean is 'boolean'
+PASS [Worker] closeEvent.wasClean is true
+PASS [Worker] closeEvent.code is 65535
+PASS [Worker] closeEvent.reason is 'good bye'
 PASS successfullyParsed is true
 
 TEST COMPLETE
