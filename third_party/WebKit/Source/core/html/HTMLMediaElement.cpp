@@ -1235,10 +1235,10 @@ void HTMLMediaElement::updateActiveTextTrackCues(double movieTime)
     // 8 - Let events be a list of tasks, initially empty. Each task in this
     // list will be associated with a text track, a text track cue, and a time,
     // which are used to sort the list before the tasks are queued.
-    Vector<std::pair<double, TextTrackCue*> > eventTasks;
+    WillBeHeapVector<std::pair<double, RawPtrWillBeMember<TextTrackCue> > > eventTasks;
 
     // 8 - Let affected tracks be a list of text tracks, initially empty.
-    Vector<TextTrack*> affectedTracks;
+    WillBeHeapVector<RawPtrWillBeMember<TextTrack> > affectedTracks;
 
     for (size_t i = 0; i < missedCuesSize; ++i) {
         // 9 - For each text track cue in missed cues, prepare an event named enter
@@ -1328,7 +1328,7 @@ void HTMLMediaElement::updateActiveTextTrackCues(double movieTime)
         // simple event named cuechange at the track element as well.
         if (affectedTracks[i]->trackType() == TextTrack::TrackElement) {
             RefPtrWillBeRawPtr<Event> event = Event::create(EventTypeNames::cuechange);
-            HTMLTrackElement* trackElement = static_cast<LoadableTextTrack*>(affectedTracks[i])->trackElement();
+            HTMLTrackElement* trackElement = static_cast<LoadableTextTrack*>(affectedTracks[i].get())->trackElement();
             ASSERT(trackElement);
             event->setTarget(trackElement);
 
