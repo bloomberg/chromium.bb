@@ -566,13 +566,10 @@ willPositionSheet:(NSWindow*)sheet
     [tabStripView removeFromSuperview];
   }
 
-  // Ditto for the content view.
-  base::scoped_nsobject<NSView> contentView(
-      [[sourceWindow contentView] retain]);
   // Disable autoresizing of subviews while we move views around. This prevents
   // spurious renderer resizes.
-  [contentView setAutoresizesSubviews:NO];
-  [contentView removeFromSuperview];
+  [self.chromeContentView setAutoresizesSubviews:NO];
+  [self.chromeContentView removeFromSuperview];
 
   // Have to do this here, otherwise later calls can crash because the window
   // has no delegate.
@@ -584,8 +581,11 @@ willPositionSheet:(NSWindow*)sheet
   // drawOverlayRect:].  I'm pretty convinced this is an Apple bug, but there is
   // no visual impact.  I have been unable to tickle it away with other window
   // or view manipulation Cocoa calls.  Stack added to suppressions_mac.txt.
-  [contentView setAutoresizesSubviews:YES];
-  [destWindow setContentView:contentView];
+  [self.chromeContentView setAutoresizesSubviews:YES];
+  [[destWindow contentView] addSubview:self.chromeContentView
+                            positioned:NSWindowBelow
+                            relativeTo:nil];
+  self.chromeContentView.frame = [[destWindow contentView] bounds];
 
   // Move the incognito badge if present.
   if ([self shouldShowAvatar]) {
@@ -852,7 +852,7 @@ willPositionSheet:(NSWindow*)sheet
     for (NSWindow* window in [[NSApplication sharedApplication] windows]) {
       if ([window
               isKindOfClass:NSClassFromString(@"NSToolbarFullScreenWindow")]) {
-        [window.contentView setHidden:YES];
+        [[window contentView] setHidden:YES];
       }
     }
   }
@@ -930,7 +930,7 @@ willPositionSheet:(NSWindow*)sheet
 }
 
 - (void)updateSubviewZOrder:(BOOL)inPresentationMode {
-  NSView* contentView = [[self window] contentView];
+  NSView* contentView = self.chromeContentView;
   NSView* toolbarView = [toolbarController_ view];
 
   if (inPresentationMode) {
