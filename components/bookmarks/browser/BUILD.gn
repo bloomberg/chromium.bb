@@ -39,18 +39,18 @@ source_set("browser") {
 
   deps = [
     "//base",
-    "//net",
-    "//third_party/icu",
-    "//ui/base",
-    "//ui/gfx",
-    "//url",
     "//components/bookmarks/common",
-    "//components/strings",
     "//components/favicon_base",
     "//components/keyed_service/core",
     "//components/pref_registry",
     "//components/query_parser",
     "//components/startup_metric_utils",
+    "//components/strings",
+    "//net",
+    "//third_party/icu",
+    "//ui/base",
+    "//ui/gfx",
+    "//url",
   ]
 
   if (toolkit_views) {

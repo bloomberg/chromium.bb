@@ -1,0 +1,45 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+source_set("enhanced_bookmarks") {
+  sources = [
+    "image_store.cc",
+    "image_store.h",
+    "image_store_util.cc",
+    "image_store_util.h",
+    "image_store_util_ios.mm",
+    "metadata_accessor.cc",
+    "metadata_accessor.h",
+    "persistent_image_store.cc",
+    "persistent_image_store.h",
+  ]
+
+  deps = [
+    "//base",
+    "//components/bookmarks/browser",
+    "//components/enhanced_bookmarks/proto",
+    "//sql",
+    "//ui/gfx",
+    "//url",
+  ]
+
+  if (is_ios) {
+    sources -= [
+      "image_store_util.cc",
+    ]
+  }
+}
+
+source_set("test_support") {
+  sources = [
+    "test_image_store.cc",
+    "test_image_store.h",
+  ]
+
+  deps = [
+    ":enhanced_bookmarks",
+    "//skia",
+    "//testing/gtest",
+  ]
+}
