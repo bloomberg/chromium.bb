@@ -668,8 +668,7 @@ bool WebViewImpl::handleGestureEvent(const WebGestureEvent& event)
     switch (event.type) {
     case WebInputEvent::GestureShowPress:
         // Queue a highlight animation, then hand off to regular handler.
-        if (settingsImpl()->gestureTapHighlightEnabled())
-            enableTapHighlightAtPoint(platformEvent);
+        enableTapHighlightAtPoint(platformEvent);
         break;
     case WebInputEvent::GestureTapCancel:
     case WebInputEvent::GestureTap:
@@ -711,8 +710,7 @@ bool WebViewImpl::handleGestureEvent(const WebGestureEvent& event)
             // FIXME: replace touch adjustment code when numberOfGoodTargets == 1?
             // Single candidate case is currently handled by: https://bugs.webkit.org/show_bug.cgi?id=85101
             if (goodTargets.size() >= 2 && m_client && m_client->didTapMultipleTargets(scaledEvent, goodTargets)) {
-                if (settingsImpl()->gestureTapHighlightEnabled())
-                    enableTapHighlights(highlightNodes);
+                enableTapHighlights(highlightNodes);
                 for (size_t i = 0; i < m_linkHighlights.size(); ++i)
                     m_linkHighlights[i]->startHighlightAnimationIfNeeded();
                 eventSwallowed = true;
