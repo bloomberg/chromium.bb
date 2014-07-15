@@ -8,6 +8,7 @@
 #include "base/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/json/json_reader.h"
+#include "base/metrics/field_trial.h"
 #include "base/prefs/pref_service.h"
 #include "base/sequenced_task_runner.h"
 #include "base/synchronization/waitable_event.h"
@@ -355,26 +356,106 @@ IN_PROC_BROWSER_TEST_F(ProfileBrowserTest,
   std::vector<Profile*> loaded_profiles = profile_manager->GetLoadedProfiles();
 
   ASSERT_NE(loaded_profiles.size(), 0UL);
-  for (size_t i = 0; i < loaded_profiles.size(); ++i) {
-    Profile* profile = loaded_profiles[i];
+  Profile* profile = loaded_profiles[0];
 
+  // This retry loop reduces flakiness due to the fact that this ultimately
+  // tests whether or not a code path hits a timed wait.
+  bool succeeded = false;
+  for (size_t retries = 0; !succeeded && retries < 3; ++retries) {
     // Flush the profile data to disk for all loaded profiles.
     profile->SetExitType(Profile::EXIT_CRASHED);
     FlushTaskRunner(profile->GetIOTaskRunner());
 
     // Make sure that the prefs file was written with the expected key/value.
     ASSERT_EQ(GetExitTypePreferenceFromDisk(profile), "Crashed");
-  }
 
-  // This must not return until the profile data has been written to disk.
-  // If this test flakes, then logoff on Windows has broken again.
-  g_browser_process->EndSession();
+    // The blocking wait in EndSession has a timeout.
+    base::Time start = base::Time::Now();
 
-  // Verify that the setting was indeed written.
-  for (size_t i = 0; i < loaded_profiles.size(); ++i) {
-    Profile* profile = loaded_profiles[i];
+    // This must not return until the profile data has been written to disk.
+    // If this test flakes, then logoff on Windows has broken again.
+    g_browser_process->EndSession();
+
+    base::Time end = base::Time::Now();
+
+    // The EndSession timeout is 10 seconds. If we take more than half that,
+    // go around again, as we may have timed out on the wait.
+    // This helps against flakes, and also ensures that if the IO thread starts
+    // blocking systemically for that length of time (e.g. deadlocking or such),
+    // we'll get a consistent test failure.
+    if (end - start > base::TimeDelta::FromSeconds(5))
+      continue;
+
     // Make sure that the prefs file was written with the expected key/value.
     ASSERT_EQ(GetExitTypePreferenceFromDisk(profile), "SessionEnded");
+
+    // Mark the success.
+    succeeded = true;
   }
+
+  ASSERT_TRUE(succeeded) << "profile->EndSession() timed out too often.";
 }
+
+IN_PROC_BROWSER_TEST_F(ProfileBrowserTest,
+                       EndSessionBrokenSynchronizationExperiment) {
+  base::ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+
+  // Select into the field trial group.
+  base::FieldTrialList::CreateFieldTrial("WindowsLogoffRace",
+                                         "BrokenSynchronization");
+
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+  ASSERT_TRUE(profile_manager);
+  std::vector<Profile*> loaded_profiles = profile_manager->GetLoadedProfiles();
+
+  ASSERT_NE(loaded_profiles.size(), 0UL);
+  Profile* profile = loaded_profiles[0];
+
+  bool mis_wrote = false;
+  // This retry loop reduces flakiness due to the fact that this ultimately
+  // tests whether or not a code path hits a timed wait.
+  for (size_t retries = 0; retries < 3; ++retries) {
+    // Flush the profile data to disk for all loaded profiles.
+    profile->SetExitType(Profile::EXIT_CRASHED);
+    FlushTaskRunner(profile->GetIOTaskRunner());
+
+    // Make sure that the prefs file was written with the expected key/value.
+    ASSERT_EQ(GetExitTypePreferenceFromDisk(profile), "Crashed");
+
+    base::WaitableEvent is_blocked(false, false);
+    base::WaitableEvent* unblock = new base::WaitableEvent(false, false);
+
+    // Block the profile's IO thread.
+    profile->GetIOTaskRunner()->PostTask(FROM_HERE,
+        base::Bind(&BlockThread, &is_blocked, base::Owned(unblock)));
+    // Wait for the IO thread to actually be blocked.
+    is_blocked.Wait();
+
+    // The blocking wait in EndSession has a timeout, so a non-write can only be
+    // concluded if it happens in less time than the timeout.
+    base::Time start = base::Time::Now();
+
+    // With the broken synchronization this is expected to return without
+    // blocking for the Profile's IO thread.
+    g_browser_process->EndSession();
+
+    base::Time end = base::Time::Now();
+
+    // The EndSession timeout is 10 seconds, we take a 5 second run-through as
+    // sufficient proof that we didn't hit the timed wait.
+    if (end - start < base::TimeDelta::FromSeconds(5)) {
+      // Make sure that the prefs file is unmodified with the expected
+      // key/value.
+      EXPECT_EQ(GetExitTypePreferenceFromDisk(profile), "Crashed");
+      mis_wrote = true;
+    }
+
+    // Release the IO thread thread.
+    unblock->Signal();
+  }
+
+  ASSERT_TRUE(mis_wrote);
+}
+
 #endif  // defined(USE_X11) || defined(OS_WIN)
