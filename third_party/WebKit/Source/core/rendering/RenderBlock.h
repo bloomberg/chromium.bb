@@ -213,9 +213,6 @@ public:
     unsigned columnCount(ColumnInfo*) const;
     LayoutRect columnRectAt(ColumnInfo*, unsigned) const;
 
-    LayoutUnit paginationStrut() const { return m_rareData ? m_rareData->m_paginationStrut : LayoutUnit(); }
-    void setPaginationStrut(LayoutUnit);
-
     bool shouldBreakAtLineToAvoidWidow() const { return m_rareData && m_rareData->m_lineBreakToAvoidWidow >= 0; }
     void clearShouldBreakAtLineToAvoidWidow() const;
     int lineBreakToAvoidWidow() const { return m_rareData ? m_rareData->m_lineBreakToAvoidWidow : -1; }
@@ -487,7 +484,6 @@ protected:
     void updateMinimumPageHeight(LayoutUnit offset, LayoutUnit minHeight);
 
     LayoutUnit adjustForUnsplittableChild(RenderBox* child, LayoutUnit logicalOffset, bool includeMargins = false); // If the child is unsplittable and can't fit on the current page, return the top of the next page/column.
-    void adjustLinePositionForPagination(RootInlineBox*, LayoutUnit& deltaOffset, RenderFlowThread*); // Computes a deltaOffset value that put a line at the top of the next page if it doesn't fit on the current page.
 
     // Adjust from painting offsets to the local coords of this renderer
     void offsetForContents(LayoutPoint&) const;
@@ -508,14 +504,12 @@ public:
         WTF_MAKE_NONCOPYABLE(RenderBlockRareData); WTF_MAKE_FAST_ALLOCATED;
     public:
         RenderBlockRareData()
-            : m_paginationStrut(0)
-            , m_pageLogicalOffset(0)
+            : m_pageLogicalOffset(0)
             , m_lineBreakToAvoidWidow(-1)
             , m_didBreakAtLineToAvoidWidow(false)
         {
         }
 
-        LayoutUnit m_paginationStrut;
         LayoutUnit m_pageLogicalOffset;
 
         int m_lineBreakToAvoidWidow : 31;

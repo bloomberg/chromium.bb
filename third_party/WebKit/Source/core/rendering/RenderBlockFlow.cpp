@@ -624,7 +624,7 @@ void RenderBlockFlow::layoutBlockChild(RenderBox* child, MarginInfo& marginInfo,
 
 LayoutUnit RenderBlockFlow::adjustBlockChildForPagination(LayoutUnit logicalTopAfterClear, LayoutUnit estimateWithoutPagination, RenderBox* child, bool atBeforeSideOfBlock)
 {
-    RenderBlock* childRenderBlock = child->isRenderBlock() ? toRenderBlock(child) : 0;
+    RenderBlockFlow* childBlockFlow = child->isRenderBlockFlow() ? toRenderBlockFlow(child) : 0;
 
     if (estimateWithoutPagination != logicalTopAfterClear) {
         // Our guess prior to pagination movement was wrong. Before we attempt to paginate, let's try again at the new
@@ -642,9 +642,9 @@ LayoutUnit RenderBlockFlow::adjustBlockChildForPagination(LayoutUnit logicalTopA
 
         SubtreeLayoutScope layoutScope(*child);
 
-        if (childRenderBlock) {
-            if (!child->avoidsFloats() && childRenderBlock->containsFloats())
-                toRenderBlockFlow(childRenderBlock)->markAllDescendantsWithFloatsForLayout();
+        if (childBlockFlow) {
+            if (!child->avoidsFloats() && childBlockFlow->containsFloats())
+                childBlockFlow->markAllDescendantsWithFloatsForLayout();
             if (!child->needsLayout())
                 child->markForPaginationRelayoutIfNeeded(layoutScope);
         }
@@ -668,8 +668,8 @@ LayoutUnit RenderBlockFlow::adjustBlockChildForPagination(LayoutUnit logicalTopA
     if (unsplittableAdjustmentDelta) {
         setPageBreak(result, childLogicalHeight - unsplittableAdjustmentDelta);
         paginationStrut = unsplittableAdjustmentDelta;
-    } else if (childRenderBlock && childRenderBlock->paginationStrut()) {
-        paginationStrut = childRenderBlock->paginationStrut();
+    } else if (childBlockFlow && childBlockFlow->paginationStrut()) {
+        paginationStrut = childBlockFlow->paginationStrut();
     }
 
     if (paginationStrut) {
@@ -680,8 +680,8 @@ LayoutUnit RenderBlockFlow::adjustBlockChildForPagination(LayoutUnit logicalTopA
             // have all the information to do so (the strut only has the remaining amount to push). Gecko gets this wrong too
             // and pushes to the next page anyway, so not too concerned about it.
             setPaginationStrut(result + paginationStrut);
-            if (childRenderBlock)
-                childRenderBlock->setPaginationStrut(0);
+            if (childBlockFlow)
+                childBlockFlow->setPaginationStrut(0);
         } else {
             result += paginationStrut;
         }
@@ -713,6 +713,94 @@ LayoutUnit RenderBlockFlow::adjustBlockChildForPagination(LayoutUnit logicalTopA
 
     // Return the final adjusted logical top.
     return result;
+}
+
+static inline LayoutUnit calculateMinimumPageHeight(RenderStyle* renderStyle, RootInlineBox* lastLine, LayoutUnit lineTop, LayoutUnit lineBottom)
+{
+    // We may require a certain minimum number of lines per page in order to satisfy
+    // orphans and widows, and that may affect the minimum page height.
+    unsigned lineCount = std::max<unsigned>(renderStyle->hasAutoOrphans() ? 1 : renderStyle->orphans(), renderStyle->hasAutoWidows() ? 1 : renderStyle->widows());
+    if (lineCount > 1) {
+        RootInlineBox* line = lastLine;
+        for (unsigned i = 1; i < lineCount && line->prevRootBox(); i++)
+            line = line->prevRootBox();
+
+        // FIXME: Paginating using line overflow isn't all fine. See FIXME in
+        // adjustLinePositionForPagination() for more details.
+        LayoutRect overflow = line->logicalVisualOverflowRect(line->lineTop(), line->lineBottom());
+        lineTop = std::min(line->lineTopWithLeading(), overflow.y());
+    }
+    return lineBottom - lineTop;
+}
+
+void RenderBlockFlow::adjustLinePositionForPagination(RootInlineBox* lineBox, LayoutUnit& delta, RenderFlowThread* flowThread)
+{
+    // FIXME: For now we paginate using line overflow. This ensures that lines don't overlap at all when we
+    // put a strut between them for pagination purposes. However, this really isn't the desired rendering, since
+    // the line on the top of the next page will appear too far down relative to the same kind of line at the top
+    // of the first column.
+    //
+    // The rendering we would like to see is one where the lineTopWithLeading is at the top of the column, and any line overflow
+    // simply spills out above the top of the column. This effect would match what happens at the top of the first column.
+    // We can't achieve this rendering, however, until we stop columns from clipping to the column bounds (thus allowing
+    // for overflow to occur), and then cache visible overflow for each column rect.
+    //
+    // Furthermore, the paint we have to do when a column has overflow has to be special. We need to exclude
+    // content that paints in a previous column (and content that paints in the following column).
+    //
+    // For now we'll at least honor the lineTopWithLeading when paginating if it is above the logical top overflow. This will
+    // at least make positive leading work in typical cases.
+    //
+    // FIXME: Another problem with simply moving lines is that the available line width may change (because of floats).
+    // Technically if the location we move the line to has a different line width than our old position, then we need to dirty the
+    // line and all following lines.
+    LayoutRect logicalVisualOverflow = lineBox->logicalVisualOverflowRect(lineBox->lineTop(), lineBox->lineBottom());
+    LayoutUnit logicalOffset = std::min(lineBox->lineTopWithLeading(), logicalVisualOverflow.y());
+    LayoutUnit logicalBottom = std::max(lineBox->lineBottomWithLeading(), logicalVisualOverflow.maxY());
+    LayoutUnit lineHeight = logicalBottom - logicalOffset;
+    updateMinimumPageHeight(logicalOffset, calculateMinimumPageHeight(style(), lineBox, logicalOffset, logicalBottom));
+    logicalOffset += delta;
+    lineBox->setPaginationStrut(0);
+    lineBox->setIsFirstAfterPageBreak(false);
+    LayoutUnit pageLogicalHeight = pageLogicalHeightForOffset(logicalOffset);
+    bool hasUniformPageLogicalHeight = !flowThread || flowThread->regionsHaveUniformLogicalHeight();
+    // If lineHeight is greater than pageLogicalHeight, but logicalVisualOverflow.height() still fits, we are
+    // still going to add a strut, so that the visible overflow fits on a single page.
+    if (!pageLogicalHeight || (hasUniformPageLogicalHeight && logicalVisualOverflow.height() > pageLogicalHeight)) {
+        // FIXME: In case the line aligns with the top of the page (or it's slightly shifted downwards) it will not be marked as the first line in the page.
+        // From here, the fix is not straightforward because it's not easy to always determine when the current line is the first in the page.
+        return;
+    }
+    LayoutUnit remainingLogicalHeight = pageRemainingLogicalHeightForOffset(logicalOffset, ExcludePageBoundary);
+
+    int lineIndex = lineCount(lineBox);
+    if (remainingLogicalHeight < lineHeight || (shouldBreakAtLineToAvoidWidow() && lineBreakToAvoidWidow() == lineIndex)) {
+        if (shouldBreakAtLineToAvoidWidow() && lineBreakToAvoidWidow() == lineIndex) {
+            clearShouldBreakAtLineToAvoidWidow();
+            setDidBreakAtLineToAvoidWidow();
+        }
+        if (lineHeight > pageLogicalHeight) {
+            // Split the top margin in order to avoid splitting the visible part of the line.
+            remainingLogicalHeight -= std::min(lineHeight - pageLogicalHeight, std::max<LayoutUnit>(0, logicalVisualOverflow.y() - lineBox->lineTopWithLeading()));
+        }
+        LayoutUnit totalLogicalHeight = lineHeight + std::max<LayoutUnit>(0, logicalOffset);
+        LayoutUnit pageLogicalHeightAtNewOffset = hasUniformPageLogicalHeight ? pageLogicalHeight : pageLogicalHeightForOffset(logicalOffset + remainingLogicalHeight);
+        setPageBreak(logicalOffset, lineHeight - remainingLogicalHeight);
+        if (((lineBox == firstRootBox() && totalLogicalHeight < pageLogicalHeightAtNewOffset) || (!style()->hasAutoOrphans() && style()->orphans() >= lineIndex))
+            && !isOutOfFlowPositioned() && !isTableCell()) {
+            setPaginationStrut(remainingLogicalHeight + std::max<LayoutUnit>(0, logicalOffset));
+        } else {
+            delta += remainingLogicalHeight;
+            lineBox->setPaginationStrut(remainingLogicalHeight);
+            lineBox->setIsFirstAfterPageBreak(true);
+        }
+    } else if (remainingLogicalHeight == pageLogicalHeight) {
+        // We're at the very top of a page or column.
+        if (lineBox != firstRootBox())
+            lineBox->setIsFirstAfterPageBreak(true);
+        if (lineBox != firstRootBox() || offsetFromLogicalTopOfFirstPage())
+            setPageBreak(logicalOffset, lineHeight);
+    }
 }
 
 void RenderBlockFlow::rebuildFloatsFromIntruding()
@@ -1381,8 +1469,8 @@ LayoutUnit RenderBlockFlow::estimateLogicalTopPosition(RenderBox* child, const M
         // For replaced elements and scrolled elements, we want to shift them to the next page if they don't fit on the current one.
         logicalTopEstimate = adjustForUnsplittableChild(child, logicalTopEstimate);
 
-        if (!child->selfNeedsLayout() && child->isRenderBlock())
-            logicalTopEstimate += toRenderBlock(child)->paginationStrut();
+        if (!child->selfNeedsLayout() && child->isRenderBlockFlow())
+            logicalTopEstimate += toRenderBlockFlow(child)->paginationStrut();
     }
 
     return logicalTopEstimate;
@@ -2320,10 +2408,10 @@ bool RenderBlockFlow::positionNewFloats()
             // See if we have a pagination strut that is making us move down further.
             // Note that an unsplittable child can't also have a pagination strut, so this is
             // exclusive with the case above.
-            RenderBlock* childBlock = childBox->isRenderBlock() ? toRenderBlock(childBox) : 0;
-            if (childBlock && childBlock->paginationStrut()) {
-                newLogicalTop += childBlock->paginationStrut();
-                childBlock->setPaginationStrut(0);
+            RenderBlockFlow* childBlockFlow = childBox->isRenderBlockFlow() ? toRenderBlockFlow(childBox) : 0;
+            if (childBlockFlow && childBlockFlow->paginationStrut()) {
+                newLogicalTop += childBlockFlow->paginationStrut();
+                childBlockFlow->setPaginationStrut(0);
             }
 
             if (newLogicalTop != floatLogicalLocation.y()) {
@@ -2335,8 +2423,8 @@ bool RenderBlockFlow::positionNewFloats()
                 setLogicalLeftForChild(childBox, floatLogicalLocation.x() + childLogicalLeftMargin);
                 setLogicalTopForChild(childBox, floatLogicalLocation.y() + marginBeforeForChild(childBox));
 
-                if (childBlock)
-                    childBlock->setChildNeedsLayout(MarkOnlyThis);
+                if (childBox->isRenderBlock())
+                    childBox->setChildNeedsLayout(MarkOnlyThis);
                 childBox->layoutIfNeeded();
             }
         }
@@ -2612,6 +2700,16 @@ GapRects RenderBlockFlow::inlineSelectionGaps(RenderBlock* rootBlock, const Layo
         lastLogicalRight = logicalRightSelectionOffset(rootBlock, lastSelectedLine->selectionBottom());
     }
     return result;
+}
+
+void RenderBlockFlow::setPaginationStrut(LayoutUnit strut)
+{
+    if (!m_rareData) {
+        if (!strut)
+            return;
+        m_rareData = adoptPtr(new RenderBlockFlowRareData(this));
+    }
+    m_rareData->m_paginationStrut = strut;
 }
 
 LayoutUnit RenderBlockFlow::logicalLeftSelectionOffset(RenderBlock* rootBlock, LayoutUnit position)
