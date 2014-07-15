@@ -1219,7 +1219,7 @@ crbug.com/30536 [ Win ] http/tests/xmlhttprequest/origin-exact-matching/36.html 
 
 # switching to apache-win32 flakiness that needs triaging.
 crbug.com/30536 [ Win ] http/tests/htmlimports/import-cors-credentials.html [ Timeout Pass ]
-crbug.com/30536 [ Win7 ] http/tests/htmlimports/redirect-cross-origin.html [ Timeout Pass ]
+crbug.com/30536 [ Win ] http/tests/htmlimports/redirect-cross-origin.html [ Timeout Pass ]
 crbug.com/30536 [ Win7 ] http/tests/navigation/forward-and-cancel.html [ Timeout Pass ]
 crbug.com/30536 [ Win7 ] http/tests/navigation/ping-cookie.html [ Failure Pass ]
 crbug.com/30536 [ Win7 ] http/tests/navigation/ping-same-origin.html [ Failure Pass ]
@@ -1239,6 +1239,13 @@ crbug.com/30536 [ Win7 ] http/tests/xmlhttprequest/origin-whitelisting-ip-addres
 crbug.com/30536 [ Win7 ] http/tests/security/clipboard/clipboard-file-access.html [ Timeout Pass ]
 crbug.com/30536 [ Win7 ] http/tests/security/contentSecurityPolicy/report-uri.html [ Timeout Pass ]
 crbug.com/30536 [ Win7 ] http/tests/security/contentSecurityPolicy/report-only.html [ Failure Pass ]
+crbug.com/30536 [ Win ] http/tests/htmlimports/redirect.html [ Timeout Pass ]
+crbug.com/30536 [ XP ] http/tests/inspector/extensions-ignore-cache.html [ Timeout Pass ]
+crbug.com/30536 [ XP ] http/tests/security/link-crossorigin-subresource-no-cors.html [ Timeout Pass ]
+crbug.com/30536 [ XP ] http/tests/security/script-crossorigin-fails-cross-origin-2.xhtml [ Timeout Pass ]
+crbug.com/30536 [ Win ] http/tests/htmlimports/import-async-grandchild-not-child.html [ Pass Timeout ]
+crbug.com/30536 [ Win ] http/tests/encoding/meta-switch-mid-parse.html [ Timeout Pass ]
+crbug.com/30536 [ Win ] http/tests/encoding/meta-switch-mid-parse-with-title.html [ Timeout Pass ]
 
 crbug.com/390204 [ Release ] inspector/console/console-viewport-selection.html [ Pass Failure ]
 crbug.com/390204 [ Debug ] inspector/console/console-viewport-selection.html [ Pass Failure Slow ]
