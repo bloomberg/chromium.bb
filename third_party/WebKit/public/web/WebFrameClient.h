@@ -267,9 +267,6 @@ public:
     // The frame's manifest has changed.
     virtual void didChangeManifest(WebLocalFrame*) { }
 
-    // TODO: Remove when chromium is changed to use didChangeThemeColor().
-    virtual void didChangeBrandColor() { }
-
     // The frame's theme color has changed.
     virtual void didChangeThemeColor() { }
 
