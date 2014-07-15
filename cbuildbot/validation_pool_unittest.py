@@ -655,8 +655,11 @@ class TestSubmitChange(MoxBase):
     # Prepare replay script.
     pool._helper_pool.ForChange(change).AndReturn(helper)
     helper.SubmitChange(change, dryrun=False)
+    helper.QuerySingleRecord(change.gerrit_number).AndReturn(results.pop(0))
     for result in results:
       helper.QuerySingleRecord(change.gerrit_number).AndReturn(result)
+      if result.status == 'SUBMITTED':
+        helper.SubmitChange(change, dryrun=False)
     self.mox.ReplayAll()
 
     # Verify results.
@@ -673,7 +676,7 @@ class TestSubmitChange(MoxBase):
     # The query will be retried 1 more time than query timeout.
     results = ['SUBMITTED' for _i in
                xrange(validation_pool.SUBMITTED_WAIT_TIMEOUT + 1)]
-    self.assertTrue(self._TestSubmitChange(results))
+    self.assertFalse(self._TestSubmitChange(results))
 
   def testSubmitChangeSubmittedToMerged(self):
     """Submit one change to gerrit, status SUBMITTED then MERGED."""
