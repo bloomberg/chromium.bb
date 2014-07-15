@@ -669,6 +669,8 @@ crbug.com/393706 [ Retina ] virtual/antialiasedtext/fast/text/shaping/same-scrip
 crbug.com/393706 [ Retina ] virtual/softwarecompositing/reflections/animation-inside-reflection.html [ ImageOnlyFailure Pass ]
 crbug.com/393706 [ Retina ] virtual/softwarecompositing/rubberbanding/transform-overhang-e.html [ ImageOnlyFailure Pass ]
 crbug.com/393706 [ Retina ] w3c/web-platform-tests/shadow-dom/shadow-trees/shadow-root-001.html [ ImageOnlyFailure Pass ]
+crbug.com/393706 [ Retina ] ietestcenter/css3/namespaces/declaring-001.xml [ ImageOnlyFailure Pass ]
+crbug.com/393706 [ Retina ] virtual/threaded/compositing/webgl/webgl-background-color.html [ ImageOnlyFailure Pass ]
 
 # 309184 and 303419 track Android-specific failures
 crbug.com/309184 crbug.com/303419 crbug.com/284782 http/tests/media/media-source/mediasource-duration.html [ Failure Pass ]
