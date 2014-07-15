@@ -206,11 +206,9 @@ Viewport.prototype = {
    * Sets the zoom of the viewport.
    * @param {number} newZoom the zoom level to zoom to.
    */
-  setZoomInternal_: function(newZoom) {
-    if (!this.allowedToChangeZoom_) {
-      throw 'Called Viewport.setZoomInternal_ without calling ' +
-            'Viewport.mightZoom_.';
-    }
+  setZoom_: function(newZoom) {
+    if (!this.allowedToChangeZoom_)
+      throw 'Called Viewport.setZoom_ without calling Viewport.mightZoom_.';
     var oldZoom = this.zoom_;
     this.zoom_ = newZoom;
     // Record the scroll position (relative to the middle of the window).
@@ -226,13 +224,12 @@ Viewport.prototype = {
   },
 
   /**
-   * Sets the zoom to the given zoom level.
-   * @param {number} newZoom the zoom level to zoom to.
+   * @private
+   * Sets the zoom for testing purposes.
    */
-  setZoom: function(newZoom) {
+  setZoomForTest_: function(newZoom) {
     this.mightZoom_(function() {
-      this.setZoomInternal_(newZoom);
-      this.updateViewport_();
+      this.setZoom_(newZoom);
     }.bind(this));
   },
 
@@ -384,8 +381,7 @@ Viewport.prototype = {
       var oldY = this.window_.pageYOffset / this.zoom_;
       // When computing fit-to-width, the maximum width of a page in the
       // document is used, which is equal to the size of the document width.
-      this.setZoomInternal_(this.computeFittingZoom_(this.documentDimensions_,
-                                                     true));
+      this.setZoom_(this.computeFittingZoom_(this.documentDimensions_, true));
       var page = this.getMostVisiblePage();
       this.window_.scrollTo(0, oldY * this.zoom_);
       this.updateViewport_();
@@ -402,7 +398,7 @@ Viewport.prototype = {
       if (!this.documentDimensions_)
         return;
       var page = this.getMostVisiblePage();
-      this.setZoomInternal_(this.computeFittingZoom_(
+      this.setZoom_(this.computeFittingZoom_(
           this.pageDimensions_[page], false));
       // Center the document in the page by scrolling by the amount of empty
       // space to the left of the document.
@@ -426,7 +422,7 @@ Viewport.prototype = {
         if (Viewport.ZOOM_FACTORS[i] < this.zoom_)
           nextZoom = Viewport.ZOOM_FACTORS[i];
       }
-      this.setZoomInternal_(nextZoom);
+      this.setZoom_(nextZoom);
       this.updateViewport_();
     }.bind(this));
   },
@@ -442,7 +438,7 @@ Viewport.prototype = {
         if (Viewport.ZOOM_FACTORS[i] > this.zoom_)
           nextZoom = Viewport.ZOOM_FACTORS[i];
       }
-      this.setZoomInternal_(nextZoom);
+      this.setZoom_(nextZoom);
       this.updateViewport_();
     }.bind(this));
   },
@@ -476,10 +472,9 @@ Viewport.prototype = {
       this.documentDimensions_ = documentDimensions;
       this.pageDimensions_ = this.documentDimensions_.pageDimensions;
       if (initialDimensions) {
-        this.setZoomInternal_(this.computeFittingZoom_(this.documentDimensions_,
-                                                       true));
+        this.setZoom_(this.computeFittingZoom_(this.documentDimensions_, true));
         if (this.zoom_ > 1)
-          this.setZoomInternal_(1);
+          this.setZoom_(1);
         this.window_.scrollTo(0, 0);
       }
       this.contentSizeChanged_();
