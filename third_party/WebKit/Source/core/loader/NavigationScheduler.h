@@ -78,6 +78,7 @@ public:
 
     void scheduleRedirect(double delay, const String& url);
     void scheduleLocationChange(Document*, const String& url, const Referrer& referrer, bool lockBackForwardList = true);
+    void schedulePageBlock(Document*, const Referrer&);
     void scheduleFormSubmission(PassRefPtrWillBeRawPtr<FormSubmission>);
     void scheduleRefresh();
     void scheduleHistoryNavigation(int steps);

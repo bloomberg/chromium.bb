@@ -121,7 +121,7 @@ void XSSAuditorDelegate::didBlockScript(const XSSInfo& xssInfo)
     }
 
     if (xssInfo.m_didBlockEntirePage)
-        m_document->frame()->navigationScheduler().scheduleLocationChange(m_document, SecurityOrigin::urlWithUniqueSecurityOrigin(), Referrer());
+        m_document->frame()->navigationScheduler().schedulePageBlock(m_document, Referrer());
 }
 
 } // namespace WebCore

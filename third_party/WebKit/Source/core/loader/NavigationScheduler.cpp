@@ -327,6 +327,12 @@ void NavigationScheduler::scheduleLocationChange(Document* originDocument, const
     schedule(adoptPtr(new ScheduledLocationChange(originDocument, url, referrer, lockBackForwardList)));
 }
 
+void NavigationScheduler::schedulePageBlock(Document* originDocument, const Referrer& referrer)
+{
+    ASSERT(m_frame->page());
+    schedule(adoptPtr(new ScheduledLocationChange(originDocument, SecurityOrigin::urlWithUniqueSecurityOrigin(), referrer, false)));
+}
+
 void NavigationScheduler::scheduleFormSubmission(PassRefPtrWillBeRawPtr<FormSubmission> submission)
 {
     ASSERT(m_frame->page());
