@@ -16,6 +16,12 @@
   </head>
   <body>
     <h3>Test Runs</h3>
+    <form method="get">
+      <label for "prefix">Search Failures by Prefix:</label>
+      <input type="text" name="marker" id="prefix">
+      <input type="submit" value="submit">
+    </form>
+    <a href="{{ next_url }}">Next</a>
     <div id="container">
       {% for link in links %}
         <div>

@@ -67,6 +67,7 @@ class GoogleCloudStorageBucket(cloud_bucket.BaseCloudBucket):
     return '/image?file_path=%s' % path
 
   # override
-  def GetAllPaths(self, prefix):
+  def GetAllPaths(self, prefix, max_keys=None, marker=None, delimiter=None):
     return (f.filename[len(self.bucket) + 1:] for f in
-            cloudstorage.listbucket(self.bucket, prefix=prefix))
+            cloudstorage.listbucket(self.bucket, prefix=prefix,
+                max_keys=max_keys, marker=marker, delimiter=delimiter))

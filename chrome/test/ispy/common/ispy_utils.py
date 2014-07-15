@@ -290,15 +290,20 @@ class ISpyUtils(object):
         'Failure', ['expected', 'diff', 'actual', 'info'])
     return Failure(expected, diff, actual, info)
 
-  def GetAllPaths(self, prefix):
+  def GetAllPaths(self, prefix, max_keys=None, marker=None, delimiter=None):
     """Gets urls to all files in GS whose path starts with a given prefix.
 
     Args:
       prefix: the prefix to filter files in GS by.
+      max_keys: Integer. Specifies the maximum number of objects returned
+      marker: String. Only objects whose fullpath starts lexicographically
+        after marker (exclusively) will be returned
+      delimiter: String. Turns on directory mode, specifies characters
+        to be used as directory separators
 
     Returns:
       a list containing urls to all objects that started with
          the prefix.
     """
-    return self.cloud_bucket.GetAllPaths(prefix)
-
+    return self.cloud_bucket.GetAllPaths(
+        prefix, max_keys=max_keys, marker=marker, delimiter=delimiter)

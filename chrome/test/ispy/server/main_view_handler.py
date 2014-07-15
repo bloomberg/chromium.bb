@@ -50,9 +50,14 @@ class MainViewHandler(webapp2.RequestHandler):
     """
     template = JINJA.get_template('list_view.html')
     data = {}
-    test_runs = set([path.lstrip('/').split('/')[1] for path in
-                    ispy.GetAllPaths('failures/')])
+    max_keys = 1000
+    marker = 'failures/%s' % self.request.get('marker')
+    test_runs = list([path.split('/')[1] for path in
+       ispy.GetAllPaths('failures/', max_keys=max_keys,
+                        marker=marker, delimiter='/')])
     base_url = '/?test_run=%s'
+    next_url = '/?marker=%s' % test_runs[-1]
+    data['next_url'] = next_url
     data['links'] = [(test_run, base_url % test_run) for test_run in test_runs]
     self.response.write(template.render(data))
 
