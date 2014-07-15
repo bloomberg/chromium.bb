@@ -60,11 +60,6 @@ public:
     virtual WebLayerTreeView* createLayerTreeViewForTesting() { return 0; }
 
     virtual WebData readFromFile(const WebString& path) { return WebData(); }
-
-    // FIXME(danakj): Remove this.
-    enum TestViewType {
-        TestViewTypeUnitTest,
-    };
 };
 
 }
