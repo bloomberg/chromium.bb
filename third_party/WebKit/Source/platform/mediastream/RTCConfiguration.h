@@ -63,6 +63,12 @@ private:
     String m_credential;
 };
 
+enum RTCIceTransports {
+    RTCIceTransportsNone,
+    RTCIceTransportsRelay,
+    RTCIceTransportsAll
+};
+
 class RTCConfiguration FINAL : public RefCounted<RTCConfiguration> {
 public:
     static PassRefPtr<RTCConfiguration> create() { return adoptRef(new RTCConfiguration()); }
@@ -70,11 +76,14 @@ public:
     void appendServer(PassRefPtr<RTCIceServer> server) { m_servers.append(server); }
     size_t numberOfServers() { return m_servers.size(); }
     RTCIceServer* server(size_t index) { return m_servers[index].get(); }
+    void setIceTransports(RTCIceTransports iceTransports) { m_iceTransports = iceTransports; }
+    RTCIceTransports iceTransports() { return m_iceTransports; }
 
 private:
-    RTCConfiguration() { }
+    RTCConfiguration() : m_iceTransports(RTCIceTransportsAll) { }
 
     Vector<RefPtr<RTCIceServer> > m_servers;
+    RTCIceTransports m_iceTransports;
 };
 
 } // namespace WebCore

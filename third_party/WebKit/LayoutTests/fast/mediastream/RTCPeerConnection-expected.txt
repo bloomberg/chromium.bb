@@ -8,7 +8,7 @@ PASS new webkitRTCPeerConnection(null, null); did not throw exception.
 PASS new webkitRTCPeerConnection(undefined); did not throw exception.
 PASS new webkitRTCPeerConnection(undefined, undefined); did not throw exception.
 PASS new webkitRTCPeerConnection(); threw exception TypeError: Failed to construct 'RTCPeerConnection': 1 argument required, but only 0 present..
-PASS new webkitRTCPeerConnection(''); threw exception TypeError: Failed to construct 'RTCPeerConnection': parameter 1 ('rtcIceServers') is not an object..
+PASS new webkitRTCPeerConnection(''); threw exception TypeError: Failed to construct 'RTCPeerConnection': parameter 1 ('rtcConfiguration') is not an object..
 PASS new webkitRTCPeerConnection(null, ''); threw exception TypeError: Failed to construct 'RTCPeerConnection': parameter 2 ('mediaConstraints') is not an object..
 PASS new webkitRTCPeerConnection({iceServers:[]}, null); did not throw exception.
 PASS new webkitRTCPeerConnection({iceServers:[{url:'stun:foo.com'}]}, null); did not throw exception.
@@ -22,6 +22,10 @@ PASS new webkitRTCPeerConnection({iceServers:[1, 2, 3]}, null); threw exception 
 PASS new webkitRTCPeerConnection({iceServers:[{}]}, null); threw exception TypeError: Failed to construct 'RTCPeerConnection': Malformed RTCIceServer.
 PASS new webkitRTCPeerConnection({iceServers:[{url:'foo'}]}, null); threw exception TypeError: Failed to construct 'RTCPeerConnection': Malformed URL.
 PASS new webkitRTCPeerConnection({iceServers:[{urls:[1, 'turn:foo.com']}]}, null); threw exception TypeError: Failed to construct 'RTCPeerConnection': Malformed URL.
+PASS new webkitRTCPeerConnection({iceServers:[], iceTransports:'none'}, null); did not throw exception.
+PASS new webkitRTCPeerConnection({iceServers:[], iceTransports:'relay'}, null); did not throw exception.
+PASS new webkitRTCPeerConnection({iceServers:[], iceTransports:'all'}, null); did not throw exception.
+PASS new webkitRTCPeerConnection({iceServers:[], iceTransports:'foo'}, null); threw exception TypeError: Failed to construct 'RTCPeerConnection': Malformed RTCIceTransports.
 PASS new webkitRTCPeerConnection(null, {mandatory:{valid_and_supported_1:1}}); did not throw exception.
 PASS new webkitRTCPeerConnection(null, {mandatory:{valid_and_supported_1:1, valid_and_supported_2:1}}); did not throw exception.
 PASS new webkitRTCPeerConnection(null, {optional:[{valid_and_supported_1:0}]}); did not throw exception.

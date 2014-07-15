@@ -31,12 +31,12 @@
 [
     GarbageCollected,
     ActiveDOMObject,
-    Constructor(Dictionary rtcIceServers, optional Dictionary mediaConstraints),
+    Constructor(Dictionary rtcConfiguration, optional Dictionary mediaConstraints),
     ConstructorCallWith=ExecutionContext,
     NoInterfaceObject,
     RaisesException=Constructor,
 ] interface RTCPeerConnection : EventTarget {
-    [RaisesException] void createOffer(RTCSessionDescriptionCallback successCallback, [Default=Undefined] optional RTCErrorCallback failureCallback, optional Dictionary mediaConstraints);
+    [RaisesException] void createOffer(RTCSessionDescriptionCallback successCallback, [Default=Undefined] optional RTCErrorCallback failureCallback, optional Dictionary rtcOfferOptions);
 
     [RaisesException] void createAnswer(RTCSessionDescriptionCallback successCallback, [Default=Undefined] optional RTCErrorCallback failureCallback, optional Dictionary mediaConstraints);
 

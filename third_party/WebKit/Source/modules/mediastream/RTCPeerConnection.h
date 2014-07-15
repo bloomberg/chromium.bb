@@ -49,6 +49,7 @@ class RTCConfiguration;
 class RTCDTMFSender;
 class RTCDataChannel;
 class RTCErrorCallback;
+class RTCOfferOptions;
 class RTCSessionDescription;
 class RTCSessionDescriptionCallback;
 class RTCStatsCallback;
@@ -62,12 +63,12 @@ class RTCPeerConnection FINAL
     DEFINE_EVENT_TARGET_REFCOUNTING_WILL_BE_REMOVED(RefCountedGarbageCollectedWillBeGarbageCollectedFinalized<RTCPeerConnection>);
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(RTCPeerConnection);
 public:
-    static RTCPeerConnection* create(ExecutionContext*, const Dictionary& rtcConfiguration, const Dictionary& mediaConstraints, ExceptionState&);
+    static RTCPeerConnection* create(ExecutionContext*, const Dictionary&, const Dictionary&, ExceptionState&);
     virtual ~RTCPeerConnection();
 
-    void createOffer(PassOwnPtr<RTCSessionDescriptionCallback>, PassOwnPtr<RTCErrorCallback>, const Dictionary& mediaConstraints, ExceptionState&);
+    void createOffer(PassOwnPtr<RTCSessionDescriptionCallback>, PassOwnPtr<RTCErrorCallback>, const Dictionary&, ExceptionState&);
 
-    void createAnswer(PassOwnPtr<RTCSessionDescriptionCallback>, PassOwnPtr<RTCErrorCallback>, const Dictionary& mediaConstraints, ExceptionState&);
+    void createAnswer(PassOwnPtr<RTCSessionDescriptionCallback>, PassOwnPtr<RTCErrorCallback>, const Dictionary&, ExceptionState&);
 
     void setLocalDescription(RTCSessionDescription*, PassOwnPtr<VoidCallback>, PassOwnPtr<RTCErrorCallback>, ExceptionState&);
     RTCSessionDescription* localDescription(ExceptionState&);
@@ -149,6 +150,8 @@ private:
     RTCPeerConnection(ExecutionContext*, PassRefPtr<RTCConfiguration>, blink::WebMediaConstraints, ExceptionState&);
 
     static PassRefPtr<RTCConfiguration> parseConfiguration(const Dictionary& configuration, ExceptionState&);
+    static PassRefPtr<RTCOfferOptions> parseOfferOptions(const Dictionary& options);
+
     void scheduleDispatchEvent(PassRefPtrWillBeRawPtr<Event>);
     void dispatchScheduledEvent();
     bool hasLocalStreamWithTrackId(const String& trackId);

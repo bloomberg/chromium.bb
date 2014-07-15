@@ -9,12 +9,16 @@ description("Tests RTCPeerConnection createOffer.");
 
 var pc = null;
 
+function dummy() {}
+
 function requestFailed2(reason)
 {
     testPassed('requestFailed was called.');
 
     errorReason = reason;
     shouldBe('errorReason', '"TEST_ERROR"');
+
+    shouldNotThrow("pc.createOffer(dummy, dummy, {offerToReceiveVideo:1, offerToReceiveAudio:0, voiceActivityDetection:false, iceRestart:true});");
 
     finishJSTest();
 }
