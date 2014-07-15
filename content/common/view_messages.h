@@ -1657,8 +1657,9 @@ IPC_MESSAGE_ROUTED1(ViewHostMsg_SetNeedsBeginFrame,
                     bool /* enabled */)
 
 // Reply to the ViewMsg_ExtractSmartClipData message.
-IPC_MESSAGE_ROUTED2(ViewHostMsg_SmartClipDataExtracted,
-                    base::string16 /* result */,
+IPC_MESSAGE_ROUTED3(ViewHostMsg_SmartClipDataExtracted,
+                    base::string16 /* text */,
+                    base::string16 /* html */,
                     gfx::Rect /* rect */)
 
 #elif defined(OS_MACOSX)

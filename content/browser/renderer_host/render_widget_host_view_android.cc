@@ -548,10 +548,11 @@ void RenderWidgetHostViewAndroid::OnStartContentIntent(
 }
 
 void RenderWidgetHostViewAndroid::OnSmartClipDataExtracted(
-    const base::string16& result,
+    const base::string16& text,
+    const base::string16& html,
     const gfx::Rect rect) {
   if (content_view_core_)
-    content_view_core_->OnSmartClipDataExtracted(rect, result);
+    content_view_core_->OnSmartClipDataExtracted(text, html, rect);
 }
 
 bool RenderWidgetHostViewAndroid::OnTouchEvent(

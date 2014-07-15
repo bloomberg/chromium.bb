@@ -215,7 +215,7 @@ public class ContentViewCore
      * extractSmartClipData are available.
      */
     public interface SmartClipDataListener {
-        public void onSmartClipDataExtracted(String result, Rect cliprect);
+        public void onSmartClipDataExtracted(String text, String html, Rect clipRect);
     }
 
     /**
@@ -3085,9 +3085,9 @@ public class ContentViewCore
     }
 
     @CalledByNative
-    private void onSmartClipDataExtracted(String result, Rect cliprect) {
+    private void onSmartClipDataExtracted(String text, String html, Rect clipRect) {
         if (mSmartClipDataListener != null ) {
-            mSmartClipDataListener.onSmartClipDataExtracted(result, cliprect);
+            mSmartClipDataListener.onSmartClipDataExtracted(text, html, clipRect);
         }
     }
 

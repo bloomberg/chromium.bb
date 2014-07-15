@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser;
 
+import android.graphics.Rect;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
@@ -33,14 +34,32 @@ public class ContentViewTest extends ChromeShellTestBase implements Handler.Call
             return mUrl;
         }
 
-        public void notifyCalled(String title, String url) {
+        public String getText() {
+            return mText;
+        }
+
+        public String getHtml() {
+            return mHtml;
+        }
+
+        public Rect getRect() {
+            return mRect;
+        }
+
+        public void notifyCalled(String title, String url, String text, String html, Rect rect) {
             mTitle = title;
             mUrl = url;
+            mText = text;
+            mHtml = html;
+            mRect = rect;
             super.notifyCalled();
         }
 
         private String mTitle;
         private String mUrl;
+        private String mText;
+        private String mHtml;
+        private Rect mRect;
     }
 
     private ChromeShellActivity mActivity;
@@ -74,8 +93,11 @@ public class ContentViewTest extends ChromeShellTestBase implements Handler.Call
         assertNotNull(bundle);
         String url = bundle.getString("url");
         String title = bundle.getString("title");
+        String text = bundle.getString("text");
+        String html = bundle.getString("html");
+        Rect rect = bundle.getParcelable("rect");
         // We don't care about other values for now.
-        mCallbackHelper.notifyCalled(title, url);
+        mCallbackHelper.notifyCalled(title, url, text, html, rect);
         return true;
     }
 
@@ -92,7 +114,10 @@ public class ContentViewTest extends ChromeShellTestBase implements Handler.Call
             }
         });
         mCallbackHelper.waitForCallback(0, 1);  // call count: 0 --> 1
-        assertNotNull("about:blank", mCallbackHelper.getTitle());
-        assertNotNull("about:blank", mCallbackHelper.getUrl());
+        assertEquals("about:blank", mCallbackHelper.getTitle());
+        assertEquals("about:blank", mCallbackHelper.getUrl());
+        assertNotNull(mCallbackHelper.getText());
+        assertNotNull(mCallbackHelper.getHtml());
+        assertNotNull(mCallbackHelper.getRect());
     }
 }

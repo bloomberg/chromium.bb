@@ -267,12 +267,13 @@ public class ContentView extends FrameLayout
             return;
         }
         mContentViewCore.setSmartClipDataListener(new ContentViewCore.SmartClipDataListener() {
-            public void onSmartClipDataExtracted(String text, Rect clipRect) {
+            public void onSmartClipDataExtracted(String text, String html, Rect clipRect) {
                 Bundle bundle = new Bundle();
                 bundle.putString("url", mContentViewCore.getWebContents().getVisibleUrl());
                 bundle.putString("title", mContentViewCore.getWebContents().getTitle());
-                bundle.putParcelable("area", clipRect);
+                bundle.putParcelable("rect", clipRect);
                 bundle.putString("text", text);
+                bundle.putString("html", html);
                 try {
                     Message msg = Message.obtain(resultHandler, 0);
                     msg.setData(bundle);
