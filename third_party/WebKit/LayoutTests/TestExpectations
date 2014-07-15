@@ -666,6 +666,7 @@ crbug.com/321857 [ Win7 Debug ] fast/filesystem/workers/file-writer-events-share
 crbug.com/323858 fast/workers/storage/interrupt-database.html [ Pass Timeout ]
 
 crbug.com/343892 [ Linux Mac ] fast/workers/shared-worker-name.html [ Pass Crash ]
+crbug.com/173443 editing/inserting/return-key-with-selection-003.html [ NeedsRebaseline ]
 
 crbug.com/345831 [ Win ] fast/dom/Window/open-window-min-size.html [ Failure ]
 crbug.com/345831 [ Linux Mac ] fast/dom/Window/open-window-min-size.html [ Failure Pass ]
