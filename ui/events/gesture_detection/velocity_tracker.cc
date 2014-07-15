@@ -34,11 +34,17 @@ namespace {
 
 COMPILE_ASSERT(MotionEvent::MAX_POINTER_ID < 32, max_pointer_id_too_large);
 
-// Threshold for determining that a pointer has stopped moving.
-// Some input devices do not send ACTION_MOVE events in the case where a pointer
-// has stopped.  We need to detect this case so that we can accurately predict
-// the velocity after the pointer starts moving again.
-const int kAssumePointerStoppedTimeMs = 40;
+// Threshold between ACTION_MOVE events for determining that a pointer has
+// stopped moving. Some input devices do not send ACTION_MOVE events in the case
+// where a pointer has stopped.  We need to detect this case so that we can
+// accurately predict the velocity after the pointer starts moving again.
+const int kAssumePointerMoveStoppedTimeMs = 40;
+
+// Threshold between ACTION_MOVE and ACTION_{UP|POINTER_UP} events for
+// determining that a pointer has stopped moving. This is a larger threshold
+// than |kAssumePointerMoveStoppedTimeMs|, as some devices may delay synthesis
+// of ACTION_{UP|POINTER_UP} to reduce risk of noisy release.
+const int kAssumePointerUpStoppedTimeMs = 80;
 
 struct Position {
   float x, y;
@@ -255,10 +261,9 @@ void VelocityTracker::AddMovement(const TimeTicks& event_time,
     id_bits.clear_last_marked_bit();
 
   if ((current_pointer_id_bits_.value & id_bits.value) &&
-      event_time >= (last_event_time_ + base::TimeDelta::FromMilliseconds(
-                                            kAssumePointerStoppedTimeMs))) {
-    // We have not received any movements for too long.  Assume that all
-    // pointers
+      (event_time - last_event_time_) >=
+          base::TimeDelta::FromMilliseconds(kAssumePointerMoveStoppedTimeMs)) {
+    // We have not received any movements for too long. Assume that all pointers
     // have stopped.
     strategy_->Clear();
   }
@@ -292,17 +297,25 @@ void VelocityTracker::AddMovement(const MotionEvent& event) {
     case MotionEvent::ACTION_MOVE:
       // case MotionEvent::ACTION_HOVER_MOVE:
       break;
-    default:
-      // Ignore all other actions because they do not convey any new information
-      // about pointer movement.  We also want to preserve the last known
-      // velocity of the pointers.
+    case MotionEvent::ACTION_UP:
+    case MotionEvent::ACTION_POINTER_UP:
       // Note that ACTION_UP and ACTION_POINTER_UP always report the last known
       // position of the pointers that went up.  ACTION_POINTER_UP does include
       // the new position of pointers that remained down but we will also
       // receive an ACTION_MOVE with this information if any of them actually
       // moved.  Since we don't know how many pointers will be going up at once
       // it makes sense to just wait for the following ACTION_MOVE before adding
-      // the movement.
+      // the movement. However, if the up event itself is delayed because of
+      // (difficult albeit possible) prolonged stationary screen contact, assume
+      // that motion has stopped.
+      if ((event.GetEventTime() - last_event_time_) >=
+          base::TimeDelta::FromMilliseconds(kAssumePointerUpStoppedTimeMs))
+        strategy_->Clear();
+      return;
+    default:
+      // Ignore all other actions because they do not convey any new information
+      // about pointer movement.  We also want to preserve the last known
+      // velocity of the pointers.
       return;
   }
 

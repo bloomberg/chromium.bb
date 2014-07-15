@@ -190,5 +190,33 @@ TEST_F(VelocityTrackerTest, VaryingVelocity) {
   }
 }
 
+TEST_F(VelocityTrackerTest, DelayedActionUp) {
+  const gfx::PointF p0(0, 0);
+  const gfx::Vector2dF v(-50000, 50000);
+  const size_t samples = 10;
+  const base::TimeTicks t0 = base::TimeTicks::Now();
+  const base::TimeDelta dt = kTenMillis * 2;
+
+  VelocityTrackerState state;
+  state.AddMovement(
+      Sample(MotionEvent::ACTION_DOWN, p0, t0, v, base::TimeDelta()));
+
+  // Apply the movement and verify a (non-zero) velocity.
+  ApplyMovement(&state, p0, v, t0, dt, samples);
+  state.ComputeCurrentVelocity(1000, 1000);
+  EXPECT_NEAR(-1000, state.GetXVelocity(0), kEpsilson);
+  EXPECT_NEAR(1000, state.GetYVelocity(0), kEpsilson);
+
+  // Apply the delayed ACTION_UP.
+  const gfx::PointF p1 = p0 + ScaleVector2d(v, dt.InSecondsF());
+  const base::TimeTicks t1 = t0 + dt + kTenMillis * 10;
+  state.AddMovement(Sample(
+      MotionEvent::ACTION_UP, p1, t1, v, base::TimeDelta()));
+
+  // The tracked velocity should have been reset.
+  state.ComputeCurrentVelocity(1000, 1000);
+  EXPECT_EQ(0.f, state.GetXVelocity(0));
+  EXPECT_EQ(0.f, state.GetYVelocity(0));
+}
 
 }  // namespace ui

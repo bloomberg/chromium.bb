@@ -99,15 +99,6 @@ void SyntheticSmoothScrollGesture::ForwardTouchInputEvents(
           target->PointerAssumedStoppedTime()) {
         event_timestamp = current_scroll_segment_stop_time_ +
                           target->PointerAssumedStoppedTime();
-        // Send one last move event, but don't change the location. Without this
-        // we'd still sometimes cause a fling on Android.
-
-        // Required to suppress flings on Aura, see
-        // |UpdateWebTouchPointFromUIEvent|, remove when crbug.com/332418
-        // is fixed.
-        touch_event_.touches[0].position.y += 0.001f;
-
-        ForwardTouchEvent(target, event_timestamp);
         ReleaseTouchPoint(target, event_timestamp);
         state_ = DONE;
       }

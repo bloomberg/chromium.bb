@@ -388,7 +388,8 @@ void ShelfLayoutManagerTest::RunGestureDragTests(gfx::Vector2d delta) {
   widget->Show();
   widget->Maximize();
 
-  const base::TimeDelta kTimeDelta = base::TimeDelta::FromMilliseconds(40);
+  // The time delta should be large enough to prevent accidental fling creation.
+  const base::TimeDelta kTimeDelta = base::TimeDelta::FromMilliseconds(100);
 
   aura::Window* window = widget->GetNativeWindow();
   shelf->LayoutShelf();
