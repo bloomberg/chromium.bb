@@ -372,6 +372,7 @@
       ],
       'dependencies': [
         '../base/base.gyp:base',
+        '../url/url.gyp:url_lib',
         '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
         '<(mojo_system_for_component)',
       ],
@@ -416,6 +417,7 @@
         '../base/base.gyp:base',
         '../base/base.gyp:base_message_loop_tests',
         '../testing/gtest.gyp:gtest',
+        '../url/url.gyp:url_lib',
         'mojo_cpp_bindings',
         'mojo_environment_chromium',
         'mojo_common_lib',

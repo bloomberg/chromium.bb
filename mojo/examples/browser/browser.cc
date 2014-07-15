@@ -5,6 +5,7 @@
 #include "base/basictypes.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "mojo/common/common_type_converters.h"
 #include "mojo/examples/window_manager/window_manager.mojom.h"
 #include "mojo/public/cpp/application/application_connection.h"
 #include "mojo/public/cpp/application/application_delegate.h"
@@ -220,7 +221,7 @@ class Browser : public ApplicationDelegate,
       printf("User entered this URL: %s\n", url.spec().c_str());
       navigation::NavigationDetailsPtr nav_details(
           navigation::NavigationDetails::New());
-      nav_details->url = url.spec();
+      nav_details->url = String::From(url);
       navigator_host_->RequestNavigate(view_manager_->GetRoots().front()->id(),
                                        navigation::NEW_NODE,
                                        nav_details.Pass());

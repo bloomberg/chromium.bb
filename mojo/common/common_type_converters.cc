@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/strings/utf_string_conversions.h"
+#include "url/gurl.h"
 
 namespace mojo {
 
@@ -36,6 +37,14 @@ base::string16 TypeConverter<String, base::string16>::ConvertTo(
     const String& input) {
   return base::UTF8ToUTF16(TypeConverter<String, base::StringPiece>::ConvertTo(
       input));
+}
+
+String TypeConverter<String, GURL>::ConvertFrom(const GURL& input) {
+  return String(input.spec());
+}
+
+GURL TypeConverter<String, GURL>::ConvertTo(const String& input) {
+  return GURL(input.get());
 }
 
 }  // namespace mojo

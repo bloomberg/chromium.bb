@@ -10,6 +10,7 @@
 #include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
+#include "mojo/common/common_type_converters.h"
 #include "mojo/common/data_pipe_utils.h"
 #include "mojo/services/public/interfaces/network/url_loader.mojom.h"
 #include "mojo/shell/context.h"
@@ -95,7 +96,7 @@ class NetworkLoader : public Loader {
     context_ = context;
 
     URLRequestPtr request(URLRequest::New());
-    request->url = url.spec();
+    request->url = String::From(url);
     request->auto_follow_redirects = true;
 
     if (base::CommandLine::ForCurrentProcess()->HasSwitch(

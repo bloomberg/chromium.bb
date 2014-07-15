@@ -6,6 +6,7 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
 
 namespace mojo {
 namespace common {
@@ -65,6 +66,22 @@ TEST(CommonTypeConvertersTest, String16) {
 
   // Test empty string conversion.
   ExpectEqualsMojoString(base::string16(), String::From(base::string16()));
+}
+
+TEST(CommonTypeConvertersTest, URL) {
+  GURL url("mojo:foo");
+  String mojo_string(String::From(url));
+
+  ASSERT_EQ(url.spec(), mojo_string);
+  EXPECT_EQ(url.spec(), mojo_string.To<GURL>().spec());
+  EXPECT_EQ(url.spec(), String::From(url));
+
+  GURL invalid = String().To<GURL>();
+  ASSERT_TRUE(invalid.spec().empty());
+
+  String string_from_invalid = String::From(invalid);
+  EXPECT_FALSE(string_from_invalid.is_null());
+  ASSERT_EQ(0U, string_from_invalid.size());
 }
 
 }  // namespace test

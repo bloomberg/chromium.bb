@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/thread_task_runner_handle.h"
+#include "mojo/common/common_type_converters.h"
 #include "mojo/services/public/interfaces/network/network_service.mojom.h"
 #include "net/base/net_errors.h"
 #include "third_party/WebKit/public/platform/WebURLError.h"
@@ -66,7 +67,7 @@ void WebURLLoaderImpl::loadAsynchronously(const blink::WebURLRequest& request,
   url_ = request.url();
 
   URLRequestPtr url_request(URLRequest::New());
-  url_request->url = url_.spec();
+  url_request->url = String::From(url_);
   url_request->auto_follow_redirects = false;
   // TODO(darin): Copy other fields.
 
@@ -90,7 +91,7 @@ void WebURLLoaderImpl::cancel() {
   response_body_stream_.reset();
 
   URLResponsePtr failed_response(URLResponse::New());
-  failed_response->url = url_.spec();
+  failed_response->url = String::From(url_);
   failed_response->error = NetworkError::New();
   failed_response->error->code = net::ERR_ABORTED;
 

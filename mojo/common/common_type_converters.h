@@ -11,6 +11,8 @@
 #include "mojo/public/cpp/bindings/string.h"
 #include "mojo/public/cpp/bindings/type_converter.h"
 
+class GURL;
+
 namespace mojo {
 
 template <>
@@ -25,6 +27,13 @@ class MOJO_COMMON_EXPORT TypeConverter<String, base::string16> {
  public:
   static String ConvertFrom(const base::string16& input);
   static base::string16 ConvertTo(const String& input);
+};
+
+template <>
+class MOJO_COMMON_EXPORT TypeConverter<String, GURL> {
+ public:
+  static String ConvertFrom(const GURL& input);
+  static GURL ConvertTo(const String& input);
 };
 
 }  // namespace mojo

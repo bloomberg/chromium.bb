@@ -19,7 +19,7 @@ const uint32_t kMaxReadSize = 64 * 1024;
 // Generates an URLResponsePtr from the response state of a net::URLRequest.
 URLResponsePtr MakeURLResponse(const net::URLRequest* url_request) {
   URLResponsePtr response(URLResponse::New());
-  response->url = url_request->url().spec();
+  response->url = String::From(url_request->url());
 
   const net::HttpResponseHeaders* headers = url_request->response_headers();
   if (headers) {
@@ -205,7 +205,7 @@ void URLLoaderImpl::OnReceivedRedirect(net::URLRequest* url_request,
   response->redirect_method =
       net::URLRequest::ComputeMethodForRedirect(url_request->method(),
                                                 response->status_code);
-  response->redirect_url = new_url.spec();
+  response->redirect_url = String::From(new_url);
 
   SendResponse(response.Pass());
 }
@@ -250,7 +250,7 @@ void URLLoaderImpl::SendError(
     const Callback<void(URLResponsePtr)>& callback) {
   URLResponsePtr response(URLResponse::New());
   if (url_request_)
-    response->url = url_request_->url().spec();
+    response->url = String::From(url_request_->url());
   response->error = MakeNetworkError(error_code);
   callback.Run(response.Pass());
 }
