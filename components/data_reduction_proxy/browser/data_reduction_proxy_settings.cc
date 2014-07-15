@@ -72,7 +72,8 @@ DataReductionProxySettings::DataReductionProxySettings(
       enabled_by_user_(false),
       prefs_(NULL),
       local_state_prefs_(NULL),
-      url_request_context_getter_(NULL) {
+      url_request_context_getter_(NULL),
+      usage_stats_(NULL) {
   DCHECK(params);
   params_.reset(params);
 }
@@ -193,7 +194,7 @@ DataReductionProxySettings::GetDailyOriginalContentLengths() {
 
 bool DataReductionProxySettings::IsDataReductionProxyUnreachable() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  return usage_stats_->isDataReductionProxyUnreachable();
+  return usage_stats_ && usage_stats_->isDataReductionProxyUnreachable();
 }
 
 void DataReductionProxySettings::SetDataReductionProxyUsageStats(
