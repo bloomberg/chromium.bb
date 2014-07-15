@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Declare CoreMedia types. For SDKs >= 10.7, use CoreMedia headers.
-#if !defined(MAC_OS_X_VERSION_10_7) || \
-    MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_7
-
 #include <CoreFoundation/CoreFoundation.h>
 
 extern "C" {
+
+//
+// Declare CoreMedia types.
+//
 
 typedef signed long CMItemCount;
 typedef uint32_t CMBlockBufferFlags;
@@ -51,17 +51,9 @@ typedef OSStatus (*CMSampleBufferMakeDataReadyCallback)(
     CMSampleBufferRef sbuf,
     void *makeDataReadyRefcon);
 
-}  // extern "C"
-
-#else
-#include <CoreMedia/CoreMedia.h>
-#endif
-
-// Declare VideoToolbox types. For SDKs >= 10.8, use VideoToolbox headers.
-#if !defined(MAC_OS_X_VERSION_10_8) || \
-    MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_8
-
-extern "C" {
+//
+// Declare VideoToolbox types.
+//
 
 typedef struct __CVBuffer *CVBufferRef;
 typedef CVBufferRef CVImageBufferRef;
@@ -84,7 +76,3 @@ typedef struct {
 } VTDecompressionOutputCallbackRecord;
 
 }  // extern "C"
-
-#else
-#include <VideoToolbox/VideoToolbox.h>
-#endif
