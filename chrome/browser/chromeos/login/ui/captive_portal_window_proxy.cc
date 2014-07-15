@@ -7,12 +7,11 @@
 #include "chrome/browser/chromeos/login/ui/captive_portal_view.h"
 #include "chrome/browser/chromeos/login/ui/proxy_settings_dialog.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
-#include "components/web_modal/web_contents_modal_dialog_host.h"
-#include "components/web_modal/web_contents_modal_dialog_manager.h"
-#include "components/web_modal/web_contents_modal_dialog_manager_delegate.h"
+#include "components/web_modal/popup_manager.h"
 #include "ui/views/widget/widget.h"
 
 namespace {
+
 // The captive portal dialog is system-modal, but uses the web-content-modal
 // dialog manager (odd) and requires this atypical dialog widget initialization.
 views::Widget* CreateWindowAsFramelessChild(views::WidgetDelegate* delegate,
@@ -72,16 +71,15 @@ void CaptivePortalWindowProxy::Show() {
   InitCaptivePortalView();
 
   CaptivePortalView* portal = captive_portal_view_.release();
-  web_modal::WebContentsModalDialogManager* manager =
-      web_modal::WebContentsModalDialogManager::FromWebContents(web_contents_);
-  const gfx::NativeWindow parent =
-      manager->delegate()->GetWebContentsModalDialogHost()->GetHostView();
-  widget_ = CreateWindowAsFramelessChild(portal, parent);
-  portal->Init();
-
-  widget_->AddObserver(this);
-  manager->ShowModalDialog(widget_->GetNativeView());
-  DCHECK(GetState() == STATE_DISPLAYED);
+  web_modal::PopupManager* popup_manager =
+      web_modal::PopupManager::FromWebContents(web_contents_);
+  if (popup_manager) {
+    widget_ =
+        CreateWindowAsFramelessChild(portal, popup_manager->GetHostView());
+    portal->Init();
+    widget_->AddObserver(this);
+    popup_manager->ShowModalDialog(widget_->GetNativeView(), web_contents_);
+  }
 }
 
 void CaptivePortalWindowProxy::Close() {

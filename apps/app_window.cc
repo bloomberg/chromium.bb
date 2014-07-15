@@ -264,6 +264,7 @@ void AppWindow::Init(const GURL& url,
     content::WebContentsObserver::Observe(web_contents);
   }
   delegate_->InitWebContents(web_contents);
+
   WebContentsModalDialogManager::CreateForWebContents(web_contents);
   // TODO(jamescook): Delegate out this creation.
   extensions::ChromeExtensionWebContentsObserver::CreateForWebContents(
@@ -285,6 +286,10 @@ void AppWindow::Init(const GURL& url,
     new_params.always_on_top = false;
 
   native_app_window_.reset(delegate_->CreateNativeAppWindow(this, new_params));
+
+  popup_manager_.reset(
+      new web_modal::PopupManager(GetWebContentsModalDialogHost()));
+  popup_manager_->RegisterWith(web_contents);
 
   // Prevent the browser process from shutting down while this window exists.
   AppsClient::Get()->IncrementKeepAliveCount();

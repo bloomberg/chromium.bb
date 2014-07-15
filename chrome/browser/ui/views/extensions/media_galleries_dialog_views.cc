@@ -7,7 +7,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/views/constrained_window_views.h"
 #include "chrome/browser/ui/views/extensions/media_gallery_checkbox_view.h"
-#include "components/web_modal/web_contents_modal_dialog_manager.h"
+#include "components/web_modal/popup_manager.h"
 #include "content/public/browser/web_contents.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
@@ -79,12 +79,10 @@ MediaGalleriesDialogViews::~MediaGalleriesDialogViews() {
 void MediaGalleriesDialogViews::AcceptDialogForTesting() {
   accepted_ = true;
 
-  web_modal::WebContentsModalDialogManager* web_contents_modal_dialog_manager =
-      web_modal::WebContentsModalDialogManager::FromWebContents(
-          controller_->WebContents());
-  DCHECK(web_contents_modal_dialog_manager);
-  web_modal::WebContentsModalDialogManager::TestApi(
-      web_contents_modal_dialog_manager).CloseAllDialogs();
+  web_modal::PopupManager* popup_manager =
+      web_modal::PopupManager::FromWebContents(controller_->WebContents());
+  DCHECK(popup_manager);
+  popup_manager->CloseAllDialogsForTesting(controller_->WebContents());
 }
 
 void MediaGalleriesDialogViews::InitChildViews() {

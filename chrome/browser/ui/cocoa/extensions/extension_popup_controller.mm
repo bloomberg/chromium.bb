@@ -14,10 +14,11 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_finder.h"
 #import "chrome/browser/ui/cocoa/browser_window_cocoa.h"
 #import "chrome/browser/ui/cocoa/extensions/extension_view_mac.h"
 #import "chrome/browser/ui/cocoa/info_bubble_window.h"
-#include "components/web_modal/web_contents_modal_dialog_manager.h"
+#include "components/web_modal/popup_manager.h"
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/devtools_manager.h"
 #include "content/public/browser/notification_details.h"
@@ -213,11 +214,12 @@ class DevtoolsNotificationBridge : public content::NotificationObserver {
 - (void)close {
   // |windowWillClose:| could have already been called. http://crbug.com/279505
   if (host_) {
-    web_modal::WebContentsModalDialogManager* modalDialogManager =
-        web_modal::WebContentsModalDialogManager::FromWebContents(
-            host_->host_contents());
-    if (modalDialogManager &&
-        modalDialogManager->IsDialogActive()) {
+    // TODO(gbillock): Change this API to say directly if the current popup
+    // should block tab close? This is a bit over-reaching.
+    web_modal::PopupManager* popup_manager =
+        web_modal::PopupManager::FromWebContents(host_->host_contents());
+    if (popup_manager && popup_manager->IsWebModalDialogActive(
+            host_->host_contents())) {
       return;
     }
   }
@@ -240,11 +242,11 @@ class DevtoolsNotificationBridge : public content::NotificationObserver {
     // it steals key-ness from the popup. Don't close the popup when this
     // happens. There's an extra windowDidResignKey: notification after the
     // modal dialog closes that should also be ignored.
-    web_modal::WebContentsModalDialogManager* modalDialogManager =
-        web_modal::WebContentsModalDialogManager::FromWebContents(
+    web_modal::PopupManager* popupManager =
+        web_modal::PopupManager::FromWebContents(
             host_->host_contents());
-    if (modalDialogManager &&
-        modalDialogManager->IsDialogActive()) {
+    if (popupManager &&
+        popupManager->IsWebModalDialogActive(host_->host_contents())) {
       ignoreWindowDidResignKey_ = YES;
       return;
     }

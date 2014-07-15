@@ -8,9 +8,8 @@
 
 #include "chrome/browser/guest_view/web_view/web_view_guest.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "components/web_modal/popup_manager.h"
 #include "components/web_modal/web_contents_modal_dialog_host.h"
-#include "components/web_modal/web_contents_modal_dialog_manager.h"
-#include "components/web_modal/web_contents_modal_dialog_manager_delegate.h"
 #include "ui/views/border.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_observer.h"
@@ -132,21 +131,22 @@ views::Widget* ShowWebModalDialogViews(
       web_view_guest && web_view_guest->embedder_web_contents() ?
           web_view_guest->embedder_web_contents() : initiator_web_contents;
   views::Widget* widget = CreateWebModalDialogViews(dialog, web_contents);
-  web_modal::WebContentsModalDialogManager::FromWebContents(web_contents)->
-      ShowModalDialog(widget->GetNativeWindow());
+  web_modal::PopupManager* popup_manager =
+      web_modal::PopupManager::FromWebContents(web_contents);
+  popup_manager->ShowModalDialog(widget->GetNativeWindow(), web_contents);
   return widget;
 }
 
 views::Widget* CreateWebModalDialogViews(views::WidgetDelegate* dialog,
                                          content::WebContents* web_contents) {
   DCHECK_EQ(ui::MODAL_TYPE_CHILD, dialog->GetModalType());
-  web_modal::WebContentsModalDialogManager* manager =
-      web_modal::WebContentsModalDialogManager::FromWebContents(web_contents);
-  const gfx::NativeWindow parent =
-      manager->delegate()->GetWebContentsModalDialogHost()->GetHostView();
+  web_modal::PopupManager* popup_manager =
+      web_modal::PopupManager::FromWebContents(web_contents);
+  const gfx::NativeWindow parent = popup_manager->GetHostView();
   return views::DialogDelegate::CreateDialogWidget(dialog, NULL, parent);
 }
 
+// TODO(gbillock): Replace this with PopupManager calls.
 views::Widget* CreateBrowserModalDialogViews(views::DialogDelegate* dialog,
                                              gfx::NativeWindow parent) {
   views::Widget* widget =

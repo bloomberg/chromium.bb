@@ -47,11 +47,10 @@ class WebContentsModalDialogManager
 
   // Focus the topmost modal dialog.  IsDialogActive() must be true when calling
   // this function.
-  void FocusTopmostDialog();
+  void FocusTopmostDialog() const;
 
-  // Overriden from SingleWebContentsDialogManagerDelegate:
+  // SingleWebContentsDialogManagerDelegate:
   virtual content::WebContents* GetWebContents() const OVERRIDE;
-  // Called when a WebContentsModalDialogs we own is about to be closed.
   virtual void WillClose(NativeWebContentsModalDialog dialog) OVERRIDE;
 
   // For testing.
@@ -74,6 +73,7 @@ class WebContentsModalDialogManager
  private:
   explicit WebContentsModalDialogManager(content::WebContents* web_contents);
   friend class content::WebContentsUserData<WebContentsModalDialogManager>;
+  friend class PopupManager;
 
   struct DialogState {
     DialogState(NativeWebContentsModalDialog dialog,

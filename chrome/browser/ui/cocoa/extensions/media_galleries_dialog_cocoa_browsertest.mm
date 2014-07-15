@@ -10,7 +10,7 @@
 #include "chrome/browser/ui/cocoa/constrained_window/constrained_window_alert.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
-#include "components/web_modal/web_contents_modal_dialog_manager.h"
+#include "components/web_modal/popup_manager.h"
 #include "content/public/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -19,7 +19,6 @@ using ::testing::AnyNumber;
 using ::testing::NiceMock;
 using ::testing::Return;
 using ::testing::ReturnRef;
-using web_modal::WebContentsModalDialogManager;
 
 class MediaGalleriesDialogBrowserTest : public InProcessBrowserTest {
 };
@@ -49,10 +48,8 @@ IN_PROC_BROWSER_TEST_F(MediaGalleriesDialogBrowserTest, Close) {
   base::scoped_nsobject<NSWindow> window([[dialog->alert_ window] retain]);
   EXPECT_TRUE([window isVisible]);
 
-  WebContentsModalDialogManager* web_contents_modal_dialog_manager =
-      WebContentsModalDialogManager::FromWebContents(web_contents);
-  WebContentsModalDialogManager::TestApi test_api(
-      web_contents_modal_dialog_manager);
-  test_api.CloseAllDialogs();
+  web_modal::PopupManager* popup_manager =
+      web_modal::PopupManager::FromWebContents(web_contents);
+  popup_manager->CloseAllDialogsForTesting(web_contents);
   EXPECT_FALSE([window isVisible]);
 }

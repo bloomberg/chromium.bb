@@ -11,6 +11,7 @@
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_sheet.h"
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_sheet_controller.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_strip_controller.h"
+#include "components/web_modal/popup_manager.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
@@ -33,9 +34,10 @@ ConstrainedWindowMac::ConstrainedWindowMac(
   web_contents_ = web_view_guest && web_view_guest->embedder_web_contents() ?
                       web_view_guest->embedder_web_contents() : web_contents;
   DCHECK(sheet_.get());
-  WebContentsModalDialogManager* web_contents_modal_dialog_manager =
-      WebContentsModalDialogManager::FromWebContents(web_contents_);
-  web_contents_modal_dialog_manager->ShowModalDialog(this);
+  web_modal::PopupManager* popup_manager =
+      web_modal::PopupManager::FromWebContents(web_contents_);
+  if (popup_manager)
+    popup_manager->ShowModalDialog(this, web_contents_);
 }
 
 ConstrainedWindowMac::~ConstrainedWindowMac() {

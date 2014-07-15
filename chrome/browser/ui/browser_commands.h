@@ -106,9 +106,9 @@ void ShowWebsiteSettings(Browser* browser,
                          const GURL& url,
                          const content::SSLStatus& ssl);
 void Print(Browser* browser);
-bool CanPrint(const Browser* browser);
+bool CanPrint(Browser* browser);
 void AdvancedPrint(Browser* browser);
-bool CanAdvancedPrint(const Browser* browser);
+bool CanAdvancedPrint(Browser* browser);
 void PrintToDestination(Browser* browser);
 void EmailPageLocation(Browser* browser);
 bool CanEmailPageLocation(const Browser* browser);

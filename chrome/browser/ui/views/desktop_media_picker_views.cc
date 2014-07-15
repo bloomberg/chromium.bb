@@ -9,7 +9,7 @@
 #include "chrome/browser/media/desktop_media_list_observer.h"
 #include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/browser/ui/views/constrained_window_views.h"
-#include "components/web_modal/web_contents_modal_dialog_manager.h"
+#include "components/web_modal/popup_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "grit/generated_resources.h"
 #include "ui/aura/window_tree_host.h"
@@ -587,10 +587,10 @@ DesktopMediaPickerDialogView::DesktopMediaPickerDialogView(
   list_view_->StartUpdating(dialog_window_id);
 
   if (parent_web_contents) {
-    web_modal::WebContentsModalDialogManager* manager =
-        web_modal::WebContentsModalDialogManager::FromWebContents(
-            parent_web_contents);
-    manager->ShowModalDialog(widget->GetNativeView());
+    web_modal::PopupManager* popup_manager =
+        web_modal::PopupManager::FromWebContents(parent_web_contents);
+    popup_manager->ShowModalDialog(GetWidget()->GetNativeView(),
+                                   parent_web_contents);
   } else {
     widget->Show();
   }

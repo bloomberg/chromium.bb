@@ -91,6 +91,7 @@ class WebDialogDelegate;
 }
 
 namespace web_modal {
+class PopupManager;
 class WebContentsModalDialogHost;
 }
 
@@ -242,6 +243,9 @@ class Browser : public TabStripModelObserver,
     toolbar_model->swap(toolbar_model_);
   }
 #endif
+  web_modal::PopupManager* popup_manager() {
+    return popup_manager_.get();
+  }
   TabStripModel* tab_strip_model() const { return tab_strip_model_.get(); }
   chrome::BrowserCommandController* command_controller() {
     return command_controller_.get();
@@ -822,6 +826,10 @@ class Browser : public TabStripModelObserver,
 
   // This Browser's window.
   BrowserWindow* window_;
+
+  // Manages popup windows (bubbles, tab-modals) visible overlapping this
+  // window. JS alerts are not handled by this manager.
+  scoped_ptr<web_modal::PopupManager> popup_manager_;
 
   scoped_ptr<TabStripModelDelegate> tab_strip_model_delegate_;
   scoped_ptr<TabStripModel> tab_strip_model_;

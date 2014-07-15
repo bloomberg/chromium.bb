@@ -84,6 +84,7 @@
 #include "components/signin/core/common/profile_management_switches.h"
 #include "components/translate/core/browser/translate_manager.h"
 #include "components/translate/core/browser/translate_ui_delegate.h"
+#include "components/web_modal/popup_manager.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host_view.h"
@@ -178,7 +179,6 @@ using content::OpenURLParams;
 using content::Referrer;
 using content::RenderWidgetHostView;
 using content::WebContents;
-using web_modal::WebContentsModalDialogManager;
 
 @interface NSWindow (NSPrivateApis)
 // Note: These functions are private, use -[NSObject respondsToSelector:]
@@ -1608,8 +1608,9 @@ using web_modal::WebContentsModalDialogManager;
   WebContents* contents = browser_->tab_strip_model()->GetWebContentsAt(index);
   if (!contents)
     return NO;
-  return !WebContentsModalDialogManager::FromWebContents(contents)->
-      IsDialogActive();
+
+  return !web_modal::PopupManager::FromWebContents(contents)->
+      IsWebModalDialogActive(contents);
 }
 
 // TabStripControllerDelegate protocol.
