@@ -47,10 +47,7 @@
 @implementation TabWindowController
 
 - (id)initTabWindowControllerWithTabStrip:(BOOL)hasTabStrip {
-  const CGFloat kDefaultWidth = 750;
-  const CGFloat kDefaultHeight = 600;
-
-  NSRect contentRect = NSMakeRect(60, 229, kDefaultWidth, kDefaultHeight);
+  NSRect contentRect = NSMakeRect(60, 229, 750, 600);
   base::scoped_nsobject<FramedBrowserWindow> window(
       [[FramedBrowserWindow alloc] initWithContentRect:contentRect
                                            hasTabStrip:hasTabStrip]);
@@ -60,20 +57,14 @@
   if ((self = [super initWithWindow:window])) {
     [[self window] setDelegate:self];
 
-    chromeContentView_.reset([[NSView alloc]
-        initWithFrame:NSMakeRect(0, 0, kDefaultWidth, kDefaultHeight)]);
-    [chromeContentView_
-        setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
-    [[[self window] contentView] addSubview:chromeContentView_];
-
-    tabContentArea_.reset(
-        [[FastResizeView alloc] initWithFrame:[chromeContentView_ bounds]]);
+    tabContentArea_.reset([[FastResizeView alloc] initWithFrame:
+        NSMakeRect(0, 0, 750, 600)]);
     [tabContentArea_ setAutoresizingMask:NSViewWidthSizable |
                                          NSViewHeightSizable];
-    [chromeContentView_ addSubview:tabContentArea_];
+    [[[self window] contentView] addSubview:tabContentArea_];
 
-    tabStripView_.reset([[TabStripView alloc]
-        initWithFrame:NSMakeRect(0, 0, kDefaultWidth, 37)]);
+    tabStripView_.reset([[TabStripView alloc] initWithFrame:
+        NSMakeRect(0, 0, 750, 37)]);
     [tabStripView_ setAutoresizingMask:NSViewWidthSizable |
                                        NSViewMinYMargin];
     if (hasTabStrip)
@@ -88,10 +79,6 @@
 
 - (FastResizeView*)tabContentArea {
   return tabContentArea_;
-}
-
-- (NSView*)chromeContentView {
-  return chromeContentView_;
 }
 
 // Add the top tab strop to the window, above the content box and add it to the
@@ -140,7 +127,7 @@
     [overlayWindow_ setOpaque:NO];
     [overlayWindow_ setDelegate:self];
 
-    originalContentView_ = self.chromeContentView;
+    originalContentView_ = [window contentView];
     [window addChildWindow:overlayWindow_ ordered:NSWindowAbove];
 
     // Explicitly set the responder to be nil here (for restoring later).
@@ -166,10 +153,7 @@
     // places. The TabStripView always needs to be in front of the window's
     // content view and therefore it should always be added after the content
     // view is set.
-    [[window contentView] addSubview:originalContentView_
-                          positioned:NSWindowBelow
-                          relativeTo:nil];
-    originalContentView_.frame = [[window contentView] bounds];
+    [window setContentView:originalContentView_];
     [[window cr_windowView] addSubview:[self tabStripView]];
     [[window cr_windowView] updateTrackingAreas];
 

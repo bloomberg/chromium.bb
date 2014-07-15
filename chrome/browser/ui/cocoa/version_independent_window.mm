@@ -32,6 +32,12 @@
   [super setFrameSize:size];
 }
 
+// The contentView gets moved around during certain full-screen operations.
+// This is less than ideal, and should eventually be removed.
+- (void)viewDidMoveToSuperview {
+  [self setFrame:[[self superview] bounds]];
+}
+
 @end
 
 @implementation NSWindow (VersionIndependentWindow)
@@ -73,8 +79,8 @@
       chromeWindowView_.reset([[FullSizeContentView alloc] init]);
       [chromeWindowView_
           setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
-      [self setContentView:chromeWindowView_];
       [chromeWindowView_ setFrame:[[[self contentView] superview] bounds]];
+      [self setContentView:chromeWindowView_];
     }
   }
   return self;
