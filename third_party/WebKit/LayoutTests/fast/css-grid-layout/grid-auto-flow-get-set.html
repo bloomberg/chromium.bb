@@ -168,26 +168,37 @@
     debug("");
     debug("Test getting and setting grid-auto-flow through JS");
     element.style.gridAutoFlow = "column";
+    shouldBe("element.style.gridAutoFlow", "'column'");
     shouldBe("window.getComputedStyle(element, '').getPropertyValue('grid-auto-flow')", "'column'");
     element.style.gridAutoFlow = "column dense";
+    shouldBe("element.style.gridAutoFlow", "'column dense'");
     shouldBe("window.getComputedStyle(element, '').getPropertyValue('grid-auto-flow')", "'column dense'");
     element.style.gridAutoFlow = "row dense";
+    shouldBe("element.style.gridAutoFlow", "'row dense'");
     shouldBe("window.getComputedStyle(element, '').getPropertyValue('grid-auto-flow')", "'row dense'");
     element.style.gridAutoFlow = "dense column";
+    shouldBe("element.style.gridAutoFlow", "'dense column'");
     shouldBe("window.getComputedStyle(element, '').getPropertyValue('grid-auto-flow')", "'column dense'");
     element.style.gridAutoFlow = "dense row";
+    shouldBe("element.style.gridAutoFlow", "'dense row'");
     shouldBe("window.getComputedStyle(element, '').getPropertyValue('grid-auto-flow')", "'row dense'");
     element.style.gridAutoFlow = "row";
+    shouldBe("element.style.gridAutoFlow", "'row'");
     shouldBe("window.getComputedStyle(element, '').getPropertyValue('grid-auto-flow')", "'row'");
     element.style.gridAutoFlow = "stack";
+    shouldBe("element.style.gridAutoFlow", "'stack'");
     shouldBe("window.getComputedStyle(element, '').getPropertyValue('grid-auto-flow')", "'stack row'");
     element.style.gridAutoFlow = "stack column";
+    shouldBe("element.style.gridAutoFlow", "'stack column'");
     shouldBe("window.getComputedStyle(element, '').getPropertyValue('grid-auto-flow')", "'stack column'");
     element.style.gridAutoFlow = "stack row";
+    shouldBe("element.style.gridAutoFlow", "'stack row'");
     shouldBe("window.getComputedStyle(element, '').getPropertyValue('grid-auto-flow')", "'stack row'");
     element.style.gridAutoFlow = "column stack";
+    shouldBe("element.style.gridAutoFlow", "'column stack'");
     shouldBe("window.getComputedStyle(element, '').getPropertyValue('grid-auto-flow')", "'stack column'");
     element.style.gridAutoFlow = "row stack";
+    shouldBe("element.style.gridAutoFlow", "'row stack'");
     shouldBe("window.getComputedStyle(element, '').getPropertyValue('grid-auto-flow')", "'stack row'");
 
     debug("");
@@ -195,22 +206,29 @@
     element = document.createElement("div");
     document.body.appendChild(element);
     element.style.gridAutoFlow = "noone";
+    shouldBe("element.style.gridAutoFlow", "''");
     shouldBe("window.getComputedStyle(element, '').getPropertyValue('grid-auto-flow')", "'row'");
     element.style.gridAutoFlow = "dense";
+    shouldBe("element.style.gridAutoFlow", "''");
     shouldBe("window.getComputedStyle(element, '').getPropertyValue('grid-auto-flow')", "'row'");
     element.style.gridAutoFlow = "column column";
+    shouldBe("element.style.gridAutoFlow", "''");
     shouldBe("window.getComputedStyle(element, '').getPropertyValue('grid-auto-flow')", "'row'");
     element.style.gridAutoFlow = "dense column stack";
+    shouldBe("element.style.gridAutoFlow", "''");
     shouldBe("window.getComputedStyle(element, '').getPropertyValue('grid-auto-flow')", "'row'");
     element.style.gridAutoFlow = "dense row stack";
+    shouldBe("element.style.gridAutoFlow", "''");
     shouldBe("window.getComputedStyle(element, '').getPropertyValue('grid-auto-flow')", "'row'");
     element.style.gridAutoFlow = "stack row row";
+    shouldBe("element.style.gridAutoFlow", "''");
     shouldBe("window.getComputedStyle(element, '').getPropertyValue('grid-auto-flow')", "'row'");
 
     debug("");
     debug("Test setting grid-auto-flow to 'initial' through JS");
     // Reusing the value so that we can check that it is set back to its initial value.
     element.style.gridAutoFlow = "initial";
+    shouldBe("element.style.gridAutoFlow", "'initial'");
     shouldBe("window.getComputedStyle(element, '').getPropertyValue('grid-auto-flow')", "'row'");
 </script>
 </body>

@@ -31,27 +31,45 @@ Test the initial value
 PASS window.getComputedStyle(element, '').getPropertyValue('grid-auto-flow') is 'row'
 
 Test getting and setting grid-auto-flow through JS
+PASS element.style.gridAutoFlow is 'column'
 PASS window.getComputedStyle(element, '').getPropertyValue('grid-auto-flow') is 'column'
+PASS element.style.gridAutoFlow is 'column dense'
 PASS window.getComputedStyle(element, '').getPropertyValue('grid-auto-flow') is 'column dense'
+PASS element.style.gridAutoFlow is 'row dense'
 PASS window.getComputedStyle(element, '').getPropertyValue('grid-auto-flow') is 'row dense'
+PASS element.style.gridAutoFlow is 'dense column'
 PASS window.getComputedStyle(element, '').getPropertyValue('grid-auto-flow') is 'column dense'
+PASS element.style.gridAutoFlow is 'dense row'
 PASS window.getComputedStyle(element, '').getPropertyValue('grid-auto-flow') is 'row dense'
+PASS element.style.gridAutoFlow is 'row'
 PASS window.getComputedStyle(element, '').getPropertyValue('grid-auto-flow') is 'row'
+PASS element.style.gridAutoFlow is 'stack'
 PASS window.getComputedStyle(element, '').getPropertyValue('grid-auto-flow') is 'stack row'
+PASS element.style.gridAutoFlow is 'stack column'
 PASS window.getComputedStyle(element, '').getPropertyValue('grid-auto-flow') is 'stack column'
+PASS element.style.gridAutoFlow is 'stack row'
 PASS window.getComputedStyle(element, '').getPropertyValue('grid-auto-flow') is 'stack row'
+PASS element.style.gridAutoFlow is 'column stack'
 PASS window.getComputedStyle(element, '').getPropertyValue('grid-auto-flow') is 'stack column'
+PASS element.style.gridAutoFlow is 'row stack'
 PASS window.getComputedStyle(element, '').getPropertyValue('grid-auto-flow') is 'stack row'
 
 Test getting and setting bad values for grid-auto-flow through JS
+PASS element.style.gridAutoFlow is ''
 PASS window.getComputedStyle(element, '').getPropertyValue('grid-auto-flow') is 'row'
+PASS element.style.gridAutoFlow is ''
 PASS window.getComputedStyle(element, '').getPropertyValue('grid-auto-flow') is 'row'
+PASS element.style.gridAutoFlow is ''
 PASS window.getComputedStyle(element, '').getPropertyValue('grid-auto-flow') is 'row'
+PASS element.style.gridAutoFlow is ''
 PASS window.getComputedStyle(element, '').getPropertyValue('grid-auto-flow') is 'row'
+PASS element.style.gridAutoFlow is ''
 PASS window.getComputedStyle(element, '').getPropertyValue('grid-auto-flow') is 'row'
+PASS element.style.gridAutoFlow is ''
 PASS window.getComputedStyle(element, '').getPropertyValue('grid-auto-flow') is 'row'
 
 Test setting grid-auto-flow to 'initial' through JS
+PASS element.style.gridAutoFlow is 'initial'
 PASS window.getComputedStyle(element, '').getPropertyValue('grid-auto-flow') is 'row'
 PASS successfullyParsed is true
 
