@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "core/inspector/ConsoleMessage.h"
+#include "core/inspector/InspectorConsoleMessage.h"
 
 #include "bindings/core/v8/ScriptCallStackFactory.h"
 #include "bindings/core/v8/ScriptValue.h"
@@ -45,7 +45,7 @@
 
 namespace WebCore {
 
-ConsoleMessage::ConsoleMessage(bool canGenerateCallStack, MessageSource source, MessageType type, MessageLevel level, const String& message)
+InspectorConsoleMessage::InspectorConsoleMessage(bool canGenerateCallStack, MessageSource source, MessageType type, MessageLevel level, const String& message)
     : m_source(source)
     , m_type(type)
     , m_level(level)
@@ -60,7 +60,7 @@ ConsoleMessage::ConsoleMessage(bool canGenerateCallStack, MessageSource source, 
     autogenerateMetadata(canGenerateCallStack);
 }
 
-ConsoleMessage::ConsoleMessage(bool canGenerateCallStack, MessageSource source, MessageType type, MessageLevel level, const String& message, const String& url, unsigned line, unsigned column, ScriptState* scriptState, unsigned long requestIdentifier)
+InspectorConsoleMessage::InspectorConsoleMessage(bool canGenerateCallStack, MessageSource source, MessageType type, MessageLevel level, const String& message, const String& url, unsigned line, unsigned column, ScriptState* scriptState, unsigned long requestIdentifier)
     : m_source(source)
     , m_type(type)
     , m_level(level)
@@ -75,7 +75,7 @@ ConsoleMessage::ConsoleMessage(bool canGenerateCallStack, MessageSource source, 
     autogenerateMetadata(canGenerateCallStack, scriptState);
 }
 
-ConsoleMessage::ConsoleMessage(bool, MessageSource source, MessageType type, MessageLevel level, const String& message, PassRefPtrWillBeRawPtr<ScriptCallStack> callStack, unsigned long requestIdentifier)
+InspectorConsoleMessage::InspectorConsoleMessage(bool, MessageSource source, MessageType type, MessageLevel level, const String& message, PassRefPtrWillBeRawPtr<ScriptCallStack> callStack, unsigned long requestIdentifier)
     : m_source(source)
     , m_type(type)
     , m_level(level)
@@ -96,7 +96,7 @@ ConsoleMessage::ConsoleMessage(bool, MessageSource source, MessageType type, Mes
     m_callStack = callStack;
 }
 
-ConsoleMessage::ConsoleMessage(bool canGenerateCallStack, MessageSource source, MessageType type, MessageLevel level, const String& message, PassRefPtrWillBeRawPtr<ScriptArguments> arguments, ScriptState* scriptState, unsigned long requestIdentifier)
+InspectorConsoleMessage::InspectorConsoleMessage(bool canGenerateCallStack, MessageSource source, MessageType type, MessageLevel level, const String& message, PassRefPtrWillBeRawPtr<ScriptArguments> arguments, ScriptState* scriptState, unsigned long requestIdentifier)
     : m_source(source)
     , m_type(type)
     , m_level(level)
@@ -112,11 +112,11 @@ ConsoleMessage::ConsoleMessage(bool canGenerateCallStack, MessageSource source, 
     autogenerateMetadata(canGenerateCallStack, scriptState);
 }
 
-ConsoleMessage::~ConsoleMessage()
+InspectorConsoleMessage::~InspectorConsoleMessage()
 {
 }
 
-void ConsoleMessage::autogenerateMetadata(bool canGenerateCallStack, ScriptState* scriptState)
+void InspectorConsoleMessage::autogenerateMetadata(bool canGenerateCallStack, ScriptState* scriptState)
 {
     if (m_type == EndGroupMessageType)
         return;
@@ -186,7 +186,7 @@ static TypeBuilder::Console::ConsoleMessage::Level::Enum messageLevelValue(Messa
     return TypeBuilder::Console::ConsoleMessage::Level::Log;
 }
 
-void ConsoleMessage::addToFrontend(InspectorFrontend::Console* frontend, InjectedScriptManager* injectedScriptManager, bool generatePreview)
+void InspectorConsoleMessage::addToFrontend(InspectorFrontend::Console* frontend, InjectedScriptManager* injectedScriptManager, bool generatePreview)
 {
     RefPtr<TypeBuilder::Console::ConsoleMessage> jsonObj = TypeBuilder::Console::ConsoleMessage::create()
         .setSource(messageSourceValue(m_source))
@@ -239,7 +239,7 @@ void ConsoleMessage::addToFrontend(InspectorFrontend::Console* frontend, Injecte
     frontend->flush();
 }
 
-void ConsoleMessage::windowCleared(LocalDOMWindow* window)
+void InspectorConsoleMessage::windowCleared(LocalDOMWindow* window)
 {
     if (m_scriptState.get() && m_scriptState.get()->domWindow() == window)
         m_scriptState.clear();
@@ -253,7 +253,7 @@ void ConsoleMessage::windowCleared(LocalDOMWindow* window)
     m_arguments.clear();
 }
 
-unsigned ConsoleMessage::argumentCount()
+unsigned InspectorConsoleMessage::argumentCount()
 {
     if (m_arguments)
         return m_arguments->argumentCount();

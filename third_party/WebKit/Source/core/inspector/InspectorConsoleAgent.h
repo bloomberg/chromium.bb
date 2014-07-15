@@ -40,7 +40,7 @@
 
 namespace WebCore {
 
-class ConsoleMessage;
+class InspectorConsoleMessage;
 class DocumentLoader;
 class LocalDOMWindow;
 class LocalFrame;
@@ -106,12 +106,12 @@ public:
     virtual bool isWorkerAgent() = 0;
 
 protected:
-    void addConsoleMessage(PassOwnPtr<ConsoleMessage>);
+    void addConsoleMessage(PassOwnPtr<InspectorConsoleMessage>);
 
     InspectorTimelineAgent* m_timelineAgent;
     InjectedScriptManager* m_injectedScriptManager;
     InspectorFrontend::Console* m_frontend;
-    Vector<OwnPtr<ConsoleMessage> > m_consoleMessages;
+    Vector<OwnPtr<InspectorConsoleMessage> > m_consoleMessages;
     int m_expiredConsoleMessageCount;
     HashCountedSet<String> m_counts;
     HashMap<String, double> m_times;

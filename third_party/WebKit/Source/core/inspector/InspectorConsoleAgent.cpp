@@ -30,9 +30,9 @@
 #include "bindings/core/v8/ScriptController.h"
 #include "bindings/core/v8/ScriptProfiler.h"
 #include "core/frame/LocalFrame.h"
-#include "core/inspector/ConsoleMessage.h"
 #include "core/inspector/InjectedScriptHost.h"
 #include "core/inspector/InjectedScriptManager.h"
+#include "core/inspector/InspectorConsoleMessage.h"
 #include "core/inspector/InspectorState.h"
 #include "core/inspector/InspectorTimelineAgent.h"
 #include "core/inspector/InstrumentingAgents.h"
@@ -96,7 +96,7 @@ void InspectorConsoleAgent::enable(ErrorString*)
     m_state->setBoolean(ConsoleAgentState::consoleMessagesEnabled, true);
 
     if (m_expiredConsoleMessageCount) {
-        ConsoleMessage expiredMessage(!isWorkerAgent(), OtherMessageSource, LogMessageType, WarningMessageLevel, String::format("%d console messages are not shown.", m_expiredConsoleMessageCount));
+        InspectorConsoleMessage expiredMessage(!isWorkerAgent(), OtherMessageSource, LogMessageType, WarningMessageLevel, String::format("%d console messages are not shown.", m_expiredConsoleMessageCount));
         expiredMessage.setTimestamp(0);
         expiredMessage.addToFrontend(m_frontend, m_injectedScriptManager, false);
     }
@@ -161,7 +161,7 @@ void InspectorConsoleAgent::addMessageToConsole(MessageSource source, MessageTyp
         clearMessages(&error);
     }
 
-    addConsoleMessage(adoptPtr(new ConsoleMessage(!isWorkerAgent(), source, type, level, message, callStack, requestIdentifier)));
+    addConsoleMessage(adoptPtr(new InspectorConsoleMessage(!isWorkerAgent(), source, type, level, message, callStack, requestIdentifier)));
 }
 
 void InspectorConsoleAgent::addConsoleAPIMessageToConsole(MessageType type, MessageLevel level, const String& message, ScriptState* scriptState, PassRefPtrWillBeRawPtr<ScriptArguments> arguments, unsigned long requestIdentifier)
@@ -171,7 +171,7 @@ void InspectorConsoleAgent::addConsoleAPIMessageToConsole(MessageType type, Mess
         clearMessages(&error);
     }
 
-    addConsoleMessage(adoptPtr(new ConsoleMessage(!isWorkerAgent(), ConsoleAPIMessageSource, type, level, message, arguments, scriptState, requestIdentifier)));
+    addConsoleMessage(adoptPtr(new InspectorConsoleMessage(!isWorkerAgent(), ConsoleAPIMessageSource, type, level, message, arguments, scriptState, requestIdentifier)));
 }
 
 void InspectorConsoleAgent::addMessageToConsole(MessageSource source, MessageType type, MessageLevel level, const String& message, const String& scriptId, unsigned lineNumber, unsigned columnNumber, ScriptState* scriptState, unsigned long requestIdentifier)
@@ -182,7 +182,7 @@ void InspectorConsoleAgent::addMessageToConsole(MessageSource source, MessageTyp
     }
 
     bool canGenerateCallStack = !isWorkerAgent() && m_frontend;
-    addConsoleMessage(adoptPtr(new ConsoleMessage(canGenerateCallStack, source, type, level, message, scriptId, lineNumber, columnNumber, scriptState, requestIdentifier)));
+    addConsoleMessage(adoptPtr(new InspectorConsoleMessage(canGenerateCallStack, source, type, level, message, scriptId, lineNumber, columnNumber, scriptState, requestIdentifier)));
 }
 
 Vector<unsigned> InspectorConsoleAgent::consoleMessageArgumentCounts()
@@ -299,7 +299,7 @@ void InspectorConsoleAgent::setMonitoringXHREnabled(ErrorString*, bool enabled)
     m_state->setBoolean(ConsoleAgentState::monitoringXHR, enabled);
 }
 
-void InspectorConsoleAgent::addConsoleMessage(PassOwnPtr<ConsoleMessage> consoleMessage)
+void InspectorConsoleAgent::addConsoleMessage(PassOwnPtr<InspectorConsoleMessage> consoleMessage)
 {
     ASSERT_ARG(consoleMessage, consoleMessage);
 

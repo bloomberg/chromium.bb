@@ -28,13 +28,13 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef ConsoleMessage_h
-#define ConsoleMessage_h
+#ifndef InspectorConsoleMessage_h
+#define InspectorConsoleMessage_h
 
 #include "bindings/core/v8/ScriptState.h"
 #include "core/InspectorFrontend.h"
-#include "core/inspector/ConsoleAPITypes.h"
 #include "core/frame/ConsoleTypes.h"
+#include "core/inspector/ConsoleAPITypes.h"
 #include "wtf/Forward.h"
 
 namespace WebCore {
@@ -47,14 +47,14 @@ class ScriptCallFrame;
 class ScriptCallStack;
 class ScriptValue;
 
-class ConsoleMessage {
-    WTF_MAKE_NONCOPYABLE(ConsoleMessage); WTF_MAKE_FAST_ALLOCATED;
+class InspectorConsoleMessage {
+    WTF_MAKE_NONCOPYABLE(InspectorConsoleMessage); WTF_MAKE_FAST_ALLOCATED;
 public:
-    ConsoleMessage(bool canGenerateCallStack, MessageSource, MessageType, MessageLevel, const String& message);
-    ConsoleMessage(bool canGenerateCallStack, MessageSource, MessageType, MessageLevel, const String& message, const String& url, unsigned line, unsigned column, ScriptState*, unsigned long requestIdentifier);
-    ConsoleMessage(bool canGenerateCallStack, MessageSource, MessageType, MessageLevel, const String& message, PassRefPtrWillBeRawPtr<ScriptCallStack>, unsigned long requestIdentifier);
-    ConsoleMessage(bool canGenerateCallStack, MessageSource, MessageType, MessageLevel, const String& message, PassRefPtrWillBeRawPtr<ScriptArguments>, ScriptState*, unsigned long requestIdentifier);
-    ~ConsoleMessage();
+    InspectorConsoleMessage(bool canGenerateCallStack, MessageSource, MessageType, MessageLevel, const String& message);
+    InspectorConsoleMessage(bool canGenerateCallStack, MessageSource, MessageType, MessageLevel, const String& message, const String& url, unsigned line, unsigned column, ScriptState*, unsigned long requestIdentifier);
+    InspectorConsoleMessage(bool canGenerateCallStack, MessageSource, MessageType, MessageLevel, const String& message, PassRefPtrWillBeRawPtr<ScriptCallStack>, unsigned long requestIdentifier);
+    InspectorConsoleMessage(bool canGenerateCallStack, MessageSource, MessageType, MessageLevel, const String& message, PassRefPtrWillBeRawPtr<ScriptArguments>, ScriptState*, unsigned long requestIdentifier);
+    ~InspectorConsoleMessage();
 
     void addToFrontend(InspectorFrontend::Console*, InjectedScriptManager*, bool generatePreview);
     void setTimestamp(double timestamp) { m_timestamp = timestamp; }
@@ -84,4 +84,4 @@ private:
 
 } // namespace WebCore
 
-#endif // ConsoleMessage_h
+#endif // InspectorConsoleMessage_h
