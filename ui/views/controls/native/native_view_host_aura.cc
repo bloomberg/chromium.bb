@@ -162,6 +162,7 @@ void NativeViewHostAura::AddClippingWindow() {
 }
 
 void NativeViewHostAura::RemoveClippingWindow() {
+  clipping_window_.Hide();
   if (host_->native_view())
     host_->native_view()->ClearProperty(aura::client::kHostWindowKey);
 
@@ -174,7 +175,6 @@ void NativeViewHostAura::RemoveClippingWindow() {
     }
     host_->native_view()->SetBounds(clipping_window_.bounds());
   }
-  clipping_window_.Hide();
   if (clipping_window_.parent())
     clipping_window_.parent()->RemoveChild(&clipping_window_);
 }

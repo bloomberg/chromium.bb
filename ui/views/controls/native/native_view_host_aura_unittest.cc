@@ -34,6 +34,49 @@ class NativeViewHostTesting : public NativeViewHost {
 };
 int NativeViewHostTesting::destroyed_count_ = 0;
 
+// Observer watching for window visibility and bounds change events. This is
+// used to verify that the child and clipping window operations are done in the
+// right order.
+class NativeViewHostWindowObserver : public aura::WindowObserver {
+ public:
+  enum EventType {
+    EVENT_NONE,
+    EVENT_SHOWN,
+    EVENT_HIDDEN,
+    EVENT_BOUNDS_CHANGED,
+  };
+
+  NativeViewHostWindowObserver() {}
+  virtual ~NativeViewHostWindowObserver() {}
+
+  const std::vector<std::pair<EventType, aura::Window*> >& events() const {
+    return events_;
+  }
+
+  // aura::WindowObserver overrides
+  virtual void OnWindowVisibilityChanged(aura::Window* window,
+                                         bool visible) OVERRIDE {
+    std::pair<EventType, aura::Window*> event =
+        std::make_pair(visible ? EVENT_SHOWN : EVENT_HIDDEN, window);
+
+    // Dedupe events as a single Hide() call can result in several
+    // notifications.
+    if (events_.size() == 0u || events_.back() != event)
+      events_.push_back(event);
+  }
+
+  virtual void OnWindowBoundsChanged(aura::Window* window,
+                                     const gfx::Rect& old_bounds,
+                                     const gfx::Rect& new_bounds) OVERRIDE {
+    events_.push_back(std::make_pair(EVENT_BOUNDS_CHANGED, window));
+  }
+
+ private:
+  std::vector<std::pair<EventType, aura::Window*> > events_;
+
+  DISALLOW_COPY_AND_ASSIGN(NativeViewHostWindowObserver);
+};
+
 class NativeViewHostAuraTest : public ViewsTestBase {
  public:
   NativeViewHostAuraTest() {
@@ -248,6 +291,36 @@ TEST_F(NativeViewHostAuraTest, ParentAfterDetach) {
   host()->Detach();
   EXPECT_EQ(root_window, child_win->GetRootWindow());
   EXPECT_EQ(child_win_tree_host, child_win->GetHost());
+
+  DestroyHost();
+}
+
+// Ensure the clipping window is hidden before setting the native view's bounds.
+// This is a regression test for http://crbug.com/388699.
+TEST_F(NativeViewHostAuraTest, RemoveClippingWindowOrder) {
+  CreateHost();
+  toplevel()->SetBounds(gfx::Rect(20, 20, 100, 100));
+  native_host()->ShowWidget(10, 20, 100, 100);
+
+  NativeViewHostWindowObserver test_observer;
+  clipping_window()->AddObserver(&test_observer);
+  child()->GetNativeView()->AddObserver(&test_observer);
+
+  host()->Detach();
+
+  ASSERT_EQ(3u, test_observer.events().size());
+  EXPECT_EQ(NativeViewHostWindowObserver::EVENT_HIDDEN,
+            test_observer.events()[0].first);
+  EXPECT_EQ(clipping_window(), test_observer.events()[0].second);
+  EXPECT_EQ(NativeViewHostWindowObserver::EVENT_BOUNDS_CHANGED,
+            test_observer.events()[1].first);
+  EXPECT_EQ(child()->GetNativeView(), test_observer.events()[1].second);
+  EXPECT_EQ(NativeViewHostWindowObserver::EVENT_HIDDEN,
+            test_observer.events()[2].first);
+  EXPECT_EQ(child()->GetNativeView(), test_observer.events()[2].second);
+
+  clipping_window()->RemoveObserver(&test_observer);
+  child()->GetNativeView()->RemoveObserver(&test_observer);
 
   DestroyHost();
 }
