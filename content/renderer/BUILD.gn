@@ -95,10 +95,12 @@ source_set("renderer") {
     ]
   } else {
     sources -= [
-      "java/java_bridge_channel.cc",
-      "java/java_bridge_channel.h",
-      "java/java_bridge_dispatcher.cc",
-      "java/java_bridge_dispatcher.h",
+      "java/gin_java_bridge_dispatcher.cc",
+      "java/gin_java_bridge_dispatcher.h",
+      "java/gin_java_bridge_object.cc",
+      "java/gin_java_bridge_object.h",
+      "java/gin_java_bridge_value_converter.cc",
+      "java/gin_java_bridge_value_converter.h",
     ]
   }
 

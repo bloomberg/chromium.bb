@@ -362,7 +362,6 @@
       'common/input_messages.h',
       'common/inter_process_time_ticks_converter.cc',
       'common/inter_process_time_ticks_converter.h',
-      'common/java_bridge_messages.h',
       'common/mac/attributed_string_coder.h',
       'common/mac/attributed_string_coder.mm',
       'common/mac/font_descriptor.h',
