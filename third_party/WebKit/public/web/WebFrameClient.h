@@ -343,9 +343,6 @@ public:
     // An element will request a resource.
     virtual void willRequestResource(WebLocalFrame*, const WebCachedURLRequest&) { }
 
-    // The request is after preconnect is triggered.
-    virtual void willRequestAfterPreconnect(WebLocalFrame*, WebURLRequest&) { }
-
     // A request is about to be sent out, and the client may modify it.  Request
     // is writable, and changes to the URL, for example, will change the request
     // made.  If this request is the result of a redirect, then redirectResponse

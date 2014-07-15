@@ -308,14 +308,6 @@ void FrameLoaderClientImpl::detachedFromParent()
     m_webFrame->setWebCoreFrame(nullptr);
 }
 
-void FrameLoaderClientImpl::dispatchWillRequestAfterPreconnect(ResourceRequest& request)
-{
-    if (m_webFrame->client()) {
-        WrappedResourceRequest webreq(request);
-        m_webFrame->client()->willRequestAfterPreconnect(m_webFrame, webreq);
-    }
-}
-
 void FrameLoaderClientImpl::dispatchWillSendRequest(
     DocumentLoader* loader, unsigned long identifier, ResourceRequest& request,
     const ResourceResponse& redirectResponse)

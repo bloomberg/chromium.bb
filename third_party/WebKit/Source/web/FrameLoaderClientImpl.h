@@ -75,7 +75,6 @@ public:
     virtual WebCore::Frame* firstChild() const OVERRIDE;
     virtual WebCore::Frame* lastChild() const OVERRIDE;
     virtual void detachedFromParent() OVERRIDE;
-    virtual void dispatchWillRequestAfterPreconnect(WebCore::ResourceRequest&) OVERRIDE;
     virtual void dispatchWillSendRequest(WebCore::DocumentLoader*, unsigned long identifier, WebCore::ResourceRequest&, const WebCore::ResourceResponse& redirectResponse) OVERRIDE;
     virtual void dispatchDidReceiveResponse(WebCore::DocumentLoader*, unsigned long identifier, const WebCore::ResourceResponse&) OVERRIDE;
     virtual void dispatchDidChangeResourcePriority(unsigned long identifier, WebCore::ResourceLoadPriority, int intraPriorityValue) OVERRIDE;
