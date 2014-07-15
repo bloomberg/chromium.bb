@@ -2349,7 +2349,7 @@ bool EventHandler::passScrollGestureEventToWidget(const PlatformGestureEvent& ge
 
     Widget* widget = toRenderWidget(renderer)->widget();
 
-    if (!widget->isFrameView())
+    if (!widget || !widget->isFrameView())
         return false;
 
     return toFrameView(widget)->frame().eventHandler().handleGestureScrollEvent(gestureEvent);
