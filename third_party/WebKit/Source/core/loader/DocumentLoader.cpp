@@ -379,7 +379,7 @@ void DocumentLoader::willSendRequest(ResourceRequest& newRequest, const Resource
     if (m_frame->tree().parent()) {
         // FIXME: This does not yet work with out-of-process iframes.
         Frame* top = m_frame->tree().top();
-        if (top->isLocalFrame() && !toLocalFrame(top)->loader().mixedContentChecker()->canRunInsecureContent(toLocalFrame(top)->document()->securityOrigin(), newRequest.url())) {
+        if (top->isLocalFrame() && !toLocalFrame(top)->loader().mixedContentChecker()->canFrameInsecureContent(toLocalFrame(top)->document()->securityOrigin(), newRequest.url())) {
             cancelMainResourceLoad(ResourceError::cancelledError(newRequest.url()));
             return;
         }

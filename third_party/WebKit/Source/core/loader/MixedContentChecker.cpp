@@ -35,6 +35,7 @@
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
 #include "platform/RuntimeEnabledFeatures.h"
+#include "platform/weborigin/SchemeRegistry.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "wtf/text/StringBuilder.h"
 
@@ -113,6 +114,18 @@ bool MixedContentChecker::canRunInsecureContentInternal(SecurityOrigin* security
         client()->didRunInsecureContent(securityOrigin, url);
 
     return allowed;
+}
+
+bool MixedContentChecker::canFrameInsecureContent(SecurityOrigin* securityOrigin, const KURL& url) const
+{
+    // If we're dealing with a CORS-enabled scheme, then block mixed frames as active content. Otherwise,
+    // treat frames as passive content.
+    //
+    // FIXME: Remove this temporary hack once we have a reasonable API for launching external applications
+    // via URLs. http://crbug.com/318788 and https://crbug.com/393481
+    if (SchemeRegistry::shouldTreatURLSchemeAsCORSEnabled(url.protocol()))
+        return canRunInsecureContentInternal(securityOrigin, url, MixedContentChecker::Execution);
+    return canDisplayInsecureContentInternal(securityOrigin, url, MixedContentChecker::Display);
 }
 
 bool MixedContentChecker::canConnectInsecureWebSocket(SecurityOrigin* securityOrigin, const KURL& url) const
