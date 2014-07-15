@@ -322,7 +322,7 @@ void StyleResolver::addToStyleSharingList(Element& element)
     INCREMENT_STYLE_STATS_COUNTER(*this, sharedStyleCandidates);
     StyleSharingList& list = styleSharingList();
     if (list.size() >= styleSharingListSize)
-        list.remove(--list.end());
+        list.removeLast();
     list.prepend(&element);
 }
 
