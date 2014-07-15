@@ -43,7 +43,7 @@ void CheckComAptTypeTask(APTTYPE* apt_type_out, HRESULT* hresult) {
   base::ScopedNativeLibrary com_library(base::FilePath(L"ole32.dll"));
   ASSERT_TRUE(com_library.is_valid());
   CoGetApartmentTypeFunc co_get_apartment_type =
-      static_cast<CoGetApartmentTypeFunc>(
+      reinterpret_cast<CoGetApartmentTypeFunc>(
           com_library.GetFunctionPointer("CoGetApartmentType"));
   ASSERT_TRUE(co_get_apartment_type != NULL);
 

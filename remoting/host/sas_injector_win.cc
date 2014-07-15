@@ -157,7 +157,7 @@ bool SasInjectorWin::InjectSas() {
 
   // Get the pointer to sas!SendSAS().
   if (send_sas_ == NULL) {
-    send_sas_ = static_cast<SendSasFunc>(
+    send_sas_ = reinterpret_cast<SendSasFunc>(
         sas_dll_.GetFunctionPointer(kSendSasName));
   }
   if (send_sas_ == NULL) {

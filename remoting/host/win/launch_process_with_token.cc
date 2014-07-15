@@ -63,7 +63,7 @@ bool ConnectToExecutionServer(uint32 session_id,
   base::ScopedNativeLibrary winsta(winsta_path);
   if (winsta.is_valid()) {
     PWINSTATIONQUERYINFORMATIONW win_station_query_information =
-        static_cast<PWINSTATIONQUERYINFORMATIONW>(
+        reinterpret_cast<PWINSTATIONQUERYINFORMATIONW>(
             winsta.GetFunctionPointer("WinStationQueryInformationW"));
     if (win_station_query_information) {
       wchar_t name[MAX_PATH];
