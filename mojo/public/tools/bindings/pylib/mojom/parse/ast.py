@@ -69,6 +69,17 @@ class NodeListBase(NodeBase):
       self.lineno = self.elements[0].lineno
 
 
+class Definition(NodeBase):
+  """Represents a definition of anything that has a global name (e.g., enums,
+  enum values, consts, structs, struct fields, interfaces). (This does not
+  include parameter definitions.) This class is meant to be subclassed."""
+
+  def __init__(self, name, **kwargs):
+    assert isinstance(name, str)
+    NodeBase.__init__(self, **kwargs)
+    self.name = name
+
+
 ################################################################################
 
 
@@ -93,21 +104,31 @@ class AttributeList(NodeListBase):
   _list_item_type = Attribute
 
 
-class EnumValue(NodeBase):
+class Enum(Definition):
+  """Represents an enum definition."""
+
+  def __init__(self, name, enum_value_list, **kwargs):
+    assert isinstance(enum_value_list, EnumValueList)
+    super(Enum, self).__init__(name, **kwargs)
+    self.enum_value_list = enum_value_list
+
+  def __eq__(self, other):
+    return super(Enum, self).__eq__(other) and \
+           self.enum_value_list == other.enum_value_list
+
+
+class EnumValue(Definition):
   """Represents a definition of an enum value."""
 
   def __init__(self, name, value, **kwargs):
-    assert isinstance(name, str)
     # The optional value is either an int (which is current a string) or a
     # "wrapped identifier".
     assert value is None or isinstance(value, str) or isinstance(value, tuple)
-    super(EnumValue, self).__init__(**kwargs)
-    self.name = name
+    super(EnumValue, self).__init__(name, **kwargs)
     self.value = value
 
   def __eq__(self, other):
     return super(EnumValue, self).__eq__(other) and \
-           self.name == other.name and \
            self.value == other.value
 
 

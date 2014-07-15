@@ -224,19 +224,20 @@ class ParserTest(unittest.TestCase):
     expected = ast.Mojom(
         ast.Module(('IDENTIFIER', 'my_module'), None),
         ast.ImportList(),
-        [('ENUM',
-          'MyEnum1',
-          ast.EnumValueList([ast.EnumValue('VALUE1', None),
-                             ast.EnumValue('VALUE2', None)])),
-         ('ENUM',
-          'MyEnum2',
-          ast.EnumValueList([ast.EnumValue('VALUE1', '-1'),
-                             ast.EnumValue('VALUE2', '0'),
-                             ast.EnumValue('VALUE3', '+987'),
-                             ast.EnumValue('VALUE4', '0xAF12'),
-                             ast.EnumValue('VALUE5', '-0x09bcd'),
-                             ast.EnumValue('VALUE6', ('IDENTIFIER', 'VALUE5')),
-                             ast.EnumValue('VALUE7', None)]))])
+        [ast.Enum(
+            'MyEnum1',
+            ast.EnumValueList([ast.EnumValue('VALUE1', None),
+                               ast.EnumValue('VALUE2', None)])),
+         ast.Enum(
+            'MyEnum2',
+            ast.EnumValueList([ast.EnumValue('VALUE1', '-1'),
+                               ast.EnumValue('VALUE2', '0'),
+                               ast.EnumValue('VALUE3', '+987'),
+                               ast.EnumValue('VALUE4', '0xAF12'),
+                               ast.EnumValue('VALUE5', '-0x09bcd'),
+                               ast.EnumValue('VALUE6', ('IDENTIFIER',
+                                                        'VALUE5')),
+                               ast.EnumValue('VALUE7', None)]))])
     self.assertEquals(parser.Parse(source, "my_file.mojom"), expected)
 
   def testInvalidEnumInitializers(self):

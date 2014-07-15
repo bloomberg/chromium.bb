@@ -296,7 +296,7 @@ class Parser(object):
   def p_enum(self, p):
     """enum : ENUM NAME LBRACE nonempty_enum_value_list RBRACE SEMI
             | ENUM NAME LBRACE nonempty_enum_value_list COMMA RBRACE SEMI"""
-    p[0] = ('ENUM', p[2], p[4])
+    p[0] = ast.Enum(p[2], p[4], filename=self.filename, lineno=p.lineno(1))
 
   def p_nonempty_enum_value_list_1(self, p):
     """nonempty_enum_value_list : enum_value"""
@@ -311,7 +311,8 @@ class Parser(object):
     """enum_value : NAME
                   | NAME EQUALS int
                   | NAME EQUALS identifier_wrapped"""
-    p[0] = ast.EnumValue(p[1], p[3] if len(p) == 4 else None)
+    p[0] = ast.EnumValue(p[1], p[3] if len(p) == 4 else None,
+                         filename=self.filename, lineno=p.lineno(1))
 
   def p_const(self, p):
     """const : CONST typename NAME EQUALS constant SEMI"""

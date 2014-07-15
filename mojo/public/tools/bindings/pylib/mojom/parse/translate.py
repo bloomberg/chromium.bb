@@ -9,10 +9,16 @@ import ast
 import re
 
 
-def _MapTree(func, tree, name):
+def _MapTreeForName(func, tree, name):
   if not tree:
     return []
-  return [func(subtree) for subtree in tree if subtree[0] == name]
+  return [func(subtree) for subtree in tree \
+              if isinstance(subtree, tuple) and subtree[0] == name]
+
+def _MapTreeForType(func, tree, type_to_map):
+  if not tree:
+    return []
+  return [func(subtree) for subtree in tree if isinstance(subtree, type_to_map)]
 
 _FIXED_ARRAY_REGEXP = re.compile(r'\[[0-9]+\]')
 
@@ -88,9 +94,9 @@ def _MapStruct(tree):
   struct = {}
   struct['name'] = tree[1]
   struct['attributes'] = _AttributeListToDict(tree[2])
-  struct['fields'] = _MapTree(_MapField, tree[3], 'FIELD')
-  struct['enums'] = _MapTree(_MapEnum, tree[3], 'ENUM')
-  struct['constants'] = _MapTree(_MapConstant, tree[3], 'CONST')
+  struct['fields'] = _MapTreeForName(_MapField, tree[3], 'FIELD')
+  struct['enums'] = _MapTreeForType(_MapEnum, tree[3], ast.Enum)
+  struct['constants'] = _MapTreeForName(_MapConstant, tree[3], 'CONST')
   return struct
 
 def _MapInterface(tree):
@@ -98,21 +104,22 @@ def _MapInterface(tree):
   interface['name'] = tree[1]
   interface['attributes'] = _AttributeListToDict(tree[2])
   interface['client'] = interface['attributes'].get('Client')
-  interface['methods'] = _MapTree(_MapMethod, tree[3], 'METHOD')
-  interface['enums'] = _MapTree(_MapEnum, tree[3], 'ENUM')
-  interface['constants'] = _MapTree(_MapConstant, tree[3], 'CONST')
+  interface['methods'] = _MapTreeForName(_MapMethod, tree[3], 'METHOD')
+  interface['enums'] = _MapTreeForType(_MapEnum, tree[3], ast.Enum)
+  interface['constants'] = _MapTreeForName(_MapConstant, tree[3], 'CONST')
   return interface
 
-def _MapEnum(tree):
+def _MapEnum(enum):
   def EnumValueToDict(enum_value):
     assert isinstance(enum_value, ast.EnumValue)
     return {'name': enum_value.name,
             'value': enum_value.value}
 
-  enum = {}
-  enum['name'] = tree[1]
-  enum['fields'] = map(EnumValueToDict, tree[2])
-  return enum
+  assert isinstance(enum, ast.Enum)
+  rv = {}
+  rv['name'] = enum.name
+  rv['fields'] = map(EnumValueToDict, enum.enum_value_list)
+  return rv
 
 def _MapConstant(tree):
   constant = {}
@@ -134,12 +141,14 @@ class _MojomBuilder(object):
         [{'filename': imp.import_filename} for imp in tree.import_list]
     self.mojom['attributes'] = \
         _AttributeListToDict(tree.module.attribute_list) if tree.module else {}
-    self.mojom['structs'] = _MapTree(_MapStruct, tree.definition_list, 'STRUCT')
+    self.mojom['structs'] = \
+        _MapTreeForName(_MapStruct, tree.definition_list, 'STRUCT')
     self.mojom['interfaces'] = \
-        _MapTree(_MapInterface, tree.definition_list, 'INTERFACE')
-    self.mojom['enums'] = _MapTree(_MapEnum, tree.definition_list, 'ENUM')
+        _MapTreeForName(_MapInterface, tree.definition_list, 'INTERFACE')
+    self.mojom['enums'] = \
+        _MapTreeForType(_MapEnum, tree.definition_list, ast.Enum)
     self.mojom['constants'] = \
-        _MapTree(_MapConstant, tree.definition_list, 'CONST')
+        _MapTreeForName(_MapConstant, tree.definition_list, 'CONST')
     return self.mojom
 
 
