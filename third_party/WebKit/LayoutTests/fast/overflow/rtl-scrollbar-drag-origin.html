@@ -34,7 +34,7 @@ This test is expected to fail on Mac because it doesn't cancel scrolling when mo
         eventSender.mouseMoveTo(100, 195);
         shouldBe("container.scrollLeft" , "0");
 
-        eventSender.mouseMoveTo(0, 195);
+        eventSender.mouseMoveTo(100, 700);
         shouldBe("container.scrollLeft" , "350");
     }
 </script>
