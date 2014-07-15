@@ -233,7 +233,7 @@ void shutdown()
 void shutdownWithoutV8()
 {
     ASSERT(!s_endOfTaskRunner);
-    WebCore::shutdown();
+    WebCore::CoreInitializer::shutdown();
     WebCore::Heap::shutdown();
     WTF::shutdown();
     Platform::shutdown();

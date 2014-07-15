@@ -121,7 +121,7 @@ void CoreInitializer::init()
     HTMLParserThread::init();
 }
 
-void shutdown()
+void CoreInitializer::shutdown()
 {
     // Make sure we stop the HTMLParserThread before Platform::current() is cleared.
     HTMLParserThread::shutdown();
