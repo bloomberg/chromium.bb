@@ -41,6 +41,7 @@
 
 namespace WebCore {
 
+class AsyncFileSystemCallbacks;
 class Event;
 class EventListener;
 class EventTarget;
@@ -103,8 +104,15 @@ public:
     void didKillAllExecutionContextTasks(ExecutionContext*);
     void willPerformExecutionContextTask(ExecutionContext*, ExecutionContextTask*);
 
+    void didEnqueueAsyncFileSystemCallback(ExecutionContext*, AsyncFileSystemCallbacks*, const ScriptValue& callFrames);
+    void didRemoveAsyncFileSystemCallback(ExecutionContext*, AsyncFileSystemCallbacks*);
+    void willHandleAsyncFileSystemCallback(ExecutionContext*, AsyncFileSystemCallbacks*, bool hasMore);
+
     void didEnqueueV8AsyncTask(ExecutionContext*, const String& eventName, int id, const ScriptValue& callFrames);
     void willHandleV8AsyncTask(ExecutionContext*, const String& eventName, int id);
+
+    void willRescheduleAsyncCallChain();
+    void didRescheduleAsyncCallChain();
 
     void didFireAsyncCall();
     void clear();
@@ -124,6 +132,8 @@ private:
     unsigned m_maxAsyncCallStackDepth;
     RefPtr<AsyncCallChain> m_currentAsyncCallChain;
     unsigned m_nestedAsyncCallCount;
+    bool m_rescheduleNextAsyncCallChain;
+    RefPtr<AsyncCallChain> m_rescheduledAsyncCallChain;
     typedef HashMap<ExecutionContext*, ExecutionContextData*> ExecutionContextDataMap;
     ExecutionContextDataMap m_executionContextDataMap;
 };

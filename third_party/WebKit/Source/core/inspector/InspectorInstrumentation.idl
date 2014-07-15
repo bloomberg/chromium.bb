@@ -52,7 +52,7 @@
 *       Keep - pass first parameter (used to access the InstrumentingAgents instance) to agents.
 *       FastReturn - return early from the inline method if this parameter is 0/false.
 *
-*   returnValue: C++ return value. Only "void" and "InspectorInstrumentationCookie" are supported.
+*   returnValue: C++ return value. Only "void", "bool" and "InspectorInstrumentationCookie" are supported.
 *
 *   methodName: C++ name for the public instrumentation method and agents methods.
 *
@@ -66,6 +66,9 @@
 interface InspectorInstrumentation {
 
 #include "core/dom/PseudoElement.h"
+
+// Forward declarations.
+class AsyncFileSystemCallbacks;
 
     [Page, Inspector, PageDebugger, PageRuntime]
     void didClearDocumentOfWindowObject([Keep] LocalFrame*);
@@ -201,6 +204,18 @@ interface InspectorInstrumentation {
 
     [Debugger, Inline=FastReturn]
     void didPerformExecutionContextTask(ExecutionContext*);
+
+    [Debugger, Inline=FastReturn]
+    void didEnqueueAsyncFileSystemCallback([Keep] ExecutionContext*, AsyncFileSystemCallbacks*);
+
+    [Debugger, Inline=FastReturn]
+    void didRemoveAsyncFileSystemCallback([Keep] ExecutionContext*, AsyncFileSystemCallbacks*);
+
+    [Debugger, Inline=FastReturn]
+    void willHandleAsyncFileSystemCallback([Keep] ExecutionContext*, AsyncFileSystemCallbacks*, bool willReschedule, bool hasMore);
+
+    [Debugger, Inline=FastReturn]
+    void didHandleAsyncFileSystemCallback([Keep] ExecutionContext*, AsyncFileSystemCallbacks*, bool didReschedule);
 
     [Timeline, Inline=FastReturn]
     InspectorInstrumentationCookie willEvaluateScript([Keep] LocalFrame*, const String& url, int lineNumber);
