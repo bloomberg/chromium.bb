@@ -33712,11 +33712,7 @@
         "usepkg_build_packages": false,
         "usepkg_setup_board": false,
         "vm_test_runs": 1,
-        "vm_tests": [
-            "smoke_suite",
-            "dev_mode_test",
-            "cros_vm_test"
-        ]
+        "vm_tests": []
     },
     "lumpy-chrome-perf": {
         "afdo_generate": false,

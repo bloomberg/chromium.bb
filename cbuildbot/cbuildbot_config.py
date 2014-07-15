@@ -2126,6 +2126,8 @@ _release.add_config('link_freon-release',
   boards=['link_freon'],
   useflags=_release['useflags'] + ['highdpi'],
   hw_tests=[],
+  # This build can't run vm_tests, bug 387507
+  vm_tests=[],
   # This build doesn't generate signed images, so don't try to release them.
   paygen=False,
   signer_tests=False,
