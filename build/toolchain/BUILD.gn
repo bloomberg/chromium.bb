@@ -119,8 +119,7 @@ template("prep_toolchain") {
       sources = [ "${nacl_path}/libnacl.a" ]
       outputs = [ "${install_dir}/lib/libnacl.a" ]
       deps = [
-        "//native_client/build/toolchain:untar_${package}",
-        "//native_client/src/untrusted/nacl:nacl(//native_client/build/toolchain/nacl:raw_newlib_arm)",
+        "//native_client/build/toolchain:untar_${package}"
       ]
     }
   } else {
@@ -175,8 +174,7 @@ template("prep_toolchain") {
       sources = [ "${nacl_path}/libnacl.a" ]
       outputs = [ "${install_dir}/lib32/libnacl.a" ]
       deps = [
-        "//native_client/src/untrusted/nacl:nacl(//native_client/build/toolchain/nacl:raw_newlib_x86)",
-        "//native_client/build/toolchain:untar_${package}",
+        "//native_client/build/toolchain:untar_${package}"
       ]
     }
     nacl_path = "${root_build_dir}/raw_newlib_x64/obj/native_client/src/untrusted/nacl"
@@ -184,7 +182,6 @@ template("prep_toolchain") {
       sources = [ "${nacl_path}/libnacl.a" ]
       outputs = [ "${install_dir}/lib/libnacl.a" ]
       deps = [
-        "//native_client/src/untrusted/nacl:nacl(//native_client/build/toolchain/nacl:raw_newlib_x64)",
         "//native_client/build/toolchain:untar_${package}"
       ]
     }

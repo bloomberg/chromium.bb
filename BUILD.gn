@@ -14,23 +14,21 @@
 # combinations of the real targets.
 #
 
-if (os == "linux") {
-  group("trusted_arm") {
-    deps = [
-      "//native_client/src:trusted_targets(//native_client/build/toolchain/$os:trusted_arm)",
-    ]
-  }
+group("trusted_arm") {
+  deps = [
+    "//native_client/src:trusted_targets(//native_client/build/toolchain/linux:trusted_arm)",
+  ]
 }
 
 group("trusted_32") {
   deps = [
-    "//native_client/src:trusted_targets(//native_client/build/toolchain/$os:trusted_x86)",
+    "//native_client/src:trusted_targets(//native_client/build/toolchain/linux:trusted_x86)",
   ]
 }
 
 group("trusted_64") {
   deps = [
-    "//native_client/src:trusted_targets(//native_client/build/toolchain/$os:trusted_x64)",
+    "//native_client/src:trusted_targets(//native_client/build/toolchain/linux:trusted_x64)",
   ]
 }
 

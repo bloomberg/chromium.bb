@@ -117,7 +117,6 @@ template("mac_clang_toolchain") {
 
     toolchain_args() {
       os = invoker.toolchain_os
-      cpu_arch = invoker.toolchain_cpu_arch
     }
   }
 }
@@ -125,24 +124,10 @@ template("mac_clang_toolchain") {
 # Toolchain representing the target build (either mac or iOS).
 mac_clang_toolchain("clang") {
   toolchain_os = os
-  toolchain_cpu_arch = cpu_arch
 }
 
 # This toolchain provides a way for iOS target compiles to reference targets
 # compiled for the host system. It just overrides the OS back to "mac".
 mac_clang_toolchain("host_clang") {
   toolchain_os = "mac"
-  toolchain_cpu_arch = cpu_arch
-}
-
-# Toolchain representing the target build (either mac or iOS).
-mac_clang_toolchain("trusted_x86") {
-  toolchain_os = os
-  toolchain_cpu_arch = "x86"
-}
-
-# Toolchain representing the target build (either mac or iOS).
-mac_clang_toolchain("trusted_x64") {
-  toolchain_os = os
-  toolchain_cpu_arch = "x64"
 }
