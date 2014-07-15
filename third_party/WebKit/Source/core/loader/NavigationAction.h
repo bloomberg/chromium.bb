@@ -45,7 +45,6 @@ namespace WebCore {
         NavigationAction(const ResourceRequest&, FrameLoadType = FrameLoadTypeStandard, bool isFormSubmission = false, PassRefPtrWillBeRawPtr<Event> = nullptr);
 
         const ResourceRequest& resourceRequest() const { return m_resourceRequest; }
-        ResourceRequest& mutableResourceRequest() { return m_resourceRequest; }
         NavigationType type() const { return m_type; }
         DOMTimeStamp eventTimeStamp() const { return m_eventTimeStamp; }
         NavigationPolicy policy() const { return m_policy; }

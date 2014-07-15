@@ -401,17 +401,8 @@ WebURLRequest::RequestContext WebURLRequest::requestContextFromTargetType(WebURL
     return RequestContextUnspecified;
 }
 
-WebURLRequest::TargetType WebURLRequest::targetTypeFromRequestContextAndFrameType(WebURLRequest::RequestContext requestContext, WebURLRequest::FrameType frameType)
+WebURLRequest::TargetType WebURLRequest::targetTypeFromRequestContext(WebURLRequest::RequestContext requestContext)
 {
-    if (frameType != FrameTypeNone) {
-        ASSERT(requestContext == RequestContextForm || requestContext == RequestContextFrame || requestContext == RequestContextHyperlink || requestContext == RequestContextIframe || requestContext == RequestContextInternal || requestContext == RequestContextLocation);
-        if (frameType == FrameTypeTopLevel || frameType == FrameTypeAuxiliary)
-            return TargetIsMainFrame;
-        if (frameType == FrameTypeNested)
-            return TargetIsSubframe;
-        ASSERT_NOT_REACHED();
-    }
-
     switch (requestContext) {
     // Favicon
     case RequestContextFavicon:
@@ -424,6 +415,14 @@ WebURLRequest::TargetType WebURLRequest::targetTypeFromRequestContextAndFrameTyp
     // Image
     case RequestContextImage:
         return TargetIsImage;
+
+    // Main Frame
+    //
+    // FIXME: This conflates the initator with the target. It shouldn't.
+    case RequestContextForm:
+    case RequestContextHyperlink:
+    case RequestContextLocation:
+        return TargetIsMainFrame;
 
     // Media
     case RequestContextAudio:
@@ -454,6 +453,10 @@ WebURLRequest::TargetType WebURLRequest::targetTypeFromRequestContextAndFrameTyp
     case RequestContextStyle:
         return TargetIsStyleSheet;
 
+    // Subframe
+    case RequestContextFrame:
+    case RequestContextIframe:
+        return TargetIsSubframe;
 
     // Subresource
     case RequestContextDownload:
@@ -484,16 +487,6 @@ WebURLRequest::TargetType WebURLRequest::targetTypeFromRequestContextAndFrameTyp
     case RequestContextFetch:
     case RequestContextXMLHttpRequest:
         return TargetIsXHR;
-
-    // These should be handled by the FrameType checks at the top of the function.
-    // Main Frame
-    case RequestContextForm:
-    case RequestContextHyperlink:
-    case RequestContextLocation:
-    case RequestContextFrame:
-    case RequestContextIframe:
-        ASSERT_NOT_REACHED();
-        return TargetIsUnspecified;
     }
     ASSERT_NOT_REACHED();
     return TargetIsUnspecified;
@@ -503,7 +496,7 @@ WebURLRequest::TargetType WebURLRequest::targetTypeFromRequestContextAndFrameTyp
 WebURLRequest::TargetType WebURLRequest::targetType() const
 {
     // FIXME: Temporary special case until downstream chromium.org knows of the new TargetTypes.
-    TargetType targetType = WebURLRequest::targetTypeFromRequestContextAndFrameType(requestContext(), frameType());
+    TargetType targetType = WebURLRequest::targetTypeFromRequestContext(requestContext());
     if (targetType == TargetIsTextTrack || targetType == TargetIsUnspecified)
         return TargetIsSubresource;
     return targetType;

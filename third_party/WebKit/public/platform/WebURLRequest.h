@@ -258,8 +258,7 @@ public:
 
     // FIXME: Drop these once we replace TargetType upstream.
     static RequestContext requestContextFromTargetType(TargetType);
-    static TargetType targetTypeFromRequestContextAndFrameType(RequestContext, FrameType);
-
+    static TargetType targetTypeFromRequestContext(RequestContext);
 protected:
     BLINK_PLATFORM_EXPORT void assign(WebURLRequestPrivate*);
 

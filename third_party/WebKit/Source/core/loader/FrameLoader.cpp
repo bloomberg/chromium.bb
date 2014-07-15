@@ -94,8 +94,6 @@
 #include "wtf/text/CString.h"
 #include "wtf/text/WTFString.h"
 
-using blink::WebURLRequest;
-
 namespace WebCore {
 
 using namespace HTMLNames;
@@ -135,8 +133,8 @@ FrameLoader::~FrameLoader()
 void FrameLoader::init()
 {
     ResourceRequest initialRequest(KURL(ParsedURLString, emptyString()));
-    initialRequest.setRequestContext(WebURLRequest::RequestContextInternal);
-    initialRequest.setFrameType(m_frame->isMainFrame() ? WebURLRequest::FrameTypeTopLevel : WebURLRequest::FrameTypeNested);
+    initialRequest.setRequestContext(blink::WebURLRequest::RequestContextInternal);
+    initialRequest.setFrameType(m_frame->isMainFrame() ? blink::WebURLRequest::FrameTypeTopLevel : blink::WebURLRequest::FrameTypeNested);
     m_provisionalDocumentLoader = client()->createDocumentLoader(m_frame, initialRequest, SubstituteData());
     m_provisionalDocumentLoader->startLoadingMainResource();
     m_frame->document()->cancelParsing();
@@ -679,7 +677,7 @@ FrameLoadType FrameLoader::determineFrameLoadType(const FrameLoadRequest& reques
 
 bool FrameLoader::prepareRequestForThisFrame(FrameLoadRequest& request)
 {
-    request.resourceRequest().setFrameType(m_frame->isMainFrame() ? WebURLRequest::FrameTypeTopLevel : WebURLRequest::FrameTypeNested);
+    request.resourceRequest().setFrameType(m_frame->isMainFrame() ? blink::WebURLRequest::FrameTypeTopLevel : blink::WebURLRequest::FrameTypeNested);
 
     // If no origin Document* was specified, skip remaining security checks and assume the caller has fully initialized the FrameLoadRequest.
     if (!request.originDocument())
@@ -710,27 +708,6 @@ static bool shouldOpenInNewWindow(LocalFrame* targetFrame, const FrameLoadReques
     return request.formState() && action.shouldOpenInNewWindow();
 }
 
-static WebURLRequest::RequestContext determineRequestContextFromNavigationType(const NavigationType navigationType)
-{
-    switch (navigationType) {
-    case NavigationTypeLinkClicked:
-        return WebURLRequest::RequestContextHyperlink;
-
-    case NavigationTypeOther:
-        return WebURLRequest::RequestContextLocation;
-
-    case NavigationTypeFormResubmitted:
-    case NavigationTypeFormSubmitted:
-        return WebURLRequest::RequestContextForm;
-
-    case NavigationTypeBackForward:
-    case NavigationTypeReload:
-        return WebURLRequest::RequestContextInternal;
-    }
-    ASSERT_NOT_REACHED();
-    return WebURLRequest::RequestContextHyperlink;
-}
-
 void FrameLoader::load(const FrameLoadRequest& passedRequest)
 {
     ASSERT(m_frame->document());
@@ -755,8 +732,6 @@ void FrameLoader::load(const FrameLoadRequest& passedRequest)
 
     FrameLoadType newLoadType = determineFrameLoadType(request);
     NavigationAction action(request.resourceRequest(), newLoadType, request.formState(), request.triggeringEvent());
-    if (action.resourceRequest().requestContext() == WebURLRequest::RequestContextUnspecified)
-        action.mutableResourceRequest().setRequestContext(determineRequestContextFromNavigationType(action.type()));
     if (shouldOpenInNewWindow(targetFrame.get(), request, action)) {
         if (action.policy() == NavigationPolicyDownload)
             client()->loadURLExternally(action.resourceRequest(), NavigationPolicyDownload);
@@ -824,8 +799,7 @@ void FrameLoader::reload(ReloadPolicy reloadPolicy, const KURL& overrideURL, con
 
     ResourceRequestCachePolicy cachePolicy = reloadPolicy == EndToEndReload ? ReloadBypassingCache : ReloadIgnoringCacheData;
     ResourceRequest request = requestFromHistoryItem(m_currentItem.get(), cachePolicy);
-    request.setFrameType(m_frame->isMainFrame() ? WebURLRequest::FrameTypeTopLevel : WebURLRequest::FrameTypeNested);
-    request.setRequestContext(WebURLRequest::RequestContextInternal);
+    request.setFrameType(m_frame->isMainFrame() ? blink::WebURLRequest::FrameTypeTopLevel : blink::WebURLRequest::FrameTypeNested);
     if (!overrideURL.isEmpty()) {
         request.setURL(overrideURL);
         request.clearHTTPReferrer();
@@ -1447,8 +1421,7 @@ void FrameLoader::loadHistoryItem(HistoryItem* item, HistoryLoadType historyLoad
     }
 
     ResourceRequest request = requestFromHistoryItem(item, cachePolicy);
-    request.setFrameType(m_frame->isMainFrame() ? WebURLRequest::FrameTypeTopLevel : WebURLRequest::FrameTypeNested);
-    request.setRequestContext(WebURLRequest::RequestContextInternal);
+    request.setFrameType(m_frame->isMainFrame() ? blink::WebURLRequest::FrameTypeTopLevel : blink::WebURLRequest::FrameTypeNested);
     loadWithNavigationAction(NavigationAction(request, FrameLoadTypeBackForward), FrameLoadTypeBackForward, nullptr, SubstituteData(), CheckContentSecurityPolicy);
 }
 
