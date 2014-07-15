@@ -292,7 +292,7 @@ class OmniboxViewTest : public InProcessBrowserTest,
                                         entry.typed_count, time, false,
                                         history::SOURCE_BROWSED);
     if (entry.starred)
-      bookmark_utils::AddIfNotBookmarked(bookmark_model, url, base::string16());
+      bookmarks::AddIfNotBookmarked(bookmark_model, url, base::string16());
     // Wait at least for the AddPageWithDetails() call to finish.
     {
       content::NotificationRegistrar registrar;

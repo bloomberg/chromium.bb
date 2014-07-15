@@ -251,7 +251,8 @@ std::vector<const BookmarkNode*> BookmarkNodeData::GetNodes(
     return nodes;
 
   for (size_t i = 0; i < elements.size(); ++i) {
-    const BookmarkNode* node = GetBookmarkNodeByID(model, elements[i].id_);
+    const BookmarkNode* node =
+        bookmarks::GetBookmarkNodeByID(model, elements[i].id_);
     if (!node) {
       nodes.clear();
       return nodes;

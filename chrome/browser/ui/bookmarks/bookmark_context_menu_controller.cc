@@ -210,7 +210,7 @@ void BookmarkContextMenuController::ExecuteCommand(int id, int event_flags) {
 
       int index;
       const BookmarkNode* parent =
-          bookmark_utils::GetParentForNewNodes(parent_, selection_, &index);
+          bookmarks::GetParentForNewNodes(parent_, selection_, &index);
       GURL url;
       base::string16 title;
       chrome::GetURLAndTitleToBookmark(
@@ -230,7 +230,7 @@ void BookmarkContextMenuController::ExecuteCommand(int id, int event_flags) {
 
       int index;
       const BookmarkNode* parent =
-          bookmark_utils::GetParentForNewNodes(parent_, selection_, &index);
+          bookmarks::GetParentForNewNodes(parent_, selection_, &index);
       BookmarkEditor::Show(
           parent_window_,
           profile_,
@@ -273,21 +273,21 @@ void BookmarkContextMenuController::ExecuteCommand(int id, int event_flags) {
     }
 
     case IDC_CUT:
-      bookmark_utils::CopyToClipboard(model_, selection_, true);
+      bookmarks::CopyToClipboard(model_, selection_, true);
       break;
 
     case IDC_COPY:
-      bookmark_utils::CopyToClipboard(model_, selection_, false);
+      bookmarks::CopyToClipboard(model_, selection_, false);
       break;
 
     case IDC_PASTE: {
       int index;
       const BookmarkNode* paste_target =
-          bookmark_utils::GetParentForNewNodes(parent_, selection_, &index);
+          bookmarks::GetParentForNewNodes(parent_, selection_, &index);
       if (!paste_target)
         return;
 
-      bookmark_utils::PasteFromClipboard(model_, paste_target, index);
+      bookmarks::PasteFromClipboard(model_, paste_target, index);
       break;
     }
 
@@ -343,9 +343,8 @@ bool BookmarkContextMenuController::IsCommandIdEnabled(int command_id) const {
 
   bool is_root_node = selection_.size() == 1 &&
                       selection_[0]->parent() == model_->root_node();
-  bool can_edit =
-      prefs->GetBoolean(prefs::kEditBookmarksEnabled) &&
-      bookmark_utils::CanAllBeEditedByUser(model_->client(), selection_);
+  bool can_edit = prefs->GetBoolean(prefs::kEditBookmarksEnabled) &&
+                  bookmarks::CanAllBeEditedByUser(model_->client(), selection_);
   IncognitoModePrefs::Availability incognito_avail =
       IncognitoModePrefs::GetAvailability(prefs);
 
@@ -386,8 +385,7 @@ bool BookmarkContextMenuController::IsCommandIdEnabled(int command_id) const {
     case IDC_BOOKMARK_BAR_NEW_FOLDER:
     case IDC_BOOKMARK_BAR_ADD_NEW_BOOKMARK:
       return can_edit && model_->client()->CanBeEditedByUser(parent_) &&
-             bookmark_utils::GetParentForNewNodes(parent_, selection_, NULL) !=
-                 NULL;
+             bookmarks::GetParentForNewNodes(parent_, selection_, NULL) != NULL;
 
     case IDC_BOOKMARK_BAR_ALWAYS_SHOW:
       return !prefs->IsManagedPreference(prefs::kShowBookmarkBar);
@@ -404,8 +402,8 @@ bool BookmarkContextMenuController::IsCommandIdEnabled(int command_id) const {
       // Paste to selection from the Bookmark Bar, to parent_ everywhere else
       return can_edit &&
              ((!selection_.empty() &&
-               bookmark_utils::CanPasteFromClipboard(model_, selection_[0])) ||
-              bookmark_utils::CanPasteFromClipboard(model_, parent_));
+               bookmarks::CanPasteFromClipboard(model_, selection_[0])) ||
+              bookmarks::CanPasteFromClipboard(model_, parent_));
   }
   return true;
 }

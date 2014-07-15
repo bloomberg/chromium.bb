@@ -396,7 +396,8 @@ const BookmarkNode* BookmarksBridge::GetNodeByID(long node_id, int type) {
     node = partner_bookmarks_shim_->GetNodeByID(
         static_cast<int64>(node_id));
   } else {
-    node = GetBookmarkNodeByID(bookmark_model_, static_cast<int64>(node_id));
+    node = bookmarks::GetBookmarkNodeByID(bookmark_model_,
+                                          static_cast<int64>(node_id));
   }
   return node;
 }

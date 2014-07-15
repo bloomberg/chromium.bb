@@ -69,8 +69,8 @@ ScoredHistoryMatch::ScoredHistoryMatch(
   // so that we can score as well as provide autocomplete highlighting.
   base::OffsetAdjuster::Adjustments adjustments;
   base::string16 url =
-      bookmark_utils::CleanUpUrlForMatching(gurl, languages, &adjustments);
-  base::string16 title = bookmark_utils::CleanUpTitleForMatching(row.title());
+      bookmarks::CleanUpUrlForMatching(gurl, languages, &adjustments);
+  base::string16 title = bookmarks::CleanUpTitleForMatching(row.title());
   int term_num = 0;
   for (String16Vector::const_iterator iter = terms.begin(); iter != terms.end();
        ++iter, ++term_num) {

@@ -182,9 +182,9 @@ void BookmarkCurrentPageInternal(Browser* browser) {
     // so that bookmarks have an icon for the page.
     FaviconTabHelper::FromWebContents(web_contents)->SaveFavicon();
   }
-  bool was_bookmarked_by_user = bookmark_utils::IsBookmarkedByUser(model, url);
-  bookmark_utils::AddIfNotBookmarked(model, url, title);
-  bool is_bookmarked_by_user = bookmark_utils::IsBookmarkedByUser(model, url);
+  bool was_bookmarked_by_user = bookmarks::IsBookmarkedByUser(model, url);
+  bookmarks::AddIfNotBookmarked(model, url, title);
+  bool is_bookmarked_by_user = bookmarks::IsBookmarkedByUser(model, url);
   // Make sure the model actually added a bookmark before showing the star. A
   // bookmark isn't created if the url is invalid.
   if (browser->window()->IsActive() && is_bookmarked_by_user) {

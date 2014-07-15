@@ -1045,7 +1045,8 @@ void RecordAppLaunch(Profile* profile, GURL url) {
 
 - (IBAction)openBookmarkMenuItem:(id)sender {
   int64 tag = [self nodeIdFromMenuTag:[sender tag]];
-  const BookmarkNode* node = GetBookmarkNodeByID(bookmarkModel_, tag);
+  const BookmarkNode* node =
+      bookmarks::GetBookmarkNodeByID(bookmarkModel_, tag);
   WindowOpenDisposition disposition =
       ui::WindowOpenDispositionFromNSEvent([NSApp currentEvent]);
   [self openURL:node->url() disposition:disposition];

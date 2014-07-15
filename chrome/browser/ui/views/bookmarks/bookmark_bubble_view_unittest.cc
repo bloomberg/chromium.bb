@@ -33,7 +33,7 @@ class BookmarkBubbleViewTest : public BrowserWithTestWindowTest {
         BookmarkModelFactory::GetForProfile(profile());
     test::WaitForBookmarkModelToLoad(bookmark_model);
 
-    bookmark_utils::AddIfNotBookmarked(
+    bookmarks::AddIfNotBookmarked(
         bookmark_model, GURL(kTestBookmarkURL), base::string16());
   }
 

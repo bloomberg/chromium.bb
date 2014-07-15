@@ -142,9 +142,8 @@ TEST_F(ProfileWriterTest, CheckBookmarksWithMultiProfile) {
   BookmarkModel* bookmark_model2 =
       BookmarkModelFactory::GetForProfile(&profile2);
   test::WaitForBookmarkModelToLoad(bookmark_model2);
-  bookmark_utils::AddIfNotBookmarked(bookmark_model2,
-                                     GURL("http://www.bing.com"),
-                                     base::ASCIIToUTF16("Bing"));
+  bookmarks::AddIfNotBookmarked(
+      bookmark_model2, GURL("http://www.bing.com"), base::ASCIIToUTF16("Bing"));
   TestingProfile profile1;
   profile1.CreateBookmarkModel(true);
 

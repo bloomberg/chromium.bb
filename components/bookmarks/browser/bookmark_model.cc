@@ -153,7 +153,7 @@ void BookmarkModel::Load(
 
 const BookmarkNode* BookmarkModel::GetParentForNewNodes() {
   std::vector<const BookmarkNode*> nodes =
-      bookmark_utils::GetMostRecentlyModifiedUserFolders(this, 1);
+      bookmarks::GetMostRecentlyModifiedUserFolders(this, 1);
   DCHECK(!nodes.empty());  // This list is always padded with default folders.
   return nodes[0];
 }
@@ -293,7 +293,7 @@ void BookmarkModel::Copy(const BookmarkNode* node,
   std::vector<BookmarkNodeData::Element> elements(drag_data.elements);
   // CloneBookmarkNode will use BookmarkModel methods to do the job, so we
   // don't need to send notifications here.
-  bookmark_utils::CloneBookmarkNode(this, elements, new_parent, index, true);
+  bookmarks::CloneBookmarkNode(this, elements, new_parent, index, true);
 
   if (store_.get())
     store_->ScheduleSave();
@@ -510,7 +510,7 @@ const BookmarkNode* BookmarkModel::GetMostRecentlyAddedUserNodeForURL(
     const GURL& url) {
   std::vector<const BookmarkNode*> nodes;
   GetNodesByURL(url, &nodes);
-  std::sort(nodes.begin(), nodes.end(), &bookmark_utils::MoreRecentlyAdded);
+  std::sort(nodes.begin(), nodes.end(), &bookmarks::MoreRecentlyAdded);
 
   // Look for the first node that the user can edit.
   for (size_t i = 0; i < nodes.size(); ++i) {

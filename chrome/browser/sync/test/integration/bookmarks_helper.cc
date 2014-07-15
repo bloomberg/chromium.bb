@@ -431,7 +431,7 @@ const BookmarkNode* AddURL(int profile,
                            const std::string& title,
                            const GURL& url) {
   BookmarkModel* model = GetBookmarkModel(profile);
-  if (GetBookmarkNodeByID(model, parent->id()) != parent) {
+  if (bookmarks::GetBookmarkNodeByID(model, parent->id()) != parent) {
     LOG(ERROR) << "Node " << parent->GetTitle() << " does not belong to "
                << "Profile " << profile;
     return NULL;
@@ -473,7 +473,7 @@ const BookmarkNode* AddFolder(int profile,
                               int index,
                               const std::string& title) {
   BookmarkModel* model = GetBookmarkModel(profile);
-  if (GetBookmarkNodeByID(model, parent->id()) != parent) {
+  if (bookmarks::GetBookmarkNodeByID(model, parent->id()) != parent) {
     LOG(ERROR) << "Node " << parent->GetTitle() << " does not belong to "
                << "Profile " << profile;
     return NULL;
@@ -504,7 +504,7 @@ void SetTitle(int profile,
               const BookmarkNode* node,
               const std::string& new_title) {
   BookmarkModel* model = GetBookmarkModel(profile);
-  ASSERT_EQ(GetBookmarkNodeByID(model, node->id()), node)
+  ASSERT_EQ(bookmarks::GetBookmarkNodeByID(model, node->id()), node)
       << "Node " << node->GetTitle() << " does not belong to "
       << "Profile " << profile;
   if (sync_datatype_helper::test()->use_verifier()) {
@@ -521,7 +521,7 @@ void SetFavicon(int profile,
                 const gfx::Image& image,
                 FaviconSource favicon_source) {
   BookmarkModel* model = GetBookmarkModel(profile);
-  ASSERT_EQ(GetBookmarkNodeByID(model, node->id()), node)
+  ASSERT_EQ(bookmarks::GetBookmarkNodeByID(model, node->id()), node)
       << "Node " << node->GetTitle() << " does not belong to "
       << "Profile " << profile;
   ASSERT_EQ(BookmarkNode::URL, node->type()) << "Node " << node->GetTitle()
@@ -549,7 +549,7 @@ const BookmarkNode* SetURL(int profile,
                            const BookmarkNode* node,
                            const GURL& new_url) {
   BookmarkModel* model = GetBookmarkModel(profile);
-  if (GetBookmarkNodeByID(model, node->id()) != node) {
+  if (bookmarks::GetBookmarkNodeByID(model, node->id()) != node) {
     LOG(ERROR) << "Node " << node->GetTitle() << " does not belong to "
                << "Profile " << profile;
     return NULL;
@@ -570,7 +570,7 @@ void Move(int profile,
           const BookmarkNode* new_parent,
           int index) {
   BookmarkModel* model = GetBookmarkModel(profile);
-  ASSERT_EQ(GetBookmarkNodeByID(model, node->id()), node)
+  ASSERT_EQ(bookmarks::GetBookmarkNodeByID(model, node->id()), node)
       << "Node " << node->GetTitle() << " does not belong to "
       << "Profile " << profile;
   if (sync_datatype_helper::test()->use_verifier()) {
@@ -585,7 +585,7 @@ void Move(int profile,
 
 void Remove(int profile, const BookmarkNode* parent, int index) {
   BookmarkModel* model = GetBookmarkModel(profile);
-  ASSERT_EQ(GetBookmarkNodeByID(model, parent->id()), parent)
+  ASSERT_EQ(bookmarks::GetBookmarkNodeByID(model, parent->id()), parent)
       << "Node " << parent->GetTitle() << " does not belong to "
       << "Profile " << profile;
   if (sync_datatype_helper::test()->use_verifier()) {
@@ -612,7 +612,7 @@ void RemoveAll(int profile) {
 
 void SortChildren(int profile, const BookmarkNode* parent) {
   BookmarkModel* model = GetBookmarkModel(profile);
-  ASSERT_EQ(GetBookmarkNodeByID(model, parent->id()), parent)
+  ASSERT_EQ(bookmarks::GetBookmarkNodeByID(model, parent->id()), parent)
       << "Node " << parent->GetTitle() << " does not belong to "
       << "Profile " << profile;
   if (sync_datatype_helper::test()->use_verifier()) {
@@ -624,8 +624,9 @@ void SortChildren(int profile, const BookmarkNode* parent) {
 }
 
 void ReverseChildOrder(int profile, const BookmarkNode* parent) {
-  ASSERT_EQ(GetBookmarkNodeByID(GetBookmarkModel(profile), parent->id()),
-            parent)
+  ASSERT_EQ(
+      bookmarks::GetBookmarkNodeByID(GetBookmarkModel(profile), parent->id()),
+      parent)
       << "Node " << parent->GetTitle() << " does not belong to "
       << "Profile " << profile;
   int child_count = parent->child_count();

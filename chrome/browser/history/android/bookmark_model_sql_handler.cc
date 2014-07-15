@@ -46,7 +46,8 @@ void BookmarkModelSQLHandler::Task::AddBookmark(const GURL& url,
   BookmarkModel* bookmark_model = GetBookmarkModel();
   if (!bookmark_model)
     return;
-  const BookmarkNode* parent = GetBookmarkNodeByID(bookmark_model, parent_id);
+  const BookmarkNode* parent =
+      bookmarks::GetBookmarkNodeByID(bookmark_model, parent_id);
   if (parent)
     bookmark_model->AddURL(parent, 0, title, url);
 }

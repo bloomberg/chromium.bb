@@ -80,9 +80,9 @@ IN_PROC_BROWSER_TEST_F(BookmarkBrowsertest, BookmarkBarVisibleWait) {
 IN_PROC_BROWSER_TEST_F(BookmarkBrowsertest, PRE_Persist) {
   BookmarkModel* bookmark_model = WaitForBookmarkModel(browser()->profile());
 
-  bookmark_utils::AddIfNotBookmarked(
-      bookmark_model, GURL(kPersistBookmarkURL),
-      base::ASCIIToUTF16(kPersistBookmarkTitle));
+  bookmarks::AddIfNotBookmarked(bookmark_model,
+                                GURL(kPersistBookmarkURL),
+                                base::ASCIIToUTF16(kPersistBookmarkTitle));
 }
 
 #if defined(THREAD_SANITIZER)
@@ -120,9 +120,9 @@ IN_PROC_BROWSER_TEST_F(BookmarkBrowsertest, DISABLED_MultiProfile) {
   Browser* browser2 = observer.WaitForSingleNewBrowser();
   BookmarkModel* bookmark_model2 = WaitForBookmarkModel(browser2->profile());
 
-  bookmark_utils::AddIfNotBookmarked(
-      bookmark_model1, GURL(kPersistBookmarkURL),
-      base::ASCIIToUTF16(kPersistBookmarkTitle));
+  bookmarks::AddIfNotBookmarked(bookmark_model1,
+                                GURL(kPersistBookmarkURL),
+                                base::ASCIIToUTF16(kPersistBookmarkTitle));
   std::vector<BookmarkModel::URLAndTitle> urls1, urls2;
   bookmark_model1->GetBookmarks(&urls1);
   bookmark_model2->GetBookmarks(&urls2);

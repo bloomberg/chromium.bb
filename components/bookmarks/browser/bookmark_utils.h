@@ -16,10 +16,6 @@ class BookmarkModel;
 class BookmarkNode;
 class GURL;
 
-namespace bookmarks {
-class BookmarkClient;
-}
-
 namespace user_prefs {
 class PrefRegistrySyncable;
 }
@@ -27,7 +23,9 @@ class PrefRegistrySyncable;
 // A collection of bookmark utility functions used by various parts of the UI
 // that show bookmarks (bookmark manager, bookmark bar view, ...) and other
 // systems that involve indexing and searching bookmarks.
-namespace bookmark_utils {
+namespace bookmarks {
+
+class BookmarkClient;
 
 // Fields to use when finding matching bookmarks.
 struct QueryFields {
@@ -149,9 +147,9 @@ bool CanAllBeEditedByUser(bookmarks::BookmarkClient* client,
 // by the user.
 bool IsBookmarkedByUser(BookmarkModel* model, const GURL& url);
 
-}  // namespace bookmark_utils
-
 // Returns the node with |id|, or NULL if there is no node with |id|.
 const BookmarkNode* GetBookmarkNodeByID(const BookmarkModel* model, int64 id);
+
+}  // namespace bookmarks
 
 #endif  // COMPONENTS_BOOKMARKS_BROWSER_BOOKMARK_UTILS_H_

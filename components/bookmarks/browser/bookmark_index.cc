@@ -19,12 +19,10 @@
 #include "components/query_parser/snippet.h"
 #include "third_party/icu/source/common/unicode/normalizer2.h"
 
-using bookmarks::BookmarkClient;
+namespace bookmarks {
 
 typedef BookmarkClient::NodeTypedCountPair NodeTypedCountPair;
 typedef BookmarkClient::NodeTypedCountPairs NodeTypedCountPairs;
-
-namespace bookmarks {
 
 namespace {
 
@@ -118,8 +116,8 @@ void BookmarkIndex::Add(const BookmarkNode* node) {
   for (size_t i = 0; i < terms.size(); ++i)
     RegisterNode(terms[i], node);
   if (index_urls_) {
-    terms = ExtractQueryWords(bookmark_utils::CleanUpUrlForMatching(
-        node->url(), languages_, NULL));
+    terms =
+        ExtractQueryWords(CleanUpUrlForMatching(node->url(), languages_, NULL));
     for (size_t i = 0; i < terms.size(); ++i)
       RegisterNode(terms[i], node);
   }
@@ -134,8 +132,8 @@ void BookmarkIndex::Remove(const BookmarkNode* node) {
   for (size_t i = 0; i < terms.size(); ++i)
     UnregisterNode(terms[i], node);
   if (index_urls_) {
-    terms = ExtractQueryWords(bookmark_utils::CleanUpUrlForMatching(
-        node->url(), languages_, NULL));
+    terms =
+        ExtractQueryWords(CleanUpUrlForMatching(node->url(), languages_, NULL));
     for (size_t i = 0; i < terms.size(); ++i)
       UnregisterNode(terms[i], node);
   }
@@ -221,8 +219,9 @@ void BookmarkIndex::AddMatchToResults(
   parser->ExtractQueryWords(lower_title, &title_words);
   base::OffsetAdjuster::Adjustments adjustments;
   if (index_urls_) {
-    parser->ExtractQueryWords(bookmark_utils::CleanUpUrlForMatching(
-        node->url(), languages_, &adjustments), &url_words);
+    parser->ExtractQueryWords(
+        CleanUpUrlForMatching(node->url(), languages_, &adjustments),
+        &url_words);
   }
   query_parser::Snippet::MatchPositions title_matches, url_matches;
   for (size_t i = 0; i < query_nodes.size(); ++i) {

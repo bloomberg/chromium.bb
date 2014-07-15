@@ -212,7 +212,8 @@ void BookmarkEditorView::ExecuteCommand(int command_id, int event_flags) {
     if (!node)
       return;
     if (node->value != 0) {
-      const BookmarkNode* b_node = GetBookmarkNodeByID(bb_model_, node->value);
+      const BookmarkNode* b_node =
+          bookmarks::GetBookmarkNodeByID(bb_model_, node->value);
       if (!b_node->empty() &&
           !chrome::ConfirmDeleteBookmarkNode(b_node,
             GetWidget()->GetNativeWindow())) {
@@ -577,7 +578,7 @@ void BookmarkEditorView::ApplyEdits(EditorNode* parent) {
 
   // Remove the folders that were removed. This has to be done after all the
   // other changes have been committed.
-  bookmark_utils::DeleteBookmarkFolders(bb_model_, deletes_);
+  bookmarks::DeleteBookmarkFolders(bb_model_, deletes_);
 }
 
 void BookmarkEditorView::ApplyNameChangesAndCreateNewFolders(
@@ -619,8 +620,11 @@ void BookmarkEditorView::UpdateExpandedNodes(
   if (!tree_view_->IsExpanded(editor_node))
     return;
 
-  if (editor_node->value != 0)  // The root is 0.
-    expanded_nodes->insert(GetBookmarkNodeByID(bb_model_, editor_node->value));
+  // The root is 0.
+  if (editor_node->value != 0) {
+    expanded_nodes->insert(
+        bookmarks::GetBookmarkNodeByID(bb_model_, editor_node->value));
+  }
 
   for (int i = 0; i < editor_node->child_count(); ++i)
     UpdateExpandedNodes(editor_node->GetChild(i), expanded_nodes);

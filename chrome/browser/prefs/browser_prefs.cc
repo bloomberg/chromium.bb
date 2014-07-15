@@ -349,7 +349,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   TRACE_EVENT0("browser", "chrome::RegisterUserPrefs");
   // User prefs. Please keep this list alphabetized.
   autofill::AutofillManager::RegisterProfilePrefs(registry);
-  bookmark_utils::RegisterProfilePrefs(registry);
+  bookmarks::RegisterProfilePrefs(registry);
   sync_driver::SyncPrefs::RegisterProfilePrefs(registry);
   ChromeContentBrowserClient::RegisterProfilePrefs(registry);
   ChromeVersionService::RegisterProfilePrefs(registry);

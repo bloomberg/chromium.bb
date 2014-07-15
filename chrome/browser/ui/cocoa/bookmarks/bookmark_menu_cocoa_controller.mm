@@ -80,7 +80,8 @@ const NSUInteger kMaximumMenuPixelsWide = 300;
 // Return the a BookmarkNode that has the given id (called
 // "identifier" here to avoid conflict with objc's concept of "id").
 - (const BookmarkNode*)nodeForIdentifier:(int)identifier {
-  return GetBookmarkNodeByID(bridge_->GetBookmarkModel(), identifier);
+  return bookmarks::GetBookmarkNodeByID(bridge_->GetBookmarkModel(),
+                                        identifier);
 }
 
 // Open the URL of the given BookmarkNode in the current tab.

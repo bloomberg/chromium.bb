@@ -71,7 +71,7 @@ const BookmarkNode* GetNodeFromString(BookmarkModel* model,
   int64 id;
   if (!base::StringToInt64(id_string, &id))
     return NULL;
-  return GetBookmarkNodeByID(model, id);
+  return bookmarks::GetBookmarkNodeByID(model, id);
 }
 
 // Gets a vector of bookmark nodes from the argument list of IDs.
@@ -359,7 +359,7 @@ bool ClipboardBookmarkManagerFunction::CopyOrCut(bool cut,
     error_ = bookmark_keys::kModifyManagedError;
     return false;
   }
-  bookmark_utils::CopyToClipboard(model, nodes, cut);
+  bookmarks::CopyToClipboard(model, nodes, cut);
   return true;
 }
 
@@ -388,7 +388,7 @@ bool BookmarkManagerPrivatePasteFunction::RunOnReady() {
   const BookmarkNode* parent_node = GetNodeFromString(model, params->parent_id);
   if (!CanBeModified(parent_node))
     return false;
-  bool can_paste = bookmark_utils::CanPasteFromClipboard(model, parent_node);
+  bool can_paste = bookmarks::CanPasteFromClipboard(model, parent_node);
   if (!can_paste)
     return false;
 
@@ -405,7 +405,7 @@ bool BookmarkManagerPrivatePasteFunction::RunOnReady() {
       highest_index = index;
   }
 
-  bookmark_utils::PasteFromClipboard(model, parent_node, highest_index);
+  bookmarks::PasteFromClipboard(model, parent_node, highest_index);
   return true;
 }
 
@@ -422,8 +422,7 @@ bool BookmarkManagerPrivateCanPasteFunction::RunOnReady() {
     error_ = bookmark_keys::kNoParentError;
     return false;
   }
-  bool can_paste =
-      bookmark_utils::CanPasteFromClipboard(model, parent_node);
+  bool can_paste = bookmarks::CanPasteFromClipboard(model, parent_node);
   SetResult(new base::FundamentalValue(can_paste));
   return true;
 }

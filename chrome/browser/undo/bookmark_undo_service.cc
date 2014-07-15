@@ -81,7 +81,8 @@ BookmarkAddOperation::BookmarkAddOperation(Profile* profile,
 
 void BookmarkAddOperation::Undo() {
   BookmarkModel* model = GetBookmarkModel();
-  const BookmarkNode* parent = GetBookmarkNodeByID(model, parent_id_);
+  const BookmarkNode* parent =
+      bookmarks::GetBookmarkNodeByID(model, parent_id_);
   DCHECK(parent);
 
   model->Remove(parent, index_);
@@ -147,11 +148,12 @@ BookmarkRemoveOperation::BookmarkRemoveOperation(Profile* profile,
 void BookmarkRemoveOperation::Undo() {
   DCHECK(removed_node_.is_valid());
   BookmarkModel* model = GetBookmarkModel();
-  const BookmarkNode* parent = GetBookmarkNodeByID(model, parent_id_);
+  const BookmarkNode* parent =
+      bookmarks::GetBookmarkNodeByID(model, parent_id_);
   DCHECK(parent);
 
-  bookmark_utils::CloneBookmarkNode(model, removed_node_.elements, parent,
-                                    old_index_, false);
+  bookmarks::CloneBookmarkNode(
+      model, removed_node_.elements, parent, old_index_, false);
   UpdateBookmarkIds(removed_node_.elements[0], parent, old_index_);
 }
 
@@ -215,7 +217,7 @@ BookmarkEditOperation::BookmarkEditOperation(Profile* profile,
 void BookmarkEditOperation::Undo() {
   DCHECK(original_bookmark_.is_valid());
   BookmarkModel* model = GetBookmarkModel();
-  const BookmarkNode* node = GetBookmarkNodeByID(model, node_id_);
+  const BookmarkNode* node = bookmarks::GetBookmarkNodeByID(model, node_id_);
   DCHECK(node);
 
   model->SetTitle(node, original_bookmark_.elements[0].title);
@@ -279,8 +281,10 @@ BookmarkMoveOperation::BookmarkMoveOperation(Profile* profile,
 
 void BookmarkMoveOperation::Undo() {
   BookmarkModel* model = GetBookmarkModel();
-  const BookmarkNode* old_parent = GetBookmarkNodeByID(model, old_parent_id_);
-  const BookmarkNode* new_parent = GetBookmarkNodeByID(model, new_parent_id_);
+  const BookmarkNode* old_parent =
+      bookmarks::GetBookmarkNodeByID(model, old_parent_id_);
+  const BookmarkNode* new_parent =
+      bookmarks::GetBookmarkNodeByID(model, new_parent_id_);
   DCHECK(old_parent);
   DCHECK(new_parent);
 
@@ -352,12 +356,15 @@ BookmarkReorderOperation::~BookmarkReorderOperation() {
 
 void BookmarkReorderOperation::Undo() {
   BookmarkModel* model = GetBookmarkModel();
-  const BookmarkNode* parent = GetBookmarkNodeByID(model, parent_id_);
+  const BookmarkNode* parent =
+      bookmarks::GetBookmarkNodeByID(model, parent_id_);
   DCHECK(parent);
 
   std::vector<const BookmarkNode*> ordered_nodes;
-  for (size_t i = 0; i < ordered_bookmarks_.size(); ++i)
-    ordered_nodes.push_back(GetBookmarkNodeByID(model, ordered_bookmarks_[i]));
+  for (size_t i = 0; i < ordered_bookmarks_.size(); ++i) {
+    ordered_nodes.push_back(
+        bookmarks::GetBookmarkNodeByID(model, ordered_bookmarks_[i]));
+  }
 
   model->ReorderChildren(parent, ordered_nodes);
 }

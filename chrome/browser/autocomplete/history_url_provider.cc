@@ -713,8 +713,8 @@ int HistoryURLProvider::CalculateRelevance(MatchType match_type,
 ACMatchClassifications HistoryURLProvider::ClassifyDescription(
     const base::string16& input_text,
     const base::string16& description) {
-  base::string16 clean_description = bookmark_utils::CleanUpTitleForMatching(
-      description);
+  base::string16 clean_description =
+      bookmarks::CleanUpTitleForMatching(description);
   history::TermMatches description_matches(SortAndDeoverlapMatches(
       history::MatchTermInString(input_text, clean_description, 0)));
   history::WordStarts description_word_starts;

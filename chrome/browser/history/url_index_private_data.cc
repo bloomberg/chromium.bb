@@ -748,11 +748,10 @@ void URLIndexPrivateData::AddRowWordsToIndex(const URLRow& row,
   // Split URL into individual, unique words then add in the title words.
   const GURL& gurl(row.url());
   const base::string16& url =
-      bookmark_utils::CleanUpUrlForMatching(gurl, languages, NULL);
+      bookmarks::CleanUpUrlForMatching(gurl, languages, NULL);
   String16Set url_words = String16SetFromString16(url,
       word_starts ? &word_starts->url_word_starts_ : NULL);
-  const base::string16& title =
-      bookmark_utils::CleanUpTitleForMatching(row.title());
+  const base::string16& title = bookmarks::CleanUpTitleForMatching(row.title());
   String16Set title_words = String16SetFromString16(title,
       word_starts ? &word_starts->title_word_starts_ : NULL);
   String16Set words = base::STLSetUnion<String16Set>(url_words, title_words);
@@ -1227,11 +1226,11 @@ bool URLIndexPrivateData::RestoreWordStartsMap(
          iter != history_info_map_.end(); ++iter) {
       RowWordStarts word_starts;
       const URLRow& row(iter->second.url_row);
-      const base::string16& url = bookmark_utils::CleanUpUrlForMatching(
-          row.url(), languages, NULL);
+      const base::string16& url =
+          bookmarks::CleanUpUrlForMatching(row.url(), languages, NULL);
       String16VectorFromString16(url, false, &word_starts.url_word_starts_);
       const base::string16& title =
-          bookmark_utils::CleanUpTitleForMatching(row.title());
+          bookmarks::CleanUpTitleForMatching(row.title());
       String16VectorFromString16(title, false, &word_starts.title_word_starts_);
       word_starts_map_[iter->first] = word_starts;
     }

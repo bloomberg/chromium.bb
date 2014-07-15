@@ -559,7 +559,7 @@ TEST_F(BookmarkBarControllerTest, OffTheSideButtonHidden) {
   EXPECT_TRUE([bar_ offTheSideButtonIsHidden]);
 
   for (int i = 0; i < 2; i++) {
-    bookmark_utils::AddIfNotBookmarked(
+    bookmarks::AddIfNotBookmarked(
         model, GURL("http://www.foo.com"), ASCIIToUTF16("small"));
     EXPECT_TRUE([bar_ offTheSideButtonIsHidden]);
   }
@@ -692,8 +692,8 @@ TEST_F(BookmarkBarControllerTest, MenuForFolderNode) {
 
   // Test two bookmarks.
   GURL gurl("http://www.foo.com");
-  bookmark_utils::AddIfNotBookmarked(model, gurl, ASCIIToUTF16("small"));
-  bookmark_utils::AddIfNotBookmarked(
+  bookmarks::AddIfNotBookmarked(model, gurl, ASCIIToUTF16("small"));
+  bookmarks::AddIfNotBookmarked(
       model, GURL("http://www.cnn.com"), ASCIIToUTF16("bigger title"));
   menu = [bar_ menuForFolderNode:model->bookmark_bar_node()];
   EXPECT_EQ([menu numberOfItems], 2);
@@ -703,7 +703,7 @@ TEST_F(BookmarkBarControllerTest, MenuForFolderNode) {
   EXPECT_TRUE(item);
   if (item) {
     int64 tag = [bar_ nodeIdFromMenuTag:[item tag]];
-    const BookmarkNode* node = GetBookmarkNodeByID(model, tag);
+    const BookmarkNode* node = bookmarks::GetBookmarkNodeByID(model, tag);
     EXPECT_TRUE(node);
     EXPECT_EQ(gurl, node->url());
   }
@@ -764,23 +764,23 @@ TEST_F(BookmarkBarControllerTest, TestAddRemoveAndClear) {
   // TODO(viettrungluu): make the test independent of window/view size, font
   // metrics, button size and spacing, and everything else.
   base::string16 title1(ASCIIToUTF16("x"));
-  bookmark_utils::AddIfNotBookmarked(model, gurl1, title1);
+  bookmarks::AddIfNotBookmarked(model, gurl1, title1);
   EXPECT_EQ(1U, [[bar_ buttons] count]);
   EXPECT_EQ(1+initial_subview_count, [[buttonView subviews] count]);
 
   GURL gurl2("http://legion-of-doom.gov");
   base::string16 title2(ASCIIToUTF16("y"));
-  bookmark_utils::AddIfNotBookmarked(model, gurl2, title2);
+  bookmarks::AddIfNotBookmarked(model, gurl2, title2);
   EXPECT_EQ(2U, [[bar_ buttons] count]);
   EXPECT_EQ(2+initial_subview_count, [[buttonView subviews] count]);
 
   for (int i = 0; i < 3; i++) {
-    bookmark_utils::RemoveAllBookmarks(model, gurl2);
+    bookmarks::RemoveAllBookmarks(model, gurl2);
     EXPECT_EQ(1U, [[bar_ buttons] count]);
     EXPECT_EQ(1+initial_subview_count, [[buttonView subviews] count]);
 
     // and bring it back
-    bookmark_utils::AddIfNotBookmarked(model, gurl2, title2);
+    bookmarks::AddIfNotBookmarked(model, gurl2, title2);
     EXPECT_EQ(2U, [[bar_ buttons] count]);
     EXPECT_EQ(2+initial_subview_count, [[buttonView subviews] count]);
   }
@@ -861,11 +861,11 @@ TEST_F(BookmarkBarControllerTest, CheckForGrowth) {
   BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile());
   GURL gurl1("http://www.google.com");
   base::string16 title1(ASCIIToUTF16("x"));
-  bookmark_utils::AddIfNotBookmarked(model, gurl1, title1);
+  bookmarks::AddIfNotBookmarked(model, gurl1, title1);
 
   GURL gurl2("http://www.google.com/blah");
   base::string16 title2(ASCIIToUTF16("y"));
-  bookmark_utils::AddIfNotBookmarked(model, gurl2, title2);
+  bookmarks::AddIfNotBookmarked(model, gurl2, title2);
 
   EXPECT_EQ(2U, [[bar_ buttons] count]);
   CGFloat width_1 = [[[bar_ buttons] objectAtIndex:0] frame].size.width;
@@ -944,7 +944,7 @@ TEST_F(BookmarkBarControllerTest, MiddleClick) {
   BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile());
   GURL gurl1("http://www.google.com/");
   base::string16 title1(ASCIIToUTF16("x"));
-  bookmark_utils::AddIfNotBookmarked(model, gurl1, title1);
+  bookmarks::AddIfNotBookmarked(model, gurl1, title1);
 
   EXPECT_EQ(1U, [[bar_ buttons] count]);
   NSButton* first = [[bar_ buttons] objectAtIndex:0];
@@ -1044,7 +1044,7 @@ TEST_F(BookmarkBarControllerTest, TestDragButton) {
                               ASCIIToUTF16("b"),
                               ASCIIToUTF16("c") };
   for (unsigned i = 0; i < arraysize(titles); i++)
-    bookmark_utils::AddIfNotBookmarked(model, gurls[i], titles[i]);
+    bookmarks::AddIfNotBookmarked(model, gurls[i], titles[i]);
 
   EXPECT_EQ([[bar_ buttons] count], arraysize(titles));
   EXPECT_NSEQ(@"a", [[[bar_ buttons] objectAtIndex:0] title]);
@@ -1116,7 +1116,7 @@ TEST_F(BookmarkBarControllerTest, TestCopyButton) {
                               ASCIIToUTF16("b"),
                               ASCIIToUTF16("c") };
   for (unsigned i = 0; i < arraysize(titles); i++)
-    bookmark_utils::AddIfNotBookmarked(model, gurls[i], titles[i]);
+    bookmarks::AddIfNotBookmarked(model, gurls[i], titles[i]);
 
   EXPECT_EQ([[bar_ buttons] count], arraysize(titles));
   EXPECT_NSEQ(@"a", [[[bar_ buttons] objectAtIndex:0] title]);
@@ -1138,7 +1138,7 @@ TEST_F(BookmarkBarControllerTest, TestCopyButton) {
 // buttons have the same colored text.  Repeat more than once.
 TEST_F(BookmarkBarControllerTest, TestThemedButton) {
   BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile());
-  bookmark_utils::AddIfNotBookmarked(
+  bookmarks::AddIfNotBookmarked(
       model, GURL("http://www.foo.com"), ASCIIToUTF16("small"));
   BookmarkButton* button = [[bar_ buttons] objectAtIndex:0];
   EXPECT_TRUE(button);
@@ -1171,7 +1171,7 @@ TEST_F(BookmarkBarControllerTest, TestClearOnDealloc) {
                               ASCIIToUTF16("b"),
                               ASCIIToUTF16("c") };
   for (size_t i = 0; i < arraysize(titles); i++)
-    bookmark_utils::AddIfNotBookmarked(model, gurls[i], titles[i]);
+    bookmarks::AddIfNotBookmarked(model, gurls[i], titles[i]);
 
   // Get and retain the buttons so we can examine them after dealloc.
   base::scoped_nsobject<NSArray> buttons([[bar_ buttons] retain]);

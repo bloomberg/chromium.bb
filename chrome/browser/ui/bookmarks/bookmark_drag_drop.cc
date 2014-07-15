@@ -30,8 +30,8 @@ int DropBookmarks(Profile* profile,
     const std::vector<const BookmarkNode*> dragged_nodes =
         data.GetNodes(model, profile->GetPath());
     DCHECK(model->client()->CanBeEditedByUser(parent_node));
-    DCHECK(copy || bookmark_utils::CanAllBeEditedByUser(model->client(),
-                                                        dragged_nodes));
+    DCHECK(copy ||
+           bookmarks::CanAllBeEditedByUser(model->client(), dragged_nodes));
     if (!dragged_nodes.empty()) {
       // Drag from same profile. Copy or move nodes.
       for (size_t i = 0; i < dragged_nodes.size(); ++i) {
@@ -47,8 +47,7 @@ int DropBookmarks(Profile* profile,
     return ui::DragDropTypes::DRAG_NONE;
   }
   // Dropping a folder from different profile. Always accept.
-  bookmark_utils::CloneBookmarkNode(model, data.elements, parent_node,
-                                    index, true);
+  bookmarks::CloneBookmarkNode(model, data.elements, parent_node, index, true);
   return ui::DragDropTypes::DRAG_COPY;
 }
 

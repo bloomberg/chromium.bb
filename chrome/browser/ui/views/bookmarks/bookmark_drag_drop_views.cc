@@ -39,7 +39,7 @@ void DragBookmarks(Profile* profile,
 
   int operation = ui::DragDropTypes::DRAG_COPY | ui::DragDropTypes::DRAG_LINK;
   BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile);
-  if (bookmark_utils::CanAllBeEditedByUser(model->client(), nodes))
+  if (bookmarks::CanAllBeEditedByUser(model->client(), nodes))
     operation |= ui::DragDropTypes::DRAG_MOVE;
 
   views::Widget* widget = views::Widget::GetWidgetForNativeView(view);

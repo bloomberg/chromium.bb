@@ -162,7 +162,7 @@ using base::UserMetricsAction;
     const BookmarkModel* const model = [[self controller] bookmarkModel];
     const BookmarkNode* const source_node = [button bookmarkNode];
     const BookmarkNode* const target_node =
-        GetBookmarkNodeByID(model, source_node->id());
+        bookmarks::GetBookmarkNodeByID(model, source_node->id());
 
     BOOL copy =
         !([info draggingSourceOperationMask] & NSDragOperationMove) ||

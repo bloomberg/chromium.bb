@@ -197,7 +197,7 @@ const BookmarkNode* BookmarksFunction::GetBookmarkNodeFromId(
   if (!GetBookmarkIdAsInt64(id_string, &id))
     return NULL;
 
-  const BookmarkNode* node = GetBookmarkNodeByID(
+  const BookmarkNode* node = ::bookmarks::GetBookmarkNodeByID(
       BookmarkModelFactory::GetForProfile(GetProfile()), id);
   if (!node)
     error_ = keys::kNoNodeError;
@@ -218,7 +218,8 @@ const BookmarkNode* BookmarksFunction::CreateBookmarkNode(
     if (!GetBookmarkIdAsInt64(*details.parent_id, &parentId))
       return NULL;
   }
-  const BookmarkNode* parent = GetBookmarkNodeByID(model, parentId);
+  const BookmarkNode* parent =
+      ::bookmarks::GetBookmarkNodeByID(model, parentId);
   if (!CanBeModified(parent))
     return NULL;
 
@@ -537,7 +538,7 @@ bool BookmarksGetRecentFunction::RunOnReady() {
     return false;
 
   std::vector<const BookmarkNode*> nodes;
-  bookmark_utils::GetMostRecentlyAddedEntries(
+  ::bookmarks::GetMostRecentlyAddedEntries(
       BookmarkModelFactory::GetForProfile(GetProfile()),
       params->number_of_items,
       &nodes);
@@ -587,10 +588,10 @@ bool BookmarksSearchFunction::RunOnReady() {
   std::string lang = prefs->GetString(prefs::kAcceptLanguages);
   std::vector<const BookmarkNode*> nodes;
   if (params->query.as_string) {
-    bookmark_utils::QueryFields query;
+    ::bookmarks::QueryFields query;
     query.word_phrase_query.reset(
         new base::string16(base::UTF8ToUTF16(*params->query.as_string)));
-    bookmark_utils::GetBookmarksMatchingProperties(
+    ::bookmarks::GetBookmarksMatchingProperties(
         BookmarkModelFactory::GetForProfile(GetProfile()),
         query,
         std::numeric_limits<int>::max(),
@@ -600,7 +601,7 @@ bool BookmarksSearchFunction::RunOnReady() {
     DCHECK(params->query.as_object);
     const bookmarks::Search::Params::Query::Object& object =
         *params->query.as_object;
-    bookmark_utils::QueryFields query;
+    ::bookmarks::QueryFields query;
     if (object.query) {
       query.word_phrase_query.reset(
           new base::string16(base::UTF8ToUTF16(*object.query)));
@@ -609,7 +610,7 @@ bool BookmarksSearchFunction::RunOnReady() {
       query.url.reset(new base::string16(base::UTF8ToUTF16(*object.url)));
     if (object.title)
       query.title.reset(new base::string16(base::UTF8ToUTF16(*object.title)));
-    bookmark_utils::GetBookmarksMatchingProperties(
+    ::bookmarks::GetBookmarksMatchingProperties(
         BookmarkModelFactory::GetForProfile(GetProfile()),
         query,
         std::numeric_limits<int>::max(),
@@ -722,7 +723,7 @@ bool BookmarksMoveFunction::RunOnReady() {
     if (!GetBookmarkIdAsInt64(*params->destination.parent_id, &parentId))
       return false;
 
-    parent = GetBookmarkNodeByID(model, parentId);
+    parent = ::bookmarks::GetBookmarkNodeByID(model, parentId);
   }
   if (!CanBeModified(parent) || !CanBeModified(node))
     return false;
@@ -845,7 +846,8 @@ class CreateBookmarkBucketMapper : public BookmarkBucketMapper<std::string> {
 
     int64 parent_id_int64;
     base::StringToInt64(parent_id, &parent_id_int64);
-    const BookmarkNode* parent = GetBookmarkNodeByID(model, parent_id_int64);
+    const BookmarkNode* parent =
+        ::bookmarks::GetBookmarkNodeByID(model, parent_id_int64);
     if (!parent)
       return;
 
@@ -884,7 +886,7 @@ class RemoveBookmarksBucketMapper : public BookmarkBucketMapper<std::string> {
     for (IdList::iterator it = ids.begin(); it != ids.end(); ++it) {
       BookmarkModel* model = BookmarkModelFactory::GetForProfile(
           Profile::FromBrowserContext(browser_context_));
-      const BookmarkNode* node = GetBookmarkNodeByID(model, *it);
+      const BookmarkNode* node = ::bookmarks::GetBookmarkNodeByID(model, *it);
       if (!node || node->is_root())
         return;
 

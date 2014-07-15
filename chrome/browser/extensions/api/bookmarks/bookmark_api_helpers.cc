@@ -111,7 +111,7 @@ bool RemoveNode(BookmarkModel* model,
                 int64 id,
                 bool recursive,
                 std::string* error) {
-  const BookmarkNode* node = GetBookmarkNodeByID(model, id);
+  const BookmarkNode* node = bookmarks::GetBookmarkNodeByID(model, id);
   if (!node) {
     *error = keys::kNoNodeError;
     return false;

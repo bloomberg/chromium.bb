@@ -108,7 +108,7 @@ IN_PROC_BROWSER_TEST_F(ToolbarViewTest,
 
   BookmarkModel* model =
       BookmarkModelFactory::GetForProfile(browser()->profile());
-  bookmark_utils::AddIfNotBookmarked(
+  bookmarks::AddIfNotBookmarked(
       model, GURL("http://foo.com"), base::ASCIIToUTF16("Foo"));
 
   // We want to specifically test the case where the bookmark bar is

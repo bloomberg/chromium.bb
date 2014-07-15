@@ -224,7 +224,7 @@ class AddBookmarkTask : public BookmarkModelTask {
     if (!node) {
       const BookmarkNode* parent_node = NULL;
       if (parent_id >= 0)
-        parent_node = GetBookmarkNodeByID(model, parent_id);
+        parent_node = bookmarks::GetBookmarkNodeByID(model, parent_id);
       if (!parent_node)
         parent_node = model->bookmark_bar_node();
 
@@ -259,7 +259,7 @@ class RemoveBookmarkTask : public BookmarkModelObserverTask {
 
   static void RunOnUIThread(BookmarkModel* model, const int64 id) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-    const BookmarkNode* node = GetBookmarkNodeByID(model, id);
+    const BookmarkNode* node = bookmarks::GetBookmarkNodeByID(model, id);
     if (node && node->parent()) {
       const BookmarkNode* parent_node = node->parent();
       model->Remove(parent_node, parent_node->GetIndexOf(node));
@@ -332,7 +332,7 @@ class UpdateBookmarkTask : public BookmarkModelObserverTask {
                             const base::string16& url,
                             const int64 parent_id) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-    const BookmarkNode* node = GetBookmarkNodeByID(model, id);
+    const BookmarkNode* node = bookmarks::GetBookmarkNodeByID(model, id);
     if (node) {
       if (node->GetTitle() != title)
         model->SetTitle(node, title);
@@ -345,7 +345,8 @@ class UpdateBookmarkTask : public BookmarkModelObserverTask {
 
       if (parent_id >= 0 &&
           (!node->parent() || parent_id != node->parent()->id())) {
-        const BookmarkNode* new_parent = GetBookmarkNodeByID(model, parent_id);
+        const BookmarkNode* new_parent =
+            bookmarks::GetBookmarkNodeByID(model, parent_id);
 
         if (new_parent)
           model->Move(node, new_parent, 0);
@@ -387,7 +388,7 @@ class BookmarkNodeExistsTask : public BookmarkModelTask {
                             bool* result) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     DCHECK(result);
-    *result = GetBookmarkNodeByID(model, id) != NULL;
+    *result = bookmarks::GetBookmarkNodeByID(model, id) != NULL;
   }
 
  private:
@@ -413,7 +414,7 @@ class IsInMobileBookmarksBranchTask : public BookmarkModelTask {
                             bool *result) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     DCHECK(result);
-    const BookmarkNode* node = GetBookmarkNodeByID(model, id);
+    const BookmarkNode* node = bookmarks::GetBookmarkNodeByID(model, id);
     const BookmarkNode* mobile_node = model->mobile_node();
     while (node && node != mobile_node)
       node = node->parent();
@@ -449,8 +450,9 @@ class CreateBookmarksFolderOnceTask : public BookmarkModelTask {
     DCHECK(result);
 
     // Invalid ids are assumed to refer to the Mobile Bookmarks folder.
-    const BookmarkNode* parent = parent_id >= 0 ?
-        GetBookmarkNodeByID(model, parent_id) : model->mobile_node();
+    const BookmarkNode* parent =
+        parent_id >= 0 ? bookmarks::GetBookmarkNodeByID(model, parent_id)
+                       : model->mobile_node();
     DCHECK(parent);
 
     bool in_mobile_bookmarks;
@@ -559,7 +561,7 @@ class GetBookmarkNodeTask : public BookmarkModelTask {
                             bool get_children,
                             ScopedJavaGlobalRef<jobject>* jnode) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-    const BookmarkNode* node = GetBookmarkNodeByID(model, id);
+    const BookmarkNode* node = bookmarks::GetBookmarkNodeByID(model, id);
     if (!node || !jnode)
       return;
 

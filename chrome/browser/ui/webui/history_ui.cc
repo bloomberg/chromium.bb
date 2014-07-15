@@ -661,7 +661,7 @@ void BrowsingHistoryHandler::HandleRemoveBookmark(const base::ListValue* args) {
   base::string16 url = ExtractStringValue(args);
   Profile* profile = Profile::FromWebUI(web_ui());
   BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile);
-  bookmark_utils::RemoveAllBookmarks(model, GURL(url));
+  bookmarks::RemoveAllBookmarks(model, GURL(url));
 }
 
 // static

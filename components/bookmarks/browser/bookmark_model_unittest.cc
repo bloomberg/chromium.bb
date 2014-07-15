@@ -735,7 +735,7 @@ TEST_F(BookmarkModelTest, MostRecentlyModifiedFolders) {
 
   // Make sure folder is in the most recently modified.
   std::vector<const BookmarkNode*> most_recent_folders =
-      bookmark_utils::GetMostRecentlyModifiedUserFolders(model_.get(), 1);
+      bookmarks::GetMostRecentlyModifiedUserFolders(model_.get(), 1);
   ASSERT_EQ(1U, most_recent_folders.size());
   ASSERT_EQ(folder, most_recent_folders[0]);
 
@@ -743,7 +743,7 @@ TEST_F(BookmarkModelTest, MostRecentlyModifiedFolders) {
   // returned list.
   model_->Remove(folder->parent(), 0);
   most_recent_folders =
-      bookmark_utils::GetMostRecentlyModifiedUserFolders(model_.get(), 1);
+      bookmarks::GetMostRecentlyModifiedUserFolders(model_.get(), 1);
   ASSERT_EQ(1U, most_recent_folders.size());
   ASSERT_TRUE(most_recent_folders[0] != folder);
 }
@@ -776,7 +776,7 @@ TEST_F(BookmarkModelTest, MostRecentlyAddedEntries) {
 
   // Make sure order is honored.
   std::vector<const BookmarkNode*> recently_added;
-  bookmark_utils::GetMostRecentlyAddedEntries(model_.get(), 2, &recently_added);
+  bookmarks::GetMostRecentlyAddedEntries(model_.get(), 2, &recently_added);
   ASSERT_EQ(2U, recently_added.size());
   ASSERT_TRUE(n1 == recently_added[0]);
   ASSERT_TRUE(n2 == recently_added[1]);
@@ -784,7 +784,7 @@ TEST_F(BookmarkModelTest, MostRecentlyAddedEntries) {
   // swap 1 and 2, then check again.
   recently_added.clear();
   SwapDateAdded(n1, n2);
-  bookmark_utils::GetMostRecentlyAddedEntries(model_.get(), 4, &recently_added);
+  bookmarks::GetMostRecentlyAddedEntries(model_.get(), 4, &recently_added);
   ASSERT_EQ(4U, recently_added.size());
   ASSERT_TRUE(n2 == recently_added[0]);
   ASSERT_TRUE(n1 == recently_added[1]);
@@ -1141,12 +1141,12 @@ TEST_F(BookmarkModelTest, IsBookmarked) {
   EXPECT_TRUE(model_->IsBookmarked(GURL("http://youtube.com")));
   EXPECT_FALSE(model_->IsBookmarked(GURL("http://reddit.com")));
 
-  EXPECT_TRUE(bookmark_utils::IsBookmarkedByUser(model_.get(),
-                                                 GURL("http://google.com")));
-  EXPECT_FALSE(bookmark_utils::IsBookmarkedByUser(model_.get(),
-                                                  GURL("http://youtube.com")));
-  EXPECT_FALSE(bookmark_utils::IsBookmarkedByUser(model_.get(),
-                                                  GURL("http://reddit.com")));
+  EXPECT_TRUE(
+      bookmarks::IsBookmarkedByUser(model_.get(), GURL("http://google.com")));
+  EXPECT_FALSE(
+      bookmarks::IsBookmarkedByUser(model_.get(), GURL("http://youtube.com")));
+  EXPECT_FALSE(
+      bookmarks::IsBookmarkedByUser(model_.get(), GURL("http://reddit.com")));
 }
 
 // Verifies that GetMostRecentlyAddedUserNodeForURL skips bookmarks that
