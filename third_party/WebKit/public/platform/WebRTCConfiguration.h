@@ -74,6 +74,12 @@ private:
     WebPrivatePtr<WebCore::RTCIceServer> m_private;
 };
 
+enum WebRTCIceTransports {
+    WebRTCIceTransportsNone,
+    WebRTCIceTransportsRelay,
+    WebRTCIceTransportsAll
+};
+
 class WebRTCConfiguration {
 public:
     WebRTCConfiguration() { }
@@ -93,6 +99,8 @@ public:
 
     BLINK_PLATFORM_EXPORT size_t numberOfServers() const;
     BLINK_PLATFORM_EXPORT WebRTCICEServer server(size_t index) const;
+
+    BLINK_PLATFORM_EXPORT WebRTCIceTransports iceTransports() const;
 
 #if INSIDE_BLINK
     BLINK_PLATFORM_EXPORT WebRTCConfiguration(const WTF::PassRefPtr<WebCore::RTCConfiguration>&);

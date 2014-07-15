@@ -101,4 +101,20 @@ WebRTCICEServer WebRTCConfiguration::server(size_t index) const
     return WebRTCICEServer(m_private->server(index));
 }
 
+WebRTCIceTransports WebRTCConfiguration::iceTransports() const
+{
+    ASSERT(!isNull());
+    switch (m_private->iceTransports()) {
+    case RTCIceTransportsNone:
+        return WebRTCIceTransportsNone;
+    case RTCIceTransportsRelay:
+        return WebRTCIceTransportsRelay;
+    case RTCIceTransportsAll:
+        return WebRTCIceTransportsAll;
+    default:
+        ASSERT_NOT_REACHED();
+    }
+    return WebRTCIceTransportsAll;
+}
+
 } // namespace blink

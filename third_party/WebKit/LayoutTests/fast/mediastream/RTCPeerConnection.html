@@ -29,6 +29,11 @@ shouldThrow("new webkitRTCPeerConnection({iceServers:[{}]}, null);");
 shouldThrow("new webkitRTCPeerConnection({iceServers:[{url:'foo'}]}, null);");
 shouldThrow("new webkitRTCPeerConnection({iceServers:[{urls:[1, 'turn:foo.com']}]}, null);");
 
+shouldNotThrow("new webkitRTCPeerConnection({iceServers:[], iceTransports:'none'}, null);");
+shouldNotThrow("new webkitRTCPeerConnection({iceServers:[], iceTransports:'relay'}, null);");
+shouldNotThrow("new webkitRTCPeerConnection({iceServers:[], iceTransports:'all'}, null);");
+shouldThrow("new webkitRTCPeerConnection({iceServers:[], iceTransports:'foo'}, null);");
+
 shouldNotThrow("new webkitRTCPeerConnection(null, {mandatory:{valid_and_supported_1:1}});");
 shouldNotThrow("new webkitRTCPeerConnection(null, {mandatory:{valid_and_supported_1:1, valid_and_supported_2:1}});");
 shouldNotThrow("new webkitRTCPeerConnection(null, {optional:[{valid_and_supported_1:0}]});");
