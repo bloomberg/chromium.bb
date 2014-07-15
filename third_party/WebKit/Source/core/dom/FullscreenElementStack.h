@@ -66,7 +66,8 @@ public:
     };
 
     void requestFullScreenForElement(Element&, RequestType);
-    void webkitCancelFullScreen();
+    void fullyExitFullscreen();
+    void exitFullscreen();
 
     void webkitWillEnterFullScreenForElement(Element*);
     void webkitDidEnterFullScreenForElement(Element*);
@@ -82,8 +83,8 @@ public:
     // W3C API
     static bool webkitFullscreenEnabled(Document&);
     Element* webkitFullscreenElement() const { return !m_fullScreenElementStack.isEmpty() ? m_fullScreenElementStack.last().get() : 0; }
-    void webkitExitFullscreen();
 
+    // Mozilla API
     bool webkitIsFullScreen() const { return m_fullScreenElement.get(); }
     bool webkitFullScreenKeyboardInputAllowed() const { return m_fullScreenElement.get() && m_areKeysEnabledInFullScreen; }
     Element* webkitCurrentFullScreenElement() const { return m_fullScreenElement.get(); }

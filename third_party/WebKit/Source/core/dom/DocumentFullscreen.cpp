@@ -53,7 +53,7 @@ Element* DocumentFullscreen::webkitCurrentFullScreenElement(Document& document)
 
 void DocumentFullscreen::webkitCancelFullScreen(Document& document)
 {
-    FullscreenElementStack::from(document).webkitCancelFullScreen();
+    FullscreenElementStack::from(document).fullyExitFullscreen();
 }
 
 bool DocumentFullscreen::webkitFullscreenEnabled(Document& document)
@@ -70,7 +70,7 @@ Element* DocumentFullscreen::webkitFullscreenElement(Document& document)
 
 void DocumentFullscreen::webkitExitFullscreen(Document& document)
 {
-    FullscreenElementStack::from(document).webkitExitFullscreen();
+    FullscreenElementStack::from(document).exitFullscreen();
 }
 
 } // namespace WebCore

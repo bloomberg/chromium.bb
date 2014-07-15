@@ -3479,7 +3479,7 @@ void HTMLMediaElement::exitFullscreen()
 {
     WTF_LOG(Media, "HTMLMediaElement::exitFullscreen");
 
-    FullscreenElementStack::from(document()).webkitCancelFullScreen();
+    FullscreenElementStack::from(document()).fullyExitFullscreen();
 }
 
 void HTMLMediaElement::didBecomeFullscreenElement()

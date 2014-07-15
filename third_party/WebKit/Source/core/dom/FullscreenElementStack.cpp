@@ -268,25 +268,23 @@ void FullscreenElementStack::requestFullScreenForElement(Element& element, Reque
     enqueueErrorEvent(element);
 }
 
-void FullscreenElementStack::webkitCancelFullScreen()
+void FullscreenElementStack::fullyExitFullscreen()
 {
-    // The Mozilla "cancelFullScreen()" API behaves like the W3C "fully exit fullscreen" behavior, which
-    // is defined as:
     // "To fully exit fullscreen act as if the exitFullscreen() method was invoked on the top-level browsing
     // context's document and subsequently empty that document's fullscreen element stack."
     if (!fullscreenElementFrom(document()->topDocument()))
         return;
 
     // To achieve that aim, remove all the elements from the top document's stack except for the first before
-    // calling webkitExitFullscreen():
+    // calling exitFullscreen():
     WillBeHeapVector<RefPtrWillBeMember<Element> > replacementFullscreenElementStack;
     replacementFullscreenElementStack.append(fullscreenElementFrom(document()->topDocument()));
     FullscreenElementStack& topFullscreenElementStack = from(document()->topDocument());
     topFullscreenElementStack.m_fullScreenElementStack.swap(replacementFullscreenElementStack);
-    topFullscreenElementStack.webkitExitFullscreen();
+    topFullscreenElementStack.exitFullscreen();
 }
 
-void FullscreenElementStack::webkitExitFullscreen()
+void FullscreenElementStack::exitFullscreen()
 {
     // The exitFullscreen() method must run these steps:
 
@@ -451,9 +449,9 @@ void FullscreenElementStack::webkitDidExitFullScreenForElement(Element*)
     m_fullScreenElement = nullptr;
     document()->setNeedsStyleRecalc(SubtreeStyleChange);
 
-    // When webkitCancelFullScreen is called, we call webkitExitFullScreen on the topDocument(). That
-    // means that the events will be queued there. So if we have no events here, start the timer on
-    // the exiting document.
+    // When fullyExitFullscreen is called, we call exitFullscreen on the topDocument(). That means
+    // that the events will be queued there. So if we have no events here, start the timer on the
+    // exiting document.
     Document* exitingDocument = document();
     if (m_eventQueue.isEmpty())
         exitingDocument = &document()->topDocument();
@@ -529,7 +527,7 @@ void FullscreenElementStack::eventQueueTimerFired(Timer<FullscreenElementStack>*
 void FullscreenElementStack::fullScreenElementRemoved()
 {
     m_fullScreenElement->setContainsFullScreenElementOnAncestorsCrossingFrameBoundaries(false);
-    webkitCancelFullScreen();
+    fullyExitFullscreen();
 }
 
 void FullscreenElementStack::removeFullScreenElementOfSubtree(Node* node, bool amongChildrenOnly)
