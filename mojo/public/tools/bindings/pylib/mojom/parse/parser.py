@@ -316,7 +316,7 @@ class Parser(object):
 
   def p_const(self, p):
     """const : CONST typename NAME EQUALS constant SEMI"""
-    p[0] = ('CONST', p[2], p[3], p[5])
+    p[0] = ast.Const(p[3], p[2], p[5])
 
   def p_constant(self, p):
     """constant : literal

@@ -104,6 +104,25 @@ class AttributeList(NodeListBase):
   _list_item_type = Attribute
 
 
+class Const(Definition):
+  """Represents a const definition."""
+
+  def __init__(self, name, typename, value, **kwargs):
+    # The typename is currently passed through as a string.
+    assert isinstance(typename, str)
+    # The value is either a literal (currently passed through as a string) or a
+    # "wrapped identifier".
+    assert isinstance(value, str) or isinstance(value, tuple)
+    super(Const, self).__init__(name, **kwargs)
+    self.typename = typename
+    self.value = value
+
+  def __eq__(self, other):
+    return super(Const, self).__eq__(other) and \
+           self.typename == other.typename and \
+           self.value == other.value
+
+
 class Enum(Definition):
   """Represents an enum definition."""
 

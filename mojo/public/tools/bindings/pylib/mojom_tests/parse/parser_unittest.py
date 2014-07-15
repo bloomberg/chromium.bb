@@ -288,7 +288,7 @@ class ParserTest(unittest.TestCase):
         ast.ImportList(),
         [('STRUCT',
           'MyStruct', None,
-          [('CONST', 'int8', 'kNumber', '-1'),
+          [ast.Const('kNumber', 'int8', '-1'),
            ('FIELD', 'int8', 'number',
             ast.Ordinal(0), ('IDENTIFIER', 'kNumber'))])])
     self.assertEquals(parser.Parse(source, "my_file.mojom"), expected)

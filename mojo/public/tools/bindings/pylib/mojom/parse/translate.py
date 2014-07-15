@@ -10,12 +10,14 @@ import re
 
 
 def _MapTreeForName(func, tree, name):
+  assert isinstance(name, str)
   if not tree:
     return []
   return [func(subtree) for subtree in tree \
               if isinstance(subtree, tuple) and subtree[0] == name]
 
 def _MapTreeForType(func, tree, type_to_map):
+  assert isinstance(type_to_map, type)
   if not tree:
     return []
   return [func(subtree) for subtree in tree if isinstance(subtree, type_to_map)]
@@ -23,23 +25,23 @@ def _MapTreeForType(func, tree, type_to_map):
 _FIXED_ARRAY_REGEXP = re.compile(r'\[[0-9]+\]')
 
 def _MapKind(kind):
-  map_to_kind = { 'bool': 'b',
-                  'int8': 'i8',
-                  'int16': 'i16',
-                  'int32': 'i32',
-                  'int64': 'i64',
-                  'uint8': 'u8',
-                  'uint16': 'u16',
-                  'uint32': 'u32',
-                  'uint64': 'u64',
-                  'float': 'f',
-                  'double': 'd',
-                  'string': 's',
-                  'handle': 'h',
-                  'handle<data_pipe_consumer>': 'h:d:c',
-                  'handle<data_pipe_producer>': 'h:d:p',
-                  'handle<message_pipe>': 'h:m',
-                  'handle<shared_buffer>': 'h:s'}
+  map_to_kind = {'bool': 'b',
+                 'int8': 'i8',
+                 'int16': 'i16',
+                 'int32': 'i32',
+                 'int64': 'i64',
+                 'uint8': 'u8',
+                 'uint16': 'u16',
+                 'uint32': 'u32',
+                 'uint64': 'u64',
+                 'float': 'f',
+                 'double': 'd',
+                 'string': 's',
+                 'handle': 'h',
+                 'handle<data_pipe_consumer>': 'h:d:c',
+                 'handle<data_pipe_producer>': 'h:d:p',
+                 'handle<message_pipe>': 'h:m',
+                 'handle<shared_buffer>': 'h:s'}
   if kind.endswith('[]'):
     typename = kind[0:-2]
     if _FIXED_ARRAY_REGEXP.search(typename):
@@ -96,7 +98,7 @@ def _MapStruct(tree):
   struct['attributes'] = _AttributeListToDict(tree[2])
   struct['fields'] = _MapTreeForName(_MapField, tree[3], 'FIELD')
   struct['enums'] = _MapTreeForType(_MapEnum, tree[3], ast.Enum)
-  struct['constants'] = _MapTreeForName(_MapConstant, tree[3], 'CONST')
+  struct['constants'] = _MapTreeForType(_MapConstant, tree[3], ast.Const)
   return struct
 
 def _MapInterface(tree):
@@ -106,7 +108,7 @@ def _MapInterface(tree):
   interface['client'] = interface['attributes'].get('Client')
   interface['methods'] = _MapTreeForName(_MapMethod, tree[3], 'METHOD')
   interface['enums'] = _MapTreeForType(_MapEnum, tree[3], ast.Enum)
-  interface['constants'] = _MapTreeForName(_MapConstant, tree[3], 'CONST')
+  interface['constants'] = _MapTreeForType(_MapConstant, tree[3], ast.Const)
   return interface
 
 def _MapEnum(enum):
@@ -116,17 +118,14 @@ def _MapEnum(enum):
             'value': enum_value.value}
 
   assert isinstance(enum, ast.Enum)
-  rv = {}
-  rv['name'] = enum.name
-  rv['fields'] = map(EnumValueToDict, enum.enum_value_list)
-  return rv
+  return {'name': enum.name,
+          'fields': map(EnumValueToDict, enum.enum_value_list)}
 
-def _MapConstant(tree):
-  constant = {}
-  constant['name'] = tree[2]
-  constant['kind'] = _MapKind(tree[1])
-  constant['value'] = tree[3]
-  return constant
+def _MapConstant(const):
+  assert isinstance(const, ast.Const)
+  return {'name': const.name,
+          'kind': _MapKind(const.typename),
+          'value': const.value}
 
 
 class _MojomBuilder(object):
@@ -148,7 +147,7 @@ class _MojomBuilder(object):
     self.mojom['enums'] = \
         _MapTreeForType(_MapEnum, tree.definition_list, ast.Enum)
     self.mojom['constants'] = \
-        _MapTreeForName(_MapConstant, tree.definition_list, 'CONST')
+        _MapTreeForType(_MapConstant, tree.definition_list, ast.Const)
     return self.mojom
 
 
