@@ -485,10 +485,7 @@ TEST_F(FullscreenControllerStateUnitTest, ExitTabFullscreenViaReplacingTab) {
 TEST_F(FullscreenControllerStateUnitTest, OneCapturedFullscreenedTab) {
   content::WebContentsDelegate* const wc_delegate =
       static_cast<content::WebContentsDelegate*>(browser());
-  if (!wc_delegate->EmbedsFullscreenWidget()) {
-    LOG(WARNING) << "Skipping test since fullscreen-within-tab is disabled.";
-    return;
-  }
+  ASSERT_TRUE(wc_delegate->EmbedsFullscreenWidget());
 
   AddTab(browser(), GURL(url::kAboutBlankURL));
   AddTab(browser(), GURL(url::kAboutBlankURL));
@@ -552,10 +549,7 @@ TEST_F(FullscreenControllerStateUnitTest, OneCapturedFullscreenedTab) {
 TEST_F(FullscreenControllerStateUnitTest, TwoFullscreenedTabsOneCaptured) {
   content::WebContentsDelegate* const wc_delegate =
       static_cast<content::WebContentsDelegate*>(browser());
-  if (!wc_delegate->EmbedsFullscreenWidget()) {
-    LOG(WARNING) << "Skipping test since fullscreen-within-tab is disabled.";
-    return;
-  }
+  ASSERT_TRUE(wc_delegate->EmbedsFullscreenWidget());
 
   AddTab(browser(), GURL(url::kAboutBlankURL));
   AddTab(browser(), GURL(url::kAboutBlankURL));
@@ -613,10 +607,7 @@ TEST_F(FullscreenControllerStateUnitTest,
        BackgroundCapturedTabExitsFullscreen) {
   content::WebContentsDelegate* const wc_delegate =
       static_cast<content::WebContentsDelegate*>(browser());
-  if (!wc_delegate->EmbedsFullscreenWidget()) {
-    LOG(WARNING) << "Skipping test since fullscreen-within-tab is disabled.";
-    return;
-  }
+  ASSERT_TRUE(wc_delegate->EmbedsFullscreenWidget());
 
   AddTab(browser(), GURL(url::kAboutBlankURL));
   AddTab(browser(), GURL(url::kAboutBlankURL));
@@ -672,10 +663,7 @@ TEST_F(FullscreenControllerStateUnitTest,
        OneCapturedTabFullscreenedBeforeBrowserFullscreen) {
   content::WebContentsDelegate* const wc_delegate =
       static_cast<content::WebContentsDelegate*>(browser());
-  if (!wc_delegate->EmbedsFullscreenWidget()) {
-    LOG(WARNING) << "Skipping test since fullscreen-within-tab is disabled.";
-    return;
-  }
+  ASSERT_TRUE(wc_delegate->EmbedsFullscreenWidget());
 
   AddTab(browser(), GURL(url::kAboutBlankURL));
   content::WebContents* const tab =
@@ -726,10 +714,7 @@ TEST_F(FullscreenControllerStateUnitTest,
        CapturedFullscreenedTabTransferredBetweenBrowserWindows) {
   content::WebContentsDelegate* const wc_delegate =
       static_cast<content::WebContentsDelegate*>(browser());
-  if (!wc_delegate->EmbedsFullscreenWidget()) {
-    LOG(WARNING) << "Skipping test since fullscreen-within-tab is disabled.";
-    return;
-  }
+  ASSERT_TRUE(wc_delegate->EmbedsFullscreenWidget());
 
   AddTab(browser(), GURL(url::kAboutBlankURL));
   AddTab(browser(), GURL(url::kAboutBlankURL));

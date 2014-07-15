@@ -1264,12 +1264,8 @@ NSImage* Overlay(NSImage* ground, NSImage* overlay, CGFloat alpha) {
 
   // Make a new tab. Load the contents of this tab from the nib and associate
   // the new controller with |contents| so it can be looked up later.
-  const BOOL autoEmbedFullscreen =
-      implicit_cast<content::WebContentsDelegate*>(browser_)->
-          EmbedsFullscreenWidget();
   base::scoped_nsobject<TabContentsController> contentsController(
-      [[TabContentsController alloc] initWithContents:contents
-                               andAutoEmbedFullscreen:autoEmbedFullscreen]);
+      [[TabContentsController alloc] initWithContents:contents]);
   [tabContentsArray_ insertObject:contentsController atIndex:index];
 
   // Make a new tab and add it to the strip. Keep track of its controller.
@@ -1388,12 +1384,8 @@ NSImage* Overlay(NSImage* ground, NSImage* overlay, CGFloat alpha) {
   // Simply create a new TabContentsController for |newContents| and place it
   // into the array, replacing |oldContents|.  An ActiveTabChanged notification
   // will follow, at which point we will install the new view.
-  const BOOL autoEmbedFullscreen =
-      implicit_cast<content::WebContentsDelegate*>(browser_)->
-          EmbedsFullscreenWidget();
   base::scoped_nsobject<TabContentsController> newController(
-      [[TabContentsController alloc] initWithContents:newContents
-                               andAutoEmbedFullscreen:autoEmbedFullscreen]);
+      [[TabContentsController alloc] initWithContents:newContents]);
 
   // Bye bye, |oldController|.
   [tabContentsArray_ replaceObjectAtIndex:index withObject:newController];

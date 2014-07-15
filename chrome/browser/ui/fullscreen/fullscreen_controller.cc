@@ -85,8 +85,7 @@ bool FullscreenController::IsFullscreenForTabOrPending(
     const WebContents* web_contents) const {
   if (web_contents == fullscreened_tab_) {
     DCHECK(web_contents == browser_->tab_strip_model()->GetActiveWebContents());
-    DCHECK(!IsFullscreenWithinTabPossible() ||
-           web_contents->GetCapturerCount() == 0);
+    DCHECK(web_contents->GetCapturerCount() == 0);
     return true;
   }
   return IsFullscreenForCapturedTab(web_contents);
@@ -711,8 +710,7 @@ FullscreenController::GetMouseLockSetting(const GURL& url) const {
 bool FullscreenController::IsPrivilegedFullscreenForTab() const {
   const bool embedded_widget_present =
       fullscreened_tab_ &&
-      fullscreened_tab_->GetFullscreenRenderWidgetHostView() &&
-      IsFullscreenWithinTabPossible();
+      fullscreened_tab_->GetFullscreenRenderWidgetHostView();
   return embedded_widget_present || is_privileged_fullscreen_for_testing_;
 }
 
@@ -721,16 +719,8 @@ void FullscreenController::SetPrivilegedFullscreenForTesting(
   is_privileged_fullscreen_for_testing_ = is_privileged;
 }
 
-bool FullscreenController::IsFullscreenWithinTabPossible() const {
-  return implicit_cast<const content::WebContentsDelegate*>(browser_)->
-      EmbedsFullscreenWidget();
-}
-
 bool FullscreenController::MaybeToggleFullscreenForCapturedTab(
     WebContents* web_contents, bool enter_fullscreen) {
-  if (!IsFullscreenWithinTabPossible())
-    return false;
-
   if (enter_fullscreen) {
     if (web_contents->GetCapturerCount() > 0) {
       FullscreenWithinTabHelper::CreateForWebContents(web_contents);
@@ -755,7 +745,6 @@ bool FullscreenController::IsFullscreenForCapturedTab(
   const FullscreenWithinTabHelper* const helper = web_contents ?
       FullscreenWithinTabHelper::FromWebContents(web_contents) : NULL;
   if (helper && helper->is_fullscreen_for_captured_tab()) {
-    DCHECK(IsFullscreenWithinTabPossible());
     DCHECK_NE(fullscreened_tab_, web_contents);
     return true;
   }

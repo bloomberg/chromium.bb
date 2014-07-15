@@ -44,11 +44,8 @@ class WebContents;
 }
 @property(readonly, nonatomic) content::WebContents* webContents;
 
-// Create the contents of a tab represented by |contents|.  When
-// |enableEmbeddedFullscreen| is true, the WebContents view will automatically
-// be swapped with a fullscreen render widget owned by the current WebContents.
-- (id)initWithContents:(content::WebContents*)contents
-    andAutoEmbedFullscreen:(BOOL)enableEmbeddedFullscreen;
+// Create the contents of a tab represented by |contents|.
+- (id)initWithContents:(content::WebContents*)contents;
 
 // Call when the container view owned by TabContentsController is about to be
 // resized and inserted into the view hierarchy, so as to not trigger

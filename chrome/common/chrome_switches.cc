@@ -273,13 +273,6 @@ const char kDisableExtensionsFileAccessCheck[] =
 const char kDisableExtensionsHttpThrottling[] =
     "disable-extensions-http-throttling";
 
-// Disables embedding of Flash fullscreen widgets within the browser window.
-// This restores the old code paths where Flash fullscreen would display in its
-// own separate, always-on-top window.  In addition, this disables the new logic
-// which would prevent fullscreening the browser window during screen-capture of
-// a tab.  http://crbug.com/256870 and http://crbug.com/290403
-const char kDisableFullscreenWithinTab[] = "disable-fullscreen-within-tab";
-
 // Don't resolve hostnames to IPv6 addresses. This can be used when debugging
 // issues relating to IPv6, but shouldn't otherwise be needed. Be sure to file
 // bugs if something isn't working properly in the presence of IPv6. This flag

@@ -1913,9 +1913,7 @@ void BrowserView::InitViews() {
 
   contents_web_view_ = new ContentsWebView(browser_->profile());
   contents_web_view_->set_id(VIEW_ID_TAB_CONTAINER);
-  contents_web_view_->SetEmbedFullscreenWidgetMode(
-      implicit_cast<content::WebContentsDelegate*>(browser_.get())->
-          EmbedsFullscreenWidget());
+  contents_web_view_->SetEmbedFullscreenWidgetMode(true);
 
   web_contents_close_handler_.reset(
       new WebContentsCloseHandler(contents_web_view_));

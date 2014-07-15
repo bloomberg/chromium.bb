@@ -38,18 +38,17 @@ class WebContents;
 // this for us.
 //
 // FullscreenWithinTab Note:
-// When the browser is configured as such, all fullscreen widgets are displayed
-// within the tab contents area, and FullscreenController will expand the
-// browser window so that the tab contents area fills the entire
-// screen. However, special behavior applies when a tab is being
-// screen-captured. First, the browser window will not be fullscreened. This
-// allows the user to retain control of their desktop to work in other browser
-// tabs or applications while the fullscreen view is displayed on a remote
-// screen. Second, FullscreenController will auto-resize fullscreen widgets to
-// that of the capture video resolution when they are hidden (e.g., when a user
-// has switched to another tab). This is both a performance and quality
-// improvement since scaling and letterboxing steps can be skipped in the
-// capture pipeline.
+// All fullscreen widgets are displayed within the tab contents area, and
+// FullscreenController will expand the browser window so that the tab contents
+// area fills the entire screen. However, special behavior applies when a tab is
+// being screen-captured. First, the browser window will not be
+// fullscreened. This allows the user to retain control of their desktop to work
+// in other browser tabs or applications while the fullscreen view is displayed
+// on a remote screen. Second, FullscreenController will auto-resize fullscreen
+// widgets to that of the capture video resolution when they are hidden (e.g.,
+// when a user has switched to another tab). This is both a performance and
+// quality improvement since scaling and letterboxing steps can be skipped in
+// the capture pipeline.
 
 // This class implements fullscreen and mouselock behaviour.
 class FullscreenController : public content::NotificationObserver {
@@ -201,9 +200,6 @@ class FullscreenController : public content::NotificationObserver {
 
   bool IsPrivilegedFullscreenForTab() const;
   void SetPrivilegedFullscreenForTesting(bool is_privileged);
-  // Returns true if fullscreen-within-tab has been enabled for the
-  // |browser_|. See 'FullscreenWithinTab Note'.
-  bool IsFullscreenWithinTabPossible() const;
   // Returns true if |web_contents| was toggled into/out of fullscreen mode as a
   // screen-captured tab. See 'FullscreenWithinTab Note'.
   bool MaybeToggleFullscreenForCapturedTab(content::WebContents* web_contents,

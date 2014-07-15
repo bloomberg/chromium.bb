@@ -177,11 +177,9 @@ class FullscreenObserver : public WebContentsObserver {
 @implementation TabContentsController
 @synthesize webContents = contents_;
 
-- (id)initWithContents:(WebContents*)contents
-    andAutoEmbedFullscreen:(BOOL)enableEmbeddedFullscreen {
+- (id)initWithContents:(WebContents*)contents {
   if ((self = [super initWithNibName:nil bundle:nil])) {
-    if (enableEmbeddedFullscreen)
-      fullscreenObserver_.reset(new FullscreenObserver(self));
+    fullscreenObserver_.reset(new FullscreenObserver(self));
     [self changeWebContents:contents];
   }
   return self;
@@ -248,13 +246,9 @@ class FullscreenObserver : public WebContentsObserver {
 
 - (void)changeWebContents:(WebContents*)newContents {
   contents_ = newContents;
-  if (fullscreenObserver_) {
-    fullscreenObserver_->Observe(contents_);
-    isEmbeddingFullscreenWidget_ =
-        contents_ && contents_->GetFullscreenRenderWidgetHostView();
-  } else {
-    isEmbeddingFullscreenWidget_ = NO;
-  }
+  fullscreenObserver_->Observe(contents_);
+  isEmbeddingFullscreenWidget_ =
+      contents_ && contents_->GetFullscreenRenderWidgetHostView();
 }
 
 // Returns YES if the tab represented by this controller is the front-most.
@@ -309,8 +303,6 @@ class FullscreenObserver : public WebContentsObserver {
 }
 
 - (BOOL)contentsInFullscreenCaptureMode {
-  if (!fullscreenObserver_)
-    return NO;
   // Note: Grab a known-valid WebContents pointer from |fullscreenObserver_|.
   content::WebContents* const wc = fullscreenObserver_->web_contents();
   if (!wc ||

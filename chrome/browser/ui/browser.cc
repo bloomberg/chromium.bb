@@ -1620,8 +1620,7 @@ void Browser::EnumerateDirectory(WebContents* web_contents,
 }
 
 bool Browser::EmbedsFullscreenWidget() const {
-  return !CommandLine::ForCurrentProcess()->
-      HasSwitch(switches::kDisableFullscreenWithinTab);
+  return true;
 }
 
 void Browser::ToggleFullscreenModeForTab(WebContents* web_contents,

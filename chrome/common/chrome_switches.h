@@ -85,7 +85,6 @@ extern const char kDisableDomainReliability[];
 extern const char kDisableExtensionsFileAccessCheck[];
 extern const char kDisableExtensionsHttpThrottling[];
 extern const char kDisableExtensions[];
-extern const char kDisableFullscreenWithinTab[];
 extern const char kDisableIPv6[];
 extern const char kDisableMinimizeOnSecondLauncherItemClick[];
 extern const char kDisableNTPOtherSessionsMenu[];
