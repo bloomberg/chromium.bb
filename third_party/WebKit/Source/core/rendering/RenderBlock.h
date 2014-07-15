@@ -346,7 +346,7 @@ protected:
 
     virtual bool isInlineBlockOrInlineTable() const OVERRIDE FINAL { return isInline() && isReplaced(); }
 
-    virtual void invalidateTreeAfterLayout(const RenderLayerModelObject&) OVERRIDE;
+    virtual void invalidateTreeAfterLayout(const PaintInvalidationState&) OVERRIDE;
 
 private:
     virtual RenderObjectChildList* virtualChildren() OVERRIDE FINAL { return children(); }
@@ -404,7 +404,7 @@ private:
     // children.
     virtual RenderBlock* firstLineBlock() const OVERRIDE;
 
-    virtual LayoutRect rectWithOutlineForPaintInvalidation(const RenderLayerModelObject* paintInvalidationContainer, LayoutUnit outlineWidth) const OVERRIDE FINAL;
+    virtual LayoutRect rectWithOutlineForPaintInvalidation(const RenderLayerModelObject* paintInvalidationContainer, LayoutUnit outlineWidth, const PaintInvalidationState* = 0) const OVERRIDE FINAL;
     virtual RenderStyle* outlineStyle() const OVERRIDE FINAL;
 
     virtual RenderObject* hoverAncestor() const OVERRIDE FINAL;

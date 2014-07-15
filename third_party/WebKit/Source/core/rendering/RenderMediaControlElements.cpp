@@ -49,7 +49,6 @@ void RenderTextTrackContainerElement::layout()
 
     DeprecatedScheduleStyleRecalcDuringLayout marker(node()->document().lifecycle());
 
-    ForceHorriblySlowRectMapping slowRectMapping(*this);
     static_cast<MediaControlTextTrackContainerElement*>(node())->updateSizes();
 }
 

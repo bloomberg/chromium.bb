@@ -1017,9 +1017,9 @@ void FrameView::invalidateTreeIfNeeded()
 
     TRACE_EVENT1("blink", "FrameView::invalidateTree", "root", rootForPaintInvalidation->debugName().ascii());
 
-    LayoutState rootLayoutState(*rootForPaintInvalidation);
+    PaintInvalidationState rootPaintInvalidationState(*rootForPaintInvalidation);
 
-    rootForPaintInvalidation->invalidateTreeAfterLayout(*rootForPaintInvalidation->containerForPaintInvalidation());
+    rootForPaintInvalidation->invalidateTreeAfterLayout(rootPaintInvalidationState);
 
     // Invalidate the paint of the frameviews scrollbars if needed
     if (hasVerticalBarDamage())

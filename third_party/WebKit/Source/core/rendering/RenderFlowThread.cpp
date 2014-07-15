@@ -165,8 +165,6 @@ void RenderFlowThread::repaintRectangleInRegions(const LayoutRect& repaintRect) 
     if (!shouldRepaint(repaintRect) || !hasValidRegionInfo())
         return;
 
-    ForceHorriblySlowRectMapping slowRectMapping(*this); // We can't use layout state to repaint, since the regions are somewhere else.
-
     // We can't use currentFlowThread as it is possible to have interleaved flow threads and the wrong one could be used.
     // Let each columnSet figure out the proper enclosing flow thread.
     CurrentRenderFlowThreadDisabler disabler(view());
