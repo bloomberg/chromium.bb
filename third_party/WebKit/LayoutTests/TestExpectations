@@ -1456,7 +1456,11 @@ crbug.com/392046 [ Win ] scrollbars/rtl/overflow-scroll-rtl.html [ Pass ImageOnl
 crbug.com/392046 [ Win ] fast/parser/fonts.html [ Pass Failure ]
 
 crbug.com/391068 http/tests/websocket/workers/close-code-and-reason.html [ Timeout Pass ]
-
+crbug.com/393832 [ Mac Release ] storage/indexeddb/basics-shared-workers.html [ Pass Timeout ]
+crbug.com/393832 [ Mac Release ] storage/indexeddb/cursor-advance-workers.html [ Pass Timeout ]
+crbug.com/393832 [ Mac Release ] storage/indexeddb/objectstore-basics-workers.html [ Pass Timeout ]
+crbug.com/393832 [ Mac Release ] storage/indexeddb/transaction-complete-workers.html [ Pass Timeout ]
+crbug.com/393832 [ Mac Release ] http/tests/serviceworker/indexeddb.html [ Pass Timeout ]
 crbug.com/392095 webaudio/realtimeanalyser-fft-scaling.html [ Pass Failure ]
 
 crbug.com/392706 virtual/threaded/animations/play-state-initially-paused.html [ Failure ]
