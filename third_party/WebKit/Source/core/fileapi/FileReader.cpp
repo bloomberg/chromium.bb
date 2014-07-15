@@ -132,7 +132,7 @@ private:
 
 PassRefPtrWillBeRawPtr<FileReader> FileReader::create(ExecutionContext* context)
 {
-    RefPtrWillBeRawPtr<FileReader> fileReader(adoptRefWillBeRefCountedGarbageCollected(new FileReader(context)));
+    RefPtrWillBeRawPtr<FileReader> fileReader(adoptRefWillBeNoop(new FileReader(context)));
     fileReader->suspendIfNeeded();
     return fileReader.release();
 }
