@@ -41,14 +41,15 @@
                   ]
                 },
                 {
-                  "bounds": [15, 385]
-                },
-                {
-                  "position": [15, 385],
+                  "position": [0, 385],
                   "bounds": [385, 15]
                 },
                 {
-                  "position": [0, 385],
+                  "position": [385, 0],
+                  "bounds": [15, 385]
+                },
+                {
+                  "position": [385, 385],
                   "bounds": [15, 15],
                   "drawsContent": true
                 }
