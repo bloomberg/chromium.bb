@@ -25,24 +25,19 @@
 
 #include "config.h"
 
+#include "core/rendering/RenderingTestHelper.h"
 #include "core/rendering/RenderTableCell.h"
-
-#include "core/testing/DummyPageHolder.h"
-
-#include <gtest/gtest.h>
-
-using namespace blink;
 
 namespace WebCore {
 
 namespace {
 
-class RenderTableCellDeathTest : public testing::Test {
+class RenderTableCellDeathTest : public RenderingTest {
 protected:
     virtual void SetUp()
     {
-        m_pageHolder = DummyPageHolder::create(IntSize(800, 600));
-        m_cell = RenderTableCell::createAnonymous(&m_pageHolder->document());
+        RenderingTest::SetUp();
+        m_cell = RenderTableCell::createAnonymous(&document());
     }
 
     virtual void TearDown()
@@ -50,7 +45,6 @@ protected:
         m_cell->destroy();
     }
 
-    OwnPtr<DummyPageHolder> m_pageHolder;
     RenderTableCell* m_cell;
 };
 
@@ -82,6 +76,40 @@ TEST_F(RenderTableCellDeathTest, CrashIfSettingUnsetColumnIndex)
 }
 
 #endif
+
+class RenderTableCellTest : public RenderingTest { };
+
+TEST_F(RenderTableCellTest, ResetColspanIfTooBig)
+{
+    setBodyInnerHTML("<table><td colspan='14000'></td></table>");
+
+    RenderTableCell* cell = toRenderTableCell(document().body()->firstChild()->firstChild()->firstChild()->firstChild()->renderer());
+    ASSERT_EQ(cell->colSpan(), 8190U);
+}
+
+TEST_F(RenderTableCellTest, DoNotResetColspanJustBelowBoundary)
+{
+    setBodyInnerHTML("<table><td colspan='8190'></td></table>");
+
+    RenderTableCell* cell = toRenderTableCell(document().body()->firstChild()->firstChild()->firstChild()->firstChild()->renderer());
+    ASSERT_EQ(cell->colSpan(), 8190U);
+}
+
+TEST_F(RenderTableCellTest, ResetRowspanIfTooBig)
+{
+    setBodyInnerHTML("<table><td rowspan='14000'></td></table>");
+
+    RenderTableCell* cell = toRenderTableCell(document().body()->firstChild()->firstChild()->firstChild()->firstChild()->renderer());
+    ASSERT_EQ(cell->rowSpan(), 8190U);
+}
+
+TEST_F(RenderTableCellTest, DoNotResetRowspanJustBelowBoundary)
+{
+    setBodyInnerHTML("<table><td rowspan='8190'></td></table>");
+
+    RenderTableCell* cell = toRenderTableCell(document().body()->firstChild()->firstChild()->firstChild()->firstChild()->renderer());
+    ASSERT_EQ(cell->rowSpan(), 8190U);
+}
 
 }
 
