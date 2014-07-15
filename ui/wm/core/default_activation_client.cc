@@ -106,11 +106,6 @@ aura::Window* DefaultActivationClient::GetToplevelWindow(aura::Window* window) {
   return NULL;
 }
 
-bool DefaultActivationClient::OnWillFocusWindow(aura::Window* window,
-                                                const ui::Event* event) {
-  return true;
-}
-
 bool DefaultActivationClient::CanActivateWindow(aura::Window* window) const {
   return true;
 }

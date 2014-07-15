@@ -85,12 +85,6 @@ aura::Window* FocusController::GetToplevelWindow(aura::Window* window) {
   return rules_->GetToplevelWindow(window);
 }
 
-bool FocusController::OnWillFocusWindow(aura::Window* window,
-                                        const ui::Event* event) {
-  NOTREACHED();
-  return false;
-}
-
 bool FocusController::CanActivateWindow(aura::Window* window) const {
   return rules_->CanActivateWindow(window);
 }

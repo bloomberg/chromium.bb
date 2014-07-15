@@ -44,10 +44,6 @@ class AURA_EXPORT ActivationClient {
   // Retrieves the toplevel window for |window|, or NULL if there is none.
   virtual Window* GetToplevelWindow(Window* window) = 0;
 
-  // Invoked prior to |window| getting focus as a result of the |event|. |event|
-  // may be NULL. Returning false blocks |window| from getting focus.
-  virtual bool OnWillFocusWindow(Window* window, const ui::Event* event) = 0;
-
   // Returns true if |window| can be activated, false otherwise. If |window| has
   // a modal child it can not be activated.
   virtual bool CanActivateWindow(Window* window) const = 0;
