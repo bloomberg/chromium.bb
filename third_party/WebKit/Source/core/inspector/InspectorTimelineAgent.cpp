@@ -415,7 +415,7 @@ void InspectorTimelineAgent::innerStop(bool fromConsole)
 
     for (size_t i = 0; i < m_consoleTimelines.size(); ++i) {
         String message = String::format("Timeline '%s' terminated.", m_consoleTimelines[i].utf8().data());
-        mainFrame()->console().addMessage(ConsoleAPIMessageSource, DebugMessageLevel, message);
+        mainFrame()->console().addMessage(JSMessageSource, DebugMessageLevel, message);
     }
     m_consoleTimelines.clear();
 
@@ -778,7 +778,8 @@ void InspectorTimelineAgent::consoleTimeline(ExecutionContext* context, const St
         return;
 
     String message = String::format("Timeline '%s' started.", title.utf8().data());
-    mainFrame()->console().addMessage(ConsoleAPIMessageSource, DebugMessageLevel, message, String(), 0, 0, nullptr, scriptState);
+
+    mainFrame()->console().addMessage(JSMessageSource, DebugMessageLevel, message, String(), 0, 0, nullptr, scriptState);
     m_consoleTimelines.append(title);
     if (!isStarted()) {
         innerStart();
@@ -796,7 +797,7 @@ void InspectorTimelineAgent::consoleTimelineEnd(ExecutionContext* context, const
     size_t index = m_consoleTimelines.find(title);
     if (index == kNotFound) {
         String message = String::format("Timeline '%s' was not started.", title.utf8().data());
-        mainFrame()->console().addMessage(ConsoleAPIMessageSource, DebugMessageLevel, message, String(), 0, 0, nullptr, scriptState);
+        mainFrame()->console().addMessage(JSMessageSource, DebugMessageLevel, message, String(), 0, 0, nullptr, scriptState);
         return;
     }
 
@@ -807,7 +808,7 @@ void InspectorTimelineAgent::consoleTimelineEnd(ExecutionContext* context, const
         unwindRecordStack();
         innerStop(true);
     }
-    mainFrame()->console().addMessage(ConsoleAPIMessageSource, DebugMessageLevel, message, String(), 0, 0, nullptr, scriptState);
+    mainFrame()->console().addMessage(JSMessageSource, DebugMessageLevel, message, String(), 0, 0, nullptr, scriptState);
 }
 
 void InspectorTimelineAgent::domContentLoadedEventFired(LocalFrame* frame)

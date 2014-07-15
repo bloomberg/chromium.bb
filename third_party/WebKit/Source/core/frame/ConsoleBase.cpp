@@ -84,7 +84,7 @@ void ConsoleBase::table(ScriptState* scriptState, PassRefPtrWillBeRawPtr<ScriptA
 
 void ConsoleBase::clear(ScriptState* scriptState, PassRefPtrWillBeRawPtr<ScriptArguments> arguments)
 {
-    InspectorInstrumentation::addMessageToConsole(context(), ConsoleAPIMessageSource, ClearMessageType, LogMessageLevel, String(), scriptState, arguments);
+    InspectorInstrumentation::addConsoleAPIMessageToConsole(context(), ClearMessageType, LogMessageLevel, String(), scriptState, arguments);
 }
 
 void ConsoleBase::trace(ScriptState* scriptState, PassRefPtrWillBeRawPtr<ScriptArguments> arguments)
@@ -149,17 +149,17 @@ void ConsoleBase::timelineEnd(ScriptState* scriptState, const String& title)
 
 void ConsoleBase::group(ScriptState* scriptState, PassRefPtrWillBeRawPtr<ScriptArguments> arguments)
 {
-    InspectorInstrumentation::addMessageToConsole(context(), ConsoleAPIMessageSource, StartGroupMessageType, LogMessageLevel, String(), scriptState, arguments);
+    InspectorInstrumentation::addConsoleAPIMessageToConsole(context(), StartGroupMessageType, LogMessageLevel, String(), scriptState, arguments);
 }
 
 void ConsoleBase::groupCollapsed(ScriptState* scriptState, PassRefPtrWillBeRawPtr<ScriptArguments> arguments)
 {
-    InspectorInstrumentation::addMessageToConsole(context(), ConsoleAPIMessageSource, StartGroupCollapsedMessageType, LogMessageLevel, String(), scriptState, arguments);
+    InspectorInstrumentation::addConsoleAPIMessageToConsole(context(), StartGroupCollapsedMessageType, LogMessageLevel, String(), scriptState, arguments);
 }
 
 void ConsoleBase::groupEnd()
 {
-    InspectorInstrumentation::addMessageToConsole(context(), ConsoleAPIMessageSource, EndGroupMessageType, LogMessageLevel, String(), nullptr);
+    InspectorInstrumentation::addConsoleAPIMessageToConsole(context(), EndGroupMessageType, LogMessageLevel, String(), nullptr, nullptr);
 }
 
 void ConsoleBase::internalAddMessage(MessageType type, MessageLevel level, ScriptState* scriptState, PassRefPtrWillBeRawPtr<ScriptArguments> scriptArguments, bool acceptNoArguments, bool printTrace)
@@ -176,7 +176,7 @@ void ConsoleBase::internalAddMessage(MessageType type, MessageLevel level, Scrip
 
     String message;
     bool gotStringMessage = arguments->getFirstArgumentAsString(message);
-    InspectorInstrumentation::addMessageToConsole(context(), ConsoleAPIMessageSource, type, level, message, scriptState, arguments);
+    InspectorInstrumentation::addConsoleAPIMessageToConsole(context(), type, level, message, scriptState, arguments);
     if (gotStringMessage)
         reportMessageToClient(level, message, callStack);
 }

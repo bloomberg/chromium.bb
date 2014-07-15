@@ -273,20 +273,10 @@ bool InspectorDebuggerAgent::runningNestedMessageLoop()
     return scriptDebugServer().runningNestedMessageLoop();
 }
 
-void InspectorDebuggerAgent::addMessageToConsole(MessageSource source, MessageType type)
+void InspectorDebuggerAgent::addConsoleAPIMessageToConsole(MessageType type, MessageLevel, const String&, ScriptState*, PassRefPtrWillBeRawPtr<ScriptArguments>, unsigned long)
 {
-    if (source == ConsoleAPIMessageSource && type == AssertMessageType && scriptDebugServer().pauseOnExceptionsState() != ScriptDebugServer::DontPauseOnExceptions)
+    if (type == AssertMessageType && scriptDebugServer().pauseOnExceptionsState() != ScriptDebugServer::DontPauseOnExceptions)
         breakProgram(InspectorFrontend::Debugger::Reason::Assert, nullptr);
-}
-
-void InspectorDebuggerAgent::addMessageToConsole(MessageSource source, MessageType type, MessageLevel, const String&, PassRefPtrWillBeRawPtr<ScriptCallStack>, unsigned long)
-{
-    addMessageToConsole(source, type);
-}
-
-void InspectorDebuggerAgent::addMessageToConsole(MessageSource source, MessageType type, MessageLevel, const String&, ScriptState*, PassRefPtrWillBeRawPtr<ScriptArguments>, unsigned long)
-{
-    addMessageToConsole(source, type);
 }
 
 String InspectorDebuggerAgent::preprocessEventListener(LocalFrame* frame, const String& source, const String& url, const String& functionName)
