@@ -278,6 +278,11 @@
             'mojo_jni_headers',
           ],
         }],
+        ['use_x11==1', {
+          'dependencies': [
+            '../ui/platform_window/x11/x11_window.gyp:x11_window',
+          ],
+        }],
       ],
     },
     {

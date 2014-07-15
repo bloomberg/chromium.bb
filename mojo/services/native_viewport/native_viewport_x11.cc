@@ -4,108 +4,54 @@
 
 #include "mojo/services/native_viewport/native_viewport.h"
 
-#include <X11/Xlib.h>
-#include <X11/Xutil.h>
-
 #include "base/command_line.h"
 #include "base/message_loop/message_loop.h"
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/platform/platform_event_dispatcher.h"
 #include "ui/events/platform/platform_event_source.h"
-#include "ui/events/platform/x11/x11_event_source.h"
 #include "ui/gfx/rect.h"
-#include "ui/gfx/x/x11_types.h"
+#include "ui/platform_window/platform_window.h"
+#include "ui/platform_window/platform_window_delegate.h"
+#include "ui/platform_window/x11/x11_window.h"
 
 namespace mojo {
 namespace services {
 
-bool override_redirect = false;
-
-namespace test {
-
-void EnableTestNativeViewport() {
-  // Without the override_redirect BlockUntilWindowMapped() may never finish
-  // (we don't necessarily get the mapped notify). This often happens with
-  // tests.
-  // TODO: decide if we really want the override redirect here.
-  override_redirect = true;
-}
-
-}  // namespace test
-
 class NativeViewportX11 : public NativeViewport,
-                          public ui::PlatformEventDispatcher {
+                          public ui::PlatformWindowDelegate {
  public:
-  NativeViewportX11(NativeViewportDelegate* delegate)
+  explicit NativeViewportX11(NativeViewportDelegate* delegate)
       : delegate_(delegate) {
   }
 
   virtual ~NativeViewportX11() {
-    event_source_->RemovePlatformEventDispatcher(this);
-
-    XDestroyWindow(gfx::GetXDisplay(), window_);
+    // Destroy the platform-window while |this| is still alive.
+    platform_window_.reset();
   }
 
  private:
   // Overridden from NativeViewport:
   virtual void Init(const gfx::Rect& bounds) OVERRIDE {
-    XDisplay* display = gfx::GetXDisplay();
-
-    XSetWindowAttributes swa;
-    memset(&swa, 0, sizeof(swa));
-    swa.override_redirect = override_redirect ? True : False;
-
-    bounds_ = bounds;
-    window_ = XCreateWindow(
-        display,
-        DefaultRootWindow(display),
-        bounds_.x(), bounds_.y(), bounds_.width(), bounds_.height(),
-        0,  // border width
-        CopyFromParent,  // depth
-        InputOutput,
-        CopyFromParent,  // visual
-        CWBackPixmap | CWOverrideRedirect,
-        &swa);
-
-    atom_wm_protocols_ = XInternAtom(display, "WM_PROTOCOLS", 1);
-    atom_wm_delete_window_ = XInternAtom(display, "WM_DELETE_WINDOW", 1);
-    XSetWMProtocols(display, window_, &atom_wm_delete_window_, 1);
+    CHECK(!event_source_);
+    CHECK(!platform_window_);
 
     event_source_ = ui::PlatformEventSource::CreateDefault();
-    event_source_->AddPlatformEventDispatcher(this);
 
-    long event_mask = ButtonPressMask | ButtonReleaseMask | FocusChangeMask |
-        KeyPressMask | KeyReleaseMask | EnterWindowMask | LeaveWindowMask |
-        ExposureMask | VisibilityChangeMask | StructureNotifyMask |
-        PropertyChangeMask | PointerMotionMask;
-    XSelectInput(display, window_, event_mask);
-
-    // We need a WM_CLIENT_MACHINE and WM_LOCALE_NAME value so we integrate with
-    // the desktop environment.
-    XSetWMProperties(display, window_, NULL, NULL, NULL, 0, NULL, NULL, NULL);
-
-    // TODO(aa): Setup xinput2 events.
-    // See desktop_aura/desktop_window_tree_host_x11.cc.
-
-    delegate_->OnAcceleratedWidgetAvailable(window_);
+    platform_window_.reset(new ui::X11Window(this));
+    platform_window_->SetBounds(bounds);
   }
 
   virtual void Show() OVERRIDE {
-    XDisplay* display = gfx::GetXDisplay();
-    XMapWindow(display, window_);
-    static_cast<ui::X11EventSource*>(
-        event_source_.get())->BlockUntilWindowMapped(window_);
-    XFlush(display);
+    platform_window_->Show();
   }
 
   virtual void Hide() OVERRIDE {
-    XWithdrawWindow(gfx::GetXDisplay(), window_, 0);
+    platform_window_->Hide();
   }
 
   virtual void Close() OVERRIDE {
-    // TODO(beng): perform this in response to XWindow destruction.
-    delegate_->OnDestroyed();
+    platform_window_->Close();
   }
 
   virtual gfx::Size GetSize() OVERRIDE {
@@ -113,67 +59,53 @@ class NativeViewportX11 : public NativeViewport,
   }
 
   virtual void SetBounds(const gfx::Rect& bounds) OVERRIDE {
-    NOTIMPLEMENTED();
+    platform_window_->SetBounds(bounds);
   }
 
   virtual void SetCapture() OVERRIDE {
-    NOTIMPLEMENTED();
+    platform_window_->SetCapture();
   }
 
   virtual void ReleaseCapture() OVERRIDE {
-    NOTIMPLEMENTED();
+    platform_window_->ReleaseCapture();
   }
 
-  // ui::PlatformEventDispatcher:
-  virtual bool CanDispatchEvent(const ui::PlatformEvent& event) OVERRIDE {
-    // TODO(aa): This is going to have to be thought through more carefully.
-    // Which events are appropriate to pass to clients?
-    switch (event->type) {
-      case KeyPress:
-      case KeyRelease:
-      case ButtonPress:
-      case ButtonRelease:
-      case MotionNotify:
-      case ConfigureNotify:
-        return true;
-      case ClientMessage:
-        return event->xclient.message_type == atom_wm_protocols_;
-      default:
-        return false;
-    }
+  // ui::PlatformWindowDelegate:
+  virtual void OnBoundsChanged(const gfx::Rect& new_bounds) OVERRIDE {
+    bounds_ = new_bounds;
+    delegate_->OnBoundsChanged(new_bounds);
   }
 
-  virtual uint32_t DispatchEvent(const ui::PlatformEvent& event) OVERRIDE {
-    if (event->type == ClientMessage) {
-      Atom protocol = static_cast<Atom>(event->xclient.data.l[0]);
-      if (protocol == atom_wm_delete_window_)
-        delegate_->OnDestroyed();
-    } else if (event->type == KeyPress || event->type == KeyRelease) {
-      ui::KeyEvent key_event(event, false);
-      delegate_->OnEvent(&key_event);
-    } else if (event->type == ButtonPress || event->type == ButtonRelease ||
-               event->type == MotionNotify) {
-      ui::EventType event_type = ui::EventTypeFromNative(event);
-      if (event_type == ui::ET_MOUSEWHEEL) {
-        ui::MouseWheelEvent mouse_event(event);
-        delegate_->OnEvent(&mouse_event);
-      } else {
-        ui::MouseEvent mouse_event(event);
-        delegate_->OnEvent(&mouse_event);
-      }
-    } else if (event->type == ConfigureNotify) {
-      bounds_ = gfx::Rect(event->xconfigure.width, event->xconfigure.height);
-      delegate_->OnBoundsChanged(bounds_);
-    }
-    return ui::POST_DISPATCH_NONE;
+  virtual void OnDamageRect(const gfx::Rect& damaged_region) OVERRIDE {
+  }
+
+  virtual void DispatchEvent(ui::Event* event) OVERRIDE {
+    delegate_->OnEvent(event);
+  }
+
+  virtual void OnCloseRequest() OVERRIDE {
+    platform_window_->Close();
+  }
+
+  virtual void OnClosed() OVERRIDE {
+    delegate_->OnDestroyed();
+  }
+
+  virtual void OnWindowStateChanged(ui::PlatformWindowState state) OVERRIDE {
+  }
+
+  virtual void OnLostCapture() OVERRIDE {
+  }
+
+  virtual void OnAcceleratedWidgetAvailable(
+      gfx::AcceleratedWidget widget) OVERRIDE {
+    delegate_->OnAcceleratedWidgetAvailable(widget);
   }
 
   scoped_ptr<ui::PlatformEventSource> event_source_;
+  scoped_ptr<ui::PlatformWindow> platform_window_;
   NativeViewportDelegate* delegate_;
   gfx::Rect bounds_;
-  XID window_;
-  Atom atom_wm_protocols_;
-  Atom atom_wm_delete_window_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeViewportX11);
 };

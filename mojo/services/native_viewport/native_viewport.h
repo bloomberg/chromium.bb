@@ -57,12 +57,6 @@ class NativeViewport {
                                            NativeViewportDelegate* delegate);
 };
 
-#if defined(USE_X11)
-namespace test {
-MOJO_NATIVE_VIEWPORT_EXPORT void EnableTestNativeViewport();
-}
-#endif
-
 }  // namespace services
 }  // namespace mojo
 

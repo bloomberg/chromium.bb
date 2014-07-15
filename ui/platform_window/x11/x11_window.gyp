@@ -1,0 +1,29 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+{
+  'variables': {
+    'chromium_code': 1,
+    'use_x11': 1,
+  },
+  'targets': [{
+    'target_name': 'x11_window',
+    'type': '<(component)',
+    'dependencies': [
+      '../../../base/base.gyp:base',
+      '../../../build/linux/system.gyp:x11',
+      '../../../skia/skia.gyp:skia',
+      '../../events/events.gyp:events',
+      '../../events/platform/x11/x11_events_platform.gyp:x11_events_platform',
+      '../../gfx/x/gfx_x11.gyp:gfx_x11',
+      '../platform_window.gyp:platform_window',
+    ],
+    'defines': [ 'X11_WINDOW_IMPLEMENTATION' ],
+    'sources': [
+      'x11_window.cc',
+      'x11_window.h',
+      'x11_window_export.h',
+    ],
+  }],
+}
