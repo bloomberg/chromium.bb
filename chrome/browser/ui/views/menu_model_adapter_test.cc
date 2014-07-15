@@ -206,7 +206,8 @@ class MenuModelAdapterTest : public ViewEventTestBase,
         NULL, base::ASCIIToUTF16("Menu Adapter Test"), this, true);
 
     menu_ = menu_model_adapter_.CreateMenu();
-    menu_runner_.reset(new views::MenuRunner(menu_));
+    menu_runner_.reset(
+        new views::MenuRunner(menu_, views::MenuRunner::HAS_MNEMONICS));
 
     ViewEventTestBase::SetUp();
   }
@@ -235,8 +236,7 @@ class MenuModelAdapterTest : public ViewEventTestBase,
                                           button_,
                                           bounds,
                                           views::MENU_ANCHOR_TOPLEFT,
-                                          ui::MENU_SOURCE_NONE,
-                                          views::MenuRunner::HAS_MNEMONICS));
+                                          ui::MENU_SOURCE_NONE));
   }
 
   // ViewEventTestBase implementation

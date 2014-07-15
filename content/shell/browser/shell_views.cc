@@ -184,15 +184,14 @@ class ShellWindowDelegateView : public views::WidgetDelegateView,
     }
 
     context_menu_model_.reset(new ContextMenuModel(shell_, params));
-    context_menu_runner_.reset(
-        new views::MenuRunner(context_menu_model_.get()));
+    context_menu_runner_.reset(new views::MenuRunner(
+        context_menu_model_.get(), views::MenuRunner::CONTEXT_MENU));
 
     if (context_menu_runner_->RunMenuAt(web_view_->GetWidget(),
                                         NULL,
                                         gfx::Rect(screen_point, gfx::Size()),
                                         views::MENU_ANCHOR_TOPRIGHT,
-                                        ui::MENU_SOURCE_NONE,
-                                        views::MenuRunner::CONTEXT_MENU) ==
+                                        ui::MENU_SOURCE_NONE) ==
         views::MenuRunner::MENU_DELETED) {
       return;
     }

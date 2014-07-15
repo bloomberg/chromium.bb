@@ -686,8 +686,8 @@ void NotifierSettingsView::ButtonPressed(views::Button* sender,
 void NotifierSettingsView::OnMenuButtonClicked(views::View* source,
                                                const gfx::Point& point) {
   notifier_group_menu_model_.reset(new NotifierGroupMenuModel(provider_));
-  notifier_group_menu_runner_.reset(
-      new views::MenuRunner(notifier_group_menu_model_.get()));
+  notifier_group_menu_runner_.reset(new views::MenuRunner(
+      notifier_group_menu_model_.get(), views::MenuRunner::CONTEXT_MENU));
   gfx::Rect menu_anchor = source->GetBoundsInScreen();
   menu_anchor.Inset(
       gfx::Insets(0, kMenuWhitespaceOffset, 0, kMenuWhitespaceOffset));
@@ -696,8 +696,7 @@ void NotifierSettingsView::OnMenuButtonClicked(views::View* source,
                                              notifier_group_selector_,
                                              menu_anchor,
                                              views::MENU_ANCHOR_BUBBLE_ABOVE,
-                                             ui::MENU_SOURCE_MOUSE,
-                                             views::MenuRunner::CONTEXT_MENU))
+                                             ui::MENU_SOURCE_MOUSE))
     return;
   MessageCenterView* center_view = static_cast<MessageCenterView*>(parent());
   center_view->OnSettingsChanged();

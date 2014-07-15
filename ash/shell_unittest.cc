@@ -370,7 +370,7 @@ TEST_F(ShellTest, LockScreenClosesActiveMenu) {
   views::Widget* widget = ash::Shell::GetPrimaryRootWindowController()->
       wallpaper_controller()->widget();
   scoped_ptr<views::MenuRunner> menu_runner(
-      new views::MenuRunner(menu_model.get()));
+      new views::MenuRunner(menu_model.get(), views::MenuRunner::CONTEXT_MENU));
 
   // When MenuRunner runs a nested loop the LockScreenAndVerifyMenuClosed
   // command will fire, check the menu state and ensure the nested menu loop
@@ -384,8 +384,7 @@ TEST_F(ShellTest, LockScreenClosesActiveMenu) {
                                    NULL,
                                    gfx::Rect(),
                                    views::MENU_ANCHOR_TOPLEFT,
-                                   ui::MENU_SOURCE_MOUSE,
-                                   views::MenuRunner::CONTEXT_MENU));
+                                   ui::MENU_SOURCE_MOUSE));
 }
 
 TEST_F(ShellTest, ManagedWindowModeBasics) {

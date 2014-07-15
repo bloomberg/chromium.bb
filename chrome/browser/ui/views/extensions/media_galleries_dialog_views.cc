@@ -308,15 +308,14 @@ void MediaGalleriesDialogViews::ShowContextMenu(const gfx::Point& point,
                                                 ui::MenuSourceType source_type,
                                                 MediaGalleryPrefId id) {
   context_menu_runner_.reset(new views::MenuRunner(
-      controller_->GetContextMenu(id)));
+      controller_->GetContextMenu(id),
+      views::MenuRunner::HAS_MNEMONICS | views::MenuRunner::CONTEXT_MENU));
 
-  if (context_menu_runner_->RunMenuAt(
-          GetWidget(),
-          NULL,
-          gfx::Rect(point.x(), point.y(), 0, 0),
-          views::MENU_ANCHOR_TOPLEFT,
-          source_type,
-          views::MenuRunner::HAS_MNEMONICS | views::MenuRunner::CONTEXT_MENU) ==
+  if (context_menu_runner_->RunMenuAt(GetWidget(),
+                                      NULL,
+                                      gfx::Rect(point.x(), point.y(), 0, 0),
+                                      views::MENU_ANCHOR_TOPLEFT,
+                                      source_type) ==
       views::MenuRunner::MENU_DELETED) {
     return;
   }

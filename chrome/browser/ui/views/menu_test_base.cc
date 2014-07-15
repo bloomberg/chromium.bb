@@ -42,7 +42,8 @@ void MenuTestBase::SetUp() {
       NULL, base::ASCIIToUTF16("Menu Test"), this, true);
   menu_ = new views::MenuItemView(this);
   BuildMenu(menu_);
-  menu_runner_.reset(new views::MenuRunner(menu_));
+  menu_runner_.reset(
+      new views::MenuRunner(menu_, views::MenuRunner::HAS_MNEMONICS));
 
   ViewEventTestBase::SetUp();
 }
@@ -74,8 +75,7 @@ void MenuTestBase::OnMenuButtonClicked(views::View* source,
                                         button_,
                                         bounds,
                                         views::MENU_ANCHOR_TOPLEFT,
-                                        ui::MENU_SOURCE_NONE,
-                                        views::MenuRunner::HAS_MNEMONICS));
+                                        ui::MENU_SOURCE_NONE));
 }
 
 void MenuTestBase::ExecuteCommand(int id) {

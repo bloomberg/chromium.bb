@@ -280,13 +280,14 @@ bool MenuRunnerImpl::ShouldShowMnemonics(MenuButton* button) {
 
 }  // namespace internal
 
-MenuRunner::MenuRunner(ui::MenuModel* menu_model)
-    : menu_model_adapter_(new MenuModelAdapter(menu_model)),
+MenuRunner::MenuRunner(ui::MenuModel* menu_model, int32 run_types)
+    : run_types_(run_types),
+      menu_model_adapter_(new MenuModelAdapter(menu_model)),
       holder_(new internal::MenuRunnerImpl(menu_model_adapter_->CreateMenu())) {
 }
 
-MenuRunner::MenuRunner(MenuItemView* menu)
-    : holder_(new internal::MenuRunnerImpl(menu)) {
+MenuRunner::MenuRunner(MenuItemView* menu_view, int32 run_types)
+    : run_types_(run_types), holder_(new internal::MenuRunnerImpl(menu_view)) {
 }
 
 MenuRunner::~MenuRunner() {
@@ -301,22 +302,21 @@ MenuRunner::RunResult MenuRunner::RunMenuAt(Widget* parent,
                                             MenuButton* button,
                                             const gfx::Rect& bounds,
                                             MenuAnchorPosition anchor,
-                                            ui::MenuSourceType source_type,
-                                            int32 types) {
+                                            ui::MenuSourceType source_type) {
   if (runner_handler_.get()) {
-    return runner_handler_->RunMenuAt(parent, button, bounds, anchor,
-                                      source_type, types);
+    return runner_handler_->RunMenuAt(
+        parent, button, bounds, anchor, source_type, run_types_);
   }
 
   // The parent of the nested menu will have created a DisplayChangeListener, so
   // we avoid creating a DisplayChangeListener if nested. Drop menus are
   // transient, so we don't cancel in that case.
-  if ((types & (IS_NESTED | FOR_DROP)) == 0 && parent) {
+  if ((run_types_ & (IS_NESTED | FOR_DROP)) == 0 && parent) {
     display_change_listener_.reset(
         internal::DisplayChangeListener::Create(parent, this));
   }
 
-  if (types & CONTEXT_MENU) {
+  if (run_types_ & CONTEXT_MENU) {
     switch (source_type) {
       case ui::MENU_SOURCE_NONE:
       case ui::MENU_SOURCE_KEYBOARD:
@@ -332,7 +332,7 @@ MenuRunner::RunResult MenuRunner::RunMenuAt(Widget* parent,
     }
   }
 
-  return holder_->RunMenuAt(parent, button, bounds, anchor, types);
+  return holder_->RunMenuAt(parent, button, bounds, anchor, run_types_);
 }
 
 bool MenuRunner::IsRunning() const {

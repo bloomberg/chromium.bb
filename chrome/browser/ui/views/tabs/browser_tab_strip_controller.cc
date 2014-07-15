@@ -96,7 +96,9 @@ class BrowserTabStripController::TabContextMenuContents
     model_.reset(new TabMenuModel(
         this, controller->model_,
         controller->tabstrip_->GetModelIndexOfTab(tab)));
-    menu_runner_.reset(new views::MenuRunner(model_.get()));
+    menu_runner_.reset(new views::MenuRunner(
+        model_.get(),
+        views::MenuRunner::HAS_MNEMONICS | views::MenuRunner::CONTEXT_MENU));
   }
 
   virtual ~TabContextMenuContents() {
@@ -113,9 +115,7 @@ class BrowserTabStripController::TabContextMenuContents
                                 NULL,
                                 gfx::Rect(point, gfx::Size()),
                                 views::MENU_ANCHOR_TOPLEFT,
-                                source_type,
-                                views::MenuRunner::HAS_MNEMONICS |
-                                    views::MenuRunner::CONTEXT_MENU) ==
+                                source_type) ==
         views::MenuRunner::MENU_DELETED) {
       return;
     }

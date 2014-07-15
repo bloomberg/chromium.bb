@@ -468,7 +468,8 @@ void ContentSettingBubbleContents::OnMenuButtonClicked(
     MediaMenuPartsMap::iterator j(media_menus_.find(
         static_cast<views::MenuButton*>(source)));
     DCHECK(j != media_menus_.end());
-    menu_runner_.reset(new views::MenuRunner(j->second->menu_model.get()));
+    menu_runner_.reset(new views::MenuRunner(j->second->menu_model.get(),
+                                             views::MenuRunner::HAS_MNEMONICS));
 
     gfx::Point screen_location;
     views::View::ConvertPointToScreen(j->first, &screen_location);
@@ -477,8 +478,7 @@ void ContentSettingBubbleContents::OnMenuButtonClicked(
                                 j->first,
                                 gfx::Rect(screen_location, j->first->size()),
                                 views::MENU_ANCHOR_TOPLEFT,
-                                ui::MENU_SOURCE_NONE,
-                                views::MenuRunner::HAS_MNEMONICS));
+                                ui::MENU_SOURCE_NONE));
 }
 
 int ContentSettingBubbleContents::GetPreferredMediaMenuWidth(

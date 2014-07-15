@@ -261,14 +261,14 @@ void BrowserFrame::ShowContextMenuForView(views::View* source,
   views::View::ConvertPointFromScreen(non_client_view(), &point_in_view_coords);
   int hit_test = non_client_view()->NonClientHitTest(point_in_view_coords);
   if (hit_test == HTCAPTION || hit_test == HTNOWHERE) {
-    menu_runner_.reset(new views::MenuRunner(GetSystemMenuModel()));
+    menu_runner_.reset(new views::MenuRunner(
+        GetSystemMenuModel(),
+        views::MenuRunner::HAS_MNEMONICS | views::MenuRunner::CONTEXT_MENU));
     if (menu_runner_->RunMenuAt(source->GetWidget(),
                                 NULL,
                                 gfx::Rect(p, gfx::Size(0, 0)),
                                 views::MENU_ANCHOR_TOPLEFT,
-                                source_type,
-                                views::MenuRunner::HAS_MNEMONICS |
-                                    views::MenuRunner::CONTEXT_MENU) ==
+                                source_type) ==
         views::MenuRunner::MENU_DELETED) {
       return;
     }

@@ -528,13 +528,13 @@ void AutofillDialogViews::AccountChooser::OnMenuButtonClicked(
   if (!model)
     return;
 
-  menu_runner_.reset(new views::MenuRunner(model));
+  menu_runner_.reset(new views::MenuRunner(model, 0));
   if (menu_runner_->RunMenuAt(source->GetWidget(),
                               NULL,
                               source->GetBoundsInScreen(),
                               views::MENU_ANCHOR_TOPRIGHT,
-                              ui::MENU_SOURCE_NONE,
-                              0) == views::MenuRunner::MENU_DELETED) {
+                              ui::MENU_SOURCE_NONE) ==
+      views::MenuRunner::MENU_DELETED) {
     return;
   }
 }
@@ -1733,8 +1733,8 @@ void AutofillDialogViews::OnMenuButtonClicked(views::View* source,
   if (!group->suggested_button->visible())
     return;
 
-  menu_runner_.reset(new views::MenuRunner(
-                         delegate_->MenuModelForSection(group->section)));
+  menu_runner_.reset(
+      new views::MenuRunner(delegate_->MenuModelForSection(group->section), 0));
 
   group->container->SetActive(true);
   views::Button::ButtonState state = group->suggested_button->state();
@@ -1746,8 +1746,8 @@ void AutofillDialogViews::OnMenuButtonClicked(views::View* source,
                               NULL,
                               screen_bounds,
                               views::MENU_ANCHOR_TOPRIGHT,
-                              ui::MENU_SOURCE_NONE,
-                              0) == views::MenuRunner::MENU_DELETED) {
+                              ui::MENU_SOURCE_NONE) ==
+      views::MenuRunner::MENU_DELETED) {
     return;
   }
 

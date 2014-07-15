@@ -207,7 +207,7 @@ TEST_F(MenuModelAdapterTest, BasicTest) {
   // Create menu.  Build menu twice to check that rebuilding works properly.
   MenuItemView* menu = new views::MenuItemView(&delegate);
   // MenuRunner takes ownership of menu.
-  scoped_ptr<MenuRunner> menu_runner(new MenuRunner(menu));
+  scoped_ptr<MenuRunner> menu_runner(new MenuRunner(menu, 0));
   delegate.BuildMenu(menu);
   delegate.BuildMenu(menu);
   EXPECT_TRUE(menu->HasSubmenu());

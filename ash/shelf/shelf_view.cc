@@ -1764,7 +1764,8 @@ void ShelfView::ShowMenu(ui::MenuModel* menu_model,
                          bool context_menu,
                          ui::MenuSourceType source_type) {
   closing_event_time_ = base::TimeDelta();
-  launcher_menu_runner_.reset(new views::MenuRunner(menu_model));
+  launcher_menu_runner_.reset(new views::MenuRunner(
+      menu_model, context_menu ? views::MenuRunner::CONTEXT_MENU : 0));
 
   ScopedTargetRootWindow scoped_target(
       source->GetWidget()->GetNativeView()->GetRootWindow());
@@ -1816,13 +1817,11 @@ void ShelfView::ShowMenu(ui::MenuModel* menu_model,
   shelf->ForceUndimming(true);
   // NOTE: if you convert to HAS_MNEMONICS be sure and update menu building
   // code.
-  if (launcher_menu_runner_->RunMenuAt(
-          source->GetWidget(),
-          NULL,
-          anchor_point,
-          menu_alignment,
-          source_type,
-          context_menu ? views::MenuRunner::CONTEXT_MENU : 0) ==
+  if (launcher_menu_runner_->RunMenuAt(source->GetWidget(),
+                                       NULL,
+                                       anchor_point,
+                                       menu_alignment,
+                                       source_type) ==
       views::MenuRunner::MENU_DELETED) {
     if (!got_deleted) {
       got_deleted_ = NULL;

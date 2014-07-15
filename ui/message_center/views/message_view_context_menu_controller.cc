@@ -32,14 +32,14 @@ void MessageViewContextMenuController::ShowContextMenuForView(
   if (!menu_model || menu_model->GetItemCount() == 0)
     return;
 
-  views::MenuRunner menu_runner(menu_model.get());
+  views::MenuRunner menu_runner(menu_model.get(),
+                                views::MenuRunner::HAS_MNEMONICS);
 
   ignore_result(menu_runner.RunMenuAt(source->GetWidget()->GetTopLevelWidget(),
                                       NULL,
                                       gfx::Rect(point, gfx::Size()),
                                       views::MENU_ANCHOR_TOPRIGHT,
-                                      source_type,
-                                      views::MenuRunner::HAS_MNEMONICS));
+                                      source_type));
 }
 
 }  // namespace message_center

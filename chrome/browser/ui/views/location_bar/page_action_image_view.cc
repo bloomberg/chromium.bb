@@ -159,17 +159,16 @@ void PageActionImageView::ShowContextMenuForView(
 
   scoped_refptr<ExtensionContextMenuModel> context_menu_model(
       new ExtensionContextMenuModel(extension, browser_, this));
-  menu_runner_.reset(new views::MenuRunner(context_menu_model.get()));
+  menu_runner_.reset(new views::MenuRunner(
+      context_menu_model.get(),
+      views::MenuRunner::HAS_MNEMONICS | views::MenuRunner::CONTEXT_MENU));
   gfx::Point screen_loc;
   views::View::ConvertPointToScreen(this, &screen_loc);
-  if (menu_runner_->RunMenuAt(
-          GetWidget(),
-          NULL,
-          gfx::Rect(screen_loc, size()),
-          views::MENU_ANCHOR_TOPLEFT,
-          source_type,
-          views::MenuRunner::HAS_MNEMONICS | views::MenuRunner::CONTEXT_MENU) ==
-      views::MenuRunner::MENU_DELETED) {
+  if (menu_runner_->RunMenuAt(GetWidget(),
+                              NULL,
+                              gfx::Rect(screen_loc, size()),
+                              views::MENU_ANCHOR_TOPLEFT,
+                              source_type) == views::MenuRunner::MENU_DELETED) {
     return;
   }
 }

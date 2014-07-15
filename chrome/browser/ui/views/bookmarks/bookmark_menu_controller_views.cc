@@ -33,22 +33,23 @@ BookmarkMenuController::BookmarkMenuController(Browser* browser,
                                                PageNavigator* page_navigator,
                                                views::Widget* parent,
                                                const BookmarkNode* node,
-                                               int start_child_index)
+                                               int start_child_index,
+                                               bool for_drop)
     : menu_delegate_(
         new BookmarkMenuDelegate(browser, page_navigator, parent, 1,
                                  kint32max)),
       node_(node),
       observer_(NULL),
-      for_drop_(false),
+      for_drop_(for_drop),
       bookmark_bar_(NULL) {
   menu_delegate_->Init(this, NULL, node, start_child_index,
                        BookmarkMenuDelegate::HIDE_PERMANENT_FOLDERS,
                        BOOKMARK_LAUNCH_LOCATION_BAR_SUBFOLDER);
-  menu_runner_.reset(new views::MenuRunner(menu_delegate_->menu()));
+  menu_runner_.reset(new views::MenuRunner(
+      menu_delegate_->menu(), for_drop ? views::MenuRunner::FOR_DROP : 0));
 }
 
-void BookmarkMenuController::RunMenuAt(BookmarkBarView* bookmark_bar,
-                                       bool for_drop) {
+void BookmarkMenuController::RunMenuAt(BookmarkBarView* bookmark_bar) {
   bookmark_bar_ = bookmark_bar;
   views::MenuButton* menu_button = bookmark_bar_->GetMenuButtonForNode(node_);
   DCHECK(menu_button);
@@ -59,14 +60,15 @@ void BookmarkMenuController::RunMenuAt(BookmarkBarView* bookmark_bar,
   // Subtract 1 from the height to make the popup flush with the button border.
   gfx::Rect bounds(screen_loc.x(), screen_loc.y(), menu_button->width(),
                    menu_button->height() - 1);
-  for_drop_ = for_drop;
   menu_delegate_->GetBookmarkModel()->AddObserver(this);
   // We only delete ourself after the menu completes, so we can safely ignore
   // the return value.
-  ignore_result(menu_runner_->RunMenuAt(menu_delegate_->parent(), menu_button,
-      bounds, anchor, ui::MENU_SOURCE_NONE,
-      for_drop ? views::MenuRunner::FOR_DROP : 0));
-  if (!for_drop)
+  ignore_result(menu_runner_->RunMenuAt(menu_delegate_->parent(),
+                                        menu_button,
+                                        bounds,
+                                        anchor,
+                                        ui::MENU_SOURCE_NONE));
+  if (!for_drop_)
     delete this;
 }
 

@@ -591,7 +591,7 @@ void Combobox::UpdateFromModel() {
 
   MenuItemView* menu = new MenuItemView(this);
   // MenuRunner owns |menu|.
-  dropdown_list_menu_runner_.reset(new MenuRunner(menu));
+  dropdown_list_menu_runner_.reset(new MenuRunner(menu, MenuRunner::COMBOBOX));
 
   int num_items = model()->GetItemCount();
   int width = 0;
@@ -782,9 +782,8 @@ void Combobox::ShowDropDownMenu(ui::MenuSourceType source_type) {
   dropdown_open_ = true;
   MenuAnchorPosition anchor_position =
       style_ == STYLE_ACTION ? MENU_ANCHOR_TOPRIGHT : MENU_ANCHOR_TOPLEFT;
-  if (dropdown_list_menu_runner_->RunMenuAt(GetWidget(), NULL, bounds,
-                                            anchor_position, source_type,
-                                            MenuRunner::COMBOBOX) ==
+  if (dropdown_list_menu_runner_->RunMenuAt(
+          GetWidget(), NULL, bounds, anchor_position, source_type) ==
       MenuRunner::MENU_DELETED) {
     return;
   }

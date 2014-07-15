@@ -98,7 +98,8 @@ void PermissionMenuButton::OnNativeThemeChanged(const ui::NativeTheme* theme) {
 
 void PermissionMenuButton::OnMenuButtonClicked(View* source,
                                                const gfx::Point& point) {
-  menu_runner_.reset(new views::MenuRunner(menu_model_));
+  menu_runner_.reset(
+      new views::MenuRunner(menu_model_, views::MenuRunner::HAS_MNEMONICS));
 
   gfx::Point p(point);
   p.Offset(-source->width(), 0);
@@ -106,8 +107,7 @@ void PermissionMenuButton::OnMenuButtonClicked(View* source,
                               this,
                               gfx::Rect(p, gfx::Size()),
                               views::MENU_ANCHOR_TOPLEFT,
-                              ui::MENU_SOURCE_NONE,
-                              views::MenuRunner::HAS_MNEMONICS) ==
+                              ui::MENU_SOURCE_NONE) ==
       views::MenuRunner::MENU_DELETED) {
     return;
   }

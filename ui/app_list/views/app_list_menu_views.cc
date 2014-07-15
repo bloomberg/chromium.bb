@@ -23,7 +23,7 @@ AppListMenuViews::AppListMenuViews(AppListViewDelegate* delegate)
     : AppListMenu(delegate) {
   menu_delegate_.reset(new views::MenuModelAdapter(menu_model()));
   menu_ = new MenuItemView(menu_delegate_.get());
-  menu_runner_.reset(new views::MenuRunner(menu_));
+  menu_runner_.reset(new views::MenuRunner(menu_, 0));
   menu_delegate_->BuildMenu(menu_);
 }
 
@@ -35,8 +35,7 @@ void AppListMenuViews::RunMenuAt(views::MenuButton* button,
                                         button,
                                         gfx::Rect(point, gfx::Size()),
                                         views::MENU_ANCHOR_TOPRIGHT,
-                                        ui::MENU_SOURCE_NONE,
-                                        0));
+                                        ui::MENU_SOURCE_NONE));
 }
 
 void AppListMenuViews::Cancel() {

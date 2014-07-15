@@ -93,8 +93,9 @@ class VIEWS_EXPORT MenuRunner {
   };
 
   // Creates a new MenuRunner.
-  explicit MenuRunner(ui::MenuModel* menu_model);
-  explicit MenuRunner(MenuItemView* menu);
+  // |run_types| is a bitmask of RunTypes.
+  MenuRunner(ui::MenuModel* menu_model, int32 run_types);
+  MenuRunner(MenuItemView* menu, int32 run_types);
   ~MenuRunner();
 
   // Returns the menu.
@@ -105,8 +106,8 @@ class VIEWS_EXPORT MenuRunner {
   // MenuDelegate::GetSiblingMenu.
   void OwnMenu(MenuItemView* menu);
 
-  // Runs the menu. |types| is a bitmask of RunTypes. If this returns
-  // MENU_DELETED the method is returning because the MenuRunner was deleted.
+  // Runs the menu. If this returns MENU_DELETED the method is returning
+  // because the MenuRunner was deleted.
   // Typically callers should NOT do any processing if this returns
   // MENU_DELETED.
   // If |anchor| uses a |BUBBLE_..| type, the bounds will get determined by
@@ -115,8 +116,7 @@ class VIEWS_EXPORT MenuRunner {
                       MenuButton* button,
                       const gfx::Rect& bounds,
                       MenuAnchorPosition anchor,
-                      ui::MenuSourceType source_type,
-                      int32 types) WARN_UNUSED_RESULT;
+                      ui::MenuSourceType source_type) WARN_UNUSED_RESULT;
 
   // Returns true if we're in a nested message loop running the menu.
   bool IsRunning() const;
@@ -133,6 +133,7 @@ class VIEWS_EXPORT MenuRunner {
   // Sets an implementation of RunMenuAt. This is intended to be used at test.
   void SetRunnerHandler(scoped_ptr<MenuRunnerHandler> runner_handler);
 
+  const int32 run_types_;
   scoped_ptr<MenuModelAdapter> menu_model_adapter_;
 
   internal::MenuRunnerImpl* holder_;
@@ -164,7 +165,7 @@ class DisplayChangeListener {
   DisplayChangeListener() {}
 };
 
-}
+}  // namespace internal
 
 }  // namespace views
 

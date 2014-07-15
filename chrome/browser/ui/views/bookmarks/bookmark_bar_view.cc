@@ -1235,9 +1235,9 @@ void BookmarkBarView::OnMenuButtonClicked(views::View* view,
 
   RecordBookmarkFolderOpen(GetBookmarkLaunchLocation());
   bookmark_menu_ = new BookmarkMenuController(
-      browser_, page_navigator_, GetWidget(), node, start_index);
+      browser_, page_navigator_, GetWidget(), node, start_index, false);
   bookmark_menu_->set_observer(this);
-  bookmark_menu_->RunMenuAt(this, false);
+  bookmark_menu_->RunMenuAt(this);
 }
 
 void BookmarkBarView::ButtonPressed(views::Button* sender,
@@ -1598,10 +1598,10 @@ void BookmarkBarView::ShowDropFolderForNode(const BookmarkNode* node) {
     start_index = GetFirstHiddenNodeIndex();
 
   drop_info_->is_menu_showing = true;
-  bookmark_drop_menu_ = new BookmarkMenuController(browser_,
-      page_navigator_, GetWidget(), node, start_index);
+  bookmark_drop_menu_ = new BookmarkMenuController(
+      browser_, page_navigator_, GetWidget(), node, start_index, true);
   bookmark_drop_menu_->set_observer(this);
-  bookmark_drop_menu_->RunMenuAt(this, true);
+  bookmark_drop_menu_->RunMenuAt(this);
 }
 
 void BookmarkBarView::StopShowFolderDropMenuTimer() {

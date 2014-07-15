@@ -27,7 +27,9 @@ void DownloadShelfContextMenuView::Run(views::Widget* parent_widget,
   // Run() should not be getting called if the DownloadItem was destroyed.
   DCHECK(menu_model);
 
-  menu_runner_.reset(new views::MenuRunner(menu_model));
+  menu_runner_.reset(new views::MenuRunner(
+      menu_model,
+      views::MenuRunner::HAS_MNEMONICS | views::MenuRunner::CONTEXT_MENU));
 
   // The menu's alignment is determined based on the UI layout.
   views::MenuAnchorPosition position;
@@ -41,12 +43,7 @@ void DownloadShelfContextMenuView::Run(views::Widget* parent_widget,
   // been deleted. We ignore the return value because our caller already assumes
   // that the view could be deleted by the time we return from here.
   if (menu_runner_->RunMenuAt(
-          parent_widget,
-          NULL,
-          rect,
-          position,
-          source_type,
-          views::MenuRunner::HAS_MNEMONICS | views::MenuRunner::CONTEXT_MENU) ==
+          parent_widget, NULL, rect, position, source_type) ==
       views::MenuRunner::MENU_DELETED) {
     return;
   }

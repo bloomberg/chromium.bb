@@ -37,7 +37,7 @@ class BookmarkMenuDelegateTest : public BrowserWithTestWindowTest {
     if (bookmark_menu_delegate_.get()) {
       // Since we never show the menu we need to pass the MenuItemView to
       // MenuRunner so that the MenuItemView is destroyed.
-      views::MenuRunner menu_runner(bookmark_menu_delegate_->menu());
+      views::MenuRunner menu_runner(bookmark_menu_delegate_->menu(), 0);
       bookmark_menu_delegate_.reset();
     }
     BrowserWithTestWindowTest::TearDown();
@@ -47,7 +47,7 @@ class BookmarkMenuDelegateTest : public BrowserWithTestWindowTest {
   void NewDelegate(int min_menu_id, int max_menu_id) {
     // Destroy current menu if available, see comments in TearDown().
     if (bookmark_menu_delegate_.get())
-      views::MenuRunner menu_runner(bookmark_menu_delegate_->menu());
+      views::MenuRunner menu_runner(bookmark_menu_delegate_->menu(), 0);
 
     bookmark_menu_delegate_.reset(
         new BookmarkMenuDelegate(browser(), NULL, NULL,

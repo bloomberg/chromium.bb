@@ -59,14 +59,13 @@ void StatusIconWin::HandleClickEvent(const gfx::Point& cursor_pos,
   if (!SetForegroundWindow(window_))
     return;
 
-  menu_runner_.reset(new views::MenuRunner(menu_model_));
-
+  menu_runner_.reset(new views::MenuRunner(menu_model_,
+                                           views::MenuRunner::HAS_MNEMONICS));
   ignore_result(menu_runner_->RunMenuAt(NULL,
                                         NULL,
                                         gfx::Rect(cursor_pos, gfx::Size()),
                                         views::MENU_ANCHOR_TOPLEFT,
-                                        ui::MENU_SOURCE_MOUSE,
-                                        views::MenuRunner::HAS_MNEMONICS));
+                                        ui::MENU_SOURCE_MOUSE));
 }
 
 void StatusIconWin::HandleBalloonClickEvent() {

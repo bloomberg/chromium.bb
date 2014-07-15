@@ -111,7 +111,8 @@ void PermissionCombobox::GetAccessibleState(ui::AXViewState* state) {
 
 void PermissionCombobox::OnMenuButtonClicked(View* source,
                                              const gfx::Point& point) {
-  menu_runner_.reset(new views::MenuRunner(model_.get()));
+  menu_runner_.reset(
+      new views::MenuRunner(model_.get(), views::MenuRunner::HAS_MNEMONICS));
 
   gfx::Point p(point);
   p.Offset(-source->width(), 0);
@@ -119,8 +120,7 @@ void PermissionCombobox::OnMenuButtonClicked(View* source,
                               this,
                               gfx::Rect(p, gfx::Size()),
                               views::MENU_ANCHOR_TOPLEFT,
-                              ui::MENU_SOURCE_NONE,
-                              views::MenuRunner::HAS_MNEMONICS) ==
+                              ui::MENU_SOURCE_NONE) ==
       views::MenuRunner::MENU_DELETED) {
     return;
   }

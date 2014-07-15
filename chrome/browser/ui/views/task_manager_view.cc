@@ -591,14 +591,13 @@ void TaskManagerView::ShowContextMenuForView(views::View* source,
        i != columns_.end(); ++i) {
     menu_model.AddCheckItem(i->id, l10n_util::GetStringUTF16(i->id));
   }
-  menu_runner_.reset(new views::MenuRunner(&menu_model));
+  menu_runner_.reset(
+      new views::MenuRunner(&menu_model, views::MenuRunner::CONTEXT_MENU));
   if (menu_runner_->RunMenuAt(GetWidget(),
                               NULL,
                               gfx::Rect(point, gfx::Size()),
                               views::MENU_ANCHOR_TOPLEFT,
-                              source_type,
-                              views::MenuRunner::CONTEXT_MENU) ==
-      views::MenuRunner::MENU_DELETED) {
+                              source_type) == views::MenuRunner::MENU_DELETED) {
     return;
   }
 }

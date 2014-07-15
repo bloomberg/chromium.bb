@@ -307,11 +307,14 @@ void InfoBarView::RunMenuAt(ui::MenuModel* menu_model,
   DCHECK(owner());  // We'd better not open any menus while we're closing.
   gfx::Point screen_point;
   views::View::ConvertPointToScreen(button, &screen_point);
-  menu_runner_.reset(new views::MenuRunner(menu_model));
+  menu_runner_.reset(
+      new views::MenuRunner(menu_model, views::MenuRunner::HAS_MNEMONICS));
   // Ignore the result since we don't need to handle a deleted menu specially.
-  ignore_result(menu_runner_->RunMenuAt(
-      GetWidget(), button, gfx::Rect(screen_point, button->size()), anchor,
-      ui::MENU_SOURCE_NONE, views::MenuRunner::HAS_MNEMONICS));
+  ignore_result(menu_runner_->RunMenuAt(GetWidget(),
+                                        button,
+                                        gfx::Rect(screen_point, button->size()),
+                                        anchor,
+                                        ui::MENU_SOURCE_NONE));
 }
 
 // static

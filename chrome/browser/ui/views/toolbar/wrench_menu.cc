@@ -985,7 +985,8 @@ void WrenchMenu::Init(ui::MenuModel* model) {
     DCHECK(command_id_to_entry_.find(i) == command_id_to_entry_.end());
 #endif  // defined(DEBUG)
 
-  menu_runner_.reset(new views::MenuRunner(root_));
+  menu_runner_.reset(
+      new views::MenuRunner(root_, views::MenuRunner::HAS_MNEMONICS));
 }
 
 void WrenchMenu::RunMenu(views::MenuButton* host) {
@@ -997,8 +998,7 @@ void WrenchMenu::RunMenu(views::MenuButton* host) {
                               host,
                               bounds,
                               views::MENU_ANCHOR_TOPRIGHT,
-                              ui::MENU_SOURCE_NONE,
-                              views::MenuRunner::HAS_MNEMONICS) ==
+                              ui::MENU_SOURCE_NONE) ==
       views::MenuRunner::MENU_DELETED)
     return;
   if (bookmark_menu_delegate_.get()) {

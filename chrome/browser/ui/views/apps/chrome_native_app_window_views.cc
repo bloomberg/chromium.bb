@@ -471,14 +471,14 @@ void ChromeNativeAppWindowViews::ShowContextMenuForView(
   int hit_test =
       widget()->non_client_view()->NonClientHitTest(point_in_view_coords);
   if (hit_test == HTCAPTION) {
-    menu_runner_.reset(new views::MenuRunner(model.get()));
+    menu_runner_.reset(new views::MenuRunner(
+        model.get(),
+        views::MenuRunner::HAS_MNEMONICS | views::MenuRunner::CONTEXT_MENU));
     if (menu_runner_->RunMenuAt(source->GetWidget(),
                                 NULL,
                                 gfx::Rect(p, gfx::Size(0, 0)),
                                 views::MENU_ANCHOR_TOPLEFT,
-                                source_type,
-                                views::MenuRunner::HAS_MNEMONICS |
-                                    views::MenuRunner::CONTEXT_MENU) ==
+                                source_type) ==
         views::MenuRunner::MENU_DELETED) {
       return;
     }

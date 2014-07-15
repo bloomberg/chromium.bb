@@ -511,11 +511,15 @@ void BrowserActionsContainer::GetAccessibleState(
 void BrowserActionsContainer::OnMenuButtonClicked(views::View* source,
                                                   const gfx::Point& point) {
   if (source == chevron_) {
-    overflow_menu_ = new BrowserActionOverflowMenuController(
-        this, browser_, chevron_, browser_action_views_,
-        VisibleBrowserActions());
+    overflow_menu_ =
+        new BrowserActionOverflowMenuController(this,
+                                                browser_,
+                                                chevron_,
+                                                browser_action_views_,
+                                                VisibleBrowserActions(),
+                                                false);
     overflow_menu_->set_observer(this);
-    overflow_menu_->RunMenu(GetWidget(), false);
+    overflow_menu_->RunMenu(GetWidget());
   }
 }
 
@@ -933,10 +937,15 @@ void BrowserActionsContainer::StartShowFolderDropMenuTimer() {
 void BrowserActionsContainer::ShowDropFolder() {
   DCHECK(!overflow_menu_);
   SetDropIndicator(-1);
-  overflow_menu_ = new BrowserActionOverflowMenuController(
-      this, browser_, chevron_, browser_action_views_, VisibleBrowserActions());
+  overflow_menu_ =
+      new BrowserActionOverflowMenuController(this,
+                                              browser_,
+                                              chevron_,
+                                              browser_action_views_,
+                                              VisibleBrowserActions(),
+                                              true);
   overflow_menu_->set_observer(this);
-  overflow_menu_->RunMenu(GetWidget(), true);
+  overflow_menu_->RunMenu(GetWidget());
 }
 
 void BrowserActionsContainer::SetDropIndicator(int x_pos) {

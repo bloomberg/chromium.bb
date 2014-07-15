@@ -188,9 +188,6 @@ void BrowserActionButton::ShowContextMenuForView(
   // Reconstructs the menu every time because the menu's contents are dynamic.
   scoped_refptr<ExtensionContextMenuModel> context_menu_contents(
       new ExtensionContextMenuModel(extension(), browser_, delegate_));
-  menu_runner_.reset(new views::MenuRunner(context_menu_contents.get()));
-
-  context_menu_ = menu_runner_->GetMenu();
   gfx::Point screen_loc;
   views::View::ConvertPointToScreen(this, &screen_loc);
 
@@ -208,12 +205,15 @@ void BrowserActionButton::ShowContextMenuForView(
     parent = GetWidget();
   }
 
+  menu_runner_.reset(
+      new views::MenuRunner(context_menu_contents.get(), run_types));
+  context_menu_ = menu_runner_->GetMenu();
+
   if (menu_runner_->RunMenuAt(parent,
                               NULL,
                               gfx::Rect(screen_loc, size()),
                               views::MENU_ANCHOR_TOPLEFT,
-                              source_type,
-                              run_types) ==
+                              source_type) ==
       views::MenuRunner::MENU_DELETED) {
     return;
   }

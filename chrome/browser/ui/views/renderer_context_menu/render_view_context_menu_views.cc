@@ -48,9 +48,8 @@ void RenderViewContextMenuViews::RunMenuAt(views::Widget* parent,
           ? views::MENU_ANCHOR_BOTTOMCENTER
           : views::MENU_ANCHOR_TOPLEFT;
 
-  if (menu_runner_->RunMenuAt(parent, NULL, gfx::Rect(point, gfx::Size()),
-      anchor_position, type, views::MenuRunner::HAS_MNEMONICS |
-          views::MenuRunner::CONTEXT_MENU) ==
+  if (menu_runner_->RunMenuAt(
+          parent, NULL, gfx::Rect(point, gfx::Size()), anchor_position, type) ==
       views::MenuRunner::MENU_DELETED)
     return;
 }
@@ -59,7 +58,9 @@ void RenderViewContextMenuViews::RunMenuAt(views::Widget* parent,
 // RenderViewContextMenuViews, protected:
 
 void RenderViewContextMenuViews::PlatformInit() {
-  menu_runner_.reset(new views::MenuRunner(&menu_model_));
+  menu_runner_.reset(new views::MenuRunner(
+      &menu_model_,
+      views::MenuRunner::HAS_MNEMONICS | views::MenuRunner::CONTEXT_MENU));
 }
 
 void RenderViewContextMenuViews::PlatformCancel() {

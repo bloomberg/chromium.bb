@@ -630,14 +630,13 @@ void RootWindowController::ShowContextMenu(const gfx::Point& location_in_screen,
   if (!wallpaper_controller_.get())
     return;
 
-  views::MenuRunner menu_runner(menu_model.get());
+  views::MenuRunner menu_runner(menu_model.get(),
+                                views::MenuRunner::CONTEXT_MENU);
   if (menu_runner.RunMenuAt(wallpaper_controller_->widget(),
                             NULL,
                             gfx::Rect(location_in_screen, gfx::Size()),
                             views::MENU_ANCHOR_TOPLEFT,
-                            source_type,
-                            views::MenuRunner::CONTEXT_MENU) ==
-      views::MenuRunner::MENU_DELETED) {
+                            source_type) == views::MenuRunner::MENU_DELETED) {
     return;
   }
 

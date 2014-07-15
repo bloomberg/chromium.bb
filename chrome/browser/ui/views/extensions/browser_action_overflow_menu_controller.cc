@@ -62,7 +62,8 @@ BrowserActionOverflowMenuController::BrowserActionOverflowMenuController(
     Browser* browser,
     views::MenuButton* menu_button,
     const std::vector<BrowserActionView*>& views,
-    int start_index)
+    int start_index,
+    bool for_drop)
     : owner_(owner),
       browser_(browser),
       observer_(NULL),
@@ -70,9 +71,10 @@ BrowserActionOverflowMenuController::BrowserActionOverflowMenuController(
       menu_(NULL),
       views_(&views),
       start_index_(start_index),
-      for_drop_(false) {
+      for_drop_(for_drop) {
   menu_ = new views::MenuItemView(this);
-  menu_runner_.reset(new views::MenuRunner(menu_));
+  menu_runner_.reset(new views::MenuRunner(
+      menu_, for_drop_ ? views::MenuRunner::FOR_DROP : 0));
   menu_->set_has_icons(true);
 
   size_t command_id = 1;  // Menu id 0 is reserved, start with 1.
@@ -101,10 +103,7 @@ BrowserActionOverflowMenuController::~BrowserActionOverflowMenuController() {
     observer_->NotifyMenuDeleted(this);
 }
 
-bool BrowserActionOverflowMenuController::RunMenu(views::Widget* window,
-                                                  bool for_drop) {
-  for_drop_ = for_drop;
-
+bool BrowserActionOverflowMenuController::RunMenu(views::Widget* window) {
   gfx::Rect bounds = menu_button_->bounds();
   gfx::Point screen_loc;
   views::View::ConvertPointToScreen(menu_button_, &screen_loc);
@@ -113,8 +112,8 @@ bool BrowserActionOverflowMenuController::RunMenu(views::Widget* window,
 
   views::MenuAnchorPosition anchor = views::MENU_ANCHOR_TOPRIGHT;
   // As we maintain our own lifetime we can safely ignore the result.
-  ignore_result(menu_runner_->RunMenuAt(window, menu_button_, bounds, anchor,
-      ui::MENU_SOURCE_NONE, for_drop_ ? views::MenuRunner::FOR_DROP : 0));
+  ignore_result(menu_runner_->RunMenuAt(
+      window, menu_button_, bounds, anchor, ui::MENU_SOURCE_NONE));
   if (!for_drop_) {
     // Give the context menu (if any) a chance to execute the user-selected
     // command.
@@ -153,18 +152,18 @@ bool BrowserActionOverflowMenuController::ShowContextMenu(
 
   scoped_refptr<ExtensionContextMenuModel> context_menu_contents =
       new ExtensionContextMenuModel(extension, browser_, owner_);
-  views::MenuRunner context_menu_runner(context_menu_contents.get());
+  views::MenuRunner context_menu_runner(context_menu_contents.get(),
+                                        views::MenuRunner::HAS_MNEMONICS |
+                                            views::MenuRunner::IS_NESTED |
+                                            views::MenuRunner::CONTEXT_MENU);
 
   // We can ignore the result as we delete ourself.
   // This blocks until the user choses something or dismisses the menu.
-  ignore_result(context_menu_runner.RunMenuAt(
-      menu_button_->GetWidget(),
-      NULL,
-      gfx::Rect(p, gfx::Size()),
-      views::MENU_ANCHOR_TOPLEFT,
-      source_type,
-      views::MenuRunner::HAS_MNEMONICS | views::MenuRunner::IS_NESTED |
-          views::MenuRunner::CONTEXT_MENU));
+  ignore_result(context_menu_runner.RunMenuAt(menu_button_->GetWidget(),
+                                              NULL,
+                                              gfx::Rect(p, gfx::Size()),
+                                              views::MENU_ANCHOR_TOPLEFT,
+                                              source_type));
 
   // The user is done with the context menu, so we can close the underlying
   // menu.
