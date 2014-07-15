@@ -480,8 +480,8 @@ void InspectorResourceAgent::delayedRemoveReplayXHR(XMLHttpRequest* xhr)
     if (!m_replayXHRs.contains(xhr))
         return;
 
-    m_replayXHRs.remove(xhr);
     m_replayXHRsToBeDeleted.add(xhr);
+    m_replayXHRs.remove(xhr);
     m_removeFinishedReplayXHRTimer.startOneShot(0, FROM_HERE);
 }
 
