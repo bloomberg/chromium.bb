@@ -49,8 +49,8 @@ function onStateChange(event) {
 
 function onUnregister()
 {
-    // FIXME: Assert that the ServiceWorker *is* collected when the 'redundant' state is implemented.
-    assertServiceWorkerIsNotCollected();
+    gc();
+    shouldBeTrue('swObservation.wasCollected');
 
     finishJSTest();
 }

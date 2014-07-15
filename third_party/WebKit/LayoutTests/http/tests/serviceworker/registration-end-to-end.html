@@ -30,11 +30,6 @@ t.step(function() {
         return messageChannel.port1;
     }
 
-
-    var sawMessage, sawActive;
-    var messagePromise = new Promise(function(resolve) { sawMessage = resolve; });
-    var activePromise = new Promise(function(resolve) { sawActive = resolve; });
-
     function onRegister(sw) {
         serviceWorkerStates.push(sw.state);
         lastServiceWorkerState = sw.state;
@@ -64,6 +59,8 @@ t.step(function() {
                     assert_equals(lastServiceWorkerState, 'activating');
                     break;
                 default:
+                    // We won't see 'redundant' because onstatechange is
+                    // overwritten before calling unregister.
                     assert_unreached('Unexpected state: ' + sw.state);
                 }
 
@@ -76,14 +73,23 @@ t.step(function() {
         Promise.all([sawMessage, sawActive]).then(t.step_func(function() {
             assert_array_equals(serviceWorkerStates,
                                 ['parsed', 'installing', 'installed', 'activating', 'activated'],
-                                'Service worker should pass through four states');
+                                'Service worker should pass through all states');
 
             assert_equals(currentChangeCount, 0,
                           'Should not see current changes since document is out of scope');
 
             assert_equals(receivedMessageFromPort, 'Ack for: registering doc');
 
-            service_worker_unregister_and_done(t, scope);
+            var sawRedundant = new Promise(t.step_func(function(resolve) {
+                sw.onstatechange = t.step_func(function() {
+                    assert_equals(sw.state, 'redundant');
+                    resolve();
+                });
+            }));
+            navigator.serviceWorker.unregister(scope);
+            sawRedundant.then(t.step_func(function() {
+                t.done();
+            }));
         }));
     }
 });

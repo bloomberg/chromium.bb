@@ -9,6 +9,7 @@ PASS swObservation.wasCollected is false
 PASS swObservation.wasCollected is false
 PASS swObservation.wasCollected is false
 PASS swObservation.wasCollected is false
+PASS swObservation.wasCollected is true
 PASS successfullyParsed is true
 
 TEST COMPLETE
