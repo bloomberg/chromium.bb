@@ -130,7 +130,8 @@ const int BaseSearchProvider::kDeletionURLFetcherID = 3;
 BaseSearchProvider::BaseSearchProvider(AutocompleteProviderListener* listener,
                                        Profile* profile,
                                        AutocompleteProvider::Type type)
-    : AutocompleteProvider(listener, type),
+    : AutocompleteProvider(type),
+      listener_(listener),
       profile_(profile),
       field_trial_triggered_(false),
       field_trial_triggered_in_session_(false),

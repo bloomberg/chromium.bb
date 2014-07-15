@@ -7,7 +7,6 @@
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
-#include "chrome/browser/autocomplete/autocomplete_provider_listener.h"
 #include "components/autocomplete/autocomplete_input.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/url_fixer/url_fixer.h"
@@ -17,11 +16,8 @@
 // static
 const size_t AutocompleteProvider::kMaxMatches = 3;
 
-AutocompleteProvider::AutocompleteProvider(
-    AutocompleteProviderListener* listener,
-    Type type)
-    : listener_(listener),
-      done_(true),
+AutocompleteProvider::AutocompleteProvider(Type type)
+    : done_(true),
       type_(type) {
 }
 

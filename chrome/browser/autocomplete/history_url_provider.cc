@@ -477,8 +477,8 @@ HistoryURLProviderParams::~HistoryURLProviderParams() {
 
 HistoryURLProvider::HistoryURLProvider(AutocompleteProviderListener* listener,
                                        Profile* profile)
-    : HistoryProvider(listener, profile,
-                      AutocompleteProvider::TYPE_HISTORY_URL),
+    : HistoryProvider(profile, AutocompleteProvider::TYPE_HISTORY_URL),
+      listener_(listener),
       params_(NULL),
       cull_redirects_(
           !OmniboxFieldTrial::InHUPCullRedirectsFieldTrial() ||

@@ -29,7 +29,7 @@ class BuiltinProviderTest : public testing::Test {
   BuiltinProviderTest() : provider_(NULL) {}
   virtual ~BuiltinProviderTest() {}
 
-  virtual void SetUp() OVERRIDE { provider_ = new BuiltinProvider(NULL); }
+  virtual void SetUp() OVERRIDE { provider_ = new BuiltinProvider(); }
   virtual void TearDown() OVERRIDE { provider_ = NULL; }
 
   void RunTest(const TestData cases[], size_t num_cases) {

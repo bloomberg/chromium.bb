@@ -20,6 +20,7 @@
 #include "components/autocomplete/autocomplete_input.h"
 #include "components/metrics/proto/omnibox_input_type.pb.h"
 
+class AutocompleteProviderListener;
 class KeywordExtensionsDelegate;
 class Profile;
 class TemplateURL;
@@ -139,6 +140,7 @@ class KeywordProvider : public AutocompleteProvider {
 
   TemplateURLService* GetTemplateURLService() const;
 
+  AutocompleteProviderListener* listener_;
   Profile* profile_;
 
   // Model for the keywords.  This is only non-null when testing, otherwise the

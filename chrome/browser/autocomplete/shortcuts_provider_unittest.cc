@@ -19,7 +19,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/autocomplete/autocomplete_provider.h"
-#include "chrome/browser/autocomplete/autocomplete_provider_listener.h"
 #include "chrome/browser/autocomplete/autocomplete_result.h"
 #include "chrome/browser/autocomplete/chrome_autocomplete_scheme_classifier.h"
 #include "chrome/browser/autocomplete/shortcuts_backend.h"
@@ -236,13 +235,9 @@ ACMatchClassifications ClassifyTest::RunTest(const base::string16& find_text) {
 
 // ShortcutsProviderTest ------------------------------------------------------
 
-class ShortcutsProviderTest : public testing::Test,
-                              public AutocompleteProviderListener {
+class ShortcutsProviderTest : public testing::Test {
  public:
   ShortcutsProviderTest();
-
-  // AutocompleteProviderListener:
-  virtual void OnProviderUpdate(bool updated_matches) OVERRIDE;
 
  protected:
   typedef std::pair<std::string, bool> ExpectedURLAndAllowedToBeDefault;
@@ -303,15 +298,13 @@ ShortcutsProviderTest::ShortcutsProviderTest()
       file_thread_(content::BrowserThread::FILE, &message_loop_) {
 }
 
-void ShortcutsProviderTest::OnProviderUpdate(bool updated_matches) {}
-
 void ShortcutsProviderTest::SetUp() {
   ShortcutsBackendFactory::GetInstance()->SetTestingFactoryAndUse(
       &profile_, &ShortcutsBackendFactory::BuildProfileNoDatabaseForTesting);
   backend_ = ShortcutsBackendFactory::GetForProfile(&profile_);
   ASSERT_TRUE(backend_.get());
   ASSERT_TRUE(profile_.CreateHistoryService(true, false));
-  provider_ = new ShortcutsProvider(this, &profile_);
+  provider_ = new ShortcutsProvider(&profile_);
   FillData(shortcut_test_db, arraysize(shortcut_test_db));
 }
 

@@ -19,7 +19,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
-#include "chrome/browser/autocomplete/autocomplete_provider_listener.h"
 #include "chrome/browser/autocomplete/autocomplete_result.h"
 #include "chrome/browser/autocomplete/history_provider.h"
 #include "chrome/browser/autocomplete/shortcuts_backend_factory.h"
@@ -54,9 +53,8 @@ class DestinationURLEqualsURL {
 
 const int ShortcutsProvider::kShortcutsProviderDefaultMaxRelevance = 1199;
 
-ShortcutsProvider::ShortcutsProvider(AutocompleteProviderListener* listener,
-                                     Profile* profile)
-    : AutocompleteProvider(listener, AutocompleteProvider::TYPE_SHORTCUTS),
+ShortcutsProvider::ShortcutsProvider(Profile* profile)
+    : AutocompleteProvider(AutocompleteProvider::TYPE_SHORTCUTS),
       profile_(profile),
       languages_(profile_->GetPrefs()->GetString(prefs::kAcceptLanguages)),
       initialized_(false) {

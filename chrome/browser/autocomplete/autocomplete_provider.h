@@ -12,7 +12,6 @@
 #include "components/metrics/proto/omnibox_event.pb.h"
 
 class AutocompleteInput;
-class AutocompleteProviderListener;
 class BookmarkModel;
 
 typedef std::vector<metrics::OmniboxEventProto_ProviderInfo> ProvidersInfo;
@@ -137,8 +136,7 @@ class AutocompleteProvider
     TYPE_ZERO_SUGGEST     = 1 << 7,
   };
 
-  AutocompleteProvider(AutocompleteProviderListener* listener,
-                       Type type);
+  explicit AutocompleteProvider(Type type);
 
   // Returns a string describing a particular AutocompleteProvider type.
   static const char* TypeToString(Type type);
@@ -203,11 +201,6 @@ class AutocompleteProvider
   // Returns a string describing this provider's type.
   const char* GetName() const;
 
-#ifdef UNIT_TEST
-  void set_listener(AutocompleteProviderListener* listener) {
-    listener_ = listener;
-  }
-#endif
   // A suggested upper bound for how many matches a provider should return.
   // TODO(pkasting): http://b/1111299 , http://b/933133 This should go away once
   // we have good relevance heuristics; the controller should handle all
@@ -248,7 +241,6 @@ class AutocompleteProvider
   // return 0.
   static size_t TrimHttpPrefix(base::string16* url);
 
-  AutocompleteProviderListener* listener_;
   ACMatches matches_;
   bool done_;
 

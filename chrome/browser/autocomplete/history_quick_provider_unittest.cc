@@ -17,7 +17,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
-#include "chrome/browser/autocomplete/autocomplete_provider_listener.h"
 #include "chrome/browser/autocomplete/autocomplete_result.h"
 #include "chrome/browser/autocomplete/chrome_autocomplete_scheme_classifier.h"
 #include "chrome/browser/autocomplete/history_url_provider.h"
@@ -106,15 +105,11 @@ struct TestURLInfo {
    "83.A6.E4.BD.93.E5.88.B6", "Title Unimportant", 2, 2, 0}
 };
 
-class HistoryQuickProviderTest : public testing::Test,
-                                 public AutocompleteProviderListener {
+class HistoryQuickProviderTest : public testing::Test {
  public:
   HistoryQuickProviderTest()
       : ui_thread_(BrowserThread::UI, &message_loop_),
         file_thread_(BrowserThread::FILE, &message_loop_) {}
-
-  // AutocompleteProviderListener:
-  virtual void OnProviderUpdate(bool updated_matches) OVERRIDE {}
 
  protected:
   class SetShouldContain : public std::unary_function<const std::string&,
@@ -194,7 +189,7 @@ void HistoryQuickProviderTest::SetUp() {
       HistoryServiceFactory::GetForProfile(profile_.get(),
                                            Profile::EXPLICIT_ACCESS);
   EXPECT_TRUE(history_service_);
-  provider_ = new HistoryQuickProvider(this, profile_.get());
+  provider_ = new HistoryQuickProvider(profile_.get());
   TemplateURLServiceFactory::GetInstance()->SetTestingFactoryAndUse(
       profile_.get(), &HistoryQuickProviderTest::CreateTemplateURLService);
   FillData();

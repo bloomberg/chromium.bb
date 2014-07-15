@@ -24,7 +24,7 @@ class ShortcutsProvider
     : public AutocompleteProvider,
       public ShortcutsBackend::ShortcutsBackendObserver {
  public:
-  ShortcutsProvider(AutocompleteProviderListener* listener, Profile* profile);
+  explicit ShortcutsProvider(Profile* profile);
 
   // Performs the autocompletion synchronously. Since no asynch completion is
   // performed |minimal_changes| is ignored.

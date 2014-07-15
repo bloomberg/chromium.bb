@@ -29,7 +29,7 @@ struct BookmarkMatch;
 // and visit counts and last visit dates, etc. into consideration while scoring.
 class BookmarkProvider : public AutocompleteProvider {
  public:
-  BookmarkProvider(AutocompleteProviderListener* listener, Profile* profile);
+  explicit BookmarkProvider(Profile* profile);
 
   // When |minimal_changes| is true short circuit any additional searching and
   // leave the previous matches for this provider unchanged, otherwise perform

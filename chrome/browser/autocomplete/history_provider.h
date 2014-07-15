@@ -25,9 +25,7 @@ class HistoryProvider : public AutocompleteProvider {
   static bool PreventInlineAutocomplete(const AutocompleteInput& input);
 
  protected:
-  HistoryProvider(AutocompleteProviderListener* listener,
-                  Profile* profile,
-                  AutocompleteProvider::Type type);
+  HistoryProvider(Profile* profile, AutocompleteProvider::Type type);
   virtual ~HistoryProvider();
 
   // Finds and removes the match from the current collection of matches and

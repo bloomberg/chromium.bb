@@ -16,6 +16,7 @@
 #include "components/history/core/browser/history_match.h"
 #include "components/search_engines/template_url.h"
 
+class AutocompleteProviderListener;
 class Profile;
 class SearchTermsData;
 
@@ -321,6 +322,8 @@ class HistoryURLProvider : public HistoryProvider {
       size_t match_number,
       MatchType match_type,
       int relevance);
+
+  AutocompleteProviderListener* listener_;
 
   // Params for the current query.  The provider should not free this directly;
   // instead, it is passed as a parameter through the history backend, and the

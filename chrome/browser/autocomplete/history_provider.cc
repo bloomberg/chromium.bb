@@ -9,7 +9,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
-#include "chrome/browser/autocomplete/autocomplete_provider_listener.h"
 #include "chrome/browser/history/history_service.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/history/in_memory_url_index_types.h"
@@ -44,10 +43,9 @@ bool HistoryProvider::PreventInlineAutocomplete(
        IsWhitespace(input.text()[input.text().length() - 1]));
 }
 
-HistoryProvider::HistoryProvider(AutocompleteProviderListener* listener,
-                                 Profile* profile,
+HistoryProvider::HistoryProvider(Profile* profile,
                                  AutocompleteProvider::Type type)
-    : AutocompleteProvider(listener, type),
+    : AutocompleteProvider(type),
       profile_(profile) {
 }
 

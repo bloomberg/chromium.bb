@@ -51,11 +51,8 @@ using history::ScoredHistoryMatches;
 
 bool HistoryQuickProvider::disabled_ = false;
 
-HistoryQuickProvider::HistoryQuickProvider(
-    AutocompleteProviderListener* listener,
-    Profile* profile)
-    : HistoryProvider(listener, profile,
-          AutocompleteProvider::TYPE_HISTORY_QUICK),
+HistoryQuickProvider::HistoryQuickProvider(Profile* profile)
+    : HistoryProvider(profile, AutocompleteProvider::TYPE_HISTORY_QUICK),
       languages_(profile_->GetPrefs()->GetString(prefs::kAcceptLanguages)) {
 }
 

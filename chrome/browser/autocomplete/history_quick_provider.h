@@ -27,8 +27,7 @@ class ScoredHistoryMatch;
 // history.
 class HistoryQuickProvider : public HistoryProvider {
  public:
-  HistoryQuickProvider(AutocompleteProviderListener* listener,
-                       Profile* profile);
+  explicit HistoryQuickProvider(Profile* profile);
 
   // AutocompleteProvider. |minimal_changes| is ignored since there is no asynch
   // completion performed.

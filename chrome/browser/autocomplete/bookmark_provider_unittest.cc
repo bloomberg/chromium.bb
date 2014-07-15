@@ -15,7 +15,6 @@
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete_provider.h"
-#include "chrome/browser/autocomplete/autocomplete_provider_listener.h"
 #include "chrome/browser/autocomplete/chrome_autocomplete_scheme_classifier.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/bookmarks/browser/bookmark_match.h"
@@ -65,13 +64,9 @@ struct BookmarksTestInfo {
   {"jive music", "http://www.worms.com/" },
 };
 
-class BookmarkProviderTest : public testing::Test,
-                             public AutocompleteProviderListener {
+class BookmarkProviderTest : public testing::Test {
  public:
   BookmarkProviderTest();
-
-  // AutocompleteProviderListener: Not called.
-  virtual void OnProviderUpdate(bool updated_matches) OVERRIDE {}
 
  protected:
   virtual void SetUp() OVERRIDE;
@@ -92,7 +87,7 @@ BookmarkProviderTest::BookmarkProviderTest() {
 void BookmarkProviderTest::SetUp() {
   profile_.reset(new TestingProfile());
   DCHECK(profile_.get());
-  provider_ = new BookmarkProvider(this, profile_.get());
+  provider_ = new BookmarkProvider(profile_.get());
   DCHECK(provider_.get());
   provider_->set_bookmark_model_for_testing(model_.get());
 

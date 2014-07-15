@@ -183,11 +183,11 @@ AutocompleteController::AutocompleteController(
       template_url_service_(template_url_service) {
   provider_types &= ~OmniboxFieldTrial::GetDisabledProviderTypes();
   if (provider_types & AutocompleteProvider::TYPE_BOOKMARK)
-    providers_.push_back(new BookmarkProvider(this, profile));
+    providers_.push_back(new BookmarkProvider(profile));
   if (provider_types & AutocompleteProvider::TYPE_BUILTIN)
-    providers_.push_back(new BuiltinProvider(this));
+    providers_.push_back(new BuiltinProvider());
   if (provider_types & AutocompleteProvider::TYPE_HISTORY_QUICK)
-    providers_.push_back(new HistoryQuickProvider(this, profile));
+    providers_.push_back(new HistoryQuickProvider(profile));
   if (provider_types & AutocompleteProvider::TYPE_HISTORY_URL) {
     history_url_provider_ = new HistoryURLProvider(this, profile);
     providers_.push_back(history_url_provider_);
@@ -204,7 +204,7 @@ AutocompleteController::AutocompleteController(
     providers_.push_back(search_provider_);
   }
   if (provider_types & AutocompleteProvider::TYPE_SHORTCUTS)
-    providers_.push_back(new ShortcutsProvider(this, profile));
+    providers_.push_back(new ShortcutsProvider(profile));
   if (provider_types & AutocompleteProvider::TYPE_ZERO_SUGGEST) {
     zero_suggest_provider_ = ZeroSuggestProvider::Create(this, profile);
     if (zero_suggest_provider_)

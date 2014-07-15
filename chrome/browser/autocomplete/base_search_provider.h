@@ -484,6 +484,7 @@ class BaseSearchProvider : public AutocompleteProvider,
   // if suggested relevances cause undesriable behavior. Updates |done_|.
   virtual void UpdateMatches() = 0;
 
+  AutocompleteProviderListener* listener_;
   Profile* profile_;
 
   // Whether a field trial, if any, has triggered in the most recent
