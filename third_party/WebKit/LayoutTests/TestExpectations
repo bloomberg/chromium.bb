@@ -218,6 +218,8 @@ crbug.com/378919 [ Linux Android ] fast/forms/suggestion-picker/datetimelocal-su
 crbug.com/378919 [ Linux Android ] fast/forms/suggestion-picker/datetimelocal-suggestion-picker-appearance-with-scroll-bar.html [ NeedsManualRebaseline ]
 crbug.com/378919 [ Linux Android ] fast/forms/suggestion-picker/datetimelocal-suggestion-picker-appearance.html [ NeedsManualRebaseline ]
 
+crbug.com/380472 [ Linux Debug ] virtual/softwarecompositing/repaint/resize-repaint.html [ NeedsManualRebaseline ]
+
 # Untriaged Linux-specific Aura failures
 
 crbug.com/381684 [ Win Android Mac ] fonts/family-fallback-gardiner.html [ Skip ]
