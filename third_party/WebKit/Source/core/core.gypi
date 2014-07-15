@@ -3286,6 +3286,7 @@
             'svg/properties/SVGPropertyTearOff.cpp',
         ],
         'webcore_testing_idl_files': [
+          'testing/GarbageCollectedScriptWrappable.idl',
           'testing/GCObservation.idl',
           'testing/InternalProfilers.idl',
           'testing/InternalSettings.idl',
@@ -3294,6 +3295,7 @@
           'testing/LayerRectList.idl',
           'testing/MallocStatistics.idl',
           'testing/PrivateScriptTest.idl',
+          'testing/RefCountedScriptWrappable.idl',
           'testing/TypeConversions.idl',
         ],
         'generated_webcore_testing_idl_files': [
@@ -3305,6 +3307,8 @@
             '<(blink_core_output_dir)/InternalSettingsGenerated.h',
             'testing/DummyPageHolder.cpp',
             'testing/DummyPageHolder.h',
+            'testing/GarbageCollectedScriptWrappable.cpp',
+            'testing/GarbageCollectedScriptWrappable.h',
             'testing/GCObservation.cpp',
             'testing/GCObservation.h',
             'testing/InternalProfilers.cpp',
@@ -3323,6 +3327,8 @@
             'testing/NullExecutionContext.h',
             'testing/PrivateScriptTest.cpp',
             'testing/PrivateScriptTest.h',
+            'testing/RefCountedScriptWrappable.cpp',
+            'testing/RefCountedScriptWrappable.h',
             'testing/TypeConversions.h',
             'testing/v8/WebCoreTestSupport.cpp',
             'testing/v8/WebCoreTestSupport.h',

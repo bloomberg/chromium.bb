@@ -41,6 +41,7 @@
 #include "bindings/core/v8/V8ThrowException.h"
 #include "bindings/core/v8/V8ValueCache.h"
 #include "platform/heap/Heap.h"
+#include "wtf/GetPtr.h"
 #include "wtf/MathExtras.h"
 #include "wtf/text/AtomicString.h"
 #include <v8.h>
@@ -228,35 +229,11 @@ v8::Handle<v8::Value> toV8NoInline(T* impl, v8::Handle<v8::Object> creationConte
 
 template <typename T>
 struct V8ValueTraits {
-    typedef typename WTF::RemovePointer<T>::Type TypeWithoutPointer;
-    static v8::Handle<v8::Value> toV8Value(TypeWithoutPointer* const& value, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
+    static v8::Handle<v8::Value> toV8Value(const T& value, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
     {
-        return toV8NoInline(value, creationContext, isolate);
-    }
-
-    typedef typename WTF::RemoveTemplate<T, RawPtr>::Type TypeWithoutRawPtr;
-    static v8::Handle<v8::Value> toV8Value(const RawPtr<TypeWithoutRawPtr>& value, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
-    {
-        return toV8NoInline(value.get(), creationContext, isolate);
-    }
-
-    // HeapVector<RefPtr> requires the following method:
-    typedef typename WTF::RemoveTemplate<T, RefPtr>::Type TypeWithoutRefPtr;
-    static v8::Handle<v8::Value> toV8Value(const RefPtr<TypeWithoutRefPtr>& value, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
-    {
-        return toV8NoInline(value.get(), creationContext, isolate);
-    }
-
-    typedef typename WTF::RemoveTemplate<T, PassRefPtr>::Type TypeWithoutPassRefPtr;
-    static v8::Handle<v8::Value> toV8Value(const PassRefPtr<TypeWithoutPassRefPtr>& value, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
-    {
-        return toV8NoInline(value.get(), creationContext, isolate);
-    }
-
-    typedef typename WTF::RemoveTemplate<T, Member>::Type TypeWithoutMember;
-    static v8::Handle<v8::Value> toV8Value(const Member<TypeWithoutMember>& value, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
-    {
-        return toV8NoInline(value.get(), creationContext, isolate);
+        if (!WTF::getPtr(value))
+            return v8::Null(isolate);
+        return toV8NoInline(WTF::getPtr(value), creationContext, isolate);
     }
 };
 
@@ -300,11 +277,32 @@ struct V8ValueTraits<char[n]> {
     }
 };
 
+template<size_t n>
+struct V8ValueTraits<char const[n]> {
+    static inline v8::Handle<v8::Value> toV8Value(char const (&value)[n], v8::Handle<v8::Object>, v8::Isolate* isolate)
+    {
+        return v8String(isolate, value);
+    }
+};
+
 template<>
 struct V8ValueTraits<const char*> {
     static inline v8::Handle<v8::Value> toV8Value(const char* const& value, v8::Handle<v8::Object>, v8::Isolate* isolate)
     {
+        if (!value) {
+            // We return an empty string, not null, in order to align
+            // with v8String(isolate, String()).
+            return v8::String::Empty(isolate);
+        }
         return v8String(isolate, value);
+    }
+};
+
+template<>
+struct V8ValueTraits<char*> {
+    static inline v8::Handle<v8::Value> toV8Value(char* const& value, v8::Handle<v8::Object> object, v8::Isolate* isolate)
+    {
+        return V8ValueTraits<const char*>::toV8Value(value, object, isolate);
     }
 };
 

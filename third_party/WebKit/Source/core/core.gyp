@@ -801,6 +801,8 @@
       ],
       'sources': [
         '<@(webcore_testing_files)',
+        '<(bindings_core_v8_output_dir)/V8GarbageCollectedScriptWrappable.cpp',
+        '<(bindings_core_v8_output_dir)/V8GarbageCollectedScriptWrappable.h',
         '<(bindings_core_v8_output_dir)/V8GCObservation.cpp',
         '<(bindings_core_v8_output_dir)/V8GCObservation.h',
         '<(bindings_core_v8_output_dir)/V8MallocStatistics.cpp',
@@ -823,6 +825,8 @@
         '<(bindings_core_v8_output_dir)/V8LayerRect.h',
         '<(bindings_core_v8_output_dir)/V8LayerRectList.cpp',
         '<(bindings_core_v8_output_dir)/V8LayerRectList.h',
+        '<(bindings_core_v8_output_dir)/V8RefCountedScriptWrappable.cpp',
+        '<(bindings_core_v8_output_dir)/V8RefCountedScriptWrappable.h',
       ],
       'sources/': [
         ['exclude', 'testing/js'],

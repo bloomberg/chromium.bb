@@ -97,7 +97,7 @@ protected:
     ScriptValue wrap(PassRefPtrWillBeRawPtr<Event> event)
     {
         ScriptState::Scope scope(scriptState());
-        return ScriptValue(scriptState(), V8ValueTraits<Event>::toV8Value(event, scriptState()->context()->Global(), isolate()));
+        return ScriptValue(scriptState(), V8ValueTraits<PassRefPtrWillBeRawPtr<Event> >::toV8Value(event, scriptState()->context()->Global(), isolate()));
     }
 
     typedef ScriptPromiseProperty<RefPtrWillBeMember<Event>, Event*, Event*> Property;
