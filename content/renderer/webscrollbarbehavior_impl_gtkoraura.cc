@@ -40,8 +40,16 @@ bool WebScrollbarBehaviorImpl::shouldSnapBackToDragOrigin(
       (isHorizontal ? kOffEndMultiplier : kOffSideMultiplier) * -thickness,
       (isHorizontal ? kOffSideMultiplier : kOffEndMultiplier) * -thickness);
 
-  // We should snap iff the event is outside our calculated rect.
+  // On most platforms, we should snap iff the event is outside our calculated
+  // rect.  On Linux, however, we should not snap for events off the ends, but
+  // not the sides, of the rect.
+#if (defined(OS_LINUX) && !defined(OS_CHROMEOS))
+  return isHorizontal ?
+      (eventPoint.y < noSnapRect.y() || eventPoint.y >= noSnapRect.bottom()) :
+      (eventPoint.x < noSnapRect.x() || eventPoint.x >= noSnapRect.right());
+#else
   return !noSnapRect.Contains(eventPoint);
+#endif
 }
 
 }  // namespace content
