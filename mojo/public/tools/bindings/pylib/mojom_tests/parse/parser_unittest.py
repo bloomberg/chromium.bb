@@ -226,17 +226,17 @@ class ParserTest(unittest.TestCase):
         ast.ImportList(),
         [('ENUM',
           'MyEnum1',
-          [('ENUM_VALUE', 'VALUE1', None),
-           ('ENUM_VALUE', 'VALUE2', None)]),
+          ast.EnumValueList([ast.EnumValue('VALUE1', None),
+                             ast.EnumValue('VALUE2', None)])),
          ('ENUM',
           'MyEnum2',
-          [('ENUM_VALUE', 'VALUE1', '-1'),
-           ('ENUM_VALUE', 'VALUE2', '0'),
-           ('ENUM_VALUE', 'VALUE3', '+987'),
-           ('ENUM_VALUE', 'VALUE4', '0xAF12'),
-           ('ENUM_VALUE', 'VALUE5', '-0x09bcd'),
-           ('ENUM_VALUE', 'VALUE6', ('IDENTIFIER', 'VALUE5')),
-           ('ENUM_VALUE', 'VALUE7', None)])])
+          ast.EnumValueList([ast.EnumValue('VALUE1', '-1'),
+                             ast.EnumValue('VALUE2', '0'),
+                             ast.EnumValue('VALUE3', '+987'),
+                             ast.EnumValue('VALUE4', '0xAF12'),
+                             ast.EnumValue('VALUE5', '-0x09bcd'),
+                             ast.EnumValue('VALUE6', ('IDENTIFIER', 'VALUE5')),
+                             ast.EnumValue('VALUE7', None)]))])
     self.assertEquals(parser.Parse(source, "my_file.mojom"), expected)
 
   def testInvalidEnumInitializers(self):

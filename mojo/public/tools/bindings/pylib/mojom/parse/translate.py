@@ -104,13 +104,14 @@ def _MapInterface(tree):
   return interface
 
 def _MapEnum(tree):
-  def MapEnumField(tree):
-    return {'name': tree[1],
-            'value': tree[2]}
+  def EnumValueToDict(enum_value):
+    assert isinstance(enum_value, ast.EnumValue)
+    return {'name': enum_value.name,
+            'value': enum_value.value}
 
   enum = {}
   enum['name'] = tree[1]
-  enum['fields'] = _MapTree(MapEnumField, tree[2], 'ENUM_VALUE')
+  enum['fields'] = map(EnumValueToDict, tree[2])
   return enum
 
 def _MapConstant(tree):

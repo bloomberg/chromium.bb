@@ -90,6 +90,31 @@ class AttributeList(NodeListBase):
   _list_item_type = Attribute
 
 
+class EnumValue(NodeBase):
+  """Represents a definition of an enum value."""
+
+  def __init__(self, name, value, **kwargs):
+    assert isinstance(name, str)
+    # The optional value is either an int (which is current a string) or a
+    # "wrapped identifier".
+    assert value is None or isinstance(value, str) or isinstance(value, tuple)
+    NodeBase.__init__(self, **kwargs)
+    self.name = name
+    self.value = value
+
+  def __eq__(self, other):
+    return type(self) == type(other) and \
+           self.name == other.name and \
+           self.value == other.value
+
+
+class EnumValueList(NodeListBase):
+  """Represents a list of enum value definitions (i.e., the "body" of an enum
+  definition)."""
+
+  _list_item_type = EnumValue
+
+
 class Import(NodeBase):
   """Represents an import statement."""
 

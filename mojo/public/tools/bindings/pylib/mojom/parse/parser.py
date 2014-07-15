@@ -300,18 +300,18 @@ class Parser(object):
 
   def p_nonempty_enum_value_list_1(self, p):
     """nonempty_enum_value_list : enum_value"""
-    p[0] = [p[1]]
+    p[0] = ast.EnumValueList(p[1])
 
   def p_nonempty_enum_value_list_2(self, p):
     """nonempty_enum_value_list : nonempty_enum_value_list COMMA enum_value"""
     p[0] = p[1]
-    p[0].append(p[3])
+    p[0].Append(p[3])
 
   def p_enum_value(self, p):
     """enum_value : NAME
                   | NAME EQUALS int
                   | NAME EQUALS identifier_wrapped"""
-    p[0] = ('ENUM_VALUE', p[1], p[3] if len(p) == 4 else None)
+    p[0] = ast.EnumValue(p[1], p[3] if len(p) == 4 else None)
 
   def p_const(self, p):
     """const : CONST typename NAME EQUALS constant SEMI"""
