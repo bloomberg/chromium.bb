@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "core/fileapi/Stream.h"
+#include "core/streams/Stream.h"
 
 #include "platform/blob/BlobData.h"
 #include "platform/blob/BlobRegistry.h"
