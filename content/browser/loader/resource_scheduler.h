@@ -52,8 +52,30 @@ class ResourceThrottle;
 // the URLRequest.
 class CONTENT_EXPORT ResourceScheduler : public base::NonThreadSafe {
  public:
+  enum ClientThrottleState {
+    // Loaded background client, all observable clients loaded.
+    COALESCED,
+    // Background client, an observable client is loading.
+    THROTTLED,
+    // Observable (active) loaded client or
+    // Loading background client, all observable clients loaded.
+    // Note that clients which would be COALESCED are UNTHROTTLED until
+    // coalescing is turned on.
+    UNTHROTTLED,
+    // Observable (active) loading client.
+    ACTIVE_AND_LOADING,
+  };
+
   ResourceScheduler();
   ~ResourceScheduler();
+
+  // TODO(aiolos): Remove when throttling and coalescing have landed
+  void SetThrottleOptionsForTesting(bool should_throttle, bool should_coalesce);
+
+  bool should_coalesce() const { return should_coalesce_; }
+  bool should_throttle() const { return should_throttle_; }
+
+  ClientThrottleState GetClientStateForTesting(int child_id, int route_id);
 
   // Requests that this ResourceScheduler schedule, and eventually loads, the
   // specified |url_request|. Caller should delete the returned ResourceThrottle
@@ -78,11 +100,24 @@ class CONTENT_EXPORT ResourceScheduler : public base::NonThreadSafe {
   // resource loads won't interfere with first paint.
   void OnWillInsertBody(int child_id, int route_id);
 
-  // Signals from the IO thread
+  // Signals from the IO thread:
 
   // Called when we received a response to a http request that was served
   // from a proxy using SPDY.
   void OnReceivedSpdyProxiedHttpResponse(int child_id, int route_id);
+
+  // Client functions:
+
+  // Called to check if all user observable tabs have completed loading.
+  bool active_clients_loaded() const { return active_clients_loading_ == 0; }
+
+  // Called when a Client starts or stops playing audio.
+  void OnAudibilityChanged(int child_id, int route_id, bool is_audible);
+
+  // Called when a Client is shown or hidden.
+  void OnVisibilityChanged(int child_id, int route_id, bool is_visible);
+
+  void OnLoadingStateChanged(int child_id, int route_id, bool is_loaded);
 
  private:
   class RequestQueue;
@@ -101,6 +136,17 @@ class CONTENT_EXPORT ResourceScheduler : public base::NonThreadSafe {
   // Called when a ScheduledResourceRequest is destroyed.
   void RemoveRequest(ScheduledResourceRequest* request);
 
+  // These Calls may update the ThrottleState of all clients, and have the
+  // potential to be re-entarant.
+  // Called when a Client newly becomes active loading.
+  void DecrementActiveClientsLoading();
+  // Caled when a Client stops being active loading.
+  void IncrementActiveClientsLoading();
+
+  void OnLoadingActiveClientsStateChanged();
+
+  size_t CountActiveClientsLoading();
+
   // Update the queue position for |request|, possibly causing it to start
   // loading.
   //
@@ -114,7 +160,13 @@ class CONTENT_EXPORT ResourceScheduler : public base::NonThreadSafe {
   // Returns the client ID for the given |child_id| and |route_id| combo.
   ClientId MakeClientId(int child_id, int route_id);
 
+  // Returns the client for the given |child_id| and |route_id| combo.
+  Client* GetClient(int child_id, int route_id);
+
+  bool should_coalesce_;
+  bool should_throttle_;
   ClientMap client_map_;
+  size_t active_clients_loading_;
   RequestSet unowned_requests_;
 };
 

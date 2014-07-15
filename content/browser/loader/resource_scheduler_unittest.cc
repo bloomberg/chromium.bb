@@ -32,6 +32,12 @@ class TestRequestFactory;
 
 const int kChildId = 30;
 const int kRouteId = 75;
+const int kChildId2 = 43;
+const int kRouteId2 = 67;
+const int kBackgroundChildId = 35;
+const int kBackgroundRouteId = 43;
+const int kBackgroundChildId2 = 54;
+const int kBackgroundRouteId2 = 82;
 
 class TestRequest : public ResourceController {
  public:
@@ -42,6 +48,7 @@ class TestRequest : public ResourceController {
         url_request_(url_request.Pass()) {
     throttle_->set_controller_for_testing(this);
   }
+  virtual ~TestRequest() {}
 
   bool started() const { return started_; }
 
@@ -51,11 +58,15 @@ class TestRequest : public ResourceController {
     started_ = !deferred;
   }
 
+  virtual void Cancel() OVERRIDE {
+    // Alert the scheduler that the request can be deleted.
+    throttle_.reset(0);
+  }
+
   const net::URLRequest* url_request() const { return url_request_.get(); }
 
  protected:
   // ResourceController interface:
-  virtual void Cancel() OVERRIDE {}
   virtual void CancelAndIgnore() OVERRIDE {}
   virtual void CancelWithError(int error_code) OVERRIDE {}
   virtual void Resume() OVERRIDE { started_ = true; }
@@ -70,8 +81,7 @@ class CancelingTestRequest : public TestRequest {
  public:
   CancelingTestRequest(scoped_ptr<ResourceThrottle> throttle,
                        scoped_ptr<net::URLRequest> url_request)
-      : TestRequest(throttle.Pass(), url_request.Pass()) {
-  }
+      : TestRequest(throttle.Pass(), url_request.Pass()) {}
 
   void set_request_to_cancel(scoped_ptr<TestRequest> request_to_cancel) {
     request_to_cancel_ = request_to_cancel.Pass();
@@ -127,66 +137,115 @@ class ResourceSchedulerTest : public testing::Test {
       : next_request_id_(0),
         ui_thread_(BrowserThread::UI, &message_loop_),
         io_thread_(BrowserThread::IO, &message_loop_) {
+    // TODO(aiolos): remove when throttling and coalescing have both landed
+    scheduler_.SetThrottleOptionsForTesting(true /* should_throttle */,
+                                            false /* should_coalesce */);
+
     scheduler_.OnClientCreated(kChildId, kRouteId);
+    scheduler_.OnVisibilityChanged(kChildId, kRouteId, true);
+    scheduler_.OnClientCreated(kBackgroundChildId, kBackgroundRouteId);
     context_.set_http_server_properties(http_server_properties_.GetWeakPtr());
   }
 
   virtual ~ResourceSchedulerTest() {
     scheduler_.OnClientDeleted(kChildId, kRouteId);
+    scheduler_.OnClientDeleted(kBackgroundChildId, kBackgroundRouteId);
   }
 
-  scoped_ptr<net::URLRequest> NewURLRequestWithRoute(
+  scoped_ptr<net::URLRequest> NewURLRequestWithChildAndRoute(
       const char* url,
       net::RequestPriority priority,
-      int route_id) {
+      int child_id,
+      int route_id,
+      bool is_async) {
     scoped_ptr<net::URLRequest> url_request(
         context_.CreateRequest(GURL(url), priority, NULL, NULL));
     ResourceRequestInfoImpl* info = new ResourceRequestInfoImpl(
-        PROCESS_TYPE_RENDERER,             // process_type
-        kChildId,                          // child_id
-        route_id,                          // route_id
-        0,                                 // origin_pid
-        ++next_request_id_,                // request_id
-        MSG_ROUTING_NONE,                  // render_frame_id
-        false,                             // is_main_frame
-        false,                             // parent_is_main_frame
-        0,                                 // parent_render_frame_id
-        ResourceType::SUB_RESOURCE,        // resource_type
-        PAGE_TRANSITION_LINK,              // transition_type
-        false,                             // should_replace_current_entry
-        false,                             // is_download
-        false,                             // is_stream
-        true,                              // allow_download
-        false,                             // has_user_gesture
-        blink::WebReferrerPolicyDefault,   // referrer_policy
-        blink::WebPageVisibilityStateVisible,  // visibility_state
-        NULL,                              // context
+        PROCESS_TYPE_RENDERER,                   // process_type
+        child_id,                                // child_id
+        route_id,                                // route_id
+        0,                                       // origin_pid
+        ++next_request_id_,                      // request_id
+        MSG_ROUTING_NONE,                        // render_frame_id
+        false,                                   // is_main_frame
+        false,                                   // parent_is_main_frame
+        0,                                       // parent_render_frame_id
+        ResourceType::SUB_RESOURCE,              // resource_type
+        PAGE_TRANSITION_LINK,                    // transition_type
+        false,                                   // should_replace_current_entry
+        false,                                   // is_download
+        false,                                   // is_stream
+        true,                                    // allow_download
+        false,                                   // has_user_gesture
+        blink::WebReferrerPolicyDefault,         // referrer_policy
+        blink::WebPageVisibilityStateVisible,    // visibility_state
+        NULL,                                    // context
         base::WeakPtr<ResourceMessageFilter>(),  // filter
-        true);                             // is_async
+        is_async);                               // is_async
     info->AssociateWithRequest(url_request.get());
     return url_request.Pass();
   }
 
   scoped_ptr<net::URLRequest> NewURLRequest(const char* url,
                                             net::RequestPriority priority) {
-    return NewURLRequestWithRoute(url, priority, kRouteId);
+    return NewURLRequestWithChildAndRoute(
+        url, priority, kChildId, kRouteId, true);
   }
 
   TestRequest* NewRequestWithRoute(const char* url,
                                    net::RequestPriority priority,
                                    int route_id) {
-    scoped_ptr<net::URLRequest> url_request(
-        NewURLRequestWithRoute(url, priority, route_id));
-    scoped_ptr<ResourceThrottle> throttle(scheduler_.ScheduleRequest(
-        kChildId, route_id, url_request.get()));
+    return NewRequestWithChildAndRoute(url, priority, route_id, kChildId);
+  }
+
+  TestRequest* NewRequestWithChildAndRoute(const char* url,
+                                           net::RequestPriority priority,
+                                           int child_id,
+                                           int route_id) {
+    return GetNewTestRequest(url, priority, child_id, route_id, true);
+  }
+
+  TestRequest* NewRequest(const char* url, net::RequestPriority priority) {
+    return NewRequestWithChildAndRoute(url, priority, kChildId, kRouteId);
+  }
+
+  TestRequest* NewBackgroundRequest(const char* url,
+                                    net::RequestPriority priority) {
+    return NewRequestWithChildAndRoute(
+        url, priority, kBackgroundChildId, kBackgroundRouteId);
+  }
+
+  TestRequest* NewSyncRequest(const char* url, net::RequestPriority priority) {
+    return NewSyncRequestWithChildAndRoute(url, priority, kChildId, kRouteId);
+  }
+
+  TestRequest* NewBackgroundSyncRequest(const char* url,
+                                        net::RequestPriority priority) {
+    return NewSyncRequestWithChildAndRoute(
+        url, priority, kBackgroundChildId, kBackgroundRouteId);
+  }
+
+  TestRequest* NewSyncRequestWithChildAndRoute(const char* url,
+                                               net::RequestPriority priority,
+                                               int child_id,
+                                               int route_id) {
+    return GetNewTestRequest(url, priority, child_id, route_id, false);
+  }
+
+  TestRequest* GetNewTestRequest(const char* url,
+                                 net::RequestPriority priority,
+                                 int child_id,
+                                 int route_id,
+                                 bool is_async) {
+    scoped_ptr<net::URLRequest> url_request(NewURLRequestWithChildAndRoute(
+        url, priority, child_id, route_id, is_async));
+    scoped_ptr<ResourceThrottle> throttle(
+        scheduler_.ScheduleRequest(child_id, route_id, url_request.get()));
     TestRequest* request = new TestRequest(throttle.Pass(), url_request.Pass());
     request->Start();
     return request;
   }
 
-  TestRequest* NewRequest(const char* url, net::RequestPriority priority) {
-    return NewRequestWithRoute(url, priority, kRouteId);
-  }
 
   void ChangeRequestPriority(TestRequest* request,
                              net::RequestPriority new_priority,
@@ -243,7 +302,7 @@ TEST_F(ResourceSchedulerTest, OneLowLoadsUntilBodyInsertedExceptSpdy) {
       net::HostPortPair("spdyhost", 443), true);
   scoped_ptr<TestRequest> high(NewRequest("http://host/high", net::HIGHEST));
   scoped_ptr<TestRequest> low_spdy(
-      NewRequest("https://spdyhost/high", net::LOWEST));
+      NewRequest("https://spdyhost/low", net::LOWEST));
   scoped_ptr<TestRequest> low(NewRequest("http://host/low", net::LOWEST));
   scoped_ptr<TestRequest> low2(NewRequest("http://host/low", net::LOWEST));
   EXPECT_TRUE(high->started());
@@ -293,8 +352,8 @@ TEST_F(ResourceSchedulerTest, CancelOtherRequestsWhileResuming) {
 
   scoped_ptr<net::URLRequest> url_request(
       NewURLRequest("http://host/low2", net::LOWEST));
-  scoped_ptr<ResourceThrottle> throttle(scheduler_.ScheduleRequest(
-      kChildId, kRouteId, url_request.get()));
+  scoped_ptr<ResourceThrottle> throttle(
+      scheduler_.ScheduleRequest(kChildId, kRouteId, url_request.get()));
   scoped_ptr<CancelingTestRequest> low2(new CancelingTestRequest(
       throttle.Pass(), url_request.Pass()));
   low2->Start();
@@ -427,7 +486,7 @@ TEST_F(ResourceSchedulerTest, LowerPriority) {
 TEST_F(ResourceSchedulerTest, ReprioritizedRequestGoesToBackOfQueue) {
   // Dummies to enforce scheduling.
   scoped_ptr<TestRequest> high(NewRequest("http://host/high", net::HIGHEST));
-  scoped_ptr<TestRequest> low(NewRequest("http://host/high", net::LOWEST));
+  scoped_ptr<TestRequest> low(NewRequest("http://host/low", net::LOWEST));
 
   scoped_ptr<TestRequest> request(NewRequest("http://host/req", net::LOWEST));
   scoped_ptr<TestRequest> idle(NewRequest("http://host/idle", net::IDLE));
@@ -457,7 +516,7 @@ TEST_F(ResourceSchedulerTest, ReprioritizedRequestGoesToBackOfQueue) {
 TEST_F(ResourceSchedulerTest, HigherIntraPriorityGoesToFrontOfQueue) {
   // Dummies to enforce scheduling.
   scoped_ptr<TestRequest> high(NewRequest("http://host/high", net::HIGHEST));
-  scoped_ptr<TestRequest> low(NewRequest("http://host/high", net::LOWEST));
+  scoped_ptr<TestRequest> low(NewRequest("http://host/low", net::LOWEST));
 
   const int kMaxNumDelayableRequestsPerClient = 10;  // Should match the .cc.
   ScopedVector<TestRequest> lows;
@@ -479,10 +538,36 @@ TEST_F(ResourceSchedulerTest, HigherIntraPriorityGoesToFrontOfQueue) {
 TEST_F(ResourceSchedulerTest, NonHTTPSchedulesImmediately) {
   // Dummies to enforce scheduling.
   scoped_ptr<TestRequest> high(NewRequest("http://host/high", net::HIGHEST));
-  scoped_ptr<TestRequest> low(NewRequest("http://host/high", net::LOWEST));
+  scoped_ptr<TestRequest> low(NewRequest("http://host/low", net::LOWEST));
 
   scoped_ptr<TestRequest> request(
       NewRequest("chrome-extension://req", net::LOWEST));
+  EXPECT_TRUE(request->started());
+}
+
+TEST_F(ResourceSchedulerTest, ActiveLoadingSyncSchedulesImmediately) {
+  EXPECT_EQ(ResourceScheduler::ACTIVE_AND_LOADING,
+            scheduler_.GetClientStateForTesting(kChildId, kRouteId));
+  // Dummies to enforce scheduling.
+  scoped_ptr<TestRequest> high(NewRequest("http://host/high", net::HIGHEST));
+  scoped_ptr<TestRequest> low(NewRequest("http://host/low", net::LOWEST));
+
+  scoped_ptr<TestRequest> request(
+      NewSyncRequest("http://host/req", net::LOWEST));
+  EXPECT_TRUE(request->started());
+}
+
+TEST_F(ResourceSchedulerTest, UnthrottledSyncSchedulesImmediately) {
+  scheduler_.OnLoadingStateChanged(kChildId, kRouteId, true);
+  EXPECT_EQ(ResourceScheduler::UNTHROTTLED,
+            scheduler_.GetClientStateForTesting(kBackgroundChildId,
+                                                kBackgroundRouteId));
+  // Dummies to enforce scheduling.
+  scoped_ptr<TestRequest> high(NewRequest("http://host/high", net::HIGHEST));
+  scoped_ptr<TestRequest> low(NewRequest("http://host/low", net::LOWEST));
+
+  scoped_ptr<TestRequest> request(
+      NewBackgroundSyncRequest("http://host/req", net::LOWEST));
   EXPECT_TRUE(request->started());
 }
 
@@ -529,6 +614,1066 @@ TEST_F(ResourceSchedulerTest, NewSpdyHostInDelayableRequests) {
   ChangeRequestPriority(low2_spdy.get(), net::LOWEST);
   scoped_ptr<TestRequest> low2(NewRequest("http://host/low", net::LOWEST));
   EXPECT_TRUE(low2->started());
+}
+
+TEST_F(ResourceSchedulerTest, ThrottledClientCreation) {
+  EXPECT_TRUE(scheduler_.should_throttle());
+  scheduler_.OnClientCreated(kBackgroundChildId2, kBackgroundRouteId2);
+
+  EXPECT_EQ(ResourceScheduler::THROTTLED,
+            scheduler_.GetClientStateForTesting(kBackgroundChildId2,
+                                                kBackgroundRouteId2));
+  scheduler_.OnClientDeleted(kBackgroundChildId2, kBackgroundRouteId2);
+}
+
+TEST_F(ResourceSchedulerTest, ActiveClientThrottleUpdateOnLoadingChange) {
+  EXPECT_EQ(ResourceScheduler::ACTIVE_AND_LOADING,
+            scheduler_.GetClientStateForTesting(kChildId, kRouteId));
+  scheduler_.OnLoadingStateChanged(kChildId, kRouteId, true);
+  EXPECT_EQ(ResourceScheduler::UNTHROTTLED,
+            scheduler_.GetClientStateForTesting(kChildId, kRouteId));
+  scheduler_.OnLoadingStateChanged(kChildId, kRouteId, false);
+  EXPECT_EQ(ResourceScheduler::ACTIVE_AND_LOADING,
+            scheduler_.GetClientStateForTesting(kChildId, kRouteId));
+}
+
+TEST_F(ResourceSchedulerTest, CoalesceBackgroundClientOnLoadCompletion) {
+  scheduler_.SetThrottleOptionsForTesting(true /* should_throttle */,
+                                          true /* should_coalesce */);
+  EXPECT_EQ(ResourceScheduler::THROTTLED,
+            scheduler_.GetClientStateForTesting(kBackgroundChildId,
+                                                kBackgroundRouteId));
+  scheduler_.OnLoadingStateChanged(
+      kBackgroundChildId, kBackgroundRouteId, true);
+  EXPECT_EQ(ResourceScheduler::THROTTLED,
+            scheduler_.GetClientStateForTesting(kBackgroundChildId,
+                                                kBackgroundRouteId));
+  scheduler_.OnLoadingStateChanged(kChildId, kRouteId, true);
+  EXPECT_EQ(ResourceScheduler::COALESCED,
+            scheduler_.GetClientStateForTesting(kBackgroundChildId,
+                                                kBackgroundRouteId));
+}
+
+TEST_F(ResourceSchedulerTest, UnthrottleBackgroundClientOnLoadingStarted) {
+  scheduler_.SetThrottleOptionsForTesting(true /* should_throttle */,
+                                          true /* should_coalesce */);
+  scheduler_.OnLoadingStateChanged(kChildId, kRouteId, true);
+  scheduler_.OnLoadingStateChanged(
+      kBackgroundChildId, kBackgroundRouteId, true);
+  EXPECT_EQ(ResourceScheduler::COALESCED,
+            scheduler_.GetClientStateForTesting(kBackgroundChildId,
+                                                kBackgroundRouteId));
+
+  scheduler_.OnLoadingStateChanged(
+      kBackgroundChildId, kBackgroundRouteId, false);
+  EXPECT_EQ(ResourceScheduler::UNTHROTTLED,
+            scheduler_.GetClientStateForTesting(kBackgroundChildId,
+                                                kBackgroundRouteId));
+}
+
+TEST_F(ResourceSchedulerTest, OneRequestPerThrottledClient) {
+  EXPECT_EQ(ResourceScheduler::ACTIVE_AND_LOADING,
+            scheduler_.GetClientStateForTesting(kChildId, kRouteId));
+  EXPECT_EQ(ResourceScheduler::THROTTLED,
+            scheduler_.GetClientStateForTesting(kBackgroundChildId,
+                                                kBackgroundRouteId));
+  scoped_ptr<TestRequest> high(
+      NewBackgroundRequest("http://host/high", net::HIGHEST));
+  scoped_ptr<TestRequest> request(
+      NewBackgroundRequest("http://host/req", net::IDLE));
+
+  EXPECT_TRUE(high->started());
+  EXPECT_FALSE(request->started());
+}
+
+TEST_F(ResourceSchedulerTest, UnthrottleNewlyVisibleClient) {
+  EXPECT_EQ(ResourceScheduler::THROTTLED,
+            scheduler_.GetClientStateForTesting(kBackgroundChildId,
+                                                kBackgroundRouteId));
+  scoped_ptr<TestRequest> high(
+      NewBackgroundRequest("http://host/high", net::HIGHEST));
+  scoped_ptr<TestRequest> request(
+      NewBackgroundRequest("http://host/req", net::IDLE));
+  EXPECT_FALSE(request->started());
+
+  scheduler_.OnVisibilityChanged(kBackgroundChildId, kBackgroundRouteId, true);
+  EXPECT_EQ(ResourceScheduler::ACTIVE_AND_LOADING,
+            scheduler_.GetClientStateForTesting(kBackgroundChildId,
+                                                kBackgroundRouteId));
+  EXPECT_TRUE(request->started());
+}
+
+TEST_F(ResourceSchedulerTest, UnthrottleNewlyAudibleClient) {
+  EXPECT_EQ(ResourceScheduler::THROTTLED,
+            scheduler_.GetClientStateForTesting(kBackgroundChildId,
+                                                kBackgroundRouteId));
+  scoped_ptr<TestRequest> high(
+      NewBackgroundRequest("http://host/high", net::HIGHEST));
+  scoped_ptr<TestRequest> request(
+      NewBackgroundRequest("http://host/req", net::IDLE));
+  EXPECT_FALSE(request->started());
+
+  scheduler_.OnAudibilityChanged(kBackgroundChildId, kBackgroundRouteId, true);
+  EXPECT_EQ(ResourceScheduler::ACTIVE_AND_LOADING,
+            scheduler_.GetClientStateForTesting(kBackgroundChildId,
+                                                kBackgroundRouteId));
+  EXPECT_TRUE(request->started());
+}
+
+TEST_F(ResourceSchedulerTest, VisibleClientStillUnthrottledOnAudabilityChange) {
+  EXPECT_EQ(ResourceScheduler::ACTIVE_AND_LOADING,
+            scheduler_.GetClientStateForTesting(kChildId, kRouteId));
+  EXPECT_EQ(ResourceScheduler::THROTTLED,
+            scheduler_.GetClientStateForTesting(kBackgroundChildId,
+                                                kBackgroundRouteId));
+
+  scheduler_.OnAudibilityChanged(kChildId, kRouteId, true);
+  EXPECT_EQ(ResourceScheduler::ACTIVE_AND_LOADING,
+            scheduler_.GetClientStateForTesting(kChildId, kRouteId));
+  EXPECT_EQ(ResourceScheduler::THROTTLED,
+            scheduler_.GetClientStateForTesting(kBackgroundChildId,
+                                                kBackgroundRouteId));
+
+  scheduler_.OnAudibilityChanged(kChildId, kRouteId, false);
+  EXPECT_EQ(ResourceScheduler::ACTIVE_AND_LOADING,
+            scheduler_.GetClientStateForTesting(kChildId, kRouteId));
+  EXPECT_EQ(ResourceScheduler::THROTTLED,
+            scheduler_.GetClientStateForTesting(kBackgroundChildId,
+                                                kBackgroundRouteId));
+}
+
+TEST_F(ResourceSchedulerTest, AudibleClientStillUnthrottledOnVisabilityChange) {
+  scheduler_.OnVisibilityChanged(kChildId, kRouteId, false);
+  scheduler_.OnAudibilityChanged(kChildId, kRouteId, true);
+  EXPECT_EQ(ResourceScheduler::ACTIVE_AND_LOADING,
+            scheduler_.GetClientStateForTesting(kChildId, kRouteId));
+  EXPECT_EQ(ResourceScheduler::THROTTLED,
+            scheduler_.GetClientStateForTesting(kBackgroundChildId,
+                                                kBackgroundRouteId));
+
+  scheduler_.OnVisibilityChanged(kChildId, kRouteId, true);
+  EXPECT_EQ(ResourceScheduler::ACTIVE_AND_LOADING,
+            scheduler_.GetClientStateForTesting(kChildId, kRouteId));
+  EXPECT_EQ(ResourceScheduler::THROTTLED,
+            scheduler_.GetClientStateForTesting(kBackgroundChildId,
+                                                kBackgroundRouteId));
+
+  scheduler_.OnVisibilityChanged(kChildId, kRouteId, false);
+  EXPECT_EQ(ResourceScheduler::ACTIVE_AND_LOADING,
+            scheduler_.GetClientStateForTesting(kChildId, kRouteId));
+  EXPECT_EQ(ResourceScheduler::THROTTLED,
+            scheduler_.GetClientStateForTesting(kBackgroundChildId,
+                                                kBackgroundRouteId));
+}
+
+TEST_F(ResourceSchedulerTest, ThrottledClientStartsNextHighestPriorityRequest) {
+  scoped_ptr<TestRequest> request(
+      NewBackgroundRequest("http://host/req", net::IDLE));
+  // Lower priority request started first to test request prioritizaton.
+  scoped_ptr<TestRequest> low(
+      NewBackgroundRequest("http://host/high", net::IDLE));
+  scoped_ptr<TestRequest> high(
+      NewBackgroundRequest("http://host/high", net::HIGHEST));
+
+  EXPECT_FALSE(low->started());
+  EXPECT_FALSE(high->started());
+
+  // request->CancelRequest();
+  request->Cancel();
+  EXPECT_TRUE(high->started());
+  EXPECT_FALSE(low->started());
+}
+
+TEST_F(ResourceSchedulerTest, ThrottledSpdyProxySchedulesImmediately) {
+  EXPECT_EQ(ResourceScheduler::THROTTLED,
+            scheduler_.GetClientStateForTesting(kBackgroundChildId,
+                                                kBackgroundRouteId));
+  scoped_ptr<TestRequest> high(
+      NewBackgroundRequest("http://host/high", net::HIGHEST));
+  scoped_ptr<TestRequest> request(
+      NewBackgroundRequest("http://host/req", net::IDLE));
+
+  EXPECT_FALSE(request->started());
+
+  scheduler_.OnReceivedSpdyProxiedHttpResponse(kBackgroundChildId,
+                                               kBackgroundRouteId);
+  EXPECT_TRUE(request->started());
+
+  scoped_ptr<TestRequest> after(
+      NewBackgroundRequest("http://host/after", net::IDLE));
+  EXPECT_TRUE(after->started());
+}
+
+TEST_F(ResourceSchedulerTest, CoalescedClientIssuesNoRequests) {
+  scheduler_.SetThrottleOptionsForTesting(true /* should_throttle */,
+                                          true /* should_coalesce */);
+  scheduler_.OnLoadingStateChanged(kChildId, kRouteId, true);
+  scheduler_.OnLoadingStateChanged(
+      kBackgroundChildId, kBackgroundRouteId, true);
+  EXPECT_EQ(ResourceScheduler::COALESCED,
+            scheduler_.GetClientStateForTesting(kBackgroundChildId,
+                                                kBackgroundRouteId));
+  scoped_ptr<TestRequest> high(
+      NewBackgroundRequest("http://host/high", net::HIGHEST));
+  scoped_ptr<TestRequest> request(
+      NewBackgroundRequest("http://host/req", net::IDLE));
+
+  EXPECT_FALSE(high->started());
+  EXPECT_FALSE(request->started());
+
+  scheduler_.OnReceivedSpdyProxiedHttpResponse(kBackgroundChildId,
+                                               kBackgroundRouteId);
+  EXPECT_FALSE(high->started());
+
+  scoped_ptr<TestRequest> after(
+      NewBackgroundRequest("http://host/after", net::HIGHEST));
+  EXPECT_FALSE(after->started());
+}
+
+TEST_F(ResourceSchedulerTest, CoalescedSpdyProxyWaits) {
+  scheduler_.SetThrottleOptionsForTesting(true /* should_throttle */,
+                                          true /* should_coalesce */);
+  scheduler_.OnLoadingStateChanged(kChildId, kRouteId, true);
+  scheduler_.OnLoadingStateChanged(
+      kBackgroundChildId, kBackgroundRouteId, true);
+  EXPECT_EQ(ResourceScheduler::COALESCED,
+            scheduler_.GetClientStateForTesting(kBackgroundChildId,
+                                                kBackgroundRouteId));
+  scoped_ptr<TestRequest> high(
+      NewBackgroundRequest("http://host/high", net::HIGHEST));
+  scoped_ptr<TestRequest> request(
+      NewBackgroundRequest("http://host/req", net::IDLE));
+
+  EXPECT_FALSE(request->started());
+
+  scheduler_.OnReceivedSpdyProxiedHttpResponse(kBackgroundChildId,
+                                               kBackgroundRouteId);
+  EXPECT_FALSE(request->started());
+
+  scoped_ptr<TestRequest> after(
+      NewBackgroundRequest("http://host/after", net::IDLE));
+  EXPECT_FALSE(after->started());
+}
+
+TEST_F(ResourceSchedulerTest, ThrottledNonHTTPSchedulesImmediately) {
+  // Dummies to enforce scheduling.
+  scoped_ptr<TestRequest> high(
+      NewBackgroundRequest("http://host/high", net::HIGHEST));
+  scoped_ptr<TestRequest> low(
+      NewBackgroundRequest("http://host/low", net::LOWEST));
+
+  scoped_ptr<TestRequest> request(
+      NewBackgroundRequest("chrome-extension://req", net::LOWEST));
+  EXPECT_TRUE(request->started());
+  EXPECT_FALSE(low->started());
+}
+
+TEST_F(ResourceSchedulerTest, CoalescedNonHTTPSchedulesImmediately) {
+  scheduler_.SetThrottleOptionsForTesting(true /* should_throttle */,
+                                          true /* should_coalesce */);
+  scheduler_.OnLoadingStateChanged(kChildId, kRouteId, true);
+  scheduler_.OnLoadingStateChanged(
+      kBackgroundChildId, kBackgroundRouteId, true);
+  EXPECT_EQ(ResourceScheduler::COALESCED,
+            scheduler_.GetClientStateForTesting(kBackgroundChildId,
+                                                kBackgroundRouteId));
+  // Dummies to enforce scheduling.
+  scoped_ptr<TestRequest> high(
+      NewBackgroundRequest("http://host/high", net::HIGHEST));
+  scoped_ptr<TestRequest> low(
+      NewBackgroundRequest("http://host/low", net::LOWEST));
+
+  scoped_ptr<TestRequest> request(
+      NewBackgroundRequest("chrome-extension://req", net::LOWEST));
+  EXPECT_TRUE(request->started());
+  EXPECT_FALSE(low->started());
+}
+
+TEST_F(ResourceSchedulerTest, ThrottledSyncSchedulesImmediately) {
+  // Dummies to enforce scheduling.
+  scoped_ptr<TestRequest> high(
+      NewBackgroundRequest("http://host/high", net::HIGHEST));
+  scoped_ptr<TestRequest> low(
+      NewBackgroundRequest("http://host/low", net::LOWEST));
+
+  scoped_ptr<TestRequest> request(
+      NewBackgroundSyncRequest("http://host/req", net::LOWEST));
+  EXPECT_TRUE(request->started());
+  EXPECT_FALSE(low->started());
+}
+
+TEST_F(ResourceSchedulerTest, CoalescedSyncSchedulesImmediately) {
+  scheduler_.SetThrottleOptionsForTesting(true /* should_throttle */,
+                                          true /* should_coalesce */);
+  scheduler_.OnLoadingStateChanged(kChildId, kRouteId, true);
+  scheduler_.OnLoadingStateChanged(
+      kBackgroundChildId, kBackgroundRouteId, true);
+  EXPECT_EQ(ResourceScheduler::COALESCED,
+            scheduler_.GetClientStateForTesting(kBackgroundChildId,
+                                                kBackgroundRouteId));
+  // Dummies to enforce scheduling.
+  scoped_ptr<TestRequest> high(
+      NewBackgroundRequest("http://host/high", net::HIGHEST));
+  scoped_ptr<TestRequest> low(
+      NewBackgroundRequest("http://host/low", net::LOWEST));
+
+  scoped_ptr<TestRequest> request(
+      NewBackgroundSyncRequest("http://host/req", net::LOWEST));
+  EXPECT_TRUE(request->started());
+  EXPECT_FALSE(low->started());
+  EXPECT_FALSE(high->started());
+}
+
+TEST_F(ResourceSchedulerTest, AllBackgroundClientsUnthrottle) {
+  EXPECT_EQ(ResourceScheduler::THROTTLED,
+            scheduler_.GetClientStateForTesting(kBackgroundChildId,
+                                                kBackgroundRouteId));
+  EXPECT_EQ(ResourceScheduler::ACTIVE_AND_LOADING,
+            scheduler_.GetClientStateForTesting(kChildId, kRouteId));
+  EXPECT_FALSE(scheduler_.active_clients_loaded());
+
+  scheduler_.OnVisibilityChanged(kChildId, kRouteId, false);
+  EXPECT_TRUE(scheduler_.active_clients_loaded());
+  EXPECT_EQ(ResourceScheduler::UNTHROTTLED,
+            scheduler_.GetClientStateForTesting(kChildId, kRouteId));
+  EXPECT_EQ(ResourceScheduler::UNTHROTTLED,
+            scheduler_.GetClientStateForTesting(kBackgroundChildId,
+                                                kBackgroundRouteId));
+
+  scheduler_.OnLoadingStateChanged(kChildId, kRouteId, true);
+  EXPECT_EQ(ResourceScheduler::UNTHROTTLED,
+            scheduler_.GetClientStateForTesting(kChildId, kRouteId));
+  EXPECT_EQ(ResourceScheduler::UNTHROTTLED,
+            scheduler_.GetClientStateForTesting(kBackgroundChildId,
+                                                kBackgroundRouteId));
+
+  scheduler_.OnLoadingStateChanged(kChildId, kRouteId, false);
+  EXPECT_EQ(ResourceScheduler::UNTHROTTLED,
+            scheduler_.GetClientStateForTesting(kChildId, kRouteId));
+  EXPECT_EQ(ResourceScheduler::UNTHROTTLED,
+            scheduler_.GetClientStateForTesting(kBackgroundChildId,
+                                                kBackgroundRouteId));
+
+  scheduler_.OnLoadingStateChanged(kChildId, kRouteId, true);
+  scheduler_.OnLoadingStateChanged(
+      kBackgroundChildId, kBackgroundRouteId, true);
+  EXPECT_EQ(ResourceScheduler::UNTHROTTLED,
+            scheduler_.GetClientStateForTesting(kChildId, kRouteId));
+  EXPECT_EQ(ResourceScheduler::UNTHROTTLED,
+            scheduler_.GetClientStateForTesting(kBackgroundChildId,
+                                                kBackgroundRouteId));
+}
+
+TEST_F(ResourceSchedulerTest,
+       UnloadedClientVisibilityChangedCorrectlyUnthrottles) {
+  scheduler_.OnClientCreated(kChildId2, kRouteId2);
+  scheduler_.OnClientCreated(kBackgroundChildId2, kBackgroundRouteId2);
+  scheduler_.OnLoadingStateChanged(kChildId2, kRouteId2, true);
+  scheduler_.OnLoadingStateChanged(
+      kBackgroundChildId2, kBackgroundRouteId2, true);
+
+  // 1 visible, 3 hidden
+  EXPECT_FALSE(scheduler_.active_clients_loaded());
+  EXPECT_EQ(ResourceScheduler::THROTTLED,
+            scheduler_.GetClientStateForTesting(kBackgroundChildId,
+                                                kBackgroundRouteId));
+  EXPECT_EQ(ResourceScheduler::THROTTLED,
+            scheduler_.GetClientStateForTesting(kBackgroundChildId2,
+                                                kBackgroundRouteId2));
+  EXPECT_EQ(ResourceScheduler::THROTTLED,
+            scheduler_.GetClientStateForTesting(kChildId2, kRouteId2));
+  EXPECT_EQ(ResourceScheduler::ACTIVE_AND_LOADING,
+            scheduler_.GetClientStateForTesting(kChildId, kRouteId));
+
+  // 2 visible, 2 hidden
+  scheduler_.OnVisibilityChanged(kChildId2, kRouteId2, true);
+  EXPECT_FALSE(scheduler_.active_clients_loaded());
+  EXPECT_EQ(ResourceScheduler::THROTTLED,
+            scheduler_.GetClientStateForTesting(kBackgroundChildId,
+                                                kBackgroundRouteId));
+  EXPECT_EQ(ResourceScheduler::THROTTLED,
+            scheduler_.GetClientStateForTesting(kBackgroundChildId2,
+                                                kBackgroundRouteId2));
+  EXPECT_EQ(ResourceScheduler::UNTHROTTLED,
+            scheduler_.GetClientStateForTesting(kChildId2, kRouteId2));
+  EXPECT_EQ(ResourceScheduler::ACTIVE_AND_LOADING,
+            scheduler_.GetClientStateForTesting(kChildId, kRouteId));
+
+  // 1 visible, 3 hidden
+  scheduler_.OnVisibilityChanged(kChildId2, kRouteId2, false);
+  EXPECT_FALSE(scheduler_.active_clients_loaded());
+  EXPECT_EQ(ResourceScheduler::THROTTLED,
+            scheduler_.GetClientStateForTesting(kBackgroundChildId,
+                                                kBackgroundRouteId));
+  EXPECT_EQ(ResourceScheduler::THROTTLED,
+            scheduler_.GetClientStateForTesting(kBackgroundChildId2,
+                                                kBackgroundRouteId2));
+  EXPECT_EQ(ResourceScheduler::THROTTLED,
+            scheduler_.GetClientStateForTesting(kChildId2, kRouteId2));
+  EXPECT_EQ(ResourceScheduler::ACTIVE_AND_LOADING,
+            scheduler_.GetClientStateForTesting(kChildId, kRouteId));
+
+  scheduler_.OnClientDeleted(kChildId2, kRouteId2);
+  scheduler_.OnClientDeleted(kBackgroundChildId2, kBackgroundRouteId2);
+}
+
+TEST_F(ResourceSchedulerTest,
+       UnloadedClientAudibilityChangedCorrectlyUnthrottles) {
+  scheduler_.OnClientCreated(kChildId2, kRouteId2);
+  scheduler_.OnClientCreated(kBackgroundChildId2, kBackgroundRouteId2);
+  scheduler_.OnLoadingStateChanged(
+      kBackgroundChildId2, kBackgroundRouteId2, true);
+  scheduler_.OnVisibilityChanged(kChildId, kRouteId, false);
+  scheduler_.OnAudibilityChanged(kChildId, kRouteId, true);
+
+  // 1 audible, 3 hidden
+  EXPECT_FALSE(scheduler_.active_clients_loaded());
+  EXPECT_EQ(ResourceScheduler::THROTTLED,
+            scheduler_.GetClientStateForTesting(kBackgroundChildId,
+                                                kBackgroundRouteId));
+  EXPECT_EQ(ResourceScheduler::THROTTLED,
+            scheduler_.GetClientStateForTesting(kBackgroundChildId2,
+                                                kBackgroundRouteId2));
+  EXPECT_EQ(ResourceScheduler::THROTTLED,
+            scheduler_.GetClientStateForTesting(kChildId2, kRouteId2));
+  EXPECT_EQ(ResourceScheduler::ACTIVE_AND_LOADING,
+            scheduler_.GetClientStateForTesting(kChildId, kRouteId));
+
+  // 2 audible, 2 hidden
+  scheduler_.OnAudibilityChanged(kChildId2, kRouteId2, true);
+  EXPECT_FALSE(scheduler_.active_clients_loaded());
+  EXPECT_EQ(ResourceScheduler::THROTTLED,
+            scheduler_.GetClientStateForTesting(kBackgroundChildId,
+                                                kBackgroundRouteId));
+  EXPECT_EQ(ResourceScheduler::THROTTLED,
+            scheduler_.GetClientStateForTesting(kBackgroundChildId2,
+                                                kBackgroundRouteId2));
+  EXPECT_EQ(ResourceScheduler::ACTIVE_AND_LOADING,
+            scheduler_.GetClientStateForTesting(kChildId2, kRouteId2));
+  EXPECT_EQ(ResourceScheduler::ACTIVE_AND_LOADING,
+            scheduler_.GetClientStateForTesting(kChildId, kRouteId));
+
+  // 1 audible, 3 hidden
+  scheduler_.OnAudibilityChanged(kChildId2, kRouteId2, false);
+  EXPECT_FALSE(scheduler_.active_clients_loaded());
+  EXPECT_EQ(ResourceScheduler::THROTTLED,
+            scheduler_.GetClientStateForTesting(kBackgroundChildId,
+                                                kBackgroundRouteId));
+  EXPECT_EQ(ResourceScheduler::THROTTLED,
+            scheduler_.GetClientStateForTesting(kBackgroundChildId2,
+                                                kBackgroundRouteId2));
+  EXPECT_EQ(ResourceScheduler::THROTTLED,
+            scheduler_.GetClientStateForTesting(kChildId2, kRouteId2));
+  EXPECT_EQ(ResourceScheduler::ACTIVE_AND_LOADING,
+            scheduler_.GetClientStateForTesting(kChildId, kRouteId));
+
+  scheduler_.OnClientDeleted(kChildId2, kRouteId2);
+  scheduler_.OnClientDeleted(kBackgroundChildId2, kBackgroundRouteId2);
+}
+
+TEST_F(ResourceSchedulerTest,
+       LoadedClientVisibilityChangedCorrectlyUnthrottles) {
+  scheduler_.OnClientCreated(kChildId2, kRouteId2);
+  scheduler_.OnClientCreated(kBackgroundChildId2, kBackgroundRouteId2);
+  scheduler_.OnLoadingStateChanged(kChildId2, kRouteId2, true);
+  scheduler_.OnLoadingStateChanged(
+      kBackgroundChildId2, kBackgroundRouteId2, true);
+  // 1 visible, 3 hidden
+  EXPECT_FALSE(scheduler_.active_clients_loaded());
+  EXPECT_EQ(ResourceScheduler::THROTTLED,
+            scheduler_.GetClientStateForTesting(kBackgroundChildId,
+                                                kBackgroundRouteId));
+  EXPECT_EQ(ResourceScheduler::THROTTLED,
+            scheduler_.GetClientStateForTesting(kBackgroundChildId2,
+                                                kBackgroundRouteId2));
+  EXPECT_EQ(ResourceScheduler::THROTTLED,
+            scheduler_.GetClientStateForTesting(kChildId2, kRouteId2));
+  EXPECT_EQ(ResourceScheduler::ACTIVE_AND_LOADING,
+            scheduler_.GetClientStateForTesting(kChildId, kRouteId));
+
+  // 2 visible, 2 hidden
+  scheduler_.OnVisibilityChanged(kChildId2, kRouteId2, true);
+  EXPECT_FALSE(scheduler_.active_clients_loaded());
+  EXPECT_EQ(ResourceScheduler::THROTTLED,
+            scheduler_.GetClientStateForTesting(kBackgroundChildId,
+                                                kBackgroundRouteId));
+  EXPECT_EQ(ResourceScheduler::THROTTLED,
+            scheduler_.GetClientStateForTesting(kBackgroundChildId2,
+                                                kBackgroundRouteId2));
+  EXPECT_EQ(ResourceScheduler::UNTHROTTLED,
+            scheduler_.GetClientStateForTesting(kChildId2, kRouteId2));
+  EXPECT_EQ(ResourceScheduler::ACTIVE_AND_LOADING,
+            scheduler_.GetClientStateForTesting(kChildId, kRouteId));
+
+  // 1 visible, 3 hidden
+  scheduler_.OnVisibilityChanged(kChildId2, kRouteId2, false);
+  EXPECT_FALSE(scheduler_.active_clients_loaded());
+  EXPECT_EQ(ResourceScheduler::THROTTLED,
+            scheduler_.GetClientStateForTesting(kBackgroundChildId,
+                                                kBackgroundRouteId));
+  EXPECT_EQ(ResourceScheduler::THROTTLED,
+            scheduler_.GetClientStateForTesting(kBackgroundChildId2,
+                                                kBackgroundRouteId2));
+  EXPECT_EQ(ResourceScheduler::THROTTLED,
+            scheduler_.GetClientStateForTesting(kChildId2, kRouteId2));
+  EXPECT_EQ(ResourceScheduler::ACTIVE_AND_LOADING,
+            scheduler_.GetClientStateForTesting(kChildId, kRouteId));
+
+  scheduler_.OnClientDeleted(kChildId2, kRouteId2);
+  scheduler_.OnClientDeleted(kBackgroundChildId2, kBackgroundRouteId2);
+}
+
+TEST_F(ResourceSchedulerTest,
+       LoadedClientAudibilityChangedCorrectlyUnthrottles) {
+  scheduler_.OnClientCreated(kChildId2, kRouteId2);
+  scheduler_.OnClientCreated(kBackgroundChildId2, kBackgroundRouteId2);
+  scheduler_.OnLoadingStateChanged(kChildId2, kRouteId2, true);
+  scheduler_.OnLoadingStateChanged(
+      kBackgroundChildId2, kBackgroundRouteId2, true);
+  scheduler_.OnVisibilityChanged(kChildId, kRouteId, false);
+  scheduler_.OnAudibilityChanged(kChildId, kRouteId, true);
+  // 1 audible, 3 hidden
+  EXPECT_FALSE(scheduler_.active_clients_loaded());
+  EXPECT_EQ(ResourceScheduler::THROTTLED,
+            scheduler_.GetClientStateForTesting(kBackgroundChildId,
+                                                kBackgroundRouteId));
+  EXPECT_EQ(ResourceScheduler::THROTTLED,
+            scheduler_.GetClientStateForTesting(kBackgroundChildId2,
+                                                kBackgroundRouteId2));
+  EXPECT_EQ(ResourceScheduler::THROTTLED,
+            scheduler_.GetClientStateForTesting(kChildId2, kRouteId2));
+  EXPECT_EQ(ResourceScheduler::ACTIVE_AND_LOADING,
+            scheduler_.GetClientStateForTesting(kChildId, kRouteId));
+
+  // 2 audible, 2 hidden
+  scheduler_.OnAudibilityChanged(kChildId2, kRouteId2, true);
+  EXPECT_FALSE(scheduler_.active_clients_loaded());
+  EXPECT_EQ(ResourceScheduler::THROTTLED,
+            scheduler_.GetClientStateForTesting(kBackgroundChildId,
+                                                kBackgroundRouteId));
+  EXPECT_EQ(ResourceScheduler::THROTTLED,
+            scheduler_.GetClientStateForTesting(kBackgroundChildId2,
+                                                kBackgroundRouteId2));
+  EXPECT_EQ(ResourceScheduler::UNTHROTTLED,
+            scheduler_.GetClientStateForTesting(kChildId2, kRouteId2));
+  EXPECT_EQ(ResourceScheduler::ACTIVE_AND_LOADING,
+            scheduler_.GetClientStateForTesting(kChildId, kRouteId));
+
+  // 1 audible, 3 hidden
+  scheduler_.OnAudibilityChanged(kChildId2, kRouteId2, false);
+  EXPECT_FALSE(scheduler_.active_clients_loaded());
+  EXPECT_EQ(ResourceScheduler::THROTTLED,
+            scheduler_.GetClientStateForTesting(kBackgroundChildId,
+                                                kBackgroundRouteId));
+  EXPECT_EQ(ResourceScheduler::THROTTLED,
+            scheduler_.GetClientStateForTesting(kBackgroundChildId2,
+                                                kBackgroundRouteId2));
+  EXPECT_EQ(ResourceScheduler::THROTTLED,
+            scheduler_.GetClientStateForTesting(kChildId2, kRouteId2));
+  EXPECT_EQ(ResourceScheduler::ACTIVE_AND_LOADING,
+            scheduler_.GetClientStateForTesting(kChildId, kRouteId));
+
+  scheduler_.OnClientDeleted(kChildId2, kRouteId2);
+  scheduler_.OnClientDeleted(kBackgroundChildId2, kBackgroundRouteId2);
+}
+
+TEST_F(ResourceSchedulerTest, UnloadedClientBecomesHiddenCorrectlyUnthrottles) {
+  scheduler_.OnClientCreated(kChildId2, kRouteId2);
+  scheduler_.OnClientCreated(kBackgroundChildId2, kBackgroundRouteId2);
+  scheduler_.OnLoadingStateChanged(
+      kBackgroundChildId2, kBackgroundRouteId2, true);
+
+  // 2 visible, 2 hidden
+  scheduler_.OnVisibilityChanged(kChildId2, kRouteId2, true);
+  EXPECT_FALSE(scheduler_.active_clients_loaded());
+  EXPECT_EQ(ResourceScheduler::THROTTLED,
+            scheduler_.GetClientStateForTesting(kBackgroundChildId,
+                                                kBackgroundRouteId));
+  EXPECT_EQ(ResourceScheduler::THROTTLED,
+            scheduler_.GetClientStateForTesting(kBackgroundChildId2,
+                                                kBackgroundRouteId2));
+  EXPECT_EQ(ResourceScheduler::ACTIVE_AND_LOADING,
+            scheduler_.GetClientStateForTesting(kChildId2, kRouteId2));
+  EXPECT_EQ(ResourceScheduler::ACTIVE_AND_LOADING,
+            scheduler_.GetClientStateForTesting(kChildId, kRouteId));
+
+  // 1 visible, 3 hidden
+  scheduler_.OnVisibilityChanged(kChildId2, kRouteId2, false);
+  EXPECT_FALSE(scheduler_.active_clients_loaded());
+  EXPECT_EQ(ResourceScheduler::THROTTLED,
+            scheduler_.GetClientStateForTesting(kBackgroundChildId,
+                                                kBackgroundRouteId));
+  EXPECT_EQ(ResourceScheduler::THROTTLED,
+            scheduler_.GetClientStateForTesting(kBackgroundChildId2,
+                                                kBackgroundRouteId2));
+  EXPECT_EQ(ResourceScheduler::THROTTLED,
+            scheduler_.GetClientStateForTesting(kChildId2, kRouteId2));
+  EXPECT_EQ(ResourceScheduler::ACTIVE_AND_LOADING,
+            scheduler_.GetClientStateForTesting(kChildId, kRouteId));
+
+  // 0 visible, 4 hidden
+  scheduler_.OnVisibilityChanged(kChildId, kRouteId, false);
+  EXPECT_TRUE(scheduler_.active_clients_loaded());
+  EXPECT_EQ(ResourceScheduler::UNTHROTTLED,
+            scheduler_.GetClientStateForTesting(kBackgroundChildId,
+                                                kBackgroundRouteId));
+  EXPECT_EQ(ResourceScheduler::UNTHROTTLED,
+            scheduler_.GetClientStateForTesting(kBackgroundChildId2,
+                                                kBackgroundRouteId2));
+  EXPECT_EQ(ResourceScheduler::UNTHROTTLED,
+            scheduler_.GetClientStateForTesting(kChildId2, kRouteId2));
+  EXPECT_EQ(ResourceScheduler::UNTHROTTLED,
+            scheduler_.GetClientStateForTesting(kChildId, kRouteId));
+
+  // 1 visible, 3 hidden
+  scheduler_.OnVisibilityChanged(kChildId, kRouteId, true);
+  EXPECT_FALSE(scheduler_.active_clients_loaded());
+  EXPECT_EQ(ResourceScheduler::THROTTLED,
+            scheduler_.GetClientStateForTesting(kBackgroundChildId,
+                                                kBackgroundRouteId));
+  EXPECT_EQ(ResourceScheduler::THROTTLED,
+            scheduler_.GetClientStateForTesting(kBackgroundChildId2,
+                                                kBackgroundRouteId2));
+  EXPECT_EQ(ResourceScheduler::THROTTLED,
+            scheduler_.GetClientStateForTesting(kChildId2, kRouteId2));
+  EXPECT_EQ(ResourceScheduler::ACTIVE_AND_LOADING,
+            scheduler_.GetClientStateForTesting(kChildId, kRouteId));
+
+  scheduler_.OnClientDeleted(kChildId2, kRouteId2);
+  scheduler_.OnClientDeleted(kBackgroundChildId2, kBackgroundRouteId2);
+}
+
+TEST_F(ResourceSchedulerTest, UnloadedClientBecomesSilentCorrectlyUnthrottles) {
+  scheduler_.OnClientCreated(kChildId2, kRouteId2);
+  scheduler_.OnClientCreated(kBackgroundChildId2, kBackgroundRouteId2);
+  scheduler_.OnLoadingStateChanged(
+      kBackgroundChildId2, kBackgroundRouteId2, true);
+  scheduler_.OnAudibilityChanged(kChildId, kRouteId, true);
+  scheduler_.OnVisibilityChanged(kChildId, kRouteId, false);
+  scheduler_.OnAudibilityChanged(kChildId2, kRouteId2, true);
+  // 2 audible, 2 hidden
+  EXPECT_FALSE(scheduler_.active_clients_loaded());
+  EXPECT_EQ(ResourceScheduler::THROTTLED,
+            scheduler_.GetClientStateForTesting(kBackgroundChildId,
+                                                kBackgroundRouteId));
+  EXPECT_EQ(ResourceScheduler::THROTTLED,
+            scheduler_.GetClientStateForTesting(kBackgroundChildId2,
+                                                kBackgroundRouteId2));
+  EXPECT_EQ(ResourceScheduler::ACTIVE_AND_LOADING,
+            scheduler_.GetClientStateForTesting(kChildId2, kRouteId2));
+  EXPECT_EQ(ResourceScheduler::ACTIVE_AND_LOADING,
+            scheduler_.GetClientStateForTesting(kChildId, kRouteId));
+
+  // 1 audible, 3 hidden
+  scheduler_.OnAudibilityChanged(kChildId2, kRouteId2, false);
+  EXPECT_FALSE(scheduler_.active_clients_loaded());
+  EXPECT_EQ(ResourceScheduler::THROTTLED,
+            scheduler_.GetClientStateForTesting(kBackgroundChildId,
+                                                kBackgroundRouteId));
+  EXPECT_EQ(ResourceScheduler::THROTTLED,
+            scheduler_.GetClientStateForTesting(kBackgroundChildId2,
+                                                kBackgroundRouteId2));
+  EXPECT_EQ(ResourceScheduler::THROTTLED,
+            scheduler_.GetClientStateForTesting(kChildId2, kRouteId2));
+  EXPECT_EQ(ResourceScheduler::ACTIVE_AND_LOADING,
+            scheduler_.GetClientStateForTesting(kChildId, kRouteId));
+
+  // 0 audible, 4 hidden
+  scheduler_.OnAudibilityChanged(kChildId, kRouteId, false);
+  EXPECT_TRUE(scheduler_.active_clients_loaded());
+  EXPECT_EQ(ResourceScheduler::UNTHROTTLED,
+            scheduler_.GetClientStateForTesting(kBackgroundChildId,
+                                                kBackgroundRouteId));
+  EXPECT_EQ(ResourceScheduler::UNTHROTTLED,
+            scheduler_.GetClientStateForTesting(kBackgroundChildId2,
+                                                kBackgroundRouteId2));
+  EXPECT_EQ(ResourceScheduler::UNTHROTTLED,
+            scheduler_.GetClientStateForTesting(kChildId2, kRouteId2));
+  EXPECT_EQ(ResourceScheduler::UNTHROTTLED,
+            scheduler_.GetClientStateForTesting(kChildId, kRouteId));
+
+  // 1 audible, 3 hidden
+  scheduler_.OnAudibilityChanged(kChildId, kRouteId, true);
+  EXPECT_FALSE(scheduler_.active_clients_loaded());
+  EXPECT_EQ(ResourceScheduler::THROTTLED,
+            scheduler_.GetClientStateForTesting(kBackgroundChildId,
+                                                kBackgroundRouteId));
+  EXPECT_EQ(ResourceScheduler::THROTTLED,
+            scheduler_.GetClientStateForTesting(kBackgroundChildId2,
+                                                kBackgroundRouteId2));
+  EXPECT_EQ(ResourceScheduler::THROTTLED,
+            scheduler_.GetClientStateForTesting(kChildId2, kRouteId2));
+  EXPECT_EQ(ResourceScheduler::ACTIVE_AND_LOADING,
+            scheduler_.GetClientStateForTesting(kChildId, kRouteId));
+
+  scheduler_.OnClientDeleted(kChildId2, kRouteId2);
+  scheduler_.OnClientDeleted(kBackgroundChildId2, kBackgroundRouteId2);
+}
+
+TEST_F(ResourceSchedulerTest, LoadedClientBecomesHiddenCorrectlyThrottles) {
+  scheduler_.OnClientCreated(kChildId2, kRouteId2);
+  scheduler_.OnClientCreated(kBackgroundChildId2, kBackgroundRouteId2);
+  scheduler_.OnLoadingStateChanged(
+      kBackgroundChildId2, kBackgroundRouteId2, true);
+  scheduler_.OnLoadingStateChanged(kChildId2, kRouteId2, true);
+  scheduler_.OnVisibilityChanged(kChildId2, kRouteId2, true);
+  // 2 visible, 2 hidden
+  EXPECT_FALSE(scheduler_.active_clients_loaded());
+  EXPECT_EQ(ResourceScheduler::THROTTLED,
+            scheduler_.GetClientStateForTesting(kBackgroundChildId,
+                                                kBackgroundRouteId));
+  EXPECT_EQ(ResourceScheduler::THROTTLED,
+            scheduler_.GetClientStateForTesting(kBackgroundChildId2,
+                                                kBackgroundRouteId2));
+  EXPECT_EQ(ResourceScheduler::UNTHROTTLED,
+            scheduler_.GetClientStateForTesting(kChildId2, kRouteId2));
+  EXPECT_EQ(ResourceScheduler::ACTIVE_AND_LOADING,
+            scheduler_.GetClientStateForTesting(kChildId, kRouteId));
+
+  // 1 visible, 3 hidden
+  scheduler_.OnVisibilityChanged(kChildId2, kRouteId2, false);
+  EXPECT_FALSE(scheduler_.active_clients_loaded());
+  EXPECT_EQ(ResourceScheduler::THROTTLED,
+            scheduler_.GetClientStateForTesting(kBackgroundChildId,
+                                                kBackgroundRouteId));
+  EXPECT_EQ(ResourceScheduler::THROTTLED,
+            scheduler_.GetClientStateForTesting(kBackgroundChildId2,
+                                                kBackgroundRouteId2));
+  EXPECT_EQ(ResourceScheduler::THROTTLED,
+            scheduler_.GetClientStateForTesting(kChildId2, kRouteId2));
+  EXPECT_EQ(ResourceScheduler::ACTIVE_AND_LOADING,
+            scheduler_.GetClientStateForTesting(kChildId, kRouteId));
+
+  // 0 visible, 4 hidden
+  scheduler_.OnVisibilityChanged(kChildId, kRouteId, false);
+  EXPECT_TRUE(scheduler_.active_clients_loaded());
+  EXPECT_EQ(ResourceScheduler::UNTHROTTLED,
+            scheduler_.GetClientStateForTesting(kBackgroundChildId,
+                                                kBackgroundRouteId));
+  EXPECT_EQ(ResourceScheduler::UNTHROTTLED,
+            scheduler_.GetClientStateForTesting(kBackgroundChildId2,
+                                                kBackgroundRouteId2));
+  EXPECT_EQ(ResourceScheduler::UNTHROTTLED,
+            scheduler_.GetClientStateForTesting(kChildId2, kRouteId2));
+  EXPECT_EQ(ResourceScheduler::UNTHROTTLED,
+            scheduler_.GetClientStateForTesting(kChildId, kRouteId));
+
+  // 1 visible, 3 hidden
+  scheduler_.OnVisibilityChanged(kChildId2, kRouteId2, true);
+  EXPECT_TRUE(scheduler_.active_clients_loaded());
+  EXPECT_EQ(ResourceScheduler::UNTHROTTLED,
+            scheduler_.GetClientStateForTesting(kBackgroundChildId,
+                                                kBackgroundRouteId));
+  EXPECT_EQ(ResourceScheduler::UNTHROTTLED,
+            scheduler_.GetClientStateForTesting(kBackgroundChildId2,
+                                                kBackgroundRouteId2));
+  EXPECT_EQ(ResourceScheduler::UNTHROTTLED,
+            scheduler_.GetClientStateForTesting(kChildId2, kRouteId2));
+  EXPECT_EQ(ResourceScheduler::UNTHROTTLED,
+            scheduler_.GetClientStateForTesting(kChildId, kRouteId));
+
+  scheduler_.OnClientDeleted(kChildId2, kRouteId2);
+  scheduler_.OnClientDeleted(kBackgroundChildId2, kBackgroundRouteId2);
+}
+
+TEST_F(ResourceSchedulerTest, LoadedClientBecomesSilentCorrectlyThrottles) {
+  scheduler_.OnClientCreated(kChildId2, kRouteId2);
+  scheduler_.OnClientCreated(kBackgroundChildId2, kBackgroundRouteId2);
+  scheduler_.OnLoadingStateChanged(
+      kBackgroundChildId2, kBackgroundRouteId2, true);
+  scheduler_.OnLoadingStateChanged(kChildId2, kRouteId2, true);
+  scheduler_.OnVisibilityChanged(kChildId, kRouteId, false);
+  scheduler_.OnAudibilityChanged(kChildId, kRouteId, true);
+  scheduler_.OnAudibilityChanged(kChildId2, kRouteId2, true);
+  // 2 audible, 2 hidden
+  EXPECT_FALSE(scheduler_.active_clients_loaded());
+  EXPECT_EQ(ResourceScheduler::THROTTLED,
+            scheduler_.GetClientStateForTesting(kBackgroundChildId,
+                                                kBackgroundRouteId));
+  EXPECT_EQ(ResourceScheduler::THROTTLED,
+            scheduler_.GetClientStateForTesting(kBackgroundChildId2,
+                                                kBackgroundRouteId2));
+  EXPECT_EQ(ResourceScheduler::UNTHROTTLED,
+            scheduler_.GetClientStateForTesting(kChildId2, kRouteId2));
+  EXPECT_EQ(ResourceScheduler::ACTIVE_AND_LOADING,
+            scheduler_.GetClientStateForTesting(kChildId, kRouteId));
+
+  // 1 audible, 3 hidden
+  scheduler_.OnAudibilityChanged(kChildId2, kRouteId2, false);
+  EXPECT_FALSE(scheduler_.active_clients_loaded());
+  EXPECT_EQ(ResourceScheduler::THROTTLED,
+            scheduler_.GetClientStateForTesting(kBackgroundChildId,
+                                                kBackgroundRouteId));
+  EXPECT_EQ(ResourceScheduler::THROTTLED,
+            scheduler_.GetClientStateForTesting(kBackgroundChildId2,
+                                                kBackgroundRouteId2));
+  EXPECT_EQ(ResourceScheduler::THROTTLED,
+            scheduler_.GetClientStateForTesting(kChildId2, kRouteId2));
+  EXPECT_EQ(ResourceScheduler::ACTIVE_AND_LOADING,
+            scheduler_.GetClientStateForTesting(kChildId, kRouteId));
+
+  // 0 audible, 4 hidden
+  scheduler_.OnAudibilityChanged(kChildId, kRouteId, false);
+  EXPECT_TRUE(scheduler_.active_clients_loaded());
+  EXPECT_EQ(ResourceScheduler::UNTHROTTLED,
+            scheduler_.GetClientStateForTesting(kBackgroundChildId,
+                                                kBackgroundRouteId));
+  EXPECT_EQ(ResourceScheduler::UNTHROTTLED,
+            scheduler_.GetClientStateForTesting(kBackgroundChildId2,
+                                                kBackgroundRouteId2));
+  EXPECT_EQ(ResourceScheduler::UNTHROTTLED,
+            scheduler_.GetClientStateForTesting(kChildId2, kRouteId2));
+  EXPECT_EQ(ResourceScheduler::UNTHROTTLED,
+            scheduler_.GetClientStateForTesting(kChildId, kRouteId));
+
+  // 1 audible, 3 hidden
+  scheduler_.OnAudibilityChanged(kChildId2, kRouteId2, true);
+  EXPECT_TRUE(scheduler_.active_clients_loaded());
+  EXPECT_EQ(ResourceScheduler::UNTHROTTLED,
+            scheduler_.GetClientStateForTesting(kBackgroundChildId,
+                                                kBackgroundRouteId));
+  EXPECT_EQ(ResourceScheduler::UNTHROTTLED,
+            scheduler_.GetClientStateForTesting(kBackgroundChildId2,
+                                                kBackgroundRouteId2));
+  EXPECT_EQ(ResourceScheduler::UNTHROTTLED,
+            scheduler_.GetClientStateForTesting(kChildId2, kRouteId2));
+  EXPECT_EQ(ResourceScheduler::UNTHROTTLED,
+            scheduler_.GetClientStateForTesting(kChildId, kRouteId));
+
+  scheduler_.OnClientDeleted(kChildId2, kRouteId2);
+  scheduler_.OnClientDeleted(kBackgroundChildId2, kBackgroundRouteId2);
+}
+
+TEST_F(ResourceSchedulerTest, HiddenLoadedChangesCorrectlyStayThrottled) {
+  scheduler_.OnClientCreated(kChildId2, kRouteId2);
+  scheduler_.OnClientCreated(kBackgroundChildId2, kBackgroundRouteId2);
+
+  // 1 visible and 2 hidden loading, 1 visible loaded
+  scheduler_.OnVisibilityChanged(kChildId2, kRouteId2, true);
+  scheduler_.OnLoadingStateChanged(kChildId, kRouteId, true);
+  EXPECT_FALSE(scheduler_.active_clients_loaded());
+  EXPECT_EQ(ResourceScheduler::THROTTLED,
+            scheduler_.GetClientStateForTesting(kBackgroundChildId,
+                                                kBackgroundRouteId));
+  EXPECT_EQ(ResourceScheduler::THROTTLED,
+            scheduler_.GetClientStateForTesting(kBackgroundChildId2,
+                                                kBackgroundRouteId2));
+  EXPECT_EQ(ResourceScheduler::ACTIVE_AND_LOADING,
+            scheduler_.GetClientStateForTesting(kChildId2, kRouteId2));
+  EXPECT_EQ(ResourceScheduler::UNTHROTTLED,
+            scheduler_.GetClientStateForTesting(kChildId, kRouteId));
+
+  // 1 visible and 1 hidden loading, 1 visible and 1 hidden loaded
+  scheduler_.OnLoadingStateChanged(
+      kBackgroundChildId2, kBackgroundRouteId2, true);
+  EXPECT_FALSE(scheduler_.active_clients_loaded());
+  EXPECT_EQ(ResourceScheduler::THROTTLED,
+            scheduler_.GetClientStateForTesting(kBackgroundChildId,
+                                                kBackgroundRouteId));
+  EXPECT_EQ(ResourceScheduler::THROTTLED,
+            scheduler_.GetClientStateForTesting(kBackgroundChildId2,
+                                                kBackgroundRouteId2));
+  EXPECT_EQ(ResourceScheduler::ACTIVE_AND_LOADING,
+            scheduler_.GetClientStateForTesting(kChildId2, kRouteId2));
+  EXPECT_EQ(ResourceScheduler::UNTHROTTLED,
+            scheduler_.GetClientStateForTesting(kChildId, kRouteId));
+
+  // 1 visible loading, 1 visible and 2 hidden loaded
+  scheduler_.OnLoadingStateChanged(
+      kBackgroundChildId, kBackgroundRouteId, true);
+  EXPECT_FALSE(scheduler_.active_clients_loaded());
+  EXPECT_EQ(ResourceScheduler::THROTTLED,
+            scheduler_.GetClientStateForTesting(kBackgroundChildId,
+                                                kBackgroundRouteId));
+  EXPECT_EQ(ResourceScheduler::THROTTLED,
+            scheduler_.GetClientStateForTesting(kBackgroundChildId2,
+                                                kBackgroundRouteId2));
+  EXPECT_EQ(ResourceScheduler::ACTIVE_AND_LOADING,
+            scheduler_.GetClientStateForTesting(kChildId2, kRouteId2));
+  EXPECT_EQ(ResourceScheduler::UNTHROTTLED,
+            scheduler_.GetClientStateForTesting(kChildId, kRouteId));
+
+  // 1 visible and 1 hidden loading, 1 visible and 1 hidden loaded
+  scheduler_.OnLoadingStateChanged(
+      kBackgroundChildId2, kBackgroundRouteId2, true);
+  EXPECT_FALSE(scheduler_.active_clients_loaded());
+  EXPECT_EQ(ResourceScheduler::THROTTLED,
+            scheduler_.GetClientStateForTesting(kBackgroundChildId,
+                                                kBackgroundRouteId));
+  EXPECT_EQ(ResourceScheduler::THROTTLED,
+            scheduler_.GetClientStateForTesting(kBackgroundChildId2,
+                                                kBackgroundRouteId2));
+  EXPECT_EQ(ResourceScheduler::ACTIVE_AND_LOADING,
+            scheduler_.GetClientStateForTesting(kChildId2, kRouteId2));
+  EXPECT_EQ(ResourceScheduler::UNTHROTTLED,
+            scheduler_.GetClientStateForTesting(kChildId, kRouteId));
+
+  scheduler_.OnClientDeleted(kChildId2, kRouteId2);
+  scheduler_.OnClientDeleted(kBackgroundChildId2, kBackgroundRouteId2);
+}
+
+TEST_F(ResourceSchedulerTest, PartialVisibleClientLoadedDoesNotUnthrottle) {
+  scheduler_.OnClientCreated(kChildId2, kRouteId2);
+  scheduler_.OnClientCreated(kBackgroundChildId2, kBackgroundRouteId2);
+  scheduler_.OnVisibilityChanged(kChildId2, kRouteId2, true);
+
+  // 2 visible loading, 1 hidden loading, 1 hidden loaded
+  scheduler_.OnLoadingStateChanged(
+      kBackgroundChildId2, kBackgroundRouteId2, true);
+  EXPECT_FALSE(scheduler_.active_clients_loaded());
+  EXPECT_EQ(ResourceScheduler::THROTTLED,
+            scheduler_.GetClientStateForTesting(kBackgroundChildId,
+                                                kBackgroundRouteId));
+  EXPECT_EQ(ResourceScheduler::THROTTLED,
+            scheduler_.GetClientStateForTesting(kBackgroundChildId2,
+                                                kBackgroundRouteId2));
+  EXPECT_EQ(ResourceScheduler::ACTIVE_AND_LOADING,
+            scheduler_.GetClientStateForTesting(kChildId2, kRouteId2));
+  EXPECT_EQ(ResourceScheduler::ACTIVE_AND_LOADING,
+            scheduler_.GetClientStateForTesting(kChildId, kRouteId));
+
+  // 1 visible and 1 hidden loaded, 1 visible and 1 hidden loading
+  scheduler_.OnLoadingStateChanged(kChildId, kRouteId, true);
+  EXPECT_FALSE(scheduler_.active_clients_loaded());
+  EXPECT_EQ(ResourceScheduler::THROTTLED,
+            scheduler_.GetClientStateForTesting(kBackgroundChildId,
+                                                kBackgroundRouteId));
+  EXPECT_EQ(ResourceScheduler::THROTTLED,
+            scheduler_.GetClientStateForTesting(kBackgroundChildId2,
+                                                kBackgroundRouteId2));
+  EXPECT_EQ(ResourceScheduler::ACTIVE_AND_LOADING,
+            scheduler_.GetClientStateForTesting(kChildId2, kRouteId2));
+  EXPECT_EQ(ResourceScheduler::UNTHROTTLED,
+            scheduler_.GetClientStateForTesting(kChildId, kRouteId));
+
+  // 2 visible loading, 1 hidden loading, 1 hidden loaded
+  scheduler_.OnLoadingStateChanged(kChildId, kRouteId, false);
+  EXPECT_FALSE(scheduler_.active_clients_loaded());
+  EXPECT_EQ(ResourceScheduler::THROTTLED,
+            scheduler_.GetClientStateForTesting(kBackgroundChildId,
+                                                kBackgroundRouteId));
+  EXPECT_EQ(ResourceScheduler::THROTTLED,
+            scheduler_.GetClientStateForTesting(kBackgroundChildId2,
+                                                kBackgroundRouteId2));
+  EXPECT_EQ(ResourceScheduler::ACTIVE_AND_LOADING,
+            scheduler_.GetClientStateForTesting(kChildId2, kRouteId2));
+  EXPECT_EQ(ResourceScheduler::ACTIVE_AND_LOADING,
+            scheduler_.GetClientStateForTesting(kChildId, kRouteId));
+
+  scheduler_.OnClientDeleted(kChildId2, kRouteId2);
+  scheduler_.OnClientDeleted(kBackgroundChildId2, kBackgroundRouteId2);
+}
+
+TEST_F(ResourceSchedulerTest, FullVisibleLoadedCorrectlyUnthrottle) {
+  scheduler_.OnClientCreated(kChildId2, kRouteId2);
+  scheduler_.OnClientCreated(kBackgroundChildId2, kBackgroundRouteId2);
+  scheduler_.OnVisibilityChanged(kChildId2, kRouteId2, true);
+
+  // 1 visible and 1 hidden loaded, 1 visible and 1 hidden loading
+  scheduler_.OnLoadingStateChanged(
+      kBackgroundChildId2, kBackgroundRouteId2, true);
+  scheduler_.OnLoadingStateChanged(kChildId2, kRouteId2, true);
+  EXPECT_FALSE(scheduler_.active_clients_loaded());
+  EXPECT_EQ(ResourceScheduler::THROTTLED,
+            scheduler_.GetClientStateForTesting(kBackgroundChildId,
+                                                kBackgroundRouteId));
+  EXPECT_EQ(ResourceScheduler::THROTTLED,
+            scheduler_.GetClientStateForTesting(kBackgroundChildId2,
+                                                kBackgroundRouteId2));
+  EXPECT_EQ(ResourceScheduler::UNTHROTTLED,
+            scheduler_.GetClientStateForTesting(kChildId2, kRouteId2));
+  EXPECT_EQ(ResourceScheduler::ACTIVE_AND_LOADING,
+            scheduler_.GetClientStateForTesting(kChildId, kRouteId));
+
+  scoped_ptr<TestRequest> high(
+      NewBackgroundRequest("http://host/high", net::HIGHEST));
+  scoped_ptr<TestRequest> low(
+      NewBackgroundRequest("http://host/low", net::LOWEST));
+
+  EXPECT_TRUE(high->started());
+  EXPECT_FALSE(low->started());
+
+  // 2 visible loaded, 1 hidden loading, 1 hidden loaded
+  scheduler_.OnLoadingStateChanged(kChildId, kRouteId, true);
+  EXPECT_TRUE(scheduler_.active_clients_loaded());
+  EXPECT_EQ(ResourceScheduler::UNTHROTTLED,
+            scheduler_.GetClientStateForTesting(kBackgroundChildId,
+                                                kBackgroundRouteId));
+  EXPECT_EQ(ResourceScheduler::UNTHROTTLED,
+            scheduler_.GetClientStateForTesting(kBackgroundChildId2,
+                                                kBackgroundRouteId2));
+  EXPECT_EQ(ResourceScheduler::UNTHROTTLED,
+            scheduler_.GetClientStateForTesting(kChildId2, kRouteId2));
+  EXPECT_EQ(ResourceScheduler::UNTHROTTLED,
+            scheduler_.GetClientStateForTesting(kChildId, kRouteId));
+  // kBackgroundClientId unthrottling should unthrottle it's request.
+  EXPECT_TRUE(low->started());
+
+  // 1 visible and 1 hidden loaded, 1 visible and 1 hidden loading
+  scheduler_.OnLoadingStateChanged(kChildId, kRouteId, false);
+  EXPECT_FALSE(scheduler_.active_clients_loaded());
+  EXPECT_EQ(ResourceScheduler::THROTTLED,
+            scheduler_.GetClientStateForTesting(kBackgroundChildId,
+                                                kBackgroundRouteId));
+  EXPECT_EQ(ResourceScheduler::THROTTLED,
+            scheduler_.GetClientStateForTesting(kBackgroundChildId2,
+                                                kBackgroundRouteId2));
+  EXPECT_EQ(ResourceScheduler::UNTHROTTLED,
+            scheduler_.GetClientStateForTesting(kChildId2, kRouteId2));
+  EXPECT_EQ(ResourceScheduler::ACTIVE_AND_LOADING,
+            scheduler_.GetClientStateForTesting(kChildId, kRouteId));
+
+  scheduler_.OnClientDeleted(kChildId2, kRouteId2);
+  scheduler_.OnClientDeleted(kBackgroundChildId2, kBackgroundRouteId2);
+}
+
+TEST_F(ResourceSchedulerTest,
+       ActiveAndLoadingClientDeletedCorrectlyUnthrottle) {
+  scheduler_.OnClientCreated(kChildId2, kRouteId2);
+  scheduler_.OnClientCreated(kBackgroundChildId2, kBackgroundRouteId2);
+  scheduler_.OnVisibilityChanged(kChildId2, kRouteId2, true);
+
+  // 1 visible and 1 hidden loaded, 1 visible and 1 hidden loading
+  scheduler_.OnLoadingStateChanged(
+      kBackgroundChildId2, kBackgroundRouteId2, true);
+  scheduler_.OnLoadingStateChanged(kChildId, kRouteId, true);
+  EXPECT_FALSE(scheduler_.active_clients_loaded());
+  EXPECT_EQ(ResourceScheduler::THROTTLED,
+            scheduler_.GetClientStateForTesting(kBackgroundChildId,
+                                                kBackgroundRouteId));
+  EXPECT_EQ(ResourceScheduler::THROTTLED,
+            scheduler_.GetClientStateForTesting(kBackgroundChildId2,
+                                                kBackgroundRouteId2));
+  EXPECT_EQ(ResourceScheduler::UNTHROTTLED,
+            scheduler_.GetClientStateForTesting(kChildId, kRouteId));
+  EXPECT_EQ(ResourceScheduler::ACTIVE_AND_LOADING,
+            scheduler_.GetClientStateForTesting(kChildId2, kRouteId2));
+
+  // 1 visible loaded, 1 hidden loading, 1 hidden loaded
+  scheduler_.OnClientDeleted(kChildId2, kRouteId2);
+  EXPECT_TRUE(scheduler_.active_clients_loaded());
+  EXPECT_EQ(ResourceScheduler::UNTHROTTLED,
+            scheduler_.GetClientStateForTesting(kBackgroundChildId,
+                                                kBackgroundRouteId));
+  EXPECT_EQ(ResourceScheduler::UNTHROTTLED,
+            scheduler_.GetClientStateForTesting(kBackgroundChildId2,
+                                                kBackgroundRouteId2));
+  EXPECT_EQ(ResourceScheduler::UNTHROTTLED,
+            scheduler_.GetClientStateForTesting(kChildId, kRouteId));
+
+  // 1 visible and 1 hidden loaded, 1 visible and 1 hidden loading
+  scheduler_.OnLoadingStateChanged(kChildId, kRouteId, false);
+  EXPECT_FALSE(scheduler_.active_clients_loaded());
+  EXPECT_EQ(ResourceScheduler::THROTTLED,
+            scheduler_.GetClientStateForTesting(kBackgroundChildId,
+                                                kBackgroundRouteId));
+  EXPECT_EQ(ResourceScheduler::THROTTLED,
+            scheduler_.GetClientStateForTesting(kBackgroundChildId2,
+                                                kBackgroundRouteId2));
+  EXPECT_EQ(ResourceScheduler::ACTIVE_AND_LOADING,
+            scheduler_.GetClientStateForTesting(kChildId, kRouteId));
+
+  scheduler_.OnClientDeleted(kBackgroundChildId2, kBackgroundRouteId2);
 }
 
 }  // unnamed namespace
