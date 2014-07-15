@@ -280,18 +280,18 @@ class Parser(object):
     """interfacerequest : identifier AMP"""
     p[0] = p[1] + "&"
 
-  def p_ordinal(self, p):
-    """ordinal : ORDINAL
-               | """
-    if len(p) > 1:
-      value = int(p[1][1:])
-      if value > _MAX_ORDINAL_VALUE:
-        raise ParseError(self.filename, "Ordinal value %d too large:" % value,
-                         lineno=p.lineno(1),
-                         snippet=self._GetSnippet(p.lineno(1)))
-      p[0] = ast.Ordinal(value, filename=self.filename, lineno=p.lineno(1))
-    else:
-      p[0] = ast.Ordinal(None)
+  def p_ordinal_1(self, p):
+    """ordinal : """
+    p[0] = None
+
+  def p_ordinal_2(self, p):
+    """ordinal : ORDINAL"""
+    value = int(p[1][1:])
+    if value > _MAX_ORDINAL_VALUE:
+      raise ParseError(self.filename, "Ordinal value %d too large:" % value,
+                       lineno=p.lineno(1),
+                       snippet=self._GetSnippet(p.lineno(1)))
+    p[0] = ast.Ordinal(value, filename=self.filename, lineno=p.lineno(1))
 
   def p_enum(self, p):
     """enum : ENUM NAME LBRACE nonempty_enum_value_list RBRACE SEMI

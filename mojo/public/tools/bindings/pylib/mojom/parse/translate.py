@@ -68,26 +68,26 @@ def _AttributeListToDict(attribute_list):
                    for attribute in attribute_list])
 
 def _MapField(tree):
-  assert isinstance(tree[3], ast.Ordinal)
+  assert tree[3] is None or isinstance(tree[3], ast.Ordinal)
   return {'name': tree[2],
           'kind': _MapKind(tree[1]),
-          'ordinal': tree[3].value,
+          'ordinal': tree[3].value if tree[3] else None,
           'default': tree[4]}
 
 def _MapMethod(tree):
   assert isinstance(tree[2], ast.ParameterList)
-  assert isinstance(tree[3], ast.Ordinal)
+  assert tree[3] is None or isinstance(tree[3], ast.Ordinal)
   assert tree[4] is None or isinstance(tree[2], ast.ParameterList)
 
   def ParameterToDict(param):
     assert isinstance(param, ast.Parameter)
     return {'name': param.name,
             'kind': _MapKind(param.typename),
-            'ordinal': param.ordinal.value}
+            'ordinal': param.ordinal.value if param.ordinal else None}
 
   method = {'name': tree[1],
             'parameters': map(ParameterToDict, tree[2]),
-            'ordinal': tree[3].value}
+            'ordinal': tree[3].value if tree[3] else None}
   if tree[4]:
     method['response_parameters'] = map(ParameterToDict, tree[4])
   return method

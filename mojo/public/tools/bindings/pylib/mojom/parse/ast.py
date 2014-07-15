@@ -221,7 +221,7 @@ class Ordinal(NodeBase):
   """Represents an ordinal value labeling, e.g., a struct field."""
 
   def __init__(self, value, **kwargs):
-    assert value is None or isinstance(value, int)
+    assert isinstance(value, int)
     super(Ordinal, self).__init__(**kwargs)
     self.value = value
 
@@ -234,7 +234,7 @@ class Parameter(NodeBase):
   """Represents a method request or response parameter."""
 
   def __init__(self, typename, name, ordinal, **kwargs):
-    assert isinstance(ordinal, Ordinal)
+    assert ordinal is None or isinstance(ordinal, Ordinal)
     super(Parameter, self).__init__(**kwargs)
     self.typename = typename
     self.name = name

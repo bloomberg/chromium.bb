@@ -151,8 +151,8 @@ class ParserTest(unittest.TestCase):
         [('STRUCT',
           'MyStruct',
           None,
-          [('FIELD', 'int32', 'a', ast.Ordinal(None), None),
-           ('FIELD', 'double', 'b', ast.Ordinal(None), None)])])
+          [('FIELD', 'int32', 'a', None, None),
+           ('FIELD', 'double', 'b', None, None)])])
     self.assertEquals(parser.Parse(source, "my_file.mojom"), expected)
 
   def testSimpleStructWithoutModule(self):
@@ -170,8 +170,8 @@ class ParserTest(unittest.TestCase):
         [('STRUCT',
           'MyStruct',
           None,
-          [('FIELD', 'int32', 'a', ast.Ordinal(None), None),
-           ('FIELD', 'double', 'b', ast.Ordinal(None), None)])])
+          [('FIELD', 'int32', 'a', None, None),
+           ('FIELD', 'double', 'b', None, None)])])
     self.assertEquals(parser.Parse(source, "my_file.mojom"), expected)
 
   def testMissingModuleName(self):
@@ -432,7 +432,7 @@ class ParserTest(unittest.TestCase):
         [('STRUCT',
           'MyStruct',
           None,
-          [('FIELD', 'int32', 'a', ast.Ordinal(None), None)])])
+          [('FIELD', 'int32', 'a', None, None)])])
     self.assertEquals(parser.Parse(source, "my_file.mojom"), expected)
 
   def testValidHandleTypes(self):
@@ -455,13 +455,11 @@ class ParserTest(unittest.TestCase):
         [('STRUCT',
           'MyStruct',
           None,
-          [('FIELD', 'handle', 'a', ast.Ordinal(None), None),
-           ('FIELD', 'handle<data_pipe_consumer>', 'b', ast.Ordinal(None),
-            None),
-           ('FIELD', 'handle<data_pipe_producer>', 'c', ast.Ordinal(None),
-            None),
-           ('FIELD', 'handle<message_pipe>', 'd', ast.Ordinal(None), None),
-           ('FIELD', 'handle<shared_buffer>', 'e', ast.Ordinal(None), None)])])
+          [('FIELD', 'handle', 'a', None, None),
+           ('FIELD', 'handle<data_pipe_consumer>', 'b', None, None),
+           ('FIELD', 'handle<data_pipe_producer>', 'c', None, None),
+           ('FIELD', 'handle<message_pipe>', 'd', None, None),
+           ('FIELD', 'handle<shared_buffer>', 'e', None, None)])])
     self.assertEquals(parser.Parse(source, "my_file.mojom"), expected)
 
   def testInvalidHandleType(self):
@@ -515,29 +513,29 @@ class ParserTest(unittest.TestCase):
         [('STRUCT',
           'MyStruct',
           None,
-          [('FIELD', 'int16', 'a0', ast.Ordinal(None), '0'),
-           ('FIELD', 'uint16', 'a1', ast.Ordinal(None), '0x0'),
-           ('FIELD', 'uint16', 'a2', ast.Ordinal(None), '0x00'),
-           ('FIELD', 'uint16', 'a3', ast.Ordinal(None), '0x01'),
-           ('FIELD', 'uint16', 'a4', ast.Ordinal(None), '0xcd'),
-           ('FIELD', 'int32', 'a5' , ast.Ordinal(None), '12345'),
-           ('FIELD', 'int64', 'a6', ast.Ordinal(None), '-12345'),
-           ('FIELD', 'int64', 'a7', ast.Ordinal(None), '+12345'),
-           ('FIELD', 'uint32', 'a8', ast.Ordinal(None), '0x12cd3'),
-           ('FIELD', 'uint32', 'a9', ast.Ordinal(None), '-0x12cD3'),
-           ('FIELD', 'uint32', 'a10', ast.Ordinal(None), '+0x12CD3'),
-           ('FIELD', 'bool', 'a11', ast.Ordinal(None), 'true'),
-           ('FIELD', 'bool', 'a12', ast.Ordinal(None), 'false'),
-           ('FIELD', 'float', 'a13', ast.Ordinal(None), '1.2345'),
-           ('FIELD', 'float', 'a14', ast.Ordinal(None), '-1.2345'),
-           ('FIELD', 'float', 'a15', ast.Ordinal(None), '+1.2345'),
-           ('FIELD', 'float', 'a16', ast.Ordinal(None), '123.'),
-           ('FIELD', 'float', 'a17', ast.Ordinal(None), '.123'),
-           ('FIELD', 'double', 'a18', ast.Ordinal(None), '1.23E10'),
-           ('FIELD', 'double', 'a19', ast.Ordinal(None), '1.E-10'),
-           ('FIELD', 'double', 'a20', ast.Ordinal(None), '.5E+10'),
-           ('FIELD', 'double', 'a21', ast.Ordinal(None), '-1.23E10'),
-           ('FIELD', 'double', 'a22', ast.Ordinal(None), '+.123E10')])])
+          [('FIELD', 'int16', 'a0', None, '0'),
+           ('FIELD', 'uint16', 'a1', None, '0x0'),
+           ('FIELD', 'uint16', 'a2', None, '0x00'),
+           ('FIELD', 'uint16', 'a3', None, '0x01'),
+           ('FIELD', 'uint16', 'a4', None, '0xcd'),
+           ('FIELD', 'int32', 'a5' , None, '12345'),
+           ('FIELD', 'int64', 'a6', None, '-12345'),
+           ('FIELD', 'int64', 'a7', None, '+12345'),
+           ('FIELD', 'uint32', 'a8', None, '0x12cd3'),
+           ('FIELD', 'uint32', 'a9', None, '-0x12cD3'),
+           ('FIELD', 'uint32', 'a10', None, '+0x12CD3'),
+           ('FIELD', 'bool', 'a11', None, 'true'),
+           ('FIELD', 'bool', 'a12', None, 'false'),
+           ('FIELD', 'float', 'a13', None, '1.2345'),
+           ('FIELD', 'float', 'a14', None, '-1.2345'),
+           ('FIELD', 'float', 'a15', None, '+1.2345'),
+           ('FIELD', 'float', 'a16', None, '123.'),
+           ('FIELD', 'float', 'a17', None, '.123'),
+           ('FIELD', 'double', 'a18', None, '1.23E10'),
+           ('FIELD', 'double', 'a19', None, '1.E-10'),
+           ('FIELD', 'double', 'a20', None, '.5E+10'),
+           ('FIELD', 'double', 'a21', None, '-1.23E10'),
+           ('FIELD', 'double', 'a22', None, '+.123E10')])])
     self.assertEquals(parser.Parse(source, "my_file.mojom"), expected)
 
   def testValidFixedSizeArray(self):
@@ -556,11 +554,10 @@ class ParserTest(unittest.TestCase):
         [('STRUCT',
           'MyStruct',
           None,
-          [('FIELD', 'int32[]', 'normal_array', ast.Ordinal(None), None),
-           ('FIELD', 'int32[1]', 'fixed_size_array_one_entry',
-            ast.Ordinal(None), None),
-           ('FIELD', 'int32[10]', 'fixed_size_array_ten_entries',
-            ast.Ordinal(None), None)])])
+          [('FIELD', 'int32[]', 'normal_array', None, None),
+           ('FIELD', 'int32[1]', 'fixed_size_array_one_entry', None, None),
+           ('FIELD', 'int32[10]', 'fixed_size_array_ten_entries', None,
+            None)])])
     self.assertEquals(parser.Parse(source, "my_file.mojom"), expected)
 
   def testValidNestedArray(self):
@@ -573,7 +570,7 @@ class ParserTest(unittest.TestCase):
         [('STRUCT',
           'MyStruct',
           None,
-          [('FIELD', 'int32[][]', 'nested_array', ast.Ordinal(None), None)])])
+          [('FIELD', 'int32[][]', 'nested_array', None, None)])])
     self.assertEquals(parser.Parse(source, "my_file.mojom"), expected)
 
   def testInvalidFixedArraySize(self):
@@ -624,8 +621,8 @@ class ParserTest(unittest.TestCase):
           None,
           [('METHOD',
             'MyMethod',
-            ast.ParameterList(ast.Parameter('int32', 'a', ast.Ordinal(None))),
-            ast.Ordinal(None),
+            ast.ParameterList(ast.Parameter('int32', 'a', None)),
+            None,
             None)])])
     self.assertEquals(parser.Parse(source1, "my_file.mojom"), expected1)
 
@@ -667,12 +664,10 @@ class ParserTest(unittest.TestCase):
           None,
           [('METHOD',
             'MyMethod',
-            ast.ParameterList(ast.Parameter('string', 'a',
-                                            ast.Ordinal(None))),
-            ast.Ordinal(None),
-            ast.ParameterList([ast.Parameter('int32', 'a', ast.Ordinal(None)),
-                               ast.Parameter('bool', 'b',
-                                             ast.Ordinal(None))]))])])
+            ast.ParameterList(ast.Parameter('string', 'a', None)),
+            None,
+            ast.ParameterList([ast.Parameter('int32', 'a', None),
+                               ast.Parameter('bool', 'b', None)]))])])
     self.assertEquals(parser.Parse(source3, "my_file.mojom"), expected3)
 
   def testInvalidMethods(self):
