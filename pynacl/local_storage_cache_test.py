@@ -66,6 +66,17 @@ class TestLocalStorageCache(unittest.TestCase):
       storage.PutFile(bar, 'foo')
       self.assertEquals(None, mem_storage.GetData('foo'))
 
+  def test_Exists(self):
+    # Checks that exists works properly.
+    with working_directory.TemporaryWorkingDirectory() as work_dir:
+      mem_storage = fake_storage.FakeStorage()
+      storage = local_storage_cache.LocalStorageCache(
+          cache_path=os.path.join(work_dir, 'db'),
+          storage=mem_storage)
+      storage.PutData('bar', 'foo')
+      self.assertTrue(storage.Exists('foo'))
+      self.assertFalse(storage.Exists('bad_foo'))
+
   def test_BadRead(self):
     # Check that reading from a non-existant key, fails.
     with working_directory.TemporaryWorkingDirectory() as work_dir:

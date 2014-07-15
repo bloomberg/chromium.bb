@@ -50,6 +50,20 @@ class LocalStorageCache(object):
     file_tools.MakeDirectoryIfAbsent(self._cache_path)
     self._storage = storage
 
+  def Exists(self, key):
+    """Queries whether or not a key exists.
+
+    Args:
+      key: Key file is stored under.
+    Returns:
+      URL of existing key, or False if file does not exist.
+    """
+    ValidateKey(key)
+    cache_file = os.path.join(self._cache_path, key)
+    if os.path.exists(cache_file):
+      return LocalFileURL(cache_file)
+    return False
+
   def PutFile(self, path, key):
     """Write a file to storage.
 
