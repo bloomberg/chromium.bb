@@ -186,6 +186,11 @@ class MigrationTest : public SyncTest  {
     syncer::ModelTypeSet preferred_data_types =
         GetSyncService((0))->GetPreferredDataTypes();
     preferred_data_types.RemoveAll(syncer::ProxyTypes());
+
+    // The managed user settings will be "unready" during this test, so we
+    // should not request that they be migrated.
+    preferred_data_types.Remove(syncer::SUPERVISED_USER_SETTINGS);
+
     // Make sure all clients have the same preferred data types.
     for (int i = 1; i < num_clients(); ++i) {
       const syncer::ModelTypeSet other_preferred_data_types =
@@ -341,9 +346,7 @@ IN_PROC_BROWSER_TEST_F(MigrationSingleClientTest, NigoriOnly) {
 
 // A little more complicated -- two data types.
 
-// See crbug.com/392989.
-IN_PROC_BROWSER_TEST_F(MigrationSingleClientTest,
-                       DISABLED_BookmarksPrefsIndividually) {
+IN_PROC_BROWSER_TEST_F(MigrationSingleClientTest, BookmarksPrefsIndividually) {
   RunSingleClientMigrationTest(
       MakeList(syncer::BOOKMARKS, syncer::PREFERENCES),
       MODIFY_PREF);
@@ -372,32 +375,26 @@ IN_PROC_BROWSER_TEST_F(MigrationSingleClientTest, PrefsNigoriBoth) {
 }
 
 // The whole shebang -- all data types.
-
-// See crbug.com/392989.
-IN_PROC_BROWSER_TEST_F(MigrationSingleClientTest,
-                       DISABLED_AllTypesIndividually) {
+IN_PROC_BROWSER_TEST_F(MigrationSingleClientTest, AllTypesIndividually) {
   ASSERT_TRUE(SetupClients());
   RunSingleClientMigrationTest(GetPreferredDataTypesList(), MODIFY_BOOKMARK);
 }
 
-// See crbug.com/392989.
 IN_PROC_BROWSER_TEST_F(MigrationSingleClientTest,
-                       DISABLED_AllTypesIndividuallyTriggerNotification) {
+                       AllTypesIndividuallyTriggerNotification) {
   ASSERT_TRUE(SetupClients());
   RunSingleClientMigrationTest(GetPreferredDataTypesList(),
                                TRIGGER_NOTIFICATION);
 }
 
-// See crbug.com/392989.
-IN_PROC_BROWSER_TEST_F(MigrationSingleClientTest, DISABLED_AllTypesAtOnce) {
+IN_PROC_BROWSER_TEST_F(MigrationSingleClientTest, AllTypesAtOnce) {
   ASSERT_TRUE(SetupClients());
   RunSingleClientMigrationTest(MakeList(GetPreferredDataTypes()),
                                MODIFY_PREF);
 }
 
-// See crbug.com/392989.
 IN_PROC_BROWSER_TEST_F(MigrationSingleClientTest,
-                       DISABLED_AllTypesAtOnceTriggerNotification) {
+                       AllTypesAtOnceTriggerNotification) {
   ASSERT_TRUE(SetupClients());
   RunSingleClientMigrationTest(MakeList(GetPreferredDataTypes()),
                                TRIGGER_NOTIFICATION);
@@ -414,9 +411,7 @@ IN_PROC_BROWSER_TEST_F(MigrationSingleClientTest,
   RunSingleClientMigrationTest(migration_list, MODIFY_BOOKMARK);
 }
 
-// See crbug.com/392989.
-IN_PROC_BROWSER_TEST_F(MigrationSingleClientTest,
-                       DISABLED_AllTypesWithNigoriAtOnce) {
+IN_PROC_BROWSER_TEST_F(MigrationSingleClientTest, AllTypesWithNigoriAtOnce) {
   ASSERT_TRUE(SetupClients());
   syncer::ModelTypeSet all_types = GetPreferredDataTypes();
   all_types.Put(syncer::NIGORI);
@@ -456,18 +451,15 @@ class MigrationTwoClientTest : public MigrationTest {
 
 // Easiest possible test of migration errors: triggers a server
 // migration on one datatype, then modifies some other datatype.
-// See crbug.com/392989.
-IN_PROC_BROWSER_TEST_F(MigrationTwoClientTest,
-                       DISABLED_MigratePrefsThenModifyBookmark) {
+IN_PROC_BROWSER_TEST_F(MigrationTwoClientTest, MigratePrefsThenModifyBookmark) {
   RunTwoClientMigrationTest(MakeList(syncer::PREFERENCES),
                             MODIFY_BOOKMARK);
 }
 
 // Triggers a server migration on two datatypes, then makes a local
 // modification to one of them.
-// See crbug.com/392989.
 IN_PROC_BROWSER_TEST_F(MigrationTwoClientTest,
-                       DISABLED_MigratePrefsAndBookmarksThenModifyBookmark) {
+                       MigratePrefsAndBookmarksThenModifyBookmark) {
   RunTwoClientMigrationTest(
       MakeList(syncer::PREFERENCES, syncer::BOOKMARKS),
       MODIFY_BOOKMARK);
