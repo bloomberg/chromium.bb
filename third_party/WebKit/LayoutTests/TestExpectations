@@ -234,19 +234,6 @@ crbug.com/314947 [ Mavericks ] http/tests/images/drag-image-to-desktop.html [ Fa
 crbug.com/378919 [ Linux Android ] fast/forms/datetimelocal-multiple-fields/datetimelocal-multiple-fields-preserve-value-after-history-back.html [ Failure ]
 crbug.com/378919 [ Linux Android ] fast/forms/datetimelocal-multiple-fields/datetimelocal-multiple-fields-value-set-empty.html [ Failure ]
 
-# Behavior is visually identical, but we have some text diffs due to clip parent logic fixes.
-Bug(vollick) compositing/overflow/clear-scroll-parent.html [ NeedsRebaseline ]
-Bug(vollick) compositing/squashing/squashing-inside-preserve-3d-element.html [ NeedsRebaseline ]
-Bug(vollick) virtual/gpu/compositedscrolling/overflow/scroll-parent-absolute.html [ NeedsRebaseline ]
-Bug(vollick) virtual/softwarecompositing/overflow/clear-scroll-parent.html [ NeedsRebaseline ]
-Bug(vollick) virtual/softwarecompositing/squashing/squashing-inside-preserve-3d-element.html [ NeedsRebaseline ]
-Bug(vollick) virtual/gpu/compositedscrolling/overflow/universal-accelerated-overflow-scroll.html [ NeedsRebaseline ]
-Bug(vollick) compositing/overflow/scroll-parent-absolute.html [ NeedsRebaseline ]
-Bug(vollick) virtual/softwarecompositing/overflow/scroll-parent-absolute.html [ NeedsRebaseline ]
-Bug(vollick) compositing/overflow/universal-accelerated-overflow-scroll.html [ NeedsRebaseline ]
-Bug(vollick) virtual/gpu/compositedscrolling/overflow/clear-scroll-parent.html [ NeedsRebaseline ]
-Bug(vollick) virtual/softwarecompositing/overflow/universal-accelerated-overflow-scroll.html [ NeedsRebaseline ]
-
 # Mavericks bots seem to fail lots of tests on occasion.
 crbug.com/331582 [ Mavericks ] fast/inline/justify-emphasis-inline-box.html [ Pass ImageOnlyFailure ]
 crbug.com/331583 [ Mavericks ] fast/parser/fonts.html [ Pass ImageOnlyFailure ]

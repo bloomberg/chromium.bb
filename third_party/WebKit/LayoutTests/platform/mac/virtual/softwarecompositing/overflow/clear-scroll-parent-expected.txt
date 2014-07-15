@@ -48,7 +48,6 @@
           "contentsOpaque": true,
           "drawsContent": true,
           "backgroundColor": "#008000",
-          "hasClipParent": true,
           "children": [
             {
 
