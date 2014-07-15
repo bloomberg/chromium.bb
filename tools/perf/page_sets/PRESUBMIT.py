@@ -15,7 +15,7 @@ def LoadSupport(input_api):
       telemetry_path = os.path.join(os.path.dirname(os.path.dirname(
           input_api.PresubmitLocalPath())), 'telemetry')
       sys.path = [telemetry_path] + sys.path
-      from telemetry.page import cloud_storage
+      from telemetry.util import cloud_storage
       globals()['cloud_storage'] = cloud_storage
     finally:
       sys.path = _old_sys_path

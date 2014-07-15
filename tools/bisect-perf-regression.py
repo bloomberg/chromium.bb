@@ -55,7 +55,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), 'telemetry'))
 
 from auto_bisect import bisect_utils
 from auto_bisect import post_perf_builder_job as bisect_builder
-from telemetry.page import cloud_storage
+from telemetry.util import cloud_storage
 
 # The additional repositories that might need to be bisected.
 # If the repository has any dependant repositories (such as skia/src needs

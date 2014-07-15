@@ -18,7 +18,7 @@ def LoadSupport(input_api):
     try:
       telemetry_path = _GetTelemetryPath(input_api)
       sys.path = [telemetry_path] + sys.path
-      from telemetry.page import cloud_storage
+      from telemetry.util import cloud_storage
       globals()['cloud_storage'] = cloud_storage
     finally:
       sys.path = _old_sys_path
