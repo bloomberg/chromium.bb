@@ -246,27 +246,6 @@ public:
             renderer->assertRendererLaidOut();
     }
 
-    void assertRendererClearedPaintInvalidationState() const
-    {
-        if (paintInvalidationStateIsDirty()) {
-            showRenderTreeForThis();
-            ASSERT_NOT_REACHED();
-        }
-    }
-
-    void assertSubtreeClearedPaintInvalidationState() const
-    {
-        for (const RenderObject* renderer = this; renderer; renderer = renderer->nextInPreOrder()) {
-            renderer->assertRendererClearedPaintInvalidationState();
-
-            // Currently we skip some SVG containers for performance (see RenderSVGModelObject::invalidateTreeAfterLayout)
-            // so we just skip the underlying subtree. This is not strictly the condition in the previous function but
-            // it makes little sense to cover SVG subtrees if we know they are skipped anyway.
-            if (renderer->isSVGContainer())
-                return;
-        }
-    }
-
 #endif
 
     bool skipInvalidationWhenLaidOutChildren() const;
@@ -1016,14 +995,7 @@ public:
     void setPreviousPositionFromPaintInvalidationContainer(const LayoutPoint& location) { m_previousPositionFromPaintInvalidationContainer = location; }
 
     bool shouldDoFullPaintInvalidationAfterLayout() const { return m_bitfields.shouldDoFullPaintInvalidationAfterLayout(); }
-    void setShouldDoFullPaintInvalidationAfterLayout(bool b, MarkingBehavior markBehavior = MarkContainingBlockChain)
-    {
-        m_bitfields.setShouldDoFullPaintInvalidationAfterLayout(b);
-
-        if (markBehavior == MarkContainingBlockChain && b)
-            markContainingBlockChainForPaintInvalidation();
-    }
-
+    void setShouldDoFullPaintInvalidationAfterLayout(bool b) { m_bitfields.setShouldDoFullPaintInvalidationAfterLayout(b); }
     bool shouldInvalidateOverflowForPaint() const { return m_bitfields.shouldInvalidateOverflowForPaint(); }
 
     bool shouldDoFullPaintInvalidationIfSelfPaintingLayer() const { return m_bitfields.shouldDoFullPaintInvalidationIfSelfPaintingLayer(); }
@@ -1036,17 +1008,17 @@ public:
 
     // layoutDidGetCalled indicates whether this render object was re-laid-out
     // since the last call to setLayoutDidGetCalled(false) on this object.
-    bool layoutDidGetCalled() const { return m_bitfields.layoutDidGetCalled(); }
+    bool layoutDidGetCalled() { return m_bitfields.layoutDidGetCalled(); }
     void setLayoutDidGetCalled(bool b) { m_bitfields.setLayoutDidGetCalled(b); }
 
-    bool mayNeedPaintInvalidation() const { return m_bitfields.mayNeedPaintInvalidation(); }
+    bool mayNeedPaintInvalidation() { return m_bitfields.mayNeedPaintInvalidation(); }
     void setMayNeedPaintInvalidation(bool b)
     {
         m_bitfields.setMayNeedPaintInvalidation(b);
 
         // Make sure our parent is marked as needing invalidation.
-        if (b)
-            markContainingBlockChainForPaintInvalidation();
+        if (b && parent() && !parent()->mayNeedPaintInvalidation())
+            parent()->setMayNeedPaintInvalidation(b);
     }
 
     bool neededLayoutBecauseOfChildren() const { return m_bitfields.neededLayoutBecauseOfChildren(); }
@@ -1054,7 +1026,7 @@ public:
 
     bool shouldCheckForPaintInvalidationAfterLayout()
     {
-        return layoutDidGetCalled() || mayNeedPaintInvalidation() || shouldDoFullPaintInvalidationAfterLayout();
+        return layoutDidGetCalled() || mayNeedPaintInvalidation();
     }
 
     bool supportsLayoutStateCachedOffsets() const { return !hasColumns() && !hasTransform() && !hasReflection() && !style()->isFlippedBlocksWritingMode(); }
@@ -1140,20 +1112,8 @@ private:
 
 #ifndef NDEBUG
     void checkBlockPositionedObjectsNeedLayout();
-
-    bool paintInvalidationStateIsDirty() const
-    {
-        return layoutDidGetCalled() || shouldDoFullPaintInvalidationAfterLayout() || shouldDoFullPaintInvalidationIfSelfPaintingLayer()
-            || onlyNeededPositionedMovementLayout() || neededLayoutBecauseOfChildren() || mayNeedPaintInvalidation();
-    }
 #endif
     const char* invalidationReasonToString(InvalidationReason) const;
-
-    void markContainingBlockChainForPaintInvalidation()
-    {
-        for (RenderObject* container = this->container(); container && !container->shouldCheckForPaintInvalidationAfterLayout(); container = container->container())
-            container->setMayNeedPaintInvalidation(true);
-    }
 
     static bool isAllowedToModifyRenderTreeStructure(Document&);
 

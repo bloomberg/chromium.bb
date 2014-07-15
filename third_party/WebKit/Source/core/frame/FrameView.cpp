@@ -1029,9 +1029,6 @@ void FrameView::invalidateTreeIfNeeded()
     resetScrollbarDamage();
 
     m_doFullPaintInvalidation = false;
-#ifndef NDEBUG
-    renderView()->assertSubtreeClearedPaintInvalidationState();
-#endif
 }
 
 DocumentLifecycle& FrameView::lifecycle() const
