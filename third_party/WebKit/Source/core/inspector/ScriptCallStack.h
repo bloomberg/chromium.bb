@@ -42,7 +42,7 @@ namespace WebCore {
 
 class ScriptAsyncCallStack;
 
-class ScriptCallStack : public RefCountedWillBeGarbageCollectedFinalized<ScriptCallStack> {
+class ScriptCallStack FINAL : public RefCountedWillBeGarbageCollectedFinalized<ScriptCallStack> {
     DECLARE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(ScriptCallStack);
 public:
     static const size_t maxCallStackSizeToCapture = 200;
@@ -57,13 +57,13 @@ public:
 
     PassRefPtr<TypeBuilder::Array<TypeBuilder::Console::CallFrame> > buildInspectorArray() const;
 
-    void trace(Visitor*) { }
+    void trace(Visitor*);
 
 private:
     explicit ScriptCallStack(Vector<ScriptCallFrame>&);
 
     Vector<ScriptCallFrame> m_frames;
-    RefPtrWillBePersistent<ScriptAsyncCallStack> m_asyncCallStack;
+    RefPtrWillBeMember<ScriptAsyncCallStack> m_asyncCallStack;
 };
 
 } // namespace WebCore

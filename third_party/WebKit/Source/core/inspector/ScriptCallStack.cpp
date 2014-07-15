@@ -76,4 +76,9 @@ PassRefPtr<TypeBuilder::Array<TypeBuilder::Console::CallFrame> > ScriptCallStack
     return frames;
 }
 
+void ScriptCallStack::trace(Visitor* visitor)
+{
+    visitor->trace(m_asyncCallStack);
+}
+
 } // namespace WebCore
