@@ -56,8 +56,9 @@ GalleryDataModel.prototype.initialize = function(metadataCache, entries) {
 
     // Obtains items.
     var items = entries.map(function(entry, i) {
+      var clonedMetadata = MetadataCache.cloneMetadata(metadata[i]);
       return new Gallery.Item(
-          entry, MetadataCache.cloneMetadata(metadata[i]), metadataCache);
+          entry, clonedMetadata, metadataCache, /* original */ true);
     });
 
     // Update the models.
@@ -119,7 +120,7 @@ GalleryDataModel.prototype.saveItem = function(item, canvas, overwrite) {
             // New entry is added and the item now tracks it.
             // Add another item for the old entry.
             var anotherItem = new Gallery.Item(
-                oldEntry, oldMetadata, this.metadataCache_);
+                oldEntry, oldMetadata, this.metadataCache_, item.isOriginal());
             // The item must be added behind the existing item so that it does
             // not change the index of the existing item.
             // TODO(hirono): Update the item index of the selection model

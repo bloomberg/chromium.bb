@@ -12,7 +12,7 @@
  *     fetchedMedia metadata.
  * @constructor
  */
-Gallery.Item = function(entry, metadata, metadataCache) {
+Gallery.Item = function(entry, metadata, metadataCache, original) {
   /**
    * @type {FileEntry}
    * @private
@@ -34,7 +34,7 @@ Gallery.Item = function(entry, metadata, metadataCache) {
    * @type {boolean}
    * @private
    */
-  this.original_ = true;
+  this.original_ = original;
 
   Object.seal(this);
 };
