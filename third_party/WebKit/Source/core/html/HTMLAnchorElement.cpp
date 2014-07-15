@@ -52,6 +52,7 @@
 #include "platform/weborigin/SecurityPolicy.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebURL.h"
+#include "public/platform/WebURLRequest.h"
 #include "wtf/text/StringBuilder.h"
 
 namespace WebCore {
@@ -330,6 +331,7 @@ void HTMLAnchorElement::handleClick(Event* event)
 
     ResourceRequest request(completedURL);
     if (hasAttribute(downloadAttr)) {
+        request.setRequestContext(blink::WebURLRequest::RequestContextDownload);
         if (!hasRel(RelationNoReferrer)) {
             String referrer = SecurityPolicy::generateReferrerHeader(document().referrerPolicy(), completedURL, document().outgoingReferrer());
             if (!referrer.isEmpty())
@@ -341,6 +343,7 @@ void HTMLAnchorElement::handleClick(Event* event)
 
         frame->loader().client()->loadURLExternally(request, NavigationPolicyDownload, suggestedName);
     } else {
+        request.setRequestContext(blink::WebURLRequest::RequestContextHyperlink);
         FrameLoadRequest frameRequest(&document(), request, getAttribute(targetAttr));
         frameRequest.setTriggeringEvent(event);
         if (hasRel(RelationNoReferrer))
