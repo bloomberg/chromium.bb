@@ -620,9 +620,8 @@ INSTANTIATE_TEST_CASE_P(IndexedDBBrowserCorruptionTestInstantiation,
                                           "failTransactionCommit",
                                           "clearObjectStore"));
 
-// Crashes flakily on various platforms. crbug.com/375856
 IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest,
-                       DISABLED_DeleteCompactsBackingStore) {
+                       DeleteCompactsBackingStore) {
   const GURL test_url = GetTestUrl("indexeddb", "delete_compact.html");
   SimpleTest(GURL(test_url.spec() + "#fill"));
   int64 after_filling = RequestDiskUsage();
