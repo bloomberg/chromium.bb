@@ -65,7 +65,7 @@ name2
             'namespace': '',
             'fruit': False,
         }
-        in_file = InFile(lines, defaults, default_parameters)
+        in_file = InFile(lines, defaults, default_parameters=default_parameters)
         expected_parameters = {
             'namespace': 'TestNamespace',
             'fruit': True,
