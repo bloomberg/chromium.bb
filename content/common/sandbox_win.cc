@@ -431,8 +431,8 @@ void CheckDuplicateHandle(HANDLE handle) {
       kDuplicateHandleWarning;
 
   if (0 == _wcsicmp(type_info->Name.Buffer, L"Process")) {
-    const ACCESS_MASK kDangerousMask = ~(PROCESS_QUERY_LIMITED_INFORMATION |
-                                         SYNCHRONIZE);
+    const ACCESS_MASK kDangerousMask =
+        ~static_cast<DWORD>(PROCESS_QUERY_LIMITED_INFORMATION | SYNCHRONIZE);
     CHECK(!(basic_info.GrantedAccess & kDangerousMask)) <<
         kDuplicateHandleWarning;
   }

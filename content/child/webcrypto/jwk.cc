@@ -265,7 +265,7 @@ class JwkAlgorithmInfo {
   }
 
  private:
-  enum { NO_KEY_SIZE_REQUIREMENT = UINT_MAX };
+  static const unsigned int NO_KEY_SIZE_REQUIREMENT = UINT_MAX;
 
   AlgorithmCreationFunc creation_func_;
 

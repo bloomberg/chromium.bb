@@ -147,7 +147,7 @@ bool CommandBufferProxyImpl::Initialize() {
   if (!base::SharedMemory::IsHandleValid(handle))
     return false;
 
-  bool result;
+  bool result = false;
   if (!Send(new GpuCommandBufferMsg_Initialize(
       route_id_, handle, &result, &capabilities_))) {
     LOG(ERROR) << "Could not send GpuCommandBufferMsg_Initialize.";
@@ -377,7 +377,7 @@ uint32 CommandBufferProxyImpl::CreateStreamTexture(uint32 texture_id) {
     return 0;
 
   int32 stream_id = channel_->GenerateRouteID();
-  bool succeeded;
+  bool succeeded = false;
   Send(new GpuCommandBufferMsg_CreateStreamTexture(
       route_id_, texture_id, stream_id, &succeeded));
   if (!succeeded) {

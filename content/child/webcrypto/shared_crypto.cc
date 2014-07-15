@@ -484,9 +484,6 @@ Status BestEffortCheckKeyUsagesForImport(blink::WebCryptoAlgorithmId algorithm,
     return CheckKeyUsages(algorithm, blink::WebCryptoKeyTypeSecret, usages);
 
   // Try to infer the key type given the import format.
-  blink::WebCryptoKeyType key_type;
-  bool key_type_known = false;
-
   switch (format) {
     case blink::WebCryptoKeyFormatRaw:
       // TODO(eroman): The spec defines Diffie-Hellman raw import for public
@@ -494,22 +491,14 @@ Status BestEffortCheckKeyUsagesForImport(blink::WebCryptoAlgorithmId algorithm,
       // implemented.
       return Status::ErrorUnexpected();
     case blink::WebCryptoKeyFormatSpki:
-      key_type = blink::WebCryptoKeyTypePublic;
-      key_type_known = true;
-      break;
+      return CheckKeyUsages(algorithm, blink::WebCryptoKeyTypePublic, usages);
     case blink::WebCryptoKeyFormatPkcs8:
-      key_type = blink::WebCryptoKeyTypePrivate;
-      key_type_known = true;
-      break;
+      return CheckKeyUsages(algorithm, blink::WebCryptoKeyTypePrivate, usages);
     case blink::WebCryptoKeyFormatJwk:
-      key_type_known = false;
       break;
     default:
       return Status::ErrorUnexpected();
   }
-
-  if (key_type_known)
-    return CheckKeyUsages(algorithm, key_type, usages);
 
   // If the key type is not known, then the algorithm is asymmetric. Whether the
   // key data describes a public or private key isn't known yet. But it must at

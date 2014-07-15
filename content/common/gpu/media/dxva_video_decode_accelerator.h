@@ -6,7 +6,12 @@
 #define CONTENT_COMMON_GPU_MEDIA_DXVA_VIDEO_DECODE_ACCELERATOR_H_
 
 #include <d3d9.h>
+// Work around bug in this header by disabling the relevant warning for it.
+// https://connect.microsoft.com/VisualStudio/feedback/details/911260/dxva2api-h-in-win8-sdk-triggers-c4201-with-w4
+#pragma warning(push)
+#pragma warning(disable:4201)
 #include <dxva2api.h>
+#pragma warning(pop)
 #include <list>
 #include <map>
 #include <mfidl.h>

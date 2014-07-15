@@ -406,7 +406,8 @@ void PluginInstance::DidReceiveManualResponse(const GURL& url,
                                               uint32 last_modified) {
   DCHECK(load_manually_);
 
-  plugin_data_stream_ = CreateStream(-1, url, mime_type, 0);
+  plugin_data_stream_ =
+      CreateStream(static_cast<unsigned long>(-1), url, mime_type, 0);
   plugin_data_stream_->DidReceiveResponse(mime_type, headers, expected_length,
                                           last_modified, true);
 }
