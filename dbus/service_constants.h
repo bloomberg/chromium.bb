@@ -817,6 +817,7 @@ const char kHostNameProperty[] = "HostName";
 const char kIgnoredDNSSearchPathsProperty[] = "IgnoredDNSSearchPaths";
 const char kLinkMonitorTechnologiesProperty[] =
     "LinkMonitorTechnologies";
+const char kNoAutoConnectTechnologiesProperty[] = "NoAutoConnectTechnologies";
 const char kPortalCheckIntervalProperty[] = "PortalCheckInterval";
 const char kServiceCompleteListProperty[] = "ServiceCompleteList";
 const char kShortDNSTimeoutTechnologiesProperty[] =
