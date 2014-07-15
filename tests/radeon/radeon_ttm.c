@@ -25,7 +25,9 @@
  */
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
 #include "rbo.h"
+#include "xf86drm.h"
 
 /* allocate as many single page bo to try to starve the kernel
  * memory zone (below highmem)
