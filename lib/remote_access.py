@@ -669,7 +669,7 @@ class ChromiumOSDevice(RemoteDevice):
 
     return False
 
-  def _DisableRootfsVerification(self):
+  def DisableRootfsVerification(self):
     """Disables device rootfs verification."""
     logging.info('Disabling rootfs verification on device...')
     self.RunCommand(
@@ -699,7 +699,7 @@ class ChromiumOSDevice(RemoteDevice):
     # If the image is built with rootfs verification, turn off the
     # rootfs verification. After reboot, the rootfs will be mounted as
     # read-write (there is no need to remount).
-    self._DisableRootfsVerification()
+    self.DisableRootfsVerification()
 
     return not self._RootfsIsReadOnly()
 

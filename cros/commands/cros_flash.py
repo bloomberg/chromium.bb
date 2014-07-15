@@ -405,7 +405,7 @@ class RemoteDeviceUpdater(object):
   def __init__(self, ssh_hostname, ssh_port, image, stateful_update=True,
                rootfs_update=True, clobber_stateful=False, reboot=True,
                board=None, src_image_to_delta=None, wipe=True, debug=False,
-               yes=False, ping=True):
+               yes=False, ping=True, disable_verification=False):
     """Initializes RemoteDeviceUpdater"""
     if not stateful_update and not rootfs_update:
       cros_build_lib.Die('No update operation to perform. Use -h to see usage.')
@@ -418,6 +418,7 @@ class RemoteDeviceUpdater(object):
     self.src_image_to_delta = src_image_to_delta
     self.do_stateful_update = stateful_update
     self.do_rootfs_update = rootfs_update
+    self.disable_verification = disable_verification
     self.clobber_stateful = clobber_stateful
     self.reboot = reboot
     self.debug = debug
@@ -816,8 +817,13 @@ class RemoteDeviceUpdater(object):
             device.BaseRunCommand(['mkdir', '-p', device.work_dir])
 
         if self.do_rootfs_update and self.reboot:
+          logging.info('Verifying that the device has been updated...')
           new_root_dev = self.GetRootDev(device)
           self.Verify(old_root_dev, new_root_dev)
+
+        if self.disable_verification:
+          logging.info('Disabling rootfs verification on the device...')
+          device.DisableRootfsVerification()
 
     except Exception:
       logging.error('Device update failed.')
@@ -930,6 +936,9 @@ Examples:
     update.add_argument(
         '--no-ping', dest='ping', action='store_false', default=True,
         help='Do not ping the device before attempting to connect to it.')
+    update.add_argument(
+        '--disable-rootfs-verification', default=False, action='store_true',
+        help='Disable rootfs verification after update is completed.')
 
   def __init__(self, options):
     """Initializes cros flash."""
@@ -994,7 +1003,8 @@ Examples:
             wipe=self.options.wipe,
             debug=self.options.debug,
             yes=self.options.yes,
-            ping=self.options.ping)
+            ping=self.options.ping,
+            disable_verification=self.options.disable_rootfs_verification)
 
         # Perform device update.
         updater.Run()
