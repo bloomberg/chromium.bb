@@ -607,7 +607,17 @@ InspectorTest.TimeoutMock.prototype = {
 
 WebInspector.TempFile = InspectorTest.TempFileMock;
 
-};
+WebInspector.targetManager.observeTargets({
+    targetAdded: function(target)
+    {
+        if (!WebInspector.domModel)
+            WebInspector.domModel = target.domModel;
+    },
+
+    targetRemoved: function(target) { }
+});
+
+};  // initialize_InspectorTest
 
 var initializeCallId = 0;
 var runTestCallId = 1;
