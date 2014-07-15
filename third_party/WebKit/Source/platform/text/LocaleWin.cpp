@@ -150,7 +150,7 @@ static LCID LCIDFromLocale(const String& locale, bool defaultsForLocale)
 PassOwnPtr<Locale> Locale::create(const String& locale)
 {
     // Whether the default settings for the locale should be used, ignoring user overrides.
-    bool defaultsForLocale = isRunningLayoutTest();
+    bool defaultsForLocale = LayoutTestSupport::isRunningLayoutTest();
     return LocaleWin::create(LCIDFromLocale(locale, defaultsForLocale), defaultsForLocale);
 }
 

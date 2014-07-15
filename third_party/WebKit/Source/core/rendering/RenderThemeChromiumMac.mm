@@ -1791,7 +1791,7 @@ PassRefPtr<RenderTheme> RenderThemeChromiumMac::create()
 
 bool RenderThemeChromiumMac::usesTestModeFocusRingColor() const
 {
-    return isRunningLayoutTest();
+    return LayoutTestSupport::isRunningLayoutTest();
 }
 
 NSView* RenderThemeChromiumMac::documentViewFor(RenderObject*) const

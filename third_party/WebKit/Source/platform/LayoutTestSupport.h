@@ -35,10 +35,13 @@
 
 namespace WebCore {
 
-PLATFORM_EXPORT bool isRunningLayoutTest();
-PLATFORM_EXPORT void setIsRunningLayoutTest(bool);
-PLATFORM_EXPORT bool isFontAntialiasingEnabledForTest();
-PLATFORM_EXPORT void setFontAntialiasingEnabledForTest(bool);
+class LayoutTestSupport {
+public:
+    PLATFORM_EXPORT static bool isRunningLayoutTest();
+    PLATFORM_EXPORT static void setIsRunningLayoutTest(bool);
+    PLATFORM_EXPORT static bool isFontAntialiasingEnabledForTest();
+    PLATFORM_EXPORT static void setFontAntialiasingEnabledForTest(bool);
+};
 
 } // namespace WebCore
 

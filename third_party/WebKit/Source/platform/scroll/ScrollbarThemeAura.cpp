@@ -45,7 +45,7 @@ namespace WebCore {
 
 static bool useMockTheme()
 {
-    return isRunningLayoutTest();
+    return LayoutTestSupport::isRunningLayoutTest();
 }
 
 ScrollbarTheme* ScrollbarTheme::nativeTheme()

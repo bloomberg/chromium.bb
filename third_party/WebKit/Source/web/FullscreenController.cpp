@@ -96,7 +96,7 @@ void FullscreenController::didEnterFullScreen()
                     HTMLMediaElement* mediaElement = toHTMLMediaElement(element);
                     if (mediaElement->webMediaPlayer() && mediaElement->webMediaPlayer()->canEnterFullscreen()
                         // FIXME: There is no embedder-side handling in layout test mode.
-                        && !isRunningLayoutTest()) {
+                        && !LayoutTestSupport::isRunningLayoutTest()) {
                         mediaElement->webMediaPlayer()->enterFullscreen();
                     }
                     if (m_webViewImpl->layerTreeView())

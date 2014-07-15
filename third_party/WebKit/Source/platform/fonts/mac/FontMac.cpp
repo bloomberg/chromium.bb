@@ -101,9 +101,9 @@ void Font::drawGlyphs(GraphicsContext* gc, const SimpleFontData* font,
         break;
     }
 
-    if (isRunningLayoutTest()) {
+    if (LayoutTestSupport::isRunningLayoutTest()) {
         shouldSmoothFonts = false;
-        shouldAntialias = shouldAntialias && isFontAntialiasingEnabledForTest();
+        shouldAntialias = shouldAntialias && LayoutTestSupport::isFontAntialiasingEnabledForTest();
     }
 
     const Glyph* glyphs = glyphBuffer.glyphs(from);

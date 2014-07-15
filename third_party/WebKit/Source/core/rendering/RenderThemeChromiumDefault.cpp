@@ -43,7 +43,7 @@ namespace WebCore {
 
 static bool useMockTheme()
 {
-    return isRunningLayoutTest();
+    return LayoutTestSupport::isRunningLayoutTest();
 }
 
 unsigned RenderThemeChromiumDefault::m_activeSelectionBackgroundColor =

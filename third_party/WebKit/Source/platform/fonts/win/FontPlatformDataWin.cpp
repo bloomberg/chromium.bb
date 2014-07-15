@@ -70,7 +70,7 @@ void FontPlatformData::setupPaint(SkPaint* paint, GraphicsContext* context) cons
         // good test coverage matching the more common smoothing enabled
         // behavior.
         if (m_useSubpixelPositioning
-            && ((textFlags & SkPaint::kAntiAlias_Flag) || isRunningLayoutTest()))
+            && ((textFlags & SkPaint::kAntiAlias_Flag) || LayoutTestSupport::isRunningLayoutTest()))
             flags |= SkPaint::kSubpixelText_Flag;
 
         // Only set painting flags when we're actually painting.
@@ -133,8 +133,8 @@ static bool isWebFont(const String& familyName)
 
 static int computePaintTextFlags(String fontFamilyName)
 {
-    if (isRunningLayoutTest())
-        return isFontAntialiasingEnabledForTest() ? SkPaint::kAntiAlias_Flag : 0;
+    if (LayoutTestSupport::isRunningLayoutTest())
+        return LayoutTestSupport::isFontAntialiasingEnabledForTest() ? SkPaint::kAntiAlias_Flag : 0;
 
     int textFlags = getSystemTextFlags();
 

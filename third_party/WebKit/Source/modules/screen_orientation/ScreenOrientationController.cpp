@@ -57,7 +57,7 @@ blink::WebScreenOrientationType ScreenOrientationController::computeOrientation(
     // Bypass orientation detection in layout tests to get consistent results.
     // FIXME: The screen dimension should be fixed when running the layout tests to avoid such
     // issues.
-    if (isRunningLayoutTest())
+    if (LayoutTestSupport::isRunningLayoutTest())
         return blink::WebScreenOrientationPortraitPrimary;
 
     FloatRect rect = screenRect(view);

@@ -84,7 +84,7 @@ void FontPlatformData::setupPaint(SkPaint* paint, GraphicsContext*) const
     // TestRunner specifically toggles the subpixel positioning flag.
     if (RuntimeEnabledFeatures::subpixelFontScalingEnabled()
         && paint->getHinting() != SkPaint::kFull_Hinting
-        && !isRunningLayoutTest())
+        && !LayoutTestSupport::isRunningLayoutTest())
         paint->setSubpixelText(true);
     else
         paint->setSubpixelText(m_style.useSubpixelPositioning);
@@ -139,7 +139,7 @@ void FontPlatformData::querySystemForRenderStyle(bool useSkiaSubpixelPositioning
 
     // TestRunner specifically toggles the subpixel positioning flag.
     if (m_style.useSubpixelPositioning == FontRenderStyle::NoPreference
-        || isRunningLayoutTest())
+        || LayoutTestSupport::isRunningLayoutTest())
         m_style.useSubpixelPositioning = useSkiaSubpixelPositioning;
 }
 

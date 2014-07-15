@@ -63,6 +63,8 @@
 #include "wtf/text/TextEncoding.h"
 #include <v8.h>
 
+using WebCore::LayoutTestSupport;
+
 namespace blink {
 
 namespace {
@@ -240,22 +242,22 @@ void shutdownWithoutV8()
 
 void setLayoutTestMode(bool value)
 {
-    WebCore::setIsRunningLayoutTest(value);
+    LayoutTestSupport::setIsRunningLayoutTest(value);
 }
 
 bool layoutTestMode()
 {
-    return WebCore::isRunningLayoutTest();
+    return LayoutTestSupport::isRunningLayoutTest();
 }
 
 void setFontAntialiasingEnabledForTest(bool value)
 {
-    WebCore::setFontAntialiasingEnabledForTest(value);
+    LayoutTestSupport::setFontAntialiasingEnabledForTest(value);
 }
 
 bool fontAntialiasingEnabledForTest()
 {
-    return WebCore::isFontAntialiasingEnabledForTest();
+    return LayoutTestSupport::isFontAntialiasingEnabledForTest();
 }
 
 void enableLogChannel(const char* name)

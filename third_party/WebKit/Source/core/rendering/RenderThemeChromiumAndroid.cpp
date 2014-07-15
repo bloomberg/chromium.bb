@@ -71,7 +71,7 @@ String RenderThemeChromiumAndroid::extraDefaultStyleSheet()
 
 void RenderThemeChromiumAndroid::adjustInnerSpinButtonStyle(RenderStyle* style, Element*) const
 {
-    if (isRunningLayoutTest()) {
+    if (LayoutTestSupport::isRunningLayoutTest()) {
         // Match Linux spin button style in layout tests.
         // FIXME: Consider removing the conditional if a future Android theme matches this.
         IntSize size = blink::Platform::current()->themeEngine()->getSize(blink::WebThemeEngine::PartInnerSpinButton);

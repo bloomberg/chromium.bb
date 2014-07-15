@@ -121,7 +121,7 @@ double RenderThemeChromiumSkia::caretBlinkInterval() const
 {
     // Disable the blinking caret in layout test mode, as it introduces
     // a race condition for the pixel tests. http://b/1198440
-    if (isRunningLayoutTest())
+    if (LayoutTestSupport::isRunningLayoutTest())
         return 0;
 
     return caretBlinkIntervalInternal();
