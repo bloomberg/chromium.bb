@@ -72,6 +72,17 @@ name2
         }
         self.assertEquals(in_file.parameters, expected_parameters)
 
+    def test_assertion_for_non_in_files(self):
+        in_files = ['some_sample_file.json']
+        assertion_thrown = False
+        try:
+            in_file = InFile.load_from_files(in_files, None, None, None)
+        except AssertionError:
+            assertion_thrown = True
+        except:
+            pass
+        self.assertTrue(assertion_thrown)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -64,6 +64,7 @@ class InFile(object):
     def load_from_files(self, file_paths, defaults, valid_values, default_parameters):
         lines = []
         for path in file_paths:
+            assert path.endswith(".in")
             with open(os.path.abspath(path)) as in_file:
                 lines += in_file.readlines()
         return InFile(lines, defaults, valid_values, default_parameters)
