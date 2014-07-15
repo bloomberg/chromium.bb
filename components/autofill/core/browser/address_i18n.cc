@@ -27,6 +27,7 @@ base::string16 GetInfoHelper(const AutofillProfile& profile,
 }  // namespace
 
 using ::i18n::addressinput::AddressData;
+using ::i18n::addressinput::AddressField;
 
 scoped_ptr<AddressData> CreateAddressData(
     const base::Callback<base::string16(const AutofillType&)>& get_info) {
@@ -60,6 +61,82 @@ scoped_ptr< ::i18n::addressinput::AddressData>
       i18n::CreateAddressData(base::Bind(&GetInfoHelper, profile, app_locale));
   address_data->language_code = profile.language_code();
   return address_data.Pass();
+}
+
+ServerFieldType TypeForField(AddressField address_field, bool billing) {
+  switch (address_field) {
+    case ::i18n::addressinput::COUNTRY:
+      return billing ? ADDRESS_BILLING_COUNTRY : ADDRESS_HOME_COUNTRY;
+    case ::i18n::addressinput::ADMIN_AREA:
+      return billing ? ADDRESS_BILLING_STATE : ADDRESS_HOME_STATE;
+    case ::i18n::addressinput::LOCALITY:
+      return billing ? ADDRESS_BILLING_CITY : ADDRESS_HOME_CITY;
+    case ::i18n::addressinput::DEPENDENT_LOCALITY:
+      return billing ? ADDRESS_BILLING_DEPENDENT_LOCALITY
+                     : ADDRESS_HOME_DEPENDENT_LOCALITY;
+    case ::i18n::addressinput::POSTAL_CODE:
+      return billing ? ADDRESS_BILLING_ZIP : ADDRESS_HOME_ZIP;
+    case ::i18n::addressinput::SORTING_CODE:
+      return billing ? ADDRESS_BILLING_SORTING_CODE : ADDRESS_HOME_SORTING_CODE;
+    case ::i18n::addressinput::STREET_ADDRESS:
+      return billing ? ADDRESS_BILLING_STREET_ADDRESS
+                     : ADDRESS_HOME_STREET_ADDRESS;
+    case ::i18n::addressinput::RECIPIENT:
+      return billing ? NAME_BILLING_FULL : NAME_FULL;
+  }
+  NOTREACHED();
+  return UNKNOWN_TYPE;
+}
+
+bool FieldForType(ServerFieldType server_type, AddressField* field) {
+  switch (server_type) {
+    case ADDRESS_BILLING_COUNTRY:
+    case ADDRESS_HOME_COUNTRY:
+      if (field)
+        *field = ::i18n::addressinput::COUNTRY;
+      return true;
+    case ADDRESS_BILLING_STATE:
+    case ADDRESS_HOME_STATE:
+      if (field)
+        *field = ::i18n::addressinput::ADMIN_AREA;
+      return true;
+    case ADDRESS_BILLING_CITY:
+    case ADDRESS_HOME_CITY:
+      if (field)
+        *field = ::i18n::addressinput::LOCALITY;
+      return true;
+    case ADDRESS_BILLING_DEPENDENT_LOCALITY:
+    case ADDRESS_HOME_DEPENDENT_LOCALITY:
+      if (field)
+        *field = ::i18n::addressinput::DEPENDENT_LOCALITY;
+      return true;
+    case ADDRESS_BILLING_SORTING_CODE:
+    case ADDRESS_HOME_SORTING_CODE:
+      if (field)
+        *field = ::i18n::addressinput::SORTING_CODE;
+      return true;
+    case ADDRESS_BILLING_ZIP:
+    case ADDRESS_HOME_ZIP:
+      if (field)
+        *field = ::i18n::addressinput::POSTAL_CODE;
+      return true;
+    case ADDRESS_BILLING_STREET_ADDRESS:
+    case ADDRESS_BILLING_LINE1:
+    case ADDRESS_BILLING_LINE2:
+    case ADDRESS_HOME_STREET_ADDRESS:
+    case ADDRESS_HOME_LINE1:
+    case ADDRESS_HOME_LINE2:
+      if (field)
+        *field = ::i18n::addressinput::STREET_ADDRESS;
+      return true;
+    case NAME_BILLING_FULL:
+    case NAME_FULL:
+      if (field)
+        *field = ::i18n::addressinput::RECIPIENT;
+      return true;
+    default:
+      return false;
+  }
 }
 
 }  // namespace i18n

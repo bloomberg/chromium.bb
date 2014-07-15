@@ -8,6 +8,8 @@
 #include "base/callback_forward.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
+#include "components/autofill/core/browser/field_types.h"
+#include "third_party/libaddressinput/src/cpp/include/libaddressinput/address_field.h"
 
 namespace i18n {
 namespace addressinput {
@@ -31,6 +33,16 @@ scoped_ptr< ::i18n::addressinput::AddressData> CreateAddressData(
 scoped_ptr< ::i18n::addressinput::AddressData>
     CreateAddressDataFromAutofillProfile(const AutofillProfile& profile,
                                          const std::string& app_locale);
+
+// Returns the corresponding Autofill server type for |field|.
+ServerFieldType TypeForField(::i18n::addressinput::AddressField field,
+                             bool billing);
+
+// Sets |field| to the corresponding address field for the Autofill
+// |server_type|. Returns |true| if |server_type| can be represented as an
+// address field. The |field| parameter can be NULL.
+bool FieldForType(ServerFieldType server_type,
+                  ::i18n::addressinput::AddressField* field);
 
 }  // namespace i18n
 }  // namespace autofill

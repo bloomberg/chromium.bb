@@ -381,7 +381,7 @@ I18nAddressDataWrapper::~I18nAddressDataWrapper() {}
 
 base::string16 I18nAddressDataWrapper::GetInfo(const AutofillType& type) const {
   ::i18n::addressinput::AddressField field;
-  if (!i18ninput::FieldForType(type.GetStorableType(), &field))
+  if (!i18n::FieldForType(type.GetStorableType(), &field))
     return base::string16();
 
   if (field == ::i18n::addressinput::STREET_ADDRESS)

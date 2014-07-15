@@ -2002,15 +2002,14 @@ ValidityMessages AutofillDialogControllerImpl::InputsAreValid(
     localization.SetGetter(l10n_util::GetStringUTF8);
     FieldProblemMap problems;
     status = GetValidator()->ValidateAddress(*address_data, NULL, &problems);
-    common::AddressType address_type = section == SECTION_SHIPPING ?
-        common::ADDRESS_TYPE_SHIPPING : common::ADDRESS_TYPE_BILLING;
+    bool billing = section != SECTION_SHIPPING;
 
     for (FieldProblemMap::const_iterator iter = problems.begin();
          iter != problems.end(); ++iter) {
       bool sure = iter->second != MISSING_REQUIRED_FIELD;
       base::string16 text = base::UTF8ToUTF16(localization.GetErrorMessage(
           *address_data, iter->first, iter->second, true, false));
-      messages.Set(i18ninput::TypeForField(iter->first, address_type),
+      messages.Set(i18n::TypeForField(iter->first, billing),
                    ValidityMessage(text, sure));
     }
   }
@@ -3400,7 +3399,7 @@ void AutofillDialogControllerImpl::GetI18nValidatorSuggestions(
     std::vector<base::string16>* popup_labels,
     std::vector<base::string16>* popup_icons) {
   AddressField focused_field;
-  if (!i18ninput::FieldForType(type, &focused_field))
+  if (!i18n::FieldForType(type, &focused_field))
     return;
 
   FieldValueMap inputs;

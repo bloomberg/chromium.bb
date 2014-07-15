@@ -12,7 +12,6 @@
 #include "chrome/browser/ui/autofill/autofill_dialog_common.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_types.h"
 #include "components/autofill/core/browser/autofill_type.h"
-#include "third_party/libaddressinput/src/cpp/include/libaddressinput/address_field.h"
 
 namespace autofill {
 
@@ -44,16 +43,6 @@ bool CardHasCompleteAndVerifiedData(const CreditCard& card);
 // exact set of required fields depends on the region.
 bool AddressHasCompleteAndVerifiedData(const AutofillProfile& profile,
                                        const std::string& app_locale);
-
-// Returns the corresponding Autofill server type for |field|.
-ServerFieldType TypeForField(::i18n::addressinput::AddressField field,
-                             common::AddressType address_type);
-
-// Sets |field| to the corresponding address field for the Autofill
-// |server_type|. Returns |true| if |server_type| can be represented as an
-// address field. The |field| parameter can be NULL.
-bool FieldForType(ServerFieldType server_type,
-                  ::i18n::addressinput::AddressField* field);
 
 }  // namespace i18ninput
 }  // namespace autofill

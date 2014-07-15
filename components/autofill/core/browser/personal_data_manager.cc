@@ -15,6 +15,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "components/autofill/core/browser/address_i18n.h"
 #include "components/autofill/core/browser/autofill-inl.h"
 #include "components/autofill/core/browser/autofill_country.h"
 #include "components/autofill/core/browser/autofill_field.h"
@@ -24,10 +25,15 @@
 #include "components/autofill/core/browser/phone_number_i18n.h"
 #include "components/autofill/core/browser/validation.h"
 #include "components/autofill/core/common/autofill_pref_names.h"
+#include "third_party/libaddressinput/src/cpp/include/libaddressinput/address_data.h"
 #include "third_party/libaddressinput/src/cpp/include/libaddressinput/address_formatter.h"
 
 namespace autofill {
 namespace {
+
+using ::i18n::addressinput::AddressField;
+using ::i18n::addressinput::GetStreetAddressLinesAsSingleLine;
+using ::i18n::addressinput::STREET_ADDRESS;
 
 const base::string16::value_type kCreditCardPrefix[] = {'*', 0};
 
@@ -565,20 +571,23 @@ void PersonalDataManager::GetProfileSuggestions(
 
     // The value of the stored data for this field type in the |profile|.
     std::vector<base::string16> multi_values;
-    profile->GetMultiInfo(type, app_locale_, &multi_values);
+    AddressField address_field;
+    if (i18n::FieldForType(type.GetStorableType(), &address_field) &&
+        address_field == STREET_ADDRESS) {
+      std::string street_address_line;
+      GetStreetAddressLinesAsSingleLine(
+          *i18n::CreateAddressDataFromAutofillProfile(*profile, app_locale_),
+          &street_address_line);
+      multi_values.push_back(base::UTF8ToUTF16(street_address_line));
+    } else {
+      profile->GetMultiInfo(type, app_locale_, &multi_values);
+    }
 
-    // Names need to be in vertically compact form - i.e. a single line. Join
-    // multi-line addresses into a single line, using a separator.
-    // The separator is locale-specific.
-    base::string16 compact_separator =
-        base::UTF8ToUTF16(::i18n::addressinput::GetLineSeparatorForLanguage(
-            profile->language_code()));
     for (size_t i = 0; i < multi_values.size(); ++i) {
-      // Create vertically compact form.
-      base::ReplaceChars(multi_values[i],
-                         base::ASCIIToUTF16("\n"),
-                         compact_separator,
-                         &multi_values[i]);
+      // Newlines can be found only in a street address, which was collapsed
+      // into a single line above.
+      DCHECK(multi_values[i].find('\n') == std::string::npos);
+
       if (!field_is_autofilled) {
         // Suggest data that starts with what the user has typed.
         if (!multi_values[i].empty() &&
