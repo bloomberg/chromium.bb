@@ -46,7 +46,7 @@
 namespace content {
 namespace {
 
-const int kInvalidateAll = 0xFFFFFFFF;
+const unsigned kInvalidateAll = 0xFFFFFFFF;
 
 // Invoked when entries have been pruned, or removed. For example, if the
 // current entries are [google, digg, yahoo], with the current entry google,
@@ -147,7 +147,7 @@ bool ShouldKeepOverride(const NavigationEntry* last_entry) {
 
 // NavigationControllerImpl ----------------------------------------------------
 
-const size_t kMaxEntryCountForTestingNotSet = -1;
+const size_t kMaxEntryCountForTestingNotSet = static_cast<size_t>(-1);
 
 // static
 size_t NavigationControllerImpl::max_entry_count_for_testing_ =

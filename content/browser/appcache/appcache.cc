@@ -265,7 +265,8 @@ bool AppCache::FindResponseForRequest(const GURL& url,
     return true;
   }
 
-  if ((*found_network_namespace = IsInNetworkNamespace(url_no_ref)))
+  *found_network_namespace = IsInNetworkNamespace(url_no_ref);
+  if (*found_network_namespace)
     return true;
 
   const AppCacheNamespace* intercept_namespace =

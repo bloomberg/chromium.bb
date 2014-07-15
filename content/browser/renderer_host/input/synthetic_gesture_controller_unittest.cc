@@ -430,7 +430,7 @@ class SyntheticGestureControllerTest : public testing::Test {
 TEST_F(SyntheticGestureControllerTest, SingleGesture) {
   CreateControllerAndTarget<MockSyntheticGestureTarget>();
 
-  bool finished;
+  bool finished = false;
   scoped_ptr<MockSyntheticGesture> gesture(
       new MockSyntheticGesture(&finished, 3));
   QueueSyntheticGesture(gesture.PassAs<SyntheticGesture>());
@@ -444,7 +444,7 @@ TEST_F(SyntheticGestureControllerTest, SingleGesture) {
 TEST_F(SyntheticGestureControllerTest, GestureFailed) {
   CreateControllerAndTarget<MockSyntheticGestureTarget>();
 
-  bool finished;
+  bool finished = false;
   scoped_ptr<MockSyntheticGesture> gesture(
       new MockSyntheticGesture(&finished, 0));
   QueueSyntheticGesture(gesture.PassAs<SyntheticGesture>());
@@ -458,9 +458,10 @@ TEST_F(SyntheticGestureControllerTest, GestureFailed) {
 TEST_F(SyntheticGestureControllerTest, SuccessiveGestures) {
   CreateControllerAndTarget<MockSyntheticGestureTarget>();
 
-  bool finished_1, finished_2;
+  bool finished_1 = false;
   scoped_ptr<MockSyntheticGesture> gesture_1(
       new MockSyntheticGesture(&finished_1, 2));
+  bool finished_2 = false;
   scoped_ptr<MockSyntheticGesture> gesture_2(
       new MockSyntheticGesture(&finished_2, 4));
 
@@ -484,9 +485,10 @@ TEST_F(SyntheticGestureControllerTest, SuccessiveGestures) {
 TEST_F(SyntheticGestureControllerTest, TwoGesturesInFlight) {
   CreateControllerAndTarget<MockSyntheticGestureTarget>();
 
-  bool finished_1, finished_2;
+  bool finished_1 = false;
   scoped_ptr<MockSyntheticGesture> gesture_1(
       new MockSyntheticGesture(&finished_1, 2));
+  bool finished_2 = false;
   scoped_ptr<MockSyntheticGesture> gesture_2(
       new MockSyntheticGesture(&finished_2, 4));
 

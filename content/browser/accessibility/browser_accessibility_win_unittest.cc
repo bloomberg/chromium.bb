@@ -716,7 +716,7 @@ TEST(BrowserAccessibilityManagerWinTest, TestAccessibleHWND) {
   HWND desktop_hwnd = GetDesktopWindow();
   base::win::ScopedComPtr<IAccessible> desktop_hwnd_iaccessible;
   ASSERT_EQ(S_OK, AccessibleObjectFromWindow(
-      desktop_hwnd, OBJID_CLIENT,
+      desktop_hwnd, static_cast<DWORD>(OBJID_CLIENT),
       IID_IAccessible,
       reinterpret_cast<void**>(desktop_hwnd_iaccessible.Receive())));
 

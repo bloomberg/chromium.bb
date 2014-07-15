@@ -563,11 +563,11 @@ void ServiceWorkerInternalsUI::CallServiceWorkerVersionMethod(
     const ListValue* args) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   int callback_id;
-  int partition_id;
-  int64 version_id;
-  std::string version_id_string;
   const DictionaryValue* cmd_args = NULL;
+  int partition_id;
   scoped_refptr<ServiceWorkerContextWrapper> context;
+  std::string version_id_string;
+  int64 version_id = 0;
   if (!args->GetInteger(0, &callback_id) ||
       !args->GetDictionary(1, &cmd_args) ||
       !cmd_args->GetInteger("partition_id", &partition_id) ||
@@ -588,7 +588,7 @@ void ServiceWorkerInternalsUI::DispatchPushEvent(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   int callback_id;
   int partition_id;
-  int64 version_id;
+  int64 version_id = 0;
   std::string version_id_string;
   const DictionaryValue* cmd_args = NULL;
   scoped_refptr<ServiceWorkerContextWrapper> context;
@@ -609,10 +609,9 @@ void ServiceWorkerInternalsUI::DispatchPushEvent(
 void ServiceWorkerInternalsUI::InspectWorker(const ListValue* args) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   int callback_id;
-  int process_id;
-  int devtools_agent_route_id;
   const DictionaryValue* cmd_args = NULL;
-  scoped_refptr<ServiceWorkerContextWrapper> context;
+  int process_id = 0;
+  int devtools_agent_route_id = 0;
   if (!args->GetInteger(0, &callback_id) ||
       !args->GetDictionary(1, &cmd_args) ||
       !cmd_args->GetInteger("process_id", &process_id) ||

@@ -1436,7 +1436,7 @@ std::string DatabaseMetaDataKey::Encode(int64 database_id,
 }
 
 ObjectStoreMetaDataKey::ObjectStoreMetaDataKey()
-    : object_store_id_(-1), meta_data_type_(-1) {}
+    : object_store_id_(-1), meta_data_type_(0xFF) {}
 
 bool ObjectStoreMetaDataKey::Decode(StringPiece* slice,
                                     ObjectStoreMetaDataKey* result) {

@@ -409,7 +409,8 @@ bool ParseServerResponse(const std::string& response_body,
       static_cast<const base::DictionaryValue*>(location_value);
 
   // latitude and longitude fields are always required.
-  double latitude, longitude;
+  double latitude = 0;
+  double longitude = 0;
   if (!GetAsDouble(*location_object, kLatitudeString, &latitude) ||
       !GetAsDouble(*location_object, kLongitudeString, &longitude)) {
     VLOG(1) << "ParseServerResponse() : location lacks lat and/or long.";

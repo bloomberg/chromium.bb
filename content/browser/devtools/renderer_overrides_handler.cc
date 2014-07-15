@@ -326,7 +326,7 @@ RendererOverridesHandler::PageHandleJavaScriptDialog(
   base::DictionaryValue* params = command->params();
   const char* paramAccept =
       devtools::Page::handleJavaScriptDialog::kParamAccept;
-  bool accept;
+  bool accept = false;
   if (!params || !params->GetBoolean(paramAccept, &accept))
     return command->InvalidParamResponse(paramAccept);
   base::string16 prompt_override;
@@ -433,10 +433,9 @@ RendererOverridesHandler::PageGetNavigationHistory(
 scoped_refptr<DevToolsProtocol::Response>
 RendererOverridesHandler::PageNavigateToHistoryEntry(
     scoped_refptr<DevToolsProtocol::Command> command) {
-  int entry_id;
-
   base::DictionaryValue* params = command->params();
   const char* param = devtools::Page::navigateToHistoryEntry::kParamEntryId;
+  int entry_id = 0;
   if (!params || !params->GetInteger(param, &entry_id)) {
     return command->InvalidParamResponse(param);
   }
@@ -980,8 +979,8 @@ RendererOverridesHandler::InputDispatchGestureEvent(
   event.globalY = event.y;
 
   if (type == "scrollUpdate") {
-    int dx;
-    int dy;
+    int dx = 0;
+    int dy = 0;
     if (!params->GetInteger(
             devtools::Input::dispatchGestureEvent::kParamDeltaX, &dx) ||
         !params->GetInteger(

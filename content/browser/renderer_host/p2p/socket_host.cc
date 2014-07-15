@@ -221,7 +221,8 @@ bool GetRtpPacketStartPositionAndLength(const char* packet,
                                         int length,
                                         int* rtp_start_pos,
                                         int* rtp_packet_length) {
-  int rtp_begin, rtp_length;
+  int rtp_begin;
+  int rtp_length = 0;
   if (IsTurnChannelData(packet)) {
     // Turn Channel Message header format.
     //   0                   1                   2                   3
@@ -314,7 +315,7 @@ bool GetRtpPacketStartPositionAndLength(const char* packet,
   }
 
   // Making sure we have a valid RTP packet at the end.
-  if (!(rtp_length < kMinRtpHdrLen) &&
+  if ((rtp_length >= kMinRtpHdrLen) &&
       IsRtpPacket(packet + rtp_begin, rtp_length) &&
       ValidateRtpHeader(packet + rtp_begin, rtp_length, NULL)) {
     *rtp_start_pos = rtp_begin;

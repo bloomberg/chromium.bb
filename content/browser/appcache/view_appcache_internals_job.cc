@@ -652,8 +652,8 @@ net::URLRequestJob* ViewAppCacheInternalsJobFactory::CreateJobForRequest(
                                DecodeBase64URL(param));
 
   std::vector<std::string> tokens;
-  int64 response_id;
-  int64 group_id;
+  int64 response_id = 0;
+  int64 group_id = 0;
   if (command == kViewEntryCommand && Tokenize(param, "|", &tokens) == 4u &&
       base::StringToInt64(tokens[2], &response_id) &&
       base::StringToInt64(tokens[3], &group_id)) {
