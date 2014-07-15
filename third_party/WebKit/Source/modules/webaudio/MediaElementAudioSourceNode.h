@@ -72,6 +72,7 @@ private:
     double m_sourceSampleRate;
 
     OwnPtr<MultiChannelResampler> m_multiChannelResampler;
+    RefPtr<MediaElementAudioSourceNode> m_keepAliveWhileLocking;
 };
 
 } // namespace WebCore

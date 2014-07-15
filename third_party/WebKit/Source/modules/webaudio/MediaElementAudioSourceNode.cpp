@@ -141,14 +141,14 @@ void MediaElementAudioSourceNode::process(size_t numberOfFrames)
 
 void MediaElementAudioSourceNode::lock()
 {
-    ref();
+    m_keepAliveWhileLocking = this;
     m_processLock.lock();
 }
 
 void MediaElementAudioSourceNode::unlock()
 {
     m_processLock.unlock();
-    deref();
+    m_keepAliveWhileLocking.clear();
 }
 
 void MediaElementAudioSourceNode::trace(Visitor* visitor)

@@ -89,7 +89,7 @@ private:
     unsigned m_numberOfOutputChannels;
 
     RefPtr<AudioBus> m_internalInputBus;
-
+    RefPtr<ScriptProcessorNode> m_keepAliveWhileEventDispatching;
     // Synchronize process() with fireProcessEvent().
     mutable Mutex m_processEventLock;
 };

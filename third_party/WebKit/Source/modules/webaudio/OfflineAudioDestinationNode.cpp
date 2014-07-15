@@ -81,7 +81,7 @@ void OfflineAudioDestinationNode::startRendering()
 
     if (!m_startedRendering) {
         m_startedRendering = true;
-        ref(); // See corresponding deref() call in notifyCompleteDispatch().
+        m_keepAliveWhileRendering = this;
         m_renderThread = adoptPtr(blink::Platform::current()->createThread("Offline Audio Renderer"));
         m_renderThread->postTask(new Task(WTF::bind(&OfflineAudioDestinationNode::offlineRender, this)));
     }
@@ -143,7 +143,7 @@ void OfflineAudioDestinationNode::notifyCompleteDispatch(void* userData)
         return;
 
     destinationNode->notifyComplete();
-    destinationNode->deref();
+    destinationNode->m_keepAliveWhileRendering.clear();
 }
 
 void OfflineAudioDestinationNode::notifyComplete()

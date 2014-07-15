@@ -64,7 +64,7 @@ private:
 
     // This AudioNode renders into this AudioBuffer.
     RefPtrWillBeMember<AudioBuffer> m_renderTarget;
-
+    RefPtr<OfflineAudioDestinationNode> m_keepAliveWhileRendering;
     // Temporary AudioBus for each render quantum.
     RefPtr<AudioBus> m_renderBus;
 

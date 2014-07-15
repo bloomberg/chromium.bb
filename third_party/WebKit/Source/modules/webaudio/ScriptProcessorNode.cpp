@@ -220,7 +220,7 @@ void ScriptProcessorNode::process(size_t framesToProcess)
             outputBuffer->zero();
         } else {
             // Reference ourself so we don't accidentally get deleted before fireProcessEvent() gets called.
-            ref();
+            m_keepAliveWhileEventDispatching = this;
 
             // Fire the event on the main thread, not this one (which is the realtime audio thread).
             m_doubleBufferIndexForEvent = m_doubleBufferIndex;
@@ -239,9 +239,7 @@ void ScriptProcessorNode::fireProcessEventDispatch(void* userData)
         return;
 
     jsAudioNode->fireProcessEvent();
-
-    // De-reference to match the ref() call in process().
-    jsAudioNode->deref();
+    jsAudioNode->m_keepAliveWhileEventDispatching.clear();
 }
 
 void ScriptProcessorNode::fireProcessEvent()
