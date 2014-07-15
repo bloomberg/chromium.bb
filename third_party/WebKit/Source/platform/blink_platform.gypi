@@ -294,7 +294,6 @@
       'exported/WebPrerenderingSupport.cpp',
       'exported/WebRTCConfiguration.cpp',
       'exported/WebRTCICECandidate.cpp',
-      'exported/WebRTCOfferOptions.cpp',
       'exported/WebRTCSessionDescription.cpp',
       'exported/WebRTCSessionDescriptionRequest.cpp',
       'exported/WebRTCStatsRequest.cpp',

@@ -39,7 +39,6 @@ class WebRTCConfiguration;
 class WebRTCDTMFSenderHandler;
 class WebRTCDataChannelHandler;
 class WebRTCICECandidate;
-class WebRTCOfferOptions;
 class WebRTCPeerConnectionHandlerClient;
 class WebRTCSessionDescription;
 class WebRTCSessionDescriptionRequest;
@@ -55,7 +54,6 @@ public:
     virtual bool initialize(const WebRTCConfiguration&, const WebMediaConstraints&) = 0;
 
     virtual void createOffer(const WebRTCSessionDescriptionRequest&, const WebMediaConstraints&) = 0;
-    virtual void createOffer(const WebRTCSessionDescriptionRequest&, const WebRTCOfferOptions&) { }
     virtual void createAnswer(const WebRTCSessionDescriptionRequest&, const WebMediaConstraints&) = 0;
     virtual void setLocalDescription(const WebRTCVoidRequest&, const WebRTCSessionDescription&) = 0;
     virtual void setRemoteDescription(const WebRTCVoidRequest&, const WebRTCSessionDescription&) = 0;
