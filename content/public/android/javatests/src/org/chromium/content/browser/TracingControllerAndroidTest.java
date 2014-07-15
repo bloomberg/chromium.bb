@@ -61,5 +61,6 @@ public class TracingControllerAndroidTest extends ContentShellTestBase {
         // It says it stopped, so it should have written the output file.
         assertTrue(file.exists());
         assertTrue(file.delete());
+        tracingController.destroy();
     }
 }

@@ -242,6 +242,15 @@ public class TracingControllerAndroid {
 
     @Override
     protected void finalize() {
+        // Ensure that destroy() was called.
+        assert mNativeTracingControllerAndroid == 0;
+    }
+
+    /**
+     * Clean up the C++ side of this class.
+     * After the call, this class instance shouldn't be used.
+     */
+    public void destroy() {
         if (mNativeTracingControllerAndroid != 0) {
             nativeDestroy(mNativeTracingControllerAndroid);
             mNativeTracingControllerAndroid = 0;

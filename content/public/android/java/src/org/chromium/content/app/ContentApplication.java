@@ -56,6 +56,7 @@ public class ContentApplication extends BaseChromiumApplication {
     public void onTerminate() {
         try {
             getTracingController().unregisterReceiver(this);
+            getTracingController().destroy();
         } catch (SecurityException e) {
             // Happens if the process is isolated. Ignore.
         }
