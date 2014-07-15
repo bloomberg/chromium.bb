@@ -203,11 +203,13 @@ public:
         bool m_mustReleaseLock;
     };
 
-    // In AudioNode::deref() a tryLock() is used for calling finishDeref(), but if it fails keep track here.
+    // In AudioNode::breakConnection() and deref(), a tryLock() is used for
+    // calling actual processing, but if it fails keep track here.
+    void addDeferredBreakConnection(AudioNode&);
     void addDeferredFinishDeref(AudioNode*);
 
-    // In the audio thread at the start of each render cycle, we'll call handleDeferredFinishDerefs().
-    void handleDeferredFinishDerefs();
+    // In the audio thread at the start of each render cycle, we'll call this.
+    void handleDeferredAudioNodeTasks();
 
     // Only accessed when the graph lock is held.
     void markSummingJunctionDirty(AudioSummingJunction*);
@@ -306,6 +308,7 @@ private:
     volatile ThreadIdentifier m_graphOwnerThread; // if the lock is held then this is the thread which owns it, otherwise == UndefinedThreadIdentifier
 
     // Only accessed in the audio thread.
+    Vector<AudioNode*> m_deferredBreakConnectionList;
     Vector<AudioNode*> m_deferredFinishDerefList;
 
     RefPtrWillBeMember<AudioBuffer> m_renderTarget;

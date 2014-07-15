@@ -108,6 +108,7 @@ public:
 
     // Can be called from main thread or context's audio thread.  It must be called while the context's graph lock is held.
     void finishDeref();
+    void breakConnectionWithLock();
 
     // The AudioNodeInput(s) (if any) will already have their input data available when process() is called.
     // Subclasses will take this input data and put the results in the AudioBus(s) of its AudioNodeOutput(s) (if any).
@@ -229,7 +230,6 @@ private:
     // Ref-counting
     volatile int m_normalRefCount;
     volatile int m_connectionRefCount;
-    bool m_wasDisconnected;
 
     bool m_isMarkedForDeletion;
     bool m_isDisabled;

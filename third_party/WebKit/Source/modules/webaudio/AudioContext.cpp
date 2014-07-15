@@ -681,6 +681,12 @@ bool AudioContext::isGraphOwner() const
     return currentThread() == m_graphOwnerThread;
 }
 
+void AudioContext::addDeferredBreakConnection(AudioNode& node)
+{
+    ASSERT(isAudioThread());
+    m_deferredBreakConnectionList.append(&node);
+}
+
 void AudioContext::addDeferredFinishDeref(AudioNode* node)
 {
     ASSERT(isAudioThread());
@@ -715,8 +721,8 @@ void AudioContext::handlePostRenderTasks()
     // from the render graph (in which case they'll render silence).
     bool mustReleaseLock;
     if (tryLock(mustReleaseLock)) {
-        // Take care of finishing any derefs where the tryLock() failed previously.
-        handleDeferredFinishDerefs();
+        // Take care of AudioNode tasks where the tryLock() failed previously.
+        handleDeferredAudioNodeTasks();
 
         // Dynamically clean up nodes which are no longer needed.
         derefFinishedSourceNodes();
@@ -736,14 +742,16 @@ void AudioContext::handlePostRenderTasks()
     }
 }
 
-void AudioContext::handleDeferredFinishDerefs()
+void AudioContext::handleDeferredAudioNodeTasks()
 {
     ASSERT(isAudioThread() && isGraphOwner());
-    for (unsigned i = 0; i < m_deferredFinishDerefList.size(); ++i) {
-        AudioNode* node = m_deferredFinishDerefList[i];
-        node->finishDeref();
-    }
 
+    for (unsigned i = 0; i < m_deferredBreakConnectionList.size(); ++i)
+        m_deferredBreakConnectionList[i]->breakConnectionWithLock();
+    m_deferredBreakConnectionList.clear();
+
+    for (unsigned i = 0; i < m_deferredFinishDerefList.size(); ++i)
+        m_deferredFinishDerefList[i]->finishDeref();
     m_deferredFinishDerefList.clear();
 }
 

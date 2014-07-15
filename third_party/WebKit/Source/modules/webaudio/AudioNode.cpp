@@ -55,7 +55,6 @@ AudioNode::AudioNode(AudioContext* context, float sampleRate)
     , m_lastNonSilentTime(-1)
     , m_normalRefCount(1) // start out with normal refCount == 1 (like WTF::RefCounted class)
     , m_connectionRefCount(0)
-    , m_wasDisconnected(false)
     , m_isMarkedForDeletion(false)
     , m_isDisabled(false)
     , m_channelCount(2)
@@ -492,8 +491,9 @@ void AudioNode::makeConnection()
 
 void AudioNode::deref()
 {
-    // The actually work for deref happens completely within the audio context's graph lock.
-    // In the case of the audio thread, we must use a tryLock to avoid glitches.
+    // The actual work for deref happens completely within the audio context's
+    // graph lock. In the case of the audio thread, we must use a tryLock to
+    // avoid glitches.
     bool hasLock = false;
     bool mustReleaseLock = false;
 
@@ -526,9 +526,39 @@ void AudioNode::deref()
 
 void AudioNode::breakConnection()
 {
+    // The actual work for deref happens completely within the audio context's
+    // graph lock. In the case of the audio thread, we must use a tryLock to
+    // avoid glitches.
+    bool hasLock = false;
+    bool mustReleaseLock = false;
+
+    if (context()->isAudioThread()) {
+        // Real-time audio thread must not contend lock (to avoid glitches).
+        hasLock = context()->tryLock(mustReleaseLock);
+    } else {
+        context()->lock(mustReleaseLock);
+        hasLock = true;
+    }
+
+    if (hasLock) {
+        breakConnectionWithLock();
+
+        if (mustReleaseLock)
+            context()->unlock();
+    } else {
+        // We were unable to get the lock, so put this in a list to finish up
+        // later.
+        ASSERT(context()->isAudioThread());
+        context()->addDeferredBreakConnection(*this);
+    }
+}
+
+void AudioNode::breakConnectionWithLock()
+{
     ASSERT(m_normalRefCount > 0);
     atomicDecrement(&m_connectionRefCount);
-    m_wasDisconnected = true;
+    if (m_connectionRefCount == 0 && m_normalRefCount > 1)
+        disableOutputsIfNecessary();
 }
 
 void AudioNode::finishDeref()
@@ -541,12 +571,6 @@ void AudioNode::finishDeref()
 #if DEBUG_AUDIONODE_REFERENCES
     fprintf(stderr, "%p: %d: AudioNode::deref() %d %d\n", this, nodeType(), m_normalRefCount, m_connectionRefCount);
 #endif
-
-    if (m_wasDisconnected) {
-        if (m_connectionRefCount == 0 && m_normalRefCount > 0)
-            disableOutputsIfNecessary();
-        m_wasDisconnected = false;
-    }
 
     if (!m_normalRefCount && !m_isMarkedForDeletion) {
         // All references are gone - we need to go away.
