@@ -58,6 +58,7 @@ For more information of cros build usage:
     self.ssh_private_key = None
     # The installation root of packages.
     self.root = None
+    self.ping = True
 
   @classmethod
   def AddParser(cls, parser):
@@ -95,6 +96,9 @@ For more information of cros build usage:
     parser.add_argument(
         '--private-key', type='path', default=None,
         help='SSH identify file (private key).')
+    parser.add_argument(
+        '--no-ping', dest='ping', action='store_false', default=True,
+        help='Do not ping the device before attempting to connect to it.')
 
   def GetLatestPackage(self, board, pkg):
     """Returns the path to the latest |pkg| for |board|."""
@@ -239,6 +243,7 @@ For more information of cros build usage:
     self.strip = self.options.strip
     self.clean_binpkg = self.options.clean_binpkg
     self.root = self.options.root
+    self.ping = self.options.ping
     device = self.options.device
     # pylint: disable=E1101
     if urlparse.urlparse(device).scheme == '':
@@ -262,8 +267,8 @@ For more information of cros build usage:
     try:
       with remote_access.ChromiumOSDeviceHandler(
           self.ssh_hostname, port=self.ssh_port, username=self.ssh_username,
-          private_key=self.ssh_private_key,
-          base_dir=self.DEVICE_BASE_DIR) as device:
+          private_key=self.ssh_private_key, base_dir=self.DEVICE_BASE_DIR,
+          ping=self.ping) as device:
         board = cros_build_lib.GetBoard(device_board=device.board,
                                         override_board=self.options.board)
         logging.info('Board is %s', board)

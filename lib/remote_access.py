@@ -443,7 +443,7 @@ class RemoteDevice(object):
 
   def __init__(self, hostname, port=None, username=None,
                base_dir=DEFAULT_BASE_DIR, connect_settings=None,
-               private_key=None, debug_level=logging.DEBUG):
+               private_key=None, debug_level=logging.DEBUG, ping=True):
     """Initializes a RemoteDevice object.
 
     Args:
@@ -454,6 +454,7 @@ class RemoteDevice(object):
       connect_settings: Default SSH connection settings.
       private_key: The identify file to pass to `ssh -i`.
       debug_level: Setting debug level for logging.
+      ping: Whether to ping the device before attempting to connect.
     """
     self.hostname = hostname
     self.port = port
@@ -468,7 +469,7 @@ class RemoteDevice(object):
     # Setup a working directory on the device.
     self.base_dir = base_dir
 
-    if not self.Pingable():
+    if ping and not self.Pingable():
       raise DeviceNotPingable('Device %s is not pingable.' % self.hostname)
 
     # Do not call RunCommand here because we have not set up work directory yet.

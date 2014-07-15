@@ -405,7 +405,7 @@ class RemoteDeviceUpdater(object):
   def __init__(self, ssh_hostname, ssh_port, image, stateful_update=True,
                rootfs_update=True, clobber_stateful=False, reboot=True,
                board=None, src_image_to_delta=None, wipe=True, debug=False,
-               yes=False):
+               yes=False, ping=True):
     """Initializes RemoteDeviceUpdater"""
     if not stateful_update and not rootfs_update:
       cros_build_lib.Die('No update operation to perform. Use -h to see usage.')
@@ -421,6 +421,7 @@ class RemoteDeviceUpdater(object):
     self.clobber_stateful = clobber_stateful
     self.reboot = reboot
     self.debug = debug
+    self.ping = ping
     # Do not wipe if debug is set.
     self.wipe = wipe and not debug
     self.yes = yes
@@ -726,7 +727,7 @@ class RemoteDeviceUpdater(object):
     try:
       with remote_access.ChromiumOSDeviceHandler(
           self.ssh_hostname, port=self.ssh_port,
-          base_dir=self.DEVICE_BASE_DIR) as device:
+          base_dir=self.DEVICE_BASE_DIR, ping=self.ping) as device:
 
         board = cros_build_lib.GetBoard(device_board=device.board,
                                         override_board=self.board,
@@ -926,6 +927,9 @@ Examples:
     update.add_argument(
         '--clobber-stateful', action='store_true', default=False,
         help='Clobber stateful partition when performing update.')
+    update.add_argument(
+        '--no-ping', dest='ping', action='store_false', default=True,
+        help='Do not ping the device before attempting to connect to it.')
 
   def __init__(self, options):
     """Initializes cros flash."""
@@ -989,7 +993,8 @@ Examples:
             reboot=self.options.reboot,
             wipe=self.options.wipe,
             debug=self.options.debug,
-            yes=self.options.yes)
+            yes=self.options.yes,
+            ping=self.options.ping)
 
         # Perform device update.
         updater.Run()
