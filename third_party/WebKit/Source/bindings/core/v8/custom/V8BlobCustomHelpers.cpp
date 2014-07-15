@@ -106,10 +106,13 @@ bool ParsedProperties::parseBlobPropertyBag(v8::Local<v8::Value> propertyBag, co
     return true;
 }
 
-bool processBlobParts(v8::Local<v8::Object> blobParts, uint32_t blobPartsLength, bool normalizeLineEndingsToNative, BlobData& blobData, v8::Isolate* isolate)
+bool processBlobParts(v8::Local<v8::Object> blobParts, bool normalizeLineEndingsToNative, BlobData& blobData, v8::Isolate* isolate)
 {
-    for (uint32_t i = 0; i < blobPartsLength; ++i) {
-        v8::Local<v8::Value> item = blobParts->Get(v8::Uint32::New(isolate, i));
+    // FIXME: handle sequences based on ES6 @@iterator, see http://crbug.com/393866
+    v8::Local<v8::Array> array = v8::Local<v8::Array>::Cast(blobParts);
+    uint32_t length = v8::Local<v8::Array>::Cast(blobParts)->Length();
+    for (uint32_t i = 0; i < length; ++i) {
+        v8::Local<v8::Value> item = array->Get(i);
         if (item.IsEmpty())
             return false;
 

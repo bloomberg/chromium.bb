@@ -45,16 +45,11 @@ void V8Blob::constructorCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
         return;
     }
 
-    uint32_t length = 0;
-    if (info[0]->IsArray()) {
-        length = v8::Local<v8::Array>::Cast(info[0])->Length();
-    } else {
-        const int sequenceArgumentIndex = 0;
-        if (toV8Sequence(info[sequenceArgumentIndex], length, info.GetIsolate()).IsEmpty()) {
-            exceptionState.throwTypeError(ExceptionMessages::notAnArrayTypeArgumentOrValue(sequenceArgumentIndex + 1));
-            exceptionState.throwIfNeeded();
-            return;
-        }
+    // FIXME: handle sequences based on ES6 @@iterator, see http://crbug.com/393866
+    if (!info[0]->IsArray()) {
+        exceptionState.throwTypeError(ExceptionMessages::argumentNullOrIncorrectType(1, "Array"));
+        exceptionState.throwIfNeeded();
+        return;
     }
 
     V8BlobCustomHelpers::ParsedProperties properties(false);
@@ -73,8 +68,7 @@ void V8Blob::constructorCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 
     OwnPtr<BlobData> blobData = BlobData::create();
     blobData->setContentType(properties.contentType());
-    v8::Local<v8::Object> blobParts = v8::Local<v8::Object>::Cast(info[0]);
-    if (!V8BlobCustomHelpers::processBlobParts(blobParts, length, properties.normalizeLineEndingsToNative(), *blobData, info.GetIsolate()))
+    if (!V8BlobCustomHelpers::processBlobParts(v8::Local<v8::Object>::Cast(info[0]), properties.normalizeLineEndingsToNative(), *blobData, info.GetIsolate()))
         return;
 
     long long blobSize = blobData->length();

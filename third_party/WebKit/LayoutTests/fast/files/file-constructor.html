@@ -25,11 +25,12 @@ shouldBeTrue("(new File([], 1)) instanceof window.File");
 shouldBeTrue("(new File([], '')) instanceof window.File");
 shouldBeTrue("(new File([], document)) instanceof window.File");
 
-// Test invalid blob parts.
-shouldThrow("new File('hello', 'world.html')", '"TypeError: Failed to construct \'File\': The 1st argument is neither an array, nor does it have indexed properties."');
-shouldThrow("new File(0, 'world.html')", '"TypeError: Failed to construct \'File\': The 1st argument is neither an array, nor does it have indexed properties."');
+// Test invalid file parts.
+shouldThrow("new File('hello', 'world.html')", '"TypeError: Failed to construct \'File\': The 1st argument provided is either null, or an invalid Array object."');
+shouldThrow("new File(0, 'world.html')", '"TypeError: Failed to construct \'File\': The 1st argument provided is either null, or an invalid Array object."');
+shouldThrow("new File(null, 'world.html')", '"TypeError: Failed to construct \'File\': The 1st argument provided is either null, or an invalid Array object."');
 
-// Test valid blob parts.
+// Test valid file parts.
 shouldBeTrue("(new File([], 'world.html')) instanceof window.File");
 shouldBeTrue("(new File(['stringPrimitive'], 'world.html')) instanceof window.File");
 shouldBeTrue("(new File([String('stringObject')], 'world.html')) instanceof window.File");
@@ -138,23 +139,7 @@ shouldBe("new File([new Blob([(new Int32Array(100)).buffer]), new File([new Uint
 shouldBe("new Blob([new Blob([new Int32Array(100)]), new File([new Uint16Array(100)], 'world.txt'), new Uint8Array(100), new Float32Array(100), new DataView(new ArrayBuffer(100))]).size", "1200");
 shouldBe("new Blob([new Blob([(new Int32Array(100)).buffer]), new File([new Uint16Array(100).buffer], 'world.txt'), (new Uint8Array(100)).buffer, (new Float32Array(100)).buffer, (new DataView(new ArrayBuffer(100))).buffer]).size", "1200");
 
-// Test passing blob parts in sequences.
-shouldBeTrue("new File({length: 0}, 'world.txt') instanceof window.File");
-shouldBe("new File({length: 0}, 'world.txt').size", "0");
-shouldBe("new File({length: 1, 0: 'string'}, 'world.txt').size", "6");
-shouldBe("new File({length: 2, 0: new Uint8Array(100), 1: new Int16Array(100)}, 'world.txt').size", "300");
-shouldBe("new File({length: 1, 0: 'string'}, 'world.txt', {type: 'text/html'}).type", "'text/html'");
-shouldThrow("new File({length: 0}, 'world.txt', {endings:'illegal'})", "'TypeError: Failed to construct \\'File\\': The \\'endings\\' property must be either \\'transparent\\' or \\'native\\'.'");
-
-// Test passing blog parts in a sequence-like object that throws on property access.
-var throwingSequence = {length: 4, 0: 'hello', 3: 'world'};
-Object.defineProperty(throwingSequence, "1", {
-    get: function() { throw new Error("Misbehaving property"); },
-    enumerable: true, configurable: true
-});
-Object.defineProperty(throwingSequence, "2", {
-    get: function() { throw new Error("This should not be thrown"); },
-    enumerable: true, configurable: true
-});
-shouldThrow("new File(throwingSequence, 'world.txt')", "'Error: Misbehaving property'");
+// Test passing file parts in (deprecated and unsupported) objects with indexed properties.
+shouldThrow("new File({length: 0}, 'world.txt')", "'TypeError: Failed to construct \\'File\\': The 1st argument provided is either null, or an invalid Array object.'");
+shouldThrow("new File({length: 1, 0: 'string'}, 'world.txt')", "'TypeError: Failed to construct \\'File\\': The 1st argument provided is either null, or an invalid Array object.'");
 </script>

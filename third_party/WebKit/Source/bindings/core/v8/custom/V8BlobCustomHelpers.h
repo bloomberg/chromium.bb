@@ -84,7 +84,7 @@ private:
 // Appends the blobParts passed to a Blob or File constructor into a BlobData.
 // http://www.w3.org/TR/FileAPI/#constructorParams
 // Returns true if everything went well, false if a JS exception was thrown.
-bool processBlobParts(v8::Local<v8::Object> blobParts, uint32_t blobPartsLength, bool normalizeLineEndingsToNative, BlobData&, v8::Isolate*);
+bool processBlobParts(v8::Local<v8::Object> blobParts, bool normalizeLineEndingsToNative, BlobData&, v8::Isolate*);
 
 } // namespace V8BlobCustomHelpers
 
