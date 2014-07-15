@@ -2490,7 +2490,7 @@ TEST_F(WidgetTest, IsActiveFromDestroy) {
   Widget::InitParams child_params =
       CreateParams(Widget::InitParams::TYPE_POPUP);
   child_params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  child_params.context = parent_widget.GetNativeView();
+  child_params.context = parent_widget.GetNativeWindow();
   child_widget.Init(child_params);
   child_widget.AddObserver(&observer);
   child_widget.Show();

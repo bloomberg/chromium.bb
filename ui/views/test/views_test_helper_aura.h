@@ -35,7 +35,7 @@ class ViewsTestHelperAura : public ViewsTestHelper {
   // Overridden from ViewsTestHelper:
   virtual void SetUp() OVERRIDE;
   virtual void TearDown() OVERRIDE;
-  virtual gfx::NativeView GetContext() OVERRIDE;
+  virtual gfx::NativeWindow GetContext() OVERRIDE;
 
  private:
   ui::ContextFactory* context_factory_;

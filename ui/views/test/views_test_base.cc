@@ -65,7 +65,7 @@ Widget::InitParams ViewsTestBase::CreateParams(
   return params;
 }
 
-gfx::NativeView ViewsTestBase::GetContext() {
+gfx::NativeWindow ViewsTestBase::GetContext() {
   return test_helper_->GetContext();
 }
 

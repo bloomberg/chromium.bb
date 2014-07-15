@@ -15,7 +15,7 @@
 namespace {
 
 void ShowContentExampleWindow(content::BrowserContext* browser_context,
-                              gfx::NativeView window_context) {
+                              gfx::NativeWindow window_context) {
   views::examples::ShowExamplesWindowWithContent(views::examples::QUIT_ON_CLOSE,
                                                  browser_context,
                                                  window_context);

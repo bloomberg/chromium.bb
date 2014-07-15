@@ -31,7 +31,7 @@ DialogDelegate::~DialogDelegate() {
 
 // static
 Widget* DialogDelegate::CreateDialogWidget(WidgetDelegate* delegate,
-                                           gfx::NativeView context,
+                                           gfx::NativeWindow context,
                                            gfx::NativeView parent) {
   views::Widget* widget = new views::Widget;
   views::Widget::InitParams params;

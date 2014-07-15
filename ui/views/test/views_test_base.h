@@ -47,7 +47,7 @@ class ViewsTestBase : public PlatformTest {
 
   // Returns a context view. In aura builds, this will be the
   // RootWindow. Everywhere else, NULL.
-  gfx::NativeView GetContext();
+  gfx::NativeWindow GetContext();
 
  private:
   base::MessageLoopForUI message_loop_;

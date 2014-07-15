@@ -193,16 +193,15 @@ void OmniboxPopupContentsView::UpdatePopupAppearance() {
   target_bounds_ = new_target_bounds;
 
   if (popup_ == NULL) {
-    gfx::NativeView popup_parent =
-        location_bar_view_->GetWidget()->GetNativeView();
+    views::Widget* popup_parent = location_bar_view_->GetWidget();
 
     // If the popup is currently closed, we need to create it.
     popup_ = (new AutocompletePopupWidget)->AsWeakPtr();
     views::Widget::InitParams params(views::Widget::InitParams::TYPE_POPUP);
     params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
-    params.parent = popup_parent;
+    params.parent = popup_parent->GetNativeView();
     params.bounds = GetPopupBounds();
-    params.context = popup_parent;
+    params.context = popup_parent->GetNativeWindow();
     popup_->Init(params);
     // Third-party software such as DigitalPersona identity verification can
     // hook the underlying window creation methods and use SendMessage to

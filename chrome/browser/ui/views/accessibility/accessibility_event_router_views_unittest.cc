@@ -140,7 +140,7 @@ class AccessibilityEventRouterViewsTest
   }
 
   views::Widget* CreateWindowWithContents(views::View* contents) {
-    gfx::NativeView context = NULL;
+    gfx::NativeWindow context = NULL;
 #if defined(USE_AURA)
     context = aura_test_helper_->root_window();
 #endif

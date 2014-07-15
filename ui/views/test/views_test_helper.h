@@ -36,7 +36,7 @@ class ViewsTestHelper {
 
   // Returns a context view. In aura builds, this will be the
   // RootWindow. Everywhere else, NULL.
-  virtual gfx::NativeView GetContext();
+  virtual gfx::NativeWindow GetContext();
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ViewsTestHelper);

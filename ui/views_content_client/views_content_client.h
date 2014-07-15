@@ -25,7 +25,7 @@ namespace ui {
 // Sample usage:
 //
 // void InitMyApp(content::BrowserContext* browser_context,
-//                gfx::NativeView window_context) {
+//                gfx::NativeWindow window_context) {
 //   // Create desired windows and views here. Runs on the UI thread.
 // }
 //
@@ -46,7 +46,7 @@ class VIEWS_CONTENT_CLIENT_EXPORT ViewsContentClient {
  public:
   typedef base::Callback<
       void(content::BrowserContext* browser_context,
-           gfx::NativeView window_context)> Task;
+           gfx::NativeWindow window_context)> Task;
 
 #if defined(OS_WIN)
   ViewsContentClient(HINSTANCE instance,

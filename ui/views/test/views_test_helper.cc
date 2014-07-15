@@ -18,7 +18,7 @@ void ViewsTestHelper::SetUp() {
 void ViewsTestHelper::TearDown() {
 }
 
-gfx::NativeView ViewsTestHelper::GetContext() {
+gfx::NativeWindow ViewsTestHelper::GetContext() {
   return NULL;
 }
 

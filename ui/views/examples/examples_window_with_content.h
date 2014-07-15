@@ -20,7 +20,7 @@ namespace examples {
 VIEWS_EXAMPLES_WITH_CONTENT_EXPORT void ShowExamplesWindowWithContent(
     Operation operation,
     content::BrowserContext* browser_context,
-    gfx::NativeView window_context);
+    gfx::NativeWindow window_context);
 
 }  // namespace examples
 }  // namespace views

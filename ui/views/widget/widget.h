@@ -245,7 +245,7 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
     // |parent|. If you pass a RootWindow to |context|, we ask that RootWindow
     // where it wants your window placed.) NULL is not allowed if you are using
     // aura.
-    gfx::NativeView context;
+    gfx::NativeWindow context;
     // If true, forces the window to be shown in the taskbar, even for window
     // types that do not appear in the taskbar by default (popup and bubble).
     bool force_show_in_taskbar;
@@ -280,9 +280,9 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
 
   // Creates a decorated window Widget in the same desktop context as |context|.
   static Widget* CreateWindowWithContext(WidgetDelegate* delegate,
-                                         gfx::NativeView context);
+                                         gfx::NativeWindow context);
   static Widget* CreateWindowWithContextAndBounds(WidgetDelegate* delegate,
-                                                  gfx::NativeView context,
+                                                  gfx::NativeWindow context,
                                                   const gfx::Rect& bounds);
 
   // Closes all Widgets that aren't identified as "secondary widgets". Called

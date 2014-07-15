@@ -29,7 +29,7 @@ enum Operation {
 // window should be created (see |Widget::InitParams::context| for details).
 VIEWS_EXAMPLES_EXPORT void ShowExamplesWindow(
     Operation operation,
-    gfx::NativeView window_context,
+    gfx::NativeWindow window_context,
     scoped_ptr<ScopedVector<ExampleBase> > extra_examples);
 
 }  // namespace examples

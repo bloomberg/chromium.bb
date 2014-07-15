@@ -38,7 +38,7 @@ void ViewsTestHelperAura::TearDown() {
   CHECK(!wm::ScopedCaptureClient::IsActive());
 }
 
-gfx::NativeView ViewsTestHelperAura::GetContext() {
+gfx::NativeWindow ViewsTestHelperAura::GetContext() {
   return aura_test_helper_->root_window();
 }
 
