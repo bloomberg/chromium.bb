@@ -51,6 +51,8 @@ class DeviceCloudPolicyManagerChromeOS : public CloudPolicyManager {
   // Gets/Sets the device requisition.
   std::string GetDeviceRequisition() const;
   void SetDeviceRequisition(const std::string& requisition);
+  bool IsRemoraRequisition() const;
+  bool IsSharkRequisition() const;
 
   // CloudPolicyManager:
   virtual void Shutdown() OVERRIDE;

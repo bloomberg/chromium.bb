@@ -158,6 +158,14 @@ void DeviceCloudPolicyManagerChromeOS::SetDeviceRequisition(
   }
 }
 
+bool DeviceCloudPolicyManagerChromeOS::IsRemoraRequisition() const {
+  return GetDeviceRequisition() == kRemoraRequisition;
+}
+
+bool DeviceCloudPolicyManagerChromeOS::IsSharkRequisition() const {
+  return GetDeviceRequisition() == kSharkRequisition;
+}
+
 void DeviceCloudPolicyManagerChromeOS::Shutdown() {
   state_keys_update_subscription_.reset();
   CloudPolicyManager::Shutdown();
