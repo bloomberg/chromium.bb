@@ -20,7 +20,7 @@ scoped_ptr<CastReceiver> CastReceiver::Create(
     scoped_refptr<CastEnvironment> cast_environment,
     const FrameReceiverConfig& audio_config,
     const FrameReceiverConfig& video_config,
-    transport::PacketSender* const packet_sender) {
+    PacketSender* const packet_sender) {
   return scoped_ptr<CastReceiver>(new CastReceiverImpl(
       cast_environment, audio_config, video_config, packet_sender));
 }
@@ -29,7 +29,7 @@ CastReceiverImpl::CastReceiverImpl(
     scoped_refptr<CastEnvironment> cast_environment,
     const FrameReceiverConfig& audio_config,
     const FrameReceiverConfig& video_config,
-    transport::PacketSender* const packet_sender)
+    PacketSender* const packet_sender)
     : cast_environment_(cast_environment),
       pacer_(cast_environment->Clock(),
              cast_environment->Logging(),
@@ -76,7 +76,7 @@ void CastReceiverImpl::DispatchReceivedPacket(scoped_ptr<Packet> packet) {
                  base::Passed(&packet)));
 }
 
-transport::PacketReceiverCallback CastReceiverImpl::packet_receiver() {
+PacketReceiverCallback CastReceiverImpl::packet_receiver() {
   return base::Bind(&CastReceiverImpl::DispatchReceivedPacket,
                     // TODO(miu): This code structure is dangerous, since the
                     // callback could be stored and then invoked after
@@ -122,7 +122,7 @@ void CastReceiverImpl::RequestEncodedVideoFrame(
 
 void CastReceiverImpl::DecodeEncodedAudioFrame(
     const AudioFrameDecodedCallback& callback,
-    scoped_ptr<transport::EncodedFrame> encoded_frame) {
+    scoped_ptr<EncodedFrame> encoded_frame) {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
   if (!encoded_frame) {
     callback.Run(make_scoped_ptr<AudioBus>(NULL), base::TimeTicks(), false);
@@ -150,7 +150,7 @@ void CastReceiverImpl::DecodeEncodedAudioFrame(
 
 void CastReceiverImpl::DecodeEncodedVideoFrame(
     const VideoFrameDecodedCallback& callback,
-    scoped_ptr<transport::EncodedFrame> encoded_frame) {
+    scoped_ptr<EncodedFrame> encoded_frame) {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
   if (!encoded_frame) {
     callback.Run(

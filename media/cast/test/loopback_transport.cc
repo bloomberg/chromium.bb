@@ -17,18 +17,18 @@ namespace {
 class LoopBackPacketPipe : public test::PacketPipe {
  public:
   LoopBackPacketPipe(
-      const transport::PacketReceiverCallback& packet_receiver)
+      const PacketReceiverCallback& packet_receiver)
       : packet_receiver_(packet_receiver) {}
 
   virtual ~LoopBackPacketPipe() {}
 
   // PacketPipe implementations.
-  virtual void Send(scoped_ptr<transport::Packet> packet) OVERRIDE {
+  virtual void Send(scoped_ptr<Packet> packet) OVERRIDE {
     packet_receiver_.Run(packet.Pass());
   }
 
  private:
-  transport::PacketReceiverCallback packet_receiver_;
+  PacketReceiverCallback packet_receiver_;
 
   DISALLOW_COPY_AND_ASSIGN(LoopBackPacketPipe);
 };
@@ -43,7 +43,7 @@ LoopBackTransport::LoopBackTransport(
 LoopBackTransport::~LoopBackTransport() {
 }
 
-bool LoopBackTransport::SendPacket(transport::PacketRef packet,
+bool LoopBackTransport::SendPacket(PacketRef packet,
                                    const base::Closure& cb) {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
   scoped_ptr<Packet> packet_copy(new Packet(packet->data));
@@ -53,7 +53,7 @@ bool LoopBackTransport::SendPacket(transport::PacketRef packet,
 
 void LoopBackTransport::Initialize(
     scoped_ptr<test::PacketPipe> pipe,
-    const transport::PacketReceiverCallback& packet_receiver,
+    const PacketReceiverCallback& packet_receiver,
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
     base::TickClock* clock) {
   scoped_ptr<test::PacketPipe> loopback_pipe(

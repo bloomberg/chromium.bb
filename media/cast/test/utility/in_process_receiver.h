@@ -10,7 +10,8 @@
 #include "base/memory/weak_ptr.h"
 #include "media/base/audio_bus.h"
 #include "media/cast/cast_config.h"
-#include "media/cast/transport/cast_transport_config.h"
+#include "media/cast/net/cast_transport_config.h"
+#include "net/base/ip_endpoint.h"
 
 namespace base {
 class TimeTicks;
@@ -29,10 +30,7 @@ namespace cast {
 
 class CastEnvironment;
 class CastReceiver;
-
-namespace transport {
 class UdpTransport;
-}  // namespace transport
 
 // Common base functionality for an in-process Cast receiver.  This is meant to
 // be subclassed with the OnAudioFrame() and OnVideoFrame() methods implemented,
@@ -85,7 +83,7 @@ class InProcessReceiver {
 
   // Callback for the transport to notify of status changes.  A default
   // implementation is provided here that simply logs socket errors.
-  virtual void UpdateCastTransportStatus(transport::CastTransportStatus status);
+  virtual void UpdateCastTransportStatus(CastTransportStatus status);
 
  private:
   friend class base::RefCountedThreadSafe<InProcessReceiver>;
@@ -108,7 +106,7 @@ class InProcessReceiver {
   const FrameReceiverConfig audio_config_;
   const FrameReceiverConfig video_config_;
 
-  scoped_ptr<transport::UdpTransport> transport_;
+  scoped_ptr<UdpTransport> transport_;
   scoped_ptr<CastReceiver> cast_receiver_;
 
   // NOTE: Weak pointers must be invalidated before all other member variables.

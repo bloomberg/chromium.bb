@@ -40,7 +40,7 @@ VideoSenderConfig::VideoSenderConfig()
       min_qp(kDefaultMinQp),
       max_frame_rate(kDefaultMaxFrameRate),
       max_number_of_video_buffers_used(kDefaultNumberOfVideoBuffers),
-      codec(transport::CODEC_VIDEO_VP8),
+      codec(CODEC_VIDEO_VP8),
       number_of_encode_threads(1) {}
 
 VideoSenderConfig::~VideoSenderConfig() {}
@@ -57,7 +57,7 @@ AudioSenderConfig::AudioSenderConfig()
       frequency(0),
       channels(0),
       bitrate(0),
-      codec(transport::CODEC_AUDIO_OPUS) {}
+      codec(CODEC_AUDIO_OPUS) {}
 
 AudioSenderConfig::~AudioSenderConfig() {}
 
@@ -71,7 +71,7 @@ FrameReceiverConfig::FrameReceiverConfig()
       frequency(0),
       channels(0),
       max_frame_rate(0),
-      codec(transport::CODEC_UNKNOWN) {}
+      codec(CODEC_UNKNOWN) {}
 
 FrameReceiverConfig::~FrameReceiverConfig() {}
 

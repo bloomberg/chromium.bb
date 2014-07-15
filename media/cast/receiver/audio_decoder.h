@@ -10,7 +10,7 @@
 #include "media/base/audio_bus.h"
 #include "media/cast/cast_config.h"
 #include "media/cast/cast_environment.h"
-#include "media/cast/transport/cast_transport_config.h"
+#include "media/cast/net/cast_transport_config.h"
 
 namespace media {
 namespace cast {
@@ -29,7 +29,7 @@ class AudioDecoder {
   AudioDecoder(const scoped_refptr<CastEnvironment>& cast_environment,
                int channels,
                int sampling_rate,
-               transport::Codec codec);
+               Codec codec);
   virtual ~AudioDecoder();
 
   // Returns STATUS_AUDIO_INITIALIZED if the decoder was successfully
@@ -44,7 +44,7 @@ class AudioDecoder {
   // monotonically-increasing by 1 for each successive call to this method.
   // When it is not, the decoder will assume one or more frames have been
   // dropped (e.g., due to packet loss), and will perform recovery actions.
-  void DecodeFrame(scoped_ptr<transport::EncodedFrame> encoded_frame,
+  void DecodeFrame(scoped_ptr<EncodedFrame> encoded_frame,
                    const DecodeFrameCallback& callback);
 
  private:

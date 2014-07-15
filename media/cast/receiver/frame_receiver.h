@@ -9,17 +9,17 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
-#include "media/cast/base/clock_drift_smoother.h"
 #include "media/cast/cast_config.h"
 #include "media/cast/cast_receiver.h"
-#include "media/cast/framer/framer.h"
+#include "media/cast/common/clock_drift_smoother.h"
+#include "media/cast/common/transport_encryption_handler.h"
 #include "media/cast/logging/logging_defines.h"
-#include "media/cast/rtcp/receiver_rtcp_event_subscriber.h"
-#include "media/cast/rtcp/rtcp.h"
-#include "media/cast/rtp_receiver/receiver_stats.h"
-#include "media/cast/rtp_receiver/rtp_parser/rtp_parser.h"
-#include "media/cast/rtp_receiver/rtp_receiver_defines.h"
-#include "media/cast/transport/utility/transport_encryption_handler.h"
+#include "media/cast/net/rtcp/receiver_rtcp_event_subscriber.h"
+#include "media/cast/net/rtcp/rtcp.h"
+#include "media/cast/net/rtp/framer.h"
+#include "media/cast/net/rtp/receiver_stats.h"
+#include "media/cast/net/rtp/rtp_parser.h"
+#include "media/cast/net/rtp/rtp_receiver_defines.h"
 
 namespace media {
 namespace cast {
@@ -50,7 +50,7 @@ class FrameReceiver : public RtpPayloadFeedback,
   FrameReceiver(const scoped_refptr<CastEnvironment>& cast_environment,
                 const FrameReceiverConfig& config,
                 EventMediaType event_media_type,
-                transport::PacedPacketSender* const packet_sender);
+                PacedPacketSender* const packet_sender);
 
   virtual ~FrameReceiver();
 
@@ -152,7 +152,7 @@ class FrameReceiver : public RtpPayloadFeedback,
   Rtcp rtcp_;
 
   // Decrypts encrypted frames.
-  transport::TransportEncryptionHandler decryptor_;
+  TransportEncryptionHandler decryptor_;
 
   // Outstanding callbacks to run to deliver on client requests for frames.
   std::list<ReceiveEncodedFrameCallback> frame_request_queue_;

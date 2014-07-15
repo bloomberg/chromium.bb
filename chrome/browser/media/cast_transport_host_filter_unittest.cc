@@ -82,18 +82,18 @@ TEST_F(CastTransportHostFilterTest, SimpleMessages) {
   CastHostMsg_New new_msg(kChannelId, receive_endpoint_);
   FakeSend(new_msg);
 
-  media::cast::transport::CastTransportRtpConfig audio_config;
+  media::cast::CastTransportRtpConfig audio_config;
   audio_config.stored_frames = 10;
   CastHostMsg_InitializeAudio init_audio_msg(kChannelId, audio_config);
   FakeSend(init_audio_msg);
 
-  media::cast::transport::CastTransportRtpConfig video_config;
+  media::cast::CastTransportRtpConfig video_config;
   video_config.stored_frames = 10;
   CastHostMsg_InitializeVideo init_video_msg(kChannelId, video_config);
   FakeSend(init_video_msg);
 
-  media::cast::transport::EncodedFrame audio_frame;
-  audio_frame.dependency = media::cast::transport::EncodedFrame::KEY;
+  media::cast::EncodedFrame audio_frame;
+  audio_frame.dependency = media::cast::EncodedFrame::KEY;
   audio_frame.frame_id = 1;
   audio_frame.referenced_frame_id = 1;
   audio_frame.rtp_timestamp = 47;
@@ -105,8 +105,8 @@ TEST_F(CastTransportHostFilterTest, SimpleMessages) {
       kChannelId, audio_frame);
   FakeSend(insert_coded_audio_frame);
 
-  media::cast::transport::EncodedFrame video_frame;
-  video_frame.dependency = media::cast::transport::EncodedFrame::KEY;
+  media::cast::EncodedFrame video_frame;
+  video_frame.dependency = media::cast::EncodedFrame::KEY;
   video_frame.frame_id = 1;
   video_frame.referenced_frame_id = 1;
   // Let's make sure we try a few kb so multiple packets
@@ -117,11 +117,11 @@ TEST_F(CastTransportHostFilterTest, SimpleMessages) {
       kChannelId, video_frame);
   FakeSend(insert_coded_video_frame);
 
-  media::cast::transport::SendRtcpFromRtpSenderData rtcp_data;
+  media::cast::SendRtcpFromRtpSenderData rtcp_data;
   rtcp_data.packet_type_flags = 0;
   rtcp_data.sending_ssrc = 0;
   rtcp_data.c_name = "FNRD";
-  media::cast::transport::RtcpDlrrReportBlock dlrr;
+  media::cast::RtcpDlrrReportBlock dlrr;
   dlrr.last_rr = 7;
   dlrr.delay_since_last_rr = 8;
   CastHostMsg_SendRtcpFromRtpSender rtcp_msg(

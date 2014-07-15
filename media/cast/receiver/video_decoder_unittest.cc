@@ -11,9 +11,9 @@
 #include "base/time/time.h"
 #include "media/cast/cast_config.h"
 #include "media/cast/receiver/video_decoder.h"
+#include "media/cast/sender/vp8_encoder.h"
 #include "media/cast/test/utility/standalone_cast_environment.h"
 #include "media/cast/test/utility/video_utility.h"
-#include "media/cast/video_sender/codecs/vp8/vp8_encoder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace media {
@@ -35,7 +35,7 @@ VideoSenderConfig GetVideoSenderConfigForTest() {
 
 }  // namespace
 
-class VideoDecoderTest : public ::testing::TestWithParam<transport::Codec> {
+class VideoDecoderTest : public ::testing::TestWithParam<Codec> {
  public:
   VideoDecoderTest()
       : cast_environment_(new StandaloneCastEnvironment()),
@@ -73,10 +73,10 @@ class VideoDecoderTest : public ::testing::TestWithParam<transport::Codec> {
     PopulateVideoFrame(video_frame, 0);
 
     // Encode |frame| into |encoded_frame->data|.
-    scoped_ptr<transport::EncodedFrame> encoded_frame(
-        new transport::EncodedFrame());
+    scoped_ptr<EncodedFrame> encoded_frame(
+        new EncodedFrame());
     // Test only supports VP8, currently.
-    CHECK_EQ(transport::CODEC_VIDEO_VP8, GetParam());
+    CHECK_EQ(CODEC_VIDEO_VP8, GetParam());
     vp8_encoder_.Encode(video_frame, encoded_frame.get());
     encoded_frame->frame_id = last_frame_id_ + 1 + num_dropped_frames;
     last_frame_id_ = encoded_frame->frame_id;
@@ -177,7 +177,7 @@ TEST_P(VideoDecoderTest, RecoversFromDroppedFrames) {
 
 INSTANTIATE_TEST_CASE_P(VideoDecoderTestScenarios,
                         VideoDecoderTest,
-                        ::testing::Values(transport::CODEC_VIDEO_VP8));
+                        ::testing::Values(CODEC_VIDEO_VP8));
 
 }  // namespace cast
 }  // namespace media

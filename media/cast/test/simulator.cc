@@ -43,6 +43,10 @@
 #include "media/cast/logging/proto/raw_events.pb.h"
 #include "media/cast/logging/raw_event_subscriber_bundle.h"
 #include "media/cast/logging/simple_event_subscriber.h"
+#include "media/cast/net/cast_transport_config.h"
+#include "media/cast/net/cast_transport_defines.h"
+#include "media/cast/net/cast_transport_sender.h"
+#include "media/cast/net/cast_transport_sender_impl.h"
 #include "media/cast/test/fake_media_source.h"
 #include "media/cast/test/fake_single_thread_task_runner.h"
 #include "media/cast/test/loopback_transport.h"
@@ -53,10 +57,6 @@
 #include "media/cast/test/utility/test_util.h"
 #include "media/cast/test/utility/udp_proxy.h"
 #include "media/cast/test/utility/video_utility.h"
-#include "media/cast/transport/cast_transport_config.h"
-#include "media/cast/transport/cast_transport_defines.h"
-#include "media/cast/transport/cast_transport_sender.h"
-#include "media/cast/transport/cast_transport_sender_impl.h"
 
 using media::cast::proto::IPPModel;
 using media::cast::proto::NetworkSimulationModel;
@@ -72,7 +72,7 @@ const char kOutputPath[] = "output";
 const char kSimulationId[] = "sim-id";
 const char kLibDir[] = "lib-dir";
 
-void UpdateCastTransportStatus(transport::CastTransportStatus status) {
+void UpdateCastTransportStatus(CastTransportStatus status) {
   LOG(INFO) << "Cast transport status: " << status;
 }
 
@@ -236,8 +236,8 @@ void RunSimulation(const base::FilePath& source_path,
                            &receiver_to_sender));
 
   // Cast sender and transport sender.
-  scoped_ptr<transport::CastTransportSender> transport_sender(
-      new transport::CastTransportSenderImpl(
+  scoped_ptr<CastTransportSender> transport_sender(
+      new CastTransportSenderImpl(
           NULL,
           &testing_clock,
           net::IPEndPoint(),

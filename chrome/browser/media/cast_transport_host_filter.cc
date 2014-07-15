@@ -6,7 +6,7 @@
 
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/net/chrome_net_log.h"
-#include "media/cast/transport/cast_transport_sender.h"
+#include "media/cast/net/cast_transport_sender.h"
 
 namespace {
 
@@ -44,13 +44,13 @@ bool CastTransportHostFilter::OnMessageReceived(const IPC::Message& message) {
 
 void CastTransportHostFilter::NotifyStatusChange(
     int32 channel_id,
-    media::cast::transport::CastTransportStatus status) {
+    media::cast::CastTransportStatus status) {
   Send(new CastMsg_NotifyStatusChange(channel_id, status));
 }
 
 void CastTransportHostFilter::ReceivedPacket(
     int32 channel_id,
-    scoped_ptr<media::cast::transport::Packet> packet) {
+    scoped_ptr<media::cast::Packet> packet) {
   Send(new CastMsg_ReceivedPacket(channel_id, *packet));
 }
 
@@ -68,8 +68,8 @@ void CastTransportHostFilter::OnNew(
     id_map_.Remove(channel_id);
   }
 
-  scoped_ptr<media::cast::transport::CastTransportSender> sender =
-      media::cast::transport::CastTransportSender::Create(
+  scoped_ptr<media::cast::CastTransportSender> sender =
+      media::cast::CastTransportSender::Create(
           g_browser_process->net_log(),
           &clock_,
           remote_end_point,
@@ -90,7 +90,7 @@ void CastTransportHostFilter::OnNew(
 }
 
 void CastTransportHostFilter::OnDelete(int32 channel_id) {
-  media::cast::transport::CastTransportSender* sender =
+  media::cast::CastTransportSender* sender =
       id_map_.Lookup(channel_id);
   if (sender) {
     id_map_.Remove(channel_id);
@@ -102,8 +102,8 @@ void CastTransportHostFilter::OnDelete(int32 channel_id) {
 
 void CastTransportHostFilter::OnInitializeAudio(
     int32 channel_id,
-    const media::cast::transport::CastTransportRtpConfig& config) {
-  media::cast::transport::CastTransportSender* sender =
+    const media::cast::CastTransportRtpConfig& config) {
+  media::cast::CastTransportSender* sender =
       id_map_.Lookup(channel_id);
   if (sender) {
     sender->InitializeAudio(config);
@@ -115,8 +115,8 @@ void CastTransportHostFilter::OnInitializeAudio(
 
 void CastTransportHostFilter::OnInitializeVideo(
     int32 channel_id,
-    const media::cast::transport::CastTransportRtpConfig& config) {
-  media::cast::transport::CastTransportSender* sender =
+    const media::cast::CastTransportRtpConfig& config) {
+  media::cast::CastTransportSender* sender =
       id_map_.Lookup(channel_id);
   if (sender) {
     sender->InitializeVideo(config);
@@ -128,8 +128,8 @@ void CastTransportHostFilter::OnInitializeVideo(
 
 void CastTransportHostFilter::OnInsertCodedAudioFrame(
     int32 channel_id,
-    const media::cast::transport::EncodedFrame& audio_frame) {
-  media::cast::transport::CastTransportSender* sender =
+    const media::cast::EncodedFrame& audio_frame) {
+  media::cast::CastTransportSender* sender =
       id_map_.Lookup(channel_id);
   if (sender) {
     sender->InsertCodedAudioFrame(audio_frame);
@@ -142,8 +142,8 @@ void CastTransportHostFilter::OnInsertCodedAudioFrame(
 
 void CastTransportHostFilter::OnInsertCodedVideoFrame(
     int32 channel_id,
-    const media::cast::transport::EncodedFrame& video_frame) {
-  media::cast::transport::CastTransportSender* sender =
+    const media::cast::EncodedFrame& video_frame) {
+  media::cast::CastTransportSender* sender =
       id_map_.Lookup(channel_id);
   if (sender) {
     sender->InsertCodedVideoFrame(video_frame);
@@ -156,9 +156,9 @@ void CastTransportHostFilter::OnInsertCodedVideoFrame(
 
 void CastTransportHostFilter::OnSendRtcpFromRtpSender(
     int32 channel_id,
-    const media::cast::transport::SendRtcpFromRtpSenderData& data,
-    const media::cast::transport::RtcpDlrrReportBlock& dlrr) {
-  media::cast::transport::CastTransportSender* sender =
+    const media::cast::SendRtcpFromRtpSenderData& data,
+    const media::cast::RtcpDlrrReportBlock& dlrr) {
+  media::cast::CastTransportSender* sender =
       id_map_.Lookup(channel_id);
   if (sender) {
     sender->SendRtcpFromRtpSender(data.packet_type_flags,
@@ -181,7 +181,7 @@ void CastTransportHostFilter::OnResendPackets(
     const media::cast::MissingFramesAndPacketsMap& missing_packets,
     bool cancel_rtx_if_not_in_list,
     base::TimeDelta dedupe_window) {
-  media::cast::transport::CastTransportSender* sender =
+  media::cast::CastTransportSender* sender =
       id_map_.Lookup(channel_id);
   if (sender) {
     sender->ResendPackets(

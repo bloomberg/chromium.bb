@@ -68,7 +68,7 @@ ByteCounter out_pipe_output_counter;
 class ByteCounterPipe : public media::cast::test::PacketPipe {
  public:
   ByteCounterPipe(ByteCounter* counter) : counter_(counter) {}
-  virtual void Send(scoped_ptr<media::cast::transport::Packet> packet)
+  virtual void Send(scoped_ptr<media::cast::Packet> packet)
       OVERRIDE {
     counter_->Increment(packet->size());
     pipe_->Send(packet.Pass());

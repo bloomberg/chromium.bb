@@ -8,7 +8,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "media/cast/cast_environment.h"
-#include "media/cast/transport/cast_transport_config.h"
+#include "media/cast/net/cast_transport_config.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -23,13 +23,13 @@ class PacketPipe;
 }  // namespace test
 
 // Class that sends the packet to a receiver through a stack of PacketPipes.
-class LoopBackTransport : public transport::PacketSender {
+class LoopBackTransport : public PacketSender {
  public:
   explicit LoopBackTransport(
       scoped_refptr<CastEnvironment> cast_environment);
   virtual ~LoopBackTransport();
 
-  virtual bool SendPacket(transport::PacketRef packet,
+  virtual bool SendPacket(PacketRef packet,
                           const base::Closure& cb) OVERRIDE;
 
   // Initiailize this loopback transport.
@@ -38,7 +38,7 @@ class LoopBackTransport : public transport::PacketSender {
   // SendPacket() -> |pipe| -> Fake loopback pipe -> |packet_receiver|.
   void Initialize(
       scoped_ptr<test::PacketPipe> pipe,
-      const transport::PacketReceiverCallback& packet_receiver,
+      const PacketReceiverCallback& packet_receiver,
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
       base::TickClock* clock);
 

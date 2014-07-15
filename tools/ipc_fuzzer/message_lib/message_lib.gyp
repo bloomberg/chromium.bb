@@ -10,7 +10,7 @@
       '../../../chrome/chrome.gyp:common',
       '../../../content/content.gyp:content_child',
       '../../../ipc/ipc.gyp:ipc',
-      '../../../media/cast/cast.gyp:cast_transport',
+      '../../../media/cast/cast.gyp:cast_net',
       '../../../ppapi/ppapi_internal.gyp:ppapi_ipc',
       '../../../remoting/remoting.gyp:remoting_host',
       '../../../skia/skia.gyp:skia',

@@ -93,7 +93,7 @@ class CastSessionDelegate {
 
  private:
   void StatusNotificationCB(
-      media::cast::transport::CastTransportStatus status);
+      media::cast::CastTransportStatus status);
 
   // Adds logs collected from transport on browser side.
   void LogRawEvents(const std::vector<media::cast::PacketEvent>& packet_events);
@@ -101,7 +101,7 @@ class CastSessionDelegate {
   base::ThreadChecker thread_checker_;
   scoped_refptr<media::cast::CastEnvironment> cast_environment_;
   scoped_ptr<media::cast::CastSender> cast_sender_;
-  scoped_ptr<media::cast::transport::CastTransportSender> cast_transport_;
+  scoped_ptr<media::cast::CastTransportSender> cast_transport_;
 
   AudioFrameInputAvailableCallback audio_frame_input_available_callback_;
   VideoFrameInputAvailableCallback video_frame_input_available_callback_;

@@ -77,7 +77,7 @@ void CastIPCDispatcher::OnChannelClosing() {
 
 void CastIPCDispatcher::OnReceivedPacket(
     int32 channel_id,
-    const media::cast::transport::Packet& packet) {
+    const media::cast::Packet& packet) {
   CastTransportSenderIPC* sender = id_map_.Lookup(channel_id);
   if (sender) {
     sender->OnReceivedPacket(packet);
@@ -89,7 +89,7 @@ void CastIPCDispatcher::OnReceivedPacket(
 
 void CastIPCDispatcher::OnNotifyStatusChange(
     int32 channel_id,
-    media::cast::transport::CastTransportStatus status) {
+    media::cast::CastTransportStatus status) {
   CastTransportSenderIPC* sender = id_map_.Lookup(channel_id);
   if (sender) {
     sender->OnNotifyStatusChange(status);

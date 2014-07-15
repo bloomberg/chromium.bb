@@ -1,6 +1,7 @@
 // Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+
 #include "media/cast/cast_sender_impl.h"
 
 #include "base/bind.h"
@@ -75,7 +76,7 @@ class LocalAudioFrameInput : public AudioFrameInput {
 
 scoped_ptr<CastSender> CastSender::Create(
     scoped_refptr<CastEnvironment> cast_environment,
-    transport::CastTransportSender* const transport_sender) {
+    CastTransportSender* const transport_sender) {
   CHECK(cast_environment);
   return scoped_ptr<CastSender>(
       new CastSenderImpl(cast_environment, transport_sender));
@@ -83,7 +84,7 @@ scoped_ptr<CastSender> CastSender::Create(
 
 CastSenderImpl::CastSenderImpl(
     scoped_refptr<CastEnvironment> cast_environment,
-    transport::CastTransportSender* const transport_sender)
+    CastTransportSender* const transport_sender)
     : cast_environment_(cast_environment),
       transport_sender_(transport_sender),
       weak_factory_(this) {
@@ -211,7 +212,7 @@ scoped_refptr<VideoFrameInput> CastSenderImpl::video_frame_input() {
   return video_frame_input_;
 }
 
-transport::PacketReceiverCallback CastSenderImpl::packet_receiver() {
+PacketReceiverCallback CastSenderImpl::packet_receiver() {
   return base::Bind(&CastSenderImpl::ReceivedPacket,
                     weak_factory_.GetWeakPtr());
 }

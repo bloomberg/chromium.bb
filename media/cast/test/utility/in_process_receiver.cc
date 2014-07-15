@@ -11,11 +11,11 @@
 #include "media/cast/cast_config.h"
 #include "media/cast/cast_environment.h"
 #include "media/cast/cast_receiver.h"
-#include "media/cast/transport/cast_transport_config.h"
-#include "media/cast/transport/transport/udp_transport.h"
+#include "media/cast/net/cast_transport_config.h"
+#include "media/cast/net/udp_transport.h"
 
-using media::cast::transport::CastTransportStatus;
-using media::cast::transport::UdpTransport;
+using media::cast::CastTransportStatus;
+using media::cast::UdpTransport;
 
 namespace media {
 namespace cast {
@@ -67,7 +67,7 @@ void InProcessReceiver::StopOnMainThread(base::WaitableEvent* event) {
 }
 
 void InProcessReceiver::UpdateCastTransportStatus(CastTransportStatus status) {
-  LOG_IF(ERROR, status == media::cast::transport::TRANSPORT_SOCKET_ERROR)
+  LOG_IF(ERROR, status == media::cast::TRANSPORT_SOCKET_ERROR)
       << "Transport socket error occurred.  InProcessReceiver is likely dead.";
   VLOG(1) << "CastTransportStatus is now " << status;
 }

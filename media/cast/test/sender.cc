@@ -30,12 +30,12 @@
 #include "media/cast/logging/proto/raw_events.pb.h"
 #include "media/cast/logging/receiver_time_offset_estimator_impl.h"
 #include "media/cast/logging/stats_event_subscriber.h"
+#include "media/cast/net/cast_transport_defines.h"
+#include "media/cast/net/cast_transport_sender.h"
+#include "media/cast/net/udp_transport.h"
 #include "media/cast/test/fake_media_source.h"
 #include "media/cast/test/utility/default_config.h"
 #include "media/cast/test/utility/input_builder.h"
-#include "media/cast/transport/cast_transport_defines.h"
-#include "media/cast/transport/cast_transport_sender.h"
-#include "media/cast/transport/transport/udp_transport.h"
 
 namespace {
 static const int kAudioChannels = 2;
@@ -71,7 +71,7 @@ media::cast::AudioSenderConfig GetAudioSenderConfig() {
   audio_config.frequency = kAudioSamplingFrequency;
   audio_config.channels = kAudioChannels;
   audio_config.bitrate = 0;  // Use Opus auto-VBR mode.
-  audio_config.codec = media::cast::transport::CODEC_AUDIO_OPUS;
+  audio_config.codec = media::cast::CODEC_AUDIO_OPUS;
   audio_config.ssrc = 1;
   audio_config.incoming_feedback_ssrc = 2;
   audio_config.rtp_payload_type = 127;
@@ -98,7 +98,7 @@ media::cast::VideoSenderConfig GetVideoSenderConfig() {
   video_config.start_bitrate = video_config.min_bitrate;
 
   // Codec.
-  video_config.codec = media::cast::transport::CODEC_VIDEO_VP8;
+  video_config.codec = media::cast::CODEC_VIDEO_VP8;
   video_config.max_number_of_video_buffers_used = 1;
   video_config.number_of_encode_threads = 2;
 
@@ -117,7 +117,7 @@ media::cast::VideoSenderConfig GetVideoSenderConfig() {
 }
 
 void UpdateCastTransportStatus(
-    media::cast::transport::CastTransportStatus status) {
+    media::cast::CastTransportStatus status) {
   VLOG(1) << "Transport status: " << status;
 }
 
@@ -308,8 +308,8 @@ int main(int argc, char** argv) {
   }
 
   // CastTransportSender initialization.
-  scoped_ptr<media::cast::transport::CastTransportSender> transport_sender =
-      media::cast::transport::CastTransportSender::Create(
+  scoped_ptr<media::cast::CastTransportSender> transport_sender =
+      media::cast::CastTransportSender::Create(
           NULL,  // net log.
           cast_environment->Clock(),
           remote_endpoint,

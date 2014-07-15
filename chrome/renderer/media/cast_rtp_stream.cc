@@ -24,7 +24,7 @@
 #include "media/cast/cast_config.h"
 #include "media/cast/cast_defines.h"
 #include "media/cast/cast_sender.h"
-#include "media/cast/transport/cast_transport_config.h"
+#include "media/cast/net/cast_transport_config.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamSource.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -168,7 +168,7 @@ bool ToAudioSenderConfig(const CastRtpParams& params,
     return false;
   config->bitrate = params.payload.max_bitrate * kBitrateMultiplier;
   if (params.payload.codec_name == kCodecNameOpus)
-    config->codec = media::cast::transport::CODEC_AUDIO_OPUS;
+    config->codec = media::cast::CODEC_AUDIO_OPUS;
   else
     return false;
   config->aes_key = params.payload.aes_key;
@@ -201,10 +201,10 @@ bool ToVideoSenderConfig(const CastRtpParams& params,
   config->start_bitrate = config->min_bitrate;
   if (params.payload.codec_name == kCodecNameVp8) {
     config->use_external_encoder = IsHardwareVP8EncodingSupported();
-    config->codec = media::cast::transport::CODEC_VIDEO_VP8;
+    config->codec = media::cast::CODEC_VIDEO_VP8;
   } else if (params.payload.codec_name == kCodecNameH264) {
     config->use_external_encoder = IsHardwareH264EncodingSupported();
-    config->codec = media::cast::transport::CODEC_VIDEO_H264;
+    config->codec = media::cast::CODEC_VIDEO_H264;
   } else {
     return false;
   }

@@ -312,7 +312,7 @@
         '<(DEPTH)/crypto/crypto.gyp:crypto',
         '<(DEPTH)/extensions/extensions_resources.gyp:extensions_resources',
         '<(DEPTH)/extensions/extensions_strings.gyp:extensions_strings',
-        '<(DEPTH)/media/cast/cast.gyp:cast_transport',
+        '<(DEPTH)/media/cast/cast.gyp:cast_net',
         '<(DEPTH)/net/net.gyp:net',
         '<(DEPTH)/skia/skia.gyp:skia',
         '<(DEPTH)/third_party/icu/icu.gyp:icui18n',

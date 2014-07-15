@@ -22,9 +22,7 @@ class VideoFrame;
 
 namespace cast {
 
-namespace transport {
 class PacketSender;
-}
 
 // The following callbacks are used to deliver decoded audio/video frame data,
 // the frame's corresponding play-out time, and a continuity flag.
@@ -44,7 +42,7 @@ typedef base::Callback<void(const scoped_refptr<media::VideoFrame>& video_frame,
 // should examine the |frame_id| field to determine whether any frames have been
 // dropped (i.e., frame_id should be incrementing by one each time).  Note: A
 // NULL pointer can be returned on error.
-typedef base::Callback<void(scoped_ptr<transport::EncodedFrame>)>
+typedef base::Callback<void(scoped_ptr<EncodedFrame>)>
     ReceiveEncodedFrameCallback;
 
 class CastReceiver {
@@ -53,13 +51,13 @@ class CastReceiver {
       scoped_refptr<CastEnvironment> cast_environment,
       const FrameReceiverConfig& audio_config,
       const FrameReceiverConfig& video_config,
-      transport::PacketSender* const packet_sender);
+      PacketSender* const packet_sender);
 
   // All received RTP and RTCP packets for the call should be sent to this
   // PacketReceiver.  Can be called from any thread.
   // TODO(hubbe): Replace with:
   //   virtual void ReceivePacket(scoped_ptr<Packet> packet) = 0;
-  virtual transport::PacketReceiverCallback packet_receiver() = 0;
+  virtual PacketReceiverCallback packet_receiver() = 0;
 
   // Polling interface to get audio and video frames from the CastReceiver.  The
   // the RequestDecodedXXXXXFrame() methods utilize internal software-based

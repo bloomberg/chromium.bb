@@ -11,7 +11,7 @@
 #include "ipc/message_filter.h"
 #include "media/cast/cast_sender.h"
 #include "media/cast/logging/logging_defines.h"
-#include "media/cast/transport/cast_transport_sender.h"
+#include "media/cast/net/cast_transport_sender.h"
 
 class CastTransportSenderIPC;
 
@@ -40,11 +40,11 @@ class CastIPCDispatcher : public IPC::MessageFilter {
   void OnReceivedPacket(int32 channel_id, const media::cast::Packet& packet);
   void OnNotifyStatusChange(
       int32 channel_id,
-      media::cast::transport::CastTransportStatus status);
+      media::cast::CastTransportStatus status);
   void OnRtpStatistics(
       int32 channel_id,
       bool audio,
-      const media::cast::transport::RtcpSenderInfo& sender_info,
+      const media::cast::RtcpSenderInfo& sender_info,
       base::TimeTicks time_sent,
       uint32 rtp_timestamp);
   void OnRawEvents(int32 channel_id,

@@ -13,7 +13,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
-#include "media/cast/transport/cast_transport_config.h"
+#include "media/cast/net/cast_transport_config.h"
 #include "net/base/ip_endpoint.h"
 #include "third_party/mt19937ar/mt19937ar.h"
 
@@ -33,7 +33,7 @@ class PacketPipe {
  public:
   PacketPipe();
   virtual ~PacketPipe();
-  virtual void Send(scoped_ptr<transport::Packet> packet) = 0;
+  virtual void Send(scoped_ptr<Packet> packet) = 0;
   // Allows injection of fake test runner for testing.
   virtual void InitOnIOThread(
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,

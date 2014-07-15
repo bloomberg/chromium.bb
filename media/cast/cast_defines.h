@@ -14,7 +14,7 @@
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/time/time.h"
-#include "media/cast/transport/cast_transport_config.h"
+#include "media/cast/net/cast_transport_config.h"
 
 namespace media {
 namespace cast {
@@ -29,7 +29,6 @@ const uint32 kStartFrameId = UINT32_C(0xffffffff);
 // frames.
 const int kMaxUnackedFrames = 255;
 
-const size_t kMaxIpPacketSize = 1500;
 const int kStartRttMs = 20;
 const int64 kCastMessageUpdateIntervalMs = 33;
 const int64 kNackRepeatIntervalMs = 30;
@@ -191,13 +190,6 @@ inline base::TimeTicks ConvertNtpToTimeTicks(uint32 ntp_seconds,
 inline base::TimeDelta RtpDeltaToTimeDelta(int64 rtp_delta, int rtp_timebase) {
   DCHECK_GT(rtp_timebase, 0);
   return rtp_delta * base::TimeDelta::FromSeconds(1) / rtp_timebase;
-}
-
-inline uint32 GetVideoRtpTimestamp(const base::TimeTicks& time_ticks) {
-  base::TimeTicks zero_time;
-  base::TimeDelta recorded_delta = time_ticks - zero_time;
-  // Timestamp is in 90 KHz for video.
-  return static_cast<uint32>(recorded_delta.InMilliseconds() * 90);
 }
 
 }  // namespace cast

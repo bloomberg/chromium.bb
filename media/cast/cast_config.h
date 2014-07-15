@@ -16,17 +16,12 @@
 #include "base/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "media/cast/cast_defines.h"
-#include "media/cast/transport/cast_transport_config.h"
+#include "media/cast/net/cast_transport_config.h"
 
 namespace media {
 class VideoEncodeAccelerator;
 
 namespace cast {
-
-enum RtcpMode {
-  kRtcpCompound,     // Compound RTCP mode is described by RFC 4585.
-  kRtcpReducedSize,  // Reduced-size RTCP mode is described by RFC 5506.
-};
 
 // TODO(miu): Merge AudioSenderConfig and VideoSenderConfig and make their
 // naming/documentation consistent with FrameReceiverConfig.
@@ -59,7 +54,7 @@ struct AudioSenderConfig {
   int frequency;
   int channels;
   int bitrate;  // Set to <= 0 for "auto variable bitrate" (libopus knows best).
-  transport::Codec codec;
+  Codec codec;
 
   // The AES crypto key and initialization vector.  Each of these strings
   // contains the data in binary form, of size kAesKeySize.  If they are empty
@@ -105,7 +100,7 @@ struct VideoSenderConfig {
   int min_qp;
   int max_frame_rate;
   int max_number_of_video_buffers_used;  // Max value depend on codec.
-  transport::Codec codec;
+  Codec codec;
   int number_of_encode_threads;
 
   // The AES crypto key and initialization vector.  Each of these strings
@@ -166,7 +161,7 @@ struct FrameReceiverConfig {
   // Codec used for the compression of signal data.
   // TODO(miu): Merge the AudioCodec and VideoCodec enums into one so this union
   // is not necessary.
-  transport::Codec codec;
+  Codec codec;
 
   // The AES crypto key and initialization vector.  Each of these strings
   // contains the data in binary form, of size kAesKeySize.  If they are empty
@@ -175,9 +170,10 @@ struct FrameReceiverConfig {
   std::string aes_iv_mask;
 };
 
-// import from media::cast::transport
-typedef transport::Packet Packet;
-typedef transport::PacketList PacketList;
+// Import from media::cast.
+
+typedef Packet Packet;
+typedef PacketList PacketList;
 
 typedef base::Callback<void(CastInitializationStatus)>
     CastInitializationCallback;

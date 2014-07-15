@@ -11,7 +11,7 @@
 #include "content/public/browser/browser_message_filter.h"
 #include "media/cast/cast_sender.h"
 #include "media/cast/logging/logging_defines.h"
-#include "media/cast/transport/cast_transport_sender.h"
+#include "media/cast/net/cast_transport_sender.h"
 
 namespace cast {
 
@@ -23,10 +23,10 @@ class CastTransportHostFilter : public content::BrowserMessageFilter {
 
   void NotifyStatusChange(
       int32 channel_id,
-      media::cast::transport::CastTransportStatus result);
+      media::cast::CastTransportStatus result);
   void ReceivedPacket(
       int32 channel_id,
-      scoped_ptr<media::cast::transport::Packet> result);
+      scoped_ptr<media::cast::Packet> result);
   void RawEvents(int32 channel_id,
                  const std::vector<media::cast::PacketEvent>& packet_events);
 
@@ -36,20 +36,20 @@ class CastTransportHostFilter : public content::BrowserMessageFilter {
   // Forwarding functions.
   void OnInitializeAudio(
       int32 channel_id,
-      const media::cast::transport::CastTransportRtpConfig& config);
+      const media::cast::CastTransportRtpConfig& config);
   void OnInitializeVideo(
       int32 channel_id,
-      const media::cast::transport::CastTransportRtpConfig& config);
+      const media::cast::CastTransportRtpConfig& config);
   void OnInsertCodedAudioFrame(
       int32 channel_id,
-      const media::cast::transport::EncodedFrame& audio_frame);
+      const media::cast::EncodedFrame& audio_frame);
   void OnInsertCodedVideoFrame(
       int32 channel_id,
-      const media::cast::transport::EncodedFrame& video_frame);
+      const media::cast::EncodedFrame& video_frame);
   void OnSendRtcpFromRtpSender(
       int32 channel_id,
-      const media::cast::transport::SendRtcpFromRtpSenderData& data,
-      const media::cast::transport::RtcpDlrrReportBlock& dlrr);
+      const media::cast::SendRtcpFromRtpSenderData& data,
+      const media::cast::RtcpDlrrReportBlock& dlrr);
   void OnResendPackets(
       int32 channel_id,
       bool is_audio,
@@ -61,7 +61,7 @@ class CastTransportHostFilter : public content::BrowserMessageFilter {
       const net::IPEndPoint& remote_end_point);
   void OnDelete(int32 channel_id);
 
-  IDMap<media::cast::transport::CastTransportSender, IDMapOwnPointer> id_map_;
+  IDMap<media::cast::CastTransportSender, IDMapOwnPointer> id_map_;
 
   // Clock used by Cast transport.
   base::DefaultTickClock clock_;

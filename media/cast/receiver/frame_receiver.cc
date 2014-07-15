@@ -23,7 +23,7 @@ FrameReceiver::FrameReceiver(
     const scoped_refptr<CastEnvironment>& cast_environment,
     const FrameReceiverConfig& config,
     EventMediaType event_media_type,
-    transport::PacedPacketSender* const packet_sender)
+    PacedPacketSender* const packet_sender)
     : cast_environment_(cast_environment),
       packet_parser_(config.incoming_ssrc, config.rtp_payload_type),
       stats_(cast_environment->Clock()),
@@ -193,8 +193,8 @@ void FrameReceiver::EmitAvailableEncodedFrames() {
     // Attempt to peek at the next completed frame from the |framer_|.
     // TODO(miu): We should only be peeking at the metadata, and not copying the
     // payload yet!  Or, at least, peek using a StringPiece instead of a copy.
-    scoped_ptr<transport::EncodedFrame> encoded_frame(
-        new transport::EncodedFrame());
+    scoped_ptr<EncodedFrame> encoded_frame(
+        new EncodedFrame());
     bool is_consecutively_next_frame = false;
     bool have_multiple_complete_frames = false;
     if (!framer_.GetEncodedFrame(encoded_frame.get(),

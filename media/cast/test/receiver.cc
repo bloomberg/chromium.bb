@@ -33,13 +33,13 @@
 #include "media/cast/cast_environment.h"
 #include "media/cast/cast_receiver.h"
 #include "media/cast/logging/logging_defines.h"
+#include "media/cast/net/udp_transport.h"
 #include "media/cast/test/utility/audio_utility.h"
 #include "media/cast/test/utility/barcode.h"
 #include "media/cast/test/utility/default_config.h"
 #include "media/cast/test/utility/in_process_receiver.h"
 #include "media/cast/test/utility/input_builder.h"
 #include "media/cast/test/utility/standalone_cast_environment.h"
-#include "media/cast/transport/transport/udp_transport.h"
 #include "net/base/net_util.h"
 
 #if defined(OS_LINUX)

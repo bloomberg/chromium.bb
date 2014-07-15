@@ -8,28 +8,27 @@
 #include "ipc/ipc_message_macros.h"
 #include "media/cast/cast_sender.h"
 #include "media/cast/logging/logging_defines.h"
-#include "media/cast/rtcp/rtcp_defines.h"
-#include "media/cast/transport/cast_transport_sender.h"
+#include "media/cast/net/cast_transport_sender.h"
+#include "media/cast/net/rtcp/rtcp_defines.h"
 #include "net/base/ip_endpoint.h"
-#include "net/base/net_util.h"
 
 #undef IPC_MESSAGE_EXPORT
 #define IPC_MESSAGE_EXPORT
 #define IPC_MESSAGE_START CastMsgStart
 
 IPC_ENUM_TRAITS_MAX_VALUE(
-    media::cast::transport::EncodedFrame::Dependency,
-    media::cast::transport::EncodedFrame::DEPENDENCY_LAST)
-IPC_ENUM_TRAITS_MAX_VALUE(media::cast::transport::Codec,
-                          media::cast::transport::CODEC_LAST)
-IPC_ENUM_TRAITS_MAX_VALUE(media::cast::transport::CastTransportStatus,
-                          media::cast::transport::CAST_TRANSPORT_STATUS_LAST)
+    media::cast::EncodedFrame::Dependency,
+    media::cast::EncodedFrame::DEPENDENCY_LAST)
+IPC_ENUM_TRAITS_MAX_VALUE(media::cast::Codec,
+                          media::cast::CODEC_LAST)
+IPC_ENUM_TRAITS_MAX_VALUE(media::cast::CastTransportStatus,
+                          media::cast::CAST_TRANSPORT_STATUS_LAST)
 IPC_ENUM_TRAITS_MAX_VALUE(media::cast::CastLoggingEvent,
                           media::cast::kNumOfLoggingEvents)
 IPC_ENUM_TRAITS_MAX_VALUE(media::cast::EventMediaType,
                           media::cast::EVENT_MEDIA_TYPE_LAST)
 
-IPC_STRUCT_TRAITS_BEGIN(media::cast::transport::EncodedFrame)
+IPC_STRUCT_TRAITS_BEGIN(media::cast::EncodedFrame)
   IPC_STRUCT_TRAITS_MEMBER(dependency)
   IPC_STRUCT_TRAITS_MEMBER(frame_id)
   IPC_STRUCT_TRAITS_MEMBER(referenced_frame_id)
@@ -38,12 +37,12 @@ IPC_STRUCT_TRAITS_BEGIN(media::cast::transport::EncodedFrame)
   IPC_STRUCT_TRAITS_MEMBER(data)
 IPC_STRUCT_TRAITS_END()
 
-IPC_STRUCT_TRAITS_BEGIN(media::cast::transport::RtcpDlrrReportBlock)
+IPC_STRUCT_TRAITS_BEGIN(media::cast::RtcpDlrrReportBlock)
   IPC_STRUCT_TRAITS_MEMBER(last_rr)
   IPC_STRUCT_TRAITS_MEMBER(delay_since_last_rr)
 IPC_STRUCT_TRAITS_END()
 
-IPC_STRUCT_TRAITS_BEGIN(media::cast::transport::CastTransportRtpConfig)
+IPC_STRUCT_TRAITS_BEGIN(media::cast::CastTransportRtpConfig)
   IPC_STRUCT_TRAITS_MEMBER(ssrc)
   IPC_STRUCT_TRAITS_MEMBER(rtp_payload_type)
   IPC_STRUCT_TRAITS_MEMBER(stored_frames)
@@ -51,7 +50,7 @@ IPC_STRUCT_TRAITS_BEGIN(media::cast::transport::CastTransportRtpConfig)
   IPC_STRUCT_TRAITS_MEMBER(aes_iv_mask)
 IPC_STRUCT_TRAITS_END()
 
-IPC_STRUCT_TRAITS_BEGIN(media::cast::transport::SendRtcpFromRtpSenderData)
+IPC_STRUCT_TRAITS_BEGIN(media::cast::SendRtcpFromRtpSenderData)
   IPC_STRUCT_TRAITS_MEMBER(packet_type_flags)
   IPC_STRUCT_TRAITS_MEMBER(sending_ssrc)
   IPC_STRUCT_TRAITS_MEMBER(c_name)
@@ -80,7 +79,7 @@ IPC_MESSAGE_CONTROL2(CastMsg_ReceivedPacket,
 IPC_MESSAGE_CONTROL2(
     CastMsg_NotifyStatusChange,
     int32 /* channel_id */,
-    media::cast::transport::CastTransportStatus /* status */)
+    media::cast::CastTransportStatus /* status */)
 
 IPC_MESSAGE_CONTROL2(CastMsg_RawEvents,
                      int32 /* channel_id */,
@@ -91,28 +90,28 @@ IPC_MESSAGE_CONTROL2(CastMsg_RawEvents,
 IPC_MESSAGE_CONTROL2(
   CastHostMsg_InitializeAudio,
   int32 /*channel_id*/,
-  media::cast::transport::CastTransportRtpConfig /*config*/)
+  media::cast::CastTransportRtpConfig /*config*/)
 
 IPC_MESSAGE_CONTROL2(
   CastHostMsg_InitializeVideo,
   int32 /*channel_id*/,
-  media::cast::transport::CastTransportRtpConfig /*config*/)
+  media::cast::CastTransportRtpConfig /*config*/)
 
 IPC_MESSAGE_CONTROL2(
     CastHostMsg_InsertCodedAudioFrame,
     int32 /* channel_id */,
-    media::cast::transport::EncodedFrame /* audio_frame */)
+    media::cast::EncodedFrame /* audio_frame */)
 
 IPC_MESSAGE_CONTROL2(
     CastHostMsg_InsertCodedVideoFrame,
     int32 /* channel_id */,
-    media::cast::transport::EncodedFrame /* video_frame */)
+    media::cast::EncodedFrame /* video_frame */)
 
 IPC_MESSAGE_CONTROL3(
     CastHostMsg_SendRtcpFromRtpSender,
     int32 /* channel_id */,
-    media::cast::transport::SendRtcpFromRtpSenderData /* data */,
-    media::cast::transport::RtcpDlrrReportBlock /* dlrr */)
+    media::cast::SendRtcpFromRtpSenderData /* data */,
+    media::cast::RtcpDlrrReportBlock /* dlrr */)
 
 IPC_MESSAGE_CONTROL5(
     CastHostMsg_ResendPackets,

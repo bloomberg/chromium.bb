@@ -45,6 +45,10 @@
 #include "media/cast/cast_receiver.h"
 #include "media/cast/cast_sender.h"
 #include "media/cast/logging/simple_event_subscriber.h"
+#include "media/cast/net/cast_transport_config.h"
+#include "media/cast/net/cast_transport_defines.h"
+#include "media/cast/net/cast_transport_sender.h"
+#include "media/cast/net/cast_transport_sender_impl.h"
 #include "media/cast/test/fake_single_thread_task_runner.h"
 #include "media/cast/test/loopback_transport.h"
 #include "media/cast/test/skewed_single_thread_task_runner.h"
@@ -54,10 +58,6 @@
 #include "media/cast/test/utility/test_util.h"
 #include "media/cast/test/utility/udp_proxy.h"
 #include "media/cast/test/utility/video_utility.h"
-#include "media/cast/transport/cast_transport_config.h"
-#include "media/cast/transport/cast_transport_defines.h"
-#include "media/cast/transport/cast_transport_sender.h"
-#include "media/cast/transport/cast_transport_sender_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace media {
@@ -75,9 +75,9 @@ static const int kTargetPlayoutDelayMs = 300;
 // a normal video is 30 fps hence the 33 ms between frames.
 static const int kFrameTimerMs = 33;
 
-void UpdateCastTransportStatus(transport::CastTransportStatus status) {
-  bool result = (status == transport::TRANSPORT_AUDIO_INITIALIZED ||
-                 status == transport::TRANSPORT_VIDEO_INITIALIZED);
+void UpdateCastTransportStatus(CastTransportStatus status) {
+  bool result = (status == TRANSPORT_AUDIO_INITIALIZED ||
+                 status == TRANSPORT_VIDEO_INITIALIZED);
   EXPECT_TRUE(result);
 }
 
@@ -96,7 +96,7 @@ void IgnoreRawEvents(const std::vector<PacketEvent>& packet_events) {
 
 // Wraps a CastTransportSender and records some statistics about
 // the data that goes through it.
-class CastTransportSenderWrapper : public transport::CastTransportSender {
+class CastTransportSenderWrapper : public CastTransportSender {
  public:
   // Takes ownership of |transport|.
   void Init(CastTransportSender* transport,
@@ -108,28 +108,28 @@ class CastTransportSenderWrapper : public transport::CastTransportSender {
   }
 
   virtual void InitializeAudio(
-      const transport::CastTransportRtpConfig& config) OVERRIDE {
+      const CastTransportRtpConfig& config) OVERRIDE {
     transport_->InitializeAudio(config);
   }
 
   virtual void InitializeVideo(
-      const transport::CastTransportRtpConfig& config) OVERRIDE {
+      const CastTransportRtpConfig& config) OVERRIDE {
     transport_->InitializeVideo(config);
   }
 
   virtual void SetPacketReceiver(
-      const transport::PacketReceiverCallback& packet_receiver) OVERRIDE {
+      const PacketReceiverCallback& packet_receiver) OVERRIDE {
     transport_->SetPacketReceiver(packet_receiver);
   }
 
   virtual void InsertCodedAudioFrame(
-      const transport::EncodedFrame& audio_frame) OVERRIDE {
+      const EncodedFrame& audio_frame) OVERRIDE {
     *encoded_audio_bytes_ += audio_frame.data.size();
     transport_->InsertCodedAudioFrame(audio_frame);
   }
 
   virtual void InsertCodedVideoFrame(
-      const transport::EncodedFrame& video_frame) OVERRIDE {
+      const EncodedFrame& video_frame) OVERRIDE {
     *encoded_video_bytes_ += video_frame.data.size();
     transport_->InsertCodedVideoFrame(video_frame);
   }
@@ -138,7 +138,7 @@ class CastTransportSenderWrapper : public transport::CastTransportSender {
                                      uint32 ntp_seconds,
                                      uint32 ntp_fraction,
                                      uint32 rtp_timestamp,
-                                     const transport::RtcpDlrrReportBlock& dlrr,
+                                     const RtcpDlrrReportBlock& dlrr,
                                      uint32 sending_ssrc,
                                      const std::string& c_name) OVERRIDE {
     transport_->SendRtcpFromRtpSender(packet_type_flags,
@@ -161,7 +161,7 @@ class CastTransportSenderWrapper : public transport::CastTransportSender {
   }
 
  private:
-  scoped_ptr<transport::CastTransportSender> transport_;
+  scoped_ptr<CastTransportSender> transport_;
   uint64* encoded_video_bytes_;
   uint64* encoded_audio_bytes_;
 };
@@ -220,8 +220,8 @@ class RunOneBenchmark {
         base::TimeDelta::FromMilliseconds(kStartMillisecond));
   }
 
-  void Configure(transport::Codec video_codec,
-                 transport::Codec audio_codec,
+  void Configure(Codec video_codec,
+                 Codec audio_codec,
                  int audio_sampling_frequency,
                  int max_number_of_video_buffers_used) {
     audio_sender_config_.ssrc = 1;
@@ -298,7 +298,7 @@ class RunOneBenchmark {
                                           video_receiver_config_,
                                           &receiver_to_sender_);
     net::IPEndPoint dummy_endpoint;
-    transport_sender_.Init(new transport::CastTransportSenderImpl(
+    transport_sender_.Init(new CastTransportSenderImpl(
                                NULL,
                                testing_clock_sender_,
                                dummy_endpoint,
@@ -383,7 +383,7 @@ class RunOneBenchmark {
   void Run(const MeasuringPoint& p) {
     available_bitrate_ = p.bitrate;
     Configure(
-        transport::CODEC_VIDEO_FAKE, transport::CODEC_AUDIO_PCM16, 32000, 1);
+        CODEC_VIDEO_FAKE, CODEC_AUDIO_PCM16, 32000, 1);
     Create(p);
     StartBasicPlayer();
 

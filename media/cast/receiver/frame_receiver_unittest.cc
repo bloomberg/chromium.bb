@@ -12,11 +12,11 @@
 #include "media/cast/cast_defines.h"
 #include "media/cast/cast_environment.h"
 #include "media/cast/logging/simple_event_subscriber.h"
+#include "media/cast/net/pacing/mock_paced_packet_sender.h"
+#include "media/cast/net/rtcp/test_rtcp_packet_builder.h"
 #include "media/cast/receiver/frame_receiver.h"
-#include "media/cast/rtcp/test_rtcp_packet_builder.h"
 #include "media/cast/test/fake_single_thread_task_runner.h"
 #include "media/cast/test/utility/default_config.h"
-#include "media/cast/transport/pacing/mock_paced_packet_sender.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 using ::testing::_;
@@ -41,7 +41,7 @@ class FakeFrameClient {
         std::make_pair(expected_frame_id, expected_playout_time));
   }
 
-  void DeliverEncodedFrame(scoped_ptr<transport::EncodedFrame> frame) {
+  void DeliverEncodedFrame(scoped_ptr<EncodedFrame> frame) {
     SCOPED_TRACE(::testing::Message() << "num_called_ is " << num_called_);
     ASSERT_FALSE(!frame)
         << "If at shutdown: There were unsatisfied requests enqueued.";
@@ -136,7 +136,7 @@ class FrameReceiverTest : public ::testing::Test {
   RtpCastHeader rtp_header_;
   base::SimpleTestTickClock* testing_clock_;  // Owned by CastEnvironment.
   base::TimeTicks start_time_;
-  transport::MockPacedPacketSender mock_transport_;
+  MockPacedPacketSender mock_transport_;
   scoped_refptr<test::FakeSingleThreadTaskRunner> task_runner_;
   scoped_refptr<CastEnvironment> cast_environment_;
   FakeFrameClient frame_client_;
