@@ -234,7 +234,8 @@ IN_PROC_BROWSER_TEST_F(CastChannelAPITest, MAYBE_TestOpenReceiveClose) {
 
 // TODO(munjal): Win Dbg has a workaround that makes RunExtensionSubtest
 // always return true without actually running the test. Remove when fixed.
-#if defined(OS_WIN) && !defined(NDEBUG)
+// Flaky on mac: crbug.com/393969
+#if (defined(OS_WIN) && !defined(NDEBUG)) || defined(OS_MACOSX)
 #define MAYBE_TestOpenError DISABLED_TestOpenError
 #else
 #define MAYBE_TestOpenError TestOpenError
