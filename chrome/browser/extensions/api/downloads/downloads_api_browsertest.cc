@@ -3474,9 +3474,16 @@ IN_PROC_BROWSER_TEST_F(
 
 // TODO test precedence rules: install_time
 
+#if defined(OS_MACOSX)
+#define MAYBE_DownloadExtensionTest_OnDeterminingFilename_RemoveFilenameDeterminer \
+  DISABLED_DownloadExtensionTest_OnDeterminingFilename_RemoveFilenameDeterminer
+#else
+#define MAYBE_DownloadExtensionTest_OnDeterminingFilename_RemoveFilenameDeterminer \
+  DownloadExtensionTest_OnDeterminingFilename_RemoveFilenameDeterminer
+#endif
 IN_PROC_BROWSER_TEST_F(
     DownloadExtensionTest,
-    DownloadExtensionTest_OnDeterminingFilename_RemoveFilenameDeterminer) {
+    MAYBE_DownloadExtensionTest_OnDeterminingFilename_RemoveFilenameDeterminer) {
   ASSERT_TRUE(StartEmbeddedTestServer());
   ASSERT_TRUE(test_server()->Start());
   GoOnTheRecord();
