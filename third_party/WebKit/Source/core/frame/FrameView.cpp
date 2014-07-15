@@ -3186,6 +3186,12 @@ void FrameView::removeScrollableArea(ScrollableArea* scrollableArea)
     m_scrollableAreas->remove(scrollableArea);
 }
 
+void FrameView::setParent(Widget* widget)
+{
+    ScrollView::setParent(widget);
+    updateScrollableAreaSet();
+}
+
 void FrameView::removeChild(Widget* widget)
 {
     if (widget->isFrameView())
