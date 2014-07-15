@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2003, 2006, 2008, 2011 Apple Inc. All rights reserved.
  * Copyright (C) 2008 Holger Hans Peter Freyther
+ * Copyright (C) 2014 Google Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -72,17 +73,29 @@ public:
 #endif
 
 private:
-    GlyphData glyphDataForCharacter(UChar32, bool mirror, int currentCharacter, unsigned& advanceLength);
+    struct CharacterData {
+        UChar32 character;
+        unsigned clusterLength;
+        int characterOffset;
+    };
+
+    GlyphData glyphDataForCharacter(CharacterData&);
+    float characterWidth(UChar32, const GlyphData&) const;
+    void cacheFallbackFont(UChar32, const SimpleFontData*, const SimpleFontData* primaryFont);
+    float adjustSpacing(float, const CharacterData&, const SimpleFontData&, GlyphBuffer*);
+    void updateGlyphBounds(const GlyphData&, float width, bool firstCharacter);
+
     template <typename TextIterator>
-    inline unsigned advanceInternal(TextIterator&, GlyphBuffer*);
+    unsigned advanceInternal(TextIterator&, GlyphBuffer*);
 
     HashSet<const SimpleFontData*>* m_fallbackFonts;
-    bool m_accountForGlyphBounds;
     float m_maxGlyphBoundingBoxY;
     float m_minGlyphBoundingBoxY;
     float m_firstGlyphOverflow;
     float m_lastGlyphOverflow;
-    bool m_forTextEmphasis;
+
+    bool m_accountForGlyphBounds : 1;
+    bool m_forTextEmphasis : 1;
 };
 
 }
