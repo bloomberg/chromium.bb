@@ -35,6 +35,9 @@ org.chromium.mojo.bindings.Interface
 
 {% macro interface_def(interface, client) %}
 public interface {{interface|name}} extends {{super_class(client)}} {
+
+    public static final Object BUILDER = new Object();
+
 {%  for constant in interface.constants %}
 
     {{constant_def(constant)|indent(4)}}
