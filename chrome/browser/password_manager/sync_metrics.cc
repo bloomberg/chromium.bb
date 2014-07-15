@@ -13,14 +13,7 @@
 
 namespace password_manager_sync_metrics {
 
-std::string GetPasswordSyncUsername(Profile* profile) {
-  ProfileSyncService* sync_service =
-      ProfileSyncServiceFactory::GetForProfile(profile);
-  if (!sync_service ||
-      !sync_service->HasSyncSetupCompleted() ||
-      !sync_service->GetActiveDataTypes().Has(syncer::PASSWORDS))
-    return "";
-
+std::string GetSyncUsername(Profile* profile) {
   SigninManagerBase* signin_manager =
       SigninManagerFactory::GetForProfile(profile);
   if (!signin_manager)
@@ -29,13 +22,13 @@ std::string GetPasswordSyncUsername(Profile* profile) {
   return signin_manager->GetAuthenticatedUsername();
 }
 
-bool IsPasswordSyncAccountCredential(Profile* profile,
-                                     const std::string& username,
-                                     const std::string& origin) {
+bool IsSyncAccountCredential(Profile* profile,
+                             const std::string& username,
+                             const std::string& origin) {
   if (origin != GaiaUrls::GetInstance()->gaia_url().GetOrigin().spec())
     return false;
 
-  return gaia::AreEmailsSame(username, GetPasswordSyncUsername(profile));
+  return gaia::AreEmailsSame(username, GetSyncUsername(profile));
 }
 
 }  // namespace password_manager_sync_metrics

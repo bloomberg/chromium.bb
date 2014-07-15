@@ -18,7 +18,7 @@ class StubPasswordManagerClient : public PasswordManagerClient {
   virtual ~StubPasswordManagerClient();
 
   // PasswordManagerClient:
-  virtual bool IsPasswordSyncAccountCredential(
+  virtual bool IsSyncAccountCredential(
       const std::string& username, const std::string& origin) const OVERRIDE;
   virtual void PromptUserToSavePassword(PasswordFormManager* form_to_save)
       OVERRIDE;

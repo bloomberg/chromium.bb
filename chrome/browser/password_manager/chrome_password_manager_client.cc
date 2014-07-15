@@ -102,9 +102,9 @@ bool ChromePasswordManagerClient::IsPasswordManagerEnabledForCurrentPage()
   return entry->GetURL().host() != chrome::kChromeUIChromeSigninHost;
 }
 
-bool ChromePasswordManagerClient::IsPasswordSyncAccountCredential(
+bool ChromePasswordManagerClient::IsSyncAccountCredential(
     const std::string& username, const std::string& origin) const {
-  return password_manager_sync_metrics::IsPasswordSyncAccountCredential(
+  return password_manager_sync_metrics::IsSyncAccountCredential(
       profile_, username, origin);
 }
 

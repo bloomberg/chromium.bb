@@ -228,7 +228,7 @@ KeyedService* PasswordStoreFactory::BuildServiceInstanceFor(
   NOTIMPLEMENTED();
 #endif
   std::string sync_username =
-      password_manager_sync_metrics::GetPasswordSyncUsername(profile);
+      password_manager_sync_metrics::GetSyncUsername(profile);
   if (!ps || !ps->Init(
           sync_start_util::GetFlareForSyncableService(profile->GetPath()),
           sync_username)) {

@@ -35,8 +35,8 @@ class PasswordManagerClient {
   virtual bool IsPasswordManagerEnabledForCurrentPage() const;
 
   // Returns true if |username| and |origin| correspond to the account which is
-  // syncing passwords.
-  virtual bool IsPasswordSyncAccountCredential(
+  // syncing.
+  virtual bool IsSyncAccountCredential(
       const std::string& username, const std::string& origin) const = 0;
 
   // Informs the embedder of a password form that can be saved if the user

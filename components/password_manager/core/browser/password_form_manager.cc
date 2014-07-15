@@ -561,7 +561,7 @@ void PasswordFormManager::UpdateLogin() {
   // Update metadata.
   ++pending_credentials_.times_used;
 
-  if (client_->IsPasswordSyncAccountCredential(
+  if (client_->IsSyncAccountCredential(
           base::UTF16ToUTF8(pending_credentials_.username_value),
           pending_credentials_.signon_realm)) {
     base::RecordAction(

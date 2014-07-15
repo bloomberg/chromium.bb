@@ -40,7 +40,7 @@ class ChromePasswordManagerClient
   // PasswordManagerClient implementation.
   virtual bool IsAutomaticPasswordSavingEnabled() const OVERRIDE;
   virtual bool IsPasswordManagerEnabledForCurrentPage() const OVERRIDE;
-  virtual bool IsPasswordSyncAccountCredential(
+  virtual bool IsSyncAccountCredential(
       const std::string& username, const std::string& origin) const OVERRIDE;
   virtual void PromptUserToSavePassword(
       password_manager::PasswordFormManager* form_to_save) OVERRIDE;

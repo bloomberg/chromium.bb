@@ -10,7 +10,7 @@ StubPasswordManagerClient::StubPasswordManagerClient() {}
 
 StubPasswordManagerClient::~StubPasswordManagerClient() {}
 
-bool StubPasswordManagerClient::IsPasswordSyncAccountCredential(
+bool StubPasswordManagerClient::IsSyncAccountCredential(
     const std::string& username, const std::string& origin) const {
   return false;
 }

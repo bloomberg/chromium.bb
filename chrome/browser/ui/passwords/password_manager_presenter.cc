@@ -129,7 +129,7 @@ void PasswordManagerPresenter::RequestShowPassword(size_t index) {
       return;
   }
 
-  if (password_manager_sync_metrics::IsPasswordSyncAccountCredential(
+  if (password_manager_sync_metrics::IsSyncAccountCredential(
           password_view_->GetProfile(),
           base::UTF16ToUTF8(password_list_[index]->username_value),
           password_list_[index]->signon_realm)) {

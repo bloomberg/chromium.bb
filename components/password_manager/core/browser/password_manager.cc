@@ -218,7 +218,7 @@ void PasswordManager::ProvisionallySavePassword(const PasswordForm& form) {
 
   // Don't save credentials for the syncing account. See crbug.com/365832 for
   // background.
-  if (client_->IsPasswordSyncAccountCredential(
+  if (client_->IsSyncAccountCredential(
           base::UTF16ToUTF8(form.username_value), form.signon_realm)) {
     RecordFailure(SYNC_CREDENTIAL, form.origin.host(), logger.get());
     return;

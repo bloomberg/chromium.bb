@@ -43,7 +43,7 @@ namespace {
 class MockPasswordManagerClient : public StubPasswordManagerClient {
  public:
   MOCK_CONST_METHOD0(IsPasswordManagerEnabledForCurrentPage, bool());
-  MOCK_CONST_METHOD2(IsPasswordSyncAccountCredential,
+  MOCK_CONST_METHOD2(IsSyncAccountCredential,
                      bool(const std::string&, const std::string&));
   MOCK_METHOD1(PromptUserToSavePassword, void(PasswordFormManager*));
   MOCK_METHOD0(GetPasswordStore, PasswordStore*());
@@ -87,7 +87,7 @@ class PasswordManagerTest : public testing::Test {
 
     EXPECT_CALL(client_, IsPasswordManagerEnabledForCurrentPage())
         .WillRepeatedly(Return(true));
-    EXPECT_CALL(client_, IsPasswordSyncAccountCredential(_, _))
+    EXPECT_CALL(client_, IsSyncAccountCredential(_, _))
         .WillRepeatedly(Return(false));
     EXPECT_CALL(client_, GetPasswordStore()).WillRepeatedly(Return(store_));
     EXPECT_CALL(client_, GetPrefs()).WillRepeatedly(Return(&prefs_));
@@ -711,7 +711,7 @@ TEST_F(PasswordManagerTest, AutofillingDisabledIfManagerDisabled) {
 }
 
 TEST_F(PasswordManagerTest, SyncCredentialsNotSaved) {
-  EXPECT_CALL(client_, IsPasswordSyncAccountCredential(_, _))
+  EXPECT_CALL(client_, IsSyncAccountCredential(_, _))
       .WillRepeatedly(Return(true));
 
   // Simulate loading a simple form with no existing stored password.
