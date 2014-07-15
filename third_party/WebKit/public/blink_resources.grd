@@ -9,6 +9,8 @@
   </outputs>
   <release seq="1">
     <includes>
+      <include name="IDR_XML_VIEWER_JS" file="../Source/core/xml/XMLViewer.js" type="BINDATA"/>
+      <include name="IDR_XML_VIEWER_CSS" file="../Source/core/xml/XMLViewer.css" type="BINDATA"/>
       <include name="IDR_PICKER_COMMON_JS" file="../Source/web/resources/pickerCommon.js" type="BINDATA"/>
       <include name="IDR_PICKER_COMMON_CSS" file="../Source/web/resources/pickerCommon.css" type="BINDATA"/>
       <include name="IDR_CALENDAR_PICKER_CSS" file="../Source/web/resources/calendarPicker.css" type="BINDATA"/>
