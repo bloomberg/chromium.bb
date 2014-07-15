@@ -475,14 +475,31 @@ void InspectorResourceAgent::willLoadXHR(XMLHttpRequest* xhr, ThreadableLoaderCl
     m_pendingXHRReplayData.set(client, xhrReplayData);
 }
 
-void InspectorResourceAgent::didFailXHRLoading(XMLHttpRequest*, ThreadableLoaderClient* client)
+void InspectorResourceAgent::delayedRemoveReplayXHR(XMLHttpRequest* xhr)
 {
-    m_pendingXHRReplayData.remove(client);
+    if (!m_replayXHRs.contains(xhr))
+        return;
+
+    m_replayXHRs.remove(xhr);
+    m_replayXHRsToBeDeleted.add(xhr);
+    m_removeFinishedReplayXHRTimer.startOneShot(0, FROM_HERE);
 }
 
-void InspectorResourceAgent::didFinishXHRLoading(XMLHttpRequest*, ThreadableLoaderClient* client, unsigned long identifier, ScriptString sourceString, const AtomicString&, const String&, const String&, unsigned)
+void InspectorResourceAgent::didFailXHRLoading(XMLHttpRequest* xhr, ThreadableLoaderClient* client)
 {
     m_pendingXHRReplayData.remove(client);
+
+    // This method will be called from the XHR.
+    // We delay deleting the replay XHR, as deleting here may delete the caller.
+    delayedRemoveReplayXHR(xhr);
+}
+
+void InspectorResourceAgent::didFinishXHRLoading(XMLHttpRequest* xhr, ThreadableLoaderClient* client, unsigned long identifier, ScriptString sourceString, const AtomicString&, const String&, const String&, unsigned)
+{
+    m_pendingXHRReplayData.remove(client);
+
+    // See comments on |didFailXHRLoading| for why we are delaying delete.
+    delayedRemoveReplayXHR(xhr);
 }
 
 void InspectorResourceAgent::willDestroyResource(Resource* cachedResource)
@@ -707,6 +724,8 @@ void InspectorResourceAgent::replayXHR(ErrorString*, const String& requestId)
     for (HTTPHeaderMap::const_iterator it = xhrReplayData->headers().begin(); it!= end; ++it)
         xhr->setRequestHeader(it->key, it->value, IGNORE_EXCEPTION);
     xhr->sendForInspectorXHRReplay(xhrReplayData->formData(), IGNORE_EXCEPTION);
+
+    m_replayXHRs.add(xhr);
 }
 
 void InspectorResourceAgent::canClearBrowserCache(ErrorString*, bool* result)
@@ -835,12 +854,18 @@ bool InspectorResourceAgent::fetchResourceContent(Document* document, const KURL
     return false;
 }
 
+void InspectorResourceAgent::removeFinishedReplayXHRFired(Timer<InspectorResourceAgent>*)
+{
+    m_replayXHRsToBeDeleted.clear();
+}
+
 InspectorResourceAgent::InspectorResourceAgent(InspectorPageAgent* pageAgent)
     : InspectorBaseAgent<InspectorResourceAgent>("Network")
     , m_pageAgent(pageAgent)
     , m_frontend(0)
     , m_resourcesData(adoptPtr(new NetworkResourcesData()))
     , m_isRecalculatingStyle(false)
+    , m_removeFinishedReplayXHRTimer(this, &InspectorResourceAgent::removeFinishedReplayXHRFired)
 {
 }
 
