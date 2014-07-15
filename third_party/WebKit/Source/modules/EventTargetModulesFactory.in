@@ -29,4 +29,4 @@ modules/webaudio/AudioNode Conditional=WEB_AUDIO
 modules/webmidi/MIDIAccess
 modules/webmidi/MIDIInput
 modules/webmidi/MIDIPort
-modules/websockets/WebSocket
+modules/websockets/WebSocket ImplementedAs=DOMWebSocket

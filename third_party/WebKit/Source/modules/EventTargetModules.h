@@ -24,7 +24,7 @@ class MediaStream;
 class Notification;
 class ExecutionContext;
 class ScriptProcessorNode;
-class WebSocket;
+class DOMWebSocket;
 
 } // namespace WebCore
 

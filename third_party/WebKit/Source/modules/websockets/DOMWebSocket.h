@@ -28,8 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebSocket_h
-#define WebSocket_h
+#ifndef DOMWebSocket_h
+#define DOMWebSocket_h
 
 #include "core/dom/ActiveDOMObject.h"
 #include "core/events/EventListener.h"
@@ -49,18 +49,18 @@ namespace WebCore {
 class Blob;
 class ExceptionState;
 
-class WebSocket : public RefCountedWillBeRefCountedGarbageCollected<WebSocket>, public EventTargetWithInlineData, public ActiveDOMObject, public WebSocketChannelClient {
-    REFCOUNTED_EVENT_TARGET(WebSocket);
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(WebSocket);
+class DOMWebSocket : public RefCountedWillBeRefCountedGarbageCollected<DOMWebSocket>, public EventTargetWithInlineData, public ActiveDOMObject, public WebSocketChannelClient {
+    REFCOUNTED_EVENT_TARGET(DOMWebSocket);
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(DOMWebSocket);
 public:
     static const char* subprotocolSeperator();
-    // WebSocket instances must be used with a wrapper since this class's
+    // DOMWebSocket instances must be used with a wrapper since this class's
     // lifetime management is designed assuming the V8 holds a ref on it while
     // hasPendingActivity() returns true.
-    static PassRefPtrWillBeRawPtr<WebSocket> create(ExecutionContext*, const String& url, ExceptionState&);
-    static PassRefPtrWillBeRawPtr<WebSocket> create(ExecutionContext*, const String& url, const String& protocol, ExceptionState&);
-    static PassRefPtrWillBeRawPtr<WebSocket> create(ExecutionContext*, const String& url, const Vector<String>& protocols, ExceptionState&);
-    virtual ~WebSocket();
+    static PassRefPtrWillBeRawPtr<DOMWebSocket> create(ExecutionContext*, const String& url, ExceptionState&);
+    static PassRefPtrWillBeRawPtr<DOMWebSocket> create(ExecutionContext*, const String& url, const String& protocol, ExceptionState&);
+    static PassRefPtrWillBeRawPtr<DOMWebSocket> create(ExecutionContext*, const String& url, const Vector<String>& protocols, ExceptionState&);
+    virtual ~DOMWebSocket();
 
     enum State {
         CONNECTING = 0,
@@ -127,7 +127,7 @@ public:
     static bool isValidSubprotocolString(const String&);
 
 protected:
-    explicit WebSocket(ExecutionContext*);
+    explicit DOMWebSocket(ExecutionContext*);
 
 private:
     // FIXME: This should inherit WebCore::EventQueue.
@@ -206,7 +206,7 @@ private:
     // Updates m_bufferedAmountAfterClose given the amount of data passed to
     // send() method after the state changed to CLOSING or CLOSED.
     void updateBufferedAmountAfterClose(unsigned long);
-    void reflectBufferedAmountConsumption(Timer<WebSocket>*);
+    void reflectBufferedAmountConsumption(Timer<DOMWebSocket>*);
 
     void releaseChannel();
 
@@ -230,7 +230,7 @@ private:
     String m_extensions;
 
     RefPtrWillBeMember<EventQueue> m_eventQueue;
-    Timer<WebSocket> m_bufferedAmountConsumeTimer;
+    Timer<DOMWebSocket> m_bufferedAmountConsumeTimer;
 };
 
 } // namespace WebCore
