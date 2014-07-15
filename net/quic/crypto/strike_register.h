@@ -122,6 +122,9 @@ class NET_EXPORT_PRIVATE StrikeRegister {
   // strike-register.
   const uint8* orbit() const;
 
+  // Time window for which the strike register has complete information.
+  uint32 EffectiveWindowSecs(const uint32 current_time_external) const;
+
   // This is a debugging aid which checks the tree for sanity.
   void Validate();
 
@@ -133,7 +136,7 @@ class NET_EXPORT_PRIVATE StrikeRegister {
 
   // ExternalTimeToInternal converts an external time value into an internal
   // time value using |internal_epoch_|.
-  uint32 ExternalTimeToInternal(uint32 external_time);
+  uint32 ExternalTimeToInternal(uint32 external_time) const;
 
   // BestMatch returns either kNil, or an external node index which could
   // possibly match |v|.
@@ -149,9 +152,9 @@ class NET_EXPORT_PRIVATE StrikeRegister {
 
   uint32 GetFreeInternalNode();
 
-  // DropNode removes the oldest node in the tree and updates |horizon_|
+  // DropOldestNode removes the oldest node in the tree and updates |horizon_|
   // accordingly.
-  void DropNode();
+  void DropOldestNode();
 
   void FreeExternalNode(uint32 index);
 
@@ -172,7 +175,6 @@ class NET_EXPORT_PRIVATE StrikeRegister {
   const uint32 internal_epoch_;
   uint8 orbit_[8];
   uint32 horizon_;
-  bool horizon_valid_;
 
   uint32 internal_node_free_head_;
   uint32 external_node_free_head_;

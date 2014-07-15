@@ -6,11 +6,32 @@
 
 #include "base/logging.h"
 
+using std::min;
 using std::pair;
 using std::set;
 using std::vector;
 
 namespace net {
+
+namespace {
+
+uint32 GetInitialHorizon(uint32 current_time_internal,
+                         uint32 window_secs,
+                         StrikeRegister::StartupType startup) {
+  if (startup == StrikeRegister::DENY_REQUESTS_AT_STARTUP) {
+    // The horizon is initially set |window_secs| into the future because, if
+    // we just crashed, then we may have accepted nonces in the span
+    // [current_time...current_time+window_secs] and so we conservatively
+    // reject the whole timespan unless |startup| tells us otherwise.
+    return current_time_internal + window_secs + 1;
+  } else {  // startup == StrikeRegister::NO_STARTUP_PERIOD_NEEDED
+    // The orbit can be assumed to be globally unique.  Use a horizon
+    // in the past.
+    return 0;
+  }
+}
+
+}  // namespace
 
 // static
 const uint32 StrikeRegister::kExternalNodeSize = 24;
@@ -28,13 +49,11 @@ class StrikeRegister::InternalNode {
   }
 
   void SetCritByte(uint8 critbyte) {
-    data_[0] &= 0xffffff00;
-    data_[0] |= critbyte;
+    data_[0] = (data_[0] & 0xffffff00) | critbyte;
   }
 
   void SetOtherBits(uint8 otherbits) {
-    data_[1] &= 0xffffff00;
-    data_[1] |= otherbits;
+    data_[1] = (data_[1] & 0xffffff00) | otherbits;
   }
 
   void SetNextPtr(uint32 next) { data_[0] = next; }
@@ -77,12 +96,8 @@ StrikeRegister::StrikeRegister(unsigned max_entries,
       internal_epoch_(current_time > kCreationTimeFromInternalEpoch
                           ? current_time - kCreationTimeFromInternalEpoch
                           : 0),
-      // The horizon is initially set |window_secs| into the future because, if
-      // we just crashed, then we may have accepted nonces in the span
-      // [current_time...current_time+window_secs) and so we conservatively
-      // reject the whole timespan unless |startup| tells us otherwise.
-      horizon_(ExternalTimeToInternal(current_time) + window_secs),
-      horizon_valid_(startup == DENY_REQUESTS_AT_STARTUP) {
+      horizon_(GetInitialHorizon(
+          ExternalTimeToInternal(current_time), window_secs, startup)) {
   memcpy(orbit_, orbit, sizeof(orbit_));
 
   ValidateStrikeRegisterConfig(max_entries);
@@ -113,6 +128,12 @@ void StrikeRegister::Reset() {
 
 bool StrikeRegister::Insert(const uint8 nonce[32],
                             const uint32 current_time_external) {
+  // Make space for the insertion if the strike register is full.
+  while (external_node_free_head_ == kNil ||
+         internal_node_free_head_ == kNil) {
+    DropOldestNode();
+  }
+
   const uint32 current_time = ExternalTimeToInternal(current_time_external);
 
   // Check to see if the orbit is correct.
@@ -120,9 +141,9 @@ bool StrikeRegister::Insert(const uint8 nonce[32],
     return false;
   }
   const uint32 nonce_time = ExternalTimeToInternal(TimeFromBytes(nonce));
-  // We have dropped one or more nonces with a time value of |horizon_|, so
+  // We have dropped one or more nonces with a time value of |horizon_ - 1|, so
   // we have to reject anything with a timestamp less than or equal to that.
-  if (horizon_valid_ && nonce_time <= horizon_) {
+  if (nonce_time < horizon_) {
     return false;
   }
 
@@ -135,7 +156,7 @@ bool StrikeRegister::Insert(const uint8 nonce[32],
 
   // We strip the orbit out of the nonce.
   uint8 value[24];
-  memcpy(value, &nonce_time, sizeof(nonce_time));
+  memcpy(value, nonce, sizeof(nonce_time));
   memcpy(value + sizeof(nonce_time),
          nonce + sizeof(nonce_time) + sizeof(orbit_),
          sizeof(value) - sizeof(nonce_time));
@@ -149,6 +170,7 @@ bool StrikeRegister::Insert(const uint8 nonce[32],
     uint32 index = GetFreeExternalNode();
     memcpy(external_node(index), value, sizeof(value));
     internal_node_head_ = (index | kExternalFlag) << 8;
+    DCHECK_LE(horizon_, nonce_time);
     return true;
   }
 
@@ -240,11 +262,23 @@ bool StrikeRegister::Insert(const uint8 nonce[32],
   inode->SetChild(newdirection ^ 1, *where_index >> 8);
   *where_index = (*where_index & 0xff) | (internal_node_index << 8);
 
+  DCHECK_LE(horizon_, nonce_time);
   return true;
 }
 
 const uint8* StrikeRegister::orbit() const {
   return orbit_;
+}
+
+uint32 StrikeRegister::EffectiveWindowSecs(
+    const uint32 current_time_external) const {
+  const uint32 future_horizon =
+      ExternalTimeToInternal(current_time_external) + window_secs_;
+
+  if (horizon_ >= future_horizon) {
+    return 0;
+  }
+  return min(future_horizon - horizon_, 2 * window_secs_);
 }
 
 void StrikeRegister::Validate() {
@@ -284,7 +318,7 @@ uint32 StrikeRegister::TimeFromBytes(const uint8 d[4]) {
          static_cast<uint32>(d[3]);
 }
 
-uint32 StrikeRegister::ExternalTimeToInternal(uint32 external_time) {
+uint32 StrikeRegister::ExternalTimeToInternal(uint32 external_time) const {
   return external_time - internal_epoch_;
 }
 
@@ -315,28 +349,20 @@ uint8* StrikeRegister::external_node(unsigned i) {
 
 uint32 StrikeRegister::GetFreeExternalNode() {
   uint32 index = external_node_free_head_;
-  if (index == kNil) {
-    DropNode();
-    return GetFreeExternalNode();
-  }
-
+  DCHECK(index != kNil);
   external_node_free_head_ = external_node_next_ptr(index);
   return index;
 }
 
 uint32 StrikeRegister::GetFreeInternalNode() {
   uint32 index = internal_node_free_head_;
-  if (index == kNil) {
-    DropNode();
-    return GetFreeInternalNode();
-  }
-
+  DCHECK(index != kNil);
   internal_node_free_head_ = internal_nodes_[index].next();
   return index;
 }
 
-void StrikeRegister::DropNode() {
-  // DropNode should never be called on an empty tree.
+void StrikeRegister::DropOldestNode() {
+  // DropOldestNode should never be called on an empty tree.
   DCHECK(internal_node_head_ != kNil);
 
   // An internal node in a crit-bit tree always has exactly two children.
@@ -358,7 +384,9 @@ void StrikeRegister::DropNode() {
 
   const uint32 ext_index = p & ~kExternalFlag;
   const uint8* ext_node = external_node(ext_index);
-  horizon_ = TimeFromBytes(ext_node);
+  uint32 new_horizon = ExternalTimeToInternal(TimeFromBytes(ext_node)) + 1;
+  DCHECK_LE(horizon_, new_horizon);
+  horizon_ = new_horizon;
 
   if (!whereq) {
     // We are removing the last element in a tree.
