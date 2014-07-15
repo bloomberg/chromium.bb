@@ -29,7 +29,7 @@ TEST(OSExchangeDataWinTest, StringDataAccessViaCOM) {
   STGMEDIUM medium;
   EXPECT_EQ(S_OK, com_data->GetData(&format_etc, &medium));
   std::wstring output =
-      base::win::ScopedHGlobal<wchar_t>(medium.hGlobal).get();
+      base::win::ScopedHGlobal<wchar_t*>(medium.hGlobal).get();
   EXPECT_EQ(input, output);
   ReleaseStgMedium(&medium);
 }
@@ -51,7 +51,7 @@ TEST(OSExchangeDataWinTest, StringDataWritingViaCOM) {
   HGLOBAL glob = GlobalAlloc(GPTR, sizeof(wchar_t) * (input.size() + 1));
   size_t stringsz = input.size();
   SIZE_T sz = GlobalSize(glob);
-  base::win::ScopedHGlobal<wchar_t> global_lock(glob);
+  base::win::ScopedHGlobal<wchar_t*> global_lock(glob);
   wchar_t* buffer_handle = global_lock.get();
   wcscpy_s(buffer_handle, input.size() + 1, input.c_str());
   medium.hGlobal = glob;
@@ -66,7 +66,7 @@ TEST(OSExchangeDataWinTest, StringDataWritingViaCOM) {
   std::wstring title;
   EXPECT_TRUE(data2.GetURLAndTitle(
       OSExchangeData::CONVERT_FILENAMES, &url_from_data, &title));
-  GURL reference_url(input);
+  GURL reference_url(in put);
   EXPECT_EQ(reference_url.spec(), url_from_data.spec());
 }
 
@@ -89,7 +89,7 @@ TEST(OSExchangeDataWinTest, RemoveData) {
     HGLOBAL glob = GlobalAlloc(GPTR, sizeof(wchar_t) * (input.size() + 1));
     size_t stringsz = input.size();
     SIZE_T sz = GlobalSize(glob);
-    base::win::ScopedHGlobal<wchar_t> global_lock(glob);
+    base::win::ScopedHGlobal<wchar_t*> global_lock(glob);
     wchar_t* buffer_handle = global_lock.get();
     wcscpy_s(buffer_handle, input.size() + 1, input.c_str());
     medium.hGlobal = glob;
@@ -101,7 +101,7 @@ TEST(OSExchangeDataWinTest, RemoveData) {
     HGLOBAL glob = GlobalAlloc(GPTR, sizeof(wchar_t) * (input2.size() + 1));
     size_t stringsz = input2.size();
     SIZE_T sz = GlobalSize(glob);
-    base::win::ScopedHGlobal<wchar_t> global_lock(glob);
+    base::win::ScopedHGlobal<wchar_t*> global_lock(glob);
     wchar_t* buffer_handle = global_lock.get();
     wcscpy_s(buffer_handle, input2.size() + 1, input2.c_str());
     medium.hGlobal = glob;
@@ -136,7 +136,7 @@ TEST(OSExchangeDataWinTest, URLDataAccessViaCOM) {
   STGMEDIUM medium;
   EXPECT_EQ(S_OK, com_data->GetData(&format_etc, &medium));
   std::wstring output =
-      base::win::ScopedHGlobal<wchar_t>(medium.hGlobal).get();
+      base::win::ScopedHGlobal<wchar_t*>(medium.hGlobal).get();
   EXPECT_EQ(url.spec(), base::WideToUTF8(output));
   ReleaseStgMedium(&medium);
 }
@@ -163,7 +163,7 @@ TEST(OSExchangeDataWinTest, MultipleFormatsViaCOM) {
   STGMEDIUM medium;
   EXPECT_EQ(S_OK, com_data->GetData(&url_format_etc, &medium));
   std::wstring output_url =
-      base::win::ScopedHGlobal<wchar_t>(medium.hGlobal).get();
+      base::win::ScopedHGlobal<wchar_t*>(medium.hGlobal).get();
   EXPECT_EQ(url.spec(), base::WideToUTF8(output_url));
   ReleaseStgMedium(&medium);
 
@@ -171,7 +171,7 @@ TEST(OSExchangeDataWinTest, MultipleFormatsViaCOM) {
   // |text|! This is because the URL is added first and thus takes precedence!
   EXPECT_EQ(S_OK, com_data->GetData(&text_format_etc, &medium));
   std::wstring output_text =
-      base::win::ScopedHGlobal<wchar_t>(medium.hGlobal).get();
+      base::win::ScopedHGlobal<wchar_t*>(medium.hGlobal).get();
   EXPECT_EQ(url_spec, base::WideToUTF8(output_text));
   ReleaseStgMedium(&medium);
 }
@@ -284,7 +284,7 @@ TEST(OSExchangeDataWinTest, TestURLExchangeFormatsViaCOM) {
 
     STGMEDIUM medium;
     EXPECT_EQ(S_OK, com_data->GetData(&format_etc, &medium));
-    base::win::ScopedHGlobal<char> glob(medium.hGlobal);
+    base::win::ScopedHGlobal<char*> glob(medium.hGlobal);
     std::string output(glob.get(), glob.Size());
     std::string file_contents = "[InternetShortcut]\r\nURL=";
     file_contents += url_spec;
@@ -329,7 +329,7 @@ TEST(OSExchangeDataWinTest, CFHtml) {
   STGMEDIUM medium;
   IDataObject* data_object = OSExchangeDataProviderWin::GetIDataObject(data);
   EXPECT_EQ(S_OK, data_object->GetData(&format, &medium));
-  base::win::ScopedHGlobal<char> glob(medium.hGlobal);
+  base::win::ScopedHGlobal<char*> glob(medium.hGlobal);
   std::string output(glob.get(), glob.Size());
   EXPECT_EQ(expected_cf_html, output);
   ReleaseStgMedium(&medium);

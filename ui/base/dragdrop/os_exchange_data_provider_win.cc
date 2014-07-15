@@ -411,15 +411,12 @@ bool OSExchangeDataProviderWin::GetURLAndTitle(
   base::string16 url_str;
   bool success = ClipboardUtil::GetUrl(
       source_object_,
-      &url_str,
+      url,
       title,
       policy == OSExchangeData::CONVERT_FILENAMES ? true : false);
   if (success) {
-    GURL test_url(url_str);
-    if (test_url.is_valid()) {
-      *url = test_url;
-      return true;
-    }
+    DCHECK(url->is_valid());
+    return true;
   } else if (GetPlainTextURL(source_object_, url)) {
     if (url->is_valid())
       *title = net::GetSuggestedFilename(*url, "", "", "", "", std::string());
@@ -459,7 +456,7 @@ bool OSExchangeDataProviderWin::GetPickledData(
   FORMATETC format_etc = format.ToFormatEtc();
   if (SUCCEEDED(source_object_->GetData(&format_etc, &medium))) {
     if (medium.tymed & TYMED_HGLOBAL) {
-      base::win::ScopedHGlobal<char> c_data(medium.hGlobal);
+      base::win::ScopedHGlobal<char*> c_data(medium.hGlobal);
       DCHECK_GT(c_data.Size(), 0u);
       *data = Pickle(c_data.get(), static_cast<int>(c_data.Size()));
       success = true;
@@ -878,7 +875,7 @@ ULONG DataObjectImpl::Release() {
 static STGMEDIUM* GetStorageForBytes(const void* data, size_t bytes) {
   HANDLE handle = GlobalAlloc(GPTR, static_cast<int>(bytes));
   if (handle) {
-    base::win::ScopedHGlobal<uint8> scoped(handle);
+    base::win::ScopedHGlobal<uint8*> scoped(handle);
     memcpy(scoped.get(), data, bytes);
   }
 
@@ -935,7 +932,7 @@ static STGMEDIUM* GetStorageForFileName(const base::FilePath& path) {
       kDropSize + (path.value().length() + 2) * sizeof(wchar_t);
   HANDLE hdata = GlobalAlloc(GMEM_MOVEABLE, kTotalBytes);
 
-  base::win::ScopedHGlobal<DROPFILES> locked_mem(hdata);
+  base::win::ScopedHGlobal<DROPFILES*> locked_mem(hdata);
   DROPFILES* drop_files = locked_mem.get();
   drop_files->pFiles = sizeof(DROPFILES);
   drop_files->fWide = TRUE;
@@ -1011,7 +1008,7 @@ static STGMEDIUM* GetIDListStorageForFileName(const base::FilePath& path) {
   const size_t kCIDASize = kFirstPIDLOffset + kFirstPIDLSize + kSecondPIDLSize;
   HANDLE hdata = GlobalAlloc(GMEM_MOVEABLE, kCIDASize);
 
-  base::win::ScopedHGlobal<CIDA> locked_mem(hdata);
+  base::win::ScopedHGlobal<CIDA*> locked_mem(hdata);
   CIDA* cida = locked_mem.get();
   cida->cidl = 1;     // We have one PIDL (not including the 0th root PIDL).
   cida->aoffset[0] = kFirstPIDLOffset;
@@ -1034,7 +1031,7 @@ static STGMEDIUM* GetStorageForFileDescriptor(
   base::string16 file_name = path.value();
   DCHECK(!file_name.empty());
   HANDLE hdata = GlobalAlloc(GPTR, sizeof(FILEGROUPDESCRIPTOR));
-  base::win::ScopedHGlobal<FILEGROUPDESCRIPTOR> locked_mem(hdata);
+  base::win::ScopedHGlobal<FILEGROUPDESCRIPTOR*> locked_mem(hdata);
 
   FILEGROUPDESCRIPTOR* descriptor = locked_mem.get();
   descriptor->cItems = 1;

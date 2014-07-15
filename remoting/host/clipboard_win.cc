@@ -242,7 +242,7 @@ void ClipboardWin::OnClipboardUpdate() {
         return;
       }
 
-      base::win::ScopedHGlobal<WCHAR> text_lock(text_global);
+      base::win::ScopedHGlobal<WCHAR*> text_lock(text_global);
       if (!text_lock.get()) {
         LOG(WARNING) << "Couldn't lock clipboard data: " << GetLastError();
         return;

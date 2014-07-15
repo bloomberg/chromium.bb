@@ -15,6 +15,8 @@
 #include "base/strings/string16.h"
 #include "ui/base/ui_base_export.h"
 
+class GURL;
+
 namespace ui {
 
 class UI_BASE_EXPORT ClipboardUtil {
@@ -31,8 +33,10 @@ class UI_BASE_EXPORT ClipboardUtil {
   /////////////////////////////////////////////////////////////////////////////
   // Helper methods to extract information from an IDataObject.  These methods
   // return true if the requested data type is found in |data_object|.
+
+  // Only returns true if url->is_valid() is true.
   static bool GetUrl(IDataObject* data_object,
-                     base::string16* url,
+                     GURL* url,
                      base::string16* title,
                      bool convert_filenames);
   static bool GetFilenames(IDataObject* data_object,
