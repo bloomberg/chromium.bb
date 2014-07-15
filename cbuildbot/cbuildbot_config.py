@@ -1906,6 +1906,7 @@ internal_brillo_paladin.add_config('gizmo-paladin',
   boards=['gizmo'],
   paladin_builder_name='gizmo paladin',
   trybot_list=True,
+  important=False,
 )
 
 external_brillo_paladin = paladin.derive(brillo)
