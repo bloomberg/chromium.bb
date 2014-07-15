@@ -29,8 +29,6 @@
  */
 
 #include "config.h"
-
-
 #include "core/inspector/ConsoleMessage.h"
 
 #include "bindings/core/v8/ScriptCallStackFactory.h"
@@ -231,17 +229,14 @@ void ConsoleMessage::addToFrontend(InspectorFrontend::Console* frontend, Injecte
             jsonObj->setParameters(jsonArgs);
         }
     }
-    if (m_callStack)
+    if (m_callStack) {
         jsonObj->setStackTrace(m_callStack->buildInspectorArray());
-    if (m_asyncCallStack)
-        jsonObj->setAsyncStackTrace(m_asyncCallStack->buildInspectorObject());
+        RefPtrWillBeRawPtr<ScriptAsyncCallStack> asyncCallStack = m_callStack->asyncCallStack();
+        if (asyncCallStack)
+            jsonObj->setAsyncStackTrace(asyncCallStack->buildInspectorObject());
+    }
     frontend->messageAdded(jsonObj);
     frontend->flush();
-}
-
-void ConsoleMessage::setAsyncStackTrace(PassRefPtrWillBeRawPtr<ScriptAsyncCallStack> asyncCallStack)
-{
-    m_asyncCallStack = asyncCallStack;
 }
 
 void ConsoleMessage::windowCleared(LocalDOMWindow* window)

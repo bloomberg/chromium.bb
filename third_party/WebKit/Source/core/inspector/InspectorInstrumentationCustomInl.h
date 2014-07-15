@@ -39,6 +39,7 @@ bool isDebuggerPausedImpl(InstrumentingAgents*);
 bool collectingHTMLParseErrorsImpl(InstrumentingAgents*);
 PassOwnPtr<ScriptSourceCode> preprocessImpl(InstrumentingAgents*, LocalFrame*, const ScriptSourceCode&);
 String preprocessEventListenerImpl(InstrumentingAgents*, LocalFrame*, const String& source, const String& url, const String& functionName);
+void appendAsyncCallStack(ExecutionContext*, ScriptCallStack*);
 
 bool canvasAgentEnabled(ExecutionContext*);
 bool consoleAgentEnabled(ExecutionContext*);

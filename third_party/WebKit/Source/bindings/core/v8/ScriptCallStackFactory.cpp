@@ -90,7 +90,10 @@ static PassRefPtrWillBeRawPtr<ScriptCallStack> createScriptCallStack(v8::Handle<
     v8::HandleScope scope(isolate);
     Vector<ScriptCallFrame> scriptCallFrames;
     toScriptCallFramesVector(stackTrace, scriptCallFrames, maxStackSize, emptyStackIsAllowed, isolate);
-    return ScriptCallStack::create(scriptCallFrames);
+    RefPtrWillBeRawPtr<ScriptCallStack> callStack = ScriptCallStack::create(scriptCallFrames);
+    if (InspectorInstrumentation::hasFrontends())
+        InspectorInstrumentation::appendAsyncCallStack(currentExecutionContext(isolate), callStack.get());
+    return callStack.release();
 }
 
 PassRefPtrWillBeRawPtr<ScriptCallStack> createScriptCallStack(v8::Handle<v8::StackTrace> stackTrace, size_t maxStackSize, v8::Isolate* isolate)

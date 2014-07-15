@@ -42,6 +42,8 @@
 #include "core/inspector/InspectorResourceAgent.h"
 #include "core/inspector/InspectorTimelineAgent.h"
 #include "core/inspector/InstrumentingAgents.h"
+#include "core/inspector/ScriptAsyncCallStack.h"
+#include "core/inspector/ScriptCallStack.h"
 #include "core/inspector/WorkerInspectorController.h"
 #include "core/page/Page.h"
 #include "core/workers/WorkerGlobalScope.h"
@@ -147,6 +149,15 @@ String preprocessEventListenerImpl(InstrumentingAgents* instrumentingAgents, Loc
     if (InspectorDebuggerAgent* debuggerAgent = instrumentingAgents->inspectorDebuggerAgent())
         return debuggerAgent->preprocessEventListener(frame, source, url, functionName);
     return source;
+}
+
+void appendAsyncCallStack(ExecutionContext* executionContext, ScriptCallStack* callStack)
+{
+    InstrumentingAgents* instrumentingAgents = instrumentingAgentsFor(executionContext);
+    if (!instrumentingAgents)
+        return;
+    if (InspectorDebuggerAgent* debuggerAgent = instrumentingAgents->inspectorDebuggerAgent())
+        callStack->setAsyncCallStack(debuggerAgent->currentAsyncStackTraceForConsole());
 }
 
 bool canvasAgentEnabled(ExecutionContext* executionContext)

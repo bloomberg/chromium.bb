@@ -27,12 +27,23 @@ function timeout2()
 function timeout3()
 {
     console.trace();
-    debugger;
+    var iframeWidnow = document.getElementById("iframe").contentWindow;
+    tryPostMessage(iframeWidnow, "http://www.example.com");
+}
+
+function tryPostMessage(win, origin)
+{
+    try {
+        win.postMessage("Trying origin=" + origin, origin);
+    } catch(ex) {
+        console.error("FAIL: Error sending message to " + origin + ". " + ex);
+    }
 }
 
 var test = function()
 {
     var maxAsyncCallStackDepth = 4;
+    var numberOfConsoleMessages = 5;
 
     InspectorTest.setQuiet(true);
     InspectorTest.startDebuggerTest(step1);
@@ -46,15 +57,16 @@ var test = function()
 
     function step2()
     {
-        DebuggerAgent.setAsyncCallStackDepth(maxAsyncCallStackDepth, step3);
+        DebuggerAgent.setAsyncCallStackDepth(maxAsyncCallStackDepth, didPause);
     }
 
-    function step3()
+    function didPause()
     {
-        InspectorTest.resumeExecution(InspectorTest.waitUntilPaused.bind(InspectorTest, didPause));
+        InspectorTest.waitUntilNthMessageReceived(numberOfConsoleMessages, expandAndDumpConsoleMessages);
+        InspectorTest.resumeExecution();
     }
 
-    function didPause(callFrames, reason, breakpointIds, asyncStackTrace)
+    function expandAndDumpConsoleMessages()
     {
         InspectorTest.expandConsoleMessages(dumpConsoleMessages);
     }
@@ -73,6 +85,8 @@ var test = function()
 <p>
 Tests asynchronous call stacks printed in console.
 </p>
-
+<div><iframe src="../../../http/tests/security/postMessage/resources/post-message-listener.html"
+    id="iframe" width="800" height="100" style="border: 1px solid black;">
+</iframe></div>
 </body>
 </html>

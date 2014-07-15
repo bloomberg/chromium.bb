@@ -31,6 +31,7 @@
 #include "config.h"
 #include "core/inspector/ScriptCallStack.h"
 
+#include "core/inspector/ScriptAsyncCallStack.h"
 
 namespace WebCore {
 
@@ -55,6 +56,16 @@ const ScriptCallFrame &ScriptCallStack::at(size_t index) const
 size_t ScriptCallStack::size() const
 {
     return m_frames.size();
+}
+
+PassRefPtrWillBeRawPtr<ScriptAsyncCallStack> ScriptCallStack::asyncCallStack() const
+{
+    return m_asyncCallStack;
+}
+
+void ScriptCallStack::setAsyncCallStack(PassRefPtrWillBeRawPtr<ScriptAsyncCallStack> asyncCallStack)
+{
+    m_asyncCallStack = asyncCallStack;
 }
 
 PassRefPtr<TypeBuilder::Array<TypeBuilder::Console::CallFrame> > ScriptCallStack::buildInspectorArray() const

@@ -1,5 +1,7 @@
 CONSOLE ERROR: line 24: Uncaught Error: foo
+CONSOLE ERROR: Failed to execute 'postMessage' on 'DOMWindow': The target origin provided ('http://www.example.com') does not match the recipient window's origin ('').
 Tests asynchronous call stacks printed in console.
+
 
 Set timer for test function.
 Console was cleared async-callstack-in-console.html:11
@@ -18,6 +20,16 @@ Console was cleared async-callstack-in-console.html:11
 
     console.trace() async-callstack-in-console.html:29
     timeout3 async-callstack-in-console.html:29
+    setTimeout (async)
+    timeout2 async-callstack-in-console.html:23
+    setTimeout (async)
+    timeout1 async-callstack-in-console.html:18
+    setTimeout (async)
+    testFunction async-callstack-in-console.html:12
+
+    Failed to execute 'postMessage' on 'DOMWindow': The target origin provided ('http://www.example.com') does not match the recipient window's origin ('file://'). async-callstack-in-console.html:37
+    tryPostMessage async-callstack-in-console.html:37
+    timeout3 async-callstack-in-console.html:31
     setTimeout (async)
     timeout2 async-callstack-in-console.html:23
     setTimeout (async)
