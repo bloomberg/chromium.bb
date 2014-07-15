@@ -9,6 +9,7 @@
 #include "base/command_line.h"
 #include "base/strings/string_util.h"
 #include "base/win/windows_version.h"
+#include "grit/ui_resources.h"
 #include "ui/app_list/app_list_constants.h"
 #include "ui/app_list/app_list_model.h"
 #include "ui/app_list/app_list_switches.h"
@@ -33,6 +34,7 @@
 #include "ui/gfx/path.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/views/bubble/bubble_frame_view.h"
+#include "ui/views/controls/image_view.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/widget/widget.h"
@@ -148,6 +150,7 @@ AppListView::AppListView(AppListViewDelegate* delegate)
     : delegate_(delegate),
       app_list_main_view_(NULL),
       speech_view_(NULL),
+      experimental_banner_view_(NULL),
       overlay_view_(NULL),
       animation_observer_(new HideViewAnimationObserver()) {
   CHECK(delegate);
@@ -310,6 +313,18 @@ void AppListView::InitAsBubbleInternal(gfx::NativeView parent,
     AddChildView(speech_view_);
   }
 
+  if (app_list::switches::IsExperimentalAppListEnabled()) {
+    // Draw a banner in the corner of the experimental app list.
+    experimental_banner_view_ = new views::ImageView;
+    const gfx::ImageSkia& experimental_icon =
+        *ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
+            IDR_APP_LIST_EXPERIMENTAL_ICON);
+    experimental_banner_view_->SetImage(experimental_icon);
+    experimental_banner_view_->SetPaintToLayer(true);
+    experimental_banner_view_->SetFillsBoundsOpaquely(false);
+    AddChildView(experimental_banner_view_);
+  }
+
   OnProfilesChanged();
   set_color(kContentsBackgroundColor);
   set_margins(gfx::Insets());
@@ -456,6 +471,15 @@ void AppListView::Layout() {
                                       preferred_height));
     speech_bounds.Inset(-speech_view_->GetInsets());
     speech_view_->SetBoundsRect(speech_bounds);
+  }
+
+  if (experimental_banner_view_) {
+    // Position the experimental banner in the lower right corner.
+    gfx::Rect image_bounds = experimental_banner_view_->GetImageBounds();
+    image_bounds.set_origin(
+        gfx::Point(contents_bounds.width() - image_bounds.width(),
+                   contents_bounds.height() - image_bounds.height()));
+    experimental_banner_view_->SetBoundsRect(image_bounds);
   }
 }
 

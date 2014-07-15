@@ -22,6 +22,10 @@ namespace test {
 class AppListViewTestApi;
 }
 
+namespace views {
+class ImageView;
+}
+
 namespace app_list {
 class ApplicationDragAndDropHost;
 class AppListMainView;
@@ -156,6 +160,9 @@ class APP_LIST_EXPORT AppListView : public views::BubbleDelegateView,
 
   AppListMainView* app_list_main_view_;
   SpeechView* speech_view_;
+
+  // The red "experimental" banner for the experimental app list.
+  views::ImageView* experimental_banner_view_;
 
   // A semi-transparent white overlay that covers the app list while dialogs are
   // open.
