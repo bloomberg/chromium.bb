@@ -4019,9 +4019,15 @@ bool RenderBox::shrinkToAvoidFloats() const
     return style()->width().isAuto();
 }
 
+static bool isReplacedElement(Node* node)
+{
+    // Checkboxes and radioboxes are not isReplaced() nor do they have their own renderer in which to override avoidFloats().
+    return node && node->isElementNode() && toElement(node)->isFormControlElement();
+}
+
 bool RenderBox::avoidsFloats() const
 {
-    return isReplaced() || hasOverflowClip() || isHR() || isLegend() || isWritingModeRoot() || isFlexItemIncludingDeprecated();
+    return isReplaced() || isReplacedElement(node()) || hasOverflowClip() || isHR() || isLegend() || isWritingModeRoot() || isFlexItemIncludingDeprecated();
 }
 
 InvalidationReason RenderBox::getPaintInvalidationReason(const RenderLayerModelObject& paintInvalidationContainer,
