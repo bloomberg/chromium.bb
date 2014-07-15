@@ -35,8 +35,9 @@ class TranslateBubbleViewBrowserTest : public InProcessBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(TranslateBubbleViewBrowserTest);
 };
 
+// Flaky: crbug.com/394066
 IN_PROC_BROWSER_TEST_F(TranslateBubbleViewBrowserTest,
-                       CloseBrowserWithoutTranslating) {
+                       DISABLED_CloseBrowserWithoutTranslating) {
   EXPECT_FALSE(TranslateBubbleView::IsShowing());
 
   // Show a French page and wait until the bubble is shown.
