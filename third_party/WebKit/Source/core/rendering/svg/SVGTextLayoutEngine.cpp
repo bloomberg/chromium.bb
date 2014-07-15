@@ -250,7 +250,7 @@ void SVGTextLayoutEngine::layoutInlineTextBox(SVGInlineTextBox* textBox)
 
     textBox->clearTextFragments();
     m_isVerticalText = style->svgStyle().isVerticalWritingMode();
-    layoutTextOnLineOrPath(textBox, &text, style);
+    layoutTextOnLineOrPath(textBox, text, *style);
 
     if (m_inPathLayout) {
         m_pathLayoutBoxes.append(textBox);
@@ -423,27 +423,27 @@ void SVGTextLayoutEngine::advanceToNextVisualCharacter(const SVGTextMetrics& vis
     m_visualCharacterOffset += visualMetrics.length();
 }
 
-void SVGTextLayoutEngine::layoutTextOnLineOrPath(SVGInlineTextBox* textBox, RenderSVGInlineText* text, const RenderStyle* style)
+void SVGTextLayoutEngine::layoutTextOnLineOrPath(SVGInlineTextBox* textBox, const RenderSVGInlineText& text, const RenderStyle& style)
 {
     if (m_inPathLayout && !m_textPathCalculator)
         return;
 
-    SVGElement* lengthContext = toSVGElement(text->parent()->node());
+    SVGElement* lengthContext = toSVGElement(text.parent()->node());
 
-    RenderObject* textParent = text->parent();
+    RenderObject* textParent = text.parent();
     bool definesTextLength = textParent ? parentDefinesTextLength(textParent) : false;
 
-    const SVGRenderStyle& svgStyle = style->svgStyle();
+    const SVGRenderStyle& svgStyle = style.svgStyle();
 
     m_visualMetricsListOffset = 0;
     m_visualCharacterOffset = 0;
 
-    const Vector<SVGTextMetrics>& visualMetricsValues = text->layoutAttributes()->textMetricsValues();
+    const Vector<SVGTextMetrics>& visualMetricsValues = text.layoutAttributes()->textMetricsValues();
     ASSERT(!visualMetricsValues.isEmpty());
 
-    const Font& font = style->font();
+    const Font& font = style.font();
 
-    SVGTextLayoutEngineSpacing spacingLayout(font, style->effectiveZoom());
+    SVGTextLayoutEngineSpacing spacingLayout(font, style.effectiveZoom());
     SVGTextLayoutEngineBaseline baselineLayout(font);
 
     bool didStartTextFragment = false;
@@ -451,7 +451,7 @@ void SVGTextLayoutEngine::layoutTextOnLineOrPath(SVGInlineTextBox* textBox, Rend
 
     float lastAngle = 0;
     float baselineShift = baselineLayout.calculateBaselineShift(svgStyle, lengthContext);
-    baselineShift -= baselineLayout.calculateAlignmentBaselineShift(m_isVerticalText, text);
+    baselineShift -= baselineLayout.calculateAlignmentBaselineShift(m_isVerticalText, &text);
 
     // Main layout algorithm.
     while (true) {
@@ -491,7 +491,7 @@ void SVGTextLayoutEngine::layoutTextOnLineOrPath(SVGInlineTextBox* textBox, Rend
         float angle = data.rotate == SVGTextLayoutAttributes::emptyValue() ? 0 : data.rotate;
 
         // Calculate glyph orientation angle.
-        UChar currentCharacter = text->characterAt(m_visualCharacterOffset);
+        UChar currentCharacter = text.characterAt(m_visualCharacterOffset);
         float orientationAngle = baselineLayout.calculateGlyphOrientationAngle(m_isVerticalText, svgStyle, currentCharacter);
 
         // Calculate glyph advance & x/y orientation shifts.

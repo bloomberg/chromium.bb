@@ -57,6 +57,7 @@ public:
     const SVGCharacterDataMap& characterDataMap() const { return m_characterDataMap; }
 
     Vector<SVGTextMetrics>& textMetricsValues() { return m_textMetricsValues; }
+    const Vector<SVGTextMetrics>& textMetricsValues() const { return m_textMetricsValues; }
 
 private:
     RenderSVGInlineText* m_context;

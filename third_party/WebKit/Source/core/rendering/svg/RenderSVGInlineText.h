@@ -33,6 +33,7 @@ public:
 
     bool characterStartsNewTextChunk(int position) const;
     SVGTextLayoutAttributes* layoutAttributes() { return &m_layoutAttributes; }
+    const SVGTextLayoutAttributes* layoutAttributes() const { return &m_layoutAttributes; }
 
     float scalingFactor() const { return m_scalingFactor; }
     const Font& scaledFont() const { return m_scaledFont; }

@@ -63,7 +63,7 @@ private:
     void recordTextFragment(SVGInlineTextBox*, const Vector<SVGTextMetrics>&);
     bool parentDefinesTextLength(RenderObject*) const;
 
-    void layoutTextOnLineOrPath(SVGInlineTextBox*, RenderSVGInlineText*, const RenderStyle*);
+    void layoutTextOnLineOrPath(SVGInlineTextBox*, const RenderSVGInlineText&, const RenderStyle&);
     void finalizeTransformMatrices(Vector<SVGInlineTextBox*>&);
 
     bool currentLogicalCharacterAttributes(SVGTextLayoutAttributes*&);
