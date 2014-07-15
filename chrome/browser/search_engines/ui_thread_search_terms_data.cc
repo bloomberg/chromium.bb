@@ -119,7 +119,8 @@ std::string UIThreadSearchTermsData::GetSuggestRequestIdentifier() const {
     return OmniboxFieldTrial::EnableAnswersInSuggest() ?
         "chrome-mobile-ext-ansg" : "chrome-mobile-ext";
   }
-  return "chrome-ext";
+  return OmniboxFieldTrial::EnableAnswersInSuggest() ?
+      "chrome-ext-ansg" : "chrome-ext";
 #else
   return "chrome-ext";
 #endif
