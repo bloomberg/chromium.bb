@@ -161,19 +161,26 @@ void CSSPropertyParser::addPropertyWithPrefixingVariant(CSSPropertyID propId, Pa
 
 void CSSPropertyParser::addProperty(CSSPropertyID propId, PassRefPtrWillBeRawPtr<CSSValue> value, bool important, bool implicit)
 {
-    // This property doesn't belong to a shorthand.
-    if (!m_currentShorthand) {
-        m_parsedProperties.append(CSSProperty(propId, value, important, false, CSSPropertyInvalid, m_implicitShorthand || implicit));
-        return;
+    int shorthandIndex = 0;
+    bool setFromShorthand = false;
+
+    if (m_currentShorthand) {
+        Vector<StylePropertyShorthand, 4> shorthands;
+        getMatchingShorthandsForLonghand(propId, &shorthands);
+        // Viewport descriptors have width and height as shorthands, but it doesn't
+        // make sense for CSSShorthands.in to consider them as such. The shorthand
+        // index is only used by the inspector and doesn't affect viewport
+        // descriptors.
+        if (shorthands.isEmpty())
+            ASSERT(m_currentShorthand == CSSPropertyWidth || m_currentShorthand == CSSPropertyHeight);
+        else
+            setFromShorthand = true;
+
+        if (shorthands.size() > 1)
+            shorthandIndex = indexOfShorthandForLonghand(m_currentShorthand, shorthands);
     }
 
-    Vector<StylePropertyShorthand, 4> shorthands;
-    getMatchingShorthandsForLonghand(propId, &shorthands);
-    // The longhand does not belong to multiple shorthands.
-    if (shorthands.size() == 1)
-        m_parsedProperties.append(CSSProperty(propId, value, important, true, CSSPropertyInvalid, m_implicitShorthand || implicit));
-    else
-        m_parsedProperties.append(CSSProperty(propId, value, important, true, indexOfShorthandForLonghand(m_currentShorthand, shorthands), m_implicitShorthand || implicit));
+    m_parsedProperties.append(CSSProperty(propId, value, important, setFromShorthand, shorthandIndex, m_implicitShorthand || implicit));
 }
 
 void CSSPropertyParser::rollbackLastProperties(int num)
