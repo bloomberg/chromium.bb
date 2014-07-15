@@ -825,6 +825,11 @@ void OutOfProcessInstance::NavigateTo(const std::string& url,
   // Skip the code below so an empty URL does not turn into "http://", which
   // will cause GURL to fail a DCHECK.
   if (!url_copy.empty()) {
+    // If |url_copy| starts with '#', then it's for the same URL with a
+    // different URL fragment.
+    if (url_copy[0] == '#') {
+      url_copy = url_ + url_copy;
+    }
     // If there's no scheme, add http.
     if (url_copy.find("://") == std::string::npos &&
         url_copy.find("mailto:") == std::string::npos) {
@@ -834,6 +839,7 @@ void OutOfProcessInstance::NavigateTo(const std::string& url,
     if (url_copy.find("http://") != 0 &&
         url_copy.find("https://") != 0 &&
         url_copy.find("ftp://") != 0 &&
+        url_copy.find("file://") != 0 &&
         url_copy.find("mailto:") != 0) {
       return;
     }
@@ -841,6 +847,7 @@ void OutOfProcessInstance::NavigateTo(const std::string& url,
     if (url_copy == "http://" ||
         url_copy == "https://" ||
         url_copy == "ftp://" ||
+        url_copy == "file://" ||
         url_copy == "mailto:") {
       return;
     }

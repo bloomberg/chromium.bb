@@ -1170,15 +1170,29 @@ void Instance::NavigateTo(const std::string& url, bool open_in_new_tab) {
   // Skip the code below so an empty URL does not turn into "http://", which
   // will cause GURL to fail a DCHECK.
   if (!url_copy.empty()) {
+    // If |url_copy| starts with '#', then it's for the same URL with a
+    // different URL fragment.
+    if (url_copy[0] == '#') {
+      url_copy = url_ + url_copy;
+      // Changing the href does not actually do anything when navigating in the
+      // same tab, so do the actual page scroll here. Then fall through so the
+      // href gets updated.
+      if (!open_in_new_tab) {
+        int page_number = GetInitialPage(url_copy);
+        if (page_number >= 0)
+          ScrollToPage(page_number);
+      }
+    }
     // If there's no scheme, add http.
     if (url_copy.find("://") == std::string::npos &&
         url_copy.find("mailto:") == std::string::npos) {
-      url_copy = std::string("http://") + url_copy;
+      url_copy = "http://" + url_copy;
     }
     // Make sure |url_copy| starts with a valid scheme.
     if (url_copy.find("http://") != 0 &&
         url_copy.find("https://") != 0 &&
         url_copy.find("ftp://") != 0 &&
+        url_copy.find("file://") != 0 &&
         url_copy.find("mailto:") != 0) {
       return;
     }
@@ -1186,6 +1200,7 @@ void Instance::NavigateTo(const std::string& url, bool open_in_new_tab) {
     if (url_copy == "http://" ||
         url_copy == "https://" ||
         url_copy == "ftp://" ||
+        url_copy == "file://" ||
         url_copy == "mailto:") {
       return;
     }
