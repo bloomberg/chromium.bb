@@ -102,7 +102,7 @@
             '../third_party/skia/src/opts/SkBitmapProcState_opts_arm.cpp',
           ],
         }],
-        [ 'target_arch == "arm" and (arm_version < 7 or (arm_neon == 0 and arm_neon_optional == 1))', {
+        [ 'target_arch == "arm" and (arm_version < 7 or arm_neon == 0)', {
           'sources': [
             '../third_party/skia/src/opts/memset.arm.S',
           ],

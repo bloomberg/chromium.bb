@@ -631,7 +631,7 @@ source_set("skia_opts") {
     }
 
     # Non-Neon ARM code.
-    if (arm_version < 7 || (!arm_use_neon && arm_optionally_use_neon)) {
+    if (arm_version < 7 || !arm_use_neon) {
       sources += [ "//third_party/skia/src/opts/memset.arm.S" ]
     }
 
