@@ -4510,7 +4510,8 @@ class LayerTreeHostTestBreakSwapPromise : public LayerTreeHostTest {
   TestSwapPromiseResult swap_promise_result_[3];
 };
 
-MULTI_THREAD_TEST_F(LayerTreeHostTestBreakSwapPromise);
+// TODO(miletus): Flaky test: crbug.com/393995
+// MULTI_THREAD_TEST_F(LayerTreeHostTestBreakSwapPromise);
 
 class SimpleSwapPromiseMonitor : public SwapPromiseMonitor {
  public:
