@@ -296,6 +296,7 @@ DesktopWindowTreeHostX11::CreateDragDropClient(
 
 void DesktopWindowTreeHostX11::Close() {
   // TODO(erg): Might need to do additional hiding tasks here.
+  delayed_resize_task_.Cancel();
 
   if (!close_widget_factory_.HasWeakPtrs()) {
     // And we delay the close so that if we are called from an ATL callback,
@@ -1625,12 +1626,18 @@ uint32_t DesktopWindowTreeHostX11::DispatchEvent(
       bool origin_changed = bounds_.origin() != bounds.origin();
       previous_bounds_ = bounds_;
       bounds_ = bounds;
-      if (size_changed)
-        OnHostResized(bounds.size());
+
       if (origin_changed)
         OnHostMoved(bounds_.origin());
-      if (size_changed)
-        ResetWindowRegion();
+
+      if (size_changed) {
+        delayed_resize_task_.Reset(base::Bind(
+            &DesktopWindowTreeHostX11::DelayedResize,
+            close_widget_factory_.GetWeakPtr(),
+            bounds.size()));
+        base::MessageLoop::current()->PostTask(
+            FROM_HERE, delayed_resize_task_.callback());
+      }
       break;
     }
     case GenericEvent: {
@@ -1789,6 +1796,12 @@ uint32_t DesktopWindowTreeHostX11::DispatchEvent(
     }
   }
   return ui::POST_DISPATCH_STOP_PROPAGATION;
+}
+
+void DesktopWindowTreeHostX11::DelayedResize(const gfx::Size& size) {
+  OnHostResized(size);
+  ResetWindowRegion();
+  delayed_resize_task_.Cancel();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

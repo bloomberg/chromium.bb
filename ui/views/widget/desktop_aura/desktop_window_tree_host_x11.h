@@ -9,6 +9,7 @@
 #include <X11/Xlib.h>
 
 #include "base/basictypes.h"
+#include "base/cancelable_callback.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "ui/aura/window_tree_host.h"
@@ -231,6 +232,8 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11
   virtual bool CanDispatchEvent(const ui::PlatformEvent& event) OVERRIDE;
   virtual uint32_t DispatchEvent(const ui::PlatformEvent& event) OVERRIDE;
 
+  void DelayedResize(const gfx::Size& size);
+
   base::WeakPtrFactory<DesktopWindowTreeHostX11> close_widget_factory_;
 
   // X11 things
@@ -324,6 +327,8 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11
   // attention to the window or completely ignore the hint. We stop flashing
   // the frame when |xwindow_| gains focus or handles a mouse button event.
   bool urgency_hint_set_;
+
+  base::CancelableCallback<void()> delayed_resize_task_;
 
   DISALLOW_COPY_AND_ASSIGN(DesktopWindowTreeHostX11);
 };
