@@ -136,9 +136,8 @@ void DecoderSelector<StreamType>::Abort() {
   }
 
   if (decrypted_stream_) {
-    decrypted_stream_->Stop(
-        base::Bind(&DecoderSelector<StreamType>::ReturnNullDecoder,
-                   weak_ptr_factory_.GetWeakPtr()));
+    decrypted_stream_->Stop();
+    ReturnNullDecoder();
     return;
   }
 

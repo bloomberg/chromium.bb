@@ -47,7 +47,7 @@ class MEDIA_EXPORT DecryptingDemuxerStream : public DemuxerStream {
   // Note: During the teardown process, media pipeline will be waiting on the
   // render main thread. If a Decryptor depends on the render main thread
   // (e.g. PpapiDecryptor), the pending DecryptCB would not be satisfied.
-  void Stop(const base::Closure& closure);
+  void Stop();
 
   // DemuxerStream implementation.
   virtual void Read(const ReadCB& read_cb) OVERRIDE;

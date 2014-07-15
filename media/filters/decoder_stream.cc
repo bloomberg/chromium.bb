@@ -166,9 +166,10 @@ void DecoderStream<StreamType>::Stop(const base::Closure& closure) {
   DCHECK_NE(state_, STATE_STOPPED) << state_;
   DCHECK(stop_cb_.is_null());
 
-  stop_cb_ = closure;
-
+  // TODO(xhwang): This is the only asynchronousness in DecoderStream::Stop().
+  // Fix this so that we can merge the stopping code into the dtor.
   if (state_ == STATE_INITIALIZING) {
+    stop_cb_ = closure;
     decoder_selector_->Abort();
     return;
   }
@@ -186,23 +187,16 @@ void DecoderStream<StreamType>::Stop(const base::Closure& closure) {
   if (!reset_cb_.is_null())
     task_runner_->PostTask(FROM_HERE, base::ResetAndReturn(&reset_cb_));
 
-  if (decrypting_demuxer_stream_) {
-    decrypting_demuxer_stream_->Stop(base::Bind(
-        &DecoderStream<StreamType>::StopDecoder, weak_factory_.GetWeakPtr()));
-    return;
-  }
-
-  // We may not have a |decoder_| if Stop() was called during initialization.
-  if (decoder_) {
-    StopDecoder();
-    return;
-  }
+  if (decrypting_demuxer_stream_)
+    decrypting_demuxer_stream_->Stop();
+  if (decoder_)
+    decoder_->Stop();
 
   state_ = STATE_STOPPED;
   stream_ = NULL;
   decoder_.reset();
   decrypting_demuxer_stream_.reset();
-  task_runner_->PostTask(FROM_HERE, base::ResetAndReturn(&stop_cb_));
+  task_runner_->PostTask(FROM_HERE, closure);
 }
 
 template <DemuxerStream::Type StreamType>
@@ -573,23 +567,6 @@ void DecoderStream<StreamType>::OnDecoderReset() {
 
   // The resetting process will be continued in OnDecoderReinitialized().
   ReinitializeDecoder();
-}
-
-template <DemuxerStream::Type StreamType>
-void DecoderStream<StreamType>::StopDecoder() {
-  FUNCTION_DVLOG(2);
-  DCHECK(task_runner_->BelongsToCurrentThread());
-  DCHECK(state_ != STATE_UNINITIALIZED && state_ != STATE_STOPPED) << state_;
-  DCHECK(!stop_cb_.is_null());
-
-  state_ = STATE_STOPPED;
-  decoder_->Stop();
-  stream_ = NULL;
-  decoder_.reset();
-  decrypting_demuxer_stream_.reset();
-  // Post |stop_cb_| because pending |read_cb_| and/or |reset_cb_| are also
-  // posted in Stop().
-  task_runner_->PostTask(FROM_HERE, base::ResetAndReturn(&stop_cb_));
 }
 
 template class DecoderStream<DemuxerStream::VIDEO>;

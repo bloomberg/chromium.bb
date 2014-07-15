@@ -165,8 +165,6 @@ class MEDIA_EXPORT DecoderStream {
   void ResetDecoder();
   void OnDecoderReset();
 
-  void StopDecoder();
-
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
   State state_;

@@ -242,7 +242,7 @@ class DecryptingDemuxerStreamTest : public testing::Test {
   void Stop() {
     if (is_decryptor_set_)
       EXPECT_CALL(*decryptor_, CancelDecrypt(Decryptor::kAudio));
-    demuxer_stream_->Stop(NewExpectedClosure());
+    demuxer_stream_->Stop();
     message_loop_.RunUntilIdle();
   }
 
