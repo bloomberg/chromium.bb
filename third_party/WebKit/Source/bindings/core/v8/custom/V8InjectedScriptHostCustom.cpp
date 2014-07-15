@@ -58,6 +58,7 @@
 #include "core/inspector/InjectedScript.h"
 #include "core/inspector/InjectedScriptHost.h"
 #include "core/inspector/InspectorDOMAgent.h"
+#include "core/inspector/JavaScriptCallFrame.h"
 #include "platform/JSONValues.h"
 
 namespace WebCore {
@@ -335,7 +336,7 @@ void V8InjectedScriptHost::inspectMethodCustom(const v8::FunctionCallbackInfo<v8
     host->inspectImpl(object.toJSONValue(scriptState), hints.toJSONValue(scriptState));
 }
 
-void V8InjectedScriptHost::evaluateMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
+void V8InjectedScriptHost::evalMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Isolate* isolate = info.GetIsolate();
     if (info.Length() < 1) {
@@ -357,6 +358,35 @@ void V8InjectedScriptHost::evaluateMethodCustom(const v8::FunctionCallbackInfo<v
         return;
     }
     v8SetReturnValue(info, result);
+}
+
+void V8InjectedScriptHost::evaluateWithExceptionDetailsMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    v8::Isolate* isolate = info.GetIsolate();
+    if (info.Length() < 1) {
+        isolate->ThrowException(v8::Exception::Error(v8::String::NewFromUtf8(isolate, "One argument expected.")));
+        return;
+    }
+
+    v8::Handle<v8::String> expression = info[0]->ToString();
+    if (expression.IsEmpty()) {
+        isolate->ThrowException(v8::Exception::Error(v8::String::NewFromUtf8(isolate, "The argument must be a string.")));
+        return;
+    }
+
+    ASSERT(isolate->InContext());
+    v8::TryCatch tryCatch;
+    v8::Handle<v8::Value> result = V8ScriptRunner::compileAndRunInternalScript(expression, info.GetIsolate());
+
+    v8::Local<v8::Object> wrappedResult = v8::Object::New(isolate);
+    if (tryCatch.HasCaught()) {
+        wrappedResult->Set(v8::String::NewFromUtf8(isolate, "result"), tryCatch.Exception());
+        wrappedResult->Set(v8::String::NewFromUtf8(isolate, "exceptionDetails"), JavaScriptCallFrame::createExceptionDetails(tryCatch.Message(), isolate));
+    } else {
+        wrappedResult->Set(v8::String::NewFromUtf8(isolate, "result"), result);
+        wrappedResult->Set(v8::String::NewFromUtf8(isolate, "exceptionDetails"), v8::Undefined(isolate));
+    }
+    v8SetReturnValue(info, wrappedResult);
 }
 
 void V8InjectedScriptHost::setFunctionVariableValueMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)

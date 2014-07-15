@@ -351,7 +351,7 @@ InjectedScript.prototype = {
      */
     _parseObjectId: function(objectId)
     {
-        return nullifyObjectProto(InjectedScriptHost.evaluate("(" + objectId + ")"));
+        return nullifyObjectProto(InjectedScriptHost.eval("(" + objectId + ")"));
     },
 
     /**
@@ -374,7 +374,7 @@ InjectedScript.prototype = {
      */
     dispatch: function(methodName, args)
     {
-        var argsArray = InjectedScriptHost.evaluate("(" + args + ")");
+        var argsArray = InjectedScriptHost.eval("(" + args + ")");
         var result = this[methodName].apply(this, argsArray);
         if (typeof result === "undefined") {
             inspectedWindow.console.error("Web Inspector error: InjectedScript.%s returns undefined", methodName);
@@ -578,7 +578,7 @@ InjectedScript.prototype = {
      */
     evaluate: function(expression, objectGroup, injectCommandLineAPI, returnByValue, generatePreview)
     {
-        return this._evaluateAndWrap(InjectedScriptHost.evaluate, InjectedScriptHost, expression, objectGroup, false, injectCommandLineAPI, returnByValue, generatePreview);
+        return this._evaluateAndWrap(InjectedScriptHost.evaluateWithExceptionDetails, InjectedScriptHost, expression, objectGroup, false, injectCommandLineAPI, returnByValue, generatePreview);
     },
 
     /**
@@ -597,7 +597,7 @@ InjectedScript.prototype = {
 
         if (args) {
             var resolvedArgs = [];
-            args = InjectedScriptHost.evaluate(args);
+            args = InjectedScriptHost.eval(args);
             for (var i = 0; i < args.length; ++i) {
                 try {
                     resolvedArgs[i] = this._resolveCallArgument(args[i]);
@@ -609,7 +609,7 @@ InjectedScript.prototype = {
 
         try {
             var objectGroup = this._idToObjectGroupName[parsedObjectId.id];
-            var func = InjectedScriptHost.evaluate("(" + expression + ")");
+            var func = InjectedScriptHost.eval("(" + expression + ")");
             if (typeof func !== "function")
                 return "Given expression does not evaluate to a function";
 
@@ -664,27 +664,28 @@ InjectedScript.prototype = {
      */
     _evaluateAndWrap: function(evalFunction, object, expression, objectGroup, isEvalOnCallFrame, injectCommandLineAPI, returnByValue, generatePreview, scopeChain)
     {
-        try {
+        var wrappedResult = this._evaluateOn(evalFunction, object, objectGroup, expression, isEvalOnCallFrame, injectCommandLineAPI, scopeChain);
+        if (!wrappedResult.exceptionDetails) {
             return { wasThrown: false,
-                     result: this._wrapObject(this._evaluateOn(evalFunction, object, objectGroup, expression, isEvalOnCallFrame, injectCommandLineAPI, scopeChain), objectGroup, returnByValue, generatePreview),
+                     result: this._wrapObject(wrappedResult.result, objectGroup, returnByValue, generatePreview),
                      __proto__: null };
-        } catch (e) {
-            return this._createThrownValue(e, objectGroup);
         }
+        return this._createThrownValue(wrappedResult.result, objectGroup, wrappedResult.exceptionDetails);
     },
 
     /**
      * @param {*} value
      * @param {string} objectGroup
+     * @param {!DebuggerAgent.ExceptionDetails=} exceptionDetails
      * @return {!Object}
      */
-    _createThrownValue: function(value, objectGroup)
+    _createThrownValue: function(value, objectGroup, exceptionDetails)
     {
         var remoteObject = this._wrapObject(value, objectGroup);
         try {
             remoteObject.description = toStringDescription(value);
         } catch (e) {}
-        return { wasThrown: true, result: remoteObject, __proto__: null };
+        return { wasThrown: true, result: remoteObject, exceptionDetails: exceptionDetails, __proto__: null };
     },
 
     /**
@@ -727,10 +728,10 @@ InjectedScript.prototype = {
 
             if (prefix)
                 expression = prefix + "\n" + expression + "\n" + suffix;
-            var result = evalFunction.call(object, expression);
-            if (objectGroup === "console")
-                this._lastResult = result;
-            return result;
+            var wrappedResult = evalFunction.call(object, expression);
+            if (objectGroup === "console" && !wrappedResult.exceptionDetails)
+                this._lastResult = wrappedResult.result;
+            return wrappedResult;
         } finally {
             if (injectCommandLineAPI)
                 delete inspectedWindow.__commandLineAPI;
@@ -772,13 +773,13 @@ InjectedScript.prototype = {
      */
     evaluateOnCallFrame: function(topCallFrame, asyncCallStacks, callFrameId, expression, objectGroup, injectCommandLineAPI, returnByValue, generatePreview)
     {
-        var parsedCallFrameId = nullifyObjectProto(InjectedScriptHost.evaluate("(" + callFrameId + ")"));
+        var parsedCallFrameId = nullifyObjectProto(InjectedScriptHost.eval("(" + callFrameId + ")"));
         var callFrame = this._callFrameForParsedId(topCallFrame, parsedCallFrameId, asyncCallStacks);
         if (!callFrame)
             return "Could not find call frame with given id";
         if (parsedCallFrameId["asyncOrdinal"])
-            return this._evaluateAndWrap(InjectedScriptHost.evaluate, InjectedScriptHost, expression, objectGroup, false, injectCommandLineAPI, returnByValue, generatePreview, callFrame.scopeChain);
-        return this._evaluateAndWrap(callFrame.evaluate, callFrame, expression, objectGroup, true, injectCommandLineAPI, returnByValue, generatePreview);
+            return this._evaluateAndWrap(InjectedScriptHost.evaluateWithExceptionDetails, InjectedScriptHost, expression, objectGroup, false, injectCommandLineAPI, returnByValue, generatePreview, callFrame.scopeChain);
+        return this._evaluateAndWrap(callFrame.evaluateWithExceptionDetails, callFrame, expression, objectGroup, true, injectCommandLineAPI, returnByValue, generatePreview);
     },
 
     /**
@@ -840,7 +841,7 @@ InjectedScript.prototype = {
         }
         var newValueJson;
         try {
-            newValueJson = InjectedScriptHost.evaluate("(" + newValueJsonString + ")");
+            newValueJson = InjectedScriptHost.eval("(" + newValueJsonString + ")");
         } catch (e) {
             return "Failed to parse new value JSON " + newValueJsonString + " : " + e;
         }
@@ -865,7 +866,7 @@ InjectedScript.prototype = {
      */
     _callFrameForId: function(topCallFrame, callFrameId)
     {
-        var parsedCallFrameId = nullifyObjectProto(InjectedScriptHost.evaluate("(" + callFrameId + ")"));
+        var parsedCallFrameId = nullifyObjectProto(InjectedScriptHost.eval("(" + callFrameId + ")"));
         return this._callFrameForParsedId(topCallFrame, parsedCallFrameId, []);
     },
 
@@ -935,7 +936,7 @@ InjectedScript.prototype = {
     injectModule: function(name, source)
     {
         delete this._modules[name];
-        var moduleFunction = InjectedScriptHost.evaluate("(" + source + ")");
+        var moduleFunction = InjectedScriptHost.eval("(" + source + ")");
         if (typeof moduleFunction !== "function") {
             inspectedWindow.console.error("Web Inspector error: A function was expected for module %s evaluation", name);
             return null;

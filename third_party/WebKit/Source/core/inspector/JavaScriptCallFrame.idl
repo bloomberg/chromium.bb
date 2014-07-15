@@ -36,7 +36,7 @@
     const unsigned short CLOSURE_SCOPE = 3;
     const unsigned short CATCH_SCOPE = 4;
 
-    [Custom] void evaluate(DOMString script);
+    [Custom] void evaluateWithExceptionDetails(DOMString script);
     [Custom] any restart();
 
     // Only declarative scope (local, with and catch) is accepted. Returns undefined.
