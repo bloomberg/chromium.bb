@@ -75,6 +75,10 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
                 menu.findItem(R.id.contextmenu_open_original_image_in_new_tab).setVisible(false);
             }
 
+            // Avoid showing open image option for same image which is already opened.
+            if (mDelegate.getPageUrl().equals(params.getSrcUrl())) {
+                menu.findItem(R.id.contextmenu_open_image).setVisible(false);
+            }
             final TemplateUrlService templateUrlServiceInstance = TemplateUrlService.getInstance();
             final boolean isSearchByImageAvailable =
                     UrlUtilities.isDownloadableScheme(params.getSrcUrl()) &&

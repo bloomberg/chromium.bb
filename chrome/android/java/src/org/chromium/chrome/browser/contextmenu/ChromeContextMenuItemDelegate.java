@@ -79,4 +79,9 @@ public interface ChromeContextMenuItemDelegate {
      * Called when a search by image should be performed in a new tab.
      */
     void onSearchByImageInNewTab();
+
+   /**
+    * @return page url.
+    */
+    String getPageUrl();
 }

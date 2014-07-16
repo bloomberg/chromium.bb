@@ -58,4 +58,9 @@ public class EmptyChromeContextMenuItemDelegate implements ChromeContextMenuItem
     @Override
     public void onSearchByImageInNewTab() {
     }
+
+    @Override
+    public String getPageUrl() {
+        return "";
+    }
 }

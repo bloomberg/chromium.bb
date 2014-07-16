@@ -168,6 +168,11 @@ public class Tab implements NavigationClient {
         public void onSaveImageToClipboard(String url) {
             mClipboard.setHTMLText("<img src=\"" + url + "\">", url, url);
         }
+
+        @Override
+        public String getPageUrl() {
+            return getUrl();
+        }
     }
 
     /**
