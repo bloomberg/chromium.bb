@@ -31,16 +31,16 @@ void WebNodeTest::SetUp()
     m_pageHolder = WebCore::DummyPageHolder::create(IntSize(800, 600));
 }
 
-TEST_F(WebNodeTest, GetElementsByTagName)
+TEST_F(WebNodeTest, GetElementsByHTMLTagName)
 {
     document().documentElement()->setInnerHTML("<body><LABEL></LABEL><svg xmlns='http://www.w3.org/2000/svg'><label></label></svg></body>", ASSERT_NO_EXCEPTION);
     WebNode node(document().documentElement());
-    // WebNode::getElementsByTagName returns only HTML elements.
-    WebElementCollection collection = node.getElementsByTagName("label");
+    // WebNode::getElementsByHTMLTagName returns only HTML elements.
+    WebElementCollection collection = node.getElementsByHTMLTagName("label");
     EXPECT_EQ(1u, collection.length());
     EXPECT_TRUE(collection.firstItem().hasHTMLTagName("label"));
     // The argument should be lower-case.
-    collection = node.getElementsByTagName("LABEL");
+    collection = node.getElementsByHTMLTagName("LABEL");
     EXPECT_EQ(0u, collection.length());
 }
 
