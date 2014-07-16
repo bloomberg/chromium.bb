@@ -339,6 +339,19 @@ Polymer('audio-player', {
         if (this.audioController.volumeSliderShown && this.model.volume > 9)
           this.model.volume -= 10;
         break;
+      case 'MediaNextTrack':
+        this.onControllerNextClicked();
+        break;
+      case 'MediaPlayPause':
+        var playing = this.audioController.playing;
+        this.onControllerPlayingChanged(playing, !playing);
+        break;
+      case 'MediaPreviousTrack':
+        this.onControllerPreviousClicked();
+        break;
+      case 'MediaStop':
+        // TODO: Define "Stop" behavior.
+        break;
     }
   },
 });
