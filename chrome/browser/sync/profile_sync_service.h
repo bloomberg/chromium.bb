@@ -22,7 +22,6 @@
 #include "base/timer/timer.h"
 #include "chrome/browser/sync/backend_unrecoverable_error_handler.h"
 #include "chrome/browser/sync/backup_rollback_controller.h"
-#include "chrome/browser/sync/glue/local_device_info_provider.h"
 #include "chrome/browser/sync/glue/sync_backend_host.h"
 #include "chrome/browser/sync/glue/synced_device_tracker.h"
 #include "chrome/browser/sync/profile_sync_service_base.h"
@@ -89,7 +88,6 @@ namespace sync_pb {
 class EncryptedData;
 }  // namespace sync_pb
 
-using browser_sync::LocalDeviceInfoProvider;
 using browser_sync::SessionsSyncManager;
 
 // ProfileSyncService is the layer between browser subsystems like bookmarks,
@@ -184,6 +182,7 @@ class ProfileSyncService : public ProfileSyncServiceBase,
                            public browser_sync::DataTypeEncryptionHandler,
                            public OAuth2TokenService::Consumer,
                            public OAuth2TokenService::Observer,
+                           public SessionsSyncManager::SyncInternalApiDelegate,
                            public SigninManagerBase::Observer {
  public:
   typedef browser_sync::SyncBackendHost::Status Status;
@@ -266,7 +265,7 @@ class ProfileSyncService : public ProfileSyncServiceBase,
 
   // Takes ownership of |factory| and |signin_wrapper|.
   ProfileSyncService(
-      scoped_ptr<ProfileSyncComponentsFactory> factory,
+      ProfileSyncComponentsFactory* factory,
       Profile* profile,
       scoped_ptr<SupervisedUserSigninManagerWrapper> signin_wrapper,
       ProfileOAuth2TokenService* oauth2_token_service,
@@ -352,15 +351,22 @@ class ProfileSyncService : public ProfileSyncServiceBase,
   // currently syncing, returns NULL.
   virtual browser_sync::OpenTabsUIDelegate* GetOpenTabsUIDelegate();
 
-  // Returns the SyncedWindowDelegatesGetter from the embedded sessions manager.
-  virtual browser_sync::SyncedWindowDelegatesGetter*
-  GetSyncedWindowDelegatesGetter() const;
-
   // Returns the SyncableService for syncer::SESSIONS.
   virtual syncer::SyncableService* GetSessionsSyncableService();
 
-  // Returns DeviceInfo provider for the local device.
-  virtual browser_sync::LocalDeviceInfoProvider* GetLocalDeviceInfoProvider();
+  // SyncInternalApiDelegate implementation.
+  //
+  // Returns sync's representation of the local device info.
+  // Return value is an empty scoped_ptr if the device info is unavailable.
+  virtual scoped_ptr<browser_sync::DeviceInfo> GetLocalDeviceInfo()
+      const OVERRIDE;
+
+  // Gets the guid for the local device. Can be used by other layers to
+  // to distinguish sync data that belongs to the local device vs data
+  // that belongs to remote devices. Returns empty string if sync is not
+  // initialized. The GUID is not persistent across Chrome signout/signin.
+  // If you sign out of Chrome and sign in, a new GUID is generated.
+  virtual std::string GetLocalSyncCacheGUID() const OVERRIDE;
 
   // Returns sync's representation of the device info for a client identified
   // by |client_id|. Return value is an empty scoped ptr if the device info
@@ -396,7 +402,6 @@ class ProfileSyncService : public ProfileSyncServiceBase,
       const syncer::WeakHandle<syncer::JsBackend>& js_backend,
       const syncer::WeakHandle<syncer::DataTypeDebugInfoListener>&
           debug_info_listener,
-      const std::string& cache_guid,
       bool success) OVERRIDE;
   virtual void OnSyncCycleCompleted() OVERRIDE;
   virtual void OnProtocolEvent(const syncer::ProtocolEvent& event) OVERRIDE;
@@ -1108,8 +1113,6 @@ class ProfileSyncService : public ProfileSyncServiceBase,
   base::Time token_receive_time_;
   GoogleServiceAuthError last_get_token_error_;
   base::Time next_token_request_time_;
-
-  scoped_ptr<LocalDeviceInfoProvider> local_device_;
 
   // Locally owned SyncableService implementations.
   scoped_ptr<SessionsSyncManager> sessions_sync_manager_;

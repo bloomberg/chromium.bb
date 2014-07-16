@@ -10,7 +10,6 @@
 #include "chrome/browser/extensions/api/signed_in_devices/id_mapping_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/glue/device_info.h"
-#include "chrome/browser/sync/glue/local_device_info_provider.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/common/extensions/api/signed_in_devices.h"
@@ -18,7 +17,6 @@
 
 using base::DictionaryValue;
 using browser_sync::DeviceInfo;
-using browser_sync::LocalDeviceInfoProvider;
 
 namespace extensions {
 
@@ -94,10 +92,7 @@ scoped_ptr<DeviceInfo> GetLocalDeviceInfo(const std::string& extension_id,
   if (!pss) {
     return scoped_ptr<DeviceInfo>();
   }
-
-  LocalDeviceInfoProvider* local_device = pss->GetLocalDeviceInfoProvider();
-  DCHECK(local_device);
-  std::string guid = local_device->GetLocalSyncCacheGUID();
+  std::string guid = pss->GetLocalSyncCacheGUID();
   scoped_ptr<DeviceInfo> device = GetDeviceInfoForClientId(guid,
                                                            extension_id,
                                                            profile);

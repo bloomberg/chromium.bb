@@ -646,8 +646,7 @@ void SyncBackendHostImpl::HandleInitializationSuccessOnFrontendLoop(
     const syncer::WeakHandle<syncer::JsBackend> js_backend,
     const syncer::WeakHandle<syncer::DataTypeDebugInfoListener>
         debug_info_listener,
-    syncer::SyncContextProxy* sync_context_proxy,
-    const std::string& cache_guid) {
+    syncer::SyncContextProxy* sync_context_proxy) {
   DCHECK_EQ(base::MessageLoop::current(), frontend_loop_);
 
   if (sync_context_proxy)
@@ -677,7 +676,6 @@ void SyncBackendHostImpl::HandleInitializationSuccessOnFrontendLoop(
   AddExperimentalTypes();
   frontend_->OnBackendInitialized(js_backend,
                                   debug_info_listener,
-                                  cache_guid,
                                   true);
 }
 
@@ -689,7 +687,6 @@ void SyncBackendHostImpl::HandleInitializationFailureOnFrontendLoop() {
   frontend_->OnBackendInitialized(
       syncer::WeakHandle<syncer::JsBackend>(),
       syncer::WeakHandle<syncer::DataTypeDebugInfoListener>(),
-      "",
       false);
 }
 

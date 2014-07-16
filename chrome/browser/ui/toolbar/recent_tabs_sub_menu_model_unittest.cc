@@ -12,7 +12,6 @@
 #include "chrome/browser/sessions/session_types.h"
 #include "chrome/browser/sessions/persistent_tab_restore_service.h"
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
-#include "chrome/browser/sync/glue/local_device_info_provider_mock.h"
 #include "chrome/browser/sync/glue/synced_session.h"
 #include "chrome/browser/sync/profile_sync_service_mock.h"
 #include "chrome/browser/sync/sessions/sessions_sync_manager.h"
@@ -110,19 +109,14 @@ class DummyRouter : public browser_sync::LocalSessionEventRouter {
 }  // namespace
 
 class RecentTabsSubMenuModelTest
-    : public BrowserWithTestWindowTest {
+    : public BrowserWithTestWindowTest,
+      public browser_sync::SessionsSyncManager::SyncInternalApiDelegate {
  public:
   RecentTabsSubMenuModelTest()
-      : sync_service_(&testing_profile_),
-        local_device_(new browser_sync::LocalDeviceInfoProviderMock(
-                      "RecentTabsSubMenuModelTest",
-                      "Test Machine",
-                      "Chromium 10k",
-                      "Chrome 10k",
-                      sync_pb::SyncEnums_DeviceType_TYPE_LINUX)) {
+      : sync_service_(&testing_profile_) {
     manager_.reset(new browser_sync::SessionsSyncManager(
         &testing_profile_,
-        local_device_.get(),
+        this,
         scoped_ptr<browser_sync::LocalSessionEventRouter>(
             new DummyRouter())));
     manager_->MergeDataAndStartSyncing(
@@ -147,6 +141,7 @@ class RecentTabsSubMenuModelTest
         Profile::FromBrowserContext(browser_context), NULL);
   }
 
+
   browser_sync::OpenTabsUIDelegate* GetOpenTabsDelegate() {
     return manager_.get();
   }
@@ -155,12 +150,25 @@ class RecentTabsSubMenuModelTest
     helper->ExportToSessionsSyncManager(manager_.get());
   }
 
+  virtual scoped_ptr<browser_sync::DeviceInfo> GetLocalDeviceInfo()
+      const OVERRIDE {
+    return scoped_ptr<browser_sync::DeviceInfo>(
+        new browser_sync::DeviceInfo(GetLocalSyncCacheGUID(),
+                       "Test Machine",
+                       "Chromium 10k",
+                       "Chrome 10k",
+                       sync_pb::SyncEnums_DeviceType_TYPE_LINUX));
+  }
+
+  virtual std::string GetLocalSyncCacheGUID() const OVERRIDE {
+    return "RecentTabsSubMenuModelTest";
+  }
+
  private:
   TestingProfile testing_profile_;
   testing::NiceMock<ProfileSyncServiceMock> sync_service_;
 
   scoped_ptr<browser_sync::SessionsSyncManager> manager_;
-  scoped_ptr<browser_sync::LocalDeviceInfoProviderMock> local_device_;
 };
 
 // Test disabled "Recently closed" header with no foreign tabs.

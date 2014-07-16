@@ -120,7 +120,8 @@ class SyncNonFrontendDataTypeControllerTest : public testing::Test {
 
   virtual void SetUp() {
     db_thread_.Start();
-    profile_sync_factory_.reset(new ProfileSyncComponentsFactoryMock());
+    profile_sync_factory_.reset(
+        new StrictMock<ProfileSyncComponentsFactoryMock>());
 
     // All of these are refcounted, so don't need to be released.
     dtc_mock_ = new StrictMock<NonFrontendDataTypeControllerMock>();

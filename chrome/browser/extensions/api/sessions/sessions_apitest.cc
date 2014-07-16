@@ -11,9 +11,7 @@
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/sync/glue/local_device_info_provider_mock.h"
 #include "chrome/browser/sync/open_tabs_ui_delegate.h"
-#include "chrome/browser/sync/profile_sync_components_factory_mock.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/profile_sync_service_mock.h"
@@ -87,9 +85,6 @@ class ExtensionSessionsTest : public InProcessBrowserTest {
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE;
   virtual void SetUpOnMainThread() OVERRIDE;
  protected:
-  static KeyedService* BuildProfileSyncService(
-      content::BrowserContext* profile);
-
   void CreateTestProfileSyncService();
   void CreateTestExtension();
   void CreateSessionModels();
@@ -118,25 +113,6 @@ void ExtensionSessionsTest::SetUpOnMainThread() {
   CreateTestExtension();
 }
 
-KeyedService* ExtensionSessionsTest::BuildProfileSyncService(
-    content::BrowserContext* profile) {
-
-  ProfileSyncComponentsFactoryMock* factory =
-      new ProfileSyncComponentsFactoryMock();
-
-  ON_CALL(*factory, CreateLocalDeviceInfoProviderMock()).WillByDefault(
-      testing::Return(new browser_sync::LocalDeviceInfoProviderMock(
-          kSessionTags[0],
-          "machine name",
-          "Chromium 10k",
-          "Chrome 10k",
-          sync_pb::SyncEnums_DeviceType_TYPE_LINUX)));
-
-  return new ProfileSyncServiceMock(
-      scoped_ptr<ProfileSyncComponentsFactory>(factory),
-      static_cast<Profile*>(profile));
-}
-
 void ExtensionSessionsTest::CreateTestProfileSyncService() {
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   base::FilePath path;
@@ -149,7 +125,7 @@ void ExtensionSessionsTest::CreateTestProfileSyncService() {
   profile_manager->RegisterTestingProfile(profile, true, false);
   ProfileSyncServiceMock* service = static_cast<ProfileSyncServiceMock*>(
       ProfileSyncServiceFactory::GetInstance()->SetTestingFactoryAndUse(
-      profile, &ExtensionSessionsTest::BuildProfileSyncService));
+      profile, &ProfileSyncServiceMock::BuildMockProfileSyncService));
   browser_ = new Browser(Browser::CreateParams(
       profile, chrome::HOST_DESKTOP_TYPE_NATIVE));
 
@@ -166,6 +142,15 @@ void ExtensionSessionsTest::CreateTestProfileSyncService() {
       testing::ReturnRef(no_error));
   ON_CALL(*service, GetActiveDataTypes()).WillByDefault(
       testing::Return(preferred_types));
+  ON_CALL(*service, GetLocalDeviceInfoMock()).WillByDefault(
+      testing::Return(new browser_sync::DeviceInfo(
+          std::string(kSessionTags[0]),
+          "machine name",
+          "Chromium 10k",
+          "Chrome 10k",
+          sync_pb::SyncEnums_DeviceType_TYPE_LINUX)));
+  ON_CALL(*service, GetLocalSyncCacheGUID()).WillByDefault(
+      testing::Return(std::string(kSessionTags[0])));
   EXPECT_CALL(*service, AddObserver(testing::_)).Times(testing::AnyNumber());
   EXPECT_CALL(*service, RemoveObserver(testing::_)).Times(testing::AnyNumber());
 

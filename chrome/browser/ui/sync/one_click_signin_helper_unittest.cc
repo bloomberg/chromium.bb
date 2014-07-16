@@ -23,7 +23,6 @@
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/signin/signin_names_io_thread.h"
 #include "chrome/browser/signin/signin_promo.h"
-#include "chrome/browser/sync/profile_sync_components_factory_mock.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/test_profile_sync_service.h"
 #include "chrome/browser/ui/sync/one_click_signin_helper.h"
@@ -203,8 +202,7 @@ class OneClickTestProfileSyncService : public TestProfileSyncService {
  private:
   explicit OneClickTestProfileSyncService(Profile* profile)
       : TestProfileSyncService(
-          scoped_ptr<ProfileSyncComponentsFactory>(
-              new ProfileSyncComponentsFactoryMock()),
+          NULL,
           profile,
           SigninManagerFactory::GetForProfile(profile),
           ProfileOAuth2TokenServiceFactory::GetForProfile(profile),

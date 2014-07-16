@@ -8,8 +8,6 @@
 
 namespace browser_sync {
 
-const char kTestCacheGuid[] = "test-guid";
-
 SyncBackendHostMock::SyncBackendHostMock() : fail_initial_download_(false) {}
 SyncBackendHostMock::~SyncBackendHostMock() {}
 
@@ -28,7 +26,6 @@ void SyncBackendHostMock::Initialize(
   frontend->OnBackendInitialized(
       syncer::WeakHandle<syncer::JsBackend>(),
       syncer::WeakHandle<syncer::DataTypeDebugInfoListener>(),
-      kTestCacheGuid,
       !fail_initial_download_);
 }
 

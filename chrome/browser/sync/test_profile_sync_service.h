@@ -73,7 +73,7 @@ class TestProfileSyncService : public ProfileSyncService {
   // TODO(tim): Add ability to inject TokenService alongside SigninManager.
   // TODO(rogerta): what does above comment mean?
   TestProfileSyncService(
-      scoped_ptr<ProfileSyncComponentsFactory> factory,
+      ProfileSyncComponentsFactory* factory,
       Profile* profile,
       SigninManagerBase* signin,
       ProfileOAuth2TokenService* oauth2_token_service,

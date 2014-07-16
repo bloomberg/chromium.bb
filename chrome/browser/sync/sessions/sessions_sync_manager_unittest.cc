@@ -10,7 +10,6 @@
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/sessions/session_types.h"
 #include "chrome/browser/sync/glue/device_info.h"
-#include "chrome/browser/sync/glue/local_device_info_provider_mock.h"
 #include "chrome/browser/sync/glue/session_sync_test_helper.h"
 #include "chrome/browser/sync/glue/synced_tab_delegate.h"
 #include "chrome/browser/sync/glue/synced_window_delegate.h"
@@ -229,24 +228,17 @@ scoped_ptr<LocalSessionEventRouter> NewDummyRouter() {
 }  // namespace
 
 class SessionsSyncManagerTest
-    : public BrowserWithTestWindowTest {
+    : public BrowserWithTestWindowTest,
+      public SessionsSyncManager::SyncInternalApiDelegate {
  public:
-  SessionsSyncManagerTest()
-      : test_processor_(NULL) {
-    local_device_.reset(new LocalDeviceInfoProviderMock(
-        "cache_guid",
-        "Wayne Gretzky's Hacking Box",
-        "Chromium 10k",
-        "Chrome 10k",
-        sync_pb::SyncEnums_DeviceType_TYPE_LINUX));
-  }
+  SessionsSyncManagerTest() : test_processor_(NULL) {}
 
   virtual void SetUp() OVERRIDE {
     BrowserWithTestWindowTest::SetUp();
     browser_sync::NotificationServiceSessionsRouter* router(
         new browser_sync::NotificationServiceSessionsRouter(
             profile(), syncer::SyncableService::StartSyncFlare()));
-    manager_.reset(new SessionsSyncManager(profile(), local_device_.get(),
+    manager_.reset(new SessionsSyncManager(profile(), this,
       scoped_ptr<LocalSessionEventRouter>(router)));
   }
 
@@ -257,13 +249,21 @@ class SessionsSyncManagerTest
     BrowserWithTestWindowTest::TearDown();
   }
 
-  const DeviceInfo* GetLocalDeviceInfo() {
-    return local_device_->GetLocalDeviceInfo();
+  virtual scoped_ptr<DeviceInfo> GetLocalDeviceInfo() const OVERRIDE {
+    return scoped_ptr<DeviceInfo>(
+        new DeviceInfo(GetLocalSyncCacheGUID(),
+                       "Wayne Gretzky's Hacking Box",
+                       "Chromium 10k",
+                       "Chrome 10k",
+                       sync_pb::SyncEnums_DeviceType_TYPE_LINUX));
+  }
+
+  virtual std::string GetLocalSyncCacheGUID() const OVERRIDE {
+    return "cache_guid";
   }
 
   SessionsSyncManager* manager() { return manager_.get(); }
   SessionSyncTestHelper* helper() { return &helper_; }
-  LocalDeviceInfoProvider* local_device() { return local_device_.get(); }
 
   void InitWithSyncDataTakeOutput(const syncer::SyncDataList& initial_data,
                                   syncer::SyncChangeList* output) {
@@ -313,7 +313,6 @@ class SessionsSyncManagerTest
   scoped_ptr<SessionsSyncManager> manager_;
   SessionSyncTestHelper helper_;
   TestSyncProcessorStub* test_processor_;
-  scoped_ptr<LocalDeviceInfoProviderMock> local_device_;
 };
 
 // Test that the SyncSessionManager can properly fill in a SessionHeader.
@@ -686,7 +685,7 @@ TEST_F(SessionsSyncManagerTest, MergeLocalSessionNoTabs) {
       syncer::AttachmentServiceProxyForTest::Create()));
   syncer::SyncDataList in(&d, &d + 1);
   out.clear();
-  SessionsSyncManager manager2(profile(), local_device(), NewDummyRouter());
+  SessionsSyncManager manager2(profile(), this, NewDummyRouter());
   syncer::SyncMergeResult result = manager2.MergeDataAndStartSyncing(
       syncer::SESSIONS, in,
       scoped_ptr<syncer::SyncChangeProcessor>(
@@ -1274,7 +1273,7 @@ TEST_F(SessionsSyncManagerTest, SaveUnassociatedNodesForReassociation) {
       syncer::AttachmentServiceProxyForTest::Create()));
   syncer::SyncDataList in(&d, &d + 1);
   changes.clear();
-  SessionsSyncManager manager2(profile(), local_device(), NewDummyRouter());
+  SessionsSyncManager manager2(profile(), this, NewDummyRouter());
   syncer::SyncMergeResult result = manager2.MergeDataAndStartSyncing(
       syncer::SESSIONS, in,
       scoped_ptr<syncer::SyncChangeProcessor>(

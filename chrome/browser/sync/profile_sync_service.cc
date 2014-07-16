@@ -188,7 +188,7 @@ bool ShouldShowActionOnUI(
 }
 
 ProfileSyncService::ProfileSyncService(
-    scoped_ptr<ProfileSyncComponentsFactory> factory,
+    ProfileSyncComponentsFactory* factory,
     Profile* profile,
     scoped_ptr<SupervisedUserSigninManagerWrapper> signin_wrapper,
     ProfileOAuth2TokenService* oauth2_token_service,
@@ -196,7 +196,7 @@ ProfileSyncService::ProfileSyncService(
     : OAuth2TokenService::Consumer("sync"),
       last_auth_error_(AuthError::AuthErrorNone()),
       passphrase_required_reason_(syncer::REASON_PASSPHRASE_NOT_REQUIRED),
-      factory_(factory.Pass()),
+      factory_(factory),
       profile_(profile),
       sync_prefs_(profile_->GetPrefs()),
       sync_service_url_(GetSyncServiceURL(*CommandLine::ForCurrentProcess())),
@@ -243,11 +243,8 @@ ProfileSyncService::ProfileSyncService(
       sync_start_util::GetFlareForSyncableService(profile->GetPath()));
   scoped_ptr<browser_sync::LocalSessionEventRouter> router(
       new NotificationServiceSessionsRouter(profile, flare));
-
-  DCHECK(factory_.get());
-  local_device_ = factory_->CreateLocalDeviceInfoProvider();
   sessions_sync_manager_.reset(
-      new SessionsSyncManager(profile, local_device_.get(), router.Pass()));
+      new SessionsSyncManager(profile, this, router.Pass()));
 }
 
 ProfileSyncService::~ProfileSyncService() {
@@ -427,14 +424,15 @@ browser_sync::FaviconCache* ProfileSyncService::GetFaviconCache() {
   return sessions_sync_manager_->GetFaviconCache();
 }
 
-browser_sync::SyncedWindowDelegatesGetter*
-ProfileSyncService::GetSyncedWindowDelegatesGetter() const {
-  return sessions_sync_manager_->GetSyncedWindowDelegatesGetter();
-}
-
-browser_sync::LocalDeviceInfoProvider*
-ProfileSyncService::GetLocalDeviceInfoProvider() {
-  return local_device_.get();
+scoped_ptr<browser_sync::DeviceInfo>
+ProfileSyncService::GetLocalDeviceInfo() const {
+  if (HasSyncingBackend()) {
+    browser_sync::SyncedDeviceTracker* device_tracker =
+        backend_->GetSyncedDeviceTracker();
+    if (device_tracker)
+      return device_tracker->ReadLocalDeviceInfo();
+  }
+  return scoped_ptr<browser_sync::DeviceInfo>();
 }
 
 scoped_ptr<browser_sync::DeviceInfo>
@@ -460,6 +458,17 @@ ScopedVector<browser_sync::DeviceInfo>
     }
   }
   return devices.Pass();
+}
+
+std::string ProfileSyncService::GetLocalSyncCacheGUID() const {
+  if (HasSyncingBackend()) {
+    browser_sync::SyncedDeviceTracker* device_tracker =
+        backend_->GetSyncedDeviceTracker();
+    if (device_tracker) {
+      return device_tracker->cache_guid();
+    }
+  }
+  return std::string();
 }
 
 // Notifies the observer of any device info changes.
@@ -1070,7 +1079,6 @@ void ProfileSyncService::OnBackendInitialized(
     const syncer::WeakHandle<syncer::JsBackend>& js_backend,
     const syncer::WeakHandle<syncer::DataTypeDebugInfoListener>&
         debug_info_listener,
-    const std::string& cache_guid,
     bool success) {
   UpdateBackendInitUMA(success);
 
@@ -1098,9 +1106,6 @@ void ProfileSyncService::OnBackendInitialized(
 
   sync_js_controller_.AttachJsBackend(js_backend);
   debug_info_listener_ = debug_info_listener;
-
-  // Initialize local device info.
-  local_device_->Initialize(cache_guid);
 
   // Give the DataTypeControllers a handle to the now initialized backend
   // as a UserShare.

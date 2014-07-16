@@ -61,9 +61,6 @@ class ProfileSyncComponentsFactoryImpl : public ProfileSyncComponentsFactory {
       const base::WeakPtr<sync_driver::SyncPrefs>& sync_prefs,
       const base::FilePath& sync_folder) OVERRIDE;
 
-  virtual scoped_ptr<browser_sync::LocalDeviceInfoProvider>
-      CreateLocalDeviceInfoProvider() OVERRIDE;
-
   virtual base::WeakPtr<syncer::SyncableService> GetSyncableServiceForType(
       syncer::ModelType type) OVERRIDE;
   virtual scoped_ptr<syncer::AttachmentService> CreateAttachmentService(
