@@ -1,0 +1,20 @@
+main frame - didStartProvisionalLoadForFrame
+main frame - didCommitLoadForFrame
+frame "f" - didStartProvisionalLoadForFrame
+main frame - didFinishDocumentLoadForFrame
+frame "f" - didCommitLoadForFrame
+frame "f" - didReceiveTitle: Frame to test replaceChild "action"
+frame "f" - didFinishDocumentLoadForFrame
+frame "f" - didHandleOnloadEventsForFrame
+main frame - didHandleOnloadEventsForFrame
+frame "f" - didFinishLoadForFrame
+main frame - didFinishLoadForFrame
+frame "f" - didStartProvisionalLoadForFrame
+frame "f" - didCommitLoadForFrame
+frame "f" - didFinishDocumentLoadForFrame
+frame "f" - didHandleOnloadEventsForFrame
+frame "f" - didFinishLoadForFrame
+PASS successfullyParsed is true
+
+TEST COMPLETE
+Success! The form was rendered correctly. This test is for bug 388664

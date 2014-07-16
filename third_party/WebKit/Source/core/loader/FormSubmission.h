@@ -67,8 +67,8 @@ public:
         void updateMethodType(const String&);
         static String methodString(Method);
 
-        const KURL& action() const { return m_action; }
-        void parseAction(const Document&, const String&);
+        const String& action() const { return m_action; }
+        void parseAction(const String&);
 
         const AtomicString& target() const { return m_target; }
         void setTarget(const AtomicString& target) { m_target = target; }
@@ -87,7 +87,7 @@ public:
         Method m_method;
         bool m_isMultiPartForm;
 
-        KURL m_action;
+        String m_action;
         AtomicString m_target;
         AtomicString m_encodingType;
         String m_acceptCharset;
