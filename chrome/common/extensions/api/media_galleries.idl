@@ -168,7 +168,7 @@ namespace mediaGalleries {
 
     // The images embedded in the media file's metadata. This is most often
     // used for album art or video thumbnails.
-    [instanceof=Blob] object[] attachedImages;
+    [instanceOf=Blob] object[] attachedImages;
   };
 
   callback MediaMetadataCallback = void (MediaMetadata metadata);
