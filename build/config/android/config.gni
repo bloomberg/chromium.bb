@@ -10,7 +10,7 @@ if (is_android) {
     android_src = ""
 
     android_sdk_root = "//third_party/android_tools/sdk"
-    android_sdk_version = "19"
+    android_sdk_version = "20"
 
     # This is set when building the Android WebView inside the Android build
     # system, using the 'android' gyp backend. The WebView code is still built
@@ -57,7 +57,7 @@ if (is_android) {
   android_sdk = "${android_sdk_root}/platforms/android-${android_sdk_version}"
 
   android_sdk_tools = "${android_sdk_root}/tools"
-  android_sdk_build_tools = "${android_sdk_root}/build-tools/19.0.0"
+  android_sdk_build_tools = "${android_sdk_root}/build-tools/20.0.0"
 
   # Path to the SDK's android.jar
   android_sdk_jar = "$android_sdk/android.jar"
