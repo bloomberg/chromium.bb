@@ -129,4 +129,8 @@ get_n_egl_buffers(struct client *client);
 void
 skip(const char *fmt, ...);
 
+void
+expect_protocol_error(struct client *client,
+		      const struct wl_interface *intf, uint32_t code);
+
 #endif

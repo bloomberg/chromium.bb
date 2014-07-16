@@ -26,6 +26,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
+#include <errno.h>
 #include <sys/mman.h>
 
 #include "../shared/os-compatibility.h"
@@ -510,6 +511,53 @@ skip(const char *fmt, ...)
 	 * weston process) will use that as an exit status, which is what
 	 * automake will see in the end. */
 	exit(77);
+}
+
+void
+expect_protocol_error(struct client *client,
+		      const struct wl_interface *intf,
+		      uint32_t code)
+{
+	int err;
+	uint32_t errcode, failed = 0;
+	const struct wl_interface *interface;
+	unsigned int id;
+
+	/* if the error has not come yet, make it happen */
+	wl_display_roundtrip(client->wl_display);
+
+	err = wl_display_get_error(client->wl_display);
+
+	assert(err && "Expected protocol error but nothing came");
+	assert(err == EPROTO && "Expected protocol error but got local error");
+
+	errcode = wl_display_get_protocol_error(client->wl_display,
+						&interface, &id);
+
+	/* check error */
+	if (errcode != code) {
+		fprintf(stderr, "Should get error code %d but got %d\n",
+			code, errcode);
+		failed = 1;
+	}
+
+	/* this should be definitely set */
+	assert(interface);
+
+	if (strcmp(intf->name, interface->name) != 0) {
+		fprintf(stderr, "Should get interface '%s' but got '%s'\n",
+			intf->name, interface->name);
+		failed = 1;
+	}
+
+	if (failed) {
+		fprintf(stderr, "Expected other protocol error\n");
+		abort();
+	}
+
+	/* all OK */
+	fprintf(stderr, "Got expected protocol error on '%s' (object id: %d) "
+			"with code %d\n", interface->name, id, errcode);
 }
 
 static void
