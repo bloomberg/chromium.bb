@@ -680,7 +680,8 @@ TEST_F(SearchIPCRouterTest,
        SendSetDisplayInstantResultsMsg_DisableInstantOnResultsPage) {
   // |prefetch_results_srp" flag is disabled via field trials.
   ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
-      "EmbeddedSearch", "Group1 espv:42 prefetch_results_srp:0"));
+      "EmbeddedSearch",
+      "Group1 espv:42 query_extraction:1 prefetch_results_srp:0"));
   NavigateAndCommitActiveTab(GURL("https://foo.com/url?espv&bar=abc"));
 
   // Make sure ChromeViewMsg_SearchBoxSetDisplayInstantResults message param is
@@ -689,39 +690,11 @@ TEST_F(SearchIPCRouterTest,
 }
 
 TEST_F(SearchIPCRouterTest,
-       SendSetDisplayInstantResultsMsg_DisableInstantOutsideResultsPage) {
-  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
-      "EmbeddedSearch", "Group1 espv:42 prefetch_results_srp:1"));
+       SendSetDisplayInstantResultsMsg_EnableInstantOutsideSearchResultsPage) {
   NavigateAndCommitActiveTab(GURL(chrome::kChromeSearchLocalNtpUrl));
-
   // Make sure ChromeViewMsg_SearchBoxSetDisplayInstantResults param is set to
-  // false if the underlying page is not a search results page.
-  VerifyDisplayInstantResultsMsg(false);
-}
-
-TEST_F(SearchIPCRouterTest,
-       SendSetDisplayInstantResultsMsg_InstantSearchEnabled) {
-  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
-      "EmbeddedSearch",
-      "Group1 espv:42 prefetch_results:1 use_cacheable_ntp:1"));
-  NavigateAndCommitActiveTab(GURL(chrome::kChromeSearchLocalNtpUrl));
-
-  // If the "prefetch_results" flag is enabled via field trials, then
-  // ChromeViewMsg_SearchBoxSetDisplayInstantResults message param is set to
-  // true irrespective of the underlying page.
+  // true if the underlying page is not a search results page.
   VerifyDisplayInstantResultsMsg(true);
-}
-
-TEST_F(SearchIPCRouterTest,
-       SendSetDisplayInstantResultsMsg_InstantSearchDisabled) {
-  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
-      "EmbeddedSearch",
-      "Group1 espv:42 use_cacheable_ntp:1 prefetch_results:0"));
-  NavigateAndCommitActiveTab(GURL(chrome::kChromeSearchLocalNtpUrl));
-
-  // Make sure ChromeViewMsg_SearchBoxSetDisplayInstantResults param is set to
-  // false if the "prefetch_results" flag is disabled via field trials.
-  VerifyDisplayInstantResultsMsg(false);
 }
 
 TEST_F(SearchIPCRouterTest, DoNotSendSetDisplayInstantResultsMsg) {

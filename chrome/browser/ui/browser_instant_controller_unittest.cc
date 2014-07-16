@@ -29,7 +29,7 @@ class BrowserInstantControllerTest : public InstantUnitTestBase {
  public:
   virtual void SetUp() OVERRIDE {
     ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
-        "EmbeddedSearch", "Group1 use_cacheable_ntp:1 prefetch_results:1"));
+        "EmbeddedSearch", "Group1 use_cacheable_ntp:1"));
     InstantUnitTestBase::SetUp();
   }
 

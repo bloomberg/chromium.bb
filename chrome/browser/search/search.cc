@@ -65,15 +65,18 @@ const uint64 kEmbeddedPageVersionDefault = 2;
 #endif
 
 const char kHideVerbatimFlagName[] = "hide_verbatim";
-const char kPrefetchSearchResultsFlagName[] = "prefetch_results";
 const char kPrefetchSearchResultsOnSRP[] = "prefetch_results_srp";
 const char kAllowPrefetchNonDefaultMatch[] = "allow_prefetch_non_default_match";
 const char kPrerenderInstantUrlOnOmniboxFocus[] =
     "prerender_instant_url_on_omnibox_focus";
 
+#if defined(OS_ANDROID)
+const char kPrefetchSearchResultsFlagName[] = "prefetch_results";
+
 // Controls whether to reuse prerendered Instant Search base page to commit any
 // search query.
 const char kReuseInstantSearchBasePage[] = "reuse_instant_search_base_page";
+#endif
 
 // Controls whether to use the alternate Instant search base URL. This allows
 // experimentation of Instant search.
@@ -596,6 +599,7 @@ bool ShouldPrefetchSearchResults() {
   if (!IsInstantExtendedAPIEnabled())
     return false;
 
+#if defined(OS_ANDROID)
   if (CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kPrefetchSearchResults)) {
     return true;
@@ -604,6 +608,9 @@ bool ShouldPrefetchSearchResults() {
   FieldTrialFlags flags;
   return GetFieldTrialInfo(&flags) && GetBoolValueForFlagWithDefault(
       kPrefetchSearchResultsFlagName, false, flags);
+#else
+  return true;
+#endif
 }
 
 bool ShouldAllowPrefetchNonDefaultMatch() {
@@ -628,9 +635,13 @@ bool ShouldReuseInstantSearchBasePage() {
   if (!ShouldPrefetchSearchResults())
     return false;
 
+#if defined(OS_ANDROID)
   FieldTrialFlags flags;
   return GetFieldTrialInfo(&flags) && GetBoolValueForFlagWithDefault(
       kReuseInstantSearchBasePage, false, flags);
+#else
+  return true;
+#endif
 }
 
 GURL GetLocalInstantURL(Profile* profile) {

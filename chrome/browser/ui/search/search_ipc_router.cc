@@ -74,10 +74,11 @@ void SearchIPCRouter::SetDisplayInstantResults() {
     return;
 
   bool is_search_results_page = !chrome::GetSearchTerms(web_contents()).empty();
+  bool display_instant_results = is_search_results_page ?
+      chrome::ShouldPrefetchSearchResultsOnSRP() :
+          chrome::ShouldPrefetchSearchResults();
   Send(new ChromeViewMsg_SearchBoxSetDisplayInstantResults(
-       routing_id(),
-       (is_search_results_page && chrome::ShouldPrefetchSearchResultsOnSRP()) ||
-       chrome::ShouldPrefetchSearchResults()));
+       routing_id(), display_instant_results));
 }
 
 void SearchIPCRouter::SetSuggestionToPrefetch(

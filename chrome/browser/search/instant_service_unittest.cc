@@ -61,7 +61,7 @@ class InstantServiceEnabledTest : public InstantServiceTest {
  protected:
   virtual void SetUp() OVERRIDE {
     ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
-        "EmbeddedSearch", "Group1 use_cacheable_ntp:1 prefetch_results:1"));
+        "EmbeddedSearch", "Group1 use_cacheable_ntp:1"));
     InstantServiceTest::SetUp();
   }
 };
@@ -116,10 +116,8 @@ TEST_F(InstantServiceEnabledTest, SendsSearchURLsToRenderer) {
   EXPECT_EQ("https://www.google.com/newtab", new_tab_page_url.spec());
 }
 
-TEST_F(InstantServiceTest, InstantSearchDisabled) {
-  // 'prefetch_results' flag is not enabled in field trials. Make sure
-  // InstantSearchPrerenderer is not initialized.
-  EXPECT_EQ(static_cast<InstantSearchPrerenderer*>(NULL),
+TEST_F(InstantServiceTest, InstantSearchEnabled) {
+  EXPECT_NE(static_cast<InstantSearchPrerenderer*>(NULL),
             GetInstantSearchPrerenderer());
 }
 

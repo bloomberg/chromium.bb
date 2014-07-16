@@ -166,8 +166,8 @@ class InstantSearchPrerendererTest : public InstantUnitTestBase {
 
  protected:
   virtual void SetUp() OVERRIDE {
-    ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
-        "EmbeddedSearch", "Group1 strk:20 prefetch_results:1"));
+    ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial("EmbeddedSearch",
+                                                       "Group1 strk:20"));
     InstantUnitTestBase::SetUp();
   }
 
@@ -285,8 +285,8 @@ TEST_F(InstantSearchPrerendererTest, CanCommitQuery) {
 
   // Make sure InstantSearchPrerenderer::CanCommitQuery() returns false for
   // invalid search queries.
-  EXPECT_FALSE(prerenderer->CanCommitQuery(GetActiveWebContents(),
-                                           ASCIIToUTF16("joy")));
+  EXPECT_TRUE(prerenderer->CanCommitQuery(GetActiveWebContents(),
+                                          ASCIIToUTF16("joy")));
   EXPECT_FALSE(prerenderer->CanCommitQuery(GetActiveWebContents(),
                                            base::string16()));
 }
@@ -379,19 +379,17 @@ TEST_F(InstantSearchPrerendererTest, PrerenderRequestCancelled) {
 }
 
 TEST_F(InstantSearchPrerendererTest,
-       CancelPrerenderRequest_SearchQueryMistmatch) {
+       UsePrerenderedPage_SearchQueryMistmatch) {
   PrerenderSearchQuery(ASCIIToUTF16("foo"));
 
   // Open a search results page. Committed query("pen") doesn't match with the
-  // prerendered search query("foo"). Make sure the InstantSearchPrerenderer
-  // cancels the active prerender request and the browser navigates the active
-  // tab to this |url|.
+  // prerendered search query("foo"). Make sure the browser swaps the current
+  // tab contents with the prerendered contents.
   GURL url("https://www.google.com/alt#quux=pen&strk");
   browser()->OpenURL(content::OpenURLParams(url, Referrer(), CURRENT_TAB,
                                             content::PAGE_TRANSITION_TYPED,
                                             false));
-  EXPECT_NE(GetPrerenderURL(), GetActiveWebContents()->GetURL());
-  EXPECT_EQ(url, GetActiveWebContents()->GetURL());
+  EXPECT_EQ(GetPrerenderURL(), GetActiveWebContents()->GetURL());
   EXPECT_EQ(static_cast<PrerenderHandle*>(NULL), prerender_handle());
 }
 
@@ -433,9 +431,8 @@ class ReuseInstantSearchBasePageTest : public InstantSearchPrerendererTest {
 
   protected:
    virtual void SetUp() OVERRIDE {
-    ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
-        "EmbeddedSearch",
-        "Group1 strk:20 prefetch_results:1 reuse_instant_search_base_page:1"));
+    ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial("EmbeddedSearch",
+                                                       "Group1 strk:20"));
     InstantUnitTestBase::SetUp();
    }
 };
@@ -477,8 +474,7 @@ class TestUsePrerenderPage : public InstantSearchPrerendererTest {
   virtual void SetUp() OVERRIDE {
     // Disable query extraction flag in field trials.
     ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
-        "EmbeddedSearch",
-        "Group1 strk:20 query_extraction:0 prefetch_results:1"));
+        "EmbeddedSearch", "Group1 strk:20 query_extraction:0"));
     InstantUnitTestBase::SetUpWithoutQueryExtraction();
   }
 };
