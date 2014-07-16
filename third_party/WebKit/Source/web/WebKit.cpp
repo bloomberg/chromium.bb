@@ -50,6 +50,7 @@
 #include "platform/heap/Heap.h"
 #include "platform/heap/glue/MessageLoopInterruptor.h"
 #include "platform/heap/glue/PendingGCRunner.h"
+#include "platform/scheduler/Scheduler.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebPrerenderingSupport.h"
 #include "public/platform/WebThread.h"
@@ -148,7 +149,7 @@ static void cryptographicallyRandomValues(unsigned char* buffer, size_t length)
 
 static void callOnMainThreadFunction(WTF::MainThreadFunction function, void* context)
 {
-    Platform::current()->callOnMainThread(function, context);
+    WebCore::Scheduler::shared()->postTask(bind(function, context));
 }
 
 void initializeWithoutV8(Platform* platform)
@@ -163,6 +164,7 @@ void initializeWithoutV8(Platform* platform)
     WTF::initialize(currentTimeFunction, monotonicallyIncreasingTimeFunction);
     WTF::initializeMainThread(callOnMainThreadFunction);
     WebCore::Heap::init();
+    WebCore::Scheduler::initializeOnMainThread();
 
     WebCore::ThreadState::attachMainThread();
     // currentThread will always be non-null in production, but can be null in Chromium unit tests.
@@ -205,6 +207,7 @@ void shutdown()
 
     ASSERT(s_isolateInterruptor);
     WebCore::ThreadState::current()->removeInterruptor(s_isolateInterruptor);
+    WebCore::Scheduler::shutdown();
 
     // currentThread will always be non-null in production, but can be null in Chromium unit tests.
     if (Platform::current()->currentThread()) {

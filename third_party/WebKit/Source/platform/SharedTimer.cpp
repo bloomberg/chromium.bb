@@ -26,23 +26,24 @@
 #include "config.h"
 #include "platform/SharedTimer.h"
 
+#include "platform/scheduler/Scheduler.h"
 #include "public/platform/Platform.h"
 
 namespace WebCore {
 
 void setSharedTimerFiredFunction(void (*f)())
 {
-    blink::Platform::current()->setSharedTimerFiredFunction(f);
+    Scheduler::shared()->setSharedTimerFiredFunction(f);
 }
 
 void setSharedTimerFireInterval(double fireTime)
 {
-    blink::Platform::current()->setSharedTimerFireInterval(fireTime);
+    Scheduler::shared()->setSharedTimerFireInterval(fireTime);
 }
 
 void stopSharedTimer()
 {
-    blink::Platform::current()->stopSharedTimer();
+    Scheduler::shared()->stopSharedTimer();
 }
 
 } // namespace WebCore
