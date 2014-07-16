@@ -24,49 +24,57 @@ class NodeBase(object):
 # TODO(vtl): Some of this is complicated enough that it should be tested.
 class NodeListBase(NodeBase):
   """Represents a list of other nodes, all having the same type. (This is meant
-  to be subclassed, with subclasses defining _list_item_type to be the class of
-  the members of the list; _list_item_type should also be a NodeBase.)"""
+  to be subclassed, with subclasses defining _list_item_type to be the class (or
+  classes, in a tuple) of the members of the list.)"""
 
   def __init__(self, item_or_items=None, **kwargs):
-    assert issubclass(self._list_item_type, NodeBase)
     super(NodeListBase, self).__init__(**kwargs)
+    self.items = []
     if item_or_items is None:
-      self.elements = []
+      pass
+      self.items = []
     elif isinstance(item_or_items, list):
-      # TODO(vtl): Possibly we should assert that each element of the list is a
-      # |_list_item_type|.
-      self.elements = list(item_or_items)
+      for item in item_or_items:
+        assert isinstance(item, self._list_item_type)
+        self.Append(item)
     else:
       assert isinstance(item_or_items, self._list_item_type)
-      self.elements = [item_or_items]
-    self._UpdateFilenameAndLineno()
+      self.Append(item_or_items)
 
-  # Support iteration. For everything else, users should just access |elements|
+  # Support iteration. For everything else, users should just access |items|
   # directly. (We intentionally do NOT supply |__len__()| or |__nonzero__()|, so
   # |bool(NodeListBase())| is true.)
   def __iter__(self):
-    return self.elements.__iter__()
+    return self.items.__iter__()
 
   def __eq__(self, other):
     return super(NodeListBase, self).__eq__(other) and \
-           len(self.elements) == len(other.elements) and \
-           all(self.elements[i] == other.elements[i] \
-                   for i in xrange(len(self.elements)))
+           len(self.items) == len(other.items) and \
+           all(self.items[i] == other.items[i] for i in xrange(len(self.items)))
 
   # Implement this so that on failure, we get slightly more sensible output.
   def __repr__(self):
     return self.__class__.__name__ + "([" + \
-           ", ".join([repr(elem) for elem in self.elements]) + "])"
+           ", ".join([repr(elem) for elem in self.items]) + "])"
+
+  def Insert(self, item):
+    """Inserts item at the front of the list."""
+
+    assert isinstance(item, self._list_item_type)
+    self.items.insert(0, item)
+    self._UpdateFilenameAndLineno()
 
   def Append(self, item):
+    """Appends item to the end of the list."""
+
     assert isinstance(item, self._list_item_type)
-    self.elements.append(item)
+    self.items.append(item)
     self._UpdateFilenameAndLineno()
 
   def _UpdateFilenameAndLineno(self):
-    if self.elements:
-      self.filename = self.elements[0].filename
-      self.lineno = self.elements[0].lineno
+    if self.items:
+      self.filename = self.items[0].filename
+      self.lineno = self.items[0].lineno
 
 
 class Definition(NodeBase):
@@ -255,6 +263,22 @@ class ParameterList(NodeListBase):
   _list_item_type = Parameter
 
 
+class Struct(Definition):
+  """Represents a struct definition."""
+
+  def __init__(self, name, attribute_list, body, **kwargs):
+    assert attribute_list is None or isinstance(attribute_list, AttributeList)
+    assert isinstance(body, StructBody)
+    super(Struct, self).__init__(name, **kwargs)
+    self.attribute_list = attribute_list
+    self.body = body
+
+  def __eq__(self, other):
+    return super(Struct, self).__eq__(other) and \
+           self.attribute_list == other.attribute_list and \
+           self.body == other.body
+
+
 class StructField(Definition):
   """Represents a struct field definition."""
 
@@ -275,3 +299,10 @@ class StructField(Definition):
            self.ordinal == other.ordinal and \
            self.typename == other.typename and \
            self.default_value == other.default_value
+
+
+# This needs to be declared after |StructField|.
+class StructBody(NodeListBase):
+  """Represents the body of (i.e., list of definitions inside) a struct."""
+
+  _list_item_type = (Const, Enum, StructField)

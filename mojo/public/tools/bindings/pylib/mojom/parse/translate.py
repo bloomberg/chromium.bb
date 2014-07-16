@@ -85,24 +85,6 @@ def _MapMethod(tree):
     method['response_parameters'] = map(ParameterToDict, tree[4])
   return method
 
-def _MapStruct(tree):
-  def StructFieldToDict(struct_field):
-    assert isinstance(struct_field, ast.StructField)
-    return {'name': struct_field.name,
-            'kind': _MapKind(struct_field.typename),
-            'ordinal': struct_field.ordinal.value \
-                if struct_field.ordinal else None,
-            'default': struct_field.default_value}
-
-  struct = {}
-  struct['name'] = tree[1]
-  struct['attributes'] = _AttributeListToDict(tree[2])
-  struct['fields'] = _MapTreeForType(StructFieldToDict, tree[3],
-                                     ast.StructField)
-  struct['enums'] = _MapTreeForType(_MapEnum, tree[3], ast.Enum)
-  struct['constants'] = _MapTreeForType(_MapConstant, tree[3], ast.Const)
-  return struct
-
 def _MapInterface(tree):
   interface = {}
   interface['name'] = tree[1]
@@ -135,6 +117,24 @@ class _MojomBuilder(object):
     self.mojom = {}
 
   def Build(self, tree, name):
+    def StructToDict(struct):
+      def StructFieldToDict(struct_field):
+        assert isinstance(struct_field, ast.StructField)
+        return {'name': struct_field.name,
+                'kind': _MapKind(struct_field.typename),
+                'ordinal': struct_field.ordinal.value \
+                    if struct_field.ordinal else None,
+                'default': struct_field.default_value}
+
+      assert isinstance(struct, ast.Struct)
+      return {'name': struct.name,
+              'attributes': _AttributeListToDict(struct.attribute_list),
+              'fields': _MapTreeForType(StructFieldToDict, struct.body,
+                                        ast.StructField),
+              'enums': _MapTreeForType(_MapEnum, struct.body, ast.Enum),
+              'constants': _MapTreeForType(_MapConstant, struct.body,
+                                           ast.Const)}
+
     assert isinstance(tree, ast.Mojom)
     self.mojom['name'] = name
     self.mojom['namespace'] = tree.module.name[1] if tree.module else ''
@@ -143,7 +143,7 @@ class _MojomBuilder(object):
     self.mojom['attributes'] = \
         _AttributeListToDict(tree.module.attribute_list) if tree.module else {}
     self.mojom['structs'] = \
-        _MapTreeForName(_MapStruct, tree.definition_list, 'STRUCT')
+        _MapTreeForType(StructToDict, tree.definition_list, ast.Struct)
     self.mojom['interfaces'] = \
         _MapTreeForName(_MapInterface, tree.definition_list, 'INTERFACE')
     self.mojom['enums'] = \

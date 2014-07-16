@@ -169,18 +169,21 @@ class Parser(object):
 
   def p_struct(self, p):
     """struct : attribute_section STRUCT NAME LBRACE struct_body RBRACE SEMI"""
-    p[0] = ('STRUCT', p[3], p[1], p[5])
+    p[0] = ast.Struct(p[3], p[1], p[5])
 
-  def p_struct_body(self, p):
-    """struct_body : field struct_body
-                   | enum struct_body
-                   | const struct_body
-                   | """
-    if len(p) > 1:
-      p[0] = _ListFromConcat(p[1], p[2])
+  def p_struct_body_1(self, p):
+    """struct_body : """
+    p[0] = ast.StructBody()
 
-  def p_field(self, p):
-    """field : typename NAME ordinal default SEMI"""
+  def p_struct_body_2(self, p):
+    """struct_body : struct_body const
+                   | struct_body enum
+                   | struct_body struct_field"""
+    p[0] = p[1]
+    p[0].Append(p[2])
+
+  def p_struct_field(self, p):
+    """struct_field : typename NAME ordinal default SEMI"""
     p[0] = ast.StructField(p[2], p[3], p[1], p[4])
 
   def p_default_1(self, p):
