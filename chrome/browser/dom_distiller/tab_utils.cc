@@ -61,9 +61,6 @@ class SelfDeletingRequestDelegate : public ViewRequestDelegate,
   // The handle to the view request towards the DomDistillerService. It
   // needs to be kept around to ensure the distillation request finishes.
   scoped_ptr<ViewerHandle> viewer_handle_;
-
-  // The WebContents this class is tracking.
-  content::WebContents* web_contents_;
 };
 
 void SelfDeletingRequestDelegate::DidNavigateMainFrame(
@@ -83,12 +80,10 @@ void SelfDeletingRequestDelegate::WebContentsDestroyed() {
 
 SelfDeletingRequestDelegate::SelfDeletingRequestDelegate(
     content::WebContents* web_contents)
-    : web_contents_(web_contents) {
-  content::WebContentsObserver::Observe(web_contents_);
+    : WebContentsObserver(web_contents) {
 }
 
 SelfDeletingRequestDelegate::~SelfDeletingRequestDelegate() {
-  content::WebContentsObserver::Observe(NULL);
 }
 
 void SelfDeletingRequestDelegate::OnArticleReady(
