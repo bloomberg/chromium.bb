@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/logging.h"
+#include "base/numerics/safe_math.h"
 
 namespace chrome_pdf {
 
@@ -152,11 +153,11 @@ void CopyImage(const pp::ImageData& src, const pp::Rect& src_rc,
   if (stretch) {
     double x_ratio = static_cast<double>(src_rc.width()) / dest_rc.width();
     double y_ratio = static_cast<double>(src_rc.height()) / dest_rc.height();
-    int height = dest_rc.height();
-    int width = dest_rc.width();
-    for (int y = 0; y < height; y++) {
+    int32_t height = dest_rc.height();
+    int32_t width = dest_rc.width();
+    for (int32_t y = 0; y < height; ++y) {
       uint32_t* dest_pixel = dest_origin_pixel;
-      for (int x = 0; x < width; x++) {
+      for (int32_t x = 0; x < width; ++x) {
         uint32 src_x = static_cast<uint32>(x * x_ratio);
         uint32 src_y = static_cast<uint32>(y * y_ratio);
         const uint32_t* src_pixel = src.GetAddr32(
@@ -168,10 +169,11 @@ void CopyImage(const pp::ImageData& src, const pp::Rect& src_rc,
           reinterpret_cast<char*>(dest_origin_pixel) + dest->stride());
     }
   } else {
-    int height = src_rc.height();
-    int width_bytes = src_rc.width() * 4;
-    for (int y = 0; y < height; y++) {
-      memcpy(dest_origin_pixel, src_origin_pixel, width_bytes);
+    int32_t height = src_rc.height();
+    base::CheckedNumeric<int32_t> width_bytes = src_rc.width();
+    width_bytes *= 4;
+    for (int32_t y = 0; y < height; ++y) {
+      memcpy(dest_origin_pixel, src_origin_pixel, width_bytes.ValueOrDie());
       src_origin_pixel = reinterpret_cast<const uint32_t*>(
           reinterpret_cast<const char*>(src_origin_pixel) + src.stride());
       dest_origin_pixel = reinterpret_cast<uint32_t*>(
