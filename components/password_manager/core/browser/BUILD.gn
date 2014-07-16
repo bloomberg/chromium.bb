@@ -1,0 +1,109 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+if (is_android) {
+  import("//build/config/android/config.gni")
+}
+
+config("password_manager_config") {
+  # Sync (not supported in Android WebView).
+  if (!is_android || !is_android_webview_build) {
+    defines = [ "PASSWORD_MANAGER_ENABLE_SYNC" ]
+  }
+}
+
+static_library("browser") {
+  sources = [
+    "browser_save_password_progress_logger.cc",
+    "browser_save_password_progress_logger.h",
+    "log_receiver.h",
+    "log_router.cc",
+    "log_router.h",
+    "login_database.cc",
+    "login_database.h",
+    "login_database_mac.cc",
+    "login_database_posix.cc",
+    "login_database_win.cc",
+    "login_model.h",
+    "password_autofill_manager.cc",
+    "password_autofill_manager.h",
+    "password_form_manager.cc",
+    "password_form_manager.h",
+    "password_generation_manager.cc",
+    "password_generation_manager.h",
+    "password_manager.cc",
+    "password_manager.h",
+    "password_manager_client.cc",
+    "password_manager_client.h",
+    "password_manager_driver.h",
+    "password_manager_internals_service.cc",
+    "password_manager_internals_service.h",
+    "password_manager_metrics_util.cc",
+    "password_manager_metrics_util.h",
+    "password_store.cc",
+    "password_store.h",
+    "password_store_change.h",
+    "password_store_consumer.cc",
+    "password_store_consumer.h",
+    "password_store_default.cc",
+    "password_store_default.h",
+    "password_store_sync.cc",
+    "password_store_sync.h",
+    "psl_matching_helper.cc",
+    "psl_matching_helper.h",
+  ]
+
+  deps = [
+    "//base",
+    "//components/autofill/core/common",
+    "//components/keyed_service/core",
+    "//components/os_crypt",
+    "//components/password_manager/core/common",
+    "//net",
+    "//sql",
+    "//url",
+  ]
+
+  if (is_mac) {
+    # TODO(blundell): Provide the iOS login DB implementation and then
+    # also exclude the POSIX one from iOS. http://crbug.com/341429
+    sources -= [ "login_database_posix.cc" ]
+  } else if (is_win) {
+    # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+    cflags = [ "/wd4267" ]
+  }
+
+  direct_dependent_configs = [ ":password_manager_config" ]
+
+  # Sync (not supported in Android WebView).
+  if (!is_android || !is_android_webview_build) {
+    sources += [
+      "password_syncable_service.cc",
+      "password_syncable_service.h",
+    ]
+    deps += [ "//sync" ]
+  }
+}
+
+static_library("test_support") {
+  sources = [
+    "mock_password_store.cc",
+    "mock_password_store.h",
+    "password_form_data.cc",
+    "password_form_data.h",
+    "stub_password_manager_client.cc",
+    "stub_password_manager_client.h",
+    "stub_password_manager_driver.cc",
+    "stub_password_manager_driver.h",
+    "test_password_store.cc",
+    "test_password_store.h",
+  ]
+
+  deps = [
+    "//base",
+    "//components/autofill/core/common",
+    "//testing/gmock",
+    "//testing/gtest",
+  ]
+}

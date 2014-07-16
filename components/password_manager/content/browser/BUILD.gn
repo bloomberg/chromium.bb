@@ -1,0 +1,25 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+static_library("browser") {
+  sources = [
+    "content_password_manager_driver.cc",
+    "content_password_manager_driver.h",
+    "password_manager_internals_service_factory.cc",
+    "password_manager_internals_service_factory.h",
+  ]
+
+  deps = [
+    "//base",
+    "//components/autofill/content/browser",
+    "//components/autofill/content/common",
+    "//components/autofill/core/common",
+    "//components/keyed_service/content",
+    "//components/password_manager/core/browser",
+    "//content/public/browser",
+    "//content/public/common",
+    "//ipc",
+    "//net",
+  ]
+}

@@ -6,6 +6,7 @@
 {
   'targets': [
     {
+      # GN version: //components/navigation_interception
       'target_name': 'navigation_interception',
       'type': 'static_library',
       'defines!': ['CONTENT_IMPLEMENTATION'],
@@ -20,6 +21,7 @@
         '../skia/config',
       ],
       'sources': [
+        # Note: sources list duplicated in GN build.
         'navigation_interception/intercept_navigation_resource_throttle.cc',
         'navigation_interception/intercept_navigation_resource_throttle.h',
         'navigation_interception/navigation_params.h',
@@ -31,6 +33,7 @@
             'navigation_interception_jni_headers',
           ],
           'sources': [
+            # Note: sources list duplicated in GN build.
             'navigation_interception/component_jni_registrar.cc',
             'navigation_interception/component_jni_registrar.h',
             'navigation_interception/intercept_navigation_delegate.cc',
@@ -57,9 +60,11 @@
           'includes': [ '../build/java.gypi' ],
         },
         {
+          # GN version: //components/navigation_intercaption:jni_headers
           'target_name': 'navigation_interception_jni_headers',
           'type': 'none',
           'sources': [
+            # Note: sources list duplicated in GN build.
             'navigation_interception/android/java/src/org/chromium/components/navigation_interception/InterceptNavigationDelegate.java',
             'navigation_interception/android/java/src/org/chromium/components/navigation_interception/NavigationParams.java',
           ],

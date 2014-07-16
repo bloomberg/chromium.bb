@@ -1,0 +1,24 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+static_library("search_provider_logos") {
+  sources = [
+    "google_logo_api.cc",
+    "google_logo_api.h",
+    "logo_cache.cc",
+    "logo_cache.h",
+    "logo_common.cc",
+    "logo_common.h",
+    "logo_tracker.cc",
+    "logo_tracker.h",
+  ]
+
+  deps = [
+    "//base",
+    "//net",
+    "//skia",
+    "//ui/gfx",
+    "//url",
+  ]
+}

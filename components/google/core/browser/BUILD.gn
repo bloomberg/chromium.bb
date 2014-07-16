@@ -1,0 +1,42 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+static_library("browser") {
+  sources = [
+    "google_pref_names.cc",
+    "google_pref_names.h",
+    "google_search_metrics.cc",
+    "google_search_metrics.h",
+    "google_switches.cc",
+    "google_switches.h",
+    "google_url_tracker.cc",
+    "google_url_tracker.h",
+    "google_url_tracker_client.cc",
+    "google_url_tracker_client.h",
+    "google_url_tracker_infobar_delegate.cc",
+    "google_url_tracker_infobar_delegate.h",
+    "google_url_tracker_map_entry.cc",
+    "google_url_tracker_map_entry.h",
+    "google_url_tracker_navigation_helper.cc",
+    "google_url_tracker_navigation_helper.h",
+    "google_util.cc",
+    "google_util.h",
+  ]
+
+  if (is_win) {
+    # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+    cflags = [ "/wd4267" ]
+  }
+
+  deps = [
+    "//base",
+    "//components/keyed_service/core",
+    "//components/infobars/core",
+    "//components/strings",
+    "//components/url_fixer",
+    "//net",
+    "//ui/base",
+    "//url",
+  ]
+}

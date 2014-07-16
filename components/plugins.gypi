@@ -5,6 +5,7 @@
 {
   'targets': [
     {
+      # GN version: //components/plugins/renderer
       'target_name': 'plugins_renderer',
       'type': 'static_library',
       'dependencies': [
@@ -18,6 +19,7 @@
         '..',
       ],
       'sources': [
+        # Note: sources list duplicated in GN build.
         'plugins/renderer/plugin_placeholder.cc',
         'plugins/renderer/plugin_placeholder.h',
         'plugins/renderer/webview_plugin.cc',
@@ -26,6 +28,7 @@
       'conditions' : [
         ['OS=="android"', {
           'sources': [
+            # Note: sources list duplicated in GN build.
             'plugins/renderer/mobile_youtube_plugin.cc',
             'plugins/renderer/mobile_youtube_plugin.h',
           ]

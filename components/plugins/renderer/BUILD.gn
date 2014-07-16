@@ -1,0 +1,26 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+static_library("renderer") {
+  sources = [
+    "plugin_placeholder.cc",
+    "plugin_placeholder.h",
+    "webview_plugin.cc",
+    "webview_plugin.h",
+  ]
+  if (is_android) {
+    sources += [
+      "mobile_youtube_plugin.cc",
+      "mobile_youtube_plugin.h",
+    ]
+  }
+
+  deps = [
+    "//gin",
+    "//skia",
+    "//third_party/WebKit/public:blink",
+    "//third_party/re2",
+    "//v8",
+  ]
+}

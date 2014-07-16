@@ -5,6 +5,7 @@
 {
   'targets': [
     {
+      # GN version: //components/google/core/browser
       'target_name': 'google_core_browser',
       'type': 'static_library',
       'dependencies': [
@@ -21,6 +22,7 @@
         '..',
       ],
       'sources': [
+        # Note: sources duplicated in GN build.
         'google/core/browser/google_pref_names.cc',
         'google/core/browser/google_pref_names.h',
         'google/core/browser/google_search_metrics.cc',

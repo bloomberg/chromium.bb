@@ -1,0 +1,31 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+static_library("core") {
+  sources = [
+    "confirm_infobar_delegate.cc",
+    "confirm_infobar_delegate.h",
+    "infobar.cc",
+    "infobar.h",
+    "infobar_android.cc",
+    "infobar_container.cc",
+    "infobar_container.h",
+    "infobar_delegate.cc",
+    "infobar_delegate.h",
+    "infobar_manager.cc",
+    "infobar_manager.h",
+    "infobars_switches.cc",
+    "infobars_switches.h",
+  ]
+
+  deps = [
+    "//base",
+    "//skia",
+    "//ui/gfx",
+    "//ui/strings",
+  ]
+
+  # This target exposes Skia headers in its public headers.
+  forward_dependent_configs_from = [ "//skia" ]
+}

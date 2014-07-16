@@ -1,0 +1,101 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+static_library("invalidation") {
+  sources = [
+    "invalidation_logger.cc",
+    "invalidation_logger.h",
+    "invalidation_logger_observer.h",
+    "invalidation_prefs.cc",
+    "invalidation_prefs.h",
+    "invalidation_service.h",
+    "invalidation_service_util.cc",
+    "invalidation_service_util.h",
+    "invalidation_switches.cc",
+    "invalidation_switches.h",
+    "invalidator_registrar.cc",
+    "invalidator_registrar.h",
+    "invalidator_storage.cc",
+    "invalidator_storage.h",
+    "profile_invalidation_provider.cc",
+    "profile_invalidation_provider.h",
+  ]
+  if (!is_android) {
+    sources += [
+      "gcm_invalidation_bridge.cc",
+      "gcm_invalidation_bridge.h",
+      "gcm_network_channel.cc",
+      "gcm_network_channel.h",
+      "gcm_network_channel_delegate.h",
+      "invalidation_notifier.cc",
+      "invalidation_notifier.h",
+      "non_blocking_invalidator.cc",
+      "non_blocking_invalidator.h",
+      "notifier_reason_util.cc",
+      "notifier_reason_util.h",
+      "p2p_invalidator.cc",
+      "p2p_invalidator.h",
+      "push_client_channel.cc",
+      "push_client_channel.h",
+      "state_writer.h",
+      "sync_invalidation_listener.cc",
+      "sync_invalidation_listener.h",
+      "sync_system_resources.cc",
+      "sync_system_resources.h",
+      "ticl_invalidation_service.cc",
+      "ticl_invalidation_service.h",
+      "ticl_settings_provider.cc",
+      "ticl_settings_provider.h",
+    ]
+  }
+
+  # TODO(GYP) remove this when libjingle is added.
+  configs += [ "//content:libjingle_stub_config" ]
+
+  deps = [
+    "//base",
+    #"//components/gcm_driver",  TODO(GYP)
+    "//google_apis",
+    "//components/keyed_service/core",
+    "//components/pref_registry",
+    #"//components/signin/core/browser",  TODO(GYP)
+    "//sync",
+    "//third_party/cacheinvalidation",
+    #'../jingle/jingle.gyp:notifier',  TODO(GYP)
+  ]
+}
+
+static_library("test_support") {
+  sources = [
+    "fake_invalidation_handler.cc",
+    "fake_invalidation_handler.h",
+    "fake_invalidation_state_tracker.cc",
+    "fake_invalidation_state_tracker.h",
+    "fake_invalidator.cc",
+    "fake_invalidator.h",
+    "invalidation_service_test_template.cc",
+    "invalidation_service_test_template.h",
+    "invalidator_test_template.cc",
+    "invalidator_test_template.h",
+  ]
+  if (!is_android) {
+    sources += [
+      "p2p_invalidation_service.cc",
+      "p2p_invalidation_service.h",
+    ]
+  }
+
+  deps = [
+    "//base",
+    "//google_apis",
+    "//net",
+    "//sync",
+    "//testing/gmock",
+    "//third_party/cacheinvalidation",
+    #'../jingle/jingle.gyp:notifier',  TODO(GYP)
+    #'../jingle/jingle.gyp:notifier_test_util',  TODO(GYP)
+    #'../sync/sync.gyp:test_support_sync_notifier',  TODO(GYP)
+    #'gcm_driver_test_support',  TODO(GYP)
+  ]
+}

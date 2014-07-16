@@ -1,0 +1,48 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+if (is_android) {
+  import("//build/config/android/rules.gni")
+}
+
+static_library("navigation_interception") {
+  sources = [
+    "intercept_navigation_resource_throttle.cc",
+    "intercept_navigation_resource_throttle.h",
+    "navigation_params.h",
+    "navigation_params.cc",
+  ]
+
+  deps = [
+    "//base",
+    "//content/public/browser",
+    "//content/public/common",
+    "//net",
+  ]
+
+  if (is_android) {
+    sources += [
+      "component_jni_registrar.cc",
+      "component_jni_registrar.h",
+      "intercept_navigation_delegate.cc",
+      "intercept_navigation_delegate.h",
+      "navigation_params_android.h",
+      "navigation_params_android.cc",
+    ]
+    deps += [ ":jni_headers" ]
+  }
+}
+
+if (is_android) {
+
+  # TODO(GYP): navigation_interception_java target
+
+  generate_jni("jni_headers") {
+    sources = [
+      "android/java/src/org/chromium/components/navigation_interception/InterceptNavigationDelegate.java",
+      "android/java/src/org/chromium/components/navigation_interception/NavigationParams.java",
+    ]
+    jni_package = "navigation_interception"
+  }
+}

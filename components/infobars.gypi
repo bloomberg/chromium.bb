@@ -5,6 +5,7 @@
 {
   'targets': [
     {
+      # GN version: //components/infobars/core
       'target_name': 'infobars_core',
       'type': 'static_library',
       'include_dirs': [
@@ -17,6 +18,7 @@
         '../ui/strings/ui_strings.gyp:ui_strings',
       ],
       'sources': [
+        # Note: sources duplicated in GN build.
         'infobars/core/confirm_infobar_delegate.cc',
         'infobars/core/confirm_infobar_delegate.h',
         'infobars/core/infobar.cc',
@@ -33,8 +35,9 @@
       ],
     },
     {
+      # GN version: //components/infobars/test:test_support
       'target_name': 'infobars_test_support',
-     'type': 'static_library',
+      'type': 'static_library',
       'include_dirs': [
         '..',
       ],
@@ -43,6 +46,7 @@
         '../skia/skia.gyp:skia',
       ],
       'sources': [
+        # Note: sources list duplicated in GN build.
         'infobars/test/infobar_test.cc',
       ],
     },

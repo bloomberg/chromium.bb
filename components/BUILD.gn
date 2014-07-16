@@ -26,17 +26,27 @@ group("all_components") {
     "//components/favicon_base",
     "//components/feedback",
     "//components/gcm_driver",
+    "//components/google/core/browser",
     "//components/history/core/browser",
     "//components/history/core/common",
     "//components/history/core/test",
+    "//components/infobars/core",
+    "//components/infobars/test:test_support",
+    "//components/invalidation",
     "//components/json_schema",
     "//components/language_usage_metrics",
     "//components/leveldb_proto",
     "//components/metrics",
+    "//components/navigation_interception",
     "//components/navigation_metrics",
+    "//components/network_time",
     "//components/omaha_query_params",
     "//components/onc",
     "//components/os_crypt",
+    "//components/password_manager/content/browser",
+    "//components/password_manager/core/browser",
+    "//components/password_manager/core/common",
+    "//components/plugins/renderer",
     "//components/policy",
     "//components/precache/core",
     "//components/precache/content",
@@ -45,6 +55,8 @@ group("all_components") {
     "//components/rappor",
     "//components/resources:components_resources",
     "//components/search_engines",
+    "//components/search_provider_logos",
+    "//components/sessions",
     "//components/signin/core/browser",
     "//components/startup_metric_utils",
     "//components/strings",
@@ -92,16 +104,27 @@ group("all_components") {
       "//components/favicon/core",  # Blocked on keyed service.
       "//components/feedback",  # Blocked on content.
       "//components/gcm_driver",  # Should work, needs checking.
+      "//components/google/core/browser",  # Should work, needs checking.
       "//components/history/core/browser",  # Should work, needs checking.
       "//components/history/core/common",  # Should work, needs checking.
       "//components/history/core/test",  # Should work, needs checking.
+      "//components/infobars/core",  # Should work, needs checking.
+      "//components/infobars/test:test_support",  # Should work, needs checking.
+      "//components/invalidation",  # Should work, needs checking.
       "//components/json_schema",  # Should work, needs checking.
       "//components/keyed_service/content",  # Blocked on content.
-      "//components/precache/core",  # Should work, needs checking.
-      "//components/precache/content",  # Blocked on content.
+      "//components/navigation_interception",  # Blocked on content.
+      "//components/password_manager/content/browser",  # Blocked on content.
+      "//components/password_manager/core/browser",  # Should work, needs checking.
+      "//components/password_manager/core/common",  # Should work, needs checking.
+      "//components/plugins/renderer",  # Blocked on blink.
       "//components/policy",  # Blocked on content (indirectly via autofill).
+      "//components/precache/content",  # Blocked on content.
+      "//components/precache/core",  # Should work, needs checking.
       "//components/rappor",  # Should work, needs checking.
       "//components/search_engines",  # Should work, needs checking.
+      "//components/search_provider_logos",  # Should work, needs checking.
+      "//components/sessions",  # Blocked on content.
       "//components/signin/core/browser",  # Should work, needs checking.
       "//components/translate/content/browser",  # Blocked on content.
       "//components/translate/content/common",  # Blocked on content.

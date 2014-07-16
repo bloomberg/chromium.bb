@@ -5,6 +5,7 @@
 {
   'targets': [
     {
+      # GN version: //components/invalidation
       'target_name': 'invalidation',
       'type': 'static_library',
       'dependencies': [
@@ -22,6 +23,7 @@
         '..',
       ],
       'sources': [
+        # Note: sources list duplicated in GN build.
         'invalidation/invalidation_logger.cc',
         'invalidation/invalidation_logger.h',
         'invalidation/invalidation_logger_observer.h',
@@ -42,6 +44,7 @@
       'conditions': [
           ['OS != "android"', {
             'sources': [
+              # Note: sources list duplicated in GN build.
               'invalidation/gcm_invalidation_bridge.cc',
               'invalidation/gcm_invalidation_bridge.h',
               'invalidation/gcm_network_channel.cc',
@@ -72,6 +75,7 @@
     },
 
     {
+      # GN version: //components/invalidation:test_support
       'target_name': 'invalidation_test_support',
       'type': 'static_library',
       'dependencies': [
@@ -91,6 +95,7 @@
         '..',
       ],
       'sources': [
+        # Note: sources list duplicated in GN build.
         'invalidation/fake_invalidation_handler.cc',
         'invalidation/fake_invalidation_handler.h',
         'invalidation/fake_invalidation_state_tracker.cc',
@@ -105,6 +110,7 @@
       'conditions': [
           ['OS != "android"', {
             'sources': [
+              # Note: sources list duplicated in GN build.
               'invalidation/p2p_invalidation_service.cc',
               'invalidation/p2p_invalidation_service.h',
             ],

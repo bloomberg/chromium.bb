@@ -5,6 +5,7 @@
 {
   'targets': [
     {
+      # GN version: //components/sessions
       'target_name': 'sessions',
       'type': '<(component)',
       'dependencies': [
@@ -21,6 +22,7 @@
         'SESSIONS_IMPLEMENTATION',
       ],
       'sources': [
+        # Note: sources list duplicated in GN build.
         'sessions/serialized_navigation_entry.cc',
         'sessions/serialized_navigation_entry.h',
       ],
@@ -33,6 +35,7 @@
       ],
     },
     {
+      # GN version: //components/sessions:test_support
       'target_name': 'sessions_test_support',
       'type': 'static_library',
       'defines!': ['SESSIONS_IMPLEMENTATION'],
@@ -44,6 +47,7 @@
         '..',
       ],
       'sources': [
+        # Note: sources list duplicated in GN build.
         'sessions/serialized_navigation_entry_test_helper.cc',
         'sessions/serialized_navigation_entry_test_helper.h',
       ],

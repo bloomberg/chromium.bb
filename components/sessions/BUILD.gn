@@ -1,0 +1,43 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+if (is_android) {
+  import("//build/config/android/config.gn")
+}
+
+component("sessions") {
+  sources = [
+    "serialized_navigation_entry.cc",
+    "serialized_navigation_entry.h",
+  ]
+
+  defines = [ "SESSIONS_IMPLEMENTATION" ]
+
+  deps = [
+    "//base",
+    "//content/public/browser",
+    "//skia",
+    "//url",
+  ]
+
+  if (!is_android || !is_android_webview_build) {
+    deps += [ "//sync" ]
+  }
+}
+
+static_library("test_support") {
+  sources = [
+    "serialized_navigation_entry_test_helper.cc",
+    "serialized_navigation_entry_test_helper.h",
+  ]
+
+  deps = [
+    "//skia",
+    "//testing/gtest",
+  ]
+
+  if (!is_android || !is_android_webview_build) {
+    deps += [ "//sync" ]
+  }
+}

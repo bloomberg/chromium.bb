@@ -5,6 +5,7 @@
 {
   'targets': [
     {
+      # GN version: //components/network_time
       'target_name': 'network_time',
       'type': 'static_library',
       'dependencies': [
@@ -14,6 +15,7 @@
         '..',
       ],
       'sources': [
+        # Note: sources list duplicated in GN build.
         'network_time/network_time_tracker.cc',
         'network_time/network_time_tracker.h',
         'network_time/network_time_pref_names.cc',
