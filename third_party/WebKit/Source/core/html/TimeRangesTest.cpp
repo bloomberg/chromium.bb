@@ -73,8 +73,8 @@ TEST(TimeRanges, CreateFromWebTimeRanges)
 
 TEST(TimeRanges, AddOrder)
 {
-    RefPtr<TimeRanges> rangeA = TimeRanges::create();
-    RefPtr<TimeRanges> rangeB = TimeRanges::create();
+    RefPtrWillBeRawPtr<TimeRanges> rangeA = TimeRanges::create();
+    RefPtrWillBeRawPtr<TimeRanges> rangeB = TimeRanges::create();
 
     rangeA->add(0, 2);
     rangeA->add(3, 4);
@@ -92,7 +92,7 @@ TEST(TimeRanges, AddOrder)
 
 TEST(TimeRanges, OverlappingAdds)
 {
-    RefPtr<TimeRanges> ranges = TimeRanges::create();
+    RefPtrWillBeRawPtr<TimeRanges> ranges = TimeRanges::create();
 
     ranges->add(0, 2);
     ranges->add(10, 11);
@@ -122,7 +122,7 @@ TEST(TimeRanges, OverlappingAdds)
 
 TEST(TimeRanges, IntersectWith_Self)
 {
-    RefPtr<TimeRanges> ranges = TimeRanges::create(0, 2);
+    RefPtrWillBeRawPtr<TimeRanges> ranges = TimeRanges::create(0, 2);
 
     ASSERT_RANGE("{ [0,2) }", ranges);
 
@@ -133,8 +133,8 @@ TEST(TimeRanges, IntersectWith_Self)
 
 TEST(TimeRanges, IntersectWith_IdenticalRange)
 {
-    RefPtr<TimeRanges> rangesA = TimeRanges::create(0, 2);
-    RefPtr<TimeRanges> rangesB = rangesA->copy();
+    RefPtrWillBeRawPtr<TimeRanges> rangesA = TimeRanges::create(0, 2);
+    RefPtrWillBeRawPtr<TimeRanges> rangesB = rangesA->copy();
 
     ASSERT_RANGE("{ [0,2) }", rangesA);
     ASSERT_RANGE("{ [0,2) }", rangesB);
@@ -147,8 +147,8 @@ TEST(TimeRanges, IntersectWith_IdenticalRange)
 
 TEST(TimeRanges, IntersectWith_Empty)
 {
-    RefPtr<TimeRanges> rangesA = TimeRanges::create(0, 2);
-    RefPtr<TimeRanges> rangesB = TimeRanges::create();
+    RefPtrWillBeRawPtr<TimeRanges> rangesA = TimeRanges::create(0, 2);
+    RefPtrWillBeRawPtr<TimeRanges> rangesB = TimeRanges::create();
 
     ASSERT_RANGE("{ [0,2) }", rangesA);
     ASSERT_RANGE("{ }", rangesB);
@@ -161,8 +161,8 @@ TEST(TimeRanges, IntersectWith_Empty)
 
 TEST(TimeRanges, IntersectWith_DisjointRanges1)
 {
-    RefPtr<TimeRanges> rangesA = TimeRanges::create();
-    RefPtr<TimeRanges> rangesB = TimeRanges::create();
+    RefPtrWillBeRawPtr<TimeRanges> rangesA = TimeRanges::create();
+    RefPtrWillBeRawPtr<TimeRanges> rangesB = TimeRanges::create();
 
     rangesA->add(0, 1);
     rangesA->add(4, 5);
@@ -181,8 +181,8 @@ TEST(TimeRanges, IntersectWith_DisjointRanges1)
 
 TEST(TimeRanges, IntersectWith_DisjointRanges2)
 {
-    RefPtr<TimeRanges> rangesA = TimeRanges::create();
-    RefPtr<TimeRanges> rangesB = TimeRanges::create();
+    RefPtrWillBeRawPtr<TimeRanges> rangesA = TimeRanges::create();
+    RefPtrWillBeRawPtr<TimeRanges> rangesB = TimeRanges::create();
 
     rangesA->add(0, 1);
     rangesA->add(4, 5);
@@ -201,8 +201,8 @@ TEST(TimeRanges, IntersectWith_DisjointRanges2)
 
 TEST(TimeRanges, IntersectWith_CompleteOverlap1)
 {
-    RefPtr<TimeRanges> rangesA = TimeRanges::create();
-    RefPtr<TimeRanges> rangesB = TimeRanges::create();
+    RefPtrWillBeRawPtr<TimeRanges> rangesA = TimeRanges::create();
+    RefPtrWillBeRawPtr<TimeRanges> rangesB = TimeRanges::create();
 
     rangesA->add(1, 3);
     rangesA->add(4, 5);
@@ -221,8 +221,8 @@ TEST(TimeRanges, IntersectWith_CompleteOverlap1)
 
 TEST(TimeRanges, IntersectWith_CompleteOverlap2)
 {
-    RefPtr<TimeRanges> rangesA = TimeRanges::create();
-    RefPtr<TimeRanges> rangesB = TimeRanges::create();
+    RefPtrWillBeRawPtr<TimeRanges> rangesA = TimeRanges::create();
+    RefPtrWillBeRawPtr<TimeRanges> rangesB = TimeRanges::create();
 
     rangesA->add(1, 3);
     rangesA->add(4, 5);
@@ -241,8 +241,8 @@ TEST(TimeRanges, IntersectWith_CompleteOverlap2)
 
 TEST(TimeRanges, IntersectWith_Gaps1)
 {
-    RefPtr<TimeRanges> rangesA = TimeRanges::create();
-    RefPtr<TimeRanges> rangesB = TimeRanges::create();
+    RefPtrWillBeRawPtr<TimeRanges> rangesA = TimeRanges::create();
+    RefPtrWillBeRawPtr<TimeRanges> rangesB = TimeRanges::create();
 
     rangesA->add(0, 2);
     rangesA->add(4, 6);
@@ -260,8 +260,8 @@ TEST(TimeRanges, IntersectWith_Gaps1)
 
 TEST(TimeRanges, IntersectWith_Gaps2)
 {
-    RefPtr<TimeRanges> rangesA = TimeRanges::create();
-    RefPtr<TimeRanges> rangesB = TimeRanges::create();
+    RefPtrWillBeRawPtr<TimeRanges> rangesA = TimeRanges::create();
+    RefPtrWillBeRawPtr<TimeRanges> rangesB = TimeRanges::create();
 
     rangesA->add(0, 2);
     rangesA->add(4, 6);
@@ -280,8 +280,8 @@ TEST(TimeRanges, IntersectWith_Gaps2)
 
 TEST(TimeRanges, IntersectWith_Gaps3)
 {
-    RefPtr<TimeRanges> rangesA = TimeRanges::create();
-    RefPtr<TimeRanges> rangesB = TimeRanges::create();
+    RefPtrWillBeRawPtr<TimeRanges> rangesA = TimeRanges::create();
+    RefPtrWillBeRawPtr<TimeRanges> rangesB = TimeRanges::create();
 
     rangesA->add(0, 2);
     rangesA->add(4, 7);

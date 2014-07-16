@@ -85,7 +85,7 @@ void MediaController::removeMediaElement(HTMLMediaElement* element)
     m_mediaElements.remove(m_mediaElements.find(element));
 }
 
-PassRefPtr<TimeRanges> MediaController::buffered() const
+PassRefPtrWillBeRawPtr<TimeRanges> MediaController::buffered() const
 {
     if (m_mediaElements.isEmpty())
         return TimeRanges::create();
@@ -94,13 +94,13 @@ PassRefPtr<TimeRanges> MediaController::buffered() const
     // the intersection of the ranges of the media resources of the slaved media elements that the
     // user agent has buffered, at the time the attribute is evaluated.
     MediaElementSequence::const_iterator it = m_mediaElements.begin();
-    RefPtr<TimeRanges> bufferedRanges = (*it)->buffered();
+    RefPtrWillBeRawPtr<TimeRanges> bufferedRanges = (*it)->buffered();
     for (++it; it != m_mediaElements.end(); ++it)
         bufferedRanges->intersectWith((*it)->buffered().get());
     return bufferedRanges;
 }
 
-PassRefPtr<TimeRanges> MediaController::seekable() const
+PassRefPtrWillBeRawPtr<TimeRanges> MediaController::seekable() const
 {
     if (m_mediaElements.isEmpty())
         return TimeRanges::create();
@@ -109,13 +109,13 @@ PassRefPtr<TimeRanges> MediaController::seekable() const
     // the intersection of the ranges of the media resources of the slaved media elements that the
     // user agent is able to seek to, at the time the attribute is evaluated.
     MediaElementSequence::const_iterator it = m_mediaElements.begin();
-    RefPtr<TimeRanges> seekableRanges = (*it)->seekable();
+    RefPtrWillBeRawPtr<TimeRanges> seekableRanges = (*it)->seekable();
     for (++it; it != m_mediaElements.end(); ++it)
         seekableRanges->intersectWith((*it)->seekable().get());
     return seekableRanges;
 }
 
-PassRefPtr<TimeRanges> MediaController::played()
+PassRefPtrWillBeRawPtr<TimeRanges> MediaController::played()
 {
     if (m_mediaElements.isEmpty())
         return TimeRanges::create();
@@ -124,7 +124,7 @@ PassRefPtr<TimeRanges> MediaController::played()
     // the union of the ranges of the media resources of the slaved media elements that the
     // user agent has so far rendered, at the time the attribute is evaluated.
     MediaElementSequence::const_iterator it = m_mediaElements.begin();
-    RefPtr<TimeRanges> playedRanges = (*it)->played();
+    RefPtrWillBeRawPtr<TimeRanges> playedRanges = (*it)->played();
     for (++it; it != m_mediaElements.end(); ++it)
         playedRanges->unionWith((*it)->played().get());
     return playedRanges;

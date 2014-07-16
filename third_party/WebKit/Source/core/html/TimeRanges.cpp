@@ -40,9 +40,9 @@ TimeRanges::TimeRanges(double start, double end)
     add(start, end);
 }
 
-PassRefPtr<TimeRanges> TimeRanges::create(const blink::WebTimeRanges& webRanges)
+PassRefPtrWillBeRawPtr<TimeRanges> TimeRanges::create(const blink::WebTimeRanges& webRanges)
 {
-    RefPtr<TimeRanges> ranges = TimeRanges::create();
+    RefPtrWillBeRawPtr<TimeRanges> ranges = TimeRanges::create();
 
     unsigned size = webRanges.size();
     for (unsigned i = 0; i < size; ++i)
@@ -51,9 +51,9 @@ PassRefPtr<TimeRanges> TimeRanges::create(const blink::WebTimeRanges& webRanges)
     return ranges.release();
 }
 
-PassRefPtr<TimeRanges> TimeRanges::copy() const
+PassRefPtrWillBeRawPtr<TimeRanges> TimeRanges::copy() const
 {
-    RefPtr<TimeRanges> newSession = TimeRanges::create();
+    RefPtrWillBeRawPtr<TimeRanges> newSession = TimeRanges::create();
 
     unsigned size = m_ranges.size();
     for (unsigned i = 0; i < size; i++)
@@ -64,7 +64,7 @@ PassRefPtr<TimeRanges> TimeRanges::copy() const
 
 void TimeRanges::invert()
 {
-    RefPtr<TimeRanges> inverted = TimeRanges::create();
+    RefPtrWillBeRawPtr<TimeRanges> inverted = TimeRanges::create();
     double posInf = std::numeric_limits<double>::infinity();
     double negInf = -std::numeric_limits<double>::infinity();
 
@@ -93,7 +93,7 @@ void TimeRanges::intersectWith(const TimeRanges* other)
     if (other == this)
         return;
 
-    RefPtr<TimeRanges> invertedOther = other->copy();
+    RefPtrWillBeRawPtr<TimeRanges> invertedOther = other->copy();
     invertedOther->invert();
 
     invert();
@@ -104,7 +104,7 @@ void TimeRanges::intersectWith(const TimeRanges* other)
 void TimeRanges::unionWith(const TimeRanges* other)
 {
     ASSERT(other);
-    RefPtr<TimeRanges> unioned = copy();
+    RefPtrWillBeRawPtr<TimeRanges> unioned = copy();
     for (size_t index = 0; index < other->m_ranges.size(); ++index) {
         const Range& range = other->m_ranges[index];
         unioned->add(range.m_start, range.m_end);
@@ -198,4 +198,9 @@ double TimeRanges::nearest(double time) const
             closest = fabs(endTime - time);
     }
     return closest;
+}
+
+void TimeRanges::trace(Visitor* visitor)
+{
+    visitor->trace(m_ranges);
 }

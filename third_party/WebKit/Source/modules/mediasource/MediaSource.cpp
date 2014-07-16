@@ -311,11 +311,11 @@ double MediaSource::duration() const
     return isClosed() ? std::numeric_limits<float>::quiet_NaN() : m_webMediaSource->duration();
 }
 
-PassRefPtr<TimeRanges> MediaSource::buffered() const
+PassRefPtrWillBeRawPtr<TimeRanges> MediaSource::buffered() const
 {
     // Implements MediaSource algorithm for HTMLMediaElement.buffered.
     // https://dvcs.w3.org/hg/html-media/raw-file/default/media-source/media-source.html#htmlmediaelement-extensions
-    Vector<RefPtr<TimeRanges> > ranges(m_activeSourceBuffers->length());
+    WillBeHeapVector<RefPtrWillBeMember<TimeRanges> > ranges(m_activeSourceBuffers->length());
     for (size_t i = 0; i < m_activeSourceBuffers->length(); ++i)
         ranges[i] = m_activeSourceBuffers->item(i)->buffered(ASSERT_NO_EXCEPTION);
 
@@ -337,7 +337,7 @@ PassRefPtr<TimeRanges> MediaSource::buffered() const
         return TimeRanges::create();
 
     // 4. Let intersection ranges equal a TimeRange object containing a single range from 0 to highest end time.
-    RefPtr<TimeRanges> intersectionRanges = TimeRanges::create(0, highestEndTime);
+    RefPtrWillBeRawPtr<TimeRanges> intersectionRanges = TimeRanges::create(0, highestEndTime);
 
     // 5. For each SourceBuffer object in activeSourceBuffers run the following steps:
     bool ended = readyState() == endedKeyword();

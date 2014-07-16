@@ -1948,7 +1948,7 @@ void HTMLMediaElement::seek(double time, ExceptionState& exceptionState)
     // seekable attribute, then let it be the position in one of the ranges given in the seekable attribute
     // that is the nearest to the new playback position. ... If there are no ranges given in the seekable
     // attribute then set the seeking IDL attribute to false and abort these steps.
-    RefPtr<TimeRanges> seekableRanges = seekable();
+    RefPtrWillBeRawPtr<TimeRanges> seekableRanges = seekable();
 
     // Short circuit seeking to the current time by just firing the events if no seek is required.
     // Don't skip calling the media engine if we are in poster mode because a seek should always
@@ -3163,7 +3163,7 @@ void HTMLMediaElement::mediaPlayerSizeChanged()
         renderer()->updateFromElement();
 }
 
-PassRefPtr<TimeRanges> HTMLMediaElement::buffered() const
+PassRefPtrWillBeRawPtr<TimeRanges> HTMLMediaElement::buffered() const
 {
     if (m_mediaSource)
         return m_mediaSource->buffered();
@@ -3174,7 +3174,7 @@ PassRefPtr<TimeRanges> HTMLMediaElement::buffered() const
     return TimeRanges::create(webMediaPlayer()->buffered());
 }
 
-PassRefPtr<TimeRanges> HTMLMediaElement::played()
+PassRefPtrWillBeRawPtr<TimeRanges> HTMLMediaElement::played()
 {
     if (m_playing) {
         double time = currentTime();
@@ -3188,7 +3188,7 @@ PassRefPtr<TimeRanges> HTMLMediaElement::played()
     return m_playedTimeRanges->copy();
 }
 
-PassRefPtr<TimeRanges> HTMLMediaElement::seekable() const
+PassRefPtrWillBeRawPtr<TimeRanges> HTMLMediaElement::seekable() const
 {
     if (webMediaPlayer()) {
         double maxTimeSeekable = webMediaPlayer()->maxTimeSeekable();
@@ -3241,7 +3241,7 @@ bool HTMLMediaElement::endedPlayback() const
 bool HTMLMediaElement::stoppedDueToErrors() const
 {
     if (m_readyState >= HAVE_METADATA && m_error) {
-        RefPtr<TimeRanges> seekableRanges = seekable();
+        RefPtrWillBeRawPtr<TimeRanges> seekableRanges = seekable();
         if (!seekableRanges->contain(currentTime()))
             return true;
     }
@@ -3927,6 +3927,7 @@ void HTMLMediaElement::defaultEventHandler(Event* event)
 
 void HTMLMediaElement::trace(Visitor* visitor)
 {
+    visitor->trace(m_playedTimeRanges);
     visitor->trace(m_asyncEventQueue);
     visitor->trace(m_error);
     visitor->trace(m_currentSourceNode);

@@ -205,7 +205,7 @@ static bool paintMediaSlider(RenderObject* object, const PaintInfo& paintInfo, c
 
     // Draw the buffered range. Since the element may have multiple buffered ranges and it'd be
     // distracting/'busy' to show all of them, show only the buffered range containing the current play head.
-    RefPtr<TimeRanges> bufferedTimeRanges = mediaElement->buffered();
+    RefPtrWillBeRawPtr<TimeRanges> bufferedTimeRanges = mediaElement->buffered();
     float duration = mediaElement->duration();
     float currentTime = mediaElement->currentTime();
     if (std::isnan(duration) || std::isinf(duration) || !duration || std::isnan(currentTime))

@@ -49,9 +49,9 @@ public:
     void addMediaElement(HTMLMediaElement*);
     void removeMediaElement(HTMLMediaElement*);
 
-    PassRefPtr<TimeRanges> buffered() const;
-    PassRefPtr<TimeRanges> seekable() const;
-    PassRefPtr<TimeRanges> played();
+    PassRefPtrWillBeRawPtr<TimeRanges> buffered() const;
+    PassRefPtrWillBeRawPtr<TimeRanges> seekable() const;
+    PassRefPtrWillBeRawPtr<TimeRanges> played();
 
     double duration() const;
     double currentTime() const;

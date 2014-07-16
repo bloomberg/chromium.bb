@@ -82,7 +82,7 @@ public:
     virtual void close() OVERRIDE;
     virtual bool isClosed() const OVERRIDE;
     virtual double duration() const OVERRIDE;
-    virtual PassRefPtr<TimeRanges> buffered() const OVERRIDE;
+    virtual PassRefPtrWillBeRawPtr<TimeRanges> buffered() const OVERRIDE;
 #if !ENABLE(OILPAN)
     virtual void refHTMLMediaSource() OVERRIDE { ref(); }
     virtual void derefHTMLMediaSource() OVERRIDE { deref(); }

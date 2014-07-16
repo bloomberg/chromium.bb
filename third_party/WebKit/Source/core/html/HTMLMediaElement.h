@@ -121,7 +121,7 @@ public:
     String preload() const;
     void setPreload(const AtomicString&);
 
-    PassRefPtr<TimeRanges> buffered() const;
+    PassRefPtrWillBeRawPtr<TimeRanges> buffered() const;
     void load();
     String canPlayType(const String& mimeType, const String& keySystem = String()) const;
 
@@ -140,8 +140,8 @@ public:
     double playbackRate() const;
     void setPlaybackRate(double);
     void updatePlaybackRate();
-    PassRefPtr<TimeRanges> played();
-    PassRefPtr<TimeRanges> seekable() const;
+    PassRefPtrWillBeRawPtr<TimeRanges> played();
+    PassRefPtrWillBeRawPtr<TimeRanges> seekable() const;
     bool ended() const;
     bool autoplay() const;
     bool loop() const;
@@ -478,7 +478,7 @@ private:
     Timer<HTMLMediaElement> m_progressEventTimer;
     Timer<HTMLMediaElement> m_playbackProgressTimer;
     Timer<HTMLMediaElement> m_audioTracksTimer;
-    RefPtr<TimeRanges> m_playedTimeRanges;
+    RefPtrWillBeMember<TimeRanges> m_playedTimeRanges;
     OwnPtrWillBeMember<GenericEventQueue> m_asyncEventQueue;
 
     double m_playbackRate;
