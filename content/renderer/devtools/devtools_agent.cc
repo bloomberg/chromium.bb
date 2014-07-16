@@ -82,8 +82,6 @@ DevToolsAgent::DevToolsAgent(RenderViewImpl* render_view)
   g_agent_for_routing_id.Get()[routing_id()] = this;
 
   render_view->webview()->setDevToolsAgentClient(this);
-  render_view->webview()->devToolsAgent()->setProcessId(
-      base::Process::Current().pid());
 }
 
 DevToolsAgent::~DevToolsAgent() {
