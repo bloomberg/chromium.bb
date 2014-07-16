@@ -95,6 +95,9 @@ class MTPDeviceDelegateImplLinux : public MTPDeviceAsyncDelegate {
   // |snapshot_file_info| specifies the metadata details of the snapshot file.
   void WriteDataIntoSnapshotFile(const base::File::Info& snapshot_file_info);
 
+  // Marks the current request as complete and call ProcessNextPendingRequest().
+  void PendingRequestDone();
+
   // Processes the next pending request.
   void ProcessNextPendingRequest();
 
@@ -177,6 +180,8 @@ class MTPDeviceDelegateImplLinux : public MTPDeviceAsyncDelegate {
   InitializationState init_state_;
 
   // Used to make sure only one task is in progress at any time.
+  // Otherwise the browser will try to send too many requests at once and
+  // overload the device.
   bool task_in_progress_;
 
   // Registered file system device path. This path does not

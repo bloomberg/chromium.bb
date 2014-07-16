@@ -259,17 +259,17 @@ void MTPDeviceDelegateImplLinux::ReadDirectory(
 
 void MTPDeviceDelegateImplLinux::CreateSnapshotFile(
     const base::FilePath& device_file_path,
-    const base::FilePath& snapshot_file_path,
+    const base::FilePath& local_path,
     const CreateSnapshotFileSuccessCallback& success_callback,
     const ErrorCallback& error_callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   DCHECK(!device_file_path.empty());
-  DCHECK(!snapshot_file_path.empty());
+  DCHECK(!local_path.empty());
   std::string device_file_relative_path =
       GetDeviceRelativePath(device_path_, device_file_path);
   scoped_ptr<SnapshotRequestInfo> request_info(
       new SnapshotRequestInfo(device_file_relative_path,
-                              snapshot_file_path,
+                              local_path,
                               success_callback,
                               error_callback));
   base::Closure call_closure =
@@ -353,7 +353,7 @@ void MTPDeviceDelegateImplLinux::WriteDataIntoSnapshotFile(
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   DCHECK(current_snapshot_request_info_.get());
   DCHECK_GT(file_info.size, 0);
-  task_in_progress_ = true;
+  DCHECK(task_in_progress_);
   SnapshotRequestInfo request_info(
       current_snapshot_request_info_->device_file_path,
       current_snapshot_request_info_->snapshot_file_path,
@@ -373,6 +373,12 @@ void MTPDeviceDelegateImplLinux::WriteDataIntoSnapshotFile(
                                    task_closure);
 }
 
+void MTPDeviceDelegateImplLinux::PendingRequestDone() {
+  DCHECK(task_in_progress_);
+  task_in_progress_ = false;
+  ProcessNextPendingRequest();
+}
+
 void MTPDeviceDelegateImplLinux::ProcessNextPendingRequest() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   DCHECK(!task_in_progress_);
@@ -390,8 +396,7 @@ void MTPDeviceDelegateImplLinux::ProcessNextPendingRequest() {
 void MTPDeviceDelegateImplLinux::OnInitCompleted(bool succeeded) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   init_state_ = succeeded ? INITIALIZED : UNINITIALIZED;
-  task_in_progress_ = false;
-  ProcessNextPendingRequest();
+  PendingRequestDone();
 }
 
 void MTPDeviceDelegateImplLinux::OnDidGetFileInfo(
@@ -399,8 +404,7 @@ void MTPDeviceDelegateImplLinux::OnDidGetFileInfo(
     const base::File::Info& file_info) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   success_callback.Run(file_info);
-  task_in_progress_ = false;
-  ProcessNextPendingRequest();
+  PendingRequestDone();
 }
 
 void MTPDeviceDelegateImplLinux::OnDidGetFileInfoToReadDirectory(
@@ -465,8 +469,7 @@ void MTPDeviceDelegateImplLinux::OnDidReadDirectory(
     const fileapi::AsyncFileUtil::EntryList& file_list) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   success_callback.Run(file_list, false /*no more entries*/);
-  task_in_progress_ = false;
-  ProcessNextPendingRequest();
+  PendingRequestDone();
 }
 
 void MTPDeviceDelegateImplLinux::OnDidWriteDataIntoSnapshotFile(
@@ -474,43 +477,35 @@ void MTPDeviceDelegateImplLinux::OnDidWriteDataIntoSnapshotFile(
     const base::FilePath& snapshot_file_path) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   DCHECK(current_snapshot_request_info_.get());
-  DCHECK(task_in_progress_);
   current_snapshot_request_info_->success_callback.Run(
       file_info, snapshot_file_path);
-  task_in_progress_ = false;
   current_snapshot_request_info_.reset();
-  ProcessNextPendingRequest();
+  PendingRequestDone();
 }
 
 void MTPDeviceDelegateImplLinux::OnWriteDataIntoSnapshotFileError(
     base::File::Error error) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   DCHECK(current_snapshot_request_info_.get());
-  DCHECK(task_in_progress_);
   current_snapshot_request_info_->error_callback.Run(error);
-  task_in_progress_ = false;
   current_snapshot_request_info_.reset();
-  ProcessNextPendingRequest();
+  PendingRequestDone();
 }
 
 void MTPDeviceDelegateImplLinux::OnDidReadBytes(
     const ReadBytesSuccessCallback& success_callback,
     const base::File::Info& file_info, int bytes_read) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  DCHECK(task_in_progress_);
   success_callback.Run(file_info, bytes_read);
-  task_in_progress_ = false;
-  ProcessNextPendingRequest();
+  PendingRequestDone();
 }
 
 void MTPDeviceDelegateImplLinux::HandleDeviceFileError(
     const ErrorCallback& error_callback,
     base::File::Error error) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  DCHECK(task_in_progress_);
   error_callback.Run(error);
-  task_in_progress_ = false;
-  ProcessNextPendingRequest();
+  PendingRequestDone();
 }
 
 void CreateMTPDeviceAsyncDelegate(
