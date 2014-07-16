@@ -90,9 +90,11 @@ class MinimalInputEventFilter : public ui::internal::InputMethodDelegate,
 NativeWidgetViewManager::NativeWidgetViewManager(
     views::internal::NativeWidgetDelegate* delegate, view_manager::Node* node)
     : NativeWidgetAura(delegate),
-      node_(node) {
+      node_(node),
+      view_(node_->active_view()) {
   node_->AddObserver(this);
-  node_->active_view()->AddObserver(this);
+  if (view_)
+    view_->AddObserver(this);
   window_tree_host_.reset(new WindowTreeHostMojo(node_, this));
   window_tree_host_->InitHost();
 
@@ -113,9 +115,10 @@ NativeWidgetViewManager::NativeWidgetViewManager(
 }
 
 NativeWidgetViewManager::~NativeWidgetViewManager() {
-  if (node_->active_view())
-    node_->active_view()->RemoveObserver(this);
-  node_->RemoveObserver(this);
+  if (view_)
+    view_->RemoveObserver(this);
+  if (node_)
+    node_->RemoveObserver(this);
 }
 
 void NativeWidgetViewManager::InitNativeWidget(
@@ -129,11 +132,21 @@ void NativeWidgetViewManager::InitNativeWidget(
 
 void NativeWidgetViewManager::CompositorContentsChanged(
     const SkBitmap& bitmap) {
-  node_->active_view()->SetContents(bitmap);
+  if (view_)
+    view_->SetContents(bitmap);
 }
 
 void NativeWidgetViewManager::OnNodeDestroyed(view_manager::Node* node) {
+  DCHECK_EQ(node, node_);
+  node->RemoveObserver(this);
+  node_ = NULL;
   window_tree_host_.reset();
+}
+
+void NativeWidgetViewManager::OnNodeBoundsChanged(view_manager::Node* node,
+                                                  const gfx::Rect& old_bounds,
+                                                  const gfx::Rect& new_bounds) {
+  GetWidget()->SetBounds(gfx::Rect(node->bounds().size()));
 }
 
 void NativeWidgetViewManager::OnNodeActiveViewChanged(
@@ -144,6 +157,7 @@ void NativeWidgetViewManager::OnNodeActiveViewChanged(
     old_view->RemoveObserver(this);
   if (new_view)
     new_view->AddObserver(this);
+  view_ = new_view;
 }
 
 void NativeWidgetViewManager::OnViewInputEvent(view_manager::View* view,
@@ -151,6 +165,12 @@ void NativeWidgetViewManager::OnViewInputEvent(view_manager::View* view,
   scoped_ptr<ui::Event> ui_event(event.To<scoped_ptr<ui::Event> >());
   if (ui_event.get())
     window_tree_host_->SendEventToProcessor(ui_event.get());
+}
+
+void NativeWidgetViewManager::OnViewDestroyed(view_manager::View* view) {
+  DCHECK_EQ(view, view_);
+  view->RemoveObserver(this);
+  view_ = NULL;
 }
 
 }  // namespace mojo

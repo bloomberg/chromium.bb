@@ -155,6 +155,8 @@ class Browser : public ApplicationDelegate,
   Browser() : view_manager_(NULL), root_(NULL), widget_(NULL) {}
 
   virtual ~Browser() {
+    if (root_)
+      root_->RemoveObserver(this);
   }
 
  private:
@@ -242,6 +244,7 @@ class Browser : public ApplicationDelegate,
   virtual void OnNodeDestroyed(view_manager::Node* node) OVERRIDE {
     DCHECK_EQ(root_, node);
     node->RemoveObserver(this);
+    root_ = NULL;
   }
 
   scoped_ptr<ViewsInit> views_init_;

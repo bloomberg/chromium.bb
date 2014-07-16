@@ -80,6 +80,7 @@ HTMLDocumentView::HTMLDocumentView(ServiceProvider* service_provider,
     : view_manager_(view_manager),
       view_(view_manager::View::Create(view_manager_)),
       web_view_(NULL),
+      root_(NULL),
       repaint_pending_(false),
       navigator_host_(service_provider),
       weak_factory_(this) {
@@ -88,20 +89,23 @@ HTMLDocumentView::HTMLDocumentView(ServiceProvider* service_provider,
 
 HTMLDocumentView::~HTMLDocumentView() {
   view_->RemoveObserver(this);
-
   if (web_view_)
     web_view_->close();
+  if (root_)
+    root_->RemoveObserver(this);
 }
 
 void HTMLDocumentView::AttachToNode(view_manager::Node* node) {
-  node->SetActiveView(view_);
+  root_ = node;
+  root_->SetActiveView(view_);
   view_->SetColor(SK_ColorCYAN);  // Dummy background color.
 
   web_view_ = blink::WebView::create(this);
   ConfigureSettings(web_view_->settings());
   web_view_->setMainFrame(blink::WebLocalFrame::create(this));
+  web_view_->resize(root_->bounds().size());
 
-  web_view_->resize(gfx::Size(node->bounds().size()));
+  root_->AddObserver(this);
 }
 
 void HTMLDocumentView::Load(URLResponsePtr response) {
@@ -182,6 +186,19 @@ void HTMLDocumentView::OnViewInputEvent(view_manager::View* view,
           event);
   if (web_event)
     web_view_->handleInputEvent(*web_event);
+}
+
+void HTMLDocumentView::OnNodeBoundsChanged(view_manager::Node* node,
+                                           const gfx::Rect& old_bounds,
+                                           const gfx::Rect& new_bounds) {
+  DCHECK_EQ(node, root_);
+  web_view_->resize(node->bounds().size());
+}
+
+void HTMLDocumentView::OnNodeDestroyed(view_manager::Node* node) {
+  DCHECK_EQ(node, root_);
+  node->RemoveObserver(this);
+  root_ = NULL;
 }
 
 void HTMLDocumentView::Repaint() {

@@ -24,6 +24,7 @@
 #include "mojo/views/views_init.h"
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"
+#include "ui/gfx/geometry/size_conversions.h"
 
 #if defined CreateWindow
 #undef CreateWindow
@@ -90,11 +91,14 @@ class NavigatorHost : public InterfaceImpl<navigation::NavigatorHost> {
   DISALLOW_COPY_AND_ASSIGN(NavigatorHost);
 };
 
-class KeyboardManager : public KeyboardClient {
+class KeyboardManager : public KeyboardClient,
+                        public NodeObserver {
  public:
   KeyboardManager() : view_manager_(NULL), node_(NULL) {
   }
   virtual ~KeyboardManager() {
+    if (node_)
+      node_->parent()->RemoveObserver(this);
   }
 
   Node* node() { return node_; }
@@ -110,6 +114,7 @@ class KeyboardManager : public KeyboardClient {
     node_->Embed("mojo:mojo_keyboard");
     application->ConnectToService("mojo:mojo_keyboard", &keyboard_service_);
     keyboard_service_.set_client(this);
+    parent->AddObserver(this);
   }
 
   void Show(Id view_id, const gfx::Rect& bounds) {
@@ -147,6 +152,22 @@ class KeyboardManager : public KeyboardClient {
                                  flags, false)));
   }
 
+  // Overridden from NodeObserver:
+  virtual void OnNodeBoundsChanged(Node* parent,
+                                   const gfx::Rect& old_bounds,
+                                   const gfx::Rect& new_bounds) OVERRIDE {
+    gfx::Rect keyboard_bounds(node_->bounds());
+    keyboard_bounds.set_y(new_bounds.bottom() - keyboard_bounds.height());
+    keyboard_bounds.set_width(keyboard_bounds.width() +
+                              new_bounds.width() - old_bounds.width());
+    node_->SetBounds(keyboard_bounds);
+  }
+  virtual void OnNodeDestroyed(Node* parent) OVERRIDE {
+    DCHECK_EQ(parent, node_->parent());
+    parent->RemoveObserver(this);
+    node_ = NULL;
+  }
+
   KeyboardServicePtr keyboard_service_;
   ViewManager* view_manager_;
 
@@ -158,30 +179,72 @@ class KeyboardManager : public KeyboardClient {
 
 class RootLayoutManager : public NodeObserver {
  public:
-  explicit RootLayoutManager(ViewManager* view_manager,
-                             Node* root,
-                             Id content_node_id)
-                            : root_(root),
-                              view_manager_(view_manager),
-                              content_node_id_(content_node_id) {}
-  virtual ~RootLayoutManager() {}
+  RootLayoutManager(ViewManager* view_manager,
+                    Node* root,
+                    Id content_node_id,
+                    Id launcher_ui_node_id,
+                    Id control_panel_node_id)
+      : root_(root),
+        view_manager_(view_manager),
+        content_node_id_(content_node_id),
+        launcher_ui_node_id_(launcher_ui_node_id),
+        control_panel_node_id_(control_panel_node_id) {}
+  virtual ~RootLayoutManager() {
+    if (root_)
+      root_->RemoveObserver(this);
+  }
 
  private:
   // Overridden from NodeObserver:
   virtual void OnNodeBoundsChanged(Node* node,
-                                   const gfx::Rect& /*old_bounds*/,
+                                   const gfx::Rect& old_bounds,
                                    const gfx::Rect& new_bounds) OVERRIDE {
     DCHECK_EQ(node, root_);
+
     Node* content_node = view_manager_->GetNodeById(content_node_id_);
     content_node->SetBounds(new_bounds);
     // Force the view's bitmap to be recreated
     content_node->active_view()->SetColor(SK_ColorBLUE);
-    // TODO(hansmuller): Do Layout
+
+    int delta_width = new_bounds.width() - old_bounds.width();
+    int delta_height = new_bounds.height() - old_bounds.height();
+
+    Node* launcher_ui_node =
+        view_manager_->GetNodeById(launcher_ui_node_id_);
+    gfx::Rect launcher_ui_bounds(launcher_ui_node->bounds());
+    launcher_ui_bounds.set_width(launcher_ui_bounds.width() + delta_width);
+    launcher_ui_node->SetBounds(launcher_ui_bounds);
+
+    Node* control_panel_node =
+        view_manager_->GetNodeById(control_panel_node_id_);
+    gfx::Rect control_panel_bounds(control_panel_node->bounds());
+    control_panel_bounds.set_x(control_panel_bounds.x() + delta_width);
+    control_panel_node->SetBounds(control_panel_bounds);
+
+    const Node::Children& content_nodes = content_node->children();
+    Node::Children::const_iterator iter = content_nodes.begin();
+    for(; iter != content_nodes.end(); ++iter) {
+      Node* node = *iter;
+      if (node->id() == control_panel_node->id() ||
+          node->id() == launcher_ui_node->id())
+        continue;
+      gfx::Rect node_bounds(node->bounds());
+      node_bounds.set_width(node_bounds.width() + delta_width);
+      node_bounds.set_height(node_bounds.height() + delta_height);
+      node->SetBounds(node_bounds);
+    }
+  }
+  virtual void OnNodeDestroyed(Node* node) OVERRIDE {
+    DCHECK_EQ(node, root_);
+    root_->RemoveObserver(this);
+    root_ = NULL;
   }
 
   Node* root_;
   ViewManager* view_manager_;
-  Id content_node_id_;
+  const Id content_node_id_;
+  const Id launcher_ui_node_id_;
+  const Id control_panel_node_id_;
 
   DISALLOW_COPY_AND_ASSIGN(RootLayoutManager);
 };
@@ -283,16 +346,19 @@ class WindowManager : public ApplicationDelegate,
     node->SetBounds(gfx::Rect(root->bounds().size()));
     content_node_id_ = node->id();
 
-    root_layout_manager_.reset(
-        new RootLayoutManager(view_manager_, root, content_node_id_));
-    root->AddObserver(root_layout_manager_.get());
-
     View* view = View::Create(view_manager_);
     node->SetActiveView(view);
     view->SetColor(SK_ColorBLUE);
 
-    CreateLauncherUI();
-    CreateControlPanel(node);
+    Id launcher_ui_id = CreateLauncherUI();
+    Id control_panel_id = CreateControlPanel(node);
+
+    root_layout_manager_.reset(
+        new RootLayoutManager(view_manager, root,
+                              content_node_id_,
+                              launcher_ui_id,
+                              control_panel_id));
+    root->AddObserver(root_layout_manager_.get());
   }
   virtual void OnViewManagerDisconnected(ViewManager* view_manager) OVERRIDE {
     DCHECK_EQ(view_manager_, view_manager);
@@ -349,7 +415,7 @@ class WindowManager : public ApplicationDelegate,
   }
 
   // TODO(beng): proper layout manager!!
-  void CreateLauncherUI() {
+  Id CreateLauncherUI() {
     navigation::NavigationDetailsPtr nav_details;
     navigation::ResponseDetailsPtr response;
     Node* node = view_manager_->GetNodeById(content_node_id_);
@@ -358,6 +424,7 @@ class WindowManager : public ApplicationDelegate,
     bounds.set_height(kTextfieldHeight);
     launcher_ui_ = CreateChild(content_node_id_, "mojo:mojo_browser", bounds,
                                nav_details.Pass(), response.Pass());
+    return launcher_ui_->id();
   }
 
   void CreateWindow(const std::string& handler_url,
@@ -409,7 +476,7 @@ class WindowManager : public ApplicationDelegate,
         keyboard_manager_->node()->Contains(target->node());
   }
 
-  void CreateControlPanel(view_manager::Node* root) {
+  Id CreateControlPanel(view_manager::Node* root) {
     Node* node = Node::Create(view_manager_);
     View* view = view_manager::View::Create(view_manager_);
     root->AddChild(node);
@@ -424,6 +491,7 @@ class WindowManager : public ApplicationDelegate,
     node->SetBounds(bounds);
 
     debug_panel_ = new DebugPanel(this, node);
+    return node->id();
   }
 
   scoped_ptr<ViewsInit> views_init_;

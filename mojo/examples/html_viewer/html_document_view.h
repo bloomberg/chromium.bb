@@ -9,6 +9,7 @@
 #include "base/memory/weak_ptr.h"
 #include "mojo/public/cpp/application/lazy_interface_ptr.h"
 #include "mojo/public/interfaces/service_provider/service_provider.mojom.h"
+#include "mojo/services/public/cpp/view_manager/node_observer.h"
 #include "mojo/services/public/cpp/view_manager/view_observer.h"
 #include "mojo/services/public/interfaces/navigation/navigation.mojom.h"
 #include "mojo/services/public/interfaces/network/url_loader.mojom.h"
@@ -28,7 +29,8 @@ namespace examples {
 // A view for a single HTML document.
 class HTMLDocumentView : public blink::WebViewClient,
                          public blink::WebFrameClient,
-                         public view_manager::ViewObserver {
+                         public view_manager::ViewObserver,
+                         public view_manager::NodeObserver {
  public:
   HTMLDocumentView(ServiceProvider* service_provider,
                    view_manager::ViewManager* view_manager);
@@ -65,11 +67,18 @@ class HTMLDocumentView : public blink::WebViewClient,
   virtual void OnViewInputEvent(view_manager::View* view,
                                 const EventPtr& event) OVERRIDE;
 
+  // NodeObserver methods:
+  virtual void OnNodeBoundsChanged(view_manager::Node* node,
+                                   const gfx::Rect& old_bounds,
+                                   const gfx::Rect& new_bounds) OVERRIDE;
+  virtual void OnNodeDestroyed(view_manager::Node* node) OVERRIDE;
+
   void Repaint();
 
   view_manager::ViewManager* view_manager_;
   view_manager::View* view_;
   blink::WebView* web_view_;
+  view_manager::Node* root_;
   bool repaint_pending_;
   LazyInterfacePtr<navigation::NavigatorHost> navigator_host_;
 

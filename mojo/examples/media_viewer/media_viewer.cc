@@ -14,6 +14,7 @@
 #include "mojo/public/cpp/application/application_impl.h"
 #include "mojo/public/cpp/bindings/interface_impl.h"
 #include "mojo/services/public/cpp/view_manager/node.h"
+#include "mojo/services/public/cpp/view_manager/node_observer.h"
 #include "mojo/services/public/cpp/view_manager/view.h"
 #include "mojo/services/public/cpp/view_manager/view_manager.h"
 #include "mojo/services/public/cpp/view_manager/view_manager_delegate.h"
@@ -202,17 +203,22 @@ class NavigatorImpl : public InterfaceImpl<navigation::Navigator> {
 
 class MediaViewer : public ApplicationDelegate,
                     public view_manager::ViewManagerDelegate,
-                    public ControlPanel::Delegate {
+                    public ControlPanel::Delegate,
+                    public view_manager::NodeObserver {
  public:
   MediaViewer() : app_(NULL),
                   view_manager_(NULL),
+                  root_node_(NULL),
                   control_node_(NULL),
                   content_node_(NULL),
                   control_panel_(this) {
     handler_map_["image/png"] = "mojo:mojo_png_viewer";
   }
 
-  virtual ~MediaViewer() {}
+  virtual ~MediaViewer() {
+    if (root_node_)
+      root_node_->RemoveObserver(this);
+  }
 
   void Navigate(
       uint32_t node_id,
@@ -270,24 +276,32 @@ class MediaViewer : public ApplicationDelegate,
     return true;
   }
 
-  // Overridden from view_manager::ViewManagerDelegate:
-  virtual void OnRootAdded(view_manager::ViewManager* view_manager,
-                           view_manager::Node* root) OVERRIDE {
-    view_manager_ = view_manager;
-
-    control_node_ = view_manager::Node::Create(view_manager_);
-    root->AddChild(control_node_);
+  void LayoutNodes() {
+    view_manager::Node* root = content_node_->parent();
     gfx::Rect control_bounds(root->bounds().width(), 28);
     control_node_->SetBounds(control_bounds);
-    control_node_->SetActiveView(view_manager::View::Create(view_manager_));
-
-    control_panel_.Initialize(control_node_);
-
-    content_node_ = view_manager::Node::Create(view_manager_);
-    root->AddChild(content_node_);
     gfx::Rect content_bounds(0, control_bounds.height(), root->bounds().width(),
                              root->bounds().height() - control_bounds.height());
     content_node_->SetBounds(content_bounds);
+  }
+
+  // Overridden from view_manager::ViewManagerDelegate:
+  virtual void OnRootAdded(view_manager::ViewManager* view_manager,
+                           view_manager::Node* root) OVERRIDE {
+    root_node_ = root;
+    view_manager_ = view_manager;
+
+    control_node_ = view_manager::Node::Create(view_manager_);
+    root_node_->AddChild(control_node_);
+
+    content_node_ = view_manager::Node::Create(view_manager_);
+    root_node_->AddChild(content_node_);
+
+    control_node_->SetActiveView(view_manager::View::Create(view_manager_));
+    control_panel_.Initialize(control_node_);
+
+    LayoutNodes();
+    root_node_->AddObserver(this);
 
     if (pending_navigate_request_) {
       scoped_ptr<PendingNavigateRequest> request(
@@ -311,7 +325,7 @@ class MediaViewer : public ApplicationDelegate,
         zoomable_media_->ZoomIn();
         break;
       case ControlPanel::CONTROL_ACTUAL_SIZE:
-        zoomable_media_->ZoomToActualSize();
+       zoomable_media_->ZoomToActualSize();
         break;
       case ControlPanel::CONTROL_ZOOM_OUT:
         zoomable_media_->ZoomOut();
@@ -319,6 +333,18 @@ class MediaViewer : public ApplicationDelegate,
       default:
         NOTIMPLEMENTED();
     }
+  }
+
+  // NodeObserver:
+  virtual void OnNodeBoundsChanged(view_manager::Node* node,
+                                   const gfx::Rect& old_bounds,
+                                   const gfx::Rect& new_bounds) OVERRIDE {
+    LayoutNodes();
+  }
+  virtual void OnNodeDestroyed(view_manager::Node* node) OVERRIDE {
+    DCHECK_EQ(node, root_node_);
+    node->RemoveObserver(this);
+    root_node_ = NULL;
   }
 
   std::string GetHandlerForContentType(const std::string& content_type) {
@@ -329,6 +355,7 @@ class MediaViewer : public ApplicationDelegate,
   ApplicationImpl* app_;
   scoped_ptr<ViewsInit> views_init_;
   view_manager::ViewManager* view_manager_;
+  view_manager::Node* root_node_;
   view_manager::Node* control_node_;
   view_manager::Node* content_node_;
   ControlPanel control_panel_;

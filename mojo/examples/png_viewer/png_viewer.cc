@@ -10,6 +10,7 @@
 #include "mojo/public/cpp/application/application_connection.h"
 #include "mojo/public/cpp/application/application_delegate.h"
 #include "mojo/services/public/cpp/view_manager/node.h"
+#include "mojo/services/public/cpp/view_manager/node_observer.h"
 #include "mojo/services/public/cpp/view_manager/types.h"
 #include "mojo/services/public/cpp/view_manager/view.h"
 #include "mojo/services/public/cpp/view_manager/view_manager.h"
@@ -111,10 +112,17 @@ class NavigatorImpl : public InterfaceImpl<navigation::Navigator> {
 };
 
 class PNGViewer : public ApplicationDelegate,
-                  public view_manager::ViewManagerDelegate {
+                  public view_manager::ViewManagerDelegate,
+                  public view_manager::NodeObserver {
  public:
-  PNGViewer() : content_view_(NULL), zoom_percentage_(kDefaultZoomPercentage) {}
-  virtual ~PNGViewer() {}
+  PNGViewer()
+      : content_view_(NULL),
+        root_(NULL),
+        zoom_percentage_(kDefaultZoomPercentage) {}
+  virtual ~PNGViewer() {
+    if (root_)
+      root_->RemoveObserver(this);
+  }
 
   void UpdateView(view_manager::Id node_id, const SkBitmap& bitmap) {
     bitmap_ = bitmap;
@@ -161,8 +169,10 @@ class PNGViewer : public ApplicationDelegate,
   // Overridden from view_manager::ViewManagerDelegate:
   virtual void OnRootAdded(view_manager::ViewManager* view_manager,
                            view_manager::Node* root) OVERRIDE {
+    root_ = root;
+    root_->AddObserver(this);
     content_view_ = view_manager::View::Create(view_manager);
-    root->SetActiveView(content_view_);
+    root_->SetActiveView(content_view_);
     content_view_->SetColor(SK_ColorGRAY);
     if (!bitmap_.isNull())
       DrawBitmap();
@@ -189,7 +199,21 @@ class PNGViewer : public ApplicationDelegate,
     content_view_->SetContents(skia::GetTopDevice(*canvas)->accessBitmap(true));
   }
 
+  // NodeObserver:
+  virtual void OnNodeBoundsChanged(view_manager::Node* node,
+                                   const gfx::Rect& old_bounds,
+                                   const gfx::Rect& new_bounds) OVERRIDE {
+    DCHECK_EQ(node, root_);
+    DrawBitmap();
+  }
+  virtual void OnNodeDestroyed(view_manager::Node* node) OVERRIDE {
+    DCHECK_EQ(node, root_);
+    node->RemoveObserver(this);
+    root_ = NULL;
+  }
+
   view_manager::View* content_view_;
+  view_manager::Node* root_;
   SkBitmap bitmap_;
   uint16_t zoom_percentage_;
 
