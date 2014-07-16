@@ -25,6 +25,8 @@ using ::testing::Invoke;
 class ProfileSyncServiceMock : public ProfileSyncService {
  public:
   explicit ProfileSyncServiceMock(Profile* profile);
+  ProfileSyncServiceMock(
+      scoped_ptr<ProfileSyncComponentsFactory> factory, Profile* profile);
   virtual ~ProfileSyncServiceMock();
 
   // A utility used by sync tests to create a TestingProfile with a Google
@@ -37,9 +39,10 @@ class ProfileSyncServiceMock : public ProfileSyncService {
       content::BrowserContext* profile);
 
   MOCK_METHOD0(DisableForUser, void());
-  MOCK_METHOD3(OnBackendInitialized,
+  MOCK_METHOD4(OnBackendInitialized,
       void(const syncer::WeakHandle<syncer::JsBackend>&,
            const syncer::WeakHandle<syncer::DataTypeDebugInfoListener>&,
+           const std::string&,
            bool));
   MOCK_METHOD0(OnSyncCycleCompleted, void());
   MOCK_METHOD0(OnAuthError, void());
@@ -99,12 +102,6 @@ class ProfileSyncServiceMock : public ProfileSyncService {
   // This is to get around the fact that GMOCK does not handle Scoped*.
   virtual ScopedVector<browser_sync::DeviceInfo>
       GetAllSignedInDevices() const OVERRIDE;
-
-  virtual scoped_ptr<browser_sync::DeviceInfo> GetLocalDeviceInfo()
-      const OVERRIDE;
-  MOCK_CONST_METHOD0(GetLocalDeviceInfoMock,
-                     browser_sync::DeviceInfo*());
-  MOCK_CONST_METHOD0(GetLocalSyncCacheGUID, std::string());
 
   // DataTypeManagerObserver mocks.
   MOCK_METHOD0(OnConfigureBlocked, void());

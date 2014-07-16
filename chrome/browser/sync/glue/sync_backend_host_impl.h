@@ -177,7 +177,8 @@ class SyncBackendHostImpl
       const syncer::WeakHandle<syncer::JsBackend> js_backend,
       const syncer::WeakHandle<syncer::DataTypeDebugInfoListener>
           debug_info_listener,
-      syncer::SyncContextProxy* sync_context_proxy);
+      syncer::SyncContextProxy* sync_context_proxy,
+      const std::string& cache_guid);
 
   // Downloading of control types failed and will be retried. Invokes the
   // frontend's sync configure retry method.

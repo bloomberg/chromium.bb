@@ -29,6 +29,7 @@ class DataTypeManager;
 class DataTypeManagerObserver;
 class FailedDataTypesHandler;
 class GenericChangeProcessor;
+class LocalDeviceInfoProvider;
 class SyncBackendHost;
 class DataTypeErrorHandler;
 }  // namespace browser_sync
@@ -96,6 +97,10 @@ class ProfileSyncComponentsFactory
       invalidation::InvalidationService* invalidator,
       const base::WeakPtr<sync_driver::SyncPrefs>& sync_prefs,
       const base::FilePath& sync_folder) = 0;
+
+  // Creating this in the factory helps us mock it out in testing.
+  virtual scoped_ptr<browser_sync::LocalDeviceInfoProvider>
+      CreateLocalDeviceInfoProvider() = 0;
 
   // Legacy datatypes that need to be converted to the SyncableService API.
   virtual SyncComponents CreateBookmarkSyncComponents(

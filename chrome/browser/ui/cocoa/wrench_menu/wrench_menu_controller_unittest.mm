@@ -8,6 +8,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/sync/glue/device_info.h"
+#include "chrome/browser/sync/glue/local_device_info_provider_mock.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/sessions/sessions_sync_manager.h"
 #include "chrome/browser/ui/cocoa/cocoa_profile_test.h"
@@ -57,9 +58,19 @@ class DummyRouter : public browser_sync::LocalSessionEventRouter {
 };
 
 class WrenchMenuControllerTest
-    : public CocoaProfileTest,
-      public browser_sync::SessionsSyncManager::SyncInternalApiDelegate {
+    : public CocoaProfileTest {
  public:
+  WrenchMenuControllerTest()
+      : local_device_(new browser_sync::LocalDeviceInfoProviderMock(
+            "WrenchMenuControllerTest",
+            "Test Machine",
+            "Chromium 10k",
+            "Chrome 10k",
+            sync_pb::SyncEnums_DeviceType_TYPE_LINUX)) {
+  }
+
+  virtual ~WrenchMenuControllerTest() {}
+
   virtual void SetUp() OVERRIDE {
     CocoaProfileTest::SetUp();
     ASSERT_TRUE(browser());
@@ -69,7 +80,7 @@ class WrenchMenuControllerTest
 
     manager_.reset(new browser_sync::SessionsSyncManager(
         profile(),
-        this,
+        local_device_.get(),
         scoped_ptr<browser_sync::LocalSessionEventRouter>(
             new DummyRouter())));
     manager_->MergeDataAndStartSyncing(
@@ -79,20 +90,6 @@ class WrenchMenuControllerTest
             new syncer::FakeSyncChangeProcessor),
         scoped_ptr<syncer::SyncErrorFactory>(
             new syncer::SyncErrorFactoryMock));
-  }
-
-  virtual scoped_ptr<browser_sync::DeviceInfo> GetLocalDeviceInfo()
-      const OVERRIDE {
-    return scoped_ptr<browser_sync::DeviceInfo>(
-        new browser_sync::DeviceInfo(GetLocalSyncCacheGUID(),
-                       "Test Machine",
-                       "Chromium 10k",
-                       "Chrome 10k",
-                       sync_pb::SyncEnums_DeviceType_TYPE_LINUX));
-  }
-
-  virtual std::string GetLocalSyncCacheGUID() const OVERRIDE {
-    return "WrenchMenuControllerTest";
   }
 
   void RegisterRecentTabs(RecentTabsBuilderTestHelper* helper) {
@@ -120,6 +117,7 @@ class WrenchMenuControllerTest
 
  private:
   scoped_ptr<browser_sync::SessionsSyncManager> manager_;
+  scoped_ptr<browser_sync::LocalDeviceInfoProviderMock> local_device_;
 };
 
 TEST_F(WrenchMenuControllerTest, Initialized) {

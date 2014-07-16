@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/sync/profile_sync_components_factory_mock.h"
+
+#include "chrome/browser/sync/glue/local_device_info_provider_mock.h"
 #include "components/sync_driver/change_processor.h"
 #include "components/sync_driver/model_associator.h"
 #include "content/public/browser/browser_thread.h"
@@ -13,8 +15,13 @@ using browser_sync::AssociatorInterface;
 using browser_sync::ChangeProcessor;
 using testing::_;
 using testing::InvokeWithoutArgs;
+using testing::Return;
 
-ProfileSyncComponentsFactoryMock::ProfileSyncComponentsFactoryMock() {}
+ProfileSyncComponentsFactoryMock::ProfileSyncComponentsFactoryMock() {
+  ON_CALL(*this, CreateLocalDeviceInfoProviderMock()).
+      WillByDefault(
+          Return(new browser_sync::LocalDeviceInfoProviderMock()));
+}
 
 ProfileSyncComponentsFactoryMock::ProfileSyncComponentsFactoryMock(
     AssociatorInterface* model_associator, ChangeProcessor* change_processor)
@@ -25,6 +32,9 @@ ProfileSyncComponentsFactoryMock::ProfileSyncComponentsFactoryMock(
           InvokeWithoutArgs(
               this,
               &ProfileSyncComponentsFactoryMock::MakeSyncComponents));
+  ON_CALL(*this, CreateLocalDeviceInfoProviderMock()).
+      WillByDefault(
+          Return(new browser_sync::LocalDeviceInfoProviderMock()));
 }
 
 ProfileSyncComponentsFactoryMock::~ProfileSyncComponentsFactoryMock() {}
@@ -40,4 +50,10 @@ ProfileSyncComponentsFactory::SyncComponents
 ProfileSyncComponentsFactoryMock::MakeSyncComponents() {
   return SyncComponents(model_associator_.release(),
                         change_processor_.release());
+}
+
+scoped_ptr<browser_sync::LocalDeviceInfoProvider>
+ProfileSyncComponentsFactoryMock::CreateLocalDeviceInfoProvider() {
+  return scoped_ptr<browser_sync::LocalDeviceInfoProvider>(
+      CreateLocalDeviceInfoProviderMock());
 }

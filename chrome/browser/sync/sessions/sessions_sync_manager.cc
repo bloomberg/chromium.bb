@@ -6,6 +6,7 @@
 
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/sync/glue/local_device_info_provider.h"
 #include "chrome/browser/sync/glue/synced_tab_delegate.h"
 #include "chrome/browser/sync/glue/synced_window_delegate.h"
 #include "chrome/browser/sync/sessions/sessions_util.h"
@@ -44,15 +45,17 @@ static const char kNTPOpenTabSyncURL[] = "chrome://newtab/#open_tabs";
 // stale and becomes a candidate for garbage collection.
 static const size_t kDefaultStaleSessionThresholdDays = 14;  // 2 weeks.
 
+// |local_device| is owned by ProfileSyncService, its lifetime exceeds
+// lifetime of SessionSyncManager.
 SessionsSyncManager::SessionsSyncManager(
     Profile* profile,
-    SyncInternalApiDelegate* delegate,
+    LocalDeviceInfoProvider* local_device,
     scoped_ptr<LocalSessionEventRouter> router)
     : favicon_cache_(profile, kMaxSyncFavicons),
       local_tab_pool_out_of_sync_(true),
       sync_prefs_(profile->GetPrefs()),
       profile_(profile),
-      delegate_(delegate),
+      local_device_(local_device),
       local_session_header_node_id_(TabNodePool::kInvalidTabNodeID),
       stale_session_threshold_days_(kDefaultStaleSessionThresholdDays),
       local_event_router_(router.Pass()),
@@ -85,23 +88,30 @@ syncer::SyncMergeResult SessionsSyncManager::MergeDataAndStartSyncing(
   sync_processor_ = sync_processor.Pass();
 
   local_session_header_node_id_ = TabNodePool::kInvalidTabNodeID;
-  scoped_ptr<DeviceInfo> local_device_info(delegate_->GetLocalDeviceInfo());
-  syncer::SyncChangeList new_changes;
 
   // Make sure we have a machine tag.  We do this now (versus earlier) as it's
   // a conveniently safe time to assert sync is ready and the cache_guid is
   // initialized.
-  if (current_machine_tag_.empty())
+  if (current_machine_tag_.empty()) {
     InitializeCurrentMachineTag();
+  }
+
+  // SessionDataTypeController ensures that the local device info
+  // is available before activating this datatype.
+  DCHECK(local_device_);
+  const DeviceInfo* local_device_info = local_device_->GetLocalDeviceInfo();
   if (local_device_info) {
     current_session_name_ = local_device_info->client_name();
   } else {
     merge_result.set_error(error_handler_->CreateAndUploadError(
         FROM_HERE,
-        "Failed to get device info for machine tag."));
+        "Failed to get local device info."));
     return merge_result;
   }
+
   session_tracker_.SetLocalSessionTag(current_machine_tag_);
+
+  syncer::SyncChangeList new_changes;
 
   // First, we iterate over sync data to update our session_tracker_.
   syncer::SyncDataList restored_tabs;
@@ -121,7 +131,7 @@ syncer::SyncMergeResult SessionsSyncManager::MergeDataAndStartSyncing(
 
 #if defined(OS_ANDROID)
   std::string sync_machine_tag(BuildMachineTag(
-      delegate_->GetLocalSyncCacheGUID()));
+      local_device_->GetLocalSyncCacheGUID()));
   if (current_machine_tag_.compare(sync_machine_tag) != 0)
     DeleteForeignSessionInternal(sync_machine_tag, &new_changes);
 #endif
@@ -639,7 +649,10 @@ void SessionsSyncManager::InitializeCurrentMachineTag() {
     current_machine_tag_ = persisted_guid;
     DVLOG(1) << "Restoring persisted session sync guid: " << persisted_guid;
   } else {
-    current_machine_tag_ = BuildMachineTag(delegate_->GetLocalSyncCacheGUID());
+    DCHECK(local_device_);
+    std::string cache_guid = local_device_->GetLocalSyncCacheGUID();
+    DCHECK(!cache_guid.empty());
+    current_machine_tag_ = BuildMachineTag(cache_guid);
     DVLOG(1) << "Creating session sync guid: " << current_machine_tag_;
     sync_prefs_.SetSyncSessionsGUID(current_machine_tag_);
   }
@@ -952,6 +965,11 @@ void SessionsSyncManager::SetSessionTabFromDelegate(
 
 FaviconCache* SessionsSyncManager::GetFaviconCache() {
   return &favicon_cache_;
+}
+
+SyncedWindowDelegatesGetter*
+SessionsSyncManager::GetSyncedWindowDelegatesGetter() const {
+  return synced_window_getter_.get();
 }
 
 void SessionsSyncManager::DoGarbageCollection() {

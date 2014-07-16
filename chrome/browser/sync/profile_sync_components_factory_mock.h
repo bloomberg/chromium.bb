@@ -44,6 +44,11 @@ class ProfileSyncComponentsFactoryMock : public ProfileSyncComponentsFactory {
                    invalidation::InvalidationService* invalidator,
                    const base::WeakPtr<sync_driver::SyncPrefs>& sync_prefs,
                    const base::FilePath& sync_folder));
+
+  virtual scoped_ptr<browser_sync::LocalDeviceInfoProvider>
+      CreateLocalDeviceInfoProvider() OVERRIDE;
+  MOCK_METHOD0(CreateLocalDeviceInfoProviderMock, LocalDeviceInfoProvider*());
+
   MOCK_METHOD1(GetSyncableServiceForType,
                base::WeakPtr<syncer::SyncableService>(syncer::ModelType));
   virtual scoped_ptr<syncer::AttachmentService> CreateAttachmentService(

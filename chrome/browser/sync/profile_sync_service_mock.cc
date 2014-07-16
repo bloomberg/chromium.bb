@@ -8,6 +8,7 @@
 #include "base/prefs/testing_pref_store.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/sync/profile_sync_components_factory_mock.h"
 #include "chrome/browser/sync/supervised_user_signin_manager_wrapper.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -17,7 +18,20 @@
 
 ProfileSyncServiceMock::ProfileSyncServiceMock(Profile* profile)
     : ProfileSyncService(
-          NULL,
+          scoped_ptr<ProfileSyncComponentsFactory>(
+              new ProfileSyncComponentsFactoryMock()),
+          profile,
+          make_scoped_ptr(new SupervisedUserSigninManagerWrapper(
+              profile,
+              SigninManagerFactory::GetForProfile(profile))),
+          ProfileOAuth2TokenServiceFactory::GetForProfile(profile),
+          browser_sync::MANUAL_START) {
+}
+
+ProfileSyncServiceMock::ProfileSyncServiceMock(
+    scoped_ptr<ProfileSyncComponentsFactory> factory, Profile* profile)
+    : ProfileSyncService(
+          factory.Pass(),
           profile,
           make_scoped_ptr(new SupervisedUserSigninManagerWrapper(
               profile,
@@ -49,9 +63,4 @@ ScopedVector<browser_sync::DeviceInfo>
       GetAllSignedInDevicesMock();
   devices.get() = *device_vector;
   return devices.Pass();
-}
-
-scoped_ptr<browser_sync::DeviceInfo>
-    ProfileSyncServiceMock::GetLocalDeviceInfo() const {
-  return scoped_ptr<browser_sync::DeviceInfo>(GetLocalDeviceInfoMock()).Pass();
 }
