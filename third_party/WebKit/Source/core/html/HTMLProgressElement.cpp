@@ -28,6 +28,7 @@
 #include "core/HTMLNames.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/shadow/ShadowRoot.h"
+#include "core/frame/UseCounter.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/html/shadow/ProgressShadowElement.h"
 #include "core/rendering/RenderProgress.h"
@@ -44,6 +45,7 @@ HTMLProgressElement::HTMLProgressElement(Document& document)
     , m_value(nullptr)
 {
     ScriptWrappable::init(this);
+    UseCounter::count(document, UseCounter::ProgressElement);
 }
 
 HTMLProgressElement::~HTMLProgressElement()

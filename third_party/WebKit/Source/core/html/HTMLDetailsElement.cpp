@@ -30,6 +30,7 @@
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/events/Event.h"
 #include "core/events/EventSender.h"
+#include "core/frame/UseCounter.h"
 #include "core/html/HTMLContentElement.h"
 #include "core/html/HTMLDivElement.h"
 #include "core/html/HTMLSummaryElement.h"
@@ -59,6 +60,7 @@ HTMLDetailsElement::HTMLDetailsElement(Document& document)
     , m_isOpen(false)
 {
     ScriptWrappable::init(this);
+    UseCounter::count(document, UseCounter::DetailsElement);
 }
 
 HTMLDetailsElement::~HTMLDetailsElement()

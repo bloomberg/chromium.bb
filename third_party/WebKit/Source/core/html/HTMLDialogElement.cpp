@@ -31,6 +31,7 @@
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/NodeTraversal.h"
 #include "core/events/Event.h"
+#include "core/frame/UseCounter.h"
 #include "core/html/HTMLFormControlElement.h"
 #include "core/frame/FrameView.h"
 #include "core/rendering/RenderBlock.h"
@@ -97,6 +98,7 @@ inline HTMLDialogElement::HTMLDialogElement(Document& document)
     , m_returnValue("")
 {
     ScriptWrappable::init(this);
+    UseCounter::count(document, UseCounter::DialogElement);
 }
 
 DEFINE_NODE_FACTORY(HTMLDialogElement)

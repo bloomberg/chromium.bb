@@ -478,6 +478,11 @@ public:
         LegacyFullScreenErrorExemption = 477,
         MediaStreamTrackGetSources = 478,
         AspectRatioFlexItem = 479,
+        DetailsElement = 480,
+        DialogElement = 481,
+        MapElement = 482,
+        MeterElement = 483,
+        ProgressElement = 484,
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.
         // Also, run update_use_counter_feature_enum.py in chromium/src/tools/metrics/histograms/

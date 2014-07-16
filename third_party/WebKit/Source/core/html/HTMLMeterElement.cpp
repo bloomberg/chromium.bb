@@ -28,6 +28,7 @@
 #include "core/HTMLNames.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/shadow/ShadowRoot.h"
+#include "core/frame/UseCounter.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/html/shadow/MeterShadowElement.h"
 #include "core/rendering/RenderMeter.h"
@@ -41,6 +42,7 @@ HTMLMeterElement::HTMLMeterElement(Document& document)
     : LabelableElement(meterTag, document)
 {
     ScriptWrappable::init(this);
+    UseCounter::count(document, UseCounter::MeterElement);
 }
 
 HTMLMeterElement::~HTMLMeterElement()

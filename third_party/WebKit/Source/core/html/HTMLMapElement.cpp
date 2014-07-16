@@ -25,6 +25,7 @@
 #include "core/HTMLNames.h"
 #include "core/dom/Document.h"
 #include "core/dom/ElementTraversal.h"
+#include "core/frame/UseCounter.h"
 #include "core/html/HTMLAreaElement.h"
 #include "core/html/HTMLCollection.h"
 #include "core/html/HTMLImageElement.h"
@@ -38,6 +39,7 @@ inline HTMLMapElement::HTMLMapElement(Document& document)
     : HTMLElement(mapTag, document)
 {
     ScriptWrappable::init(this);
+    UseCounter::count(document, UseCounter::MapElement);
 }
 
 DEFINE_NODE_FACTORY(HTMLMapElement)
