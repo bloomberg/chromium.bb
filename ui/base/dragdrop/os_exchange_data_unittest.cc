@@ -114,13 +114,14 @@ TEST_F(OSExchangeDataTest, TestFileToURLConversion) {
     EXPECT_EQ(base::string16(), actual_title);
   }
   {
-// Filename to URL conversion is not implemented on ChromeOS.
-#if !defined(OS_CHROMEOS)
-    const bool expected_success = true;
-    const GURL expected_url(net::FilePathToFileURL(current_directory));
-#else
+// Filename to URL conversion is not implemented on ChromeOS or on non-X11 Linux
+// builds.
+#if defined(OS_CHROMEOS) || (defined(OS_LINUX) && !defined(USE_X11))
     const bool expected_success = false;
     const GURL expected_url;
+#else
+    const bool expected_success = true;
+    const GURL expected_url(net::FilePathToFileURL(current_directory));
 #endif
     EXPECT_EQ(expected_success, data.HasURL(OSExchangeData::CONVERT_FILENAMES));
     GURL actual_url;
