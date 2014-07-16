@@ -153,6 +153,10 @@
         # build system.
         'android_webview_build%': 0,
 
+        # This is set when building the Android WebView in ninja for the
+        # telemetry bot.
+        'android_webview_telemetry_build%': 0,
+
         # Set ARM architecture version.
         'arm_version%': 7,
 
@@ -257,6 +261,7 @@
       'enable_viewport%': '<(enable_viewport)',
       'enable_hidpi%': '<(enable_hidpi)',
       'android_webview_build%': '<(android_webview_build)',
+      'android_webview_telemetry_build%': '<(android_webview_telemetry_build)',
       'use_goma%': '<(use_goma)',
       'gomadir%': '<(gomadir)',
       'enable_app_list%': '<(enable_app_list)',
@@ -930,7 +935,7 @@
         # except when building Android WebView or Chromecast.
         # TODO(jshin): Handle 'use_system_icu' on Linux (Chromium).
         # Set the data reduction proxy origin for Android Webview.
-        ['android_webview_build==0 and chromecast==0', {
+        ['android_webview_build==0 and android_webview_telemetry_build==0 and chromecast==0', {
           'icu_use_data_file_flag%' : 1,
           'spdy_proxy_auth_origin%': '',
           'data_reduction_proxy_probe_url%': '',
@@ -1114,6 +1119,7 @@
     'use_libjpeg_turbo%': '<(use_libjpeg_turbo)',
     'use_system_libjpeg%': '<(use_system_libjpeg)',
     'android_webview_build%': '<(android_webview_build)',
+    'android_webview_telemetry_build%': '<(android_webview_telemetry_build)',
     'icu_use_data_file_flag%': '<(icu_use_data_file_flag)',
     'gyp_managed_install%': 0,
     'create_standalone_apk%': 1,
@@ -1772,7 +1778,7 @@
           }],
         ],
       }],
-      ['android_webview_build==1', {
+      ['android_webview_build==1 or android_webview_telemetry_build==1', {
         # When building the WebView in the Android tree, jarjar will remap all
         # the class names, so the JNI generator needs to know this.
         'jni_generator_jarjar_file': '../android_webview/build/jarjar-rules.txt',
