@@ -36,6 +36,7 @@ from chromite.lib import gerrit
 from chromite.lib import gob_util
 from chromite.lib import gs
 from chromite.lib import osutils
+from chromite.lib import parallel
 from chromite.lib import parallel_unittest
 from chromite.lib import partial_mock
 from chromite.lib import patch as cros_patch
@@ -77,6 +78,7 @@ class Base(cros_test_lib.MockTestCase):
   """Test case base class with helpers for other test suites."""
 
   def setUp(self):
+    self.manager = parallel.Manager()
     self.patch_mock = None
     self._patch_counter = (itertools.count(1)).next
     self.build_root = 'fakebuildroot'
@@ -1530,41 +1532,42 @@ class MockValidationPool(partial_mock.PartialMock):
   ATTRS = ('ReloadChanges', 'RemoveCommitReady', '_SubmitChange',
            'SendNotification')
 
-  def __init__(self):
+  def __init__(self, manager):
     partial_mock.PartialMock.__init__(self)
     self.submit_results = {}
-    self.max_submits = None
+    self.max_submits = manager.Value('i', -1)
+    self.submitted = manager.list()
+    self.notification_calls = manager.list()
 
   def GetSubmittedChanges(self):
-    calls = []
-    for call in self.patched['_SubmitChange'].call_args_list:
-      call_args, _ = call
-      calls.append(call_args[1])
-    return calls
+    return list(self.submitted)
 
   def _SubmitChange(self, _inst, change):
     result = self.submit_results.get(change, True)
+    self.submitted.append(change)
     if isinstance(result, Exception):
       raise result
-    if result and self.max_submits is not None:
-      if self.max_submits <= 0:
+    if result and self.max_submits.value != -1:
+      if self.max_submits.value <= 0:
         return False
-      self.max_submits -= 1
+      self.max_submits.value -= 1
     return result
+
+  def SendNotification(self, *args, **kwargs):
+    self.notification_calls.append((args, kwargs))
 
   @classmethod
   def ReloadChanges(cls, changes):
     return changes
 
   RemoveCommitReady = None
-  SendNotification = None
 
 
 class BaseSubmitPoolTestCase(Base, cros_build_lib_unittest.RunCommandTestCase):
   """Test full ability to submit and reject CL pools."""
 
   def setUp(self):
-    self.pool_mock = self.StartPatcher(MockValidationPool())
+    self.pool_mock = self.StartPatcher(MockValidationPool(self.manager))
     self.patch_mock = self.StartPatcher(MockPatchSeries())
     self.PatchObject(gerrit.GerritHelper, 'QuerySingleRecord')
     self.patches = self.GetPatches(2)
@@ -1624,7 +1627,7 @@ class SubmitPoolTest(BaseSubmitPoolTestCase):
         argument by index. Otherwise, look up a keyword argument.
     """
     names = []
-    for call in self.pool_mock.patched['SendNotification'].call_args_list:
+    for call in self.pool_mock.notification_calls:
       call_args, call_kwargs = call
       if change == call_args[1]:
         if isinstance(key, int):
@@ -1668,7 +1671,7 @@ class SubmitPoolTest(BaseSubmitPoolTestCase):
 
   def testSubmitPartialCycle(self):
     """Submit a failed cyclic set of dependencies"""
-    self.pool_mock.max_submits = 1
+    self.pool_mock.max_submits.value = 1
     self.patch_mock.SetCQDependencies(self.patches[0], [self.patches[1]])
     self.SubmitPool(submitted=self.patches, rejected=[self.patches[1]])
     (submitted, rejected) = self.pool_mock.GetSubmittedChanges()
@@ -1681,11 +1684,11 @@ class SubmitPoolTest(BaseSubmitPoolTestCase):
 
   def testSubmitFailedCycle(self):
     """Submit a failed cyclic set of dependencies"""
-    self.pool_mock.max_submits = 0
+    self.pool_mock.max_submits.value = 0
     self.patch_mock.SetCQDependencies(self.patches[0], [self.patches[1]])
     self.SubmitPool(submitted=[self.patches[0]], rejected=self.patches)
     (attempted,) = self.pool_mock.GetSubmittedChanges()
-    (rejected,) = [x for x in self.patches if x != attempted]
+    (rejected,) = [x for x in self.patches if x.id != attempted.id]
     failed_submit = validation_pool.PatchFailedToSubmit(
         attempted, validation_pool.ValidationPool.INCONSISTENT_SUBMIT_MSG)
     dep_failed = cros_patch.DependencyError(rejected, failed_submit)

@@ -399,7 +399,7 @@ def _PatchWrapException(functor):
 
 
 class PatchSeries(object):
-  """Class representing a set of patches applied to a single git repository."""
+  """Class representing a set of patches applied to a repo checkout."""
 
   def __init__(self, path, helper_pool=None, forced_manifest=None,
                deps_filter_fn=None, is_submitting=False):
@@ -625,7 +625,8 @@ class PatchSeries(object):
       else:
         yield (change, plan, None)
 
-  def CreateDisjointTransactions(self, changes, max_txn_length=None):
+  def CreateDisjointTransactions(self, changes, max_txn_length=None,
+                                 merge_projects=False):
     """Create a list of disjoint transactions from a list of changes.
 
     Args:
@@ -633,6 +634,8 @@ class PatchSeries(object):
         transactions for.
       max_txn_length: The maximum length of any given transaction. Optional.
         By default, do not limit the length of transactions.
+      merge_projects: If set, put all changes to a given project in the same
+        transaction.
 
     Returns:
       A list of disjoint transactions and a list of exceptions. Each transaction
@@ -653,6 +656,14 @@ class PatchSeries(object):
         # Mark every change in the transaction as bidirectionally connected.
         for change_dep in plan:
           edges.setdefault(change_dep, set()).update(plan)
+
+    if merge_projects:
+      projects = {}
+      for change in deps:
+        projects.setdefault(change.project, []).append(change)
+      for project in projects:
+        for change in projects[project]:
+          edges.setdefault(change, set()).update(projects[project])
 
     # Calculate an unordered group of strongly connected components.
     unordered_plans = digraph.StronglyConnectedComponents(list(edges), edges)
@@ -2097,15 +2108,30 @@ class ValidationPool(object):
 
     patch_series = PatchSeries(self.build_root, helper_pool=self._helper_pool)
     patch_series.InjectLookupCache(filtered_changes)
-    for change in filtered_changes:
-      errors = self._SubmitChangeWithDeps(patch_series, change, errors,
-                                          filtered_changes)
 
-    for patch, error in errors.iteritems():
-      logging.error('Could not submit %s', patch)
-      self._HandleCouldNotSubmit(patch, error)
+    # Split up the patches into disjoint transactions so that we can submit in
+    # parallel. We merge together changes to the same project into the same
+    # transaction because it helps avoid Gerrit performance problems (Gerrit
+    # chokes when two people hit submit at the same time in the same project).
+    plans, failed = patch_series.CreateDisjointTransactions(
+        filtered_changes, merge_projects=True)
+    for error in failed:
+      errors[error.patch] = error
 
-    return errors
+    # Submit each disjoint transaction in parallel.
+    with parallel.Manager() as manager:
+      p_errors = manager.dict(errors)
+      def _SubmitPlan(*plan):
+        for change in plan:
+          p_errors.update(self._SubmitChangeWithDeps(
+              patch_series, change, dict(p_errors), plan))
+      parallel.RunTasksInProcessPool(_SubmitPlan, plans, processes=4)
+
+      for patch, error in p_errors.items():
+        logging.error('Could not submit %s', patch)
+        self._HandleCouldNotSubmit(patch, error)
+
+      return dict(p_errors)
 
   def RecordPatchesInMetadata(self):
     """Mark all patches as having been picked up in metadata.json.
