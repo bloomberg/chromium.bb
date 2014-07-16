@@ -63025,7 +63025,7 @@
             "chrome_internal"
         ],
         "usepkg_build_packages": true,
-        "usepkg_setup_board": true,
+        "usepkg_setup_board": false,
         "vm_test_runs": 1,
         "vm_tests": []
     },

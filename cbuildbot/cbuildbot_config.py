@@ -1863,6 +1863,7 @@ internal_paladin.add_config('stumpy_moblab-paladin',
 
 internal_paladin.add_config('rush-paladin',
   boards=['rush'],
+  usepkg_setup_board=False,
   paladin_builder_name='rush paladin',
   important=False,
 )
@@ -2271,6 +2272,7 @@ _release.add_config('stumpy_moblab-release',
 _release.add_config('rush-release',
   boards=['rush'],
   hw_tests=[],
+  usepkg_setup_board=False,
   # This build doesn't generate signed images, so don't try to release them.
   paygen=False,
   signer_tests=False,
