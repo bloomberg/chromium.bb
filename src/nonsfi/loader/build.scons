@@ -18,5 +18,5 @@ extra_libs = ['irt_nonsfi', 'platform']
 if env['NACL_BUILD_FAMILY'] == 'UNTRUSTED':
   extra_libs.append('${NONIRT_LIBS}')
 env.ComponentProgram('nonsfi_loader',
-                     ['elf_loader.c'],
+                     ['elf_loader.c', 'elf_loader_main.c'],
                      EXTRA_LIBS=extra_libs)

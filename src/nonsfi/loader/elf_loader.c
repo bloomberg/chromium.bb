@@ -4,17 +4,14 @@
  * found in the LICENSE file.
  */
 
-#include <errno.h>
-#include <fcntl.h>
 #include <stdint.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/mman.h>
 #include <unistd.h>
 
 #include "native_client/src/include/elf.h"
-#include "native_client/src/nonsfi/irt/irt_interfaces.h"
+#include "native_client/src/nonsfi/loader/elf_loader.h"
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/trusted/service_runtime/nacl_config.h"
 
@@ -70,12 +67,7 @@ static void CheckElfHeaders(ElfW(Ehdr) *ehdr) {
   }
 }
 
-static uintptr_t LoadElfFile(const char *filename) {
-  int fd = open(filename, O_RDONLY);
-  if (fd < 0) {
-    NaClLog(LOG_FATAL, "Failed to open %s: %s\n", filename, strerror(errno));
-  }
-
+uintptr_t NaClLoadElfFile(int fd) {
   /* Read ELF file headers. */
   ElfW(Ehdr) ehdr;
   ssize_t bytes_read = pread(fd, &ehdr, sizeof(ehdr), 0);
@@ -200,15 +192,4 @@ static uintptr_t LoadElfFile(const char *filename) {
             "PT_LOAD segment\n");
   }
   return load_bias + ehdr.e_entry;
-}
-
-int main(int argc, char **argv, char **environ) {
-  if (argc < 2) {
-    fprintf(stderr, "Usage: %s <executable> <args...>\n", argv[0]);
-    return 1;
-  }
-  const char *nexe_filename = argv[1];
-  uintptr_t entry = LoadElfFile(nexe_filename);
-  return nacl_irt_nonsfi_entry(argc - 1, argv + 1, environ,
-                               (nacl_entry_func_t) entry);
 }
