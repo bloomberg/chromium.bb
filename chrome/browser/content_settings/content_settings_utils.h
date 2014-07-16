@@ -28,6 +28,9 @@ typedef std::pair<ContentSettingsPattern, ContentSettingsPattern> PatternPair;
 
 std::string GetTypeName(ContentSettingsType type);
 
+bool GetTypeFromName(const std::string& name,
+                     ContentSettingsType* return_setting);
+
 // Converts |Value| to |ContentSetting|.
 ContentSetting ValueToContentSetting(const base::Value* value);
 

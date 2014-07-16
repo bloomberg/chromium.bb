@@ -618,6 +618,10 @@ void BrowserOptionsHandler::GetLocalizedValues(base::DictionaryValue* values) {
   values->SetBoolean("showSetDefault", ShouldShowSetDefaultBrowser());
 
   values->SetBoolean("allowAdvancedSettings", ShouldAllowAdvancedSettings());
+
+  values->SetBoolean("websiteSettingsManagerEnabled",
+                     CommandLine::ForCurrentProcess()->HasSwitch(
+                         switches::kEnableWebsiteSettingsManager));
 }
 
 #if defined(ENABLE_FULL_PRINTING)

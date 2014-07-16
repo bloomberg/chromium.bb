@@ -50,6 +50,7 @@ typedef std::vector<content_settings::Rule> Rules;
 
 typedef std::pair<std::string, std::string> StringPair;
 
+// TODO(bauerb): Expose constants.
 const char* kProviderNames[] = {
   "platform_app",
   "policy",

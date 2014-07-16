@@ -1959,6 +1959,13 @@ const Experiment kExperiments[] = {
     kOsDesktop,
     SINGLE_VALUE_TYPE(extensions::switches::kEnableEmbeddedExtensionOptions)
   },
+  {
+    "enable-website-settings-manager",
+    IDS_FLAGS_ENABLE_WEBSITE_SETTINGS_NAME,
+    IDS_FLAGS_ENABLE_WEBSITE_SETTINGS_DESCRIPTION,
+    kOsDesktop,
+    SINGLE_VALUE_TYPE(switches::kEnableWebsiteSettingsManager)
+  },
 };
 
 const Experiment* experiments = kExperiments;

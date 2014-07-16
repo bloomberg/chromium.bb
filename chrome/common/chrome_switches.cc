@@ -655,6 +655,9 @@ const char kEnableWatchdog[]                = "enable-watchdog";
 // Uses WebSocket over SPDY.
 const char kEnableWebSocketOverSpdy[]       = "enable-websocket-over-spdy";
 
+// Enables the Website Settings page on the Settings page.
+const char kEnableWebsiteSettingsManager[]  = "enable-website-settings-manager";
+
 // Explicitly allows additional ports using a comma-separated list of port
 // numbers.
 const char kExplicitlyAllowedPorts[]        = "explicitly-allowed-ports";

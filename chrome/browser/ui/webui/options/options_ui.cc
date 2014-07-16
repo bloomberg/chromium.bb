@@ -47,6 +47,7 @@
 #include "chrome/browser/ui/webui/options/supervised_user_create_confirm_handler.h"
 #include "chrome/browser/ui/webui/options/supervised_user_import_handler.h"
 #include "chrome/browser/ui/webui/options/supervised_user_learn_more_handler.h"
+#include "chrome/browser/ui/webui/options/website_settings_handler.h"
 #include "chrome/browser/ui/webui/sync_setup_handler.h"
 #include "chrome/browser/ui/webui/theme_source.h"
 #include "chrome/common/url_constants.h"
@@ -296,6 +297,7 @@ OptionsUI::OptionsUI(content::WebUI* web_ui)
                           new SupervisedUserLearnMoreHandler());
   AddOptionsPageUIHandler(localized_strings, new SyncSetupHandler(
       g_browser_process->profile_manager()));
+  AddOptionsPageUIHandler(localized_strings, new WebsiteSettingsHandler());
 #if defined(OS_CHROMEOS)
   AddOptionsPageUIHandler(localized_strings,
                           new chromeos::options::AccountsOptionsHandler());

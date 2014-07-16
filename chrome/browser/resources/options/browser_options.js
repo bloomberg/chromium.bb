@@ -437,6 +437,14 @@ cr.define('options', function() {
         };
       }
 
+      // Website Settings section.
+      if (loadTimeData.getBoolean('websiteSettingsManagerEnabled')) {
+        $('website-settings-section').hidden = false;
+        $('website-management-button').onclick = function(event) {
+          OptionsPage.navigateToPage('websiteSettings');
+        };
+      }
+
       // Web Content section.
       $('fontSettingsCustomizeFontsButton').onclick = function(event) {
         OptionsPage.navigateToPage('fonts');

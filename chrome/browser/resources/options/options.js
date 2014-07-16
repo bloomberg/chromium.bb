@@ -42,6 +42,7 @@ var SearchEngineManager = options.SearchEngineManager;
 var SearchPage = options.SearchPage;
 var StartupOverlay = options.StartupOverlay;
 var SyncSetupOverlay = options.SyncSetupOverlay;
+var WebsiteSettingsManager = options.WebsiteSettingsManager;
 var ThirdPartyImeConfirmOverlay = options.ThirdPartyImeConfirmOverlay;
 
 /**
@@ -111,6 +112,9 @@ function load() {
   OptionsPage.registerOverlay(ContentSettings.getInstance(),
                               BrowserOptions.getInstance(),
                               [$('privacyContentSettingsButton')]);
+  OptionsPage.registerOverlay(WebsiteSettingsManager.getInstance(),
+                              BrowserOptions.getInstance(),
+                              [$('website-management-button')]);
   OptionsPage.registerOverlay(ContentSettingsExceptionsArea.getInstance(),
                               ContentSettings.getInstance());
   OptionsPage.registerOverlay(CookiesView.getInstance(),

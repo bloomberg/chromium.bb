@@ -6560,6 +6560,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ENABLE_EMBEDDED_EXTENSION_OPTIONS_DESCRIPTION" desc="Description of the flag that enables embedding extension options in chrome://extensions.">
         Display extension options as an embedded element in chrome://extensions rather than opening a new tab.
       </message>
+      <message name="IDS_FLAGS_ENABLE_WEBSITE_SETTINGS_NAME" desc="Name of the flag that enables the website settings manager in chrome://settings.">
+        Enables the website settings manager.
+      </message>
+      <message name="IDS_FLAGS_ENABLE_WEBSITE_SETTINGS_DESCRIPTION" desc="Description of the flag that enables the website settings manager in chrome://settings.">
+        Enables the website settings manager on the settings page.
+      </message>
 
       <!-- Crashes -->
       <message name="IDS_CRASHES_TITLE" desc="Title for the chrome://crashes page.">
@@ -7958,6 +7964,16 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_ZOOMLEVELS_MANAGE_BUTTON" desc="Button on the Content Settings dialog that opens a dialog to manage your page zoom levels (zoom levels indicate that a page should be shown for example at 110% magnification).">
         Manage...
+      </message>
+
+      <message name="IDS_WEBSITES_SETTINGS_TITLE" desc="Title for Website Settings dialog.">
+        Website Settings
+      </message>
+      <message name="IDS_WEBSITE_SETTINGS_MANAGE" desc="The label on the button that launches the Websites Settings dialog.">
+        Manage sites...
+      </message>
+      <message name="IDS_WEBSITE_SETTINGS_SEARCH_ORIGINS" desc="Placeholder text shown in the search box in the Website Settings dialog.">
+        Search sites
       </message>
 
       <!-- Automatic updates -->

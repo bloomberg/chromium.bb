@@ -64,6 +64,17 @@ std::string GetTypeName(ContentSettingsType type) {
   return std::string(kTypeNames[type]);
 }
 
+bool GetTypeFromName(const std::string& name,
+                     ContentSettingsType* return_setting) {
+  for (size_t type = 0; type < CONTENT_SETTINGS_NUM_TYPES; ++type) {
+    if (name.compare(kTypeNames[type]) == 0) {
+      *return_setting = static_cast<ContentSettingsType>(type);
+      return true;
+    }
+  }
+  return false;
+}
+
 std::string CreatePatternString(
     const ContentSettingsPattern& item_pattern,
     const ContentSettingsPattern& top_level_frame_pattern) {

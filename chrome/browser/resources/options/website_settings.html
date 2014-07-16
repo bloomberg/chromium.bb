@@ -1,0 +1,27 @@
+<div id="website-settings-page" class="page website-settings-page" hidden>
+  <div class="close-button"></div>
+  <h1 i18n-content="websiteSettingsPage"></h1>
+  <div class="content-area website-list-content-area">
+    <div class="website-column-headers">
+      <div class="website-header-controls">
+        <select id="resourceType" class="resource-type-select">
+          <option value="geolocation" i18n-content="websitesLabelGeolocation">
+          </option>
+          <option value="media-stream" i18n-content="websitesLabelMediaStream">
+          </option>
+          <option value="notifications"
+              i18n-content="websitesLabelNotifications"></option>
+        </select>
+        <input type="search" id="website-settings-search-box"
+            i18n-values="placeholder:websitesSearch" incremental>
+      </div>
+    </div>
+    <list id="origin-list" class="origin-list"></list>
+  </div>
+  <div class="action-area">
+    <div class="button-strip">
+      <button id="website-settings-overlay-confirm" i18n-content="done">
+      </button>
+    </div>
+  </div>
+</div>

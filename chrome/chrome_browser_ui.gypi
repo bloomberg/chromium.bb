@@ -1745,6 +1745,8 @@
       'browser/ui/webui/options/supervised_user_import_handler.h',
       'browser/ui/webui/options/supervised_user_learn_more_handler.cc',
       'browser/ui/webui/options/supervised_user_learn_more_handler.h',
+      'browser/ui/webui/options/website_settings_handler.cc',
+      'browser/ui/webui/options/website_settings_handler.h',
       'browser/ui/webui/performance_monitor/performance_monitor_handler.cc',
       'browser/ui/webui/performance_monitor/performance_monitor_handler.h',
       'browser/ui/webui/performance_monitor/performance_monitor_l10n.cc',
