@@ -11,7 +11,7 @@
     ['OS=="android"', {
       'variables': {
         'mojo_app_dir': '<(PRODUCT_DIR)/apps',
-        'source_binary': '<(SHARED_LIB_DIR)/<(SHARED_LIB_PREFIX)<(app_name)<(SHARED_LIB_SUFFIX)',
+        'source_binary': '<(PRODUCT_DIR)/<(SHARED_LIB_PREFIX)<(app_name)<(SHARED_LIB_SUFFIX)',
         'target_binary': '<(mojo_app_dir)/<(SHARED_LIB_PREFIX)<(app_name)<(SHARED_LIB_SUFFIX)',
       },
       'actions': [{
