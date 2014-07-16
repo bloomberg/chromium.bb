@@ -54,7 +54,6 @@
 #include "platform/network/ParsedContentType.h"
 #include "platform/network/ResourceError.h"
 #include "platform/network/ResourceRequest.h"
-#include "public/platform/Platform.h"
 #include "public/platform/WebURLRequest.h"
 #include "wtf/ArrayBuffer.h"
 #include "wtf/ArrayBufferView.h"
@@ -66,13 +65,6 @@
 namespace WebCore {
 
 DEFINE_DEBUG_ONLY_GLOBAL(WTF::RefCountedLeakCounter, xmlHttpRequestCounter, ("XMLHttpRequest"));
-
-// Histogram enum to see when we can deprecate xhr.send(ArrayBuffer).
-enum XMLHttpRequestSendArrayBufferOrView {
-    XMLHttpRequestSendArrayBuffer,
-    XMLHttpRequestSendArrayBufferView,
-    XMLHttpRequestSendArrayBufferOrViewMax,
-};
 
 struct XMLHttpRequestStaticData {
     WTF_MAKE_NONCOPYABLE(XMLHttpRequestStaticData); WTF_MAKE_FAST_ALLOCATED;
@@ -768,19 +760,12 @@ void XMLHttpRequest::send(ArrayBuffer* body, ExceptionState& exceptionState)
 {
     WTF_LOG(Network, "XMLHttpRequest %p send() ArrayBuffer %p", this, body);
 
-    String consoleMessage("ArrayBuffer is deprecated in XMLHttpRequest.send(). Use ArrayBufferView instead.");
-    executionContext()->addConsoleMessage(JSMessageSource, WarningMessageLevel, consoleMessage);
-
-    blink::Platform::current()->histogramEnumeration("WebCore.XHR.send.ArrayBufferOrView", XMLHttpRequestSendArrayBuffer, XMLHttpRequestSendArrayBufferOrViewMax);
-
     sendBytesData(body->data(), body->byteLength(), exceptionState);
 }
 
 void XMLHttpRequest::send(ArrayBufferView* body, ExceptionState& exceptionState)
 {
     WTF_LOG(Network, "XMLHttpRequest %p send() ArrayBufferView %p", this, body);
-
-    blink::Platform::current()->histogramEnumeration("WebCore.XHR.send.ArrayBufferOrView", XMLHttpRequestSendArrayBufferView, XMLHttpRequestSendArrayBufferOrViewMax);
 
     sendBytesData(body->baseAddress(), body->byteLength(), exceptionState);
 }
