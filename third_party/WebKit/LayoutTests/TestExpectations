@@ -1115,6 +1115,13 @@ crbug.com/371651 svg/custom/use-disappears-after-style-update.svg [ Pass Failure
 
 crbug.com/371654 fast/html/imports/import-custom-element-dup-resolve.html [ Pass Failure ]
 
+crbug.com/394221 [ Mac ] fast/text/emphasis-avoid-ruby.html [ Pass ImageOnlyFailure ]
+crbug.com/394221 [ Mac ] fast/text/emphasis-overlap.html [ Pass ImageOnlyFailure ]
+crbug.com/394221 [ Win ] fast/text/emphasis-avoid-ruby.html [ Pass Failure ]
+crbug.com/394216 media/video-seek-to-duration-with-playbackrate-zero.html [ Pass Timeout ]
+crbug.com/394225 [ Win ] fast/text/sub-pixel/text-scaling-webfont.html [ Crash Pass ]
+crbug.com/394230 [ Debug ] inspector/sources/debugger/debugger-script-preprocessor.html [ Crash Pass ]
+
 crbug.com/392853 fast/css/css-selector-deeply-nested.html [ Crash Pass ]
 
 crbug.com/381730 http/tests/navigation/pending-location-change-assert.html [ Pass Failure ]
