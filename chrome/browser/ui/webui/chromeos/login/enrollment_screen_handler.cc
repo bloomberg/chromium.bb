@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
@@ -48,23 +49,12 @@ const char kEnrollmentStepSignin[] = "signin";
 const char kEnrollmentStepSuccess[] = "success";
 
 // Enrollment mode strings.
-const char kEnrollmentModeManual[] = "manual";
-const char kEnrollmentModeForced[] = "forced";
-const char kEnrollmentModeAuto[] = "auto";
+const char* const kModeStrings[EnrollmentScreenActor::ENROLLMENT_MODE_COUNT] =
+    { "manual", "forced", "auto", "recovery" };
 
 std::string EnrollmentModeToString(EnrollmentScreenActor::EnrollmentMode mode) {
-  switch (mode) {
-    case EnrollmentScreenActor::ENROLLMENT_MODE_MANUAL:
-      return kEnrollmentModeManual;
-    case EnrollmentScreenActor::ENROLLMENT_MODE_FORCED:
-      return kEnrollmentModeForced;
-    case EnrollmentScreenActor::ENROLLMENT_MODE_AUTO:
-      return kEnrollmentModeAuto;
-    default:
-      NOTREACHED() << "Bad enrollment mode " << mode;
-  }
-
-  return kEnrollmentModeManual;
+  CHECK(0 <= mode && mode < EnrollmentScreenActor::ENROLLMENT_MODE_COUNT);
+  return kModeStrings[mode];
 }
 
 // A helper class that takes care of asynchronously revoking a given token.

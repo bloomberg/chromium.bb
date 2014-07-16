@@ -167,6 +167,10 @@ enum MetricEnrollment {
   kMetricEnrollmentDeprovisioned,
   // Enrollment failed because the device doesn't belong to the domain.
   kMetricEnrollmentDomainMismatch,
+  // Enrollment has been triggered, the credential screen has been shown.
+  kMetricEnrollmentTriggered,
+  // The user retried to submitted credentials.
+  kMetricEnrollmentRetried,
 
   kMetricEnrollmentSize  // Must be the last.
 };
@@ -212,6 +216,7 @@ enum PolicyInvalidationType {
 POLICY_EXPORT extern const char kMetricToken[];
 POLICY_EXPORT extern const char kMetricPolicy[];
 POLICY_EXPORT extern const char kMetricEnrollment[];
+POLICY_EXPORT extern const char kMetricEnrollmentRecovery[];
 POLICY_EXPORT extern const char kMetricPolicyRefresh[];
 POLICY_EXPORT extern const char kMetricPolicyInvalidations[];
 

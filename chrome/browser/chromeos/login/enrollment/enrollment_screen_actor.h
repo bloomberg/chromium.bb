@@ -29,11 +29,14 @@ class EnrollmentScreenActor {
     UI_ERROR_FATAL,
   };
 
-  // Describes the enrollment mode.
+  // Describes the enrollment mode.  Must be kept in sync with
+  // |kEnrollmentModes| in enrollment_screen_handler.cc.
   enum EnrollmentMode {
-    ENROLLMENT_MODE_MANUAL,  // Manually triggered enrollment.
-    ENROLLMENT_MODE_FORCED,  // Forced enrollment, user can't skip.
-    ENROLLMENT_MODE_AUTO,    // Auto-enrollment during first sign-in.
+    ENROLLMENT_MODE_MANUAL,    // Manually triggered enrollment.
+    ENROLLMENT_MODE_FORCED,    // Forced enrollment, user can't skip.
+    ENROLLMENT_MODE_AUTO,      // Auto-enrollment during first sign-in.
+    ENROLLMENT_MODE_RECOVERY,  // Recover from "spontaneous unenrollment".
+    ENROLLMENT_MODE_COUNT      // Counter must be last. Not an enrollment mode.
   };
 
   // This defines the interface for controllers which will be called back when

@@ -491,14 +491,15 @@ void WizardController::ShowEnrollmentScreen() {
     screen_parameters_->GetString("user", &user);
   }
 
-  EnrollmentScreenActor::EnrollmentMode mode =
-      EnrollmentScreenActor::ENROLLMENT_MODE_MANUAL;
+  EnrollmentScreenActor::EnrollmentMode mode;
   if (is_auto_enrollment)
     mode = EnrollmentScreenActor::ENROLLMENT_MODE_AUTO;
+  else if (ShouldRecoverEnrollment())
+    mode = EnrollmentScreenActor::ENROLLMENT_MODE_RECOVERY;
   else if (ShouldAutoStartEnrollment() && !CanExitEnrollment())
     mode = EnrollmentScreenActor::ENROLLMENT_MODE_FORCED;
-  else if (ShouldRecoverEnrollment())
-    mode = EnrollmentScreenActor::ENROLLMENT_MODE_FORCED;
+  else
+    mode = EnrollmentScreenActor::ENROLLMENT_MODE_MANUAL;
 
   EnrollmentScreen* screen = GetEnrollmentScreen();
   screen->SetParameters(mode, GetForcedEnrollmentDomain(), user);

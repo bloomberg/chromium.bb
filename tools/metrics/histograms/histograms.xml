@@ -5361,6 +5361,11 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Enterprise.EnrollmentRecovery" enum="EnterpriseEnrollmentType">
+  <owner>tnagel@chromium.org</owner>
+  <summary>Events related to Chrome OS enterprise enrollment recovery.</summary>
+</histogram>
+
 <histogram name="Enterprise.IOSPolicies">
   <owner>joaodasilva@chromium.org</owner>
   <summary>
@@ -37110,6 +37115,10 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="23" label="Domain mismatch">
     Enrollment failed because the device belongs to a different domain.
   </int>
+  <int value="24" label="Triggered">
+    Enrollment has been triggered, the credential screen has been shown.
+  </int>
+  <int value="25" label="Retried">The user retried to submit credentials.</int>
 </enum>
 
 <enum name="EnterprisePolicies" type="int">

@@ -77,7 +77,8 @@
 }
 
 #oauth-enrollment.mode-manual #oauth-enroll-learn-more-link,
-#oauth-enrollment.mode-forced #oauth-enroll-learn-more-link {
+#oauth-enrollment.mode-forced #oauth-enroll-learn-more-link,
+#oauth-enrollment.mode-recovery #oauth-enroll-learn-more-link {
   display: inline;
 }
 
@@ -132,12 +133,15 @@
 }
 
 .oauth-enroll-state-signin.mode-manual #oauth-enroll-cancel-button,
-.oauth-enroll-state-working.mode-manual #oauth-enroll-cancel-button,
 .oauth-enroll-state-signin.mode-forced #oauth-enroll-back-button,
+.oauth-enroll-state-signin.mode-recovery #oauth-enroll-back-button,
+.oauth-enroll-state-working.mode-manual #oauth-enroll-cancel-button,
 .oauth-enroll-state-working.mode-forced #oauth-enroll-back-button,
+.oauth-enroll-state-working.mode-recovery #oauth-enroll-back-button,
 .oauth-enroll-state-error.mode-manual #oauth-enroll-cancel-button,
 .oauth-enroll-state-error.mode-auto #oauth-enroll-retry-button,
 .oauth-enroll-state-error.mode-forced #oauth-enroll-back-button,
+.oauth-enroll-state-error.mode-recovery #oauth-enroll-back-button,
 .oauth-enroll-state-explain #oauth-enroll-explain-retry-button,
 .oauth-enroll-state-success #oauth-enroll-done-button {
   display: inline;

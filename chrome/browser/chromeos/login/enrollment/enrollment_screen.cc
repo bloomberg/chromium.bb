@@ -21,21 +21,10 @@
 #include "chromeos/dbus/dbus_method_call_status.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager_client.h"
-#include "components/policy/core/common/cloud/enterprise_metrics.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 
 namespace chromeos {
-
-namespace {
-
-void UMA(int sample) {
-  UMA_HISTOGRAM_ENUMERATION(policy::kMetricEnrollment,
-                            sample,
-                            policy::kMetricEnrollmentSize);
-}
-
-}  // namespace
 
 EnrollmentScreen::EnrollmentScreen(
     ScreenObserver* observer,
@@ -74,6 +63,7 @@ void EnrollmentScreen::Show() {
     actor_->ShowEnrollmentSpinnerScreen();
     actor_->FetchOAuthToken();
   } else {
+    UMA(policy::kMetricEnrollmentTriggered);
     actor_->ResetAuth(base::Bind(&EnrollmentScreen::ShowSigninScreen,
                                  weak_ptr_factory_.GetWeakPtr()));
   }
@@ -91,15 +81,18 @@ std::string EnrollmentScreen::GetName() const {
 void EnrollmentScreen::OnLoginDone(const std::string& user) {
   user_ = gaia::CanonicalizeEmail(user);
 
-  UMA(is_auto_enrollment() ? policy::kMetricEnrollmentAutoRetried
-                           : policy::kMetricEnrollmentStarted);
+  if (is_auto_enrollment())
+    UMA(policy::kMetricEnrollmentAutoRetried);
+  else if (enrollment_failed_once_)
+    UMA(policy::kMetricEnrollmentRetried);
+  else
+    UMA(policy::kMetricEnrollmentStarted);
 
   actor_->ShowEnrollmentSpinnerScreen();
   actor_->FetchOAuthToken();
 }
 
-void EnrollmentScreen::OnAuthError(
-    const GoogleServiceAuthError& error) {
+void EnrollmentScreen::OnAuthError(const GoogleServiceAuthError& error) {
   enrollment_failed_once_ = true;
   actor_->ShowAuthError(error);
 
@@ -145,7 +138,8 @@ void EnrollmentScreen::OnRetry() {
 }
 
 void EnrollmentScreen::OnCancel() {
-  if (enrollment_mode_ == EnrollmentScreenActor::ENROLLMENT_MODE_FORCED) {
+  if (enrollment_mode_ == EnrollmentScreenActor::ENROLLMENT_MODE_FORCED ||
+      enrollment_mode_ == EnrollmentScreenActor::ENROLLMENT_MODE_RECOVERY) {
     actor_->ResetAuth(
         base::Bind(&ScreenObserver::OnExit,
                    base::Unretained(get_screen_observer()),
@@ -308,7 +302,17 @@ void EnrollmentScreen::ReportEnrollmentStatus(
   UMAFailure(policy::kMetricEnrollmentOtherFailed);
 }
 
-void EnrollmentScreen::UMAFailure(int sample) {
+void EnrollmentScreen::UMA(policy::MetricEnrollment sample) {
+  if (enrollment_mode_ == EnrollmentScreenActor::ENROLLMENT_MODE_RECOVERY) {
+    UMA_HISTOGRAM_ENUMERATION(policy::kMetricEnrollmentRecovery, sample,
+                              policy::kMetricEnrollmentSize);
+  } else {
+    UMA_HISTOGRAM_ENUMERATION(policy::kMetricEnrollment, sample,
+                              policy::kMetricEnrollmentSize);
+  }
+}
+
+void EnrollmentScreen::UMAFailure(policy::MetricEnrollment sample) {
   if (is_auto_enrollment())
     sample = policy::kMetricEnrollmentAutoFailed;
   UMA(sample);

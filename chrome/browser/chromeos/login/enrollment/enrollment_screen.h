@@ -14,6 +14,7 @@
 #include "chrome/browser/chromeos/login/enrollment/enrollment_screen_actor.h"
 #include "chrome/browser/chromeos/login/screens/wizard_screen.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
+#include "components/policy/core/common/cloud/enterprise_metrics.h"
 
 namespace chromeos {
 
@@ -69,10 +70,15 @@ class EnrollmentScreen
   // operations are completed.
   void ShowEnrollmentStatusOnSuccess(const policy::EnrollmentStatus& status);
 
-  // Logs a UMA event in the kMetricEnrollment histogram. If auto-enrollment is
-  // on |sample| is ignored and a kMetricEnrollmentAutoFailed sample is logged
+  // Logs an UMA event in the kMetricEnrollment or the kMetricEnrollmentRecovery
+  // histogram, depending on |enrollment_mode_|.
+  void UMA(policy::MetricEnrollment sample);
+
+  // Logs an UMA event in the kMetricEnrollment or the kMetricEnrollmentRecovery
+  // histogram, depending on |enrollment_mode_|.  If auto-enrollment is on,
+  // |sample| is ignored and a kMetricEnrollmentAutoFailed sample is logged
   // instead.
-  void UMAFailure(int sample);
+  void UMAFailure(policy::MetricEnrollment sample);
 
   // Shows the signin screen. Used as a callback to run after auth reset.
   void ShowSigninScreen();
