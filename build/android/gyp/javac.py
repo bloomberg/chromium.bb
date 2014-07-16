@@ -119,6 +119,8 @@ def main(argv):
       help='Directories containing generated java files.')
   parser.add_option(
       '--java-srcjars',
+      action='append',
+      default=[],
       help='List of srcjars to include in compilation.')
   parser.add_option(
       '--classpath',
@@ -153,18 +155,23 @@ def main(argv):
   for arg in options.classpath:
     classpath += build_utils.ParseGypList(arg)
 
+  java_srcjars = []
+  for arg in options.java_srcjars:
+    java_srcjars += build_utils.ParseGypList(arg)
+
   java_files = args
   if options.src_gendirs:
     src_gendirs = build_utils.ParseGypList(options.src_gendirs)
     java_files += build_utils.FindInDirectories(src_gendirs, '*.java')
 
+  input_files = classpath + java_srcjars + java_files
   with build_utils.TempDir() as temp_dir:
     classes_dir = os.path.join(temp_dir, 'classes')
     os.makedirs(classes_dir)
-    if options.java_srcjars:
+    if java_srcjars:
       java_dir = os.path.join(temp_dir, 'java')
       os.makedirs(java_dir)
-      for srcjar in build_utils.ParseGypList(options.java_srcjars):
+      for srcjar in java_srcjars:
         build_utils.ExtractAll(srcjar, path=java_dir)
       java_files += build_utils.FindInDirectory(java_dir, '*.java')
 
@@ -201,7 +208,7 @@ def main(argv):
   if options.depfile:
     build_utils.WriteDepfile(
         options.depfile,
-        classpath + build_utils.GetPythonDependencies())
+        input_files + build_utils.GetPythonDependencies())
 
   if options.stamp:
     build_utils.Touch(options.stamp)

@@ -54,8 +54,13 @@ if (is_android) {
   # Path to the Android NDK and SDK.
   android_ndk_root = "//third_party/android_tools/ndk"
 
+  android_sdk = "${android_sdk_root}/platforms/android-${android_sdk_version}"
+
+  android_sdk_tools = "${android_sdk_root}/tools"
+  android_sdk_build_tools = "${android_sdk_root}/build-tools/19.0.0"
+
   # Path to the SDK's android.jar
-  android_sdk_jar = "$android_sdk_root/platforms/android-19/android.jar"
+  android_sdk_jar = "$android_sdk/android.jar"
 
   # Subdirectories inside android_ndk_root that contain the sysroot for the
   # associated platform.

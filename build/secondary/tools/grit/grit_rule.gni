@@ -13,6 +13,14 @@
 #   grit_flags (optional)
 #       List of strings containing extra command-line flags to pass to Grit.
 #
+#   resource_ids (optional)
+#     Path to a grit "firstidsfile". Default is
+#     //tools/gritsettings/resource_ids. Set to "" to use the value specified in
+#     the <grit> nodes of the processed files.
+#
+#   output_dir (optional)
+#     Directory for generated files.
+#
 #   deps  (optional)
 #   visibility  (optional)
 #       Normal meaning.
@@ -161,11 +169,24 @@ template("grit") {
          "Neither \"sources\" nor \"outputs\" can be defined for the grit " +
          "template $target_name")
 
+  if (defined(invoker.resource_ids)) {
+    resource_ids = invoker.resource_ids
+  } else {
+    resource_ids = grit_resource_id_file
+  }
+
+  if (defined(invoker.output_dir)) {
+    output_dir = invoker.output_dir
+  } else {
+    output_dir = target_gen_dir
+  }
+
   # These are all passed as arguments to the script so have to be relative to
   # the build directory.
-  resource_ids =
-    rebase_path(grit_resource_id_file, root_build_dir)
-  output_dir = rebase_path(target_gen_dir, root_build_dir)
+  if (resource_ids != "") {
+    resource_ids = rebase_path(resource_ids, root_build_dir)
+  }
+  rebased_output_dir = rebase_path(output_dir, root_build_dir)
   source_path = rebase_path(invoker.source, root_build_dir)
 
   if (defined(invoker.grit_flags)) {
@@ -183,7 +204,7 @@ template("grit") {
   ]
 
   grit_outputs_build_rel = exec_script(grit_info_script,
-    [ "--outputs", "$output_dir", source_path, "-f", resource_ids ] +
+    [ "--outputs", "$rebased_output_dir", source_path, "-f", resource_ids ] +
     grit_flags,
     "list lines")
 
@@ -199,13 +220,13 @@ template("grit") {
   # overwritten inside the innter classes so we need to compute it here.
   target_visibility = ":$target_name"
 
-  # The current grit setup makes an file in $target_gen_dir/grit/foo.h that
+  # The current grit setup makes an file in $output_dir/grit/foo.h that
   # the source code expects to include via "grit/foo.h". It would be nice to
   # change this to including absolute paths relative to the root gen directory
   # (like "mycomponent/foo.h"). This config sets up the include path.
   grit_config = target_name + "_grit_config"
   config(grit_config) {
-    include_dirs = [ target_gen_dir ]
+    include_dirs = [ output_dir ]
     visibility = target_visibility
   }
 
@@ -218,7 +239,7 @@ template("grit") {
     args = [
       "-i", source_path, "build",
       "-f", resource_ids,
-      "-o", output_dir,
+      "-o", rebased_output_dir,
     ] + grit_defines + grit_flags
 
     visibility = target_visibility

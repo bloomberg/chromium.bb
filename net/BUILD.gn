@@ -5,8 +5,14 @@
 import("//build/config/crypto.gni")
 import("//build/config/features.gni")
 import("//build/config/ui.gni")
-import("//tools/grit/grit_rule.gni")
 import("//url/config.gni")
+
+# TODO(cjhopman): //build/config/android/rules.gni also imports grit_rule.gni.
+# Currently, that file can't be imported multiple times.  Make this always
+# imported when http://crbug.com/393704 is fixed.
+if (!is_android) {
+  import("//tools/grit/grit_rule.gni")
+}
 
 if (is_android) {
   import("//build/config/android/config.gni")

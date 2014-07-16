@@ -4,6 +4,10 @@
 
 import("//build/config/android/config.gni")
 import("//build/config/android/internal_rules.gni")
+import("//tools/grit/grit_rule.gni")
+
+assert(is_android)
+
 
 # Declare a jni target
 #
@@ -167,6 +171,7 @@ template("generate_jar_jni") {
   }
 }
 
+
 # Declare a target for c-preprocessor-generated java files
 #
 # This target generates java files using the host C pre-processor. Each file in
@@ -184,7 +189,8 @@ template("generate_jar_jni") {
 #     FooBar.java.
 #   inputs: additional compile-time dependencies. Any files
 #     `#include`-ed in the templates should be listed here.
-#   package_name: this will be the subdirectory for each .java file in the .srcjar.
+#   package_name: this will be the subdirectory for each .java file in the
+#     .srcjar.
 #
 # Example
 #   java_cpp_template("foo_generated_enum") {
@@ -217,7 +223,7 @@ template("java_cpp_template") {
 
     sources = invoker.sources
 
-    gen_dir = "${target_gen_dir}/${package_name}"
+    gen_dir = "${target_gen_dir}/${target_name}/java_cpp_template/${package_name}"
     gcc_template_output_pattern = "${gen_dir}/{{source_name_part}}.java"
 
     outputs = [
@@ -250,6 +256,131 @@ template("java_cpp_template") {
   }
 }
 
+
+# Declare an Android resources target
+#
+# This creates a resources zip file that will be used when building an Android
+# library or apk and included into a final apk.
+#
+# To include these resources in a library/apk, this target should be listed in
+# the library's deps. A library/apk will also include any resources used by its
+# own dependencies.
+#
+# Variables
+#   deps: Specifies the dependencies of this target. Any Android resources
+#     listed in deps will be included by libraries/apks that depend on this
+#     target.
+#   resource_dirs: List of directories containing resources for this target.
+#   android_manifest: AndroidManifest.xml for this target. Defaults to
+#     //build/android/AndroidManifest.xml.
+#   custom_package: java package for generated .java files.
+#   v14_verify_only: If true, don't generate v14/v17 resources and just verify
+#     that the resources are v14-compliant (see
+#     build/android/gyp/generate_v14_compatible_resources.py). Defaults to
+#     false.
+#
+# Example
+#   android_resources("foo_resources") {
+#     deps = [":foo_strings_grd"]
+#     resource_dirs = ["res"]
+#     custom_package = "org.chromium.foo"
+#   }
+template("android_resources") {
+  assert(defined(invoker.resource_dirs))
+
+  base_path = "$target_gen_dir/$target_name"
+  zip_path = base_path + ".resources.zip"
+  srcjar_path = base_path + ".srcjar"
+  build_config = base_path + ".build_config"
+
+  write_build_config("${target_name}__build_config") {
+    type = "android_resources"
+    resources_zip = zip_path
+    srcjar = srcjar_path
+    if (defined(invoker.deps)) {
+      deps = invoker.deps
+    }
+  }
+
+  android_manifest = "//build/android/AndroidManifest.xml"
+  if (defined(invoker.android_manifest)) {
+    android_manifest = invoker.android_manifest
+  }
+
+  process_resources("${target_name}__process_resources") {
+    resource_dirs = invoker.resource_dirs
+    if (defined(invoker.custom_package)) {
+      custom_package = invoker.custom_package
+    }
+
+    if (defined(invoker.v14_verify_only)) {
+      v14_verify_only = invoker.v14_verify_only
+    }
+  }
+
+  group(target_name) {
+    deps = [
+      ":${target_name}__build_config",
+      ":${target_name}__process_resources",
+    ]
+  }
+}
+
+
+# Declare a target that generates localized strings.xml from a .grd file.
+#
+# If this target is included in the deps of an android resources/library/apk,
+# the strings.xml will be included with that target.
+#
+# Variables
+#   deps: Specifies the dependencies of this target.
+#   grd_file: Path to the .grd file to generate strings.xml from.
+#
+# Example
+#  java_strings_grd("foo_strings_grd") {
+#    grd_file = "foo_strings.grd"
+#  }
+template("java_strings_grd") {
+  base_path = "$target_gen_dir/$target_name"
+  resources_zip = base_path + ".resources.zip"
+
+  write_build_config("${target_name}__build_config") {
+    type = "android_resources"
+    if (defined(invoker.deps)) {
+      deps = invoker.deps
+    }
+  }
+
+  grit_target_name = "${target_name}__grit"
+  grit_output_dir = base_path + "_grit_output"
+  grit(grit_target_name) {
+    grit_flags = [
+      "-E", "ANDROID_JAVA_TAGGED_ONLY=false",
+    ]
+    output_dir = grit_output_dir
+    resource_ids = ""
+    source = invoker.grd_file
+  }
+
+  # This needs to get outputs from grit's internal target, not the final
+  # source_set.
+  generate_strings_outputs = get_target_outputs(":${grit_target_name}_grit")
+
+  zip("${target_name}__zip") {
+    base_dir = grit_output_dir
+    inputs = generate_strings_outputs
+    output = resources_zip
+  }
+
+  group(target_name) {
+    deps = [
+      ":${target_name}__build_config",
+      ":${target_name}__zip",
+    ]
+  }
+}
+
+
 # Declare an Android library target
 #
 # This target creates an Android library containing java code and Android
@@ -257,12 +388,14 @@ template("java_cpp_template") {
 #
 # Variables
 #   deps: Specifies the dependencies of this target. Java targets in this list
-#     will be added to the javac classpath.
+#     will be added to the javac classpath. Android resources in dependencies
+#     will be used when building this library.
 #   java_files: List of .java files included in this library.
 #   srcjar_deps: List of srcjar dependencies. The .java files in the srcjars
 #     will be added to java_files and be included in this library.
 #
-#   jar_excluded_patterns: List of patterns of .class files to exclude from the final jar.
+#   jar_excluded_patterns: List of patterns of .class files to exclude from the
+#     final jar.
 #
 # Example
 #   android_library("foo_java") {
@@ -282,11 +415,9 @@ template("java_cpp_template") {
 #     ]
 #   }
 template("android_library") {
-  #TODO(cjhopman): resources
-
   assert(defined(invoker.java_files))
-  dep = ":${target_name}"
-  base_path = get_label_info(dep, "target_gen_dir") + "/" + target_name
+
+  base_path = "$target_gen_dir/$target_name"
   build_config = base_path + ".build_config"
 
   write_build_config("${target_name}__build_config") {
@@ -314,4 +445,3 @@ template("android_library") {
     }
   }
 }
-

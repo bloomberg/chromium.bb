@@ -141,6 +141,10 @@ group("root") {
   }
 
   if (is_android) {
+    deps += [
+      "//ui/android:ui_java"
+    ]
+
     deps -= [
       "//cc",
       "//chrome/browser",  # Blocked on content.

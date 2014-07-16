@@ -1,0 +1,80 @@
+import("//build/config/android/rules.gni")
+
+assert(is_android)
+
+java_cpp_template("window_open_disposition_srcjar") {
+  package_name = "org/chromium/ui"
+  sources = [
+    "java/WindowOpenDisposition.template",
+  ]
+  inputs = [
+    "../base/window_open_disposition_list.h"
+  ]
+}
+
+java_cpp_template("bitmap_format_srcjar") {
+  package_name = "org/chromium/ui/gfx"
+  sources = [
+    "java/BitmapFormat.template",
+  ]
+  inputs = [
+    "../gfx/android/bitmap_config_list.h"
+  ]
+}
+
+java_strings_grd("ui_strings_grd") {
+  grd_file = "java/strings/android_ui_strings.grd"
+}
+
+android_resources("ui_java_res") {
+  custom_package = "org.chromium.ui"
+  resource_dirs = [
+    "java/res"
+  ]
+  deps = [
+    ":ui_strings_grd",
+  ]
+}
+
+android_library("ui_java") {
+  java_files = [
+    "java/src/org/chromium/ui/ColorPickerAdvanced.java",
+    "java/src/org/chromium/ui/ColorPickerAdvancedComponent.java",
+    "java/src/org/chromium/ui/ColorPickerDialog.java",
+    "java/src/org/chromium/ui/ColorPickerMoreButton.java",
+    "java/src/org/chromium/ui/ColorPickerSimple.java",
+    "java/src/org/chromium/ui/ColorSuggestion.java",
+    "java/src/org/chromium/ui/ColorSuggestionListAdapter.java",
+    "java/src/org/chromium/ui/DropdownAdapter.java",
+    "java/src/org/chromium/ui/DropdownDividerDrawable.java",
+    "java/src/org/chromium/ui/DropdownItem.java",
+    "java/src/org/chromium/ui/DropdownPopupWindow.java",
+    "java/src/org/chromium/ui/OnColorChangedListener.java",
+    "java/src/org/chromium/ui/UiUtils.java",
+    "java/src/org/chromium/ui/VSyncMonitor.java",
+    "java/src/org/chromium/ui/autofill/AutofillPopup.java",
+    "java/src/org/chromium/ui/autofill/AutofillSuggestion.java",
+    "java/src/org/chromium/ui/base/ActivityWindowAndroid.java",
+    "java/src/org/chromium/ui/base/Clipboard.java",
+    "java/src/org/chromium/ui/base/DeviceFormFactor.java",
+    "java/src/org/chromium/ui/base/LocalizationUtils.java",
+    "java/src/org/chromium/ui/base/SelectFileDialog.java",
+    "java/src/org/chromium/ui/base/TouchDevice.java",
+    "java/src/org/chromium/ui/base/ViewAndroid.java",
+    "java/src/org/chromium/ui/base/ViewAndroidDelegate.java",
+    "java/src/org/chromium/ui/base/WindowAndroid.java",
+    "java/src/org/chromium/ui/gfx/BitmapHelper.java",
+    "java/src/org/chromium/ui/gfx/DeviceDisplayInfo.java",
+    "java/src/org/chromium/ui/gfx/ViewConfigurationHelper.java",
+    "java/src/org/chromium/ui/gl/SurfaceTextureListener.java",
+    "java/src/org/chromium/ui/gl/SurfaceTexturePlatformWrapper.java",
+  ]
+  deps = [
+    ":ui_java_res",
+    "//base:base_java",
+  ]
+  srcjar_deps = [
+    ":window_open_disposition_srcjar",
+    ":bitmap_format_srcjar",
+  ]
+}

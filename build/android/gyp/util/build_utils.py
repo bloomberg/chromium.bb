@@ -198,6 +198,8 @@ def ExtractAll(zip_path, path=None, no_clobber=True):
 
   with zipfile.ZipFile(zip_path) as z:
     for name in z.namelist():
+      if name.endswith('/'):
+        continue
       CheckZipPath(name)
       if no_clobber:
         output_path = os.path.join(path, name)
@@ -216,6 +218,16 @@ def DoZip(inputs, output, base_dir):
       outfile.write(f, os.path.relpath(f, base_dir))
 
 
+def ZipDir(output, base_dir):
+  with zipfile.ZipFile(output, 'w') as outfile:
+    for root, _, files in os.walk(base_dir):
+      for f in files:
+        path = os.path.join(root, f)
+        archive_path = os.path.relpath(path, base_dir)
+        CheckZipPath(archive_path)
+        outfile.write(path, archive_path)
+
+
 def PrintWarning(message):
   print 'WARNING: ' + message
 
@@ -224,6 +236,42 @@ def PrintBigWarning(message):
   print '*****     ' * 8
   PrintWarning(message)
   print '*****     ' * 8
+
+
+def GetSortedTransitiveDependencies(top, deps_func):
+  """Gets the list of all transitive dependencies in sorted order.
+
+  There should be no cycles in the dependency graph.
+
+  Args:
+    top: a list of the top level nodes
+    deps_func: A function that takes a node and returns its direct dependencies.
+  Returns:
+    A list of all transitive dependencies of nodes in top, in order (a node will
+    appear in the list at a higher index than all of its dependencies).
+  """
+  def Node(dep):
+    return (dep, deps_func(dep))
+
+  # First: find all deps
+  unchecked_deps = list(top)
+  all_deps = set(top)
+  while unchecked_deps:
+    dep = unchecked_deps.pop()
+    new_deps = deps_func(dep).difference(all_deps)
+    unchecked_deps.extend(new_deps)
+    all_deps = all_deps.union(new_deps)
+
+  # Then: simple, slow topological sort.
+  sorted_deps = []
+  unsorted_deps = dict(map(Node, all_deps))
+  while unsorted_deps:
+    for library, dependencies in unsorted_deps.items():
+      if not dependencies.intersection(unsorted_deps.keys()):
+        sorted_deps.append(library)
+        del unsorted_deps[library]
+
+  return sorted_deps
 
 
 def GetPythonDependencies():

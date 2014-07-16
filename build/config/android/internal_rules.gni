@@ -4,6 +4,13 @@
 
 import("//build/config/android/config.gni")
 
+assert(is_android)
+
+
+rebased_android_sdk = rebase_path(android_sdk, root_build_dir)
+rebased_android_sdk_root = rebase_path(android_sdk_root, root_build_dir)
+rebased_android_sdk_build_tools = rebase_path(android_sdk_build_tools, root_build_dir)
+
 
 # Write the target's .build_config file. This is a json file that contains a
 # dictionary of information about how to build this target (things that
@@ -22,7 +29,7 @@ template("write_build_config") {
   type = invoker.type
   build_config = base_path + ".build_config"
 
-  assert(type == "android_library" || type == "android_binary")
+  assert(type == "android_binary" || type == "android_library" || type == "android_resources")
 
   action(target_name) {
     script = "//build/android/gyp/write_build_config.py"
@@ -58,8 +65,21 @@ template("write_build_config") {
         "--jar-path", rebase_path(jar_path, root_build_dir),
       ]
     }
+
+    if (type == "android_resources") {
+      assert(defined(invoker.resources_zip))
+      args += [
+        "--resources-zip", rebase_path(invoker.resources_zip, root_build_dir),
+      ]
+      if (defined(invoker.srcjar)) {
+        args += [
+          "--srcjar", rebase_path(invoker.srcjar, root_build_dir)
+        ]
+      }
+    }
   }
 }
+
 
 # Creates a zip archive of the inputs.
 # If base_dir is provided, the archive paths will be relative to it.
@@ -90,7 +110,8 @@ template("zip") {
   }
 }
 
-# Compiles and jars a set of java_files.
+
+# Compiles and jars a set of java files.
 #
 # Outputs:
 #  $jar_path.jar
@@ -164,6 +185,7 @@ template("java_library") {
       "--classpath=@($rebase_build_config:javac:classpath)",
       "--jar-path=$rebase_jar_path",
       "--java-srcjars=$rebase_java_srcjars",
+      "--java-srcjars=@($rebase_build_config:javac:srcjars)",
       "--jar-excluded-classes=$jar_excluded_patterns",
     ]
     if (chromium_code) {
@@ -200,6 +222,7 @@ template("java_library") {
   }
 }
 
+
 # This adds Android-specific parts to the java_library template.
 #
 # Runs Android lint against the compiled java files.
@@ -230,5 +253,64 @@ template("android_java_library") {
     deps = [
       ":${target_name}__java_library"
     ]
+  }
+}
+
+
+# Runs process_resources.py
+template("process_resources") {
+  zip_path = invoker.zip_path
+  srcjar_path = invoker.srcjar_path
+  build_config = invoker.build_config
+  resource_dirs = invoker.resource_dirs
+  android_manifest = invoker.android_manifest
+
+  action(target_name) {
+    script = "//build/android/gyp/process_resources.py"
+
+    depfile = "$target_gen_dir/$target_name.d"
+    outputs = [
+      depfile,
+      zip_path,
+      srcjar_path,
+    ]
+
+    sources_build_rel = exec_script(
+        "//build/android/gyp/find.py",
+        rebase_path(resource_dirs, root_build_dir),
+        "list lines"
+        )
+    sources = rebase_path(sources_build_rel, ".", root_build_dir)
+
+    source_prereqs = [
+      build_config,
+      android_manifest,
+    ]
+
+    rebase_resource_dirs = rebase_path(resource_dirs, root_build_dir)
+    rebase_build_config = rebase_path(build_config, root_build_dir)
+    args = [
+      "--depfile", rebase_path(depfile, root_build_dir),
+      "--android-sdk", rebase_path(android_sdk, root_build_dir),
+      "--android-sdk-tools", rebase_path(android_sdk_build_tools, root_build_dir),
+      "--non-constant-id",
+      "--android-manifest", rebase_path(android_manifest, root_build_dir),
+
+      "--resource-dirs=$rebase_resource_dirs",
+      "--srcjar-out", rebase_path(srcjar_path, root_build_dir),
+      "--resource-zip-out", rebase_path(zip_path, root_build_dir),
+
+      "--dependencies-res-zips=@($rebase_build_config:resources:dependency_zips)",
+    ]
+
+    if (defined(invoker.custom_package)) {
+      args += [
+        "--custom-package", invoker.custom_package,
+      ]
+    }
+
+    if (defined(invoker.v14_verify_only) && invoker.v14_verify_only) {
+      args += ["--v14-verify-only"]
+    }
   }
 }
