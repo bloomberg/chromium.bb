@@ -12,6 +12,7 @@
 
 namespace content {
 class BrowserContext;
+class RenderFrameHost;
 class WebContents;
 }
 
@@ -22,49 +23,39 @@ namespace extensions {
 namespace web_navigation_api_helpers {
 
 // Returns the frame ID as it will be passed to the extension:
-// 0 if the navigation happens in the main frame, or the frame ID
-// modulo 32 bits otherwise.
-int GetFrameId(bool is_main_frame, int64 frame_id);
+// 0 if the navigation happens in the main frame, or the frame routing ID
+// otherwise.
+int GetFrameId(content::RenderFrameHost* frame_host);
 
 // Create and dispatch the various events of the webNavigation API.
 void DispatchOnBeforeNavigate(content::WebContents* web_contents,
-                              int render_process_id,
-                              int64 frame_id,
-                              bool is_main_frame,
-                              int64 parent_frame_id,
-                              bool parent_is_main_frame,
+                              content::RenderFrameHost* frame_host,
                               const GURL& validated_url);
 
 void DispatchOnCommitted(const std::string& event_name,
                          content::WebContents* web_contents,
-                         int64 frame_id,
-                         bool is_main_frame,
+                         content::RenderFrameHost* frame_host,
                          const GURL& url,
                          content::PageTransition transition_type);
 
 void DispatchOnDOMContentLoaded(content::WebContents* web_contents,
-                                const GURL& url,
-                                bool is_main_frame,
-                                int64 frame_id);
+                                content::RenderFrameHost* frame_host,
+                                const GURL& url);
 
 void DispatchOnCompleted(content::WebContents* web_contents,
-                         const GURL& url,
-                         bool is_main_frame,
-                         int64 frame_id);
+                         content::RenderFrameHost* frame_host,
+                         const GURL& url);
 
 void DispatchOnCreatedNavigationTarget(
     content::WebContents* web_contents,
     content::BrowserContext* browser_context,
-    int64 source_frame_id,
-    bool source_frame_is_main_frame,
+    content::RenderFrameHost* source_frame_host,
     content::WebContents* target_web_contents,
     const GURL& target_url);
 
 void DispatchOnErrorOccurred(content::WebContents* web_contents,
-                             int render_process_id,
+                             content::RenderFrameHost* frame_host,
                              const GURL& url,
-                             int64 frame_id,
-                             bool is_main_frame,
                              int error_code);
 
 void DispatchOnTabReplaced(

@@ -14,6 +14,7 @@
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/web_navigation.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
@@ -56,26 +57,27 @@ void DispatchEvent(content::BrowserContext* browser_context,
 
 }  // namespace
 
-int GetFrameId(bool is_main_frame, int64 frame_id) {
-  return is_main_frame ? 0 : static_cast<int>(frame_id);
+int GetFrameId(content::RenderFrameHost* frame_host) {
+  if (!frame_host)
+    return -1;
+  return !frame_host->GetParent() ? 0 : frame_host->GetRoutingID();
 }
 
 // Constructs and dispatches an onBeforeNavigate event.
+// TODO(dcheng): Is the parent process ID needed here? http://crbug.com/393640
+// Collisions are probably possible... but maybe this won't ever happen because
+// of the SiteInstance grouping policies.
 void DispatchOnBeforeNavigate(content::WebContents* web_contents,
-                              int render_process_id,
-                              int64 frame_id,
-                              bool is_main_frame,
-                              int64 parent_frame_id,
-                              bool parent_is_main_frame,
+                              content::RenderFrameHost* frame_host,
                               const GURL& validated_url) {
   scoped_ptr<base::ListValue> args(new base::ListValue());
   base::DictionaryValue* dict = new base::DictionaryValue();
   dict->SetInteger(keys::kTabIdKey, ExtensionTabUtil::GetTabId(web_contents));
   dict->SetString(keys::kUrlKey, validated_url.spec());
-  dict->SetInteger(keys::kProcessIdKey, render_process_id);
-  dict->SetInteger(keys::kFrameIdKey, GetFrameId(is_main_frame, frame_id));
+  dict->SetInteger(keys::kProcessIdKey, frame_host->GetProcess()->GetID());
+  dict->SetInteger(keys::kFrameIdKey, GetFrameId(frame_host));
   dict->SetInteger(keys::kParentFrameIdKey,
-                   GetFrameId(parent_is_main_frame, parent_frame_id));
+                   GetFrameId(frame_host->GetParent()));
   dict->SetDouble(keys::kTimeStampKey, MilliSecondsFromTime(base::Time::Now()));
   args->Append(dict);
 
@@ -89,17 +91,15 @@ void DispatchOnBeforeNavigate(content::WebContents* web_contents,
 // event.
 void DispatchOnCommitted(const std::string& event_name,
                          content::WebContents* web_contents,
-                         int64 frame_id,
-                         bool is_main_frame,
+                         content::RenderFrameHost* frame_host,
                          const GURL& url,
                          content::PageTransition transition_type) {
   scoped_ptr<base::ListValue> args(new base::ListValue());
   base::DictionaryValue* dict = new base::DictionaryValue();
   dict->SetInteger(keys::kTabIdKey, ExtensionTabUtil::GetTabId(web_contents));
   dict->SetString(keys::kUrlKey, url.spec());
-  dict->SetInteger(keys::kProcessIdKey,
-                   web_contents->GetRenderViewHost()->GetProcess()->GetID());
-  dict->SetInteger(keys::kFrameIdKey, GetFrameId(is_main_frame, frame_id));
+  dict->SetInteger(keys::kProcessIdKey, frame_host->GetProcess()->GetID());
+  dict->SetInteger(keys::kFrameIdKey, GetFrameId(frame_host));
   std::string transition_type_string =
       content::PageTransitionGetCoreTransitionString(transition_type);
   // For webNavigation API backward compatibility, keep "start_page" even after
@@ -127,17 +127,15 @@ void DispatchOnCommitted(const std::string& event_name,
 
 // Constructs and dispatches an onDOMContentLoaded event.
 void DispatchOnDOMContentLoaded(content::WebContents* web_contents,
-                                const GURL& url,
-                                bool is_main_frame,
-                                int64 frame_id) {
+                                content::RenderFrameHost* frame_host,
+                                const GURL& url) {
   scoped_ptr<base::ListValue> args(new base::ListValue());
   base::DictionaryValue* dict = new base::DictionaryValue();
   dict->SetInteger(keys::kTabIdKey,
                    ExtensionTabUtil::GetTabId(web_contents));
   dict->SetString(keys::kUrlKey, url.spec());
-  dict->SetInteger(keys::kProcessIdKey,
-                   web_contents->GetRenderViewHost()->GetProcess()->GetID());
-  dict->SetInteger(keys::kFrameIdKey, GetFrameId(is_main_frame, frame_id));
+  dict->SetInteger(keys::kProcessIdKey, frame_host->GetProcess()->GetID());
+  dict->SetInteger(keys::kFrameIdKey, GetFrameId(frame_host));
   dict->SetDouble(keys::kTimeStampKey, MilliSecondsFromTime(base::Time::Now()));
   args->Append(dict);
 
@@ -149,17 +147,15 @@ void DispatchOnDOMContentLoaded(content::WebContents* web_contents,
 
 // Constructs and dispatches an onCompleted event.
 void DispatchOnCompleted(content::WebContents* web_contents,
-                         const GURL& url,
-                         bool is_main_frame,
-                         int64 frame_id) {
+                         content::RenderFrameHost* frame_host,
+                         const GURL& url) {
   scoped_ptr<base::ListValue> args(new base::ListValue());
   base::DictionaryValue* dict = new base::DictionaryValue();
   dict->SetInteger(keys::kTabIdKey,
                    ExtensionTabUtil::GetTabId(web_contents));
   dict->SetString(keys::kUrlKey, url.spec());
-  dict->SetInteger(keys::kProcessIdKey,
-                   web_contents->GetRenderViewHost()->GetProcess()->GetID());
-  dict->SetInteger(keys::kFrameIdKey, GetFrameId(is_main_frame, frame_id));
+  dict->SetInteger(keys::kProcessIdKey, frame_host->GetProcess()->GetID());
+  dict->SetInteger(keys::kFrameIdKey, GetFrameId(frame_host));
   dict->SetDouble(keys::kTimeStampKey, MilliSecondsFromTime(base::Time::Now()));
   args->Append(dict);
 
@@ -172,8 +168,7 @@ void DispatchOnCompleted(content::WebContents* web_contents,
 void DispatchOnCreatedNavigationTarget(
     content::WebContents* web_contents,
     content::BrowserContext* browser_context,
-    int64 source_frame_id,
-    bool source_frame_is_main_frame,
+    content::RenderFrameHost* source_frame_host,
     content::WebContents* target_web_contents,
     const GURL& target_url) {
   // Check that the tab is already inserted into a tab strip model. This code
@@ -188,9 +183,8 @@ void DispatchOnCreatedNavigationTarget(
   dict->SetInteger(keys::kSourceTabIdKey,
                    ExtensionTabUtil::GetTabId(web_contents));
   dict->SetInteger(keys::kSourceProcessIdKey,
-                   web_contents->GetRenderViewHost()->GetProcess()->GetID());
-  dict->SetInteger(keys::kSourceFrameIdKey,
-      GetFrameId(source_frame_is_main_frame, source_frame_id));
+                   source_frame_host->GetProcess()->GetID());
+  dict->SetInteger(keys::kSourceFrameIdKey, GetFrameId(source_frame_host));
   dict->SetString(keys::kUrlKey, target_url.possibly_invalid_spec());
   dict->SetInteger(keys::kTabIdKey,
                    ExtensionTabUtil::GetTabId(target_web_contents));
@@ -205,17 +199,15 @@ void DispatchOnCreatedNavigationTarget(
 
 // Constructs and dispatches an onErrorOccurred event.
 void DispatchOnErrorOccurred(content::WebContents* web_contents,
-                             int render_process_id,
+                             content::RenderFrameHost* frame_host,
                              const GURL& url,
-                             int64 frame_id,
-                             bool is_main_frame,
                              int error_code) {
   scoped_ptr<base::ListValue> args(new base::ListValue());
   base::DictionaryValue* dict = new base::DictionaryValue();
   dict->SetInteger(keys::kTabIdKey, ExtensionTabUtil::GetTabId(web_contents));
   dict->SetString(keys::kUrlKey, url.spec());
-  dict->SetInteger(keys::kProcessIdKey, render_process_id);
-  dict->SetInteger(keys::kFrameIdKey, GetFrameId(is_main_frame, frame_id));
+  dict->SetInteger(keys::kProcessIdKey, frame_host->GetProcess()->GetID());
+  dict->SetInteger(keys::kFrameIdKey, GetFrameId(frame_host));
   dict->SetString(keys::kErrorKey, net::ErrorToString(error_code));
   dict->SetDouble(keys::kTimeStampKey,
       MilliSecondsFromTime(base::Time::Now()));

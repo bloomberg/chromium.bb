@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "chrome/common/url_constants.h"
+#include "content/public/browser/render_frame_host.h"
 #include "extensions/common/constants.h"
 
 namespace extensions {
@@ -26,53 +27,24 @@ const char* kValidSchemes[] = {
 
 }  // namespace
 
-FrameNavigationState::FrameID::FrameID()
-    : frame_num(-1),
-      render_view_host(NULL) {
-}
-
-FrameNavigationState::FrameID::FrameID(
-    int64 frame_num,
-    content::RenderViewHost* render_view_host)
-    : frame_num(frame_num),
-      render_view_host(render_view_host) {
-}
-
-bool FrameNavigationState::FrameID::operator<(
-    const FrameNavigationState::FrameID& other) const {
-  return frame_num < other.frame_num ||
-      (frame_num == other.frame_num &&
-       render_view_host < other.render_view_host);
-}
-
-bool FrameNavigationState::FrameID::operator==(
-    const FrameNavigationState::FrameID& other) const {
-  return frame_num == other.frame_num &&
-      render_view_host == other.render_view_host;
-}
-
-bool FrameNavigationState::FrameID::operator!=(
-    const FrameNavigationState::FrameID& other) const {
-  return !(*this == other);
-}
-
 FrameNavigationState::FrameState::FrameState() {}
 
 // static
 bool FrameNavigationState::allow_extension_scheme_ = false;
 
-FrameNavigationState::FrameNavigationState() {}
+FrameNavigationState::FrameNavigationState() : main_frame_host_(NULL) {
+}
 
 FrameNavigationState::~FrameNavigationState() {}
 
-bool FrameNavigationState::CanSendEvents(FrameID frame_id) const {
-  FrameIdToStateMap::const_iterator frame_state =
-      frame_state_map_.find(frame_id);
-  if (frame_state == frame_state_map_.end() ||
-      frame_state->second.error_occurred) {
+bool FrameNavigationState::CanSendEvents(
+    content::RenderFrameHost* frame_host) const {
+  FrameHostToStateMap::const_iterator it =
+      frame_host_state_map_.find(frame_host);
+  if (it == frame_host_state_map_.end() || it->second.error_occurred) {
     return false;
   }
-  return IsValidUrl(frame_state->second.url);
+  return IsValidUrl(it->second.url);
 }
 
 bool FrameNavigationState::IsValidUrl(const GURL& url) const {
@@ -88,182 +60,168 @@ bool FrameNavigationState::IsValidUrl(const GURL& url) const {
   return allow_extension_scheme_ && url.scheme() == kExtensionScheme;
 }
 
-void FrameNavigationState::TrackFrame(FrameID frame_id,
-                                      FrameID parent_frame_id,
+void FrameNavigationState::TrackFrame(content::RenderFrameHost* frame_host,
                                       const GURL& url,
-                                      bool is_main_frame,
                                       bool is_error_page,
                                       bool is_iframe_srcdoc) {
-  FrameState& frame_state = frame_state_map_[frame_id];
+  FrameState& frame_state = frame_host_state_map_[frame_host];
   frame_state.error_occurred = is_error_page;
   frame_state.url = url;
-  frame_state.is_main_frame = is_main_frame;
   frame_state.is_iframe_srcdoc = is_iframe_srcdoc;
   DCHECK(!is_iframe_srcdoc || url == GURL(url::kAboutBlankURL));
   frame_state.is_navigating = true;
   frame_state.is_committed = false;
   frame_state.is_server_redirected = false;
   frame_state.is_parsing = true;
-  if (!is_main_frame) {
-    frame_state.parent_frame_num = parent_frame_id.frame_num;
-  } else {
-    DCHECK_EQ(-1, parent_frame_id.frame_num);
-    frame_state.parent_frame_num = -1;
-  }
-  frame_ids_.insert(frame_id);
+  frame_hosts_.insert(frame_host);
 }
 
-void FrameNavigationState::FrameDetached(FrameID frame_id) {
-  FrameIdToStateMap::const_iterator frame_state =
-      frame_state_map_.find(frame_id);
-  if (frame_state == frame_state_map_.end())
-    return;
-  if (frame_id == main_frame_id_)
-    main_frame_id_ = FrameID();
-  frame_state_map_.erase(frame_id);
-  frame_ids_.erase(frame_id);
-#ifndef NDEBUG
-  // Check that the deleted frame was not the parent of any other frame. WebKit
-  // should always detach frames starting with the children.
-  for (FrameIdToStateMap::const_iterator frame = frame_state_map_.begin();
-       frame != frame_state_map_.end(); ++frame) {
-    if (frame->first.render_view_host != frame_id.render_view_host)
-      continue;
-    if (frame->second.parent_frame_num != frame_id.frame_num)
-      continue;
-    NOTREACHED();
-  }
-#endif
+void FrameNavigationState::FrameDetached(content::RenderFrameHost* frame_host) {
+  if (frame_host == main_frame_host_)
+    main_frame_host_ = NULL;
+  frame_host_state_map_.erase(frame_host);
+  frame_hosts_.erase(frame_host);
 }
 
 void FrameNavigationState::StopTrackingFramesInRVH(
     content::RenderViewHost* render_view_host,
-    FrameID id_to_skip) {
-  for (std::set<FrameID>::iterator frame = frame_ids_.begin();
-       frame != frame_ids_.end();) {
-    if (frame->render_view_host != render_view_host || *frame == id_to_skip) {
-      ++frame;
+    content::RenderFrameHost* frame_host_to_skip) {
+  for (std::set<content::RenderFrameHost*>::iterator it = frame_hosts_.begin();
+       it != frame_hosts_.end();) {
+    if ((*it)->GetRenderViewHost() != render_view_host ||
+        *it == frame_host_to_skip) {
+      ++it;
       continue;
     }
-    FrameID frame_id = *frame;
-    ++frame;
-    if (frame_id == main_frame_id_)
-      main_frame_id_ = FrameID();
-    frame_state_map_.erase(frame_id);
-    frame_ids_.erase(frame_id);
+    if (*it == main_frame_host_)
+      main_frame_host_ = NULL;
+    frame_host_state_map_.erase(*it);
+    frame_hosts_.erase(it++);
   }
 }
 
-void FrameNavigationState::UpdateFrame(FrameID frame_id, const GURL& url) {
-  FrameIdToStateMap::iterator frame_state = frame_state_map_.find(frame_id);
-  if (frame_state == frame_state_map_.end()) {
+void FrameNavigationState::UpdateFrame(content::RenderFrameHost* frame_host,
+                                       const GURL& url) {
+  FrameHostToStateMap::iterator it = frame_host_state_map_.find(frame_host);
+  if (it == frame_host_state_map_.end()) {
     NOTREACHED();
     return;
   }
-  frame_state->second.url = url;
+  it->second.url = url;
 }
 
-bool FrameNavigationState::IsValidFrame(FrameID frame_id) const {
-  FrameIdToStateMap::const_iterator frame_state =
-      frame_state_map_.find(frame_id);
-  return (frame_state != frame_state_map_.end());
+bool FrameNavigationState::IsValidFrame(
+    content::RenderFrameHost* frame_host) const {
+  return frame_host_state_map_.find(frame_host) != frame_host_state_map_.end();
 }
 
-GURL FrameNavigationState::GetUrl(FrameID frame_id) const {
-  FrameIdToStateMap::const_iterator frame_state =
-      frame_state_map_.find(frame_id);
-  if (frame_state == frame_state_map_.end()) {
+GURL FrameNavigationState::GetUrl(content::RenderFrameHost* frame_host) const {
+  FrameHostToStateMap::const_iterator it =
+      frame_host_state_map_.find(frame_host);
+  if (it == frame_host_state_map_.end()) {
     NOTREACHED();
     return GURL();
   }
-  if (frame_state->second.is_iframe_srcdoc)
+  if (it->second.is_iframe_srcdoc)
     return GURL(content::kAboutSrcDocURL);
-  return frame_state->second.url;
+  return it->second.url;
 }
 
-bool FrameNavigationState::IsMainFrame(FrameID frame_id) const {
-  FrameIdToStateMap::const_iterator frame_state =
-      frame_state_map_.find(frame_id);
-  return (frame_state != frame_state_map_.end() &&
-          frame_state->second.is_main_frame);
+content::RenderFrameHost* FrameNavigationState::GetLastCommittedMainFrameHost()
+    const {
+  return main_frame_host_;
 }
 
-FrameNavigationState::FrameID FrameNavigationState::GetMainFrameID() const {
-  return main_frame_id_;
-}
-
-FrameNavigationState::FrameID FrameNavigationState::GetParentFrameID(
-    FrameID frame_id) const {
-  FrameIdToStateMap::const_iterator frame_state =
-      frame_state_map_.find(frame_id);
-  if (frame_state == frame_state_map_.end()) {
+void FrameNavigationState::SetErrorOccurredInFrame(
+    content::RenderFrameHost* frame_host) {
+  FrameHostToStateMap::iterator it = frame_host_state_map_.find(frame_host);
+  if (it == frame_host_state_map_.end()) {
     NOTREACHED();
-    return FrameID();
+    return;
   }
-  return FrameID(frame_state->second.parent_frame_num,
-                 frame_id.render_view_host);
+  it->second.error_occurred = true;
 }
 
-void FrameNavigationState::SetErrorOccurredInFrame(FrameID frame_id) {
-  DCHECK(frame_state_map_.find(frame_id) != frame_state_map_.end());
-  frame_state_map_[frame_id].error_occurred = true;
+bool FrameNavigationState::GetErrorOccurredInFrame(
+    content::RenderFrameHost* frame_host) const {
+  FrameHostToStateMap::const_iterator it =
+      frame_host_state_map_.find(frame_host);
+  DCHECK(it != frame_host_state_map_.end());
+  return it == frame_host_state_map_.end() || it->second.error_occurred;
 }
 
-bool FrameNavigationState::GetErrorOccurredInFrame(FrameID frame_id) const {
-  FrameIdToStateMap::const_iterator frame_state =
-      frame_state_map_.find(frame_id);
-  return (frame_state == frame_state_map_.end() ||
-          frame_state->second.error_occurred);
+void FrameNavigationState::SetNavigationCompleted(
+    content::RenderFrameHost* frame_host) {
+  FrameHostToStateMap::iterator it = frame_host_state_map_.find(frame_host);
+  if (it == frame_host_state_map_.end()) {
+    NOTREACHED();
+    return;
+  }
+  it->second.is_navigating = false;
 }
 
-void FrameNavigationState::SetNavigationCompleted(FrameID frame_id) {
-  DCHECK(frame_state_map_.find(frame_id) != frame_state_map_.end());
-  frame_state_map_[frame_id].is_navigating = false;
+bool FrameNavigationState::GetNavigationCompleted(
+    content::RenderFrameHost* frame_host) const {
+  FrameHostToStateMap::const_iterator it =
+      frame_host_state_map_.find(frame_host);
+  DCHECK(it != frame_host_state_map_.end());
+  return it == frame_host_state_map_.end() || !it->second.is_navigating;
 }
 
-bool FrameNavigationState::GetNavigationCompleted(FrameID frame_id) const {
-  FrameIdToStateMap::const_iterator frame_state =
-      frame_state_map_.find(frame_id);
-  return (frame_state == frame_state_map_.end() ||
-          !frame_state->second.is_navigating);
+void FrameNavigationState::SetParsingFinished(
+    content::RenderFrameHost* frame_host) {
+  FrameHostToStateMap::iterator it = frame_host_state_map_.find(frame_host);
+  if (it == frame_host_state_map_.end()) {
+    NOTREACHED();
+    return;
+  }
+  it->second.is_parsing = false;
 }
 
-void FrameNavigationState::SetParsingFinished(FrameID frame_id) {
-  DCHECK(frame_state_map_.find(frame_id) != frame_state_map_.end());
-  frame_state_map_[frame_id].is_parsing = false;
+bool FrameNavigationState::GetParsingFinished(
+    content::RenderFrameHost* frame_host) const {
+  FrameHostToStateMap::const_iterator it =
+      frame_host_state_map_.find(frame_host);
+  DCHECK(it != frame_host_state_map_.end());
+  return it == frame_host_state_map_.end() || !it->second.is_parsing;
 }
 
-bool FrameNavigationState::GetParsingFinished(FrameID frame_id) const {
-  FrameIdToStateMap::const_iterator frame_state =
-      frame_state_map_.find(frame_id);
-  return (frame_state == frame_state_map_.end() ||
-          !frame_state->second.is_parsing);
+void FrameNavigationState::SetNavigationCommitted(
+    content::RenderFrameHost* frame_host) {
+  FrameHostToStateMap::iterator it = frame_host_state_map_.find(frame_host);
+  if (it == frame_host_state_map_.end()) {
+    NOTREACHED();
+    return;
+  }
+  it->second.is_committed = true;
+  if (!frame_host->GetParent())
+    main_frame_host_ = frame_host;
 }
 
-void FrameNavigationState::SetNavigationCommitted(FrameID frame_id) {
-  DCHECK(frame_state_map_.find(frame_id) != frame_state_map_.end());
-  frame_state_map_[frame_id].is_committed = true;
-  if (frame_state_map_[frame_id].is_main_frame)
-    main_frame_id_ = frame_id;
+bool FrameNavigationState::GetNavigationCommitted(
+    content::RenderFrameHost* frame_host) const {
+  FrameHostToStateMap::const_iterator it =
+      frame_host_state_map_.find(frame_host);
+  DCHECK(it != frame_host_state_map_.end());
+  return it != frame_host_state_map_.end() && it->second.is_committed;
 }
 
-bool FrameNavigationState::GetNavigationCommitted(FrameID frame_id) const {
-  FrameIdToStateMap::const_iterator frame_state =
-      frame_state_map_.find(frame_id);
-  return (frame_state != frame_state_map_.end() &&
-          frame_state->second.is_committed);
+void FrameNavigationState::SetIsServerRedirected(
+    content::RenderFrameHost* frame_host) {
+  FrameHostToStateMap::iterator it = frame_host_state_map_.find(frame_host);
+  if (it == frame_host_state_map_.end()) {
+    NOTREACHED();
+    return;
+  }
+  it->second.is_server_redirected = true;
 }
 
-void FrameNavigationState::SetIsServerRedirected(FrameID frame_id) {
-  DCHECK(frame_state_map_.find(frame_id) != frame_state_map_.end());
-  frame_state_map_[frame_id].is_server_redirected = true;
-}
-
-bool FrameNavigationState::GetIsServerRedirected(FrameID frame_id) const {
-  FrameIdToStateMap::const_iterator frame_state =
-      frame_state_map_.find(frame_id);
-  return (frame_state != frame_state_map_.end() &&
-          frame_state->second.is_server_redirected);
+bool FrameNavigationState::GetIsServerRedirected(
+    content::RenderFrameHost* frame_host) const {
+  FrameHostToStateMap::const_iterator it =
+      frame_host_state_map_.find(frame_host);
+  DCHECK(it != frame_host_state_map_.end());
+  return it != frame_host_state_map_.end() && it->second.is_server_redirected;
 }
 
 }  // namespace extensions

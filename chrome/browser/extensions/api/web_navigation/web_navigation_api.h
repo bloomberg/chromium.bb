@@ -52,6 +52,8 @@ class WebNavigationTabObserver
                        const content::NotificationDetails& details) OVERRIDE;
 
   // content::WebContentsObserver implementation.
+  virtual void RenderFrameDeleted(
+      content::RenderFrameHost* render_frame_host) OVERRIDE;
   virtual void RenderViewDeleted(
       content::RenderViewHost* render_view_host) OVERRIDE;
   virtual void AboutToNavigateRenderView(
@@ -87,8 +89,6 @@ class WebNavigationTabObserver
                                    WindowOpenDisposition disposition,
                                    content::PageTransition transition,
                                    int64 source_frame_num) OVERRIDE;
-  virtual void FrameDetached(
-      content::RenderFrameHost* render_view_host) OVERRIDE;
   virtual void WebContentsDestroyed() OVERRIDE;
 
  private:
@@ -97,16 +97,17 @@ class WebNavigationTabObserver
 
   // True if the transition and target url correspond to a reference fragment
   // navigation.
-  bool IsReferenceFragmentNavigation(FrameNavigationState::FrameID frame_id,
+  bool IsReferenceFragmentNavigation(content::RenderFrameHost* frame_host,
                                      const GURL& url);
 
   // Creates and sends onErrorOccurred events for all on-going navigations. If
   // |render_view_host| is non-NULL, only generates events for frames in this
-  // render view host. If |id_to_skip| is given, no events are sent for that
+  // render view host. If |frame_host_to_skip| is given, no events are sent for
+  // that
   // frame.
   void SendErrorEvents(content::WebContents* web_contents,
                        content::RenderViewHost* render_view_host,
-                       FrameNavigationState::FrameID id_to_skip);
+                       content::RenderFrameHost* frame_host_to_skip);
 
   // Tracks the state of the frames we are sending events for.
   FrameNavigationState navigation_state_;
@@ -138,15 +139,13 @@ class WebNavigationEventRouter : public TabStripModelObserver,
   struct PendingWebContents{
     PendingWebContents();
     PendingWebContents(content::WebContents* source_web_contents,
-                       int64 source_frame_id,
-                       bool source_frame_is_main_frame,
+                       content::RenderFrameHost* source_frame_host,
                        content::WebContents* target_web_contents,
                        const GURL& target_url);
     ~PendingWebContents();
 
     content::WebContents* source_web_contents;
-    int64 source_frame_id;
-    bool source_frame_is_main_frame;
+    content::RenderFrameHost* source_frame_host;
     content::WebContents* target_web_contents;
     GURL target_url;
   };

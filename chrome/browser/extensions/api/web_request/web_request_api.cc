@@ -25,7 +25,6 @@
 #include "chrome/browser/extensions/api/declarative_webrequest/request_stage.h"
 #include "chrome/browser/extensions/api/declarative_webrequest/webrequest_constants.h"
 #include "chrome/browser/extensions/api/declarative_webrequest/webrequest_rules_registry.h"
-#include "chrome/browser/extensions/api/web_navigation/web_navigation_api_helpers.h"
 #include "chrome/browser/extensions/api/web_request/upload_data_presenter.h"
 #include "chrome/browser/extensions/api/web_request/web_request_api_constants.h"
 #include "chrome/browser/extensions/api/web_request/web_request_api_helpers.h"
@@ -42,6 +41,7 @@
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_message_filter.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/browser/user_metrics.h"
@@ -84,7 +84,6 @@ using extensions::ExtensionWarningSet;
 using extensions::InfoMap;
 using extensions::Feature;
 using extensions::RulesRegistryService;
-using extensions::web_navigation_api_helpers::GetFrameId;
 
 namespace helpers = extension_web_request_api_helpers;
 namespace keys = extension_web_request_api_constants;
@@ -137,6 +136,11 @@ const char* GetRequestStageAsString(
   }
   NOTREACHED();
   return "Not reached";
+}
+
+// TODO(dcheng): Fix plumbing. Frame ID is not an int64--it's just an int.
+int GetFrameId(bool is_main_frame, int64 frame_id) {
+  return is_main_frame ? 0 : static_cast<int>(frame_id);
 }
 
 bool IsWebRequestEvent(const std::string& event_name) {
