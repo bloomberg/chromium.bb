@@ -2159,13 +2159,10 @@ class ValidationPool(object):
           try:
             helper.SubmitChange(change, dryrun=self.dryrun)
           except (gob_util.GOBError, gerrit.GerritException) as e:
-            # If we get a CONFLICT, this might mean that the change was already
-            # submitted when we hit the button. Check for this.
-            if getattr(e, 'http_status', None) == httplib.CONFLICT:
-              value = helper.QuerySingleRecord(change.gerrit_number)
-              if value and value.status == 'MERGED':
-                return value
-            raise
+            # Gerrit reports CONFLICT when you hit the submit button multiple
+            # times for the same change. This is expected.
+            if getattr(e, 'http_status', None) != httplib.CONFLICT:
+              raise
 
         return value
 
