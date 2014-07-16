@@ -361,6 +361,7 @@ div.splitter {
       url('../images/files/ui/eject.png') 1x,
       url('../images/files/ui/2x/eject.png') 2x) no-repeat center;
   cursor: pointer;
+  flex: none;
   height: 20px;
   margin-right: 6px;
   opacity: 0.7;
