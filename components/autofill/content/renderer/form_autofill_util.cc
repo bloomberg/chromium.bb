@@ -852,7 +852,6 @@ bool WebFormElementToFormData(
     return false;
 
   form->name = GetFormIdentifier(form_element);
-  form->method = form_element.method();
   form->origin = frame->document().url();
   form->action = frame->document().completeURL(form_element.action());
   form->user_submitted = form_element.wasUserSubmitted();

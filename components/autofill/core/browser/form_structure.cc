@@ -33,8 +33,6 @@
 namespace autofill {
 namespace {
 
-const char kFormMethodPost[] = "post";
-
 // XML elements and attributes.
 const char kAttributeAutofillUsed[] = "autofillused";
 const char kAttributeAutofillType[] = "autofilltype";
@@ -380,15 +378,6 @@ FormStructure::FormStructure(const FormData& form)
         base::IntToString16(unique_names[field->name]);
     fields_.push_back(new AutofillField(*field, unique_name));
   }
-
-  std::string method = base::UTF16ToUTF8(form.method);
-  if (StringToLowerASCII(method) == kFormMethodPost) {
-    method_ = POST;
-  } else {
-    // Either the method is 'get', or we don't know.  In this case we default
-    // to GET.
-    method_ = GET;
-  }
 }
 
 FormStructure::~FormStructure() {}
@@ -418,7 +407,7 @@ void FormStructure::DetermineHeuristicTypes(
   UpdateAutofillCount();
   IdentifySections(has_author_specified_sections);
 
-  if (IsAutofillable(true)) {
+  if (IsAutofillable()) {
     metric_logger.LogDeveloperEngagementMetric(
         AutofillMetrics::FILLABLE_FORM_PARSED);
     if (has_author_specified_types_) {
@@ -635,8 +624,6 @@ void FormStructure::GetFieldTypePredictions(
     FormStructure* form_structure = form_structures[i];
     FormDataPredictions form;
     form.data.name = form_structure->form_name_;
-    form.data.method =
-        base::ASCIIToUTF16((form_structure->method_ == POST) ? "POST" : "GET");
     form.data.origin = form_structure->source_url_;
     form.data.action = form_structure->target_url_;
     form.signature = form_structure->FormSignature();
@@ -682,11 +669,11 @@ bool FormStructure::ShouldSkipField(const FormFieldData& field) const {
   return field.is_checkable;
 }
 
-bool FormStructure::IsAutofillable(bool require_method_post) const {
+bool FormStructure::IsAutofillable() const {
   if (autofill_count() < kRequiredAutofillFields)
     return false;
 
-  return ShouldBeParsed(require_method_post);
+  return ShouldBeParsed();
 }
 
 void FormStructure::UpdateAutofillCount() {
@@ -699,7 +686,7 @@ void FormStructure::UpdateAutofillCount() {
   }
 }
 
-bool FormStructure::ShouldBeParsed(bool require_method_post) const {
+bool FormStructure::ShouldBeParsed() const {
   if (active_field_count() < kRequiredAutofillFields)
     return false;
 
@@ -714,14 +701,12 @@ bool FormStructure::ShouldBeParsed(bool require_method_post) const {
        it != end() && !has_text_field; ++it) {
     has_text_field |= (*it)->form_control_type != "select-one";
   }
-  if (!has_text_field)
-    return false;
 
-  return !require_method_post || (method_ == POST);
+  return has_text_field;
 }
 
 bool FormStructure::ShouldBeCrowdsourced() const {
-  return !has_author_specified_types_ && ShouldBeParsed(true);
+  return !has_author_specified_types_ && ShouldBeParsed();
 }
 
 void FormStructure::UpdateFromCache(const FormStructure& cached_form) {
@@ -931,7 +916,6 @@ FormData FormStructure::ToFormData() const {
   data.name = form_name_;
   data.origin = source_url_;
   data.action = target_url_;
-  data.method = base::ASCIIToUTF16(method_ == POST ? "POST" : "GET");
 
   for (size_t i = 0; i < fields_.size(); ++i) {
     data.fields.push_back(FormFieldData(*fields_[i]));

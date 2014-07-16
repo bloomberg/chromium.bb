@@ -35,8 +35,6 @@ namespace content {
 std::ostream& operator<<(std::ostream& os, const FormData& form) {
   os << base::UTF16ToUTF8(form.name)
      << " "
-     << base::UTF16ToUTF8(form.method)
-     << " "
      << form.origin.spec()
      << " "
      << form.action.spec()
@@ -64,7 +62,6 @@ class FormStructureTest {
 TEST(FormStructureTest, FieldCount) {
   scoped_ptr<FormStructure> form_structure;
   FormData form;
-  form.method = ASCIIToUTF16("post");
 
   FormFieldData field;
   field.label = ASCIIToUTF16("username");
@@ -97,7 +94,6 @@ TEST(FormStructureTest, FieldCount) {
 TEST(FormStructureTest, AutofillCount) {
   scoped_ptr<FormStructure> form_structure;
   FormData form;
-  form.method = ASCIIToUTF16("post");
 
   FormFieldData field;
   field.label = ASCIIToUTF16("username");
@@ -141,7 +137,6 @@ TEST(FormStructureTest, AutofillCount) {
 TEST(FormStructureTest, SourceURL) {
   FormData form;
   form.origin = GURL("http://www.foo.com/");
-  form.method = ASCIIToUTF16("post");
   FormStructure form_structure(form);
 
   EXPECT_EQ(form.origin, form_structure.source_url());
@@ -152,8 +147,6 @@ TEST(FormStructureTest, IsAutofillable) {
   FormData form;
 
   // We need at least three text fields to be auto-fillable.
-  form.method = ASCIIToUTF16("post");
-
   FormFieldData field;
 
   field.label = ASCIIToUTF16("username");
@@ -173,7 +166,7 @@ TEST(FormStructureTest, IsAutofillable) {
 
   form_structure.reset(new FormStructure(form));
   form_structure->DetermineHeuristicTypes(TestAutofillMetrics());
-  EXPECT_FALSE(form_structure->IsAutofillable(true));
+  EXPECT_FALSE(form_structure->IsAutofillable());
 
   // We now have three text fields, but only two auto-fillable fields.
   field.label = ASCIIToUTF16("First Name");
@@ -188,7 +181,7 @@ TEST(FormStructureTest, IsAutofillable) {
 
   form_structure.reset(new FormStructure(form));
   form_structure->DetermineHeuristicTypes(TestAutofillMetrics());
-  EXPECT_FALSE(form_structure->IsAutofillable(true));
+  EXPECT_FALSE(form_structure->IsAutofillable());
 
   // We now have three auto-fillable fields.
   field.label = ASCIIToUTF16("Email");
@@ -198,28 +191,19 @@ TEST(FormStructureTest, IsAutofillable) {
 
   form_structure.reset(new FormStructure(form));
   form_structure->DetermineHeuristicTypes(TestAutofillMetrics());
-  EXPECT_TRUE(form_structure->IsAutofillable(true));
-
-  // The method must be 'post', though we can intentionally ignore this
-  // criterion for the sake of providing a helpful warning message to the user.
-  form.method = ASCIIToUTF16("get");
-  form_structure.reset(new FormStructure(form));
-  form_structure->DetermineHeuristicTypes(TestAutofillMetrics());
-  EXPECT_FALSE(form_structure->IsAutofillable(true));
-  EXPECT_TRUE(form_structure->IsAutofillable(false));
+  EXPECT_TRUE(form_structure->IsAutofillable());
 
   // The target cannot include http(s)://*/search...
-  form.method = ASCIIToUTF16("post");
   form.action = GURL("http://google.com/search?q=hello");
   form_structure.reset(new FormStructure(form));
   form_structure->DetermineHeuristicTypes(TestAutofillMetrics());
-  EXPECT_FALSE(form_structure->IsAutofillable(true));
+  EXPECT_FALSE(form_structure->IsAutofillable());
 
   // But search can be in the URL.
   form.action = GURL("http://search.com/?q=hello");
   form_structure.reset(new FormStructure(form));
   form_structure->DetermineHeuristicTypes(TestAutofillMetrics());
-  EXPECT_TRUE(form_structure->IsAutofillable(true));
+  EXPECT_TRUE(form_structure->IsAutofillable());
 }
 
 TEST(FormStructureTest, ShouldBeParsed) {
@@ -227,8 +211,6 @@ TEST(FormStructureTest, ShouldBeParsed) {
   FormData form;
 
   // We need at least three text fields to be parseable.
-  form.method = ASCIIToUTF16("post");
-
   FormFieldData field;
   field.label = ASCIIToUTF16("username");
   field.name = ASCIIToUTF16("username");
@@ -247,7 +229,7 @@ TEST(FormStructureTest, ShouldBeParsed) {
 
   // We have only one text field, should not be parsed.
   form_structure.reset(new FormStructure(form));
-  EXPECT_FALSE(form_structure->ShouldBeParsed(true));
+  EXPECT_FALSE(form_structure->ShouldBeParsed());
 
   // We now have three text fields, though only two are auto-fillable.
   field.label = ASCIIToUTF16("First Name");
@@ -261,25 +243,21 @@ TEST(FormStructureTest, ShouldBeParsed) {
   form.fields.push_back(field);
 
   form_structure.reset(new FormStructure(form));
-  EXPECT_TRUE(form_structure->ShouldBeParsed(true));
+  EXPECT_TRUE(form_structure->ShouldBeParsed());
 
-  // The method must be 'post', though we can intentionally ignore this
-  // criterion for the sake of providing a helpful warning message to the user.
-  form.method = ASCIIToUTF16("get");
   form_structure.reset(new FormStructure(form));
-  EXPECT_FALSE(form_structure->IsAutofillable(true));
-  EXPECT_TRUE(form_structure->ShouldBeParsed(false));
+  EXPECT_FALSE(form_structure->IsAutofillable());
+  EXPECT_TRUE(form_structure->ShouldBeParsed());
 
   // The target cannot include http(s)://*/search...
-  form.method = ASCIIToUTF16("post");
   form.action = GURL("http://google.com/search?q=hello");
   form_structure.reset(new FormStructure(form));
-  EXPECT_FALSE(form_structure->ShouldBeParsed(true));
+  EXPECT_FALSE(form_structure->ShouldBeParsed());
 
   // But search can be in the URL.
   form.action = GURL("http://search.com/?q=hello");
   form_structure.reset(new FormStructure(form));
-  EXPECT_TRUE(form_structure->ShouldBeParsed(true));
+  EXPECT_TRUE(form_structure->ShouldBeParsed());
 
   // The form need only have three fields, but at least one must be a text
   // field.
@@ -301,18 +279,17 @@ TEST(FormStructureTest, ShouldBeParsed) {
   form.fields.push_back(field);
 
   form_structure.reset(new FormStructure(form));
-  EXPECT_TRUE(form_structure->ShouldBeParsed(true));
+  EXPECT_TRUE(form_structure->ShouldBeParsed());
 
   form.fields[0].form_control_type = "select-one";
   // Now, no text fields.
   form_structure.reset(new FormStructure(form));
-  EXPECT_FALSE(form_structure->ShouldBeParsed(true));
+  EXPECT_FALSE(form_structure->ShouldBeParsed());
 }
 
 TEST(FormStructureTest, HeuristicsContactInfo) {
   scoped_ptr<FormStructure> form_structure;
   FormData form;
-  form.method = ASCIIToUTF16("post");
 
   FormFieldData field;
   field.form_control_type = "text";
@@ -352,7 +329,7 @@ TEST(FormStructureTest, HeuristicsContactInfo) {
 
   form_structure.reset(new FormStructure(form));
   form_structure->DetermineHeuristicTypes(TestAutofillMetrics());
-  EXPECT_TRUE(form_structure->IsAutofillable(true));
+  EXPECT_TRUE(form_structure->IsAutofillable());
 
   // Expect the correct number of fields.
   ASSERT_EQ(8U, form_structure->field_count());
@@ -381,7 +358,6 @@ TEST(FormStructureTest, HeuristicsContactInfo) {
 TEST(FormStructureTest, HeuristicsAutocompleteAttribute) {
   scoped_ptr<FormStructure> form_structure;
   FormData form;
-  form.method = ASCIIToUTF16("post");
 
   FormFieldData field;
   field.form_control_type = "text";
@@ -403,7 +379,7 @@ TEST(FormStructureTest, HeuristicsAutocompleteAttribute) {
 
   form_structure.reset(new FormStructure(form));
   form_structure->DetermineHeuristicTypes(TestAutofillMetrics());
-  EXPECT_TRUE(form_structure->IsAutofillable(true));
+  EXPECT_TRUE(form_structure->IsAutofillable());
 
   // Expect the correct number of fields.
   ASSERT_EQ(3U, form_structure->field_count());
@@ -422,7 +398,6 @@ TEST(FormStructureTest, HeuristicsAutocompleteAttribute) {
 TEST(FormStructureTest, HeuristicsAutocompleteAttributePhoneTypes) {
   scoped_ptr<FormStructure> form_structure;
   FormData form;
-  form.method = ASCIIToUTF16("post");
 
   FormFieldData field;
   field.form_control_type = "text";
@@ -444,7 +419,7 @@ TEST(FormStructureTest, HeuristicsAutocompleteAttributePhoneTypes) {
 
   form_structure.reset(new FormStructure(form));
   form_structure->DetermineHeuristicTypes(TestAutofillMetrics());
-  EXPECT_TRUE(form_structure->IsAutofillable(true));
+  EXPECT_TRUE(form_structure->IsAutofillable());
 
   // Expect the correct number of fields.
   ASSERT_EQ(3U, form_structure->field_count());
@@ -465,7 +440,6 @@ TEST(FormStructureTest, HeuristicsAutocompleteAttributePhoneTypes) {
 TEST(FormStructureTest, AutocompleteAttributeOverridesOtherHeuristics) {
   scoped_ptr<FormStructure> form_structure;
   FormData form;
-  form.method = ASCIIToUTF16("post");
 
   // Start with a regular contact form.
   FormFieldData field;
@@ -485,7 +459,7 @@ TEST(FormStructureTest, AutocompleteAttributeOverridesOtherHeuristics) {
 
   form_structure.reset(new FormStructure(form));
   form_structure->DetermineHeuristicTypes(TestAutofillMetrics());
-  EXPECT_TRUE(form_structure->IsAutofillable(true));
+  EXPECT_TRUE(form_structure->IsAutofillable());
   EXPECT_TRUE(form_structure->ShouldBeCrowdsourced());
 
   ASSERT_EQ(3U, form_structure->field_count());
@@ -499,7 +473,7 @@ TEST(FormStructureTest, AutocompleteAttributeOverridesOtherHeuristics) {
   form.fields.front().autocomplete_attribute = "x-other";
   form_structure.reset(new FormStructure(form));
   form_structure->DetermineHeuristicTypes(TestAutofillMetrics());
-  EXPECT_FALSE(form_structure->IsAutofillable(true));
+  EXPECT_FALSE(form_structure->IsAutofillable());
   EXPECT_FALSE(form_structure->ShouldBeCrowdsourced());
 
   ASSERT_EQ(3U, form_structure->field_count());
@@ -514,7 +488,6 @@ TEST(FormStructureTest, AutocompleteAttributeOverridesOtherHeuristics) {
 // attribute.
 TEST(FormStructureTest, HeuristicsAutocompleteAttributeWithSections) {
   FormData form;
-  form.method = ASCIIToUTF16("post");
 
   FormFieldData field;
   field.form_control_type = "text";
@@ -559,7 +532,7 @@ TEST(FormStructureTest, HeuristicsAutocompleteAttributeWithSections) {
 
   FormStructure form_structure(form);
   form_structure.DetermineHeuristicTypes(TestAutofillMetrics());
-  EXPECT_TRUE(form_structure.IsAutofillable(true));
+  EXPECT_TRUE(form_structure.IsAutofillable());
 
   // Expect the correct number of fields.
   ASSERT_EQ(9U, form_structure.field_count());
@@ -578,7 +551,6 @@ TEST(FormStructureTest, HeuristicsAutocompleteAttributeWithSections) {
 // |autocomplete| attribute.
 TEST(FormStructureTest, HeuristicsAutocompleteAttributeWithSectionsDegenerate) {
   FormData form;
-  form.method = ASCIIToUTF16("post");
 
   FormFieldData field;
   field.form_control_type = "text";
@@ -622,7 +594,6 @@ TEST(FormStructureTest, HeuristicsAutocompleteAttributeWithSectionsDegenerate) {
 // |autocomplete| attribute.
 TEST(FormStructureTest, HeuristicsAutocompleteAttributeWithSectionsRepeated) {
   FormData form;
-  form.method = ASCIIToUTF16("post");
 
   FormFieldData field;
   field.form_control_type = "text";
@@ -652,7 +623,6 @@ TEST(FormStructureTest, HeuristicsAutocompleteAttributeWithSectionsRepeated) {
 // local heuristics.
 TEST(FormStructureTest, HeuristicsDontOverrideAutocompleteAttributeSections) {
   FormData form;
-  form.method = ASCIIToUTF16("post");
 
   FormFieldData field;
   field.form_control_type = "text";
@@ -689,7 +659,6 @@ TEST(FormStructureTest, HeuristicsDontOverrideAutocompleteAttributeSections) {
 TEST(FormStructureTest, HeuristicsSample8) {
   scoped_ptr<FormStructure> form_structure;
   FormData form;
-  form.method = ASCIIToUTF16("post");
 
   FormFieldData field;
   field.form_control_type = "text";
@@ -737,7 +706,7 @@ TEST(FormStructureTest, HeuristicsSample8) {
 
   form_structure.reset(new FormStructure(form));
   form_structure->DetermineHeuristicTypes(TestAutofillMetrics());
-  EXPECT_TRUE(form_structure->IsAutofillable(true));
+  EXPECT_TRUE(form_structure->IsAutofillable());
   ASSERT_EQ(10U, form_structure->field_count());
   ASSERT_EQ(9U, form_structure->autofill_count());
 
@@ -767,7 +736,6 @@ TEST(FormStructureTest, HeuristicsSample8) {
 TEST(FormStructureTest, HeuristicsSample6) {
   scoped_ptr<FormStructure> form_structure;
   FormData form;
-  form.method = ASCIIToUTF16("post");
 
   FormFieldData field;
   field.form_control_type = "text";
@@ -804,7 +772,7 @@ TEST(FormStructureTest, HeuristicsSample6) {
 
   form_structure.reset(new FormStructure(form));
   form_structure->DetermineHeuristicTypes(TestAutofillMetrics());
-  EXPECT_TRUE(form_structure->IsAutofillable(true));
+  EXPECT_TRUE(form_structure->IsAutofillable());
   ASSERT_EQ(7U, form_structure->field_count());
   ASSERT_EQ(6U, form_structure->autofill_count());
 
@@ -830,7 +798,6 @@ TEST(FormStructureTest, HeuristicsSample6) {
 TEST(FormStructureTest, HeuristicsLabelsOnly) {
   scoped_ptr<FormStructure> form_structure;
   FormData form;
-  form.method = ASCIIToUTF16("post");
 
   FormFieldData field;
   field.form_control_type = "text";
@@ -870,7 +837,7 @@ TEST(FormStructureTest, HeuristicsLabelsOnly) {
 
   form_structure.reset(new FormStructure(form));
   form_structure->DetermineHeuristicTypes(TestAutofillMetrics());
-  EXPECT_TRUE(form_structure->IsAutofillable(true));
+  EXPECT_TRUE(form_structure->IsAutofillable());
   ASSERT_EQ(8U, form_structure->field_count());
   ASSERT_EQ(7U, form_structure->autofill_count());
 
@@ -896,7 +863,6 @@ TEST(FormStructureTest, HeuristicsLabelsOnly) {
 TEST(FormStructureTest, HeuristicsCreditCardInfo) {
   scoped_ptr<FormStructure> form_structure;
   FormData form;
-  form.method = ASCIIToUTF16("post");
 
   FormFieldData field;
   field.form_control_type = "text";
@@ -928,7 +894,7 @@ TEST(FormStructureTest, HeuristicsCreditCardInfo) {
 
   form_structure.reset(new FormStructure(form));
   form_structure->DetermineHeuristicTypes(TestAutofillMetrics());
-  EXPECT_TRUE(form_structure->IsAutofillable(true));
+  EXPECT_TRUE(form_structure->IsAutofillable());
   ASSERT_EQ(6U, form_structure->field_count());
   ASSERT_EQ(5U, form_structure->autofill_count());
 
@@ -951,7 +917,6 @@ TEST(FormStructureTest, HeuristicsCreditCardInfo) {
 TEST(FormStructureTest, HeuristicsCreditCardInfoWithUnknownCardField) {
   scoped_ptr<FormStructure> form_structure;
   FormData form;
-  form.method = ASCIIToUTF16("post");
 
   FormFieldData field;
   field.form_control_type = "text";
@@ -989,7 +954,7 @@ TEST(FormStructureTest, HeuristicsCreditCardInfoWithUnknownCardField) {
 
   form_structure.reset(new FormStructure(form));
   form_structure->DetermineHeuristicTypes(TestAutofillMetrics());
-  EXPECT_TRUE(form_structure->IsAutofillable(true));
+  EXPECT_TRUE(form_structure->IsAutofillable());
   ASSERT_EQ(7U, form_structure->field_count());
   ASSERT_EQ(5U, form_structure->autofill_count());
 
@@ -1014,7 +979,6 @@ TEST(FormStructureTest, HeuristicsCreditCardInfoWithUnknownCardField) {
 TEST(FormStructureTest, ThreeAddressLines) {
   scoped_ptr<FormStructure> form_structure;
   FormData form;
-  form.method = ASCIIToUTF16("post");
 
   FormFieldData field;
   field.form_control_type = "text";
@@ -1037,7 +1001,7 @@ TEST(FormStructureTest, ThreeAddressLines) {
 
   form_structure.reset(new FormStructure(form));
   form_structure->DetermineHeuristicTypes(TestAutofillMetrics());
-  EXPECT_TRUE(form_structure->IsAutofillable(true));
+  EXPECT_TRUE(form_structure->IsAutofillable());
   ASSERT_EQ(4U, form_structure->field_count());
   ASSERT_EQ(3U, form_structure->autofill_count());
 
@@ -1055,7 +1019,6 @@ TEST(FormStructureTest, ThreeAddressLines) {
 TEST(FormStructureTest, SurplusAddressLinesIgnored) {
   scoped_ptr<FormStructure> form_structure;
   FormData form;
-  form.method = ASCIIToUTF16("post");
 
   FormFieldData field;
   field.form_control_type = "text";
@@ -1099,7 +1062,6 @@ TEST(FormStructureTest, SurplusAddressLinesIgnored) {
 TEST(FormStructureTest, ThreeAddressLinesExpedia) {
   scoped_ptr<FormStructure> form_structure;
   FormData form;
-  form.method = ASCIIToUTF16("post");
 
   FormFieldData field;
   field.form_control_type = "text";
@@ -1122,7 +1084,7 @@ TEST(FormStructureTest, ThreeAddressLinesExpedia) {
 
   form_structure.reset(new FormStructure(form));
   form_structure->DetermineHeuristicTypes(TestAutofillMetrics());
-  EXPECT_TRUE(form_structure->IsAutofillable(true));
+  EXPECT_TRUE(form_structure->IsAutofillable());
   ASSERT_EQ(4U, form_structure->field_count());
   EXPECT_EQ(3U, form_structure->autofill_count());
 
@@ -1142,7 +1104,6 @@ TEST(FormStructureTest, ThreeAddressLinesExpedia) {
 TEST(FormStructureTest, TwoAddressLinesEbay) {
   scoped_ptr<FormStructure> form_structure;
   FormData form;
-  form.method = ASCIIToUTF16("post");
 
   FormFieldData field;
   field.form_control_type = "text";
@@ -1161,7 +1122,7 @@ TEST(FormStructureTest, TwoAddressLinesEbay) {
 
   form_structure.reset(new FormStructure(form));
   form_structure->DetermineHeuristicTypes(TestAutofillMetrics());
-  EXPECT_TRUE(form_structure->IsAutofillable(true));
+  EXPECT_TRUE(form_structure->IsAutofillable());
   ASSERT_EQ(3U, form_structure->field_count());
   ASSERT_EQ(3U, form_structure->autofill_count());
 
@@ -1176,7 +1137,6 @@ TEST(FormStructureTest, TwoAddressLinesEbay) {
 TEST(FormStructureTest, HeuristicsStateWithProvince) {
   scoped_ptr<FormStructure> form_structure;
   FormData form;
-  form.method = ASCIIToUTF16("post");
 
   FormFieldData field;
   field.form_control_type = "text";
@@ -1195,7 +1155,7 @@ TEST(FormStructureTest, HeuristicsStateWithProvince) {
 
   form_structure.reset(new FormStructure(form));
   form_structure->DetermineHeuristicTypes(TestAutofillMetrics());
-  EXPECT_TRUE(form_structure->IsAutofillable(true));
+  EXPECT_TRUE(form_structure->IsAutofillable());
   ASSERT_EQ(3U, form_structure->field_count());
   ASSERT_EQ(3U, form_structure->autofill_count());
 
@@ -1211,7 +1171,6 @@ TEST(FormStructureTest, HeuristicsStateWithProvince) {
 TEST(FormStructureTest, HeuristicsWithBilling) {
   scoped_ptr<FormStructure> form_structure;
   FormData form;
-  form.method = ASCIIToUTF16("post");
 
   FormFieldData field;
   field.form_control_type = "text";
@@ -1262,7 +1221,7 @@ TEST(FormStructureTest, HeuristicsWithBilling) {
 
   form_structure.reset(new FormStructure(form));
   form_structure->DetermineHeuristicTypes(TestAutofillMetrics());
-  EXPECT_TRUE(form_structure->IsAutofillable(true));
+  EXPECT_TRUE(form_structure->IsAutofillable());
   ASSERT_EQ(11U, form_structure->field_count());
   ASSERT_EQ(11U, form_structure->autofill_count());
 
@@ -1283,7 +1242,6 @@ TEST(FormStructureTest, HeuristicsWithBilling) {
 TEST(FormStructureTest, ThreePartPhoneNumber) {
   scoped_ptr<FormStructure> form_structure;
   FormData form;
-  form.method = ASCIIToUTF16("post");
 
   FormFieldData field;
   field.form_control_type = "text";
@@ -1312,7 +1270,7 @@ TEST(FormStructureTest, ThreePartPhoneNumber) {
 
   form_structure.reset(new FormStructure(form));
   form_structure->DetermineHeuristicTypes(TestAutofillMetrics());
-  EXPECT_TRUE(form_structure->IsAutofillable(true));
+  EXPECT_TRUE(form_structure->IsAutofillable());
   ASSERT_EQ(4U, form_structure->field_count());
   ASSERT_EQ(3U, form_structure->autofill_count());
 
@@ -1331,7 +1289,6 @@ TEST(FormStructureTest, ThreePartPhoneNumber) {
 TEST(FormStructureTest, HeuristicsInfernoCC) {
   scoped_ptr<FormStructure> form_structure;
   FormData form;
-  form.method = ASCIIToUTF16("post");
 
   FormFieldData field;
   field.form_control_type = "text";
@@ -1358,7 +1315,7 @@ TEST(FormStructureTest, HeuristicsInfernoCC) {
 
   form_structure.reset(new FormStructure(form));
   form_structure->DetermineHeuristicTypes(TestAutofillMetrics());
-  EXPECT_TRUE(form_structure->IsAutofillable(true));
+  EXPECT_TRUE(form_structure->IsAutofillable());
 
   // Expect the correct number of fields.
   ASSERT_EQ(5U, form_structure->field_count());
@@ -1380,7 +1337,6 @@ TEST(FormStructureTest, HeuristicsInfernoCC) {
 TEST(FormStructureTest, CVCCodeClash) {
   scoped_ptr<FormStructure> form_structure;
   FormData form;
-  form.method = ASCIIToUTF16("post");
 
   FormFieldData field;
   field.form_control_type = "text";
@@ -1411,7 +1367,7 @@ TEST(FormStructureTest, CVCCodeClash) {
 
   form_structure.reset(new FormStructure(form));
   form_structure->DetermineHeuristicTypes(TestAutofillMetrics());
-  EXPECT_TRUE(form_structure->IsAutofillable(true));
+  EXPECT_TRUE(form_structure->IsAutofillable());
 
   // Expect the correct number of fields.
   ASSERT_EQ(6U, form_structure->field_count());
@@ -1435,7 +1391,6 @@ TEST(FormStructureTest, CVCCodeClash) {
 
 TEST(FormStructureTest, EncodeQueryRequest) {
   FormData form;
-  form.method = ASCIIToUTF16("post");
 
   FormFieldData field;
   field.form_control_type = "text";
@@ -1571,7 +1526,6 @@ TEST(FormStructureTest, EncodeUploadRequest) {
   scoped_ptr<FormStructure> form_structure;
   std::vector<ServerFieldTypeSet> possible_field_types;
   FormData form;
-  form.method = ASCIIToUTF16("post");
   form_structure.reset(new FormStructure(form));
   form_structure->DetermineHeuristicTypes(TestAutofillMetrics());
 
@@ -1729,7 +1683,6 @@ TEST(FormStructureTest, EncodeFieldAssignments) {
   scoped_ptr<FormStructure> form_structure;
   std::vector<ServerFieldTypeSet> possible_field_types;
   FormData form;
-  form.method = ASCIIToUTF16("post");
   form_structure.reset(new FormStructure(form));
   form_structure->DetermineHeuristicTypes(TestAutofillMetrics());
 
@@ -1855,7 +1808,6 @@ TEST(FormStructureTest, EncodeFieldAssignments) {
 // |available_types|.
 TEST(FormStructureTest, CheckDataPresence) {
   FormData form;
-  form.method = ASCIIToUTF16("post");
 
   FormFieldData field;
   field.form_control_type = "text";
@@ -2109,7 +2061,6 @@ TEST(FormStructureTest, CheckMultipleTypes) {
   scoped_ptr<FormStructure> form_structure;
   std::vector<ServerFieldTypeSet> possible_field_types;
   FormData form;
-  form.method = ASCIIToUTF16("post");
 
   FormFieldData field;
   field.form_control_type = "text";
@@ -2215,7 +2166,6 @@ TEST(FormStructureTest, CheckFormSignature) {
   // Check that form signature is created correctly.
   scoped_ptr<FormStructure> form_structure;
   FormData form;
-  form.method = ASCIIToUTF16("post");
 
   FormFieldData field;
   field.form_control_type = "text";
@@ -2284,7 +2234,6 @@ TEST(FormStructureTest, CheckFormSignature) {
 TEST(FormStructureTest, ToFormData) {
   FormData form;
   form.name = ASCIIToUTF16("the-name");
-  form.method = ASCIIToUTF16("POST");
   form.origin = GURL("http://cool.com");
   form.action = form.origin.Resolve("/login");
 
@@ -2315,7 +2264,6 @@ TEST(FormStructureTest, ToFormData) {
 TEST(FormStructureTest, SkipFieldTest) {
   FormData form;
   form.name = ASCIIToUTF16("the-name");
-  form.method = ASCIIToUTF16("POST");
   form.origin = GURL("http://cool.com");
   form.action = form.origin.Resolve("/login");
 

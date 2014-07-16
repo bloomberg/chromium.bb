@@ -133,7 +133,6 @@ TEST_F(AutofillDownloadTest, QueryAndUploadTest) {
   net::TestURLFetcherFactory factory;
 
   FormData form;
-  form.method = ASCIIToUTF16("post");
 
   FormFieldData field;
   field.label = ASCIIToUTF16("username");
@@ -344,7 +343,6 @@ TEST_F(AutofillDownloadTest, CacheQueryTest) {
   net::TestURLFetcherFactory factory;
 
   FormData form;
-  form.method = ASCIIToUTF16("post");
 
   FormFieldData field;
   field.form_control_type = "text";

@@ -52,7 +52,6 @@ void CreateTestFormField(const char* label,
 
 void CreateTestAddressFormData(FormData* form) {
   form->name = ASCIIToUTF16("MyForm");
-  form->method = ASCIIToUTF16("POST");
   form->origin = GURL("http://myform.com/form.html");
   form->action = GURL("http://myform.com/submit.html");
   form->user_submitted = true;

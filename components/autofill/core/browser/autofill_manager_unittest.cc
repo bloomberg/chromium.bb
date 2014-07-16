@@ -188,7 +188,6 @@ void CreateTestCreditCardFormData(FormData* form,
                                   bool is_https,
                                   bool use_month_type) {
   form->name = ASCIIToUTF16("MyForm");
-  form->method = ASCIIToUTF16("POST");
   if (is_https) {
     form->origin = GURL("https://myform.com/form.html");
     form->action = GURL("https://myform.com/submit.html");
@@ -258,7 +257,6 @@ void ExpectFilledForm(int page_id,
 
   EXPECT_EQ(expected_page_id, page_id);
   EXPECT_EQ(ASCIIToUTF16("MyForm"), filled_form.name);
-  EXPECT_EQ(ASCIIToUTF16("POST"), filled_form.method);
   if (has_credit_card_fields) {
     EXPECT_EQ(GURL("https://myform.com/form.html"), filled_form.origin);
     EXPECT_EQ(GURL("https://myform.com/submit.html"), filled_form.action);
@@ -771,7 +769,6 @@ TEST_F(AutofillManagerTest, GetProfileSuggestionsUnknownFields) {
   // Set up our form data.
   FormData form;
   form.name = ASCIIToUTF16("MyForm");
-  form.method = ASCIIToUTF16("POST");
   form.origin = GURL("http://myform.com/form.html");
   form.action = GURL("http://myform.com/submit.html");
   form.user_submitted = true;
@@ -843,64 +840,6 @@ TEST_F(AutofillManagerTest, GetProfileSuggestionsAutofillDisabledByUser) {
   autofill_manager_->set_autofill_enabled(false);
 
   const FormFieldData& field = form.fields[0];
-  GetAutofillSuggestions(form, field);
-  EXPECT_FALSE(external_delegate_->on_suggestions_returned_seen());
-}
-
-// Test that we return a warning explaining that autofill suggestions are
-// unavailable when the form method is GET rather than POST.
-TEST_F(AutofillManagerTest, GetProfileSuggestionsMethodGet) {
-  // Set up our form data.
-  FormData form;
-  test::CreateTestAddressFormData(&form);
-  form.method = ASCIIToUTF16("GET");
-  std::vector<FormData> forms(1, form);
-  FormsSeen(forms);
-
-  const FormFieldData& field = form.fields[0];
-  GetAutofillSuggestions(form, field);
-
-  // No suggestions provided, so send an empty vector as the results.
-  // This triggers the combined message send.
-  AutocompleteSuggestionsReturned(std::vector<base::string16>());
-
-  // Test that we sent the right values to the external delegate.
-  base::string16 expected_values[] = {
-    l10n_util::GetStringUTF16(IDS_AUTOFILL_WARNING_FORM_DISABLED)
-  };
-  base::string16 expected_labels[] = {base::string16()};
-  base::string16 expected_icons[] = {base::string16()};
-  int expected_unique_ids[] = {POPUP_ITEM_ID_WARNING_MESSAGE};
-  external_delegate_->CheckSuggestions(
-      kDefaultPageID, arraysize(expected_values), expected_values,
-      expected_labels, expected_icons, expected_unique_ids);
-
-  // Now add some Autocomplete suggestions. We should return the autocomplete
-  // suggestions and the warning; these will be culled by the renderer.
-  const int kPageID2 = 2;
-  GetAutofillSuggestions(kPageID2, form, field);
-
-  std::vector<base::string16> suggestions;
-  suggestions.push_back(ASCIIToUTF16("Jay"));
-  suggestions.push_back(ASCIIToUTF16("Jason"));
-  AutocompleteSuggestionsReturned(suggestions);
-
-  base::string16 expected_values2[] = {
-    l10n_util::GetStringUTF16(IDS_AUTOFILL_WARNING_FORM_DISABLED),
-    ASCIIToUTF16("Jay"),
-    ASCIIToUTF16("Jason")
-  };
-  base::string16 expected_labels2[] = { base::string16(), base::string16(),
-                                        base::string16()};
-  base::string16 expected_icons2[] = { base::string16(), base::string16(),
-                                       base::string16()};
-  int expected_unique_ids2[] = {-1, 0, 0};
-  external_delegate_->CheckSuggestions(
-      kPageID2, arraysize(expected_values2), expected_values2,
-      expected_labels2, expected_icons2, expected_unique_ids2);
-
-  // Now clear the test profiles and try again -- we shouldn't return a warning.
-  personal_data_.ClearAutofillProfiles();
   GetAutofillSuggestions(form, field);
   EXPECT_FALSE(external_delegate_->on_suggestions_returned_seen());
 }
@@ -1803,7 +1742,6 @@ TEST_F(AutofillManagerTest, FillFormWithAuthorSpecifiedSections) {
   // The billing section includes both address and credit card fields.
   FormData form;
   form.name = ASCIIToUTF16("MyForm");
-  form.method = ASCIIToUTF16("POST");
   form.origin = GURL("https://myform.com/form.html");
   form.action = GURL("https://myform.com/submit.html");
   form.user_submitted = true;
@@ -1868,7 +1806,6 @@ TEST_F(AutofillManagerTest, FillFormWithAuthorSpecifiedSections) {
     SCOPED_TRACE("Unnamed section");
     EXPECT_EQ(kDefaultPageID, response_page_id);
     EXPECT_EQ(ASCIIToUTF16("MyForm"), response_data.name);
-    EXPECT_EQ(ASCIIToUTF16("POST"), response_data.method);
     EXPECT_EQ(GURL("https://myform.com/form.html"), response_data.origin);
     EXPECT_EQ(GURL("https://myform.com/submit.html"), response_data.action);
     EXPECT_TRUE(response_data.user_submitted);
@@ -1900,7 +1837,6 @@ TEST_F(AutofillManagerTest, FillFormWithAuthorSpecifiedSections) {
     SCOPED_TRACE("Billing address");
     EXPECT_EQ(kPageID2, response_page_id);
     EXPECT_EQ(ASCIIToUTF16("MyForm"), response_data.name);
-    EXPECT_EQ(ASCIIToUTF16("POST"), response_data.method);
     EXPECT_EQ(GURL("https://myform.com/form.html"), response_data.origin);
     EXPECT_EQ(GURL("https://myform.com/submit.html"), response_data.action);
     EXPECT_TRUE(response_data.user_submitted);
@@ -1933,7 +1869,6 @@ TEST_F(AutofillManagerTest, FillFormWithAuthorSpecifiedSections) {
     SCOPED_TRACE("Credit card");
     EXPECT_EQ(kPageID3, response_page_id);
     EXPECT_EQ(ASCIIToUTF16("MyForm"), response_data.name);
-    EXPECT_EQ(ASCIIToUTF16("POST"), response_data.method);
     EXPECT_EQ(GURL("https://myform.com/form.html"), response_data.origin);
     EXPECT_EQ(GURL("https://myform.com/submit.html"), response_data.action);
     EXPECT_TRUE(response_data.user_submitted);
@@ -2106,7 +2041,6 @@ TEST_F(AutofillManagerTest, FillPhoneNumber) {
   // In the other form, rely on the autocompletetype attribute.
   FormData form_with_maxlength;
   form_with_maxlength.name = ASCIIToUTF16("MyMaxlengthPhoneForm");
-  form_with_maxlength.method = ASCIIToUTF16("POST");
   form_with_maxlength.origin = GURL("http://myform.com/phone_form.html");
   form_with_maxlength.action = GURL("http://myform.com/phone_submit.html");
   form_with_maxlength.user_submitted = true;
@@ -2341,7 +2275,6 @@ TEST_F(AutofillManagerTest, FormSubmittedAutocompleteEnabled) {
   // Set up our form data.
   FormData form;
   test::CreateTestAddressFormData(&form);
-  form.method = ASCIIToUTF16("GET");
   MockAutocompleteHistoryManager* m = static_cast<
       MockAutocompleteHistoryManager*>(
           autofill_manager_->autocomplete_history_manager_.get());
@@ -2362,7 +2295,6 @@ TEST_F(AutofillManagerTest, AutocompleteSuggestionsWhenAutofillDisabled) {
   // Set up our form data.
   FormData form;
   test::CreateTestAddressFormData(&form);
-  form.method = ASCIIToUTF16("GET");
   std::vector<FormData> forms(1, form);
   FormsSeen(forms);
   const FormFieldData& field = form.fields[0];
@@ -2517,7 +2449,6 @@ TEST_F(AutofillManagerTest, AuxiliaryProfilesReset) {
 TEST_F(AutofillManagerTest, DeterminePossibleFieldTypesForUpload) {
   FormData form;
   form.name = ASCIIToUTF16("MyForm");
-  form.method = ASCIIToUTF16("POST");
   form.origin = GURL("http://myform.com/form.html");
   form.action = GURL("http://myform.com/submit.html");
   form.user_submitted = true;

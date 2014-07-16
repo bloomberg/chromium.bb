@@ -38,10 +38,6 @@ class SavePasswordProgressLogger {
     STRING_DECISION_ASK,
     STRING_DECISION_DROP,
     STRING_DECISION_SAVE,
-    STRING_METHOD,
-    STRING_METHOD_GET,
-    STRING_METHOD_POST,
-    STRING_METHOD_EMPTY,
     STRING_OTHER,
     STRING_SCHEME_HTML,
     STRING_SCHEME_BASIC,
@@ -114,7 +110,6 @@ class SavePasswordProgressLogger {
   void LogPasswordForm(StringID label, const PasswordForm& form);
   void LogHTMLForm(StringID label,
                    const std::string& name_or_id,
-                   const std::string& method,
                    const GURL& action);
   void LogURL(StringID label, const GURL& url);
   void LogBoolean(StringID label, bool truth_value);

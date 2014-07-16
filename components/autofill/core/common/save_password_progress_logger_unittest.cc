@@ -86,13 +86,11 @@ TEST(SavePasswordProgressLoggerTest, LogHTMLForm) {
   TestLogger logger;
   logger.LogHTMLForm(SavePasswordProgressLogger::STRING_MESSAGE,
                      "form_name",
-                     "post",
                      GURL("http://example.org/verysecret?verysecret"));
   SCOPED_TRACE(testing::Message() << "Log string = ["
                                   << logger.accumulated_log() << "]");
   EXPECT_TRUE(logger.LogsContainSubstring(kTestString));
   EXPECT_TRUE(logger.LogsContainSubstring("form_name"));
-  EXPECT_TRUE(logger.LogsContainSubstring("POST"));
   EXPECT_TRUE(logger.LogsContainSubstring("http://example.org"));
   EXPECT_FALSE(logger.LogsContainSubstring("verysecret"));
 }

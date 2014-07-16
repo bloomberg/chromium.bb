@@ -28,8 +28,6 @@ struct FormData {
 
   // The name of the form.
   base::string16 name;
-  // GET or POST.
-  base::string16 method;
   // The URL (minus query parameters) containing the form.
   GURL origin;
   // The action target of the form.

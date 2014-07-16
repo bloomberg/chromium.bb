@@ -89,7 +89,6 @@ class AutocompleteHistoryManagerTest : public testing::Test {
 TEST_F(AutocompleteHistoryManagerTest, CreditCardNumberValue) {
   FormData form;
   form.name = ASCIIToUTF16("MyForm");
-  form.method = ASCIIToUTF16("POST");
   form.origin = GURL("http://myform.com/form.html");
   form.action = GURL("http://myform.com/submit.html");
   form.user_submitted = true;
@@ -112,7 +111,6 @@ TEST_F(AutocompleteHistoryManagerTest, CreditCardNumberValue) {
 TEST_F(AutocompleteHistoryManagerTest, NonCreditCardNumberValue) {
   FormData form;
   form.name = ASCIIToUTF16("MyForm");
-  form.method = ASCIIToUTF16("POST");
   form.origin = GURL("http://myform.com/form.html");
   form.action = GURL("http://myform.com/submit.html");
   form.user_submitted = true;
@@ -133,7 +131,6 @@ TEST_F(AutocompleteHistoryManagerTest, NonCreditCardNumberValue) {
 TEST_F(AutocompleteHistoryManagerTest, SSNValue) {
   FormData form;
   form.name = ASCIIToUTF16("MyForm");
-  form.method = ASCIIToUTF16("POST");
   form.origin = GURL("http://myform.com/form.html");
   form.action = GURL("http://myform.com/submit.html");
   form.user_submitted = true;
@@ -153,7 +150,6 @@ TEST_F(AutocompleteHistoryManagerTest, SSNValue) {
 TEST_F(AutocompleteHistoryManagerTest, SearchField) {
   FormData form;
   form.name = ASCIIToUTF16("MyForm");
-  form.method = ASCIIToUTF16("POST");
   form.origin = GURL("http://myform.com/form.html");
   form.action = GURL("http://myform.com/submit.html");
   form.user_submitted = true;
@@ -237,7 +233,6 @@ TEST_F(AutocompleteHistoryManagerTest, NoAutocompleteSuggestionsForTextarea) {
 
   FormData form;
   form.name = ASCIIToUTF16("MyForm");
-  form.method = ASCIIToUTF16("POST");
   form.origin = GURL("http://myform.com/form.html");
   form.action = GURL("http://myform.com/submit.html");
   form.user_submitted = true;

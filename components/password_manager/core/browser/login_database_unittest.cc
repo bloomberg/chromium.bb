@@ -134,7 +134,6 @@ TEST_F(LoginDatabaseTest, Logins) {
   form.scheme = PasswordForm::SCHEME_HTML;
   form.times_used = 1;
   form.form_data.name = ASCIIToUTF16("form_name");
-  form.form_data.method = ASCIIToUTF16("POST");
   form.date_synced = base::Time::Now();
 
   // Add it and make sure it is there and that all the fields were retrieved

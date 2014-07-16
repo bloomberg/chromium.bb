@@ -347,7 +347,6 @@ class AutofillDialogControllerTest : public InProcessBrowserTest {
 
     FormData form;
     form.name = ASCIIToUTF16("TestForm");
-    form.method = ASCIIToUTF16("POST");
     form.user_submitted = true;
 
     FormFieldData field;

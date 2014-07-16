@@ -283,7 +283,6 @@ TEST_F(AutofillMetricsTest, QualityMetrics) {
   // Set up our form data.
   FormData form;
   form.name = ASCIIToUTF16("TestForm");
-  form.method = ASCIIToUTF16("POST");
   form.origin = GURL("http://example.com/form.html");
   form.action = GURL("http://example.com/submit.html");
   form.user_submitted = true;
@@ -391,7 +390,6 @@ TEST_F(AutofillMetricsTest, SaneMetricsWithCacheMismatch) {
   // Set up our form data.
   FormData form;
   form.name = ASCIIToUTF16("TestForm");
-  form.method = ASCIIToUTF16("POST");
   form.origin = GURL("http://example.com/form.html");
   form.action = GURL("http://example.com/submit.html");
   form.user_submitted = true;
@@ -493,7 +491,6 @@ TEST_F(AutofillMetricsTest, DeveloperEngagement) {
   // Start with a non-fillable form.
   FormData form;
   form.name = ASCIIToUTF16("TestForm");
-  form.method = ASCIIToUTF16("POST");
   form.origin = GURL("http://example.com/form.html");
   form.action = GURL("http://example.com/submit.html");
 
@@ -602,7 +599,6 @@ TEST_F(AutofillMetricsTest, AddressSuggestionsCount) {
   // Set up our form data.
   FormData form;
   form.name = ASCIIToUTF16("TestForm");
-  form.method = ASCIIToUTF16("POST");
   form.origin = GURL("http://example.com/form.html");
   form.action = GURL("http://example.com/submit.html");
   form.user_submitted = true;
@@ -691,7 +687,6 @@ TEST_F(AutofillMetricsTest, UserHappinessFormLoadAndSubmission) {
   // Start with a form with insufficiently many fields.
   FormData form;
   form.name = ASCIIToUTF16("TestForm");
-  form.method = ASCIIToUTF16("POST");
   form.origin = GURL("http://example.com/form.html");
   form.action = GURL("http://example.com/submit.html");
   form.user_submitted = true;
@@ -825,7 +820,6 @@ TEST_F(AutofillMetricsTest, UserHappinessFormInteraction) {
   // Load a fillable form.
   FormData form;
   form.name = ASCIIToUTF16("TestForm");
-  form.method = ASCIIToUTF16("POST");
   form.origin = GURL("http://example.com/form.html");
   form.action = GURL("http://example.com/submit.html");
   form.user_submitted = true;
@@ -932,7 +926,6 @@ TEST_F(AutofillMetricsTest, FormFillDuration) {
   // Load a fillable form.
   FormData form;
   form.name = ASCIIToUTF16("TestForm");
-  form.method = ASCIIToUTF16("POST");
   form.origin = GURL("http://example.com/form.html");
   form.action = GURL("http://example.com/submit.html");
   form.user_submitted = true;

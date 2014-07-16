@@ -39,14 +39,6 @@ std::string GetStringFromID(SavePasswordProgressLogger::StringID id) {
       return "Decision: DROP the password";
     case SavePasswordProgressLogger::STRING_DECISION_SAVE:
       return "Decision: SAVE the password";
-    case SavePasswordProgressLogger::STRING_METHOD:
-      return "Form method";
-    case SavePasswordProgressLogger::STRING_METHOD_GET:
-      return "GET";
-    case SavePasswordProgressLogger::STRING_METHOD_POST:
-      return "POST";
-    case SavePasswordProgressLogger::STRING_METHOD_EMPTY:
-      return "(empty)";
     case SavePasswordProgressLogger::STRING_OTHER:
       return "(other)";
     case SavePasswordProgressLogger::STRING_SCHEME_HTML:
@@ -223,21 +215,6 @@ std::string FormSchemeToString(PasswordForm::Scheme scheme) {
   return GetStringFromID(result_id);
 }
 
-std::string FormMethodToString(const std::string& method) {
-  std::string method_processed;
-  base::TrimWhitespaceASCII(
-      StringToLowerASCII(method), base::TRIM_ALL, &method_processed);
-  SavePasswordProgressLogger::StringID result_id =
-      SavePasswordProgressLogger::STRING_OTHER;
-  if (method_processed.empty())
-    result_id = SavePasswordProgressLogger::STRING_METHOD_EMPTY;
-  else if (method_processed == "get")
-    result_id = SavePasswordProgressLogger::STRING_METHOD_GET;
-  else if (method_processed == "post")
-    result_id = SavePasswordProgressLogger::STRING_METHOD_POST;
-  return GetStringFromID(result_id);
-}
-
 }  // namespace
 
 SavePasswordProgressLogger::SavePasswordProgressLogger() {
@@ -281,11 +258,9 @@ void SavePasswordProgressLogger::LogPasswordForm(
 void SavePasswordProgressLogger::LogHTMLForm(
     SavePasswordProgressLogger::StringID label,
     const std::string& name_or_id,
-    const std::string& method,
     const GURL& action) {
   DictionaryValue log;
   log.SetString(GetStringFromID(STRING_NAME_OR_ID), ScrubElementID(name_or_id));
-  log.SetString(GetStringFromID(STRING_METHOD), FormMethodToString(method));
   log.SetString(GetStringFromID(STRING_ACTION), ScrubURL(action));
   LogValue(label, log);
 }

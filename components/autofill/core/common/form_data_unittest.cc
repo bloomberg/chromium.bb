@@ -13,7 +13,6 @@ namespace autofill {
 TEST(FormDataTest, SerializeAndDeserialize) {
   FormData data;
   data.name = base::ASCIIToUTF16("name");
-  data.method = base::ASCIIToUTF16("POST");
   data.origin = GURL("origin");
   data.action = GURL("action");
   data.user_submitted = true;

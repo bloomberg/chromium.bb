@@ -56,7 +56,6 @@ FormData::FormData()
 
 FormData::FormData(const FormData& data)
     : name(data.name),
-      method(data.method),
       origin(data.origin),
       action(data.action),
       user_submitted(data.user_submitted),
@@ -68,7 +67,6 @@ FormData::~FormData() {
 
 bool FormData::operator==(const FormData& form) const {
   return name == form.name &&
-         StringToLowerASCII(method) == StringToLowerASCII(form.method) &&
          origin == form.origin &&
          action == form.action &&
          user_submitted == form.user_submitted &&
@@ -82,8 +80,6 @@ bool FormData::operator!=(const FormData& form) const {
 bool FormData::operator<(const FormData& form) const {
   if (name != form.name)
     return name < form.name;
-  if (StringToLowerASCII(method) != StringToLowerASCII(form.method))
-    return StringToLowerASCII(method) < StringToLowerASCII(form.method);
   if (origin != form.origin)
     return origin < form.origin;
   if (action != form.action)
@@ -95,7 +91,6 @@ bool FormData::operator<(const FormData& form) const {
 
 std::ostream& operator<<(std::ostream& os, const FormData& form) {
   os << base::UTF16ToUTF8(form.name) << " "
-     << base::UTF16ToUTF8(form.method) << " "
      << form.origin << " "
      << form.action << " "
      << form.user_submitted << " "
@@ -109,7 +104,6 @@ std::ostream& operator<<(std::ostream& os, const FormData& form) {
 void SerializeFormData(const FormData& form_data, Pickle* pickle) {
   pickle->WriteInt(kPickleVersion);
   pickle->WriteString16(form_data.name);
-  pickle->WriteString16(form_data.method);
   pickle->WriteString(form_data.origin.spec());
   pickle->WriteString(form_data.action.spec());
   pickle->WriteBool(form_data.user_submitted);
@@ -126,7 +120,6 @@ bool DeserializeFormData(PickleIterator* iter, FormData* form_data) {
   switch (version) {
     case 1: {
       if (!iter->ReadString16(&form_data->name) ||
-          !iter->ReadString16(&form_data->method) ||
           !ReadGURL(iter, &form_data->origin) ||
           !ReadGURL(iter, &form_data->action) ||
           !iter->ReadBool(&form_data->user_submitted) ||

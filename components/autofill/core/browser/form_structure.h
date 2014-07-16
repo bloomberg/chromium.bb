@@ -20,11 +20,6 @@
 #include "components/autofill/core/common/web_element_descriptor.h"
 #include "url/gurl.h"
 
-enum RequestMethod {
-  GET,
-  POST
-};
-
 enum UploadRequired {
   UPLOAD_NOT_REQUIRED,
   UPLOAD_REQUIRED,
@@ -96,9 +91,8 @@ class FormStructure {
   std::string FormSignature() const;
 
   // Runs a quick heuristic to rule out forms that are obviously not
-  // auto-fillable, like google/yahoo/msn search, etc. The requirement that the
-  // form's method be POST is only applied if |require_method_post| is true.
-  bool IsAutofillable(bool require_method_post) const;
+  // auto-fillable, like google/yahoo/msn search, etc.
+  bool IsAutofillable() const;
 
   // Resets |autofill_count_| and counts the number of auto-fillable fields.
   // This is used when we receive server data for form fields.  At that time,
@@ -107,9 +101,7 @@ class FormStructure {
   void UpdateAutofillCount();
 
   // Returns true if this form matches the structural requirements for Autofill.
-  // The requirement that the form's method be POST is only applied if
-  // |require_method_post| is true.
-  bool ShouldBeParsed(bool require_method_post) const;
+  bool ShouldBeParsed() const;
 
   // Returns true if we should query the crowdsourcing server to determine this
   // form's field types.  If the form includes author-specified types, this will
@@ -253,9 +245,6 @@ class FormStructure {
   // Whether the server expects us to always upload, never upload, or default
   // to the stored upload rates.
   UploadRequired upload_required_;
-
-  // GET or POST.
-  RequestMethod method_;
 
   // Whether the form includes any field types explicitly specified by the site
   // author, via the |autocompletetype| attribute.

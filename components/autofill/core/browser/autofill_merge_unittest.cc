@@ -185,7 +185,6 @@ void AutofillMergeTest::MergeProfiles(const std::string& profiles,
   // Create a test form.
   FormData form;
   form.name = base::ASCIIToUTF16("MyTestForm");
-  form.method = base::ASCIIToUTF16("POST");
   form.origin = GURL("https://www.example.com/origin.html");
   form.action = GURL("https://www.example.com/action.html");
   form.user_submitted = true;
