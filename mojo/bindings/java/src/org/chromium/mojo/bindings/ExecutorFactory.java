@@ -68,7 +68,8 @@ class ExecutorFactory {
             mWaiter = core.getDefaultAsyncWaiter();
             assert mWaiter != null;
             mLock = new Object();
-            Pair<MessagePipeHandle, MessagePipeHandle> handles = core.createMessagePipe();
+            Pair<MessagePipeHandle, MessagePipeHandle> handles = core.createMessagePipe(
+                    new MessagePipeHandle.CreateOptions());
             mReadHandle = handles.first;
             mWriteHandle = handles.second;
             mPendingActions = new ArrayList<Runnable>();

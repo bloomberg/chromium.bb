@@ -45,7 +45,7 @@ public class MessageTest extends MojoTestCase {
         Core core = CoreImpl.getInstance();
         mData = TestUtils.newRandomBuffer(DATA_SIZE);
         mMessageReceiver = new RecordingMessageReceiver();
-        mHandles = core.createMessagePipe();
+        mHandles = core.createMessagePipe(new MessagePipeHandle.CreateOptions());
         Pair<DataPipe.ProducerHandle, DataPipe.ConsumerHandle> datapipe = core.createDataPipe(null);
         mHandlesToSend.addAll(Arrays.asList(datapipe.first, datapipe.second));
         mHandlesToClose.addAll(Arrays.asList(mHandles.first, mHandles.second));

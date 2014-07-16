@@ -12,6 +12,51 @@ import java.util.List;
  * can contain plain data and/or Mojo handles.
  */
 public interface MessagePipeHandle extends Handle {
+
+    /**
+     * Flags for the message pipe creation operation.
+     */
+    public static class CreateFlags extends Flags<CreateFlags> {
+        private static final int FLAG_NONE = 0;
+
+        /**
+         * Immutable flag with not bit set.
+         */
+        public static final CreateFlags NONE = CreateFlags.none().immutable();
+
+        /**
+         * Dedicated constructor.
+         *
+         * @param flags initial value of the flags.
+         */
+        protected CreateFlags(int flags) {
+            super(flags);
+        }
+
+        /**
+         * @return flags with no bit set.
+         */
+        public static CreateFlags none() {
+            return new CreateFlags(FLAG_NONE);
+        }
+
+    }
+
+    /**
+     * Used to specify creation parameters for a message pipe to |Core#createMessagePipe()|.
+     */
+    public static class CreateOptions {
+        private CreateFlags mFlags = CreateFlags.NONE;
+
+        /**
+         * @return the flags
+         */
+        public CreateFlags getFlags() {
+            return mFlags;
+        }
+
+    }
+
     /**
      * Flags for the write operations on MessagePipeHandle .
      */

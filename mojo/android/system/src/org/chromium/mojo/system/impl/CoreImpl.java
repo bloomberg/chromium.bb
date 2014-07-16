@@ -109,11 +109,18 @@ public class CoreImpl implements Core, AsyncWaiter {
     }
 
     /**
-     * @see Core#createMessagePipe()
+     * @see Core#createMessagePipe(MessagePipeHandle.CreateOptions)
      */
     @Override
-    public Pair<MessagePipeHandle, MessagePipeHandle> createMessagePipe() {
-        NativeCreationResult result = nativeCreateMessagePipe();
+    public Pair<MessagePipeHandle, MessagePipeHandle> createMessagePipe(
+            MessagePipeHandle.CreateOptions options) {
+        ByteBuffer optionsBuffer = null;
+        if (options != null) {
+            optionsBuffer = allocateDirectBuffer(8);
+            optionsBuffer.putInt(0, 8);
+            optionsBuffer.putInt(4, options.getFlags().getFlags());
+        }
+        NativeCreationResult result = nativeCreateMessagePipe(optionsBuffer);
         if (result.getMojoResult() != MojoResult.OK) {
             throw new MojoException(result.getMojoResult());
         }
@@ -611,7 +618,7 @@ public class CoreImpl implements Core, AsyncWaiter {
 
     private native int nativeWaitMany(ByteBuffer buffer, long deadline);
 
-    private native NativeCreationResult nativeCreateMessagePipe();
+    private native NativeCreationResult nativeCreateMessagePipe(ByteBuffer optionsBuffer);
 
     private native NativeCreationResult nativeCreateDataPipe(ByteBuffer optionsBuffer);
 

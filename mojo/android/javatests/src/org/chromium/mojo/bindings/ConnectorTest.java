@@ -42,7 +42,8 @@ public class ConnectorTest extends MojoTestCase {
     protected void setUp() throws Exception {
         super.setUp();
         Core core = CoreImpl.getInstance();
-        Pair<MessagePipeHandle, MessagePipeHandle> handles = core.createMessagePipe();
+        Pair<MessagePipeHandle, MessagePipeHandle> handles = core.createMessagePipe(
+                new MessagePipeHandle.CreateOptions());
         mHandle = handles.first;
         mConnector = new Connector(handles.second);
         mReceiver = new RecordingMessageReceiver();

@@ -75,11 +75,21 @@ static jint WaitMany(JNIEnv* env,
   return MojoWaitMany(handle_start, signals_start, nb_handles, deadline);
 }
 
-static jobject CreateMessagePipe(JNIEnv* env, jobject jcaller) {
+static jobject CreateMessagePipe(JNIEnv* env,
+                                 jobject jcaller,
+                                 jobject options_buffer) {
+  const MojoCreateMessagePipeOptions* options = NULL;
+  if (options_buffer) {
+    const void* buffer_start = env->GetDirectBufferAddress(options_buffer);
+    DCHECK(buffer_start);
+    const size_t buffer_size = env->GetDirectBufferCapacity(options_buffer);
+    DCHECK_EQ(buffer_size, sizeof(MojoCreateMessagePipeOptions));
+    options = static_cast<const MojoCreateMessagePipeOptions*>(buffer_start);
+    DCHECK_EQ(options->struct_size, buffer_size);
+  }
   MojoHandle handle1;
   MojoHandle handle2;
-  // TODO(vtl): Add support for the options struct.
-  MojoResult result = MojoCreateMessagePipe(NULL, &handle1, &handle2);
+  MojoResult result = MojoCreateMessagePipe(options, &handle1, &handle2);
   return Java_CoreImpl_newNativeCreationResult(env, result, handle1, handle2)
       .Release();
 }

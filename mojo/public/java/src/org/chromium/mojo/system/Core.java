@@ -149,11 +149,12 @@ public interface Core {
 
     /**
      * Creates a message pipe, which is a bidirectional communication channel for framed data (i.e.,
-     * messages). Messages can contain plain data and/or Mojo handles.
+     * messages), with the given options. Messages can contain plain data and/or Mojo handles.
      *
      * @return the set of handles for the two endpoints (ports) of the message pipe.
      */
-    public Pair<MessagePipeHandle, MessagePipeHandle> createMessagePipe();
+    public Pair<MessagePipeHandle, MessagePipeHandle> createMessagePipe(
+            MessagePipeHandle.CreateOptions options);
 
     /**
      * Creates a data pipe, which is a unidirectional communication channel for unframed data, with

@@ -174,7 +174,7 @@ public class CoreImplTest extends MojoTestCase {
     @SmallTest
     public void testWaitMany() {
         Core core = CoreImpl.getInstance();
-        Pair<MessagePipeHandle, MessagePipeHandle> handles = core.createMessagePipe();
+        Pair<MessagePipeHandle, MessagePipeHandle> handles = core.createMessagePipe(null);
         addHandlePairToClose(handles);
 
         List<Pair<Handle, Core.HandleSignals>> handlesToWaitOn = new ArrayList<
@@ -204,7 +204,7 @@ public class CoreImplTest extends MojoTestCase {
     public void testGetCore() {
         Core core = CoreImpl.getInstance();
 
-        Pair<? extends Handle, ? extends Handle> handles = core.createMessagePipe();
+        Pair<? extends Handle, ? extends Handle> handles = core.createMessagePipe(null);
         addHandlePairToClose(handles);
         assertEquals(core, handles.first.getCore());
         assertEquals(core, handles.second.getCore());
@@ -222,13 +222,31 @@ public class CoreImplTest extends MojoTestCase {
         assertEquals(core, handle2.getCore());
     }
 
+    private static void createAndCloseMessagePipe(MessagePipeHandle.CreateOptions options) {
+        Core core = CoreImpl.getInstance();
+        Pair<MessagePipeHandle, MessagePipeHandle> handles = core.createMessagePipe(options);
+        handles.first.close();
+        handles.second.close();
+    }
+
+    /**
+     * Testing {@link MessagePipeHandle} creation.
+     */
+    @SmallTest
+    public void testMessagePipeCreation() {
+        // Test creation with null options.
+        createAndCloseMessagePipe(null);
+        // Test creation with default options.
+        createAndCloseMessagePipe(new MessagePipeHandle.CreateOptions());
+    }
+
     /**
      * Testing {@link MessagePipeHandle}.
      */
     @SmallTest
     public void testMessagePipeEmpty() {
         Core core = CoreImpl.getInstance();
-        Pair<MessagePipeHandle, MessagePipeHandle> handles = core.createMessagePipe();
+        Pair<MessagePipeHandle, MessagePipeHandle> handles = core.createMessagePipe(null);
         addHandlePairToClose(handles);
         // Testing wait.
         assertEquals(MojoResult.OK,
@@ -248,7 +266,7 @@ public class CoreImplTest extends MojoTestCase {
         assertEquals(MojoResult.CANCELLED,
                 handles.first.wait(Core.HandleSignals.READABLE, 1000000L));
 
-        handles = core.createMessagePipe();
+        handles = core.createMessagePipe(null);
         addHandlePairToClose(handles);
 
         // Closing the other pipe while waiting.
@@ -269,7 +287,7 @@ public class CoreImplTest extends MojoTestCase {
     @SmallTest
     public void testMessagePipeSend() {
         Core core = CoreImpl.getInstance();
-        Pair<MessagePipeHandle, MessagePipeHandle> handles = core.createMessagePipe();
+        Pair<MessagePipeHandle, MessagePipeHandle> handles = core.createMessagePipe(null);
         addHandlePairToClose(handles);
 
         checkSendingMessage(handles.first, handles.second);
@@ -283,7 +301,7 @@ public class CoreImplTest extends MojoTestCase {
     public void testMessagePipeReceiveOnSmallBuffer() {
         Random random = new Random();
         Core core = CoreImpl.getInstance();
-        Pair<MessagePipeHandle, MessagePipeHandle> handles = core.createMessagePipe();
+        Pair<MessagePipeHandle, MessagePipeHandle> handles = core.createMessagePipe(null);
         addHandlePairToClose(handles);
 
         // Writing a random 8 bytes message.
@@ -307,8 +325,8 @@ public class CoreImplTest extends MojoTestCase {
     @SmallTest
     public void testMessagePipeSendHandles() {
         Core core = CoreImpl.getInstance();
-        Pair<MessagePipeHandle, MessagePipeHandle> handles = core.createMessagePipe();
-        Pair<MessagePipeHandle, MessagePipeHandle> handlesToShare = core.createMessagePipe();
+        Pair<MessagePipeHandle, MessagePipeHandle> handles = core.createMessagePipe(null);
+        Pair<MessagePipeHandle, MessagePipeHandle> handlesToShare = core.createMessagePipe(null);
         addHandlePairToClose(handles);
         addHandlePairToClose(handlesToShare);
 
@@ -509,7 +527,7 @@ public class CoreImplTest extends MojoTestCase {
         // Until the behavior is changed on the C++ side, handle gracefully 2 different use case:
         // - Receive a INVALID_ARGUMENT exception
         // - Receive an invalid handle on the other side.
-        Pair<MessagePipeHandle, MessagePipeHandle> handles = core.createMessagePipe();
+        Pair<MessagePipeHandle, MessagePipeHandle> handles = core.createMessagePipe(null);
         addHandlePairToClose(handles);
         try {
             handles.first.writeMessage(null, Collections.<Handle> singletonList(handle),
@@ -567,7 +585,7 @@ public class CoreImplTest extends MojoTestCase {
         Core core = CoreImpl.getInstance();
 
         // Checking a correct result.
-        Pair<MessagePipeHandle, MessagePipeHandle> handles = core.createMessagePipe();
+        Pair<MessagePipeHandle, MessagePipeHandle> handles = core.createMessagePipe(null);
         addHandlePairToClose(handles);
         final AsyncWaiterResult asyncWaiterResult = new AsyncWaiterResult();
         assertEquals(Integer.MIN_VALUE, asyncWaiterResult.getResult());
@@ -593,7 +611,7 @@ public class CoreImplTest extends MojoTestCase {
         Core core = CoreImpl.getInstance();
 
         // Closing the peer handle.
-        Pair<MessagePipeHandle, MessagePipeHandle> handles = core.createMessagePipe();
+        Pair<MessagePipeHandle, MessagePipeHandle> handles = core.createMessagePipe(null);
         addHandlePairToClose(handles);
 
         final AsyncWaiterResult asyncWaiterResult = new AsyncWaiterResult();
@@ -623,7 +641,7 @@ public class CoreImplTest extends MojoTestCase {
         Core core = CoreImpl.getInstance();
 
         // Closing the peer handle.
-        Pair<MessagePipeHandle, MessagePipeHandle> handles = core.createMessagePipe();
+        Pair<MessagePipeHandle, MessagePipeHandle> handles = core.createMessagePipe(null);
         addHandlePairToClose(handles);
 
         final AsyncWaiterResult asyncWaiterResult = new AsyncWaiterResult();
@@ -654,7 +672,7 @@ public class CoreImplTest extends MojoTestCase {
         Core core = CoreImpl.getInstance();
 
         // Closing the peer handle.
-        Pair<MessagePipeHandle, MessagePipeHandle> handles = core.createMessagePipe();
+        Pair<MessagePipeHandle, MessagePipeHandle> handles = core.createMessagePipe(null);
         addHandlePairToClose(handles);
 
         final AsyncWaiterResult asyncWaiterResult = new AsyncWaiterResult();
@@ -704,7 +722,7 @@ public class CoreImplTest extends MojoTestCase {
         Core core = CoreImpl.getInstance();
 
         // Closing the peer handle.
-        Pair<MessagePipeHandle, MessagePipeHandle> handles = core.createMessagePipe();
+        Pair<MessagePipeHandle, MessagePipeHandle> handles = core.createMessagePipe(null);
         addHandlePairToClose(handles);
 
         final AsyncWaiterResult asyncWaiterResult = new AsyncWaiterResult();
@@ -729,7 +747,7 @@ public class CoreImplTest extends MojoTestCase {
         Core core = CoreImpl.getInstance();
 
         // Closing the peer handle.
-        Pair<MessagePipeHandle, MessagePipeHandle> handles = core.createMessagePipe();
+        Pair<MessagePipeHandle, MessagePipeHandle> handles = core.createMessagePipe(null);
         addHandlePairToClose(handles);
 
         final AsyncWaiterResult asyncWaiterResult = new AsyncWaiterResult();
@@ -765,7 +783,7 @@ public class CoreImplTest extends MojoTestCase {
         Core core = CoreImpl.getInstance();
 
         // Closing the peer handle.
-        Pair<MessagePipeHandle, MessagePipeHandle> handles = core.createMessagePipe();
+        Pair<MessagePipeHandle, MessagePipeHandle> handles = core.createMessagePipe(null);
         addHandlePairToClose(handles);
 
         final AsyncWaiterResult asyncWaiterResult = new AsyncWaiterResult();
@@ -790,7 +808,7 @@ public class CoreImplTest extends MojoTestCase {
     @SmallTest
     public void testMessagePipeHandlePass() {
         Core core = CoreImpl.getInstance();
-        Pair<MessagePipeHandle, MessagePipeHandle> handles = core.createMessagePipe();
+        Pair<MessagePipeHandle, MessagePipeHandle> handles = core.createMessagePipe(null);
         addHandlePairToClose(handles);
 
         assertTrue(handles.first.isValid());
