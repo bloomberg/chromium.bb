@@ -102,22 +102,8 @@
         <structure type="chrome_scaled_image" name="IDR_AURA_CURSOR_GRABBING" file="common/pointers/hand3.png" />
       </if>
       <if expr="toolkit_views">
-        <structure type="chrome_scaled_image" name="IDR_AURA_SHADOW_ACTIVE_BOTTOM" file="common/window_shadow_active_bottom.png" />
-        <structure type="chrome_scaled_image" name="IDR_AURA_SHADOW_ACTIVE_BOTTOM_LEFT" file="common/window_shadow_active_bottom_left.png" />
-        <structure type="chrome_scaled_image" name="IDR_AURA_SHADOW_ACTIVE_BOTTOM_RIGHT" file="common/window_shadow_active_bottom_right.png" />
-        <structure type="chrome_scaled_image" name="IDR_AURA_SHADOW_ACTIVE_LEFT" file="common/window_shadow_active_left.png" />
-        <structure type="chrome_scaled_image" name="IDR_AURA_SHADOW_ACTIVE_RIGHT" file="common/window_shadow_active_right.png" />
-        <structure type="chrome_scaled_image" name="IDR_AURA_SHADOW_ACTIVE_TOP" file="common/window_shadow_active_top.png" />
-        <structure type="chrome_scaled_image" name="IDR_AURA_SHADOW_ACTIVE_TOP_LEFT" file="common/window_shadow_active_top_left.png" />
-        <structure type="chrome_scaled_image" name="IDR_AURA_SHADOW_ACTIVE_TOP_RIGHT" file="common/window_shadow_active_top_right.png" />
-        <structure type="chrome_scaled_image" name="IDR_AURA_SHADOW_INACTIVE_BOTTOM" file="common/window_shadow_inactive_bottom.png" />
-        <structure type="chrome_scaled_image" name="IDR_AURA_SHADOW_INACTIVE_BOTTOM_LEFT" file="common/window_shadow_inactive_bottom_left.png" />
-        <structure type="chrome_scaled_image" name="IDR_AURA_SHADOW_INACTIVE_BOTTOM_RIGHT" file="common/window_shadow_inactive_bottom_right.png" />
-        <structure type="chrome_scaled_image" name="IDR_AURA_SHADOW_INACTIVE_LEFT" file="common/window_shadow_inactive_left.png" />
-        <structure type="chrome_scaled_image" name="IDR_AURA_SHADOW_INACTIVE_RIGHT" file="common/window_shadow_inactive_right.png" />
-        <structure type="chrome_scaled_image" name="IDR_AURA_SHADOW_INACTIVE_TOP" file="common/window_shadow_inactive_top.png" />
-        <structure type="chrome_scaled_image" name="IDR_AURA_SHADOW_INACTIVE_TOP_LEFT" file="common/window_shadow_inactive_top_left.png" />
-        <structure type="chrome_scaled_image" name="IDR_AURA_SHADOW_INACTIVE_TOP_RIGHT" file="common/window_shadow_inactive_top_right.png" />
+        <structure type="chrome_scaled_image" name="IDR_AURA_SHADOW_ACTIVE" file="common/window_shadow_active.png" />
+        <structure type="chrome_scaled_image" name="IDR_AURA_SHADOW_INACTIVE" file="common/window_shadow_inactive.png" />
       </if>
       <structure type="chrome_scaled_image" name="IDR_BACK_ARROW" file="common/back_arrow.png" />
       <structure type="chrome_scaled_image" name="IDR_FORWARD_ARROW" file="common/forward_arrow.png" />
@@ -555,6 +541,7 @@
         <structure type="chrome_scaled_image" name="IDR_WINDOW_BUBBLE_SHADOW_SPIKE_BIG_LEFT" file="common/window_bubble_shadow_spike_big_left.png" />
         <structure type="chrome_scaled_image" name="IDR_WINDOW_BUBBLE_SHADOW_SPIKE_BIG_RIGHT" file="common/window_bubble_shadow_spike_big_right.png" />
         <structure type="chrome_scaled_image" name="IDR_WINDOW_BUBBLE_SHADOW_SPIKE_BIG_TOP" file="common/window_bubble_shadow_spike_big_top.png" />
+        <structure type="chrome_scaled_image" name="IDR_WINDOW_BUBBLE_SHADOW_SMALL" file="common/window_bubble_shadow_small.png" />
         <structure type="chrome_scaled_image" name="IDR_WINDOW_BUBBLE_SHADOW_SMALL_BOTTOM" file="common/window_bubble_shadow_small_bottom.png" />
         <structure type="chrome_scaled_image" name="IDR_WINDOW_BUBBLE_SHADOW_SMALL_BOTTOM_LEFT" file="common/window_bubble_shadow_small_bottom_left.png" />
         <structure type="chrome_scaled_image" name="IDR_WINDOW_BUBBLE_SHADOW_SMALL_BOTTOM_RIGHT" file="common/window_bubble_shadow_small_bottom_right.png" />

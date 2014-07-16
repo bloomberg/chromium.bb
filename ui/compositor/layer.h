@@ -36,6 +36,7 @@ class CopyOutputRequest;
 class DelegatedFrameProvider;
 class DelegatedRendererLayer;
 class Layer;
+class NinePatchLayer;
 class ResourceUpdateQueue;
 class SolidColorLayer;
 class TextureLayer;
@@ -276,6 +277,15 @@ class COMPOSITOR_EXPORT Layer
   // Sets the layer's fill color.  May only be called for LAYER_SOLID_COLOR.
   void SetColor(SkColor color);
 
+  // Updates the nine patch layer's bitmap and aperture. May only be called for
+  // LAYER_NINE_PATCH.
+  void UpdateNinePatchLayerBitmap(const SkBitmap& bitmap,
+                                  const gfx::Rect& aperture);
+
+  // Updates the nine patch layer's border. May only be called for
+  // LAYER_NINE_PATCH.
+  void UpdateNinePatchLayerBorder(const gfx::Rect& border);
+
   // Adds |invalid_rect| to the Layer's pending invalid rect and calls
   // ScheduleDraw(). Returns false if the paint request is ignored.
   bool SchedulePaint(const gfx::Rect& invalid_rect);
@@ -469,6 +479,7 @@ class COMPOSITOR_EXPORT Layer
   // Ownership of the layer is held through one of the strongly typed layer
   // pointers, depending on which sort of layer this is.
   scoped_refptr<cc::Layer> content_layer_;
+  scoped_refptr<cc::NinePatchLayer> nine_patch_layer_;
   scoped_refptr<cc::TextureLayer> texture_layer_;
   scoped_refptr<cc::SolidColorLayer> solid_color_layer_;
   scoped_refptr<cc::DelegatedRendererLayer> delegated_renderer_layer_;

@@ -17,6 +17,9 @@ enum LayerType {
 
   // A layer that's drawn as a single color.
   LAYER_SOLID_COLOR = 2,
+
+  // A layer based on the NinePatchLayer class.
+  LAYER_NINE_PATCH = 3,
 };
 
 }  // namespace ui

@@ -55,6 +55,9 @@ void PrintLayerHierarchyImp(const Layer* layer,
     case ui::LAYER_SOLID_COLOR:
       *out << L" solid";
       break;
+    case ui::LAYER_NINE_PATCH:
+      *out << L" nine_patch";
+      break;
   }
 
   if (!layer->visible())
