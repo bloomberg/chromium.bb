@@ -59,7 +59,8 @@ class ExternalInstallManager : public ExtensionRegistryObserver,
   virtual void OnExtensionLoaded(content::BrowserContext* browser_context,
                                  const Extension* extension) OVERRIDE;
   virtual void OnExtensionInstalled(content::BrowserContext* browser_context,
-                                    const Extension* extension) OVERRIDE;
+                                    const Extension* extension,
+                                    bool is_update) OVERRIDE;
   virtual void OnExtensionUninstalled(content::BrowserContext* browser_context,
                                       const Extension* extension) OVERRIDE;
 

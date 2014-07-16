@@ -1820,7 +1820,7 @@ void ExtensionService::FinishInstallation(
   AddExtension(extension);
 
   // Notify observers that need to know when an installation is complete.
-  registry_->TriggerOnInstalled(extension);
+  registry_->TriggerOnInstalled(extension, is_update);
 
   // Check extensions that may have been delayed only because this shared module
   // was not available.
@@ -1878,7 +1878,7 @@ void ExtensionService::PromoteEphemeralApp(
     registry_->TriggerOnLoaded(extension);
   }
 
-  registry_->TriggerOnInstalled(extension);
+  registry_->TriggerOnInstalled(extension, true);
 
   if (!is_from_sync && extension_sync_service_)
     extension_sync_service_->SyncExtensionChangeIfNeeded(*extension);

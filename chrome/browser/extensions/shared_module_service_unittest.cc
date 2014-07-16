@@ -25,15 +25,18 @@ namespace {
 // Return an extension with |id| which imports a module with the given
 // |import_id|.
 scoped_refptr<Extension> CreateExtensionImportingModule(
-    const std::string& import_id, const std::string& id) {
-  scoped_ptr<base::DictionaryValue> manifest =
-      DictionaryBuilder()
-          .Set("name", "Has Dependent Modules")
-          .Set("version", "1.0")
-          .Set("manifest_version", 2)
-          .Set("import",
-               ListBuilder().Append(DictionaryBuilder().Set("id", import_id)))
-          .Build();
+    const std::string& import_id,
+    const std::string& id,
+    const std::string& version) {
+  DictionaryBuilder builder;
+  builder.Set("name", "Has Dependent Modules")
+         .Set("version", version)
+         .Set("manifest_version", 2);
+  if (!import_id.empty()) {
+    builder.Set("import",
+                ListBuilder().Append(DictionaryBuilder().Set("id", import_id)));
+  }
+  scoped_ptr<base::DictionaryValue> manifest = builder.Build();
 
   return ExtensionBuilder().SetManifest(manifest.Pass())
                            .AddFlags(Extension::FROM_WEBSTORE)
@@ -53,27 +56,37 @@ class SharedModuleServiceUnitTest : public ExtensionServiceTestBase {
   virtual void SetUp() OVERRIDE;
 
   // Install an extension and notify the ExtensionService.
-  testing::AssertionResult InstallExtension(const Extension* extension);
+  testing::AssertionResult InstallExtension(const Extension* extension,
+                                            bool is_update);
   ScopedCurrentChannel current_channel_;
 };
 
 void SharedModuleServiceUnitTest::SetUp() {
   ExtensionServiceTestBase::SetUp();
   InitializeGoodInstalledExtensionService();
-  service_->Init();
+  service()->Init();
 }
 
 testing::AssertionResult SharedModuleServiceUnitTest::InstallExtension(
-    const Extension* extension) {
-  // Verify the extension is not already installed.
-  if (registry()->GetExtensionById(extension->id(),
-                                   ExtensionRegistry::ENABLED)) {
-    return testing::AssertionFailure() << "Extension already installed.";
+    const Extension* extension,
+    bool is_update) {
+
+  const Extension* old = registry()->GetExtensionById(
+      extension->id(),
+      ExtensionRegistry::ENABLED);
+
+  // Verify the extension is not already installed, if it is not update.
+  if (!is_update) {
+    if (old)
+      return testing::AssertionFailure() << "Extension already installed.";
+  } else {
+    if (!old)
+      return testing::AssertionFailure() << "The extension does not exist.";
   }
 
   // Notify the service that the extension is installed. This adds it to the
   // registry, notifies interested parties, etc.
-  service_->OnExtensionInstalled(
+  service()->OnExtensionInstalled(
       extension, syncer::StringOrdinal(), kInstallFlagInstallImmediately);
 
   // Verify that the extension is now installed.
@@ -90,17 +103,17 @@ TEST_F(SharedModuleServiceUnitTest, AddDependentSharedModules) {
   std::string import_id = id_util::GenerateId("id");
   std::string extension_id = id_util::GenerateId("extension_id");
   scoped_refptr<Extension> extension =
-      CreateExtensionImportingModule(import_id, extension_id);
+      CreateExtensionImportingModule(import_id, extension_id, "1.0");
 
   PendingExtensionManager* pending_extension_manager =
-      service_->pending_extension_manager();
+      service()->pending_extension_manager();
 
   // Verify that we don't currently want to install the imported module.
   EXPECT_FALSE(pending_extension_manager->IsIdPending(import_id));
 
   // Try to satisfy imports for the extension. This should queue the imported
   // module's installation.
-  service_->shared_module_service()->SatisfyImports(extension);
+  service()->shared_module_service()->SatisfyImports(extension);
   EXPECT_TRUE(pending_extension_manager->IsIdPending(import_id));
 }
 
@@ -120,17 +133,17 @@ TEST_F(SharedModuleServiceUnitTest, PruneSharedModulesOnUninstall) {
                         .SetID(id_util::GenerateId("shared_module"))
                         .Build();
 
-  EXPECT_TRUE(InstallExtension(shared_module));
+  EXPECT_TRUE(InstallExtension(shared_module, false));
 
   std::string extension_id = id_util::GenerateId("extension_id");
   // Create and install an extension that imports our new module.
   scoped_refptr<Extension> importing_extension =
-      CreateExtensionImportingModule(shared_module->id(), extension_id);
-  EXPECT_TRUE(InstallExtension(importing_extension));
+      CreateExtensionImportingModule(shared_module->id(), extension_id, "1.0");
+  EXPECT_TRUE(InstallExtension(importing_extension, false));
 
   // Uninstall the extension that imports our module.
   base::string16 error;
-  service_->UninstallExtension(importing_extension->id(),
+  service()->UninstallExtension(importing_extension->id(),
                                ExtensionService::UNINSTALL_REASON_FOR_TESTING,
                                &error);
   EXPECT_TRUE(error.empty());
@@ -140,6 +153,77 @@ TEST_F(SharedModuleServiceUnitTest, PruneSharedModulesOnUninstall) {
   // depended upon it.
   EXPECT_FALSE(registry()->GetExtensionById(shared_module->id(),
                                             ExtensionRegistry::EVERYTHING));
+}
+
+TEST_F(SharedModuleServiceUnitTest, PruneSharedModulesOnUpdate) {
+  // Create two modules which export a resource, and install them.
+  scoped_ptr<base::DictionaryValue> manifest_1 =
+      DictionaryBuilder()
+          .Set("name", "Shared Module 1")
+          .Set("version", "1.0")
+          .Set("manifest_version", 2)
+          .Set("export",
+               DictionaryBuilder().Set("resources",
+                                       ListBuilder().Append("foo.js"))).Build();
+  scoped_refptr<Extension> shared_module_1 =
+      ExtensionBuilder().SetManifest(manifest_1.Pass())
+                        .AddFlags(Extension::FROM_WEBSTORE)
+                        .SetID(id_util::GenerateId("shared_module_1"))
+                        .Build();
+  EXPECT_TRUE(InstallExtension(shared_module_1, false));
+
+  scoped_ptr<base::DictionaryValue> manifest_2 =
+      DictionaryBuilder()
+          .Set("name", "Shared Module 2")
+          .Set("version", "1.0")
+          .Set("manifest_version", 2)
+          .Set("export",
+               DictionaryBuilder().Set("resources",
+                                       ListBuilder().Append("foo.js"))).Build();
+  scoped_refptr<Extension> shared_module_2 =
+      ExtensionBuilder().SetManifest(manifest_2.Pass())
+                        .AddFlags(Extension::FROM_WEBSTORE)
+                        .SetID(id_util::GenerateId("shared_module_2"))
+                        .Build();
+  EXPECT_TRUE(InstallExtension(shared_module_2, false));
+
+  std::string extension_id = id_util::GenerateId("extension_id");
+
+  // Create and install an extension v1.0 that imports our new module 1.
+  scoped_refptr<Extension> importing_extension_1 =
+      CreateExtensionImportingModule(shared_module_1->id(),
+                                     extension_id,
+                                     "1.0");
+  EXPECT_TRUE(InstallExtension(importing_extension_1, false));
+
+  // Create and install a new version of the extension that imports our new
+  // module 2.
+  scoped_refptr<Extension> importing_extension_2 =
+      CreateExtensionImportingModule(shared_module_2->id(),
+                                     extension_id,
+                                     "1.1");
+  EXPECT_TRUE(InstallExtension(importing_extension_2, true));
+
+  // Since the extension v1.1 depends the module 2 insteand module 1.
+  // So the module 1 should be uninstalled.
+  EXPECT_FALSE(registry()->GetExtensionById(shared_module_1->id(),
+                                            ExtensionRegistry::EVERYTHING));
+  EXPECT_TRUE(registry()->GetExtensionById(shared_module_2->id(),
+                                            ExtensionRegistry::EVERYTHING));
+
+  // Create and install a new version of the extension that does not import any
+  // module.
+  scoped_refptr<Extension> importing_extension_3 =
+      CreateExtensionImportingModule("", extension_id, "1.2");
+  EXPECT_TRUE(InstallExtension(importing_extension_3, true));
+
+  // Since the extension v1.2 does not depend any module, so the all models
+  // should have been uninstalled.
+  EXPECT_FALSE(registry()->GetExtensionById(shared_module_1->id(),
+                                            ExtensionRegistry::EVERYTHING));
+  EXPECT_FALSE(registry()->GetExtensionById(shared_module_2->id(),
+                                            ExtensionRegistry::EVERYTHING));
+
 }
 
 TEST_F(SharedModuleServiceUnitTest, WhitelistedImports) {
@@ -163,17 +247,21 @@ TEST_F(SharedModuleServiceUnitTest, WhitelistedImports) {
                         .SetID(id_util::GenerateId("shared_module"))
                         .Build();
 
-  EXPECT_TRUE(InstallExtension(shared_module));
+  EXPECT_TRUE(InstallExtension(shared_module, false));
 
   // Create and install an extension with the whitelisted ID.
   scoped_refptr<Extension> whitelisted_extension =
-      CreateExtensionImportingModule(shared_module->id(), whitelisted_id);
-  EXPECT_TRUE(InstallExtension(whitelisted_extension));
+      CreateExtensionImportingModule(shared_module->id(),
+                                     whitelisted_id,
+                                     "1.0");
+  EXPECT_TRUE(InstallExtension(whitelisted_extension, false));
 
   // Try to install an extension with an ID that is not whitelisted.
   scoped_refptr<Extension> nonwhitelisted_extension =
-      CreateExtensionImportingModule(shared_module->id(), nonwhitelisted_id);
-  EXPECT_FALSE(InstallExtension(nonwhitelisted_extension));
+      CreateExtensionImportingModule(shared_module->id(),
+                                     nonwhitelisted_id,
+                                     "1.0");
+  EXPECT_FALSE(InstallExtension(nonwhitelisted_extension, false));
 }
 
 }  // namespace extensions

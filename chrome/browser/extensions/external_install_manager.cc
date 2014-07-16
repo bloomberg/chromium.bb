@@ -175,7 +175,8 @@ void ExternalInstallManager::OnExtensionLoaded(
 
 void ExternalInstallManager::OnExtensionInstalled(
     content::BrowserContext* browser_context,
-    const Extension* extension) {
+    const Extension* extension,
+    bool is_update) {
   // Certain extension locations are specific enough that we can
   // auto-acknowledge any extension that came from one of them.
   if (Manifest::IsPolicyLocation(extension->location()) ||

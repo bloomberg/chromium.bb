@@ -63,7 +63,8 @@ class ExtensionRegistryObserver {
   // extension is tracked in one of the ExtensionRegistry sets, but is not
   // necessarily enabled.
   virtual void OnExtensionInstalled(content::BrowserContext* browser_context,
-                                    const Extension* extension) {}
+                                    const Extension* extension,
+                                    bool is_update) {}
 
   // Called after an extension is uninstalled. The extension no longer exists in
   // any of the ExtensionRegistry sets (enabled, disabled, etc.).

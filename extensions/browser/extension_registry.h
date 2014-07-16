@@ -88,7 +88,8 @@ class ExtensionRegistry : public KeyedService {
 
   // Invokes the observer method OnExtensionInstalled(). The extension must be
   // contained in one of the registry's extension sets.
-  void TriggerOnInstalled(const Extension* extension);
+  void TriggerOnInstalled(const Extension* extension,
+                          bool is_update);
 
   // Invokes the observer method OnExtensionUninstalled(). The extension must
   // not be any installed extension with |extension|'s ID.

@@ -285,7 +285,8 @@ void HotwordService::InstallHotwordExtensionFromWebstore() {
 
 void HotwordService::OnExtensionInstalled(
     content::BrowserContext* browser_context,
-    const extensions::Extension* extension) {
+    const extensions::Extension* extension,
+    bool is_update) {
 
   if (extension->id() != extension_misc::kHotwordExtensionId ||
       profile_ != Profile::FromBrowserContext(browser_context))

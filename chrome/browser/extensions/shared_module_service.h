@@ -55,7 +55,13 @@ class SharedModuleService : public ExtensionRegistryObserver {
   scoped_ptr<ExtensionSet> GetDependentExtensions(const Extension* extension);
 
  private:
+  // Uninstall shared modules which are not used by other extensions.
+  void PruneSharedModules();
+
   // ExtensionRegistryObserver implementation.
+  virtual void OnExtensionInstalled(content::BrowserContext* browser_context,
+                                    const Extension* extension,
+                                    bool is_update) OVERRIDE;
   virtual void OnExtensionUninstalled(content::BrowserContext* browser_context,
                                       const Extension* extension) OVERRIDE;
 

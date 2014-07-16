@@ -226,7 +226,8 @@ void ErrorConsole::OnExtensionLoaded(content::BrowserContext* browser_context,
 
 void ErrorConsole::OnExtensionInstalled(
     content::BrowserContext* browser_context,
-    const Extension* extension) {
+    const Extension* extension,
+    bool is_update) {
   // We don't want to have manifest errors from previous installs. We want
   // to keep runtime errors, though, because extensions are reloaded on a
   // refresh of chrome:extensions, and we don't want to wipe our history

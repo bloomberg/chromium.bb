@@ -947,7 +947,8 @@ void ManagementEventRouter::OnExtensionUnloaded(
 
 void ManagementEventRouter::OnExtensionInstalled(
     content::BrowserContext* browser_context,
-    const Extension* extension) {
+    const Extension* extension,
+    bool is_update) {
   BroadcastEvent(extension, management::OnInstalled::kEventName);
 }
 

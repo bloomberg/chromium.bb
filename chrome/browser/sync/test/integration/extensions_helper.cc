@@ -157,7 +157,8 @@ class ExtensionsMatchChecker : public StatusChangeChecker,
       extensions::UnloadedExtensionInfo::Reason reason) OVERRIDE;
   virtual void OnExtensionInstalled(
       content::BrowserContext* browser_context,
-      const extensions::Extension* extension) OVERRIDE;
+      const extensions::Extension* extension,
+      bool is_update) OVERRIDE;
   virtual void OnExtensionUninstalled(
       content::BrowserContext* browser_context,
       const extensions::Extension* extension) OVERRIDE;
@@ -222,7 +223,8 @@ void ExtensionsMatchChecker::OnExtensionUnloaded(
 
 void ExtensionsMatchChecker::OnExtensionInstalled(
     content::BrowserContext* browser_context,
-    const extensions::Extension* extension) {
+    const extensions::Extension* extension,
+    bool is_update) {
   CheckExitCondition();
 }
 

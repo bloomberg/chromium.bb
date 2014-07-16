@@ -67,11 +67,13 @@ void ExtensionRegistry::TriggerOnWillBeInstalled(const Extension* extension,
           browser_context_, extension, is_update, from_ephemeral, old_name));
 }
 
-void ExtensionRegistry::TriggerOnInstalled(const Extension* extension) {
+void ExtensionRegistry::TriggerOnInstalled(const Extension* extension,
+                                           bool is_update) {
   DCHECK(GenerateInstalledExtensionsSet()->Contains(extension->id()));
   FOR_EACH_OBSERVER(ExtensionRegistryObserver,
                     observers_,
-                    OnExtensionInstalled(browser_context_, extension));
+                    OnExtensionInstalled(
+                        browser_context_, extension, is_update));
 }
 
 void ExtensionRegistry::TriggerOnUninstalled(const Extension* extension) {

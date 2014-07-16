@@ -200,7 +200,8 @@ class WebstoreInstaller : public content::NotificationObserver,
 
   // ExtensionRegistryObserver.
   virtual void OnExtensionInstalled(content::BrowserContext* browser_context,
-                                    const Extension* extension) OVERRIDE;
+                                    const Extension* extension,
+                                    bool is_update) OVERRIDE;
 
   // Removes the reference to the delegate passed in the constructor. Used when
   // the delegate object must be deleted before this object.

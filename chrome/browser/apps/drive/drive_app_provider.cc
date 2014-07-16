@@ -221,7 +221,8 @@ void DriveAppProvider::OnDriveAppRegistryUpdated() {
 
 void DriveAppProvider::OnExtensionInstalled(
     content::BrowserContext* browser_context,
-    const Extension* extension) {
+    const Extension* extension,
+    bool is_update) {
   // Bail if the |extension| is installed from a converter. The post install
   // processing will be handled in OnLocalAppConverted.
   if (!pending_converters_.empty() &&

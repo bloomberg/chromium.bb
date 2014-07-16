@@ -619,7 +619,8 @@ void SyncFileSystemService::OnRemoteServiceStateUpdated(
 
 void SyncFileSystemService::OnExtensionInstalled(
     content::BrowserContext* browser_context,
-    const Extension* extension) {
+    const Extension* extension,
+    bool is_update) {
   GURL app_origin = Extension::GetBaseURLFromExtensionId(extension->id());
   DVLOG(1) << "Handle extension notification for INSTALLED: " << app_origin;
   // NOTE: When an app is uninstalled and re-installed in a sequence,

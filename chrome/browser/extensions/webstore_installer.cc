@@ -385,7 +385,8 @@ void WebstoreInstaller::Observe(int type,
 
 void WebstoreInstaller::OnExtensionInstalled(
     content::BrowserContext* browser_context,
-    const Extension* extension) {
+    const Extension* extension,
+    bool is_update) {
   CHECK(profile_->IsSameProfile(Profile::FromBrowserContext(browser_context)));
   if (pending_modules_.empty())
     return;
