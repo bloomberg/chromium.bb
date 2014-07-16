@@ -142,7 +142,7 @@ class EnumValue(Definition):
   def __init__(self, name, value, **kwargs):
     # The optional value is either an int (which is current a string) or a
     # "wrapped identifier".
-    assert value is None or isinstance(value, str) or isinstance(value, tuple)
+    assert value is None or isinstance(value, (str, tuple))
     super(EnumValue, self).__init__(name, **kwargs)
     self.value = value
 
@@ -233,21 +233,45 @@ class Ordinal(NodeBase):
 class Parameter(NodeBase):
   """Represents a method request or response parameter."""
 
-  def __init__(self, typename, name, ordinal, **kwargs):
+  def __init__(self, name, ordinal, typename, **kwargs):
+    assert isinstance(name, str)
     assert ordinal is None or isinstance(ordinal, Ordinal)
+    assert isinstance(typename, str)
     super(Parameter, self).__init__(**kwargs)
-    self.typename = typename
     self.name = name
     self.ordinal = ordinal
+    self.typename = typename
 
   def __eq__(self, other):
     return super(Parameter, self).__eq__(other) and \
-           self.typename == other.typename and \
            self.name == other.name and \
-           self.ordinal == other.ordinal
+           self.ordinal == other.ordinal and \
+           self.typename == other.typename
 
 
 class ParameterList(NodeListBase):
   """Represents a list of (method request or response) parameters."""
 
   _list_item_type = Parameter
+
+
+class StructField(Definition):
+  """Represents a struct field definition."""
+
+  def __init__(self, name, ordinal, typename, default_value, **kwargs):
+    assert isinstance(name, str)
+    assert ordinal is None or isinstance(ordinal, Ordinal)
+    assert isinstance(typename, str)
+    # The optional default value is currently either a value as a string or a
+    # "wrapped identifier".
+    assert default_value is None or isinstance(default_value, (str, tuple))
+    super(StructField, self).__init__(name, **kwargs)
+    self.ordinal = ordinal
+    self.typename = typename
+    self.default_value = default_value
+
+  def __eq__(self, other):
+    return super(StructField, self).__eq__(other) and \
+           self.ordinal == other.ordinal and \
+           self.typename == other.typename and \
+           self.default_value == other.default_value

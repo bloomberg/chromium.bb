@@ -181,13 +181,15 @@ class Parser(object):
 
   def p_field(self, p):
     """field : typename NAME ordinal default SEMI"""
-    p[0] = ('FIELD', p[1], p[2], p[3], p[4])
+    p[0] = ast.StructField(p[2], p[3], p[1], p[4])
 
-  def p_default(self, p):
-    """default : EQUALS constant
-               | """
-    if len(p) > 2:
-      p[0] = p[2]
+  def p_default_1(self, p):
+    """default : """
+    p[0] = None
+
+  def p_default_2(self, p):
+    """default : EQUALS constant"""
+    p[0] = p[2]
 
   def p_interface(self, p):
     """interface : attribute_section INTERFACE NAME LBRACE interface_body \
@@ -231,7 +233,7 @@ class Parser(object):
 
   def p_parameter(self, p):
     """parameter : typename NAME ordinal"""
-    p[0] = ast.Parameter(p[1], p[2], p[3],
+    p[0] = ast.Parameter(p[2], p[3], p[1],
                          filename=self.filename, lineno=p.lineno(2))
 
   def p_typename(self, p):

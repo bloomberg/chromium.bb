@@ -67,13 +67,6 @@ def _AttributeListToDict(attribute_list):
   return dict([(attribute.key, attribute.value)
                    for attribute in attribute_list])
 
-def _MapField(tree):
-  assert tree[3] is None or isinstance(tree[3], ast.Ordinal)
-  return {'name': tree[2],
-          'kind': _MapKind(tree[1]),
-          'ordinal': tree[3].value if tree[3] else None,
-          'default': tree[4]}
-
 def _MapMethod(tree):
   assert isinstance(tree[2], ast.ParameterList)
   assert tree[3] is None or isinstance(tree[3], ast.Ordinal)
@@ -93,10 +86,19 @@ def _MapMethod(tree):
   return method
 
 def _MapStruct(tree):
+  def StructFieldToDict(struct_field):
+    assert isinstance(struct_field, ast.StructField)
+    return {'name': struct_field.name,
+            'kind': _MapKind(struct_field.typename),
+            'ordinal': struct_field.ordinal.value \
+                if struct_field.ordinal else None,
+            'default': struct_field.default_value}
+
   struct = {}
   struct['name'] = tree[1]
   struct['attributes'] = _AttributeListToDict(tree[2])
-  struct['fields'] = _MapTreeForName(_MapField, tree[3], 'FIELD')
+  struct['fields'] = _MapTreeForType(StructFieldToDict, tree[3],
+                                     ast.StructField)
   struct['enums'] = _MapTreeForType(_MapEnum, tree[3], ast.Enum)
   struct['constants'] = _MapTreeForType(_MapConstant, tree[3], ast.Const)
   return struct
