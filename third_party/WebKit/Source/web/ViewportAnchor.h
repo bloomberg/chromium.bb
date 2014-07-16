@@ -54,7 +54,7 @@ namespace blink {
 // its orientation relative to the node, and the viewport origin maintains its
 // orientation relative to the anchor.
 class ViewportAnchor {
-    WTF_MAKE_NONCOPYABLE(ViewportAnchor);
+    STACK_ALLOCATED();
 public:
     explicit ViewportAnchor(WebCore::EventHandler* eventHandler);
 
@@ -63,11 +63,11 @@ public:
     WebCore::IntPoint computeOrigin(const WebCore::IntSize& currentViewSize) const;
 
 private:
-    WebCore::EventHandler* m_eventHandler;
+    RawPtrWillBeMember<WebCore::EventHandler> m_eventHandler;
 
     WebCore::IntRect m_viewRect;
 
-    RefPtrWillBePersistent<WebCore::Node> m_anchorNode;
+    RefPtrWillBeMember<WebCore::Node> m_anchorNode;
     WebCore::LayoutRect m_anchorNodeBounds;
 
     WebCore::FloatSize m_anchorInViewCoords;
