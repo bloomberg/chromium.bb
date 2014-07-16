@@ -131,6 +131,7 @@ def method_context(interface, method):
         'cpp_type': (v8_types.cpp_template_type('Nullable', idl_type.cpp_type)
                      if idl_type.is_explicit_nullable else idl_type.cpp_type),
         'cpp_value': this_cpp_value,
+        'cpp_type_initializer': idl_type.cpp_type_initializer,
         'custom_registration_extended_attributes':
             CUSTOM_REGISTRATION_EXTENDED_ATTRIBUTES.intersection(
                 extended_attributes.iterkeys()),

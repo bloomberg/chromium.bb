@@ -190,13 +190,33 @@ def cpp_type(idl_type, extended_attributes=None, raw_type=False, used_as_argumen
     return base_idl_type + '*'
 
 
+def cpp_type_initializer(idl_type):
+    """Returns a string containing a C++ initialization statement for the
+    corresponding type.
+
+    |idl_type| argument is of type IdlType.
+    """
+
+    if (idl_type.is_numeric_type):
+        return ' = 0'
+    if idl_type.base_type == 'boolean':
+        return ' = false'
+    return ''
+
+
 def cpp_type_union(idl_type, extended_attributes=None, raw_type=False):
     return (member_type.cpp_type for member_type in idl_type.member_types)
 
 
+def cpp_type_initializer_union(idl_type):
+    return (member_type.cpp_type_initializer for member_type in idl_type.member_types)
+
+
 # Allow access as idl_type.cpp_type if no arguments
 IdlType.cpp_type = property(cpp_type)
+IdlType.cpp_type_initializer = property(cpp_type_initializer)
 IdlUnionType.cpp_type = property(cpp_type_union)
+IdlUnionType.cpp_type_initializer = property(cpp_type_initializer_union)
 IdlType.cpp_type_args = cpp_type
 IdlUnionType.cpp_type_args = cpp_type_union
 

@@ -321,6 +321,10 @@ class IdlUnionType(object):
         return False
 
     @property
+    def is_string_type(self):
+        return False
+
+    @property
     def is_sequence(self):
         # We do not support sequences of union types
         return False

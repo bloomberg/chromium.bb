@@ -4920,7 +4920,7 @@ static void readonlyShortAttributeAttributeGetter(const v8::PropertyCallbackInfo
 {
     v8::Handle<v8::Object> holder = info.Holder();
     TestObject* impl = V8TestObject::toNative(holder);
-    int result;
+    int result = 0;
     if (!readonlyShortAttributeAttributeGetterImplementedInPrivateScript(toFrameIfNotDetached(info.GetIsolate()->GetCurrentContext()), impl, &result))
         return;
     v8SetReturnValueInt(info, result);
@@ -4996,7 +4996,7 @@ static void shortAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Val
 {
     v8::Handle<v8::Object> holder = info.Holder();
     TestObject* impl = V8TestObject::toNative(holder);
-    int result;
+    int result = 0;
     if (!shortAttributeAttributeGetterImplementedInPrivateScript(toFrameIfNotDetached(info.GetIsolate()->GetCurrentContext()), impl, &result))
         return;
     v8SetReturnValueInt(info, result);
@@ -10164,7 +10164,7 @@ static bool shortMethodImplementedInPrivateScriptMethodImplementedInPrivateScrip
 static void shortMethodImplementedInPrivateScriptMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toNative(info.Holder());
-    int result;
+    int result = 0;
     if (!shortMethodImplementedInPrivateScriptMethodImplementedInPrivateScript(toFrameIfNotDetached(info.GetIsolate()->GetCurrentContext()), impl, &result))
         return;
     v8SetReturnValueInt(info, result);
@@ -10224,7 +10224,7 @@ static void shortMethodWithShortArgumentImplementedInPrivateScriptMethod(const v
         V8RethrowTryCatchScope rethrow(block);
         TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(value, toInt16(info[0], exceptionState), exceptionState);
     }
-    int result;
+    int result = 0;
     if (!shortMethodWithShortArgumentImplementedInPrivateScriptMethodImplementedInPrivateScript(toFrameIfNotDetached(info.GetIsolate()->GetCurrentContext()), impl, value, &result))
         return;
     v8SetReturnValueInt(info, result);

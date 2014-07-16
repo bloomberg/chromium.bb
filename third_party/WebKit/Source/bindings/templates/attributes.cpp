@@ -50,7 +50,7 @@ const v8::PropertyCallbackInfo<v8::Value>& info
     bool isNull = false;
     {% endif %}
     {% if attribute.is_implemented_in_private_script %}
-    {{attribute.cpp_type}} result;
+    {{attribute.cpp_type}} result{{attribute.cpp_type_initializer}};
     if (!{{attribute.cpp_value_original}})
         return;
     {% elif attribute.cpp_value_original %}

@@ -247,7 +247,7 @@ Document& document = *toDocument(currentExecutionContext(info.GetIsolate()));
 {% if method.idl_type == 'void' %}
 {{cpp_value}};
 {% elif method.is_implemented_in_private_script %}
-{{method.cpp_type}} result;
+{{method.cpp_type}} result{{method.cpp_type_initializer}};
 if (!{{method.cpp_value}})
     return;
 {% elif method.is_constructor %}

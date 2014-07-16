@@ -95,6 +95,7 @@ def attribute_context(interface, attribute):
                             if is_constructor_attribute(attribute) else None,
         'cpp_name': cpp_name(attribute),
         'cpp_type': idl_type.cpp_type,
+        'cpp_type_initializer': idl_type.cpp_type_initializer,
         'deprecate_as': v8_utilities.deprecate_as(attribute),  # [DeprecateAs]
         'enum_validation_expression': idl_type.enum_validation_expression,
         'has_custom_getter': has_custom_getter,
