@@ -15,6 +15,10 @@ namespace content {
 class PowerSaveBlocker;
 }
 
+namespace session_manager {
+class SessionManager;
+}
+
 namespace chromeos {
 
 class DataPromoNotification;
@@ -69,6 +73,8 @@ class ChromeBrowserMainPartsChromeos : public ChromeBrowserMainPartsLinux {
   scoped_ptr<DataPromoNotification> data_promo_notification_;
 
   scoped_ptr<internal::DBusServices> dbus_services_;
+
+  scoped_ptr<session_manager::SessionManager> session_manager_;
 
   scoped_ptr<EventRewriterController> keyboard_event_rewriters_;
 

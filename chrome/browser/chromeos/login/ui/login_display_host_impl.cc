@@ -68,6 +68,7 @@
 #include "chromeos/ime/input_method_manager.h"
 #include "chromeos/login/login_state.h"
 #include "chromeos/settings/timezone_settings.h"
+#include "components/session_manager/core/session_manager.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_frame_host.h"
@@ -1182,32 +1183,36 @@ void ShowLoginWizard(const std::string& first_screen_name) {
 
   gfx::Rect screen_bounds(chromeos::CalculateScreenBounds(gfx::Size()));
 
+  g_browser_process->platform_part()->SessionManager()->SetSessionState(
+      StartupUtils::IsOobeCompleted()
+          ? session_manager::SESSION_STATE_LOGIN_PRIMARY
+          : session_manager::SESSION_STATE_OOBE);
+
   LoginDisplayHost* display_host = new LoginDisplayHostImpl(screen_bounds);
 
-  bool show_app_launch_splash_screen = (first_screen_name ==
-      chromeos::WizardController::kAppLaunchSplashScreenName);
+  bool show_app_launch_splash_screen =
+      (first_screen_name == WizardController::kAppLaunchSplashScreenName);
   if (show_app_launch_splash_screen) {
     const std::string& auto_launch_app_id =
-        chromeos::KioskAppManager::Get()->GetAutoLaunchApp();
+        KioskAppManager::Get()->GetAutoLaunchApp();
     display_host->StartAppLaunch(auto_launch_app_id,
                                  false /* diagnostic_mode */);
     return;
   }
 
-  // Check whether we need to execute OOBE process.
-  bool oobe_complete = chromeos::StartupUtils::IsOobeCompleted();
+  // Check whether we need to execute OOBE flow.
+  bool oobe_complete = StartupUtils::IsOobeCompleted();
   policy::BrowserPolicyConnectorChromeOS* connector =
       g_browser_process->platform_part()->browser_policy_connector_chromeos();
   bool enrollment_screen_wanted =
-      chromeos::WizardController::ShouldRecoverEnrollment() ||
-      (chromeos::WizardController::ShouldAutoStartEnrollment() &&
-       oobe_complete &&
+      WizardController::ShouldRecoverEnrollment() ||
+      (WizardController::ShouldAutoStartEnrollment() && oobe_complete &&
        !connector->IsEnterpriseManaged());
   if (enrollment_screen_wanted && first_screen_name.empty()) {
     // Shows networks screen instead of enrollment screen to resume the
     // interrupted auto start enrollment flow because enrollment screen does
     // not handle flaky network. See http://crbug.com/332572
-    display_host->StartWizard(chromeos::WizardController::kNetworkScreenName,
+    display_host->StartWizard(WizardController::kNetworkScreenName,
                               scoped_ptr<base::DictionaryValue>());
     return;
   }
@@ -1221,7 +1226,7 @@ void ShowLoginWizard(const std::string& first_screen_name) {
 
   bool show_login_screen =
       (first_screen_name.empty() && oobe_complete) ||
-      first_screen_name == chromeos::WizardController::kLoginScreenName;
+      first_screen_name == WizardController::kLoginScreenName;
 
   if (show_login_screen) {
     display_host->StartSignInScreen(LoginScreenContext());
@@ -1229,12 +1234,12 @@ void ShowLoginWizard(const std::string& first_screen_name) {
   }
 
   // Load startup manifest.
-  const chromeos::StartupCustomizationDocument* startup_manifest =
-      chromeos::StartupCustomizationDocument::GetInstance();
+  const StartupCustomizationDocument* startup_manifest =
+      StartupCustomizationDocument::GetInstance();
 
   // Switch to initial locale if specified by customization
   // and has not been set yet. We cannot call
-  // chromeos::LanguageSwitchMenu::SwitchLanguage here before
+  // LanguageSwitchMenu::SwitchLanguage here before
   // EmitLoginPromptReady.
   PrefService* prefs = g_browser_process->local_state();
   const std::string& current_locale =
@@ -1259,7 +1264,7 @@ void ShowLoginWizard(const std::string& first_screen_name) {
   // Don't need to schedule pref save because setting initial local
   // will enforce preference saving.
   prefs->SetString(prefs::kApplicationLocale, locale);
-  chromeos::StartupUtils::SetInitialLocale(locale);
+  StartupUtils::SetInitialLocale(locale);
 
   scoped_ptr<ShowLoginWizardSwitchLanguageCallbackData> data(
       new ShowLoginWizardSwitchLanguageCallbackData(

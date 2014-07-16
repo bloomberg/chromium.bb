@@ -48,6 +48,7 @@ include_rules = [
   "+components/rappor",
   "+components/search_engines",
   "+components/search_provider_logos",
+  "+components/session_manager",
   "+components/sessions",
   "+components/signin",
   "+components/startup_metric_utils",

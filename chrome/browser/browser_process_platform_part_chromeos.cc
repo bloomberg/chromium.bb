@@ -4,14 +4,18 @@
 
 #include "chrome/browser/browser_process_platform_part_chromeos.h"
 
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/time/default_tick_clock.h"
 #include "base/time/tick_clock.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/login/session/chrome_session_manager.h"
 #include "chrome/browser/chromeos/memory/oom_priority_manager.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/system/automatic_reboot_manager.h"
+#include "chrome/browser/profiles/profile.h"
+#include "components/session_manager/core/session_manager.h"
 
 BrowserProcessPlatformPart::BrowserProcessPlatformPart()
     : created_profile_helper_(false) {
@@ -29,6 +33,24 @@ void BrowserProcessPlatformPart::InitializeAutomaticRebootManager() {
 
 void BrowserProcessPlatformPart::ShutdownAutomaticRebootManager() {
   automatic_reboot_manager_.reset();
+}
+
+void BrowserProcessPlatformPart::InitializeSessionManager(
+    const base::CommandLine& parsed_command_line,
+    Profile* profile,
+    bool is_running_test) {
+  DCHECK(!session_manager_);
+  session_manager_ = chromeos::ChromeSessionManager::CreateSessionManager(
+      parsed_command_line, profile, is_running_test);
+}
+
+void BrowserProcessPlatformPart::ShutdownSessionManager() {
+  session_manager_.reset();
+}
+
+session_manager::SessionManager* BrowserProcessPlatformPart::SessionManager() {
+  DCHECK(CalledOnValidThread());
+  return session_manager_.get();
 }
 
 chromeos::OomPriorityManager*

@@ -84,6 +84,7 @@
     }],
     ['use_ash==1', {
       'includes': [
+        'session_manager.gypi',
         'user_manager.gypi',
       ],
     }],

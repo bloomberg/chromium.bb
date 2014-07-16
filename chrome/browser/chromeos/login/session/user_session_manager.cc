@@ -55,6 +55,7 @@
 #include "chromeos/ime/input_method_manager.h"
 #include "chromeos/network/portal_detector/network_portal_detector.h"
 #include "chromeos/network/portal_detector/network_portal_detector_strategy.h"
+#include "components/session_manager/core/session_manager.h"
 #include "components/signin/core/browser/signin_manager_base.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
@@ -466,11 +467,15 @@ void UserSessionManager::OnNewRefreshTokenAvaiable(Profile* user_profile) {
 
 void UserSessionManager::OnConnectionTypeChanged(
     net::NetworkChangeNotifier::ConnectionType type) {
+  bool is_running_test =
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          ::switches::kTestName) ||
+      base::CommandLine::ForCurrentProcess()->HasSwitch(::switches::kTestType);
   UserManager* user_manager = UserManager::Get();
   if (type == net::NetworkChangeNotifier::CONNECTION_NONE ||
       !user_manager->IsUserLoggedIn() ||
       !user_manager->IsLoggedInAsRegularUser() ||
-      user_manager->IsLoggedInAsStub()) {
+      user_manager->IsLoggedInAsStub() || is_running_test) {
     return;
   }
 
@@ -681,6 +686,9 @@ void UserSessionManager::FinalizePrepareProfile(Profile* profile) {
   }
 
   profile->OnLogin();
+
+  g_browser_process->platform_part()->SessionManager()->SetSessionState(
+      session_manager::SESSION_STATE_LOGGED_IN_NOT_ACTIVE);
 
   // Send the notification before creating the browser so additional objects
   // that need the profile (e.g. the launcher) can be created first.

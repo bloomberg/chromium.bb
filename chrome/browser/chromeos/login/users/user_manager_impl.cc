@@ -58,6 +58,7 @@
 #include "chromeos/login/login_state.h"
 #include "chromeos/login/user_names.h"
 #include "chromeos/settings/cros_settings_names.h"
+#include "components/session_manager/core/session_manager.h"
 #include "components/user_manager/user_type.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
@@ -493,7 +494,11 @@ void UserManagerImpl::SwitchActiveUser(const std::string& user_id) {
 void UserManagerImpl::SessionStarted() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   session_started_ = true;
+
   UpdateLoginState();
+  g_browser_process->platform_part()->SessionManager()->SetSessionState(
+      session_manager::SESSION_STATE_ACTIVE);
+
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_SESSION_STARTED,
       content::Source<UserManager>(this),
