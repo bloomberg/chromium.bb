@@ -607,6 +607,7 @@ void AudioNode::printNodeCounts()
 void AudioNode::trace(Visitor* visitor)
 {
     visitor->trace(m_context);
+    visitor->trace(m_inputs);
     EventTargetWithInlineData::trace(visitor);
 }
 

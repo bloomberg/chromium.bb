@@ -43,7 +43,12 @@ namespace WebCore {
 
 class AudioNodeOutput;
 
-class AudioParam FINAL : public RefCountedWillBeGarbageCollectedFinalized<AudioParam>, public ScriptWrappable, public AudioSummingJunction {
+#if ENABLE(OILPAN)
+#define AUDIO_PARAM_BASE_CLASSES public AudioSummingJunction, public ScriptWrappable
+#else
+#define AUDIO_PARAM_BASE_CLASSES public RefCounted<AudioParam>, public ScriptWrappable, public AudioSummingJunction
+#endif
+class AudioParam FINAL : AUDIO_PARAM_BASE_CLASSES {
 public:
     static const double DefaultSmoothingConstant;
     static const double SnapThreshold;
@@ -102,9 +107,7 @@ public:
     void connect(AudioNodeOutput*);
     void disconnect(AudioNodeOutput*);
 
-    void trace(Visitor*) { }
-
-protected:
+private:
     AudioParam(AudioContext* context, const String& name, double defaultValue, double minValue, double maxValue, unsigned units = 0)
         : AudioSummingJunction(context)
         , m_name(name)
@@ -118,7 +121,6 @@ protected:
         ScriptWrappable::init(this);
     }
 
-private:
     // sampleAccurate corresponds to a-rate (audio rate) vs. k-rate in the Web Audio specification.
     void calculateFinalValues(float* values, unsigned numberOfValues, bool sampleAccurate);
     void calculateTimelineValues(float* values, unsigned numberOfValues);

@@ -37,10 +37,10 @@ class AudioNodeOutput;
 
 // An AudioSummingJunction represents a point where zero, one, or more AudioNodeOutputs connect.
 
-class AudioSummingJunction {
+class AudioSummingJunction : public NoBaseWillBeGarbageCollectedFinalized<AudioSummingJunction> {
 public:
-    explicit AudioSummingJunction(AudioContext*);
     virtual ~AudioSummingJunction();
+    virtual void trace(Visitor*);
 
     // Can be called from any thread.
     AudioContext* context() { return m_context.get(); }
@@ -61,7 +61,18 @@ public:
     virtual void didUpdate() = 0;
 
 protected:
-    RefPtrWillBePersistent<AudioContext> m_context;
+    explicit AudioSummingJunction(AudioContext*);
+
+    // Oilpan: m_context can be null only in the destructor because
+    // AudioSummingJunction objects are owned by AudioNodes, and AudioNodes have
+    // strong references to AudioContext.
+    // Theorically this should be a strong reference and AudioContext::
+    // m_dirtySummingJunctions should be HeapHashSet<WeakMember<
+    // AudioSummingJunction>>, but we can't do them because the map is modified
+    // in an audio rendering thread, which has no GC support. We need to remove
+    // an AudioSummingJunction from AudioContext in ~AudioSummingJunction, and
+    // this WeakMember<> makes it possible though we can't do it with Member<>.
+    RefPtrWillBeWeakMember<AudioContext> m_context;
 
     // m_outputs contains the AudioNodeOutputs representing current connections which are not disabled.
     // The rendering code should never use this directly, but instead uses m_renderingOutputs.

@@ -42,14 +42,15 @@ class AudioNodeOutput;
 
 class AudioNodeInput FINAL : public AudioSummingJunction {
 public:
-    static PassOwnPtr<AudioNodeInput> create(AudioNode&);
+    static PassOwnPtrWillBeRawPtr<AudioNodeInput> create(AudioNode&);
 
     // AudioSummingJunction
+    virtual void trace(Visitor*) OVERRIDE;
     virtual bool canUpdateState() OVERRIDE { return !node().isMarkedForDeletion(); }
     virtual void didUpdate() OVERRIDE;
 
     // Can be called from any thread.
-    AudioNode& node() const { return m_node; }
+    AudioNode& node() const { return *m_node; }
 
     // Must be called with the context's graph lock.
     void connect(AudioNodeOutput&);
@@ -82,7 +83,7 @@ public:
 private:
     explicit AudioNodeInput(AudioNode&);
 
-    AudioNode& m_node;
+    RawPtrWillBeMember<AudioNode> m_node;
 
     // m_disabledOutputs contains the AudioNodeOutputs which are disabled (will not be processed) by the audio graph rendering.
     // But, from JavaScript's perspective, these outputs are still connected to us.

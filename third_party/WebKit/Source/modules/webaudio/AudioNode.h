@@ -209,7 +209,7 @@ private:
     NodeType m_nodeType;
     RefPtrWillBeMember<AudioContext> m_context;
     float m_sampleRate;
-    Vector<OwnPtr<AudioNodeInput> > m_inputs;
+    WillBeHeapVector<OwnPtrWillBeMember<AudioNodeInput> > m_inputs;
     Vector<OwnPtr<AudioNodeOutput> > m_outputs;
 
 #if ENABLE(OILPAN)
