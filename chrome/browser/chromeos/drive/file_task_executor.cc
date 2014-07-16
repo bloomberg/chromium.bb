@@ -25,9 +25,49 @@ using fileapi::FileSystemURL;
 
 namespace drive {
 
-FileTaskExecutor::FileTaskExecutor(Profile* profile,
-                                   const std::string& app_id)
-  : profile_(profile),
+namespace {
+
+class FileTaskExecutorDelegateImpl : public FileTaskExecutorDelegate {
+ public:
+  explicit FileTaskExecutorDelegateImpl(Profile* profile) : profile_(profile) {
+  }
+
+  virtual FileSystemInterface* GetFileSystem() OVERRIDE {
+    return util::GetFileSystemByProfile(profile_);
+  }
+
+  virtual DriveServiceInterface* GetDriveService() OVERRIDE {
+    return util::GetDriveServiceByProfile(profile_);
+  }
+
+  virtual void OpenBrowserWindow(const GURL& open_link) OVERRIDE {
+    chrome::ScopedTabbedBrowserDisplayer displayer(
+         profile_, chrome::HOST_DESKTOP_TYPE_ASH);
+    chrome::AddSelectedTabWithURL(displayer.browser(), open_link,
+                                  content::PAGE_TRANSITION_LINK);
+    // Since the ScopedTabbedBrowserDisplayer does not guarantee that the
+    // browser will be shown on the active desktop, we ensure the visibility.
+    multi_user_util::MoveWindowToCurrentDesktop(
+        displayer.browser()->window()->GetNativeWindow());
+  }
+
+ private:
+  Profile* const profile_;
+};
+
+}  // namespace
+
+FileTaskExecutor::FileTaskExecutor(Profile* profile, const std::string& app_id)
+  : delegate_(new FileTaskExecutorDelegateImpl(profile)),
+    app_id_(app_id),
+    current_index_(0),
+    weak_ptr_factory_(this) {
+}
+
+FileTaskExecutor::FileTaskExecutor(
+    scoped_ptr<FileTaskExecutorDelegate> delegate,
+    const std::string& app_id)
+  : delegate_(delegate.Pass()),
     app_id_(app_id),
     current_index_(0),
     weak_ptr_factory_(this) {
@@ -39,6 +79,8 @@ FileTaskExecutor::~FileTaskExecutor() {
 void FileTaskExecutor::Execute(
     const std::vector<FileSystemURL>& file_urls,
     const file_manager::file_tasks::FileTaskFinishedCallback& done) {
+  DCHECK(!file_urls.empty());
+
   done_ = done;
 
   std::vector<base::FilePath> paths;
@@ -51,7 +93,7 @@ void FileTaskExecutor::Execute(
     paths.push_back(path);
   }
 
-  FileSystemInterface* file_system = util::GetFileSystemByProfile(profile_);
+  FileSystemInterface* const file_system = delegate_->GetFileSystem();
   if (!file_system) {
     Done(false);
     return;
@@ -75,9 +117,7 @@ void FileTaskExecutor::OnFileEntryFetched(FileError error,
   if (entry.get() && !entry->has_file_specific_info())
     error = FILE_ERROR_NOT_FOUND;
 
-  DriveServiceInterface* drive_service =
-      util::GetDriveServiceByProfile(profile_);
-
+  DriveServiceInterface* const drive_service = delegate_->GetDriveService();
   if (!drive_service || error != FILE_ERROR_OK) {
     Done(false);
     return;
@@ -98,24 +138,12 @@ void FileTaskExecutor::OnAppAuthorized(const std::string& resource_id,
                                        const GURL& open_link) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
-  DriveIntegrationService* service =
-      DriveIntegrationServiceFactory::FindForProfile(profile_);
-  if (!service || !service->IsMounted() ||
-      error != google_apis::HTTP_SUCCESS || open_link.is_empty()) {
+  if (error != google_apis::HTTP_SUCCESS || open_link.is_empty()) {
     Done(false);
     return;
   }
 
-  {
-    chrome::ScopedTabbedBrowserDisplayer displayer(
-         profile_, chrome::HOST_DESKTOP_TYPE_ASH);
-    chrome::AddSelectedTabWithURL(displayer.browser(), open_link,
-                                  content::PAGE_TRANSITION_LINK);
-    // Since the ScopedTabbedBrowserDisplayer does not guarantee that the
-    // browser will be shown on the active desktop, we ensure the visibility.
-    multi_user_util::MoveWindowToCurrentDesktop(
-        displayer.browser()->window()->GetNativeWindow());
-  }
+  delegate_->OpenBrowserWindow(open_link);
 
   // We're done with this file.  If this is the last one, then we're done.
   current_index_--;

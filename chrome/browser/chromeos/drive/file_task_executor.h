@@ -16,7 +16,19 @@
 
 namespace drive {
 
+class DriveServiceInterface;
+class FileSystemInterface;
 class ResourceEntry;
+
+// Delegate class for hooking fake instances and behaviors for testing.
+class FileTaskExecutorDelegate {
+ public:
+  virtual ~FileTaskExecutorDelegate() {}
+
+  virtual FileSystemInterface* GetFileSystem() = 0;
+  virtual DriveServiceInterface* GetDriveService() = 0;
+  virtual void OpenBrowserWindow(const GURL& open_link) = 0;
+};
 
 // This class implements an "executor" class that will execute tasks for
 // third party Drive apps that store data in Drive itself.  To do that, it
@@ -25,12 +37,17 @@ class ResourceEntry;
 // for opening the document in that app directly.
 class FileTaskExecutor {
  public:
+  // Creates FileTaskExecutor with delegate derived from |profile|. Used in
+  // product environment.
   FileTaskExecutor(Profile* profile, const std::string& app_id);
 
+  // Creates FileTaskExecutor with a specific delegate.
+  FileTaskExecutor(scoped_ptr<FileTaskExecutorDelegate> delegate,
+                   const std::string& app_id);
+
   // Executes file tasks, runs |done| and deletes |this|.
-  void Execute(
-      const std::vector<fileapi::FileSystemURL>& file_urls,
-      const file_manager::file_tasks::FileTaskFinishedCallback& done);
+  void Execute(const std::vector<fileapi::FileSystemURL>& file_urls,
+               const file_manager::file_tasks::FileTaskFinishedCallback& done);
 
  private:
   ~FileTaskExecutor();
@@ -43,7 +60,7 @@ class FileTaskExecutor {
   // Calls |done_| with |success| status and deletes |this|.
   void Done(bool success);
 
-  Profile* profile_;
+  scoped_ptr<FileTaskExecutorDelegate> delegate_;
   std::string app_id_;
   int current_index_;
   file_manager::file_tasks::FileTaskFinishedCallback done_;
